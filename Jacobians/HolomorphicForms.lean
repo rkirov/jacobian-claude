@@ -207,14 +207,15 @@ noncomputable def ambientIso (X : Type*) [TopologicalSpace X] [T2Space X]
   (Module.finBasisOfFinrankEq ℂ (HolomorphicOneForms X)
     (finrank_HolomorphicOneForms_eq_genus X)).equivFun.symm
 
-/-- **TODO(math)**: the ambient ℝ-linear map `Φ` induced by the pullback
-of forms along `f : X → Y`. Concretely the dual of `pullbackForm f hf`
-transported along `ambientIso`. -/
+/-- **TODO(math)**: the ambient ℝ-linear map `Φ` induced by the pushforward
+of forms along `f : X → Y`. Concretely `(ambientIso Y).symm ∘
+pushforwardForm f hf ∘ ambientIso X`, restricted to ℝ-linear. Left
+sorry pending pushforwardForm content + continuous-linearity tracking. -/
 noncomputable def ambientPhi {gX gY : ℕ}
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (Fin gX → ℂ) →L[ℝ] (Fin gY → ℂ) := sorry
 
-/-- **TODO(math)**: the ambient ℝ-linear map `Ψ` induced by the pushforward
+/-- **TODO(math)**: the ambient ℝ-linear map `Ψ` induced by the pullback
 of forms along `f : X → Y`. -/
 noncomputable def ambientPsi {gX gY : ℕ}
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
