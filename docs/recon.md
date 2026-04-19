@@ -254,6 +254,48 @@ are deferred).
 
 ---
 
+## Current state (as of most recent commit)
+
+**Challenge file `Jacobians.lean`:** 19 sorries (down from 24 at start).
+
+**Closed so far:**
+- `def Jacobian X := ...` — now the period-lattice quotient.
+- Five structural instances on `Jacobian X`: `AddCommGroup`, `TopologicalSpace`,
+  `T2Space`, `CompactSpace`, `ChartedSpace (Fin (genus X) → ℂ)`.
+- Two more: `IsManifold` and `LieAddGroup` on `Jacobian X` — routed through
+  stubs in `Jacobians/ZLatticeQuotient.lean` (documented proof sketches).
+
+**Remaining 19 sorries break into four clusters, all gated on content:**
+
+1. *Period lattice content* (3 sorries): `periodLattice X`, its
+   `DiscreteTopology` and `IsZLattice ℝ` instances. Needs holomorphic 1-forms
+   + singular H₁ + integration.
+2. *Topological genus* (2 sorries): `genus`, `genus_eq_zero_iff_homeo`.
+   Needs a definition (e.g. `rank(H₁(X, ℤ)) / 2`) + uniformization for genus 0.
+3. *Abel–Jacobi map* (4 sorries): `ofCurve`, `ofCurve_contMDiff`,
+   `ofCurve_self`, `ofCurve_inj`. Needs integration-along-paths.
+4. *Functoriality + degree* (10 sorries): `pushforward`, `pullback`, their
+   `ContMDiff` claims, `*_id_apply` / `*_comp_apply` lemmas, `ContMDiff.degree`,
+   and the headline `pushforward_pullback = deg • id`.
+
+**Important finding:** the "functoriality" lemmas (`pushforward_id_apply`,
+`pullback_id_apply`, comp variants) cannot be closed by any trivial
+placeholder — they constrain `pushforward id = id`, which rules out
+e.g. defining `pushforward := 0`.
+
+**Support files (`Jacobians/*.lean`):** 2 stubs remaining —
+`instIsManifoldQuotient` and `instLieAddGroupQuotient` in
+`ZLatticeQuotient.lean`, both with documented proof sketches. The math
+argument is clean (transition maps in the quotient charted space are
+locally translations by lattice elements, hence analytic) but the
+formalization needs the locally-constant-via-discrete-target lemma that
+Mathlib doesn't have in immediate form.
+
+**Build performance (session investment):**
+- `Jacobians.lean`: clean build 5 min → 51 s (via `#min_imports`).
+- Support files: 7–30 s each with narrow imports.
+- Full-project incremental: 9–20 s.
+
 ## Aggregated gap ranking (what to build first)
 
 1. **Quotient Lie group instance** on `E ⧸ Λ` for `E` a f.d. normed
