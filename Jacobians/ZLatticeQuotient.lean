@@ -1,6 +1,7 @@
 import Mathlib.Algebra.Module.ZLattice.Basic
 import Mathlib.Topology.Covering.Quotient
 import Mathlib.Topology.Algebra.IsUniformGroup.Basic
+import Mathlib.Topology.LocallyConstant.Basic
 import Mathlib.Geometry.Manifold.Algebra.LieGroup
 import Mathlib.Geometry.Manifold.IsManifold.Basic
 import Jacobians.ChartedSpaceOfLocalHomeomorph
@@ -119,31 +120,135 @@ using the fact that `QuotientAddGroup.mk` is a local homeomorphism. -/
 
 section Manifold
 
-open scoped Manifold
+open scoped Manifold Topology
 
 variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCommGroup E]
   [NormedSpace 𝕜 E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
   (Λ : Submodule ℤ E) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
   {n : WithTop ℕ∞}
 
-/-- The analytic manifold structure on `E ⧸ Λ`.
+/-! ### Transitions between `mk`-matching partial homs are locally translations
 
-**Proof outline** (deferred): apply `isManifold_of_contDiffOn`. Transitions
-between charts in `IsLocalHomeomorph.chartedSpace` have the form
-`P ≫ₕ P'.symm` where `P`, `P'` are `OpenPartialHomeomorph`s with
-`P = P' = QuotientAddGroup.mk` as functions. The composition sends
-`y ↦ y'` with `y' - y ∈ Λ`. Since `Λ` is discrete and the composition
-is continuous, `y ↦ y' - y` is locally constant, so the transition is
-locally a translation by a fixed lattice element. Translations are
-analytic (`contDiff_id.add contDiff_const`). Hence the transition is
-`ContDiffOn 𝕜 n`. -/
+Any two `OpenPartialHomeomorph E (E ⧸ Λ.toAddSubgroup)` whose `toFun`s
+equal `QuotientAddGroup.mk` have a composition `P ≫ₕ P'.symm : E → E`
+that satisfies `(P ≫ₕ P'.symm) y - y ∈ Λ`. Since `Λ` is discrete and
+the composition is continuous, the difference is locally constant,
+hence the composition is locally a translation. -/
+
+/-- Step 1: transition displacement lies in the lattice. -/
+theorem transition_sub_mem_lattice
+    (P P' : OpenPartialHomeomorph E (E ⧸ Λ.toAddSubgroup))
+    (hP : (P : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk)
+    (hP' : (P' : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk)
+    {y : E} (hy : y ∈ (P ≫ₕ P'.symm).source) :
+    (P ≫ₕ P'.symm) y - y ∈ Λ.toAddSubgroup := by
+  rw [← QuotientAddGroup.eq_iff_sub_mem]
+  -- Goal: (mk ((P ≫ₕ P'.symm) y) : E⧸Λ) = mk y.
+  rw [OpenPartialHomeomorph.trans_apply]
+  -- Goal: (mk (P'.symm (P y)) : _) = mk y.
+  rw [OpenPartialHomeomorph.trans_source, Set.mem_inter_iff,
+      OpenPartialHomeomorph.symm_source] at hy
+  -- hy : y ∈ P.source ∧ P y ∈ P'.target.
+  have hPy : P y ∈ P'.target := hy.2
+  have key : (P' (P'.symm (P y)) : E ⧸ Λ.toAddSubgroup) = P y :=
+    P'.right_inv hPy
+  calc (QuotientAddGroup.mk (P'.symm (P y)) : E ⧸ Λ.toAddSubgroup)
+      = P' (P'.symm (P y)) := by rw [← hP']
+    _ = P y               := key
+    _ = QuotientAddGroup.mk y := by rw [hP]
+
+/-- Step 2 + 3: the displacement `y ↦ transition y - y` is continuous. -/
+theorem transition_displacement_continuousOn
+    (P P' : OpenPartialHomeomorph E (E ⧸ Λ.toAddSubgroup)) :
+    ContinuousOn (fun y : E => (P ≫ₕ P'.symm) y - y) (P ≫ₕ P'.symm).source :=
+  ((P ≫ₕ P'.symm).continuousOn).sub continuousOn_id
+
+/-- Step 4: near any point of the source, the displacement is constant.
+
+Proof: displacement `d` is continuous on `T.source` (open) into `E`,
+with values in `Λ`. `Λ` is discrete in `E`, so near `y₀` the value
+`d y` must equal `d y₀`. -/
+theorem transition_displacement_eventuallyEq
+    (P P' : OpenPartialHomeomorph E (E ⧸ Λ.toAddSubgroup))
+    (hP : (P : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk)
+    (hP' : (P' : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk)
+    {y₀ : E} (hy₀ : y₀ ∈ (P ≫ₕ P'.symm).source) :
+    ∀ᶠ y in 𝓝 y₀, (P ≫ₕ P'.symm) y - y = (P ≫ₕ P'.symm) y₀ - y₀ := by
+  set T := P ≫ₕ P'.symm
+  set d : E → E := fun y => T y - y
+  -- The restriction of `d` to `T.source` is a continuous map into `Λ.toAddSubgroup`
+  -- (a subtype with the discrete topology).
+  let drestr : T.source → (Λ.toAddSubgroup : Set E) :=
+    fun ⟨y, hy⟩ => ⟨d y, transition_sub_mem_lattice Λ P P' hP hP' hy⟩
+  have hd_cont : ContinuousOn d T.source :=
+    transition_displacement_continuousOn Λ P P'
+  have hdrestr_cont : Continuous drestr := by
+    refine continuous_induced_rng.mpr ?_
+    exact hd_cont.comp_continuous continuous_subtype_val Subtype.property
+  -- Target has the discrete topology (as a subspace of E via the Λ coercion).
+  -- So `drestr` is locally constant.
+  have hlc : IsLocallyConstant drestr :=
+    (IsLocallyConstant.iff_continuous drestr).mpr hdrestr_cont
+  -- From local constancy on the subtype we get eventual equality within 𝓝 ⟨y₀, hy₀⟩.
+  have hsub := hlc.eventually_eq ⟨y₀, hy₀⟩
+  -- Transport to 𝓝 y₀ via the open-embedding `Subtype.val : T.source → E`.
+  have hopen : IsOpen (T.source : Set E) := T.open_source
+  have hemb : Topology.IsOpenEmbedding (Subtype.val : T.source → E) :=
+    hopen.isOpenEmbedding_subtypeVal
+  -- The filter `𝓝 y₀` on E, restricted to the image, corresponds to the
+  -- subtype filter at ⟨y₀, hy₀⟩.
+  -- Specifically, `𝓝 (⟨y₀, hy₀⟩ : T.source) = Filter.comap Subtype.val (𝓝 y₀)`.
+  rw [hemb.nhds_eq_comap ⟨y₀, hy₀⟩] at hsub
+  -- Push through via `Filter.eventually_comap` to get the result on E.
+  filter_upwards [hopen.mem_nhds hy₀, Filter.eventually_comap.mp hsub] with y hy_src hy_eq
+  have := hy_eq ⟨y, hy_src⟩ rfl
+  exact congrArg Subtype.val this
+
+/-- Step 5: the transition between `mk`-matching partial homs is
+`ContDiffOn 𝕜 n` on its source. Near any point of the source, the
+transition equals a translation by a fixed lattice element (step 4),
+and translations are `ContDiff`. -/
+theorem transition_contDiffOn_of_agrees_with_mk
+    (P P' : OpenPartialHomeomorph E (E ⧸ Λ.toAddSubgroup))
+    (hP : (P : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk)
+    (hP' : (P' : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk) :
+    ContDiffOn 𝕜 n (P ≫ₕ P'.symm : E → E) (P ≫ₕ P'.symm).source := by
+  intro y₀ hy₀
+  set T := P ≫ₕ P'.symm
+  -- The transition equals a translation in a neighborhood of y₀
+  have heq : (fun y : E => T y) =ᶠ[𝓝 y₀] (fun y : E => y + (T y₀ - y₀)) := by
+    filter_upwards [transition_displacement_eventuallyEq Λ P P' hP hP' hy₀] with y hy
+    -- hy : T y - y = T y₀ - y₀.  Rearranging: T y = y + (T y₀ - y₀).
+    have : T y = y + (T y - y) := by abel
+    rw [this, hy]
+  -- Translation is ContDiff
+  have htrans : ContDiff 𝕜 n (fun y : E => y + (T y₀ - y₀)) :=
+    contDiff_id.add contDiff_const
+  -- Combine
+  exact (htrans.contDiffAt.congr_of_eventuallyEq heq).contDiffWithinAt
+
+/-- The analytic manifold structure on `E ⧸ Λ`. -/
 noncomputable instance instIsManifoldQuotient :
-    IsManifold 𝓘(𝕜, E) n (E ⧸ Λ.toAddSubgroup) := sorry
+    IsManifold 𝓘(𝕜, E) n (E ⧸ Λ.toAddSubgroup) := by
+  refine isManifold_of_contDiffOn _ _ _ ?_
+  intro e e' he he'
+  obtain ⟨q₁, rfl⟩ := he
+  obtain ⟨q₂, rfl⟩ := he'
+  set x₁ := Classical.choose (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup) q₁)
+  set x₂ := Classical.choose (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup) q₂)
+  set P₁ := IsLocalHomeomorph.chartAtPreimage (isLocalHomeomorph_mk Λ.toAddSubgroup) x₁
+  set P₂ := IsLocalHomeomorph.chartAtPreimage (isLocalHomeomorph_mk Λ.toAddSubgroup) x₂
+  have hP₁ : (P₁ : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk :=
+    (IsLocalHomeomorph.eq_chartAtPreimage (isLocalHomeomorph_mk Λ.toAddSubgroup) x₁).symm
+  have hP₂ : (P₂ : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk :=
+    (IsLocalHomeomorph.eq_chartAtPreimage (isLocalHomeomorph_mk Λ.toAddSubgroup) x₂).symm
+  -- Simplify away the trivial model / range-of-model
+  simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
+    Function.comp_id, Set.range_id, Set.preimage_id, id_eq,
+    Set.inter_univ, OpenPartialHomeomorph.symm_symm]
+  exact transition_contDiffOn_of_agrees_with_mk Λ P₁ P₂ hP₁ hP₂
 
-/-- The analytic Lie-group structure on `E ⧸ Λ` — follows from
-`IsManifold` plus analyticity of addition/negation on `E`, descended
-through the quotient map via `QuotientAddGroup.mk` being a local
-homeomorphism (`isLocalHomeomorph_mk`). -/
+/-- The analytic Lie-group structure on `E ⧸ Λ`. -/
 noncomputable instance instLieAddGroupQuotient :
     LieAddGroup 𝓘(𝕜, E) n (E ⧸ Λ.toAddSubgroup) := sorry
 
