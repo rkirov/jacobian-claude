@@ -103,6 +103,35 @@ Not proofs — pointers to Lean / Mathlib infrastructure and related work.
   Theorem* (expository)](https://wstein.org/projects/kleinerman_99paper.pdf)
   — short, readable, useful cross-check for definitions.
 
+## Learning from scratch (for the non-mathematician collaborator)
+
+If the user's background is roughly *Tao, Analysis I* — i.e. rigorous real
+analysis but no complex analysis, no topology, no algebra beyond groups —
+the ladder to reading Kleinerman looks like this.
+
+**Instant intuition pass (~1–2 hours; no textbook needed):**
+
+- Wikipedia: [Riemann surface](https://en.wikipedia.org/wiki/Riemann_surface).
+- Wikipedia: [Genus (mathematics)](https://en.wikipedia.org/wiki/Genus_(mathematics)).
+- Wikipedia: [Divisor (algebraic geometry)](https://en.wikipedia.org/wiki/Divisor_(algebraic_geometry)).
+
+After this the user can follow the *shape* of the formalization and
+spot-check definitions, but not proofs.
+
+**Real understanding (unavoidable): complex analysis first.**
+
+- **Stein & Shakarchi, *Complex Analysis*** (Princeton Lectures II),
+  Chapters 1–3. ~100 pages to Cauchy's theorem and residues.
+- Alternative if more comfortable in the same style as Tao I: Tao's own
+  *Analysis II* (2nd ed), complex-analysis chapter.
+
+**Riemann surfaces on top of that:**
+
+- **Miranda**, Chapters 1 (Riemann surface definitions + examples), 5
+  §1 (divisors), 6 (holomorphic 1-forms), 8 (Jacobian + Abel).
+- Alternative, free PDF lecture notes:
+  [McMullen, Harvard Math 213b](https://people.math.harvard.edu/~ctm/papers/home/text/class/harvard/213b/course/course.pdf).
+
 ## Workflow
 
 - When opening a new sorry to close, open the primary source at the
