@@ -1,5 +1,8 @@
 import Mathlib.Geometry.Manifold.Complex
 import Mathlib.Geometry.Manifold.ContMDiff.Basic
+import Mathlib.Geometry.Manifold.VectorBundle.SmoothSection
+import Mathlib.Geometry.Manifold.VectorBundle.Tangent
+import Mathlib.Geometry.Manifold.VectorBundle.Hom
 import Mathlib.LinearAlgebra.Dimension.Basic
 import Mathlib.LinearAlgebra.Dimension.Finrank
 import Mathlib.Analysis.Normed.Module.Basic
@@ -7,37 +10,25 @@ import Mathlib.Analysis.Normed.Module.FiniteDimension
 import Jacobians.Genus
 
 /-!
-# Holomorphic 1-forms on a complex manifold — pragmatic placeholder
+# Holomorphic 1-forms on a complex manifold
 
-**Representation disclosure (important):** this file models
-`HolomorphicOneForms X` as `Fin (dim_H0_Omega X) → ℂ` — an abstract
-finite-dim ℂ-vector space of some sorried dimension. This is **not** the
-mathematically correct definition (holomorphic 1-forms are sections of
-the holomorphic cotangent bundle, not a parametric `Fin n → ℂ`), but it
-gives the correct *structural* type: a finite-dim ℂ-vector space,
-topological via the pi-topology, with dimension equal to `genus X` (once
-we identify `dim_H0_Omega X = genus X`).
+Uses Mathlib's `ContMDiffSection` and the `Bundle.ContinuousLinearMap`
+hom-of-bundles construction to define holomorphic 1-forms as **analytic
+sections of the cotangent bundle**.
 
-The real construction will eventually replace this with:
+The cotangent bundle at a point `x : X` is
+`TangentSpace 𝓘(ℂ) x →L[ℂ] ℂ`, built via Mathlib's hom-of-bundles
+machinery (`Bundle.ContinuousLinearMap.fiberBundle`, `vectorBundle`,
+and `vectorPrebundle.isContMDiff`).
 
-  `HolomorphicOneForms X := ` *smooth sections of the holomorphic
-  cotangent bundle on X, satisfying the holomorphy condition in local
-  coordinates*.
+This is the **honest** definition (compare to a placeholder that sets
+`HolomorphicOneForms X := Fin (genus X) → ℂ`).
 
-For now the placeholder **closes many structural sorries** (the type
-itself, AddCommGroup, Module ℂ, TopologicalSpace, FiniteDimensional,
-NormedSpace) and lets us connect the architecture. The content-level
-theorems (`pullbackForm_id`, `pullbackForm_comp`,
-`pushforwardForm_pullbackForm_eq`) remain sorries and must be
-re-examined once the representation is upgraded.
+## Dimension theorem (sorry)
 
-## TODO(math) — upgrade path
-
-1. Replace `HolomorphicOneForms X := Fin (dim_H0_Omega X) → ℂ` with
-   a structure over actual sections of the holomorphic cotangent bundle.
-2. Prove the dimension theorem `finrank ℂ (HolomorphicOneForms X) = genus X`.
-3. Re-verify that all downstream users still work (likely they do,
-   since we're changing only the representation of a f.d. ℂ-space).
+On a compact connected complex 1-manifold, `HolomorphicOneForms X` is
+a finite-dim ℂ-vector space of dimension `genus X`. This is a classical
+result (Riemann–Roch) and is recorded here as a sorry with TODO(math).
 
 ## References
 
@@ -46,18 +37,19 @@ Forster §§9–10; Miranda Ch. 4 §1.
 
 namespace Jacobians
 
-open scoped Manifold ContDiff
+open scoped Manifold ContDiff Bundle
 
-/-- The ℂ-vector space of global holomorphic 1-forms on a compact
-connected complex manifold of dim 1.
+/-- The ℂ-vector space of global analytic sections of the cotangent bundle
+of a compact connected complex 1-manifold.
 
-**Representation placeholder** (see module docstring): modelled as
-`Fin (genus X) → ℂ`. All structural instances are inherited from the
-pi-type. The actual construction (sections of the holomorphic cotangent
-bundle) is future work. -/
+Mathematically: global holomorphic 1-forms on `X`. The cotangent bundle
+is built as `Bundle.ContinuousLinearMap (RingHom.id ℂ) (TangentSpace,
+Bundle.Trivial X ℂ)` — the fiberwise continuous linear maps from
+tangent to trivial-ℂ-bundle. -/
 def HolomorphicOneForms (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type :=
-  Fin (genus X) → ℂ
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type _ :=
+  ContMDiffSection 𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω
+    (fun x : X => TangentSpace 𝓘(ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)
 
 section Instances
 
@@ -65,37 +57,33 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 noncomputable instance : AddCommGroup (HolomorphicOneForms X) :=
-  inferInstanceAs (AddCommGroup (Fin (genus X) → ℂ))
+  inferInstanceAs (AddCommGroup
+    (ContMDiffSection 𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)))
 
 noncomputable instance : Module ℂ (HolomorphicOneForms X) :=
-  inferInstanceAs (Module ℂ (Fin (genus X) → ℂ))
-
-noncomputable instance : TopologicalSpace (HolomorphicOneForms X) :=
-  inferInstanceAs (TopologicalSpace (Fin (genus X) → ℂ))
-
-noncomputable instance : ContinuousAdd (HolomorphicOneForms X) :=
-  inferInstanceAs (ContinuousAdd (Fin (genus X) → ℂ))
-
-noncomputable instance : NormedAddCommGroup (HolomorphicOneForms X) :=
-  inferInstanceAs (NormedAddCommGroup (Fin (genus X) → ℂ))
-
-noncomputable instance : NormedSpace ℂ (HolomorphicOneForms X) :=
-  inferInstanceAs (NormedSpace ℂ (Fin (genus X) → ℂ))
-
-noncomputable instance : FiniteDimensional ℂ (HolomorphicOneForms X) :=
-  inferInstanceAs (FiniteDimensional ℂ (Fin (genus X) → ℂ))
+  inferInstanceAs (Module ℂ
+    (ContMDiffSection 𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)))
 
 end Instances
 
-/-! ### Dimension -/
+section Curve
 
-@[simp]
-theorem finrank_HolomorphicOneForms (X : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] :
-    Module.finrank ℂ (HolomorphicOneForms X) = genus X := by
-  show Module.finrank ℂ (Fin (genus X) → ℂ) = genus X
-  simp
+variable (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+/-- **TODO(math)**: on a compact connected complex 1-manifold, the space
+of global holomorphic 1-forms is finite-dimensional. (Cartan–Serre
+applied to the sheaf `Ω¹_X`.) -/
+noncomputable instance : FiniteDimensional ℂ (HolomorphicOneForms X) := sorry
+
+/-- **TODO(math)**: dimension of holomorphic 1-forms = genus.
+Riemann–Roch / Dolbeault on a compact connected complex 1-manifold. -/
+theorem finrank_HolomorphicOneForms_eq_genus :
+    Module.finrank ℂ (HolomorphicOneForms X) = genus X := sorry
+
+end Curve
 
 /-! ### Pullback of forms along a holomorphic map. -/
 
@@ -110,15 +98,16 @@ variable {X Y Z : Type*}
     [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
 
 /-- **TODO(math)**: pullback of a holomorphic 1-form along a holomorphic
-map. -/
+map. In local coordinates: if `ω = f(w) dw` on `Y`, then
+`g^*ω = f(g(z)) g'(z) dz` on `X`. -/
 noncomputable def pullbackForm (g : X → Y) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g) :
-    HolomorphicOneForms Y →L[ℂ] HolomorphicOneForms X := sorry
+    HolomorphicOneForms Y →ₗ[ℂ] HolomorphicOneForms X := sorry
 
 /-- **TODO(math)**: `pullbackForm id = id`. -/
 theorem pullbackForm_id : pullbackForm (id : X → X) contMDiff_id =
-    ContinuousLinearMap.id ℂ (HolomorphicOneForms X) := sorry
+    LinearMap.id (R := ℂ) (M := HolomorphicOneForms X) := sorry
 
-/-- **TODO(math)**: contravariance of pullback under composition. -/
+/-- **TODO(math)**: contravariance of pullback. -/
 theorem pullbackForm_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
     (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f)) :
@@ -127,11 +116,7 @@ theorem pullbackForm_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f
 
 end Functoriality
 
-/-! ### Pushforward of forms under a proper holomorphic map between curves.
-
-For a non-constant holomorphic map `f : X → Y` of compact Riemann
-surfaces of degree `d`, pushforward of 1-forms exists and satisfies
-`f_* ∘ f^* = d • id`. For constant maps, pushforward is zero. -/
+/-! ### Pushforward of forms under a proper holomorphic map between curves. -/
 
 section PushforwardCurve
 
@@ -144,10 +129,9 @@ variable {X Y : Type*}
 /-- **TODO(math)**: pushforward of holomorphic 1-forms under a
 holomorphic map of compact Riemann surfaces. -/
 noncomputable def pushforwardForm (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    HolomorphicOneForms X →L[ℂ] HolomorphicOneForms Y := sorry
+    HolomorphicOneForms X →ₗ[ℂ] HolomorphicOneForms Y := sorry
 
-/-- **TODO(math)**: the headline identity `f_* ∘ f^* = deg(f) • id` on
-holomorphic 1-forms. -/
+/-- **TODO(math)**: the headline identity `f_* ∘ f^* = deg(f) • id`. -/
 theorem pushforwardForm_pullbackForm_eq (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (d : ℕ) (P : HolomorphicOneForms Y) :
     pushforwardForm f hf (pullbackForm f hf P) = (d : ℂ) • P := sorry
