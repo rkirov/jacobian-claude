@@ -4,7 +4,7 @@ One-page current state. Read this first before a session.
 
 ## Headline
 
-**Challenge sorry count: 24 → 14.** The headline `pushforward_pullback`
+**Challenge sorry count: 24 → 12.** The headline `pushforward_pullback`
 theorem and all four functoriality lemmas (`pushforward_id_apply`,
 `pullback_id_apply`, `pushforward_comp_apply`, `pullback_comp_apply`)
 are **closed in the challenge file**, contingent on content sorries in
@@ -14,37 +14,42 @@ are **closed in the challenge file**, contingent on content sorries in
 
 | File                          | Sorries | Kind                          |
 |-------------------------------|---------|-------------------------------|
-| `Jacobians.lean`              | 14      | content-gated (challenge file) |
+| `Jacobians.lean`              | 12      | content-gated (challenge file) |
+| `Jacobians/Genus.lean`        | 2       | genus + genus_eq_zero_iff_homeo |
 | `ZLatticeQuotient.lean`       | 2       | IsManifold + LieAddGroup stubs |
-| `HolomorphicForms.lean`       | 10      | content skeleton              |
+| `HolomorphicForms.lean`       | 5       | content (pullback/pushforward + degree identity) |
 | `FormsToJacobian.lean`        | 8       | bridge (iso + duals + ambient functoriality) |
 | `Architecture.lean`           | 0       | *architecture de-risked*      |
 | `ChartedSpaceOfLocalHomeomorph.lean` | 0 | manifold general-purpose     |
 | `JacobianValidate.lean`       | 0       | instance regression test      |
-| **Total**                     | **34**  |                               |
+| **Total**                     | **29**  |                               |
 
-## Remaining Jacobians.lean sorries (14)
+## Remaining Jacobians.lean sorries (12)
 
 1. `periodLattice X` definition
 2. `DiscreteTopology (periodLattice X)`
 3. `IsZLattice ℝ (periodLattice X)`
-4. `genus X` definition
-5. `genus_eq_zero_iff_homeo`
-6. `ofCurve`
-7. `ofCurve_contMDiff`
-8. `ofCurve_self`
-9. `ofCurve_inj` (Abel's theorem)
-10. `pushforward_contMDiff`
-11. `pullback_contMDiff`
-12. `ambientPhi_preserves_lattice` (wire-up dependency)
-13. `ambientPsi_preserves_lattice` (wire-up dependency)
-14. `ContMDiff.degree`
+4. `ofCurve`
+5. `ofCurve_contMDiff`
+6. `ofCurve_self`
+7. `ofCurve_inj` (Abel's theorem)
+8. `pushforward_contMDiff`
+9. `pullback_contMDiff`
+10. `ambientPhi_preserves_lattice` (wire-up dependency)
+11. `ambientPsi_preserves_lattice` (wire-up dependency)
+12. `ContMDiff.degree`
+
+(`genus` and `genus_eq_zero_iff_homeo` moved to `Jacobians/Genus.lean`.)
 
 ## Content sorries by layer
 
-**`HolomorphicForms.lean` (10 sorries):** define the type, structural
-instances, `pullbackForm`/`pushforwardForm` operations, their
-functoriality, and the degree identity `f_* ∘ f^* = d • id` on forms.
+**`HolomorphicForms.lean` (5 sorries):** `pullbackForm`,
+`pushforwardForm`, their functoriality (`pullbackForm_id`,
+`pullbackForm_comp`), and the degree identity
+`pushforwardForm_pullbackForm_eq`. The type itself and all structural
+instances (AddCommGroup / Module ℂ / FiniteDimensional / Normed) are
+now closed via the pragmatic placeholder
+`HolomorphicOneForms X := Fin (genus X) → ℂ`.
 
 **`FormsToJacobian.lean` (8 sorries):** bridge — basis iso, `ambientPhi`,
 `ambientPsi`, `ambientPhi_ambientPsi_eq` (degree identity on ambient),
@@ -94,8 +99,9 @@ functoriality, and the degree identity `f_* ∘ f^* = d • id` on forms.
 ├── Jacobians/
 │   ├── Architecture.lean       -- headline-identity descent (0 sorries)
 │   ├── ChartedSpaceOfLocalHomeomorph.lean  -- mathlib candidate (0 sorries)
+│   ├── Genus.lean              -- genus + homeo lemma (2 sorries)
 │   ├── ZLatticeQuotient.lean   -- quotient Lie-group scaffold (2 sorries)
-│   ├── HolomorphicForms.lean   -- content skeleton (10 sorries)
+│   ├── HolomorphicForms.lean   -- content (5 sorries; structural ones closed)
 │   ├── FormsToJacobian.lean    -- bridge (8 sorries)
 │   └── JacobianValidate.lean   -- instance regression
 ├── docs/
