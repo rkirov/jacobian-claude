@@ -1,0 +1,12 @@
+/.lake
+/build
+/lake-packages
+/lean_packages
+*.olean
+*.ilean
+*.trace
+*.hash
+
+# vim swap files
+*.swp
+*.swo
