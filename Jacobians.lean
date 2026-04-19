@@ -15,6 +15,8 @@ import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import Mathlib.Topology.Category.TopCat.Limits.Basic
 import Jacobians.ZLatticeQuotient
 import Jacobians.ChartedSpaceOfLocalHomeomorph
+import Jacobians.Architecture
+import Jacobians.FormsToJacobian
 
 /-
 
@@ -151,6 +153,11 @@ variable (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
 def pushforward (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     Jacobian X →ₜ+ Jacobian Y := sorry
+  -- When filled: route through `Architecture.pushforward` applied to
+  -- `Bridge.ambientPhi f hf`, with a `(sorry : lattice preservation)` proof.
+  -- Elaboration requires Jacobian X to reduce to the quotient, which needs
+  -- either @[reducible] on Jacobian (costly for build time) or an explicit
+  -- show/unfold at each use site.
 
 -- pushforward is holomorphic
 theorem pushforward_contMDiff :
