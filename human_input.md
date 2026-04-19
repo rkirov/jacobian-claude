@@ -104,6 +104,23 @@ commit.
 (skeleton → proof → refactor → validation). No pushes unless asked.
 Saved as a memory.
 
+### Continue on high-risk to uncover issues — don't just go deeper on easy wins
+
+**When:** after committing the architecture de-risk (commit `1b429c8`)
+and asking what's next.
+**My default:** Was leaning toward safe incremental work (more skeleton
+files).
+**User steer:** "continue on parts that feel highest risk to uncover
+more issues"
+**Change:** Attempted the highest-risk non-content wire-up: routing
+`Jacobians.pushforward` through `Architecture.pushforward +
+Bridge.ambientPhi`. Uncovered a concrete design finding (commit
+`4e50ddc`): our non-reducible `Jacobian X` makes proof-time elaboration
+awkward when using abstract `Architecture` theorems. Documented the
+tradeoff (reducibility vs. build time vs. `abbrev`) and deferred the
+call. The attempt surfaced a real architectural decision to track, even
+though no sorries closed.
+
 ### Don't silently drop universe polymorphism; try briefly, mark TODO
 
 **When:** after the prototype committed with `Type 0` instead of the
@@ -137,3 +154,7 @@ this log, and moved on. Closed 3 net sorries in `Jacobians.lean`.
 - **Silently abandoning scope.** When I can't get something to work the
   way the spec asked, mark it as an explicit TODO in the code and the
   steering log rather than just dropping it.
+- **Preferring "low-risk progress" over useful risk-taking.** User has
+  repeatedly pushed me to take on the hardest / riskiest next step. My
+  default is incremental safe work; their steering says aim at what's
+  likely to fail, because that's where issues surface.
