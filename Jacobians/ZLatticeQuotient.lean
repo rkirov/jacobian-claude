@@ -1,30 +1,21 @@
-import Mathlib
+import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.Topology.Covering.Quotient
+import Mathlib.Topology.Algebra.IsUniformGroup.Basic
 
 /-!
 # Quotient of a finite-dimensional normed space by a `ZLattice`
 
-This file develops the Lie-group structure on `E ⧸ Λ` where `E` is a
-finite-dimensional normed space over `ℝ` (or a normed field `𝕜 ∈ {ℝ, ℂ}`
-extending `ℝ`), and `Λ : Submodule ℤ E` is a full-rank discrete lattice
-(`IsZLattice ℝ Λ`).
-
-Session 2+ progress — currently establishes the "cheap" instances
-(`CompactSpace`) and stubs the manifold / `LieAddGroup` instances.
-
-## Outline
-
+Supporting theory for the `Jacobian X` construction.
 Given `Λ : Submodule ℤ E` with `[DiscreteTopology Λ]` and `[IsZLattice ℝ Λ]`:
 
-* `AddCommGroup (E ⧸ Λ.toAddSubgroup)` — automatic from `QuotientAddGroup`.
-* `TopologicalSpace (E ⧸ Λ.toAddSubgroup)` — automatic.
-* `T2Space (E ⧸ Λ.toAddSubgroup)` — automatic via `AddSubgroup.isClosed_of_discrete`
-  and `QuotientAddGroup.instT3Space`.
-* `CompactSpace (E ⧸ Λ.toAddSubgroup)` — via
+* `AddCommGroup (E ⧸ Λ.toAddSubgroup)` — automatic.
+* `TopologicalSpace`, `T2Space`, `T3Space`, `IsTopologicalAddGroup` — automatic
+  (via `AddSubgroup.isClosed_of_discrete` and `QuotientAddGroup.instT3Space`).
+* `CompactSpace (E ⧸ Λ.toAddSubgroup)` — proven via
   `IsZLattice.isCompact_range_of_periodic`.
-* `ChartedSpace E (E ⧸ Λ.toAddSubgroup)` — **TODO** (requires a charted-space
-  constructor from `IsLocalHomeomorph`, which is a candidate Mathlib contribution).
-* `IsManifold 𝓘(𝕜, E) ω (E ⧸ Λ.toAddSubgroup)` — **TODO** (after `ChartedSpace`).
-* `LieAddGroup 𝓘(𝕜, E) ω (E ⧸ Λ.toAddSubgroup)` — **TODO**.
+* `QuotientAddGroup.mk : E → E ⧸ Λ` is a covering map / local homeomorphism,
+  which will be the foundation for the (still-to-come) `ChartedSpace E (E ⧸ Λ)`
+  and `LieAddGroup` instances.
 
 ## References
 
@@ -33,14 +24,45 @@ Lee, *Introduction to Smooth Manifolds*, Ch. 21 (quotient Lie groups).
 
 namespace Jacobians.ZLatticeQuotient
 
-open scoped Manifold ContDiff
+/-! ### Covering-map structure
+
+Works for any commutative topological group `E` with a discrete subgroup `Λ` —
+no normed / finite-dim assumption needed. -/
+section CoveringMap
+
+variable {E : Type*} [AddCommGroup E] [TopologicalSpace E] [IsTopologicalAddGroup E]
+  (Λ : AddSubgroup E) [DiscreteTopology Λ]
+
+/-- The quotient map `E → E ⧸ Λ` is a covering map. -/
+theorem isCoveringMap_mk : IsCoveringMap (QuotientAddGroup.mk : E → E ⧸ Λ) :=
+  (AddSubgroup.isAddQuotientCoveringMap_of_comm _
+    DiscreteTopology.isDiscrete).isCoveringMap
+
+/-- The quotient map `E → E ⧸ Λ` is a local homeomorphism. -/
+theorem isLocalHomeomorph_mk :
+    IsLocalHomeomorph (QuotientAddGroup.mk : E → E ⧸ Λ) :=
+  (isCoveringMap_mk Λ).isLocalHomeomorph
+
+/-- The quotient map `E → E ⧸ Λ` is an open map. -/
+theorem isOpenMap_mk : IsOpenMap (QuotientAddGroup.mk : E → E ⧸ Λ) :=
+  (isLocalHomeomorph_mk Λ).isOpenMap
+
+end CoveringMap
+
+/-! ### Lie-group scaffolding instances on `E ⧸ Λ`
+
+For `E` a finite-dim normed real space and `Λ` a `ZLattice`. -/
+section ZLatticeInstances
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-variable (Λ : Submodule ℤ E) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
+  (Λ : Submodule ℤ E) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
 
-/-- The quotient `E ⧸ Λ` is compact: the quotient map is continuous, periodic with
-respect to `Λ`, and surjective, so its range (the whole quotient) is compact by
-`IsZLattice.isCompact_range_of_periodic`. -/
+/-- `DiscreteTopology` transfers from `Λ : Submodule ℤ E` to `Λ.toAddSubgroup`. -/
+instance : DiscreteTopology Λ.toAddSubgroup := ‹DiscreteTopology Λ›
+
+/-- The quotient `E ⧸ Λ` is compact. The quotient map is continuous,
+periodic with respect to `Λ`, and surjective, so its range (the whole
+quotient) is compact by `IsZLattice.isCompact_range_of_periodic`. -/
 instance instCompactSpaceQuotient : CompactSpace (E ⧸ Λ.toAddSubgroup) := by
   rw [← isCompact_univ_iff,
       ← Set.range_eq_univ.mpr (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup))]
@@ -49,25 +71,13 @@ instance instCompactSpaceQuotient : CompactSpace (E ⧸ Λ.toAddSubgroup) := by
   intro z w hw
   exact QuotientAddGroup.eq_iff_sub_mem.mpr (by simpa using hw)
 
-section Freebies
-
-/-! The following instances are automatic once `E ⧸ Λ.toAddSubgroup` is spelled out.
-They are recorded as `example`s so regressions are caught at build time. -/
-
 example : AddCommGroup (E ⧸ Λ.toAddSubgroup) := inferInstance
 example : TopologicalSpace (E ⧸ Λ.toAddSubgroup) := inferInstance
 example : IsTopologicalAddGroup (E ⧸ Λ.toAddSubgroup) := inferInstance
 example : T2Space (E ⧸ Λ.toAddSubgroup) := inferInstance
+example : T3Space (E ⧸ Λ.toAddSubgroup) := inferInstance
 example : CompactSpace (E ⧸ Λ.toAddSubgroup) := inferInstance
 
-end Freebies
-
-/-- TODO: the quotient `E ⧸ Λ` is a charted space modelled on `E`.
-This requires a charted-space-from-local-homeomorphism constructor
-that does not currently exist in Mathlib; see `Mathlib/Topology/Covering/`.
-The local homeomorphism we want is `QuotientAddGroup.mk : E → E ⧸ Λ`,
-which is a covering map by `AddSubgroup.isAddQuotientCoveringMap_of_comm`. -/
-@[implicit_reducible]
-def chartedSpace : ChartedSpace E (E ⧸ Λ.toAddSubgroup) := sorry
+end ZLatticeInstances
 
 end Jacobians.ZLatticeQuotient
