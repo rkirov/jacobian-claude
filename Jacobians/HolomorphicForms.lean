@@ -101,23 +101,54 @@ variable {X Y Z : Type*}
 /-- Pullback of a holomorphic 1-form along a holomorphic map of complex
 manifolds.
 
-The pointwise formula is `(pullbackForm g α)(x) = α(g x) ∘ mfderiv g x`.
-Expressed as a ℂ-linear map on sections — marked `sorry` because the
-full construction (pointwise + smoothness + linearity) needs three
-sub-sorries which net out worse than a single opaque sorry here. -/
+Pointwise: `(pullbackForm g α)(x) = α(g x) ∘ mfderiv g x`. -/
 noncomputable def pullbackForm (g : X → Y) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g) :
-    HolomorphicOneForms Y →ₗ[ℂ] HolomorphicOneForms X := sorry
+    HolomorphicOneForms Y →ₗ[ℂ] HolomorphicOneForms X where
+  toFun α :=
+    { toFun := fun x : X =>
+        (α.toFun (g x)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) g x)
+      contMDiff_toFun := sorry /- TODO(math): chain rule on bundle sections -/ }
+  map_add' α₁ α₂ := by
+    apply ContMDiffSection.ext
+    intro x
+    show ((α₁ + α₂).toFun (g x)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) g x) =
+      ((α₁.toFun (g x)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) g x)) +
+        ((α₂.toFun (g x)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) g x))
+    rfl
+  map_smul' c α := by
+    apply ContMDiffSection.ext
+    intro x
+    show ((c • α).toFun (g x)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) g x) =
+      c • (α.toFun (g x)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) g x)
+    rfl
 
-/-- **TODO(math)**: `pullbackForm id = id`. -/
+/-- `pullbackForm id = id`. Follows from `mfderiv id = id` and
+`ContinuousLinearMap.comp_id`. -/
 theorem pullbackForm_id : pullbackForm (id : X → X) contMDiff_id =
-    LinearMap.id (R := ℂ) (M := HolomorphicOneForms X) := sorry
+    LinearMap.id (R := ℂ) (M := HolomorphicOneForms X) := by
+  ext α
+  apply ContMDiffSection.ext
+  intro x
+  show (α.toFun x).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) (id : X → X) x) = α.toFun x
+  rw [mfderiv_id]
+  exact ContinuousLinearMap.comp_id _
 
-/-- **TODO(math)**: contravariance of pullback. -/
+/-- Contravariance of pullback: `(g ∘ f)^* = f^* ∘ g^*`. Follows from
+the chain rule `mfderiv_comp` + associativity of composition. -/
 theorem pullbackForm_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
     (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f)) :
     pullbackForm (g ∘ f) hgf =
-      (pullbackForm f hf).comp (pullbackForm g hg) := sorry
+      (pullbackForm f hf).comp (pullbackForm g hg) := by
+  ext α
+  apply ContMDiffSection.ext
+  intro x
+  show (α.toFun ((g ∘ f) x)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) (g ∘ f) x) =
+    ((α.toFun (g (f x))).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) g (f x))).comp
+      (mfderiv 𝓘(ℂ) 𝓘(ℂ) f x)
+  rw [mfderiv_comp x (hg.mdifferentiableAt (by decide))
+    (hf.mdifferentiableAt (by decide))]
+  exact (ContinuousLinearMap.comp_assoc _ _ _).symm
 
 end Functoriality
 
