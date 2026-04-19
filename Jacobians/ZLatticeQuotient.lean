@@ -117,7 +117,7 @@ reduce to the analyticity of addition / negation on `E ⧸ Λ`. These lift
 from the analyticity of addition / negation on `E` via the quotient map,
 using the fact that `QuotientAddGroup.mk` is a local homeomorphism. -/
 
-section ManifoldStubs
+section Manifold
 
 open scoped Manifold
 
@@ -126,17 +126,28 @@ variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCom
   (Λ : Submodule ℤ E) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
   {n : WithTop ℕ∞}
 
-/-- The analytic manifold structure on `E ⧸ Λ`. **TODO**: see the proof
-sketch in the module docstring. -/
+/-- The analytic manifold structure on `E ⧸ Λ`.
+
+**Proof outline** (deferred): apply `isManifold_of_contDiffOn`. Transitions
+between charts in `IsLocalHomeomorph.chartedSpace` have the form
+`P ≫ₕ P'.symm` where `P`, `P'` are `OpenPartialHomeomorph`s with
+`P = P' = QuotientAddGroup.mk` as functions. The composition sends
+`y ↦ y'` with `y' - y ∈ Λ`. Since `Λ` is discrete and the composition
+is continuous, `y ↦ y' - y` is locally constant, so the transition is
+locally a translation by a fixed lattice element. Translations are
+analytic (`contDiff_id.add contDiff_const`). Hence the transition is
+`ContDiffOn 𝕜 n`. -/
 noncomputable instance instIsManifoldQuotient :
     IsManifold 𝓘(𝕜, E) n (E ⧸ Λ.toAddSubgroup) := sorry
 
-/-- The analytic Lie-group structure on `E ⧸ Λ`. **TODO**: see the proof
-sketch. -/
+/-- The analytic Lie-group structure on `E ⧸ Λ` — follows from
+`IsManifold` plus analyticity of addition/negation on `E`, descended
+through the quotient map via `QuotientAddGroup.mk` being a local
+homeomorphism (`isLocalHomeomorph_mk`). -/
 noncomputable instance instLieAddGroupQuotient :
     LieAddGroup 𝓘(𝕜, E) n (E ⧸ Λ.toAddSubgroup) := sorry
 
-end ManifoldStubs
+end Manifold
 
 /-! ### Descent of linear maps to morphisms between ZLattice quotients
 
