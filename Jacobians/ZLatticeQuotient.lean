@@ -1,6 +1,7 @@
 import Mathlib.Algebra.Module.ZLattice.Basic
 import Mathlib.Topology.Covering.Quotient
 import Mathlib.Topology.Algebra.IsUniformGroup.Basic
+import Jacobians.ChartedSpaceOfLocalHomeomorph
 
 /-!
 # Quotient of a finite-dimensional normed space by a `ZLattice`
@@ -47,6 +48,11 @@ theorem isLocalHomeomorph_mk :
 theorem isOpenMap_mk : IsOpenMap (QuotientAddGroup.mk : E → E ⧸ Λ) :=
   (isLocalHomeomorph_mk Λ).isOpenMap
 
+/-- Charted space structure on `E ⧸ Λ` modelled on `E`, coming from the fact
+that the quotient map is a surjective local homeomorphism. -/
+noncomputable instance chartedSpaceQuotient : ChartedSpace E (E ⧸ Λ) :=
+  (isLocalHomeomorph_mk Λ).chartedSpace QuotientAddGroup.mk_surjective
+
 end CoveringMap
 
 /-! ### Lie-group scaffolding instances on `E ⧸ Λ`
@@ -77,6 +83,7 @@ example : IsTopologicalAddGroup (E ⧸ Λ.toAddSubgroup) := inferInstance
 example : T2Space (E ⧸ Λ.toAddSubgroup) := inferInstance
 example : T3Space (E ⧸ Λ.toAddSubgroup) := inferInstance
 example : CompactSpace (E ⧸ Λ.toAddSubgroup) := inferInstance
+example : ChartedSpace E (E ⧸ Λ.toAddSubgroup) := inferInstance
 
 end ZLatticeInstances
 
