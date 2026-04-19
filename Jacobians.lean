@@ -149,15 +149,22 @@ variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [Connecte
 
 variable (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
 
-/-- The pushforward map between Jacobians associated to a map of the underlying curves. -/
-def pushforward (f : X → Y)
+/-- Lattice preservation: the ambient pushforward map sends the `X`-period
+lattice into the `Y`-period lattice. Content-gated. -/
+lemma ambientPhi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    (periodLattice X).toAddSubgroup ≤
+      (periodLattice Y).toAddSubgroup.comap
+        (Jacobians.Bridge.ambientPhi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
+  sorry
+
+/-- The pushforward map between Jacobians associated to a map of the underlying curves.
+Wired: `Architecture.pushforward` applied to `Bridge.ambientPhi f hf`. -/
+noncomputable def pushforward (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    Jacobian X →ₜ+ Jacobian Y := sorry
-  -- When filled: route through `Architecture.pushforward` applied to
-  -- `Bridge.ambientPhi f hf`, with a `(sorry : lattice preservation)` proof.
-  -- Elaboration requires Jacobian X to reduce to the quotient, which needs
-  -- either @[reducible] on Jacobian (costly for build time) or an explicit
-  -- show/unfold at each use site.
+    Jacobian X →ₜ+ Jacobian Y :=
+  Jacobians.Architecture.pushforward (periodLattice X) (periodLattice Y)
+    (Jacobians.Bridge.ambientPhi (gX := genus X) (gY := genus Y) f hf)
+    (ambientPhi_preserves_lattice f hf)
 
 -- pushforward is holomorphic
 theorem pushforward_contMDiff :
@@ -165,7 +172,13 @@ theorem pushforward_contMDiff :
   (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ)) ω (pushforward f hf) := sorry
 
 -- functoriality
-lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P := sorry
+lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P :=
+  Jacobians.Architecture.pushforward_id_of_ambient
+    (periodLattice X)
+    (Jacobians.Bridge.ambientPhi (gX := genus X) (gY := genus X) id contMDiff_id)
+    (ambientPhi_preserves_lattice id contMDiff_id)
+    (fun x => Jacobians.Bridge.ambientPhi_id (X := X) x)
+    P
 
 variable {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z]
   [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
@@ -174,14 +187,28 @@ variable (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
 
 -- functoriality
 lemma pushforward_comp_apply (P : Jacobian X) :
-    pushforward (g ∘ f) (hg.comp hf) P = pushforward g hg (pushforward f hf P) :=
+    pushforward (g ∘ f) (hg.comp hf) P = pushforward g hg (pushforward f hf P) := by
+  -- Would reduce to Architecture.pushforward_comp_of_ambient, but requires
+  -- rewriting `ambientPhi (g ∘ f)` to `ambientPhi g ∘ ambientPhi f` first
+  -- (Bridge.ambientPhi_comp). Deferred pending that bridge lemma.
+  sorry
+
+/-- Lattice preservation on the pullback side. -/
+lemma ambientPsi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    (periodLattice Y).toAddSubgroup ≤
+      (periodLattice X).toAddSubgroup.comap
+        (Jacobians.Bridge.ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
   sorry
 
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
-Equal to the zero map if the map on curves is constant. -/
-def pullback (f : X → Y)
+Equal to the zero map if the map on curves is constant.
+Wired: `Architecture.pullback` applied to `Bridge.ambientPsi f hf`. -/
+noncomputable def pullback (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    Jacobian Y →ₜ+ Jacobian X := sorry
+    Jacobian Y →ₜ+ Jacobian X :=
+  Jacobians.Architecture.pullback (periodLattice X) (periodLattice Y)
+    (Jacobians.Bridge.ambientPsi (gX := genus X) (gY := genus Y) f hf)
+    (ambientPsi_preserves_lattice f hf)
 
 -- pullback is holomorphic
 theorem pullback_contMDiff :
@@ -189,7 +216,13 @@ theorem pullback_contMDiff :
       (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) := sorry
 
 -- functoriality
-lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P := sorry
+lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P :=
+  Jacobians.Architecture.pushforward_id_of_ambient
+    (periodLattice X)
+    (Jacobians.Bridge.ambientPsi (gX := genus X) (gY := genus X) id contMDiff_id)
+    (ambientPsi_preserves_lattice id contMDiff_id)
+    (fun x => Jacobians.Bridge.ambientPsi_id (X := X) x)
+    P
 
 -- functoriality
 lemma pullback_comp_apply (P : Jacobian Z) :
