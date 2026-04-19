@@ -4,6 +4,7 @@ import Mathlib.LinearAlgebra.Dimension.Basic
 import Mathlib.LinearAlgebra.Dimension.Finrank
 import Mathlib.Analysis.Normed.Module.Basic
 import Mathlib.Analysis.Normed.Module.FiniteDimension
+import Jacobians.Genus
 
 /-!
 # Holomorphic 1-forms on a complex manifold — pragmatic placeholder
@@ -47,59 +48,53 @@ namespace Jacobians
 
 open scoped Manifold ContDiff
 
-/-- The (geometric) dimension of the space of holomorphic 1-forms on `X`.
-For a compact Riemann surface this equals the topological genus
-(Riemann–Roch / Dolbeault). **TODO(math)**: provide actual construction
-(as `finrank ℂ` of the space of global sections of `Ω¹_X`, or
-equivalently via sheaf cohomology). -/
-noncomputable def dim_H0_Omega (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] : ℕ := sorry
-
-/-- The ℂ-vector space of global holomorphic 1-forms on a complex manifold.
+/-- The ℂ-vector space of global holomorphic 1-forms on a compact
+connected complex manifold of dim 1.
 
 **Representation placeholder** (see module docstring): modelled as
-`Fin (dim_H0_Omega X) → ℂ`. All structural instances are inherited from
-the pi-type. The actual construction (sections of the holomorphic
-cotangent bundle) is future work. -/
-def HolomorphicOneForms (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] : Type :=
-  Fin (dim_H0_Omega X) → ℂ
+`Fin (genus X) → ℂ`. All structural instances are inherited from the
+pi-type. The actual construction (sections of the holomorphic cotangent
+bundle) is future work. -/
+def HolomorphicOneForms (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type :=
+  Fin (genus X) → ℂ
 
 section Instances
 
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-  [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 noncomputable instance : AddCommGroup (HolomorphicOneForms X) :=
-  inferInstanceAs (AddCommGroup (Fin (dim_H0_Omega X) → ℂ))
+  inferInstanceAs (AddCommGroup (Fin (genus X) → ℂ))
 
 noncomputable instance : Module ℂ (HolomorphicOneForms X) :=
-  inferInstanceAs (Module ℂ (Fin (dim_H0_Omega X) → ℂ))
+  inferInstanceAs (Module ℂ (Fin (genus X) → ℂ))
 
 noncomputable instance : TopologicalSpace (HolomorphicOneForms X) :=
-  inferInstanceAs (TopologicalSpace (Fin (dim_H0_Omega X) → ℂ))
+  inferInstanceAs (TopologicalSpace (Fin (genus X) → ℂ))
 
 noncomputable instance : ContinuousAdd (HolomorphicOneForms X) :=
-  inferInstanceAs (ContinuousAdd (Fin (dim_H0_Omega X) → ℂ))
+  inferInstanceAs (ContinuousAdd (Fin (genus X) → ℂ))
 
 noncomputable instance : NormedAddCommGroup (HolomorphicOneForms X) :=
-  inferInstanceAs (NormedAddCommGroup (Fin (dim_H0_Omega X) → ℂ))
+  inferInstanceAs (NormedAddCommGroup (Fin (genus X) → ℂ))
 
 noncomputable instance : NormedSpace ℂ (HolomorphicOneForms X) :=
-  inferInstanceAs (NormedSpace ℂ (Fin (dim_H0_Omega X) → ℂ))
+  inferInstanceAs (NormedSpace ℂ (Fin (genus X) → ℂ))
 
 noncomputable instance : FiniteDimensional ℂ (HolomorphicOneForms X) :=
-  inferInstanceAs (FiniteDimensional ℂ (Fin (dim_H0_Omega X) → ℂ))
+  inferInstanceAs (FiniteDimensional ℂ (Fin (genus X) → ℂ))
 
 end Instances
 
 /-! ### Dimension -/
 
 @[simp]
-theorem finrank_HolomorphicOneForms (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X]
+theorem finrank_HolomorphicOneForms (X : Type*) [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] :
-    Module.finrank ℂ (HolomorphicOneForms X) = dim_H0_Omega X := by
-  show Module.finrank ℂ (Fin (dim_H0_Omega X) → ℂ) = dim_H0_Omega X
+    Module.finrank ℂ (HolomorphicOneForms X) = genus X := by
+  show Module.finrank ℂ (Fin (genus X) → ℂ) = genus X
   simp
 
 /-! ### Pullback of forms along a holomorphic map. -/
@@ -107,9 +102,12 @@ theorem finrank_HolomorphicOneForms (X : Type*) [TopologicalSpace X] [ChartedSpa
 section Functoriality
 
 variable {X Y Z : Type*}
-  [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-  [TopologicalSpace Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+  [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z] [Nonempty Z]
+    [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
 
 /-- **TODO(math)**: pullback of a holomorphic 1-form along a holomorphic
 map. -/

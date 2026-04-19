@@ -13,6 +13,7 @@ import Mathlib.Geometry.Manifold.ContMDiff.Defs
 import Mathlib.Geometry.Manifold.IsManifold.Basic
 import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import Mathlib.Topology.Category.TopCat.Limits.Basic
+import Jacobians.Genus
 import Jacobians.ZLatticeQuotient
 import Jacobians.ChartedSpaceOfLocalHomeomorph
 import Jacobians.Architecture
@@ -57,18 +58,12 @@ open scoped ContDiff -- for ω notation
 
 open scoped Manifold -- for 𝓘 notation
 
-/-- The genus of a compact Riemann surface. -/
-def genus (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-  [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : ℕ := sorry
+-- `genus` and `genus_eq_zero_iff_homeo` are defined in Jacobians.Genus so
+-- HolomorphicForms.lean can use `genus` without a circular dependency.
 
 -- let X be a compact Riemann surface
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
   [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
--- this proof avoids the hack answer `∀ X, genus X = 0`
-lemma genus_eq_zero_iff_homeo :
-    genus X = 0 ↔ Nonempty (X ≃ₜ (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) :=
-  sorry
 
 -- data
 /-- The period lattice of a compact Riemann surface, living inside
