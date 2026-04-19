@@ -104,6 +104,20 @@ commit.
 (skeleton → proof → refactor → validation). No pushes unless asked.
 Saved as a memory.
 
+### Don't silently drop universe polymorphism; try briefly, mark TODO
+
+**When:** after the prototype committed with `Type 0` instead of the
+challenge's `Type u`, and I asked what to do next.
+**My default:** Was about to either abandon the universe issue quietly
+or dive into a multi-hour `ULift` + `ChartedSpace`-transfer project.
+**User steer:** "Try 1) briefly but otherwise settle for proving without
+universe polymorphism (especially if it needs changes in Mathlib) leave
+as todo explicitly."
+**Change:** Briefly checked — `ChartedSpace`-over-`ULift` doesn't exist
+in Mathlib and would be a separate contribution. Dropped to `Type`,
+noted the gap as an explicit TODO in both the Jacobian docstring and
+this log, and moved on. Closed 3 net sorries in `Jacobians.lean`.
+
 ---
 
 ## Patterns to watch
@@ -120,3 +134,6 @@ Saved as a memory.
   simpler type, hunt for the bridge lemma.
 - **Publishing / pushing without being asked.** Default to local commit;
   publish only on explicit request.
+- **Silently abandoning scope.** When I can't get something to work the
+  way the spec asked, mark it as an explicit TODO in the code and the
+  steering log rather than just dropping it.
