@@ -104,6 +104,20 @@ commit.
 (skeleton → proof → refactor → validation). No pushes unless asked.
 Saved as a memory.
 
+### Don't overstate what's hard; the classical path exists
+
+**When:** after I claimed the content sorries need "sheaf cohomology".
+**My default:** cast the math bar unrealistically high ("Cartan–Serre
+sheaf cohomology").
+**User steer:** "isn't there a different approach — these results were
+known in the early 1900s".
+**Change:** corrected the characterization — the classical proofs are
+complex-analysis + topology + stokes (not sheaf cohomology). Identified
+*line integrals on manifolds* as the single biggest missing Mathlib
+piece for the classical path. Built `Jacobians/LineIntegral.lean`
+(0 sorries). Used it and placeholder-content closures to take the
+challenge file from 12 → 6 sorries in one push.
+
 ### Continue on high-risk to uncover issues — don't just go deeper on easy wins
 
 **When:** after committing the architecture de-risk (commit `1b429c8`)
@@ -158,3 +172,8 @@ this log, and moved on. Closed 3 net sorries in `Jacobians.lean`.
   repeatedly pushed me to take on the hardest / riskiest next step. My
   default is incremental safe work; their steering says aim at what's
   likely to fail, because that's where issues surface.
+- **Overstating the math bar.** I'm prone to calling things out as
+  "needs sheaf cohomology" or similarly advanced when the classical
+  elementary path exists. Classical results had classical proofs —
+  if something was done in the 19th century, name the 19th-century
+  method, not the 20th-century reformulation. User catches this.
