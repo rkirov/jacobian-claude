@@ -27,12 +27,16 @@ aab21f6  Prototype Jacobian via period-lattice quotient
 | `Jacobians.lean`              | 19      | content-gated (challenge file) |
 | `ZLatticeQuotient.lean`       | 2       | IsManifold + LieAddGroup stubs |
 | `HolomorphicForms.lean`       | 9       | content skeleton              |
-| `FormsToJacobian.lean`        | 4       | bridge (basis iso + duals)    |
-| `JacobianPrototype.lean`      | 4       | early-session prototype (can delete) |
+| `FormsToJacobian.lean`        | 8       | bridge: isos + duals + ambient functoriality |
 | `Architecture.lean`           | 0       | *architecture de-risked*      |
 | `ChartedSpaceOfLocalHomeomorph.lean` | 0 | manifold general-purpose     |
 | `JacobianValidate.lean`       | 0       | instance regression test      |
 | **Total**                     | **38**  |                               |
+
+Note: `Jacobians.lean` only imports `ZLatticeQuotient` and
+`ChartedSpaceOfLocalHomeomorph` so a bare `lake build` shows 21
+sorries. `HolomorphicForms` and `FormsToJacobian` are built via
+`lake build Jacobians.HolomorphicForms Jacobians.FormsToJacobian`.
 
 ## Build performance
 
@@ -76,8 +80,7 @@ aab21f6  Prototype Jacobian via period-lattice quotient
 │   ├── ChartedSpaceOfLocalHomeomorph.lean  -- mathlib candidate (0 sorries)
 │   ├── ZLatticeQuotient.lean   -- quotient Lie-group scaffold (2 sorries)
 │   ├── HolomorphicForms.lean   -- content skeleton (9 sorries)
-│   ├── FormsToJacobian.lean    -- bridge (4 sorries)
-│   ├── JacobianPrototype.lean  -- early prototype, redundant now
+│   ├── FormsToJacobian.lean    -- bridge (8 sorries)
 │   └── JacobianValidate.lean   -- instance regression
 ├── docs/
 │   ├── DESIGN.md
@@ -111,5 +114,3 @@ All remaining risk is in **content** now, not architecture. Candidates:
    using "transitions are locally translations by lattice elements".
 6. **Universe polymorphism ULift** — blocked on a Mathlib contribution.
 
-Cleanup candidate: `JacobianPrototype.lean` is superseded by the real
-wiring in `Jacobians.lean` and can be deleted.
