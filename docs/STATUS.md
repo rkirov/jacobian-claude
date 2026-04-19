@@ -43,13 +43,13 @@ are **closed in the challenge file**, contingent on content sorries in
 
 ## Content sorries by layer
 
-**`HolomorphicForms.lean` (5 sorries):** `pullbackForm`,
-`pushforwardForm`, their functoriality (`pullbackForm_id`,
-`pullbackForm_comp`), and the degree identity
-`pushforwardForm_pullbackForm_eq`. The type itself and all structural
-instances (AddCommGroup / Module ℂ / FiniteDimensional / Normed) are
-now closed via the pragmatic placeholder
-`HolomorphicOneForms X := Fin (genus X) → ℂ`.
+**`HolomorphicForms.lean` (7 sorries):** the real definition — analytic
+sections of the cotangent bundle via `ContMDiffSection` + `Bundle.Hom`.
+The `AddCommGroup` / `Module ℂ` instances are automatic (via
+`ContMDiffSection`). Sorried pieces:
+`FiniteDimensional`, `finrank_HolomorphicOneForms_eq_genus`,
+`pullbackForm`, `pullbackForm_id`, `pullbackForm_comp`,
+`pushforwardForm`, `pushforwardForm_pullbackForm_eq`.
 
 **`FormsToJacobian.lean` (8 sorries):** bridge — basis iso, `ambientPhi`,
 `ambientPsi`, `ambientPhi_ambientPsi_eq` (degree identity on ambient),
