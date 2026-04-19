@@ -1,7 +1,20 @@
-import Mathlib -- compiles with commit 8e3c989104daaa052921bf43de9eef0e1ac9fbf5 (15th April 2026)
+-- Narrow imports (via `#min_imports` linter). Replaces `import Mathlib`
+-- from the original challenge spec to make the file build in seconds
+-- instead of minutes. The original was
+-- `import Mathlib -- compiles with commit 8e3c989... (15th April 2026)`.
+import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.AlgebraicTopology.SimplexCategory.Basic
+import Mathlib.Analysis.CStarAlgebra.Classes
+import Mathlib.Analysis.Calculus.ContDiff.Defs
+import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Data.Complex.Basic
+import Mathlib.Geometry.Manifold.Algebra.LieGroup
+import Mathlib.Geometry.Manifold.ContMDiff.Defs
+import Mathlib.Geometry.Manifold.IsManifold.Basic
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+import Mathlib.Topology.Category.TopCat.Limits.Basic
 import Jacobians.ZLatticeQuotient
 import Jacobians.ChartedSpaceOfLocalHomeomorph
-import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 
 /-
 
