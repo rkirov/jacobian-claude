@@ -1,6 +1,8 @@
 import Mathlib.Algebra.Module.ZLattice.Basic
 import Mathlib.Topology.Covering.Quotient
 import Mathlib.Topology.Algebra.IsUniformGroup.Basic
+import Mathlib.Geometry.Manifold.Algebra.LieGroup
+import Mathlib.Geometry.Manifold.IsManifold.Basic
 import Jacobians.ChartedSpaceOfLocalHomeomorph
 
 /-!
@@ -83,8 +85,57 @@ example : IsTopologicalAddGroup (E ⧸ Λ.toAddSubgroup) := inferInstance
 example : T2Space (E ⧸ Λ.toAddSubgroup) := inferInstance
 example : T3Space (E ⧸ Λ.toAddSubgroup) := inferInstance
 example : CompactSpace (E ⧸ Λ.toAddSubgroup) := inferInstance
-example : ChartedSpace E (E ⧸ Λ.toAddSubgroup) := inferInstance
+noncomputable example : ChartedSpace E (E ⧸ Λ.toAddSubgroup) := inferInstance
 
 end ZLatticeInstances
+
+/-! ### Manifold and Lie-group instances (sorried, proof-sketch documented)
+
+The `IsManifold` and `LieAddGroup` instances on `E ⧸ Λ` are not yet closed;
+they reduce to "transition maps between quotient charts are analytic",
+which requires a locally-constant-lattice-translation argument that is a
+substantial formalization step. Sketched below and left as TODO.
+
+## Proof sketch for `IsManifold 𝓘(𝕜, E) n (E ⧸ Λ)`
+
+Apply `isManifold_of_contDiffOn`. Charts `e, e'` in the atlas come from
+`IsLocalHomeomorph.chartedSpace`, so each is `P.symm` for some
+`P : OpenPartialHomeomorph E (E ⧸ Λ)` agreeing with `QuotientAddGroup.mk`
+on its source. The transition `e.symm ≫ₕ e' = P ≫ₕ P'.symm : E → E`
+sends `x ∈ P.source` with `mk x ∈ P'.target` to the unique `y ∈ P'.source`
+with `mk y = mk x`, i.e. `y = x + λ` for some `λ ∈ Λ`.
+
+Since `Λ` is discrete and the transition is continuous, the map `x ↦ λ`
+is locally constant — on each connected component of the overlap, the
+transition is literally `x ↦ x + λ₀` for a fixed `λ₀ ∈ Λ`. Translations
+are analytic, so the transition is `ContDiffOn 𝕜 ω`.
+
+## Proof sketch for `LieAddGroup`
+
+`LieAddGroup` extends `ContMDiffAdd` and requires `ContMDiff_neg`. Both
+reduce to the analyticity of addition / negation on `E ⧸ Λ`. These lift
+from the analyticity of addition / negation on `E` via the quotient map,
+using the fact that `QuotientAddGroup.mk` is a local homeomorphism. -/
+
+section ManifoldStubs
+
+open scoped Manifold
+
+variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCommGroup E]
+  [NormedSpace 𝕜 E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+  (Λ : Submodule ℤ E) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
+  {n : WithTop ℕ∞}
+
+/-- The analytic manifold structure on `E ⧸ Λ`. **TODO**: see the proof
+sketch in the module docstring. -/
+noncomputable instance instIsManifoldQuotient :
+    IsManifold 𝓘(𝕜, E) n (E ⧸ Λ.toAddSubgroup) := sorry
+
+/-- The analytic Lie-group structure on `E ⧸ Λ`. **TODO**: see the proof
+sketch. -/
+noncomputable instance instLieAddGroupQuotient :
+    LieAddGroup 𝓘(𝕜, E) n (E ⧸ Λ.toAddSubgroup) := sorry
+
+end ManifoldStubs
 
 end Jacobians.ZLatticeQuotient

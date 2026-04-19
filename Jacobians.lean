@@ -109,10 +109,14 @@ equal to the genus of the surface. -/
 noncomputable instance : ChartedSpace (Fin (genus X) → ℂ) (Jacobian X) := inferInstance
 
 -- Prop
-instance : IsManifold (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) := sorry
+noncomputable instance :
+    IsManifold (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) :=
+  inferInstance
 
 -- Prop
-instance : LieAddGroup (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) := sorry
+noncomputable instance :
+    LieAddGroup (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) :=
+  inferInstance
 
 /-- The Abel-Jacobi map from a compact Riemann surface to its Jacobian. -/
 def ofCurve (P : X) : X → Jacobian X := sorry
