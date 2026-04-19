@@ -50,16 +50,20 @@ variable {X Y : Type*}
   [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
-/-! ### TODO(math): choice of basis iso -/
+/-! ### Basis iso — closed via `finBasisOfFinrankEq` -/
 
-/-- **TODO(math)**: a linear isomorphism identifying `Fin (genus X) → ℂ`
-with `HolomorphicOneForms X` (via a choice of basis). In practice this
-will come from `Basis.ofFinrankEq` once we know
-`finrank ℂ (HolomorphicOneForms X) = genus X`. -/
+/-- A linear isomorphism identifying `Fin (genus X) → ℂ` with
+`HolomorphicOneForms X`, constructed from a choice of basis via
+`Module.finBasisOfFinrankEq`.
+
+Uses `finrank_HolomorphicOneForms_eq_genus` (currently sorried) to
+supply the dimension equality. -/
 noncomputable def ambientIso (X : Type*) [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] (g : ℕ) :
-    (Fin g → ℂ) ≃ₗ[ℂ] HolomorphicOneForms X := sorry
+    [IsManifold 𝓘(ℂ) ω X] :
+    (Fin (genus X) → ℂ) ≃ₗ[ℂ] HolomorphicOneForms X :=
+  (Module.finBasisOfFinrankEq ℂ (HolomorphicOneForms X)
+    (finrank_HolomorphicOneForms_eq_genus X)).equivFun.symm
 
 /-! ### TODO(math): from Forms to Ambient linear maps
 
