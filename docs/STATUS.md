@@ -14,11 +14,11 @@ support files.
 | `Jacobians.lean`              | 6       | content-gated (challenge file) |
 | `Jacobians/Genus.lean`        | 2       | genus + genus_eq_zero_iff_homeo |
 | `Jacobians/ZLatticeQuotient.lean` | 2   | IsManifold + LieAddGroup stubs + quotient-morphism descent (0 sorries) |
-| `Jacobians/HolomorphicForms.lean` | 14  | cotangent sections + ambient bridge |
+| `Jacobians/HolomorphicForms.lean` | 12  | cotangent sections + ambient bridge (pullbackForm_id/comp closed) |
 | `Jacobians/LineIntegral.lean` | 0       | *path integration; 0 sorries* |
 | `Jacobians/ChartedSpaceOfLocalHomeomorph.lean` | 0 | manifold general-purpose     |
 | `Jacobians/JacobianValidate.lean` | 0   | instance regression test      |
-| **Total**                     | **24**  |                               |
+| **Total**                     | **22**  |                               |
 
 ## Remaining Jacobians.lean sorries (6)
 
