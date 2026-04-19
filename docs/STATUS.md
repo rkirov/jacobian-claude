@@ -17,12 +17,12 @@ are **closed in the challenge file**, contingent on content sorries in
 | `Jacobians.lean`              | 12      | content-gated (challenge file) |
 | `Jacobians/Genus.lean`        | 2       | genus + genus_eq_zero_iff_homeo |
 | `ZLatticeQuotient.lean`       | 2       | IsManifold + LieAddGroup stubs |
-| `HolomorphicForms.lean`       | 5       | content (pullback/pushforward + degree identity) |
-| `FormsToJacobian.lean`        | 8       | bridge (iso + duals + ambient functoriality) |
+| `HolomorphicForms.lean`       | 7       | real cotangent-bundle def; content sorries |
+| `FormsToJacobian.lean`        | 7       | bridge (ambientIso closed; ambientPhi/Psi + functoriality remain) |
 | `Architecture.lean`           | 0       | *architecture de-risked*      |
 | `ChartedSpaceOfLocalHomeomorph.lean` | 0 | manifold general-purpose     |
 | `JacobianValidate.lean`       | 0       | instance regression test      |
-| **Total**                     | **29**  |                               |
+| **Total**                     | **30**  |                               |
 
 ## Remaining Jacobians.lean sorries (12)
 
