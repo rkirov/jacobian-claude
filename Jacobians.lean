@@ -68,20 +68,31 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
 
 -- data
 /-- The period lattice of a compact Riemann surface, living inside
-`(Fin (genus X) → ℂ)`. In the real construction this is the image of
-`H₁(X, ℤ)` in `H⁰(X, Ω¹)ᵛ` under the period pairing; currently
-`sorry`-level until holomorphic 1-forms + integration exist. -/
-def periodLattice (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
-    Submodule ℤ (Fin (genus X) → ℂ) := sorry
+`(Fin (genus X) → ℂ)`.
+
+**Placeholder definition**: for now, the span over ℤ of the standard
+real-analytic basis of `Fin (genus X) → ℂ` (a `2 * genus X`-element
+basis). This is a valid `IsZLattice` (all structural instances fire)
+but has nothing to do with actual periods of holomorphic 1-forms.
+
+The real definition is `image of H₁(X, ℤ)` in `H⁰(X, Ω¹)ᵛ` under the
+period pairing; replacing this placeholder with the real construction
+is content-level TODO(math). -/
+noncomputable def periodLattice (X : Type*) [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] : Submodule ℤ (Fin (genus X) → ℂ) :=
+  Submodule.span ℤ (Set.range (Module.finBasis ℝ (Fin (genus X) → ℂ)))
 
 instance {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
-    DiscreteTopology (periodLattice X) := sorry
+    DiscreteTopology (periodLattice X) :=
+  inferInstanceAs (DiscreteTopology
+    (Submodule.span ℤ (Set.range (Module.finBasis ℝ (Fin (genus X) → ℂ)))))
 
 instance {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
-    IsZLattice ℝ (periodLattice X) := sorry
+    IsZLattice ℝ (periodLattice X) :=
+  instIsZLatticeRealSpan (Module.finBasis ℝ (Fin (genus X) → ℂ))
 
 -- data
 /-- The Jacobian of a compact Riemann surface, as the quotient of
