@@ -188,10 +188,16 @@ variable (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
 -- functoriality
 lemma pushforward_comp_apply (P : Jacobian X) :
     pushforward (g ∘ f) (hg.comp hf) P = pushforward g hg (pushforward f hf P) := by
-  -- Would reduce to Architecture.pushforward_comp_of_ambient, but requires
-  -- rewriting `ambientPhi (g ∘ f)` to `ambientPhi g ∘ ambientPhi f` first
-  -- (Bridge.ambientPhi_comp). Deferred pending that bridge lemma.
-  sorry
+  induction P using QuotientAddGroup.induction_on with
+  | H x =>
+    show QuotientAddGroup.mk
+        (Jacobians.Bridge.ambientPhi (gX := genus X) (gY := genus Z) (g ∘ f)
+          (hg.comp hf) x) =
+      QuotientAddGroup.mk
+        (Jacobians.Bridge.ambientPhi (gX := genus Y) (gY := genus Z) g hg
+          (Jacobians.Bridge.ambientPhi (gX := genus X) (gY := genus Y) f hf x))
+    congr 1
+    exact Jacobians.Bridge.ambientPhi_comp f hf g hg (hg.comp hf) x
 
 /-- Lattice preservation on the pullback side. -/
 lemma ambientPsi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
@@ -226,7 +232,17 @@ lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P :=
 
 -- functoriality
 lemma pullback_comp_apply (P : Jacobian Z) :
-    pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := sorry
+    pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := by
+  induction P using QuotientAddGroup.induction_on with
+  | H z =>
+    show QuotientAddGroup.mk
+        (Jacobians.Bridge.ambientPsi (gX := genus X) (gY := genus Z) (g ∘ f)
+          (hg.comp hf) z) =
+      QuotientAddGroup.mk
+        (Jacobians.Bridge.ambientPsi (gX := genus X) (gY := genus Y) f hf
+          (Jacobians.Bridge.ambientPsi (gX := genus Y) (gY := genus Z) g hg z))
+    congr 1
+    exact Jacobians.Bridge.ambientPsi_comp f hf g hg (hg.comp hf) z
 
 /-- The degree of a holomorphic map between compact Riemann surfaces. Equal to zero
 for constant maps, otherwise equal to the usual degree. -/
