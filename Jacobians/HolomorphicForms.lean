@@ -143,4 +143,93 @@ theorem pushforwardForm_pullbackForm_eq (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 
 
 end PushforwardCurve
 
+/-! ### Ambient-space bridge
+
+Connects the forms side (`HolomorphicOneForms X`, `pullbackForm`,
+`pushforwardForm`) to the Jacobian-quotient ambient `(Fin (genus X) → ℂ)`
+via a basis isomorphism and dualization. This is the glue layer between
+`HolomorphicForms` and `ZLatticeQuotient` (where the quotient descent
+lives).
+
+|Ambient side                            |Forms side                        |
+|----------------------------------------|----------------------------------|
+|`Φ : (Fin gX → ℂ) →L[ℝ] (Fin gY → ℂ)`    |dual of `pullbackForm f hf`       |
+|`Ψ : (Fin gY → ℂ) →L[ℝ] (Fin gX → ℂ)`    |dual of `pushforwardForm f hf`    |
+|`Φ (Ψ y) = d • y`                       |`pushforwardForm_pullbackForm_eq` |
+-/
+
+section AmbientBridge
+
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
+/-- A linear isomorphism `(Fin (genus X) → ℂ) ≃ₗ[ℂ] HolomorphicOneForms X`
+from a choice of basis, via `Module.finBasisOfFinrankEq` + the sorried
+dimension equality `finrank_HolomorphicOneForms_eq_genus`. -/
+noncomputable def ambientIso (X : Type*) [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] :
+    (Fin (genus X) → ℂ) ≃ₗ[ℂ] HolomorphicOneForms X :=
+  (Module.finBasisOfFinrankEq ℂ (HolomorphicOneForms X)
+    (finrank_HolomorphicOneForms_eq_genus X)).equivFun.symm
+
+/-- **TODO(math)**: the ambient ℝ-linear map `Φ` induced by the pullback
+of forms along `f : X → Y`. Concretely the dual of `pullbackForm f hf`
+transported along `ambientIso`. -/
+noncomputable def ambientPhi {gX gY : ℕ}
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    (Fin gX → ℂ) →L[ℝ] (Fin gY → ℂ) := sorry
+
+/-- **TODO(math)**: the ambient ℝ-linear map `Ψ` induced by the pushforward
+of forms along `f : X → Y`. -/
+noncomputable def ambientPsi {gX gY : ℕ}
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    (Fin gY → ℂ) →L[ℝ] (Fin gX → ℂ) := sorry
+
+/-- **TODO(math)**: the ambient degree identity, dualized from
+`pushforwardForm_pullbackForm_eq`. -/
+theorem ambientPhi_ambientPsi_eq {gX gY : ℕ}
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (d : ℕ)
+    (y : Fin gY → ℂ) :
+    ambientPhi (gX := gX) (gY := gY) f hf (ambientPsi f hf y) = (d : ℕ) • y := sorry
+
+/-- **TODO(math)**: `ambientPhi id = id` (dualizes `pullbackForm_id`). -/
+theorem ambientPhi_id {g : ℕ} (x : Fin g → ℂ) :
+    ambientPhi (X := X) (Y := X) (gX := g) (gY := g) id contMDiff_id x = x := sorry
+
+/-- **TODO(math)**: covariant composition: `ambientPhi (g ∘ f) =
+ambientPhi g ∘ ambientPhi f`. -/
+theorem ambientPhi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+    [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+    {gX gY gZ : ℕ}
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
+    (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f))
+    (x : Fin gX → ℂ) :
+    ambientPhi (gX := gX) (gY := gZ) (g ∘ f) hgf x =
+      ambientPhi (gX := gY) (gY := gZ) g hg
+        (ambientPhi (gX := gX) (gY := gY) f hf x) := sorry
+
+/-- **TODO(math)**: `ambientPsi id = id`. -/
+theorem ambientPsi_id {g : ℕ} (y : Fin g → ℂ) :
+    ambientPsi (X := X) (Y := X) (gX := g) (gY := g) id contMDiff_id y = y := sorry
+
+/-- **TODO(math)**: contravariant composition: `ambientPsi (g ∘ f) =
+ambientPsi f ∘ ambientPsi g`. -/
+theorem ambientPsi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+    [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+    {gX gY gZ : ℕ}
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
+    (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f))
+    (z : Fin gZ → ℂ) :
+    ambientPsi (gX := gX) (gY := gZ) (g ∘ f) hgf z =
+      ambientPsi (gX := gX) (gY := gY) f hf
+        (ambientPsi (gX := gY) (gY := gZ) g hg z) := sorry
+
+end AmbientBridge
+
 end Jacobians

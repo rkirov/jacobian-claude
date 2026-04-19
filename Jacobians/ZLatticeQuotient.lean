@@ -138,4 +138,92 @@ noncomputable instance instLieAddGroupQuotient :
 
 end ManifoldStubs
 
+/-! ### Descent of linear maps to morphisms between ZLattice quotients
+
+Given a lattice-respecting continuous ℝ-linear map between ambient spaces,
+this section builds the induced group morphism between the corresponding
+quotient tori and proves functoriality + the descent of the "degree
+identity" `Φ ∘ Ψ = d • id` from the ambient to the quotient.
+
+This is what makes the challenge's `pushforward_pullback = deg • id`
+tractable once we have the ambient linear maps with the right degree
+identity — the quotient side is structurally automatic. -/
+
+section LatticeMorphisms
+
+noncomputable section
+
+/-- The descended pushforward map on quotient tori, from a lattice-respecting
+ambient linear map. -/
+def pushforward {gX gY : ℕ}
+    (ΛX : Submodule ℤ (Fin gX → ℂ)) (ΛY : Submodule ℤ (Fin gY → ℂ))
+    (Φ : (Fin gX → ℂ) →L[ℝ] (Fin gY → ℂ))
+    (hΦ : ΛX.toAddSubgroup ≤ ΛY.toAddSubgroup.comap Φ.toAddMonoidHom) :
+    ((Fin gX → ℂ) ⧸ ΛX.toAddSubgroup) →ₜ+ ((Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) where
+  toFun := QuotientAddGroup.map _ _ Φ.toAddMonoidHom hΦ
+  map_zero' := (QuotientAddGroup.map _ _ Φ.toAddMonoidHom hΦ).map_zero
+  map_add' := (QuotientAddGroup.map _ _ Φ.toAddMonoidHom hΦ).map_add
+  continuous_toFun :=
+    continuous_quot_lift _ (QuotientAddGroup.continuous_mk.comp Φ.continuous)
+
+/-- The descended pullback map (dual direction). Defined via `pushforward`. -/
+def pullback {gX gY : ℕ}
+    (ΛX : Submodule ℤ (Fin gX → ℂ)) (ΛY : Submodule ℤ (Fin gY → ℂ))
+    (Ψ : (Fin gY → ℂ) →L[ℝ] (Fin gX → ℂ))
+    (hΨ : ΛY.toAddSubgroup ≤ ΛX.toAddSubgroup.comap Ψ.toAddMonoidHom) :
+    ((Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) →ₜ+ ((Fin gX → ℂ) ⧸ ΛX.toAddSubgroup) :=
+  pushforward ΛY ΛX Ψ hΨ
+
+/-- Headline: the degree identity `Φ ∘ Ψ = d • id` on the ambient
+descends to `pushforward ∘ pullback = d • id` on the quotient. -/
+theorem pushforward_pullback_of_ambient
+    {gX gY : ℕ}
+    (ΛX : Submodule ℤ (Fin gX → ℂ)) (ΛY : Submodule ℤ (Fin gY → ℂ))
+    (Φ : (Fin gX → ℂ) →L[ℝ] (Fin gY → ℂ))
+    (Ψ : (Fin gY → ℂ) →L[ℝ] (Fin gX → ℂ))
+    (hΦ : ΛX.toAddSubgroup ≤ ΛY.toAddSubgroup.comap Φ.toAddMonoidHom)
+    (hΨ : ΛY.toAddSubgroup ≤ ΛX.toAddSubgroup.comap Ψ.toAddMonoidHom)
+    (d : ℕ)
+    (hΦΨ : ∀ y : (Fin gY → ℂ), Φ (Ψ y) = (d : ℕ) • y)
+    (P : (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) :
+    pushforward ΛX ΛY Φ hΦ (pullback ΛX ΛY Ψ hΨ P) = d • P := by
+  induction P using QuotientAddGroup.induction_on with
+  | H y =>
+    show (QuotientAddGroup.mk (Φ (Ψ y)) : _) = d • (QuotientAddGroup.mk y : _)
+    rw [hΦΨ y]
+    simp
+
+/-- Functoriality: ambient identity descends to quotient identity. -/
+theorem pushforward_id_of_ambient
+    {g : ℕ} (Λ : Submodule ℤ (Fin g → ℂ))
+    (Φ : (Fin g → ℂ) →L[ℝ] (Fin g → ℂ))
+    (hΦΛ : Λ.toAddSubgroup ≤ Λ.toAddSubgroup.comap Φ.toAddMonoidHom)
+    (hΦid : ∀ x : (Fin g → ℂ), Φ x = x)
+    (P : (Fin g → ℂ) ⧸ Λ.toAddSubgroup) :
+    pushforward Λ Λ Φ hΦΛ P = P := by
+  induction P using QuotientAddGroup.induction_on with
+  | H x =>
+    show (QuotientAddGroup.mk (Φ x) : _) = _
+    rw [hΦid]
+
+/-- Functoriality: ambient composition descends to quotient composition. -/
+theorem pushforward_comp_of_ambient
+    {gX gY gZ : ℕ}
+    (ΛX : Submodule ℤ (Fin gX → ℂ)) (ΛY : Submodule ℤ (Fin gY → ℂ))
+    (ΛZ : Submodule ℤ (Fin gZ → ℂ))
+    (Φ₁ : (Fin gX → ℂ) →L[ℝ] (Fin gY → ℂ))
+    (Φ₂ : (Fin gY → ℂ) →L[ℝ] (Fin gZ → ℂ))
+    (hΦ₁ : ΛX.toAddSubgroup ≤ ΛY.toAddSubgroup.comap Φ₁.toAddMonoidHom)
+    (hΦ₂ : ΛY.toAddSubgroup ≤ ΛZ.toAddSubgroup.comap Φ₂.toAddMonoidHom)
+    (hΦ₁₂ : ΛX.toAddSubgroup ≤ ΛZ.toAddSubgroup.comap (Φ₂.comp Φ₁).toAddMonoidHom)
+    (P : (Fin gX → ℂ) ⧸ ΛX.toAddSubgroup) :
+    pushforward ΛX ΛZ (Φ₂.comp Φ₁) hΦ₁₂ P =
+      pushforward ΛY ΛZ Φ₂ hΦ₂ (pushforward ΛX ΛY Φ₁ hΦ₁ P) := by
+  induction P using QuotientAddGroup.induction_on with
+  | H x => rfl
+
+end
+
+end LatticeMorphisms
+
 end Jacobians.ZLatticeQuotient

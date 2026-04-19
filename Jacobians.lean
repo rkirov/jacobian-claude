@@ -16,8 +16,7 @@ import Mathlib.Topology.Category.TopCat.Limits.Basic
 import Jacobians.Genus
 import Jacobians.ZLatticeQuotient
 import Jacobians.ChartedSpaceOfLocalHomeomorph
-import Jacobians.Architecture
-import Jacobians.FormsToJacobian
+import Jacobians.HolomorphicForms
 import Jacobians.LineIntegral
 
 /-
@@ -171,16 +170,16 @@ lattice into the `Y`-period lattice. Content-gated. -/
 lemma ambientPhi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (periodLattice X).toAddSubgroup ≤
       (periodLattice Y).toAddSubgroup.comap
-        (Jacobians.Bridge.ambientPhi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
+        (Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
   sorry
 
 /-- The pushforward map between Jacobians associated to a map of the underlying curves.
-Wired: `Architecture.pushforward` applied to `Bridge.ambientPhi f hf`. -/
+Wired: `ZLatticeQuotient.pushforward` applied to `ambientPhi f hf`. -/
 noncomputable def pushforward (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     Jacobian X →ₜ+ Jacobian Y :=
-  Jacobians.Architecture.pushforward (periodLattice X) (periodLattice Y)
-    (Jacobians.Bridge.ambientPhi (gX := genus X) (gY := genus Y) f hf)
+  Jacobians.ZLatticeQuotient.pushforward (periodLattice X) (periodLattice Y)
+    (Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf)
     (ambientPhi_preserves_lattice f hf)
 
 -- pushforward is holomorphic
@@ -190,11 +189,11 @@ theorem pushforward_contMDiff :
 
 -- functoriality
 lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P :=
-  Jacobians.Architecture.pushforward_id_of_ambient
+  Jacobians.ZLatticeQuotient.pushforward_id_of_ambient
     (periodLattice X)
-    (Jacobians.Bridge.ambientPhi (gX := genus X) (gY := genus X) id contMDiff_id)
+    (Jacobians.ambientPhi (gX := genus X) (gY := genus X) id contMDiff_id)
     (ambientPhi_preserves_lattice id contMDiff_id)
-    (fun x => Jacobians.Bridge.ambientPhi_id (X := X) x)
+    (fun x => Jacobians.ambientPhi_id (X := X) x)
     P
 
 variable {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z]
@@ -208,29 +207,29 @@ lemma pushforward_comp_apply (P : Jacobian X) :
   induction P using QuotientAddGroup.induction_on with
   | H x =>
     show QuotientAddGroup.mk
-        (Jacobians.Bridge.ambientPhi (gX := genus X) (gY := genus Z) (g ∘ f)
+        (Jacobians.ambientPhi (gX := genus X) (gY := genus Z) (g ∘ f)
           (hg.comp hf) x) =
       QuotientAddGroup.mk
-        (Jacobians.Bridge.ambientPhi (gX := genus Y) (gY := genus Z) g hg
-          (Jacobians.Bridge.ambientPhi (gX := genus X) (gY := genus Y) f hf x))
+        (Jacobians.ambientPhi (gX := genus Y) (gY := genus Z) g hg
+          (Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf x))
     congr 1
-    exact Jacobians.Bridge.ambientPhi_comp f hf g hg (hg.comp hf) x
+    exact Jacobians.ambientPhi_comp f hf g hg (hg.comp hf) x
 
 /-- Lattice preservation on the pullback side. -/
 lemma ambientPsi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (periodLattice Y).toAddSubgroup ≤
       (periodLattice X).toAddSubgroup.comap
-        (Jacobians.Bridge.ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
+        (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
   sorry
 
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
 Equal to the zero map if the map on curves is constant.
-Wired: `Architecture.pullback` applied to `Bridge.ambientPsi f hf`. -/
+Wired: `ZLatticeQuotient.pullback` applied to `ambientPsi f hf`. -/
 noncomputable def pullback (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     Jacobian Y →ₜ+ Jacobian X :=
-  Jacobians.Architecture.pullback (periodLattice X) (periodLattice Y)
-    (Jacobians.Bridge.ambientPsi (gX := genus X) (gY := genus Y) f hf)
+  Jacobians.ZLatticeQuotient.pullback (periodLattice X) (periodLattice Y)
+    (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf)
     (ambientPsi_preserves_lattice f hf)
 
 -- pullback is holomorphic
@@ -240,11 +239,11 @@ theorem pullback_contMDiff :
 
 -- functoriality
 lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P :=
-  Jacobians.Architecture.pushforward_id_of_ambient
+  Jacobians.ZLatticeQuotient.pushforward_id_of_ambient
     (periodLattice X)
-    (Jacobians.Bridge.ambientPsi (gX := genus X) (gY := genus X) id contMDiff_id)
+    (Jacobians.ambientPsi (gX := genus X) (gY := genus X) id contMDiff_id)
     (ambientPsi_preserves_lattice id contMDiff_id)
-    (fun x => Jacobians.Bridge.ambientPsi_id (X := X) x)
+    (fun x => Jacobians.ambientPsi_id (X := X) x)
     P
 
 -- functoriality
@@ -253,13 +252,13 @@ lemma pullback_comp_apply (P : Jacobian Z) :
   induction P using QuotientAddGroup.induction_on with
   | H z =>
     show QuotientAddGroup.mk
-        (Jacobians.Bridge.ambientPsi (gX := genus X) (gY := genus Z) (g ∘ f)
+        (Jacobians.ambientPsi (gX := genus X) (gY := genus Z) (g ∘ f)
           (hg.comp hf) z) =
       QuotientAddGroup.mk
-        (Jacobians.Bridge.ambientPsi (gX := genus X) (gY := genus Y) f hf
-          (Jacobians.Bridge.ambientPsi (gX := genus Y) (gY := genus Z) g hg z))
+        (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf
+          (Jacobians.ambientPsi (gX := genus Y) (gY := genus Z) g hg z))
     congr 1
-    exact Jacobians.Bridge.ambientPsi_comp f hf g hg (hg.comp hf) z
+    exact Jacobians.ambientPsi_comp f hf g hg (hg.comp hf) z
 
 /-- The degree of a holomorphic map between compact Riemann surfaces. Equal to zero
 for constant maps, otherwise equal to the usual degree.
@@ -267,21 +266,21 @@ for constant maps, otherwise equal to the usual degree.
 Placeholder definition: returns `0` always. TODO(math): replace with
 counting-of-preimages-of-a-regular-value. The Lean-level statement
 `pushforward_pullback = deg • id` still holds with `deg = 0` because
-the content-level identity `Bridge.ambientPhi_ambientPsi_eq` is sorried;
+the content-level identity `ambientPhi_ambientPsi_eq` is sorried;
 when content is filled in, both `ContMDiff.degree` and
 `ambientPhi_ambientPsi_eq` must be consistent. -/
 def _root_.ContMDiff.degree (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ := 0
 
 lemma pushforward_pullback (P : Jacobian Y) :
   pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P :=
-  Jacobians.Architecture.pushforward_pullback_of_ambient
+  Jacobians.ZLatticeQuotient.pushforward_pullback_of_ambient
     (periodLattice X) (periodLattice Y)
-    (Jacobians.Bridge.ambientPhi (gX := genus X) (gY := genus Y) f hf)
-    (Jacobians.Bridge.ambientPsi (gX := genus X) (gY := genus Y) f hf)
+    (Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf)
+    (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf)
     (ambientPhi_preserves_lattice f hf)
     (ambientPsi_preserves_lattice f hf)
     (ContMDiff.degree f hf)
-    (fun y => Jacobians.Bridge.ambientPhi_ambientPsi_eq f hf
+    (fun y => Jacobians.ambientPhi_ambientPsi_eq f hf
       (ContMDiff.degree f hf) y)
     P
 
