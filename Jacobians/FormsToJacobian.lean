@@ -93,6 +93,41 @@ theorem ambientPhi_ambientPsi_eq {gX gY : ℕ}
     (y : Fin gY → ℂ) :
     ambientPhi (gX := gX) (gY := gY) f hf (ambientPsi f hf y) = (d : ℕ) • y := sorry
 
+/-! ### Functoriality on the ambient (dualizes `pullbackForm` functoriality) -/
+
+/-- **TODO(math)**: `ambientPhi id = id`. Dualizes `pullbackForm_id`. -/
+theorem ambientPhi_id {g : ℕ} (x : Fin g → ℂ) :
+    ambientPhi (X := X) (Y := X) (gX := g) (gY := g) id contMDiff_id x = x := sorry
+
+/-- **TODO(math)**: `ambientPhi (g ∘ f) = ambientPhi g ∘ ambientPhi f`.
+Dualizes `pullbackForm_comp` (contravariance-of-dual). -/
+theorem ambientPhi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+    [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+    {gX gY gZ : ℕ}
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
+    (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f))
+    (x : Fin gX → ℂ) :
+    ambientPhi (gX := gX) (gY := gZ) (g ∘ f) hgf x =
+      ambientPhi (gX := gY) (gY := gZ) g hg
+        (ambientPhi (gX := gX) (gY := gY) f hf x) := sorry
+
+/-- **TODO(math)**: `ambientPsi id = id`. -/
+theorem ambientPsi_id {g : ℕ} (y : Fin g → ℂ) :
+    ambientPsi (X := X) (Y := X) (gX := g) (gY := g) id contMDiff_id y = y := sorry
+
+/-- **TODO(math)**: `ambientPsi (g ∘ f) = ambientPsi f ∘ ambientPsi g`. -/
+theorem ambientPsi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+    [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+    {gX gY gZ : ℕ}
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
+    (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f))
+    (z : Fin gZ → ℂ) :
+    ambientPsi (gX := gX) (gY := gZ) (g ∘ f) hgf z =
+      ambientPsi (gX := gX) (gY := gY) f hf
+        (ambientPsi (gX := gY) (gY := gZ) g hg z) := sorry
+
 /-! ### How to plug into Architecture
 
 Given the ambient maps above and a (future) lattice-preservation proof,
