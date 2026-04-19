@@ -251,6 +251,16 @@ def _root_.ContMDiff.degree
   sorry
 
 lemma pushforward_pullback (P : Jacobian Y) :
-  pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P := sorry
+  pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P :=
+  Jacobians.Architecture.pushforward_pullback_of_ambient
+    (periodLattice X) (periodLattice Y)
+    (Jacobians.Bridge.ambientPhi (gX := genus X) (gY := genus Y) f hf)
+    (Jacobians.Bridge.ambientPsi (gX := genus X) (gY := genus Y) f hf)
+    (ambientPhi_preserves_lattice f hf)
+    (ambientPsi_preserves_lattice f hf)
+    (ContMDiff.degree f hf)
+    (fun y => Jacobians.Bridge.ambientPhi_ambientPsi_eq f hf
+      (ContMDiff.degree f hf) y)
+    P
 
 end Jacobian
