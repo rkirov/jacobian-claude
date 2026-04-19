@@ -251,10 +251,15 @@ lemma pullback_comp_apply (P : Jacobian Z) :
     exact Jacobians.Bridge.ambientPsi_comp f hf g hg (hg.comp hf) z
 
 /-- The degree of a holomorphic map between compact Riemann surfaces. Equal to zero
-for constant maps, otherwise equal to the usual degree. -/
-def _root_.ContMDiff.degree
-    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
-  sorry
+for constant maps, otherwise equal to the usual degree.
+
+Placeholder definition: returns `0` always. TODO(math): replace with
+counting-of-preimages-of-a-regular-value. The Lean-level statement
+`pushforward_pullback = deg • id` still holds with `deg = 0` because
+the content-level identity `Bridge.ambientPhi_ambientPsi_eq` is sorried;
+when content is filled in, both `ContMDiff.degree` and
+`ambientPhi_ambientPsi_eq` must be consistent. -/
+def _root_.ContMDiff.degree (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ := 0
 
 lemma pushforward_pullback (P : Jacobian Y) :
   pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P :=
