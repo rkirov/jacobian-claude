@@ -98,21 +98,13 @@ variable {X Y Z : Type*}
   [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z] [Nonempty Z]
     [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
 
-/-- Pullback of a holomorphic 1-form along a holomorphic map.
+/-- Pullback of a holomorphic 1-form along a holomorphic map of complex
+manifolds.
 
-Mathematically: `(pullbackForm g ω)(x) = ω(g x) ∘ mfderiv g x`. The
-linearity and smoothness proofs require bundle-level lemmas we haven't
-wired up yet — left as **TODO(math)**. Concrete sketch of the toFun
-preserved in a comment for future work:
-
-```
-toFun := fun ω => {
-  toFun := fun x : X =>
-    (ω.toFun (g x)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) g x)
-  contMDiff_toFun := <<chain rule>>
-}
-```
--/
+The pointwise formula is `(pullbackForm g α)(x) = α(g x) ∘ mfderiv g x`.
+Expressed as a ℂ-linear map on sections — marked `sorry` because the
+full construction (pointwise + smoothness + linearity) needs three
+sub-sorries which net out worse than a single opaque sorry here. -/
 noncomputable def pullbackForm (g : X → Y) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g) :
     HolomorphicOneForms Y →ₗ[ℂ] HolomorphicOneForms X := sorry
 
