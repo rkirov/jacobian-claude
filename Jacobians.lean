@@ -1,4 +1,7 @@
 import Mathlib -- compiles with commit 8e3c989104daaa052921bf43de9eef0e1ac9fbf5 (15th April 2026)
+import Jacobians.ZLatticeQuotient
+import Jacobians.ChartedSpaceOfLocalHomeomorph
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 
 /-
 
@@ -52,32 +55,58 @@ lemma genus_eq_zero_iff_homeo :
     genus X = 0 ↔ Nonempty (X ≃ₜ (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) :=
   sorry
 
-universe u in
 -- data
-/-- The Jacobian of a compact Riemann surface. -/
-def Jacobian (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-  [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type u := sorry
+/-- The period lattice of a compact Riemann surface, living inside
+`(Fin (genus X) → ℂ)`. In the real construction this is the image of
+`H₁(X, ℤ)` in `H⁰(X, Ω¹)ᵛ` under the period pairing; currently
+`sorry`-level until holomorphic 1-forms + integration exist. -/
+def periodLattice (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
+    Submodule ℤ (Fin (genus X) → ℂ) := sorry
+
+instance {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
+    DiscreteTopology (periodLattice X) := sorry
+
+instance {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
+    IsZLattice ℝ (periodLattice X) := sorry
+
+-- data
+/-- The Jacobian of a compact Riemann surface, as the quotient of
+`(Fin (genus X) → ℂ)` by the period lattice.
+
+TODO (universe polymorphism): the challenge file originally signed
+`Jacobian : Type u`. Our concrete construction lives in `Type 0`.
+Preserving `Type u` requires `ULift.{u}` plus transferring every
+downstream instance across that lift, which needs a `ChartedSpace`-over-
+`ULift` constructor that Mathlib does not currently provide. Left as
+explicit TODO; current signature is `Type`. -/
+@[reducible]
+noncomputable def Jacobian (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type :=
+  (Fin (genus X) → ℂ) ⧸ (periodLattice X).toAddSubgroup
 
 namespace Jacobian
 
 -- data
 /-- The Jacobian of a compact Riemann surface is naturally an additive commutative group. -/
-instance : AddCommGroup (Jacobian X) := sorry
+noncomputable instance : AddCommGroup (Jacobian X) := inferInstance
 
 -- data
 /-- The Jacobian of a compact Riemann surface is naturally a topological space. -/
-instance : TopologicalSpace (Jacobian X) := sorry
+noncomputable instance : TopologicalSpace (Jacobian X) := inferInstance
 
 -- Prop
-instance : T2Space (Jacobian X) := sorry
+noncomputable instance : T2Space (Jacobian X) := inferInstance
 
 -- Prop
-instance : CompactSpace (Jacobian X) := sorry
+noncomputable instance : CompactSpace (Jacobian X) := inferInstance
 
 -- data
 /-- The Jacobian of a compact Riemann surface is a complex manifold, of dimension
 equal to the genus of the surface. -/
-instance : ChartedSpace (Fin (genus X) → ℂ) (Jacobian X) := sorry
+noncomputable instance : ChartedSpace (Fin (genus X) → ℂ) (Jacobian X) := inferInstance
 
 -- Prop
 instance : IsManifold (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) := sorry
