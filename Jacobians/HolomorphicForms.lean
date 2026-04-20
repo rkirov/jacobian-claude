@@ -1,5 +1,6 @@
 import Mathlib.Geometry.Manifold.Complex
 import Mathlib.Geometry.Manifold.ContMDiff.Basic
+import Mathlib.Geometry.Manifold.ContMDiffMFDeriv
 import Mathlib.Geometry.Manifold.VectorBundle.SmoothSection
 import Mathlib.Geometry.Manifold.VectorBundle.Tangent
 import Mathlib.Geometry.Manifold.VectorBundle.Hom
@@ -101,13 +102,79 @@ variable {X Y Z : Type*}
 /-- Pullback of a holomorphic 1-form along a holomorphic map of complex
 manifolds.
 
-Pointwise: `(pullbackForm g α)(x) = α(g x) ∘ mfderiv g x`. -/
+Pointwise: `(pullbackForm g α)(x) = α(g x) ∘ mfderiv g x`.
+
+The smoothness (`contMDiff_toFun`) is the chain rule on bundle sections:
+`α(g x) ∘ mfderiv g x : TX_x →L[ℂ] ℂ` varies smoothly with x because
+both factors vary smoothly (α is smooth on Y, mfderiv g is smooth on X)
+when read in tangent coordinates. -/
 noncomputable def pullbackForm (g : X → Y) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g) :
     HolomorphicOneForms Y →ₗ[ℂ] HolomorphicOneForms X where
   toFun α :=
     { toFun := fun x : X =>
         (α.toFun (g x)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) g x)
-      contMDiff_toFun := sorry /- TODO(math): chain rule on bundle sections -/ }
+      contMDiff_toFun := by
+        intro x₀
+        -- Strategy: reduce to checking the hom-bundle iff + coordinate rep.
+        rw [contMDiffAt_hom_bundle]
+        refine ⟨contMDiffAt_id, ?_⟩
+        -- Goal: ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ω
+        --         (fun x => inCoordinates ℂ TS_X ℂ Trivial_X x₀ x x₀ x
+        --            ((α(g x)).comp (mfderiv g x))) x₀.
+        -- Factor: inCoordinates = [α in coords] ∘ [mfderiv in coords].
+        -- Step A: α(g x) in coordinates at g x₀ is smooth.
+        -- Step B: mfderiv g x in coordinates (x₀ → g x₀) is smooth via mfderiv_const.
+        -- Step C: compose via ContMDiff.clm_comp (normed space CLM).
+        have hA : ContMDiffAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ω
+            (fun x => ContinuousLinearMap.inCoordinates ℂ
+                (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+                (g x₀) (g x) (g x₀) (g x) (α.toFun (g x))) x₀ := by
+          have hα := α.contMDiff_toFun (g x₀)
+          rw [contMDiffAt_hom_bundle] at hα
+          obtain ⟨_, h⟩ := hα
+          -- h : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ω
+          --      (fun y => inCoordinates ... (g x₀) y (g x₀) y (α y)) (g x₀)
+          exact h.comp x₀ (hg x₀)
+        have hB : ContMDiffAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ω
+            (fun x => ContinuousLinearMap.inCoordinates ℂ
+                (TangentSpace 𝓘(ℂ, ℂ) (M := X)) ℂ
+                (TangentSpace 𝓘(ℂ, ℂ) (M := Y))
+                x₀ x (g x₀) (g x) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) g x)) x₀ :=
+          (hg x₀).mfderiv_const (le_refl _)
+        -- Compose them: [α in coords] ∘ [mfderiv in coords]
+        have hcomp : ContMDiffAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ω
+            (fun x => (ContinuousLinearMap.inCoordinates ℂ
+                (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+                (g x₀) (g x) (g x₀) (g x) (α.toFun (g x))).comp
+              (ContinuousLinearMap.inCoordinates ℂ
+                (TangentSpace 𝓘(ℂ, ℂ) (M := X)) ℂ
+                (TangentSpace 𝓘(ℂ, ℂ) (M := Y))
+                x₀ x (g x₀) (g x) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) g x))) x₀ :=
+          hA.clm_comp hB
+        -- Congr argument: the composition equals the target inCoordinates.
+        apply hcomp.congr_of_eventuallyEq
+        -- Need: eventually for x near x₀, LHS = RHS pointwise.
+        filter_upwards [
+          ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).open_baseSet.mem_nhds
+            (mem_baseSet_trivializationAt ℂ _ x₀)),
+          (hg.continuous.continuousAt.preimage_mem_nhds
+            ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (g x₀)).open_baseSet.mem_nhds
+              (mem_baseSet_trivializationAt ℂ _ (g x₀))))
+          ] with x hx_TS_X hx_TS_Y
+        -- hx_TS_X : x ∈ (trivializationAt ℂ TangentSpace x₀).baseSet
+        -- hx_TS_Y : g x ∈ (trivializationAt ℂ TangentSpace (g x₀)).baseSet
+        ext v
+        simp only [ContinuousLinearMap.inCoordinates,
+          ContinuousLinearMap.comp_apply,
+          Bundle.Trivial.fiberBundle_trivializationAt',
+          Bundle.Trivial.continuousLinearMapAt_trivialization,
+          ContinuousLinearMap.id_apply]
+        -- After simp: LHS v = α(g x) (mfderiv g x ((trivTS_X x₀).symmL ℂ x v))
+        -- RHS v = α(g x) ((trivTS_Y g x₀).symmL ℂ (g x)
+        --           ((trivTS_Y g x₀).continuousLinearMapAt ℂ (g x)
+        --             (mfderiv g x ((trivTS_X x₀).symmL ℂ x v))))
+        -- The inner (symmL ∘ continuousLinearMapAt) on a fiber element is identity.
+        rw [Bundle.Trivialization.symmL_continuousLinearMapAt _ hx_TS_Y] }
   map_add' α₁ α₂ := by
     apply ContMDiffSection.ext
     intro x
