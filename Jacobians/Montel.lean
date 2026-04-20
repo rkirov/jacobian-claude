@@ -85,13 +85,33 @@ theorem exists_finite_chart_cover :
       hopen hcov
   exact ⟨s, Set.eq_univ_of_univ_subset hs⟩
 
-/-! ### Next (not in this commit)
+/-! ### Step 1b: local representative of α in a chart
 
-- [ ] Local representative of α in a chart (via Hom bundle trivialization).
-- [ ] Sup-norm in each chart as a compact-subset sup.
-- [ ] Max over the finite atlas.
+For a chart at `x₀`, the tangent bundle trivialization gives an iso
+`TangentSpace y ≃L[ℂ] ℂ` for `y` in the chart's base set. Applied to
+`(1 : ℂ)` via `.symmL`, we get the "unit tangent at y in x₀'s
+trivialization". Then `α.toFun y` applied to this unit tangent gives
+a scalar in `ℂ` (via `Bundle.Trivial X ℂ y = ℂ`).
+
+This is the chart-local holomorphic coefficient of α. -/
+
+/-- The local representative of a holomorphic 1-form α at y, using the
+trivialization of the tangent bundle at x₀. In the chart around x₀,
+α = `localRep x₀ α y · dz` where z is the chart coordinate. -/
+noncomputable def localRep
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) (y : X) : ℂ :=
+  α.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)
+
+/-! ### Next
+
+- [ ] Continuity of `localRep x₀ α` on `(chartAt ℂ x₀).source`.
+- [ ] Finite-cover-based sup-norm: `max_j sup_y (|localRep x_j α y|)`
+      over y in chart closure.
 - [ ] NormedAddCommGroup / NormedSpace instances.
-- [ ] Cauchy estimates on chart reps.
+- [ ] Cauchy estimates on chart reps (they're holomorphic functions in
+      the chart).
 - [ ] Arzelà–Ascoli assembly.
 - [ ] Riesz conclusion.
 -/
