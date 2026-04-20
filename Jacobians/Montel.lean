@@ -3,10 +3,7 @@ import Mathlib.Geometry.Manifold.VectorBundle.Hom
 import Mathlib.Geometry.Manifold.VectorBundle.SmoothSection
 import Mathlib.Geometry.Manifold.IsManifold.Basic
 import Mathlib.Analysis.Normed.Module.FiniteDimension
-import Mathlib.Topology.ContinuousMap.Bounded.Basic
-import Mathlib.Topology.Algebra.InfiniteSum.Basic
 import Mathlib.Analysis.Complex.Basic
-import Mathlib.Topology.Order.Compact
 import Mathlib.Topology.ShrinkingLemma
 import Mathlib.Analysis.Normed.Group.Seminorm
 import Jacobians.Genus
@@ -203,39 +200,7 @@ theorem localRep_continuousOn
     continuous_snd.comp (Bundle.Trivial.homeomorphProd X ℂ).continuous
   exact hproj.comp_continuousOn hap
 
-/-! ### Step 1d: chart-local sup-norm
-
-For each chart (parameterized by `x₀`), the chart-local sup-norm of α
-is `sSup_{y ∈ X} ‖localRep α x₀ y‖`. By compactness of X + continuity
-of `‖localRep α x₀ ·‖` on the chart base set, this is finite (though
-the specific value depends on `α`'s behavior outside the base set,
-which is where the formal choice matters). -/
-
-/-- The chart-local sup-norm of α, indexed by the center x₀ of a chart. -/
-noncomputable def HolomorphicOneForms.chartNorm
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (x₀ : X) : ℝ :=
-  ⨆ y : X, ‖localRep α x₀ y‖
-
-/-! ### Step 1e: finite-cover sup-norm
-
-The actual sup-norm on `HolomorphicOneForms X`: pick a finite chart
-cover (via `exists_finite_chart_cover`), and take the `Finset.sup` of
-chart-local sup-norms.
-
-Note: the specific finite cover used is not canonical, but any choice
-yields an equivalent norm (classical fact: all sup-norms coming from
-finite atlas refinements are equivalent). -/
-
-/-- The finite-cover sup-norm of α, using a given non-empty finite cover. -/
-noncomputable def HolomorphicOneForms.supNormOn
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (s : Finset X) (hs : s.Nonempty) : ℝ :=
-  s.sup' hs (fun x₀ => HolomorphicOneForms.chartNorm α x₀)
-
-/-! ### Step 1f: canonical finite cover
+/-! ### Step 1d: canonical finite chart cover
 
 Pick a specific non-empty finite cover via `Classical.choose`. Any such
 choice yields an equivalent sup-norm (classical fact). -/
@@ -259,69 +224,7 @@ theorem chartCover_nonempty : ((chartCover : Finset X)).Nonempty := by
   obtain ⟨i, hi, _⟩ := hx
   exact ⟨i, hi⟩
 
-/-- The canonical sup-norm on `HolomorphicOneForms X`. -/
-noncomputable def HolomorphicOneForms.supNorm
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) : ℝ :=
-  HolomorphicOneForms.supNormOn α ((chartCover : Finset X)) chartCover_nonempty
-
-/-! ### Step 1g: basic norm properties -/
-
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
-/-- Chart-local sup-norm is non-negative. -/
-theorem HolomorphicOneForms.chartNorm_nonneg
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (x₀ : X) :
-    0 ≤ HolomorphicOneForms.chartNorm α x₀ :=
-  Real.iSup_nonneg (fun _ => norm_nonneg _)
-
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
-/-- Chart-local sup-norm of zero is zero. -/
-theorem HolomorphicOneForms.chartNorm_zero (x₀ : X) :
-    HolomorphicOneForms.chartNorm (0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) x₀ = 0 := by
-  unfold HolomorphicOneForms.chartNorm localRep
-  change (⨆ y : X, ‖(0 : ℂ →L[ℂ] ℂ)
-    ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)‖ : ℝ) = 0
-  simp
-
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
-/-- `supNormOn` of zero is zero. -/
-theorem HolomorphicOneForms.supNormOn_zero (s : Finset X) (hs : s.Nonempty) :
-    HolomorphicOneForms.supNormOn (0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) s hs = 0 := by
-  unfold HolomorphicOneForms.supNormOn
-  simp [HolomorphicOneForms.chartNorm_zero]
-
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
-/-- `supNormOn` is non-negative. -/
-theorem HolomorphicOneForms.supNormOn_nonneg
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (s : Finset X) (hs : s.Nonempty) :
-    0 ≤ HolomorphicOneForms.supNormOn α s hs := by
-  unfold HolomorphicOneForms.supNormOn
-  obtain ⟨x₀, hx₀⟩ := hs
-  exact le_trans (HolomorphicOneForms.chartNorm_nonneg α x₀)
-    (Finset.le_sup' _ hx₀)
-
-omit [T2Space X] [ConnectedSpace X] in
-/-- `supNorm` is non-negative. -/
-theorem HolomorphicOneForms.supNorm_nonneg
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) :
-    0 ≤ HolomorphicOneForms.supNorm α :=
-  HolomorphicOneForms.supNormOn_nonneg α _ _
-
-omit [T2Space X] [ConnectedSpace X] in
-/-- `supNorm` of zero is zero. -/
-theorem HolomorphicOneForms.supNorm_zero :
-    HolomorphicOneForms.supNorm (0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) = 0 :=
-  HolomorphicOneForms.supNormOn_zero ((chartCover : Finset X)) chartCover_nonempty
-
-/-! ### Step 1h: shrunken (compact) chart cover
+/-! ### Step 1e: shrunken (compact) chart cover
 
 For each `x` in `chartCover`, we need a COMPACT subset `K_x ⊂ baseSet_x`
 such that the collection `{K_x}` still covers X. Apply the shrinking
