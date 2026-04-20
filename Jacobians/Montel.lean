@@ -79,10 +79,12 @@ sense, but concrete enough to define a scalar `ℂ`-valued function on X.
 Mathematically: this is the local coordinate `a(z)` when the 1-form is
 written as `α = a(z) dz` in a chart. -/
 
-/-- Type-level identification of the tangent space at x with ℂ. -/
-noncomputable def tangentOne {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+/-- The model-space "unit tangent" vector at x. Since
+`TangentSpace 𝓘(ℂ, ℂ) x` is definitionally `ℂ`, we can use `1 : ℂ`
+directly. -/
+def tangentOne {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
     (x : X) : TangentSpace 𝓘(ℂ, ℂ) (M := X) x :=
-  (NormedSpace.fromTangentSpace (𝕜 := ℂ) (E := ℂ) (1 : ℂ)).symm 1
+  (1 : ℂ)
 
 /-- The scalar "local value" of a holomorphic 1-form at x, obtained by
 applying α to the model-space unit tangent vector. -/
