@@ -104,10 +104,29 @@ noncomputable def localRep
     (x₀ : X) (y : X) : ℂ :=
   α.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)
 
+/-! ### Step 1c: continuity of `localRep` on the trivialization base set
+
+On `(trivializationAt ℂ TangentBundle x₀).baseSet`, the map
+`y ↦ (triv x₀).symmL ℂ y 1` is a smooth section of the tangent bundle
+(comes from the inverse trivialization applied to a constant). Composed
+with α (smooth section of the cotangent bundle) via `clm_bundle_apply`,
+the result is continuous.
+
+For the sup-norm argument we only need **continuity**, but smoothness
+is available as a bonus (useful for Cauchy estimates later). -/
+
+/-- `localRep α x₀` is continuous on the chart source at x₀. -/
+theorem localRep_continuousOn
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) :
+    ContinuousOn (localRep α x₀)
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet :=
+  sorry
+
 /-! ### Next
 
-- [ ] Continuity of `localRep x₀ α` on `(chartAt ℂ x₀).source`.
-- [ ] Finite-cover-based sup-norm: `max_j sup_y (|localRep x_j α y|)`
+- [ ] Finite-cover-based sup-norm: `max_j sup_y (|localRep α x_j y|)`
       over y in chart closure.
 - [ ] NormedAddCommGroup / NormedSpace instances.
 - [ ] Cauchy estimates on chart reps (they're holomorphic functions in
