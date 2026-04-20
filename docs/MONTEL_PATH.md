@@ -103,3 +103,56 @@ coordinate change via chart derivatives.
   `68e4157`).
 - Partial unfolding toward `eval_continuous` — stuck at bundle-section
   evaluation machinery (commit `04377fe`).
+
+## Refined findings (further exploration)
+
+After deeper investigation, the `α.eval` approach has a fundamental
+issue: `tangentOne x = 1 : ℂ` is NOT a globally continuous section of
+the tangent bundle. The "constant 1 in model space" depends on chart
+trivialization, and non-trivial chart transitions (chart derivatives ≠
+identity) break the coherence.
+
+Concretely: `ContMDiff.clm_bundle_apply` requires BOTH sections to be
+smooth; `tangentOne` fails smoothness globally.
+
+### Better approach: use a Riemannian metric
+
+Mathlib has `Bundle.ContMDiffRiemannianMetric` (in
+`Mathlib/Geometry/Manifold/VectorBundle/Riemannian.lean`). A smooth
+Riemannian metric on the tangent bundle gives:
+- Inner product on each fiber.
+- Norm on tangent vectors.
+- CLM operator norm on cotangent vectors (α(x) : T_x → ℂ).
+- Pointwise `‖α(x)‖` — continuous as the CLM norm + smooth metric.
+- Sup over compact X = finite norm.
+
+**Blocker**: constructing a smooth Riemannian metric on X requires a
+partition of unity argument. Mathlib has PoU in
+`Mathlib/Geometry/Manifold/PartitionOfUnity.lean` but tying it to
+Riemannian metric construction is non-trivial.
+
+### Alternate: use existing `Bundle.ContinuousLinearMap` trivialization
+
+Rather than constructing a canonical norm, define sup-norm via a
+SPECIFIC finite atlas (compactness gives finiteness). For each chart,
+α's trivialization gives a local holomorphic function; sup of
+sup-norms of these local representatives is a legitimate norm.
+
+This avoids the Riemannian metric construction but requires writing
+out the trivialization extraction explicitly.
+
+## Refined estimate
+
+Step 1 (norm on HOF X) is **genuinely weeks of work** even with
+Mathlib's Riemannian/trivialization infrastructure. The overall Montel
+proof remains 2-4 months minimum.
+
+## Current status (checkpoint 2)
+
+- Skeleton + concrete `eval`/`supNorm` landed but `eval_continuous`
+  has a structural issue (tangentOne non-smooth globally).
+- Further progress requires switching approach to either:
+  (a) Riemannian metric on TangentSpace via PoU, or
+  (b) Chart-atlas based norm via `Bundle.ContinuousLinearMap`
+      trivializations.
+- Either path is substantial dedicated work (multi-week per sub-step).
