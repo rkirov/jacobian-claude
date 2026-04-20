@@ -300,6 +300,54 @@ theorem HolomorphicOneForms.supNorm_zero :
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) = 0 :=
   HolomorphicOneForms.supNormOn_zero (chartCover (X := X)) chartCover_nonempty
 
+/-! ### Step 1h: behavior of `localRep` under the vector space operations -/
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+/-- `localRep` is additive: `localRep (α + β) = localRep α + localRep β`. -/
+theorem localRep_add
+    (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ y : X) :
+    localRep (α + β) x₀ y = localRep α x₀ y + localRep β x₀ y := by
+  unfold localRep
+  -- (α + β).toFun y = α.toFun y + β.toFun y
+  have : (α + β).toFun y = α.toFun y + β.toFun y := by
+    change (⇑(α + β)) y = _
+    rw [ContMDiffSection.coe_add]
+    rfl
+  rw [this]
+  rfl
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+/-- `localRep` is homogeneous: `localRep (c • α) = c • localRep α`. -/
+theorem localRep_smul (c : ℂ)
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ y : X) :
+    localRep (c • α) x₀ y = c • localRep α x₀ y := by
+  unfold localRep
+  have : (c • α).toFun y = c • α.toFun y := by
+    change (⇑(c • α)) y = _
+    rw [ContMDiffSection.coe_smul]
+    rfl
+  rw [this]
+  rfl
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+/-- `localRep` is additive in the negation: `localRep (-α) = -localRep α`. -/
+theorem localRep_neg
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ y : X) :
+    localRep (-α) x₀ y = -localRep α x₀ y := by
+  unfold localRep
+  have : (-α).toFun y = -α.toFun y := by
+    change (⇑(-α)) y = _
+    rw [ContMDiffSection.coe_neg]
+    rfl
+  rw [this]
+  rfl
+
 /-! ### Next
 
 - [ ] Boundedness of `localRep α x₀` on X (via compactness).
