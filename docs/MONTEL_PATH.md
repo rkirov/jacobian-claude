@@ -156,3 +156,47 @@ proof remains 2-4 months minimum.
   (b) Chart-atlas based norm via `Bundle.ContinuousLinearMap`
       trivializations.
 - Either path is substantial dedicated work (multi-week per sub-step).
+
+## Current status (checkpoint 3 — Step 1 complete)
+
+**Step 1 (norm on HOF X) is fully done.** `HolomorphicOneForms X` carries
+a proper `NormedAddCommGroup` and `NormedSpace ℂ` structure (non-instance,
+reducible defs — consumers opt in with `letI`).
+
+The approach chosen: **chart-atlas (option b)**. Building blocks:
+
+- `exists_finite_chart_cover` — finite chart cover of compact X.
+- `chartCover` — canonical finite cover (via Classical.choose).
+- `coverOpen` + shrinking lemma (`exists_iUnion_eq_closed_subset`) →
+  `shrunkChart : X → Set X` giving compact refinement
+  (`IsClosed + IsCompact (via CompactSpace)`).
+- `localRep α x₀ y := α.toFun y ((trivializationAt ℂ TangentSpace x₀).symmL ℂ y 1)` —
+  chart-local scalar representative of α.
+- `continuousOn_symmL_const` (closed via `Trivialization.mk_symm` +
+  `OpenPartialHomeomorph.continuousOn_symm`) and `localRep_continuousOn`.
+- `chartNormK α x₀ := sSup ((‖localRep α x₀ ·‖) '' shrunkChart x₀)` —
+  bounded chart-local sup-norm via continuity + compactness.
+- `chartNormK_nonneg / chartNormK_zero / chartNormK_bddAbove`.
+- `chartNormK_add_le` (triangle), `chartNormK_smul` (full homogeneity
+  including c = 0 edge case handled separately).
+- `supNormK α := chartCover.sup' chartCover_nonempty (chartNormK α ·)`.
+- `supNormK_add_le` / `supNormK_smul` / `supNormK_neg` /
+  `eq_zero_of_supNormK_eq_zero` (positive-definiteness).
+
+Key insight for positive-definiteness: `T_y X ≃L[ℂ] ℂ` on the
+trivialization base set (via `Trivialization.continuousLinearEquivAt`),
+so `e.symmL ℂ y 1` is a spanning vector of `T_y X` (1-dim over ℂ).
+Vanishing of `localRep α x₀` on the spanning vector implies
+`α.toFun y = 0` as a CLM (via `ContinuousLinearMap.ext_ring`).
+
+Final packaging: `AddGroupNorm.toNormedAddCommGroup` +
+`NormedSpace.mk` via homogeneity.
+
+## Next (Step 2+)
+
+- Completeness (Banach): uniform limits of holomorphic sections are
+  holomorphic. Requires Cauchy formula for limit interchange.
+- Cauchy estimates on `localRep` (holomorphic functions in chart).
+- Equicontinuity of bounded families.
+- Arzelà–Ascoli for bundle sections.
+- Riesz: compact closed ball ⇒ finite-dimensional.
