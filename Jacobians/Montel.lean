@@ -115,22 +115,45 @@ the result is continuous.
 For the sup-norm argument we only need **continuity**, but smoothness
 is available as a bonus (useful for Cauchy estimates later). -/
 
-/-- `localRep α x₀` is continuous on the trivialization's base set.
-Proof sketch: it's the application of the smooth CLM-section α to the
-smooth tangent-section `(triv x₀).symmL ℂ · 1`; `Continuous.clm_bundle_apply`
-handles the composition. -/
+/-- A constant section of a vector bundle (via inverse trivialization) is
+continuous on the trivialization's base set. -/
+theorem continuousOn_symmL_const
+    (e : Trivialization ℂ (Bundle.TotalSpace.proj (E := fun x : X =>
+      TangentSpace 𝓘(ℂ, ℂ) x)))
+    [MemTrivializationAtlas e] (v : ℂ) :
+    ContinuousOn
+      (fun y : X => TotalSpace.mk' ℂ (E := fun x : X => TangentSpace 𝓘(ℂ, ℂ) x)
+        y (e.symmL ℂ y v))
+      e.baseSet := by
+  sorry
+
+/-- `localRep α x₀` is continuous on the trivialization's base set. -/
 theorem localRep_continuousOn
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (x₀ : X) :
     ContinuousOn (localRep α x₀)
       (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet := by
-  -- TODO: assemble using `ContinuousOn.clm_bundle_apply` applied to
-  -- α.contMDiff_toFun.continuous.continuousOn (CLM section) and
-  -- `Trivialization.continuousOn_symm_totalSpace_iff` (tangent section
-  -- continuity from inverse trivialization). Then project to ℂ via the
-  -- Bundle.Trivial trivialization.
-  sorry
+  -- CLM section α is continuous (from ContMDiff).
+  have hα : ContinuousOn
+      (fun y : X => TotalSpace.mk' (ℂ →L[ℂ] ℂ)
+        (E := fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)
+        y (α.toFun y))
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet :=
+    α.contMDiff_toFun.continuous.continuousOn
+  -- Constant tangent section is continuous on base set.
+  have hv := continuousOn_symmL_const (X := X)
+    (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀) 1
+  -- Apply: continuity of α applied to the tangent section.
+  have hap := hα.clm_bundle_apply hv
+  -- hap : ContinuousOn (fun y => TotalSpace.mk' ℂ y (α.toFun y ((triv x₀).symmL ℂ y 1)))
+  --         baseSet
+  -- Project to ℂ: for Bundle.Trivial, the total space is X × ℂ and the second
+  -- projection is continuous.
+  have hproj : Continuous
+      (fun p : Bundle.TotalSpace ℂ (Bundle.Trivial X ℂ) => p.2) :=
+    continuous_snd.comp (Bundle.Trivial.homeomorphProd X ℂ).continuous
+  exact hproj.comp_continuousOn hap
 
 /-! ### Next
 
