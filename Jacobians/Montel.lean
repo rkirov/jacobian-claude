@@ -602,8 +602,7 @@ theorem HolomorphicOneForms.chartNormK_add_le
     rw [hα, hβ, hαβ]; ring_nf; rfl
 
 omit [ConnectedSpace X] [Nonempty X] in
-/-- Sub-homogeneity of `chartNormK` (one direction, which is enough along with
-the other for equality). `chartNormK (c • α) ≤ ‖c‖ * chartNormK α`. -/
+/-- Sub-homogeneity of `chartNormK`: `chartNormK (c • α) ≤ ‖c‖ * chartNormK α`. -/
 theorem HolomorphicOneForms.chartNormK_smul_le (c : ℂ)
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
@@ -625,6 +624,37 @@ theorem HolomorphicOneForms.chartNormK_smul_le (c : ℂ)
     have h2 : sSup ((fun y : X => ‖localRep α x₀ y‖) '' shrunkChart (X := X) x₀) = 0 := by
       simp [hne, Real.sSup_empty]
     rw [h1, h2, mul_zero]
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- Full homogeneity of `chartNormK`: `chartNormK (c • α) = ‖c‖ * chartNormK α`. -/
+theorem HolomorphicOneForms.chartNormK_smul (c : ℂ)
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) :
+    HolomorphicOneForms.chartNormK (c • α) x₀ =
+      ‖c‖ * HolomorphicOneForms.chartNormK α x₀ := by
+  refine le_antisymm (HolomorphicOneForms.chartNormK_smul_le c α x₀) ?_
+  -- Reverse: ‖c‖ * chartNormK α ≤ chartNormK (c • α).
+  by_cases hc : c = 0
+  · subst hc
+    simp
+    exact HolomorphicOneForms.chartNormK_nonneg _ _
+  · -- c ≠ 0: apply smul_le with c⁻¹ to (c • α).
+    have hc' : c⁻¹ • (c • α) = α := by
+      rw [smul_smul, inv_mul_cancel₀ hc, one_smul]
+    have hsub := HolomorphicOneForms.chartNormK_smul_le c⁻¹ (c • α) x₀
+    rw [hc'] at hsub
+    -- hsub : chartNormK α x₀ ≤ ‖c⁻¹‖ * chartNormK (c • α) x₀
+    rw [norm_inv] at hsub
+    have hcpos : 0 < ‖c‖ := by
+      rw [norm_pos_iff]; exact hc
+    -- From: chartNormK α ≤ (1/‖c‖) * chartNormK (c•α)
+    -- Multiply both sides by ‖c‖: ‖c‖ * chartNormK α ≤ chartNormK (c•α)
+    calc ‖c‖ * HolomorphicOneForms.chartNormK α x₀
+        ≤ ‖c‖ * (‖c‖⁻¹ * HolomorphicOneForms.chartNormK (c • α) x₀) :=
+          mul_le_mul_of_nonneg_left hsub (norm_nonneg _)
+      _ = HolomorphicOneForms.chartNormK (c • α) x₀ := by
+          rw [← mul_assoc, mul_inv_cancel₀ hcpos.ne', one_mul]
 
 /-! ### Next
 
