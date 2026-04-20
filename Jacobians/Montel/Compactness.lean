@@ -6,6 +6,7 @@ import Mathlib.Analysis.Complex.Liouville
 import Mathlib.Topology.MetricSpace.Thickening
 import Mathlib.Analysis.Normed.Module.RCLike.Real
 import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Topology.MetricSpace.UniformConvergence
 
 /-!
 # Montel path — compactness of the closed unit ball (work in progress)
@@ -375,12 +376,57 @@ theorem exists_cauchy_lipschitz_bound
     exact hdiff.hasDerivAt.hasDerivWithinAt
   exact Convex.norm_image_sub_le_of_norm_hasDerivWithin_le hhasDer hderBnd hKconv hw hz
 
+/-! ### Step B.6 — Uniform equicontinuity from a bounded analytic family
+
+The direct corollary of B.5: a family of analytic functions on open
+`U ⊂ ℂ` uniformly bounded on `U` is **uniformly equicontinuous** on any
+convex compact `K ⊂ U`. This is the exact hypothesis Arzelà–Ascoli
+needs (up to the BoundedContinuousFunction wrapping).
+
+For a single fixed bound `C`, we express this as a uniform Lipschitz
+constant that works for the whole family, then invoke Mathlib's
+`LipschitzOnWith.uniformEquicontinuousOn`. -/
+
+/-- A bounded family of analytic functions on open `U` is uniformly
+equicontinuous on any convex compact `K ⊂ U`.
+
+Note: requires `0 ≤ C` (trivially true if `U` is nonempty — take any
+`z ∈ U` and use `‖f z‖ ≤ C`; stated explicitly here to avoid
+case-splitting). -/
+theorem uniformEquicontinuousOn_of_bounded_analyticOn
+    {ι : Type*} {U K : Set ℂ} {f : ι → ℂ → ℂ} {C : ℝ}
+    (hU : IsOpen U) (hKcpt : IsCompact K) (hKU : K ⊆ U) (hKconv : Convex ℝ K)
+    (hCnn : 0 ≤ C)
+    (hf : ∀ i, AnalyticOn ℂ (f i) U)
+    (hfb : ∀ i, ∀ z ∈ U, ‖f i z‖ ≤ C) :
+    UniformEquicontinuousOn f K := by
+  obtain ⟨L, hLpos, hLip⟩ := exists_cauchy_lipschitz_bound hU hKcpt hKU hKconv
+  have hLC_nn : 0 ≤ L * C := mul_nonneg hLpos.le hCnn
+  refine LipschitzOnWith.uniformEquicontinuousOn f (L * C).toNNReal ?_
+  intro i
+  rw [lipschitzOnWith_iff_dist_le_mul]
+  intro z hz w hw
+  rw [Real.coe_toNNReal _ hLC_nn, dist_eq_norm, dist_eq_norm]
+  exact hLip (f i) (hf i) C (hfb i) z hz w hw
+
 /-! ### Next steps (scheduled, not implemented here)
 
-**B.6** `closedBall_relativelyCompact` — Arzelà–Ascoli assembly on each
-`C(shrunkChart x₀, ℂ)`, then finite product.
+**B.7** `closedBall_relativelyCompact` — Arzelà–Ascoli assembly on each
+`C(shrunkChart x₀, ℂ)`, then finite product. Requires: the uniform
+`‖α‖ ≤ 1` bound to control `localRep α x₀` on an OPEN neighborhood of
+`shrunkChart x₀` in chart coordinates. The bundle-side subtlety: our
+current `supNormK` bounds `localRep α x₀` only on `shrunkChart x₀`, not
+on a thickening. Resolutions:
 
-**B.7** `closedBall_isClosed` — via uniform limits of holomorphic
+1. Chart-transition argument: bound `|localRep α x₀|` near boundary of
+   `shrunkChart x₀` using another chart `x₀'` where that region is
+   well-inside `shrunkChart x₀'`, transferring via the derivative of
+   the chart transition map.
+2. Inner/outer shrinkage refactor: add `innerShrunkChart x₀ ⊂ interior
+   (shrunkChart x₀)` still covering X; outer for the norm, inner for
+   Arzelà.
+
+**B.8** `closedBall_isClosed` — via uniform limits of holomorphic
 functions being holomorphic (`TendstoLocallyUniformlyOn.analyticOn`).
 
 **Assembly** — discharge `HolomorphicOneForms.closedBall_isCompact` in
