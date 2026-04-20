@@ -5,7 +5,8 @@
 **Challenge sorry count: 24 → 6.** The classical path (line integrals +
 placeholder period lattice + trivial degree + structural Abel–Jacobi)
 has closed most of the challenge file, contingent on content sorries in
-support files.
+support files. **`ZLatticeQuotient` is now sorry-free** — the full Lie
+group structure on the quotient torus is proven end-to-end.
 
 ## Sorry count by file
 
@@ -13,12 +14,12 @@ support files.
 |-------------------------------|---------|-------------------------------|
 | `Jacobians.lean`              | 6       | content-gated (challenge file) |
 | `Jacobians/Genus.lean`        | 2       | genus + genus_eq_zero_iff_homeo |
-| `Jacobians/ZLatticeQuotient.lean` | 2   | IsManifold + LieAddGroup stubs + quotient-morphism descent (0 sorries) |
+| `Jacobians/ZLatticeQuotient.lean` | 0   | **fully proven** — IsManifold + LieAddGroup + quotient morphism descent |
 | `Jacobians/HolomorphicForms.lean` | 12  | cotangent sections + ambient bridge (pullbackForm_id/comp closed) |
 | `Jacobians/LineIntegral.lean` | 0       | *path integration; 0 sorries* |
 | `Jacobians/ChartedSpaceOfLocalHomeomorph.lean` | 0 | manifold general-purpose     |
 | `Jacobians/JacobianValidate.lean` | 0   | instance regression test      |
-| **Total**                     | **22**  |                               |
+| **Total**                     | **20**  |                               |
 
 ## Remaining Jacobians.lean sorries (6)
 
@@ -38,7 +39,12 @@ support files.
 Structural / architecture:
 - `Jacobian` definition + 5 instance classes (AddCommGroup, TopologicalSpace,
   T2Space, CompactSpace, ChartedSpace (Fin g → ℂ)).
-- `IsManifold` + `LieAddGroup` on Jacobian X (routed through support stubs).
+- `IsManifold` + `LieAddGroup` on Jacobian X — **real proofs, 0 sorries**.
+  - `IsManifold`: transitions between `mk`-matching charts are locally
+    lattice translations (classical discrete-image argument).
+  - `LieAddGroup`: chart pullbacks of +/- on the quotient factor as
+    `R.symm ∘ mk ∘ (+ or neg on E)` — `contDiffOn_symm_mk` helper +
+    `ContDiffOn.comp` yields `ContMDiff`.
 - Four functoriality lemmas: pushforward/pullback id and comp.
 - Headline `pushforward_pullback = deg • id`.
 
@@ -76,12 +82,10 @@ with the real Abel–Jacobi map, and replace the placeholder
 /home/rado/jacobian/
 ├── Jacobians.lean              -- challenge file, 6 sorries
 ├── Jacobians/
-│   ├── Architecture.lean       -- headline-identity descent (0)
 │   ├── ChartedSpaceOfLocalHomeomorph.lean  -- mathlib candidate (0)
 │   ├── Genus.lean              -- 2 sorries
-│   ├── ZLatticeQuotient.lean   -- 2 sorries (IsManifold + LieAddGroup)
-│   ├── HolomorphicForms.lean   -- real cotangent sections (7 sorries)
-│   ├── FormsToJacobian.lean    -- bridge (7 sorries)
+│   ├── ZLatticeQuotient.lean   -- **0 sorries** (IsManifold + LieAddGroup real)
+│   ├── HolomorphicForms.lean   -- real cotangent sections (12 sorries)
 │   ├── LineIntegral.lean       -- path integration (0 sorries)
 │   └── JacobianValidate.lean   -- instance regression
 ├── docs/                       -- DESIGN / recon / REFERENCES / STATUS
