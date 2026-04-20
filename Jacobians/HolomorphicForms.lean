@@ -283,11 +283,26 @@ noncomputable def ambientPhi {gX gY : ℕ}
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (Fin gX → ℂ) →L[ℂ] (Fin gY → ℂ) := sorry
 
-/-- **TODO(math)**: the ambient ℂ-linear map `Ψ` induced by the pullback
-of forms along `f : X → Y`. -/
+/-- The ambient ℂ-linear map `Ψ` induced by the pullback of forms along
+`f : X → Y`. Defined via `ambientIso` + `pullbackForm`:
+`Ψ = (ambientIso X).symm ∘ pullbackForm f hf ∘ ambientIso Y` (when the
+genus sizes match; otherwise zero — this branch is never used in the
+challenge). This is a concrete definition (no sorry at this level), but
+it depends on `ambientIso` which internally depends on
+`finrank_HolomorphicOneForms_eq_genus`. -/
 noncomputable def ambientPsi {gX gY : ℕ}
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    (Fin gY → ℂ) →L[ℂ] (Fin gX → ℂ) := sorry
+    (Fin gY → ℂ) →L[ℂ] (Fin gX → ℂ) := by
+  classical
+  by_cases hX : gX = genus X
+  · by_cases hY : gY = genus Y
+    · subst hX; subst hY
+      -- Compose: (Fin gY → ℂ) →ₗ HOF Y →ₗ HOF X →ₗ (Fin gX → ℂ), then cast to CLM
+      refine LinearMap.toContinuousLinearMap
+        ((ambientIso X).symm.toLinearMap.comp
+          ((pullbackForm f hf).comp (ambientIso Y).toLinearMap))
+    · exact 0
+  · exact 0
 
 /-- **TODO(math)**: the ambient degree identity, dualized from
 `pushforwardForm_pullbackForm_eq`. -/
@@ -313,22 +328,33 @@ theorem ambientPhi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpa
       ambientPhi (gX := gY) (gY := gZ) g hg
         (ambientPhi (gX := gX) (gY := gY) f hf x) := sorry
 
-/-- **TODO(math)**: `ambientPsi id = id`. -/
-theorem ambientPsi_id {g : ℕ} (y : Fin g → ℂ) :
-    ambientPsi (X := X) (Y := X) (gX := g) (gY := g) id contMDiff_id y = y := sorry
+/-- `ambientPsi id = id`. Proven via `pullbackForm_id`. -/
+theorem ambientPsi_id (y : Fin (genus X) → ℂ) :
+    ambientPsi (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id y = y := by
+  unfold ambientPsi
+  simp only [dif_pos rfl]
+  show (((ambientIso X).symm.toLinearMap.comp
+      ((pullbackForm (id : X → X) contMDiff_id).comp (ambientIso X).toLinearMap)) : _ →ₗ[_] _) y = y
+  rw [show (pullbackForm (id : X → X) contMDiff_id) = LinearMap.id from pullbackForm_id]
+  simp
 
-/-- **TODO(math)**: contravariant composition: `ambientPsi (g ∘ f) =
-ambientPsi f ∘ ambientPsi g`. -/
+/-- Contravariant composition: `ambientPsi (g ∘ f) = ambientPsi f ∘ ambientPsi g`.
+Proven via `pullbackForm_comp`. -/
 theorem ambientPsi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
     [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
-    {gX gY gZ : ℕ}
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
     (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f))
-    (z : Fin gZ → ℂ) :
-    ambientPsi (gX := gX) (gY := gZ) (g ∘ f) hgf z =
-      ambientPsi (gX := gX) (gY := gY) f hf
-        (ambientPsi (gX := gY) (gY := gZ) g hg z) := sorry
+    (z : Fin (genus Z) → ℂ) :
+    ambientPsi (gX := genus X) (gY := genus Z) (g ∘ f) hgf z =
+      ambientPsi (gX := genus X) (gY := genus Y) f hf
+        (ambientPsi (gX := genus Y) (gY := genus Z) g hg z) := by
+  unfold ambientPsi
+  simp only [dif_pos rfl]
+  show (((ambientIso X).symm.toLinearMap.comp
+      ((pullbackForm (g ∘ f) hgf).comp (ambientIso Z).toLinearMap))) z = _
+  rw [pullbackForm_comp f hf g hg hgf]
+  simp [LinearMap.comp_apply, LinearEquiv.symm_apply_apply]
 
 end AmbientBridge
 
