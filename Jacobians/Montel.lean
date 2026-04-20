@@ -717,10 +717,59 @@ theorem HolomorphicOneForms.supNormK_smul (c : ℂ)
     funext x₀; exact HolomorphicOneForms.chartNormK_smul c α x₀
   rw [hrw, ← Finset.mul₀_sup' (norm_nonneg c) _ _ chartCover_nonempty]
 
+/-! ### Step 1m: vanishing of `localRep` from `chartNormK = 0` -/
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- If `chartNormK α x₀ = 0` then `localRep α x₀ y = 0` for all y ∈ `shrunkChart x₀`. -/
+theorem HolomorphicOneForms.localRep_eq_zero_of_chartNormK_eq_zero
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) (h : HolomorphicOneForms.chartNormK α x₀ = 0)
+    (y : X) (hy : y ∈ shrunkChart (X := X) x₀) :
+    localRep α x₀ y = 0 := by
+  -- `‖localRep α x₀ y‖ ≤ chartNormK α x₀ = 0` via `le_csSup`.
+  have hbd := HolomorphicOneForms.chartNormK_bddAbove α x₀
+  have hle : ‖localRep α x₀ y‖ ≤ HolomorphicOneForms.chartNormK α x₀ := by
+    unfold HolomorphicOneForms.chartNormK
+    exact le_csSup hbd ⟨y, hy, rfl⟩
+  rw [h] at hle
+  -- `‖localRep α x₀ y‖ ≤ 0` + norm nonneg ⇒ `‖localRep α x₀ y‖ = 0` ⇒ `localRep α x₀ y = 0`.
+  have : ‖localRep α x₀ y‖ = 0 := le_antisymm hle (norm_nonneg _)
+  exact norm_eq_zero.mp this
+
+omit [ConnectedSpace X] in
+/-- If `supNormK α = 0` then `chartNormK α x = 0` for every `x ∈ chartCover`. -/
+theorem HolomorphicOneForms.chartNormK_eq_zero_of_supNormK_eq_zero
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (h : HolomorphicOneForms.supNormK α = 0)
+    (x : X) (hx : x ∈ (chartCover : Finset X)) :
+    HolomorphicOneForms.chartNormK α x = 0 := by
+  -- chartNormK α x ≤ supNormK α = 0 via `Finset.le_sup'`.
+  have hle : HolomorphicOneForms.chartNormK α x ≤ HolomorphicOneForms.supNormK α := by
+    unfold HolomorphicOneForms.supNormK
+    exact Finset.le_sup' _ hx
+  rw [h] at hle
+  exact le_antisymm hle (HolomorphicOneForms.chartNormK_nonneg α x)
+
+omit [ConnectedSpace X] in
+/-- Consequence: `supNormK α = 0` forces `localRep α x₀ y = 0` for every
+`x₀ ∈ chartCover` and `y ∈ shrunkChart x₀`. -/
+theorem HolomorphicOneForms.localRep_eq_zero_of_supNormK_eq_zero
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (h : HolomorphicOneForms.supNormK α = 0)
+    (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X))
+    (y : X) (hy : y ∈ shrunkChart (X := X) x₀) :
+    localRep α x₀ y = 0 :=
+  HolomorphicOneForms.localRep_eq_zero_of_chartNormK_eq_zero α x₀
+    (HolomorphicOneForms.chartNormK_eq_zero_of_supNormK_eq_zero α h x₀ hx₀) y hy
+
 /-! ### Next
 
-- [ ] Prove `chartNormK_eq_zero → localRep α x₀ = 0` on `shrunkChart x₀`.
-- [ ] `supNormK_eq_zero → α = 0` (via localRep-determines-α on each chart).
+- [ ] `supNormK_eq_zero → α = 0` (positive-definiteness: use that shrunkCharts
+      cover X + localRep α x₀ determines α near y via the trivialization's
+      inverse being a nonzero span of T_y X).
 - [ ] NormedAddCommGroup instance.
 - [ ] Cauchy estimates on `localRep` (holomorphic functions in chart).
 - [ ] Equicontinuity of bounded families.
