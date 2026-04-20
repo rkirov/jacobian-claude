@@ -207,19 +207,20 @@ noncomputable def ambientIso (X : Type*) [TopologicalSpace X] [T2Space X]
   (Module.finBasisOfFinrankEq ℂ (HolomorphicOneForms X)
     (finrank_HolomorphicOneForms_eq_genus X)).equivFun.symm
 
-/-- **TODO(math)**: the ambient ℝ-linear map `Φ` induced by the pushforward
+/-- **TODO(math)**: the ambient ℂ-linear map `Φ` induced by the pushforward
 of forms along `f : X → Y`. Concretely `(ambientIso Y).symm ∘
-pushforwardForm f hf ∘ ambientIso X`, restricted to ℝ-linear. Left
-sorry pending pushforwardForm content + continuous-linearity tracking. -/
+pushforwardForm f hf ∘ ambientIso X`. Upgraded from `→L[ℝ]` to `→L[ℂ]`
+so that `pushforward_contMDiff` is provable: ℂ-linearity gives
+`ContDiff ℂ ω Φ`, required for smoothness over the ℂ model. -/
 noncomputable def ambientPhi {gX gY : ℕ}
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    (Fin gX → ℂ) →L[ℝ] (Fin gY → ℂ) := sorry
+    (Fin gX → ℂ) →L[ℂ] (Fin gY → ℂ) := sorry
 
-/-- **TODO(math)**: the ambient ℝ-linear map `Ψ` induced by the pullback
+/-- **TODO(math)**: the ambient ℂ-linear map `Ψ` induced by the pullback
 of forms along `f : X → Y`. -/
 noncomputable def ambientPsi {gX gY : ℕ}
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    (Fin gY → ℂ) →L[ℝ] (Fin gX → ℂ) := sorry
+    (Fin gY → ℂ) →L[ℂ] (Fin gX → ℂ) := sorry
 
 /-- **TODO(math)**: the ambient degree identity, dualized from
 `pushforwardForm_pullbackForm_eq`. -/

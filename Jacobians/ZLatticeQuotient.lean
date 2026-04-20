@@ -4,6 +4,7 @@ import Mathlib.Topology.Algebra.IsUniformGroup.Basic
 import Mathlib.Topology.LocallyConstant.Basic
 import Mathlib.Geometry.Manifold.Algebra.LieGroup
 import Mathlib.Geometry.Manifold.IsManifold.Basic
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import Jacobians.ChartedSpaceOfLocalHomeomorph
 
 /-!
@@ -541,13 +542,19 @@ identity — the quotient side is structurally automatic. -/
 
 section LatticeMorphisms
 
+open scoped Manifold ContDiff
+
 noncomputable section
 
 /-- The descended pushforward map on quotient tori, from a lattice-respecting
-ambient linear map. -/
+ambient ℂ-linear map. (The body uses only `Φ.toAddMonoidHom` and
+`Φ.continuous`, so `→L[ℂ]` vs `→L[ℝ]` doesn't matter for the
+construction; we take `→L[ℂ]` here because the downstream
+`pushforward_contMDiff_of_ambient` needs the ℂ-linearity for
+`ContDiff ℂ ω Φ`.) -/
 def pushforward {gX gY : ℕ}
     (ΛX : Submodule ℤ (Fin gX → ℂ)) (ΛY : Submodule ℤ (Fin gY → ℂ))
-    (Φ : (Fin gX → ℂ) →L[ℝ] (Fin gY → ℂ))
+    (Φ : (Fin gX → ℂ) →L[ℂ] (Fin gY → ℂ))
     (hΦ : ΛX.toAddSubgroup ≤ ΛY.toAddSubgroup.comap Φ.toAddMonoidHom) :
     ((Fin gX → ℂ) ⧸ ΛX.toAddSubgroup) →ₜ+ ((Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) where
   toFun := QuotientAddGroup.map _ _ Φ.toAddMonoidHom hΦ
@@ -559,7 +566,7 @@ def pushforward {gX gY : ℕ}
 /-- The descended pullback map (dual direction). Defined via `pushforward`. -/
 def pullback {gX gY : ℕ}
     (ΛX : Submodule ℤ (Fin gX → ℂ)) (ΛY : Submodule ℤ (Fin gY → ℂ))
-    (Ψ : (Fin gY → ℂ) →L[ℝ] (Fin gX → ℂ))
+    (Ψ : (Fin gY → ℂ) →L[ℂ] (Fin gX → ℂ))
     (hΨ : ΛY.toAddSubgroup ≤ ΛX.toAddSubgroup.comap Ψ.toAddMonoidHom) :
     ((Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) →ₜ+ ((Fin gX → ℂ) ⧸ ΛX.toAddSubgroup) :=
   pushforward ΛY ΛX Ψ hΨ
@@ -569,8 +576,8 @@ descends to `pushforward ∘ pullback = d • id` on the quotient. -/
 theorem pushforward_pullback_of_ambient
     {gX gY : ℕ}
     (ΛX : Submodule ℤ (Fin gX → ℂ)) (ΛY : Submodule ℤ (Fin gY → ℂ))
-    (Φ : (Fin gX → ℂ) →L[ℝ] (Fin gY → ℂ))
-    (Ψ : (Fin gY → ℂ) →L[ℝ] (Fin gX → ℂ))
+    (Φ : (Fin gX → ℂ) →L[ℂ] (Fin gY → ℂ))
+    (Ψ : (Fin gY → ℂ) →L[ℂ] (Fin gX → ℂ))
     (hΦ : ΛX.toAddSubgroup ≤ ΛY.toAddSubgroup.comap Φ.toAddMonoidHom)
     (hΨ : ΛY.toAddSubgroup ≤ ΛX.toAddSubgroup.comap Ψ.toAddMonoidHom)
     (d : ℕ)
@@ -586,7 +593,7 @@ theorem pushforward_pullback_of_ambient
 /-- Functoriality: ambient identity descends to quotient identity. -/
 theorem pushforward_id_of_ambient
     {g : ℕ} (Λ : Submodule ℤ (Fin g → ℂ))
-    (Φ : (Fin g → ℂ) →L[ℝ] (Fin g → ℂ))
+    (Φ : (Fin g → ℂ) →L[ℂ] (Fin g → ℂ))
     (hΦΛ : Λ.toAddSubgroup ≤ Λ.toAddSubgroup.comap Φ.toAddMonoidHom)
     (hΦid : ∀ x : (Fin g → ℂ), Φ x = x)
     (P : (Fin g → ℂ) ⧸ Λ.toAddSubgroup) :
@@ -601,8 +608,8 @@ theorem pushforward_comp_of_ambient
     {gX gY gZ : ℕ}
     (ΛX : Submodule ℤ (Fin gX → ℂ)) (ΛY : Submodule ℤ (Fin gY → ℂ))
     (ΛZ : Submodule ℤ (Fin gZ → ℂ))
-    (Φ₁ : (Fin gX → ℂ) →L[ℝ] (Fin gY → ℂ))
-    (Φ₂ : (Fin gY → ℂ) →L[ℝ] (Fin gZ → ℂ))
+    (Φ₁ : (Fin gX → ℂ) →L[ℂ] (Fin gY → ℂ))
+    (Φ₂ : (Fin gY → ℂ) →L[ℂ] (Fin gZ → ℂ))
     (hΦ₁ : ΛX.toAddSubgroup ≤ ΛY.toAddSubgroup.comap Φ₁.toAddMonoidHom)
     (hΦ₂ : ΛY.toAddSubgroup ≤ ΛZ.toAddSubgroup.comap Φ₂.toAddMonoidHom)
     (hΦ₁₂ : ΛX.toAddSubgroup ≤ ΛZ.toAddSubgroup.comap (Φ₂.comp Φ₁).toAddMonoidHom)
@@ -611,6 +618,120 @@ theorem pushforward_comp_of_ambient
       pushforward ΛY ΛZ Φ₂ hΦ₂ (pushforward ΛX ΛY Φ₁ hΦ₁ P) := by
   induction P using QuotientAddGroup.induction_on with
   | H x => rfl
+
+/-- **Smoothness**: a ℂ-linear continuous ambient map descends to a
+`ContMDiff` map on the quotient tori. Uses chart-pullback +
+`contDiffOn_symm_mk` + ContDiff ℂ of the ambient linear map. -/
+theorem pushforward_contMDiff_of_ambient {gX gY : ℕ}
+    (ΛX : Submodule ℤ (Fin gX → ℂ))
+    [DiscreteTopology ΛX] [IsZLattice ℝ ΛX]
+    (ΛY : Submodule ℤ (Fin gY → ℂ))
+    [DiscreteTopology ΛY] [IsZLattice ℝ ΛY]
+    (Φ : (Fin gX → ℂ) →L[ℂ] (Fin gY → ℂ))
+    (hΦ : ΛX.toAddSubgroup ≤ ΛY.toAddSubgroup.comap Φ.toAddMonoidHom) :
+    ContMDiff 𝓘(ℂ, Fin gX → ℂ) 𝓘(ℂ, Fin gY → ℂ) ω
+      (pushforward ΛX ΛY Φ hΦ : _ → _) := by
+  intro qX
+  set x_c := Classical.choose
+    (QuotientAddGroup.mk_surjective (s := ΛX.toAddSubgroup) qX)
+  have hqc : QuotientAddGroup.mk x_c = qX :=
+    Classical.choose_spec (QuotientAddGroup.mk_surjective (s := ΛX.toAddSubgroup) qX)
+  set target_q := (pushforward ΛX ΛY Φ hΦ qX :
+    (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) with htgt_def
+  set y_c := Classical.choose
+    (QuotientAddGroup.mk_surjective (s := ΛY.toAddSubgroup) target_q)
+  have hyc : QuotientAddGroup.mk y_c = target_q :=
+    Classical.choose_spec
+      (QuotientAddGroup.mk_surjective (s := ΛY.toAddSubgroup) target_q)
+  set P := IsLocalHomeomorph.chartAtPreimage
+    (isLocalHomeomorph_mk ΛX.toAddSubgroup) x_c
+  set R := IsLocalHomeomorph.chartAtPreimage
+    (isLocalHomeomorph_mk ΛY.toAddSubgroup) y_c
+  have hP : (P : (Fin gX → ℂ) → (Fin gX → ℂ) ⧸ ΛX.toAddSubgroup) =
+      QuotientAddGroup.mk :=
+    (IsLocalHomeomorph.eq_chartAtPreimage
+      (isLocalHomeomorph_mk ΛX.toAddSubgroup) x_c).symm
+  have hR : (R : (Fin gY → ℂ) → (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) =
+      QuotientAddGroup.mk :=
+    (IsLocalHomeomorph.eq_chartAtPreimage
+      (isLocalHomeomorph_mk ΛY.toAddSubgroup) y_c).symm
+  have hxc_mem : x_c ∈ P.source :=
+    IsLocalHomeomorph.mem_source_chartAtPreimage _ _
+  have hyc_mem : y_c ∈ R.source :=
+    IsLocalHomeomorph.mem_source_chartAtPreimage _ _
+  rw [contMDiffAt_iff]
+  refine ⟨?_, ?_⟩
+  · exact (continuous_quot_lift _
+      (QuotientAddGroup.continuous_mk.comp Φ.continuous)).continuousAt
+  have hΦ_diff : ContDiff ℂ ω (Φ : (Fin gX → ℂ) → (Fin gY → ℂ)) := Φ.contDiff
+  have hR_sec := contDiffOn_symm_mk (𝕜 := ℂ) (n := ω) ΛY R hR
+  have hmem_img : Φ x_c ∈
+      (QuotientAddGroup.mk : (Fin gY → ℂ) → (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) ⁻¹'
+        R.target := by
+    show QuotientAddGroup.mk (Φ x_c) ∈ R.target
+    have hmk : (QuotientAddGroup.mk (Φ x_c) :
+        (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) = target_q := by
+      rw [htgt_def, ← hqc]
+      rfl
+    rw [hmk, ← hyc]
+    have hRy : R y_c = QuotientAddGroup.mk y_c := by rw [← hR]
+    rw [← hRy]
+    exact R.map_source hyc_mem
+  have hopen_R : IsOpen
+      ((QuotientAddGroup.mk : (Fin gY → ℂ) → (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) ⁻¹'
+        R.target) :=
+    QuotientAddGroup.continuous_mk.isOpen_preimage _ R.open_target
+  have hcomp_on : ContDiffOn ℂ ω
+      (fun x : Fin gX → ℂ => R.symm (QuotientAddGroup.mk (Φ x) :
+        (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup))
+      (Φ ⁻¹'
+        ((QuotientAddGroup.mk : (Fin gY → ℂ) → (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) ⁻¹'
+          R.target)) := by
+    apply hR_sec.comp hΦ_diff.contDiffOn
+    intro x hx; exact hx
+  have hopen_pre : IsOpen (Φ ⁻¹'
+      ((QuotientAddGroup.mk : (Fin gY → ℂ) → (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) ⁻¹'
+        R.target)) :=
+    Φ.continuous.isOpen_preimage _ hopen_R
+  have hkey : ContDiffAt ℂ ω
+      (fun x : Fin gX → ℂ => R.symm (QuotientAddGroup.mk (Φ x) :
+        (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup)) x_c :=
+    hcomp_on.contDiffAt (hopen_pre.mem_nhds hmem_img)
+  simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
+    Set.range_id, Set.univ_inter]
+  rw [contDiffWithinAt_univ]
+  have hpoint : extChartAt 𝓘(ℂ, Fin gX → ℂ) qX qX = x_c := by
+    show P.symm qX = x_c
+    have : P x_c = qX := by rw [hP]; exact hqc
+    rw [← this]
+    exact P.left_inv hxc_mem
+  rw [hpoint]
+  apply hkey.congr_of_eventuallyEq
+  have hxc_src_preimg : x_c ∈ Φ ⁻¹'
+      ((QuotientAddGroup.mk : (Fin gY → ℂ) → (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup) ⁻¹'
+        R.target) := hmem_img
+  have hP_open : IsOpen (P.source : Set (Fin gX → ℂ)) := P.open_source
+  filter_upwards [hP_open.mem_nhds hxc_mem, hopen_pre.mem_nhds hxc_src_preimg]
+    with x hx_src _hx_phi
+  simp only [Function.comp_apply]
+  change R.symm (QuotientAddGroup.map ΛX.toAddSubgroup ΛY.toAddSubgroup Φ.toAddMonoidHom
+      hΦ (P x)) =
+    R.symm (QuotientAddGroup.mk (Φ x) : (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup)
+  have hPx : P x = QuotientAddGroup.mk x := by rw [← hP]
+  rw [hPx]
+  rfl
+
+/-- Pullback smoothness, via pushforward. -/
+theorem pullback_contMDiff_of_ambient {gX gY : ℕ}
+    (ΛX : Submodule ℤ (Fin gX → ℂ))
+    [DiscreteTopology ΛX] [IsZLattice ℝ ΛX]
+    (ΛY : Submodule ℤ (Fin gY → ℂ))
+    [DiscreteTopology ΛY] [IsZLattice ℝ ΛY]
+    (Ψ : (Fin gY → ℂ) →L[ℂ] (Fin gX → ℂ))
+    (hΨ : ΛY.toAddSubgroup ≤ ΛX.toAddSubgroup.comap Ψ.toAddMonoidHom) :
+    ContMDiff 𝓘(ℂ, Fin gY → ℂ) 𝓘(ℂ, Fin gX → ℂ) ω
+      (pullback ΛX ΛY Ψ hΨ : _ → _) :=
+  pushforward_contMDiff_of_ambient ΛY ΛX Ψ hΨ
 
 end
 

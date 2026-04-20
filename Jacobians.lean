@@ -185,7 +185,11 @@ noncomputable def pushforward (f : X → Y)
 -- pushforward is holomorphic
 theorem pushforward_contMDiff :
   ContMDiff (modelWithCornersSelf ℂ (Fin (genus X) → ℂ))
-  (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ)) ω (pushforward f hf) := sorry
+  (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ)) ω (pushforward f hf) :=
+  Jacobians.ZLatticeQuotient.pushforward_contMDiff_of_ambient
+    (periodLattice X) (periodLattice Y)
+    (Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf)
+    (ambientPhi_preserves_lattice f hf)
 
 -- functoriality
 lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P :=
@@ -235,7 +239,11 @@ noncomputable def pullback (f : X → Y)
 -- pullback is holomorphic
 theorem pullback_contMDiff :
     ContMDiff (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ))
-      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) := sorry
+      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) :=
+  Jacobians.ZLatticeQuotient.pullback_contMDiff_of_ambient
+    (periodLattice X) (periodLattice Y)
+    (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf)
+    (ambientPsi_preserves_lattice f hf)
 
 -- functoriality
 lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P :=
