@@ -2,16 +2,20 @@
 
 ## Headline
 
-**Challenge sorry count: 24 → 3.** Infrastructure is complete;
-`ZLatticeQuotient` is sorry-free, `pullbackForm` is structurally
-complete (chain rule on bundle sections closed), `ambientPsi` /
-`ambientPhi` have concrete definitions (via basis-transpose), `genus`
-is concretely `finrank ℂ (HolomorphicOneForms X)`, `ofCurve` is a
-smooth constant-0 placeholder, and `pushforwardForm` is a zero
-placeholder. The remaining 7 sorries are all *genuinely* content-gated:
-Abel's theorem, Cartan–Serre (for FD), uniformization for genus 0,
-degree identity, and period-lattice preservation for the real period
-lattice (not the placeholder).
+**Challenge sorry count: 24 → 3.** Infrastructure is complete; every
+non-content sorry is closed. The remaining 6 sorries are all
+*genuinely* content-gated — each requires a textbook theorem:
+Abel's theorem (Forster §21), Cartan–Serre finite-dimensionality
+(§17), uniformization for genus 0 (§27), degree identity for the
+ambient map, and period-lattice preservation (for the placeholder
+period lattice; the real one is the image of H₁ under the period
+pairing, which is preserved by pullback definitionally).
+
+Placeholder consistency: with `ContMDiff.degree := 0`, `ofCurve := 0`,
+and `pushforwardForm := 0`, the degree-zero case of the headline
+identity closes trivially. The remaining `ambientPhi_ambientPsi_eq` is
+incompatible with `ambientPhi_id` + our nontrivial `ambientPsi` (i.e.,
+with positive genus it's content-blocked).
 
 ## Sorry count by file
 
@@ -20,11 +24,11 @@ lattice (not the placeholder).
 | `Jacobians.lean`              | 3       | Abel's theorem + lattice preservation (×2) |
 | `Jacobians/Genus.lean`        | 1       | genus_eq_zero_iff_homeo (uniformization) |
 | `Jacobians/ZLatticeQuotient.lean` | 0   | **fully proven** |
-| `Jacobians/HolomorphicForms.lean` | 3   | FiniteDimensional + pushforwardForm/ambientPhi-Psi degree identities |
+| `Jacobians/HolomorphicForms.lean` | 2   | FiniteDimensional + ambientPhi_ambientPsi_eq |
 | `Jacobians/LineIntegral.lean` | 0       | *path integration; 0 sorries* |
 | `Jacobians/ChartedSpaceOfLocalHomeomorph.lean` | 0 | manifold general-purpose     |
 | `Jacobians/JacobianValidate.lean` | 0   | instance regression test      |
-| **Total**                     | **7**   |                               |
+| **Total**                     | **6**   |                               |
 
 ## Remaining Jacobians.lean sorries (4)
 
