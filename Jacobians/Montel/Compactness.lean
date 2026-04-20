@@ -1,6 +1,7 @@
 import Jacobians.Montel.SupNorm
 import Mathlib.Topology.ContinuousMap.Compact
 import Mathlib.Topology.ContinuousMap.Bounded.Basic
+import Mathlib.Analysis.Calculus.ContDiff.Defs
 
 /-!
 # Montel path — compactness of the closed unit ball (work in progress)
@@ -147,29 +148,156 @@ theorem norm_localRepOnShrunk_le_supNormK
     rw [h0, norm_zero]
     exact HolomorphicOneForms.supNormK_nonneg α
 
+/-! ### Step B.3 — `localRep` is analytic in chart coordinates
+
+The `ContMDiff ω ⇔ AnalyticOn ℂ` bridge at bundle-section level:
+`z ↦ localRep α x₀ ((chartAt ℂ x₀).symm z)` is analytic on the chart
+target (an open subset of `ℂ`).
+
+**Proof outline.**
+1. `α.contMDiff_toFun` gives smoothness of α as a bundle section in the
+   Hom bundle globally.
+2. The constant-1 frame tangent vector
+   `y ↦ TotalSpace.mk' ℂ y (e.symmL ℂ y 1)` is `ContMDiffOn ω` on
+   `e.baseSet` (from `e.contMDiffOn_section_baseSet_iff`: its
+   trivialization representative is the constant function `1`, which
+   is smooth).
+3. `ContMDiffOn.clm_bundle_apply` combines (1) and (2) to give
+   smoothness of `y ↦ TotalSpace.mk' ℂ y (localRep α x₀ y)` as a
+   section of the Trivial ℂ bundle.
+4. `contMDiffWithinAt_section` on the Trivial bundle (whose
+   trivialization projection is the identity) extracts scalar
+   smoothness `ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω (localRep α x₀) e.baseSet`.
+5. `contMDiffOn_iff` unfolds manifold-smoothness into
+   `ContDiffOn ℂ ω (f ∘ (chartAt ℂ x₀).symm)` on the chart target
+   (using `extChartAt 𝓘(ℂ) = chartAt ℂ` for ℂ as its own model).
+6. `contDiffOn_omega_iff_analyticOn` on the open chart target
+   concludes `AnalyticOn`. -/
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+/-- The trivialization base set at `x₀` equals `(chartAt ℂ x₀).source`
+(specialization of `TangentBundle.trivializationAt_baseSet`). -/
+theorem baseSet_eq_chartAt_source (x₀ : X) :
+    (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet =
+      (chartAt ℂ x₀).source :=
+  TangentBundle.trivializationAt_baseSet x₀
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+/-- The constant-1 tangent-frame section
+`y ↦ (trivializationAt …).symmL ℂ y 1` is smooth as a bundle section
+on the trivialization's base set. Proof: via
+`Trivialization.contMDiffOn_section_baseSet_iff`, equivalent to
+smoothness of the trivialization representative, which equals the
+constant `1 : ℂ` on the base set. -/
+theorem contMDiffOn_frame
+    (x₀ : X) :
+    ContMDiffOn 𝓘(ℂ, ℂ) (𝓘(ℂ, ℂ).prod 𝓘(ℂ, ℂ)) ω
+      (fun y : X => TotalSpace.mk' ℂ
+        (E := fun x : X => TangentSpace 𝓘(ℂ, ℂ) x) y
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1))
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet := by
+  rw [(trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).contMDiffOn_section_baseSet_iff]
+  have hconst : Set.EqOn
+      (fun y : X =>
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀)
+          ⟨y, (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1⟩).2)
+      (fun _ : X => (1 : ℂ))
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet := by
+    intro y hy
+    simp only
+    have hsymmL :
+        (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1 =
+          (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symm y 1 := rfl
+    rw [hsymmL]
+    have hmk :
+        (⟨y, (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symm y 1⟩ :
+          TotalSpace ℂ (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x)) =
+        (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).toOpenPartialHomeomorph.symm (y, 1) :=
+      Trivialization.mk_symm _ hy 1
+    rw [hmk]
+    simp [(trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).apply_symm_apply' hy]
+  exact contMDiffOn_const.congr hconst
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+/-- Scalar smoothness of `localRep α x₀` as a function `X → ℂ` on the
+chart source (= trivialization base set). Combines `α.contMDiff_toFun`,
+`contMDiffOn_frame`, and `ContMDiffOn.clm_bundle_apply` via scalar
+extraction on the Trivial bundle. -/
+theorem localRep_contMDiffOn
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) :
+    ContMDiffOn 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω (localRep α x₀)
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet := by
+  have hα : ContMDiffOn 𝓘(ℂ, ℂ) (𝓘(ℂ, ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+      (fun x : X => TotalSpace.mk' (ℂ →L[ℂ] ℂ)
+        (E := fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)
+        x (α.toFun x))
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet :=
+    α.contMDiff_toFun.contMDiffOn
+  have happ : ContMDiffOn 𝓘(ℂ, ℂ) (𝓘(ℂ, ℂ).prod 𝓘(ℂ, ℂ)) ω
+      (fun y : X => TotalSpace.mk' ℂ (E := Bundle.Trivial X ℂ) y (localRep α x₀ y))
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet :=
+    hα.clm_bundle_apply (contMDiffOn_frame x₀)
+  intro y hy
+  have h := happ y hy
+  rw [contMDiffWithinAt_section] at h
+  have heqPt : ∀ x : X,
+      ((trivializationAt ℂ (Bundle.Trivial X ℂ) y) ⟨x, localRep α x₀ x⟩).2 = localRep α x₀ x := by
+    intro x
+    simp [Bundle.Trivial.trivialization]
+  exact h.congr (fun x _ => heqPt x) (heqPt y)
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- **Step B.3 — the holomorphicity bridge.**
+In chart coordinates at `x₀`, the local representative of a holomorphic
+1-form α is analytic on the chart target.
+
+Proof chain:
+1. `localRep_contMDiffOn` gives `ContMDiffOn ω` on the chart source.
+2. `contMDiffOn_iff` reduces this to `ContDiffOn ℂ ω` in chart
+   coordinates (using that ℂ's `extChartAt` is essentially the
+   identity).
+3. `contDiffOn_omega_iff_analyticOn` on the open chart target
+   promotes `ContDiffOn ω` ⇒ `AnalyticOn`. -/
+theorem localRep_analyticOn_chartTarget
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) :
+    AnalyticOn ℂ (fun z : ℂ => localRep α x₀ ((chartAt ℂ x₀).symm z))
+      (chartAt ℂ x₀).target := by
+  -- Step 1: manifold smoothness on the chart source.
+  have hfm : ContMDiffOn 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω (localRep α x₀) (chartAt ℂ x₀).source := by
+    rw [← baseSet_eq_chartAt_source x₀]
+    exact localRep_contMDiffOn α x₀
+  -- Step 2: unfold contMDiffOn_iff to ContDiffOn ℂ ω via ℂ's identity model.
+  rw [contMDiffOn_iff] at hfm
+  obtain ⟨_, hf_chart⟩ := hfm
+  have hCD := hf_chart x₀ (0 : ℂ)
+  have h1 : (extChartAt 𝓘(ℂ, ℂ) x₀).target = (chartAt ℂ x₀).target := by simp [extChartAt]
+  have h2 : (extChartAt 𝓘(ℂ, ℂ) (0 : ℂ)).source = Set.univ := by simp [extChartAt]
+  have h3 : ∀ z, (extChartAt 𝓘(ℂ, ℂ) x₀).symm z = (chartAt ℂ x₀).symm z := by
+    intro z; simp [extChartAt]
+  have h4 : ∀ z, (extChartAt 𝓘(ℂ, ℂ) (0 : ℂ)) z = z := by intro z; simp [extChartAt]
+  rw [h2, Set.preimage_univ, Set.inter_univ] at hCD
+  have hset : (extChartAt 𝓘(ℂ, ℂ) x₀).target ∩
+      (extChartAt 𝓘(ℂ, ℂ) x₀).symm ⁻¹' (chartAt ℂ x₀).source = (chartAt ℂ x₀).target := by
+    ext z
+    refine ⟨fun ⟨htgt, _⟩ => by rw [h1] at htgt; exact htgt, fun hz => ?_⟩
+    refine ⟨h1 ▸ hz, ?_⟩
+    simp only [Set.mem_preimage]
+    rw [h3]
+    exact (chartAt ℂ x₀).map_target hz
+  rw [hset] at hCD
+  have hfun : ((extChartAt 𝓘(ℂ, ℂ) (0 : ℂ)) ∘ localRep α x₀ ∘ (extChartAt 𝓘(ℂ, ℂ) x₀).symm) =
+      (fun z : ℂ => localRep α x₀ ((chartAt ℂ x₀).symm z)) := by
+    funext z
+    simp [Function.comp_def]
+  rw [hfun] at hCD
+  -- Step 3: ContDiffOn ω ↔ AnalyticOn via UniqueDiffOn on open set.
+  exact (contDiffOn_omega_iff_analyticOn (chartAt ℂ x₀).open_target.uniqueDiffOn).mp hCD
+
 /-! ### Next steps (scheduled, not implemented here)
-
-**B.3 — the `ContMDiff ω ⇔ AnalyticOn ℂ` bridge (BLOCKING).**
-The target statement is:
-  `AnalyticOn ℂ (fun z : ℂ => localRep α x₀ ((chartAt ℂ x₀).symm z))
-     (chartAt ℂ x₀).target`.
-This is the bundle-section-level form of the classical
-`C^ω ⇔ analytic` fact for ℂ-valued maps between open ℂ sets. It is
-deferred here because it is a multi-step reduction, not a one-liner,
-and filing it as a sub-sorry in this file would strictly grow the
-repo's overall sorry count (the existing master sorry
-`HolomorphicOneForms.closedBall_isCompact` in `Jacobians/Montel.lean`
-already covers this content indirectly). Candidate Mathlib lemmas to
-combine, in order of use:
-
-- `Bundle.contMDiffAt_section` — characterizes smoothness of a section
-  via smoothness of its trivialization representative.
-- `contMDiffAt_iff_of_mem_source` / `contMDiffWithinAt_iff` — unfolds
-  `ContMDiff` on a chart via `ContDiffOn` of the chart representative.
-- `ContDiffOn.analyticOn` / `ContDiffWithinAt.analyticOn` — for
-  complex target, `C^ω` ⇒ analytic (the core Mathlib bridge).
-- `TangentBundle.trivializationAt` and the `symmL` apparatus, plus
-  `OpenPartialHomeomorph` smoothness of the chart inverse.
 
 **B.4** `cauchy_estimate` — derivative bound for analytic functions on
 a compact shrinkage. Mathlib's key lemma:
