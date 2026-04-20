@@ -883,8 +883,24 @@ instances upstream or competing choices. Consumers can locally
     NormedAddCommGroup (Jacobians.HolomorphicOneForms X) :=
   AddGroupNorm.toNormedAddCommGroup HolomorphicOneForms.supNormKAsAddGroupNorm
 
+/-! ### Step 1q: `NormedSpace ℂ` instance
+
+With the `NormedAddCommGroup` established, upgrading to `NormedSpace ℂ`
+requires `‖c • α‖ ≤ ‖c‖ * ‖α‖` — which we already have as equality via
+`supNormK_smul`. -/
+
+omit [ConnectedSpace X] in
+/-- `HolomorphicOneForms X` as a `NormedSpace ℂ`.
+
+Non-instance: companion to `normedAddCommGroup`. -/
+@[reducible] noncomputable def HolomorphicOneForms.normedSpace :
+    letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+    NormedSpace ℂ (Jacobians.HolomorphicOneForms X) :=
+  letI : NormedAddCommGroup (Jacobians.HolomorphicOneForms X) :=
+    HolomorphicOneForms.normedAddCommGroup
+  NormedSpace.mk (fun c α => le_of_eq (HolomorphicOneForms.supNormK_smul c α))
+
 /-! ### Next
-- [ ] `NormedSpace ℂ` instance (homogeneity extends to a normed space).
 - [ ] Completeness (Banach): uniform limits of holomorphic sections are holomorphic.
 - [ ] Cauchy estimates on `localRep` (holomorphic functions in chart).
 - [ ] Equicontinuity of bounded families.
