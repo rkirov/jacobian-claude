@@ -67,16 +67,14 @@ construction — the `NormedAddCommGroup` instance is built from it). -/
 theorem norm_HOF_eq_supNormK (α : HolomorphicOneForms X) :
     ‖α‖ = Jacobians.Montel.HolomorphicOneForms.supNormK α := rfl
 
-/-- **TODO(math)**: on a compact connected complex 1-manifold, the space
-of global holomorphic 1-forms is finite-dimensional. Via the Montel
-compactness route (Ahlfors-Sario): `HOF X` has a Banach structure via
-`supNormK`, the closed unit ball is compact (Arzelà-Ascoli on each chart
-+ finite atlas), hence `FiniteDimensional` (Riesz).
-
-The normed structure above is real; this final step remains gated on
-Cauchy estimates + Arzelà-Ascoli + Riesz (see `Jacobians/Montel.lean`
-scaffolding). -/
-noncomputable instance : FiniteDimensional ℂ (HolomorphicOneForms X) := sorry
+/-- On a compact connected complex 1-manifold, the space of global holomorphic
+1-forms is finite-dimensional. Derived via Montel/Riesz from
+`Jacobians.Montel.HolomorphicOneForms.closedBall_isCompact` (the single
+remaining content sorry: the closed unit ball under `supNormK` is compact
+via Arzelà-Ascoli). -/
+noncomputable instance : FiniteDimensional ℂ (HolomorphicOneForms X) :=
+  FiniteDimensional.of_isCompact_closedBall₀ ℂ zero_lt_one
+    Jacobians.Montel.HolomorphicOneForms.closedBall_isCompact
 
 /-- Dimension of holomorphic 1-forms = genus. With `genus X` defined as
 `Module.finrank ℂ (HolomorphicOneForms X)` (see `Jacobians.Genus`), this
