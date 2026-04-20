@@ -234,14 +234,15 @@ theorem HolomorphicOneForms.chartNorm_nonneg
     -- bounded. For now this is deferred.
     sorry) y₀ (norm_nonneg _)
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- Chart-local sup-norm of zero is zero. -/
 theorem HolomorphicOneForms.chartNorm_zero (x₀ : X) :
     HolomorphicOneForms.chartNorm (0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) x₀ = 0 := by
-  unfold HolomorphicOneForms.chartNorm
-  simp only [localRep]
-  -- α.toFun = 0 for zero section ⇒ localRep = 0 ⇒ sup of ‖0‖ = 0.
-  sorry
+  unfold HolomorphicOneForms.chartNorm localRep
+  change (⨆ y : X, ‖(0 : ℂ →L[ℂ] ℂ)
+    ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)‖ : ℝ) = 0
+  simp
 
 /-! ### Next
 
