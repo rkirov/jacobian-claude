@@ -316,24 +316,27 @@ open Classical in
 private noncomputable def coverOpen (x : X) : Set X :=
   if x ∈ (chartCover : Finset X) then (chartAt ℂ x).source else ∅
 
+omit [T2Space X] [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
 private theorem coverOpen_isOpen (x : X) : IsOpen (coverOpen (X := X) x) := by
   unfold coverOpen
   by_cases hx : x ∈ (chartCover : Finset X)
   · rw [if_pos hx]; exact (chartAt ℂ x).open_source
   · rw [if_neg hx]; exact isOpen_empty
 
+omit [T2Space X] [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
 private theorem iUnion_coverOpen_eq :
     (⋃ x : X, coverOpen (X := X) x) = Set.univ := by
   apply Set.eq_univ_of_univ_subset
   rw [← chartCover_cover (X := X)]
   intro y hy
-  simp only [Set.mem_iUnion, Set.mem_setOf_eq] at hy
+  simp only [Set.mem_iUnion] at hy
   obtain ⟨x₀, hx₀cover, hx₀src⟩ := hy
   refine Set.mem_iUnion.mpr ⟨x₀, ?_⟩
   unfold coverOpen
   rw [if_pos hx₀cover]
   exact hx₀src
 
+omit [T2Space X] [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
 private theorem coverOpen_locallyFinite (y : X) :
     {x | y ∈ coverOpen (X := X) x}.Finite := by
   apply Set.Finite.subset ((chartCover : Finset X)).finite_toSet
@@ -344,6 +347,7 @@ private theorem coverOpen_locallyFinite (y : X) :
   rw [if_neg (by simpa [Finset.mem_coe] using hxmem)] at hx
   exact absurd hx (Set.notMem_empty y)
 
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
 /-- Shrinking lemma applied to `coverOpen`: gives a closed family
 `shrunkChart` with `shrunkChart x ⊆ coverOpen x` and still covering X. -/
 private theorem exists_compact_shrink :
@@ -356,15 +360,19 @@ private theorem exists_compact_shrink :
 noncomputable def shrunkChart (x : X) : Set X :=
   Classical.choose (exists_compact_shrink (X := X)) x
 
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
 theorem iUnion_shrunkChart_eq : (⋃ x : X, shrunkChart (X := X) x) = Set.univ :=
   (Classical.choose_spec (exists_compact_shrink (X := X))).1
 
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
 theorem shrunkChart_isClosed (x : X) : IsClosed (shrunkChart (X := X) x) :=
   (Classical.choose_spec (exists_compact_shrink (X := X))).2.1 x
 
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
 theorem shrunkChart_isCompact (x : X) : IsCompact (shrunkChart (X := X) x) :=
   (shrunkChart_isClosed x).isCompact
 
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
 /-- `shrunkChart x ⊆ (chartAt ℂ x).source` when `x ∈ chartCover`. -/
 theorem shrunkChart_subset_source (x : X) (hx : x ∈ (chartCover : Finset X)) :
     shrunkChart (X := X) x ⊆ (chartAt ℂ x).source := by
@@ -375,6 +383,7 @@ theorem shrunkChart_subset_source (x : X) (hx : x ∈ (chartCover : Finset X)) :
   rw [if_pos hx] at hyc
   exact hyc
 
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
 /-- For x ∉ chartCover, the shrunkChart is empty. -/
 theorem shrunkChart_eq_empty (x : X) (hx : x ∉ (chartCover : Finset X)) :
     shrunkChart (X := X) x = ∅ := by
@@ -386,6 +395,7 @@ theorem shrunkChart_eq_empty (x : X) (hx : x ∉ (chartCover : Finset X)) :
   rw [if_neg hx] at hyc
   exact hyc
 
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
 /-- Restricted cover: the shrunkCharts indexed by `chartCover` still cover X. -/
 theorem iUnion_shrunkChart_chartCover_eq :
     (⋃ x ∈ (chartCover : Finset X), shrunkChart (X := X) x) = Set.univ := by
@@ -448,13 +458,122 @@ theorem localRep_neg
   rw [this]
   rfl
 
+/-! ### Step 1j: proper (bounded) chart-local sup-norm
+
+The earlier `chartNorm α x₀ := ⨆ y : X, ‖localRep α x₀ y‖` is unbounded
+in general (the "unit tangent" `e.symmL ℂ y 1` blows up as y approaches
+the boundary of baseSet in X). Consequently by Mathlib's convention
+`Real.iSup_of_not_bddAbove`, unbounded iSup returns 0 — destroying the
+triangle inequality.
+
+The textbook fix: sup only over the compact `shrunkChart x₀` (we built
+this above using the shrinking lemma). Since `localRep α x₀` is
+continuous on baseSet ⊇ shrunkChart x₀ and shrunkChart x₀ is compact,
+the image is compact in ℝ, hence bounded. -/
+
+/-- Bounded chart-local sup-norm: sup over the compact `shrunkChart x₀`. -/
+noncomputable def HolomorphicOneForms.chartNormK
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) : ℝ :=
+  sSup ((fun y : X => ‖localRep α x₀ y‖) '' shrunkChart (X := X) x₀)
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- `chartNormK` is non-negative (sSup over a set of non-negative values or ∅). -/
+theorem HolomorphicOneForms.chartNormK_nonneg
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) : 0 ≤ HolomorphicOneForms.chartNormK α x₀ := by
+  unfold HolomorphicOneForms.chartNormK
+  by_cases hne : (shrunkChart (X := X) x₀).Nonempty
+  · obtain ⟨y, hy⟩ := hne
+    apply le_csSup_of_le
+    · -- bounded above: localRep continuous on baseSet ⊇ shrunkChart (compact),
+      -- so image is bounded
+      by_cases hx : x₀ ∈ (chartCover : Finset X)
+      · have hsub : shrunkChart (X := X) x₀ ⊆
+            (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet := by
+          rw [TangentBundle.trivializationAt_baseSet]
+          exact shrunkChart_subset_source x₀ hx
+        have hcompact := shrunkChart_isCompact (X := X) x₀
+        have hcont : ContinuousOn (fun y : X => ‖localRep α x₀ y‖)
+            (shrunkChart (X := X) x₀) := by
+          have := (localRep_continuousOn α x₀).mono hsub
+          exact this.norm
+        have himg_compact : IsCompact
+            ((fun y : X => ‖localRep α x₀ y‖) '' shrunkChart (X := X) x₀) :=
+          hcompact.image_of_continuousOn hcont
+        exact himg_compact.bddAbove
+      · rw [shrunkChart_eq_empty x₀ hx] at hy
+        exact absurd hy (Set.notMem_empty y)
+    · exact ⟨y, hy, rfl⟩
+    · exact norm_nonneg _
+  · -- empty: image is empty, sSup ∅ = 0
+    rw [Set.not_nonempty_iff_eq_empty] at hne
+    simp [hne]
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- The image of `‖localRep α x₀ ·‖` over `shrunkChart x₀` is bounded above. -/
+theorem HolomorphicOneForms.chartNormK_bddAbove
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) :
+    BddAbove ((fun y : X => ‖localRep α x₀ y‖) '' shrunkChart (X := X) x₀) := by
+  by_cases hx : x₀ ∈ (chartCover : Finset X)
+  · have hsub : shrunkChart (X := X) x₀ ⊆
+        (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet := by
+      rw [TangentBundle.trivializationAt_baseSet]
+      exact shrunkChart_subset_source x₀ hx
+    have hcompact := shrunkChart_isCompact (X := X) x₀
+    have hcont : ContinuousOn (fun y : X => ‖localRep α x₀ y‖)
+        (shrunkChart (X := X) x₀) :=
+      ((localRep_continuousOn α x₀).mono hsub).norm
+    exact (hcompact.image_of_continuousOn hcont).bddAbove
+  · rw [shrunkChart_eq_empty x₀ hx]
+    simp [BddAbove, Set.image_empty]
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- `chartNormK` of the zero section is zero. -/
+theorem HolomorphicOneForms.chartNormK_zero (x₀ : X) :
+    HolomorphicOneForms.chartNormK
+      (0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+        (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+      x₀ = 0 := by
+  unfold HolomorphicOneForms.chartNormK localRep
+  -- Everything in the image is ‖0 applied to anything‖ = 0.
+  have himg : (fun y : X => ‖(0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+        (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)).toFun y
+      ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)‖) '' shrunkChart (X := X) x₀
+      ⊆ {0} := by
+    intro r hr
+    obtain ⟨y, _, rfl⟩ := hr
+    change ‖(0 : TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ) _‖ ∈ ({0} : Set ℝ)
+    simp
+  by_cases hne : (shrunkChart (X := X) x₀).Nonempty
+  · obtain ⟨y, hy⟩ := hne
+    have hmem : (0 : ℝ) ∈ (fun y : X => ‖(0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+        (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)).toFun y
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)‖) '' shrunkChart x₀ := by
+      refine ⟨y, hy, ?_⟩
+      change ‖(0 : TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ) _‖ = 0
+      simp
+    have : (fun y : X => ‖(0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+        (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)).toFun y
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)‖) '' shrunkChart x₀ =
+        {0} :=
+      Set.eq_singleton_iff_unique_mem.mpr ⟨hmem, fun b hb => himg hb⟩
+    rw [this]
+    exact csSup_singleton 0
+  · rw [Set.not_nonempty_iff_eq_empty] at hne
+    simp [hne]
+
 /-! ### Next
 
-- [ ] Boundedness of `localRep α x₀` on X (via compactness).
-- [ ] Prove `supNorm α ≥ 0`.
-- [ ] Prove `supNorm = 0 → α = 0` (positive-definiteness, the hard
-      direction — needs that cover covers X AND continuity).
-- [ ] Prove triangle + scalar mult compat.
+- [ ] Prove `chartNormK_add_le`: triangle inequality on one chart.
+- [ ] Prove `chartNormK_smul`: homogeneity.
+- [ ] Prove `chartNormK_eq_zero → localRep α x₀ = 0` on `shrunkChart x₀`.
+- [ ] Assemble `supNorm α := sup over chartCover of chartNormK α x`.
+- [ ] `supNorm_eq_zero → α = 0` (via localRep-determines-α on each chart).
 - [ ] NormedAddCommGroup instance.
 - [ ] Cauchy estimates on `localRep` (holomorphic functions in chart).
 - [ ] Equicontinuity of bounded families.
