@@ -7,6 +7,7 @@ import Mathlib.Topology.ContinuousMap.Bounded.Basic
 import Mathlib.Topology.Algebra.InfiniteSum.Basic
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Topology.Order.Compact
+import Mathlib.Topology.ShrinkingLemma
 
 /-!
 # Montel path to finite-dimensionality of `HolomorphicOneForms`
@@ -224,15 +225,15 @@ noncomputable def chartCover : Finset X :=
   Classical.choose (exists_finite_chart_cover (X := X))
 
 omit [T2Space X] [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
-theorem chartCover_cover : (⋃ x ∈ chartCover (X := X), (chartAt ℂ x).source) = Set.univ :=
+theorem chartCover_cover : (⋃ x ∈ (chartCover : Finset X), (chartAt ℂ x).source) = Set.univ :=
   Classical.choose_spec (exists_finite_chart_cover (X := X))
 
 omit [T2Space X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] in
 /-- The canonical finite chart cover is non-empty (X is non-empty and the
 cover is a cover). -/
-theorem chartCover_nonempty : (chartCover (X := X)).Nonempty := by
+theorem chartCover_nonempty : ((chartCover : Finset X)).Nonempty := by
   obtain ⟨x₀⟩ := (inferInstance : Nonempty X)
-  have hx : x₀ ∈ (⋃ x ∈ chartCover (X := X), (chartAt ℂ x).source) := by
+  have hx : x₀ ∈ (⋃ x ∈ (chartCover : Finset X), (chartAt ℂ x).source) := by
     rw [chartCover_cover]; trivial
   simp only [Set.mem_iUnion] at hx
   obtain ⟨i, hi, _⟩ := hx
@@ -242,7 +243,7 @@ theorem chartCover_nonempty : (chartCover (X := X)).Nonempty := by
 noncomputable def HolomorphicOneForms.supNorm
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) : ℝ :=
-  HolomorphicOneForms.supNormOn α (chartCover (X := X)) chartCover_nonempty
+  HolomorphicOneForms.supNormOn α ((chartCover : Finset X)) chartCover_nonempty
 
 /-! ### Step 1g: basic norm properties -/
 
@@ -298,9 +299,108 @@ omit [T2Space X] [ConnectedSpace X] in
 theorem HolomorphicOneForms.supNorm_zero :
     HolomorphicOneForms.supNorm (0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) = 0 :=
-  HolomorphicOneForms.supNormOn_zero (chartCover (X := X)) chartCover_nonempty
+  HolomorphicOneForms.supNormOn_zero ((chartCover : Finset X)) chartCover_nonempty
 
-/-! ### Step 1h: behavior of `localRep` under the vector space operations -/
+/-! ### Step 1h: shrunken (compact) chart cover
+
+For each `x` in `chartCover`, we need a COMPACT subset `K_x ⊂ baseSet_x`
+such that the collection `{K_x}` still covers X. Apply the shrinking
+lemma (available since X is compact T2 and locally compact as a
+charted space over ℂ).
+
+Status: done — `shrunkChart` gives the compact shrinkage. -/
+
+open Classical in
+/-- Auxiliary open family for the shrinking lemma: chart source at x if
+`x ∈ chartCover`, else `∅`. -/
+private noncomputable def coverOpen (x : X) : Set X :=
+  if x ∈ (chartCover : Finset X) then (chartAt ℂ x).source else ∅
+
+private theorem coverOpen_isOpen (x : X) : IsOpen (coverOpen (X := X) x) := by
+  unfold coverOpen
+  by_cases hx : x ∈ (chartCover : Finset X)
+  · rw [if_pos hx]; exact (chartAt ℂ x).open_source
+  · rw [if_neg hx]; exact isOpen_empty
+
+private theorem iUnion_coverOpen_eq :
+    (⋃ x : X, coverOpen (X := X) x) = Set.univ := by
+  apply Set.eq_univ_of_univ_subset
+  rw [← chartCover_cover (X := X)]
+  intro y hy
+  simp only [Set.mem_iUnion, Set.mem_setOf_eq] at hy
+  obtain ⟨x₀, hx₀cover, hx₀src⟩ := hy
+  refine Set.mem_iUnion.mpr ⟨x₀, ?_⟩
+  unfold coverOpen
+  rw [if_pos hx₀cover]
+  exact hx₀src
+
+private theorem coverOpen_locallyFinite (y : X) :
+    {x | y ∈ coverOpen (X := X) x}.Finite := by
+  apply Set.Finite.subset ((chartCover : Finset X)).finite_toSet
+  intro x hx
+  simp only [Set.mem_setOf_eq] at hx
+  unfold coverOpen at hx
+  by_contra hxmem
+  rw [if_neg (by simpa [Finset.mem_coe] using hxmem)] at hx
+  exact absurd hx (Set.notMem_empty y)
+
+/-- Shrinking lemma applied to `coverOpen`: gives a closed family
+`shrunkChart` with `shrunkChart x ⊆ coverOpen x` and still covering X. -/
+private theorem exists_compact_shrink :
+    ∃ K : X → Set X, (⋃ x, K x) = Set.univ ∧
+      (∀ x, IsClosed (K x)) ∧ (∀ x, K x ⊆ coverOpen (X := X) x) :=
+  exists_iUnion_eq_closed_subset coverOpen_isOpen coverOpen_locallyFinite
+    iUnion_coverOpen_eq
+
+/-- A specific compact shrinkage of the `coverOpen` family. -/
+noncomputable def shrunkChart (x : X) : Set X :=
+  Classical.choose (exists_compact_shrink (X := X)) x
+
+theorem iUnion_shrunkChart_eq : (⋃ x : X, shrunkChart (X := X) x) = Set.univ :=
+  (Classical.choose_spec (exists_compact_shrink (X := X))).1
+
+theorem shrunkChart_isClosed (x : X) : IsClosed (shrunkChart (X := X) x) :=
+  (Classical.choose_spec (exists_compact_shrink (X := X))).2.1 x
+
+theorem shrunkChart_isCompact (x : X) : IsCompact (shrunkChart (X := X) x) :=
+  (shrunkChart_isClosed x).isCompact
+
+/-- `shrunkChart x ⊆ (chartAt ℂ x).source` when `x ∈ chartCover`. -/
+theorem shrunkChart_subset_source (x : X) (hx : x ∈ (chartCover : Finset X)) :
+    shrunkChart (X := X) x ⊆ (chartAt ℂ x).source := by
+  have h := (Classical.choose_spec (exists_compact_shrink (X := X))).2.2 x
+  intro y hy
+  have hyc := h hy
+  unfold coverOpen at hyc
+  rw [if_pos hx] at hyc
+  exact hyc
+
+/-- For x ∉ chartCover, the shrunkChart is empty. -/
+theorem shrunkChart_eq_empty (x : X) (hx : x ∉ (chartCover : Finset X)) :
+    shrunkChart (X := X) x = ∅ := by
+  have h := (Classical.choose_spec (exists_compact_shrink (X := X))).2.2 x
+  apply Set.eq_empty_iff_forall_notMem.mpr
+  intro y hy
+  have hyc := h hy
+  unfold coverOpen at hyc
+  rw [if_neg hx] at hyc
+  exact hyc
+
+/-- Restricted cover: the shrunkCharts indexed by `chartCover` still cover X. -/
+theorem iUnion_shrunkChart_chartCover_eq :
+    (⋃ x ∈ (chartCover : Finset X), shrunkChart (X := X) x) = Set.univ := by
+  apply Set.eq_univ_of_univ_subset
+  rw [← iUnion_shrunkChart_eq (X := X)]
+  intro y hy
+  simp only [Set.mem_iUnion] at hy ⊢
+  obtain ⟨x, hxy⟩ := hy
+  by_cases hxmem : x ∈ (chartCover : Finset X)
+  · exact ⟨x, hxmem, hxy⟩
+  · exfalso
+    rw [shrunkChart_eq_empty x hxmem] at hxy
+    exact hxy
+
+/-! ### Step 1i: behavior of `localRep` under the vector space operations -/
 
 omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- `localRep` is additive: `localRep (α + β) = localRep α + localRep β`. -/
