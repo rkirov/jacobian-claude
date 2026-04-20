@@ -5,6 +5,7 @@ import Mathlib.Analysis.Calculus.ContDiff.Defs
 import Mathlib.Analysis.Complex.Liouville
 import Mathlib.Topology.MetricSpace.Thickening
 import Mathlib.Analysis.Normed.Module.RCLike.Real
+import Mathlib.Analysis.Calculus.MeanValue
 
 /-!
 # Montel path — compactness of the closed unit ball (work in progress)
@@ -337,13 +338,44 @@ theorem exists_cauchy_deriv_bound
   calc ‖deriv f z‖ ≤ C / δ := hcd
     _ = 1 / δ * C := by ring
 
-/-! ### Next steps (scheduled, not implemented here)
+/-! ### Step B.5 — Uniform Lipschitz bound on convex compacta
 
-**B.5** `equicontinuous_of_bounded` — combine B.3 + B.4 to get a
-uniform Lipschitz bound for the family `{localRep α x₀ ∘
-(chartAt …).symm : ‖α‖ ≤ M}` on a compact subset of the chart target.
-Then equicontinuity follows by MVT on segments (or local Lipschitz via
-ball-covering). Pure complex analysis.
+Combining B.4's uniform derivative bound with the mean-value inequality
+on a convex set gives a uniform Lipschitz bound for the family of
+analytic functions on `U` uniformly bounded by `C`, restricted to any
+**convex** compact `K ⊂ U`:
+
+  `‖f z - f w‖ ≤ L · C · ‖z - w‖`   for z, w ∈ K,
+
+with `L = 1/δ` depending only on `U`, `K`.
+
+Convexity of `K` is required for the mean-value inequality
+(`Convex.norm_image_sub_le_of_norm_hasDerivWithin_le`). A general
+compact `K ⊂ U` can be covered by finitely many closed balls inside
+`U`; equicontinuity then transfers from each ball to `K`. For our
+downstream Arzelà–Ascoli use, applying this to a closed ball `closedBall
+z₀ r` (convex) strictly inside the chart target is sufficient — the
+closedBall form is what will bridge to the manifold side. -/
+
+/-- Uniform Lipschitz bound for a family of analytic functions bounded
+on an open set, restricted to a convex compact subset. -/
+theorem exists_cauchy_lipschitz_bound
+    {U K : Set ℂ} (hU : IsOpen U) (hKcpt : IsCompact K) (hKU : K ⊆ U)
+    (hKconv : Convex ℝ K) :
+    ∃ L : ℝ, 0 < L ∧ ∀ (f : ℂ → ℂ), AnalyticOn ℂ f U → ∀ C : ℝ,
+      (∀ z ∈ U, ‖f z‖ ≤ C) → ∀ z ∈ K, ∀ w ∈ K, ‖f z - f w‖ ≤ L * C * ‖z - w‖ := by
+  obtain ⟨L, hLpos, hLbd⟩ := exists_cauchy_deriv_bound hU hKcpt hKU
+  refine ⟨L, hLpos, fun f hf C hfb z hz w hw => ?_⟩
+  have hderBnd : ∀ x ∈ K, ‖deriv f x‖ ≤ L * C := hLbd f hf C hfb
+  have hhasDer : ∀ x ∈ K, HasDerivWithinAt f (deriv f x) K x := by
+    intro x hx
+    have hx_in_U : x ∈ U := hKU hx
+    have hdiff : DifferentiableAt ℂ f x :=
+      (hf.differentiableOn x hx_in_U).differentiableAt (hU.mem_nhds hx_in_U)
+    exact hdiff.hasDerivAt.hasDerivWithinAt
+  exact Convex.norm_image_sub_le_of_norm_hasDerivWithin_le hhasDer hderBnd hKconv hw hz
+
+/-! ### Next steps (scheduled, not implemented here)
 
 **B.6** `closedBall_relativelyCompact` — Arzelà–Ascoli assembly on each
 `C(shrunkChart x₀, ℂ)`, then finite product.
