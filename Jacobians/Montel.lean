@@ -219,20 +219,14 @@ noncomputable def HolomorphicOneForms.supNorm
 
 /-! ### Step 1g: basic norm properties -/
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- Chart-local sup-norm is non-negative. -/
 theorem HolomorphicOneForms.chartNorm_nonneg
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (x₀ : X) :
-    0 ≤ HolomorphicOneForms.chartNorm α x₀ := by
-  unfold HolomorphicOneForms.chartNorm
-  -- ⨆ y, ‖localRep α x₀ y‖ ≥ 0 since each term is ≥ 0.
-  obtain ⟨y₀⟩ := (inferInstance : Nonempty X)
-  exact le_ciSup_of_le (by
-    -- Need BddAbove of the range. This isn't automatic; we use that
-    -- `localRep α x₀` is locally continuous and X is compact, so
-    -- bounded. For now this is deferred.
-    sorry) y₀ (norm_nonneg _)
+    0 ≤ HolomorphicOneForms.chartNorm α x₀ :=
+  Real.iSup_nonneg (fun _ => norm_nonneg _)
 
 omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- Chart-local sup-norm of zero is zero. -/
