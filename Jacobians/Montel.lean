@@ -246,6 +246,26 @@ theorem HolomorphicOneForms.supNormOn_zero (s : Finset X) (hs : s.Nonempty) :
   unfold HolomorphicOneForms.supNormOn
   simp [HolomorphicOneForms.chartNorm_zero]
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+/-- `supNormOn` is non-negative. -/
+theorem HolomorphicOneForms.supNormOn_nonneg
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (s : Finset X) (hs : s.Nonempty) :
+    0 ≤ HolomorphicOneForms.supNormOn α s hs := by
+  unfold HolomorphicOneForms.supNormOn
+  obtain ⟨x₀, hx₀⟩ := hs
+  exact le_trans (HolomorphicOneForms.chartNorm_nonneg α x₀)
+    (Finset.le_sup' _ hx₀)
+
+omit [T2Space X] [ConnectedSpace X] in
+/-- `supNorm` is non-negative. -/
+theorem HolomorphicOneForms.supNorm_nonneg
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) :
+    0 ≤ HolomorphicOneForms.supNorm α :=
+  HolomorphicOneForms.supNormOn_nonneg α _ _
+
 omit [T2Space X] [ConnectedSpace X] in
 /-- `supNorm` of zero is zero. -/
 theorem HolomorphicOneForms.supNorm_zero :
