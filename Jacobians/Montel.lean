@@ -244,10 +244,27 @@ theorem HolomorphicOneForms.chartNorm_zero (x₀ : X) :
     ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)‖ : ℝ) = 0
   simp
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
+/-- `supNormOn` of zero is zero. -/
+theorem HolomorphicOneForms.supNormOn_zero (s : Finset X) (hs : s.Nonempty) :
+    HolomorphicOneForms.supNormOn (0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) s hs = 0 := by
+  unfold HolomorphicOneForms.supNormOn
+  simp [HolomorphicOneForms.chartNorm_zero]
+
+omit [T2Space X] [ConnectedSpace X] in
+/-- `supNorm` of zero is zero. -/
+theorem HolomorphicOneForms.supNorm_zero :
+    HolomorphicOneForms.supNorm (0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) = 0 :=
+  HolomorphicOneForms.supNormOn_zero (chartCover (X := X)) chartCover_nonempty
+
 /-! ### Next
 
 - [ ] Boundedness of `localRep α x₀` on X (via compactness).
-- [ ] Prove `supNorm = 0 ↔ α = 0` (positive-definiteness).
+- [ ] Prove `supNorm α ≥ 0`.
+- [ ] Prove `supNorm = 0 → α = 0` (positive-definiteness, the hard
+      direction — needs that cover covers X AND continuity).
 - [ ] Prove triangle + scalar mult compat.
 - [ ] NormedAddCommGroup instance.
 - [ ] Cauchy estimates on `localRep` (holomorphic functions in chart).
