@@ -656,11 +656,71 @@ theorem HolomorphicOneForms.chartNormK_smul (c : ℂ)
       _ = HolomorphicOneForms.chartNormK (c • α) x₀ := by
           rw [← mul_assoc, mul_inv_cancel₀ hcpos.ne', one_mul]
 
+/-! ### Step 1l: assembled sup-norm over the finite chart cover -/
+
+/-- The assembled sup-norm on `HolomorphicOneForms X`: sup over `chartCover` of
+per-chart `chartNormK`. -/
+noncomputable def HolomorphicOneForms.supNormK
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) : ℝ :=
+  (chartCover : Finset X).sup' (chartCover_nonempty)
+    (fun x₀ => HolomorphicOneForms.chartNormK α x₀)
+
+omit [ConnectedSpace X] in
+/-- `supNormK` is non-negative. -/
+theorem HolomorphicOneForms.supNormK_nonneg
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) :
+    0 ≤ HolomorphicOneForms.supNormK α := by
+  unfold HolomorphicOneForms.supNormK
+  obtain ⟨x₀, hx₀⟩ := chartCover_nonempty (X := X)
+  exact le_trans (HolomorphicOneForms.chartNormK_nonneg α x₀)
+    (Finset.le_sup' _ hx₀)
+
+omit [ConnectedSpace X] in
+/-- `supNormK` of zero is zero. -/
+theorem HolomorphicOneForms.supNormK_zero :
+    HolomorphicOneForms.supNormK (0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) = 0 := by
+  unfold HolomorphicOneForms.supNormK
+  simp [HolomorphicOneForms.chartNormK_zero]
+
+omit [ConnectedSpace X] in
+/-- Triangle inequality for `supNormK`: `supNormK (α+β) ≤ supNormK α + supNormK β`. -/
+theorem HolomorphicOneForms.supNormK_add_le
+    (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) :
+    HolomorphicOneForms.supNormK (α + β) ≤
+      HolomorphicOneForms.supNormK α + HolomorphicOneForms.supNormK β := by
+  unfold HolomorphicOneForms.supNormK
+  rw [Finset.sup'_le_iff]
+  intro x₀ hx₀
+  calc HolomorphicOneForms.chartNormK (α + β) x₀
+      ≤ HolomorphicOneForms.chartNormK α x₀ +
+        HolomorphicOneForms.chartNormK β x₀ :=
+        HolomorphicOneForms.chartNormK_add_le α β x₀
+    _ ≤ (chartCover : Finset X).sup' chartCover_nonempty
+          (fun y => HolomorphicOneForms.chartNormK α y) +
+        (chartCover : Finset X).sup' chartCover_nonempty
+          (fun y => HolomorphicOneForms.chartNormK β y) :=
+        add_le_add (Finset.le_sup' _ hx₀) (Finset.le_sup' _ hx₀)
+
+omit [ConnectedSpace X] in
+/-- Homogeneity of `supNormK`: `supNormK (c • α) = ‖c‖ * supNormK α`. -/
+theorem HolomorphicOneForms.supNormK_smul (c : ℂ)
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) :
+    HolomorphicOneForms.supNormK (c • α) = ‖c‖ * HolomorphicOneForms.supNormK α := by
+  unfold HolomorphicOneForms.supNormK
+  have hrw : (fun x₀ : X => HolomorphicOneForms.chartNormK (c • α) x₀) =
+      fun x₀ => ‖c‖ * HolomorphicOneForms.chartNormK α x₀ := by
+    funext x₀; exact HolomorphicOneForms.chartNormK_smul c α x₀
+  rw [hrw, ← Finset.mul₀_sup' (norm_nonneg c) _ _ chartCover_nonempty]
+
 /-! ### Next
 
 - [ ] Prove `chartNormK_eq_zero → localRep α x₀ = 0` on `shrunkChart x₀`.
-- [ ] Assemble `supNorm α := sup over chartCover of chartNormK α x`.
-- [ ] `supNorm_eq_zero → α = 0` (via localRep-determines-α on each chart).
+- [ ] `supNormK_eq_zero → α = 0` (via localRep-determines-α on each chart).
 - [ ] NormedAddCommGroup instance.
 - [ ] Cauchy estimates on `localRep` (holomorphic functions in chart).
 - [ ] Equicontinuity of bounded families.
