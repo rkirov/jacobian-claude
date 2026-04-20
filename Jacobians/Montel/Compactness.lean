@@ -105,6 +105,48 @@ theorem localRepOnShrunk_apply
   unfold localRepOnShrunk
   simp [hx₀]
 
+/-! ### Step B.2 — pointwise norm bound on `localRepOnShrunk`
+
+Under the `ContinuousMap.norm = sSup` identity on a compact `CompactSpace`,
+the bundled form `localRepOnShrunk α x₀` has norm exactly `chartNormK α x₀`
+— it bounds above by `supNormK α = ‖α‖`, establishing the component-wise
+uniform bound on the image of the closed unit ball.
+
+We avoid packaging the full product embedding `HOF X →L[ℂ] Π …` here
+because the component-wise bound is what downstream Arzelà–Ascoli
+actually consumes; product-norm bookkeeping adds complexity without
+unlocking new content. -/
+
+omit [ConnectedSpace X] in
+/-- Component-wise bound: for `x₀ ∈ chartCover`, the bundled continuous
+map `localRepOnShrunk α x₀` on the compact shrunk chart has norm ≤ the
+global Montel sup-norm `supNormK α`. -/
+theorem norm_localRepOnShrunk_le_supNormK
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    letI := shrunkChart_compactSpace (X := X) x₀
+    ‖localRepOnShrunk α x₀‖ ≤ HolomorphicOneForms.supNormK α := by
+  letI := shrunkChart_compactSpace (X := X) x₀
+  -- Non-empty vs empty shrunkChart split.
+  by_cases hne : Nonempty (shrunkChart (X := X) x₀)
+  · haveI := hne
+    refine (ContinuousMap.norm_le_of_nonempty _).mpr ?_
+    intro y
+    have hy : (y : X) ∈ shrunkChart (X := X) x₀ := y.2
+    calc ‖localRepOnShrunk α x₀ y‖
+        = ‖localRep α x₀ (y : X)‖ := by
+          rw [localRepOnShrunk_apply α hx₀ y]
+      _ ≤ HolomorphicOneForms.supNormK α :=
+          HolomorphicOneForms.norm_localRep_le_supNormK α hx₀ hy
+  · -- Empty shrunk chart ⇒ ‖·‖ = 0 ≤ supNormK α.
+    rw [not_nonempty_iff] at hne
+    have h0 : localRepOnShrunk α x₀ = 0 := by
+      ext y
+      exact (hne.false y).elim
+    rw [h0, norm_zero]
+    exact HolomorphicOneForms.supNormK_nonneg α
+
 /-! ### Next steps (scheduled, not implemented here)
 
 - **B.2** `localRepEmbedding : HOF X →L[ℂ] Π x₀ ∈ chartCover,
