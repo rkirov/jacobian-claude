@@ -2,6 +2,9 @@ import Jacobians.Montel.SupNorm
 import Mathlib.Topology.ContinuousMap.Compact
 import Mathlib.Topology.ContinuousMap.Bounded.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Defs
+import Mathlib.Analysis.Complex.Liouville
+import Mathlib.Topology.MetricSpace.Thickening
+import Mathlib.Analysis.Normed.Module.RCLike.Real
 
 /-!
 # Montel path — compactness of the closed unit ball (work in progress)
@@ -248,7 +251,7 @@ theorem localRep_contMDiffOn
     simp [Bundle.Trivial.trivialization]
   exact h.congr (fun x _ => heqPt x) (heqPt y)
 
-omit [ConnectedSpace X] [Nonempty X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- **Step B.3 — the holomorphicity bridge.**
 In chart coordinates at `x₀`, the local representative of a holomorphic
 1-form α is analytic on the chart target.
@@ -297,19 +300,50 @@ theorem localRep_analyticOn_chartTarget
   -- Step 3: ContDiffOn ω ↔ AnalyticOn via UniqueDiffOn on open set.
   exact (contDiffOn_omega_iff_analyticOn (chartAt ℂ x₀).open_target.uniqueDiffOn).mp hCD
 
+/-! ### Step B.4 — Cauchy estimate: uniform derivative bound on compacta
+
+Pure complex analysis (no bundles). For an analytic function `f : ℂ → ℂ`
+on an open set `U`, bounded by `C` on `U`, the derivative is bounded by
+`L · C` on any compact `K ⊂ U`, where `L = 1/δ` and `δ > 0` is a
+thickening radius with `cthickening δ K ⊆ U` (which exists by
+`IsCompact.exists_cthickening_subset_open`).
+
+The derivative bound `L` depends only on `U` and `K`, not on `f`, so
+this lemma directly yields **uniform** derivative bounds for families
+of analytic functions — precisely what Arzelà–Ascoli needs. -/
+
+/-- Cauchy estimate on a compact subset of an open set: for `f`
+analytic on `U` with `‖f‖ ≤ C`, `‖deriv f z‖ ≤ L · C` for all `z ∈ K`,
+with `L = 1/δ` depending only on `K ⊂ U`. -/
+theorem exists_cauchy_deriv_bound
+    {U K : Set ℂ} (hU : IsOpen U) (hKcpt : IsCompact K) (hKU : K ⊆ U) :
+    ∃ L : ℝ, 0 < L ∧ ∀ (f : ℂ → ℂ), AnalyticOn ℂ f U → ∀ C : ℝ,
+      (∀ z ∈ U, ‖f z‖ ≤ C) → ∀ z ∈ K, ‖deriv f z‖ ≤ L * C := by
+  obtain ⟨δ, hδpos, hδsub⟩ := hKcpt.exists_cthickening_subset_open hU hKU
+  refine ⟨1 / δ, by positivity, fun f hf C hfb z hz => ?_⟩
+  have hclosedBall : Metric.closedBall z δ ⊆ U := by
+    have h1 : Metric.closedBall z δ ⊆ Metric.cthickening δ K := by
+      intro w hw
+      rw [hKcpt.cthickening_eq_biUnion_closedBall hδpos.le]
+      exact Set.mem_biUnion hz hw
+    exact h1.trans hδsub
+  have hAnalBall : AnalyticOn ℂ f (Metric.closedBall z δ) := hf.mono hclosedBall
+  have hdcoc : DiffContOnCl ℂ f (Metric.ball z δ) :=
+    ⟨(hAnalBall.mono Metric.ball_subset_closedBall).differentiableOn,
+     by rw [closure_ball z hδpos.ne']; exact hAnalBall.continuousOn⟩
+  have hsphere : ∀ w ∈ Metric.sphere z δ, ‖f w‖ ≤ C := fun w hw =>
+    hfb w (hclosedBall (Metric.sphere_subset_closedBall hw))
+  have hcd := Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hδpos hdcoc hsphere
+  calc ‖deriv f z‖ ≤ C / δ := hcd
+    _ = 1 / δ * C := by ring
+
 /-! ### Next steps (scheduled, not implemented here)
 
-**B.4** `cauchy_estimate` — derivative bound for analytic functions on
-a compact shrinkage. Mathlib's key lemma:
-`Complex.norm_deriv_le_of_forall_mem_sphere_norm_le`:
-  `0 < R → DiffContOnCl ℂ f (ball c R) → (∀ z ∈ sphere c R, ‖f z‖ ≤ C)
-     → ‖deriv f c‖ ≤ C / R`.
-From this, derive uniform Lipschitz bounds on the pullback over a
-slightly-shrunk set, uniformly in α on the closed unit ball (using B.3).
-
-**B.5** `equicontinuous_of_bounded` — combine B.3 + B.4. Pure complex
-analysis: bounded derivative ⇒ locally Lipschitz ⇒ equicontinuous on
-compacta.
+**B.5** `equicontinuous_of_bounded` — combine B.3 + B.4 to get a
+uniform Lipschitz bound for the family `{localRep α x₀ ∘
+(chartAt …).symm : ‖α‖ ≤ M}` on a compact subset of the chart target.
+Then equicontinuity follows by MVT on segments (or local Lipschitz via
+ball-covering). Pure complex analysis.
 
 **B.6** `closedBall_relativelyCompact` — Arzelà–Ascoli assembly on each
 `C(shrunkChart x₀, ℂ)`, then finite product.
