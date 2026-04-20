@@ -553,6 +553,15 @@ theorem HolomorphicOneForms.chartNormK_bddAbove
     simp [BddAbove, Set.image_empty]
 
 omit [ConnectedSpace X] [Nonempty X] in
+/-- Pointwise bound: `‖localRep α x₀ y‖ ≤ chartNormK α x₀` for y ∈ shrunkChart. -/
+theorem HolomorphicOneForms.norm_localRep_le_chartNormK
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) {y : X} (hy : y ∈ shrunkChart (X := X) x₀) :
+    ‖localRep α x₀ y‖ ≤ HolomorphicOneForms.chartNormK α x₀ :=
+  le_csSup (HolomorphicOneForms.chartNormK_bddAbove α x₀) ⟨y, hy, rfl⟩
+
+omit [ConnectedSpace X] [Nonempty X] in
 /-- `chartNormK` of the zero section is zero. -/
 theorem HolomorphicOneForms.chartNormK_zero (x₀ : X) :
     HolomorphicOneForms.chartNormK
@@ -696,6 +705,29 @@ theorem HolomorphicOneForms.supNormK_nonneg
   obtain ⟨x₀, hx₀⟩ := chartCover_nonempty (X := X)
   exact le_trans (HolomorphicOneForms.chartNormK_nonneg α x₀)
     (Finset.le_sup' _ hx₀)
+
+omit [ConnectedSpace X] in
+/-- Chart-local bound via supNormK: `chartNormK α x₀ ≤ supNormK α`
+when `x₀ ∈ chartCover`. -/
+theorem HolomorphicOneForms.chartNormK_le_supNormK
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    HolomorphicOneForms.chartNormK α x₀ ≤ HolomorphicOneForms.supNormK α := by
+  unfold HolomorphicOneForms.supNormK
+  exact Finset.le_sup' _ hx₀
+
+omit [ConnectedSpace X] in
+/-- Pointwise bound via `supNormK`: `‖localRep α x₀ y‖ ≤ supNormK α`
+when `x₀ ∈ chartCover` and `y ∈ shrunkChart x₀`. -/
+theorem HolomorphicOneForms.norm_localRep_le_supNormK
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    {y : X} (hy : y ∈ shrunkChart (X := X) x₀) :
+    ‖localRep α x₀ y‖ ≤ HolomorphicOneForms.supNormK α :=
+  le_trans (HolomorphicOneForms.norm_localRep_le_chartNormK α x₀ hy)
+    (HolomorphicOneForms.chartNormK_le_supNormK α hx₀)
 
 omit [ConnectedSpace X] in
 /-- `supNormK` of zero is zero. -/
