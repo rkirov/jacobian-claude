@@ -1,5 +1,35 @@
 # Project status (auto-maintained)
 
+## Montel Step 1 — COMPLETE (as of 2026-04-21 session)
+
+`HolomorphicOneForms X` now carries a proper `NormedAddCommGroup` +
+`NormedSpace ℂ` structure (non-instance, reducible defs in
+`Jacobians/Montel.lean`). The approach used is the classical
+Ahlfors–Sario chart-atlas / compact-shrinking construction:
+
+- `chartCover` — finite chart cover of compact X (via Heine-Borel).
+- `shrunkChart` — compact refinement via the shrinking lemma
+  (`exists_iUnion_eq_closed_subset`, NormalSpace auto-instance on
+  compact T2).
+- `localRep α x₀ y` — chart-local scalar representative of α via
+  trivialization inverse at `x₀`.
+- `chartNormK` — per-chart bounded sup-norm (sSup of `‖localRep ·‖`
+  over compact `shrunkChart`, with boundedness from continuity +
+  compactness).
+- `supNormK α` — global norm as `Finset.sup'` of `chartNormK` over
+  `chartCover`.
+- Seminorm axioms proven: nonneg, zero, triangle, full homogeneity
+  (including the c = 0 edge case), negation invariance.
+- Positive-definiteness (`eq_zero_of_supNormK_eq_zero`) via the key
+  geometric content: `T_y X ≃L[ℂ] ℂ` on the trivialization base set,
+  so `e.symmL ℂ y 1` spans `T_y X` (1-dim over ℂ); α vanishing there
+  ⇒ α.toFun y = 0 as a CLM (via `ContinuousLinearMap.ext_ring`).
+- Packaged via `AddGroupNorm.toNormedAddCommGroup` and `NormedSpace.mk`.
+
+Remaining Montel steps 2+ (Cauchy estimates, equicontinuity, Arzelà–Ascoli,
+Riesz to FiniteDimensional) are stubbed with sorry-free `True`-returning
+scaffolding theorems; their bodies are dedicated future work.
+
 ## Headline
 
 **Challenge sorry count: 24 → 3.** Infrastructure is complete; every
