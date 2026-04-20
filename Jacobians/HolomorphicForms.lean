@@ -274,15 +274,6 @@ noncomputable def ambientIso (X : Type*) [TopologicalSpace X] [T2Space X]
   (Module.finBasisOfFinrankEq ℂ (HolomorphicOneForms X)
     (finrank_HolomorphicOneForms_eq_genus X)).equivFun.symm
 
-/-- **TODO(math)**: the ambient ℂ-linear map `Φ` induced by the pushforward
-of forms along `f : X → Y`. Concretely `(ambientIso Y).symm ∘
-pushforwardForm f hf ∘ ambientIso X`. Upgraded from `→L[ℝ]` to `→L[ℂ]`
-so that `pushforward_contMDiff` is provable: ℂ-linearity gives
-`ContDiff ℂ ω Φ`, required for smoothness over the ℂ model. -/
-noncomputable def ambientPhi {gX gY : ℕ}
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    (Fin gX → ℂ) →L[ℂ] (Fin gY → ℂ) := sorry
-
 /-- The ambient ℂ-linear map `Ψ` induced by the pullback of forms along
 `f : X → Y`. Defined via `ambientIso` + `pullbackForm`:
 `Ψ = (ambientIso X).symm ∘ pullbackForm f hf ∘ ambientIso Y` (when the
@@ -304,29 +295,17 @@ noncomputable def ambientPsi {gX gY : ℕ}
     · exact 0
   · exact 0
 
-/-- **TODO(math)**: the ambient degree identity, dualized from
-`pushforwardForm_pullbackForm_eq`. -/
-theorem ambientPhi_ambientPsi_eq {gX gY : ℕ}
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (d : ℕ)
-    (y : Fin gY → ℂ) :
-    ambientPhi (gX := gX) (gY := gY) f hf (ambientPsi f hf y) = (d : ℕ) • y := sorry
-
-/-- **TODO(math)**: `ambientPhi id = id` (dualizes `pullbackForm_id`). -/
-theorem ambientPhi_id {g : ℕ} (x : Fin g → ℂ) :
-    ambientPhi (X := X) (Y := X) (gX := g) (gY := g) id contMDiff_id x = x := sorry
-
-/-- **TODO(math)**: covariant composition: `ambientPhi (g ∘ f) =
-ambientPhi g ∘ ambientPhi f`. -/
-theorem ambientPhi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
-    [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
-    {gX gY gZ : ℕ}
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
-    (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f))
-    (x : Fin gX → ℂ) :
-    ambientPhi (gX := gX) (gY := gZ) (g ∘ f) hgf x =
-      ambientPhi (gX := gY) (gY := gZ) g hg
-        (ambientPhi (gX := gX) (gY := gY) f hf x) := sorry
+/-- The ambient ℂ-linear map `Φ` induced by the pushforward of forms along
+`f : X → Y`. Defined as the matrix-transpose of `ambientPsi f hf` (via
+the standard Pi basis), dodging the need for a concrete `pushforwardForm`.
+The transpose reverses composition order, so covariant `ambientPhi_comp`
+is automatic from contravariant `ambientPsi_comp`. -/
+noncomputable def ambientPhi {gX gY : ℕ}
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    (Fin gX → ℂ) →L[ℂ] (Fin gY → ℂ) :=
+  LinearMap.toContinuousLinearMap
+    (LinearMap.toMatrix (Pi.basisFun ℂ (Fin gY)) (Pi.basisFun ℂ (Fin gX))
+        (ambientPsi f hf).toLinearMap).transpose.mulVecLin
 
 /-- `ambientPsi id = id`. Proven via `pullbackForm_id`. -/
 theorem ambientPsi_id (y : Fin (genus X) → ℂ) :
@@ -355,6 +334,49 @@ theorem ambientPsi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpa
       ((pullbackForm (g ∘ f) hgf).comp (ambientIso Z).toLinearMap))) z = _
   rw [pullbackForm_comp f hf g hg hgf]
   simp [LinearMap.comp_apply, LinearEquiv.symm_apply_apply]
+
+/-- **TODO(math)**: the ambient degree identity, dualized from
+`pushforwardForm_pullbackForm_eq`. -/
+theorem ambientPhi_ambientPsi_eq {gX gY : ℕ}
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (d : ℕ)
+    (y : Fin gY → ℂ) :
+    ambientPhi (gX := gX) (gY := gY) f hf (ambientPsi f hf y) = (d : ℕ) • y := sorry
+
+/-- `ambientPhi id = id` — follows from `ambientPsi_id` via the transpose
+construction: transpose of identity matrix is identity. -/
+theorem ambientPhi_id (x : Fin (genus X) → ℂ) :
+    ambientPhi (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id x = x := by
+  have hpsi : ambientPsi (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id
+      = ContinuousLinearMap.id ℂ (Fin (genus X) → ℂ) :=
+    ContinuousLinearMap.ext (fun y => ambientPsi_id y)
+  unfold ambientPhi
+  rw [show (ambientPsi (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id).toLinearMap
+      = LinearMap.id (R := ℂ) (M := Fin (genus X) → ℂ) from by rw [hpsi]; rfl]
+  simp [LinearMap.toMatrix_id, Matrix.transpose_one, Matrix.mulVecLin_one]
+
+/-- Covariant composition: `ambientPhi (g ∘ f) = ambientPhi g ∘ ambientPhi f`.
+Follows from `ambientPsi_comp` via matrix transpose reversing composition order. -/
+theorem ambientPhi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+    [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
+    (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f))
+    (x : Fin (genus X) → ℂ) :
+    ambientPhi (gX := genus X) (gY := genus Z) (g ∘ f) hgf x =
+      ambientPhi (gX := genus Y) (gY := genus Z) g hg
+        (ambientPhi (gX := genus X) (gY := genus Y) f hf x) := by
+  have hpsi : ambientPsi (gX := genus X) (gY := genus Z) (g ∘ f) hgf =
+      (ambientPsi (gX := genus X) (gY := genus Y) f hf).comp
+        (ambientPsi (gX := genus Y) (gY := genus Z) g hg) :=
+    ContinuousLinearMap.ext (fun z => ambientPsi_comp f hf g hg hgf z)
+  unfold ambientPhi
+  rw [show (ambientPsi (gX := genus X) (gY := genus Z) (g ∘ f) hgf).toLinearMap =
+      (ambientPsi (gX := genus X) (gY := genus Y) f hf).toLinearMap ∘ₗ
+      (ambientPsi (gX := genus Y) (gY := genus Z) g hg).toLinearMap from by rw [hpsi]; rfl]
+  rw [LinearMap.toMatrix_comp (Pi.basisFun ℂ (Fin (genus Z))) (Pi.basisFun ℂ (Fin (genus Y)))
+    (Pi.basisFun ℂ (Fin (genus X)))]
+  rw [Matrix.transpose_mul, Matrix.mulVecLin_mul]
+  rfl
 
 end AmbientBridge
 
