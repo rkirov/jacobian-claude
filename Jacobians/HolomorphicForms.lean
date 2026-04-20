@@ -41,34 +41,9 @@ namespace Jacobians
 
 open scoped Manifold ContDiff Bundle
 
-/-- The ℂ-vector space of global analytic sections of the cotangent bundle
-of a compact connected complex 1-manifold.
-
-Mathematically: global holomorphic 1-forms on `X`. The cotangent bundle
-is built as `Bundle.ContinuousLinearMap (RingHom.id ℂ) (TangentSpace,
-Bundle.Trivial X ℂ)` — the fiberwise continuous linear maps from
-tangent to trivial-ℂ-bundle. -/
-def HolomorphicOneForms (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type _ :=
-  ContMDiffSection 𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω
-    (fun x : X => TangentSpace 𝓘(ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)
-
-section Instances
-
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-noncomputable instance : AddCommGroup (HolomorphicOneForms X) :=
-  inferInstanceAs (AddCommGroup
-    (ContMDiffSection 𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)))
-
-noncomputable instance : Module ℂ (HolomorphicOneForms X) :=
-  inferInstanceAs (Module ℂ
-    (ContMDiffSection 𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)))
-
-end Instances
+-- `HolomorphicOneForms` and its `AddCommGroup` / `Module ℂ` instances are
+-- defined in `Jacobians.Genus` (to allow `genus X := finrank ℂ (HOF X)`
+-- without a circular import).
 
 section Curve
 
@@ -80,10 +55,11 @@ of global holomorphic 1-forms is finite-dimensional. (Cartan–Serre
 applied to the sheaf `Ω¹_X`.) -/
 noncomputable instance : FiniteDimensional ℂ (HolomorphicOneForms X) := sorry
 
-/-- **TODO(math)**: dimension of holomorphic 1-forms = genus.
-Riemann–Roch / Dolbeault on a compact connected complex 1-manifold. -/
+/-- Dimension of holomorphic 1-forms = genus. With `genus X` defined as
+`Module.finrank ℂ (HolomorphicOneForms X)` (see `Jacobians.Genus`), this
+is `rfl`. -/
 theorem finrank_HolomorphicOneForms_eq_genus :
-    Module.finrank ℂ (HolomorphicOneForms X) = genus X := sorry
+    Module.finrank ℂ (HolomorphicOneForms X) = genus X := rfl
 
 end Curve
 
