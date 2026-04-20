@@ -248,9 +248,283 @@ noncomputable instance instIsManifoldQuotient :
     Set.inter_univ, OpenPartialHomeomorph.symm_symm]
   exact transition_contDiffOn_of_agrees_with_mk Λ P₁ P₂ hP₁ hP₂
 
+/-! ### Section lemma: `P.symm ∘ mk` is analytic on `mk ⁻¹ P.target`
+
+Given any `P : OpenPartialHomeomorph E (E ⧸ Λ)` agreeing with `mk`, the
+composition `y ↦ P.symm (mk y)` is `ContDiffOn 𝕜 n` on the preimage of
+`P.target`. This is the core ingredient for `LieAddGroup`: chart pullbacks
+of the group operations on `E ⧸ Λ` factor through this map composed with
+operations on `E`. -/
+
+theorem contDiffOn_symm_mk
+    (P : OpenPartialHomeomorph E (E ⧸ Λ.toAddSubgroup))
+    (hP : (P : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk) :
+    ContDiffOn 𝕜 n
+      (fun y : E => P.symm (QuotientAddGroup.mk y : E ⧸ Λ.toAddSubgroup))
+      ((QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup) ⁻¹' P.target) := by
+  intro y₀ hy₀
+  -- Choose a local chart P₀ around y₀ agreeing with mk
+  set P₀ := IsLocalHomeomorph.chartAtPreimage (isLocalHomeomorph_mk Λ.toAddSubgroup) y₀
+  have hP₀ : (P₀ : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk :=
+    (IsLocalHomeomorph.eq_chartAtPreimage (isLocalHomeomorph_mk Λ.toAddSubgroup) y₀).symm
+  -- y₀ is in the transition's source
+  have hy₀_P₀ : y₀ ∈ P₀.source :=
+    IsLocalHomeomorph.mem_source_chartAtPreimage _ _
+  have hy₀_src : y₀ ∈ (P₀ ≫ₕ P.symm).source := by
+    rw [OpenPartialHomeomorph.trans_source, Set.mem_inter_iff,
+        OpenPartialHomeomorph.symm_source]
+    refine ⟨hy₀_P₀, ?_⟩
+    show P₀ y₀ ∈ P.target
+    rw [hP₀]; exact hy₀
+  -- Transition is ContDiffOn
+  have htrans : ContDiffOn 𝕜 n (P₀ ≫ₕ P.symm : E → E) (P₀ ≫ₕ P.symm).source :=
+    transition_contDiffOn_of_agrees_with_mk Λ P₀ P hP₀ hP
+  -- On that source, `P.symm ∘ mk` agrees with the transition
+  have hcongr :
+      Set.EqOn (fun y : E => P.symm (QuotientAddGroup.mk y : E ⧸ Λ.toAddSubgroup))
+        (P₀ ≫ₕ P.symm : E → E) (P₀ ≫ₕ P.symm).source := by
+    intro y hy
+    rw [OpenPartialHomeomorph.trans_source, Set.mem_inter_iff] at hy
+    -- Goal: P.symm (mk y) = (P₀ ≫ₕ P.symm) y = P.symm (P₀ y)
+    rw [OpenPartialHomeomorph.trans_apply]
+    have : P₀ y = QuotientAddGroup.mk y := by rw [← hP₀]
+    rw [this]
+  -- So the map is ContDiffAt y₀ via the open set (P₀ ≫ₕ P.symm).source
+  have hopen : IsOpen ((P₀ ≫ₕ P.symm).source : Set E) := (P₀ ≫ₕ P.symm).open_source
+  have hOn : ContDiffOn 𝕜 n
+      (fun y : E => P.symm (QuotientAddGroup.mk y : E ⧸ Λ.toAddSubgroup))
+      (P₀ ≫ₕ P.symm).source :=
+    htrans.congr (fun y hy => hcongr hy)
+  have hAt : ContDiffAt 𝕜 n
+      (fun y : E => P.symm (QuotientAddGroup.mk y : E ⧸ Λ.toAddSubgroup)) y₀ :=
+    hOn.contDiffAt (hopen.mem_nhds hy₀_src)
+  exact hAt.contDiffWithinAt
+
+/-! ### Smoothness of the group operations on `E ⧸ Λ`
+
+The approach: each chart `chartAt q` on `E ⧸ Λ` unfolds (via
+`IsLocalHomeomorph.chartedSpace`) to the inverse of an
+`OpenPartialHomeomorph E (E ⧸ Λ)` agreeing with `mk`. So chart pullbacks
+of `add` and `neg` become expressions of the form `P.symm ∘ mk ∘ f`
+for a `ContDiff` `f : E → E` (or `f : E × E → E`). By `contDiffOn_symm_mk`
+the outer factor is `ContDiff` on its natural domain, and the composite
+is then `ContDiff`. -/
+
+
+/-- The negation map `q ↦ -q` on `E ⧸ Λ` is `ContMDiff`. -/
+theorem contMDiff_neg :
+    ContMDiff 𝓘(𝕜, E) 𝓘(𝕜, E) n
+      (fun q : E ⧸ Λ.toAddSubgroup => -q) := by
+  intro q₀
+  -- Extract chart data from our ChartedSpace instance
+  set x_c := Classical.choose
+    (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup) q₀) with hxc_def
+  have hqc : QuotientAddGroup.mk x_c = q₀ :=
+    Classical.choose_spec (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup) q₀)
+  set y_c := Classical.choose
+    (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup) (-q₀)) with hyc_def
+  have hync : QuotientAddGroup.mk y_c = -q₀ :=
+    Classical.choose_spec (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup) (-q₀))
+  -- Chart P around x_c, chart Q around y_c
+  set P := IsLocalHomeomorph.chartAtPreimage
+    (isLocalHomeomorph_mk Λ.toAddSubgroup) x_c with hP_def
+  set Q := IsLocalHomeomorph.chartAtPreimage
+    (isLocalHomeomorph_mk Λ.toAddSubgroup) y_c with hQ_def
+  have hP : (P : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk :=
+    (IsLocalHomeomorph.eq_chartAtPreimage (isLocalHomeomorph_mk Λ.toAddSubgroup) x_c).symm
+  have hQ : (Q : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk :=
+    (IsLocalHomeomorph.eq_chartAtPreimage (isLocalHomeomorph_mk Λ.toAddSubgroup) y_c).symm
+  have hxc_mem : x_c ∈ P.source :=
+    IsLocalHomeomorph.mem_source_chartAtPreimage _ _
+  have hyc_mem : y_c ∈ Q.source :=
+    IsLocalHomeomorph.mem_source_chartAtPreimage _ _
+  -- Apply contMDiffAt_iff to reduce to chart pullback smoothness
+  rw [contMDiffAt_iff]
+  refine ⟨continuous_neg.continuousAt, ?_⟩
+  -- chartAt on our ChartedSpace: chartAt q₀ = P.symm (since P := chartAtPreimage x_c
+  -- and x_c = Classical.choose (mk_surjective q₀))
+  -- extChartAt with trivial model coincides with chartAt as a function.
+  -- Range 𝓘(𝕜, E) = univ.
+  simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
+    Set.range_id, Set.univ_inter]
+  -- Show: ContDiffWithinAt 𝕜 n (extChartAt 𝓘(𝕜,E) (-q₀) ∘ neg ∘ (extChartAt 𝓘(𝕜,E) q₀).symm)
+  --         univ (extChartAt 𝓘(𝕜,E) q₀ q₀)
+  -- Since range I = univ, ContDiffWithinAt univ = ContDiffAt.
+  rw [contDiffWithinAt_univ]
+  -- Show: ContDiffAt 𝕜 n (extChartAt _ (-q₀) ∘ neg ∘ (extChartAt _ q₀).symm) (extChartAt _ q₀ q₀)
+  -- Now the chart pullback should equal (fun y => Q.symm (mk (-y))) on P.source, and
+  -- extChartAt _ q₀ q₀ = x_c.
+  -- mk(-x_c) = mk y_c since both reduce to -q₀
+  have hmx : QuotientAddGroup.mk (-x_c) =
+      (QuotientAddGroup.mk y_c : E ⧸ Λ.toAddSubgroup) := by
+    rw [QuotientAddGroup.mk_neg, hqc, hync]
+  -- (-x_c) ∈ mk ⁻¹ Q.target
+  have hmem_neg : (-x_c) ∈
+      (QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup) ⁻¹' Q.target := by
+    show QuotientAddGroup.mk (-x_c) ∈ Q.target
+    rw [hmx]
+    have hQy : Q y_c = QuotientAddGroup.mk y_c := by rw [← hQ]
+    rw [← hQy]
+    exact Q.map_source hyc_mem
+  have hopen_Q : IsOpen
+      ((QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup) ⁻¹' Q.target) :=
+    QuotientAddGroup.continuous_mk.isOpen_preimage _ Q.open_target
+  have hneg_E : ContDiff 𝕜 n (fun y : E => -y) := contDiff_neg
+  have hcomp_on : ContDiffOn 𝕜 n
+      (fun y : E => Q.symm (QuotientAddGroup.mk (-y) : E ⧸ Λ.toAddSubgroup))
+      ((fun y : E => -y) ⁻¹'
+        ((QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup) ⁻¹' Q.target)) := by
+    apply (contDiffOn_symm_mk Λ Q hQ).comp hneg_E.contDiffOn
+    intro y hy; exact hy
+  have hmem_neg_pre :
+      x_c ∈ (fun y : E => -y) ⁻¹'
+        ((QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup) ⁻¹' Q.target) := hmem_neg
+  have hopen_neg_pre : IsOpen
+      ((fun y : E => -y) ⁻¹'
+        ((QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup) ⁻¹' Q.target)) :=
+    continuous_neg.isOpen_preimage _ hopen_Q
+  have hkey : ContDiffAt 𝕜 n
+      (fun y : E => Q.symm (QuotientAddGroup.mk (-y) : E ⧸ Λ.toAddSubgroup)) x_c :=
+    hcomp_on.contDiffAt (hopen_neg_pre.mem_nhds hmem_neg_pre)
+  -- Use that the pullback equals this expression near x_c.
+  -- ⇑(extChartAt _ q₀) = chartAt q₀ = P.symm (for trivial model)
+  -- ⇑(extChartAt _ (-q₀)) = Q.symm
+  -- At extChartAt _ q₀ q₀ = P.symm q₀ = x_c
+  -- Pullback(y) = Q.symm (neg (P.symm.symm y)) = Q.symm (neg (P y)) = Q.symm (neg (mk y))
+  --            = Q.symm (mk (-y)) on P.source
+  have hpoint : extChartAt 𝓘(𝕜, E) q₀ q₀ = x_c := by
+    show (chartAt E q₀) q₀ = x_c
+    -- chartAt q₀ = P.symm, (P.symm) q₀ = x_c since P x_c = mk x_c = q₀ and x_c ∈ P.source
+    show P.symm q₀ = x_c
+    have : P x_c = q₀ := by rw [hP]; exact hqc
+    rw [← this]
+    exact P.left_inv hxc_mem
+  rw [hpoint]
+  apply hkey.congr_of_eventuallyEq
+  -- Eventually equal near x_c
+  have hP_source_open : IsOpen (P.source : Set E) := P.open_source
+  filter_upwards [hP_source_open.mem_nhds hxc_mem] with y hy
+  -- Reduce via defeq: extChartAt with trivial model = chartAt as functions.
+  change Q.symm (- (P y)) = Q.symm (QuotientAddGroup.mk (-y) : E ⧸ Λ.toAddSubgroup)
+  -- Now rewrite P y = mk y (since y ∈ P.source and P agrees with mk)
+  have h3 : P y = QuotientAddGroup.mk y := by rw [← hP]
+  rw [h3]
+  rw [QuotientAddGroup.mk_neg]
+
+
+/-- Addition on `E ⧸ Λ` is `ContMDiff`. -/
+theorem contMDiff_add :
+    ContMDiff (𝓘(𝕜, E).prod 𝓘(𝕜, E)) 𝓘(𝕜, E) n
+      (fun p : (E ⧸ Λ.toAddSubgroup) × (E ⧸ Λ.toAddSubgroup) => p.1 + p.2) := by
+  intro ⟨q₁, q₂⟩
+  -- Preimages for source charts
+  set x₁ := Classical.choose
+    (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup) q₁)
+  have hq₁ : QuotientAddGroup.mk x₁ = q₁ :=
+    Classical.choose_spec (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup) q₁)
+  set x₂ := Classical.choose
+    (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup) q₂)
+  have hq₂ : QuotientAddGroup.mk x₂ = q₂ :=
+    Classical.choose_spec (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup) q₂)
+  -- Preimage for target chart
+  set x₃ := Classical.choose
+    (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup) (q₁ + q₂))
+  have hq₃ : QuotientAddGroup.mk x₃ = q₁ + q₂ :=
+    Classical.choose_spec (QuotientAddGroup.mk_surjective (s := Λ.toAddSubgroup) (q₁ + q₂))
+  -- Charts
+  set P₁ := IsLocalHomeomorph.chartAtPreimage
+    (isLocalHomeomorph_mk Λ.toAddSubgroup) x₁
+  set P₂ := IsLocalHomeomorph.chartAtPreimage
+    (isLocalHomeomorph_mk Λ.toAddSubgroup) x₂
+  set R := IsLocalHomeomorph.chartAtPreimage
+    (isLocalHomeomorph_mk Λ.toAddSubgroup) x₃
+  have hP₁ : (P₁ : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk :=
+    (IsLocalHomeomorph.eq_chartAtPreimage (isLocalHomeomorph_mk Λ.toAddSubgroup) x₁).symm
+  have hP₂ : (P₂ : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk :=
+    (IsLocalHomeomorph.eq_chartAtPreimage (isLocalHomeomorph_mk Λ.toAddSubgroup) x₂).symm
+  have hR : (R : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk :=
+    (IsLocalHomeomorph.eq_chartAtPreimage (isLocalHomeomorph_mk Λ.toAddSubgroup) x₃).symm
+  have hx₁_mem : x₁ ∈ P₁.source :=
+    IsLocalHomeomorph.mem_source_chartAtPreimage _ _
+  have hx₂_mem : x₂ ∈ P₂.source :=
+    IsLocalHomeomorph.mem_source_chartAtPreimage _ _
+  have hx₃_mem : x₃ ∈ R.source :=
+    IsLocalHomeomorph.mem_source_chartAtPreimage _ _
+  -- Reduce to chart pullback ContDiffAt
+  rw [contMDiffAt_iff]
+  refine ⟨continuous_add.continuousAt, ?_⟩
+  -- Set.range (I.prod I) = univ for trivial models
+  have hrange : (Set.range ((𝓘(𝕜, E)).prod (𝓘(𝕜, E)) :
+      ModelWithCorners 𝕜 (E × E) (E × E))) = Set.univ := by
+    rw [ModelWithCorners.range_prod]
+    simp [Set.range_id]
+  rw [hrange, contDiffWithinAt_univ]
+  have hmem_sum : (x₁ + x₂) ∈
+      (QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup) ⁻¹' R.target := by
+    show QuotientAddGroup.mk (x₁ + x₂) ∈ R.target
+    have hmksum : (QuotientAddGroup.mk (x₁ + x₂) : E ⧸ Λ.toAddSubgroup) =
+        QuotientAddGroup.mk x₃ := by
+      rw [QuotientAddGroup.mk_add, hq₁, hq₂, hq₃]
+    rw [hmksum]
+    have hRy : R x₃ = QuotientAddGroup.mk x₃ := by rw [← hR]
+    rw [← hRy]
+    exact R.map_source hx₃_mem
+  have hopen_R : IsOpen
+      ((QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup) ⁻¹' R.target) :=
+    QuotientAddGroup.continuous_mk.isOpen_preimage _ R.open_target
+  -- Use ContDiffOn.comp directly at the ContDiffOn level to avoid unification issues
+  have hadd_E : ContDiff 𝕜 n (fun p : E × E => p.1 + p.2) := contDiff_add
+  have hcomp_on : ContDiffOn 𝕜 n
+      (fun p : E × E => R.symm (QuotientAddGroup.mk (p.1 + p.2) : E ⧸ Λ.toAddSubgroup))
+      ((fun p : E × E => p.1 + p.2) ⁻¹'
+        ((QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup) ⁻¹' R.target)) := by
+    apply (contDiffOn_symm_mk Λ R hR).comp hadd_E.contDiffOn
+    intro p hp; exact hp
+  have hmem_prod :
+      ((x₁, x₂) : E × E) ∈
+      (fun p : E × E => p.1 + p.2) ⁻¹'
+        ((QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup) ⁻¹' R.target) := hmem_sum
+  have hopen_prod : IsOpen
+      ((fun p : E × E => p.1 + p.2) ⁻¹'
+        ((QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup) ⁻¹' R.target)) :=
+    continuous_add.isOpen_preimage _ hopen_R
+  have hkey : ContDiffAt 𝕜 n
+      (fun p : E × E => R.symm (QuotientAddGroup.mk (p.1 + p.2) : E ⧸ Λ.toAddSubgroup))
+      (x₁, x₂) :=
+    hcomp_on.contDiffAt (hopen_prod.mem_nhds hmem_prod)
+  have hpoint : extChartAt (𝓘(𝕜, E).prod 𝓘(𝕜, E)) (q₁, q₂) (q₁, q₂) = (x₁, x₂) := by
+    show (P₁.symm q₁, P₂.symm q₂) = (x₁, x₂)
+    ext
+    · have hpq : P₁ x₁ = q₁ := by rw [hP₁]; exact hq₁
+      rw [← hpq]; exact P₁.left_inv hx₁_mem
+    · have hpq : P₂ x₂ = q₂ := by rw [hP₂]; exact hq₂
+      rw [← hpq]; exact P₂.left_inv hx₂_mem
+  rw [hpoint]
+  apply hkey.congr_of_eventuallyEq
+  -- Eventually equal near (x₁, x₂)
+  have hP₁_open : IsOpen (P₁.source : Set E) := P₁.open_source
+  have hP₂_open : IsOpen (P₂.source : Set E) := P₂.open_source
+  have hprod_mem : ((x₁, x₂) : E × E) ∈ P₁.source ×ˢ P₂.source :=
+    ⟨hx₁_mem, hx₂_mem⟩
+  have hprod_open : IsOpen (P₁.source ×ˢ P₂.source : Set (E × E)) :=
+    hP₁_open.prod hP₂_open
+  filter_upwards [hprod_open.mem_nhds hprod_mem] with p hp
+  obtain ⟨hy₁, hy₂⟩ := hp
+  -- Goal: chart pullback = fun p => R.symm (mk (p.1 + p.2))
+  -- extChartAt on product is product of extChartAts, so the pullback through
+  -- (extChartAt (q₁, q₂)).symm = (P₁, P₂), and extChartAt at q₁+q₂ = R.symm.
+  change R.symm (P₁ p.1 + P₂ p.2) = R.symm (QuotientAddGroup.mk (p.1 + p.2) :
+      E ⧸ Λ.toAddSubgroup)
+  have h4 : P₁ p.1 = QuotientAddGroup.mk p.1 := by rw [← hP₁]
+  have h5 : P₂ p.2 = QuotientAddGroup.mk p.2 := by rw [← hP₂]
+  rw [h4, h5]
+  congr 1
+
 /-- The analytic Lie-group structure on `E ⧸ Λ`. -/
 noncomputable instance instLieAddGroupQuotient :
-    LieAddGroup 𝓘(𝕜, E) n (E ⧸ Λ.toAddSubgroup) := sorry
+    LieAddGroup 𝓘(𝕜, E) n (E ⧸ Λ.toAddSubgroup) where
+  contMDiff_add := contMDiff_add Λ
+  contMDiff_neg := contMDiff_neg Λ
 
 end Manifold
 
