@@ -765,11 +765,53 @@ theorem HolomorphicOneForms.localRep_eq_zero_of_supNormK_eq_zero
   HolomorphicOneForms.localRep_eq_zero_of_chartNormK_eq_zero α x₀
     (HolomorphicOneForms.chartNormK_eq_zero_of_supNormK_eq_zero α h x₀ hx₀) y hy
 
+/-! ### Step 1n: `localRep α x₀ y = 0` at `y ∈ baseSet` forces `α.toFun y = 0`
+
+The tangent space `T_y X` is 1-dim over ℂ (as `X` is charted over ℂ). The
+trivialization `e` at `x₀` gives a continuous linear EQUIVALENCE
+`T_y X ≃L[ℂ] ℂ` for `y ∈ e.baseSet`, and `e.symmL ℂ y 1` is the image
+of `1 ∈ ℂ` under the inverse — hence a spanning vector of `T_y X`.
+
+`α.toFun y : T_y X →L[ℂ] ℂ` vanishing on this spanning vector ⇒ zero as a CLM. -/
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+/-- If the local representative of α vanishes at y ∈ baseSet of the trivialization
+at x₀, then `α.toFun y = 0` as a continuous linear map. -/
+theorem alpha_toFun_eq_zero_of_localRep_eq_zero
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ y : X)
+    (hy : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet)
+    (h : localRep α x₀ y = 0) :
+    α.toFun y = 0 := by
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀ with he_def
+  set φ := e.continuousLinearEquivAt ℂ y hy with hφ_def
+  -- `φ.symm` (as a CLM) equals `e.symmL ℂ y`.
+  have hφsymm : (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) = e.symmL ℂ y :=
+    Trivialization.symm_continuousLinearEquivAt_eq' e hy
+  -- Compose α.toFun y with φ.symm on the right; the result is a CLM ℂ →L[ℂ] ℂ.
+  have hcomp : (α.toFun y : TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ).comp
+      (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) = 0 := by
+    apply ContinuousLinearMap.ext_ring
+    show α.toFun y ((φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) 1) = 0
+    rw [hφsymm]
+    exact h
+  -- Post-compose with φ to recover α.toFun y.
+  have hext : (α.toFun y : TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ) =
+      ((α.toFun y).comp (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y)).comp
+        (φ : TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ) := by
+    apply ContinuousLinearMap.ext
+    intro w
+    change α.toFun y w = α.toFun y (φ.symm (φ w))
+    rw [φ.symm_apply_apply]
+  rw [hext, hcomp, ContinuousLinearMap.zero_comp]
+
 /-! ### Next
 
-- [ ] `supNormK_eq_zero → α = 0` (positive-definiteness: use that shrunkCharts
-      cover X + localRep α x₀ determines α near y via the trivialization's
-      inverse being a nonzero span of T_y X).
+- [ ] `supNormK_eq_zero → α = 0` (positive-definiteness: combine
+      localRep_eq_zero_of_supNormK_eq_zero with
+      alpha_toFun_eq_zero_of_localRep_eq_zero; use that shrunkCharts
+      cover X and shrunkChart ⊆ baseSet).
 - [ ] NormedAddCommGroup instance.
 - [ ] Cauchy estimates on `localRep` (holomorphic functions in chart).
 - [ ] Equicontinuity of bounded families.
