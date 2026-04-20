@@ -153,6 +153,33 @@ theorem norm_localRepOnShrunk_le_supNormK
     rw [h0, norm_zero]
     exact HolomorphicOneForms.supNormK_nonneg α
 
+/-! ### Bridge: open-neighborhood bound on `localRep`
+
+The `Cover.lean` refactor exposes an open layer `chartOpen x₀` sitting
+inside the outer closed `shrunkChart x₀`. Since `supNormK α` bounds
+`|localRep α x₀|` on `shrunkChart x₀`, it also bounds it on the OPEN
+`chartOpen x₀` — giving Arzelà–Ascoli the wiggle room it needs to apply
+Cauchy estimates on a neighborhood of the inner compact. -/
+
+omit [ConnectedSpace X] in
+/-- `|localRep α x₀| ≤ supNormK α` on the OPEN layer `chartOpen x₀`
+(for `x₀ ∈ chartCover`). Since `chartOpen x₀ ⊆ shrunkChart x₀`, this is
+immediate from `norm_localRep_le_supNormK`. -/
+theorem norm_localRep_le_supNormK_on_chartOpen
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    {y : X} (hy : y ∈ chartOpen (X := X) x₀) :
+    ‖localRep α x₀ y‖ ≤ HolomorphicOneForms.supNormK α :=
+  HolomorphicOneForms.norm_localRep_le_supNormK α hx₀
+    (chartOpen_subset_shrunkChart x₀ hy)
+
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+/-- `chartOpen x₀` is contained in the chart source for `x₀ ∈ chartCover`. -/
+theorem chartOpen_subset_source (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    chartOpen (X := X) x₀ ⊆ (chartAt ℂ x₀).source :=
+  (chartOpen_subset_shrunkChart x₀).trans (shrunkChart_subset_source x₀ hx₀)
+
 /-! ### Step B.3 — `localRep` is analytic in chart coordinates
 
 The `ContMDiff ω ⇔ AnalyticOn ℂ` bridge at bundle-section level:
