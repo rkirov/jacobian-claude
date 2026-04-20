@@ -806,12 +806,43 @@ theorem alpha_toFun_eq_zero_of_localRep_eq_zero
     rw [φ.symm_apply_apply]
   rw [hext, hcomp, ContinuousLinearMap.zero_comp]
 
-/-! ### Next
+/-! ### Step 1o: positive-definiteness of supNormK -/
 
-- [ ] `supNormK_eq_zero → α = 0` (positive-definiteness: combine
-      localRep_eq_zero_of_supNormK_eq_zero with
-      alpha_toFun_eq_zero_of_localRep_eq_zero; use that shrunkCharts
-      cover X and shrunkChart ⊆ baseSet).
+omit [ConnectedSpace X] in
+/-- Positive-definiteness: `supNormK α = 0 → α = 0`. -/
+theorem HolomorphicOneForms.eq_zero_of_supNormK_eq_zero
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (h : HolomorphicOneForms.supNormK α = 0) :
+    α = 0 := by
+  -- It suffices to show α.toFun y = 0 for every y ∈ X.
+  apply ContMDiffSection.ext
+  intro y
+  -- y is in some shrunkChart x₀ for x₀ ∈ chartCover (by coverage).
+  have hmem : y ∈ (Set.univ : Set X) := Set.mem_univ _
+  rw [← iUnion_shrunkChart_chartCover_eq (X := X)] at hmem
+  simp only [Set.mem_iUnion] at hmem
+  obtain ⟨x₀, hx₀mem, hyx₀⟩ := hmem
+  -- `localRep α x₀ y = 0` by localRep_eq_zero_of_supNormK_eq_zero.
+  have hlocal := HolomorphicOneForms.localRep_eq_zero_of_supNormK_eq_zero α h x₀ hx₀mem y hyx₀
+  -- `y ∈ baseSet` (via shrunkChart ⊆ source + TangentBundle.trivializationAt_baseSet).
+  have hy_baseSet :
+      y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet := by
+    rw [TangentBundle.trivializationAt_baseSet]
+    exact shrunkChart_subset_source x₀ hx₀mem hyx₀
+  -- α.toFun y = 0 (as a CLM) by alpha_toFun_eq_zero_of_localRep_eq_zero.
+  have htofun := alpha_toFun_eq_zero_of_localRep_eq_zero α x₀ y hy_baseSet hlocal
+  -- Reconcile with the zero section.
+  change α.toFun y = (0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+    (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)).toFun y
+  rw [htofun]
+  -- ⇑(0 : ContMDiffSection ...) y = 0; uses coe_zero.
+  have : (⇑(0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))) = 0 :=
+    ContMDiffSection.coe_zero
+  exact (congrFun this y).symm
+
+/-! ### Next
 - [ ] NormedAddCommGroup instance.
 - [ ] Cauchy estimates on `localRep` (holomorphic functions in chart).
 - [ ] Equicontinuity of bounded families.
