@@ -115,8 +115,14 @@ the result is continuous.
 For the sup-norm argument we only need **continuity**, but smoothness
 is available as a bonus (useful for Cauchy estimates later). -/
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- A constant section of a vector bundle (via inverse trivialization) is
-continuous on the trivialization's base set. -/
+continuous on the trivialization's base set.
+
+Proof: the section's total-space form equals `e.toOpenPartialHomeomorph.symm`
+composed with `fun y => (y, v)`, which is continuous on `e.baseSet`
+since `e.symm` is continuous on its source (= `baseSet × univ` for
+vector bundles). -/
 theorem continuousOn_symmL_const
     (e : Trivialization ℂ (Bundle.TotalSpace.proj (E := fun x : X =>
       TangentSpace 𝓘(ℂ, ℂ) x)))
@@ -125,8 +131,29 @@ theorem continuousOn_symmL_const
       (fun y : X => TotalSpace.mk' ℂ (E := fun x : X => TangentSpace 𝓘(ℂ, ℂ) x)
         y (e.symmL ℂ y v))
       e.baseSet := by
-  sorry
+  -- The section's total-space form equals `e.symm ∘ (·, v)` on baseSet.
+  -- `e.symm` is continuous on its source = baseSet × univ.
+  -- `(·, v)` is continuous.
+  -- Composition is continuous on baseSet.
+  have h1 : ContinuousOn (fun p : X × ℂ => e.toOpenPartialHomeomorph.symm p)
+      (e.baseSet ×ˢ Set.univ) := by
+    apply e.toOpenPartialHomeomorph.continuousOn_symm.mono
+    rw [← e.target_eq]
+  have h2 : ContinuousOn (fun y : X => (y, v)) e.baseSet :=
+    (continuousOn_id.prodMk continuousOn_const)
+  have h3 : Set.MapsTo (fun y : X => (y, v)) e.baseSet (e.baseSet ×ˢ Set.univ) := by
+    intro y hy
+    exact ⟨hy, Set.mem_univ _⟩
+  -- Goal: show the composition on baseSet equals our target function.
+  have h4 := h1.comp h2 h3
+  -- h4 : ContinuousOn (fun y => e.symm (y, v)) e.baseSet.
+  refine h4.congr ?_
+  intro y hy
+  -- `e.mk_symm hy v : TotalSpace.mk y (e.symm y v) = e.toOpenPartialHomeomorph.symm (y, v)`
+  -- and `e.symmL ℂ y v = e.symm y v` definitionally (`symmL` has `toFun := e.symm b`).
+  simpa using Trivialization.mk_symm e hy v
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- `localRep α x₀` is continuous on the trivialization's base set. -/
 theorem localRep_continuousOn
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
