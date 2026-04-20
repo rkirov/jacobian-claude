@@ -7,7 +7,10 @@ placeholder period lattice + trivial degree + structural Abel–Jacobi)
 has closed most of the challenge file, contingent on content sorries in
 support files. **`ZLatticeQuotient` is now sorry-free** — the full Lie
 group structure on the quotient torus AND the smoothness of the
-quotient descent are both proven end-to-end.
+quotient descent are both proven end-to-end. **`pullbackForm` is
+structurally complete** — the chain rule on cotangent sections is
+proven (only content sorries remain for pushforwardForm and
+dimension theorems).
 
 ## Sorry count by file
 
@@ -16,11 +19,11 @@ quotient descent are both proven end-to-end.
 | `Jacobians.lean`              | 4       | content-gated (Abel, ambient content) |
 | `Jacobians/Genus.lean`        | 2       | genus + genus_eq_zero_iff_homeo |
 | `Jacobians/ZLatticeQuotient.lean` | 0   | **fully proven** — IsManifold + LieAddGroup + smoothness of descent |
-| `Jacobians/HolomorphicForms.lean` | 12  | cotangent sections + ambient bridge (pullbackForm_id/comp closed) |
+| `Jacobians/HolomorphicForms.lean` | 11  | cotangent sections + ambient bridge (pullbackForm now structurally complete) |
 | `Jacobians/LineIntegral.lean` | 0       | *path integration; 0 sorries* |
 | `Jacobians/ChartedSpaceOfLocalHomeomorph.lean` | 0 | manifold general-purpose     |
 | `Jacobians/JacobianValidate.lean` | 0   | instance regression test      |
-| **Total**                     | **18**  |                               |
+| **Total**                     | **17**  |                               |
 
 ## Remaining Jacobians.lean sorries (4)
 
