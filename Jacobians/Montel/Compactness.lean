@@ -149,19 +149,47 @@ theorem norm_localRepOnShrunk_le_supNormK
 
 /-! ### Next steps (scheduled, not implemented here)
 
-- **B.2** `localRepEmbedding : HOF X →L[ℂ] Π x₀ ∈ chartCover,
-  C(shrunkChart x₀, ℂ)` — continuous linear injection, operator norm
-  ≤ 1 by `norm_localRep_le_supNormK`.
-- **B.3** `localRep_analyticOn` — the `ContMDiff ω ⇔ AnalyticOn ℂ`
-  bridge at bundle-section level. Flagged as highest-risk by
-  `docs/MONTEL_PATH.md`.
-- **B.4** `cauchy_estimate` — derivative bound for analytic functions
-  on a compact shrinkage (pointwise complex analysis).
-- **B.5** `equicontinuous_of_bounded` — combine B.3 + B.4.
-- **B.6** `closedBall_relativelyCompact` — Arzelà–Ascoli assembly.
-- **B.7** `closedBall_isClosed` — via uniform limits of holomorphic
-  functions being holomorphic (`TendstoLocallyUniformlyOn.analyticOn`).
-- **Assembly** — discharge `HolomorphicOneForms.closedBall_isCompact`
-  in `Jacobians/Montel.lean`. -/
+**B.3 — the `ContMDiff ω ⇔ AnalyticOn ℂ` bridge (BLOCKING).**
+The target statement is:
+  `AnalyticOn ℂ (fun z : ℂ => localRep α x₀ ((chartAt ℂ x₀).symm z))
+     (chartAt ℂ x₀).target`.
+This is the bundle-section-level form of the classical
+`C^ω ⇔ analytic` fact for ℂ-valued maps between open ℂ sets. It is
+deferred here because it is a multi-step reduction, not a one-liner,
+and filing it as a sub-sorry in this file would strictly grow the
+repo's overall sorry count (the existing master sorry
+`HolomorphicOneForms.closedBall_isCompact` in `Jacobians/Montel.lean`
+already covers this content indirectly). Candidate Mathlib lemmas to
+combine, in order of use:
+
+- `Bundle.contMDiffAt_section` — characterizes smoothness of a section
+  via smoothness of its trivialization representative.
+- `contMDiffAt_iff_of_mem_source` / `contMDiffWithinAt_iff` — unfolds
+  `ContMDiff` on a chart via `ContDiffOn` of the chart representative.
+- `ContDiffOn.analyticOn` / `ContDiffWithinAt.analyticOn` — for
+  complex target, `C^ω` ⇒ analytic (the core Mathlib bridge).
+- `TangentBundle.trivializationAt` and the `symmL` apparatus, plus
+  `OpenPartialHomeomorph` smoothness of the chart inverse.
+
+**B.4** `cauchy_estimate` — derivative bound for analytic functions on
+a compact shrinkage. Mathlib's key lemma:
+`Complex.norm_deriv_le_of_forall_mem_sphere_norm_le`:
+  `0 < R → DiffContOnCl ℂ f (ball c R) → (∀ z ∈ sphere c R, ‖f z‖ ≤ C)
+     → ‖deriv f c‖ ≤ C / R`.
+From this, derive uniform Lipschitz bounds on the pullback over a
+slightly-shrunk set, uniformly in α on the closed unit ball (using B.3).
+
+**B.5** `equicontinuous_of_bounded` — combine B.3 + B.4. Pure complex
+analysis: bounded derivative ⇒ locally Lipschitz ⇒ equicontinuous on
+compacta.
+
+**B.6** `closedBall_relativelyCompact` — Arzelà–Ascoli assembly on each
+`C(shrunkChart x₀, ℂ)`, then finite product.
+
+**B.7** `closedBall_isClosed` — via uniform limits of holomorphic
+functions being holomorphic (`TendstoLocallyUniformlyOn.analyticOn`).
+
+**Assembly** — discharge `HolomorphicOneForms.closedBall_isCompact` in
+`Jacobians/Montel.lean`. -/
 
 end Jacobians.Montel
