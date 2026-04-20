@@ -187,9 +187,39 @@ noncomputable def HolomorphicOneForms.supNormOn
     (s : Finset X) (hs : s.Nonempty) : ℝ :=
   s.sup' hs (fun x₀ => HolomorphicOneForms.chartNorm α x₀)
 
+/-! ### Step 1f: canonical finite cover
+
+Pick a specific non-empty finite cover via `Classical.choose`. Any such
+choice yields an equivalent sup-norm (classical fact). -/
+
+/-- The canonical finite chart cover of compact X. -/
+noncomputable def chartCover : Finset X :=
+  Classical.choose (exists_finite_chart_cover (X := X))
+
+omit [T2Space X] [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+theorem chartCover_cover : (⋃ x ∈ chartCover (X := X), (chartAt ℂ x).source) = Set.univ :=
+  Classical.choose_spec (exists_finite_chart_cover (X := X))
+
+omit [T2Space X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] in
+/-- The canonical finite chart cover is non-empty (X is non-empty and the
+cover is a cover). -/
+theorem chartCover_nonempty : (chartCover (X := X)).Nonempty := by
+  obtain ⟨x₀⟩ := (inferInstance : Nonempty X)
+  have hx : x₀ ∈ (⋃ x ∈ chartCover (X := X), (chartAt ℂ x).source) := by
+    rw [chartCover_cover]; trivial
+  simp only [Set.mem_iUnion] at hx
+  obtain ⟨i, hi, _⟩ := hx
+  exact ⟨i, hi⟩
+
+/-- The canonical sup-norm on `HolomorphicOneForms X`. -/
+noncomputable def HolomorphicOneForms.supNorm
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) : ℝ :=
+  HolomorphicOneForms.supNormOn α (chartCover (X := X)) chartCover_nonempty
+
 /-! ### Next
 
-- [ ] `HolomorphicOneForms.supNorm` — pick a specific finite cover.
+- [ ] Prove `supNorm ≥ 0`.
 - [ ] Prove `supNorm = 0 ↔ α = 0` (positive-definiteness).
 - [ ] Prove triangle + scalar mult compat.
 - [ ] NormedAddCommGroup instance.
