@@ -10,6 +10,7 @@ import Mathlib.LinearAlgebra.Dimension.Finrank
 import Mathlib.Analysis.Normed.Module.Basic
 import Mathlib.Analysis.Normed.Module.FiniteDimension
 import Jacobians.Genus
+import Jacobians.Montel
 
 /-!
 # Holomorphic 1-forms on a complex manifold
@@ -50,9 +51,26 @@ section Curve
 variable (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
+/-- `NormedAddCommGroup` on `HolomorphicOneForms X` via Montel's chart-atlas
+`supNormK`. This is real infrastructure (no sorry) and follows the
+Ahlfors-Sario construction (see `Jacobians.Montel`). -/
+noncomputable instance : NormedAddCommGroup (HolomorphicOneForms X) :=
+  Jacobians.Montel.HolomorphicOneForms.normedAddCommGroup
+
+/-- `NormedSpace ℂ` on `HolomorphicOneForms X` completing the normed-space
+structure via `supNormK` homogeneity. -/
+noncomputable instance : NormedSpace ℂ (HolomorphicOneForms X) :=
+  Jacobians.Montel.HolomorphicOneForms.normedSpace
+
 /-- **TODO(math)**: on a compact connected complex 1-manifold, the space
-of global holomorphic 1-forms is finite-dimensional. (Cartan–Serre
-applied to the sheaf `Ω¹_X`.) -/
+of global holomorphic 1-forms is finite-dimensional. Via the Montel
+compactness route (Ahlfors-Sario): `HOF X` has a Banach structure via
+`supNormK`, the closed unit ball is compact (Arzelà-Ascoli on each chart
++ finite atlas), hence `FiniteDimensional` (Riesz).
+
+The normed structure above is real; this final step remains gated on
+Cauchy estimates + Arzelà-Ascoli + Riesz (see `Jacobians/Montel.lean`
+scaffolding). -/
 noncomputable instance : FiniteDimensional ℂ (HolomorphicOneForms X) := sorry
 
 /-- Dimension of holomorphic 1-forms = genus. With `genus X` defined as
