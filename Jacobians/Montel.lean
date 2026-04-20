@@ -217,9 +217,35 @@ noncomputable def HolomorphicOneForms.supNorm
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) : ℝ :=
   HolomorphicOneForms.supNormOn α (chartCover (X := X)) chartCover_nonempty
 
+/-! ### Step 1g: basic norm properties -/
+
+/-- Chart-local sup-norm is non-negative. -/
+theorem HolomorphicOneForms.chartNorm_nonneg
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) :
+    0 ≤ HolomorphicOneForms.chartNorm α x₀ := by
+  unfold HolomorphicOneForms.chartNorm
+  -- ⨆ y, ‖localRep α x₀ y‖ ≥ 0 since each term is ≥ 0.
+  obtain ⟨y₀⟩ := (inferInstance : Nonempty X)
+  exact le_ciSup_of_le (by
+    -- Need BddAbove of the range. This isn't automatic; we use that
+    -- `localRep α x₀` is locally continuous and X is compact, so
+    -- bounded. For now this is deferred.
+    sorry) y₀ (norm_nonneg _)
+
+/-- Chart-local sup-norm of zero is zero. -/
+theorem HolomorphicOneForms.chartNorm_zero (x₀ : X) :
+    HolomorphicOneForms.chartNorm (0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) x₀ = 0 := by
+  unfold HolomorphicOneForms.chartNorm
+  simp only [localRep]
+  -- α.toFun = 0 for zero section ⇒ localRep = 0 ⇒ sup of ‖0‖ = 0.
+  sorry
+
 /-! ### Next
 
-- [ ] Prove `supNorm ≥ 0`.
+- [ ] Boundedness of `localRep α x₀` on X (via compactness).
 - [ ] Prove `supNorm = 0 ↔ α = 0` (positive-definiteness).
 - [ ] Prove triangle + scalar mult compat.
 - [ ] NormedAddCommGroup instance.
