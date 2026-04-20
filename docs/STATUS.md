@@ -2,39 +2,39 @@
 
 ## Headline
 
-**Challenge sorry count: 24 → 6.** The classical path (line integrals +
+**Challenge sorry count: 24 → 4.** The classical path (line integrals +
 placeholder period lattice + trivial degree + structural Abel–Jacobi)
 has closed most of the challenge file, contingent on content sorries in
 support files. **`ZLatticeQuotient` is now sorry-free** — the full Lie
-group structure on the quotient torus is proven end-to-end.
+group structure on the quotient torus AND the smoothness of the
+quotient descent are both proven end-to-end.
 
 ## Sorry count by file
 
 | File                          | Sorries | Kind                          |
 |-------------------------------|---------|-------------------------------|
-| `Jacobians.lean`              | 6       | content-gated (challenge file) |
+| `Jacobians.lean`              | 4       | content-gated (Abel, ambient content) |
 | `Jacobians/Genus.lean`        | 2       | genus + genus_eq_zero_iff_homeo |
-| `Jacobians/ZLatticeQuotient.lean` | 0   | **fully proven** — IsManifold + LieAddGroup + quotient morphism descent |
+| `Jacobians/ZLatticeQuotient.lean` | 0   | **fully proven** — IsManifold + LieAddGroup + smoothness of descent |
 | `Jacobians/HolomorphicForms.lean` | 12  | cotangent sections + ambient bridge (pullbackForm_id/comp closed) |
 | `Jacobians/LineIntegral.lean` | 0       | *path integration; 0 sorries* |
 | `Jacobians/ChartedSpaceOfLocalHomeomorph.lean` | 0 | manifold general-purpose     |
 | `Jacobians/JacobianValidate.lean` | 0   | instance regression test      |
-| **Total**                     | **20**  |                               |
+| **Total**                     | **18**  |                               |
 
-## Remaining Jacobians.lean sorries (6)
+## Remaining Jacobians.lean sorries (4)
 
-1. `ofCurve_contMDiff` — depends on IsManifold on quotient + ofCurve being
-   the real integrated map (not the placeholder).
+1. `ofCurve_contMDiff` — depends on ofCurve being the real integrated
+   map (not the placeholder). Blocked by replacing ofCurve with real
+   Abel–Jacobi via `LineIntegral`.
 2. `ofCurve_inj` — Abel's theorem. Needs meromorphic functions + divisor
-   theory.
-3. `pushforward_contMDiff` — smoothness of pushforward, needs IsManifold on quotient.
-4. `pullback_contMDiff` — smoothness of pullback, same.
-5. `ambientPhi_preserves_lattice` — content: pullback of holomorphic 1-forms
+   theory (Forster §21).
+3. `ambientPhi_preserves_lattice` — content: pullback of holomorphic 1-forms
    sends periods to periods (via change of variables in line integrals).
-6. `ambientPsi_preserves_lattice` — content: pushforward of holomorphic
+4. `ambientPsi_preserves_lattice` — content: pushforward of holomorphic
    1-forms sends periods to periods.
 
-## Closures this session (24 → 6)
+## Closures across recent sessions (24 → 4)
 
 Structural / architecture:
 - `Jacobian` definition + 5 instance classes (AddCommGroup, TopologicalSpace,
@@ -47,6 +47,16 @@ Structural / architecture:
     `ContDiffOn.comp` yields `ContMDiff`.
 - Four functoriality lemmas: pushforward/pullback id and comp.
 - Headline `pushforward_pullback = deg • id`.
+- **`pushforward_contMDiff` + `pullback_contMDiff`** — closed by
+  upgrading `ambientPhi` / `ambientPsi` to ℂ-linear (from ℝ-linear, the
+  previous typing was weaker than the math). The new
+  `pushforward_contMDiff_of_ambient` in ZLatticeQuotient uses the same
+  chart-pullback pattern as `contMDiff_add`. Dodged a `restrictScalars`
+  typeclass-synthesis diamond (`Pi.isScalarTower` vs `Real.isScalarTower`
+  paths both succeed and Lean can't commit) by changing
+  `ZLatticeQuotient.pushforward`'s input from `→L[ℝ]` to `→L[ℂ]`; the
+  body uses only `.toAddMonoidHom` and `.continuous`, so this is an
+  inert API widening.
 
 Placeholder / via classical path:
 - `genus` + `genus_eq_zero_iff_homeo` moved to support file.
