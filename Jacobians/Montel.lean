@@ -6,133 +6,94 @@ import Mathlib.Analysis.Normed.Module.FiniteDimension
 import Mathlib.Topology.ContinuousMap.Bounded.Basic
 import Mathlib.Topology.Algebra.InfiniteSum.Basic
 import Mathlib.Analysis.Complex.Basic
+import Mathlib.Topology.Order.Compact
 
 /-!
 # Montel path to finite-dimensionality of `HolomorphicOneForms`
 
 **Goal**: prove `FiniteDimensional ℂ (HolomorphicOneForms X)` for X a
 compact connected complex 1-manifold via the classical Montel /
-compactness route.
+compactness route (Ahlfors–Sario, Rudin).
 
 See `docs/MONTEL_PATH.md` for the overall plan.
 
-## Strategy
+## Classical textbook approach (Ahlfors–Sario Ch II §5)
 
-1. Assign a sup-norm to smooth sections (via bundle trivializations +
-   compactness of base).
-2. Show holomorphic sections form a closed subspace (preserved under
-   uniform limits).
-3. Cauchy estimates on charts give equicontinuity of bounded
-   holomorphic section families.
-4. Arzelà–Ascoli ⇒ bounded closed sets in the sup-norm are compact.
-5. Riesz ⇒ the space is finite-dimensional.
+1. **Finite atlas.** X compact ⇒ finite open cover by chart domains
+   `{U_1, ..., U_n}` with charts `φ_j : U_j → V_j ⊆ ℂ`.
+2. **Local representative.** In chart `(U_j, φ_j)`, a holomorphic
+   1-form α restricts to `α_j = f_j(z) dz` where `f_j : V_j → ℂ` is
+   holomorphic. On overlaps, `f_j = f_k · (∂φ_k/∂φ_j)` (chain rule).
+3. **Sup-norm.** `‖α‖ := max_j sup_{z ∈ K_j} |f_j(z)|` where
+   `K_j ⊂ V_j` is a compact sub-set chosen such that
+   `⋃ φ_j⁻¹(K_j) = X`. (Refine atlas if needed.)
+4. **Cauchy estimates.** For `K_j ⊂ K'_j ⊂ V_j` with
+   `d = dist(K_j, ∂K'_j) > 0`, Cauchy's integral formula gives
+   `|f_j'(z)| ≤ |f_j|_{∞, K'_j} / d` for z ∈ K_j. Hence a family
+   `{f_j}` bounded in sup-norm on K'_j is equicontinuous on K_j.
+5. **Arzelà–Ascoli.** Bounded + equicontinuous ⇒ compact in `C(K_j, ℂ)`.
+   Iterating over the finite atlas: bounded sets in HOF X are compact
+   in the sup-norm topology.
+6. **Riesz.** Compact closed ball ⇒ `HOF X` is finite-dimensional.
 
-This file provides the skeleton — concrete machinery is built up
-incrementally.
+## This file: step 1 — norm on HOF X via chart trivializations
 
-## Current status
+Given the structural issues with the earlier `tangentOne`-based
+approach (not a smooth global section), we use the textbook
+chart-atlas approach directly.
 
-Step 1 (norm on `ContMDiffSection` via a finite atlas): **in progress**.
+**Key building block**: `Bundle.ContinuousLinearMap`'s trivialization at
+a point gives a local `(fiber) → (ℂ →L[ℂ] ℂ)` representation.
 
-Key technical hurdle identified: `TangentSpace 𝓘(ℂ) x` does not carry
-a `NormedAddCommGroup` instance by default (deliberately, to avoid
-incorrect instance resolution — see the comment in
-`Mathlib.Geometry.Manifold.IsManifold.Basic` near the `TangentSpace`
-definition). The concrete norm on `HolomorphicOneForms X` will be
-constructed via a specific trivialization choice of the cotangent
-bundle over a finite atlas, producing a chart-local representative as
-a holomorphic `ℂ → ℂ` function whose sup gives the section norm.
-
-## Roadmap (ordered sub-tasks)
-
-- [x] `docs/MONTEL_PATH.md` — decision + plan recorded.
-- [ ] `Bundle.holoChartNorm` — in a fixed chart, norm of a bundle
-      section as sup of the chart-local holomorphic function.
-- [ ] `HolomorphicOneForms.norm_def` — max over a finite atlas of
-      chart-local norms.
-- [ ] `NormedAddCommGroup (HolomorphicOneForms X)` instance (compact X).
-- [ ] `NormedSpace ℂ (HolomorphicOneForms X)`.
-- [ ] `Cauchy` — derivative bound on chart-local representatives via
-      uniform norm + disc-distance.
-- [ ] `Equicontinuous` — a norm-bounded family of holomorphic sections
-      is equicontinuous (in some chart metric).
-- [ ] Adapt Arzelà–Ascoli from `Mathlib.Topology.UniformSpace.Ascoli`.
-- [ ] Conclude `IsCompact (closedBall 0 1)` in `HOF X`.
-- [ ] Apply `FiniteDimensional.of_isCompact_closedBall₀`.
+**Status**: machinery setup. The actual norm + its properties are
+deferred to incremental sub-tasks, each tracked below.
 -/
 
 namespace Jacobians.Montel
 
 open scoped Manifold ContDiff
+open Bundle
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-! ### Step 1a: evaluate a cotangent section at a tangent vector
+/-! ### Finite chart cover
 
-The cotangent section `α x : TangentSpace 𝓘(ℂ) x →L[ℂ] ℂ` can be applied
-to any tangent vector. Since `TangentSpace 𝓘(ℂ, ℂ) x` is definitionally
-`ℂ`, we can use `1 : ℂ` (via `NormedSpace.fromTangentSpace`) as a
-canonical "unit tangent" at x — not canonical in a chart-independent
-sense, but concrete enough to define a scalar `ℂ`-valued function on X.
+For compact X with `ChartedSpace ℂ X`, the chart sources form an open
+cover, and compactness gives a finite subcover. -/
 
-Mathematically: this is the local coordinate `a(z)` when the 1-form is
-written as `α = a(z) dz` in a chart. -/
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+/-- The chart source at x is open in X. -/
+theorem isOpen_chartAt_source (x : X) : IsOpen (chartAt ℂ x).source :=
+  (chartAt ℂ x).open_source
 
-/-- The model-space "unit tangent" vector at x. Since
-`TangentSpace 𝓘(ℂ, ℂ) x` is definitionally `ℂ`, we can use `1 : ℂ`
-directly. -/
-def tangentOne {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (x : X) : TangentSpace 𝓘(ℂ, ℂ) (M := X) x :=
-  (1 : ℂ)
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+/-- Chart sources cover X. -/
+theorem iUnion_chartAt_source_eq_univ : (⋃ x : X, (chartAt ℂ x).source) = Set.univ :=
+  iUnion_source_chartAt ℂ X
 
-/-- The scalar "local value" of a holomorphic 1-form at x, obtained by
-applying α to the model-space unit tangent vector. -/
-noncomputable def HolomorphicOneForms.eval
-    {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (x : X) : ℂ :=
-  α.toFun x (tangentOne x)
+omit [T2Space X] [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+/-- Compactness of X yields a FINITE set of points `{x_1, ..., x_n}`
+whose chart sources cover X. -/
+theorem exists_finite_chart_cover :
+    ∃ (s : Finset X), (⋃ x ∈ s, (chartAt ℂ x).source) = Set.univ := by
+  have hcov : Set.univ ⊆ ⋃ x : X, (chartAt ℂ x).source :=
+    (iUnion_chartAt_source_eq_univ (X := X)).symm.le
+  have hopen : ∀ x : X, IsOpen (chartAt ℂ x).source := fun x => (chartAt ℂ x).open_source
+  obtain ⟨s, hs⟩ :=
+    IsCompact.elim_finite_subcover isCompact_univ (fun x : X => (chartAt ℂ x).source)
+      hopen hcov
+  exact ⟨s, Set.eq_univ_of_univ_subset hs⟩
 
-/-! ### Step 1b: continuity of `HolomorphicOneForms.eval`
+/-! ### Next (not in this commit)
 
-The function `α.eval : X → ℂ` is continuous. Proof: `α.toFun` is
-`ContMDiff` hence continuous as a bundle section; applying it to the
-(chart-local) unit tangent vector gives a continuous scalar function.
-
-This is the `ContMDiff.clm_apply_of_inCoordinates` pattern adapted to
-our cotangent-bundle setup. -/
-theorem HolomorphicOneForms.eval_continuous
-    {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) :
-    Continuous (HolomorphicOneForms.eval α) := by
-  -- Goal: Continuous (fun x => α.toFun x (tangentOne x))
-  -- tangentOne x = 1, and via the definitional equalities
-  -- TangentSpace 𝓘(ℂ, ℂ) x = ℂ, (Bundle.Trivial X ℂ) x = ℂ, we can
-  -- treat α.toFun as a function X → (ℂ →L[ℂ] ℂ). Evaluation at 1 is
-  -- a continuous linear map ContinuousLinearMap.apply, so compose.
-  -- Continuity of α.toFun treated this way: via contMDiffAt_hom_bundle
-  -- + continuity of the in-coordinates representation for the trivial
-  -- Trivial-bundle factor. Much of this reduces through Hom bundle
-  -- machinery; left as a concrete next step in the Montel path.
-  sorry
-
-/-! ### Step 1c: the sup-norm `‖α‖`
-
-By compactness of X + continuity of `α.eval`, `sSup (Set.range (‖α.eval ·‖))`
-is finite. This is the norm we will put on `HolomorphicOneForms X`. -/
-noncomputable def HolomorphicOneForms.supNorm
-    {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) : ℝ :=
-  sSup (Set.range (fun x : X => ‖HolomorphicOneForms.eval α x‖))
-
--- TODO: supNorm_nonneg, supNorm_eq_zero_iff, supNorm_add, supNorm_smul
--- to upgrade to a full NormedAddCommGroup / NormedSpace ℂ instance.
+- [ ] Local representative of α in a chart (via Hom bundle trivialization).
+- [ ] Sup-norm in each chart as a compact-subset sup.
+- [ ] Max over the finite atlas.
+- [ ] NormedAddCommGroup / NormedSpace instances.
+- [ ] Cauchy estimates on chart reps.
+- [ ] Arzelà–Ascoli assembly.
+- [ ] Riesz conclusion.
+-/
 
 end Jacobians.Montel
