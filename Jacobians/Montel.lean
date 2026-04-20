@@ -115,13 +115,21 @@ the result is continuous.
 For the sup-norm argument we only need **continuity**, but smoothness
 is available as a bonus (useful for Cauchy estimates later). -/
 
-/-- `localRep α x₀` is continuous on the chart source at x₀. -/
+/-- `localRep α x₀` is continuous on the trivialization's base set.
+Proof sketch: it's the application of the smooth CLM-section α to the
+smooth tangent-section `(triv x₀).symmL ℂ · 1`; `Continuous.clm_bundle_apply`
+handles the composition. -/
 theorem localRep_continuousOn
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (x₀ : X) :
     ContinuousOn (localRep α x₀)
-      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet :=
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet := by
+  -- TODO: assemble using `ContinuousOn.clm_bundle_apply` applied to
+  -- α.contMDiff_toFun.continuous.continuousOn (CLM section) and
+  -- `Trivialization.continuousOn_symm_totalSpace_iff` (tangent section
+  -- continuity from inverse trivialization). Then project to ℂ via the
+  -- Bundle.Trivial trivialization.
   sorry
 
 /-! ### Next
