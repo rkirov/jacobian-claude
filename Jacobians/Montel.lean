@@ -567,10 +567,67 @@ theorem HolomorphicOneForms.chartNormK_zero (x₀ : X) :
   · rw [Set.not_nonempty_iff_eq_empty] at hne
     simp [hne]
 
+/-! ### Step 1k: triangle inequality and homogeneity for `chartNormK` -/
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- Triangle inequality for `chartNormK`: `chartNormK (α+β) ≤ chartNormK α + chartNormK β`. -/
+theorem HolomorphicOneForms.chartNormK_add_le
+    (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) :
+    HolomorphicOneForms.chartNormK (α + β) x₀ ≤
+      HolomorphicOneForms.chartNormK α x₀ + HolomorphicOneForms.chartNormK β x₀ := by
+  unfold HolomorphicOneForms.chartNormK
+  by_cases hne : (shrunkChart (X := X) x₀).Nonempty
+  · apply csSup_le (Set.Nonempty.image _ hne)
+    rintro r ⟨y, hy, rfl⟩
+    show ‖localRep (α + β) x₀ y‖ ≤ _
+    rw [localRep_add]
+    calc ‖localRep α x₀ y + localRep β x₀ y‖
+        ≤ ‖localRep α x₀ y‖ + ‖localRep β x₀ y‖ := norm_add_le _ _
+      _ ≤ sSup ((fun z : X => ‖localRep α x₀ z‖) '' shrunkChart (X := X) x₀) +
+          sSup ((fun z : X => ‖localRep β x₀ z‖) '' shrunkChart (X := X) x₀) := by
+        apply add_le_add
+        · exact le_csSup
+            (HolomorphicOneForms.chartNormK_bddAbove α x₀) ⟨y, hy, rfl⟩
+        · exact le_csSup
+            (HolomorphicOneForms.chartNormK_bddAbove β x₀) ⟨y, hy, rfl⟩
+  · rw [Set.not_nonempty_iff_eq_empty] at hne
+    have hα : sSup ((fun y : X => ‖localRep α x₀ y‖) '' shrunkChart (X := X) x₀) = 0 := by
+      simp [hne, Real.sSup_empty]
+    have hβ : sSup ((fun y : X => ‖localRep β x₀ y‖) '' shrunkChart (X := X) x₀) = 0 := by
+      simp [hne, Real.sSup_empty]
+    have hαβ : sSup ((fun y : X => ‖localRep (α + β) x₀ y‖) '' shrunkChart (X := X) x₀) = 0 := by
+      simp [hne, Real.sSup_empty]
+    rw [hα, hβ, hαβ]; ring_nf; rfl
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- Sub-homogeneity of `chartNormK` (one direction, which is enough along with
+the other for equality). `chartNormK (c • α) ≤ ‖c‖ * chartNormK α`. -/
+theorem HolomorphicOneForms.chartNormK_smul_le (c : ℂ)
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) :
+    HolomorphicOneForms.chartNormK (c • α) x₀ ≤
+      ‖c‖ * HolomorphicOneForms.chartNormK α x₀ := by
+  unfold HolomorphicOneForms.chartNormK
+  by_cases hne : (shrunkChart (X := X) x₀).Nonempty
+  · apply csSup_le (Set.Nonempty.image _ hne)
+    rintro r ⟨y, hy, rfl⟩
+    show ‖localRep (c • α) x₀ y‖ ≤ _
+    rw [localRep_smul, norm_smul]
+    exact mul_le_mul_of_nonneg_left
+      (le_csSup (HolomorphicOneForms.chartNormK_bddAbove α x₀) ⟨y, hy, rfl⟩)
+      (norm_nonneg _)
+  · rw [Set.not_nonempty_iff_eq_empty] at hne
+    have h1 : sSup ((fun y : X => ‖localRep (c • α) x₀ y‖) '' shrunkChart (X := X) x₀) = 0 := by
+      simp [hne, Real.sSup_empty]
+    have h2 : sSup ((fun y : X => ‖localRep α x₀ y‖) '' shrunkChart (X := X) x₀) = 0 := by
+      simp [hne, Real.sSup_empty]
+    rw [h1, h2, mul_zero]
+
 /-! ### Next
 
-- [ ] Prove `chartNormK_add_le`: triangle inequality on one chart.
-- [ ] Prove `chartNormK_smul`: homogeneity.
 - [ ] Prove `chartNormK_eq_zero → localRep α x₀ = 0` on `shrunkChart x₀`.
 - [ ] Assemble `supNorm α := sup over chartCover of chartNormK α x`.
 - [ ] `supNorm_eq_zero → α = 0` (via localRep-determines-α on each chart).
