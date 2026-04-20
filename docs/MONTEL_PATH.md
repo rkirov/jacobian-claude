@@ -68,3 +68,38 @@ to Mathlib.
 Ahlfors, L. and Sario, L. *Riemann Surfaces*, Princeton, 1960 —
 Ch. II §5 for Montel. Rudin, *Real and Complex Analysis*, Ch. 14 for
 the planar case as a template.
+
+## Current state (checkpoint)
+
+`Jacobians/Montel.lean` compiles as a skeleton with concrete
+foundations:
+
+- `tangentOne x : TangentSpace 𝓘(ℂ, ℂ) x` — the model-space unit tangent
+  vector (directly `1 : ℂ` via defeq).
+- `HolomorphicOneForms.eval α : X → ℂ` — scalar evaluation of a
+  cotangent section via `α.toFun x (tangentOne x)`.
+- `HolomorphicOneForms.supNorm α : ℝ` — `sSup` of `‖eval α x‖` over X.
+- `HolomorphicOneForms.eval_continuous` — SORRY; bundle-level
+  continuity of the evaluation.
+
+The `eval_continuous` sorry is the first concrete content-level step.
+To close it we need either:
+1. Apply `ContMDiff.clm_apply_of_inCoordinates` with an appropriate
+   "constant tangent" section, OR
+2. Use trivializations of the `Bundle.ContinuousLinearMap` Hom-bundle
+   directly on a finite atlas and glue.
+
+Approach (1) is blocked because `tangentOne` is NOT a globally smooth
+vector field (it's "constant 1 in model space", which depends on chart
+trivialization and isn't globally coherent under arbitrary chart
+changes). Approach (2) is more hands-on but requires writing out the
+coordinate change via chart derivatives.
+
+## Session log (2026-04-21)
+
+- Decision recorded (this doc + commit `5009a16`).
+- Skeleton `Jacobians/Montel.lean` landed (commit `109419c`).
+- `tangentOne` simplification + `eval`/`supNorm` definitions (commit
+  `68e4157`).
+- Partial unfolding toward `eval_continuous` — stuck at bundle-section
+  evaluation machinery (commit `04377fe`).
