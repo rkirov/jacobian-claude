@@ -110,18 +110,15 @@ theorem HolomorphicOneForms.eval_continuous
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) :
     Continuous (HolomorphicOneForms.eval α) := by
-  -- α.contMDiff_toFun says α as a map X → TotalSpace is ContMDiff.
-  -- We unfold via contMDiffAt_hom_bundle to get the in-coordinates rep.
-  -- Since the bundle is trivialized by charts (cotangent = Hom(TX, ℂ)),
-  -- the value in chart coordinates is a holomorphic function, hence
-  -- continuous. Gluing over a finite atlas gives global continuity.
-  have hα : ContMDiff 𝓘(ℂ, ℂ) (𝓘(ℂ, ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
-      (fun x : X => Bundle.TotalSpace.mk' (ℂ →L[ℂ] ℂ) x (α.toFun x)) := α.contMDiff_toFun
-  -- TODO(Montel-step1): extract pointwise continuity of `α.eval`.
-  -- Strategy: in-coordinates representation of α (via
-  -- `contMDiffAt_hom_bundle` iff) is a smooth `ℂ → ℂ →L[ℂ] ℂ` function;
-  -- compose with evaluation at 1 to get α.eval in coordinates, which is
-  -- smooth. Patch via atlas cover.
+  -- Goal: Continuous (fun x => α.toFun x (tangentOne x))
+  -- tangentOne x = 1, and via the definitional equalities
+  -- TangentSpace 𝓘(ℂ, ℂ) x = ℂ, (Bundle.Trivial X ℂ) x = ℂ, we can
+  -- treat α.toFun as a function X → (ℂ →L[ℂ] ℂ). Evaluation at 1 is
+  -- a continuous linear map ContinuousLinearMap.apply, so compose.
+  -- Continuity of α.toFun treated this way: via contMDiffAt_hom_bundle
+  -- + continuity of the in-coordinates representation for the trivial
+  -- Trivial-bundle factor. Much of this reduces through Hom bundle
+  -- machinery; left as a concrete next step in the Montel path.
   sorry
 
 /-! ### Step 1c: the sup-norm `‖α‖`
