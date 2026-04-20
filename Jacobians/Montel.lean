@@ -8,6 +8,8 @@ import Mathlib.Topology.Algebra.InfiniteSum.Basic
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Topology.Order.Compact
 import Mathlib.Topology.ShrinkingLemma
+import Mathlib.Analysis.Normed.Group.Seminorm
+import Jacobians.Genus
 
 /-!
 # Montel path to finite-dimensionality of `HolomorphicOneForms`
@@ -806,6 +808,16 @@ theorem alpha_toFun_eq_zero_of_localRep_eq_zero
     rw [φ.symm_apply_apply]
   rw [hext, hcomp, ContinuousLinearMap.zero_comp]
 
+omit [ConnectedSpace X] in
+/-- Negation invariance: `supNormK (-α) = supNormK α`. -/
+theorem HolomorphicOneForms.supNormK_neg
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) :
+    HolomorphicOneForms.supNormK (-α) = HolomorphicOneForms.supNormK α := by
+  have h : -α = (-1 : ℂ) • α := (neg_one_smul ℂ α).symm
+  rw [h, HolomorphicOneForms.supNormK_smul]
+  simp
+
 /-! ### Step 1o: positive-definiteness of supNormK -/
 
 omit [ConnectedSpace X] in
@@ -842,8 +854,38 @@ theorem HolomorphicOneForms.eq_zero_of_supNormK_eq_zero
     ContMDiffSection.coe_zero
   exact (congrFun this y).symm
 
+/-! ### Step 1p: `NormedAddCommGroup` instance on `HolomorphicOneForms X`
+
+`HolomorphicOneForms X` is a `def` alias for `ContMDiffSection` (see
+`Jacobians/Genus.lean`). We can therefore add an `AddGroupNorm` on it
+and use Mathlib's `AddGroupNorm.toNormedAddCommGroup`.
+
+`supNormK` taking a `ContMDiffSection ...` argument unifies with
+`HolomorphicOneForms X` by definitional equality. -/
+
+omit [ConnectedSpace X] in
+/-- The `AddGroupNorm` structure on `HolomorphicOneForms X`. -/
+noncomputable def HolomorphicOneForms.supNormKAsAddGroupNorm :
+    AddGroupNorm (Jacobians.HolomorphicOneForms X) where
+  toFun := fun α => HolomorphicOneForms.supNormK α
+  map_zero' := HolomorphicOneForms.supNormK_zero
+  add_le' := fun α β => HolomorphicOneForms.supNormK_add_le α β
+  neg' := fun α => HolomorphicOneForms.supNormK_neg α
+  eq_zero_of_map_eq_zero' := fun α h => HolomorphicOneForms.eq_zero_of_supNormK_eq_zero α h
+
+omit [ConnectedSpace X] in
+/-- `HolomorphicOneForms X` as a `NormedAddCommGroup`.
+
+Non-instance: to avoid conflict with potential other normed-group
+instances upstream or competing choices. Consumers can locally
+`letI := HolomorphicOneForms.normedAddCommGroup` to enable. -/
+@[reducible] noncomputable def HolomorphicOneForms.normedAddCommGroup :
+    NormedAddCommGroup (Jacobians.HolomorphicOneForms X) :=
+  AddGroupNorm.toNormedAddCommGroup HolomorphicOneForms.supNormKAsAddGroupNorm
+
 /-! ### Next
-- [ ] NormedAddCommGroup instance.
+- [ ] `NormedSpace ℂ` instance (homogeneity extends to a normed space).
+- [ ] Completeness (Banach): uniform limits of holomorphic sections are holomorphic.
 - [ ] Cauchy estimates on `localRep` (holomorphic functions in chart).
 - [ ] Equicontinuity of bounded families.
 - [ ] Arzelà–Ascoli assembly.
