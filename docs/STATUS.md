@@ -2,28 +2,26 @@
 
 ## Headline
 
-**Challenge sorry count: 24 → 4.** The classical path (line integrals +
-placeholder period lattice + trivial degree + structural Abel–Jacobi)
-has closed most of the challenge file, contingent on content sorries in
-support files. **`ZLatticeQuotient` is now sorry-free** — the full Lie
-group structure on the quotient torus AND the smoothness of the
-quotient descent are both proven end-to-end. **`pullbackForm` is
-structurally complete** — the chain rule on cotangent sections is
-proven (only content sorries remain for pushforwardForm and
-dimension theorems).
+**Challenge sorry count: 24 → 4.** Infrastructure is largely complete;
+`ZLatticeQuotient` is sorry-free, `pullbackForm` is structurally
+complete, `ambientPsi` / `ambientPhi` have concrete definitions
+(ambientPhi via matrix transpose of ambientPsi), and `genus` is now
+concretely `finrank ℂ (HolomorphicOneForms X)`. The remaining 9 sorries
+are all *genuinely* content-gated (Abel's theorem, Cartan–Serre,
+Riemann–Roch, uniformization, degree theory).
 
 ## Sorry count by file
 
 | File                          | Sorries | Kind                          |
 |-------------------------------|---------|-------------------------------|
-| `Jacobians.lean`              | 4       | content-gated (Abel, ambient content) |
-| `Jacobians/Genus.lean`        | 2       | genus + genus_eq_zero_iff_homeo |
+| `Jacobians.lean`              | 4       | content-gated (Abel + lattice preservation) |
+| `Jacobians/Genus.lean`        | 1       | genus_eq_zero_iff_homeo (uniformization); `genus` now defined |
 | `Jacobians/ZLatticeQuotient.lean` | 0   | **fully proven** — IsManifold + LieAddGroup + smoothness of descent |
-| `Jacobians/HolomorphicForms.lean` | 11  | cotangent sections + ambient bridge (pullbackForm now structurally complete) |
+| `Jacobians/HolomorphicForms.lean` | 4   | FiniteDimensional + pushforwardForm cluster + ambient_eq (all content) |
 | `Jacobians/LineIntegral.lean` | 0       | *path integration; 0 sorries* |
 | `Jacobians/ChartedSpaceOfLocalHomeomorph.lean` | 0 | manifold general-purpose     |
 | `Jacobians/JacobianValidate.lean` | 0   | instance regression test      |
-| **Total**                     | **17**  |                               |
+| **Total**                     | **9**   |                               |
 
 ## Remaining Jacobians.lean sorries (4)
 
