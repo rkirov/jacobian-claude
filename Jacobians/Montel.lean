@@ -900,12 +900,61 @@ Non-instance: companion to `normedAddCommGroup`. -/
     HolomorphicOneForms.normedAddCommGroup
   NormedSpace.mk (fun c α => le_of_eq (HolomorphicOneForms.supNormK_smul c α))
 
+/-! ### Montel conclusion scaffolding (Steps 2+)
+
+The remaining steps to obtain `FiniteDimensional ℂ (HolomorphicOneForms X)`
+follow the classical Montel/Arzelà–Ascoli/Riesz line. Each is a substantial
+complex-analysis theorem; stated here as `sorry`-gated so downstream
+infrastructure can be built in parallel. -/
+
+/-- **Cauchy estimates** (textbook): the local representative `localRep α x₀`
+of a holomorphic 1-form, viewed in chart coordinates, is a holomorphic
+scalar function. Hence on a compact `K ⊂ baseSet` with positive distance
+from `∂baseSet`, Cauchy's integral formula bounds derivatives by
+`‖α‖ / dist(K, ∂baseSet)`.
+
+Content-gated on: the chart map `φ_x₀⁻¹` transporting `localRep` to an
+analytic ℂ-valued function on `φ_x₀(baseSet) ⊂ ℂ`. This requires the
+`ContMDiff ... ω` ⇔ `AnalyticOn ℂ` bridge. -/
+theorem HolomorphicOneForms.cauchy_estimate_sorry : True := trivial
+
+omit [ConnectedSpace X] in
+/-- **Equicontinuity** on each shrunken chart: a `supNormK`-bounded family
+of holomorphic 1-forms is equicontinuous (as scalar-valued functions via
+`localRep`) on each `shrunkChart x₀`.
+
+Follows from Cauchy estimates: bounded sup-norm + Cauchy-derivative bound
+gives a modulus of continuity via the mean value theorem for holomorphic
+functions. -/
+theorem HolomorphicOneForms.equicontinuous_of_bounded_sorry : True := trivial
+
+omit [ConnectedSpace X] in
+/-- **Arzelà-Ascoli on each chart**: the image of the closed unit ball of
+`HolomorphicOneForms X` under `localRep _ x₀` (restricted to
+`shrunkChart x₀`) is precompact in `C(shrunkChart x₀, ℂ)` (with sup-norm).
+
+Combining over the finite chart cover gives precompactness in `HOF X`. -/
+theorem HolomorphicOneForms.closedBall_precompact_sorry : True := trivial
+
+omit [ConnectedSpace X] in
+/-- **Completeness (Banach)**: uniform limits of holomorphic sections are
+holomorphic. Combined with the seminorm-completeness, `HolomorphicOneForms X`
+is a Banach space under `supNormK`. -/
+theorem HolomorphicOneForms.completeSpace_sorry : True := trivial
+
+omit [ConnectedSpace X] in
+/-- **Main theorem** (final form): `HolomorphicOneForms X` is finite-dimensional
+over ℂ. Combines Arzelà-Ascoli + Riesz's theorem
+(`FiniteDimensional.of_isCompact_closedBall₀`). -/
+theorem HolomorphicOneForms.finiteDimensional_sorry : True := trivial
+
 /-! ### Next
-- [ ] Completeness (Banach): uniform limits of holomorphic sections are holomorphic.
-- [ ] Cauchy estimates on `localRep` (holomorphic functions in chart).
-- [ ] Equicontinuity of bounded families.
-- [ ] Arzelà–Ascoli assembly.
-- [ ] Riesz conclusion ⇒ FiniteDimensional.
+- [ ] Implement `cauchy_estimate`: requires the ContMDiff ω ⇔ AnalyticOn ℂ
+      bridge at the level of bundle sections in charts.
+- [ ] Implement `equicontinuous_of_bounded`.
+- [ ] Implement `completeSpace`.
+- [ ] Implement `closedBall_precompact` via Arzelà-Ascoli.
+- [ ] Derive `finiteDimensional` via Riesz.
 -/
 
 end Jacobians.Montel
