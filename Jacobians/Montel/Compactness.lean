@@ -153,6 +153,90 @@ theorem norm_localRepOnShrunk_le_supNormK
     rw [h0, norm_zero]
     exact HolomorphicOneForms.supNormK_nonneg α
 
+/-! ### Inner analog: `localRepOnInnerShrunk` on `innerShrunkChart`
+
+Inner closed shrinkage `innerShrunkChart x₀ ⊆ chartOpen x₀ ⊆ shrunkChart x₀`
+gives the Arzelà–Ascoli domain: compact, covers X (in union over
+`chartCover`), and has an OPEN `chartOpen x₀` neighborhood on which
+`supNormK α` bounds `|localRep α x₀|`. This unlocks Cauchy-estimate
+equicontinuity. -/
+
+omit [ConnectedSpace X] [Nonempty X] in
+theorem innerShrunkChart_subset_baseSet (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    innerShrunkChart (X := X) x₀ ⊆
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet :=
+  (innerShrunkChart_subset_shrunkChart x₀).trans (shrunkChart_subset_baseSet x₀ hx₀)
+
+omit [ConnectedSpace X] [Nonempty X] in
+theorem localRep_continuousOn_innerShrunkChart
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    ContinuousOn (localRep α x₀) (innerShrunkChart (X := X) x₀) :=
+  (localRep_continuousOn α x₀).mono (innerShrunkChart_subset_baseSet x₀ hx₀)
+
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+theorem innerShrunkChart_compactSpace (x₀ : X) :
+    CompactSpace (innerShrunkChart (X := X) x₀) :=
+  isCompact_iff_compactSpace.mp (innerShrunkChart_isCompact x₀)
+
+/-- `localRep α x₀` bundled as a continuous map on the compact inner
+`innerShrunkChart x₀`. Fallback to constant zero for `x₀ ∉ chartCover`
+(where `innerShrunkChart x₀ = ∅`). -/
+noncomputable def localRepOnInnerShrunk
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) : C(innerShrunkChart (X := X) x₀, ℂ) := by
+  classical
+  by_cases hx₀ : x₀ ∈ (chartCover : Finset X)
+  · exact
+      { toFun := fun y => localRep α x₀ (y : X)
+        continuous_toFun := by
+          have h := localRep_continuousOn_innerShrunkChart α x₀ hx₀
+          exact h.restrict }
+  · exact
+      { toFun := fun _ => 0
+        continuous_toFun := continuous_const }
+
+omit [ConnectedSpace X] [Nonempty X] in
+theorem localRepOnInnerShrunk_apply
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    (y : innerShrunkChart (X := X) x₀) :
+    localRepOnInnerShrunk α x₀ y = localRep α x₀ (y : X) := by
+  unfold localRepOnInnerShrunk
+  simp [hx₀]
+
+omit [ConnectedSpace X] in
+/-- Component-wise bound for the inner version: same `supNormK` bound
+as outer, since `innerShrunkChart ⊆ shrunkChart` and the norm bound on
+outer lifts to inner. -/
+theorem norm_localRepOnInnerShrunk_le_supNormK
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    letI := innerShrunkChart_compactSpace (X := X) x₀
+    ‖localRepOnInnerShrunk α x₀‖ ≤ HolomorphicOneForms.supNormK α := by
+  letI := innerShrunkChart_compactSpace (X := X) x₀
+  by_cases hne : Nonempty (innerShrunkChart (X := X) x₀)
+  · haveI := hne
+    refine (ContinuousMap.norm_le_of_nonempty _).mpr ?_
+    intro y
+    have hy_inner : (y : X) ∈ innerShrunkChart (X := X) x₀ := y.2
+    have hy_outer : (y : X) ∈ shrunkChart (X := X) x₀ :=
+      innerShrunkChart_subset_shrunkChart x₀ hy_inner
+    calc ‖localRepOnInnerShrunk α x₀ y‖
+        = ‖localRep α x₀ (y : X)‖ := by rw [localRepOnInnerShrunk_apply α hx₀ y]
+      _ ≤ HolomorphicOneForms.supNormK α :=
+          HolomorphicOneForms.norm_localRep_le_supNormK α hx₀ hy_outer
+  · rw [not_nonempty_iff] at hne
+    have h0 : localRepOnInnerShrunk α x₀ = 0 := by
+      ext y
+      exact (hne.false y).elim
+    rw [h0, norm_zero]
+    exact HolomorphicOneForms.supNormK_nonneg α
+
 /-! ### Bridge: open-neighborhood bound on `localRep`
 
 The `Cover.lean` refactor exposes an open layer `chartOpen x₀` sitting
