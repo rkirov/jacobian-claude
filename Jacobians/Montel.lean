@@ -155,15 +155,48 @@ theorem localRep_continuousOn
     continuous_snd.comp (Bundle.Trivial.homeomorphProd X ℂ).continuous
   exact hproj.comp_continuousOn hap
 
+/-! ### Step 1d: chart-local sup-norm
+
+For each chart (parameterized by `x₀`), the chart-local sup-norm of α
+is `sSup_{y ∈ X} ‖localRep α x₀ y‖`. By compactness of X + continuity
+of `‖localRep α x₀ ·‖` on the chart base set, this is finite (though
+the specific value depends on `α`'s behavior outside the base set,
+which is where the formal choice matters). -/
+
+/-- The chart-local sup-norm of α, indexed by the center x₀ of a chart. -/
+noncomputable def HolomorphicOneForms.chartNorm
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) : ℝ :=
+  ⨆ y : X, ‖localRep α x₀ y‖
+
+/-! ### Step 1e: finite-cover sup-norm
+
+The actual sup-norm on `HolomorphicOneForms X`: pick a finite chart
+cover (via `exists_finite_chart_cover`), and take the `Finset.sup` of
+chart-local sup-norms.
+
+Note: the specific finite cover used is not canonical, but any choice
+yields an equivalent norm (classical fact: all sup-norms coming from
+finite atlas refinements are equivalent). -/
+
+/-- The finite-cover sup-norm of α, using a given non-empty finite cover. -/
+noncomputable def HolomorphicOneForms.supNormOn
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (s : Finset X) (hs : s.Nonempty) : ℝ :=
+  s.sup' hs (fun x₀ => HolomorphicOneForms.chartNorm α x₀)
+
 /-! ### Next
 
-- [ ] Finite-cover-based sup-norm: `max_j sup_y (|localRep α x_j y|)`
-      over y in chart closure.
-- [ ] NormedAddCommGroup / NormedSpace instances.
-- [ ] Cauchy estimates on chart reps (they're holomorphic functions in
-      the chart).
+- [ ] `HolomorphicOneForms.supNorm` — pick a specific finite cover.
+- [ ] Prove `supNorm = 0 ↔ α = 0` (positive-definiteness).
+- [ ] Prove triangle + scalar mult compat.
+- [ ] NormedAddCommGroup instance.
+- [ ] Cauchy estimates on `localRep` (holomorphic functions in chart).
+- [ ] Equicontinuity of bounded families.
 - [ ] Arzelà–Ascoli assembly.
-- [ ] Riesz conclusion.
+- [ ] Riesz conclusion ⇒ FiniteDimensional.
 -/
 
 end Jacobians.Montel
