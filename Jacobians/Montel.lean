@@ -116,6 +116,57 @@ theorem norm_mkOfCompact_localRepOnInnerShrunk_le
     rw [h0, norm_zero]
     exact norm_nonneg _
 
+/-! ### The per-chart continuous linear embedding (B.9 step 3b)
+
+Packages the embedding `α ↦ mkOfCompact (localRepOnInnerShrunk α x₀)`
+as a `ContinuousLinearMap` from `HOF X` (with the supNormK-based
+normed structure) to `innerShrunkChart x₀ →ᵇ ℂ`. Continuity follows
+from the boundedness `‖·‖ ≤ ‖α‖` via `LinearMap.mkContinuous`. -/
+
+/-- Per-chart bcf-embedding as a `ContinuousLinearMap`. -/
+noncomputable def HolomorphicOneForms.embedInnerBcf (x₀ : X) :
+    letI := innerShrunkChart_compactSpace (X := X) x₀
+    letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+    letI := HolomorphicOneForms.normedSpace (X := X)
+    Jacobians.HolomorphicOneForms X →L[ℂ]
+      BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ := by
+  letI := innerShrunkChart_compactSpace (X := X) x₀
+  letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+  letI := HolomorphicOneForms.normedSpace (X := X)
+  refine LinearMap.mkContinuous
+    { toFun := fun α => BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀)
+      map_add' := ?_
+      map_smul' := ?_ } 1 ?_
+  · intro α β
+    apply BoundedContinuousFunction.ext_iff.mpr
+    intro y
+    have hfn : localRepOnInnerShrunk (α + β) x₀ =
+        localRepOnInnerShrunk α x₀ + localRepOnInnerShrunk β x₀ :=
+      localRepOnInnerShrunk_add α β x₀
+    simp only [BoundedContinuousFunction.mkOfCompact_apply,
+      BoundedContinuousFunction.coe_add, Pi.add_apply, hfn,
+      ContinuousMap.add_apply]
+  · intro c α
+    apply BoundedContinuousFunction.ext_iff.mpr
+    intro y
+    have hfn : localRepOnInnerShrunk (c • α) x₀ = c • localRepOnInnerShrunk α x₀ :=
+      localRepOnInnerShrunk_smul c α x₀
+    simp only [BoundedContinuousFunction.mkOfCompact_apply,
+      BoundedContinuousFunction.coe_smul, RingHom.id_apply, hfn,
+      ContinuousMap.smul_apply]
+  · intro α
+    calc ‖BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀)‖
+        ≤ ‖α‖ := norm_mkOfCompact_localRepOnInnerShrunk_le α x₀
+      _ = 1 * ‖α‖ := (one_mul _).symm
+
+/-- The continuous linear map's value at α is `mkOfCompact (localRepOnInnerShrunk α x₀)`. -/
+theorem HolomorphicOneForms.embedInnerBcf_apply (x₀ : X) (α : Jacobians.HolomorphicOneForms X) :
+    letI := innerShrunkChart_compactSpace (X := X) x₀
+    letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+    letI := HolomorphicOneForms.normedSpace (X := X)
+    (HolomorphicOneForms.embedInnerBcf x₀ : _ →L[ℂ] _) α =
+      BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀) := rfl
+
 /-! ### Montel conclusion: closed unit ball is compact (single sorry) + Riesz -/
 
 /-- **Core content sorry**: the closed unit ball in `HolomorphicOneForms X`
