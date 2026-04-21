@@ -57,6 +57,47 @@ theorem norm_localRep_sub_le_supNormK
   rw [h_ap]
   exact HolomorphicOneForms.norm_localRep_le_supNormK (α - β) hx₀ hy
 
+/-! ### Step 1b — `localRep α` on shrunkChart as a continuous map
+
+Bundles `localRep α x₀` restricted to `shrunkChart x₀` as a `C(_, ℂ)`,
+parallel to `localRepOnInnerShrunk` but on the outer shrinkage. -/
+
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+theorem shrunkChart_compactSpace' (x₀ : X) :
+    CompactSpace (shrunkChart (X := X) x₀) :=
+  isCompact_iff_compactSpace.mp (shrunkChart_isCompact x₀)
+
+/-- Bundled version of `localRep α x₀` on shrunkChart x₀. -/
+noncomputable def localRepOnShrunkBcf
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) : BoundedContinuousFunction (shrunkChart (X := X) x₀) ℂ := by
+  letI := shrunkChart_compactSpace' (X := X) x₀
+  exact BoundedContinuousFunction.mkOfCompact (localRepOnShrunk α x₀)
+
+/-! ### Step 2 — bcf-Cauchy on shrunkChart from supNormK-Cauchy
+
+The per-chart bcf distance is bounded by supNormK of the difference,
+so a supNormK-Cauchy sequence has bcf-Cauchy chart restrictions. -/
+
+omit [ConnectedSpace X] in
+/-- Per-chart bcf-distance ≤ supNormK-distance for `α, β ∈ HOF X`. -/
+theorem dist_localRepOnShrunkBcf_le_supNormK_sub
+    (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    letI := shrunkChart_compactSpace' (X := X) x₀
+    dist (localRepOnShrunkBcf α x₀) (localRepOnShrunkBcf β x₀) ≤
+      HolomorphicOneForms.supNormK (α - β) := by
+  letI := shrunkChart_compactSpace' (X := X) x₀
+  refine (BoundedContinuousFunction.dist_le
+    (HolomorphicOneForms.supNormK_nonneg _)).mpr ?_
+  intro y
+  have hy : (y : X) ∈ shrunkChart (X := X) x₀ := y.2
+  simp only [localRepOnShrunkBcf, BoundedContinuousFunction.mkOfCompact_apply,
+    localRepOnShrunk_apply _ hx₀, dist_eq_norm]
+  exact norm_localRep_sub_le_supNormK α β hx₀ hy
+
 /-! ### Remaining steps (DEFERRED — require substantial bundle-reconstruction work)
 
 The full completeness proof requires:
