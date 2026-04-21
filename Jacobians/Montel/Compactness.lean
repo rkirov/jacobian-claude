@@ -715,6 +715,42 @@ theorem equicontinuousAt_localRep_on_innerShrunkChart
   rw [hsymm_y, hsymm_y₀, dist_eq_norm] at hFbound
   exact hFbound.le
 
+omit [ConnectedSpace X] in
+/-- **Equicontinuous family on `innerShrunkChart x₀`.**
+The family indexed by `α` with `supNormK α ≤ M` of functions
+`(y : innerShrunkChart x₀) ↦ localRep α x₀ y.val` is `Equicontinuous`,
+i.e., pointwise equicontinuous at every point. Derived from
+`equicontinuousAt_localRep_on_innerShrunkChart` by packaging the
+neighborhood-in-X witness into the subtype neighborhood via
+`nhds_subtype`. -/
+theorem equicontinuous_localRep_inner_family
+    (M : ℝ) (hMnn : 0 ≤ M) {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    Equicontinuous
+      (fun α : {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+          (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
+          HolomorphicOneForms.supNormK α ≤ M} =>
+        fun y : innerShrunkChart (X := X) x₀ => localRep α.1 x₀ (y : X)) := by
+  intro y₀
+  rw [Metric.equicontinuousAt_iff_right]
+  intro ε hε
+  obtain ⟨V, hV_nhds, hV_bd⟩ :=
+    equicontinuousAt_localRep_on_innerShrunkChart M hMnn hx₀ y₀.1 y₀.2 (ε/2) (by linarith)
+  -- Show Subtype.val ⁻¹' V ∈ 𝓝 y₀.
+  rw [nhds_subtype]
+  rw [Filter.eventually_comap]
+  filter_upwards [hV_nhds] with y' hy' y hy_eq
+  -- y : innerShrunkChart x₀, y.val = y' ∈ V.
+  have hy_inner : y.val ∈ innerShrunkChart (X := X) x₀ := y.2
+  have hy_in_V : y.val ∈ V := hy_eq ▸ hy'
+  intro α
+  have := hV_bd y.val hy_in_V α.1 α.2 hy_inner
+  -- Need: dist (F α y₀) (F α y) < ε. We have ‖localRep α.1 x₀ y.val - localRep α.1 x₀ y₀.val‖ ≤ ε/2.
+  rw [dist_eq_norm]
+  calc ‖localRep α.1 x₀ (y₀ : X) - localRep α.1 x₀ (y : X)‖
+      = ‖localRep α.1 x₀ (y : X) - localRep α.1 x₀ (y₀ : X)‖ := norm_sub_rev _ _
+    _ ≤ ε/2 := this
+    _ < ε := by linarith
+
 /-! ### Next steps (scheduled, not implemented here)
 
 **B.8** Apply `BoundedContinuousFunction.arzela_ascoli` to each
