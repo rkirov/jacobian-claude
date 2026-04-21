@@ -159,6 +159,45 @@ noncomputable def HolomorphicOneForms.embedInnerBcf (x₀ : X) :
         ≤ ‖α‖ := norm_mkOfCompact_localRepOnInnerShrunk_le α x₀
       _ = 1 * ‖α‖ := (one_mul _).symm
 
+/-- **Cauchy preservation**: CauchySeq in HOF X maps to CauchySeq in bcf
+under the per-chart embedding (via continuity of `embedInnerBcf`). -/
+theorem HolomorphicOneForms.cauchySeq_embedInnerBcf_of_cauchySeq
+    (x₀ : X)
+    (αs : ℕ → Jacobians.HolomorphicOneForms X)
+    (hCauchy : letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+      CauchySeq αs) :
+    letI := innerShrunkChart_compactSpace (X := X) x₀
+    letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+    letI := HolomorphicOneForms.normedSpace (X := X)
+    CauchySeq fun n =>
+      BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk (αs n) x₀) := by
+  letI := innerShrunkChart_compactSpace (X := X) x₀
+  letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+  letI := HolomorphicOneForms.normedSpace (X := X)
+  -- Push CauchySeq through the continuous linear embedding.
+  have h := hCauchy.map (HolomorphicOneForms.embedInnerBcf x₀).uniformContinuous
+  convert h using 0
+
+/-- **Chart-wise convergence**: CauchySeq in HOF X has per-chart bcf
+limits, since bcf is complete. -/
+theorem HolomorphicOneForms.exists_bcf_limit_of_cauchySeq
+    (x₀ : X)
+    (αs : ℕ → Jacobians.HolomorphicOneForms X)
+    (hCauchy : letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+      CauchySeq αs) :
+    letI := innerShrunkChart_compactSpace (X := X) x₀
+    letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+    letI := HolomorphicOneForms.normedSpace (X := X)
+    ∃ g : BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ,
+      Filter.Tendsto
+        (fun n => BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk (αs n) x₀))
+        Filter.atTop (nhds g) := by
+  letI := innerShrunkChart_compactSpace (X := X) x₀
+  letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+  letI := HolomorphicOneForms.normedSpace (X := X)
+  have hCSeq := HolomorphicOneForms.cauchySeq_embedInnerBcf_of_cauchySeq x₀ αs hCauchy
+  exact cauchySeq_tendsto_of_complete hCSeq
+
 /-- The continuous linear map's value at α is `mkOfCompact (localRepOnInnerShrunk α x₀)`. -/
 theorem HolomorphicOneForms.embedInnerBcf_apply (x₀ : X) (α : Jacobians.HolomorphicOneForms X) :
     letI := innerShrunkChart_compactSpace (X := X) x₀
