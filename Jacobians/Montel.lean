@@ -6,6 +6,7 @@ import Jacobians.Montel.LocalRep
 import Jacobians.Montel.ChartNorm
 import Jacobians.Montel.SupNorm
 import Jacobians.Montel.Compactness
+import Jacobians.Montel.ChartTransition
 
 /-!
 # Montel path to finite-dimensionality of `HolomorphicOneForms`
