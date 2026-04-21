@@ -413,6 +413,56 @@ theorem localRep_analyticOn_chartTarget
   -- Step 3: ContDiffOn ω ↔ AnalyticOn via UniqueDiffOn on open set.
   exact (contDiffOn_omega_iff_analyticOn (chartAt ℂ x₀).open_target.uniqueDiffOn).mp hCD
 
+/-! ### Chart-image bridge to complex analysis
+
+The chart image `(chartAt ℂ x₀) '' chartOpen x₀` is open in `ℂ`, and on
+it the pullback `localRep α x₀ ∘ chart.symm` is both analytic (from B.3
++ monotonicity) and bounded by `supNormK α` (from the open-neighborhood
+bound). This is the direct input to Arzelà–Ascoli on the chart side. -/
+
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+/-- The chart image of `chartOpen x₀` is open in `ℂ`. -/
+theorem isOpen_chart_image_chartOpen (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    IsOpen ((chartAt ℂ x₀) '' chartOpen (X := X) x₀) := by
+  apply (chartAt ℂ x₀).isOpen_image_iff_of_subset_source (chartOpen_subset_source x₀ hx₀) |>.mpr
+  exact chartOpen_isOpen x₀
+
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+/-- The chart image of `chartOpen x₀` sits inside the chart target. -/
+theorem chart_image_chartOpen_subset_target (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    (chartAt ℂ x₀) '' chartOpen (X := X) x₀ ⊆ (chartAt ℂ x₀).target := by
+  intro z hz
+  obtain ⟨y, hy, rfl⟩ := hz
+  exact (chartAt ℂ x₀).map_source (chartOpen_subset_source x₀ hx₀ hy)
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- Pullback analyticity on the chart image of `chartOpen x₀`. Direct
+specialization of `localRep_analyticOn_chartTarget` via
+`AnalyticOn.mono`. -/
+theorem localRep_analyticOn_chart_image_chartOpen
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    AnalyticOn ℂ (fun z : ℂ => localRep α x₀ ((chartAt ℂ x₀).symm z))
+      ((chartAt ℂ x₀) '' chartOpen (X := X) x₀) :=
+  (localRep_analyticOn_chartTarget α x₀).mono (chart_image_chartOpen_subset_target x₀ hx₀)
+
+omit [ConnectedSpace X] in
+/-- The pullback `localRep α x₀ ∘ chart.symm` is bounded by `supNormK α`
+on the chart image of `chartOpen x₀`. -/
+theorem norm_localRep_pullback_le_supNormK_on_chart_image_chartOpen
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    {z : ℂ} (hz : z ∈ (chartAt ℂ x₀) '' chartOpen (X := X) x₀) :
+    ‖localRep α x₀ ((chartAt ℂ x₀).symm z)‖ ≤ HolomorphicOneForms.supNormK α := by
+  obtain ⟨y, hy, hzy⟩ := hz
+  have hy_src : y ∈ (chartAt ℂ x₀).source := chartOpen_subset_source x₀ hx₀ hy
+  have hsymm : (chartAt ℂ x₀).symm z = y := by
+    rw [← hzy]; exact (chartAt ℂ x₀).left_inv hy_src
+  rw [hsymm]
+  exact norm_localRep_le_supNormK_on_chartOpen α hx₀ hy
+
 /-! ### Step B.4 — Cauchy estimate: uniform derivative bound on compacta
 
 Pure complex analysis (no bundles). For an analytic function `f : ℂ → ℂ`
