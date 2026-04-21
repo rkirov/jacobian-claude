@@ -523,6 +523,29 @@ theorem analyticOn_of_tendstoLocallyUniformlyOn
       (by filter_upwards [hF] with n hn using hn.differentiableOn) hU
   exact h_diff.analyticOn hU
 
+omit [ConnectedSpace X] [Nonempty X] in
+/-- **Chart-pullback analytic limit.** Given a sequence of holomorphic
+1-forms whose chart-pullbacks converge locally uniformly on
+`chart '' chartOpen x₀`, the limit function is analytic there.
+
+Specialization of `analyticOn_of_tendstoLocallyUniformlyOn` to our
+pulled-back family. Used downstream in B.10 to reconstruct the limit
+section's chart representatives as analytic functions. -/
+theorem analyticOn_of_pullback_tendsto_locally_uniformly
+    {ι : Type*} {φ : Filter ι} [φ.NeBot]
+    (αf : ι → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    (g : ℂ → ℂ)
+    (hconv : TendstoLocallyUniformlyOn
+      (fun n : ι => fun z : ℂ => localRep (αf n) x₀ ((chartAt ℂ x₀).symm z))
+      g φ ((chartAt ℂ x₀) '' chartOpen (X := X) x₀)) :
+    AnalyticOn ℂ g ((chartAt ℂ x₀) '' chartOpen (X := X) x₀) := by
+  apply analyticOn_of_tendstoLocallyUniformlyOn (isOpen_chart_image_chartOpen x₀ hx₀)
+    hconv
+  filter_upwards with n
+  exact localRep_analyticOn_chart_image_chartOpen (αf n) x₀ hx₀
+
 /-! ### Step B.5 — Uniform Lipschitz bound on convex compacta
 
 Combining B.4's uniform derivative bound with the mean-value inequality
