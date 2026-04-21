@@ -859,6 +859,29 @@ theorem isCompact_univ_pi_closure_image_inner_bcf
       isClosed_closure ?_
     exact (isClosed_singleton.closure_subset_iff).mpr hrange_sub
 
+omit [ConnectedSpace X] in
+/-- **Step B.9 step 2 — Embedding lands in the compact product.**
+For each α with `supNormK α ≤ M`, the associated function
+`x₀ ↦ mkOfCompact (localRepOnInnerShrunk α x₀)` lies in the compact
+`univ.pi`-set from step 1. -/
+theorem embedding_in_univ_pi_closure
+    (M : ℝ)
+    (α : {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+        (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
+        HolomorphicOneForms.supNormK α ≤ M}) :
+    letI := fun x₀ : X => innerShrunkChart_compactSpace (X := X) x₀
+    (fun x₀ : X =>
+        BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α.1 x₀)) ∈
+      Set.univ.pi
+        (fun x₀ : X =>
+          closure (Set.range
+            (fun α : {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+                (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
+                HolomorphicOneForms.supNormK α ≤ M} =>
+              BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α.1 x₀)))) := by
+  intro x₀ _
+  exact subset_closure ⟨α, rfl⟩
+
 /-! ### Next steps (scheduled, not implemented here)
 
 **B.9** Inject HOF X into the finite product
