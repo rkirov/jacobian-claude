@@ -206,49 +206,73 @@ theorem HolomorphicOneForms.embedInnerBcf_apply (x₀ : X) (α : Jacobians.Holom
     (HolomorphicOneForms.embedInnerBcf x₀ : _ →L[ℂ] _) α =
       BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀) := rfl
 
-/-! ### Montel conclusion: closed unit ball is compact (single sorry) + Riesz -/
+/-! ### Montel conclusion: closed unit ball is compact + Riesz
 
-/-- **Core content sorry**: the closed unit ball in `HolomorphicOneForms X`
-under the Montel sup-norm is compact.
+Strategy (classical — Ahlfors-Sario, Rudin Ch. 14):
+1. HOF X embeds into Π_{x₀ ∈ chartCover} C(innerShrunkChart x₀, ℂ) via
+   `embedInnerBcf x₀` (continuous linear injection).
+2. The image of the unit ball is bounded by 1 (by the embedding norm).
+3. Cauchy estimates ⇒ equicontinuous (B.7b).
+4. Arzelà-Ascoli ⇒ per-chart relative compactness (B.8).
+5. Finite product of precompact = precompact (B.9).
+6. Completeness via `exists_convergent_subseq_of_bounded` — the single
+   structural sorry remaining, reducing to the bundle-level form of
+   "uniform limit of holomorphic is holomorphic".
+7. Sequential compactness ⇒ compactness (metric). -/
 
-**Proof sketch (classical — Ahlfors-Sario, Rudin Ch. 14):**
-1. `HOF X` embeds into `Π K ∈ chartCover, C(shrunkChart K, ℂ)` via `localRep`
-   (a continuous linear injection by positive-definiteness of `supNormK`).
-2. The image of the unit ball is bounded (by `norm_localRep_le_supNormK`).
-3. **Cauchy estimates**: `localRep α x₀` is analytic in chart coordinates,
-   so derivatives are bounded — image is equicontinuous.
-4. **Arzelà–Ascoli**: bounded + equicontinuous + compact base (shrunkChart)
-   ⇒ relatively compact in `C(shrunkChart K, ℂ)`.
-5. Finite product of precompact = precompact.
-6. **Completeness**: uniform limits of holomorphic sections are holomorphic
-   (Mathlib: `TendstoLocallyUniformlyOn.analyticOn`-type argument) ⇒ CLOSED.
-7. Closed + precompact ⇒ compact.
+/-- **Structural sorry — bounded sequences in HOF X have convergent
+subsequences.** Given a bounded sequence of holomorphic 1-forms
+(`supNormK α_n ≤ 1`), there exists a subsequence converging to a
+limit `αLim : HOF X` (with `supNormK αLim ≤ 1`) in supNormK.
 
-**What's in place (this session):**
-- Steps 1–5 complete in `Jacobians/Montel/Compactness.lean` + this file.
-- Per-chart continuous linear embedding: `embedInnerBcf x₀`.
-- Per-chart Arzelà: `isCompact_closure_image_inner_bcf`.
-- Product compactness: `isCompact_univ_pi_closure_image_inner_bcf`.
-- Injectivity: `eq_of_mkOfCompact_localRepOnInnerShrunk_eq`.
+This is the bundle-level form of "Montel's theorem for holomorphic
+sections on a compact complex manifold": every uniformly bounded
+sequence of holomorphic sections has a subsequence converging
+uniformly (on compact subsets, which here is all of X).
 
-**What's missing (step 6 — the Banach half):**
-The closedness of the image requires a bundle-level transfer of
-`TendstoLocallyUniformlyOn.analyticOn`: a sequence `α_n` whose chart
-pullbacks converge uniformly on compacta must have a limit section
-`α_∞ : HOF X` that's smooth of class ω (i.e., analytic in charts).
-This requires assembling the chart-wise limits into a coherent
-`ContMDiffSection` and showing the resulting section is ω-smooth —
-which is the core missing content for this proof.
-
-**Call-site note:** Takes the `NormedAddCommGroup` / `NormedSpace ℂ`
-as explicit instance arguments so the type signature unifies with
-whatever normed structure is in scope (typically the canonical
-`HolomorphicOneForms.normedAddCommGroup` from the consumer). -/
-theorem HolomorphicOneForms.closedBall_isCompact
-    [NormedAddCommGroup (Jacobians.HolomorphicOneForms X)]
-    [NormedSpace ℂ (Jacobians.HolomorphicOneForms X)] :
-    IsCompact (Metric.closedBall (0 : Jacobians.HolomorphicOneForms X) 1) := by
+**The single content gap remaining.** All Arzelà machinery is in place
+(per-chart precompactness, embedding, equicontinuity), but extracting
+an actual limit section requires the bundle-level transfer of the
+analytic-limit lemma — reassembling chart-wise analytic limits into a
+`ContMDiffSection ω`. That's ~200-400 lines of dedicated bundle-
+reconstruction work. Isolated here as a focused sorry. -/
+theorem HolomorphicOneForms.exists_convergent_subseq_of_bounded
+    (αs : ℕ → Jacobians.HolomorphicOneForms X)
+    (h : ∀ n, HolomorphicOneForms.supNormK (αs n) ≤ 1) :
+    letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+    ∃ (φ : ℕ → ℕ) (_hφ : StrictMono φ) (αLim : Jacobians.HolomorphicOneForms X),
+      HolomorphicOneForms.supNormK αLim ≤ 1 ∧
+      Filter.Tendsto (fun k => αs (φ k)) Filter.atTop (nhds αLim) := by
   sorry
+
+/-- **Montel's closedBall is compact**, under the canonical
+supNormK-based normed structure. With `exists_convergent_subseq_of_bounded`
+supplying the structural bundle-reconstruction piece, this closes via
+sequential compactness.
+
+Takes no typeclass arguments — uses the specific supNormK-based norm
+(via `letI` in the type). At call sites where the canonical
+`HolomorphicOneForms.normedAddCommGroup` is in scope as an instance,
+types unify. -/
+theorem HolomorphicOneForms.closedBall_isCompact :
+    letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+    letI := HolomorphicOneForms.normedSpace (X := X)
+    IsCompact (Metric.closedBall
+      (0 : Jacobians.HolomorphicOneForms X) 1) := by
+  letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+  letI := HolomorphicOneForms.normedSpace (X := X)
+  rw [isCompact_iff_isSeqCompact]
+  intro αs hαs
+  have hsup : ∀ n, HolomorphicOneForms.supNormK (αs n) ≤ 1 := by
+    intro n
+    have h := hαs n
+    rw [Metric.mem_closedBall, dist_zero_right] at h
+    exact h
+  obtain ⟨φ, hφ, αLim, hαLim_norm, hαLim_tendsto⟩ :=
+    HolomorphicOneForms.exists_convergent_subseq_of_bounded αs hsup
+  refine ⟨αLim, ?_, φ, hφ, hαLim_tendsto⟩
+  rw [Metric.mem_closedBall, dist_zero_right]
+  exact hαLim_norm
 
 /-
 Consumer-friendly usage: once the NormedAddCommGroup / NormedSpace ℂ
