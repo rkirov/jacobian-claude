@@ -117,4 +117,90 @@ theorem localRep_chart_transition
     exact map_smul (e.symmL ℂ y) c 1
   rw [h, map_smul, smul_eq_mul]
 
+/-! ### Continuity of the chart-transition factor -/
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+/-- Continuity of `chartTransitionFactor` on the overlap of two base sets. -/
+theorem continuousOn_chartTransitionFactor (x₀ x₀' : X) :
+    ContinuousOn (chartTransitionFactor (X := X) x₀ x₀')
+      ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀').baseSet ∩
+        (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet) := by
+  unfold chartTransitionFactor
+  -- continuousOn_coordChange gives continuity of y ↦ coordChangeL ℂ e' e y as a CLM
+  have h := continuousOn_coordChange ℂ
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀')
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀)
+  -- Apply at 1: composing with (evaluation at 1) preserves continuity.
+  exact (ContinuousLinearMap.apply ℂ ℂ (1 : ℂ)).continuous.comp_continuousOn h
+
+/-! ### Pairwise chart-transition bound -/
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- **Pairwise bound**: for each chart pair `(x₀, x₀') ∈ chartCover²`, there's
+a universal constant `M ≥ 0` such that for any α and any point y in the
+overlap `shrunkChart x₀ ∩ innerShrunkChart x₀'`,
+`‖localRep α x₀ y‖ ≤ M · ‖localRep α x₀' y‖`.
+
+Proof: `1/‖chartTransitionFactor x₀ x₀' y‖` is continuous and bounded on
+the compact overlap (since `c ≠ 0` there); take the sup as M. -/
+theorem exists_pairwise_chart_transition_bound
+    (x₀ x₀' : X) (hx₀ : x₀ ∈ (chartCover : Finset X))
+    (hx₀' : x₀' ∈ (chartCover : Finset X)) :
+    ∃ M : ℝ, 0 ≤ M ∧ ∀ (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+      (y : X), y ∈ shrunkChart (X := X) x₀ → y ∈ innerShrunkChart (X := X) x₀' →
+        ‖localRep α x₀ y‖ ≤ M * ‖localRep α x₀' y‖ := by
+  set K := shrunkChart (X := X) x₀ ∩ innerShrunkChart (X := X) x₀' with hK_def
+  have hKcpt : IsCompact K :=
+    (shrunkChart_isCompact x₀).inter_right (innerShrunkChart_isClosed x₀')
+  -- K sits inside both base sets
+  have hKbase_x₀' : K ⊆ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀').baseSet := by
+    intro y hy
+    exact innerShrunkChart_subset_baseSet x₀' hx₀' hy.2
+  have hKbase_x₀ : K ⊆ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet := by
+    intro y hy
+    exact shrunkChart_subset_baseSet x₀ hx₀ hy.1
+  have hKbase : K ⊆ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀').baseSet ∩
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet := by
+    intro y hy; exact ⟨hKbase_x₀' hy, hKbase_x₀ hy⟩
+  -- g(y) := 1 / ‖c(y)‖ is continuous on K (c is cont, nonzero on overlap ⊇ K).
+  have hg_cont : ContinuousOn (fun y => 1 / ‖chartTransitionFactor (X := X) x₀ x₀' y‖) K := by
+    apply ContinuousOn.div₀ continuousOn_const
+    · exact ((continuousOn_chartTransitionFactor x₀ x₀').mono hKbase).norm
+    · intro y _
+      exact norm_ne_zero_iff.mpr (chartTransitionFactor_ne_zero x₀ x₀' y)
+  -- Bounded above on K
+  have hbdd : BddAbove ((fun y => 1 / ‖chartTransitionFactor (X := X) x₀ x₀' y‖) '' K) :=
+    hKcpt.bddAbove_image hg_cont
+  obtain ⟨M, hMub⟩ := hbdd
+  refine ⟨max M 0, le_max_right _ _, ?_⟩
+  intro α y hy_shrunk hy_inner
+  have hy_K : y ∈ K := ⟨hy_shrunk, hy_inner⟩
+  have hy_base_x₀' : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀').baseSet :=
+    hKbase_x₀' hy_K
+  have hy_base_x₀ : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet :=
+    hKbase_x₀ hy_K
+  -- localRep α x₀' y = c(y) * localRep α x₀ y.
+  have hrel := localRep_chart_transition α x₀ x₀' y hy_base_x₀' hy_base_x₀
+  -- So localRep α x₀ y = localRep α x₀' y / c(y). |localRep α x₀ y| ≤ (1/|c|) · |localRep α x₀' y|.
+  have hc_ne : chartTransitionFactor (X := X) x₀ x₀' y ≠ 0 :=
+    chartTransitionFactor_ne_zero x₀ x₀' y
+  have hrel' : localRep α x₀ y =
+      localRep α x₀' y / chartTransitionFactor (X := X) x₀ x₀' y := by
+    rw [eq_div_iff hc_ne, mul_comm]
+    exact hrel.symm
+  rw [hrel', norm_div]
+  have hg_y : (1 : ℝ) / ‖chartTransitionFactor (X := X) x₀ x₀' y‖ ≤ M :=
+    hMub ⟨y, hy_K, rfl⟩
+  have hg_y' : (1 : ℝ) / ‖chartTransitionFactor (X := X) x₀ x₀' y‖ ≤ max M 0 :=
+    le_trans hg_y (le_max_left _ _)
+  have hnorm_pos : 0 < ‖chartTransitionFactor (X := X) x₀ x₀' y‖ :=
+    norm_pos_iff.mpr hc_ne
+  rw [div_eq_inv_mul]
+  calc ‖chartTransitionFactor (X := X) x₀ x₀' y‖⁻¹ * ‖localRep α x₀' y‖
+      = (1 / ‖chartTransitionFactor (X := X) x₀ x₀' y‖) * ‖localRep α x₀' y‖ := by
+        rw [one_div]
+    _ ≤ max M 0 * ‖localRep α x₀' y‖ := by
+        apply mul_le_mul_of_nonneg_right hg_y' (norm_nonneg _)
+
 end Jacobians.Montel
