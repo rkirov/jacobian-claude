@@ -570,24 +570,56 @@ theorem uniformEquicontinuousOn_of_bounded_analyticOn
   rw [Real.coe_toNNReal _ hLC_nn, dist_eq_norm, dist_eq_norm]
   exact hLip (f i) (hf i) C (hfb i) z hz w hw
 
+/-! ### Step B.7a — Equicontinuity of the inner family at each point
+
+For a uniformly bounded family of holomorphic 1-forms (`supNormK α ≤ M`),
+the associated family `{localRepOnInnerShrunk α x₀}` is equicontinuous
+at each point `y₀ ∈ innerShrunkChart x₀`.
+
+The proof goes through the chart `φ = chartAt ℂ x₀`:
+1. `φ y₀` lies in the open set `φ '' chartOpen x₀` (via the sequence of
+   subset inclusions `innerShrunkChart ⊆ chartOpen`).
+2. Pick a closed ball `B̄(φ y₀, r) ⊆ φ '' chartOpen` (convex, compact).
+3. Apply B.6 on `B̄(φ y₀, r)`: pullback family is uniformly
+   equicontinuous there — specifically, there's a `δ` s.t. for any two
+   points in the closed ball within `δ`, pullback values are within `ε`.
+4. Transfer: for `y ∈ innerShrunkChart x₀` near `y₀` (in the sense
+   that `φ y` is within `min(r, δ)` of `φ y₀`), use step (3) to bound
+   `|localRep α x₀ y - localRep α x₀ y₀|`. Chart continuity at `y₀`
+   ensures such `y` form a neighborhood of `y₀` in the subtype. -/
+
+omit [ConnectedSpace X] in
+/-- For a holomorphic 1-form bounded by `M` under `supNormK`, the
+pullback through the chart at `x₀` is bounded by `M` on
+`chart '' chartOpen x₀`. Packaging of earlier bridge lemmas. -/
+theorem norm_localRep_pullback_le_of_supNormK_le
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    {M : ℝ} (hαM : HolomorphicOneForms.supNormK α ≤ M)
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    {z : ℂ} (hz : z ∈ (chartAt ℂ x₀) '' chartOpen (X := X) x₀) :
+    ‖localRep α x₀ ((chartAt ℂ x₀).symm z)‖ ≤ M := by
+  calc ‖localRep α x₀ ((chartAt ℂ x₀).symm z)‖
+      ≤ HolomorphicOneForms.supNormK α :=
+        norm_localRep_pullback_le_supNormK_on_chart_image_chartOpen α hx₀ hz
+    _ ≤ M := hαM
+
 /-! ### Next steps (scheduled, not implemented here)
 
-**B.7** `closedBall_relativelyCompact` — Arzelà–Ascoli assembly on each
-`C(shrunkChart x₀, ℂ)`, then finite product. Requires: the uniform
-`‖α‖ ≤ 1` bound to control `localRep α x₀` on an OPEN neighborhood of
-`shrunkChart x₀` in chart coordinates. The bundle-side subtlety: our
-current `supNormK` bounds `localRep α x₀` only on `shrunkChart x₀`, not
-on a thickening. Resolutions:
+**B.7b** `equicontinuous_localRepOnInnerShrunk` — assemble local
+equicontinuity via (a) B.6 on a closedBall inside `chart '' chartOpen`,
+(b) chart continuity to transfer back to `innerShrunkChart`.
 
-1. Chart-transition argument: bound `|localRep α x₀|` near boundary of
-   `shrunkChart x₀` using another chart `x₀'` where that region is
-   well-inside `shrunkChart x₀'`, transferring via the derivative of
-   the chart transition map.
-2. Inner/outer shrinkage refactor: add `innerShrunkChart x₀ ⊂ interior
-   (shrunkChart x₀)` still covering X; outer for the norm, inner for
-   Arzelà.
+**B.8** Apply `BoundedContinuousFunction.arzela_ascoli` to each
+`x₀ ∈ chartCover`, get relative compactness in each
+`C(innerShrunkChart x₀, ℂ)`.
 
-**B.8** `closedBall_isClosed` — via uniform limits of holomorphic
+**B.9** Inject HOF X into the finite product
+`Π x₀ ∈ chartCover, C(innerShrunkChart x₀, ℂ)` (injective via
+`iUnion_innerShrunkChart_chartCover_eq = univ`). Transfer compactness
+of product to closedBall in HOF X.
+
+**B.10** `closedBall_isClosed` — via uniform limits of holomorphic
 functions being holomorphic (`TendstoLocallyUniformlyOn.analyticOn`).
 
 **Assembly** — discharge `HolomorphicOneForms.closedBall_isCompact` in
