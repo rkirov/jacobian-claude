@@ -1,5 +1,32 @@
 # Project status (auto-maintained)
 
+## Montel — chart-transition estimate landed (new file ChartTransition.lean)
+
+`Jacobians/Montel/ChartTransition.lean` (new file, 200+ lines,
+sorry-free) provides the chart-transition machinery that lifts
+per-chart Arzelà precompactness to supNormK precompactness:
+
+- `chartTransitionFactor x₀ x₀' y` — the scalar c(y) such that
+  `e_{x₀'}.symmL y 1 = c(y) · e_{x₀}.symmL y 1` in T_y X.
+- `chartTransitionFactor_ne_zero` — via CLE injectivity.
+- `symmL_apply_chartTransitionFactor` — the identity `e.symmL y c = e'.symmL y 1`.
+- `localRep_chart_transition` — `localRep α x₀' y = c(y) · localRep α x₀ y`.
+- `continuousOn_chartTransitionFactor` — continuity on overlap (via
+  `continuousOn_coordChange` + evaluation at 1).
+- `exists_pairwise_chart_transition_bound` — pair-wise bound using
+  `IsCompact.bddAbove_image` on 1/‖c(y)‖ (continuous, nonzero on
+  compact overlap).
+- `exists_global_chart_transition_bound` — aggregates pairwise bounds
+  over finite `chartCover × chartCover` via `Finset.sup'` +
+  `Classical.choose`, giving a universal `M` with
+  `‖localRep α x₀ y‖ ≤ M · ‖localRep α x₀' y‖` for a suitable x₀'.
+
+This means: chart-wise convergence (from per-chart Arzelà) lifts to
+supNormK-Cauchy convergence. The remaining gap is **CompleteSpace of
+HOF X** (i.e., Cauchy → convergent), which is equivalent to the
+bundle-section reconstruction for uniform limits of holomorphic
+sections.
+
 ## Montel — closedBall_isCompact CLOSED modulo one focused sorry
 
 `HolomorphicOneForms.closedBall_isCompact` now has a real proof using
