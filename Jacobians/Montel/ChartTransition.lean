@@ -203,4 +203,77 @@ theorem exists_pairwise_chart_transition_bound
     _ ≤ max M 0 * ‖localRep α x₀' y‖ := by
         apply mul_le_mul_of_nonneg_right hg_y' (norm_nonneg _)
 
+/-! ### Global chart-transition bound (aggregated over chartCover × chartCover)
+
+For each pair `(x₀, x₀') ∈ chartCover²`, the pairwise bound yields an
+`M_{x₀,x₀'} ≥ 0`. Taking max over the finite product gives a universal
+`M` such that, for any α, for any y ∈ shrunkChart x₀ (x₀ ∈ chartCover),
+there's x₀' ∈ chartCover with `y ∈ innerShrunkChart x₀'` (inner cover)
+and `‖localRep α x₀ y‖ ≤ M · ‖localRep α x₀' y‖`.
+
+Since `‖localRep α x₀' y‖ ≤ chartNormK (via inner shrinkage)` bounds the
+right-hand side by the max inner chart-norm, we obtain
+`supNormK α ≤ M · (max over chartCover of inner-chart-norm)`. -/
+
+omit [ConnectedSpace X] in
+/-- **Global chart-transition bound** (pointwise form).
+There is a universal constant `M ≥ 0` such that for any α, for any
+`x₀ ∈ chartCover` and any `y ∈ shrunkChart x₀`, there exists
+`x₀' ∈ chartCover` with `y ∈ innerShrunkChart x₀'` and
+`‖localRep α x₀ y‖ ≤ M · ‖localRep α x₀' y‖`. -/
+theorem exists_global_chart_transition_bound :
+    ∃ M : ℝ, 0 ≤ M ∧ ∀ (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+      (x₀ : X), x₀ ∈ (chartCover : Finset X) →
+        ∀ (y : X), y ∈ shrunkChart (X := X) x₀ →
+          ∃ (x₀' : X) (_hx₀' : x₀' ∈ (chartCover : Finset X))
+            (_hy' : y ∈ innerShrunkChart (X := X) x₀'),
+            ‖localRep α x₀ y‖ ≤ M * ‖localRep α x₀' y‖ := by
+  classical
+  -- For each pair (x₀, x₀') ∈ chartCover², get the pairwise bound.
+  -- Take max over the finite product.
+  let pairs : Finset (X × X) := (chartCover : Finset X) ×ˢ (chartCover : Finset X)
+  -- Define per-pair constant via Classical.choose from exists_pairwise_chart_transition_bound.
+  let M_pair : X × X → ℝ := fun p =>
+    if h : p.1 ∈ (chartCover : Finset X) ∧ p.2 ∈ (chartCover : Finset X) then
+      Classical.choose (exists_pairwise_chart_transition_bound p.1 p.2 h.1 h.2)
+    else 0
+  have hM_pair_nn : ∀ p, 0 ≤ M_pair p := by
+    intro p
+    simp only [M_pair]
+    split_ifs with h
+    · exact (Classical.choose_spec (exists_pairwise_chart_transition_bound p.1 p.2 h.1 h.2)).1
+    · exact le_refl 0
+  -- M := sup over pairs. If pairs empty, M = 0. Not empty since chartCover nonempty.
+  have hpairs_nonempty : pairs.Nonempty := by
+    obtain ⟨x₀, hx₀⟩ := chartCover_nonempty (X := X)
+    exact ⟨(x₀, x₀), Finset.mem_product.mpr ⟨hx₀, hx₀⟩⟩
+  let M : ℝ := pairs.sup' hpairs_nonempty M_pair
+  have hM_nn : 0 ≤ M := by
+    obtain ⟨p, hp⟩ := hpairs_nonempty
+    exact le_trans (hM_pair_nn p) (Finset.le_sup' _ hp)
+  refine ⟨M, hM_nn, ?_⟩
+  intro α x₀ hx₀ y hy_shrunk
+  -- Get x₀' ∈ chartCover with y ∈ innerShrunkChart x₀' (inner cover).
+  have hmem : y ∈ (Set.univ : Set X) := Set.mem_univ _
+  rw [← iUnion_innerShrunkChart_chartCover_eq (X := X)] at hmem
+  simp only [Set.mem_iUnion] at hmem
+  obtain ⟨x₀', hx₀'mem, hy_inner⟩ := hmem
+  refine ⟨x₀', hx₀'mem, hy_inner, ?_⟩
+  -- Apply pairwise bound for (x₀, x₀').
+  have hpair_bound := exists_pairwise_chart_transition_bound x₀ x₀' hx₀ hx₀'mem
+  have hMpair_def : M_pair (x₀, x₀') =
+      Classical.choose hpair_bound := by
+    simp only [M_pair]
+    rw [dif_pos ⟨hx₀, hx₀'mem⟩]
+  have hMpair_spec := Classical.choose_spec hpair_bound
+  have hbd := hMpair_spec.2 α y hy_shrunk hy_inner
+  rw [← hMpair_def] at hbd
+  have hle : M_pair (x₀, x₀') ≤ M :=
+    Finset.le_sup' _ (Finset.mem_product.mpr ⟨hx₀, hx₀'mem⟩)
+  calc ‖localRep α x₀ y‖
+      ≤ M_pair (x₀, x₀') * ‖localRep α x₀' y‖ := hbd
+    _ ≤ M * ‖localRep α x₀' y‖ :=
+        mul_le_mul_of_nonneg_right hle (norm_nonneg _)
+
 end Jacobians.Montel
