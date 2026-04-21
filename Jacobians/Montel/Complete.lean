@@ -353,6 +353,106 @@ theorem cauchy_supNormK_of_bcf_tendsto
     linarith
   exact lt_of_le_of_lt h_step1 h_step2
 
+/-! ### Step 3d — Coordinate identity and pointwise CLM Cauchy
+
+On the base set of the trivialization at `x₀`, the section's CLM value
+`α.toFun y` is `(localRep α x₀ y) • φ` where
+`φ := e.continuousLinearEquivAt ℂ y hy`. This reduces CauchySeq in CLM
+norm to CauchySeq in ℂ, which is already supplied by
+`cauchySeq_alpha_toFun_apply_symmL`. -/
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+/-- **Coordinate identity.** For `y ∈ (trivializationAt … x₀).baseSet`,
+`α.toFun y` equals `(localRep α x₀ y) • φ` where `φ` is the CLE
+`T_y X ≃L[ℂ] ℂ` from the trivialization. -/
+theorem toFun_eq_localRep_smul
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ y : X)
+    (hy : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet) :
+    letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+    α.toFun y = (localRep α x₀ y) •
+      (e.continuousLinearEquivAt ℂ y hy :
+        TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ) := by
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀ with he
+  set φ := e.continuousLinearEquivAt ℂ y hy with hφ
+  apply ContinuousLinearMap.ext
+  intro v
+  -- Goal: α.toFun y v = ((localRep α x₀ y) • (φ : T_y X →L[ℂ] ℂ)) v
+  -- RHS: (localRep α x₀ y) • (φ v) = localRep α x₀ y * φ v (in ℂ)
+  change α.toFun y v = (localRep α x₀ y) • (φ v)
+  -- Strategy: rewrite v as φ.symm (φ v); use ℂ-linearity of α.toFun y ∘ φ.symm.
+  have hv_eq : v = (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) (φ v) :=
+    (ContinuousLinearEquiv.symm_apply_apply φ v).symm
+  -- Write (φ v : ℂ) = (φ v) • (1 : ℂ) and push through φ.symm.
+  have hφv_smul : (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) (φ v) =
+      (φ v) • ((φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) 1) := by
+    have h1 : (φ v : ℂ) = (φ v) • (1 : ℂ) := by
+      rw [smul_eq_mul, mul_one]
+    conv_lhs => rw [h1]
+    exact (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y).map_smul (φ v) 1
+  -- Identify φ.symm 1 with e.symmL ℂ y 1.
+  have h_symmL : (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) = e.symmL ℂ y :=
+    Trivialization.symm_continuousLinearEquivAt_eq' e hy
+  -- Chain: α.toFun y v = α.toFun y ((φ v) • (e.symmL ℂ y 1))
+  --                   = (φ v) • (α.toFun y (e.symmL ℂ y 1))
+  --                   = (φ v) • localRep α x₀ y
+  --                   = localRep α x₀ y • (φ v)  (commutative)
+  calc α.toFun y v
+      = α.toFun y ((φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) (φ v)) := by rw [← hv_eq]
+    _ = α.toFun y ((φ v) • ((φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) 1)) := by
+          rw [hφv_smul]
+    _ = (φ v) • (α.toFun y ((φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) 1)) :=
+          (α.toFun y).map_smul (φ v) _
+    _ = (φ v) • (α.toFun y (e.symmL ℂ y 1)) := by rw [h_symmL]
+    _ = (φ v) • (localRep α x₀ y) := rfl
+    _ = (localRep α x₀ y) • (φ v) := by rw [smul_eq_mul, smul_eq_mul]; ring
+
+omit [ConnectedSpace X] in
+/-- **Pointwise CLM Cauchy.** For a supNormK-Cauchy sequence and
+`y ∈ shrunkChart x₀` (some `x₀ ∈ chartCover`), the CLM value
+`(αs n).toFun y` is Cauchy in `T_y X →L[ℂ] ℂ`.
+
+Proof: the CLM `L : ℂ →L[ℂ] (T_y X →L[ℂ] ℂ), c ↦ c • φ` is Lipschitz
+(CLMs are Lipschitz). Since `(αs n).toFun y = L (localRep (αs n) x₀ y)`
+and `localRep (αs n) x₀ y` is Cauchy in ℂ, the image under `L` is
+Cauchy in the CLM space. -/
+theorem cauchySeq_toFun_of_supNormK_cauchy
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (h_diff : ∀ ε > 0, ∃ N, ∀ n m, n ≥ N → m ≥ N →
+      HolomorphicOneForms.supNormK (αs n - αs m) < ε)
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    {y : X} (hy : y ∈ shrunkChart (X := X) x₀) :
+    CauchySeq (fun n : ℕ => (αs n).toFun y) := by
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+  have hy_baseSet : y ∈ e.baseSet := by
+    rw [TangentBundle.trivializationAt_baseSet]
+    exact shrunkChart_subset_source x₀ hx₀ hy
+  set φ := e.continuousLinearEquivAt ℂ y hy_baseSet
+  -- c ↦ c • φ as a CLM.
+  set L : ℂ →L[ℂ] (TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ) :=
+    (ContinuousLinearMap.id ℂ ℂ).smulRight
+      (φ : TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ)
+  -- Identity: (αs n).toFun y = L (localRep (αs n) x₀ y)
+  have h_id : ∀ n, (αs n).toFun y = L (localRep (αs n) x₀ y) := by
+    intro n
+    have := toFun_eq_localRep_smul (αs n) x₀ y hy_baseSet
+    simpa [L, ContinuousLinearMap.smulRight_apply] using this
+  -- Cauchy in ℂ of localRep (αs n) x₀ y.
+  have h_cauchy_ℂ : CauchySeq (fun n : ℕ => localRep (αs n) x₀ y) :=
+    cauchySeq_alpha_toFun_apply_symmL αs h_diff hx₀ hy
+  -- Transport via L (uniformly continuous).
+  have h_unif : UniformContinuous L := L.uniformContinuous
+  have h_cauchy_L : CauchySeq (fun n : ℕ => L (localRep (αs n) x₀ y)) :=
+    h_unif.comp_cauchySeq h_cauchy_ℂ
+  -- Rewrite using h_id.
+  have h_fun_eq : (fun n : ℕ => (αs n).toFun y) =
+      (fun n : ℕ => L (localRep (αs n) x₀ y)) := by
+    funext n; exact h_id n
+  rw [h_fun_eq]
+  exact h_cauchy_L
+
 /-! ### Remaining steps (DEFERRED)
 
 The full completeness proof requires:
