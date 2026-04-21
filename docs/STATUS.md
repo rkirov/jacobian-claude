@@ -1,24 +1,40 @@
 # Project status (auto-maintained)
 
-## Montel Steps 1–B.9 + limit-preservation building blocks — MOSTLY COMPLETE
+## Montel — closedBall_isCompact CLOSED modulo one focused sorry
 
-`Jacobians/Montel/Compactness.lean` + `Jacobians/Montel.lean` now
-contain the full Arzelà–Ascoli pipeline through B.9 step 3b
-(continuous linear embedding), plus the analytic-limit lemmas
-(`analyticOn_of_tendstoLocallyUniformlyOn`,
-`analyticOn_of_pullback_tendsto_locally_uniformly`) needed for B.10.
+`HolomorphicOneForms.closedBall_isCompact` now has a real proof using
+sequential compactness + the structural sorry
+`exists_convergent_subseq_of_bounded`. The proof:
 
-**Still outstanding** (one sorry in `Montel.lean:212`):
-- Construct `α∞ : HOF X` pointwise from chart-wise bcf-Cauchy limits.
-- Show α∞ is ContMDiffSection ω via chart-wise analyticity
-  (using `analyticOn_of_pullback_tendsto_locally_uniformly`) + bundle
-  section assembly.
-- Conclude `CompleteSpace HOF X` (or bypass via sequential compactness
-  of closedBall).
-- Combine with precompactness to discharge `closedBall_isCompact`.
+```
+theorem closedBall_isCompact :
+    letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+    letI := HolomorphicOneForms.normedSpace (X := X)
+    IsCompact (Metric.closedBall (0 : HOF X) 1) := by
+  rw [isCompact_iff_isSeqCompact]
+  intro αs hαs
+  have hsup : ∀ n, supNormK (αs n) ≤ 1 := ...
+  obtain ⟨φ, hφ, αLim, hαLim_norm, hαLim_tendsto⟩ :=
+    exists_convergent_subseq_of_bounded αs hsup
+  refine ⟨αLim, _, φ, hφ, hαLim_tendsto⟩
+  ...
+```
 
-This is multi-session Mathlib-adjacent work centered on assembling
-chart-wise analytic limits into a coherent ContMDiffSection.
+The single remaining sorry is now precisely
+`exists_convergent_subseq_of_bounded`: bounded supNormK-sequence has
+supNormK-convergent subsequence with supNormK-bounded limit.
+
+**Content gap**: reduces to either
+(a) Chart-transition estimate `supNormK α ≤ C · sup_{x₀ ∈ chartCover}
+    ‖localRepOnInnerShrunk α x₀‖_bcf` — lifts per-chart inner
+    precompactness (B.8) to supNormK precompactness.
+(b) Direct bundle-section reconstruction assembling chart-wise
+    analytic limits into a `ContMDiffSection ω`.
+
+Either ~200-400 lines of bundle-adjacent work. Call sites
+(`HolomorphicForms.FiniteDimensional` instance) continue to type-check
+— the reducible NormedAddCommGroup instance unifies with the
+`letI`-in-type signature.
 
 ## Montel Steps 1–B.9.3a — MOSTLY COMPLETE (as of 2026-04-21 session)
 
