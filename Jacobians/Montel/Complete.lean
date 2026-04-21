@@ -1,4 +1,4 @@
-import Jacobians.Montel.Compactness
+import Jacobians.Montel.ChartTransition
 import Mathlib.Topology.UniformSpace.CompleteSeparated
 
 /-!
@@ -215,6 +215,143 @@ theorem exists_subseq_bcf_tendsto_on_chartCover
   refine ⟨φ, hφ, ?_⟩
   intro x₀ hx₀
   exact hconv x₀ (Finset.mem_toList.mpr hx₀)
+
+/-! ### Step 3c — Chart-transition: bcf-Cauchy ⇒ supNormK-Cauchy
+
+Combining the chart-transition supNormK bound
+(`exists_supNormK_le_const_sup_inner`) with per-chart bcf-convergence
+(which implies bcf-Cauchy, which dominates the inner-chart sSup),
+a subsequence whose bcf-images converge on every chart is
+supNormK-Cauchy. -/
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- **Inner sSup is bounded by bcf-distance.** For any two sections and
+any chart x₀ ∈ chartCover, `sSup ‖localRep (α-β) x₀ ·‖` on
+`innerShrunkChart x₀` is bounded above by the bcf-distance of their
+`mkOfCompact ∘ localRepOnInnerShrunk` images. -/
+private lemma sSup_innerShrunk_norm_sub_le_dist_bcf
+    (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    letI := innerShrunkChart_compactSpace (X := X) x₀
+    sSup ((fun y : X => ‖localRep (α - β) x₀ y‖) '' innerShrunkChart (X := X) x₀) ≤
+      dist
+        (BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀))
+        (BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk β x₀)) := by
+  letI := innerShrunkChart_compactSpace (X := X) x₀
+  set D : ℝ := dist
+    (BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀))
+    (BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk β x₀))
+  have hD_nn : 0 ≤ D := dist_nonneg
+  by_cases hne : Set.Nonempty (innerShrunkChart (X := X) x₀)
+  · apply csSup_le
+    · obtain ⟨y, hy⟩ := hne
+      exact ⟨‖localRep (α - β) x₀ y‖, y, hy, rfl⟩
+    · rintro _ ⟨y, hy, rfl⟩
+      -- ‖localRep (α - β) x₀ y‖ = ‖bcf_α ⟨y, hy⟩ - bcf_β ⟨y, hy⟩‖ ≤ D.
+      show ‖localRep (α - β) x₀ y‖ ≤ D
+      have h_sub : localRep (α - β) x₀ y = localRep α x₀ y - localRep β x₀ y := by
+        have hsub : α - β = α + (-β) := by rw [sub_eq_add_neg]
+        rw [hsub, localRep_add, localRep_neg]; ring
+      rw [h_sub]
+      calc ‖localRep α x₀ y - localRep β x₀ y‖
+          = ‖(BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀))
+              ⟨y, hy⟩ -
+            (BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk β x₀))
+              ⟨y, hy⟩‖ := by
+              simp only [BoundedContinuousFunction.mkOfCompact_apply,
+                localRepOnInnerShrunk_apply _ hx₀]
+        _ = dist
+              ((BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀))
+                ⟨y, hy⟩)
+              ((BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk β x₀))
+                ⟨y, hy⟩) := (dist_eq_norm _ _).symm
+        _ ≤ D := BoundedContinuousFunction.dist_coe_le_dist _
+  · rw [Set.not_nonempty_iff_eq_empty] at hne
+    simp [hne, Real.sSup_empty, hD_nn]
+
+omit [ConnectedSpace X] in
+/-- **bcf-convergent on every chart ⇒ supNormK-Cauchy.**
+Given a strict-mono subsequence `φ` such that the bcf-images on each
+`innerShrunkChart x₀` converge, the subsequence is supNormK-Cauchy. -/
+theorem cauchy_supNormK_of_bcf_tendsto
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (φ : ℕ → ℕ)
+    (h_chart_conv : ∀ x₀ ∈ (chartCover : Finset X),
+      letI := innerShrunkChart_compactSpace (X := X) x₀
+      ∃ g : BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ,
+        Tendsto
+          (fun n : ℕ => BoundedContinuousFunction.mkOfCompact
+            (localRepOnInnerShrunk (αs (φ n)) x₀))
+          atTop (𝓝 g)) :
+    ∀ ε > 0, ∃ N, ∀ n m, n ≥ N → m ≥ N →
+      HolomorphicOneForms.supNormK (αs (φ n) - αs (φ m)) < ε := by
+  classical
+  obtain ⟨M, hMnn, hM⟩ := exists_supNormK_le_const_sup_inner (X := X)
+  intro ε hε
+  -- Target per-chart bcf Cauchy threshold: δ = ε / (M + 1).
+  set δ : ℝ := ε / (M + 1)
+  have hM1_pos : 0 < M + 1 := by linarith
+  have hδ_pos : 0 < δ := div_pos hε hM1_pos
+  -- For each x₀ ∈ chartCover, extract Cauchy N_{x₀} at threshold δ.
+  have h_each :
+      ∀ x₀ ∈ (chartCover : Finset X), ∃ N_x, ∀ n m, n ≥ N_x → m ≥ N_x →
+        letI := innerShrunkChart_compactSpace (X := X) x₀
+        dist
+          (BoundedContinuousFunction.mkOfCompact
+            (localRepOnInnerShrunk (αs (φ n)) x₀))
+          (BoundedContinuousFunction.mkOfCompact
+            (localRepOnInnerShrunk (αs (φ m)) x₀)) < δ := by
+    intro x₀ hx₀
+    letI := innerShrunkChart_compactSpace (X := X) x₀
+    obtain ⟨g, hg⟩ := h_chart_conv x₀ hx₀
+    -- Convergent ⇒ Cauchy.
+    have hCauchy : CauchySeq
+        (fun n : ℕ => BoundedContinuousFunction.mkOfCompact
+          (localRepOnInnerShrunk (αs (φ n)) x₀)) := hg.cauchySeq
+    rw [Metric.cauchySeq_iff] at hCauchy
+    obtain ⟨N_x, hN_x⟩ := hCauchy δ hδ_pos
+    exact ⟨N_x, fun n m hn hm => hN_x n hn m hm⟩
+  -- Pick a common N via Finset.sup' over chartCover (or 0 if empty — but chartCover is nonempty).
+  choose N_fn hN_fn using h_each
+  set N : ℕ := (chartCover : Finset X).attach.sup fun x => N_fn x.1 x.2 with hN_def
+  refine ⟨N, fun n m hn hm => ?_⟩
+  -- Bound supNormK (αs(φ n) - αs(φ m)) via chart transition.
+  have h_bound := hM (αs (φ n) - αs (φ m))
+  -- For each x₀ ∈ chartCover, bound the inner sSup by δ.
+  have h_inner_le : ∀ x₀ ∈ (chartCover : Finset X),
+      sSup ((fun y : X => ‖localRep (αs (φ n) - αs (φ m)) x₀ y‖) ''
+        innerShrunkChart (X := X) x₀) ≤ δ := by
+    intro x₀ hx₀
+    have hn' : n ≥ N_fn x₀ hx₀ :=
+      le_trans (Finset.le_sup (f := fun x : {x // x ∈ (chartCover : Finset X)} =>
+        N_fn x.1 x.2) (Finset.mem_attach _ ⟨x₀, hx₀⟩)) hn
+    have hm' : m ≥ N_fn x₀ hx₀ :=
+      le_trans (Finset.le_sup (f := fun x : {x // x ∈ (chartCover : Finset X)} =>
+        N_fn x.1 x.2) (Finset.mem_attach _ ⟨x₀, hx₀⟩)) hm
+    have h_dist_lt := hN_fn x₀ hx₀ n m hn' hm'
+    have h_le_dist := sSup_innerShrunk_norm_sub_le_dist_bcf
+      (αs (φ n)) (αs (φ m)) hx₀
+    linarith
+  -- sup' over chartCover ≤ δ.
+  have h_sup'_le :
+      (chartCover : Finset X).sup' chartCover_nonempty
+        (fun x₀' : X =>
+          sSup ((fun y : X => ‖localRep (αs (φ n) - αs (φ m)) x₀' y‖) ''
+            innerShrunkChart (X := X) x₀')) ≤ δ := by
+    rw [Finset.sup'_le_iff]
+    intro x₀ hx₀
+    exact h_inner_le x₀ hx₀
+  -- Combine: supNormK ≤ M * δ ≤ M * ε / (M+1) < ε.
+  have h_step1 : HolomorphicOneForms.supNormK (αs (φ n) - αs (φ m)) ≤ M * δ :=
+    le_trans h_bound (mul_le_mul_of_nonneg_left h_sup'_le hMnn)
+  have h_step2 : M * δ < ε := by
+    have h_sum : M * δ + δ = ε := by
+      show M * (ε / (M + 1)) + ε / (M + 1) = ε
+      field_simp
+    linarith
+  exact lt_of_le_of_lt h_step1 h_step2
 
 /-! ### Remaining steps (DEFERRED)
 
