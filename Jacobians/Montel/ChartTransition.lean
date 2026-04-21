@@ -276,4 +276,91 @@ theorem exists_global_chart_transition_bound :
     _ ≤ M * ‖localRep α x₀' y‖ :=
         mul_le_mul_of_nonneg_right hle (norm_nonneg _)
 
+/-! ### `supNormK` form of the chart-transition bound -/
+
+omit [ConnectedSpace X] in
+/-- **Chart-transition supNormK bound.** There exists a universal
+constant `M ≥ 0` such that for any α,
+`supNormK α ≤ M · (max over chartCover of sSup of ‖localRep α x₀'·‖
+  on innerShrunkChart x₀')`.
+
+This is the supNormK form of `exists_global_chart_transition_bound`,
+obtained by taking sup over y of the pointwise bound. -/
+theorem exists_supNormK_le_const_sup_inner :
+    ∃ M : ℝ, 0 ≤ M ∧ ∀ (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)),
+      HolomorphicOneForms.supNormK α ≤
+        M * (chartCover : Finset X).sup' chartCover_nonempty
+          (fun x₀' => sSup ((fun y : X => ‖localRep α x₀' y‖) ''
+            innerShrunkChart (X := X) x₀')) := by
+  obtain ⟨M, hMnn, hM⟩ := exists_global_chart_transition_bound (X := X)
+  refine ⟨M, hMnn, fun α => ?_⟩
+  -- supNormK α = max_{x₀ ∈ chartCover} sup_{y ∈ shrunkChart x₀} ‖localRep α x₀ y‖
+  -- We want: this ≤ M * max_{x₀' ∈ chartCover} sup_{y ∈ innerShrunkChart x₀'} ‖localRep α x₀' y‖
+  unfold HolomorphicOneForms.supNormK
+  rw [Finset.sup'_le_iff]
+  intro x₀ hx₀
+  -- chartNormK α x₀ ≤ M * sup_{x₀'} sSup_{innerShrunkChart x₀'} |localRep α x₀' ·|
+  unfold HolomorphicOneForms.chartNormK
+  -- sSup ≤ M * (sup_{x₀'} sSup_{inner x₀'} ...)
+  have hbdd : BddAbove ((fun y : X => ‖localRep α x₀ y‖) '' shrunkChart (X := X) x₀) :=
+    HolomorphicOneForms.chartNormK_bddAbove α x₀
+  -- If shrunkChart x₀ is empty, LHS = sSup (∅ : Set ℝ) = 0; RHS ≥ 0.
+  by_cases hne : Set.Nonempty (shrunkChart (X := X) x₀)
+  swap
+  · rw [Set.not_nonempty_iff_eq_empty] at hne
+    simp only [hne, Set.image_empty, Real.sSup_empty]
+    -- RHS is nonneg.
+    apply mul_nonneg hMnn
+    -- Finset.sup' of sSup of image terms.
+    obtain ⟨x₀₀, hx₀₀⟩ := chartCover_nonempty (X := X)
+    apply le_trans _ (Finset.le_sup' _ hx₀₀)
+    -- Per-factor: sSup ≥ 0 (norms).
+    by_cases hne' : Set.Nonempty (innerShrunkChart (X := X) x₀₀)
+    · obtain ⟨z, hz⟩ := hne'
+      have hz_img : ‖localRep α x₀₀ z‖ ∈
+          (fun y => ‖localRep α x₀₀ y‖) '' innerShrunkChart (X := X) x₀₀ :=
+        ⟨z, hz, rfl⟩
+      have hbdd : BddAbove ((fun y => ‖localRep α x₀₀ y‖) '' innerShrunkChart (X := X) x₀₀) := by
+        have := HolomorphicOneForms.chartNormK_bddAbove α x₀₀
+        apply this.mono
+        intro w ⟨z', hz', hzw'⟩
+        exact ⟨z', innerShrunkChart_subset_shrunkChart x₀₀ hz', hzw'⟩
+      exact le_trans (norm_nonneg _) (le_csSup hbdd hz_img)
+    · rw [Set.not_nonempty_iff_eq_empty] at hne'
+      simp [hne']
+  apply csSup_le
+  · obtain ⟨y, hy⟩ := hne
+    exact ⟨‖localRep α x₀ y‖, y, hy, rfl⟩
+  · rintro _ ⟨y, hy_shrunk, rfl⟩
+    -- For y ∈ shrunkChart x₀: apply global bound to get x₀' and bound.
+    obtain ⟨x₀', hx₀'mem, hy_inner, hbound⟩ := hM α x₀ hx₀ y hy_shrunk
+    -- ‖localRep α x₀ y‖ ≤ M * ‖localRep α x₀' y‖.
+    have h_inner_y : ‖localRep α x₀' y‖ ≤
+        sSup ((fun z : X => ‖localRep α x₀' z‖) '' innerShrunkChart (X := X) x₀') := by
+      apply le_csSup
+      · -- BddAbove of image over innerShrunkChart
+        have := HolomorphicOneForms.chartNormK_bddAbove α x₀'
+        -- innerShrunkChart ⊂ shrunkChart, so image is a subset.
+        have hsub : ((fun z : X => ‖localRep α x₀' z‖) '' innerShrunkChart (X := X) x₀') ⊆
+            ((fun z : X => ‖localRep α x₀' z‖) '' shrunkChart (X := X) x₀') := by
+          intro w ⟨z, hz, hzw⟩
+          exact ⟨z, innerShrunkChart_subset_shrunkChart x₀' hz, hzw⟩
+        exact this.mono hsub
+      · exact ⟨y, hy_inner, rfl⟩
+    -- And sSup_{inner x₀'} ≤ chartCover.sup' ... (sSup over innerShrunkChart x₀'').
+    have h_finsup : sSup ((fun z : X => ‖localRep α x₀' z‖) '' innerShrunkChart (X := X) x₀') ≤
+        (chartCover : Finset X).sup' chartCover_nonempty
+          (fun x₀'' => sSup ((fun z : X => ‖localRep α x₀'' z‖) ''
+            innerShrunkChart (X := X) x₀'')) :=
+      Finset.le_sup' (f := fun x₀'' => sSup ((fun z : X => ‖localRep α x₀'' z‖) ''
+        innerShrunkChart (X := X) x₀'')) hx₀'mem
+    calc ‖localRep α x₀ y‖
+        ≤ M * ‖localRep α x₀' y‖ := hbound
+      _ ≤ M * sSup ((fun z : X => ‖localRep α x₀' z‖) ''
+          innerShrunkChart (X := X) x₀') :=
+          mul_le_mul_of_nonneg_left h_inner_y hMnn
+      _ ≤ M * (chartCover : Finset X).sup' chartCover_nonempty _ :=
+          mul_le_mul_of_nonneg_left h_finsup hMnn
+
 end Jacobians.Montel
