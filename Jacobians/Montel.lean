@@ -185,9 +185,26 @@ under the Montel sup-norm is compact.
    (Mathlib: `TendstoLocallyUniformlyOn.analyticOn`-type argument) ⇒ CLOSED.
 7. Closed + precompact ⇒ compact.
 
-Takes the `NormedAddCommGroup` / `NormedSpace ℂ` as explicit instance
-arguments so the type signature unifies with whatever normed structure is
-in scope (typically the one from `Jacobians.HolomorphicForms`). -/
+**What's in place (this session):**
+- Steps 1–5 complete in `Jacobians/Montel/Compactness.lean` + this file.
+- Per-chart continuous linear embedding: `embedInnerBcf x₀`.
+- Per-chart Arzelà: `isCompact_closure_image_inner_bcf`.
+- Product compactness: `isCompact_univ_pi_closure_image_inner_bcf`.
+- Injectivity: `eq_of_mkOfCompact_localRepOnInnerShrunk_eq`.
+
+**What's missing (step 6 — the Banach half):**
+The closedness of the image requires a bundle-level transfer of
+`TendstoLocallyUniformlyOn.analyticOn`: a sequence `α_n` whose chart
+pullbacks converge uniformly on compacta must have a limit section
+`α_∞ : HOF X` that's smooth of class ω (i.e., analytic in charts).
+This requires assembling the chart-wise limits into a coherent
+`ContMDiffSection` and showing the resulting section is ω-smooth —
+which is the core missing content for this proof.
+
+**Call-site note:** Takes the `NormedAddCommGroup` / `NormedSpace ℂ`
+as explicit instance arguments so the type signature unifies with
+whatever normed structure is in scope (typically the canonical
+`HolomorphicOneForms.normedAddCommGroup` from the consumer). -/
 theorem HolomorphicOneForms.closedBall_isCompact
     [NormedAddCommGroup (Jacobians.HolomorphicOneForms X)]
     [NormedSpace ℂ (Jacobians.HolomorphicOneForms X)] :
