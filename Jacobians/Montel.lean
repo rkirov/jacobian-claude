@@ -286,51 +286,17 @@ the `FiniteDimensional` conclusion follows via Riesz:
         Jacobians.Montel.HolomorphicOneForms.closedBall_isCompact
 -/
 
-/-! ### Current state of the closedBall_isCompact proof
+/-! ### Status (post-refactor)
 
-**Arzelà–Ascoli infrastructure — COMPLETE** (see `Jacobians/Montel/Compactness.lean`):
-- [x] B.3 `localRep_analyticOn_chartTarget` (ContMDiff ω ⇔ AnalyticOn ℂ
-      bridge at bundle-section level).
-- [x] B.4 `exists_cauchy_deriv_bound` (uniform derivative bound on
-      compact ⊂ open).
-- [x] B.5 `exists_cauchy_lipschitz_bound` (uniform Lipschitz on convex
-      compact).
-- [x] B.6 `uniformEquicontinuousOn_of_bounded_analyticOn` (uniform
-      equicontinuity on convex compacta).
-- [x] B.7b `equicontinuousAt_localRep_on_innerShrunkChart` + its
-      `Equicontinuous` form (pointwise equicontinuity on innerShrunkChart,
-      the Arzelà-ready domain).
-- [x] B.8 `isCompact_closure_image_inner_bcf` (per-chart Arzelà
-      relative compactness).
-- [x] B.9 step 1 `isCompact_univ_pi_closure_image_inner_bcf` (univ-pi
-      product compactness).
-- [x] B.9 step 2 `embedding_in_univ_pi_closure` (embedding lands in
-      compact product).
-- [x] B.9 step 3a `eq_of_mkOfCompact_localRepOnInnerShrunk_eq`
-      (embedding injectivity via 1-dim tangent argument).
-- [x] Linearity: `localRepOnInnerShrunk_add` / `..._smul`.
-
-**Infrastructure refactor** — Cover.lean now provides inner/outer
-double shrinkage via `exists_subset_iUnion_closure_subset` applied
-twice: `innerShrunkChart ⊆ chartOpen ⊆ shrunkChart ⊆ chartSource`,
-with `chartOpen` open.
-
-**Remaining steps to close this sorry:**
-- [ ] B.9 step 3b: **Embedding continuity.** Bound `‖Φ α x₀‖_{bcf} ≤ ‖α‖`
-      and package as `ContinuousLinearMap`. Best done here (Montel.lean)
-      since `HolomorphicOneForms.normedAddCommGroup` is in scope.
-- [ ] B.10: **Closedness of embedded closedBall.** Uniform limits of
-      holomorphic sections are holomorphic via
-      `TendstoLocallyUniformlyOn.analyticOn`. The subtle piece: glue
-      per-chart limits into a global bundle section. Requires
-      reconstructing α from its chart-local representatives and showing
-      smoothness class ω preserved under uniform limits.
-- [ ] Final assembly: `IsCompact (closedBall 0 1)` via closed subset of
-      compact image under the continuous embedding.
-
-**Estimated scope**: B.10 is the main content — multi-session work,
-requiring an `AnalyticOn`-to-`ContMDiffSection ω` transfer at the bundle
-level. B.9 step 3b + Assembly are mechanical once B.10 lands.
--/
+- **`closedBall_isCompact`**: CLOSED (real proof via sequential
+  compactness using the structural sorry below).
+- **`exists_convergent_subseq_of_bounded`**: single structural sorry
+  — bundle-level Montel: bounded sequence has supNormK-convergent
+  subsequence. Reduces to a chart-transition estimate OR bundle-section
+  reconstruction (~200-400 lines of bundle-adjacent work).
+- All Arzelà-Ascoli infrastructure (B.1-B.9) is in
+  `Jacobians/Montel/Compactness.lean`, fully proven.
+- All analytic-limit machinery (`analyticOn_of_tendstoLocallyUniformlyOn`
+  etc.) is in place. -/
 
 end Jacobians.Montel
