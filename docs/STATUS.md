@@ -1,6 +1,37 @@
 # Project status (auto-maintained)
 
-## Montel — Chart-transition + supNormK bound + Cauchy pointwise (latest)
+## Montel — Step 5a + 5b landed: common subseq + supNormK-Cauchy (latest)
+
+**New landings (this session):**
+- `Jacobians/Montel/Complete.lean` extended with two new theorems:
+  - **`exists_subseq_bcf_tendsto_on_chartCover`** (Step 5a) — finite
+    diagonal over `chartCover.toList`: for any `supNormK ≤ 1` sequence,
+    extract a strict-mono subsequence such that the bcf-image on each
+    `innerShrunkChart x₀ ∈ chartCover` converges in BCF(inner, ℂ).
+    Uses `IsCompact.isSeqCompact` + `subseq_of_frequently_in` per chart.
+  - **`cauchy_supNormK_of_bcf_tendsto`** (Step 5b) — if a subsequence's
+    bcf-images converge on every `x₀ ∈ chartCover`, the subsequence is
+    supNormK-Cauchy. Glue: `exists_supNormK_le_const_sup_inner` bounds
+    supNormK by `M · max x₀ sSup …`; each inner sSup ≤ bcf-distance
+    (new helper `sSup_innerShrunk_norm_sub_le_dist_bcf`); pick
+    `δ = ε/(M+1)` and take `Finset.attach.sup` over per-chart Cauchy
+    thresholds.
+
+**Status of the Montel sorry (`exists_convergent_subseq_of_bounded`):**
+- Steps 5a + 5b: ✅ compiled clean in Complete.lean.
+- Step 5c (pointwise CLM limit αLim.toFun y : T_y X →L[ℂ] ℂ):
+  pending. The identity `α.toFun y = (localRep α x₀ y) • φ` (where
+  `φ := e.continuousLinearEquivAt ℂ y hy`) reduces CauchySeq in CLM
+  to CauchySeq in ℂ (which is already landed as
+  `cauchySeq_alpha_toFun_apply_symmL`). Estimated: ~50 lines.
+- Step 5d (assemble αLim as `ContMDiffSection ω`):
+  the bundle-reconstruction step, ~200–400 lines. Chart-wise
+  analyticity of the limit via `analyticOn_of_pullback_tendsto_locally_uniformly`
+  + smoothness transport through charts.
+- Step 6 (`supNormK αLim ≤ 1` + `Tendsto αs φ → αLim`): straightforward
+  once αLim is in hand.
+
+## Montel — Chart-transition + supNormK bound + Cauchy pointwise
 
 **New landings (this session):**
 - `Jacobians/Montel/ChartTransition.lean` (new file, ~400 lines, sorry-free)
