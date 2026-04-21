@@ -111,7 +111,6 @@ the supNormK bound on localRep. -/
 theorem cauchySeq_alpha_toFun_apply_symmL
     (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (hC : CauchySeq fun n => HolomorphicOneForms.supNormK (αs n - αs 0))
     (h_diff : ∀ ε > 0, ∃ N, ∀ n m, n ≥ N → m ≥ N →
       HolomorphicOneForms.supNormK (αs n - αs m) < ε)
     {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X)) {y : X}
@@ -122,14 +121,12 @@ theorem cauchySeq_alpha_toFun_apply_symmL
   obtain ⟨N, hN⟩ := h_diff ε hε
   refine ⟨N, fun n hn m hm => ?_⟩
   rw [dist_eq_norm]
-  have h_nm : ‖localRep (αs n) x₀ y - localRep (αs m) x₀ y‖ ≤
-      HolomorphicOneForms.supNormK (αs n - αs m) :=
-    norm_localRep_sub_le_supNormK (αs n) (αs m) hx₀ hy
   calc ‖localRep (αs n) x₀ y - localRep (αs m) x₀ y‖
-      ≤ HolomorphicOneForms.supNormK (αs n - αs m) := h_nm
+      ≤ HolomorphicOneForms.supNormK (αs n - αs m) :=
+        norm_localRep_sub_le_supNormK (αs n) (αs m) hx₀ hy
     _ < ε := hN n m hn hm
 
-/-! ### Remaining steps (DEFERRED — require substantial bundle-reconstruction work)
+/-! ### Remaining steps (DEFERRED)
 
 The full completeness proof requires:
 
