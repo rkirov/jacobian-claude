@@ -453,6 +453,26 @@ theorem cauchySeq_toFun_of_supNormK_cauchy
   rw [h_fun_eq]
   exact h_cauchy_L
 
+/-! ### Step 4 — Pointwise CLM limit (DEFERRED)
+
+The natural next step is to package Step 5c's CauchySeq-per-point fact
+with completeness of the CLM space to extract a pointwise limit
+function. **Blocker:** `TangentSpace 𝓘(ℂ, ℂ) y` is intentionally not
+reducible (see Mathlib's `IsManifold/Basic.lean:1037`), so the
+`CompleteSpace (TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ)` instance does not
+synthesize directly. Workaround options:
+
+1. Transport `CauchySeq` along the CLE `φ := e.continuousLinearEquivAt`
+   to `CauchySeq` in `ℂ →L[ℂ] ℂ` (which has an inferred
+   `CompleteSpace`), extract a limit there, transport back.
+2. Construct `αLim.toFun y` directly from the per-chart bcf-limit
+   `g_{x₀}` and `φ` as `g_{x₀} y • φ`, then verify well-definedness
+   across chart overlaps via `chartTransitionFactor`.
+
+Option 2 is more work but dovetails into Step 5d (bundle
+reconstruction) since it also provides the chart-wise analytic data
+used in `analyticOn_of_pullback_tendsto_locally_uniformly`. -/
+
 /-! ### Remaining steps (DEFERRED)
 
 The full completeness proof requires:
