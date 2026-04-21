@@ -1,33 +1,49 @@
 # Project status (auto-maintained)
 
-## Montel — Step 5a + 5b landed: common subseq + supNormK-Cauchy (latest)
+## Montel — Steps 5a + 5b + 5c landed; 5d blocked on CompleteSpace (latest)
 
 **New landings (this session):**
-- `Jacobians/Montel/Complete.lean` extended with two new theorems:
-  - **`exists_subseq_bcf_tendsto_on_chartCover`** (Step 5a) — finite
-    diagonal over `chartCover.toList`: for any `supNormK ≤ 1` sequence,
-    extract a strict-mono subsequence such that the bcf-image on each
-    `innerShrunkChart x₀ ∈ chartCover` converges in BCF(inner, ℂ).
-    Uses `IsCompact.isSeqCompact` + `subseq_of_frequently_in` per chart.
-  - **`cauchy_supNormK_of_bcf_tendsto`** (Step 5b) — if a subsequence's
-    bcf-images converge on every `x₀ ∈ chartCover`, the subsequence is
-    supNormK-Cauchy. Glue: `exists_supNormK_le_const_sup_inner` bounds
-    supNormK by `M · max x₀ sSup …`; each inner sSup ≤ bcf-distance
-    (new helper `sSup_innerShrunk_norm_sub_le_dist_bcf`); pick
-    `δ = ε/(M+1)` and take `Finset.attach.sup` over per-chart Cauchy
-    thresholds.
+- Complete.lean: **Step 5a** — `exists_subseq_bcf_tendsto_on_chartCover`:
+  finite diagonal over `chartCover.toList` yields a common strict-mono
+  subsequence whose bcf-image on each `innerShrunkChart x₀ ∈ chartCover`
+  converges (IsCompact.isSeqCompact + subseq_of_frequently_in per chart).
+- Complete.lean: **Step 5b** — `cauchy_supNormK_of_bcf_tendsto`: lifts
+  per-chart bcf-Cauchy to supNormK-Cauchy via
+  `exists_supNormK_le_const_sup_inner` + the bridge
+  `sSup_innerShrunk_norm_sub_le_dist_bcf` (inner sSup ≤ bcf-distance).
+- Complete.lean: **Step 5c** — two lemmas:
+  - `toFun_eq_localRep_smul`: coordinate identity
+    `α.toFun y = (localRep α x₀ y) • φ` on the trivialization base set
+    (where `φ := e.continuousLinearEquivAt ℂ y hy`).
+  - `cauchySeq_toFun_of_supNormK_cauchy`: pointwise CLM-Cauchy from
+    supNormK-Cauchy, by transporting through the CLM
+    `(id ℂ ℂ).smulRight φ` (CLMs are uniformly continuous).
+
+**Workflow note:** LSP MCP tools should be avoided on this 4 GB host
+for Montel/HolomorphicForms modules — the parked workers (300–500 MB
+each) pin enough memory to OOM-kill subsequent `lake build` targets.
+Edit files blind; run `lake build Jacobians.<module>` one target at a
+time in a separate tmux pane/window. Build times: 15–25 s per module
+when memory is clear.
 
 **Status of the Montel sorry (`exists_convergent_subseq_of_bounded`):**
-- Steps 5a + 5b: ✅ compiled clean in Complete.lean.
-- Step 5c (pointwise CLM limit αLim.toFun y : T_y X →L[ℂ] ℂ):
-  pending. The identity `α.toFun y = (localRep α x₀ y) • φ` (where
-  `φ := e.continuousLinearEquivAt ℂ y hy`) reduces CauchySeq in CLM
-  to CauchySeq in ℂ (which is already landed as
-  `cauchySeq_alpha_toFun_apply_symmL`). Estimated: ~50 lines.
-- Step 5d (assemble αLim as `ContMDiffSection ω`):
-  the bundle-reconstruction step, ~200–400 lines. Chart-wise
-  analyticity of the limit via `analyticOn_of_pullback_tendsto_locally_uniformly`
-  + smoothness transport through charts.
+- Steps 5a + 5b + 5c: ✅ landed in Complete.lean.
+- **Step 5d (blocked)** — assembling the pointwise CLM limit as a
+  `ContMDiffSection ω`. Attempted to extract a limit via
+  `cauchySeq_tendsto_of_complete`, but `CompleteSpace (TangentSpace y
+  →L[ℂ] ℂ)` does not synthesize because `TangentSpace` is
+  intentionally non-reducible in Mathlib (see
+  `IsManifold/Basic.lean:1037` — the deliberate design choice to avoid
+  typeclass misresolution). Two viable paths forward:
+    1. Transport the per-point CauchySeq along the CLE
+       `φ := e.continuousLinearEquivAt` to `ℂ →L[ℂ] ℂ` (which has
+       inferrable `CompleteSpace`), extract the limit there, transport
+       back.
+    2. Construct αLim.toFun y directly from the per-chart bcf-limit
+       `g_{x₀}` and φ as `g_{x₀} y • φ`, then prove well-definedness
+       across chart overlaps via `chartTransitionFactor`.
+  Option 2 is more work but feeds directly into the bundle-smoothness
+  proof via `analyticOn_of_pullback_tendsto_locally_uniformly`. ~200 lines.
 - Step 6 (`supNormK αLim ≤ 1` + `Tendsto αs φ → αLim`): straightforward
   once αLim is in hand.
 
