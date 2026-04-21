@@ -882,6 +882,69 @@ theorem embedding_in_univ_pi_closure
   intro x₀ _
   exact subset_closure ⟨α, rfl⟩
 
+/-! ### Step B.9 step 3a — Injectivity of the embedding
+
+If `localRep α x₀ y = localRep β x₀ y` for every `y ∈ innerShrunkChart x₀`
+and every `x₀ ∈ chartCover`, then `α = β`. Proof via pointwise
+vanishing of `α - β`: for any `y ∈ X`, by inner-cover there's `x₀`
+with `y ∈ innerShrunkChart x₀` (which ⊆ baseSet), so
+`localRep (α - β) x₀ y = 0` forces `(α - β).toFun y = 0` by the
+1-dim tangent argument (`alpha_toFun_eq_zero_of_localRep_eq_zero`). -/
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- **Injectivity of the bcf-embedding.** Equality of
+`mkOfCompact (localRepOnInnerShrunk · x₀)` at every `x₀` (including
+outside chartCover) pins down the holomorphic 1-form. -/
+theorem eq_of_mkOfCompact_localRepOnInnerShrunk_eq
+    (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (h : ∀ x₀ : X,
+      letI := innerShrunkChart_compactSpace (X := X) x₀
+      BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀) =
+        BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk β x₀)) :
+    α = β := by
+  -- Extract pointwise equality localRep α x₀ y = localRep β x₀ y on innerShrunkChart x₀.
+  have h' : ∀ x₀ ∈ (chartCover : Finset X), ∀ y ∈ innerShrunkChart (X := X) x₀,
+      localRep α x₀ y = localRep β x₀ y := by
+    intro x₀ hx₀ y hy
+    haveI := innerShrunkChart_compactSpace (X := X) x₀
+    have := congrArg (fun f => f ⟨y, hy⟩) (h x₀)
+    simp only [BoundedContinuousFunction.mkOfCompact_apply] at this
+    rw [localRepOnInnerShrunk_apply _ hx₀, localRepOnInnerShrunk_apply _ hx₀] at this
+    exact this
+  -- Now show α = β via pointwise vanishing of γ := α - β.
+  apply ContMDiffSection.ext
+  intro y
+  -- y ∈ ⋃ innerShrunkChart x₀ = univ ⇒ ∃ x₀' ∈ chartCover, y ∈ innerShrunkChart x₀'.
+  have hmem : y ∈ (Set.univ : Set X) := Set.mem_univ _
+  rw [← iUnion_innerShrunkChart_chartCover_eq (X := X)] at hmem
+  simp only [Set.mem_iUnion] at hmem
+  obtain ⟨x₀', hx₀'mem, hy_in⟩ := hmem
+  -- localRep (α - β) x₀' y = 0.
+  have hlocal : localRep α x₀' y - localRep β x₀' y = 0 := by
+    rw [h' x₀' hx₀'mem y hy_in]; ring
+  -- Convert to: localRep (γ := α - β) x₀' y = 0.
+  -- Use linearity of localRep (localRep_add and localRep_neg).
+  have hγ_localRep : localRep (α - β) x₀' y = 0 := by
+    have hsub : α - β = α + (-β) := by rw [sub_eq_add_neg]
+    rw [hsub, localRep_add, localRep_neg]
+    calc localRep α x₀' y + -localRep β x₀' y
+        = localRep α x₀' y - localRep β x₀' y := by ring
+      _ = 0 := hlocal
+  -- y is in baseSet (since innerShrunkChart ⊆ baseSet for x₀' ∈ chartCover).
+  have hy_base : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀').baseSet :=
+    innerShrunkChart_subset_baseSet x₀' hx₀'mem hy_in
+  have h_toFun : (α - β).toFun y = 0 :=
+    alpha_toFun_eq_zero_of_localRep_eq_zero (α - β) x₀' y hy_base hγ_localRep
+  -- Convert "(α - β).toFun y = 0" to "α.toFun y = β.toFun y".
+  have hsub_zero : α.toFun y - β.toFun y = 0 := by
+    have heq : (α - β).toFun y = α.toFun y - β.toFun y := by
+      change (⇑(α - β)) y = _
+      rw [ContMDiffSection.coe_sub]
+      rfl
+    rw [← heq]; exact h_toFun
+  exact sub_eq_zero.mp hsub_zero
+
 /-! ### Next steps (scheduled, not implemented here)
 
 **B.9** Inject HOF X into the finite product
