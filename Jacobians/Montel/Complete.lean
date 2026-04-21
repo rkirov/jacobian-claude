@@ -98,6 +98,37 @@ theorem dist_localRepOnShrunkBcf_le_supNormK_sub
     localRepOnShrunk_apply _ hx₀, dist_eq_norm]
   exact norm_localRep_sub_le_supNormK α β hx₀ hy
 
+/-! ### Step 3 — Pointwise CLM limit from supNormK Cauchy
+
+For a supNormK-Cauchy sequence of sections, `α_n.toFun y` is Cauchy in
+the complete space `T_y X →L[ℂ] ℂ` (CLM space, complete since ℂ is).
+This gives a pointwise CLM limit `αLim.toFun y`. -/
+
+omit [ConnectedSpace X] in
+/-- For a supNormK-Cauchy sequence, the CLM value at each point is Cauchy.
+This uses the identity `α.toFun y (e.symmL y 1) = localRep α x₀ y` and
+the supNormK bound on localRep. -/
+theorem cauchySeq_alpha_toFun_apply_symmL
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (hC : CauchySeq fun n => HolomorphicOneForms.supNormK (αs n - αs 0))
+    (h_diff : ∀ ε > 0, ∃ N, ∀ n m, n ≥ N → m ≥ N →
+      HolomorphicOneForms.supNormK (αs n - αs m) < ε)
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X)) {y : X}
+    (hy : y ∈ shrunkChart (X := X) x₀) :
+    CauchySeq (fun n : ℕ => localRep (αs n) x₀ y) := by
+  rw [Metric.cauchySeq_iff]
+  intro ε hε
+  obtain ⟨N, hN⟩ := h_diff ε hε
+  refine ⟨N, fun n hn m hm => ?_⟩
+  rw [dist_eq_norm]
+  have h_nm : ‖localRep (αs n) x₀ y - localRep (αs m) x₀ y‖ ≤
+      HolomorphicOneForms.supNormK (αs n - αs m) :=
+    norm_localRep_sub_le_supNormK (αs n) (αs m) hx₀ hy
+  calc ‖localRep (αs n) x₀ y - localRep (αs m) x₀ y‖
+      ≤ HolomorphicOneForms.supNormK (αs n - αs m) := h_nm
+    _ < ε := hN n m hn hm
+
 /-! ### Remaining steps (DEFERRED — require substantial bundle-reconstruction work)
 
 The full completeness proof requires:
