@@ -126,6 +126,96 @@ theorem cauchySeq_alpha_toFun_apply_symmL
         norm_localRep_sub_le_supNormK (αs n) (αs m) hx₀ hy
     _ < ε := hN n m hn hm
 
+/-! ### Step 3b — Finite diagonal: common bcf-convergent subsequence on chartCover
+
+Given a bounded sequence of sections (supNormK ≤ 1), iterate per-chart
+Arzelà (`isCompact_closure_image_inner_bcf` for `M = 1`) over the finite
+`chartCover` to extract a single strict-mono `φ : ℕ → ℕ` such that for
+every `x₀ ∈ chartCover` the bcf-image on `innerShrunkChart x₀`
+converges to some limit. -/
+
+omit [ConnectedSpace X] in
+/-- List-indexed finite-diagonal extractor. By induction on `xs`, at
+each cons step we sub-sample inside the compact closure of the range
+of `mkOfCompact ∘ localRepOnInnerShrunk · y`. The outer strict-mono
+preserves convergence in earlier charts (composing with a strict-mono
+sequence preserves `Tendsto` at `atTop`). -/
+private lemma exists_common_subseq_bcf_tendsto
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (h : ∀ n, HolomorphicOneForms.supNormK (αs n) ≤ 1)
+    (xs : List X) (hxs : ∀ x ∈ xs, x ∈ (chartCover : Finset X)) :
+    ∃ (φ : ℕ → ℕ), StrictMono φ ∧
+      ∀ x ∈ xs,
+        letI := innerShrunkChart_compactSpace (X := X) x
+        ∃ g : BoundedContinuousFunction (innerShrunkChart (X := X) x) ℂ,
+          Tendsto
+            (fun n : ℕ => BoundedContinuousFunction.mkOfCompact
+              (localRepOnInnerShrunk (αs (φ n)) x))
+            atTop (𝓝 g) := by
+  induction xs with
+  | nil =>
+    refine ⟨id, strictMono_id, fun x hx => ?_⟩
+    exact absurd hx List.not_mem_nil
+  | cons y ys ih =>
+    have hys : ∀ x ∈ ys, x ∈ (chartCover : Finset X) :=
+      fun x hx => hxs x (List.mem_cons_of_mem _ hx)
+    obtain ⟨φ₀, hφ₀, hφ₀_conv⟩ := ih hys
+    have hy : y ∈ (chartCover : Finset X) := hxs y List.mem_cons_self
+    letI := innerShrunkChart_compactSpace (X := X) y
+    set K : Set (BoundedContinuousFunction (innerShrunkChart (X := X) y) ℂ) :=
+      closure (Set.range
+        (fun α : {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+            (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
+            HolomorphicOneForms.supNormK α ≤ 1} =>
+          BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α.1 y)))
+      with hK_def
+    have hK : IsCompact K := isCompact_closure_image_inner_bcf 1 zero_le_one hy
+    have hK_seq : IsSeqCompact K := hK.isSeqCompact
+    set s : ℕ → BoundedContinuousFunction (innerShrunkChart (X := X) y) ℂ :=
+      fun n => BoundedContinuousFunction.mkOfCompact
+        (localRepOnInnerShrunk (αs (φ₀ n)) y)
+      with hs_def
+    have hs_in : ∀ n, s n ∈ K := by
+      intro n
+      refine subset_closure ?_
+      exact ⟨⟨αs (φ₀ n), h (φ₀ n)⟩, rfl⟩
+    obtain ⟨a, _haK, ψ, hψ, hψ_conv⟩ :=
+      hK_seq.subseq_of_frequently_in (x := s)
+        (Filter.Eventually.frequently (Filter.Eventually.of_forall hs_in))
+    refine ⟨φ₀ ∘ ψ, hφ₀.comp hψ, ?_⟩
+    intro x hx
+    rcases List.mem_cons.mp hx with rfl | hxys
+    · refine ⟨a, ?_⟩
+      simpa [Function.comp, s, hs_def] using hψ_conv
+    · obtain ⟨g, hg⟩ := hφ₀_conv x hxys
+      refine ⟨g, ?_⟩
+      exact hg.comp hψ.tendsto_atTop
+
+omit [ConnectedSpace X] in
+/-- **Common bcf-convergent subsequence on `chartCover`.**
+For any bounded sequence of sections (`supNormK (αs n) ≤ 1`), there is
+a strict-mono subsequence `φ` such that on each chart `x₀ ∈ chartCover`
+the bcf-image `mkOfCompact ∘ localRepOnInnerShrunk (αs (φ n)) x₀`
+converges in `BCF(innerShrunkChart x₀, ℂ)`. -/
+theorem exists_subseq_bcf_tendsto_on_chartCover
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (h : ∀ n, HolomorphicOneForms.supNormK (αs n) ≤ 1) :
+    ∃ (φ : ℕ → ℕ), StrictMono φ ∧
+      ∀ x₀ ∈ (chartCover : Finset X),
+        letI := innerShrunkChart_compactSpace (X := X) x₀
+        ∃ g : BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ,
+          Tendsto
+            (fun n : ℕ => BoundedContinuousFunction.mkOfCompact
+              (localRepOnInnerShrunk (αs (φ n)) x₀))
+            atTop (𝓝 g) := by
+  obtain ⟨φ, hφ, hconv⟩ := exists_common_subseq_bcf_tendsto αs h
+    (chartCover : Finset X).toList (fun x hx => Finset.mem_toList.mp hx)
+  refine ⟨φ, hφ, ?_⟩
+  intro x₀ hx₀
+  exact hconv x₀ (Finset.mem_toList.mpr hx₀)
+
 /-! ### Remaining steps (DEFERRED)
 
 The full completeness proof requires:
