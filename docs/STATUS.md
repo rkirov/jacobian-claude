@@ -1,5 +1,25 @@
 # Project status (auto-maintained)
 
+## Montel Steps 1–B.9 + limit-preservation building blocks — MOSTLY COMPLETE
+
+`Jacobians/Montel/Compactness.lean` + `Jacobians/Montel.lean` now
+contain the full Arzelà–Ascoli pipeline through B.9 step 3b
+(continuous linear embedding), plus the analytic-limit lemmas
+(`analyticOn_of_tendstoLocallyUniformlyOn`,
+`analyticOn_of_pullback_tendsto_locally_uniformly`) needed for B.10.
+
+**Still outstanding** (one sorry in `Montel.lean:212`):
+- Construct `α∞ : HOF X` pointwise from chart-wise bcf-Cauchy limits.
+- Show α∞ is ContMDiffSection ω via chart-wise analyticity
+  (using `analyticOn_of_pullback_tendsto_locally_uniformly`) + bundle
+  section assembly.
+- Conclude `CompleteSpace HOF X` (or bypass via sequential compactness
+  of closedBall).
+- Combine with precompactness to discharge `closedBall_isCompact`.
+
+This is multi-session Mathlib-adjacent work centered on assembling
+chart-wise analytic limits into a coherent ContMDiffSection.
+
 ## Montel Steps 1–B.9.3a — MOSTLY COMPLETE (as of 2026-04-21 session)
 
 `Jacobians/Montel/Compactness.lean` now contains the full Arzelà–Ascoli
