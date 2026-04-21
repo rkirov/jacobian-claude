@@ -222,23 +222,30 @@ Strategy (classical — Ahlfors-Sario, Rudin Ch. 14):
 7. Sequential compactness ⇒ compactness (metric). -/
 
 /-- **Structural sorry — bounded sequences in HOF X have convergent
-subsequences.** Given a bounded sequence of holomorphic 1-forms
-(`supNormK α_n ≤ 1`), there exists a subsequence converging to a
-limit `αLim : HOF X` (with `supNormK αLim ≤ 1`) in supNormK.
+subsequences** (bundle-level Montel's theorem).
 
-This is the bundle-level form of "Montel's theorem for holomorphic
-sections on a compact complex manifold": every uniformly bounded
-sequence of holomorphic sections has a subsequence converging
-uniformly (on compact subsets, which here is all of X).
+Given a bounded supNormK sequence of holomorphic 1-forms, there exists
+a supNormK-convergent subsequence with the limit in HOF X with
+`supNormK limit ≤ 1`.
 
-**The single content gap remaining.** All Arzelà machinery is in place
-(per-chart precompactness in `Compactness.lean`, embedding, pointwise
-equicontinuity), but extracting an actual convergent subsequence in
-supNormK requires either: (a) a chart-transition estimate to lift
-per-chart precompactness from the inner shrinkage to supNormK, OR
-(b) a bundle-section reconstruction assembling chart-wise analytic
-limits into a `ContMDiffSection ω`. That's ~200-400 lines of
-dedicated work. Isolated here as a focused sorry. -/
+**Reduction path (all ingredients in place in sibling modules):**
+1. Per-chart Arzelà (B.8 in `Compactness.lean`) gives per-chart
+   convergent subsequences in `bcf(innerShrunkChart x₀, ℂ)`.
+2. Diagonal over finite `chartCover` gives a common subsequence
+   with bcf-Cauchy per chart.
+3. `exists_supNormK_le_const_sup_inner` (chart-transition bound in
+   `ChartTransition.lean`) lifts this to supNormK-Cauchy.
+4. Define `αLim.toFun` as the pointwise CLM limit (CLM space complete).
+5. Show `αLim` is a `ContMDiffSection ω` via chart-wise analyticity of
+   the pullback, using `analyticOn_of_pullback_tendsto_locally_uniformly`
+   from `Compactness.lean` + chart characterization of ContMDiff.
+6. Show `αs(φ k) → αLim` in supNormK and `supNormK αLim ≤ 1`.
+
+Step 5 is the bundle-level "uniform limit of holomorphic sections is
+holomorphic" — a classical 100+ year old result (Banach's completeness
+argument for spaces of holomorphic functions/sections), requiring ~200
+lines of bundle-reconstruction Lean plumbing. Not research-level math,
+just a Mathlib-adjacent contribution yet to be written. -/
 theorem HolomorphicOneForms.exists_convergent_subseq_of_bounded
     (αs : ℕ → Jacobians.HolomorphicOneForms X)
     (h : ∀ n, HolomorphicOneForms.supNormK (αs n) ≤ 1) :
