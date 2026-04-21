@@ -231,11 +231,13 @@ sequence of holomorphic sections has a subsequence converging
 uniformly (on compact subsets, which here is all of X).
 
 **The single content gap remaining.** All Arzelà machinery is in place
-(per-chart precompactness, embedding, equicontinuity), but extracting
-an actual limit section requires the bundle-level transfer of the
-analytic-limit lemma — reassembling chart-wise analytic limits into a
-`ContMDiffSection ω`. That's ~200-400 lines of dedicated bundle-
-reconstruction work. Isolated here as a focused sorry. -/
+(per-chart precompactness in `Compactness.lean`, embedding, pointwise
+equicontinuity), but extracting an actual convergent subsequence in
+supNormK requires either: (a) a chart-transition estimate to lift
+per-chart precompactness from the inner shrinkage to supNormK, OR
+(b) a bundle-section reconstruction assembling chart-wise analytic
+limits into a `ContMDiffSection ω`. That's ~200-400 lines of
+dedicated work. Isolated here as a focused sorry. -/
 theorem HolomorphicOneForms.exists_convergent_subseq_of_bounded
     (αs : ℕ → Jacobians.HolomorphicOneForms X)
     (h : ∀ n, HolomorphicOneForms.supNormK (αs n) ≤ 1) :
