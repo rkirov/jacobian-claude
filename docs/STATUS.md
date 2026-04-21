@@ -1,5 +1,38 @@
 # Project status (auto-maintained)
 
+## Montel — Chart-transition + supNormK bound + Cauchy pointwise (latest)
+
+**New landings (this session):**
+- `Jacobians/Montel/ChartTransition.lean` (new file, ~400 lines, sorry-free)
+  - `chartTransitionFactor`, `..._ne_zero`.
+  - `symmL_apply_chartTransitionFactor`, `localRep_chart_transition`.
+  - `continuousOn_chartTransitionFactor`.
+  - `exists_pairwise_chart_transition_bound`.
+  - `exists_global_chart_transition_bound`.
+  - **`exists_supNormK_le_const_sup_inner`** — supNormK bound by
+    max of inner chart sup-norms (key estimate).
+- `Jacobians/Montel/Complete.lean` extended with
+  `cauchySeq_alpha_toFun_apply_symmL` — per-point Cauchy from
+  supNormK-Cauchy (algebraic, sorry-free).
+
+**Reduction of the Montel sorry:**
+The single remaining sorry `exists_convergent_subseq_of_bounded` now
+has a CLEAR reduction path:
+
+1. **Cauchy extraction** ✅ ingredients in place:
+   - Per-chart Arzelà gives bcf-Cauchy per chart.
+   - `exists_supNormK_le_const_sup_inner` lifts to supNormK-Cauchy.
+2. **CLM pointwise limit** ✅ per-point Cauchy lemma landed.
+3. **Bundle reconstruction (remaining)** — the limit section's chart
+   representations are analytic (by `TendstoLocallyUniformlyOn.differentiableOn`
+   + our `analyticOn_of_pullback_tendsto_locally_uniformly`), which
+   gives `ContMDiffSection ω` status via chart characterization.
+   ~100-200 lines of bundle plumbing remaining.
+
+Classical math is known for 100+ years; what remains is Lean
+translation of the standard Banach-space-of-holomorphic-sections
+completeness argument. No new mathematics, just formalization work.
+
 ## Montel — chart-transition estimate landed (new file ChartTransition.lean)
 
 `Jacobians/Montel/ChartTransition.lean` (new file, 200+ lines,
