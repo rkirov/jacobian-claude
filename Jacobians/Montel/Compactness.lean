@@ -7,6 +7,7 @@ import Mathlib.Topology.MetricSpace.Thickening
 import Mathlib.Analysis.Normed.Module.RCLike.Real
 import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Topology.MetricSpace.UniformConvergence
+import Mathlib.Topology.ContinuousMap.Bounded.ArzelaAscoli
 
 /-!
 # Montel path — compactness of the closed unit ball (work in progress)
@@ -751,11 +752,67 @@ theorem equicontinuous_localRep_inner_family
     _ ≤ ε/2 := this
     _ < ε := by linarith
 
-/-! ### Next steps (scheduled, not implemented here)
+/-! ### Step B.8 — Arzelà–Ascoli on each chart
 
-**B.8** Apply `BoundedContinuousFunction.arzela_ascoli` to each
-`x₀ ∈ chartCover`, get relative compactness in each
-`C(innerShrunkChart x₀, ℂ)`.
+Applies `BoundedContinuousFunction.arzela_ascoli` per chart: bounded +
+equicontinuous (both now in place) gives relative compactness of the
+inner-shrunk-chart image in `α →ᵇ ℂ`. -/
+
+omit [ConnectedSpace X] in
+/-- **Per-chart relative compactness.**
+The image of the supNormK-`M`-ball under `α ↦ mkOfCompact ∘
+localRepOnInnerShrunk α x₀` has compact closure in
+`innerShrunkChart x₀ →ᵇ ℂ`. -/
+theorem isCompact_closure_image_inner_bcf
+    (M : ℝ) (hMnn : 0 ≤ M) {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    letI := innerShrunkChart_compactSpace (X := X) x₀
+    IsCompact (closure (Set.range
+      (fun α : {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+          (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
+          HolomorphicOneForms.supNormK α ≤ M} =>
+        BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α.1 x₀)))) := by
+  letI := innerShrunkChart_compactSpace (X := X) x₀
+  apply BoundedContinuousFunction.arzela_ascoli (Metric.closedBall (0 : ℂ) M)
+    (isCompact_closedBall _ _)
+  · -- in_s: all values in closedBall 0 M.
+    rintro f y ⟨α, rfl⟩
+    rw [Metric.mem_closedBall, dist_zero_right,
+        BoundedContinuousFunction.mkOfCompact_apply]
+    calc ‖localRepOnInnerShrunk α.1 x₀ y‖
+        ≤ ‖localRepOnInnerShrunk α.1 x₀‖ :=
+          ContinuousMap.norm_coe_le_norm _ y
+      _ ≤ HolomorphicOneForms.supNormK α.1 :=
+          norm_localRepOnInnerShrunk_le_supNormK α.1 hx₀
+      _ ≤ M := α.2
+  · -- Equicontinuous: transfer from the indexed family via Classical.choose.
+    classical
+    set ι := {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+          (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
+          HolomorphicOneForms.supNormK α ≤ M}
+    set F_bcf : ι → BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ :=
+      fun α => BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α.1 x₀)
+    -- `Equicontinuous (fun α : ι => ⇑(F_bcf α))` equals the known equicontinuous family.
+    have hFbcf_fn : Equicontinuous (fun α : ι => (⇑(F_bcf α) : innerShrunkChart x₀ → ℂ)) := by
+      have hF := equicontinuous_localRep_inner_family M hMnn hx₀
+      have heq : (fun α : ι => (⇑(F_bcf α) : innerShrunkChart x₀ → ℂ)) =
+          (fun α : ι => fun y : innerShrunkChart (X := X) x₀ => localRep α.1 x₀ (y : X)) := by
+        funext α y
+        simp only [F_bcf, BoundedContinuousFunction.mkOfCompact_apply]
+        exact localRepOnInnerShrunk_apply _ hx₀ y
+      rw [heq]; exact hF
+    -- Now use Classical.choose to build u : Set.range F_bcf → ι and compose.
+    let u : ↥(Set.range F_bcf) → ι := fun x => Classical.choose x.2
+    have hu_spec : ∀ x : ↥(Set.range F_bcf), F_bcf (u x) = x.val :=
+      fun x => Classical.choose_spec x.2
+    have hcomp : (fun x : ↥(Set.range F_bcf) => (⇑x.val : innerShrunkChart x₀ → ℂ)) =
+        (fun α : ι => (⇑(F_bcf α) : innerShrunkChart x₀ → ℂ)) ∘ u := by
+      funext x y
+      simp only [Function.comp]
+      rw [hu_spec x]
+    rw [hcomp]
+    exact hFbcf_fn.comp u
+
+/-! ### Next steps (scheduled, not implemented here)
 
 **B.9** Inject HOF X into the finite product
 `Π x₀ ∈ chartCover, C(innerShrunkChart x₀, ℂ)` (injective via
