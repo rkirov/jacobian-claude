@@ -812,6 +812,53 @@ theorem isCompact_closure_image_inner_bcf
     rw [hcomp]
     exact hFbcf_fn.comp u
 
+/-! ### Step B.9 step 1 — Product compactness over `X` (all-index form)
+
+The univ-indexed product of closures is compact: for `x₀ ∉ chartCover`,
+`innerShrunkChart x₀ = ∅` so the image range is `{0}` (or degenerate);
+for `x₀ ∈ chartCover`, B.8 gives compact closure. Either way each
+factor is compact; by `isCompact_univ_pi`, the infinite product is
+compact. -/
+
+omit [ConnectedSpace X] in
+/-- **Product compactness.**
+Product over all `x₀ : X` of per-chart closures. Each factor is either
+compact by B.8 (for `x₀ ∈ chartCover`) or a single-point singleton (for
+`x₀ ∉ chartCover`, where `innerShrunkChart x₀ = ∅` makes the BCF zero). -/
+theorem isCompact_univ_pi_closure_image_inner_bcf
+    (M : ℝ) (hMnn : 0 ≤ M) :
+    letI := fun x₀ : X => innerShrunkChart_compactSpace (X := X) x₀
+    IsCompact (Set.univ.pi
+      (fun x₀ : X =>
+        closure (Set.range
+          (fun α : {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+              (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
+              HolomorphicOneForms.supNormK α ≤ M} =>
+            BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α.1 x₀))))) := by
+  classical
+  letI := fun x₀ : X => innerShrunkChart_compactSpace (X := X) x₀
+  apply isCompact_univ_pi
+  intro x₀
+  by_cases hx₀ : x₀ ∈ (chartCover : Finset X)
+  · exact isCompact_closure_image_inner_bcf M hMnn hx₀
+  · -- x₀ ∉ chartCover ⇒ innerShrunkChart x₀ = ∅ ⇒ all BCF values are 0 ⇒ range is {0}.
+    have hempty : innerShrunkChart (X := X) x₀ = ∅ := innerShrunkChart_eq_empty x₀ hx₀
+    have h_iso : IsEmpty (innerShrunkChart (X := X) x₀) := Set.isEmpty_coe_sort.mpr hempty
+    have hrange_sub : Set.range
+        (fun α : {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+            (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
+            HolomorphicOneForms.supNormK α ≤ M} =>
+          BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α.1 x₀)) ⊆ {0} := by
+      rintro f ⟨α, rfl⟩
+      rw [Set.mem_singleton_iff]
+      ext y
+      exact h_iso.false y |>.elim
+    -- closure of a subset of {0} is a subset of {0}, hence compact (finite).
+    refine (Set.Finite.isCompact (Set.finite_singleton (0 :
+        BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ))).of_isClosed_subset
+      isClosed_closure ?_
+    exact (isClosed_singleton.closure_subset_iff).mpr hrange_sub
+
 /-! ### Next steps (scheduled, not implemented here)
 
 **B.9** Inject HOF X into the finite product
