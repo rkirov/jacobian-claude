@@ -8,6 +8,7 @@ import Mathlib.Analysis.Normed.Module.RCLike.Real
 import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Topology.MetricSpace.UniformConvergence
 import Mathlib.Topology.ContinuousMap.Bounded.ArzelaAscoli
+import Mathlib.Analysis.Complex.LocallyUniformLimit
 
 /-!
 # Montel path — compactness of the closed unit ball (work in progress)
@@ -500,6 +501,27 @@ theorem exists_cauchy_deriv_bound
   have hcd := Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hδpos hdcoc hsphere
   calc ‖deriv f z‖ ≤ C / δ := hcd
     _ = 1 / δ * C := by ring
+
+/-! ### Limits of analytic families (building block for B.10)
+
+The classical "uniform limit of holomorphic is holomorphic" result,
+packaged for our use: `TendstoLocallyUniformlyOn.differentiableOn`
+combined with `DifferentiableOn.analyticOn` on open ℂ-sets. -/
+
+/-- **Uniform-local limits of analytic functions are analytic.**
+A locally-uniform limit of `AnalyticOn` functions on an open `U ⊆ ℂ`
+is itself `AnalyticOn U`. -/
+theorem analyticOn_of_tendstoLocallyUniformlyOn
+    {ι : Type*} {U : Set ℂ} {F : ι → ℂ → ℂ} {f : ℂ → ℂ}
+    {φ : Filter ι} [φ.NeBot]
+    (hU : IsOpen U)
+    (hlim : TendstoLocallyUniformlyOn F f φ U)
+    (hF : ∀ᶠ n in φ, AnalyticOn ℂ (F n) U) :
+    AnalyticOn ℂ f U := by
+  have h_diff : DifferentiableOn ℂ f U :=
+    TendstoLocallyUniformlyOn.differentiableOn hlim
+      (by filter_upwards [hF] with n hn using hn.differentiableOn) hU
+  exact h_diff.analyticOn hU
 
 /-! ### Step B.5 — Uniform Lipschitz bound on convex compacta
 
