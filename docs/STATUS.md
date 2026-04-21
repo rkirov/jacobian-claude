@@ -1,6 +1,43 @@
 # Project status (auto-maintained)
 
-## Montel Step 1 — COMPLETE (as of 2026-04-21 session)
+## Montel Steps 1–B.9.3a — MOSTLY COMPLETE (as of 2026-04-21 session)
+
+`Jacobians/Montel/Compactness.lean` now contains the full Arzelà–Ascoli
+pipeline (~1000 lines), assembling the closedBall compactness argument
+from the classical complex-analysis building blocks. Remaining work:
+continuity of the embedding (B.9 step 3b), closedness of the
+embedded closedBall (B.10 — via `TendstoLocallyUniformlyOn.analyticOn`),
+and the final assembly that discharges `closedBall_isCompact` in
+`Montel.lean`.
+
+**Content landed (18 commits this session):**
+- B.1: `localRepOnShrunk α x₀ : C(shrunkChart x₀, ℂ)` — bundle localRep.
+- B.2: component-wise norm bound `≤ supNormK α`.
+- B.3: `localRep_analyticOn_chartTarget` — the `ContMDiff ω ⇔
+  AnalyticOn ℂ` bridge at bundle-section level.
+- B.4: `exists_cauchy_deriv_bound` — uniform derivative bound on
+  compact ⊂ open.
+- B.5: `exists_cauchy_lipschitz_bound` — uniform Lipschitz on convex
+  compact.
+- B.6: `uniformEquicontinuousOn_of_bounded_analyticOn` — uniform
+  equicontinuity on convex compacta.
+- B.7b: `equicontinuousAt_localRep_on_innerShrunkChart` + Equicontinuous
+  form — pointwise equicontinuity on innerShrunkChart x₀.
+- B.8: `isCompact_closure_image_inner_bcf` — per-chart Arzelà
+  relative compactness.
+- B.9 step 1: `isCompact_univ_pi_closure_image_inner_bcf` — product
+  compactness.
+- B.9 step 2: `embedding_in_univ_pi_closure` — embedding lands in
+  compact product.
+- B.9 step 3a: `eq_of_mkOfCompact_localRepOnInnerShrunk_eq` —
+  embedding injectivity via the 1-dim tangent argument.
+
+**Cover.lean refactored** to inner/outer double open-shrinking:
+`innerShrunkChart ⊆ chartOpen ⊆ shrunkChart ⊆ chart source`, with
+`chartOpen` open, giving Arzelà the wiggle room needed for Cauchy
+estimates.
+
+## Montel Step 1 — COMPLETE (as of 2026-04-20 session)
 
 `HolomorphicOneForms X` now carries a proper `NormedAddCommGroup` +
 `NormedSpace ℂ` structure (non-instance, reducible defs in
