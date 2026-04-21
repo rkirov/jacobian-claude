@@ -35,8 +35,8 @@ steps (3)–(6) are separately scheduled.
 
 namespace Jacobians.Montel
 
-open scoped Manifold ContDiff
-open Bundle
+open scoped Manifold ContDiff Topology
+open Bundle Filter
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -604,11 +604,118 @@ theorem norm_localRep_pullback_le_of_supNormK_le
         norm_localRep_pullback_le_supNormK_on_chart_image_chartOpen α hx₀ hz
     _ ≤ M := hαM
 
-/-! ### Next steps (scheduled, not implemented here)
+/-! ### Step B.7b — Equicontinuity of the inner family
 
-**B.7b** `equicontinuous_localRepOnInnerShrunk` — assemble local
-equicontinuity via (a) B.6 on a closedBall inside `chart '' chartOpen`,
-(b) chart continuity to transfer back to `innerShrunkChart`.
+Assembles local equicontinuity via B.6 on a closed ball inside
+`chart '' chartOpen`, then transfers back to `innerShrunkChart x₀` via
+chart continuity. -/
+
+omit [ConnectedSpace X] in
+/-- **Equicontinuity of the inner family.**
+For each `y₀ : innerShrunkChart x₀` and ε > 0, there's an X-nbhd V of
+`y₀.val` with: `‖localRep α x₀ y - localRep α x₀ y₀.val‖ < ε` for all
+`α` with `supNormK α ≤ M` and all `y ∈ V ∩ innerShrunkChart x₀`.
+
+Proof: via B.6 on a closed ball `closedBall (chart y₀) r` strictly
+inside the open `chart '' chartOpen x₀`, then transfer through chart
+continuity at `y₀`. -/
+theorem equicontinuousAt_localRep_on_innerShrunkChart
+    (M : ℝ) (hMnn : 0 ≤ M) {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    (y₀ : X) (hy₀ : y₀ ∈ innerShrunkChart (X := X) x₀) :
+    ∀ ε > 0, ∃ V ∈ 𝓝 y₀, ∀ y ∈ V, ∀ α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x),
+        HolomorphicOneForms.supNormK α ≤ M →
+        y ∈ innerShrunkChart (X := X) x₀ →
+        ‖localRep α x₀ y - localRep α x₀ y₀‖ ≤ ε := by
+  intro ε hε
+  -- z₀ = chart(y₀); lives in chart '' chartOpen (open).
+  set z₀ := (chartAt ℂ x₀) y₀ with hz₀_def
+  have hy₀_chartOpen : y₀ ∈ chartOpen (X := X) x₀ :=
+    innerShrunkChart_subset_chartOpen x₀ hy₀
+  have hy₀_src : y₀ ∈ (chartAt ℂ x₀).source :=
+    chartOpen_subset_source x₀ hx₀ hy₀_chartOpen
+  have hz₀_in : z₀ ∈ (chartAt ℂ x₀) '' chartOpen (X := X) x₀ :=
+    ⟨y₀, hy₀_chartOpen, rfl⟩
+  -- chart '' chartOpen is open in ℂ; pick r > 0 with closedBall z₀ r ⊂ chart '' chartOpen.
+  have hopenU : IsOpen ((chartAt ℂ x₀) '' chartOpen (X := X) x₀) :=
+    isOpen_chart_image_chartOpen x₀ hx₀
+  obtain ⟨r, hr_pos, hr_sub⟩ := Metric.isOpen_iff.mp hopenU z₀ hz₀_in
+  -- Use closedBall z₀ (r/2) ⊂ ball z₀ r (strict) ⊂ chart '' chartOpen.
+  have hr2pos : 0 < r / 2 := by linarith
+  have hclosed_sub : Metric.closedBall z₀ (r/2) ⊆ (chartAt ℂ x₀) '' chartOpen (X := X) x₀ := by
+    intro z hz
+    have : z ∈ Metric.ball z₀ r := by
+      rw [Metric.mem_ball]
+      have : dist z z₀ ≤ r/2 := Metric.mem_closedBall.mp hz
+      linarith
+    exact hr_sub this
+  -- B.6 on closedBall z₀ (r/2): UniformEquicontinuousOn of the pullback family.
+  set U := (chartAt ℂ x₀) '' chartOpen (X := X) x₀
+  set K := Metric.closedBall z₀ (r/2)
+  -- Index family by α with supNormK ≤ M.
+  let ι := {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
+      HolomorphicOneForms.supNormK α ≤ M}
+  let F : ι → ℂ → ℂ := fun α z => localRep α.1 x₀ ((chartAt ℂ x₀).symm z)
+  have hF_analytic : ∀ i : ι, AnalyticOn ℂ (F i) U :=
+    fun i => localRep_analyticOn_chart_image_chartOpen i.1 x₀ hx₀
+  have hF_bound : ∀ i : ι, ∀ z ∈ U, ‖F i z‖ ≤ M := fun i z hz =>
+    norm_localRep_pullback_le_of_supNormK_le i.1 i.2 hx₀ hz
+  have hK_cpt : IsCompact K := isCompact_closedBall _ _
+  have hK_conv : Convex ℝ K := convex_closedBall _ _
+  have hK_sub : K ⊆ U := hclosed_sub
+  have hEqui : UniformEquicontinuousOn F K :=
+    uniformEquicontinuousOn_of_bounded_analyticOn hopenU hK_cpt hK_sub hK_conv hMnn
+      hF_analytic hF_bound
+  -- Convert to UniformEquicontinuous on subtype K and use Metric characterization.
+  rw [← uniformEquicontinuous_restrict_iff] at hEqui
+  rw [Metric.uniformEquicontinuous_iff] at hEqui
+  obtain ⟨δ, hδpos, hδbd⟩ := hEqui ε hε
+  -- Now find X-nbhd V of y₀ such that y ∈ V ⇒ chart y is close to chart y₀.
+  -- chart is continuous at y₀ (since y₀ ∈ chart source).
+  have h_chart_cont : ContinuousAt ((chartAt ℂ x₀) : X → ℂ) y₀ :=
+    (chartAt ℂ x₀).continuousAt hy₀_src
+  have hρ_pos : 0 < min (r/2) δ := lt_min hr2pos hδpos
+  -- Neighborhood V: y ∈ (chartAt ℂ x₀).source ∩ chart⁻¹' (ball z₀ (min (r/2) δ))
+  have hball_mem : Metric.ball z₀ (min (r/2) δ) ∈ 𝓝 z₀ :=
+    Metric.ball_mem_nhds _ hρ_pos
+  have hpreimage : (chartAt ℂ x₀) ⁻¹' Metric.ball z₀ (min (r/2) δ) ∈ 𝓝 y₀ := by
+    apply h_chart_cont.preimage_mem_nhds
+    exact hball_mem
+  have hsource_nhds : (chartAt ℂ x₀).source ∈ 𝓝 y₀ :=
+    (chartAt ℂ x₀).open_source.mem_nhds hy₀_src
+  refine ⟨(chartAt ℂ x₀) ⁻¹' Metric.ball z₀ (min (r/2) δ) ∩ (chartAt ℂ x₀).source,
+    Filter.inter_mem hpreimage hsource_nhds, ?_⟩
+  intro y hyV α hαM hy_inner
+  obtain ⟨hy_preimg, hy_src⟩ := hyV
+  -- chart y is in ball(z₀, min (r/2) δ) ⊂ closedBall(z₀, r/2) = K.
+  have hchart_y_ball : (chartAt ℂ x₀) y ∈ Metric.ball z₀ (min (r/2) δ) := hy_preimg
+  have hchart_y_K : (chartAt ℂ x₀) y ∈ K := by
+    have : dist ((chartAt ℂ x₀) y) z₀ < min (r/2) δ := Metric.mem_ball.mp hchart_y_ball
+    have : dist ((chartAt ℂ x₀) y) z₀ ≤ r/2 := by
+      have := lt_of_lt_of_le this (min_le_left _ _)
+      exact this.le
+    exact Metric.mem_closedBall.mp (Metric.mem_closedBall.mpr this)
+  have hchart_y₀_K : z₀ ∈ K := Metric.mem_closedBall_self hr2pos.le
+  -- Apply hδbd with subtype elements.
+  have hdist_chart : dist ((chartAt ℂ x₀) y) z₀ < δ := by
+    have : dist ((chartAt ℂ x₀) y) z₀ < min (r/2) δ := Metric.mem_ball.mp hchart_y_ball
+    exact lt_of_lt_of_le this (min_le_right _ _)
+  have hdist_sub : dist (⟨(chartAt ℂ x₀) y, hchart_y_K⟩ : K) ⟨z₀, hchart_y₀_K⟩ < δ := by
+    simp [Subtype.dist_eq]; exact hdist_chart
+  have hFbound := hδbd ⟨(chartAt ℂ x₀) y, hchart_y_K⟩ ⟨z₀, hchart_y₀_K⟩ hdist_sub ⟨α, hαM⟩
+  -- Unfold K.restrict ∘ F.
+  change dist (localRep α x₀ ((chartAt ℂ x₀).symm ((chartAt ℂ x₀) y)))
+           (localRep α x₀ ((chartAt ℂ x₀).symm z₀)) < ε at hFbound
+  -- chart.symm (chart y) = y (on source), and chart.symm z₀ = y₀.
+  have hsymm_y : (chartAt ℂ x₀).symm ((chartAt ℂ x₀) y) = y :=
+    (chartAt ℂ x₀).left_inv hy_src
+  have hsymm_y₀ : (chartAt ℂ x₀).symm z₀ = y₀ :=
+    (chartAt ℂ x₀).left_inv hy₀_src
+  rw [hsymm_y, hsymm_y₀, dist_eq_norm] at hFbound
+  exact hFbound.le
+
+/-! ### Next steps (scheduled, not implemented here)
 
 **B.8** Apply `BoundedContinuousFunction.arzela_ascoli` to each
 `x₀ ∈ chartCover`, get relative compactness in each
