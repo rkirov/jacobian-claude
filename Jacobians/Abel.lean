@@ -316,10 +316,32 @@ theorem MeromorphicFunction.orderAtPoint_chart_invariant
     -- `OpenPartialHomeomorph.contDiffOn_extend_coord_change` + compositions,
     -- but the bridging (extChartAt → chartAt, ω ↔ analytic, biholomorphism
     -- inverse function theorem) is ~100+ lines each.
+    -- Step A1-A2: e and chart_y are both in maximalAtlas 𝓘(ℂ) ω.
+    have he_max : e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X :=
+      IsManifold.subset_maximalAtlas _he
+    have hchart_max : chartAt (H := ℂ) y ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X :=
+      IsManifold.chart_mem_maximalAtlas y
+    -- Step A3-A6: chart-transition is ContDiffWithinAt ℂ ω at the point, using
+    -- Mathlib's point-based lemma. For I boundaryless, range I = univ, so
+    -- ContDiffWithinAt univ = ContDiffAt.
+    have hy_chart_src : y ∈ (chartAt (H := ℂ) y).source := mem_chart_source ℂ y
+    have h_contDiffAt : ContDiffAt ℂ ω
+        (↑(𝓘(ℂ).extendCoordChange (chartAt (H := ℂ) y) e))
+        ((chartAt (H := ℂ) y).extend 𝓘(ℂ) y) := by
+      have h := OpenPartialHomeomorph.contDiffWithinAt_extend_coord_change'
+        hchart_max he_max hy_chart_src hy
+      rwa [ModelWithCorners.range_eq_univ, contDiffWithinAt_univ] at h
+    -- Step A7: AnalyticAt at the point (ω = ⊤ definitionally).
+    have h_analyticAt : AnalyticAt ℂ (↑(𝓘(ℂ).extendCoordChange (chartAt (H := ℂ) y) e))
+        ((chartAt (H := ℂ) y).extend 𝓘(ℂ) y) :=
+      h_contDiffAt.analyticAt
+    -- Step A8: bridge extendCoordChange's coe to e ∘ chart_y.symm (rfl pointwise).
+    have h_analytic : AnalyticAt ℂ (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) :=
+      h_analyticAt
     exact meromorphicOrderAt_comp_of_deriv_ne_zero
       (g := e ∘ (chartAt (H := ℂ) y).symm) (f := f.toFun ∘ e.symm)
       (x := (chartAt (H := ℂ) y) y)
-      (sorry : AnalyticAt ℂ (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y))
+      h_analytic
       (sorry : deriv (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) ≠ 0)
   -- Assemble.
   rw [h_comp_ord.symm]
