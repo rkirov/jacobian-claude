@@ -171,6 +171,17 @@ lemma ofCurve_self (P : X) : ofCurve P P = 0 := by
   exact (QuotientAddGroup.eq_zero_iff _).mpr
     (Jacobians.periodVec_smoothPath_self_mem_lattice P)
 
+/-- **Basepoint change for `ofCurve`**: shifting the basepoint from
+`P` to `P₀` adds the constant `ofCurve P₀ P` (the image of the old
+basepoint under the new).
+
+Classical: the closed loop `sp(P, A) ⊕ reverse(sp(P₀, A)) ⊕ sp(P₀, P)`
+(going `P → A → P₀ → P`) has `periodVec` in the lattice. Quotienting
+gives the identity. Formalization needs path concat/reverse smoothness
+preservation, ~30-50 lines. -/
+lemma ofCurve_basepoint_change (P P₀ A : X) :
+    ofCurve P₀ A = ofCurve P A + ofCurve P₀ P := sorry
+
 /-- **Abel ⇒ ofCurve injective.**
 
 Structurally: `HasAbelsTheorem X` + `NoDegreeOneDivisorsToPP1 X`
@@ -190,7 +201,23 @@ proof chain:
    → contradicts NoDegreeOneDivisorsToPP1 if Q ≠ Q' and 0 < genus X. -/
 lemma ofCurve_inj [Jacobians.HasAbelsTheorem X]
     [Jacobians.NoDegreeOneDivisorsToPP1 X]
-    (P : X) (_h : 0 < genus X) : Function.Injective (ofCurve P) := sorry
+    (P : X) (h : 0 < genus X) : Function.Injective (ofCurve P) := by
+  intro Q Q' h_eq
+  by_contra h_ne
+  -- Abel's theorem chain: abelJacobi (twoPointDivisor Q' Q) ≠ 0 when Q' ≠ Q.
+  have h_nonzero := Jacobians.abelJacobi_twoPoint_ne_zero h (Ne.symm h_ne)
+  apply h_nonzero
+  -- Compute abelJacobi (twoPointDivisor Q' Q) = mk(sp(P₀,Q')) - mk(sp(P₀,Q))
+  rw [Jacobians.abelJacobi_twoPointDivisor _ _ (Ne.symm h_ne)]
+  -- Let P₀ = Classical.arbitrary X. Show mk(sp(P₀,Q')) = mk(sp(P₀,Q)).
+  -- Via basepoint change: ofCurve P₀ A = ofCurve P A + ofCurve P₀ P.
+  -- Since ofCurve P Q = ofCurve P Q' (hypothesis), subtract gives:
+  -- ofCurve P₀ Q - ofCurve P₀ Q' = ofCurve P Q - ofCurve P Q' = 0.
+  show ofCurve (Classical.arbitrary X) Q' - ofCurve (Classical.arbitrary X) Q = 0
+  rw [ofCurve_basepoint_change P (Classical.arbitrary X) Q',
+    ofCurve_basepoint_change P (Classical.arbitrary X) Q,
+    h_eq]
+  abel
 
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
   [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] [Jacobians.IsPeriodLattice Y]
