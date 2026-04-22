@@ -1,6 +1,30 @@
 # Project status (auto-maintained)
 
-## Abel–Jacobi: lineIntegral_pullback decomposed + additivity/reversal (latest, 2026-04-22)
+## Abel–Jacobi: chain rule + linear algebra CLOSED (latest, 2026-04-23)
+
+**Two substantive theorems fully proven (sorry-free):**
+
+1. **`pathSpeed_comp_eq_mfderiv`** (LineIntegral.lean): the pointwise
+   chain-rule identity `pathSpeed (f ∘ γ) t = mfderiv f (γ t) (pathSpeed γ t)`.
+   ~80 lines. Bypasses the `IsScalarTower ℝ ℂ ℂ` diamond by
+   constructing the ℝ-`HasFDerivAt` manually from `IsLittleO` +
+   `ContinuousLinearMap.coe_restrictScalars'`, avoiding
+   `HasFDerivAt.restrictScalars` typeclass synthesis failure.
+
+2. **`periodVec_pushforward_of_smooth`** (PeriodLattice.lean): the
+   linear-algebra identity `periodVec (f ∘ γ) = ambientPhi f hf (periodVec γ)`
+   under regularity hypotheses (continuity + chart-pullback diff +
+   per-basis integrability). ~90 lines. Uses the closed
+   `lineIntegral_pullback` + `pullbackForm_periodBasisForm_eq` +
+   Finset.sum distribution via `intervalIntegral.integral_finset_sum`
+   + matrix-transpose unfolding.
+
+**Result:** `lineIntegral_pullback` is now a REAL theorem.
+`ambientPhi_preserves_lattice` is real modulo only the hypothesis-less
+`periodVec_pushforward` sorry (which needs closedLoopPeriods to carry
+smoothness data — a separate refactor).
+
+## Abel–Jacobi: lineIntegral_pullback decomposed + additivity/reversal (earlier)
 
 **`lineIntegral_pullback` is now a REAL theorem** modulo the atomic
 pointwise identity `pathSpeed_comp_eq_mfderiv`. Split:
