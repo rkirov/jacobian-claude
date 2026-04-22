@@ -830,7 +830,16 @@ constant. -/
 theorem criticalSet_ne_univ_of_nonconstant
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (_hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
-    criticalSet f ≠ Set.univ := sorry
+    criticalSet f ≠ Set.univ := by
+  -- Contrapositive: if criticalSet = univ (i.e., mfderiv f ≡ 0), then f is constant.
+  -- Strategy: in each chart of Y, the chart-pulled f = chartAt y₀ ∘ f has mfderiv 0,
+  -- and Y being compact+connected+complex gives local constancy propagating globally.
+  -- Full reduction to Liouville-for-compact-manifolds needs chart-covering work
+  -- (~50 lines); left as a focused gap. The high-level plan:
+  -- 1. mfderiv f = 0 everywhere → in charts, fderiv of chart-pullback = 0.
+  -- 2. `IsOpen.is_const_of_fderiv_eq_zero` gives local constancy in each chart.
+  -- 3. Patch via connectedness + path-connectedness of X.
+  sorry
 
 /-- **Critical set is finite.** In local charts, `mfderiv f` becomes
 a nonvanishing analytic function near any non-critical point, so
