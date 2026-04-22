@@ -310,6 +310,99 @@ theorem periodVec_pushforward
       ambientPhi (gX := genus X) (gY := genus Y) f hf (periodVec γ) :=
   sorry
 
+/-- **Smooth variant of `periodVec_pushforward`.** With sufficient
+path regularity (continuity + chart-pullback differentiability +
+per-basis integrability), the identity is a real theorem proven via
+`lineIntegral_pullback` + basis-expansion linearity. The
+hypothesis-free version `periodVec_pushforward` is reserved for
+downstream use without threading hypotheses; it remains a sorry
+until smoothness is baked into `closedLoopPeriods`. -/
+theorem periodVec_pushforward_of_smooth
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X)
+    (hγ_cont : Continuous γ)
+    (hγ_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t)
+    (hint_X : ∀ i : Fin (genus X), IntervalIntegrable
+      (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
+        MeasureTheory.volume 0 1) :
+    periodVec (f ∘ γ) =
+      ambientPhi (gX := genus X) (gY := genus Y) f hf (periodVec γ) := by
+  funext j
+  show lineIntegral (periodBasisForm Y j) (f ∘ γ) =
+    ambientPhi (gX := genus X) (gY := genus Y) f hf (periodVec γ) j
+  rw [lineIntegral_pullback f hf _ γ hγ_cont hγ_diff]
+  rw [pullbackForm_periodBasisForm_eq]
+  -- Goal: lineIntegral (ambientIso X (ambientPsi f hf e_j^Y)) γ = (ambientPhi f hf (periodVec γ)) j
+  set v := ambientPsi (gX := genus X) (gY := genus Y) f hf
+    (Pi.basisFun ℂ (Fin (genus Y)) j) with hv_def
+  -- Step 1: ambientIso X v = ∑ i, v i • periodBasisForm X i
+  have h_iso_sum : ambientIso X v = ∑ i, v i • periodBasisForm X i := by
+    have h_v_decomp : v = ∑ i, v i • Pi.basisFun ℂ (Fin (genus X)) i := by
+      have := pi_eq_sum_univ' v
+      convert this using 2
+      simp [Pi.basisFun_apply]
+    conv_lhs => rw [h_v_decomp, map_sum]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    rw [map_smul]
+    rfl
+  rw [h_iso_sum]
+  -- Step 2: lineIntegral distributes over the Finset sum (needs integrability).
+  have h_sum_lineIntegral : lineIntegral (∑ i, v i • periodBasisForm X i) γ =
+      ∑ i, v i * lineIntegral (periodBasisForm X i) γ := by
+    unfold lineIntegral
+    have h_pw : ∀ t : ℝ,
+        (∑ i, v i • periodBasisForm X i).toFun (γ t) (pathSpeed γ t) =
+          ∑ i, v i * (periodBasisForm X i).toFun (γ t) (pathSpeed γ t) := by
+      intro t
+      -- Unfold toFun on a finset sum of smul'd sections.
+      induction (Finset.univ : Finset (Fin (genus X))) using Finset.induction_on with
+      | empty =>
+        rw [Finset.sum_empty, Finset.sum_empty]
+        show (0 : HolomorphicOneForms X).toFun (γ t) (pathSpeed γ t) = 0
+        rfl
+      | @insert a s ha ih =>
+        rw [Finset.sum_insert ha, Finset.sum_insert ha]
+        show ((v a • periodBasisForm X a) + ∑ i ∈ s, v i • periodBasisForm X i).toFun (γ t)
+            (pathSpeed γ t) = _
+        rw [show ((v a • periodBasisForm X a) + ∑ i ∈ s, v i • periodBasisForm X i).toFun (γ t) =
+            (v a • periodBasisForm X a).toFun (γ t) +
+              (∑ i ∈ s, v i • periodBasisForm X i).toFun (γ t) from rfl,
+          ContinuousLinearMap.add_apply, ih]
+        show v a * (periodBasisForm X a).toFun (γ t) (pathSpeed γ t) +
+            ∑ i ∈ s, v i * (periodBasisForm X i).toFun (γ t) (pathSpeed γ t) =
+          v a * (periodBasisForm X a).toFun (γ t) (pathSpeed γ t) +
+            ∑ i ∈ s, v i * (periodBasisForm X i).toFun (γ t) (pathSpeed γ t)
+        rfl
+    simp_rw [h_pw]
+    rw [intervalIntegral.integral_finset_sum (s := Finset.univ)
+      (f := fun i t => v i * (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
+      (fun i _ => (hint_X i).const_mul (v i))]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    exact intervalIntegral.integral_const_mul _ _
+  rw [h_sum_lineIntegral]
+  -- Step 3: (ambientPhi f hf (periodVec γ)) j = ∑ i, v i * (periodVec γ) i (matrix transpose).
+  show ∑ i, v i * lineIntegral (periodBasisForm X i) γ =
+    (ambientPhi f hf (periodVec γ)) j
+  have h_ambientPhi : (ambientPhi f hf (periodVec γ)) j = ∑ i, v i * (periodVec γ) i := by
+    show (Matrix.transpose (LinearMap.toMatrix
+      (Pi.basisFun ℂ (Fin (genus Y))) (Pi.basisFun ℂ (Fin (genus X)))
+      (ambientPsi f hf).toLinearMap)).mulVecLin (periodVec γ) j =
+      ∑ i, v i * (periodVec γ) i
+    rw [Matrix.mulVecLin_apply]
+    show ∑ i, (Matrix.transpose (LinearMap.toMatrix _ _ _)) j i * (periodVec γ) i =
+      ∑ i, v i * (periodVec γ) i
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    congr 1
+    show (LinearMap.toMatrix (Pi.basisFun ℂ (Fin (genus Y)))
+      (Pi.basisFun ℂ (Fin (genus X))) (ambientPsi f hf).toLinearMap) i j = v i
+    rw [LinearMap.toMatrix_apply]
+    show ((Pi.basisFun ℂ (Fin (genus X))).repr
+      (ambientPsi f hf (Pi.basisFun ℂ (Fin (genus Y)) j))) i = v i
+    rw [Pi.basisFun_repr]
+  rw [h_ambientPhi]
+  -- Goal: ∑ i, v i * lineIntegral (periodBasisForm X i) γ = ∑ i, v i * (periodVec γ) i
+  rfl
+
 /-- **`IsPeriodLattice` typeclass.** Axiomatizes the two key structural
 facts about the period lattice that follow from the Hodge
 decomposition of compact Riemann surfaces:
