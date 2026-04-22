@@ -1,6 +1,13 @@
 # Project status (auto-maintained)
 
-## Session wrap-up: major Abel chain closed (latest)
+## Sorry localization + Jacobians.lean 1-sorry state (latest)
+
+`ofCurve_basepoint_change` is now REAL in Jacobians.lean; delegates
+to new `smoothPath_basepoint_change` in PeriodLattice.lean (the
+natural home for path/periodVec content). Jacobians.lean now has
+only 1 sorry: `ofCurve_contMDiff` (Abel-Jacobi holomorphicity).
+
+## Session wrap-up: major Abel chain closed (earlier)
 
 **THE main challenge theorem `ofCurve_inj` is now REAL content**,
 delegated to:
