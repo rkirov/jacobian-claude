@@ -1,6 +1,46 @@
 # Project status (auto-maintained)
 
-## Montel — Steps 5a + 5b + 5c + pointwise-limit (5d-partial) landed (latest)
+## Montel — `exists_convergent_subseq_of_bounded` assembled; only bundle smoothness remains (latest)
+
+**Major milestone:** `HolomorphicOneForms.exists_convergent_subseq_of_bounded`
+in `Jacobians/Montel.lean` now has a real proof. The sole remaining
+`sorry` is a focused bundle-smoothness obligation:
+`ContMDiff ω (fun x => TotalSpace.mk' _ x (L x))` where L is the
+already-landed pointwise CLM limit (via `exists_toFun_limit`).
+
+**Landed (this session):**
+- Batch 1 in `Complete.lean`:
+  - `localRep_tendsto_of_toFun_tendsto` — pointwise CLM Tendsto ⇒
+    pointwise scalar `localRep` Tendsto (via `ContinuousEvalConst`).
+  - `norm_limit_localRep_le_one` (Step 6a scalar) — the bound on
+    limit's `localRep` at each `(x₀ ∈ chartCover, y ∈ shrunkChart x₀)`.
+  - `norm_localRep_sub_limit_le` (Step 6b scalar) — uniform in (x₀, y)
+    convergence of `localRep (αs n) x₀ y` to `L y (e.symmL ℂ y 1)`.
+- Batch 3 in `Montel.lean`:
+  - Full assembly of `exists_convergent_subseq_of_bounded` via the
+    Batch 1 helpers + csSup_le + Finset.sup'_le_iff pattern.
+  - Subtraction + `ContMDiffSection.coe_sub` + `congr_fun` pattern
+    to handle the NormedAddCommGroup diamond on HOF X.
+
+**Remaining:** Step 5d-smooth — proving `αLim.toFun` defines a
+`ContMDiffSection ω`. Sketch:
+1. On each `innerChartOpen x₀` (open ⊆ innerShrunkChart x₀),
+   bcf-convergence restricts to uniform convergence. Locally uniform on
+   innerChartOpen ⇒ via chart pushforward, locally uniform on
+   `chartAt x₀ '' innerChartOpen x₀` in ℂ.
+2. Apply `analyticOn_of_tendstoLocallyUniformlyOn` (already in
+   `Compactness.lean`) to get analytic pullback limit.
+3. Reverse the `localRep_analyticOn_chartTarget` bridge: from analytic
+   pullback, get `ContMDiffOn ω` of `localRep αLim x₀`.
+4. Use `Trivialization.contMDiffAt_section_iff` on the Hom-bundle
+   trivialization to lift chart-wise smoothness of `localRep αLim x₀`
+   to section-level `ContMDiff ω` of `αLim`.
+
+Step 4 in particular requires navigating the Hom-bundle trivialization
+plumbing — Mathlib's `Bundle.continuousLinearMap` infrastructure —
+which isn't immediately user-friendly.
+
+## Montel — Steps 5a + 5b + 5c + pointwise-limit (5d-partial) landed (prior)
 
 **This session (post 8 GB upgrade):**
 - Droplet upgraded from 2vCPU/4 GB to 4vCPU/8 GB — LSP workers now have
