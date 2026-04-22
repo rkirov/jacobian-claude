@@ -628,28 +628,82 @@ theorem ambientPsi_eq_zero_of_const
   ext v i
   simp
 
+/-- A **preimage cycle** witnessing the trace identity: a finite
+ℤ-combination of closed smooth loops in `X` whose period-vector sum
+equals `ambientPsi f hf (periodVec δ)`.
+
+Classically: for non-constant holomorphic `f : X → Y` between compact
+Riemann surfaces, `f` is a branched cover of some degree `d ≥ 1`,
+and the set-theoretic preimage `f⁻¹(δ)` of a loop `δ` (avoiding
+branch points) is `d` disjoint closed loops in `X` whose signed sum
+realizes `ambientPsi (periodVec δ)` (Forster §10.11).
+
+Defining `PreimageCycle` as a bundle of (loops + coefficients +
+trace equation) lets us isolate the classical content: the theorem
+`ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle` is
+real and purely algebraic; only *producing* a `PreimageCycle` for
+each non-constant `f, δ` is content-gated. -/
+structure PreimageCycle (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (δ : ℝ → Y) where
+  /-- Number of lifts. -/
+  n : ℕ
+  /-- The lifted closed loops in X. -/
+  loops : Fin n → ℝ → X
+  /-- Each lift is a closed smooth loop. -/
+  loops_smooth : ∀ i, IsClosedSmoothLoop (loops i)
+  /-- Integer coefficients (signed lifts / branching multiplicities). -/
+  coeffs : Fin n → ℤ
+  /-- The trace identity: `ambientPsi` on `periodVec δ` equals the
+  ℤ-combination of `periodVec`s of the lifts. -/
+  trace_eq : ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) =
+    ∑ i, coeffs i • periodVec (loops i)
+
+/-- **Trace identity — algebraic reduction.** Given a `PreimageCycle`
+witness for `(f, δ)`, the pulled-back period vector
+`ambientPsi (periodVec δ)` lies in `truePeriodLattice X`: each
+`periodVec` of a closed smooth loop is in the lattice, and the
+lattice is closed under ℤ-linear combinations. -/
+theorem ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (δ : ℝ → Y) (c : PreimageCycle f hf δ) :
+    ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
+      truePeriodLattice X := by
+  rw [c.trace_eq]
+  exact Submodule.sum_mem _ fun i _ =>
+    Submodule.smul_mem _ (c.coeffs i)
+      (periodVec_mem_truePeriodLattice_of_closed _ (c.loops_smooth i))
+
+/-- **Existence of preimage cycle for non-constant maps** — the single
+remaining content sorry. Classically (Forster §10.11): pick `δ` to
+avoid the branch locus; locally lift via the unbranched cover on
+`Y ∖ f(R)`; patch the lifts globally via the covering structure.
+Requires real branched-cover infrastructure not yet in Mathlib. -/
+theorem exists_preimageCycle_of_nonconstant
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (_hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (_hδ : IsClosedSmoothLoop δ) :
+    Nonempty (PreimageCycle f hf δ) := sorry
+
 /-- **Trace identity — member case.** For a closed smooth loop `δ`
 in `Y`, the pulled-back period vector `ambientPsi (periodVec δ)` lies
 in `truePeriodLattice X`.
 
-Case-split on whether `f` is constant: constant case proven via
-`ambientPsi_eq_zero_of_const`; non-constant case left as a focused
-content sorry (Forster §10.11 trace identity, needs real
-`pushforwardForm` + branched-cover lift). -/
+Case-split: constant case proven via `ambientPsi_eq_zero_of_const`;
+non-constant case reduced to `exists_preimageCycle_of_nonconstant`
+(classical branched-cover content) + the algebraic lemma
+`ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle`. -/
 theorem ambientPsi_periodVec_mem_truePeriodLattice
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (δ : ℝ → Y) (_hδ : IsClosedSmoothLoop δ) :
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
     ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
       truePeriodLattice X := by
   by_cases hconst : ∃ y₀ : Y, ∀ x, f x = y₀
   · -- Constant case: ambientPsi = 0, image is 0 ∈ lattice.
     rw [ambientPsi_eq_zero_of_const f hf hconst]
     simp
-  · -- Non-constant case: f is a branched cover; needs the trace identity.
-    -- `ambientPsi (periodVec δ) = periodVec (f⁻¹(δ))` — a ℤ-cycle
-    -- in X by the branched-cover lift. Real infrastructure required
-    -- (~200–500 lines). See file header.
-    sorry
+  · -- Non-constant case: extract preimage cycle, reduce algebraically.
+    obtain ⟨c⟩ := exists_preimageCycle_of_nonconstant f hf hconst δ hδ
+    exact ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle f hf δ c
 
 /-- `ambientPsi` preserves the period lattice. Reduces to the member
 case (`ambientPsi_periodVec_mem_truePeriodLattice`) via span induction;
