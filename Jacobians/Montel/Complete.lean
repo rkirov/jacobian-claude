@@ -574,6 +574,56 @@ theorem norm_limit_localRep_le_one
     le_trans (HolomorphicOneForms.norm_localRep_le_supNormK (αs n) hx₀ hy) (h n)
   exact le_of_tendsto h_tendsto.norm (Filter.Eventually.of_forall h_bounded)
 
+/-! ### Step 6b — bound on `‖αs n - limit‖` at scalar level
+
+Given a supNormK-Cauchy sequence `αs` with pointwise CLM limit `L`,
+for every ε > 0 there is `N` such that for all `n ≥ N` and every
+chart / point, the scalar diff `‖localRep (αs n) x₀ y - L y (e.symmL y 1)‖ ≤ ε`.
+This is the scalar analog of `supNormK (αs n - αLim) ≤ ε`, proven
+without yet packaging L as a ContMDiffSection. -/
+
+omit [ConnectedSpace X] in
+/-- Scalar-level convergence of `localRep (αs n) x₀ y` to
+`L y (e.symmL ℂ y 1)`, uniformly over `(x₀ ∈ chartCover, y ∈ shrunkChart x₀)`. -/
+theorem norm_localRep_sub_limit_le
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (h_cauchy : ∀ ε > 0, ∃ N, ∀ n m, n ≥ N → m ≥ N →
+      HolomorphicOneForms.supNormK (αs n - αs m) < ε)
+    (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
+    (hL : ∀ y : X, Tendsto (fun n : ℕ => (αs n).toFun y) atTop (𝓝 (L y)))
+    (ε : ℝ) (hε : 0 < ε) :
+    ∃ N, ∀ n, n ≥ N → ∀ (x₀ : X), x₀ ∈ (chartCover : Finset X) →
+      ∀ (y : X), y ∈ shrunkChart (X := X) x₀ →
+      letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+      ‖localRep (αs n) x₀ y - L y (e.symmL ℂ y 1)‖ ≤ ε := by
+  obtain ⟨N, hN⟩ := h_cauchy ε hε
+  refine ⟨N, fun n hn x₀ hx₀ y hy => ?_⟩
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+  -- As m → ∞, localRep (αs m) x₀ y → L y (e.symmL ℂ y 1).
+  have h_m_tendsto : Tendsto (fun m : ℕ => localRep (αs m) x₀ y) atTop
+      (𝓝 (L y (e.symmL ℂ y 1))) :=
+    localRep_tendsto_of_toFun_tendsto αs L hL x₀ y
+  -- Hence the diff (αs n) - (αs m) → (αs n) - L as m → ∞.
+  have h_sub_tendsto :
+      Tendsto (fun m : ℕ =>
+        localRep (αs n) x₀ y - localRep (αs m) x₀ y) atTop
+          (𝓝 (localRep (αs n) x₀ y - L y (e.symmL ℂ y 1))) :=
+    tendsto_const_nhds.sub h_m_tendsto
+  -- For m ≥ N, the diff is bounded by ε.
+  have h_eventually : ∀ᶠ m in atTop,
+      ‖localRep (αs n) x₀ y - localRep (αs m) x₀ y‖ ≤ ε := by
+    filter_upwards [Filter.eventually_ge_atTop N] with m hm
+    have h_sub_eq : localRep (αs n) x₀ y - localRep (αs m) x₀ y =
+        localRep (αs n - αs m) x₀ y := by
+      have hsub : αs n - αs m = αs n + (-αs m) := sub_eq_add_neg _ _
+      rw [hsub, localRep_add, localRep_neg]; ring
+    rw [h_sub_eq]
+    exact le_of_lt (lt_of_le_of_lt
+      (HolomorphicOneForms.norm_localRep_le_supNormK (αs n - αs m) hx₀ hy)
+      (hN n m hn hm))
+  exact le_of_tendsto h_sub_tendsto.norm h_eventually
+
 /-! ### Remaining steps (DEFERRED)
 
 The full completeness proof requires:
