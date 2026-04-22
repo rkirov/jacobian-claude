@@ -67,9 +67,40 @@ Weierstrass argument (§ every-complex-analysis-book); Mathlib's
 `Trivialization.contMDiffOn_section_baseSet_iff` is the bridge. Not
 a math gap, a plumbing gap.
 
-**Estimated effort:** ~200 lines of careful bundle-specific work.
-Should be tackled in a dedicated session where the LSP can stay
-responsive (now viable on the 8 GB host).
+**Infrastructure prepared (2026-04-23):**
+- `Cover.lean`:
+  - `innerChartOpen_eq_empty` (factored out).
+  - `iUnion_innerChartOpen_chartCover_eq` — every y ∈ X lives in some
+    innerChartOpen x₀ for x₀ ∈ chartCover.
+- `Compactness.lean`:
+  - `innerChartOpen_subset_source` — containment in chart source.
+  - `isOpen_chart_image_innerChartOpen` — chart image is open in ℂ.
+  - `chart_image_innerChartOpen_subset_target` — image ⊆ chart target.
+  - `localRep_analyticOn_chart_image_innerChartOpen` — pullback
+    analyticity on the smaller open set.
+  - `analyticOn_of_pullback_tendsto_locally_uniformly_inner` —
+    specialized version of the analytic-limit lemma on
+    `chart '' innerChartOpen x₀`.
+
+**Remaining substeps (~150 lines total):**
+1. **TendstoLocallyUniformlyOn of chart pullbacks on `chart '' innerChartOpen x₀`**
+   — from bcf-convergence on `innerShrunkChart x₀` (uniform) restricted
+   to open subset, pushed through chart homeomorphism. Plus identify
+   the limit function as the chart pullback of `αLim.toFun y (e.symmL y 1)`.
+2. **ContMDiffOn bridge** — from `AnalyticOn` pullback (given by the
+   infrastructure above) back to `ContMDiffOn ω (localRep αLim x₀)` on
+   `innerChartOpen x₀`. Reverse of `localRep_analyticOn_chartTarget`
+   via `contDiffOn_omega_iff_analyticOn` + `contMDiffOn_iff`.
+3. **Hom-bundle section smoothness** — via
+   `Trivialization.contMDiffOn_section_baseSet_iff` applied to the
+   Hom-bundle trivialization at each x₀ ∈ chartCover. Needs
+   `(e_Hom ⟨y, αLim.toFun y⟩).2` unfolded to scalar-CLM-ℂ→ℂ form and
+   connected to `localRep αLim x₀`.
+4. **Finite cover assembly** — from per-chart ContMDiffOn to full
+   ContMDiff via `iUnion_innerChartOpen_chartCover_eq` + `ContMDiff.of_locally_contMDiffOn`.
+
+**Estimated remaining effort:** ~150 lines. Substep 1 is the single
+hardest piece (bcf-to-chart-pullback conversion).
 
 ## Montel — Steps 5a + 5b + 5c + pointwise-limit (5d-partial) landed (prior)
 
