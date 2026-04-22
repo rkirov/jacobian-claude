@@ -311,11 +311,16 @@ theorem MeromorphicFunction.orderAtPoint_chart_invariant
     rw [show meromorphicOrderAt (f.toFun ∘ e.symm) (e y) =
       meromorphicOrderAt (f.toFun ∘ e.symm) ((e ∘ (chartAt (H := ℂ) y).symm)
         ((chartAt (H := ℂ) y) y)) by rw [h_ey]]
+    -- Remaining two atomic sub-sorries: chart-transition is analytic +
+    -- has nonzero derivative. Both follow from
+    -- `OpenPartialHomeomorph.contDiffOn_extend_coord_change` + compositions,
+    -- but the bridging (extChartAt → chartAt, ω ↔ analytic, biholomorphism
+    -- inverse function theorem) is ~100+ lines each.
     exact meromorphicOrderAt_comp_of_deriv_ne_zero
       (g := e ∘ (chartAt (H := ℂ) y).symm) (f := f.toFun ∘ e.symm)
       (x := (chartAt (H := ℂ) y) y)
-      (by sorry : AnalyticAt ℂ (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y))
-      (by sorry : deriv (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) ≠ 0)
+      (sorry : AnalyticAt ℂ (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y))
+      (sorry : deriv (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) ≠ 0)
   -- Assemble.
   rw [h_comp_ord.symm]
   exact h_ord_congr.symm
