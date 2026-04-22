@@ -2,6 +2,7 @@ import Jacobians.LineIntegral
 import Mathlib.LinearAlgebra.Basis.Basic
 import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.Topology.Connected.LocPathConnected
 
 /-!
 # Period lattice of a compact Riemann surface
@@ -46,6 +47,41 @@ is independent of basepoint choice, because any two basepoints can
 be connected by a path which conjugates closed loops without changing
 the integral (modulo the lattice itself). -/
 noncomputable def basepoint (X : Type*) [Nonempty X] : X := Classical.arbitrary X
+
+/-! ### Path-connectedness of a compact Riemann surface (classical)
+
+A connected manifold over a locally-path-connected model is itself
+path-connected. Specifically: `ChartedSpace ℂ X` inherits
+`LocPathConnectedSpace X` from `ℂ` via chart-local homeomorphisms
+(`ChartedSpace.locPathConnectedSpace`), and combined with
+`ConnectedSpace X` gives `PathConnectedSpace X`
+(`pathConnectedSpace_iff_connectedSpace`).
+
+From this we get `Path P Q` for any `P Q : X` — a continuous path
+between any two points on a compact connected Riemann surface. -/
+
+/-- `X` is locally path-connected, inherited from `ℂ` via charts. -/
+instance instLocPathConnectedSpaceOfChartedSpaceC
+    (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X] :
+    LocPathConnectedSpace X :=
+  ChartedSpace.locPathConnectedSpace ℂ X
+
+/-- `X` is path-connected (connected + locally path-connected). -/
+instance instPathConnectedSpaceOfConnectedChartedSpace
+    (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X] [ConnectedSpace X] :
+    PathConnectedSpace X :=
+  pathConnectedSpace_iff_connectedSpace.mpr inferInstance
+
+/-- **Classical fact**: for any two points on a connected compact
+Riemann surface, there exists a continuous path between them.
+
+This is just `PathConnectedSpace.somePath`; captured as an explicit
+theorem for readability and for consumption by downstream Abel-Jacobi
+definitions. Upgrading to a *smooth* path requires additional
+content (smooth-approximation theorem — a known Mathlib gap for
+general manifolds). -/
+noncomputable def continuousPath (P Q : X) : Path P Q :=
+  (PathConnectedSpace.somePath P Q)
 
 /-- The i-th basis element of `HolomorphicOneForms X`, defined via
 `ambientIso X` applied to the standard unit vector. This choice
