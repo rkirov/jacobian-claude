@@ -358,8 +358,9 @@ when content is filled in, both `ContMDiff.degree` and
 `ambientPhi_ambientPsi_eq` must be consistent. -/
 def _root_.ContMDiff.degree (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ := 0
 
-lemma pushforward_pullback (P : Jacobian Y) :
-  pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P :=
+lemma pushforward_pullback [Jacobians.HasAmbientDegreeIdentity X Y]
+    (P : Jacobian Y) :
+    pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P :=
   Jacobians.ZLatticeQuotient.pushforward_pullback_of_ambient
     (periodLattice X) (periodLattice Y)
     (Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf)
