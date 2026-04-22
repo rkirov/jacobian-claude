@@ -82,25 +82,35 @@ a math gap, a plumbing gap.
     specialized version of the analytic-limit lemma on
     `chart '' innerChartOpen x₀`.
 
-**Remaining substeps (~150 lines total):**
-1. **TendstoLocallyUniformlyOn of chart pullbacks on `chart '' innerChartOpen x₀`**
-   — from bcf-convergence on `innerShrunkChart x₀` (uniform) restricted
-   to open subset, pushed through chart homeomorphism. Plus identify
-   the limit function as the chart pullback of `αLim.toFun y (e.symmL y 1)`.
-2. **ContMDiffOn bridge** — from `AnalyticOn` pullback (given by the
-   infrastructure above) back to `ContMDiffOn ω (localRep αLim x₀)` on
-   `innerChartOpen x₀`. Reverse of `localRep_analyticOn_chartTarget`
-   via `contDiffOn_omega_iff_analyticOn` + `contMDiffOn_iff`.
-3. **Hom-bundle section smoothness** — via
-   `Trivialization.contMDiffOn_section_baseSet_iff` applied to the
-   Hom-bundle trivialization at each x₀ ∈ chartCover. Needs
-   `(e_Hom ⟨y, αLim.toFun y⟩).2` unfolded to scalar-CLM-ℂ→ℂ form and
-   connected to `localRep αLim x₀`.
-4. **Finite cover assembly** — from per-chart ContMDiffOn to full
-   ContMDiff via `iUnion_innerChartOpen_chartCover_eq` + `ContMDiff.of_locally_contMDiffOn`.
+**Substep status (Path 2):**
 
-**Estimated remaining effort:** ~150 lines. Substep 1 is the single
-hardest piece (bcf-to-chart-pullback conversion).
+- ✅ **Substep 1** — `tendstoLocallyUniformlyOn_pullback_on_innerChartOpen`:
+  bcf-convergence on `innerShrunkChart x₀` → TendstoLocallyUniformlyOn
+  of chart pullbacks on `chart '' innerChartOpen x₀`. 7-step proof
+  (bcf→subtype-uniform, identify limit, set-level, restrict, push
+  through chart, uniform→locally uniform). Uses helper
+  `bcf_limit_eq_L_eval` for uniqueness-of-limits identification.
+- ✅ **Substep 2** — `analyticOn_limit_pullback_inner`:
+  One-line composition of substep 1 with
+  `analyticOn_of_pullback_tendsto_locally_uniformly_inner`.
+- ✅ **Substep 3** — `contMDiffOn_limit_inner`:
+  Reverse of `localRep_analyticOn_chartTarget`, restricted to
+  `innerChartOpen x₀`. Uses `contMDiffOn_iff_of_subset_source'`
+  (cleaner than `contMDiffOn_iff`) + `contDiffOn_omega_iff_analyticOn.mpr`.
+- ⏳ **Substep 4** — Hom-bundle section smoothness from `contMDiffOn_limit_inner`.
+  Approach: use `contMDiffAt_hom_bundle` to reduce section smoothness
+  to smoothness of (a) projection (trivial, identity map) and (b)
+  `inCoordinates F₁ E₁ F₂ E₂ x₀ x x₀ x (L x)` — an ℂ →L[ℂ] ℂ-valued
+  function. For our setup (ℂ-target Trivial bundle), `inCoordinates`
+  simplifies to "multiplication by `L x (e.symmL ℂ x 1)`", so
+  smoothness reduces to scalar smoothness from substep 3 via the CLE
+  `ℂ ≃L[ℂ] (ℂ →L[ℂ] ℂ)` (value at 1). ~50-80 lines.
+- ⏳ **Substep 5** — Finite cover assembly. ContMDiffAt at each y₀ via
+  picking x₀' ∈ chartCover with y₀ ∈ innerChartOpen x₀'
+  (iUnion_innerChartOpen_chartCover_eq), then substep 4. ~20 lines.
+
+**Estimated remaining:** ~70-100 lines. Substep 4 is the last real
+content piece; substep 5 is plumbing.
 
 ## Montel — Steps 5a + 5b + 5c + pointwise-limit (5d-partial) landed (prior)
 
