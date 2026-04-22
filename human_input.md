@@ -202,3 +202,28 @@ call, default to the classical/direct path. Reserve architectural
 decisions (refactors, alternate definitions) for moments where the
 direct path is clearly blocked — not as a "maybe this helps later"
 speculation.
+
+## 2026-04-23 — Session N+1 (autonomous overnight, chain rule closed)
+
+### Use the MCP to investigate typeclass issues
+
+**When:** stuck on `IsScalarTower ℝ ℂ ℂ` failing to synthesize in
+`DifferentiableAt.restrictScalars`, despite `inferInstance` succeeding
+for the class itself.
+**My default:** Tried edits in the file, rebuilt the project, guessed
+at workarounds (manually provided instance, `haveI`, etc. — all
+failed).
+**User steer:** "Can you use the mcp for this. Think what are you
+trying to do."
+**Change:** Switched to `lean_run_code` via the MCP to test bypasses
+rapidly. Discovered that `ContinuousLinearMap.restrictScalars` on
+`ℂ →L[ℂ] ℂ → ℂ →L[ℝ] ℂ` works fine (no diamond), while
+`HasFDerivAt.restrictScalars` hits the diamond. Workaround:
+construct the ℝ-`HasFDerivAt` manually via
+`hasFDerivAt_iff_isLittleO_nhds_zero` + `ContinuousLinearMap.coe_restrictScalars'`.
+Closed `pathSpeed_comp_eq_mfderiv` + `periodVec_pushforward_of_smooth`.
+
+**Takeaway to remember:** For targeted Mathlib typeclass debugging,
+the LSP MCP (lean_run_code / lean_diagnostic_messages / lean_leansearch)
+is much faster than rebuilding. Use it when iterating on proof
+details or investigating why instances don't fire.
