@@ -36,7 +36,8 @@ Forster §§20–21; Miranda Ch. V §§1–3.
 
 namespace Jacobians
 
-open scoped Manifold ContDiff Bundle
+open scoped Manifold ContDiff Bundle Topology
+open Filter
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -285,7 +286,40 @@ theorem IsClosedSmoothLoop.comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ
     IsClosedSmoothLoop (f ∘ γ) where
   closed := by simp [Function.comp_apply, hγ.closed]
   cont := hf.continuous.comp hγ.cont
-  diff := sorry
+  diff := by
+    intro t ht
+    -- Near t, (chartAt ℂ (f (γ t))).toFun ∘ (f ∘ γ) = f_loc ∘ (chart_X ∘ γ).
+    set φ_X := chartAt (H := ℂ) (γ t)
+    set φ_Y := chartAt (H := ℂ) (f (γ t))
+    set f_loc : ℂ → ℂ := fun z => φ_Y (f (φ_X.symm z))
+    set g_X : ℝ → ℂ := φ_X.toFun ∘ γ
+    have hγ_source : ∀ᶠ s in 𝓝 t, γ s ∈ φ_X.source :=
+      hγ.cont.continuousAt.eventually
+        (φ_X.open_source.mem_nhds (mem_chart_source ℂ (γ t)))
+    have h_eq : (φ_Y.toFun ∘ (f ∘ γ)) =ᶠ[𝓝 t] f_loc ∘ g_X := by
+      filter_upwards [hγ_source] with s hs
+      simp only [Function.comp_apply]
+      congr 2
+      exact (φ_X.left_inv hs).symm
+    have hf_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f (γ t) :=
+      hf.mdifferentiableAt (by decide : ω ≠ 0)
+    have hf_loc_diff_ℂ : DifferentiableAt ℂ f_loc (g_X t) := by
+      have h1 := hf_mdiff.differentiableWithinAt_writtenInExtChartAt
+      rw [ModelWithCorners.range_eq_univ, differentiableWithinAt_univ] at h1
+      convert h1 using 2
+    -- Bypass the ℝ/ℂ diamond: construct ℝ-HasFDerivAt manually.
+    have hf_loc_hasFD_ℂ : HasFDerivAt f_loc (fderiv ℂ f_loc (g_X t)) (g_X t) :=
+      hf_loc_diff_ℂ.hasFDerivAt
+    have hf_loc_hasFD_ℝ : HasFDerivAt f_loc
+        ((fderiv ℂ f_loc (g_X t)).restrictScalars ℝ) (g_X t) := by
+      rw [hasFDerivAt_iff_isLittleO_nhds_zero] at hf_loc_hasFD_ℂ ⊢
+      simp only [ContinuousLinearMap.coe_restrictScalars']
+      exact hf_loc_hasFD_ℂ
+    have hf_loc_diff_ℝ : DifferentiableAt ℝ f_loc (g_X t) :=
+      hf_loc_hasFD_ℝ.differentiableAt
+    have h_comp_diff : DifferentiableAt ℝ (f_loc ∘ g_X) t :=
+      hf_loc_diff_ℝ.comp t (hγ.diff t ht)
+    exact (h_eq.differentiableAt_iff).mpr h_comp_diff
   integrable := sorry
 
 /-- Change-of-variables at the vector level: evaluating each Y-basis
