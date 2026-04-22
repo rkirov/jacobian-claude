@@ -592,34 +592,53 @@ The span-induction skeleton is symmetric to the Phi version. All
 ℤ-linearity cases (zero/add/smul) are immediate from the
 `AddMonoidHom`-structure of `ambientPsi`. Only the member case —
 "for a closed smooth loop `δ` in `Y`, `ambientPsi (periodVec δ) ∈
-truePeriodLattice X`" — is content-gated and isolated as
-`ambientPsi_periodVec_mem_truePeriodLattice`. -/
+truePeriodLattice X`" — is content-gated, and is axiomatized by the
+typeclass `HasPullbackCycle X Y`. -/
 
-/-- **Content sorry — trace identity.** For a closed smooth loop `δ`
-in `Y`, the pulled-back period vector `ambientPsi (periodVec δ)` lies
+/-- **Trace / pullback-cycle typeclass.** Axiomatizes that for every
+holomorphic `f : X → Y` and every closed smooth loop `δ : ℝ → Y`,
+the pulled-back period vector `ambientPsi f hf (periodVec δ)` lies
 in `truePeriodLattice X`.
 
-Mathematical content (Forster §10.11): a proper holomorphic map `f :
-X → Y` between compact Riemann surfaces is a branched cover of some
-degree `d ≥ 1` (or constant, for which the claim is trivial since
-`ambientPsi = 0`). For non-constant `f`, the preimage `f⁻¹(δ)` is a
-ℤ-cycle in `X` (a formal ℤ-sum of closed loops in `X`), and the
-trace identity `ambientPsi (periodVec δ) = periodVec (f⁻¹(δ))`
-places the result in the period lattice of `X`.
+Mathematical content (Forster §10.11): a proper holomorphic map
+between compact Riemann surfaces is either constant (in which case
+`ambientPsi = 0` and the claim is trivial) or a finite branched
+cover of some degree `d ≥ 1`, whose preimage `f⁻¹(δ)` is a ℤ-cycle
+in `X` — a formal ℤ-sum of closed loops — and the trace identity
+`ambientPsi (periodVec δ) = periodVec (f⁻¹(δ))` places the result
+in the period lattice of `X`.
 
-The needed infrastructure (real `pushforwardForm`; branched-cover
-lift existence; trace adjunction) is ~200–500 lines not yet in
-place. Left as a focused content sorry. -/
-theorem ambientPsi_periodVec_mem_truePeriodLattice
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (δ : ℝ → Y) (_hδ : IsClosedSmoothLoop δ) :
+Real instances require `pushforwardForm` + branched-cover lift
+existence + trace adjunction (~200–500 lines of not-yet-built
+infrastructure). -/
+class HasPullbackCycle (X Y : Type*)
+    [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] :
+    Prop where
+  /-- The trace identity at the member-case level: pulled-back period
+  vectors of closed smooth loops in `Y` land in the period lattice
+  of `X`. -/
+  trace_mem : ∀ (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+      (δ : ℝ → Y), IsClosedSmoothLoop δ →
     ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
-      truePeriodLattice X := sorry
+      truePeriodLattice X
+
+/-- **Trace identity — member case.** For a closed smooth loop `δ`
+in `Y`, the pulled-back period vector `ambientPsi (periodVec δ)` lies
+in `truePeriodLattice X`. Delegates to `HasPullbackCycle.trace_mem`. -/
+theorem ambientPsi_periodVec_mem_truePeriodLattice [HasPullbackCycle X Y]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
+    ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
+      truePeriodLattice X :=
+  HasPullbackCycle.trace_mem f hf δ hδ
 
 /-- `ambientPsi` preserves the period lattice. Reduces to the member
 case (`ambientPsi_periodVec_mem_truePeriodLattice`) via span induction;
 zero/add/smul cases are immediate ℤ-linearity. -/
-theorem ambientPsi_preserves_truePeriodLattice
+theorem ambientPsi_preserves_truePeriodLattice [HasPullbackCycle X Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (truePeriodLattice Y).toAddSubgroup ≤
       (truePeriodLattice X).toAddSubgroup.comap
