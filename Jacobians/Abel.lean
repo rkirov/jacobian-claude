@@ -148,12 +148,27 @@ Note this depends on `ofCurve` being a real path-integrated map, not
 the current placeholder. -/
 
 variable {X} in
-/-- Abel–Jacobi map: sends a degree-0 divisor to an element of the
-Jacobian. Well-defined only when `ofCurve` is the real Abel-Jacobi
-map (not the placeholder `const 0`). Content sorry. -/
+/-- Abel–Jacobi map: sends a degree-0 divisor `D = ∑ n_i · P_i` to
+`∑ n_i · [ofCurve basepoint P_i]` in the Jacobian `(Fin gX → ℂ) ⧸ lattice`.
+
+**Well-definedness** (independence of basepoint): uses `∑ n_i = 0`
+to absorb the basepoint choice. For any two basepoints P₀, P₀':
+`AJ_{P₀} D - AJ_{P₀'} D = (∑ n_i) · [ofCurve P₀' P₀] = 0` (since ∑ n_i = 0).
+
+**Current implementation**: placeholder zero map, consistent with
+the placeholder `Jacobian.ofCurve := fun _ _ => 0`. A real
+implementation requires:
+1. A real `ofCurve` via path integration (Phase 3).
+2. Basepoint-independence proof (uses the degree-0 condition).
+
+With the current placeholder, `abelJacobi ≡ 0`, so
+`HasAbelsTheorem.aj_zero_imp_principal` would require every
+degree-0 divisor to be principal — false for genus ≥ 1. This
+inconsistency is fine as long as the axioms aren't instantiated;
+real instances await real `ofCurve`. -/
 noncomputable def abelJacobi (_D : DivisorOfDegZero X) :
     (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup :=
-  sorry
+  0
 
 /-! ### Abel's theorem itself
 
