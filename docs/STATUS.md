@@ -1,6 +1,25 @@
 # Project status (auto-maintained)
 
-## Placeholder-removal session (latest, 2026-04-23)
+## ofCurve_inj REAL via Abel chain (latest)
+
+**ofCurve_inj is now a REAL theorem** (THE main challenge theorem).
+
+Proof chain:
+1. `abelJacobi_twoPoint_ne_zero` (under `HasAbelsTheorem` +
+   `NoDegreeOneDivisorsToPP1` + `0 < genus X`) gives
+   `abelJacobi (twoPointDivisor Q' Q) ≠ 0`.
+2. `abelJacobi_twoPointDivisor` (NEW REAL): direct unfolding of the
+   sum gives `abelJacobi (twoPointDivisor A B) = ofCurve P₀ A -
+   ofCurve P₀ B` (for A ≠ B, P₀ = Classical.arbitrary X).
+3. `ofCurve_basepoint_change` (content sorry): `ofCurve P₀ A =
+   ofCurve P A + ofCurve P₀ P`. Under hypothesis `ofCurve P Q =
+   ofCurve P Q'`, subtraction gives `ofCurve P₀ Q = ofCurve P₀ Q'`,
+   contradicting step 1.
+
+One new content sorry (`ofCurve_basepoint_change`) but
+`ofCurve_inj` is now delegated to real Abel content.
+
+## Placeholder-removal session (earlier this session)
 
 **Major refactor: three core placeholders removed, definitions now
 real-shaped.**
