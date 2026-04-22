@@ -516,6 +516,34 @@ theorem exists_toFun_limit
   choose L hL using h_pw_limit
   exact ⟨L, hL⟩
 
+
+/-! ### Step 6 helper — pointwise `localRep` Tendsto
+
+From pointwise CLM Tendsto of `(αs n).toFun y`, evaluation at
+`e.symmL ℂ y 1` gives pointwise scalar Tendsto of `localRep`. Bridges
+pointwise CLM convergence (Step 5c/5d-limit) to the scalar chart-rep
+used by `supNormK`/`chartNormK`. -/
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+/-- Pointwise Tendsto of `localReps` from pointwise CLM Tendsto by
+continuity of evaluation at `e.symmL ℂ y 1`. -/
+theorem localRep_tendsto_of_toFun_tendsto
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (αLim_toFun : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
+    (hL : ∀ y : X, Tendsto (fun n : ℕ => (αs n).toFun y) atTop (𝓝 (αLim_toFun y)))
+    (x₀ y : X) :
+    letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+    Tendsto (fun n : ℕ => localRep (αs n) x₀ y) atTop
+      (𝓝 (αLim_toFun y (e.symmL ℂ y 1))) := by
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+  -- evaluation at a fixed vector is continuous via ContinuousEvalConst
+  have h_eval : Continuous
+      (fun L : TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y =>
+        L (e.symmL ℂ y 1)) :=
+    continuous_eval_const _
+  exact (h_eval.tendsto _).comp (hL y)
+
 /-! ### Remaining steps (DEFERRED)
 
 The full completeness proof requires:
