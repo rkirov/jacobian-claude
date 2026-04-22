@@ -23,22 +23,46 @@ already-landed pointwise CLM limit (via `exists_toFun_limit`).
     to handle the NormedAddCommGroup diamond on HOF X.
 
 **Remaining:** Step 5d-smooth — proving `αLim.toFun` defines a
-`ContMDiffSection ω`. Sketch:
-1. On each `innerChartOpen x₀` (open ⊆ innerShrunkChart x₀),
-   bcf-convergence restricts to uniform convergence. Locally uniform on
-   innerChartOpen ⇒ via chart pushforward, locally uniform on
-   `chartAt x₀ '' innerChartOpen x₀` in ℂ.
-2. Apply `analyticOn_of_tendstoLocallyUniformlyOn` (already in
-   `Compactness.lean`) to get analytic pullback limit.
-3. Reverse the `localRep_analyticOn_chartTarget` bridge: from analytic
-   pullback, get `ContMDiffOn ω` of `localRep αLim x₀`.
-4. Use `Trivialization.contMDiffAt_section_iff` on the Hom-bundle
-   trivialization to lift chart-wise smoothness of `localRep αLim x₀`
-   to section-level `ContMDiff ω` of `αLim`.
+`ContMDiffSection ω`.
 
-Step 4 in particular requires navigating the Hom-bundle trivialization
-plumbing — Mathlib's `Bundle.continuousLinearMap` infrastructure —
-which isn't immediately user-friendly.
+**Path 1 — smul reconstruction (via Step 5c identity):**
+1. Show `ContMDiffOn ω (localRep αLim x₀) (innerChartOpen x₀)` via
+   analytic pullback (substeps 1a/1b/1c below).
+2. Using `toFun_eq_localRep_smul` (already landed):
+   `αLim.toFun y = localRep αLim x₀ y • (e.continuousLinearEquivAt ℂ y hy)`.
+3. Show the frame CLE section `y ↦ e.continuousLinearEquivAt ℂ y hy`
+   (as a Hom-bundle section) is `ContMDiff ω` — this is the "smooth
+   dual frame" on the cotangent bundle, available via the
+   `ContMDiffVectorBundle ω` structure.
+4. Combine via scalar-smul-of-ContMDiff-section: product of a smooth
+   scalar and a smooth bundle section is a smooth bundle section.
+
+**Path 2 — direct via Hom trivialization:**
+1. Prove `ContMDiffOn ω (localRep αLim x₀) (innerChartOpen x₀)`.
+2. Use `Trivialization.contMDiffOn_section_baseSet_iff` for the
+   Hom-bundle trivialization at x₀, which reduces section smoothness
+   to smoothness of the scalar CLM representation. For CLMs `ℂ →L[ℂ] ℂ`,
+   this further reduces to smoothness of the scalar at 1 (= localRep).
+
+**Substeps for step 1 (common to both paths):**
+1a. `TendstoLocallyUniformlyOn` of chart-pullbacks on
+    `chartAt x₀ '' innerChartOpen x₀` — from bcf convergence on the
+    containing `innerShrunkChart x₀` (uniform ⇒ locally uniform on the
+    smaller open set).
+1b. `analyticOn_of_tendstoLocallyUniformlyOn` (Mathlib) — bounded
+    analytic + locally uniform convergence ⇒ analytic limit.
+1c. Reverse of `localRep_analyticOn_chartTarget` — AnalyticOn on chart
+    target ⇒ ContMDiffOn on chart source. Uses
+    `contDiffOn_omega_iff_analyticOn` + chart-coordinate manifold
+    smoothness bridge.
+
+Path 1 requires the smooth dual frame (step 3) — hairy.
+Path 2 requires the Hom-bundle trivialization atlas — hairy in a
+different way.
+
+**Estimated effort:** ~200 lines of careful bundle-specific work.
+Should be tackled in a dedicated session where the LSP can stay
+responsive (now viable on the 8 GB host).
 
 ## Montel — Steps 5a + 5b + 5c + pointwise-limit (5d-partial) landed (prior)
 
