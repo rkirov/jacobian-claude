@@ -608,6 +608,45 @@ noncomputable def abelJacobi (D : DivisorOfDegZero X) :
     ((D : Divisor X) P) •
       QuotientAddGroup.mk (periodVec (smoothPath (Classical.arbitrary X) P))
 
+variable {X} in
+/-- **Abel-Jacobi on a two-point divisor.** For `A ≠ B`:
+`abelJacobi (A - B) = ofCurve P₀ A - ofCurve P₀ B` where `P₀ =
+Classical.arbitrary X`. Direct computation from the definition:
+`twoPointDivisor A B = single A 1 - single B 1` has support `{A, B}`
+for `A ≠ B`, and the weighted `periodVec` sum unfolds to the
+difference. -/
+theorem abelJacobi_twoPointDivisor (A B : X) (hne : A ≠ B) :
+    abelJacobi ⟨twoPointDivisor X A B, twoPointDivisor_mem_degZero X A B⟩ =
+      QuotientAddGroup.mk (periodVec (smoothPath (Classical.arbitrary X) A)) -
+      QuotientAddGroup.mk (periodVec (smoothPath (Classical.arbitrary X) B)) := by
+  classical
+  unfold abelJacobi
+  -- Compute: `(twoPointDivisor A B).sum` over support with value (D P) • mk(periodVec(sp(P₀,P)))
+  have hAnB : ¬ A = B := hne
+  have hBnA : ¬ B = A := Ne.symm hne
+  have hsupp : (twoPointDivisor X A B).support = ({A, B} : Finset X) := by
+    ext P
+    simp only [twoPointDivisor, Finsupp.mem_support_iff, Finsupp.coe_sub, Pi.sub_apply,
+      Finsupp.single_apply, Finset.mem_insert, Finset.mem_singleton]
+    by_cases hPA : A = P
+    · subst hPA
+      simp [hBnA]
+    · by_cases hPB : B = P
+      · subst hPB
+        simp [hAnB]
+      · simp [hPA, hPB, show (P = A ↔ A = P) from eq_comm,
+          show (P = B ↔ B = P) from eq_comm]
+  have hA : (twoPointDivisor X A B : Divisor X) A = 1 := by
+    simp [twoPointDivisor, Finsupp.coe_sub, Pi.sub_apply, Finsupp.single_apply, hBnA]
+  have hB : (twoPointDivisor X A B : Divisor X) B = -1 := by
+    simp [twoPointDivisor, Finsupp.coe_sub, Pi.sub_apply, Finsupp.single_apply, hAnB]
+  show ∑ P ∈ (twoPointDivisor X A B).support,
+    (twoPointDivisor X A B : Divisor X) P • _ = _
+  rw [hsupp, Finset.sum_insert (by simp [hne]), Finset.sum_singleton]
+  rw [hA, hB]
+  show (1 : ℤ) • _ + (-1 : ℤ) • _ = _ - _
+  simp [sub_eq_add_neg]
+
 /-! ### Abel's theorem itself
 
 **Statement** (Forster 21.4): A degree-0 divisor `D` is principal iff
