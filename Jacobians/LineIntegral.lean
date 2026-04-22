@@ -525,6 +525,24 @@ theorem pathSpeed_comp_eq_mfderiv
   -- Step 2: γ s ∈ φ_X.source for s near t.
   have hγ_source : ∀ᶠ s in 𝓝 t, γ s ∈ φ_X.source :=
     hγ_cont.eventually (φ_X.open_source.mem_nhds hγt_X)
+  -- Step 3: g_Y s = (f_loc ∘ g_X) s for s near t.
+  have h_eq : g_Y =ᶠ[𝓝 t] f_loc ∘ g_X := by
+    filter_upwards [hγ_source] with s hs
+    -- LHS: g_Y s = φ_Y (f (γ s))
+    -- RHS: (f_loc ∘ g_X) s = f_loc (g_X s) = φ_Y (f (φ_X.symm (φ_X (γ s))))
+    simp only [hg_Y_def, hf_loc_def, hg_X_def, Function.comp_apply]
+    congr 2
+    exact (φ_X.left_inv hs).symm
+  -- Step 4: f_loc is ℂ-differentiable at g_X t (from f smoothness).
+  have hf_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f (γ t) :=
+    hf.mdifferentiableAt (by decide : ω ≠ 0)
+  -- The model is boundaryless, so range I = univ; DifferentiableWithinAt univ = DifferentiableAt.
+  have hf_loc_diff_ℂ : DifferentiableAt ℂ f_loc (g_X t) := by
+    have h1 := hf_mdiff.differentiableWithinAt_writtenInExtChartAt
+    rw [ModelWithCorners.range_eq_univ, differentiableWithinAt_univ] at h1
+    -- h1 : DifferentiableAt ℂ (writtenInExtChartAt 𝓘(ℂ) 𝓘(ℂ) (γ t) f) ((extChartAt 𝓘(ℂ) (γ t)) (γ t))
+    -- Need: DifferentiableAt ℂ f_loc (g_X t)
+    convert h1 using 2
   sorry
 
 /-- **Change of variables for the line integral** (classical).
