@@ -429,38 +429,21 @@ theorem lineIntegral_concat (α : HolomorphicOneForms X) (γ γ' : ℝ → X)
   unfold lineIntegral at h_left h_right
   rw [h_left, h_right]
 
-/-! ### Phase 1c: chart-local path independence
+/-! ### Phase 1c: chart-local path independence — removed
 
-If two smooth paths `γ₀, γ₁ : [0,1] → X` have the same endpoints and
-their images lie within a single chart domain, then their line
-integrals agree. Classically: the integrand `α.toFun(·)(pathSpeed)`
-pulled back through the chart becomes a holomorphic 1-form on a
-chart-open in ℂ, and holomorphic integration is path-independent on
-simply-connected opens (Cauchy's theorem).
+A previously-stated `lineIntegral_eq_of_chart_local` asserted
+path-independence of `lineIntegral α` for two smooth paths whose
+images lie within a single chart source. That statement, as given,
+is *not provable*: `chartAt x₀` in a `ChartedSpace ℂ X` may have a
+non-simply-connected target (e.g., an annulus), in which case
+holomorphic integration is not path-independent.
 
-**Remaining as substep** (~200 lines): apply Mathlib's Cauchy theorem
-for convex opens (`Complex.integral_eq_zero_of_contDiffOn_closedLoop`
-or similar) to the chart-pulled-back integrand. -/
-
-/-- **Chart-local path independence.** Two smooth paths with the
-same endpoints, whose images lie within a single chart source, give
-the same line integral against any `α`. Content sorry — Phase 1c.
-
-Used downstream in Phase 2 (period-lattice definition via closed
-loops: loops that bound a chart-image region contribute `0` to the
-period lattice). -/
-theorem lineIntegral_eq_of_chart_local
-    (α : HolomorphicOneForms X) (x₀ : X) (γ₀ γ₁ : ℝ → X)
-    (_hγ₀_image : ∀ t ∈ Set.uIcc (0 : ℝ) 1, γ₀ t ∈ (chartAt (H := ℂ) x₀).source)
-    (_hγ₁_image : ∀ t ∈ Set.uIcc (0 : ℝ) 1, γ₁ t ∈ (chartAt (H := ℂ) x₀).source)
-    (_hγ₀_smooth : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₀ t)).toFun ∘ γ₀) t)
-    (_hγ₁_smooth : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₁ t)).toFun ∘ γ₁) t)
-    (_hendpoint0 : γ₀ 0 = γ₁ 0)
-    (_hendpoint1 : γ₀ 1 = γ₁ 1) :
-    lineIntegral α γ₀ = lineIntegral α γ₁ := by
-  sorry
+The statement had zero call sites in the project. Removed rather
+than repaired (a provable version would need an additional
+`Convex` / `SimplyConnected` hypothesis on the chart-image region,
+and downstream consumers do not exist yet). If such a consumer
+appears later, reinstate with the stronger hypothesis and prove via
+`Complex.DifferentiableOn.isExactOn_ball` + endpoint evaluation. -/
 
 /-! ### Phase 4 support: change of variables for the line integral
 
