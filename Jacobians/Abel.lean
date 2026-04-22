@@ -268,6 +268,31 @@ theorem abelJacobi_twoPoint_ne_zero [HasAbelsTheorem X] [NoDegreeOneDivisorsToPP
   -- h_principal : twoPointDivisor X P Q ∈ PrincipalDivisors X
   exact NoDegreeOneDivisorsToPP1.twoPoint_not_principal h hPQ h_principal
 
+/-- **Placeholder inconsistency lemma**: with the current placeholder
+`abelJacobi ≡ 0` and `MeromorphicFunction.div ≡ 0`, assuming
+`HasAbelsTheorem X` forces any two points to be equal. Equivalently:
+`HasAbelsTheorem X` is satisfiable on at most a one-point space under
+the placeholder.
+
+Classical statement Abel's theorem + non-placeholder ofCurve makes
+this false (allowing X to have many points). Formalizing the real
+instance awaits real `ofCurve`. -/
+theorem HasAbelsTheorem.no_distinct_points_placeholder [HasAbelsTheorem X]
+    (P Q : X) : P = Q := by
+  by_contra hPQ
+  -- With placeholder abelJacobi ≡ 0:
+  have h_aj : abelJacobi ⟨twoPointDivisor X P Q,
+      twoPointDivisor_mem_degZero X P Q⟩ = 0 := rfl
+  -- Abel's theorem says twoPointDivisor is principal.
+  have h_princ := HasAbelsTheorem.aj_zero_imp_principal _ h_aj
+  -- With placeholder MeromorphicFunction.div ≡ 0, principal divisors are trivial.
+  rw [PrincipalDivisors_eq_bot, AddSubgroup.mem_bot] at h_princ
+  -- h_princ : twoPointDivisor X P Q = 0, i.e., single P 1 = single Q 1.
+  have h_sub : Finsupp.single P (1 : ℤ) - Finsupp.single Q 1 = 0 := h_princ
+  have h_eq : Finsupp.single P (1 : ℤ) = Finsupp.single Q 1 := sub_eq_zero.mp h_sub
+  -- Finsupp.single is left-injective for nonzero values.
+  exact hPQ (Finsupp.single_left_injective (one_ne_zero (α := ℤ)) h_eq)
+
 /-! ### Derivation of `ofCurve_inj` from Abel's theorem
 
 **Sketch** (Forster §21.5): if `ofCurve P Q = ofCurve P Q'` for
