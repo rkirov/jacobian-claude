@@ -390,7 +390,7 @@ theorem MeromorphicFunction.orderAtPoint_isolated_at
     ∃ t ∈ 𝓝 z, ∀ y ∈ t, y ≠ z → f.orderAtPoint y = 0 := by
   -- Apply the dichotomy at chart_z z.
   have hmero := f.meromorphic z
-  rcases hmero.eventually_eq_zero_or_eventually_ne_zero with h_zero | _
+  rcases hmero.eventually_eq_zero_or_eventually_ne_zero with h_zero | h_nz
   · -- Case A: (f ∘ chart_z.symm) w = 0 eventually in pointed nbhd of chart_z z.
     -- Transfer to X: get an open nbhd V of z in X with f ≡ 0 on V \ {z}.
     have h_chart_nhd : ∀ᶠ w in 𝓝 ((chartAt (H := ℂ) z) z),
@@ -433,9 +433,59 @@ theorem MeromorphicFunction.orderAtPoint_isolated_at
       isOpen_compl_singleton.mem_nhds (by simpa using hy_ne)
     filter_upwards [hU_y, h_y_ne_z] with x hx_U hx_ne
     exact hV x (hU_V hx_U) hx_ne
-  · -- Case B: f ∘ chart_z.symm ≠ 0 in pointed nbhd.
-    -- Order via chart_z is 0 for w ≠ chart_z z nearby (standard).
-    -- Transfer via `orderAtPoint_chart_invariant` (Mathlib-missing Lemma B above).
+  · -- Case B: f ∘ chart_z.symm ≠ 0 eventually in pointed nbhd of chart_z z.
+    -- Strategy: extract Laurent expansion (f ∘ chart_z.symm =ᶠ (w - chart_z z)^n • g).
+    -- For w near chart_z z with w ≠ chart_z z, this gives an analytic nonzero
+    -- function at w, so meromorphicOrderAt at w = 0. Then use Lemma B to
+    -- transfer to orderAtPoint f y.
+    have hmero_ne_top : meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) z).symm)
+        ((chartAt (H := ℂ) z) z) ≠ ⊤ :=
+      (meromorphicOrderAt_ne_top_iff_eventually_ne_zero hmero).mpr h_nz
+    obtain ⟨g, hg_analytic, hg_ne_zero, h_laurent⟩ :=
+      (meromorphicOrderAt_ne_top_iff hmero).mp hmero_ne_top
+    -- Let n := the finite order.
+    set n := (meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) z).symm)
+      ((chartAt (H := ℂ) z) z)).untop₀
+    -- g is analytic near chart_z z, so nonzero in some nbhd.
+    have hg_ne_zero_nbhd : ∀ᶠ w in 𝓝 ((chartAt (H := ℂ) z) z), g w ≠ 0 :=
+      hg_analytic.continuousAt.eventually_ne hg_ne_zero
+    -- Continuity of chart_z at z gives a nbhd of z where chart_z y ≠ chart_z z ⇒
+    -- the Laurent expansion + g ≠ 0 + power nonzero ⇒ order = 0.
+    have h_chart_cont : ContinuousAt (chartAt (H := ℂ) z) z :=
+      (chartAt (H := ℂ) z).continuousAt (mem_chart_source ℂ z)
+    -- Pull back the nbhd of chart_z z in ℂ to a nbhd of z in X.
+    have h_X_nbhd : ∀ᶠ y in 𝓝 z,
+        y ∈ (chartAt (H := ℂ) z).source ∧
+        ((chartAt (H := ℂ) z) y = (chartAt (H := ℂ) z) z ∨
+         g ((chartAt (H := ℂ) z) y) ≠ 0) := by
+      filter_upwards [(chartAt (H := ℂ) z).open_source.mem_nhds (mem_chart_source ℂ z),
+        h_chart_cont.preimage_mem_nhds hg_ne_zero_nbhd] with y hy_src hy_g
+      refine ⟨hy_src, Or.inr hy_g⟩
+    obtain ⟨t, ht_nhds, ht⟩ := Filter.eventually_iff_exists_mem.mp h_X_nbhd
+    refine ⟨t, ht_nhds, ?_⟩
+    intro y hy_t hy_ne
+    obtain ⟨hy_src, hy_g⟩ := ht y hy_t
+    -- chart_z y ≠ chart_z z since y ≠ z and chart_z is injective on source.
+    have h_chart_ne : (chartAt (H := ℂ) z) y ≠ (chartAt (H := ℂ) z) z := by
+      intro heq
+      exact hy_ne ((chartAt (H := ℂ) z).injOn hy_src (mem_chart_source ℂ z) heq)
+    have hy_g' : g ((chartAt (H := ℂ) z) y) ≠ 0 := hy_g.resolve_left h_chart_ne
+    -- Apply Lemma B to transfer: orderAtPoint f y = (meromorphicOrderAt (f ∘ chart_z.symm) (chart_z y)).untop₀.
+    rw [← f.orderAtPoint_chart_invariant (chartAt (H := ℂ) z) (chart_mem_atlas ℂ z) hy_src]
+    -- Define g' : ℂ → ℂ := fun w => (w - chart_z z)^n • g w. Analytic at chart_z y, nonzero there.
+    -- By h_laurent (pointed nbhd of chart_z z) shrunk to a pointed nbhd of chart_z y,
+    -- f ∘ chart_z.symm =ᶠ g' near chart_z y.
+    -- Hence meromorphicOrderAt (f ∘ chart_z.symm) (chart_z y) = meromorphicOrderAt g' (chart_z y) = 0
+    -- (g' analytic with nonzero value ⇒ order = 0).
+    set g' : ℂ → ℂ := fun w => (w - (chartAt (H := ℂ) z) z)^n • g w with hg'
+    -- Remaining: use Laurent expansion + g'-analyticity + meromorphicOrderAt congr
+    -- to derive order = 0 at chart_z y. The chain:
+    -- 1. g' := (w ↦ (w - chart_z z)^n • g(w)) is analytic at chart_z y.
+    -- 2. g'(chart_z y) = (chart_z y - chart_z z)^n • g(chart_z y) ≠ 0.
+    -- 3. f ∘ chart_z.symm =ᶠ g' near chart_z y (pointed nbhd).
+    -- 4. meromorphicOrderAt_eq_int_iff with n := 0 gives order = 0.
+    -- 5. .untop₀ 0 = 0.
+    -- Each step is bounded Mathlib plumbing (~60 lines total).
     sorry
 
 variable {X} in
