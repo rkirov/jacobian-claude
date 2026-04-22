@@ -193,16 +193,7 @@ concat/reverse smoothness preservation). -/
 lemma ofCurve_basepoint_change (P P₀ A : X) :
     ofCurve P₀ A = ofCurve P A + ofCurve P₀ P := by
   unfold ofCurve
-  -- Goal: mk(periodVec(sp(P₀,A))) = mk(periodVec(sp(P,A))) + mk(periodVec(sp(P₀,P)))
-  rw [show QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P A)) +
-         QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P₀ P)) =
-       QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P A) +
-                            Jacobians.periodVec (Jacobians.smoothPath P₀ P)) from
-    (QuotientAddGroup.mk_add _ _ _).symm]
-  -- Use mk_periodVec_eq_of_endpoints: γ₁ = sp(P₀, A), γ₂ = concat(sp(P₀, P), sp(P, A)).
-  -- periodVec γ₂ = periodVec(sp(P₀, P)) + periodVec(sp(P, A)) by periodVec_concat.
-  -- Both γ₁, γ₂ go from P₀ to A, so mk(periodVec γ₁) = mk(periodVec γ₂).
-  sorry
+  exact Jacobians.smoothPath_basepoint_change P P₀ A
 
 /-- **Abel ⇒ ofCurve injective.**
 

@@ -192,6 +192,23 @@ theorem periodVec_smoothPath_self_mem_lattice [HasSmoothPaths X] (P : X) :
   periodVec_mem_truePeriodLattice_of_closed _
     (isSmoothPath_smoothPath P P).toClosedSmoothLoop
 
+/-- **Basepoint change for `smoothPath` modulo the period lattice**
+(classical, Forster §21). The path from `P₀` to `A` differs from
+the concatenation `P₀ → P → A` by a closed smooth loop, whose
+`periodVec` is in the lattice. Quotienting gives the identity.
+
+Content: needs `mk_periodVec_eq_of_endpoints` + `periodVec_concat`
+with the hypothesis bundle for smoothness+integrability of the
+concat `sp(P₀, P) ⊕ sp(P, A)` and the closed-loop construction.
+Left as a focused classical sorry — the core path-algebra content
+is a ~50-line proof once the concat smoothness machinery is
+established. -/
+theorem smoothPath_basepoint_change [HasSmoothPaths X] (P P₀ A : X) :
+    (QuotientAddGroup.mk (periodVec (smoothPath P₀ A)) :
+      (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
+    QuotientAddGroup.mk (periodVec (smoothPath P A)) +
+    QuotientAddGroup.mk (periodVec (smoothPath P₀ P)) := sorry
+
 /-- **Constant-path period vector is zero.** Classical fact: the
 tangent of a constant curve is zero, so every integrand is zero. -/
 theorem periodVec_const (P : X) : periodVec (fun _ : ℝ => P) = 0 := by
