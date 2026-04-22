@@ -174,24 +174,23 @@ lemma ofCurve_self (P : X) : ofCurve P P = 0 := by
 /-- **Abel ⇒ ofCurve injective.**
 
 Structurally: `HasAbelsTheorem X` + `NoDegreeOneDivisorsToPP1 X`
-axiomatize the two classical pieces that together force two distinct
-points on a positive-genus surface to have different Abel-Jacobi
-images. This typeclass-gated version is the real theorem; the
-dependency on these classes reflects what Abel's theorem genuinely
-requires (Forster §§20-21 — residue theorem, divisor theory, Abel's
-proof). Real instances require real `ofCurve` + real divisor theory.
+axiomatize Abel's theorem + the Riemann-Hurwitz obstruction to
+degree-1 maps to ℙ¹. Together with real `ofCurve` (path-integrated)
+and real `abelJacobi` connecting via
+`abelJacobi (twoPointDivisor P Q) = ofCurve P₀ P - ofCurve P₀ Q`,
+these force two distinct points on a positive-genus surface to
+have different Abel-Jacobi images.
 
-Note: under the current `ofCurve := fun _ _ => 0` placeholder, any
-instance of `[HasAbelsTheorem X]` forces X to be a single-point space
-(see `HasAbelsTheorem.no_distinct_points_placeholder`). Combined with
-`0 < genus X`, this is vacuously consistent since positive-genus
-surfaces have infinitely many points — the typeclass is unsatisfiable
-there under the placeholder. Real instances land together with real
-`ofCurve`. -/
+Currently sorry because the `abelJacobi ↔ ofCurve` connection is
+not yet built (abelJacobi is still placeholder ≡ 0; relating it to
+the real ofCurve requires ~30 lines). Under real abelJacobi the
+proof chain:
+  ofCurve P Q = ofCurve P Q' → abelJacobi (Q - Q') = 0
+   → Q - Q' principal (HasAbelsTheorem)
+   → contradicts NoDegreeOneDivisorsToPP1 if Q ≠ Q' and 0 < genus X. -/
 lemma ofCurve_inj [Jacobians.HasAbelsTheorem X]
-    (P : X) (_h : 0 < genus X) : Function.Injective (ofCurve P) := by
-  intro Q Q' _
-  exact Jacobians.HasAbelsTheorem.no_distinct_points_placeholder X Q Q'
+    [Jacobians.NoDegreeOneDivisorsToPP1 X]
+    (P : X) (_h : 0 < genus X) : Function.Injective (ofCurve P) := sorry
 
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
   [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] [Jacobians.IsPeriodLattice Y]

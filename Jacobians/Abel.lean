@@ -128,17 +128,6 @@ theorem twoPointDivisor_mem_degZero (P Q : X) :
 theorem twoPointDivisor_self (P : X) : twoPointDivisor X P P = 0 := by
   simp [twoPointDivisor]
 
-/-- The divisor of a meromorphic function: classical construction
-`div f = (zeros of f) - (poles of f)` with multiplicities via
-`meromorphicOrderAt`.
-
-**Current implementation**: placeholder `div f := 0`. Real version
-lives in `divViaOrder` below (real but content-gated on finite
-support). Once the finite-support sorry is closed, `div` can be
-swapped for `divViaOrder`. -/
-noncomputable def MeromorphicFunction.div (_f : MeromorphicFunction X) : Divisor X :=
-  0
-
 /-! ### Real divisor construction via `meromorphicOrderAt`
 
 The order of a meromorphic function at a point `x ∈ X` is read off
@@ -541,6 +530,12 @@ noncomputable def MeromorphicFunction.divViaOrder (f : MeromorphicFunction X) : 
   Finsupp.ofSupportFinite (MeromorphicFunction.orderAtPoint f)
     ((MeromorphicFunction.orderLocallyFinsupp f).finiteSupport isCompact_univ)
 
+/-- **The divisor of a meromorphic function** (classical construction
+`div f = (zeros of f) - (poles of f)` with multiplicities). Now real
+via `divViaOrder`, now that `orderAtPoint_isolated_at` is closed. -/
+noncomputable def MeromorphicFunction.div (f : MeromorphicFunction X) : Divisor X :=
+  MeromorphicFunction.divViaOrder X f
+
 /-- The principal divisors: image of `div`. Classical fact:
 every principal divisor has degree 0, so this sits inside
 `DivisorOfDegZero X`. Content sorry — requires the residue theorem. -/
@@ -554,42 +549,35 @@ theorem IsMeromorphic.zero : IsMeromorphic X (fun _ => 0) := by
   show MeromorphicAt (fun _ => (0 : ℂ)) ((chartAt (H := ℂ) x) x)
   exact MeromorphicAt.const 0 _
 
-/-- With the current placeholder `MeromorphicFunction.div ≡ 0`, the
-principal divisors collapse to the trivial subgroup `{0}`. This is
-consistent with `abelJacobi ≡ 0`: at the placeholder level,
-`HasAbelsTheorem` reduces to "every degree-0 divisor equals 0",
-which is false for positive-genus surfaces (reflecting that real
-instances require real `ofCurve`). -/
-theorem PrincipalDivisors_eq_bot : PrincipalDivisors X = ⊥ := by
-  show AddSubgroup.closure (Set.range (MeromorphicFunction.div X)) = ⊥
-  have h_range : Set.range (MeromorphicFunction.div X) = {0} := by
-    ext d
-    simp only [Set.mem_range, Set.mem_singleton_iff]
-    constructor
-    · rintro ⟨f, rfl⟩
-      rfl
-    · rintro rfl
-      exact ⟨⟨fun _ => 0, IsMeromorphic.zero X⟩, rfl⟩
-  rw [h_range, AddSubgroup.closure_singleton_zero]
+/-! ### `PrincipalDivisors_eq_bot` removed
 
-/-- **Residue theorem (trivial placeholder version).** The degree of
-`div f` is zero for every meromorphic function `f`. Classical fact,
-Forster §4.24.
+Under the previous placeholder `div ≡ 0`, `PrincipalDivisors X` was
+the trivial subgroup `⊥`. With `div` now defined as `divViaOrder`,
+this is no longer true in general (principal divisors are nontrivial
+on positive-genus surfaces). The placeholder-specific theorem has
+been removed; `ofCurve_inj`'s former proof via
+`no_distinct_points_placeholder` no longer applies and `ofCurve_inj`
+now needs the real Abel argument (content sorry). -/
 
-Under the current placeholder `MeromorphicFunction.div ≡ 0`, this is
-trivially `deg 0 = 0`. With a real `div`, the proof requires the
-residue theorem (Stokes on compact X applied to `df/f`). -/
+/-- **Residue theorem** (Forster §4.24): the degree of `div f` is
+zero for every meromorphic function `f`. Classical fact; proof
+requires Stokes' theorem on compact X applied to `df/f`. Content
+sorry — Mathlib doesn't currently have the residue theorem for
+general Riemann surfaces. -/
 theorem deg_div (f : MeromorphicFunction X) :
-    Divisor.deg X (MeromorphicFunction.div X f) = 0 := by
-  show Divisor.deg X (0 : Divisor X) = 0
-  simp
+    Divisor.deg X (MeromorphicFunction.div X f) = 0 := sorry
 
 /-- **Principal divisors have degree 0** (Forster §4.24). Every
-principal divisor sits inside `DivisorOfDegZero X`. -/
+principal divisor sits inside `DivisorOfDegZero X`. Proof uses
+`deg_div` (residue theorem) + closure under addition. -/
 theorem PrincipalDivisors_le_DivisorOfDegZero :
     PrincipalDivisors X ≤ DivisorOfDegZero X := by
-  rw [PrincipalDivisors_eq_bot]
-  exact bot_le
+  show AddSubgroup.closure (Set.range (MeromorphicFunction.div X)) ≤ DivisorOfDegZero X
+  refine AddSubgroup.closure_le _ |>.mpr ?_
+  rintro d ⟨f, rfl⟩
+  show MeromorphicFunction.div X f ∈ DivisorOfDegZero X
+  show (Divisor.deg X) (MeromorphicFunction.div X f) = 0
+  exact deg_div X f
 
 /-! ### Abel–Jacobi map (on divisors of degree 0)
 
@@ -684,30 +672,14 @@ theorem abelJacobi_twoPoint_ne_zero [HasAbelsTheorem X] [NoDegreeOneDivisorsToPP
   -- h_principal : twoPointDivisor X P Q ∈ PrincipalDivisors X
   exact NoDegreeOneDivisorsToPP1.twoPoint_not_principal h hPQ h_principal
 
-/-- **Placeholder inconsistency lemma**: with the current placeholder
-`abelJacobi ≡ 0` and `MeromorphicFunction.div ≡ 0`, assuming
-`HasAbelsTheorem X` forces any two points to be equal. Equivalently:
-`HasAbelsTheorem X` is satisfiable on at most a one-point space under
-the placeholder.
+/-! ### `no_distinct_points_placeholder` removed
 
-Classical statement Abel's theorem + non-placeholder ofCurve makes
-this false (allowing X to have many points). Formalizing the real
-instance awaits real `ofCurve`. -/
-theorem HasAbelsTheorem.no_distinct_points_placeholder [HasAbelsTheorem X]
-    (P Q : X) : P = Q := by
-  by_contra hPQ
-  -- With placeholder abelJacobi ≡ 0:
-  have h_aj : abelJacobi ⟨twoPointDivisor X P Q,
-      twoPointDivisor_mem_degZero X P Q⟩ = 0 := rfl
-  -- Abel's theorem says twoPointDivisor is principal.
-  have h_princ := HasAbelsTheorem.aj_zero_imp_principal _ h_aj
-  -- With placeholder MeromorphicFunction.div ≡ 0, principal divisors are trivial.
-  rw [PrincipalDivisors_eq_bot, AddSubgroup.mem_bot] at h_princ
-  -- h_princ : twoPointDivisor X P Q = 0, i.e., single P 1 = single Q 1.
-  have h_sub : Finsupp.single P (1 : ℤ) - Finsupp.single Q 1 = 0 := h_princ
-  have h_eq : Finsupp.single P (1 : ℤ) = Finsupp.single Q 1 := sub_eq_zero.mp h_sub
-  -- Finsupp.single is left-injective for nonzero values.
-  exact hPQ (Finsupp.single_left_injective (one_ne_zero (α := ℤ)) h_eq)
+The previous `HasAbelsTheorem.no_distinct_points_placeholder`
+theorem used the placeholder `div ≡ 0` to conclude "every two
+points are equal". With `div` now real (`divViaOrder`), this
+placeholder chain no longer exists. Real `ofCurve_inj` requires
+the genuine Abel theorem chain via `abelJacobi_twoPoint_ne_zero`,
+which needs real `abelJacobi` connected to `ofCurve`. -/
 
 /-! ### Derivation of `ofCurve_inj` from Abel's theorem
 
