@@ -825,6 +825,37 @@ theorem contMDiffOn_limit_inner
   exact (contDiffOn_omega_iff_analyticOn
     (isOpen_chart_image_innerChartOpen x₀ hx₀).uniqueDiffOn).mpr h_analytic
 
+omit [ConnectedSpace X] [Nonempty X] in
+/-- **Substep 4 of Path 2.** The pointwise CLM limit, packaged as a
+bundle-section, is `ContMDiff ω` on each `innerChartOpen x₀` for
+`x₀ ∈ chartCover`.
+
+Uses `toFun_eq_localRep_smul` to express `L y = (scalar) • (CLE)` and
+combines smoothness of the scalar (substep 3) with smoothness of the
+frame via `clm_bundle_apply`-style arguments. Concretely, we lift via
+`Trivialization.contMDiffAt_section_iff` on the Hom bundle, reducing
+section smoothness to smoothness of the `inCoordinates` CLM-valued
+function. For `Trivial X ℂ`-target, `inCoordinates` collapses to
+`c(y) • (ContinuousLinearMap.id ℂ ℂ)` where `c(y) = L y (e.symmL y 1)`. -/
+theorem contMDiffOn_totalSpaceMk_L_inner
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
+    (hL : ∀ y : X, Tendsto (fun n : ℕ => (αs n).toFun y) atTop (𝓝 (L y)))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    (g : letI := innerShrunkChart_compactSpace (X := X) x₀
+      BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ)
+    (hg : letI := innerShrunkChart_compactSpace (X := X) x₀
+      Tendsto (fun n : ℕ =>
+        BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk (αs n) x₀))
+        atTop (𝓝 g)) :
+    ContMDiffOn 𝓘(ℂ, ℂ) (𝓘(ℂ, ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+      (fun y : X => TotalSpace.mk' (ℂ →L[ℂ] ℂ)
+        (E := fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)
+        y (L y))
+      (innerChartOpen (X := X) x₀) := by
+  sorry
+
 /-! ### Remaining steps (DEFERRED)
 
 The full completeness proof requires:
