@@ -1,5 +1,6 @@
 import Jacobians.PeriodLattice
 import Mathlib.Analysis.Meromorphic.Basic
+import Mathlib.Analysis.Meromorphic.Order
 import Mathlib.Data.Finsupp.Weight
 
 /-!
@@ -130,19 +131,54 @@ theorem twoPointDivisor_self (P : X) : twoPointDivisor X P P = 0 := by
 `div f = (zeros of f) - (poles of f)` with multiplicities via
 `meromorphicOrderAt`.
 
-**Current implementation**: placeholder `div f := 0` (trivially
-finitely-supported). A real implementation requires:
-1. For each point `x`, compute `meromorphicOrderAt (f ∘ chart⁻¹) (chart x)`
-   and cast to ℤ via `.untop₀`.
-2. Prove the order function is finitely supported on compact `X`
-   (classical: zeros of a nonzero meromorphic function are isolated;
-   a compact space has finitely many isolated points per chart).
-
-With the placeholder, `PrincipalDivisors X = {0}`, making
-`HasAbelsTheorem` unsatisfiable for positive-genus surfaces (same as
-`abelJacobi ≡ 0`). Real instances require real divisor theory. -/
+**Current implementation**: placeholder `div f := 0`. Real version
+lives in `divViaOrder` below (real but content-gated on finite
+support). Once the finite-support sorry is closed, `div` can be
+swapped for `divViaOrder`. -/
 noncomputable def MeromorphicFunction.div (_f : MeromorphicFunction X) : Divisor X :=
   0
+
+/-! ### Real divisor construction via `meromorphicOrderAt`
+
+The order of a meromorphic function at a point `x ∈ X` is read off
+the chart pullback: pick any chart `φ` around `x`, and compute
+`meromorphicOrderAt (f ∘ φ⁻¹) (φ x)`. Mathlib's
+`meromorphicOrderAt : (𝕜 → E) → 𝕜 → WithTop ℤ` returns `⊤` if `f`
+is identically zero near `x`, and the finite order otherwise. Cast
+to `ℤ` via `.untop₀` (sending `⊤ ↦ 0`).
+
+**Chart-independence** (content): orders of meromorphic functions
+are invariant under biholomorphic coordinate change. Not proved
+here; left as an assumed property of the real construction.
+
+**Finite support** (content): on a compact `X`, a meromorphic
+function has finitely many zeros and poles. Classical: zeros/poles
+of a non-identically-zero meromorphic function are isolated, and
+compactness + isolation ⇒ finite. -/
+
+variable {X} in
+/-- The integer order of `f` at `x`, via the chart pullback. -/
+noncomputable def MeromorphicFunction.orderAtPoint (f : MeromorphicFunction X) (x : X) : ℤ :=
+  (meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) x).symm)
+    ((chartAt (H := ℂ) x) x)).untop₀
+
+/-- **Real divisor of a meromorphic function** (content-gated).
+Uses the order function at each point and wraps as a `Finsupp` via
+`ofSupportFinite` with a finite-support hypothesis.
+
+The content sorry is `orderAtPoint_finite_support`: the order
+function has finite support on compact `X`. Classical; requires:
+* Isolation of zeros/poles (Mathlib has this for `𝕜 → E` via
+  `MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero`).
+* Lifting to the manifold via a finite chart cover + compactness.
+
+When this sorry closes, one can replace the placeholder
+`MeromorphicFunction.div` definition with `divViaOrder` (one-line
+change) to get real divisor theory downstream. -/
+noncomputable def MeromorphicFunction.divViaOrder (f : MeromorphicFunction X) : Divisor X := by
+  classical
+  refine Finsupp.ofSupportFinite (MeromorphicFunction.orderAtPoint f) ?_
+  sorry
 
 /-- The principal divisors: image of `div`. Classical fact:
 every principal divisor has degree 0, so this sits inside
