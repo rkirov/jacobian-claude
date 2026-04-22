@@ -60,6 +60,13 @@ Path 1 requires the smooth dual frame (step 3) — hairy.
 Path 2 requires the Hom-bundle trivialization atlas — hairy in a
 different way.
 
+**Decision (2026-04-23): Path 2 (direct Hom-trivialization).** User
+confirmed: classical problem ⇒ classical proof; no HOF X refactor.
+The ~200 lines are the formal shadow of the textbook chart-local
+Weierstrass argument (§ every-complex-analysis-book); Mathlib's
+`Trivialization.contMDiffOn_section_baseSet_iff` is the bridge. Not
+a math gap, a plumbing gap.
+
 **Estimated effort:** ~200 lines of careful bundle-specific work.
 Should be tackled in a dedicated session where the LSP can stay
 responsive (now viable on the 8 GB host).

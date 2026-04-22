@@ -177,3 +177,28 @@ this log, and moved on. Closed 3 net sorries in `Jacobians.lean`.
   elementary path exists. Classical results had classical proofs —
   if something was done in the 19th century, name the 19th-century
   method, not the 20th-century reformulation. User catches this.
+
+## 2026-04-23 — Session N (Montel assembly + Path 2 decision)
+
+### Stick to the classical approach; no HOF X refactor
+
+**When:** after assembling `exists_convergent_subseq_of_bounded` with
+one focused smoothness sorry remaining. I offered two paths to close
+the sorry — (1) direct Hom-trivialization plumbing, (2) redefine
+HOF X chart-locally à la Forster. I asked which was preferred.
+**My default:** Flagged the tradeoff as a real architectural choice
+and punted to the user.
+**User steer:** "I have no instinct I don't know the math. But
+generally I was told this is a classic problem so fancier stuff can
+wait."
+**Change:** Committed to Path 2 (direct Hom-trivialization plumbing)
+for the next session. No HOF X refactor. The classical Montel proof,
+formalized straight through our existing bundle-section definition,
+matches the "classic problem ⇒ classical proof" spirit. Refactoring
+should wait until we've landed the direct proof.
+
+**Takeaway to remember:** When the user can't make a math-content
+call, default to the classical/direct path. Reserve architectural
+decisions (refactors, alternate definitions) for moments where the
+direct path is clearly blocked — not as a "maybe this helps later"
+speculation.
