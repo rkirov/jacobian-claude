@@ -154,14 +154,26 @@ does via `lineIntegral`. -/
 noncomputable def ofCurve (P : X) : X → Jacobian X := fun Q =>
   QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P Q))
 
-/-- **Holomorphic Abel-Jacobi map** — this is classical content
-(Forster §21: the Abel-Jacobi map is holomorphic). Smoothness as
-`Q` varies requires the chosen `smoothPath P Q` to vary smoothly
-with `Q`, which depends on the concrete `HasSmoothPaths` instance.
-Left as a content sorry until a specific instance is constructed. -/
-lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ)
+/-- **Abel-Jacobi holomorphicity typeclass** (Forster §21).
+Axiomatizes that `ofCurve P : X → Jacobian X` is holomorphic
+(equivalently, the Abel-Jacobi map varies smoothly with its second
+argument). Real instances require the concrete `HasSmoothPaths`
+instance to provide a jointly-smooth family `(P, Q) ↦ smoothPath P Q`,
+which is standard content on compact Riemann surfaces. -/
+class HasHolomorphicAbelJacobi (X : Type*) [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [Jacobians.IsPeriodLattice X]
+    [Jacobians.HasSmoothPaths X] : Prop where
+  /-- The Abel-Jacobi map `ofCurve P` is holomorphic. -/
+  ofCurve_contMDiff : ∀ (P : X), ContMDiff 𝓘(ℂ)
+    (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P)
+
+/-- **Holomorphic Abel-Jacobi map** (Forster §21). Delegates to
+the `HasHolomorphicAbelJacobi` typeclass. -/
+lemma ofCurve_contMDiff [HasHolomorphicAbelJacobi X]
+    (P : X) : ContMDiff 𝓘(ℂ)
     (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) :=
-  sorry
+  HasHolomorphicAbelJacobi.ofCurve_contMDiff P
 
 /-- **Abel-Jacobi of basepoint is zero**: the smooth path `P → P` is
 a closed smooth loop, so its periodVec is in the lattice, hence maps
@@ -301,7 +313,8 @@ lemma pushforward_comp_apply (P : Jacobian X) :
 /-- Lattice preservation on the pullback side. Case-split on f constant
 vs non-constant: the constant case is real (ambientPsi = 0); the
 non-constant case is the trace identity (Forster §10.11). -/
-lemma ambientPsi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+lemma ambientPsi_preserves_lattice [Jacobians.HasBranchedCoverContent X Y]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (periodLattice Y).toAddSubgroup ≤
       (periodLattice X).toAddSubgroup.comap
         (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
@@ -310,7 +323,7 @@ lemma ambientPsi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
 Equal to the zero map if the map on curves is constant.
 Wired: `ZLatticeQuotient.pullback` applied to `ambientPsi f hf`. -/
-noncomputable def pullback (f : X → Y)
+noncomputable def pullback [Jacobians.HasBranchedCoverContent X Y] (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     Jacobian Y →ₜ+ Jacobian X :=
   Jacobians.ZLatticeQuotient.pullback (periodLattice X) (periodLattice Y)
@@ -318,7 +331,7 @@ noncomputable def pullback (f : X → Y)
     (ambientPsi_preserves_lattice f hf)
 
 -- pullback is holomorphic
-theorem pullback_contMDiff :
+theorem pullback_contMDiff [Jacobians.HasBranchedCoverContent X Y] :
     ContMDiff (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ))
       (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) :=
   Jacobians.ZLatticeQuotient.pullback_contMDiff_of_ambient
@@ -327,7 +340,8 @@ theorem pullback_contMDiff :
     (ambientPsi_preserves_lattice f hf)
 
 -- functoriality
-lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P :=
+lemma pullback_id_apply [Jacobians.HasBranchedCoverContent X X]
+    (P : Jacobian X) : pullback id contMDiff_id P = P :=
   Jacobians.ZLatticeQuotient.pushforward_id_of_ambient
     (periodLattice X)
     (Jacobians.ambientPsi (gX := genus X) (gY := genus X) id contMDiff_id)
@@ -336,7 +350,9 @@ lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P :=
     P
 
 -- functoriality
-lemma pullback_comp_apply (P : Jacobian Z) :
+lemma pullback_comp_apply [Jacobians.HasBranchedCoverContent X Y]
+    [Jacobians.HasBranchedCoverContent Y Z] [Jacobians.HasBranchedCoverContent X Z]
+    (P : Jacobian Z) :
     pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := by
   induction P using QuotientAddGroup.induction_on with
   | H z =>
@@ -361,6 +377,7 @@ when content is filled in, both `ContMDiff.degree` and
 def _root_.ContMDiff.degree (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ := 0
 
 lemma pushforward_pullback [Jacobians.HasAmbientDegreeIdentity X Y]
+    [Jacobians.HasBranchedCoverContent X Y]
     (P : Jacobian Y) :
     pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P :=
   Jacobians.ZLatticeQuotient.pushforward_pullback_of_ambient

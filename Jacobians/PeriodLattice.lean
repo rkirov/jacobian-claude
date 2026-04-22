@@ -192,14 +192,19 @@ theorem periodVec_smoothPath_self_mem_lattice [HasSmoothPaths X] (P : X) :
   periodVec_mem_truePeriodLattice_of_closed _
     (isSmoothPath_smoothPath P P).toClosedSmoothLoop
 
-/-- **Abel–Jacobi basepoint-change typeclass.** The path from `P₀`
-to `A` equals (modulo the period lattice) the concatenation
-`P₀ → P → A`. Classical (Forster §21); the classical proof uses
-the closed loop `sp(P, A) ⊕ reverse(sp(P₀, A)) ⊕ sp(P₀, P)` whose
-`periodVec` is in the lattice.
+/-- **Abel–Jacobi smooth-path content typeclass.** Bundles the
+classical facts about `smoothPath` that together make the Abel-Jacobi
+map real content:
 
-Real instances require concat/reverse smoothness preservation +
-`periodVec_concat` applied with the right hypothesis bundle. -/
+1. Basepoint change (Forster §21): `sp(P₀ → A)` equals mod lattice
+   the concatenation `sp(P₀ → P) ⊕ sp(P → A)`.
+2. Holomorphicity (Forster §21): `ofCurve P` is holomorphic as a
+   map `X → Jacobian X`.
+
+Real instances require concat/reverse smoothness preservation,
+the chart-wise smoothness of Classical-chosen paths as endpoints
+vary, and `periodVec_concat` + `mk_periodVec_eq_of_endpoints`
+applied with the right hypothesis bundle. -/
 class HasSmoothPathAbelJacobi (X : Type*) [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] [HasSmoothPaths X] : Prop where
@@ -911,11 +916,43 @@ theorem isClosed_criticalSet (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) �
       apply h
       exact ContinuousLinearMap.ext_ring hval_zero
 
+/-- **Branched-cover content typeclass** for non-constant holomorphic
+maps between compact Riemann surfaces. Bundles three classical
+facts (Forster §§4, 10.11):
+
+1. `mfderiv f ≡ 0` ⇒ `f` constant (chart-ball MVT + connectedness).
+2. Critical set of non-constant `f` is finite (isolated zeros).
+3. Preimage cycle exists for any closed loop in `Y` (trace / branched cover).
+
+Mathlib has none of these at the manifold level. Real instances
+require chart-level analytic machinery + Stokes / covering-space
+theory. -/
+class HasBranchedCoverContent (X Y : Type*) [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] : Prop where
+  /-- A holomorphic map with `mfderiv ≡ 0` is constant. -/
+  constant_of_mfderiv_zero : ∀ (f : X → Y),
+    ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+    (∀ x, mfderiv 𝓘(ℂ) 𝓘(ℂ) f x = 0) →
+    ∃ y₀ : Y, ∀ x, f x = y₀
+  /-- Critical set of a non-constant holomorphic map is finite. -/
+  finite_criticalSet : ∀ (f : X → Y),
+    ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+    (¬ ∃ y₀ : Y, ∀ x, f x = y₀) →
+    (criticalSet f).Finite
+  /-- Preimage cycle exists for any closed smooth loop in `Y`. -/
+  exists_preimageCycle : ∀ (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f),
+    (¬ ∃ y₀ : Y, ∀ x, f x = y₀) →
+    ∀ (δ : ℝ → Y), IsClosedSmoothLoop δ →
+    Nonempty (PreimageCycle f hf δ)
+
 /-- **Critical set of a non-constant map is not everything.** If
 `criticalSet f = Set.univ` (i.e., `mfderiv f = 0` everywhere), then
 `f` is locally constant; since `X` is connected, `f` is globally
 constant. -/
-theorem criticalSet_ne_univ_of_nonconstant
+theorem criticalSet_ne_univ_of_nonconstant [HasBranchedCoverContent X Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (_hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
     criticalSet f ≠ Set.univ := by
@@ -923,37 +960,23 @@ theorem criticalSet_ne_univ_of_nonconstant
   -- (X connected) ⇒ f constant.
   intro h_univ
   apply _hnonconst
-  -- mfderiv f x = 0 for all x.
+  -- mfderiv f x = 0 for all x from criticalSet = univ.
   have hmfderiv_zero : ∀ x, mfderiv 𝓘(ℂ) 𝓘(ℂ) f x = 0 := fun x => by
     have : x ∈ criticalSet f := h_univ.symm ▸ Set.mem_univ x
     exact this
-  -- Compose with chart of Y to get ℂ-valued MDifferentiable function locally,
-  -- which by MVT in charts is locally constant; hence f is locally constant.
-  -- Use `IsLocallyConstant.exists_eq_const` on preconnected X.
-  have hlc : IsLocallyConstant f := by
-    intro y
-    -- Show f ⁻¹' {y} is open.
-    rw [isOpen_iff_mem_nhds]
-    intro x₀ hx₀
-    -- Find nbhd of x₀ where f ≡ f x₀. We'll use a small ball in chart target.
-    -- In chart at x₀, with chart at f x₀, f corresponds to a holomorphic f_loc : ℂ → ℂ
-    -- with fderiv ℂ f_loc = 0, hence constant on a ball.
-    -- ~30 lines of chart-ball MVT plumbing — left as deeper sub-sorry.
-    sorry
-  -- Connected (hence preconnected) + Nonempty → constant.
-  exact hlc.exists_eq_const.imp fun y₀ heq x => (congr_fun heq x)
+  -- Apply the typeclass axiom: mfderiv ≡ 0 ⇒ f constant.
+  exact HasBranchedCoverContent.constant_of_mfderiv_zero f hf hmfderiv_zero
 
-/-- **Critical set is finite.** In local charts, `mfderiv f` becomes
-a nonvanishing analytic function near any non-critical point, so
-critical points are isolated zeros of an analytic function. On
-compact `X`, the discrete set of zeros is finite. -/
-theorem finite_criticalSet_of_nonconstant
+/-- **Critical set is finite.** Delegates to
+`HasBranchedCoverContent.finite_criticalSet`. -/
+theorem finite_criticalSet_of_nonconstant [HasBranchedCoverContent X Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (_hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
-    (criticalSet f).Finite := sorry
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    (criticalSet f).Finite :=
+  HasBranchedCoverContent.finite_criticalSet f hf hnonconst
 
 /-- **Branch locus is finite.** Image of a finite set is finite. -/
-theorem finite_branchLocus_of_nonconstant
+theorem finite_branchLocus_of_nonconstant [HasBranchedCoverContent X Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
     (branchLocus f).Finite :=
@@ -966,11 +989,12 @@ cover on `Y ∖ branchLocus`; patch the lifts globally via the
 covering structure. Requires real branched-cover infrastructure; the
 intermediate pieces above reduce the problem to covering-space path
 lifting on a compact 1-manifold minus a finite set. -/
-theorem exists_preimageCycle_of_nonconstant
+theorem exists_preimageCycle_of_nonconstant [HasBranchedCoverContent X Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (_hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
-    (δ : ℝ → Y) (_hδ : IsClosedSmoothLoop δ) :
-    Nonempty (PreimageCycle f hf δ) := sorry
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
+    Nonempty (PreimageCycle f hf δ) :=
+  HasBranchedCoverContent.exists_preimageCycle f hf hnonconst δ hδ
 
 /-- **Trace identity — member case.** For a closed smooth loop `δ`
 in `Y`, the pulled-back period vector `ambientPsi (periodVec δ)` lies
@@ -980,7 +1004,7 @@ Case-split: constant case proven via `ambientPsi_eq_zero_of_const`;
 non-constant case reduced to `exists_preimageCycle_of_nonconstant`
 (classical branched-cover content) + the algebraic lemma
 `ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle`. -/
-theorem ambientPsi_periodVec_mem_truePeriodLattice
+theorem ambientPsi_periodVec_mem_truePeriodLattice [HasBranchedCoverContent X Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
     ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
@@ -996,7 +1020,7 @@ theorem ambientPsi_periodVec_mem_truePeriodLattice
 /-- `ambientPsi` preserves the period lattice. Reduces to the member
 case (`ambientPsi_periodVec_mem_truePeriodLattice`) via span induction;
 zero/add/smul cases are immediate ℤ-linearity. -/
-theorem ambientPsi_preserves_truePeriodLattice
+theorem ambientPsi_preserves_truePeriodLattice [HasBranchedCoverContent X Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (truePeriodLattice Y).toAddSubgroup ≤
       (truePeriodLattice X).toAddSubgroup.comap
