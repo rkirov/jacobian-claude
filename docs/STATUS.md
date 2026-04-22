@@ -1,5 +1,30 @@
 # Project status (auto-maintained)
 
+## Abel–Jacobi: lineIntegral_pullback decomposed + additivity/reversal (latest, 2026-04-22)
+
+**`lineIntegral_pullback` is now a REAL theorem** modulo the atomic
+pointwise identity `pathSpeed_comp_eq_mfderiv`. Split:
+- `pathSpeed_comp_eq_mfderiv (hγ_diff) : pathSpeed (f∘γ) t = mfderiv f (γ t) (pathSpeed γ t)`
+  — single sorry, the heart of the chain rule.
+- `lineIntegral_pullback (hγ_diff) : ∫_{f∘γ} α = ∫_γ pullbackForm f hf α`
+  — proven via `integral_congr` + `ContinuousLinearMap.comp_apply` +
+  the pointwise identity.
+
+Added regularity hypothesis `hγ_diff` — the γ chart pullback is
+ℝ-differentiable on [0, 1] — which propagates to
+`periodVec_comp_eq_lineIntegral_pullback`.
+
+**Proof strategy for `pathSpeed_comp_eq_mfderiv`** (documented in file):
+1. Chart-pullback chain rule via `fderiv.comp` on
+   `f_loc ∘ (chartAt_X ∘ γ)` where `f_loc = chartAt_Y ∘ f ∘ chartAt_X.symm`.
+2. Bridge `fderiv ℝ f_loc = (fderiv ℂ f_loc).restrictScalars ℝ`
+   via `HasFDerivAt.restrictScalars`.
+3. Bridge `fderiv ℂ f_loc (chart_X (γ t)) = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t)`
+   via `MDifferentiableAt.mfderiv` + `writtenInExtChartAt`
+   unfolding + `range 𝓘(ℂ) = univ`.
+
+~100–200 lines of bounded chart manipulation. No Mathlib gaps.
+
 ## Abel–Jacobi: classical facts landed (latest, 2026-04-22)
 
 Extended session progress after Phase 2 + 4a landing:
