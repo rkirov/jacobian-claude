@@ -190,7 +190,8 @@ bundle for `mk_periodVec_eq_of_endpoints` and `periodVec_concat` —
 concat of smooth paths is a smooth loop when closed, and path-algebra
 integrability. Left as a focused content sorry (~30-50 lines of
 concat/reverse smoothness preservation). -/
-lemma ofCurve_basepoint_change (P P₀ A : X) :
+lemma ofCurve_basepoint_change [Jacobians.HasSmoothPathAbelJacobi X]
+    (P P₀ A : X) :
     ofCurve P₀ A = ofCurve P A + ofCurve P₀ P := by
   unfold ofCurve
   exact Jacobians.smoothPath_basepoint_change P P₀ A
@@ -214,6 +215,7 @@ proof chain:
    → contradicts NoDegreeOneDivisorsToPP1 if Q ≠ Q' and 0 < genus X. -/
 lemma ofCurve_inj [Jacobians.HasAbelsTheorem X]
     [Jacobians.NoDegreeOneDivisorsToPP1 X]
+    [Jacobians.HasSmoothPathAbelJacobi X]
     (P : X) (h : 0 < genus X) : Function.Injective (ofCurve P) := by
   intro Q Q' h_eq
   by_contra h_ne

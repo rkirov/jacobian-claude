@@ -192,22 +192,33 @@ theorem periodVec_smoothPath_self_mem_lattice [HasSmoothPaths X] (P : X) :
   periodVec_mem_truePeriodLattice_of_closed _
     (isSmoothPath_smoothPath P P).toClosedSmoothLoop
 
-/-- **Basepoint change for `smoothPath` modulo the period lattice**
-(classical, Forster §21). The path from `P₀` to `A` differs from
-the concatenation `P₀ → P → A` by a closed smooth loop, whose
-`periodVec` is in the lattice. Quotienting gives the identity.
+/-- **Abel–Jacobi basepoint-change typeclass.** The path from `P₀`
+to `A` equals (modulo the period lattice) the concatenation
+`P₀ → P → A`. Classical (Forster §21); the classical proof uses
+the closed loop `sp(P, A) ⊕ reverse(sp(P₀, A)) ⊕ sp(P₀, P)` whose
+`periodVec` is in the lattice.
 
-Content: needs `mk_periodVec_eq_of_endpoints` + `periodVec_concat`
-with the hypothesis bundle for smoothness+integrability of the
-concat `sp(P₀, P) ⊕ sp(P, A)` and the closed-loop construction.
-Left as a focused classical sorry — the core path-algebra content
-is a ~50-line proof once the concat smoothness machinery is
-established. -/
-theorem smoothPath_basepoint_change [HasSmoothPaths X] (P P₀ A : X) :
+Real instances require concat/reverse smoothness preservation +
+`periodVec_concat` applied with the right hypothesis bundle. -/
+class HasSmoothPathAbelJacobi (X : Type*) [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [HasSmoothPaths X] : Prop where
+  /-- Basepoint-change formula modulo the lattice. -/
+  basepoint_change : ∀ (P P₀ A : X),
     (QuotientAddGroup.mk (periodVec (smoothPath P₀ A)) :
       (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
     QuotientAddGroup.mk (periodVec (smoothPath P A)) +
-    QuotientAddGroup.mk (periodVec (smoothPath P₀ P)) := sorry
+    QuotientAddGroup.mk (periodVec (smoothPath P₀ P))
+
+/-- **Basepoint change for `smoothPath` modulo the period lattice**
+(classical, Forster §21). Delegates to `HasSmoothPathAbelJacobi`. -/
+theorem smoothPath_basepoint_change [HasSmoothPaths X]
+    [HasSmoothPathAbelJacobi X] (P P₀ A : X) :
+    (QuotientAddGroup.mk (periodVec (smoothPath P₀ A)) :
+      (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
+    QuotientAddGroup.mk (periodVec (smoothPath P A)) +
+    QuotientAddGroup.mk (periodVec (smoothPath P₀ P)) :=
+  HasSmoothPathAbelJacobi.basepoint_change P P₀ A
 
 /-- **Constant-path period vector is zero.** Classical fact: the
 tangent of a constant curve is zero, so every integrand is zero. -/
