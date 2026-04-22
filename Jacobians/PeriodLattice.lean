@@ -282,8 +282,11 @@ chart chain rule + linear-algebra arguments from elsewhere in the
 file. Bounded but ~100 lines. -/
 theorem IsClosedSmoothLoop.comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     {γ : ℝ → X} (hγ : IsClosedSmoothLoop γ) :
-    IsClosedSmoothLoop (f ∘ γ) :=
-  sorry
+    IsClosedSmoothLoop (f ∘ γ) where
+  closed := by simp [Function.comp_apply, hγ.closed]
+  cont := hf.continuous.comp hγ.cont
+  diff := sorry
+  integrable := sorry
 
 /-- Change-of-variables at the vector level: evaluating each Y-basis
 form against `f ∘ γ` equals evaluating its pullback against `γ`.
