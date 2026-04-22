@@ -35,6 +35,7 @@ open scoped Manifold ContDiff Topology
 
 variable (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [Jacobians.HasSmoothPaths X]
 
 /-! ### Meromorphic functions on a compact Riemann surface
 
@@ -594,22 +595,18 @@ variable {X} in
 
 **Well-definedness** (independence of basepoint): uses `∑ n_i = 0`
 to absorb the basepoint choice. For any two basepoints P₀, P₀':
-`AJ_{P₀} D - AJ_{P₀'} D = (∑ n_i) · [ofCurve P₀' P₀] = 0` (since ∑ n_i = 0).
+`AJ_{P₀} D - AJ_{P₀'} D = (∑ n_i) · [smoothPath P₀' P₀] = 0` (since ∑ n_i = 0).
 
-**Current implementation**: placeholder zero map, consistent with
-the placeholder `Jacobian.ofCurve := fun _ _ => 0`. A real
-implementation requires:
-1. A real `ofCurve` via path integration (Phase 3).
-2. Basepoint-independence proof (uses the degree-0 condition).
-
-With the current placeholder, `abelJacobi ≡ 0`, so
-`HasAbelsTheorem.aj_zero_imp_principal` would require every
-degree-0 divisor to be principal — false for genus ≥ 1. This
-inconsistency is fine as long as the axioms aren't instantiated;
-real instances await real `ofCurve`. -/
-noncomputable def abelJacobi (_D : DivisorOfDegZero X) :
-    (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup :=
-  0
+Now real: uses `smoothPath` from `HasSmoothPaths` typeclass
+and sums `periodVec` of paths from a fixed basepoint `P₀` to each
+point in the support of `D`, weighted by multiplicities, projected
+to the Jacobian quotient. -/
+noncomputable def abelJacobi (D : DivisorOfDegZero X) :
+    (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup := by
+  classical
+  exact ∑ P ∈ (D : Divisor X).support,
+    ((D : Divisor X) P) •
+      QuotientAddGroup.mk (periodVec (smoothPath (Classical.arbitrary X) P))
 
 /-! ### Abel's theorem itself
 
