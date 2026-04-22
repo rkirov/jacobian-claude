@@ -709,11 +709,14 @@ def criticalSet (f : X → Y) : Set X :=
 def branchLocus (f : X → Y) : Set Y :=
   f '' criticalSet f
 
-/-- **Critical set is closed.** The mfderiv depends continuously on
-the base point (as a section of a continuous bundle of CLMs), so its
-zero set is closed. -/
+/-- **Critical set is closed.** At each point `x₀`, near `x₀` the
+map `x ↦ fderiv ℂ (local rep) (chart x)` is continuous (analytic
+in chart coords; chart continuous), so the zero set is closed. The
+argument needs care because the chart source varies with `x`; we
+use a fixed chart at `x₀` on an open neighborhood. -/
 theorem isClosed_criticalSet (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    IsClosed (criticalSet f) := sorry
+    IsClosed (criticalSet f) := by
+  sorry
 
 /-- **Critical set of a non-constant map is not everything.** If
 `criticalSet f = Set.univ` (i.e., `mfderiv f = 0` everywhere), then
