@@ -7,6 +7,7 @@ import Jacobians.Montel.ChartNorm
 import Jacobians.Montel.SupNorm
 import Jacobians.Montel.Compactness
 import Jacobians.Montel.ChartTransition
+import Jacobians.Montel.Complete
 
 /-!
 # Montel path to finite-dimensionality of `HolomorphicOneForms`
@@ -253,7 +254,84 @@ theorem HolomorphicOneForms.exists_convergent_subseq_of_bounded
     ∃ (φ : ℕ → ℕ) (_hφ : StrictMono φ) (αLim : Jacobians.HolomorphicOneForms X),
       HolomorphicOneForms.supNormK αLim ≤ 1 ∧
       Filter.Tendsto (fun k => αs (φ k)) Filter.atTop (nhds αLim) := by
-  sorry
+  letI := HolomorphicOneForms.normedAddCommGroup (X := X)
+  -- Step 5a: common bcf-convergent subsequence on `chartCover`.
+  obtain ⟨φ, hφ, h_bcf⟩ := exists_subseq_bcf_tendsto_on_chartCover αs h
+  -- Step 5b: the subsequence is supNormK-Cauchy.
+  have h_cauchy := cauchy_supNormK_of_bcf_tendsto αs φ h_bcf
+  -- Step 5d-limit: pointwise CLM limit `L y`.
+  obtain ⟨L, hL⟩ := exists_toFun_limit (fun n : ℕ => αs (φ n)) h_cauchy
+  -- ** Step 5d-smooth (focused sorry) **: bundle-smoothness reconstruction.
+  have h_smooth : ContMDiff 𝓘(ℂ, ℂ) (𝓘(ℂ, ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+      (fun x : X => TotalSpace.mk' (ℂ →L[ℂ] ℂ)
+        (E := fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)
+        x (L x)) := by
+    sorry
+  -- Assemble αLim as a ContMDiffSection.
+  let αLim : Jacobians.HolomorphicOneForms X := ⟨L, h_smooth⟩
+  have hαLim_toFun : αLim.toFun = L := rfl
+  -- Pointwise Tendsto transfers to αLim.toFun.
+  have hL' : ∀ y : X,
+      Filter.Tendsto (fun n : ℕ => (αs (φ n)).toFun y) Filter.atTop
+        (nhds (αLim.toFun y)) := by
+    intro y; rw [hαLim_toFun]; exact hL y
+  refine ⟨φ, hφ, αLim, ?_supNormK_bound, ?_tendsto⟩
+  · -- Step 6a: supNormK αLim ≤ 1 from scalar bound `norm_limit_localRep_le_one`.
+    unfold HolomorphicOneForms.supNormK
+    rw [Finset.sup'_le_iff]
+    intro x₀ hx₀
+    unfold HolomorphicOneForms.chartNormK
+    by_cases hne : Set.Nonempty (shrunkChart (X := X) x₀)
+    · apply csSup_le (hne.image _)
+      rintro r ⟨y, hy, rfl⟩
+      -- ‖localRep αLim x₀ y‖ = ‖L y (e.symmL ℂ y 1)‖ ≤ 1.
+      show ‖localRep αLim x₀ y‖ ≤ 1
+      set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+      have heq : localRep αLim x₀ y = L y (e.symmL ℂ y 1) := by
+        show αLim.toFun y _ = _
+        rw [hαLim_toFun]
+      rw [heq]
+      exact norm_limit_localRep_le_one (fun n => αs (φ n))
+        (fun n => h (φ n)) L hL hx₀ hy
+    · rw [Set.not_nonempty_iff_eq_empty] at hne
+      simp [hne, Real.sSup_empty]
+  · -- Step 6b: Tendsto via supNormK from scalar bound `norm_localRep_sub_limit_le`.
+    rw [Metric.tendsto_atTop]
+    intro ε hε
+    -- Use the scalar bound at ε/2.
+    obtain ⟨N, hN⟩ := norm_localRep_sub_limit_le (fun n => αs (φ n)) h_cauchy L hL
+      (ε / 2) (half_pos hε)
+    refine ⟨N, fun n hn => ?_⟩
+    rw [dist_eq_norm]
+    -- supNormK (αs (φ n) - αLim) ≤ ε/2 < ε.
+    have h_step : HolomorphicOneForms.supNormK (αs (φ n) - αLim) ≤ ε / 2 := by
+      unfold HolomorphicOneForms.supNormK
+      rw [Finset.sup'_le_iff]
+      intro x₀ hx₀
+      unfold HolomorphicOneForms.chartNormK
+      by_cases hne : Set.Nonempty (shrunkChart (X := X) x₀)
+      · apply csSup_le (hne.image _)
+        rintro r ⟨y, hy, rfl⟩
+        -- ‖localRep (αs (φ n) - αLim) x₀ y‖ ≤ ε/2
+        show ‖localRep (αs (φ n) - αLim) x₀ y‖ ≤ ε / 2
+        set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+        have h_sub_eq : localRep (αs (φ n) - αLim) x₀ y =
+            localRep (αs (φ n)) x₀ y - L y (e.symmL ℂ y 1) := by
+          show (αs (φ n) - αLim).toFun y (e.symmL ℂ y 1) =
+              (αs (φ n)).toFun y (e.symmL ℂ y 1) - L y (e.symmL ℂ y 1)
+          have h_eq : (αs (φ n) - αLim).toFun y =
+              (αs (φ n)).toFun y - αLim.toFun y :=
+            congr_fun (ContMDiffSection.coe_sub (αs (φ n)) αLim) y
+          rw [h_eq, ContinuousLinearMap.sub_apply, hαLim_toFun]
+        rw [h_sub_eq]
+        exact hN n hn x₀ hx₀ y hy
+      · rw [Set.not_nonempty_iff_eq_empty] at hne
+        simp [hne, Real.sSup_empty]
+        linarith
+    have h_norm_eq : ‖αs (φ n) - αLim‖ =
+        HolomorphicOneForms.supNormK (αs (φ n) - αLim) := rfl
+    rw [h_norm_eq]
+    linarith
 
 /-- **Montel's closedBall is compact**, under the canonical
 supNormK-based normed structure. With `exists_convergent_subseq_of_bounded`
