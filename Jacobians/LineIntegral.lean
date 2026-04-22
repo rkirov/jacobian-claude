@@ -6,6 +6,8 @@ import Mathlib.Geometry.Manifold.MFDeriv.FDeriv
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Comp
 import Mathlib.Analysis.Calculus.FDeriv.RestrictScalars
+import Mathlib.Analysis.RCLike.Basic
+import Mathlib.Analysis.Complex.Basic
 
 /-!
 # Line integral of a holomorphic 1-form along a smooth path
@@ -536,14 +538,59 @@ theorem pathSpeed_comp_eq_mfderiv
   -- Step 4: f_loc is ℂ-differentiable at g_X t (from f smoothness).
   have hf_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f (γ t) :=
     hf.mdifferentiableAt (by decide : ω ≠ 0)
-  -- The model is boundaryless, so range I = univ; DifferentiableWithinAt univ = DifferentiableAt.
   have hf_loc_diff_ℂ : DifferentiableAt ℂ f_loc (g_X t) := by
     have h1 := hf_mdiff.differentiableWithinAt_writtenInExtChartAt
     rw [ModelWithCorners.range_eq_univ, differentiableWithinAt_univ] at h1
-    -- h1 : DifferentiableAt ℂ (writtenInExtChartAt 𝓘(ℂ) 𝓘(ℂ) (γ t) f) ((extChartAt 𝓘(ℂ) (γ t)) (γ t))
-    -- Need: DifferentiableAt ℂ f_loc (g_X t)
     convert h1 using 2
-  sorry
+  -- Step 5: ℝ-differentiability of f_loc, bypassing the ℝ/ℂ diamond.
+  -- `HasFDerivAt.restrictScalars ℝ` would close this, but Lean can't
+  -- synthesize `IsScalarTower ℝ ℂ ℂ` in this context (Complex's module
+  -- diamond). We construct the ℝ-`HasFDerivAt` manually from
+  -- `IsLittleO` — the underlying asymptotic is the same, only the
+  -- CLM's scalar-structure tag differs (via `ContinuousLinearMap.restrictScalars`).
+  have hf_loc_hasFD_ℂ : HasFDerivAt f_loc (fderiv ℂ f_loc (g_X t)) (g_X t) :=
+    hf_loc_diff_ℂ.hasFDerivAt
+  have hf_loc_hasFD_ℝ : HasFDerivAt f_loc
+      ((fderiv ℂ f_loc (g_X t)).restrictScalars ℝ) (g_X t) := by
+    rw [hasFDerivAt_iff_isLittleO_nhds_zero] at hf_loc_hasFD_ℂ ⊢
+    simp only [ContinuousLinearMap.coe_restrictScalars']
+    exact hf_loc_hasFD_ℂ
+  have hf_loc_diff_ℝ : DifferentiableAt ℝ f_loc (g_X t) :=
+    hf_loc_hasFD_ℝ.differentiableAt
+  have hf_loc_fderiv_ℝ : fderiv ℝ f_loc (g_X t) =
+      (fderiv ℂ f_loc (g_X t)).restrictScalars ℝ :=
+    hf_loc_hasFD_ℝ.fderiv
+  -- Step 6: Chain rule for fderiv ℝ of f_loc ∘ g_X at t.
+  have h_chain : fderiv ℝ (f_loc ∘ g_X) t =
+      (fderiv ℝ f_loc (g_X t)).comp (fderiv ℝ g_X t) :=
+    fderiv_comp t hf_loc_diff_ℝ hγ_diff
+  -- Step 7: mfderiv f (γ t) = fderiv ℂ f_loc (g_X t).
+  have h_mfderiv : mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t) = fderiv ℂ f_loc (g_X t) := by
+    rw [hf_mdiff.mfderiv]
+    rw [ModelWithCorners.range_eq_univ, fderivWithin_univ]
+    -- Need: fderiv ℂ (writtenInExtChartAt 𝓘(ℂ) 𝓘(ℂ) (γ t) f) ((extChartAt 𝓘(ℂ) (γ t)) (γ t))
+    --     = fderiv ℂ f_loc (g_X t)
+    -- These are equal up to definitional unfolding (writtenInExtChartAt = f_loc, extChartAt x x = g_X t).
+    congr 1
+  -- Step 8: Assemble.
+  -- pathSpeed (f ∘ γ) t
+  --   = fderiv ℝ g_Y t 1                                    (unfold)
+  --   = fderiv ℝ (f_loc ∘ g_X) t 1                          (by h_eq.fderiv_eq)
+  --   = (fderiv ℝ f_loc (g_X t)).comp (fderiv ℝ g_X t) 1    (chain rule)
+  --   = fderiv ℝ f_loc (g_X t) (pathSpeed γ t)
+  --   = (fderiv ℂ f_loc (g_X t)).restrictScalars ℝ (pathSpeed γ t)  (hf_loc_fderiv_ℝ)
+  --   = fderiv ℂ f_loc (g_X t) (pathSpeed γ t)              (restrictScalars_apply)
+  --   = mfderiv f (γ t) (pathSpeed γ t)                     (h_mfderiv.symm)
+  show pathSpeed (f ∘ γ) t = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t) (pathSpeed γ t)
+  rw [h_mfderiv]
+  -- Goal: pathSpeed (f ∘ γ) t = fderiv ℂ f_loc (g_X t) (pathSpeed γ t)
+  show fderiv ℝ ((chartAt (H := ℂ) ((f ∘ γ) t)).toFun ∘ (f ∘ γ)) t 1 =
+    fderiv ℂ f_loc (g_X t) (pathSpeed γ t)
+  -- (f ∘ γ) t = f (γ t), so chartAt (f ∘ γ) t = chartAt (f (γ t)) = φ_Y
+  have h_gY : (chartAt (H := ℂ) ((f ∘ γ) t)).toFun ∘ (f ∘ γ) = g_Y := rfl
+  rw [h_gY, h_eq.fderiv_eq, h_chain, ContinuousLinearMap.comp_apply,
+      hf_loc_fderiv_ℝ, ContinuousLinearMap.coe_restrictScalars']
+  rfl
 
 /-- **Change of variables for the line integral** (classical).
 Derived from `pathSpeed_comp_eq_mfderiv` + the definition of
