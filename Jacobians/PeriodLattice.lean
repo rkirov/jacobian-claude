@@ -125,6 +125,64 @@ theorem periodVec_const (P : X) : periodVec (fun _ : ℝ => P) = 0 := by
   funext i
   exact lineIntegral_const _ P
 
+/-- **Period vector reverses sign under path reversal.** Classical
+fact: `∫_{reverse γ} ω = -∫_γ ω`. Applied componentwise to the basis
+forms. The α-independent differentiability hypothesis is inherited
+from `lineIntegral_reverse`. -/
+theorem periodVec_reverse (γ : ℝ → X)
+    (hdiff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ (1 - t))).toFun ∘ γ) (1 - t)) :
+    periodVec (reverse γ) = -periodVec γ := by
+  funext i
+  exact lineIntegral_reverse (periodBasisForm X i) γ hdiff
+
+open MeasureTheory in
+/-- **Period vector is additive under path concatenation.** Classical
+fact: `∫_{γ ∗ γ'} ω = ∫_γ ω + ∫_{γ'} ω`. Applied componentwise to
+basis forms. Hypotheses (integrability per basis form + pointwise
+a.e. identities from the `pathSpeed` chain rule on each half) are
+per-i quantified versions of `lineIntegral_concat`'s hypotheses. -/
+theorem periodVec_concat (γ γ' : ℝ → X)
+    (hint_γ : ∀ i : Fin (genus X), IntervalIntegrable
+      (fun u => (periodBasisForm X i).toFun (γ u) (pathSpeed γ u)) volume 0 1)
+    (hint_γ' : ∀ i : Fin (genus X), IntervalIntegrable
+      (fun u => (periodBasisForm X i).toFun (γ' u) (pathSpeed γ' u)) volume 0 1)
+    (hint_concat_left : ∀ i : Fin (genus X), IntervalIntegrable
+      (fun t => (periodBasisForm X i).toFun ((concat γ γ') t)
+        (pathSpeed (concat γ γ') t)) volume 0 (1/2))
+    (hint_concat_right : ∀ i : Fin (genus X), IntervalIntegrable
+      (fun t => (periodBasisForm X i).toFun ((concat γ γ') t)
+        (pathSpeed (concat γ γ') t)) volume (1/2) 1)
+    (h_ae_left : ∀ i : Fin (genus X), ∀ᵐ t ∂(volume.restrict (Set.uIoc (0 : ℝ) (1/2))),
+      (periodBasisForm X i).toFun ((concat γ γ') t) (pathSpeed (concat γ γ') t) =
+        (2 : ℂ) * (periodBasisForm X i).toFun (γ (2 * t)) (pathSpeed γ (2 * t)))
+    (h_ae_right : ∀ i : Fin (genus X), ∀ᵐ t ∂(volume.restrict (Set.uIoc ((1 : ℝ)/2) 1)),
+      (periodBasisForm X i).toFun ((concat γ γ') t) (pathSpeed (concat γ γ') t) =
+        (2 : ℂ) * (periodBasisForm X i).toFun (γ' (2 * t - 1)) (pathSpeed γ' (2 * t - 1))) :
+    periodVec (concat γ γ') = periodVec γ + periodVec γ' := by
+  funext i
+  exact lineIntegral_concat (periodBasisForm X i) γ γ'
+    (hint_γ i) (hint_γ' i)
+    (hint_concat_left i) (hint_concat_right i)
+    (h_ae_left i) (h_ae_right i)
+
+/-- **Closed-loop period is zero in the Jacobian.** Classical fact:
+integrating any form along a closed loop gives an element of the
+period lattice, which is the zero class in the Jacobian quotient. -/
+theorem mk_periodVec_closed_loop_zero (γ : ℝ → X) (hγ : γ 0 = γ 1) :
+    (QuotientAddGroup.mk (periodVec γ) :
+      (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) = 0 :=
+  (QuotientAddGroup.eq_zero_iff _).mpr
+    (periodVec_mem_truePeriodLattice_of_closed γ hγ)
+
+/-- **Constant-path Jacobian class is zero.** Corollary of
+`periodVec_const`: the quotient class of the zero vector is zero. -/
+theorem mk_periodVec_const_zero (P : X) :
+    (QuotientAddGroup.mk (periodVec (fun _ : ℝ => P)) :
+      (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) = 0 := by
+  rw [periodVec_const]
+  exact QuotientAddGroup.mk_zero _
+
 /-! ### Abel–Jacobi well-definedness (classical, Abel 1826)
 
 Two paths with the same endpoints yield period vectors that differ
