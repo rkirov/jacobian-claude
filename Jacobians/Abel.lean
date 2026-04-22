@@ -266,13 +266,49 @@ theorem MeromorphicFunction.orderAtPoint_isolated_at
     ∃ t ∈ 𝓝 z, ∀ y ∈ t, y ≠ z → f.orderAtPoint y = 0 := by
   -- Apply the dichotomy at chart_z z.
   have hmero := f.meromorphic z
-  rcases hmero.eventually_eq_zero_or_eventually_ne_zero with _ | _
-  · -- Case A: f ∘ chart_z.symm ≡ 0 in pointed nbhd of chart_z z.
-    -- Transfer to X (chart_z continuity), then for each y ≠ z nearby,
-    -- use `orderAtPoint_eq_zero_of_eventually_zero` since f ≡ 0 near y.
-    -- Bounded ~30-line proof via `Filter.eventually_nhdsWithin_iff` +
-    -- `ContinuousAt.eventually` + T2-separation of y, z.
-    sorry
+  rcases hmero.eventually_eq_zero_or_eventually_ne_zero with h_zero | _
+  · -- Case A: (f ∘ chart_z.symm) w = 0 eventually in pointed nbhd of chart_z z.
+    -- Transfer to X: get an open nbhd V of z in X with f ≡ 0 on V \ {z}.
+    have h_chart_nhd : ∀ᶠ w in 𝓝 ((chartAt (H := ℂ) z) z),
+        w ∉ ({(chartAt (H := ℂ) z) z} : Set ℂ) → (f.toFun ∘ (chartAt (H := ℂ) z).symm) w = 0 := by
+      have : ∀ᶠ (y : ℂ) in 𝓝 ((chartAt (H := ℂ) z) z),
+          y ∉ ({(chartAt (H := ℂ) z) z} : Set ℂ) →
+          (f.toFun ∘ (chartAt (H := ℂ) z).symm) y = 0 := by
+        rw [Filter.Eventually, mem_nhdsWithin_iff_eventually] at h_zero
+        filter_upwards [h_zero] with y hy hys
+        exact hy hys
+      exact this
+    -- Pull back via chart_z continuity.
+    have h_at_z : ContinuousAt (chartAt (H := ℂ) z) z :=
+      (chartAt (H := ℂ) z).continuousAt (mem_chart_source ℂ z)
+    have h_X_cond : ∀ᶠ x in 𝓝 z, x ≠ z →
+        (f.toFun ∘ (chartAt (H := ℂ) z).symm) ((chartAt (H := ℂ) z) x) = 0 := by
+      have := h_at_z.eventually h_chart_nhd
+      filter_upwards [this,
+        (chartAt (H := ℂ) z).open_source.mem_nhds (mem_chart_source ℂ z)] with x hx hx_src hx_ne
+      apply hx
+      intro heq
+      rw [Set.mem_singleton_iff] at heq
+      exact hx_ne ((chartAt (H := ℂ) z).injOn hx_src (mem_chart_source ℂ z) heq)
+    -- Rewrite using left_inv to get f ≡ 0 near z except at z.
+    have h_X : ∀ᶠ x in 𝓝 z, x ≠ z → f.toFun x = 0 := by
+      filter_upwards [h_X_cond,
+        (chartAt (H := ℂ) z).open_source.mem_nhds (mem_chart_source ℂ z)] with x hx hx_src hx_ne
+      have := hx hx_ne
+      rwa [Function.comp_apply, (chartAt (H := ℂ) z).left_inv hx_src] at this
+    -- Extract an open nbhd V ⊆ 𝓝 z where x ∈ V ∧ x ≠ z → f x = 0.
+    rw [Filter.eventually_iff_exists_mem] at h_X
+    obtain ⟨V, hV_mem, hV⟩ := h_X
+    obtain ⟨U, hU_V, hU_open, hz_U⟩ := mem_nhds_iff.mp hV_mem
+    refine ⟨U, hU_open.mem_nhds hz_U, ?_⟩
+    intro y hy_U hy_ne
+    -- f ≡ 0 in a neighborhood of y (namely, U \ {z} which is open and contains y).
+    apply f.orderAtPoint_eq_zero_of_eventually_zero y
+    have hU_y : U ∈ 𝓝 y := hU_open.mem_nhds hy_U
+    have h_y_ne_z : {z}ᶜ ∈ 𝓝 y :=
+      isOpen_compl_singleton.mem_nhds (by simpa using hy_ne)
+    filter_upwards [hU_y, h_y_ne_z] with x hx_U hx_ne
+    exact hV x (hU_V hx_U) hx_ne
   · -- Case B: f ∘ chart_z.symm ≠ 0 in pointed nbhd.
     -- Order via chart_z is 0 for w ≠ chart_z z nearby (standard).
     -- Transfer via `orderAtPoint_chart_invariant` (Mathlib-missing Lemma B above).
