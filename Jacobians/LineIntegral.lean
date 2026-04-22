@@ -117,6 +117,38 @@ theorem lineIntegral_neg (α : HolomorphicOneForms X) (γ : ℝ → X) :
   have h : -α = (-1 : ℂ) • α := by rw [neg_smul, one_smul]
   rw [h, lineIntegral_smul]; ring
 
+/-! ### Phase 1b: constant path
+
+Classical fact: the line integral of any holomorphic 1-form along a
+constant path is zero. The tangent vector of a constant curve is
+zero; a linear form evaluated at zero is zero; the integrand is
+identically zero; its integral is zero. -/
+
+/-- `pathSpeed (fun _ => P) t = 0`: the tangent of a constant curve
+is zero. Chart pullback of a constant map is constant in ℂ, whose
+fderiv is zero. -/
+theorem pathSpeed_const (P : X) (t : ℝ) :
+    pathSpeed (fun _ : ℝ => P) t = 0 := by
+  unfold pathSpeed
+  have h_const : (chartAt (H := ℂ) P).toFun ∘ (fun _ : ℝ => P) =
+      fun _ : ℝ => (chartAt (H := ℂ) P) P := by
+    funext s; rfl
+  rw [h_const, fderiv_fun_const]
+  rfl
+
+/-- **Line integral of any form along a constant path is zero.** -/
+theorem lineIntegral_const (α : HolomorphicOneForms X) (P : X) :
+    lineIntegral α (fun _ : ℝ => P) = 0 := by
+  unfold lineIntegral
+  -- integrand: α.toFun P (pathSpeed (fun _ => P) t) = α.toFun P 0 = 0.
+  have h_zero : ∀ t : ℝ,
+      α.toFun ((fun _ : ℝ => P) t) (pathSpeed (fun _ : ℝ => P) t) = 0 := by
+    intro t
+    rw [pathSpeed_const]
+    exact (α.toFun P).map_zero
+  simp_rw [h_zero]
+  exact intervalIntegral.integral_zero
+
 /-! ### Phase 1b: path reversal
 
 `reverse γ t := γ (1 - t)`, and the line integral flips sign under

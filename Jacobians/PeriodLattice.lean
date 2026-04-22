@@ -83,6 +83,12 @@ theorem periodVec_mem_truePeriodLattice_of_closed (γ : ℝ → X) (hγ : γ 0 =
     periodVec γ ∈ truePeriodLattice X :=
   Submodule.subset_span ⟨γ, hγ, rfl⟩
 
+/-- **Constant-path period vector is zero.** Classical fact: the
+tangent of a constant curve is zero, so every integrand is zero. -/
+theorem periodVec_const (P : X) : periodVec (fun _ : ℝ => P) = 0 := by
+  funext i
+  exact lineIntegral_const _ P
+
 /-! ### Abel–Jacobi well-definedness (classical, Abel 1826)
 
 Two paths with the same endpoints yield period vectors that differ
