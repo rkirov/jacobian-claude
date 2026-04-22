@@ -338,11 +338,44 @@ theorem MeromorphicFunction.orderAtPoint_chart_invariant
     -- Step A8: bridge extendCoordChange's coe to e ∘ chart_y.symm (rfl pointwise).
     have h_analytic : AnalyticAt ℂ (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) :=
       h_analyticAt
+    -- Sub-sorry B: nonzero derivative via biholomorphism.
+    -- Inverse direction: `chart_y ∘ e.symm` is also analytic at `e y`.
+    have h_analytic_inv : AnalyticAt ℂ ((chartAt (H := ℂ) y) ∘ e.symm) (e y) := by
+      have h_contDiffAt' : ContDiffAt ℂ ω
+          (↑(𝓘(ℂ).extendCoordChange e (chartAt (H := ℂ) y)))
+          (e.extend 𝓘(ℂ) y) := by
+        have h := OpenPartialHomeomorph.contDiffWithinAt_extend_coord_change'
+          he_max hchart_max hy (mem_chart_source ℂ y)
+        rwa [ModelWithCorners.range_eq_univ, contDiffWithinAt_univ] at h
+      exact h_contDiffAt'.analyticAt
+    -- Composition `(chart_y ∘ e.symm) ∘ (e ∘ chart_y.symm) =ᶠ id` near chart_y y.
+    have h_comp_id : ((chartAt (H := ℂ) y) ∘ e.symm) ∘ (e ∘ (chartAt (H := ℂ) y).symm)
+        =ᶠ[𝓝 ((chartAt (H := ℂ) y) y)] id := by
+      have h_target_nhd : (chartAt (H := ℂ) y).target ∈ 𝓝 ((chartAt (H := ℂ) y) y) :=
+        (chartAt (H := ℂ) y).open_target.mem_nhds
+          ((chartAt (H := ℂ) y).map_source (mem_chart_source ℂ y))
+      filter_upwards [h_source, h_target_nhd] with w hw_e hw_target
+      show (chartAt (H := ℂ) y) (e.symm (e ((chartAt (H := ℂ) y).symm w))) = w
+      rw [e.left_inv hw_e, (chartAt (H := ℂ) y).right_inv hw_target]
+    -- Chain rule: deriv of composition = deriv(id) = 1.
+    have h_nonzero : deriv (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) ≠ 0 := by
+      intro h_deriv_zero
+      have h_diff_outer : DifferentiableAt ℂ ((chartAt (H := ℂ) y) ∘ e.symm) (e y) :=
+        h_analytic_inv.differentiableAt
+      have h_diff_inner : DifferentiableAt ℂ (e ∘ (chartAt (H := ℂ) y).symm)
+          ((chartAt (H := ℂ) y) y) :=
+        h_analytic.differentiableAt
+      have h_comp_deriv := deriv_comp ((chartAt (H := ℂ) y) y)
+        (h_ey ▸ h_diff_outer) h_diff_inner
+      rw [h_comp_id.deriv_eq] at h_comp_deriv
+      rw [h_ey] at h_comp_deriv
+      rw [deriv_id] at h_comp_deriv
+      rw [h_deriv_zero, mul_zero] at h_comp_deriv
+      exact one_ne_zero h_comp_deriv
     exact meromorphicOrderAt_comp_of_deriv_ne_zero
       (g := e ∘ (chartAt (H := ℂ) y).symm) (f := f.toFun ∘ e.symm)
       (x := (chartAt (H := ℂ) y) y)
-      h_analytic
-      (sorry : deriv (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) ≠ 0)
+      h_analytic h_nonzero
   -- Assemble.
   rw [h_comp_ord.symm]
   exact h_ord_congr.symm
