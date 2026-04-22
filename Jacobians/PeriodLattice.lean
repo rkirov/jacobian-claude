@@ -748,20 +748,42 @@ theorem isClosed_criticalSet (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) �
         (TangentSpace 𝓘(ℂ, ℂ) (M := Y))
         x₀ x (f x₀) (f x) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x)) x₀ :=
       hmf.continuousAt
-    -- Key fact: for x in both trivialization baseSets, inCoordinates(L) = 0 ↔ L = 0
-    -- because trivializations compose as bijections on fibers.
-    -- Proof direction used here: L ≠ 0 → inCoordinates(L) ≠ 0 (at basepoint, this
-    -- is a concrete nonzero value; by continuity, nonzero in a nbhd; in that nbhd,
-    -- L = mfderiv f x must be nonzero by the iff).
-    --
-    -- Concretely: inCoordinates(L) = continuousLinearMapAt Y(f x) ∘ L ∘ symmL X(x).
-    -- If this composition is 0 and trivialization factors are bijections on the
-    -- fiber at x (baseSet condition), then L = 0. Contrapositive gives L ≠ 0.
-    --
-    -- The outer structure (continuity + nbhd extraction) is real; the iff inside
-    -- requires  `Trivialization.symmL_continuousLinearMapAt` style compositions
-    -- at x = x₀ specifically. Remaining: ~20 lines of trivialization composition.
-    sorry
+    -- Key observation: mfderiv f x₀ ≠ 0 implies inCoordinates(mfderiv f x₀) ≠ 0,
+    -- because inCoordinates is conjugation by bijective trivializations.
+    -- Rather than proving the full iff, use the contrapositive inline:
+    -- if inCoordinates(mfderiv f x) = 0, then mfderiv f x = 0 (bijection).
+    have hbase_X : (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet ∈ 𝓝 x₀ :=
+      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).open_baseSet.mem_nhds
+        (mem_baseSet_trivializationAt ℂ _ x₀)
+    have hbase_Y : f ⁻¹' (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (f x₀)).baseSet ∈ 𝓝 x₀ :=
+      hf.continuous.continuousAt.preimage_mem_nhds
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (f x₀)).open_baseSet.mem_nhds
+          (mem_baseSet_trivializationAt ℂ _ (f x₀)))
+    -- At x₀, inCoordinates ≠ 0 (mfderiv ≠ 0 + trivialization bijection).
+    -- Key tactic: conjugate out the trivialization factors.
+    have hinCoord_ne_x₀ : ContinuousLinearMap.inCoordinates ℂ
+        (TangentSpace 𝓘(ℂ, ℂ) (M := X)) ℂ
+        (TangentSpace 𝓘(ℂ, ℂ) (M := Y))
+        x₀ x₀ (f x₀) (f x₀) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x₀) ≠ 0 := by
+      intro h
+      apply hx₀
+      -- From h: continuousLinearMapAt (triv Y) (f x₀) ∘ mfderiv f x₀ ∘ symmL (triv X) x₀ = 0.
+      -- Need: mfderiv f x₀ = 0.
+      -- Compose with the inverses on both sides.
+      ext v
+      -- Show (mfderiv f x₀) v = 0.
+      sorry
+    -- By continuity, inCoordinates ≠ 0 in a nbhd.
+    have hnbhd : (fun x => ContinuousLinearMap.inCoordinates ℂ
+        (TangentSpace 𝓘(ℂ, ℂ) (M := X)) ℂ
+        (TangentSpace 𝓘(ℂ, ℂ) (M := Y))
+        x₀ x (f x₀) (f x) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x)) ⁻¹' {0}ᶜ ∈ 𝓝 x₀ :=
+      hcont.preimage_mem_nhds (isOpen_compl_singleton.mem_nhds hinCoord_ne_x₀)
+    -- Pull back: inCoordinates ≠ 0 → mfderiv ≠ 0 (composition with 0 = 0).
+    filter_upwards [hnbhd] with x hx hmf_zero
+    apply hx
+    simp [ContinuousLinearMap.inCoordinates, hmf_zero,
+      ContinuousLinearMap.comp_zero, ContinuousLinearMap.zero_comp]
   · -- Set equality: complement of "mfderiv f x 1 = 0" = "mfderiv f x ≠ 0".
     ext x
     simp only [Set.mem_compl_iff, Set.mem_preimage, Set.mem_singleton_iff, Set.mem_setOf_eq]
