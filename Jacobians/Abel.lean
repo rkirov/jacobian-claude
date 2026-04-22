@@ -126,11 +126,23 @@ theorem twoPointDivisor_mem_degZero (P Q : X) :
 theorem twoPointDivisor_self (P : X) : twoPointDivisor X P P = 0 := by
   simp [twoPointDivisor]
 
-/-- The divisor of a meromorphic function (classical: zeros minus
-poles, counted with multiplicity). Content sorry — needs order-at-a-point
-theory via `meromorphicOrderAt`. -/
+/-- The divisor of a meromorphic function: classical construction
+`div f = (zeros of f) - (poles of f)` with multiplicities via
+`meromorphicOrderAt`.
+
+**Current implementation**: placeholder `div f := 0` (trivially
+finitely-supported). A real implementation requires:
+1. For each point `x`, compute `meromorphicOrderAt (f ∘ chart⁻¹) (chart x)`
+   and cast to ℤ via `.untop₀`.
+2. Prove the order function is finitely supported on compact `X`
+   (classical: zeros of a nonzero meromorphic function are isolated;
+   a compact space has finitely many isolated points per chart).
+
+With the placeholder, `PrincipalDivisors X = {0}`, making
+`HasAbelsTheorem` unsatisfiable for positive-genus surfaces (same as
+`abelJacobi ≡ 0`). Real instances require real divisor theory. -/
 noncomputable def MeromorphicFunction.div (_f : MeromorphicFunction X) : Divisor X :=
-  sorry
+  0
 
 /-- The principal divisors: image of `div`. Classical fact:
 every principal divisor has degree 0, so this sits inside
