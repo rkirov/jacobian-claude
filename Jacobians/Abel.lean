@@ -188,8 +188,23 @@ noncomputable def MeromorphicFunction.orderLocallyFinsupp (f : MeromorphicFuncti
   supportWithinDomain' := Set.subset_univ _
   supportLocallyFiniteWithinDomain' := by
     intro z _
-    -- Content sorry: around each z, only finitely many points have
-    -- nonzero order. Follows from chart-level isolation of zeros/poles.
+    -- **Proof sketch** (content sorry). Around each `z ∈ X`:
+    -- 1. `f.meromorphic z` gives `MeromorphicAt (f ∘ chart_z.symm) (chart_z z)`.
+    -- 2. `MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero` yields:
+    --    Case A (f ≡ 0 near z in chart_z.symm coords):
+    --      Then in a pointed neighborhood, the chart pullback is 0.
+    --      By `.untop₀ ⊤ = 0`, order is 0 there.
+    --      Support ∩ nbhd ⊆ {z}.
+    --    Case B (f ≠ 0 near z in chart_z.symm coords):
+    --      In a pointed neighborhood, f is nonzero meromorphic ⇒ order is 0
+    --      (regular nonzero values have meromorphicOrderAt = 0).
+    --      Support ∩ nbhd ⊆ {z}.
+    -- 3. **Bridge to `orderAtPoint f y`**: `orderAtPoint` uses `chart_y`,
+    --    not `chart_z`. Requires chart-invariance of `meromorphicOrderAt`
+    --    via `meromorphicOrderAt_comp_of_deriv_ne_zero` applied to the
+    --    chart-transition biholomorphism `chart_z ∘ chart_y.symm`. This
+    --    is the nontrivial step (~50–100 lines).
+    -- 4. Conclude: ∃ t ∈ 𝓝 z, t ∩ support ⊆ {z} finite.
     sorry
 
 /-- **Real divisor of a meromorphic function**. Uses the
