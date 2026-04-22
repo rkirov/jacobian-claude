@@ -1,10 +1,10 @@
 # Project status (auto-maintained)
 
-## Abel–Jacobi: Phase 1 skeleton complete (latest)
+## Abel–Jacobi: Phase 1b fully proven; only 1c remains (latest)
 
-All Phase 1 statements are declared; 2 proof bodies remain as sorry.
-Downstream Phase 2+ code can now invoke the full Phase 1 API with
-explicit hypotheses.
+Phase 1a + 1b (linearity + reversal + concatenation) are all fully
+proven. Only 1c (chart-local path independence via Cauchy) remains
+as a single sorry.
 
 **Phase 1a — Vector line integral** (`LineIntegral.lean`):
 - ✅ `lineIntegralVec`, `lineIntegralVec_apply`.
@@ -15,10 +15,9 @@ explicit hypotheses.
   operations + `intervalIntegral` linearity).
 - ✅ `reverse γ`, `pathSpeed_reverse`, `lineIntegral_reverse`
   (chain rule on `(1-·)` + `intervalIntegral.integral_comp_sub_left`).
-- 🔶 `concat γ γ'`, `concat_apply_{left,right}`, `lineIntegral_concat`
-  (statement + definition landed; proof body sorry — ~80 lines of
-  piecewise chain rule + `smul_integral_comp_mul_add`-style
-  reparametrization on each half).
+- ✅ `concat γ γ'`, `pathSpeed_concat_{left,right}`, `lineIntegral_concat`
+  (chain rule on `(2·)` / `(2·-1)` + `smul_integral_comp_mul_add/sub`
+  reparametrization per half + split at 1/2).
 
 **Phase 1c — Chart-local path independence** (`LineIntegral.lean`):
 - 🔶 `lineIntegral_eq_of_chart_local` (statement landed; proof body
