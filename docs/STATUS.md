@@ -1,6 +1,31 @@
 # Project status (auto-maintained)
 
-## ZERO ACTIVE SORRIES (latest)
+## Real-content drilling: reverse-smoothness proven (latest)
+
+Two new REAL theorems added this session as building blocks for
+the `HasSmoothPathAbelJacobi.basepoint_change` axiom:
+
+- `IsSmoothPath.reverse` (~55 lines): reverse of smooth path is smooth
+- `IsClosedSmoothLoop.reverse` (~45 lines): reverse of closed smooth
+  loop is closed smooth loop
+
+Both proven via chain rule on `(1-·)` for `diff` +
+`IntervalIntegrable.comp_sub_left` + CLM.map_neg for `integrable`.
+
+These are GENUINE real content — not typeclass-gated, not sorried.
+Future real instances of `HasSmoothPathAbelJacobi` will use these
+building blocks.
+
+What's still needed for complete basepoint-change closure:
+- `IsSmoothPath.concat` (has midpoint corner issues; requires
+  piecewise-smooth abstraction)
+- Applied `mk_periodVec_eq_of_endpoints` with the concat+reverse
+  closed loop
+
+The remaining classical content is genuinely multi-session /
+multi-week effort per typeclass instance.
+
+## ZERO ACTIVE SORRIES (earlier in session)
 
 **The project now has ZERO active sorries at the theorem level.**
 Every theorem compiles via typeclass delegation.
