@@ -245,16 +245,80 @@ theorem MeromorphicFunction.orderAtPoint_eq_zero_of_eventually_zero
 variable {X} in
 /-- **Lemma B** (Mathlib-missing): chart-invariance of the order.
 The order computed via an arbitrary chart `e` matches `orderAtPoint`
-(computed via `chart_y`). Sorry'd; follows from
-`meromorphicOrderAt_comp_of_deriv_ne_zero` applied to the chart
-transition `chart_y ∘ e.symm` (analytic with nonzero derivative by
-`IsManifold 𝓘(ℂ) ω`). -/
+(computed via `chart_y`).
+
+Proof outline (Forster §6):
+1. Show `f ∘ chart_y.symm =ᶠ (f ∘ e.symm) ∘ (e ∘ chart_y.symm)` in a
+   pointed nbhd of `chart_y y`, using `e.left_inv` on points where
+   `chart_y.symm w ∈ e.source` (guaranteed by continuity of
+   `chart_y.symm` + openness of `e.source`).
+2. Apply `meromorphicOrderAt_congr` to turn LHS into the composition.
+3. Apply `meromorphicOrderAt_comp_of_deriv_ne_zero` with
+   `g := e ∘ chart_y.symm` analytic at `chart_y y` with nonzero
+   derivative (both from `IsManifold 𝓘(ℂ) ω` — chart transitions
+   are biholomorphic).
+
+**Currently sorry'd** — formalizing chart-transition analyticity
+(`g` analytic) + nonzero derivative on a ℂ-manifold requires
+~50-100 lines of manifold + Mathlib bridging. -/
 theorem MeromorphicFunction.orderAtPoint_chart_invariant
     (f : MeromorphicFunction X) {y : X}
-    (e : OpenPartialHomeomorph X ℂ) (_he : e ∈ atlas ℂ X) (_hy : y ∈ e.source) :
+    (e : OpenPartialHomeomorph X ℂ) (_he : e ∈ atlas ℂ X) (hy : y ∈ e.source) :
     (meromorphicOrderAt (f.toFun ∘ e.symm) (e y)).untop₀ =
-      f.orderAtPoint y :=
-  sorry
+      f.orderAtPoint y := by
+  suffices h : meromorphicOrderAt (f.toFun ∘ e.symm) (e y) =
+      meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) by
+    show (meromorphicOrderAt (f.toFun ∘ e.symm) (e y)).untop₀ = _
+    rw [h]
+    rfl
+  -- Step 1: `chart_y.symm w ∈ e.source` for w near `chart_y y`.
+  have h_y_eq : (chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y) = y :=
+    (chartAt (H := ℂ) y).left_inv (mem_chart_source ℂ y)
+  have h_cont_symm : ContinuousAt (chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y) :=
+    (chartAt (H := ℂ) y).continuousAt_symm
+      ((chartAt (H := ℂ) y).map_source (mem_chart_source ℂ y))
+  have h_source : ∀ᶠ w in 𝓝 ((chartAt (H := ℂ) y) y),
+      (chartAt (H := ℂ) y).symm w ∈ e.source := by
+    have : ∀ᶠ w in 𝓝 ((chartAt (H := ℂ) y) y),
+        (chartAt (H := ℂ) y).symm w ∈ e.source := by
+      have h1 : (chartAt (H := ℂ) y).symm ⁻¹' e.source ∈ 𝓝 ((chartAt (H := ℂ) y) y) := by
+        apply h_cont_symm.preimage_mem_nhds
+        rw [h_y_eq]
+        exact e.open_source.mem_nhds hy
+      exact h1
+    exact this
+  -- Step 2: eventual equality of chart pullbacks.
+  have h_eq : (f.toFun ∘ (chartAt (H := ℂ) y).symm) =ᶠ[𝓝 ((chartAt (H := ℂ) y) y)]
+      (f.toFun ∘ e.symm) ∘ (e ∘ (chartAt (H := ℂ) y).symm) := by
+    filter_upwards [h_source] with w hw
+    show f.toFun ((chartAt (H := ℂ) y).symm w) =
+      f.toFun (e.symm (e ((chartAt (H := ℂ) y).symm w)))
+    rw [e.left_inv hw]
+  -- Step 3: apply congr to get meromorphicOrderAt equality via composition.
+  have h_ord_congr : meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) y).symm)
+      ((chartAt (H := ℂ) y) y) =
+      meromorphicOrderAt ((f.toFun ∘ e.symm) ∘ (e ∘ (chartAt (H := ℂ) y).symm))
+        ((chartAt (H := ℂ) y) y) :=
+    meromorphicOrderAt_congr (h_eq.filter_mono nhdsWithin_le_nhds)
+  -- Step 4: `e ∘ chart_y.symm` evaluated at `chart_y y` equals `e y`.
+  have h_ey : (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) = e y := by
+    show e ((chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y)) = e y
+    rw [h_y_eq]
+  -- Step 5: apply `meromorphicOrderAt_comp_of_deriv_ne_zero` to reduce composition.
+  have h_comp_ord : meromorphicOrderAt ((f.toFun ∘ e.symm) ∘ (e ∘ (chartAt (H := ℂ) y).symm))
+      ((chartAt (H := ℂ) y) y) =
+      meromorphicOrderAt (f.toFun ∘ e.symm) (e y) := by
+    rw [show meromorphicOrderAt (f.toFun ∘ e.symm) (e y) =
+      meromorphicOrderAt (f.toFun ∘ e.symm) ((e ∘ (chartAt (H := ℂ) y).symm)
+        ((chartAt (H := ℂ) y) y)) by rw [h_ey]]
+    exact meromorphicOrderAt_comp_of_deriv_ne_zero
+      (g := e ∘ (chartAt (H := ℂ) y).symm) (f := f.toFun ∘ e.symm)
+      (x := (chartAt (H := ℂ) y) y)
+      (by sorry : AnalyticAt ℂ (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y))
+      (by sorry : deriv (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) ≠ 0)
+  -- Assemble.
+  rw [h_comp_ord.symm]
+  exact h_ord_congr.symm
 
 variable {X} in
 /-- **Isolation of zeros/poles** around a point (Forster §6 /
