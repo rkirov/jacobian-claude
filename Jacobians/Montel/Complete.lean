@@ -860,18 +860,56 @@ theorem contMDiffOn_totalSpaceMk_L_inner
       (fun y : X => L y (e.symmL ℂ y 1))
       (innerChartOpen (X := X) x₀) :=
     contMDiffOn_limit_inner αs L hL hx₀ g hg
-  -- Goal: ContMDiffOn for the Hom-bundle section.
-  -- Via `contMDiffWithinAt_hom_bundle`:
-  --   section smooth ↔ projection smooth ∧ inCoordinates smooth.
+  -- Use the Hom-bundle trivialization centered at our chart center x₀.
+  set eHom := trivializationAt (ℂ →L[ℂ] ℂ)
+    (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) x₀ with heHom_def
+  -- innerChartOpen x₀ ⊆ eHom.baseSet (= Tangent baseSet ∩ Trivial baseSet = chart source ∩ univ).
+  have h_inner_sub_hom : innerChartOpen (X := X) x₀ ⊆ eHom.baseSet := by
+    intro y hy
+    rw [heHom_def, hom_trivializationAt_baseSet]
+    refine ⟨?_tangent, Set.mem_univ _⟩
+    rw [TangentBundle.trivializationAt_baseSet]
+    exact innerChartOpen_subset_source x₀ hx₀ hy
+  -- Reduce section smoothness to coordinate-function smoothness via the iff.
   intro y₀ hy₀
-  rw [contMDiffWithinAt_hom_bundle]
-  refine ⟨?_proj, ?_incoords⟩
-  · -- Projection smoothness: (fun y => (TotalSpace.mk' _ y (L y)).1) = id.
-    exact contMDiffWithinAt_id
-  · -- inCoordinates smoothness — the hard piece.
-    -- For our bundle (Trivial target, TangentSpace source), inCoordinates
-    -- collapses to a scalar-multiplied identity CLM on ℂ →L[ℂ] ℂ.
-    sorry
+  rw [Trivialization.contMDiffWithinAt_section _ (h_inner_sub_hom hy₀)]
+  -- Goal: ContMDiffWithinAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ω
+  --   (fun x => (eHom ⟨x, L x⟩).2) (innerChartOpen x₀) y₀
+  -- By hom_trivializationAt_apply, (eHom ⟨x, L x⟩).2 = inCoordinates ... x₀ x x₀ x (L x).
+  -- Via `inCoordinates` definition + `Bundle.Trivial.continuousLinearMapAt_trivialization = id` +
+  -- `id.comp f = f`, this simplifies to `(L x).comp (e.symmL ℂ x) : ℂ →L[ℂ] ℂ`.
+  -- By 1-dim scalar action, this equals `(L x (e.symmL ℂ x 1)) • (ContinuousLinearMap.id ℂ ℂ)`.
+  -- Smoothness then follows from substep 3 + ContMDiffWithinAt.smul const.
+  have h_simpl : ∀ y ∈ innerChartOpen (X := X) x₀,
+      (eHom (TotalSpace.mk' (ℂ →L[ℂ] ℂ) y (L y))).2 =
+        (L y (e.symmL ℂ y 1)) • (ContinuousLinearMap.id ℂ ℂ) := by
+    intro y hy
+    rw [heHom_def]
+    -- Unfold via hom_trivializationAt_apply.
+    rw [hom_trivializationAt_apply]
+    -- Now LHS: inCoordinates ℂ TangentSpace ℂ (Trivial X ℂ) x₀ y x₀ y (L y).
+    -- Prove pointwise equality directly.
+    apply ContinuousLinearMap.ext
+    intro v
+    -- Unfold inCoordinates and simplify Trivial's continuousLinearMapAt via rw.
+    have h_triv_id : Trivialization.continuousLinearMapAt ℂ
+        (trivializationAt ℂ (Bundle.Trivial X ℂ) x₀) y = ContinuousLinearMap.id ℂ ℂ :=
+      Bundle.Trivial.continuousLinearMapAt_trivialization ℂ X ℂ y
+    simp only [ContinuousLinearMap.inCoordinates, ContinuousLinearMap.coe_comp',
+               Function.comp_apply, h_triv_id, ContinuousLinearMap.id_apply,
+               ContinuousLinearMap.smul_apply]
+    -- Goal: L y (e.symmL y v) = (L y (e.symmL y 1)) • v.
+    have hv : (v : ℂ) = v • (1 : ℂ) := by rw [smul_eq_mul, mul_one]
+    conv_lhs => rw [hv, (e.symmL ℂ y).map_smul]
+    rw [(L y).map_smul]
+    simp only [smul_eq_mul]
+    ring
+  -- Use congr_of_eventuallyEq via ContMDiffWithinAt.congr with the h_simpl equality.
+  have h_smul_smooth : ContMDiffWithinAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ω
+      (fun y : X => (L y (e.symmL ℂ y 1)) • (ContinuousLinearMap.id ℂ ℂ))
+      (innerChartOpen (X := X) x₀) y₀ :=
+    (h_scalar y₀ hy₀).smul contMDiffWithinAt_const
+  exact h_smul_smooth.congr (fun y hy => h_simpl y hy) (h_simpl y₀ hy₀)
 
 /-! ### Remaining steps (DEFERRED)
 
