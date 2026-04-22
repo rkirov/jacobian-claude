@@ -150,6 +150,31 @@ every principal divisor has degree 0, so this sits inside
 noncomputable def PrincipalDivisors : AddSubgroup (Divisor X) :=
   AddSubgroup.closure (Set.range (MeromorphicFunction.div X))
 
+/-- The zero function is trivially meromorphic: chart pullbacks of
+constant functions are constant, hence meromorphic. -/
+theorem IsMeromorphic.zero : IsMeromorphic X (fun _ => 0) := by
+  intro x
+  show MeromorphicAt (fun _ => (0 : ℂ)) ((chartAt (H := ℂ) x) x)
+  exact MeromorphicAt.const 0 _
+
+/-- With the current placeholder `MeromorphicFunction.div ≡ 0`, the
+principal divisors collapse to the trivial subgroup `{0}`. This is
+consistent with `abelJacobi ≡ 0`: at the placeholder level,
+`HasAbelsTheorem` reduces to "every degree-0 divisor equals 0",
+which is false for positive-genus surfaces (reflecting that real
+instances require real `ofCurve`). -/
+theorem PrincipalDivisors_eq_bot : PrincipalDivisors X = ⊥ := by
+  show AddSubgroup.closure (Set.range (MeromorphicFunction.div X)) = ⊥
+  have h_range : Set.range (MeromorphicFunction.div X) = {0} := by
+    ext d
+    simp only [Set.mem_range, Set.mem_singleton_iff]
+    constructor
+    · rintro ⟨f, rfl⟩
+      rfl
+    · rintro rfl
+      exact ⟨⟨fun _ => 0, IsMeromorphic.zero X⟩, rfl⟩
+  rw [h_range, AddSubgroup.closure_singleton_zero]
+
 /-! ### Abel–Jacobi map (on divisors of degree 0)
 
 For a divisor `D = ∑ n_i · P_i` with `∑ n_i = 0`, the Abel–Jacobi
