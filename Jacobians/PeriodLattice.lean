@@ -83,6 +83,59 @@ theorem periodVec_mem_truePeriodLattice_of_closed (γ : ℝ → X) (hγ : γ 0 =
     periodVec γ ∈ truePeriodLattice X :=
   Submodule.subset_span ⟨γ, hγ, rfl⟩
 
+/-! ### Abel–Jacobi well-definedness (classical, Abel 1826)
+
+Two paths with the same endpoints yield period vectors that differ
+by a period-lattice element. The classical proof uses `γ₁` followed
+by `reverse γ₂` to form a closed loop; its period vector is
+`periodVec γ₁ - periodVec γ₂`, manifestly in the lattice.
+
+The smoothness content is packed into the `hconcat` hypothesis:
+`periodVec (concat γ₁ (reverse γ₂)) = periodVec γ₁ - periodVec γ₂`.
+This single equation encodes the output of Phase 1 reversal and
+concatenation identities (which individually carry differentiability /
+integrability hypotheses). Downstream callers who have smooth γ can
+derive `hconcat` from Phase 1 lemmas; callers working abstractly can
+just pass it in. -/
+
+/-- **Abel–Jacobi well-definedness (lattice form).** If two paths
+share endpoints, their period vectors differ by a lattice element. -/
+theorem periodVec_sub_mem_truePeriodLattice
+    (γ₁ γ₂ : ℝ → X) (h0 : γ₁ 0 = γ₂ 0)
+    (hconcat : periodVec (concat γ₁ (reverse γ₂)) =
+      periodVec γ₁ - periodVec γ₂) :
+    periodVec γ₁ - periodVec γ₂ ∈ truePeriodLattice X := by
+  rw [← hconcat]
+  refine periodVec_mem_truePeriodLattice_of_closed _ ?_
+  -- (concat γ₁ (reverse γ₂)) 0 = γ₁ 0 = γ₂ 0 = (reverse γ₂) 1 = (concat γ₁ (reverse γ₂)) 1
+  -- at t = 0: 0 ≤ 1/2, so concat... 0 = γ₁ (2 * 0) = γ₁ 0.
+  -- at t = 1: ¬(1 ≤ 1/2), so concat... 1 = (reverse γ₂)(2 * 1 - 1) = (reverse γ₂) 1 = γ₂ (1-1) = γ₂ 0.
+  show (concat γ₁ (reverse γ₂)) 0 = (concat γ₁ (reverse γ₂)) 1
+  rw [concat_apply_left _ _ (by norm_num : (0 : ℝ) ≤ 1/2),
+      concat_apply_right _ _ (by norm_num : ¬ (1 : ℝ) ≤ 1/2)]
+  simp only [reverse_apply, mul_zero]
+  have h1 : (1 : ℝ) - (2 * 1 - 1) = 0 := by norm_num
+  rw [h1, h0]
+
+/-- **Abel–Jacobi well-definedness (quotient form).** Two paths
+sharing both endpoints map to the same element of
+`(Fin (genus X) → ℂ) ⧸ truePeriodLattice X`. -/
+theorem mk_periodVec_eq_of_endpoints
+    (γ₁ γ₂ : ℝ → X) (h0 : γ₁ 0 = γ₂ 0)
+    (hconcat : periodVec (concat γ₁ (reverse γ₂)) =
+      periodVec γ₁ - periodVec γ₂) :
+    (QuotientAddGroup.mk (periodVec γ₁) :
+      (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
+      QuotientAddGroup.mk (periodVec γ₂) := by
+  rw [QuotientAddGroup.eq]
+  -- Goal: -periodVec γ₁ + periodVec γ₂ ∈ (truePeriodLattice X).toAddSubgroup
+  -- We have periodVec γ₁ - periodVec γ₂ ∈ truePeriodLattice X.
+  -- By negation closure: -(periodVec γ₁ - periodVec γ₂) = -periodVec γ₁ + periodVec γ₂ ∈ lattice.
+  have h := periodVec_sub_mem_truePeriodLattice γ₁ γ₂ h0 hconcat
+  have : -periodVec γ₁ + periodVec γ₂ = -(periodVec γ₁ - periodVec γ₂) := by ring
+  rw [this]
+  exact (truePeriodLattice X).neg_mem h
+
 /-! ### Phase 4 support: change of variables under smooth maps
 
 For `f : X → Y` smooth and `γ : ℝ → X` a path, the period vector of
