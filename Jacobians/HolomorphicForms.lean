@@ -229,20 +229,17 @@ variable {X Y : Type*}
 /-- **Placeholder**: pushforward of holomorphic 1-forms under a proper
 holomorphic map. The real definition (Forster §10 trace / residue
 construction) requires degree theory — see Forster §4 for proper maps
-and §10.11 for the trace of forms. Defined here as the zero map, which
-is consistent with `ContMDiff.degree := 0` (the challenge's
-`ContMDiff.degree` placeholder) for the headline identity
-`pushforwardForm ∘ pullbackForm = d • id` in the `d = 0` case. -/
+and §10.11 for the trace of forms. Defined here as the zero map,
+consistent with `ContMDiff.degree := 0` for the degree identity in
+the `d = 0` case. Real instances are Mathlib-contribution-scale. -/
 noncomputable def pushforwardForm (_f : X → Y) (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω _f) :
     HolomorphicOneForms X →ₗ[ℂ] HolomorphicOneForms Y := 0
 
 /-- Placeholder form of the headline identity `f_* ∘ f^* = deg(f) • id`.
 
-With `pushforwardForm := 0` the LHS is zero; consistent with the
-`ContMDiff.degree := 0` challenge placeholder, the RHS is also zero.
-The real theorem — that the composition equals multiplication by the
-proper-map degree — requires content (Forster §17 residue theorem,
-§11 degree counting). -/
+With `pushforwardForm := 0` and `ContMDiff.degree := 0`, both sides
+are zero. Real theorem requires real `pushforwardForm` + real
+`degree` + residue-theorem content. -/
 theorem pushforwardForm_pullbackForm_eq_zero (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (P : HolomorphicOneForms Y) :
     pushforwardForm f hf (pullbackForm f hf P) = 0 := by

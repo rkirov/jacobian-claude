@@ -365,15 +365,15 @@ lemma pullback_comp_apply [Jacobians.HasBranchedCoverContent X Y]
     congr 1
     exact Jacobians.ambientPsi_comp f hf g hg (hg.comp hf) z
 
-/-- The degree of a holomorphic map between compact Riemann surfaces. Equal to zero
-for constant maps, otherwise equal to the usual degree.
+/-- The degree of a holomorphic map between compact Riemann surfaces.
+Equal to zero for constant maps, otherwise equal to the usual
+degree (# preimages of a regular value, Forster §4).
 
-Placeholder definition: returns `0` always. TODO(math): replace with
-counting-of-preimages-of-a-regular-value. The Lean-level statement
-`pushforward_pullback = deg • id` still holds with `deg = 0` because
-the content-level identity `ambientPhi_ambientPsi_eq` is sorried;
-when content is filled in, both `ContMDiff.degree` and
-`ambientPhi_ambientPsi_eq` must be consistent. -/
+**Placeholder**: returns `0` always. Real content requires
+regular-value theory + preimage counting — Mathlib-contribution-scale.
+Coupled with `pushforwardForm := 0` placeholder: both must be real
+for the degree identity `pushforwardForm ∘ pullbackForm = deg • id`
+to hold nontrivially. -/
 def _root_.ContMDiff.degree (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ := 0
 
 lemma pushforward_pullback [Jacobians.HasAmbientDegreeIdentity X Y]
