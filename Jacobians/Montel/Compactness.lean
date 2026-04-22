@@ -437,6 +437,44 @@ theorem chart_image_chartOpen_subset_target (x₀ : X) (hx₀ : x₀ ∈ (chartC
   obtain ⟨y, hy, rfl⟩ := hz
   exact (chartAt ℂ x₀).map_source (chartOpen_subset_source x₀ hx₀ hy)
 
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+/-- `innerChartOpen x₀ ⊆ (chartAt ℂ x₀).source` for `x₀ ∈ chartCover`.
+`innerChartOpen ⊆ closure(innerChartOpen) ⊆ chartOpen ⊆ chartAt source`. -/
+theorem innerChartOpen_subset_source
+    (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    innerChartOpen (X := X) x₀ ⊆ (chartAt ℂ x₀).source :=
+  (subset_closure.trans (closure_innerChartOpen_subset_chartOpen x₀)).trans
+    (chartOpen_subset_source x₀ hx₀)
+
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+/-- The chart image of `innerChartOpen x₀` is open in `ℂ`. -/
+theorem isOpen_chart_image_innerChartOpen
+    (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    IsOpen ((chartAt ℂ x₀) '' innerChartOpen (X := X) x₀) := by
+  apply (chartAt ℂ x₀).isOpen_image_iff_of_subset_source
+    (innerChartOpen_subset_source x₀ hx₀) |>.mpr
+  exact innerChartOpen_isOpen x₀
+
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+/-- The chart image of `innerChartOpen x₀` sits inside the chart target. -/
+theorem chart_image_innerChartOpen_subset_target
+    (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    (chartAt ℂ x₀) '' innerChartOpen (X := X) x₀ ⊆ (chartAt ℂ x₀).target := by
+  intro z hz
+  obtain ⟨y, hy, rfl⟩ := hz
+  exact (chartAt ℂ x₀).map_source (innerChartOpen_subset_source x₀ hx₀ hy)
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- Pullback analyticity on the chart image of `innerChartOpen x₀`. -/
+theorem localRep_analyticOn_chart_image_innerChartOpen
+    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
+    AnalyticOn ℂ (fun z : ℂ => localRep α x₀ ((chartAt ℂ x₀).symm z))
+      ((chartAt ℂ x₀) '' innerChartOpen (X := X) x₀) :=
+  (localRep_analyticOn_chartTarget α x₀).mono
+    (chart_image_innerChartOpen_subset_target x₀ hx₀)
+
 omit [ConnectedSpace X] [Nonempty X] in
 /-- Pullback analyticity on the chart image of `chartOpen x₀`. Direct
 specialization of `localRep_analyticOn_chartTarget` via
