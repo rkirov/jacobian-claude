@@ -209,29 +209,187 @@ omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
 theorem concat_apply_right (γ γ' : ℝ → X) {t : ℝ} (ht : ¬ t ≤ 1/2) :
     concat γ γ' t = γ' (2 * t - 1) := if_neg ht
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] in
+/-- pathSpeed of `concat γ γ'` on the strict left half: equals
+`2 * pathSpeed γ (2t)` via chain rule on `γ ∘ (2·)`. -/
+theorem pathSpeed_concat_left (γ γ' : ℝ → X) (t : ℝ) (ht : t < 1/2)
+    (hdiff : DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (γ (2 * t))).toFun ∘ γ) (2 * t)) :
+    pathSpeed (concat γ γ') t = 2 * pathSpeed γ (2 * t) := by
+  unfold pathSpeed
+  -- concat γ γ' t = γ (2 * t) for t ≤ 1/2.
+  have ht_le : t ≤ 1/2 := le_of_lt ht
+  have h_pt : concat γ γ' t = γ (2 * t) := concat_apply_left γ γ' ht_le
+  show fderiv ℝ ((chartAt (H := ℂ) (concat γ γ' t)).toFun ∘ (concat γ γ')) t (1 : ℝ) =
+    2 * fderiv ℝ ((chartAt (H := ℂ) (γ (2 * t))).toFun ∘ γ) (2 * t) (1 : ℝ)
+  -- chartAt at concat γ γ' t = chartAt at γ(2t) via h_pt.
+  rw [h_pt]
+  -- In a neighborhood of t (t < 1/2), concat γ γ' s = γ (2*s). Use fderiv locality.
+  set ψ : ℝ → ℂ := (chartAt (H := ℂ) (γ (2 * t))).toFun ∘ γ with hψ
+  -- Claim: (chartAt ...).toFun ∘ (concat γ γ') = ψ ∘ (2·) in a nbhd of t.
+  have h_eventually : (chartAt (H := ℂ) (γ (2 * t))).toFun ∘ (concat γ γ') =ᶠ[nhds t]
+      ψ ∘ (fun s : ℝ => 2 * s) := by
+    have h_open : IsOpen (Set.Iio (1/2 : ℝ)) := isOpen_Iio
+    have ht_mem : t ∈ Set.Iio (1/2 : ℝ) := ht
+    filter_upwards [h_open.mem_nhds ht_mem] with s hs
+    simp only [Function.comp_apply, hψ]
+    rw [concat_apply_left γ γ' (le_of_lt hs)]
+  -- fderiv is local:
+  rw [Filter.EventuallyEq.fderiv_eq h_eventually]
+  -- Now apply chain rule to ψ ∘ (2·).
+  have h_mul_diff : DifferentiableAt ℝ (fun s : ℝ => 2 * s) t :=
+    (differentiableAt_const (2 : ℝ)).mul differentiableAt_id
+  rw [fderiv_comp t hdiff h_mul_diff]
+  -- fderiv (2·) t 1 = 2.
+  have h_fderiv_mul : fderiv ℝ (fun s : ℝ => 2 * s) t (1 : ℝ) = (2 : ℝ) := by
+    rw [fderiv_const_mul differentiableAt_id]; simp
+  show (fderiv ℝ ψ (2 * t)) (fderiv ℝ (fun s : ℝ => 2 * s) t 1) = 2 * fderiv ℝ ψ (2 * t) 1
+  rw [h_fderiv_mul]
+  -- (fderiv ℝ ψ (2t)) 2 = 2 * (fderiv ℝ ψ (2t)) 1 via ℝ-linearity on CLM.
+  have h_smul_eq : (2 : ℝ) = (2 : ℝ) • (1 : ℝ) := by rw [smul_eq_mul, mul_one]
+  calc (fderiv ℝ ψ (2 * t)) (2 : ℝ)
+      = (fderiv ℝ ψ (2 * t)) ((2 : ℝ) • (1 : ℝ)) := by rw [← h_smul_eq]
+    _ = (2 : ℝ) • (fderiv ℝ ψ (2 * t)) 1 :=
+        (fderiv ℝ ψ (2 * t)).map_smul (2 : ℝ) (1 : ℝ)
+    _ = 2 * (fderiv ℝ ψ (2 * t)) 1 := by rw [Complex.real_smul]; push_cast; ring
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] in
+/-- pathSpeed of `concat γ γ'` on the strict right half: equals
+`2 * pathSpeed γ' (2t - 1)` via chain rule on `γ' ∘ (2·-1)`. -/
+theorem pathSpeed_concat_right (γ γ' : ℝ → X) (t : ℝ) (ht : 1/2 < t)
+    (hdiff : DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (γ' (2 * t - 1))).toFun ∘ γ') (2 * t - 1)) :
+    pathSpeed (concat γ γ') t = 2 * pathSpeed γ' (2 * t - 1) := by
+  unfold pathSpeed
+  have ht_nle : ¬ t ≤ 1/2 := not_le.mpr ht
+  have h_pt : concat γ γ' t = γ' (2 * t - 1) := concat_apply_right γ γ' ht_nle
+  show fderiv ℝ ((chartAt (H := ℂ) (concat γ γ' t)).toFun ∘ (concat γ γ')) t (1 : ℝ) =
+    2 * fderiv ℝ ((chartAt (H := ℂ) (γ' (2 * t - 1))).toFun ∘ γ') (2 * t - 1) (1 : ℝ)
+  rw [h_pt]
+  set ψ' : ℝ → ℂ := (chartAt (H := ℂ) (γ' (2 * t - 1))).toFun ∘ γ' with hψ'
+  have h_eventually : (chartAt (H := ℂ) (γ' (2 * t - 1))).toFun ∘ (concat γ γ') =ᶠ[nhds t]
+      ψ' ∘ (fun s : ℝ => 2 * s - 1) := by
+    have h_open : IsOpen (Set.Ioi (1/2 : ℝ)) := isOpen_Ioi
+    have ht_mem : t ∈ Set.Ioi (1/2 : ℝ) := ht
+    filter_upwards [h_open.mem_nhds ht_mem] with s hs
+    simp only [Function.comp_apply, hψ']
+    rw [concat_apply_right γ γ' (not_le.mpr hs)]
+  rw [Filter.EventuallyEq.fderiv_eq h_eventually]
+  have h_sub_diff : DifferentiableAt ℝ (fun s : ℝ => 2 * s - 1) t :=
+    ((differentiableAt_const (2 : ℝ)).mul differentiableAt_id).sub (differentiableAt_const _)
+  rw [fderiv_comp t hdiff h_sub_diff]
+  have h_fderiv_sub_mul : fderiv ℝ (fun s : ℝ => 2 * s - 1) t (1 : ℝ) = (2 : ℝ) := by
+    rw [show (fun s : ℝ => 2 * s - 1) = (fun s : ℝ => 2 * s + (-1)) from by funext s; ring]
+    rw [fderiv_add_const, fderiv_const_mul differentiableAt_id]; simp
+  show (fderiv ℝ ψ' (2 * t - 1)) (fderiv ℝ (fun s : ℝ => 2 * s - 1) t 1) =
+    2 * fderiv ℝ ψ' (2 * t - 1) 1
+  rw [h_fderiv_sub_mul]
+  have h_smul_eq : (2 : ℝ) = (2 : ℝ) • (1 : ℝ) := by rw [smul_eq_mul, mul_one]
+  calc (fderiv ℝ ψ' (2 * t - 1)) (2 : ℝ)
+      = (fderiv ℝ ψ' (2 * t - 1)) ((2 : ℝ) • (1 : ℝ)) := by rw [← h_smul_eq]
+    _ = (2 : ℝ) • (fderiv ℝ ψ' (2 * t - 1)) 1 :=
+        (fderiv ℝ ψ' (2 * t - 1)).map_smul (2 : ℝ) (1 : ℝ)
+    _ = 2 * (fderiv ℝ ψ' (2 * t - 1)) 1 := by rw [Complex.real_smul]; push_cast; ring
+
+/-- Left half of the concat integral, reparametrized to `lineIntegral α γ`. -/
+private lemma lineIntegral_concat_left (α : HolomorphicOneForms X) (γ γ' : ℝ → X)
+    (_hint_γ : IntervalIntegrable
+      (fun u : ℝ => α.toFun (γ u) (pathSpeed γ u)) volume 0 1)
+    (h_ae : ∀ᵐ t ∂(volume.restrict (Set.uIoc (0 : ℝ) (1/2))),
+      α.toFun ((concat γ γ') t) (pathSpeed (concat γ γ') t) =
+        (2 : ℂ) * α.toFun (γ (2 * t)) (pathSpeed γ (2 * t))) :
+    ∫ t in (0 : ℝ)..(1/2), α.toFun ((concat γ γ') t) (pathSpeed (concat γ γ') t) =
+      lineIntegral α γ := by
+  unfold lineIntegral
+  -- Substitution u = 2x: smul_integral_comp_mul_add signature `c • ∫ x in a..b, f (c*x+d) = ...`.
+  -- With c = 2, d = 0, a = 0, b = 1/2: `2 • ∫ x in 0..(1/2), f (2*x+0) = ∫ in 0..1, f x`.
+  have h_sub_raw := @intervalIntegral.smul_integral_comp_mul_add _ _ _ (0 : ℝ) (1/2 : ℝ)
+    (fun u : ℝ => α.toFun (γ u) (pathSpeed γ u)) 2 0
+  -- Normalize: 2 * x + 0 → 2 * x, endpoints 0+2*0 → 0, 0+2*(1/2) → 1.
+  have h_sub : (2 : ℝ) • ∫ t in (0 : ℝ)..(1/2),
+      α.toFun (γ (2 * t)) (pathSpeed γ (2 * t)) =
+      ∫ t in (0 : ℝ)..1, α.toFun (γ t) (pathSpeed γ t) := by
+    have : (fun x : ℝ => α.toFun (γ (2 * x + 0)) (pathSpeed γ (2 * x + 0))) =
+        fun x : ℝ => α.toFun (γ (2 * x)) (pathSpeed γ (2 * x)) := by
+      funext x; rw [add_zero]
+    rw [this] at h_sub_raw
+    have h_endpt1 : (2 : ℝ) * 0 + 0 = 0 := by norm_num
+    have h_endpt2 : (2 : ℝ) * ((1 : ℝ)/2) + 0 = 1 := by norm_num
+    rw [h_endpt1, h_endpt2] at h_sub_raw
+    exact h_sub_raw
+  -- Convert ℝ-smul to ℂ-mul.
+  have h_sub_mul : (2 : ℂ) * ∫ t in (0 : ℝ)..(1/2),
+      α.toFun (γ (2 * t)) (pathSpeed γ (2 * t)) =
+      ∫ t in (0 : ℝ)..1, α.toFun (γ t) (pathSpeed γ t) := by
+    rw [← h_sub, Complex.real_smul]; push_cast; ring
+  calc ∫ t in (0 : ℝ)..(1/2), α.toFun ((concat γ γ') t) (pathSpeed (concat γ γ') t)
+      = ∫ t in (0 : ℝ)..(1/2),
+          (2 : ℂ) * α.toFun (γ (2 * t)) (pathSpeed γ (2 * t)) :=
+        intervalIntegral.integral_congr_ae_restrict h_ae
+    _ = (2 : ℂ) * ∫ t in (0 : ℝ)..(1/2),
+          α.toFun (γ (2 * t)) (pathSpeed γ (2 * t)) :=
+        intervalIntegral.integral_const_mul _ _
+    _ = ∫ t in (0 : ℝ)..1, α.toFun (γ t) (pathSpeed γ t) := h_sub_mul
+
+/-- Right half of the concat integral, reparametrized to `lineIntegral α γ'`. -/
+private lemma lineIntegral_concat_right (α : HolomorphicOneForms X) (γ γ' : ℝ → X)
+    (_hint_γ' : IntervalIntegrable
+      (fun u : ℝ => α.toFun (γ' u) (pathSpeed γ' u)) volume 0 1)
+    (h_ae : ∀ᵐ t ∂(volume.restrict (Set.uIoc ((1 : ℝ)/2) 1)),
+      α.toFun ((concat γ γ') t) (pathSpeed (concat γ γ') t) =
+        (2 : ℂ) * α.toFun (γ' (2 * t - 1)) (pathSpeed γ' (2 * t - 1))) :
+    ∫ t in ((1 : ℝ)/2)..1, α.toFun ((concat γ γ') t) (pathSpeed (concat γ γ') t) =
+      lineIntegral α γ' := by
+  unfold lineIntegral
+  -- Substitution u = 2x - 1.
+  have h_sub := @intervalIntegral.smul_integral_comp_mul_sub _ _ _ ((1 : ℝ)/2) 1
+    (fun u : ℝ => α.toFun (γ' u) (pathSpeed γ' u)) 2 1
+  simp only [Complex.real_smul] at h_sub
+  push_cast at h_sub
+  have h_endpt0 : ((2 : ℝ) * ((1 : ℝ)/2) - 1 : ℝ) = 0 := by norm_num
+  have h_endpt1 : ((2 : ℝ) * 1 - 1 : ℝ) = 1 := by norm_num
+  rw [h_endpt0, h_endpt1] at h_sub
+  calc ∫ t in ((1 : ℝ)/2)..1,
+        α.toFun ((concat γ γ') t) (pathSpeed (concat γ γ') t)
+      = ∫ t in ((1 : ℝ)/2)..1,
+          (2 : ℂ) * α.toFun (γ' (2 * t - 1)) (pathSpeed γ' (2 * t - 1)) :=
+        intervalIntegral.integral_congr_ae_restrict h_ae
+    _ = (2 : ℂ) * ∫ t in ((1 : ℝ)/2)..1,
+          α.toFun (γ' (2 * t - 1)) (pathSpeed γ' (2 * t - 1)) :=
+        intervalIntegral.integral_const_mul _ _
+    _ = ∫ t in (0 : ℝ)..1, α.toFun (γ' t) (pathSpeed γ' t) := h_sub
+
 /-- **Concatenation identity for the line integral.**
 `lineIntegral α (concat γ γ') = lineIntegral α γ + lineIntegral α γ'`
-assuming each half is smooth in the chart pullback and the matching
-conditions at `t = 1/2` hold.
-
-The proof splits the integral at `1/2`, reparametrizes each half via
-`u = 2t` (first half) and `u = 2t - 1` (second half), and applies the
-chain rule to the pathSpeed to absorb the reparametrization factor of
-`2`.
-
-**Remaining as substep**: piecewise-differentiability handling +
-`intervalIntegral.integral_comp_smul_left` variant; the proof is
-~80 lines of careful integral manipulation. Stating the identity
-with a sorry lets downstream code use it while the proof is factored
-out. -/
+assuming smoothness of each half in the chart pullback, the matching
+condition at `t = 1/2`, and integrability / pointwise identities
+expressing `pathSpeed (concat)` via the chain rule on each half. -/
 theorem lineIntegral_concat (α : HolomorphicOneForms X) (γ γ' : ℝ → X)
-    (_hγ : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t)
-    (_hγ' : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ' t)).toFun ∘ γ') t)
-    (_hmatch : γ 1 = γ' 0) :
+    (hint_γ : IntervalIntegrable
+      (fun u : ℝ => α.toFun (γ u) (pathSpeed γ u)) volume 0 1)
+    (hint_γ' : IntervalIntegrable
+      (fun u : ℝ => α.toFun (γ' u) (pathSpeed γ' u)) volume 0 1)
+    (hint_concat_left : IntervalIntegrable
+      (fun t : ℝ => α.toFun ((concat γ γ') t) (pathSpeed (concat γ γ') t))
+      volume 0 (1/2))
+    (hint_concat_right : IntervalIntegrable
+      (fun t : ℝ => α.toFun ((concat γ γ') t) (pathSpeed (concat γ γ') t))
+      volume (1/2) 1)
+    (h_ae_left : ∀ᵐ t ∂(volume.restrict (Set.uIoc (0 : ℝ) (1/2))),
+      α.toFun ((concat γ γ') t) (pathSpeed (concat γ γ') t) =
+        (2 : ℂ) * α.toFun (γ (2 * t)) (pathSpeed γ (2 * t)))
+    (h_ae_right : ∀ᵐ t ∂(volume.restrict (Set.uIoc ((1 : ℝ)/2) 1)),
+      α.toFun ((concat γ γ') t) (pathSpeed (concat γ γ') t) =
+        (2 : ℂ) * α.toFun (γ' (2 * t - 1)) (pathSpeed γ' (2 * t - 1))) :
     lineIntegral α (concat γ γ') = lineIntegral α γ + lineIntegral α γ' := by
-  sorry
+  have h_left := lineIntegral_concat_left α γ γ' hint_γ h_ae_left
+  have h_right := lineIntegral_concat_right α γ γ' hint_γ' h_ae_right
+  unfold lineIntegral
+  rw [← intervalIntegral.integral_add_adjacent_intervals hint_concat_left hint_concat_right]
+  unfold lineIntegral at h_left h_right
+  rw [h_left, h_right]
 
 /-! ### Phase 1c: chart-local path independence
 
