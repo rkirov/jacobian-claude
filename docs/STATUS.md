@@ -82,7 +82,7 @@ a math gap, a plumbing gap.
     specialized version of the analytic-limit lemma on
     `chart '' innerChartOpen x₀`.
 
-**Substep status (Path 2):**
+**Substep status (Path 2, after 2026-04-24 session):**
 
 - ✅ **Substep 1** — `tendstoLocallyUniformlyOn_pullback_on_innerChartOpen`:
   bcf-convergence on `innerShrunkChart x₀` → TendstoLocallyUniformlyOn
@@ -97,20 +97,24 @@ a math gap, a plumbing gap.
   Reverse of `localRep_analyticOn_chartTarget`, restricted to
   `innerChartOpen x₀`. Uses `contMDiffOn_iff_of_subset_source'`
   (cleaner than `contMDiffOn_iff`) + `contDiffOn_omega_iff_analyticOn.mpr`.
-- ⏳ **Substep 4** — Hom-bundle section smoothness from `contMDiffOn_limit_inner`.
-  Approach: use `contMDiffAt_hom_bundle` to reduce section smoothness
+- 🔶 **Substep 4** (skeleton only) — `contMDiffOn_totalSpaceMk_L_inner`:
+  theorem statement declared (signature matches substeps 1-3's parameter
+  list), body is `sorry`. Approach documented: use `contMDiffAt_hom_bundle`
+  iff (or `Trivialization.contMDiffOn_section_baseSet_iff`) to reduce
   to smoothness of (a) projection (trivial, identity map) and (b)
-  `inCoordinates F₁ E₁ F₂ E₂ x₀ x x₀ x (L x)` — an ℂ →L[ℂ] ℂ-valued
-  function. For our setup (ℂ-target Trivial bundle), `inCoordinates`
-  simplifies to "multiplication by `L x (e.symmL ℂ x 1)`", so
-  smoothness reduces to scalar smoothness from substep 3 via the CLE
-  `ℂ ≃L[ℂ] (ℂ →L[ℂ] ℂ)` (value at 1). ~50-80 lines.
+  `inCoordinates F₁ E₁ F₂ E₂ x₀ x x₀ x (L x)`. For `Bundle.Trivial X ℂ`
+  target, `continuousLinearMapAt_trivialization = id`, so `inCoordinates`
+  collapses to `c(y) • (ContinuousLinearMap.id ℂ ℂ)` where
+  `c(y) = L y (e.symmL ℂ y 1)` — the scalar from substep 3. The
+  CLE `c ↦ c • id` is itself a CLM (hence smooth), so composition of
+  smooth scalar with smooth CLM gives smooth CLM-valued function.
+  ~80-120 lines to fill in.
 - ⏳ **Substep 5** — Finite cover assembly. ContMDiffAt at each y₀ via
   picking x₀' ∈ chartCover with y₀ ∈ innerChartOpen x₀'
   (iUnion_innerChartOpen_chartCover_eq), then substep 4. ~20 lines.
 
-**Estimated remaining:** ~70-100 lines. Substep 4 is the last real
-content piece; substep 5 is plumbing.
+**Estimated remaining:** ~100-140 lines. Substep 4's `inCoordinates`
+simplification is the last real content piece; substep 5 is plumbing.
 
 ## Montel — Steps 5a + 5b + 5c + pointwise-limit (5d-partial) landed (prior)
 
