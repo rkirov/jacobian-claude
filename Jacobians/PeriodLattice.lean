@@ -748,12 +748,19 @@ theorem isClosed_criticalSet (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) �
         (TangentSpace 𝓘(ℂ, ℂ) (M := Y))
         x₀ x (f x₀) (f x) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x)) x₀ :=
       hmf.continuousAt
-    -- Remaining step: navigate `Trivialization.continuousLinearMapAt_symmL` etc.
-    -- to show: at x = x₀, inCoordinates(mfderiv f x₀) = mfderiv f x₀ (nonzero);
-    -- then by continuity, inCoordinates ≠ 0 in a nbhd; contrapositive of
-    -- mfderiv = 0 → inCoordinates = 0 gives mfderiv ≠ 0 in that nbhd.
-    -- The specific unfold needs `TangentBundle.continuousLinearMapAt_trivializationAt_eq_core`
-    -- + `coordChange_self_apply`, which is bounded but dense Mathlib bundle plumbing.
+    -- Key fact: for x in both trivialization baseSets, inCoordinates(L) = 0 ↔ L = 0
+    -- because trivializations compose as bijections on fibers.
+    -- Proof direction used here: L ≠ 0 → inCoordinates(L) ≠ 0 (at basepoint, this
+    -- is a concrete nonzero value; by continuity, nonzero in a nbhd; in that nbhd,
+    -- L = mfderiv f x must be nonzero by the iff).
+    --
+    -- Concretely: inCoordinates(L) = continuousLinearMapAt Y(f x) ∘ L ∘ symmL X(x).
+    -- If this composition is 0 and trivialization factors are bijections on the
+    -- fiber at x (baseSet condition), then L = 0. Contrapositive gives L ≠ 0.
+    --
+    -- The outer structure (continuity + nbhd extraction) is real; the iff inside
+    -- requires  `Trivialization.symmL_continuousLinearMapAt` style compositions
+    -- at x = x₀ specifically. Remaining: ~20 lines of trivialization composition.
     sorry
   · -- Set equality: complement of "mfderiv f x 1 = 0" = "mfderiv f x ≠ 0".
     ext x
