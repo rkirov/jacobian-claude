@@ -261,12 +261,24 @@ theorem HolomorphicOneForms.exists_convergent_subseq_of_bounded
   have h_cauchy := cauchy_supNormK_of_bcf_tendsto αs φ h_bcf
   -- Step 5d-limit: pointwise CLM limit `L y`.
   obtain ⟨L, hL⟩ := exists_toFun_limit (fun n : ℕ => αs (φ n)) h_cauchy
-  -- ** Step 5d-smooth (focused sorry) **: bundle-smoothness reconstruction.
+  -- Step 5d-smooth: bundle-smoothness reconstruction via substeps 1-5.
+  -- Substeps 1-3 + 4 (modulo inner inCoordinates sorry) handle the per-chart
+  -- smoothness; substep 5 below assembles via the finite cover.
   have h_smooth : ContMDiff 𝓘(ℂ, ℂ) (𝓘(ℂ, ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
       (fun x : X => TotalSpace.mk' (ℂ →L[ℂ] ℂ)
         (E := fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)
         x (L x)) := by
-    sorry
+    intro y
+    -- Find x₀' ∈ chartCover with y ∈ innerChartOpen x₀'.
+    have hmem : y ∈ (Set.univ : Set X) := Set.mem_univ _
+    rw [← iUnion_innerChartOpen_chartCover_eq (X := X)] at hmem
+    simp only [Set.mem_iUnion] at hmem
+    obtain ⟨x₀', hx₀'mem, hy_in⟩ := hmem
+    obtain ⟨g', hg'⟩ := h_bcf x₀' hx₀'mem
+    -- Substep 4 gives ContMDiffOn on innerChartOpen x₀'.
+    have h_on := contMDiffOn_totalSpaceMk_L_inner (fun n => αs (φ n)) L hL hx₀'mem g' hg'
+    -- Lift ContMDiffOn + interior point → ContMDiffAt.
+    exact (h_on y hy_in).contMDiffAt ((innerChartOpen_isOpen x₀').mem_nhds hy_in)
   -- Assemble αLim as a ContMDiffSection.
   let αLim : Jacobians.HolomorphicOneForms X := ⟨L, h_smooth⟩
   have hαLim_toFun : αLim.toFun = L := rfl

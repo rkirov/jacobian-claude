@@ -854,7 +854,24 @@ theorem contMDiffOn_totalSpaceMk_L_inner
         (E := fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)
         y (L y))
       (innerChartOpen (X := X) x₀) := by
-  sorry
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀ with he_def
+  -- Get scalar smoothness from substep 3.
+  have h_scalar : ContMDiffOn 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω
+      (fun y : X => L y (e.symmL ℂ y 1))
+      (innerChartOpen (X := X) x₀) :=
+    contMDiffOn_limit_inner αs L hL hx₀ g hg
+  -- Goal: ContMDiffOn for the Hom-bundle section.
+  -- Via `contMDiffWithinAt_hom_bundle`:
+  --   section smooth ↔ projection smooth ∧ inCoordinates smooth.
+  intro y₀ hy₀
+  rw [contMDiffWithinAt_hom_bundle]
+  refine ⟨?_proj, ?_incoords⟩
+  · -- Projection smoothness: (fun y => (TotalSpace.mk' _ y (L y)).1) = id.
+    exact contMDiffWithinAt_id
+  · -- inCoordinates smoothness — the hard piece.
+    -- For our bundle (Trivial target, TangentSpace source), inCoordinates
+    -- collapses to a scalar-multiplied identity CLM on ℂ →L[ℂ] ℂ.
+    sorry
 
 /-! ### Remaining steps (DEFERRED)
 
