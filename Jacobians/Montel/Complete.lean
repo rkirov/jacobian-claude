@@ -774,6 +774,57 @@ theorem analyticOn_limit_pullback_inner
   analyticOn_of_pullback_tendsto_locally_uniformly_inner αs hx₀ _
     (tendstoLocallyUniformlyOn_pullback_on_innerChartOpen αs L hL hx₀ g hg)
 
+omit [ConnectedSpace X] [Nonempty X] in
+/-- **Substep 3 of Path 2.** Reverse of `localRep_analyticOn_chartTarget`:
+analytic pullback on `chart '' innerChartOpen x₀` ⇒ `ContMDiffOn ω`
+of `fun y => L y (e.symmL ℂ y 1)` on `innerChartOpen x₀`. -/
+theorem contMDiffOn_limit_inner
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
+    (hL : ∀ y : X, Tendsto (fun n : ℕ => (αs n).toFun y) atTop (𝓝 (L y)))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    (g : letI := innerShrunkChart_compactSpace (X := X) x₀
+      BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ)
+    (hg : letI := innerShrunkChart_compactSpace (X := X) x₀
+      Tendsto (fun n : ℕ =>
+        BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk (αs n) x₀))
+        atTop (𝓝 g)) :
+    letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+    ContMDiffOn 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω
+      (fun y : X => L y (e.symmL ℂ y 1))
+      (innerChartOpen (X := X) x₀) := by
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+  -- Substep 2: AnalyticOn of the chart pullback.
+  have h_analytic := analyticOn_limit_pullback_inner αs L hL hx₀ g hg
+  -- Package: use `contMDiffOn_iff_of_subset_source'` with x := x₀, y := 0.
+  -- Need: innerChartOpen ⊆ extChartAt 𝓘(ℂ, ℂ) x₀ .source = chartAt ℂ x₀ .source.
+  have hs : innerChartOpen (X := X) x₀ ⊆ (extChartAt 𝓘(ℂ, ℂ) x₀).source := by
+    have : (extChartAt 𝓘(ℂ, ℂ) x₀).source = (chartAt ℂ x₀).source := by simp [extChartAt]
+    rw [this]; exact innerChartOpen_subset_source x₀ hx₀
+  have h2s : Set.MapsTo (fun y : X => L y (e.symmL ℂ y 1))
+      (innerChartOpen (X := X) x₀) (extChartAt 𝓘(ℂ, ℂ) (0 : ℂ)).source := by
+    have h_src : (extChartAt 𝓘(ℂ, ℂ) (0 : ℂ)).source = Set.univ := by simp [extChartAt]
+    rw [h_src]
+    exact fun _ _ => Set.mem_univ _
+  rw [contMDiffOn_iff_of_subset_source' hs h2s]
+  -- Goal: ContDiffOn ℂ ω (extChartAt 0 ∘ f ∘ (extChartAt x₀).symm)
+  --                    (extChartAt x₀ '' innerChartOpen x₀)
+  -- extChartAt 0 = id, extChartAt x₀.symm = chart.symm, extChartAt x₀ '' = chart ''.
+  have h_set_eq : extChartAt 𝓘(ℂ, ℂ) x₀ '' innerChartOpen (X := X) x₀ =
+      (chartAt ℂ x₀) '' innerChartOpen (X := X) x₀ := by
+    simp [extChartAt]
+  have h_fun_eq : (extChartAt 𝓘(ℂ, ℂ) (0 : ℂ) ∘
+      (fun y : X => L y (e.symmL ℂ y 1)) ∘ (extChartAt 𝓘(ℂ, ℂ) x₀).symm) =
+      fun z : ℂ => L ((chartAt ℂ x₀).symm z) (e.symmL ℂ ((chartAt ℂ x₀).symm z) 1) := by
+    funext z
+    simp [extChartAt, Function.comp_def]
+  rw [h_set_eq, h_fun_eq]
+  -- Now: ContDiffOn ℂ ω (chart pullback of L) (chart '' innerChartOpen x₀).
+  -- Use `contDiffOn_omega_iff_analyticOn.mpr` — open set has UniqueDiffOn.
+  exact (contDiffOn_omega_iff_analyticOn
+    (isOpen_chart_image_innerChartOpen x₀ hx₀).uniqueDiffOn).mpr h_analytic
+
 /-! ### Remaining steps (DEFERRED)
 
 The full completeness proof requires:
