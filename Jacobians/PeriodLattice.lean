@@ -145,6 +145,49 @@ theorem IsSmoothPath.toClosedSmoothLoop {P : X} {γ : ℝ → X}
   diff := h.diff
   integrable := h.integrable
 
+/-- **Reverse of a closed smooth loop is a closed smooth loop** (REAL).
+The reverse loop `t ↦ γ(1 - t)` is still closed and smooth. -/
+theorem IsClosedSmoothLoop.reverse {γ : ℝ → X}
+    (h : IsClosedSmoothLoop γ) : IsClosedSmoothLoop (Jacobians.reverse γ) where
+  closed := by show γ (1 - 0) = γ (1 - 1); simp [h.closed]
+  cont := h.cont.comp (continuous_const.sub continuous_id)
+  diff := by
+    intro t ht
+    have h1t : 1 - t ∈ Set.uIcc (0 : ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht ⊢
+      rcases ht with ⟨h0, h1⟩
+      refine ⟨by linarith, by linarith⟩
+    have hdiff_inner := h.diff (1 - t) h1t
+    have h_comp : (chartAt (H := ℂ) (Jacobians.reverse γ t)).toFun ∘ Jacobians.reverse γ =
+        (chartAt (H := ℂ) (γ (1 - t))).toFun ∘ γ ∘ (fun s => 1 - s) := by
+      funext s; rfl
+    rw [h_comp]
+    have h_sub_diff : DifferentiableAt ℝ (fun s : ℝ => 1 - s) t :=
+      (differentiableAt_const _).sub differentiableAt_id
+    exact hdiff_inner.comp t h_sub_diff
+  integrable := by
+    intro i
+    have hint_γ := h.integrable i
+    have h_sub := hint_γ.comp_sub_left 1
+    simp only [sub_zero, sub_self] at h_sub
+    have h_neg := h_sub.neg
+    refine h_neg.symm.congr_ae ?_
+    refine (MeasureTheory.ae_restrict_iff' measurableSet_uIoc).mpr ?_
+    filter_upwards with t ht
+    have ht_uIcc : t ∈ Set.uIcc (0 : ℝ) 1 := Set.uIoc_subset_uIcc ht
+    have h1t_uIcc : 1 - t ∈ Set.uIcc (0 : ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht_uIcc ⊢
+      rcases ht_uIcc with ⟨h0, h1⟩
+      refine ⟨by linarith, by linarith⟩
+    have h_ps_rev : pathSpeed (Jacobians.reverse γ) t = -pathSpeed γ (1 - t) :=
+      pathSpeed_reverse γ t (h.diff (1 - t) h1t_uIcc)
+    show -(periodBasisForm X i).toFun (γ (1 - t)) (pathSpeed γ (1 - t)) =
+      (periodBasisForm X i).toFun ((Jacobians.reverse γ) t) (pathSpeed (Jacobians.reverse γ) t)
+    rw [h_ps_rev]
+    show -((periodBasisForm X i).toFun (γ (1 - t))) (pathSpeed γ (1 - t)) =
+      ((periodBasisForm X i).toFun (γ (1 - t))) (-pathSpeed γ (1 - t))
+    exact ((periodBasisForm X i).toFun (γ (1 - t))).map_neg _ |>.symm
+
 /-- **Reverse of a smooth path is a smooth path** (REAL). The reverse
 path `t ↦ γ(1 - t)` goes from `Q` to `P` when `γ` goes `P` to `Q`,
 with smoothness preserved via the chain rule on `(1 - ·)`. -/
