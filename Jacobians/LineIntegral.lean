@@ -186,4 +186,84 @@ theorem lineIntegral_reverse (α : HolomorphicOneForms X) (γ : ℝ → X)
   simp at h_sub
   exact h_sub
 
+/-! ### Phase 1b: path concatenation
+
+`concat γ γ'` traverses `γ` on `[0, 1/2]` and `γ'` on `[1/2, 1]`,
+each at double speed. The line integral adds. -/
+
+/-- Concatenation of paths: `concat γ γ' t := γ(2t)` on `[0, 1/2]`,
+`γ'(2t - 1)` on `[1/2, 1]`. Typical basepoint-matching requirement
+`γ 1 = γ' 0` is not enforced in the definition itself (it's needed
+for the concatenation to be continuous at `t = 1/2`, which is
+assumed when invoking `lineIntegral_concat`). -/
+noncomputable def concat (γ γ' : ℝ → X) : ℝ → X :=
+  fun t => if t ≤ 1/2 then γ (2 * t) else γ' (2 * t - 1)
+
+omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
+theorem concat_apply_left (γ γ' : ℝ → X) {t : ℝ} (ht : t ≤ 1/2) :
+    concat γ γ' t = γ (2 * t) := if_pos ht
+
+omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
+theorem concat_apply_right (γ γ' : ℝ → X) {t : ℝ} (ht : ¬ t ≤ 1/2) :
+    concat γ γ' t = γ' (2 * t - 1) := if_neg ht
+
+/-- **Concatenation identity for the line integral.**
+`lineIntegral α (concat γ γ') = lineIntegral α γ + lineIntegral α γ'`
+assuming each half is smooth in the chart pullback and the matching
+conditions at `t = 1/2` hold.
+
+The proof splits the integral at `1/2`, reparametrizes each half via
+`u = 2t` (first half) and `u = 2t - 1` (second half), and applies the
+chain rule to the pathSpeed to absorb the reparametrization factor of
+`2`.
+
+**Remaining as substep**: piecewise-differentiability handling +
+`intervalIntegral.integral_comp_smul_left` variant; the proof is
+~80 lines of careful integral manipulation. Stating the identity
+with a sorry lets downstream code use it while the proof is factored
+out. -/
+theorem lineIntegral_concat (α : HolomorphicOneForms X) (γ γ' : ℝ → X)
+    (_hγ : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t)
+    (_hγ' : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ' t)).toFun ∘ γ') t)
+    (_hmatch : γ 1 = γ' 0) :
+    lineIntegral α (concat γ γ') = lineIntegral α γ + lineIntegral α γ' := by
+  sorry
+
+/-! ### Phase 1c: chart-local path independence
+
+If two smooth paths `γ₀, γ₁ : [0,1] → X` have the same endpoints and
+their images lie within a single chart domain, then their line
+integrals agree. Classically: the integrand `α.toFun(·)(pathSpeed)`
+pulled back through the chart becomes a holomorphic 1-form on a
+chart-open in ℂ, and holomorphic integration is path-independent on
+simply-connected opens (Cauchy's theorem).
+
+**Remaining as substep** (~200 lines): apply Mathlib's Cauchy theorem
+for convex opens (`Complex.integral_eq_zero_of_contDiffOn_closedLoop`
+or similar) to the chart-pulled-back integrand. -/
+
+/-- **Chart-local path independence.** Two smooth paths with the
+same endpoints, whose images lie within a single chart source, give
+the same line integral against any `α`. Content sorry — Phase 1c.
+
+Used downstream in Phase 2 (period-lattice definition via closed
+loops: loops that bound a chart-image region contribute `0` to the
+period lattice). -/
+theorem lineIntegral_eq_of_chart_local
+    (α : HolomorphicOneForms X) (x₀ : X) (γ₀ γ₁ : ℝ → X)
+    (_hγ₀_image : ∀ t ∈ Set.uIcc (0 : ℝ) 1, γ₀ t ∈ (chartAt (H := ℂ) x₀).source)
+    (_hγ₁_image : ∀ t ∈ Set.uIcc (0 : ℝ) 1, γ₁ t ∈ (chartAt (H := ℂ) x₀).source)
+    (_hγ₀_smooth : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₀ t)).toFun ∘ γ₀) t)
+    (_hγ₁_smooth : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₁ t)).toFun ∘ γ₁) t)
+    (_hendpoint0 : γ₀ 0 = γ₁ 0)
+    (_hendpoint1 : γ₀ 1 = γ₁ 1) :
+    lineIntegral α γ₀ = lineIntegral α γ₁ := by
+  sorry
+
 end Jacobians
