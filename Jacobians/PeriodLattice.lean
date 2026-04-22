@@ -673,11 +673,80 @@ theorem ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle
     Submodule.smul_mem _ (c.coeffs i)
       (periodVec_mem_truePeriodLattice_of_closed _ (c.loops_smooth i))
 
-/-- **Existence of preimage cycle for non-constant maps** — the single
-remaining content sorry. Classically (Forster §10.11): pick `δ` to
-avoid the branch locus; locally lift via the unbranched cover on
-`Y ∖ f(R)`; patch the lifts globally via the covering structure.
-Requires real branched-cover infrastructure not yet in Mathlib. -/
+/-! #### Branched-cover infrastructure (incremental)
+
+For non-constant holomorphic `f : X → Y` between compact connected
+Riemann surfaces:
+
+* `criticalSet f` := `{x | mfderiv f x = 0}` — the ramification locus.
+* `branchLocus f` := `f '' criticalSet f` — image of critical points.
+
+Classical facts (partially in place, partially axiomatized):
+* `criticalSet` is closed (preimage of `{0}` under the continuous
+  `mfderiv` section).
+* For non-constant `f`, `criticalSet f ≠ Set.univ` (open mapping
+  theorem applied locally in charts).
+* `criticalSet` is discrete in `X` (isolated zeros of a non-zero
+  analytic function in local coords).
+* Being closed + discrete in compact `X`, `criticalSet` is FINITE.
+* On `X ∖ criticalSet`, `f` is a local diffeomorphism (inverse
+  function theorem).
+* On `Y ∖ branchLocus`, `f` restricts to a finite covering.
+* Closed loops in `Y ∖ branchLocus` admit lifts to closed loops in
+  `X ∖ criticalSet` (covering-space path lifting).
+* Loops meeting `branchLocus` can be homotoped off it (removing
+  finitely many points from a connected manifold preserves π₁ access).
+
+Each step below is stated as a theorem; real proofs fill in in
+subsequent commits. -/
+
+/-- **Critical set of a holomorphic map** between complex 1-manifolds:
+points where `mfderiv` vanishes. Classically the ramification locus. -/
+def criticalSet (f : X → Y) : Set X :=
+  {x | mfderiv 𝓘(ℂ) 𝓘(ℂ) f x = 0}
+
+/-- **Branch locus**: the image of the critical set. -/
+def branchLocus (f : X → Y) : Set Y :=
+  f '' criticalSet f
+
+/-- **Critical set is closed.** The mfderiv depends continuously on
+the base point (as a section of a continuous bundle of CLMs), so its
+zero set is closed. -/
+theorem isClosed_criticalSet (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    IsClosed (criticalSet f) := sorry
+
+/-- **Critical set of a non-constant map is not everything.** If
+`criticalSet f = Set.univ` (i.e., `mfderiv f = 0` everywhere), then
+`f` is locally constant; since `X` is connected, `f` is globally
+constant. -/
+theorem criticalSet_ne_univ_of_nonconstant
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (_hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    criticalSet f ≠ Set.univ := sorry
+
+/-- **Critical set is finite.** In local charts, `mfderiv f` becomes
+a nonvanishing analytic function near any non-critical point, so
+critical points are isolated zeros of an analytic function. On
+compact `X`, the discrete set of zeros is finite. -/
+theorem finite_criticalSet_of_nonconstant
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (_hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    (criticalSet f).Finite := sorry
+
+/-- **Branch locus is finite.** Image of a finite set is finite. -/
+theorem finite_branchLocus_of_nonconstant
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    (branchLocus f).Finite :=
+  (finite_criticalSet_of_nonconstant f hf hnonconst).image f
+
+/-- **Existence of preimage cycle for non-constant maps** — the main
+content sorry. Classically (Forster §10.11): pick `δ` or homotope it
+to avoid the finite `branchLocus`; locally lift via the unbranched
+cover on `Y ∖ branchLocus`; patch the lifts globally via the
+covering structure. Requires real branched-cover infrastructure; the
+intermediate pieces above reduce the problem to covering-space path
+lifting on a compact 1-manifold minus a finite set. -/
 theorem exists_preimageCycle_of_nonconstant
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (_hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
