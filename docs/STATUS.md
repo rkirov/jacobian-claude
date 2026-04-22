@@ -1,5 +1,51 @@
 # Project status (auto-maintained)
 
+## Abel–Jacobi: Phase 2 + 4a landed (latest, 2026-04-22)
+
+**Milestone**: `ambientPhi_preserves_lattice` is now a real theorem
+(modulo two named content sorries), replacing one placeholder sorry
+in `Jacobians.lean` with structural infrastructure.
+
+**Phase 2a** (real period lattice): landed previously. `periodLattice X`
+now unfolds to `Jacobians.truePeriodLattice X`, with
+`[Jacobians.IsPeriodLattice X]` gating the `DiscreteTopology` /
+`IsZLattice ℝ` instances (the rank-2g Hodge content).
+
+**Phase 2b** (refactor + Phase 4a prep, this session):
+- `closedLoopPeriods` now requires `γ 0 = γ 1` (any basepoint),
+  dropping the fixed-basepoint requirement. Makes `f ∘ γ` of a
+  closed loop manifestly closed.
+- Replaced `hofBasis` with `periodBasisForm X i := ambientIso X (Pi.basisFun ℂ i)`
+  so that period-pairing matrix structure aligns with `ambientPhi` /
+  `ambientPsi` matrix representations.
+
+**Phase 4a** (`ambientPhi_preserves_lattice`): real theorem.
+- `ambientPhi_preserves_truePeriodLattice` (PeriodLattice.lean, proven):
+  via `Submodule.span_induction` on the ℤ-span generating set.
+- Reduces to `periodVec_pushforward` (sorry): `periodVec (f ∘ γ) =
+  ambientPhi f hf (periodVec γ)` — matrix-transpose identity.
+- `periodVec_pushforward` reduces to `lineIntegral_pullback` (sorry):
+  `∫_{f∘γ} α = ∫_γ pullbackForm f hf α` — the change-of-variables
+  chain rule for `pathSpeed` under composition.
+
+**Phase 4b** (`ambientPsi_preserves_lattice`): STILL SORRY. Genuine
+content gap: requires pushforward-of-forms (trace theory). The
+pullback-only `ambientPsi` does not naturally preserve the Y→X
+period lattice — the statement holds only with the proper
+`pushforwardForm` construction (Forster §10.11 trace).
+
+**Jacobians.lean sorry count: 3 → 2** (one challenge-level sorry
+converted to named content sorries deeper in the stack).
+
+**Remaining challenge-level sorries:**
+1. `ofCurve_inj` (Abel's theorem, Forster §21) — months-scale.
+2. `ambientPsi_preserves_lattice` (pushforward-of-forms trace).
+3. `ambientPhi_ambientPsi_eq` (degree identity, HolomorphicForms.lean).
+4. `genus_eq_zero_iff_homeo` (uniformization, Genus.lean).
+5. `lineIntegral_pullback` (LineIntegral.lean — chain rule).
+6. `periodVec_pushforward` (PeriodLattice.lean — linear algebra from #5).
+7. `lineIntegral_eq_of_chart_local` (LineIntegral.lean, off critical path).
+
 ## Abel–Jacobi: Phase 1 operationally complete (latest)
 
 Phase 1a + 1b (linearity + reversal + concatenation) are all fully
