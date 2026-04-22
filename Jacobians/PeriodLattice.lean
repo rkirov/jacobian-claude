@@ -302,8 +302,8 @@ matches:
   `periodVec Y (f∘γ) j = ∫_γ pullbackForm f hf (basis_j^Y)
                        = ∑_i M_ij (periodVec X γ)_i`.
 
-Uses `lineIntegral_pullback` (content sorry pending) + linearity of
-`lineIntegral` in the form + basis expansion. -/
+Uses `lineIntegral_pullback` (now real) + linearity of `lineIntegral`
+via basis expansion (the remaining content gap). -/
 theorem periodVec_pushforward
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X) :
     periodVec (f ∘ γ) =
