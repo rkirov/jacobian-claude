@@ -31,7 +31,7 @@ of Mathlib-contribution-sized work (divisor theory + residue theorem
 
 namespace Jacobians
 
-open scoped Manifold ContDiff
+open scoped Manifold ContDiff Topology
 
 variable (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -177,35 +177,57 @@ We decompose the finite-support proof into:
 3. **Apply `.finiteSupport`** with `isCompact_univ` (from `CompactSpace X`).
 4. **Convert** to `Finsupp` via `Finsupp.ofSupportFinite`. -/
 
+/-! #### Two classical lemmas, following Forster §6
+
+Forster's `div f` is built from two classical facts:
+
+1. **Order is chart-invariant** (`orderAtPoint_invariant`): for `y` in
+   any chart source, `meromorphicOrderAt (f ∘ chart.symm) (chart y)`
+   has the same `.untop₀` as via `chart_y`. Follows from
+   `meromorphicOrderAt_comp_of_deriv_ne_zero` applied to chart
+   transitions; the latter are biholomorphic by `IsManifold 𝓘(ℂ) ω`.
+
+2. **Zeros/poles are isolated** (`orderAtPoint_isolated_at`): around
+   any point, meromorphicity + dichotomy + isolation gives a
+   neighborhood in chart_z.source where the order is 0 except
+   possibly at the center point.
+
+Together, these close `supportLocallyFiniteWithinDomain'`. Both are
+textbook lemmas (Forster §6.4, Miranda II.4). -/
+
+variable {X} in
+/-- **Isolation of zeros/poles** around a point (Forster §6 /
+Miranda II.4). Around any `z ∈ X`, there's a neighborhood where
+`orderAtPoint f y = 0` for all `y ≠ z`. Classical: combines
+`MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero` at
+`chart_z z` (giving a pointed neighborhood in chart_z coordinates
+where the chart pullback is either ≡ 0 or ≠ 0) with chart-invariance
+of `meromorphicOrderAt` (via
+`meromorphicOrderAt_comp_of_deriv_ne_zero` on chart transitions).
+In either branch of the dichotomy, the order in any other chart_y
+equals 0 for y ≠ z near z. -/
+theorem MeromorphicFunction.orderAtPoint_isolated_at
+    (f : MeromorphicFunction X) (z : X) :
+    ∃ t ∈ 𝓝 z, ∀ y ∈ t, y ≠ z → f.orderAtPoint y = 0 :=
+  sorry
+
 variable {X} in
 /-- The order function as a `locallyFinsuppWithin` on `Set.univ`.
 Wraps `orderAtPoint` together with the local-finiteness proof
-(content sorry). Once closed, `divViaOrder` follows automatically
-via compactness. -/
+derived from `orderAtPoint_isolated_at`. -/
 noncomputable def MeromorphicFunction.orderLocallyFinsupp (f : MeromorphicFunction X) :
     Function.locallyFinsuppWithin (Set.univ : Set X) ℤ where
   toFun := MeromorphicFunction.orderAtPoint f
   supportWithinDomain' := Set.subset_univ _
   supportLocallyFiniteWithinDomain' := by
     intro z _
-    -- **Proof sketch** (content sorry). Around each `z ∈ X`:
-    -- 1. `f.meromorphic z` gives `MeromorphicAt (f ∘ chart_z.symm) (chart_z z)`.
-    -- 2. `MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero` yields:
-    --    Case A (f ≡ 0 near z in chart_z.symm coords):
-    --      Then in a pointed neighborhood, the chart pullback is 0.
-    --      By `.untop₀ ⊤ = 0`, order is 0 there.
-    --      Support ∩ nbhd ⊆ {z}.
-    --    Case B (f ≠ 0 near z in chart_z.symm coords):
-    --      In a pointed neighborhood, f is nonzero meromorphic ⇒ order is 0
-    --      (regular nonzero values have meromorphicOrderAt = 0).
-    --      Support ∩ nbhd ⊆ {z}.
-    -- 3. **Bridge to `orderAtPoint f y`**: `orderAtPoint` uses `chart_y`,
-    --    not `chart_z`. Requires chart-invariance of `meromorphicOrderAt`
-    --    via `meromorphicOrderAt_comp_of_deriv_ne_zero` applied to the
-    --    chart-transition biholomorphism `chart_z ∘ chart_y.symm`. This
-    --    is the nontrivial step (~50–100 lines).
-    -- 4. Conclude: ∃ t ∈ 𝓝 z, t ∩ support ⊆ {z} finite.
-    sorry
+    obtain ⟨t, ht_nhds, ht⟩ := f.orderAtPoint_isolated_at z
+    refine ⟨t, ht_nhds, ?_⟩
+    -- Support ∩ t ⊆ {z} (since ht says y ∈ t ∧ y ≠ z ⇒ order = 0 ⇒ y ∉ support).
+    apply Set.Finite.subset (Set.finite_singleton z)
+    intro y ⟨hy_t, hy_supp⟩
+    by_contra hne
+    exact hy_supp (ht y hy_t hne)
 
 /-- **Real divisor of a meromorphic function**. Uses the
 `locallyFinsuppWithin` wrapper + `finiteSupport` + `ofSupportFinite`.
