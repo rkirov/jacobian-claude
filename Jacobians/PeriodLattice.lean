@@ -118,6 +118,59 @@ def closedLoopPeriods (X : Type*) [TopologicalSpace X] [T2Space X]
     [IsManifold 𝓘(ℂ) ω X] : Set (Fin (genus X) → ℂ) :=
   {v | ∃ (γ : ℝ → X), IsClosedSmoothLoop γ ∧ v = periodVec γ}
 
+/-- **Smooth path between two points** with `periodVec`-integrability.
+Contains exactly the data needed to apply `periodVec` / `lineIntegral`
+machinery to the path; the endpoint hypotheses ensure the path goes
+from `P` to `Q`. -/
+structure IsSmoothPath (P Q : X) (γ : ℝ → X) : Prop where
+  /-- Path starts at `P`. -/
+  start : γ 0 = P
+  /-- Path ends at `Q`. -/
+  finish : γ 1 = Q
+  /-- Continuity of the path. -/
+  cont : Continuous γ
+  /-- Chart-pullback differentiability at each point of `[0,1]`. -/
+  diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+    DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t
+  /-- Integrability of each basis-form integrand. -/
+  integrable : ∀ i : Fin (genus X), IntervalIntegrable
+    (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
+      MeasureTheory.volume 0 1
+
+/-- A smooth path from `P` to itself is a closed smooth loop. -/
+theorem IsSmoothPath.toClosedSmoothLoop {P : X} {γ : ℝ → X}
+    (h : IsSmoothPath P P γ) : IsClosedSmoothLoop γ where
+  closed := h.start.trans h.finish.symm
+  cont := h.cont
+  diff := h.diff
+  integrable := h.integrable
+
+/-- **Typeclass axiomatizing smooth-path existence.** For any two points
+`P, Q` on a compact connected Riemann surface, a smooth path from `P`
+to `Q` exists (satisfying the regularity needed for `periodVec` to be
+well-defined).
+
+Classical fact (Forster §§1-2): compact Riemann surfaces are smoothly
+path-connected — covered by finitely many charts, each biholomorphic
+to an open subset of ℂ, and smooth paths in charts patch via
+continuity at chart overlaps. Real instance is bounded construction
+(~100-200 lines); axiomatized here as typeclass content. -/
+class HasSmoothPaths (X : Type*) [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] : Prop where
+  /-- For every pair of points, a smooth path exists between them. -/
+  exists_smooth_path : ∀ (P Q : X), ∃ γ : ℝ → X, IsSmoothPath P Q γ
+
+/-- The smooth path between `P` and `Q` (choice via `Classical.choose`
+of `HasSmoothPaths.exists_smooth_path`). -/
+noncomputable def smoothPath [HasSmoothPaths X] (P Q : X) : ℝ → X :=
+  Classical.choose (HasSmoothPaths.exists_smooth_path (X := X) P Q)
+
+/-- The chosen smooth path satisfies `IsSmoothPath`. -/
+theorem isSmoothPath_smoothPath [HasSmoothPaths X] (P Q : X) :
+    IsSmoothPath P Q (smoothPath P Q) :=
+  Classical.choose_spec (HasSmoothPaths.exists_smooth_path (X := X) P Q)
+
 /-- **True period lattice**: ℤ-span of period vectors of closed
 loops. -/
 noncomputable def truePeriodLattice (X : Type*) [TopologicalSpace X]
@@ -131,6 +184,13 @@ theorem periodVec_mem_truePeriodLattice_of_closed (γ : ℝ → X)
     (hγ : IsClosedSmoothLoop γ) :
     periodVec γ ∈ truePeriodLattice X :=
   Submodule.subset_span ⟨γ, hγ, rfl⟩
+
+/-- The `periodVec` of the smooth path from `P` to `P` is in the
+period lattice (it's a closed smooth loop). -/
+theorem periodVec_smoothPath_self_mem_lattice [HasSmoothPaths X] (P : X) :
+    periodVec (smoothPath P P) ∈ truePeriodLattice X :=
+  periodVec_mem_truePeriodLattice_of_closed _
+    (isSmoothPath_smoothPath P P).toClosedSmoothLoop
 
 /-- **Constant-path period vector is zero.** Classical fact: the
 tangent of a constant curve is zero, so every integrand is zero. -/

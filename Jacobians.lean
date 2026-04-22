@@ -66,6 +66,7 @@ open scoped Manifold -- for 𝓘 notation
 -- let X be a compact Riemann surface
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
   [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [Nonempty X] [Jacobians.IsPeriodLattice X]
+  [Jacobians.HasSmoothPaths X]
 
 -- data
 /-- The period lattice of a compact Riemann surface, living inside
@@ -144,19 +145,31 @@ noncomputable instance :
 
 /-- The Abel-Jacobi map from a compact Riemann surface to its Jacobian.
 
-**Placeholder**: defined as the constant zero map. The real definition
-integrates a basis of holomorphic 1-forms along a path from `P` to `Q`
-— see `Jacobians/LineIntegral.lean` (Forster §21). With this
-placeholder, `ofCurve_self` is `rfl` and `ofCurve_contMDiff` is
-`contMDiff_const`. The injectivity claim (`ofCurve_inj`, Abel's
-theorem) is false for this placeholder and remains a content sorry. -/
-noncomputable def ofCurve (_P : X) : X → Jacobian X := fun _ => 0
+Real-shaped definition: for any `P Q : X`, use the `smoothPath` from
+`HasSmoothPaths`, take its `periodVec`, and project to the Jacobian
+quotient. Under the `HasSmoothPaths X` axiom, this is honest content;
+the classical Abel-Jacobi map (Forster §21) integrates a basis of
+holomorphic 1-forms along the path, which is exactly what `periodVec`
+does via `lineIntegral`. -/
+noncomputable def ofCurve (P : X) : X → Jacobian X := fun Q =>
+  QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P Q))
 
+/-- **Holomorphic Abel-Jacobi map** — this is classical content
+(Forster §21: the Abel-Jacobi map is holomorphic). Smoothness as
+`Q` varies requires the chosen `smoothPath P Q` to vary smoothly
+with `Q`, which depends on the concrete `HasSmoothPaths` instance.
+Left as a content sorry until a specific instance is constructed. -/
 lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ)
     (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) :=
-  contMDiff_const
+  sorry
 
-lemma ofCurve_self (P : X) : ofCurve P P = 0 := rfl
+/-- **Abel-Jacobi of basepoint is zero**: the smooth path `P → P` is
+a closed smooth loop, so its periodVec is in the lattice, hence maps
+to `0` in the quotient. -/
+lemma ofCurve_self (P : X) : ofCurve P P = 0 := by
+  unfold ofCurve
+  exact (QuotientAddGroup.eq_zero_iff _).mpr
+    (Jacobians.periodVec_smoothPath_self_mem_lattice P)
 
 /-- **Abel ⇒ ofCurve injective.**
 
@@ -182,6 +195,7 @@ lemma ofCurve_inj [Jacobians.HasAbelsTheorem X]
 
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
   [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] [Jacobians.IsPeriodLattice Y]
+  [Jacobians.HasSmoothPaths Y]
 
 variable (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
 
@@ -225,6 +239,7 @@ lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P 
 
 variable {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z]
   [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z] [Jacobians.IsPeriodLattice Z]
+  [Jacobians.HasSmoothPaths Z]
 
 variable (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
 
