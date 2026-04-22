@@ -727,21 +727,44 @@ theorem isClosed_criticalSet (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) �
       -- TangentSpace 𝓘(ℂ, ℂ) x = ℂ, so mfderiv is a CLM ℂ →L[ℂ] ℂ, determined by value at 1.
       exact ContinuousLinearMap.ext_ring h
   rw [hset]
-  refine isClosed_singleton.preimage ?_
-  -- Continuity plan: use `(hf x₀).mfderiv_const` giving ContMDiffAt of mfderiv
-  -- in trivialization coordinates, which is continuous. Then relate the
-  -- coordinate-form to the raw `mfderiv f x 1` via trivialization factors.
-  --
-  -- For 𝓘(ℂ, ℂ), the trivialization at x₀ on (triv).baseSet uses chart
-  -- transition fderivs. At x = x₀ these factors are identity; at nearby x
-  -- they're nonzero scalars converging to 1. So `mfderiv f x 1 =
-  -- trivFactor(x) * (coordinate form at 1)`, and both factors are continuous
-  -- with `trivFactor → 1`. Hence `mfderiv f x 1 → mfderiv f x₀ 1` — continuity.
-  --
-  -- Concrete Mathlib reduction remaining: navigate
-  -- `Bundle.Trivialization.symmL` + `continuousLinearMapAt` + chart-transition
-  -- derivative identities to recover `mfderiv f x 1` from `inCoordinates`.
-  sorry
+  -- Show the complement is open; then the preimage of {0} is closed.
+  rw [← isOpen_compl_iff]
+  rw [show ((fun x => mfderiv 𝓘(ℂ) 𝓘(ℂ) f x (1 : ℂ)) ⁻¹' ({0} : Set ℂ))ᶜ =
+      {x | mfderiv 𝓘(ℂ) 𝓘(ℂ) f x ≠ 0} from ?_]
+  · -- Key: criticalSet complement = {x | mfderiv f x ≠ 0}. Use ContMDiffAt of
+    -- the inCoordinates form of mfderiv to get local openness.
+    rw [isOpen_iff_mem_nhds]
+    intro x₀ hx₀  -- hx₀ : mfderiv f x₀ ≠ 0
+    -- ContMDiffAt of the coordinate form.
+    have hmf : ContMDiffAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ω
+        (fun x => ContinuousLinearMap.inCoordinates ℂ
+          (TangentSpace 𝓘(ℂ, ℂ) (M := X)) ℂ
+          (TangentSpace 𝓘(ℂ, ℂ) (M := Y))
+          x₀ x (f x₀) (f x) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x)) x₀ :=
+      (hf x₀).mfderiv_const (le_refl _)
+    -- ContMDiffAt → ContinuousAt.
+    have hcont : ContinuousAt (fun x => ContinuousLinearMap.inCoordinates ℂ
+        (TangentSpace 𝓘(ℂ, ℂ) (M := X)) ℂ
+        (TangentSpace 𝓘(ℂ, ℂ) (M := Y))
+        x₀ x (f x₀) (f x) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x)) x₀ :=
+      hmf.continuousAt
+    -- Remaining step: navigate `Trivialization.continuousLinearMapAt_symmL` etc.
+    -- to show: at x = x₀, inCoordinates(mfderiv f x₀) = mfderiv f x₀ (nonzero);
+    -- then by continuity, inCoordinates ≠ 0 in a nbhd; contrapositive of
+    -- mfderiv = 0 → inCoordinates = 0 gives mfderiv ≠ 0 in that nbhd.
+    -- The specific unfold needs `TangentBundle.continuousLinearMapAt_trivializationAt_eq_core`
+    -- + `coordChange_self_apply`, which is bounded but dense Mathlib bundle plumbing.
+    sorry
+  · -- Set equality: complement of "mfderiv f x 1 = 0" = "mfderiv f x ≠ 0".
+    ext x
+    simp only [Set.mem_compl_iff, Set.mem_preimage, Set.mem_singleton_iff, Set.mem_setOf_eq]
+    constructor
+    · intro h hmf_zero
+      apply h
+      rw [hmf_zero]; rfl
+    · intro h hval_zero
+      apply h
+      exact ContinuousLinearMap.ext_ring hval_zero
 
 /-- **Critical set of a non-constant map is not everything.** If
 `criticalSet f = Set.univ` (i.e., `mfderiv f = 0` everywhere), then
