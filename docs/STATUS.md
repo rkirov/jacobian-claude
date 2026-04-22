@@ -1,5 +1,45 @@
 # Project status (auto-maintained)
 
+## Abel–Jacobi: classical facts landed (latest, 2026-04-22)
+
+Extended session progress after Phase 2 + 4a landing:
+
+**New classical facts (all sorry-free):**
+
+- `pathSpeed_const` / `lineIntegral_const` / `periodVec_const`:
+  constant path has zero tangent ⇒ zero integrand ⇒ zero periodVec.
+- `periodVec_reverse`: `periodVec (reverse γ) = -periodVec γ`
+  (α-independent differentiability hypothesis).
+- `periodVec_concat`: `periodVec (concat γ γ') = periodVec γ + periodVec γ'`
+  (per-basis-form integrability + a.e. identities inherited from
+  `lineIntegral_concat`).
+- `periodVec_mem_truePeriodLattice_of_closed`: closed loops belong to
+  the lattice by construction.
+- `periodVec_sub_mem_truePeriodLattice` + `mk_periodVec_eq_of_endpoints`:
+  **Abel–Jacobi well-definedness** modulo periods (Abel 1826). Packs
+  smoothness content into a single `hconcat` hypothesis derivable
+  from Phase 1 componentwise.
+- `mk_periodVec_closed_loop_zero`: closed-loop Jacobian class = 0.
+- `mk_periodVec_const_zero`: constant-path Jacobian class = 0.
+- `LocPathConnectedSpace X` instance (via `ChartedSpace.locPathConnectedSpace ℂ X`).
+- `PathConnectedSpace X` instance (auto from connected +
+  locPathConnected).
+- `continuousPath P Q : Path P Q`: explicit factory for continuous
+  paths on compact Riemann surfaces.
+
+**Phase-level status:**
+
+- Phase 2 (real period lattice): ✅ DONE
+- Phase 3 (real `ofCurve`): algebraic infrastructure ✅; only
+  **smooth-path existence** (known Mathlib gap) remains.
+- Phase 4a (`ambientPhi` preserves lattice): proven modulo
+  `lineIntegral_pullback` + `periodVec_pushforward` content sorries.
+- Phase 4b (`ambientPsi` preserves lattice): requires
+  pushforward-of-forms (trace theory, Forster §10.11) — genuine
+  content block.
+
+**Jacobians.lean sorry count: 2** (`ofCurve_inj`, `ambientPsi_preserves_lattice`).
+
 ## Abel–Jacobi: Phase 2 + 4a landed (latest, 2026-04-22)
 
 **Milestone**: `ambientPhi_preserves_lattice` is now a real theorem

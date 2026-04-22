@@ -73,7 +73,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
 Defined as `Jacobians.truePeriodLattice X` (see
 `Jacobians/PeriodLattice.lean`): the ℤ-span of period vectors of
 smooth closed loops, where the period pairing uses
-`Jacobians.hofBasis X`.
+`Jacobians.periodBasisForm X` (basis via `ambientIso X`).
 
 The `DiscreteTopology` and `IsZLattice ℝ` instances require the
 Hodge-decomposition-level rank-2g theorem; these are provided via

@@ -1,5 +1,4 @@
 import Jacobians.LineIntegral
-import Mathlib.LinearAlgebra.Basis.Basic
 import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 import Mathlib.Algebra.Module.ZLattice.Basic
 import Mathlib.Topology.Connected.LocPathConnected
