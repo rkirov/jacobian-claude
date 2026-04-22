@@ -145,6 +145,64 @@ theorem IsSmoothPath.toClosedSmoothLoop {P : X} {γ : ℝ → X}
   diff := h.diff
   integrable := h.integrable
 
+/-- **Reverse of a smooth path is a smooth path** (REAL). The reverse
+path `t ↦ γ(1 - t)` goes from `Q` to `P` when `γ` goes `P` to `Q`,
+with smoothness preserved via the chain rule on `(1 - ·)`. -/
+theorem IsSmoothPath.reverse {P Q : X} {γ : ℝ → X}
+    (h : IsSmoothPath P Q γ) : IsSmoothPath Q P (Jacobians.reverse γ) where
+  start := by show γ (1 - 0) = Q; simp [h.finish]
+  finish := by show γ (1 - 1) = P; simp [h.start]
+  cont := h.cont.comp (continuous_const.sub continuous_id)
+  diff := by
+    intro t ht
+    -- Goal: DifferentiableAt ℝ ((chartAt ℂ (reverse γ t)).toFun ∘ reverse γ) t
+    -- = DifferentiableAt ℝ ((chartAt ℂ (γ (1-t))).toFun ∘ (fun s => γ (1-s))) t
+    -- By chain rule on `s ↦ 1 - s` + h.diff at (1 - t).
+    have h1t : 1 - t ∈ Set.uIcc (0 : ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht ⊢
+      rcases ht with ⟨h0, h1⟩
+      refine ⟨by linarith, by linarith⟩
+    have hdiff_inner := h.diff (1 - t) h1t
+    -- Rewrite reverse γ to γ ∘ (1 - ·).
+    have h_comp : (chartAt (H := ℂ) (Jacobians.reverse γ t)).toFun ∘ Jacobians.reverse γ =
+        (chartAt (H := ℂ) (γ (1 - t))).toFun ∘ γ ∘ (fun s => 1 - s) := by
+      funext s
+      show (chartAt (H := ℂ) (γ (1 - t))).toFun (γ (1 - s)) = _
+      rfl
+    rw [h_comp]
+    have h_sub_diff : DifferentiableAt ℝ (fun s : ℝ => 1 - s) t :=
+      (differentiableAt_const _).sub differentiableAt_id
+    exact hdiff_inner.comp t h_sub_diff
+  integrable := by
+    intro i
+    -- Integrand along γ: g(s) = (periodBasisForm X i).toFun (γ s) (pathSpeed γ s).
+    -- Apply IntervalIntegrable.comp_sub_left with c = 1 to get integrability of
+    -- fun t => g(1 - t) on [0, 1].
+    -- Then negate (CLM linearity + pathSpeed_reverse) to match reverse integrand.
+    have hint_γ := h.integrable i
+    have h_sub := hint_γ.comp_sub_left 1
+    -- h_sub : IntervalIntegrable (fun x => integrand_at (1 - x)) volume (1-0) (1-1)
+    simp only [sub_zero, sub_self] at h_sub
+    -- Now h_sub : IntervalIntegrable ... volume 1 0
+    have h_neg := h_sub.neg
+    refine h_neg.symm.congr_ae ?_
+    -- Show a.e. equality: reverse integrand = -(original at 1 - t).
+    refine (MeasureTheory.ae_restrict_iff' measurableSet_uIoc).mpr ?_
+    filter_upwards with t ht
+    have ht_uIcc : t ∈ Set.uIcc (0 : ℝ) 1 := Set.uIoc_subset_uIcc ht
+    have h1t_uIcc : 1 - t ∈ Set.uIcc (0 : ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht_uIcc ⊢
+      rcases ht_uIcc with ⟨h0, h1⟩
+      refine ⟨by linarith, by linarith⟩
+    have h_ps_rev : pathSpeed (Jacobians.reverse γ) t = -pathSpeed γ (1 - t) :=
+      pathSpeed_reverse γ t (h.diff (1 - t) h1t_uIcc)
+    show -(periodBasisForm X i).toFun (γ (1 - t)) (pathSpeed γ (1 - t)) =
+      (periodBasisForm X i).toFun ((Jacobians.reverse γ) t) (pathSpeed (Jacobians.reverse γ) t)
+    rw [h_ps_rev]
+    show -((periodBasisForm X i).toFun (γ (1 - t))) (pathSpeed γ (1 - t)) =
+      ((periodBasisForm X i).toFun (γ (1 - t))) (-pathSpeed γ (1 - t))
+    exact ((periodBasisForm X i).toFun (γ (1 - t))).map_neg _ |>.symm
+
 /-- **Typeclass axiomatizing smooth-path existence.** For any two points
 `P, Q` on a compact connected Riemann surface, a smooth path from `P`
 to `Q` exists (satisfying the regularity needed for `periodVec` to be
