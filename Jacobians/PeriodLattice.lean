@@ -582,63 +582,79 @@ theorem ambientPhi_preserves_truePeriodLattice
 
 /-! ### Phase 4b: `ambientPsi` preserves the period lattice
 
-This is the **trace / pullback-of-cycle direction** and is content-deep.
-Unlike the Phi direction (where `f ∘ γ` is automatically a closed loop
-in `Y`), there is no natural closed loop in `X` associated to a loop
-`δ` in `Y` — one would need the branched-cover structure of `f` to
-take preimage lifts (Forster §10.11).
+This is the **trace / pullback-of-cycle direction**. Split by whether
+`f` is constant:
 
-The span-induction skeleton is symmetric to the Phi version. All
-ℤ-linearity cases (zero/add/smul) are immediate from the
-`AddMonoidHom`-structure of `ambientPsi`. Only the member case —
-"for a closed smooth loop `δ` in `Y`, `ambientPsi (periodVec δ) ∈
-truePeriodLattice X`" — is content-gated, and is axiomatized by the
-typeclass `HasPullbackCycle X Y`. -/
+**Constant case (real)**: if `f x = y₀` for all `x`, then
+`mfderiv f x = 0` (by `mfderiv_const`), so `pullbackForm f hf = 0`
+(pointwise composition with zero), so `ambientPsi f hf = 0`. Hence
+the image is `0 ∈ truePeriodLattice X` for free.
 
-/-- **Trace / pullback-cycle typeclass.** Axiomatizes that for every
-holomorphic `f : X → Y` and every closed smooth loop `δ : ℝ → Y`,
-the pulled-back period vector `ambientPsi f hf (periodVec δ)` lies
-in `truePeriodLattice X`.
+**Non-constant case (content-gated)**: `f` is a branched cover of
+some degree `d ≥ 1`; the preimage `f⁻¹(δ)` is a ℤ-cycle in `X` and
+the trace identity places `ambientPsi (periodVec δ)` in the period
+lattice (Forster §10.11). Real infrastructure required:
+`pushforwardForm` + branched-cover lift existence + trace adjunction
+(~200–500 lines not yet in place). -/
 
-Mathematical content (Forster §10.11): a proper holomorphic map
-between compact Riemann surfaces is either constant (in which case
-`ambientPsi = 0` and the claim is trivial) or a finite branched
-cover of some degree `d ≥ 1`, whose preimage `f⁻¹(δ)` is a ℤ-cycle
-in `X` — a formal ℤ-sum of closed loops — and the trace identity
-`ambientPsi (periodVec δ) = periodVec (f⁻¹(δ))` places the result
-in the period lattice of `X`.
+/-- **pullbackForm of a constant map is zero.** If `f` is constant,
+then `mfderiv f x = 0` everywhere, making the pointwise composition
+`α(f x) ∘ mfderiv f x = 0`. -/
+theorem pullbackForm_eq_zero_of_const
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hconst : ∃ y₀ : Y, ∀ x, f x = y₀) :
+    pullbackForm f hf = 0 := by
+  obtain ⟨y₀, hy₀⟩ := hconst
+  ext α
+  apply ContMDiffSection.ext
+  intro x
+  show (α.toFun (f x)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) f x) = 0
+  have : mfderiv 𝓘(ℂ) 𝓘(ℂ) f x = 0 := by
+    have hfconst : f = fun _ => y₀ := funext hy₀
+    rw [hfconst]
+    exact mfderiv_const
+  rw [this, ContinuousLinearMap.comp_zero]
 
-Real instances require `pushforwardForm` + branched-cover lift
-existence + trace adjunction (~200–500 lines of not-yet-built
-infrastructure). -/
-class HasPullbackCycle (X Y : Type*)
-    [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
-    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] :
-    Prop where
-  /-- The trace identity at the member-case level: pulled-back period
-  vectors of closed smooth loops in `Y` land in the period lattice
-  of `X`. -/
-  trace_mem : ∀ (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-      (δ : ℝ → Y), IsClosedSmoothLoop δ →
-    ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
-      truePeriodLattice X
+/-- **ambientPsi of a constant map is zero.** Follows from
+`pullbackForm_eq_zero_of_const`: `ambientPsi = iso⁻¹ ∘ pullbackForm ∘ iso`,
+and composition with zero is zero. -/
+theorem ambientPsi_eq_zero_of_const
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hconst : ∃ y₀ : Y, ∀ x, f x = y₀) :
+    ambientPsi (gX := genus X) (gY := genus Y) f hf = 0 := by
+  unfold ambientPsi
+  simp only [dite_true]
+  rw [pullbackForm_eq_zero_of_const f hf hconst]
+  ext v i
+  simp
 
 /-- **Trace identity — member case.** For a closed smooth loop `δ`
 in `Y`, the pulled-back period vector `ambientPsi (periodVec δ)` lies
-in `truePeriodLattice X`. Delegates to `HasPullbackCycle.trace_mem`. -/
-theorem ambientPsi_periodVec_mem_truePeriodLattice [HasPullbackCycle X Y]
+in `truePeriodLattice X`.
+
+Case-split on whether `f` is constant: constant case proven via
+`ambientPsi_eq_zero_of_const`; non-constant case left as a focused
+content sorry (Forster §10.11 trace identity, needs real
+`pushforwardForm` + branched-cover lift). -/
+theorem ambientPsi_periodVec_mem_truePeriodLattice
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
+    (δ : ℝ → Y) (_hδ : IsClosedSmoothLoop δ) :
     ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
-      truePeriodLattice X :=
-  HasPullbackCycle.trace_mem f hf δ hδ
+      truePeriodLattice X := by
+  by_cases hconst : ∃ y₀ : Y, ∀ x, f x = y₀
+  · -- Constant case: ambientPsi = 0, image is 0 ∈ lattice.
+    rw [ambientPsi_eq_zero_of_const f hf hconst]
+    simp
+  · -- Non-constant case: f is a branched cover; needs the trace identity.
+    -- `ambientPsi (periodVec δ) = periodVec (f⁻¹(δ))` — a ℤ-cycle
+    -- in X by the branched-cover lift. Real infrastructure required
+    -- (~200–500 lines). See file header.
+    sorry
 
 /-- `ambientPsi` preserves the period lattice. Reduces to the member
 case (`ambientPsi_periodVec_mem_truePeriodLattice`) via span induction;
 zero/add/smul cases are immediate ℤ-linearity. -/
-theorem ambientPsi_preserves_truePeriodLattice [HasPullbackCycle X Y]
+theorem ambientPsi_preserves_truePeriodLattice
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (truePeriodLattice Y).toAddSubgroup ≤
       (truePeriodLattice X).toAddSubgroup.comap

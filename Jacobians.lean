@@ -242,11 +242,10 @@ lemma pushforward_comp_apply (P : Jacobian X) :
     congr 1
     exact Jacobians.ambientPhi_comp f hf g hg (hg.comp hf) x
 
-/-- Lattice preservation on the pullback side. Gated on the trace
-identity typeclass `Jacobians.HasPullbackCycle X Y` (Forster §10.11);
-span-induction from the typeclass's `trace_mem` axiom. -/
-lemma ambientPsi_preserves_lattice [Jacobians.HasPullbackCycle X Y]
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+/-- Lattice preservation on the pullback side. Case-split on f constant
+vs non-constant: the constant case is real (ambientPsi = 0); the
+non-constant case is the trace identity (Forster §10.11). -/
+lemma ambientPsi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (periodLattice Y).toAddSubgroup ≤
       (periodLattice X).toAddSubgroup.comap
         (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
@@ -255,7 +254,7 @@ lemma ambientPsi_preserves_lattice [Jacobians.HasPullbackCycle X Y]
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
 Equal to the zero map if the map on curves is constant.
 Wired: `ZLatticeQuotient.pullback` applied to `ambientPsi f hf`. -/
-noncomputable def pullback [Jacobians.HasPullbackCycle X Y] (f : X → Y)
+noncomputable def pullback (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     Jacobian Y →ₜ+ Jacobian X :=
   Jacobians.ZLatticeQuotient.pullback (periodLattice X) (periodLattice Y)
@@ -263,7 +262,7 @@ noncomputable def pullback [Jacobians.HasPullbackCycle X Y] (f : X → Y)
     (ambientPsi_preserves_lattice f hf)
 
 -- pullback is holomorphic
-theorem pullback_contMDiff [Jacobians.HasPullbackCycle X Y] :
+theorem pullback_contMDiff :
     ContMDiff (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ))
       (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) :=
   Jacobians.ZLatticeQuotient.pullback_contMDiff_of_ambient
@@ -272,8 +271,7 @@ theorem pullback_contMDiff [Jacobians.HasPullbackCycle X Y] :
     (ambientPsi_preserves_lattice f hf)
 
 -- functoriality
-lemma pullback_id_apply [Jacobians.HasPullbackCycle X X]
-    (P : Jacobian X) : pullback id contMDiff_id P = P :=
+lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P :=
   Jacobians.ZLatticeQuotient.pushforward_id_of_ambient
     (periodLattice X)
     (Jacobians.ambientPsi (gX := genus X) (gY := genus X) id contMDiff_id)
@@ -282,8 +280,7 @@ lemma pullback_id_apply [Jacobians.HasPullbackCycle X X]
     P
 
 -- functoriality
-lemma pullback_comp_apply [Jacobians.HasPullbackCycle X Y] [Jacobians.HasPullbackCycle Y Z]
-    [Jacobians.HasPullbackCycle X Z] (P : Jacobian Z) :
+lemma pullback_comp_apply (P : Jacobian Z) :
     pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := by
   induction P using QuotientAddGroup.induction_on with
   | H z =>
@@ -307,7 +304,7 @@ when content is filled in, both `ContMDiff.degree` and
 `ambientPhi_ambientPsi_eq` must be consistent. -/
 def _root_.ContMDiff.degree (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ := 0
 
-lemma pushforward_pullback [Jacobians.HasPullbackCycle X Y] (P : Jacobian Y) :
+lemma pushforward_pullback (P : Jacobian Y) :
   pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P :=
   Jacobians.ZLatticeQuotient.pushforward_pullback_of_ambient
     (periodLattice X) (periodLattice Y)
