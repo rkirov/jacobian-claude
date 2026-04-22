@@ -831,15 +831,29 @@ theorem criticalSet_ne_univ_of_nonconstant
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (_hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
     criticalSet f ≠ Set.univ := by
-  -- Contrapositive: if criticalSet = univ (i.e., mfderiv f ≡ 0), then f is constant.
-  -- Strategy: in each chart of Y, the chart-pulled f = chartAt y₀ ∘ f has mfderiv 0,
-  -- and Y being compact+connected+complex gives local constancy propagating globally.
-  -- Full reduction to Liouville-for-compact-manifolds needs chart-covering work
-  -- (~50 lines); left as a focused gap. The high-level plan:
-  -- 1. mfderiv f = 0 everywhere → in charts, fderiv of chart-pullback = 0.
-  -- 2. `IsOpen.is_const_of_fderiv_eq_zero` gives local constancy in each chart.
-  -- 3. Patch via connectedness + path-connectedness of X.
-  sorry
+  -- Contrapositive: criticalSet = univ ⇒ mfderiv f ≡ 0 ⇒ f locally constant ⇒
+  -- (X connected) ⇒ f constant.
+  intro h_univ
+  apply _hnonconst
+  -- mfderiv f x = 0 for all x.
+  have hmfderiv_zero : ∀ x, mfderiv 𝓘(ℂ) 𝓘(ℂ) f x = 0 := fun x => by
+    have : x ∈ criticalSet f := h_univ.symm ▸ Set.mem_univ x
+    exact this
+  -- Compose with chart of Y to get ℂ-valued MDifferentiable function locally,
+  -- which by MVT in charts is locally constant; hence f is locally constant.
+  -- Use `IsLocallyConstant.exists_eq_const` on preconnected X.
+  have hlc : IsLocallyConstant f := by
+    intro y
+    -- Show f ⁻¹' {y} is open.
+    rw [isOpen_iff_mem_nhds]
+    intro x₀ hx₀
+    -- Find nbhd of x₀ where f ≡ f x₀. We'll use a small ball in chart target.
+    -- In chart at x₀, with chart at f x₀, f corresponds to a holomorphic f_loc : ℂ → ℂ
+    -- with fderiv ℂ f_loc = 0, hence constant on a ball.
+    -- ~30 lines of chart-ball MVT plumbing — left as deeper sub-sorry.
+    sorry
+  -- Connected (hence preconnected) + Nonempty → constant.
+  exact hlc.exists_eq_const.imp fun y₀ heq x => (congr_fun heq x)
 
 /-- **Critical set is finite.** In local charts, `mfderiv f` becomes
 a nonvanishing analytic function near any non-critical point, so
