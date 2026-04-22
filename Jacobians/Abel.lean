@@ -446,47 +446,75 @@ theorem MeromorphicFunction.orderAtPoint_isolated_at
     -- Let n := the finite order.
     set n := (meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) z).symm)
       ((chartAt (H := ℂ) z) z)).untop₀
-    -- g is analytic near chart_z z, so nonzero in some nbhd.
+    -- g is analytic in a nbhd of chart_z z, nonzero, and locally analytic around each point.
     have hg_ne_zero_nbhd : ∀ᶠ w in 𝓝 ((chartAt (H := ℂ) z) z), g w ≠ 0 :=
       hg_analytic.continuousAt.eventually_ne hg_ne_zero
-    -- Continuity of chart_z at z gives a nbhd of z where chart_z y ≠ chart_z z ⇒
-    -- the Laurent expansion + g ≠ 0 + power nonzero ⇒ order = 0.
+    have hg_analyticAt_nbhd : ∀ᶠ w in 𝓝 ((chartAt (H := ℂ) z) z), AnalyticAt ℂ g w :=
+      hg_analytic.eventually_analyticAt
+    -- Also need a nbhd of chart_z z where h_laurent holds (subset of pointed nbhd).
+    -- h_laurent : f ∘ chart_z.symm =ᶠ g' near chart_z z (pointed).
+    obtain ⟨U, hU_mem, hU_eq⟩ : ∃ U ∈ 𝓝 ((chartAt (H := ℂ) z) z),
+        ∀ w ∈ U, w ≠ (chartAt (H := ℂ) z) z →
+          (f.toFun ∘ (chartAt (H := ℂ) z).symm) w =
+            (w - (chartAt (H := ℂ) z) z)^n • g w := by
+      have h_lau_ev : ∀ᶠ w in 𝓝[≠] (chartAt (H := ℂ) z) z,
+          (f.toFun ∘ (chartAt (H := ℂ) z).symm) w =
+            (w - (chartAt (H := ℂ) z) z)^n • g w := h_laurent
+      rw [eventually_nhdsWithin_iff, Filter.eventually_iff_exists_mem] at h_lau_ev
+      obtain ⟨U, hU_mem, hU_eq⟩ := h_lau_ev
+      exact ⟨U, hU_mem, fun w hw hne => hU_eq w hw (by simpa using hne)⟩
+    -- Extract an open V ⊆ U containing chart_z z so V ∈ 𝓝 (chart_z y) whenever chart_z y ∈ V.
+    obtain ⟨V, hV_sub_U, hV_open, hz_V⟩ := mem_nhds_iff.mp hU_mem
+    have hV_mem : V ∈ 𝓝 ((chartAt (H := ℂ) z) z) := hV_open.mem_nhds hz_V
+    -- Continuity of chart_z at z.
     have h_chart_cont : ContinuousAt (chartAt (H := ℂ) z) z :=
       (chartAt (H := ℂ) z).continuousAt (mem_chart_source ℂ z)
-    -- Pull back the nbhd of chart_z z in ℂ to a nbhd of z in X.
+    -- Pull everything back to a nbhd of z, threading V through.
     have h_X_nbhd : ∀ᶠ y in 𝓝 z,
         y ∈ (chartAt (H := ℂ) z).source ∧
-        ((chartAt (H := ℂ) z) y = (chartAt (H := ℂ) z) z ∨
-         g ((chartAt (H := ℂ) z) y) ≠ 0) := by
+        AnalyticAt ℂ g ((chartAt (H := ℂ) z) y) ∧
+        g ((chartAt (H := ℂ) z) y) ≠ 0 ∧
+        ((chartAt (H := ℂ) z) y ∈ V) := by
       filter_upwards [(chartAt (H := ℂ) z).open_source.mem_nhds (mem_chart_source ℂ z),
-        h_chart_cont.preimage_mem_nhds hg_ne_zero_nbhd] with y hy_src hy_g
-      refine ⟨hy_src, Or.inr hy_g⟩
+        h_chart_cont.preimage_mem_nhds hg_ne_zero_nbhd,
+        h_chart_cont.preimage_mem_nhds hg_analyticAt_nbhd,
+        h_chart_cont.preimage_mem_nhds hV_mem] with y hy_src hy_g hy_ana hy_V
+      exact ⟨hy_src, hy_ana, hy_g, hy_V⟩
     obtain ⟨t, ht_nhds, ht⟩ := Filter.eventually_iff_exists_mem.mp h_X_nbhd
     refine ⟨t, ht_nhds, ?_⟩
     intro y hy_t hy_ne
-    obtain ⟨hy_src, hy_g⟩ := ht y hy_t
+    obtain ⟨hy_src, hy_ana, hy_g', hy_V⟩ := ht y hy_t
     -- chart_z y ≠ chart_z z since y ≠ z and chart_z is injective on source.
     have h_chart_ne : (chartAt (H := ℂ) z) y ≠ (chartAt (H := ℂ) z) z := by
       intro heq
       exact hy_ne ((chartAt (H := ℂ) z).injOn hy_src (mem_chart_source ℂ z) heq)
-    have hy_g' : g ((chartAt (H := ℂ) z) y) ≠ 0 := hy_g.resolve_left h_chart_ne
     -- Apply Lemma B to transfer: orderAtPoint f y = (meromorphicOrderAt (f ∘ chart_z.symm) (chart_z y)).untop₀.
     rw [← f.orderAtPoint_chart_invariant (chartAt (H := ℂ) z) (chart_mem_atlas ℂ z) hy_src]
-    -- Define g' : ℂ → ℂ := fun w => (w - chart_z z)^n • g w. Analytic at chart_z y, nonzero there.
-    -- By h_laurent (pointed nbhd of chart_z z) shrunk to a pointed nbhd of chart_z y,
-    -- f ∘ chart_z.symm =ᶠ g' near chart_z y.
-    -- Hence meromorphicOrderAt (f ∘ chart_z.symm) (chart_z y) = meromorphicOrderAt g' (chart_z y) = 0
-    -- (g' analytic with nonzero value ⇒ order = 0).
-    set g' : ℂ → ℂ := fun w => (w - (chartAt (H := ℂ) z) z)^n • g w with hg'
-    -- Remaining: use Laurent expansion + g'-analyticity + meromorphicOrderAt congr
-    -- to derive order = 0 at chart_z y. The chain:
-    -- 1. g' := (w ↦ (w - chart_z z)^n • g(w)) is analytic at chart_z y.
-    -- 2. g'(chart_z y) = (chart_z y - chart_z z)^n • g(chart_z y) ≠ 0.
-    -- 3. f ∘ chart_z.symm =ᶠ g' near chart_z y (pointed nbhd).
-    -- 4. meromorphicOrderAt_eq_int_iff with n := 0 gives order = 0.
-    -- 5. .untop₀ 0 = 0.
-    -- Each step is bounded Mathlib plumbing (~60 lines total).
-    sorry
+    -- Set g' := fun w => (w - chart_z z)^n • g w.
+    set g' : ℂ → ℂ := fun w => (w - (chartAt (H := ℂ) z) z)^n • g w with hg'_def
+    -- g' is analytic at chart_z y (product of nonzero analytic factors).
+    have hg'_analytic : AnalyticAt ℂ g' ((chartAt (H := ℂ) z) y) := by
+      rw [hg'_def]
+      exact (((analyticAt_id).sub analyticAt_const).zpow
+        (sub_ne_zero_of_ne h_chart_ne)).smul hy_ana
+    -- g'(chart_z y) ≠ 0 via product of nonzero factors.
+    have hg'_ne : g' ((chartAt (H := ℂ) z) y) ≠ 0 := by
+      rw [hg'_def]
+      exact smul_ne_zero (zpow_ne_zero _ (sub_ne_zero_of_ne h_chart_ne)) hy_g'
+    -- f ∘ chart_z.symm =ᶠ g' in pointed nbhd of chart_z y (using V and {chart_z z}ᶜ).
+    have hV_nhd_y : V ∈ 𝓝 ((chartAt (H := ℂ) z) y) := hV_open.mem_nhds hy_V
+    have h_ne_cz : {(chartAt (H := ℂ) z) z}ᶜ ∈ 𝓝 ((chartAt (H := ℂ) z) y) :=
+      isOpen_compl_singleton.mem_nhds h_chart_ne
+    have h_ev_eq :
+        (f.toFun ∘ (chartAt (H := ℂ) z).symm) =ᶠ[𝓝[≠] (chartAt (H := ℂ) z) y] g' := by
+      filter_upwards [mem_nhdsWithin_of_mem_nhds hV_nhd_y,
+        mem_nhdsWithin_of_mem_nhds h_ne_cz] with w hw_V hw_ne_cz
+      rw [Set.mem_compl_iff, Set.mem_singleton_iff] at hw_ne_cz
+      exact hU_eq w (hV_sub_U hw_V) hw_ne_cz
+    -- Conclude via meromorphicOrderAt_congr + analytic order at nonzero point = 0.
+    rw [meromorphicOrderAt_congr h_ev_eq, hg'_analytic.meromorphicOrderAt_eq,
+      (hg'_analytic.analyticOrderAt_eq_zero).mpr hg'_ne]
+    rfl
 
 variable {X} in
 /-- The order function as a `locallyFinsuppWithin` on `Set.univ`.
