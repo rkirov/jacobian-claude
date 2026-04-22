@@ -1,5 +1,40 @@
 # Project status (auto-maintained)
 
+## Abel scaffolding landed (latest, 2026-04-23)
+
+New file `Jacobians/Abel.lean` (sorry-free). All the types and
+statements needed to state Abel's theorem on a compact Riemann
+surface:
+
+**Real (sorry-free) content:**
+- `IsMeromorphic f`: predicate, via Mathlib's `MeromorphicAt` on
+  chart pullbacks.
+- `IsMeromorphic.zero`: the zero function is meromorphic (proof
+  uses `MeromorphicAt.const`).
+- `MeromorphicFunction X`: bundled type.
+- `Divisor X := X →₀ ℤ`.
+- `Divisor.deg : Divisor X →+ ℤ` via `Finsupp.degree`, with simp
+  lemmas for zero/add/neg/sub/single.
+- `DivisorOfDegZero X := Divisor.deg.ker`.
+- `twoPointDivisor P Q := single P 1 - single Q 1` + properties
+  (`twoPointDivisor_deg`, `twoPointDivisor_mem_degZero`, `_self`).
+- `PrincipalDivisors X` + `PrincipalDivisors_eq_bot` (real proof
+  using `AddSubgroup.closure_singleton_zero`).
+- `abelJacobi` (placeholder ≡ 0, matching `Jacobian.ofCurve ≡ 0`).
+- `MeromorphicFunction.div` (placeholder ≡ 0).
+
+**Placeholder-respecting typeclasses:**
+- `HasAbelsTheorem X` (Abel 1826, two directions).
+- `NoDegreeOneDivisorsToPP1 X` (Riemann-Hurwitz consequence).
+- `abelJacobi_twoPoint_ne_zero`: real conditional theorem. Given
+  both typeclasses + positive genus + distinct points, the two-point
+  divisor has nonzero Abel-Jacobi image. This is the key lemma for
+  `ofCurve_inj`.
+
+**Under the placeholder `Jacobian.ofCurve := fun _ _ => 0`**, the
+typeclasses are unsatisfiable on positive-genus surfaces (consistent).
+Real instances require real `ofCurve` from path integration (Phase 3).
+
 ## Abel–Jacobi: `ambientPhi_preserves_lattice` FULLY CLOSED (latest, 2026-04-23)
 
 **`ambientPhi_preserves_lattice` in `Jacobians.lean` is now a 100% REAL theorem.**
