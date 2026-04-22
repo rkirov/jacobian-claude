@@ -584,6 +584,27 @@ theorem analyticOn_of_pullback_tendsto_locally_uniformly
   filter_upwards with n
   exact localRep_analyticOn_chart_image_chartOpen (αf n) x₀ hx₀
 
+omit [ConnectedSpace X] [Nonempty X] in
+/-- **Chart-pullback analytic limit on `innerChartOpen`.** Inner-open
+variant of `analyticOn_of_pullback_tendsto_locally_uniformly`. Needed
+when we can only establish locally uniform convergence on the smaller
+`chart '' innerChartOpen x₀` (as arises from bcf-convergence on the
+compact `innerShrunkChart x₀`, restricted to its open interior). -/
+theorem analyticOn_of_pullback_tendsto_locally_uniformly_inner
+    {ι : Type*} {φ : Filter ι} [φ.NeBot]
+    (αf : ι → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    (g : ℂ → ℂ)
+    (hconv : TendstoLocallyUniformlyOn
+      (fun n : ι => fun z : ℂ => localRep (αf n) x₀ ((chartAt ℂ x₀).symm z))
+      g φ ((chartAt ℂ x₀) '' innerChartOpen (X := X) x₀)) :
+    AnalyticOn ℂ g ((chartAt ℂ x₀) '' innerChartOpen (X := X) x₀) := by
+  apply analyticOn_of_tendstoLocallyUniformlyOn
+    (isOpen_chart_image_innerChartOpen x₀ hx₀) hconv
+  filter_upwards with n
+  exact localRep_analyticOn_chart_image_innerChartOpen (αf n) x₀ hx₀
+
 /-! ### Step B.5 — Uniform Lipschitz bound on convex compacta
 
 Combining B.4's uniform derivative bound with the mean-value inequality
