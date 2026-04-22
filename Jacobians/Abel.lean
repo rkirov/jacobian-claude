@@ -560,18 +560,40 @@ been removed; `ofCurve_inj`'s former proof via
 `no_distinct_points_placeholder` no longer applies and `ofCurve_inj`
 now needs the real Abel argument (content sorry). -/
 
+/-- **Residue theorem typeclass** (Forster §4.24 / Miranda §V.2.4).
+Axiomatizes the classical fact that on a compact Riemann surface,
+the sum of orders of a meromorphic function is zero:
+`∑_{x ∈ X} ord_x(f) = 0` for every meromorphic `f`.
+
+Classical proof: integrate `d(log f) = df/f` around the boundary of
+a triangulation; each face contributes zero (Stokes); each edge is
+traversed twice with opposite orientations, cancelling. The residue
+at each pole/zero contributes `2πi · ord_x(f)`, so the sum of
+orders is zero.
+
+Not currently in Mathlib (only has circle-integral residue for
+`ℂ → E` — not manifold-level). Axiomatized here; real instances
+require either a direct Stokes-on-manifolds proof, an adaptation of
+Mathlib's circle-integral machinery via chart cover, or a
+Riemann–Roch route. -/
+class HasResidueTheorem (X : Type*) [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [Jacobians.HasSmoothPaths X] : Prop where
+  /-- The degree of the divisor of any meromorphic function is zero. -/
+  deg_div_eq_zero : ∀ f : MeromorphicFunction X,
+    Divisor.deg X (MeromorphicFunction.divViaOrder X f) = 0
+
 /-- **Residue theorem** (Forster §4.24): the degree of `div f` is
-zero for every meromorphic function `f`. Classical fact; proof
-requires Stokes' theorem on compact X applied to `df/f`. Content
-sorry — Mathlib doesn't currently have the residue theorem for
-general Riemann surfaces. -/
-theorem deg_div (f : MeromorphicFunction X) :
-    Divisor.deg X (MeromorphicFunction.div X f) = 0 := sorry
+zero for every meromorphic function `f`. Delegates to the
+`HasResidueTheorem X` typeclass. -/
+theorem deg_div [HasResidueTheorem X] (f : MeromorphicFunction X) :
+    Divisor.deg X (MeromorphicFunction.div X f) = 0 :=
+  HasResidueTheorem.deg_div_eq_zero f
 
 /-- **Principal divisors have degree 0** (Forster §4.24). Every
 principal divisor sits inside `DivisorOfDegZero X`. Proof uses
 `deg_div` (residue theorem) + closure under addition. -/
-theorem PrincipalDivisors_le_DivisorOfDegZero :
+theorem PrincipalDivisors_le_DivisorOfDegZero [HasResidueTheorem X] :
     PrincipalDivisors X ≤ DivisorOfDegZero X := by
   show AddSubgroup.closure (Set.range (MeromorphicFunction.div X)) ≤ DivisorOfDegZero X
   refine AddSubgroup.closure_le _ |>.mpr ?_
