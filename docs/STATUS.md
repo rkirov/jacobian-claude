@@ -1,6 +1,42 @@
 # Project status (auto-maintained)
 
-## Montel — Steps 5a + 5b + 5c landed; 5d blocked on CompleteSpace (latest)
+## Montel — Steps 5a + 5b + 5c + pointwise-limit (5d-partial) landed (latest)
+
+**This session (post 8 GB upgrade):**
+- Droplet upgraded from 2vCPU/4 GB to 4vCPU/8 GB — LSP workers now have
+  comfortable headroom; build times for `Jacobians.Montel.Complete`
+  stabilized at 20–25 s.
+- **`exists_toFun_limit`** landed. Produces the pointwise CLM limit
+  `αLim.toFun : (y : X) → T_y X →L[ℂ] (Trivial X ℂ) y` with Tendsto.
+  Unblocks the CompleteSpace-synthesis issue from last session by
+  transporting `CauchySeq` along the chart CLE
+  `φ := e.continuousLinearEquivAt ℂ y hy` into `ℂ →L[ℂ] ℂ` (which does
+  have inferrable `CompleteSpace`), extracting the limit via
+  `cauchySeq_tendsto_of_complete`, and pulling back via
+  `φ.arrowCongr (ContinuousLinearEquiv.refl ℂ ℂ)`.symm.
+- Failed approach first: injecting NormedAddCommGroup on `TangentSpace
+  y` via `inferInstanceAs (NormedAddCommGroup ℂ)` elaborated but
+  produced kernel mismatches (the `•` on `TangentSpace y` and on `ℂ`
+  are not kernel-equal even though definitionally equal). The transport
+  route avoids touching the fiber's normed instances entirely.
+
+**Remaining for the Montel sorry (`exists_convergent_subseq_of_bounded`):**
+- **Step 5d proper** (smoothness): assemble `αLim.toFun` into a
+  `ContMDiffSection ω`. The smoothness proof needs chart-wise
+  analyticity of the limit via
+  `analyticOn_of_pullback_tendsto_locally_uniformly` +
+  Bridge-from-analytic-localRep-to-ContMDiff-section. The forward
+  direction (`ContMDiffSection → analyticOn_chart`) is in
+  `Compactness.lean`; the reverse is new — this is the genuine bundle
+  reconstruction step, ~200 lines. Not a Mathlib gap per se but
+  Mathlib doesn't ship this bridge directly.
+- **Step 6** (norm bound + Tendsto in supNormK):
+  `supNormK αLim ≤ 1` via lowersemicontinuity of supNormK under
+  pointwise Tendsto + chartNormK's sSup characterization; then
+  `Tendsto (αs ∘ φ) atTop (𝓝 αLim)` in supNormK from Cauchy +
+  pointwise limit. ~50 lines, straightforward once αLim is in hand.
+
+## Montel — Steps 5a + 5b + 5c landed; 5d blocked on CompleteSpace (prior)
 
 **New landings (this session):**
 - Complete.lean: **Step 5a** — `exists_subseq_bcf_tendsto_on_chartCover`:
