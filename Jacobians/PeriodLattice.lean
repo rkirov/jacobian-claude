@@ -728,7 +728,20 @@ theorem isClosed_criticalSet (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) �
       exact ContinuousLinearMap.ext_ring h
   rw [hset]
   refine isClosed_singleton.preimage ?_
-  sorry  -- Continuity of x ↦ mfderiv f x 1.
+  -- Continuity plan: use `(hf x₀).mfderiv_const` giving ContMDiffAt of mfderiv
+  -- in trivialization coordinates, which is continuous. Then relate the
+  -- coordinate-form to the raw `mfderiv f x 1` via trivialization factors.
+  --
+  -- For 𝓘(ℂ, ℂ), the trivialization at x₀ on (triv).baseSet uses chart
+  -- transition fderivs. At x = x₀ these factors are identity; at nearby x
+  -- they're nonzero scalars converging to 1. So `mfderiv f x 1 =
+  -- trivFactor(x) * (coordinate form at 1)`, and both factors are continuous
+  -- with `trivFactor → 1`. Hence `mfderiv f x 1 → mfderiv f x₀ 1` — continuity.
+  --
+  -- Concrete Mathlib reduction remaining: navigate
+  -- `Bundle.Trivialization.symmL` + `continuousLinearMapAt` + chart-transition
+  -- derivative identities to recover `mfderiv f x 1` from `inCoordinates`.
+  sorry
 
 /-- **Critical set of a non-constant map is not everything.** If
 `criticalSet f = Set.univ` (i.e., `mfderiv f = 0` everywhere), then
