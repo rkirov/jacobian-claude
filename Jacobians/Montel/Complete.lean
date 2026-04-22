@@ -453,25 +453,68 @@ theorem cauchySeq_toFun_of_supNormK_cauchy
   rw [h_fun_eq]
   exact h_cauchy_L
 
-/-! ### Step 4 — Pointwise CLM limit (DEFERRED)
+/-! ### Step 4 — Pointwise CLM limit
 
-The natural next step is to package Step 5c's CauchySeq-per-point fact
-with completeness of the CLM space to extract a pointwise limit
-function. **Blocker:** `TangentSpace 𝓘(ℂ, ℂ) y` is intentionally not
-reducible (see Mathlib's `IsManifold/Basic.lean:1037`), so the
-`CompleteSpace (TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ)` instance does not
-synthesize directly. Workaround options:
+Packages Step 5c's CauchySeq-per-point fact with completeness of the
+CLM space to extract a pointwise limit function. Provides the local
+normed instances on `TangentSpace 𝓘(ℂ, ℂ) y` (intentionally
+non-reducible in Mathlib — `IsManifold/Basic.lean:1037`) via
+`inferInstanceAs (NormedAddCommGroup ℂ)` / etc., relying on the defeq
+`TangentSpace 𝓘(ℂ, ℂ) y = ℂ`. -/
 
-1. Transport `CauchySeq` along the CLE `φ := e.continuousLinearEquivAt`
-   to `CauchySeq` in `ℂ →L[ℂ] ℂ` (which has an inferred
-   `CompleteSpace`), extract a limit there, transport back.
-2. Construct `αLim.toFun y` directly from the per-chart bcf-limit
-   `g_{x₀}` and `φ` as `g_{x₀} y • φ`, then verify well-definedness
-   across chart overlaps via `chartTransitionFactor`.
-
-Option 2 is more work but dovetails into Step 5d (bundle
-reconstruction) since it also provides the chart-wise analytic data
-used in `analyticOn_of_pullback_tendsto_locally_uniformly`. -/
+omit [ConnectedSpace X] in
+/-- Pointwise CLM limit of a supNormK-Cauchy sequence of sections. -/
+theorem exists_toFun_limit
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (h_diff : ∀ ε > 0, ∃ N, ∀ n m, n ≥ N → m ≥ N →
+      HolomorphicOneForms.supNormK (αs n - αs m) < ε) :
+    ∃ L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y,
+      ∀ y : X, Tendsto (fun n : ℕ => (αs n).toFun y) atTop (𝓝 (L y)) := by
+  have h_pw_cauchy : ∀ y : X, CauchySeq (fun n : ℕ => (αs n).toFun y) := by
+    intro y
+    have hmem : y ∈ (Set.univ : Set X) := Set.mem_univ _
+    rw [← iUnion_shrunkChart_chartCover_eq (X := X)] at hmem
+    simp only [Set.mem_iUnion] at hmem
+    obtain ⟨x₀, hx₀mem, hy_in⟩ := hmem
+    exact cauchySeq_toFun_of_supNormK_cauchy αs h_diff hx₀mem hy_in
+  have h_pw_limit : ∀ y : X,
+      ∃ L : TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y,
+        Tendsto (fun n : ℕ => (αs n).toFun y) atTop (𝓝 L) := by
+    intro y
+    -- Pick x₀ ∈ chartCover with y ∈ shrunkChart x₀; use the chart CLE
+    -- φ : TangentSpace y ≃L[ℂ] ℂ to transport the Cauchy sequence
+    -- into `ℂ →L[ℂ] ℂ` (which is a complete normed space).
+    have hmem : y ∈ (Set.univ : Set X) := Set.mem_univ _
+    rw [← iUnion_shrunkChart_chartCover_eq (X := X)] at hmem
+    simp only [Set.mem_iUnion] at hmem
+    obtain ⟨x₀, hx₀mem, hy_in⟩ := hmem
+    set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀ with he
+    have hy_baseSet : y ∈ e.baseSet := by
+      rw [TangentBundle.trivializationAt_baseSet]
+      exact shrunkChart_subset_source x₀ hx₀mem hy_in
+    set φ := e.continuousLinearEquivAt ℂ y hy_baseSet with hφ
+    -- CLE between CLM spaces: arrowCongr φ (refl ℂ) sends L ↦ L.comp φ.symm.
+    let transport : (TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
+        ≃L[ℂ] (ℂ →L[ℂ] ℂ) :=
+      φ.arrowCongr (ContinuousLinearEquiv.refl ℂ ℂ)
+    -- Transport Cauchy into the complete `ℂ →L[ℂ] ℂ` space via the
+    -- underlying CLM (which is uniformly continuous).
+    have h_s_cauchy : CauchySeq (fun n : ℕ => transport ((αs n).toFun y)) :=
+      transport.toContinuousLinearMap.uniformContinuous.comp_cauchySeq (h_pw_cauchy y)
+    obtain ⟨L', hL'⟩ := cauchySeq_tendsto_of_complete h_s_cauchy
+    refine ⟨transport.symm L', ?_⟩
+    -- Transport the limit back via transport.symm (continuous ⇒ Tendsto).
+    have h_back : Tendsto (fun n : ℕ => transport.symm (transport ((αs n).toFun y)))
+        atTop (𝓝 (transport.symm L')) :=
+      (transport.symm.continuous.tendsto L').comp hL'
+    have h_round_trip : (fun n : ℕ => transport.symm (transport ((αs n).toFun y))) =
+        fun n : ℕ => (αs n).toFun y := by
+      funext n; exact transport.symm_apply_apply _
+    rw [h_round_trip] at h_back
+    exact h_back
+  choose L hL using h_pw_limit
+  exact ⟨L, hL⟩
 
 /-! ### Remaining steps (DEFERRED)
 
