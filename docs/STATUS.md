@@ -1,6 +1,72 @@
 # Project status (auto-maintained)
 
-## Abel scaffolding landed (latest, 2026-04-23)
+## Placeholder-removal session (latest, 2026-04-23)
+
+**Major refactor: three core placeholders removed, definitions now
+real-shaped.**
+
+### Removed placeholders (now real):
+
+| Before | After |
+|--------|-------|
+| `Jacobian.ofCurve P := fun _ => 0` | `fun Q => mk (periodVec (smoothPath P Q))` |
+| `MeromorphicFunction.div := 0` | `divViaOrder` via `orderAtPoint` |
+| `abelJacobi := 0` | `∑ P ∈ supp D, D P • mk (periodVec (smoothPath P₀ P))` |
+
+### New infrastructure in `Jacobians/PeriodLattice.lean`:
+
+- `IsSmoothPath P Q γ` structure (smoothness-with-endpoints)
+- `IsSmoothPath.toClosedSmoothLoop` (real theorem: smooth P→P path
+  is a closed smooth loop)
+- `HasSmoothPaths X` typeclass (axiomatizes smooth-path existence;
+  classically true on compact Riemann surfaces via chart-cover)
+- `smoothPath P Q` / `isSmoothPath_smoothPath` / `periodVec_smoothPath_self_mem_lattice`
+
+### Placeholder artifacts removed:
+
+- `HasAbelsTheorem.no_distinct_points_placeholder` (was
+  placeholder-specific, false under real div)
+- `PrincipalDivisors_eq_bot` (was placeholder-specific, false on
+  positive-genus surfaces)
+
+### Sorry count: 6 → 8 (HONEST increase)
+
+- Previously vacuous/trivial: `ofCurve_inj` (via placeholder-inconsistent
+  typeclass), `deg_div` (trivial under div ≡ 0), `ofCurve_contMDiff`
+  (trivially `contMDiff_const` via placeholder).
+- Now each of these is a named classical content sorry:
+  - `deg_div`: residue theorem (Forster §4.24)
+  - `ofCurve_inj`: Abel's theorem chain via `HasAbelsTheorem` +
+    `NoDegreeOneDivisorsToPP1` applied to real `ofCurve`/`abelJacobi`
+  - `ofCurve_contMDiff`: Abel-Jacobi map is holomorphic (Forster §21)
+
+### Remaining placeholders (deeper content):
+
+- `pushforwardForm := 0` — trace of forms (Forster §10.11 / §17)
+- `ContMDiff.degree := 0` — preimage counting (Forster §4)
+- `ambientPhi` via matrix-transpose (workaround; canonical math
+  definition is via `pushforwardForm`, blocked on the above)
+
+### Session-local wins (earlier): 
+
+- `isClosed_criticalSet` FULLY PROVEN (bundle-trivialization drilling).
+- `ambientPsi_periodVec_mem_truePeriodLattice` constant case proven;
+  non-constant decomposed via `PreimageCycle` structure.
+- `criticalSet_ne_univ_of_nonconstant` outer structure proven via
+  `IsLocallyConstant.exists_eq_const`.
+
+### Session remaining sorries (all named classical facts):
+
+1. `Jacobians.lean:164` — `ofCurve_contMDiff` (Abel-Jacobi holomorphic)
+2. `Jacobians.lean:193` — `ofCurve_inj` (Abel's theorem chain)
+3. `PeriodLattice.lean:914` — `criticalSet_ne_univ` inner (chart-ball MVT)
+4. `PeriodLattice.lean:925` — `finite_criticalSet` (isolated zeros + compact)
+5. `PeriodLattice.lean:945` — `exists_preimageCycle` (branched-cover trace)
+6. `HolomorphicForms.lean:353` — `ambientPhi_ambientPsi_eq` (degree identity)
+7. `Genus.lean:75` — `genus_eq_zero_iff_homeo` (Riemann-Roch for g=0)
+8. `Abel.lean:569` — `deg_div` (residue theorem)
+
+## Abel scaffolding landed (earlier, 2026-04-23)
 
 New file `Jacobians/Abel.lean` (sorry-free). All the types and
 statements needed to state Abel's theorem on a compact Riemann
