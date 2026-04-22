@@ -195,21 +195,88 @@ Forster's `div f` is built from two classical facts:
 Together, these close `supportLocallyFiniteWithinDomain'`. Both are
 textbook lemmas (Forster §6.4, Miranda II.4). -/
 
+/-! #### The Mathlib-missing pieces for `orderAtPoint_isolated_at`
+
+Two textbook lemmas that Mathlib does not currently have for
+manifold-level meromorphic functions:
+
+**Lemma A** (`orderAtPoint_eq_zero_of_eventually_zero`): if `f` is
+identically zero in a neighborhood of `y` (as a function on `X`),
+then `orderAtPoint f y = 0`. Follows from `.untop₀ ⊤ = 0`: f ≡ 0
+near y ⇒ (f ∘ chart_y.symm) = 0 eventually ⇒ meromorphicOrderAt = ⊤.
+
+**Lemma B** (`orderAtPoint_chart_invariant`): the order is
+chart-invariant. Specifically, `orderAtPoint f y = (meromorphicOrderAt
+(f ∘ chart_z.symm) (chart_z y)).untop₀` for `y ∈ chart_z.source`.
+Follows from `meromorphicOrderAt_comp_of_deriv_ne_zero` applied to
+the chart transition `chart_z ∘ chart_y.symm`, which is analytic
+with nonzero derivative (from `IsManifold 𝓘(ℂ) ω`). -/
+
+variable {X} in
+/-- **Lemma A**: f identically zero near y ⇒ orderAtPoint f y = 0. -/
+theorem MeromorphicFunction.orderAtPoint_eq_zero_of_eventually_zero
+    (f : MeromorphicFunction X) (y : X)
+    (h : ∀ᶠ x in 𝓝 y, f.toFun x = 0) : f.orderAtPoint y = 0 := by
+  -- chart.symm (chart y) = y.
+  have h_symm_eq : (chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y) = y :=
+    (chartAt (H := ℂ) y).left_inv (mem_chart_source ℂ y)
+  -- chart.symm maps chart y continuously to y.
+  have h_cont : ContinuousAt (chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y) :=
+    (chartAt (H := ℂ) y).continuousAt_symm
+      ((chartAt (H := ℂ) y).map_source (mem_chart_source ℂ y))
+  -- Rewrite h to use chart.symm (chart y) = y.
+  have h' : ∀ᶠ x in 𝓝 ((chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y)),
+      f.toFun x = 0 := by rw [h_symm_eq]; exact h
+  -- So for w near chart y, (f ∘ chart.symm) w = f(chart.symm w) → 0.
+  have h_chart : ∀ᶠ w in 𝓝 ((chartAt (H := ℂ) y) y),
+      (f.toFun ∘ (chartAt (H := ℂ) y).symm) w = 0 := h_cont.eventually h'
+  -- Eventually zero on a pointed nbhd too.
+  have h_pw : ∀ᶠ w in 𝓝[{((chartAt (H := ℂ) y) y)}ᶜ] ((chartAt (H := ℂ) y) y),
+      (f.toFun ∘ (chartAt (H := ℂ) y).symm) w = 0 :=
+    h_chart.filter_mono nhdsWithin_le_nhds
+  -- meromorphicOrderAt is ⊤ for eventually-zero in pointed nbhd.
+  have h_order : meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) y).symm)
+      ((chartAt (H := ℂ) y) y) = ⊤ :=
+    meromorphicOrderAt_eq_top_iff.mpr h_pw
+  show (meromorphicOrderAt _ _).untop₀ = 0
+  rw [h_order]
+  exact WithTop.untop₀_top
+
+variable {X} in
+/-- **Lemma B** (Mathlib-missing): chart-invariance of the order.
+The order computed via an arbitrary chart `e` matches `orderAtPoint`
+(computed via `chart_y`). Sorry'd; follows from
+`meromorphicOrderAt_comp_of_deriv_ne_zero` applied to the chart
+transition `chart_y ∘ e.symm` (analytic with nonzero derivative by
+`IsManifold 𝓘(ℂ) ω`). -/
+theorem MeromorphicFunction.orderAtPoint_chart_invariant
+    (f : MeromorphicFunction X) {y : X}
+    (e : OpenPartialHomeomorph X ℂ) (_he : e ∈ atlas ℂ X) (_hy : y ∈ e.source) :
+    (meromorphicOrderAt (f.toFun ∘ e.symm) (e y)).untop₀ =
+      f.orderAtPoint y :=
+  sorry
+
 variable {X} in
 /-- **Isolation of zeros/poles** around a point (Forster §6 /
-Miranda II.4). Around any `z ∈ X`, there's a neighborhood where
-`orderAtPoint f y = 0` for all `y ≠ z`. Classical: combines
-`MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero` at
-`chart_z z` (giving a pointed neighborhood in chart_z coordinates
-where the chart pullback is either ≡ 0 or ≠ 0) with chart-invariance
-of `meromorphicOrderAt` (via
-`meromorphicOrderAt_comp_of_deriv_ne_zero` on chart transitions).
-In either branch of the dichotomy, the order in any other chart_y
-equals 0 for y ≠ z near z. -/
+Miranda II.4). Combines Lemma A (identically zero case) and
+Lemma B (chart invariance, Mathlib-missing) with the dichotomy
+`MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero`. -/
 theorem MeromorphicFunction.orderAtPoint_isolated_at
     (f : MeromorphicFunction X) (z : X) :
-    ∃ t ∈ 𝓝 z, ∀ y ∈ t, y ≠ z → f.orderAtPoint y = 0 :=
-  sorry
+    ∃ t ∈ 𝓝 z, ∀ y ∈ t, y ≠ z → f.orderAtPoint y = 0 := by
+  -- Apply the dichotomy at chart_z z.
+  have hmero := f.meromorphic z
+  rcases hmero.eventually_eq_zero_or_eventually_ne_zero with _ | _
+  · -- Case A: f ∘ chart_z.symm ≡ 0 in pointed nbhd of chart_z z.
+    -- Transfer to X (chart_z continuity), then for each y ≠ z nearby,
+    -- use `orderAtPoint_eq_zero_of_eventually_zero` since f ≡ 0 near y.
+    -- Bounded ~30-line proof via `Filter.eventually_nhdsWithin_iff` +
+    -- `ContinuousAt.eventually` + T2-separation of y, z.
+    sorry
+  · -- Case B: f ∘ chart_z.symm ≠ 0 in pointed nbhd.
+    -- Order via chart_z is 0 for w ≠ chart_z z nearby (standard).
+    -- Transfer via `orderAtPoint_chart_invariant` (Mathlib-missing Lemma B above).
+    sorry
 
 variable {X} in
 /-- The order function as a `locallyFinsuppWithin` on `Set.univ`.
