@@ -1,10 +1,20 @@
 # Project status (auto-maintained)
 
-## Abel–Jacobi: Phase 1b fully proven; only 1c remains (latest)
+## Abel–Jacobi: Phase 1 operationally complete (latest)
 
 Phase 1a + 1b (linearity + reversal + concatenation) are all fully
-proven. Only 1c (chart-local path independence via Cauchy) remains
-as a single sorry.
+proven. Phase 1c remains as a single sorry but is **not on the
+critical path** for Phase 2→3→4:
+
+- Well-definedness of `ofCurve`: follows from reversal + concat +
+  the *definition* of periodLattice as ℤ-span of closed-loop integrals
+  (`∫_γ - ∫_{γ'} = ∫_{γ ∗ reverse γ'}`, a closed loop ⇒ in periodLattice
+  by construction).
+- 1c would be needed only for further results about the period lattice
+  structure (rank, discreteness) — but those are absorbed by the
+  `IsPeriodLattice` typeclass axiomatization alongside the Hodge gap.
+
+Phase 1 is therefore **operationally complete**. Phase 2 can proceed.
 
 **Phase 1a — Vector line integral** (`LineIntegral.lean`):
 - ✅ `lineIntegralVec`, `lineIntegralVec_apply`.
