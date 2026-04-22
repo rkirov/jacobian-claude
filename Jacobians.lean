@@ -175,12 +175,34 @@ lemma ofCurve_self (P : X) : ofCurve P P = 0 := by
 `P` to `P₀` adds the constant `ofCurve P₀ P` (the image of the old
 basepoint under the new).
 
-Classical: the closed loop `sp(P, A) ⊕ reverse(sp(P₀, A)) ⊕ sp(P₀, P)`
-(going `P → A → P₀ → P`) has `periodVec` in the lattice. Quotienting
-gives the identity. Formalization needs path concat/reverse smoothness
-preservation, ~30-50 lines. -/
+**Proof strategy:**
+1. Let `γ₁ = sp(P₀, A)` and `γ₂ = concat(sp(P₀, P), sp(P, A))`. Both
+   go from P₀ to A.
+2. Apply `mk_periodVec_eq_of_endpoints`: their mk(periodVec) are
+   equal in the Jacobian quotient.
+3. By `periodVec_concat`, `periodVec γ₂ = periodVec (sp(P₀, P)) +
+   periodVec (sp(P, A))`.
+4. Rearrange via `QuotientAddGroup.mk_add`: `ofCurve P₀ A = ofCurve
+   P₀ P + ofCurve P A`.
+
+The remaining content gap is the smoothness+integrability hypothesis
+bundle for `mk_periodVec_eq_of_endpoints` and `periodVec_concat` —
+concat of smooth paths is a smooth loop when closed, and path-algebra
+integrability. Left as a focused content sorry (~30-50 lines of
+concat/reverse smoothness preservation). -/
 lemma ofCurve_basepoint_change (P P₀ A : X) :
-    ofCurve P₀ A = ofCurve P A + ofCurve P₀ P := sorry
+    ofCurve P₀ A = ofCurve P A + ofCurve P₀ P := by
+  unfold ofCurve
+  -- Goal: mk(periodVec(sp(P₀,A))) = mk(periodVec(sp(P,A))) + mk(periodVec(sp(P₀,P)))
+  rw [show QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P A)) +
+         QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P₀ P)) =
+       QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P A) +
+                            Jacobians.periodVec (Jacobians.smoothPath P₀ P)) from
+    (QuotientAddGroup.mk_add _ _ _).symm]
+  -- Use mk_periodVec_eq_of_endpoints: γ₁ = sp(P₀, A), γ₂ = concat(sp(P₀, P), sp(P, A)).
+  -- periodVec γ₂ = periodVec(sp(P₀, P)) + periodVec(sp(P, A)) by periodVec_concat.
+  -- Both γ₁, γ₂ go from P₀ to A, so mk(periodVec γ₁) = mk(periodVec γ₂).
+  sorry
 
 /-- **Abel ⇒ ofCurve injective.**
 
