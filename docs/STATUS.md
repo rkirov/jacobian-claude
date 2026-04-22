@@ -1,6 +1,64 @@
 # Project status (auto-maintained)
 
-## Abel–Jacobi: chain rule + linear algebra CLOSED (latest, 2026-04-23)
+## Abel–Jacobi: chain rule + basis expansion fully closed (latest, 2026-04-23)
+
+**MAJOR SESSION: Two hard theorems now fully sorry-free:**
+
+### `lineIntegral_pullback` (LineIntegral.lean) — REAL theorem
+
+Closed via the atomic pointwise identity `pathSpeed_comp_eq_mfderiv`,
+which is itself closed via ~80 lines of chart-pullback manipulation:
+
+1. Chart-pullback equality via `filter_upwards` on γ s ∈ chart.source.
+2. ℂ-differentiability of f_loc via `MDifferentiableAt.differentiableWithinAt_writtenInExtChartAt`
+   + `ModelWithCorners.range_eq_univ` + `differentiableWithinAt_univ`.
+3. **Bypass of the `IsScalarTower ℝ ℂ ℂ` diamond**: direct
+   `HasFDerivAt.restrictScalars` fails due to `Complex.instModuleSelf`
+   vs `Algebra.toModule` diamond. Workaround: construct the
+   ℝ-`HasFDerivAt` manually via `hasFDerivAt_iff_isLittleO_nhds_zero`
+   + `ContinuousLinearMap.coe_restrictScalars'`.
+4. Chain rule via `fderiv_comp`.
+5. `MDifferentiableAt.mfderiv` + `fderivWithin_univ` for the mfderiv bridge.
+6. Assemble: `Filter.EventuallyEq.fderiv_eq` + `ContinuousLinearMap.comp_apply`.
+
+### `periodVec_pushforward_of_smooth` (PeriodLattice.lean) — REAL theorem
+
+Under regularity hypotheses (`Continuous γ` + `DifferentiableAt`
+chart pullback + per-basis integrability), the linear-algebra
+identity `periodVec (f ∘ γ) = ambientPhi f hf (periodVec γ)` is
+now sorry-free. Proof via:
+
+1. `lineIntegral_pullback` (the chain rule result).
+2. `pullbackForm_periodBasisForm_eq` (pullback in ambient coords).
+3. `pi_eq_sum_univ'` (Pi.basisFun decomposition).
+4. `intervalIntegral.integral_finset_sum` (sum distribution, using
+   per-basis integrability).
+5. Matrix transpose unfolding via `Matrix.mulVecLin_apply` +
+   `LinearMap.toMatrix_apply` + `Pi.basisFun_repr`.
+
+### Added predicate `IsClosedSmoothLoop`
+
+A structure bundling the regularity hypotheses for downstream use.
+Not yet propagated into `closedLoopPeriods` (the full propagation
+needs an auxiliary lemma that `f ∘ γ` is `IsClosedSmoothLoop` when
+`γ` is + f smooth — substantial but bounded).
+
+### Current sorry count: 6 (2 from Jacobians.lean, 4 content-gated)
+
+- `Jacobians.lean:161` — `ofCurve_inj` (Abel's theorem)
+- `Jacobians.lean:226` — `ambientPsi_preserves_lattice` (needs pushforward-of-forms)
+- `Jacobians/Genus.lean:72` — `genus_eq_zero_iff_homeo` (Riemann-Roch)
+- `Jacobians/HolomorphicForms.lean:350` — `ambientPhi_ambientPsi_eq` (degree identity)
+- `Jacobians/LineIntegral.lean:452` — `lineIntegral_eq_of_chart_local` (off-path Cauchy)
+- `Jacobians/PeriodLattice.lean:318` — `periodVec_pushforward` (hypothesis-free; smooth version real)
+
+`ambientPhi_preserves_lattice` in Jacobians.lean is a REAL theorem
+(via `ambientPhi_preserves_truePeriodLattice`) modulo only the
+hypothesis-free `periodVec_pushforward` sorry, which requires
+propagating `IsClosedSmoothLoop` into `closedLoopPeriods` (deferred
+to next session).
+
+## Abel–Jacobi: chain rule + linear algebra CLOSED (earlier this session)
 
 **Two substantive theorems fully proven (sorry-free):**
 
