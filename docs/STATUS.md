@@ -97,7 +97,27 @@ a math gap, a plumbing gap.
   Reverse of `localRep_analyticOn_chartTarget`, restricted to
   `innerChartOpen x₀`. Uses `contMDiffOn_iff_of_subset_source'`
   (cleaner than `contMDiffOn_iff`) + `contDiffOn_omega_iff_analyticOn.mpr`.
-- 🔶 **Substep 4** (skeleton only) — `contMDiffOn_totalSpaceMk_L_inner`:
+- 🔶 **Substep 4 (80% done)** — `contMDiffOn_totalSpaceMk_L_inner`:
+  Outer structure via `contMDiffWithinAt_hom_bundle`: splits into
+  (a) projection smoothness (closed via `contMDiffWithinAt_id`) and
+  (b) `inCoordinates` smoothness (remaining sub-sorry).
+  Inner sub-sorry: show `ContMDiffWithinAt ω (fun x => inCoordinates
+  ℂ (TangentSpace) ℂ (Trivial X ℂ) y₀ x y₀ x (L x)) (innerChartOpen x₀) y₀`.
+  Approach: use `inCoordinates_eq` + `Trivial.continuousLinearMapAt_trivialization = id`
+  to reduce to smoothness of `L y ∘ (e.symmL ℂ y)` as ℂ →L[ℂ] ℂ,
+  which equals `(L y (e.symmL y 1)) • (ContinuousLinearMap.id ℂ ℂ)`.
+  Combine smooth scalar (substep 3) with smooth CLE action. ~50-80 lines.
+- ✅ **Substep 5** — finite cover assembly in `Montel.lean`:
+  for each y ∈ X, pick x₀' ∈ chartCover with y ∈ innerChartOpen x₀'
+  (via `iUnion_innerChartOpen_chartCover_eq`); apply substep 4;
+  lift `ContMDiffOn` to `ContMDiffAt` via `IsOpen.mem_nhds`.
+
+**Full Montel chain stands assembled modulo the ONE inner
+inCoordinates sorry in Complete.lean.**
+
+(Original substep 4 skeleton, preserved below:)
+
+- 🔶 **Substep 4 (skeleton only)** — `contMDiffOn_totalSpaceMk_L_inner`:
   theorem statement declared (signature matches substeps 1-3's parameter
   list), body is `sorry`. Approach documented: use `contMDiffAt_hom_bundle`
   iff (or `Trivialization.contMDiffOn_section_baseSet_iff`) to reduce
