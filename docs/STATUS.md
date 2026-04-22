@@ -1,6 +1,34 @@
 # Project status (auto-maintained)
 
-## Montel — FULLY CLOSED (latest)
+## Abel–Jacobi: Phase 1a + linearity landed (latest)
+
+Started Path B per `docs/ABEL_JACOBI_PLAN.md`. Montel provides
+`FiniteDimensional ℂ (HOF X)`, so `Module.finBasis ℂ (HOF X)` is now
+a usable finite basis.
+
+**In `LineIntegral.lean`:**
+- `lineIntegralVec` (Phase 1a): vector line integral
+  `Fin n → HOF X → (ℝ → X) → (Fin n → ℂ)` — the period-map building
+  block.
+- `lineIntegral_zero`, `lineIntegral_add`, `lineIntegral_smul`,
+  `lineIntegral_neg` (Phase 1b linearity): algebraic identities in
+  the form, via `ContMDiffSection`'s `AddCommGroup`/`Module ℂ`
+  instances (rfl-level pointwise) + `intervalIntegral` linearity.
+  `lineIntegral_add` takes integrability hypotheses; a
+  hypothesis-free variant awaits the smooth-path → continuous-
+  integrand lemma.
+
+**Still to do in Phase 1:**
+- 1b-reversal: `lineIntegral α (reverse γ) = -lineIntegral α γ` (chain
+  rule + interval substitution).
+- 1b-concatenation: `lineIntegral α (γ ∗ γ') = lineIntegral α γ +
+  lineIntegral α γ'` (piecewise-smooth path handling).
+- 1c: path-independence inside a chart (local Cauchy's theorem).
+
+Then Phase 2 (real `periodLattice` via period-map image on closed
+loops), Phase 3 (`ofCurve`), Phase 4 (lattice preservation).
+
+## Montel — FULLY CLOSED (prior)
 
 **Montel is completely sorry-free.** `HolomorphicOneForms.exists_convergent_subseq_of_bounded`
 in `Jacobians/Montel.lean` has a real proof with zero sorries. The
