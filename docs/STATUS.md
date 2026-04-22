@@ -1,32 +1,39 @@
 # Project status (auto-maintained)
 
-## Abel–Jacobi: Phase 1a + linearity landed (latest)
+## Abel–Jacobi: Phase 1 skeleton complete (latest)
 
-Started Path B per `docs/ABEL_JACOBI_PLAN.md`. Montel provides
-`FiniteDimensional ℂ (HOF X)`, so `Module.finBasis ℂ (HOF X)` is now
-a usable finite basis.
+All Phase 1 statements are declared; 2 proof bodies remain as sorry.
+Downstream Phase 2+ code can now invoke the full Phase 1 API with
+explicit hypotheses.
 
-**In `LineIntegral.lean`:**
-- `lineIntegralVec` (Phase 1a): vector line integral
-  `Fin n → HOF X → (ℝ → X) → (Fin n → ℂ)` — the period-map building
-  block.
-- `lineIntegral_zero`, `lineIntegral_add`, `lineIntegral_smul`,
-  `lineIntegral_neg` (Phase 1b linearity): algebraic identities in
-  the form, via `ContMDiffSection`'s `AddCommGroup`/`Module ℂ`
-  instances (rfl-level pointwise) + `intervalIntegral` linearity.
-  `lineIntegral_add` takes integrability hypotheses; a
-  hypothesis-free variant awaits the smooth-path → continuous-
-  integrand lemma.
+**Phase 1a — Vector line integral** (`LineIntegral.lean`):
+- ✅ `lineIntegralVec`, `lineIntegralVec_apply`.
 
-**Still to do in Phase 1:**
-- 1b-reversal: `lineIntegral α (reverse γ) = -lineIntegral α γ` (chain
-  rule + interval substitution).
-- 1b-concatenation: `lineIntegral α (γ ∗ γ') = lineIntegral α γ +
-  lineIntegral α γ'` (piecewise-smooth path handling).
-- 1c: path-independence inside a chart (local Cauchy's theorem).
+**Phase 1b — Line integral operations** (`LineIntegral.lean`):
+- ✅ `lineIntegral_zero`, `lineIntegral_add`, `lineIntegral_smul`,
+  `lineIntegral_neg` (linearity in the form, via `ContMDiffSection`
+  operations + `intervalIntegral` linearity).
+- ✅ `reverse γ`, `pathSpeed_reverse`, `lineIntegral_reverse`
+  (chain rule on `(1-·)` + `intervalIntegral.integral_comp_sub_left`).
+- 🔶 `concat γ γ'`, `concat_apply_{left,right}`, `lineIntegral_concat`
+  (statement + definition landed; proof body sorry — ~80 lines of
+  piecewise chain rule + `smul_integral_comp_mul_add`-style
+  reparametrization on each half).
+
+**Phase 1c — Chart-local path independence** (`LineIntegral.lean`):
+- 🔶 `lineIntegral_eq_of_chart_local` (statement landed; proof body
+  sorry — ~200 lines of Cauchy-theorem transport: Mathlib's
+  `Complex.integral_eq_zero_on_closedLoop` applied to the chart
+  pullback).
+
+**Remaining Phase 1 work (2 sub-sorries):** fill `lineIntegral_concat`
+and `lineIntegral_eq_of_chart_local`. Both are substantial (100–200
+lines each) but mechanically bounded: no Mathlib gaps, just careful
+interval-integral reparametrization and Cauchy-theorem invocation.
 
 Then Phase 2 (real `periodLattice` via period-map image on closed
-loops), Phase 3 (`ofCurve`), Phase 4 (lattice preservation).
+loops with `IsPeriodLattice` axiomatizing the Hodge-rank gap),
+Phase 3 (`ofCurve`), Phase 4 (lattice preservation).
 
 ## Montel — FULLY CLOSED (prior)
 
