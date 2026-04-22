@@ -624,6 +624,134 @@ theorem norm_localRep_sub_limit_le
       (hN n m hn hm))
   exact le_of_tendsto h_sub_tendsto.norm h_eventually
 
+/-! ### Step 5d substep 1 — chart-pullback locally uniform convergence
+
+The bridge from bcf-convergence on `innerShrunkChart x₀` (compact) to
+`TendstoLocallyUniformlyOn` of the chart pullbacks on
+`chart '' innerChartOpen x₀` (open ⊆ chart target). Path 2's step 1. -/
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- **Limit identification.** The bcf-limit `g` on `innerShrunkChart x₀`
+agrees with `y ↦ L y (e.symmL ℂ y 1)` via pointwise uniqueness of limits. -/
+private lemma bcf_limit_eq_L_eval
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
+    (hL : ∀ y : X, Tendsto (fun n : ℕ => (αs n).toFun y) atTop (𝓝 (L y)))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    (g : letI := innerShrunkChart_compactSpace (X := X) x₀
+      BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ)
+    (hg : letI := innerShrunkChart_compactSpace (X := X) x₀
+      Tendsto (fun n : ℕ =>
+        BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk (αs n) x₀))
+        atTop (𝓝 g))
+    (y : innerShrunkChart (X := X) x₀) :
+    letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+    g y = L y.val (e.symmL ℂ y.val 1) := by
+  letI := innerShrunkChart_compactSpace (X := X) x₀
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+  -- bcf Tendsto → pointwise TendstoUniformly → pointwise Tendsto.
+  rw [BoundedContinuousFunction.tendsto_iff_tendstoUniformly] at hg
+  have hg_pw : Tendsto (fun n : ℕ =>
+      BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk (αs n) x₀) y)
+      atTop (𝓝 (g y)) :=
+    hg.tendsto_at y
+  -- LHS simplifies to localRep (αs n) x₀ y.val.
+  have h_simp : ∀ n, BoundedContinuousFunction.mkOfCompact
+      (localRepOnInnerShrunk (αs n) x₀) y = localRep (αs n) x₀ y.val := by
+    intro n
+    simp only [BoundedContinuousFunction.mkOfCompact_apply,
+      localRepOnInnerShrunk_apply _ hx₀]
+  -- Rewrite hg_pw to get Tendsto of `localRep (αs n) x₀ y.val`.
+  rw [show (fun n : ℕ => BoundedContinuousFunction.mkOfCompact
+        (localRepOnInnerShrunk (αs n) x₀) y) =
+      fun n : ℕ => localRep (αs n) x₀ y.val from funext h_simp] at hg_pw
+  -- Other Tendsto: from `localRep_tendsto_of_toFun_tendsto`.
+  have h_L_tendsto : Tendsto (fun n : ℕ => localRep (αs n) x₀ y.val) atTop
+      (𝓝 (L y.val (e.symmL ℂ y.val 1))) :=
+    localRep_tendsto_of_toFun_tendsto αs L hL x₀ y.val
+  -- Uniqueness of limit in ℂ.
+  exact tendsto_nhds_unique hg_pw h_L_tendsto
+
+omit [ConnectedSpace X] [Nonempty X] in
+/-- **Substep 1 of Path 2.** Chart pullbacks of `localRep` converge
+locally uniformly on `chart '' innerChartOpen x₀` to the pullback of
+`y ↦ L y (e.symmL ℂ y 1)`, assuming bcf-convergence on
+`innerShrunkChart x₀` and pointwise CLM Tendsto. -/
+theorem tendstoLocallyUniformlyOn_pullback_on_innerChartOpen
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
+    (hL : ∀ y : X, Tendsto (fun n : ℕ => (αs n).toFun y) atTop (𝓝 (L y)))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    (g : letI := innerShrunkChart_compactSpace (X := X) x₀
+      BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ)
+    (hg : letI := innerShrunkChart_compactSpace (X := X) x₀
+      Tendsto (fun n : ℕ =>
+        BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk (αs n) x₀))
+        atTop (𝓝 g)) :
+    letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+    TendstoLocallyUniformlyOn
+      (fun n : ℕ => fun z : ℂ => localRep (αs n) x₀ ((chartAt ℂ x₀).symm z))
+      (fun z : ℂ => L ((chartAt ℂ x₀).symm z) (e.symmL ℂ ((chartAt ℂ x₀).symm z) 1))
+      atTop
+      ((chartAt ℂ x₀) '' innerChartOpen (X := X) x₀) := by
+  letI := innerShrunkChart_compactSpace (X := X) x₀
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+  -- Step 1: Identify the subtype limit via uniqueness.
+  have h_id : (⇑g : innerShrunkChart (X := X) x₀ → ℂ) =
+      fun y : innerShrunkChart (X := X) x₀ => L y.val (e.symmL ℂ y.val 1) := by
+    funext y; exact bcf_limit_eq_L_eval αs L hL hx₀ g hg y
+  -- Step 2: bcf-Tendsto ⇒ TendstoUniformly on subtype.
+  rw [BoundedContinuousFunction.tendsto_iff_tendstoUniformly] at hg
+  -- Step 3: Simplify LHS of the subtype convergence to `localRep (αs n) x₀ y.val`.
+  have h_simp : ∀ n : ℕ, (⇑(BoundedContinuousFunction.mkOfCompact
+      (localRepOnInnerShrunk (αs n) x₀)) : innerShrunkChart (X := X) x₀ → ℂ) =
+      fun y : innerShrunkChart (X := X) x₀ => localRep (αs n) x₀ y.val := by
+    intro n; funext y
+    simp only [BoundedContinuousFunction.mkOfCompact_apply,
+      localRepOnInnerShrunk_apply _ hx₀]
+  have hg_sub : TendstoUniformly
+      (fun n : ℕ => fun y : innerShrunkChart (X := X) x₀ => localRep (αs n) x₀ y.val)
+      (fun y : innerShrunkChart (X := X) x₀ => L y.val (e.symmL ℂ y.val 1))
+      atTop := by
+    have := hg
+    rw [show (fun n : ℕ => ⇑(BoundedContinuousFunction.mkOfCompact
+          (localRepOnInnerShrunk (αs n) x₀))) =
+        fun n : ℕ => fun y : innerShrunkChart (X := X) x₀ =>
+          localRep (αs n) x₀ y.val from funext h_simp] at this
+    rw [h_id] at this
+    exact this
+  -- Step 4: Subtype-TendstoUniformly ⇒ TendstoUniformlyOn the set innerShrunkChart.
+  have hUnifOn_shrunk : TendstoUniformlyOn
+      (fun n : ℕ => fun y : X => localRep (αs n) x₀ y)
+      (fun y : X => L y (e.symmL ℂ y 1))
+      atTop
+      (innerShrunkChart (X := X) x₀) := by
+    rw [tendstoUniformlyOn_iff_tendstoUniformly_comp_coe]
+    exact hg_sub
+  -- Step 5: Restrict to innerChartOpen ⊆ innerShrunkChart.
+  have hUnifOn_inner : TendstoUniformlyOn
+      (fun n : ℕ => fun y : X => localRep (αs n) x₀ y)
+      (fun y : X => L y (e.symmL ℂ y 1))
+      atTop
+      (innerChartOpen (X := X) x₀) :=
+    hUnifOn_shrunk.mono (subset_closure)
+  -- Step 6: Push through chart.symm via TendstoUniformlyOn.comp + mono.
+  have hUnifOn_preimage := hUnifOn_inner.comp (chartAt ℂ x₀).symm
+  have h_img_subset :
+      (chartAt ℂ x₀) '' innerChartOpen (X := X) x₀ ⊆
+        (chartAt ℂ x₀).symm ⁻¹' (innerChartOpen (X := X) x₀) := by
+    intro z hz
+    obtain ⟨y, hy, rfl⟩ := hz
+    have hy_src : y ∈ (chartAt ℂ x₀).source :=
+      innerChartOpen_subset_source x₀ hx₀ hy
+    rw [Set.mem_preimage, (chartAt ℂ x₀).left_inv hy_src]
+    exact hy
+  have hUnifOn_img := hUnifOn_preimage.mono h_img_subset
+  -- Step 7: Uniform on open ⇒ locally uniform.
+  exact hUnifOn_img.tendstoLocallyUniformlyOn
+
 /-! ### Remaining steps (DEFERRED)
 
 The full completeness proof requires:
