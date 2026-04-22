@@ -109,16 +109,13 @@ structure IsClosedSmoothLoop (γ : ℝ → X) : Prop where
     (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
       MeasureTheory.volume 0 1
 
-/-- The set of period vectors arising from closed loops (at any
-basepoint). The `γ 0 = γ 1` condition captures "closed loop". For
-the line integrals to behave per Phase 1 identities + the chain
-rule, regularity is needed (see `IsClosedSmoothLoop` above); the
-downstream theorems requiring regularity thread it as a separate
-hypothesis. -/
+/-- The set of period vectors arising from closed smooth loops (at
+any basepoint). Requires `IsClosedSmoothLoop` regularity so that the
+Phase 1 line-integral identities + chain rule apply. -/
 def closedLoopPeriods (X : Type*) [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] : Set (Fin (genus X) → ℂ) :=
-  {v | ∃ (γ : ℝ → X), γ 0 = γ 1 ∧ v = periodVec γ}
+  {v | ∃ (γ : ℝ → X), IsClosedSmoothLoop γ ∧ v = periodVec γ}
 
 /-- **True period lattice**: ℤ-span of period vectors of closed
 loops. -/
@@ -128,8 +125,9 @@ noncomputable def truePeriodLattice (X : Type*) [TopologicalSpace X]
     Submodule ℤ (Fin (genus X) → ℂ) :=
   Submodule.span ℤ (closedLoopPeriods X)
 
-/-- Any closed-loop period vector is in the period lattice. -/
-theorem periodVec_mem_truePeriodLattice_of_closed (γ : ℝ → X) (hγ : γ 0 = γ 1) :
+/-- Any closed-smooth-loop period vector is in the period lattice. -/
+theorem periodVec_mem_truePeriodLattice_of_closed (γ : ℝ → X)
+    (hγ : IsClosedSmoothLoop γ) :
     periodVec γ ∈ truePeriodLattice X :=
   Submodule.subset_span ⟨γ, hγ, rfl⟩
 
@@ -181,9 +179,9 @@ theorem periodVec_concat (γ γ' : ℝ → X)
     (h_ae_left i) (h_ae_right i)
 
 /-- **Closed-loop period is zero in the Jacobian.** Classical fact:
-integrating any form along a closed loop gives an element of the
-period lattice, which is the zero class in the Jacobian quotient. -/
-theorem mk_periodVec_closed_loop_zero (γ : ℝ → X) (hγ : γ 0 = γ 1) :
+integrating any form along a closed smooth loop gives an element of
+the period lattice, which is the zero class in the Jacobian quotient. -/
+theorem mk_periodVec_closed_loop_zero (γ : ℝ → X) (hγ : IsClosedSmoothLoop γ) :
     (QuotientAddGroup.mk (periodVec γ) :
       (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) = 0 :=
   (QuotientAddGroup.eq_zero_iff _).mpr
@@ -230,30 +228,26 @@ element. The concatenation `γ₁ ∗ reverse γ₂` must itself be a closed
 smooth loop (passed in as `hsmooth`). -/
 theorem periodVec_sub_mem_truePeriodLattice
     (γ₁ γ₂ : ℝ → X) (h0 : γ₁ 0 = γ₂ 0)
+    (hsmooth : IsClosedSmoothLoop (concat γ₁ (reverse γ₂)))
     (hconcat : periodVec (concat γ₁ (reverse γ₂)) =
       periodVec γ₁ - periodVec γ₂) :
     periodVec γ₁ - periodVec γ₂ ∈ truePeriodLattice X := by
   rw [← hconcat]
-  refine periodVec_mem_truePeriodLattice_of_closed _ ?_
-  show (concat γ₁ (reverse γ₂)) 0 = (concat γ₁ (reverse γ₂)) 1
-  rw [concat_apply_left _ _ (by norm_num : (0 : ℝ) ≤ 1/2),
-      concat_apply_right _ _ (by norm_num : ¬ (1 : ℝ) ≤ 1/2)]
-  simp only [reverse_apply, mul_zero]
-  have h1 : (1 : ℝ) - (2 * 1 - 1) = 0 := by norm_num
-  rw [h1, h0]
+  exact periodVec_mem_truePeriodLattice_of_closed _ hsmooth
 
-/-- **Abel–Jacobi well-definedness (quotient form).** Two paths
-sharing both endpoints map to the same element of
+/-- **Abel–Jacobi well-definedness (quotient form).** Two smooth
+paths sharing both endpoints map to the same element of
 `(Fin (genus X) → ℂ) ⧸ truePeriodLattice X`. -/
 theorem mk_periodVec_eq_of_endpoints
     (γ₁ γ₂ : ℝ → X) (h0 : γ₁ 0 = γ₂ 0)
+    (hsmooth : IsClosedSmoothLoop (concat γ₁ (reverse γ₂)))
     (hconcat : periodVec (concat γ₁ (reverse γ₂)) =
       periodVec γ₁ - periodVec γ₂) :
     (QuotientAddGroup.mk (periodVec γ₁) :
       (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
       QuotientAddGroup.mk (periodVec γ₂) := by
   rw [QuotientAddGroup.eq]
-  have h := periodVec_sub_mem_truePeriodLattice γ₁ γ₂ h0 hconcat
+  have h := periodVec_sub_mem_truePeriodLattice γ₁ γ₂ h0 hsmooth hconcat
   have : -periodVec γ₁ + periodVec γ₂ = -(periodVec γ₁ - periodVec γ₂) := by ring
   rw [this]
   exact (truePeriodLattice X).neg_mem h
@@ -268,6 +262,28 @@ that forces `ambientPhi` to preserve the lattice. -/
 
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
     [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
+/-- **Smooth loops compose with smooth maps.** If `γ : ℝ → X` is a
+closed smooth loop and `f : X → Y` is smooth, then `f ∘ γ` is a
+closed smooth loop in `Y`. Sub-lemmas:
+1. Closedness: from `γ 0 = γ 1`.
+2. Continuity: from continuity of `f` and `γ`.
+3. Chart-pullback differentiability of `chart_Y ∘ (f ∘ γ)` at `t`:
+   via the chart chain rule `f_loc ∘ (chart_X ∘ γ)` (proved inside
+   `pathSpeed_comp_eq_mfderiv`).
+4. Integrability of each Y-basis form along `f ∘ γ`: via
+   `lineIntegral_pullback`, the integrand equals
+   `(pullbackForm f hf (periodBasisForm Y j)).toFun (γ t) (pathSpeed γ t)`
+   (at least a.e.), which is a ℂ-linear combination of X-basis
+   integrands — each integrable by hypothesis.
+
+**Content sorry**: the sub-lemmas 3 and 4 require replaying the
+chart chain rule + linear-algebra arguments from elsewhere in the
+file. Bounded but ~100 lines. -/
+theorem IsClosedSmoothLoop.comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    {γ : ℝ → X} (hγ : IsClosedSmoothLoop γ) :
+    IsClosedSmoothLoop (f ∘ γ) :=
+  sorry
 
 /-- Change-of-variables at the vector level: evaluating each Y-basis
 form against `f ∘ γ` equals evaluating its pullback against `γ`.
@@ -313,22 +329,10 @@ matches:
   `periodVec Y (f∘γ) j = ∫_γ pullbackForm f hf (basis_j^Y)
                        = ∑_i M_ij (periodVec X γ)_i`.
 
-Uses `lineIntegral_pullback` (now real) + linearity of `lineIntegral`
-via basis expansion (the remaining content gap). -/
+Uses `lineIntegral_pullback` + linearity of `lineIntegral` via basis
+expansion. Requires path regularity (the hypotheses of
+`IsClosedSmoothLoop`). -/
 theorem periodVec_pushforward
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X) :
-    periodVec (f ∘ γ) =
-      ambientPhi (gX := genus X) (gY := genus Y) f hf (periodVec γ) :=
-  sorry
-
-/-- **Smooth variant of `periodVec_pushforward`.** With sufficient
-path regularity (continuity + chart-pullback differentiability +
-per-basis integrability), the identity is a real theorem proven via
-`lineIntegral_pullback` + basis-expansion linearity. The
-hypothesis-free version `periodVec_pushforward` is reserved for
-downstream use without threading hypotheses; it remains a sorry
-until smoothness is baked into `closedLoopPeriods`. -/
-theorem periodVec_pushforward_of_smooth
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X)
     (hγ_cont : Continuous γ)
     (hγ_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
@@ -456,11 +460,11 @@ theorem ambientPhi_preserves_truePeriodLattice
   refine Submodule.span_induction
     (p := fun v _ => ambientPhi (gX := genus X) (gY := genus Y) f hf v ∈
       truePeriodLattice Y) ?_ ?_ ?_ ?_ hv
-  · -- member case
+  · -- member case: γ ∈ closedLoopPeriods carries IsClosedSmoothLoop.
     rintro _ ⟨γ, hγ, rfl⟩
-    rw [← periodVec_pushforward f hf γ]
-    exact periodVec_mem_truePeriodLattice_of_closed (f ∘ γ)
-      (by simp [Function.comp_apply, hγ])
+    rw [← periodVec_pushforward f hf γ hγ.cont hγ.diff hγ.integrable]
+    -- f ∘ γ is IsClosedSmoothLoop via `IsClosedSmoothLoop.comp`.
+    exact periodVec_mem_truePeriodLattice_of_closed (f ∘ γ) (hγ.comp f hf)
   · -- zero case
     simp
   · -- add case
