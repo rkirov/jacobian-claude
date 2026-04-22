@@ -544,6 +544,36 @@ theorem localRep_tendsto_of_toFun_tendsto
     continuous_eval_const _
   exact (h_eval.tendsto _).comp (hL y)
 
+/-! ### Step 6a — norm bound on the pointwise limit
+
+Pointwise in each chart, if the (αs n) are bounded by 1 in supNormK
+and converge pointwise in CLM to L, then the chart-representative of
+L is bounded by 1. This packages the norm-lsc argument at the level
+of `localRep`-style scalar evaluation, without yet needing L to be a
+`ContMDiffSection`. -/
+
+omit [ConnectedSpace X] in
+/-- **Step 6a bound**: for a bounded supNormK sequence with pointwise
+CLM limit `L y`, each scalar `‖L y (e.symmL ℂ y 1)‖ ≤ 1` at
+`y ∈ shrunkChart x₀`. -/
+theorem norm_limit_localRep_le_one
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (h : ∀ n, HolomorphicOneForms.supNormK (αs n) ≤ 1)
+    (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
+    (hL : ∀ y : X, Tendsto (fun n : ℕ => (αs n).toFun y) atTop (𝓝 (L y)))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    {y : X} (hy : y ∈ shrunkChart (X := X) x₀) :
+    letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+    ‖L y (e.symmL ℂ y 1)‖ ≤ 1 := by
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+  have h_tendsto : Tendsto (fun n : ℕ => localRep (αs n) x₀ y) atTop
+      (𝓝 (L y (e.symmL ℂ y 1))) :=
+    localRep_tendsto_of_toFun_tendsto αs L hL x₀ y
+  have h_bounded : ∀ n : ℕ, ‖localRep (αs n) x₀ y‖ ≤ 1 := fun n =>
+    le_trans (HolomorphicOneForms.norm_localRep_le_supNormK (αs n) hx₀ hy) (h n)
+  exact le_of_tendsto h_tendsto.norm (Filter.Eventually.of_forall h_bounded)
+
 /-! ### Remaining steps (DEFERRED)
 
 The full completeness proof requires:
