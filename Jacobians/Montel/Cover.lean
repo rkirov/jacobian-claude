@@ -306,9 +306,10 @@ theorem iUnion_innerShrunkChart_eq : (⋃ x : X, innerShrunkChart (X := X) x) = 
   exact Set.iUnion_mono (fun _ => subset_closure)
 
 omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
-/-- For x ∉ chartCover, innerShrunkChart is empty (since innerChartOpen ⊆ chartOpen ⊆ ∅). -/
-theorem innerShrunkChart_eq_empty (x : X) (hx : x ∉ (chartCover : Finset X)) :
-    innerShrunkChart (X := X) x = ∅ := by
+/-- For x ∉ chartCover, innerChartOpen is empty (via `chartOpen x = ∅`
+and `innerChartOpen ⊆ closure (innerChartOpen) ⊆ chartOpen`). -/
+theorem innerChartOpen_eq_empty (x : X) (hx : x ∉ (chartCover : Finset X)) :
+    innerChartOpen (X := X) x = ∅ := by
   have h1 : chartOpen (X := X) x = ∅ := by
     apply Set.eq_empty_iff_forall_notMem.mpr
     intro y hy
@@ -317,15 +318,19 @@ theorem innerShrunkChart_eq_empty (x : X) (hx : x ∉ (chartCover : Finset X)) :
     unfold coverOpen at this
     rw [if_neg hx] at this
     exact this
-  have h2 : innerChartOpen (X := X) x = ∅ := by
-    apply Set.eq_empty_iff_forall_notMem.mpr
-    intro y hy
-    have : y ∈ chartOpen (X := X) x :=
-      closure_innerChartOpen_subset_chartOpen x (subset_closure hy)
-    rw [h1] at this
-    exact this
+  apply Set.eq_empty_iff_forall_notMem.mpr
+  intro y hy
+  have : y ∈ chartOpen (X := X) x :=
+    closure_innerChartOpen_subset_chartOpen x (subset_closure hy)
+  rw [h1] at this
+  exact this
+
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+/-- For x ∉ chartCover, innerShrunkChart is empty (since innerChartOpen = ∅). -/
+theorem innerShrunkChart_eq_empty (x : X) (hx : x ∉ (chartCover : Finset X)) :
+    innerShrunkChart (X := X) x = ∅ := by
   unfold innerShrunkChart
-  rw [h2, closure_empty]
+  rw [innerChartOpen_eq_empty x hx, closure_empty]
 
 omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
 /-- Restricted cover over chartCover: inner closed sets still cover X. -/
@@ -340,6 +345,22 @@ theorem iUnion_innerShrunkChart_chartCover_eq :
   · exact ⟨x, hxmem, hxy⟩
   · exfalso
     rw [innerShrunkChart_eq_empty x hxmem] at hxy
+    exact hxy
+
+omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+/-- Restricted cover over chartCover: inner OPEN sets cover X. Useful
+for chart-neighborhood arguments (e.g., Path 2 smoothness). -/
+theorem iUnion_innerChartOpen_chartCover_eq :
+    (⋃ x ∈ (chartCover : Finset X), innerChartOpen (X := X) x) = Set.univ := by
+  apply Set.eq_univ_of_univ_subset
+  rw [← iUnion_innerChartOpen_eq (X := X)]
+  intro y hy
+  simp only [Set.mem_iUnion] at hy ⊢
+  obtain ⟨x, hxy⟩ := hy
+  by_cases hxmem : x ∈ (chartCover : Finset X)
+  · exact ⟨x, hxmem, hxy⟩
+  · exfalso
+    rw [innerChartOpen_eq_empty x hxmem] at hxy
     exact hxy
 
 end Jacobians.Montel
