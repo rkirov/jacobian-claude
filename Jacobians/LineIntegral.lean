@@ -117,4 +117,73 @@ theorem lineIntegral_neg (α : HolomorphicOneForms X) (γ : ℝ → X) :
   have h : -α = (-1 : ℂ) • α := by rw [neg_smul, one_smul]
   rw [h, lineIntegral_smul]; ring
 
+/-! ### Phase 1b: path reversal
+
+`reverse γ t := γ (1 - t)`, and the line integral flips sign under
+reversal. The pathSpeed identity `pathSpeed (reverse γ) t =
+-pathSpeed γ (1 - t)` holds under differentiability of the chart
+pullback at `1 - t`. -/
+
+/-- Time-reversal of a path: `reverse γ t := γ (1 - t)`. -/
+def reverse (γ : ℝ → X) : ℝ → X := fun t => γ (1 - t)
+
+omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
+@[simp] theorem reverse_apply (γ : ℝ → X) (t : ℝ) :
+    reverse γ t = γ (1 - t) := rfl
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] in
+/-- pathSpeed under reversal: sign flip + reparametrization. Requires
+chart-pullback `(chartAt ℂ (γ(1-t))).toFun ∘ γ` to be differentiable
+at `1 - t` (which holds for smooth γ at points in the chart source). -/
+theorem pathSpeed_reverse (γ : ℝ → X) (t : ℝ)
+    (hdiff : DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (γ (1 - t))).toFun ∘ γ) (1 - t)) :
+    pathSpeed (reverse γ) t = -pathSpeed γ (1 - t) := by
+  unfold pathSpeed
+  -- reverse γ t = γ (1 - t), so chartAt at (reverse γ t) = chartAt at (γ (1 - t)).
+  show fderiv ℝ ((chartAt (H := ℂ) (γ (1 - t))).toFun ∘ (reverse γ)) t (1 : ℝ) =
+    -fderiv ℝ ((chartAt (H := ℂ) (γ (1 - t))).toFun ∘ γ) (1 - t) (1 : ℝ)
+  -- (chartAt).toFun ∘ (reverse γ) = (chartAt).toFun ∘ γ ∘ (1 - ·)
+  set ψ : ℝ → ℂ := (chartAt (H := ℂ) (γ (1 - t))).toFun ∘ γ with hψ
+  have h_comp : (chartAt (H := ℂ) (γ (1 - t))).toFun ∘ (reverse γ) =
+      ψ ∘ (fun s : ℝ => 1 - s) := by
+    funext s; simp [reverse, hψ, Function.comp_def]
+  rw [h_comp]
+  -- Chain rule: fderiv (ψ ∘ (1-·)) t 1 = fderiv ψ (1-t) (fderiv (1-·) t 1).
+  have h_sub_diff : DifferentiableAt ℝ (fun s : ℝ => 1 - s) t :=
+    (differentiableAt_const _).sub differentiableAt_id
+  rw [fderiv_comp t hdiff h_sub_diff]
+  -- fderiv (1-·) t applied at 1 = -1 (the derivative of `1 - s` is `-1`).
+  have h_fderiv_sub : fderiv ℝ (fun s : ℝ => 1 - s) t (1 : ℝ) = (-1 : ℝ) := by
+    rw [fderiv_const_sub]; simp
+  show (fderiv ℝ ψ (1 - t)) (fderiv ℝ (fun s : ℝ => 1 - s) t 1) = -fderiv ℝ ψ (1 - t) 1
+  rw [h_fderiv_sub]
+  rw [show ((fderiv ℝ ψ (1 - t)) (-1 : ℝ) : ℂ) = -fderiv ℝ ψ (1 - t) (1 : ℝ) from by
+    rw [show (-1 : ℝ) = -(1 : ℝ) from rfl, (fderiv ℝ ψ (1 - t)).map_neg]]
+
+/-- Line integral reverses sign under path reversal, under
+differentiability of the chart pullback on [0, 1]. -/
+theorem lineIntegral_reverse (α : HolomorphicOneForms X) (γ : ℝ → X)
+    (hdiff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ (1 - t))).toFun ∘ γ) (1 - t)) :
+    lineIntegral α (reverse γ) = -lineIntegral α γ := by
+  unfold lineIntegral
+  -- α.toFun((reverse γ) t)(pathSpeed (reverse γ) t) = -α.toFun(γ(1-t))(pathSpeed γ(1-t)).
+  have h_pw : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      α.toFun ((reverse γ) t) (pathSpeed (reverse γ) t) =
+        -α.toFun (γ (1 - t)) (pathSpeed γ (1 - t)) := by
+    intro t ht
+    rw [reverse_apply, pathSpeed_reverse γ t (hdiff t ht)]
+    exact (α.toFun (γ (1 - t))).map_neg _
+  rw [intervalIntegral.integral_congr h_pw, intervalIntegral.integral_neg]
+  -- ∫_0^1 α(γ(1-t))(pathSpeed γ(1-t)) dt = ∫_0^1 α(γ u)(pathSpeed γ u) du
+  -- via substitution u = 1 - t.
+  congr 1
+  have h_sub := intervalIntegral.integral_comp_sub_left
+    (fun u : ℝ => α.toFun (γ u) (pathSpeed γ u)) 1 (a := 0) (b := 1)
+  simp at h_sub
+  exact h_sub
+
 end Jacobians
