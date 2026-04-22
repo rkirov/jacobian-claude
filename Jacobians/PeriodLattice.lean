@@ -255,6 +255,23 @@ theorem periodVec_comp_eq_lineIntegral_pullback
   unfold periodVec
   exact lineIntegral_pullback f hf (periodBasisForm Y j) γ
 
+/-- **Pullback of a `Y`-basis form via `f`, expressed in the `X`
+basis coordinates.** Classical linear-algebra identity tying
+`pullbackForm` to `ambientPsi`. Pure manipulation of the
+`ambientIso`-based definitions; no analytic content. -/
+theorem pullbackForm_periodBasisForm_eq (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (j : Fin (genus Y)) :
+    pullbackForm f hf (periodBasisForm Y j) =
+      ambientIso X (ambientPsi (gX := genus X) (gY := genus Y) f hf
+        (Pi.basisFun ℂ (Fin (genus Y)) j)) := by
+  unfold ambientPsi
+  simp only [dif_pos rfl]
+  show pullbackForm f hf (periodBasisForm Y j) =
+    ambientIso X (((ambientIso X).symm.toLinearMap.comp
+      ((pullbackForm f hf).comp (ambientIso Y).toLinearMap) : _ →ₗ[_] _)
+        (Pi.basisFun ℂ (Fin (genus Y)) j))
+  simp [periodBasisForm, LinearMap.comp_apply]
+
 /-- **Key identity**: the period vector of the image loop equals
 `ambientPhi` applied to the period vector of the source loop.
 
