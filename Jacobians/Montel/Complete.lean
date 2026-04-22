@@ -752,6 +752,28 @@ theorem tendstoLocallyUniformlyOn_pullback_on_innerChartOpen
   -- Step 7: Uniform on open ⇒ locally uniform.
   exact hUnifOn_img.tendstoLocallyUniformlyOn
 
+omit [ConnectedSpace X] [Nonempty X] in
+/-- **Substep 2 of Path 2.** The chart-pullback of `y ↦ L y (e.symmL y 1)`
+is analytic on `chart '' innerChartOpen x₀` — feeds substep 3. -/
+theorem analyticOn_limit_pullback_inner
+    (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
+      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
+    (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
+    (hL : ∀ y : X, Tendsto (fun n : ℕ => (αs n).toFun y) atTop (𝓝 (L y)))
+    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
+    (g : letI := innerShrunkChart_compactSpace (X := X) x₀
+      BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ)
+    (hg : letI := innerShrunkChart_compactSpace (X := X) x₀
+      Tendsto (fun n : ℕ =>
+        BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk (αs n) x₀))
+        atTop (𝓝 g)) :
+    letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+    AnalyticOn ℂ
+      (fun z : ℂ => L ((chartAt ℂ x₀).symm z) (e.symmL ℂ ((chartAt ℂ x₀).symm z) 1))
+      ((chartAt ℂ x₀) '' innerChartOpen (X := X) x₀) :=
+  analyticOn_of_pullback_tendsto_locally_uniformly_inner αs hx₀ _
+    (tendstoLocallyUniformlyOn_pullback_on_innerChartOpen αs L hL hx₀ g hg)
+
 /-! ### Remaining steps (DEFERRED)
 
 The full completeness proof requires:
