@@ -175,6 +175,25 @@ theorem PrincipalDivisors_eq_bot : PrincipalDivisors X = ⊥ := by
       exact ⟨⟨fun _ => 0, IsMeromorphic.zero X⟩, rfl⟩
   rw [h_range, AddSubgroup.closure_singleton_zero]
 
+/-- **Residue theorem (trivial placeholder version).** The degree of
+`div f` is zero for every meromorphic function `f`. Classical fact,
+Forster §4.24.
+
+Under the current placeholder `MeromorphicFunction.div ≡ 0`, this is
+trivially `deg 0 = 0`. With a real `div`, the proof requires the
+residue theorem (Stokes on compact X applied to `df/f`). -/
+theorem deg_div (f : MeromorphicFunction X) :
+    Divisor.deg X (MeromorphicFunction.div X f) = 0 := by
+  show Divisor.deg X (0 : Divisor X) = 0
+  simp
+
+/-- **Principal divisors have degree 0** (Forster §4.24). Every
+principal divisor sits inside `DivisorOfDegZero X`. -/
+theorem PrincipalDivisors_le_DivisorOfDegZero :
+    PrincipalDivisors X ≤ DivisorOfDegZero X := by
+  rw [PrincipalDivisors_eq_bot]
+  exact bot_le
+
 /-! ### Abel–Jacobi map (on divisors of degree 0)
 
 For a divisor `D = ∑ n_i · P_i` with `∑ n_i = 0`, the Abel–Jacobi
