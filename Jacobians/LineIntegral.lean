@@ -1,7 +1,11 @@
 import Jacobians.HolomorphicForms
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Mathlib.Geometry.Manifold.MFDeriv.Defs
+import Mathlib.Geometry.Manifold.MFDeriv.Basic
+import Mathlib.Geometry.Manifold.MFDeriv.FDeriv
 import Mathlib.Analysis.Calculus.FDeriv.Basic
+import Mathlib.Analysis.Calculus.FDeriv.Comp
+import Mathlib.Analysis.Calculus.FDeriv.RestrictScalars
 
 /-!
 # Line integral of a holomorphic 1-form along a smooth path
