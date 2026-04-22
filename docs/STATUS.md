@@ -1,6 +1,33 @@
 # Project status (auto-maintained)
 
-## Abel–Jacobi: chain rule + basis expansion fully closed (latest, 2026-04-23)
+## Abel–Jacobi: `ambientPhi_preserves_lattice` FULLY CLOSED (latest, 2026-04-23)
+
+**`ambientPhi_preserves_lattice` in `Jacobians.lean` is now a 100% REAL theorem.**
+
+Session total: **sorry count 7 → 5**. Three hard proofs closed:
+1. `pathSpeed_comp_eq_mfderiv` (the atomic chain rule, ~80 lines via the
+   `IsScalarTower ℝ ℂ ℂ` diamond bypass).
+2. `periodVec_pushforward` with IsClosedSmoothLoop hypotheses
+   (~90 lines of basis expansion + Finset.sum distribution).
+3. `IsClosedSmoothLoop.comp` (~100 lines showing smooth loops compose
+   with smooth maps: chart chain rule + pullback integrability).
+
+Structural changes:
+- Introduced `IsClosedSmoothLoop` predicate (closed + continuous +
+  diff in chart pullback + per-basis integrable).
+- Refactored `closedLoopPeriods` to require `IsClosedSmoothLoop` —
+  making the period lattice's member data carry smoothness.
+- Removed the technically-false hypothesis-free `periodVec_pushforward`
+  sorry; the refactor makes the hypothesis-laden version the real one.
+
+**Remaining 5 challenge-level sorries, each a named classical result:**
+1. `Jacobians.lean:161` — `ofCurve_inj` (Abel's theorem, Forster §21)
+2. `Jacobians.lean:226` — `ambientPsi_preserves_lattice` (pushforward-of-forms / trace, Forster §10.11)
+3. `Genus.lean:72` — `genus_eq_zero_iff_homeo` (Riemann-Roch for genus 0)
+4. `HolomorphicForms.lean:350` — `ambientPhi_ambientPsi_eq` (proper-map degree)
+5. `LineIntegral.lean:452` — `lineIntegral_eq_of_chart_local` (off critical path)
+
+## Abel–Jacobi: chain rule + basis expansion fully closed (earlier this session)
 
 **MAJOR SESSION: Two hard theorems now fully sorry-free:**
 
