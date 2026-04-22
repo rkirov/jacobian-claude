@@ -182,6 +182,18 @@ theorem mk_periodVec_const_zero (P : X) :
   rw [periodVec_const]
   exact QuotientAddGroup.mk_zero _
 
+/-- **Abel-Jacobi additivity under concatenation.** Classical fact:
+concatenating a path `P → Q` with a path `Q → R` corresponds to
+adding their Jacobian-valued classes. Takes the same per-basis-form
+hypotheses as `periodVec_concat`. -/
+theorem mk_periodVec_concat_eq_add
+    (γ γ' : ℝ → X) (hperiod : periodVec (concat γ γ') = periodVec γ + periodVec γ') :
+    (QuotientAddGroup.mk (periodVec (concat γ γ')) :
+      (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
+      QuotientAddGroup.mk (periodVec γ) + QuotientAddGroup.mk (periodVec γ') := by
+  rw [hperiod]
+  rfl
+
 /-! ### Abel–Jacobi well-definedness (classical, Abel 1826)
 
 Two paths with the same endpoints yield period vectors that differ
