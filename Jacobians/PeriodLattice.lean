@@ -260,16 +260,16 @@ variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
 
 /-- Change-of-variables at the vector level: evaluating each Y-basis
 form against `f ∘ γ` equals evaluating its pullback against `γ`.
-Requires path regularity hypothesis `hγ_diff` (inherited from
-`lineIntegral_pullback`). -/
+Requires path regularity hypotheses (inherited from `lineIntegral_pullback`). -/
 theorem periodVec_comp_eq_lineIntegral_pullback
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X) (j : Fin (genus Y))
+    (hγ_cont : Continuous γ)
     (hγ_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
       DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
     periodVec (f ∘ γ) j =
       lineIntegral (pullbackForm f hf (periodBasisForm Y j)) γ := by
   unfold periodVec
-  exact lineIntegral_pullback f hf (periodBasisForm Y j) γ hγ_diff
+  exact lineIntegral_pullback f hf (periodBasisForm Y j) γ hγ_cont hγ_diff
 
 /-- **Pullback of a `Y`-basis form via `f`, expressed in the `X`
 basis coordinates.** Classical linear-algebra identity tying

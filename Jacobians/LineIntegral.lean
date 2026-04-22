@@ -40,8 +40,8 @@ Forster §§10–12; Miranda Ch. 4 §§3–4.
 
 namespace Jacobians
 
-open scoped Manifold ContDiff Bundle
-open MeasureTheory
+open scoped Manifold ContDiff Bundle Topology
+open MeasureTheory Filter
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -508,8 +508,23 @@ theorem pathSpeed_comp_eq_mfderiv
     {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
     [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X) (t : ℝ)
-    (_hγ : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
-    pathSpeed (f ∘ γ) t = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t) (pathSpeed γ t) :=
+    (hγ_cont : ContinuousAt γ t)
+    (hγ_diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
+    pathSpeed (f ∘ γ) t = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t) (pathSpeed γ t) := by
+  -- Abbreviations
+  set φ_X := chartAt (H := ℂ) (γ t) with hφ_X_def
+  set φ_Y := chartAt (H := ℂ) (f (γ t)) with hφ_Y_def
+  -- Local representation of f: ℂ → ℂ
+  set f_loc : ℂ → ℂ := fun z => φ_Y (f (φ_X.symm z)) with hf_loc_def
+  -- Chart pullbacks of γ and (f ∘ γ)
+  set g_X : ℝ → ℂ := φ_X.toFun ∘ γ with hg_X_def
+  set g_Y : ℝ → ℂ := φ_Y.toFun ∘ (f ∘ γ) with hg_Y_def
+  -- Step 1: Key membership facts.
+  have hγt_X : γ t ∈ φ_X.source := mem_chart_source ℂ (γ t)
+  have hfγt_Y : f (γ t) ∈ φ_Y.source := mem_chart_source ℂ (f (γ t))
+  -- Step 2: γ s ∈ φ_X.source for s near t.
+  have hγ_source : ∀ᶠ s in 𝓝 t, γ s ∈ φ_X.source :=
+    hγ_cont.eventually (φ_X.open_source.mem_nhds hγt_X)
   sorry
 
 /-- **Change of variables for the line integral** (classical).
@@ -525,6 +540,7 @@ theorem lineIntegral_pullback
     [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (α : HolomorphicOneForms Y) (γ : ℝ → X)
+    (hγ_cont : Continuous γ)
     (hγ_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
       DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
     lineIntegral α (f ∘ γ) = lineIntegral (pullbackForm f hf α) γ := by
@@ -533,6 +549,6 @@ theorem lineIntegral_pullback
   show α.toFun (f (γ t)) (pathSpeed (f ∘ γ) t) =
     (α.toFun (f (γ t))).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t)) (pathSpeed γ t)
   rw [ContinuousLinearMap.comp_apply,
-    pathSpeed_comp_eq_mfderiv f hf γ t (hγ_diff t ht)]
+    pathSpeed_comp_eq_mfderiv f hf γ t hγ_cont.continuousAt (hγ_diff t ht)]
 
 end Jacobians
