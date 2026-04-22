@@ -2,6 +2,7 @@ import Jacobians.PeriodLattice
 import Mathlib.Analysis.Meromorphic.Basic
 import Mathlib.Analysis.Meromorphic.Order
 import Mathlib.Data.Finsupp.Weight
+import Mathlib.Topology.LocallyFinsupp
 
 /-!
 # Abel's theorem on a compact Riemann surface
@@ -162,23 +163,41 @@ noncomputable def MeromorphicFunction.orderAtPoint (f : MeromorphicFunction X) (
   (meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) x).symm)
     ((chartAt (H := ℂ) x) x)).untop₀
 
-/-- **Real divisor of a meromorphic function** (content-gated).
-Uses the order function at each point and wraps as a `Finsupp` via
-`ofSupportFinite` with a finite-support hypothesis.
+/-! #### Subtasks for finite-support
 
-The content sorry is `orderAtPoint_finite_support`: the order
-function has finite support on compact `X`. Classical; requires:
-* Isolation of zeros/poles (Mathlib has this for `𝕜 → E` via
-  `MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero`).
-* Lifting to the manifold via a finite chart cover + compactness.
+We decompose the finite-support proof into:
 
-When this sorry closes, one can replace the placeholder
-`MeromorphicFunction.div` definition with `divViaOrder` (one-line
-change) to get real divisor theory downstream. -/
-noncomputable def MeromorphicFunction.divViaOrder (f : MeromorphicFunction X) : Divisor X := by
-  classical
-  refine Finsupp.ofSupportFinite (MeromorphicFunction.orderAtPoint f) ?_
-  sorry
+1. **Local finiteness** (`orderAtPoint_locallyFinite`): around each
+   `x ∈ X`, a neighborhood exists in which only finitely many points
+   have nonzero order. Requires chart-level `MeromorphicAt` isolation
+   (`MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero`) +
+   chart-invariance of order. Content sorry.
+2. **Wrap as `locallyFinsuppWithin Set.univ`** via the structure
+   constructor.
+3. **Apply `.finiteSupport`** with `isCompact_univ` (from `CompactSpace X`).
+4. **Convert** to `Finsupp` via `Finsupp.ofSupportFinite`. -/
+
+variable {X} in
+/-- The order function as a `locallyFinsuppWithin` on `Set.univ`.
+Wraps `orderAtPoint` together with the local-finiteness proof
+(content sorry). Once closed, `divViaOrder` follows automatically
+via compactness. -/
+noncomputable def MeromorphicFunction.orderLocallyFinsupp (f : MeromorphicFunction X) :
+    Function.locallyFinsuppWithin (Set.univ : Set X) ℤ where
+  toFun := MeromorphicFunction.orderAtPoint f
+  supportWithinDomain' := Set.subset_univ _
+  supportLocallyFiniteWithinDomain' := by
+    intro z _
+    -- Content sorry: around each z, only finitely many points have
+    -- nonzero order. Follows from chart-level isolation of zeros/poles.
+    sorry
+
+/-- **Real divisor of a meromorphic function**. Uses the
+`locallyFinsuppWithin` wrapper + `finiteSupport` + `ofSupportFinite`.
+The content gap is `supportLocallyFiniteWithinDomain'` above. -/
+noncomputable def MeromorphicFunction.divViaOrder (f : MeromorphicFunction X) : Divisor X :=
+  Finsupp.ofSupportFinite (MeromorphicFunction.orderAtPoint f)
+    ((MeromorphicFunction.orderLocallyFinsupp f).finiteSupport isCompact_univ)
 
 /-- The principal divisors: image of `div`. Classical fact:
 every principal divisor has degree 0, so this sits inside
