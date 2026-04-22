@@ -166,12 +166,15 @@ variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [Connecte
 variable (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
 
 /-- Lattice preservation: the ambient pushforward map sends the `X`-period
-lattice into the `Y`-period lattice. Content-gated. -/
+lattice into the `Y`-period lattice. Real (non-sorry) theorem from
+the period-pairing identity in `Jacobians/PeriodLattice.lean`, modulo
+the single content sorry `lineIntegral_pullback` (the change-of-variables
+chain rule). -/
 lemma ambientPhi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (periodLattice X).toAddSubgroup ≤
       (periodLattice Y).toAddSubgroup.comap
         (Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
-  sorry
+  Jacobians.ambientPhi_preserves_truePeriodLattice f hf
 
 /-- The pushforward map between Jacobians associated to a map of the underlying curves.
 Wired: `ZLatticeQuotient.pushforward` applied to `ambientPhi f hf`. -/

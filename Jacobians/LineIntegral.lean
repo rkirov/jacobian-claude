@@ -424,4 +424,35 @@ theorem lineIntegral_eq_of_chart_local
     lineIntegral α γ₀ = lineIntegral α γ₁ := by
   sorry
 
+/-! ### Phase 4 support: change of variables for the line integral
+
+The pullback-of-forms interacts with the line integral via
+`∫_{f ∘ γ} α = ∫_γ (pullbackForm f hf α)`. This is the analytic
+identity underlying "the image of a loop has the same period
+vector as the loop itself, up to the pullback matrix" — the basic
+mechanism that makes `ambientPhi` preserve the period lattice.
+
+**Proof content (sorried as a single named content gap):** chain
+rule for `pathSpeed` under composition with a smooth map. Formally,
+
+```
+pathSpeed (f ∘ γ) t = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t) (pathSpeed γ t)
+```
+
+combined with the pointwise identity
+`(pullbackForm f hf α).toFun (γ t) = (α.toFun (f (γ t))).comp (mfderiv f (γ t))`
+and the identity of integrands, then `intervalIntegral.integral_congr`.
+
+This reduces to the chart-level chain rule for
+`fderiv ℝ (chart_Y ∘ f ∘ γ) = fderiv ℝ (chart_Y ∘ f ∘ chart_X.symm) ∘ fderiv ℝ (chart_X ∘ γ)`,
+which is ~100–200 lines of careful chart-pullback manipulation in the
+base-field workaround. -/
+theorem lineIntegral_pullback
+    {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (α : HolomorphicOneForms Y) (γ : ℝ → X) :
+    lineIntegral α (f ∘ γ) = lineIntegral (pullbackForm f hf α) γ :=
+  sorry
+
 end Jacobians
