@@ -464,27 +464,71 @@ identity underlying "the image of a loop has the same period
 vector as the loop itself, up to the pullback matrix" — the basic
 mechanism that makes `ambientPhi` preserve the period lattice.
 
-**Proof content (sorried as a single named content gap):** chain
-rule for `pathSpeed` under composition with a smooth map. Formally,
-
+**Proof decomposition.** The full lemma follows from a single
+pointwise identity:
 ```
 pathSpeed (f ∘ γ) t = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t) (pathSpeed γ t)
 ```
+combined with the definition of `pullbackForm` (which inserts
+`mfderiv f` into the integrand), and `intervalIntegral.integral_congr`.
 
-combined with the pointwise identity
-`(pullbackForm f hf α).toFun (γ t) = (α.toFun (f (γ t))).comp (mfderiv f (γ t))`
-and the identity of integrands, then `intervalIntegral.integral_congr`.
+The pointwise identity is the chart-level chain rule transported
+through the base-field workaround (`pathSpeed` is defined via
+`fderiv ℝ` on chart pullbacks, while `mfderiv` uses `fderiv ℂ` on
+`writtenInExtChartAt`). The bridge goes via:
+1. Chart-pullback chain rule: `fderiv ℝ (chart_Y ∘ f ∘ γ) t 1
+   = (fderiv ℝ f_loc (chart_X (γ t))) (pathSpeed γ t)` where
+   `f_loc = chart_Y ∘ f ∘ chart_X.symm`.
+2. `fderiv ℝ f_loc = (fderiv ℂ f_loc).restrictScalars ℝ` (since `f`
+   is holomorphic).
+3. `fderiv ℂ f_loc (chart_X (γ t)) = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t)`
+   (via `MDifferentiableAt.mfderiv`). -/
 
-This reduces to the chart-level chain rule for
-`fderiv ℝ (chart_Y ∘ f ∘ γ) = fderiv ℝ (chart_Y ∘ f ∘ chart_X.symm) ∘ fderiv ℝ (chart_X ∘ γ)`,
-which is ~100–200 lines of careful chart-pullback manipulation in the
-base-field workaround. -/
+/-- **Core pointwise identity** for the chain rule. Under
+differentiability of `γ` in the chart pullback at `t` (i.e., γ is
+C¹-smooth in chart coordinates at `t`) and smoothness of `f`, the
+tangent of `f ∘ γ` at `t` equals the manifold derivative `mfderiv f`
+applied to the tangent of `γ` at `t`.
+
+Content sorry: the full proof requires ~100–200 lines of chart
+manipulation:
+1. Chart-pullback chain rule: `fderiv ℝ (chart_Y ∘ f ∘ γ) t 1 =
+   (fderiv ℝ f_loc (chart_X (γ t))) (pathSpeed γ t)` via
+   `fderiv.comp` on `f_loc ∘ (chart_X ∘ γ)` where `f_loc = chart_Y ∘
+   f ∘ chart_X.symm`.
+2. `fderiv ℝ f_loc = (fderiv ℂ f_loc).restrictScalars ℝ` via
+   `HasFDerivAt.restrictScalars`.
+3. `fderiv ℂ f_loc (chart_X (γ t)) = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t)` via
+   `MDifferentiableAt.mfderiv` + `writtenInExtChartAt` unfolding. -/
+theorem pathSpeed_comp_eq_mfderiv
+    {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X) (t : ℝ)
+    (_hγ : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
+    pathSpeed (f ∘ γ) t = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t) (pathSpeed γ t) :=
+  sorry
+
+/-- **Change of variables for the line integral** (classical).
+Derived from `pathSpeed_comp_eq_mfderiv` + the definition of
+`pullbackForm` + `intervalIntegral.integral_congr`.
+
+The `hγ_diff` hypothesis — `γ` is C¹-smooth in chart pullbacks for
+`t ∈ [0, 1]` — is the usual path-regularity required for line
+integrals to behave sensibly. For smooth closed loops (the use case
+in the period lattice), this holds automatically. -/
 theorem lineIntegral_pullback
     {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
     [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (α : HolomorphicOneForms Y) (γ : ℝ → X) :
-    lineIntegral α (f ∘ γ) = lineIntegral (pullbackForm f hf α) γ :=
-  sorry
+    (α : HolomorphicOneForms Y) (γ : ℝ → X)
+    (hγ_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
+    lineIntegral α (f ∘ γ) = lineIntegral (pullbackForm f hf α) γ := by
+  unfold lineIntegral
+  refine intervalIntegral.integral_congr (fun t ht => ?_)
+  show α.toFun (f (γ t)) (pathSpeed (f ∘ γ) t) =
+    (α.toFun (f (γ t))).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t)) (pathSpeed γ t)
+  rw [ContinuousLinearMap.comp_apply,
+    pathSpeed_comp_eq_mfderiv f hf γ t (hγ_diff t ht)]
 
 end Jacobians
