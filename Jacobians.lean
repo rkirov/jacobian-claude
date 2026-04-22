@@ -246,12 +246,16 @@ lemma pushforward_comp_apply (P : Jacobian X) :
     congr 1
     exact Jacobians.ambientPhi_comp f hf g hg (hg.comp hf) x
 
-/-- Lattice preservation on the pullback side. -/
+/-- Lattice preservation on the pullback side. Reduced via span
+induction to the single member-case content sorry
+`Jacobians.ambientPsi_periodVec_mem_truePeriodLattice` (the trace /
+branched-cover identity, Forster §10.11). All ℤ-linearity steps are
+real. -/
 lemma ambientPsi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (periodLattice Y).toAddSubgroup ≤
       (periodLattice X).toAddSubgroup.comap
         (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
-  sorry
+  Jacobians.ambientPsi_preserves_truePeriodLattice f hf
 
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
 Equal to the zero map if the map on curves is constant.

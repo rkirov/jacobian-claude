@@ -580,4 +580,68 @@ theorem ambientPhi_preserves_truePeriodLattice
     simp only [map_zsmul]
     exact Submodule.smul_mem _ r hx
 
+/-! ### Phase 4b: `ambientPsi` preserves the period lattice
+
+This is the **trace / pullback-of-cycle direction** and is content-deep.
+Unlike the Phi direction (where `f ∘ γ` is automatically a closed loop
+in `Y`), there is no natural closed loop in `X` associated to a loop
+`δ` in `Y` — one would need the branched-cover structure of `f` to
+take preimage lifts (Forster §10.11).
+
+The span-induction skeleton is symmetric to the Phi version. All
+ℤ-linearity cases (zero/add/smul) are immediate from the
+`AddMonoidHom`-structure of `ambientPsi`. Only the member case —
+"for a closed smooth loop `δ` in `Y`, `ambientPsi (periodVec δ) ∈
+truePeriodLattice X`" — is content-gated and isolated as
+`ambientPsi_periodVec_mem_truePeriodLattice`. -/
+
+/-- **Content sorry — trace identity.** For a closed smooth loop `δ`
+in `Y`, the pulled-back period vector `ambientPsi (periodVec δ)` lies
+in `truePeriodLattice X`.
+
+Mathematical content (Forster §10.11): a proper holomorphic map `f :
+X → Y` between compact Riemann surfaces is a branched cover of some
+degree `d ≥ 1` (or constant, for which the claim is trivial since
+`ambientPsi = 0`). For non-constant `f`, the preimage `f⁻¹(δ)` is a
+ℤ-cycle in `X` (a formal ℤ-sum of closed loops in `X`), and the
+trace identity `ambientPsi (periodVec δ) = periodVec (f⁻¹(δ))`
+places the result in the period lattice of `X`.
+
+The needed infrastructure (real `pushforwardForm`; branched-cover
+lift existence; trace adjunction) is ~200–500 lines not yet in
+place. Left as a focused content sorry. -/
+theorem ambientPsi_periodVec_mem_truePeriodLattice
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (δ : ℝ → Y) (_hδ : IsClosedSmoothLoop δ) :
+    ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
+      truePeriodLattice X := sorry
+
+/-- `ambientPsi` preserves the period lattice. Reduces to the member
+case (`ambientPsi_periodVec_mem_truePeriodLattice`) via span induction;
+zero/add/smul cases are immediate ℤ-linearity. -/
+theorem ambientPsi_preserves_truePeriodLattice
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    (truePeriodLattice Y).toAddSubgroup ≤
+      (truePeriodLattice X).toAddSubgroup.comap
+        (ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom := by
+  show ∀ v ∈ truePeriodLattice Y,
+    ambientPsi (gX := genus X) (gY := genus Y) f hf v ∈ truePeriodLattice X
+  intro v hv
+  refine Submodule.span_induction
+    (p := fun v _ => ambientPsi (gX := genus X) (gY := genus Y) f hf v ∈
+      truePeriodLattice X) ?_ ?_ ?_ ?_ hv
+  · -- member case: δ ∈ closedLoopPeriods Y. Delegated to content sorry.
+    rintro _ ⟨δ, hδ, rfl⟩
+    exact ambientPsi_periodVec_mem_truePeriodLattice f hf δ hδ
+  · -- zero case
+    simp
+  · -- add case
+    intro x y _ _ hx hy
+    simp only [map_add]
+    exact Submodule.add_mem _ hx hy
+  · -- smul case (ℤ-scalar)
+    intro r x _ hx
+    simp only [map_zsmul]
+    exact Submodule.smul_mem _ r hx
+
 end Jacobians
