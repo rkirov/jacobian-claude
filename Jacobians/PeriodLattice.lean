@@ -767,12 +767,40 @@ theorem isClosed_criticalSet (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) �
         x₀ x₀ (f x₀) (f x₀) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x₀) ≠ 0 := by
       intro h
       apply hx₀
-      -- From h: continuousLinearMapAt (triv Y) (f x₀) ∘ mfderiv f x₀ ∘ symmL (triv X) x₀ = 0.
-      -- Need: mfderiv f x₀ = 0.
-      -- Compose with the inverses on both sides.
-      ext v
-      -- Show (mfderiv f x₀) v = 0.
-      sorry
+      -- `h` is a CLM equation; evaluate at `continuousLinearMapAt 1` and use
+      -- `symmL_continuousLinearMapAt = id`.
+      have hmem_X : x₀ ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet :=
+        mem_baseSet_trivializationAt ℂ _ x₀
+      have hmem_Y : f x₀ ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (f x₀)).baseSet :=
+        mem_baseSet_trivializationAt ℂ _ (f x₀)
+      apply ContinuousLinearMap.ext
+      intro v
+      show (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x₀) v = 0
+      -- Apply h at `continuousLinearMapAt (triv X) x₀ v : ℂ`.
+      have happ := congr_arg
+        (fun L : ℂ →L[ℂ] ℂ =>
+          L ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).continuousLinearMapAt ℂ x₀ v))
+        h
+      simp only [ContinuousLinearMap.zero_apply] at happ
+      simp only [ContinuousLinearMap.inCoordinates, ContinuousLinearMap.comp_apply] at happ
+      rw [Bundle.Trivialization.symmL_continuousLinearMapAt _ hmem_X] at happ
+      -- happ : continuousLinearMapAt (triv Y) (f x₀) (mfderiv f x₀ v) = 0
+      -- Apply symmL to both sides to cancel the continuousLinearMapAt.
+      have := congr_arg
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (f x₀)).symmL ℂ (f x₀)) happ
+      rw [Bundle.Trivialization.symmL_continuousLinearMapAt _ hmem_Y] at this
+      -- `this : (mfderiv f x₀) v = (triv Y).symm (f x₀) 0`
+      -- Need: (triv Y).symm (f x₀) 0 = 0, which holds because
+      -- symmL is a CLM (hence map_zero) and coincides with symm on baseSet.
+      have hzero : ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (f x₀)).symmL ℂ (f x₀)) 0
+          = (0 : TangentSpace 𝓘(ℂ, ℂ) (M := Y) (f x₀)) :=
+        ContinuousLinearMap.map_zero _
+      -- Convert via the (symmL vs symm) coincidence lemma.
+      calc (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x₀) v
+          = _ := this
+        _ = ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (f x₀)).symmL ℂ (f x₀)) 0 := by
+              simp [Bundle.Trivialization.symmL]
+        _ = 0 := hzero
     -- By continuity, inCoordinates ≠ 0 in a nbhd.
     have hnbhd : (fun x => ContinuousLinearMap.inCoordinates ℂ
         (TangentSpace 𝓘(ℂ, ℂ) (M := X)) ℂ
