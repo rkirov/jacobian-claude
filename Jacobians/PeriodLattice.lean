@@ -716,7 +716,19 @@ argument needs care because the chart source varies with `x`; we
 use a fixed chart at `x₀` on an open neighborhood. -/
 theorem isClosed_criticalSet (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     IsClosed (criticalSet f) := by
-  sorry
+  -- Strategy: criticalSet f = {x | mfderiv f x 1 = 0} ∈ X (scalar form).
+  -- mfderiv f x 1 as a function X → ℂ is continuous; zero is closed; preimage closed.
+  have hset : criticalSet f = (fun x => mfderiv 𝓘(ℂ) 𝓘(ℂ) f x (1 : ℂ)) ⁻¹' {0} := by
+    ext x
+    simp only [criticalSet, Set.mem_preimage, Set.mem_singleton_iff, Set.mem_setOf_eq]
+    constructor
+    · intro h; rw [h]; rfl
+    · intro h
+      -- TangentSpace 𝓘(ℂ, ℂ) x = ℂ, so mfderiv is a CLM ℂ →L[ℂ] ℂ, determined by value at 1.
+      exact ContinuousLinearMap.ext_ring h
+  rw [hset]
+  refine isClosed_singleton.preimage ?_
+  sorry  -- Continuity of x ↦ mfderiv f x 1.
 
 /-- **Critical set of a non-constant map is not everything.** If
 `criticalSet f = Set.univ` (i.e., `mfderiv f = 0` everywhere), then
