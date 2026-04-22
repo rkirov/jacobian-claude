@@ -71,6 +71,61 @@ surface, every principal divisor has degree 0 (Forster §4.24). -/
 noncomputable def DivisorOfDegZero : AddSubgroup (Divisor X) :=
   (Divisor.deg X).ker
 
+/-! ### Basic degree computations -/
+
+@[simp]
+theorem Divisor.deg_zero : Divisor.deg X 0 = 0 :=
+  map_zero _
+
+@[simp]
+theorem Divisor.deg_add (D D' : Divisor X) :
+    Divisor.deg X (D + D') = Divisor.deg X D + Divisor.deg X D' :=
+  map_add _ _ _
+
+@[simp]
+theorem Divisor.deg_neg (D : Divisor X) :
+    Divisor.deg X (-D) = -Divisor.deg X D :=
+  map_neg _ _
+
+@[simp]
+theorem Divisor.deg_sub (D D' : Divisor X) :
+    Divisor.deg X (D - D') = Divisor.deg X D - Divisor.deg X D' :=
+  map_sub _ _ _
+
+@[simp]
+theorem Divisor.deg_single (P : X) (n : ℤ) :
+    Divisor.deg X (Finsupp.single P n) = n := by
+  show Finsupp.degree (Finsupp.single P n) = n
+  by_cases hn : n = 0
+  · simp [hn]
+  · simp [Finsupp.degree_apply, Finsupp.support_single_ne_zero _ hn,
+      Finsupp.single_eq_same]
+
+/-! ### Two-point divisor `P - Q`
+
+The fundamental degree-0 divisor associated with two points. Every
+divisor of degree 0 decomposes as a ℤ-linear combination of such
+two-point divisors (choose any basepoint and subtract). -/
+
+/-- The divisor `P - Q` (formal difference of points, as a
+degree-0 divisor via `Finsupp.single`). -/
+noncomputable def twoPointDivisor (P Q : X) : Divisor X :=
+  Finsupp.single P 1 - Finsupp.single Q 1
+
+@[simp]
+theorem twoPointDivisor_deg (P Q : X) :
+    Divisor.deg X (twoPointDivisor X P Q) = 0 := by
+  simp [twoPointDivisor]
+
+theorem twoPointDivisor_mem_degZero (P Q : X) :
+    twoPointDivisor X P Q ∈ DivisorOfDegZero X := by
+  show Divisor.deg X (twoPointDivisor X P Q) = 0
+  exact twoPointDivisor_deg X P Q
+
+@[simp]
+theorem twoPointDivisor_self (P : X) : twoPointDivisor X P P = 0 := by
+  simp [twoPointDivisor]
+
 /-- The divisor of a meromorphic function (classical: zeros minus
 poles, counted with multiplicity). Content sorry — needs order-at-a-point
 theory via `meromorphicOrderAt`. -/
@@ -123,6 +178,43 @@ class HasAbelsTheorem : Prop where
   direction, Abel's original theorem). -/
   aj_zero_imp_principal : ∀ D : DivisorOfDegZero X,
     abelJacobi D = 0 → (D : Divisor X) ∈ PrincipalDivisors X
+
+/-! ### Consequence: two-point divisors on positive-genus surfaces
+
+For `X` of genus ≥ 1, the divisor `P - Q` with `P ≠ Q` is NOT
+principal (Forster §21.5 / Miranda Ch. V §2.8). The classical
+argument:
+
+A principal divisor `P - Q` with `P ≠ Q` means some meromorphic
+function `f` has a simple zero at `P` and a simple pole at `Q` and
+no other zeros/poles. Such an `f` is a degree-1 map `X → ℙ¹`, which
+must be a biholomorphism (by Riemann-Hurwitz: deg-1 covers are
+isomorphisms). But then `X ≃ ℙ¹`, which has genus 0 — contradiction.
+
+Axiomatized as a typeclass field `twoPointDivisor_not_principal_of_pos_genus`,
+alongside Abel's theorem itself. This is the piece that, combined
+with Abel, implies `abelJacobi (P - Q) ≠ 0`, the lemma needed for
+`ofCurve_inj`. -/
+
+/-- **Non-principality of two-point divisors on positive-genus surfaces.**
+Axiomatized; the proof is classical (Riemann-Hurwitz + genus-0
+characterization of ℙ¹). -/
+class NoDegreeOneDivisorsToPP1 : Prop where
+  twoPoint_not_principal : 0 < genus X →
+    ∀ {P Q : X}, P ≠ Q → twoPointDivisor X P Q ∉ PrincipalDivisors X
+
+variable {X} in
+/-- **Consequence of Abel's theorem + non-existence of degree-1 maps
+to ℙ¹ on positive-genus surfaces**: the Abel–Jacobi image of a
+two-point divisor `P - Q` is nonzero when `P ≠ Q` on a surface of
+positive genus. -/
+theorem abelJacobi_twoPoint_ne_zero [HasAbelsTheorem X] [NoDegreeOneDivisorsToPP1 X]
+    (h : 0 < genus X) {P Q : X} (hPQ : P ≠ Q) :
+    abelJacobi ⟨twoPointDivisor X P Q, twoPointDivisor_mem_degZero X P Q⟩ ≠ 0 := by
+  intro h_aj
+  have h_principal := HasAbelsTheorem.aj_zero_imp_principal _ h_aj
+  -- h_principal : twoPointDivisor X P Q ∈ PrincipalDivisors X
+  exact NoDegreeOneDivisorsToPP1.twoPoint_not_principal h hPQ h_principal
 
 /-! ### Derivation of `ofCurve_inj` from Abel's theorem
 
