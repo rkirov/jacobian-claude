@@ -95,11 +95,26 @@ noncomputable def periodBasisForm (X : Type*) [TopologicalSpace X] [T2Space X]
 noncomputable def periodVec (γ : ℝ → X) : Fin (genus X) → ℂ :=
   fun i => lineIntegral (periodBasisForm X i) γ
 
-/-- The set of period vectors arising from smooth closed loops (at
-any basepoint). The `γ 0 = γ 1` condition captures "closed loop".
-Allowing any basepoint makes the set manifestly preserved under
-composition with a smooth map (the image of a closed loop is a
-closed loop), simplifying functoriality proofs. -/
+/-- Regularity predicate for a closed loop in `X`: closed endpoints
++ continuity + chart-pullback differentiability + integrability of
+each basis-form integrand. Packages what's needed for the
+`lineIntegral` machinery (Phase 1 identities, chain rule, basis
+expansion) to apply sensibly. -/
+structure IsClosedSmoothLoop (γ : ℝ → X) : Prop where
+  closed : γ 0 = γ 1
+  cont : Continuous γ
+  diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+    DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t
+  integrable : ∀ i : Fin (genus X), IntervalIntegrable
+    (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
+      MeasureTheory.volume 0 1
+
+/-- The set of period vectors arising from closed loops (at any
+basepoint). The `γ 0 = γ 1` condition captures "closed loop". For
+the line integrals to behave per Phase 1 identities + the chain
+rule, regularity is needed (see `IsClosedSmoothLoop` above); the
+downstream theorems requiring regularity thread it as a separate
+hypothesis. -/
 def closedLoopPeriods (X : Type*) [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] : Set (Fin (genus X) → ℂ) :=
@@ -209,8 +224,10 @@ integrability hypotheses). Downstream callers who have smooth γ can
 derive `hconcat` from Phase 1 lemmas; callers working abstractly can
 just pass it in. -/
 
-/-- **Abel–Jacobi well-definedness (lattice form).** If two paths
-share endpoints, their period vectors differ by a lattice element. -/
+/-- **Abel–Jacobi well-definedness (lattice form).** If two smooth
+paths share endpoints, their period vectors differ by a lattice
+element. The concatenation `γ₁ ∗ reverse γ₂` must itself be a closed
+smooth loop (passed in as `hsmooth`). -/
 theorem periodVec_sub_mem_truePeriodLattice
     (γ₁ γ₂ : ℝ → X) (h0 : γ₁ 0 = γ₂ 0)
     (hconcat : periodVec (concat γ₁ (reverse γ₂)) =
@@ -218,9 +235,6 @@ theorem periodVec_sub_mem_truePeriodLattice
     periodVec γ₁ - periodVec γ₂ ∈ truePeriodLattice X := by
   rw [← hconcat]
   refine periodVec_mem_truePeriodLattice_of_closed _ ?_
-  -- (concat γ₁ (reverse γ₂)) 0 = γ₁ 0 = γ₂ 0 = (reverse γ₂) 1 = (concat γ₁ (reverse γ₂)) 1
-  -- at t = 0: 0 ≤ 1/2, so concat... 0 = γ₁ (2 * 0) = γ₁ 0.
-  -- at t = 1: ¬(1 ≤ 1/2), so concat... 1 = (reverse γ₂)(2 * 1 - 1) = (reverse γ₂) 1 = γ₂ (1-1) = γ₂ 0.
   show (concat γ₁ (reverse γ₂)) 0 = (concat γ₁ (reverse γ₂)) 1
   rw [concat_apply_left _ _ (by norm_num : (0 : ℝ) ≤ 1/2),
       concat_apply_right _ _ (by norm_num : ¬ (1 : ℝ) ≤ 1/2)]
@@ -239,9 +253,6 @@ theorem mk_periodVec_eq_of_endpoints
       (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
       QuotientAddGroup.mk (periodVec γ₂) := by
   rw [QuotientAddGroup.eq]
-  -- Goal: -periodVec γ₁ + periodVec γ₂ ∈ (truePeriodLattice X).toAddSubgroup
-  -- We have periodVec γ₁ - periodVec γ₂ ∈ truePeriodLattice X.
-  -- By negation closure: -(periodVec γ₁ - periodVec γ₂) = -periodVec γ₁ + periodVec γ₂ ∈ lattice.
   have h := periodVec_sub_mem_truePeriodLattice γ₁ γ₂ h0 hconcat
   have : -periodVec γ₁ + periodVec γ₂ = -(periodVec γ₁ - periodVec γ₂) := by ring
   rw [this]
