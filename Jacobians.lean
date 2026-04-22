@@ -18,6 +18,7 @@ import Jacobians.ZLatticeQuotient
 import Jacobians.ChartedSpaceOfLocalHomeomorph
 import Jacobians.HolomorphicForms
 import Jacobians.LineIntegral
+import Jacobians.PeriodLattice
 
 /-
 
@@ -63,35 +64,36 @@ open scoped Manifold -- for 𝓘 notation
 
 -- let X be a compact Riemann surface
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-  [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [Nonempty X] [Jacobians.IsPeriodLattice X]
 
 -- data
 /-- The period lattice of a compact Riemann surface, living inside
 `(Fin (genus X) → ℂ)`.
 
-**Placeholder definition**: for now, the span over ℤ of the standard
-real-analytic basis of `Fin (genus X) → ℂ` (a `2 * genus X`-element
-basis). This is a valid `IsZLattice` (all structural instances fire)
-but has nothing to do with actual periods of holomorphic 1-forms.
+Defined as `Jacobians.truePeriodLattice X` (see
+`Jacobians/PeriodLattice.lean`): the ℤ-span of period vectors of
+smooth closed loops, where the period pairing uses
+`Jacobians.hofBasis X`.
 
-The real definition is `image of H₁(X, ℤ)` in `H⁰(X, Ω¹)ᵛ` under the
-period pairing; replacing this placeholder with the real construction
-is content-level TODO(math). -/
+The `DiscreteTopology` and `IsZLattice ℝ` instances require the
+Hodge-decomposition-level rank-2g theorem; these are provided via
+the `IsPeriodLattice` typeclass (see `PeriodLattice.lean`). -/
 noncomputable def periodLattice (X : Type*) [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] : Submodule ℤ (Fin (genus X) → ℂ) :=
-  Submodule.span ℤ (Set.range (Module.finBasis ℝ (Fin (genus X) → ℂ)))
+  Jacobians.truePeriodLattice X
 
 instance {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [Jacobians.IsPeriodLattice X] :
     DiscreteTopology (periodLattice X) :=
-  inferInstanceAs (DiscreteTopology
-    (Submodule.span ℤ (Set.range (Module.finBasis ℝ (Fin (genus X) → ℂ)))))
+  inferInstanceAs (DiscreteTopology (Jacobians.truePeriodLattice X))
 
 instance {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [Jacobians.IsPeriodLattice X] :
     IsZLattice ℝ (periodLattice X) :=
-  instIsZLatticeRealSpan (Module.finBasis ℝ (Fin (genus X) → ℂ))
+  inferInstanceAs (IsZLattice ℝ (Jacobians.truePeriodLattice X))
 
 -- data
 /-- The Jacobian of a compact Riemann surface, as the quotient of
@@ -159,7 +161,7 @@ lemma ofCurve_self (P : X) : ofCurve P P = 0 := rfl
 lemma ofCurve_inj (P : X) (h : 0 < genus X) : Function.Injective (ofCurve P) := sorry
 
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-  [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+  [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] [Jacobians.IsPeriodLattice Y]
 
 variable (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
 
@@ -199,7 +201,7 @@ lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P 
     P
 
 variable {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z]
-  [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+  [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z] [Jacobians.IsPeriodLattice Z]
 
 variable (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
 
