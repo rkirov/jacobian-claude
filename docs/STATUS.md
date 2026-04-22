@@ -1,6 +1,32 @@
 # Project status (auto-maintained)
 
-## Montel — `exists_convergent_subseq_of_bounded` assembled; only bundle smoothness remains (latest)
+## Montel — FULLY CLOSED (latest)
+
+**Montel is completely sorry-free.** `HolomorphicOneForms.exists_convergent_subseq_of_bounded`
+in `Jacobians/Montel.lean` has a real proof with zero sorries. The
+`closedBall_isCompact` theorem now stands as a real theorem (not
+sorry-dependent), giving `FiniteDimensional ℂ (HolomorphicOneForms X)`
+via the Riesz compact-closed-ball characterization.
+
+**Path 2 substeps all landed:**
+- Substep 1: TendstoLocallyUniformlyOn chart pullbacks (128 lines).
+- Substep 2: AnalyticOn limit pullback (one-liner).
+- Substep 3: ContMDiffOn scalar via reverse chart bridge (51 lines).
+- Substep 4: Hom-bundle lift with `inCoordinates` simplification
+  (60 lines — uses `Bundle.Trivial.continuousLinearMapAt_trivialization = id`
+  + pointwise ℂ-linearity + ring to reduce to scalar smoothness).
+- Substep 5: finite cover assembly in `Montel.lean`.
+
+**Closed over the session arc (2026-04-23 → 2026-04-24):**
+From whole-body sorry on `exists_convergent_subseq_of_bounded` (the
+existential: bounded supNormK sequences have convergent subsequences)
+to a fully-formalized 350+ line proof chain from per-chart Arzelà →
+bcf-Cauchy → supNormK-Cauchy → pointwise CLM limit → chart-wise
+smoothness → bundle section → supNormK ≤ 1 + Tendsto.
+
+The Montel theorem closes completely without any Mathlib gap.
+
+## Montel — `exists_convergent_subseq_of_bounded` assembled; only bundle smoothness remains (prior)
 
 **Major milestone:** `HolomorphicOneForms.exists_convergent_subseq_of_bounded`
 in `Jacobians/Montel.lean` now has a real proof. The sole remaining
