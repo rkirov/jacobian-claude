@@ -37,7 +37,6 @@ open scoped Manifold ContDiff Topology
 
 variable (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [Jacobians.HasSmoothPaths X]
 
 /-! ### Meromorphic functions on a compact Riemann surface
 
@@ -562,47 +561,24 @@ been removed; `ofCurve_inj`'s former proof via
 `no_distinct_points_placeholder` no longer applies and `ofCurve_inj`
 now needs the real Abel argument (content sorry). -/
 
-/-- **Residue theorem typeclass** (Forster §4.24 / Miranda §V.2.4).
-Axiomatizes the classical fact that on a compact Riemann surface,
-the sum of orders of a meromorphic function is zero:
-`∑_{x ∈ X} ord_x(f) = 0` for every meromorphic `f`.
-
-Classical proof: integrate `d(log f) = df/f` around the boundary of
-a triangulation; each face contributes zero (Stokes); each edge is
-traversed twice with opposite orientations, cancelling. The residue
-at each pole/zero contributes `2πi · ord_x(f)`, so the sum of
-orders is zero.
-
-Not currently in Mathlib (only has circle-integral residue for
-`ℂ → E` — not manifold-level). Axiomatized here; real instances
-require either a direct Stokes-on-manifolds proof, an adaptation of
-Mathlib's circle-integral machinery via chart cover, or a
-Riemann–Roch route. -/
-class HasResidueTheorem (X : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] [Jacobians.HasSmoothPaths X] : Prop where
-  /-- The degree of the divisor of any meromorphic function is zero. -/
-  deg_div_eq_zero : ∀ f : MeromorphicFunction X,
-    Divisor.deg X (MeromorphicFunction.divViaOrder X f) = 0
-
 /-- **Residue theorem** (Forster §4.24): the degree of `div f` is
-zero for every meromorphic function `f`. Delegates to the
-`HasResidueTheorem X` typeclass. -/
-theorem deg_div [HasResidueTheorem X] (f : MeromorphicFunction X) :
+zero for every meromorphic function `f`.
+
+Classical proof: integrate `d(log f) = df/f` around the boundary of a
+triangulation; each face contributes zero (Stokes); each edge is
+traversed twice with opposite orientations, cancelling. The residue at
+each pole/zero contributes `2πi · ord_x(f)`, so the sum of orders is
+zero. Not currently in Mathlib at the manifold level. -/
+theorem deg_div (f : MeromorphicFunction X) :
     Divisor.deg X (MeromorphicFunction.div X f) = 0 :=
-  HasResidueTheorem.deg_div_eq_zero f
+  sorry
 
 /-- **Principal divisors have degree 0** (Forster §4.24). Every
 principal divisor sits inside `DivisorOfDegZero X`. Proof uses
 `deg_div` (residue theorem) + closure under addition. -/
-theorem PrincipalDivisors_le_DivisorOfDegZero [HasResidueTheorem X] :
-    PrincipalDivisors X ≤ DivisorOfDegZero X := by
-  show AddSubgroup.closure (Set.range (MeromorphicFunction.div X)) ≤ DivisorOfDegZero X
-  refine AddSubgroup.closure_le _ |>.mpr ?_
-  rintro d ⟨f, rfl⟩
-  show MeromorphicFunction.div X f ∈ DivisorOfDegZero X
-  show (Divisor.deg X) (MeromorphicFunction.div X f) = 0
-  exact deg_div X f
+theorem PrincipalDivisors_le_DivisorOfDegZero :
+    PrincipalDivisors X ≤ DivisorOfDegZero X :=
+  sorry
 
 /-! ### Abel–Jacobi map (on divisors of degree 0)
 
@@ -681,19 +657,8 @@ Axiomatized via a typeclass so downstream consequences can be
 stated. Filling in this class is the Mathlib-contribution-scale
 work to formalize divisor theory + residue theorem + Abel's proof. -/
 
-/-- **Abel's theorem** as a typeclass. Axiomatizes the key equivalence
-between principality of degree-0 divisors and vanishing in the
-Jacobian. Derivable (~6-12 months of work) from the residue theorem,
-divisor theory, and the classical Abel–Jacobi argument. -/
-class HasAbelsTheorem : Prop where
-  /-- Degree-zero principal divisor ⇒ Abel–Jacobi image is zero
-  (the easy direction, follows from Stokes). -/
-  principal_imp_aj_zero : ∀ D : DivisorOfDegZero X,
-    (D : Divisor X) ∈ PrincipalDivisors X → abelJacobi D = 0
-  /-- Abel–Jacobi image is zero ⇒ divisor is principal (the hard
-  direction, Abel's original theorem). -/
-  aj_zero_imp_principal : ∀ D : DivisorOfDegZero X,
-    abelJacobi D = 0 → (D : Divisor X) ∈ PrincipalDivisors X
+-- `HasAbelsTheorem` class removed: reverted to sorry-based
+-- `abelJacobi_twoPoint_ne_zero` below.
 
 /-! ### Consequence: two-point divisors on positive-genus surfaces
 
@@ -712,25 +677,21 @@ alongside Abel's theorem itself. This is the piece that, combined
 with Abel, implies `abelJacobi (P - Q) ≠ 0`, the lemma needed for
 `ofCurve_inj`. -/
 
-/-- **Non-principality of two-point divisors on positive-genus surfaces.**
-Axiomatized; the proof is classical (Riemann-Hurwitz + genus-0
-characterization of ℙ¹). -/
-class NoDegreeOneDivisorsToPP1 : Prop where
-  twoPoint_not_principal : 0 < genus X →
-    ∀ {P Q : X}, P ≠ Q → twoPointDivisor X P Q ∉ PrincipalDivisors X
-
 variable {X} in
 /-- **Consequence of Abel's theorem + non-existence of degree-1 maps
 to ℙ¹ on positive-genus surfaces**: the Abel–Jacobi image of a
 two-point divisor `P - Q` is nonzero when `P ≠ Q` on a surface of
-positive genus. -/
-theorem abelJacobi_twoPoint_ne_zero [HasAbelsTheorem X] [NoDegreeOneDivisorsToPP1 X]
+positive genus.
+
+Classical argument: if `abelJacobi (P - Q) = 0`, then by Abel's theorem
+`P - Q` is principal — some meromorphic function `f` has a simple zero
+at `P` and a simple pole at `Q` and no other zeros/poles. Such an `f`
+is a degree-1 map `X → ℙ¹`, hence a biholomorphism (Riemann-Hurwitz).
+But then `X ≃ ℙ¹`, which has genus 0 — contradiction. -/
+theorem abelJacobi_twoPoint_ne_zero
     (h : 0 < genus X) {P Q : X} (hPQ : P ≠ Q) :
-    abelJacobi ⟨twoPointDivisor X P Q, twoPointDivisor_mem_degZero X P Q⟩ ≠ 0 := by
-  intro h_aj
-  have h_principal := HasAbelsTheorem.aj_zero_imp_principal _ h_aj
-  -- h_principal : twoPointDivisor X P Q ∈ PrincipalDivisors X
-  exact NoDegreeOneDivisorsToPP1.twoPoint_not_principal h hPQ h_principal
+    abelJacobi ⟨twoPointDivisor X P Q, twoPointDivisor_mem_degZero X P Q⟩ ≠ 0 :=
+  sorry
 
 /-! ### `no_distinct_points_placeholder` removed
 

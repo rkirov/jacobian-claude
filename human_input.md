@@ -292,3 +292,34 @@ reporting. Avoid "structurally elegant" tricks that mask content
 gaps. When something genuinely needs content that's beyond a
 session's scope, say so directly rather than hiding it in
 axiomatization.
+
+## 2026-04-22 — Session N+3 (reversal of axiom-classes to sorries)
+
+### Sorries are honest; axiom-classes are ambiguous
+
+**When:** after I'd proposed three hacks (`ambientPhi` via matrix
+transpose, `ContMDiff.degree := 0`, `ambientPhi_ambientPsi_eq` with
+an explicit `d` argument) and started fixing them by introducing a
+`HasAmbientDegreeIdentity` typeclass. By that point the project had
+~10 axiom-classes: `HasUniformizationG0`, `HasAmbientDegreeIdentity`,
+`HasSmoothPaths`, `HasSmoothPathAbelJacobi`, `IsPeriodLattice`,
+`HasBranchedCoverContent`, `HasResidueTheorem`, `HasAbelsTheorem`,
+`NoDegreeOneDivisorsToPP1`, `HasHolomorphicAbelJacobi`.
+**My default:** Viewed axiom-classes as cleaner than sorries
+(typed, composable, scoped to the needed surface).
+**User steer:** "One might consider them cheating — sorries are
+semantically clear placeholders while others are ambiguous. Keep
+all placeholders as sorries."
+**Change:** Deleted all 10 axiom-classes. Replaced every gated
+theorem with a sorry-body (or sorry-instance for the lattice
+structure). `smoothPath` itself became `def smoothPath ... :=
+sorry`. Stripped the hypotheses from every downstream variable
+block and lemma signature. Build still succeeds (17 sorry
+warnings, all openly accounted for).
+
+**Takeaway to remember:** `sorry` is the canonical placeholder
+signal in Lean; `class Has* : Prop where axiom_field := ...` is
+content-equivalent but hides the "this is unproved" status behind
+typeclass ceremony. When offering "structural" progress, don't
+axiomatize — write the sorry, and let the sorry warnings be the
+honest measure of what's left.

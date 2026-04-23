@@ -67,8 +67,7 @@ open scoped Manifold -- for 𝓘 notation
 
 -- let X be a compact Riemann surface
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-  [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [Nonempty X] [Jacobians.IsPeriodLattice X]
-  [Jacobians.HasSmoothPaths X]
+  [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [Nonempty X]
 
 -- data
 /-- The period lattice of a compact Riemann surface, living inside
@@ -88,14 +87,12 @@ noncomputable def periodLattice (X : Type*) [TopologicalSpace X] [T2Space X]
   Jacobians.truePeriodLattice X
 
 instance {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [Jacobians.IsPeriodLattice X] :
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
     DiscreteTopology (periodLattice X) :=
   inferInstanceAs (DiscreteTopology (Jacobians.truePeriodLattice X))
 
 instance {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [Jacobians.IsPeriodLattice X] :
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
     IsZLattice ℝ (periodLattice X) :=
   inferInstanceAs (IsZLattice ℝ (Jacobians.truePeriodLattice X))
 
@@ -156,26 +153,14 @@ does via `lineIntegral`. -/
 noncomputable def ofCurve (P : X) : X → Jacobian X := fun Q =>
   QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P Q))
 
-/-- **Abel-Jacobi holomorphicity typeclass** (Forster §21).
-Axiomatizes that `ofCurve P : X → Jacobian X` is holomorphic
-(equivalently, the Abel-Jacobi map varies smoothly with its second
-argument). Real instances require the concrete `HasSmoothPaths`
-instance to provide a jointly-smooth family `(P, Q) ↦ smoothPath P Q`,
-which is standard content on compact Riemann surfaces. -/
-class HasHolomorphicAbelJacobi (X : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] [Jacobians.IsPeriodLattice X]
-    [Jacobians.HasSmoothPaths X] : Prop where
-  /-- The Abel-Jacobi map `ofCurve P` is holomorphic. -/
-  ofCurve_contMDiff : ∀ (P : X), ContMDiff 𝓘(ℂ)
-    (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P)
-
-/-- **Holomorphic Abel-Jacobi map** (Forster §21). Delegates to
-the `HasHolomorphicAbelJacobi` typeclass. -/
-lemma ofCurve_contMDiff [HasHolomorphicAbelJacobi X]
-    (P : X) : ContMDiff 𝓘(ℂ)
+/-- **Holomorphic Abel-Jacobi map** (Forster §21): `ofCurve P : X → Jacobian X`
+is holomorphic (i.e. the Abel-Jacobi map varies smoothly with its second
+argument). Real proof requires a concrete smooth-path construction
+providing a jointly-smooth family `(P, Q) ↦ smoothPath P Q`; standard
+content on compact Riemann surfaces, not in Mathlib. -/
+lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ)
     (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) :=
-  HasHolomorphicAbelJacobi.ofCurve_contMDiff P
+  sorry
 
 /-- **Abel-Jacobi of basepoint is zero**: the smooth path `P → P` is
 a closed smooth loop, so its periodVec is in the lattice, hence maps
@@ -204,8 +189,7 @@ bundle for `mk_periodVec_eq_of_endpoints` and `periodVec_concat` —
 concat of smooth paths is a smooth loop when closed, and path-algebra
 integrability. Left as a focused content sorry (~30-50 lines of
 concat/reverse smoothness preservation). -/
-lemma ofCurve_basepoint_change [Jacobians.HasSmoothPathAbelJacobi X]
-    (P P₀ A : X) :
+lemma ofCurve_basepoint_change (P P₀ A : X) :
     ofCurve P₀ A = ofCurve P A + ofCurve P₀ P := by
   unfold ofCurve
   exact Jacobians.smoothPath_basepoint_change P P₀ A
@@ -227,9 +211,7 @@ proof chain:
   ofCurve P Q = ofCurve P Q' → abelJacobi (Q - Q') = 0
    → Q - Q' principal (HasAbelsTheorem)
    → contradicts NoDegreeOneDivisorsToPP1 if Q ≠ Q' and 0 < genus X. -/
-lemma ofCurve_inj [Jacobians.HasAbelsTheorem X]
-    [Jacobians.NoDegreeOneDivisorsToPP1 X]
-    [Jacobians.HasSmoothPathAbelJacobi X]
+lemma ofCurve_inj
     (P : X) (h : 0 < genus X) : Function.Injective (ofCurve P) := by
   intro Q Q' h_eq
   by_contra h_ne
@@ -249,8 +231,7 @@ lemma ofCurve_inj [Jacobians.HasAbelsTheorem X]
   abel
 
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-  [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] [Jacobians.IsPeriodLattice Y]
-  [Jacobians.HasSmoothPaths Y]
+  [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 variable (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
 
@@ -293,8 +274,7 @@ lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P 
     P
 
 variable {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z]
-  [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z] [Jacobians.IsPeriodLattice Z]
-  [Jacobians.HasSmoothPaths Z]
+  [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
 
 variable (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
 
@@ -315,7 +295,7 @@ lemma pushforward_comp_apply (P : Jacobian X) :
 /-- Lattice preservation on the pullback side. Case-split on f constant
 vs non-constant: the constant case is real (ambientPsi = 0); the
 non-constant case is the trace identity (Forster §10.11). -/
-lemma ambientPsi_preserves_lattice [Jacobians.HasBranchedCoverContent X Y]
+lemma ambientPsi_preserves_lattice
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (periodLattice Y).toAddSubgroup ≤
       (periodLattice X).toAddSubgroup.comap
@@ -325,7 +305,7 @@ lemma ambientPsi_preserves_lattice [Jacobians.HasBranchedCoverContent X Y]
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
 Equal to the zero map if the map on curves is constant.
 Wired: `ZLatticeQuotient.pullback` applied to `ambientPsi f hf`. -/
-noncomputable def pullback [Jacobians.HasBranchedCoverContent X Y] (f : X → Y)
+noncomputable def pullback (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     Jacobian Y →ₜ+ Jacobian X :=
   Jacobians.ZLatticeQuotient.pullback (periodLattice X) (periodLattice Y)
@@ -333,7 +313,7 @@ noncomputable def pullback [Jacobians.HasBranchedCoverContent X Y] (f : X → Y)
     (ambientPsi_preserves_lattice f hf)
 
 -- pullback is holomorphic
-theorem pullback_contMDiff [Jacobians.HasBranchedCoverContent X Y] :
+theorem pullback_contMDiff :
     ContMDiff (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ))
       (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) :=
   Jacobians.ZLatticeQuotient.pullback_contMDiff_of_ambient
@@ -342,7 +322,7 @@ theorem pullback_contMDiff [Jacobians.HasBranchedCoverContent X Y] :
     (ambientPsi_preserves_lattice f hf)
 
 -- functoriality
-lemma pullback_id_apply [Jacobians.HasBranchedCoverContent X X]
+lemma pullback_id_apply
     (P : Jacobian X) : pullback id contMDiff_id P = P :=
   Jacobians.ZLatticeQuotient.pushforward_id_of_ambient
     (periodLattice X)
@@ -352,8 +332,7 @@ lemma pullback_id_apply [Jacobians.HasBranchedCoverContent X X]
     P
 
 -- functoriality
-lemma pullback_comp_apply [Jacobians.HasBranchedCoverContent X Y]
-    [Jacobians.HasBranchedCoverContent Y Z] [Jacobians.HasBranchedCoverContent X Z]
+lemma pullback_comp_apply
     (P : Jacobian Z) :
     pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := by
   induction P using QuotientAddGroup.induction_on with
@@ -376,8 +355,7 @@ regular-value theory + preimage counting — Mathlib-contribution-scale
 work not yet formalized. -/
 def _root_.ContMDiff.degree (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ := 0
 
-lemma pushforward_pullback [Jacobians.HasAmbientDegreeIdentity X Y]
-    [Jacobians.HasBranchedCoverContent X Y]
+lemma pushforward_pullback
     (P : Jacobian Y) :
     pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P :=
   Jacobians.ZLatticeQuotient.pushforward_pullback_of_ambient

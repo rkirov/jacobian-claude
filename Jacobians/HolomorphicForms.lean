@@ -311,34 +311,19 @@ theorem ambientPsi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpa
   rw [pullbackForm_comp f hf g hg hgf]
   simp [LinearMap.comp_apply]
 
-/-- **Degree identity typeclass** (Forster §17 / Miranda §III.4).
+/-- **Ambient degree identity** (Forster §17 / Miranda §III.4).
 The composition `ambientPhi f hf ∘ ambientPsi f hf` equals
-multiplication by the degree `d` (a specific natural number for
-each `f, hf`). In terms of forms: `f_* ∘ f^* = deg(f) • id`.
+multiplication by the degree `d`. In terms of forms: `f_* ∘ f^* = deg(f) • id`.
 
-Mathlib has no manifold-level degree theory for proper holomorphic
-maps. Axiomatized; real instances require a real `ContMDiff.degree`
-(via preimage counting at regular values) together with a real
-trace/pushforward construction for `ambientPhi`. ~500-1000 lines
-to formalize. -/
-class HasAmbientDegreeIdentity (X Y : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X]
-    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] : Prop where
-  /-- The ambient degree identity: `Φ ∘ Ψ = d • id`. -/
-  ambientPhi_ambientPsi_eq : ∀ {gX gY : ℕ} (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (d : ℕ) (y : Fin gY → ℂ),
-    ambientPhi (gX := gX) (gY := gY) f hf (ambientPsi f hf y) = (d : ℕ) • y
-
-/-- **Ambient degree identity** (Forster §17). Delegates to the
-`HasAmbientDegreeIdentity` typeclass. Real instances await real
-`pushforwardForm` + `ContMDiff.degree`. -/
-theorem ambientPhi_ambientPsi_eq [HasAmbientDegreeIdentity X Y] {gX gY : ℕ}
+Mathlib has no manifold-level degree theory for proper holomorphic maps.
+Real content requires a real `ContMDiff.degree` (via preimage counting
+at regular values) together with a real trace/pushforward construction
+for `ambientPhi`. ~500-1000 lines to formalize. -/
+theorem ambientPhi_ambientPsi_eq {gX gY : ℕ}
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (d : ℕ)
     (y : Fin gY → ℂ) :
     ambientPhi (gX := gX) (gY := gY) f hf (ambientPsi f hf y) = (d : ℕ) • y :=
-  HasAmbientDegreeIdentity.ambientPhi_ambientPsi_eq f hf d y
+  sorry
 
 /-- `ambientPhi id = id` — follows from `ambientPsi_id` via the transpose
 construction: transpose of identity matrix is identity. -/

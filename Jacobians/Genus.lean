@@ -67,27 +67,15 @@ noncomputable def genus (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpa
   [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : ℕ :=
   Module.finrank ℂ (Jacobians.HolomorphicOneForms X)
 
-/-- **Uniformization / Riemann–Roch characterization of genus-0 surfaces**
-as a typeclass. A compact Riemann surface of genus 0 is homeomorphic
-to the 2-sphere (Forster §16.3: Uniformization theorem; Miranda §V).
-
-Mathlib does not currently have this classical result. Real
-instances would follow from the uniformization theorem, or via
-Riemann–Roch (genus 0 ⇒ a non-constant meromorphic function with
-a single simple pole gives a biholomorphism X → ℂP¹ ≃ S²). -/
-class HasUniformizationG0 (X : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] : Prop where
-  /-- Genus-0 characterization: `genus X = 0` iff `X` is homeomorphic
-  to the standard 2-sphere. -/
-  genus_eq_zero_iff :
-    genus X = 0 ↔ Nonempty (X ≃ₜ (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1))
-
 /-- A compact Riemann surface has genus 0 iff it is homeomorphic to the sphere.
 This is the "anti-hack" constraint preventing `∀ X, genus X = 0`.
-Delegates to the `HasUniformizationG0 X` typeclass. -/
+
+Classical result (Forster §16.3: Uniformization theorem; Miranda §V): a
+compact Riemann surface of genus 0 is homeomorphic to the 2-sphere.
+Mathlib does not currently have this; real proof would follow from
+uniformization or Riemann–Roch (genus 0 ⇒ a non-constant meromorphic
+function with a single simple pole gives a biholomorphism X → ℂP¹ ≃ S²). -/
 lemma genus_eq_zero_iff_homeo {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [HasUniformizationG0 X] :
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
     genus X = 0 ↔ Nonempty (X ≃ₜ (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) :=
-  HasUniformizationG0.genus_eq_zero_iff
+  sorry

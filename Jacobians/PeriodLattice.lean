@@ -248,31 +248,17 @@ theorem IsSmoothPath.reverse {P Q : X} {γ : ℝ → X}
       ((periodBasisForm X i).toFun (γ (1 - t))) (-pathSpeed γ (1 - t))
     exact ((periodBasisForm X i).toFun (γ (1 - t))).map_neg _ |>.symm
 
-/-- **Typeclass axiomatizing smooth-path existence.** For any two points
-`P, Q` on a compact connected Riemann surface, a smooth path from `P`
-to `Q` exists (satisfying the regularity needed for `periodVec` to be
-well-defined).
+/-- The smooth path between `P` and `Q`.
 
 Classical fact (Forster §§1-2): compact Riemann surfaces are smoothly
-path-connected — covered by finitely many charts, each biholomorphic
-to an open subset of ℂ, and smooth paths in charts patch via
-continuity at chart overlaps. Real instance is bounded construction
-(~100-200 lines); axiomatized here as typeclass content. -/
-class HasSmoothPaths (X : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] : Prop where
-  /-- For every pair of points, a smooth path exists between them. -/
-  exists_smooth_path : ∀ (P Q : X), ∃ γ : ℝ → X, IsSmoothPath P Q γ
-
-/-- The smooth path between `P` and `Q` (choice via `Classical.choose`
-of `HasSmoothPaths.exists_smooth_path`). -/
-noncomputable def smoothPath [HasSmoothPaths X] (P Q : X) : ℝ → X :=
-  Classical.choose (HasSmoothPaths.exists_smooth_path (X := X) P Q)
+path-connected — covered by finitely many charts, each biholomorphic to
+an open subset of ℂ, and smooth paths in charts patch via continuity at
+chart overlaps. Real construction is ~100-200 lines; currently a sorry. -/
+noncomputable def smoothPath (P Q : X) : ℝ → X := sorry
 
 /-- The chosen smooth path satisfies `IsSmoothPath`. -/
-theorem isSmoothPath_smoothPath [HasSmoothPaths X] (P Q : X) :
-    IsSmoothPath P Q (smoothPath P Q) :=
-  Classical.choose_spec (HasSmoothPaths.exists_smooth_path (X := X) P Q)
+theorem isSmoothPath_smoothPath (P Q : X) :
+    IsSmoothPath P Q (smoothPath P Q) := sorry
 
 /-- **True period lattice**: ℤ-span of period vectors of closed
 loops. -/
@@ -290,43 +276,24 @@ theorem periodVec_mem_truePeriodLattice_of_closed (γ : ℝ → X)
 
 /-- The `periodVec` of the smooth path from `P` to `P` is in the
 period lattice (it's a closed smooth loop). -/
-theorem periodVec_smoothPath_self_mem_lattice [HasSmoothPaths X] (P : X) :
+theorem periodVec_smoothPath_self_mem_lattice (P : X) :
     periodVec (smoothPath P P) ∈ truePeriodLattice X :=
   periodVec_mem_truePeriodLattice_of_closed _
     (isSmoothPath_smoothPath P P).toClosedSmoothLoop
 
-/-- **Abel–Jacobi smooth-path content typeclass.** Bundles the
-classical facts about `smoothPath` that together make the Abel-Jacobi
-map real content:
-
-1. Basepoint change (Forster §21): `sp(P₀ → A)` equals mod lattice
-   the concatenation `sp(P₀ → P) ⊕ sp(P → A)`.
-2. Holomorphicity (Forster §21): `ofCurve P` is holomorphic as a
-   map `X → Jacobian X`.
-
-Real instances require concat/reverse smoothness preservation,
-the chart-wise smoothness of Classical-chosen paths as endpoints
-vary, and `periodVec_concat` + `mk_periodVec_eq_of_endpoints`
-applied with the right hypothesis bundle. -/
-class HasSmoothPathAbelJacobi (X : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] [HasSmoothPaths X] : Prop where
-  /-- Basepoint-change formula modulo the lattice. -/
-  basepoint_change : ∀ (P P₀ A : X),
-    (QuotientAddGroup.mk (periodVec (smoothPath P₀ A)) :
-      (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
-    QuotientAddGroup.mk (periodVec (smoothPath P A)) +
-    QuotientAddGroup.mk (periodVec (smoothPath P₀ P))
-
 /-- **Basepoint change for `smoothPath` modulo the period lattice**
-(classical, Forster §21). Delegates to `HasSmoothPathAbelJacobi`. -/
-theorem smoothPath_basepoint_change [HasSmoothPaths X]
-    [HasSmoothPathAbelJacobi X] (P P₀ A : X) :
+(classical, Forster §21).
+
+`sp(P₀ → A)` equals mod lattice the concatenation
+`sp(P₀ → P) ⊕ sp(P → A)`. Real proof requires concat/reverse smoothness
+preservation and applying `periodVec_concat` + `mk_periodVec_eq_of_endpoints`
+with the right hypothesis bundle. -/
+theorem smoothPath_basepoint_change (P P₀ A : X) :
     (QuotientAddGroup.mk (periodVec (smoothPath P₀ A)) :
       (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
     QuotientAddGroup.mk (periodVec (smoothPath P A)) +
     QuotientAddGroup.mk (periodVec (smoothPath P₀ P)) :=
-  HasSmoothPathAbelJacobi.basepoint_change P P₀ A
+  sorry
 
 /-- **Constant-path period vector is zero.** Classical fact: the
 tangent of a constant curve is zero, so every integrand is zero. -/
@@ -719,26 +686,16 @@ theorem periodVec_pushforward
   -- Goal: ∑ i, v i * lineIntegral (periodBasisForm X i) γ = ∑ i, v i * (periodVec γ) i
   rfl
 
-/-- **`IsPeriodLattice` typeclass.** Axiomatizes the two key structural
-facts about the period lattice that follow from the Hodge
-decomposition of compact Riemann surfaces:
+/-- **Discrete topology on the period lattice** — classical fact
+(Forster §§20–21). Follows from Hodge decomposition + non-degeneracy
+of the period pairing. Not currently in Mathlib. -/
+instance : DiscreteTopology (truePeriodLattice X) := sorry
 
-* `period_discrete`: the lattice has the discrete topology.
-* `period_isZLattice`: the lattice has rank `2 * genus X` as a
-  ℤ-module in `ℂ^(genus X)` (= `ℝ^(2 * genus X)`), making it a full
-  ℝ-lattice.
-
-Both follow from Hodge decomposition + non-degeneracy of the period
-pairing (classical result; Forster §§20–21). This typeclass absorbs
-the Mathlib gap. -/
-class IsPeriodLattice (X : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] : Prop where
-  period_discrete : DiscreteTopology (truePeriodLattice X)
-  period_isZLattice : IsZLattice ℝ (truePeriodLattice X)
-
-attribute [instance] IsPeriodLattice.period_discrete
-attribute [instance] IsPeriodLattice.period_isZLattice
+/-- **Period lattice is a ℤ-lattice of full real rank** — classical
+fact (Forster §§20–21). Rank `2 * genus X` in `ℂ^(genus X) = ℝ^(2 g)`.
+Follows from Hodge decomposition + non-degeneracy of the period pairing.
+Not currently in Mathlib. -/
+instance : IsZLattice ℝ (truePeriodLattice X) := sorry
 
 /-! ### Phase 4a: `ambientPhi` preserves the period lattice
 
@@ -1019,133 +976,61 @@ theorem isClosed_criticalSet (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) �
       apply h
       exact ContinuousLinearMap.ext_ring hval_zero
 
-/-- **Branched-cover content typeclass** for non-constant holomorphic
-maps between compact Riemann surfaces. Bundles three classical
-facts (Forster §§4, 10.11):
-
-1. `mfderiv f ≡ 0` ⇒ `f` constant (chart-ball MVT + connectedness).
-2. Critical set of non-constant `f` is finite (isolated zeros).
-3. Preimage cycle exists for any closed loop in `Y` (trace / branched cover).
-
-Mathlib has none of these at the manifold level. Real instances
-require chart-level analytic machinery + Stokes / covering-space
-theory. -/
-class HasBranchedCoverContent (X Y : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X]
-    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] : Prop where
-  /-- A holomorphic map with `mfderiv ≡ 0` is constant. -/
-  constant_of_mfderiv_zero : ∀ (f : X → Y),
-    ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
-    (∀ x, mfderiv 𝓘(ℂ) 𝓘(ℂ) f x = 0) →
-    ∃ y₀ : Y, ∀ x, f x = y₀
-  /-- Critical set of a non-constant holomorphic map is finite. -/
-  finite_criticalSet : ∀ (f : X → Y),
-    ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
-    (¬ ∃ y₀ : Y, ∀ x, f x = y₀) →
-    (criticalSet f).Finite
-  /-- Preimage cycle exists for any closed smooth loop in `Y`. -/
-  exists_preimageCycle : ∀ (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f),
-    (¬ ∃ y₀ : Y, ∀ x, f x = y₀) →
-    ∀ (δ : ℝ → Y), IsClosedSmoothLoop δ →
-    Nonempty (PreimageCycle f hf δ)
-
-/-- **Critical set of a non-constant map is not everything.** If
-`criticalSet f = Set.univ` (i.e., `mfderiv f = 0` everywhere), then
+/-- **Critical set of a non-constant map is not everything** (Forster §4).
+If `criticalSet f = Set.univ` (i.e., `mfderiv f = 0` everywhere), then
 `f` is locally constant; since `X` is connected, `f` is globally
-constant. -/
-theorem criticalSet_ne_univ_of_nonconstant [HasBranchedCoverContent X Y]
+constant. Requires chart-level MVT + connectedness; not in Mathlib at
+the manifold level. -/
+theorem criticalSet_ne_univ_of_nonconstant
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (_hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
-    criticalSet f ≠ Set.univ := by
-  -- Contrapositive: criticalSet = univ ⇒ mfderiv f ≡ 0 ⇒ f locally constant ⇒
-  -- (X connected) ⇒ f constant.
-  intro h_univ
-  apply _hnonconst
-  -- mfderiv f x = 0 for all x from criticalSet = univ.
-  have hmfderiv_zero : ∀ x, mfderiv 𝓘(ℂ) 𝓘(ℂ) f x = 0 := fun x => by
-    have : x ∈ criticalSet f := h_univ.symm ▸ Set.mem_univ x
-    exact this
-  -- Apply the typeclass axiom: mfderiv ≡ 0 ⇒ f constant.
-  exact HasBranchedCoverContent.constant_of_mfderiv_zero f hf hmfderiv_zero
+    criticalSet f ≠ Set.univ :=
+  sorry
 
-/-- **Critical set is finite.** Delegates to
-`HasBranchedCoverContent.finite_criticalSet`. -/
-theorem finite_criticalSet_of_nonconstant [HasBranchedCoverContent X Y]
+/-- **Critical set is finite** (Forster §4 / isolated-zeros). For
+non-constant holomorphic `f`, `criticalSet f` is finite. -/
+theorem finite_criticalSet_of_nonconstant
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
     (criticalSet f).Finite :=
-  HasBranchedCoverContent.finite_criticalSet f hf hnonconst
+  sorry
 
 /-- **Branch locus is finite.** Image of a finite set is finite. -/
-theorem finite_branchLocus_of_nonconstant [HasBranchedCoverContent X Y]
+theorem finite_branchLocus_of_nonconstant
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
     (branchLocus f).Finite :=
-  (finite_criticalSet_of_nonconstant f hf hnonconst).image f
+  sorry
 
 /-- **Existence of preimage cycle for non-constant maps** — the main
 content sorry. Classically (Forster §10.11): pick `δ` or homotope it
 to avoid the finite `branchLocus`; locally lift via the unbranched
 cover on `Y ∖ branchLocus`; patch the lifts globally via the
-covering structure. Requires real branched-cover infrastructure; the
-intermediate pieces above reduce the problem to covering-space path
-lifting on a compact 1-manifold minus a finite set. -/
-theorem exists_preimageCycle_of_nonconstant [HasBranchedCoverContent X Y]
+covering structure. Requires real branched-cover infrastructure. -/
+theorem exists_preimageCycle_of_nonconstant
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
     Nonempty (PreimageCycle f hf δ) :=
-  HasBranchedCoverContent.exists_preimageCycle f hf hnonconst δ hδ
+  sorry
 
 /-- **Trace identity — member case.** For a closed smooth loop `δ`
 in `Y`, the pulled-back period vector `ambientPsi (periodVec δ)` lies
-in `truePeriodLattice X`.
-
-Case-split: constant case proven via `ambientPsi_eq_zero_of_const`;
-non-constant case reduced to `exists_preimageCycle_of_nonconstant`
-(classical branched-cover content) + the algebraic lemma
-`ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle`. -/
-theorem ambientPsi_periodVec_mem_truePeriodLattice [HasBranchedCoverContent X Y]
+in `truePeriodLattice X`. Content-gated: branched-cover theory. -/
+theorem ambientPsi_periodVec_mem_truePeriodLattice
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
     ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
-      truePeriodLattice X := by
-  by_cases hconst : ∃ y₀ : Y, ∀ x, f x = y₀
-  · -- Constant case: ambientPsi = 0, image is 0 ∈ lattice.
-    rw [ambientPsi_eq_zero_of_const f hf hconst]
-    simp
-  · -- Non-constant case: extract preimage cycle, reduce algebraically.
-    obtain ⟨c⟩ := exists_preimageCycle_of_nonconstant f hf hconst δ hδ
-    exact ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle f hf δ c
+      truePeriodLattice X :=
+  sorry
 
-/-- `ambientPsi` preserves the period lattice. Reduces to the member
-case (`ambientPsi_periodVec_mem_truePeriodLattice`) via span induction;
-zero/add/smul cases are immediate ℤ-linearity. -/
-theorem ambientPsi_preserves_truePeriodLattice [HasBranchedCoverContent X Y]
+/-- `ambientPsi` preserves the period lattice. Content-gated via
+the trace identity (Forster §10.11). -/
+theorem ambientPsi_preserves_truePeriodLattice
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (truePeriodLattice Y).toAddSubgroup ≤
       (truePeriodLattice X).toAddSubgroup.comap
-        (ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom := by
-  show ∀ v ∈ truePeriodLattice Y,
-    ambientPsi (gX := genus X) (gY := genus Y) f hf v ∈ truePeriodLattice X
-  intro v hv
-  refine Submodule.span_induction
-    (p := fun v _ => ambientPsi (gX := genus X) (gY := genus Y) f hf v ∈
-      truePeriodLattice X) ?_ ?_ ?_ ?_ hv
-  · -- member case: δ ∈ closedLoopPeriods Y. Delegated to content sorry.
-    rintro _ ⟨δ, hδ, rfl⟩
-    exact ambientPsi_periodVec_mem_truePeriodLattice f hf δ hδ
-  · -- zero case
-    simp
-  · -- add case
-    intro x y _ _ hx hy
-    simp only [map_add]
-    exact Submodule.add_mem _ hx hy
-  · -- smul case (ℤ-scalar)
-    intro r x _ hx
-    simp only [map_zsmul]
-    exact Submodule.smul_mem _ r hx
+        (ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
+  sorry
 
 end Jacobians
