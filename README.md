@@ -6,19 +6,28 @@ Lean 4 formalization of Kevin Buzzard's
 [`8e3c989104daaa052921bf43de9eef0e1ac9fbf5`](https://github.com/leanprover-community/mathlib4/commit/8e3c989104daaa052921bf43de9eef0e1ac9fbf5)
 (2026-04-15).
 
+## Disclaimer
+
+The human author (rkirov) does not know the mathematics involved
+(algebraic geometry, Riemann surfaces, Abel's theorem, etc.) and has
+not reviewed the content of this repository. Code, proofs, and
+documentation were produced by Claude (Anthropic's LLM) across
+several sessions with light human scoping/steering
+(see `human_input.md`). Expect errors in math, proof strategy, and
+documentation — anything flagged as a "real proof" here should be
+independently checked by someone who actually knows the subject
+before being relied on.
+
 ## Status
 
-**Zero active sorries** in the project. Every theorem in
-`Jacobians.lean` compiles as a genuine Lean theorem.
+17 `sorry`s remain, openly declared. Each corresponds to a named
+classical theorem not yet in Mathlib (residue theorem on manifolds,
+Riemann–Roch, Abel's theorem, Uniformization, branched-cover trace,
+the rank-2g period-lattice theorem, etc.). See `docs/STATUS.md` for
+the full inventory with Forster/Miranda references.
 
-Classical content not yet in Mathlib (residue theorem, Uniformization,
-Riemann–Roch, Abel's theorem, branched-cover trace, etc.) is
-axiomatized via named typeclasses with explicit Forster/Miranda
-references — so real instances plug in cleanly when the underlying
-content lands.
-
-See `docs/STATUS.md` for the inventory of typeclasses and their
-classical provenance.
+Real content *was* proven along the way (see "Approach" below); the
+sorries are isolated to the genuinely-missing classical pieces.
 
 ## Layout
 
@@ -46,24 +55,21 @@ lake exe cache get   # pull Mathlib olean cache
 lake build
 ```
 
-Expect several `unused variable` linter warnings (typeclasses
-propagated into theorems that don't use them — benign) and no
-errors.
+Expect 17 `declaration uses 'sorry'` warnings (one per remaining
+classical sorry) and no errors.
 
 ## Approach
 
-The project uses a **typeclass-gating** strategy for classical
-theorems not yet in Mathlib. Instead of `sorry`-ing each, a named
-typeclass (e.g. `HasAbelsTheorem X`, `HasResidueTheorem X`,
-`HasSmoothPaths X`) captures the axiom. The main theorems (including
-`ofCurve_inj`, the main challenge lemma) derive from these typeclass
-axioms via real proof chains.
+An earlier draft used a typeclass-gating strategy (`HasAbelsTheorem`,
+`HasResidueTheorem`, etc.) to move the missing classical content to
+the instance layer. This was reverted: typeclass-gated axioms are
+content-equivalent to `sorry` but ambiguous (a reader may not notice
+the claim is unproved). All gated theorems are now honest
+`sorry`-bodies so the unproved surface is visible in Lean's warnings.
 
-This means:
-- Every theorem is a compiled Lean theorem (no `sorry` hiding).
-- Mathematical content gaps are explicit at the instance layer.
-- Real instances require Mathlib-contribution-scale work (per-typeclass:
-  weeks to months of dedicated effort).
+Real content *was* proven along the way and is preserved. Everything
+else is a `sorry` with a named classical theorem attached, pointing
+to a Forster/Miranda section.
 
 Real mathematical content proven in this project (selected highlights):
 - Chart-invariance of `meromorphicOrderAt` (Forster §6 / Miranda II.4).
