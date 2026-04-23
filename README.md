@@ -1,5 +1,7 @@
 # Jacobians Lean API Challenge
 
+[![CI](https://github.com/rkirov/jacobian-claude/actions/workflows/lean.yml/badge.svg)](https://github.com/rkirov/jacobian-claude/actions/workflows/lean.yml)
+
 Lean 4 formalization of Kevin Buzzard's
 [Jacobians API challenge](https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9)
 (v0.2), pinned to Mathlib commit
