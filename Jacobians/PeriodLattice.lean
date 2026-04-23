@@ -34,6 +34,8 @@ period pairing.
 Forster §§20–21; Miranda Ch. V §§1–3.
 -/
 
+set_option linter.unusedSectionVars false
+
 namespace Jacobians
 
 open scoped Manifold ContDiff Bundle Topology
@@ -422,7 +424,7 @@ paths share endpoints, their period vectors differ by a lattice
 element. The concatenation `γ₁ ∗ reverse γ₂` must itself be a closed
 smooth loop (passed in as `hsmooth`). -/
 theorem periodVec_sub_mem_truePeriodLattice
-    (γ₁ γ₂ : ℝ → X) (h0 : γ₁ 0 = γ₂ 0)
+    (γ₁ γ₂ : ℝ → X) (_h0 : γ₁ 0 = γ₂ 0)
     (hsmooth : IsClosedSmoothLoop (concat γ₁ (reverse γ₂)))
     (hconcat : periodVec (concat γ₁ (reverse γ₂)) =
       periodVec γ₁ - periodVec γ₂) :
@@ -468,6 +470,7 @@ theorem pullbackForm_periodBasisForm_eq (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 
       ambientIso X (ambientPsi (gX := genus X) (gY := genus Y) f hf
         (Pi.basisFun ℂ (Fin (genus Y)) j)) := by
   unfold ambientPsi
+  set_option linter.unusedSimpArgs false in
   simp only [dif_pos rfl]
   show pullbackForm f hf (periodBasisForm Y j) =
     ambientIso X (((ambientIso X).symm.toLinearMap.comp

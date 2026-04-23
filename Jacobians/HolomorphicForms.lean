@@ -160,7 +160,7 @@ noncomputable def pullbackForm (g : X → Y) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ)
           ] with x hx_TS_X hx_TS_Y
         -- hx_TS_X : x ∈ (trivializationAt ℂ TangentSpace x₀).baseSet
         -- hx_TS_Y : g x ∈ (trivializationAt ℂ TangentSpace (g x₀)).baseSet
-        ext v
+        ext
         simp only [ContinuousLinearMap.inCoordinates,
           ContinuousLinearMap.comp_apply,
           Bundle.Trivial.fiberBundle_trivializationAt',
@@ -318,6 +318,7 @@ noncomputable def ambientPhi {gX gY : ℕ}
 theorem ambientPsi_id (y : Fin (genus X) → ℂ) :
     ambientPsi (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id y = y := by
   unfold ambientPsi
+  set_option linter.unusedSimpArgs false in
   simp only [dif_pos rfl]
   show (((ambientIso X).symm.toLinearMap.comp
       ((pullbackForm (id : X → X) contMDiff_id).comp (ambientIso X).toLinearMap)) : _ →ₗ[_] _) y = y
@@ -336,11 +337,12 @@ theorem ambientPsi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpa
       ambientPsi (gX := genus X) (gY := genus Y) f hf
         (ambientPsi (gX := genus Y) (gY := genus Z) g hg z) := by
   unfold ambientPsi
+  set_option linter.unusedSimpArgs false in
   simp only [dif_pos rfl]
   show (((ambientIso X).symm.toLinearMap.comp
       ((pullbackForm (g ∘ f) hgf).comp (ambientIso Z).toLinearMap))) z = _
   rw [pullbackForm_comp f hf g hg hgf]
-  simp [LinearMap.comp_apply, LinearEquiv.symm_apply_apply]
+  simp [LinearMap.comp_apply]
 
 /-- **Degree identity typeclass** (Forster §17 / Miranda §III.4).
 The composition `ambientPhi f hf ∘ ambientPsi f hf` equals
@@ -381,7 +383,7 @@ theorem ambientPhi_id (x : Fin (genus X) → ℂ) :
   unfold ambientPhi
   rw [show (ambientPsi (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id).toLinearMap
       = LinearMap.id (R := ℂ) (M := Fin (genus X) → ℂ) from by rw [hpsi]; rfl]
-  simp [LinearMap.toMatrix_id, Matrix.transpose_one, Matrix.mulVecLin_one]
+  simp [Matrix.transpose_one, Matrix.mulVecLin_one]
 
 /-- Covariant composition: `ambientPhi (g ∘ f) = ambientPhi g ∘ ambientPhi f`.
 Follows from `ambientPsi_comp` via matrix transpose reversing composition order. -/

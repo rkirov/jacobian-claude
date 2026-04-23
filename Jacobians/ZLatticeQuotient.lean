@@ -27,6 +27,8 @@ Given `Λ : Submodule ℤ E` with `[DiscreteTopology Λ]` and `[IsZLattice ℝ �
 Lee, *Introduction to Smooth Manifolds*, Ch. 21 (quotient Lie groups).
 -/
 
+set_option linter.unusedSectionVars false
+
 namespace Jacobians.ZLatticeQuotient
 
 /-! ### Covering-map structure
@@ -245,7 +247,7 @@ noncomputable instance instIsManifoldQuotient :
     (IsLocalHomeomorph.eq_chartAtPreimage (isLocalHomeomorph_mk Λ.toAddSubgroup) x₂).symm
   -- Simplify away the trivial model / range-of-model
   simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
-    Function.comp_id, Set.range_id, Set.preimage_id, id_eq,
+    Function.comp_id, Set.range_id, Set.preimage_id,
     Set.inter_univ, OpenPartialHomeomorph.symm_symm]
   exact transition_contDiffOn_of_agrees_with_mk Λ P₁ P₂ hP₁ hP₂
 
@@ -346,8 +348,7 @@ theorem contMDiff_neg :
   -- and x_c = Classical.choose (mk_surjective q₀))
   -- extChartAt with trivial model coincides with chartAt as a function.
   -- Range 𝓘(𝕜, E) = univ.
-  simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
-    Set.range_id, Set.univ_inter]
+  simp only [modelWithCornersSelf_coe, Set.range_id]
   -- Show: ContDiffWithinAt 𝕜 n (extChartAt 𝓘(𝕜,E) (-q₀) ∘ neg ∘ (extChartAt 𝓘(𝕜,E) q₀).symm)
   --         univ (extChartAt 𝓘(𝕜,E) q₀ q₀)
   -- Since range I = univ, ContDiffWithinAt univ = ContDiffAt.
@@ -697,8 +698,7 @@ theorem pushforward_contMDiff_of_ambient {gX gY : ℕ}
       (fun x : Fin gX → ℂ => R.symm (QuotientAddGroup.mk (Φ x) :
         (Fin gY → ℂ) ⧸ ΛY.toAddSubgroup)) x_c :=
     hcomp_on.contDiffAt (hopen_pre.mem_nhds hmem_img)
-  simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
-    Set.range_id, Set.univ_inter]
+  simp only [modelWithCornersSelf_coe, Set.range_id]
   rw [contDiffWithinAt_univ]
   have hpoint : extChartAt 𝓘(ℂ, Fin gX → ℂ) qX qX = x_c := by
     show P.symm qX = x_c

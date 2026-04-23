@@ -29,6 +29,8 @@ of Mathlib-contribution-sized work (divisor theory + residue theorem
 * Miranda, *Algebraic Curves and Riemann Surfaces*, Ch. V §§1–4.
 -/
 
+set_option linter.unusedSectionVars false
+
 namespace Jacobians
 
 open scoped Manifold ContDiff Topology
@@ -318,7 +320,7 @@ theorem MeromorphicFunction.orderAtPoint_chart_invariant
     have h_contDiffAt : ContDiffAt ℂ ω
         (↑(𝓘(ℂ).extendCoordChange (chartAt (H := ℂ) y) e))
         ((chartAt (H := ℂ) y).extend 𝓘(ℂ) y) := by
-      have h := OpenPartialHomeomorph.contDiffWithinAt_extend_coord_change'
+      have h := ModelWithCorners.contDiffWithinAt_extendCoordChange'
         hchart_max he_max hy_chart_src hy
       rwa [ModelWithCorners.range_eq_univ, contDiffWithinAt_univ] at h
     -- Step A7: AnalyticAt at the point (ω = ⊤ definitionally).
@@ -334,7 +336,7 @@ theorem MeromorphicFunction.orderAtPoint_chart_invariant
       have h_contDiffAt' : ContDiffAt ℂ ω
           (↑(𝓘(ℂ).extendCoordChange e (chartAt (H := ℂ) y)))
           (e.extend 𝓘(ℂ) y) := by
-        have h := OpenPartialHomeomorph.contDiffWithinAt_extend_coord_change'
+        have h := ModelWithCorners.contDiffWithinAt_extendCoordChange'
           he_max hchart_max hy (mem_chart_source ℂ y)
         rwa [ModelWithCorners.range_eq_univ, contDiffWithinAt_univ] at h
       exact h_contDiffAt'.analyticAt
@@ -659,9 +661,9 @@ theorem abelJacobi_twoPointDivisor (A B : X) (hne : A ≠ B) :
       · simp [hPA, hPB, show (P = A ↔ A = P) from eq_comm,
           show (P = B ↔ B = P) from eq_comm]
   have hA : (twoPointDivisor X A B : Divisor X) A = 1 := by
-    simp [twoPointDivisor, Finsupp.coe_sub, Pi.sub_apply, Finsupp.single_apply, hBnA]
+    simp [twoPointDivisor, Finsupp.coe_sub, Pi.sub_apply, hBnA]
   have hB : (twoPointDivisor X A B : Divisor X) B = -1 := by
-    simp [twoPointDivisor, Finsupp.coe_sub, Pi.sub_apply, Finsupp.single_apply, hAnB]
+    simp [twoPointDivisor, Finsupp.coe_sub, Pi.sub_apply, hAnB]
   show ∑ P ∈ (twoPointDivisor X A B).support,
     (twoPointDivisor X A B : Divisor X) P • _ = _
   rw [hsupp, Finset.sum_insert (by simp [hne]), Finset.sum_singleton]

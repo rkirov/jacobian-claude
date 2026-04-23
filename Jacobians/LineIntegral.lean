@@ -40,6 +40,8 @@ well-definedness) is a TODO(math).
 Forster §§10–12; Miranda Ch. 4 §§3–4.
 -/
 
+set_option linter.unusedSectionVars false
+
 namespace Jacobians
 
 open scoped Manifold ContDiff Bundle Topology
@@ -384,8 +386,6 @@ private lemma lineIntegral_concat_right (α : HolomorphicOneForms X) (γ γ' : �
   -- Substitution u = 2x - 1.
   have h_sub := @intervalIntegral.smul_integral_comp_mul_sub _ _ _ ((1 : ℝ)/2) 1
     (fun u : ℝ => α.toFun (γ' u) (pathSpeed γ' u)) 2 1
-  simp only [Complex.real_smul] at h_sub
-  push_cast at h_sub
   have h_endpt0 : ((2 : ℝ) * ((1 : ℝ)/2) - 1 : ℝ) = 0 := by norm_num
   have h_endpt1 : ((2 : ℝ) * 1 - 1 : ℝ) = 1 := by norm_num
   rw [h_endpt0, h_endpt1] at h_sub
