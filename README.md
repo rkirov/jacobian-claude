@@ -22,14 +22,70 @@ before being relied on.
 
 ## Status
 
-17 `sorry`s remain, openly declared. Each corresponds to a named
-classical theorem not yet in Mathlib (residue theorem on manifolds,
-Riemann–Roch, Abel's theorem, Uniformization, branched-cover trace,
-the rank-2g period-lattice theorem, etc.). See `docs/STATUS.md` for
-the full inventory with Forster/Miranda references.
+**Not done, not close to done.** The challenge file compiles and
+every main signature from Buzzard's spec is defined, but 17 `sorry`s
+remain — each corresponding to a named classical theorem not yet in
+Mathlib. Those 17 are the mathematically load-bearing pieces; filling
+them is substantial, multi-month-each, Mathlib-contribution-scale
+work (some of it touching genuinely deep theorems — Uniformization,
+Hodge decomposition for the period lattice, Abel's theorem).
 
-Real content *was* proven along the way (see "Approach" below); the
-sorries are isolated to the genuinely-missing classical pieces.
+The code to date is ~7,800 lines. A rough honest estimate for a
+complete, sorry-free solution is several times that, most of the
+remaining bulk being upstream Mathlib infrastructure (manifold
+Stokes, manifold-level meromorphic functions, divisor theory on
+manifolds, manifold degree, Čech cohomology of 𝒪, Riemann–Roch).
+None of those currently exist in Mathlib.
+
+### What is done
+
+- Every type/definition in Buzzard's challenge spec: `genus`,
+  `Jacobian`, `periodLattice`, `ofCurve`, `pushforward`, `pullback`,
+  `ContMDiff.degree` (the last two as `0` placeholders where
+  noted).
+- All the main theorems compile with the challenge's intended
+  statements.
+- Real proof chains for the `pushforward` side (functoriality,
+  lattice preservation, smoothness via `ZLatticeQuotient`).
+- `ofCurve_inj` (the main challenge theorem) reduces to Abel's
+  theorem via a real proof chain — the chain itself is genuine
+  (basepoint change, `abelJacobi ↔ ofCurve` bridge, two-point
+  divisor algebra).
+- Substantial real infrastructure: line integrals on manifolds
+  (0 sorries, the single biggest missing Mathlib piece),
+  chart-invariance of `meromorphicOrderAt`, Montel's theorem via
+  per-chart Arzelà, bundle-trivialization proofs like
+  `isClosed_criticalSet`, reverse/concat smoothness preservation
+  for smooth paths.
+
+### What is remaining (17 sorries)
+
+Tiered by classical difficulty (not Lean-formalization difficulty,
+which is dominated by missing Mathlib infrastructure):
+
+- **Trivial / easy (~days of work once infrastructure exists):**
+  `PrincipalDivisors_le_DivisorOfDegZero`, `smoothPath_basepoint_change`,
+  `finite_branchLocus_of_nonconstant`, `criticalSet_ne_univ_of_nonconstant`.
+- **Medium (~weeks each, classical complex analysis):**
+  `smoothPath` existence, `finite_criticalSet_of_nonconstant`,
+  `ofCurve_contMDiff`.
+- **Hard (Mathlib-contribution scale, ~months each):**
+  `deg_div` (residue theorem on manifolds),
+  `exists_preimageCycle_of_nonconstant` (branched-cover lifting),
+  `ambientPsi_periodVec_mem_truePeriodLattice`,
+  `ambientPsi_preserves_truePeriodLattice`.
+- **Very hard (big named classical theorems):**
+  `ambientPhi_ambientPsi_eq` (degree identity; Forster §17),
+  `abelJacobi_twoPoint_ne_zero` (Abel's theorem + Riemann–Hurwitz;
+  Forster §21).
+- **Foundational (rank-2g period-lattice theorem; Hodge decomp):**
+  `DiscreteTopology (truePeriodLattice X)`,
+  `IsZLattice ℝ (truePeriodLattice X)`.
+- **Peak difficulty:** `genus_eq_zero_iff_homeo` (Uniformization in
+  the genus-0 case; Forster §16).
+
+See `docs/STATUS.md` for the full inventory with Forster/Miranda
+section references.
 
 ## Layout
 
@@ -73,7 +129,7 @@ Real content *was* proven along the way and is preserved. Everything
 else is a `sorry` with a named classical theorem attached, pointing
 to a Forster/Miranda section.
 
-Real mathematical content proven in this project (selected highlights):
+Selected proven content (not just stated — real Lean proofs):
 - Chart-invariance of `meromorphicOrderAt` (Forster §6 / Miranda II.4).
 - Montel's theorem via Arzelà on per-chart bounded-analytic families.
 - Chain rule `pathSpeed_comp_eq_mfderiv` via `IsScalarTower ℝ ℂ ℂ` diamond bypass.
@@ -82,7 +138,8 @@ Real mathematical content proven in this project (selected highlights):
 - `ambientPhi_preserves_truePeriodLattice` (span induction).
 - `isClosed_criticalSet` (bundle trivialization + MVT).
 - `abelJacobi_twoPointDivisor` (direct sum computation).
-- `ofCurve_inj` (THE main challenge theorem, via Abel chain).
+- `ofCurve_inj` — the main challenge theorem, proof chain is real
+  (relies on sorry-d Abel + Riemann–Hurwitz axioms at the leaves).
 - Various concat/reverse smoothness preservation theorems.
 
 ## References
