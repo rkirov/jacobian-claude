@@ -216,52 +216,19 @@ theorem pullbackForm_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f
 
 end Functoriality
 
-/-! ### Pushforward of forms under a proper holomorphic map between curves. -/
-
-section PushforwardCurve
-
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
-/-- **Placeholder**: pushforward of holomorphic 1-forms under a proper
-holomorphic map. The real definition (Forster §10 trace / residue
-construction) requires degree theory — see Forster §4 for proper maps
-and §10.11 for the trace of forms. Defined here as the zero map,
-consistent with `ContMDiff.degree := 0` for the degree identity in
-the `d = 0` case. Real instances are Mathlib-contribution-scale. -/
-noncomputable def pushforwardForm (_f : X → Y) (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω _f) :
-    HolomorphicOneForms X →ₗ[ℂ] HolomorphicOneForms Y := 0
-
-/-- Placeholder form of the headline identity `f_* ∘ f^* = deg(f) • id`.
-
-With `pushforwardForm := 0` and `ContMDiff.degree := 0`, both sides
-are zero. Real theorem requires real `pushforwardForm` + real
-`degree` + residue-theorem content. -/
-theorem pushforwardForm_pullbackForm_eq_zero (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (P : HolomorphicOneForms Y) :
-    pushforwardForm f hf (pullbackForm f hf P) = 0 := by
-  show (0 : _ →ₗ[_] _) _ = _
-  rfl
-
-end PushforwardCurve
-
 /-! ### Ambient-space bridge
 
-Connects the forms side (`HolomorphicOneForms X`, `pullbackForm`,
-`pushforwardForm`) to the Jacobian-quotient ambient `(Fin (genus X) → ℂ)`
-via a basis isomorphism and dualization. This is the glue layer between
+Connects the forms side (`HolomorphicOneForms X`, `pullbackForm`) to
+the Jacobian-quotient ambient `(Fin (genus X) → ℂ)` via a basis
+isomorphism and dualization. This is the glue layer between
 `HolomorphicForms` and `ZLatticeQuotient` (where the quotient descent
 lives).
 
-|Ambient side                            |Forms side                        |
-|----------------------------------------|----------------------------------|
-|`Φ : (Fin gX → ℂ) →L[ℝ] (Fin gY → ℂ)`    |dual of `pullbackForm f hf`       |
-|`Ψ : (Fin gY → ℂ) →L[ℝ] (Fin gX → ℂ)`    |dual of `pushforwardForm f hf`    |
-|`Φ (Ψ y) = d • y`                       |`pushforwardForm_pullbackForm_eq` |
--/
+`Ψ : (Fin gY → ℂ) →L[ℂ] (Fin gX → ℂ)` is the coefficient matrix of
+`pullbackForm f hf` in the chosen basis; `Φ` is its matrix transpose
+(a workaround for the real pushforward/trace). Real content for the
+degree identity `Φ ∘ Ψ = d • id` is axiomatized by
+`HasAmbientDegreeIdentity`. -/
 
 section AmbientBridge
 
@@ -350,10 +317,10 @@ multiplication by the degree `d` (a specific natural number for
 each `f, hf`). In terms of forms: `f_* ∘ f^* = deg(f) • id`.
 
 Mathlib has no manifold-level degree theory for proper holomorphic
-maps. Axiomatized; real instances require
-(1) a real `pushforwardForm` via trace construction, and
-(2) a real `ContMDiff.degree` via preimage counting at regular
-values. Coupled content, ~500-1000 lines to formalize. -/
+maps. Axiomatized; real instances require a real `ContMDiff.degree`
+(via preimage counting at regular values) together with a real
+trace/pushforward construction for `ambientPhi`. ~500-1000 lines
+to formalize. -/
 class HasAmbientDegreeIdentity (X Y : Type*) [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X]

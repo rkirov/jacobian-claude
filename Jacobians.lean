@@ -372,10 +372,8 @@ Equal to zero for constant maps, otherwise equal to the usual
 degree (# preimages of a regular value, Forster §4).
 
 **Placeholder**: returns `0` always. Real content requires
-regular-value theory + preimage counting — Mathlib-contribution-scale.
-Coupled with `pushforwardForm := 0` placeholder: both must be real
-for the degree identity `pushforwardForm ∘ pullbackForm = deg • id`
-to hold nontrivially. -/
+regular-value theory + preimage counting — Mathlib-contribution-scale
+work not yet formalized. -/
 def _root_.ContMDiff.degree (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ := 0
 
 lemma pushforward_pullback [Jacobians.HasAmbientDegreeIdentity X Y]

@@ -790,9 +790,8 @@ the image is `0 ∈ truePeriodLattice X` for free.
 **Non-constant case (content-gated)**: `f` is a branched cover of
 some degree `d ≥ 1`; the preimage `f⁻¹(δ)` is a ℤ-cycle in `X` and
 the trace identity places `ambientPsi (periodVec δ)` in the period
-lattice (Forster §10.11). Real infrastructure required:
-`pushforwardForm` + branched-cover lift existence + trace adjunction
-(~200–500 lines not yet in place). -/
+lattice (Forster §10.11). Real infrastructure required: branched-cover
+lift existence + trace adjunction (~200–500 lines not yet in place). -/
 
 /-- **pullbackForm of a constant map is zero.** If `f` is constant,
 then `mfderiv f x = 0` everywhere, making the pointwise composition
