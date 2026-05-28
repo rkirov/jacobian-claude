@@ -846,13 +846,62 @@ lemma localLift_eq_const_add_periodVec_ChartBallPath
   -- Step 2: periodVec γ i = lineIntegral (periodBasisForm X i) γ.
   rfl
 
+/-- **Path-difference-in-lattice for ChartBallPath vs smoothPath.**
+
+For `Q₀, Q : X` with the affine chart-coord segment from `(chartAt Q₀) Q₀`
+to `(chartAt Q₀) Q` contained in `(chartAt Q₀).target`, the two smooth
+paths `ChartBallPath Q₀ Q₀ Q` and `smoothPath Q₀ Q` both go from `Q₀`
+to `Q`, so their periodVecs differ by a lattice element.
+
+**Proof structure.** Apply `mk_periodVec_eq_of_endpoints` with `γ₁ :=
+ChartBallPath Q₀ Q₀ Q`, `γ₂ := smoothPath Q₀ Q`. Hypotheses:
+* `γ₁ 0 = γ₂ 0 = Q₀` (`ChartBallPath.start` + `smoothPath_zero`).
+* `IsClosedSmoothLoop (concat γ₁ (reverse γ₂))`: needs ChartBallPath
+  smoothness on chart-ball + smoothPath smoothness via
+  `isSmoothPath_smoothPath` + reverse/concat smoothness preservation
+  (proven infrastructure in `Jacobians/LineIntegral.lean` and
+  `Jacobians/PeriodLattice.lean`).
+* `periodVec_concat` formula: requires integrability of each basis
+  form integrand on each piece. For `ChartBallPath`: integrand is
+  bounded continuous on `[0, 1]` (using `chartFormCoeff` continuity
+  + `chartFrame_cancel` to identify with the path integrand). For
+  `smoothPath`: from `IsSmoothPath.integrable`.
+
+We separate this as a single classical-content sub-sorry. -/
+lemma chartBallPath_smoothPath_endpoints_eq_in_quotient
+    (Q₀ Q : X)
+    (_h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
+    (QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.ChartBallPath Q₀ Q₀ Q)) :
+      (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
+    QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath Q₀ Q)) :=
+  sorry
+
 theorem localLift_quotient_eq_ofCurve_eventually
     (P Q₀ : X) :
     (fun Q => QuotientAddGroup.mk
         (localLift (X := X) Q₀ (periodVec (smoothPath P Q₀)) Q) :
       X → (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =ᶠ[nhds Q₀]
-      (fun Q => QuotientAddGroup.mk (periodVec (smoothPath P Q))) :=
-  sorry
+      (fun Q => QuotientAddGroup.mk (periodVec (smoothPath P Q))) := by
+  filter_upwards [affine_in_target_eventually Q₀] with Q hQ
+  -- Step 1: rewrite LHS via `localLift_eq_const_add_periodVec_ChartBallPath`.
+  rw [localLift_eq_const_add_periodVec_ChartBallPath Q₀ Q _ hQ]
+  -- LHS = [periodVec(smoothPath P Q₀) + periodVec(ChartBallPath Q₀ Q₀ Q)]
+  --     = [periodVec(smoothPath P Q₀)] + [periodVec(ChartBallPath Q₀ Q₀ Q)]
+  rw [QuotientAddGroup.mk_add]
+  -- Step 2: use `chartBallPath_smoothPath_endpoints_eq_in_quotient` to replace
+  -- [periodVec(ChartBallPath)] by [periodVec(smoothPath Q₀ Q)].
+  rw [chartBallPath_smoothPath_endpoints_eq_in_quotient Q₀ Q hQ]
+  -- LHS now = [periodVec(smoothPath P Q₀)] + [periodVec(smoothPath Q₀ Q)]
+  -- Step 3: rewrite RHS via `smoothPath_basepoint_change`.
+  -- `smoothPath_basepoint_change Q₀ P Q`: with (P, P₀, A) = (Q₀, P, Q), gives:
+  --   [periodVec(smoothPath P Q)] = [periodVec(smoothPath Q₀ Q)] + [periodVec(smoothPath P Q₀)]
+  rw [Jacobians.smoothPath_basepoint_change Q₀ P Q]
+  -- Goal: [periodVec(smoothPath P Q₀)] + [periodVec(smoothPath Q₀ Q)]
+  --     = [periodVec(smoothPath Q₀ Q)] + [periodVec(smoothPath P Q₀)]
+  -- Quotient is abelian; commute.
+  exact add_comm _ _
 
 /-! ## Top-level wiring for `ofCurve_contMDiff`
 
