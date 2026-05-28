@@ -1452,6 +1452,54 @@ lemma ChartBallPath_continuousOn_target_set (anchor P Q : X) (S : Set ℝ)
   unfold ChartBallPath
   exact h_inv_cont.comp hz_cont.continuousOn h_target
 
+/-! ## Joint smoothness `Q ↦ periodVec(sp P Q)` — analysis of obstacle
+
+For full closure of `exists_smoothPath_family`'s third conjunct
+(`∀ P, ContMDiff 𝓘(ℂ) 𝓘(ℂ, Fin (genus X) → ℂ) ω (fun Q => periodVec (sp P Q))`),
+the witness `sp` must vary smoothly with Q. Two analyses:
+
+**Why Classical.choice fails.** The natural witness `smoothPathRaw` uses
+`Classical.choice` on chart-cover existence (`exists_chartCover`). The
+chart cover for the path P → Q depends on the path's image, which
+varies with Q. Different Q's get different chart covers, with
+discontinuous chart-index transitions across Q. Joint smoothness fails.
+
+**Why a construction is hard.** A jointly-smooth path family P,Q ↦ sp(P,Q)
+on a generic compact connected Riemann surface is the classical
+"smooth exponential map" / "geodesic path family" content. It exists
+(Forster §§1-2) but requires either:
+
+* Smooth-partition-of-unity construction over a fixed atlas (~300-600 LOC
+  in Lean, requires `Mathlib.Geometry.Manifold.PartitionOfUnity` API).
+* Riemannian structure (which our X doesn't have natively — would need
+  to construct one).
+* `Whitney.smoothApprox`-style globalisation (Mathlib's `SmoothApprox`
+  handles M → F maps but not parameter-dependent path families).
+
+**Chart-ball case (where progress is feasible).** For Q in the chart
+ball of P (i.e., `(chartAt P) Q` close enough to `(chartAt P) P` that
+the linear interpolation stays in the chart target), `ChartBallPath P P Q`
+is jointly smooth in (P, Q) — the formula
+`(chartAt P).symm ((1-s) * (chartAt P) P + s * (chartAt P) Q)` depends
+smoothly on Q via `chartAt P` (which is smooth as `OpenPartialHomeomorph.MDifferentiable`).
+This gives `Q ↦ periodVec(ChartBallPath P P Q)` smooth in Q on the
+chart ball — a local result.
+
+The globalization (from chart-ball joint smoothness to global) is the
+classical content owed.
+
+**Status.** Joint smoothness remains the open structural piece. The
+chart-transition diff infrastructure (proven above) closes the
+`IsSmoothPath.diff` field for `ChartBallPath`; combined with the
+chart-cover-glue for `IsSmoothPath.cont` (still owed), we get the
+first conjunct of `exists_smoothPath_family`. The second conjunct
+(basepoint change) follows from `periodVec_concat`. Only the third
+conjunct is genuinely deep.
+
+For now, `exists_smoothPath_family` remains a single classical sorry
+in `PeriodLattice.lean:299`, consolidating the structural content of
+all three conjuncts. -/
+
 /-- The composition `(chartAt ℂ (γ t)) ∘ γ` is `Continuous` at each `t` in
 the open set where `z(s) ∈ chart.target` near `t`. (Useful for the
 diff-via-eventuallyEq path.) -/
