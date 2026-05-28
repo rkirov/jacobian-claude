@@ -451,3 +451,33 @@ The other two PeriodLattice sorries about branched covers
 `ambientPsi_preserves_truePeriodLattice`) are NOT closed by this
 refactor — they need the discharge's branched-cover lifting theory,
 which isn't in the 42-file closure we ported.
+
+## 2026-05-28 — Session N+4 continued (smoothPath scoping + foundation)
+
+### "do it" — committed to multi-session smoothPath
+
+**When:** after the critical-set bridge closed 3 sorries (commit `43ed27d`),
+proposed `smoothPath` as the next wall. Initial estimate was 500–2k LOC;
+deeper scoping showed 300–1500 LOC realistic depending on rigor needed for
+the `IsSmoothPath.diff` and `.integrable` conditions.
+**My default (corrected):** Almost wrote a "linear-interp-in-chartAt" stub
+that would fail in general (chart targets aren't convex; cross-chart
+interpolation fails outside). User-acknowledged "multi-session", which
+authorised me to do real work over several sessions.
+**Change:** Scoped the construction (chart-cover + chart-ball-linear pieces
++ C¹ smoothstep transitions at junctions; partition-of-unity not needed
+since `IsSmoothPath.diff` only requires C¹). Started session 1 foundation
+in `Jacobians/SmoothPath.lean`: `ChartBallPath` + `start/finish/continuousOn`
+lemmas (~90 LOC, builds clean, no sorries). This is the local-case building
+block — the global `smoothPath` will compose finitely many such pieces along
+a chart-cover of a continuous path.
+**Takeaway to remember:** Some walls don't have a Mathlib shortcut at this
+pin — `SmoothApprox` is the closest, but it approximates `M → F` not `ℝ → M`,
+wrong direction for paths. The classical Forster §§1–2 construction has to
+be done by hand. Foundation-first commits (build a primitive, prove its
+basic properties, leave the gluing for next session) keep the work tractable.
+
+### Status
+
+Sorries: 14 (unchanged this commit; smoothPath sorries still open).
+Foundation `ChartBallPath` ready for use in next session's chart-cover work.
