@@ -1742,11 +1742,166 @@ lemma isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
       have h_sub_diff : DifferentiableAt ℝ (fun s : ℝ => 2 * s - 1) t :=
         ((differentiableAt_const _).mul differentiableAt_id).sub (differentiableAt_const _)
       exact h_inner_diff.comp t h_sub_diff
-  · -- integrable for each basis form: requires IntervalIntegrable.comp_mul_left + comp_sub_right
-    -- substitutions which have finiteness defaults that don't auto-discharge for our integrand.
-    -- The structural argument: split [0,1] into [0,1/2] ∪ [1/2,1], use pathSpeed_concat_left/right
-    -- + linearity to get 2 * γ₁_integrand(2t) and 2 * γ₂'_integrand(2t-1), then congr_ae.
-    sorry
+  · -- integrable for each basis form: split [0,1] = [0,1/2] ∪ [1/2,1], shift each
+    -- via comp_mul_left / comp_sub_right, then congr_ae (excluding {1/2}: measure zero).
+    intro i
+    have h_Ψ₁ : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun (Jacobians.ChartBallPathSmooth Q₀ Q t)
+          (Jacobians.pathSpeed (Jacobians.ChartBallPathSmooth Q₀ Q) t)) volume 0 1 :=
+      h_γ₁.integrable i
+    have h_Ψ₂' : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q) t)
+          (Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q)) t)) volume 0 1 :=
+      h_γ₂_rev.integrable i
+    -- ae filter: t ≠ 1/2 holds almost everywhere (singleton {1/2} has measure 0).
+    have h_ae_neq : ∀ᵐ t ∂(MeasureTheory.volume : MeasureTheory.Measure ℝ),
+        t ≠ (1/2 : ℝ) := by
+      rw [MeasureTheory.ae_iff]
+      simp
+    -- ============ LEFT HALF: IntervalIntegrable on (0, 1/2) ============
+    -- Step 1: shift Ψ₁ via comp_mul_left to get (fun t => Ψ₁ (2*t)) on (0, 1/2).
+    have h_Ψ₁_shift : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun
+          (Jacobians.ChartBallPathSmooth Q₀ Q (2 * t))
+          (Jacobians.pathSpeed (Jacobians.ChartBallPathSmooth Q₀ Q) (2 * t)))
+        volume 0 (1/2) := by
+      have h_mul := h_Ψ₁.comp_mul_left (c := 2)
+      convert h_mul using 2 <;> norm_num
+    -- Step 2: multiply by 2.
+    have h_Ψ₁_shift_2 : IntervalIntegrable
+        (fun t => (2 : ℂ) * (periodBasisForm X i).toFun
+          (Jacobians.ChartBallPathSmooth Q₀ Q (2 * t))
+          (Jacobians.pathSpeed (Jacobians.ChartBallPathSmooth Q₀ Q) (2 * t)))
+        volume 0 (1/2) := h_Ψ₁_shift.const_mul 2
+    -- Step 3: congr_ae with concat integrand on (0, 1/2].
+    have h_Ψc_left : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun
+          (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+            (Jacobians.reverse (smoothPathSmooth Q₀ Q)) t)
+          (Jacobians.pathSpeed (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+            (Jacobians.reverse (smoothPathSmooth Q₀ Q))) t)) volume 0 (1/2) := by
+      refine h_Ψ₁_shift_2.congr_ae ?_
+      refine (MeasureTheory.ae_restrict_iff' measurableSet_uIoc).mpr ?_
+      filter_upwards [h_ae_neq] with t h_neq ht
+      rw [Set.uIoc_of_le (by norm_num : (0:ℝ) ≤ 1/2)] at ht
+      obtain ⟨ht_pos, ht_le⟩ := ht
+      have h_lt : t < 1/2 := lt_of_le_of_ne ht_le h_neq
+      have h_2t_uIcc : 2 * t ∈ Set.uIcc (0:ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+        refine ⟨by linarith, by linarith⟩
+      have h_diff_at_2t := h_γ₁.diff (2 * t) h_2t_uIcc
+      have h_concat_apply : Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q)) t =
+          Jacobians.ChartBallPathSmooth Q₀ Q (2 * t) :=
+        Jacobians.concat_apply_left _ _ (le_of_lt h_lt)
+      have h_pathSpeed_eq : Jacobians.pathSpeed (Jacobians.concat
+          (Jacobians.ChartBallPathSmooth Q₀ Q)
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q))) t =
+          2 * Jacobians.pathSpeed (Jacobians.ChartBallPathSmooth Q₀ Q) (2 * t) :=
+        Jacobians.pathSpeed_concat_left _ _ t h_lt h_diff_at_2t
+      show (2 : ℂ) * (periodBasisForm X i).toFun
+          (Jacobians.ChartBallPathSmooth Q₀ Q (2 * t))
+          (Jacobians.pathSpeed (Jacobians.ChartBallPathSmooth Q₀ Q) (2 * t)) =
+        (periodBasisForm X i).toFun (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q)) t)
+          (Jacobians.pathSpeed (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+            (Jacobians.reverse (smoothPathSmooth Q₀ Q))) t)
+      rw [h_concat_apply, h_pathSpeed_eq]
+      have h_lin := ((periodBasisForm X i).toFun
+          (Jacobians.ChartBallPathSmooth Q₀ Q (2 * t))).map_smul
+        (2 : ℂ) (Jacobians.pathSpeed (Jacobians.ChartBallPathSmooth Q₀ Q) (2 * t))
+      simp only [smul_eq_mul] at h_lin
+      exact h_lin.symm
+    -- ============ RIGHT HALF: IntervalIntegrable on (1/2, 1) ============
+    -- Step 1: shift Ψ₂' via comp_mul_left to get (fun t => Ψ₂' (2*t)) on (0, 1/2).
+    have h_Ψ₂'_shift : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * t))
+          (Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q)) (2 * t)))
+        volume 0 (1/2) := by
+      have h_mul := h_Ψ₂'.comp_mul_left (c := 2)
+      convert h_mul using 2 <;> norm_num
+    -- Step 2: shift via comp_sub_right by 1/2 to move interval to (1/2, 1).
+    -- Result endpoints are (0 + 1/2) = 1/2 and (1/2 + 1/2) = 1.
+    have h_Ψ₂'_shift_sub : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * (t - 1/2)))
+          (Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q))
+            (2 * (t - 1/2))))
+        volume (1/2) 1 := by
+      have h_sub := h_Ψ₂'_shift.comp_sub_right (1/2)
+      have h_e1 : (0 : ℝ) + 1/2 = 1/2 := by norm_num
+      have h_e2 : (1/2 : ℝ) + 1/2 = 1 := by norm_num
+      rw [h_e1, h_e2] at h_sub
+      exact h_sub
+    -- Step 3: rewrite 2 * (t - 1/2) = 2t - 1.
+    have h_Ψ₂'_shift_2 : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * t - 1))
+          (Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q)) (2 * t - 1)))
+        volume (1/2) 1 := by
+      have h_fn_eq : (fun t : ℝ => (periodBasisForm X i).toFun
+            (Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * (t - 1/2)))
+            (Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q))
+              (2 * (t - 1/2)))) =
+          (fun t : ℝ => (periodBasisForm X i).toFun
+            (Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * t - 1))
+            (Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q))
+              (2 * t - 1))) := by
+        funext t
+        have h_arith : (2 : ℝ) * (t - 1/2) = 2 * t - 1 := by ring
+        rw [h_arith]
+      rw [← h_fn_eq]; exact h_Ψ₂'_shift_sub
+    -- Step 4: multiply by 2.
+    have h_Ψ₂'_shift_2_const : IntervalIntegrable
+        (fun t => (2 : ℂ) * (periodBasisForm X i).toFun
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * t - 1))
+          (Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q)) (2 * t - 1)))
+        volume (1/2) 1 := h_Ψ₂'_shift_2.const_mul 2
+    -- Step 5: congr_ae with concat integrand on [1/2, 1).
+    have h_Ψc_right : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun
+          (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+            (Jacobians.reverse (smoothPathSmooth Q₀ Q)) t)
+          (Jacobians.pathSpeed (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+            (Jacobians.reverse (smoothPathSmooth Q₀ Q))) t)) volume (1/2) 1 := by
+      refine h_Ψ₂'_shift_2_const.congr_ae ?_
+      refine (MeasureTheory.ae_restrict_iff' measurableSet_uIoc).mpr ?_
+      filter_upwards [h_ae_neq] with t _h_neq ht
+      rw [Set.uIoc_of_le (by norm_num : (1/2:ℝ) ≤ 1)] at ht
+      obtain ⟨ht_pos, ht_le⟩ := ht
+      have h_gt : 1/2 < t := ht_pos
+      have h_2tm1_uIcc : 2 * t - 1 ∈ Set.uIcc (0:ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+        refine ⟨by linarith, by linarith⟩
+      have h_diff_at := h_γ₂_rev.diff (2 * t - 1) h_2tm1_uIcc
+      have h_concat_apply : Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q)) t =
+          Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * t - 1) :=
+        Jacobians.concat_apply_right _ _ (not_le.mpr h_gt)
+      have h_pathSpeed_eq : Jacobians.pathSpeed (Jacobians.concat
+          (Jacobians.ChartBallPathSmooth Q₀ Q)
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q))) t =
+          2 * Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q))
+            (2 * t - 1) :=
+        Jacobians.pathSpeed_concat_right _ _ t h_gt h_diff_at
+      show (2 : ℂ) * (periodBasisForm X i).toFun
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * t - 1))
+          (Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q)) (2 * t - 1)) =
+        (periodBasisForm X i).toFun (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q)) t)
+          (Jacobians.pathSpeed (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+            (Jacobians.reverse (smoothPathSmooth Q₀ Q))) t)
+      rw [h_concat_apply, h_pathSpeed_eq]
+      have h_lin := ((periodBasisForm X i).toFun
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * t - 1))).map_smul
+        (2 : ℂ) (Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q))
+          (2 * t - 1))
+      simp only [smul_eq_mul] at h_lin
+      exact h_lin.symm
+    -- ============ COMBINE via .trans ============
+    exact h_Ψc_left.trans h_Ψc_right
 
 /-- **periodVec of the concat = difference of periodVecs** for our paths.
 
