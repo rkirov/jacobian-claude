@@ -1538,11 +1538,185 @@ lemma isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
         (differentiableAt_const _).mul differentiableAt_id
       exact h_inner_diff.comp t h_mul_diff
     · -- t = 1/2: junction case (both sides have zero derivative)
-      -- At t = 1/2, γ(1/2) = γ₁(1) = Q.
-      -- We need DifferentiableAt of (chartAt Q ∘ γ) at 1/2.
-      -- Both sides give derivative 0 (smoothStep01_deriv(1) = smoothStep01_deriv(0) = 0).
-      -- Formalizing the union of HasDerivWithinAt from both sides is substantial.
-      sorry
+      -- At t = 1/2, γ(1/2) = γ₁(1) = Q. We prove HasDerivAt = 0 via
+      -- HasDerivWithinAt on Iic ∪ Ici. Both sides give derivative 0
+      -- (smoothStep01_deriv(1) = smoothStep01_deriv(0) = 0).
+      subst h_eq
+      -- Compute γ(1/2) = Q.
+      have hQ_eq : Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q)) (1/2 : ℝ) = Q := by
+        rw [Jacobians.concat_apply_left _ _ (le_refl _)]
+        show Jacobians.ChartBallPathSmooth Q₀ Q ((2 : ℝ) * (1/2)) = Q
+        rw [show (2 : ℝ) * (1/2) = 1 from by norm_num]
+        exact h_γ₁.finish
+      rw [show (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q)) (1/2 : ℝ)) = Q from hQ_eq]
+      -- Goal: DifferentiableAt ℝ ((chartAt Q).toFun ∘ concat γ₁ γ₂_rev) (1/2)
+      set f : ℝ → ℂ := (chartAt (H := ℂ) Q).toFun ∘
+        Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q)) with hf_def
+      -- ============ LEFT SIDE: HasDerivAt = 0 at 1/2 from Iic ============
+      have h_one_uIcc : (1 : ℝ) ∈ Set.uIcc (0 : ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨zero_le_one, le_refl _⟩
+      have h_g_L_diff : DifferentiableAt ℝ
+          ((chartAt (H := ℂ) (Jacobians.ChartBallPathSmooth Q₀ Q 1)).toFun ∘
+            Jacobians.ChartBallPathSmooth Q₀ Q) 1 := h_γ₁.diff 1 h_one_uIcc
+      rw [h_γ₁.finish] at h_g_L_diff
+      -- pathSpeed γ₁ 1 = 0 via chain rule + smoothStep01_deriv 1 = 0.
+      have h_chart_ball_at_one :
+          ((1 - ((1 : ℝ) : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+            ((1 : ℝ) : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target :=
+        h_chart_ball 1 ⟨zero_le_one, le_refl _⟩
+      have h_inner_diff_at_σ1 : DifferentiableAt ℝ
+          ((chartAt (H := ℂ) (Jacobians.ChartBallPath Q₀ Q₀ Q
+              (Jacobians.smoothStep01 1))).toFun ∘
+            Jacobians.ChartBallPath Q₀ Q₀ Q) (Jacobians.smoothStep01 1) := by
+        rw [Jacobians.smoothStep01_one]
+        exact Jacobians.ChartBallPath_chart_at_self_differentiableAt Q₀ Q₀ Q 1
+          h_chart_ball_at_one
+      have h_ps_γ₁_one : Jacobians.pathSpeed (Jacobians.ChartBallPathSmooth Q₀ Q) 1 = 0 := by
+        show Jacobians.pathSpeed
+          (Jacobians.ChartBallPath Q₀ Q₀ Q ∘ Jacobians.smoothStep01) 1 = 0
+        rw [pathSpeed_smoothStep01_comp_eq (Jacobians.ChartBallPath Q₀ Q₀ Q) 1
+          h_inner_diff_at_σ1]
+        rw [Jacobians.smoothStep01_deriv_one, Complex.ofReal_zero, zero_mul]
+      -- HasDerivAt of g_L = (chartAt Q) ∘ ChartBallPathSmooth at 1 with derivative 0.
+      have h_g_L_HDA : HasDerivAt
+          ((chartAt (H := ℂ) Q).toFun ∘ Jacobians.ChartBallPathSmooth Q₀ Q) 0 1 := by
+        have h_HDA := h_g_L_diff.hasDerivAt
+        have h_path_eq : Jacobians.pathSpeed (Jacobians.ChartBallPathSmooth Q₀ Q) 1 =
+            deriv ((chartAt (H := ℂ) Q).toFun ∘ Jacobians.ChartBallPathSmooth Q₀ Q) 1 := by
+          show fderiv ℝ
+            ((chartAt (H := ℂ) (Jacobians.ChartBallPathSmooth Q₀ Q 1)).toFun ∘
+              Jacobians.ChartBallPathSmooth Q₀ Q) 1 1 = _
+          rw [h_γ₁.finish]; rfl
+        have h_deriv_zero :
+            deriv ((chartAt (H := ℂ) Q).toFun ∘ Jacobians.ChartBallPathSmooth Q₀ Q) 1 = 0 := by
+          rw [← h_path_eq]; exact h_ps_γ₁_one
+        rw [← h_deriv_zero]; exact h_HDA
+      -- HasDerivAt for the doubling map at 1/2.
+      have h_2mul_HDA : HasDerivAt (fun s : ℝ => 2 * s) (2 : ℝ) (1/2 : ℝ) := by
+        have h := (hasDerivAt_id (1/2 : ℝ)).const_mul (2 : ℝ)
+        simpa using h
+      -- Chain rule: HasDerivAt (g_L ∘ (2·)) 0 (1/2).
+      have h_f_L_HDA : HasDerivAt
+          (((chartAt (H := ℂ) Q).toFun ∘ Jacobians.ChartBallPathSmooth Q₀ Q) ∘
+            (fun s : ℝ => 2 * s)) 0 (1/2 : ℝ) := by
+        have h_scomp := h_g_L_HDA.scomp_of_eq (1/2 : ℝ) h_2mul_HDA
+          (by norm_num : (1 : ℝ) = 2 * (1/2 : ℝ))
+        simpa using h_scomp
+      -- f = g_L ∘ (2·) on Iic (1/2).
+      have h_eqOn_Iic : Set.EqOn f
+          (((chartAt (H := ℂ) Q).toFun ∘ Jacobians.ChartBallPathSmooth Q₀ Q) ∘
+            (fun s : ℝ => 2 * s)) (Set.Iic (1/2 : ℝ)) := by
+        intro s hs
+        show ((chartAt (H := ℂ) Q).toFun ∘ _) s =
+          (((chartAt (H := ℂ) Q).toFun ∘ Jacobians.ChartBallPathSmooth Q₀ Q) ∘
+            (fun s : ℝ => 2 * s)) s
+        simp only [Function.comp_apply]
+        rw [Jacobians.concat_apply_left _ _ hs]
+      have h_half_in_Iic : (1/2 : ℝ) ∈ Set.Iic (1/2 : ℝ) := Set.self_mem_Iic
+      have h_Iic_HDWA : HasDerivWithinAt f 0 (Set.Iic (1/2 : ℝ)) (1/2 : ℝ) := by
+        have h_inner := h_f_L_HDA.hasDerivWithinAt (s := Set.Iic (1/2 : ℝ))
+        exact h_inner.congr (fun s hs => h_eqOn_Iic hs) (h_eqOn_Iic h_half_in_Iic)
+      -- ============ RIGHT SIDE: HasDerivAt = 0 at 1/2 from Ici ============
+      have h_zero_uIcc : (0 : ℝ) ∈ Set.uIcc (0 : ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨le_refl _, zero_le_one⟩
+      have h_γ₂_rev_zero : Jacobians.reverse (smoothPathSmooth Q₀ Q) 0 = Q := h_γ₂_rev.start
+      have h_g_R_diff : DifferentiableAt ℝ
+          ((chartAt (H := ℂ) (Jacobians.reverse (smoothPathSmooth Q₀ Q) 0)).toFun ∘
+            Jacobians.reverse (smoothPathSmooth Q₀ Q)) 0 :=
+        h_γ₂_rev.diff 0 h_zero_uIcc
+      rw [h_γ₂_rev_zero] at h_g_R_diff
+      -- pathSpeed smoothPathSmooth 1 = 0 via chain rule + smoothStep01_deriv 1 = 0.
+      have h_smoothPath := Jacobians.isSmoothPath_smoothPath Q₀ Q
+      have h_inner_diff_at_σ1_sp : DifferentiableAt ℝ
+          ((chartAt (H := ℂ) (Jacobians.smoothPath Q₀ Q
+              (Jacobians.smoothStep01 1))).toFun ∘
+            Jacobians.smoothPath Q₀ Q) (Jacobians.smoothStep01 1) := by
+        rw [Jacobians.smoothStep01_one]; exact h_smoothPath.diff 1 h_one_uIcc
+      have h_ps_smoothPathSmooth_one :
+          Jacobians.pathSpeed (smoothPathSmooth Q₀ Q) 1 = 0 := by
+        show Jacobians.pathSpeed
+          (Jacobians.smoothPath Q₀ Q ∘ Jacobians.smoothStep01) 1 = 0
+        rw [pathSpeed_smoothStep01_comp_eq (Jacobians.smoothPath Q₀ Q) 1
+          h_inner_diff_at_σ1_sp]
+        rw [Jacobians.smoothStep01_deriv_one, Complex.ofReal_zero, zero_mul]
+      -- pathSpeed (reverse smoothPathSmooth) 0 = -pathSpeed smoothPathSmooth 1 = 0.
+      have h_γ₂ := isSmoothPath_smoothPathSmooth Q₀ Q
+      have h_smoothPathSmooth_one_diff : DifferentiableAt ℝ
+          ((chartAt (H := ℂ) (smoothPathSmooth Q₀ Q (1 - 0))).toFun ∘
+            smoothPathSmooth Q₀ Q) (1 - 0) := by
+        rw [show (1 : ℝ) - 0 = 1 from by norm_num]
+        exact h_γ₂.diff 1 h_one_uIcc
+      have h_ps_γ₂_rev_zero :
+          Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q)) 0 = 0 := by
+        rw [Jacobians.pathSpeed_reverse (smoothPathSmooth Q₀ Q) 0
+          h_smoothPathSmooth_one_diff]
+        rw [show (1 : ℝ) - 0 = 1 from by norm_num, h_ps_smoothPathSmooth_one, neg_zero]
+      -- HasDerivAt of g_R = (chartAt Q) ∘ reverse smoothPathSmooth at 0 with derivative 0.
+      have h_g_R_HDA : HasDerivAt
+          ((chartAt (H := ℂ) Q).toFun ∘ Jacobians.reverse (smoothPathSmooth Q₀ Q))
+            0 0 := by
+        have h_HDA := h_g_R_diff.hasDerivAt
+        have h_path_eq :
+            Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q)) 0 =
+            deriv ((chartAt (H := ℂ) Q).toFun ∘
+              Jacobians.reverse (smoothPathSmooth Q₀ Q)) 0 := by
+          show fderiv ℝ
+            ((chartAt (H := ℂ) (Jacobians.reverse (smoothPathSmooth Q₀ Q) 0)).toFun ∘
+              Jacobians.reverse (smoothPathSmooth Q₀ Q)) 0 1 = _
+          rw [h_γ₂_rev_zero]; rfl
+        have h_deriv_zero :
+            deriv ((chartAt (H := ℂ) Q).toFun ∘
+              Jacobians.reverse (smoothPathSmooth Q₀ Q)) 0 = 0 := by
+          rw [← h_path_eq]; exact h_ps_γ₂_rev_zero
+        rw [← h_deriv_zero]; exact h_HDA
+      -- HasDerivAt for the shift map (2·-1) at 1/2.
+      have h_sub_HDA : HasDerivAt (fun s : ℝ => 2 * s - 1) (2 : ℝ) (1/2 : ℝ) :=
+        h_2mul_HDA.sub_const 1
+      -- Chain rule: HasDerivAt (g_R ∘ (2·-1)) 0 (1/2).
+      have h_f_R_HDA : HasDerivAt
+          (((chartAt (H := ℂ) Q).toFun ∘ Jacobians.reverse (smoothPathSmooth Q₀ Q)) ∘
+            (fun s : ℝ => 2 * s - 1)) 0 (1/2 : ℝ) := by
+        have h_scomp := h_g_R_HDA.scomp_of_eq (1/2 : ℝ) h_sub_HDA
+          (by norm_num : (0 : ℝ) = 2 * (1/2 : ℝ) - 1)
+        simpa using h_scomp
+      -- f = g_R ∘ (2·-1) on Ici (1/2).
+      have h_eqOn_Ici : Set.EqOn f
+          (((chartAt (H := ℂ) Q).toFun ∘ Jacobians.reverse (smoothPathSmooth Q₀ Q)) ∘
+            (fun s : ℝ => 2 * s - 1)) (Set.Ici (1/2 : ℝ)) := by
+        intro s hs
+        show ((chartAt (H := ℂ) Q).toFun ∘ _) s =
+          (((chartAt (H := ℂ) Q).toFun ∘ Jacobians.reverse (smoothPathSmooth Q₀ Q)) ∘
+            (fun s : ℝ => 2 * s - 1)) s
+        simp only [Function.comp_apply]
+        have hs_le : (1/2 : ℝ) ≤ s := hs
+        rcases eq_or_lt_of_le hs_le with h_eq_half | h_gt_half
+        · -- s = 1/2: both sides equal (chartAt Q)(Q).
+          rw [← h_eq_half]
+          rw [Jacobians.concat_apply_left _ _ (le_refl _)]
+          rw [show (2 : ℝ) * (1/2) - 1 = 0 from by norm_num,
+              show (2 : ℝ) * (1/2) = 1 from by norm_num]
+          rw [h_γ₁.finish, h_γ₂_rev.start]
+        · -- s > 1/2
+          rw [Jacobians.concat_apply_right _ _ (not_le.mpr h_gt_half)]
+      have h_half_in_Ici : (1/2 : ℝ) ∈ Set.Ici (1/2 : ℝ) := Set.self_mem_Ici
+      have h_Ici_HDWA : HasDerivWithinAt f 0 (Set.Ici (1/2 : ℝ)) (1/2 : ℝ) := by
+        have h_inner := h_f_R_HDA.hasDerivWithinAt (s := Set.Ici (1/2 : ℝ))
+        exact h_inner.congr (fun s hs => h_eqOn_Ici hs) (h_eqOn_Ici h_half_in_Ici)
+      -- ============ UNION ============
+      have h_union : HasDerivWithinAt f 0
+          (Set.Iic (1/2 : ℝ) ∪ Set.Ici (1/2 : ℝ)) (1/2 : ℝ) :=
+        h_Iic_HDWA.union h_Ici_HDWA
+      have h_union_eq : Set.Iic (1/2 : ℝ) ∪ Set.Ici (1/2 : ℝ) = Set.univ := by
+        ext x
+        simp only [Set.mem_union, Set.mem_Iic, Set.mem_Ici, Set.mem_univ, iff_true]
+        rcases lt_or_ge x (1/2 : ℝ) with h | h
+        · exact Or.inl (le_of_lt h)
+        · exact Or.inr h
+      rw [h_union_eq] at h_union
+      exact (h_union.hasDerivAt Filter.univ_mem).differentiableAt
     · -- t > 1/2: use γ₂_rev's diff at 2t-1
       have h2tm1_Icc : 2 * t - 1 ∈ Set.uIcc (0 : ℝ) 1 := by
         rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
