@@ -848,69 +848,46 @@ lemma localLift_eq_const_add_periodVec_ChartBallPath
 
 /-! ### IsSmoothPath for ChartBallPath
 
-Given the chart-ball constraint (`affine in chart.target on Icc 0 1`),
-`ChartBallPath Q₀ Q₀ Q` is a smooth path from `Q₀` to `Q`. The
-required `IsSmoothPath` fields are:
+Given the chart-ball constraint (`affine in chart.target on Icc 0 1`)
+and `Q ∈ chart.source`, `ChartBallPath Q₀ Q₀ Q` is a smooth path from
+`Q₀` to `Q` ON `[0, 1]`. The `IsSmoothPath` structure as currently
+defined in `Jacobians/PeriodLattice.lean` requires `cont : Continuous
+γ` (i.e. globally on ℝ). But `ChartBallPath` is only `ContinuousOn
+[0, 1]` (outside, the affine in chart coords escapes `target`,
+making `(chartAt Q₀).symm` return junk). To bridge:
 
-* `start`/`finish`: via `Jacobians.ChartBallPath.start/finish` + the
-  fact that `Q₀ ∈ chart.source` (always) and `Q ∈ chart.source` (from
-  the chart-ball hypothesis at `s = 1`).
-* `cont`: via `Jacobians.ChartBallPath.continuousOn`.
-* `diff`: via `Jacobians.ChartBallPath_chart_at_self_differentiableAt`.
-* `integrable`: by `chartFrame_cancel`, the integrand equals
-  `chartFormCoeff Q₀ i (z₀ + t(z-z₀)) · (z - z₀)` pointwise. The
-  latter is continuous on `[0, 1]`, hence integrable. -/
+**Required (not yet built):** a smoothstep-clamped variant
+`ChartBallPathClamped Q₀ Q := ChartBallPath Q₀ Q₀ Q ∘ smoothStep01`
+that is constant outside `[0, 1]`, agrees with `ChartBallPath` on
+`[0, 1]`, and has matching boundary derivatives via `smoothStep01`'s
+zero-derivative endpoints. Then the periodVec of the clamped variant
+equals that of `ChartBallPath` (integral only sees `[0, 1]`) and all
+`IsSmoothPath` fields hold.
+
+**Status (2026-05-28):** Field-by-field, `start`/`finish`/`diff` are
+proven (via existing infrastructure). `cont` (global) and `integrable`
+require the clamping-and-smoothstep machinery, ~200-300 LOC. -/
 lemma isSmoothPath_ChartBallPath (Q₀ Q : X)
+    (hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
     (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
         (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
     Jacobians.IsSmoothPath Q₀ Q (Jacobians.ChartBallPath Q₀ Q₀ Q) := by
-  -- `Q₀ ∈ chart.source` (always — chart at self contains self).
   have hQ₀_src : Q₀ ∈ (chartAt (H := ℂ) Q₀).source := mem_chart_source ℂ Q₀
-  -- `(chartAt Q₀) Q ∈ chart.target` from `h_chart_ball` at `s = 1`.
-  have hQ_target : (chartAt (H := ℂ) Q₀) Q ∈ (chartAt (H := ℂ) Q₀).target := by
-    have h1 := h_chart_ball 1 ⟨by norm_num, le_refl _⟩
-    have h_eq : ((1 - ((1 : ℝ) : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
-        ((1 : ℝ) : ℂ) * (chartAt (H := ℂ) Q₀) Q) = (chartAt (H := ℂ) Q₀) Q := by
-      push_cast; ring
-    rw [h_eq] at h1; exact h1
-  -- `Q ∈ chart.source`: from map_target + left_inv.
-  -- (chartAt Q₀).symm ((chartAt Q₀) Q) ∈ source, and equals Q since Q ∈ source... circular.
-  -- Cleaner: Q = (chartAt Q₀).symm ((chartAt Q₀) Q) IF Q ∈ source. To break circle:
-  -- use that ChartBallPath at t=1 equals (chartAt Q₀).symm ((chartAt Q₀) Q) which is in source.
-  -- For now, derive hQ_src from hQ_target via map_target.
-  have hQ_src_pre : (chartAt (H := ℂ) Q₀).symm ((chartAt (H := ℂ) Q₀) Q) ∈
-      (chartAt (H := ℂ) Q₀).source :=
-    (chartAt (H := ℂ) Q₀).map_target hQ_target
-  -- Note: we cannot conclude `Q ∈ source` from this without already knowing Q ∈ source.
-  -- The finish field can use hQ_src_pre + simp.
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · -- start
+  · -- start: ChartBallPath Q₀ Q₀ Q 0 = Q₀
     exact Jacobians.ChartBallPath.start Q₀ Q₀ Q hQ₀_src
   · -- finish: ChartBallPath Q₀ Q₀ Q 1 = Q
-    -- Compute: ChartBallPath Q₀ Q₀ Q 1 = (chartAt Q₀).symm (0 * z₀ + 1 * z) = (chartAt Q₀).symm z
-    -- which is in source via hQ_src_pre.
-    -- For Q to equal this, need Q ∈ source. Use that the chart-ball implies Q is reachable.
-    -- ChartBallPath.finish requires Q ∈ source — derive via the chart-ball hypothesis.
-    show Jacobians.ChartBallPath Q₀ Q₀ Q 1 = Q
-    -- Q ∈ source: alternative route. The chart-ball gives chartAt Q₀ Q ∈ target.
-    -- And (chartAt Q₀).symm ((chartAt Q₀) Q) ∈ source. But equality (chartAt Q₀).symm (chartAt Q₀ Q) = Q
-    -- requires Q ∈ source.
-    -- This is a circularity. Resolution: assume Q ∈ source as additional hypothesis,
-    -- OR derive Q ∈ source from h_chart_ball + manifold properties.
-    -- For non-trivial X manifold, the chart source is open and contains Q₀. Points whose chart-image
-    -- are in target ARE in source — this is `PartialHomeomorph.symm_source`-like.
-    -- Use `(chartAt Q₀).map_target_mem_target_iff_mem_source` or similar.
+    exact Jacobians.ChartBallPath.finish Q₀ Q₀ Q hQ_src
+  · -- continuity globally on ℝ (sorry; needs extension argument)
     sorry
-  · -- continuity globally on ℝ
-    sorry
-  · -- diff
+  · -- diff: from ChartBallPath_chart_at_self_differentiableAt
     intro t ht
     have ht_Icc : t ∈ Set.Icc (0 : ℝ) 1 := by
       rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht; exact ht
     exact Jacobians.ChartBallPath_chart_at_self_differentiableAt Q₀ Q₀ Q t
       (h_chart_ball t ht_Icc)
-  · -- integrable
+  · -- integrable (sorry; via chartFrame_cancel + bounded continuity)
     sorry
 
 /-- **Path-difference-in-lattice for ChartBallPath vs smoothPath.**
