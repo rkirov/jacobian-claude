@@ -151,6 +151,36 @@ theorem IsSmoothPath.toClosedSmoothLoop {P : X} {γ : ℝ → X}
   diff := h.diff
   integrable := h.integrable
 
+/-- **The constant path is a smooth path (and a smooth loop).** Trivial
+foundational case: `γ = fun _ => P` satisfies all `IsSmoothPath`
+conditions because chart-pullbacks of constants are constant
+(differentiable), and the form-integrand vanishes since `pathSpeed` of
+a constant curve is zero (`pathSpeed_const`). -/
+theorem isSmoothPath_const (P : X) :
+    IsSmoothPath P P (fun _ : ℝ => P) where
+  start := rfl
+  finish := rfl
+  cont := continuous_const
+  diff := by
+    intro t _
+    -- (chartAt ℂ P) ∘ (fun _ => P) = fun _ => (chartAt ℂ P) P, a constant.
+    show DifferentiableAt ℝ
+      (fun _ : ℝ => (chartAt (H := ℂ) P).toFun P) t
+    exact differentiableAt_const _
+  integrable := by
+    intro i
+    -- Integrand: (periodBasisForm X i).toFun P (pathSpeed (const P) t) = ... 0 = 0.
+    have h_zero : ∀ t : ℝ,
+        (periodBasisForm X i).toFun ((fun _ : ℝ => P) t)
+          (pathSpeed (fun _ : ℝ => P) t) = 0 := by
+      intro t
+      rw [pathSpeed_const]
+      exact ((periodBasisForm X i).toFun P).map_zero
+    -- 0 is interval-integrable; the integrand is everywhere 0.
+    refine (intervalIntegrable_const (c := (0 : ℂ))).congr ?_
+    intro t _
+    exact (h_zero t).symm
+
 /-- **Reverse of a closed smooth loop is a closed smooth loop** (REAL).
 The reverse loop `t ↦ γ(1 - t)` is still closed and smooth. -/
 theorem IsClosedSmoothLoop.reverse {γ : ℝ → X}
