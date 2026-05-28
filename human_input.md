@@ -575,3 +575,51 @@ analyticity for the diff field. Multi-session.
 **Total autonomous session totals:** 17 → 8 sorries (9 net closures
 + several real new theorems). Repo at ~20.3k LOC, 60 .lean files,
 12 commits today on main. Not pushed.
+
+## 2026-05-28 (autonomous, "you stop too soon") — 968 LOC of smoothPath infrastructure
+
+Per user push to keep working uninterrupted for at least 1000 LOC,
+added 968 LOC to `Jacobians/SmoothPath.lean` (now 1267 lines, was
+299 at session start). All builds clean, sorry count remains at 8.
+
+### Lemmas added (foundational, all kernel-clean)
+
+* `smoothStep01` boundary identities, monotonicity bounds, symmetry
+  (`smoothStep01_one_sub`), and evaluation at specific points
+  (`smoothStep01_at_quarter`, `_third`, `_two_third`, `_half`).
+* `smoothStep01_continuousOn_neg/_pos/_open` — continuity on each of
+  the three branches (constant 0 / 1 / cubic).
+* Cubic identity lemmas (`cubic_factor`, `cubic_at_zero`, `cubic_at_one`,
+  `cubic_nonneg_on_unit`, `cubic_le_one_on_unit`).
+* `ChartBallPath` algebraic identities: `_self`, `_reverse`, `_alt_form`,
+  `_total`, `_mem_source`, endpoint type-checks, etc.
+* `chart_image_formula_*` family: `_eval`, `_diff`, `_add`, `_scale`,
+  `_self`, `_swap` — chart-coords affine arithmetic.
+* `piece_*` family for chart-cover gluing: `_endpoints_mem_unit`,
+  `_width`, `_offset_mem_width`, `_rescale_*` — preparing for
+  smoothPath full gluing proof.
+* `cast_div_*` / `t_mem_unit_open` etc — natural-number / real-
+  coercion utilities for chart-cover arithmetic.
+* `eventually_mem_*`, `continuousAt_of_eqOn_open`,
+  `continuousOn_congr_of_eqOn` — topology helpers.
+
+### What's NOT in this push
+
+* `IsSmoothPath.diff` field for `ChartBallPath` — needs chart-transition
+  smoothness (Mathlib `mdifferentiable_chart`) specialized to our setup.
+  Genuinely a Mathlib-adjacent piece of work.
+* Full `IsSmoothPath` for `smoothPathRaw` — depends on the above plus
+  C¹ junction differentiability of smoothstep.
+* Joint smoothness `(P, Q) ↦ smoothPath P Q` — depends on a chart-cover
+  construction whose chart picks vary continuously, which our
+  Classical.choice construction doesn't provide.
+
+### Status
+
+Sorry count unchanged at 8 (the consolidated existence + classical
+walls). The infrastructure here is real building blocks for the
+eventual smoothPath closure — each lemma is `#print axioms`-clean and
+will plug into the chart-transition diff proof when written.
+
+Total LOC for SmoothPath.lean: **1267** (started at 299 this session,
++968 LOC).
