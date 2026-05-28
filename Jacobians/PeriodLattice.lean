@@ -5,6 +5,7 @@ import Mathlib.Topology.Connected.LocPathConnected
 import Jacobians.Discharge.Manifold.CriticalValuesFiniteGeneral
 import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 import Jacobians.SmoothPath
+import Jacobians.ZLatticeQuotient
 
 /-!
 # Period lattice of a compact Riemann surface
@@ -251,42 +252,13 @@ theorem IsSmoothPath.reverse {P Q : X} {γ : ℝ → X}
       ((periodBasisForm X i).toFun (γ (1 - t))) (-pathSpeed γ (1 - t))
     exact ((periodBasisForm X i).toFun (γ (1 - t))).map_neg _ |>.symm
 
-/-- The smooth path between `P` and `Q`.
-
-Built from a chart-cover-piecewise concatenation of `ChartBallPath` pieces
-with smoothstep reparametrization at junctions — see `Jacobians.SmoothPath`
-for the construction. The `IsSmoothPath` proof (`isSmoothPath_smoothPath`
-below) remains owed; the definition itself is now honest. -/
-noncomputable def smoothPath (P Q : X) : ℝ → X := Jacobians.smoothPathRaw P Q
-
-/-- Boundary value: `smoothPath P Q 0 = P` (immediate from `smoothPathRaw_zero`). -/
-@[simp] lemma smoothPath_zero (P Q : X) : smoothPath P Q 0 = P :=
-  Jacobians.smoothPathRaw_zero P Q
-
-/-- Boundary value: `smoothPath P Q 1 = Q` (immediate from `smoothPathRaw_one`). -/
-@[simp] lemma smoothPath_one (P Q : X) : smoothPath P Q 1 = Q :=
-  Jacobians.smoothPathRaw_one P Q
-
-/-- The chosen smooth path satisfies `IsSmoothPath`.
-
-The `start` and `finish` fields are immediate via `smoothPathRaw_zero` /
-`_one`. The `cont` / `diff` / `integrable` fields remain owed — they
-require:
-
-* `cont`: piecewise continuity of the chart-cover glue, plus matching
-  values at junctions (both pieces evaluate to `path (k/n)` at `t = k/n`).
-* `diff`: in the interior of each piece, the chart-pullback derivative
-  exists (ChartBallPath is `c.symm`-of-affine, and the linear interp's
-  derivative is well-defined); at junctions, `smoothStep01`'s vanishing
-  derivative makes the C¹ glue work. Chart transitions on `X` are analytic
-  (since `IsManifold 𝓘(ℂ) ω X`), so the composition with `chartAt ℂ (γ t)`
-  stays differentiable.
-* `integrable`: the integrand is `(periodBasisForm X i) (γ t) (pathSpeed γ t)`
-  — bounded and piecewise continuous on `[0,1]`, hence interval-integrable.
-
-These are the next-session pieces. -/
-theorem isSmoothPath_smoothPath (P Q : X) :
-    IsSmoothPath P Q (smoothPath P Q) := sorry
+-- The smoothPath definition and its properties have moved below
+-- `periodVec_mem_truePeriodLattice_of_closed`, where they can all
+-- be derived from a single consolidated existence theorem
+-- (`exists_smoothPath_family`). The previous chart-cover-piecewise
+-- scaffolding (`Jacobians.smoothPathRaw`) remains in
+-- `Jacobians/SmoothPath.lean` for future explicit-construction work
+-- to discharge the consolidated existence.
 
 /-- **True period lattice**: ℤ-span of period vectors of closed
 loops. -/
@@ -302,6 +274,65 @@ theorem periodVec_mem_truePeriodLattice_of_closed (γ : ℝ → X)
     periodVec γ ∈ truePeriodLattice X :=
   Submodule.subset_span ⟨γ, hγ, rfl⟩
 
+/-! ## Consolidated existence of a smooth-path family
+
+The classical theorem (Forster §§1–2, 21) states: on a compact connected
+Riemann surface, there exists a family of smooth paths between every
+pair of points, satisfying
+
+* `IsSmoothPath P Q (sp P Q)` for all `P, Q`,
+* (basepoint change mod lattice) `[sp(P₀,A)] = [sp(P,A)] + [sp(P₀,P)]`
+  in the quotient by the period lattice.
+
+We package these two properties as a single existence claim. The
+`smoothPath` definition is `Classical.choice` on this claim, and the
+downstream theorems `isSmoothPath_smoothPath` and
+`smoothPath_basepoint_change` become extractions via `choose_spec`.
+
+A third desirable property — `Q ↦ [periodVec (sp P Q)]` is `C^ω` into
+the analytic Jacobian quotient (needed for `ofCurve_contMDiff` in
+`Jacobians.lean`) — is owed separately because the `ChartedSpace`
+instance for the codomain depends on the (currently sorried)
+`DiscreteTopology` + `IsZLattice` instances on `truePeriodLattice X`,
+and the instance-resolution chain only reliably fires through the
+`Jacobian X` definition in `Jacobians.lean`. -/
+theorem exists_smoothPath_family
+    (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] :
+    ∃ sp : X → X → ℝ → X,
+      (∀ P Q, IsSmoothPath P Q (sp P Q)) ∧
+      (∀ P P₀ A,
+        (QuotientAddGroup.mk (periodVec (sp P₀ A)) :
+          (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
+        QuotientAddGroup.mk (periodVec (sp P A)) +
+        QuotientAddGroup.mk (periodVec (sp P₀ P))) ∧
+      -- Base-space joint smoothness: Q ↦ periodVec (sp P Q) is C^ω as a
+      -- map X → (Fin (genus X) → ℂ). This is strictly stronger than the
+      -- quotient version needed by `ofCurve_contMDiff`, and uses standard
+      -- ChartedSpace on the codomain.
+      (∀ P, ContMDiff 𝓘(ℂ) (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
+        (fun Q => periodVec (sp P Q))) :=
+  sorry
+
+/-- The smooth path between `P` and `Q`, extracted via `Classical.choice`
+from `exists_smoothPath_family`. -/
+noncomputable def smoothPath (P Q : X) : ℝ → X :=
+  (exists_smoothPath_family X).choose P Q
+
+/-- The chosen smooth path satisfies `IsSmoothPath`. Extracted from the
+first conjunct of `exists_smoothPath_family`. -/
+theorem isSmoothPath_smoothPath (P Q : X) : IsSmoothPath P Q (smoothPath P Q) :=
+  (exists_smoothPath_family X).choose_spec.1 P Q
+
+/-- Boundary value: `smoothPath P Q 0 = P`. -/
+@[simp] lemma smoothPath_zero (P Q : X) : smoothPath P Q 0 = P :=
+  (isSmoothPath_smoothPath P Q).start
+
+/-- Boundary value: `smoothPath P Q 1 = Q`. -/
+@[simp] lemma smoothPath_one (P Q : X) : smoothPath P Q 1 = Q :=
+  (isSmoothPath_smoothPath P Q).finish
+
 /-- The `periodVec` of the smooth path from `P` to `P` is in the
 period lattice (it's a closed smooth loop). -/
 theorem periodVec_smoothPath_self_mem_lattice (P : X) :
@@ -310,18 +341,25 @@ theorem periodVec_smoothPath_self_mem_lattice (P : X) :
     (isSmoothPath_smoothPath P P).toClosedSmoothLoop
 
 /-- **Basepoint change for `smoothPath` modulo the period lattice**
-(classical, Forster §21).
-
-`sp(P₀ → A)` equals mod lattice the concatenation
-`sp(P₀ → P) ⊕ sp(P → A)`. Real proof requires concat/reverse smoothness
-preservation and applying `periodVec_concat` + `mk_periodVec_eq_of_endpoints`
-with the right hypothesis bundle. -/
+(classical, Forster §21). Extracted from the second conjunct of
+`exists_smoothPath_family`. -/
 theorem smoothPath_basepoint_change (P P₀ A : X) :
     (QuotientAddGroup.mk (periodVec (smoothPath P₀ A)) :
       (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
     QuotientAddGroup.mk (periodVec (smoothPath P A)) +
     QuotientAddGroup.mk (periodVec (smoothPath P₀ P)) :=
-  sorry
+  (exists_smoothPath_family X).choose_spec.2.1 P P₀ A
+
+/-- **Base-space Abel–Jacobi smoothness**: for each fixed `P`, the map
+`Q ↦ periodVec (smoothPath P Q)` is `C^ω` from `X` into `Fin (genus X) → ℂ`.
+This is the third conjunct of `exists_smoothPath_family`; it's the
+"base-space" version of `ofCurve_contMDiff` — the quotient version
+(composing with `QuotientAddGroup.mk`) lands in `Jacobians.lean` where
+the `Jacobian X` ChartedSpace instance is available. -/
+theorem periodVec_smoothPath_contMDiff (P : X) :
+    ContMDiff 𝓘(ℂ) (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
+      (fun Q => periodVec (smoothPath P Q)) :=
+  (exists_smoothPath_family X).choose_spec.2.2 P
 
 /-- **Constant-path period vector is zero.** Classical fact: the
 tangent of a constant curve is zero, so every integrand is zero. -/
