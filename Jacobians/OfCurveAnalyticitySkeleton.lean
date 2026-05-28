@@ -1459,17 +1459,58 @@ lemma isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
       (Jacobians.reverse (smoothPathSmooth Q₀ Q))) :=
   sorry
 
-/-- **periodVec of the concat = sum of periodVecs** for our specific paths. -/
+/-- **periodVec of the concat = difference of periodVecs** for our paths.
+
+Uses `periodVec_reverse` (smoothPathSmooth diff is proven) and recognizes
+that `periodVec (concat γ₁ (reverse γ₂)) = periodVec γ₁ - periodVec γ₂`
+when γ₁ and γ₂ are smooth paths with all integrability hypotheses
+holding.
+
+The full unconditional version requires applying `periodVec_concat`
+with its 6 hypotheses (integrabilities + pathSpeed_concat identities).
+For now we take periodVec_reverse only, leaving the concat application
+as a sub-sorry. -/
 lemma periodVec_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
     (Q₀ Q : X)
-    (_h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+    (hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
         (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
     Jacobians.periodVec (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
       (Jacobians.reverse (smoothPathSmooth Q₀ Q))) =
     Jacobians.periodVec (Jacobians.ChartBallPathSmooth Q₀ Q) -
-    Jacobians.periodVec (smoothPathSmooth Q₀ Q) :=
-  sorry
+    Jacobians.periodVec (smoothPathSmooth Q₀ Q) := by
+  have h_γ₁ : Jacobians.IsSmoothPath Q₀ Q (Jacobians.ChartBallPathSmooth Q₀ Q) :=
+    isSmoothPath_ChartBallPathSmooth Q₀ Q hQ_src h_chart_ball
+  have _h_γ₁_used := h_γ₁  -- silence unused
+  have _h_chart_ball_used := h_chart_ball
+  have _hQ_src_used := hQ_src
+  have h_γ₂ : Jacobians.IsSmoothPath Q₀ Q (smoothPathSmooth Q₀ Q) :=
+    isSmoothPath_smoothPathSmooth Q₀ Q
+  have h_γ₂_rev : Jacobians.IsSmoothPath Q Q₀ (Jacobians.reverse (smoothPathSmooth Q₀ Q)) :=
+    h_γ₂.reverse
+  -- periodVec(reverse γ₂) = -periodVec γ₂ via periodVec_reverse.
+  have h_reverse_eq : Jacobians.periodVec (Jacobians.reverse (smoothPathSmooth Q₀ Q)) =
+      -Jacobians.periodVec (smoothPathSmooth Q₀ Q) :=
+    Jacobians.periodVec_reverse (smoothPathSmooth Q₀ Q) (fun t ht => by
+      have h1t : 1 - t ∈ Set.uIcc (0 : ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht ⊢
+        rcases ht with ⟨h0, h1⟩
+        refine ⟨by linarith, by linarith⟩
+      exact h_γ₂.diff (1 - t) h1t)
+  -- periodVec(concat γ₁ γ₂') = periodVec γ₁ + periodVec γ₂' via periodVec_concat.
+  -- This needs 6 hypotheses. We supply integrabilities for γ₁ and γ₂' from
+  -- IsSmoothPath.integrable. The concat-subinterval integrabilities + a.e.
+  -- identities require pathSpeed_concat_left/right + restriction arguments.
+  -- Left as focused sub-sorry: the bulk concat-integrability assembly.
+  have h_concat_eq : Jacobians.periodVec (Jacobians.concat
+      (Jacobians.ChartBallPathSmooth Q₀ Q)
+      (Jacobians.reverse (smoothPathSmooth Q₀ Q))) =
+    Jacobians.periodVec (Jacobians.ChartBallPathSmooth Q₀ Q) +
+    Jacobians.periodVec (Jacobians.reverse (smoothPathSmooth Q₀ Q)) := by
+    sorry  -- periodVec_concat with 6 hypotheses
+  rw [h_concat_eq, h_reverse_eq]
+  ring
 
 /-- **Path-difference-in-lattice for ChartBallPath vs smoothPath.**
 
@@ -1517,7 +1558,7 @@ lemma chartBallPath_smoothPath_endpoints_eq_in_quotient
     exact isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
       Q₀ Q hQ_src h_chart_ball
   · -- hconcat: periodVec(concat) = periodVec γ₁ - periodVec γ₂
-    exact periodVec_concat_ChartBallPathSmooth_reverse_smoothPathSmooth Q₀ Q h_chart_ball
+    exact periodVec_concat_ChartBallPathSmooth_reverse_smoothPathSmooth Q₀ Q hQ_src h_chart_ball
 
 theorem localLift_quotient_eq_ofCurve_eventually
     (P Q₀ : X) :
