@@ -7,6 +7,7 @@ import Jacobians.Discharge.Manifold.ContMDiffOmegaAnalytic
 import Jacobians.Montel.Compactness
 import Mathlib.Analysis.Complex.HasPrimitives
 import Mathlib.Analysis.Complex.CauchyIntegral
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
 
 /-!
 # Analyticity skeleton for `ofCurve_contMDiff`
@@ -985,26 +986,129 @@ lemma pathSpeed_smoothStep01_comp_eq (γ : ℝ → X) (t : ℝ)
   -- Convert `r • z` (ℝ acting on ℂ) to `(r : ℂ) * z`.
   exact Complex.real_smul
 
-/-- **PeriodVec is invariant under `smoothStep01` reparameterization.**
+/-- **Generic periodVec invariance under smoothStep01 reparameterization.**
 
-The line integral of a 1-form along a path is invariant under
-parameterization changes preserving endpoints. The `smoothStep01`
-reparam fixes both endpoints (`smoothStep01 0 = 0`, `smoothStep01 1 =
-1`), so the integral is unchanged.
+For any path `γ : ℝ → X` whose chart-pullback is `DifferentiableAt ℝ`
+at each `s ∈ [0, 1]`, and whose basis-form integrand is `ContinuousOn`
+`[0, 1]`, `periodVec (γ ∘ smoothStep01) = periodVec γ`.
 
-Concretely, by `intervalIntegral.integral_comp_mul_deriv`:
-`∫_0^1 g(smoothStep01 t) * smoothStep01'(t) dt = ∫_0^1 g(u) du`
-when `g` is continuous and `smoothStep01` has continuous derivative on
-`[0, 1]`. The integrand of `periodVec (γ ∘ smoothStep01)` is exactly
-`(integrand of periodVec γ) ∘ smoothStep01` times `smoothStep01'`
-(by chain rule on the chart-pullback derivative + ℂ-linearity of α). -/
+The proof:
+1. By `pathSpeed_smoothStep01_comp_eq`, the integrand of
+   `periodVec (γ ∘ σ) i` equals
+   `σ'(t) • (α.toFun(γ(σ t)))(pathSpeed γ (σ t))` pointwise on `[0, 1]`.
+2. By `intervalIntegral.integral_deriv_smul_comp'` (substitution-of-
+   variables with `f = σ`, `f' = σ'`, `g(u) = α.toFun(γ u)(pathSpeed γ u)`),
+   the integral equals `∫_{σ 0}^{σ 1} g(u) du = ∫_0^1 g(u) du =
+   periodVec γ i`.
+
+The substitution lemma's hypotheses:
+* `HasDerivAt smoothStep01 (smoothStep01_deriv x) x` for each `x ∈ uIcc 0 1` (PROVEN).
+* `ContinuousOn smoothStep01_deriv (uIcc 0 1)` (PROVEN).
+* `ContinuousOn g (smoothStep01 '' [[0, 1]] = [0, 1])` (parameter — caller supplies). -/
+lemma periodVec_smoothStep01_comp_eq_generic (γ : ℝ → X)
+    (hγ_diff : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ s)).toFun ∘ γ) s)
+    (hg_cont : ∀ i : Fin (genus X),
+      ContinuousOn (fun u => (periodBasisForm X i).toFun (γ u)
+        (Jacobians.pathSpeed γ u)) (Set.Icc (0 : ℝ) 1)) :
+    Jacobians.periodVec (γ ∘ Jacobians.smoothStep01) = Jacobians.periodVec γ := by
+  funext i
+  -- Definitions: periodVec γ i = ∫_0^1 (periodBasisForm i).toFun (γ t) (pathSpeed γ t).
+  show ∫ t in (0 : ℝ)..1, (periodBasisForm X i).toFun ((γ ∘ Jacobians.smoothStep01) t)
+        (Jacobians.pathSpeed (γ ∘ Jacobians.smoothStep01) t) =
+      ∫ t in (0 : ℝ)..1, (periodBasisForm X i).toFun (γ t) (Jacobians.pathSpeed γ t)
+  -- Set g(u) := (periodBasisForm i).toFun(γ u)(pathSpeed γ u).
+  set g : ℝ → ℂ :=
+    fun u => (periodBasisForm X i).toFun (γ u) (Jacobians.pathSpeed γ u) with hg_def
+  -- Step 1: integrand of LHS at t ∈ [0,1] equals σ'(t) • g(σ t).
+  have h_integrand_eq : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      (periodBasisForm X i).toFun ((γ ∘ Jacobians.smoothStep01) t)
+        (Jacobians.pathSpeed (γ ∘ Jacobians.smoothStep01) t) =
+      Jacobians.smoothStep01_deriv t • g (Jacobians.smoothStep01 t) := by
+    intro t ht
+    have ht_Icc : t ∈ Set.Icc (0 : ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht; exact ht
+    have hs_Icc : Jacobians.smoothStep01 t ∈ Set.Icc (0 : ℝ) 1 :=
+      Jacobians.smoothStep01_mem_unit t
+    have hγ_diff_at_s := hγ_diff (Jacobians.smoothStep01 t) hs_Icc
+    have h_speed := pathSpeed_smoothStep01_comp_eq γ t hγ_diff_at_s
+    -- LHS = α.toFun(γ(σ t)) (pathSpeed (γ ∘ σ) t)
+    -- = α.toFun(γ(σ t)) ((σ'(t) : ℂ) * pathSpeed γ (σ t))
+    -- = (σ'(t) : ℂ) * α.toFun(γ(σ t)) (pathSpeed γ (σ t))  [ℂ-linearity]
+    -- = σ'(t) • g(σ t)
+    show (periodBasisForm X i).toFun (γ (Jacobians.smoothStep01 t))
+        (Jacobians.pathSpeed (γ ∘ Jacobians.smoothStep01) t) =
+      Jacobians.smoothStep01_deriv t • g (Jacobians.smoothStep01 t)
+    rw [h_speed]
+    -- α.toFun(γt) is ℂ-linear, so α.toFun(γt) ((σ' : ℂ) * x) = (σ' : ℂ) * α.toFun(γt)(x).
+    -- Then (σ' : ℂ) * (...) = σ' • (...) via Complex.real_smul.symm.
+    have h_lin : ((periodBasisForm X i).toFun (γ (Jacobians.smoothStep01 t)))
+        ((Jacobians.smoothStep01_deriv t : ℂ) *
+          Jacobians.pathSpeed γ (Jacobians.smoothStep01 t)) =
+      (Jacobians.smoothStep01_deriv t : ℂ) *
+        ((periodBasisForm X i).toFun (γ (Jacobians.smoothStep01 t)))
+          (Jacobians.pathSpeed γ (Jacobians.smoothStep01 t)) := by
+      -- Use ContinuousLinearMap.map_smul to extract the ℂ-scalar.
+      have h_lin :=
+        ((periodBasisForm X i).toFun (γ (Jacobians.smoothStep01 t))).map_smul
+        (Jacobians.smoothStep01_deriv t : ℂ)
+        (Jacobians.pathSpeed γ (Jacobians.smoothStep01 t))
+      -- h_lin : α.toFun (γ ...) ((↑σ' : ℂ) • path) = (↑σ' : ℂ) • α.toFun (γ ...) (path)
+      -- Convert smul to mul on both sides.
+      simp only [smul_eq_mul] at h_lin
+      exact h_lin
+    rw [h_lin]
+    -- Now: (σ' : ℂ) * g(σ t) = σ' • g(σ t) via Complex.real_smul.symm.
+    show (Jacobians.smoothStep01_deriv t : ℂ) *
+        ((periodBasisForm X i).toFun (γ (Jacobians.smoothStep01 t)))
+          (Jacobians.pathSpeed γ (Jacobians.smoothStep01 t)) =
+      Jacobians.smoothStep01_deriv t • g (Jacobians.smoothStep01 t)
+    exact Complex.real_smul.symm
+  -- Step 2: rewrite the integral via this pointwise identity.
+  rw [intervalIntegral.integral_congr h_integrand_eq]
+  -- Now: ∫ t in 0..1, σ'(t) • g(σ t) = ∫ t in 0..1, g t
+  -- Step 3: apply substitution-of-variables.
+  have h_subst : ∫ x in (0 : ℝ)..1, Jacobians.smoothStep01_deriv x •
+        (g ∘ Jacobians.smoothStep01) x =
+      ∫ x in Jacobians.smoothStep01 0..Jacobians.smoothStep01 1, g x :=
+    intervalIntegral.integral_deriv_smul_comp'
+      (h := fun x _ => Jacobians.smoothStep01_hasDerivAt_explicit x)
+      (h' := Jacobians.smoothStep01_deriv_continuousOn_uIcc)
+      (hg := by
+        have h_subset : Jacobians.smoothStep01 '' (Set.uIcc (0 : ℝ) 1) ⊆ Set.Icc (0 : ℝ) 1 := by
+          intro u hu
+          obtain ⟨s, _, hs_eq⟩ := hu
+          rw [← hs_eq]
+          exact Jacobians.smoothStep01_mem_unit s
+        exact (hg_cont i).mono h_subset)
+  rw [Jacobians.smoothStep01_zero, Jacobians.smoothStep01_one] at h_subst
+  -- The LHS of h_subst matches our goal's LHS (modulo composition unfolding).
+  -- Note: σ'(t) • (g ∘ σ)(t) = σ'(t) • g(σ t).
+  show ∫ t in (0 : ℝ)..1, Jacobians.smoothStep01_deriv t • g (Jacobians.smoothStep01 t) =
+      ∫ t in (0 : ℝ)..1, g t
+  exact h_subst
+
+/-- **PeriodVec is invariant under `smoothStep01` reparameterization for ChartBallPath.**
+Direct corollary of `periodVec_smoothStep01_comp_eq_generic` applied to
+`ChartBallPath Q₀ Q₀ Q`. -/
 lemma periodVec_ChartBallPathSmooth_eq (Q₀ Q : X)
-    (_h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
         (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
     Jacobians.periodVec (Jacobians.ChartBallPathSmooth Q₀ Q) =
-    Jacobians.periodVec (Jacobians.ChartBallPath Q₀ Q₀ Q) :=
-  sorry
+    Jacobians.periodVec (Jacobians.ChartBallPath Q₀ Q₀ Q) := by
+  -- ChartBallPathSmooth Q₀ Q = ChartBallPath Q₀ Q₀ Q ∘ smoothStep01 (def unfolding).
+  show Jacobians.periodVec (Jacobians.ChartBallPath Q₀ Q₀ Q ∘ Jacobians.smoothStep01) =
+      Jacobians.periodVec (Jacobians.ChartBallPath Q₀ Q₀ Q)
+  apply periodVec_smoothStep01_comp_eq_generic
+  · -- Chart-pullback diff at each s ∈ [0, 1].
+    intro s hs
+    exact Jacobians.ChartBallPath_chart_at_self_differentiableAt Q₀ Q₀ Q s
+      (h_chart_ball s hs)
+  · -- ContinuousOn of integrand on [0, 1]. Use chartFrame_cancel:
+    -- α.toFun (γt) (pathSpeed γ t) = chartFormCoeff Q₀ i (z₀ + t(z-z₀)) * (z - z₀).
+    -- RHS is continuous on [0, 1] (chartFormCoeff continuous + polynomial in t).
+    sorry
 
 /-! ### Smoothstep-reparameterized smoothPath
 
