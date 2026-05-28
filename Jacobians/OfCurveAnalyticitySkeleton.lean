@@ -890,6 +890,29 @@ lemma isSmoothPath_ChartBallPath (Q₀ Q : X)
   · -- integrable (sorry; via chartFrame_cancel + bounded continuity)
     sorry
 
+/-! ### IsSmoothPath for ChartBallPathSmooth (smoothstep-reparameterized)
+
+This variant uses `smoothStep01` reparameterization so that derivatives
+at boundary points are zero — which is what's needed for the eventual
+concat-smoothness argument. The `start`, `finish`, `cont`, `diff`
+fields are PROVEN via the building blocks in `Jacobians/SmoothPath.lean`;
+the `integrable` field remains a focused sub-sorry (continuity of the
+basis-form integrand on `[0, 1]`). -/
+lemma isSmoothPath_ChartBallPathSmooth (Q₀ Q : X)
+    (hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
+    Jacobians.IsSmoothPath Q₀ Q (Jacobians.ChartBallPathSmooth Q₀ Q) := by
+  have hQ₀_src : Q₀ ∈ (chartAt (H := ℂ) Q₀).source := mem_chart_source ℂ Q₀
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · exact Jacobians.ChartBallPathSmooth.start Q₀ Q hQ₀_src
+  · exact Jacobians.ChartBallPathSmooth.finish Q₀ Q hQ_src
+  · exact Jacobians.ChartBallPathSmooth.continuous Q₀ Q h_chart_ball
+  · intro t _
+    exact Jacobians.ChartBallPathSmooth_chart_at_self_differentiableAt Q₀ Q t h_chart_ball
+  · sorry  -- integrable: continuity-on-[0,1] of integrand
+
 /-- **Path-difference-in-lattice for ChartBallPath vs smoothPath.**
 
 For `Q₀, Q : X` with the affine chart-coord segment from `(chartAt Q₀) Q₀`
