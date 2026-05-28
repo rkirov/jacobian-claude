@@ -524,3 +524,36 @@ quotient version elsewhere.
 13 → 12. Five smoothPath-related sorries (line 259, 262 def+is, 263
 old, 288, 293 old basepoint) consolidated through the day into 1
 existence sorry + `ofCurve_contMDiff` remaining.
+
+## 2026-05-28 (autonomous, continued) — closed ofCurve_contMDiff via contMDiff_mk
+
+**Final autonomous session result:** 13 → **8 sorries**. Five closures
+this push (4 prior + ofCurve_contMDiff just now).
+
+**Key new theorem (fully kernel-clean):**
+`Jacobians.ZLatticeQuotient.contMDiff_mk` —
+`ContMDiff 𝓘(𝕜, E) 𝓘(𝕜, E) n (QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup)`
+for `Λ` a ZLattice. The chart on the quotient at `mk x` is `mk⁻¹`'s
+local inverse (via `IsLocalHomeomorph.chartedSpace`), so the chart-
+pullback of `mk` is locally identity, hence `ContDiff`. `#print axioms`
+returns only `[propext, Classical.choice, Quot.sound]` — no `sorryAx`.
+
+**`ofCurve_contMDiff` proof structure:**
+- `Q ↦ periodVec (smoothPath P Q)` is `ContMDiff` into the base
+  `Fin (genus X) → ℂ` (third conjunct of `exists_smoothPath_family`).
+- `QuotientAddGroup.mk` is `ContMDiff` (`contMDiff_mk`, fully proven).
+- Compose: `ofCurve P = mk ∘ (Q ↦ periodVec (smoothPath P Q))`.
+
+**Remaining 8 sorries** are all the "irreducible classical content":
+* `Genus.lean:78` — `genus_eq_zero_iff_homeo` (uniformization)
+* `HolomorphicForms.lean:322` — `ambientPhi_ambientPsi_eq` (trace identity)
+* `PeriodLattice.lean:299` — `exists_smoothPath_family` (consolidated smoothPath)
+* `PeriodLattice.lean:758` — `DiscreteTopology` (Riemann bilinear)
+* `PeriodLattice.lean:764` — `IsZLattice` (Riemann bilinear)
+* `PeriodLattice.lean:980` — `exists_preimageCycle_of_nonconstant` (branched cover)
+* `Abel.lean:572` — `deg_div` (residue theorem)
+* `Abel.lean:701` — `abelJacobi_twoPoint_ne_zero` (Abel's theorem)
+
+The structural-reduction phase is essentially complete — every remaining
+sorry is a substantive classical theorem from Forster Ch. III §§16-21 +
+Riemann bilinear (Forster §§20-21) + residue (§4.24) + uniformization (§16).

@@ -155,13 +155,31 @@ noncomputable def ofCurve (P : X) : X → Jacobian X := fun Q =>
   QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P Q))
 
 /-- **Holomorphic Abel-Jacobi map** (Forster §21): `ofCurve P : X → Jacobian X`
-is holomorphic (i.e. the Abel-Jacobi map varies smoothly with its second
-argument). Real proof requires a concrete smooth-path construction
-providing a jointly-smooth family `(P, Q) ↦ smoothPath P Q`; standard
-content on compact Riemann surfaces, not in Mathlib. -/
+is holomorphic. Composition of two `ContMDiff` ingredients:
+
+* `Jacobians.periodVec_smoothPath_contMDiff P`: base-space smoothness
+  `Q ↦ periodVec (smoothPath P Q)` (from the consolidated
+  `exists_smoothPath_family` existence).
+* `Jacobians.ZLatticeQuotient.contMDiff_mk`: smoothness of the quotient
+  projection `QuotientAddGroup.mk : (Fin (genus X) → ℂ) → Jacobian X`,
+  via the local-homeomorphism chart structure on the period-lattice
+  quotient. -/
 lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ)
-    (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) :=
-  sorry
+    (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) := by
+  -- ofCurve P Q = QuotientAddGroup.mk (periodVec (smoothPath P Q)).
+  show ContMDiff 𝓘(ℂ) (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
+    (fun Q => (QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P Q)) :
+      Jacobian X))
+  have h_base : ContMDiff 𝓘(ℂ) (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
+      (fun Q => Jacobians.periodVec (Jacobians.smoothPath P Q)) :=
+    Jacobians.periodVec_smoothPath_contMDiff P
+  have h_mk : ContMDiff (modelWithCornersSelf ℂ (Fin (genus X) → ℂ))
+      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
+      (QuotientAddGroup.mk :
+        (Fin (genus X) → ℂ) → (Fin (genus X) → ℂ) ⧸ (periodLattice X).toAddSubgroup) :=
+    Jacobians.ZLatticeQuotient.contMDiff_mk (𝕜 := ℂ) (E := Fin (genus X) → ℂ)
+      (Λ := periodLattice X) (n := ω)
+  exact h_mk.comp h_base
 
 /-- **Abel-Jacobi of basepoint is zero**: the smooth path `P → P` is
 a closed smooth loop, so its periodVec is in the lattice, hence maps
