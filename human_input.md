@@ -323,3 +323,44 @@ content-equivalent but hides the "this is unproved" status behind
 typeclass ceremony. When offering "structural" progress, don't
 axiomatize — write the sorry, and let the sorry warnings be the
 honest measure of what's left.
+
+## 2026-05-28 — Session N+4 (audit + port from Brsanch/jacobian-lean-challenge)
+
+### Verify external claims before trusting; "carefully port what we can use"
+
+**When:** user asked to compare to
+<https://github.com/Brsanch/jacobian-lean-challenge> and "analyze
+what would it take to combine and finish." Initial Plan was an
+analysis. User chose "Analysis + verify external claims" over
+"analysis only," then after the verified audit said "for now
+carefully port the parts from that project we can use."
+**My default (corrected):** Initial grep-count gave 1,105 "sorries"
+in the external repo and I prepared to treat its 14/24 STRICT-CLOSED
+claim as inflated. After proper comment-stripping the real sorry
+count is 8 (all in `Basic.lean`, one per OPEN item) — the 1,105 was
+docstring narrative.
+**User steer (implicit, by choice of "verify"):** Don't anchor
+analysis on grep counts. Build it, run `#print axioms`, trust the
+compiler. The audit (`docs/EXTERNAL_AUDIT.md`,
+`/tmp/jb-audit.log`) verified all 14 strict-closed items kernel-clean
+with `[propext, Classical.choice, Quot.sound]`.
+**Change:** Ported a narrow slice — `RegularValueWitness`,
+`RegularValueWitnessReg`, `degreeFiber` — into `Jacobians/Degree.lean`.
+Replaced `Jacobians.lean:356 ContMDiff.degree := 0` with the real
+`degreeFiber` shape. **Zero new sorries**: without a witness existence
+proof, `degreeFiber` falls back to `0`, so the practical value is
+unchanged but the *statements* of `pushforward_pullback` and
+`ambientPhi_ambientPsi_eq` are now honest (= deg·P) rather than vacuous
+(= 0·P).
+**Takeaway to remember:** When weighing another formalization to
+borrow from, grep is misleading on heavily-documented repos — the
+compiler is the only reliable surface. The Brsanch repo's actual
+honest closure count under `#print axioms` matches its OPEN.md claim
+(14/24). It uses the same Mathlib pin as us, so ports are
+ABI-compatible (no toolchain skew). What we did NOT take: the Pic⁰
+construction itself (architecturally worse for our period-torus
+approach — owes Jacobi inversion that we sidestep), the divisor
+functoriality (we already have functoriality via `ZLatticeQuotient`),
+and the 4k-LOC discharge chain for the witness (deferred — would
+upgrade `degreeFiber` from "fallback-0" to real fibre counts, but
+the textbook content lands in walls 3/5 of Phase C).

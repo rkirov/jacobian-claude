@@ -20,6 +20,7 @@ import Jacobians.HolomorphicForms
 import Jacobians.LineIntegral
 import Jacobians.PeriodLattice
 import Jacobians.Abel
+import Jacobians.Degree
 
 /-
 
@@ -347,13 +348,23 @@ lemma pullback_comp_apply
     exact Jacobians.ambientPsi_comp f hf g hg (hg.comp hf) z
 
 /-- The degree of a holomorphic map between compact Riemann surfaces.
-Equal to zero for constant maps, otherwise equal to the usual
-degree (# preimages of a regular value, Forster §4).
+Equal to zero for constant maps, otherwise equal to the cardinality of
+a regular fibre (Forster §4).
 
-**Placeholder**: returns `0` always. Real content requires
-regular-value theory + preimage counting — Mathlib-contribution-scale
-work not yet formalized. -/
-def _root_.ContMDiff.degree (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ := 0
+**Implementation.** Delegates to `Jacobians.degreeFiber`, a port of
+`JacobianChallenge.ContMDiff.degreeFiber` from Bryan Sanchez's
+`jacobian-lean-challenge` (`#print axioms`-verified clean per
+`docs/EXTERNAL_AUDIT.md`). For non-constant `f`, `degreeFiber` returns
+the cardinality of the fibre over a `RegularValueWitnessReg`-supplied
+regular value via `Classical.choice`. No proof of
+`Nonempty (RegularValueWitnessReg f)` is supplied at this pin
+(it reduces to the identity-theorem ⇒ discrete-fibres ⇒ regular-value
+chain, ~4k LOC of analytic infrastructure not ported), so in current
+practice this still returns `0` — but the *shape* is correct, so
+`pushforward_pullback` and `ambientPhi_ambientPsi_eq` now state the
+honest trace identity (`= deg • P`) rather than a vacuous `= 0 • P`. -/
+noncomputable def _root_.ContMDiff.degree (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
+  Jacobians.degreeFiber f hf
 
 lemma pushforward_pullback
     (P : Jacobian Y) :
