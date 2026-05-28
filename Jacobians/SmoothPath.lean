@@ -42,6 +42,7 @@ import Mathlib.Analysis.Calculus.FDeriv.Add
 import Mathlib.Analysis.Calculus.Deriv.Pow
 import Mathlib.Analysis.Calculus.Deriv.Mul
 import Mathlib.Analysis.Calculus.Deriv.Add
+import Mathlib.Analysis.Calculus.Deriv.MeanValue
 import Mathlib.Analysis.Calculus.FDeriv.RestrictScalars
 import Mathlib.Analysis.Complex.OperatorNorm
 import Mathlib.Topology.MetricSpace.Cover
@@ -1340,6 +1341,18 @@ lemma smoothStep01_deriv_continuousOn_uIcc :
     ContinuousOn smoothStep01_deriv (Set.uIcc (0 : ℝ) 1) :=
   smoothStep01_deriv_continuous.continuousOn
 
+/-- **`smoothStep01_deriv` is nonneg on `[0, 1]`.** -/
+lemma smoothStep01_deriv_nonneg_on_Icc {t : ℝ} (ht : t ∈ Set.Icc (0 : ℝ) 1) :
+    0 ≤ smoothStep01_deriv t := by
+  unfold smoothStep01_deriv
+  split_ifs with h0 h1
+  · exact le_refl _
+  · exact le_refl _
+  · push_neg at h0 h1
+    have h_t_nn : 0 ≤ t := le_of_lt h0
+    have h_1mt_nn : 0 ≤ 1 - t := by linarith
+    positivity
+
 /-- **`smoothStep01` is globally `Differentiable ℝ`**, with derivative
 `0` at boundary and `6t(1-t)` on `(0, 1)`. -/
 lemma smoothStep01_differentiable : Differentiable ℝ smoothStep01 := by
@@ -1369,6 +1382,34 @@ lemma smoothStep01_differentiable : Differentiable ℝ smoothStep01 := by
         filter_upwards [Ioi_mem_nhds h1] with s hs
         exact smoothStep01_eqOn_one hs
       exact (differentiableAt_const (1 : ℝ)).congr_of_eventuallyEq h_eq
+
+/-- **`smoothStep01` is monotone on `[0, 1]`.** -/
+lemma smoothStep01_monotoneOn_Icc :
+    MonotoneOn smoothStep01 (Set.Icc (0 : ℝ) 1) := by
+  refine monotoneOn_of_deriv_nonneg (convex_Icc (0:ℝ) 1)
+    smoothStep01_continuous.continuousOn
+    smoothStep01_differentiable.differentiableOn ?_
+  intro t ht
+  have ht_Icc : t ∈ Set.Icc (0:ℝ) 1 := interior_subset ht
+  have h_deriv_eq : deriv smoothStep01 t = smoothStep01_deriv t :=
+    (smoothStep01_hasDerivAt_explicit t).deriv
+  rw [h_deriv_eq]
+  exact smoothStep01_deriv_nonneg_on_Icc ht_Icc
+
+/-- **`smoothStep01` maps `[0, 1]` onto `[0, 1]`** (image). -/
+lemma smoothStep01_image_Icc :
+    smoothStep01 '' Set.Icc (0 : ℝ) 1 = Set.Icc (0 : ℝ) 1 := by
+  apply Set.eq_of_subset_of_subset
+  · intro u hu
+    obtain ⟨t, _, ht_eq⟩ := hu
+    rw [← ht_eq]
+    exact smoothStep01_mem_unit t
+  · intro u hu
+    have h_cont : ContinuousOn smoothStep01 (Set.Icc (0 : ℝ) 1) :=
+      smoothStep01_continuous.continuousOn
+    have h_start : smoothStep01 0 ≤ u := by rw [smoothStep01_zero]; exact hu.1
+    have h_end : u ≤ smoothStep01 1 := by rw [smoothStep01_one]; exact hu.2
+    exact intermediate_value_Icc (by norm_num : (0:ℝ) ≤ 1) h_cont ⟨h_start, h_end⟩
 
 /-! ## ChartBallPathSmooth — smoothstep-reparameterized chart-ball path
 

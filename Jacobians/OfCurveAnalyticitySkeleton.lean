@@ -1326,8 +1326,66 @@ lemma isSmoothPath_smoothPathSmooth (P Q : X) :
       funext s; rfl
     rw [h_eq]
     exact h_inner_diff.comp t h_sigma_diff
-  · -- integrable — via reparam invariance of line integral
-    sorry
+  · -- integrable — via reparam invariance using integrableOn_image_iff
+    intro i
+    have h_sp_int := h_smoothPath.integrable i
+    set h : ℝ → ℂ := fun u =>
+      (periodBasisForm X i).toFun (Jacobians.smoothPath P Q u)
+        (Jacobians.pathSpeed (Jacobians.smoothPath P Q) u) with hh_def
+    -- Convert IntervalIntegrable to IntegrableOn Icc directly.
+    have h_int_Icc : MeasureTheory.IntegrableOn h (Set.Icc (0:ℝ) 1) MeasureTheory.volume :=
+      (intervalIntegrable_iff_integrableOn_Icc_of_le (by norm_num : (0:ℝ) ≤ 1)).mp h_sp_int
+    have h_subst_iff := MeasureTheory.integrableOn_image_iff_integrableOn_deriv_smul_of_monotoneOn
+      (s := Set.Icc (0:ℝ) 1) measurableSet_Icc
+      (f := Jacobians.smoothStep01) (f' := Jacobians.smoothStep01_deriv)
+      (fun x _ => (Jacobians.smoothStep01_hasDerivAt_explicit x).hasDerivWithinAt)
+      Jacobians.smoothStep01_monotoneOn_Icc h
+    rw [Jacobians.smoothStep01_image_Icc] at h_subst_iff
+    have h_subst_int : MeasureTheory.IntegrableOn
+        (fun x => Jacobians.smoothStep01_deriv x • h (Jacobians.smoothStep01 x))
+        (Set.Icc (0:ℝ) 1) MeasureTheory.volume := h_subst_iff.mp h_int_Icc
+    have h_subst_Ioc : MeasureTheory.IntegrableOn
+        (fun x => Jacobians.smoothStep01_deriv x • h (Jacobians.smoothStep01 x))
+        (Set.Ioc (0:ℝ) 1) MeasureTheory.volume :=
+      h_subst_int.mono_set Set.Ioc_subset_Icc_self
+    have h_sub_intInt : IntervalIntegrable
+        (fun x => Jacobians.smoothStep01_deriv x • h (Jacobians.smoothStep01 x))
+        MeasureTheory.volume 0 1 :=
+      (intervalIntegrable_iff_integrableOn_Ioc_of_le (by norm_num : (0:ℝ) ≤ 1)).mpr h_subst_Ioc
+    -- Show the smoothPathSmooth integrand EqOn σ' • (h ∘ σ) on Set.uIoc 0 1.
+    apply h_sub_intInt.congr
+    intro t ht
+    -- Pointwise: σ'(t) • h(σ(t)) = α.toFun(smoothPathSmooth t)(pathSpeed smoothPathSmooth t)
+    have ht_Ioc : t ∈ Set.Ioc (0:ℝ) 1 := by
+      rw [Set.uIoc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht; exact ht
+    have hs_uIcc : Jacobians.smoothStep01 t ∈ Set.uIcc (0:ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+      exact Jacobians.smoothStep01_mem_unit t
+    have hγ_diff := h_smoothPath.diff (Jacobians.smoothStep01 t) hs_uIcc
+    have h_speed := pathSpeed_smoothStep01_comp_eq (Jacobians.smoothPath P Q) t hγ_diff
+    show Jacobians.smoothStep01_deriv t • h (Jacobians.smoothStep01 t) =
+        (periodBasisForm X i).toFun
+          (Jacobians.smoothPath P Q (Jacobians.smoothStep01 t))
+          (Jacobians.pathSpeed (Jacobians.smoothPath P Q ∘ Jacobians.smoothStep01) t)
+    rw [h_speed]
+    have h_lin : ((periodBasisForm X i).toFun
+          (Jacobians.smoothPath P Q (Jacobians.smoothStep01 t)))
+        ((Jacobians.smoothStep01_deriv t : ℂ) *
+          Jacobians.pathSpeed (Jacobians.smoothPath P Q) (Jacobians.smoothStep01 t)) =
+      (Jacobians.smoothStep01_deriv t : ℂ) *
+        ((periodBasisForm X i).toFun
+          (Jacobians.smoothPath P Q (Jacobians.smoothStep01 t)))
+          (Jacobians.pathSpeed (Jacobians.smoothPath P Q) (Jacobians.smoothStep01 t)) := by
+      have h_ml := ((periodBasisForm X i).toFun
+          (Jacobians.smoothPath P Q (Jacobians.smoothStep01 t))).map_smul
+        (Jacobians.smoothStep01_deriv t : ℂ)
+        (Jacobians.pathSpeed (Jacobians.smoothPath P Q) (Jacobians.smoothStep01 t))
+      simp only [smul_eq_mul] at h_ml
+      exact h_ml
+    rw [h_lin]
+    show (Jacobians.smoothStep01_deriv t : ℝ) • h (Jacobians.smoothStep01 t) =
+        (Jacobians.smoothStep01_deriv t : ℂ) * h (Jacobians.smoothStep01 t)
+    exact Complex.real_smul
 
 /-! ### Closed loop via smoothstep junctions
 
