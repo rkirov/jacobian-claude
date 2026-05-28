@@ -738,6 +738,114 @@ lemma chartFrame_cancel (Q₀ Q : X) (i : Fin (genus X)) (t : ℝ)
   rw [h_lin]
   ring
 
+/-- **Affine path stays in chart target near Q₀.** Trivially, near Q₀
+(where `Q = Q₀`), `affine s = z₀` is in the chart target. We need the
+target-membership uniform in `s ∈ Icc 0 1`, for a chart-ball
+neighborhood of Q₀. By openness of the chart target and continuity of
+the chart-coord operation, this holds for Q in some chart-source
+neighborhood of Q₀ small enough that the convex hull of `{z₀, z}` is
+in the chart target. -/
+lemma affine_in_target_eventually (Q₀ : X) :
+    ∀ᶠ Q in nhds Q₀, ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target := by
+  -- Pick a chart ball `Metric.ball z₀ r ⊆ (chartAt Q₀).target`.
+  set z₀ : ℂ := (chartAt (H := ℂ) Q₀) Q₀ with hz₀
+  have h_open := (chartAt (H := ℂ) Q₀).open_target
+  have h_src : Q₀ ∈ (chartAt (H := ℂ) Q₀).source := mem_chart_source ℂ Q₀
+  have h_mem : z₀ ∈ (chartAt (H := ℂ) Q₀).target :=
+    (chartAt (H := ℂ) Q₀).map_source h_src
+  obtain ⟨r, hr_pos, hr_subset⟩ := Metric.isOpen_iff.mp h_open _ h_mem
+  -- The set V := {Q | (chartAt Q₀) Q ∈ Metric.ball z₀ r} ∩ (chartAt Q₀).source
+  -- is open and contains Q₀.
+  -- For Q ∈ V, the convex hull of {z₀, (chartAt Q₀) Q} ⊆ Metric.ball z₀ r ⊆ target.
+  have h_chart_cont : ContinuousAt (chartAt (H := ℂ) Q₀) Q₀ :=
+    (chartAt (H := ℂ) Q₀).continuousAt h_src
+  -- The preimage of `Metric.ball z₀ r` under chartAt Q₀ is open in X at Q₀.
+  have h_preimage : ∀ᶠ Q in nhds Q₀, (chartAt (H := ℂ) Q₀) Q ∈ Metric.ball z₀ r :=
+    h_chart_cont.eventually (Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self hr_pos))
+  filter_upwards [h_preimage] with Q hQ_in_ball s hs
+  -- Convex combination of z₀ (= chart Q₀) and (chart Q) lies in ball z₀ r.
+  have hz₀_mem : z₀ ∈ Metric.ball z₀ r := Metric.mem_ball_self hr_pos
+  have hz_mem : (chartAt (H := ℂ) Q₀) Q ∈ Metric.ball z₀ r := hQ_in_ball
+  have hconv : Convex ℝ (Metric.ball z₀ r) := convex_ball _ _
+  have h_combine := hconv hz₀_mem hz_mem (a := 1 - s) (b := s)
+    (by linarith [hs.1, hs.2]) (by linarith [hs.1, hs.2]) (by linarith)
+  -- Convert real-smul to complex-mul.
+  have h_eq : ((1 - s : ℝ) • z₀ + s • (chartAt (H := ℂ) Q₀) Q : ℂ) =
+      (1 - (s : ℂ)) * z₀ + (s : ℂ) * (chartAt (H := ℂ) Q₀) Q := by
+    rw [Complex.real_smul, Complex.real_smul]; push_cast; ring
+  rw [h_eq] at h_combine
+  exact hr_subset h_combine
+
+/-- **localLift via lineIntegral(ChartBallPath).** Using `chartFrame_cancel`,
+we identify `localLift Q₀ c Q` with `c + periodVec(ChartBallPath Q₀ Q₀ Q)`
+componentwise, provided the affine path stays in chart target on `[0,1]`.
+
+This is sub-lemma (a) in the docstring above. -/
+lemma localLift_eq_const_add_periodVec_ChartBallPath
+    (Q₀ Q : X) (c : Fin (genus X) → ℂ)
+    (h_target_Icc : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
+    localLift (X := X) Q₀ c Q =
+      c + Jacobians.periodVec (Jacobians.ChartBallPath Q₀ Q₀ Q) := by
+  funext i
+  show localLiftChart (X := X) Q₀ c i ((chartAt (H := ℂ) Q₀) Q) = _
+  unfold localLiftChart
+  set z₀ : ℂ := (chartAt (H := ℂ) Q₀) Q₀ with hz₀
+  set z : ℂ := (chartAt (H := ℂ) Q₀) Q with hz
+  -- Apply chartFrame_cancel pointwise on [0, 1].
+  -- The affine path stays in target on Icc 0 1; extend to nbhd by openness.
+  have h_target_nbhd_at : ∀ t ∈ Set.Icc (0 : ℝ) 1,
+      ∀ᶠ (s : ℝ) in nhds t,
+        ((1 - (s : ℂ)) * z₀ + (s : ℂ) * z) ∈ (chartAt (H := ℂ) Q₀).target := by
+    intro t ht
+    -- The set `{s | affine s ∈ target}` is open (preimage of open under continuous).
+    have h_cont : Continuous (fun s : ℝ => (1 - (s : ℂ)) * z₀ + (s : ℂ) * z) := by
+      refine Continuous.add ?_ ?_
+      · exact (continuous_const.sub Complex.continuous_ofReal).mul continuous_const
+      · exact Complex.continuous_ofReal.mul continuous_const
+    have h_open_set : IsOpen
+        {s : ℝ | (1 - (s : ℂ)) * z₀ + (s : ℂ) * z ∈ (chartAt (H := ℂ) Q₀).target} := by
+      have := (chartAt (H := ℂ) Q₀).open_target.preimage h_cont
+      exact this
+    have h_t_mem : t ∈ {s : ℝ | (1 - (s : ℂ)) * z₀ + (s : ℂ) * z ∈
+        (chartAt (H := ℂ) Q₀).target} := h_target_Icc t ht
+    exact h_open_set.mem_nhds h_t_mem
+  -- Pointwise: chart-coord integrand = path integrand on Icc 0 1.
+  have h_pointwise : ∀ t ∈ Set.Icc (0 : ℝ) 1,
+      chartFormCoeff (X := X) Q₀ i ((1 - (t : ℂ)) * z₀ + (t : ℂ) * z) * (z - z₀) =
+        (periodBasisForm X i).toFun (Jacobians.ChartBallPath Q₀ Q₀ Q t)
+          (pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q) t) := by
+    intro t ht
+    exact (chartFrame_cancel (X := X) Q₀ Q i t (h_target_nbhd_at t ht)).symm
+  -- Use intervalIntegral.integral_congr to lift pointwise eq to integral eq.
+  have h_int_eq : ∫ t in (0 : ℝ)..1,
+        chartFormCoeff (X := X) Q₀ i ((1 - (t : ℂ)) * z₀ + (t : ℂ) * z) * (z - z₀) =
+      ∫ t in (0 : ℝ)..1,
+        (periodBasisForm X i).toFun (Jacobians.ChartBallPath Q₀ Q₀ Q t)
+          (pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q) t) := by
+    refine intervalIntegral.integral_congr ?_
+    -- uIcc 0 1 = Icc 0 1 since 0 ≤ 1.
+    rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+    exact h_pointwise
+  -- Conclude.
+  show c i + ∫ t in (0 : ℝ)..1,
+      chartFormCoeff (X := X) Q₀ i (z₀ + (t : ℂ) * (z - z₀)) * (z - z₀) =
+    c i + Jacobians.periodVec (Jacobians.ChartBallPath Q₀ Q₀ Q) i
+  -- Step 1: rewrite (z₀ + t(z - z₀)) = (1 - t)·z₀ + t·z
+  have h_rewrite : (fun t : ℝ =>
+      chartFormCoeff (X := X) Q₀ i (z₀ + (t : ℂ) * (z - z₀)) * (z - z₀)) =
+      fun t : ℝ =>
+        chartFormCoeff (X := X) Q₀ i ((1 - (t : ℂ)) * z₀ + (t : ℂ) * z) * (z - z₀) := by
+    funext t
+    have : z₀ + (t : ℂ) * (z - z₀) = (1 - (t : ℂ)) * z₀ + (t : ℂ) * z := by ring
+    rw [this]
+  rw [h_rewrite, h_int_eq]
+  -- Step 2: periodVec γ i = lineIntegral (periodBasisForm X i) γ.
+  rfl
+
 theorem localLift_quotient_eq_ofCurve_eventually
     (P Q₀ : X) :
     (fun Q => QuotientAddGroup.mk
