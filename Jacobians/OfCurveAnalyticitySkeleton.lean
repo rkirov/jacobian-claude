@@ -895,37 +895,6 @@ lemma isSmoothPath_ChartBallPath (Q₀ Q : X)
   · -- integrable (sorry; via chartFrame_cancel + bounded continuity)
     sorry
 
-/-! ### IsSmoothPath for ChartBallPathSmooth (smoothstep-reparameterized)
-
-This variant uses `smoothStep01` reparameterization so that derivatives
-at boundary points are zero — which is what's needed for the eventual
-concat-smoothness argument. The `start`, `finish`, `cont`, `diff`
-fields are PROVEN via the building blocks in `Jacobians/SmoothPath.lean`;
-the `integrable` field remains a focused sub-sorry (continuity of the
-basis-form integrand on `[0, 1]`). -/
-lemma isSmoothPath_ChartBallPathSmooth (Q₀ Q : X)
-    (hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
-    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
-      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
-        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
-    Jacobians.IsSmoothPath Q₀ Q (Jacobians.ChartBallPathSmooth Q₀ Q) := by
-  have hQ₀_src : Q₀ ∈ (chartAt (H := ℂ) Q₀).source := mem_chart_source ℂ Q₀
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · exact Jacobians.ChartBallPathSmooth.start Q₀ Q hQ₀_src
-  · exact Jacobians.ChartBallPathSmooth.finish Q₀ Q hQ_src
-  · exact Jacobians.ChartBallPathSmooth.continuous Q₀ Q h_chart_ball
-  · intro t _
-    exact Jacobians.ChartBallPathSmooth_chart_at_self_differentiableAt Q₀ Q t h_chart_ball
-  · sorry  -- integrable: needs pathSpeed_smoothStep01_comp_eq moved up + ContinuousOn argument
-
-/-! ### Reparameterization invariance of periodVec under smoothStep01
-
-By substitution-of-variables (`intervalIntegral.integral_comp_mul_deriv`),
-`periodVec (γ ∘ smoothStep01) = periodVec γ` for any smooth path γ
-(with appropriate regularity hypotheses). Applied to ChartBallPath
-gives `periodVec (ChartBallPathSmooth Q₀ Q) = periodVec (ChartBallPath
-Q₀ Q₀ Q)`. -/
-
 /-- **PathSpeed chain rule for smoothStep01 reparameterization.**
 
 For a smooth path `γ : ℝ → X` and `σ := smoothStep01`, the pathSpeed
@@ -943,48 +912,155 @@ lemma pathSpeed_smoothStep01_comp_eq (γ : ℝ → X) (t : ℝ)
     Jacobians.pathSpeed (γ ∘ Jacobians.smoothStep01) t =
       (Jacobians.smoothStep01_deriv t : ℂ) *
         Jacobians.pathSpeed γ (Jacobians.smoothStep01 t) := by
-  -- pathSpeed is defined as `fderiv ℝ ((chartAt ℂ (γ t)).toFun ∘ γ) t 1`.
-  -- For `γ ∘ σ`, the chart point is `γ(σ t)`, same as in the inner expression.
   unfold Jacobians.pathSpeed
-  -- Rewrite the composition: `(chartAt ℂ ((γ ∘ σ) t)).toFun ∘ (γ ∘ σ)` =
-  -- `((chartAt ℂ (γ(σ t))).toFun ∘ γ) ∘ σ` (associativity).
   have h_assoc : (chartAt (H := ℂ) ((γ ∘ Jacobians.smoothStep01) t)).toFun ∘
         (γ ∘ Jacobians.smoothStep01) =
       ((chartAt (H := ℂ) (γ (Jacobians.smoothStep01 t))).toFun ∘ γ) ∘
         Jacobians.smoothStep01 := by
     funext s; rfl
   rw [h_assoc]
-  -- Chain rule for HasDerivAt: φ ∘ σ at t has derivative σ'(t) • φ'(σ(t)).
   have hσ : HasDerivAt Jacobians.smoothStep01 (Jacobians.smoothStep01_deriv t) t :=
     Jacobians.smoothStep01_hasDerivAt_explicit t
   have hφ : HasDerivAt
       ((chartAt (H := ℂ) (γ (Jacobians.smoothStep01 t))).toFun ∘ γ)
       (Jacobians.pathSpeed γ (Jacobians.smoothStep01 t))
-      (Jacobians.smoothStep01 t) := by
-    -- pathSpeed γ (σ t) = fderiv ℝ (...) (σ t) 1, so HasDerivAt at σ t with that value.
-    exact hγ_diff.hasDerivAt
-  -- Apply scomp: HasDerivAt (φ ∘ σ) (σ' • pathSpeed γ (σ t)) t.
+      (Jacobians.smoothStep01 t) := hγ_diff.hasDerivAt
   have h_comp : HasDerivAt
       (((chartAt (H := ℂ) (γ (Jacobians.smoothStep01 t))).toFun ∘ γ) ∘
         Jacobians.smoothStep01)
       (Jacobians.smoothStep01_deriv t • Jacobians.pathSpeed γ (Jacobians.smoothStep01 t))
       t := HasDerivAt.scomp t hφ hσ
-  -- HasDerivAt gives `(fderiv ℝ f t) 1 = f'` via `HasDerivAt.deriv`-style identity.
-  -- Use deriv = (fderiv ...) 1.
   have h_deriv : deriv (((chartAt (H := ℂ) (γ (Jacobians.smoothStep01 t))).toFun ∘ γ) ∘
         Jacobians.smoothStep01) t =
       Jacobians.smoothStep01_deriv t • Jacobians.pathSpeed γ (Jacobians.smoothStep01 t) :=
     h_comp.deriv
-  -- `deriv f x = (fderiv ℝ f x) 1` (unfold).
   have h_lhs_eq : (fderiv ℝ
       (((chartAt (H := ℂ) (γ (Jacobians.smoothStep01 t))).toFun ∘ γ) ∘
         Jacobians.smoothStep01) t) 1 =
       Jacobians.smoothStep01_deriv t • Jacobians.pathSpeed γ (Jacobians.smoothStep01 t) := by
-    rw [← h_deriv]
-    rfl
+    rw [← h_deriv]; rfl
   rw [h_lhs_eq]
-  -- Convert `r • z` (ℝ acting on ℂ) to `(r : ℂ) * z`.
   exact Complex.real_smul
+
+/-! ### IsSmoothPath for ChartBallPathSmooth (smoothstep-reparameterized)
+
+This variant uses `smoothStep01` reparameterization so that derivatives
+at boundary points are zero — which is what's needed for the eventual
+concat-smoothness argument. The `start`, `finish`, `cont`, `diff`
+fields are PROVEN via the building blocks in `Jacobians/SmoothPath.lean`;
+the `integrable` field is closed via `pathSpeed_smoothStep01_comp_eq` +
+chartFrame_cancel + ContinuousOn argument. -/
+lemma isSmoothPath_ChartBallPathSmooth (Q₀ Q : X)
+    (hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
+    Jacobians.IsSmoothPath Q₀ Q (Jacobians.ChartBallPathSmooth Q₀ Q) := by
+  have hQ₀_src : Q₀ ∈ (chartAt (H := ℂ) Q₀).source := mem_chart_source ℂ Q₀
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · exact Jacobians.ChartBallPathSmooth.start Q₀ Q hQ₀_src
+  · exact Jacobians.ChartBallPathSmooth.finish Q₀ Q hQ_src
+  · exact Jacobians.ChartBallPathSmooth.continuous Q₀ Q h_chart_ball
+  · intro t _
+    exact Jacobians.ChartBallPathSmooth_chart_at_self_differentiableAt Q₀ Q t h_chart_ball
+  · -- integrable: integrand = σ'(t) * chartFormCoeff Q₀ i (z₀ + σ(t)(z-z₀)) * (z - z₀).
+    intro i
+    set z₀ : ℂ := (chartAt (H := ℂ) Q₀) Q₀
+    set z : ℂ := (chartAt (H := ℂ) Q₀) Q
+    have h_eq : ∀ t ∈ Set.Icc (0 : ℝ) 1,
+        (periodBasisForm X i).toFun (Jacobians.ChartBallPathSmooth Q₀ Q t)
+          (Jacobians.pathSpeed (Jacobians.ChartBallPathSmooth Q₀ Q) t) =
+        (Jacobians.smoothStep01_deriv t : ℂ) *
+          (chartFormCoeff (X := X) Q₀ i
+            (z₀ + (Jacobians.smoothStep01 t : ℂ) * (z - z₀)) * (z - z₀)) := by
+      intro t _
+      show (periodBasisForm X i).toFun (Jacobians.ChartBallPath Q₀ Q₀ Q (Jacobians.smoothStep01 t))
+          (Jacobians.pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q ∘ Jacobians.smoothStep01) t) = _
+      have hs_Icc : Jacobians.smoothStep01 t ∈ Set.Icc (0 : ℝ) 1 :=
+        Jacobians.smoothStep01_mem_unit t
+      have hγ_diff := Jacobians.ChartBallPath_chart_at_self_differentiableAt Q₀ Q₀ Q
+        (Jacobians.smoothStep01 t) (h_chart_ball (Jacobians.smoothStep01 t) hs_Icc)
+      have h_speed := pathSpeed_smoothStep01_comp_eq (Jacobians.ChartBallPath Q₀ Q₀ Q) t hγ_diff
+      rw [h_speed]
+      -- ℂ-linearity in mul form: f (c * x) = c * f x for ℂ →L[ℂ] ℂ.
+      have h_lin : ((periodBasisForm X i).toFun
+            (Jacobians.ChartBallPath Q₀ Q₀ Q (Jacobians.smoothStep01 t)))
+          ((Jacobians.smoothStep01_deriv t : ℂ) *
+            Jacobians.pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q) (Jacobians.smoothStep01 t)) =
+        (Jacobians.smoothStep01_deriv t : ℂ) *
+          ((periodBasisForm X i).toFun
+            (Jacobians.ChartBallPath Q₀ Q₀ Q (Jacobians.smoothStep01 t)))
+            (Jacobians.pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q) (Jacobians.smoothStep01 t)) := by
+        have h := ((periodBasisForm X i).toFun
+            (Jacobians.ChartBallPath Q₀ Q₀ Q (Jacobians.smoothStep01 t))).map_smul
+          (Jacobians.smoothStep01_deriv t : ℂ)
+          (Jacobians.pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q) (Jacobians.smoothStep01 t))
+        simp only [smul_eq_mul] at h
+        exact h
+      rw [h_lin]
+      have h_target_nbhd_σt : ∀ᶠ s : ℝ in nhds (Jacobians.smoothStep01 t),
+          ((1 - (s : ℂ)) * z₀ + (s : ℂ) * z) ∈ (chartAt (H := ℂ) Q₀).target := by
+        have h_cont : Continuous (fun s : ℝ => (1 - (s : ℂ)) * z₀ + (s : ℂ) * z) := by
+          refine Continuous.add ?_ ?_
+          · exact (continuous_const.sub Complex.continuous_ofReal).mul continuous_const
+          · exact Complex.continuous_ofReal.mul continuous_const
+        have h_open : IsOpen
+            {s : ℝ | (1 - (s : ℂ)) * z₀ + (s : ℂ) * z ∈ (chartAt (H := ℂ) Q₀).target} :=
+          (chartAt (H := ℂ) Q₀).open_target.preimage h_cont
+        exact h_open.mem_nhds (h_chart_ball (Jacobians.smoothStep01 t) hs_Icc)
+      have h_cf := chartFrame_cancel (X := X) Q₀ Q i (Jacobians.smoothStep01 t) h_target_nbhd_σt
+      rw [h_cf]
+      -- chartFormCoeff Q₀ i (z₀ + σ(t)(z-z₀)) = chartFormCoeff Q₀ i ((1-σ(t))z₀ + σ(t)z)
+      have h_arg_eq : (z₀ + (Jacobians.smoothStep01 t : ℂ) * (z - z₀)) =
+          ((1 - (Jacobians.smoothStep01 t : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+            (Jacobians.smoothStep01 t : ℂ) * (chartAt (H := ℂ) Q₀) Q) := by
+        show z₀ + (Jacobians.smoothStep01 t : ℂ) * (z - z₀) =
+            (1 - (Jacobians.smoothStep01 t : ℂ)) * z₀ + (Jacobians.smoothStep01 t : ℂ) * z
+        ring
+      rw [h_arg_eq]
+    have h_rhs_cont : ContinuousOn
+        (fun t : ℝ => (Jacobians.smoothStep01_deriv t : ℂ) *
+          (chartFormCoeff (X := X) Q₀ i
+            (z₀ + (Jacobians.smoothStep01 t : ℂ) * (z - z₀)) * (z - z₀)))
+        (Set.Icc (0 : ℝ) 1) := by
+      refine ContinuousOn.mul ?_ ?_
+      · exact (Complex.continuous_ofReal.comp Jacobians.smoothStep01_deriv_continuous).continuousOn
+      · refine ContinuousOn.mul ?_ continuousOn_const
+        have h_chartFormCoeff_cont : ContinuousOn (chartFormCoeff (X := X) Q₀ i)
+            (chartAt (H := ℂ) Q₀).target :=
+          (chartFormCoeff_differentiableOn Q₀ i).continuousOn
+        have h_inner_cont : Continuous (fun t : ℝ =>
+            z₀ + (Jacobians.smoothStep01 t : ℂ) * (z - z₀)) := by
+          refine Continuous.add continuous_const ?_
+          exact (Complex.continuous_ofReal.comp Jacobians.smoothStep01_continuous).mul
+            continuous_const
+        have h_mapsTo : ∀ t ∈ Set.Icc (0 : ℝ) 1,
+            z₀ + (Jacobians.smoothStep01 t : ℂ) * (z - z₀) ∈ (chartAt (H := ℂ) Q₀).target := by
+          intro t _
+          have hs_Icc : Jacobians.smoothStep01 t ∈ Set.Icc (0 : ℝ) 1 :=
+            Jacobians.smoothStep01_mem_unit t
+          have h_rewrite : z₀ + (Jacobians.smoothStep01 t : ℂ) * (z - z₀) =
+              (1 - (Jacobians.smoothStep01 t : ℂ)) * z₀ +
+                (Jacobians.smoothStep01 t : ℂ) * z := by ring
+          rw [h_rewrite]
+          exact h_chart_ball (Jacobians.smoothStep01 t) hs_Icc
+        exact h_chartFormCoeff_cont.comp h_inner_cont.continuousOn h_mapsTo
+    have h_lhs_cont : ContinuousOn
+        (fun t : ℝ => (periodBasisForm X i).toFun (Jacobians.ChartBallPathSmooth Q₀ Q t)
+          (Jacobians.pathSpeed (Jacobians.ChartBallPathSmooth Q₀ Q) t))
+        (Set.Icc (0 : ℝ) 1) := by
+      refine h_rhs_cont.congr ?_
+      intro t ht
+      exact h_eq t ht
+    exact h_lhs_cont.intervalIntegrable_of_Icc (by norm_num : (0:ℝ) ≤ 1)
+
+/-! ### Reparameterization invariance of periodVec under smoothStep01
+
+By substitution-of-variables (`intervalIntegral.integral_comp_mul_deriv`),
+`periodVec (γ ∘ smoothStep01) = periodVec γ` for any smooth path γ
+(with appropriate regularity hypotheses). Applied to ChartBallPath
+gives `periodVec (ChartBallPathSmooth Q₀ Q) = periodVec (ChartBallPath
+Q₀ Q₀ Q)`. -/
 
 /-- **Generic periodVec invariance under smoothStep01 reparameterization.**
 
