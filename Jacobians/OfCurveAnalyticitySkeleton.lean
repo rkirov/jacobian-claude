@@ -477,7 +477,11 @@ Specifically, the strategy uses:
 /-- **Chart-Q₀ tangent vector via the trivialization**: at any point
 `y` in the chart source of `Q₀`, `(trivAt Q₀).symmL ℂ y 1` equals the
 fderiv (over ℂ) of the chart-transition map. This is a specialization
-of Mathlib's `TangentBundle.symmL_trivializationAt_eq_core`. -/
+of Mathlib's `TangentBundle.symmL_trivializationAt_eq_core`.
+
+Note: with `I = 𝓘(ℂ)`, `range I = univ`, so `fderivWithin _ _ univ = fderiv`.
+We state the lemma in the `fderivWithin` form to match what `tangentBundleCore`
+gives directly; downstream we rewrite to `fderiv ℂ`. -/
 lemma trivAt_symmL_one_eq_fderiv (Q₀ y : X)
     (hy : y ∈ (chartAt (H := ℂ) Q₀).source) :
     (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) Q₀).symmL ℂ y (1 : ℂ) =
@@ -519,6 +523,220 @@ lemma trivAt_symmL_one_eq_fderiv (Q₀ y : X)
   -- After unfolding extChartAt to chartAt, the two functions are definitionally
   -- equal (extChartAt 𝓘(ℂ) b = chartAt b, extChartAt symm = chartAt symm).
   rfl
+
+/-- **ℂ-version of the chart-Q₀-frame tangent identity**. Since
+`fderivWithin ℂ _ univ = fderiv ℂ _`, we can express `(trivAt Q₀).symmL ℂ y 1`
+as the plain `fderiv ℂ` of the chart transition. -/
+lemma trivAt_symmL_one_eq_fderiv_C (Q₀ y : X)
+    (hy : y ∈ (chartAt (H := ℂ) Q₀).source) :
+    (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) Q₀).symmL ℂ y (1 : ℂ) =
+      fderiv ℂ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) Q₀).symm)
+        ((chartAt (H := ℂ) Q₀) y) (1 : ℂ) := by
+  rw [trivAt_symmL_one_eq_fderiv Q₀ y hy, fderivWithin_univ]
+
+/-- **Chart-source membership: ChartBallPath Q₀ Q₀ Q t is in `(chartAt Q₀).source`
+when the affine point is in `target`.** Trivial consequence of `ChartBallPath_mem_source`. -/
+lemma chartBallPath_mem_source_of_affine (Q₀ Q : X) (t : ℝ)
+    (h_target : ((1 - (t : ℂ)) * (chartAt ℂ Q₀) Q₀ + (t : ℂ) * (chartAt ℂ Q₀) Q)
+        ∈ (chartAt ℂ Q₀).target) :
+    Jacobians.ChartBallPath Q₀ Q₀ Q t ∈ (chartAt (H := ℂ) Q₀).source := by
+  exact Jacobians.ChartBallPath_mem_source Q₀ Q₀ Q t h_target
+
+/-- **Key chart-frame cancellation lemma (pointwise).** For `γ := ChartBallPath
+Q₀ Q₀ Q` and `α := periodBasisForm X i`, the integrand of `lineIntegral α γ`
+equals the chart-coord straight-line integrand. Specifically:
+
+```
+α.toFun (γ t) (pathSpeed γ t) = chartFormCoeff Q₀ i (z₀ + t(z-z₀)) · (z - z₀)
+```
+
+where `z = (chartAt Q₀) Q`, `z₀ = (chartAt Q₀) Q₀`.
+
+This is the heart of sub-lemma (a) in the docstring above. The proof
+uses the chain rule for `pathSpeed`, `trivAt_symmL_one_eq_fderiv_C`,
+and ℂ-linearity of `α.toFun`. -/
+lemma chartFrame_cancel (Q₀ Q : X) (i : Fin (genus X)) (t : ℝ)
+    (h_target_nbhd : ∀ᶠ s : ℝ in nhds t,
+      ((1 - (s : ℂ)) * (chartAt ℂ Q₀) Q₀ + (s : ℂ) * (chartAt ℂ Q₀) Q)
+        ∈ (chartAt (H := ℂ) Q₀).target) :
+    (periodBasisForm X i).toFun (Jacobians.ChartBallPath Q₀ Q₀ Q t)
+        (pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q) t) =
+      chartFormCoeff (X := X) Q₀ i
+        ((1 - (t : ℂ)) * (chartAt ℂ Q₀) Q₀ + (t : ℂ) * (chartAt ℂ Q₀) Q)
+      * ((chartAt ℂ Q₀) Q - (chartAt ℂ Q₀) Q₀) := by
+  -- Set up.
+  set z₀ : ℂ := (chartAt (H := ℂ) Q₀) Q₀ with hz₀
+  set z : ℂ := (chartAt (H := ℂ) Q₀) Q with hz
+  set affine : ℝ → ℂ := fun s => (1 - (s : ℂ)) * z₀ + (s : ℂ) * z with haffine
+  set γ : ℝ → X := Jacobians.ChartBallPath Q₀ Q₀ Q with hγ
+  -- The current-time target membership.
+  have h_target_t : affine t ∈ (chartAt (H := ℂ) Q₀).target := h_target_nbhd.self_of_nhds
+  -- γ t ∈ chartAt Q₀ source.
+  have hγt_source : γ t ∈ (chartAt (H := ℂ) Q₀).source :=
+    chartBallPath_mem_source_of_affine Q₀ Q t h_target_t
+  -- γ t ∈ chartAt (γ t).source.
+  have hγt_self_source : γ t ∈ (chartAt (H := ℂ) (γ t)).source :=
+    mem_chart_source ℂ (γ t)
+  -- chart Q₀ at γ t = affine t.
+  have h_chart_γt : (chartAt (H := ℂ) Q₀) (γ t) = affine t := by
+    rw [hγ]
+    have h_in_target_at_t : (1 - (t : ℂ)) * (chartAt ℂ Q₀) Q₀ + (t : ℂ) * (chartAt ℂ Q₀) Q
+        ∈ (chartAt (H := ℂ) Q₀).target := h_target_t
+    -- chart_ChartBallPath_eq: when affine in target, chart of ChartBallPath = affine.
+    exact Jacobians.chart_ChartBallPath_eq Q₀ Q₀ Q t h_in_target_at_t
+  -- Differentiability of affine at t (always).
+  have h_affine_diff : DifferentiableAt ℝ affine t :=
+    Jacobians.differentiable_chart_image_formula Q₀ Q₀ Q t
+  -- Fderiv of affine at t in direction 1 is `z - z₀`.
+  have h_affine_fderiv : fderiv ℝ affine t (1 : ℝ) = z - z₀ := by
+    rw [haffine]
+    -- affine s = (1 - s) * z₀ + s * z = z₀ + s * (z - z₀)
+    have h_eq : (fun s : ℝ => (1 - (s : ℂ)) * z₀ + (s : ℂ) * z) =
+        (fun s : ℝ => z₀ + (s : ℂ) * (z - z₀)) := by funext s; ring
+    rw [h_eq]
+    -- fderiv of (z₀ + s * (z - z₀)) at t in direction 1:
+    -- = fderiv (z₀) + fderiv (s * (z-z₀))
+    -- = 0 + (z - z₀) * fderiv (s ↦ s)
+    -- = (z - z₀) * 1 = (z - z₀).
+    have h_id : HasDerivAt (fun s : ℝ => s) 1 t := hasDerivAt_id t
+    have h_smul : HasDerivAt (fun s : ℝ => s • (z - z₀)) ((1 : ℝ) • (z - z₀)) t :=
+      h_id.smul_const (z - z₀)
+    have h_eq2 : (fun s : ℝ => s • (z - z₀)) = (fun s : ℝ => (s : ℂ) * (z - z₀)) := by
+      funext s; exact Complex.real_smul
+    rw [h_eq2] at h_smul
+    have h_one : ((1 : ℝ) • (z - z₀) : ℂ) = z - z₀ := by
+      rw [Complex.real_smul]; simp
+    rw [h_one] at h_smul
+    -- h_smul : HasDerivAt (fun s : ℝ => (s : ℂ) * (z - z₀)) (z - z₀) t
+    have h_const : HasDerivAt (fun _ : ℝ => z₀) 0 t := hasDerivAt_const t z₀
+    have h_add : HasDerivAt (fun s : ℝ => z₀ + (s : ℂ) * (z - z₀)) (0 + (z - z₀)) t :=
+      h_const.add h_smul
+    rw [zero_add] at h_add
+    -- h_add : HasDerivAt (...) (z - z₀) t.
+    -- Convert to HasFDerivAt then take .fderiv.
+    have h_fd : HasFDerivAt (fun s : ℝ => z₀ + (s : ℂ) * (z - z₀))
+        (ContinuousLinearMap.smulRight (1 : ℝ →L[ℝ] ℝ) (z - z₀)) t :=
+      h_add.hasFDerivAt
+    have h_fderiv_eq := h_fd.fderiv
+    rw [h_fderiv_eq]
+    -- ContinuousLinearMap.smulRight 1 (z - z₀) applied to 1 = 1 • (z - z₀) = z - z₀
+    show ContinuousLinearMap.smulRight (1 : ℝ →L[ℝ] ℝ) (z - z₀) (1 : ℝ) = z - z₀
+    simp
+  -- Chart transition h := (chartAt γt) ∘ (chartAt Q₀).symm.
+  set h_trans : ℂ → ℂ := fun w => (chartAt (H := ℂ) (γ t)) ((chartAt (H := ℂ) Q₀).symm w)
+    with hh_trans
+  -- h_trans is differentiable at (affine t) over ℂ.
+  have h_trans_diff_C : DifferentiableAt ℂ h_trans (affine t) := by
+    have h_src : (chartAt (H := ℂ) Q₀).symm (affine t) ∈ (chartAt (H := ℂ) (γ t)).source := by
+      rw [show (chartAt (H := ℂ) Q₀).symm (affine t) = γ t from ?_]
+      · exact hγt_self_source
+      · -- γ t = (chartAt Q₀).symm (affine t)
+        rw [hγ]
+        show Jacobians.ChartBallPath Q₀ Q₀ Q t = _
+        rfl
+    have h_dC := Jacobians.chart_transition_differentiableAt_C (X := X) Q₀ (γ t) (affine t)
+      h_target_t h_src
+    -- h_dC : DifferentiableAt ℂ ((chartAt Q₀).symm ≫ₕ (chartAt (γ t))) (affine t)
+    -- Express ≫ₕ as plain composition.
+    have h_eq_comp : (fun v : ℂ =>
+        ((((chartAt (H := ℂ) Q₀).symm ≫ₕ (chartAt (H := ℂ) (γ t))) : ℂ → ℂ)) v) =ᶠ[nhds (affine t)]
+        h_trans := by
+      have h_open : IsOpen ((chartAt (H := ℂ) Q₀).symm ≫ₕ (chartAt (H := ℂ) (γ t))).source :=
+        ((chartAt (H := ℂ) Q₀).symm ≫ₕ (chartAt (H := ℂ) (γ t))).open_source
+      have h_mem : affine t ∈ ((chartAt (H := ℂ) Q₀).symm ≫ₕ (chartAt (H := ℂ) (γ t))).source :=
+        (Jacobians.chart_trans_source_iff (X := X) Q₀ (γ t) (affine t)).mpr
+          ⟨h_target_t, h_src⟩
+      filter_upwards [h_open.mem_nhds h_mem] with v _hv
+      rfl
+    exact h_dC.congr_of_eventuallyEq h_eq_comp
+  -- h_trans is differentiable at (affine t) over ℝ (restrict scalars).
+  have h_trans_diff_R : DifferentiableAt ℝ h_trans (affine t) :=
+    @DifferentiableAt.restrictScalars ℝ _ ℂ _ _ ℂ _ _ _
+      Jacobians.instIsScalarTower_R_C_C
+      ℂ _ _ _ Jacobians.instIsScalarTower_R_C_C _ _ h_trans_diff_C
+  -- fderiv ℝ h_trans = (fderiv ℂ h_trans).restrictScalars ℝ.
+  have h_trans_fderiv_RC : fderiv ℝ h_trans (affine t) =
+      (fderiv ℂ h_trans (affine t)).restrictScalars ℝ := by
+    have hFD_C : HasFDerivAt h_trans (fderiv ℂ h_trans (affine t)) (affine t) :=
+      h_trans_diff_C.hasFDerivAt
+    have hFD_R : HasFDerivAt h_trans
+        ((fderiv ℂ h_trans (affine t)).restrictScalars ℝ) (affine t) := by
+      rw [hasFDerivAt_iff_isLittleO_nhds_zero] at hFD_C ⊢
+      simp only [ContinuousLinearMap.coe_restrictScalars']
+      exact hFD_C
+    exact hFD_R.fderiv
+  -- Now compute pathSpeed γ t.
+  -- pathSpeed γ t = fderiv ℝ (chart γt ∘ γ) t 1.
+  -- chart γt ∘ γ is locally (near t) equal to h_trans ∘ affine.
+  -- Use h_target_nbhd to get the local equality.
+  have h_local_eq : (chartAt (H := ℂ) (γ t)).toFun ∘ γ =ᶠ[nhds t]
+      h_trans ∘ affine := by
+    filter_upwards [h_target_nbhd] with s hs_target
+    -- chart_γt (γ s) = chart_γt ((chartAt Q₀).symm (affine s)) = h_trans (affine s)
+    show (chartAt (H := ℂ) (γ t)) (γ s) = h_trans (affine s)
+    have h_γs_eq : γ s = (chartAt (H := ℂ) Q₀).symm (affine s) := rfl
+    rw [h_γs_eq]
+  -- pathSpeed γ t via fderiv.
+  have h_pathSpeed : pathSpeed γ t = fderiv ℝ (h_trans ∘ affine) t 1 := by
+    show fderiv ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t 1 = _
+    rw [Filter.EventuallyEq.fderiv_eq h_local_eq]
+  -- Apply chain rule.
+  have h_chain : fderiv ℝ (h_trans ∘ affine) t =
+      (fderiv ℝ h_trans (affine t)).comp (fderiv ℝ affine t) :=
+    fderiv_comp t h_trans_diff_R h_affine_diff
+  -- pathSpeed γ t = (fderiv ℝ h_trans (affine t)) (z - z₀).
+  have h_pathSpeed_eq : pathSpeed γ t = (fderiv ℝ h_trans (affine t)) (z - z₀) := by
+    rw [h_pathSpeed, h_chain, ContinuousLinearMap.comp_apply, h_affine_fderiv]
+  -- Replace fderiv ℝ with fderiv ℂ via restrictScalars.
+  have h_pathSpeed_C : pathSpeed γ t = (fderiv ℂ h_trans (affine t)) (z - z₀) := by
+    rw [h_pathSpeed_eq, h_trans_fderiv_RC, ContinuousLinearMap.coe_restrictScalars']
+  -- For a ℂ-linear map ℂ →L[ℂ] ℂ, applying to (z - z₀) = (z - z₀) * applied-to-1.
+  have h_fderiv_apply : (fderiv ℂ h_trans (affine t)) (z - z₀) =
+      (z - z₀) * (fderiv ℂ h_trans (affine t)) 1 := by
+    have := (fderiv ℂ h_trans (affine t)).map_smul (z - z₀) (1 : ℂ)
+    -- this : (fderiv ℂ h_trans (affine t)) ((z - z₀) • 1) = (z - z₀) • (fderiv ℂ h_trans (affine t)) 1
+    rw [smul_eq_mul, mul_one] at this
+    rw [this, smul_eq_mul]
+  -- pathSpeed γ t = (z - z₀) * (fderiv ℂ h_trans (affine t) 1).
+  have h_pathSpeed_final : pathSpeed γ t = (z - z₀) * (fderiv ℂ h_trans (affine t)) 1 := by
+    rw [h_pathSpeed_C, h_fderiv_apply]
+  -- chartFormCoeff Q₀ i (affine t) = α.toFun(γt)((trivAt Q₀).symmL ℂ (γt) 1)
+  --                                = α.toFun(γt)(fderiv ℂ h_trans (affine t) 1)
+  have h_chartFormCoeff : chartFormCoeff (X := X) Q₀ i (affine t) =
+      (periodBasisForm X i).toFun (γ t) ((fderiv ℂ h_trans (affine t)) 1) := by
+    unfold chartFormCoeff
+    show Jacobians.Montel.localRep (periodBasisForm X i) Q₀
+        ((chartAt (H := ℂ) Q₀).symm (affine t)) = _
+    have h_eq : (chartAt (H := ℂ) Q₀).symm (affine t) = γ t := by
+      rw [hγ]
+      show _ = Jacobians.ChartBallPath Q₀ Q₀ Q t
+      rfl
+    rw [h_eq]
+    show (periodBasisForm X i).toFun (γ t)
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) Q₀).symmL ℂ (γ t) 1) = _
+    rw [trivAt_symmL_one_eq_fderiv_C Q₀ (γ t) hγt_source]
+    congr 1
+    -- Need: fderiv ℂ ((chartAt γt) ∘ (chartAt Q₀).symm) ((chartAt Q₀) (γt)) 1 =
+    --       fderiv ℂ h_trans (affine t) 1
+    -- (chartAt Q₀)(γt) = affine t (by h_chart_γt).
+    -- h_trans = (chartAt γt) ∘ (chartAt Q₀).symm.
+    rw [h_chart_γt]
+    rfl
+  -- Assemble.
+  rw [h_chartFormCoeff, h_pathSpeed_final]
+  -- Goal: α.toFun(γt) ((z - z₀) * fderiv ℂ h_trans (affine t) 1) =
+  --       α.toFun(γt) (fderiv ℂ h_trans (affine t) 1) * (z - z₀)
+  -- Use ℂ-linearity of the CLM α.toFun(γt):
+  have h_lin : ((periodBasisForm X i).toFun (γ t))
+      ((z - z₀) * (fderiv ℂ h_trans (affine t)) 1) =
+        (z - z₀) * ((periodBasisForm X i).toFun (γ t))
+          ((fderiv ℂ h_trans (affine t)) 1) := by
+    have := (periodBasisForm X i).toFun (γ t) |>.map_smul (z - z₀)
+      ((fderiv ℂ h_trans (affine t)) 1)
+    simp only [smul_eq_mul] at this
+    exact this
+  rw [h_lin]
+  ring
 
 theorem localLift_quotient_eq_ofCurve_eventually
     (P Q₀ : X) :
