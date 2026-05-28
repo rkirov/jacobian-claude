@@ -970,10 +970,23 @@ lemma periodVec_smoothPathSmooth_eq (P Q : X) :
   sorry
 
 /-- `smoothPathSmooth` is an `IsSmoothPath`, with zero derivative at
-endpoints (via `smoothStep01`'s zero boundary derivatives). -/
+endpoints (via `smoothStep01`'s zero boundary derivatives). Closes
+`start` (PROVEN), `finish` (PROVEN), `cont` (PROVEN, composition of
+continuous smoothPath with continuous smoothStep01). `diff` and
+`integrable` remain sub-sorries pending chain-rule + reparam
+integrability work. -/
 lemma isSmoothPath_smoothPathSmooth (P Q : X) :
-    Jacobians.IsSmoothPath P Q (smoothPathSmooth P Q) :=
-  sorry
+    Jacobians.IsSmoothPath P Q (smoothPathSmooth P Q) := by
+  have h_smoothPath := Jacobians.isSmoothPath_smoothPath P Q
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · exact smoothPathSmooth_zero P Q
+  · exact smoothPathSmooth_one P Q
+  · -- Continuous (smoothPath P Q ∘ smoothStep01)
+    exact h_smoothPath.cont.comp Jacobians.smoothStep01_continuous
+  · -- diff at each t ∈ uIcc 0 1 — via chain rule
+    sorry
+  · -- integrable — via reparam invariance of line integral
+    sorry
 
 /-! ### Closed loop via smoothstep junctions
 
