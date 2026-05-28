@@ -45,6 +45,8 @@ import Mathlib.Topology.MetricSpace.Cover
 import Mathlib.Geometry.Manifold.MFDeriv.Defs
 import Mathlib.Geometry.Manifold.MFDeriv.Atlas
 import Mathlib.Geometry.Manifold.MFDeriv.NormedSpace
+import Mathlib.Geometry.Manifold.ContMDiff.Atlas
+import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
 
 namespace Jacobians
 
@@ -1452,7 +1454,30 @@ lemma ChartBallPath_continuousOn_target_set (anchor P Q : X) (S : Set ℝ)
   unfold ChartBallPath
   exact h_inv_cont.comp hz_cont.continuousOn h_target
 
-/-! ## Joint smoothness `Q ↦ periodVec(sp P Q)` — analysis of obstacle
+/-! ## Joint smoothness in `Q`: building blocks (chart smoothness)
+
+These are kernel-clean Mathlib re-exports of `chartAt`'s smoothness, used
+as building blocks for the eventual joint-smoothness proofs. The full
+`ChartBallPath_contMDiffOn_in_Q` requires `ContMDiffOn.add`,
+`ContMDiffOn.const_smul`, etc., applied to maps from a manifold to a
+normed space — the precise Mathlib lemma names vary and need careful
+matching. -/
+
+/-- The chart-coordinate value `Q ↦ (chartAt ℂ P) Q` is `ContMDiffOn` on
+the chart source — Mathlib's `contMDiffOn_chart`. -/
+lemma chartAt_contMDiffOn (P : X) :
+    ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω
+      (fun Q : X => (chartAt ℂ P) Q) (chartAt ℂ P).source :=
+  contMDiffOn_chart
+
+/-- The chart-coordinate inverse `(chartAt ℂ P).symm` is `ContMDiffOn` on
+the chart target — Mathlib's `contMDiffOn_chart_symm`. -/
+lemma chartAt_symm_contMDiffOn (P : X) :
+    ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω
+      (fun z : ℂ => (chartAt ℂ P).symm z) (chartAt ℂ P).target :=
+  contMDiffOn_chart_symm
+
+/-! ## Joint smoothness obstacle (documentation continues)
 
 For full closure of `exists_smoothPath_family`'s third conjunct
 (`∀ P, ContMDiff 𝓘(ℂ) 𝓘(ℂ, Fin (genus X) → ℂ) ω (fun Q => periodVec (sp P Q))`),
