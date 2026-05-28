@@ -1333,6 +1333,13 @@ lemma smoothStep01_deriv_continuous : Continuous smoothStep01_deriv := by
       norm_num
     · fun_prop
 
+/-- **`smoothStep01_deriv` is `ContinuousOn` `uIcc 0 1`** — corollary of
+global continuity. Specialized for use with
+`intervalIntegral.integral_deriv_smul_comp'`. -/
+lemma smoothStep01_deriv_continuousOn_uIcc :
+    ContinuousOn smoothStep01_deriv (Set.uIcc (0 : ℝ) 1) :=
+  smoothStep01_deriv_continuous.continuousOn
+
 /-- **`smoothStep01` is globally `Differentiable ℝ`**, with derivative
 `0` at boundary and `6t(1-t)` on `(0, 1)`. -/
 lemma smoothStep01_differentiable : Differentiable ℝ smoothStep01 := by
