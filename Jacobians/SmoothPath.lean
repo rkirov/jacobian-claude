@@ -1367,12 +1367,65 @@ lemma chart_transition_differentiableAt_R (x y : X) (u : ℂ)
     (chart_transition_differentiableAt_C x y u h_target h_source)
 
 /-- **Chart transition as plain function composition** `(chartAt ℂ y) ∘ (chartAt ℂ x).symm`
-is `DifferentiableAt ℝ` at `u`. (Just a rewrite of the previous, using the
-`OpenPartialHomeomorph.trans` definition.) -/
+is `DifferentiableAt ℝ` at `u`. Rewriting `OpenPartialHomeomorph.trans` as
+plain function composition. -/
 lemma chart_transition_comp_differentiableAt_R (x y : X) (u : ℂ)
     (h_target : u ∈ (chartAt ℂ x).target)
     (h_source : (chartAt ℂ x).symm u ∈ (chartAt ℂ y).source) :
-    DifferentiableAt ℝ (fun v : ℂ => (chartAt ℂ y) ((chartAt ℂ x).symm v)) u :=
-  chart_transition_differentiableAt_R x y u h_target h_source
+    DifferentiableAt ℝ (fun v : ℂ => (chartAt ℂ y) ((chartAt ℂ x).symm v)) u := by
+  -- The trans function equals fun v ↦ (chartAt y) ((chartAt x).symm v) on its source.
+  have h_eq : (fun v : ℂ => (((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)) : ℂ → ℂ) v) =ᶠ[𝓝 u]
+      (fun v : ℂ => (chartAt ℂ y) ((chartAt ℂ x).symm v)) := by
+    have h_open : IsOpen ((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)).source :=
+      ((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)).open_source
+    have h_mem : u ∈ ((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)).source :=
+      (chart_trans_source_iff x y u).mpr ⟨h_target, h_source⟩
+    filter_upwards [h_open.mem_nhds h_mem] with v _hv
+    rfl
+  exact (chart_transition_differentiableAt_R x y u h_target h_source).congr_of_eventuallyEq h_eq
+
+/-! ## Composition with the affine path z
+
+The chart-pullback of `ChartBallPath` equals `chart_transition ∘ z`. We now
+compose `chart_transition_differentiableAt_R` (DifferentiableAt at z t) with
+the affine z (DifferentiableAt at t) to get DifferentiableAt of the
+chart-pullback at t — exactly the `IsSmoothPath.diff` content. -/
+
+/-- The chart-pullback of `ChartBallPath` via the chart at `γ t` is
+`DifferentiableAt ℝ` at `t`, provided the affine `z t` is in the chart at
+anchor's target. -/
+lemma ChartBallPath_chart_at_self_differentiableAt
+    (anchor P Q : X) (t : ℝ)
+    (h_target_at_t : ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q)
+      ∈ (chartAt ℂ anchor).target) :
+    DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (ChartBallPath anchor P Q t)).toFun ∘ ChartBallPath anchor P Q) t := by
+  -- Set up: γ s = (chartAt anchor).symm (z s).
+  set z : ℝ → ℂ := fun s : ℝ =>
+    (1 - (s : ℂ)) * (chartAt ℂ anchor) P + (s : ℂ) * (chartAt ℂ anchor) Q with hz_def
+  set γ : ℝ → X := ChartBallPath anchor P Q with hγ_def
+  -- z is Differentiable.
+  have hz_diff : DifferentiableAt ℝ z t :=
+    (differentiable_chart_image_formula anchor P Q) t
+  -- γ s = (chartAt anchor).symm (z s) by def of ChartBallPath.
+  have hγ_eq_at : ∀ s, γ s = (chartAt ℂ anchor).symm (z s) := by
+    intro s; rfl
+  -- γ t ∈ (chartAt ℂ (γ t)).source (chartAt's source contains its basepoint).
+  have hγt_in_self : γ t ∈ (chartAt ℂ (γ t)).source := mem_chart_source ℂ (γ t)
+  -- (chartAt anchor).symm (z t) = γ t, so this is in (chartAt (γ t)).source.
+  have h_source : (chartAt ℂ anchor).symm (z t) ∈ (chartAt ℂ (γ t)).source := by
+    rw [← hγ_eq_at t]; exact hγt_in_self
+  -- chart transition is DifferentiableAt at z t.
+  have h_trans : DifferentiableAt ℝ
+      (fun v : ℂ => (chartAt ℂ (γ t)) ((chartAt ℂ anchor).symm v)) (z t) :=
+    chart_transition_comp_differentiableAt_R anchor (γ t) (z t) h_target_at_t h_source
+  -- Compose with z via chain rule: result is DifferentiableAt ℝ at t.
+  have h_comp : DifferentiableAt ℝ
+      ((fun v : ℂ => (chartAt ℂ (γ t)) ((chartAt ℂ anchor).symm v)) ∘ z) t :=
+    h_trans.comp t hz_diff
+  -- Rewrite: this equals chartAt (γ t) ∘ γ.
+  show DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t
+  -- Both sides apply chartAt (γ t) to γ s = (chartAt anchor).symm (z s).
+  exact h_comp
 
 end Jacobians
