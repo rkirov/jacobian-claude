@@ -4,6 +4,7 @@ import Mathlib.Algebra.Module.ZLattice.Basic
 import Mathlib.Topology.Connected.LocPathConnected
 import Jacobians.Discharge.Manifold.CriticalValuesFiniteGeneral
 import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
+import Jacobians.SmoothPath
 
 /-!
 # Period lattice of a compact Riemann surface
@@ -252,11 +253,11 @@ theorem IsSmoothPath.reverse {P Q : X} {γ : ℝ → X}
 
 /-- The smooth path between `P` and `Q`.
 
-Classical fact (Forster §§1-2): compact Riemann surfaces are smoothly
-path-connected — covered by finitely many charts, each biholomorphic to
-an open subset of ℂ, and smooth paths in charts patch via continuity at
-chart overlaps. Real construction is ~100-200 lines; currently a sorry. -/
-noncomputable def smoothPath (P Q : X) : ℝ → X := sorry
+Built from a chart-cover-piecewise concatenation of `ChartBallPath` pieces
+with smoothstep reparametrization at junctions — see `Jacobians.SmoothPath`
+for the construction. The `IsSmoothPath` proof (`isSmoothPath_smoothPath`
+below) remains owed; the definition itself is now honest. -/
+noncomputable def smoothPath (P Q : X) : ℝ → X := Jacobians.smoothPathRaw P Q
 
 /-- The chosen smooth path satisfies `IsSmoothPath`. -/
 theorem isSmoothPath_smoothPath (P Q : X) :
