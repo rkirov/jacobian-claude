@@ -1212,6 +1212,36 @@ lemma smoothStep01_hasDerivAt_one : HasDerivAt smoothStep01 0 1 := by
           have h5 : 5 * |h| ≤ ε := by linarith
           exact mul_le_mul_of_nonneg_right h5 (abs_nonneg _)
 
+/-- **`smoothStep01` is globally `Differentiable ℝ`**, with derivative
+`0` at boundary and `6t(1-t)` on `(0, 1)`. -/
+lemma smoothStep01_differentiable : Differentiable ℝ smoothStep01 := by
+  intro t
+  rcases lt_trichotomy t 0 with h0 | h0 | h0
+  · -- t < 0: smoothStep01 = 0 on a nbhd of t
+    have h_eq : smoothStep01 =ᶠ[𝓝 t] (fun _ : ℝ => (0 : ℝ)) := by
+      filter_upwards [Iio_mem_nhds h0] with s hs
+      exact smoothStep01_eqOn_zero hs
+    exact (differentiableAt_const (0 : ℝ)).congr_of_eventuallyEq h_eq
+  · -- t = 0
+    subst h0
+    exact smoothStep01_hasDerivAt_zero.differentiableAt
+  · rcases lt_trichotomy t 1 with h1 | h1 | h1
+    · -- 0 < t < 1: smoothStep01 = 3t² - 2t³ on a nbhd of t
+      have h_eq : smoothStep01 =ᶠ[𝓝 t] (fun s : ℝ => 3 * s^2 - 2 * s^3) := by
+        filter_upwards [Ioo_mem_nhds h0 h1] with s hs
+        exact smoothStep01_of_mem_open s hs.1 hs.2
+      have h_cubic_diff : DifferentiableAt ℝ (fun s : ℝ => 3 * s^2 - 2 * s^3) t := by
+        fun_prop
+      exact h_cubic_diff.congr_of_eventuallyEq h_eq
+    · -- t = 1
+      subst h1
+      exact smoothStep01_hasDerivAt_one.differentiableAt
+    · -- t > 1: smoothStep01 = 1 on a nbhd
+      have h_eq : smoothStep01 =ᶠ[𝓝 t] (fun _ : ℝ => (1 : ℝ)) := by
+        filter_upwards [Ioi_mem_nhds h1] with s hs
+        exact smoothStep01_eqOn_one hs
+      exact (differentiableAt_const (1 : ℝ)).congr_of_eventuallyEq h_eq
+
 /-! ## More chart-image affine identities -/
 
 /-- The chart-image at `t = 0` is `c P` (alternative phrasing). -/
