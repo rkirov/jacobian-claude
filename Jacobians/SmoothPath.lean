@@ -39,6 +39,8 @@ import Mathlib.Topology.Connected.LocPathConnected
 import Mathlib.Analysis.Calculus.ContDiff.Defs
 import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Analysis.Calculus.FDeriv.Add
+import Mathlib.Analysis.Calculus.FDeriv.RestrictScalars
+import Mathlib.Analysis.Complex.OperatorNorm
 import Mathlib.Topology.MetricSpace.Cover
 import Mathlib.Geometry.Manifold.MFDeriv.Defs
 import Mathlib.Geometry.Manifold.MFDeriv.Atlas
@@ -1265,30 +1267,112 @@ lemma ChartBallPath_anchor_anchor (anchor : X) (t : ℝ) :
 lemma ChartBallPath_endpoint_type (anchor P Q : X) (t : ℝ) :
     ChartBallPath anchor P Q t = ChartBallPath anchor P Q t := rfl
 
-/-! ## Notes on the remaining IsSmoothPath proof
+/-! ## Chart transition smoothness via contDiffGroupoid
 
-The Mathlib MFDeriv API does NOT directly give us what we need:
-`MDifferentiableAt I I' f x` requires `I` and `I'` to have the SAME
-scalar field. Our setup has `γ : ℝ → X` with `X : ChartedSpace ℂ` over
-ℂ-field — so attempting `MDifferentiableAt 𝓘(ℝ) 𝓘(ℂ) γ t` fails at
-typeclass synthesis.
+For `IsManifold 𝓘(ℂ) ω X`, the structure groupoid is `contDiffGroupoid ω 𝓘(ℂ)`,
+and any pair of charts in the maximal atlas have a transition function in this
+groupoid. Unfolding the groupoid membership gives `ContDiffOn ℂ ω` of the chart
+transition, which restricts to `DifferentiableAt ℝ` after composition with the
+real-affine path. This is the bridge for the `IsSmoothPath.diff` field. -/
 
-Two alternatives for the eventual `IsSmoothPath.diff` proof:
+variable [IsManifold 𝓘(ℂ) ω X]
 
-1. **Real-2-manifold view.** A complex 1-manifold is also a smooth real
-   2-manifold via the obvious ℂ ≃ ℝ²-style identification. Set up
-   `ChartedSpace (Fin 2 → ℝ) X` as a derived instance and use
-   `MDifferentiableAt 𝓘(ℝ, Fin 2 → ℝ) 𝓘(ℝ, Fin 2 → ℝ) ...`. Substantial
-   API plumbing.
+/-- **Chart transitions on an analytic complex manifold are `ContDiffOn ℂ ω`.**
+For any two points `x, y : X`, the trans `(chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)`
+is in the `contDiffGroupoid ω 𝓘(ℂ)`, giving its underlying function as
+`ContDiffOn ℂ ω` on the trans's source. -/
+lemma chart_transition_contDiffOn (x y : X) :
+    let e : OpenPartialHomeomorph ℂ ℂ := (chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)
+    ContDiffOn ℂ ω ((𝓘(ℂ) : ModelWithCorners ℂ ℂ ℂ) ∘ e ∘ 𝓘(ℂ).symm)
+      (𝓘(ℂ).symm ⁻¹' e.source ∩ Set.range 𝓘(ℂ)) := by
+  intro e
+  have h_x : chartAt ℂ x ∈ StructureGroupoid.maximalAtlas X (contDiffGroupoid ω 𝓘(ℂ)) :=
+    StructureGroupoid.chart_mem_maximalAtlas _ x
+  have h_y : chartAt ℂ y ∈ StructureGroupoid.maximalAtlas X (contDiffGroupoid ω 𝓘(ℂ)) :=
+    StructureGroupoid.chart_mem_maximalAtlas _ y
+  have h_trans : e ∈ contDiffGroupoid ω 𝓘(ℂ) :=
+    StructureGroupoid.compatible_of_mem_maximalAtlas h_x h_y
+  rw [contDiffGroupoid, mem_groupoid_of_pregroupoid] at h_trans
+  exact h_trans.1
 
-2. **Direct chart-transition argument.** Use Mathlib's
-   `OpenPartialHomeomorph.MDifferentiable` for chart transitions, plus
-   `IsManifold I ω X`-derived analyticity of transitions. Compose with
-   the affine path manually. Probably 200-500 LOC of focused work.
+/-- For self-model `𝓘(ℂ)`, the ModelWithCorners coercion is identity, so the
+ContDiffOn statement above simplifies to plain `ContDiffOn ℂ ω` of the
+chart transition function on its source. -/
+lemma chart_transition_contDiffOn_simplified (x y : X) :
+    let e : OpenPartialHomeomorph ℂ ℂ := (chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)
+    ContDiffOn ℂ ω (e : ℂ → ℂ) e.source := by
+  intro e
+  have h := chart_transition_contDiffOn x y
+  -- 𝓘(ℂ) = id, range 𝓘(ℂ) = univ, 𝓘(ℂ).symm = id, so simp simplifies.
+  simpa using h
 
-Either path is genuinely Mathlib-adjacent and beyond a single
-autonomous session. The infrastructure in this file (chart-image
-arithmetic, smoothstep properties, chart-cover lemma, ChartBallPath
-identities) plugs into whichever path is chosen. -/
+/-- The trans as a function applied to a point. -/
+lemma chart_trans_apply (x y : X) (u : ℂ)
+    (hu : u ∈ ((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)).source) :
+    (((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)) : ℂ → ℂ) u = (chartAt ℂ y) ((chartAt ℂ x).symm u) := by
+  rfl
+
+/-- Chart transition source membership: `u` is in the trans source iff
+`u ∈ (chartAt ℂ x).target` and `(chartAt ℂ x).symm u ∈ (chartAt ℂ y).source`. -/
+lemma chart_trans_source_iff (x y : X) (u : ℂ) :
+    u ∈ ((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)).source ↔
+      u ∈ (chartAt ℂ x).target ∧ (chartAt ℂ x).symm u ∈ (chartAt ℂ y).source := by
+  show u ∈ (chartAt ℂ x).symm.source ∩ (chartAt ℂ x).symm ⁻¹' (chartAt ℂ y).source ↔ _
+  rw [OpenPartialHomeomorph.symm_source]
+  exact Iff.rfl
+
+/-- Chart transition is `ContDiffAt ℂ ω` at every point in its source. -/
+lemma chart_transition_contDiffAt (x y : X) (u : ℂ)
+    (h_target : u ∈ (chartAt ℂ x).target)
+    (h_source : (chartAt ℂ x).symm u ∈ (chartAt ℂ y).source) :
+    ContDiffAt ℂ ω (((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)) : ℂ → ℂ) u := by
+  have h_on := chart_transition_contDiffOn_simplified x y
+  have h_mem : u ∈ ((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)).source :=
+    (chart_trans_source_iff x y u).mpr ⟨h_target, h_source⟩
+  -- The trans source is open.
+  have h_open : IsOpen ((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)).source :=
+    ((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)).open_source
+  exact h_on.contDiffAt (h_open.mem_nhds h_mem)
+
+/-- Chart transition is `DifferentiableAt ℂ` at every point in its source. -/
+lemma chart_transition_differentiableAt_C (x y : X) (u : ℂ)
+    (h_target : u ∈ (chartAt ℂ x).target)
+    (h_source : (chartAt ℂ x).symm u ∈ (chartAt ℂ y).source) :
+    DifferentiableAt ℂ (((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)) : ℂ → ℂ) u := by
+  have h := chart_transition_contDiffAt x y u h_target h_source
+  -- ContDiffAt ω → DifferentiableAt requires ω ≠ 0.
+  refine h.differentiableAt ?_
+  -- ω is the analytic level; ω ≠ 0.
+  intro h_eq
+  -- ω = 0 contradicts the definition: in `WithTop ℕ∞`, ω is `analytic` which is `⊤`.
+  -- For Mathlib's ContDiff hierarchy, `ω ≠ 0` is automatic.
+  -- Use Mathlib's analytic-level non-zero fact.
+  exact absurd h_eq (by decide)
+
+/-- `IsScalarTower ℝ ℂ ℂ`: trivial via the `Complex.smul_def` / `IsScalarTower.right`-style
+construction. Stated locally to make `restrictScalars ℝ` synthesis succeed. -/
+instance instIsScalarTower_R_C_C : IsScalarTower ℝ ℂ ℂ :=
+  IsScalarTower.of_algebraMap_smul fun _ _ => rfl
+
+/-- Chart transition is `DifferentiableAt ℝ` (restrict-scalars from `ℂ` to `ℝ`).
+We pass the `IsScalarTower ℝ ℂ ℂ` instance explicitly because Lean's
+typeclass search doesn't pick it up automatically inside our namespace
++ variable-block context. -/
+lemma chart_transition_differentiableAt_R (x y : X) (u : ℂ)
+    (h_target : u ∈ (chartAt ℂ x).target)
+    (h_source : (chartAt ℂ x).symm u ∈ (chartAt ℂ y).source) :
+    DifferentiableAt ℝ (((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)) : ℂ → ℂ) u :=
+  @DifferentiableAt.restrictScalars ℝ _ ℂ _ _ ℂ _ _ _ instIsScalarTower_R_C_C
+    ℂ _ _ _ instIsScalarTower_R_C_C _ _
+    (chart_transition_differentiableAt_C x y u h_target h_source)
+
+/-- **Chart transition as plain function composition** `(chartAt ℂ y) ∘ (chartAt ℂ x).symm`
+is `DifferentiableAt ℝ` at `u`. (Just a rewrite of the previous, using the
+`OpenPartialHomeomorph.trans` definition.) -/
+lemma chart_transition_comp_differentiableAt_R (x y : X) (u : ℂ)
+    (h_target : u ∈ (chartAt ℂ x).target)
+    (h_source : (chartAt ℂ x).symm u ∈ (chartAt ℂ y).source) :
+    DifferentiableAt ℝ (fun v : ℂ => (chartAt ℂ y) ((chartAt ℂ x).symm v)) u :=
+  chart_transition_differentiableAt_R x y u h_target h_source
 
 end Jacobians
