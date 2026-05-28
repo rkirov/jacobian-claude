@@ -1108,7 +1108,72 @@ lemma periodVec_ChartBallPathSmooth_eq (Q₀ Q : X)
   · -- ContinuousOn of integrand on [0, 1]. Use chartFrame_cancel:
     -- α.toFun (γt) (pathSpeed γ t) = chartFormCoeff Q₀ i (z₀ + t(z-z₀)) * (z - z₀).
     -- RHS is continuous on [0, 1] (chartFormCoeff continuous + polynomial in t).
-    sorry
+    intro i
+    -- Step 1: rewrite pointwise via chartFrame_cancel.
+    set z₀ : ℂ := (chartAt (H := ℂ) Q₀) Q₀
+    set z : ℂ := (chartAt (H := ℂ) Q₀) Q
+    have h_eq : ∀ u ∈ Set.Icc (0 : ℝ) 1,
+        (periodBasisForm X i).toFun (Jacobians.ChartBallPath Q₀ Q₀ Q u)
+          (Jacobians.pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q) u) =
+        chartFormCoeff (X := X) Q₀ i (z₀ + (u : ℂ) * (z - z₀)) * (z - z₀) := by
+      intro u hu
+      -- Need: nbhd hypothesis for chartFrame_cancel.
+      have h_target_nbhd : ∀ᶠ s : ℝ in nhds u,
+          ((1 - (s : ℂ)) * z₀ + (s : ℂ) * z) ∈ (chartAt (H := ℂ) Q₀).target := by
+        have h_cont : Continuous (fun s : ℝ => (1 - (s : ℂ)) * z₀ + (s : ℂ) * z) := by
+          refine Continuous.add ?_ ?_
+          · exact (continuous_const.sub Complex.continuous_ofReal).mul continuous_const
+          · exact Complex.continuous_ofReal.mul continuous_const
+        have h_open : IsOpen
+            {s : ℝ | (1 - (s : ℂ)) * z₀ + (s : ℂ) * z ∈ (chartAt (H := ℂ) Q₀).target} :=
+          (chartAt (H := ℂ) Q₀).open_target.preimage h_cont
+        exact h_open.mem_nhds (h_chart_ball u hu)
+      have h_cf := chartFrame_cancel (X := X) Q₀ Q i u h_target_nbhd
+      -- h_cf : chartFormCoeff Q₀ i ((1-u)·(chartAt Q₀)Q₀ + u·(chartAt Q₀)Q) *
+      --        ((chartAt Q₀)Q - (chartAt Q₀)Q₀) = α.toFun (γu)(pathSpeed γu)
+      -- Goal: α.toFun (γu)(pathSpeed γu) = chartFormCoeff Q₀ i (z₀ + u(z-z₀)) * (z - z₀)
+      -- Where z₀ := chartAt Q₀ Q₀, z := chartAt Q₀ Q.
+      have h_rewrite_form : z₀ + (u : ℂ) * (z - z₀) =
+          (1 - (u : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ + (u : ℂ) * (chartAt (H := ℂ) Q₀) Q := by
+        show z₀ + (u : ℂ) * (z - z₀) = (1 - (u : ℂ)) * z₀ + (u : ℂ) * z
+        ring
+      rw [h_rewrite_form]
+      show ((periodBasisForm X i).toFun (Jacobians.ChartBallPath Q₀ Q₀ Q u))
+          (Jacobians.pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q) u) =
+        chartFormCoeff (X := X) Q₀ i
+          ((1 - (u : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ + (u : ℂ) * (chartAt (H := ℂ) Q₀) Q) *
+        ((chartAt (H := ℂ) Q₀) Q - (chartAt (H := ℂ) Q₀) Q₀)
+      exact h_cf
+    -- Step 2: RHS continuous on [0, 1].
+    have h_rhs_cont : ContinuousOn
+        (fun u : ℝ => chartFormCoeff (X := X) Q₀ i (z₀ + (u : ℂ) * (z - z₀)) * (z - z₀))
+        (Set.Icc (0 : ℝ) 1) := by
+      refine ContinuousOn.mul ?_ continuousOn_const
+      -- ContinuousOn of chartFormCoeff Q₀ i (affine in u).
+      -- chartFormCoeff is continuous on chart target (from AnalyticOn).
+      have h_chartFormCoeff_cont : ContinuousOn (chartFormCoeff (X := X) Q₀ i)
+          (chartAt (H := ℂ) Q₀).target :=
+        (chartFormCoeff_differentiableOn Q₀ i).continuousOn
+      -- The affine map u ↦ z₀ + u(z - z₀) is continuous (ℝ → ℂ).
+      have h_affine_cont : Continuous (fun u : ℝ => z₀ + (u : ℂ) * (z - z₀)) := by
+        refine Continuous.add continuous_const ?_
+        exact Complex.continuous_ofReal.mul continuous_const
+      -- The affine maps [0,1] into chart target by h_chart_ball
+      -- (after rewriting (z₀ + u(z-z₀)) = ((1-u)z₀ + uz)).
+      have h_mapsTo : ∀ u ∈ Set.Icc (0 : ℝ) 1,
+          z₀ + (u : ℂ) * (z - z₀) ∈ (chartAt (H := ℂ) Q₀).target := by
+        intro u hu
+        have h_rewrite : z₀ + (u : ℂ) * (z - z₀) = ((1 - (u : ℂ)) * z₀ + (u : ℂ) * z) := by
+          ring
+        rw [h_rewrite]
+        exact h_chart_ball u hu
+      exact h_chartFormCoeff_cont.comp h_affine_cont.continuousOn h_mapsTo
+    -- Step 3: ContinuousOn of LHS via congruence.
+    -- We have h_eq : ∀ u ∈ Icc 0 1, LHS(u) = RHS(u).
+    -- ContinuousOn.congr converts ContinuousOn of RHS to ContinuousOn of LHS via EqOn.
+    refine h_rhs_cont.congr ?_
+    intro u hu
+    exact h_eq u hu
 
 /-! ### Smoothstep-reparameterized smoothPath
 
