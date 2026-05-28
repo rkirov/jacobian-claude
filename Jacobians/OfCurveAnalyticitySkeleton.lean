@@ -442,6 +442,84 @@ This closed loop's periodVec is in `truePeriodLattice X` by
     which requires concat-smoothness + reverse-smoothness (both with
     proven infrastructure in `Jacobians/LineIntegral.lean` and
     `PeriodLattice.lean`). -/
+/-! ### Chart-frame cancellation: pathSpeed of `ChartBallPath` and `localRep`
+
+To prove the main identification (`localLift_quotient_eq_ofCurve_eventually`),
+the structural content is the chart-frame cancellation lemma: for `γ :=
+ChartBallPath Q₀ Q₀ Q t` and `α := periodBasisForm X i`,
+
+```
+α.toFun (γ t) (pathSpeed γ t) = chartFormCoeff Q₀ i (z₀ + t(z-z₀)) · (z - z₀)
+```
+
+The proof uses Mathlib's `TangentBundle.symmL_trivializationAt_eq_core`,
+which identifies `(trivAt b₀).symmL ℂ b 1` with the chart-transition
+derivative. The chain-rule on `(chartAt γt) ∘ (chartAt Q₀).symm ∘ affine`
+gives the matching `pathSpeed γ t = fderiv (chart transition)((z-z₀))`.
+
+We do NOT attempt to formalize this here in full generality. Instead, we
+take a different route: we identify both sides at the single point
+`Q = Q₀` and use that on the chart source, the **difference** is a
+locally analytic ℂ^g-valued function that vanishes at Q₀ AND lands in
+the period lattice (mod which the quotient is defined), so it's a
+constant equal to zero in the quotient.
+
+Specifically, the strategy uses:
+
+* `localLift_contMDiffAt` (PROVEN) — the LHS is `ContMDiffAt` at Q₀.
+* `ofCurve_contMDiff` would tell us the RHS is `ContMDiffAt` at Q₀,
+  except we're proving that exact thing! So we use:
+* `smoothPath_basepoint_change` (PROVEN) — algebraic reduction of RHS.
+* Concrete closed-loop argument via `periodVec_concat`,
+  `periodVec_reverse`, `periodVec_mem_truePeriodLattice_of_closed`.
+-/
+
+/-- **Chart-Q₀ tangent vector via the trivialization**: at any point
+`y` in the chart source of `Q₀`, `(trivAt Q₀).symmL ℂ y 1` equals the
+fderiv (over ℂ) of the chart-transition map. This is a specialization
+of Mathlib's `TangentBundle.symmL_trivializationAt_eq_core`. -/
+lemma trivAt_symmL_one_eq_fderiv (Q₀ y : X)
+    (hy : y ∈ (chartAt (H := ℂ) Q₀).source) :
+    (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) Q₀).symmL ℂ y (1 : ℂ) =
+      fderivWithin ℂ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) Q₀).symm)
+        Set.univ ((chartAt (H := ℂ) Q₀) y) (1 : ℂ) := by
+  have h_symmL := TangentBundle.symmL_trivializationAt_eq_core
+    (I := 𝓘(ℂ, ℂ)) (M := X) (E := ℂ) (b₀ := Q₀) (b := y) hy
+  -- Apply the equality at 1 ∈ ℂ.
+  rw [show ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) Q₀).symmL ℂ y (1 : ℂ))
+        = ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) Q₀).symmL ℂ y) (1 : ℂ) from rfl]
+  rw [h_symmL]
+  -- The coord change is `fderivWithin ℂ (extChartAt 𝓘(ℂ) y ∘ (extChartAt 𝓘(ℂ) Q₀).symm)
+  --   (range 𝓘(ℂ)) (extChartAt 𝓘(ℂ) Q₀ y)`.
+  -- For 𝓘(ℂ), extChartAt = chartAt and range = univ.
+  show (tangentBundleCore 𝓘(ℂ, ℂ) X).coordChange (achart ℂ Q₀) (achart ℂ y) y (1 : ℂ) =
+    fderivWithin ℂ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) Q₀).symm) Set.univ
+      ((chartAt (H := ℂ) Q₀) y) (1 : ℂ)
+  rw [tangentBundleCore_coordChange_achart]
+  -- Goal: fderivWithin ℂ (extChartAt 𝓘(ℂ) y ∘ (extChartAt 𝓘(ℂ) Q₀).symm) (range 𝓘(ℂ))
+  --        (extChartAt 𝓘(ℂ) Q₀ y) 1 = fderivWithin ℂ ((chartAt y) ∘ (chartAt Q₀).symm)
+  --        univ ((chartAt Q₀) y) 1
+  have hrange : (Set.range (𝓘(ℂ, ℂ) : ModelWithCorners ℂ ℂ ℂ)) = Set.univ := by
+    exact ModelWithCorners.range_eq_univ _
+  have hext_chart : ∀ (z : ℂ) (b : X),
+      ((extChartAt (𝓘(ℂ, ℂ) : ModelWithCorners ℂ ℂ ℂ) b) : X → ℂ) = (chartAt (H := ℂ) b) := by
+    intro z b; funext w
+    simp [extChartAt]
+  have hext_chart_pt : ∀ (b : X) (w : X),
+      (extChartAt (𝓘(ℂ, ℂ) : ModelWithCorners ℂ ℂ ℂ) b) w =
+        (chartAt (H := ℂ) b) w := by
+    intros; simp [extChartAt]
+  have hext_symm : ∀ (b : X) (z : ℂ),
+      ((extChartAt (𝓘(ℂ, ℂ) : ModelWithCorners ℂ ℂ ℂ) b).symm) z =
+        (chartAt (H := ℂ) b).symm z := by
+    intros; simp [extChartAt]
+  -- Now rewrite all extChartAt's to chartAt's.
+  rw [hrange]
+  rw [hext_chart_pt Q₀ y]
+  -- After unfolding extChartAt to chartAt, the two functions are definitionally
+  -- equal (extChartAt 𝓘(ℂ) b = chartAt b, extChartAt symm = chartAt symm).
+  rfl
+
 theorem localLift_quotient_eq_ofCurve_eventually
     (P Q₀ : X) :
     (fun Q => QuotientAddGroup.mk
