@@ -1451,13 +1451,64 @@ bare `concat`'s derivative at the junction `t = 1/2` is `0` from both
 sides → differentiable. -/
 lemma isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
     (Q₀ Q : X)
-    (_hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
-    (_h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+    (hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
         (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
     Jacobians.IsClosedSmoothLoop (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
-      (Jacobians.reverse (smoothPathSmooth Q₀ Q))) :=
-  sorry
+      (Jacobians.reverse (smoothPathSmooth Q₀ Q))) := by
+  have h_γ₁ : Jacobians.IsSmoothPath Q₀ Q (Jacobians.ChartBallPathSmooth Q₀ Q) :=
+    isSmoothPath_ChartBallPathSmooth Q₀ Q hQ_src h_chart_ball
+  have h_γ₂ : Jacobians.IsSmoothPath Q₀ Q (smoothPathSmooth Q₀ Q) :=
+    isSmoothPath_smoothPathSmooth Q₀ Q
+  have h_γ₂_rev : Jacobians.IsSmoothPath Q Q₀ (Jacobians.reverse (smoothPathSmooth Q₀ Q)) :=
+    h_γ₂.reverse
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · -- closed: concat γ₁ γ₂' 0 = concat γ₁ γ₂' 1
+    show Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+        (Jacobians.reverse (smoothPathSmooth Q₀ Q)) 0 =
+      Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+        (Jacobians.reverse (smoothPathSmooth Q₀ Q)) 1
+    rw [Jacobians.concat_apply_left _ _ (by norm_num : (0:ℝ) ≤ 1/2)]
+    rw [Jacobians.concat_apply_right _ _ (by norm_num : ¬ (1:ℝ) ≤ 1/2)]
+    show Jacobians.ChartBallPathSmooth Q₀ Q (2 * 0) =
+      Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * 1 - 1)
+    have h_lhs : Jacobians.ChartBallPathSmooth Q₀ Q (2 * 0) = Q₀ := by
+      simp [h_γ₁.start]
+    have h_rhs : Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * 1 - 1) = Q₀ := by
+      have h_eq : (2 * (1 : ℝ) - 1) = 1 := by norm_num
+      rw [h_eq]
+      exact h_γ₂_rev.finish
+    rw [h_lhs, h_rhs]
+  · -- continuity: concat of continuous γ₁ and continuous γ₂' matching at 1/2
+    -- concat γ₁ γ₂' t = if t ≤ 1/2 then γ₁(2t) else γ₂'(2t-1)
+    show Continuous (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+      (Jacobians.reverse (smoothPathSmooth Q₀ Q)))
+    unfold Jacobians.concat
+    -- Apply Continuous.if_le.
+    refine Continuous.if_le ?_ ?_ continuous_id continuous_const ?_
+    · -- γ₁ ∘ (2·) is continuous
+      exact h_γ₁.cont.comp (continuous_const.mul continuous_id)
+    · -- γ₂' ∘ (2·-1) is continuous
+      exact h_γ₂_rev.cont.comp ((continuous_const.mul continuous_id).sub continuous_const)
+    · -- At t = 1/2 (where p t = q t): γ₁(2*(1/2)) = γ₂'(2*(1/2)-1)
+      intro t ht
+      -- ht : t = 1/2
+      have ht_eq : t = 1/2 := ht
+      rw [ht_eq]
+      show Jacobians.ChartBallPathSmooth Q₀ Q (2 * (1/2 : ℝ)) =
+        Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * (1/2 : ℝ) - 1)
+      have h_left : (2 * (1/2 : ℝ)) = 1 := by norm_num
+      rw [h_left]
+      -- Goal: ChartBallPathSmooth Q₀ Q 1 = reverse ... (1 - 1)
+      have h_right : ((1 : ℝ) - 1) = 0 := by norm_num
+      rw [h_right]
+      rw [h_γ₁.finish]
+      exact h_γ₂_rev.start.symm
+  · -- diff at each t ∈ uIcc 0 1: junction handling
+    sorry
+  · -- integrable for each basis form
+    sorry
 
 /-- **periodVec of the concat = difference of periodVecs** for our paths.
 
