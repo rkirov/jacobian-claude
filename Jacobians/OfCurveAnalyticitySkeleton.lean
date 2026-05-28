@@ -1127,11 +1127,27 @@ noncomputable def smoothPathSmooth (P Q : X) : ℝ → X :=
 @[simp] lemma smoothPathSmooth_one (P Q : X) : smoothPathSmooth P Q 1 = Q := by
   simp [smoothPathSmooth]
 
-/-- **PeriodVec invariance for smoothPath under `smoothStep01`**. -/
+/-- **PeriodVec invariance for smoothPath under `smoothStep01`**.
+
+Direct corollary of `periodVec_smoothStep01_comp_eq_generic` applied to
+`smoothPath P Q`, whose chart-pullback differentiability and integrand
+continuity come from `Jacobians.isSmoothPath_smoothPath`. -/
 lemma periodVec_smoothPathSmooth_eq (P Q : X) :
     Jacobians.periodVec (smoothPathSmooth P Q) =
-    Jacobians.periodVec (Jacobians.smoothPath P Q) :=
-  sorry
+    Jacobians.periodVec (Jacobians.smoothPath P Q) := by
+  show Jacobians.periodVec (Jacobians.smoothPath P Q ∘ Jacobians.smoothStep01) =
+      Jacobians.periodVec (Jacobians.smoothPath P Q)
+  apply periodVec_smoothStep01_comp_eq_generic
+  · -- Chart-pullback diff at each s ∈ [0, 1] from IsSmoothPath.diff.
+    intro s hs
+    have h_uIcc : s ∈ Set.uIcc (0 : ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact hs
+    exact (Jacobians.isSmoothPath_smoothPath P Q).diff s h_uIcc
+  · -- ContinuousOn of integrand on [0, 1] — sorry (needs continuity of
+    -- pathSpeed for smoothPath). The IsSmoothPath.integrable field gives
+    -- only integrability, not continuity. Continuity could be derived from
+    -- C¹-ness of the chart-pullback but that's not directly available.
+    sorry
 
 /-- `smoothPathSmooth` is an `IsSmoothPath`, with zero derivative at
 endpoints (via `smoothStep01`'s zero boundary derivatives). Closes
