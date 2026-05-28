@@ -925,6 +925,66 @@ By substitution-of-variables (`intervalIntegral.integral_comp_mul_deriv`),
 gives `periodVec (ChartBallPathSmooth Q₀ Q) = periodVec (ChartBallPath
 Q₀ Q₀ Q)`. -/
 
+/-- **PathSpeed chain rule for smoothStep01 reparameterization.**
+
+For a smooth path `γ : ℝ → X` and `σ := smoothStep01`, the pathSpeed
+of `γ ∘ σ` at `t` equals `σ'(t) • pathSpeed γ (σ t)` via the chain
+rule applied to `(chartAt (γ(σ t))).toFun ∘ γ ∘ σ`.
+
+Requires:
+* `γ` chart-pullback differentiable at `σ t` (i.e., the existing
+  `pathSpeed γ (σ t)` is computed from a `HasDerivAt`).
+-/
+lemma pathSpeed_smoothStep01_comp_eq (γ : ℝ → X) (t : ℝ)
+    (hγ_diff : DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (γ (Jacobians.smoothStep01 t))).toFun ∘ γ)
+      (Jacobians.smoothStep01 t)) :
+    Jacobians.pathSpeed (γ ∘ Jacobians.smoothStep01) t =
+      (Jacobians.smoothStep01_deriv t : ℂ) *
+        Jacobians.pathSpeed γ (Jacobians.smoothStep01 t) := by
+  -- pathSpeed is defined as `fderiv ℝ ((chartAt ℂ (γ t)).toFun ∘ γ) t 1`.
+  -- For `γ ∘ σ`, the chart point is `γ(σ t)`, same as in the inner expression.
+  unfold Jacobians.pathSpeed
+  -- Rewrite the composition: `(chartAt ℂ ((γ ∘ σ) t)).toFun ∘ (γ ∘ σ)` =
+  -- `((chartAt ℂ (γ(σ t))).toFun ∘ γ) ∘ σ` (associativity).
+  have h_assoc : (chartAt (H := ℂ) ((γ ∘ Jacobians.smoothStep01) t)).toFun ∘
+        (γ ∘ Jacobians.smoothStep01) =
+      ((chartAt (H := ℂ) (γ (Jacobians.smoothStep01 t))).toFun ∘ γ) ∘
+        Jacobians.smoothStep01 := by
+    funext s; rfl
+  rw [h_assoc]
+  -- Chain rule for HasDerivAt: φ ∘ σ at t has derivative σ'(t) • φ'(σ(t)).
+  have hσ : HasDerivAt Jacobians.smoothStep01 (Jacobians.smoothStep01_deriv t) t :=
+    Jacobians.smoothStep01_hasDerivAt_explicit t
+  have hφ : HasDerivAt
+      ((chartAt (H := ℂ) (γ (Jacobians.smoothStep01 t))).toFun ∘ γ)
+      (Jacobians.pathSpeed γ (Jacobians.smoothStep01 t))
+      (Jacobians.smoothStep01 t) := by
+    -- pathSpeed γ (σ t) = fderiv ℝ (...) (σ t) 1, so HasDerivAt at σ t with that value.
+    exact hγ_diff.hasDerivAt
+  -- Apply scomp: HasDerivAt (φ ∘ σ) (σ' • pathSpeed γ (σ t)) t.
+  have h_comp : HasDerivAt
+      (((chartAt (H := ℂ) (γ (Jacobians.smoothStep01 t))).toFun ∘ γ) ∘
+        Jacobians.smoothStep01)
+      (Jacobians.smoothStep01_deriv t • Jacobians.pathSpeed γ (Jacobians.smoothStep01 t))
+      t := HasDerivAt.scomp t hφ hσ
+  -- HasDerivAt gives `(fderiv ℝ f t) 1 = f'` via `HasDerivAt.deriv`-style identity.
+  -- Use deriv = (fderiv ...) 1.
+  have h_deriv : deriv (((chartAt (H := ℂ) (γ (Jacobians.smoothStep01 t))).toFun ∘ γ) ∘
+        Jacobians.smoothStep01) t =
+      Jacobians.smoothStep01_deriv t • Jacobians.pathSpeed γ (Jacobians.smoothStep01 t) :=
+    h_comp.deriv
+  -- `deriv f x = (fderiv ℝ f x) 1` (unfold).
+  have h_lhs_eq : (fderiv ℝ
+      (((chartAt (H := ℂ) (γ (Jacobians.smoothStep01 t))).toFun ∘ γ) ∘
+        Jacobians.smoothStep01) t) 1 =
+      Jacobians.smoothStep01_deriv t • Jacobians.pathSpeed γ (Jacobians.smoothStep01 t) := by
+    rw [← h_deriv]
+    rfl
+  rw [h_lhs_eq]
+  -- Convert `r • z` (ℝ acting on ℂ) to `(r : ℂ) * z`.
+  exact Complex.real_smul
+
 /-- **PeriodVec is invariant under `smoothStep01` reparameterization.**
 
 The line integral of a 1-form along a path is invariant under
