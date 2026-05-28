@@ -393,12 +393,40 @@ This closed loop's periodVec is in `truePeriodLattice X` by
 **Status.** The Lean proof needs three sub-pieces, each ~50-150 LOC:
 
 (a) `localLift_eq_constants_add_periodVec_ChartBallPath`: chart-coord
-    integral equals path-integral. The non-trivial step — the
-    `pathSpeed` uses `chartAt ℂ (γ t)` (chart at path point), which
-    may differ from `chartAt ℂ Q₀`. But `(periodBasisForm i).toFun
-    (γ t)` is chart-independent (it's a global section), and using
-    `localRep`'s trivialization gives a chart-Q₀-frame expression
-    that matches the chart-coord integral.
+    integral equals path-integral.
+
+    **Mathematical resolution (chart-frame cancellation by 1-form
+    covariance).** For `γ := ChartBallPath Q₀ Q₀ Q` and `α :=
+    periodBasisForm X i`, the path-integral integrand is
+    `α.toFun (γ t) (pathSpeed γ t)`. This uses `chartAt (γ t)`-frame
+    in `pathSpeed`, but the value is intrinsic (1-form against
+    tangent vector).
+
+    Compute in chart-Q₀ frame: let `h := chartAt (γ t) ∘ chartAt Q₀.
+    symm` (the transition map). Then:
+    * `pathSpeed γ t = h'(z(γt)) * (z - z₀)` (chain rule on
+      `chartAt(γt) ∘ γ = h ∘ (chartAt(Q₀) ∘ γ)` evaluated at the
+      chart-Q₀-frame derivative `(z - z₀)`).
+    * The 1-form transforms covariantly: `α_γt(w) = α_Q₀(h⁻¹(w)) /
+      h'(h⁻¹(w))`.
+    * Hence `α.toFun (γt) v = α_γt(chartAt(γt)(γt)) · v` (in
+      chart-γt frame) `= α_Q₀(z(γt))/h'(z(γt)) · v`.
+
+    Plugging in `v = pathSpeed γ t = h'(z(γt)) · (z - z₀)`:
+    `α.toFun (γt) (pathSpeed γt) = α_Q₀(z(γt)) · (z - z₀)`. The
+    transition `h'` cancels exactly.
+
+    And `α_Q₀(z(γt)) = localRep α Q₀ (γt) = chartFormCoeff Q₀ i
+    (z₀ + t(z - z₀))`. So pointwise, the path-integral integrand
+    equals the chart-coord integrand. `intervalIntegral.integral_congr`
+    then gives equality of integrals.
+
+    **Lean formalization cost.** ~150-300 LOC: requires manipulating
+    `Trivialization.symmL`, `ContinuousLinearMap.smul_apply`, chain
+    rule via `pathSpeed_comp_eq_mfderiv`-style decomposition. The
+    chart `(chartAt Q₀).symm` isn't a global manifold map, so direct
+    use of `pathSpeed_comp_eq_mfderiv` doesn't apply — we'd need a
+    chart-restricted variant.
 
 (b) `periodVec_concat` (PROVEN) + integrability bookkeeping on the
     concatenation of `smoothPath P Q₀` and `ChartBallPath Q₀ Q₀ Q`.
