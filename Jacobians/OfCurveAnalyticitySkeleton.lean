@@ -1564,7 +1564,10 @@ lemma isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
       have h_sub_diff : DifferentiableAt ℝ (fun s : ℝ => 2 * s - 1) t :=
         ((differentiableAt_const _).mul differentiableAt_id).sub (differentiableAt_const _)
       exact h_inner_diff.comp t h_sub_diff
-  · -- integrable for each basis form
+  · -- integrable for each basis form: requires IntervalIntegrable.comp_mul_left + comp_sub_right
+    -- substitutions which have finiteness defaults that don't auto-discharge for our integrand.
+    -- The structural argument: split [0,1] into [0,1/2] ∪ [1/2,1], use pathSpeed_concat_left/right
+    -- + linearity to get 2 * γ₁_integrand(2t) and 2 * γ₂'_integrand(2t-1), then congr_ae.
     sorry
 
 /-- **periodVec of the concat = difference of periodVecs** for our paths.
