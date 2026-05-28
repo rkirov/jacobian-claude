@@ -259,7 +259,32 @@ for the construction. The `IsSmoothPath` proof (`isSmoothPath_smoothPath`
 below) remains owed; the definition itself is now honest. -/
 noncomputable def smoothPath (P Q : X) : ℝ → X := Jacobians.smoothPathRaw P Q
 
-/-- The chosen smooth path satisfies `IsSmoothPath`. -/
+/-- Boundary value: `smoothPath P Q 0 = P` (immediate from `smoothPathRaw_zero`). -/
+@[simp] lemma smoothPath_zero (P Q : X) : smoothPath P Q 0 = P :=
+  Jacobians.smoothPathRaw_zero P Q
+
+/-- Boundary value: `smoothPath P Q 1 = Q` (immediate from `smoothPathRaw_one`). -/
+@[simp] lemma smoothPath_one (P Q : X) : smoothPath P Q 1 = Q :=
+  Jacobians.smoothPathRaw_one P Q
+
+/-- The chosen smooth path satisfies `IsSmoothPath`.
+
+The `start` and `finish` fields are immediate via `smoothPathRaw_zero` /
+`_one`. The `cont` / `diff` / `integrable` fields remain owed — they
+require:
+
+* `cont`: piecewise continuity of the chart-cover glue, plus matching
+  values at junctions (both pieces evaluate to `path (k/n)` at `t = k/n`).
+* `diff`: in the interior of each piece, the chart-pullback derivative
+  exists (ChartBallPath is `c.symm`-of-affine, and the linear interp's
+  derivative is well-defined); at junctions, `smoothStep01`'s vanishing
+  derivative makes the C¹ glue work. Chart transitions on `X` are analytic
+  (since `IsManifold 𝓘(ℂ) ω X`), so the composition with `chartAt ℂ (γ t)`
+  stays differentiable.
+* `integrable`: the integrand is `(periodBasisForm X i) (γ t) (pathSpeed γ t)`
+  — bounded and piecewise continuous on `[0,1]`, hence interval-integrable.
+
+These are the next-session pieces. -/
 theorem isSmoothPath_smoothPath (P Q : X) :
     IsSmoothPath P Q (smoothPath P Q) := sorry
 
