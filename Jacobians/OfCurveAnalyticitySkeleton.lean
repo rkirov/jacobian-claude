@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Jacobians.PeriodLattice
 import Jacobians.Discharge.Manifold.ContMDiffOmegaAnalytic
+import Jacobians.Montel.Compactness
 import Mathlib.Analysis.Complex.HasPrimitives
 import Mathlib.Analysis.Complex.CauchyIntegral
 
@@ -64,32 +65,28 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-- **Chart-pulled-back periodBasisForm at a chart-coord point.**
 
 Given `Q₀ : X` with chart `e := chartAt ℂ Q₀`, and a chart-coordinate
-`z ∈ e.target`, the chart-pulled-back periodBasisForm is the action
-of `(periodBasisForm X i)` at `e.symm z` against `(1 : ℂ)` viewed as
-a chart-coord tangent vector.
+`z ∈ e.target`, the chart-pulled-back periodBasisForm is the value of
+the form's **local representative** (from `Jacobians.Montel.LocalRep`)
+at the point `e.symm z`.
 
-Equivalently: the local coefficient of `ω_i` in the chart `e`. By
-`HolomorphicOneForms`, this is holomorphic in `z` on `e.target`. -/
+The local representative `localRep α x₀ y` evaluates `α.toFun y` at
+the canonical tangent vector at `y` induced by the trivialization of
+the tangent bundle at `x₀` (applied to the unit `1 : ℂ`). It is the
+coefficient of `dz` in the chart-coord expression of `α`. -/
 noncomputable def chartFormCoeff (Q₀ : X) (i : Fin (genus X)) (z : ℂ) : ℂ :=
-  (periodBasisForm X i).toFun ((chartAt (H := ℂ) Q₀).symm z) (1 : ℂ)
+  Jacobians.Montel.localRep (periodBasisForm X i) Q₀
+    ((chartAt (H := ℂ) Q₀).symm z)
 
 /-- **The chart-form coefficient is holomorphic on the chart target.**
 
-Classical content: `periodBasisForm X i` is a holomorphic 1-form, so
-its coefficient in any chart is a holomorphic function of the chart
-coordinate. The Lean route requires unfolding `HolomorphicOneForms`
-to extract the analyticity of the coefficient. -/
+PROVEN: direct corollary of `Jacobians.Montel.localRep_analyticOn_chartTarget`
+(the existing chart-coord analyticity of `localRep`, proven via
+`localRep_contMDiffOn` + `contDiffOn_omega_iff_analyticOn`). -/
 theorem chartFormCoeff_differentiableOn (Q₀ : X) (i : Fin (genus X)) :
     DifferentiableOn ℂ (chartFormCoeff (X := X) Q₀ i)
-      ((chartAt (H := ℂ) Q₀).target) := by
-  -- `HolomorphicOneForms X` records (in its bundle structure) that
-  -- the chart-coord coefficients are holomorphic. Extraction from
-  -- the bundle structure is mechanical but requires unfolding the
-  -- `HolomorphicOneForms` definition.
-  --
-  -- TODO(content): replay the chart-trivialization of the holomorphic
-  -- 1-form bundle and extract the local section's analyticity.
-  sorry
+      ((chartAt (H := ℂ) Q₀).target) :=
+  (Jacobians.Montel.localRep_analyticOn_chartTarget
+    (periodBasisForm X i) Q₀).differentiableOn
 
 /-- **A holomorphic function on an open ball has an analytic primitive.**
 
