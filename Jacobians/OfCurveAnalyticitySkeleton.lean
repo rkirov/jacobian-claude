@@ -1270,25 +1270,74 @@ noncomputable def smoothPathSmooth (P Q : X) : ℝ → X :=
 
 /-- **PeriodVec invariance for smoothPath under `smoothStep01`**.
 
-Direct corollary of `periodVec_smoothStep01_comp_eq_generic` applied to
-`smoothPath P Q`, whose chart-pullback differentiability and integrand
-continuity come from `Jacobians.isSmoothPath_smoothPath`. -/
+Uses `MeasureTheory.integral_image_eq_integral_deriv_smul_of_monotoneOn`
+which only requires MonotoneOn (no ContinuousOn of integrand).
+This is the key insight: even though smoothPath isn't C¹, the
+substitution formula still holds via monotonicity. -/
 lemma periodVec_smoothPathSmooth_eq (P Q : X) :
     Jacobians.periodVec (smoothPathSmooth P Q) =
     Jacobians.periodVec (Jacobians.smoothPath P Q) := by
-  show Jacobians.periodVec (Jacobians.smoothPath P Q ∘ Jacobians.smoothStep01) =
-      Jacobians.periodVec (Jacobians.smoothPath P Q)
-  apply periodVec_smoothStep01_comp_eq_generic
-  · -- Chart-pullback diff at each s ∈ [0, 1] from IsSmoothPath.diff.
-    intro s hs
-    have h_uIcc : s ∈ Set.uIcc (0 : ℝ) 1 := by
-      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact hs
-    exact (Jacobians.isSmoothPath_smoothPath P Q).diff s h_uIcc
-  · -- ContinuousOn of integrand on [0, 1] — sorry (needs continuity of
-    -- pathSpeed for smoothPath). The IsSmoothPath.integrable field gives
-    -- only integrability, not continuity. Continuity could be derived from
-    -- C¹-ness of the chart-pullback but that's not directly available.
-    sorry
+  funext i
+  set h : ℝ → ℂ := fun u =>
+    (periodBasisForm X i).toFun (Jacobians.smoothPath P Q u)
+      (Jacobians.pathSpeed (Jacobians.smoothPath P Q) u) with hh_def
+  have h_smoothPath := Jacobians.isSmoothPath_smoothPath P Q
+  -- The integrand of `periodVec smoothPathSmooth` equals σ' • h ∘ σ pointwise on [0,1].
+  -- Goal: ∫_0..1 (integrand smoothPathSmooth) = ∫_0..1 h.
+  show ∫ t in (0:ℝ)..1, (periodBasisForm X i).toFun (smoothPathSmooth P Q t)
+      (Jacobians.pathSpeed (smoothPathSmooth P Q) t) = ∫ u in (0:ℝ)..1, h u
+  -- Step 1: rewrite LHS integrand as σ' • (h ∘ σ).
+  have h_eq : ∀ t ∈ Set.uIcc (0:ℝ) 1,
+      (periodBasisForm X i).toFun (smoothPathSmooth P Q t)
+        (Jacobians.pathSpeed (smoothPathSmooth P Q) t) =
+      Jacobians.smoothStep01_deriv t • h (Jacobians.smoothStep01 t) := by
+    intro t ht
+    show (periodBasisForm X i).toFun
+        (Jacobians.smoothPath P Q (Jacobians.smoothStep01 t))
+        (Jacobians.pathSpeed (Jacobians.smoothPath P Q ∘ Jacobians.smoothStep01) t) =
+        Jacobians.smoothStep01_deriv t • h (Jacobians.smoothStep01 t)
+    have hs_uIcc : Jacobians.smoothStep01 t ∈ Set.uIcc (0:ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+      exact Jacobians.smoothStep01_mem_unit t
+    have hγ_diff := h_smoothPath.diff (Jacobians.smoothStep01 t) hs_uIcc
+    have h_speed := pathSpeed_smoothStep01_comp_eq (Jacobians.smoothPath P Q) t hγ_diff
+    rw [h_speed]
+    have h_lin : ((periodBasisForm X i).toFun
+          (Jacobians.smoothPath P Q (Jacobians.smoothStep01 t)))
+        ((Jacobians.smoothStep01_deriv t : ℂ) *
+          Jacobians.pathSpeed (Jacobians.smoothPath P Q) (Jacobians.smoothStep01 t)) =
+      (Jacobians.smoothStep01_deriv t : ℂ) *
+        ((periodBasisForm X i).toFun
+          (Jacobians.smoothPath P Q (Jacobians.smoothStep01 t)))
+          (Jacobians.pathSpeed (Jacobians.smoothPath P Q) (Jacobians.smoothStep01 t)) := by
+      have h_ml := ((periodBasisForm X i).toFun
+          (Jacobians.smoothPath P Q (Jacobians.smoothStep01 t))).map_smul
+        (Jacobians.smoothStep01_deriv t : ℂ)
+        (Jacobians.pathSpeed (Jacobians.smoothPath P Q) (Jacobians.smoothStep01 t))
+      simp only [smul_eq_mul] at h_ml
+      exact h_ml
+    rw [h_lin]
+    show (Jacobians.smoothStep01_deriv t : ℝ) • h (Jacobians.smoothStep01 t) =
+        (Jacobians.smoothStep01_deriv t : ℂ) * h (Jacobians.smoothStep01 t)
+    exact Complex.real_smul
+  rw [intervalIntegral.integral_congr h_eq]
+  -- Step 2: apply substitution formula.
+  -- Goal: ∫_0..1 σ' • (h ∘ σ) = ∫_0..1 h.
+  -- Convert interval integral to Bochner via Icc:
+  have h_convert : ∀ (f : ℝ → ℂ),
+      ∫ t in (0:ℝ)..1, f t = ∫ t in Set.Icc (0:ℝ) 1, f t := fun f => by
+    rw [intervalIntegral.integral_of_le (by norm_num : (0:ℝ) ≤ 1)]
+    rw [MeasureTheory.integral_Icc_eq_integral_Ioc]
+  rw [h_convert (fun t => Jacobians.smoothStep01_deriv t • h (Jacobians.smoothStep01 t))]
+  rw [h_convert h]
+  -- Apply integral_image_eq_integral_deriv_smul_of_monotoneOn.
+  have h_subst := MeasureTheory.integral_image_eq_integral_deriv_smul_of_monotoneOn
+    (s := Set.Icc (0:ℝ) 1) measurableSet_Icc
+    (f := Jacobians.smoothStep01) (f' := Jacobians.smoothStep01_deriv)
+    (fun x _ => (Jacobians.smoothStep01_hasDerivAt_explicit x).hasDerivWithinAt)
+    Jacobians.smoothStep01_monotoneOn_Icc h
+  rw [Jacobians.smoothStep01_image_Icc] at h_subst
+  exact h_subst.symm
 
 /-- `smoothPathSmooth` is an `IsSmoothPath`, with zero derivative at
 endpoints (via `smoothStep01`'s zero boundary derivatives). Closes
