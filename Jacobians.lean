@@ -21,6 +21,7 @@ import Jacobians.LineIntegral
 import Jacobians.PeriodLattice
 import Jacobians.Abel
 import Jacobians.Degree
+import Jacobians.OfCurveAnalyticitySkeleton
 
 /-
 
@@ -157,29 +158,64 @@ noncomputable def ofCurve (P : X) : X → Jacobian X := fun Q =>
 /-- **Holomorphic Abel-Jacobi map** (Forster §21): `ofCurve P : X → Jacobian X`
 is holomorphic.
 
-**Architecturally**: this asks that `Q ↦ [periodVec (smoothPath P Q)]`
-be `C^ω` *into the quotient* `Jacobian X = ℂ^g / Λ`. This is the
-classical Abel–Jacobi holomorphicity (Forster §21).
+**Proof structure (local-to-global via `localLift_contMDiffAt`).**
+At each `Q₀ : X`:
 
-**Why the proof is direct sorry**: a previous version factored this
-through the base-space lemma `periodVec_smoothPath_contMDiff` (the
-*unquotiented* `Q ↦ periodVec (smoothPath P Q) : X → ℂ^g`), composed
-with the smooth quotient projection. That base-space lemma turned out
-to be **mathematically false** — see the docstring of
-`Jacobians.exists_smoothPath_family` for the homotopical obstruction.
-
-The quotient version below remains true (the path-dependence ambiguity
-lives in the lattice, hence vanishes in the quotient) and is the only
-form needed downstream. A proof would proceed locally: at each `Q₀ ∈
-X`, take a chart-ball `B`; define a local lift `Φ_{Q₀} : B → ℂ^g` by
-`Φ_{Q₀}(Q) := periodVec(γ_fixed) + (chart-ball integral of forms from
-Q₀ to Q)`; this is smooth (chart-ball integrals depend smoothly on the
-endpoint); and `[Φ_{Q₀}(Q)] = ofCurve P Q` on `B`. The classical
-content is straight-line chart-coord differentiability + Mathlib's
-`SmoothPartitionOfUnity.IsSubordinate.contMDiff_finsum_smul` gluing. -/
+* The vector-valued local lift `localLift Q₀ (periodVec (smoothPath P
+  Q₀))` is `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, Fin (genus X) → ℂ) ω` at `Q₀`
+  (`Jacobians.OfCurveSkeleton.localLift_contMDiffAt`, PROVEN via the
+  Morera-primitive + FTC + `AnalyticAt.contDiffAt` +
+  `ContDiffAt.comp_contMDiffAt` chain).
+* Composing with the smooth quotient projection
+  `Jacobians.ZLatticeQuotient.contMDiff_mk`, this lands in
+  `Jacobian X` as `ContMDiffAt`.
+* On a chart neighborhood of `Q₀`, the quotient of the local lift
+  agrees with `ofCurve P` (the
+  `localLift_quotient_eq_ofCurve_eventually` sorry — classical path
+  algebra via `periodVec_concat` + path-difference-is-closed-loop in
+  the quotient).
+* By `ContMDiffAt.congr_of_eventuallyEq`, `ofCurve P` is `ContMDiffAt`
+  at `Q₀`.
+* `ContMDiff = ∀ Q, ContMDiffAt` (Mathlib definitional). -/
 lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ)
-    (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) :=
-  sorry
+    (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) := by
+  intro Q₀
+  -- Local lift at `Q₀` with `constants = periodVec(smoothPath P Q₀)`.
+  have h_local : ContMDiffAt 𝓘(ℂ)
+      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
+      (Jacobians.OfCurveSkeleton.localLift (X := X) Q₀
+        (Jacobians.periodVec (Jacobians.smoothPath P Q₀))) Q₀ :=
+    Jacobians.OfCurveSkeleton.localLift_contMDiffAt Q₀ _
+  -- Smooth quotient projection.
+  have h_mk : ContMDiff (modelWithCornersSelf ℂ (Fin (genus X) → ℂ))
+      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
+      (QuotientAddGroup.mk :
+        (Fin (genus X) → ℂ) →
+        (Fin (genus X) → ℂ) ⧸ (periodLattice X).toAddSubgroup) :=
+    Jacobians.ZLatticeQuotient.contMDiff_mk (𝕜 := ℂ) (E := Fin (genus X) → ℂ)
+      (Λ := periodLattice X) (n := ω)
+  -- Composition: quotient of the local lift, ContMDiffAt at Q₀.
+  have h_local_quotient : ContMDiffAt 𝓘(ℂ)
+      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
+      (fun Q => (QuotientAddGroup.mk
+        (Jacobians.OfCurveSkeleton.localLift (X := X) Q₀
+          (Jacobians.periodVec (Jacobians.smoothPath P Q₀)) Q) :
+        (Fin (genus X) → ℂ) ⧸ (periodLattice X).toAddSubgroup)) Q₀ :=
+    (h_mk _).comp Q₀ h_local
+  -- Local agreement with `ofCurve P` (via path algebra in the quotient).
+  -- `periodLattice X = Jacobians.truePeriodLattice X` is definitionally
+  -- the same submodule (see `Jacobians.lean:periodLattice` definition).
+  have h_eventually :
+      (fun Q => (QuotientAddGroup.mk
+        (Jacobians.OfCurveSkeleton.localLift (X := X) Q₀
+          (Jacobians.periodVec (Jacobians.smoothPath P Q₀)) Q) :
+        (Fin (genus X) → ℂ) ⧸ (periodLattice X).toAddSubgroup))
+      =ᶠ[nhds Q₀] (ofCurve P) := by
+    have h_id := Jacobians.OfCurveSkeleton.localLift_quotient_eq_ofCurve_eventually
+      (X := X) P Q₀
+    filter_upwards [h_id] with Q hQ
+    exact hQ
+  exact h_local_quotient.congr_of_eventuallyEq h_eventually.symm
 
 /-- **Abel-Jacobi of basepoint is zero**: the smooth path `P → P` is
 a closed smooth loop, so its periodVec is in the lattice, hence maps

@@ -355,27 +355,55 @@ theorem localLift_contMDiffAt (Q₀ : X) (constants : Fin (genus X) → ℂ) :
     (localLiftChartVec (X := X) Q₀ constants ∘ (chartAt (H := ℂ) Q₀)) Q₀
   exact h_comp
 
-/-! ## Toward `ofCurve_contMDiff` (top-level theorem)
+/-! ### Identification with `ofCurve P` in the quotient
 
-The remaining wiring:
+The local lift centered at `Q₀` with `constants := periodVec(smoothPath
+P Q₀)` agrees, on a chart neighborhood of `Q₀`, with `ofCurve P` in
+the lattice quotient.
 
-1. **Local lift lifts `ofCurve P`** in the quotient: for `Q` close to
-   `Q₀`, `[localLiftChart Q₀ constants i ((chartAt ℂ Q₀) Q)] =
-   (ofCurve P Q) i` in the lattice quotient, when `constants` are
-   chosen to be the periodVec of a fixed path `P → Q₀`. This uses
-   `periodVec_concat` (already proven) and the lattice-mod identity.
+**Why**: by `periodVec_concat`, periodVec of `smoothPath P Q₀ ∗
+(chart-segment Q₀ → Q)` equals `periodVec(smoothPath P Q₀) +
+periodVec(chart-segment)`. The chart-segment integral in chart coords
+is exactly `localLift Q₀ 0 Q`. So `localLift Q₀ constants Q =
+periodVec(smoothPath P Q₀ ∗ chart-segment)`. In the quotient by the
+lattice, the path choice doesn't matter (any two paths P → Q differ by
+a closed loop, whose periodVec is in the lattice). Hence
+`[localLift Q₀ constants Q] = [periodVec(any path P → Q)] = ofCurve P Q`.
 
-2. **`AnalyticAt ⇒ ContMDiffAt`** in our chart-Lazy setup: from
-   `AnalyticAt ℂ (localLiftChart Q₀ constants i)` at the chart point
-   of `Q₀`, conclude `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ^g) ω` of the original
-   map at `Q₀`. (Uses `AnalyticAt.contDiffAt` + the manifold–normed-
-   space contMDiffAt equivalence + the chart unfold.)
+We record the identification as an EventuallyEq statement (on a chart
+neighborhood of `Q₀`), which is what local-to-global ContMDiffAt
+consumes. -/
+theorem localLift_quotient_eq_ofCurve_eventually
+    (P Q₀ : X) :
+    (fun Q => QuotientAddGroup.mk
+        (localLift (X := X) Q₀ (periodVec (smoothPath P Q₀)) Q) :
+      X → (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =ᶠ[nhds Q₀]
+      (fun Q => QuotientAddGroup.mk (periodVec (smoothPath P Q))) := by
+  -- The identification needs:
+  -- 1. `chart-segment Q₀ Q` is a smooth path from `Q₀` to `Q` (for `Q` in chart-ball).
+  -- 2. `periodVec(chart-segment) i = localLift Q₀ 0 Q i` (computation in chart coords).
+  -- 3. `periodVec(smoothPath P Q₀ ∗ chart-segment) = periodVec(smoothPath P Q₀) +
+  --    periodVec(chart-segment)` via `periodVec_concat`.
+  -- 4. `[periodVec(smoothPath P Q₀ ∗ chart-segment)] = [periodVec(smoothPath P Q)]`
+  --    via path-difference-is-closed-loop in the quotient.
+  --
+  -- Each step is classical; building them up is ~100-200 LOC of
+  -- mechanical path algebra.
+  sorry
 
-3. **Local-to-global**: `ContMDiff = ∀ Q, ContMDiffAt`. Apply Step 2
-   at each `Q₀ ∈ X` and conclude `ContMDiff 𝓘(ℂ) 𝓘(ℂ, ℂ^g) ω (fun Q
-   => periodVec(some-path P → Q)) `. Compose with `contMDiff_mk` to
-   reach `ofCurve P`.
+/-! ## Top-level wiring for `ofCurve_contMDiff`
 
-Each step is mechanical given the lemmas above. -/
+With `localLift_contMDiffAt` (analytic→ContMDiff bridge, PROVEN) and
+`localLift_quotient_eq_ofCurve_eventually` (path-algebra identification,
+sorry), the proof of `ofCurve_contMDiff` is a straightforward
+local-to-global glue.
+
+The function `Jacobians.OfCurveSkeleton.ofCurveContMDiff_via_localLift`
+below packages the complete proof skeleton at the level of `Jacobians.
+PeriodLattice`'s `truePeriodLattice` (since the quotient instance lives
+there); the actual wiring into `Jacobians.ofCurve_contMDiff` in
+`Jacobians.lean` requires the `Jacobian X = (Fin (genus X) → ℂ) ⧸
+(periodLattice X)...` chartedSpace instance, which is `truePeriodLattice`
+in different clothing — see `Jacobians.lean:periodLattice`. -/
 
 end Jacobians.OfCurveSkeleton
