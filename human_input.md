@@ -557,3 +557,21 @@ returns only `[propext, Classical.choice, Quot.sound]` — no `sorryAx`.
 The structural-reduction phase is essentially complete — every remaining
 sorry is a substantive classical theorem from Forster Ch. III §§16-21 +
 Riemann bilinear (Forster §§20-21) + residue (§4.24) + uniformization (§16).
+
+### Final autonomous summary (commit `facc998`)
+
+Added `isSmoothPath_const` as a foundational kernel-clean lemma —
+the constant path is a smooth loop. Doesn't directly close any sorry,
+but provides a clean `IsSmoothPath P P` instance for the eventual
+piecewise-glue construction (where many sub-pieces may collapse to
+constants under specific arrangements).
+
+Stopped here. The natural next building block is `IsSmoothPath.concat`
+with smoothstep junction reparametrization — but that's ~200 LOC of
+careful chain-rule + interval-integral work, and the more-fundamental
+`exists_smoothPath_family` requires this plus the chart-transition
+analyticity for the diff field. Multi-session.
+
+**Total autonomous session totals:** 17 → 8 sorries (9 net closures
++ several real new theorems). Repo at ~20.3k LOC, 60 .lean files,
+12 commits today on main. Not pushed.
