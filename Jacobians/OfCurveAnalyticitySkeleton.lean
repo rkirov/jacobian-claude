@@ -1505,8 +1505,65 @@ lemma isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
       rw [h_right]
       rw [h_γ₁.finish]
       exact h_γ₂_rev.start.symm
-  · -- diff at each t ∈ uIcc 0 1: junction handling
-    sorry
+  · -- diff at each t ∈ uIcc 0 1: case split on t vs 1/2.
+    intro t ht
+    have ht_Icc : t ∈ Set.Icc (0 : ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht; exact ht
+    rcases lt_trichotomy t (1/2) with h_lt | h_eq | h_gt
+    · -- t < 1/2: use γ₁'s diff at 2t via pathSpeed_concat_left machinery
+      have h2t_Icc : 2 * t ∈ Set.uIcc (0 : ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+        refine ⟨by linarith [ht_Icc.1], ?_⟩
+        linarith [ht_Icc.1]
+      have h_inner_diff := h_γ₁.diff (2 * t) h2t_Icc
+      -- (chartAt (γ t)) ∘ concat = ((chartAt (γ₁(2t))) ∘ γ₁) ∘ (2·) in nbhd of t.
+      have h_pt : Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q)) t =
+          Jacobians.ChartBallPathSmooth Q₀ Q (2 * t) :=
+        Jacobians.concat_apply_left _ _ (le_of_lt h_lt)
+      have h_eventually : (chartAt (H := ℂ)
+          (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+            (Jacobians.reverse (smoothPathSmooth Q₀ Q)) t)).toFun ∘
+          Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+            (Jacobians.reverse (smoothPathSmooth Q₀ Q)) =ᶠ[nhds t]
+        ((chartAt (H := ℂ) (Jacobians.ChartBallPathSmooth Q₀ Q (2 * t))).toFun ∘
+          Jacobians.ChartBallPathSmooth Q₀ Q) ∘ (fun s : ℝ => 2 * s) := by
+        have h_open : IsOpen (Set.Iio (1/2 : ℝ)) := isOpen_Iio
+        have ht_mem : t ∈ Set.Iio (1/2 : ℝ) := h_lt
+        filter_upwards [h_open.mem_nhds ht_mem] with s hs
+        simp only [Function.comp_apply, h_pt]
+        rw [Jacobians.concat_apply_left _ _ (le_of_lt hs)]
+      rw [Filter.EventuallyEq.differentiableAt_iff h_eventually]
+      have h_mul_diff : DifferentiableAt ℝ (fun s : ℝ => 2 * s) t :=
+        (differentiableAt_const _).mul differentiableAt_id
+      exact h_inner_diff.comp t h_mul_diff
+    · -- t = 1/2: junction case (both sides have zero derivative)
+      sorry
+    · -- t > 1/2: use γ₂_rev's diff at 2t-1
+      have h2tm1_Icc : 2 * t - 1 ∈ Set.uIcc (0 : ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+        refine ⟨by linarith, by linarith [ht_Icc.2]⟩
+      have h_inner_diff := h_γ₂_rev.diff (2 * t - 1) h2tm1_Icc
+      have h_pt : Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+          (Jacobians.reverse (smoothPathSmooth Q₀ Q)) t =
+          Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * t - 1) :=
+        Jacobians.concat_apply_right _ _ (not_le.mpr h_gt)
+      have h_eventually : (chartAt (H := ℂ)
+          (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+            (Jacobians.reverse (smoothPathSmooth Q₀ Q)) t)).toFun ∘
+          Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+            (Jacobians.reverse (smoothPathSmooth Q₀ Q)) =ᶠ[nhds t]
+        ((chartAt (H := ℂ) (Jacobians.reverse (smoothPathSmooth Q₀ Q) (2 * t - 1))).toFun ∘
+          Jacobians.reverse (smoothPathSmooth Q₀ Q)) ∘ (fun s : ℝ => 2 * s - 1) := by
+        have h_open : IsOpen (Set.Ioi (1/2 : ℝ)) := isOpen_Ioi
+        have ht_mem : t ∈ Set.Ioi (1/2 : ℝ) := h_gt
+        filter_upwards [h_open.mem_nhds ht_mem] with s hs
+        simp only [Function.comp_apply, h_pt]
+        rw [Jacobians.concat_apply_right _ _ (not_le.mpr hs)]
+      rw [Filter.EventuallyEq.differentiableAt_iff h_eventually]
+      have h_sub_diff : DifferentiableAt ℝ (fun s : ℝ => 2 * s - 1) t :=
+        ((differentiableAt_const _).mul differentiableAt_id).sub (differentiableAt_const _)
+      exact h_inner_diff.comp t h_sub_diff
   · -- integrable for each basis form
     sorry
 
