@@ -574,11 +574,21 @@ theorem deg_div (f : MeromorphicFunction X) :
   sorry
 
 /-- **Principal divisors have degree 0** (Forster §4.24). Every
-principal divisor sits inside `DivisorOfDegZero X`. Proof uses
-`deg_div` (residue theorem) + closure under addition. -/
+principal divisor sits inside `DivisorOfDegZero X`. Reduces to
+`deg_div` (residue theorem) on each generator and extends to the
+subgroup closure by `AddSubgroup.closure_le`. -/
 theorem PrincipalDivisors_le_DivisorOfDegZero :
-    PrincipalDivisors X ≤ DivisorOfDegZero X :=
-  sorry
+    PrincipalDivisors X ≤ DivisorOfDegZero X := by
+  unfold PrincipalDivisors
+  rw [AddSubgroup.closure_le]
+  intro D hD
+  obtain ⟨f, hf⟩ := hD
+  -- hf : MeromorphicFunction.div X f = D
+  -- Goal: D ∈ DivisorOfDegZero X = (Divisor.deg X).ker
+  -- i.e., Divisor.deg X D = 0. Substitute hf and use deg_div.
+  subst hf
+  show Divisor.deg X (MeromorphicFunction.div X f) = 0
+  exact deg_div X f
 
 /-! ### Abel–Jacobi map (on divisors of degree 0)
 

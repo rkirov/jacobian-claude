@@ -986,21 +986,54 @@ theorem exists_preimageCycle_of_nonconstant
 
 /-- **Trace identity — member case.** For a closed smooth loop `δ`
 in `Y`, the pulled-back period vector `ambientPsi (periodVec δ)` lies
-in `truePeriodLattice X`. Content-gated: branched-cover theory. -/
+in `truePeriodLattice X`. Case-splits on constancy of `f`:
+
+* If `f` is constant, `ambientPsi f hf = 0` (`ambientPsi_eq_zero_of_const`),
+  so the image is `0`, which is in any submodule.
+* If `f` is non-constant, extract a preimage cycle witness via
+  `exists_preimageCycle_of_nonconstant`, then apply the algebraic trace
+  identity `ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle`. -/
 theorem ambientPsi_periodVec_mem_truePeriodLattice
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
     ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
-      truePeriodLattice X :=
-  sorry
+      truePeriodLattice X := by
+  by_cases hconst : ∃ y₀ : Y, ∀ x, f x = y₀
+  · -- Constant case: ambientPsi = 0.
+    rw [ambientPsi_eq_zero_of_const f hf hconst]
+    simp
+  · -- Non-constant case: extract a preimage cycle and apply the algebraic
+    -- reduction.
+    obtain ⟨c⟩ := exists_preimageCycle_of_nonconstant f hf hconst δ hδ
+    exact ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle f hf δ c
 
-/-- `ambientPsi` preserves the period lattice. Content-gated via
-the trace identity (Forster §10.11). -/
+/-- `ambientPsi` preserves the period lattice. Reduces to
+`ambientPsi_periodVec_mem_truePeriodLattice` on closed-loop generators,
+extended to the ℤ-span by `Submodule.span_induction` and `ambientPsi`'s
+ℤ-linearity. (Mirrors the structure of `ambientPhi_preserves_truePeriodLattice`.) -/
 theorem ambientPsi_preserves_truePeriodLattice
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (truePeriodLattice Y).toAddSubgroup ≤
       (truePeriodLattice X).toAddSubgroup.comap
-        (ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
-  sorry
+        (ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom := by
+  show ∀ v ∈ truePeriodLattice Y,
+    ambientPsi (gX := genus X) (gY := genus Y) f hf v ∈ truePeriodLattice X
+  intro v hv
+  refine Submodule.span_induction
+    (p := fun v _ => ambientPsi (gX := genus X) (gY := genus Y) f hf v ∈
+      truePeriodLattice X) ?_ ?_ ?_ ?_ hv
+  · -- Generator case: v = periodVec δ for a closed smooth loop δ in Y.
+    rintro _ ⟨δ, hδ, rfl⟩
+    exact ambientPsi_periodVec_mem_truePeriodLattice f hf δ hδ
+  · -- Zero case.
+    simp
+  · -- Additive case.
+    intro x y _ _ hx hy
+    simp only [map_add]
+    exact Submodule.add_mem _ hx hy
+  · -- ℤ-scalar case.
+    intro r x _ hx
+    simp only [map_zsmul]
+    exact Submodule.smul_mem _ r hx
 
 end Jacobians
