@@ -1428,4 +1428,67 @@ lemma ChartBallPath_chart_at_self_differentiableAt
   -- Both sides apply chartAt (γ t) to γ s = (chartAt anchor).symm (z s).
   exact h_comp
 
+/-! ## ChartBallPath: continuity globally
+
+Under the chart-ball hypothesis (`z(t) ∈ chart.target` for all `t ∈ ℝ`),
+`ChartBallPath` is continuous as a function ℝ → X. This is the
+`IsSmoothPath.cont` field, but requires the chart-ball hypothesis to
+hold globally (not just on `[0,1]`). For local use (chart-cover gluing),
+we'll use this with `s ∈ Icc 0 1` plus extension by constants outside. -/
+
+/-- Continuity of ChartBallPath on the set where the affine `z` stays in
+the chart target. Composition of `Continuous` affine + `ContinuousOn`
+chart inverse. -/
+lemma ChartBallPath_continuousOn_target_set (anchor P Q : X) (S : Set ℝ)
+    (h_target : ∀ t ∈ S,
+      ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q)
+        ∈ (chartAt ℂ anchor).target) :
+    ContinuousOn (ChartBallPath anchor P Q) S := by
+  set z : ℝ → ℂ := fun s : ℝ =>
+    (1 - (s : ℂ)) * (chartAt ℂ anchor) P + (s : ℂ) * (chartAt ℂ anchor) Q
+  have hz_cont : Continuous z := continuous_chart_image_formula anchor P Q
+  have h_inv_cont : ContinuousOn (chartAt ℂ anchor).symm (chartAt ℂ anchor).target :=
+    (chartAt ℂ anchor).continuousOn_invFun
+  unfold ChartBallPath
+  exact h_inv_cont.comp hz_cont.continuousOn h_target
+
+/-- The composition `(chartAt ℂ (γ t)) ∘ γ` is `Continuous` at each `t` in
+the open set where `z(s) ∈ chart.target` near `t`. (Useful for the
+diff-via-eventuallyEq path.) -/
+lemma chart_at_self_comp_continuousAt_of_target_nbhd (anchor P Q : X) (t : ℝ)
+    (h_nbhd : ∀ᶠ s : ℝ in 𝓝 t,
+      ((1 - (s : ℂ)) * (chartAt ℂ anchor) P + (s : ℂ) * (chartAt ℂ anchor) Q)
+        ∈ (chartAt ℂ anchor).target) :
+    ContinuousAt
+      ((chartAt (H := ℂ) (ChartBallPath anchor P Q t)).toFun ∘ ChartBallPath anchor P Q) t := by
+  -- The chart at γ t is continuous at γ t.
+  set γ := ChartBallPath anchor P Q
+  have h_chart_cont : ContinuousAt (chartAt (H := ℂ) (γ t)).toFun (γ t) :=
+    (chartAt ℂ (γ t)).continuousAt (mem_chart_source ℂ (γ t))
+  -- γ is continuous near t (within the target-nbhd).
+  -- For Continuous of composition, need γ continuous at t.
+  have h_γ_cont : ContinuousAt γ t := by
+    -- γ = (chartAt anchor).symm ∘ z. We use ContinuousAt of composition.
+    have h_t_target : ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q)
+        ∈ (chartAt ℂ anchor).target := h_nbhd.self_of_nhds
+    -- Restrict ContinuousOn (chartAt anchor).symm to ContinuousAt at z t.
+    have h_inv_at : ContinuousAt (chartAt ℂ anchor).symm
+        ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q) :=
+      (chartAt ℂ anchor).continuousOn_invFun.continuousAt
+        ((chartAt ℂ anchor).open_target.mem_nhds h_t_target)
+    -- z is continuous everywhere; in particular ContinuousAt t.
+    have h_z_at : ContinuousAt (fun s : ℝ =>
+        (1 - (s : ℂ)) * (chartAt ℂ anchor) P + (s : ℂ) * (chartAt ℂ anchor) Q) t :=
+      (continuous_chart_image_formula anchor P Q).continuousAt
+    -- γ s = (chartAt anchor).symm (z s) for all s.
+    -- ContinuousAt.comp gives us the composition.
+    have h_comp : ContinuousAt
+        ((chartAt ℂ anchor).symm ∘
+          fun s : ℝ => (1 - (s : ℂ)) * (chartAt ℂ anchor) P + (s : ℂ) * (chartAt ℂ anchor) Q)
+        t :=
+      ContinuousAt.comp h_inv_at h_z_at
+    exact h_comp
+  -- Compose: chart ∘ γ continuous at t.
+  exact h_chart_cont.comp h_γ_cont
+
 end Jacobians
