@@ -916,7 +916,7 @@ lemma isSmoothPath_ChartBallPathSmooth (Q₀ Q : X)
   · exact Jacobians.ChartBallPathSmooth.continuous Q₀ Q h_chart_ball
   · intro t _
     exact Jacobians.ChartBallPathSmooth_chart_at_self_differentiableAt Q₀ Q t h_chart_ball
-  · sorry  -- integrable: continuity-on-[0,1] of integrand
+  · sorry  -- integrable: needs pathSpeed_smoothStep01_comp_eq moved up + ContinuousOn argument
 
 /-! ### Reparameterization invariance of periodVec under smoothStep01
 
