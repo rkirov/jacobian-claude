@@ -224,31 +224,60 @@ theorem localLiftChart_analyticAt (Q₀ : X) (constants : Fin (genus X) → ℂ)
     (i : Fin (genus X)) :
     AnalyticAt ℂ (localLiftChart (X := X) Q₀ constants i)
       ((chartAt (H := ℂ) Q₀) Q₀) := by
-  -- Pick `r` small enough that `Metric.ball ((chartAt ℂ Q₀) Q₀) r ⊆
-  -- (chartAt ℂ Q₀).target`. (Standard from `e.open_target` and
-  -- `e Q₀ ∈ e.target`.)
-  --
-  -- On that ball, `chartFormCoeff Q₀ i` is `DifferentiableOn ℂ`
-  -- (`chartFormCoeff_differentiableOn`).
-  --
-  -- `exists_analytic_primitive_on_ball` gives `g` with `HasDerivAt g
-  -- (chartFormCoeff Q₀ i z) z` for all `z` in the ball, and
-  -- `AnalyticOn ℂ g (ball)`.
-  --
-  -- `segmentIntegral_eq_primitive_diff` rewrites
-  -- `∫_0^1 chartFormCoeff(z₀ + t(z-z₀)) (z-z₀) dt = g(z) - g(z₀)`.
-  --
-  -- So `localLiftChart Q₀ constants i z = constants i + g(z) - g(z₀)
-  -- = (constants i - g(z₀)) + g(z)`.
-  --
-  -- Since `g` is `AnalyticOn` and the chart point `z₀` is in the
-  -- ball, `g` is `AnalyticAt ℂ` at `z₀`. Adding a constant preserves
-  -- `AnalyticAt ℂ`.
-  --
-  -- TODO(content): chain the three lemmas (chartFormCoeff_diff +
-  -- exists_analytic_primitive_on_ball + segmentIntegral_eq_primitive_diff).
-  -- ~60-100 LOC bookkeeping.
-  sorry
+  -- Step 1: pick a chart ball `Metric.ball z₀ r ⊆ chart.target`.
+  set z₀ : ℂ := (chartAt (H := ℂ) Q₀) Q₀ with hz₀_def
+  have h_open := (chartAt (H := ℂ) Q₀).open_target
+  have h_src : Q₀ ∈ (chartAt (H := ℂ) Q₀).source := mem_chart_source ℂ Q₀
+  have h_mem : z₀ ∈ (chartAt (H := ℂ) Q₀).target :=
+    (chartAt (H := ℂ) Q₀).map_source h_src
+  obtain ⟨r, hr_pos, hr_subset⟩ := Metric.isOpen_iff.mp h_open _ h_mem
+  -- Step 2: `chartFormCoeff` is `DifferentiableOn` on this ball.
+  have hdiff : DifferentiableOn ℂ (chartFormCoeff (X := X) Q₀ i)
+      (Metric.ball z₀ r) :=
+    (chartFormCoeff_differentiableOn Q₀ i).mono hr_subset
+  -- Step 3: analytic primitive on the ball.
+  obtain ⟨g, hg_deriv, hg_ana⟩ := exists_analytic_primitive_on_ball hdiff
+  -- Step 4: continuity of `chartFormCoeff` on the ball (from
+  -- `DifferentiableOn`).
+  have hf_cont : ContinuousOn (chartFormCoeff (X := X) Q₀ i)
+      (Metric.ball z₀ r) := hdiff.continuousOn
+  -- Step 5: On `Metric.ball z₀ r`, the local lift equals
+  -- `constants i + g z - g z₀`.
+  have h_eq : Set.EqOn (localLiftChart (X := X) Q₀ constants i)
+      (fun z => constants i + g z - g z₀) (Metric.ball z₀ r) := by
+    intro z hz
+    -- Apply `segmentIntegral_eq_primitive_diff` with `a = z₀`, `b = z`.
+    -- Segment is contained in the ball (convexity).
+    have hz₀_mem : z₀ ∈ Metric.ball z₀ r := Metric.mem_ball_self hr_pos
+    have hseg : Set.Icc (0 : ℝ) 1 ⊆
+        {t | z₀ + (t : ℂ) * (z - z₀) ∈ Metric.ball z₀ r} := by
+      intro t ht
+      show z₀ + (t : ℂ) * (z - z₀) ∈ Metric.ball z₀ r
+      have h_rewrite : z₀ + (t : ℂ) * (z - z₀) = z₀ + t • (z - z₀) := by
+        rw [Complex.real_smul]
+      rw [h_rewrite]
+      exact (convex_ball z₀ r).add_smul_sub_mem hz₀_mem hz ht
+    have := segmentIntegral_eq_primitive_diff (c := z₀) (r := r)
+      (a := z₀) (b := z) (f := chartFormCoeff (X := X) Q₀ i) (g := g)
+      hz₀_mem hz hseg hf_cont hg_deriv
+    simp only [localLiftChart]
+    rw [this]
+    ring
+  -- Step 6: `(fun z => constants i + g z - g z₀)` is `AnalyticAt` at z₀.
+  -- It's `constants i - g z₀` (constant) plus `g` (analytic at z₀
+  -- since z₀ is in the open ball).
+  have hg_at : AnalyticAt ℂ g z₀ :=
+    hg_ana.analyticAt (Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self hr_pos))
+  have h_target : AnalyticAt ℂ (fun z => constants i + g z - g z₀) z₀ := by
+    have h1 : AnalyticAt ℂ (fun _ : ℂ => constants i) z₀ := analyticAt_const
+    have h2 : AnalyticAt ℂ (fun _ : ℂ => g z₀) z₀ := analyticAt_const
+    exact (h1.add hg_at).sub h2
+  -- Step 7: AnalyticAt is local; conclude via `EventuallyEq`.
+  have h_nhds : (fun z => constants i + g z - g z₀) =ᶠ[nhds z₀]
+      localLiftChart (X := X) Q₀ constants i := by
+    filter_upwards [Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self hr_pos)]
+      with z hz using (h_eq hz).symm
+  exact h_target.congr h_nhds
 
 /-! ## Toward `ofCurve_contMDiff` (top-level theorem)
 
