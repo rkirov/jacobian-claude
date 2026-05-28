@@ -364,3 +364,50 @@ functoriality (we already have functoriality via `ZLatticeQuotient`),
 and the 4k-LOC discharge chain for the witness (deferred — would
 upgrade `degreeFiber` from "fallback-0" to real fibre counts, but
 the textbook content lands in walls 3/5 of Phase C).
+
+## 2026-05-28 — Session N+4 continued (extend port: full discharge chain)
+
+### "Don't preserve structure; rename and repackage"
+
+**When:** after the small `degreeFiber`-only port landed (commit
+`04c4f67`), user asked "what should we work on next" and chose to
+extend the port for the regular-witness discharge. Initial estimate
+was 4k LOC, but the *regular* variant (used by `degreeFiber`) needs
+the critical-set + critical-values-finite machinery, totalling 42
+files / 12,500 LOC. User confirmed: "do that, focus on minimal well
+factored code, rename and repackage as needed."
+**My default (corrected):** Would have erred on preserving the
+external repo's namespaces and file layout verbatim for "audit
+faithfulness." User explicitly authorised renaming/repackaging.
+**Change:** Copied 42 files into `Jacobians/Discharge/{Manifold,
+Divisor}/`, renamed namespace `JacobianChallenge → Jacobians.Discharge`
+via sed, stripped `set_option diagnostics` noise. Added
+`set_option autoImplicit true` per-file because our lakefile's
+`autoImplicit := false` is stricter than external's
+`relaxedAutoImplicit := false` (`ω` from `ContDiff` scope needed
+auto-binding in their setup; we explicitly enable it for the
+ported subtree only). Rewrote `Jacobians/Degree.lean` as a thin
+forwarder providing `Jacobians.*` aliases to the discharge.
+**Takeaway to remember:** lakefile `leanOptions` are inherited
+project-wide; per-file `set_option` overrides at the top of each
+file are the right scope for porting code with different style
+assumptions. Don't try to mass-rewrite imported code; flip the
+option instead.
+
+### What this gives us
+
+`ContMDiff.degree f hf` is now backed by the discharge — for
+non-constant analytic `f`, `Nonempty (RegularValueWitnessReg f)` is
+provable (via
+`Jacobians.regularValueWitnessReg_nonempty_of_nonConstantMap`), so
+`Classical.choice` can extract a real fibre cardinality. **All ported
+declarations remain `#print axioms`-clean**: only `[propext,
+Classical.choice, Quot.sound]`. Sorry count stays at 17 (zero new
+sorries introduced by 12.5k LOC of port).
+
+The 3 local critical-set sorries in `PeriodLattice.lean:984,992,999`
+**are not closed for free** — local `criticalSet` uses
+`{x | mfderiv f x = 0}`, external `criticalSetGeneral` uses
+`{x | ¬ ∃ U, InjOn f U}`. They're classically equivalent (Forster
+planar bridge) but definitionally distinct; closing them requires a
+bridge lemma, deferred.
