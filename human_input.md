@@ -623,3 +623,51 @@ will plug into the chart-transition diff proof when written.
 
 Total LOC for SmoothPath.lean: **1267** (started at 299 this session,
 +968 LOC).
+
+## 2026-05-28 [continued]: Math-error correction in exists_smoothPath_family
+
+### User direction
+> "I don't have expertise to help here. Research Mathlib and make a
+> solid plan then push to finish"
+
+### Action taken: Mathlib API research + math-error correction
+
+Spawned two thorough Explore agents to map the actually-available
+Mathlib API (commit `8e3c989`) for:
+- `ContMDiff` arithmetic (`.add`, `.smul`, `.comp`, etc.)
+- Smooth path machinery (none exists as a packaged type)
+- Parameter-dependent integral smoothness
+- `SmoothPartitionOfUnity` gluing
+- Lebesgue number lemma + chart cover infrastructure
+
+**Critical finding**: The third conjunct of `exists_smoothPath_family`
+in `Jacobians/PeriodLattice.lean` claimed `Q ↦ periodVec(sp P Q)` is
+`C^ω` into the **unquotiented** space `Fin (genus X) → ℂ`. This claim
+is **mathematically false** for any `X` with non-trivial `π_1` (i.e.
+any positive-genus Riemann surface).
+
+*Why it's false:* such a continuous lift would imply
+`(ofCurve P)_* : π_1(X) → π_1(ℂ^g / Λ) = Λ` is zero. But this
+homomorphism *is* the period map of homology classes, which is non-zero
+by the very definition of `Λ`.
+
+### Fix applied
+
+- Removed the false third conjunct from `exists_smoothPath_family`.
+- Removed the dependent lemma `periodVec_smoothPath_contMDiff` (which
+  asserted the false claim).
+- Updated `ofCurve_contMDiff` in `Jacobians.lean` to use a direct sorry
+  with a docstring explaining the quotient version is the right
+  formulation. The quotient version (`Q ↦ [periodVec ...]` into
+  `Jacobian X`) IS mathematically true — the path-dependence ambiguity
+  lives in the lattice and vanishes in the quotient.
+
+### Status
+
+Sorry count: 8 → 9 (one false sorry replaced by two honest sorries: a
+weakened existence + a separate quotient-smoothness claim). The new
+sorry in `ofCurve_contMDiff` is mathematically provable (multi-hundred
+LOC of classical chart-ball integral smoothness + partition-of-unity
+gluing); the previous false sorry was provably-unprovable.
+
+Net: +1 sorry, but mathematical correctness restored.

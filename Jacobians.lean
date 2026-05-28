@@ -155,31 +155,31 @@ noncomputable def ofCurve (P : X) : X → Jacobian X := fun Q =>
   QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P Q))
 
 /-- **Holomorphic Abel-Jacobi map** (Forster §21): `ofCurve P : X → Jacobian X`
-is holomorphic. Composition of two `ContMDiff` ingredients:
+is holomorphic.
 
-* `Jacobians.periodVec_smoothPath_contMDiff P`: base-space smoothness
-  `Q ↦ periodVec (smoothPath P Q)` (from the consolidated
-  `exists_smoothPath_family` existence).
-* `Jacobians.ZLatticeQuotient.contMDiff_mk`: smoothness of the quotient
-  projection `QuotientAddGroup.mk : (Fin (genus X) → ℂ) → Jacobian X`,
-  via the local-homeomorphism chart structure on the period-lattice
-  quotient. -/
+**Architecturally**: this asks that `Q ↦ [periodVec (smoothPath P Q)]`
+be `C^ω` *into the quotient* `Jacobian X = ℂ^g / Λ`. This is the
+classical Abel–Jacobi holomorphicity (Forster §21).
+
+**Why the proof is direct sorry**: a previous version factored this
+through the base-space lemma `periodVec_smoothPath_contMDiff` (the
+*unquotiented* `Q ↦ periodVec (smoothPath P Q) : X → ℂ^g`), composed
+with the smooth quotient projection. That base-space lemma turned out
+to be **mathematically false** — see the docstring of
+`Jacobians.exists_smoothPath_family` for the homotopical obstruction.
+
+The quotient version below remains true (the path-dependence ambiguity
+lives in the lattice, hence vanishes in the quotient) and is the only
+form needed downstream. A proof would proceed locally: at each `Q₀ ∈
+X`, take a chart-ball `B`; define a local lift `Φ_{Q₀} : B → ℂ^g` by
+`Φ_{Q₀}(Q) := periodVec(γ_fixed) + (chart-ball integral of forms from
+Q₀ to Q)`; this is smooth (chart-ball integrals depend smoothly on the
+endpoint); and `[Φ_{Q₀}(Q)] = ofCurve P Q` on `B`. The classical
+content is straight-line chart-coord differentiability + Mathlib's
+`SmoothPartitionOfUnity.IsSubordinate.contMDiff_finsum_smul` gluing. -/
 lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ)
-    (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) := by
-  -- ofCurve P Q = QuotientAddGroup.mk (periodVec (smoothPath P Q)).
-  show ContMDiff 𝓘(ℂ) (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
-    (fun Q => (QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P Q)) :
-      Jacobian X))
-  have h_base : ContMDiff 𝓘(ℂ) (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
-      (fun Q => Jacobians.periodVec (Jacobians.smoothPath P Q)) :=
-    Jacobians.periodVec_smoothPath_contMDiff P
-  have h_mk : ContMDiff (modelWithCornersSelf ℂ (Fin (genus X) → ℂ))
-      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
-      (QuotientAddGroup.mk :
-        (Fin (genus X) → ℂ) → (Fin (genus X) → ℂ) ⧸ (periodLattice X).toAddSubgroup) :=
-    Jacobians.ZLatticeQuotient.contMDiff_mk (𝕜 := ℂ) (E := Fin (genus X) → ℂ)
-      (Λ := periodLattice X) (n := ω)
-  exact h_mk.comp h_base
+    (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) :=
+  sorry
 
 /-- **Abel-Jacobi of basepoint is zero**: the smooth path `P → P` is
 a closed smooth loop, so its periodVec is in the lattice, hence maps
