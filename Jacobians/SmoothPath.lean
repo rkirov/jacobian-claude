@@ -40,6 +40,9 @@ import Mathlib.Analysis.Calculus.ContDiff.Defs
 import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Analysis.Calculus.FDeriv.Add
 import Mathlib.Topology.MetricSpace.Cover
+import Mathlib.Geometry.Manifold.MFDeriv.Defs
+import Mathlib.Geometry.Manifold.MFDeriv.Atlas
+import Mathlib.Geometry.Manifold.MFDeriv.NormedSpace
 
 namespace Jacobians
 
@@ -1262,6 +1265,30 @@ lemma ChartBallPath_anchor_anchor (anchor : X) (t : ℝ) :
 lemma ChartBallPath_endpoint_type (anchor P Q : X) (t : ℝ) :
     ChartBallPath anchor P Q t = ChartBallPath anchor P Q t := rfl
 
-/-! ## End -/
+/-! ## Notes on the remaining IsSmoothPath proof
+
+The Mathlib MFDeriv API does NOT directly give us what we need:
+`MDifferentiableAt I I' f x` requires `I` and `I'` to have the SAME
+scalar field. Our setup has `γ : ℝ → X` with `X : ChartedSpace ℂ` over
+ℂ-field — so attempting `MDifferentiableAt 𝓘(ℝ) 𝓘(ℂ) γ t` fails at
+typeclass synthesis.
+
+Two alternatives for the eventual `IsSmoothPath.diff` proof:
+
+1. **Real-2-manifold view.** A complex 1-manifold is also a smooth real
+   2-manifold via the obvious ℂ ≃ ℝ²-style identification. Set up
+   `ChartedSpace (Fin 2 → ℝ) X` as a derived instance and use
+   `MDifferentiableAt 𝓘(ℝ, Fin 2 → ℝ) 𝓘(ℝ, Fin 2 → ℝ) ...`. Substantial
+   API plumbing.
+
+2. **Direct chart-transition argument.** Use Mathlib's
+   `OpenPartialHomeomorph.MDifferentiable` for chart transitions, plus
+   `IsManifold I ω X`-derived analyticity of transitions. Compose with
+   the affine path manually. Probably 200-500 LOC of focused work.
+
+Either path is genuinely Mathlib-adjacent and beyond a single
+autonomous session. The infrastructure in this file (chart-image
+arithmetic, smoothstep properties, chart-cover lemma, ChartBallPath
+identities) plugs into whichever path is chosen. -/
 
 end Jacobians
