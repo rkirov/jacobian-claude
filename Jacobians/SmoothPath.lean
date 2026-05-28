@@ -1064,6 +1064,154 @@ lemma smoothStep01_continuousOn_open :
   apply ContinuousWithinAt.congr_of_eventuallyEq cubic_continuous.continuousWithinAt h_eq
   exact smoothStep01_of_mem_open t ht.1 ht.2
 
+/-- **`smoothStep01` is globally continuous on ℝ.**
+
+Built via `Continuous.if`: branches agree on the frontier
+(at `t = 0`, both equal `0`; at `t = 1`, both equal `1`). -/
+lemma smoothStep01_continuous : Continuous smoothStep01 := by
+  unfold smoothStep01
+  -- Goal: Continuous (fun t => if t ≤ 0 then 0 else if t ≥ 1 then 1 else 3 * t^2 - 2 * t^3)
+  -- Note: outer `if t ≤ 0` uses `Iic 0`; frontier is `{0}` where cubic(0) = 0.
+  refine Continuous.if ?_ continuous_const ?_
+  · -- ∀ a ∈ frontier {x | x ≤ 0}, (0 : ℝ) = (if a ≥ 1 then 1 else 3 * a^2 - 2 * a^3)
+    intro a ha
+    -- frontier {x | x ≤ 0} = frontier (Iic 0) = {0}
+    have ha_eq : a = 0 := by
+      have h_fr : frontier {x : ℝ | x ≤ 0} = {0} := by
+        change frontier (Set.Iic (0 : ℝ)) = {0}
+        rw [frontier_Iic]
+      rw [h_fr] at ha
+      exact ha
+    subst ha_eq
+    -- Goal: 0 = if (0 : ℝ) ≥ 1 then 1 else 3 * 0^2 - 2 * 0^3
+    have h_not : ¬((0 : ℝ) ≥ 1) := by norm_num
+    rw [if_neg h_not]
+    norm_num
+  · refine Continuous.if ?_ continuous_const ?_
+    · -- ∀ a ∈ frontier {x | x ≥ 1}, (1 : ℝ) = 3 * a^2 - 2 * a^3
+      intro a ha
+      have ha_eq : a = 1 := by
+        have h_fr : frontier {x : ℝ | 1 ≤ x} = {1} := by
+          change frontier (Set.Ici (1 : ℝ)) = {1}
+          rw [frontier_Ici]
+        rw [h_fr] at ha
+        exact ha
+      subst ha_eq
+      norm_num
+    · fun_prop
+
+/-- **`smoothStep01` has derivative `0` at `t = 0`** (zero on both sides). -/
+lemma smoothStep01_hasDerivAt_zero : HasDerivAt smoothStep01 0 0 := by
+  -- For t ≤ 0, smoothStep01 = 0. For 0 < t < 1, smoothStep01 = 3t² - 2t³.
+  -- Derivative at 0 from the left: 0 (constant).
+  -- Derivative at 0 from the right: d/dt(3t² - 2t³)|_{t=0} = 6t - 6t² |_{t=0} = 0.
+  -- Both equal 0; HasDerivAt 0 0 holds.
+  rw [hasDerivAt_iff_isLittleO]
+  rw [Asymptotics.isLittleO_iff]
+  intro ε hε
+  -- Goal: |smoothStep01 (0 + h) - smoothStep01 0 - h • 0| ≤ ε * |h - 0| eventually.
+  -- = |smoothStep01 h - 0 - 0| = |smoothStep01 h| ≤ ε * |h|.
+  -- For |h| small, smoothStep01 h = 0 (h ≤ 0) or = 3h² - 2h³ (0 < h < 1).
+  -- |3h² - 2h³| = |h|² · |3 - 2h| ≤ |h|² · 5 (for |h| < 1).
+  -- For |h| ≤ ε / 5 and |h| < 1: |3h² - 2h³| ≤ 5|h|² = 5|h|·|h| ≤ ε|h|.
+  filter_upwards [Metric.ball_mem_nhds (0 : ℝ) (by positivity : (0 : ℝ) < min (ε / 5) (1 / 2))]
+    with h hh
+  -- hh : h ∈ Metric.ball 0 (min (ε / 5) (1 / 2))
+  simp only [Metric.mem_ball, dist_zero_right, Real.norm_eq_abs] at hh
+  have hh_lt_eps : |h| < ε / 5 := lt_of_lt_of_le hh (min_le_left _ _)
+  have hh_lt_half : |h| < 1 / 2 := lt_of_lt_of_le hh (min_le_right _ _)
+  have hh_lt_one : |h| < 1 := lt_of_lt_of_le hh_lt_half (by norm_num : (1:ℝ)/2 ≤ 1)
+  -- Simplify the goal: |smoothStep01 (0 + h) - smoothStep01 0 - h • 0| ≤ ε * |h - 0|
+  simp only [zero_add, smoothStep01_zero, sub_zero, smul_zero, Real.norm_eq_abs]
+  -- Goal: |smoothStep01 h| ≤ ε * |h|
+  by_cases h_neg : h ≤ 0
+  · -- h ≤ 0: smoothStep01 h = 0
+    rcases eq_or_lt_of_le h_neg with rfl | h_lt
+    · simp
+    · rw [smoothStep01_eqOn_zero h_lt]
+      simp; positivity
+  · push_neg at h_neg
+    -- h > 0; combined with hh_lt_half, h < 1/2 < 1, so 0 < h < 1.
+    have h_lt_one : h < 1 := by
+      have h_abs_le_half : |h| ≤ 1 / 2 := le_of_lt hh_lt_half
+      have h_le_half : h ≤ 1 / 2 := le_trans (le_abs_self h) h_abs_le_half
+      linarith
+    have h_in_open : 0 < h ∧ h < 1 := ⟨h_neg, h_lt_one⟩
+    rw [smoothStep01_of_mem_open h h_in_open.1 h_in_open.2]
+    -- |3h² - 2h³| ≤ ε * |h|
+    have h_abs_eq : |h| = h := abs_of_pos h_neg
+    rw [h_abs_eq]
+    have h_bound : |3 * h^2 - 2 * h^3| ≤ 5 * h^2 := by
+      have : 3 * h^2 - 2 * h^3 = h^2 * (3 - 2 * h) := by ring
+      rw [this, abs_mul]
+      have h_sq_pos : 0 ≤ h^2 := sq_nonneg _
+      rw [abs_of_nonneg h_sq_pos]
+      have h_factor_bound : |3 - 2 * h| ≤ 5 := by
+        rw [abs_le]
+        refine ⟨by linarith [abs_nonneg h, neg_le_abs h], by linarith [abs_nonneg h, le_abs_self h]⟩
+      calc h ^ 2 * |3 - 2 * h| ≤ h ^ 2 * 5 := by
+              exact mul_le_mul_of_nonneg_left h_factor_bound h_sq_pos
+        _ = 5 * h ^ 2 := by ring
+    calc |3 * h^2 - 2 * h^3| ≤ 5 * h^2 := h_bound
+      _ = 5 * h * h := by ring
+      _ ≤ ε * h := by
+          have : 5 * h ≤ ε := by
+            have : |h| < ε / 5 := hh_lt_eps
+            rw [h_abs_eq] at this
+            linarith
+          exact mul_le_mul_of_nonneg_right this (le_of_lt h_neg)
+
+/-- **`smoothStep01` has derivative `0` at `t = 1`** (zero on both sides). -/
+lemma smoothStep01_hasDerivAt_one : HasDerivAt smoothStep01 0 1 := by
+  -- `hasDerivAt_iff_isLittleO`: filter is `𝓝 1`, difference is `x' - 1`.
+  rw [hasDerivAt_iff_isLittleO]
+  rw [Asymptotics.isLittleO_iff]
+  intro ε hε
+  filter_upwards [Metric.ball_mem_nhds (1 : ℝ) (by positivity : (0 : ℝ) < min (ε / 5) (1 / 2))]
+    with x' hx'
+  simp only [Metric.mem_ball, Real.dist_eq, Real.norm_eq_abs] at hx'
+  -- hx' : |x' - 1| < min (ε / 5) (1 / 2)
+  have hx'_lt_eps : |x' - 1| < ε / 5 := lt_of_lt_of_le hx' (min_le_left _ _)
+  have hx'_lt_half : |x' - 1| < 1 / 2 := lt_of_lt_of_le hx' (min_le_right _ _)
+  simp only [smoothStep01_one, smul_zero, sub_zero, Real.norm_eq_abs]
+  -- Goal: |smoothStep01 x' - 1| ≤ ε * |x' - 1|
+  -- Set h := x' - 1
+  set h : ℝ := x' - 1 with hh_def
+  -- x' = 1 + h
+  have hx'_eq : x' = 1 + h := by rw [hh_def]; ring
+  rw [hx'_eq]
+  by_cases h_pos : 0 ≤ h
+  · -- h ≥ 0: 1 + h ≥ 1
+    rcases lt_or_eq_of_le h_pos with h_lt | h_eq
+    · have h_gt_one : (1 : ℝ) < 1 + h := by linarith
+      rw [smoothStep01_eqOn_one h_gt_one]
+      simp
+      positivity
+    · -- h = 0
+      have : h = 0 := h_eq.symm
+      rw [this]; simp
+  · push_neg at h_pos
+    -- h < 0; combined with hx'_lt_half = |h| < 1/2, so -1/2 < h < 0, so 1/2 < 1 + h < 1.
+    have h_abs_eq : |h| = -h := abs_of_neg h_pos
+    have h_gt_neg_half : h > -1/2 := by linarith [hx'_lt_half, h_abs_eq]
+    have h_one_plus_lt : 1 + h < 1 := by linarith
+    have h_one_plus_pos : 1 + h > 0 := by linarith
+    rw [smoothStep01_of_mem_open _ h_one_plus_pos h_one_plus_lt]
+    -- Goal: |3 * (1 + h)^2 - 2 * (1 + h)^3 - 1| ≤ ε * |h|
+    have h_algebra : 3 * (1 + h)^2 - 2 * (1 + h)^3 - 1 = -(h^2 * (3 + 2 * h)) := by ring
+    rw [h_algebra, abs_neg, abs_mul]
+    have h_sq_abs : |h^2| = h^2 := abs_of_nonneg (sq_nonneg _)
+    rw [h_sq_abs]
+    have h_factor_bound : |3 + 2 * h| ≤ 5 := by
+      rw [abs_le]
+      refine ⟨by linarith [abs_nonneg h, neg_le_abs h], by linarith [abs_nonneg h, le_abs_self h]⟩
+    calc h^2 * |3 + 2 * h| ≤ h^2 * 5 := by
+            exact mul_le_mul_of_nonneg_left h_factor_bound (sq_nonneg _)
+      _ = 5 * |h| * |h| := by rw [h_abs_eq]; ring
+      _ ≤ ε * |h| := by
+          have h5 : 5 * |h| ≤ ε := by linarith
+          exact mul_le_mul_of_nonneg_right h5 (abs_nonneg _)
+
 /-! ## More chart-image affine identities -/
 
 /-- The chart-image at `t = 0` is `c P` (alternative phrasing). -/
