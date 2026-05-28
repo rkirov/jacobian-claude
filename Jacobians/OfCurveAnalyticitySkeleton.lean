@@ -913,6 +913,99 @@ lemma isSmoothPath_ChartBallPathSmooth (Q₀ Q : X)
     exact Jacobians.ChartBallPathSmooth_chart_at_self_differentiableAt Q₀ Q t h_chart_ball
   · sorry  -- integrable: continuity-on-[0,1] of integrand
 
+/-! ### Reparameterization invariance of periodVec under smoothStep01
+
+By substitution-of-variables (`intervalIntegral.integral_comp_mul_deriv`),
+`periodVec (γ ∘ smoothStep01) = periodVec γ` for any smooth path γ
+(with appropriate regularity hypotheses). Applied to ChartBallPath
+gives `periodVec (ChartBallPathSmooth Q₀ Q) = periodVec (ChartBallPath
+Q₀ Q₀ Q)`. -/
+
+/-- **PeriodVec is invariant under `smoothStep01` reparameterization.**
+
+The line integral of a 1-form along a path is invariant under
+parameterization changes preserving endpoints. The `smoothStep01`
+reparam fixes both endpoints (`smoothStep01 0 = 0`, `smoothStep01 1 =
+1`), so the integral is unchanged.
+
+Concretely, by `intervalIntegral.integral_comp_mul_deriv`:
+`∫_0^1 g(smoothStep01 t) * smoothStep01'(t) dt = ∫_0^1 g(u) du`
+when `g` is continuous and `smoothStep01` has continuous derivative on
+`[0, 1]`. The integrand of `periodVec (γ ∘ smoothStep01)` is exactly
+`(integrand of periodVec γ) ∘ smoothStep01` times `smoothStep01'`
+(by chain rule on the chart-pullback derivative + ℂ-linearity of α). -/
+lemma periodVec_ChartBallPathSmooth_eq (Q₀ Q : X)
+    (_h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
+    Jacobians.periodVec (Jacobians.ChartBallPathSmooth Q₀ Q) =
+    Jacobians.periodVec (Jacobians.ChartBallPath Q₀ Q₀ Q) :=
+  sorry
+
+/-! ### Smoothstep-reparameterized smoothPath
+
+`smoothPath` from `Classical.choice` may not have zero derivative at
+endpoints. To make the concat-at-junction smoothness work, we
+similarly compose with `smoothStep01`. -/
+
+/-- The smoothstep-reparameterized version of `smoothPath P Q`. -/
+noncomputable def smoothPathSmooth (P Q : X) : ℝ → X :=
+  fun t => Jacobians.smoothPath P Q (smoothStep01 t)
+
+/-- `smoothPathSmooth` retains the start/end points of `smoothPath`. -/
+@[simp] lemma smoothPathSmooth_zero (P Q : X) : smoothPathSmooth P Q 0 = P := by
+  simp [smoothPathSmooth]
+
+@[simp] lemma smoothPathSmooth_one (P Q : X) : smoothPathSmooth P Q 1 = Q := by
+  simp [smoothPathSmooth]
+
+/-- **PeriodVec invariance for smoothPath under `smoothStep01`**. -/
+lemma periodVec_smoothPathSmooth_eq (P Q : X) :
+    Jacobians.periodVec (smoothPathSmooth P Q) =
+    Jacobians.periodVec (Jacobians.smoothPath P Q) :=
+  sorry
+
+/-- `smoothPathSmooth` is an `IsSmoothPath`, with zero derivative at
+endpoints (via `smoothStep01`'s zero boundary derivatives). -/
+lemma isSmoothPath_smoothPathSmooth (P Q : X) :
+    Jacobians.IsSmoothPath P Q (smoothPathSmooth P Q) :=
+  sorry
+
+/-! ### Closed loop via smoothstep junctions
+
+With `ChartBallPathSmooth` and `smoothPathSmooth` both having zero
+boundary derivatives, the bare `concat γ₁ (reverse γ₂)` has matching
+(all zero) derivatives at the junction `t = 1/2`, hence is a closed
+smooth loop. -/
+
+/-- **The concat of `ChartBallPathSmooth Q₀ Q` and `reverse(smoothPathSmooth
+Q₀ Q)` is a closed smooth loop at `Q₀`.**
+
+All path endpoints have zero derivative (via `smoothStep01`), so the
+bare `concat`'s derivative at the junction `t = 1/2` is `0` from both
+sides → differentiable. -/
+lemma isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
+    (Q₀ Q : X)
+    (_hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
+    (_h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
+    Jacobians.IsClosedSmoothLoop (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+      (Jacobians.reverse (smoothPathSmooth Q₀ Q))) :=
+  sorry
+
+/-- **periodVec of the concat = sum of periodVecs** for our specific paths. -/
+lemma periodVec_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
+    (Q₀ Q : X)
+    (_h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
+    Jacobians.periodVec (Jacobians.concat (Jacobians.ChartBallPathSmooth Q₀ Q)
+      (Jacobians.reverse (smoothPathSmooth Q₀ Q))) =
+    Jacobians.periodVec (Jacobians.ChartBallPathSmooth Q₀ Q) -
+    Jacobians.periodVec (smoothPathSmooth Q₀ Q) :=
+  sorry
+
 /-- **Path-difference-in-lattice for ChartBallPath vs smoothPath.**
 
 For `Q₀, Q : X` with the affine chart-coord segment from `(chartAt Q₀) Q₀`
@@ -937,13 +1030,41 @@ ChartBallPath Q₀ Q₀ Q`, `γ₂ := smoothPath Q₀ Q`. Hypotheses:
 We separate this as a single classical-content sub-sorry. -/
 lemma chartBallPath_smoothPath_endpoints_eq_in_quotient
     (Q₀ Q : X)
-    (_h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
         (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
     (QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.ChartBallPath Q₀ Q₀ Q)) :
       (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =
-    QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath Q₀ Q)) :=
-  sorry
+    QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath Q₀ Q)) := by
+  -- Step 1: replace ChartBallPath by ChartBallPathSmooth (reparam-invariant periodVec).
+  rw [← periodVec_ChartBallPathSmooth_eq Q₀ Q h_chart_ball]
+  -- Step 2: replace smoothPath by smoothPathSmooth (same trick).
+  rw [← periodVec_smoothPathSmooth_eq Q₀ Q]
+  -- Now: [periodVec(ChartBallPathSmooth)] = [periodVec(smoothPathSmooth)]
+  -- Need `Q ∈ chart.source` from chart-ball at s = 1.
+  have hQ_target : (chartAt (H := ℂ) Q₀) Q ∈ (chartAt (H := ℂ) Q₀).target := by
+    have h1 := h_chart_ball 1 ⟨by norm_num, le_refl _⟩
+    have h_eq : ((1 - ((1 : ℝ) : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        ((1 : ℝ) : ℂ) * (chartAt (H := ℂ) Q₀) Q) = (chartAt (H := ℂ) Q₀) Q := by
+      push_cast; ring
+    rw [h_eq] at h1; exact h1
+  -- Need Q ∈ (chartAt Q₀).source. This follows from the chart-ball
+  -- structure: a nbhd of Q₀ maps into chart target, and inverse of chart
+  -- maps target back to source.
+  have hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source := by
+    sorry  -- focused: Q ∈ source from chart-ball at s = 1
+  -- Step 3: Apply mk_periodVec_eq_of_endpoints with γ₁ = ChartBallPathSmooth, γ₂ = smoothPathSmooth.
+  refine Jacobians.mk_periodVec_eq_of_endpoints
+    (Jacobians.ChartBallPathSmooth Q₀ Q) (smoothPathSmooth Q₀ Q) ?_ ?_ ?_
+  · -- h0: γ₁ 0 = γ₂ 0
+    show Jacobians.ChartBallPathSmooth Q₀ Q 0 = smoothPathSmooth Q₀ Q 0
+    rw [Jacobians.ChartBallPathSmooth.start Q₀ Q (mem_chart_source ℂ Q₀)]
+    rw [smoothPathSmooth_zero]
+  · -- hsmooth: concat is IsClosedSmoothLoop
+    exact isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
+      Q₀ Q hQ_src h_chart_ball
+  · -- hconcat: periodVec(concat) = periodVec γ₁ - periodVec γ₂
+    exact periodVec_concat_ChartBallPathSmooth_reverse_smoothPathSmooth Q₀ Q h_chart_ball
 
 theorem localLift_quotient_eq_ofCurve_eventually
     (P Q₀ : X) :
