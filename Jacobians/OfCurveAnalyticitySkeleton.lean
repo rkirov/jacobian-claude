@@ -1,0 +1,276 @@
+/-
+Copyright (c) 2026.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+import Jacobians.PeriodLattice
+import Jacobians.Discharge.Manifold.ContMDiffOmegaAnalytic
+import Mathlib.Analysis.Complex.HasPrimitives
+import Mathlib.Analysis.Complex.CauchyIntegral
+
+/-!
+# Analyticity skeleton for `ofCurve_contMDiff`
+
+This file lays out the proof skeleton for `Jacobians.ofCurve_contMDiff`
+(Forster §21: the Abel–Jacobi map is holomorphic, in the quotient
+sense — see `Jacobians.exists_smoothPath_family` for why the
+unquotiented version is mathematically false).
+
+**Mathlib API used**
+* `Mathlib.Analysis.Complex.HasPrimitives.DifferentiableOn.isExactOn_ball` —
+  a holomorphic function on a ball has a primitive (Morera).
+* `Mathlib.Analysis.Complex.CauchyIntegral.DifferentiableOn.analyticOn` —
+  on an open set, `DifferentiableOn ℂ ⇒ AnalyticOn ℂ`.
+* `Mathlib.Analysis.Calculus.ContDiff.Defs.AnalyticAt.contDiffAt` —
+  in a complete codomain, `AnalyticAt ℂ ⇒ ContDiffAt ℂ n` for any `n`.
+
+**Construction strategy**
+
+For each `Q₀ : X`, in the chart `e := chartAt ℂ Q₀`, on the chart-ball
+`B := e.target ∩ ball (e Q₀) r` for some `r > 0`, define the **local
+lift**
+
+```
+Φ_{Q₀} : X → ℂ^g
+Φ_{Q₀}(Q) := constant(Q₀) + ∫_{e Q₀}^{e Q} ω̃_i(w) dw    -- in chart coords
+```
+
+where `ω̃_i = (periodBasisForm i)` pulled back via `e.symm`, and the
+integral is along the straight line in chart coordinates.
+
+By Morera + Cauchy, this is locally analytic in `(e Q)`, hence
+analytic-on-the-chart-pullback, hence `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ^g) ω`
+at `Q₀`.
+
+The local lifts agree with `ofCurve P` modulo the period lattice
+(path-difference-is-closed-loop ⇒ lattice element). Local-to-global
+smoothness in the **quotient** follows from `contMDiff_iff_forall_*`.
+
+**Status of this file (2026-05-28)**
+
+All theorems are sorry-bodied with detailed proof plans. The
+architecture is sound — each sorry maps to one cleanly-statable
+classical-content claim.
+-/
+
+open scoped Manifold ContDiff
+open Complex Set
+open MeasureTheory
+
+namespace Jacobians.OfCurveSkeleton
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+/-- **Chart-pulled-back periodBasisForm at a chart-coord point.**
+
+Given `Q₀ : X` with chart `e := chartAt ℂ Q₀`, and a chart-coordinate
+`z ∈ e.target`, the chart-pulled-back periodBasisForm is the action
+of `(periodBasisForm X i)` at `e.symm z` against `(1 : ℂ)` viewed as
+a chart-coord tangent vector.
+
+Equivalently: the local coefficient of `ω_i` in the chart `e`. By
+`HolomorphicOneForms`, this is holomorphic in `z` on `e.target`. -/
+noncomputable def chartFormCoeff (Q₀ : X) (i : Fin (genus X)) (z : ℂ) : ℂ :=
+  (periodBasisForm X i).toFun ((chartAt (H := ℂ) Q₀).symm z) (1 : ℂ)
+
+/-- **The chart-form coefficient is holomorphic on the chart target.**
+
+Classical content: `periodBasisForm X i` is a holomorphic 1-form, so
+its coefficient in any chart is a holomorphic function of the chart
+coordinate. The Lean route requires unfolding `HolomorphicOneForms`
+to extract the analyticity of the coefficient. -/
+theorem chartFormCoeff_differentiableOn (Q₀ : X) (i : Fin (genus X)) :
+    DifferentiableOn ℂ (chartFormCoeff (X := X) Q₀ i)
+      ((chartAt (H := ℂ) Q₀).target) := by
+  -- `HolomorphicOneForms X` records (in its bundle structure) that
+  -- the chart-coord coefficients are holomorphic. Extraction from
+  -- the bundle structure is mechanical but requires unfolding the
+  -- `HolomorphicOneForms` definition.
+  --
+  -- TODO(content): replay the chart-trivialization of the holomorphic
+  -- 1-form bundle and extract the local section's analyticity.
+  sorry
+
+/-- **A holomorphic function on an open ball has an analytic primitive.**
+
+Direct application of Mathlib's `DifferentiableOn.isExactOn_ball` +
+`DifferentiableOn.analyticOn`. Mathlib defines `IsExactOn` as
+existence of `g` with `HasDerivAt g (f z) z` for all `z` in the ball;
+extracting `g` and showing its analyticity is the content here. -/
+theorem exists_analytic_primitive_on_ball
+    {f : ℂ → ℂ} {c : ℂ} {r : ℝ}
+    (hf : DifferentiableOn ℂ f (Metric.ball c r)) :
+    ∃ g : ℂ → ℂ,
+      (∀ z ∈ Metric.ball c r, HasDerivAt g (f z) z) ∧
+      AnalyticOn ℂ g (Metric.ball c r) := by
+  obtain ⟨g, hg⟩ := hf.isExactOn_ball
+  refine ⟨g, hg, ?_⟩
+  -- `g` is differentiable on the ball (each point has `HasDerivAt`).
+  have hgdiff : DifferentiableOn ℂ g (Metric.ball c r) := by
+    intro z hz
+    exact (hg z hz).differentiableAt.differentiableWithinAt
+  -- On an open set, `DifferentiableOn ℂ ⇒ AnalyticOn ℂ`.
+  exact hgdiff.analyticOn Metric.isOpen_ball
+
+/-- **FTC for a primitive along a straight-line segment in ℂ.**
+
+If `g` is a primitive of `f` on a ball containing both `a` and `b`
+(and the segment between them), then `∫_0^1 f(a + t(b-a)) (b-a) dt =
+g(b) - g(a)`.
+
+This is just the fundamental theorem of calculus applied to `s ↦
+g(a + s(b - a))` whose derivative is `f(a + s(b - a)) (b - a)`. -/
+theorem segmentIntegral_eq_primitive_diff
+    {f g : ℂ → ℂ} {c : ℂ} {r : ℝ} {a b : ℂ}
+    (_ha : a ∈ Metric.ball c r) (_hb : b ∈ Metric.ball c r)
+    (hseg : Set.Icc (0 : ℝ) 1 ⊆ {t | a + (t : ℂ) * (b - a) ∈ Metric.ball c r})
+    (hf_cont : ContinuousOn f (Metric.ball c r))
+    (hg : ∀ z ∈ Metric.ball c r, HasDerivAt g (f z) z) :
+    ∫ t in (0 : ℝ)..1, f (a + (t : ℂ) * (b - a)) * (b - a) =
+      g b - g a := by
+  -- The composed path `φ : ℝ → ℂ`, `φ t := a + t • (b - a)`,
+  -- has `HasDerivAt φ (b - a) t` (real-linear, derivative = `b - a`).
+  -- Then by complex chain rule (a `HasDerivAt` composition where the
+  -- inner derivative is real and the outer is complex),
+  -- `t ↦ g(φ t)` has derivative `f(φ t) * (b - a)` at each `t ∈ [0,1]`.
+  set φ : ℝ → ℂ := fun t => a + (t : ℂ) * (b - a) with hφ_def
+  have hφ : ∀ t : ℝ, HasDerivAt φ (b - a) t := by
+    intro t
+    -- Express φ in terms of `smul`, take derivative via `HasDerivAt.smul_const`,
+    -- then rewrite back to the `(·) * (b - a)` form.
+    have h_id : HasDerivAt (fun s : ℝ => s) 1 t := hasDerivAt_id t
+    have h_smul : HasDerivAt (fun s : ℝ => s • (b - a)) ((1 : ℝ) • (b - a)) t :=
+      h_id.smul_const (b - a)
+    have h_eq : (fun s : ℝ => s • (b - a)) = (fun s : ℝ => (s : ℂ) * (b - a)) := by
+      funext s; exact Complex.real_smul
+    rw [h_eq] at h_smul
+    -- Simplify `1 • (b - a)` to `b - a`.
+    have h_one : ((1 : ℝ) • (b - a) : ℂ) = b - a := by
+      rw [Complex.real_smul]; simp
+    rw [h_one] at h_smul
+    -- h_smul : HasDerivAt (fun s : ℝ => (s : ℂ) * (b - a)) (b - a) t
+    have h_const : HasDerivAt (fun _ : ℝ => a) 0 t := hasDerivAt_const t a
+    have h_add : HasDerivAt (fun s : ℝ => a + (s : ℂ) * (b - a)) (0 + (b - a)) t :=
+      h_const.add h_smul
+    rw [zero_add] at h_add
+    exact h_add
+  -- Composed derivative: `(g ∘ φ)' t = (b - a) * f (φ t)`.
+  have h_comp : ∀ t ∈ Set.Icc (0 : ℝ) 1,
+      HasDerivAt (fun s => g (φ s)) (f (φ t) * (b - a)) t := by
+    intro t ht
+    have hzt : φ t ∈ Metric.ball c r := hseg ht
+    have hg_at : HasDerivAt g (f (φ t)) (φ t) := hg (φ t) hzt
+    have := hg_at.comp t (hφ t)
+    simpa [mul_comm] using this
+  -- FTC: `∫ t in 0..1, (g ∘ φ)' t = g (φ 1) - g (φ 0)`.
+  have h_endpoints : φ 0 = a ∧ φ 1 = b := by
+    refine ⟨?_, ?_⟩ <;> simp [φ]
+  -- The integrand `f (φ t) * (b - a)` is continuous on `[0, 1]`,
+  -- hence integrable on it.
+  have hφ_cont : Continuous φ := by
+    have : Continuous (fun t : ℝ => (t : ℂ) * (b - a)) :=
+      (Complex.continuous_ofReal).mul continuous_const
+    exact continuous_const.add this
+  have h_int_cont : ContinuousOn (fun t : ℝ => f (φ t) * (b - a))
+      (Set.Icc (0 : ℝ) 1) := by
+    refine (ContinuousOn.mul ?_ continuousOn_const)
+    exact (hf_cont.comp hφ_cont.continuousOn (fun t ht => hseg ht))
+  have h_int : IntervalIntegrable (fun t : ℝ => f (φ t) * (b - a))
+      MeasureTheory.volume 0 1 :=
+    (h_int_cont.intervalIntegrable_of_Icc (by norm_num : (0:ℝ) ≤ 1))
+  -- Convert `Set.Icc` HasDerivAt statement to `uIcc` form.
+  have h_comp' : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      HasDerivAt (fun s => g (φ s)) (f (φ t) * (b - a)) t := by
+    intro t ht
+    rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht
+    exact h_comp t ht
+  -- Apply FTC.
+  have h_FTC := intervalIntegral.integral_eq_sub_of_hasDerivAt h_comp' h_int
+  rw [h_endpoints.1, h_endpoints.2] at h_FTC
+  exact h_FTC
+
+/-- **Local lift `Φ_{Q₀}` in chart coordinates.**
+
+For chart coord `z ∈ e.target` (where `e = chartAt ℂ Q₀`), the local
+lift of `ofCurve P` at `Q₀` is
+
+```
+Φ̃_{Q₀, i}(z) := constant_i + ∫_0^1 chartFormCoeff Q₀ i (z₀ + t (z - z₀)) * (z - z₀) dt
+```
+
+where `z₀ = e Q₀` and `constant_i := periodVec(some-fixed-path P → Q₀) i`.
+
+For now, we only need that `Φ̃_{Q₀, i}` is `AnalyticAt ℂ` at `z₀`. -/
+noncomputable def localLiftChart (Q₀ : X) (constants : Fin (genus X) → ℂ)
+    (i : Fin (genus X)) (z : ℂ) : ℂ :=
+  constants i +
+    ∫ t in (0 : ℝ)..1,
+      (chartFormCoeff (X := X) Q₀ i
+        ((chartAt (H := ℂ) Q₀) Q₀ + (t : ℂ) * (z - (chartAt (H := ℂ) Q₀) Q₀))
+       * (z - (chartAt (H := ℂ) Q₀) Q₀))
+
+/-- **Local lift is analytic on a chart ball.**
+
+Combines `exists_analytic_primitive_on_ball` (from `chartFormCoeff`'s
+holomorphy) with `segmentIntegral_eq_primitive_diff` (rewriting the
+straight-line integral as `g(z) - g(z₀)`).
+
+The result `localLiftChart Q₀ constants i z = constants i + g(z) -
+g(z₀)` is analytic in `z` because `g` is analytic.
+
+Locally on the chart-ball `Metric.ball ((chartAt ℂ Q₀) Q₀) r`
+contained in `e.target`. -/
+theorem localLiftChart_analyticAt (Q₀ : X) (constants : Fin (genus X) → ℂ)
+    (i : Fin (genus X)) :
+    AnalyticAt ℂ (localLiftChart (X := X) Q₀ constants i)
+      ((chartAt (H := ℂ) Q₀) Q₀) := by
+  -- Pick `r` small enough that `Metric.ball ((chartAt ℂ Q₀) Q₀) r ⊆
+  -- (chartAt ℂ Q₀).target`. (Standard from `e.open_target` and
+  -- `e Q₀ ∈ e.target`.)
+  --
+  -- On that ball, `chartFormCoeff Q₀ i` is `DifferentiableOn ℂ`
+  -- (`chartFormCoeff_differentiableOn`).
+  --
+  -- `exists_analytic_primitive_on_ball` gives `g` with `HasDerivAt g
+  -- (chartFormCoeff Q₀ i z) z` for all `z` in the ball, and
+  -- `AnalyticOn ℂ g (ball)`.
+  --
+  -- `segmentIntegral_eq_primitive_diff` rewrites
+  -- `∫_0^1 chartFormCoeff(z₀ + t(z-z₀)) (z-z₀) dt = g(z) - g(z₀)`.
+  --
+  -- So `localLiftChart Q₀ constants i z = constants i + g(z) - g(z₀)
+  -- = (constants i - g(z₀)) + g(z)`.
+  --
+  -- Since `g` is `AnalyticOn` and the chart point `z₀` is in the
+  -- ball, `g` is `AnalyticAt ℂ` at `z₀`. Adding a constant preserves
+  -- `AnalyticAt ℂ`.
+  --
+  -- TODO(content): chain the three lemmas (chartFormCoeff_diff +
+  -- exists_analytic_primitive_on_ball + segmentIntegral_eq_primitive_diff).
+  -- ~60-100 LOC bookkeeping.
+  sorry
+
+/-! ## Toward `ofCurve_contMDiff` (top-level theorem)
+
+The remaining wiring:
+
+1. **Local lift lifts `ofCurve P`** in the quotient: for `Q` close to
+   `Q₀`, `[localLiftChart Q₀ constants i ((chartAt ℂ Q₀) Q)] =
+   (ofCurve P Q) i` in the lattice quotient, when `constants` are
+   chosen to be the periodVec of a fixed path `P → Q₀`. This uses
+   `periodVec_concat` (already proven) and the lattice-mod identity.
+
+2. **`AnalyticAt ⇒ ContMDiffAt`** in our chart-Lazy setup: from
+   `AnalyticAt ℂ (localLiftChart Q₀ constants i)` at the chart point
+   of `Q₀`, conclude `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ^g) ω` of the original
+   map at `Q₀`. (Uses `AnalyticAt.contDiffAt` + the manifold–normed-
+   space contMDiffAt equivalence + the chart unfold.)
+
+3. **Local-to-global**: `ContMDiff = ∀ Q, ContMDiffAt`. Apply Step 2
+   at each `Q₀ ∈ X` and conclude `ContMDiff 𝓘(ℂ) 𝓘(ℂ, ℂ^g) ω (fun Q
+   => periodVec(some-path P → Q)) `. Compose with `contMDiff_mk` to
+   reach `ofCurve P`.
+
+Each step is mechanical given the lemmas above. -/
+
+end Jacobians.OfCurveSkeleton
