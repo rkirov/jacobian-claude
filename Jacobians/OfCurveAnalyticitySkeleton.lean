@@ -1538,6 +1538,10 @@ lemma isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
         (differentiableAt_const _).mul differentiableAt_id
       exact h_inner_diff.comp t h_mul_diff
     · -- t = 1/2: junction case (both sides have zero derivative)
+      -- At t = 1/2, γ(1/2) = γ₁(1) = Q.
+      -- We need DifferentiableAt of (chartAt Q ∘ γ) at 1/2.
+      -- Both sides give derivative 0 (smoothStep01_deriv(1) = smoothStep01_deriv(0) = 0).
+      -- Formalizing the union of HasDerivWithinAt from both sides is substantial.
       sorry
     · -- t > 1/2: use γ₂_rev's diff at 2t-1
       have h2tm1_Icc : 2 * t - 1 ∈ Set.uIcc (0 : ℝ) 1 := by
