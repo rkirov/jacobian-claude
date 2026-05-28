@@ -1242,6 +1242,51 @@ lemma smoothStep01_differentiable : Differentiable ℝ smoothStep01 := by
         exact smoothStep01_eqOn_one hs
       exact (differentiableAt_const (1 : ℝ)).congr_of_eventuallyEq h_eq
 
+/-! ## ChartBallPathSmooth — smoothstep-reparameterized chart-ball path
+
+A path that traces out the same image in X as `ChartBallPath` but with
+smoothstep-reparameterized time, so derivatives at `t = 0` and `t = 1`
+are zero (matching the constant extension outside `[0, 1]`). -/
+
+/-- **Smoothstep-reparameterized chart-ball path.** Maps `ℝ → X` by
+composing `ChartBallPath Q₀ Q₀ Q` with `smoothStep01`. Globally
+continuous (since `smoothStep01` maps ℝ → `[0, 1]` and `ChartBallPath`
+is `ContinuousOn [0, 1]`). -/
+noncomputable def ChartBallPathSmooth (Q₀ Q : X) : ℝ → X :=
+  fun t => Jacobians.ChartBallPath Q₀ Q₀ Q (smoothStep01 t)
+
+/-- `ChartBallPathSmooth Q₀ Q 0 = Q₀` when `Q₀` is in the chart source. -/
+@[simp] lemma ChartBallPathSmooth.start (Q₀ Q : X)
+    (hQ₀_src : Q₀ ∈ (chartAt (H := ℂ) Q₀).source) :
+    ChartBallPathSmooth Q₀ Q 0 = Q₀ := by
+  unfold ChartBallPathSmooth
+  rw [smoothStep01_zero]
+  exact Jacobians.ChartBallPath.start Q₀ Q₀ Q hQ₀_src
+
+/-- `ChartBallPathSmooth Q₀ Q 1 = Q` when `Q` is in the chart source. -/
+@[simp] lemma ChartBallPathSmooth.finish (Q₀ Q : X)
+    (hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source) :
+    ChartBallPathSmooth Q₀ Q 1 = Q := by
+  unfold ChartBallPathSmooth
+  rw [smoothStep01_one]
+  exact Jacobians.ChartBallPath.finish Q₀ Q₀ Q hQ_src
+
+/-- `ChartBallPathSmooth Q₀ Q` is globally continuous on ℝ, provided the
+chart-ball hypothesis holds on `[0, 1]`. -/
+lemma ChartBallPathSmooth.continuous (Q₀ Q : X)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
+    Continuous (ChartBallPathSmooth Q₀ Q) := by
+  unfold ChartBallPathSmooth
+  refine (Jacobians.ChartBallPath.continuousOn Q₀ Q₀ Q h_chart_ball).comp_continuous
+    smoothStep01_continuous ?_
+  intro t
+  exact smoothStep01_mem_unit t
+
+-- (`ChartBallPathSmooth_chart_at_self_differentiableAt` defined below,
+-- after `ChartBallPath_chart_at_self_differentiableAt` to use it.)
+
 /-! ## More chart-image affine identities -/
 
 /-- The chart-image at `t = 0` is `c P` (alternative phrasing). -/
@@ -1607,6 +1652,39 @@ lemma ChartBallPath_chart_at_self_differentiableAt
   show DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t
   -- Both sides apply chartAt (γ t) to γ s = (chartAt anchor).symm (z s).
   exact h_comp
+
+/-- **Chart-pullback differentiability of `ChartBallPathSmooth`** at each `t`.
+
+By chain rule: `(chartAt (γt)) ∘ ChartBallPathSmooth = ((chartAt (γt)) ∘
+ChartBallPath) ∘ smoothStep01`. The inner composition is diff at
+`smoothStep01 t` (provided chart-ball at that point — follows from
+`smoothStep01 t ∈ [0, 1]`). Outer composition with `smoothStep01`
+(differentiable everywhere) gives diff at `t`. -/
+lemma ChartBallPathSmooth_chart_at_self_differentiableAt (Q₀ Q : X) (t : ℝ)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
+    DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (ChartBallPathSmooth Q₀ Q t)).toFun ∘ ChartBallPathSmooth Q₀ Q) t := by
+  have h_s_in : smoothStep01 t ∈ Set.Icc (0 : ℝ) 1 := smoothStep01_mem_unit t
+  have h_chart_at_s : ((1 - ((smoothStep01 t) : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+      ((smoothStep01 t) : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target :=
+    h_chart_ball (smoothStep01 t) h_s_in
+  have h_inner_diff : DifferentiableAt ℝ
+      ((chartAt (H := ℂ)
+        (ChartBallPath Q₀ Q₀ Q (smoothStep01 t))).toFun ∘
+        ChartBallPath Q₀ Q₀ Q) (smoothStep01 t) :=
+    ChartBallPath_chart_at_self_differentiableAt Q₀ Q₀ Q (smoothStep01 t) h_chart_at_s
+  have h_smooth_diff : DifferentiableAt ℝ smoothStep01 t :=
+    smoothStep01_differentiable t
+  have h_eq : ((chartAt (H := ℂ) (ChartBallPathSmooth Q₀ Q t)).toFun ∘ ChartBallPathSmooth Q₀ Q) =
+      ((chartAt (H := ℂ)
+        (ChartBallPath Q₀ Q₀ Q (smoothStep01 t))).toFun ∘
+        ChartBallPath Q₀ Q₀ Q) ∘ smoothStep01 := by
+    funext s
+    rfl
+  rw [h_eq]
+  exact h_inner_diff.comp t h_smooth_diff
 
 /-! ## ChartBallPath: continuity globally
 
