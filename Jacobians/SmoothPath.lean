@@ -39,6 +39,9 @@ import Mathlib.Topology.Connected.LocPathConnected
 import Mathlib.Analysis.Calculus.ContDiff.Defs
 import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Analysis.Calculus.FDeriv.Add
+import Mathlib.Analysis.Calculus.Deriv.Pow
+import Mathlib.Analysis.Calculus.Deriv.Mul
+import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Analysis.Calculus.FDeriv.RestrictScalars
 import Mathlib.Analysis.Complex.OperatorNorm
 import Mathlib.Topology.MetricSpace.Cover
@@ -1211,6 +1214,124 @@ lemma smoothStep01_hasDerivAt_one : HasDerivAt smoothStep01 0 1 := by
       _ ≤ ε * |h| := by
           have h5 : 5 * |h| ≤ ε := by linarith
           exact mul_le_mul_of_nonneg_right h5 (abs_nonneg _)
+
+/-- **Explicit derivative of `smoothStep01`**: `0` outside `(0, 1)`,
+`6t(1-t)` on `(0, 1)`, also `0` at the boundary points (matching
+zero left/right derivatives). -/
+noncomputable def smoothStep01_deriv (t : ℝ) : ℝ :=
+  if t ≤ 0 then 0
+  else if t ≥ 1 then 0
+  else 6 * t * (1 - t)
+
+@[simp] lemma smoothStep01_deriv_zero : smoothStep01_deriv 0 = 0 := by
+  simp [smoothStep01_deriv]
+
+@[simp] lemma smoothStep01_deriv_one : smoothStep01_deriv 1 = 0 := by
+  simp [smoothStep01_deriv]
+
+lemma smoothStep01_deriv_eqOn_zero :
+    Set.EqOn smoothStep01_deriv (fun _ : ℝ => 0) (Set.Iio 0) := by
+  intro t ht
+  have ht' : t < 0 := ht
+  simp [smoothStep01_deriv, le_of_lt ht']
+
+lemma smoothStep01_deriv_eqOn_one :
+    Set.EqOn smoothStep01_deriv (fun _ : ℝ => 0) (Set.Ioi 1) := by
+  intro t ht
+  have ht' : 1 < t := ht
+  have h_not : ¬ t ≤ 0 := by linarith
+  simp [smoothStep01_deriv, h_not, le_of_lt ht']
+
+lemma smoothStep01_deriv_eqOn_open :
+    Set.EqOn smoothStep01_deriv (fun t => 6 * t * (1 - t)) (Set.Ioo (0 : ℝ) 1) := by
+  intro t ⟨h0, h1⟩
+  have h_not_le : ¬ t ≤ 0 := by linarith
+  have h_not_ge : ¬ (t : ℝ) ≥ 1 := by linarith
+  simp [smoothStep01_deriv, h_not_le, h_not_ge]
+
+/-- **HasDerivAt at each `t ∈ ℝ`** for `smoothStep01` with explicit
+derivative `smoothStep01_deriv t`. -/
+lemma smoothStep01_hasDerivAt_explicit (t : ℝ) :
+    HasDerivAt smoothStep01 (smoothStep01_deriv t) t := by
+  rcases lt_trichotomy t 0 with h0 | h0 | h0
+  · -- t < 0
+    have h_eq_l : smoothStep01 =ᶠ[𝓝 t] (fun _ : ℝ => (0 : ℝ)) := by
+      filter_upwards [Iio_mem_nhds h0] with s hs
+      exact smoothStep01_eqOn_zero hs
+    have h_deriv_eq : smoothStep01_deriv t = 0 := smoothStep01_deriv_eqOn_zero h0
+    rw [h_deriv_eq]
+    exact (hasDerivAt_const t (0 : ℝ)).congr_of_eventuallyEq h_eq_l
+  · -- t = 0
+    subst h0
+    rw [smoothStep01_deriv_zero]
+    exact smoothStep01_hasDerivAt_zero
+  · rcases lt_trichotomy t 1 with h1 | h1 | h1
+    · -- 0 < t < 1
+      have h_eq_c : smoothStep01 =ᶠ[𝓝 t] (fun s : ℝ => 3 * s^2 - 2 * s^3) := by
+        filter_upwards [Ioo_mem_nhds h0 h1] with s hs
+        exact smoothStep01_of_mem_open s hs.1 hs.2
+      have h_deriv_eq : smoothStep01_deriv t = 6 * t * (1 - t) :=
+        smoothStep01_deriv_eqOn_open ⟨h0, h1⟩
+      rw [h_deriv_eq]
+      have h_id : HasDerivAt (fun s : ℝ => s) 1 t := hasDerivAt_id t
+      have h_sq' : HasDerivAt (fun s : ℝ => s^2) (2 * t) t := by
+        have := HasDerivAt.pow h_id 2
+        simpa using this
+      have h_cube' : HasDerivAt (fun s : ℝ => s^3) (3 * t^2) t := by
+        have := HasDerivAt.pow h_id 3
+        convert this using 1; push_cast; ring
+      have h_3sq : HasDerivAt (fun s : ℝ => 3 * s^2) (3 * (2 * t)) t :=
+        HasDerivAt.const_mul 3 h_sq'
+      have h_2cube : HasDerivAt (fun s : ℝ => 2 * s^3) (2 * (3 * t^2)) t :=
+        HasDerivAt.const_mul 2 h_cube'
+      have h_diff : HasDerivAt ((fun s : ℝ => 3 * s^2) - (fun s : ℝ => 2 * s^3))
+          (3 * (2 * t) - 2 * (3 * t^2)) t := HasDerivAt.sub h_3sq h_2cube
+      have h_fun_eq : ((fun s : ℝ => 3 * s^2) - (fun s : ℝ => 2 * s^3) : ℝ → ℝ) =
+          (fun s : ℝ => 3 * s^2 - 2 * s^3) := by
+        funext s; simp [Pi.sub_apply]
+      rw [h_fun_eq] at h_diff
+      have h_d_eq : (3 * (2 * t) - 2 * (3 * t^2) : ℝ) = 6 * t * (1 - t) := by ring
+      rw [h_d_eq] at h_diff
+      exact h_diff.congr_of_eventuallyEq h_eq_c
+    · -- t = 1
+      subst h1
+      rw [smoothStep01_deriv_one]
+      exact smoothStep01_hasDerivAt_one
+    · -- t > 1
+      have h_eq_r : smoothStep01 =ᶠ[𝓝 t] (fun _ : ℝ => (1 : ℝ)) := by
+        filter_upwards [Ioi_mem_nhds h1] with s hs
+        exact smoothStep01_eqOn_one hs
+      have h_deriv_eq : smoothStep01_deriv t = 0 := smoothStep01_deriv_eqOn_one h1
+      rw [h_deriv_eq]
+      exact (hasDerivAt_const t (1 : ℝ)).congr_of_eventuallyEq h_eq_r
+
+/-- **`smoothStep01_deriv` is continuous globally.** -/
+lemma smoothStep01_deriv_continuous : Continuous smoothStep01_deriv := by
+  unfold smoothStep01_deriv
+  refine Continuous.if ?_ continuous_const ?_
+  · intro a ha
+    have ha_eq : a = 0 := by
+      have h_fr : frontier {x : ℝ | x ≤ 0} = {0} := by
+        change frontier (Set.Iic (0 : ℝ)) = {0}
+        rw [frontier_Iic]
+      rw [h_fr] at ha
+      exact ha
+    subst ha_eq
+    -- Goal: 0 = if 0 ≥ 1 then 0 else 6 * 0 * (1 - 0)
+    have h_not : ¬ ((0 : ℝ) ≥ 1) := by norm_num
+    rw [if_neg h_not]
+    norm_num
+  · refine Continuous.if ?_ continuous_const ?_
+    · intro a ha
+      have ha_eq : a = 1 := by
+        have h_fr : frontier {x : ℝ | 1 ≤ x} = {1} := by
+          change frontier (Set.Ici (1 : ℝ)) = {1}
+          rw [frontier_Ici]
+        rw [h_fr] at ha
+        exact ha
+      subst ha_eq
+      norm_num
+    · fun_prop
 
 /-- **`smoothStep01` is globally `Differentiable ℝ`**, with derivative
 `0` at boundary and `6t(1-t)` on `(0, 1)`. -/
