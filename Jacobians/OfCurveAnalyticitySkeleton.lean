@@ -851,49 +851,18 @@ lemma localLift_eq_const_add_periodVec_ChartBallPath
   -- Step 2: periodVec γ i = lineIntegral (periodBasisForm X i) γ.
   rfl
 
-/-! ### IsSmoothPath for ChartBallPath
+/-! ### IsSmoothPath for ChartBallPath — removed
 
-Given the chart-ball constraint (`affine in chart.target on Icc 0 1`)
-and `Q ∈ chart.source`, `ChartBallPath Q₀ Q₀ Q` is a smooth path from
-`Q₀` to `Q` ON `[0, 1]`. The `IsSmoothPath` structure as currently
-defined in `Jacobians/PeriodLattice.lean` requires `cont : Continuous
-γ` (i.e. globally on ℝ). But `ChartBallPath` is only `ContinuousOn
-[0, 1]` (outside, the affine in chart coords escapes `target`,
-making `(chartAt Q₀).symm` return junk). To bridge:
+The linear `ChartBallPath Q₀ Q₀ Q` is `ContinuousOn [0, 1]` but NOT
+globally Continuous (outside `[0, 1]`, the affine chart-coord escapes
+`target`, making `(chartAt Q₀).symm` return junk). The `IsSmoothPath`
+structure requires global `Continuous γ`, so the bare linear path
+cannot satisfy it.
 
-**Required (not yet built):** a smoothstep-clamped variant
-`ChartBallPathClamped Q₀ Q := ChartBallPath Q₀ Q₀ Q ∘ smoothStep01`
-that is constant outside `[0, 1]`, agrees with `ChartBallPath` on
-`[0, 1]`, and has matching boundary derivatives via `smoothStep01`'s
-zero-derivative endpoints. Then the periodVec of the clamped variant
-equals that of `ChartBallPath` (integral only sees `[0, 1]`) and all
-`IsSmoothPath` fields hold.
-
-**Status (2026-05-28):** Field-by-field, `start`/`finish`/`diff` are
-proven (via existing infrastructure). `cont` (global) and `integrable`
-require the clamping-and-smoothstep machinery, ~200-300 LOC. -/
-lemma isSmoothPath_ChartBallPath (Q₀ Q : X)
-    (hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
-    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
-      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
-        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
-    Jacobians.IsSmoothPath Q₀ Q (Jacobians.ChartBallPath Q₀ Q₀ Q) := by
-  have hQ₀_src : Q₀ ∈ (chartAt (H := ℂ) Q₀).source := mem_chart_source ℂ Q₀
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · -- start: ChartBallPath Q₀ Q₀ Q 0 = Q₀
-    exact Jacobians.ChartBallPath.start Q₀ Q₀ Q hQ₀_src
-  · -- finish: ChartBallPath Q₀ Q₀ Q 1 = Q
-    exact Jacobians.ChartBallPath.finish Q₀ Q₀ Q hQ_src
-  · -- continuity globally on ℝ (sorry; needs extension argument)
-    sorry
-  · -- diff: from ChartBallPath_chart_at_self_differentiableAt
-    intro t ht
-    have ht_Icc : t ∈ Set.Icc (0 : ℝ) 1 := by
-      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht; exact ht
-    exact Jacobians.ChartBallPath_chart_at_self_differentiableAt Q₀ Q₀ Q t
-      (h_chart_ball t ht_Icc)
-  · -- integrable (sorry; via chartFrame_cancel + bounded continuity)
-    sorry
+The smoothstep-clamped variant `ChartBallPathSmooth Q₀ Q :=
+ChartBallPath Q₀ Q₀ Q ∘ smoothStep01` (defined below) IS globally
+continuous (since `smoothStep01 : ℝ → [0,1]`) and replaces the linear
+version everywhere downstream. See `isSmoothPath_ChartBallPathSmooth`. -/
 
 /-- **PathSpeed chain rule for smoothStep01 reparameterization.**
 
