@@ -279,6 +279,82 @@ theorem localLiftChart_analyticAt (Q₀ : X) (constants : Fin (genus X) → ℂ)
       with z hz using (h_eq hz).symm
   exact h_target.congr h_nhds
 
+/-! ### Bridge: analyticAt of chart-coord lift ⇒ `ContMDiffAt` on the manifold
+
+The vector-valued local lift, expressed as a function `X → (Fin (genus
+X) → ℂ)`, is `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, Fin (genus X) → ℂ) ω` at `Q₀`.
+
+This is the analytic→ContMDiffAt bridge: from `AnalyticAt` of each
+chart-coord component, we get `ContDiffAt ℂ ω` (Mathlib's
+`AnalyticAt.contDiffAt`), bundle via `contDiffAt_pi`, then convert to
+`ContMDiffAt` via the chart-pullback characterization. -/
+
+/-- **Vector-valued local lift** at `Q₀`. -/
+noncomputable def localLift (Q₀ : X) (constants : Fin (genus X) → ℂ)
+    (Q : X) : Fin (genus X) → ℂ :=
+  fun i => localLiftChart (X := X) Q₀ constants i ((chartAt (H := ℂ) Q₀) Q)
+
+/-- **The chart-coord function** of the local lift, as a vector-valued
+map `ℂ → (Fin (genus X) → ℂ)`. -/
+noncomputable def localLiftChartVec (Q₀ : X) (constants : Fin (genus X) → ℂ)
+    (z : ℂ) : Fin (genus X) → ℂ :=
+  fun i => localLiftChart (X := X) Q₀ constants i z
+
+/-- **The chart-coord vector lift is `AnalyticAt`** at the chart point. -/
+theorem localLiftChartVec_analyticAt (Q₀ : X) (constants : Fin (genus X) → ℂ) :
+    AnalyticAt ℂ (localLiftChartVec (X := X) Q₀ constants)
+      ((chartAt (H := ℂ) Q₀) Q₀) := by
+  -- Bundle the per-component analyticAt into a `Pi`-valued analyticAt.
+  -- Mathlib: `analyticAt_pi` or similar — each component analytic implies
+  -- the pi-bundled function is analytic.
+  rw [show localLiftChartVec (X := X) Q₀ constants
+      = (fun z i => localLiftChart (X := X) Q₀ constants i z) from rfl]
+  exact AnalyticAt.pi fun i => localLiftChart_analyticAt Q₀ constants i
+
+/-- **The chart-coord vector lift is `ContDiffAt`** at the chart point. -/
+theorem localLiftChartVec_contDiffAt (Q₀ : X) (constants : Fin (genus X) → ℂ) :
+    ContDiffAt ℂ ω (localLiftChartVec (X := X) Q₀ constants)
+      ((chartAt (H := ℂ) Q₀) Q₀) :=
+  (localLiftChartVec_analyticAt Q₀ constants).contDiffAt
+
+/-- **The vector-valued local lift is `ContMDiffAt`** at `Q₀`.
+
+`localLift Q₀ constants = localLiftChartVec Q₀ constants ∘ chartAt ℂ Q₀`.
+The chart map `chartAt ℂ Q₀` is `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω` at `Q₀`
+(Mathlib's `contMDiffAt_extChartAt`), and the chart-coord function is
+`ContDiffAt ℂ ω` at `(chartAt ℂ Q₀) Q₀` (above). Mathlib's
+`ContDiffAt.comp_contMDiffAt` glues these into `ContMDiffAt 𝓘(ℂ)
+𝓘(ℂ, Fin (genus X) → ℂ) ω` of the composition. -/
+theorem localLift_contMDiffAt (Q₀ : X) (constants : Fin (genus X) → ℂ) :
+    ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, Fin (genus X) → ℂ) ω
+      (localLift (X := X) Q₀ constants) Q₀ := by
+  -- Step 1: `chartAt ℂ Q₀` is `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω` at `Q₀`.
+  -- Use `contMDiffAt_extChartAt` and the fact that `extChartAt 𝓘(ℂ)` agrees
+  -- with `chartAt ℂ` as a function (boundaryless model).
+  have h_chart : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ) ω
+      (chartAt (H := ℂ) Q₀ : X → ℂ) Q₀ := by
+    have h_ext : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ) ω
+        (extChartAt 𝓘(ℂ) Q₀ : X → ℂ) Q₀ := contMDiffAt_extChartAt
+    -- `extChartAt 𝓘(ℂ) Q₀` = `chartAt ℂ Q₀` as functions on the chart source.
+    -- Their values agree pointwise (model is identity).
+    have h_eq : (extChartAt 𝓘(ℂ) Q₀ : X → ℂ) = (chartAt (H := ℂ) Q₀ : X → ℂ) := by
+      funext y
+      simp [extChartAt_coe]
+    rw [h_eq] at h_ext
+    exact h_ext
+  -- Step 2: chart-coord vector function is `ContDiffAt ℂ ω` at chart-image.
+  have h_chartVec : ContDiffAt ℂ ω
+      (localLiftChartVec (X := X) Q₀ constants) ((chartAt (H := ℂ) Q₀) Q₀) :=
+    localLiftChartVec_contDiffAt Q₀ constants
+  -- Step 3: compose via `ContDiffAt.comp_contMDiffAt`. The result is
+  -- `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, V) ω (localLiftChartVec ∘ chartAt) Q₀`, which
+  -- equals `ContMDiffAt ... (localLift ...) Q₀` by definition unfolding.
+  have h_comp := h_chartVec.comp_contMDiffAt (x := Q₀) h_chart
+  -- `localLift Q₀ constants = localLiftChartVec Q₀ constants ∘ chartAt ℂ Q₀`.
+  change ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, Fin (genus X) → ℂ) ω
+    (localLiftChartVec (X := X) Q₀ constants ∘ (chartAt (H := ℂ) Q₀)) Q₀
+  exact h_comp
+
 /-! ## Toward `ofCurve_contMDiff` (top-level theorem)
 
 The remaining wiring:
