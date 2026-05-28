@@ -738,13 +738,17 @@ lemma chartFrame_cancel (Q₀ Q : X) (i : Fin (genus X)) (t : ℝ)
   rw [h_lin]
   ring
 
+/-- **`Q ∈ (chartAt Q₀).source` eventually in `nhds Q₀`.**
+
+Chart source is open and contains `Q₀`. -/
+lemma Q_in_chart_source_eventually (Q₀ : X) :
+    ∀ᶠ Q in nhds Q₀, Q ∈ (chartAt (H := ℂ) Q₀).source := by
+  exact (chartAt (H := ℂ) Q₀).open_source.mem_nhds (mem_chart_source ℂ Q₀)
+
 /-- **Affine path stays in chart target near Q₀.** Trivially, near Q₀
 (where `Q = Q₀`), `affine s = z₀` is in the chart target. We need the
 target-membership uniform in `s ∈ Icc 0 1`, for a chart-ball
-neighborhood of Q₀. By openness of the chart target and continuity of
-the chart-coord operation, this holds for Q in some chart-source
-neighborhood of Q₀ small enough that the convex hull of `{z₀, z}` is
-in the chart target. -/
+neighborhood of Q₀. -/
 lemma affine_in_target_eventually (Q₀ : X) :
     ∀ᶠ Q in nhds Q₀, ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
@@ -1030,6 +1034,7 @@ ChartBallPath Q₀ Q₀ Q`, `γ₂ := smoothPath Q₀ Q`. Hypotheses:
 We separate this as a single classical-content sub-sorry. -/
 lemma chartBallPath_smoothPath_endpoints_eq_in_quotient
     (Q₀ Q : X)
+    (hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
     (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
         (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
@@ -1040,19 +1045,6 @@ lemma chartBallPath_smoothPath_endpoints_eq_in_quotient
   rw [← periodVec_ChartBallPathSmooth_eq Q₀ Q h_chart_ball]
   -- Step 2: replace smoothPath by smoothPathSmooth (same trick).
   rw [← periodVec_smoothPathSmooth_eq Q₀ Q]
-  -- Now: [periodVec(ChartBallPathSmooth)] = [periodVec(smoothPathSmooth)]
-  -- Need `Q ∈ chart.source` from chart-ball at s = 1.
-  have hQ_target : (chartAt (H := ℂ) Q₀) Q ∈ (chartAt (H := ℂ) Q₀).target := by
-    have h1 := h_chart_ball 1 ⟨by norm_num, le_refl _⟩
-    have h_eq : ((1 - ((1 : ℝ) : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
-        ((1 : ℝ) : ℂ) * (chartAt (H := ℂ) Q₀) Q) = (chartAt (H := ℂ) Q₀) Q := by
-      push_cast; ring
-    rw [h_eq] at h1; exact h1
-  -- Need Q ∈ (chartAt Q₀).source. This follows from the chart-ball
-  -- structure: a nbhd of Q₀ maps into chart target, and inverse of chart
-  -- maps target back to source.
-  have hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source := by
-    sorry  -- focused: Q ∈ source from chart-ball at s = 1
   -- Step 3: Apply mk_periodVec_eq_of_endpoints with γ₁ = ChartBallPathSmooth, γ₂ = smoothPathSmooth.
   refine Jacobians.mk_periodVec_eq_of_endpoints
     (Jacobians.ChartBallPathSmooth Q₀ Q) (smoothPathSmooth Q₀ Q) ?_ ?_ ?_
@@ -1072,7 +1064,8 @@ theorem localLift_quotient_eq_ofCurve_eventually
         (localLift (X := X) Q₀ (periodVec (smoothPath P Q₀)) Q) :
       X → (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =ᶠ[nhds Q₀]
       (fun Q => QuotientAddGroup.mk (periodVec (smoothPath P Q))) := by
-  filter_upwards [affine_in_target_eventually Q₀] with Q hQ
+  filter_upwards [affine_in_target_eventually Q₀, Q_in_chart_source_eventually Q₀]
+    with Q hQ hQ_src
   -- Step 1: rewrite LHS via `localLift_eq_const_add_periodVec_ChartBallPath`.
   rw [localLift_eq_const_add_periodVec_ChartBallPath Q₀ Q _ hQ]
   -- LHS = [periodVec(smoothPath P Q₀) + periodVec(ChartBallPath Q₀ Q₀ Q)]
@@ -1080,7 +1073,7 @@ theorem localLift_quotient_eq_ofCurve_eventually
   rw [QuotientAddGroup.mk_add]
   -- Step 2: use `chartBallPath_smoothPath_endpoints_eq_in_quotient` to replace
   -- [periodVec(ChartBallPath)] by [periodVec(smoothPath Q₀ Q)].
-  rw [chartBallPath_smoothPath_endpoints_eq_in_quotient Q₀ Q hQ]
+  rw [chartBallPath_smoothPath_endpoints_eq_in_quotient Q₀ Q hQ_src hQ]
   -- LHS now = [periodVec(smoothPath P Q₀)] + [periodVec(smoothPath Q₀ Q)]
   -- Step 3: rewrite RHS via `smoothPath_basepoint_change`.
   -- `smoothPath_basepoint_change Q₀ P Q`: with (P, P₀, A) = (Q₀, P, Q), gives:
