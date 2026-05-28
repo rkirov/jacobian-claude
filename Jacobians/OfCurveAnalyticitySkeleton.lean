@@ -1229,7 +1229,27 @@ lemma isSmoothPath_smoothPathSmooth (P Q : X) :
   · -- Continuous (smoothPath P Q ∘ smoothStep01)
     exact h_smoothPath.cont.comp Jacobians.smoothStep01_continuous
   · -- diff at each t ∈ uIcc 0 1 — via chain rule
-    sorry
+    -- (chartAt (smoothPath ∘ σ t)) ∘ smoothPath ∘ σ = ((chartAt(γ ∘ σ t)) ∘ γ) ∘ σ
+    -- Inner diff at σ t (from IsSmoothPath.diff of smoothPath at σ t).
+    -- σ diff at t.
+    -- Composition is diff.
+    intro t ht
+    have ht_Icc : t ∈ Set.Icc (0 : ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht; exact ht
+    have hs_Icc : Jacobians.smoothStep01 t ∈ Set.Icc (0 : ℝ) 1 :=
+      Jacobians.smoothStep01_mem_unit t
+    have hs_uIcc : Jacobians.smoothStep01 t ∈ Set.uIcc (0 : ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact hs_Icc
+    have h_inner_diff := h_smoothPath.diff (Jacobians.smoothStep01 t) hs_uIcc
+    have h_sigma_diff : DifferentiableAt ℝ Jacobians.smoothStep01 t :=
+      Jacobians.smoothStep01_differentiable t
+    -- smoothPathSmooth t = smoothPath (σ t), so chartAt (smoothPathSmooth t) = chartAt (smoothPath (σ t)).
+    have h_eq : ((chartAt (H := ℂ) (smoothPathSmooth P Q t)).toFun ∘ smoothPathSmooth P Q) =
+        ((chartAt (H := ℂ) (Jacobians.smoothPath P Q (Jacobians.smoothStep01 t))).toFun ∘
+          Jacobians.smoothPath P Q) ∘ Jacobians.smoothStep01 := by
+      funext s; rfl
+    rw [h_eq]
+    exact h_inner_diff.comp t h_sigma_diff
   · -- integrable — via reparam invariance of line integral
     sorry
 
