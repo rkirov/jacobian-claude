@@ -358,34 +358,68 @@ The local lift centered at `Q₀` with `constants := periodVec(smoothPath
 P Q₀)` agrees, on a chart neighborhood of `Q₀`, with `ofCurve P` in
 the lattice quotient.
 
-**Why**: by `periodVec_concat`, periodVec of `smoothPath P Q₀ ∗
-(chart-segment Q₀ → Q)` equals `periodVec(smoothPath P Q₀) +
-periodVec(chart-segment)`. The chart-segment integral in chart coords
-is exactly `localLift Q₀ 0 Q`. So `localLift Q₀ constants Q =
-periodVec(smoothPath P Q₀ ∗ chart-segment)`. In the quotient by the
-lattice, the path choice doesn't matter (any two paths P → Q differ by
-a closed loop, whose periodVec is in the lattice). Hence
-`[localLift Q₀ constants Q] = [periodVec(any path P → Q)] = ofCurve P Q`.
+**Mathematical proof.** For `Q` in a chart-ball around `Q₀`, the
+chart-segment `ChartBallPath Q₀ Q₀ Q : ℝ → X` is a smooth path from
+`Q₀` to `Q` (`Jacobians.ChartBallPath.start` + `.finish` +
+chart-transition smoothness — built up in `Jacobians/SmoothPath.lean`).
 
-We record the identification as an EventuallyEq statement (on a chart
-neighborhood of `Q₀`), which is what local-to-global ContMDiffAt
-consumes. -/
+Then:
+
+```
+localLift Q₀ constants Q
+  = constants + ∫_0^1 chartFormCoeff(z₀ + t(z-z₀)) (z-z₀) dt    -- def
+  = constants + periodVec(ChartBallPath Q₀ Q₀ Q)                -- chart-frame line integral
+  = periodVec(smoothPath P Q₀) + periodVec(ChartBallPath Q₀ Q₀ Q) -- choice of constants
+  = periodVec(smoothPath P Q₀ ∗ ChartBallPath Q₀ Q₀ Q)           -- periodVec_concat
+```
+
+The concatenation `smoothPath P Q₀ ∗ ChartBallPath Q₀ Q₀ Q` is a
+smooth path from `P` to `Q`. The difference `(smoothPath P Q₀ ∗
+ChartBallPath Q₀ Q₀ Q) ∗ reverse(smoothPath P Q)` is a smooth closed
+loop at `P`. By `periodVec_concat` + `periodVec_reverse`:
+
+```
+periodVec((smoothPath P Q₀ ∗ ChartBallPath Q₀ Q₀ Q) ∗ reverse(smoothPath P Q))
+  = periodVec(smoothPath P Q₀ ∗ ChartBallPath ...) - periodVec(smoothPath P Q)
+```
+
+This closed loop's periodVec is in `truePeriodLattice X` by
+`periodVec_mem_truePeriodLattice_of_closed`. Hence in the quotient:
+
+```
+[localLift Q₀ constants Q] = [periodVec(smoothPath P Q)]
+```
+
+**Status.** The Lean proof needs three sub-pieces, each ~50-150 LOC:
+
+(a) `localLift_eq_constants_add_periodVec_ChartBallPath`: chart-coord
+    integral equals path-integral. The non-trivial step — the
+    `pathSpeed` uses `chartAt ℂ (γ t)` (chart at path point), which
+    may differ from `chartAt ℂ Q₀`. But `(periodBasisForm i).toFun
+    (γ t)` is chart-independent (it's a global section), and using
+    `localRep`'s trivialization gives a chart-Q₀-frame expression
+    that matches the chart-coord integral.
+
+(b) `periodVec_concat` (PROVEN) + integrability bookkeeping on the
+    concatenation of `smoothPath P Q₀` and `ChartBallPath Q₀ Q₀ Q`.
+    The integrability of basis-form integrands on each piece needs
+    `IsSmoothPath.integrable` for `smoothPath`, plus a separate
+    integrability lemma for `ChartBallPath` (continuous integrand on
+    `[0,1]` × compact chart-ball).
+
+(c) `periodVec_smoothPath_eq_periodVec_concat_mod_lattice`: the
+    closed-loop argument via `periodVec_mem_truePeriodLattice_of_closed`.
+    The non-trivial step is showing `(smoothPath P Q₀ ∗ ChartBallPath
+    Q₀ Q₀ Q) ∗ reverse(smoothPath P Q)` is a `IsClosedSmoothLoop`,
+    which requires concat-smoothness + reverse-smoothness (both with
+    proven infrastructure in `Jacobians/LineIntegral.lean` and
+    `PeriodLattice.lean`). -/
 theorem localLift_quotient_eq_ofCurve_eventually
     (P Q₀ : X) :
     (fun Q => QuotientAddGroup.mk
         (localLift (X := X) Q₀ (periodVec (smoothPath P Q₀)) Q) :
       X → (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) =ᶠ[nhds Q₀]
-      (fun Q => QuotientAddGroup.mk (periodVec (smoothPath P Q))) := by
-  -- The identification needs:
-  -- 1. `chart-segment Q₀ Q` is a smooth path from `Q₀` to `Q` (for `Q` in chart-ball).
-  -- 2. `periodVec(chart-segment) i = localLift Q₀ 0 Q i` (computation in chart coords).
-  -- 3. `periodVec(smoothPath P Q₀ ∗ chart-segment) = periodVec(smoothPath P Q₀) +
-  --    periodVec(chart-segment)` via `periodVec_concat`.
-  -- 4. `[periodVec(smoothPath P Q₀ ∗ chart-segment)] = [periodVec(smoothPath P Q)]`
-  --    via path-difference-is-closed-loop in the quotient.
-  --
-  -- Each step is classical; building them up is ~100-200 LOC of
-  -- mechanical path algebra.
+      (fun Q => QuotientAddGroup.mk (periodVec (smoothPath P Q))) :=
   sorry
 
 /-! ## Top-level wiring for `ofCurve_contMDiff`
