@@ -2,6 +2,8 @@ import Jacobians.LineIntegral
 import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 import Mathlib.Algebra.Module.ZLattice.Basic
 import Mathlib.Topology.Connected.LocPathConnected
+import Jacobians.Discharge.Manifold.CriticalValuesFiniteGeneral
+import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 
 /-!
 # Period lattice of a compact Riemann surface
@@ -853,154 +855,58 @@ Classical facts (partially in place, partially axiomatized):
 Each step below is stated as a theorem; real proofs fill in in
 subsequent commits. -/
 
-/-- **Critical set of a holomorphic map** between complex 1-manifolds:
-points where `mfderiv` vanishes. Classically the ramification locus. -/
+/-- **Critical set of a holomorphic map** between complex 1-manifolds.
+
+Defined as `Jacobians.Discharge.Manifold.criticalSetGeneral f` — the set of
+points at which `f` is not locally injective. Classically equivalent to
+`{x | mfderiv f x = 0}` for analytic maps between complex 1-manifolds
+(the planar bridge ZZ99 / Forster §I.7); the local-injectivity definition is
+the one supported by the imported discharge infrastructure, which gives us
+closedness, ne-univ, and finiteness directly. -/
 def criticalSet (f : X → Y) : Set X :=
-  {x | mfderiv 𝓘(ℂ) 𝓘(ℂ) f x = 0}
+  Jacobians.Discharge.Manifold.criticalSetGeneral f
 
 /-- **Branch locus**: the image of the critical set. -/
 def branchLocus (f : X → Y) : Set Y :=
   f '' criticalSet f
 
-/-- **Critical set is closed.** At each point `x₀`, near `x₀` the
-map `x ↦ fderiv ℂ (local rep) (chart x)` is continuous (analytic
-in chart coords; chart continuous), so the zero set is closed. The
-argument needs care because the chart source varies with `x`; we
-use a fixed chart at `x₀` on an open neighborhood. -/
-theorem isClosed_criticalSet (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    IsClosed (criticalSet f) := by
-  -- Strategy: criticalSet f = {x | mfderiv f x 1 = 0} ∈ X (scalar form).
-  -- mfderiv f x 1 as a function X → ℂ is continuous; zero is closed; preimage closed.
-  have hset : criticalSet f = (fun x => mfderiv 𝓘(ℂ) 𝓘(ℂ) f x (1 : ℂ)) ⁻¹' {0} := by
-    ext x
-    simp only [criticalSet, Set.mem_preimage, Set.mem_singleton_iff, Set.mem_setOf_eq]
-    constructor
-    · intro h; rw [h]; rfl
-    · intro h
-      -- TangentSpace 𝓘(ℂ, ℂ) x = ℂ, so mfderiv is a CLM ℂ →L[ℂ] ℂ, determined by value at 1.
-      exact ContinuousLinearMap.ext_ring h
-  rw [hset]
-  -- Show the complement is open; then the preimage of {0} is closed.
-  rw [← isOpen_compl_iff]
-  rw [show ((fun x => mfderiv 𝓘(ℂ) 𝓘(ℂ) f x (1 : ℂ)) ⁻¹' ({0} : Set ℂ))ᶜ =
-      {x | mfderiv 𝓘(ℂ) 𝓘(ℂ) f x ≠ 0} from ?_]
-  · -- Key: criticalSet complement = {x | mfderiv f x ≠ 0}. Use ContMDiffAt of
-    -- the inCoordinates form of mfderiv to get local openness.
-    rw [isOpen_iff_mem_nhds]
-    intro x₀ hx₀  -- hx₀ : mfderiv f x₀ ≠ 0
-    -- ContMDiffAt of the coordinate form.
-    have hmf : ContMDiffAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ω
-        (fun x => ContinuousLinearMap.inCoordinates ℂ
-          (TangentSpace 𝓘(ℂ, ℂ) (M := X)) ℂ
-          (TangentSpace 𝓘(ℂ, ℂ) (M := Y))
-          x₀ x (f x₀) (f x) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x)) x₀ :=
-      (hf x₀).mfderiv_const (le_refl _)
-    -- ContMDiffAt → ContinuousAt.
-    have hcont : ContinuousAt (fun x => ContinuousLinearMap.inCoordinates ℂ
-        (TangentSpace 𝓘(ℂ, ℂ) (M := X)) ℂ
-        (TangentSpace 𝓘(ℂ, ℂ) (M := Y))
-        x₀ x (f x₀) (f x) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x)) x₀ :=
-      hmf.continuousAt
-    -- Key observation: mfderiv f x₀ ≠ 0 implies inCoordinates(mfderiv f x₀) ≠ 0,
-    -- because inCoordinates is conjugation by bijective trivializations.
-    -- Rather than proving the full iff, use the contrapositive inline:
-    -- if inCoordinates(mfderiv f x) = 0, then mfderiv f x = 0 (bijection).
-    have hbase_X : (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet ∈ 𝓝 x₀ :=
-      (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).open_baseSet.mem_nhds
-        (mem_baseSet_trivializationAt ℂ _ x₀)
-    have hbase_Y : f ⁻¹' (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (f x₀)).baseSet ∈ 𝓝 x₀ :=
-      hf.continuous.continuousAt.preimage_mem_nhds
-        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (f x₀)).open_baseSet.mem_nhds
-          (mem_baseSet_trivializationAt ℂ _ (f x₀)))
-    -- At x₀, inCoordinates ≠ 0 (mfderiv ≠ 0 + trivialization bijection).
-    -- Key tactic: conjugate out the trivialization factors.
-    have hinCoord_ne_x₀ : ContinuousLinearMap.inCoordinates ℂ
-        (TangentSpace 𝓘(ℂ, ℂ) (M := X)) ℂ
-        (TangentSpace 𝓘(ℂ, ℂ) (M := Y))
-        x₀ x₀ (f x₀) (f x₀) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x₀) ≠ 0 := by
-      intro h
-      apply hx₀
-      -- `h` is a CLM equation; evaluate at `continuousLinearMapAt 1` and use
-      -- `symmL_continuousLinearMapAt = id`.
-      have hmem_X : x₀ ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet :=
-        mem_baseSet_trivializationAt ℂ _ x₀
-      have hmem_Y : f x₀ ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (f x₀)).baseSet :=
-        mem_baseSet_trivializationAt ℂ _ (f x₀)
-      apply ContinuousLinearMap.ext
-      intro v
-      show (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x₀) v = 0
-      -- Apply h at `continuousLinearMapAt (triv X) x₀ v : ℂ`.
-      have happ := congr_arg
-        (fun L : ℂ →L[ℂ] ℂ =>
-          L ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).continuousLinearMapAt ℂ x₀ v))
-        h
-      simp only [ContinuousLinearMap.zero_apply] at happ
-      simp only [ContinuousLinearMap.inCoordinates, ContinuousLinearMap.comp_apply] at happ
-      rw [Bundle.Trivialization.symmL_continuousLinearMapAt _ hmem_X] at happ
-      -- happ : continuousLinearMapAt (triv Y) (f x₀) (mfderiv f x₀ v) = 0
-      -- Apply symmL to both sides to cancel the continuousLinearMapAt.
-      have := congr_arg
-        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (f x₀)).symmL ℂ (f x₀)) happ
-      rw [Bundle.Trivialization.symmL_continuousLinearMapAt _ hmem_Y] at this
-      -- `this : (mfderiv f x₀) v = (triv Y).symm (f x₀) 0`
-      -- Need: (triv Y).symm (f x₀) 0 = 0, which holds because
-      -- symmL is a CLM (hence map_zero) and coincides with symm on baseSet.
-      have hzero : ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (f x₀)).symmL ℂ (f x₀)) 0
-          = (0 : TangentSpace 𝓘(ℂ, ℂ) (M := Y) (f x₀)) :=
-        ContinuousLinearMap.map_zero _
-      -- Convert via the (symmL vs symm) coincidence lemma.
-      calc (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x₀) v
-          = _ := this
-        _ = ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := Y)) (f x₀)).symmL ℂ (f x₀)) 0 := by
-              simp [Bundle.Trivialization.symmL]
-        _ = 0 := hzero
-    -- By continuity, inCoordinates ≠ 0 in a nbhd.
-    have hnbhd : (fun x => ContinuousLinearMap.inCoordinates ℂ
-        (TangentSpace 𝓘(ℂ, ℂ) (M := X)) ℂ
-        (TangentSpace 𝓘(ℂ, ℂ) (M := Y))
-        x₀ x (f x₀) (f x) (mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x)) ⁻¹' {0}ᶜ ∈ 𝓝 x₀ :=
-      hcont.preimage_mem_nhds (isOpen_compl_singleton.mem_nhds hinCoord_ne_x₀)
-    -- Pull back: inCoordinates ≠ 0 → mfderiv ≠ 0 (composition with 0 = 0).
-    filter_upwards [hnbhd] with x hx hmf_zero
-    apply hx
-    simp [ContinuousLinearMap.inCoordinates, hmf_zero,
-      ContinuousLinearMap.comp_zero, ContinuousLinearMap.zero_comp]
-  · -- Set equality: complement of "mfderiv f x 1 = 0" = "mfderiv f x ≠ 0".
-    ext x
-    simp only [Set.mem_compl_iff, Set.mem_preimage, Set.mem_singleton_iff, Set.mem_setOf_eq]
-    constructor
-    · intro h hmf_zero
-      apply h
-      rw [hmf_zero]; rfl
-    · intro h hval_zero
-      apply h
-      exact ContinuousLinearMap.ext_ring hval_zero
+/-- **Critical set is closed.** The not-locally-injective set is closed via
+the discharge's `isClosed_criticalSetGeneral` (CriticalSetClosed). -/
+theorem isClosed_criticalSet (f : X → Y) (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    IsClosed (criticalSet f) :=
+  Jacobians.Discharge.Manifold.isClosed_criticalSetGeneral f
 
-/-- **Critical set of a non-constant map is not everything** (Forster §4).
-If `criticalSet f = Set.univ` (i.e., `mfderiv f = 0` everywhere), then
-`f` is locally constant; since `X` is connected, `f` is globally
-constant. Requires chart-level MVT + connectedness; not in Mathlib at
-the manifold level. -/
+/-- **Critical set of a non-constant map is not everything.** Discharge
+proves `(criticalSet f).Finite`; `X` is infinite (a compact connected
+complex 1-manifold has an open chart into ℂ which contains an open ball,
+hence infinitely many points); so `criticalSet f ≠ univ`. -/
 theorem criticalSet_ne_univ_of_nonconstant
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (_hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
-    criticalSet f ≠ Set.univ :=
-  sorry
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    criticalSet f ≠ Set.univ := by
+  intro h_eq
+  have h_fin : (criticalSet f).Finite :=
+    Jacobians.Discharge.Manifold.criticalSet_finite_general f hf hnonconst
+  rw [h_eq] at h_fin
+  haveI : Infinite X :=
+    Jacobians.Discharge.ContMDiff.Owed.degree.y_infinite_of_chartedSpace_complex
+  exact Set.infinite_univ.not_finite h_fin
 
 /-- **Critical set is finite** (Forster §4 / isolated-zeros). For
-non-constant holomorphic `f`, `criticalSet f` is finite. -/
+non-constant holomorphic `f`, `criticalSet f` is finite. Direct forward
+to discharge's `criticalSet_finite_general`. -/
 theorem finite_criticalSet_of_nonconstant
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
     (criticalSet f).Finite :=
-  sorry
+  Jacobians.Discharge.Manifold.criticalSet_finite_general f hf hnonconst
 
 /-- **Branch locus is finite.** Image of a finite set is finite. -/
 theorem finite_branchLocus_of_nonconstant
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
     (branchLocus f).Finite :=
-  sorry
+  (finite_criticalSet_of_nonconstant f hf hnonconst).image f
 
 /-- **Existence of preimage cycle for non-constant maps** — the main
 content sorry. Classically (Forster §10.11): pick `δ` or homotope it

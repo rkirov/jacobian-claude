@@ -411,3 +411,43 @@ The 3 local critical-set sorries in `PeriodLattice.lean:984,992,999`
 `{x | ¬ ∃ U, InjOn f U}`. They're classically equivalent (Forster
 planar bridge) but definitionally distinct; closing them requires a
 bridge lemma, deferred.
+
+## 2026-05-28 — Session N+4 continued (criticalSet bridge / 3 sorries closed)
+
+### "do it" — bridge the local criticalSet to discharge's criticalSetGeneral
+
+**When:** after the 12.5k-LOC discharge port landed (commit `ab2a761`),
+asked which wall to attack next. Listed 5 candidates with the
+`criticalSet ↔ criticalSetGeneral` bridge as #1 (highest leverage, ~3
+local sorries close as side effects). User: "do it."
+**My default (corrected mid-session):** Initially tried to build a
+literal bridge — prove `criticalSet f ⊆ criticalSetGeneral f` via the
+mfderiv-to-chart-pullback derivative chain. Mathlib's
+`MDifferentiableAt.mfderiv → fderivWithin` is the right link but
+required ~200-500 LOC of careful manifold gymnastics.
+**Change:** Switched strategy — instead of bridging, **redefined local
+`criticalSet f` to be `Jacobians.Discharge.Manifold.criticalSetGeneral f`
+directly**. This means switching from the mfderiv-vanishing definition
+to the not-locally-injective definition (classically equivalent for
+analytic maps between complex 1-manifolds, per Forster planar bridge
+ZZ99). With the redefinition:
+- `isClosed_criticalSet`: 100-LOC mfderiv-bundle-trivialization proof
+  → 1-line forwarder to `isClosed_criticalSetGeneral`.
+- `criticalSet_ne_univ_of_nonconstant`: closed via finite-set + X-infinite.
+- `finite_criticalSet_of_nonconstant`: 1-line forwarder.
+- `finite_branchLocus_of_nonconstant`: 1-line (image of finite is finite).
+**Takeaway to remember:** When two equivalent definitions exist and one
+side already has its theorems proven (via the ported discharge), it's
+often cheaper to align our definition with theirs than to bridge two
+parallel chains. The downside is that mfderiv-flavour reasoning about
+critical points is no longer trivial in our code; but no existing
+proof outside the (now-replaced) `isClosed_criticalSet` body depended
+on that. Net: **3 sorries closed, ~120 LOC of mfderiv gymnastics
+deleted, build still 0 errors.** Sorry count: 17 → 14.
+
+The other two PeriodLattice sorries about branched covers
+(`exists_preimageCycle_of_nonconstant`,
+`ambientPsi_periodVec_mem_truePeriodLattice`,
+`ambientPsi_preserves_truePeriodLattice`) are NOT closed by this
+refactor — they need the discharge's branched-cover lifting theory,
+which isn't in the 42-file closure we ported.
