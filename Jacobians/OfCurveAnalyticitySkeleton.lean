@@ -47,11 +47,16 @@ The local lifts agree with `ofCurve P` modulo the period lattice
 (path-difference-is-closed-loop ⇒ lattice element). Local-to-global
 smoothness in the **quotient** follows from `contMDiff_iff_forall_*`.
 
-**Status of this file (2026-05-28)**
+**Status of this file (updated 2026-05-29)**
 
-All theorems are sorry-bodied with detailed proof plans. The
-architecture is sound — each sorry maps to one cleanly-statable
-classical-content claim.
+The file is now sorry-FREE in all proof bodies: the local chart-ball
+machinery (`localLift_contMDiffAt`, `chartFrame_cancel`,
+`isSmoothPath_ChartBallPathSmooth`, the 2-piece junction loop, and
+`localLift_quotient_eq_ofCurve_eventually`) is all proven and
+`#print axioms`-clean. The only residual dependence on `sorryAx` is
+transitive, through `smoothPath` (= `Classical.choice` of
+`exists_smoothPath_family`, sorry S1). Closing S1 makes this entire
+file — and `ofCurve_contMDiff` — unconditionally sorry-free.
 -/
 
 open scoped Manifold ContDiff
@@ -2073,7 +2078,8 @@ theorem localLift_quotient_eq_ofCurve_eventually
 
 With `localLift_contMDiffAt` (analytic→ContMDiff bridge, PROVEN) and
 `localLift_quotient_eq_ofCurve_eventually` (path-algebra identification,
-sorry), the proof of `ofCurve_contMDiff` is a straightforward
+also PROVEN — modulo `smoothPath` which is `Classical.choice` of sorry
+S1), the proof of `ofCurve_contMDiff` is a straightforward
 local-to-global glue.
 
 The function `Jacobians.OfCurveSkeleton.ofCurveContMDiff_via_localLift`

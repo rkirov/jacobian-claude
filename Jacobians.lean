@@ -239,33 +239,31 @@ basepoint under the new).
 4. Rearrange via `QuotientAddGroup.mk_add`: `ofCurve P₀ A = ofCurve
    P₀ P + ofCurve P A`.
 
-The remaining content gap is the smoothness+integrability hypothesis
-bundle for `mk_periodVec_eq_of_endpoints` and `periodVec_concat` —
-concat of smooth paths is a smooth loop when closed, and path-algebra
-integrability. Left as a focused content sorry (~30-50 lines of
-concat/reverse smoothness preservation). -/
+Proven here via `smoothPath_basepoint_change`, which is the second
+conjunct of `exists_smoothPath_family` (sorry S1) extracted by
+`choose_spec`. So this lemma is genuine modulo S1 — no separate sorry. -/
 lemma ofCurve_basepoint_change (P P₀ A : X) :
     ofCurve P₀ A = ofCurve P A + ofCurve P₀ P := by
   unfold ofCurve
   exact Jacobians.smoothPath_basepoint_change P P₀ A
 
-/-- **Abel ⇒ ofCurve injective.**
+/-- **Abel ⇒ ofCurve injective** (THE main challenge theorem).
 
-Structurally: `HasAbelsTheorem X` + `NoDegreeOneDivisorsToPP1 X`
-axiomatize Abel's theorem + the Riemann-Hurwitz obstruction to
-degree-1 maps to ℙ¹. Together with real `ofCurve` (path-integrated)
-and real `abelJacobi` connecting via
-`abelJacobi (twoPointDivisor P Q) = ofCurve P₀ P - ofCurve P₀ Q`,
-these force two distinct points on a positive-genus surface to
-have different Abel-Jacobi images.
+This is a *real* proof chain, not a placeholder. `ofCurve` is the
+path-integrated Abel–Jacobi map and `abelJacobi` is the genuine
+divisor map; they connect via the proven
+`abelJacobi_twoPointDivisor : abelJacobi (twoPointDivisor Q' Q) =
+ofCurve P₀ Q' - ofCurve P₀ Q`. The chain:
+  ofCurve P Q = ofCurve P Q'
+   → (basepoint change, `ofCurve_basepoint_change`) ofCurve P₀ Q' = ofCurve P₀ Q
+   → abelJacobi (twoPointDivisor Q' Q) = 0
+   → contradicts `abelJacobi_twoPoint_ne_zero` when Q ≠ Q' and 0 < genus X.
 
-Currently sorry because the `abelJacobi ↔ ofCurve` connection is
-not yet built (abelJacobi is still placeholder ≡ 0; relating it to
-the real ofCurve requires ~30 lines). Under real abelJacobi the
-proof chain:
-  ofCurve P Q = ofCurve P Q' → abelJacobi (Q - Q') = 0
-   → Q - Q' principal (HasAbelsTheorem)
-   → contradicts NoDegreeOneDivisorsToPP1 if Q ≠ Q' and 0 < genus X. -/
+The only remaining math gap is the leaf `abelJacobi_twoPoint_ne_zero`
+(sorry S7 = Abel's theorem + Riemann–Hurwitz, `Abel.lean`); everything
+above it here is proven. The basepoint-change step also rests on
+`smoothPath_basepoint_change`, extracted from sorry S1
+(`exists_smoothPath_family`). -/
 lemma ofCurve_inj
     (P : X) (h : 0 < genus X) : Function.Injective (ofCurve P) := by
   intro Q Q' h_eq
@@ -410,15 +408,37 @@ a regular fibre (Forster §4).
 `jacobian-lean-challenge` (`#print axioms`-verified clean per
 `docs/EXTERNAL_AUDIT.md`). For non-constant `f`, `degreeFiber` returns
 the cardinality of the fibre over a `RegularValueWitnessReg`-supplied
-regular value via `Classical.choice`. No proof of
-`Nonempty (RegularValueWitnessReg f)` is supplied at this pin
-(it reduces to the identity-theorem ⇒ discrete-fibres ⇒ regular-value
-chain, ~4k LOC of analytic infrastructure not ported), so in current
-practice this still returns `0` — but the *shape* is correct, so
-`pushforward_pullback` and `ambientPhi_ambientPsi_eq` now state the
-honest trace identity (`= deg • P`) rather than a vacuous `= 0 • P`. -/
+regular value via `Classical.choice`. The witness existence
+`Nonempty (RegularValueWitnessReg f)` *is* supplied unconditionally
+(`Jacobians.regularValueWitnessReg_nonempty_of_nonConstantMap`,
+`#print axioms`-clean), so for non-constant `f` the `else 0` fallback
+does **not** fire and the degree is a genuine regular-fibre cardinality.
+
+Remaining gaps (do not affect soundness of the *shape* `= deg • P` in
+`pushforward_pullback`, but matter for its quantitative meaning):
+(a) *positivity* — `degreeFiber f hf > 0` for non-constant `f` (needs
+surjectivity of proper non-constant holomorphic maps); (b)
+*well-definedness* — independence of the chosen regular value. -/
 noncomputable def _root_.ContMDiff.degree (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
   Jacobians.degreeFiber f hf
+
+/-- **Ambient degree identity** (Forster §17 / Miranda §III.4):
+`f_* ∘ f^* = deg(f) • id` on holomorphic 1-forms, in ambient coordinates.
+
+Stated here (rather than in `HolomorphicForms.lean`) so the degree is pinned
+to the genuine `ContMDiff.degree f hf`, which is defined in this file. A free
+`d : ℕ` version — the previous formulation — was vacuously false (`d = 0` vs
+`d = 1` forces `y = 0`). This is the honest single-degree statement.
+
+Content sorry: the real proof (Forster §17) needs a genuine `pushforwardForm`
+/ trace map for 1-forms — the current `ambientPhi` is a matrix-transpose
+placeholder, so the identity does not hold definitionally and this stays a
+classical-content sorry. ~500–1000 lines once a real pushforward exists. -/
+theorem ambientPhi_ambientPsi_eq (y : Fin (genus Y) → ℂ) :
+    Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf
+      (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf y) =
+      (ContMDiff.degree f hf) • y :=
+  sorry
 
 lemma pushforward_pullback
     (P : Jacobian Y) :
@@ -430,8 +450,7 @@ lemma pushforward_pullback
     (ambientPhi_preserves_lattice f hf)
     (ambientPsi_preserves_lattice f hf)
     (ContMDiff.degree f hf)
-    (fun y => Jacobians.ambientPhi_ambientPsi_eq f hf
-      (ContMDiff.degree f hf) y)
+    (fun y => ambientPhi_ambientPsi_eq f hf y)
     P
 
 end Jacobian
