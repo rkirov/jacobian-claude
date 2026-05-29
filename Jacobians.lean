@@ -348,25 +348,32 @@ lemma pushforward_comp_apply (P : Jacobian X) :
     congr 1
     exact Jacobians.ambientPhi_comp f hf g hg (hg.comp hf) x
 
-/-- Lattice preservation on the pullback side. Case-split on f constant
-vs non-constant: the constant case is real (ambientPsi = 0); the
-non-constant case is the trace identity (Forster §10.11). -/
-lemma ambientPsi_preserves_lattice
+/-- Lattice preservation on the pullback side: the genuine Jacobian pullback
+`ambientPullbackJac` (= `Tᵀ`, the trace transpose) maps the `Y`-period lattice
+into the `X`-period lattice, because `Tᵀ(periodVec δ) = periodVec(preimage
+cycle of δ)` (projection formula) and the preimage cycle is an `X`-cycle.
+
+**[open, §3]** Discharged by the S4 §3 preimage-cycle construction
+(`ambientPullbackJac_preserves_truePeriodLattice`, PeriodLattice.lean); stubbed
+here pending that build. Replaces the misformalized `ambientPsi`-as-pullback,
+whose preservation rested on the false `ambientPsi`-trace identity. -/
+lemma ambientPullbackJac_preserves_lattice
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (periodLattice Y).toAddSubgroup ≤
       (periodLattice X).toAddSubgroup.comap
-        (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
-  Jacobians.ambientPsi_preserves_truePeriodLattice f hf
+        (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
+  sorry
 
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
 Equal to the zero map if the map on curves is constant.
-Wired: `ZLatticeQuotient.pullback` applied to `ambientPsi f hf`. -/
+Wired: `ZLatticeQuotient.pullback` applied to the genuine Jacobian pullback
+`ambientPullbackJac f hf` (= `Tᵀ`). -/
 noncomputable def pullback (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     Jacobian Y →ₜ+ Jacobian X :=
   Jacobians.ZLatticeQuotient.pullback (periodLattice X) (periodLattice Y)
-    (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf)
-    (ambientPsi_preserves_lattice f hf)
+    (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf)
+    (ambientPullbackJac_preserves_lattice f hf)
 
 -- pullback is holomorphic
 theorem pullback_contMDiff :
@@ -374,17 +381,17 @@ theorem pullback_contMDiff :
       (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) :=
   Jacobians.ZLatticeQuotient.pullback_contMDiff_of_ambient
     (periodLattice X) (periodLattice Y)
-    (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf)
-    (ambientPsi_preserves_lattice f hf)
+    (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf)
+    (ambientPullbackJac_preserves_lattice f hf)
 
 -- functoriality
 lemma pullback_id_apply
     (P : Jacobian X) : pullback id contMDiff_id P = P :=
   Jacobians.ZLatticeQuotient.pushforward_id_of_ambient
     (periodLattice X)
-    (Jacobians.ambientPsi (gX := genus X) (gY := genus X) id contMDiff_id)
-    (ambientPsi_preserves_lattice id contMDiff_id)
-    (fun x => Jacobians.ambientPsi_id (X := X) x)
+    (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus X) id contMDiff_id)
+    (ambientPullbackJac_preserves_lattice id contMDiff_id)
+    (fun x => Jacobians.ambientPullbackJac_id (X := X) x)
     P
 
 -- functoriality
@@ -394,13 +401,13 @@ lemma pullback_comp_apply
   induction P using QuotientAddGroup.induction_on with
   | H z =>
     show QuotientAddGroup.mk
-        (Jacobians.ambientPsi (gX := genus X) (gY := genus Z) (g ∘ f)
+        (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Z) (g ∘ f)
           (hg.comp hf) z) =
       QuotientAddGroup.mk
-        (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf
-          (Jacobians.ambientPsi (gX := genus Y) (gY := genus Z) g hg z))
+        (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf
+          (Jacobians.ambientPullbackJac (gX := genus Y) (gY := genus Z) g hg z))
     congr 1
-    exact Jacobians.ambientPsi_comp f hf g hg (hg.comp hf) z
+    exact Jacobians.ambientPullbackJac_comp f hf g hg (hg.comp hf) z
 
 /-- The degree of a holomorphic map between compact Riemann surfaces.
 Equal to zero for constant maps, otherwise equal to the cardinality of
@@ -425,26 +432,24 @@ surjectivity of proper non-constant holomorphic maps); (b)
 noncomputable def _root_.ContMDiff.degree (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
   Jacobians.degreeFiber f hf
 
-/-- **Ambient degree identity** (Griffiths–Harris Ch. 2 §2.7 — the trace map
-for forms; *not* Forster §17, which is Serre Duality):
-`f_* ∘ f^* = deg(f) • id` on holomorphic 1-forms, in ambient coordinates.
+/-- **Ambient degree identity** (`f_* ∘ f^* = deg(f) • id`; Griffiths–Harris
+Ch. 2 §2.7 — the trace map for forms): the genuine pushforward `ambientPhi`
+(= `Mᵀ`, dual to pullback-of-forms) composed with the genuine pullback
+`ambientPullbackJac` (= `Tᵀ`, transpose of the trace `pushforwardForm`) is
+multiplication by the degree, in ambient coordinates.
 
-Stated here (rather than in `HolomorphicForms.lean`) so the degree is pinned
-to the genuine `ContMDiff.degree f hf`, which is defined in this file. A free
-`d : ℕ` version — the previous formulation — was vacuously false (`d = 0` vs
-`d = 1` forces `y = 0`). This is the honest single-degree statement.
+`Mᵀ Tᵀ = (T M)ᵀ = (deg • I)ᵀ = deg • I`, where `T M = deg • I` is the trace
+identity `pushforwardForm ∘ pullbackForm = deg • id` (G&H §2.7).
 
-**Soundness caveat.** `ambientPhi` is currently the matrix TRANSPOSE of
-`ambientPsi`, which is the adjoint in the chosen basis — NOT the pushforward
-`f_*` (a trace/transfer map). For the transpose, `Φ∘Ψ = d•id` reduces to
-`MᵀM = d·I`, which is false for a generic pullback matrix. So this `sorry` is
-not just unproven but *false under the current definitions*; closing it
-honestly requires replacing `ambientPhi` with a genuine `pushforwardForm`
-(trace of forms, Griffiths–Harris §2.7). Until then `pushforward` /
-`pushforward_pullback` denote the wrong map. ~500–1000 lines. -/
-theorem ambientPhi_ambientPsi_eq (y : Fin (genus Y) → ℂ) :
+**[open, honest]** Now a *true* statement (no longer the false `MᵀM = deg·I` of
+the old `ambientPhi_ambientPsi_eq`, which used the wrong pullback). Discharged in
+Phase 4 from the S4 §3 preimage cycle + the proven `periodVec_pushforward` + S3
+spanning: `ambientPhi(periodVec Γ) = periodVec(f∘Γ) = deg·periodVec δ` and
+`periodVec Γ = ambientPullbackJac(periodVec δ)`, extended off the lattice by
+full-rank (S3). See `docs/S8_TRACE_PLAN.md`. -/
+theorem ambientPhi_ambientPullback_eq (y : Fin (genus Y) → ℂ) :
     Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf
-      (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf y) =
+      (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf y) =
       (ContMDiff.degree f hf) • y :=
   sorry
 
@@ -454,11 +459,11 @@ lemma pushforward_pullback
   Jacobians.ZLatticeQuotient.pushforward_pullback_of_ambient
     (periodLattice X) (periodLattice Y)
     (Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf)
-    (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf)
+    (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf)
     (ambientPhi_preserves_lattice f hf)
-    (ambientPsi_preserves_lattice f hf)
+    (ambientPullbackJac_preserves_lattice f hf)
     (ContMDiff.degree f hf)
-    (fun y => ambientPhi_ambientPsi_eq f hf y)
+    (fun y => ambientPhi_ambientPullback_eq f hf y)
     P
 
 end Jacobian
