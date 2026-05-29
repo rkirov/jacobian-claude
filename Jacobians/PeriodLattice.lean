@@ -1183,19 +1183,192 @@ theorem nhds_le_map_of_chartPullback_not_eventuallyConst
     _ = Filter.map f (Filter.map φ.symm (𝓝 (φ x))) := by rw [Filter.map_map]
     _ = Filter.map f (𝓝 x) := by rw [hnx]
 
-/-- **[open]** The chart pullback of a non-constant holomorphic map is
-not locally constant at any chart image. This is the *globalized identity
-theorem*: from `f` non-constant globally, walk analytic continuation across a
-chain of overlapping charts (a path from `x` to a point where `f` differs) to
-rule out local constancy at `x`. The repo's `AnalyticContinuationGlobalization`
-isolates exactly this as deferred (the local within-chart version
-`not_eventually_const_at_chartImage` is proven there; the cross-chart
-globalization is the remaining analytic input). -/
-theorem chartPullback_not_eventuallyConst (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+section GlobalizedIdentity
+open Set
+
+/-- `f` is locally constant at `x`: eventually equal to `f x`. -/
+def locConst (f : X → Y) (x : X) : Prop := ∀ᶠ x' in 𝓝 x, f x' = f x
+
+-- Lemma A: chart-pullback eventually const at chart image ↔ f locally const at x.
+theorem chartPullback_eventuallyConst_iff_locConst
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X) :
+    (∀ᶠ z in 𝓝 ((chartAt ℂ x) x),
+      chartPullback f x z = chartPullback f x ((chartAt ℂ x) x))
+    ↔ locConst f x := by
+  set φ := chartAt ℂ x with hφ
+  set ψ := chartAt ℂ (f x) with hψ
+  have hxφ : x ∈ φ.source := mem_chart_source ℂ x
+  have hfxψ : f x ∈ ψ.source := mem_chart_source ℂ (f x)
+  -- 𝓝 x = map φ.symm (𝓝 (φ x)), and 𝓝 (φ x) = map φ (𝓝 x)
+  have hmap : Filter.map φ.symm (𝓝 (φ x)) = 𝓝 x := φ.symm_map_nhds_eq hxφ
+  have hmap' : Filter.map φ (𝓝 x) = 𝓝 (φ x) := φ.map_nhds_eq hxφ
+  -- f continuous near x stays in ψ.source
+  have hcontf : ContinuousAt f x := hf.continuous.continuousAt
+  have hf_src : ∀ᶠ x' in 𝓝 x, f x' ∈ ψ.source :=
+    hcontf.preimage_mem_nhds (ψ.open_source.mem_nhds hfxψ)
+  -- φ.symm (φ x) = x
+  have hsymm : φ.symm (φ x) = x := φ.left_inv hxφ
+  -- chartPullback f x (φ x') = ψ (f x') when x' ∈ φ.source
+  have hpb_eq : ∀ x', x' ∈ φ.source →
+      chartPullback f x (φ x') = ψ (f x') := by
+    intro x' hx'
+    simp only [chartPullback, Function.comp_apply, ← hφ, ← hψ]
+    rw [φ.left_inv hx']
+  have hpbx : chartPullback f x (φ x) = ψ (f x) := hpb_eq x hxφ
+  -- x' ∈ φ.source for x' near x
+  have hx_src : ∀ᶠ x' in 𝓝 x, x' ∈ φ.source :=
+    φ.open_source.mem_nhds hxφ
+  constructor
+  · -- pullback const ⇒ locConst
+    intro hev
+    rw [← hmap', Filter.eventually_map] at hev
+    -- hev : ∀ᶠ x' in 𝓝 x, chartPullback f x (φ x') = chartPullback f x (φ x)
+    filter_upwards [hev, hf_src, hx_src] with x' hpb hx'src hx'φ
+    -- ψ (f x') = ψ (f x) ⇒ f x' = f x
+    rw [hpb_eq x' hx'φ, hpbx] at hpb
+    exact ψ.injOn hx'src hfxψ hpb
+  · -- locConst ⇒ pullback const
+    intro hlc
+    rw [← hmap', Filter.eventually_map]
+    filter_upwards [hlc, hx_src] with x' hfx' hx'φ
+    rw [hpb_eq x' hx'φ, hpbx, hfx']
+
+/-- **Bridge with a fixed target chart.** For `x` in the source chart of `x₀`
+whose image `f x` lies in the *fixed* target chart of `x₀`, local constancy of
+`f` at `x` is equivalent to the (single, `x₀`-based) chart pullback being
+eventually constant at `φ₀ x`. -/
+theorem locConst_iff_pullback_const_fixedChart
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x₀ x : X)
+    (hxφ : x ∈ (chartAt ℂ x₀).source)
+    (hfxψ : f x ∈ (chartAt ℂ (f x₀)).source) :
+    locConst f x ↔
+      ∀ᶠ z in 𝓝 ((chartAt ℂ x₀) x), chartPullback f x₀ z = chartPullback f x₀ ((chartAt ℂ x₀) x) := by
+  set φ := chartAt ℂ x₀ with hφ
+  set ψ := chartAt ℂ (f x₀) with hψ
+  -- 𝓝 (φ x) = map φ (𝓝 x)
+  have hmap' : Filter.map φ (𝓝 x) = 𝓝 (φ x) := φ.map_nhds_eq hxφ
+  -- f continuous near x stays in ψ.source
+  have hcontf : ContinuousAt f x := hf.continuous.continuousAt
+  have hf_src : ∀ᶠ x' in 𝓝 x, f x' ∈ ψ.source :=
+    hcontf.preimage_mem_nhds (ψ.open_source.mem_nhds hfxψ)
+  -- chartPullback f x₀ (φ x') = ψ (f x') when x' ∈ φ.source
+  have hpb_eq : ∀ x', x' ∈ φ.source →
+      chartPullback f x₀ (φ x') = ψ (f x') := by
+    intro x' hx'
+    simp only [chartPullback, Function.comp_apply, ← hφ, ← hψ]
+    rw [φ.left_inv hx']
+  have hpbx : chartPullback f x₀ (φ x) = ψ (f x) := hpb_eq x hxφ
+  have hx_src : ∀ᶠ x' in 𝓝 x, x' ∈ φ.source := φ.open_source.mem_nhds hxφ
+  constructor
+  · -- locConst ⇒ pullback const
+    intro hlc
+    rw [← hmap', Filter.eventually_map]
+    filter_upwards [hlc, hx_src] with x' hfx' hx'φ
+    rw [hpb_eq x' hx'φ, hpbx, hfx']
+  · -- pullback const ⇒ locConst
+    intro hev
+    rw [← hmap', Filter.eventually_map] at hev
+    filter_upwards [hev, hf_src, hx_src] with x' hpb hx'src hx'φ
+    rw [hpb_eq x' hx'φ, hpbx] at hpb
+    exact ψ.injOn hx'src hfxψ hpb
+
+/-- The set of points where `f` is locally constant is **open**. -/
+theorem isOpen_locConst (f : X → Y) : IsOpen {x | locConst f x} := by
+  rw [isOpen_iff_eventually]
+  intro x₀ hx₀
+  -- hx₀ : locConst f x₀, i.e. ∀ᶠ x' in 𝓝 x₀, f x' = f x₀
+  simp only [mem_setOf_eq, locConst] at hx₀
+  rw [eventually_iff_exists_mem] at hx₀
+  obtain ⟨W, hW, hWeq⟩ := hx₀
+  -- W ∈ 𝓝 x₀ with f = f x₀ on W
+  rw [eventually_iff_exists_mem]
+  refine ⟨interior W, interior_mem_nhds.mpr hW, ?_⟩
+  intro x hxW
+  -- f locally const at x: on interior W (a nbhd of x), f = f x₀ = f x
+  have hfx : f x = f x₀ := hWeq x (interior_subset hxW)
+  have : ∀ᶠ x' in 𝓝 x, f x' = f x := by
+    filter_upwards [isOpen_interior.mem_nhds hxW] with x' hx'
+    rw [hWeq x' (interior_subset hx'), hfx]
+  exact this
+
+/-- The set of points where `f` is locally constant is **closed**
+(equivalently, its complement is open), via the identity theorem. -/
+theorem isClosed_locConst (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    IsClosed {x | locConst f x} := by
+  rw [← isOpen_compl_iff, isOpen_iff_eventually]
+  intro x₀ hx₀
+  simp only [mem_compl_iff, mem_setOf_eq] at hx₀ ⊢
+  set φ := chartAt ℂ x₀ with hφ
+  set ψ := chartAt ℂ (f x₀) with hψ
+  set G := chartPullback f x₀ with hG
+  set z₀ := φ x₀ with hz₀
+  have hxφ₀ : x₀ ∈ φ.source := mem_chart_source ℂ x₀
+  have hfxψ₀ : f x₀ ∈ ψ.source := mem_chart_source ℂ (f x₀)
+  -- G not eventually const at z₀, via Lemma A
+  have hGnc : ¬ ∀ᶠ z in 𝓝 z₀, G z = G z₀ :=
+    fun h => hx₀ ((chartPullback_eventuallyConst_iff_locConst f hf x₀).mp h)
+  -- G analytic on a ball around z₀
+  have hGA : AnalyticAt ℂ G z₀ := analyticAt_chartPullback f hf x₀
+  obtain ⟨r, hr, hball⟩ := hGA.exists_ball_analyticOnNhd
+  have hballpc : IsPreconnected (Metric.ball z₀ r) := (convex_ball z₀ r).isPreconnected
+  -- For every z₁ in the ball, G not eventually const at z₁.
+  have hnc_ball : ∀ z₁ ∈ Metric.ball z₀ r, ¬ ∀ᶠ z in 𝓝 z₁, G z = G z₁ := by
+    intro z₁ hz₁ hev
+    -- G = G z₁ on the ball
+    have heqOn : EqOn G (fun _ => G z₁) (Metric.ball z₀ r) :=
+      Jacobians.Discharge.ContMDiff.Degree.eqOn_const_of_preconnected_of_eventuallyEq
+        hball hballpc hz₁ hev
+    -- so G eventually const at z₀
+    apply hGnc
+    have hz₀ball : z₀ ∈ Metric.ball z₀ r := Metric.mem_ball_self hr
+    filter_upwards [Metric.ball_mem_nhds z₀ hr] with z hz
+    rw [heqOn hz, heqOn hz₀ball]
+  -- Now: the open set around x₀ where the bridge applies.
+  -- V := φ.source ∩ φ ⁻¹' (ball) ∩ f ⁻¹' ψ.source
+  have hVopen : IsOpen (φ.source ∩ φ ⁻¹' (Metric.ball z₀ r)) :=
+    φ.continuousOn.isOpen_inter_preimage φ.open_source Metric.isOpen_ball
+  have hfopen : IsOpen (f ⁻¹' ψ.source) :=
+    ψ.open_source.preimage hf.continuous
+  refine Filter.eventually_iff_exists_mem.mpr
+    ⟨(φ.source ∩ φ ⁻¹' (Metric.ball z₀ r)) ∩ (f ⁻¹' ψ.source), ?_, ?_⟩
+  · refine (hVopen.inter hfopen).mem_nhds ⟨⟨hxφ₀, ?_⟩, hfxψ₀⟩
+    show φ x₀ ∈ Metric.ball z₀ r
+    rw [← hz₀]; exact Metric.mem_ball_self hr
+  · rintro x ⟨⟨hxsrc, hxball⟩, hxfsrc⟩
+    -- ¬ locConst f x via bridge + hnc_ball
+    rw [locConst_iff_pullback_const_fixedChart f hf x₀ x hxsrc hxfsrc]
+    -- goal: ¬ ∀ᶠ z in 𝓝 (φ x), G z = G (φ x)
+    exact hnc_ball (φ x) hxball
+
+/-- **Globalized identity theorem.** The chart pullback of a non-constant
+holomorphic map is not locally constant at any chart image. -/
+theorem chartPullback_not_eventuallyConst
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (x : X) :
     ¬ ∀ᶠ z in 𝓝 ((chartAt ℂ x) x),
-      chartPullback f x z = chartPullback f x ((chartAt ℂ x) x) :=
-  sorry
+      chartPullback f x z = chartPullback f x ((chartAt ℂ x) x) := by
+  rw [chartPullback_eventuallyConst_iff_locConst f hf x]
+  -- Suppose f is locally constant at x. Show f is globally constant.
+  intro hlc
+  apply hnonconst
+  -- S = {x | locConst f x} is clopen and nonempty, hence all of X.
+  have hclopen : IsClopen {x : X | locConst f x} :=
+    ⟨isClosed_locConst f hf, isOpen_locConst f⟩
+  have hne : {x : X | locConst f x}.Nonempty := ⟨x, hlc⟩
+  have huniv : {x : X | locConst f x} = Set.univ :=
+    (isClopen_iff.mp hclopen).resolve_left
+      (Set.nonempty_iff_ne_empty.mp hne)
+  -- So f is locally constant everywhere ⇒ IsLocallyConstant ⇒ constant.
+  have hLC : IsLocallyConstant f := by
+    rw [IsLocallyConstant.iff_eventually_eq]
+    intro y
+    have hy : y ∈ {x : X | locConst f x} := by rw [huniv]; trivial
+    exact hy
+  obtain ⟨y₀, hy₀⟩ := hLC.exists_eq_const
+  exact ⟨y₀, fun x' => congrFun hy₀ x'⟩
+
+end GlobalizedIdentity
+
 
 /-- **[PROVEN modulo `chartPullback_not_eventuallyConst`]** A non-constant
 holomorphic map between Riemann surfaces is an open map. Assembled from the
