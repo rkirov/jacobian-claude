@@ -7,7 +7,7 @@ import Mathlib.Topology.LocallyFinsupp
 /-!
 # Abel's theorem on a compact Riemann surface
 
-Abel's theorem (Abel 1826, Forster §21): a divisor `D` of degree 0 on a
+Abel's theorem (Abel 1826, Forster §20): a divisor `D` of degree 0 on a
 compact Riemann surface is principal (i.e., `D = div f` for some
 meromorphic function `f`) if and only if its Abel–Jacobi image is
 zero in the Jacobian.
@@ -71,7 +71,7 @@ a group homomorphism `Divisor X →+ ℤ` via `Finsupp.degree`. -/
 def Divisor.deg : Divisor X →+ ℤ := Finsupp.degree
 
 /-- The subgroup of degree-zero divisors. On a compact Riemann
-surface, every principal divisor has degree 0 (Forster §4.24). -/
+surface, every principal divisor has degree 0 (Forster Cor 4.25). -/
 noncomputable def DivisorOfDegZero : AddSubgroup (Divisor X) :=
   (Divisor.deg X).ker
 
@@ -561,19 +561,22 @@ been removed; `ofCurve_inj`'s former proof via
 `no_distinct_points_placeholder` no longer applies and `ofCurve_inj`
 now needs the real Abel argument (content sorry). -/
 
-/-- **Residue theorem** (Forster §4.24): the degree of `div f` is
-zero for every meromorphic function `f`.
+/-- **Degree of a principal divisor is zero** (Forster Cor 4.25): for every
+non-constant meromorphic `f`, `deg (div f) = #zeros − #poles = 0`.
 
-Classical proof: integrate `d(log f) = df/f` around the boundary of a
-triangulation; each face contributes zero (Stokes); each edge is
-traversed twice with opposite orientations, cancelling. The residue at
-each pole/zero contributes `2πi · ord_x(f)`, so the sum of orders is
-zero. Not currently in Mathlib at the manifold level. -/
+This is NOT the manifold-Stokes residue theorem (the "§4.24/triangulation"
+framing in earlier comments was a mis-citation). The clean route is the
+proper-map degree (Forster §4.24): viewing `f : X → ℙ¹`, properness (automatic
+on compact `X`) makes `f` an `n`-sheeted branched cover, so it takes every
+value — in particular `0` and `∞` — exactly `n` times counting multiplicity.
+Hence `#zeros = #poles = n`, i.e. `deg (div f) = 0`. So this shares the
+proper-map / covering machinery of S4 (`§4.22–4.25`), not Stokes. The constant
+case is degenerate (`div = 0`). -/
 theorem deg_div (f : MeromorphicFunction X) :
     Divisor.deg X (MeromorphicFunction.div X f) = 0 :=
   sorry
 
-/-- **Principal divisors have degree 0** (Forster §4.24). Every
+/-- **Principal divisors have degree 0** (Forster Cor 4.25). Every
 principal divisor sits inside `DivisorOfDegZero X`. Reduces to
 `deg_div` (residue theorem) on each generator and extends to the
 subgroup closure by `AddSubgroup.closure_le`. -/

@@ -311,7 +311,8 @@ theorem ambientPsi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpa
   rw [pullbackForm_comp f hf g hg hgf]
   simp [LinearMap.comp_apply]
 
-/- **Ambient degree identity** (`f_* ∘ f^* = deg(f) • id`, Forster §17).
+/- **Ambient degree identity** (`f_* ∘ f^* = deg(f) • id`, Griffiths–Harris
+Ch. 2 §2.7 — the trace map for forms).
 
 This is stated in `Jacobians.lean` as `Jacobian.ambientPhi_ambientPsi_eq`,
 *not* here. It must pin the degree to the genuine `ContMDiff.degree f hf`,

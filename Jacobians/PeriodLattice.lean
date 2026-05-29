@@ -29,11 +29,14 @@ period pairing.
 * `periodVec_pushforward` — the change-of-variables identity
   `periodVec Y (f ∘ γ) = ambientPhi f hf (periodVec X γ)`, from
   which `ambientPhi` preservation of the period lattice follows.
-* `IsPeriodLattice X` typeclass — axiomatizes `DiscreteTopology` and
-  `IsZLattice ℝ` of the period lattice. These properties require the
-  Hodge-decomposition-level rank-2g theorem, which is tagged as an
-  open Mathlib-adjacent contribution. Downstream code assuming
-  `[IsPeriodLattice X]` can proceed.
+* `DiscreteTopology`/`IsZLattice ℝ` of `truePeriodLattice X` — these are the
+  two open instances (S2/S3) supplied as `sorry` instances below. They hold
+  classically (the period lattice is a full-rank ℤ-lattice in `ℝ^(2g)`) but
+  require the Hodge / Riemann-bilinear-relations theorem (Forster §§19–20),
+  not yet in Mathlib. NOTE: there is no `IsPeriodLattice` typeclass — these are
+  unconditional `sorry` instances, so every `Jacobian`-as-torus consequence
+  rests on them; a future refactor could gate them behind an explicit
+  hypothesis class instead.
 
 ## References
 
@@ -1114,17 +1117,13 @@ theorem finite_branchLocus_of_nonconstant
     (branchLocus f).Finite :=
   (finite_criticalSet_of_nonconstant f hf hnonconst).image f
 
-/-! ## §1 Local structure of non-constant holomorphic maps -/
+/-! ## §1 Local structure of non-constant holomorphic maps
 
-/-- **[open]** At a point off the critical set, a holomorphic map is a local
-diffeomorphism. Classical: `mfderiv f x ≠ 0` (i.e. `x ∉ criticalSet f`) plus
-the inverse function theorem (Forster §2.1) give a chart-local biholomorphism.
-The repo's discharge tree (`notInjOn_iff_deriv_zero_of_analytic_of_order`,
-`contMDiff_omega_analyticAt_chart_pullback`) supplies the analyticity needed. -/
-theorem isLocalHomeoOffCritical (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    {x : X} (hx : x ∉ criticalSet f) :
-    ∃ U : Set X, IsOpen U ∧ x ∈ U ∧ Set.InjOn f U ∧ IsOpen (f '' U) :=
-  sorry
+Non-constant holomorphic maps between Riemann surfaces are open and discrete
+(Forster §4.2); off the branch locus they are local homeomorphisms (§4.4), and
+since a compact source makes them proper, they restrict to finite-sheeted
+coverings off the branch locus (§4.22–4.23). The open-mapping half is proven
+below (`isOpenMap_of_nonconstant`). -/
 
 /-- Chart pullback of `f` at `x`. -/
 noncomputable def chartPullback (f : X → Y) (x : X) : ℂ → ℂ :=
@@ -1222,15 +1221,6 @@ theorem surjective_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(�
   · exact absurd h (Set.range_nonempty f).ne_empty
   · exact Set.range_eq_univ.mp h
 
-/-- **[open]** A non-constant holomorphic map is a covering map over the
-complement of its (finite) branch locus (Forster §4.22 / §10.11): off the
-branch locus every fibre is finite (discrete + compact) and `f` is a local
-homeomorphism, so it is an evenly-covered covering map there. -/
-theorem isCoveringMapOn_compl_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
-    IsCoveringMapOn f (Set.univ \ branchLocus f) :=
-  sorry
-
 /-! ## §2 Homotopy invariance and genericity
 
 The supporting classical fact (stated only in prose to avoid an unsound
@@ -1257,14 +1247,17 @@ theorem exists_loop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘
 /-! ## §3 Lifting and the preimage cycle -/
 
 /-- **[open]** A closed smooth loop off the branch locus lifts to a preimage
-cycle. Construction (Forster §10.11): by `isCoveringMapOn_compl_branchLocus`,
-`f` is a finite covering over `Y ∖ branchLocus`; lift `δ` from each sheet
-(`IsCoveringMap.liftPath`); group the lifts into closed loops along the
-monodromy permutation's orbits (smoothness of each lift from the local-diffeo
-covering); the period trace identity
+cycle. Construction (Forster §4.22–4.23 + §4.14): on compact `X`, non-constant
+holomorphic `f` is proper, so off the branch locus it restricts to a finite
+unbranched covering `X ∖ f⁻¹(B) → Y ∖ B` (proper local homeo ⇒ covering map);
+lift `δ` from each sheet (`IsCoveringMap.liftPath`, Forster §4.14); group the
+lifts into closed loops along the monodromy permutation's orbits (smoothness of
+each lift from the local-diffeo covering); the period trace identity
 `ambientPsi (periodVec δ) = ∑ periodVec (orbit loop)` holds because pulling back
 the basis forms along the sheets and summing reproduces `ambientPsi` (the
-change-of-variables / trace of `pullbackForm`). -/
+change-of-variables / trace of `pullbackForm`). The covering structure
+(`IsCoveringMapOn f (univ ∖ branchLocus f)`) is the natural sub-lemma to
+re-introduce here, proven via Mathlib's proper-map/covering API. -/
 theorem exists_preimageCycle_of_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :

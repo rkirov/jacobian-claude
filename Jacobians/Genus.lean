@@ -70,11 +70,14 @@ noncomputable def genus (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpa
 /-- A compact Riemann surface has genus 0 iff it is homeomorphic to the sphere.
 This is the "anti-hack" constraint preventing `∀ X, genus X = 0`.
 
-Classical result (Forster §16.3: Uniformization theorem; Miranda §V): a
-compact Riemann surface of genus 0 is homeomorphic to the 2-sphere.
-Mathlib does not currently have this; real proof would follow from
-uniformization or Riemann–Roch (genus 0 ⇒ a non-constant meromorphic
-function with a single simple pole gives a biholomorphism X → ℂP¹ ≃ S²). -/
+Classical result: a compact Riemann surface of genus 0 is homeomorphic to the
+2-sphere. The standard route is Riemann–Roch (Forster §16): genus 0 ⇒ a
+non-constant meromorphic function with a single simple pole ⇒ a degree-1 map
+`X → ℙ¹`, which by the proper-map degree (§4.24) is a biholomorphism, so
+`X ≃ ℙ¹ ≃ₜ S²`. (Alternatively the uniformization / Riemann mapping theorem,
+Forster §27.) Mathlib has neither Riemann–Roch nor uniformization nor a
+complex `ℙ¹`/Riemann-sphere manifold, so this is the most theory-deficient
+remaining sorry. -/
 lemma genus_eq_zero_iff_homeo {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
     genus X = 0 ↔ Nonempty (X ≃ₜ (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) :=

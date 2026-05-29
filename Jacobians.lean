@@ -82,8 +82,10 @@ smooth closed loops, where the period pairing uses
 `Jacobians.periodBasisForm X` (basis via `ambientIso X`).
 
 The `DiscreteTopology` and `IsZLattice ℝ` instances require the
-Hodge-decomposition-level rank-2g theorem; these are provided via
-the `IsPeriodLattice` typeclass (see `PeriodLattice.lean`). -/
+Hodge / Riemann-bilinear rank-2g theorem (Forster §§19–20, not yet in
+Mathlib); they are supplied as unconditional `sorry` instances (S2/S3) in
+`PeriodLattice.lean`, so the Jacobian-as-complex-torus structure rests on
+them. -/
 noncomputable def periodLattice (X : Type*) [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] : Submodule ℤ (Fin (genus X) → ℂ) :=
@@ -423,7 +425,8 @@ surjectivity of proper non-constant holomorphic maps); (b)
 noncomputable def _root_.ContMDiff.degree (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
   Jacobians.degreeFiber f hf
 
-/-- **Ambient degree identity** (Forster §17 / Miranda §III.4):
+/-- **Ambient degree identity** (Griffiths–Harris Ch. 2 §2.7 — the trace map
+for forms; *not* Forster §17, which is Serre Duality):
 `f_* ∘ f^* = deg(f) • id` on holomorphic 1-forms, in ambient coordinates.
 
 Stated here (rather than in `HolomorphicForms.lean`) so the degree is pinned
@@ -431,10 +434,14 @@ to the genuine `ContMDiff.degree f hf`, which is defined in this file. A free
 `d : ℕ` version — the previous formulation — was vacuously false (`d = 0` vs
 `d = 1` forces `y = 0`). This is the honest single-degree statement.
 
-Content sorry: the real proof (Forster §17) needs a genuine `pushforwardForm`
-/ trace map for 1-forms — the current `ambientPhi` is a matrix-transpose
-placeholder, so the identity does not hold definitionally and this stays a
-classical-content sorry. ~500–1000 lines once a real pushforward exists. -/
+**Soundness caveat.** `ambientPhi` is currently the matrix TRANSPOSE of
+`ambientPsi`, which is the adjoint in the chosen basis — NOT the pushforward
+`f_*` (a trace/transfer map). For the transpose, `Φ∘Ψ = d•id` reduces to
+`MᵀM = d·I`, which is false for a generic pullback matrix. So this `sorry` is
+not just unproven but *false under the current definitions*; closing it
+honestly requires replacing `ambientPhi` with a genuine `pushforwardForm`
+(trace of forms, Griffiths–Harris §2.7). Until then `pushforward` /
+`pushforward_pullback` denote the wrong map. ~500–1000 lines. -/
 theorem ambientPhi_ambientPsi_eq (y : Fin (genus Y) → ℂ) :
     Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf
       (Jacobians.ambientPsi (gX := genus X) (gY := genus Y) f hf y) =
