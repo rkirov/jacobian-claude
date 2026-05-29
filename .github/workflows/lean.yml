@@ -14,7 +14,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Sorry-count guard
+        run: python3 scripts/check_sorries.py 8
+
       - name: Build Lean project
         uses: leanprover/lean-action@v1
         with:
           use-mathlib-cache: true
+
+      - name: Axiom hygiene check
+        run: lake env lean AxiomCheck.lean
