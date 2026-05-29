@@ -1157,24 +1157,22 @@ theorem isCoveringMapOn_compl_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ
     IsCoveringMapOn f (Set.univ \ branchLocus f) :=
   sorry
 
-/-! ## §2 Homotopy invariance and genericity -/
+/-! ## §2 Homotopy invariance and genericity
 
-/-- **[wall B1]** `periodVec` is homotopy-invariant: homotopic closed smooth
-loops have equal period vectors. Classical (Forster §10.5): the period forms
-are closed (holomorphic 1-forms), so `∫_γ ω` depends only on the homotopy class
-by Stokes on the homotopy cylinder. (Mathlib lacks manifold Stokes; this is the
-analytic input.) -/
-theorem periodVec_eq_of_homotopic (γ₀ γ₁ : ℝ → X)
-    (h₀ : IsClosedSmoothLoop γ₀) (h₁ : IsClosedSmoothLoop γ₁)
-    (hhom : ∀ y : Y, True)  -- placeholder homotopy hypothesis; see plan
-    : periodVec γ₀ = periodVec γ₁ :=
-  sorry
+The supporting classical fact (stated only in prose to avoid an unsound
+placeholder lemma): **`periodVec` is homotopy-invariant** — homotopic closed
+smooth loops have equal period vectors, because the period forms are closed
+holomorphic 1-forms and `∫_γ ω` depends only on the homotopy class by Stokes on
+the homotopy cylinder (Forster §10.5; Mathlib lacks manifold Stokes). Stating
+it as a Lean lemma requires the right smooth-homotopy hypothesis (a genuine
+homotopy of loops), which we fold directly into `exists_loop_off_branchLocus`
+below rather than asserting separately. -/
 
 /-- **[wall B2]** A closed smooth loop in `Y` can be homotoped off the finite
 branch locus without changing its period vector. Genericity: `branchLocus f`
 is finite (`finite_branchLocus_of_nonconstant`), hence has real codimension 2
-in the surface `Y`, so a generic loop avoids it; homotopy invariance
-(`periodVec_eq_of_homotopic`) preserves the period. -/
+in the surface `Y`, so a generic loop avoids it; homotopy invariance of
+`periodVec` (see §2 note) preserves the period. -/
 theorem exists_loop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :

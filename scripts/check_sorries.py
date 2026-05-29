@@ -14,7 +14,7 @@ import re
 import sys
 import pathlib
 
-EXPECTED = int(sys.argv[1]) if len(sys.argv) > 1 else 12
+EXPECTED = int(sys.argv[1]) if len(sys.argv) > 1 else 11
 
 # The remaining classical-content sorries, for a readable report.
 # (S1 closed 2026-05-29; S4 decomposed into 6 named classical sub-walls,
@@ -25,7 +25,6 @@ KNOWN = {
     "S4a": "isLocalHomeoOffCritical (inverse fn thm)",
     "S4b": "isOpenMap_of_nonconstant (open mapping)",
     "S4c": "isCoveringMapOn_compl_branchLocus (covering off branch locus)",
-    "S4d": "periodVec_eq_of_homotopic (homotopy invariance / Stokes)",
     "S4e": "exists_loop_off_branchLocus (genericity)",
     "S4f": "exists_preimageCycle_of_off_branchLocus (lift + trace)",
     "S5": "genus_eq_zero_iff_homeo (uniformization)",
