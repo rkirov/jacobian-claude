@@ -4,11 +4,18 @@ _Last updated 2026-05-29._
 
 ## Current state
 
-**Sorry count: 8. Custom axioms: 0.** `lake build` is clean (exit 0;
+**Sorry count: 7. Custom axioms: 0.** `lake build` is clean (exit 0;
 only linter warnings). Every challenge signature is defined and every
-main theorem compiles. The 8 sorries are named classical theorems not
+main theorem compiles. The 7 sorries are named classical theorems not
 yet in Mathlib; each is honest (no typeclass-gating, no `:= 0`
 placeholder hiding the gap).
+
+> **S1 closed (2026-05-29).** `exists_smoothPath_family` (smooth-path
+> existence + Abel–Jacobi basepoint change) is now fully proven and
+> axiom-clean, including the chart-ball cover `exists_hop_cover`/
+> `exists_smoothChain`. The smooth-path content of the Abel–Jacobi map is
+> done; `ofCurve_contMDiff`'s residual `sorryAx` is now only via the
+> Jacobian's S2/S3 lattice instances, not S1.
 
 > Historical note: an earlier version of this file claimed "0 sorries"
 > via a typeclass-gating strategy (`HasAbelsTheorem`, `HasResidueTheorem`,
@@ -16,14 +23,14 @@ placeholder hiding the gap).
 > to `sorry` but hide the unproved surface. All gaps are now honest
 > `sorry`s visible in Lean's warnings.
 
-## The 8 sorries
+## The 7 sorries
 
 | ID | Location | Name | Classical content | Tier |
 |----|----------|------|-------------------|------|
-| S1 | `PeriodLattice.lean:397` | `exists_hop_cover` | chart-ball cover: a continuous path samples into finitely many valid hops | ~100–200 LOC; subtle (anchor-varying chart) |
-| S2 | `PeriodLattice.lean:787` | `DiscreteTopology (truePeriodLattice X)` | period lattice is discrete (Riemann bilinear) | research-frontier |
-| S3 | `PeriodLattice.lean:793` | `IsZLattice ℝ (truePeriodLattice X)` | lattice has full rank 2g (Hodge) | research-frontier |
-| S4 | `PeriodLattice.lean:1014` | `exists_preimageCycle_of_nonconstant` | branched-cover lifting (Forster §10.11) | hard |
+| ~~S1~~ | — | ~~`exists_smoothPath_family`~~ | **CLOSED 2026-05-29** (smooth-path existence + basepoint change, incl. chart-ball cover) | ✅ proven, axiom-clean |
+| S2 | `PeriodLattice.lean:899` | `DiscreteTopology (truePeriodLattice X)` | period lattice is discrete (Riemann bilinear) | research-frontier |
+| S3 | `PeriodLattice.lean:905` | `IsZLattice ℝ (truePeriodLattice X)` | lattice has full rank 2g (Hodge) | research-frontier |
+| S4 | `PeriodLattice.lean:1121` | `exists_preimageCycle_of_nonconstant` | branched-cover lifting (Forster §10.11) | hard |
 | S5 | `Genus.lean:81` | `genus_eq_zero_iff_homeo` | uniformization, genus 0 (Forster §16/27) | research-frontier |
 | S6 | `Abel.lean:574` | `deg_div` | residue theorem (Forster §4.24) | research-frontier |
 | S7 | `Abel.lean:704` | `abelJacobi_twoPoint_ne_zero` | Abel + Riemann–Hurwitz (Forster §21) | research-frontier |
@@ -31,25 +38,19 @@ placeholder hiding the gap).
 
 ## Dependency / leverage map
 
-- **S1** is the sole remaining gap for `ofCurve_contMDiff` (the
-  Abel–Jacobi map is holomorphic). As of 2026-05-29 it is **reduced to a
-  single analytic lemma** `exists_hop_cover`. Everything else is proven and
-  axiom-clean: `IsSmoothPath.concat` (keystone junction concat),
-  `periodVec_concat_of_smooth` (period additivity), `exists_smoothPath_family`
-  (cocycle reduction), `zeroVelHop` (zero-velocity hop), and
-  `exists_zeroVel_smoothPath_aux` (n-piece glue induction).
-  - **Remaining (`exists_hop_cover`):** sample `continuousPath P Q` into
-    finitely many points whose consecutive pairs are `HopValid`. The
-    `OfCurveSkeleton.{Q_in_chart_source,affine_in_target}_eventually` lemmas
-    give `∀ᶠ Q in 𝓝 Q₀, HopValid Q₀ Q` (validity neighborhood for a *fixed*
-    anchor). The subtlety: `HopValid` is **directional** (anchor → target)
-    and uses `chartAt` of the *anchor*, which varies discontinuously, so a
-    naive joint-continuity / Lebesgue-number argument doesn't close it
-    directly. Needs a careful uniform-mesh argument handling the
-    anchor-varying chart. This is the project's long-standing analytic wall.
-- **S7** is the sole remaining math gap (with S1) for the main theorem
-  `ofCurve_inj`. The downstream wiring (`abelJacobi_twoPointDivisor`,
-  basepoint change) is proven.
+- **S1 — CLOSED.** `exists_smoothPath_family` is fully proven and axiom-clean.
+  The proof chain (all axiom-clean): `IsSmoothPath.concat` (keystone junction
+  concat) → `periodVec_concat_of_smooth` (period additivity) +
+  `exists_smoothPath_family` (cocycle reduction); `zeroVelHop` (zero-velocity
+  hop) + `exists_zeroVel_smoothPath_aux` (n-piece glue) + `exists_smoothChain`
+  (chart-ball cover). The cover's anchor-varying-chart obstacle was resolved
+  by the **common-anchor** trick (`exists_zeroVelPath_of_common_anchor`):
+  reach both endpoints of a Lebesgue segment from its common anchor, one via
+  `reverse`. `ofCurve_contMDiff` no longer depends on S1 (only on S2/S3 now,
+  via the Jacobian's lattice/manifold instances).
+- **S7** is the sole remaining math gap for the main theorem `ofCurve_inj`.
+  The downstream wiring (`abelJacobi_twoPointDivisor`, basepoint change,
+  smooth-path existence) is now proven.
 - **S2/S3** ground every `Jacobian X` manifold instance
   (Compact/Charted/IsManifold/LieAddGroup, via `ZLatticeQuotient`).
   S3 depends on S2 (`IsZLattice` takes `[DiscreteTopology]`).
