@@ -22,20 +22,22 @@ before being relied on.
 
 ## Status
 
-**Not done, not close to done.** The challenge file compiles and
-every main signature from Buzzard's spec is defined, but 17 `sorry`s
-remain — each corresponding to a named classical theorem not yet in
-Mathlib. Those 17 are the mathematically load-bearing pieces; filling
-them is substantial, multi-month-each, Mathlib-contribution-scale
-work (some of it touching genuinely deep theorems — Uniformization,
-Hodge decomposition for the period lattice, Abel's theorem).
+**Not done, but further than the headline suggests.** The challenge
+file compiles clean (`lake build`, exit 0) and every main signature
+from Buzzard's spec is defined. **8 `sorry`s remain, 0 custom axioms**
+(`#print axioms` shows only the standard `propext, Classical.choice,
+Quot.sound`). Each sorry is a named classical theorem not yet in
+Mathlib — the mathematically load-bearing pieces.
 
-The code to date is ~7,800 lines. A rough honest estimate for a
+The code to date is ~24k lines. A rough honest estimate for a
 complete, sorry-free solution is several times that, most of the
 remaining bulk being upstream Mathlib infrastructure (manifold
 Stokes, manifold-level meromorphic functions, divisor theory on
-manifolds, manifold degree, Čech cohomology of 𝒪, Riemann–Roch).
+manifolds, manifold degree, Riemann bilinear / Hodge, uniformization).
 None of those currently exist in Mathlib.
+
+See `docs/STATUS.md` for the live 8-sorry inventory (S1–S8), the
+dependency/leverage map, and per-sorry tiers.
 
 ### What is done
 
@@ -58,34 +60,29 @@ None of those currently exist in Mathlib.
   `isClosed_criticalSet`, reverse/concat smoothness preservation
   for smooth paths.
 
-### What is remaining (17 sorries)
+### What is remaining (8 sorries)
 
-Tiered by classical difficulty (not Lean-formalization difficulty,
-which is dominated by missing Mathlib infrastructure):
+Tiered by realistic Lean-completion difficulty:
 
-- **Trivial / easy (~days of work once infrastructure exists):**
-  `PrincipalDivisors_le_DivisorOfDegZero`, `smoothPath_basepoint_change`,
-  `finite_branchLocus_of_nonconstant`, `criticalSet_ne_univ_of_nonconstant`.
-- **Medium (~weeks each, classical complex analysis):**
-  `smoothPath` existence, `finite_criticalSet_of_nonconstant`,
-  `ofCurve_contMDiff`.
-- **Hard (Mathlib-contribution scale, ~months each):**
-  `deg_div` (residue theorem on manifolds),
-  `exists_preimageCycle_of_nonconstant` (branched-cover lifting),
-  `ambientPsi_periodVec_mem_truePeriodLattice`,
-  `ambientPsi_preserves_truePeriodLattice`.
-- **Very hard (big named classical theorems):**
-  `ambientPhi_ambientPsi_eq` (degree identity; Forster §17),
-  `abelJacobi_twoPoint_ne_zero` (Abel's theorem + Riemann–Hurwitz;
-  Forster §21).
-- **Foundational (rank-2g period-lattice theorem; Hodge decomp):**
-  `DiscreteTopology (truePeriodLattice X)`,
-  `IsZLattice ℝ (truePeriodLattice X)`.
-- **Peak difficulty:** `genus_eq_zero_iff_homeo` (Uniformization in
-  the genus-0 case; Forster §16).
+- **Tractable now (~weeks, bounded Lean engineering):**
+  `exists_smoothPath_family` (S1) — the local chart-ball machinery is
+  already proven and axiom-clean; only the global path-family
+  construction remains. Closing it makes `ofCurve_contMDiff` (the
+  Abel–Jacobi map is holomorphic) fully real with no further work.
+- **Hard (single self-contained theory builds, ~months each):**
+  `exists_preimageCycle_of_nonconstant` (S4, branched-cover lifting),
+  `ambientPhi_ambientPsi_eq` (S8, degree identity — also needs a real
+  `pushforwardForm`).
+- **Research-frontier (Mathlib-contribution scale, no Mathlib support):**
+  `deg_div` (S6, residue theorem), `abelJacobi_twoPoint_ne_zero` (S7,
+  Abel + Riemann–Hurwitz — the leaf of the main theorem `ofCurve_inj`),
+  `DiscreteTopology`/`IsZLattice` for `truePeriodLattice` (S2/S3,
+  Riemann bilinear / Hodge — ground the Jacobian-is-a-torus instances),
+  `genus_eq_zero_iff_homeo` (S5, uniformization — the most
+  theory-deficient).
 
-See `docs/STATUS.md` for the full inventory with Forster/Miranda
-section references.
+See `docs/STATUS.md` for the full inventory with locations, the
+dependency/leverage map, and Forster/Miranda section references.
 
 ## Layout
 
@@ -113,7 +110,7 @@ lake exe cache get   # pull Mathlib olean cache
 lake build
 ```
 
-Expect 17 `declaration uses 'sorry'` warnings (one per remaining
+Expect 8 `declaration uses 'sorry'` warnings (one per remaining
 classical sorry) and no errors.
 
 ## Approach
