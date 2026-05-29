@@ -134,3 +134,46 @@ Refined remaining work (one core, not two):
 - The monodromy loops (for `loops`/`pushforward_eq`) are independent geometry,
   buildable from the covering bridge + `liftPath` (Mathlib has the API).
 - Then `ambientPhi_ambientPullback_eq` off the lattice via S3 spanning.
+
+## Two routes to `pushforward_pullback` (2026-05-29, after deep reuse-analysis)
+
+Both discharge the same goal; they differ in what they reuse vs. build new.
+
+**Route A — geometric trace on forms** (`ambientPullbackJac := Tᵀ`, current arch).
+`pullback_eq` needs `pushforwardForm` constructed (sum over local holo sections).
+- New: local **holomorphic** section ⇐ manifold IFT (**Mathlib gap**: only the
+  chart-level complex IFT `AnalyticAt.analyticAt_localInverse` exists) + "analytic
+  injective ⟹ deriv≠0" (not direct in Mathlib; via order theory) + global
+  assembly + branch extension. Import-order wrinkle: `pushforwardForm` lives in
+  HolomorphicForms (upstream of the covering in PeriodLattice) ⟹ relocate first.
+- Reuse: chart machinery; Discharge's `LocalNormalForm`/`MeromorphicExtension`
+  are for meromorphic *functions* X→ℂ (divisor theory), not the map X→Y — partial.
+- Pro: `ambientPullbackJac` is ℂ-linear *by construction*.
+
+**Route B — period-map pullback** (`ambientPullbackJac(periodVec δ) := periodVec(Γ_δ)`).
+Makes `pullback_eq` **definitional**; the degree identity then follows from the
+**proven** `periodVec_pushforward` + `f∘Γ = deg·δ`.
+- New: the lift `Γ_δ` (monodromy loops via covering bridge + Mathlib `liftPath` +
+  orbit-grouping + smoothness); ℂ-linear well-definedness of the period-map.
+- Reuse (maximal): `periodVec_pushforward` (proven), the keystone (proven),
+  fiber finiteness (proven); **well-definedness ⇐ §2 (Stokes) and spanning ⇐ S3 —
+  both already-accepted project sorries, not new frontier deps.**
+- Con: redefines `ambientPullbackJac`; ℝ-on-periods → ℂ-linear extension is subtle.
+
+**Caveat (the shared irreducible core).** Route B's "ℂ-linear extension" Con is
+*not* lighter than Route A's holomorphicity: the period-map `periodVec δ ↦
+periodVec(Γ_δ)` is manifestly ℝ-linear but is ℂ-linear **iff** the pullback is
+holomorphic — exactly Route A's content. So both routes share one irreducible
+analytic core: **the Jacobian pullback is holomorphic / the trace of forms is a
+holomorphic form** (G&H §2.7). There is no algebraic shortcut (the pseudo-inverse
+`deg·(MᵀM)⁻¹Mᵀ` gives the degree identity but fails lattice-preservation and
+functoriality, so it is *not* the genuine pullback).
+
+**Recommendation.** Route B still reuses more *proven* machinery
+(`periodVec_pushforward`, keystone, fiber finiteness) and its concrete first step
+— the monodromy lift via the covering bridge + Mathlib `liftPath` — is buildable
+now and gives `loops`/`pushforward_eq`. But the holomorphicity/ℂ-linearity core is
+genuine analytic heart that Mathlib does not yet support (manifold IFT; analytic
+open-mapping multiplicity): a **dedicated multi-session formalization**, not a
+quick assembly. The surrounding engineering — architecture, `Tᵀ` rewire, keystone,
+§3 repoint, lattice-preservation routing, fiber finiteness — is complete.
