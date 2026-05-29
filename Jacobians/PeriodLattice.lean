@@ -1465,6 +1465,23 @@ theorem isCoveringMapOn_compl_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ
     rw [hpe_source]; exact heU
   · rw [OpenPartialHomeomorph.coe_ofContinuousOpen]; exact hpe_coe
 
+/-- **[PROVEN]** Subtype corestriction of the off-branch covering. Bridges
+`isCoveringMapOn_compl_branchLocus` (an `IsCoveringMapOn` on the *set*
+`univ ∖ branchLocus f`) to a genuine `IsCoveringMap` of the corestricted map
+`↥(f ⁻¹' (univ ∖ branchLocus f)) → ↥(univ ∖ branchLocus f)`, via Mathlib's
+`IsCoveringMapOn.isCoveringMap_restrictPreimage`.
+
+This is the form `Mathlib.Topology.Homotopy.Lifting` consumes: it unlocks
+`IsCoveringMap.liftPath` (path lifting, Forster §4.14) and
+`IsCoveringMap.liftPath_apply_one_eq_of_homotopicRel` (monodromy / homotopy
+invariance of lift endpoints) — the toolkit for assembling the lifted loops in
+`exists_preimageCycle_of_off_branchLocus` (§3 below). -/
+theorem isCoveringMap_restrictPreimage_compl_branchLocus
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    IsCoveringMap ((Set.univ \ branchLocus f).restrictPreimage f) :=
+  (isCoveringMapOn_compl_branchLocus f hf hnonconst).isCoveringMap_restrictPreimage
+
 /-! ## §2 Homotopy invariance and genericity
 
 The supporting classical fact (stated only in prose to avoid an unsound
