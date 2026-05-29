@@ -20,7 +20,7 @@ placeholder hiding the gap).
 
 | ID | Location | Name | Classical content | Tier |
 |----|----------|------|-------------------|------|
-| S1 | `PeriodLattice.lean:356` | `exists_smoothPath_family` | smooth-path existence + Abel–Jacobi basepoint change | tractable now (~480–900 LOC) |
+| S1 | `PeriodLattice.lean:329` | `exists_zeroVel_smoothPath` | zero-endpoint-velocity smooth-path existence (chart-ball cover + n-piece glue) | tractable, ~250–400 LOC remaining |
 | S2 | `PeriodLattice.lean:787` | `DiscreteTopology (truePeriodLattice X)` | period lattice is discrete (Riemann bilinear) | research-frontier |
 | S3 | `PeriodLattice.lean:793` | `IsZLattice ℝ (truePeriodLattice X)` | lattice has full rank 2g (Hodge) | research-frontier |
 | S4 | `PeriodLattice.lean:1014` | `exists_preimageCycle_of_nonconstant` | branched-cover lifting (Forster §10.11) | hard |
@@ -32,10 +32,13 @@ placeholder hiding the gap).
 ## Dependency / leverage map
 
 - **S1** is the sole remaining gap for `ofCurve_contMDiff` (the
-  Abel–Jacobi map is holomorphic). Its local chart-ball machinery is
-  fully proven and axiom-clean (`SmoothPath.lean`,
-  `OfCurveAnalyticitySkeleton.lean`); what remains is the global
-  construction. Highest leverage.
+  Abel–Jacobi map is holomorphic). As of 2026-05-29 it is **reduced**:
+  `exists_smoothPath_family` is PROVEN from the focused kernel
+  `exists_zeroVel_smoothPath` via the keystone `IsSmoothPath.concat`
+  (`SmoothPathCore.lean`) + `periodVec_concat_of_smooth` (axiom-clean) +
+  `mk_periodVec_eq_of_endpoints`. All that remains is the kernel: a
+  chart-ball cover of a continuous path (Lebesgue number on chart balls)
+  glued by an n-piece `concat` induction. Highest leverage; tractable.
 - **S7** is the sole remaining math gap (with S1) for the main theorem
   `ofCurve_inj`. The downstream wiring (`abelJacobi_twoPointDivisor`,
   basepoint change) is proven.
