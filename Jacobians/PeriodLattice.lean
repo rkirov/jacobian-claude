@@ -1245,6 +1245,22 @@ theorem isLocalHomeoOffCritical (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ
   exact ⟨U, hUopen, hxU, hinj₀.mono hUsub,
     isOpenMap_of_nonconstant f hf hnonconst U hUopen⟩
 
+/-- **[PROVEN]** Proper preimage-neighborhood lemma (Forster 4.21b): for a proper
+`f`, an open `V` containing the fibre `f⁻¹{x}` has an open neighborhood `U ∋ x`
+with `f⁻¹U ⊆ V`. (From `f` being a closed map.) Used to shrink the disjoint
+local-homeo sheets over a fibre to a common base neighborhood — the key step in
+the covering structure off the branch locus (Forster 4.22). -/
+theorem properNbhd {f : X → Y} (hf : IsProperMap f) (x : Y) {V : Set X}
+    (hV : IsOpen V) (hsub : f ⁻¹' {x} ⊆ V) :
+    ∃ U : Set Y, IsOpen U ∧ x ∈ U ∧ f ⁻¹' U ⊆ V := by
+  have hcompl : IsClosed (f '' Vᶜ) := hf.isClosedMap _ hV.isClosed_compl
+  refine ⟨(f '' Vᶜ)ᶜ, hcompl.isOpen_compl, ?_, ?_⟩
+  · rintro ⟨z, hzV, hzx⟩
+    exact hzV (hsub hzx)
+  · intro z hz
+    by_contra hzV
+    exact hz ⟨z, hzV, rfl⟩
+
 /-! ## §2 Homotopy invariance and genericity
 
 The supporting classical fact (stated only in prose to avoid an unsound
