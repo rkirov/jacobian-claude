@@ -3,6 +3,7 @@ import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 import Mathlib.Algebra.Module.ZLattice.Basic
 import Mathlib.Topology.Connected.LocPathConnected
 import Mathlib.Topology.Maps.Proper.Basic
+import Mathlib.Topology.Covering.Basic
 import Jacobians.Discharge.Manifold.CriticalValuesFiniteGeneral
 import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 import Jacobians.SmoothPath
@@ -1260,6 +1261,36 @@ theorem properNbhd {f : X → Y} (hf : IsProperMap f) (x : Y) {V : Set X}
   · intro z hz
     by_contra hzV
     exact hz ⟨z, hzV, rfl⟩
+
+/-- **[PROVEN modulo `isOpenMap_of_nonconstant`]** Covering off the branch locus
+(Forster 4.22): a non-constant holomorphic map restricts to a covering map on
+the complement of its (finite) branch locus. Proven via Mathlib's
+`IsCoveringMapOn.of_openPartialHomeomorph` (the proper-local-homeo ⇒ covering
+theorem — Mathlib already has it, so no hand-built `f⁻¹U ≃ₜ U × fibre`): off the
+branch locus every fibre point is off `criticalSet`, so `isLocalHomeoOffCritical`
+gives an open injective neighborhood, packaged as an `OpenPartialHomeomorph`
+whose `toFun` is `f`. -/
+theorem isCoveringMapOn_compl_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    IsCoveringMapOn f (Set.univ \ branchLocus f) := by
+  have hopen : IsOpenMap f := isOpenMap_of_nonconstant f hf hnonconst
+  refine IsCoveringMapOn.of_openPartialHomeomorph hf.continuous ?_
+  intro e he
+  have hfe : f e ∉ branchLocus f := he.2
+  have hecrit : e ∉ criticalSet f := fun hmem => hfe ⟨e, hmem, rfl⟩
+  obtain ⟨U, hUopen, heU, hinj, _himg⟩ := isLocalHomeoOffCritical f hf hnonconst hecrit
+  let pe : PartialEquiv X Y := Set.InjOn.toPartialEquiv f U hinj
+  have hpe_coe : ⇑pe = f := rfl
+  have hpe_source : pe.source = U := rfl
+  refine ⟨OpenPartialHomeomorph.ofContinuousOpen pe ?_ ?_ ?_, ?_, ?_⟩
+  · rw [hpe_coe, hpe_source]; exact hf.continuous.continuousOn
+  · rw [hpe_coe]; exact hopen
+  · rw [hpe_source]; exact hUopen
+  · show e ∈ (OpenPartialHomeomorph.ofContinuousOpen pe _ _ _).source
+    rw [OpenPartialHomeomorph.ofContinuousOpen]
+    show e ∈ pe.source
+    rw [hpe_source]; exact heU
+  · rw [OpenPartialHomeomorph.coe_ofContinuousOpen]; exact hpe_coe
 
 /-! ## §2 Homotopy invariance and genericity
 
