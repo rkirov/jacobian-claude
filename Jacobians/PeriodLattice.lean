@@ -354,13 +354,162 @@ theorem zeroVelHop {Q₀ Q : X} (h : HopValid Q₀ Q) :
           (haff (smoothStep01 1) (Jacobians.smoothStep01_mem_unit 1))),
       smoothStep01_deriv_one, Complex.ofReal_zero, zero_mul]
 
-/-- **n-piece glue (S1-C)**: a finite chain of valid hops glues to a single
-smooth path with zero endpoint velocity, by induction on the number of hops.
-Base = constant path; step = `concat` of the prefix path with the next hop
-via `IsSmoothPath.concat`, preserving the zero-velocity invariant
-(`pathSpeed (concat ·) {0,1} = 2 · pathSpeed (piece) {0,1} = 0`). -/
+/-- Generic neighborhood cover of a path: given an open-neighborhood assignment
+`W y ∋ y`, a continuous `γ` is covered segment-by-segment, each segment landing
+in some `W (x k)`. (Generalizes `exists_chartCover` from chart sources to `W`.) -/
+theorem exists_nbhd_cover (γ : ℝ → X) (hγ : Continuous γ)
+    (W : X → Set X) (hW_open : ∀ y, IsOpen (W y)) (hW_mem : ∀ y, y ∈ W y) :
+    ∃ (n : ℕ) (_hn : 0 < n) (x : Fin n → X),
+      ∀ (k : Fin n) (s : ℝ),
+        (k : ℝ) / n ≤ s → s ≤ ((k : ℝ) + 1) / n → γ s ∈ W (x k) := by
+  set scc : Set ℝ := Set.Icc (0 : ℝ) 1 with hs_def
+  set U : scc → Set ℝ := fun t => γ ⁻¹' W (γ t.1) with hU_def
+  have hU_open : ∀ t : scc, IsOpen (U t) := fun t => (hW_open (γ t.1)).preimage hγ
+  have hU_cover : scc ⊆ ⋃ t : scc, U t := by
+    intro t ht
+    exact Set.mem_iUnion.mpr ⟨⟨t, ht⟩, hW_mem (γ t)⟩
+  obtain ⟨δ, hδ_pos, hδ⟩ :=
+    lebesgue_number_lemma_of_metric isCompact_Icc hU_open hU_cover
+  obtain ⟨n, hn_gt⟩ : ∃ n : ℕ, 1 / δ < (n : ℝ) := exists_nat_gt _
+  have hn_pos : 0 < n := by
+    have h1 : (0 : ℝ) < 1 / δ := by positivity
+    exact_mod_cast lt_trans h1 hn_gt
+  have key : ∀ k : Fin n, ∃ x : X, ∀ y : ℝ,
+      (k : ℝ) / n ≤ y → y ≤ ((k : ℝ) + 1) / n → γ y ∈ W x := by
+    intro k
+    set m : ℝ := ((k : ℝ) + 1/2) / n with hm_def
+    have hm_mem : m ∈ scc := by
+      refine ⟨?_, ?_⟩
+      · apply div_nonneg
+        · have : (0 : ℝ) ≤ k := Nat.cast_nonneg _
+          linarith
+        · exact Nat.cast_nonneg _
+      · rw [hm_def, div_le_one (by exact_mod_cast hn_pos)]
+        have hk : (k : ℝ) + 1 ≤ n := by
+          have : (k.val + 1 : ℕ) ≤ n := k.isLt
+          exact_mod_cast this
+        linarith
+    obtain ⟨t₀, ht₀⟩ := hδ m hm_mem
+    refine ⟨γ t₀.1, fun y hy_low hy_high => ?_⟩
+    apply ht₀
+    show y ∈ Metric.ball m δ
+    rw [Metric.mem_ball, Real.dist_eq]
+    have hn : (1 : ℝ) / n < δ := by
+      have hn_R : (0 : ℝ) < n := by exact_mod_cast hn_pos
+      rw [div_lt_iff₀ hn_R]
+      have h := mul_lt_mul_of_pos_left hn_gt hδ_pos
+      have h_simp : δ * (1 / δ) = 1 := by field_simp
+      linarith
+    have h_dist : |y - m| ≤ 1 / (2 * n) := by
+      rw [abs_sub_le_iff]
+      refine ⟨?_, ?_⟩
+      · have : y - m ≤ ((k : ℝ) + 1) / n - ((k : ℝ) + 1/2) / n := by linarith
+        have heq : ((k : ℝ) + 1) / n - ((k : ℝ) + 1/2) / n = 1 / (2 * n) := by
+          field_simp; ring
+        linarith
+      · have : m - y ≤ ((k : ℝ) + 1/2) / n - (k : ℝ) / n := by linarith
+        have heq : ((k : ℝ) + 1/2) / n - (k : ℝ) / n = 1 / (2 * n) := by
+          field_simp; ring
+        linarith
+    have h1 : (1 : ℝ) / (2 * n) ≤ 1 / n := by
+      apply div_le_div_of_nonneg_left (by norm_num) (by exact_mod_cast hn_pos)
+      have hnn : (0 : ℝ) < n := by exact_mod_cast hn_pos
+      nlinarith
+    linarith
+  classical
+  exact ⟨n, hn_pos, fun k => (key k).choose,
+    fun k y h1 h2 => (key k).choose_spec y h1 h2⟩
+
+/-- Common-anchor segment: if a point `w` validly hops to both `u` and `v`,
+then there is a zero-endpoint-velocity smooth path `u → v` (go `u → w` via the
+reversed hop, then `w → v` via the forward hop). -/
+theorem exists_zeroVelPath_of_common_anchor {w u v : X}
+    (hu : HopValid w u) (hv : HopValid w v) :
+    ∃ γ, IsSmoothPath u v γ ∧ pathSpeed γ 0 = 0 ∧ pathSpeed γ 1 = 0 := by
+  obtain ⟨hu_sm, hu_v0, hu_v1⟩ := zeroVelHop hu
+  obtain ⟨hv_sm, hv_v0, hv_v1⟩ := zeroVelHop hv
+  have h0uIcc : (0:ℝ) ∈ Set.uIcc (0:ℝ) 1 := by
+    rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨le_refl _, zero_le_one⟩
+  have h1uIcc : (1:ℝ) ∈ Set.uIcc (0:ℝ) 1 := by
+    rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨zero_le_one, le_refl _⟩
+  -- reversed hop u → w, zero velocity at both ends
+  have hrev_sm : IsSmoothPath u w (Jacobians.reverse (ChartBallPathSmooth w u)) := hu_sm.reverse
+  have hrev_v0 : pathSpeed (Jacobians.reverse (ChartBallPathSmooth w u)) 0 = 0 := by
+    rw [Jacobians.pathSpeed_reverse _ 0
+        (by rw [show (1:ℝ)-0 = 1 from by norm_num]; exact hu_sm.diff 1 h1uIcc),
+      show (1:ℝ)-0 = 1 from by norm_num, hu_v1, neg_zero]
+  have hrev_v1 : pathSpeed (Jacobians.reverse (ChartBallPathSmooth w u)) 1 = 0 := by
+    rw [Jacobians.pathSpeed_reverse _ 1
+        (by rw [show (1:ℝ)-1 = 0 from by norm_num]; exact hu_sm.diff 0 h0uIcc),
+      show (1:ℝ)-1 = 0 from by norm_num, hu_v0, neg_zero]
+  refine ⟨Jacobians.concat (Jacobians.reverse (ChartBallPathSmooth w u)) (ChartBallPathSmooth w v),
+    hrev_sm.concat hv_sm hrev_v1 hv_v0, ?_, ?_⟩
+  · have hd : DifferentiableAt ℝ
+        ((chartAt (H := ℂ) (Jacobians.reverse (ChartBallPathSmooth w u) (2 * 0))).toFun ∘
+          Jacobians.reverse (ChartBallPathSmooth w u)) (2 * 0) := by
+      rw [show (2:ℝ)*0 = 0 from by norm_num]; exact hrev_sm.diff 0 h0uIcc
+    rw [Jacobians.pathSpeed_concat_left _ _ 0 (by norm_num) hd,
+      show (2:ℝ)*0 = 0 from by norm_num, hrev_v0, mul_zero]
+  · have hd : DifferentiableAt ℝ
+        ((chartAt (H := ℂ) (ChartBallPathSmooth w v (2 * 1 - 1))).toFun ∘
+          ChartBallPathSmooth w v) (2 * 1 - 1) := by
+      rw [show (2:ℝ)*1-1 = 1 from by norm_num]; exact hv_sm.diff 1 h1uIcc
+    rw [Jacobians.pathSpeed_concat_right _ (ChartBallPathSmooth w v) 1 (by norm_num) hd,
+      show (2:ℝ)*1-1 = 1 from by norm_num, hv_v1, mul_zero]
+
+/-- The `HopValid`-validity neighborhood of `y` (open, contains `y`). -/
+def hopNbhd (y : X) : Set X := interior {Q | HopValid y Q}
+
+theorem isOpen_hopNbhd (y : X) : IsOpen (hopNbhd y) := isOpen_interior
+
+theorem self_mem_hopNbhd (y : X) : y ∈ hopNbhd y := by
+  rw [hopNbhd, mem_interior_iff_mem_nhds]
+  exact (OfCurveSkeleton.Q_in_chart_source_eventually y).and
+    (OfCurveSkeleton.affine_in_target_eventually y)
+
+theorem hopValid_of_mem_hopNbhd {y Q : X} (h : Q ∈ hopNbhd y) : HopValid y Q :=
+  interior_subset (s := {Q' : X | HopValid y Q'}) h
+
+/-- **Chart-ball cover (S1-B)**: a chain of zero-velocity smooth-path hops from
+`P` to `Q`. Lebesgue-number cover of `continuousPath P Q`; each segment's
+endpoints are reached from a common Lebesgue anchor via `exists_zeroVelPath_of_common_anchor`. -/
+theorem exists_smoothChain (P Q : X) :
+    ∃ (n : ℕ) (a : ℕ → X), a 0 = P ∧ a n = Q ∧
+      ∀ k, k < n → ∃ γ, IsSmoothPath (a k) (a (k+1)) γ ∧
+        pathSpeed γ 0 = 0 ∧ pathSpeed γ 1 = 0 := by
+  set c : ℝ → X := fun t => (continuousPath P Q).extend t with hc_def
+  have hc_cont : Continuous c := (continuousPath P Q).continuous_extend
+  have hc0 : c 0 = P := Path.extend_zero _
+  have hc1 : c 1 = Q := Path.extend_one _
+  obtain ⟨n, hn_pos, x, hx⟩ :=
+    exists_nbhd_cover c hc_cont hopNbhd isOpen_hopNbhd self_mem_hopNbhd
+  refine ⟨n, fun j => c ((j : ℝ) / n), ?_, ?_, ?_⟩
+  · show c (((0 : ℕ) : ℝ) / (n : ℝ)) = P
+    rw [Nat.cast_zero, zero_div]; exact hc0
+  · show c (((n : ℕ) : ℝ) / (n : ℝ)) = Q
+    rw [div_self (by exact_mod_cast hn_pos.ne' : (n : ℝ) ≠ 0)]; exact hc1
+  · intro k hk
+    have hkn : (k : ℝ) / n ≤ (k : ℝ) / n := le_refl _
+    have hk1n : (k : ℝ) / n ≤ ((k : ℝ) + 1) / n := by
+      gcongr
+      linarith
+    have hkk1 : ((k : ℝ) + 1) / n ≤ ((k : ℝ) + 1) / n := le_refl _
+    -- both endpoints land in hopNbhd (x ⟨k,hk⟩)
+    have hu : HopValid (x ⟨k, hk⟩) (c ((k : ℝ) / n)) :=
+      hopValid_of_mem_hopNbhd (hx ⟨k, hk⟩ ((k : ℝ) / n) hkn hk1n)
+    have hv : HopValid (x ⟨k, hk⟩) (c (((k : ℝ) + 1) / n)) :=
+      hopValid_of_mem_hopNbhd (hx ⟨k, hk⟩ (((k : ℝ) + 1) / n) hk1n hkk1)
+    obtain ⟨γ, hγsm, hγv0, hγv1⟩ := exists_zeroVelPath_of_common_anchor hu hv
+    refine ⟨γ, ?_, hγv0, hγv1⟩
+    have hcast : ((k : ℝ) + 1) / n = ((k + 1 : ℕ) : ℝ) / n := by push_cast; ring
+    rw [hcast] at hγsm
+    exact hγsm
+
+/-- **Generalized n-piece glue**: a chain of zero-velocity smooth-path hops
+glues to a single zero-velocity smooth path, by induction on the chain length. -/
 theorem exists_zeroVel_smoothPath_aux (a : ℕ → X) :
-    ∀ n, (∀ k, k < n → HopValid (a k) (a (k+1))) →
+    ∀ n, (∀ k, k < n → ∃ γ, IsSmoothPath (a k) (a (k+1)) γ ∧
+          pathSpeed γ 0 = 0 ∧ pathSpeed γ 1 = 0) →
       ∃ γ, IsSmoothPath (a 0) (a n) γ ∧ pathSpeed γ 0 = 0 ∧ pathSpeed γ 1 = 0 := by
   intro n
   induction n with
@@ -369,42 +518,29 @@ theorem exists_zeroVel_smoothPath_aux (a : ℕ → X) :
     exact ⟨fun _ => a 0, isSmoothPath_const (a 0),
       by rw [pathSpeed_const], by rw [pathSpeed_const]⟩
   | succ m ih =>
-    intro hhop
-    obtain ⟨γ, hγsm, hγv0, hγv1⟩ := ih (fun k hk => hhop k (by omega))
-    obtain ⟨hhsm, hhv0, hhv1⟩ := zeroVelHop (hhop m (by omega))
+    intro hstep
+    obtain ⟨γ, hγsm, hγv0, hγv1⟩ := ih (fun k hk => hstep k (by omega))
+    obtain ⟨g, hgsm, hgv0, hgv1⟩ := hstep m (by omega)
     have h0uIcc : (0:ℝ) ∈ Set.uIcc (0:ℝ) 1 := by
       rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨le_refl _, zero_le_one⟩
     have h1uIcc : (1:ℝ) ∈ Set.uIcc (0:ℝ) 1 := by
       rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨zero_le_one, le_refl _⟩
-    refine ⟨Jacobians.concat γ (ChartBallPathSmooth (a m) (a (m+1))),
-      hγsm.concat hhsm hγv1 hhv0, ?_, ?_⟩
+    refine ⟨Jacobians.concat γ g, hγsm.concat hgsm hγv1 hgv0, ?_, ?_⟩
     · have hd : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ (2 * 0))).toFun ∘ γ) (2 * 0) := by
         rw [show (2:ℝ)*0 = 0 from by norm_num]; exact hγsm.diff 0 h0uIcc
-      rw [Jacobians.pathSpeed_concat_left γ _ 0 (by norm_num) hd,
+      rw [Jacobians.pathSpeed_concat_left γ g 0 (by norm_num) hd,
         show (2:ℝ)*0 = 0 from by norm_num, hγv0, mul_zero]
-    · have hd : DifferentiableAt ℝ
-          ((chartAt (H := ℂ) (ChartBallPathSmooth (a m) (a (m+1)) (2 * 1 - 1))).toFun ∘
-            ChartBallPathSmooth (a m) (a (m+1))) (2 * 1 - 1) := by
-        rw [show (2:ℝ)*1-1 = 1 from by norm_num]; exact hhsm.diff 1 h1uIcc
-      rw [Jacobians.pathSpeed_concat_right _ (ChartBallPathSmooth (a m) (a (m+1))) 1 (by norm_num) hd,
-        show (2:ℝ)*1-1 = 1 from by norm_num, hhv1, mul_zero]
+    · have hd : DifferentiableAt ℝ ((chartAt (H := ℂ) (g (2 * 1 - 1))).toFun ∘ g) (2 * 1 - 1) := by
+        rw [show (2:ℝ)*1-1 = 1 from by norm_num]; exact hgsm.diff 1 h1uIcc
+      rw [Jacobians.pathSpeed_concat_right γ g 1 (by norm_num) hd,
+        show (2:ℝ)*1-1 = 1 from by norm_num, hgv1, mul_zero]
 
-/-- **Chart-ball cover (S1-B)** — the remaining analytic content of S1: a
-continuous path from `P` to `Q` can be sampled into finitely many points whose
-consecutive pairs are valid chart-ball hops. Classically a Lebesgue-number
-argument on chart-coordinate balls along `continuousPath P Q`, using the
-`OfCurveSkeleton.*_eventually` lemmas. **This is the sole remaining S1 sorry.** -/
-theorem exists_hop_cover (P Q : X) :
-    ∃ (n : ℕ) (a : ℕ → X), a 0 = P ∧ a n = Q ∧ ∀ k, k < n → HopValid (a k) (a (k+1)) :=
-  sorry
-
-/-- **S1 kernel**: a zero-endpoint-velocity smooth path exists between any two
-points. Assembles the chart-ball cover (`exists_hop_cover`) with the n-piece
-glue (`exists_zeroVel_smoothPath_aux`). -/
+/-- **S1 kernel, fully proven**: a zero-endpoint-velocity smooth path exists
+between any two points (chart-ball cover glued by the n-piece induction). -/
 theorem exists_zeroVel_smoothPath (P Q : X) :
     ∃ γ, IsSmoothPath P Q γ ∧ pathSpeed γ 0 = 0 ∧ pathSpeed γ 1 = 0 := by
-  obtain ⟨n, a, ha0, han, hhop⟩ := exists_hop_cover P Q
-  obtain ⟨γ, hsm, hv0, hv1⟩ := exists_zeroVel_smoothPath_aux a n hhop
+  obtain ⟨n, a, ha0, han, hstep⟩ := exists_smoothChain P Q
+  obtain ⟨γ, hsm, hv0, hv1⟩ := exists_zeroVel_smoothPath_aux a n hstep
   exact ⟨γ, ha0 ▸ han ▸ hsm, hv0, hv1⟩
 
 theorem exists_smoothPath_family

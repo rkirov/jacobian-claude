@@ -14,11 +14,10 @@ import re
 import sys
 import pathlib
 
-EXPECTED = int(sys.argv[1]) if len(sys.argv) > 1 else 8
+EXPECTED = int(sys.argv[1]) if len(sys.argv) > 1 else 7
 
 # The 8 known classical-content sorries, for a readable report.
 KNOWN = {
-    "S1": "exists_smoothPath_family (smooth-path existence + basepoint change)",
     "S2": "DiscreteTopology (truePeriodLattice X)",
     "S3": "IsZLattice ℝ (truePeriodLattice X)",
     "S4": "exists_preimageCycle_of_nonconstant (branched-cover lifting)",
