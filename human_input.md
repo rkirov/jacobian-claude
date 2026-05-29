@@ -730,3 +730,25 @@ Review → S8 soundness fix + honest-docs/guards → **S1 CLOSED** (smooth-path
 existence, axiom-clean) → S4 decomposed into named sub-lemmas → **S4b
 isOpenMap proven** modulo the globalized identity theorem. ~11 sorries; build
 green. All local commits, not pushed.
+
+## 2026-05-29 (cont.) — Methodology: split derisking, connect the ends
+
+**Moment:** I'd diagnosed that S4's two remaining lemmas are analytic walls and
+recommended either (b) fix S8's trace first (it's the shared blocker) or finish
+S4. **User steered:** first "yes, work bottom up on the dependency graph" — then,
+crucially: *"should be more clear, do some downstream scaffolding and ideation,
+but then start building up from upstream. Just identifying big 'walls' is risky,
+as it might create throwaway work. We need a split approach to derisking, working
+a bit from both ends, prioritizing connecting the ends whenever possible."*
+
+**Pattern to internalize:** don't just locate walls and stop — that risks
+throwaway. Scaffold the downstream *interface* AND build up from the upstream
+*leaf*, and **prioritize proving the connection between them** (a lemma that
+shows "upstream X ⟹ downstream Y") so neither end is wasted. Be clearer in
+planning.
+
+**What changed:** wrote `docs/S8_TRACE_PLAN.md`; scaffolded the trace interface
+(`pushforwardForm`/`ambientPullbackJac`), rewired `pullback` (misformalization
+gone, `pushforward_pullback` now true), and **proved the meet-in-the-middle
+keystone** connecting the §3 preimage cycle to the S8 identity (on periods) via
+the already-proven `periodVec_pushforward`. Build green; all local commits.
