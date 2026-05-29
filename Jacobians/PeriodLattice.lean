@@ -1113,17 +1113,116 @@ theorem finite_branchLocus_of_nonconstant
     (branchLocus f).Finite :=
   (finite_criticalSet_of_nonconstant f hf hnonconst).image f
 
-/-- **Existence of preimage cycle for non-constant maps** — the main
-content sorry. Classically (Forster §10.11): pick `δ` or homotope it
-to avoid the finite `branchLocus`; locally lift via the unbranched
-cover on `Y ∖ branchLocus`; patch the lifts globally via the
-covering structure. Requires real branched-cover infrastructure. -/
-theorem exists_preimageCycle_of_nonconstant
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+/-! ## §1 Local structure of non-constant holomorphic maps -/
+
+/-- **[wall A1]** At a point off the critical set, a holomorphic map is a local
+diffeomorphism. Classical: `mfderiv f x ≠ 0` (i.e. `x ∉ criticalSet f`) plus
+the inverse function theorem (Forster §2.1) give a chart-local biholomorphism.
+The repo's discharge tree (`notInjOn_iff_deriv_zero_of_analytic_of_order`,
+`contMDiff_omega_analyticAt_chart_pullback`) supplies the analyticity needed. -/
+theorem isLocalHomeoOffCritical (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    {x : X} (hx : x ∉ criticalSet f) :
+    ∃ U : Set X, IsOpen U ∧ x ∈ U ∧ Set.InjOn f U ∧ IsOpen (f '' U) :=
+  sorry
+
+/-- **[wall A2]** A non-constant holomorphic map between Riemann surfaces is an
+open map (Forster §2.4, open mapping theorem). Off the critical set this is
+`isLocalHomeoOffCritical`; at critical points it follows from the local normal
+form `z ↦ z^k` (also open). -/
+theorem isOpenMap_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    IsOpenMap f :=
+  sorry
+
+/-- **[PROVEN]** A non-constant holomorphic map between compact connected
+Riemann surfaces is surjective: its range is open (open mapping), closed
+(continuous image of compact in a T2 space), and nonempty, hence clopen, hence
+all of the connected target `Y`. -/
+theorem surjective_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    Function.Surjective f := by
+  have hopen : IsOpen (Set.range f) := (isOpenMap_of_nonconstant f hf hnonconst).isOpen_range
+  have hclosed : IsClosed (Set.range f) := (isCompact_range hf.continuous).isClosed
+  have hclopen : IsClopen (Set.range f) := ⟨hclosed, hopen⟩
+  rcases isClopen_iff.mp hclopen with h | h
+  · exact absurd h (Set.range_nonempty f).ne_empty
+  · exact Set.range_eq_univ.mp h
+
+/-- **[wall A3]** A non-constant holomorphic map is a covering map over the
+complement of its (finite) branch locus (Forster §4.22 / §10.11): off the
+branch locus every fibre is finite (discrete + compact) and `f` is a local
+homeomorphism, so it is an evenly-covered covering map there. -/
+theorem isCoveringMapOn_compl_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    IsCoveringMapOn f (Set.univ \ branchLocus f) :=
+  sorry
+
+/-! ## §2 Homotopy invariance and genericity -/
+
+/-- **[wall B1]** `periodVec` is homotopy-invariant: homotopic closed smooth
+loops have equal period vectors. Classical (Forster §10.5): the period forms
+are closed (holomorphic 1-forms), so `∫_γ ω` depends only on the homotopy class
+by Stokes on the homotopy cylinder. (Mathlib lacks manifold Stokes; this is the
+analytic input.) -/
+theorem periodVec_eq_of_homotopic (γ₀ γ₁ : ℝ → X)
+    (h₀ : IsClosedSmoothLoop γ₀) (h₁ : IsClosedSmoothLoop γ₁)
+    (hhom : ∀ y : Y, True)  -- placeholder homotopy hypothesis; see plan
+    : periodVec γ₀ = periodVec γ₁ :=
+  sorry
+
+/-- **[wall B2]** A closed smooth loop in `Y` can be homotoped off the finite
+branch locus without changing its period vector. Genericity: `branchLocus f`
+is finite (`finite_branchLocus_of_nonconstant`), hence has real codimension 2
+in the surface `Y`, so a generic loop avoids it; homotopy invariance
+(`periodVec_eq_of_homotopic`) preserves the period. -/
+theorem exists_loop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
+    ∃ δ', IsClosedSmoothLoop δ' ∧ periodVec δ' = periodVec δ ∧
+      (∀ t : ℝ, δ' t ∉ branchLocus f) :=
+  sorry
+
+/-! ## §3 Lifting and the preimage cycle -/
+
+/-- **[wall C]** A closed smooth loop off the branch locus lifts to a preimage
+cycle. Construction (Forster §10.11): by `isCoveringMapOn_compl_branchLocus`,
+`f` is a finite covering over `Y ∖ branchLocus`; lift `δ` from each sheet
+(`IsCoveringMap.liftPath`); group the lifts into closed loops along the
+monodromy permutation's orbits (smoothness of each lift from the local-diffeo
+covering); the period trace identity
+`ambientPsi (periodVec δ) = ∑ periodVec (orbit loop)` holds because pulling back
+the basis forms along the sheets and summing reproduces `ambientPsi` (the
+change-of-variables / trace of `pullbackForm`). -/
+theorem exists_preimageCycle_of_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :
     Nonempty (PreimageCycle f hf δ) :=
   sorry
+
+/-! ## §4 Proven glue + assembly -/
+
+/-- **[PROVEN]** A `PreimageCycle` depends on `δ` only through `periodVec δ`
+(the only place `δ` enters the data is the trace identity's left-hand side).
+Transporting along a period-vector equality reuses the same loops/coeffs. -/
+def PreimageCycle.congr_periodVec {f : X → Y} {hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f}
+    {δ δ' : ℝ → Y} (h : periodVec δ = periodVec δ') (c : PreimageCycle f hf δ') :
+    PreimageCycle f hf δ where
+  n := c.n
+  loops := c.loops
+  loops_smooth := c.loops_smooth
+  coeffs := c.coeffs
+  trace_eq := by rw [h]; exact c.trace_eq
+
+/-- **[PROVEN]** `exists_preimageCycle_of_nonconstant`, assembled: homotope `δ`
+off the branch locus (B2), lift it to a preimage cycle (C), and transport back
+along the period-vector equality (`congr_periodVec`). -/
+theorem exists_preimageCycle_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
+    Nonempty (PreimageCycle f hf δ) := by
+  obtain ⟨δ', hδ', hpv, havoid⟩ := exists_loop_off_branchLocus f hf hnonconst δ hδ
+  obtain ⟨c⟩ := exists_preimageCycle_of_off_branchLocus f hf hnonconst δ' hδ' havoid
+  exact ⟨PreimageCycle.congr_periodVec hpv.symm c⟩
 
 /-- **Trace identity — member case.** For a closed smooth loop `δ`
 in `Y`, the pulled-back period vector `ambientPsi (periodVec δ)` lies

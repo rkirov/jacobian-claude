@@ -14,13 +14,20 @@ import re
 import sys
 import pathlib
 
-EXPECTED = int(sys.argv[1]) if len(sys.argv) > 1 else 7
+EXPECTED = int(sys.argv[1]) if len(sys.argv) > 1 else 12
 
-# The 8 known classical-content sorries, for a readable report.
+# The remaining classical-content sorries, for a readable report.
+# (S1 closed 2026-05-29; S4 decomposed into 6 named classical sub-walls,
+# with the algebraic glue proven — see PeriodLattice.lean §S4.)
 KNOWN = {
     "S2": "DiscreteTopology (truePeriodLattice X)",
     "S3": "IsZLattice ℝ (truePeriodLattice X)",
-    "S4": "exists_preimageCycle_of_nonconstant (branched-cover lifting)",
+    "S4a": "isLocalHomeoOffCritical (inverse fn thm)",
+    "S4b": "isOpenMap_of_nonconstant (open mapping)",
+    "S4c": "isCoveringMapOn_compl_branchLocus (covering off branch locus)",
+    "S4d": "periodVec_eq_of_homotopic (homotopy invariance / Stokes)",
+    "S4e": "exists_loop_off_branchLocus (genericity)",
+    "S4f": "exists_preimageCycle_of_off_branchLocus (lift + trace)",
     "S5": "genus_eq_zero_iff_homeo (uniformization)",
     "S6": "deg_div (residue theorem)",
     "S7": "abelJacobi_twoPoint_ne_zero (Abel + Riemann-Hurwitz)",
