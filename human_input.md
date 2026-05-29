@@ -671,3 +671,33 @@ LOC of classical chart-ball integral smoothness + partition-of-unity
 gluing); the previous false sorry was provably-unprovable.
 
 Net: +1 sorry, but mathematical correctness restored.
+
+## 2026-05-29 (review + Tier-0 cleanup)
+
+### User direction
+> "review this project and plan how to complete it"
+
+Then, after the multi-agent review + start of Tier-0 work:
+> "It's ok to turn one sorry into more intermediate"
+
+### Context
+Ran a 12-agent deep review (8 sorry dives + 4 cross-cutting audits). Key
+outcomes: confirmed 8 sorries / 0 axioms (README's "17" and STATUS.md's
+"0 via typeclasses" were stale); found S8 `ambientPhi_ambientPsi_eq` was
+**unsound as stated** (free `d : ℕ` ⇒ vacuously false), with
+`pushforward_pullback` routing through it; confirmed `ContMDiff.degree` is
+a real fibre-cardinality degree (not the `:= 0` stub the docs claimed).
+
+Started **Tier 0** (cheap honesty/correctness fixes): relocated S8 to
+`Jacobians.lean` with `d` pinned to `ContMDiff.degree` (kills the
+unsoundness, keeps it an honest sorry); scrubbed stale docstrings
+(README, STATUS.md, Jacobians.lean degree/abelJacobi/ofCurve_inj,
+skeleton "all sorry-bodied"); added `scripts/check_sorries.py` + CI guard
+(sorry-count == 8 + AxiomCheck). Next: Tier 1 = close S1
+`exists_smoothPath_family` (highest leverage; unblocks `ofCurve_contMDiff`).
+
+### Interpretation of "more intermediate"
+Decomposition of a hard sorry (esp. S1) into several smaller honest
+sorries is sanctioned — the frozen count is not a constraint. The CI
+guard takes the expected count as a parameter, so intentional
+decomposition just bumps `N`. Recorded as `feedback_decompose_sorries`.
