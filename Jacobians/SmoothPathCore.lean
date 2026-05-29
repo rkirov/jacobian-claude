@@ -280,6 +280,231 @@ theorem IsSmoothPath.reverse {P Q : X} {γ : ℝ → X}
       ((periodBasisForm X i).toFun (γ (1 - t))) (-pathSpeed γ (1 - t))
     exact ((periodBasisForm X i).toFun (γ (1 - t))).map_neg _ |>.symm
 
+open MeasureTheory in
+/-- **Concatenation of two smooth paths is a smooth path** — provided the
+junction velocities vanish (`pathSpeed γ₁ 1 = 0` and `pathSpeed γ₂ 0 = 0`).
+
+`concat γ₁ γ₂` runs `γ₁(2t)` on `[0,½]` and `γ₂(2t−1)` on `[½,1]`. The C¹
+(`diff`) field at the junction `t = ½` requires the left and right chart
+velocities to agree; the two hypotheses make both one-sided derivatives `0`,
+glued via `HasDerivWithinAt` on `Iic ∪ Ici`. This is the general form of the
+proven 2-piece junction lemma
+`OfCurveSkeleton.isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth`,
+and the keystone for the n-piece glued path used to discharge
+`exists_smoothPath_family`: every hop there is smoothstep-reparametrized, so
+its endpoint velocities are `0` and the hypotheses hold. -/
+theorem IsSmoothPath.concat {P Q R : X} {γ₁ γ₂ : ℝ → X}
+    (h₁ : IsSmoothPath P Q γ₁) (h₂ : IsSmoothPath Q R γ₂)
+    (hv₁ : pathSpeed γ₁ 1 = 0) (hv₂ : pathSpeed γ₂ 0 = 0) :
+    IsSmoothPath P R (Jacobians.concat γ₁ γ₂) where
+  start := by
+    rw [Jacobians.concat_apply_left _ _ (by norm_num : (0:ℝ) ≤ 1/2),
+        show (2:ℝ) * 0 = 0 from by norm_num]
+    exact h₁.start
+  finish := by
+    rw [Jacobians.concat_apply_right _ _ (by norm_num : ¬ (1:ℝ) ≤ 1/2),
+        show (2:ℝ) * 1 - 1 = 1 from by norm_num]
+    exact h₂.finish
+  cont := by
+    unfold Jacobians.concat
+    refine Continuous.if_le ?_ ?_ continuous_id continuous_const ?_
+    · exact h₁.cont.comp (continuous_const.mul continuous_id)
+    · exact h₂.cont.comp ((continuous_const.mul continuous_id).sub continuous_const)
+    · intro t ht
+      have ht_eq : t = 1/2 := ht
+      rw [ht_eq]
+      show γ₁ (2 * (1/2 : ℝ)) = γ₂ (2 * (1/2 : ℝ) - 1)
+      rw [show (2:ℝ) * (1/2) = 1 from by norm_num, show (1:ℝ) - 1 = 0 from by norm_num]
+      rw [h₁.finish]; exact h₂.start.symm
+  diff := by
+    intro t ht
+    have ht_Icc : t ∈ Set.Icc (0 : ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht; exact ht
+    rcases lt_trichotomy t (1/2) with h_lt | h_eq | h_gt
+    · -- t < 1/2
+      have h2t_Icc : 2 * t ∈ Set.uIcc (0 : ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+        exact ⟨by linarith [ht_Icc.1], by linarith [ht_Icc.1]⟩
+      have h_inner_diff := h₁.diff (2 * t) h2t_Icc
+      have h_pt : Jacobians.concat γ₁ γ₂ t = γ₁ (2 * t) :=
+        Jacobians.concat_apply_left _ _ (le_of_lt h_lt)
+      have h_eventually : (chartAt (H := ℂ) (Jacobians.concat γ₁ γ₂ t)).toFun ∘
+          Jacobians.concat γ₁ γ₂ =ᶠ[nhds t]
+          ((chartAt (H := ℂ) (γ₁ (2 * t))).toFun ∘ γ₁) ∘ (fun s : ℝ => 2 * s) := by
+        have h_open : IsOpen (Set.Iio (1/2 : ℝ)) := isOpen_Iio
+        filter_upwards [h_open.mem_nhds (show t ∈ Set.Iio (1/2 : ℝ) from h_lt)] with s hs
+        simp only [Function.comp_apply, h_pt]
+        rw [Jacobians.concat_apply_left _ _ (le_of_lt hs)]
+      rw [Filter.EventuallyEq.differentiableAt_iff h_eventually]
+      exact h_inner_diff.comp t ((differentiableAt_const _).mul differentiableAt_id)
+    · -- t = 1/2 (junction; both one-sided derivatives are 0)
+      subst h_eq
+      have hQ_eq : Jacobians.concat γ₁ γ₂ (1/2 : ℝ) = Q := by
+        rw [Jacobians.concat_apply_left _ _ (le_refl _),
+            show (2:ℝ) * (1/2) = 1 from by norm_num]
+        exact h₁.finish
+      rw [show (Jacobians.concat γ₁ γ₂ (1/2 : ℝ)) = Q from hQ_eq]
+      set f : ℝ → ℂ := (chartAt (H := ℂ) Q).toFun ∘ Jacobians.concat γ₁ γ₂ with hf_def
+      have h_one_uIcc : (1 : ℝ) ∈ Set.uIcc (0 : ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨zero_le_one, le_refl _⟩
+      have h_zero_uIcc : (0 : ℝ) ∈ Set.uIcc (0 : ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨le_refl _, zero_le_one⟩
+      have h_2mul_HDA : HasDerivAt (fun s : ℝ => 2 * s) (2 : ℝ) (1/2 : ℝ) := by
+        simpa using (hasDerivAt_id (1/2 : ℝ)).const_mul (2 : ℝ)
+      -- LEFT: HasDerivWithinAt f 0 on Iic(1/2)
+      have h_g_L_diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₁) 1 :=
+        h₁.diff 1 h_one_uIcc
+      rw [h₁.finish] at h_g_L_diff
+      have h_g_L_HDA : HasDerivAt ((chartAt (H := ℂ) Q).toFun ∘ γ₁) 0 1 := by
+        have h_path_eq : pathSpeed γ₁ 1 = deriv ((chartAt (H := ℂ) Q).toFun ∘ γ₁) 1 := by
+          show fderiv ℝ ((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₁) 1 1 = _
+          rw [h₁.finish]; rfl
+        have h_deriv_zero : deriv ((chartAt (H := ℂ) Q).toFun ∘ γ₁) 1 = 0 := by
+          rw [← h_path_eq]; exact hv₁
+        rw [← h_deriv_zero]; exact h_g_L_diff.hasDerivAt
+      have h_f_L_HDA : HasDerivAt
+          (((chartAt (H := ℂ) Q).toFun ∘ γ₁) ∘ (fun s : ℝ => 2 * s)) 0 (1/2 : ℝ) := by
+        simpa using h_g_L_HDA.scomp_of_eq (1/2 : ℝ) h_2mul_HDA
+          (by norm_num : (1 : ℝ) = 2 * (1/2 : ℝ))
+      have h_eqOn_Iic : Set.EqOn f
+          (((chartAt (H := ℂ) Q).toFun ∘ γ₁) ∘ (fun s : ℝ => 2 * s)) (Set.Iic (1/2 : ℝ)) := by
+        intro s hs
+        simp only [hf_def, Function.comp_apply]
+        rw [Jacobians.concat_apply_left _ _ hs]
+      have h_Iic_HDWA : HasDerivWithinAt f 0 (Set.Iic (1/2 : ℝ)) (1/2 : ℝ) :=
+        (h_f_L_HDA.hasDerivWithinAt (s := Set.Iic (1/2 : ℝ))).congr
+          (fun s hs => h_eqOn_Iic hs) (h_eqOn_Iic Set.self_mem_Iic)
+      -- RIGHT: HasDerivWithinAt f 0 on Ici(1/2)
+      have h_g_R_diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₂ 0)).toFun ∘ γ₂) 0 :=
+        h₂.diff 0 h_zero_uIcc
+      rw [h₂.start] at h_g_R_diff
+      have h_g_R_HDA : HasDerivAt ((chartAt (H := ℂ) Q).toFun ∘ γ₂) 0 0 := by
+        have h_path_eq : pathSpeed γ₂ 0 = deriv ((chartAt (H := ℂ) Q).toFun ∘ γ₂) 0 := by
+          show fderiv ℝ ((chartAt (H := ℂ) (γ₂ 0)).toFun ∘ γ₂) 0 1 = _
+          rw [h₂.start]; rfl
+        have h_deriv_zero : deriv ((chartAt (H := ℂ) Q).toFun ∘ γ₂) 0 = 0 := by
+          rw [← h_path_eq]; exact hv₂
+        rw [← h_deriv_zero]; exact h_g_R_diff.hasDerivAt
+      have h_f_R_HDA : HasDerivAt
+          (((chartAt (H := ℂ) Q).toFun ∘ γ₂) ∘ (fun s : ℝ => 2 * s - 1)) 0 (1/2 : ℝ) := by
+        simpa using h_g_R_HDA.scomp_of_eq (1/2 : ℝ) (h_2mul_HDA.sub_const 1)
+          (by norm_num : (0 : ℝ) = 2 * (1/2 : ℝ) - 1)
+      have h_eqOn_Ici : Set.EqOn f
+          (((chartAt (H := ℂ) Q).toFun ∘ γ₂) ∘ (fun s : ℝ => 2 * s - 1)) (Set.Ici (1/2 : ℝ)) := by
+        intro s hs
+        simp only [hf_def, Function.comp_apply]
+        rcases eq_or_lt_of_le (show (1/2 : ℝ) ≤ s from hs) with h_eq_half | h_gt_half
+        · rw [← h_eq_half, Jacobians.concat_apply_left _ _ (le_refl _),
+              show (2:ℝ) * (1/2) - 1 = 0 from by norm_num,
+              show (2:ℝ) * (1/2) = 1 from by norm_num, h₁.finish, h₂.start]
+        · rw [Jacobians.concat_apply_right _ _ (not_le.mpr h_gt_half)]
+      have h_Ici_HDWA : HasDerivWithinAt f 0 (Set.Ici (1/2 : ℝ)) (1/2 : ℝ) :=
+        (h_f_R_HDA.hasDerivWithinAt (s := Set.Ici (1/2 : ℝ))).congr
+          (fun s hs => h_eqOn_Ici hs) (h_eqOn_Ici Set.self_mem_Ici)
+      -- UNION
+      have h_union : HasDerivWithinAt f 0
+          (Set.Iic (1/2 : ℝ) ∪ Set.Ici (1/2 : ℝ)) (1/2 : ℝ) :=
+        h_Iic_HDWA.union h_Ici_HDWA
+      have h_union_eq : Set.Iic (1/2 : ℝ) ∪ Set.Ici (1/2 : ℝ) = Set.univ := by
+        ext x; simp only [Set.mem_union, Set.mem_Iic, Set.mem_Ici, Set.mem_univ, iff_true]
+        rcases lt_or_ge x (1/2 : ℝ) with h | h
+        · exact Or.inl (le_of_lt h)
+        · exact Or.inr h
+      rw [h_union_eq] at h_union
+      exact (h_union.hasDerivAt Filter.univ_mem).differentiableAt
+    · -- t > 1/2
+      have h2tm1_Icc : 2 * t - 1 ∈ Set.uIcc (0 : ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+        exact ⟨by linarith, by linarith [ht_Icc.2]⟩
+      have h_inner_diff := h₂.diff (2 * t - 1) h2tm1_Icc
+      have h_pt : Jacobians.concat γ₁ γ₂ t = γ₂ (2 * t - 1) :=
+        Jacobians.concat_apply_right _ _ (not_le.mpr h_gt)
+      have h_eventually : (chartAt (H := ℂ) (Jacobians.concat γ₁ γ₂ t)).toFun ∘
+          Jacobians.concat γ₁ γ₂ =ᶠ[nhds t]
+          ((chartAt (H := ℂ) (γ₂ (2 * t - 1))).toFun ∘ γ₂) ∘ (fun s : ℝ => 2 * s - 1) := by
+        have h_open : IsOpen (Set.Ioi (1/2 : ℝ)) := isOpen_Ioi
+        filter_upwards [h_open.mem_nhds (show t ∈ Set.Ioi (1/2 : ℝ) from h_gt)] with s hs
+        simp only [Function.comp_apply, h_pt]
+        rw [Jacobians.concat_apply_right _ _ (not_le.mpr hs)]
+      rw [Filter.EventuallyEq.differentiableAt_iff h_eventually]
+      exact h_inner_diff.comp t
+        (((differentiableAt_const _).mul differentiableAt_id).sub (differentiableAt_const _))
+  integrable := by
+    intro i
+    have h_Ψ₁ : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun (γ₁ t) (pathSpeed γ₁ t)) volume 0 1 :=
+      h₁.integrable i
+    have h_Ψ₂ : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun (γ₂ t) (pathSpeed γ₂ t)) volume 0 1 :=
+      h₂.integrable i
+    have h_ae_neq : ∀ᵐ t ∂(volume : Measure ℝ), t ≠ (1/2 : ℝ) := by
+      rw [MeasureTheory.ae_iff]; simp
+    -- LEFT half on (0, 1/2)
+    have h_Ψ₁_shift : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun (γ₁ (2 * t)) (pathSpeed γ₁ (2 * t)))
+        volume 0 (1/2) := by
+      have h_mul := h_Ψ₁.comp_mul_left (c := 2)
+      convert h_mul using 2 <;> norm_num
+    have h_Ψc_left : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun (Jacobians.concat γ₁ γ₂ t)
+          (pathSpeed (Jacobians.concat γ₁ γ₂) t)) volume 0 (1/2) := by
+      refine (h_Ψ₁_shift.const_mul (2:ℂ)).congr_ae ?_
+      refine (MeasureTheory.ae_restrict_iff' measurableSet_uIoc).mpr ?_
+      filter_upwards [h_ae_neq] with t h_neq ht
+      rw [Set.uIoc_of_le (by norm_num : (0:ℝ) ≤ 1/2)] at ht
+      have h_lt : t < 1/2 := lt_of_le_of_ne ht.2 h_neq
+      have h_2t_uIcc : 2 * t ∈ Set.uIcc (0:ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨by linarith [ht.1], by linarith⟩
+      have h_concat_apply : Jacobians.concat γ₁ γ₂ t = γ₁ (2 * t) :=
+        Jacobians.concat_apply_left _ _ (le_of_lt h_lt)
+      have h_pathSpeed_eq : pathSpeed (Jacobians.concat γ₁ γ₂) t = 2 * pathSpeed γ₁ (2 * t) :=
+        Jacobians.pathSpeed_concat_left _ _ t h_lt (h₁.diff (2 * t) h_2t_uIcc)
+      show (2:ℂ) * (periodBasisForm X i).toFun (γ₁ (2*t)) (pathSpeed γ₁ (2*t)) =
+        (periodBasisForm X i).toFun (Jacobians.concat γ₁ γ₂ t)
+          (pathSpeed (Jacobians.concat γ₁ γ₂) t)
+      rw [h_concat_apply, h_pathSpeed_eq]
+      have h_lin := ((periodBasisForm X i).toFun (γ₁ (2*t))).map_smul (2:ℂ) (pathSpeed γ₁ (2*t))
+      simp only [smul_eq_mul] at h_lin
+      exact h_lin.symm
+    -- RIGHT half on (1/2, 1)
+    have h_Ψ₂_shift : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun (γ₂ (2 * t)) (pathSpeed γ₂ (2 * t)))
+        volume 0 (1/2) := by
+      have h_mul := h_Ψ₂.comp_mul_left (c := 2)
+      convert h_mul using 2 <;> norm_num
+    have h_Ψ₂_shift_2 : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun (γ₂ (2 * t - 1)) (pathSpeed γ₂ (2 * t - 1)))
+        volume (1/2) 1 := by
+      have h_sub := h_Ψ₂_shift.comp_sub_right (1/2)
+      rw [show (0:ℝ) + 1/2 = 1/2 from by norm_num, show (1/2:ℝ) + 1/2 = 1 from by norm_num] at h_sub
+      have h_fn_eq : (fun t : ℝ => (periodBasisForm X i).toFun (γ₂ (2 * (t - 1/2)))
+            (pathSpeed γ₂ (2 * (t - 1/2)))) =
+          (fun t : ℝ => (periodBasisForm X i).toFun (γ₂ (2 * t - 1)) (pathSpeed γ₂ (2 * t - 1))) := by
+        funext t; rw [show (2:ℝ) * (t - 1/2) = 2 * t - 1 from by ring]
+      rw [h_fn_eq] at h_sub; exact h_sub
+    have h_Ψc_right : IntervalIntegrable
+        (fun t => (periodBasisForm X i).toFun (Jacobians.concat γ₁ γ₂ t)
+          (pathSpeed (Jacobians.concat γ₁ γ₂) t)) volume (1/2) 1 := by
+      refine (h_Ψ₂_shift_2.const_mul (2:ℂ)).congr_ae ?_
+      refine (MeasureTheory.ae_restrict_iff' measurableSet_uIoc).mpr ?_
+      filter_upwards [h_ae_neq] with t _h_neq ht
+      rw [Set.uIoc_of_le (by norm_num : (1/2:ℝ) ≤ 1)] at ht
+      have h_gt : 1/2 < t := ht.1
+      have h_2tm1_uIcc : 2 * t - 1 ∈ Set.uIcc (0:ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨by linarith, by linarith [ht.2]⟩
+      have h_concat_apply : Jacobians.concat γ₁ γ₂ t = γ₂ (2 * t - 1) :=
+        Jacobians.concat_apply_right _ _ (not_le.mpr h_gt)
+      have h_pathSpeed_eq : pathSpeed (Jacobians.concat γ₁ γ₂) t = 2 * pathSpeed γ₂ (2 * t - 1) :=
+        Jacobians.pathSpeed_concat_right _ _ t h_gt (h₂.diff (2 * t - 1) h_2tm1_uIcc)
+      show (2:ℂ) * (periodBasisForm X i).toFun (γ₂ (2*t-1)) (pathSpeed γ₂ (2*t-1)) =
+        (periodBasisForm X i).toFun (Jacobians.concat γ₁ γ₂ t)
+          (pathSpeed (Jacobians.concat γ₁ γ₂) t)
+      rw [h_concat_apply, h_pathSpeed_eq]
+      have h_lin := ((periodBasisForm X i).toFun (γ₂ (2*t-1))).map_smul (2:ℂ) (pathSpeed γ₂ (2*t-1))
+      simp only [smul_eq_mul] at h_lin
+      exact h_lin.symm
+    exact h_Ψc_left.trans h_Ψc_right
+
 end Jacobians
 
 /-! ## Chart-ball-hop machinery (`Jacobians.OfCurveSkeleton`)
