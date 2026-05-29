@@ -353,16 +353,17 @@ lemma pushforward_comp_apply (P : Jacobian X) :
 into the `X`-period lattice, because `Tᵀ(periodVec δ) = periodVec(preimage
 cycle of δ)` (projection formula) and the preimage cycle is an `X`-cycle.
 
-**[open, §3]** Discharged by the S4 §3 preimage-cycle construction
-(`ambientPullbackJac_preserves_truePeriodLattice`, PeriodLattice.lean); stubbed
-here pending that build. Replaces the misformalized `ambientPsi`-as-pullback,
-whose preservation rested on the false `ambientPsi`-trace identity. -/
+Discharged by the S4 §3 preimage-cycle construction
+(`ambientPullbackJac_preserves_truePeriodLattice`, PeriodLattice.lean) — itself
+modulo the §3 `exists_preimageCycle` lift. Replaces the misformalized
+`ambientPsi`-as-pullback, whose preservation rested on the false `ambientPsi`
+trace identity. -/
 lemma ambientPullbackJac_preserves_lattice
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (periodLattice Y).toAddSubgroup ≤
       (periodLattice X).toAddSubgroup.comap
         (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom :=
-  sorry
+  Jacobians.ambientPullbackJac_preserves_truePeriodLattice f hf
 
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
 Equal to the zero map if the map on curves is constant.

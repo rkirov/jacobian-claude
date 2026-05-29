@@ -238,12 +238,22 @@ the analytic content; it is deferred behind this declaration and its laws
 S4 §3 (the preimage cycle) discharges these via `periodVec_pushforward` — that is
 the meet-in-the-middle connection. -/
 noncomputable def pushforwardForm (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    HolomorphicOneForms X →ₗ[ℂ] HolomorphicOneForms Y :=
-  sorry
+    HolomorphicOneForms X →ₗ[ℂ] HolomorphicOneForms Y := by
+  classical
+  exact if (∃ y₀ : Y, ∀ x, f x = y₀) then 0 else sorry
+
+/-- **Trace of a constant map is zero** (`deg = 0`, no sheets to sum over) —
+provable from the constancy branch of `pushforwardForm`'s definition. Mirrors
+`pullbackForm_eq_zero_of_const`. -/
+theorem pushforwardForm_eq_zero_of_const (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hconst : ∃ y₀ : Y, ∀ x, f x = y₀) :
+    pushforwardForm f hf = 0 := by
+  classical
+  rw [pushforwardForm, if_pos hconst]
 
 /-- `f₊(id) = id` — the identity map is a one-sheeted cover. Covariant
 functoriality of the trace at the identity (honest sorry pending the geometric
-construction of `pushforwardForm`). -/
+construction of `pushforwardForm` on the non-constant branch). -/
 theorem pushforwardForm_id : pushforwardForm (id : X → X) contMDiff_id =
     LinearMap.id (R := ℂ) (M := HolomorphicOneForms X) :=
   sorry
@@ -495,6 +505,29 @@ theorem ambientPullbackJac_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [Co
     (Pi.basisFun ℂ (Fin (genus Z)))]
   rw [Matrix.transpose_mul, Matrix.mulVecLin_mul]
   rfl
+
+/-- **ambientTrace of a constant map is zero**, from `pushforwardForm_eq_zero_of_const`
+(mirrors `ambientPsi_eq_zero_of_const`). -/
+theorem ambientTrace_eq_zero_of_const (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hconst : ∃ y₀ : Y, ∀ x, f x = y₀) :
+    ambientTrace (gX := genus X) (gY := genus Y) f hf = 0 := by
+  unfold ambientTrace
+  simp only [dite_true]
+  rw [pushforwardForm_eq_zero_of_const f hf hconst]
+  ext v i
+  simp
+
+/-- **ambientPullbackJac of a constant map is zero** (`Tᵀ = 0` when `T = 0`).
+The constant-case input to `ambientPullbackJac_preserves_truePeriodLattice`. -/
+theorem ambientPullbackJac_eq_zero_of_const (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hconst : ∃ y₀ : Y, ∀ x, f x = y₀) :
+    ambientPullbackJac (gX := genus X) (gY := genus Y) f hf = 0 := by
+  unfold ambientPullbackJac
+  rw [show (ambientTrace (gX := genus X) (gY := genus Y) f hf).toLinearMap
+      = (0 : (Fin (genus X) → ℂ) →ₗ[ℂ] (Fin (genus Y) → ℂ)) from by
+    rw [ambientTrace_eq_zero_of_const f hf hconst]; rfl]
+  ext v i
+  simp
 
 end AmbientBridge
 

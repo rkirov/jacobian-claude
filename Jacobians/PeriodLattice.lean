@@ -1019,22 +1019,30 @@ structure PreimageCycle (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
   loops_smooth : ∀ i, IsClosedSmoothLoop (loops i)
   /-- Integer coefficients (signed lifts / branching multiplicities). -/
   coeffs : Fin n → ℤ
-  /-- The trace identity: `ambientPsi` on `periodVec δ` equals the
-  ℤ-combination of `periodVec`s of the lifts. -/
-  trace_eq : ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) =
+  /-- Sheet count of the cover (classically `= deg f`). -/
+  sheets : ℕ
+  /-- **Pullback identity** (projection formula): the genuine Jacobian pullback
+  `ambientPullbackJac` (= `Tᵀ`) on `periodVec δ` equals the ℤ-combination of the
+  lifts' period vectors `periodVec(Γ) = Tᵀ·periodVec δ`. (Replaces the former
+  `ambientPsi`-based `trace_eq`, which used the wrong map.) -/
+  pullback_eq : ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (periodVec δ) =
     ∑ i, coeffs i • periodVec (loops i)
+  /-- **Pushforward identity** (`f∘Γ = sheets·δ` on periods): the lifts project to
+  `δ` with multiplicities summing to `sheets`. Feeds the S8 connection keystone. -/
+  pushforward_eq : ∑ i, coeffs i • periodVec (f ∘ loops i) =
+    (sheets : ℤ) • periodVec δ
 
-/-- **Trace identity — algebraic reduction.** Given a `PreimageCycle`
+/-- **Pullback identity — algebraic reduction.** Given a `PreimageCycle`
 witness for `(f, δ)`, the pulled-back period vector
-`ambientPsi (periodVec δ)` lies in `truePeriodLattice X`: each
+`ambientPullbackJac (periodVec δ)` lies in `truePeriodLattice X`: each
 `periodVec` of a closed smooth loop is in the lattice, and the
 lattice is closed under ℤ-linear combinations. -/
-theorem ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle
+theorem ambientPullbackJac_periodVec_mem_truePeriodLattice_of_preimageCycle
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (δ : ℝ → Y) (c : PreimageCycle f hf δ) :
-    ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
+    ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
       truePeriodLattice X := by
-  rw [c.trace_eq]
+  rw [c.pullback_eq]
   exact Submodule.sum_mem _ fun i _ =>
     Submodule.smul_mem _ (c.coeffs i)
       (periodVec_mem_truePeriodLattice_of_closed _ (c.loops_smooth i))
@@ -1537,7 +1545,9 @@ def PreimageCycle.congr_periodVec {f : X → Y} {hf : ContMDiff 𝓘(ℂ) 𝓘(�
   loops := c.loops
   loops_smooth := c.loops_smooth
   coeffs := c.coeffs
-  trace_eq := by rw [h]; exact c.trace_eq
+  sheets := c.sheets
+  pullback_eq := by rw [h]; exact c.pullback_eq
+  pushforward_eq := by rw [h]; exact c.pushforward_eq
 
 /-- **[PROVEN]** `exists_preimageCycle_of_nonconstant`, assembled: homotope `δ`
 off the branch locus (B2), lift it to a preimage cycle (C), and transport back
@@ -1550,47 +1560,47 @@ theorem exists_preimageCycle_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(�
   obtain ⟨c⟩ := exists_preimageCycle_of_off_branchLocus f hf hnonconst δ' hδ' havoid
   exact ⟨PreimageCycle.congr_periodVec hpv.symm c⟩
 
-/-- **Trace identity — member case.** For a closed smooth loop `δ`
-in `Y`, the pulled-back period vector `ambientPsi (periodVec δ)` lies
+/-- **Pullback identity — member case.** For a closed smooth loop `δ`
+in `Y`, the genuine pullback `ambientPullbackJac (periodVec δ)` lies
 in `truePeriodLattice X`. Case-splits on constancy of `f`:
 
-* If `f` is constant, `ambientPsi f hf = 0` (`ambientPsi_eq_zero_of_const`),
-  so the image is `0`, which is in any submodule.
+* If `f` is constant, `ambientPullbackJac f hf = 0`
+  (`ambientPullbackJac_eq_zero_of_const`), so the image is `0`.
 * If `f` is non-constant, extract a preimage cycle witness via
-  `exists_preimageCycle_of_nonconstant`, then apply the algebraic trace
-  identity `ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle`. -/
-theorem ambientPsi_periodVec_mem_truePeriodLattice
+  `exists_preimageCycle_of_nonconstant`, then apply the algebraic reduction
+  `ambientPullbackJac_periodVec_mem_truePeriodLattice_of_preimageCycle`. -/
+theorem ambientPullbackJac_periodVec_mem_truePeriodLattice
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
-    ambientPsi (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
+    ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
       truePeriodLattice X := by
   by_cases hconst : ∃ y₀ : Y, ∀ x, f x = y₀
-  · -- Constant case: ambientPsi = 0.
-    rw [ambientPsi_eq_zero_of_const f hf hconst]
+  · -- Constant case: ambientPullbackJac = 0.
+    rw [ambientPullbackJac_eq_zero_of_const f hf hconst]
     simp
   · -- Non-constant case: extract a preimage cycle and apply the algebraic
     -- reduction.
     obtain ⟨c⟩ := exists_preimageCycle_of_nonconstant f hf hconst δ hδ
-    exact ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle f hf δ c
+    exact ambientPullbackJac_periodVec_mem_truePeriodLattice_of_preimageCycle f hf δ c
 
-/-- `ambientPsi` preserves the period lattice. Reduces to
-`ambientPsi_periodVec_mem_truePeriodLattice` on closed-loop generators,
-extended to the ℤ-span by `Submodule.span_induction` and `ambientPsi`'s
-ℤ-linearity. (Mirrors the structure of `ambientPhi_preserves_truePeriodLattice`.) -/
-theorem ambientPsi_preserves_truePeriodLattice
+/-- `ambientPullbackJac` (the genuine Jacobian pullback `Tᵀ`) preserves the period
+lattice. Reduces to `ambientPullbackJac_periodVec_mem_truePeriodLattice` on
+closed-loop generators, extended to the ℤ-span by `Submodule.span_induction` and
+ℤ-linearity. Discharges `Jacobian.ambientPullbackJac_preserves_lattice`. -/
+theorem ambientPullbackJac_preserves_truePeriodLattice
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (truePeriodLattice Y).toAddSubgroup ≤
       (truePeriodLattice X).toAddSubgroup.comap
-        (ambientPsi (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom := by
+        (ambientPullbackJac (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom := by
   show ∀ v ∈ truePeriodLattice Y,
-    ambientPsi (gX := genus X) (gY := genus Y) f hf v ∈ truePeriodLattice X
+    ambientPullbackJac (gX := genus X) (gY := genus Y) f hf v ∈ truePeriodLattice X
   intro v hv
   refine Submodule.span_induction
-    (p := fun v _ => ambientPsi (gX := genus X) (gY := genus Y) f hf v ∈
+    (p := fun v _ => ambientPullbackJac (gX := genus X) (gY := genus Y) f hf v ∈
       truePeriodLattice X) ?_ ?_ ?_ ?_ hv
   · -- Generator case: v = periodVec δ for a closed smooth loop δ in Y.
     rintro _ ⟨δ, hδ, rfl⟩
-    exact ambientPsi_periodVec_mem_truePeriodLattice f hf δ hδ
+    exact ambientPullbackJac_periodVec_mem_truePeriodLattice f hf δ hδ
   · -- Zero case.
     simp
   · -- Additive case.
