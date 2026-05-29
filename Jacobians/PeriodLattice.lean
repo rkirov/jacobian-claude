@@ -1515,6 +1515,30 @@ theorem exists_loop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘
 
 /-! ## §3 Lifting and the preimage cycle -/
 
+/-- **[PROVEN]** Fibres off the branch locus are **finite**. For `y ∉ branchLocus f`
+every preimage `x` is a non-critical point, where `f` is locally injective
+(`isLocalHomeoOffCritical`), so `x` is isolated in the fibre ⟹ the fibre is
+`IsDiscrete`; it is also closed in compact `X` ⟹ compact, hence finite. This is
+the sheet count of the cover over `y` (classically `= deg f`) — the foundation of
+the §3 preimage-cycle lift. Note: unlike the discharge's
+`fibres_finite_of_connectivity_hypothesis` (gated on the global identity theorem),
+this is unconditional off the branch locus, since `isLocalHomeoOffCritical` is
+already proven there. -/
+theorem fiber_finite_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {y : Y} (hy : y ∉ branchLocus f) :
+    (f ⁻¹' {y}).Finite := by
+  apply Jacobians.Discharge.ContMDiff.Degree.fiber_finite_of_isDiscrete hf.continuous y
+  rw [isDiscrete_iff_forall_exists_isOpen]
+  intro x hx
+  rw [Set.mem_preimage, Set.mem_singleton_iff] at hx
+  have hxcrit : x ∉ criticalSet f := fun hmem => hy ⟨x, hmem, hx⟩
+  obtain ⟨U, hUopen, hxU, hinj, _⟩ := isLocalHomeoOffCritical f hf hnonconst hxcrit
+  refine ⟨U, hUopen, Set.eq_singleton_iff_unique_mem.mpr ⟨⟨hxU, ?_⟩, ?_⟩⟩
+  · rw [Set.mem_preimage, Set.mem_singleton_iff]; exact hx
+  · rintro x' ⟨hx'U, hx'fib⟩
+    rw [Set.mem_preimage, Set.mem_singleton_iff] at hx'fib
+    exact hinj hx'U hxU (hx'fib.trans hx.symm)
+
 /-- **[open]** A closed smooth loop off the branch locus lifts to a preimage
 cycle. Construction (Forster §4.22–4.23 + §4.14): on compact `X`, non-constant
 holomorphic `f` is proper, so off the branch locus it restricts to a finite
