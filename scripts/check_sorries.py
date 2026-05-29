@@ -23,7 +23,7 @@ KNOWN = {
     "S2": "DiscreteTopology (truePeriodLattice X)",
     "S3": "IsZLattice ℝ (truePeriodLattice X)",
     "S4a": "isLocalHomeoOffCritical (inverse fn thm)",
-    "S4b": "isOpenMap_of_nonconstant (open mapping)",
+    "S4b": "chartPullback_not_eventuallyConst (globalized identity thm; isOpenMap now PROVEN from it)",
     "S4c": "isCoveringMapOn_compl_branchLocus (covering off branch locus)",
     "S4e": "exists_loop_off_branchLocus (genericity)",
     "S4f": "exists_preimageCycle_of_off_branchLocus (lift + trace)",

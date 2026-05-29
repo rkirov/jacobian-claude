@@ -7,6 +7,7 @@ import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 import Jacobians.SmoothPath
 import Jacobians.SmoothPathCore
 import Jacobians.ZLatticeQuotient
+import Mathlib.Analysis.Complex.OpenMapping
 
 /-!
 # Period lattice of a compact Riemann surface
@@ -1125,14 +1126,87 @@ theorem isLocalHomeoOffCritical (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ
     ∃ U : Set X, IsOpen U ∧ x ∈ U ∧ Set.InjOn f U ∧ IsOpen (f '' U) :=
   sorry
 
-/-- **[wall A2]** A non-constant holomorphic map between Riemann surfaces is an
-open map (Forster §2.4, open mapping theorem). Off the critical set this is
-`isLocalHomeoOffCritical`; at critical points it follows from the local normal
-form `z ↦ z^k` (also open). -/
+/-- Chart pullback of `f` at `x`. -/
+noncomputable def chartPullback (f : X → Y) (x : X) : ℂ → ℂ :=
+  (chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm
+
+theorem analyticAt_chartPullback (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X) :
+    AnalyticAt ℂ (chartPullback f x) ((chartAt ℂ x) x) :=
+  Jacobians.Discharge.ContMDiff.Owed.degree.contMDiffAt_omega_analyticAt_chart_pullback (hf x)
+
+/-- **Local open mapping at `x`** (provided the chart pullback is not locally
+constant there): `f` sends neighborhoods of `x` to neighborhoods of `f x`. This
+is the heart of the open mapping theorem, transferred through the charts. -/
+theorem nhds_le_map_of_chartPullback_not_eventuallyConst
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X)
+    (hnc : ¬ ∀ᶠ z in 𝓝 ((chartAt ℂ x) x), chartPullback f x z = chartPullback f x ((chartAt ℂ x) x)) :
+    𝓝 (f x) ≤ Filter.map f (𝓝 x) := by
+  set φ := chartAt ℂ x with hφ
+  set ψ := chartAt ℂ (f x) with hψ
+  set g := chartPullback f x with hg
+  have hxφ : x ∈ φ.source := mem_chart_source ℂ x
+  have hfxψ : f x ∈ ψ.source := mem_chart_source ℂ (f x)
+  -- g is open at φ x: from analyticity + not-locally-constant, `nhds_le_map_nhds`.
+  have hgA : AnalyticAt ℂ g (φ x) := analyticAt_chartPullback f hf x
+  have hg_open : 𝓝 (g (φ x)) ≤ Filter.map g (𝓝 (φ x)) :=
+    hgA.eventually_constant_or_nhds_le_map_nhds.resolve_left hnc
+  -- g (φ x) = ψ (f x).
+  have hgφx : g (φ x) = ψ (f x) := by
+    simp only [hg, chartPullback, Function.comp_apply]
+    rw [φ.left_inv hxφ]
+  -- 𝓝 x = map φ.symm (𝓝 (φ x)).
+  have hnx : Filter.map φ.symm (𝓝 (φ x)) = 𝓝 x := φ.symm_map_nhds_eq hxφ
+  -- 𝓝 (f x) = map ψ.symm (𝓝 (ψ (f x))).
+  have hnfx : Filter.map ψ.symm (𝓝 (ψ (f x))) = 𝓝 (f x) := ψ.symm_map_nhds_eq hfxψ
+  -- f ∘ φ.symm =ᶠ[𝓝 (φ x)] ψ.symm ∘ g  near φ x.
+  have hev : (f ∘ φ.symm) =ᶠ[𝓝 (φ x)] (ψ.symm ∘ g) := by
+    have hφxtarget : φ x ∈ φ.target := φ.map_source hxφ
+    have hcont : ContinuousAt (fun z => f (φ.symm z)) (φ x) :=
+      hf.continuous.continuousAt.comp
+        (φ.continuousOn_symm.continuousAt (φ.open_target.mem_nhds hφxtarget))
+    have hval : f (φ.symm (φ x)) = f x := by rw [φ.left_inv hxφ]
+    have hsrc_nhds : ψ.source ∈ 𝓝 (f (φ.symm (φ x))) := by
+      rw [hval]; exact ψ.open_source.mem_nhds hfxψ
+    have hpre : ∀ᶠ z in 𝓝 (φ x), f (φ.symm z) ∈ ψ.source :=
+      hcont.preimage_mem_nhds hsrc_nhds
+    filter_upwards [hpre] with z hz
+    show f (φ.symm z) = ψ.symm (g z)
+    simp only [hg, chartPullback, Function.comp_apply]
+    rw [ψ.left_inv hz]
+  -- assemble: 𝓝 (f x) ≤ map f (𝓝 x)
+  calc 𝓝 (f x) = Filter.map ψ.symm (𝓝 (ψ (f x))) := hnfx.symm
+    _ ≤ Filter.map ψ.symm (Filter.map g (𝓝 (φ x))) := by
+          rw [← hgφx]; exact Filter.map_mono hg_open
+    _ = Filter.map (ψ.symm ∘ g) (𝓝 (φ x)) := by rw [Filter.map_map]
+    _ = Filter.map (f ∘ φ.symm) (𝓝 (φ x)) := by rw [Filter.map_congr hev.symm]
+    _ = Filter.map f (Filter.map φ.symm (𝓝 (φ x))) := by rw [Filter.map_map]
+    _ = Filter.map f (𝓝 x) := by rw [hnx]
+
+/-- **[wall, refined]** The chart pullback of a non-constant holomorphic map is
+not locally constant at any chart image. This is the *globalized identity
+theorem*: from `f` non-constant globally, walk analytic continuation across a
+chain of overlapping charts (a path from `x` to a point where `f` differs) to
+rule out local constancy at `x`. The repo's `AnalyticContinuationGlobalization`
+isolates exactly this as owed (the local within-chart version
+`not_eventually_const_at_chartImage` is proven there; the cross-chart
+globalization is the remaining analytic input). -/
+theorem chartPullback_not_eventuallyConst (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (x : X) :
+    ¬ ∀ᶠ z in 𝓝 ((chartAt ℂ x) x),
+      chartPullback f x z = chartPullback f x ((chartAt ℂ x) x) :=
+  sorry
+
+/-- **[PROVEN modulo `chartPullback_not_eventuallyConst`]** A non-constant
+holomorphic map between Riemann surfaces is an open map. Assembled from the
+proven open-mapping transfer `nhds_le_map_of_chartPullback_not_eventuallyConst`
+and the (refined) non-constancy wall. -/
 theorem isOpenMap_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
-    IsOpenMap f :=
-  sorry
+    IsOpenMap f := by
+  rw [isOpenMap_iff_nhds_le]
+  intro x
+  exact nhds_le_map_of_chartPullback_not_eventuallyConst f hf x
+    (chartPullback_not_eventuallyConst f hf hnonconst x)
 
 /-- **[PROVEN]** A non-constant holomorphic map between compact connected
 Riemann surfaces is surjective: its range is open (open mapping), closed
