@@ -453,6 +453,37 @@ theorem ambientPhi_ambientPullback_eq (y : Fin (genus Y) → ℂ) :
       (ContMDiff.degree f hf) • y :=
   sorry
 
+/-- **Connection keystone (S4 §3 ⟹ S8, on periods).** If the preimage cycle of a
+loop `δ` is realised by closed smooth loops `loops` with integer `coeffs`
+satisfying the two cycle identities —
+* `h_pullback`: `Tᵀ·periodVec δ = ∑ coeffs·periodVec loopsᵢ` (projection formula),
+* `h_pushforward`: `∑ coeffs·periodVec(f∘loopsᵢ) = deg·periodVec δ` (i.e. `f∘Γ = deg·δ`)
+— then the degree identity `ambientPhi(ambientPullbackJac(periodVec δ)) = deg·periodVec δ`
+holds on `periodVec δ`.
+
+This is the meet-in-the-middle linchpin: it consumes the (upstream) §3 preimage
+cycle and the **proven** `periodVec_pushforward`, and yields
+`ambientPhi_ambientPullback_eq` *restricted to period vectors* — proving that the
+§3 construction will discharge S8 (no throwaway). The full identity then follows
+by S3 (the period lattice spans `Fin gY → ℂ`). No new sorry. See
+`docs/S8_TRACE_PLAN.md`. -/
+lemma ambientPhi_ambientPullback_periodVec_of_cycle
+    {n : ℕ} (loops : Fin n → ℝ → X)
+    (loops_smooth : ∀ i, Jacobians.IsClosedSmoothLoop (loops i))
+    (coeffs : Fin n → ℤ) (δ : ℝ → Y)
+    (h_pullback : Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf
+        (Jacobians.periodVec δ) = ∑ i, coeffs i • Jacobians.periodVec (loops i))
+    (h_pushforward : ∑ i, coeffs i • Jacobians.periodVec (f ∘ loops i) =
+        (ContMDiff.degree f hf) • Jacobians.periodVec δ) :
+    Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf
+        (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf
+          (Jacobians.periodVec δ)) =
+      (ContMDiff.degree f hf) • Jacobians.periodVec δ := by
+  rw [h_pullback, map_sum, ← h_pushforward]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  rw [map_zsmul, Jacobians.periodVec_pushforward f hf (loops i) (loops_smooth i).cont
+    (loops_smooth i).diff (loops_smooth i).integrable]
+
 lemma pushforward_pullback
     (P : Jacobian Y) :
     pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P :=
