@@ -103,3 +103,34 @@ carries the connection. The covering bridge
 Walls that remain genuinely Mathlib-deficient and stay as cited sorries:
 §2 (manifold de Rham/Stokes for period homotopy-invariance), the geometric
 trace construction if step 4's lattice route is blocked by S3.
+
+## Phase 3 findings (2026-05-29)
+
+Status: steps 1–2 done; step 3 repoint done; the keystone (step 4 on periods)
+proven. Within step 3 (the lift):
+
+- **`fiber_finite_off_branchLocus` PROVEN** (unconditional off-branch): the fibre
+  `f⁻¹(y)` for `y ∉ branchLocus f` is finite (isolated points via the proven
+  `isLocalHomeoOffCritical` + compact). This is the cover's sheet count, the
+  lift's foundation. Bypasses the discharge's identity-theorem-gated version.
+
+- **Key coupling: `pullback_eq` ≡ the trace construction.** `PreimageCycle`'s
+  `pullback_eq` (`ambientPullbackJac(periodVec δ) = ∑ coeffs·periodVec loopsᵢ`)
+  relates the *opaque* `ambientPullbackJac` (= `Tᵀ`, built on the `sorry`
+  `pushforwardForm`) to the concrete preimage-cycle geometry. It is **provable
+  only once `pushforwardForm` is constructed** to satisfy the projection formula
+  `∫_δ f₊ω = ∫_{f⁻¹(δ)} ω`. So the geometric lift gives `loops` + `pushforward_eq`
+  (`f∘Γ = deg·δ`, from `periodVec_pushforward`) but **not** `pullback_eq`.
+
+  ⟹ **The §3 `pullback_eq` and the S8 `pushforwardForm` leaf are the SAME content**
+  (sum over the `deg` local sections of the cover + holomorphicity + removable-
+  singularity extension = G&H §2.7). This is the single unified hard core.
+
+Refined remaining work (one core, not two):
+- **Geometric trace** `pushforwardForm f hf ω := ∑_{sheets} gᵢ^* ω` via the
+  proven covering's local sections, holomorphic across branch points. Discharges
+  `pushforwardForm`/`_id`/`_comp` AND the lift's `pullback_eq` (projection
+  formula) together. ~500–1000 LOC, the analytic heart.
+- The monodromy loops (for `loops`/`pushforward_eq`) are independent geometry,
+  buildable from the covering bridge + `liftPath` (Mathlib has the API).
+- Then `ambientPhi_ambientPullback_eq` off the lattice via S3 spanning.
