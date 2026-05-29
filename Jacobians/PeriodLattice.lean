@@ -326,8 +326,86 @@ depends only on endpoints and is additive under concatenation.
 The provably-false third conjunct (unquotiented smoothness of
 `Q ↦ periodVec (sp P Q)`) was removed 2026-05-28; see the project memory
 `project_smoothpath_math_error`. -/
+/-- A valid chart-ball hop `Q₀ → Q`: `Q` is in `Q₀`'s chart source and the
+affine segment between their chart images stays in the chart target. Exactly
+the hypotheses `ChartBallPathSmooth` needs. -/
+def HopValid (Q₀ Q : X) : Prop :=
+  Q ∈ (chartAt (H := ℂ) Q₀).source ∧
+  ∀ s ∈ Set.Icc (0 : ℝ) 1,
+    ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+      (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target
+
+/-- A valid hop yields a smooth path with zero velocity at both endpoints
+(`ChartBallPathSmooth` is smoothstep-reparametrized). -/
+theorem zeroVelHop {Q₀ Q : X} (h : HopValid Q₀ Q) :
+    IsSmoothPath Q₀ Q (ChartBallPathSmooth Q₀ Q) ∧
+    pathSpeed (ChartBallPathSmooth Q₀ Q) 0 = 0 ∧
+    pathSpeed (ChartBallPathSmooth Q₀ Q) 1 = 0 := by
+  obtain ⟨hsrc, haff⟩ := h
+  refine ⟨OfCurveSkeleton.isSmoothPath_ChartBallPathSmooth Q₀ Q hsrc haff, ?_, ?_⟩
+  · show pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q ∘ smoothStep01) 0 = 0
+    rw [OfCurveSkeleton.pathSpeed_smoothStep01_comp_eq (Jacobians.ChartBallPath Q₀ Q₀ Q) 0
+        (Jacobians.ChartBallPath_chart_at_self_differentiableAt Q₀ Q₀ Q (smoothStep01 0)
+          (haff (smoothStep01 0) (Jacobians.smoothStep01_mem_unit 0))),
+      smoothStep01_deriv_zero, Complex.ofReal_zero, zero_mul]
+  · show pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q ∘ smoothStep01) 1 = 0
+    rw [OfCurveSkeleton.pathSpeed_smoothStep01_comp_eq (Jacobians.ChartBallPath Q₀ Q₀ Q) 1
+        (Jacobians.ChartBallPath_chart_at_self_differentiableAt Q₀ Q₀ Q (smoothStep01 1)
+          (haff (smoothStep01 1) (Jacobians.smoothStep01_mem_unit 1))),
+      smoothStep01_deriv_one, Complex.ofReal_zero, zero_mul]
+
+/-- **n-piece glue (S1-C)**: a finite chain of valid hops glues to a single
+smooth path with zero endpoint velocity, by induction on the number of hops.
+Base = constant path; step = `concat` of the prefix path with the next hop
+via `IsSmoothPath.concat`, preserving the zero-velocity invariant
+(`pathSpeed (concat ·) {0,1} = 2 · pathSpeed (piece) {0,1} = 0`). -/
+theorem exists_zeroVel_smoothPath_aux (a : ℕ → X) :
+    ∀ n, (∀ k, k < n → HopValid (a k) (a (k+1))) →
+      ∃ γ, IsSmoothPath (a 0) (a n) γ ∧ pathSpeed γ 0 = 0 ∧ pathSpeed γ 1 = 0 := by
+  intro n
+  induction n with
+  | zero =>
+    intro _
+    exact ⟨fun _ => a 0, isSmoothPath_const (a 0),
+      by rw [pathSpeed_const], by rw [pathSpeed_const]⟩
+  | succ m ih =>
+    intro hhop
+    obtain ⟨γ, hγsm, hγv0, hγv1⟩ := ih (fun k hk => hhop k (by omega))
+    obtain ⟨hhsm, hhv0, hhv1⟩ := zeroVelHop (hhop m (by omega))
+    have h0uIcc : (0:ℝ) ∈ Set.uIcc (0:ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨le_refl _, zero_le_one⟩
+    have h1uIcc : (1:ℝ) ∈ Set.uIcc (0:ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨zero_le_one, le_refl _⟩
+    refine ⟨Jacobians.concat γ (ChartBallPathSmooth (a m) (a (m+1))),
+      hγsm.concat hhsm hγv1 hhv0, ?_, ?_⟩
+    · have hd : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ (2 * 0))).toFun ∘ γ) (2 * 0) := by
+        rw [show (2:ℝ)*0 = 0 from by norm_num]; exact hγsm.diff 0 h0uIcc
+      rw [Jacobians.pathSpeed_concat_left γ _ 0 (by norm_num) hd,
+        show (2:ℝ)*0 = 0 from by norm_num, hγv0, mul_zero]
+    · have hd : DifferentiableAt ℝ
+          ((chartAt (H := ℂ) (ChartBallPathSmooth (a m) (a (m+1)) (2 * 1 - 1))).toFun ∘
+            ChartBallPathSmooth (a m) (a (m+1))) (2 * 1 - 1) := by
+        rw [show (2:ℝ)*1-1 = 1 from by norm_num]; exact hhsm.diff 1 h1uIcc
+      rw [Jacobians.pathSpeed_concat_right _ (ChartBallPathSmooth (a m) (a (m+1))) 1 (by norm_num) hd,
+        show (2:ℝ)*1-1 = 1 from by norm_num, hhv1, mul_zero]
+
+/-- **Chart-ball cover (S1-B)** — the remaining analytic content of S1: a
+continuous path from `P` to `Q` can be sampled into finitely many points whose
+consecutive pairs are valid chart-ball hops. Classically a Lebesgue-number
+argument on chart-coordinate balls along `continuousPath P Q`, using the
+`OfCurveSkeleton.*_eventually` lemmas. **This is the sole remaining S1 sorry.** -/
+theorem exists_hop_cover (P Q : X) :
+    ∃ (n : ℕ) (a : ℕ → X), a 0 = P ∧ a n = Q ∧ ∀ k, k < n → HopValid (a k) (a (k+1)) :=
+  sorry
+
+/-- **S1 kernel**: a zero-endpoint-velocity smooth path exists between any two
+points. Assembles the chart-ball cover (`exists_hop_cover`) with the n-piece
+glue (`exists_zeroVel_smoothPath_aux`). -/
 theorem exists_zeroVel_smoothPath (P Q : X) :
-    ∃ γ, IsSmoothPath P Q γ ∧ pathSpeed γ 0 = 0 ∧ pathSpeed γ 1 = 0 := sorry
+    ∃ γ, IsSmoothPath P Q γ ∧ pathSpeed γ 0 = 0 ∧ pathSpeed γ 1 = 0 := by
+  obtain ⟨n, a, ha0, han, hhop⟩ := exists_hop_cover P Q
+  obtain ⟨γ, hsm, hv0, hv1⟩ := exists_zeroVel_smoothPath_aux a n hhop
+  exact ⟨γ, ha0 ▸ han ▸ hsm, hv0, hv1⟩
 
 theorem exists_smoothPath_family
     (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
