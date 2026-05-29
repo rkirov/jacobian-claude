@@ -2,6 +2,7 @@ import Jacobians.LineIntegral
 import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 import Mathlib.Algebra.Module.ZLattice.Basic
 import Mathlib.Topology.Connected.LocPathConnected
+import Mathlib.Topology.Maps.Proper.Basic
 import Jacobians.Discharge.Manifold.CriticalValuesFiniteGeneral
 import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 import Jacobians.SmoothPath
@@ -1220,6 +1221,29 @@ theorem surjective_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(�
   rcases isClopen_iff.mp hclopen with h | h
   · exact absurd h (Set.range_nonempty f).ne_empty
   · exact Set.range_eq_univ.mp h
+
+/-- **[PROVEN]** A holomorphic map from a compact Riemann surface is proper
+(Forster §4.20): a continuous map from a compact space to a T2 space is proper.
+This is what makes the branched-cover theory (§4.22–4.25) available: a proper
+local homeomorphism is a covering map. -/
+theorem isProperMap_of_contMDiff (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    IsProperMap f :=
+  hf.continuous.isProperMap
+
+/-- **[PROVEN modulo `isOpenMap_of_nonconstant`]** Local homeomorphism off the
+critical set (Forster §4.4): where `f` is locally injective (`x ∉ criticalSet f`,
+i.e. by definition `∃ U ∈ 𝓝 x, InjOn f U`), it restricts to an open injection on
+a neighborhood — open via the open-mapping theorem, injective by hypothesis.
+Together with `isProperMap_of_contMDiff` this is the input to the covering
+structure off the branch locus. -/
+theorem isLocalHomeoOffCritical (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {x : X} (hx : x ∉ criticalSet f) :
+    ∃ U : Set X, IsOpen U ∧ x ∈ U ∧ Set.InjOn f U ∧ IsOpen (f '' U) := by
+  have hex : ∃ U ∈ nhds x, Set.InjOn f U := not_not.mp hx
+  obtain ⟨U₀, hU₀nhds, hinj₀⟩ := hex
+  obtain ⟨U, hUsub, hUopen, hxU⟩ := mem_nhds_iff.mp hU₀nhds
+  exact ⟨U, hUopen, hxU, hinj₀.mono hUsub,
+    isOpenMap_of_nonconstant f hf hnonconst U hUopen⟩
 
 /-! ## §2 Homotopy invariance and genericity
 
