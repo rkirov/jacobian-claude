@@ -701,3 +701,32 @@ Decomposition of a hard sorry (esp. S1) into several smaller honest
 sorries is sanctioned — the frozen count is not a constraint. The CI
 guard takes the expected count as a parameter, so intentional
 decomposition just bumps `N`. Recorded as `feedback_decompose_sorries`.
+
+## 2026-05-29 (cont.) — terminology + process-overhead corrections
+
+### User directions
+> "You picked up some concepts like 'wall' 'owed' from another repo. Not sure if those are standard"
+> "Even code ported from the other repo is now our code and we should keep reformatting to suit the goals of this repo for better clarity and conciseness"
+> "We are creating too much overhead - moving one theorem from unsolved to solved requires changing too many extra strings, guards etc."
+
+### Actions
+- **Terminology standardized repo-wide** (incl. ported Discharge tree): namespace
+  `…ContMDiff.Owed.degree` → `…ContMDiff.Degree`; lemma suffix
+  `_holds_unconditional` → `_unconditional`; docstring jargon "owed" → standard
+  phrasing (deferred / not-yet-formalised / open), my `[wall …]` markers →
+  `[open]`. ("owed" was inherited from the port; "wall" was my coinage — neither
+  standard.) Recorded principle: ported code is ours, reformat for clarity
+  (`feedback_ported_code_is_ours`).
+- **Cut bookkeeping overhead.** `scripts/check_sorries.py` is now informational
+  only (prints count + per-file; always exit 0) — no exact-count gate, no
+  hand-maintained per-sorry `KNOWN` dict, CI step non-gating. Closing/decomposing
+  a theorem now needs zero guard/CI/STATUS edits. Correctness guarding stays with
+  `AxiomCheck.lean` + reading statements (the S8/homotopy bugs were unsound
+  *statements*, not count issues). STATUS to be kept lightweight (no churny line
+  numbers). Updated `feedback_decompose_sorries`.
+
+### Session arc so far (2026-05-29)
+Review → S8 soundness fix + honest-docs/guards → **S1 CLOSED** (smooth-path
+existence, axiom-clean) → S4 decomposed into named sub-lemmas → **S4b
+isOpenMap proven** modulo the globalized identity theorem. ~11 sorries; build
+green. All local commits, not pushed.

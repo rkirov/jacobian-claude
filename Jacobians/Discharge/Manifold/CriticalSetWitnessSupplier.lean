@@ -110,7 +110,7 @@ bundle's `F'` and compatibility data into the structure consumed by
 noncomputable def criticalChartPullbackData_of_bridge
     (f : MeromorphicNonzero X) {x : X}
     (B : CriticalChartBridgeBundle f x) :
-    ContMDiff.Owed.degree.CriticalChartPullbackData
+    ContMDiff.Degree.CriticalChartPullbackData
       f.toRiemannSphere f.criticalSet x := by
   classical
   -- Source-chart abbreviation.
@@ -194,7 +194,7 @@ noncomputable def criticalChartPullbackData_of_bridge_global
     (f : MeromorphicNonzero X)
     (h : ∀ x ∈ f.criticalSet, CriticalChartBridgeBundle f x) :
     ∀ x ∈ f.criticalSet,
-      ContMDiff.Owed.degree.CriticalChartPullbackData
+      ContMDiff.Degree.CriticalChartPullbackData
         f.toRiemannSphere f.criticalSet x :=
   fun x hx => criticalChartPullbackData_of_bridge f (h x hx)
 

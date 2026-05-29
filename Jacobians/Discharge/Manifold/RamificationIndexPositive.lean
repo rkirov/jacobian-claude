@@ -47,7 +47,7 @@ theorem manifoldRamificationIndex_pos_at_fibre_of_perChartNonConstancy
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
     [ConnectedSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : Jacobians.Discharge.ContMDiff.Owed.degree.PerChartNonConstancyHypothesis X Y)
+    (H : Jacobians.Discharge.ContMDiff.Degree.PerChartNonConstancyHypothesis X Y)
     {f : X → Y} (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnc : ¬ Jacobians.Discharge.IsConstantMap f)
     {x : X} {y : Y} (hxy : f x = y) :
@@ -61,7 +61,7 @@ theorem manifoldRamificationIndex_pos_at_fibre_of_perChartNonConstancy
   set F : ℂ → ℂ := (chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm with hF
   -- F is analytic at z₀.
   have hFA : AnalyticAt ℂ F z₀ :=
-    Jacobians.Discharge.ContMDiff.Owed.degree.contMDiff_omega_analyticAt_chart_pullback hf x
+    Jacobians.Discharge.ContMDiff.Degree.contMDiff_omega_analyticAt_chart_pullback hf x
   -- F z₀ = (chartAt ℂ (f x)) (f x). The (F z) - F z₀ shift vanishes at z₀.
   -- For analyticOrderAt of an analytic function at its zero:
   --   it equals ⊤ iff the function is eventually 0 in 𝓝 z₀

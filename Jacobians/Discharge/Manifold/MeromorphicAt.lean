@@ -40,7 +40,7 @@ parameter, but require `[ChartedSpace ℂ M]` so that chart codomains are
 literally `ℂ` (not a generic model space `H`). This avoids having to write
 `I.symm ∘ (chartAt H x) ∘ ...` everywhere.
 
-## Owed work (intentionally not in this file)
+## Open work (intentionally not in this file)
 
 The following are **not** proved here and are tracked in `OPEN.md`:
 
@@ -81,7 +81,7 @@ canonical chart at `x`, namely `f ∘ (chartAt ℂ x).symm : ℂ → ℂ`, is
 meromorphic at the chart image `(chartAt ℂ x) x` in the standard sense.
 
 This is a chart-pullback definition. It is conditionally chart-independent
-on a complex analytic manifold; the unconditional discharge is owed (see
+on a complex analytic manifold; the unconditional discharge is deferred (see
 the file header). -/
 def MMeromorphicAt (_I : ModelWithCorners ℂ ℂ ℂ) (f : M → ℂ) (x : M) : Prop :=
   MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
@@ -97,7 +97,7 @@ neighborhood, a finite negative integer for poles, zero for regular nonzero
 points, and a positive integer for zeros (matching `meromorphicOrderAt`'s
 convention).
 
-Chart-independence is owed; see file header. -/
+Chart-independence is deferred; see file header. -/
 def mmeromorphicOrderAt (_I : ModelWithCorners ℂ ℂ ℂ) (f : M → ℂ) (x : M) :
     WithTop ℤ :=
   meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
@@ -338,7 +338,7 @@ The chart-pullback definition `MMeromorphicAt I f x` uses the *canonical* chart
 map being analytic with non-vanishing derivative at `e x`. On a complex
 analytic manifold (`[IsManifold I ω M]` with `I = 𝓘(ℂ, ℂ)`), those hypotheses
 hold automatically; the discharge is documented at the bottom of this section
-and is the only piece *still* owed (see `OPEN.md`).
+and is the only piece *still* deferred (see `OPEN.md`).
 
 The mathematical content reduces to the mathlib lemmas
 `meromorphicAt_comp_iff_of_deriv_ne_zero` and
@@ -388,7 +388,7 @@ the standard meromorphy of `f ∘ e.symm` at `e x`.
 
 Both hypotheses are automatic on a complex analytic manifold (chart
 transitions are analytic biholomorphisms); see
-`analyticAt_chart_transition_of_atlas` (still owed) for the discharge. -/
+`analyticAt_chart_transition_of_atlas` (still open) for the discharge. -/
 lemma MMeromorphicAt.iff_of_chart
     (hxe : x ∈ e.source)
     (h_an : AnalyticAt ℂ ((chartAt ℂ x) ∘ e.symm) (e x))

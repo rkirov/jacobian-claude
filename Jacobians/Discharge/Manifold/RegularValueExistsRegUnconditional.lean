@@ -33,7 +33,7 @@ this file's existence theorem is in scope.
 
 * `criticalValues_finite_general` (CV-Gen): the critical-value set
   `criticalValuesGeneral f` is finite for non-constant analytic `f`.
-* `fibres_finite_statement_holds_unconditional` (ZZ48): every fibre of
+* `fibres_finite_statement_unconditional` (ZZ48): every fibre of
   a non-constant analytic `f` is finite.
 * `Y` is infinite, derived from `ChartedSpace ℂ Y` + `T2Space Y` +
   non-emptiness.
@@ -57,7 +57,7 @@ open scoped Manifold ContDiff
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -168,17 +168,17 @@ lemma deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
   have hfx_d : f x ∈ d.source := mem_chart_source ℂ (f x)
   -- Analyticity of F at c x (ZZ24).
   have hFA_at_x : AnalyticAt ℂ F (c x) :=
-    Jacobians.Discharge.ContMDiff.Owed.degree.contMDiff_omega_analyticAt_chart_pullback
+    Jacobians.Discharge.ContMDiff.Degree.contMDiff_omega_analyticAt_chart_pullback
       hf x
   -- Non-eventual-constancy of F at c x (clopenness discharge, general).
   have hClop :
-      Jacobians.Discharge.ContMDiff.Owed.degree.ClopennessOfLocallyConstHypothesis
+      Jacobians.Discharge.ContMDiff.Degree.ClopennessOfLocallyConstHypothesis
         X Y :=
-    Jacobians.Discharge.ContMDiff.Owed.degree.clopennessOfLocallyConst_holds
+    Jacobians.Discharge.ContMDiff.Degree.clopennessOfLocallyConst_holds
   have hChartNEC :
-      Jacobians.Discharge.ContMDiff.Owed.degree.ChartPullbackNotEventuallyConstHypothesis
+      Jacobians.Discharge.ContMDiff.Degree.ChartPullbackNotEventuallyConstHypothesis
         X Y :=
-    Jacobians.Discharge.ContMDiff.Owed.degree.chartPullbackNotEventuallyConst_of_clopennessOfLocallyConst
+    Jacobians.Discharge.ContMDiff.Degree.chartPullbackNotEventuallyConst_of_clopennessOfLocallyConst
       hClop
   have hFne_raw :
       ¬ ∀ᶠ z in 𝓝 (c x),
@@ -287,7 +287,7 @@ lemma deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
 /-- **Headline existence.** For every non-constant analytic
 `f : X → Y` between compact connected complex 1-manifolds,
 `Nonempty (RegularValueWitnessReg f)`. -/
-theorem regular_value_exists_reg_holds_unconditional
+theorem regular_value_exists_reg_unconditional
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -311,7 +311,7 @@ theorem regular_value_exists_reg_holds_unconditional
   obtain ⟨y₀, hy₀⟩ := h_compl_nonempty
   -- 4. Fibre over y₀ is finite (ZZ48).
   have h_fib_fin : (f ⁻¹' {y₀}).Finite :=
-    fibres_finite_statement_holds_unconditional f hf hnc y₀
+    fibres_finite_statement_unconditional f hf hnc y₀
   -- 5. Build the underlying RegularValueWitness.
   let w : RegularValueWitness f :=
     { value := y₀, fiber_finite := h_fib_fin }
@@ -339,7 +339,7 @@ theorem regular_value_exists_reg_holds_unconditional
   -- 7. Package as a RegularValueWitnessReg.
   exact ⟨w.toRegular h_reg⟩
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge
 

@@ -1,5 +1,5 @@
 /-
-Foundations for the smooth-path construction (wall 6).
+Foundations for the smooth-path construction.
 
 This file is being built across multiple sessions. The end goal is to close
 the four open sorries in `PeriodLattice.lean:259,262,293` and
@@ -251,7 +251,7 @@ The smoothstep reparametrization `smoothStep01` is applied within each
 piece so the path's derivative vanishes at junction times, making the
 overall path C¹ on `[0, 1]`. (We don't prove the C¹ property in this
 session; see `Jacobians.lean:162` / `PeriodLattice.lean:262` for the
-`IsSmoothPath` obligations still owed.)
+`IsSmoothPath` obligations still open.)
 -/
 
 variable [PathConnectedSpace X]
@@ -312,7 +312,7 @@ noncomputable def smoothPathRaw (P Q : X) : ℝ → X :=
 /-! ## smoothStep01 properties
 
 The basic boundary identities; differentiability of the smoothstep
-function across its junctions at `t = 0` and `t = 1` is owed to the
+function across its junctions at `t = 0` and `t = 1` is deferred to the
 fuller construction phase. -/
 
 /-- `smoothStep01` agrees with `3t² - 2t³` on the open interval `(0, 1)`. -/
@@ -1550,7 +1550,7 @@ lemma chart_image_in_target_iff (anchor P Q : X) (t : ℝ) :
 These lemmas form a substrate for the eventual closure of
 `exists_smoothPath_family`. The C¹ junction differentiability,
 chart-transition smoothness for the diff field, and integrability all
-remain owed; they require Mathlib chart-transition lemmas
+remain deferred; they require Mathlib chart-transition lemmas
 (`mdifferentiable_chart`, `IsManifold.contMDiffOn_chartAt`, etc.) to be
 specialized to our setup.
 -/
@@ -1936,12 +1936,12 @@ This gives `Q ↦ periodVec(ChartBallPath P P Q)` smooth in Q on the
 chart ball — a local result.
 
 The globalization (from chart-ball joint smoothness to global) is the
-classical content owed.
+classical content deferred.
 
 **Status.** Joint smoothness remains the open structural piece. The
 chart-transition diff infrastructure (proven above) closes the
 `IsSmoothPath.diff` field for `ChartBallPath`; combined with the
-chart-cover-glue for `IsSmoothPath.cont` (still owed), we get the
+chart-cover-glue for `IsSmoothPath.cont` (still open), we get the
 first conjunct of `exists_smoothPath_family`. The second conjunct
 (basepoint change) follows from `periodVec_concat`. Only the third
 conjunct is genuinely deep.

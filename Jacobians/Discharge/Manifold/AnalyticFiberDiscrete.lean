@@ -13,7 +13,7 @@ set_option autoImplicit true
 /-! # From per-fibre analytic non-degeneracy to discreteness
 
 Companion to `Jacobians.Discharge.Manifold.Degree`. ZZ20 reduced
-`Owed.degree.fibres_finite_statement` to the topological hypothesis
+`Degree.fibres_finite_statement` to the topological hypothesis
 
 ```
 ∀ f y, IsDiscrete (f ⁻¹' {y}).
@@ -47,10 +47,10 @@ What this file *does* discharge:
   then `f ⁻¹' {y₀}` is `IsDiscrete`.
 
 * `fibres_finite_of_chart_pullback` — composition with ZZ20: this discharges
-  `Owed.degree.fibres_finite_statement` from the chart-pullback non-degeneracy
+  `Degree.fibres_finite_statement` from the chart-pullback non-degeneracy
   hypothesis.
 
-What this file does **not** do (still owed):
+What this file does **not** do (still open):
 
 * The bridge `ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → for each x, the chart pullback of f
   at x is `AnalyticAt`. This is the mathlib bridge from real-analytic
@@ -77,7 +77,7 @@ open scoped Manifold Topology
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -310,6 +310,6 @@ lemma fibres_finite_of_chart_pullback
   refine fiber_finite_of_isDiscrete hf.continuous y ?_
   exact isDiscrete_fiber_of_chart_pullback f y (h_chart f hf hnc y)
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

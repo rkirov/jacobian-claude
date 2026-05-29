@@ -65,7 +65,7 @@ open scoped Manifold Topology ContDiff
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -130,6 +130,6 @@ theorem fibres_finite_statement_holds_of_withinChartWitness
   fibres_finite_statement_holds_of_connectivity
     (connectivityGlobalization_of_withinChartWitness H)
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

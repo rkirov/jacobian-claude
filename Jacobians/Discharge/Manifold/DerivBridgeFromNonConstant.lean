@@ -45,7 +45,7 @@ The chip ships:
   `criticalSet_finite_of_derivBridge`.
 
 This chip does **not** discharge the `LocalDerivCompatibilityData` hypothesis
-itself — that remains owed to the joint composition of:
+itself — that remains deferred to the joint composition of:
 
 1. ZZ43's `ChartPullbackNotEventuallyConstHypothesis` (already discharged from
    `ChartOverlapPropagationHypothesis`);
@@ -170,7 +170,7 @@ noncomputable def derivBridgeData_of_localCompatibility_literalPullback
   F := (chartAt ℂ (f.toRiemannSphere x)) ∘ f.toRiemannSphere
         ∘ (chartAt ℂ x).symm
   hFA :=
-    Jacobians.Discharge.ContMDiff.Owed.degree.contMDiff_omega_analyticAt_chart_pullback
+    Jacobians.Discharge.ContMDiff.Degree.contMDiff_omega_analyticAt_chart_pullback
       (Jacobians.Discharge.MeromorphicNonzero.toRiemannSphere_contMDiff f) x
   hFne := hFne
   hCompat := hCompat

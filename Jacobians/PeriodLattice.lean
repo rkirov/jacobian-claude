@@ -1095,7 +1095,7 @@ theorem criticalSet_ne_univ_of_nonconstant
     Jacobians.Discharge.Manifold.criticalSet_finite_general f hf hnonconst
   rw [h_eq] at h_fin
   haveI : Infinite X :=
-    Jacobians.Discharge.ContMDiff.Owed.degree.y_infinite_of_chartedSpace_complex
+    Jacobians.Discharge.ContMDiff.Degree.y_infinite_of_chartedSpace_complex
   exact Set.infinite_univ.not_finite h_fin
 
 /-- **Critical set is finite** (Forster §4 / isolated-zeros). For
@@ -1116,7 +1116,7 @@ theorem finite_branchLocus_of_nonconstant
 
 /-! ## §1 Local structure of non-constant holomorphic maps -/
 
-/-- **[wall A1]** At a point off the critical set, a holomorphic map is a local
+/-- **[open]** At a point off the critical set, a holomorphic map is a local
 diffeomorphism. Classical: `mfderiv f x ≠ 0` (i.e. `x ∉ criticalSet f`) plus
 the inverse function theorem (Forster §2.1) give a chart-local biholomorphism.
 The repo's discharge tree (`notInjOn_iff_deriv_zero_of_analytic_of_order`,
@@ -1132,7 +1132,7 @@ noncomputable def chartPullback (f : X → Y) (x : X) : ℂ → ℂ :=
 
 theorem analyticAt_chartPullback (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X) :
     AnalyticAt ℂ (chartPullback f x) ((chartAt ℂ x) x) :=
-  Jacobians.Discharge.ContMDiff.Owed.degree.contMDiffAt_omega_analyticAt_chart_pullback (hf x)
+  Jacobians.Discharge.ContMDiff.Degree.contMDiffAt_omega_analyticAt_chart_pullback (hf x)
 
 /-- **Local open mapping at `x`** (provided the chart pullback is not locally
 constant there): `f` sends neighborhoods of `x` to neighborhoods of `f x`. This
@@ -1182,12 +1182,12 @@ theorem nhds_le_map_of_chartPullback_not_eventuallyConst
     _ = Filter.map f (Filter.map φ.symm (𝓝 (φ x))) := by rw [Filter.map_map]
     _ = Filter.map f (𝓝 x) := by rw [hnx]
 
-/-- **[wall, refined]** The chart pullback of a non-constant holomorphic map is
+/-- **[open]** The chart pullback of a non-constant holomorphic map is
 not locally constant at any chart image. This is the *globalized identity
 theorem*: from `f` non-constant globally, walk analytic continuation across a
 chain of overlapping charts (a path from `x` to a point where `f` differs) to
 rule out local constancy at `x`. The repo's `AnalyticContinuationGlobalization`
-isolates exactly this as owed (the local within-chart version
+isolates exactly this as deferred (the local within-chart version
 `not_eventually_const_at_chartImage` is proven there; the cross-chart
 globalization is the remaining analytic input). -/
 theorem chartPullback_not_eventuallyConst (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
@@ -1199,7 +1199,7 @@ theorem chartPullback_not_eventuallyConst (f : X → Y) (hf : ContMDiff 𝓘(ℂ
 /-- **[PROVEN modulo `chartPullback_not_eventuallyConst`]** A non-constant
 holomorphic map between Riemann surfaces is an open map. Assembled from the
 proven open-mapping transfer `nhds_le_map_of_chartPullback_not_eventuallyConst`
-and the (refined) non-constancy wall. -/
+and the (refined) non-constancy lemma. -/
 theorem isOpenMap_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
     IsOpenMap f := by
@@ -1222,7 +1222,7 @@ theorem surjective_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(�
   · exact absurd h (Set.range_nonempty f).ne_empty
   · exact Set.range_eq_univ.mp h
 
-/-- **[wall A3]** A non-constant holomorphic map is a covering map over the
+/-- **[open]** A non-constant holomorphic map is a covering map over the
 complement of its (finite) branch locus (Forster §4.22 / §10.11): off the
 branch locus every fibre is finite (discrete + compact) and `f` is a local
 homeomorphism, so it is an evenly-covered covering map there. -/
@@ -1242,7 +1242,7 @@ it as a Lean lemma requires the right smooth-homotopy hypothesis (a genuine
 homotopy of loops), which we fold directly into `exists_loop_off_branchLocus`
 below rather than asserting separately. -/
 
-/-- **[wall B2]** A closed smooth loop in `Y` can be homotoped off the finite
+/-- **[open]** A closed smooth loop in `Y` can be homotoped off the finite
 branch locus without changing its period vector. Genericity: `branchLocus f`
 is finite (`finite_branchLocus_of_nonconstant`), hence has real codimension 2
 in the surface `Y`, so a generic loop avoids it; homotopy invariance of
@@ -1256,7 +1256,7 @@ theorem exists_loop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘
 
 /-! ## §3 Lifting and the preimage cycle -/
 
-/-- **[wall C]** A closed smooth loop off the branch locus lifts to a preimage
+/-- **[open]** A closed smooth loop off the branch locus lifts to a preimage
 cycle. Construction (Forster §10.11): by `isCoveringMapOn_compl_branchLocus`,
 `f` is a finite covering over `Y ∖ branchLocus`; lift `δ` from each sheet
 (`IsCoveringMap.liftPath`); group the lifts into closed loops along the

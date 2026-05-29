@@ -15,7 +15,7 @@ set_option autoImplicit true
 /-! # Full assembly: `fibres_finite_statement` modulo a single connectivity hypothesis
 
 This file composes the landed pieces into the maximal unconditional reduction
-of `Owed.degree.fibres_finite_statement` available at this pin:
+of `Degree.fibres_finite_statement` available at this pin:
 
 * ZZ20 (`Degree.lean`): `fibres_finite_of_all_fibers_isDiscrete` reduces the
   statement to per-fibre `IsDiscrete`.
@@ -54,7 +54,7 @@ open scoped Manifold Topology ContDiff
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -135,6 +135,6 @@ theorem fibres_finite_statement_holds_of_connectivity
           ∀ y : Y, (f ⁻¹' {y}).Finite :=
   fibres_finite_of_connectivity_hypothesis
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

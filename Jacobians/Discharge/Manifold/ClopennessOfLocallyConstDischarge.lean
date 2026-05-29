@@ -62,7 +62,7 @@ open scoped Manifold Topology ContDiff
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -201,6 +201,6 @@ theorem clopennessOfLocallyConst_holds
   -- Hence `x ∈ S = locallyConstLocus f y₀`.
   exact mem_locallyConstLocus_of_isOpen hV_open hxV h_const_on_V
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

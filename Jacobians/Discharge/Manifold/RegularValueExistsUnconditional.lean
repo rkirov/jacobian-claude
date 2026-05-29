@@ -8,7 +8,7 @@ import Jacobians.Discharge.Manifold.ClopennessOfLocallyConstDischarge
 set_option autoImplicit true
 
 
-/-! # Unconditional discharge of `Owed.degree.regular_value_exists_statement`
+/-! # Unconditional discharge of `Degree.regular_value_exists_statement`
 
 Step A.2 of Path A. ZZ33 (`Manifold/Degree.lean`) reduced
 `regular_value_exists_statement` to `fibres_finite_statement` via
@@ -35,7 +35,7 @@ open scoped Manifold Topology ContDiff
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -53,7 +53,7 @@ The proof composes:
   reduces to fibres-finite via "pick any `y : Y`".
 
 No external hypothesis. -/
-theorem regular_value_exists_statement_holds_unconditional
+theorem regular_value_exists_statement_unconditional
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -69,6 +69,6 @@ theorem regular_value_exists_statement_holds_unconditional
   -- Reduce regular-value-exists to fibres-finite (ZZ33).
   exact regular_value_exists_of_fibres_finite h_fib
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

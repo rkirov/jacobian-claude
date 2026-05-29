@@ -3,7 +3,7 @@ Thin forwarder from `Jacobians.*` to the ported discharge under
 `Jacobians.Discharge.*`. The discharge ships
 `Nonempty (RegularValueWitnessReg f)` unconditionally for non-constant
 analytic `f : X → Y` between compact connected complex 1-manifolds
-(`regular_value_exists_reg_holds_unconditional`), so the `else 0`
+(`regular_value_exists_reg_unconditional`), so the `else 0`
 fallback in `degreeFiber` no longer fires for non-constant maps.
 
 Original code MIT-licensed by Bryan Sanchez (2026); audit verifies
@@ -37,7 +37,7 @@ noncomputable abbrev degreeFiber := @Jacobians.Discharge.ContMDiff.degreeFiber
 
 /-- **Unconditional existence of a regular witness** for non-constant
 analytic maps between compact connected complex 1-manifolds. Forwards
-to `Jacobians.Discharge.ContMDiff.Owed.degree.regular_value_exists_reg_holds_unconditional`. -/
+to `Jacobians.Discharge.ContMDiff.Degree.regular_value_exists_reg_unconditional`. -/
 theorem regularValueWitnessReg_nonempty_of_nonConstantMap
     {X : Type _} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X]
@@ -46,7 +46,7 @@ theorem regularValueWitnessReg_nonempty_of_nonConstantMap
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ) ω f)
     (hnc : ¬ IsConstantMap f) :
     Nonempty (RegularValueWitnessReg f) :=
-  Jacobians.Discharge.ContMDiff.Owed.degree.regular_value_exists_reg_holds_unconditional
+  Jacobians.Discharge.ContMDiff.Degree.regular_value_exists_reg_unconditional
     f hf hnc
 
 end Jacobians

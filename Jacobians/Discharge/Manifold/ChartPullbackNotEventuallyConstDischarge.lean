@@ -84,7 +84,7 @@ open scoped Manifold Topology ContDiff
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -95,7 +95,7 @@ universe u v
 open set `V ⊆ X` containing `x₀` on which `f` is identically `y₀`, the map
 `f` is identically `y₀` on all of `X`.
 
-This is the manifold-globalization content owed by the path-walking
+This is the manifold-globalization content deferred by the path-walking
 analytic-continuation argument. It contains no filter algebra, no chart
 coordinates, no eventual equality — purely the topological/analytic
 statement "local-constancy at a single point lifts to global-constancy".
@@ -317,6 +317,6 @@ theorem fibres_finite_statement_holds_of_chartOverlapPropagation
   fibres_finite_statement_holds_of_chart_pullback_not_eventually_const
     (chartPullbackNotEventuallyConst_of_chartOverlapPropagation H)
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

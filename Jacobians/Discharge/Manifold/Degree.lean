@@ -32,7 +32,7 @@ deg(f) = |f ⁻¹' {y}|   for any regular value y : Y.
   `0`. This matches `degreeStub`'s constant-case answer and is strictly more
   informative than `degreeStub` whenever a witness *does* exist.
 
-## What is owed (and is the deep classical input)
+## What is deferred (and is the deep classical input)
 
 For a non-constant holomorphic map `f : X → Y` between compact connected
 Riemann surfaces, the following are classical and **not yet in mathlib at the
@@ -51,7 +51,7 @@ pin**:
 
 The first two together produce a `RegularValueWitness f`. The third is what
 makes `degreeFiber f hf` independent of the chosen witness. None of (1)–(3)
-are formalised at this pin; their statements are recorded as `Owed.*`
+are formalised at this pin; their statements are recorded as `Degree.*`
 docstrings below for downstream.
 
 ## Why a separate definition (and not editing `_root_.ContMDiff.degree`)
@@ -226,7 +226,7 @@ surfaces, as a fibre cardinality.
 
 The well-definedness — independence of the chosen witness — is the deep
 classical input that is **not** discharged here. See file docstring items
-(2)–(3) for what is owed.
+(2)–(3) for what is deferred.
 
 **ZZ-RegFix correction.** Earlier the `Classical.choice` was on
 `Nonempty (RegularValueWitness f)`, which carries no regularity certificate;
@@ -292,19 +292,19 @@ lemma degreeFiber_eq_witness_card
   unfold degreeFiber
   simp [hnc, h]
 
-/-! ## Owed mathlib infrastructure
+/-! ## Open mathlib infrastructure
 
 The following statements would, if formalised in mathlib at this pin, allow
 `degreeFiber` to be promoted from "structural skeleton with `Classical.choice`
 fallback" to a fully honest definition. They are not proved here; they are
 recorded as type-checking placeholders so that downstream files can grep for
-`Owed.degree.` to find the dependency surface.
+`Degree.` to find the dependency surface.
 
 Each placeholder is a `Prop`-valued definition of the **statement** of the
 classical theorem; we do **not** assume it (no `axiom`s). Discharging them is
 out of scope for this round. -/
 
-namespace Owed.degree
+namespace Degree
 
 /-- (1) For a non-constant analytic map `f : X → Y` between compact connected
 Riemann surfaces, every fibre is finite. Classical: identity theorem
@@ -355,7 +355,7 @@ topological hypothesis: **each fibre carries the discrete subspace topology**
 continuity gives closedness, compactness of `X` upgrades closed to compact,
 and a compact discrete subspace is finite (`IsCompact.finite`).
 
-What is owed (and not formalised here) is the implication
+What is deferred (and not formalised here) is the implication
 
   analytic, non-constant ⇒ ∀ y, IsDiscrete (f ⁻¹' {y}).
 
@@ -705,7 +705,7 @@ lemma fibre_card_eq_of_locallyConstant_subtype_reg
     _ = card_of w₂.toWitness.value := hc
     _ = w₂.toWitness.card := h_witness w₂.toWitness
 
-end Owed.degree
+end Degree
 
 end ContMDiff
 

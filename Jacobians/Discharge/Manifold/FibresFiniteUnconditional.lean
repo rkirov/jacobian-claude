@@ -13,7 +13,7 @@ set_option autoImplicit true
 
 ZZ47 closed `ClopennessOfLocallyConstHypothesis` unconditionally. ZZ46
 reduced `fibres_finite_statement` to that hypothesis. Composing the two
-gives an unconditional discharge of the first `Owed.degree` statement. -/
+gives an unconditional discharge of the first `Degree` statement. -/
 
 @[expose] public section
 
@@ -22,14 +22,14 @@ open scoped Manifold Topology ContDiff
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
 /-- **Unconditional `fibres_finite_statement`.** Direct composition of
 `fibres_finite_statement_holds_of_clopennessOfLocallyConst` (ZZ46) with
 `clopennessOfLocallyConst_holds` (ZZ47). -/
-theorem fibres_finite_statement_holds_unconditional
+theorem fibres_finite_statement_unconditional
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -40,6 +40,6 @@ theorem fibres_finite_statement_holds_unconditional
   fibres_finite_statement_holds_of_clopennessOfLocallyConst
     clopennessOfLocallyConst_holds
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

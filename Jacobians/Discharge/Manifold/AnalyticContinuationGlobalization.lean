@@ -24,7 +24,7 @@ connected open set in `ℂ` (i.e. **within one chart**).
 
 The full manifold-level globalisation across chart overlaps requires walking
 the analytic-continuation argument along a path in `X` and is left as a
-hypothesis-parameter, with what is still owed documented at the end of this
+hypothesis-parameter, with what is still open documented at the end of this
 file.
 
 What this file *does* discharge:
@@ -51,7 +51,7 @@ What this file *does* discharge:
   value other than `c` somewhere on the connected chart domain `U`), then the
   pullback is not eventually `c` at the chart image of any `x ∈ U`.
 
-What this file does **not** do (still owed for full manifold globalisation):
+What this file does **not** do (still open for full manifold globalisation):
 
 * Walking analytic continuation along a path in a connected complex manifold
   `X` to get from "`f` non-constant on `X`" to "the chart pullback at every
@@ -67,7 +67,7 @@ What this file does **not** do (still owed for full manifold globalisation):
   `ConnectedSpace + LocallyPathConnectedSpace`, the latter true for manifolds)
   plus the chart-overlap analyticity bridge. The path-walking step is plain
   topology once the chart-overlap analyticity is in hand, but the
-  chart-overlap analyticity itself is owed by ZZ24 (the `ContMDiff … ω →
+  chart-overlap analyticity itself is deferred by ZZ24 (the `ContMDiff … ω →
   AnalyticAt` bridge on chart pullbacks). Until ZZ24 lands, the within-one-chart
   version is the right granularity for this file.
 -/
@@ -79,7 +79,7 @@ open scoped Manifold Topology
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -165,7 +165,7 @@ point) into the resulting `¬ ∀ᶠ` statement.
 
 This is the maximal local-only deliverable: it does *not* claim to derive the
 witness from `¬ IsConstantMap f` globally — that step requires walking
-analytic continuation across charts, which is owed.
+analytic continuation across charts, which is deferred.
 -/
 
 /-- **Composition contract.** A "chart non-constancy witness assignment" is a
@@ -196,7 +196,7 @@ lemma not_eventually_const_at_chartImage
   chart_pullback_not_eventually_const_within_chart
     (A.witness x hx) (A.chartImage_mem x hx)
 
-/-! ## Documentation: full manifold globalisation, what is still owed
+/-! ## Documentation: full manifold globalisation, what is still open
 
 Let `X, Y` be connected complex manifolds and `f : X → Y` analytic and
 non-constant. To produce a `FibreChartNonConstAssignment`, we need: for every
@@ -231,7 +231,7 @@ Step 4 requires:
         tube, which is plain topology.
 
 (a) is in mathlib at the pin (analytic structure on `IsManifold … ω`); (c) is
-plain topology; (b) is owed by ZZ24. Once ZZ24 lands, the path-walking step
+plain topology; (b) is deferred by ZZ24. Once ZZ24 lands, the path-walking step
 is straightforward and produces a `FibreChartNonConstAssignment` from
 `¬ IsConstantMap f` plus connectedness, completing the manifold-level
 globalisation.
@@ -242,6 +242,6 @@ the locally-derivable identity-theorem content (this file) from the
 chart-overlap analyticity content (ZZ24).
 -/
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

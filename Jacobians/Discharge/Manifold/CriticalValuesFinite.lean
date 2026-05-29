@@ -66,7 +66,7 @@ zero" branch of the analytic dichotomy.
   is **not** delivered unconditionally: it still routes through
   `CriticalSetFiniteUnconditional.criticalSet_finite_of_witness`, which
   consumes the `CriticalSetWitness` package whose construction (residuals
-  R-MN and R-Closed) is owed to separate chips. What this file delivers
+  R-MN and R-Closed) is deferred to separate chips. What this file delivers
   is the planar-side critical-point isolation core that those chips will
   consume.
 -/
@@ -233,7 +233,7 @@ noncomputable def criticalChartPullbackData_of_derivBridge
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
     {f : Jacobians.Discharge.MeromorphicNonzero X} {x : X}
     (D : DerivBridgeData f x) :
-    Jacobians.Discharge.ContMDiff.Owed.degree.CriticalChartPullbackData
+    Jacobians.Discharge.ContMDiff.Degree.CriticalChartPullbackData
       f.toRiemannSphere f.criticalSet x :=
   Jacobians.Discharge.MeromorphicNonzero.criticalChartPullbackData_of_bridge f
     (criticalChartBridgeBundle_of_derivBridge D)

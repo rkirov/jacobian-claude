@@ -67,7 +67,7 @@ open Set Filter Topology
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -260,6 +260,6 @@ lemma criticalSet_isDiscrete_of_not_constant
     IsDiscrete crit :=
   criticalSet_isDiscrete_of_chart_pullback f crit h
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

@@ -81,7 +81,7 @@ open scoped Manifold Topology ContDiff
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -134,7 +134,7 @@ map `f : X → Y` and every `y₀ : Y`, the locally-constant locus
 `{x | ∀ᶠ x' in 𝓝 x, f x' = y₀}` is closed.
 
 Combined with the open-ness lemma above, this is the residual
-analytic-continuation content owed by the path-walking argument: along
+analytic-continuation content deferred by the path-walking argument: along
 a path `γ : [0,1] → X` from any boundary point of the locus, finitely
 many overlapping charts let one chain
 `AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq` to extend the
@@ -266,6 +266,6 @@ theorem fibres_finite_statement_holds_of_clopennessOfLocallyConst
   fibres_finite_statement_holds_of_chartOverlapPropagation
     (chartOverlapPropagation_of_clopennessOfLocallyConst H)
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

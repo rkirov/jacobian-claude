@@ -103,7 +103,7 @@ structure CriticalSetWitness (f : MeromorphicNonzero X) where
   closed : IsClosed f.criticalSet
   chart_data :
     ∀ x ∈ f.criticalSet,
-      ContMDiff.Owed.degree.CriticalChartPullbackData
+      ContMDiff.Degree.CriticalChartPullbackData
         f.toRiemannSphere f.criticalSet x
 
 /-- **Finiteness of the critical set, given the chart-pullback witness
@@ -112,7 +112,7 @@ package.** Direct application of ZZ44's
 theorem criticalSet_finite_of_witness
     (f : MeromorphicNonzero X) (w : CriticalSetWitness f) :
     f.criticalSet.Finite :=
-  ContMDiff.Owed.degree.criticalSet_finite_of_chart_pullback
+  ContMDiff.Degree.criticalSet_finite_of_chart_pullback
     f.toRiemannSphere f.criticalSet w.closed w.chart_data
 
 /-- **Finiteness of the critical values, given the chart-pullback witness

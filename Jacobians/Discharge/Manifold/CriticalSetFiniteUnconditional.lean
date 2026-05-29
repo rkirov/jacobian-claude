@@ -104,7 +104,7 @@ under closedness + compactness of `X`, finiteness) is unconditionally
 provable from the present infrastructure. -/
 def nonDegenerateCriticalSet (f : MeromorphicNonzero X) : Set X :=
   { x ∈ f.criticalSet | Nonempty (
-      ContMDiff.Owed.degree.CriticalChartPullbackData
+      ContMDiff.Degree.CriticalChartPullbackData
         f.toRiemannSphere f.criticalSet x) }
 
 /-- The non-degenerate critical set is contained in the critical set. -/
@@ -160,7 +160,7 @@ lemma consumes. -/
 noncomputable def nonDegenerateCriticalSet_chartPullbackData
     (f : MeromorphicNonzero X) :
     ∀ x ∈ f.nonDegenerateCriticalSet,
-      ContMDiff.Owed.degree.CriticalChartPullbackData
+      ContMDiff.Degree.CriticalChartPullbackData
         f.toRiemannSphere f.criticalSet x := by
   classical
   intro x hx
@@ -201,10 +201,10 @@ lemma criticalSet_finite_on_nonDegenerate
     intro x hx
     have hx_crit : x ∈ f.criticalSet := f.nonDegenerateCriticalSet_subset hx
     have D :
-        ContMDiff.Owed.degree.CriticalChartPullbackData
+        ContMDiff.Degree.CriticalChartPullbackData
           f.toRiemannSphere f.criticalSet x :=
       f.nonDegenerateCriticalSet_chartPullbackData x hx
-    rcases ContMDiff.Owed.degree.criticalSet_pointIsolated_via_chart_pullback
+    rcases ContMDiff.Degree.criticalSet_pointIsolated_via_chart_pullback
         (f := f.toRiemannSphere) (crit := f.criticalSet)
         (x := x) hx_crit D with ⟨U, hU_open, hU_eq⟩
     refine ⟨U, hU_open, ?_⟩
@@ -226,7 +226,7 @@ lemma criticalSet_finite_on_nonDegenerate
       rw [hU_eq] at hy_in
       simpa using hy_in
   -- Closedness + compactness ⇒ finite.
-  exact ContMDiff.Owed.degree.criticalSet_finite_of_isDiscrete_of_isClosed
+  exact ContMDiff.Degree.criticalSet_finite_of_isDiscrete_of_isClosed
     h_closed h_disc
 
 /-! ## Conditional headline statements (residuals named) -/

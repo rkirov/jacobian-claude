@@ -63,7 +63,7 @@ What is **stated but not proven** here:
    `f⁻¹{w}` near `x` for `w` near `f x`). Discharging this requires the
    Rouché-style argument that `(z - x₀) ^ k · u(z) = w` has exactly `k`
    solutions near `x₀` for `w` near `0` (when `u(x₀) ≠ 0`). That argument
-   is not in mathlib at the pin; it is owed from a future
+   is not in mathlib at the pin; it is deferred from a future
    `Mathlib.Analysis.SpecialFunctions.Complex.LocalMultiplicity` (does not
    exist).
 
@@ -72,7 +72,7 @@ identities, and the chart-coordinate local-form theorem, all proven; the
 topological-multiplicity bridge stated as a `Prop`-valued `def` (NOT an
 `axiom`) so future filling does not contaminate the kernel.
 
-## Owed mathlib lemmas (catalogued for the next pass)
+## Open mathlib lemmas (catalogued for the next pass)
 
 The following mathlib names are what the eventual filling will route through:
 
@@ -182,7 +182,7 @@ neighborhood of `(chartAt ℂ x) x`.
 
 This is the **chart-coordinate** version of R3. The R3 statement in
 `ResidueTheorem.lean` further requires extracting the *topological*
-multiplicity (cardinality of preimages); that step is owed from a
+multiplicity (cardinality of preimages); that step is deferred from a
 mathlib-side Rouché argument and is captured as
 `localMultiplicity_eq_localOrder_statement` below.
 
@@ -381,7 +381,7 @@ every `w ∈ V`, the set `{y ∈ U | f y = w}` has exactly `(localOrder I f x).n
 elements (when the order is positive; the pole case is symmetric via
 `f⁻¹`).
 
-**Status.** Stated, not proven. The Rouché-side counting argument is owed
+**Status.** Stated, not proven. The Rouché-side counting argument is deferred
 from a future mathlib `LocalMultiplicity` package. We state it in
 `Prop`-valued form to preserve the dependency surface. -/
 def localMultiplicity_eq_localOrder_statement : Prop :=
@@ -443,7 +443,7 @@ At the mathlib pin (`8e3c989`, 15 April 2026) the precise gating input is
 * `Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv.HasStrictFDerivAt.toOpenPartialHomeomorph`
   — the inverse function theorem packaged as an `OpenPartialHomeomorph`.
 
-What is **owed** for the general `k ≥ 2` case:
+What is **deferred** for the general `k ≥ 2` case:
 
 > A theorem of the form: for `g` analytic at `z₀` with `analyticOrderAt g z₀ = (k : ℕ∞)`
 > and `k ≥ 1`, there exist neighborhoods `V` of `z₀` and `W` of `0` such that
@@ -470,7 +470,7 @@ exactly `k` solutions in `V \ {0}`.
 
 The hypotheses are packaged as the `→` body so the type-shape of the
 statement is `Prop`-valued (not a function-type), matching the structural
-convention used elsewhere in this repo for owed-but-stated content
+convention used elsewhere in this repo for stated-but-unproven content
 (`R3_localMultiplicity_statement` in `ResidueTheorem.lean`,
 `R5_principal_degree_zero_statement`, etc.).
 
@@ -587,7 +587,7 @@ Cauchy's theorem (Cauchy–Goursat) applied to `deriv f / f` then gives
 
 This is the `k = 0` (no-zero, no-pole) leg of the argument principle, and it
 is honestly proven below from `Complex.circleIntegral_eq_zero_of_differentiable_on_off_countable`.
-The general (k ≥ 1) case is owed; see `argumentPrinciple_disk_statement`. -/
+The general (k ≥ 1) case is deferred; see `argumentPrinciple_disk_statement`. -/
 
 /-- **Argument principle, trivial (k = 0) case.**
 

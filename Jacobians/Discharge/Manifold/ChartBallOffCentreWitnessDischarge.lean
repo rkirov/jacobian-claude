@@ -57,7 +57,7 @@ open scoped Manifold Topology ContDiff
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -154,7 +154,7 @@ This is the manifold-side hypothesis-parameter that bridges
 within-one-chart version of this bridge is supplied by
 `chart_pullback_not_eventually_const_of_witness` in
 `AnalyticContinuationGlobalization.lean`; the manifold-globalization step
-across chart overlaps is owed elsewhere and is not the subject of this file. -/
+across chart overlaps is deferred elsewhere and is not the subject of this file. -/
 def ChartPullbackNotEventuallyConstHypothesis
     (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -270,6 +270,6 @@ theorem fibres_finite_statement_holds_of_chart_pullback_not_eventually_const
   fibres_finite_statement_holds_of_chartBallOffCentreWitness
     (chartBallOffCentreWitness_of_chart_pullback_not_eventually_const H)
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

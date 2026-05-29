@@ -69,7 +69,7 @@ unreachable `⊤` slot ruled out by `nonvanishing_germ` — and `order < 0`).
      `1/f`.
 
 Both branches require chart-side bookkeeping through `OpenPartialHomeomorph`
-and the `ChartedSpace ℂ X` atlas. The owed material is recorded honestly in
+and the `ChartedSpace ℂ X` atlas. The deferred material is recorded honestly in
 `OPEN.md` (this `Prop`-only statement is the named hook).
 
 This is the **R1** discharge from

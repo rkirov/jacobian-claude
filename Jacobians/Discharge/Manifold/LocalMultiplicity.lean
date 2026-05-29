@@ -24,7 +24,7 @@ The eventual analytic content — define a *regular value* `y₀ : Y` (one whose
 fiber `f ⁻¹' {y₀}` is finite and avoids ramification points), then take
 `Nat.card (f ⁻¹' {y₀})` — requires the chart-independence of
 `mmeromorphicOrderAt` (so that "ramification index `≥ 2`" is well-defined
-intrinsically on the manifold). That chart-independence is owed work in
+intrinsically on the manifold). That chart-independence is deferred work in
 `Jacobians.Discharge.Manifold.MeromorphicAt` (see its file header).
 
 Per the project's "honest stub > speculative real definition" principle, we

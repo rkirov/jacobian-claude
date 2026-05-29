@@ -31,7 +31,7 @@ open scoped Manifold Topology ContDiff
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -192,6 +192,6 @@ noncomputable def chartPullbackData_of_contMDiff_global
   -- motive — supported because `Eq` allows large elimination.
   hx_eq ▸ D
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

@@ -120,16 +120,16 @@ noncomputable def localDerivCompatibilityData_of_meromorphicNonzero
   have hV_subS : V ⊆ c.source := fun _ hy => hy.1
   -- Analyticity of `F` at `c x` (ZZ24).
   have hFA_at_x : AnalyticAt ℂ F (c x) :=
-    Jacobians.Discharge.ContMDiff.Owed.degree.contMDiff_omega_analyticAt_chart_pullback hf x
+    Jacobians.Discharge.ContMDiff.Degree.contMDiff_omega_analyticAt_chart_pullback hf x
   -- Non-eventual-constancy of `F` at `c x` (clopenness discharge).
   have hClop :
-      Jacobians.Discharge.ContMDiff.Owed.degree.ClopennessOfLocallyConstHypothesis
+      Jacobians.Discharge.ContMDiff.Degree.ClopennessOfLocallyConstHypothesis
         X RiemannSphere :=
-    Jacobians.Discharge.ContMDiff.Owed.degree.clopennessOfLocallyConst_holds
+    Jacobians.Discharge.ContMDiff.Degree.clopennessOfLocallyConst_holds
   have hChartNEC :
-      Jacobians.Discharge.ContMDiff.Owed.degree.ChartPullbackNotEventuallyConstHypothesis
+      Jacobians.Discharge.ContMDiff.Degree.ChartPullbackNotEventuallyConstHypothesis
         X RiemannSphere :=
-    Jacobians.Discharge.ContMDiff.Owed.degree.chartPullbackNotEventuallyConst_of_clopennessOfLocallyConst
+    Jacobians.Discharge.ContMDiff.Degree.chartPullbackNotEventuallyConst_of_clopennessOfLocallyConst
       hClop
   have hFne_raw :
       ¬ ∀ᶠ z in 𝓝 (c x),
@@ -175,7 +175,7 @@ noncomputable def localDerivCompatibilityData_of_meromorphicNonzero
       mem_chart_source ℂ (f.toRiemannSphere x')
     -- F' analytic at c' x' (ZZ24).
     have hF'A_at_x' : AnalyticAt ℂ F' (c' x') :=
-      Jacobians.Discharge.ContMDiff.Owed.degree.contMDiff_omega_analyticAt_chart_pullback
+      Jacobians.Discharge.ContMDiff.Degree.contMDiff_omega_analyticAt_chart_pullback
         hf x'
     -- F' (c' x') = d' (f.toRiemannSphere x').
     have hF'cx' : F' (c' x') = d' (f.toRiemannSphere x') := by

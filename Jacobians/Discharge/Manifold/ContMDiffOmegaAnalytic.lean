@@ -41,7 +41,7 @@ open scoped Manifold Topology ContDiff
 
 namespace Jacobians.Discharge
 namespace ContMDiff
-namespace Owed.degree
+namespace Degree
 
 universe u v
 
@@ -106,6 +106,6 @@ theorem contMDiff_omega_analyticAt_chart_pullback
       ((chartAt ℂ x) x) :=
   contMDiffAt_omega_analyticAt_chart_pullback (hf x)
 
-end Owed.degree
+end Degree
 end ContMDiff
 end Jacobians.Discharge

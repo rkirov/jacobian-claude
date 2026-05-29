@@ -21,7 +21,7 @@ compact complex manifold `X` modelled on `ℂ`. The chain
 subgroup `PrincDiv X` is set to `⊥` as a deliberate placeholder (see its
 docstring); the analytic content (chart-independence of meromorphic order,
 local finiteness of the order divisor, residue theorem on a compact Riemann
-surface) is owed by `MeromorphicAt.lean` and downstream files.
+surface) is deferred by `MeromorphicAt.lean` and downstream files.
 
 ## What's in this file
 
@@ -44,11 +44,11 @@ surface) is owed by `MeromorphicAt.lean` and downstream files.
 * `Jacobians.Discharge.Pic0 X := Div0 X ⧸ (PrincDiv X).addSubgroupOf (Div0 X)`
   — the Picard group of degree-zero divisors as an `AddCommGroup`.
 
-## Owed for follow-up (not in this commit)
+## Open for follow-up (not in this commit)
 
 * The honest definition of `PrincDiv X` (= principal divisors of non-zero
   global meromorphic functions). Requires (i) chart-independence of
-  `mmeromorphicOrderAt` (owed by `MeromorphicAt.lean`), (ii) local
+  `mmeromorphicOrderAt` (deferred by `MeromorphicAt.lean`), (ii) local
   finiteness of the order divisor of a meromorphic function, (iii) the
   residue theorem on a compact Riemann surface (degree-zero property).
 -/
