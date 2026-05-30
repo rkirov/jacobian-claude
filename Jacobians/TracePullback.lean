@@ -714,6 +714,91 @@ theorem differentiableAt_chart_lift_of_notMem_criticalSet
   rw [hΓchart_eq.differentiableAt_iff]
   exact hG_diff_ℝ.comp t₀ hδ_diff
 
+/-- **Velocity-section continuity of the seam-flattening reparametrization.** For a closed
+smooth loop `δ` in `Y`, the velocity tangent-section of `δ ∘ flatEndReparam` is
+`ContinuousOn (Icc 0 1)` — i.e. `δ ∘ flatEndReparam` (the base loop the §3 lifts cover)
+satisfies the `velCont` regularity. Via `velCont_reparam` with `σ = flatEndReparam`
+(monotone, `C²`, mapping `[0,1]` into `[0,1]`), the chain-rule input being
+`pathSpeed_flatEndReparam_comp_eq`. Feeds the interior case of each lift's `velCont`. -/
+private theorem velCont_flatEndReparam (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
+    ContinuousOn (fun s : ℝ => Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := Y))
+        ((δ ∘ flatEndReparam) s) (pathSpeed (δ ∘ flatEndReparam) s))
+      (Set.Icc 0 1) := by
+  refine velCont_reparam δ flatEndReparam (deriv flatEndReparam) (D := Set.Icc 0 1)
+    (fun s _ => flatEndReparam_mem_unit s) differentiable_flatEndReparam.continuous.continuousOn
+    ((Complex.continuous_ofReal.comp
+      ((contDiff_flatEndReparam (n := 2)).continuous_deriv (by norm_num))).continuousOn)
+    (fun s _ => ?_) hδ.velCont
+  have hrt : flatEndReparam s ∈ Set.uIcc (0:ℝ) 1 := by
+    rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact flatEndReparam_mem_unit s
+  rw [pathSpeed_flatEndReparam_comp_eq δ s (hδ.diff (flatEndReparam s) hrt), smul_eq_mul]
+
+/-- **Velocity-section germ invariance.** If two paths agree near `t₀`, their velocity
+tangent-sections agree near `t₀`: the section value at `s`, `⟨γ s, pathSpeed γ s⟩`, depends
+on `γ` only through its germ at `s` (base point `γ s`, chart-pullback derivative `pathSpeed γ s`).
+Lets a lift's `velCont` be read off a locally-coinciding model path — `const` near the
+seam-flat ends, `g ∘ δr` (a local two-sided inverse `g`) in the interior. -/
+private theorem velsection_eventuallyEq_of_eventuallyEq {γ h : ℝ → X} {t₀ : ℝ}
+    (hγh : γ =ᶠ[𝓝 t₀] h) :
+    (fun s : ℝ => Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s))
+      =ᶠ[𝓝 t₀]
+    (fun s : ℝ => Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (h s) (pathSpeed h s)) := by
+  filter_upwards [hγh, hγh.eventuallyEq_nhds] with s hs hs_nhds
+  have hps : pathSpeed γ s = pathSpeed h s := by
+    show fderiv ℝ ((chartAt (H := ℂ) (γ s)).toFun ∘ γ) s 1
+       = fderiv ℝ ((chartAt (H := ℂ) (h s)).toFun ∘ h) s 1
+    rw [hs, (hs_nhds.fun_comp (chartAt (H := ℂ) (h s)).toFun).fderiv_eq]
+  rw [hps, hs]
+
+/-- **Pointwise local velocity-section continuity under post-composition** — the
+`ContinuousWithinAt` companion of `velCont_compOn`. At a single `t₀ ∈ [0,1]`, if the base
+velocity section of `γ` is `ContinuousWithinAt` and `γ` lands in the open `C^ω`-domain `V`
+of `g` near `t₀`, then the velocity section of `g ∘ γ` is `ContinuousWithinAt`. This is what
+patches the §3 lift's `velCont` chart-by-chart: each interior point lies in some local
+two-sided inverse's domain, where the lift coincides with `g ∘ δr`. -/
+private theorem velContWithinAt_compOn (g : Y → X) {V : Set Y}
+    (hg : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g V) (hVo : IsOpen V) (γ : ℝ → Y) (hγc : Continuous γ)
+    {t₀ : ℝ} (ht₀ : t₀ ∈ Set.Icc (0:ℝ) 1)
+    (hγV : ∀ᶠ s in 𝓝[Set.Icc (0:ℝ) 1] t₀, γ s ∈ V)
+    (hγdiff : ∀ᶠ s in 𝓝[Set.Icc (0:ℝ) 1] t₀,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ s)).toFun ∘ γ) s)
+    (hγ : ContinuousWithinAt (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
+      (E := TangentSpace 𝓘(ℂ) (M := Y)) (γ s) (pathSpeed γ s))) (Set.Icc 0 1) t₀) :
+    ContinuousWithinAt (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
+      (E := TangentSpace 𝓘(ℂ) (M := X)) (g (γ s)) (pathSpeed (g ∘ γ) s))) (Set.Icc 0 1) t₀ := by
+  have hγt₀V : γ t₀ ∈ V := hγV.self_of_nhdsWithin ht₀
+  set S : ℝ → Bundle.TotalSpace ℂ (TangentSpace 𝓘(ℂ) (M := Y)) :=
+    fun s => Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := Y)) (γ s) (pathSpeed γ s) with hS
+  have htmw : ContinuousOn (tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V) (Bundle.TotalSpace.proj ⁻¹' V) :=
+    hg.continuousOn_tangentMapWithin (by decide : (1 : WithTop ℕ∞) ≤ ω) hVo.uniqueMDiffOn
+  have htmw_at : ContinuousWithinAt (tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V)
+      (Bundle.TotalSpace.proj ⁻¹' V) (S t₀) := htmw (S t₀) hγt₀V
+  have hS_tendsto : Filter.Tendsto S (𝓝[Set.Icc 0 1] t₀)
+      (𝓝[Bundle.TotalSpace.proj ⁻¹' V] (S t₀)) := by
+    rw [tendsto_nhdsWithin_iff]
+    exact ⟨hγ, by filter_upwards [hγV] with s hs using hs⟩
+  have hcomp : ContinuousWithinAt (tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V ∘ S) (Set.Icc 0 1) t₀ :=
+    htmw_at.tendsto.comp hS_tendsto
+  refine hcomp.congr_of_eventuallyEq ?_ ?_
+  · filter_upwards [hγV, hγdiff] with s hsV hsdiff
+    have hgmdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (γ s) :=
+      (hg.contMDiffAt (hVo.mem_nhds hsV)).mdifferentiableAt (by decide : ω ≠ 0)
+    show Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (g (γ s)) (pathSpeed (g ∘ γ) s)
+        = tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V (S s)
+    rw [tangentMapWithin_eq_tangentMap (hVo.uniqueMDiffWithinAt hsV) hgmdiff]
+    simp only [tangentMap, Bundle.TotalSpace.mk']
+    congr 1
+    exact pathSpeed_comp_eq_mfderiv_of_mdiff g γ s hgmdiff hγc.continuousAt hsdiff
+  · have hgmdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (γ t₀) :=
+      (hg.contMDiffAt (hVo.mem_nhds hγt₀V)).mdifferentiableAt (by decide : ω ≠ 0)
+    show Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (g (γ t₀)) (pathSpeed (g ∘ γ) t₀)
+        = tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V (S t₀)
+    rw [tangentMapWithin_eq_tangentMap (hVo.uniqueMDiffWithinAt hγt₀V) hgmdiff]
+    simp only [tangentMap, Bundle.TotalSpace.mk']
+    congr 1
+    exact pathSpeed_comp_eq_mfderiv_of_mdiff g γ t₀ hgmdiff hγc.continuousAt
+      (hγdiff.self_of_nhdsWithin ht₀)
+
 /-- **§3 sub-piece C — the seam-flattened smooth lift.** Lifting the *reparametrized*
 loop `δ ∘ flatEndReparam` (constant near `0,1`) off the branch locus from a fibre
 point `e` yields a genuine smooth path with **zero endpoint velocity**:
@@ -722,6 +807,10 @@ point `e` yields a genuine smooth path with **zero endpoint velocity**:
   injectivity of `f`, using the lift's `projIcc` clamp), so it is chart-differentiable
   with zero velocity at both endpoints;
 * on the interior `(0,1)`, `Γ` is chart-differentiable by sub-piece B;
+* its **velocity tangent-section is `ContinuousOn [0,1]`** (`velCont`): off the endpoints via
+  `velContWithinAt_compOn` (each interior point lies in a local two-sided inverse `g`'s domain,
+  where `Γ =ᶠ g ∘ δr`), and at the seam-flat ends via `velsection_eventuallyEq_of_eventuallyEq`
+  against the constant path — so `Γ` is a full `IsSmoothPath`, not merely chart-differentiable;
 * its endpoint `Γ 1` lies in the same fibre (`f (Γ 1) = δ 0`), the monodromy target.
 
 This is the per-segment building block of the orbit construction: concatenating these
@@ -737,6 +826,8 @@ theorem exists_smoothLift_flatEnd_off_branchLocus
       Continuous Γ ∧ Γ 0 = e ∧
       (∀ t ∈ Set.Icc (0:ℝ) 1, f (Γ t) = δ (flatEndReparam t)) ∧
       (∀ t ∈ Set.uIcc (0:ℝ) 1, DifferentiableAt ℝ ((chartAt (H := ℂ) (Γ t)).toFun ∘ Γ) t) ∧
+      ContinuousOn (fun s : ℝ => Bundle.TotalSpace.mk' ℂ
+          (E := TangentSpace 𝓘(ℂ) (M := X)) (Γ s) (pathSpeed Γ s)) (Set.Icc 0 1) ∧
       pathSpeed Γ 0 = 0 ∧ pathSpeed Γ 1 = 0 ∧
       f (Γ 1) = δ 0 := by
   classical
@@ -825,7 +916,55 @@ theorem exists_smoothLift_flatEnd_off_branchLocus
         (fun _ => (chartAt (H := ℂ) (Γ 1)).toFun (Γ 1)) := hΓ_const1.fun_comp _
     show fderiv ℝ ((chartAt (H := ℂ) (Γ 1)).toFun ∘ Γ) 1 1 = 0
     rw [hc.fderiv_eq]; simp
-  exact ⟨Γ, hΓ_cont, hΓ0, hΓ_lift, hΓ_diff, hps0, hps1, hfΓ1⟩
+  -- **Velocity-section continuity** (`velCont`). At each `t₀ ∈ [0,1]`, the section is read
+  -- off a locally-coinciding model path (`velsection_eventuallyEq_of_eventuallyEq`): near the
+  -- seam-flat endpoints `Γ` is constant (`isSmoothPath_const`), and at every interior point
+  -- `Γ =ᶠ g ∘ δr` for a local two-sided inverse `g`, handled by `velContWithinAt_compOn`.
+  have hvelCont : ContinuousOn (fun s : ℝ => Bundle.TotalSpace.mk' ℂ
+      (E := TangentSpace 𝓘(ℂ) (M := X)) (Γ s) (pathSpeed Γ s)) (Set.Icc 0 1) := by
+    intro t₀ ht₀
+    obtain ⟨ht0, ht1⟩ := ht₀
+    rcases eq_or_lt_of_le ht0 with rfl | h0pos
+    · -- `t₀ = 0`: plateau, `Γ =ᶠ[𝓝 0] (fun _ => e)`.
+      exact ((isSmoothPath_const e).velCont 0 (Set.left_mem_Icc.mpr zero_le_one)).congr_of_eventuallyEq
+        ((velsection_eventuallyEq_of_eventuallyEq hΓ_const0).filter_mono nhdsWithin_le_nhds)
+        (velsection_eventuallyEq_of_eventuallyEq hΓ_const0).self_of_nhds
+    · rcases eq_or_lt_of_le ht1 with rfl | h1lt
+      · -- `t₀ = 1`: plateau, `Γ =ᶠ[𝓝 1] (fun _ => Γ 1)`.
+        exact ((isSmoothPath_const (Γ 1)).velCont 1 (Set.right_mem_Icc.mpr zero_le_one)).congr_of_eventuallyEq
+          ((velsection_eventuallyEq_of_eventuallyEq hΓ_const1).filter_mono nhdsWithin_le_nhds)
+          (velsection_eventuallyEq_of_eventuallyEq hΓ_const1).self_of_nhds
+      · -- interior `0 < t₀ < 1`: local two-sided inverse `g`, `Γ =ᶠ g ∘ δr`, `velContWithinAt_compOn`.
+        have ht01 : t₀ ∈ Set.Icc (0:ℝ) 1 := ⟨h0pos.le, h1lt.le⟩
+        have hΓcrit : Γ t₀ ∉ criticalSet f :=
+          fun hmem => (hδr_avoid t₀) ⟨Γ t₀, hmem, hΓ_lift t₀ ht01⟩
+        obtain ⟨g, V, hVopen, hfΓtV, hgfΓ, hsec, hg_smooth, hgf_id⟩ :=
+          exists_twoSided_localInverse f hf hnonconst hΓcrit
+        have hδrtV : δr t₀ ∈ V := hΓ_lift t₀ ht01 ▸ hfΓtV
+        have hγV : ∀ᶠ s in 𝓝[Set.Icc (0:ℝ) 1] t₀, δr s ∈ V :=
+          (hδr_cont.continuousAt.eventually_mem (hVopen.mem_nhds hδrtV)).filter_mono nhdsWithin_le_nhds
+        have hγdiff : ∀ᶠ s in 𝓝[Set.Icc (0:ℝ) 1] t₀,
+            DifferentiableAt ℝ ((chartAt (H := ℂ) (δr s)).toFun ∘ δr) s :=
+          Filter.eventually_of_mem self_mem_nhdsWithin fun s hs =>
+            hδr_diff s (by rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact hs)
+        have hγ : ContinuousWithinAt (fun s : ℝ => Bundle.TotalSpace.mk' ℂ
+            (E := TangentSpace 𝓘(ℂ) (M := Y)) (δr s) (pathSpeed δr s)) (Set.Icc 0 1) t₀ :=
+          velCont_flatEndReparam δ hδ t₀ ht01
+        -- Near `t₀`, the lift coincides with `g ∘ δr`.
+        have hΓ_eq : Γ =ᶠ[𝓝 t₀] g ∘ δr := by
+          have hfΓδr : ∀ᶠ s in 𝓝 t₀, f (Γ s) = δr s := by
+            filter_upwards [Ioo_mem_nhds h0pos h1lt] with s hs
+            exact hΓ_lift s ⟨hs.1.le, hs.2.le⟩
+          have hgf_along : ∀ᶠ s in 𝓝 t₀, (g ∘ f) (Γ s) = id (Γ s) :=
+            hΓ_cont.continuousAt.tendsto.eventually hgf_id
+          filter_upwards [hgf_along, hfΓδr] with s h1 h2
+          show Γ s = g (δr s)
+          rw [← h2]; exact h1.symm
+        exact (velContWithinAt_compOn g hg_smooth hVopen δr hδr_cont ht01 hγV hγdiff
+            hγ).congr_of_eventuallyEq
+          ((velsection_eventuallyEq_of_eventuallyEq hΓ_eq).filter_mono nhdsWithin_le_nhds)
+          (velsection_eventuallyEq_of_eventuallyEq hΓ_eq).self_of_nhds
+  exact ⟨Γ, hΓ_cont, hΓ0, hΓ_lift, hΓ_diff, hvelCont, hps0, hps1, hfΓ1⟩
 
 /-! ## §3 monodromy decomposition of the preimage-cycle lift
 
@@ -878,54 +1017,43 @@ structure MonodromyLiftFamily (f : X → Y) (δ : ℝ → Y) where
   fibre_surj : ∀ t ∈ Set.Icc (0 : ℝ) 1, ∀ x : X,
     f x = δ (flatEndReparam t) → ∃ i, Γ i t = x
 
-/-- **Pointwise local velocity-section continuity under post-composition** — the
-`ContinuousWithinAt` companion of `velCont_compOn`. At a single `t₀ ∈ [0,1]`, if the base
-velocity section of `γ` is `ContinuousWithinAt` and `γ` lands in the open `C^ω`-domain `V`
-of `g` near `t₀`, then the velocity section of `g ∘ γ` is `ContinuousWithinAt`. This is what
-patches the §3 lift's `velCont` chart-by-chart: each interior point lies in some local
-two-sided inverse's domain, where the lift coincides with `g ∘ δr`. -/
-private theorem velContWithinAt_compOn (g : Y → X) {V : Set Y}
-    (hg : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g V) (hVo : IsOpen V) (γ : ℝ → Y) (hγc : Continuous γ)
-    {t₀ : ℝ} (ht₀ : t₀ ∈ Set.Icc (0:ℝ) 1)
-    (hγV : ∀ᶠ s in 𝓝[Set.Icc (0:ℝ) 1] t₀, γ s ∈ V)
-    (hγdiff : ∀ᶠ s in 𝓝[Set.Icc (0:ℝ) 1] t₀,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ s)).toFun ∘ γ) s)
-    (hγ : ContinuousWithinAt (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
-      (E := TangentSpace 𝓘(ℂ) (M := Y)) (γ s) (pathSpeed γ s))) (Set.Icc 0 1) t₀) :
-    ContinuousWithinAt (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
-      (E := TangentSpace 𝓘(ℂ) (M := X)) (g (γ s)) (pathSpeed (g ∘ γ) s))) (Set.Icc 0 1) t₀ := by
-  have hγt₀V : γ t₀ ∈ V := hγV.self_of_nhdsWithin ht₀
-  set S : ℝ → Bundle.TotalSpace ℂ (TangentSpace 𝓘(ℂ) (M := Y)) :=
-    fun s => Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := Y)) (γ s) (pathSpeed γ s) with hS
-  have htmw : ContinuousOn (tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V) (Bundle.TotalSpace.proj ⁻¹' V) :=
-    hg.continuousOn_tangentMapWithin (by decide : (1 : WithTop ℕ∞) ≤ ω) hVo.uniqueMDiffOn
-  have htmw_at : ContinuousWithinAt (tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V)
-      (Bundle.TotalSpace.proj ⁻¹' V) (S t₀) := htmw (S t₀) hγt₀V
-  have hS_tendsto : Filter.Tendsto S (𝓝[Set.Icc 0 1] t₀)
-      (𝓝[Bundle.TotalSpace.proj ⁻¹' V] (S t₀)) := by
-    rw [tendsto_nhdsWithin_iff]
-    exact ⟨hγ, by filter_upwards [hγV] with s hs using hs⟩
-  have hcomp : ContinuousWithinAt (tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V ∘ S) (Set.Icc 0 1) t₀ :=
-    htmw_at.tendsto.comp hS_tendsto
-  refine hcomp.congr_of_eventuallyEq ?_ ?_
-  · filter_upwards [hγV, hγdiff] with s hsV hsdiff
-    have hgmdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (γ s) :=
-      (hg.contMDiffAt (hVo.mem_nhds hsV)).mdifferentiableAt (by decide : ω ≠ 0)
-    show Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (g (γ s)) (pathSpeed (g ∘ γ) s)
-        = tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V (S s)
-    rw [tangentMapWithin_eq_tangentMap (hVo.uniqueMDiffWithinAt hsV) hgmdiff]
-    simp only [tangentMap, Bundle.TotalSpace.mk']
-    congr 1
-    exact pathSpeed_comp_eq_mfderiv_of_mdiff g γ s hgmdiff hγc.continuousAt hsdiff
-  · have hgmdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (γ t₀) :=
-      (hg.contMDiffAt (hVo.mem_nhds hγt₀V)).mdifferentiableAt (by decide : ω ≠ 0)
-    show Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (g (γ t₀)) (pathSpeed (g ∘ γ) t₀)
-        = tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V (S t₀)
-    rw [tangentMapWithin_eq_tangentMap (hVo.uniqueMDiffWithinAt hγt₀V) hgmdiff]
-    simp only [tangentMap, Bundle.TotalSpace.mk']
-    congr 1
-    exact pathSpeed_comp_eq_mfderiv_of_mdiff g γ t₀ hgmdiff hγc.continuousAt
-      (hγdiff.self_of_nhdsWithin ht₀)
+
+/-- **Lift uniqueness on `[0,1]`.** Two continuous lifts `Γ₁, Γ₂` of the same base path `β`
+(off the branch locus) that agree at one time `t₀ ∈ [0,1]` agree on all of `[0,1]`. The
+agreement set is clopen in the connected `[0,1]`: closed as the equalizer of continuous maps
+into the `T₂` space `X`, and open because at any agreement point `Γ₁ s = Γ₂ s` the value is
+off-critical, where `f` is locally injective (`isLocalHomeoOffCritical`) — and both lifts
+project to `β`, so local injectivity forces them to coincide nearby. Drives `fibre_inj`. -/
+private theorem lift_eqOn_Icc_of_eq {f : X → Y} (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {β : ℝ → Y}
+    (hβ : ∀ t ∈ Set.Icc (0:ℝ) 1, β t ∉ branchLocus f)
+    {Γ₁ Γ₂ : ℝ → X} (hc₁ : Continuous Γ₁) (hc₂ : Continuous Γ₂)
+    (hl₁ : ∀ t ∈ Set.Icc (0:ℝ) 1, f (Γ₁ t) = β t)
+    (hl₂ : ∀ t ∈ Set.Icc (0:ℝ) 1, f (Γ₂ t) = β t)
+    {t₀ : ℝ} (ht₀ : t₀ ∈ Set.Icc (0:ℝ) 1) (heq : Γ₁ t₀ = Γ₂ t₀) :
+    Set.EqOn Γ₁ Γ₂ (Set.Icc (0:ℝ) 1) := by
+  classical
+  haveI : PreconnectedSpace ↥(Set.Icc (0:ℝ) 1) :=
+    isPreconnected_iff_preconnectedSpace.mp isPreconnected_Icc
+  set S : Set ↥(Set.Icc (0:ℝ) 1) := {p | Γ₁ ↑p = Γ₂ ↑p} with hS_def
+  have hclosed : IsClosed S :=
+    isClosed_eq (hc₁.comp continuous_subtype_val) (hc₂.comp continuous_subtype_val)
+  have hopen : IsOpen S := by
+    rw [isOpen_iff_mem_nhds]
+    intro p hp
+    have hpeq : Γ₁ ↑p = Γ₂ ↑p := hp
+    have hx₀crit : Γ₁ ↑p ∉ criticalSet f :=
+      fun hmem => hβ ↑p p.2 ⟨Γ₁ ↑p, hmem, hl₁ ↑p p.2⟩
+    obtain ⟨U, hUopen, hx₀U, hinj, -⟩ := isLocalHomeoOffCritical f hf hnonconst hx₀crit
+    have h1U := (hc₁.comp continuous_subtype_val).continuousAt.eventually_mem (hUopen.mem_nhds hx₀U)
+    have h2U := (hc₂.comp continuous_subtype_val).continuousAt.eventually_mem
+      (hUopen.mem_nhds (hpeq ▸ hx₀U))
+    filter_upwards [h1U, h2U] with q hq1 hq2
+    exact hinj hq1 hq2 ((hl₁ ↑q q.2).trans (hl₂ ↑q q.2).symm)
+  have hSuniv : S = Set.univ := IsClopen.eq_univ ⟨hclosed, hopen⟩ ⟨⟨t₀, ht₀⟩, heq⟩
+  intro t ht
+  have : (⟨t, ht⟩ : ↥(Set.Icc (0:ℝ) 1)) ∈ S := by rw [hSuniv]; exact Set.mem_univ _
+  exact this
 
 /-- **Leaf A + B — construct the monodromy lift family.** Off the branch locus, the
 seam-flattened lifts of `δ` (one per fibre point, `exists_smoothLift_flatEnd_off_branchLocus`
@@ -935,8 +1063,90 @@ connected `[0,1]` (via the local sheet system). -/
 theorem exists_monodromyLiftFamily (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :
-    Nonempty (MonodromyLiftFamily f δ) :=
-  sorry
+    Nonempty (MonodromyLiftFamily f δ) := by
+  classical
+  -- The fibre over `δ 0` is finite (off-branch); enumerate it as `Fin n`.
+  have hfin : (f ⁻¹' {δ 0}).Finite := fiber_finite_off_branchLocus f hf hnonconst (havoid 0)
+  have _ffib : Fintype ↥(f ⁻¹' {δ 0}) := hfin.fintype
+  set n : ℕ := Fintype.card ↥(f ⁻¹' {δ 0}) with hn_def
+  set enum : Fin n ≃ ↥(f ⁻¹' {δ 0}) := (Fintype.equivFin _).symm with henum_def
+  set pt : Fin n → X := fun i => ((enum i : ↥(f ⁻¹' {δ 0})) : X) with hpt_def
+  have hpt_fib : ∀ i, f (pt i) = δ 0 := fun i => (enum i).2
+  -- One seam-flattened smooth lift per fibre point.
+  have hlift : ∀ i : Fin n, ∃ Γ : ℝ → X,
+      Continuous Γ ∧ Γ 0 = pt i ∧
+      (∀ t ∈ Set.Icc (0:ℝ) 1, f (Γ t) = δ (flatEndReparam t)) ∧
+      (∀ t ∈ Set.uIcc (0:ℝ) 1, DifferentiableAt ℝ ((chartAt (H := ℂ) (Γ t)).toFun ∘ Γ) t) ∧
+      ContinuousOn (fun s : ℝ => Bundle.TotalSpace.mk' ℂ
+          (E := TangentSpace 𝓘(ℂ) (M := X)) (Γ s) (pathSpeed Γ s)) (Set.Icc 0 1) ∧
+      pathSpeed Γ 0 = 0 ∧ pathSpeed Γ 1 = 0 ∧ f (Γ 1) = δ 0 :=
+    fun i => exists_smoothLift_flatEnd_off_branchLocus f hf hnonconst δ hδ havoid (hpt_fib i)
+  choose Γ hcont hΓ0 hlifts hdiff hvc hps0 hps1 _hfΓ1 using hlift
+  -- `δr` is off-branch everywhere (the lifts cover it on `[0,1]`).
+  have hδr_avoid : ∀ t : ℝ, δ (flatEndReparam t) ∉ branchLocus f := fun t => havoid (flatEndReparam t)
+  -- **Fibre injectivity** (lift uniqueness): two lifts agreeing at some time `t ∈ [0,1]` agree at
+  -- `0`, so their distinct basepoints `pt i` force `i = k`.
+  have hfib_inj : ∀ t ∈ Set.Icc (0:ℝ) 1, Function.Injective fun i => Γ i t := by
+    intro t ht i k hik
+    have hEq : Set.EqOn (Γ i) (Γ k) (Set.Icc (0:ℝ) 1) :=
+      lift_eqOn_Icc_of_eq hf hnonconst (fun s _ => hδr_avoid s) (hcont i) (hcont k)
+        (hlifts i) (hlifts k) ht hik
+    have hpteq : pt i = pt k := by
+      rw [← hΓ0 i, ← hΓ0 k]; exact hEq (Set.left_mem_Icc.mpr zero_le_one)
+    exact enum.injective (Subtype.ext hpteq)
+  -- `ncard` of the range of an injective `Fin m → X` is `m`.
+  have hrange_ncard : ∀ {m : ℕ} (g : Fin m → X), Function.Injective g →
+      (Set.range g).ncard = m := fun g hg => by
+    rw [← Set.image_univ, Set.ncard_image_of_injective _ hg, Set.ncard_univ,
+      Nat.card_eq_fintype_card, Fintype.card_fin]
+  -- **Fibre cardinality is constant `= n`** along `[0,1]`: `t ↦ #(f⁻¹{δr t})` is locally constant
+  -- (over each `LocalSheetSystem` base the fibre is the range of the injective sheet map, so its
+  -- card is the sheet count), hence constant on the connected `[0,1]`; its value at `0` is `n`.
+  have hcard : ∀ t ∈ Set.Icc (0:ℝ) 1, (f ⁻¹' {δ (flatEndReparam t)}).ncard = n := by
+    set fc : ℝ → ℕ := fun t => (f ⁻¹' {δ (flatEndReparam t)}).ncard with hfc_def
+    have hδr_cont : Continuous fun t => δ (flatEndReparam t) :=
+      hδ.cont.comp differentiable_flatEndReparam.continuous
+    have hfc_cont : ContinuousOn fc (Set.Icc (0:ℝ) 1) := by
+      intro t₀ _
+      obtain ⟨S⟩ := exists_localSheetSystem f hf hnonconst (hδr_avoid t₀)
+      have hcard_sheets : ∀ y ∈ S.V, (f ⁻¹' {y}).ncard = S.n := fun y hy => by
+        rw [S.fibre_eq y hy]; exact hrange_ncard _ (S.sheet_inj y hy)
+      have hmem : ∀ᶠ t in 𝓝[Set.Icc (0:ℝ) 1] t₀, δ (flatEndReparam t) ∈ S.V :=
+        (hδr_cont.continuousAt.eventually_mem (S.isOpen_V.mem_nhds S.mem_V)).filter_mono
+          nhdsWithin_le_nhds
+      have hloc : ∀ᶠ t in 𝓝[Set.Icc (0:ℝ) 1] t₀, fc t = fc t₀ := by
+        filter_upwards [hmem] with t htV
+        show (f ⁻¹' {δ (flatEndReparam t)}).ncard = (f ⁻¹' {δ (flatEndReparam t₀)}).ncard
+        rw [hcard_sheets _ htV, hcard_sheets _ S.mem_V]
+      exact (tendsto_pure.mpr hloc).mono_right (pure_le_nhds _)
+    intro t ht
+    have hconst := IsPreconnected.constant isPreconnected_Icc hfc_cont ht
+      (Set.left_mem_Icc.mpr zero_le_one)
+    show fc t = n
+    rw [hconst]
+    show (f ⁻¹' {δ (flatEndReparam 0)}).ncard = n
+    rw [flatEndReparam_zero, ← Nat.card_coe_set_eq, Nat.card_eq_fintype_card]
+  refine ⟨{
+    n := n
+    Γ := Γ
+    smooth := fun i => ⟨rfl, rfl, hcont i, hdiff i, hvc i⟩
+    velZero_zero := hps0
+    velZero_one := hps1
+    lifts := fun i t ht => hlifts i t ht
+    fibre_inj := hfib_inj
+    fibre_surj := ?_ }⟩
+  -- `fibre_surj`: `i ↦ Γ i t` injects `Fin n` into the `n`-element fibre over `δr t`, so it is onto.
+  intro t ht x hx
+  have hfibfin : (f ⁻¹' {δ (flatEndReparam t)}).Finite :=
+    fiber_finite_off_branchLocus f hf hnonconst (hδr_avoid t)
+  have hsub : Set.range (fun i => Γ i t) ⊆ f ⁻¹' {δ (flatEndReparam t)} := by
+    rintro z ⟨i, rfl⟩; exact hlifts i t ht
+  have heq : Set.range (fun i => Γ i t) = f ⁻¹' {δ (flatEndReparam t)} :=
+    Set.eq_of_subset_of_ncard_le hsub
+      (le_of_eq (by rw [hcard t ht, hrange_ncard _ (hfib_inj t ht)])) hfibfin
+  have hxrange : x ∈ Set.range (fun i => Γ i t) := by rw [heq]; exact hx
+  obtain ⟨i, hi⟩ := hxrange
+  exact ⟨i, hi⟩
 
 /-- **Per-sheet velocity identity (interior).** At an interior `t ∈ (0,1)`, the trace
 summand of `α` at the lift point `M.Γ i t`, evaluated at the reparametrized base
