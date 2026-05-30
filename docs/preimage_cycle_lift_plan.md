@@ -18,17 +18,37 @@ form coefficient along the lift. Resolution (`Jacobians/CotangentCoeff.lean`, so
   the section's smoothness ⇒ its `inCoordinates` rep is continuous into the fixed `ℂ→Lℂ`). This
   is exactly the tool the chart-patchwork needs (and the continuity input `traceForm_comp` needs).
 
-So **no fundamental bundle blocker remains.** Lift integrability now reduces to two *engineering*
-tasks (both "hard Lean, no missing math"):
- (i) the **velocity refactor** — add `speed_integrable : IntervalIntegrable (pathSpeed γ) volume 0 1`
-     to `IsClosedSmoothLoop`/`IsSmoothPath` (raw pathSpeed integrable; `comp` via chart-patchwork +
-     `analyticAt_chartPullback`, no bundle work); and
- (ii) the **chart-patchwork**: cover `[0,1]` by segments where `Γ` stays in one chart `c`; on each,
-     `α.toFun (Γ s)(pathSpeed Γ s) = inCoordinates(α (Γ s))(velocity-in-fixed-chart-c)`, a product of
-     the continuous bounded local coefficient (`continuousAt_localCoeff`) and the integrable
-     fixed-chart velocity (from (i)); glue via `LocallyIntegrableOn.integrableOn_isCompact`.
-(The bundle-pairing lemmas `ContMDiffAt.clm_apply_of_inCoordinates` do NOT apply directly — they
-need the curve-velocity domain section `ContMDiff`, but the lift is only chart-pointwise-diff.)
+### DEFINITIVE FINDING (2026-05-30, Lean-verified): the loop predicate must be genuinely C¹
+
+"Lemma A" — `IntervalIntegrable (s ↦ α.toFun (γ s)(pathSpeed γ s)) 0 1` from `Continuous γ` +
+`IntervalIntegrable (pathSpeed γ) 0 1` (i.e. the velocity-refactor + chart-patchwork plan above) —
+**is FALSE** for chart-pointwise-differentiable loops. Verified by isolating three facts:
+ * The integrand factors as `c(s)·(pathSpeed γ s)` with `c(s) = α.toFun (γ s) 1` = the **discontinuous,
+   unbounded** global coefficient (the very object `CotangentCoeff` shows is discontinuous).
+ * In the `inCoordinates` split, `V(s) = (triv).continuousLinearMapAt (γ s)(pathSpeed γ s) = m(s)·pathSpeed γ s`
+   with `m(s) = (triv).continuousLinearMapAt (γ s) 1`, and `m∘γ = triv ∘ (constant-1 tangent section)` —
+   **discontinuous/unbounded** (the const-1-section obstruction). So `‖(triv).continuousLinearMapAt (γ s)‖`
+   is unbounded near `s₀`; "continuous · integrable" never applies. `c = (local coeff)·m`, discontinuity all in `m`.
+ * `hγ_speed` only bounds the *moving-chart* velocity; the *fixed-chart* velocity `V = m·pathSpeed` can blow
+   up where `γ` accumulates in chart-distorted regions. The conclusion is not derivable from the hypotheses
+   (and depends on the `chartAt` assignment of the specific `ChartedSpace`).
+
+The repo's own `IsClosedSmoothLoop`/`IsSmoothPath` carry `integrable` as a **separate field** (alongside
+`cont`, pointwise `diff`) for exactly this reason — it is *not* derivable from cont + pointwise-diff.
+
+**Consequence — the genuine fix (the textbook smooth-curve notion the user pointed to from the start):**
+the loop predicate must require **honest smoothness**, i.e. a *continuous velocity tangent section* /
+`ContMDiffOn 𝓘(ℝ) 𝓘(ℂ) γ (Icc 0 1)` (a real-smooth curve into the complex 1-manifold). From that, the
+integrand `α.toFun(γs)(pathSpeed γs)` is **continuous** (curve velocity is a continuous tangent section,
+paired with the smooth form), hence `integrable` by `Continuous.intervalIntegrable` — and the seam-fix lift
+`g∘δr` (g `C^ω`, δr smooth) is then smooth ⇒ its integrand continuous ⇒ integrable. This is a **deep
+foundational refactor** of `IsClosedSmoothLoop`/`IsSmoothPath` (replace `cont`+`diff`+`integrable` with one
+`ContMDiffOn`/velocity-continuity field, derive the rest; re-prove ~10 constructors). The bundle local-coeff
+lemmas (`CotangentCoeff`) remain useful for the smooth-curve integrand-continuity proof.
+
+*(The earlier "velocity refactor (`speed_integrable`) + chart-patchwork" plan is abandoned — `speed_integrable`
+= moving-chart-speed integrability is insufficient; the fixed-chart velocity is what matters, and only genuine
+C¹ controls it. This is the third deepening; each was caught before building on a false helper.)*
 
 ## Goal
 
