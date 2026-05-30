@@ -389,30 +389,177 @@ theorem traceFun_smul_of_notMem_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(�
 
 /-! ### Existence of the local sheet system (covering unpacking) -/
 
-/-- **[ISOLATED SORRY — covering trivialization unpacking]** Off the branch locus a
-local sheet system exists. This is the *only* irreducible step in the off-branch
-construction.
+/-- **[PROVEN]** Off the branch locus a local sheet system exists (Forster §4.22).
 
-Construction (Forster §4.22; Mathlib `IsCoveringMapOn`/`IsEvenlyCovered`): off the
-branch locus `f` is proper + a local homeo, hence restricts to a finite covering
-`isCoveringMapOn_compl_branchLocus`. Over `y₀` the fibre is finite
-(`fiber_finite_off_branchLocus`); shrinking via `properNbhd` gives an open
-`V ∋ y₀` over which `f⁻¹V` splits into `|f⁻¹{y₀}|` disjoint open sheets, each a
-graph of a `C^ω` section `sheet i` (from `exists_twoSided_localInverse` at each
-fibre point — supplying `sheet_smooth`, `sheet_section`, `sheet_leftInv`). The
-covering's even-covering homeomorphism `f⁻¹V ≃ V × fibre` gives `fibre_eq` (the
-sheets exhaust each fibre) and `sheet_inj` (distinct sheets stay disjoint).
-
-What is needed to discharge this: extract, from Mathlib's `IsCoveringMapOn` even
-covering over `y₀` together with `properNbhd`, the indexed family of section
-graphs as functions `Fin n → Y → X`, and transport the trivialization's
-`fibre = sheets` bijection through the charts. Bounded but genuinely lengthy
-(Forster 4.22–4.23). The per-sheet `C^ω` sections themselves are already available
-unconditionally (`exists_twoSided_localInverse`). -/
+Construction (no covering trivialization needed — assembled directly from the proven
+local pieces): the fibre `f⁻¹{y₀}` is finite (`fiber_finite_off_branchLocus`),
+enumerated as `pt : Fin n → X` via `Fintype.equivFin`. The `pt i` are pairwise
+distinct points off `criticalSet`, separated by pairwise-disjoint opens `Sep i`
+(`X` is T2, `Set.Finite.t2_separation`). At each `pt i`, `exists_twoSided_localInverse`
+gives a `C^ω` two-sided section `g i` on an open `Vsec i ∋ y₀`
+(supplying `sheet_smooth`, `sheet_section`, and the `sheet_leftInv` content), and
+`isLocalHomeoOffCritical` gives an open injective neighborhood, shrunk into `Sep i`
+to make the sheets disjoint. Properness (`properNbhd` of `isProperMap_of_contMDiff`)
+shrinks the fibre's open cover `⋃ Uinj` to a base `Ubase ∋ y₀` with `f⁻¹ Ubase ⊆ ⋃ Uinj`.
+Over `V := Ubase ∩ ⋂ i (Vsec i ∩ g i⁻¹ (Uinj i))` every preimage of `y ∈ V` lands in
+some `Uinj j`, where `g j y` is its unique preimage — giving `fibre_eq`; the disjoint
+`Sep i` give `sheet_inj`. With this, `contMDiffAt_traceFun_of_notMem_branchLocus`
+(off-branch holomorphicity of the trace) is **unconditional**. -/
 theorem exists_localSheetSystem (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {y₀ : Y} (hy₀ : y₀ ∉ branchLocus f) :
-    Nonempty (LocalSheetSystem f y₀) :=
-  sorry
+    Nonempty (LocalSheetSystem f y₀) := by
+  classical
+  -- The fibre over `y₀` is finite; enumerate it as `Fin n`.
+  have hfin : (f ⁻¹' {y₀}).Finite := fiber_finite_off_branchLocus f hf hnonconst hy₀
+  let _ffib : Fintype (f ⁻¹' {y₀}) := hfin.fintype
+  set n : ℕ := Fintype.card (f ⁻¹' {y₀}) with hn_def
+  set e : (f ⁻¹' {y₀}) ≃ Fin n := Fintype.equivFin _ with he_def
+  -- The `i`-th fibre point, as a term of `X`.
+  set pt : Fin n → X := fun i => (e.symm i : X) with hpt_def
+  have hpt_fib : ∀ i, f (pt i) = y₀ := fun i => (e.symm i).2
+  have hpt_crit : ∀ i, pt i ∉ criticalSet f := fun i hmem =>
+    hy₀ ⟨pt i, hmem, hpt_fib i⟩
+  have hpt_inj : Function.Injective pt := fun i j hij => by
+    have : e.symm i = e.symm j := Subtype.ext hij
+    exact e.symm.injective this
+  -- Separate the finitely many distinct fibre points by pairwise-disjoint open
+  -- neighborhoods (`X` is T2). `Sep i ∋ pt i`, open, and disjoint for distinct
+  -- `pt i`. This makes the sheets provably distinct over the base (sheet `i`
+  -- lands in `Sep i`, sheet `j` in the disjoint `Sep j`).
+  obtain ⟨Sep₀, hSep₀_mem, hSep₀_disj⟩ :
+      ∃ U : X → Set X, (∀ x, x ∈ U x ∧ IsOpen (U x)) ∧ (Set.range pt).PairwiseDisjoint U :=
+    (Set.finite_range pt).t2_separation
+  set Sep : Fin n → Set X := fun i => Sep₀ (pt i) with hSep_def
+  have hSep_mem : ∀ i, pt i ∈ Sep i := fun i => (hSep₀_mem (pt i)).1
+  have hSep_open : ∀ i, IsOpen (Sep i) := fun i => (hSep₀_mem (pt i)).2
+  have hSep_disj : ∀ i j, i ≠ j → Disjoint (Sep i) (Sep j) := fun i j hij =>
+    hSep₀_disj (Set.mem_range_self i) (Set.mem_range_self j)
+      (fun h => hij (hpt_inj h))
+  -- For each fibre point, a `C^ω` two-sided local section `g i` on an open
+  -- `Vsec i ∋ y₀` (with `g i y₀ = pt i`, `f ∘ g i = id` on `Vsec i`,
+  -- `g i ∘ f = id` near `pt i`) together with an open injective neighborhood
+  -- `Uinj i ∋ pt i` of `pt i` in `X` (`isLocalHomeoOffCritical`), shrunk into
+  -- the separating window `Sep i` so the sheets are pairwise disjoint.
+  have hpkg : ∀ i : Fin n, ∃ (g : Y → X) (Vsec : Set Y) (Uinj : Set X),
+      IsOpen Vsec ∧ y₀ ∈ Vsec ∧ g y₀ = pt i ∧
+        (∀ y ∈ Vsec, f (g y) = y) ∧ ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g Vsec ∧
+        ((g ∘ f) =ᶠ[𝓝 (pt i)] id) ∧
+        IsOpen Uinj ∧ pt i ∈ Uinj ∧ Set.InjOn f Uinj ∧ Uinj ⊆ Sep i := by
+    intro i
+    obtain ⟨g, Vsec, hVo, hfxV, hgfx, hsec, hgsm, hgf⟩ :=
+      exists_twoSided_localInverse f hf hnonconst (hpt_crit i)
+    obtain ⟨Uinj, hUo, hxU, hinj, -⟩ := isLocalHomeoOffCritical f hf hnonconst (hpt_crit i)
+    -- `exists_twoSided_localInverse` lives over `f (pt i) = y₀`; rewrite to `y₀`.
+    rw [hpt_fib i] at hfxV hgfx
+    -- Intersect the injective neighborhood with the separating window `Sep i`.
+    refine ⟨g, Vsec, Uinj ∩ Sep i, hVo, hfxV, hgfx, hsec, hgsm, hgf,
+      hUo.inter (hSep_open i), ⟨hxU, hSep_mem i⟩, hinj.mono Set.inter_subset_left,
+      Set.inter_subset_right⟩
+  choose g Vsec Uinj hVo hy₀V hgfx hsec hgsm hgf hUo hxU hinj hUsep using hpkg
+  -- The fibre `f⁻¹{y₀} = pt '' univ` is contained in the open `⋃ⱼ Uinj j`.
+  set Ubig : Set X := ⋃ j, Uinj j with hUbig_def
+  have hUbig_open : IsOpen Ubig := isOpen_iUnion hUo
+  have hfib_sub : f ⁻¹' {y₀} ⊆ Ubig := by
+    intro x hx
+    have hxfib : x ∈ f ⁻¹' {y₀} := hx
+    -- `x` is the `e`-image of itself; it equals `pt (e ⟨x, _⟩)`.
+    set j : Fin n := e ⟨x, hxfib⟩ with hj_def
+    have hpt_eq : pt j = x := by simp only [hpt_def, hj_def, Equiv.symm_apply_apply]
+    exact Set.mem_iUnion.mpr ⟨j, hpt_eq ▸ hxU j⟩
+  -- Properness: shrink to an open base `Ubase ∋ y₀` with `f⁻¹ Ubase ⊆ Ubig`.
+  obtain ⟨Ubase, hUbase_open, hy₀Ubase, hUbase_sub⟩ :=
+    properNbhd (isProperMap_of_contMDiff f hf) y₀ hUbig_open hfib_sub
+  -- Each `Wsheet i := Vsec i ∩ (g i)⁻¹ (Uinj i)` is open (continuity of the
+  -- section on its open domain) and contains `y₀` (`g i y₀ = pt i ∈ Uinj i`).
+  set Wsheet : Fin n → Set Y := fun i => Vsec i ∩ g i ⁻¹' Uinj i with hWsheet_def
+  have hWsheet_open : ∀ i, IsOpen (Wsheet i) := fun i =>
+    (hgsm i).continuousOn.isOpen_inter_preimage (hVo i) (hUo i)
+  have hy₀Wsheet : ∀ i, y₀ ∈ Wsheet i := fun i =>
+    ⟨hy₀V i, by rw [Set.mem_preimage, hgfx i]; exact hxU i⟩
+  -- The base neighborhood: properness ∩ all sheet windows.
+  set V : Set Y := Ubase ∩ ⋂ i, Wsheet i with hV_def
+  have hV_open : IsOpen V :=
+    hUbase_open.inter (isOpen_iInter_of_finite (fun i => hWsheet_open i))
+  have hy₀V_mem : y₀ ∈ V := ⟨hy₀Ubase, Set.mem_iInter.mpr hy₀Wsheet⟩
+  have hV_sub_Ubase : ∀ {y}, y ∈ V → y ∈ Ubase := fun {_} hy => hy.1
+  have hV_sub_Wsheet : ∀ i {y}, y ∈ V → y ∈ Wsheet i :=
+    fun i {_} hy => (Set.mem_iInter.mp hy.2) i
+  have hV_sub_Vsec : ∀ i {y}, y ∈ V → y ∈ Vsec i := fun i {_} hy => (hV_sub_Wsheet i hy).1
+  have hVsub_Vsec : ∀ i, V ⊆ Vsec i := fun i _ hy => (hV_sub_Wsheet i hy).1
+  -- `f (g i y) = y` for `y ∈ V` (section on `V ⊆ Vsec i`).
+  have hsec_V : ∀ i, ∀ y ∈ V, f (g i y) = y := fun i y hy =>
+    hsec i y (hV_sub_Vsec i hy)
+  -- `g i y ∈ Uinj i` for `y ∈ V` (from the `g i ⁻¹ Uinj i` window).
+  have hgmem_V : ∀ i, ∀ y ∈ V, g i y ∈ Uinj i := fun i y hy =>
+    (hV_sub_Wsheet i hy).2
+  refine ⟨{
+    n := n
+    V := V
+    isOpen_V := hV_open
+    mem_V := hy₀V_mem
+    sheet := g
+    sheet_smooth := fun i => (hgsm i).mono (hVsub_Vsec i)
+    sheet_section := hsec_V
+    sheet_leftInv := ?_
+    sheet_inj := ?_
+    fibre_eq := ?_ }⟩
+  · -- `sheet_leftInv`: `g i ∘ f = id` near `g i y` for `y ∈ V`.
+    -- The two-sided inverse gives this near `pt i = g i y₀`. For general `y ∈ V`,
+    -- `g i y ∈ Uinj i` where `f` is injective, and `g i ∘ f = id` near it follows
+    -- from the section identity + injectivity, via the same argument as
+    -- `exists_twoSided_localInverse`.
+    intro i y hy
+    -- `g i` is continuous at `y` (open domain `Vsec i ⊇ V ∋ y`).
+    have hgi_contAt : ContinuousAt (g i) y :=
+      (hgsm i).continuousOn.continuousAt ((hVo i).mem_nhds (hV_sub_Vsec i hy))
+    -- Near `g i y`, points land in `Uinj i`.
+    have hpre_U : ∀ᶠ x in 𝓝 (g i y), x ∈ Uinj i :=
+      (hUo i).eventually_mem (hgmem_V i y hy)
+    -- `f` is continuous at `g i y`.
+    have hf_contAt : ContinuousAt f (g i y) := hf.continuous.continuousAt
+    -- Near `g i y`: `f x ∈ V` (since `f (g i y) = y ∈ V`, `V` open).
+    have hfx_V : ∀ᶠ x in 𝓝 (g i y), f x ∈ V :=
+      hf_contAt.eventually_mem (by rw [hsec_V i y hy]; exact hV_open.mem_nhds hy)
+    -- Near `g i y`: `g i (f x) ∈ Uinj i`.
+    have hgfx_U : ∀ᶠ x in 𝓝 (g i y), g i (f x) ∈ Uinj i := by
+      filter_upwards [hfx_V] with x hx
+      exact hgmem_V i (f x) hx
+    filter_upwards [hpre_U, hfx_V, hgfx_U] with x hxU' hxV' hgfxU'
+    show g i (f x) = x
+    -- `f (g i (f x)) = f x` (section at `f x ∈ V`); inject on `Uinj i`.
+    exact hinj i hgfxU' hxU' (hsec_V i (f x) hxV')
+  · -- `sheet_inj`: the sheets are distinct over `V`. For `y ∈ V`,
+    -- `g i y ∈ Uinj i ⊆ Sep i` and `g j y ∈ Uinj j ⊆ Sep j`, and the `Sep`'s
+    -- are pairwise disjoint for distinct indices — so equal sheet values force
+    -- equal indices.
+    intro y hy i j hij
+    by_contra hne
+    have hxSi : g i y ∈ Sep i := hUsep i (hgmem_V i y hy)
+    have hxSj : g j y ∈ Sep j := hUsep j (hgmem_V j y hy)
+    have hgij : g i y = g j y := hij
+    -- `g i y = g j y` lies in `Sep i ∩ Sep j`, which is empty for `i ≠ j`.
+    exact (hSep_disj i j hne).le_bot ⟨hxSi, hgij ▸ hxSj⟩
+  · -- `fibre_eq`: the sheets exhaust the fibre over each `y ∈ V`.
+    intro y hy
+    apply Set.eq_of_subset_of_subset
+    · -- `⊆`: any `x ∈ f⁻¹{y}` lies in some `Uinj j` (properness), and there
+      -- `g j y` is the unique preimage of `y`, so `x = g j y`.
+      intro x hx
+      rw [Set.mem_preimage, Set.mem_singleton_iff] at hx
+      -- `x ∈ f⁻¹ Ubase ⊆ Ubig = ⋃ Uinj`.
+      have hxUbase : x ∈ f ⁻¹' Ubase := by
+        rw [Set.mem_preimage, hx]; exact hV_sub_Ubase hy
+      have hxUbig : x ∈ Ubig := hUbase_sub hxUbase
+      obtain ⟨j, hxUj⟩ := Set.mem_iUnion.mp hxUbig
+      -- `g j y ∈ Uinj j` and `f (g j y) = y = f x`; inject on `Uinj j`.
+      have hgjy_U : g j y ∈ Uinj j := hgmem_V j y hy
+      have hfgjy : f (g j y) = y := hsec_V j y hy
+      have : x = g j y := hinj j hxUj hgjy_U (by rw [hx, hfgjy])
+      exact Set.mem_range.mpr ⟨j, this.symm⟩
+    · -- `⊇`: each `g i y` is in the fibre (`f (g i y) = y`).
+      rintro x ⟨i, rfl⟩
+      rw [Set.mem_preimage, Set.mem_singleton_iff]
+      exact hsec_V i y hy
 
 /-- **Off-branch holomorphicity of the trace, top-level form.** For `y₀` off the
 branch locus, the fibre-sum trace `y ↦ traceFun f α y` is `ContMDiffAt` (a
@@ -430,33 +577,67 @@ theorem contMDiffAt_traceFun_of_notMem_branchLocus (f : X → Y)
 
 /-! ## Assembling into `HolomorphicOneForms Y` via branch extension
 
-The off-branch fibre sum `traceFun f α` is a holomorphic one-form on `Y ∖ branchLocus f`
-(`contMDiffAt_traceFun_of_notMem_branchLocus`). To upgrade it to a *global* element
-of `HolomorphicOneForms Y` we must extend across the finite `branchLocus f`. The
-trace is bounded near each branch point (a finite sum of bounded local terms — the
-ramified sheets), so by Riemann's removable-singularity theorem it extends
-holomorphically; the extended value at a branch point is the limit, **not** the
-naive `finsum` (which is `0` there when the fibre is infinite). For this reason the
-global section's `toFun` is the *extension*, characterized by agreeing with `traceFun`
-off the branch locus — we must not assert global smoothness of `traceFun` itself,
-which is false at branch points.
+The off-branch fibre sum `traceFun f α` is now an **unconditional** holomorphic
+one-form on `Y ∖ branchLocus f`: `contMDiffAt_traceFun_of_notMem_branchLocus`
+depends only on `exists_localSheetSystem` (closed above) and the proven
+`LocalSheetSystem.contMDiffAt_traceFun`. To upgrade it to a *global* element of
+`HolomorphicOneForms Y` we must extend across the finite `branchLocus f`
+(`finite_branchLocus_of_nonconstant`). The extended value at a branch point is the
+removable-singularity **limit**, *not* the naive `finsum` (which is `0` there, since
+the fibre over a branch point is still finite but the per-sheet derivatives blow up).
+The global section's `toFun` is therefore the *extension*, characterized only by
+agreeing with `traceFun` off the branch locus — we must not assert global smoothness
+of `traceFun` itself, which is false at branch points.
 
-We package this honestly as an existence theorem: the genuine trace `LinearMap`
-exists and agrees with the proven fibre sum off the branch locus. The single
-`sorry` isolates exactly two pieces of classical content:
-* the **covering unpacking** (`exists_localSheetSystem`, used off-branch), and
-* the **removable-singularity extension** across `branchLocus f`
-  (Riemann's theorem; project infra in `Discharge/Manifold/MeromorphicExtension.lean`,
-  Mathlib `Complex.differentiableOn_update_limUnder_…`).
-Linearity of the trace map follows from the proven pointwise linearity of the fibre
+### Why this single `sorry` remains (precise frontier)
+
+`HolomorphicOneForms Y = ContMDiffSection 𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω _`, so `T α` must carry
+a *global* `ContMDiff` proof — including at branch points. Producing it needs, in
+order of difficulty:
+
+1. **[GENUINE ANALYTIC CRUX — not in Mathlib, not in `Discharge/`]** *Local
+   boundedness of the trace near each branch point.* In a chart at a branch point
+   `y₀`, the bundle-section coefficient `z ↦ traceFun f α (chart⁻¹ z)` is a
+   holomorphic function on the punctured disk that is **bounded** as `z → 0`. The
+   classical reason: near `y₀` the cover has local normal form `w ↦ wᵉ` on each
+   ramified sheet (`Discharge/Manifold/LocalNormalForm.lean`
+   `MMeromorphicAt.exists_local_normal_form` gives the `wᵉ` model for the *map*),
+   and the symmetric sum over the `e` colliding sheets of the per-sheet pullback
+   `(α (sheetᵢ z)) ∘ (mfderiv sheetᵢ z)` cancels the `1/eʷᵉ⁻¹` blow-up (a Puiseux /
+   Newton-symmetric-function computation). No project lemma currently supplies this;
+   it is the analytic heart of the trace's well-definedness.
+
+2. **Removable-singularity extension.** Given (1), Mathlib closes the chart-level
+   step: `Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt`
+   (or `differentiableOn_update_limUnder_of_bddAbove`, file
+   `Mathlib/Analysis/Complex/RemovableSingularity.lean`) makes the `Function.update`
+   extension differentiable/analytic at `y₀`.
+
+3. **Bundle re-gluing.** Lift the chart-level extension back to a global
+   `ContMDiffSection` of the cotangent bundle (off-branch from
+   `contMDiffAt_traceFun_of_notMem_branchLocus`, at branch points from (1)+(2)).
+   There is no section-extension-across-a-finite-set lemma in the project yet; this
+   is substantial manifold/`Bundle.ContinuousLinearMap` plumbing.
+
+Linearity of `T` would then follow from the proven pointwise linearity of the fibre
 sum (`traceFun_add_of_notMem_branchLocus`, `traceFun_smul_of_notMem_branchLocus`)
-together with continuity of the extension; it is bundled into the existence claim. -/
+plus continuity/density of the extension across the finite branch locus.
 
-/-- **[ISOLATED SORRY — branch extension + assembly]** The trace
-`f₊ : Ω¹(X) →ₗ[ℂ] Ω¹(Y)` exists as a genuine holomorphic one-form linear map,
-agreeing with the off-branch fibre sum `traceFun`. Sound (classically true; Forster
-§10, Griffiths–Harris Ch. 2 §2.7). The `sorry` covers the removable-singularity
-extension across the finite branch locus plus the covering unpacking. -/
+Sound (classically true; Forster §10, Griffiths–Harris Ch. 2 §2.7). References:
+Forster §4.22–4.25 (local normal form `wᵉ`), §10 (the trace). -/
+
+/-- **[ISOLATED SORRY — removable-singularity branch extension + bundle assembly]**
+The trace `f₊ : Ω¹(X) →ₗ[ℂ] Ω¹(Y)` exists as a genuine holomorphic one-form linear
+map, agreeing with the off-branch fibre sum `traceFun`. Sound (classically true;
+Forster §10, Griffiths–Harris Ch. 2 §2.7).
+
+The off-branch input is **unconditional** (`exists_localSheetSystem` is closed). The
+remaining `sorry` needs exactly: (1) local boundedness of `traceFun` near each branch
+point (the symmetric-sum/local-normal-form crux — *not* in Mathlib or `Discharge/`),
+then (2) Mathlib's removable singularity
+`Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt`, then
+(3) re-gluing the chart-level extension into a global `ContMDiffSection`. See the
+section docstring above for the full breakdown. -/
 theorem exists_traceForm (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
     ∃ T : HolomorphicOneForms X →ₗ[ℂ] HolomorphicOneForms Y,
