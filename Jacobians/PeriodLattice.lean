@@ -715,74 +715,9 @@ theorem IsClosedSmoothLoop.comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ
     have h_comp_diff : DifferentiableAt ℝ (f_loc ∘ g_X) t :=
       hf_loc_diff_ℝ.comp t (hγ.diff t ht)
     exact (h_eq.differentiableAt_iff).mpr h_comp_diff
-  integrable := by
-    intro j
-    -- The integrand for f ∘ γ equals the integrand of pullbackForm f hf (periodBasisForm Y j)
-    -- along γ, via the pointwise chain rule (pathSpeed_comp_eq_mfderiv).
-    -- The pullbackForm is a ℂ-linear combination of periodBasisForm X i, each of whose
-    -- integrands is integrable against γ (by hγ.integrable).
-    have h_pw : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-        (periodBasisForm Y j).toFun ((f ∘ γ) t) (pathSpeed (f ∘ γ) t) =
-          (pullbackForm f hf (periodBasisForm Y j)).toFun (γ t) (pathSpeed γ t) := by
-      intro t ht
-      show (periodBasisForm Y j).toFun (f (γ t)) (pathSpeed (f ∘ γ) t) =
-        ((periodBasisForm Y j).toFun (f (γ t))).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t))
-          (pathSpeed γ t)
-      rw [ContinuousLinearMap.comp_apply,
-        pathSpeed_comp_eq_mfderiv f hf γ t hγ.cont.continuousAt (hγ.diff t ht)]
-    -- Pullback form as a sum: ambientIso X v with v = ambientPsi f hf e_j.
-    set v := ambientPsi (gX := genus X) (gY := genus Y) f hf
-      (Pi.basisFun ℂ (Fin (genus Y)) j)
-    have h_pullback_sum : pullbackForm f hf (periodBasisForm Y j) =
-        ∑ i, v i • periodBasisForm X i := by
-      rw [pullbackForm_periodBasisForm_eq]
-      show ambientIso X v = _
-      have h_v_decomp : v = ∑ i, v i • Pi.basisFun ℂ (Fin (genus X)) i := by
-        have := pi_eq_sum_univ' v
-        convert this using 2
-        simp [Pi.basisFun_apply]
-      conv_lhs => rw [h_v_decomp, map_sum]
-      refine Finset.sum_congr rfl (fun i _ => ?_)
-      rw [map_smul]
-      rfl
-    -- The integrand along γ of the sum is the sum of integrands.
-    have h_integrand_sum : ∀ t,
-        (pullbackForm f hf (periodBasisForm Y j)).toFun (γ t) (pathSpeed γ t) =
-          ∑ i, v i * (periodBasisForm X i).toFun (γ t) (pathSpeed γ t) := by
-      intro t
-      rw [h_pullback_sum]
-      -- Same Finset induction as in periodVec_pushforward_of_smooth.
-      induction (Finset.univ : Finset (Fin (genus X))) using Finset.induction_on with
-      | empty =>
-        rw [Finset.sum_empty, Finset.sum_empty]
-        show (0 : HolomorphicOneForms X).toFun (γ t) (pathSpeed γ t) = 0
-        rfl
-      | @insert a s ha ih =>
-        rw [Finset.sum_insert ha, Finset.sum_insert ha]
-        show ((v a • periodBasisForm X a) + ∑ i ∈ s, v i • periodBasisForm X i).toFun (γ t)
-            (pathSpeed γ t) = _
-        rw [show ((v a • periodBasisForm X a) + ∑ i ∈ s, v i • periodBasisForm X i).toFun (γ t) =
-            (v a • periodBasisForm X a).toFun (γ t) +
-              (∑ i ∈ s, v i • periodBasisForm X i).toFun (γ t) from rfl,
-          ContinuousLinearMap.add_apply, ih]
-        rfl
-    -- Integrability of the sum via Finset.sum of integrable summands.
-    have h_sum_integrable : IntervalIntegrable
-        (fun t => ∑ i, v i * (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
-        MeasureTheory.volume 0 1 := by
-      rw [show (fun t => ∑ i, v i * (periodBasisForm X i).toFun (γ t) (pathSpeed γ t)) =
-        ∑ i : Fin (genus X),
-          (fun t => v i * (periodBasisForm X i).toFun (γ t) (pathSpeed γ t)) from by
-        funext t; simp [Finset.sum_apply]]
-      refine IntervalIntegrable.sum _ (fun i _ => ?_)
-      exact (hγ.integrable i).const_mul (v i)
-    -- Combine: h_pw + h_integrand_sum give a.e. equality; use congr.
-    refine h_sum_integrable.congr_ae ?_
-    rw [Filter.EventuallyEq]
-    refine (MeasureTheory.ae_restrict_iff' measurableSet_uIoc).mpr ?_
-    filter_upwards with t ht
-    rw [← h_integrand_sum]
-    exact (h_pw t (Set.uIoc_subset_uIcc ht)).symm
+  velCont :=
+    velCont_comp f hf γ hγ.cont
+      (fun s hs => hγ.diff s (Set.Icc_subset_uIcc hs)) hγ.velCont
 
 /-- Change-of-variables at the vector level: evaluating each Y-basis
 form against `f ∘ γ` equals evaluating its pullback against `γ`.

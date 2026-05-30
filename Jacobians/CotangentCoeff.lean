@@ -195,8 +195,10 @@ continuity `hγ`, the pointwise `hγdiff` and `hγcont` fields** — these are N
 continuous velocity section), which is exactly why the refactor *keeps* the `cont`/`diff` fields and
 only replaces `integrable` with `velCont`. -/
 
+omit [CompactSpace X] in
 /-- Local analogue of `pathSpeed_comp_eq_mfderiv`: only `MDifferentiableAt f (γ t)` is needed (the
-global `ContMDiff f` in the original is used solely to produce this), so it applies to local sections. -/
+global `ContMDiff f` in the original is used solely to produce this), so it applies to local sections.
+The source `X` need NOT be compact (used with `X = ℂ` in the `ChartBall` base case). -/
 theorem pathSpeed_comp_eq_mfderiv_of_mdiff (f : X → Y) (γ : ℝ → X) (t : ℝ)
     (hf_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f (γ t))
     (hγ_cont : ContinuousAt γ t)
@@ -272,10 +274,12 @@ theorem velCont_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ
   congr 1
   exact pathSpeed_comp_eq_mfderiv f hf γ s hγcont.continuousAt (hγdiff s hs)
 
+omit [CompactSpace Y] in
 /-- **LOCAL: velocity-section continuity is preserved by a map `C^ω` on an open set.** For the §3
 lift `g∘γ` (`g` a local section) and the `ChartBall` base case. Open `V` upgrades `ContMDiffOn` to
 `ContMDiffAt`/`MDifferentiableAt`, so `pathSpeed_comp_eq_mfderiv_of_mdiff` applies, and
-`tangentMapWithin g V = tangentMap g` on `V`. -/
+`tangentMapWithin g V = tangentMap g` on `V`. The source `Y` need NOT be compact (the `ChartBall`
+base case takes `Y = ℂ`, the non-compact model space). -/
 theorem velCont_compOn (g : Y → X) {V : Set Y} (hg : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g V)
     (hVo : IsOpen V) (γ : ℝ → Y) (hγV : ∀ s ∈ Set.Icc (0 : ℝ) 1, γ s ∈ V)
     (hγcont : Continuous γ)
@@ -539,6 +543,73 @@ private theorem velCont_affineReparam (γ : ℝ → X) (a b : ℝ) {D : Set ℝ}
         ← triv.continuousLinearMapAt_apply_of_mem ℂ hx₀base]
     exact (triv.continuousLinearMapAt ℂ (γ (r s₀))).map_smul (a : ℂ) _
 
+/-- **Velocity-section continuity under a smooth scalar reparametrization `σ`.** For the
+`smoothPathSmooth = smoothPath ∘ smoothStep01` case: given the chain-rule fact
+`pathSpeed (γ ∘ σ) s = σ'(s) • pathSpeed γ (σ s)` (supplied as `hspeed`, from
+`pathSpeed_smoothStep01_comp_eq`), a continuous reparam `σ` mapping `D` into `[0,1]`, and a
+continuous scaling `σ'`, the reparametrized velocity section is continuous on `D`. Generalizes
+`velCont_affineReparam` (constant scale `a`) to a varying scale `σ'`. -/
+theorem velCont_reparam (γ : ℝ → X) (σ σ' : ℝ → ℝ) {D : Set ℝ}
+    (hmaps : Set.MapsTo σ D (Set.Icc 0 1)) (hσcont : ContinuousOn σ D)
+    (hσ'cont : ContinuousOn (fun s : ℝ => (σ' s : ℂ)) D)
+    (hspeed : ∀ s ∈ D, pathSpeed (γ ∘ σ) s = (σ' s : ℂ) • pathSpeed γ (σ s))
+    (hγ : ContinuousOn (fun s : ℝ =>
+        Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s))
+      (Set.Icc 0 1)) :
+    ContinuousOn (fun s : ℝ =>
+        Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+          ((γ ∘ σ) s) (pathSpeed (γ ∘ σ) s))
+      D := by
+  have hbase : ContinuousOn (fun s : ℝ => γ (σ s)) D := by
+    have hγbase : ContinuousOn γ (Set.Icc (0:ℝ) 1) :=
+      (FiberBundle.continuous_proj ℂ (TangentSpace 𝓘(ℂ) (M := X))).comp_continuousOn hγ
+    exact hγbase.comp hσcont hmaps
+  intro s₀ hs₀
+  rw [FiberBundle.continuousWithinAt_totalSpace]
+  refine ⟨hbase s₀ hs₀, ?_⟩
+  set x₀ := γ (σ s₀) with hx₀
+  set triv := trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀ with htriv
+  have hx₀base : x₀ ∈ triv.baseSet := mem_baseSet_trivializationAt ℂ _ x₀
+  have hrs₀ : σ s₀ ∈ Set.Icc (0:ℝ) 1 := hmaps hs₀
+  have hγ_at : ContinuousWithinAt
+      (fun s : ℝ => Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s)
+        (pathSpeed γ s)) (Set.Icc 0 1) (σ s₀) := hγ (σ s₀) hrs₀
+  rw [FiberBundle.continuousWithinAt_totalSpace] at hγ_at
+  have hfib_orig : ContinuousWithinAt
+      (fun u : ℝ => (triv (Bundle.TotalSpace.mk' ℂ
+        (E := TangentSpace 𝓘(ℂ) (M := X)) (γ u) (pathSpeed γ u))).2)
+      (Set.Icc 0 1) (σ s₀) := hγ_at.2
+  have hcomp : ContinuousWithinAt
+      (fun s : ℝ => (triv (Bundle.TotalSpace.mk' ℂ
+        (E := TangentSpace 𝓘(ℂ) (M := X)) (γ (σ s)) (pathSpeed γ (σ s)))).2)
+      D s₀ :=
+    hfib_orig.comp (hσcont s₀ hs₀) hmaps
+  -- scale the trivialized fibre by `σ' s` (continuous).
+  have hsmul : ContinuousWithinAt
+      (fun s : ℝ => (σ' s : ℂ) • (triv (Bundle.TotalSpace.mk' ℂ
+        (E := TangentSpace 𝓘(ℂ) (M := X)) (γ (σ s)) (pathSpeed γ (σ s)))).2)
+      D s₀ := (hσ'cont s₀ hs₀).smul hcomp
+  refine hsmul.congr_of_eventuallyEq ?_ ?_
+  · have hev : ∀ᶠ s in 𝓝[D] s₀, γ (σ s) ∈ triv.baseSet :=
+      (hbase s₀ hs₀).eventually (triv.open_baseSet.mem_nhds hx₀base)
+    filter_upwards [hev, self_mem_nhdsWithin] with s hs hsD
+    show (triv (Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+        ((γ ∘ σ) s) (pathSpeed (γ ∘ σ) s))).2 = _
+    rw [hspeed s hsD]
+    show (triv (Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+        (γ (σ s)) ((σ' s : ℂ) • pathSpeed γ (σ s)))).2 = _
+    rw [← triv.continuousLinearMapAt_apply_of_mem ℂ hs,
+        ← triv.continuousLinearMapAt_apply_of_mem ℂ hs]
+    exact (triv.continuousLinearMapAt ℂ (γ (σ s))).map_smul (σ' s : ℂ) _
+  · show (triv (Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+        ((γ ∘ σ) s₀) (pathSpeed (γ ∘ σ) s₀))).2 = _
+    rw [hspeed s₀ hs₀]
+    show (triv (Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+        (γ (σ s₀)) ((σ' s₀ : ℂ) • pathSpeed γ (σ s₀)))).2 = _
+    rw [← triv.continuousLinearMapAt_apply_of_mem ℂ hx₀base,
+        ← triv.continuousLinearMapAt_apply_of_mem ℂ hx₀base]
+    exact (triv.continuousLinearMapAt ℂ (γ (σ s₀))).map_smul (σ' s₀ : ℂ) _
+
 /-- **Velocity-section continuity is preserved by concatenation** at vanishing junction velocities.
 For the `IsSmoothPath.concat` constructor. On each open half the concatenation's velocity section
 is the corresponding piece's section reparametrized (`2·` left, `2·-1` right) with the fibre scaled
@@ -626,5 +697,22 @@ theorem velCont_concat (γ₁ γ₂ : ℝ → X)
     show Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
         (Jacobians.concat γ₁ γ₂ s) (pathSpeed (Jacobians.concat γ₁ γ₂) s) = _
     rw [h_base, h_fib]
+
+/-- **Velocity-section continuity of a `C¹` path into the model space ℂ.** For ℂ the chart at any
+point is the identity, so `pathSpeed β = deriv β` and the tangent bundle is trivial; the velocity
+section is therefore continuous as soon as `β` and `deriv β` are. This is the base-path velocity
+input for the `ChartBallPathSmooth` case of the C¹ refactor (composed with `(chartAt ℂ Q₀).symm` via
+`velCont_compOn`). -/
+theorem velCont_modelPath (β : ℝ → ℂ) (hβ : Continuous β) (hβ' : Continuous (deriv β)) :
+    ContinuousOn (fun s : ℝ =>
+        Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := ℂ)) (β s) (pathSpeed β s))
+      (Set.Icc 0 1) := by
+  have hps : (fun s : ℝ => pathSpeed β s) = deriv β := by funext s; simp [pathSpeed]
+  intro s₀ hs₀
+  rw [FiberBundle.continuousWithinAt_totalSpace]
+  refine ⟨hβ.continuousWithinAt, ?_⟩
+  have hβ'cwa : ContinuousWithinAt (fun s : ℝ => pathSpeed β s) (Set.Icc 0 1) s₀ := by
+    rw [hps]; exact hβ'.continuousWithinAt
+  refine hβ'cwa.congr_of_eventuallyEq ?_ ?_ <;> simp
 
 end Jacobians
