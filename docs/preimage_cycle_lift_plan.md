@@ -24,24 +24,36 @@ So the ambient/matrix layer of the whole §3 chain is finished; the one remainin
 (besides the pre-existing, deferred `exists_loop_off_branchLocus`) is `exists_preimageLoopFamily`,
 stated purely in line-integral/period terms.
 
-**Frontier — NOT blocked; no refactor needed (corrected 2026-05-30).** The remaining
-analytic prerequisites of `exists_preimageLoopFamily` — the seam-fix lifts'
-**integrability** and **reparam-invariance** `periodVec (δ∘flatEndReparam) = periodVec δ`
-— are a *monotone change of variables* for the line integral, and Mathlib's
-**measure-theoretic** monotone CoV handles this for merely *integrable* (not necessarily
-continuous) integrands: `MeasureTheory.integral_image_eq_integral_deriv_smul_of_monotoneOn`
-and `integrableOn_image_iff_integrableOn_deriv_smul_of_monotoneOn` (`JacobianOneDim.lean`).
-The **codebase already uses the integrability version** for `smoothStep01` (in
-`isSmoothPath_smoothPathSmooth`, `OfCurveAnalyticitySkeleton.lean`). `flatEndReparam` is
-monotone (`Real.smoothTransition.monotone`), so the same pattern applies verbatim. *(My
-earlier "blocked / needs C¹ refactor" note was wrong — it only checked the FTC-based
-`integral_deriv_smul_comp'''`, which is continuity-gated; the measure-theoretic monotone CoV
-is not.)* So the weak `IsClosedSmoothLoop` predicate is fine; no refactor. The remaining
-content is all "hard Lean, no missing math": reparam-invariance + lift integrability (mirror
-the `smoothStep01` proofs with `flatEndReparam`), the monodromy permutation
-(`IsCoveringMap.eq_liftPath_iff`) + orbit concatenation (`IsSmoothPath.concat`), and the
-partition/sheet-reassembly projection formula (`exists_nbhd_cover` +
-`exists_localSheetSystem_traceForm_eq_sum` + `lineIntegral_pullback_section`).
+**Frontier (corrected twice — read carefully).** Reparam-invariance is NOT blocked and
+needed no refactor: it is a *monotone change of variables* handled by Mathlib's
+measure-theoretic monotone CoV for merely *integrable* integrands
+(`integral_image_eq_integral_deriv_smul_of_monotoneOn`, the codebase already uses the
+`integrableOn_image_iff` sibling for `smoothStep01`) — DONE sorry-free. **BUT the lift
+*integrability* genuinely DOES need a regularity strengthening (the textbook-C¹ direction the
+user originally pointed to).** Why: the orbit loops must be `IsClosedSmoothLoop`, whose
+`integrable` field for a lift `Γ = g∘δr` (local section `g`) reduces — via the norm bound
+`‖ωᵢ(Γ s)(pathSpeed Γ s)‖ ≤ ‖ωᵢ‖∞ · ‖pathSpeed Γ s‖` and `pathSpeed Γ = mfderiv g · pathSpeed δr`
+— to **raw `pathSpeed δ` being interval-integrable**. The current `IsClosedSmoothLoop`
+provides only the basis-form *pairings* `(periodBasisForm X i)(γ t)(pathSpeed γ t)` integrable,
+from which raw `pathSpeed` is NOT recoverable (the basis forms can share zeros). The
+`IsClosedSmoothLoop.comp` trick (expand `pullbackForm f` in the *global* basis) does not apply,
+because the lift's section `g` is *local* (no global `pullbackForm g`). So lift integrability is
+blocked on the weak predicate.
+
+**Recommended fix (textbook-sound, user-pre-approved): add raw velocity integrability to the
+loop predicate.** Strengthen `IsClosedSmoothLoop`/`IsSmoothPath` with a field
+`speed_integrable : IntervalIntegrable (pathSpeed γ) volume 0 1` (the loop has integrable
+velocity — the natural textbook regularity), and *derive* the old basis-pairing `integrable`
+from it (`|formᵢ(γt)(pathSpeed γt)| ≤ ‖formᵢ‖∞·‖pathSpeed γt‖`). Then lift integrability follows
+by the norm-bound argument **without any cotangent-bundle scalar-coefficient extraction** (only
+boundedness of a continuous section over a compact set + `speed_integrable` of `δr` via the
+monotone CoV). Cost: the repo-wide predicate refactor (~10 constructors must prove
+`speed_integrable`; for the explicit paths `pathSpeed` is continuous hence integrable, so these
+are routine). *This re-corrects the over-optimistic "no refactor / no missing math" — that held
+for reparam-invariance, not for lift integrability.* The other open pieces (monodromy permutation
+`IsCoveringMap.eq_liftPath_iff` + orbit concat `IsSmoothPath.concat`; projection via fibre-sum-of-
+lifts `traceFun = ∑ₑ` + `traceForm_toFun_of_notMem_branchLocus`) are genuinely just hard Lean,
+and become clean once the loops are `IsClosedSmoothLoop` (i.e. after the `speed_integrable` refactor).
 
 - **A — continuous path-lift: DONE, sorry-free** (`exists_continuous_lift_off_branchLocus`,
   commit `32d435e`). `δ` off-branch lifts through the proven covering via Mathlib's
