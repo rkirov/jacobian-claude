@@ -300,6 +300,79 @@ theorem exists_continuous_lift_off_branchLocus
       (Set.projIcc 0 1 zero_le_one 0) : X) = e
     rw [h0, hzero]
 
+/-- **§3 sub-piece B — smoothness of the lift.** A continuous lift `Γ` of `δ`
+through a non-critical point inherits `δ`'s chart-pullback differentiability.
+Given `Γ` continuous at `t₀`, `f ∘ Γ = δ` near `t₀`, `Γ t₀` off the critical set,
+and `δ` chart-pullback-differentiable at `t₀`, the lift `Γ` is chart-pullback
+differentiable at `t₀`.
+
+Proof: take the two-sided local inverse `g` at `Γ t₀`
+(`exists_twoSided_localInverse`). Near `t₀`, `Γ = g ∘ δ` directly from `g∘f=id`
+near `Γ t₀` + continuity of `Γ` + `f∘Γ=δ` (no lift-uniqueness needed). In charts,
+`(chart_Γt₀)∘Γ =ᶠ G∘d` where `G = (chart_Γt₀)∘g∘(chart_δt₀).symm` is the chart
+representation of the holomorphic `g` and `d = (chart_δt₀)∘δ`. `G` is `ℂ`-, hence
+`ℝ`-differentiable (via `writtenInExtChartAt` + `restrictScalars`), so the chain
+rule and `congr_of_eventuallyEq` conclude. Mirrors `IsClosedSmoothLoop.comp` /
+`pathSpeed_comp_eq_mfderiv`. Foundation for assembling the lift into a smooth loop. -/
+theorem differentiableAt_chart_lift_of_notMem_criticalSet
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (Γ : ℝ → X) {t₀ : ℝ}
+    (hΓ_cont : ContinuousAt Γ t₀)
+    (hfΓδ : ∀ᶠ t in 𝓝 t₀, f (Γ t) = δ t)
+    (hΓcrit : Γ t₀ ∉ criticalSet f)
+    (hδ_diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (δ t₀)).toFun ∘ δ) t₀) :
+    DifferentiableAt ℝ ((chartAt (H := ℂ) (Γ t₀)).toFun ∘ Γ) t₀ := by
+  classical
+  obtain ⟨g, V, hVopen, hfΓt₀V, hgfΓ, hsec, hg_smooth, hgf_id⟩ :=
+    exists_twoSided_localInverse f hf hnonconst hΓcrit
+  have hfΓt₀ : f (Γ t₀) = δ t₀ := hfΓδ.self_of_nhds
+  have hδt₀V : δ t₀ ∈ V := hfΓt₀ ▸ hfΓt₀V
+  have hgδt₀ : g (δ t₀) = Γ t₀ := hfΓt₀ ▸ hgfΓ
+  -- Near `t₀`, the lift coincides with `g ∘ δ`.
+  have hΓ_eq : Γ =ᶠ[𝓝 t₀] g ∘ δ := by
+    have hgf_along : ∀ᶠ t in 𝓝 t₀, (g ∘ f) (Γ t) = id (Γ t) := hΓ_cont.tendsto.eventually hgf_id
+    filter_upwards [hgf_along, hfΓδ] with t h1 h2
+    show Γ t = g (δ t)
+    rw [← h2]
+    exact h1.symm
+  -- `δ` is continuous at `t₀` (it equals `f ∘ Γ` near `t₀`).
+  have hδ_contAt : ContinuousAt δ t₀ :=
+    (hf.continuous.continuousAt.comp hΓ_cont).congr hfΓδ
+  have hδ_source : ∀ᶠ t in 𝓝 t₀, δ t ∈ (chartAt (H := ℂ) (δ t₀)).source :=
+    hδ_contAt.eventually_mem
+      ((chartAt (H := ℂ) (δ t₀)).open_source.mem_nhds (mem_chart_source ℂ (δ t₀)))
+  -- `g` is `MDifferentiableAt` at `δ t₀ ∈ V`.
+  have hg_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (δ t₀) :=
+    (hg_smooth.contMDiffAt (hVopen.mem_nhds hδt₀V)).mdifferentiableAt (by decide : ω ≠ 0)
+  -- Chart representation `G` of `g` and chart pullback `d` of `δ`.
+  set d : ℝ → ℂ := (chartAt (H := ℂ) (δ t₀)).toFun ∘ δ with hd_def
+  set G : ℂ → ℂ :=
+    fun z => (chartAt (H := ℂ) (Γ t₀)).toFun (g ((chartAt (H := ℂ) (δ t₀)).symm z)) with hG_def
+  -- `G` is `ℝ`-differentiable at `d t₀` (holomorphic `g` in charts).
+  have hG_diff_ℝ : DifferentiableAt ℝ G (d t₀) := by
+    have hG_diff_ℂ : DifferentiableAt ℂ G (d t₀) := by
+      have h1 := hg_mdiff.differentiableWithinAt_writtenInExtChartAt
+      rw [ModelWithCorners.range_eq_univ, differentiableWithinAt_univ] at h1
+      rw [hG_def, show (chartAt (H := ℂ) (Γ t₀)) = (chartAt (H := ℂ) (g (δ t₀))) from by rw [hgδt₀]]
+      convert h1 using 2
+    have hFD_ℂ := hG_diff_ℂ.hasFDerivAt
+    have hFD_ℝ : HasFDerivAt G ((fderiv ℂ G (d t₀)).restrictScalars ℝ) (d t₀) := by
+      rw [hasFDerivAt_iff_isLittleO_nhds_zero] at hFD_ℂ ⊢
+      simp only [ContinuousLinearMap.coe_restrictScalars']
+      exact hFD_ℂ
+    exact hFD_ℝ.differentiableAt
+  -- Assemble: `chart_Γt₀ ∘ Γ =ᶠ G ∘ d`, then chain rule.
+  have hcomp_eq : ((chartAt (H := ℂ) (Γ t₀)).toFun ∘ (g ∘ δ)) =ᶠ[𝓝 t₀] (G ∘ d) := by
+    filter_upwards [hδ_source] with t ht
+    show (chartAt (H := ℂ) (Γ t₀)) (g (δ t)) =
+      (chartAt (H := ℂ) (Γ t₀)) (g ((chartAt (H := ℂ) (δ t₀)).symm ((chartAt (H := ℂ) (δ t₀)) (δ t))))
+    rw [(chartAt (H := ℂ) (δ t₀)).left_inv ht]
+  have hΓchart_eq : ((chartAt (H := ℂ) (Γ t₀)).toFun ∘ Γ) =ᶠ[𝓝 t₀] (G ∘ d) :=
+    (hΓ_eq.fun_comp (chartAt (H := ℂ) (Γ t₀)).toFun).trans hcomp_eq
+  rw [hΓchart_eq.differentiableAt_iff]
+  exact hG_diff_ℝ.comp t₀ hδ_diff
+
 /-- **[open]** A closed smooth loop off the branch locus lifts to a preimage
 cycle. Construction (Forster §4.22–4.23 + §4.14): on compact `X`, non-constant
 holomorphic `f` is proper, so off the branch locus it restricts to a finite

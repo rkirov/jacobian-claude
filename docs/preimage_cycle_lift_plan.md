@@ -21,6 +21,13 @@ A `PreimageCycle` bundles: `n`, `loops : Fin n → ℝ → X`, `loops_smooth` (e
   commit `32d435e`). `δ` off-branch lifts through the proven covering via Mathlib's
   `IsCoveringMap.liftPath`, repackaged to `ℝ → X` with `Set.projIcc`. `#print axioms` =
   `[propext, Classical.choice, Quot.sound]`. (Added `import Mathlib.Topology.Homotopy.Lifting`.)
+- **B — smoothness of the lift: DONE, sorry-free**
+  (`differentiableAt_chart_lift_of_notMem_criticalSet`). A continuous lift `Γ` of `δ`
+  through a non-critical point is chart-pullback-differentiable wherever `δ` is.
+  Proof exactly as planned: two-sided local inverse `g` at `Γ t₀`, `Γ =ᶠ g∘δ` near `t₀`
+  (no lift-uniqueness needed), `G∘d` chart factorization, `g` holomorphic ⇒ `ℝ`-diff via
+  `writtenInExtChartAt`+`restrictScalars`. `#print axioms` = `[propext, Classical.choice,
+  Quot.sound]`. Compiled essentially first-try (mirrors `IsClosedSmoothLoop.comp`).
 
 ## Proven infrastructure to build on
 
