@@ -5,6 +5,34 @@ Continuation plan for `exists_preimageCycle_of_off_branchLocus`
 pushforward∘pullback = degree identity. This is the "§3 / loop-lifting machinery"
 referenced throughout the codebase. Written 2026-05-30 after sub-piece A landed.
 
+## ⇒ STATUS (2026-05-30, latest): ALL THREE LEAVES PROVEN — the §3 geometric heart is DONE
+
+Leaf A+B `exists_monodromyLiftFamily` is now **proven, sorry-free + axiom-clean**
+(`[propext, Classical.choice, Quot.sound]`), commit `990f9f6`. With leaves D & E
+already done, `exists_preimageLoopFamily` has **no remaining §3 sorry**: its only
+`sorryAx` is the *inherited* branch-point extension `traceExtendsAt_branchPoint`
+(through `traceFormTotal`/leaf D), a separate frontier item — NOT the §3 lift geometry.
+
+How A+B was closed (all the analytic infra was already in place; this was the geometry):
+* **lift `velCont`** — extended `exists_smoothLift_flatEnd_off_branchLocus` to also yield
+  `velCont` (hence a full `IsSmoothPath`). Two new helpers: `velCont_flatEndReparam` (δr's
+  velCont via `velCont_reparam`) and `velsection_eventuallyEq_of_eventuallyEq` (velocity-section
+  germ invariance — paths agreeing near `t₀` have equal velsections near `t₀`; handles the
+  dependent `Bundle.TotalSpace.mk'` transport cleanly since `TangentSpace 𝓘(ℂ) · = ℂ`). The
+  velCont proof: interior `(0,1)` via `velContWithinAt_compOn` + `Γ =ᶠ g∘δr`; seam-flat endpoints
+  `{0,1}` via `isSmoothPath_const` + germ-invariance congr. (`velContWithinAt_compOn` was moved
+  upstream of the lift lemma so it is in scope.)
+* **`fibre_inj`** — `lift_eqOn_Icc_of_eq` (new): two lifts of the same off-branch base path
+  agreeing at one time agree on `[0,1]`, via a clopen equalizer in the connected subtype
+  `↥(Icc 0 1)` (`IsClopen.eq_univ` + `isPreconnected_iff_preconnectedSpace`; open by local
+  injectivity off `criticalSet`). Then `enum`-injectivity of the basepoints.
+* **`fibre_surj`** — off-branch fibre cardinality constancy: `t ↦ (f⁻¹{δr t}).ncard` is locally
+  constant (over each `LocalSheetSystem` base the fibre is the range of the injective sheet map,
+  so card `= S.n`), hence constant on connected `[0,1]` (`IsPreconnected.constant`, ℕ discrete via
+  `tendsto_pure`+`pure_le_nhds`), value `n` at `0`. Injective-into-equal-card (`Set.eq_of_subset_of_ncard_le`).
+
+Everything below is the prior derivation, retained as historical record.
+
 ## ⇒ STATUS (2026-05-30, later): DECOMPOSED into 3 typechecking leaves + PROVEN assembly
 
 `exists_preimageLoopFamily` is now **proven from three leaf lemmas** (assembly compiles,
