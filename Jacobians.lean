@@ -19,6 +19,7 @@ import Jacobians.ChartedSpaceOfLocalHomeomorph
 import Jacobians.HolomorphicForms
 import Jacobians.LineIntegral
 import Jacobians.SmoothPathCore
+import Jacobians.ManifoldIFT
 import Jacobians.PeriodLattice
 import Jacobians.Abel
 import Jacobians.Degree
