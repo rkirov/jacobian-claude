@@ -111,19 +111,27 @@ velocity there, with NO one-sided gluing; the interior is plain B. Output: `Γ` 
 `f(Γ t)=δ(flatEndReparam t)` on `[0,1]`, chart-diff on all `[0,1]`, `pathSpeed Γ 0 = pathSpeed Γ 1 = 0`,
 and `f(Γ 1)=δ 0` (monodromy target in the fibre). (A was extended to expose its clamp; no callers broke.)
 
-**Reparam-invariance — DONE, sorry-free** (`lineIntegral_comp_flatEndReparam`,
-`periodVec_comp_flatEndReparam`): `periodVec (γ ∘ flatEndReparam) = periodVec γ`, via the
-measure-theoretic monotone CoV (`integral_image_eq_integral_deriv_smul_of_monotoneOn`, no
-continuity needed). Transports the final `PreimageCycle` from `δ∘flatEndReparam` back to `δ`
-(`PreimageCycle.congr_periodVec`). Supporting: `flatEndReparam_{hasDerivAt,monotone,image_Icc}`,
-`pathSpeed_flatEndReparam_comp_eq`. `#print axioms = [propext, Classical.choice, Quot.sound]`.
+**Transport/regularity lemmas — DONE, sorry-free:**
+ * `lineIntegral_comp_flatEndReparam` / `periodVec_comp_flatEndReparam`: `periodVec (γ ∘
+   flatEndReparam) = periodVec γ`, via the measure-theoretic monotone CoV
+   (`integral_image_eq_integral_deriv_smul_of_monotoneOn`, no continuity needed). Transports the
+   final `PreimageCycle` from `δ∘flatEndReparam` back to `δ` (`PreimageCycle.congr_periodVec`).
+ * `lineIntegral_congr_of_eqOn` / `periodVec_congr_of_eqOn`: line integral / period depend only on
+   the path's `[0,1]` values (integrand germ agrees on the open interior; endpoints null). Gives the
+   single-lift pushforward `lineIntegral α (f∘Γ) = lineIntegral α δr` (since `f∘Γ = δr` on `[0,1]`).
+ * `intervalIntegrable_comp_flatEndReparam`: integrability preserved under `flatEndReparam` (the
+   *integrability* version of the monotone CoV, mirroring the codebase `smoothStep01` proof) — gives
+   `δr`'s basis-integrand integrability from `δ`'s, the input to the lift-integrability patchwork.
+ Supporting: `flatEndReparam_{hasDerivAt,monotone,image_Icc}`, `pathSpeed_flatEndReparam_comp_eq`.
+ All `#print axioms = [propext, Classical.choice, Quot.sound]`.
 
 **Still open for C (all unblocked — "hard Lean, no missing math"):**
- 1. **Integrability** of the lift's integrand on `[0,1]` (the one `IsSmoothPath` field still owed).
+ 1. **Lift integrability** — upgrade `exists_smoothLift_flatEnd_off_branchLocus` to a full `IsSmoothPath`.
     Plateau ends give `0`; the middle `[1/4,3/4]` is `Γ = g∘δr` locally ⇒ integrand is a ℂ-combination
-    of `δ`-basis integrands reparametrized by `flatEndReparam`, each integrable by the *integrability*
-    version `integrableOn_image_iff_integrableOn_deriv_smul_of_monotoneOn` (the exact lemma the codebase
-    uses for `smoothStep01`). Patchwork of local `g`'s ⇒ a finite cover (`exists_nbhd_cover`) + gluing.
+    of `δr`-basis integrands, each integrable by `intervalIntegrable_comp_flatEndReparam` (DONE).
+    Remaining: the patchwork — a finite cover (`exists_nbhd_cover` with `W x` = a two-sided-inverse
+    neighborhood) on which `Γ = g_k∘δr`, the per-segment `pathSpeed_comp` + pullback-form expansion,
+    and gluing `IntervalIntegrable` over the partition.
  2. **Monodromy permutation** `σ : F → F`, `σ e = Γ_e 1`, on the finite fibre `F=f⁻¹'{δ 0}`
     (`fiber_finite_off_branchLocus` ⇒ `Fintype`); bijective by lift uniqueness
     (`IsCoveringMap.eq_liftPath_iff` ✓ — found). Package `e ↦ Γ_e` as a function (choice over the fibre).
