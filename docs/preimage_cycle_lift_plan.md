@@ -5,6 +5,29 @@ Continuation plan for `exists_preimageCycle_of_off_branchLocus`
 pushforward∘pullback = degree identity. This is the "§3 / loop-lifting machinery"
 referenced throughout the codebase. Written 2026-05-30 after sub-piece A landed.
 
+## ⇒ STATUS (2026-05-30, end of session): ALL ANALYTIC WALLS CLEARED — only the geometry remains
+
+The "DEFINITIVE FINDING" below (loop predicate must be genuinely C¹) is now **DONE**, not pending.
+The C¹ refactor is complete + Lean-verified (commits `93b869c` arch-fix → `0500e15` Phase 1 →
+`318b8c6` Phase 2; build green, sorry count 71→71, all axiom-clean):
+* `IsClosedSmoothLoop`/`IsSmoothPath` now carry `velCont` (continuous velocity tangent-section);
+  `….integrable` is a drop-in THEOREM (same signature, derived via the justification lemma), so
+  consumers are untouched.
+* Full velCont API in `CotangentCoeff.lean` (repointed upstream): `velCont_comp`, `velCont_compOn`
+  (`omit [CompactSpace]`, so ℂ can be the source — this is what gives a **local-section lift its
+  velCont**), `velCont_reverse`, `velCont_concat`, `velCont_reparam`, `velCont_modelPath`.
+* Both analytic facts that were "gated on a Mathlib gap" are cleared: reparam-invariance is proven
+  (`periodVec_comp_flatEndReparam`), and the lifts' integrability now follows from `velCont`
+  (`velCont_compOn` on the lift `g∘δr` ⇒ `velCont` ⇒ `….integrable`).
+
+**So `exists_preimageLoopFamily` (TracePullback.lean) is the *only* remaining content on this path,
+and it needs no further analysis** — only the monodromy permutation (fibre `Fintype` +
+`IsCoveringMap.eq_liftPath_iff`) / orbit concatenation (`IsSmoothPath.concat`, junction velocities
+zero) / sheet-reassembly projection (`exists_nbhd_cover` + `exists_localSheetSystem_traceForm_eq_sum`
++ `lineIntegral_pullback_section`). Next session: decompose it into precise named sub-lemmas
+(bottom out each *statement* first), then prove/delegate. Everything below is preserved as the
+historical derivation of WHY the predicate is C¹.
+
 ## KEYSTONE (2026-05-30): cotangent-bundle coefficient continuity — **RESOLVED**
 
 The §3 lift integrability (orbit loops being `IsClosedSmoothLoop`) needs control of the

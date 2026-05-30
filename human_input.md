@@ -752,3 +752,40 @@ planning.
 gone, `pushforward_pullback` now true), and **proved the meet-in-the-middle
 keystone** connecting the §3 preimage cycle to the S8 identity (on periods) via
 the already-proven `periodVec_pushforward`. Build green; all local commits.
+
+## 2026-05-30 (cont.) — Methodology: delegate volume to clean-context agents, keep judgment
+
+**Moment:** after I'd proven the full C¹-refactor *toolkit* (justification lemma +
+`velCont_comp`/`velCont_compOn`) and reported the remaining predicate-flip +
+constructor-rewiring as "large, multi-file, routine-but-voluminous," the user
+asked: *"can an agent do the voluminous but routine part (they start with clean
+context I assume)?"*
+
+**Pattern to internalize:** YES — and the division of labor matters. I keep the
+*judgment* calls: (1) the architecture fix (CotangentCoeff imported TraceForm →
+import cycle; I repointed it upstream so SmoothPathCore could use it — an agent
+should not be deciding the import graph); (2) pinning the *exact statements* of
+the gated helpers so the agent can't drift into a subtly-misformalised lemma
+(the user's standing caution). The agent gets the *volume* (rewire ~10
+constructors, grind the bundle-continuity proofs). Safety rails that made
+delegation low-risk: commit the bottom-out phase first + record its SHA;
+make the multi-file flip atomic with **revert-to-that-SHA if it can't reach a
+fully green build** (never leave a broken tree / never invent a sorry); `#print
+axioms` gate. And — **verify the agent's success myself**, don't trust the
+report: re-ran the full build, checked sorry-count delta (71→71), read every new
+helper's *statement*, and re-ran `lean_verify` on the hardest lemmas. The agent
+succeeded and was honest about its deviations (2 extra constructors, an
+`omit [CompactSpace]` generalization, a `velCont_reparam` that takes the chain
+rule as a hypothesis) — all verified sound.
+
+**Then steered (checkpoint):** offered to (a) design the §3 decomposition now and
+delegate, (b) checkpoint and start §3 fresh, or (c) build §3 directly now. User
+chose **(b) checkpoint, start §3 fresh** — the intricate monodromy/orbit/projection
+*design* deserves clean context, not the tail of a very long session. Lesson:
+after a major verified milestone, a fresh-context start for the next design-heavy
+phase beats grinding at depth.
+
+**What changed:** C¹ refactor COMPLETE + independently verified (commits
+`93b869c`/`0500e15`/`318b8c6`); `exists_preimageLoopFamily` docstring + plan doc +
+state memory corrected to show all analytic walls cleared — §3 is now pure geometry.
+Build green, all local commits.
