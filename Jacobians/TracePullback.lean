@@ -352,13 +352,18 @@ branch locus lifts, through the proven covering
 `f (Γ t) = δ t` on `[0,1]` and prescribed start `Γ 0 = e` (any fibre point over
 `δ 0`). The lift is Mathlib's `IsCoveringMap.liftPath`, repackaged from the unit
 interval to `ℝ → X` via `Set.projIcc`. Foundation for the smooth-loop assembly
-(§3 sub-piece A). -/
+(§3 sub-piece A).
+
+The lift is `Set.projIcc`-clamped, so it is **constant outside `[0,1]`** (`= e` on
+`(-∞,0]`, `= Γ 1` on `[1,∞)`); these two facts are exposed in the conclusion — they
+give the two-sided endpoint control the seam-flattening construction needs. -/
 theorem exists_continuous_lift_off_branchLocus
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ_cont : Continuous δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f)
     {e : X} (he : f e = δ 0) :
-    ∃ Γ : ℝ → X, Continuous Γ ∧ (∀ t ∈ Set.Icc (0:ℝ) 1, f (Γ t) = δ t) ∧ Γ 0 = e := by
+    ∃ Γ : ℝ → X, Continuous Γ ∧ (∀ t ∈ Set.Icc (0:ℝ) 1, f (Γ t) = δ t) ∧ Γ 0 = e ∧
+      (∀ t : ℝ, t ≤ 0 → Γ t = e) ∧ (∀ t : ℝ, 1 ≤ t → Γ t = Γ 1) := by
   classical
   have cov : IsCoveringMap ((Set.univ \ branchLocus f).restrictPreimage f) :=
     isCoveringMap_restrictPreimage_compl_branchLocus f hf hnonconst
@@ -378,7 +383,7 @@ theorem exists_continuous_lift_off_branchLocus
   have hlifts := IsCoveringMap.liftPath_lifts cov δ' e' hγ0
   have hzero := IsCoveringMap.liftPath_zero cov δ' e' hγ0
   refine ⟨fun t => ((IsCoveringMap.liftPath cov δ' e' hγ0)
-      (Set.projIcc 0 1 zero_le_one t) : X), ?_, ?_, ?_⟩
+      (Set.projIcc 0 1 zero_le_one t) : X), ?_, ?_, ?_, ?_, ?_⟩
   · exact continuous_subtype_val.comp
       ((map_continuous (IsCoveringMap.liftPath cov δ' e' hγ0)).comp continuous_projIcc)
   · intro t ht
@@ -388,10 +393,26 @@ theorem exists_continuous_lift_off_branchLocus
     simpa [Function.comp_apply, Set.restrictPreimage_coe, hδ'c, Set.coe_projIcc,
       min_eq_right ht1, max_eq_right ht0] using h
   · have h0 : Set.projIcc (0:ℝ) 1 zero_le_one 0 = 0 := by
-      apply Subtype.ext; simp [Set.coe_projIcc]
+      apply Subtype.ext; simp
     show ((IsCoveringMap.liftPath cov δ' e' hγ0)
       (Set.projIcc 0 1 zero_le_one 0) : X) = e
     rw [h0, hzero]
+  · -- Clamp on `(-∞, 0]`: `projIcc` sends `t ≤ 0` to the left endpoint `0`, so `Γ t = e`.
+    intro t ht
+    show ((IsCoveringMap.liftPath cov δ' e' hγ0)
+      (Set.projIcc 0 1 zero_le_one t) : X) = e
+    have h0' : Set.projIcc (0:ℝ) 1 zero_le_one t = 0 := by
+      rw [Set.projIcc_of_le_left _ ht]; rfl
+    rw [h0', hzero]
+  · -- Clamp on `[1, ∞)`: `projIcc` sends `1 ≤ t` to the right endpoint `1`, as it does `1`.
+    intro t ht
+    show ((IsCoveringMap.liftPath cov δ' e' hγ0)
+        (Set.projIcc 0 1 zero_le_one t) : X) =
+      ((IsCoveringMap.liftPath cov δ' e' hγ0)
+        (Set.projIcc 0 1 zero_le_one 1) : X)
+    have h1 : Set.projIcc (0:ℝ) 1 zero_le_one t = Set.projIcc (0:ℝ) 1 zero_le_one 1 := by
+      rw [Set.projIcc_of_right_le _ ht, Set.projIcc_of_right_le _ le_rfl]
+    rw [h1]
 
 /-! ### Seam-flattening reparametrization (§3 step C)
 
@@ -508,6 +529,119 @@ theorem differentiableAt_chart_lift_of_notMem_criticalSet
     (hΓ_eq.fun_comp (chartAt (H := ℂ) (Γ t₀)).toFun).trans hcomp_eq
   rw [hΓchart_eq.differentiableAt_iff]
   exact hG_diff_ℝ.comp t₀ hδ_diff
+
+/-- **§3 sub-piece C — the seam-flattened smooth lift.** Lifting the *reparametrized*
+loop `δ ∘ flatEndReparam` (constant near `0,1`) off the branch locus from a fibre
+point `e` yields a genuine smooth path with **zero endpoint velocity**:
+
+* `Γ` is constant `= e` near `0` and constant `= Γ 1` near `1` (continuity + local
+  injectivity of `f`, using the lift's `projIcc` clamp), so it is chart-differentiable
+  with zero velocity at both endpoints;
+* on the interior `(0,1)`, `Γ` is chart-differentiable by sub-piece B;
+* its endpoint `Γ 1` lies in the same fibre (`f (Γ 1) = δ 0`), the monodromy target.
+
+This is the per-segment building block of the orbit construction: concatenating these
+over a monodromy orbit (zero junction velocities ⇒ `IsSmoothPath.concat`) closes the
+lift into a smooth loop. The base loop is `δ ∘ flatEndReparam`, a reparametrization of
+`δ` (its period vector is unchanged — recorded separately). -/
+theorem exists_smoothLift_flatEnd_off_branchLocus
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f)
+    {e : X} (he : f e = δ 0) :
+    ∃ Γ : ℝ → X,
+      Continuous Γ ∧ Γ 0 = e ∧
+      (∀ t ∈ Set.Icc (0:ℝ) 1, f (Γ t) = δ (flatEndReparam t)) ∧
+      (∀ t ∈ Set.uIcc (0:ℝ) 1, DifferentiableAt ℝ ((chartAt (H := ℂ) (Γ t)).toFun ∘ Γ) t) ∧
+      pathSpeed Γ 0 = 0 ∧ pathSpeed Γ 1 = 0 ∧
+      f (Γ 1) = δ 0 := by
+  classical
+  -- The reparametrized base loop `δr = δ ∘ flatEndReparam`, constant near the endpoints.
+  set δr : ℝ → Y := δ ∘ flatEndReparam with hδr_def
+  have hδr_cont : Continuous δr := hδ.cont.comp differentiable_flatEndReparam.continuous
+  have hδr_avoid : ∀ t : ℝ, δr t ∉ branchLocus f := fun t => havoid (flatEndReparam t)
+  have hδr0 : δr 0 = δ 0 := by show δ (flatEndReparam 0) = δ 0; rw [flatEndReparam_zero]
+  have he' : f e = δr 0 := by rw [hδr0]; exact he
+  -- Lift `δr` from `e` (sub-piece A), exposing the endpoint clamps.
+  obtain ⟨Γ, hΓ_cont, hΓ_lift, hΓ0, hΓ_clampL, hΓ_clampR⟩ :=
+    exists_continuous_lift_off_branchLocus f hf hnonconst δr hδr_cont hδr_avoid he'
+  -- `f (Γ 1) = δ 0`.
+  have hfΓ1 : f (Γ 1) = δ 0 := by
+    rw [hΓ_lift 1 ⟨zero_le_one, le_rfl⟩]; show δ (flatEndReparam 1) = δ 0
+    rw [flatEndReparam_one]; exact hδ.closed.symm
+  -- `δr` is chart-pullback-differentiable on `[0,1]` (chain rule `δ ∘ flatEndReparam`).
+  have hδr_diff : ∀ t ∈ Set.uIcc (0:ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (δr t)).toFun ∘ δr) t := by
+    intro t _
+    have hrt : flatEndReparam t ∈ Set.uIcc (0:ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact flatEndReparam_mem_unit t
+    have hδr_comp : ((chartAt (H := ℂ) (δr t)).toFun ∘ δr) =
+        ((chartAt (H := ℂ) (δ (flatEndReparam t))).toFun ∘ δ) ∘ flatEndReparam := by
+      funext s; rfl
+    rw [hδr_comp]
+    exact (hδ.diff (flatEndReparam t) hrt).comp t (differentiable_flatEndReparam t)
+  -- `Γ` is constant `= e` near `0`.
+  have hΓ_const0 : Γ =ᶠ[𝓝 (0:ℝ)] (fun _ => e) := by
+    have he_crit : e ∉ criticalSet f := fun hmem => (havoid 0) ⟨e, hmem, he⟩
+    obtain ⟨U, hUopen, heU, hinj, -⟩ := isLocalHomeoOffCritical f hf hnonconst he_crit
+    have hΓU : ∀ᶠ t in 𝓝 (0:ℝ), Γ t ∈ U :=
+      hΓ_cont.continuousAt.eventually_mem (by rw [hΓ0]; exact hUopen.mem_nhds heU)
+    have hfΓ0 : ∀ᶠ t in 𝓝 (0:ℝ), f (Γ t) = δ 0 := by
+      filter_upwards [Iic_mem_nhds (show (0:ℝ) < 1/4 by norm_num)] with t ht
+      simp only [Set.mem_Iic] at ht
+      rcases le_or_gt t 0 with htle | htpos
+      · rw [hΓ_clampL t htle, he]
+      · rw [hΓ_lift t ⟨htpos.le, by linarith⟩]
+        show δ (flatEndReparam t) = δ 0; rw [flatEndReparam_eqZero_of_le ht]
+    filter_upwards [hΓU, hfΓ0] with t htU htf
+    exact hinj htU heU (htf.trans he.symm)
+  -- `Γ` is constant `= Γ 1` near `1`.
+  have hΓ_const1 : Γ =ᶠ[𝓝 (1:ℝ)] (fun _ => Γ 1) := by
+    have hΓ1_crit : Γ 1 ∉ criticalSet f := fun hmem => (havoid 0) ⟨Γ 1, hmem, hfΓ1⟩
+    obtain ⟨U, hUopen, hΓ1U, hinj, -⟩ := isLocalHomeoOffCritical f hf hnonconst hΓ1_crit
+    have hΓU : ∀ᶠ t in 𝓝 (1:ℝ), Γ t ∈ U :=
+      hΓ_cont.continuousAt.eventually_mem (hUopen.mem_nhds hΓ1U)
+    have hfΓ1' : ∀ᶠ t in 𝓝 (1:ℝ), f (Γ t) = δ 0 := by
+      filter_upwards [Ici_mem_nhds (show (3/4:ℝ) < 1 by norm_num)] with t ht
+      simp only [Set.mem_Ici] at ht
+      rcases le_or_gt 1 t with htge | htlt
+      · rw [hΓ_clampR t htge, hfΓ1]
+      · rw [hΓ_lift t ⟨by linarith, htlt.le⟩]
+        show δ (flatEndReparam t) = δ 0; rw [flatEndReparam_eqOne_of_ge ht]; exact hδ.closed.symm
+    filter_upwards [hΓU, hfΓ1'] with t htU htf
+    exact hinj htU hΓ1U (htf.trans hfΓ1.symm)
+  -- Chart-pullback differentiability on `[0,1]`.
+  have hΓ_diff : ∀ t ∈ Set.uIcc (0:ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (Γ t)).toFun ∘ Γ) t := by
+    intro t ht
+    rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht
+    obtain ⟨ht0, ht1⟩ := ht
+    rcases eq_or_lt_of_le ht0 with rfl | h0pos
+    · have hc : ((chartAt (H := ℂ) (Γ 0)).toFun ∘ Γ) =ᶠ[𝓝 (0:ℝ)]
+          (fun _ => (chartAt (H := ℂ) (Γ 0)).toFun e) := hΓ_const0.fun_comp _
+      rw [hc.differentiableAt_iff]; exact differentiableAt_const _
+    · rcases eq_or_lt_of_le ht1 with rfl | h1lt
+      · have hc : ((chartAt (H := ℂ) (Γ 1)).toFun ∘ Γ) =ᶠ[𝓝 (1:ℝ)]
+            (fun _ => (chartAt (H := ℂ) (Γ 1)).toFun (Γ 1)) := hΓ_const1.fun_comp _
+        rw [hc.differentiableAt_iff]; exact differentiableAt_const _
+      · refine differentiableAt_chart_lift_of_notMem_criticalSet f hf hnonconst δr Γ
+          hΓ_cont.continuousAt ?_ ?_ ?_
+        · filter_upwards [Ioo_mem_nhds h0pos h1lt] with s hs
+          exact hΓ_lift s ⟨hs.1.le, hs.2.le⟩
+        · exact fun hmem => (hδr_avoid t) ⟨Γ t, hmem, hΓ_lift t ⟨h0pos.le, h1lt.le⟩⟩
+        · exact hδr_diff t (by rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨h0pos.le, h1lt.le⟩)
+  -- Zero endpoint velocities (chart pullback is eventually constant).
+  have hps0 : pathSpeed Γ 0 = 0 := by
+    have hc : ((chartAt (H := ℂ) (Γ 0)).toFun ∘ Γ) =ᶠ[𝓝 (0:ℝ)]
+        (fun _ => (chartAt (H := ℂ) (Γ 0)).toFun e) := hΓ_const0.fun_comp _
+    show fderiv ℝ ((chartAt (H := ℂ) (Γ 0)).toFun ∘ Γ) 0 1 = 0
+    rw [hc.fderiv_eq]; simp
+  have hps1 : pathSpeed Γ 1 = 0 := by
+    have hc : ((chartAt (H := ℂ) (Γ 1)).toFun ∘ Γ) =ᶠ[𝓝 (1:ℝ)]
+        (fun _ => (chartAt (H := ℂ) (Γ 1)).toFun (Γ 1)) := hΓ_const1.fun_comp _
+    show fderiv ℝ ((chartAt (H := ℂ) (Γ 1)).toFun ∘ Γ) 1 1 = 0
+    rw [hc.fderiv_eq]; simp
+  exact ⟨Γ, hΓ_cont, hΓ0, hΓ_lift, hΓ_diff, hps0, hps1, hfΓ1⟩
 
 /-- **[open]** A closed smooth loop off the branch locus lifts to a preimage
 cycle. Construction (Forster §4.22–4.23 + §4.14): on compact `X`, non-constant
