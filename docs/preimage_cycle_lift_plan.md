@@ -50,6 +50,33 @@ lemmas (`CotangentCoeff`) remain useful for the smooth-curve integrand-continuit
 = moving-chart-speed integrability is insufficient; the fixed-chart velocity is what matters, and only genuine
 C¹ controls it. This is the third deepening; each was caught before building on a false helper.)*
 
+### C¹ refactor — FOUNDATION PROVEN; concrete plan
+**Bottom-out done** (`CotangentCoeff.lean`, sorry-free): `continuousOn_form_pathSpeed` /
+`intervalIntegrable_form_pathSpeed_of_velContinuous` — if the **velocity tangent section**
+`s ↦ ⟨γ s, pathSpeed γ s⟩` is `ContinuousOn [0,1]` (call this `velCont`), then the integrand
+`α.toFun(γs)(pathSpeed γs)` is `ContinuousOn` hence `IntervalIntegrable`, for EVERY `α`. So the new
+`velCont` field provably yields the old `integrable` field. (NB the field is the *geometric*
+velocity-section continuity, NOT bare-number `pathSpeed` continuity, which leaves the discontinuous
+coefficient.)
+
+**Remaining refactor steps** (each large but specified):
+ 1. In `SmoothPathCore.lean`, replace the `integrable` field of `IsClosedSmoothLoop`/`IsSmoothPath` with
+    `velCont : ContinuousOn (fun s => ⟨γ s, pathSpeed γ s⟩ : TangentBundle 𝓘(ℂ) X) (Icc 0 1)`; add a
+    derived theorem `.integrable` via `intervalIntegrable_form_pathSpeed_of_velContinuous` (so the ~24
+    `.integrable` consumers are unchanged).
+ 2. Re-prove the ~10 constructors to supply `velCont`:
+    - `const`: velocity section ≡ `⟨P,0⟩` (continuous_const).
+    - `comp` (`f∘γ`, f global `C^ω`): **clean** — velocity-section(`f∘γ`) `= tangentMap f ∘ velocity-section(γ)`
+      (via `pathSpeed_comp_eq_mfderiv`: `pathSpeed(f∘γ)s = mfderiv f(γs)(pathSpeed γs)`), continuous from
+      `tangentMap f` continuous (f smooth) + γ's `velCont`. (No base-field issue: `f : X→Y` both complex.)
+    - `reverse`/`concat`: velocity-section preserved (junction velocities already 0 for the smooth concat).
+    - `ChartBallPath(Smooth)`/`smoothPath(Smooth)`: base velocity-section continuity in a single chart
+      (trivialized) — the explicit paths are genuinely C¹.
+ 3. The §3 seam-fix lift `Γ = g∘δr` (g a *local* `C^ω` section): velCont via the local analogue of `comp`
+    (`tangentMap` of the `ContMDiffOn` section on the interior; constant ⟹ `⟨·,0⟩` near the seam ends).
+After this, lift loops are `IsClosedSmoothLoop` ⇒ the monodromy/orbit/projection geometry proceeds
+(`IsCoveringMap.eq_liftPath_iff`, `IsSmoothPath.concat`, fibre-sum-of-lifts projection).
+
 ## Goal
 
 `exists_preimageCycle_of_off_branchLocus (f hf hnonconst) (δ) (hδ : IsClosedSmoothLoop δ)
