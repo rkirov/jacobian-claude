@@ -553,6 +553,44 @@ theorem periodVec_comp_flatEndReparam (γ : ℝ → X) (hγ : IsClosedSmoothLoop
   funext i
   exact lineIntegral_comp_flatEndReparam (periodBasisForm X i) γ hγ.diff
 
+/-- **Line integral depends only on the path's values on `[0,1]`.** Two paths
+agreeing on `[0,1]` have equal line integrals: the integrand (value + `pathSpeed`,
+a germ at `t`) agrees on the open interior `(0,1)` — where `[0,1]` is a neighborhood —
+hence a.e. on `(0,1]`. The endpoints, where the germ leaks outside `[0,1]`, are a
+null set. Gives the single-lift pushforward `lineIntegral α (f∘Γ) = lineIntegral α δr`
+since a lift satisfies `f∘Γ = δr` on `[0,1]`. -/
+theorem lineIntegral_congr_of_eqOn (α : HolomorphicOneForms X) {g₁ g₂ : ℝ → X}
+    (h : Set.EqOn g₁ g₂ (Set.Icc (0:ℝ) 1)) :
+    lineIntegral α g₁ = lineIntegral α g₂ := by
+  unfold lineIntegral
+  refine intervalIntegral.integral_congr_ae ?_
+  rw [MeasureTheory.ae_iff]
+  refine MeasureTheory.measure_mono_null ?_ (MeasureTheory.measure_singleton (1 : ℝ))
+  intro t ht
+  simp only [Set.mem_setOf_eq, Classical.not_imp] at ht
+  obtain ⟨ht_mem, ht_ne⟩ := ht
+  rw [Set.uIoc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht_mem
+  by_contra ht1
+  refine ht_ne ?_
+  have ht_Ioo : t ∈ Set.Ioo (0:ℝ) 1 :=
+    ⟨ht_mem.1, lt_of_le_of_ne ht_mem.2 (by simpa using ht1)⟩
+  have heq_nbhd : g₁ =ᶠ[𝓝 t] g₂ := by
+    filter_upwards [Ioo_mem_nhds ht_Ioo.1 ht_Ioo.2] with s hs
+    exact h ⟨hs.1.le, hs.2.le⟩
+  have hval : g₁ t = g₂ t := h ⟨ht_Ioo.1.le, ht_Ioo.2.le⟩
+  show α.toFun (g₁ t) (pathSpeed g₁ t) = α.toFun (g₂ t) (pathSpeed g₂ t)
+  rw [hval]
+  congr 1
+  show fderiv ℝ ((chartAt (H := ℂ) (g₁ t)).toFun ∘ g₁) t 1 =
+    fderiv ℝ ((chartAt (H := ℂ) (g₂ t)).toFun ∘ g₂) t 1
+  rw [hval, (heq_nbhd.fun_comp (chartAt (H := ℂ) (g₂ t)).toFun).fderiv_eq]
+
+/-- **Period vector depends only on the loop's values on `[0,1]`.** Componentwise
+`lineIntegral_congr_of_eqOn`. -/
+theorem periodVec_congr_of_eqOn {g₁ g₂ : ℝ → X}
+    (h : Set.EqOn g₁ g₂ (Set.Icc (0:ℝ) 1)) : periodVec g₁ = periodVec g₂ := by
+  funext i; exact lineIntegral_congr_of_eqOn (periodBasisForm X i) h
+
 
 /-- **§3 sub-piece B — smoothness of the lift.** A continuous lift `Γ` of `δ`
 through a non-critical point inherits `δ`'s chart-pullback differentiability.
