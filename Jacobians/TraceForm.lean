@@ -1011,8 +1011,33 @@ fibre sum, and proving the extension of the (single-sheet) fibre sum for `id` eq
 the same analytic status as `traceExtendsAt_branchPoint`. -/
 theorem traceForm_id (hnonconst : ¬ ∃ x₀ : X, ∀ x, (id : X → X) x = x₀) :
     traceForm (id : X → X) contMDiff_id hnonconst =
-      LinearMap.id (R := ℂ) (M := HolomorphicOneForms X) :=
-  sorry
+      LinearMap.id (R := ℂ) (M := HolomorphicOneForms X) := by
+  -- `id` is injective on every neighborhood, so its critical set — hence its branch
+  -- locus — is empty. Thus the trace agrees with the fibre sum at *every* point, and
+  -- the singleton fibre `id⁻¹'{y} = {y}` collapses the sum to `α y`.
+  have hcrit : criticalSet (id : X → X) = ∅ := by
+    rw [Set.eq_empty_iff_forall_notMem]
+    intro x hx
+    exact hx ⟨Set.univ, Filter.univ_mem, Set.injOn_id _⟩
+  have hbranch : branchLocus (id : X → X) = ∅ := by
+    rw [branchLocus, hcrit, Set.image_empty]
+  refine LinearMap.ext (fun α => ?_)
+  refine ContMDiffSection.ext (fun y => ?_)
+  show (traceForm (id : X → X) contMDiff_id hnonconst α).toFun y = α.toFun y
+  have hy : y ∉ branchLocus (id : X → X) := by rw [hbranch]; exact Set.notMem_empty y
+  rw [traceForm_toFun_of_notMem_branchLocus (id : X → X) contMDiff_id hnonconst α hy]
+  -- `traceFun id α y = ∑ᶠ x ∈ id⁻¹'{y}, traceSummandAt id α y x`; the fibre is `{y}`.
+  show (∑ᶠ (x : X) (_ : x ∈ (id : X → X) ⁻¹' {y}), traceSummandAt (id : X → X) α y x)
+      = α.toFun y
+  have hfib : (id : X → X) ⁻¹' {y} = {y} := by simp [Set.preimage_id]
+  rw [hfib, finsum_mem_singleton]
+  show traceSummand (id : X → X) α y = α.toFun y
+  show (α.toFun y).comp ((mfderiv 𝓘(ℂ) 𝓘(ℂ) (id : X → X) y).inverse) = α.toFun y
+  -- `mfderiv id y = id`, so its inverse is `id` and the comp collapses.
+  have hinv : (mfderiv 𝓘(ℂ) 𝓘(ℂ) (id : X → X) y).inverse
+      = ContinuousLinearMap.id ℂ (TangentSpace 𝓘(ℂ) y) := by
+    rw [mfderiv_id]; exact ContinuousLinearMap.inverse_id
+  rw [hinv]; exact ContinuousLinearMap.comp_id _
 
 /-- **Covariance of the trace: `(g ∘ f)₊ = g₊ ∘ f₊`** (sheet counts of composite
 covers multiply, and the per-sheet pullbacks compose contravariantly so the traces
@@ -1025,6 +1050,22 @@ theorem traceForm_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpac
     (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f)) (hgfnc : ¬ ∃ z₀ : Z, ∀ x, (g ∘ f) x = z₀) :
     traceForm (g ∘ f) hgf hgfnc =
       (traceForm g hg hgnc).comp (traceForm f hf hfnc) :=
+  -- Honest sorry. The intended proof is density + continuity: both sides are
+  -- forms whose fibre-component map `z ↦ (·) z : Z → (ℂ →L[ℂ] ℂ)` is continuous,
+  -- and they agree off a finite bad set `B` (the union of `branchLocus (g∘f)`,
+  -- `branchLocus g`, and the `g`-images of points where some `f`-fibre meets
+  -- `branchLocus f`), whose complement is dense (`Y`/`Z` are perfect spaces —
+  -- `neBot_nhdsWithin_compl_self`). Two remaining gaps make this too heavy here:
+  -- (1) a continuity extractor `Continuous (fun z ↦ (form) z)` for the model-fibre
+  --     component of a `ContMDiffSection` into the (only locally trivial) cotangent
+  --     hom-bundle — needs the `contMDiffAt_hom_bundle` trivialization machinery,
+  --     as in `contMDiffAt_pullback_section`;
+  -- (2) the off-branch fibre factorization
+  --     `traceFun (g∘f) α z = traceFun g (traceForm f hf hfnc α) z`, via the disjoint
+  --     partition `(g∘f)⁻¹'{z} = ⋃_{y∈g⁻¹'{z}} f⁻¹'{y}` (`finsum_mem_biUnion`), the
+  --     chain rule `mfderiv (g∘f) x = mfderiv g (f x) ∘ mfderiv f x` (`mfderiv_comp`)
+  --     with `(·)⁻¹` of the composite, and pulling the common right-`comp` out of the
+  --     inner finsum — the combinatorial finsum-partition step that remains.
   sorry
 
 /-! ## Total trace wrapper (constant-map bookkeeping)
