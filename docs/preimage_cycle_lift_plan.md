@@ -5,22 +5,30 @@ Continuation plan for `exists_preimageCycle_of_off_branchLocus`
 pushforward∘pullback = degree identity. This is the "§3 / loop-lifting machinery"
 referenced throughout the codebase. Written 2026-05-30 after sub-piece A landed.
 
-## KEYSTONE (2026-05-30): cotangent-bundle coefficient-continuity extractor
+## KEYSTONE (2026-05-30): cotangent-bundle coefficient continuity — **RESOLVED**
 
-The §3 lift integrability (orbit loops being `IsClosedSmoothLoop`) reduces, via
-`α.toFun x v = (α.toFun x 1)·v` and `pathSpeed Γ = mfderiv g · pathSpeed δr`, to:
-(i) raw `pathSpeed` integrability — the **velocity refactor** (add `speed_integrable`
-to the loop predicate; doable, incl. `comp` via chart-patchwork + `analyticAt_chartPullback`,
-no bundle work); AND (ii) **`Continuous (fun x => α.toFun x (1 : TangentSpace 𝓘(ℂ) x))`** —
-the model-fibre coefficient of a `ContMDiffSection` of the cotangent hom-bundle. (ii) is the
-**genuine keystone**, the SAME blocker as `traceForm_comp` (prior subagents stalled on it). It
-must go through `contMDiffAt_hom_bundle` + `inCoordinates` (the section's smoothness ⇒ its
-`inCoordinates` rep is continuous in the fixed type `ℂ→Lℂ`; extract the coefficient via the
-trivial-codomain + tangent-domain trivializations). A focused attempt is underway
-(2026-05-30). The bundle-pairing lemmas (`ContMDiffAt.clm_apply_of_inCoordinates`) do NOT
-apply: they need the *domain* section (curve velocity) `ContMDiff`, but the lift is only
-chart-pointwise-differentiable, and the constant "1-section" of the (nontrivial) tangent
-bundle isn't even continuous.
+The §3 lift integrability (orbit loops being `IsClosedSmoothLoop`) needs control of the
+form coefficient along the lift. Resolution (`Jacobians/CotangentCoeff.lean`, sorry-free):
+* The **global** coefficient `x ↦ α.toFun x (1 : TangentSpace 𝓘(ℂ) x)` is **FALSE/discontinuous**
+  in general — `1 : TangentSpace x` is the `∂/∂z` of the *varying preferred chart*, a
+  discontinuous tangent section (obstruction isolated in `const_one_section_continuous_of_coordChange_fixes_one`,
+  `target_eq_inCoordinates_of_w`). My earlier "extractor" target was this — it does not exist.
+* The **local** coefficient (read in a *fixed* chart/trivialization) **IS continuous and is
+  proven**: `continuousAt_inCoordinates`, `continuousAt_localCoeff` (via `contMDiffAt_hom_bundle`:
+  the section's smoothness ⇒ its `inCoordinates` rep is continuous into the fixed `ℂ→Lℂ`). This
+  is exactly the tool the chart-patchwork needs (and the continuity input `traceForm_comp` needs).
+
+So **no fundamental bundle blocker remains.** Lift integrability now reduces to two *engineering*
+tasks (both "hard Lean, no missing math"):
+ (i) the **velocity refactor** — add `speed_integrable : IntervalIntegrable (pathSpeed γ) volume 0 1`
+     to `IsClosedSmoothLoop`/`IsSmoothPath` (raw pathSpeed integrable; `comp` via chart-patchwork +
+     `analyticAt_chartPullback`, no bundle work); and
+ (ii) the **chart-patchwork**: cover `[0,1]` by segments where `Γ` stays in one chart `c`; on each,
+     `α.toFun (Γ s)(pathSpeed Γ s) = inCoordinates(α (Γ s))(velocity-in-fixed-chart-c)`, a product of
+     the continuous bounded local coefficient (`continuousAt_localCoeff`) and the integrable
+     fixed-chart velocity (from (i)); glue via `LocallyIntegrableOn.integrableOn_isCompact`.
+(The bundle-pairing lemmas `ContMDiffAt.clm_apply_of_inCoordinates` do NOT apply directly — they
+need the curve-velocity domain section `ContMDiff`, but the lift is only chart-pointwise-diff.)
 
 ## Goal
 
