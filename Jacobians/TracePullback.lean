@@ -7,6 +7,7 @@ import Jacobians.TraceForm
 import Mathlib.Topology.Homotopy.Lifting
 import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 import Mathlib.MeasureTheory.Function.JacobianOneDim
+import Mathlib.GroupTheory.Perm.Cycle.Concrete
 
 /-!
 # The Jacobian pullback in ambient coordinates, driven by the geometric trace
@@ -1073,6 +1074,216 @@ theorem lineIntegral_traceFormTotal_eq_sum_periodVec (f : X → Y)
   rw [traceForm_apply_eq_sum_lift_interior f hf hnonconst δ hδ havoid M ωj ht_Ioo]
   exact Finset.sum_congr rfl fun i _ =>
     traceSummand_lift_velocity_interior f hf hnonconst δ hδ havoid M ωj i ht_Ioo
+
+/-! ### Leaf E helpers: monodromy permutation, orbit chains, push-forward by `f` -/
+
+/-- **Push a smooth path forward by a global `C^ω` map.** `f ∘ γ` is a smooth path
+from `f P` to `f Q`: continuity by composition; chart-pullback differentiability via the
+chart-local representation `f_loc = chartY ∘ f ∘ chartX.symm` (holomorphic ⟹ ℝ-diff by
+`restrictScalars`, as in `differentiableAt_chart_lift_of_notMem_criticalSet`); `velCont` by
+`velCont_comp`. The orbit loops push to multiples of `δ`, so `f ∘ (orbit loop)` must be a
+smooth path for the period accounting. -/
+theorem IsSmoothPath.comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    {P Q : X} {γ : ℝ → X} (hγ : IsSmoothPath P Q γ) :
+    IsSmoothPath (f P) (f Q) (f ∘ γ) where
+  start := by simp [Function.comp_apply, hγ.start]
+  finish := by simp [Function.comp_apply, hγ.finish]
+  cont := hf.continuous.comp hγ.cont
+  diff := by
+    intro t ht
+    set φ_X := chartAt (H := ℂ) (γ t)
+    set φ_Y := chartAt (H := ℂ) (f (γ t))
+    set f_loc : ℂ → ℂ := fun z => φ_Y (f (φ_X.symm z))
+    set g_X : ℝ → ℂ := φ_X.toFun ∘ γ
+    have hγ_source : ∀ᶠ s in 𝓝 t, γ s ∈ φ_X.source :=
+      hγ.cont.continuousAt.eventually
+        (φ_X.open_source.mem_nhds (mem_chart_source ℂ (γ t)))
+    have h_eq : (φ_Y.toFun ∘ (f ∘ γ)) =ᶠ[𝓝 t] f_loc ∘ g_X := by
+      filter_upwards [hγ_source] with s hs
+      simp only [Function.comp_apply]
+      congr 2
+      exact (φ_X.left_inv hs).symm
+    have hf_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f (γ t) :=
+      hf.mdifferentiableAt (by decide : ω ≠ 0)
+    have hf_loc_diff_ℂ : DifferentiableAt ℂ f_loc (g_X t) := by
+      have h1 := hf_mdiff.differentiableWithinAt_writtenInExtChartAt
+      rw [ModelWithCorners.range_eq_univ, differentiableWithinAt_univ] at h1
+      convert h1 using 2
+    have hf_loc_hasFD_ℝ : HasFDerivAt f_loc
+        ((fderiv ℂ f_loc (g_X t)).restrictScalars ℝ) (g_X t) := by
+      have hf_loc_hasFD_ℂ : HasFDerivAt f_loc (fderiv ℂ f_loc (g_X t)) (g_X t) :=
+        hf_loc_diff_ℂ.hasFDerivAt
+      rw [hasFDerivAt_iff_isLittleO_nhds_zero] at hf_loc_hasFD_ℂ ⊢
+      simp only [ContinuousLinearMap.coe_restrictScalars']
+      exact hf_loc_hasFD_ℂ
+    have h_comp_diff : DifferentiableAt ℝ (f_loc ∘ g_X) t :=
+      hf_loc_hasFD_ℝ.differentiableAt.comp t (hγ.diff t ht)
+    exact (h_eq.differentiableAt_iff).mpr h_comp_diff
+  velCont :=
+    velCont_comp f hf γ hγ.cont
+      (fun s hs => hγ.diff s (by rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact hs))
+      hγ.velCont
+
+/-- **Each lift pushes to `δ`'s period.** Since `f ∘ Γ i = δ ∘ flatEndReparam` on `[0,1]`
+and the period is `flatEndReparam`-invariant. -/
+private theorem periodVec_comp_lift (f : X → Y) (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ)
+    (M : MonodromyLiftFamily f δ) (i : Fin M.n) :
+    periodVec (f ∘ M.Γ i) = periodVec δ := by
+  rw [periodVec_congr_of_eqOn (M.lifts i)]
+  exact periodVec_comp_flatEndReparam δ hδ
+
+/-- **Orbit chain.** `concatPow σ k i` concatenates the lifts `Γ i, Γ (σ i), …, Γ (σ^k i)`
+— a path from `Γ i 0` to `Γ (σ^k i) 1 = Γ (σ^{k+1} i) 0`. The orbit loop is `concatPow`
+to the orbit length minus one (then start `= finish`). -/
+private noncomputable def concatPow (f : X → Y) (δ : ℝ → Y) (M : MonodromyLiftFamily f δ)
+    (σ : Equiv.Perm (Fin M.n)) : ℕ → Fin M.n → (ℝ → X)
+  | 0, i => M.Γ i
+  | (k+1), i => Jacobians.concat (M.Γ i) (concatPow f δ M σ k (σ i))
+
+/-- `concatPow σ k i` is a smooth path `Γ i 0 → Γ (σ^k i) 1` with zero endpoint velocities
+(so consecutive chains and the final closure glue with `IsSmoothPath.concat`). -/
+private theorem concatPow_isSmoothPath (f : X → Y) (δ : ℝ → Y) (M : MonodromyLiftFamily f δ)
+    (σ : Equiv.Perm (Fin M.n)) (hσ : ∀ i, M.Γ (σ i) 0 = M.Γ i 1) :
+    ∀ (k : ℕ) (i : Fin M.n),
+      IsSmoothPath (M.Γ i 0) (M.Γ ((σ^k) i) 1) (concatPow f δ M σ k i)
+      ∧ pathSpeed (concatPow f δ M σ k i) 0 = 0
+      ∧ pathSpeed (concatPow f δ M σ k i) 1 = 0 := by
+  intro k
+  induction k with
+  | zero =>
+    intro i
+    refine ⟨?_, ?_, ?_⟩
+    · simpa [concatPow, pow_zero] using M.smooth i
+    · simpa [concatPow] using M.velZero_zero i
+    · simpa [concatPow, pow_zero] using M.velZero_one i
+  | succ k ih =>
+    intro i
+    obtain ⟨ih_sp, ih_v0, _ih_v1⟩ := ih (σ i)
+    have h1 : IsSmoothPath (M.Γ i 0) (M.Γ i 1) (M.Γ i) := M.smooth i
+    have hjoin : M.Γ i 1 = M.Γ (σ i) 0 := (hσ i).symm
+    have ih_sp' : IsSmoothPath (M.Γ i 1) (M.Γ ((σ^k) (σ i)) 1) (concatPow f δ M σ k (σ i)) := by
+      rw [hjoin]; exact ih_sp
+    have hconcat : IsSmoothPath (M.Γ i 0) (M.Γ ((σ^k) (σ i)) 1)
+        (Jacobians.concat (M.Γ i) (concatPow f δ M σ k (σ i))) :=
+      h1.concat ih_sp' (M.velZero_one i) ih_v0
+    have hpow : (σ^(k+1)) i = (σ^k) (σ i) := by rw [pow_succ]; rfl
+    have hmem0 : (0:ℝ) ∈ Set.uIcc (0:ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨le_refl 0, zero_le_one⟩
+    have hmem1 : (1:ℝ) ∈ Set.uIcc (0:ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨zero_le_one, le_refl 1⟩
+    refine ⟨?_, ?_, ?_⟩
+    · show IsSmoothPath (M.Γ i 0) (M.Γ ((σ^(k+1)) i) 1) _
+      rw [hpow]; exact hconcat
+    · show pathSpeed (Jacobians.concat (M.Γ i) (concatPow f δ M σ k (σ i))) 0 = 0
+      rw [Jacobians.pathSpeed_concat_left _ _ 0 (by norm_num)
+          (by rw [show (2:ℝ) * 0 = 0 from by norm_num]; exact (M.smooth i).diff 0 hmem0),
+        show (2:ℝ) * 0 = 0 from by norm_num, M.velZero_zero i, mul_zero]
+    · show pathSpeed (Jacobians.concat (M.Γ i) (concatPow f δ M σ k (σ i))) 1 = 0
+      rw [Jacobians.pathSpeed_concat_right _ _ 1 (by norm_num)
+          (by rw [show (2:ℝ) * 1 - 1 = 1 from by norm_num]; exact ih_sp'.diff 1 hmem1),
+        show (2:ℝ) * 1 - 1 = 1 from by norm_num, _ih_v1, mul_zero]
+
+/-- `periodVec` of the orbit chain is the sum of the lift periods over `Γ i, …, Γ (σ^k i)`. -/
+private theorem concatPow_periodVec (f : X → Y) (δ : ℝ → Y) (M : MonodromyLiftFamily f δ)
+    (σ : Equiv.Perm (Fin M.n)) (hσ : ∀ i, M.Γ (σ i) 0 = M.Γ i 1) :
+    ∀ (k : ℕ) (i : Fin M.n),
+      periodVec (concatPow f δ M σ k i) = ∑ j ∈ Finset.range (k+1), periodVec (M.Γ ((σ^j) i)) := by
+  intro k
+  induction k with
+  | zero => intro i; simp [concatPow, pow_zero]
+  | succ k ih =>
+    intro i
+    show periodVec (Jacobians.concat (M.Γ i) (concatPow f δ M σ k (σ i))) = _
+    have hsp2 : IsSmoothPath (M.Γ i 1) (M.Γ ((σ^k) (σ i)) 1) (concatPow f δ M σ k (σ i)) := by
+      have := (concatPow_isSmoothPath f δ M σ hσ k (σ i)).1; rw [hσ i] at this; exact this
+    rw [periodVec_concat_of_smooth (M.smooth i) hsp2, ih (σ i),
+        Finset.sum_range_succ' (fun j => periodVec (M.Γ ((σ ^ j) i))) (k+1)]
+    exact add_comm _ _
+
+/-- `f ∘ (orbit chain)` pushes to `(k+1) • periodVec δ` (it traverses `δ` `k+1` times). -/
+private theorem comp_concatPow_periodVec (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (M : MonodromyLiftFamily f δ)
+    (σ : Equiv.Perm (Fin M.n)) (hσ : ∀ i, M.Γ (σ i) 0 = M.Γ i 1) :
+    ∀ (k : ℕ) (i : Fin M.n),
+      periodVec (f ∘ concatPow f δ M σ k i) = (k+1) • periodVec δ := by
+  intro k
+  induction k with
+  | zero => intro i; show periodVec (f ∘ M.Γ i) = (0+1) • periodVec δ;
+            rw [periodVec_comp_lift f δ hδ M i]; simp
+  | succ k ih =>
+    intro i
+    have hpush : f ∘ concatPow f δ M σ (k+1) i
+        = Jacobians.concat (f ∘ M.Γ i) (f ∘ concatPow f δ M σ k (σ i)) := by
+      show f ∘ Jacobians.concat (M.Γ i) (concatPow f δ M σ k (σ i)) = _
+      funext t; simp only [Function.comp_apply, Jacobians.concat]; split <;> rfl
+    rw [hpush]
+    have hsp1 : IsSmoothPath (f (M.Γ i 0)) (f (M.Γ i 1)) (f ∘ M.Γ i) := (M.smooth i).comp f hf
+    have hsp2' : IsSmoothPath (f (M.Γ i 1)) (f (M.Γ ((σ^k) (σ i)) 1)) (f ∘ concatPow f δ M σ k (σ i)) := by
+      have h2 : IsSmoothPath (M.Γ i 1) (M.Γ ((σ^k) (σ i)) 1) (concatPow f δ M σ k (σ i)) := by
+        have := (concatPow_isSmoothPath f δ M σ hσ k (σ i)).1; rw [hσ i] at this; exact this
+      have := h2.comp f hf; exact this
+    rw [periodVec_concat_of_smooth hsp1 hsp2', periodVec_comp_lift f δ hδ M i, ih (σ i),
+      show (k+1+1) • periodVec δ = periodVec δ + (k+1) • periodVec δ by
+        rw [add_comm, add_smul, one_smul]]
+
+/-- **The monodromy permutation.** `σ i` is the unique index with `Γ (σ i) 0 = Γ i 1`
+(both endpoints lie in the fibre over `δ 0`): existence by `fibre_surj` at `t = 1`,
+injectivity by `fibre_inj` at `t = 1`, bijective since `Fin M.n` is finite. -/
+private theorem exists_monodromyPerm (f : X → Y) (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ)
+    (M : MonodromyLiftFamily f δ) :
+    ∃ σ : Equiv.Perm (Fin M.n), ∀ i, M.Γ (σ i) 0 = M.Γ i 1 := by
+  classical
+  have h0 : (0:ℝ) ∈ Set.Icc (0:ℝ) 1 := ⟨le_refl 0, by norm_num⟩
+  have h1 : (1:ℝ) ∈ Set.Icc (0:ℝ) 1 := ⟨by norm_num, le_refl 1⟩
+  have key : ∀ i, ∃ j, M.Γ j 0 = M.Γ i 1 := by
+    intro i
+    have hfi1 : f (M.Γ i 1) = δ (flatEndReparam 1) := M.lifts i h1
+    have heq : δ (flatEndReparam 1) = δ (flatEndReparam 0) := by
+      rw [flatEndReparam_one, flatEndReparam_zero, hδ.closed]
+    rw [heq] at hfi1
+    exact M.fibre_surj 0 h0 (M.Γ i 1) hfi1
+  choose g hg using key
+  have hg_inj : Function.Injective g := by
+    intro i j hij
+    have : M.Γ i 1 = M.Γ j 1 := by rw [← hg i, ← hg j, hij]
+    exact M.fibre_inj 1 h1 this
+  have hg_bij : Function.Bijective g := (Finite.injective_iff_bijective).mp hg_inj
+  exact ⟨Equiv.ofBijective g hg_bij, fun i => by simp only [Equiv.ofBijective_apply]; exact hg i⟩
+
+/-- After `orderOf (σ.cycleOf e)` steps, `σ` returns `e` to itself (orbit closes). -/
+private theorem perm_pow_orderOf_cycleOf_apply_self {N : ℕ} (σ : Equiv.Perm (Fin N)) (e : Fin N) :
+    (σ ^ orderOf (σ.cycleOf e)) e = e := by
+  classical
+  have h1 : ((σ.cycleOf e) ^ orderOf (σ.cycleOf e)) e = (σ ^ orderOf (σ.cycleOf e)) e :=
+    Equiv.Perm.cycleOf_pow_apply_self σ e (orderOf (σ.cycleOf e))
+  rw [← h1, pow_orderOf_eq_one]; rfl
+
+/-- `j ↦ σ^j e` is injective on `range (orderOf (σ.cycleOf e))` (the orbit has exactly
+that many distinct elements). -/
+private theorem perm_pow_apply_injOn {N : ℕ} (σ : Equiv.Perm (Fin N)) (e : Fin N) :
+    Set.InjOn (fun j => (σ ^ j) e) (Finset.range (orderOf (σ.cycleOf e))) := by
+  classical
+  intro a ha b hb hab
+  simp only [Finset.coe_range, Set.mem_Iio] at ha hb
+  simp only at hab
+  rw [← Equiv.Perm.cycleOf_pow_apply_self σ e a, ← Equiv.Perm.cycleOf_pow_apply_self σ e b] at hab
+  set c := σ.cycleOf e with hc
+  rcases eq_or_ne c 1 with hc1 | hc1
+  · rw [hc1] at ha hb; simp at ha hb; omega
+  · have hσe : σ e ≠ e := by rwa [Ne, ← Equiv.Perm.cycleOf_eq_one_iff (f := σ)]
+    have hcyc : c.IsCycle := σ.isCycle_cycleOf hσe
+    have he_mem : e ∈ c.support := by
+      rw [hc, Equiv.Perm.mem_support_cycleOf_iff]
+      exact ⟨Equiv.Perm.SameCycle.rfl, Equiv.Perm.mem_support.mpr hσe⟩
+    have hcOn : c.IsCycleOn (c.support : Set (Fin N)) := by
+      have h := hcyc.isCycleOn
+      have hset : ({x | c x ≠ x} : Set (Fin N)) = (c.support : Set (Fin N)) := by
+        ext x; simp [Equiv.Perm.mem_support]
+      rwa [hset] at h
+    have hord : orderOf c = c.support.card := hcyc.orderOf
+    rw [Equiv.Perm.IsCycleOn.pow_apply_eq_pow_apply hcOn he_mem] at hab
+    rw [hord] at ha hb
+    exact (Nat.ModEq.eq_of_lt_of_lt hab ha hb)
 
 /-- **Leaf E — orbit loops.** Group the lift family into closed smooth loops along
 the orbits of the monodromy permutation `σ i := the index with Γ (σ i) 0 = Γ i 1`
