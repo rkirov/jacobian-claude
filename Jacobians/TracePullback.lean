@@ -826,6 +826,99 @@ theorem exists_smoothLift_flatEnd_off_branchLocus
     rw [hc.fderiv_eq]; simp
   exact ⟨Γ, hΓ_cont, hΓ0, hΓ_lift, hΓ_diff, hps0, hps1, hfΓ1⟩
 
+/-! ## §3 monodromy decomposition of the preimage-cycle lift
+
+`exists_preimageLoopFamily` (the geometric heart) is assembled from three leaf
+statements, bottomed-out below. The new analytic-free route replaces the old
+segment-partition/sheet-reassembly projection plan with a single **pointwise
+fibre-sum identity** (leaf D), made possible by carrying a *global* lift family
+along `δr := δ ∘ flatEndReparam`:
+
+* `MonodromyLiftFamily f δ` — the interface: a finite family of seam-flattened
+  smooth lifts `Γ i` of `δr`, whose time-`t` values `i ↦ Γ i t` sweep the fibre
+  `f⁻¹(δr t)` *bijectively* for every `t ∈ [0,1]`. The bijection at `t = 1` is the
+  monodromy permutation; the bijection at general `t` is what reindexes the trace
+  fibre-sum in the projection formula.
+* `exists_monodromyLiftFamily` (leaf A+B) — construct it off the branch locus
+  (one seam-flattened lift per fibre point, with `velCont`; injectivity by lift
+  uniqueness, surjectivity by fibre-cardinality constancy).
+* `lineIntegral_traceFormTotal_eq_sum_periodVec` (leaf D) — the projection formula
+  `∫_δ trace(ωⱼ) = ∑ᵢ periodVec(Γᵢ)ⱼ`, via the pointwise identity
+  `trace(ωⱼ)(δr t)(δr' t) = ∑ᵢ ωⱼ(Γᵢ t)(Γᵢ' t)` (fibre-sum reindexed by the
+  bijection; each summand `= ωⱼ(Γᵢ t)((mfderiv f)⁻¹ δr' t)` with the inverse hitting
+  `Γᵢ' t` since `f ∘ Γᵢ = δr`).
+* `exists_orbitLoops_of_monodromyLiftFamily` (leaf E) — group the lifts into closed
+  smooth loops along the `σ`-orbits (iterated `concat`, junction velocities `0`),
+  accounting both period identities.
+-/
+
+/-- **Interface for the §3 monodromy construction.** A finite family of
+seam-flattened smooth lifts `Γ i` of `δr = δ ∘ flatEndReparam`, whose time-`t`
+evaluations `i ↦ Γ i t` sweep the fibre `f⁻¹(δr t)` injectively and surjectively
+for every `t ∈ [0,1]`. Carrying the whole family at once (rather than local sheets)
+is what turns the projection formula into a pointwise fibre-sum identity, and the
+`t = 1` bijection is the monodromy permutation driving the orbit loops. -/
+structure MonodromyLiftFamily (f : X → Y) (δ : ℝ → Y) where
+  /-- Number of lifts `= #fibre = #sheets`. -/
+  n : ℕ
+  /-- The lifts, `Γ i : ℝ → X`. -/
+  Γ : Fin n → ℝ → X
+  /-- Each lift is a smooth path (from `Γ i 0` to `Γ i 1`), carrying `velCont`. -/
+  smooth : ∀ i, IsSmoothPath (Γ i 0) (Γ i 1) (Γ i)
+  /-- Seam-flattened: zero start velocity (for orbit `concat` junctions). -/
+  velZero_zero : ∀ i, pathSpeed (Γ i) 0 = 0
+  /-- Seam-flattened: zero end velocity. -/
+  velZero_one : ∀ i, pathSpeed (Γ i) 1 = 0
+  /-- `Γ i` lifts `δr`: `f ∘ Γ i = δ ∘ flatEndReparam` on `[0,1]`. -/
+  lifts : ∀ i, Set.EqOn (f ∘ Γ i) (δ ∘ flatEndReparam) (Set.Icc 0 1)
+  /-- For each `t ∈ [0,1]`, the lifts are pairwise distinct at time `t`. -/
+  fibre_inj : ∀ t ∈ Set.Icc (0 : ℝ) 1, Function.Injective fun i => Γ i t
+  /-- For each `t ∈ [0,1]`, the lifts sweep out the *entire* fibre over `δr t`. -/
+  fibre_surj : ∀ t ∈ Set.Icc (0 : ℝ) 1, ∀ x : X,
+    f x = δ (flatEndReparam t) → ∃ i, Γ i t = x
+
+/-- **Leaf A + B — construct the monodromy lift family.** Off the branch locus, the
+seam-flattened lifts of `δ` (one per fibre point, `exists_smoothLift_flatEnd_off_branchLocus`
+upgraded with `velCont`) assemble into a `MonodromyLiftFamily`: injectivity is lift
+uniqueness, surjectivity is constancy of the off-branch fibre cardinality along the
+connected `[0,1]` (via the local sheet system). -/
+theorem exists_monodromyLiftFamily (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :
+    Nonempty (MonodromyLiftFamily f δ) :=
+  sorry
+
+/-- **Leaf D — projection formula (pointwise fibre-sum).** The line integral of the
+trace form along `δ` equals the sum, over the lift family, of the lift periods:
+`∫_δ traceFormTotal(ωⱼ) = ∑ᵢ periodVec(Γ i) j`. Reparametrize to `δr`, then integrate
+the pointwise identity `traceFun f ωⱼ (δr t)(δr' t) = ∑ᵢ ωⱼ(Γ i t)(Γ i' t)` (the trace
+fibre-sum reindexed by the time-`t` bijection `i ↦ Γ i t`, each summand the pullback
+covector with `(mfderiv f)⁻¹ (δr' t) = pathSpeed (Γ i) t`). -/
+theorem lineIntegral_traceFormTotal_eq_sum_periodVec (f : X → Y)
+    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f)
+    (M : MonodromyLiftFamily f δ) (j : Fin (genus X)) :
+    lineIntegral (traceFormTotal f hf (periodBasisForm X j)) δ
+      = ∑ i, periodVec (M.Γ i) j :=
+  sorry
+
+/-- **Leaf E — orbit loops.** Group the lift family into closed smooth loops along
+the orbits of the monodromy permutation `σ i := the index with Γ (σ i) 0 = Γ i 1`
+(bijective by `fibre_inj`/`fibre_surj` at `t = 1`): each orbit gives the iterated
+`concat` of its lifts (a closed loop — junction velocities `0` — smooth by
+`velCont_concat`). With all `coeffs = 1` and `sheets = M.n`, period accounting gives
+the two identities: `∑ orbit-periods = ∑ᵢ periodVec(Γ i)` (orbit partition +
+`periodVec_concat_of_smooth`), and `∑ periodVec(f ∘ loop) = M.n • periodVec δ`
+(each `f ∘ Γ i = δr` so each orbit pushes to `(orbit length) • periodVec δ`). -/
+theorem exists_orbitLoops_of_monodromyLiftFamily (f : X → Y)
+    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ)
+    (M : MonodromyLiftFamily f δ) :
+    ∃ (m : ℕ) (loops : Fin m → ℝ → X) (coeffs : Fin m → ℤ),
+      (∀ i, IsClosedSmoothLoop (loops i)) ∧
+      (∑ i, coeffs i • periodVec (loops i) = ∑ i, periodVec (M.Γ i)) ∧
+      (∑ i, coeffs i • periodVec (f ∘ loops i) = (M.n : ℤ) • periodVec δ) :=
+  sorry
+
 /-- **[open] — geometric heart of the preimage-cycle lift.** The monodromy/orbit
 construction, stated **purely in elementary line-integral / period-vector terms**
 (no ambient-coordinate `ambientPullbackJac`): off the branch locus, `δ` lifts to a
@@ -861,8 +954,21 @@ theorem exists_preimageLoopFamily (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(�
       (∀ i, IsClosedSmoothLoop (loops i)) ∧
       (fun j => lineIntegral (traceFormTotal f hf (periodBasisForm X j)) δ) =
         ∑ i, coeffs i • periodVec (loops i) ∧
-      ∑ i, coeffs i • periodVec (f ∘ loops i) = (sheets : ℤ) • periodVec δ :=
-  sorry
+      ∑ i, coeffs i • periodVec (f ∘ loops i) = (sheets : ℤ) • periodVec δ := by
+  -- Construct the global lift family along `δr = δ ∘ flatEndReparam` (leaf A+B).
+  obtain ⟨M⟩ := exists_monodromyLiftFamily f hf hnonconst δ hδ havoid
+  -- Group the lifts into closed smooth loops along the monodromy orbits (leaf E).
+  obtain ⟨m, loops, coeffs, hclosed, hper, hpush⟩ :=
+    exists_orbitLoops_of_monodromyLiftFamily f hf δ hδ M
+  refine ⟨m, loops, coeffs, M.n, hclosed, ?_, hpush⟩
+  -- Projection identity: the trace integral is the sum of lift periods (leaf D),
+  -- which the orbit grouping rewrites as the loop periods.
+  have hproj : (fun j => lineIntegral (traceFormTotal f hf (periodBasisForm X j)) δ)
+      = ∑ i, periodVec (M.Γ i) := by
+    funext j
+    rw [lineIntegral_traceFormTotal_eq_sum_periodVec f hf hnonconst δ hδ havoid M j,
+      Finset.sum_apply]
+  rw [hproj]; exact hper.symm
 
 /-- **A closed smooth loop off the branch locus lifts to a preimage cycle.** The
 coordinate-layer reduction is now **proven**: it takes the elementary geometric
