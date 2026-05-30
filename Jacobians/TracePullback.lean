@@ -5,6 +5,7 @@ Authors: Rado Kirov
 -/
 import Jacobians.TraceForm
 import Mathlib.Topology.Homotopy.Lifting
+import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 
 /-!
 # The Jacobian pullback in ambient coordinates, driven by the geometric trace
@@ -391,6 +392,49 @@ theorem exists_continuous_lift_off_branchLocus
     show ((IsCoveringMap.liftPath cov δ' e' hγ0)
       (Set.projIcc 0 1 zero_le_one 0) : X) = e
     rw [h0, hzero]
+
+/-! ### Seam-flattening reparametrization (§3 step C)
+
+A path-lift produced by `exists_continuous_lift_off_branchLocus` is `Set.projIcc`-
+clamped (constant outside `[0,1]`), so it is *not* differentiable at the endpoints
+`0,1`, and `differentiableAt_chart_lift_of_notMem_criticalSet` (B) only delivers
+differentiability on the open `(0,1)`. To concatenate lifts into closed loops we
+need lifts that are genuine smooth paths with *zero endpoint velocity*. The fix is
+to reparametrize the base loop by `flatEndReparam`, which is **constant near each
+endpoint** (a genuine plateau, not merely zero-derivative). Then the lift of the
+reparametrized loop is *constant* near `0,1` (continuity + local injectivity of `f`),
+hence trivially smooth with zero velocity there, while the interior is handled by B —
+sidestepping any one-sided gluing. -/
+
+/-- A smooth reparametrization of the unit interval, **constant near the endpoints**:
+`flatEndReparam t = Real.smoothTransition (2 t - 1/2)`. It is `≡ 0` on `(-∞, 1/4]`,
+`≡ 1` on `[3/4, ∞)`, smooth, monotone, maps `[0,1]` into `[0,1]`, and fixes the
+endpoints (`0 ↦ 0`, `1 ↦ 1`). The end plateaus are what make a lift of
+`δ ∘ flatEndReparam` constant near the seam. -/
+noncomputable def flatEndReparam (t : ℝ) : ℝ := Real.smoothTransition (2 * t - 1 / 2)
+
+@[simp] theorem flatEndReparam_zero : flatEndReparam 0 = 0 := by
+  unfold flatEndReparam; rw [Real.smoothTransition.zero_of_nonpos (by norm_num)]
+
+@[simp] theorem flatEndReparam_one : flatEndReparam 1 = 1 := by
+  unfold flatEndReparam; rw [Real.smoothTransition.one_of_one_le (by norm_num)]
+
+/-- `flatEndReparam` is `≡ 0` on the left plateau `(-∞, 1/4]`. -/
+theorem flatEndReparam_eqZero_of_le {t : ℝ} (ht : t ≤ 1 / 4) : flatEndReparam t = 0 := by
+  unfold flatEndReparam; exact Real.smoothTransition.zero_of_nonpos (by linarith)
+
+/-- `flatEndReparam` is `≡ 1` on the right plateau `[3/4, ∞)`. -/
+theorem flatEndReparam_eqOne_of_ge {t : ℝ} (ht : 3 / 4 ≤ t) : flatEndReparam t = 1 := by
+  unfold flatEndReparam; exact Real.smoothTransition.one_of_one_le (by linarith)
+
+theorem flatEndReparam_mem_unit (t : ℝ) : flatEndReparam t ∈ Set.Icc (0 : ℝ) 1 :=
+  ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
+
+theorem contDiff_flatEndReparam {n : ℕ∞} : ContDiff ℝ n flatEndReparam :=
+  Real.smoothTransition.contDiff.comp ((contDiff_const.mul contDiff_id).sub contDiff_const)
+
+theorem differentiable_flatEndReparam : Differentiable ℝ flatEndReparam :=
+  (contDiff_flatEndReparam (n := 1)).differentiable (by norm_num)
 
 /-- **§3 sub-piece B — smoothness of the lift.** A continuous lift `Γ` of `δ`
 through a non-critical point inherits `δ`'s chart-pullback differentiability.
