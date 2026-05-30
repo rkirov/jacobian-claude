@@ -5,6 +5,23 @@ Continuation plan for `exists_preimageCycle_of_off_branchLocus`
 pushforward∘pullback = degree identity. This is the "§3 / loop-lifting machinery"
 referenced throughout the codebase. Written 2026-05-30 after sub-piece A landed.
 
+## KEYSTONE (2026-05-30): cotangent-bundle coefficient-continuity extractor
+
+The §3 lift integrability (orbit loops being `IsClosedSmoothLoop`) reduces, via
+`α.toFun x v = (α.toFun x 1)·v` and `pathSpeed Γ = mfderiv g · pathSpeed δr`, to:
+(i) raw `pathSpeed` integrability — the **velocity refactor** (add `speed_integrable`
+to the loop predicate; doable, incl. `comp` via chart-patchwork + `analyticAt_chartPullback`,
+no bundle work); AND (ii) **`Continuous (fun x => α.toFun x (1 : TangentSpace 𝓘(ℂ) x))`** —
+the model-fibre coefficient of a `ContMDiffSection` of the cotangent hom-bundle. (ii) is the
+**genuine keystone**, the SAME blocker as `traceForm_comp` (prior subagents stalled on it). It
+must go through `contMDiffAt_hom_bundle` + `inCoordinates` (the section's smoothness ⇒ its
+`inCoordinates` rep is continuous in the fixed type `ℂ→Lℂ`; extract the coefficient via the
+trivial-codomain + tangent-domain trivializations). A focused attempt is underway
+(2026-05-30). The bundle-pairing lemmas (`ContMDiffAt.clm_apply_of_inCoordinates`) do NOT
+apply: they need the *domain* section (curve velocity) `ContMDiff`, but the lift is only
+chart-pointwise-differentiable, and the constant "1-section" of the (nontrivial) tangent
+bundle isn't even continuous.
+
 ## Goal
 
 `exists_preimageCycle_of_off_branchLocus (f hf hnonconst) (δ) (hδ : IsClosedSmoothLoop δ)
