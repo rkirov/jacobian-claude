@@ -888,6 +888,141 @@ theorem exists_monodromyLiftFamily (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(
     Nonempty (MonodromyLiftFamily f δ) :=
   sorry
 
+/-- **Per-sheet velocity identity (interior).** At an interior `t ∈ (0,1)`, the trace
+summand of `α` at the lift point `M.Γ i t`, evaluated at the reparametrized base
+velocity `pathSpeed (δ ∘ flatEndReparam) t`, equals the form `α` at `M.Γ i t` evaluated
+at the lift's own velocity `pathSpeed (M.Γ i) t`. The local two-sided inverse `g` at
+the (non-critical) point `M.Γ i t` realizes `traceSummand = sheetPullback`, and the
+germ identity `M.Γ i =ᶠ g ∘ δr` (same `g∘f=id`-near-the-point factorization as
+`differentiableAt_chart_lift_of_notMem_criticalSet`) turns `mfderiv g (δr t)` applied
+to the base velocity into `pathSpeed (M.Γ i) t`. -/
+private theorem traceSummand_lift_velocity_interior (f : X → Y)
+    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f)
+    (M : MonodromyLiftFamily f δ) (α : HolomorphicOneForms X) (i : Fin M.n) {t : ℝ}
+    (ht : t ∈ Set.Ioo (0:ℝ) 1) :
+    traceSummand f α (M.Γ i t) (pathSpeed (δ ∘ flatEndReparam) t)
+      = α.toFun (M.Γ i t) (pathSpeed (M.Γ i) t) := by
+  classical
+  set δr : ℝ → Y := δ ∘ flatEndReparam with hδr_def
+  -- Membership of `t` in `[0,1]`, base velocity facts.
+  have ht01 : t ∈ Set.Icc (0:ℝ) 1 := ⟨ht.1.le, ht.2.le⟩
+  -- The lift covers `δr` at `t`: `f (Γ i t) = δr t`.
+  have hfΓt : f (M.Γ i t) = δr t := M.lifts i ht01
+  -- `Γ i t` is off the critical set (else `δr t ∈ branchLocus`, contradicting `havoid`).
+  have hΓcrit : M.Γ i t ∉ criticalSet f := by
+    intro hmem
+    exact (havoid (flatEndReparam t)) ⟨M.Γ i t, hmem, hfΓt⟩
+  -- A `C^ω` two-sided local inverse `g` at `Γ i t`.
+  obtain ⟨g, V, hVopen, hfΓtV, hgfΓ, hsec, hg_smooth, hgf_id⟩ :=
+    exists_twoSided_localInverse f hf hnonconst hΓcrit
+  have hδrtV : δr t ∈ V := hfΓt ▸ hfΓtV
+  have hgδrt : g (δr t) = M.Γ i t := hfΓt ▸ hgfΓ
+  -- `f` and `g` are `MDifferentiableAt` at the relevant points.
+  have hf_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f (M.Γ i t) := hf.mdifferentiableAt (by decide)
+  have hg_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (f (M.Γ i t)) := by
+    rw [hfΓt]
+    exact (hg_smooth.contMDiffAt (hVopen.mem_nhds hδrtV)).mdifferentiableAt (by decide : ω ≠ 0)
+  -- `f ∘ g = id` near `f (Γ i t)` (open `V`).
+  have hfs : (f ∘ g) =ᶠ[𝓝 (f (M.Γ i t))] id := by
+    rw [hfΓt]
+    filter_upwards [hVopen.mem_nhds hδrtV] with y hy
+    show f (g y) = y; exact hsec y hy
+  -- `g ∘ f = id` near `Γ i t`.
+  have hsf : (g ∘ f) =ᶠ[𝓝 (M.Γ i t)] id := hgf_id
+  have hgfx : g (f (M.Γ i t)) = M.Γ i t := by rw [hfΓt]; exact hgδrt
+  -- The key value identity: `traceSummand f α (Γ i t) = sheetPullback α g (f (Γ i t))`.
+  have hval := traceSummand_eq_sheetPullback (f := f) (g := g) (x₀ := M.Γ i t)
+    α hgfx hf_mdiff hg_mdiff hfs hsf
+  -- `δr` is chart-pullback differentiable at the interior `t` (chain rule on `δ ∘ flatEndReparam`).
+  have hδr_diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (δr t)).toFun ∘ δr) t := by
+    have hrt : flatEndReparam t ∈ Set.uIcc (0:ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact flatEndReparam_mem_unit t
+    have hδr_comp : ((chartAt (H := ℂ) (δr t)).toFun ∘ δr) =
+        ((chartAt (H := ℂ) (δ (flatEndReparam t))).toFun ∘ δ) ∘ flatEndReparam := by
+      funext s; rfl
+    rw [hδr_comp]
+    exact (hδ.diff (flatEndReparam t) hrt).comp t (differentiable_flatEndReparam t)
+  -- `δr` is continuous at `t`.
+  have hδr_contAt : ContinuousAt δr t :=
+    (hδ.cont.comp differentiable_flatEndReparam.continuous).continuousAt
+  -- Near `t`, the lift coincides with `g ∘ δr` (same factorization as the lift-smoothness lemma).
+  have hΓ_eq : M.Γ i =ᶠ[𝓝 t] g ∘ δr := by
+    have hfΓδr : ∀ᶠ s in 𝓝 t, f (M.Γ i s) = δr s := by
+      filter_upwards [Ioo_mem_nhds ht.1 ht.2] with s hs
+      exact M.lifts i ⟨hs.1.le, hs.2.le⟩
+    have hΓ_contAt : ContinuousAt (M.Γ i) t := (M.smooth i).cont.continuousAt
+    have hgf_along : ∀ᶠ s in 𝓝 t, (g ∘ f) (M.Γ i s) = id (M.Γ i s) :=
+      hΓ_contAt.tendsto.eventually hgf_id
+    filter_upwards [hgf_along, hfΓδr] with s h1 h2
+    show M.Γ i s = g (δr s)
+    rw [← h2]; exact h1.symm
+  -- `pathSpeed (g ∘ δr) t = mfderiv g (δr t) (pathSpeed δr t)` (chain rule via local section).
+  have hps_comp : pathSpeed (g ∘ δr) t = mfderiv 𝓘(ℂ) 𝓘(ℂ) g (δr t) (pathSpeed δr t) := by
+    have hg_mdiff' : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (δr t) := by
+      have := hg_mdiff; rwa [hfΓt] at this
+    exact pathSpeed_comp_eq_mfderiv_of_mdiff g δr t hg_mdiff' hδr_contAt hδr_diff
+  -- `pathSpeed (Γ i) t = pathSpeed (g ∘ δr) t` (germ invariance of pathSpeed).
+  have hps_eq : pathSpeed (M.Γ i) t = pathSpeed (g ∘ δr) t := by
+    show fderiv ℝ ((chartAt (H := ℂ) (M.Γ i t)).toFun ∘ M.Γ i) t 1 =
+      fderiv ℝ ((chartAt (H := ℂ) ((g ∘ δr) t)).toFun ∘ (g ∘ δr)) t 1
+    have hval_t : M.Γ i t = (g ∘ δr) t := hΓ_eq.self_of_nhds
+    rw [hval_t, (hΓ_eq.fun_comp (chartAt (H := ℂ) ((g ∘ δr) t)).toFun).fderiv_eq]
+  -- Assemble.
+  rw [hps_eq, hps_comp, hval]
+  show (α.toFun (g (f (M.Γ i t)))).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) g (f (M.Γ i t)))
+      (pathSpeed δr t) = α.toFun (M.Γ i t) (mfderiv 𝓘(ℂ) 𝓘(ℂ) g (δr t) (pathSpeed δr t))
+  rw [hfΓt, hgδrt, ContinuousLinearMap.comp_apply]
+
+/-- **Off-branch trace value at the lift fibre-sum (interior).** At an interior
+`t ∈ (0,1)`, the trace form value `(traceForm f hf hnonconst α) (δr t)` (a fibre-sum of
+trace summands) evaluated at the base velocity reindexes, via the time-`t` bijection
+`i ↦ M.Γ i t` of `Fin M.n` onto the (finite, off-branch) fibre `f⁻¹{δr t}`, to the sum
+over the lift family of the per-sheet velocity terms. -/
+private theorem traceForm_apply_eq_sum_lift_interior (f : X → Y)
+    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (_hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f)
+    (M : MonodromyLiftFamily f δ) (α : HolomorphicOneForms X) {t : ℝ}
+    (ht : t ∈ Set.Ioo (0:ℝ) 1) :
+    (traceForm f hf hnonconst α).toFun (δ (flatEndReparam t))
+        (pathSpeed (δ ∘ flatEndReparam) t)
+      = ∑ i, traceSummand f α (M.Γ i t) (pathSpeed (δ ∘ flatEndReparam) t) := by
+  classical
+  set δr : ℝ → Y := δ ∘ flatEndReparam with hδr_def
+  set v : ℂ := pathSpeed δr t with hv_def
+  have ht01 : t ∈ Set.Icc (0:ℝ) 1 := ⟨ht.1.le, ht.2.le⟩
+  show ((traceForm f hf hnonconst α).toFun (δr t)) v
+    = ∑ i, traceSummand f α (M.Γ i t) v
+  -- Off-branch: the trace form value is the fibre-sum `traceFun`.
+  have hδr_avoid : δr t ∉ branchLocus f := havoid (flatEndReparam t)
+  rw [traceForm_toFun_of_notMem_branchLocus f hf hnonconst α hδr_avoid]
+  -- The fibre over `δr t` is finite.
+  have hfin : (f ⁻¹' {δr t}).Finite := fiber_finite_off_branchLocus f hf hnonconst hδr_avoid
+  -- Unfold the fibre sum; reindex the fibre Finset by the time-`t` bijection `i ↦ M.Γ i t`
+  -- at the covector (CLM) level, then evaluate at `v`.
+  rw [traceFun, finsum_mem_eq_finite_toFinset_sum _ hfin]
+  simp only [traceSummandAt]
+  have hreindex : ∑ x ∈ hfin.toFinset, traceSummand f α x
+      = ∑ i, traceSummand f α (M.Γ i t) := by
+    refine (Finset.sum_bij (fun (i : Fin M.n) (_ : i ∈ Finset.univ) => M.Γ i t)
+      ?_ ?_ ?_ ?_).symm
+    · -- maps into the fibre Finset
+      intro i _
+      rw [Set.Finite.mem_toFinset, Set.mem_preimage, Set.mem_singleton_iff]
+      exact M.lifts i ht01
+    · -- injective on `univ` (fibre injectivity at `t`)
+      intro a₁ _ a₂ _ heq
+      exact M.fibre_inj t ht01 heq
+    · -- surjective onto the fibre Finset (fibre surjectivity at `t`)
+      intro x hx
+      rw [Set.Finite.mem_toFinset, Set.mem_preimage, Set.mem_singleton_iff] at hx
+      obtain ⟨i, hi⟩ := M.fibre_surj t ht01 x hx
+      exact ⟨i, Finset.mem_univ i, hi⟩
+    · -- termwise equality
+      intro i _; rfl
+  rw [hreindex]
+  exact ContinuousLinearMap.sum_apply Finset.univ (fun i => traceSummand f α (M.Γ i t)) v
+
 /-- **Leaf D — projection formula (pointwise fibre-sum).** The line integral of the
 trace form along `δ` equals the sum, over the lift family, of the lift periods:
 `∫_δ traceFormTotal(ωⱼ) = ∑ᵢ periodVec(Γ i) j`. Reparametrize to `δr`, then integrate
@@ -899,8 +1034,45 @@ theorem lineIntegral_traceFormTotal_eq_sum_periodVec (f : X → Y)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f)
     (M : MonodromyLiftFamily f δ) (j : Fin (genus X)) :
     lineIntegral (traceFormTotal f hf (periodBasisForm X j)) δ
-      = ∑ i, periodVec (M.Γ i) j :=
-  sorry
+      = ∑ i, periodVec (M.Γ i) j := by
+  classical
+  set ωj : HolomorphicOneForms X := periodBasisForm X j with hωj_def
+  set δr : ℝ → Y := δ ∘ flatEndReparam with hδr_def
+  -- Step 1: total trace = genuine trace (off-constant).
+  rw [traceFormTotal_of_nonconstant f hf hnonconst]
+  -- Step 2: reparametrize the LHS line integral by `flatEndReparam`.
+  rw [← lineIntegral_comp_flatEndReparam (traceForm f hf hnonconst ωj) δ hδ.diff]
+  -- Step 3: pull the RHS sum inside the integral.
+  have hRHS : ∑ i, periodVec (M.Γ i) j
+      = ∫ t in (0:ℝ)..1, ∑ i, ωj.toFun (M.Γ i t) (pathSpeed (M.Γ i) t) := by
+    rw [intervalIntegral.integral_finset_sum (fun i _ => (M.smooth i).integrable j)]
+    rfl
+  rw [hRHS]
+  -- Unfold the LHS to an interval integral over the reparametrized integrand.
+  show (∫ t in (0:ℝ)..1, (traceForm f hf hnonconst ωj).toFun ((δ ∘ flatEndReparam) t)
+        (pathSpeed (δ ∘ flatEndReparam) t))
+    = ∫ t in (0:ℝ)..1, ∑ i, ωj.toFun (M.Γ i t) (pathSpeed (M.Γ i) t)
+  -- Step 4: the integrands agree a.e. on `(0,1]` (pointwise on the interior `(0,1)`;
+  -- the endpoint `{1}` is null).
+  refine intervalIntegral.integral_congr_ae ?_
+  rw [MeasureTheory.ae_iff]
+  refine MeasureTheory.measure_mono_null ?_ (MeasureTheory.measure_singleton (1 : ℝ))
+  intro t ht
+  simp only [Set.mem_setOf_eq, Classical.not_imp] at ht
+  obtain ⟨ht_mem, ht_ne⟩ := ht
+  rw [Set.uIoc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht_mem
+  by_contra ht1
+  refine ht_ne ?_
+  -- `t ∈ (0,1)`.
+  have ht_Ioo : t ∈ Set.Ioo (0:ℝ) 1 :=
+    ⟨ht_mem.1, lt_of_le_of_ne ht_mem.2 (by simpa using ht1)⟩
+  -- Pointwise identity on the interior.
+  show (traceForm f hf hnonconst ωj).toFun (δ (flatEndReparam t))
+        (pathSpeed (δ ∘ flatEndReparam) t)
+    = ∑ i, ωj.toFun (M.Γ i t) (pathSpeed (M.Γ i) t)
+  rw [traceForm_apply_eq_sum_lift_interior f hf hnonconst δ hδ havoid M ωj ht_Ioo]
+  exact Finset.sum_congr rfl fun i _ =>
+    traceSummand_lift_velocity_interior f hf hnonconst δ hδ havoid M ωj i ht_Ioo
 
 /-- **Leaf E — orbit loops.** Group the lift family into closed smooth loops along
 the orbits of the monodromy permutation `σ i := the index with Γ (σ i) 0 = Γ i 1`
