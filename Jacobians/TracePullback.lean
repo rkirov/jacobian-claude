@@ -6,6 +6,7 @@ Authors: Rado Kirov
 import Jacobians.TraceForm
 import Mathlib.Topology.Homotopy.Lifting
 import Mathlib.Analysis.SpecialFunctions.SmoothTransition
+import Mathlib.MeasureTheory.Function.JacobianOneDim
 
 /-!
 # The Jacobian pullback in ambient coordinates, driven by the geometric trace
@@ -456,6 +457,102 @@ theorem contDiff_flatEndReparam {n : ℕ∞} : ContDiff ℝ n flatEndReparam :=
 
 theorem differentiable_flatEndReparam : Differentiable ℝ flatEndReparam :=
   (contDiff_flatEndReparam (n := 1)).differentiable (by norm_num)
+
+theorem flatEndReparam_hasDerivAt (t : ℝ) :
+    HasDerivAt flatEndReparam (deriv flatEndReparam t) t :=
+  (differentiable_flatEndReparam t).hasDerivAt
+
+theorem flatEndReparam_monotone : Monotone flatEndReparam := by
+  intro a b hab; unfold flatEndReparam; exact Real.smoothTransition.monotone (by linarith)
+
+theorem flatEndReparam_image_Icc : flatEndReparam '' Set.Icc (0:ℝ) 1 = Set.Icc 0 1 := by
+  apply Set.eq_of_subset_of_subset
+  · rintro u ⟨t, -, rfl⟩; exact flatEndReparam_mem_unit t
+  · have h := intermediate_value_Icc (zero_le_one (α := ℝ))
+      differentiable_flatEndReparam.continuous.continuousOn
+    rwa [flatEndReparam_zero, flatEndReparam_one] at h
+
+/-- Reparametrized pathSpeed (chain rule): `pathSpeed (γ ∘ flatEndReparam) t =
+flatEndReparam'(t) · pathSpeed γ (flatEndReparam t)`. Mirrors
+`pathSpeed_smoothStep01_comp_eq`. -/
+theorem pathSpeed_flatEndReparam_comp_eq (γ : ℝ → X) (t : ℝ)
+    (hγ_diff : DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (γ (flatEndReparam t))).toFun ∘ γ) (flatEndReparam t)) :
+    pathSpeed (γ ∘ flatEndReparam) t =
+      ((deriv flatEndReparam t : ℝ) : ℂ) * pathSpeed γ (flatEndReparam t) := by
+  unfold pathSpeed
+  have h_assoc : (chartAt (H := ℂ) ((γ ∘ flatEndReparam) t)).toFun ∘ (γ ∘ flatEndReparam) =
+      ((chartAt (H := ℂ) (γ (flatEndReparam t))).toFun ∘ γ) ∘ flatEndReparam := by
+    funext s; rfl
+  rw [h_assoc]
+  have hσ : HasDerivAt flatEndReparam (deriv flatEndReparam t) t := flatEndReparam_hasDerivAt t
+  have hφ : HasDerivAt ((chartAt (H := ℂ) (γ (flatEndReparam t))).toFun ∘ γ)
+      (pathSpeed γ (flatEndReparam t)) (flatEndReparam t) := hγ_diff.hasDerivAt
+  have h_comp : HasDerivAt
+      (((chartAt (H := ℂ) (γ (flatEndReparam t))).toFun ∘ γ) ∘ flatEndReparam)
+      (deriv flatEndReparam t • pathSpeed γ (flatEndReparam t)) t := hφ.scomp t hσ
+  have h_deriv := h_comp.deriv
+  have h_lhs_eq : (fderiv ℝ
+      (((chartAt (H := ℂ) (γ (flatEndReparam t))).toFun ∘ γ) ∘ flatEndReparam) t) 1 =
+      deriv flatEndReparam t • pathSpeed γ (flatEndReparam t) := by rw [← h_deriv]; rfl
+  rw [h_lhs_eq]; exact Complex.real_smul
+
+/-- **Reparametrization-invariance of the line integral** (the textbook monotone
+change of variables). Reparametrizing a (regular, integrable) path by the monotone
+`flatEndReparam` leaves the line integral unchanged. Uses Mathlib's measure-theoretic
+monotone CoV `integral_image_eq_integral_deriv_smul_of_monotoneOn` (valid for merely
+*integrable* integrands — no `C¹` needed), exactly the value-level companion of the
+`smoothStep01` integrability argument in `isSmoothPath_smoothPathSmooth`. The key to
+transporting the preimage-cycle construction from `δ∘flatEndReparam` back to `δ`. -/
+theorem lineIntegral_comp_flatEndReparam (α : HolomorphicOneForms X) (γ : ℝ → X)
+    (hγ_diff : ∀ t ∈ Set.uIcc (0:ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
+    lineIntegral α (γ ∘ flatEndReparam) = lineIntegral α γ := by
+  have h01 : (0:ℝ) ≤ 1 := by norm_num
+  -- The monotone change-of-variables (value version) for the integrand of `γ`.
+  have hcov := MeasureTheory.integral_image_eq_integral_deriv_smul_of_monotoneOn
+    (s := Set.Icc (0:ℝ) 1) measurableSet_Icc (f := flatEndReparam) (f' := deriv flatEndReparam)
+    (fun x _ => (flatEndReparam_hasDerivAt x).hasDerivWithinAt) (flatEndReparam_monotone.monotoneOn _)
+    (fun u => α.toFun (γ u) (pathSpeed γ u))
+  rw [flatEndReparam_image_Icc] at hcov
+  -- `lineIntegral α γ` as a set integral over `Icc 0 1`.
+  have hRHS : lineIntegral α γ = ∫ x in Set.Icc (0:ℝ) 1, α.toFun (γ x) (pathSpeed γ x) := by
+    unfold lineIntegral
+    rw [intervalIntegral.integral_of_le h01, ← MeasureTheory.integral_Icc_eq_integral_Ioc]
+  -- `lineIntegral α (γ∘r)` as the reparametrized set integral over `Icc 0 1`.
+  have hLHS : lineIntegral α (γ ∘ flatEndReparam) =
+      ∫ x in Set.Icc (0:ℝ) 1,
+        deriv flatEndReparam x • α.toFun (γ (flatEndReparam x)) (pathSpeed γ (flatEndReparam x)) := by
+    unfold lineIntegral
+    rw [intervalIntegral.integral_of_le h01, ← MeasureTheory.integral_Icc_eq_integral_Ioc]
+    refine MeasureTheory.setIntegral_congr_fun measurableSet_Icc (fun t ht => ?_)
+    have hrt : flatEndReparam t ∈ Set.uIcc (0:ℝ) 1 := by
+      rw [Set.uIcc_of_le h01]; exact flatEndReparam_mem_unit t
+    have hps := pathSpeed_flatEndReparam_comp_eq γ t (hγ_diff (flatEndReparam t) hrt)
+    show α.toFun (γ (flatEndReparam t)) (pathSpeed (γ ∘ flatEndReparam) t) =
+      deriv flatEndReparam t • α.toFun (γ (flatEndReparam t)) (pathSpeed γ (flatEndReparam t))
+    rw [hps]
+    have h_lin : (α.toFun (γ (flatEndReparam t)))
+          (((deriv flatEndReparam t : ℝ) : ℂ) * pathSpeed γ (flatEndReparam t)) =
+        ((deriv flatEndReparam t : ℝ) : ℂ) *
+          (α.toFun (γ (flatEndReparam t))) (pathSpeed γ (flatEndReparam t)) := by
+      have h_ml := (α.toFun (γ (flatEndReparam t))).map_smul
+        ((deriv flatEndReparam t : ℝ) : ℂ) (pathSpeed γ (flatEndReparam t))
+      simp only [smul_eq_mul] at h_ml
+      exact h_ml
+    rw [h_lin, Complex.real_smul]
+  rw [hLHS, hRHS]; exact hcov.symm
+
+/-- **Period vector is `flatEndReparam`-invariant.** A closed smooth loop and its
+seam-flattened reparametrization `γ ∘ flatEndReparam` have the same period vector
+(componentwise `lineIntegral_comp_flatEndReparam`). This is what lets the
+preimage-cycle construction, carried out for `δ ∘ flatEndReparam`, transport back to
+`δ` (via `PreimageCycle.congr_periodVec`). -/
+theorem periodVec_comp_flatEndReparam (γ : ℝ → X) (hγ : IsClosedSmoothLoop γ) :
+    periodVec (γ ∘ flatEndReparam) = periodVec γ := by
+  funext i
+  exact lineIntegral_comp_flatEndReparam (periodBasisForm X i) γ hγ.diff
+
 
 /-- **§3 sub-piece B — smoothness of the lift.** A continuous lift `Γ` of `δ`
 through a non-critical point inherits `δ`'s chart-pullback differentiability.
