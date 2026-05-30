@@ -17,6 +17,31 @@ A `PreimageCycle` bundles: `n`, `loops : Fin n → ℝ → X`, `loops_smooth` (e
 
 ## Status
 
+**Top-level theorem `exists_preimageCycle_of_off_branchLocus` is now PROVEN** — reduced
+(sorry-free coordinate glue) to the single elementary geometric lemma
+`exists_preimageLoopFamily` via the bridge `ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal`.
+So the ambient/matrix layer of the whole §3 chain is finished; the one remaining sorry
+(besides the pre-existing, deferred `exists_loop_off_branchLocus`) is `exists_preimageLoopFamily`,
+stated purely in line-integral/period terms.
+
+**The frontier is now a single analytic gap.** `exists_preimageLoopFamily` needs two
+prerequisites — the seam-fix lifts' **integrability** and **reparam-invariance**
+`periodVec (δ∘flatEndReparam) = periodVec δ` — both of which reduce to a *change of
+variables for the line integral* under the monotone `C¹` reparam `flatEndReparam`.
+Mathlib's CoV (`integral_deriv_smul_comp'''`, strongest variant) requires the integrand
+**continuous on the open interval**; but an `IsClosedSmoothLoop`'s integrand
+`t ↦ ωⱼ(δ t)(pathSpeed δ t)` is only *interval-integrable + pointwise-differentiable*, NOT
+`C¹` (no continuity of `pathSpeed δ`). So the CoV does not apply. **Two ways forward (a
+Lean/architecture decision for the user):**
+ (a) **Strengthen `IsClosedSmoothLoop`** (and `IsSmoothPath`) to require `ContinuousOn`/`C¹`
+     chart-derivatives (i.e. `pathSpeed` continuous), not just pointwise `DifferentiableAt`.
+     This makes integrands continuous ⇒ CoV applies ⇒ unblocks reparam-invariance + lift
+     integrability in one stroke (and likely simplifies several existing proofs). Cost: a
+     repo-wide refactor of the predicate and its ~dozen call sites.
+ (b) **Prove a CoV / integrability-transfer for *integrable* integrands under a monotone AC
+     reparam** (the 1-D area formula for monotone AC maps holds for integrable `g`; Mathlib's
+     interval-integral CoV is FTC-based hence continuity-gated). A focused real-analysis lemma.
+
 - **A — continuous path-lift: DONE, sorry-free** (`exists_continuous_lift_off_branchLocus`,
   commit `32d435e`). `δ` off-branch lifts through the proven covering via Mathlib's
   `IsCoveringMap.liftPath`, repackaged to `ℝ → X` with `Set.projIcc`. `#print axioms` =
@@ -115,16 +140,20 @@ heart shared with C. Off-branch throughout ⇒ **no branch-point continuity need
 `ℓ` is `δ` traversed `ℓ` times (`f∘Γ_e=δ`); `periodVec(f∘loop)=ℓ•periodVec δ` via
 `periodVec_concat_of_smooth`; `∑_orbits ℓ = card F = sheets`.
 
-### F — assemble `PreimageCycle` from C–E and conclude `Nonempty`.
+### F — assemble `PreimageCycle` — **DONE, sorry-free coordinate glue**
+`exists_preimageCycle_of_off_branchLocus` reduces to `exists_preimageLoopFamily` via the bridge
+(see Status). All of C/D-geom/E/F is now packaged into that one elementary lemma.
 
 ## Infrastructure confirmed available (2026-05-30 audit)
-All non-monodromy ingredients are now proven: A (`exists_continuous_lift_off_branchLocus`),
-B (`differentiableAt_chart_lift_of_notMem_criticalSet`), the matrix↔integral bridge,
+All non-monodromy ingredients are proven and the coordinate layer is fully wired in:
+A (`exists_continuous_lift_off_branchLocus`, clamp-exposing), B
+(`differentiableAt_chart_lift_of_notMem_criticalSet`), the seam fix
+(`flatEndReparam` + `exists_smoothLift_flatEnd_off_branchLocus`), the matrix↔integral bridge,
 `exists_localSheetSystem`(+`_traceForm_eq_sum`), `exists_nbhd_cover` (partition),
 `lineIntegral_pullback_section`, `IsSmoothPath.concat`/`periodVec_concat_of_smooth`,
-`fiber_finite_off_branchLocus`. **The sole remaining content is the monodromy/seam/reassembly
-combinatorics (C + D-geom + E + F), one interconnected argument — the seam-smoothness fix (C
-option i) is the gating sub-problem.**
+`fiber_finite_off_branchLocus`, and the proven reduction `exists_preimageCycle_of_off_branchLocus`.
+**The sole remaining content is `exists_preimageLoopFamily`: the monodromy/orbit + partition/
+reassembly combinatorics, gated on the analytic CoV/regularity gap (see Status (a)/(b)).**
 
 ## Separately recorded: `traceForm_comp` is infrastructure-blocked
 
