@@ -111,20 +111,24 @@ velocity there, with NO one-sided gluing; the interior is plain B. Output: `Γ` 
 `f(Γ t)=δ(flatEndReparam t)` on `[0,1]`, chart-diff on all `[0,1]`, `pathSpeed Γ 0 = pathSpeed Γ 1 = 0`,
 and `f(Γ 1)=δ 0` (monodromy target in the fibre). (A was extended to expose its clamp; no callers broke.)
 
-**Still open for C:**
- 1. **Integrability** of the lift's integrand `t ↦ ωᵢ(Γ t)(pathSpeed Γ t)` on `[0,1]` — the one
-    `IsSmoothPath` field not yet provided. Hard part is the middle `[1/4,3/4]` (plateau ends give `0`);
-    there `Γ = g∘δr` locally ⇒ integrand `= (pullbackForm g ωᵢ)(δr ·)(pathSpeed δr ·)`, a ℂ-combination
-    of `δ`-basis integrands reparametrized by `flatEndReparam` — reduce to `δ`'s given integrability via
-    a change-of-variables/`comp`-integrability lemma. (Patchwork of local `g`'s ⇒ needs a cover/partition.)
+**Reparam-invariance — DONE, sorry-free** (`lineIntegral_comp_flatEndReparam`,
+`periodVec_comp_flatEndReparam`): `periodVec (γ ∘ flatEndReparam) = periodVec γ`, via the
+measure-theoretic monotone CoV (`integral_image_eq_integral_deriv_smul_of_monotoneOn`, no
+continuity needed). Transports the final `PreimageCycle` from `δ∘flatEndReparam` back to `δ`
+(`PreimageCycle.congr_periodVec`). Supporting: `flatEndReparam_{hasDerivAt,monotone,image_Icc}`,
+`pathSpeed_flatEndReparam_comp_eq`. `#print axioms = [propext, Classical.choice, Quot.sound]`.
+
+**Still open for C (all unblocked — "hard Lean, no missing math"):**
+ 1. **Integrability** of the lift's integrand on `[0,1]` (the one `IsSmoothPath` field still owed).
+    Plateau ends give `0`; the middle `[1/4,3/4]` is `Γ = g∘δr` locally ⇒ integrand is a ℂ-combination
+    of `δ`-basis integrands reparametrized by `flatEndReparam`, each integrable by the *integrability*
+    version `integrableOn_image_iff_integrableOn_deriv_smul_of_monotoneOn` (the exact lemma the codebase
+    uses for `smoothStep01`). Patchwork of local `g`'s ⇒ a finite cover (`exists_nbhd_cover`) + gluing.
  2. **Monodromy permutation** `σ : F → F`, `σ e = Γ_e 1`, on the finite fibre `F=f⁻¹'{δ 0}`
-    (`fiber_finite_off_branchLocus` ⇒ `Fintype`); bijective by lift uniqueness (`IsCoveringMap` /
-    reversed-loop lift). Package `e ↦ Γ_e` as a function (choice over the fibre).
+    (`fiber_finite_off_branchLocus` ⇒ `Fintype`); bijective by lift uniqueness
+    (`IsCoveringMap.eq_liftPath_iff` ✓ — found). Package `e ↦ Γ_e` as a function (choice over the fibre).
  3. **Orbit concatenation** into closed loops via `IsSmoothPath.concat` (zero junction velocities ✓
     from the seam fix) + `periodVec_concat_of_smooth`; `n`=#orbits, `coeffs i = 1`, `sheets = card F`.
- 4. **Reparam-invariance** `periodVec (δ ∘ flatEndReparam) = periodVec δ` (change of variables for
-    `lineIntegral` under the monotone reparam fixing `0,1`) — to transport the final `PreimageCycle`
-    from `δ∘flatEndReparam` back to `δ` (via `PreimageCycle.congr_periodVec`).
 
 ### D-geom — projection formula (open; infra now all present)
 Goal `∫_δ traceFormTotal f hf ωᵢ = ∑_loops coeffs·periodVec(loop)_i` (then `pullback_eq`
