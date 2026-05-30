@@ -24,65 +24,63 @@ before being relied on.
 
 **Not done, but further than the headline suggests.** The challenge
 file compiles clean (`lake build`, exit 0) and every main signature
-from Buzzard's spec is defined. **8 `sorry`s remain, 0 custom axioms**
-(`#print axioms` shows only the standard `propext, Classical.choice,
-Quot.sound`). Each sorry is a named classical theorem not yet in
-Mathlib — the mathematically load-bearing pieces.
+from Buzzard's spec is defined, with **0 custom axioms** (`#print
+axioms` shows only the standard `propext, Classical.choice,
+Quot.sound`). The remaining gaps are named classical theorems not yet
+in Mathlib — the mathematically load-bearing pieces. (The build shows
+more than one `sorry` warning per goal where a goal is decomposed into
+named sub-lemmas.)
 
-The code to date is ~24k lines. A rough honest estimate for a
-complete, sorry-free solution is several times that, most of the
-remaining bulk being upstream Mathlib infrastructure (manifold
-Stokes, manifold-level meromorphic functions, divisor theory on
-manifolds, manifold degree, Riemann bilinear / Hodge, uniformization).
-None of those currently exist in Mathlib.
-
-See `docs/STATUS.md` for the live 8-sorry inventory (S1–S8), the
-dependency/leverage map, and per-sorry tiers.
+The code to date is ~24k lines. A complete, sorry-free solution is
+several times that, most of the remaining bulk being upstream Mathlib
+infrastructure (manifold Stokes, manifold-level meromorphic functions,
+divisor theory on manifolds, Riemann bilinear / Hodge, uniformization)
+that does not currently exist in Mathlib.
 
 ### What is done
 
-- Every type/definition in Buzzard's challenge spec: `genus`,
-  `Jacobian`, `periodLattice`, `ofCurve`, `pushforward`, `pullback`,
-  `ContMDiff.degree` (the last two as `0` placeholders where
-  noted).
-- All the main theorems compile with the challenge's intended
-  statements.
-- Real proof chains for the `pushforward` side (functoriality,
-  lattice preservation, smoothness via `ZLatticeQuotient`).
-- `ofCurve_inj` (the main challenge theorem) reduces to Abel's
-  theorem via a real proof chain — the chain itself is genuine
-  (basepoint change, `abelJacobi ↔ ofCurve` bridge, two-point
-  divisor algebra).
-- Substantial real infrastructure: line integrals on manifolds
-  (0 sorries, the single biggest missing Mathlib piece),
-  chart-invariance of `meromorphicOrderAt`, Montel's theorem via
-  per-chart Arzelà, bundle-trivialization proofs like
-  `isClosed_criticalSet`, reverse/concat smoothness preservation
-  for smooth paths.
+- Every type/definition in Buzzard's spec: `genus`, `Jacobian`,
+  `periodLattice`, `ofCurve`, `pushforward`, `pullback`,
+  `ContMDiff.degree` (a real fibre-cardinality degree).
+- All main theorems compile with the challenge's intended statements.
+- **Smooth-path family / Abel–Jacobi holomorphicity** — fully proven,
+  axiom-clean (the chart-ball cover + junction-concat keystone).
+- **Pushforward/pullback functoriality + lattice preservation** via
+  `ZLatticeQuotient`. The `pushforward ∘ pullback = degree`
+  *misformalization* (pullback was the transpose, not the genuine
+  pushforward) is now fixed: `pullback` is the genuine trace transpose
+  and `pushforward_pullback` is a *true* statement.
+- **Manifold inverse function theorem** for complex 1-manifolds
+  (`exists_holo_localInverse`) and **local holomorphic sections** at
+  non-critical points — reusable infrastructure; the off-branch
+  **trace (pushforward) of forms** is built on them.
+- `ofCurve_inj` reduces to Abel's theorem via a genuine proof chain.
+- Line integrals on manifolds (0 sorries — the single biggest missing
+  Mathlib piece), chart-invariance of `meromorphicOrderAt`, Montel's
+  theorem, the off-branch covering map, fibre finiteness.
 
-### What is remaining (8 sorries)
+### What is remaining
 
-Tiered by realistic Lean-completion difficulty:
+The open classical theorems, named by what they are:
 
-- **Tractable now (~weeks, bounded Lean engineering):**
-  `exists_smoothPath_family` (S1) — the local chart-ball machinery is
-  already proven and axiom-clean; only the global path-family
-  construction remains. Closing it makes `ofCurve_contMDiff` (the
-  Abel–Jacobi map is holomorphic) fully real with no further work.
-- **Hard (single self-contained theory builds, ~months each):**
-  `exists_preimageCycle_of_nonconstant` (S4, branched-cover lifting),
-  `ambientPhi_ambientPsi_eq` (S8, degree identity — also needs a real
-  `pushforwardForm`).
-- **Research-frontier (Mathlib-contribution scale, no Mathlib support):**
-  `deg_div` (S6, residue theorem), `abelJacobi_twoPoint_ne_zero` (S7,
-  Abel + Riemann–Hurwitz — the leaf of the main theorem `ofCurve_inj`),
-  `DiscreteTopology`/`IsZLattice` for `truePeriodLattice` (S2/S3,
-  Riemann bilinear / Hodge — ground the Jacobian-is-a-torus instances),
-  `genus_eq_zero_iff_homeo` (S5, uniformization — the most
-  theory-deficient).
+- **Period lattice is discrete** and **is full-rank (a ℤ-lattice)** —
+  ground the Jacobian-as-complex-torus instances (Riemann bilinear /
+  Hodge; no Mathlib support).
+- **Branched-cover loop lifting** — homotope a loop off the branch
+  locus (manifold Stokes) and lift it to the preimage cycle. The
+  covering, fibre finiteness, manifold IFT, local sections, and the
+  off-branch trace are built; the loop homotopy + cycle assembly remain.
+- **Pushforward ∘ pullback = degree** — remaining: the trace map's
+  branch-point extension + projection formula, then the degree identity
+  off the lattice (via full-rank).
+- **Degree counts zeros and poles** — off the critical path.
+- **Abel–Jacobi non-vanishing** — Abel + Riemann–Hurwitz; the leaf of
+  the main injectivity theorem `ofCurve_inj`.
+- **Genus zero ⟺ sphere** — uniformization; the most theory-deficient.
 
-See `docs/STATUS.md` for the full inventory with locations, the
-dependency/leverage map, and Forster/Miranda section references.
+The live status is tracked in the agent memory; `docs/REFERENCES.md`
+has per-topic textbook pointers and `docs/S8_TRACE_PLAN.md` records the
+trace-map design.
 
 ## Layout
 
@@ -95,13 +93,11 @@ dependency/leverage map, and Forster/Miranda section references.
   - `Genus.lean` — genus = dim HOF X.
   - `Montel/` — Montel's theorem (compactness of holomorphic 1-forms under supNormK).
   - `ZLatticeQuotient.lean` — quotient of ℂ^g by a ℤ-lattice as a complex manifold.
-- `docs/` — design notes, plans, references, status:
-  - `STATUS.md` — project status and milestones.
+- `docs/` — design notes and references:
   - `DESIGN.md` — long-term construction choices.
-  - `ABEL_JACOBI_PLAN.md` — roadmap for the Abel–Jacobi chain.
-  - `MONTEL_PATH.md` — Montel theorem proof path.
-  - `REFERENCES.md` — textbook/paper references per sorry.
-  - `recon.md` — Mathlib availability audit.
+  - `REFERENCES.md` — textbook/paper references per topic.
+  - `S8_TRACE_PLAN.md` — the trace-map (pushforward of forms) design.
+  - `EXTERNAL_AUDIT.md` — audit of the ported discharge infrastructure.
 
 ## Build
 
@@ -110,8 +106,8 @@ lake exe cache get   # pull Mathlib olean cache
 lake build
 ```
 
-Expect 8 `declaration uses 'sorry'` warnings (one per remaining
-classical sorry) and no errors.
+Expect a number of `declaration uses 'sorry'` warnings (the open
+classical theorems above, plus their named sub-lemmas) and no errors.
 
 ## Approach
 
