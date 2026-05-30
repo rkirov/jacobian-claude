@@ -847,10 +847,13 @@ What it still needs (all infrastructure is identified; see
   concatenated over its orbits (`IsSmoothPath.concat`, junction velocities zero);
 * the partition/sheet-reassembly projection formula (`exists_nbhd_cover` +
   `exists_localSheetSystem_traceForm_eq_sum` + `lineIntegral_pullback_section`);
-* two **analytic facts currently gated on a Mathlib gap** — the lifts' integrability
-  and line-integral reparametrization-invariance `periodVec (δ∘flatEndReparam) =
-  periodVec δ` — both reducing to a **change-of-variables for *integrable* (not
-  merely continuous) integrands** under a monotone `C¹` reparametrization. -/
+* the two analytic facts that were the last walls are now **both CLEARED**: the
+  line-integral reparametrization-invariance `periodVec (δ∘flatEndReparam) =
+  periodVec δ` is PROVEN (`periodVec_comp_flatEndReparam`, monotone change-of-variables
+  for *integrable* integrands), and the lifts' integrability now follows from the
+  **C¹ loop-predicate refactor** (`IsClosedSmoothLoop` carries `velCont`; a local-section
+  lift `g∘δr` gets its `velCont` from `velCont_compOn`, whence `integrable`). So what
+  remains here is *purely* the monodromy/orbit/projection geometry — no missing analysis. -/
 theorem exists_preimageLoopFamily (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :
