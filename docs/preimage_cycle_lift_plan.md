@@ -30,10 +30,52 @@ leaves live in `TracePullback.lean` just above `exists_preimageLoopFamily`:
   along σ-orbits (`σ` = `fibre`-bijection at `t=1`; iterated `concat`, junctions `0`), account
   both periods (`coeffs=1`, `sheets=M.n`).
 
-All three leaf proofs delegated to clean-context agents (statements pinned ⟹ a sorry-free +
-axiom-clean build is automatically sound; verify by statement-unchanged + build + `#print
-axioms`). Everything below is the prior derivation (still valid; the C¹ refactor that makes
-`smooth`/velCont available, and the reparam-invariance that D/E use).
+### Progress (2026-05-30): leaves D & E DONE; only A+B remains
+
+* **leaf D** — PROVEN, axiom-clean (commit `5a09adc`). `lineIntegral_traceFormTotal_eq_sum_periodVec`
+  via the pointwise fibre-sum identity (two private helpers: `traceSummand_lift_velocity_interior`,
+  `traceForm_apply_eq_sum_lift_interior`). The `sorryAx` it reports is inherited from
+  `traceFormTotal` (open `traceExtendsAt_branchPoint`), NOT new.
+* **leaf E** — PROVEN, axiom-clean (commits `b8d264d` helpers, `3ff405d` accounting).
+  Orbit machinery: `IsSmoothPath.comp`, `concatPow`(+`_isSmoothPath`/`_periodVec`),
+  `comp_concatPow_periodVec`, `periodVec_comp_lift`, `exists_monodromyPerm`,
+  `perm_pow_orderOf_cycleOf_apply_self`, `perm_pow_apply_injOn`, and the key
+  `exists_orbitCoeff` (orbit-partition accounting: orbit = SameCycle class = image of
+  `k↦σ^k i`; `Finset.sum_fiberwise` over the orbit-min representative). orbit loop =
+  `concatPow (orderOf(cycleOf i) - 1) i`.
+
+### Leaf A+B remainder (`exists_monodromyLiftFamily`) — the ONLY open piece of the heart
+
+`velContWithinAt_compOn` (pointwise `ContinuousWithinAt` companion of `velCont_compOn`) is
+**PROVEN** (commit, axiom-clean) — the analytic crux. Remaining sub-parts (all infra now in place):
+1. **`δr` velCont**: `ContinuousOn (velsection (δ∘flatEndReparam)) (Icc 0 1)` via
+   `velCont_reparam δ flatEndReparam (deriv flatEndReparam)` — `hmaps`=`flatEndReparam_mem_unit`,
+   `hσcont`=`differentiable_flatEndReparam.continuous`, `hσ'cont`=`(Complex.continuous_ofReal.comp
+   ((contDiff_flatEndReparam (n:=2)).continuous_deriv …)).continuousOn`, `hspeed`=
+   `pathSpeed_flatEndReparam_comp_eq` + `smul_eq_mul`, `hγ`=`hδ.velCont`. (~10 lines, recipe verified.)
+2. **lift velCont** (extend `exists_smoothLift_flatEnd_off_branchLocus` — only docstring callers, safe
+   to extend its output tuple): `ContinuousOn (velsection Γ) (Icc 0 1)`, 3 cases on `t₀`:
+   * `t₀=0`/`t₀=1` (plateau): `Γ ≡ e`/`≡ Γ 1` near the endpoint (reuse `hΓ_const0`/`hΓ_const1`);
+     velsection ≡ `⟨e,0⟩`. **Fiddly:** `mk' (Γ s)(pathSpeed Γ s) = mk' e 0` is a *dependent*
+     `TotalSpace.mk'` equality (base `Γ s = e`, fibre `pathSpeed Γ s = 0`) — naive `rw [hs]` hits a
+     motive error; use `congr 1` (base eq + ℂ-fibre HEq→eq) or `FiberBundle.continuousWithinAt_totalSpace`.
+   * interior `0<t₀<1`: `𝓝[Icc] t₀ = 𝓝 t₀`; local two-sided inverse `g` at `Γ t₀` (∉ criticalSet
+     since `δ(flatEndReparam t₀)∉branchLocus`), `Γ =ᶠ[𝓝 t₀] g∘δr` (as in
+     `differentiableAt_chart_lift_of_notMem_criticalSet`), then `velContWithinAt_compOn` + congr.
+3. **construct the family**: fibre `f⁻¹'{δ 0}` finite (`fiber_finite_off_branchLocus (havoid 0)`) ⇒
+   `Fintype`; `n=card`, `enum : Fin n ≃ ↥fibre`; `Γ i :=` (extended lift from `(enum i).1`).
+   `smooth`/`velZero`/`lifts` fields from the extended lift.
+4. **`fibre_inj`**: lift uniqueness — `{s∈Icc | Γ i s = Γ k s}` clopen in connected `Icc`
+   (open: local homeo of `f`; closed: T2+cont), nonempty ⇒ `=Icc` ⇒ `Γ i 0 = Γ k 0` ⇒ `i=k`.
+5. **`fibre_surj`**: equinumerosity — `t↦#(f⁻¹'{δr t})` locally constant (over each
+   `LocalSheetSystem` base `V`, `#fibre = S.n` by `fibre_eq`+`sheet_inj`; `δr` cont) ⇒ constant on
+   connected `Icc` ⇒ `=n`; injective (#4) + equal card ⇒ surjective.
+
+All three leaf proofs of D/E were delegated to clean-context agents (statements pinned ⟹ a
+sorry-free + axiom-clean build is automatically sound; verify by statement-unchanged + build +
+`#print axioms`); leaf E was salvaged from a stopped agent's scratch + completed by hand.
+Everything below is the prior derivation (still valid; the C¹ refactor that makes `smooth`/velCont
+available, and the reparam-invariance that D/E use).
 
 ## ⇒ STATUS (2026-05-30, end of session): ALL ANALYTIC WALLS CLEARED — only the geometry remains
 
