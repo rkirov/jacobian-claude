@@ -50,47 +50,74 @@ A `PreimageCycle` bundles: `n`, `loops : Fin n → ℝ → X`, `loops_smooth` (e
 
 ## Remaining steps
 
-### B — smoothness of the lift (tractable, ~100 lines)
-Lemma `differentiableAt_chart_lift_of_notMem_criticalSet`:
-given `Γ` continuous, `∀ᶠ t in 𝓝 t₀, f (Γ t) = δ t`, `Γ t₀ ∉ criticalSet f`, and
-`DifferentiableAt ℝ ((chartAt ℂ (δ t₀)).toFun ∘ δ) t₀`, conclude
-`DifferentiableAt ℝ ((chartAt ℂ (Γ t₀)).toFun ∘ Γ) t₀`.
-Proof: get `g` from `exists_twoSided_localInverse` at `Γ t₀`. **`Γ =ᶠ[𝓝 t₀] g∘δ`** follows
-directly from `g∘f=id` near `Γ t₀` + continuity of `Γ` + `f∘Γ=δ` — **no lift-uniqueness needed**.
-Then `(chartAt Γt₀)∘Γ =ᶠ G∘d` where `G = (chartAt Γt₀)∘g∘(chartAt δt₀).symm` (`g` in charts) and
-`d = (chartAt δt₀)∘δ`; chain rule `(DifferentiableAt G (d t₀)).comp _ hδ_diff`, then
-`congr_of_eventuallyEq`. The one boilerplate sub-step is `DifferentiableAt ℝ G (d t₀)` — `g`
-holomorphic ⇒ `ℝ`-differentiable in charts: extract from `pathSpeed_comp_eq_mfderiv` steps 4-7
-(`hf_mdiff.differentiableWithinAt_writtenInExtChartAt` + `range_eq_univ` + `restrictScalars`;
-note the `IsScalarTower ℝ ℂ ℂ` diamond worked around there via manual `HasFDerivAt.restrictScalars`).
+### B — smoothness of the lift — **DONE, sorry-free**
+`differentiableAt_chart_lift_of_notMem_criticalSet` (TracePullback.lean): given `Γ`
+continuous at `t₀`, `∀ᶠ t in 𝓝 t₀, f (Γ t) = δ t`, `Γ t₀ ∉ criticalSet f`, and
+`δ` chart-pullback-diff at `t₀`, then `Γ` is chart-pullback-diff at `t₀`. Proof exactly
+as the plan predicted (two-sided inverse `g`, `Γ =ᶠ g∘δ`, `G∘d` factorization,
+`writtenInExtChartAt`+`restrictScalars`). Compiled essentially first-try. **NB the
+hypothesis is `ContinuousAt Γ t₀` + the *eventually* `f∘Γ=δ`** — for A's `projIcc`-clamped
+lift this `∀ᶠ` holds only for `t₀ ∈ (0,1)` (open interval), NOT at the endpoints `0,1`,
+because outside `[0,1]` the clamped lift is constant while `δ` is not. So **B gives lift
+differentiability on `(0,1)` only**; the endpoint/seam differentiability is the C difficulty.
 
-### C — monodromy → closed loops (THE CRUX)
-From each fibre point `e ∈ f⁻¹'{δ 0}`, lift `δ` (A+B). The lift endpoints realise the monodromy
-permutation `σ` (`Γ_e 1 = the next sheet`); concatenate `Γ_e * Γ_{σe} * …` over `σ`'s orbit
-(`liftPath_trans`) until returning to `e` — that is one closed loop. `n` = #orbits, `coeffs` from
-orbit lengths, `sheets` = `#(f⁻¹'{δ 0})`.
-**Genuine difficulty — seam/endpoint smoothness:** A's `Set.projIcc`-clamped lift is *constant*
-outside `[0,1]`, so it is NOT differentiable at the seam. Closing into an `IsClosedSmoothLoop`
-needs the smoothness at the concatenation seams, which comes from the monodromy endpoint-match
-(`liftPath_apply_one_eq_of_homotopicRel` / uniqueness of lifts) together with `δ`'s own
-loop-smoothness at `δ 0 = δ 1`. This is the hard, delicate part — budget the most time here.
+### D-algebra — period-level matrix↔integral bridge — **DONE, sorry-free**
+`ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal` (TracePullback.lean):
+`(ambientPullbackJac f hf (periodVec δ))_i = ∫_δ traceFormTotal f hf (ωᵢ^X)`. Pure linear
+algebra + `lineIntegral` linearity, dual to `periodVec_pushforward`. **This reduces
+`pullback_eq` to the geometric projection identity** `∫_δ trace(ωᵢ) = ∑_loops coeffs·∫_loop ωᵢ`.
 
-### D — pullback_eq (projection formula)
-`ambientPullbackJac f hf (periodVec δ) = ∑ coeffs • periodVec (loops)`. Per basis component `i`:
-`(Tᵀ (periodVec δ))_i = ∫_δ traceForm(ωᵢ^X)` (since `ambientPullbackJac = Tᵀ`, `T` = `traceForm`
-matrix, and `lineIntegral` is linear) `= ∑_loops ∫_{loop} ωᵢ^X`. The last `=` is the projection
-formula: off-branch `traceForm(ωᵢ) = ∑_sheets sheetPullback`, and `lineIntegral_pullback` turns
-each sheet's `∫_δ (pullback along section)` into `∫_{section∘δ} ωᵢ`; the sheet-sections∘δ assemble
-(monodromy) into the `loops`. **Key: `δ` stays off-branch, so this needs NO branch-point
-continuity** — unlike `traceForm_comp` (see below). The sheet-sum ↔ loop-sum glue is the monodromy
-bookkeeping from C.
+### D-geom infra — local sheet decomposition — **DONE, sorry-free**
+`exists_localSheetSystem_traceForm_eq_sum` (TraceForm.lean): off-branch there is a local
+sheet system `S` at `y₀` with, for off-branch `y ∈ S.V`,
+`(traceForm f hf hnonconst α).toFun y = ∑ᵢ sheetPullback α (S.sheet i) y`. The per-base
+input to the projection formula.
 
-### E — pushforward_eq
-`∑ coeffs • periodVec (f ∘ loops) = sheets • periodVec δ`. Each `f ∘ loop` is `δ` traversed
-(orbit length) times; `periodVec (f∘loop) = (orbit length) • periodVec δ` via `periodVec_pushforward`
-+ `periodVec_concat`; summing with `coeffs` gives `sheets • periodVec δ`.
+### C — monodromy → closed loops (THE CRUX, still open)
+From each fibre point `e ∈ f⁻¹'{δ 0}` (finite, `fiber_finite_off_branchLocus` ⇒ `Fintype`),
+lift `δ` (A continuous + B smooth-on-`(0,1)`). Endpoints realise the monodromy permutation
+`σ : F → F`, `σ e = Γ_e 1` (∈ fibre since `f(Γ_e 1)=δ 1=δ 0`; bijective by lift uniqueness,
+`IsCoveringMap.liftPath` uniqueness / reversed-loop lift). Concatenate over `σ`-orbits into
+closed loops; `n` = #orbits, `coeffs i = 1`, `sheets = Fintype.card F`.
+**Genuine difficulty — seam/endpoint smoothness (budget most time here):** B only gives
+differentiability on the open `(0,1)`; A's lift is `projIcc`-constant outside `[0,1]` so it is
+provably *non*-differentiable at `0,1`. Two candidate fixes, both nontrivial:
+ (i) **smoothstep reparametrization** (as `zeroVelHop`/`IsSmoothPath.concat` do): needs the
+     inner lift differentiable *at* the endpoints (`ChartBallPath_chart_at_self_differentiableAt`
+     analogue) — which we do NOT have for the clamped lift. Would require a lift defined &
+     smooth on an *open* nbhd of `[0,1]` (e.g. lift a periodically/`δ 0=δ 1`-glued extension of
+     `δ`), then reparametrize. Likely also wants arranging `δ'` (from `exists_loop_off_branchLocus`)
+     to have zero endpoint velocity — period-invariant under reparam.
+ (ii) match one-sided velocities at the seam directly from the monodromy endpoint-equality —
+     needs `δ` itself `C¹`-closed (`δ'(0)=δ'(1)`), not guaranteed by `IsClosedSmoothLoop`.
+Recommended: fold a "lift smooth on a nbhd of `[0,1]` with zero endpoint velocity" into the
+construction (option i), reusing the `IsSmoothPath.concat`/`periodVec_concat_of_smooth` chain.
 
-### F — assemble `PreimageCycle` from B–E and conclude `Nonempty`.
+### D-geom — projection formula (open; infra now all present)
+Goal `∫_δ traceFormTotal f hf ωᵢ = ∑_loops coeffs·periodVec(loop)_i` (then `pullback_eq`
+via D-algebra). Partition `[0,1]` by `exists_nbhd_cover` (Lebesgue, uniform `k/n` grid) so each
+segment `δ|[k/n,(k+1)/n]` lands in some base `S_k.V` (from `exists_localSheetSystem_traceForm_eq_sum`).
+On each segment `∫ trace(ωᵢ) = ∑_sheets ∫ sheetPullback = ∑_sheets ∫_{sheet∘δ|seg} ωᵢ`
+(`lineIntegral_pullback_section`). **Remaining bookkeeping:** the per-segment sheet pieces
+`sheet∘δ|seg` match across segment boundaries (lift continuity/uniqueness) and reassemble into the
+global lifts `Γ_e`, then group by `σ`-orbit into the `loops`. This index-matching is the combinatorial
+heart shared with C. Off-branch throughout ⇒ **no branch-point continuity needed** (unlike `traceForm_comp`).
+
+### E — pushforward_eq (open; reduces to concat bookkeeping)
+`∑ coeffs • periodVec (f ∘ loops) = sheets • periodVec δ`. Each `f∘loop` over an orbit of length
+`ℓ` is `δ` traversed `ℓ` times (`f∘Γ_e=δ`); `periodVec(f∘loop)=ℓ•periodVec δ` via
+`periodVec_concat_of_smooth`; `∑_orbits ℓ = card F = sheets`.
+
+### F — assemble `PreimageCycle` from C–E and conclude `Nonempty`.
+
+## Infrastructure confirmed available (2026-05-30 audit)
+All non-monodromy ingredients are now proven: A (`exists_continuous_lift_off_branchLocus`),
+B (`differentiableAt_chart_lift_of_notMem_criticalSet`), the matrix↔integral bridge,
+`exists_localSheetSystem`(+`_traceForm_eq_sum`), `exists_nbhd_cover` (partition),
+`lineIntegral_pullback_section`, `IsSmoothPath.concat`/`periodVec_concat_of_smooth`,
+`fiber_finite_off_branchLocus`. **The sole remaining content is the monodromy/seam/reassembly
+combinatorics (C + D-geom + E + F), one interconnected argument — the seam-smoothness fix (C
+option i) is the gating sub-problem.**
 
 ## Separately recorded: `traceForm_comp` is infrastructure-blocked
 
