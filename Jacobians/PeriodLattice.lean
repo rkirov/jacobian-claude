@@ -995,59 +995,6 @@ theorem ambientPsi_eq_zero_of_const
   ext v i
   simp
 
-/-- A **preimage cycle** witnessing the trace identity: a finite
-ℤ-combination of closed smooth loops in `X` whose period-vector sum
-equals `ambientPsi f hf (periodVec δ)`.
-
-Classically: for non-constant holomorphic `f : X → Y` between compact
-Riemann surfaces, `f` is a branched cover of some degree `d ≥ 1`,
-and the set-theoretic preimage `f⁻¹(δ)` of a loop `δ` (avoiding
-branch points) is `d` disjoint closed loops in `X` whose signed sum
-realizes `ambientPsi (periodVec δ)` (Forster §10.11).
-
-Defining `PreimageCycle` as a bundle of (loops + coefficients +
-trace equation) lets us isolate the classical content: the theorem
-`ambientPsi_periodVec_mem_truePeriodLattice_of_preimageCycle` is
-real and purely algebraic; only *producing* a `PreimageCycle` for
-each non-constant `f, δ` is content-gated. -/
-structure PreimageCycle (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (δ : ℝ → Y) where
-  /-- Number of lifts. -/
-  n : ℕ
-  /-- The lifted closed loops in X. -/
-  loops : Fin n → ℝ → X
-  /-- Each lift is a closed smooth loop. -/
-  loops_smooth : ∀ i, IsClosedSmoothLoop (loops i)
-  /-- Integer coefficients (signed lifts / branching multiplicities). -/
-  coeffs : Fin n → ℤ
-  /-- Sheet count of the cover (classically `= deg f`). -/
-  sheets : ℕ
-  /-- **Pullback identity** (projection formula): the genuine Jacobian pullback
-  `ambientPullbackJac` (= `Tᵀ`) on `periodVec δ` equals the ℤ-combination of the
-  lifts' period vectors `periodVec(Γ) = Tᵀ·periodVec δ`. (Replaces the former
-  `ambientPsi`-based `trace_eq`, which used the wrong map.) -/
-  pullback_eq : ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (periodVec δ) =
-    ∑ i, coeffs i • periodVec (loops i)
-  /-- **Pushforward identity** (`f∘Γ = sheets·δ` on periods): the lifts project to
-  `δ` with multiplicities summing to `sheets`. Feeds the S8 connection keystone. -/
-  pushforward_eq : ∑ i, coeffs i • periodVec (f ∘ loops i) =
-    (sheets : ℤ) • periodVec δ
-
-/-- **Pullback identity — algebraic reduction.** Given a `PreimageCycle`
-witness for `(f, δ)`, the pulled-back period vector
-`ambientPullbackJac (periodVec δ)` lies in `truePeriodLattice X`: each
-`periodVec` of a closed smooth loop is in the lattice, and the
-lattice is closed under ℤ-linear combinations. -/
-theorem ambientPullbackJac_periodVec_mem_truePeriodLattice_of_preimageCycle
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (δ : ℝ → Y) (c : PreimageCycle f hf δ) :
-    ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
-      truePeriodLattice X := by
-  rw [c.pullback_eq]
-  exact Submodule.sum_mem _ fun i _ =>
-    Submodule.smul_mem _ (c.coeffs i)
-      (periodVec_mem_truePeriodLattice_of_closed _ (c.loops_smooth i))
-
 /-! #### Branched-cover infrastructure (incremental)
 
 For non-constant holomorphic `f : X → Y` between compact connected
@@ -1646,7 +1593,8 @@ This is the form `Mathlib.Topology.Homotopy.Lifting` consumes: it unlocks
 `IsCoveringMap.liftPath` (path lifting, Forster §4.14) and
 `IsCoveringMap.liftPath_apply_one_eq_of_homotopicRel` (monodromy / homotopy
 invariance of lift endpoints) — the toolkit for assembling the lifted loops in
-`exists_preimageCycle_of_off_branchLocus` (§3 below). -/
+`exists_preimageCycle_of_off_branchLocus` (relocated to
+`Jacobians/TracePullback.lean`, where the genuine `ambientPullbackJac` lives). -/
 theorem isCoveringMap_restrictPreimage_compl_branchLocus
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
@@ -1661,22 +1609,14 @@ smooth loops have equal period vectors, because the period forms are closed
 holomorphic 1-forms and `∫_γ ω` depends only on the homotopy class by Stokes on
 the homotopy cylinder (Forster §10.5; Mathlib lacks manifold Stokes). Stating
 it as a Lean lemma requires the right smooth-homotopy hypothesis (a genuine
-homotopy of loops), which we fold directly into `exists_loop_off_branchLocus`
-below rather than asserting separately. -/
+homotopy of loops), which is folded directly into `exists_loop_off_branchLocus`
+(relocated to `Jacobians/TracePullback.lean`) rather than asserted separately. -/
 
-/-- **[open]** A closed smooth loop in `Y` can be homotoped off the finite
-branch locus without changing its period vector. Genericity: `branchLocus f`
-is finite (`finite_branchLocus_of_nonconstant`), hence has real codimension 2
-in the surface `Y`, so a generic loop avoids it; homotopy invariance of
-`periodVec` (see §2 note) preserves the period. -/
-theorem exists_loop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
-    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
-    ∃ δ', IsClosedSmoothLoop δ' ∧ periodVec δ' = periodVec δ ∧
-      (∀ t : ℝ, δ' t ∉ branchLocus f) :=
-  sorry
+/-! ## §3 Off-branch fibre finiteness
 
-/-! ## §3 Lifting and the preimage cycle -/
+The remaining §3 ingredient that lives here (the preimage-cycle lift itself was
+relocated to `Jacobians/TracePullback.lean`, downstream of the genuine
+`ambientPullbackJac`). -/
 
 /-- **[PROVEN]** Fibres off the branch locus are **finite**. For `y ∉ branchLocus f`
 every preimage `x` is a non-critical point, where `f` is locally injective
@@ -1701,102 +1641,5 @@ theorem fiber_finite_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) �
   · rintro x' ⟨hx'U, hx'fib⟩
     rw [Set.mem_preimage, Set.mem_singleton_iff] at hx'fib
     exact hinj hx'U hxU (hx'fib.trans hx.symm)
-
-/-- **[open]** A closed smooth loop off the branch locus lifts to a preimage
-cycle. Construction (Forster §4.22–4.23 + §4.14): on compact `X`, non-constant
-holomorphic `f` is proper, so off the branch locus it restricts to a finite
-unbranched covering `X ∖ f⁻¹(B) → Y ∖ B` (proper local homeo ⇒ covering map);
-lift `δ` from each sheet (`IsCoveringMap.liftPath`, Forster §4.14); group the
-lifts into closed loops along the monodromy permutation's orbits (smoothness of
-each lift from the local-diffeo covering); the period trace identity
-`ambientPsi (periodVec δ) = ∑ periodVec (orbit loop)` holds because pulling back
-the basis forms along the sheets and summing reproduces `ambientPsi` (the
-change-of-variables / trace of `pullbackForm`). The covering structure
-(`IsCoveringMapOn f (univ ∖ branchLocus f)`) is the natural sub-lemma to
-re-introduce here, proven via Mathlib's proper-map/covering API. -/
-theorem exists_preimageCycle_of_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
-    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :
-    Nonempty (PreimageCycle f hf δ) :=
-  sorry
-
-/-! ## §4 Proven glue + assembly -/
-
-/-- **[PROVEN]** A `PreimageCycle` depends on `δ` only through `periodVec δ`
-(the only place `δ` enters the data is the trace identity's left-hand side).
-Transporting along a period-vector equality reuses the same loops/coeffs. -/
-def PreimageCycle.congr_periodVec {f : X → Y} {hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f}
-    {δ δ' : ℝ → Y} (h : periodVec δ = periodVec δ') (c : PreimageCycle f hf δ') :
-    PreimageCycle f hf δ where
-  n := c.n
-  loops := c.loops
-  loops_smooth := c.loops_smooth
-  coeffs := c.coeffs
-  sheets := c.sheets
-  pullback_eq := by rw [h]; exact c.pullback_eq
-  pushforward_eq := by rw [h]; exact c.pushforward_eq
-
-/-- **[PROVEN]** `exists_preimageCycle_of_nonconstant`, assembled: homotope `δ`
-off the branch locus (B2), lift it to a preimage cycle (C), and transport back
-along the period-vector equality (`congr_periodVec`). -/
-theorem exists_preimageCycle_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
-    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
-    Nonempty (PreimageCycle f hf δ) := by
-  obtain ⟨δ', hδ', hpv, havoid⟩ := exists_loop_off_branchLocus f hf hnonconst δ hδ
-  obtain ⟨c⟩ := exists_preimageCycle_of_off_branchLocus f hf hnonconst δ' hδ' havoid
-  exact ⟨PreimageCycle.congr_periodVec hpv.symm c⟩
-
-/-- **Pullback identity — member case.** For a closed smooth loop `δ`
-in `Y`, the genuine pullback `ambientPullbackJac (periodVec δ)` lies
-in `truePeriodLattice X`. Case-splits on constancy of `f`:
-
-* If `f` is constant, `ambientPullbackJac f hf = 0`
-  (`ambientPullbackJac_eq_zero_of_const`), so the image is `0`.
-* If `f` is non-constant, extract a preimage cycle witness via
-  `exists_preimageCycle_of_nonconstant`, then apply the algebraic reduction
-  `ambientPullbackJac_periodVec_mem_truePeriodLattice_of_preimageCycle`. -/
-theorem ambientPullbackJac_periodVec_mem_truePeriodLattice
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
-    ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
-      truePeriodLattice X := by
-  by_cases hconst : ∃ y₀ : Y, ∀ x, f x = y₀
-  · -- Constant case: ambientPullbackJac = 0.
-    rw [ambientPullbackJac_eq_zero_of_const f hf hconst]
-    simp
-  · -- Non-constant case: extract a preimage cycle and apply the algebraic
-    -- reduction.
-    obtain ⟨c⟩ := exists_preimageCycle_of_nonconstant f hf hconst δ hδ
-    exact ambientPullbackJac_periodVec_mem_truePeriodLattice_of_preimageCycle f hf δ c
-
-/-- `ambientPullbackJac` (the genuine Jacobian pullback `Tᵀ`) preserves the period
-lattice. Reduces to `ambientPullbackJac_periodVec_mem_truePeriodLattice` on
-closed-loop generators, extended to the ℤ-span by `Submodule.span_induction` and
-ℤ-linearity. Discharges `Jacobian.ambientPullbackJac_preserves_lattice`. -/
-theorem ambientPullbackJac_preserves_truePeriodLattice
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    (truePeriodLattice Y).toAddSubgroup ≤
-      (truePeriodLattice X).toAddSubgroup.comap
-        (ambientPullbackJac (gX := genus X) (gY := genus Y) f hf).toAddMonoidHom := by
-  show ∀ v ∈ truePeriodLattice Y,
-    ambientPullbackJac (gX := genus X) (gY := genus Y) f hf v ∈ truePeriodLattice X
-  intro v hv
-  refine Submodule.span_induction
-    (p := fun v _ => ambientPullbackJac (gX := genus X) (gY := genus Y) f hf v ∈
-      truePeriodLattice X) ?_ ?_ ?_ ?_ hv
-  · -- Generator case: v = periodVec δ for a closed smooth loop δ in Y.
-    rintro _ ⟨δ, hδ, rfl⟩
-    exact ambientPullbackJac_periodVec_mem_truePeriodLattice f hf δ hδ
-  · -- Zero case.
-    simp
-  · -- Additive case.
-    intro x y _ _ hx hy
-    simp only [map_add]
-    exact Submodule.add_mem _ hx hy
-  · -- ℤ-scalar case.
-    intro r x _ hx
-    simp only [map_zsmul]
-    exact Submodule.smul_mem _ r hx
 
 end Jacobians

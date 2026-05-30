@@ -990,4 +990,129 @@ theorem lineIntegral_traceForm_eq_sum_lifts {k : ℕ} (f : X → Y)
   exact Finset.sum_congr rfl fun i _ =>
     lineIntegral_pullback_section (s i) (hs i) α δ hδ_cont hδ_diff
 
+/-! ## Covariant functoriality of the trace
+
+`traceForm` is covariant to `f` (a trace sums over the sheets of the cover, and
+sheet counts of the identity / a composite cover behave as expected). These are the
+two functoriality laws of the genuine geometric trace `f₊`; together with the
+single branch-extension input (`traceExtendsAt_branchPoint`) they are the trace's
+remaining analytic content. They drive the ambient pullback `Tᵀ` downstream
+(`Jacobians/TracePullback.lean`).
+
+Each is stated with the non-constancy hypotheses that `traceForm` itself requires.
+The constant-map bookkeeping is handled once, downstream, by the total wrapper
+`traceFormTotal` and its laws. -/
+
+/-- **`f₊(id) = id`** — the identity map is a one-sheeted unbranched cover, so its
+trace is the identity. Honest sorry: classically true (Forster §10), but in this
+formalization `traceForm` is the removable-singularity extension of the off-branch
+fibre sum, and proving the extension of the (single-sheet) fibre sum for `id` equals
+`id` on *all* of `X` is the identity-theorem upgrade of the off-branch agreement —
+the same analytic status as `traceExtendsAt_branchPoint`. -/
+theorem traceForm_id (hnonconst : ¬ ∃ x₀ : X, ∀ x, (id : X → X) x = x₀) :
+    traceForm (id : X → X) contMDiff_id hnonconst =
+      LinearMap.id (R := ℂ) (M := HolomorphicOneForms X) :=
+  sorry
+
+/-- **Covariance of the trace: `(g ∘ f)₊ = g₊ ∘ f₊`** (sheet counts of composite
+covers multiply, and the per-sheet pullbacks compose contravariantly so the traces
+compose covariantly). Honest sorry: classically true (Griffiths–Harris Ch. 2 §2.7),
+same analytic status as `traceForm_id` / `traceExtendsAt_branchPoint`. -/
+theorem traceForm_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+    [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hfnc : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g) (hgnc : ¬ ∃ z₀ : Z, ∀ y, g y = z₀)
+    (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f)) (hgfnc : ¬ ∃ z₀ : Z, ∀ x, (g ∘ f) x = z₀) :
+    traceForm (g ∘ f) hgf hgfnc =
+      (traceForm g hg hgnc).comp (traceForm f hf hfnc) :=
+  sorry
+
+/-! ## Total trace wrapper (constant-map bookkeeping)
+
+`traceForm` requires `f` non-constant (the off-branch fibre sum is empty of content
+for a constant map, whose degree is `0`). The downstream ambient layer needs a map
+defined for **every** holomorphic `f`. `traceFormTotal` supplies it: it is `0` on
+constant maps (degree `0`, no sheets) and the genuine `traceForm` otherwise. Its
+three laws (`_eq_zero_of_const`, `_id`, `_comp`) are the exact drop-in replacements
+for the old `pushforwardForm_*`; the constancy case-splits live here, once. -/
+
+/-- **Total trace** `f₊ : Ω¹(X) →ₗ[ℂ] Ω¹(Y)`, defined for every holomorphic `f`:
+the genuine `traceForm` when `f` is non-constant, and `0` when `f` is constant
+(degree `0`). This is the object the ambient coordinate layer dualizes. -/
+noncomputable def traceFormTotal (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    HolomorphicOneForms X →ₗ[ℂ] HolomorphicOneForms Y := by
+  classical
+  exact if h : ∃ y₀ : Y, ∀ x, f x = y₀ then 0 else traceForm f hf h
+
+/-- **Total trace of a constant map is zero** (degree `0`, no sheets to sum over).
+Drop-in replacement for `pushforwardForm_eq_zero_of_const`. -/
+theorem traceFormTotal_eq_zero_of_const (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hconst : ∃ y₀ : Y, ∀ x, f x = y₀) :
+    traceFormTotal f hf = 0 := by
+  classical
+  rw [traceFormTotal, dif_pos hconst]
+
+/-- **Off-constant, the total trace is the genuine trace.** -/
+theorem traceFormTotal_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    traceFormTotal f hf = traceForm f hf hnonconst := by
+  classical
+  rw [traceFormTotal, dif_neg hnonconst]
+
+/-- A non-constant `f : X → Y` between compact Riemann surfaces is **surjective**
+(its image is clopen in connected `Y`). Re-exported here from
+`surjective_of_nonconstant` (PeriodLattice) for the composite-non-constancy argument
+in `traceFormTotal_comp`. -/
+private theorem surjective_of_nonconstant' (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) : Function.Surjective f :=
+  surjective_of_nonconstant f hf hnonconst
+
+/-- **`traceFormTotal id = id`** — for an infinite `X` the identity is non-constant,
+so `traceFormTotal id = traceForm id`, which is the identity by `traceForm_id`. Drop-in
+replacement for `pushforwardForm_id`. -/
+theorem traceFormTotal_id : traceFormTotal (id : X → X) contMDiff_id =
+    LinearMap.id (R := ℂ) (M := HolomorphicOneForms X) := by
+  classical
+  haveI : Infinite X := Jacobians.Discharge.ContMDiff.Degree.y_infinite_of_chartedSpace_complex
+  have hnc : ¬ ∃ x₀ : X, ∀ x, (id : X → X) x = x₀ := by
+    rintro ⟨x₀, hx₀⟩
+    obtain ⟨a, b, hab⟩ := exists_pair_ne X
+    exact hab ((hx₀ a).trans (hx₀ b).symm)
+  rw [traceFormTotal_of_nonconstant (id : X → X) contMDiff_id hnc, traceForm_id hnc]
+
+/-- **Covariance `traceFormTotal (g ∘ f) = traceFormTotal g ∘ₗ traceFormTotal f`.**
+Case-splits on constancy: if `f` or `g` is constant the composite is constant and
+both sides collapse to `0` (composition with the zero map); otherwise `f` is
+surjective, so `g ∘ f` non-constant follows from `g` non-constant, and the law is
+`traceForm_comp`. Drop-in replacement for `pushforwardForm_comp`. -/
+theorem traceFormTotal_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+    [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
+    (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f)) :
+    traceFormTotal (g ∘ f) hgf =
+      (traceFormTotal g hg).comp (traceFormTotal f hf) := by
+  classical
+  by_cases hfc : ∃ y₀ : Y, ∀ x, f x = y₀
+  · -- `f` constant ⟹ `g ∘ f` constant; both sides are `0`.
+    obtain ⟨y₀, hy₀⟩ := hfc
+    have hgfc : ∃ z₀ : Z, ∀ x, (g ∘ f) x = z₀ := ⟨g y₀, fun x => by simp [hy₀ x]⟩
+    rw [traceFormTotal_eq_zero_of_const (g ∘ f) hgf hgfc,
+      traceFormTotal_eq_zero_of_const f hf ⟨y₀, hy₀⟩, LinearMap.comp_zero]
+  · by_cases hgc : ∃ z₀ : Z, ∀ y, g y = z₀
+    · -- `g` constant ⟹ `g ∘ f` constant; both sides are `0`.
+      obtain ⟨z₀, hz₀⟩ := hgc
+      have hgfc : ∃ z₀ : Z, ∀ x, (g ∘ f) x = z₀ := ⟨z₀, fun x => hz₀ (f x)⟩
+      rw [traceFormTotal_eq_zero_of_const (g ∘ f) hgf hgfc,
+        traceFormTotal_eq_zero_of_const g hg ⟨z₀, hz₀⟩, LinearMap.zero_comp]
+    · -- both non-constant: `f` surjective ⟹ `g ∘ f` non-constant; apply `traceForm_comp`.
+      have hgfnc : ¬ ∃ z₀ : Z, ∀ x, (g ∘ f) x = z₀ := by
+        rintro ⟨z₀, hz₀⟩
+        exact hgc ⟨z₀, fun y => by
+          obtain ⟨x, rfl⟩ := surjective_of_nonconstant' f hf hfc y
+          exact hz₀ x⟩
+      rw [traceFormTotal_of_nonconstant (g ∘ f) hgf hgfnc,
+        traceFormTotal_of_nonconstant f hf hfc, traceFormTotal_of_nonconstant g hg hgc,
+        traceForm_comp f hf hfc g hg hgc hgf hgfnc]
+
 end Jacobians

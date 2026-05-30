@@ -21,6 +21,7 @@ import Jacobians.LineIntegral
 import Jacobians.SmoothPathCore
 import Jacobians.ManifoldIFT
 import Jacobians.PeriodLattice
+import Jacobians.TracePullback
 import Jacobians.Abel
 import Jacobians.Degree
 import Jacobians.OfCurveAnalyticitySkeleton
@@ -437,11 +438,11 @@ noncomputable def _root_.ContMDiff.degree (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω
 /-- **Ambient degree identity** (`f_* ∘ f^* = deg(f) • id`; Griffiths–Harris
 Ch. 2 §2.7 — the trace map for forms): the genuine pushforward `ambientPhi`
 (= `Mᵀ`, dual to pullback-of-forms) composed with the genuine pullback
-`ambientPullbackJac` (= `Tᵀ`, transpose of the trace `pushforwardForm`) is
+`ambientPullbackJac` (= `Tᵀ`, transpose of the geometric trace `traceForm`) is
 multiplication by the degree, in ambient coordinates.
 
 `Mᵀ Tᵀ = (T M)ᵀ = (deg • I)ᵀ = deg • I`, where `T M = deg • I` is the trace
-identity `pushforwardForm ∘ pullbackForm = deg • id` (G&H §2.7).
+identity `traceForm ∘ pullbackForm = deg • id` (G&H §2.7).
 
 **[open, honest]** Now a *true* statement (no longer the false `MᵀM = deg·I` of
 the old `ambientPhi_ambientPsi_eq`, which used the wrong pullback). Discharged in
