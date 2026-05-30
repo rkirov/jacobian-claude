@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.TraceForm
+import Mathlib.Topology.Homotopy.Lifting
 
 /-!
 # The Jacobian pullback in ambient coordinates, driven by the geometric trace
@@ -251,6 +252,53 @@ theorem exists_loop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘
     ∃ δ', IsClosedSmoothLoop δ' ∧ periodVec δ' = periodVec δ ∧
       (∀ t : ℝ, δ' t ∉ branchLocus f) :=
   sorry
+
+/-- **Continuous path-lift off the branch locus.** A path `δ` in `Y` that avoids the
+branch locus lifts, through the proven covering
+`(univ \ branchLocus f).restrictPreimage f`, to a continuous path `Γ` in `X` with
+`f (Γ t) = δ t` on `[0,1]` and prescribed start `Γ 0 = e` (any fibre point over
+`δ 0`). The lift is Mathlib's `IsCoveringMap.liftPath`, repackaged from the unit
+interval to `ℝ → X` via `Set.projIcc`. Foundation for the smooth-loop assembly
+(§3 sub-piece A). -/
+theorem exists_continuous_lift_off_branchLocus
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ_cont : Continuous δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f)
+    {e : X} (he : f e = δ 0) :
+    ∃ Γ : ℝ → X, Continuous Γ ∧ (∀ t ∈ Set.Icc (0:ℝ) 1, f (Γ t) = δ t) ∧ Γ 0 = e := by
+  classical
+  have cov : IsCoveringMap ((Set.univ \ branchLocus f).restrictPreimage f) :=
+    isCoveringMap_restrictPreimage_compl_branchLocus f hf hnonconst
+  -- `δ` lands in `s := univ \ branchLocus f` everywhere (it avoids the branch locus).
+  have hδs : ∀ t : ℝ, δ t ∈ Set.univ \ branchLocus f := fun t => ⟨Set.mem_univ _, havoid t⟩
+  -- Corestrict `δ` to the unit interval, as a continuous map into the subtype.
+  let δ' : C(unitInterval, ↥(Set.univ \ branchLocus f)) :=
+    ⟨fun t => ⟨δ t, hδs t⟩, (hδ_cont.comp continuous_subtype_val).subtype_mk _⟩
+  -- The start point, lifted into the fibre subtype.
+  have hes : e ∈ f ⁻¹' (Set.univ \ branchLocus f) := by
+    show f e ∈ Set.univ \ branchLocus f; rw [he]; exact hδs 0
+  let e' : ↥(f ⁻¹' (Set.univ \ branchLocus f)) := ⟨e, hes⟩
+  have hγ0 : δ' 0 = (Set.univ \ branchLocus f).restrictPreimage f e' := by
+    apply Subtype.ext
+    show δ ((0 : unitInterval) : ℝ) = f e
+    rw [Set.Icc.coe_zero, he]
+  have hlifts := IsCoveringMap.liftPath_lifts cov δ' e' hγ0
+  have hzero := IsCoveringMap.liftPath_zero cov δ' e' hγ0
+  refine ⟨fun t => ((IsCoveringMap.liftPath cov δ' e' hγ0)
+      (Set.projIcc 0 1 zero_le_one t) : X), ?_, ?_, ?_⟩
+  · exact continuous_subtype_val.comp
+      ((map_continuous (IsCoveringMap.liftPath cov δ' e' hγ0)).comp continuous_projIcc)
+  · intro t ht
+    obtain ⟨ht0, ht1⟩ := ht
+    have hδ'c : ∀ x : unitInterval, (↑(δ' x) : Y) = δ ↑x := fun _ => rfl
+    have h := congrArg Subtype.val (congr_fun hlifts (Set.projIcc 0 1 zero_le_one t))
+    simpa [Function.comp_apply, Set.restrictPreimage_coe, hδ'c, Set.coe_projIcc,
+      min_eq_right ht1, max_eq_right ht0] using h
+  · have h0 : Set.projIcc (0:ℝ) 1 zero_le_one 0 = 0 := by
+      apply Subtype.ext; simp [Set.coe_projIcc]
+    show ((IsCoveringMap.liftPath cov δ' e' hγ0)
+      (Set.projIcc 0 1 zero_le_one 0) : X) = e
+    rw [h0, hzero]
 
 /-- **[open]** A closed smooth loop off the branch locus lifts to a preimage
 cycle. Construction (Forster §4.22–4.23 + §4.14): on compact `X`, non-constant
