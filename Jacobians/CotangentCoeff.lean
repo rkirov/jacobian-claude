@@ -303,4 +303,328 @@ theorem velCont_compOn (g : Y → X) {V : Set Y} (hg : ContMDiffOn 𝓘(ℂ) �
   congr 1
   exact pathSpeed_comp_eq_mfderiv_of_mdiff g γ s hgmdiff hγcont.continuousAt (hγdiff s hs)
 
+/-! ## Velocity-section continuity under PRE-composition (reverse) and piecewise gluing (concat)
+
+These are the constructor-side tools for the `IsClosedSmoothLoop.reverse`/`IsSmoothPath.reverse`
+and `IsSmoothPath.concat` constructors. Unlike `velCont_comp`/`velCont_compOn` (post-composition
+by a manifold map, handled by `tangentMap`), these are reparametrizations / piecewise glues, so
+they need a direct trivialization argument via `FiberBundle.continuousWithinAt_totalSpace` (which
+reduces total-space continuity to: base proj continuous + the trivialized fibre component
+`(trivializationAt _ _ (base x₀) (f x)).2` continuous). -/
+
+/-- **Velocity-section continuity is preserved by time-reversal.** For the
+`IsClosedSmoothLoop.reverse`/`IsSmoothPath.reverse` constructors. The reversed velocity section is
+`s ↦ ⟨γ(1-s), -pathSpeed γ(1-s)⟩` (via `pathSpeed_reverse`, needs `hγdiff` at `1-s`); base
+continuity comes from reparametrizing the original base by `s ↦ 1-s`, and the trivialized fibre is
+the negation of the original's (negation is ℂ-linear, passes through `continuousLinearMapAt`). -/
+theorem velCont_reverse (γ : ℝ → X)
+    (hγdiff : ∀ t ∈ Set.uIcc (0:ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t)
+    (hγ : ContinuousOn (fun s : ℝ =>
+        Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s))
+      (Set.Icc 0 1)) :
+    ContinuousOn (fun s : ℝ =>
+        Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+          (Jacobians.reverse γ s) (pathSpeed (Jacobians.reverse γ) s))
+      (Set.Icc 0 1) := by
+  -- The reparametrization `s ↦ 1 - s` maps `Icc 0 1` into `Icc 0 1` continuously.
+  have hsub_cont : Continuous (fun s : ℝ => 1 - s) := continuous_const.sub continuous_id
+  have hsub_maps : Set.MapsTo (fun s : ℝ => 1 - s) (Set.Icc (0:ℝ) 1) (Set.Icc 0 1) := by
+    intro s hs; exact ⟨by linarith [hs.2], by linarith [hs.1]⟩
+  have hbase : ContinuousOn (fun s : ℝ => γ (1 - s)) (Set.Icc (0:ℝ) 1) := by
+    have hγbase : ContinuousOn γ (Set.Icc (0:ℝ) 1) :=
+      (FiberBundle.continuous_proj ℂ (TangentSpace 𝓘(ℂ) (M := X))).comp_continuousOn hγ
+    exact hγbase.comp hsub_cont.continuousOn hsub_maps
+  intro s₀ hs₀
+  rw [FiberBundle.continuousWithinAt_totalSpace]
+  refine ⟨?_, ?_⟩
+  · -- base proj continuous: `s ↦ (⟨γ(1-s), …⟩).proj = γ(1-s)`.
+    exact hbase s₀ hs₀
+  · -- trivialized fibre at base `γ(1-s₀)` is continuous.
+    set x₀ := γ (1 - s₀) with hx₀
+    set triv := trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀ with htriv
+    have hx₀base : x₀ ∈ triv.baseSet := mem_baseSet_trivializationAt ℂ _ x₀
+    -- 1-s₀ ∈ Icc 0 1.
+    have hs₀' : (1 - s₀) ∈ Set.Icc (0:ℝ) 1 := hsub_maps hs₀
+    -- The ORIGINAL section's trivialized fibre at base x₀ is continuous at 1-s₀.
+    have hγ_at : ContinuousWithinAt
+        (fun s : ℝ => Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s)
+          (pathSpeed γ s)) (Set.Icc 0 1) (1 - s₀) := hγ (1 - s₀) hs₀'
+    rw [FiberBundle.continuousWithinAt_totalSpace] at hγ_at
+    -- hγ_at.2 : ContinuousWithinAt (fun u => (triv ⟨γ u, pathSpeed γ u⟩).2) (Icc 0 1) (1-s₀)
+    have hfib_orig : ContinuousWithinAt
+        (fun u : ℝ => (triv (Bundle.TotalSpace.mk' ℂ
+          (E := TangentSpace 𝓘(ℂ) (M := X)) (γ u) (pathSpeed γ u))).2)
+        (Set.Icc 0 1) (1 - s₀) := hγ_at.2
+    -- Reparametrize by s ↦ 1 - s.
+    have hcomp : ContinuousWithinAt
+        (fun s : ℝ => (triv (Bundle.TotalSpace.mk' ℂ
+          (E := TangentSpace 𝓘(ℂ) (M := X)) (γ (1 - s)) (pathSpeed γ (1 - s)))).2)
+        (Set.Icc 0 1) s₀ := by
+      have hsub_cwa : ContinuousWithinAt (fun s : ℝ => 1 - s) (Set.Icc (0:ℝ) 1) s₀ :=
+        hsub_cont.continuousWithinAt
+      exact hfib_orig.comp hsub_cwa hsub_maps
+    -- Now: target fibre = - (original reparametrized fibre), via continuousLinearMapAt + pathSpeed_reverse.
+    -- The map `· ↦ -·` on ℂ is continuous, so `(- original)` is continuous.
+    have hneg : ContinuousWithinAt
+        (fun s : ℝ => -(triv (Bundle.TotalSpace.mk' ℂ
+          (E := TangentSpace 𝓘(ℂ) (M := X)) (γ (1 - s)) (pathSpeed γ (1 - s)))).2)
+        (Set.Icc 0 1) s₀ := hcomp.neg
+    refine hneg.congr_of_eventuallyEq ?_ ?_
+    · -- eventually equal on Icc near s₀
+      have hev : ∀ᶠ s in 𝓝[Set.Icc (0:ℝ) 1] s₀, γ (1 - s) ∈ triv.baseSet := by
+        have hbase_at : ContinuousWithinAt (fun s : ℝ => γ (1 - s)) (Set.Icc (0:ℝ) 1) s₀ :=
+          hbase s₀ hs₀
+        exact hbase_at.eventually (triv.open_baseSet.mem_nhds hx₀base)
+      filter_upwards [hev, self_mem_nhdsWithin] with s hs hsIcc
+      -- LHS: (triv ⟨γ(1-s), pathSpeed (reverse γ) s⟩).2
+      -- RHS: -(triv ⟨γ(1-s), pathSpeed γ(1-s)⟩).2
+      have h1s_uIcc : (1 - s) ∈ Set.uIcc (0:ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+        exact ⟨by linarith [hsIcc.2], by linarith [hsIcc.1]⟩
+      have hps : pathSpeed (Jacobians.reverse γ) s = -pathSpeed γ (1 - s) :=
+        pathSpeed_reverse γ s (hγdiff (1 - s) h1s_uIcc)
+      show (triv (Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+          (Jacobians.reverse γ s) (pathSpeed (Jacobians.reverse γ) s))).2 = _
+      rw [reverse_apply, hps]
+      -- Turn both `(triv ⟨·, w⟩).2` into `continuousLinearMapAt`.
+      rw [← triv.continuousLinearMapAt_apply_of_mem ℂ hs,
+          ← triv.continuousLinearMapAt_apply_of_mem ℂ hs]
+      exact (triv.continuousLinearMapAt ℂ (γ (1 - s))).map_neg _
+    · -- at s₀ itself
+      have h1s₀_uIcc : (1 - s₀) ∈ Set.uIcc (0:ℝ) 1 := by
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+        exact ⟨by linarith [hs₀.2], by linarith [hs₀.1]⟩
+      have hps : pathSpeed (Jacobians.reverse γ) s₀ = -pathSpeed γ (1 - s₀) :=
+        pathSpeed_reverse γ s₀ (hγdiff (1 - s₀) h1s₀_uIcc)
+      show (triv (Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+          (Jacobians.reverse γ s₀) (pathSpeed (Jacobians.reverse γ) s₀))).2 = _
+      rw [reverse_apply, hps]
+      rw [← triv.continuousLinearMapAt_apply_of_mem ℂ hx₀base,
+          ← triv.continuousLinearMapAt_apply_of_mem ℂ hx₀base]
+      exact (triv.continuousLinearMapAt ℂ (γ (1 - s₀))).map_neg _
+
+/-- **The junction velocity of a concatenation vanishes**, given both pieces' chart-pullback
+differentiability and vanishing endpoint velocities (`pathSpeed γ₁ 1 = 0`, `pathSpeed γ₂ 0 = 0`)
+and matched basepoints `γ₁ 1 = γ₂ 0`. This is the velocity restatement of the junction step of the
+`IsSmoothPath.concat` `diff` field (`HasDerivWithinAt … 0` glued on `Iic ∪ Ici`). -/
+theorem pathSpeed_concat_junction (γ₁ γ₂ : ℝ → X)
+    (h₁diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₁) 1)
+    (h₂diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₂ 0)).toFun ∘ γ₂) 0)
+    (hv₁ : pathSpeed γ₁ 1 = 0) (hv₂ : pathSpeed γ₂ 0 = 0) (hjoin : γ₁ 1 = γ₂ 0) :
+    pathSpeed (Jacobians.concat γ₁ γ₂) (1/2) = 0 := by
+  have hmid : Jacobians.concat γ₁ γ₂ (1/2 : ℝ) = γ₁ 1 := by
+    rw [Jacobians.concat_apply_left _ _ (le_refl _), show (2:ℝ) * (1/2) = 1 from by norm_num]
+  show fderiv ℝ ((chartAt (H := ℂ) (Jacobians.concat γ₁ γ₂ (1/2))).toFun ∘
+      Jacobians.concat γ₁ γ₂) (1/2) (1 : ℝ) = 0
+  rw [hmid]
+  set f : ℝ → ℂ := (chartAt (H := ℂ) (γ₁ 1)).toFun ∘ Jacobians.concat γ₁ γ₂ with hf_def
+  have h_2mul_HDA : HasDerivAt (fun s : ℝ => 2 * s) (2 : ℝ) (1/2 : ℝ) := by
+    simpa using (hasDerivAt_id (1/2 : ℝ)).const_mul (2 : ℝ)
+  -- LEFT: HasDerivWithinAt f 0 on Iic(1/2)
+  have h_g_L_HDA : HasDerivAt ((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₁) 0 1 := by
+    have h_deriv_zero : deriv ((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₁) 1 = 0 := hv₁
+    rw [← h_deriv_zero]; exact h₁diff.hasDerivAt
+  have h_f_L_HDA : HasDerivAt
+      (((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₁) ∘ (fun s : ℝ => 2 * s)) 0 (1/2 : ℝ) := by
+    simpa using h_g_L_HDA.scomp_of_eq (1/2 : ℝ) h_2mul_HDA (by norm_num : (1 : ℝ) = 2 * (1/2 : ℝ))
+  have h_eqOn_Iic : Set.EqOn f
+      (((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₁) ∘ (fun s : ℝ => 2 * s)) (Set.Iic (1/2 : ℝ)) := by
+    intro s hs
+    simp only [hf_def, Function.comp_apply]
+    rw [Jacobians.concat_apply_left _ _ hs]
+  have h_Iic_HDWA : HasDerivWithinAt f 0 (Set.Iic (1/2 : ℝ)) (1/2 : ℝ) :=
+    (h_f_L_HDA.hasDerivWithinAt (s := Set.Iic (1/2 : ℝ))).congr
+      (fun s hs => h_eqOn_Iic hs) (h_eqOn_Iic Set.self_mem_Iic)
+  -- RIGHT: HasDerivWithinAt f 0 on Ici(1/2)
+  have h_g_R_HDA : HasDerivAt ((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₂) 0 0 := by
+    have h₂diff' : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₂) 0 := by
+      rw [hjoin]; exact h₂diff
+    have h_deriv_zero : deriv ((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₂) 0 = 0 := by
+      have : deriv ((chartAt (H := ℂ) (γ₂ 0)).toFun ∘ γ₂) 0 = 0 := hv₂
+      rw [hjoin]; exact this
+    rw [← h_deriv_zero]; exact h₂diff'.hasDerivAt
+  have h_f_R_HDA : HasDerivAt
+      (((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₂) ∘ (fun s : ℝ => 2 * s - 1)) 0 (1/2 : ℝ) := by
+    simpa using h_g_R_HDA.scomp_of_eq (1/2 : ℝ) (h_2mul_HDA.sub_const 1)
+      (by norm_num : (0 : ℝ) = 2 * (1/2 : ℝ) - 1)
+  have h_eqOn_Ici : Set.EqOn f
+      (((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₂) ∘ (fun s : ℝ => 2 * s - 1)) (Set.Ici (1/2 : ℝ)) := by
+    intro s hs
+    simp only [hf_def, Function.comp_apply]
+    rcases eq_or_lt_of_le (show (1/2 : ℝ) ≤ s from hs) with h_eq_half | h_gt_half
+    · rw [← h_eq_half, Jacobians.concat_apply_left _ _ (le_refl _),
+          show (2:ℝ) * (1/2) - 1 = 0 from by norm_num,
+          show (2:ℝ) * (1/2) = 1 from by norm_num, hjoin]
+    · rw [Jacobians.concat_apply_right _ _ (not_le.mpr h_gt_half)]
+  have h_Ici_HDWA : HasDerivWithinAt f 0 (Set.Ici (1/2 : ℝ)) (1/2 : ℝ) :=
+    (h_f_R_HDA.hasDerivWithinAt (s := Set.Ici (1/2 : ℝ))).congr
+      (fun s hs => h_eqOn_Ici hs) (h_eqOn_Ici Set.self_mem_Ici)
+  -- UNION ⇒ HasDerivAt f 0 (1/2) ⇒ pathSpeed = 0.
+  have h_union : HasDerivWithinAt f 0 (Set.Iic (1/2 : ℝ) ∪ Set.Ici (1/2 : ℝ)) (1/2 : ℝ) :=
+    h_Iic_HDWA.union h_Ici_HDWA
+  have h_union_eq : Set.Iic (1/2 : ℝ) ∪ Set.Ici (1/2 : ℝ) = Set.univ := by
+    ext x; simp only [Set.mem_union, Set.mem_Iic, Set.mem_Ici, Set.mem_univ, iff_true]
+    rcases lt_or_ge x (1/2 : ℝ) with h | h
+    · exact Or.inl (le_of_lt h)
+    · exact Or.inr h
+  rw [h_union_eq] at h_union
+  have h_HDA : HasDerivAt f 0 (1/2 : ℝ) := h_union.hasDerivAt Filter.univ_mem
+  -- pathSpeed = fderiv … 1 = deriv … = 0.
+  show fderiv ℝ f (1/2) (1 : ℝ) = 0
+  rw [fderiv_apply_one_eq_deriv]; exact h_HDA.deriv
+
+/-- **Velocity-section continuity under an affine reparametrization `s ↦ a*s + b` with the fibre
+rescaled by `a`.** This is the shape of each half of `concat` (left: `a = 2, b = 0`; right:
+`a = 2, b = -1`), where `pathSpeed (concat) s = 2 * pathSpeed γᵢ (2s + …)`. Mirrors `velCont_reverse`
+(itself the `a = -1, b = 1` case): base continuity from reparametrizing the projection, fibre
+continuity from the original trivialized fibre scaled by `a` (scaling is ℂ-linear, passes through
+`continuousLinearMapAt`). -/
+private theorem velCont_affineReparam (γ : ℝ → X) (a b : ℝ) {D : Set ℝ}
+    (hmaps : Set.MapsTo (fun s : ℝ => a * s + b) D (Set.Icc 0 1))
+    (hγ : ContinuousOn (fun s : ℝ =>
+        Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s))
+      (Set.Icc 0 1)) :
+    ContinuousOn (fun s : ℝ =>
+        Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+          (γ (a * s + b)) ((a : ℂ) • pathSpeed γ (a * s + b)))
+      D := by
+  set r : ℝ → ℝ := fun s : ℝ => a * s + b with hr_def
+  have hr_cont : Continuous r :=
+    (continuous_const.mul continuous_id).add continuous_const
+  have hbase : ContinuousOn (fun s : ℝ => γ (r s)) D := by
+    have hγbase : ContinuousOn γ (Set.Icc (0:ℝ) 1) :=
+      (FiberBundle.continuous_proj ℂ (TangentSpace 𝓘(ℂ) (M := X))).comp_continuousOn hγ
+    exact hγbase.comp hr_cont.continuousOn hmaps
+  intro s₀ hs₀
+  rw [FiberBundle.continuousWithinAt_totalSpace]
+  refine ⟨hbase s₀ hs₀, ?_⟩
+  set x₀ := γ (r s₀) with hx₀
+  set triv := trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀ with htriv
+  have hx₀base : x₀ ∈ triv.baseSet := mem_baseSet_trivializationAt ℂ _ x₀
+  have hrs₀ : r s₀ ∈ Set.Icc (0:ℝ) 1 := hmaps hs₀
+  have hγ_at : ContinuousWithinAt
+      (fun s : ℝ => Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s)
+        (pathSpeed γ s)) (Set.Icc 0 1) (r s₀) := hγ (r s₀) hrs₀
+  rw [FiberBundle.continuousWithinAt_totalSpace] at hγ_at
+  have hfib_orig : ContinuousWithinAt
+      (fun u : ℝ => (triv (Bundle.TotalSpace.mk' ℂ
+        (E := TangentSpace 𝓘(ℂ) (M := X)) (γ u) (pathSpeed γ u))).2)
+      (Set.Icc 0 1) (r s₀) := hγ_at.2
+  have hr_cwa : ContinuousWithinAt r D s₀ := hr_cont.continuousWithinAt
+  have hcomp : ContinuousWithinAt
+      (fun s : ℝ => (triv (Bundle.TotalSpace.mk' ℂ
+        (E := TangentSpace 𝓘(ℂ) (M := X)) (γ (r s)) (pathSpeed γ (r s)))).2)
+      D s₀ :=
+    hfib_orig.comp hr_cwa hmaps
+  -- scale the trivialized fibre by `a`.
+  have hsmul : ContinuousWithinAt
+      (fun s : ℝ => (a : ℂ) • (triv (Bundle.TotalSpace.mk' ℂ
+        (E := TangentSpace 𝓘(ℂ) (M := X)) (γ (r s)) (pathSpeed γ (r s)))).2)
+      D s₀ := hcomp.const_smul (a : ℂ)
+  refine hsmul.congr_of_eventuallyEq ?_ ?_
+  · have hev : ∀ᶠ s in 𝓝[D] s₀, γ (r s) ∈ triv.baseSet := by
+      have hbase_at : ContinuousWithinAt (fun s : ℝ => γ (r s)) D s₀ :=
+        hbase s₀ hs₀
+      exact hbase_at.eventually (triv.open_baseSet.mem_nhds hx₀base)
+    filter_upwards [hev] with s hs
+    show (triv (Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+        (γ (r s)) ((a : ℂ) • pathSpeed γ (r s)))).2 = _
+    rw [← triv.continuousLinearMapAt_apply_of_mem ℂ hs,
+        ← triv.continuousLinearMapAt_apply_of_mem ℂ hs]
+    exact (triv.continuousLinearMapAt ℂ (γ (r s))).map_smul (a : ℂ) _
+  · show (triv (Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+        (γ (r s₀)) ((a : ℂ) • pathSpeed γ (r s₀)))).2 = _
+    rw [← triv.continuousLinearMapAt_apply_of_mem ℂ hx₀base,
+        ← triv.continuousLinearMapAt_apply_of_mem ℂ hx₀base]
+    exact (triv.continuousLinearMapAt ℂ (γ (r s₀))).map_smul (a : ℂ) _
+
+/-- **Velocity-section continuity is preserved by concatenation** at vanishing junction velocities.
+For the `IsSmoothPath.concat` constructor. On each open half the concatenation's velocity section
+is the corresponding piece's section reparametrized (`2·` left, `2·-1` right) with the fibre scaled
+by `2` (`pathSpeed_concat_left`/`right`, via `velCont_affineReparam`); at the junction `s = ½` both
+the actual junction velocity (`pathSpeed_concat_junction`, `= 0`) and each scaled-reparam value
+(`2 • pathSpeed γ₁ 1 = 0` by `hv₁`, resp. `hv₂`) vanish and the bases match (`hjoin`), so the
+concat-section coincides with each clean reparam section up to and INCLUDING `½`, and the two
+one-sided `ContinuousWithinAt`s glue (`ContinuousWithinAt.union` on `Iic ½ ∪ Ici ½ = univ`). -/
+theorem velCont_concat (γ₁ γ₂ : ℝ → X)
+    (h₁diff : ∀ t ∈ Set.uIcc (0:ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₁ t)).toFun ∘ γ₁) t)
+    (h₂diff : ∀ t ∈ Set.uIcc (0:ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₂ t)).toFun ∘ γ₂) t)
+    (hv₁ : pathSpeed γ₁ 1 = 0) (hv₂ : pathSpeed γ₂ 0 = 0) (hjoin : γ₁ 1 = γ₂ 0)
+    (hγ₁ : ContinuousOn (fun s : ℝ =>
+        Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ₁ s) (pathSpeed γ₁ s))
+      (Set.Icc 0 1))
+    (hγ₂ : ContinuousOn (fun s : ℝ =>
+        Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ₂ s) (pathSpeed γ₂ s))
+      (Set.Icc 0 1)) :
+    ContinuousOn (fun s : ℝ =>
+        Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+          (Jacobians.concat γ₁ γ₂ s) (pathSpeed (Jacobians.concat γ₁ γ₂) s))
+      (Set.Icc 0 1) := by
+  -- uIcc membership helpers.
+  have h_one_uIcc : (1 : ℝ) ∈ Set.uIcc (0 : ℝ) 1 := by
+    rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨zero_le_one, le_refl _⟩
+  have h_zero_uIcc : (0 : ℝ) ∈ Set.uIcc (0 : ℝ) 1 := by
+    rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨le_refl _, zero_le_one⟩
+  -- Junction velocity vanishes.
+  have hjunc : pathSpeed (Jacobians.concat γ₁ γ₂) (1/2) = 0 :=
+    pathSpeed_concat_junction γ₁ γ₂ (h₁diff 1 h_one_uIcc) (h₂diff 0 h_zero_uIcc) hv₁ hv₂ hjoin
+  -- The two clean reparam sections, continuous via `velCont_affineReparam`.
+  have hmapsL : Set.MapsTo (fun s : ℝ => 2 * s + 0) (Set.Icc (0:ℝ) (1/2)) (Set.Icc 0 1) := by
+    intro s hs; exact ⟨by simpa using by linarith [hs.1], by simpa using by linarith [hs.2]⟩
+  have hmapsR : Set.MapsTo (fun s : ℝ => 2 * s + (-1)) (Set.Icc (1/2:ℝ) 1) (Set.Icc 0 1) := by
+    intro s hs; exact ⟨by simp; linarith [hs.1], by simp; linarith [hs.2]⟩
+  have hS₁ := velCont_affineReparam γ₁ 2 0 hmapsL hγ₁
+  have hS₂ := velCont_affineReparam γ₂ 2 (-1) hmapsR hγ₂
+  -- Split `Icc 0 1` into the two closed halves.
+  have hsplit : Set.Icc (0:ℝ) 1 = Set.Icc (0:ℝ) (1/2) ∪ Set.Icc (1/2) 1 := by
+    rw [Set.Icc_union_Icc_eq_Icc (by norm_num) (by norm_num)]
+  rw [hsplit]
+  refine ContinuousOn.union_of_isClosed ?_ ?_ isClosed_Icc isClosed_Icc
+  · -- LEFT half: concat-section = S₁ on Icc 0 (1/2).
+    refine hS₁.congr ?_
+    intro s hs
+    have hs_le : s ≤ 1/2 := hs.2
+    have h_base : Jacobians.concat γ₁ γ₂ s = γ₁ (2 * s + 0) := by
+      rw [Jacobians.concat_apply_left _ _ hs_le, add_zero]
+    have h_fib : pathSpeed (Jacobians.concat γ₁ γ₂) s = ((2:ℝ) : ℂ) • pathSpeed γ₁ (2 * s + 0) := by
+      rcases lt_or_eq_of_le hs_le with h_lt | h_eq
+      · have h2s_uIcc : 2 * s ∈ Set.uIcc (0:ℝ) 1 := by
+          rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+          exact ⟨by linarith [hs.1], by linarith⟩
+        rw [Jacobians.pathSpeed_concat_left _ _ s h_lt (h₁diff (2 * s) h2s_uIcc), add_zero,
+          smul_eq_mul]; push_cast; ring
+      · subst h_eq
+        rw [hjunc, show (2:ℝ) * (1/2) + 0 = 1 from by norm_num, hv₁, smul_zero]
+    show Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+        (Jacobians.concat γ₁ γ₂ s) (pathSpeed (Jacobians.concat γ₁ γ₂) s) = _
+    rw [h_base, h_fib]
+  · -- RIGHT half: concat-section = S₂ on Icc (1/2) 1.
+    refine hS₂.congr ?_
+    intro s hs
+    have hs_ge : 1/2 ≤ s := hs.1
+    have h_base : Jacobians.concat γ₁ γ₂ s = γ₂ (2 * s + (-1)) := by
+      rcases lt_or_eq_of_le hs_ge with h_gt | h_eq
+      · rw [Jacobians.concat_apply_right _ _ (not_le.mpr h_gt),
+          show (2:ℝ) * s + (-1) = 2*s - 1 from by ring]
+      · subst h_eq
+        rw [Jacobians.concat_apply_left _ _ (le_refl _),
+          show (2:ℝ) * (1/2) = 1 from by norm_num,
+          show (1:ℝ) + (-1) = 0 from by norm_num, hjoin]
+    have h_fib : pathSpeed (Jacobians.concat γ₁ γ₂) s
+        = ((2:ℝ) : ℂ) • pathSpeed γ₂ (2 * s + (-1)) := by
+      rcases lt_or_eq_of_le hs_ge with h_gt | h_eq
+      · have h2sm1_uIcc : 2 * s - 1 ∈ Set.uIcc (0:ℝ) 1 := by
+          rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+          exact ⟨by linarith, by linarith [hs.2]⟩
+        rw [Jacobians.pathSpeed_concat_right _ _ s h_gt (h₂diff (2 * s - 1) h2sm1_uIcc),
+          show (2:ℝ) * s + (-1) = 2*s - 1 from by ring, smul_eq_mul]; push_cast; ring
+      · subst h_eq
+        rw [hjunc, show (2:ℝ) * (1/2) + (-1) = 0 from by norm_num, hv₂, smul_zero]
+    show Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+        (Jacobians.concat γ₁ γ₂ s) (pathSpeed (Jacobians.concat γ₁ γ₂) s) = _
+    rw [h_base, h_fib]
+
 end Jacobians
