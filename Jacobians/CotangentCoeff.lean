@@ -94,4 +94,23 @@ theorem target_eq_inCoordinates_of_w (α : HolomorphicOneForms X) (x₀ x : X)
     Bundle.Trivial.continuousLinearMapAt_trivialization, ContinuousLinearMap.id_apply]
   rw [Bundle.Trivialization.symmL_continuousLinearMapAt _ hxbase]
 
+/-- **General-vector form of `target_eq_inCoordinates_of_w`.** For any tangent vector `v` at
+`x ∈ (chartAt ℂ x₀).source`, applying the form equals applying its fixed-`x₀`-trivialization
+`inCoordinates` representation to `v` read in that trivialization. (The `v = 1` case is the
+obstruction lemma `target_eq_inCoordinates_of_w`; this general version is what lets a
+chart-patchwork rewrite the line-integral integrand `α.toFun (γ s) (pathSpeed γ s)` into a
+product of the continuous local coefficient and the trivialized velocity.) -/
+theorem apply_eq_inCoordinates (α : HolomorphicOneForms X) (x₀ x : X)
+    (hx : x ∈ (chartAt ℂ x₀).source) (v : TangentSpace 𝓘(ℂ) x) :
+    α.toFun x v =
+      ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := X)) ℂ (Bundle.Trivial X ℂ)
+        x₀ x x₀ x (α.toFun x)
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).continuousLinearMapAt ℂ x v) := by
+  have hxbase : x ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).baseSet := by
+    rw [TangentBundle.trivializationAt_baseSet]; exact hx
+  simp only [ContinuousLinearMap.inCoordinates, ContinuousLinearMap.comp_apply,
+    Bundle.Trivial.fiberBundle_trivializationAt',
+    Bundle.Trivial.continuousLinearMapAt_trivialization, ContinuousLinearMap.id_apply]
+  rw [Bundle.Trivialization.symmL_continuousLinearMapAt _ hxbase]
+
 end Jacobians
