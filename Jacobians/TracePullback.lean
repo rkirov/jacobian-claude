@@ -181,6 +181,98 @@ theorem ambientPullbackJac_eq_zero_of_const (f : X → Y) (hf : ContMDiff 𝓘(�
   ext v i
   simp
 
+/-- **Algebraic bridge (projection formula, period level).** The `i`-th component of
+the genuine Jacobian pullback `ambientPullbackJac f hf (periodVec δ)` is the line
+integral of the trace of the `i`-th basis form along `δ`:
+`(Tᵀ · periodVec δ)ᵢ = ∫_δ traceFormTotal f hf (ωᵢ^X)`.
+
+Pure linear algebra + linearity of `lineIntegral`, dual to `periodVec_pushforward`
+(`PeriodLattice.lean`). With `w := (ambientIso Y).symm (traceFormTotal f hf ωᵢ^X)`:
+the matrix entry `Tᵀ i j = (ambientTrace f hf eᵢ^X) j = w j` (`ambientTrace` is the
+`ambientIso`-conjugate of `traceFormTotal`), so the LHS is `∑ⱼ wⱼ (periodVec δ)ⱼ`;
+and `traceFormTotal f hf ωᵢ^X = ambientIso Y w = ∑ⱼ wⱼ • ωⱼ^Y`, so the RHS line
+integral is `∑ⱼ wⱼ ∫_δ ωⱼ^Y = ∑ⱼ wⱼ (periodVec δ)ⱼ` by linearity. The integrability
+hypothesis is the per-basis-form regularity of a closed smooth loop. -/
+theorem ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (δ : ℝ → Y) (i : Fin (genus X))
+    (hint_Y : ∀ j : Fin (genus Y), IntervalIntegrable
+      (fun t => (periodBasisForm Y j).toFun (δ t) (pathSpeed δ t)) MeasureTheory.volume 0 1) :
+    ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (periodVec δ) i =
+      lineIntegral (traceFormTotal f hf (periodBasisForm X i)) δ := by
+  classical
+  set w := (ambientIso Y).symm (traceFormTotal f hf (periodBasisForm X i)) with hw_def
+  -- The matrix-transpose action `(Tᵀ · periodVec δ)ᵢ = ∑ⱼ wⱼ (periodVec δ)ⱼ`.
+  have hLHS : ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (periodVec δ) i
+      = ∑ j, w j * (periodVec δ) j := by
+    show (Matrix.transpose (LinearMap.toMatrix (Pi.basisFun ℂ (Fin (genus X)))
+        (Pi.basisFun ℂ (Fin (genus Y))) (ambientTrace f hf).toLinearMap)).mulVecLin
+        (periodVec δ) i = ∑ j, w j * (periodVec δ) j
+    rw [Matrix.mulVecLin_apply]
+    show ∑ j, (Matrix.transpose (LinearMap.toMatrix _ _ _)) i j * (periodVec δ) j
+        = ∑ j, w j * (periodVec δ) j
+    refine Finset.sum_congr rfl (fun j _ => ?_)
+    congr 1
+    show (LinearMap.toMatrix (Pi.basisFun ℂ (Fin (genus X)))
+      (Pi.basisFun ℂ (Fin (genus Y))) (ambientTrace f hf).toLinearMap) j i = w j
+    rw [LinearMap.toMatrix_apply]
+    show ((Pi.basisFun ℂ (Fin (genus Y))).repr
+      (ambientTrace f hf (Pi.basisFun ℂ (Fin (genus X)) i))) j = w j
+    rw [Pi.basisFun_repr]
+    -- `ambientTrace f hf eᵢ^X = w` (ambientIso-conjugate of traceFormTotal).
+    have hat : ambientTrace (gX := genus X) (gY := genus Y) f hf
+        (Pi.basisFun ℂ (Fin (genus X)) i) = w := by
+      rw [hw_def]
+      unfold ambientTrace
+      set_option linter.unusedSimpArgs false in simp only [dif_pos rfl]
+      rfl
+    rw [hat]
+  -- The line integral of the trace form `= ∑ⱼ wⱼ (periodVec δ)ⱼ`.
+  have hRHS : lineIntegral (traceFormTotal f hf (periodBasisForm X i)) δ
+      = ∑ j, w j * (periodVec δ) j := by
+    have h_iso : traceFormTotal f hf (periodBasisForm X i) = ambientIso Y w := by
+      rw [hw_def]; exact ((ambientIso Y).apply_symm_apply _).symm
+    rw [h_iso]
+    have h_iso_sum : ambientIso Y w = ∑ j, w j • periodBasisForm Y j := by
+      have h_w_decomp : w = ∑ j, w j • Pi.basisFun ℂ (Fin (genus Y)) j := by
+        have := pi_eq_sum_univ' w
+        convert this using 2
+        simp [Pi.basisFun_apply]
+      conv_lhs => rw [h_w_decomp, map_sum]
+      refine Finset.sum_congr rfl (fun j _ => ?_)
+      rw [map_smul]; rfl
+    rw [h_iso_sum]
+    -- `lineIntegral (∑ⱼ wⱼ • ωⱼ^Y) δ = ∑ⱼ wⱼ ∫_δ ωⱼ^Y = ∑ⱼ wⱼ (periodVec δ)ⱼ`.
+    have h_sum_lineIntegral : lineIntegral (∑ j, w j • periodBasisForm Y j) δ =
+        ∑ j, w j * lineIntegral (periodBasisForm Y j) δ := by
+      unfold lineIntegral
+      have h_pw : ∀ t : ℝ,
+          (∑ j, w j • periodBasisForm Y j).toFun (δ t) (pathSpeed δ t) =
+            ∑ j, w j * (periodBasisForm Y j).toFun (δ t) (pathSpeed δ t) := by
+        intro t
+        induction (Finset.univ : Finset (Fin (genus Y))) using Finset.induction_on with
+        | empty =>
+          rw [Finset.sum_empty, Finset.sum_empty]
+          show (0 : HolomorphicOneForms Y).toFun (δ t) (pathSpeed δ t) = 0
+          rfl
+        | @insert a s ha ih =>
+          rw [Finset.sum_insert ha, Finset.sum_insert ha]
+          show ((w a • periodBasisForm Y a) + ∑ j ∈ s, w j • periodBasisForm Y j).toFun (δ t)
+              (pathSpeed δ t) = _
+          rw [show ((w a • periodBasisForm Y a) + ∑ j ∈ s, w j • periodBasisForm Y j).toFun (δ t) =
+              (w a • periodBasisForm Y a).toFun (δ t) +
+                (∑ j ∈ s, w j • periodBasisForm Y j).toFun (δ t) from rfl,
+            ContinuousLinearMap.add_apply, ih]
+          rfl
+      simp_rw [h_pw]
+      rw [intervalIntegral.integral_finset_sum (s := Finset.univ)
+        (f := fun j t => w j * (periodBasisForm Y j).toFun (δ t) (pathSpeed δ t))
+        (fun j _ => (hint_Y j).const_mul (w j))]
+      refine Finset.sum_congr rfl (fun j _ => ?_)
+      exact intervalIntegral.integral_const_mul _ _
+    rw [h_sum_lineIntegral]
+    rfl
+  rw [hLHS, hRHS]
+
 /-! ## §3 The preimage cycle and lattice preservation
 
 Relocated here from `PeriodLattice.lean` (whose covering / fibre-finiteness
