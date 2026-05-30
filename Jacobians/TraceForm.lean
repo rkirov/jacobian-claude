@@ -575,6 +575,203 @@ theorem contMDiffAt_traceFun_of_notMem_branchLocus (f : X → Y)
   obtain ⟨S⟩ := exists_localSheetSystem f hf hnonconst hy₀
   exact S.contMDiffAt_traceFun hf α
 
+/-! ### The trace as a bundle section, and its canonical branch extension
+
+We package the covector-valued trace as a map into the cotangent-bundle total space
+(`traceTotalSpaceMk`) so we can speak of its `ContMDiff`ness directly, and we define the
+*canonical extension* `traceFunExt` that overwrites the (wrong) `finsum = 0` value
+at each branch point with the **removable-singularity limit** `limUnder (𝓝[≠] y₀)`.
+
+Off the branch locus `traceFunExt = traceFun`; on a *punctured* neighborhood of a
+branch point they also agree (the branch locus is finite, so a punctured nhd avoids
+it). These two agreements are all the reduction lemma below needs. -/
+
+/-- The trace, packaged as a map into the **total space** of the cotangent bundle of
+`Y` (the shape consumed by `ContMDiffAt`/`ContMDiffSection`). `coeff` is the covector
+to place in the fibre at `y` — either the raw fibre sum `traceFun f α y` or its branch
+extension `traceFunExt f α y`. -/
+noncomputable abbrev traceTotalSpaceMk (coeff : Y → (ℂ →L[ℂ] ℂ)) (y : Y) :
+    Bundle.TotalSpace (ℂ →L[ℂ] ℂ)
+      (fun y : Y => TangentSpace 𝓘(ℂ) y →L[ℂ] (Bundle.Trivial Y ℂ) y) :=
+  Bundle.TotalSpace.mk'
+    (E := fun y : Y => TangentSpace 𝓘(ℂ) y →L[ℂ] (Bundle.Trivial Y ℂ) y) (ℂ →L[ℂ] ℂ) y
+    (coeff y)
+
+/-- **Canonical branch extension of the trace coefficient.** Equal to the fibre sum
+`traceFun f α` off the branch locus, and to the removable-singularity limit
+`limUnder (𝓝[≠] y) (traceFun f α)` at each branch point (where the naive `finsum` is
+`0`). The membership test is decidable via `Classical.dec`. -/
+noncomputable def traceFunExt (f : X → Y) (α : HolomorphicOneForms X) (y : Y) :
+    ℂ →L[ℂ] ℂ := by
+  classical
+  exact if y ∈ branchLocus f then limUnder (𝓝[≠] y) (traceFun f α) else traceFun f α y
+
+/-- Off the branch locus, the extension is the raw fibre sum. -/
+theorem traceFunExt_of_notMem_branchLocus (f : X → Y) (α : HolomorphicOneForms X)
+    {y : Y} (hy : y ∉ branchLocus f) :
+    traceFunExt f α y = traceFun f α y := by
+  classical
+  rw [traceFunExt, if_neg hy]
+
+/-- A punctured neighborhood of any point `y₀` **eventually avoids the branch locus**:
+the branch locus is finite (hence `branchLocus f \ {y₀}` is closed), so its complement
+is a neighborhood of `y₀`, and a point there which is also `≠ y₀` is off-branch. This is
+the engine behind both the agreement lemma below and the linearity argument: on `𝓝[≠] y₀`
+the trace is genuinely the off-branch fibre sum. -/
+theorem eventually_notMem_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (y₀ : Y) :
+    ∀ᶠ y in 𝓝[≠] y₀, y ∉ branchLocus f := by
+  have hBfin : (branchLocus f).Finite := finite_branchLocus_of_nonconstant f hf hnonconst
+  have hclosed : IsClosed (branchLocus f \ {y₀}) := hBfin.diff.isClosed
+  have hnhd : (branchLocus f \ {y₀})ᶜ ∈ 𝓝 y₀ :=
+    hclosed.isOpen_compl.mem_nhds (by simp)
+  filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds hnhd] with y hy_ne hy_notdiff
+  rw [Set.mem_compl_iff, Set.mem_diff, not_and, not_not] at hy_notdiff
+  exact fun hyB => hy_ne (hy_notdiff hyB)
+
+/-- On the **punctured** neighborhood of any point `y₀`, the extension agrees with the
+raw fibre sum: on `𝓝[≠] y₀` points are eventually off the branch locus
+(`eventually_notMem_branchLocus`), where `traceFunExt = traceFun`. This is the bridge
+turning a limit/continuity statement about `traceFun` into one about `traceFunExt`. -/
+theorem traceFunExt_eventuallyEq_traceFun (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X) (y₀ : Y) :
+    traceFunExt f α =ᶠ[𝓝[≠] y₀] traceFun f α := by
+  filter_upwards [eventually_notMem_branchLocus f hf hnonconst y₀] with y hy_off
+  exact traceFunExt_of_notMem_branchLocus f α hy_off
+
+/-! ### Off-branch smoothness of the extended section
+
+Off the branch locus the extension equals the raw fibre sum on a whole (open)
+neighborhood, so off-branch `ContMDiffAt` of the *extended* section follows from the
+unconditional off-branch `ContMDiffAt` of the raw fibre-sum section. -/
+
+/-- The extended trace section is `ContMDiffAt` at every point **off** the branch
+locus, unconditionally (no analytic hypothesis): the extension agrees with the raw
+fibre sum on the open set `(branchLocus f)ᶜ`, where the fibre sum is holomorphic
+(`contMDiffAt_traceFun_of_notMem_branchLocus`). -/
+theorem contMDiffAt_traceSection_ext_of_notMem_branchLocus (f : X → Y)
+    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (α : HolomorphicOneForms X) {y₀ : Y} (hy₀ : y₀ ∉ branchLocus f) :
+    ContMDiffAt 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+      (traceTotalSpaceMk (traceFunExt f α)) y₀ := by
+  have hBclosed : IsClosed (branchLocus f) :=
+    (finite_branchLocus_of_nonconstant f hf hnonconst).isClosed
+  -- On the open complement of the branch locus, `traceFunExt = traceFun`.
+  have heq : traceTotalSpaceMk (traceFunExt f α) =ᶠ[𝓝 y₀] traceTotalSpaceMk (traceFun f α) := by
+    filter_upwards [hBclosed.isOpen_compl.mem_nhds hy₀] with y hy
+    simp only [traceTotalSpaceMk, traceFunExt_of_notMem_branchLocus f α hy]
+  exact (contMDiffAt_traceFun_of_notMem_branchLocus f hf hnonconst α hy₀).congr_of_eventuallyEq heq
+
+/-- A connected complex 1-manifold has **no isolated points**: the punctured
+neighborhood filter `𝓝[≠] y₀` is `NeBot`. (`Y` is `Infinite`
+— `y_infinite_of_chartedSpace_complex` — hence `Nontrivial`; with `T1Space` +
+`ConnectedSpace` this gives `PerfectSpace`, hence `NeBot (𝓝[≠] y₀)`.) This is what
+makes limits along punctured neighborhoods unique, the engine of the linearity
+argument below. -/
+instance neBot_nhdsWithin_compl_self (y₀ : Y) : (𝓝[≠] y₀).NeBot := by
+  haveI : Infinite Y := Jacobians.Discharge.ContMDiff.Degree.y_infinite_of_chartedSpace_complex
+  infer_instance
+
+/-! ### The reduction lemma (regluing + linearity), conditional on per-branch extension
+
+The deliverable: a **fully-proven** reduction of `exists_traceForm` to one per-branch-point
+analytic input. The input, `hext`, packages — for each form `α` and each branch point
+`y₀` — the two facts that the (classically true) holomorphic extension supplies:
+
+* `hsmooth`: the extended bundle section is `ContMDiffAt` at `y₀` (the *holomorphic*
+  extension; from boundedness + Mathlib's removable singularity, then bundle regluing);
+* `hcont`: the extension coefficient `traceFunExt f α : Y → (ℂ →L[ℂ] ℂ)` is `ContinuousAt`
+  at `y₀` (the weaker *continuous* extension — the shadow of `hsmooth`).
+
+Both are consequences of the single analytic crux (local boundedness of the trace near
+a branch point, §1 of the assembly docstring); we keep them as the hypothesis so the
+regluing **and** the full ℂ-linearity of `T` are proven here, unconditionally. -/
+
+/-- **Reduction lemma for the trace.** Given the per-branch-point extension data `hext`
+(holomorphic-extension smoothness + continuity at each branch point, for every form),
+the trace `f₊ : Ω¹(X) →ₗ[ℂ] Ω¹(Y)` exists as a genuine holomorphic-one-form linear map
+agreeing with the off-branch fibre sum `traceFun`.
+
+Everything here is proven outright:
+* **Section assembly**: `traceFunExt f α` is a global `ContMDiffSection` — off-branch from
+  `contMDiffAt_traceSection_ext_of_notMem_branchLocus`, at branch points from `hext`.
+* **Linearity**: at a branch point the extension value is the *unique* limit of `traceFun`
+  along the punctured neighborhood (`neBot_nhdsWithin_compl_self` + `tendsto_nhds_unique`),
+  and limits respect `+`/`•`; off-branch the fibre sum is already additive/homogeneous
+  (`traceFun_add_of_notMem_branchLocus`, `traceFun_smul_of_notMem_branchLocus`). -/
+theorem exists_traceForm_of_branchExtension (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (hext : ∀ (α : HolomorphicOneForms X) (y₀ : Y), y₀ ∈ branchLocus f →
+      ContMDiffAt 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+          (traceTotalSpaceMk (traceFunExt f α)) y₀ ∧
+        ContinuousAt (traceFunExt f α) y₀) :
+    ∃ T : HolomorphicOneForms X →ₗ[ℂ] HolomorphicOneForms Y,
+      ∀ (α : HolomorphicOneForms X) (y : Y), y ∉ branchLocus f →
+        (T α).toFun y = traceFun f α y := by
+  classical
+  -- Global `ContMDiff` of the extended section, for each form.
+  have hsmooth : ∀ α : HolomorphicOneForms X, ContMDiff 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+      (traceTotalSpaceMk (traceFunExt f α)) := by
+    intro α y₀
+    by_cases hy₀ : y₀ ∈ branchLocus f
+    · exact (hext α y₀ hy₀).1
+    · exact contMDiffAt_traceSection_ext_of_notMem_branchLocus f hf hnonconst α hy₀
+  -- The underlying section assignment `α ↦ ⟨traceFunExt f α, …⟩`.
+  set T₀ : HolomorphicOneForms X → HolomorphicOneForms Y :=
+    fun α => ⟨traceFunExt f α, hsmooth α⟩ with hT₀_def
+  -- `traceFunExt f α y` is the unique punctured-nhd limit of `traceFun f α` at a branch
+  -- point: it is `ContinuousAt` (hence tends to its value along `𝓝[≠]`) and equals the
+  -- raw fibre sum on the punctured neighborhood.
+  have htendsto : ∀ (α : HolomorphicOneForms X) {y₀ : Y}, y₀ ∈ branchLocus f →
+      Filter.Tendsto (traceFun f α) (𝓝[≠] y₀) (𝓝 (traceFunExt f α y₀)) := by
+    intro α y₀ hy₀
+    have hca : Filter.Tendsto (traceFunExt f α) (𝓝[≠] y₀) (𝓝 (traceFunExt f α y₀)) :=
+      ((hext α y₀ hy₀).2.continuousWithinAt (s := {y₀}ᶜ))
+    exact hca.congr' (traceFunExt_eventuallyEq_traceFun f hf hnonconst α y₀)
+  -- Pointwise additivity of the extended coefficient (everywhere, incl. branch points).
+  have hadd : ∀ (α β : HolomorphicOneForms X) (y : Y),
+      traceFunExt f (α + β) y = traceFunExt f α y + traceFunExt f β y := by
+    intro α β y
+    by_cases hy : y ∈ branchLocus f
+    · -- Unique-limit argument: both sides are limits of `traceFun … ` along `𝓝[≠] y`.
+      refine tendsto_nhds_unique (htendsto (α + β) hy) ?_
+      have hsum := (htendsto α hy).add (htendsto β hy)
+      refine hsum.congr' ?_
+      filter_upwards [eventually_notMem_branchLocus f hf hnonconst y] with z hz_off
+      exact (traceFun_add_of_notMem_branchLocus f hf hnonconst α β hz_off).symm
+    · rw [traceFunExt_of_notMem_branchLocus f (α + β) hy,
+        traceFunExt_of_notMem_branchLocus f α hy, traceFunExt_of_notMem_branchLocus f β hy,
+        traceFun_add_of_notMem_branchLocus f hf hnonconst α β hy]
+  -- Pointwise ℂ-homogeneity of the extended coefficient (everywhere, incl. branch points).
+  have hsmul : ∀ (c : ℂ) (α : HolomorphicOneForms X) (y : Y),
+      traceFunExt f (c • α) y = c • traceFunExt f α y := by
+    intro c α y
+    by_cases hy : y ∈ branchLocus f
+    · refine tendsto_nhds_unique (htendsto (c • α) hy) ?_
+      have hsm := (htendsto α hy).const_smul c
+      refine hsm.congr' ?_
+      filter_upwards [eventually_notMem_branchLocus f hf hnonconst y] with z hz_off
+      exact (traceFun_smul_of_notMem_branchLocus f hf hnonconst c α hz_off).symm
+    · rw [traceFunExt_of_notMem_branchLocus f (c • α) hy,
+        traceFunExt_of_notMem_branchLocus f α hy,
+        traceFun_smul_of_notMem_branchLocus f hf hnonconst c α hy]
+  -- Assemble the linear map. `+`/`•` of sections are pointwise (`coe_add`, `coe_smul`),
+  -- so the section identities follow termwise from `hadd`/`hsmul`.
+  refine ⟨{
+    toFun := T₀
+    map_add' := fun α β => ?_
+    map_smul' := fun c α => ?_ }, ?_⟩
+  · refine ContMDiffSection.ext (fun y => ?_)
+    show traceFunExt f (α + β) y = (T₀ α + T₀ β).toFun y
+    rw [hadd α β y]; rfl
+  · refine ContMDiffSection.ext (fun y => ?_)
+    show traceFunExt f (c • α) y = (c • T₀ α).toFun y
+    rw [hsmul c α y]; rfl
+  · -- Off-branch the section is the raw fibre sum, by construction of `traceFunExt`.
+    intro α y hy
+    show traceFunExt f α y = traceFun f α y
+    exact traceFunExt_of_notMem_branchLocus f α hy
+
 /-! ## Assembling into `HolomorphicOneForms Y` via branch extension
 
 The off-branch fibre sum `traceFun f α` is now an **unconditional** holomorphic
@@ -589,61 +786,80 @@ The global section's `toFun` is therefore the *extension*, characterized only by
 agreeing with `traceFun` off the branch locus — we must not assert global smoothness
 of `traceFun` itself, which is false at branch points.
 
-### Why this single `sorry` remains (precise frontier)
+### State of the assembly: framework PROVEN, one analytic fact ISOLATED
 
-`HolomorphicOneForms Y = ContMDiffSection 𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω _`, so `T α` must carry
-a *global* `ContMDiff` proof — including at branch points. Producing it needs, in
-order of difficulty:
+The regluing **and** the full ℂ-linearity are now proven outright in
+`exists_traceForm_of_branchExtension` (above), which reduces `exists_traceForm` to a
+single per-branch-point input `hext`. So the whole bundle/linearity scaffolding is
+done and reusable; what remains is exactly that input, isolated below as
+`traceExtendsAt_branchPoint` — the genuine analytic frontier.
+
+`HolomorphicOneForms Y = ContMDiffSection 𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω _`, so the extended
+section `traceFunExt f α` must carry a *global* `ContMDiff` proof — including at branch
+points. The per-branch-point input has two halves, **both consequences of the single
+analytic crux** (local boundedness of the trace near a branch point):
 
 1. **[GENUINE ANALYTIC CRUX — not in Mathlib, not in `Discharge/`]** *Local
    boundedness of the trace near each branch point.* In a chart at a branch point
-   `y₀`, the bundle-section coefficient `z ↦ traceFun f α (chart⁻¹ z)` is a
-   holomorphic function on the punctured disk that is **bounded** as `z → 0`. The
-   classical reason: near `y₀` the cover has local normal form `w ↦ wᵉ` on each
-   ramified sheet (`Discharge/Manifold/LocalNormalForm.lean`
-   `MMeromorphicAt.exists_local_normal_form` gives the `wᵉ` model for the *map*),
-   and the symmetric sum over the `e` colliding sheets of the per-sheet pullback
-   `(α (sheetᵢ z)) ∘ (mfderiv sheetᵢ z)` cancels the `1/eʷᵉ⁻¹` blow-up (a Puiseux /
-   Newton-symmetric-function computation). No project lemma currently supplies this;
-   it is the analytic heart of the trace's well-definedness.
+   `y₀`, the coefficient `z ↦ traceFun f α (chart⁻¹ z)` is holomorphic on the punctured
+   disk and **bounded** as `z → 0`. The classical reason: near `y₀` the cover has local
+   normal form `w ↦ wᵉ` on each ramified sheet (`Discharge/Manifold/LocalNormalForm.lean`
+   `MMeromorphicAt.exists_local_normal_form` gives the `wᵉ` model for the *map*), and
+   the symmetric sum over the `e` colliding sheets of the per-sheet pullback
+   `(α (sheetᵢ z)) ∘ (mfderiv sheetᵢ z)` cancels the `wᵉ⁻¹`-type blow-up via roots-of-
+   unity orthogonality `∑ₖ ζ^{k(n+1)} = e·[e ∣ n+1]` (a Puiseux / Newton-symmetric-
+   function computation). No project lemma currently supplies this; it is the analytic
+   heart of the trace's well-definedness.
 
-2. **Removable-singularity extension.** Given (1), Mathlib closes the chart-level
-   step: `Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt`
-   (or `differentiableOn_update_limUnder_of_bddAbove`, file
-   `Mathlib/Analysis/Complex/RemovableSingularity.lean`) makes the `Function.update`
-   extension differentiable/analytic at `y₀`.
-
-3. **Bundle re-gluing.** Lift the chart-level extension back to a global
-   `ContMDiffSection` of the cotangent bundle (off-branch from
-   `contMDiffAt_traceFun_of_notMem_branchLocus`, at branch points from (1)+(2)).
-   There is no section-extension-across-a-finite-set lemma in the project yet; this
-   is substantial manifold/`Bundle.ContinuousLinearMap` plumbing.
-
-Linearity of `T` would then follow from the proven pointwise linearity of the fibre
-sum (`traceFun_add_of_notMem_branchLocus`, `traceFun_smul_of_notMem_branchLocus`)
-plus continuity/density of the extension across the finite branch locus.
+2. **Removable singularity + bundle regluing.** Given (1), Mathlib closes the chart
+   step — `Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt` (or
+   `differentiableOn_update_limUnder_of_bddAbove`, file
+   `Mathlib/Analysis/Complex/RemovableSingularity.lean`) — yielding *both* the
+   continuity (`ContinuousAt (traceFunExt f α)`) and, after lifting the chart-level
+   analyticity back through `contMDiffAt_hom_bundle`, the section `ContMDiffAt`. These
+   are precisely the two conjuncts of `hext`.
 
 Sound (classically true; Forster §10, Griffiths–Harris Ch. 2 §2.7). References:
 Forster §4.22–4.25 (local normal form `wᵉ`), §10 (the trace). -/
 
-/-- **[ISOLATED SORRY — removable-singularity branch extension + bundle assembly]**
-The trace `f₊ : Ω¹(X) →ₗ[ℂ] Ω¹(Y)` exists as a genuine holomorphic one-form linear
-map, agreeing with the off-branch fibre sum `traceFun`. Sound (classically true;
-Forster §10, Griffiths–Harris Ch. 2 §2.7).
+/-- **[ISOLATED ANALYTIC SORRY — the trace's local boundedness at a branch point]**
 
-The off-branch input is **unconditional** (`exists_localSheetSystem` is closed). The
-remaining `sorry` needs exactly: (1) local boundedness of `traceFun` near each branch
-point (the symmetric-sum/local-normal-form crux — *not* in Mathlib or `Discharge/`),
-then (2) Mathlib's removable singularity
-`Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt`, then
-(3) re-gluing the chart-level extension into a global `ContMDiffSection`. See the
-section docstring above for the full breakdown. -/
+For every form `α` and every branch point `y₀ ∈ branchLocus f`, the canonical branch
+extension `traceFunExt f α` is, at `y₀`:
+* `ContMDiffAt` as a section of the cotangent bundle (the *holomorphic* extension), and
+* `ContinuousAt` as a coefficient `Y → (ℂ →L[ℂ] ℂ)` (the *continuous* extension).
+
+This is the **single remaining analytic fact** of the trace map. It is the manifold
+incarnation of: *the holomorphic 1-form `traceFun f α` on `Y ∖ branchLocus f` is locally
+bounded near each branch point, hence (Riemann removable singularity) extends
+holomorphically.* The classical proof uses the local normal form `w ↦ wᵉ` of the
+branched cover and the roots-of-unity cancellation of the per-sheet blow-ups; see the
+section docstring above for the precise statement and why Mathlib/`Discharge` lack it
+(no Puiseux/Newton-symmetric-function machinery for branched-cover traces).
+
+Everything *downstream* of this fact — the removable-singularity extension being well
+defined, the global `ContMDiffSection` regluing, and the full ℂ-linearity of the trace —
+is proven unconditionally in `exists_traceForm_of_branchExtension`. -/
+theorem traceExtendsAt_branchPoint (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X)
+    {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
+    ContMDiffAt 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+        (traceTotalSpaceMk (traceFunExt f α)) y₀ ∧
+      ContinuousAt (traceFunExt f α) y₀ :=
+  sorry
+
+/-- **Existence of the trace** `f₊ : Ω¹(X) →ₗ[ℂ] Ω¹(Y)` as a genuine holomorphic
+one-form linear map agreeing with the off-branch fibre sum `traceFun`. Now a one-line
+consequence of the fully-proven reduction `exists_traceForm_of_branchExtension` and the
+isolated per-branch-point analytic input `traceExtendsAt_branchPoint`. Sound (classically
+true; Forster §10, Griffiths–Harris Ch. 2 §2.7). -/
 theorem exists_traceForm (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
     ∃ T : HolomorphicOneForms X →ₗ[ℂ] HolomorphicOneForms Y,
       ∀ (α : HolomorphicOneForms X) (y : Y), y ∉ branchLocus f →
         (T α).toFun y = traceFun f α y :=
-  sorry
+  exists_traceForm_of_branchExtension f hf hnonconst
+    (fun α _y₀ hy₀ => traceExtendsAt_branchPoint f hf hnonconst α hy₀)
 
 /-- **Trace (pushforward) of holomorphic one-forms**, `f₊ : Ω¹(X) →ₗ[ℂ] Ω¹(Y)`,
 extracted from `exists_traceForm`. Off the branch locus it is the holomorphic
