@@ -5,6 +5,36 @@ Continuation plan for `exists_preimageCycle_of_off_branchLocus`
 pushforward∘pullback = degree identity. This is the "§3 / loop-lifting machinery"
 referenced throughout the codebase. Written 2026-05-30 after sub-piece A landed.
 
+## ⇒ STATUS (2026-05-30, later): DECOMPOSED into 3 typechecking leaves + PROVEN assembly
+
+`exists_preimageLoopFamily` is now **proven from three leaf lemmas** (assembly compiles,
+sorry-free); the geometric heart is bottomed-out. Commit `dc3386c`. The new interface +
+leaves live in `TracePullback.lean` just above `exists_preimageLoopFamily`:
+
+* **`MonodromyLiftFamily f δ`** (struct) — the interface: a finite family of seam-flattened
+  smooth lifts `Γ i` of `δr = δ∘flatEndReparam` whose time-`t` values `i ↦ Γ i t` sweep the
+  fibre `f⁻¹(δr t)` **bijectively** for every `t∈[0,1]`. Fields: `n`, `Γ`, `smooth` (each an
+  `IsSmoothPath`, i.e. carries velCont), `velZero_zero/one`, `lifts` (`f∘Γi = δr` on `[0,1]`),
+  `fibre_inj`, `fibre_surj`.
+* **leaf A+B `exists_monodromyLiftFamily`** — construct it off-branch (one velCont lift per
+  fibre point; `fibre_inj` by lift uniqueness/clopen; `fibre_surj` by off-branch fibre-card
+  constancy on connected `[0,1]` via the local sheet system). Hardest leaf.
+* **leaf D `lineIntegral_traceFormTotal_eq_sum_periodVec`** — projection formula
+  `∫_δ trace(ωⱼ) = ∑ᵢ periodVec(Γᵢ)ⱼ`. **KEY SIMPLIFICATION**: the old segment-partition /
+  sheet-reassembly / index-matching route is *abandoned* in favour of a single **pointwise
+  fibre-sum identity** `traceFun f ωⱼ (δr t)(δr' t) = ∑ᵢ ωⱼ(Γᵢ t)(Γᵢ' t)` — the trace
+  fibre-sum reindexed by the time-`t` bijection, each summand `= ωⱼ(Γᵢ t)((mfderiv f)⁻¹ δr' t)`
+  with `(mfderiv f)⁻¹(δr' t) = pathSpeed Γᵢ t` (since `f∘Γᵢ = δr`). Integrate; done. No
+  `exists_nbhd_cover`/`lineIntegral_pullback_section` partition bookkeeping needed.
+* **leaf E `exists_orbitLoops_of_monodromyLiftFamily`** — group lifts into closed smooth loops
+  along σ-orbits (`σ` = `fibre`-bijection at `t=1`; iterated `concat`, junctions `0`), account
+  both periods (`coeffs=1`, `sheets=M.n`).
+
+All three leaf proofs delegated to clean-context agents (statements pinned ⟹ a sorry-free +
+axiom-clean build is automatically sound; verify by statement-unchanged + build + `#print
+axioms`). Everything below is the prior derivation (still valid; the C¹ refactor that makes
+`smooth`/velCont available, and the reparam-invariance that D/E use).
+
 ## ⇒ STATUS (2026-05-30, end of session): ALL ANALYTIC WALLS CLEARED — only the geometry remains
 
 The "DEFINITIVE FINDING" below (loop predicate must be genuinely C¹) is now **DONE**, not pending.
