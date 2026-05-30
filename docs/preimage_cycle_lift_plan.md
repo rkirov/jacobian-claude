@@ -24,23 +24,24 @@ So the ambient/matrix layer of the whole §3 chain is finished; the one remainin
 (besides the pre-existing, deferred `exists_loop_off_branchLocus`) is `exists_preimageLoopFamily`,
 stated purely in line-integral/period terms.
 
-**The frontier is now a single analytic gap.** `exists_preimageLoopFamily` needs two
-prerequisites — the seam-fix lifts' **integrability** and **reparam-invariance**
-`periodVec (δ∘flatEndReparam) = periodVec δ` — both of which reduce to a *change of
-variables for the line integral* under the monotone `C¹` reparam `flatEndReparam`.
-Mathlib's CoV (`integral_deriv_smul_comp'''`, strongest variant) requires the integrand
-**continuous on the open interval**; but an `IsClosedSmoothLoop`'s integrand
-`t ↦ ωⱼ(δ t)(pathSpeed δ t)` is only *interval-integrable + pointwise-differentiable*, NOT
-`C¹` (no continuity of `pathSpeed δ`). So the CoV does not apply. **Two ways forward (a
-Lean/architecture decision for the user):**
- (a) **Strengthen `IsClosedSmoothLoop`** (and `IsSmoothPath`) to require `ContinuousOn`/`C¹`
-     chart-derivatives (i.e. `pathSpeed` continuous), not just pointwise `DifferentiableAt`.
-     This makes integrands continuous ⇒ CoV applies ⇒ unblocks reparam-invariance + lift
-     integrability in one stroke (and likely simplifies several existing proofs). Cost: a
-     repo-wide refactor of the predicate and its ~dozen call sites.
- (b) **Prove a CoV / integrability-transfer for *integrable* integrands under a monotone AC
-     reparam** (the 1-D area formula for monotone AC maps holds for integrable `g`; Mathlib's
-     interval-integral CoV is FTC-based hence continuity-gated). A focused real-analysis lemma.
+**Frontier — NOT blocked; no refactor needed (corrected 2026-05-30).** The remaining
+analytic prerequisites of `exists_preimageLoopFamily` — the seam-fix lifts'
+**integrability** and **reparam-invariance** `periodVec (δ∘flatEndReparam) = periodVec δ`
+— are a *monotone change of variables* for the line integral, and Mathlib's
+**measure-theoretic** monotone CoV handles this for merely *integrable* (not necessarily
+continuous) integrands: `MeasureTheory.integral_image_eq_integral_deriv_smul_of_monotoneOn`
+and `integrableOn_image_iff_integrableOn_deriv_smul_of_monotoneOn` (`JacobianOneDim.lean`).
+The **codebase already uses the integrability version** for `smoothStep01` (in
+`isSmoothPath_smoothPathSmooth`, `OfCurveAnalyticitySkeleton.lean`). `flatEndReparam` is
+monotone (`Real.smoothTransition.monotone`), so the same pattern applies verbatim. *(My
+earlier "blocked / needs C¹ refactor" note was wrong — it only checked the FTC-based
+`integral_deriv_smul_comp'''`, which is continuity-gated; the measure-theoretic monotone CoV
+is not.)* So the weak `IsClosedSmoothLoop` predicate is fine; no refactor. The remaining
+content is all "hard Lean, no missing math": reparam-invariance + lift integrability (mirror
+the `smoothStep01` proofs with `flatEndReparam`), the monodromy permutation
+(`IsCoveringMap.eq_liftPath_iff`) + orbit concatenation (`IsSmoothPath.concat`), and the
+partition/sheet-reassembly projection formula (`exists_nbhd_cover` +
+`exists_localSheetSystem_traceForm_eq_sum` + `lineIntegral_pullback_section`).
 
 - **A — continuous path-lift: DONE, sorry-free** (`exists_continuous_lift_off_branchLocus`,
   commit `32d435e`). `δ` off-branch lifts through the proven covering via Mathlib's
