@@ -40,6 +40,8 @@ open Filter Set MeasureTheory
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
   [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+  [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- **The continuous local object.** Near `x₀`, the coordinate of the section `α` in the FIXED
 hom-bundle trivialization at `x₀` is continuous (indeed it is `ContMDiffAt`) as a map into the
@@ -181,5 +183,123 @@ theorem intervalIntegrable_form_pathSpeed_of_velContinuous (α : HolomorphicOneF
   apply ContinuousOn.intervalIntegrable
   rw [Set.uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)]
   exact continuousOn_form_pathSpeed α γ hvel
+
+/-! ## Velocity-section continuity is preserved by smooth composition
+
+The constructor-side tools for the C¹ refactor. `velCont_comp` handles `IsClosedSmoothLoop.comp`
+(`f∘γ`, global `f`); `velCont_compOn` handles the §3 lift `g∘δr` (local section `g`, `C^ω` on an
+open `V`) and the `ChartBall` base case (via `chartAt _).symm`). **Both require, beyond velocity
+continuity `hγ`, the pointwise `hγdiff` and `hγcont` fields** — these are NOT implied by `hγ`
+(`pathSpeed` uses the junk-value convention, so a nowhere-differentiable continuous curve has a
+continuous velocity section), which is exactly why the refactor *keeps* the `cont`/`diff` fields and
+only replaces `integrable` with `velCont`. -/
+
+/-- Local analogue of `pathSpeed_comp_eq_mfderiv`: only `MDifferentiableAt f (γ t)` is needed (the
+global `ContMDiff f` in the original is used solely to produce this), so it applies to local sections. -/
+theorem pathSpeed_comp_eq_mfderiv_of_mdiff (f : X → Y) (γ : ℝ → X) (t : ℝ)
+    (hf_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f (γ t))
+    (hγ_cont : ContinuousAt γ t)
+    (hγ_diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
+    pathSpeed (f ∘ γ) t = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t) (pathSpeed γ t) := by
+  set φ_X := chartAt (H := ℂ) (γ t) with hφ_X_def
+  set φ_Y := chartAt (H := ℂ) (f (γ t)) with hφ_Y_def
+  set f_loc : ℂ → ℂ := fun z => φ_Y (f (φ_X.symm z)) with hf_loc_def
+  set g_X : ℝ → ℂ := φ_X.toFun ∘ γ with hg_X_def
+  set g_Y : ℝ → ℂ := φ_Y.toFun ∘ (f ∘ γ) with hg_Y_def
+  have hγt_X : γ t ∈ φ_X.source := mem_chart_source ℂ (γ t)
+  have hfγt_Y : f (γ t) ∈ φ_Y.source := mem_chart_source ℂ (f (γ t))
+  have hγ_source : ∀ᶠ s in 𝓝 t, γ s ∈ φ_X.source :=
+    hγ_cont.eventually (φ_X.open_source.mem_nhds hγt_X)
+  have h_eq : g_Y =ᶠ[𝓝 t] f_loc ∘ g_X := by
+    filter_upwards [hγ_source] with s hs
+    simp only [hg_Y_def, hf_loc_def, hg_X_def, Function.comp_apply]
+    congr 2
+    exact (φ_X.left_inv hs).symm
+  have hf_loc_diff_ℂ : DifferentiableAt ℂ f_loc (g_X t) := by
+    have h1 := hf_mdiff.differentiableWithinAt_writtenInExtChartAt
+    rw [ModelWithCorners.range_eq_univ, differentiableWithinAt_univ] at h1
+    convert h1 using 2
+  have hf_loc_hasFD_ℂ : HasFDerivAt f_loc (fderiv ℂ f_loc (g_X t)) (g_X t) :=
+    hf_loc_diff_ℂ.hasFDerivAt
+  have hf_loc_hasFD_ℝ : HasFDerivAt f_loc
+      ((fderiv ℂ f_loc (g_X t)).restrictScalars ℝ) (g_X t) := by
+    rw [hasFDerivAt_iff_isLittleO_nhds_zero] at hf_loc_hasFD_ℂ ⊢
+    simp only [ContinuousLinearMap.coe_restrictScalars']
+    exact hf_loc_hasFD_ℂ
+  have hf_loc_diff_ℝ : DifferentiableAt ℝ f_loc (g_X t) :=
+    hf_loc_hasFD_ℝ.differentiableAt
+  have hf_loc_fderiv_ℝ : fderiv ℝ f_loc (g_X t) =
+      (fderiv ℂ f_loc (g_X t)).restrictScalars ℝ :=
+    hf_loc_hasFD_ℝ.fderiv
+  have h_chain : fderiv ℝ (f_loc ∘ g_X) t =
+      (fderiv ℝ f_loc (g_X t)).comp (fderiv ℝ g_X t) :=
+    fderiv_comp t hf_loc_diff_ℝ hγ_diff
+  have h_mfderiv : mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t) = fderiv ℂ f_loc (g_X t) := by
+    rw [hf_mdiff.mfderiv]
+    rw [ModelWithCorners.range_eq_univ, fderivWithin_univ]
+    congr 1
+  show pathSpeed (f ∘ γ) t = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t) (pathSpeed γ t)
+  rw [h_mfderiv]
+  show fderiv ℝ ((chartAt (H := ℂ) ((f ∘ γ) t)).toFun ∘ (f ∘ γ)) t 1 =
+    fderiv ℂ f_loc (g_X t) (pathSpeed γ t)
+  have h_gY : (chartAt (H := ℂ) ((f ∘ γ) t)).toFun ∘ (f ∘ γ) = g_Y := rfl
+  rw [h_gY, h_eq.fderiv_eq, h_chain, ContinuousLinearMap.comp_apply,
+      hf_loc_fderiv_ℝ, ContinuousLinearMap.coe_restrictScalars']
+  rfl
+
+/-- **GLOBAL: velocity-section continuity is preserved by a global `C^ω` map.** For the
+`IsClosedSmoothLoop.comp` constructor. Identifies velocity-section(`f∘γ`) with `tangentMap f`
+applied to velocity-section(`γ`) (pointwise via `pathSpeed_comp_eq_mfderiv`), then composes with the
+continuous `tangentMap f`. -/
+theorem velCont_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X)
+    (hγcont : Continuous γ)
+    (hγdiff : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ s)).toFun ∘ γ) s)
+    (hγ : ContinuousOn (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
+      (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s))) (Set.Icc 0 1)) :
+    ContinuousOn (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
+      (E := TangentSpace 𝓘(ℂ) (M := Y)) (f (γ s)) (pathSpeed (f ∘ γ) s))) (Set.Icc 0 1) := by
+  have hcont_tm : Continuous (tangentMap 𝓘(ℂ) 𝓘(ℂ) f) :=
+    hf.continuous_tangentMap (by decide : (1 : WithTop ℕ∞) ≤ ω)
+  have hcomp : ContinuousOn ((tangentMap 𝓘(ℂ) 𝓘(ℂ) f) ∘
+      (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
+        (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s)))) (Set.Icc 0 1) :=
+    hcont_tm.comp_continuousOn hγ
+  refine hcomp.congr ?_
+  intro s hs
+  simp only [Function.comp_apply, tangentMap, Bundle.TotalSpace.mk']
+  congr 1
+  exact pathSpeed_comp_eq_mfderiv f hf γ s hγcont.continuousAt (hγdiff s hs)
+
+/-- **LOCAL: velocity-section continuity is preserved by a map `C^ω` on an open set.** For the §3
+lift `g∘γ` (`g` a local section) and the `ChartBall` base case. Open `V` upgrades `ContMDiffOn` to
+`ContMDiffAt`/`MDifferentiableAt`, so `pathSpeed_comp_eq_mfderiv_of_mdiff` applies, and
+`tangentMapWithin g V = tangentMap g` on `V`. -/
+theorem velCont_compOn (g : Y → X) {V : Set Y} (hg : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g V)
+    (hVo : IsOpen V) (γ : ℝ → Y) (hγV : ∀ s ∈ Set.Icc (0 : ℝ) 1, γ s ∈ V)
+    (hγcont : Continuous γ)
+    (hγdiff : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ s)).toFun ∘ γ) s)
+    (hγ : ContinuousOn (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
+      (E := TangentSpace 𝓘(ℂ) (M := Y)) (γ s) (pathSpeed γ s))) (Set.Icc 0 1)) :
+    ContinuousOn (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
+      (E := TangentSpace 𝓘(ℂ) (M := X)) (g (γ s)) (pathSpeed (g ∘ γ) s))) (Set.Icc 0 1) := by
+  have htmw : ContinuousOn (tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V) (Bundle.TotalSpace.proj ⁻¹' V) :=
+    hg.continuousOn_tangentMapWithin (by decide : (1 : WithTop ℕ∞) ≤ ω) hVo.uniqueMDiffOn
+  have hmaps : Set.MapsTo (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
+      (E := TangentSpace 𝓘(ℂ) (M := Y)) (γ s) (pathSpeed γ s)))
+      (Set.Icc 0 1) (Bundle.TotalSpace.proj ⁻¹' V) := fun s hs => hγV s hs
+  have hcomp : ContinuousOn ((tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V) ∘
+      (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
+        (E := TangentSpace 𝓘(ℂ) (M := Y)) (γ s) (pathSpeed γ s)))) (Set.Icc 0 1) :=
+    htmw.comp hγ hmaps
+  refine hcomp.congr ?_
+  intro s hs
+  have hgmdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (γ s) :=
+    (hg.contMDiffAt (hVo.mem_nhds (hγV s hs))).mdifferentiableAt (by decide : ω ≠ 0)
+  rw [Function.comp_apply, tangentMapWithin_eq_tangentMap (hVo.uniqueMDiffWithinAt (hγV s hs)) hgmdiff]
+  simp only [tangentMap, Bundle.TotalSpace.mk']
+  congr 1
+  exact pathSpeed_comp_eq_mfderiv_of_mdiff g γ s hgmdiff hγcont.continuousAt (hγdiff s hs)
 
 end Jacobians
