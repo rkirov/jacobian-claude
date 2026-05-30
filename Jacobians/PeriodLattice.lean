@@ -6,6 +6,7 @@ import Mathlib.Topology.Maps.Proper.Basic
 import Mathlib.Topology.Covering.Basic
 import Jacobians.Discharge.Manifold.CriticalValuesFiniteGeneral
 import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
+import Jacobians.ManifoldIFT
 import Jacobians.SmoothPath
 import Jacobians.SmoothPathCore
 import Jacobians.ZLatticeQuotient
@@ -1426,6 +1427,168 @@ theorem isLocalHomeoOffCritical (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ
   obtain ⟨U, hUsub, hUopen, hxU⟩ := mem_nhds_iff.mp hU₀nhds
   exact ⟨U, hUopen, hxU, hinj₀.mono hUsub,
     isOpenMap_of_nonconstant f hf hnonconst U hUopen⟩
+
+/-- **Chart-bridge package at a single point.** For non-constant analytic
+`f : X → Y` and any `x : X`, assembles the `ChartBridgePackage f x` consumed by
+the ZZ99 bridge `criticalSet_iff_chart_pullback_deriv_zero`. The chart pullback
+`F := (chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm` is analytic at `z₀ := chartAt ℂ x x`
+(ZZ24), has finite local order `k ≥ 1` of `F - F z₀` (finiteness = `F` not
+eventually constant, via the clopenness/chart-overlap discharge applied to the
+non-constant `f`; positivity because `(F - F z₀)(z₀) = 0`), and the manifold ↔
+chart-pullback non-injectivity transfer holds through the chart homeomorphism.
+This is the single-point specialization of `criticalChartPullbackData_general`'s
+per-point work. -/
+noncomputable def chartBridgePackage_of_nonconstant
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (x : X) :
+    Jacobians.Discharge.Manifold.ChartBridgePackage f x := by
+  classical
+  -- Canonical charts at `x` and `f x`, and the chart pullback `F`.
+  set c : OpenPartialHomeomorph X ℂ := chartAt ℂ x with hc_def
+  set d : OpenPartialHomeomorph Y ℂ := chartAt ℂ (f x) with hd_def
+  set F : ℂ → ℂ := d ∘ f ∘ c.symm with hF_def
+  have hxc : x ∈ c.source := mem_chart_source ℂ x
+  have hfxd : f x ∈ d.source := mem_chart_source ℂ (f x)
+  -- `F` is `AnalyticAt ℂ` at `c x` (ZZ24).
+  have hFA : AnalyticAt ℂ F (c x) :=
+    Jacobians.Discharge.ContMDiff.Degree.contMDiff_omega_analyticAt_chart_pullback hf x
+  -- `F (c x) = d (f x)` via chart left-inverse.
+  have hFcx : F (c x) = d (f x) := by
+    have h_inv : c.symm (c x) = x := c.left_inv hxc
+    show (d ∘ f ∘ c.symm) (c x) = d (f x)
+    simp [Function.comp, h_inv]
+  -- Non-eventual-constancy of `F` at `c x` (clopenness/chart-overlap discharge).
+  have hClop :
+      Jacobians.Discharge.ContMDiff.Degree.ClopennessOfLocallyConstHypothesis X Y :=
+    Jacobians.Discharge.ContMDiff.Degree.clopennessOfLocallyConst_holds
+  have hChartNEC :
+      Jacobians.Discharge.ContMDiff.Degree.ChartPullbackNotEventuallyConstHypothesis X Y :=
+    Jacobians.Discharge.ContMDiff.Degree.chartPullbackNotEventuallyConst_of_clopennessOfLocallyConst
+      hClop
+  have hFne_raw :
+      ¬ ∀ᶠ z in 𝓝 (c x),
+        ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z = (chartAt ℂ (f x)) (f x) :=
+    hChartNEC f hf hnonconst (f x) x rfl
+  have hFne : ¬ ∀ᶠ z in 𝓝 (c x), F z = F (c x) := by
+    intro hev
+    apply hFne_raw
+    exact hev.mono (fun z hz => by
+      show ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z = (chartAt ℂ (f x)) (f x)
+      have hz' : F z = F (c x) := hz
+      rw [show ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z = F z from rfl, hz', hFcx])
+  -- Order of `(F - F (c x))` at `c x` is finite and ≥ 1.
+  have hFA_sub : AnalyticAt ℂ (fun z => F z - F (c x)) (c x) := hFA.sub analyticAt_const
+  have h_ord_ne_top : analyticOrderAt (fun z => F z - F (c x)) (c x) ≠ ⊤ := by
+    intro h_top
+    apply hFne
+    have h := analyticOrderAt_eq_top.mp h_top
+    exact h.mono (fun z hz => sub_eq_zero.mp hz)
+  have hF_self : (fun z => F z - F (c x)) (c x) = 0 := by simp
+  have h_ord_ne_zero : analyticOrderAt (fun z => F z - F (c x)) (c x) ≠ 0 := by
+    intro h_zero
+    exact (hFA_sub.analyticOrderAt_eq_zero.mp h_zero) hF_self
+  set ord : ℕ∞ := analyticOrderAt (fun z => F z - F (c x)) (c x) with hord_def
+  -- Extract the finite order as `k : ℕ` (the goal here is `Type`-valued, so we
+  -- compute `k := ord.toNat` rather than destructuring the existential).
+  set k : ℕ := ord.toNat with hk_def
+  have hk_eq : ord = (k : ℕ∞) := (ENat.coe_toNat h_ord_ne_top).symm
+  have hk_ge_one : 1 ≤ k :=
+    Nat.one_le_iff_ne_zero.mpr (fun h0 => h_ord_ne_zero (by rw [hk_eq, h0, Nat.cast_zero]))
+  -- Manifold ↔ chart-pullback non-injectivity transfer.
+  have h_inj_iff : (∃ U ∈ 𝓝 x, Set.InjOn f U) ↔ (∃ U' ∈ 𝓝 (c x), Set.InjOn F U') := by
+    constructor
+    · rintro ⟨U, hU_nhds, hU_inj⟩
+      set U₁ : Set X := U ∩ c.source ∩ f ⁻¹' d.source with hU₁_def
+      have hf_cont : Continuous f := hf.continuous
+      have hU₁_nhds : U₁ ∈ 𝓝 x :=
+        Filter.inter_mem (Filter.inter_mem hU_nhds (c.open_source.mem_nhds hxc))
+          (hf_cont.continuousAt.preimage_mem_nhds (d.open_source.mem_nhds hfxd))
+      have hU₁_subc : U₁ ⊆ c.source := fun _ hy => hy.1.2
+      obtain ⟨U₁o, hU₁o_open, hU₁o_sub, hx_U₁o⟩ :
+          ∃ Uo, IsOpen Uo ∧ Uo ⊆ U₁ ∧ x ∈ Uo := by
+        obtain ⟨W, hW_sub, hW_open, hxW⟩ := mem_nhds_iff.mp hU₁_nhds
+        exact ⟨W, hW_open, hW_sub, hxW⟩
+      have hU₁o_subc : U₁o ⊆ c.source := hU₁o_sub.trans hU₁_subc
+      set U' : Set ℂ := c '' U₁o with hU'_def
+      have hU'_open : IsOpen U' := c.isOpen_image_of_subset_source hU₁o_open hU₁o_subc
+      have hcx_U' : c x ∈ U' := ⟨x, hx_U₁o, rfl⟩
+      refine ⟨U', hU'_open.mem_nhds hcx_U', ?_⟩
+      rintro z₁ ⟨y₁, hy₁_U, hy₁_eq⟩ z₂ ⟨y₂, hy₂_U, hy₂_eq⟩ hF_eq
+      have hy₁_subc : y₁ ∈ c.source := hU₁o_subc hy₁_U
+      have hy₂_subc : y₂ ∈ c.source := hU₁o_subc hy₂_U
+      have hy₁_U₁ : y₁ ∈ U₁ := hU₁o_sub hy₁_U
+      have hy₂_U₁ : y₂ ∈ U₁ := hU₁o_sub hy₂_U
+      have h_inv_y₁ : c.symm (c y₁) = y₁ := c.left_inv hy₁_subc
+      have h_inv_y₂ : c.symm (c y₂) = y₂ := c.left_inv hy₂_subc
+      have hF_at_y₁ : F (c y₁) = d (f y₁) := by
+        show (d ∘ f ∘ c.symm) (c y₁) = d (f y₁); simp [Function.comp, h_inv_y₁]
+      have hF_at_y₂ : F (c y₂) = d (f y₂) := by
+        show (d ∘ f ∘ c.symm) (c y₂) = d (f y₂); simp [Function.comp, h_inv_y₂]
+      rw [← hy₁_eq, ← hy₂_eq] at hF_eq
+      rw [hF_at_y₁, hF_at_y₂] at hF_eq
+      have hf_eq : f y₁ = f y₂ := d.injOn hy₁_U₁.2 hy₂_U₁.2 hF_eq
+      have hy_eq : y₁ = y₂ := hU_inj hy₁_U₁.1.1 hy₂_U₁.1.1 hf_eq
+      rw [← hy₁_eq, ← hy₂_eq, hy_eq]
+    · rintro ⟨U', hU'_nhds, hU'_inj⟩
+      obtain ⟨U'o, hU'o_open, hU'o_sub, hcx_U'o⟩ :
+          ∃ U'o, IsOpen U'o ∧ U'o ⊆ U' ∧ c x ∈ U'o := by
+        obtain ⟨W, hW_sub, hW_open, hxW⟩ := mem_nhds_iff.mp hU'_nhds
+        exact ⟨W, hW_open, hW_sub, hxW⟩
+      set U : Set X := c.source ∩ c ⁻¹' U'o with hU_def
+      have hU_open : IsOpen U :=
+        c.continuousOn_toFun.isOpen_inter_preimage c.open_source hU'o_open
+      have hx_U : x ∈ U := ⟨hxc, hcx_U'o⟩
+      refine ⟨U, hU_open.mem_nhds hx_U, ?_⟩
+      intro y₁ hy₁ y₂ hy₂ hf_eq
+      obtain ⟨hy₁_subc, hy₁_pre⟩ := hy₁
+      obtain ⟨hy₂_subc, hy₂_pre⟩ := hy₂
+      have hcy₁_U' : c y₁ ∈ U' := hU'o_sub hy₁_pre
+      have hcy₂_U' : c y₂ ∈ U' := hU'o_sub hy₂_pre
+      have h_inv_y₁ : c.symm (c y₁) = y₁ := c.left_inv hy₁_subc
+      have h_inv_y₂ : c.symm (c y₂) = y₂ := c.left_inv hy₂_subc
+      have hF_at_y₁ : F (c y₁) = d (f y₁) := by
+        show (d ∘ f ∘ c.symm) (c y₁) = d (f y₁); simp [Function.comp, h_inv_y₁]
+      have hF_at_y₂ : F (c y₂) = d (f y₂) := by
+        show (d ∘ f ∘ c.symm) (c y₂) = d (f y₂); simp [Function.comp, h_inv_y₂]
+      have hF_eq : F (c y₁) = F (c y₂) := by rw [hF_at_y₁, hF_at_y₂, hf_eq]
+      have hcy_eq : c y₁ = c y₂ := hU'_inj hcy₁_U' hcy₂_U' hF_eq
+      exact c.injOn hy₁_subc hy₂_subc hcy_eq
+  -- Package it up. `inj_iff` is the negation of `h_inj_iff`.
+  exact
+    { F := F
+      z₀ := c x
+      hF_an := hFA
+      k := k
+      hk_ge_one := hk_ge_one
+      hord := hk_eq
+      inj_iff := by
+        constructor
+        · intro h hex; exact h (h_inj_iff.mpr hex)
+        · intro h hex; exact h (h_inj_iff.mp hex) }
+
+/-- **[PROVEN]** Local holomorphic section at a non-critical point. For non-constant
+holomorphic `f` and `x ∉ criticalSet f`, `f` admits a `C^ω` local section `g` near
+`f x` with `g (f x) = x` and `f ∘ g = id` on an open neighborhood. Composes the
+manifold IFT (`exists_holo_localInverse`) with the ZZ99 critical-set ↔ chart-deriv
+bridge. The input for the branched-cover trace's fiber sum. -/
+theorem exists_holo_localInverse_of_notMem_criticalSet
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {x : X} (hxcrit : x ∉ criticalSet f) :
+    ∃ (g : Y → X) (V : Set Y), IsOpen V ∧ f x ∈ V ∧ g (f x) = x ∧
+      (∀ y ∈ V, f (g y) = y) ∧ ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g V := by
+  -- Step 1: build the chart-bridge package and apply ZZ99 to get `deriv F z₀ ≠ 0`.
+  set P : Jacobians.Discharge.Manifold.ChartBridgePackage f x :=
+    chartBridgePackage_of_nonconstant f hf hnonconst x with hP_def
+  -- `x ∉ criticalSet f` unfolds to `¬ ¬ (∃ U ∈ 𝓝 x, InjOn f U)`.
+  have hnotcrit : ¬ (¬ ∃ U ∈ 𝓝 x, Set.InjOn f U) := hxcrit
+  have hbridge : (¬ ∃ U ∈ 𝓝 x, Set.InjOn f U) ↔ deriv P.F P.z₀ = 0 :=
+    Jacobians.Discharge.Manifold.criticalSet_iff_chart_pullback_deriv_zero P
+  have hderiv0 : deriv P.F P.z₀ ≠ 0 := fun h => hnotcrit (hbridge.mpr h)
+  -- `P.F` and `P.z₀` are definitionally the IFT's expected chart pullback / base point.
+  have hderiv : deriv ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) ≠ 0 :=
+    hderiv0
+  -- Step 2: apply the manifold IFT.
+  exact exists_holo_localInverse f hf x hderiv
 
 /-- **[PROVEN]** Proper preimage-neighborhood lemma (Forster 4.21b): for a proper
 `f`, an open `V` containing the fibre `f⁻¹{x}` has an open neighborhood `U ∋ x`
