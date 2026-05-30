@@ -3,9 +3,6 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
-import Jacobians.Discharge.Manifold.LocalDerivCompatibilitySupply
-import Jacobians.Discharge.Manifold.DerivBridgeFromNonConstant
-import Jacobians.Discharge.Manifold.CriticalSetClosed
 import Jacobians.Discharge.Manifold.CriticalValuesFinite
 import Jacobians.Discharge.Manifold.ContMDiffOmegaAnalytic
 import Jacobians.Discharge.Manifold.ChartOverlapPropagationDischarge
@@ -154,11 +151,9 @@ For each `x ∈ criticalSetGeneral f hf`, build a
 `CriticalChartPullbackData f (criticalSetGeneral f hf) x` whose `F'`
 is the derivative of the literal chart pullback of `f`.
 
-The construction reuses the same chart-transition compatibility argument
-as `LocalDerivCompatibilitySupply.localDerivCompatibilityData_of_meromorphicNonzero`,
-applied to the general `f` instead of `f.toRiemannSphere`. The proof body
-is a near-copy of that supplier with `f.toRiemannSphere` replaced by
-`f` everywhere. -/
+The construction uses the standard chart-transition compatibility argument,
+applied to the general `f`. The proof body works with `f` directly
+(rather than `f.toRiemannSphere`) throughout. -/
 
 /-- **Per-point chart-pullback data (general).**
 

@@ -4,10 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import Mathlib.Analysis.Analytic.Order
-import Jacobians.Discharge.Manifold.AnalyticFiberDiscrete
 import Jacobians.Discharge.Manifold.CriticalSetDiscrete
 import Jacobians.Discharge.Manifold.CriticalSetDefinition
-import Jacobians.Discharge.Manifold.CriticalSetFiniteUnconditional
 import Jacobians.Discharge.Manifold.CriticalSetWitnessSupplier
 
 set_option autoImplicit true
