@@ -643,23 +643,62 @@ theorem exists_smoothLift_flatEnd_off_branchLocus
     rw [hc.fderiv_eq]; simp
   exact ⟨Γ, hΓ_cont, hΓ0, hΓ_lift, hΓ_diff, hps0, hps1, hfΓ1⟩
 
-/-- **[open]** A closed smooth loop off the branch locus lifts to a preimage
-cycle. Construction (Forster §4.22–4.23 + §4.14): on compact `X`, non-constant
-holomorphic `f` is proper, so off the branch locus it restricts to a finite
-unbranched covering `X ∖ f⁻¹(B) → Y ∖ B` (proper local homeo ⇒ covering map);
-lift `δ` from each sheet (`IsCoveringMap.liftPath`, Forster §4.14); group the
-lifts into closed loops along the monodromy permutation's orbits (smoothness of
-each lift from the local-diffeo covering); the pullback identity
-`Tᵀ (periodVec δ) = ∑ periodVec (orbit loop)` holds because pulling back
-the basis forms along the sheets and summing reproduces the trace transpose (the
-change-of-variables / trace of `pullbackForm`). The covering structure
-(`IsCoveringMapOn f (univ ∖ branchLocus f)`, proven in `PeriodLattice.lean`) is the
-input here. -/
+/-- **[open] — geometric heart of the preimage-cycle lift.** The monodromy/orbit
+construction, stated **purely in elementary line-integral / period-vector terms**
+(no ambient-coordinate `ambientPullbackJac`): off the branch locus, `δ` lifts to a
+finite ℤ-family of closed smooth loops realizing
+* the **projection identity** `∫_δ traceFormTotal(ωⱼ^X) = ∑ᵢ coeffsᵢ • periodVec(loopsᵢ)ⱼ`
+  (the per-component pullback, before coordinatization), and
+* the **pushforward identity** `∑ᵢ coeffsᵢ • periodVec(f∘loopsᵢ) = sheets • periodVec δ`.
+
+The reduction `exists_preimageCycle_of_off_branchLocus` below turns this into a
+`PreimageCycle` via the **proven** coordinate bridge
+`ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal` — so this lemma
+isolates exactly the remaining *geometry*.
+
+What it still needs (all infrastructure is identified; see
+`docs/preimage_cycle_lift_plan.md`):
+* the seam-flattened smooth lifts `exists_smoothLift_flatEnd_off_branchLocus` (DONE),
+  one per fibre point (`fiber_finite_off_branchLocus` ⇒ `Fintype`), assembled into a
+  monodromy permutation via lift uniqueness (`IsCoveringMap.eq_liftPath_iff`) and
+  concatenated over its orbits (`IsSmoothPath.concat`, junction velocities zero);
+* the partition/sheet-reassembly projection formula (`exists_nbhd_cover` +
+  `exists_localSheetSystem_traceForm_eq_sum` + `lineIntegral_pullback_section`);
+* two **analytic facts currently gated on a Mathlib gap** — the lifts' integrability
+  and line-integral reparametrization-invariance `periodVec (δ∘flatEndReparam) =
+  periodVec δ` — both reducing to a **change-of-variables for *integrable* (not
+  merely continuous) integrands** under a monotone `C¹` reparametrization. -/
+theorem exists_preimageLoopFamily (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :
+    ∃ (m : ℕ) (loops : Fin m → ℝ → X) (coeffs : Fin m → ℤ) (sheets : ℕ),
+      (∀ i, IsClosedSmoothLoop (loops i)) ∧
+      (fun j => lineIntegral (traceFormTotal f hf (periodBasisForm X j)) δ) =
+        ∑ i, coeffs i • periodVec (loops i) ∧
+      ∑ i, coeffs i • periodVec (f ∘ loops i) = (sheets : ℤ) • periodVec δ :=
+  sorry
+
+/-- **A closed smooth loop off the branch locus lifts to a preimage cycle.** The
+coordinate-layer reduction is now **proven**: it takes the elementary geometric
+loop family `exists_preimageLoopFamily` and packages it as a `PreimageCycle`, the
+only nontrivial step being the projection identity's conversion from the line-integral
+form `∫_δ trace(ωⱼ)` to the ambient pullback `(ambientPullbackJac f hf (periodVec δ))ⱼ`
+via the proven bridge `ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal`
+(integrability supplied by `hδ.integrable`). The remaining content is entirely inside
+`exists_preimageLoopFamily` (the monodromy/projection geometry). -/
 theorem exists_preimageCycle_of_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :
-    Nonempty (PreimageCycle f hf δ) :=
-  sorry
+    Nonempty (PreimageCycle f hf δ) := by
+  obtain ⟨m, loops, coeffs, sheets, hclosed, hproj, hpush⟩ :=
+    exists_preimageLoopFamily f hf hnonconst δ hδ havoid
+  refine ⟨⟨m, loops, hclosed, coeffs, sheets, ?_, hpush⟩⟩
+  -- Convert the projection identity to the ambient pullback via the proven bridge.
+  have hb : ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (periodVec δ) =
+      (fun j => lineIntegral (traceFormTotal f hf (periodBasisForm X j)) δ) := by
+    funext j
+    exact ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal f hf δ j hδ.integrable
+  rw [hb, hproj]
 
 /-- **[PROVEN]** A `PreimageCycle` depends on `δ` only through `periodVec δ`
 (the only places `δ` enters the data are the pullback/pushforward identities,
