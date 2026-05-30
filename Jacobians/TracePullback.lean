@@ -878,6 +878,55 @@ structure MonodromyLiftFamily (f : X → Y) (δ : ℝ → Y) where
   fibre_surj : ∀ t ∈ Set.Icc (0 : ℝ) 1, ∀ x : X,
     f x = δ (flatEndReparam t) → ∃ i, Γ i t = x
 
+/-- **Pointwise local velocity-section continuity under post-composition** — the
+`ContinuousWithinAt` companion of `velCont_compOn`. At a single `t₀ ∈ [0,1]`, if the base
+velocity section of `γ` is `ContinuousWithinAt` and `γ` lands in the open `C^ω`-domain `V`
+of `g` near `t₀`, then the velocity section of `g ∘ γ` is `ContinuousWithinAt`. This is what
+patches the §3 lift's `velCont` chart-by-chart: each interior point lies in some local
+two-sided inverse's domain, where the lift coincides with `g ∘ δr`. -/
+private theorem velContWithinAt_compOn (g : Y → X) {V : Set Y}
+    (hg : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g V) (hVo : IsOpen V) (γ : ℝ → Y) (hγc : Continuous γ)
+    {t₀ : ℝ} (ht₀ : t₀ ∈ Set.Icc (0:ℝ) 1)
+    (hγV : ∀ᶠ s in 𝓝[Set.Icc (0:ℝ) 1] t₀, γ s ∈ V)
+    (hγdiff : ∀ᶠ s in 𝓝[Set.Icc (0:ℝ) 1] t₀,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ s)).toFun ∘ γ) s)
+    (hγ : ContinuousWithinAt (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
+      (E := TangentSpace 𝓘(ℂ) (M := Y)) (γ s) (pathSpeed γ s))) (Set.Icc 0 1) t₀) :
+    ContinuousWithinAt (fun s : ℝ => (Bundle.TotalSpace.mk' ℂ
+      (E := TangentSpace 𝓘(ℂ) (M := X)) (g (γ s)) (pathSpeed (g ∘ γ) s))) (Set.Icc 0 1) t₀ := by
+  have hγt₀V : γ t₀ ∈ V := hγV.self_of_nhdsWithin ht₀
+  set S : ℝ → Bundle.TotalSpace ℂ (TangentSpace 𝓘(ℂ) (M := Y)) :=
+    fun s => Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := Y)) (γ s) (pathSpeed γ s) with hS
+  have htmw : ContinuousOn (tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V) (Bundle.TotalSpace.proj ⁻¹' V) :=
+    hg.continuousOn_tangentMapWithin (by decide : (1 : WithTop ℕ∞) ≤ ω) hVo.uniqueMDiffOn
+  have htmw_at : ContinuousWithinAt (tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V)
+      (Bundle.TotalSpace.proj ⁻¹' V) (S t₀) := htmw (S t₀) hγt₀V
+  have hS_tendsto : Filter.Tendsto S (𝓝[Set.Icc 0 1] t₀)
+      (𝓝[Bundle.TotalSpace.proj ⁻¹' V] (S t₀)) := by
+    rw [tendsto_nhdsWithin_iff]
+    exact ⟨hγ, by filter_upwards [hγV] with s hs using hs⟩
+  have hcomp : ContinuousWithinAt (tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V ∘ S) (Set.Icc 0 1) t₀ :=
+    htmw_at.tendsto.comp hS_tendsto
+  refine hcomp.congr_of_eventuallyEq ?_ ?_
+  · filter_upwards [hγV, hγdiff] with s hsV hsdiff
+    have hgmdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (γ s) :=
+      (hg.contMDiffAt (hVo.mem_nhds hsV)).mdifferentiableAt (by decide : ω ≠ 0)
+    show Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (g (γ s)) (pathSpeed (g ∘ γ) s)
+        = tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V (S s)
+    rw [tangentMapWithin_eq_tangentMap (hVo.uniqueMDiffWithinAt hsV) hgmdiff]
+    simp only [tangentMap, Bundle.TotalSpace.mk']
+    congr 1
+    exact pathSpeed_comp_eq_mfderiv_of_mdiff g γ s hgmdiff hγc.continuousAt hsdiff
+  · have hgmdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (γ t₀) :=
+      (hg.contMDiffAt (hVo.mem_nhds hγt₀V)).mdifferentiableAt (by decide : ω ≠ 0)
+    show Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (g (γ t₀)) (pathSpeed (g ∘ γ) t₀)
+        = tangentMapWithin 𝓘(ℂ) 𝓘(ℂ) g V (S t₀)
+    rw [tangentMapWithin_eq_tangentMap (hVo.uniqueMDiffWithinAt hγt₀V) hgmdiff]
+    simp only [tangentMap, Bundle.TotalSpace.mk']
+    congr 1
+    exact pathSpeed_comp_eq_mfderiv_of_mdiff g γ t₀ hgmdiff hγc.continuousAt
+      (hγdiff.self_of_nhdsWithin ht₀)
+
 /-- **Leaf A + B — construct the monodromy lift family.** Off the branch locus, the
 seam-flattened lifts of `δ` (one per fibre point, `exists_smoothLift_flatEnd_off_branchLocus`
 upgraded with `velCont`) assemble into a `MonodromyLiftFamily`: injectivity is lift
