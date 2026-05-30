@@ -1285,6 +1285,83 @@ private theorem perm_pow_apply_injOn {N : ℕ} (σ : Equiv.Perm (Fin N)) (e : Fi
     rw [hord] at ha hb
     exact (Nat.ModEq.eq_of_lt_of_lt hab ha hb)
 
+/-- **Orbit-coefficient partition (pure permutation combinatorics).** For a permutation
+`σ` of `Fin N`, there are integer coefficients — the indicator of one representative
+(orbit-minimum) per `σ`-orbit — such that for ANY orbit-summed family
+`loopval i = ∑_{k < orderOf (cycleOf i)} F (σ^k i)`, the weighted sum
+`∑ coeffs i • loopval i` collapses to `∑ i, F i`. This is the orbit-partition accounting
+shared by both period identities of the orbit loops (`F = periodVec ∘ Γ` for the pullback
+identity; `F` constant for the pushforward count). -/
+private theorem exists_orbitCoeff {N : ℕ} (σ : Equiv.Perm (Fin N)) :
+    ∃ coeffs : Fin N → ℤ, ∀ {A : Type*} [AddCommGroup A] (F loopval : Fin N → A),
+      (∀ i, loopval i = ∑ k ∈ Finset.range (orderOf (σ.cycleOf i)), F ((σ ^ k) i)) →
+      ∑ i, coeffs i • loopval i = ∑ i, F i := by
+  classical
+  set orb : Fin N → Finset (Fin N) := fun i => Finset.univ.filter (σ.SameCycle i) with horb
+  have horb_self : ∀ i, i ∈ orb i := fun i => by
+    simp only [horb, Finset.mem_filter, Finset.mem_univ, true_and]
+    exact Equiv.Perm.SameCycle.refl σ i
+  set rep : Fin N → Fin N := fun i => (orb i).min' ⟨i, horb_self i⟩ with hrep
+  have hℓpos : ∀ i, 0 < orderOf (σ.cycleOf i) := fun i => orderOf_pos _
+  -- the orbit is the image of `k ↦ σ^k i` over `[0, orderOf (cycleOf i))`
+  have hKimg : ∀ i, (Finset.range (orderOf (σ.cycleOf i))).image (fun k => (σ ^ k) i) = orb i := by
+    intro i
+    apply Finset.Subset.antisymm
+    · intro x hx
+      simp only [Finset.mem_image, Finset.mem_range] at hx
+      obtain ⟨k, _, rfl⟩ := hx
+      simp only [horb, Finset.mem_filter, Finset.mem_univ, true_and]
+      exact (Equiv.Perm.SameCycle.refl σ i).pow_right
+    · intro x hx
+      simp only [horb, Finset.mem_filter, Finset.mem_univ, true_and] at hx
+      obtain ⟨m, hm⟩ := hx.exists_nat_pow_eq
+      simp only [Finset.mem_image, Finset.mem_range]
+      exact ⟨m % orderOf (σ.cycleOf i), Nat.mod_lt _ (hℓpos i),
+        by rw [Equiv.Perm.pow_mod_orderOf_cycleOf_apply]; exact hm⟩
+  have hinj : ∀ i, Set.InjOn (fun k => (σ ^ k) i) ↑(Finset.range (orderOf (σ.cycleOf i))) :=
+    fun i => perm_pow_apply_injOn σ i
+  have hrep_sc : ∀ i, σ.SameCycle i (rep i) := by
+    intro i
+    have hm : rep i ∈ orb i := (orb i).min'_mem _
+    simpa only [horb, Finset.mem_filter, Finset.mem_univ, true_and] using hm
+  have horb_eq : ∀ i j, σ.SameCycle i j → orb i = orb j := by
+    intro i j h
+    simp only [horb]
+    exact Finset.filter_congr (fun x _ => ⟨fun hix => h.symm.trans hix, fun hjx => h.trans hjx⟩)
+  have hrep_eq_iff : ∀ i j, rep i = rep j ↔ σ.SameCycle i j := by
+    intro i j
+    refine ⟨fun h => ?_, fun h => by simp only [hrep, horb_eq i j h]⟩
+    have h1 := hrep_sc i
+    have h2 := hrep_sc j
+    rw [← h] at h2
+    exact h1.trans h2.symm
+  have hrep_idem : ∀ i, rep (rep i) = rep i := fun i => (hrep_eq_iff (rep i) i).mpr (hrep_sc i).symm
+  have hfiber : ∀ i, rep i = i → Finset.univ.filter (fun x => rep x = i) = orb i := by
+    intro i hi
+    ext x
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, horb]
+    refine ⟨fun h => ?_, fun h => ?_⟩
+    · have hx : rep x = rep i := by rw [h, hi]
+      exact ((hrep_eq_iff x i).mp hx).symm
+    · have hx : rep x = rep i := (hrep_eq_iff x i).mpr h.symm
+      rw [hx, hi]
+  refine ⟨fun i => if rep i = i then (1 : ℤ) else 0, ?_⟩
+  intro A _ F loopval hloop
+  have hper : ∀ i, (if rep i = i then (1 : ℤ) else 0) • loopval i
+      = ∑ x ∈ Finset.univ.filter (fun x => rep x = i), F x := by
+    intro i
+    by_cases hi : rep i = i
+    · simp only [hi, if_true, one_zsmul]
+      rw [hloop i, hfiber i hi, ← hKimg i]
+      exact (Finset.sum_image (fun a ha b hb hab =>
+        hinj i (Finset.mem_coe.mpr ha) (Finset.mem_coe.mpr hb) hab)).symm
+    · simp only [hi, if_false, zero_zsmul]
+      have hempty : Finset.univ.filter (fun x => rep x = i) = ∅ :=
+        Finset.filter_eq_empty_iff.mpr (fun x _ hx => hi (by rw [← hx]; exact hrep_idem x))
+      rw [hempty, Finset.sum_empty]
+  rw [Finset.sum_congr rfl (fun i _ => hper i)]
+  exact Finset.sum_fiberwise Finset.univ rep F
+
 /-- **Leaf E — orbit loops.** Group the lift family into closed smooth loops along
 the orbits of the monodromy permutation `σ i := the index with Γ (σ i) 0 = Γ i 1`
 (bijective by `fibre_inj`/`fibre_surj` at `t = 1`): each orbit gives the iterated
@@ -1299,8 +1376,35 @@ theorem exists_orbitLoops_of_monodromyLiftFamily (f : X → Y)
     ∃ (m : ℕ) (loops : Fin m → ℝ → X) (coeffs : Fin m → ℤ),
       (∀ i, IsClosedSmoothLoop (loops i)) ∧
       (∑ i, coeffs i • periodVec (loops i) = ∑ i, periodVec (M.Γ i)) ∧
-      (∑ i, coeffs i • periodVec (f ∘ loops i) = (M.n : ℤ) • periodVec δ) :=
-  sorry
+      (∑ i, coeffs i • periodVec (f ∘ loops i) = (M.n : ℤ) • periodVec δ) := by
+  classical
+  obtain ⟨σ, hσ⟩ := exists_monodromyPerm f δ hδ M
+  obtain ⟨coeffs, hcoeff⟩ := exists_orbitCoeff σ
+  refine ⟨M.n, fun i => concatPow f δ M σ (orderOf (σ.cycleOf i) - 1) i, coeffs, ?_, ?_, ?_⟩
+  · -- each orbit loop is a closed smooth loop (start = finish, since `σ^(orderOf) i = i`)
+    intro i
+    obtain ⟨hsp, _, _⟩ := concatPow_isSmoothPath f δ M σ hσ (orderOf (σ.cycleOf i) - 1) i
+    have hσℓ : σ ((σ ^ (orderOf (σ.cycleOf i) - 1)) i) = i := by
+      have h1 : σ ((σ ^ (orderOf (σ.cycleOf i) - 1)) i) = (σ ^ orderOf (σ.cycleOf i)) i := by
+        rw [← Equiv.Perm.mul_apply, ← pow_succ', Nat.sub_add_cancel (orderOf_pos _)]
+      rw [h1]; exact perm_pow_orderOf_cycleOf_apply_self σ i
+    have hclose : M.Γ ((σ ^ (orderOf (σ.cycleOf i) - 1)) i) 1 = M.Γ i 0 := by
+      rw [(hσ ((σ ^ (orderOf (σ.cycleOf i) - 1)) i)).symm, hσℓ]
+    rw [hclose] at hsp
+    exact hsp.toClosedSmoothLoop
+  · -- pullback identity: orbit-period accounting with `F = periodVec ∘ Γ`
+    have hloop2 : ∀ i, periodVec (concatPow f δ M σ (orderOf (σ.cycleOf i) - 1) i)
+        = ∑ k ∈ Finset.range (orderOf (σ.cycleOf i)), periodVec (M.Γ ((σ ^ k) i)) := fun i => by
+      rw [concatPow_periodVec f δ M σ hσ (orderOf (σ.cycleOf i) - 1) i,
+        Nat.sub_add_cancel (orderOf_pos _)]
+    exact hcoeff (fun x => periodVec (M.Γ x)) _ hloop2
+  · -- pushforward identity: orbit-period accounting with `F` constant `= periodVec δ`
+    have hloop3 : ∀ i, periodVec (f ∘ concatPow f δ M σ (orderOf (σ.cycleOf i) - 1) i)
+        = ∑ _k ∈ Finset.range (orderOf (σ.cycleOf i)), periodVec δ := fun i => by
+      rw [comp_concatPow_periodVec f hf δ hδ M σ hσ (orderOf (σ.cycleOf i) - 1) i,
+        Finset.sum_const, Finset.card_range, Nat.sub_add_cancel (orderOf_pos _)]
+    rw [hcoeff (fun _ => periodVec δ) _ hloop3, Finset.sum_const, Finset.card_univ,
+      Fintype.card_fin, ← natCast_zsmul]
 
 /-- **[open] — geometric heart of the preimage-cycle lift.** The monodromy/orbit
 construction, stated **purely in elementary line-integral / period-vector terms**
