@@ -877,6 +877,28 @@ theorem traceForm_toFun_of_notMem_branchLocus (f : X → Y) (hf : ContMDiff 𝓘
     (traceForm f hf hnonconst α).toFun y = traceFun f α y :=
   (exists_traceForm f hf hnonconst).choose_spec α y hy
 
+/-- **Local sheet decomposition of the trace form.** Off the branch locus there is a
+local sheet system `S` at `y₀` over whose base `S.V` the trace one-form is the finite
+sum of the per-sheet pullbacks: at every off-branch `y ∈ S.V`,
+`(traceForm f hf hnonconst α).toFun y = ∑ᵢ sheetPullback α (S.sheet i) y`.
+
+This is the **per-base-neighborhood input to the period-level projection formula**:
+to integrate `traceForm f hf α` along a loop `δ` (which avoids the branch locus),
+cover the compact `δ([0,1])` by finitely many such bases, and on each the trace
+splits into sheet pullbacks, each of which is `∫_δ sheetPullback = ∫_{sheet∘δ} α`
+(`lineIntegral_pullback_section`). Combines `exists_localSheetSystem` (the off-branch
+covering) with `LocalSheetSystem.traceFun_eq_sum_sheetPullback` and the off-branch
+agreement `traceForm_toFun_of_notMem_branchLocus`. -/
+theorem exists_localSheetSystem_traceForm_eq_sum (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X)
+    {y₀ : Y} (hy₀ : y₀ ∉ branchLocus f) :
+    ∃ S : LocalSheetSystem f y₀, ∀ y ∈ S.V, y ∉ branchLocus f →
+      (traceForm f hf hnonconst α).toFun y = ∑ i, sheetPullback α (S.sheet i) y := by
+  obtain ⟨S⟩ := exists_localSheetSystem f hf hnonconst hy₀
+  refine ⟨S, fun y hyV hyB => ?_⟩
+  rw [traceForm_toFun_of_notMem_branchLocus f hf hnonconst α hyB]
+  exact S.traceFun_eq_sum_sheetPullback hf α hyV
+
 /-! ## The projection formula (period level)
 
 The eventual goal is the multi-sheet projection formula
