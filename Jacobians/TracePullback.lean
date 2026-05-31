@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.TraceForm
+import Jacobians.LoopOffBranch
 import Mathlib.Topology.Homotopy.Lifting
 import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 import Mathlib.MeasureTheory.Function.JacobianOneDim
@@ -336,11 +337,47 @@ theorem ambientPullbackJac_periodVec_mem_truePeriodLattice_of_preimageCycle
     Submodule.smul_mem _ (c.coeffs i)
       (periodVec_mem_truePeriodLattice_of_closed _ (c.loops_smooth i))
 
-/-- **[open]** A closed smooth loop in `Y` can be homotoped off the finite
-branch locus without changing its period vector. Genericity: `branchLocus f`
-is finite (`finite_branchLocus_of_nonconstant`), hence has real codimension 2
-in the surface `Y`, so a generic loop avoids it; homotopy invariance of
-`periodVec` preserves the period. -/
+/-- **[open — local crux proven, global assembly remaining]** A closed smooth
+loop in `Y` can be deformed off the finite branch locus without changing its
+period vector. `branchLocus f` is finite (`finite_branchLocus_of_nonconstant`),
+hence real codimension 2, so a generic loop avoids it; the period is preserved by
+*chart-local* path-independence (NO global manifold Stokes — see below).
+
+**Route (the "just enough Stokes" of the local-detour method, Forster §10.5).**
+Subdivide `[0,1]` by `Path.exists_ball_chart_subdivision` into pieces
+`δ|[tₖ,tₖ₊₁]`, each landing in one **ball**-chart `φₖ` (target a disk in `ℂ`).
+Refine so the finitely many subdivision points `δ(tₖ)` avoid the finite `B`.
+On each piece, replace the sub-arc by an off-branch detour with the **same
+endpoints** `δ(tₖ), δ(tₖ₊₁)` inside `φₖ.source ∩ Bᶜ` (path-connected via
+`isPathConnected_compl_finite_of_connected_chartedSpace_complex` /
+`joinedIn_compl_in_ball_chart_source`, smoothed by the chart-ball-hop toolkit).
+Glue the detoured pieces C¹-smoothly (zero-endpoint-velocity reparametrization +
+`IsSmoothPath.concat`, as in `exists_zeroVel_smoothPath`).
+
+**Period preservation is LOCAL and PROVEN.** On each piece, the sub-arc and its
+detour share endpoints inside one ball-chart, so they contribute *equally* to
+every period by `OfCurveSkeleton.lineIntegral_eq_of_chart_ball_endpoints`
+(`Jacobians/LoopOffBranch.lean`): both line integrals equal the same
+primitive-difference `Fₖ(chart δ(tₖ₊₁)) − Fₖ(chart δ(tₖ))`, where `Fₖ` is the
+holomorphic primitive of the chart coefficient `chartFormCoeff φₖ i` on the disk
+(Morera, `DifferentiableOn.isExactOn_ball`). This is the genuine analytic content
+the project previously flagged as missing (the removed `lineIntegral_eq_of_chart_local`
+in `Jacobians/LineIntegral.lean`); it is now an axiom-clean theorem, built on
+`chartFrame_cancel_general` + `lineIntegral_eq_primitive_diff_in_ballChart`.
+
+**What remains is the GLOBAL assembly** (engineering, NOT missing math): the
+partition refinement keeping all `δ(tₖ) ∉ B`; the per-piece off-branch smooth
+detour with matching chart-coordinate endpoints; the N-piece C¹ gluing into a
+closed smooth loop with `velCont`; and the telescoping that sums the per-piece
+period equalities to `periodVec δ' = periodVec δ`. No manifold Stokes / de Rham /
+homotopy cylinder is needed — only the proven single-disk FTC above, applied
+piecewise. (~600–1000 LoC of repo-style chart-hop + concat assembly.)
+
+Consumers (`exists_preimageCycle_of_nonconstant`,
+`exists_preimageCycle_sheets_eq_fibreCard_of_nonconstant`) require the period
+vector LITERALLY equal (threaded through `PreimageCycle.congr_periodVec`), which
+is why this conjunct cannot be weakened to "homotopic" or "equal mod lattice"
+(the repo already has the mod-lattice form, `mk_periodVec_eq_of_endpoints`). -/
 theorem exists_loop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
