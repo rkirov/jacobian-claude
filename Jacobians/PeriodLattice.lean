@@ -9,7 +9,7 @@ import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 import Jacobians.ManifoldIFT
 import Jacobians.SmoothPath
 import Jacobians.SmoothPathCore
-import Jacobians.Dissection
+import Jacobians.CutSurfaceRelations
 import Jacobians.ZLatticeQuotient
 import Mathlib.Analysis.Complex.OpenMapping
 

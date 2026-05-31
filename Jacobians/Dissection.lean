@@ -99,20 +99,6 @@ structure CanonicalDissection (X : Type*) [TopologicalSpace X] [T2Space X] [Comp
   (sign validated at `g = 1`: standard torus `↦ 2·Im τ > 0`). -/
   periodRel_posDef : (periodHermitian loop).PosDef
 
-/-- **[ISOLATED INPUT]** Every compact connected Riemann surface admits a canonical dissection
-*satisfying the two Riemann bilinear relations*. This bundles the surface-topology content
-(`H₁(X;ℤ) ≅ ℤ^{2g}`, the canonical `4g`-gon dissection, period homology-invariance) — which Mathlib
-has no path to for surfaces — together with the analytic relations (`periodRel_vanishing`,
-`periodRel_posDef`). The analytic relations' box-level core is proven
-(`Jacobians.BoundaryPositivity.boundaryForm_pos`); what stays isolated is the cut-chart/boundary-word
-identification `∮_{∂box} ↦ ∑ₖ(AₖB̄ₖ − BₖĀₖ)` and, for `g ≥ 2`, Stokes on the `4g`-gon. Isolating the
-whole bundle keeps `exists_periodLattice_realBasis` hypothesis-free. (Forster §§20–21; Miranda Ch. V;
-Griffiths–Harris pp. 231–232.) -/
-theorem exists_canonicalDissection (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
-    Nonempty (CanonicalDissection X) :=
-  sorry
-
 /-- **The `2g` periods of a canonical dissection are ℝ-linearly independent** in `ℂ^g ≅ ℝ^{2g}`.
 This is now *proven* from the dissection's two Riemann bilinear relations
 (`periodRel_vanishing` + `periodRel_posDef`) via the matrix-algebra core
