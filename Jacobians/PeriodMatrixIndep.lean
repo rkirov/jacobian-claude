@@ -110,6 +110,62 @@ theorem linearIndependent_periodRows_of_posDef
     intro hz
     apply hNJNdet
     rw [hz]; ring
-  sorry
+  -- Step 6: independence from `N.det ≠ 0`.
+  rw [Fintype.linearIndependent_iff]
+  intro c hc
+  -- The complex vector of real coefficients.
+  set z : Fin g ⊕ Fin g → ℂ := fun k => (c k : ℂ) with hz
+  -- Column-sum vanishing, extracted from `hc` evaluated pointwise.
+  have hcol : ∀ j, (∑ k, z k * Matrix.fromRows A B k j) = 0 := by
+    intro j
+    have hcj := congrFun hc j
+    rw [Finset.sum_apply] at hcj
+    simp only [Pi.smul_apply, Pi.zero_apply] at hcj
+    rw [← hcj]
+    refine Finset.sum_congr rfl (fun k _ => ?_)
+    exact (Complex.real_smul).symm
+  -- Row `inl j` of `Nᵀ` at column `k` is the `(k, j)` entry of the period matrix `M`.
+  have hrow_inl : ∀ (j : Fin g) (k : Fin g ⊕ Fin g),
+      Nᵀ (Sum.inl j) k = Matrix.fromRows A B k j := by
+    intro j k
+    rw [hNt]
+    cases k <;>
+      simp [Matrix.fromBlocks, Matrix.transpose_apply, Matrix.fromRows]
+  -- Row `inr j` of `Nᵀ` at column `k` is the conjugate of that entry.
+  have hrow_inr : ∀ (j : Fin g) (k : Fin g ⊕ Fin g),
+      Nᵀ (Sum.inr j) k = starRingEnd ℂ (Matrix.fromRows A B k j) := by
+    intro j k
+    rw [hNt]
+    cases k <;>
+      simp [Matrix.fromBlocks, Matrix.transpose_apply, Matrix.fromRows, hcA, hcB, Matrix.map_apply]
+  -- `z` is fixed by conjugation (its entries are real).
+  have hzconj : ∀ k, starRingEnd ℂ (z k) = z k := by
+    intro k; rw [hz]; exact Complex.conj_ofReal _
+  -- `Nᵀ.mulVec z = 0`.
+  have hmv : Nᵀ.mulVec z = 0 := by
+    funext i
+    rw [Pi.zero_apply, Matrix.mulVec, dotProduct]
+    cases i with
+    | inl j =>
+      -- ∑ k, M k j * z k = ∑ k, z k * M k j = 0.
+      simp_rw [hrow_inl]
+      rw [← hcol j]
+      exact Finset.sum_congr rfl (fun k _ => mul_comm _ _)
+    | inr j =>
+      -- ∑ k, conj(M k j) * z k = conj (∑ k, M k j * z k) = conj 0 = 0.
+      have hinner : (∑ k, Matrix.fromRows A B k j * z k) = 0 := by
+        rw [← hcol j]
+        exact Finset.sum_congr rfl (fun k _ => mul_comm _ _)
+      simp_rw [hrow_inr]
+      have hterm : ∀ k, starRingEnd ℂ (Matrix.fromRows A B k j) * z k
+          = starRingEnd ℂ (Matrix.fromRows A B k j * z k) := by
+        intro k; rw [map_mul, hzconj]
+      simp_rw [hterm, ← map_sum, hinner, map_zero]
+  -- det Nᵀ ≠ 0 ⟹ z = 0.
+  have hNtdet : Nᵀ.det ≠ 0 := by rw [Matrix.det_transpose]; exact hNdet
+  have hzz : z = 0 := Matrix.eq_zero_of_mulVec_eq_zero hNtdet hmv
+  intro k
+  have : (c k : ℂ) = 0 := congrFun hzz k
+  exact_mod_cast this
 
 end Jacobians
