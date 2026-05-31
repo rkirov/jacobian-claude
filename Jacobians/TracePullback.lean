@@ -513,27 +513,43 @@ lemma exists_offBranch_detour_piece (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘
     rw [hγ, Jacobians.pathSpeed_concat_right γ₁ γ₂ 1 (by norm_num) hd,
       show (2:ℝ)*1-1 = 1 from by norm_num, hv2_1, mul_zero]
 
-/-- **[open — GEOMETRIC obligation only].** The geometric heart of the off-branch surgery,
-isolated from the (now-proven) analytic telescoping. It asserts the existence of a closed smooth
-loop `δ'` avoiding `branchLocus f`, *together with a partition* `0 = s₀ ≤ ⋯ ≤ sₙ = 1` of `[0,1]`
-witnessing that `δ'` was obtained from `δ` by replacing sub-arcs over sub-balls with
-same-chart-endpoints detours: the partial line integrals match piece-by-piece.
+/-- **[open — GEOMETRIC obligation only; the planar-geometry KERNELS are now proven].** The
+geometric heart of the off-branch surgery, isolated from the (proven) analytic telescoping. It
+asserts the existence of a closed smooth loop `δ'` avoiding `branchLocus f`, *together with a
+partition* `0 = s₀ ≤ ⋯ ≤ sₙ = 1` of `[0,1]` witnessing that `δ'` was obtained from `δ` by replacing
+sub-arcs over sub-balls with same-chart-endpoints detours: the partial line integrals match
+piece-by-piece.
 
-**Why this is the only thing left, and why it is `sorry`.** The period equality
+**Status — what is proven, and the precise residual.** The period equality
 `periodVec δ' = periodVec δ` is *not* assumed here — it is derived in `exists_loop_off_branchLocus`
-below from this output via the fully-proven `periodVec_eq_of_partition_integral_eq` (telescoping over
-the partition). The per-piece partial-integral hypothesis is exactly what the proven splice lemma
+from this output via the fully-proven `periodVec_eq_of_partition_integral_eq` (telescoping over the
+partition). The per-piece partial-integral hypothesis is exactly what the proven splice lemma
 `OfCurveSkeleton.intervalIntegral_form_pathSpeed_eq_of_subball_endpoints` produces for replaced
-pieces (detour and original sub-arc share chart-coordinate endpoints inside one
-`chart_restrict_to_ball` sub-ball, via the sub-ball FTC), and is trivially `rfl` for kept pieces.
+pieces, and is trivially `rfl` for kept pieces.
 
-What remains genuinely open is the **explicit planar-geometry construction** of `δ'` itself:
-subdivide `δ` by `Path.exists_ball_chart_subdivision` so each sub-arc lies in one ball-chart
-containing ≤ 1 branch point and each `δ(sₖ) ∉ B`; on a branch-meeting piece build a C¹ chart-coord
-detour from `δ(sₖ)` to `δ(sₖ₊₁)` avoiding the one branch point, **with endpoint velocities matching
-`pathSpeed δ` at the seams** (so the spliced `δ'` is C¹ with continuous velocity section); glue.
-This is bounded but intricate (velocity-matched dodge of a point inside a disk, staying in the ball)
-and is the remaining work. NO analytic/Stokes content remains — only the construction. -/
+The *explicit planar geometry* — the part long flagged as the hard core — is now **fully proven** as
+reusable kernels:
+* `OfCurveSkeleton.exists_relay_dodge_finite` — the ball-confined two-segment dodge of the finite
+  chart-image of the branch locus (the planar "go around the branch point inside the disk");
+* `OfCurveSkeleton.ChartBallPathSmooth3` + `isSmoothPath_ChartBallPathSmooth3` — flat-ended
+  (zero-endpoint-velocity) smooth chart paths between arbitrary points measured in a *common* anchor
+  chart, so all pieces over one sub-interval share the chart frame the splice reads;
+* `exists_offBranch_detour_piece` (above) — combining the two: a flat-ended smooth path `P → Q` off
+  `branchLocus f`, confined to a prescribed chart sub-ball, with matching chart endpoints. This is
+  the complete per-piece replacement arc.
+
+What remains is **assembly plumbing only** (no new geometry, no analysis):
+1. an off-branch subdivision of `δ` — cover `δ([0,1])` by chart sub-balls each meeting `branchLocus`
+   in at most its finite chart-image (via `exists_nbhd_cover`), with the (uniform) breakpoints `sₖ`
+   chosen so `δ(sₖ) ∉ branchLocus` (handling the measure-zero set of times where `δ` meets the
+   locus — the one transversality wrinkle, since a `C¹` `δ` may a priori linger on a branch point);
+2. a **uniform-breakpoint `n`-piece C¹ glue**: splice the per-piece detours (kept-pieces use `δ`
+   itself) into one `IsClosedSmoothLoop` `δ'` with breakpoints `sₖ = k/n`, each piece the detour
+   reparametrized affinely onto `[sₖ, sₖ₊₁]` (every piece flat-ended ⇒ C¹ at every breakpoint — the
+   `n`-piece generalization of `IsSmoothPath.concat`, whose 2-piece form is proven);
+3. feeding `exists_offBranch_detour_piece` + the splice lemma to discharge the per-piece integral
+   equality.
+NO analytic/Stokes/de Rham/homotopy content remains — only this reparametrization bookkeeping. -/
 theorem exists_splicedLoop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
