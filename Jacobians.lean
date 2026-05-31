@@ -30,7 +30,7 @@ import Jacobians.OfCurveAnalyticitySkeleton
 
 # Jacobians
 
-An AI challenge to make an API for Jacobians, by Kevin Buzzard. v0.2.
+An AI challenge to make an API for Jacobians, by Kevin Buzzard. v0.4.
 
 ## Main missing definitions
 
@@ -56,6 +56,9 @@ An AI challenge to make an API for Jacobians, by Kevin Buzzard. v0.2.
 
 ## Changelog
 
+* v0.4: use notation `𝓘(ℂ, E)` instead of `modelWithCornersSelf ℂ E` (note in particular
+  that v0.4 is syntactically identical to v0.3)
+* v0.3: drop `[Nonempty X]` in the presence of `[ConnectedSpace X]` (connected => nonempty).
 * v0.2: `Type*` not `Type u`; use `𝓘(ℂ)` instead of `modelWithCornersSelf ℂ ℂ`; docstrings
   and comments
 * v0.1: initial public release
@@ -72,7 +75,7 @@ open scoped Manifold -- for 𝓘 notation
 
 -- let X be a compact Riemann surface
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-  [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [Nonempty X]
+  [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 -- data
 /-- The period lattice of a compact Riemann surface, living inside
@@ -89,17 +92,17 @@ Mathlib); they are supplied as unconditional `sorry` instances (S2/S3) in
 `PeriodLattice.lean`, so the Jacobian-as-complex-torus structure rests on
 them. -/
 noncomputable def periodLattice (X : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] : Submodule ℤ (Fin (genus X) → ℂ) :=
   Jacobians.truePeriodLattice X
 
 instance {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
     DiscreteTopology (periodLattice X) :=
   inferInstanceAs (DiscreteTopology (Jacobians.truePeriodLattice X))
 
 instance {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
     IsZLattice ℝ (periodLattice X) :=
   inferInstanceAs (IsZLattice ℝ (Jacobians.truePeriodLattice X))
 
@@ -115,7 +118,7 @@ downstream instance across that lift, which needs a `ChartedSpace`-over-
 explicit TODO; current signature is `Type`. -/
 @[reducible]
 noncomputable def Jacobian (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type :=
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type :=
   (Fin (genus X) → ℂ) ⧸ (periodLattice X).toAddSubgroup
 
 namespace Jacobian
@@ -141,12 +144,12 @@ noncomputable instance : ChartedSpace (Fin (genus X) → ℂ) (Jacobian X) := in
 
 -- Prop
 noncomputable instance :
-    IsManifold (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) :=
+    IsManifold (𝓘(ℂ, Fin (genus X) → ℂ)) ω (Jacobian X) :=
   inferInstance
 
 -- Prop
 noncomputable instance :
-    LieAddGroup (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) :=
+    LieAddGroup (𝓘(ℂ, Fin (genus X) → ℂ)) ω (Jacobian X) :=
   inferInstance
 
 /-- The Abel-Jacobi map from a compact Riemann surface to its Jacobian.
@@ -182,17 +185,17 @@ At each `Q₀ : X`:
   at `Q₀`.
 * `ContMDiff = ∀ Q, ContMDiffAt` (Mathlib definitional). -/
 lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ)
-    (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) := by
+    (𝓘(ℂ, Fin (genus X) → ℂ)) ω (ofCurve P) := by
   intro Q₀
   -- Local lift at `Q₀` with `constants = periodVec(smoothPath P Q₀)`.
   have h_local : ContMDiffAt 𝓘(ℂ)
-      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
+      (𝓘(ℂ, Fin (genus X) → ℂ)) ω
       (Jacobians.OfCurveSkeleton.localLift (X := X) Q₀
         (Jacobians.periodVec (Jacobians.smoothPath P Q₀))) Q₀ :=
     Jacobians.OfCurveSkeleton.localLift_contMDiffAt Q₀ _
   -- Smooth quotient projection.
-  have h_mk : ContMDiff (modelWithCornersSelf ℂ (Fin (genus X) → ℂ))
-      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
+  have h_mk : ContMDiff (𝓘(ℂ, Fin (genus X) → ℂ))
+      (𝓘(ℂ, Fin (genus X) → ℂ)) ω
       (QuotientAddGroup.mk :
         (Fin (genus X) → ℂ) →
         (Fin (genus X) → ℂ) ⧸ (periodLattice X).toAddSubgroup) :=
@@ -200,7 +203,7 @@ lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ)
       (Λ := periodLattice X) (n := ω)
   -- Composition: quotient of the local lift, ContMDiffAt at Q₀.
   have h_local_quotient : ContMDiffAt 𝓘(ℂ)
-      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω
+      (𝓘(ℂ, Fin (genus X) → ℂ)) ω
       (fun Q => (QuotientAddGroup.mk
         (Jacobians.OfCurveSkeleton.localLift (X := X) Q₀
           (Jacobians.periodVec (Jacobians.smoothPath P Q₀)) Q) :
@@ -288,7 +291,7 @@ lemma ofCurve_inj
   abel
 
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-  [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+   [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 variable (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
 
@@ -314,8 +317,8 @@ noncomputable def pushforward (f : X → Y)
 
 -- pushforward is holomorphic
 theorem pushforward_contMDiff :
-  ContMDiff (modelWithCornersSelf ℂ (Fin (genus X) → ℂ))
-  (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ)) ω (pushforward f hf) :=
+  ContMDiff (𝓘(ℂ, Fin (genus X) → ℂ))
+  (𝓘(ℂ, Fin (genus Y) → ℂ)) ω (pushforward f hf) :=
   Jacobians.ZLatticeQuotient.pushforward_contMDiff_of_ambient
     (periodLattice X) (periodLattice Y)
     (Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf)
@@ -331,7 +334,7 @@ lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P 
     P
 
 variable {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z]
-  [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+   [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
 
 variable (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
 
@@ -379,8 +382,8 @@ noncomputable def pullback (f : X → Y)
 
 -- pullback is holomorphic
 theorem pullback_contMDiff :
-    ContMDiff (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ))
-      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) :=
+    ContMDiff (𝓘(ℂ, Fin (genus Y) → ℂ))
+      (𝓘(ℂ, Fin (genus X) → ℂ)) ω (pullback f hf) :=
   Jacobians.ZLatticeQuotient.pullback_contMDiff_of_ambient
     (periodLattice X) (periodLattice Y)
     (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf)

@@ -4,9 +4,19 @@
 
 Lean 4 formalization of Kevin Buzzard's
 [Jacobians API challenge](https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9)
-(v0.2), pinned to Mathlib commit
+(**v0.4**), pinned to Mathlib commit
 [`8e3c989104daaa052921bf43de9eef0e1ac9fbf5`](https://github.com/leanprover-community/mathlib4/commit/8e3c989104daaa052921bf43de9eef0e1ac9fbf5)
 (2026-04-15).
+
+The exact v0.4 spec is committed verbatim as
+[`Jacobian_challenge.lean`](Jacobian_challenge.lean) (byte-for-byte identical to
+the gist — `diff` is empty), and [`ChallengeConformance.lean`](ChallengeConformance.lean)
+machine-checks (`lake env lean ChallengeConformance.lean`) that this repo's
+declarations satisfy every v0.4 signature: no `[Nonempty X]` (v0.3), `𝓘(ℂ, E)`
+notation (v0.4). v0.4's notation/`Nonempty` changes are compatible with the pinned
+Mathlib, so no Mathlib bump is needed. (One documented gap: the spec signs
+`Jacobian : Type u`; our construction is `Type 0` — a pre-existing
+universe-polymorphism TODO.)
 
 ## Disclaimer
 
