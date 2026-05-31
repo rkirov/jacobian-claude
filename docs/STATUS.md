@@ -24,8 +24,8 @@ missing math" — is now done (`exists_monodromyLiftFamily`, 2026-05-30); and
 |---|---|---|---|---|
 | 1 | `genus_eq_zero_iff_homeo` | Genus.lean:84 | genus 0 ⟺ sphere (uniformization / Riemann–Roch) | **isolated leaf** |
 | 3 | `abelJacobi_twoPoint_ne_zero` | Abel.lean:669 | two-point Abel–Jacobi image ≠ 0 | **critical path** of `ofCurve_inj`; *is* Abel's theorem |
-| 4 | `traceExtendsAt_branchPoint` | TraceForm.lean:849 | trace of a form extends across branch points | under `traceForm` ⇒ `pushforward_pullback` |
-| 5 | `traceForm_comp` | TraceForm.lean:1091 | trace functoriality `(g∘f)₊=g₊∘f₊` | **off-path leaf** |
+| ~~4~~ | ~~`traceExtendsAt_branchPoint`~~ | — | **✅ DISCHARGED 2026-05-31** (axiom-clean; see below) | — |
+| 5 | `traceForm_comp` | TraceForm.lean | trace functoriality `(g∘f)₊=g₊∘f₊` | **off-path leaf** |
 | 6 | `exists_loop_off_branchLocus` | TracePullback.lean:349 | homotope a loop off the branch locus | **critical path** of `pushforward_pullback`; needs manifold Stokes (deferred) |
 | 7 | `exists_periodLattice_realBasis` | PeriodLattice.lean:855 | period lattice has a real basis of ℂ^g (Riemann bilinear) | **universal instance** (see below) |
 
@@ -34,9 +34,26 @@ missing math" — is now done (`exists_monodromyLiftFamily`, 2026-05-30); and
 > ground truth. Recent moves: the dead `deg_div`/`PrincipalDivisors` chain was
 > **deleted** (2026-05-31, was #2 — nothing depended on it); the old #8
 > `ambientPhi_ambientPullback_eq` (ambient degree identity `Φ∘Ψ = deg·id`) is
-> now **proven**; and **#8′ `exists_preimageCycle_sheets_eq_degree` is now
+> now **proven**; **#8′ `exists_preimageCycle_sheets_eq_degree` is now
 > discharged** (2026-05-31) by porting Bryan Sanchez's axiom-clean degree
-> well-definedness (see below). Net: **7 → 6**.
+> well-definedness (see below); and **#4 `traceExtendsAt_branchPoint` is now
+> discharged** (2026-05-31, axiom-clean — the branch-point boundedness crux, via the
+> local little-o + exact per-preimage local coefficient + fibre-sum assembly; see
+> `docs/trace_branchpoint_plan.md`). Net: **7 → 6 → 5**.
+
+### #4 `traceExtendsAt_branchPoint` — DISCHARGED (2026-05-31), AXIOM-CLEAN
+
+The trace's branch-point extension is **complete**: `traceExtendsAt_branchPoint`,
+`traceLocalCoeff_mul_sub_tendsto_zero`, `exists_traceForm`, and `traceForm` all verify
+`[propext, Classical.choice, Quot.sound]` (no `sorryAx`, `lean_verify`-confirmed). No
+roots-of-unity/Puiseux were needed: the crux was reformulated from a (likely-false) global
+`BddAbove` to the local little-o `(z−z₀)·G(z)→0`, proven from the one-variable
+`sub_div_deriv_tendsto_zero` + the **exact** per-preimage local-coefficient identity
+`inCoordinates(traceSummand) 1 = (α local coeff)/F'` (the `symmL`/`(mfderiv f)⁻¹` obstruction
+factors cancel in one chart) + a fibre-sum assembly (additivity + properness + finite subcover +
+uniform off-branch fibre-card bound from a preconnected punctured chart-ball). Consequently
+`traceForm` is now `sorryAx`-free, and every downstream theorem that inherited **only** #4 via the
+trace loses that gap (see the dependency table below).
 
 ### #7 is the universal load-bearing sorry; #8′ is now DISCHARGED
 
@@ -73,9 +90,9 @@ as a `RegularValueWitnessReg` (`exists_regularValueWitnessReg_value_eq`), and
 `degreeFiber_eq_card_of_regularWitness` closes it: `sheets = #(f⁻¹{y₀}) = w.card =
 degreeFiber f = ContMDiff.degree f`. The degree-well-definedness content is verified
 axiom-clean (AxiomCheck.lean); `exists_preimageCycle_sheets_eq_degree` itself carries
-`sorryAx` only via the *inherited* #4 (trace branch-point) and #6 (Stokes homotopy),
-which the cycle already depended on. So `pushforward_pullback` now rests on
-**#4 + #6 + #7** (no separate degree gap).
+`sorryAx` only via the *inherited* #6 (Stokes homotopy), which the cycle already
+depended on (#4, the trace branch-point, is now **discharged**). So
+`pushforward_pullback` now rests on **#6 + #7** (no separate degree or trace gap).
 
 ### #7 the universal load-bearing sorry
 
@@ -88,8 +105,8 @@ though the underlying construction is itself clean: `ofCurve_contMDiff`,
 `pushforward_contMDiff`, `pullback_contMDiff`. Honest reading: *"the Abel–Jacobi
 map is holomorphic" is proven conditional on the period lattice being a lattice* —
 not unconditionally. The old #8 off-lattice extension *also* consumed #7's real
-basis and is now proven (above), so `pushforward_pullback` rests on #7 + #8′
-(+ #4/#6 via the trace).
+basis and is now proven (above), so `pushforward_pullback` rests on #7 + #6 (Stokes
+homotopy via the trace); #4 and #8′ are discharged.
 
 (By contrast, purely **algebraic** facts about `Jacobian X` that do not invoke
 its manifold structure — e.g. `ofCurve_self : ofCurve P P = 0`, a group
@@ -102,11 +119,11 @@ equation — are clean.)
 | `ofCurve_self` | **CLEAN** | — (group equation) |
 | `ofCurve_contMDiff` | sorryAx | #7 (lattice → manifold structure) |
 | `pushforward_contMDiff` | sorryAx | #7 |
-| `pullback_contMDiff` | sorryAx | #7 (and the trace matrix, #4) |
+| `pullback_contMDiff` | sorryAx | #7 (the trace-matrix #4 is now **discharged**) |
 | `ofCurve_inj` | sorryAx | #3 (Abel) + #7 |
-| `pushforward_pullback` | sorryAx | #4 (trace branch-point) + #6 (Stokes homotopy) + #7 (manifold). #8′ degree well-definedness is now **discharged** (axiom-clean port), so it no longer contributes a separate gap |
+| `pushforward_pullback` | sorryAx | #6 (Stokes homotopy) + #7 (manifold). #4 (trace branch-point) and #8′ (degree well-definedness) are now both **discharged** (axiom-clean), so neither contributes a separate gap |
 | `genus_eq_zero_iff_homeo` | sorryAx | #1 |
-| `traceForm` | sorryAx | #4 (branch-point extension) |
+| `traceForm` | **CLEAN** | — (#4 discharged 2026-05-31; `[propext, Classical.choice, Quot.sound]`) |
 
 ## The genuinely-clean core (verified `[propext, Classical.choice, Quot.sound]`)
 
@@ -118,8 +135,11 @@ The real, unconditional content proved along the way:
 - **§3 monodromy lift geometry** `exists_monodromyLiftFamily`,
   `exists_orbitLoops_of_monodromyLiftFamily`, `lift_eqOn_Icc_of_eq` and the
   `velCont` toolkit (TracePullback.lean / CotangentCoeff.lean) — the loop-lifting
-  machinery. *(`exists_preimageLoopFamily` itself shows `sorryAx`, but only the
-  inherited #4 via `traceFormTotal`/leaf D — the geometry is clean.)*
+  machinery. *(`exists_preimageLoopFamily` inherited #4 via `traceFormTotal`/leaf D;
+  with #4 now discharged that inheritance is gone — the geometry is clean.)*
+- **Trace pushforward of holomorphic 1-forms** `exists_traceForm`/`traceForm`
+  (TraceForm.lean) — including the branch-point extension `traceExtendsAt_branchPoint`
+  (#4, discharged 2026-05-31). All `[propext, Classical.choice, Quot.sound]`.
 - `periodVec_pushforward`, `ambientPhi_preserves_truePeriodLattice`,
   `ambientPullbackJac_preserves_truePeriodLattice` (period/lattice algebra).
 - `localLift_quotient_eq_ofCurve_eventually` (path-algebra identification — now

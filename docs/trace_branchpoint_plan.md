@@ -1,5 +1,33 @@
 # Plan — discharge #4 `traceExtendsAt_branchPoint` (the trace's branch-point extension)
 
+## ✅ DISCHARGED (2026-05-31) — `traceExtendsAt_branchPoint`, `exists_traceForm`, `traceForm` are AXIOM-CLEAN
+
+`#4` is **complete**. `traceExtendsAt_branchPoint`, `traceLocalCoeff_mul_sub_tendsto_zero`, and
+`exists_traceForm` all verify with axioms `[propext, Classical.choice, Quot.sound]` (no `sorryAx`).
+The trace's only remaining sorry is the *unrelated* `traceForm_comp` (#5, functoriality).
+
+**The full chain that closed it (no roots-of-unity / Puiseux):**
+1. Reformulated the crux: global `BddAbove` (likely false) → local little-o `(z−z₀)·G(z)→0`
+   (`traceLocalCoeff_mul_sub_tendsto_zero`), consumed by Mathlib's
+   `differentiableOn_update_limUnder_insert_of_isLittleO`.
+2. `sub_div_deriv_tendsto_zero` — one-variable heart: `F` analytic, `F w₀=z₀`, not loc const ⟹
+   `(F w−z₀)/F'(w)→0`.
+3. `traceSummand_inCoordinates_apply_one_eq_ref` — **exact** per-preimage local coefficient
+   `= (α's x₀-frame local coeff)/F'(ψ x)` (cotangent-coordinate computation: the `symmL`/
+   `(mfderiv f)⁻¹` obstruction factors cancel in the common chart, via
+   `TangentBundle.{continuousLinearMapAt,symmL}_trivializationAt = mfderiv` of charts,
+   `mfderiv_section_eq_inverse`, `apply_eq_inCoordinates`).
+4. `traceSummand_localCoeff_mul_sub_tendsto` — per-preimage growth `→0` (3 + 2 + `continuousAt_localCoeff`).
+5. Fibre-sum assembly (`traceLocalCoeff_mul_sub_tendsto_zero_Y`): additivity (`localCoeffLin.map_sum`),
+   properness (`properNbhd`/`isProperMap_of_contMDiff`), finite subcover of `f⁻¹ y₀`, ε/(N+1) count.
+6. `fibre_ncard_bddAbove_near_branch` — the uniform off-branch fibre-card bound `≤ N`:
+   `fibre_ncard_locally_const` (sheet system) + preconnected punctured chart-ball
+   (`Set.Countable.isPathConnected_ball_diff_complex`) + `IsPreconnected.constant`.
+
+Everything below is the historical plan; retained for context.
+
+---
+
 **Goal**: for a branch point `y₀ ∈ branchLocus f`, the canonical extension `traceFunExt f α`
 is, at `y₀`,
 * `ContMDiffAt` as a cotangent-bundle section (`traceTotalSpaceMk (traceFunExt f α)`), **and**
