@@ -1,5 +1,23 @@
 # External-repo audit — `Brsanch/jacobian-lean-challenge`
 
+> **▶ 2026-05-31 — degree-well-definedness port.** 22 further modules
+> (~3.3k LOC) were ported from this repo into
+> `Jacobians/Discharge/Manifold/` to discharge #8′
+> (`exists_preimageCycle_sheets_eq_degree`): the well-definedness top layer
+> rooted at `DegreeWellDefined.lean` (`degreeFiber_eq_card_of_regular_witness`)
+> — the topological `PathConnectedComplFinite` sub-tree (connected complex
+> 1-manifold minus a finite set is path-connected) and the analytic
+> `HLcUnconditional`/`HPkgUnconditional`/`LocalSheetDataFromContMDiff`/
+> `HurwitzPatchingDataConstruction` chain (locally-constant fibre cardinality
+> via the `z ↦ zᵏ` normal form). Mechanical namespace rewrite
+> (`JacobianChallenge`→`Jacobians.Discharge`, `Owed.degree`→`Degree`); 2 manual
+> fixes (an `open scoped ContDiff` for `ω`; a stray `ω` @-arg). Same Mathlib pin
+> + toolchain, so it compiled with only those name fixes.
+> `Jacobians.Discharge.degreeFiber_eq_card_of_regular_witness` re-verified
+> `#print axioms` = `[propext, Classical.choice, Quot.sound]` (guarded in
+> `AxiomCheck.lean`). MIT-licensed by Bryan Sanchez (2026); provenance retained
+> in each ported file's header.
+
 **Date:** 2026-05-28
 **Audited commit:** `Brsanch/jacobian-lean-challenge` `HEAD` of `main`,
 pushed 2026-05-27T02:50:05Z.
