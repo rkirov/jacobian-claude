@@ -25,7 +25,7 @@ missing math" — is now done (`exists_monodromyLiftFamily`, 2026-05-30); and
 | 1 | `genus_eq_zero_iff_homeo` | Genus.lean:84 | genus 0 ⟺ sphere (uniformization / Riemann–Roch) | **isolated leaf** |
 | 3 | `abelJacobi_twoPoint_ne_zero` | Abel.lean:669 | two-point Abel–Jacobi image ≠ 0 | **critical path** of `ofCurve_inj`; *is* Abel's theorem |
 | ~~4~~ | ~~`traceExtendsAt_branchPoint`~~ | — | **✅ DISCHARGED 2026-05-31** (axiom-clean; see below) | — |
-| 5 | `traceForm_comp` | TraceForm.lean | trace functoriality `(g∘f)₊=g₊∘f₊` | **off-path leaf** |
+| ~~5~~ | ~~`traceForm_comp`~~ | — | **✅ DISCHARGED 2026-05-31** (axiom-clean; functoriality via off-branch factorization + density of the local coefficient) | — |
 | 6 | `exists_loop_off_branchLocus` | TracePullback.lean:349 | homotope a loop off the branch locus | **critical path** of `pushforward_pullback`; needs manifold Stokes (deferred) |
 | 7 | `exists_periodLattice_realBasis` | PeriodLattice.lean:855 | period lattice has a real basis of ℂ^g (Riemann bilinear) | **universal instance** (see below) |
 
@@ -39,7 +39,11 @@ missing math" — is now done (`exists_monodromyLiftFamily`, 2026-05-30); and
 > well-definedness (see below); and **#4 `traceExtendsAt_branchPoint` is now
 > discharged** (2026-05-31, axiom-clean — the branch-point boundedness crux, via the
 > local little-o + exact per-preimage local coefficient + fibre-sum assembly; see
-> `docs/trace_branchpoint_plan.md`). Net: **7 → 6 → 5**.
+> `docs/trace_branchpoint_plan.md`); and **#5 `traceForm_comp`** (trace functoriality
+> `(g∘f)₊=g₊∘f₊`) is now **discharged** (2026-05-31, axiom-clean — sound proof via the
+> off-branch fibre factorization + density of the fixed-frame local coefficient, not the
+> unsound raw-fibre-continuity sketch). **TraceForm.lean is now entirely sorry-free.**
+> Net: **7 → 6 → 5 → 4**.
 
 ### #4 `traceExtendsAt_branchPoint` — DISCHARGED (2026-05-31), AXIOM-CLEAN
 
