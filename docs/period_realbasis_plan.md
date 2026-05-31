@@ -3,20 +3,31 @@
 **Target** (`PeriodLattice.lean`): `∃ b : Basis (Fin 2g) ℝ (ℂ^g), truePeriodLattice X = span ℤ (range b)`,
 where `truePeriodLattice X = span ℤ (closedLoopPeriods X)` and `periodVec γ = (∮_γ ω₁,…,∮_γ ω_g)`.
 
-## Status: scaffold DONE (commit `f382960`), now filling bottom-up (riskiest/deepest first)
+## Status: Pillar A DISCHARGED (2026-05-31). Only the isolated input `exists_canonicalDissection` remains.
 
 `Jacobians/Dissection.lean` splits the goal into **two pillars** + a proven **assembly**:
 
 | node | kind | status |
 |---|---|---|
 | `realBasis_of_canonicalDissection` | assembly: `2g` ℝ-indep vectors in `ℂ^g≅ℝ^{2g}` ⟹ basis; generation ⟹ ℤ-span | **PROVEN** |
-| `exists_periodLattice_realBasis` | = assembly ∘ the two pillars | **PROVEN** (modulo pillars) |
-| `exists_canonicalDissection` | **Pillar T (topology)** — isolated | **SORRY** (isolate; surface classification, Mathlib has no path) |
-| `periodVec_linearIndependent` | **Pillar A (analysis)** — Riemann bilinear relations | **SORRY** → the build below |
+| `exists_periodLattice_realBasis` | = assembly ∘ the two pillars | **PROVEN** (modulo the one isolated input) |
+| `periodVec_linearIndependent` | **Pillar A (analysis)** — Riemann bilinear relations ⟹ ℝ-independence | ✅ **PROVEN** (axiom-clean) |
+| `exists_canonicalDissection` | **isolated input**: topology *+* the two relations (bundled) | **SORRY** (isolated) |
 
-Pillar T is *isolated* (building `H₁(surface)≅ℤ^{2g}` = the surface classification theorem, out of
-scope). Pillar A is *built* via Riemann's cut-surface + Green's theorem (no Hodge/de Rham — see
-`docs/period_lattice_realbasis_research.md`).
+**Pillar A is DONE.** `periodVec_linearIndependent` is proven via the self-contained matrix-algebra
+core `linearIndependent_periodRows_of_posDef` (`Jacobians/PeriodMatrixIndep.lean`, axiom-clean): the
+two Riemann bilinear relations (R1 `AᵀB=BᵀA`, R2 `H=−i(AᵀB̄−BᵀĀ)` positive-definite) force the doubled
+period matrix `[Π|Π̄]` nonsingular (`det(NᵀJN)=(det N)²·det J`, antidiagonal blocks `±(det H)²≠0` from
+`PosDef.det_pos`), hence the `2g` real period vectors are independent. The relations enter as fields
+`periodRel_vanishing`/`periodRel_posDef` of `CanonicalDissection`.
+
+**Architecture decision (2026-05-31, flag for review).** The two relations are *bundled into* the
+isolated `exists_canonicalDissection` (alongside the topology `H₁≅ℤ^{2g}` + cut chart). This keeps
+`exists_periodLattice_realBasis` hypothesis-free. The box-level analytic core for R2 is **proven**
+(`boundaryForm_pos`, below); what stays isolated is the cut-chart pullback `cut^*ω=h dz`, the
+boundary-word `∮_{∂box}↦∑ₖ(AₖB̄ₖ−BₖĀₖ)`, and (for `g≥2`) Stokes on the `4g`-gon — i.e. exactly the
+surface-topology + polygon-Green content Mathlib lacks. The analytic leaves below remain *built and
+available* toward eventually discharging R1/R2 from an exposed cut chart (a future refactor).
 
 ## Pillar A dependency tree (the build) — committed cut-surface model
 

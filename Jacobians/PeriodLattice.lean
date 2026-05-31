@@ -33,14 +33,14 @@ period pairing.
 * `periodVec_pushforward` — the change-of-variables identity
   `periodVec Y (f ∘ γ) = ambientPhi f hf (periodVec X γ)`, from
   which `ambientPhi` preservation of the period lattice follows.
-* `DiscreteTopology`/`IsZLattice ℝ` of `truePeriodLattice X` — these are the
-  two open instances (S2/S3) supplied as `sorry` instances below. They hold
-  classically (the period lattice is a full-rank ℤ-lattice in `ℝ^(2g)`) but
-  require the Hodge / Riemann-bilinear-relations theorem (Forster §§19–20),
-  not yet in Mathlib. NOTE: there is no `IsPeriodLattice` typeclass — these are
-  unconditional `sorry` instances, so every `Jacobian`-as-torus consequence
-  rests on them; a future refactor could gate them behind an explicit
-  hypothesis class instead.
+* `DiscreteTopology`/`IsZLattice ℝ` of `truePeriodLattice X` — both instances below are now
+  *derived* (not `sorry`) from `exists_periodLattice_realBasis`: the lattice is the ℤ-span of an
+  ℝ-basis, hence discrete (`ZSpan.instDiscreteTopology`) and a full-rank ℤ-lattice
+  (`instIsZLatticeRealSpan`). `exists_periodLattice_realBasis` itself is proven (`Dissection.lean`)
+  modulo the single isolated input `exists_canonicalDissection` (surface topology + the two Riemann
+  bilinear relations); its analytic core `periodVec_linearIndependent` is axiom-clean. So every
+  `Jacobian`-as-torus consequence now rests on that one isolated input, not on these instances
+  directly.
 
 ## References
 
