@@ -253,6 +253,61 @@ instance : ChartedSpace ℂ RiemannSphere where
     | infty => exact Set.mem_insert_of_mem _ rfl
     | coe z => exact Set.mem_insert _ _
 
+/-- `chartInfty.symm z = invMap (z : RiemannSphere)`: on the affine part it is `z ↦ z⁻¹`,
+matching the inversion. -/
+lemma chartInfty_symm_apply (z : ℂ) :
+    chartInfty.symm z = invMap (z : RiemannSphere) := by
+  rw [chartInfty, OpenPartialHomeomorph.coe_trans_symm, Function.comp_apply, chartCoe_symm_apply]
+  simp only [Homeomorph.toOpenPartialHomeomorph_symm_apply, inversionHomeomorph_symm_apply]
+
+/-! ### Milestone 3 — the analytic manifold structure
+
+The four transition maps between `chartCoe` and `chartInfty` are either the identity or the
+inversion `z ↦ z⁻¹`, both of which are analytic (`contDiffOn_id`, `contDiffOn_inv`). We use
+`isManifold_of_contDiffOn`. -/
+
+instance : IsManifold 𝓘(ℂ) ω RiemannSphere := by
+  apply isManifold_of_contDiffOn
+  intro e e' he he'
+  rw [show atlas ℂ RiemannSphere = ({chartCoe, chartInfty} : Set _) from rfl] at he he'
+  simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm, Function.id_comp,
+    Function.comp_id, Set.preimage_id, Set.range_id, Set.inter_univ]
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at he he'
+  obtain rfl | rfl := he <;> obtain rfl | rfl := he'
+  -- chartCoe ↝ chartCoe : the identity
+  · refine contDiffOn_id.congr (fun z hz => ?_)
+    simp only [OpenPartialHomeomorph.coe_trans, Function.comp_apply, chartCoe_symm_apply,
+      chartCoe_apply_coe, id_eq]
+  -- chartCoe ↝ chartInfty : the inversion z ↦ z⁻¹ on {0}ᶜ
+  · have hsrc : (chartCoe.symm ≫ₕ chartInfty).source ⊆ {(0 : ℂ)}ᶜ := by
+      intro z hz
+      rw [OpenPartialHomeomorph.trans_source] at hz
+      simp only [Set.mem_inter_iff, Set.mem_preimage, chartCoe_symm_apply, chartInfty_source,
+        Set.mem_compl_iff, Set.mem_singleton_iff] at hz
+      simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+      intro h; exact hz.2 (by rw [h])
+    refine ((contDiffOn_inv (𝕜 := ℂ)).mono hsrc).congr (fun z hz => ?_)
+    rw [OpenPartialHomeomorph.coe_trans, Function.comp_apply, chartCoe_symm_apply,
+      chartInfty_apply_coe (by simpa using hsrc hz)]
+  -- chartInfty ↝ chartCoe : the inversion z ↦ z⁻¹ on {0}ᶜ
+  · have hsrc : (chartInfty.symm ≫ₕ chartCoe).source ⊆ {(0 : ℂ)}ᶜ := by
+      intro z hz
+      rw [OpenPartialHomeomorph.trans_source] at hz
+      simp only [Set.mem_inter_iff, Set.mem_preimage, chartCoe_source, Set.mem_compl_iff,
+        Set.mem_singleton_iff, chartInfty_symm_apply] at hz
+      simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+      intro h; exact hz.2 (by rw [h]; simp)
+    refine ((contDiffOn_inv (𝕜 := ℂ)).mono hsrc).congr (fun z hz => ?_)
+    rw [OpenPartialHomeomorph.coe_trans, Function.comp_apply, chartInfty_symm_apply,
+      invMap_coe_of_ne (by simpa using hsrc hz), chartCoe_apply_coe]
+  -- chartInfty ↝ chartInfty : the identity (z ↦ z⁻¹⁻¹ = z, with ∞ handled at z = 0)
+  · refine contDiffOn_id.congr (fun z hz => ?_)
+    rw [OpenPartialHomeomorph.coe_trans, Function.comp_apply, chartInfty_symm_apply, id_eq]
+    by_cases hz0 : z = 0
+    · subst hz0
+      rw [invMap_coe_zero, chartInfty_apply_infty]
+    · rw [invMap_coe_of_ne hz0, chartInfty_apply_coe (inv_ne_zero hz0), inv_inv]
+
 end RiemannSphere
 
 end Jacobians
