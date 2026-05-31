@@ -253,4 +253,52 @@ theorem MeromorphicFunction.mdifferentiable_holoRepr (f : MeromorphicFunction X)
   apply hdiff.mono
   simp [Set.preimage_univ, mfld_simps]
 
+/-! ### Liouville endgame: constant repair forces order `≡ 0` -/
+
+/-- If the limit-repair `holoRepr` is **constant** (the conclusion of Liouville on a compact
+connected manifold), then the order of `f` is `0` at every point. In each chart the pullback
+`f.toFun ∘ φ.symm` agrees off the center with the normal-form representative, which equals the
+constant `c`; the order of a constant is `0` (`⊤ ↦ 0` for `c = 0`, else `0`). -/
+theorem MeromorphicFunction.orderAtPoint_eq_zero_of_holoRepr_const (f : MeromorphicFunction X)
+    (hpos : ∀ x, 0 ≤ f.orderAtPoint x) {c : ℂ} (hconst : ∀ y, f.holoRepr y = c) (x : X) :
+    f.orderAtPoint x = 0 := by
+  set φ := chartAt (H := ℂ) x with hφ
+  obtain ⟨V, hVopen, hzV, hFV, hrepr⟩ := f.exists_holoRepr_eq_NFOn x (hpos x)
+  -- The pullback agrees off-center with the normal-form rep, which (on V, pushed back) is `c`.
+  have hNFconst : ∀ w ∈ V, toMeromorphicNFOn (f.toFun ∘ φ.symm) V w = c := by
+    intro w hw; rw [← hrepr w hw]; exact hconst _
+  -- So `f.toFun ∘ φ.symm =ᶠ[𝓝[≠] φx] (fun _ => c)`.
+  have hF_eq : (f.toFun ∘ φ.symm) =ᶠ[𝓝[≠] (φ x)] (fun _ => c) := by
+    have h1 : toMeromorphicNFOn (f.toFun ∘ φ.symm) V =ᶠ[𝓝[≠] (φ x)] (f.toFun ∘ φ.symm) :=
+      hFV.toMeromorphicNFOn_eq_self_on_nhdsNE hzV
+    have h2 : (fun w => toMeromorphicNFOn (f.toFun ∘ φ.symm) V w) =ᶠ[𝓝[≠] (φ x)] (fun _ => c) := by
+      filter_upwards [eventually_nhdsWithin_of_eventually_nhds (hVopen.mem_nhds hzV)] with w hw
+      exact hNFconst w hw
+    exact h1.symm.trans h2
+  -- The order of `f` at `x` is the order of the pullback, which equals the order of the constant `c`.
+  show (meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x)).untop₀ = 0
+  rw [meromorphicOrderAt_congr hF_eq, meromorphicOrderAt_const]
+  split <;> simp
+
+/-- **[INPUT — compact Liouville (no Dolbeault)] PROVEN.** A non-constant meromorphic function on a
+compact connected Riemann surface has a pole. Contrapositive: with no pole every order is `≥ 0`, so
+the limit-repair `holoRepr` is globally holomorphic (`mdifferentiable_holoRepr`); by holomorphic
+Liouville on the compact connected `X` (`MDifferentiable.exists_eq_const_of_compactSpace`) it is
+constant, forcing every order to be `0` (`orderAtPoint_eq_zero_of_holoRepr_const`) — contradicting
+non-constancy. -/
+theorem MeromorphicFunction.exists_pole_of_nonconstant (f : MeromorphicFunction X)
+    (hf : ∃ x, f.orderAtPoint x ≠ 0) : ∃ x, f.orderAtPoint x < 0 := by
+  by_contra hno
+  simp only [not_exists, not_lt] at hno
+  -- no pole: every order ≥ 0
+  have hpos : ∀ x, 0 ≤ f.orderAtPoint x := hno
+  -- holoRepr is globally holomorphic, hence constant (compact connected Liouville)
+  haveI hIM : IsManifold 𝓘(ℂ) 1 X := IsManifold.of_le le_top
+  have hmdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f.holoRepr := f.mdifferentiable_holoRepr hpos
+  obtain ⟨c, hc_const⟩ := hmdiff.exists_eq_const_of_compactSpace
+  have hc : ∀ y, f.holoRepr y = c := fun y => congrFun hc_const y
+  -- then every order is 0, contradicting non-constancy
+  obtain ⟨x, hx⟩ := hf
+  exact hx (f.orderAtPoint_eq_zero_of_holoRepr_const hpos hc x)
+
 end Jacobians
