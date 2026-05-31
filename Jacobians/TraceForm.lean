@@ -1497,6 +1497,52 @@ theorem traceSummand_localCoeff_mul_sub_tendsto (f : X → Y) (hf : ContMDiff �
   rw [hval, hFψx, ha₀, hz₀]
   ring
 
+/-- The linear map `φ ↦ inCoordinates … y₀ y y₀ y φ 1` (the local-coefficient functional). -/
+noncomputable def localCoeffLin (y₀ y : Y) : (ℂ →L[ℂ] ℂ) →ₗ[ℂ] ℂ where
+  toFun := fun φ => ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ
+    (Bundle.Trivial Y ℂ) y₀ y y₀ y φ (1 : ℂ)
+  map_add' := fun φ ψ => inCoordinates_apply_one_add φ ψ y₀ y
+  map_smul' := by
+    intro a φ
+    simpa using inCoordinates_apply_one_smul a φ y₀ y
+
+/-- **Additivity over the fibre.** Off the branch locus the local coefficient of the fibre-sum
+trace is the fibre sum of the per-summand local coefficients. -/
+theorem traceLocalCoeff_traceFun_eq_finsum (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X)
+    (y₀ : Y) {y : Y} (hy : y ∉ branchLocus f) :
+    traceLocalCoeff (traceFun f α) y₀ y
+      = ∑ᶠ x ∈ f ⁻¹' {y}, localCoeffLin y₀ y (traceSummand f α x) := by
+  have hfin : (f ⁻¹' {y}).Finite := fiber_finite_off_branchLocus f hf hnonconst hy
+  have h1 : traceLocalCoeff (traceFun f α) y₀ y = localCoeffLin y₀ y (traceFun f α y) := rfl
+  rw [h1]
+  have h2 : traceFun f α y = ∑ᶠ x ∈ f ⁻¹' {y}, traceSummand f α x := by
+    unfold traceFun
+    simp only [traceSummandAt]
+  rw [h2, finsum_mem_eq_finite_toFinset_sum _ hfin,
+    finsum_mem_eq_finite_toFinset_sum _ hfin, map_sum]
+
+/-- **Off-branch fibre cardinality is locally constant.** For a regular value `y₁` there is an
+open `V ∋ y₁` on which every fibre has the same cardinality `(f⁻¹{y₁}).ncard` (from the local
+sheet system: the `n` injective holomorphic sheets sweep out each nearby fibre). -/
+theorem fibre_ncard_locally_const (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {y₁ : Y} (hy₁ : y₁ ∉ branchLocus f) :
+    ∃ V : Set Y, IsOpen V ∧ y₁ ∈ V ∧
+      ∀ y ∈ V, (f ⁻¹' {y}).ncard = (f ⁻¹' {y₁}).ncard := by
+  obtain ⟨S⟩ := exists_localSheetSystem f hf hnonconst hy₁
+  have hcard_sheets : ∀ y ∈ S.V, (f ⁻¹' {y}).ncard = S.n := fun y hy => by
+    rw [S.fibre_eq y hy, ← Set.image_univ,
+      Set.ncard_image_of_injective _ (S.sheet_inj y hy), Set.ncard_univ, Nat.card_eq_fintype_card,
+      Fintype.card_fin]
+  exact ⟨S.V, S.isOpen_V, S.mem_V, fun y hy => by
+    rw [hcard_sheets y hy, hcard_sheets y₁ S.mem_V]⟩
+
+/-- The scaled per-summand local coefficient `Φ` summed in the fibre-sum assembly. -/
+noncomputable def bigPhi (f : X → Y) (α : HolomorphicOneForms X) (y₀ : Y) (x : X) : ℂ :=
+  (chartAt ℂ y₀ (f x) - chartAt ℂ y₀ y₀)
+    * ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+        y₀ (f x) y₀ (f x) (traceSummand f α x) (1 : ℂ)
+
 /-- **[REMAINING ANALYTIC FRONTIER — the manifold-side of the boundedness crux]**
 
 The `Y`-side of `traceLocalCoeff_mul_sub_tendsto_zero`: in the chart `c := chartAt ℂ y₀`, the
@@ -1539,8 +1585,102 @@ theorem traceLocalCoeff_mul_sub_tendsto_zero_Y (f : X → Y) (hf : ContMDiff �
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X)
     {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
     Tendsto (fun y => ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)
-        * traceLocalCoeff (traceFun f α) y₀ y) (𝓝[≠] y₀) (𝓝 0) :=
-  sorry
+        * traceLocalCoeff (traceFun f α) y₀ y) (𝓝[≠] y₀) (𝓝 0) := by
+  set c := chartAt ℂ y₀ with hc
+  -- **[ISOLATED — the one remaining sorry.]** Uniform off-branch fibre-cardinality bound near a
+  -- branch point. This is the classical "off-branch fibre cardinality = degree" fact: it follows
+  -- from `fibre_ncard_locally_const` (PROVEN: the fibre card is locally constant on the open
+  -- complement of the branch locus) PLUS a *preconnected punctured neighborhood* of `y₀` avoiding
+  -- the (finite) branch locus — on which a locally-constant ℕ-valued function is globally constant.
+  -- The missing input is purely topological: a connected punctured chart-ball, i.e. that an open
+  -- ball in ℂ ≅ ℝ² minus a finite set is (path-)connected — supplied by the repo's
+  -- `Set.Countable.isPathConnected_ball_diff_complex`.
+  have hcard : ∃ N : ℕ, ∀ᶠ y in 𝓝[≠] y₀, y ∉ branchLocus f →
+      (f ⁻¹' {y}).ncard ≤ N := by sorry
+  obtain ⟨N, hN⟩ := hcard
+  -- Per-preimage open neighborhood with the scaled-coefficient bound.
+  have hloc : ∀ (x₀ : X), f x₀ = y₀ → ∀ ε' : ℝ, 0 < ε' →
+      ∃ U : Set X, IsOpen U ∧ x₀ ∈ U ∧
+        ∀ x ∈ U, x ∉ criticalSet f → x ≠ x₀ → ‖bigPhi f α y₀ x‖ < ε' := by
+    intro x₀ hfx₀ ε' hε'
+    have htend := traceSummand_localCoeff_mul_sub_tendsto f hf hnonconst α hfx₀
+    have hev : ∀ᶠ x in 𝓝[(criticalSet f)ᶜ \ {x₀}] x₀, ‖bigPhi f α y₀ x‖ < ε' := by
+      have := htend.eventually (Metric.ball_mem_nhds (0 : ℂ) hε')
+      filter_upwards [this] with x hx
+      simpa [bigPhi, Complex.dist_eq] using hx
+    rw [eventually_nhdsWithin_iff] at hev
+    rw [eventually_iff_exists_mem] at hev
+    obtain ⟨V, hVnhd, hV⟩ := hev
+    obtain ⟨U, hUsub, hUopen, hxU⟩ := mem_nhds_iff.mp hVnhd
+    refine ⟨U, hUopen, hxU, ?_⟩
+    intro x hxU' hxcrit hxne
+    exact hV x (hUsub hxU') ⟨hxcrit, hxne⟩
+  have hproper : IsProperMap f := isProperMap_of_contMDiff f hf
+  have hcompact : IsCompact (f ⁻¹' {y₀}) :=
+    (isClosed_singleton.preimage hf.continuous).isCompact
+  rw [NormedAddGroup.tendsto_nhds_zero]
+  intro ε hε
+  set ε' : ℝ := ε / (N + 1) with hε'def
+  have hε' : 0 < ε' := by positivity
+  choose! U hUopen hUmem hUbnd using fun (p : X) (hp : f p = y₀) => hloc p hp ε' hε'
+  obtain ⟨b, hbsub, hbfin, hbcover⟩ :=
+    hcompact.elim_finite_subcover_image
+      (b := f ⁻¹' {y₀}) (c := U)
+      (fun i hi => hUopen i hi)
+      (fun p hp => Set.mem_iUnion₂.mpr ⟨p, hp, hUmem p hp⟩)
+  set V : Set X := ⋃ i ∈ b, U i with hVdef
+  have hVopen : IsOpen V := isOpen_biUnion (fun i hi => hUopen i (hbsub hi))
+  obtain ⟨W, hWopen, hWmem, hWsub⟩ := properNbhd hproper y₀ hVopen hbcover
+  have hWnhd : W ∈ 𝓝[≠] y₀ := nhdsWithin_le_nhds (hWopen.mem_nhds hWmem)
+  filter_upwards [hWnhd, hN, eventually_notMem_branchLocus f hf hnonconst y₀,
+    self_mem_nhdsWithin] with y hyW hyN hybranch hyne
+  have hynotbranch : y ∉ branchLocus f := hybranch
+  have hyncard : (f ⁻¹' {y}).ncard ≤ N := hyN hynotbranch
+  have hfin : (f ⁻¹' {y}).Finite := fiber_finite_off_branchLocus f hf hnonconst hynotbranch
+  have hEsum := traceLocalCoeff_traceFun_eq_finsum f hf hnonconst α y₀ hynotbranch
+  have hsummand : ∀ x ∈ f ⁻¹' {y},
+      (c y - c y₀) * localCoeffLin y₀ y (traceSummand f α x) = bigPhi f α y₀ x := by
+    intro x hx
+    rw [Set.mem_preimage, Set.mem_singleton_iff] at hx
+    simp only [bigPhi, localCoeffLin, LinearMap.coe_mk, AddHom.coe_mk, hc]
+    rw [hx]
+  have heq : (c y - c y₀) * traceLocalCoeff (traceFun f α) y₀ y
+      = ∑ᶠ x ∈ f ⁻¹' {y}, bigPhi f α y₀ x := by
+    rw [hEsum, mul_finsum_mem _ _]
+    exact finsum_mem_congr rfl hsummand
+  have hxbound : ∀ x ∈ f ⁻¹' {y}, ‖bigPhi f α y₀ x‖ < ε' := by
+    intro x hx
+    have hxy : f x = y := by rw [Set.mem_preimage, Set.mem_singleton_iff] at hx; exact hx
+    have hxcrit : x ∉ criticalSet f := fun hmem => hynotbranch ⟨x, hmem, hxy⟩
+    have hxW : x ∈ f ⁻¹' W := by rw [Set.mem_preimage, hxy]; exact hyW
+    have hxV : x ∈ V := hWsub hxW
+    rw [hVdef, Set.mem_iUnion₂] at hxV
+    obtain ⟨i, hib, hiU⟩ := hxV
+    have hfiy₀ : f i = y₀ := by
+      have := hbsub hib; rw [Set.mem_preimage, Set.mem_singleton_iff] at this; exact this
+    have hxne_i : x ≠ i := by
+      intro hcontra; rw [hcontra, hfiy₀] at hxy; exact hyne (by rw [Set.mem_singleton_iff, hxy])
+    exact hUbnd i hfiy₀ x hiU hxcrit hxne_i
+  rw [heq, finsum_mem_eq_finite_toFinset_sum _ hfin]
+  have hcardN : hfin.toFinset.card ≤ N := by
+    rw [← Set.ncard_eq_toFinset_card _ hfin]; exact hyncard
+  calc ‖∑ x ∈ hfin.toFinset, bigPhi f α y₀ x‖
+      ≤ ∑ x ∈ hfin.toFinset, ‖bigPhi f α y₀ x‖ := norm_sum_le _ _
+    _ ≤ hfin.toFinset.card • ε' := by
+        refine Finset.sum_le_card_nsmul _ _ _ (fun x hx => ?_)
+        exact le_of_lt (hxbound x ((Set.Finite.mem_toFinset hfin).mp hx))
+    _ = (hfin.toFinset.card : ℝ) * ε' := by rw [nsmul_eq_mul]
+    _ ≤ (N : ℝ) * ε' := by
+        apply mul_le_mul_of_nonneg_right _ (le_of_lt hε')
+        exact_mod_cast hcardN
+    _ < ε := by
+        rw [hε'def]
+        calc (N : ℝ) * (ε / (N + 1)) = (N / (N + 1)) * ε := by ring
+          _ < 1 * ε := by
+              apply mul_lt_mul_of_pos_right _ hε
+              rw [div_lt_one (by positivity)]
+              linarith
+          _ = ε := one_mul ε
 
 /-- **[THE TRACE'S ANALYTIC CRUX — local boundedness at a branch point, little-o form]**
 
