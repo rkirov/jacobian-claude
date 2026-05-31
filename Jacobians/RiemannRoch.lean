@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.Roadmap
+import Jacobians.MeromorphicLiouville
 
 /-!
 # Riemann–Roch layer — finer reduction of the #1 input (TEMPORARY scaffold)
@@ -74,7 +75,7 @@ Riemann surface has a pole. Meromorphic corollary of holomorphic Liouville
 Fillable from Mathlib + the repo's chart/meromorphic API — independent of the Dolbeault wall. -/
 theorem exists_pole_of_nonconstant (f : MeromorphicFunction X) (hf : IsNonConstant f) :
     ∃ x, f.orderAtPoint x < 0 :=
-  sorry
+  f.exists_pole_of_nonconstant hf
 
 /-- **[INPUT — Riemann–Roch output]** Genus `0` yields a non-constant meromorphic function with poles
 bounded by a single point (`l(P) ≥ 2`). The genuine RR content (Forster §16), resting on the
