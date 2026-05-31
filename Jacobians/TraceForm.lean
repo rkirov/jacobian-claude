@@ -1152,6 +1152,91 @@ theorem contMDiffAt_of_analyticAt_chartPullback {g : Y → ℂ} {y₀ : Y}
   rw [hfun, hbase]
   exact han.contDiffAt
 
+/-! ### The one-variable analytic heart of the local-boundedness crux
+
+The whole branch-point boundedness reduces, sheet by sheet in coordinates, to the following
+elementary one-variable fact: for an analytic `F` with `F w₀ = z₀` that is *not* locally
+constant, the ratio `(F w − z₀)/F'(w)` tends to `0` as `w → w₀`. Geometrically `F` is the
+map `f` read in charts at a ramification point; `(mfderiv f x)⁻¹ ∼ 1/F'(w)` blows up like
+`(w − w₀)^{1−e}`, but it is multiplied by `z − z₀ = F(w) − z₀ ∼ (w − w₀)^e`, and the product
+`∼ (w − w₀) → 0`. No symmetric-function cancellation is needed — just the factorization
+`F − z₀ = (w − w₀)^e · g` with `g w₀ ≠ 0`. -/
+
+/-- **One-variable analytic heart.** If `F` is analytic at `w₀` with `F w₀ = z₀` and is not
+eventually constant `≡ z₀`, then `(F w − z₀)/F'(w) → 0` as `w → w₀` through `w ≠ w₀`. Proof:
+`F − z₀ = (w − w₀)^(d+1) · g` (`g w₀ ≠ 0`), so for `w ≠ w₀` the ratio equals
+`(w − w₀)·g/( (d+1)·g + (w − w₀)·g')`, whose limit is `0/((d+1) g w₀) = 0`. -/
+theorem sub_div_deriv_tendsto_zero {F : ℂ → ℂ} {w₀ z₀ : ℂ}
+    (hF : AnalyticAt ℂ F w₀) (hFw₀ : F w₀ = z₀)
+    (hnc : ¬ ∀ᶠ w in 𝓝 w₀, F w = z₀) :
+    Tendsto (fun w => (F w - z₀) / deriv F w) (𝓝[≠] w₀) (𝓝 0) := by
+  -- Factor `F - z₀ = (w - w₀)^e • g`, `g` analytic, `g w₀ ≠ 0`.
+  have hFsub : AnalyticAt ℂ (fun w => F w - z₀) w₀ := hF.sub analyticAt_const
+  have hne0 : ¬ ∀ᶠ w in 𝓝 w₀, (fun w => F w - z₀) w = 0 := by
+    simpa [sub_eq_zero] using hnc
+  obtain ⟨e, g, hg, hg0, hFg⟩ :=
+    (hFsub.exists_eventuallyEq_pow_smul_nonzero_iff).mpr hne0
+  -- `e ≥ 1`, write `e = d + 1`.
+  have he : e ≠ 0 := by
+    rintro rfl
+    have h0 := hFg.self_of_nhds
+    simp only [pow_zero, one_smul, hFw₀, sub_self] at h0
+    exact hg0 h0.symm
+  obtain ⟨d, rfl⟩ : ∃ d, e = d + 1 := Nat.exists_eq_succ_of_ne_zero he
+  -- the candidate limit function `R`, continuous at `w₀` with value `0`.
+  set R : ℂ → ℂ := fun w => (w - w₀) * g w / ((d + 1 : ℕ) * g w + (w - w₀) * deriv g w) with hR
+  have hden0 : ((d + 1 : ℕ) : ℂ) * g w₀ ≠ 0 := by
+    simp only [ne_eq, mul_eq_zero, not_or]
+    exact ⟨by exact_mod_cast (Nat.succ_ne_zero d), hg0⟩
+  have hden : Tendsto (fun w => ((d + 1 : ℕ) : ℂ) * g w + (w - w₀) * deriv g w) (𝓝 w₀)
+      (𝓝 (((d + 1 : ℕ) : ℂ) * g w₀)) := by
+    have h1 : Tendsto (fun w => ((d + 1 : ℕ) : ℂ) * g w) (𝓝 w₀) (𝓝 (((d + 1 : ℕ) : ℂ) * g w₀)) :=
+      tendsto_const_nhds.mul hg.continuousAt
+    have h2 : Tendsto (fun w => (w - w₀) * deriv g w) (𝓝 w₀) (𝓝 (0 * deriv g w₀)) := by
+      refine Tendsto.mul ?_ hg.deriv.continuousAt
+      simpa using (continuous_sub_right w₀).tendsto w₀
+    simpa using h1.add h2
+  have hnum : Tendsto (fun w => (w - w₀) * g w) (𝓝 w₀) (𝓝 (0 * g w₀)) := by
+    refine Tendsto.mul ?_ hg.continuousAt
+    simpa using (continuous_sub_right w₀).tendsto w₀
+  have hRlim : Tendsto R (𝓝 w₀) (𝓝 0) := by
+    have h := hnum.div hden hden0
+    simp only [zero_mul, zero_div] at h
+    exact h
+  have hgdiff_ev : ∀ᶠ w in 𝓝 w₀, DifferentiableAt ℂ g w := by
+    filter_upwards [hg.eventually_analyticAt] with w hw using hw.differentiableAt
+  obtain ⟨U, hUsub, hUopen, hw₀U⟩ := mem_nhds_iff.mp hFg
+  have hcongr : (fun w => (F w - z₀) / deriv F w) =ᶠ[𝓝[≠] w₀] R := by
+    filter_upwards [self_mem_nhdsWithin, mem_nhdsWithin_of_mem_nhds (hUopen.mem_nhds hw₀U),
+        mem_nhdsWithin_of_mem_nhds hgdiff_ev]
+      with w hw_ne hwU hgw_diff
+    have hwne : w ≠ w₀ := hw_ne
+    have hFval : F w - z₀ = (w - w₀) ^ (d + 1) * g w := by
+      have := hUsub hwU; simpa [smul_eq_mul] using this
+    have hFeq : F =ᶠ[𝓝 w] (fun v => z₀ + (v - w₀) ^ (d + 1) * g v) := by
+      filter_upwards [hUopen.mem_nhds hwU] with v hv
+      have hvsub := hUsub hv
+      simp only [Set.mem_setOf_eq, smul_eq_mul] at hvsub
+      rw [add_comm]; exact sub_eq_iff_eq_add.mp hvsub
+    have hpow : HasDerivAt (fun v : ℂ => (v - w₀) ^ (d + 1))
+        (((d + 1 : ℕ) : ℂ) * (w - w₀) ^ d) w := by
+      have h1 : HasDerivAt (fun v : ℂ => v - w₀) 1 w := by
+        simpa using (hasDerivAt_id w).sub_const w₀
+      simpa using h1.pow (d + 1)
+    have hadd : HasDerivAt (fun v => z₀ + (v - w₀) ^ (d + 1) * g v)
+        (((d + 1 : ℕ) : ℂ) * (w - w₀) ^ d * g w + (w - w₀) ^ (d + 1) * deriv g w) w :=
+      (hpow.mul hgw_diff.hasDerivAt).const_add z₀
+    have hderiv : deriv F w
+        = ((d + 1 : ℕ) : ℂ) * (w - w₀) ^ d * g w + (w - w₀) ^ (d + 1) * deriv g w := by
+      rw [hFeq.deriv_eq, hadd.deriv]
+    rw [hFval, hderiv]
+    have hp : (w - w₀) ^ d ≠ 0 := pow_ne_zero d (sub_ne_zero.mpr hwne)
+    rw [show (w - w₀) ^ (d + 1) * g w = (w - w₀) ^ d * ((w - w₀) * g w) by rw [pow_succ]; ring,
+       show (((d + 1 : ℕ) : ℂ) * (w - w₀) ^ d * g w + (w - w₀) ^ (d + 1) * deriv g w)
+          = (w - w₀) ^ d * (((d + 1 : ℕ) : ℂ) * g w + (w - w₀) * deriv g w) by rw [pow_succ]; ring]
+    rw [mul_div_mul_left _ _ hp]
+  exact (hRlim.mono_left nhdsWithin_le_nhds).congr' hcongr.symm
+
 /-- **[THE TRACE'S ANALYTIC CRUX — local boundedness at a branch point, little-o form]**
 
 The single genuinely-analytic input. In the fixed chart `c := chartAt ℂ y₀`, the trace's
