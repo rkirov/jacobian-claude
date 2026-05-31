@@ -113,6 +113,11 @@ def RegularValueWitness.card {X : Type u} {Y : Type v} {f : X → Y}
     (w : RegularValueWitness f) : ℕ :=
   w.fiber_finite.toFinset.card
 
+/-- The witness card is the `Set.ncard` of its fibre. -/
+lemma RegularValueWitness.card_eq_ncard {X : Type u} {Y : Type v} {f : X → Y}
+    (w : RegularValueWitness f) : w.card = (f ⁻¹' {w.value}).ncard := by
+  rw [RegularValueWitness.card, (f ⁻¹' {w.value}).ncard_eq_toFinset_card w.fiber_finite]
+
 /-! ## Regular-value strengthened witness (ZZ172 corrected form)
 
 `RegularValueWitness` carries only `fiber_finite`, which is structurally too

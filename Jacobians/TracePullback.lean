@@ -1017,6 +1017,25 @@ structure MonodromyLiftFamily (f : X → Y) (δ : ℝ → Y) where
   fibre_surj : ∀ t ∈ Set.Icc (0 : ℝ) 1, ∀ x : X,
     f x = δ (flatEndReparam t) → ∃ i, Γ i t = x
 
+/-- **The lift count is the regular-fibre cardinality.** At `t = 0` the map
+`i ↦ Γ i 0` is a bijection from `Fin M.n` onto the fibre `f⁻¹{δ(flatEndReparam 0)}`
+(injective by `fibre_inj`, onto by `fibre_surj`), so `M.n` equals that fibre's
+`ncard`. This is what pins the cycle's sheet count to a *regular* fibre. -/
+lemma MonodromyLiftFamily.n_eq_fibre_ncard {f : X → Y} {δ : ℝ → Y}
+    (M : MonodromyLiftFamily f δ) :
+    M.n = (f ⁻¹' {δ (flatEndReparam 0)}).ncard := by
+  have h0 : (0 : ℝ) ∈ Set.Icc (0 : ℝ) 1 := Set.left_mem_Icc.mpr zero_le_one
+  have hinj : Function.Injective (fun i => M.Γ i 0) := M.fibre_inj 0 h0
+  have hrange : Set.range (fun i => M.Γ i 0) = f ⁻¹' {δ (flatEndReparam 0)} := by
+    apply Set.Subset.antisymm
+    · rintro z ⟨i, rfl⟩
+      show f (M.Γ i 0) = δ (flatEndReparam 0)
+      exact M.lifts i h0
+    · intro x hx
+      exact M.fibre_surj 0 h0 x hx
+  rw [← hrange, ← Set.image_univ, Set.ncard_image_of_injective _ hinj, Set.ncard_univ,
+    Nat.card_eq_fintype_card, Fintype.card_fin]
+
 
 /-- **Lift uniqueness on `[0,1]`.** Two continuous lifts `Γ₁, Γ₂` of the same base path `β`
 (off the branch locus) that agree at one time `t₀ ∈ [0,1]` agree on all of `[0,1]`. The
@@ -1763,6 +1782,59 @@ theorem exists_preimageCycle_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(�
   obtain ⟨δ', hδ', hpv, havoid⟩ := exists_loop_off_branchLocus f hf hnonconst δ hδ
   obtain ⟨c⟩ := exists_preimageCycle_of_off_branchLocus f hf hnonconst δ' hδ' havoid
   exact ⟨PreimageCycle.congr_periodVec hpv.symm c⟩
+
+/-- A value off the branch locus is off the (defeq) general critical-value set
+`criticalValuesGeneral`. (`branchLocus f = f '' criticalSet f =
+f '' criticalSetGeneral f = criticalValuesGeneral f` by definition.) -/
+theorem notMem_criticalValuesGeneral_of_notMem_branchLocus {f : X → Y} {y : Y}
+    (h : y ∉ branchLocus f) :
+    y ∉ Jacobians.Discharge.Manifold.criticalValuesGeneral f := by
+  unfold branchLocus criticalSet at h
+  unfold Jacobians.Discharge.Manifold.criticalValuesGeneral
+  exact h
+
+/-- **Strengthened off-branch cycle.** Beyond the `PreimageCycle`, returns a
+*regular value* `y₀` (off the branch locus) whose fibre has cardinality equal
+to the cycle's `sheets`. This exposes `sheets = #(regular fibre)`, the bridge
+identifying `sheets` with the analytic degree `degreeFiber`. Built exactly like
+`exists_preimageCycle_of_off_branchLocus`, but keeping the monodromy family `M`
+in scope so its `n = #fibre` (`M.n_eq_fibre_ncard`) can be read off. -/
+theorem exists_preimageCycle_sheets_eq_fibreCard_of_off_branchLocus
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :
+    ∃ (c : PreimageCycle f hf δ) (y₀ : Y),
+      y₀ ∉ branchLocus f ∧ c.sheets = (f ⁻¹' {y₀}).ncard := by
+  obtain ⟨M⟩ := exists_monodromyLiftFamily f hf hnonconst δ hδ havoid
+  obtain ⟨m, loops, coeffs, hclosed, hper, hpush⟩ :=
+    exists_orbitLoops_of_monodromyLiftFamily f hf δ hδ M
+  have hb : ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (periodVec δ) =
+      (fun j => lineIntegral (traceFormTotal f hf (periodBasisForm X j)) δ) := by
+    funext j
+    exact ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal f hf δ j hδ.integrable
+  have hproj : (fun j => lineIntegral (traceFormTotal f hf (periodBasisForm X j)) δ)
+      = ∑ i, periodVec (M.Γ i) := by
+    funext j
+    rw [lineIntegral_traceFormTotal_eq_sum_periodVec f hf hnonconst δ hδ havoid M j,
+      Finset.sum_apply]
+  refine ⟨⟨m, loops, hclosed, coeffs, M.n, ?_, hpush⟩, δ (flatEndReparam 0),
+    havoid _, M.n_eq_fibre_ncard⟩
+  rw [hb, hproj]; exact hper.symm
+
+/-- **Strengthened cycle for any non-constant `f`.** Combines
+`exists_preimageCycle_sheets_eq_fibreCard_of_off_branchLocus` with the
+off-branch homotopy; `congr_periodVec` carries `sheets` (and hence the
+fibre-cardinality identity) across. -/
+theorem exists_preimageCycle_sheets_eq_fibreCard_of_nonconstant
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
+    ∃ (c : PreimageCycle f hf δ) (y₀ : Y),
+      y₀ ∉ branchLocus f ∧ c.sheets = (f ⁻¹' {y₀}).ncard := by
+  obtain ⟨δ', hδ', hpv, havoid⟩ := exists_loop_off_branchLocus f hf hnonconst δ hδ
+  obtain ⟨c, y₀, hy₀, hsheets⟩ :=
+    exists_preimageCycle_sheets_eq_fibreCard_of_off_branchLocus f hf hnonconst δ' hδ' havoid
+  exact ⟨PreimageCycle.congr_periodVec hpv.symm c, y₀, hy₀, hsheets⟩
 
 /-- **Pullback identity — member case.** For a closed smooth loop `δ`
 in `Y`, the genuine pullback `ambientPullbackJac (periodVec δ)` lies

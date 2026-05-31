@@ -14,6 +14,12 @@ import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 #print axioms Jacobians.Discharge.ContMDiff.Degree.regular_value_exists_reg_unconditional
 #print axioms Jacobians.Discharge.ContMDiff.Degree.regular_value_exists_statement_unconditional
 
+-- Degree well-definedness (ported from brsanch; discharges #8′): every regular
+-- fibre has the same cardinality `= degreeFiber f`. Axiom-clean.
+#print axioms Jacobians.Discharge.degreeFiber_eq_card_of_regular_witness
+#print axioms Jacobians.degreeFiber_eq_card_of_regularWitness
+#print axioms Jacobians.Discharge.ContMDiff.Degree.exists_regularValueWitnessReg_value_eq
+
 -- Newly-closed local theorems (3 sorries → 0):
 #print axioms Jacobians.isClosed_criticalSet
 #print axioms Jacobians.criticalSet_ne_univ_of_nonconstant

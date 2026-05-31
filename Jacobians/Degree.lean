@@ -11,6 +11,7 @@ Original code MIT-licensed by Bryan Sanchez (2026); audit verifies
 See `docs/EXTERNAL_AUDIT.md`.
 -/
 import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
+import Jacobians.Discharge.Manifold.DegreeWellDefined
 
 open scoped Manifold ContDiff
 
@@ -48,5 +49,19 @@ theorem regularValueWitnessReg_nonempty_of_nonConstantMap
     Nonempty (RegularValueWitnessReg f) :=
   Jacobians.Discharge.ContMDiff.Degree.regular_value_exists_reg_unconditional
     f hf hnc
+
+/-- **Degree well-definedness.** For non-constant analytic `f`, the
+fibre-cardinality degree `degreeFiber f hf` equals the `card` of *any*
+regularity-certified regular-value witness. Forwards to the ported,
+axiom-clean `Jacobians.Discharge.degreeFiber_eq_card_of_regular_witness`. -/
+theorem degreeFiber_eq_card_of_regularWitness
+    {X : Type _} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X]
+    {Y : Type _} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ, ℂ) ω Y]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ) ω f)
+    (hnc : ¬ IsConstantMap f) (w : RegularValueWitnessReg f) :
+    degreeFiber f hf = w.card :=
+  Jacobians.Discharge.degreeFiber_eq_card_of_regular_witness f hf hnc w
 
 end Jacobians

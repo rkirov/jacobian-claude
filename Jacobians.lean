@@ -488,8 +488,32 @@ cardinality is `degreeFiber f` by degree well-definedness (ported from Bryan
 Sanchez's `jacobian-lean-challenge`, `degreeFiber_eq_card_of_regular_witness`). -/
 theorem exists_preimageCycle_sheets_eq_degree (δ : ℝ → Y)
     (hδ : Jacobians.IsClosedSmoothLoop δ) :
-    ∃ c : Jacobians.PreimageCycle f hf δ, c.sheets = ContMDiff.degree f hf :=
-  sorry
+    ∃ c : Jacobians.PreimageCycle f hf δ, c.sheets = ContMDiff.degree f hf := by
+  by_cases hconst : ∃ y₀ : Y, ∀ x, f x = y₀
+  · -- Constant `f`: the degree is `0`, realised by the empty preimage cycle.
+    refine ⟨{ n := 0, loops := Fin.elim0, loops_smooth := fun i => i.elim0,
+              coeffs := Fin.elim0, sheets := 0, pullback_eq := ?_,
+              pushforward_eq := ?_ }, ?_⟩
+    · rw [Jacobians.ambientPullbackJac_eq_zero_of_const f hf hconst]; simp
+    · simp
+    · show (0 : ℕ) = ContMDiff.degree f hf
+      have hcm : Jacobians.Discharge.IsConstantMap f := hconst
+      rw [ContMDiff.degree]
+      exact (if_pos hcm).symm
+  · -- Non-constant `f`: `sheets = #(regular fibre) = degreeFiber = degree`,
+    -- the last equality being **degree well-definedness** (ported, axiom-clean).
+    obtain ⟨c, y₀, hy₀, hsheets⟩ :=
+      Jacobians.exists_preimageCycle_sheets_eq_fibreCard_of_nonconstant f hf hconst δ hδ
+    refine ⟨c, ?_⟩
+    obtain ⟨w, hwval⟩ :=
+      Jacobians.Discharge.ContMDiff.Degree.exists_regularValueWitnessReg_value_eq f hf hconst
+        (Jacobians.notMem_criticalValuesGeneral_of_notMem_branchLocus hy₀)
+    have hwcard : w.card = (f ⁻¹' {y₀}).ncard := by
+      have h1 : w.card = w.toWitness.card := rfl
+      rw [h1, w.toWitness.card_eq_ncard, hwval]
+    show c.sheets = ContMDiff.degree f hf
+    rw [hsheets, show ContMDiff.degree f hf = Jacobians.degreeFiber f hf from rfl,
+      Jacobians.degreeFiber_eq_card_of_regularWitness f hf hconst w, hwcard]
 
 /-- The ambient degree identity on a single period vector `periodVec δ`: combine
 the §3 keystone with the cycle-sheets-equal-degree input. -/

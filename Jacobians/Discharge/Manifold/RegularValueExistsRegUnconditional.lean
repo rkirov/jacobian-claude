@@ -284,6 +284,43 @@ lemma deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
   by_contra h_d_zero
   exact h_neg_iff (h_planar.mpr h_d_zero)
 
+/-- **Witness at a prescribed regular value.** A value `y₀` off the
+critical-value set yields a regularity-certified witness *with that exact
+value* — so its fibre cardinality can be identified with `y₀`'s. (This is
+steps 4–7 of `regular_value_exists_reg_unconditional` at a caller-chosen
+`y₀` instead of a `Classical.choice`-picked one.) -/
+lemma exists_regularValueWitnessReg_value_eq
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
+    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold (𝓘(ℂ, ℂ)) ω Y]
+    (f : X → Y) (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ Jacobians.Discharge.IsConstantMap f)
+    {y₀ : Y} (hy₀ : y₀ ∉ Jacobians.Discharge.Manifold.criticalValuesGeneral f) :
+    ∃ w : RegularValueWitnessReg f, w.toWitness.value = y₀ := by
+  classical
+  -- Fibre over y₀ is finite (ZZ48).
+  have h_fib_fin : (f ⁻¹' {y₀}).Finite :=
+    fibres_finite_statement_unconditional f hf hnc y₀
+  -- Plain witness at y₀.
+  let w : RegularValueWitness f := { value := y₀, fiber_finite := h_fib_fin }
+  -- Regularity certificate at every preimage (same argument as the headline).
+  have h_reg : ∀ x ∈ f ⁻¹' {w.value},
+      deriv ((chartAt ℂ w.value) ∘ f ∘ (chartAt ℂ x).symm)
+        ((chartAt ℂ x) x) ≠ 0 := by
+    intro x hx
+    have hfx_eq : f x = y₀ := hx
+    have h_inj : ∃ U ∈ 𝓝 x, Set.InjOn f U :=
+      preimages_locally_injective_of_notMem_criticalValues
+        (f := f) (y := y₀) hy₀ x hx
+    have h_deriv_at_fx :
+        deriv ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm)
+          ((chartAt ℂ x) x) ≠ 0 :=
+      deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood hf hnc x h_inj
+    show deriv ((chartAt ℂ y₀) ∘ f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) ≠ 0
+    rw [← hfx_eq]; exact h_deriv_at_fx
+  exact ⟨w.toRegular h_reg, rfl⟩
+
 /-- **Headline existence.** For every non-constant analytic
 `f : X → Y` between compact connected complex 1-manifolds,
 `Nonempty (RegularValueWitnessReg f)`. -/
