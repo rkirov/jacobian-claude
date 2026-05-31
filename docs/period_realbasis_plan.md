@@ -59,9 +59,13 @@ Then the tree, **deepest leaf first** (= fill order):
    on `S₀` (`d(f_jω_l)=ω_j∧ω_l=0`, wedge of holomorphic `(1,0)`-forms in complex-dim 1), so
    `∮_{∂box} cut^*(f_jω_l) = ∬ d = 0`; boundary bookkeeping gives the relation. [~400–800]
 
-5. **`riemann_relation_positivity`** `−i∑_k(A_{jk}\overline{B_{jk}} − B_{jk}\overline{A_{jk}}) > 0`:
-   `−i∮_{∂box} cut^*(f̄_jω_j) = ∬_X (−i)ω̄_j∧ω_j = ∬ 2|f_j'|² dA > 0` (Green + pointwise
-   `−i\overline{dz}∧dz = 2dx dy` + `setIntegral_pos`, `f_j'=ω_j≠0` on an open dense set). [~400–800]
+5. **`riemann_relation_positivity`** `−i∑_k(A_{jk}\overline{B_{jk}} − B_{jk}\overline{A_{jk}}) > 0`.
+   - ✅ **Green positivity bridge DONE** (`Jacobians/GreenPositivity.lean`, `integral_normSq_eq_boundary`,
+     axiom-clean): for holomorphic `h` on `U⊇[0,1]²` with primitive `F`,
+     `∬_box ‖h‖² = −(i/2)·∮_{∂box} F̄ h dz`. (pointwise `d(F̄ h dz)=2i‖h‖²` + `greenOnUnitBox`.)
+   - **next:** `∬_box ‖h‖² > 0` for `h` holomorphic `≢ 0` (`setIntegral_pos` + isolated zeros ⟹
+     zero set measure-zero); then `cut^*ω = h dz` (cut chart) makes `∮_{∂box} F̄ h dz` the period
+     bilinear sum (step 3/the boundary word). [remaining ~400]
 
 6. **`periodVec_linearIndependent`** *(the pillar-A goal)*: the positivity Hermitian form
    `−iΠᵀJΠ̄ ≻ 0` forces the `2g` rows of the period matrix `Π` (the `periodVec (loop k)`) to be
