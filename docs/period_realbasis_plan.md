@@ -3,6 +3,33 @@
 **Target** (`PeriodLattice.lean`): `∃ b : Basis (Fin 2g) ℝ (ℂ^g), truePeriodLattice X = span ℤ (range b)`,
 where `truePeriodLattice X = span ℤ (closedLoopPeriods X)` and `periodVec γ = (∮_γ ω₁,…,∮_γ ω_g)`.
 
+## ▶ 2026-05-31 (LATEST-3) — R1 **and** R2 PROVEN from a `CutSurface`; only `exists_cutSurface` isolated.
+
+**The directive's analytic content is discharged.** A `CutSurface X` structure
+(`Jacobians/CutSurfaceRelations.lean`) carries the cut chart's *boundary data* — pullback coeffs
+`h_j = cut^*ω_j` holomorphic on convex `U ⊇ box` (primitives `F_i`), the two **boundary words**
+(`(AᵀB − BᵀA)_{ij} = ∮_{∂box} F_i h_j`; `(AᵀB̄ − BᵀĀ)_{ij} = −∮_{∂box} F̄_i h_j`), non-degeneracy, and
+the topological loops. From it **both Riemann relations are now THEOREMS, verified axiom-clean**
+`[propext, Classical.choice, Quot.sound]`:
+
+* `CutSurface.cutSurface_R1 : AᵀB = BᵀA` — box Cauchy (`riemann_R1_of_boundaryWord`).
+* `CutSurface.cutSurface_R2 : (periodHermitian).PosDef` — the new box-layer core
+  `riemann_R2_posDef_of_boundaryWord` (`Jacobians/BoundaryWordR2.lean`): `boundaryForm` bilinearity
+  (`boundaryForm_combo` = `edgeBF_combo` + `sum_lincomb4`) collapses `vᴴ H v` to
+  `−i·boundaryForm(h_v,F_v) = 2·∬‖h_v‖² > 0` by the proven Green-positivity bridge `boundaryForm_pos`;
+  Hermitian-ness is automatic. Sign validated at `g=1 → 2·Im τ > 0`.
+
+`exists_canonicalDissection` is now **derived** from the single isolated `exists_cutSurface` (the only
+`sorry`), with R1/R2 supplied as the proven theorems. The isolated input is exactly the
+surface-topology + polygon-Green/gluing content Mathlib lacks (Radó triangulation + classification +
+the cut chart + `4g`-gon Green that produces the boundary words). The relations are no longer bundled
+assertions. Commits: `672236e` (interface + R1) → `2e35d59` (R2 core).
+
+**Remaining for a *fully* discharged #7:** prove the boundary words themselves (and `exists_cutSurface`)
+from the gluing — i.e. the `4g`-gon Green + primitive-jump = period monodromy. That stays isolated
+(genuinely missing surface topology). `EdgeChangeOfVariables.lean` (`lineIntegral_comp_cut`) is the
+foundation for that future step.
+
 ## ▶ 2026-05-31 (LATEST) — DIRECTIVE: prove the Riemann relations, isolate ONLY the chart existence.
 
 User: "this theorem is tricky, put all energy into formally proving it"; "isolate and prove — don't

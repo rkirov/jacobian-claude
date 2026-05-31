@@ -32,7 +32,7 @@ Record chapter/section pointers next to each sorry as it's closed.
 | `ofCurve` (Abel–Jacobi map) | Forster §20 | Miranda Ch. VIII §1 |
 | `ofCurve_contMDiff` | Forster §21 (holomorphicity) | Miranda Ch. VIII §2 |
 | `ofCurve_self` | trivial (definition unwinding) | — |
-| `ofCurve_inj` (Abel's theorem) | Forster §21 | Miranda Ch. VIII §3 |
+| `ofCurve_inj` (Abel's theorem) | Forster §20 (Abel's Thm 20.7) + §21.7 (Pic⁰ ↪ Jac injective) | Miranda Ch. VIII §3 |
 | `pushforward`, `pullback` | Miranda Ch. VII | Griffiths–Harris Ch. 2 |
 | `pushforward_contMDiff`, `pullback_contMDiff` | Miranda Ch. VII | — |
 | `pushforward_id_apply`, `pushforward_comp_apply`, mirror for pullback | trivial (functoriality) | — |

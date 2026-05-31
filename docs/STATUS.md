@@ -27,7 +27,7 @@ missing math" — is now done (`exists_monodromyLiftFamily`, 2026-05-30); and
 | ~~4~~ | ~~`traceExtendsAt_branchPoint`~~ | — | **✅ DISCHARGED 2026-05-31** (axiom-clean; see below) | — |
 | ~~5~~ | ~~`traceForm_comp`~~ | — | **✅ DISCHARGED 2026-05-31** (axiom-clean; functoriality via off-branch factorization + density of the local coefficient) | — |
 | 6 | `exists_loop_off_branchLocus` | TracePullback.lean:349 | homotope a loop off the branch locus | **critical path** of `pushforward_pullback`; needs manifold Stokes (deferred) |
-| 7 | `exists_canonicalDissection` | Dissection.lean:108 | a canonical dissection exists: surface topology (`H₁≅ℤ^{2g}`, `4g`-gon) **+** the two Riemann bilinear relations | **universal instance** (see below); the analytic core `periodVec_linearIndependent` is now **discharged** axiom-clean, so `exists_periodLattice_realBasis` rests on this single isolated input |
+| 7 | `exists_cutSurface` | CutSurfaceRelations.lean:160 | a **cut surface** exists: the holomorphic cut chart + boundary-word data (surface topology `H₁≅ℤ^{2g}`, `4g`-gon Green, gluing) | **universal instance** (see below). Both Riemann bilinear relations R1/R2 are now **PROVEN theorems** (`CutSurface.cutSurface_R1`/`_R2`, axiom-clean) from this cut surface; `exists_canonicalDissection` is derived from it. So `exists_periodLattice_realBasis` rests on this single isolated *chart-existence* input — the relations are no longer bundled |
 
 > **Count history (transparency).** Earlier passes miscounted; a verified
 > `grep -rnE '(:=\s*sorry$|^\s*sorry$)' Jacobians.lean Jacobians/` is the
