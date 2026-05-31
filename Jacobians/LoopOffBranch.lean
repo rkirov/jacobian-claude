@@ -257,4 +257,115 @@ lemma lineIntegral_eq_of_chart_ball_endpoints
   simp only [hD] at hthis
   linear_combination hthis
 
+/-! ## Sub-ball generalization (usable with `chart_restrict_to_ball`)
+
+The two lemmas above require the chart `chartAt Q₀` to have its **entire** target equal
+to a ball — which generic charts do not. The downstream subdivision machinery
+(`Path.exists_ball_chart_subdivision`, built on `chart_restrict_to_ball`) instead gives a
+ball `Metric.ball c r ⊆ (chartAt Q₀).target` that is a *sub-region* of the chart target,
+together with the guarantee that the path stays in the restricted (smaller) source. The
+following generalizations replace the `target = ball` hypothesis by `ball ⊆ target` plus an
+explicit "chart-images land in the ball" hypothesis. The proofs are identical: the ball is
+still the simply-connected region carrying Morera's primitive (`isExactOn_ball`); the only
+change is `chartFormCoeff` is now holomorphic on the ball by `DifferentiableOn.mono` from
+the full target, and chart-image confinement is supplied rather than derived from
+`map_source`. -/
+
+/-- **Chart-local FTC on a sub-ball of the chart target.** Generalizes
+`lineIntegral_eq_primitive_diff_in_ballChart`: the ball `Metric.ball c r` need only be a
+subset of `(chartAt Q₀).target`, with the path's chart-images supplied to lie in the ball
+(`hg_ball`). The conclusion is the same primitive-difference. -/
+lemma lineIntegral_eq_primitive_diff_in_subball
+    (Q₀ : X) (γ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ)
+    (hsub : Metric.ball c r ⊆ (chartAt (H := ℂ) Q₀).target)
+    (hg_ball : ∀ t ∈ Set.Icc (0 : ℝ) 1, (chartAt (H := ℂ) Q₀) (γ t) ∈ Metric.ball c r)
+    (hγ_in : ∀ t ∈ Set.Icc (0 : ℝ) 1, γ t ∈ (chartAt (H := ℂ) Q₀).source)
+    (hγ_cont : Continuous γ)
+    (hγ_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) Q₀).toFun ∘ γ) t)
+    (hint : IntervalIntegrable
+      (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t)) volume 0 1) :
+    ∃ F : ℂ → ℂ,
+      (∀ w ∈ Metric.ball c r, HasDerivAt F (chartFormCoeff (X := X) Q₀ i w) w) ∧
+      lineIntegral (periodBasisForm X i) γ =
+        F ((chartAt (H := ℂ) Q₀) (γ 1)) - F ((chartAt (H := ℂ) Q₀) (γ 0)) := by
+  set e := chartAt (H := ℂ) Q₀ with he
+  -- `chartFormCoeff Q₀ i` is holomorphic on the (sub-)ball ⟹ has a primitive `F`.
+  have hcoeff_diffOn : DifferentiableOn ℂ (chartFormCoeff (X := X) Q₀ i) (Metric.ball c r) :=
+    (chartFormCoeff_differentiableOn Q₀ i).mono hsub
+  obtain ⟨F, hF⟩ := hcoeff_diffOn.isExactOn_ball
+  refine ⟨F, hF, ?_⟩
+  set g : ℝ → ℂ := e.toFun ∘ γ with hg
+  have hg_ball' : ∀ t ∈ Set.Icc (0 : ℝ) 1, g t ∈ Metric.ball c r := hg_ball
+  have huIcc_sub : Set.uIcc (0 : ℝ) 1 = Set.Icc (0 : ℝ) 1 := Set.uIcc_of_le (by norm_num)
+  -- `F ∘ g` has derivative `coeff(g t) · g'(t)` by the chain rule.
+  have hFg_deriv : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      HasDerivAt (F ∘ g) (chartFormCoeff (X := X) Q₀ i (g t) * (fderiv ℝ g t 1)) t := by
+    intro t ht
+    rw [huIcc_sub] at ht
+    have hg_deriv : HasDerivAt g (fderiv ℝ g t 1) t := (hγ_diff t (huIcc_sub ▸ ht)).hasDerivAt
+    have hF_at : HasDerivAt F (chartFormCoeff (X := X) Q₀ i (g t)) (g t) := hF (g t) (hg_ball' t ht)
+    have := hF_at.comp t hg_deriv
+    convert this using 1
+  unfold lineIntegral
+  -- The line-integral integrand equals `coeff(g t) · g'(t)` on `[0,1]`.
+  have hintegrand : Set.EqOn
+      (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
+      (fun t => chartFormCoeff (X := X) Q₀ i (g t) * (fderiv ℝ g t 1))
+      (Set.uIcc 0 1) := by
+    intro t ht
+    rw [huIcc_sub] at ht
+    have h_src_nbhd : ∀ᶠ s : ℝ in nhds t, γ s ∈ e.source :=
+      (e.open_source.preimage hγ_cont).mem_nhds (hγ_in t ht)
+    exact chartFrame_cancel_general Q₀ γ i t h_src_nbhd (hγ_diff t (huIcc_sub ▸ ht))
+  rw [intervalIntegral.integral_congr hintegrand,
+    intervalIntegral.integral_eq_sub_of_hasDerivAt hFg_deriv
+      (hint.congr (fun t ht => hintegrand (Set.uIoc_subset_uIcc ht)))]
+  rfl
+
+/-- **Chart-local path-independence on a sub-ball of the chart target.** Generalizes
+`lineIntegral_eq_of_chart_ball_endpoints`: two C¹ paths `γ₁, γ₂` whose chart-images lie in a
+common ball `Metric.ball c r ⊆ (chartAt Q₀).target` and share chart-coordinate endpoints have
+equal line integrals. This is the form directly usable from the subdivision machinery, where
+the relevant ball is the `chart_restrict_to_ball` ball sitting inside the chart target. -/
+lemma lineIntegral_eq_of_chart_subball_endpoints
+    (Q₀ : X) (γ₁ γ₂ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ)
+    (hsub : Metric.ball c r ⊆ (chartAt (H := ℂ) Q₀).target)
+    (hg₁_ball : ∀ t ∈ Set.Icc (0 : ℝ) 1, (chartAt (H := ℂ) Q₀) (γ₁ t) ∈ Metric.ball c r)
+    (hg₂_ball : ∀ t ∈ Set.Icc (0 : ℝ) 1, (chartAt (H := ℂ) Q₀) (γ₂ t) ∈ Metric.ball c r)
+    (hγ₁_in : ∀ t ∈ Set.Icc (0 : ℝ) 1, γ₁ t ∈ (chartAt (H := ℂ) Q₀).source)
+    (hγ₂_in : ∀ t ∈ Set.Icc (0 : ℝ) 1, γ₂ t ∈ (chartAt (H := ℂ) Q₀).source)
+    (hγ₁_cont : Continuous γ₁) (hγ₂_cont : Continuous γ₂)
+    (hγ₁_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) Q₀).toFun ∘ γ₁) t)
+    (hγ₂_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) Q₀).toFun ∘ γ₂) t)
+    (hint₁ : IntervalIntegrable
+      (fun t => (periodBasisForm X i).toFun (γ₁ t) (pathSpeed γ₁ t)) volume 0 1)
+    (hint₂ : IntervalIntegrable
+      (fun t => (periodBasisForm X i).toFun (γ₂ t) (pathSpeed γ₂ t)) volume 0 1)
+    (h0 : (chartAt (H := ℂ) Q₀) (γ₁ 0) = (chartAt (H := ℂ) Q₀) (γ₂ 0))
+    (h1 : (chartAt (H := ℂ) Q₀) (γ₁ 1) = (chartAt (H := ℂ) Q₀) (γ₂ 1)) :
+    lineIntegral (periodBasisForm X i) γ₁ = lineIntegral (periodBasisForm X i) γ₂ := by
+  obtain ⟨F₁, hF₁, he₁⟩ :=
+    lineIntegral_eq_primitive_diff_in_subball Q₀ γ₁ i c r hsub hg₁_ball hγ₁_in hγ₁_cont hγ₁_diff hint₁
+  obtain ⟨F₂, hF₂, he₂⟩ :=
+    lineIntegral_eq_primitive_diff_in_subball Q₀ γ₂ i c r hsub hg₂_ball hγ₂_in hγ₂_cont hγ₂_diff hint₂
+  set D : ℂ → ℂ := fun z => F₁ z - F₂ z with hD
+  have hD_diff : DifferentiableOn ℂ D (Metric.ball c r) := fun w hw =>
+    ((hF₁ w hw).sub (hF₂ w hw)).differentiableAt.differentiableWithinAt
+  have hD_deriv0 : Set.EqOn (deriv D) 0 (Metric.ball c r) := by
+    intro w hw
+    have : HasDerivAt D 0 w := by simpa using (hF₁ w hw).sub (hF₂ w hw)
+    simp [this.deriv]
+  have hp0 : (chartAt (H := ℂ) Q₀) (γ₁ 0) ∈ Metric.ball c r := hg₁_ball 0 ⟨le_rfl, zero_le_one⟩
+  have hp1 : (chartAt (H := ℂ) Q₀) (γ₁ 1) ∈ Metric.ball c r := hg₁_ball 1 ⟨zero_le_one, le_rfl⟩
+  have hDeq : D ((chartAt (H := ℂ) Q₀) (γ₁ 1)) = D ((chartAt (H := ℂ) Q₀) (γ₁ 0)) :=
+    Metric.isOpen_ball.is_const_of_deriv_eq_zero (convex_ball c r).isPreconnected
+      hD_diff hD_deriv0 hp1 hp0
+  rw [he₁, he₂, ← h0, ← h1]
+  have hthis := hDeq
+  simp only [hD] at hthis
+  linear_combination hthis
+
 end Jacobians.OfCurveSkeleton
