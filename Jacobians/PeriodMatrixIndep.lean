@@ -1,4 +1,5 @@
 import Mathlib.LinearAlgebra.Matrix.PosDef
+import Mathlib.Analysis.Matrix.PosDef
 import Mathlib.LinearAlgebra.Matrix.SchurComplement
 import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 import Mathlib.Data.Matrix.ColumnRowPartitioned
@@ -63,6 +64,26 @@ theorem linearIndependent_periodRows_of_posDef
       simp only [neg_mul]
       rw [e1, e2, hR1]
       abel
+  -- Step 4: K and L have nonzero determinant.
+  -- K = I • H.
+  have hKIH : K = Complex.I • H := by
+    rw [hH, smul_smul]
+    rw [show Complex.I * -Complex.I = 1 by rw [mul_neg, Complex.I_mul_I, neg_neg]]
+    rw [one_smul]
+  have hHdet : H.det ≠ 0 := ne_of_gt hR2.det_pos
+  have hKdet : K.det ≠ 0 := by
+    rw [hKIH, Matrix.det_smul, Fintype.card_fin]
+    exact mul_ne_zero (pow_ne_zero _ Complex.I_ne_zero) hHdet
+  -- L = -Kᵀ.
+  have hLt : Lᵀ = -K := by
+    rw [hL, hK, Matrix.transpose_sub, Matrix.transpose_mul, Matrix.transpose_mul,
+      Matrix.transpose_transpose, Matrix.transpose_transpose]
+    abel
+  have hLeq : L = -Kᵀ := by
+    rw [← Matrix.transpose_transpose L, hLt, Matrix.transpose_neg]
+  have hLdet : L.det ≠ 0 := by
+    rw [hLeq, Matrix.det_neg, Matrix.det_transpose, Fintype.card_fin]
+    exact mul_ne_zero (pow_ne_zero _ (by norm_num)) hKdet
   sorry
 
 end Jacobians
