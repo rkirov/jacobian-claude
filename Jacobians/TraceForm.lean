@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.PeriodLattice
+import Jacobians.Discharge.Manifold.IsPathConnectedBallMinusCountable
 
 /-!
 # Trace (pushforward) of a holomorphic 1-form along a branched cover
@@ -1543,6 +1544,80 @@ noncomputable def bigPhi (f : X → Y) (α : HolomorphicOneForms X) (y₀ : Y) (
     * ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
         y₀ (f x) y₀ (f x) (traceSummand f α x) (1 : ℂ)
 
+/-- **Uniform off-branch fibre-cardinality bound near a branch point** (the classical "off-branch
+fibre cardinality = degree, hence locally bounded"). The fibre card is locally constant off the
+branch locus (`fibre_ncard_locally_const`), and on a **preconnected punctured chart-ball**
+`c.symm '' (Metric.ball z₀ r \ Badℂ)` — connected because a ball in `ℂ ≅ ℝ²` minus the finite set
+`Badℂ = c '' (branchLocus f ∩ c.source)` is path-connected
+(`Set.Countable.isPathConnected_ball_diff_complex`) — a locally-constant ℕ-valued function is
+globally constant (`IsPreconnected.constant`, `ℕ` discrete). This punctured nbhd is eventual in
+`𝓝[≠] y₀` (pushing `Metric.ball z₀ r \ Badℂ ∈ 𝓝[≠] z₀` along `c`), giving the uniform bound. -/
+theorem fibre_ncard_bddAbove_near_branch (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
+    ∃ N : ℕ, ∀ᶠ y in 𝓝[≠] y₀, y ∉ branchLocus f → (f ⁻¹' {y}).ncard ≤ N := by
+  classical
+  set c := chartAt ℂ y₀ with hc
+  set z₀ := c y₀ with hz₀
+  have hz₀tgt : z₀ ∈ c.target := c.map_source (mem_chart_source ℂ y₀)
+  obtain ⟨r, hr, hball_sub⟩ := Metric.isOpen_iff.mp c.open_target z₀ hz₀tgt
+  have hBfin : (branchLocus f).Finite := finite_branchLocus_of_nonconstant f hf hnonconst
+  set Badℂ : Set ℂ := c '' (branchLocus f ∩ c.source) with hBad
+  have hBadℂ_fin : Badℂ.Finite := ((hBfin.inter_of_left _).image c)
+  set U : Set ℂ := Metric.ball z₀ r \ Badℂ with hU
+  have hU_pc : IsPathConnected U :=
+    Jacobians.Discharge.Set.Countable.isPathConnected_ball_diff_complex hr
+      (Set.Finite.countable hBadℂ_fin)
+  have hU_preconn : IsPreconnected U := hU_pc.isConnected.isPreconnected
+  have hUsub : U ⊆ c.target := fun z hz => hball_sub (Set.diff_subset hz)
+  set T : Set Y := c.symm '' U with hT
+  have hT_preconn : IsPreconnected T :=
+    hU_preconn.image c.symm (c.continuousOn_symm.mono hUsub)
+  have hT_offbranch : ∀ y ∈ T, y ∉ branchLocus f := by
+    rintro _ ⟨z, hzU, rfl⟩ hyB
+    have hz_tgt : z ∈ c.target := hUsub hzU
+    have hsrc : c.symm z ∈ c.source := c.map_target hz_tgt
+    have : c (c.symm z) ∈ Badℂ := by
+      rw [hBad]; exact Set.mem_image_of_mem c ⟨hyB, hsrc⟩
+    rw [c.right_inv hz_tgt] at this
+    exact hzU.2 this
+  set card : Y → ℕ := fun y => (f ⁻¹' {y}).ncard with hcard
+  have hcard_cont : ContinuousOn card T := by
+    intro y hy
+    have hyoff : y ∉ branchLocus f := hT_offbranch y hy
+    obtain ⟨V, hVopen, hyV, hVcard⟩ := fibre_ncard_locally_const f hf hnonconst hyoff
+    have hloc : ∀ᶠ y' in 𝓝[T] y, card y' = card y := by
+      filter_upwards [nhdsWithin_le_nhds (hVopen.mem_nhds hyV)] with y' hy'V
+      show (f ⁻¹' {y'}).ncard = (f ⁻¹' {y}).ncard
+      rw [hVcard y' hy'V, hVcard y hyV]
+    exact (tendsto_pure.mpr hloc).mono_right (pure_le_nhds _)
+  obtain ⟨z₁, hz₁U⟩ := hU_pc.nonempty
+  have hy₁T : c.symm z₁ ∈ T := ⟨z₁, hz₁U, rfl⟩
+  set N : ℕ := card (c.symm z₁) with hN_def
+  have hN : ∀ y ∈ T, card y = N :=
+    fun y hy => IsPreconnected.constant hT_preconn hcard_cont hy hy₁T
+  have hBadcompl : Badℂᶜ ∈ 𝓝[≠] z₀ := nhdsNE_le_cofinite z₀ hBadℂ_fin.compl_mem_cofinite
+  have hball_nhds : Metric.ball z₀ r ∈ 𝓝[≠] z₀ :=
+    nhdsWithin_le_nhds (Metric.ball_mem_nhds _ hr)
+  have hU_ev : ∀ᶠ z in 𝓝[≠] z₀, z ∈ U := by
+    filter_upwards [hball_nhds, hBadcompl] with z hzb hzc
+    exact ⟨hzb, hzc⟩
+  have hsrc_nhds : c.source ∈ 𝓝 y₀ := c.open_source.mem_nhds (mem_chart_source ℂ y₀)
+  have hc_contAt : ContinuousAt c y₀ := c.continuousOn.continuousAt hsrc_nhds
+  have hc_tendsto : Tendsto c (𝓝[≠] y₀) (𝓝[≠] z₀) := by
+    rw [tendsto_nhdsWithin_iff]
+    refine ⟨hc_contAt.mono_left nhdsWithin_le_nhds, ?_⟩
+    filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds hsrc_nhds] with y hy_ne hy_src
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+    intro hcy
+    exact hy_ne (c.injOn hy_src (mem_chart_source ℂ y₀) (by rw [hcy, ← hz₀]))
+  have hcU_ev : ∀ᶠ y in 𝓝[≠] y₀, c y ∈ U := hc_tendsto.eventually hU_ev
+  have hT_ev : ∀ᶠ y in 𝓝[≠] y₀, y ∈ T := by
+    filter_upwards [hcU_ev, nhdsWithin_le_nhds hsrc_nhds] with y hyU hy_src
+    exact ⟨c y, hyU, c.left_inv hy_src⟩
+  refine ⟨N, ?_⟩
+  filter_upwards [hT_ev] with y hyT _
+  exact (hN y hyT).le
+
 /-- **[REMAINING ANALYTIC FRONTIER — the manifold-side of the boundedness crux]**
 
 The `Y`-side of `traceLocalCoeff_mul_sub_tendsto_zero`: in the chart `c := chartAt ℂ y₀`, the
@@ -1587,17 +1662,8 @@ theorem traceLocalCoeff_mul_sub_tendsto_zero_Y (f : X → Y) (hf : ContMDiff �
     Tendsto (fun y => ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)
         * traceLocalCoeff (traceFun f α) y₀ y) (𝓝[≠] y₀) (𝓝 0) := by
   set c := chartAt ℂ y₀ with hc
-  -- **[ISOLATED — the one remaining sorry.]** Uniform off-branch fibre-cardinality bound near a
-  -- branch point. This is the classical "off-branch fibre cardinality = degree" fact: it follows
-  -- from `fibre_ncard_locally_const` (PROVEN: the fibre card is locally constant on the open
-  -- complement of the branch locus) PLUS a *preconnected punctured neighborhood* of `y₀` avoiding
-  -- the (finite) branch locus — on which a locally-constant ℕ-valued function is globally constant.
-  -- The missing input is purely topological: a connected punctured chart-ball, i.e. that an open
-  -- ball in ℂ ≅ ℝ² minus a finite set is (path-)connected — supplied by the repo's
-  -- `Set.Countable.isPathConnected_ball_diff_complex`.
-  have hcard : ∃ N : ℕ, ∀ᶠ y in 𝓝[≠] y₀, y ∉ branchLocus f →
-      (f ⁻¹' {y}).ncard ≤ N := by sorry
-  obtain ⟨N, hN⟩ := hcard
+  -- Uniform off-branch fibre-cardinality bound near the branch point.
+  obtain ⟨N, hN⟩ := fibre_ncard_bddAbove_near_branch f hf hnonconst hy₀
   -- Per-preimage open neighborhood with the scaled-coefficient bound.
   have hloc : ∀ (x₀ : X), f x₀ = y₀ → ∀ ε' : ℝ, 0 < ε' →
       ∃ U : Set X, IsOpen U ∧ x₀ ∈ U ∧
