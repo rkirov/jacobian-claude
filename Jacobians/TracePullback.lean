@@ -415,7 +415,103 @@ lemma exists_offBranch_detour_piece (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘
     have hm_in : m ∈ segment ℝ (e P) m := right_mem_segment ℝ (e P) m
     exact fun hmem => (Set.disjoint_left.mp hseg1_off hm_in) hmem
   have hmPt_off : mPt ∉ branchLocus f := chartSymm_notMem_branchLocus hm_target hmB
-  sorry
+  -- Segment-membership of the affine combination (real-smul ↔ complex-mult form).
+  have hsmem : ∀ (a b : ℂ) (σ : ℝ), σ ∈ Set.Icc (0:ℝ) 1 →
+      (1 - (σ : ℂ)) * a + (σ : ℂ) * b ∈ segment ℝ a b := by
+    intro a b σ hσ
+    refine ⟨1 - σ, σ, by linarith [hσ.2], hσ.1, by ring, ?_⟩
+    rw [Complex.real_smul, Complex.real_smul]; push_cast; ring
+  -- Chart-ball hypotheses for the two A3 hops (segment ⊆ ball ⊆ target).
+  have hball1 : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * e P + (s : ℂ) * e mPt) ∈ e.target := by
+    intro s hs
+    refine hball (hseg1_ball ?_)
+    rw [he_mPt]; exact hsmem (e P) m s hs
+  have hball2 : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * e mPt + (s : ℂ) * e Q) ∈ e.target := by
+    intro s hs
+    refine hball (hseg2_ball ?_)
+    rw [he_mPt]; exact hsmem m (e Q) s hs
+  set γ₁ : ℝ → Y := OfCurveSkeleton.ChartBallPathSmooth3 w P mPt with hγ₁
+  set γ₂ : ℝ → Y := OfCurveSkeleton.ChartBallPathSmooth3 w mPt Q with hγ₂
+  have hsp1 : IsSmoothPath P mPt γ₁ :=
+    OfCurveSkeleton.isSmoothPath_ChartBallPathSmooth3 w P mPt hP_src hmPt_src hball1
+  have hsp2 : IsSmoothPath mPt Q γ₂ :=
+    OfCurveSkeleton.isSmoothPath_ChartBallPathSmooth3 w mPt Q hmPt_src hQ_src hball2
+  have hv1_0 : pathSpeed γ₁ 0 = 0 :=
+    OfCurveSkeleton.pathSpeed_ChartBallPathSmooth3_zero w P mPt hball1
+  have hv1_1 : pathSpeed γ₁ 1 = 0 :=
+    OfCurveSkeleton.pathSpeed_ChartBallPathSmooth3_one w P mPt hball1
+  have hv2_0 : pathSpeed γ₂ 0 = 0 :=
+    OfCurveSkeleton.pathSpeed_ChartBallPathSmooth3_zero w mPt Q hball2
+  have hv2_1 : pathSpeed γ₂ 1 = 0 :=
+    OfCurveSkeleton.pathSpeed_ChartBallPathSmooth3_one w mPt Q hball2
+  set γ : ℝ → Y := Jacobians.concat γ₁ γ₂ with hγ
+  -- Per-hop chart-image-in-ball (all of ℝ, since smoothStep01 clamps into [0,1]).
+  have hγ₁_ball : ∀ t : ℝ, e (γ₁ t) ∈ Metric.ball c r := by
+    intro t
+    have hσ := Jacobians.smoothStep01_mem_unit t
+    rw [hγ₁, OfCurveSkeleton.chart_ChartBallPathSmooth3_eq w P mPt t (hball1 _ hσ), he_mPt]
+    exact hseg1_ball (hsmem (e P) m _ hσ)
+  have hγ₂_ball : ∀ t : ℝ, e (γ₂ t) ∈ Metric.ball c r := by
+    intro t
+    have hσ := Jacobians.smoothStep01_mem_unit t
+    rw [hγ₂, OfCurveSkeleton.chart_ChartBallPathSmooth3_eq w mPt Q t (hball2 _ hσ), he_mPt]
+    exact hseg2_ball (hsmem m (e Q) _ hσ)
+  -- Per-hop in chart source (all of ℝ).
+  have hγ₁_src : ∀ t : ℝ, γ₁ t ∈ e.source := fun t =>
+    OfCurveSkeleton.ChartBallPathSmooth3_mem_source w P mPt t hball1
+  have hγ₂_src : ∀ t : ℝ, γ₂ t ∈ e.source := fun t =>
+    OfCurveSkeleton.ChartBallPathSmooth3_mem_source w mPt Q t hball2
+  -- Per-hop off-branch (all of ℝ): chart image is a segment point off B.
+  have hγ₁_off : ∀ t : ℝ, γ₁ t ∉ branchLocus f := by
+    intro t
+    have hσ := Jacobians.smoothStep01_mem_unit t
+    have hchart : e (γ₁ t) ∈ segment ℝ (e P) m := by
+      rw [hγ₁, OfCurveSkeleton.chart_ChartBallPathSmooth3_eq w P mPt t (hball1 _ hσ), he_mPt]
+      exact hsmem (e P) m _ hσ
+    have hnotB : e (γ₁ t) ∉ B := fun hmem => (Set.disjoint_left.mp hseg1_off hchart) hmem
+    have := chartSymm_notMem_branchLocus (f := f) (w := w) (e.map_source (hγ₁_src t)) hnotB
+    rwa [e.left_inv (hγ₁_src t)] at this
+  have hγ₂_off : ∀ t : ℝ, γ₂ t ∉ branchLocus f := by
+    intro t
+    have hσ := Jacobians.smoothStep01_mem_unit t
+    have hchart : e (γ₂ t) ∈ segment ℝ m (e Q) := by
+      rw [hγ₂, OfCurveSkeleton.chart_ChartBallPathSmooth3_eq w mPt Q t (hball2 _ hσ), he_mPt]
+      exact hsmem m (e Q) _ hσ
+    have hnotB : e (γ₂ t) ∉ B := fun hmem => (Set.disjoint_left.mp hseg2_off hchart) hmem
+    have := chartSymm_notMem_branchLocus (f := f) (w := w) (e.map_source (hγ₂_src t)) hnotB
+    rwa [e.left_inv (hγ₂_src t)] at this
+  refine ⟨γ, hsp1.concat hsp2 hv1_1 hv2_0, ?_, ?_, ?_, ?_, ?_⟩
+  · -- off-branch for all t, splitting at the concat junction.
+    intro t
+    by_cases ht : t ≤ 1/2
+    · rw [hγ, Jacobians.concat_apply_left _ _ ht]; exact hγ₁_off _
+    · rw [hγ, Jacobians.concat_apply_right _ _ ht]; exact hγ₂_off _
+  · -- chart-image-in-ball on [0,1].
+    intro t _
+    by_cases ht : t ≤ 1/2
+    · rw [hγ, Jacobians.concat_apply_left _ _ ht]; exact hγ₁_ball _
+    · rw [hγ, Jacobians.concat_apply_right _ _ ht]; exact hγ₂_ball _
+  · -- in chart source on [0,1].
+    intro t _
+    by_cases ht : t ≤ 1/2
+    · rw [hγ, Jacobians.concat_apply_left _ _ ht]; exact hγ₁_src _
+    · rw [hγ, Jacobians.concat_apply_right _ _ ht]; exact hγ₂_src _
+  · -- pathSpeed γ 0 = 0.
+    have h0uIcc : (0:ℝ) ∈ Set.uIcc (0:ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨le_refl _, zero_le_one⟩
+    have hd : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₁ (2 * 0))).toFun ∘ γ₁) (2 * 0) := by
+      rw [show (2:ℝ)*0 = 0 from by norm_num]; exact hsp1.diff 0 h0uIcc
+    rw [hγ, Jacobians.pathSpeed_concat_left γ₁ γ₂ 0 (by norm_num) hd,
+      show (2:ℝ)*0 = 0 from by norm_num, hv1_0, mul_zero]
+  · -- pathSpeed γ 1 = 0.
+    have h1uIcc : (1:ℝ) ∈ Set.uIcc (0:ℝ) 1 := by
+      rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨zero_le_one, le_refl _⟩
+    have hd : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₂ (2 * 1 - 1))).toFun ∘ γ₂) (2 * 1 - 1) := by
+      rw [show (2:ℝ)*1-1 = 1 from by norm_num]; exact hsp2.diff 1 h1uIcc
+    rw [hγ, Jacobians.pathSpeed_concat_right γ₁ γ₂ 1 (by norm_num) hd,
+      show (2:ℝ)*1-1 = 1 from by norm_num, hv2_1, mul_zero]
 
 /-- **[open — GEOMETRIC obligation only].** The geometric heart of the off-branch surgery,
 isolated from the (now-proven) analytic telescoping. It asserts the existence of a closed smooth
