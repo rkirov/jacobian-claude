@@ -474,3 +474,51 @@ lemma intervalIntegral_form_pathSpeed_eq_of_subball_endpoints
   linear_combination hthis
 
 end Jacobians.OfCurveSkeleton
+
+namespace Jacobians
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+/-- **Period-vector telescoping over a partition.** If `δ, δ'` are closed smooth loops and there
+is a partition `0 = s₀ ≤ s₁ ≤ ⋯ ≤ sₙ = 1` of `[0,1]` (with each sub-interval inside `[0,1]`) such
+that the *partial* line integrals of every period basis form agree piece-by-piece
+(`∫_{sₖ}^{sₖ₊₁} ωᵢ(δ') = ∫_{sₖ}^{sₖ₊₁} ωᵢ(δ)`), then `periodVec δ' = periodVec δ`.
+
+This is the analytic core of period-preservation for the off-branch surgery, fully discharged:
+`periodVec` is the integral over `[0,1]`, which splits as the sum of the partial integrals over the
+subdivision (`intervalIntegral.sum_integral_adjacent_intervals`, with per-piece integrability
+inherited from `IsClosedSmoothLoop.integrable` via `IntervalIntegrable.mono_set`); the hypothesis
+makes the two sums equal term-by-term. The remaining (geometric) work for
+`exists_loop_off_branchLocus` is to *produce* a `δ'` avoiding `branchLocus f` whose per-piece partial
+integrals match `δ`'s — for pieces where `δ'` is left equal to `δ` this is trivial, and for replaced
+pieces it is exactly `OfCurveSkeleton.intervalIntegral_form_pathSpeed_eq_of_subball_endpoints` (the
+detour and the original sub-arc share chart-coordinate endpoints inside one sub-ball). -/
+theorem periodVec_eq_of_partition_integral_eq (δ δ' : ℝ → X)
+    (hδ : IsClosedSmoothLoop δ) (hδ' : IsClosedSmoothLoop δ')
+    (s : ℕ → ℝ) (n : ℕ) (hs0 : s 0 = 0) (hsn : s n = 1)
+    (hs_sub : ∀ k, k < n → Set.uIcc (s k) (s (k+1)) ⊆ Set.Icc (0:ℝ) 1)
+    (hpiece : ∀ (i : Fin (genus X)) (k : ℕ), k < n →
+      (∫ t in (s k)..(s (k+1)), (periodBasisForm X i).toFun (δ' t) (pathSpeed δ' t)) =
+      (∫ t in (s k)..(s (k+1)), (periodBasisForm X i).toFun (δ t) (pathSpeed δ t))) :
+    periodVec δ' = periodVec δ := by
+  funext i
+  show lineIntegral (periodBasisForm X i) δ' = lineIntegral (periodBasisForm X i) δ
+  unfold lineIntegral
+  have hint_δ : ∀ k, k < n → IntervalIntegrable
+      (fun t => (periodBasisForm X i).toFun (δ t) (pathSpeed δ t)) volume (s k) (s (k+1)) :=
+    fun k hk => (hδ.integrable i).mono_set (by
+      rw [Set.uIcc_of_le (zero_le_one)]; exact hs_sub k hk)
+  have hint_δ' : ∀ k, k < n → IntervalIntegrable
+      (fun t => (periodBasisForm X i).toFun (δ' t) (pathSpeed δ' t)) volume (s k) (s (k+1)) :=
+    fun k hk => (hδ'.integrable i).mono_set (by
+      rw [Set.uIcc_of_le (zero_le_one)]; exact hs_sub k hk)
+  have htel_δ := intervalIntegral.sum_integral_adjacent_intervals (a := s) (n := n)
+    (f := fun t => (periodBasisForm X i).toFun (δ t) (pathSpeed δ t)) hint_δ
+  have htel_δ' := intervalIntegral.sum_integral_adjacent_intervals (a := s) (n := n)
+    (f := fun t => (periodBasisForm X i).toFun (δ' t) (pathSpeed δ' t)) hint_δ'
+  rw [hs0, hsn] at htel_δ htel_δ'
+  rw [← htel_δ, ← htel_δ']
+  exact Finset.sum_congr rfl (fun k hk => hpiece i k (Finset.mem_range.mp hk))
+
+end Jacobians
