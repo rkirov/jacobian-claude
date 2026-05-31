@@ -826,6 +826,110 @@ lemma pathSpeed_ChartBallPathSmooth3_one (w P Q : X)
   show Jacobians.pathSpeed (Jacobians.ChartBallPath w P Q ∘ Jacobians.smoothStep01) 1 = 0
   rw [h, Jacobians.smoothStep01_deriv_one]; simp
 
+/-! ### A4. Balanced binary glue of `2^d` flat-ended pieces
+
+The off-branch loop `δ'` is assembled from per-sub-interval detours by a **balanced binary
+concatenation** of `2^d` pieces. Because `Jacobians.concat` always splits the parameter at `1/2`,
+balanced (rather than right-linear) nesting makes the `k`-th piece occupy *exactly* the uniform
+dyadic sub-interval `[k/2^d, (k+1)/2^d]`, and the split points align with the dyadic breakpoints —
+so the whole construction reuses the proven `concat` suite with **no** variable-split-point or affine
+reparametrization machinery.
+
+`balancedGlue g d` glues `g 0, …, g (2^d - 1)`. Every piece is flat-ended (zero endpoint velocity),
+so each `concat` junction is C¹ for free (`IsSmoothPath.concat`). The fundamental
+`balancedGlue_apply_of_mem` reads off the value on the `k`-th dyadic interval as `g k` affinely
+reparametrized by `t ↦ 2^d · t − k`. -/
+
+/-- Balanced binary concatenation of `2^d` paths `g 0, …, g (2^d-1)` (split always at the midpoint,
+so pieces land on uniform dyadic sub-intervals). -/
+noncomputable def balancedGlue (g : ℕ → ℝ → X) : ℕ → ℝ → X
+  | 0 => g 0
+  | (d+1) => Jacobians.concat (balancedGlue g d) (balancedGlue (fun k => g (2^d + k)) d)
+
+@[simp] lemma balancedGlue_zero (g : ℕ → ℝ → X) : balancedGlue g 0 = g 0 := rfl
+
+lemma balancedGlue_succ (g : ℕ → ℝ → X) (d : ℕ) :
+    balancedGlue g (d+1) =
+      Jacobians.concat (balancedGlue g d) (balancedGlue (fun k => g (2^d + k)) d) := rfl
+
+/-- **Value of the balanced glue on the `k`-th dyadic sub-interval.** For `k < 2^d` and
+`t ∈ [k/2^d, (k+1)/2^d]`, the glue equals `g k` reparametrized affinely by `t ↦ 2^d·t − k`.
+The chaining hypothesis `hchain` (consecutive pieces share their shared node value) handles the
+junctions, which `concat` resolves by its left branch. -/
+lemma balancedGlue_apply_of_mem (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
+    (d : ℕ) (k : ℕ) (hk : k < 2^d) (t : ℝ)
+    (ht0 : (k : ℝ) / 2^d ≤ t) (ht1 : t ≤ ((k : ℝ) + 1) / 2^d) :
+    balancedGlue g d t = g k ((2:ℝ)^d * t - k) := by
+  induction d generalizing g k t with
+  | zero =>
+    have hk0 : k = 0 := by omega
+    subst hk0
+    simp only [balancedGlue_zero, pow_zero, Nat.cast_zero, one_mul, sub_zero]
+  | succ d ih =>
+    have h2d : (0:ℝ) < 2^d := by positivity
+    rw [balancedGlue_succ]
+    rcases lt_or_ge k (2^d) with hklt | hkge
+    · -- left half: k < 2^d, so t ≤ 1/2.
+      have hk1 : ((k:ℝ) + 1) ≤ 2^d := by exact_mod_cast hklt
+      have ht0' : (k:ℝ) / 2^d ≤ 2 * t := by
+        have h := ht0; rw [pow_succ, div_le_iff₀ (by positivity)] at h
+        rw [div_le_iff₀ h2d]; nlinarith
+      have ht1' : 2 * t ≤ ((k:ℝ) + 1) / 2^d := by
+        have h := ht1; rw [pow_succ, le_div_iff₀ (by positivity)] at h
+        rw [le_div_iff₀ h2d]; nlinarith
+      have ht_le_half : t ≤ 1/2 := by
+        have : 2 * t ≤ ((k:ℝ)+1) / 2^d := ht1'
+        rw [le_div_iff₀ h2d] at this; nlinarith
+      rw [Jacobians.concat_apply_left _ _ ht_le_half, ih g hchain k hklt (2*t) ht0' ht1']
+      rw [pow_succ]; ring_nf
+    · -- right half: 2^d ≤ k < 2^(d+1).
+      have hk2 : k < 2^d + 2^d := by have := hk; rw [pow_succ] at this; omega
+      set k' := k - 2^d with hk'_def
+      have hkk' : k = 2^d + k' := by omega
+      have hk'lt : k' < 2^d := by omega
+      have hk_cast : (k:ℝ) = 2^d + k' := by rw [hkk']; push_cast; ring
+      have ht_ge_half : (1:ℝ)/2 ≤ t := by
+        have h := ht0; rw [pow_succ, div_le_iff₀ (by positivity)] at h
+        have hkge' : (2:ℝ)^d ≤ k := by exact_mod_cast hkge
+        nlinarith
+      rcases eq_or_lt_of_le ht_ge_half with hhalf | hgt
+      · -- t = 1/2: must be the left node k = 2^d, k' = 0; resolved by chaining.
+        have ht_le : t ≤ 1/2 := le_of_eq hhalf.symm
+        rw [Jacobians.concat_apply_left _ _ ht_le]
+        have hk_eq : k = 2^d := by
+          have hlo : (k:ℝ) / 2^(d+1) ≤ 1/2 := by rw [← hhalf]; exact ht0
+          rw [pow_succ, div_le_iff₀ (by positivity)] at hlo
+          have : (k:ℝ) ≤ 2^d := by nlinarith
+          have hkle : k ≤ 2^d := by exact_mod_cast this
+          omega
+        have h2t1 : 2 * t = 1 := by rw [← hhalf]; ring
+        rw [h2t1]
+        have h1le : 1 ≤ 2^d := Nat.one_le_two_pow
+        have hcastsub : ((2^d : ℕ) - 1 : ℕ) = (2^d : ℝ) - 1 := by
+          push_cast [Nat.cast_sub h1le]; ring
+        have hidx : (2^d : ℕ) - 1 < 2^d := by omega
+        have hlast : (2:ℝ)^d * 1 - (((2^d : ℕ) - 1 : ℕ) : ℝ) = 1 := by rw [hcastsub]; ring
+        rw [ih g hchain ((2^d : ℕ) - 1) hidx 1
+              (by rw [hcastsub, div_le_one h2d]; linarith)
+              (by rw [hcastsub, le_div_iff₀ h2d]; nlinarith), hlast]
+        have hrhs_arg : (2:ℝ)^(d+1) * t - k = 0 := by
+          rw [← hhalf, hk_eq]; push_cast [pow_succ]; ring
+        rw [hrhs_arg, hk_eq]
+        have hchain_last := hchain ((2^d : ℕ) - 1)
+        rwa [Nat.sub_add_cancel h1le] at hchain_last
+      · -- t > 1/2: right branch.
+        rw [Jacobians.concat_apply_right _ _ (not_le.mpr hgt)]
+        have ht0' : (k':ℝ) / 2^d ≤ 2 * t - 1 := by
+          have h := ht0; rw [pow_succ, div_le_iff₀ (by positivity)] at h
+          rw [hk_cast] at h; rw [div_le_iff₀ h2d]; nlinarith
+        have ht1' : 2 * t - 1 ≤ ((k':ℝ) + 1) / 2^d := by
+          have h := ht1; rw [pow_succ, le_div_iff₀ (by positivity)] at h
+          rw [hk_cast] at h; rw [le_div_iff₀ h2d]; nlinarith
+        rw [ih (fun j => g (2^d + j)) (fun j => hchain (2^d + j)) k' hk'lt (2*t-1) ht0' ht1']
+        congr 1
+        · rw [hkk']
+        · rw [hk_cast, pow_succ]; push_cast; ring
+
 end Jacobians.OfCurveSkeleton
 
 namespace Jacobians
