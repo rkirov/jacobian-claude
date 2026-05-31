@@ -134,20 +134,42 @@ needed* for the little-o.
   (`Tendsto c.symm (𝓝[≠] z₀) (𝓝[≠] y₀)`), fully proven.
 
 **One isolated `sorry` remains — `traceLocalCoeff_mul_sub_tendsto_zero_Y`** (the manifold side):
-`(c y − c y₀)·traceLocalCoeff (traceFun f α) y₀ y → 0` as `y → y₀`. Its internal decomposition
-(recorded in its docstring) is now **soft** (no missing analytic content):
-1. *Norm bound* `‖traceLocalCoeff coeff y₀ y‖ ≤ B·‖coeff y‖` near `y₀` — `B` bounds the fixed
-   trivialization `symmL` near `y₀` (`= id` at `y₀` by `tangent_symmL_center`). [needs general
-   `symmL` continuity for the ℂ tangent bundle — Mathlib's `Riemannian.lean` has only the real
-   inner-product version; mild plumbing.]
-2. *Per-preimage estimate* via the **scalar map `g := c ∘ f : X → ℂ`** (model-space target ⟹
-   trivial target chart, avoiding the varying-chart problem): `mfderiv g x = fderiv ℂ F (c_{x_j}
-   x)` for the FIXED `F = c∘f∘chart_{x_j}.symm` (the `LineIntegral.lean` `h_mfderiv` pattern), and
-   `mfderiv g = mfderiv c · mfderiv f` gives `‖(mfderiv f x)⁻¹‖ = |mfderiv c (fx)|·|F'(w)|⁻¹`;
-   feed `sub_div_deriv_tendsto_zero` (PROVEN) + boundedness of `mfderiv c` near `y₀`.
-3. *Assembly*: properness (`X` compact ⟹ `f⁻¹W ⊆ ⋃_j U_j` near `y₀`) + uniform off-branch fibre
-   cardinality (`= deg f`; repo degree theory) reduce the finite fibre sum to finitely many
-   `→ 0` terms.
+`(c y − c y₀)·traceLocalCoeff (traceFun f α) y₀ y → 0` as `y → y₀`.
+
+### ⚠ CORRECTION (2026-05-31, adversarial subagent check) — the naive decomposition was UNSOUND
+
+The earlier "norm bound `‖traceLocalCoeff coeff y₀ y‖ ≤ B·‖coeff y‖` (uniform `B`)" step is
+**mathematically false**. A free `∀ φ` bound is *equivalent* to local boundedness of the
+bare-fibre coordinate `symmL(tangentTriv y₀) y 1`, which is exactly the genus≥2 obstruction
+(`CotangentCoeff.lean` `const_one_section_continuous_of_coordChange_fixes_one`): the constant
+native-frame section is discontinuous, and there is **no Riemannian metric on `TY`** (so no
+compactness rescue, and `TangentSpace 𝓘(ℂ) y` carries no `Norm` instance). Confirmed three ways
+by the subagent (`fun_prop` fails; `continuousAt_hom_bundle` reduces it to the obstruction; only
+the *total-space* section is continuous, with no continuous bare-fibre extraction). **So one must
+not split the `inCoordinates`/`symmL` factor off the operator norm.**
+
+### Corrected approach — exact per-preimage local coefficient (no missing math)
+
+The `symmL` and `(mfderiv f x)⁻¹` factors **cancel** when the application
+`inCoordinates(…)(traceSummand f α x) 1` is kept together and computed exactly in ONE fixed
+chart. Off-branch `traceLocalCoeff (traceFun f α) y₀ y = ∑_{x∈f⁻¹y} inCoordinates(…)(traceSummand
+f α x) 1` (additive). Each term equals **`a(w)·S'(z)`** where `S = chart_X ∘ s ∘ c.symm` is the
+local section in charts, `z = c y`, `w = S(z)`, `a` = `α`'s `chart_X`-coefficient; since `S = F⁻¹`
+for `F = c∘f∘chart_X.symm`, `S'(z) = 1/F'(w)`, so the term is `a(w)/F'(w)` — *no `symmL` factor*.
+Then `(z−c y₀)·a(w)/F'(w) = a(w)·(F(w)−c y₀)/F'(w) → 0` by `sub_div_deriv_tendsto_zero` (PROVEN).
+The exact value comes from `apply_eq_inCoordinates` (CotangentCoeff) + the operator identity inside
+`contMDiffAt_pullback_section` (`inCoordinates(sheetPullback) = inCoordinates_X(α) ∘
+inCoordinates(mfderiv s)`), evaluated at `1`; the chart-matrix of `mfderiv f x` from `chartAt x`
+to `c = chartAt y₀` is `F'(w)` (= `mfderiv (c∘f) x 1` by the proven bridge below).
+
+**PROVEN foundations (in `TraceForm.lean`, commit `10fc1d0`):**
+- `norm_inverse_clm`: `‖T.inverse‖ = ‖T 1‖⁻¹` on `ℂ →L[ℂ] ℂ` (unconditional).
+- `mfderiv_apply_one_eq_deriv_chartPullback`: `mfderiv h x 1 = deriv (h ∘ chart.symm) (chart x)`
+  for `h : X → ℂ` (the `LineIntegral.lean :: h_mfderiv` pattern, target = model space `ℂ`).
+
+**Remaining:** (1) the exact per-preimage value `inCoordinates(…)(traceSummand f α x) 1 = a(w)/F'(w)`
+(the cotangent-coordinate computation — the real work), (2) the assembly: properness
+(`X` compact ⟹ `f⁻¹W ⊆ ⋃_j U_j`) + uniform off-branch fibre cardinality (`= deg f`).
 
 (The pre-existing #5 sorry `traceForm_comp` is unrelated to this plan and untouched.)
 
