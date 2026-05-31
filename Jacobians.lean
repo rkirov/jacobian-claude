@@ -430,13 +430,29 @@ regular value via `Classical.choice`. The witness existence
 `#print axioms`-clean), so for non-constant `f` the `else 0` fallback
 does **not** fire and the degree is a genuine regular-fibre cardinality.
 
-Remaining gaps (do not affect soundness of the *shape* `= deg • P` in
-`pushforward_pullback`, but matter for its quantitative meaning):
-(a) *positivity* — `degreeFiber f hf > 0` for non-constant `f` (needs
-surjectivity of proper non-constant holomorphic maps); (b)
-*well-definedness* — independence of the chosen regular value. -/
+Both quantitative properties are now proven: *well-definedness* (independence of
+the chosen regular value) via the ported degree well-definedness
+(`Jacobians.degreeFiber_eq_card_of_regularWitness`), and *positivity*
+(`ContMDiff.degree_pos`, below). -/
 noncomputable def _root_.ContMDiff.degree (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
   Jacobians.degreeFiber f hf
+
+/-- **Positivity of the degree.** A non-constant holomorphic map between compact
+Riemann surfaces is surjective (`surjective_of_nonconstant`), so its chosen
+regular fibre is nonempty and finite — hence `0 < degree f hf`. -/
+theorem _root_.ContMDiff.degree_pos (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnc : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) : 0 < ContMDiff.degree f hf := by
+  have h : Nonempty (Jacobians.RegularValueWitnessReg f) :=
+    Jacobians.regularValueWitnessReg_nonempty_of_nonConstantMap f hf hnc
+  have key : ContMDiff.degree f hf = (Classical.choice h).card :=
+    Jacobians.Discharge.ContMDiff.degreeFiber_eq_witness_card f hf hnc h
+  have hcard : (Classical.choice h).card
+      = (f ⁻¹' {(Classical.choice h).toWitness.value}).ncard :=
+    (Classical.choice h).toWitness.card_eq_ncard
+  rw [key, hcard, Set.ncard_pos (Classical.choice h).toWitness.fiber_finite]
+  obtain ⟨x, hx⟩ := Jacobians.surjective_of_nonconstant f hf hnc
+    (Classical.choice h).toWitness.value
+  exact ⟨x, hx⟩
 
 -- `ambientPhi_ambientPullback_eq` (the ambient degree identity `Mᵀ Tᵀ = deg • I`)
 -- is proven below, after the keystone `ambientPhi_ambientPullback_periodVec_of_cycle`
