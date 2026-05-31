@@ -579,12 +579,17 @@ theorem contMDiffAt_traceFun_of_notMem_branchLocus (f : X → Y)
 
 We package the covector-valued trace as a map into the cotangent-bundle total space
 (`traceTotalSpaceMk`) so we can speak of its `ContMDiff`ness directly, and we define the
-*canonical extension* `traceFunExt` that overwrites the (wrong) `finsum = 0` value
-at each branch point with the **removable-singularity limit** `limUnder (𝓝[≠] y₀)`.
+*canonical extension* `traceFunExt` that overwrites the (wrong) `finsum = 0` value at each
+branch point with the geometrically-correct **fixed-frame branch value** `traceBranchValue`
+(the removable-singularity limit of the *local coefficient*, read in the fixed `y₀`-chart —
+NOT the raw-operator limit, which is discontinuous for a non-trivial tangent bundle).
 
 Off the branch locus `traceFunExt = traceFun`; on a *punctured* neighborhood of a
 branch point they also agree (the branch locus is finite, so a punctured nhd avoids
-it). These two agreements are all the reduction lemma below needs. -/
+it). These two agreements are all the reduction lemma below needs.
+
+The **local coefficient** `traceLocalCoeff` and the **center-frame identities** are placed
+first, since both `traceBranchValue` and `traceFunExt` are defined in terms of them. -/
 
 /-- The trace, packaged as a map into the **total space** of the cotangent bundle of
 `Y` (the shape consumed by `ContMDiffAt`/`ContMDiffSection`). `coeff` is the covector
@@ -597,14 +602,145 @@ noncomputable abbrev traceTotalSpaceMk (coeff : Y → (ℂ →L[ℂ] ℂ)) (y : 
     (E := fun y : Y => TangentSpace 𝓘(ℂ) y →L[ℂ] (Bundle.Trivial Y ℂ) y) (ℂ →L[ℂ] ℂ) y
     (coeff y)
 
+/-- **Local coefficient of the trace.** The coordinate of the (extended) trace section
+`coeff` read in the *fixed* hom-bundle trivialization at `y₀`, evaluated on the model basis
+vector `1 : ℂ`. Concretely `inCoordinates … y₀ y y₀ y (coeff y) (1 : ℂ) : ℂ`. This is the
+continuous/holomorphic object (unlike the raw `(coeff y) 1`); the trace section is
+`ContMDiffAt`/`ContinuousAt` at `y₀` **iff** this scalar is, by `contMDiffAt_hom_bundle`. We
+define it for an arbitrary coefficient so it can be applied to both `traceFun` and
+`traceFunExt`. -/
+noncomputable def traceLocalCoeff (coeff : Y → (ℂ →L[ℂ] ℂ)) (y₀ y : Y) : ℂ :=
+  ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+    y₀ y y₀ y (coeff y) (1 : ℂ)
+
+/-- A `ℂ →L[ℂ] ℂ` operator is its value-at-`1` times the identity: `φ = (φ 1) • id`. The
+elementary fact underlying the reconstruction of an operator-valued chart coordinate from
+its scalar coordinate. -/
+theorem clm_eq_apply_one_smul_id (φ : ℂ →L[ℂ] ℂ) :
+    φ = (φ (1 : ℂ)) • ContinuousLinearMap.id ℂ ℂ := by
+  apply ContinuousLinearMap.ext_ring
+  simp
+
+/-- **Tangent trivialization is the identity at its own center.** The fixed `y₀`-tangent
+trivialization's fiber coordinate map `continuousLinearMapAt … y₀` is `id` (the chart-transition
+derivative `D(chart ∘ chart.symm)` at the center is `D id = id`). This is the precise sense in
+which the *fixed* trivialization removes the chart-frame discontinuity at `y₀`. -/
+theorem tangent_continuousLinearMapAt_center (y₀ : Y) :
+    (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := Y)) y₀).continuousLinearMapAt ℂ y₀
+      = ContinuousLinearMap.id ℂ ℂ := by
+  apply ContinuousLinearMap.ext_ring
+  change (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := Y)) y₀).continuousLinearMapAt ℂ y₀ _ = _
+  rw [(trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := Y)) y₀).continuousLinearMapAt_apply_of_mem ℂ
+    (mem_baseSet_trivializationAt ℂ _ y₀), TangentBundle.trivializationAt_apply]
+  -- The fiber map at the center is `fderivWithin (e ∘ e.symm) (range I) (e y₀) 1`,
+  -- with `e := extChartAt 𝓘(ℂ) y₀`; and `e ∘ e.symm = id` on `e.target ∈ 𝓝 (e y₀)`.
+  show (fderivWithin ℂ (extChartAt 𝓘(ℂ) y₀ ∘ (extChartAt 𝓘(ℂ) y₀).symm)
+      (Set.range (𝓘(ℂ) : ModelWithCorners ℂ ℂ ℂ)) (extChartAt 𝓘(ℂ) y₀ y₀)) 1 = (1 : ℂ)
+  rw [ModelWithCorners.range_eq_univ]
+  have hev : ((extChartAt 𝓘(ℂ) y₀) ∘ (extChartAt 𝓘(ℂ) y₀).symm : ℂ → ℂ)
+      =ᶠ[𝓝 (extChartAt 𝓘(ℂ) y₀ y₀)] id := by
+    filter_upwards [extChartAt_target_mem_nhds (I := 𝓘(ℂ)) y₀] with z hz
+    simp only [Function.comp_apply, id_eq]; exact (extChartAt 𝓘(ℂ) y₀).right_inv hz
+  rw [fderivWithin_univ, hev.fderiv_eq, fderiv_id, ContinuousLinearMap.id_apply]
+
+/-- The inverse tangent trivialization `symmL … y₀` is also `id` at the center (inverse of
+`tangent_continuousLinearMapAt_center`). -/
+theorem tangent_symmL_center (y₀ : Y) :
+    (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := Y)) y₀).symmL ℂ y₀
+      = ContinuousLinearMap.id ℂ ℂ := by
+  have h := (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := Y)) y₀).symmL_continuousLinearMapAt
+    (R := ℂ) (mem_baseSet_trivializationAt ℂ _ y₀)
+  rw [tangent_continuousLinearMapAt_center] at h
+  -- `h : ∀ y, symmL(…) (id y) = y`, i.e. `symmL(…) v = v`; conclude the operator equals `id`.
+  refine ContinuousLinearMap.ext (fun v => ?_)
+  simpa using h v
+
+/-- **The fixed-frame coordinate change is the identity AT the center `y₀`.** For the cotangent
+hom-bundle, `inCoordinates … y₀ y₀ y₀ y₀ φ = φ`: at the center both the source (tangent) and
+target (trivial) coordinate changes are `id`. Consequently the *local coefficient* read at the
+center recovers the raw value, `traceLocalCoeff coeff y₀ y₀ = (coeff y₀) 1`
+(`traceLocalCoeff_center`). This is what makes the branch value `L • id` self-consistent: its
+local coefficient at `y₀` is exactly `L`. -/
+theorem inCoordinates_center_self (φ : ℂ →L[ℂ] ℂ) (y₀ : Y) :
+    ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+      y₀ y₀ y₀ y₀ φ = φ := by
+  simp only [ContinuousLinearMap.inCoordinates, Bundle.Trivial.fiberBundle_trivializationAt',
+    Bundle.Trivial.continuousLinearMapAt_trivialization, ContinuousLinearMap.id_comp,
+    tangent_symmL_center]
+  exact ContinuousLinearMap.comp_id φ
+
+/-- **Local coefficient at the center recovers the raw value-at-`1`.** Immediate from
+`inCoordinates_center_self`. -/
+theorem traceLocalCoeff_center (coeff : Y → (ℂ →L[ℂ] ℂ)) (y₀ : Y) :
+    traceLocalCoeff coeff y₀ y₀ = (coeff y₀) (1 : ℂ) := by
+  rw [traceLocalCoeff, inCoordinates_center_self]
+
+/-- **`inCoordinates` of the cotangent hom-bundle, value-at-`1`, is additive in the operator.**
+The target trivial-bundle coordinate `continuousLinearMapAt` is `id`, so `inCoordinates … φ 1`
+reduces to `φ (symmL … 1)`, additive in `φ`. -/
+theorem inCoordinates_apply_one_add (φ ψ : ℂ →L[ℂ] ℂ) (y₀ y : Y) :
+    ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+        y₀ y y₀ y (φ + ψ) (1 : ℂ)
+      = ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+          y₀ y y₀ y φ (1 : ℂ)
+        + ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+          y₀ y y₀ y ψ (1 : ℂ) := by
+  simp only [ContinuousLinearMap.inCoordinates, Bundle.Trivial.fiberBundle_trivializationAt',
+    Bundle.Trivial.continuousLinearMapAt_trivialization, ContinuousLinearMap.id_comp,
+    ContinuousLinearMap.comp_apply]
+  exact ContinuousLinearMap.add_apply φ ψ _
+
+/-- **`inCoordinates` value-at-`1` is ℂ-homogeneous in the operator.** Companion to
+`inCoordinates_apply_one_add`. -/
+theorem inCoordinates_apply_one_smul (a : ℂ) (φ : ℂ →L[ℂ] ℂ) (y₀ y : Y) :
+    ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+        y₀ y y₀ y (a • φ) (1 : ℂ)
+      = a • ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+          y₀ y y₀ y φ (1 : ℂ) := by
+  simp only [ContinuousLinearMap.inCoordinates, Bundle.Trivial.fiberBundle_trivializationAt',
+    Bundle.Trivial.continuousLinearMapAt_trivialization, ContinuousLinearMap.id_comp,
+    ContinuousLinearMap.comp_apply]
+  exact ContinuousLinearMap.smul_apply a φ _
+
+/-- **The local coefficient is additive in the operator value.** The local coefficient of a
+pointwise sum of coefficient functions splits (from `inCoordinates_apply_one_add`). Used for
+ℂ-linearity of the trace at branch points, read in the fixed frame. -/
+theorem traceLocalCoeff_add (g h : Y → (ℂ →L[ℂ] ℂ)) (y₀ y : Y) :
+    traceLocalCoeff (fun y => g y + h y) y₀ y
+      = traceLocalCoeff g y₀ y + traceLocalCoeff h y₀ y :=
+  inCoordinates_apply_one_add (g y) (h y) y₀ y
+
+/-- **The local coefficient is ℂ-homogeneous in the operator value.** Companion to
+`traceLocalCoeff_add`. -/
+theorem traceLocalCoeff_smul (a : ℂ) (g : Y → (ℂ →L[ℂ] ℂ)) (y₀ y : Y) :
+    traceLocalCoeff (fun y => a • g y) y₀ y = a • traceLocalCoeff g y₀ y :=
+  inCoordinates_apply_one_smul a (g y) y₀ y
+
+/-- **Branch value of the trace, in the fixed `y₀`-frame.** At a branch point `y₀` the operator
+`traceFun f α y` (read in the *varying* chart at `y`) is genuinely discontinuous as `y → y₀` for a
+non-trivial tangent bundle (genus ≥ 2; the `CotangentCoeff.lean` obstruction), so the naive
+operator `limUnder` is junk. The geometrically-correct value is built from the **local
+coefficient** read in the FIXED `y₀`-chart: take its removable-singularity limit `L` (a scalar in
+`ℂ`, the chart-pullback `limUnder` of `z ↦ traceLocalCoeff (traceFun f α) y₀ (chart⁻¹ z)`) and
+package it as the operator `L • id`. By `traceLocalCoeff_center`, this operator's own local
+coefficient at `y₀` is exactly `L`, so the extension is self-consistent and its section is the
+continuous bundle-extension. -/
+noncomputable def traceBranchValue (f : X → Y) (α : HolomorphicOneForms X) (y₀ : Y) :
+    ℂ →L[ℂ] ℂ :=
+  (limUnder (𝓝[≠] ((chartAt ℂ y₀) y₀))
+      (fun z => traceLocalCoeff (traceFun f α) y₀ ((chartAt ℂ y₀).symm z)))
+    • ContinuousLinearMap.id ℂ ℂ
+
 /-- **Canonical branch extension of the trace coefficient.** Equal to the fibre sum
-`traceFun f α` off the branch locus, and to the removable-singularity limit
-`limUnder (𝓝[≠] y) (traceFun f α)` at each branch point (where the naive `finsum` is
-`0`). The membership test is decidable via `Classical.dec`. -/
+`traceFun f α` off the branch locus, and to the **fixed-frame branch value** `traceBranchValue`
+at each branch point (where the naive `finsum` is `0`). At a branch point the branch value is
+read in the fixed `y₀`-trivialization (the local coefficient), NOT as the raw-operator limit — the
+latter is discontinuous for a non-trivial tangent bundle. The membership test is decidable via
+`Classical.dec`. -/
 noncomputable def traceFunExt (f : X → Y) (α : HolomorphicOneForms X) (y : Y) :
     ℂ →L[ℂ] ℂ := by
   classical
-  exact if y ∈ branchLocus f then limUnder (𝓝[≠] y) (traceFun f α) else traceFun f α y
+  exact if y ∈ branchLocus f then traceBranchValue f α y else traceFun f α y
 
 /-- Off the branch locus, the extension is the raw fibre sum. -/
 theorem traceFunExt_of_notMem_branchLocus (f : X → Y) (α : HolomorphicOneForms X)
@@ -612,6 +748,25 @@ theorem traceFunExt_of_notMem_branchLocus (f : X → Y) (α : HolomorphicOneForm
     traceFunExt f α y = traceFun f α y := by
   classical
   rw [traceFunExt, if_neg hy]
+
+/-- At a branch point, the extension is the fixed-frame branch value. -/
+theorem traceFunExt_of_mem_branchLocus (f : X → Y) (α : HolomorphicOneForms X)
+    {y : Y} (hy : y ∈ branchLocus f) :
+    traceFunExt f α y = traceBranchValue f α y := by
+  classical
+  rw [traceFunExt, if_pos hy]
+
+/-- **At a branch point the extension operator is `(local coefficient) • id`.** Since the branch
+value is `L • id` and `traceLocalCoeff (L • id) y y = L` (`traceLocalCoeff_center`), the operator
+`traceFunExt f α y` is recovered from its own (scalar, linear-in-`α`) local coefficient. This is
+the bridge that turns the ℂ-linearity of the *scalar* local coefficient into ℂ-linearity of the
+*operator* extension at branch points. -/
+theorem traceFunExt_branchPoint_eq_smul_id (f : X → Y) (α : HolomorphicOneForms X)
+    {y : Y} (hy : y ∈ branchLocus f) :
+    traceFunExt f α y = (traceLocalCoeff (traceFunExt f α) y y) • ContinuousLinearMap.id ℂ ℂ := by
+  rw [traceLocalCoeff_center, traceFunExt_of_mem_branchLocus f α hy, traceBranchValue]
+  -- `(L • id) 1 = L`, so the RHS is `((L • id) 1) • id = L • id = traceBranchValue`.
+  simp
 
 /-- A punctured neighborhood of any point `y₀` **eventually avoids the branch locus**:
 the branch locus is finite (hence `branchLocus f \ {y₀}` is closed), so its complement
@@ -680,31 +835,43 @@ analytic input. The input, `hext`, packages — for each form `α` and each bran
 
 * `hsmooth`: the extended bundle section is `ContMDiffAt` at `y₀` (the *holomorphic*
   extension; from boundedness + Mathlib's removable singularity, then bundle regluing);
-* `hcont`: the extension coefficient `traceFunExt f α : Y → (ℂ →L[ℂ] ℂ)` is `ContinuousAt`
-  at `y₀` (the weaker *continuous* extension — the shadow of `hsmooth`).
+* `hcont`: the extension's **fixed-frame local coefficient**
+  `y ↦ traceLocalCoeff (traceFunExt f α) y₀ y` is `ContinuousAt y₀` (the *continuous*
+  extension, in the fixed `y₀`-trivialization — the shadow of `hsmooth`).
 
-Both are consequences of the single analytic crux (local boundedness of the trace near
-a branch point, §1 of the assembly docstring); we keep them as the hypothesis so the
-regluing **and** the full ℂ-linearity of `T` are proven here, unconditionally. -/
+**Crucial soundness point.** `hcont` is phrased in the FIXED frame (the local coefficient),
+NOT as continuity of the raw operator `traceFunExt f α : Y → (ℂ →L[ℂ] ℂ)` in the model fibre.
+The latter is *provably false* for a non-trivial tangent bundle (genus ≥ 2): the operator is read
+in the *varying* chart at `y`, whose transition factor is discontinuous (`CotangentCoeff.lean`).
+The ℂ-linearity argument below is therefore re-derived in the fixed frame: at a branch point each
+operator equals `(local coefficient) • id` (`traceFunExt_branchPoint_eq_smul_id`), and the scalar
+local coefficients are additive/homogeneous by a unique-limit argument using `hcont`. This is
+both true and sufficient.
+
+Both `hsmooth` and `hcont` are consequences of the single analytic crux (local boundedness of
+the trace near a branch point, §1 of the assembly docstring); we keep them as the hypothesis so
+the regluing **and** the full ℂ-linearity of `T` are proven here, unconditionally. -/
 
 /-- **Reduction lemma for the trace.** Given the per-branch-point extension data `hext`
-(holomorphic-extension smoothness + continuity at each branch point, for every form),
-the trace `f₊ : Ω¹(X) →ₗ[ℂ] Ω¹(Y)` exists as a genuine holomorphic-one-form linear map
-agreeing with the off-branch fibre sum `traceFun`.
+(holomorphic-extension smoothness + fixed-frame local-coefficient continuity at each branch
+point, for every form), the trace `f₊ : Ω¹(X) →ₗ[ℂ] Ω¹(Y)` exists as a genuine
+holomorphic-one-form linear map agreeing with the off-branch fibre sum `traceFun`.
 
 Everything here is proven outright:
 * **Section assembly**: `traceFunExt f α` is a global `ContMDiffSection` — off-branch from
   `contMDiffAt_traceSection_ext_of_notMem_branchLocus`, at branch points from `hext`.
-* **Linearity**: at a branch point the extension value is the *unique* limit of `traceFun`
-  along the punctured neighborhood (`neBot_nhdsWithin_compl_self` + `tendsto_nhds_unique`),
-  and limits respect `+`/`•`; off-branch the fibre sum is already additive/homogeneous
-  (`traceFun_add_of_notMem_branchLocus`, `traceFun_smul_of_notMem_branchLocus`). -/
+* **Linearity**: at a branch point the extension operator is `(local coefficient) • id`, and the
+  *scalar* local coefficient is the *unique* fixed-frame limit of the raw trace's local
+  coefficient along the punctured neighborhood (`neBot_nhdsWithin_compl_self` +
+  `tendsto_nhds_unique`); limits respect `+`/`•` and the local coefficient is linear in the
+  operator (`inCoordinates_apply_one_add/smul`); off-branch the fibre sum is already
+  additive/homogeneous (`traceFun_add_of_notMem_branchLocus`, `…_smul_…`). -/
 theorem exists_traceForm_of_branchExtension (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (hext : ∀ (α : HolomorphicOneForms X) (y₀ : Y), y₀ ∈ branchLocus f →
       ContMDiffAt 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
           (traceTotalSpaceMk (traceFunExt f α)) y₀ ∧
-        ContinuousAt (traceFunExt f α) y₀) :
+        ContinuousAt (fun y => traceLocalCoeff (traceFunExt f α) y₀ y) y₀) :
     ∃ T : HolomorphicOneForms X →ₗ[ℂ] HolomorphicOneForms Y,
       ∀ (α : HolomorphicOneForms X) (y : Y), y ∉ branchLocus f →
         (T α).toFun y = traceFun f α y := by
@@ -719,26 +886,50 @@ theorem exists_traceForm_of_branchExtension (f : X → Y) (hf : ContMDiff 𝓘(�
   -- The underlying section assignment `α ↦ ⟨traceFunExt f α, …⟩`.
   set T₀ : HolomorphicOneForms X → HolomorphicOneForms Y :=
     fun α => ⟨traceFunExt f α, hsmooth α⟩ with hT₀_def
-  -- `traceFunExt f α y` is the unique punctured-nhd limit of `traceFun f α` at a branch
-  -- point: it is `ContinuousAt` (hence tends to its value along `𝓝[≠]`) and equals the
-  -- raw fibre sum on the punctured neighborhood.
-  have htendsto : ∀ (α : HolomorphicOneForms X) {y₀ : Y}, y₀ ∈ branchLocus f →
-      Filter.Tendsto (traceFun f α) (𝓝[≠] y₀) (𝓝 (traceFunExt f α y₀)) := by
+  -- **Local-coefficient convergence (the SOUND replacement for raw-operator convergence).**
+  -- At a branch point `y₀`, the *fixed-frame* local coefficient of the raw trace converges to
+  -- that of the extension: `hext`'s fixed-frame continuity gives the limit, and on the punctured
+  -- neighborhood the extended local coefficient agrees with the raw one (off-branch they are
+  -- equal). NB the raw OPERATOR does NOT converge in `ℂ →L[ℂ] ℂ` (genus ≥ 2 obstruction); only
+  -- this fixed-frame scalar does — which is exactly what powers ℂ-linearity at branch points.
+  have htendstoLC : ∀ (α : HolomorphicOneForms X) {y₀ : Y}, y₀ ∈ branchLocus f →
+      Filter.Tendsto (fun y => traceLocalCoeff (traceFun f α) y₀ y) (𝓝[≠] y₀)
+        (𝓝 (traceLocalCoeff (traceFunExt f α) y₀ y₀)) := by
     intro α y₀ hy₀
-    have hca : Filter.Tendsto (traceFunExt f α) (𝓝[≠] y₀) (𝓝 (traceFunExt f α y₀)) :=
+    have hca : Filter.Tendsto (fun y => traceLocalCoeff (traceFunExt f α) y₀ y) (𝓝[≠] y₀)
+        (𝓝 (traceLocalCoeff (traceFunExt f α) y₀ y₀)) :=
       ((hext α y₀ hy₀).2.continuousWithinAt (s := {y₀}ᶜ))
-    exact hca.congr' (traceFunExt_eventuallyEq_traceFun f hf hnonconst α y₀)
+    refine hca.congr' ?_
+    -- On `𝓝[≠] y₀` points are off-branch, where `traceFunExt = traceFun`, so the local
+    -- coefficients (which depend only on the coefficient at the point) agree.
+    filter_upwards [eventually_notMem_branchLocus f hf hnonconst y₀] with y hy_off
+    simp only [traceLocalCoeff, traceFunExt_of_notMem_branchLocus f α hy_off]
   -- Pointwise additivity of the extended coefficient (everywhere, incl. branch points).
   have hadd : ∀ (α β : HolomorphicOneForms X) (y : Y),
       traceFunExt f (α + β) y = traceFunExt f α y + traceFunExt f β y := by
     intro α β y
     by_cases hy : y ∈ branchLocus f
-    · -- Unique-limit argument: both sides are limits of `traceFun … ` along `𝓝[≠] y`.
-      refine tendsto_nhds_unique (htendsto (α + β) hy) ?_
-      have hsum := (htendsto α hy).add (htendsto β hy)
-      refine hsum.congr' ?_
-      filter_upwards [eventually_notMem_branchLocus f hf hnonconst y] with z hz_off
-      exact (traceFun_add_of_notMem_branchLocus f hf hnonconst α β hz_off).symm
+    · -- At a branch point each operator is `(local coeff) • id` (`…_eq_smul_id`); the scalar
+      -- local coefficients add by the unique-limit argument in the fixed frame.
+      have hLC : traceLocalCoeff (traceFunExt f (α + β)) y y
+          = traceLocalCoeff (traceFunExt f α) y y + traceLocalCoeff (traceFunExt f β) y y := by
+        refine tendsto_nhds_unique (htendstoLC (α + β) hy) ?_
+        have hsum := (htendstoLC α hy).add (htendstoLC β hy)
+        refine hsum.congr' ?_
+        filter_upwards [eventually_notMem_branchLocus f hf hnonconst y] with z hz_off
+        -- off-branch (at `z`): local coeff of `traceFun (α+β)` = sum, since `traceFun (α+β) z`
+        -- splits (`traceFun_add`) and `inCoordinates …·1` is additive in the operator.
+        have hoff : traceLocalCoeff (traceFun f (α + β)) y z
+            = traceLocalCoeff (traceFun f α) y z + traceLocalCoeff (traceFun f β) y z := by
+          simp only [traceLocalCoeff,
+            traceFun_add_of_notMem_branchLocus f hf hnonconst α β hz_off]
+          exact inCoordinates_apply_one_add (traceFun f α z) (traceFun f β z) y z
+        exact hoff.symm
+      rw [traceFunExt_branchPoint_eq_smul_id f (α + β) hy,
+          traceFunExt_branchPoint_eq_smul_id f α hy, traceFunExt_branchPoint_eq_smul_id f β hy,
+          hLC]
+      exact add_smul (traceLocalCoeff (traceFunExt f α) y y)
+        (traceLocalCoeff (traceFunExt f β) y y) (ContinuousLinearMap.id ℂ ℂ)
     · rw [traceFunExt_of_notMem_branchLocus f (α + β) hy,
         traceFunExt_of_notMem_branchLocus f α hy, traceFunExt_of_notMem_branchLocus f β hy,
         traceFun_add_of_notMem_branchLocus f hf hnonconst α β hy]
@@ -747,11 +938,20 @@ theorem exists_traceForm_of_branchExtension (f : X → Y) (hf : ContMDiff 𝓘(�
       traceFunExt f (c • α) y = c • traceFunExt f α y := by
     intro c α y
     by_cases hy : y ∈ branchLocus f
-    · refine tendsto_nhds_unique (htendsto (c • α) hy) ?_
-      have hsm := (htendsto α hy).const_smul c
-      refine hsm.congr' ?_
-      filter_upwards [eventually_notMem_branchLocus f hf hnonconst y] with z hz_off
-      exact (traceFun_smul_of_notMem_branchLocus f hf hnonconst c α hz_off).symm
+    · have hLC : traceLocalCoeff (traceFunExt f (c • α)) y y
+          = c • traceLocalCoeff (traceFunExt f α) y y := by
+        refine tendsto_nhds_unique (htendstoLC (c • α) hy) ?_
+        have hsm := (htendstoLC α hy).const_smul c
+        refine hsm.congr' ?_
+        filter_upwards [eventually_notMem_branchLocus f hf hnonconst y] with z hz_off
+        have hoff : traceLocalCoeff (traceFun f (c • α)) y z
+            = c • traceLocalCoeff (traceFun f α) y z := by
+          simp only [traceLocalCoeff,
+            traceFun_smul_of_notMem_branchLocus f hf hnonconst c α hz_off]
+          exact inCoordinates_apply_one_smul c (traceFun f α z) y z
+        exact hoff.symm
+      rw [traceFunExt_branchPoint_eq_smul_id f (c • α) hy,
+          traceFunExt_branchPoint_eq_smul_id f α hy, hLC, smul_assoc]
     · rw [traceFunExt_of_notMem_branchLocus f (c • α) hy,
         traceFunExt_of_notMem_branchLocus f α hy,
         traceFun_smul_of_notMem_branchLocus f hf hnonconst c α hy]
@@ -842,25 +1042,6 @@ the coordinate of the trace section in the *fixed `y₀`-trivialization*. This i
 object whose continuity/smoothness `Mathlib.contMDiffAt_hom_bundle` (`contMDiffAt_section`)
 governs, and which `continuousAt_inCoordinates` (in `CotangentCoeff.lean`) already shows is
 continuous wherever the section is smooth. -/
-
-/-- **Local coefficient of the trace.** The coordinate of the (extended) trace section
-`traceFunExt f α` read in the *fixed* hom-bundle trivialization at `y₀`, evaluated on the
-model basis vector `1 : ℂ`. Concretely `inCoordinates … y₀ y y₀ y (coeff y) (1 : ℂ) : ℂ`.
-This is the continuous/holomorphic object (unlike the raw `(coeff y) 1`); the trace
-section is `ContMDiffAt`/`ContinuousAt` at `y₀` **iff** this scalar is, by
-`contMDiffAt_hom_bundle`. We define it for an arbitrary coefficient so it can be applied to
-both `traceFun` and `traceFunExt`. -/
-noncomputable def traceLocalCoeff (coeff : Y → (ℂ →L[ℂ] ℂ)) (y₀ y : Y) : ℂ :=
-  ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
-    y₀ y y₀ y (coeff y) (1 : ℂ)
-
-/-- A `ℂ →L[ℂ] ℂ` operator is its value-at-`1` times the identity: `φ = (φ 1) • id`. The
-elementary fact underlying the reconstruction of an operator-valued chart coordinate from
-its scalar coordinate. -/
-theorem clm_eq_apply_one_smul_id (φ : ℂ →L[ℂ] ℂ) :
-    φ = (φ (1 : ℂ)) • ContinuousLinearMap.id ℂ ℂ := by
-  apply ContinuousLinearMap.ext_ring
-  simp
 
 /-- **Section lift from the local coefficient (the converse of `continuousAt_inCoordinates`).**
 If the scalar local coefficient `y ↦ traceLocalCoeff coeff y₀ y` is `ContMDiffAt` at `y₀`,
@@ -993,68 +1174,57 @@ theorem traceLocalCoeff_bddAbove (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(�
       (((chartAt ℂ y₀).target ∩ (chartAt ℂ y₀).symm ⁻¹' ((branchLocus f)ᶜ)) \ {(chartAt ℂ y₀) y₀})) :=
   sorry
 
-/-- **[ISOLATED SECONDARY SORRY — the `traceFunExt`-branch-value is in the correct frame; a
-`traceFunExt`-DESIGN gap, NOT a consequence of boundedness]**
+/-- **Branch-value local-coefficient matching (now PROVEN, no analytic input).** With the
+refactored `traceFunExt`, the branch value `traceFunExt f α y₀ = traceBranchValue f α y₀` is the
+operator `L • id`, where `L` is the chart-pullback removable-singularity limit of the *local
+coefficient* of the raw trace. The local coefficient of the extended trace at the center `y₀`
+recovers exactly `L`:
+`traceLocalCoeff (traceFunExt f α) y₀ y₀ = L = limUnder (𝓝[≠] (c y₀)) (z ↦ traceLocalCoeff (traceFun f α) y₀ (c⁻¹ z))`.
 
-Two facts asserting that the branch-point value `traceFunExt f α y₀` (defined as the raw
-operator limit `limUnder (𝓝[≠] y₀) (traceFun f α)`) is the *geometrically correct* extension:
-
-1. **Raw convergence** — `traceFun f α y → traceFunExt f α y₀` along `𝓝[≠] y₀` (so the raw
-   `limUnder` actually converges, giving conjunct 2's continuity).
-2. **Local-coefficient matching** — the local coefficient of the extended trace at `y₀`,
-   `traceLocalCoeff (traceFunExt f α) y₀ y₀`, equals the removable-singularity limit of the
-   chart-pulled-back local coefficient of the *raw* trace (giving conjunct 1's analytic match
-   at the puncture).
-
-**Why this is isolated separately from the boundedness crux.** The local-boundedness input
-`traceLocalCoeff_bddAbove` controls the *local coefficient* — the trace read in the **fixed
-`y₀`-trivialization** — the genuinely continuous/holomorphic object, which suffices for the
-*section*'s smoothness off `y₀` and for its removable extension. But the section's value AT
-`y₀` is fixed by `traceFunExt f α y₀`, which the current design takes to be the **raw**
-operator `limUnder`. The raw operator `traceFun f α y` is read in the *varying chart at `y`*:
-it equals `inCoordinates(traceFun f α y) ∘ clmAt(tangentTriv y₀) y`, whose second factor (the
-chart-transition derivative) is *discontinuous* in `y` for a non-trivial tangent bundle
-(genus ≥ 2; the obstruction isolated in `CotangentCoeff.lean`,
-`const_one_section_continuous_of_coordChange_fixes_one`). Hence the raw limit need not exist,
-and even granting it, its frame does not match the local-coefficient extension's — neither
-fact follows from boundedness.
-
-This is a **design issue in `traceFunExt`** (consumed by `exists_traceForm_of_branchExtension`
-via `htendsto`/`hext`): the branch value should be defined via the **local coefficient** (or
-as the *bundle-limit* of the section), not the raw-operator `limUnder`. With that fix both
-facts become provable from boundedness alone (the section converges in the bundle; its limit
-value, read locally, is the analytic extension). As stated against the current raw-operator
-`traceFunExt`, this is the precise residual gap. See the report and
-`docs/trace_branchpoint_plan.md`. -/
-theorem traceFunExt_branchValue_correct (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X)
-    {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
-    Filter.Tendsto (traceFun f α) (𝓝[≠] y₀) (𝓝 (traceFunExt f α y₀)) ∧
-      traceLocalCoeff (traceFunExt f α) y₀ y₀ =
+This is precisely the "local-coefficient matching" the section-smoothness bridge needs at the
+puncture, and it is now a **definitional consequence of the center-frame identity**
+`traceLocalCoeff_center` (`traceLocalCoeff (L • id) y₀ y₀ = (L • id) 1 = L`) — it requires *no*
+boundedness/analytic input. (The old, design-flawed "raw convergence" conjunct — `ContinuousAt`
+of the raw operator in the model fibre — was *provably false* for a non-trivial tangent bundle,
+genus ≥ 2; it has been removed, and `traceExtendsAt_branchPoint` now expresses continuity in the
+geometrically-correct *fixed frame*, see its statement.) -/
+theorem traceFunExt_branchValue_correct (f : X → Y)
+    (α : HolomorphicOneForms X) {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
+    traceLocalCoeff (traceFunExt f α) y₀ y₀ =
         limUnder (𝓝[≠] ((chartAt ℂ y₀) y₀))
-          (fun z => traceLocalCoeff (traceFun f α) y₀ ((chartAt ℂ y₀).symm z)) :=
-  sorry
+          (fun z => traceLocalCoeff (traceFun f α) y₀ ((chartAt ℂ y₀).symm z)) := by
+  rw [traceLocalCoeff_center, traceFunExt_of_mem_branchLocus f α hy₀, traceBranchValue]
+  simp
 
-/-- **[PROVEN MODULO the boundedness crux `traceLocalCoeff_bddAbove` and the raw-convergence
-input `traceFun_tendsto_branchExtension`]**
+/-- **[PROVEN MODULO the single boundedness crux `traceLocalCoeff_bddAbove`]**
 
 For every form `α` and every branch point `y₀ ∈ branchLocus f`, the canonical branch
 extension `traceFunExt f α` is, at `y₀`:
 * `ContMDiffAt` as a section of the cotangent bundle (the *holomorphic* extension), and
-* `ContinuousAt` as a coefficient `Y → (ℂ →L[ℂ] ℂ)` (the *continuous* extension).
+* `ContinuousAt` **in the fixed `y₀`-frame**, i.e. the local coefficient
+  `y ↦ traceLocalCoeff (traceFunExt f α) y₀ y` is `ContinuousAt y₀`.
 
-**Bridge structure.**
-* *Continuity (conjunct 2)* is the raw-convergence input `traceFun_tendsto_branchExtension`
-  transported through `traceFunExt =ᶠ[𝓝[≠] y₀] traceFun`.
-* *Section smoothness (conjunct 1)* is Mathlib's removable singularity theorem
-  (`Complex.differentiableOn_update_limUnder_of_bddAbove`,
-  `Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt`) applied to the
-  *local coefficient* read in the `y₀`-chart: it is holomorphic off `y₀` (off-branch section
-  smoothness, `contMDiffAt_traceLocalCoeff_of_notMem_branchLocus`, + the scalar chart bridges)
-  and bounded there (the crux `traceLocalCoeff_bddAbove`), hence extends analytically; its
-  value at `y₀` matches `traceLocalCoeff (traceFunExt f α) y₀ y₀` by the raw-convergence input.
-  The analytic local coefficient is lifted back to the section via
-  `contMDiffAt_traceTotalSpaceMk_of_localCoeff`.
+**Why the second conjunct is the *local coefficient*, not the raw operator.** The naive
+"`ContinuousAt (traceFunExt f α) y₀`" — continuity of the operator read in the *model fibre*
+`ℂ →L[ℂ] ℂ` — is **provably false** for a non-trivial tangent bundle (genus ≥ 2): the raw
+operator `traceFun f α y` is `inCoordinates(…) ∘ clmAt(tangentTriv y₀) y`, whose chart-transition
+factor is discontinuous (the `CotangentCoeff.lean` obstruction). The geometrically-correct
+continuity statement is continuity of the section *in the bundle*, equivalently continuity of
+its coordinate in the **fixed** `y₀`-trivialization — the local coefficient. (This is also
+exactly the *shadow* of the first conjunct: section `ContMDiffAt` ⟹ local-coeff `ContMDiffAt`
+⟹ `ContinuousAt`. The reduction lemma `exists_traceForm_of_branchExtension` consumes this
+fixed-frame continuity soundly; see its `htendsto` argument, which is now phrased in local
+coordinates.)
+
+**Bridge structure.** The whole proof is the single fact: the *local coefficient* read in the
+`y₀`-chart is `ContMDiffAt y₀`. It is holomorphic off `y₀` (off-branch section smoothness
+`contMDiffAt_traceLocalCoeff_of_notMem_branchLocus` + the scalar chart bridges) and **bounded**
+there (the crux `traceLocalCoeff_bddAbove`), so by Mathlib's removable singularity theorem
+(`Complex.differentiableOn_update_limUnder_of_bddAbove`, `DifferentiableOn.analyticAt`) it
+extends analytically across `y₀`; its value at `y₀` matches `traceLocalCoeff (traceFunExt f α)
+y₀ y₀` by `traceFunExt_branchValue_correct`. Then:
+* conjunct 1 lifts it to the section via `contMDiffAt_traceTotalSpaceMk_of_localCoeff`;
+* conjunct 2 is its `.continuousAt`.
 
 Everything *downstream* — the global `ContMDiffSection` regluing and the full ℂ-linearity of
 the trace — is proven unconditionally in `exists_traceForm_of_branchExtension`. -/
@@ -1063,7 +1233,7 @@ theorem traceExtendsAt_branchPoint (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(
     {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
     ContMDiffAt 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
         (traceTotalSpaceMk (traceFunExt f α)) y₀ ∧
-      ContinuousAt (traceFunExt f α) y₀ := by
+      ContinuousAt (fun y => traceLocalCoeff (traceFunExt f α) y₀ y) y₀ := by
   classical
   set c := chartAt ℂ y₀ with hc_def
   -- Abbreviations for the local coefficient of the raw / extended trace, and its chart pullback.
@@ -1071,21 +1241,14 @@ theorem traceExtendsAt_branchPoint (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(
   set Hext : Y → ℂ := fun y => traceLocalCoeff (traceFunExt f α) y₀ y with hHext
   set G : ℂ → ℂ := fun z => Hraw (c.symm z) with hG
   set z₀ : ℂ := c y₀ with hz₀
-  -- ============================ Conjunct 2: continuity (from the raw-convergence input) ====
-  obtain ⟨hraw, hmatch⟩ := traceFunExt_branchValue_correct f hf hnonconst α hy₀
-  have hcont : ContinuousAt (traceFunExt f α) y₀ := by
-    have hEq : traceFunExt f α =ᶠ[𝓝[≠] y₀] traceFun f α :=
-      traceFunExt_eventuallyEq_traceFun f hf hnonconst α y₀
-    -- `traceFunExt` tends to its own value along the punctured nbhd; it is also constant-value
-    -- continuous "at" `y₀` trivially, so it is `ContinuousAt`.
-    have hwithin : Filter.Tendsto (traceFunExt f α) (𝓝[≠] y₀) (𝓝 (traceFunExt f α y₀)) :=
-      hraw.congr' hEq.symm
-    rw [← continuousWithinAt_compl_self]
-    exact hwithin
-  refine ⟨?_, hcont⟩
-  -- ============================ Conjunct 1: section smoothness ==============================
-  -- Reduce the section to its scalar local coefficient `Hext`, then to chart-pullback analyticity.
-  apply contMDiffAt_traceTotalSpaceMk_of_localCoeff
+  -- The branch-value local-coefficient match (PROVEN, no analytic input).
+  have hmatch : Hext y₀ = limUnder (𝓝[≠] z₀) G :=
+    traceFunExt_branchValue_correct f α hy₀
+  -- **Main claim**: the extended local coefficient `Hext` is `ContMDiffAt y₀`. Both conjuncts
+  -- follow (conjunct 1 via the section-lift; conjunct 2 is its `ContinuousAt`).
+  suffices hlc : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ) ω Hext y₀ by
+    exact ⟨contMDiffAt_traceTotalSpaceMk_of_localCoeff (traceFunExt f α) hlc,
+      hlc.continuousAt⟩
   -- Goal: `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ,ℂ) ω (fun y => traceLocalCoeff (traceFunExt f α) y₀ y) y₀`.
   set L : ℂ := limUnder (𝓝[≠] z₀) G with hL
   have hBfin : (branchLocus f).Finite := finite_branchLocus_of_nonconstant f hf hnonconst
