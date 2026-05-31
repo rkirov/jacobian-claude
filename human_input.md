@@ -789,3 +789,43 @@ phase beats grinding at depth.
 `93b869c`/`0500e15`/`318b8c6`); `exists_preimageLoopFamily` docstring + plan doc +
 state memory corrected to show all analytic walls cleared — §3 is now pure geometry.
 Build green, all local commits.
+
+---
+
+## 2026-05-31 — Direction: "build a self-contained piece," then #8 full discharge via brsanch
+
+**User steering (sequence):** (1) After I surfaced the post-§3 fork, user picked
+**"build one self-contained piece"** over assume-and-derive / document. (2) Then:
+*"self-contained piece, drill down, but make sure it's a high value one — both deep
+in the dep chain and reachable; you mentioned deg being dead-end, remove the whole
+chain if never plan to use."* (3) Then `/effort max` + *"remember discharge was
+picked up from another repo /tmp/jacobian-brsanch so look around if there is more
+useful stuff there."*
+
+**What I did (judgment + verification, not blind execution):**
+- Confirmed `deg_div`→`PrincipalDivisors_le_DivisorOfDegZero`→∅ is genuinely dead
+  (grep'd consumers) and **deleted the chain** (`DivisorOfDegZero` stays — `abelJacobi`
+  uses it). Honest: did NOT just trust STATUS's "DEAD leaf" label, traced it.
+- Picked **#8 `ambientPhi_ambientPullback_eq`** as the deep+reachable target (headline
+  path `pushforward_pullback`; on-period case already proven). Verified the agent's
+  reachability survey myself on the hardest calls (#8 gated on #7; #5 off-path).
+- **Proved #8** (keystone → span_induction → §7 real-basis off-lattice), isolating the
+  sole remaining input to **#8′ `exists_preimageCycle_sheets_eq_degree`** = degree
+  well-definedness. Fought a `Module ℝ (Fin g → ℂ)` defeq-not-syntactic instance clash
+  (~15 diagnostic runs) → componentwise-conversion + defeq-aware `exact` workaround.
+- **brsanch payoff:** verified (`#print axioms` on built oleans) that
+  `degreeFiber_eq_card_of_regular_witness` is PROVEN axiom-clean there — exactly what
+  discharges #8′. Scoped the port precisely (local already has the conditional core;
+  missing = 2 unconditional inputs + a TracePullback strengthening).
+
+**Pattern to internalize:** "reachable + high value" is a real constraint — when no
+single sorry is both, the move is to PROVE the reducible part (off-lattice extension)
+and ISOLATE the irreducible nugget to a crisp, externally-proven statement, rather
+than pick an off-path leaf. And: when an "obvious" proof (restrictScalars/Basis.ext)
+fights the elaborator, diagnose the instance layer (pp.all, #synth, rfl-tests) before
+assuming a math problem — here it was a benign defeq diamond, beaten by `exact`.
+
+**Stopped at:** Stage 4 (the brsanch port + TracePullback `M.n=#fibre` exposure) is a
+large multi-file phase. Per the §3 lesson (checkpoint after a milestone, fresh context
+for the next big phase), surfaced it as the next focused session rather than grinding
+the port at the tail of a long session. #8 proven + isolated is committed (`16e59b2`).

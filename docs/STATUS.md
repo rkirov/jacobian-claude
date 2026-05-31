@@ -12,7 +12,7 @@ appears in its axiom set — i.e. it (transitively) depends on one of the 8 open
 dependency tree is unproved. There are **0 custom `axiom`s** in the project;
 the only unproved surface is the 8 `sorry`s below.
 
-## The 8 open `sorry`s
+## The 7 open `sorry`s
 
 Every one is a **named classical theorem not in Mathlib** (not a mechanical
 gap). The §3 loop-lifting geometry — the last piece that was "hard Lean, no
@@ -21,22 +21,55 @@ missing math" — is now done (`exists_monodromyLiftFamily`, 2026-05-30).
 | # | declaration | file:line | what it is | role |
 |---|---|---|---|---|
 | 1 | `genus_eq_zero_iff_homeo` | Genus.lean:84 | genus 0 ⟺ sphere (uniformization / Riemann–Roch) | **isolated leaf** |
-| 2 | `deg_div` | Abel.lean:577 | `deg(div f)=0` (proper-map degree) | **DEAD leaf** — nothing depends on it |
-| 3 | `abelJacobi_twoPoint_ne_zero` | Abel.lean:707 | two-point Abel–Jacobi image ≠ 0 | **critical path** of `ofCurve_inj`; *is* Abel's theorem |
+| 3 | `abelJacobi_twoPoint_ne_zero` | Abel.lean:669 | two-point Abel–Jacobi image ≠ 0 | **critical path** of `ofCurve_inj`; *is* Abel's theorem |
 | 4 | `traceExtendsAt_branchPoint` | TraceForm.lean:849 | trace of a form extends across branch points | under `traceForm` ⇒ `pushforward_pullback` |
 | 5 | `traceForm_comp` | TraceForm.lean:1091 | trace functoriality `(g∘f)₊=g₊∘f₊` | **off-path leaf** |
 | 6 | `exists_loop_off_branchLocus` | TracePullback.lean:349 | homotope a loop off the branch locus | **critical path** of `pushforward_pullback`; needs manifold Stokes (deferred) |
 | 7 | `exists_periodLattice_realBasis` | PeriodLattice.lean:855 | period lattice has a real basis of ℂ^g (Riemann bilinear) | **universal instance** (see below) |
-| 8 | `ambientPhi_ambientPullback_eq` | Jacobians.lean:456 | ambient degree identity `Φ∘Ψ = deg·id` on all of ℂ^gY | **critical path** of `pushforward_pullback` |
+| 8′ | `exists_preimageCycle_sheets_eq_degree` | Jacobians.lean:492 | a loop's preimage-cycle sheet count = analytic degree | **critical path** of `pushforward_pullback`; = degree well-definedness |
 
-> **Count history (transparency).** A prior pass listed "8" sorries but
-> scanned only `Jacobians/` and **missed `ambientPhi_ambientPullback_eq` in the
-> root `Jacobians.lean`** — there were really **9**. The lattice reduction
-> (2026-05-31, below) then merged the two lattice instances
-> (`DiscreteTopology` + `IsZLattice`) into the single `exists_periodLattice_realBasis`,
-> netting the current **8**. Reproduce: `grep -rnE '(:=\s*sorry$|^\s*sorry$)' Jacobians.lean Jacobians/`.
+> **Count history (transparency).** Earlier passes miscounted; a verified
+> `grep -rnE '(:=\s*sorry$|^\s*sorry$)' Jacobians.lean Jacobians/` is the
+> ground truth. Recent moves: the dead `deg_div`/`PrincipalDivisors` chain was
+> **deleted** (2026-05-31, was #2 — nothing depended on it); the old #8
+> `ambientPhi_ambientPullback_eq` (ambient degree identity `Φ∘Ψ = deg·id`) is
+> now **proven** and its sole remaining input is the crisper #8′
+> `exists_preimageCycle_sheets_eq_degree` (see below). Net: still **7**.
 
-### #7 is the universal load-bearing sorry; #8 is the degree headline's last gap
+### #7 is the universal load-bearing sorry; #8′ is the degree headline's last gap
+
+#### Old #8 `ambientPhi_ambientPullback_eq` — now PROVEN (2026-05-31)
+
+The ambient (matrix-level) degree identity `Φ(Ψ y) = deg·y` **for all `y`** is no
+longer a sorry. The keystone `ambientPhi_ambientPullback_periodVec_of_cycle` gives
+it on each `periodVec δ` (consuming the §3 preimage cycle + the proven
+`periodVec_pushforward`); `Submodule.span_induction` extends it to the whole period
+lattice; and the **§7 real period basis** extends it off the lattice
+(`ambientPhi_ambientPullback_eq`, Jacobians.lean) — `ambientPhi∘ambientPullbackJac`
+is ℂ-linear and agrees with `deg·id` on the ℝ-basis, so `y = ∑ (b.repr y i)·b i`
+pushes through. (A defeq-but-not-syntactic `Module ℝ (Fin g → ℂ)` instance clash
+broke `restrictScalars`/`Basis.ext`; the working proof converts each real scalar to
+its complex coercion componentwise and closes per-term with a defeq-aware `exact`.)
+Its sole remaining input is #8′.
+
+#### #8′ `exists_preimageCycle_sheets_eq_degree` = degree well-definedness
+
+For a closed loop `δ`, the keystone needs the preimage cycle's `sheets` to equal
+`ContMDiff.degree f`. The cycle from `exists_preimageCycle_of_nonconstant` has
+`sheets = M.n = #(f⁻¹{δ 0})`, a **regular** fibre (`δ 0 ∉ branchLocus`); its
+cardinality is `degreeFiber f` precisely by **degree well-definedness** (all regular
+fibres have equal cardinality). This is **proven, axiom-clean, in Bryan Sanchez's
+`jacobian-lean-challenge`** as `degreeFiber_eq_card_of_regular_witness`
+(`#print axioms` = `[propext, Classical.choice, Quot.sound]`; see
+`/tmp/jacobian-brsanch`). Discharging #8′ is a **port** of that well-definedness
+chain (the local project already has the *conditional* core
+`fibre_card_eq_of_locallyConstant_subtype_reg`; missing are the two *unconditional*
+inputs — locally-constant fibre cardinality [analytic, local normal form `z↦zᵏ`]
+and preconnectedness of the regular values [topological, connected surface minus a
+finite set]) **plus** exposing `M.n = #fibre` from the cycle construction. Tracked
+as the next phase.
+
+### #7 the universal load-bearing sorry
 
 `Jacobian X = (ℂ^g) ⧸ periodLattice` is only a **complex manifold / Lie group**
 *given* that `periodLattice` is a discrete, full-rank ℤ-lattice. As of 2026-05-31
@@ -46,15 +79,9 @@ holomorphicity of a map into `Jacobian X` carries `sorryAx` through #7**, even
 though the underlying construction is itself clean: `ofCurve_contMDiff`,
 `pushforward_contMDiff`, `pullback_contMDiff`. Honest reading: *"the Abel–Jacobi
 map is holomorphic" is proven conditional on the period lattice being a lattice* —
-not unconditionally.
-
-#8 `ambientPhi_ambientPullback_eq` is the **ambient (matrix-level) degree
-identity** `Φ(Ψ y) = deg·y` for all `y`. It is *already proven on period vectors*
-by the keystone `ambientPhi_ambientPullback_periodVec_of_cycle` (which consumes the
-§3 preimage cycle + the proven `periodVec_pushforward`); the only remaining gap is
-**extending it off the lattice to all of `ℂ^gY`** — which is exactly what #7's
-full-rank lattice (the periods span `ℝ^{2g}`) provides. So #7 and #8 are linked:
-discharging #7 also unlocks the off-lattice extension of #8.
+not unconditionally. The old #8 off-lattice extension *also* consumed #7's real
+basis and is now proven (above), so `pushforward_pullback` rests on #7 + #8′
+(+ #4/#6 via the trace).
 
 (By contrast, purely **algebraic** facts about `Jacobian X` that do not invoke
 its manifold structure — e.g. `ofCurve_self : ofCurve P P = 0`, a group
@@ -69,7 +96,7 @@ equation — are clean.)
 | `pushforward_contMDiff` | sorryAx | #7 |
 | `pullback_contMDiff` | sorryAx | #7 (and the trace matrix, #4) |
 | `ofCurve_inj` | sorryAx | #3 (Abel) + #7 |
-| `pushforward_pullback` | sorryAx | #8 (ambient identity) + #7 (manifold); #8 in turn rests on #4+#6+#7 |
+| `pushforward_pullback` | sorryAx | #8′ (degree well-definedness, via the now-proven ambient identity) + #7 (manifold); #8′ in turn rests on #4+#6+#7 |
 | `genus_eq_zero_iff_homeo` | sorryAx | #1 |
 | `traceForm` | sorryAx | #4 (branch-point extension) |
 
