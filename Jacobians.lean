@@ -175,10 +175,9 @@ At each `Q₀ : X`:
   `Jacobians.ZLatticeQuotient.contMDiff_mk`, this lands in
   `Jacobian X` as `ContMDiffAt`.
 * On a chart neighborhood of `Q₀`, the quotient of the local lift
-  agrees with `ofCurve P` (the
-  `localLift_quotient_eq_ofCurve_eventually` sorry — classical path
-  algebra via `periodVec_concat` + path-difference-is-closed-loop in
-  the quotient).
+  agrees with `ofCurve P` (`localLift_quotient_eq_ofCurve_eventually`,
+  PROVEN — classical path algebra via `periodVec_concat` +
+  path-difference-is-closed-loop in the quotient).
 * By `ContMDiffAt.congr_of_eventuallyEq`, `ofCurve P` is `ContMDiffAt`
   at `Q₀`.
 * `ContMDiff = ∀ Q, ContMDiffAt` (Mathlib definitional). -/

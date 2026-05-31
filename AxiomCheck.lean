@@ -19,8 +19,9 @@ import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 #print axioms Jacobians.criticalSet_ne_univ_of_nonconstant
 #print axioms Jacobians.finite_criticalSet_of_nonconstant
 #print axioms Jacobians.finite_branchLocus_of_nonconstant
--- Note: `ramificationSumEqualsDegree_unconditional` lives in the
--- Brsanch repo's `NearbyRegularWitnessUnconditional.lean` chain, not in
--- the 42-file closure we ported. Audit confirmed it clean upstream; not
--- needed for our local `pushforward_pullback`, which goes via
--- `ambientPhi_ambientPsi_eq` (still sorry'd in `HolomorphicForms.lean`).
+-- The declarations above are the genuinely axiom-CLEAN core (the guard:
+-- CI fails if any acquires `sorryAx`). The headline theorems about maps
+-- into `Jacobian X` (`ofCurve_contMDiff`, `pushforward_pullback`, `ofCurve_inj`,
+-- …) deliberately are NOT listed here: they carry `sorryAx` via the open
+-- classical theorems (esp. the period-lattice instances #7/#8, which make
+-- `Jacobian X` a manifold). See `docs/STATUS.md` for the per-theorem status.

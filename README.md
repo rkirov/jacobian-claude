@@ -43,13 +43,26 @@ that does not currently exist in Mathlib.
   `periodLattice`, `ofCurve`, `pushforward`, `pullback`,
   `ContMDiff.degree` (a real fibre-cardinality degree).
 - All main theorems compile with the challenge's intended statements.
-- **Smooth-path family / Abel–Jacobi holomorphicity** — fully proven,
-  axiom-clean (the chart-ball cover + junction-concat keystone).
+  **But the headline theorems about maps *into the Jacobian* carry
+  `sorryAx`** — see the caveat below and `docs/STATUS.md` for the
+  machine-verified per-theorem status.
+- **Smooth-path family** `exists_smoothPath_family` — fully proven,
+  axiom-clean (the chart-ball cover + junction-concat keystone). This is
+  the real substance behind "the Abel–Jacobi map is holomorphic". The
+  holomorphicity *statement* `ofCurve_contMDiff` itself, however, carries
+  `sorryAx`: `Jacobian X` is only a manifold *given* the (sorry'd) lattice
+  instances #7/#8, so holomorphicity is proven **conditional on the period
+  lattice being a lattice**, not unconditionally.
+- **§3 loop-lifting geometry** — `exists_monodromyLiftFamily` + orbit loops
+  (the monodromy / projection machinery), fully proven, axiom-clean
+  (2026-05-30). This was the last piece that was "hard Lean, no missing math".
 - **Pushforward/pullback functoriality + lattice preservation** via
   `ZLatticeQuotient`. The `pushforward ∘ pullback = degree`
   *misformalization* (pullback was the transpose, not the genuine
-  pushforward) is now fixed: `pullback` is the genuine trace transpose
-  and `pushforward_pullback` is a *true* statement.
+  pushforward) is now fixed: `pullback` is the genuine trace transpose, so
+  `pushforward_pullback` is now **correctly formalized** (no longer a *wrong*
+  statement). It remains `sorry`-backed (trace branch-extension #4 + loop
+  homotopy #6 + lattice #7/#8).
 - **Manifold inverse function theorem** for complex 1-manifolds
   (`exists_holo_localInverse`) and **local holomorphic sections** at
   non-critical points — reusable infrastructure; the off-branch
@@ -78,9 +91,10 @@ The open classical theorems, named by what they are:
   the main injectivity theorem `ofCurve_inj`.
 - **Genus zero ⟺ sphere** — uniformization; the most theory-deficient.
 
-The live status is tracked in the agent memory; `docs/REFERENCES.md`
-has per-topic textbook pointers and `docs/S8_TRACE_PLAN.md` records the
-trace-map design.
+**`docs/STATUS.md`** has the machine-verified, per-theorem `sorryAx` status
+and the classification of the 8 open `sorry`s (which are critical-path, leaf,
+dead, or universal-instance). `docs/REFERENCES.md` has per-topic textbook
+pointers and `docs/S8_TRACE_PLAN.md` records the trace-map design.
 
 ## Layout
 
