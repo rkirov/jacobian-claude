@@ -1248,14 +1248,20 @@ remaining input.
 **Internal decomposition (the actual remaining work).**
 1. *Norm bound.* `‖traceLocalCoeff coeff y₀ y‖ ≤ B · ‖coeff y‖` for `y` near `y₀`, where `B`
    bounds the fixed-`y₀`-trivialization coordinate change `symmL` near `y₀` (continuous, and
-   `= id` at `y₀` by `tangent_symmL_center`). Reduces the goal to the raw operator norm
-   `(c y − c y₀) · ‖traceFun f α y‖`.
+   `= id` at `y₀` by `tangent_symmL_center`, so `B = 2` works eventually). Reduces the goal to
+   the raw operator norm `(c y − c y₀) · ‖traceFun f α y‖`.
 2. *Fibre-sum triangle + per-preimage estimate.* Off-branch
    `traceFun f α y = ∑_{x ∈ f⁻¹ y} traceSummand f α x` (finite), so
-   `|c y − c y₀| · ‖traceFun f α y‖ ≤ ∑_x ‖α x‖ · (|c (f x) − c y₀| · ‖(mfderiv f x)⁻¹‖)`. Near
-   each `x_j ∈ f⁻¹ y₀`, reading `f` in charts as `F` and using the manifold↔chart derivative
-   bridge `mfderiv f x ↔ fderiv F`, the per-preimage factor is `|F(w) − c y₀| / |F'(w)| → 0` by
-   `sub_div_deriv_tendsto_zero` (PROVEN).
+   `|c y − c y₀| · ‖traceFun f α y‖ ≤ ∑_x ‖α x‖ · (|c (f x) − c y₀| · ‖(mfderiv f x)⁻¹‖)`.
+   The key per-preimage factor is handled by working with the **scalar map** `g := c ∘ f : X → ℂ`
+   (target the *model space* `ℂ`, whose charts are trivial — no varying target chart): the
+   canonical chart bridge gives `mfderiv g x = fderiv ℂ F (c_{x_j} x)` for the FIXED
+   `F := c ∘ f ∘ (chartAt ℂ x_j).symm` (cf. `LineIntegral.lean` `h_mfderiv`), and the chain rule
+   `mfderiv g x = mfderiv c (f x) · mfderiv f x` gives
+   `‖(mfderiv f x)⁻¹‖ = |mfderiv c (f x)| · |F'(c_{x_j} x)|⁻¹`. Since `c (f x) = F(c_{x_j} x)`,
+   the per-preimage factor is `|mfderiv c (f x)| · (|F(w) − c y₀| / |F'(w)|)`, with
+   `|F(w) − c y₀|/|F'(w)| → 0` by `sub_div_deriv_tendsto_zero` (PROVEN) and `|mfderiv c (f x)|`
+   bounded near `y₀` (the chart `c` is a biholomorphism, `mfderiv c` continuous and nonzero).
 3. *Assembly.* Properness (`X` compact ⟹ `f⁻¹ W ⊆ ⋃_j U_j` for small `W ∋ y₀`) + the uniform
    off-branch fibre cardinality reduce the finite fibre sum to a finite sum of terms each `→ 0`.
 
