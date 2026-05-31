@@ -62,4 +62,55 @@ theorem riemann_R1_of_boundaryWord {g : ℕ} (A B : Matrix (Fin g) (Fin g) ℂ) 
   rw [Matrix.zero_apply, boundaryWord i j]
   exact rectBoundaryIntegral_eq_zero_of_differentiableOn (hFh i j)
 
+/-- **Per-handle cancellation = the boundary word, PROVEN from the gluing.** This is the geometric
+heart of the boundary word for a *single handle* (one `a`-loop, one `b`-loop): the box contour
+integral `∮_{∂box}(F·h dz)` equals the antisymmetric period product `A·B' − B·A'`, derived purely
+from the cut chart's **gluing** and the primitive's **jumps** across the cuts.
+
+Hypotheses (all supplied by a cut chart that identifies the box's opposite edges):
+* **gluing** `hper_a`/`hper_b` — the pullback `h = cut^*ω` takes equal values on identified edges
+  (the chart glues `x ↦ x+i` and `y·i ↦ 1+y·i`);
+* **jumps** `hjump_a`/`hjump_b` — the primitive `F` of `h` increases by a fixed period across each
+  cut: by `B` (the `b`-period of the `F`-form) crossing the `a`-cut, and by `A` (the `a`-period)
+  crossing the `b`-cut. This is the monodromy fact "primitive jump = period";
+* **periods** `hAper`/`hBper` — the `a`-period `A' = ∫₀¹ h(x) dx` and `b`-period `B' = i∫₀¹ h(yi) dy`
+  of the `h`-form, read off the bottom/left edges.
+
+Then `∮_{∂box}(F·h) = A·B' − B·A'`. (Bottom−top collapses to `−B·A'` via the `a`-cut jump;
+right−left to `A·B'` via the `b`-cut jump. Pure interval-integral algebra; no surface topology — that
+lives in *realizing* the gluing/jump data, i.e. the isolated `exists_cutSurface`.) Combined with box
+Cauchy (`rectBoundaryIntegral_eq_zero_of_differentiableOn`) this gives `A·B' = B·A'` — Riemann's R1
+for one handle. The general-`g` boundary word sums `g` such handles over the `4g`-gon. -/
+theorem rectBoundaryIntegral_singleHandle (h F : ℂ → ℂ) (A B Aper Bper : ℂ)
+    (hper_a : ∀ x ∈ Set.uIcc (0:ℝ) 1, h ((x:ℂ) + Complex.I) = h (x:ℂ))
+    (hjump_a : ∀ x ∈ Set.uIcc (0:ℝ) 1, F ((x:ℂ) + Complex.I) = F (x:ℂ) + B)
+    (hper_b : ∀ y ∈ Set.uIcc (0:ℝ) 1, h (1 + (y:ℂ) * Complex.I) = h ((y:ℂ) * Complex.I))
+    (hjump_b : ∀ y ∈ Set.uIcc (0:ℝ) 1, F (1 + (y:ℂ) * Complex.I) = F ((y:ℂ) * Complex.I) + A)
+    (hAper : (∫ x in (0:ℝ)..1, h (x:ℂ)) = Aper)
+    (hBper : Complex.I * ∫ y in (0:ℝ)..1, h ((y:ℂ) * Complex.I) = Bper)
+    (hi_bot : IntervalIntegrable (fun x : ℝ => F (x:ℂ) * h (x:ℂ)) volume 0 1)
+    (hi_both : IntervalIntegrable (fun x : ℝ => h (x:ℂ)) volume 0 1)
+    (hi_left : IntervalIntegrable
+      (fun y : ℝ => F ((y:ℂ) * Complex.I) * h ((y:ℂ) * Complex.I)) volume 0 1)
+    (hi_lefth : IntervalIntegrable (fun y : ℝ => h ((y:ℂ) * Complex.I)) volume 0 1) :
+    rectBoundaryIntegral (fun z => F z * h z) = A * Bper - B * Aper := by
+  have htop : (∫ x in (0:ℝ)..1, (fun z => F z * h z) ((x:ℂ) + Complex.I))
+      = (∫ x in (0:ℝ)..1, F (x:ℂ) * h (x:ℂ)) + B * Aper := by
+    rw [intervalIntegral.integral_congr (g := fun x => F (x:ℂ) * h (x:ℂ) + B * h (x:ℂ))
+        (fun x hx => by simp only; rw [hper_a x hx, hjump_a x hx]; ring),
+      intervalIntegral.integral_add hi_bot (hi_both.const_mul B),
+      show (∫ x in (0:ℝ)..1, B * h (x:ℂ)) = B * ∫ x in (0:ℝ)..1, h (x:ℂ) from
+        intervalIntegral.integral_const_mul B _, hAper]
+  have hright : (∫ y in (0:ℝ)..1, (fun z => F z * h z) (1 + (y:ℂ) * Complex.I))
+      = (∫ y in (0:ℝ)..1, F ((y:ℂ) * Complex.I) * h ((y:ℂ) * Complex.I))
+        + A * ∫ y in (0:ℝ)..1, h ((y:ℂ) * Complex.I) := by
+    rw [intervalIntegral.integral_congr
+        (g := fun y => F ((y:ℂ) * Complex.I) * h ((y:ℂ) * Complex.I) + A * h ((y:ℂ) * Complex.I))
+        (fun y hy => by simp only; rw [hper_b y hy, hjump_b y hy]; ring),
+      intervalIntegral.integral_add hi_left (hi_lefth.const_mul A),
+      show (∫ y in (0:ℝ)..1, A * h ((y:ℂ) * Complex.I))
+          = A * ∫ y in (0:ℝ)..1, h ((y:ℂ) * Complex.I) from
+        intervalIntegral.integral_const_mul A _]
+  rw [rectBoundaryIntegral, htop, hright, ← hAper, ← hBper]; ring
+
 end Jacobians
