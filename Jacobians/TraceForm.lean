@@ -1237,41 +1237,265 @@ theorem sub_div_deriv_tendsto_zero {F : ℂ → ℂ} {w₀ z₀ : ℂ}
     rw [mul_div_mul_left _ _ hp]
   exact (hRlim.mono_left nhdsWithin_le_nhds).congr' hcongr.symm
 
-/-! ### Foundations for the per-preimage estimate (consumed by `…_Y`'s eventual proof)
+/-! ### Exact per-preimage local coefficient and its growth
 
-Two small, reusable facts the exact per-preimage local-coefficient computation rests on:
-the operator-inverse norm `‖T.inverse‖ = ‖T 1‖⁻¹` on `ℂ →L[ℂ] ℂ`, and the scalar
-manifold→chart derivative bridge `mfderiv h x 1 = deriv (h ∘ chart.symm) (chart x)`. -/
+The trace's local coefficient, off the critical set, factors *per preimage* in one fixed chart
+as `(α's local coefficient) / F'`, where `F = chartAt ℂ y₀ ∘ f ∘ (chartAt ℂ x₀).symm` reads `f` in
+charts. The `symmL`/`(mfderiv f)⁻¹` obstruction factors **cancel** in the common `chartAt ℂ x₀`
+frame — this is what makes the local coefficient continuous (genus ≥ 2) despite each factor being
+discontinuous. From this exact value, the per-preimage growth `(c (f x) − c y₀) · (local coeff) →
+0` is immediate from the one-variable `sub_div_deriv_tendsto_zero`. -/
 
-/-- **Operator-inverse norm on `ℂ →L[ℂ] ℂ`.** `‖T.inverse‖ = ‖T 1‖⁻¹`, unconditionally:
-at `T 1 = 0` the operator is `0` so both sides vanish (`0⁻¹ = 0`); otherwise `T = (T 1) • id`
-is invertible with inverse `(T 1)⁻¹ • id`. -/
-theorem norm_inverse_clm (T : ℂ →L[ℂ] ℂ) : ‖T.inverse‖ = ‖T (1 : ℂ)‖⁻¹ := by
-  set a : ℂ := T (1 : ℂ) with ha
-  have hT : T = a • ContinuousLinearMap.id ℂ ℂ := clm_eq_apply_one_smul_id T
-  by_cases h : a = 0
-  · have hT0 : T = 0 := by rw [hT, h]; exact zero_smul ℂ (ContinuousLinearMap.id ℂ ℂ)
-    rw [hT0, ContinuousLinearMap.inverse_zero]; simp [h]
-  · have hcomp1 : T.comp (a⁻¹ • ContinuousLinearMap.id ℂ ℂ) = ContinuousLinearMap.id ℂ ℂ := by
-      rw [hT, ContinuousLinearMap.smul_comp, ContinuousLinearMap.comp_smul,
-        ContinuousLinearMap.id_comp, smul_smul, mul_inv_cancel₀ h, one_smul]
-    have hcomp2 : (a⁻¹ • ContinuousLinearMap.id ℂ ℂ).comp T = ContinuousLinearMap.id ℂ ℂ := by
-      rw [hT, ContinuousLinearMap.smul_comp, ContinuousLinearMap.comp_smul,
-        ContinuousLinearMap.id_comp, smul_smul, inv_mul_cancel₀ h, one_smul]
-    rw [ContinuousLinearMap.inverse_eq hcomp1 hcomp2, norm_smul, norm_inv]; simp
-
-/-- **Scalar manifold→chart derivative bridge.** For `h : X → ℂ` MDifferentiable at `x`,
-`mfderiv h x` on the basis vector `1` is the ordinary derivative of the chart pullback
-`h ∘ (chartAt ℂ x).symm` at `(chartAt ℂ x) x`. (Target is the model space `ℂ`, whose charts are
-trivial, so `writtenInExtChartAt = h ∘ chart.symm`; then `fderiv … 1 = deriv` definitionally.) -/
-theorem mfderiv_apply_one_eq_deriv_chartPullback {h : X → ℂ} {x : X}
-    (hh : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) h x) :
-    mfderiv 𝓘(ℂ) 𝓘(ℂ) h x (1 : ℂ) = deriv (h ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := by
-  have hbridge : mfderiv 𝓘(ℂ) 𝓘(ℂ) h x
-      = fderiv ℂ (h ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := by
-    rw [hh.mfderiv, ModelWithCorners.range_eq_univ, fderivWithin_univ]
+/-- **Exact per-preimage local coefficient.** Off the critical set, the trace summand's
+`y₀`-fixed-frame local coefficient at `x` equals `(α's local coefficient at `x`, read in the
+`x₀`-frame) / F'(chartAt x₀ x)`, where `F = chartAt ℂ y₀ ∘ f ∘ (chartAt ℂ x₀).symm`. The proof
+computes `inCoordinates(…)(traceSummand) 1 = (α x)((mfderiv f x)⁻¹ (∂/∂z))` and pushes everything
+through the `chartAt x₀` and `chartAt y₀` frames: the trivialization coordinate maps are
+`mfderiv` of charts (`TangentBundle.continuousLinearMapAt_trivializationAt` /
+`symmL_trivializationAt`), the section `(mfderiv f x)⁻¹ = mfderiv g (f x)`
+(`mfderiv_section_eq_inverse`), and `deriv (chart-section) = (F')⁻¹` since the chart-section is the
+local inverse of `F`. -/
+theorem traceSummand_inCoordinates_apply_one_eq_ref (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X) (y₀ : Y) {x₀ x : X}
+    (hxcrit : x ∉ criticalSet f) (hxsrc : x ∈ (chartAt ℂ x₀).source)
+    (hfx : f x ∈ (chartAt ℂ y₀).source) :
+    ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+        y₀ (f x) y₀ (f x) (traceSummand f α x) (1 : ℂ)
+      = (ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := X)) ℂ (Bundle.Trivial X ℂ)
+          x₀ x x₀ x (α.toFun x) (1 : ℂ))
+        / deriv (chartAt ℂ y₀ ∘ f ∘ (chartAt ℂ x₀).symm) ((chartAt ℂ x₀) x) := by
+  set c := chartAt ℂ y₀ with hc
+  set ψ := chartAt ℂ x₀ with hψ
+  have hstep1 : ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ
+      (Bundle.Trivial Y ℂ) y₀ (f x) y₀ (f x) (traceSummand f α x) (1 : ℂ)
+      = (traceSummand f α x)
+          ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := Y)) y₀).symmL ℂ (f x) (1 : ℂ)) := by
+    simp only [ContinuousLinearMap.inCoordinates,
+      Bundle.Trivial.fiberBundle_trivializationAt',
+      Bundle.Trivial.continuousLinearMapAt_trivialization, ContinuousLinearMap.id_comp,
+      ContinuousLinearMap.comp_apply]
+    rfl
+  have hsymmL : (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := Y)) y₀).symmL ℂ (f x) (1 : ℂ)
+      = mfderiv 𝓘(ℂ) 𝓘(ℂ) c.symm (c (f x)) (1 : ℂ) := by
+    have h := TangentBundle.symmL_trivializationAt (𝕜 := ℂ) (I := 𝓘(ℂ)) (x₀ := y₀) (x := f x) hfx
+    rw [h, ModelWithCorners.range_eq_univ, mfderivWithin_univ]
     congr 1
-  rw [hbridge]; rfl
+  obtain ⟨g, V, hVopen, hfxV, hgfx, hsec, hgsmooth, hsf⟩ :=
+    exists_twoSided_localInverse f hf hnonconst hxcrit
+  have hf_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f x := hf.mdifferentiableAt (by decide)
+  have hg_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (f x) :=
+    (hgsmooth.contMDiffAt (hVopen.mem_nhds hfxV)).mdifferentiableAt (by decide)
+  have hfs : (f ∘ g) =ᶠ[𝓝 (f x)] id := by
+    filter_upwards [hVopen.mem_nhds hfxV] with y hy
+    simp only [Function.comp_apply, id_eq]; exact hsec y hy
+  have hinv : mfderiv 𝓘(ℂ) 𝓘(ℂ) g (f x) = (mfderiv 𝓘(ℂ) 𝓘(ℂ) f x).inverse :=
+    mfderiv_section_eq_inverse hgfx rfl hf_diff hg_diff hfs hsf
+  have hcfx_mem : c (f x) ∈ c.target := c.map_source hfx
+  have hcsymm_inv : c.symm (c (f x)) = f x := c.left_inv hfx
+  have hcsymm_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) c.symm (c (f x)) := by
+    have : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω c.symm (c (f x)) :=
+      (contMDiffOn_chart_symm (I := 𝓘(ℂ)) (x := y₀) (c (f x)) hcfx_mem).contMDiffAt
+        (c.open_target.mem_nhds hcfx_mem)
+    exact this.mdifferentiableAt (by decide)
+  have hg_diff' : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (c.symm (c (f x))) := by
+    rw [hcsymm_inv]; exact hg_diff
+  have hchain : (mfderiv 𝓘(ℂ) 𝓘(ℂ) g (f x)) ((mfderiv 𝓘(ℂ) 𝓘(ℂ) c.symm (c (f x))) (1 : ℂ))
+      = (mfderiv 𝓘(ℂ) 𝓘(ℂ) (g ∘ c.symm) (c (f x))) (1 : ℂ) := by
+    rw [mfderiv_comp_apply (c (f x)) hg_diff' hcsymm_diff (1 : ℂ), hcsymm_inv]
+  have hval : (traceSummand f α x)
+        ((mfderiv 𝓘(ℂ) 𝓘(ℂ) c.symm (c (f x))) (1 : ℂ))
+      = (α.toFun x) ((mfderiv 𝓘(ℂ) 𝓘(ℂ) (g ∘ c.symm) (c (f x))) (1 : ℂ)) := by
+    rw [traceSummand, ContinuousLinearMap.comp_apply, ← hinv]
+    exact congrArg (α.toFun x) hchain
+  set v : TangentSpace 𝓘(ℂ) x := (mfderiv 𝓘(ℂ) 𝓘(ℂ) (g ∘ c.symm) (c (f x))) (1 : ℂ) with hv
+  set a₀ : ℂ := ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := X)) ℂ
+      (Bundle.Trivial X ℂ) x₀ x x₀ x (α.toFun x) (1 : ℂ) with ha₀
+  have hlin : (α.toFun x) v
+      = ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).continuousLinearMapAt ℂ x v)
+          • a₀ := by
+    rw [apply_eq_inCoordinates α x₀ x hxsrc v]
+    set t : ℂ := (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).continuousLinearMapAt ℂ x v
+      with ht
+    rw [ha₀, show (t : ℂ) = t • (1 : ℂ) by rw [smul_eq_mul, mul_one], map_smul]
+    simp only [smul_eq_mul, mul_one]
+  have hclm : (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).continuousLinearMapAt ℂ x
+      = mfderiv 𝓘(ℂ) 𝓘(ℂ) ψ x := by
+    rw [TangentBundle.continuousLinearMapAt_trivializationAt (hxsrc)]
+    congr 1
+  have hψ_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) ψ x := by
+    have : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω ψ x :=
+      (contMDiffOn_chart (I := 𝓘(ℂ)) (x := x₀)).contMDiffAt
+        ((chartAt ℂ x₀).open_source.mem_nhds hxsrc)
+    exact this.mdifferentiableAt (by decide)
+  have hgcs_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (g ∘ c.symm) (c (f x)) :=
+    hg_diff'.comp (c (f x)) hcsymm_diff
+  have hgcs_pt : (g ∘ c.symm) (c (f x)) = x := by
+    simp only [Function.comp_apply, hcsymm_inv, hgfx]
+  have hψ_diff' : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) ψ ((g ∘ c.symm) (c (f x))) := by
+    rw [hgcs_pt]; exact hψ_diff
+  have ht_deriv : (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).continuousLinearMapAt ℂ x v
+      = deriv (ψ ∘ g ∘ c.symm) (c (f x)) := by
+    rw [hclm, hv]
+    rw [show (mfderiv 𝓘(ℂ) 𝓘(ℂ) ψ x) = (mfderiv 𝓘(ℂ) 𝓘(ℂ) ψ ((g ∘ c.symm) (c (f x))))
+        from by rw [hgcs_pt]]
+    have hcr : (mfderiv 𝓘(ℂ) 𝓘(ℂ) (ψ ∘ (g ∘ c.symm)) (c (f x))) (1 : ℂ)
+        = (mfderiv 𝓘(ℂ) 𝓘(ℂ) ψ ((g ∘ c.symm) (c (f x))))
+            ((mfderiv 𝓘(ℂ) 𝓘(ℂ) (g ∘ c.symm) (c (f x))) (1 : ℂ)) :=
+      mfderiv_comp_apply (c (f x)) hψ_diff' hgcs_diff (1 : ℂ)
+    refine hcr.symm.trans ?_
+    rw [mfderiv_eq_fderiv]
+    rfl
+  set w : ℂ := ψ x with hw
+  set F : ℂ → ℂ := c ∘ f ∘ ψ.symm with hF
+  set S : ℂ → ℂ := ψ ∘ g ∘ c.symm with hS
+  have hc_smooth : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (c : Y → ℂ) (f x) :=
+    (contMDiffOn_chart (I := 𝓘(ℂ)) (x := y₀)).contMDiffAt (c.open_source.mem_nhds hfx)
+  have hψ_smooth : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (ψ : X → ℂ) x :=
+    (contMDiffOn_chart (I := 𝓘(ℂ)) (x := x₀)).contMDiffAt
+      ((chartAt ℂ x₀).open_source.mem_nhds hxsrc)
+  have hg_smooth : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g (f x) :=
+    hgsmooth.contMDiffAt (hVopen.mem_nhds hfxV)
+  have hcf_smooth : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (c ∘ f) x :=
+    hc_smooth.comp x (hf.contMDiffAt)
+  have hψg_smooth : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (ψ ∘ g) (f x) := by
+    have : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω ψ (g (f x)) := by rw [hgfx]; exact hψ_smooth
+    exact this.comp (f x) hg_smooth
+  have hF_diff : DifferentiableAt ℂ F w :=
+    differentiableAt_chartPullback_of_contMDiffAt hcf_smooth hxsrc
+  have hS_diff : DifferentiableAt ℂ S (c (f x)) :=
+    differentiableAt_chartPullback_of_contMDiffAt hψg_smooth hfx
+  have hψsymm_inv : ψ.symm (ψ x) = x := ψ.left_inv hxsrc
+  have hFw : F w = c (f x) := by
+    simp only [hF, hw, Function.comp_apply, hψsymm_inv]
+  have hwx : ψ.symm w = x := by rw [hw, hψsymm_inv]
+  have hw_tgt : w ∈ ψ.target := by rw [hw]; exact ψ.map_source hxsrc
+  have hψsymm_contAt : ContinuousAt ψ.symm w :=
+    ψ.continuousOn_symm.continuousAt (ψ.open_target.mem_nhds hw_tgt)
+  have hSF : (S ∘ F) =ᶠ[𝓝 w] id := by
+    have h1 : ∀ᶠ u in 𝓝 w, u ∈ ψ.target := ψ.open_target.eventually_mem hw_tgt
+    have hfψ_cont : ContinuousAt (fun u => f (ψ.symm u)) w := by
+      have : ContinuousAt f (ψ.symm w) := by rw [hwx]; exact hf.continuous.continuousAt
+      exact this.comp hψsymm_contAt
+    have h2 : ∀ᶠ u in 𝓝 w, f (ψ.symm u) ∈ c.source := by
+      have : f (ψ.symm w) ∈ c.source := by rw [hwx]; exact hfx
+      exact hfψ_cont.eventually_mem (c.open_source.mem_nhds this)
+    have h3 : ∀ᶠ u in 𝓝 w, (g ∘ f) (ψ.symm u) = ψ.symm u := by
+      have := hψsymm_contAt.eventually (p := fun y => (g ∘ f) y = id y) (by rw [hwx]; exact hsf)
+      simpa using this
+    filter_upwards [h1, h2, h3] with u hu_tgt hu_src hu_pull
+    show S (F u) = u
+    have hFu : F u = c (f (ψ.symm u)) := by simp only [hF, Function.comp_apply]
+    rw [hS]
+    simp only [Function.comp_apply, hFu, c.left_inv hu_src]
+    show ψ ((g ∘ f) (ψ.symm u)) = u
+    rw [hu_pull, ψ.right_inv hu_tgt]
+  have hF_hasDeriv : HasDerivAt F (deriv F w) w := hF_diff.hasDerivAt
+  have hS_hasDeriv : HasDerivAt S (deriv S (c (f x))) (F w) := by
+    rw [hFw]; exact hS_diff.hasDerivAt
+  have hcomp_hasDeriv : HasDerivAt (S ∘ F) (deriv S (c (f x)) * deriv F w) w :=
+    hS_hasDeriv.comp w hF_hasDeriv
+  have hid_hasDeriv : HasDerivAt (S ∘ F) 1 w :=
+    (hasDerivAt_id w).congr_of_eventuallyEq hSF
+  have hmul1 : deriv S (c (f x)) * deriv F w = 1 :=
+    hcomp_hasDeriv.unique hid_hasDeriv
+  have hderivS : deriv S (c (f x)) = (deriv F w)⁻¹ :=
+    eq_inv_of_mul_eq_one_left hmul1
+  calc ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ
+          (Bundle.Trivial Y ℂ) y₀ (f x) y₀ (f x) (traceSummand f α x) (1 : ℂ)
+      = (α.toFun x) v := by rw [hstep1, hsymmL]; exact hval
+    _ = (deriv S (c (f x))) • a₀ := by rw [hlin, ht_deriv]
+    _ = (deriv F w)⁻¹ • a₀ := by rw [hderivS]
+    _ = a₀ / deriv F w := by rw [smul_eq_mul, div_eq_mul_inv, mul_comm]
+
+/-- **Per-preimage growth.** For a preimage `x₀ ∈ f⁻¹{y₀}`, the scaled trace-summand local
+coefficient `(c (f x) − c y₀) · inCoordinates(…)(traceSummand f α x) 1` tends to `0` as `x → x₀`
+through off-critical `x ≠ x₀`. By the exact value it equals `a₀(x) · (F(ψ x) − z₀)/F'(ψ x)` with
+`a₀` the (continuous) local coefficient of `α`, and `(F(u) − z₀)/F'(u) → 0`
+(`sub_div_deriv_tendsto_zero`, `F` analytic, `F(ψ x₀) = z₀`, not locally constant). -/
+theorem traceSummand_localCoeff_mul_sub_tendsto (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X) {y₀ : Y} {x₀ : X}
+    (hfx₀ : f x₀ = y₀) :
+    Tendsto (fun x => (chartAt ℂ y₀ (f x) - chartAt ℂ y₀ y₀)
+        * ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+            y₀ (f x) y₀ (f x) (traceSummand f α x) (1 : ℂ))
+      (𝓝[(criticalSet f)ᶜ \ {x₀}] x₀) (𝓝 0) := by
+  set c := chartAt ℂ y₀ with hc
+  set ψ := chartAt ℂ x₀ with hψ
+  set F : ℂ → ℂ := c ∘ f ∘ ψ.symm with hF
+  set w₀ : ℂ := ψ x₀ with hw₀
+  set z₀ : ℂ := c y₀ with hz₀
+  have hx₀src : x₀ ∈ ψ.source := mem_chart_source ℂ x₀
+  have hψsymm_inv : ψ.symm w₀ = x₀ := ψ.left_inv hx₀src
+  have hF_an : AnalyticAt ℂ F w₀ := by
+    have h := analyticAt_chartPullback f hf x₀
+    have hpb : chartPullback f x₀ = F := by
+      simp only [chartPullback, hF, hψ, hfx₀, hc]
+    rw [hpb] at h
+    exact h
+  have hFw₀ : F w₀ = z₀ := by
+    simp only [hF, hz₀, Function.comp_apply, hψsymm_inv, hfx₀]
+  have hF_nonconst : ¬ ∀ᶠ u in 𝓝 w₀, F u = z₀ := by
+    have h := chartPullback_not_eventuallyConst f hf hnonconst x₀
+    intro hcon
+    apply h
+    have hpb : chartPullback f x₀ = F := by
+      simp only [chartPullback, hF, hψ, hfx₀, hc]
+    rw [hpb]
+    have : F (ψ x₀) = z₀ := by rw [← hw₀]; exact hFw₀
+    rw [show (chartAt ℂ x₀) x₀ = w₀ from rfl, this]
+    exact hcon
+  have hratio : Tendsto (fun u => (F u - z₀) / deriv F u) (𝓝[≠] w₀) (𝓝 0) :=
+    sub_div_deriv_tendsto_zero hF_an hFw₀ hF_nonconst
+  set a₀ : X → ℂ := fun x => ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := X)) ℂ
+      (Bundle.Trivial X ℂ) x₀ x x₀ x (α.toFun x) (1 : ℂ) with ha₀
+  have ha₀_cont : ContinuousAt a₀ x₀ := continuousAt_localCoeff α x₀
+  have hψ_smooth : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (ψ : X → ℂ) x₀ :=
+    (contMDiffOn_chart (I := 𝓘(ℂ)) (x := x₀)).contMDiffAt
+      ((chartAt ℂ x₀).open_source.mem_nhds hx₀src)
+  have hψ_contAt : ContinuousAt (ψ : X → ℂ) x₀ := hψ_smooth.continuousAt
+  have hψ_tendsto : Tendsto (ψ : X → ℂ) (𝓝[(criticalSet f)ᶜ \ {x₀}] x₀) (𝓝[≠] w₀) := by
+    rw [tendsto_nhdsWithin_iff]
+    refine ⟨hψ_contAt.mono_left nhdsWithin_le_nhds, ?_⟩
+    have hsrc_ev : ∀ᶠ x in 𝓝[(criticalSet f)ᶜ \ {x₀}] x₀, x ∈ ψ.source :=
+      mem_nhdsWithin_of_mem_nhds (ψ.open_source.mem_nhds hx₀src)
+    have hne_ev : ∀ᶠ x in 𝓝[(criticalSet f)ᶜ \ {x₀}] x₀, x ≠ x₀ := by
+      rw [eventually_nhdsWithin_iff]
+      filter_upwards with x hx
+      exact hx.2
+    filter_upwards [hsrc_ev, hne_ev] with x hxsrc hxne
+    show ψ x ∈ {w₀}ᶜ
+    simp only [mem_compl_iff, mem_singleton_iff]
+    intro hcontra
+    exact hxne (ψ.injOn hxsrc hx₀src (by rw [hcontra, hw₀]))
+  have hratio_comp : Tendsto (fun x => (F (ψ x) - z₀) / deriv F (ψ x))
+      (𝓝[(criticalSet f)ᶜ \ {x₀}] x₀) (𝓝 0) :=
+    hratio.comp hψ_tendsto
+  have ha₀_within : Tendsto a₀ (𝓝[(criticalSet f)ᶜ \ {x₀}] x₀) (𝓝 (a₀ x₀)) :=
+    ha₀_cont.mono_left nhdsWithin_le_nhds
+  have hprod : Tendsto (fun x => a₀ x * ((F (ψ x) - z₀) / deriv F (ψ x)))
+      (𝓝[(criticalSet f)ᶜ \ {x₀}] x₀) (𝓝 0) := by
+    have := ha₀_within.mul hratio_comp
+    rwa [mul_zero] at this
+  refine hprod.congr' ?_
+  have hsrc_ev : ∀ᶠ x in 𝓝[(criticalSet f)ᶜ \ {x₀}] x₀, x ∈ ψ.source :=
+    mem_nhdsWithin_of_mem_nhds (ψ.open_source.mem_nhds hx₀src)
+  have hcrit_ev : ∀ᶠ x in 𝓝[(criticalSet f)ᶜ \ {x₀}] x₀, x ∉ criticalSet f := by
+    rw [eventually_nhdsWithin_iff]
+    filter_upwards with x hx
+    exact hx.1
+  have hfsrc_ev : ∀ᶠ x in 𝓝[(criticalSet f)ᶜ \ {x₀}] x₀, f x ∈ c.source := by
+    have hcont : ContinuousAt f x₀ := hf.continuous.continuousAt
+    have hmem : f x₀ ∈ c.source := by rw [hfx₀]; exact mem_chart_source ℂ y₀
+    exact mem_nhdsWithin_of_mem_nhds (hcont.preimage_mem_nhds (c.open_source.mem_nhds hmem))
+  filter_upwards [hsrc_ev, hcrit_ev, hfsrc_ev] with x hxsrc hxcrit hfxsrc
+  have hval := traceSummand_inCoordinates_apply_one_eq_ref f hf hnonconst α y₀ hxcrit hxsrc hfxsrc
+  have hFψx : F (ψ x) = c (f x) := by
+    simp only [hF, Function.comp_apply, ψ.left_inv hxsrc]
+  show a₀ x * ((F (ψ x) - z₀) / deriv F (ψ x))
+    = (c (f x) - z₀) * ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ
+      (Bundle.Trivial Y ℂ) y₀ (f x) y₀ (f x) (traceSummand f α x) (1 : ℂ)
+  rw [hval, hFψx, ha₀, hz₀]
+  ring
 
 /-- **[REMAINING ANALYTIC FRONTIER — the manifold-side of the boundedness crux]**
 
