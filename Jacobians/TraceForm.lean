@@ -822,31 +822,368 @@ analytic crux** (local boundedness of the trace near a branch point):
 Sound (classically true; Forster §10, Griffiths–Harris Ch. 2 §2.7). References:
 Forster §4.22–4.25 (local normal form `wᵉ`), §10 (the trace). -/
 
+/-! ### Bridge from chart-coefficient boundedness to the branch-point extension
+
+The trace's branch-point extension `traceExtendsAt_branchPoint` is the *only* genuinely
+analytic step of the whole trace construction. We discharge it here **modulo a single
+clean local-boundedness input** (`traceLocalCoeff_bddAbove`, the analytic crux): the
+*local coefficient* of the trace, read in the fixed chart at `y₀`, is bounded on a
+punctured disk. From boundedness everything else is Mathlib's removable singularity
+theorem plus the bundle-coordinate plumbing developed below.
+
+The right scalar to control is **not** the discontinuous "global coefficient"
+`(traceFun f α y) 1` (the value of the covector on the chart-`∂/∂z` *at the varying point
+`y`*; discontinuous when the tangent bundle is non-trivial, exactly the obstruction
+isolated in `CotangentCoeff.lean`), but the **local coefficient**
+
+> `traceLocalCoeff f α y₀ y := inCoordinates … y₀ y y₀ y (traceFun f α y) (1 : ℂ)`,
+
+the coordinate of the trace section in the *fixed `y₀`-trivialization*. This is the
+object whose continuity/smoothness `Mathlib.contMDiffAt_hom_bundle` (`contMDiffAt_section`)
+governs, and which `continuousAt_inCoordinates` (in `CotangentCoeff.lean`) already shows is
+continuous wherever the section is smooth. -/
+
+/-- **Local coefficient of the trace.** The coordinate of the (extended) trace section
+`traceFunExt f α` read in the *fixed* hom-bundle trivialization at `y₀`, evaluated on the
+model basis vector `1 : ℂ`. Concretely `inCoordinates … y₀ y y₀ y (coeff y) (1 : ℂ) : ℂ`.
+This is the continuous/holomorphic object (unlike the raw `(coeff y) 1`); the trace
+section is `ContMDiffAt`/`ContinuousAt` at `y₀` **iff** this scalar is, by
+`contMDiffAt_hom_bundle`. We define it for an arbitrary coefficient so it can be applied to
+both `traceFun` and `traceFunExt`. -/
+noncomputable def traceLocalCoeff (coeff : Y → (ℂ →L[ℂ] ℂ)) (y₀ y : Y) : ℂ :=
+  ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+    y₀ y y₀ y (coeff y) (1 : ℂ)
+
+/-- A `ℂ →L[ℂ] ℂ` operator is its value-at-`1` times the identity: `φ = (φ 1) • id`. The
+elementary fact underlying the reconstruction of an operator-valued chart coordinate from
+its scalar coordinate. -/
+theorem clm_eq_apply_one_smul_id (φ : ℂ →L[ℂ] ℂ) :
+    φ = (φ (1 : ℂ)) • ContinuousLinearMap.id ℂ ℂ := by
+  apply ContinuousLinearMap.ext_ring
+  simp
+
+/-- **Section lift from the local coefficient (the converse of `continuousAt_inCoordinates`).**
+If the scalar local coefficient `y ↦ traceLocalCoeff coeff y₀ y` is `ContMDiffAt` at `y₀`,
+then the section `traceTotalSpaceMk coeff` is `ContMDiffAt` at `y₀`. This is the bundle-
+coordinate engine: by `contMDiffAt_hom_bundle` the section is smooth iff its `inCoordinates`
+operator is smooth into the fixed normed space `ℂ →L[ℂ] ℂ`; that operator equals
+`(traceLocalCoeff coeff y₀ y) • id` (`clm_eq_apply_one_smul_id`), a scalar multiple of a
+constant operator, hence smooth from the scalar's smoothness. -/
+theorem contMDiffAt_traceTotalSpaceMk_of_localCoeff (coeff : Y → (ℂ →L[ℂ] ℂ)) {y₀ : Y}
+    (hcoeff : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ) ω (fun y => traceLocalCoeff coeff y₀ y) y₀) :
+    ContMDiffAt 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω (traceTotalSpaceMk coeff) y₀ := by
+  rw [contMDiffAt_hom_bundle]
+  refine ⟨contMDiffAt_id, ?_⟩
+  -- The `inCoordinates` operator equals `(scalar) • id`.
+  have hsmul : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ω
+      (fun y => (traceLocalCoeff coeff y₀ y) • ContinuousLinearMap.id ℂ ℂ) y₀ :=
+    hcoeff.smul contMDiffAt_const
+  refine hsmul.congr_of_eventuallyEq (Filter.Eventually.of_forall (fun y => ?_))
+  show ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
+      y₀ y y₀ y (coeff y) = traceLocalCoeff coeff y₀ y • ContinuousLinearMap.id ℂ ℂ
+  exact clm_eq_apply_one_smul_id _
+
+/-- **Off-branch smoothness of the local coefficient.** Wherever `y₁` is off the branch
+locus *and* lies in the fixed chart source at `y₀`, the scalar local coefficient
+`y ↦ traceLocalCoeff (traceFun f α) y₀ y` is `ContMDiffAt` at `y₁`. Derived from the
+off-branch section smoothness `contMDiffAt_traceFun_of_notMem_branchLocus` read in the
+*fixed `y₀`-trivialization* (`contMDiffAt_section_iff` with the hom-bundle trivialization at
+`y₀`, whose coordinate is exactly `inCoordinates … y₀ · y₀ ·` by `hom_trivializationAt_apply`),
+then evaluated on the model basis vector `1`. -/
+theorem contMDiffAt_traceLocalCoeff_of_notMem_branchLocus (f : X → Y)
+    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (α : HolomorphicOneForms X) (y₀ : Y) {y₁ : Y} (hy₁ : y₁ ∉ branchLocus f)
+    (hy₁src : y₁ ∈ (chartAt ℂ y₀).source) :
+    ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ) ω (fun y => traceLocalCoeff (traceFun f α) y₀ y) y₁ := by
+  -- The trace section is `ContMDiffAt` at `y₁` (off branch).
+  have hsec : ContMDiffAt 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+      (traceTotalSpaceMk (traceFun f α)) y₁ :=
+    contMDiffAt_traceFun_of_notMem_branchLocus f hf hnonconst α hy₁
+  -- Read it in the FIXED hom-bundle trivialization at `y₀`. Its base set is the tangent
+  -- trivialization base set at `y₀` (∩ the trivial-bundle base set `univ`), i.e. the chart
+  -- source at `y₀`, which contains `y₁`.
+  have hy₁base : y₁ ∈ (trivializationAt (ℂ →L[ℂ] ℂ)
+      (fun y : Y => TangentSpace 𝓘(ℂ) y →L[ℂ] (Bundle.Trivial Y ℂ) y) y₀).baseSet := by
+    rw [hom_trivializationAt_baseSet]
+    refine ⟨?_, Set.mem_univ _⟩
+    rw [TangentBundle.trivializationAt_baseSet]
+    exact hy₁src
+  have hcoord := ((trivializationAt (ℂ →L[ℂ] ℂ)
+      (fun y : Y => TangentSpace 𝓘(ℂ) y →L[ℂ] (Bundle.Trivial Y ℂ) y) y₀).contMDiffAt_section_iff
+      (E := fun y : Y => TangentSpace 𝓘(ℂ) y →L[ℂ] (Bundle.Trivial Y ℂ) y)
+      (s := fun y => traceFun f α y) hy₁base).mp hsec
+  -- `(ehom ⟨y, traceFun f α y⟩).2 = inCoordinates … y₀ y y₀ y (traceFun f α y)` (defeq), an
+  -- operator-valued `ContMDiffAt`; apply at `1` to get the scalar local coefficient.
+  exact hcoord.clm_apply contMDiffAt_const
+
+/-! ### Scalar manifold ↔ chart bridges (for maps `Y → ℂ`)
+
+A scalar map `g : Y → ℂ` is `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ,ℂ) ω` at `y₀` exactly when its chart
+pullback `g ∘ (chartAt ℂ y₀).symm` is `AnalyticAt` at `(chartAt ℂ y₀) y₀` (target chart on
+the model space `ℂ` is the identity). We package the two directions needed for the
+removable-singularity bridge. -/
+
+/-- **Manifold smoothness ⟹ chart-pullback differentiability (scalar codomain).** If
+`g : Y → ℂ` is `ContMDiffAt … ω` at `y₁`, its chart pullback `g ∘ (chartAt ℂ y₀).symm` is
+`DifferentiableAt ℂ` at `(chartAt ℂ y₀) y₁`, provided `y₁` lies in the chart source. The
+chart inverse `(chartAt ℂ y₀).symm : ℂ → Y` is `ContMDiffAt` at `(chartAt ℂ y₀) y₁`
+(`contMDiffOn_chart_symm`, since `(chartAt ℂ y₀) y₁ ∈ target`) and maps it to `y₁`, so the
+composite `g ∘ (chartAt ℂ y₀).symm : ℂ → ℂ` is `ContMDiffAt`, i.e. `DifferentiableAt`. -/
+theorem differentiableAt_chartPullback_of_contMDiffAt {g : Y → ℂ} {y₀ y₁ : Y}
+    (hg : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ) ω g y₁) (hy₁ : y₁ ∈ (chartAt ℂ y₀).source) :
+    DifferentiableAt ℂ (g ∘ (chartAt ℂ y₀).symm) ((chartAt ℂ y₀) y₁) := by
+  have hmem : (chartAt ℂ y₀) y₁ ∈ (chartAt ℂ y₀).target :=
+    (chartAt ℂ y₀).map_source hy₁
+  -- chart inverse is `ContMDiffAt` at the chart image, landing at `y₁`.
+  have hsymm : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (chartAt ℂ y₀).symm ((chartAt ℂ y₀) y₁) :=
+    (contMDiffOn_chart_symm (I := 𝓘(ℂ)) (x := y₀) ((chartAt ℂ y₀) y₁) hmem).contMDiffAt
+      ((chartAt ℂ y₀).open_target.mem_nhds hmem)
+  have hsymm_eq : (chartAt ℂ y₀).symm ((chartAt ℂ y₀) y₁) = y₁ :=
+    (chartAt ℂ y₀).left_inv hy₁
+  have hg' : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ) ω g ((chartAt ℂ y₀).symm ((chartAt ℂ y₀) y₁)) := by
+    rw [hsymm_eq]; exact hg
+  -- composite `g ∘ chart.symm : ℂ → ℂ`, smooth at the chart image, hence differentiable.
+  have hcomp : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ) ω (g ∘ (chartAt ℂ y₀).symm) ((chartAt ℂ y₀) y₁) :=
+    hg'.comp ((chartAt ℂ y₀) y₁) hsymm
+  exact (contMDiffAt_iff_contDiffAt.mp hcomp).differentiableAt (by simp)
+
+/-- **Chart-pullback analyticity ⟹ manifold smoothness (scalar codomain).** Converse of
+`differentiableAt_chartPullback_of_contMDiffAt` at the basepoint: if `g : Y → ℂ` is
+`ContinuousAt` at `y₀` and its chart pullback `g ∘ (chartAt ℂ y₀).symm` is `AnalyticAt ℂ` at
+`(chartAt ℂ y₀) y₀`, then `g` is `ContMDiffAt … ω` at `y₀`. This is the `mpr` of
+`contMDiffAt_iff` for a scalar target (the target chart is the identity, the source extended
+chart is `chartAt ℂ y₀`), feeding the removably-extended analytic local coefficient back into
+section smoothness. -/
+theorem contMDiffAt_of_analyticAt_chartPullback {g : Y → ℂ} {y₀ : Y}
+    (hcont : ContinuousAt g y₀)
+    (han : AnalyticAt ℂ (g ∘ (chartAt ℂ y₀).symm) ((chartAt ℂ y₀) y₀)) :
+    ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ) ω g y₀ := by
+  rw [contMDiffAt_iff]
+  refine ⟨hcont, ?_⟩
+  have hrange : range (𝓘(ℂ) : ModelWithCorners ℂ ℂ ℂ) = univ :=
+    ModelWithCorners.Boundaryless.range_eq_univ
+  rw [hrange, contDiffWithinAt_univ]
+  -- Identify the extended-chart pullback with `g ∘ (chartAt ℂ y₀).symm` (target chart = id).
+  have hfun : (extChartAt 𝓘(ℂ) (g y₀) ∘ g ∘ (extChartAt 𝓘(ℂ) y₀).symm)
+      = (g ∘ (chartAt ℂ y₀).symm) := by
+    funext z; simp [extChartAt_coe, extChartAt_coe_symm]
+  have hbase : extChartAt 𝓘(ℂ) y₀ y₀ = (chartAt ℂ y₀) y₀ := by simp [extChartAt_coe]
+  rw [hfun, hbase]
+  exact han.contDiffAt
+
 /-- **[ISOLATED ANALYTIC SORRY — the trace's local boundedness at a branch point]**
+
+The single genuinely-analytic input: in the fixed chart `c := chartAt ℂ y₀`, the trace's
+*local coefficient* `z ↦ traceLocalCoeff (traceFun f α) y₀ (c.symm z)` is **bounded** on a
+punctured neighborhood of `c y₀` (in the chart codomain `ℂ`). Equivalently: the holomorphic
+one-form `traceFun f α` on `Y ∖ branchLocus f` is *locally bounded* near the branch point
+`y₀`, read in the `y₀`-chart.
+
+This is the **only** fact the whole trace construction is missing. Its classical proof uses
+the local normal form `w ↦ wᵉ` of the branched cover on each colliding sheet
+(`Discharge/Manifold/LocalNormalForm.lean`) and the roots-of-unity cancellation of the
+per-sheet `wᵉ⁻¹` blow-ups, `∑ₖ ζ^{k(n+1)} = e·[e ∣ n+1]` (a Puiseux / Newton-symmetric-
+function computation absent from Mathlib and `Discharge/`). Holomorphy of this scalar on the
+punctured disk is **not** assumed here — it is derived in `traceExtendsAt_branchPoint` from
+the off-branch holomorphicity of the trace section. -/
+theorem traceLocalCoeff_bddAbove (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X)
+    {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
+    BddAbove (norm ∘ (fun z : ℂ => traceLocalCoeff (traceFun f α) y₀ ((chartAt ℂ y₀).symm z)) ''
+      (((chartAt ℂ y₀).target ∩ (chartAt ℂ y₀).symm ⁻¹' ((branchLocus f)ᶜ)) \ {(chartAt ℂ y₀) y₀})) :=
+  sorry
+
+/-- **[ISOLATED SECONDARY SORRY — the `traceFunExt`-branch-value is in the correct frame; a
+`traceFunExt`-DESIGN gap, NOT a consequence of boundedness]**
+
+Two facts asserting that the branch-point value `traceFunExt f α y₀` (defined as the raw
+operator limit `limUnder (𝓝[≠] y₀) (traceFun f α)`) is the *geometrically correct* extension:
+
+1. **Raw convergence** — `traceFun f α y → traceFunExt f α y₀` along `𝓝[≠] y₀` (so the raw
+   `limUnder` actually converges, giving conjunct 2's continuity).
+2. **Local-coefficient matching** — the local coefficient of the extended trace at `y₀`,
+   `traceLocalCoeff (traceFunExt f α) y₀ y₀`, equals the removable-singularity limit of the
+   chart-pulled-back local coefficient of the *raw* trace (giving conjunct 1's analytic match
+   at the puncture).
+
+**Why this is isolated separately from the boundedness crux.** The local-boundedness input
+`traceLocalCoeff_bddAbove` controls the *local coefficient* — the trace read in the **fixed
+`y₀`-trivialization** — the genuinely continuous/holomorphic object, which suffices for the
+*section*'s smoothness off `y₀` and for its removable extension. But the section's value AT
+`y₀` is fixed by `traceFunExt f α y₀`, which the current design takes to be the **raw**
+operator `limUnder`. The raw operator `traceFun f α y` is read in the *varying chart at `y`*:
+it equals `inCoordinates(traceFun f α y) ∘ clmAt(tangentTriv y₀) y`, whose second factor (the
+chart-transition derivative) is *discontinuous* in `y` for a non-trivial tangent bundle
+(genus ≥ 2; the obstruction isolated in `CotangentCoeff.lean`,
+`const_one_section_continuous_of_coordChange_fixes_one`). Hence the raw limit need not exist,
+and even granting it, its frame does not match the local-coefficient extension's — neither
+fact follows from boundedness.
+
+This is a **design issue in `traceFunExt`** (consumed by `exists_traceForm_of_branchExtension`
+via `htendsto`/`hext`): the branch value should be defined via the **local coefficient** (or
+as the *bundle-limit* of the section), not the raw-operator `limUnder`. With that fix both
+facts become provable from boundedness alone (the section converges in the bundle; its limit
+value, read locally, is the analytic extension). As stated against the current raw-operator
+`traceFunExt`, this is the precise residual gap. See the report and
+`docs/trace_branchpoint_plan.md`. -/
+theorem traceFunExt_branchValue_correct (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X)
+    {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
+    Filter.Tendsto (traceFun f α) (𝓝[≠] y₀) (𝓝 (traceFunExt f α y₀)) ∧
+      traceLocalCoeff (traceFunExt f α) y₀ y₀ =
+        limUnder (𝓝[≠] ((chartAt ℂ y₀) y₀))
+          (fun z => traceLocalCoeff (traceFun f α) y₀ ((chartAt ℂ y₀).symm z)) :=
+  sorry
+
+/-- **[PROVEN MODULO the boundedness crux `traceLocalCoeff_bddAbove` and the raw-convergence
+input `traceFun_tendsto_branchExtension`]**
 
 For every form `α` and every branch point `y₀ ∈ branchLocus f`, the canonical branch
 extension `traceFunExt f α` is, at `y₀`:
 * `ContMDiffAt` as a section of the cotangent bundle (the *holomorphic* extension), and
 * `ContinuousAt` as a coefficient `Y → (ℂ →L[ℂ] ℂ)` (the *continuous* extension).
 
-This is the **single remaining analytic fact** of the trace map. It is the manifold
-incarnation of: *the holomorphic 1-form `traceFun f α` on `Y ∖ branchLocus f` is locally
-bounded near each branch point, hence (Riemann removable singularity) extends
-holomorphically.* The classical proof uses the local normal form `w ↦ wᵉ` of the
-branched cover and the roots-of-unity cancellation of the per-sheet blow-ups; see the
-section docstring above for the precise statement and why Mathlib/`Discharge` lack it
-(no Puiseux/Newton-symmetric-function machinery for branched-cover traces).
+**Bridge structure.**
+* *Continuity (conjunct 2)* is the raw-convergence input `traceFun_tendsto_branchExtension`
+  transported through `traceFunExt =ᶠ[𝓝[≠] y₀] traceFun`.
+* *Section smoothness (conjunct 1)* is Mathlib's removable singularity theorem
+  (`Complex.differentiableOn_update_limUnder_of_bddAbove`,
+  `Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt`) applied to the
+  *local coefficient* read in the `y₀`-chart: it is holomorphic off `y₀` (off-branch section
+  smoothness, `contMDiffAt_traceLocalCoeff_of_notMem_branchLocus`, + the scalar chart bridges)
+  and bounded there (the crux `traceLocalCoeff_bddAbove`), hence extends analytically; its
+  value at `y₀` matches `traceLocalCoeff (traceFunExt f α) y₀ y₀` by the raw-convergence input.
+  The analytic local coefficient is lifted back to the section via
+  `contMDiffAt_traceTotalSpaceMk_of_localCoeff`.
 
-Everything *downstream* of this fact — the removable-singularity extension being well
-defined, the global `ContMDiffSection` regluing, and the full ℂ-linearity of the trace —
-is proven unconditionally in `exists_traceForm_of_branchExtension`. -/
+Everything *downstream* — the global `ContMDiffSection` regluing and the full ℂ-linearity of
+the trace — is proven unconditionally in `exists_traceForm_of_branchExtension`. -/
 theorem traceExtendsAt_branchPoint (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X)
     {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
     ContMDiffAt 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
         (traceTotalSpaceMk (traceFunExt f α)) y₀ ∧
-      ContinuousAt (traceFunExt f α) y₀ :=
-  sorry
+      ContinuousAt (traceFunExt f α) y₀ := by
+  classical
+  set c := chartAt ℂ y₀ with hc_def
+  -- Abbreviations for the local coefficient of the raw / extended trace, and its chart pullback.
+  set Hraw : Y → ℂ := fun y => traceLocalCoeff (traceFun f α) y₀ y with hHraw
+  set Hext : Y → ℂ := fun y => traceLocalCoeff (traceFunExt f α) y₀ y with hHext
+  set G : ℂ → ℂ := fun z => Hraw (c.symm z) with hG
+  set z₀ : ℂ := c y₀ with hz₀
+  -- ============================ Conjunct 2: continuity (from the raw-convergence input) ====
+  obtain ⟨hraw, hmatch⟩ := traceFunExt_branchValue_correct f hf hnonconst α hy₀
+  have hcont : ContinuousAt (traceFunExt f α) y₀ := by
+    have hEq : traceFunExt f α =ᶠ[𝓝[≠] y₀] traceFun f α :=
+      traceFunExt_eventuallyEq_traceFun f hf hnonconst α y₀
+    -- `traceFunExt` tends to its own value along the punctured nbhd; it is also constant-value
+    -- continuous "at" `y₀` trivially, so it is `ContinuousAt`.
+    have hwithin : Filter.Tendsto (traceFunExt f α) (𝓝[≠] y₀) (𝓝 (traceFunExt f α y₀)) :=
+      hraw.congr' hEq.symm
+    rw [← continuousWithinAt_compl_self]
+    exact hwithin
+  refine ⟨?_, hcont⟩
+  -- ============================ Conjunct 1: section smoothness ==============================
+  -- Reduce the section to its scalar local coefficient `Hext`, then to chart-pullback analyticity.
+  apply contMDiffAt_traceTotalSpaceMk_of_localCoeff
+  -- Goal: `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ,ℂ) ω (fun y => traceLocalCoeff (traceFunExt f α) y₀ y) y₀`.
+  set L : ℂ := limUnder (𝓝[≠] z₀) G with hL
+  have hBfin : (branchLocus f).Finite := finite_branchLocus_of_nonconstant f hf hnonconst
+  have hz₀_target : z₀ ∈ c.target := c.map_source (mem_chart_source ℂ y₀)
+  -- The other branch points in the chart, pushed into the chart codomain: a finite set `Badℂ`
+  -- of `c.target` not containing `z₀`. Removing it from `c.target` gives a nbhd `s` of `z₀` whose
+  -- punctured part lands off the branch locus.
+  set Bad : Set Y := (branchLocus f \ {y₀}) ∩ c.source with hBad
+  have hBad_fin : Bad.Finite := (hBfin.diff.subset Set.inter_subset_left)
+  set Badℂ : Set ℂ := c '' Bad with hBadℂ
+  have hBadℂ_fin : Badℂ.Finite := hBad_fin.image _
+  set s : Set ℂ := c.target \ Badℂ with hs_def
+  have hz₀_notBadℂ : z₀ ∉ Badℂ := by
+    rintro ⟨y, ⟨⟨_, hy_ne⟩, hy_src⟩, hcy⟩
+    apply hy_ne
+    -- `c y = z₀ = c y₀` with both in source ⟹ `y = y₀`.
+    have := c.injOn hy_src (mem_chart_source ℂ y₀) (by rw [hcy])
+    simpa using this
+  have hz₀_s : z₀ ∈ s := ⟨hz₀_target, hz₀_notBadℂ⟩
+  have hs_open : IsOpen s := c.open_target.sdiff hBadℂ_fin.isClosed
+  have hs_mem : s ∈ 𝓝 z₀ := hs_open.mem_nhds hz₀_s
+  -- On the punctured `s`, the chart preimage avoids the whole branch locus.
+  have hpunct_off : ∀ z ∈ s \ {z₀}, c.symm z ∉ branchLocus f ∧ c.symm z ∈ c.source := by
+    rintro z ⟨⟨hz_tgt, hz_notBad⟩, hz_ne⟩
+    have hsrc : c.symm z ∈ c.source := c.map_target hz_tgt
+    refine ⟨fun hzB => ?_, hsrc⟩
+    -- if `c.symm z ∈ branchLocus`: either it is `y₀` (forces `z = z₀`) or it lands in `Badℂ`.
+    by_cases hzy : c.symm z = y₀
+    · exact hz_ne (by rw [Set.mem_singleton_iff, hz₀, ← hzy, c.right_inv hz_tgt])
+    · exact hz_notBad ⟨c.symm z, ⟨⟨hzB, hzy⟩, hsrc⟩, c.right_inv hz_tgt⟩
+  -- **`G` is complex-differentiable on the punctured `s`.**
+  have hG_diff : DifferentiableOn ℂ G (s \ {z₀}) := by
+    intro z hz
+    obtain ⟨hz_off, hz_src⟩ := hpunct_off z hz
+    -- `Hraw` is `ContMDiffAt (c.symm z)`; its `y₀`-chart pullback is differentiable at `c (c.symm z) = z`.
+    have hHraw_smooth : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ) ω Hraw (c.symm z) :=
+      contMDiffAt_traceLocalCoeff_of_notMem_branchLocus f hf hnonconst α y₀ hz_off hz_src
+    have hdiff := differentiableAt_chartPullback_of_contMDiffAt (y₀ := y₀) hHraw_smooth hz_src
+    -- `c (c.symm z) = z`, so this is `DifferentiableAt G z`.
+    rw [c.right_inv hz.1.1] at hdiff
+    exact hdiff.differentiableWithinAt
+  -- **`G` is bounded on the punctured `s`** (the crux, restricted to `s \ {z₀} ⊆` the good set).
+  have hG_bdd : BddAbove (norm ∘ G '' (s \ {z₀})) := by
+    refine (traceLocalCoeff_bddAbove f hf hnonconst α hy₀).mono (Set.image_mono ?_)
+    rintro z hz
+    obtain ⟨hz_off, _⟩ := hpunct_off z hz
+    exact ⟨⟨hz.1.1, hz_off⟩, hz.2⟩
+  -- **Removable singularity**: `update G z₀ L` is differentiable on the whole `s`, hence analytic at `z₀`.
+  have hupd : DifferentiableOn ℂ (Function.update G z₀ L) s :=
+    Complex.differentiableOn_update_limUnder_of_bddAbove hs_mem hG_diff hG_bdd
+  have hanalytic : AnalyticAt ℂ (Function.update G z₀ L) z₀ := hupd.analyticAt hs_mem
+  -- **`Hext ∘ c.symm` agrees with the analytic extension on a full neighborhood of `z₀`.**
+  have hsymm_z₀ : c.symm z₀ = y₀ := by rw [hz₀]; exact c.left_inv (mem_chart_source ℂ y₀)
+  have hkey : (Hext ∘ c.symm) =ᶠ[𝓝 z₀] Function.update G z₀ L := by
+    -- Off `z₀`: `Hext ∘ c.symm = Hraw ∘ c.symm = G = update G z₀ L`. At `z₀`: both equal `L`.
+    have hpunct : (Hext ∘ c.symm) =ᶠ[𝓝[≠] z₀] Function.update G z₀ L := by
+      -- On the punctured nbhd `Hext = Hraw` (pull back `traceFunExt =ᶠ traceFun` through `c.symm`).
+      have hHeq : (Hext ∘ c.symm) =ᶠ[𝓝[≠] z₀] (Hraw ∘ c.symm) := by
+        -- `c.symm` maps the punctured nbhd of `z₀` to the punctured nbhd of `y₀`:
+        -- continuous at `z₀` (→ `y₀`) and injective on `c.target`, so `z ≠ z₀ ⟹ c.symm z ≠ y₀`.
+        have hcs_cont : Filter.Tendsto c.symm (𝓝 z₀) (𝓝 y₀) := by
+          have := (c.continuousAt_symm hz₀_target)
+          rw [ContinuousAt, hsymm_z₀] at this; exact this
+        have hmap : Filter.Tendsto c.symm (𝓝[≠] z₀) (𝓝[≠] y₀) := by
+          rw [tendsto_nhdsWithin_iff]
+          refine ⟨hcs_cont.mono_left nhdsWithin_le_nhds, ?_⟩
+          filter_upwards [self_mem_nhdsWithin,
+            nhdsWithin_le_nhds (c.open_target.mem_nhds hz₀_target)] with z hz_ne hz_tgt
+          simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+          intro hcsy
+          exact hz_ne (by rw [Set.mem_singleton_iff, hz₀, ← hcsy, c.right_inv hz_tgt])
+        have hHeq' : Hext =ᶠ[𝓝[≠] y₀] Hraw := by
+          filter_upwards [eventually_notMem_branchLocus f hf hnonconst y₀] with y hy_off
+          simp only [hHext, hHraw, traceLocalCoeff, traceFunExt_of_notMem_branchLocus f α hy_off]
+        exact hHeq'.comp_tendsto hmap
+      filter_upwards [hHeq, self_mem_nhdsWithin] with z hz hz_ne
+      rw [hz]
+      simp only [hG, Function.comp_apply, Function.update_of_ne hz_ne]
+    -- Patch the value at `z₀`: `(Hext ∘ c.symm) z₀ = Hext y₀ = L = update G z₀ L z₀`.
+    have hval : (Hext ∘ c.symm) z₀ = Function.update G z₀ L z₀ := by
+      simp only [Function.comp_apply, hsymm_z₀, Function.update_self]
+      rw [hHext]; exact hmatch
+    exact eventuallyEq_nhds_of_eventuallyEq_nhdsNE hpunct hval
+  -- **Conclude**: the extended local coefficient is `ContMDiffAt` at `y₀`.
+  refine contMDiffAt_of_analyticAt_chartPullback ?_ ?_
+  · -- `ContinuousAt Hext y₀`: `Hext = (Hext ∘ c.symm) ∘ c` near `y₀`; both factors continuous.
+    have hcontPull : ContinuousAt (Hext ∘ c.symm) z₀ :=
+      (hanalytic.continuousAt).congr hkey.symm
+    have hc_contAt : ContinuousAt (c : Y → ℂ) y₀ :=
+      (c.continuousOn.continuousAt (c.open_source.mem_nhds (mem_chart_source ℂ y₀)))
+    have hcomp : ContinuousAt ((Hext ∘ c.symm) ∘ (c : Y → ℂ)) y₀ := by
+      rw [hz₀] at hcontPull; exact hcontPull.comp hc_contAt
+    refine hcomp.congr ?_
+    filter_upwards [c.open_source.mem_nhds (mem_chart_source ℂ y₀)] with y hy
+    simp only [Function.comp_apply, c.left_inv hy, hHext]
+  · -- `AnalyticAt (Hext ∘ c.symm) z₀` from the analytic extension.
+    rw [← hz₀]
+    exact hanalytic.congr hkey.symm
 
 /-- **Existence of the trace** `f₊ : Ω¹(X) →ₗ[ℂ] Ω¹(Y)` as a genuine holomorphic
 one-form linear map agreeing with the off-branch fibre sum `traceFun`. Now a one-line

@@ -60,7 +60,36 @@ roots-of-unity sum identity + holomorphy of the result). A3's core sum identity
 work is plumbing it through the per-sheet pullback coordinates.
 
 ## Status
-- Phase B: **in progress** (background agent).
-- Phase A: not started (the crux; multi-session).
+- Phase B: **DONE** — `traceExtendsAt_branchPoint` is proven (no `sorry` in it) from two
+  isolated inputs; `lake build Jacobians.TraceForm` succeeds. The bridge infrastructure is all
+  proven: `traceLocalCoeff` (the right object — the trace read in the *fixed `y₀`-chart*),
+  `contMDiffAt_traceTotalSpaceMk_of_localCoeff` (scalar local-coeff smoothness ⟹ section
+  smoothness, via `op = (op 1) • id` + `contMDiffAt_hom_bundle`),
+  `contMDiffAt_traceLocalCoeff_of_notMem_branchLocus` (off-branch local-coeff smoothness),
+  the two scalar manifold↔chart bridges, and the removable-singularity assembly
+  (`Complex.differentiableOn_update_limUnder_of_bddAbove` + `DifferentiableOn.analyticAt`).
+- **Two isolated `sorry`s remain** (the analytic frontier + a design gap):
+  1. `traceLocalCoeff_bddAbove` — **the intended Phase-A crux**: local boundedness of the trace
+     near the branch point, read in the `y₀`-chart. Genuinely missing analytic content
+     (roots-of-unity/Puiseux). This is the *right* object: boundedness of the **local**
+     coefficient (not the raw operator) is exactly what the removable-singularity bridge needs.
+  2. `traceFunExt_branchValue_correct` — **a `traceFunExt`-DESIGN gap, NOT implied by
+     boundedness**. The conclusion of `traceExtendsAt_branchPoint` references the branch value
+     `traceFunExt f α y₀`, which the current `traceFunExt` *defines* as the **raw-operator**
+     `limUnder (𝓝[≠] y₀) (traceFun f α)`. The raw operator `traceFun f α y ∈ ℂ →L ℂ` is read in
+     the *varying chart at `y`* — it equals `inCoordinates(…) ∘ clmAt(tangentTriv y₀) y`, whose
+     chart-transition factor is **discontinuous** for a non-trivial tangent bundle (genus ≥ 2;
+     the obstruction in `CotangentCoeff.lean`). So the raw `limUnder` need not converge (and its
+     frame mismatches the local-coefficient extension). This lemma packages the two facts the
+     current statement needs (raw convergence for `ContinuousAt`; local-coeff matching for the
+     analytic-extension value).
+- **Recommended fix (Phase A / refactor):** redefine `traceFunExt` at branch points via the
+  **local coefficient** (or as the *bundle-limit* of the section `traceTotalSpaceMk`), not the
+  raw-operator `limUnder`. Then `traceFunExt_branchValue_correct` becomes provable **from
+  boundedness alone** (the section converges in the bundle; its limit value read locally is the
+  analytic extension), collapsing Phase B to the single genuine crux `traceLocalCoeff_bddAbove`.
+  This also fixes `exists_traceForm_of_branchExtension`, which consumes the raw convergence via
+  `htendsto`/`hext.2`.
+- Phase A: not started (the crux; multi-session) — `traceLocalCoeff_bddAbove`.
 
 Refs: Forster §10 (the trace), §4.22–4.25 (local normal form `wᵉ`); Griffiths–Harris Ch.2 §2.7.
