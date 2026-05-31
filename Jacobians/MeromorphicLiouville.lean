@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.Abel
+import Mathlib.Analysis.Meromorphic.NormalForm
+import Mathlib.Geometry.Manifold.Complex
 
 /-!
 # Compact Liouville for meromorphic functions (non-Dolbeault)
@@ -116,5 +118,139 @@ theorem MeromorphicFunction.orderAtPoint_nonneg_iff_tendsto
       have := φ.symm.tendsto_nhdsNE (x := φ x) (by simpa using hwt)
       simpa [φ.left_inv hxs] using this
     exact hc.comp htsymm
+
+/-! ### The repair is the normal-form representative, chart by chart -/
+
+/-- For a meromorphic function `F : ℂ → ℂ` whose order at `w` is `≥ 0`, the value of its
+normal-form representative at the center equals the limit along `𝓝[≠] w`. -/
+theorem toMeromorphicNFAt_self_eq_limUnder {F : ℂ → ℂ} {w c : ℂ}
+    (hF : MeromorphicAt F w) (ho : 0 ≤ meromorphicOrderAt F w)
+    (hc : Tendsto F (𝓝[≠] w) (𝓝 c)) :
+    toMeromorphicNFAt F w w = c := by
+  have hNF : MeromorphicNFAt (toMeromorphicNFAt F w) w := meromorphicNFAt_toMeromorphicNFAt
+  have hord : meromorphicOrderAt (toMeromorphicNFAt F w) w = meromorphicOrderAt F w :=
+    meromorphicOrderAt_congr hF.eq_nhdsNE_toMeromorphicNFAt.symm
+  have hAna : AnalyticAt ℂ (toMeromorphicNFAt F w) w :=
+    hNF.meromorphicOrderAt_nonneg_iff_analyticAt.1 (hord ▸ ho)
+  have h1 : Tendsto (toMeromorphicNFAt F w) (𝓝[≠] w) (𝓝 (toMeromorphicNFAt F w w)) :=
+    hAna.continuousAt.continuousWithinAt.tendsto
+  have h2 : Tendsto (toMeromorphicNFAt F w) (𝓝[≠] w) (𝓝 c) :=
+    hc.congr' hF.eq_nhdsNE_toMeromorphicNFAt
+  exact tendsto_nhds_unique h1 h2
+
+/-- From meromorphy of `F` *at* a point `z`, extract an **open neighborhood** `V ∋ z` on which `F`
+is meromorphic, and moreover **analytic away from `z`**. (Mathlib `MeromorphicAt.eventually_analyticAt`:
+`F` is analytic on a punctured neighborhood; together with meromorphy at `z` itself this is
+meromorphy on a full open `V`.) -/
+theorem MeromorphicAt.exists_isOpen_meromorphicOn {F : ℂ → ℂ} {z : ℂ} (hF : MeromorphicAt F z) :
+    ∃ V : Set ℂ, IsOpen V ∧ z ∈ V ∧ MeromorphicOn F V ∧
+      ∀ w ∈ V, w ≠ z → AnalyticAt ℂ F w := by
+  obtain ⟨V, hVsub, hVopen, hzV⟩ := eventually_nhds_iff.1
+    (eventually_nhdsWithin_iff.1 hF.eventually_analyticAt)
+  refine ⟨V, hVopen, hzV, fun w hw => ?_, fun w hw hwz => hVsub w hw hwz⟩
+  by_cases hwz : w = z
+  · exact hwz ▸ hF
+  · exact (hVsub w hw hwz).meromorphicAt
+
+/-- **The local repair lemma.** On a small open neighborhood `V` of `φ x₀` (with `φ = chartAt x₀`),
+the limit-repair `holoRepr`, read back through the chart, coincides with the normal-form
+representative of the pullback `F = f.toFun ∘ φ.symm`. Concretely: for every `w ∈ V`,
+`f.holoRepr (φ.symm w) = toMeromorphicNFOn F V w`.
+
+This needs the order of `f` to be `≥ 0` only at `x₀` (the center); at the punctured points `F` is
+analytic, so its order is automatically `≥ 0`. -/
+theorem MeromorphicFunction.exists_holoRepr_eq_NFOn (f : MeromorphicFunction X) (x₀ : X)
+    (h₀ : 0 ≤ f.orderAtPoint x₀) :
+    ∃ V : Set ℂ, IsOpen V ∧ (chartAt (H := ℂ) x₀) x₀ ∈ V ∧
+      ∃ (_hF : MeromorphicOn (f.toFun ∘ (chartAt (H := ℂ) x₀).symm) V),
+        ∀ w ∈ V, f.holoRepr ((chartAt (H := ℂ) x₀).symm w) =
+          toMeromorphicNFOn (f.toFun ∘ (chartAt (H := ℂ) x₀).symm) V w := by
+  set φ := chartAt (H := ℂ) x₀ with hφ
+  set F := f.toFun ∘ φ.symm with hFdef
+  have hmero₀ : MeromorphicAt F (φ x₀) := f.meromorphic x₀
+  obtain ⟨V₀, hV₀open, hzV₀, hFV₀, hana₀⟩ :=
+    Jacobians.MeromorphicAt.exists_isOpen_meromorphicOn hmero₀
+  -- Restrict to `φ.target` so that `φ.symm` is a genuine inverse on `V`.
+  set V := V₀ ∩ φ.target with hVdef
+  have hVopen : IsOpen V := hV₀open.inter φ.open_target
+  have hzV : φ x₀ ∈ V := ⟨hzV₀, φ.map_source (mem_chart_source ℂ x₀)⟩
+  have hFV : MeromorphicOn F V := fun w hw => hFV₀ w hw.1
+  have hana : ∀ w ∈ V, w ≠ φ x₀ → AnalyticAt ℂ F w := fun w hw hwz => hana₀ w hw.1 hwz
+  have hVtarget : V ⊆ φ.target := fun _ hw => hw.2
+  refine ⟨V, hVopen, hzV, hFV, fun w hw => ?_⟩
+  -- The order of F at w is ≥ 0: at the center from h₀ (def of orderAtPoint), else F is analytic.
+  have hord_w : 0 ≤ meromorphicOrderAt F w := by
+    by_cases hwz : w = φ x₀
+    · subst hwz
+      rw [show f.orderAtPoint x₀ = (meromorphicOrderAt F (φ x₀)).untop₀ from rfl,
+        untop₀_nonneg_iff] at h₀
+      exact h₀
+    · -- w ≠ φ x₀ : F analytic at w (from the punctured-analyticity), so order ≥ 0
+      exact (hana w hw hwz).meromorphicOrderAt_nonneg
+  -- F has a limit c at w; that c is both the NFOn value and the holoRepr value.
+  obtain ⟨c, hc⟩ := tendsto_nhds_of_meromorphicOrderAt_nonneg (hFV w hw) hord_w
+  -- NFOn value at w = NFAt value at w = c.
+  have hNFOn : toMeromorphicNFOn F V w = c := by
+    rw [toMeromorphicNFOn_eq_toMeromorphicNFAt hFV hw]
+    exact toMeromorphicNFAt_self_eq_limUnder (hFV w hw) hord_w hc
+  rw [hNFOn]
+  -- holoRepr value at φ.symm w = c : f.toFun has limit c at φ.symm w (transfer of hc).
+  show limUnder (𝓝[≠] (φ.symm w)) f.toFun = c
+  have hys : φ.symm w ∈ φ.source := φ.map_target (hVtarget hw)
+  -- The punctured neighborhood of `φ.symm w` is NeBot: it receives `𝓝[≠] w` (NeBot in ℂ) under φ.symm.
+  have htsymm : Tendsto φ.symm (𝓝[≠] w) (𝓝[≠] (φ.symm w)) := by
+    have := φ.symm.tendsto_nhdsNE (x := w) (by simpa using hVtarget hw)
+    simpa using this
+  haveI hNeBot : (𝓝[≠] (φ.symm w)).NeBot := htsymm.neBot
+  apply Filter.Tendsto.limUnder_eq
+  -- transfer: compose `F = f.toFun ∘ φ.symm` (limit c at w) with forward chart φ at φ.symm w.
+  have hfwd : Tendsto φ (𝓝[≠] (φ.symm w)) (𝓝[≠] (φ (φ.symm w))) := φ.tendsto_nhdsNE hys
+  have hwr : φ (φ.symm w) = w := φ.right_inv (hVtarget hw)
+  have hcomp : Tendsto (F ∘ φ) (𝓝[≠] (φ.symm w)) (𝓝 c) := by
+    rw [← hwr] at hc; exact hc.comp hfwd
+  refine hcomp.congr' ?_
+  have hev : ∀ᶠ y in 𝓝 (φ.symm w), y ∈ φ.source := φ.open_source.mem_nhds hys
+  filter_upwards [mem_nhdsWithin_of_mem_nhds hev] with y hy
+  simp [hFdef, Function.comp, φ.left_inv hy]
+
+/-- **The limit-repair is globally holomorphic.** If `f` has no pole (`∀ x, 0 ≤ orderAtPoint x`),
+then `f.holoRepr : X → ℂ` is `MDifferentiable`. In each chart, `holoRepr` read back equals the
+analytic normal-form representative of the pullback (`exists_holoRepr_eq_NFOn`), hence is analytic;
+the chart bridge `mdifferentiableWithinAt_of_comp_extChartAt_symm` lifts this to the manifold. -/
+theorem MeromorphicFunction.mdifferentiable_holoRepr (f : MeromorphicFunction X)
+    (hpos : ∀ x, 0 ≤ f.orderAtPoint x) :
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f.holoRepr := by
+  intro x₀
+  set φ := chartAt (H := ℂ) x₀ with hφ
+  obtain ⟨V, hVopen, hzV, hFV, hrepr⟩ := f.exists_holoRepr_eq_NFOn x₀ (hpos x₀)
+  -- NFOn is analytic at φ x₀ (its order there = order of F = orderAtPoint x₀ ≥ 0, and it's in NF).
+  have hNFana : AnalyticAt ℂ (toMeromorphicNFOn (f.toFun ∘ φ.symm) V) (φ x₀) := by
+    have hNF : MeromorphicNFAt (toMeromorphicNFOn (f.toFun ∘ φ.symm) V) (φ x₀) :=
+      meromorphicNFOn_toMeromorphicNFOn (f.toFun ∘ φ.symm) V hzV
+    have hord : meromorphicOrderAt (toMeromorphicNFOn (f.toFun ∘ φ.symm) V) (φ x₀) =
+        meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x₀) :=
+      meromorphicOrderAt_congr (hFV.toMeromorphicNFOn_eq_self_on_nhdsNE hzV)
+    have h₀ : 0 ≤ meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x₀) := by
+      have := hpos x₀
+      rwa [show f.orderAtPoint x₀ =
+        (meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x₀)).untop₀ from rfl, untop₀_nonneg_iff] at this
+    exact hNF.meromorphicOrderAt_nonneg_iff_analyticAt.1 (hord ▸ h₀)
+  -- holoRepr ∘ φ.symm =ᶠ[𝓝 (φ x₀)] NFOn, so it's analytic at φ x₀.
+  have hEq : f.holoRepr ∘ φ.symm =ᶠ[𝓝 (φ x₀)] toMeromorphicNFOn (f.toFun ∘ φ.symm) V := by
+    filter_upwards [hVopen.mem_nhds hzV] with w hw using hrepr w hw
+  have hReprAna : AnalyticAt ℂ (f.holoRepr ∘ φ.symm) (φ x₀) := hNFana.congr hEq.symm
+  -- Lift analyticity in the chart to MDifferentiableAt via the chart bridge.
+  have hIM : IsManifold 𝓘(ℂ) 1 X := IsManifold.of_le le_top
+  refine (mdifferentiableWithinAt_univ ..).mp ?_
+  apply DifferentiableWithinAt.mdifferentiableWithinAt_of_comp_extChartAt_symm
+  -- match the goal: extChartAt for the trivial model 𝓘(ℂ) is the chart, range 𝓘(ℂ) = univ.
+  have hdiff : DifferentiableWithinAt ℂ (f.holoRepr ∘ φ.symm) Set.univ (φ x₀) :=
+    hReprAna.differentiableWithinAt
+  have hextpt : (extChartAt 𝓘(ℂ) x₀) x₀ = φ x₀ := by simp [hφ, mfld_simps]
+  have hextsymm : ⇑(extChartAt 𝓘(ℂ) x₀).symm = ⇑φ.symm := by
+    funext z; simp [hφ, mfld_simps]
+  rw [hextpt, hextsymm]
+  apply hdiff.mono
+  simp [Set.preimage_univ, mfld_simps]
 
 end Jacobians
