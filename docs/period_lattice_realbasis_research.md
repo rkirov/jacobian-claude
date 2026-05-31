@@ -44,13 +44,18 @@ forms.**
   disc Cauchy formula, `DifferentiableOn.analyticOn`, `circleIntegral`. `integral_pos` for the
   positivity.
 
-**Absent (the real gaps — all elementary & buildable, none needing de Rham/Hodge):**
-- **Green's theorem on the `4g`-gon** (Mathlib only has the rectangle) — build by subdividing `S₀`
-  into rectangles/triangles and cancelling interior edges. *Principal cost ~800–1500 LoC.*
-- **Single-valued primitive on a simply-connected planar region** / homotopy-invariance of contour
-  integrals — Mathlib has *neither* as a named theorem. On a disc it's immediate (termwise
-  antiderivative of the power series); globalize over the contractible `S₀`. *~400–800 LoC.* (A
-  homotopy-invariance lemma would be a worthwhile standalone Mathlib PR.)
+**⚡ CORRECTION (2026-05-31, found while building):** Mathlib has MORE than this report first
+concluded. `Mathlib.MeasureTheory.Integral.CurveIntegral` provides `curveIntegral` (`∫ᶜ x in γ, ω x`)
+with concat/symm/additivity, AND **homotopy-invariance of closed-form curve integrals**
+(`curveIntegral_add_curveIntegral_eq_of_hasFDerivWithinAt`, Poincaré, via unit-square pullback). The
+**single-valued primitive on a convex set** is `Convex.exists_forall_hasDerivWithinAt`
+(`…CurveIntegral.Poincare`); `Mathlib.Analysis.Complex.HasPrimitives` adds Morera/`IsConservativeOn`.
+So the "homotopy invariance / primitive" gap below is **CLOSED** for the normed-space (= cut-box)
+setting. Still genuinely absent:
+- **Green's theorem on the `4g`-gon** — but the box-image cut-surface model (see the build plan)
+  avoids this: pull back to `[0,1]²` and use the box divergence theorem / `curveIntegral`.
+- **Surface integration over `X`** as a manifold + the **cut-surface chart / boundary word** (the
+  topological dissection) — these stay isolated (Pillar T).
 - **Manifold de Rham cohomology / Hodge theory**: ABSENT, **no open PR**, "known gap" on the Lean
   blog for years — but **not needed for this statement**.
 

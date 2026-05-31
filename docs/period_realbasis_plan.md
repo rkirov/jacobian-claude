@@ -37,9 +37,19 @@ Then the tree, **deepest leaf first** (= fill order):
    `integral2_divergence_prod_of_hasFDerivAt` (`f=Q, g=−P`). Boundary orientation: counterclockwise
    `∫P(·,0)+∫Q(1,·)−∫P(·,1)−∫Q(0,·)` (callers must match this sign). ~45 LoC.
 
-2. **`exists_primitive_on_box`** / **`exists_primitive_simplyConnected`**. A holomorphic `ω`'s
-   primitive `f` (`f' = ω`-coeff) on the simply-connected cut box: termwise antiderivative on a
-   disc, globalized over the contractible box. [~300–700]
+2. **`exists_primitive_of_convex`** ✅ **DONE** (`Jacobians/Primitive.lean`, axiom-clean, ~16 LoC).
+   Mathlib already had it: `Convex.exists_forall_hasDerivWithinAt`
+   (`MeasureTheory.Integral.CurveIntegral.Poincare`) + `HasDerivWithinAt.hasDerivAt` on the open box.
+
+   **⚡ Major Mathlib finding (revise the build accordingly).** `Mathlib.MeasureTheory.Integral.CurveIntegral`
+   has a full **contour-integral** theory `∫ᶜ x in γ, ω x` (`curveIntegral`) with `_trans`/`_symm`/`_refl`/
+   `_add` (path concat + additivity), AND — contrary to the research note — **homotopy invariance of
+   closed-form curve integrals**: `curveIntegral_add_curveIntegral_eq_of_hasFDerivWithinAt` (Poincaré,
+   proven via the unit-square pullback + the divergence theorem). It is for paths in a **normed space**
+   `E` — i.e. *exactly the box setting* after pulling `ω` back via the cut chart. So steps 3–5 below
+   should be rebuilt on `curveIntegral` + this Poincaré lemma (the boundary bookkeeping = `curveIntegral`
+   additivity over `∂box` segments; relation I = Poincaré/closed-form). `Mathlib.Analysis.Complex.HasPrimitives`
+   (`IsConservativeOn`/`IsExactOn`, Morera) is also available.
 
 3. **`surfaceIntegral`** `∬_X β := ∬_{[0,1]²} (cut^* β)` for a 2-form `β`, + **pullback Green**
    `∬_X dα = ∮_{∂box}(cut^*α)` (from 1 + `extDeriv` commuting with pullback,
