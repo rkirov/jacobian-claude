@@ -51,9 +51,17 @@ open Jacobians
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- `f` is **non-constant**: it does not equal a single value everywhere. -/
+/-- `f` is **non-constant** (order-based): it has a genuine zero or pole somewhere,
+`∃ x, f.orderAtPoint x ≠ 0`.
+
+This is the *junk-immune* notion. A value-based `¬ ∃ c, ∀ x, f.toFun x = c` is too weak: the repo's
+`MeromorphicFunction.toFun` can carry **removable-singularity junk** (`MeromorphicAt` does not pin the
+value at the center), so a "constant + one junk value" function would be value-non-constant yet
+pole-free — breaking `exists_pole_of_nonconstant`. At the order level there is no junk: `orderAtPoint`
+depends only on the germ, and `orderAtPoint ≡ 0 ⟺ f` is a (non-vanishing) constant or the zero
+function, so `∃ x, orderAtPoint x ≠ 0` is exactly honest non-constancy. -/
 def IsNonConstant (f : MeromorphicFunction X) : Prop :=
-  ¬ ∃ c : ℂ, ∀ x, f.toFun x = c
+  ∃ x, f.orderAtPoint x ≠ 0
 
 /-- `f` has **poles bounded by the single point `P`**: holomorphic off `P` and at most a simple pole
 at `P` (`div f ≥ −P`, i.e. `f ∈ L(P)`). -/
