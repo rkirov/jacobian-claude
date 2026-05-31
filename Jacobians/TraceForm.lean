@@ -1026,7 +1026,7 @@ Forster §4.22–4.25 (local normal form `wᵉ`), §10 (the trace). -/
 
 The trace's branch-point extension `traceExtendsAt_branchPoint` is the *only* genuinely
 analytic step of the whole trace construction. We discharge it here **modulo a single
-clean local-boundedness input** (`traceLocalCoeff_bddAbove`, the analytic crux): the
+clean local-boundedness input** (`traceLocalCoeff_mul_sub_tendsto_zero`, the analytic crux): the
 *local coefficient* of the trace, read in the fixed chart at `y₀`, is bounded on a
 punctured disk. From boundedness everything else is Mathlib's removable singularity
 theorem plus the bundle-coordinate plumbing developed below.
@@ -1152,26 +1152,40 @@ theorem contMDiffAt_of_analyticAt_chartPullback {g : Y → ℂ} {y₀ : Y}
   rw [hfun, hbase]
   exact han.contDiffAt
 
-/-- **[ISOLATED ANALYTIC SORRY — the trace's local boundedness at a branch point]**
+/-- **[THE TRACE'S ANALYTIC CRUX — local boundedness at a branch point, little-o form]**
 
-The single genuinely-analytic input: in the fixed chart `c := chartAt ℂ y₀`, the trace's
-*local coefficient* `z ↦ traceLocalCoeff (traceFun f α) y₀ (c.symm z)` is **bounded** on a
-punctured neighborhood of `c y₀` (in the chart codomain `ℂ`). Equivalently: the holomorphic
-one-form `traceFun f α` on `Y ∖ branchLocus f` is *locally bounded* near the branch point
-`y₀`, read in the `y₀`-chart.
+The single genuinely-analytic input. In the fixed chart `c := chartAt ℂ y₀`, the trace's
+*local coefficient* `G z := traceLocalCoeff (traceFun f α) y₀ (c.symm z)` satisfies the
+**local little-o** bound `(z - c y₀) · G z → 0` as `z → c y₀` (through the punctured
+neighborhood). Equivalently `G =o[𝓝[≠] (c y₀)] (· - c y₀)⁻¹`: the trace one-form
+`traceFun f α` on `Y ∖ branchLocus f`, read in the `y₀`-chart, has at worst a *removable*
+singularity at the branch point (no genuine pole).
 
-This is the **only** fact the whole trace construction is missing. Its classical proof uses
-the local normal form `w ↦ wᵉ` of the branched cover on each colliding sheet
-(`Discharge/Manifold/LocalNormalForm.lean`) and the roots-of-unity cancellation of the
-per-sheet `wᵉ⁻¹` blow-ups, `∑ₖ ζ^{k(n+1)} = e·[e ∣ n+1]` (a Puiseux / Newton-symmetric-
-function computation absent from Mathlib and `Discharge/`). Holomorphy of this scalar on the
-punctured disk is **not** assumed here — it is derived in `traceExtendsAt_branchPoint` from
-the off-branch holomorphicity of the trace section. -/
-theorem traceLocalCoeff_bddAbove (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+This is exactly the hypothesis of Mathlib's little-o removable-singularity theorem
+`Complex.differentiableOn_update_limUnder_insert_of_isLittleO`, and it is the **only** fact
+the whole trace construction is missing.
+
+**Why the little-o (not global `BddAbove`).** Global boundedness over the whole chart target
+is *false* in general (the chart codomain need not be relatively compact). The geometrically
+correct — and provable — statement is the *local* one at `y₀`, and the little-o form is
+strictly weaker than local boundedness yet still suffices for removability.
+
+**Proof strategy (no roots-of-unity / Puiseux needed).** `‖traceFun f α y‖` is bounded by the
+fibre sum `∑_{x ∈ f⁻¹ y} ‖α x‖ · ‖(mfderiv f x)⁻¹‖`. Near each branch preimage `x_j ∈ f⁻¹ y₀`
+the map `f` has, in coordinates, an analytic normal form `F` with `F(0) = c y₀` and a
+finite-order zero of `F - c y₀`; then the crude per-sheet estimate
+`|z - c y₀| · ‖(mfderiv f x)⁻¹‖ = |F(w) - c y₀| / |F'(w)| → 0` (because `F - c y₀ = wᵉ · g`
+with `g(0) ≠ 0`, so the ratio is `w · g/(e g + w g') → 0`). Summing the finitely many sheets
+over the finite fibre gives `(z - c y₀) · G z → 0` — **no symmetric-function cancellation**,
+just the triangle inequality. Holomorphy of `G` on the punctured disk is *not* used here; it
+is supplied separately in `traceExtendsAt_branchPoint`. -/
+theorem traceLocalCoeff_mul_sub_tendsto_zero (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X)
     {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
-    BddAbove (norm ∘ (fun z : ℂ => traceLocalCoeff (traceFun f α) y₀ ((chartAt ℂ y₀).symm z)) ''
-      (((chartAt ℂ y₀).target ∩ (chartAt ℂ y₀).symm ⁻¹' ((branchLocus f)ᶜ)) \ {(chartAt ℂ y₀) y₀})) :=
+    Tendsto
+      (fun z : ℂ => (z - (chartAt ℂ y₀) y₀)
+        * traceLocalCoeff (traceFun f α) y₀ ((chartAt ℂ y₀).symm z))
+      (𝓝[≠] ((chartAt ℂ y₀) y₀)) (𝓝 0) :=
   sorry
 
 /-- **Branch-value local-coefficient matching (now PROVEN, no analytic input).** With the
@@ -1196,7 +1210,7 @@ theorem traceFunExt_branchValue_correct (f : X → Y)
   rw [traceLocalCoeff_center, traceFunExt_of_mem_branchLocus f α hy₀, traceBranchValue]
   simp
 
-/-- **[PROVEN MODULO the single boundedness crux `traceLocalCoeff_bddAbove`]**
+/-- **[PROVEN MODULO the single analytic crux `traceLocalCoeff_mul_sub_tendsto_zero`]**
 
 For every form `α` and every branch point `y₀ ∈ branchLocus f`, the canonical branch
 extension `traceFunExt f α` is, at `y₀`:
@@ -1219,8 +1233,9 @@ coordinates.)
 **Bridge structure.** The whole proof is the single fact: the *local coefficient* read in the
 `y₀`-chart is `ContMDiffAt y₀`. It is holomorphic off `y₀` (off-branch section smoothness
 `contMDiffAt_traceLocalCoeff_of_notMem_branchLocus` + the scalar chart bridges) and **bounded**
-there (the crux `traceLocalCoeff_bddAbove`), so by Mathlib's removable singularity theorem
-(`Complex.differentiableOn_update_limUnder_of_bddAbove`, `DifferentiableOn.analyticAt`) it
+there, and has at worst a removable singularity (the crux `traceLocalCoeff_mul_sub_tendsto_zero`:
+`(z - z₀)·G z → 0`), so by Mathlib's little-o removable singularity theorem
+(`Complex.differentiableOn_update_limUnder_insert_of_isLittleO`, `DifferentiableOn.analyticAt`) it
 extends analytically across `y₀`; its value at `y₀` matches `traceLocalCoeff (traceFunExt f α)
 y₀ y₀` by `traceFunExt_branchValue_correct`. Then:
 * conjunct 1 lifts it to the section via `contMDiffAt_traceTotalSpaceMk_of_localCoeff`;
@@ -1290,16 +1305,37 @@ theorem traceExtendsAt_branchPoint (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(
     -- `c (c.symm z) = z`, so this is `DifferentiableAt G z`.
     rw [c.right_inv hz.1.1] at hdiff
     exact hdiff.differentiableWithinAt
-  -- **`G` is bounded on the punctured `s`** (the crux, restricted to `s \ {z₀} ⊆` the good set).
-  have hG_bdd : BddAbove (norm ∘ G '' (s \ {z₀})) := by
-    refine (traceLocalCoeff_bddAbove f hf hnonconst α hy₀).mono (Set.image_mono ?_)
-    rintro z hz
-    obtain ⟨hz_off, _⟩ := hpunct_off z hz
-    exact ⟨⟨hz.1.1, hz_off⟩, hz.2⟩
-  -- **Removable singularity**: `update G z₀ L` is differentiable on the whole `s`, hence analytic at `z₀`.
-  have hupd : DifferentiableOn ℂ (Function.update G z₀ L) s :=
-    Complex.differentiableOn_update_limUnder_of_bddAbove hs_mem hG_diff hG_bdd
-  have hanalytic : AnalyticAt ℂ (Function.update G z₀ L) z₀ := hupd.analyticAt hs_mem
+  -- **`(z - z₀)·G z → 0`** (the analytic crux): `G` has at worst a removable singularity at `z₀`.
+  have hG_tendsto : Tendsto (fun z => (z - z₀) * G z) (𝓝[≠] z₀) (𝓝 0) :=
+    traceLocalCoeff_mul_sub_tendsto_zero f hf hnonconst α hy₀
+  -- Convert to the little-o `(G - G z₀) =o[𝓝[≠] z₀] (· - z₀)⁻¹` consumed by removability.
+  have hG_littleO : (fun z => G z - G z₀) =o[𝓝[≠] z₀] fun z => (z - z₀)⁻¹ := by
+    refine Asymptotics.isLittleO_of_tendsto' ?_ ?_
+    · filter_upwards [self_mem_nhdsWithin] with z hz hcontra
+      exact absurd (inv_eq_zero.mp hcontra) (sub_ne_zero.mpr hz)
+    · -- `(G z - G z₀) / (z - z₀)⁻¹ = (z - z₀)·(G z - G z₀) → 0` (crux minus a `→0` constant tail).
+      have hconst : Tendsto (fun z => (z - z₀) * G z₀) (𝓝[≠] z₀) (𝓝 0) := by
+        have : Tendsto (fun z : ℂ => z - z₀) (𝓝[≠] z₀) (𝓝 0) := by
+          simpa using ((continuous_sub_right z₀).tendsto z₀).mono_left nhdsWithin_le_nhds
+        simpa using this.mul_const (G z₀)
+      have hdiff := hG_tendsto.sub hconst
+      simp only [sub_zero] at hdiff
+      have heq : (fun z => (G z - G z₀) / (z - z₀)⁻¹)
+          = (fun z => (z - z₀) * G z - (z - z₀) * G z₀) := by
+        funext z; rw [div_eq_mul_inv, inv_inv]; ring
+      rw [heq]; exact hdiff
+  -- **Removable singularity (little-o form)**: `update G z₀ L` is analytic at `z₀`.
+  have hs_NE : s \ {z₀} ∈ 𝓝[≠] z₀ :=
+    inter_mem (mem_nhdsWithin_of_mem_nhds hs_mem) self_mem_nhdsWithin
+  have hupd : DifferentiableOn ℂ (Function.update G z₀ L) (insert z₀ (s \ {z₀})) := by
+    have := Complex.differentiableOn_update_limUnder_insert_of_isLittleO hs_NE hG_diff hG_littleO
+    rwa [← hL] at this
+  have hins_mem : insert z₀ (s \ {z₀}) ∈ 𝓝 z₀ :=
+    Filter.mem_of_superset hs_mem (fun z hz => by
+      by_cases h : z = z₀
+      · exact h ▸ Set.mem_insert _ _
+      · exact Set.mem_insert_of_mem _ ⟨hz, h⟩)
+  have hanalytic : AnalyticAt ℂ (Function.update G z₀ L) z₀ := hupd.analyticAt hins_mem
   -- **`Hext ∘ c.symm` agrees with the analytic extension on a full neighborhood of `z₀`.**
   have hsymm_z₀ : c.symm z₀ = y₀ := by rw [hz₀]; exact c.left_inv (mem_chart_source ℂ y₀)
   have hkey : (Hext ∘ c.symm) =ᶠ[𝓝 z₀] Function.update G z₀ L := by
