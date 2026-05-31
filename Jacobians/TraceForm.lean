@@ -2212,34 +2212,200 @@ theorem traceForm_id (hnonconst : ¬ ∃ x₀ : X, ∀ x, (id : X → X) x = x�
     rw [mfderiv_id]; exact ContinuousLinearMap.inverse_id
   rw [hinv]; exact ContinuousLinearMap.comp_id _
 
-/-- **Covariance of the trace: `(g ∘ f)₊ = g₊ ∘ f₊`** (sheet counts of composite
-covers multiply, and the per-sheet pullbacks compose contravariantly so the traces
-compose covariantly). Honest sorry: classically true (Griffiths–Harris Ch. 2 §2.7),
-same analytic status as `traceForm_id` / `traceExtendsAt_branchPoint`. -/
+/-- **Local coefficient of an arbitrary smooth section is `ContMDiffAt`.** Generalizes
+`contMDiffAt_traceLocalCoeff_of_notMem_branchLocus` from `traceFun f α` to any smooth section
+`s : HolomorphicOneForms Y`: read in the FIXED `y₀`-hom-trivialization the section's coordinate is
+`ContMDiffAt`, hence the scalar local coefficient (its value on `1`) is too. (No branch-locus
+hypothesis — `s` is globally smooth.) -/
+theorem contMDiffAt_localCoeff_section (s : HolomorphicOneForms Y) (y₀ : Y) {y₁ : Y}
+    (hy₁src : y₁ ∈ (chartAt ℂ y₀).source) :
+    ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ) ω (fun y => traceLocalCoeff (s.toFun) y₀ y) y₁ := by
+  have hsec : ContMDiffAt 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+      (traceTotalSpaceMk (s.toFun)) y₁ := s.contMDiff_toFun.contMDiffAt
+  have hy₁base : y₁ ∈ (trivializationAt (ℂ →L[ℂ] ℂ)
+      (fun y : Y => TangentSpace 𝓘(ℂ) y →L[ℂ] (Bundle.Trivial Y ℂ) y) y₀).baseSet := by
+    rw [hom_trivializationAt_baseSet]
+    refine ⟨?_, Set.mem_univ _⟩
+    rw [TangentBundle.trivializationAt_baseSet]
+    exact hy₁src
+  have hcoord := ((trivializationAt (ℂ →L[ℂ] ℂ)
+      (fun y : Y => TangentSpace 𝓘(ℂ) y →L[ℂ] (Bundle.Trivial Y ℂ) y) y₀).contMDiffAt_section_iff
+      (E := fun y : Y => TangentSpace 𝓘(ℂ) y →L[ℂ] (Bundle.Trivial Y ℂ) y)
+      (s := fun y => s.toFun y) hy₁base).mp hsec
+  exact hcoord.clm_apply contMDiffAt_const
+
+/-- Off the critical set, `mfderiv g y` is invertible (it has a two-sided local-inverse
+section). -/
+theorem isInvertible_mfderiv_of_notMem_criticalSet (g : Y → X) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
+    (hgnc : ¬ ∃ x₀ : X, ∀ y, g y = x₀) {y : Y} (hy : y ∉ criticalSet g) :
+    (mfderiv 𝓘(ℂ) 𝓘(ℂ) g y).IsInvertible := by
+  obtain ⟨s, V, hVopen, hgyV, hsgy, hsec, hssmooth, hsf⟩ :=
+    exists_twoSided_localInverse g hg hgnc hy
+  have hg_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g y := hg.mdifferentiableAt (by decide)
+  have hs_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) s (g y) :=
+    ((hssmooth.contMDiffAt (hVopen.mem_nhds hgyV)).mdifferentiableAt (by decide))
+  have hg_diff' : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (s (g y)) := by rw [hsgy]; exact hg_diff
+  have hfs : (g ∘ s) =ᶠ[𝓝 (g y)] id := by
+    filter_upwards [hVopen.mem_nhds hgyV] with z hz; exact hsec z hz
+  have hcomp_gs : (mfderiv 𝓘(ℂ) 𝓘(ℂ) g y).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) s (g y)) =
+      ContinuousLinearMap.id ℂ (TangentSpace 𝓘(ℂ) (g y)) := by
+    have h1 : mfderiv 𝓘(ℂ) 𝓘(ℂ) (g ∘ s) (g y) = mfderiv 𝓘(ℂ) 𝓘(ℂ) (id : X → X) (g y) :=
+      hfs.mfderiv_eq
+    rw [mfderiv_id] at h1
+    rw [← h1, mfderiv_comp (g y) hg_diff' hs_diff, hsgy]
+  have hcomp_sg : (mfderiv 𝓘(ℂ) 𝓘(ℂ) s (g y)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) g y) =
+      ContinuousLinearMap.id ℂ (TangentSpace 𝓘(ℂ) y) := by
+    have h1 : mfderiv 𝓘(ℂ) 𝓘(ℂ) (s ∘ g) y = mfderiv 𝓘(ℂ) 𝓘(ℂ) (id : Y → Y) y :=
+      hsf.mfderiv_eq
+    rw [mfderiv_id] at h1
+    rw [← h1, mfderiv_comp y hs_diff hg_diff]
+  refine ⟨ContinuousLinearEquiv.equivOfInverse (mfderiv 𝓘(ℂ) 𝓘(ℂ) g y)
+      (mfderiv 𝓘(ℂ) 𝓘(ℂ) s (g y)) ?_ ?_, rfl⟩
+  · intro v
+    have := ContinuousLinearMap.ext_iff.mp hcomp_sg v
+    simpa using this
+  · intro v
+    have := ContinuousLinearMap.ext_iff.mp hcomp_gs v
+    simpa using this
+
+/-- **Covariance of the trace: `(g ∘ f)₊ = g₊ ∘ f₊`** (Griffiths–Harris Ch. 2 §2.7). Both sides
+are smooth forms; their **fixed-frame local coefficients** (not the discontinuous raw fibre
+components — the genus≥2 `CotangentCoeff` obstruction) agree off the finite bad set
+`B = branchLocus (g∘f) ∪ branchLocus g ∪ g '' branchLocus f` via the off-branch fibre
+factorization `traceFun (g∘f) α z = traceFun g (traceForm f α) z` (partition
+`(g∘f)⁻¹{z} = ⊔_{y∈g⁻¹z} f⁻¹{y}` + chain rule `(mfderiv (g∘f))⁻¹ = (mfderiv f)⁻¹∘(mfderiv g)⁻¹` +
+pulling the common right-comp out of the inner finsum). The local coefficients are `ContinuousOn`
+the chart source (`contMDiffAt_localCoeff_section`), `Bᶜ` is dense (finite `B`, perfect space), so
+they agree everywhere; evaluating at the chart center (`traceLocalCoeff_center`) gives the operator
+equality. -/
 theorem traceForm_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
     [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hfnc : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g) (hgnc : ¬ ∃ z₀ : Z, ∀ y, g y = z₀)
     (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f)) (hgfnc : ¬ ∃ z₀ : Z, ∀ x, (g ∘ f) x = z₀) :
     traceForm (g ∘ f) hgf hgfnc =
-      (traceForm g hg hgnc).comp (traceForm f hf hfnc) :=
-  -- Honest sorry. The intended proof is density + continuity: both sides are
-  -- forms whose fibre-component map `z ↦ (·) z : Z → (ℂ →L[ℂ] ℂ)` is continuous,
-  -- and they agree off a finite bad set `B` (the union of `branchLocus (g∘f)`,
-  -- `branchLocus g`, and the `g`-images of points where some `f`-fibre meets
-  -- `branchLocus f`), whose complement is dense (`Y`/`Z` are perfect spaces —
-  -- `neBot_nhdsWithin_compl_self`). Two remaining gaps make this too heavy here:
-  -- (1) a continuity extractor `Continuous (fun z ↦ (form) z)` for the model-fibre
-  --     component of a `ContMDiffSection` into the (only locally trivial) cotangent
-  --     hom-bundle — needs the `contMDiffAt_hom_bundle` trivialization machinery,
-  --     as in `contMDiffAt_pullback_section`;
-  -- (2) the off-branch fibre factorization
-  --     `traceFun (g∘f) α z = traceFun g (traceForm f hf hfnc α) z`, via the disjoint
-  --     partition `(g∘f)⁻¹'{z} = ⋃_{y∈g⁻¹'{z}} f⁻¹'{y}` (`finsum_mem_biUnion`), the
-  --     chain rule `mfderiv (g∘f) x = mfderiv g (f x) ∘ mfderiv f x` (`mfderiv_comp`)
-  --     with `(·)⁻¹` of the composite, and pulling the common right-`comp` out of the
-  --     inner finsum — the combinatorial finsum-partition step that remains.
-  sorry
+      (traceForm g hg hgnc).comp (traceForm f hf hfnc) := by
+  refine LinearMap.ext (fun α => ?_)
+  rw [LinearMap.comp_apply]
+  refine ContMDiffSection.ext (fun z₀ => ?_)
+  set L' := traceForm (g ∘ f) hgf hgfnc α with hL'
+  set R' := traceForm g hg hgnc (traceForm f hf hfnc α) with hR'
+  apply ContinuousLinearMap.ext_ring
+  set B : Set Z := branchLocus (g ∘ f) ∪ branchLocus g ∪ g '' (branchLocus f) with hB
+  have hBfin : B.Finite := by
+    refine (Set.Finite.union (Set.Finite.union ?_ ?_) ?_)
+    · exact finite_branchLocus_of_nonconstant (g ∘ f) hgf hgfnc
+    · exact finite_branchLocus_of_nonconstant g hg hgnc
+    · exact (finite_branchLocus_of_nonconstant f hf hfnc).image g
+  set t : Set Z := (chartAt ℂ z₀).source with ht
+  have hcontL : ContinuousOn (fun z => traceLocalCoeff (L'.toFun) z₀ z) t := by
+    intro z₁ hz₁
+    refine (contMDiffAt_localCoeff_section L' z₀ hz₁).continuousAt.continuousWithinAt
+  have hcontR : ContinuousOn (fun z => traceLocalCoeff (R'.toFun) z₀ z) t := by
+    intro z₁ hz₁
+    refine (contMDiffAt_localCoeff_section R' z₀ hz₁).continuousAt.continuousWithinAt
+  have hagree : Set.EqOn (fun z => traceLocalCoeff (L'.toFun) z₀ z)
+      (fun z => traceLocalCoeff (R'.toFun) z₀ z) (t \ B) := by
+    intro z hz
+    obtain ⟨_hzt, hzB⟩ := hz
+    have hz_gf : z ∉ branchLocus (g ∘ f) := fun h => hzB (Or.inl (Or.inl h))
+    have hz_g : z ∉ branchLocus g := fun h => hzB (Or.inl (Or.inr h))
+    have hz_gimf : z ∉ g '' (branchLocus f) := fun h => hzB (Or.inr h)
+    have hLeq : L'.toFun z = traceFun (g ∘ f) α z := by
+      rw [hL']; exact traceForm_toFun_of_notMem_branchLocus (g ∘ f) hgf hgfnc α hz_gf
+    have hReq : R'.toFun z = traceFun g (traceForm f hf hfnc α) z := by
+      rw [hR']; exact traceForm_toFun_of_notMem_branchLocus g hg hgnc _ hz_g
+    have hfact : traceFun (g ∘ f) α z = traceFun g (traceForm f hf hfnc α) z := by
+      set β := traceForm f hf hfnc α with hβ
+      have hy_off : ∀ y ∈ g ⁻¹' {z}, y ∉ branchLocus f := by
+        intro y hy hyB
+        rw [Set.mem_preimage, Set.mem_singleton_iff] at hy
+        exact hz_gimf ⟨y, hyB, hy⟩
+      have hy_gcrit : ∀ y ∈ g ⁻¹' {z}, y ∉ criticalSet g := by
+        intro y hy hycrit
+        rw [Set.mem_preimage, Set.mem_singleton_iff] at hy
+        exact hz_g ⟨y, hycrit, hy⟩
+      have hgfib_fin : (g ⁻¹' {z}).Finite := fiber_finite_off_branchLocus g hg hgnc hz_g
+      have hffib_fin : ∀ y ∈ g ⁻¹' {z}, (f ⁻¹' {y}).Finite :=
+        fun y hy => fiber_finite_off_branchLocus f hf hfnc (hy_off y hy)
+      have hpart : (g ∘ f) ⁻¹' {z} = ⋃ y ∈ g ⁻¹' {z}, f ⁻¹' {y} := by
+        ext x
+        simp only [Set.mem_preimage, Set.mem_singleton_iff, Function.comp_apply,
+          Set.mem_iUnion, exists_prop]
+        constructor
+        · intro hx; exact ⟨f x, hx, rfl⟩
+        · rintro ⟨y, hgy, hfx⟩; rw [hfx]; exact hgy
+      have hdisj : (g ⁻¹' {z}).PairwiseDisjoint (fun y => f ⁻¹' {y}) := by
+        intro y₁ _ y₂ _ hne
+        refine Set.disjoint_left.mpr (fun x hx₁ hx₂ => ?_)
+        rw [Set.mem_preimage, Set.mem_singleton_iff] at hx₁ hx₂
+        exact hne (hx₁ ▸ hx₂)
+      have hinner : ∀ y ∈ g ⁻¹' {z},
+          (∑ᶠ (x : X) (_ : x ∈ f ⁻¹' {y}), traceSummand (g ∘ f) α x)
+            = traceSummand g β y := by
+        intro y hy
+        have hy_gcrit_y : y ∉ criticalSet g := hy_gcrit y hy
+        have hy_off_y : y ∉ branchLocus f := hy_off y hy
+        have hg_inv : (mfderiv 𝓘(ℂ) 𝓘(ℂ) g y).IsInvertible :=
+          isInvertible_mfderiv_of_notMem_criticalSet g hg hgnc hy_gcrit_y
+        have hsummand : ∀ x ∈ f ⁻¹' {y},
+            traceSummand (g ∘ f) α x
+              = (traceSummand f α x).comp ((mfderiv 𝓘(ℂ) 𝓘(ℂ) g y).inverse) := by
+          intro x hx
+          rw [Set.mem_preimage, Set.mem_singleton_iff] at hx
+          have hf_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f x := hf.mdifferentiableAt (by decide)
+          have hg_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (f x) := by
+            rw [hx]; exact hg.mdifferentiableAt (by decide)
+          have hg_inv' : (mfderiv 𝓘(ℂ) 𝓘(ℂ) g (f x)).IsInvertible := by rw [hx]; exact hg_inv
+          show (α.toFun x).comp ((mfderiv 𝓘(ℂ) 𝓘(ℂ) (g ∘ f) x).inverse)
+            = ((α.toFun x).comp ((mfderiv 𝓘(ℂ) 𝓘(ℂ) f x).inverse)).comp
+                ((mfderiv 𝓘(ℂ) 𝓘(ℂ) g y).inverse)
+          have hcomp_eq : (mfderiv 𝓘(ℂ) 𝓘(ℂ) (g ∘ f) x).inverse
+              = (mfderiv 𝓘(ℂ) 𝓘(ℂ) f x).inverse.comp ((mfderiv 𝓘(ℂ) 𝓘(ℂ) g (f x)).inverse) := by
+            rw [mfderiv_comp x hg_diff hf_diff]
+            exact ContinuousLinearMap.IsInvertible.inverse_comp_of_left hg_inv'
+          apply ContinuousLinearMap.ext_ring
+          rw [hcomp_eq, hx]
+          rfl
+        have htf : (∑ᶠ (x : X) (_ : x ∈ f ⁻¹' {y}), traceSummand f α x) = β.toFun y := by
+          have h1 : traceFun f α y = β.toFun y :=
+            (traceForm_toFun_of_notMem_branchLocus f hf hfnc α hy_off_y).symm
+          rw [← h1]; rfl
+        rw [finsum_mem_eq_finite_toFinset_sum _ (hffib_fin y hy)]
+        rw [Finset.sum_congr rfl (fun x hx => hsummand x ((Set.Finite.mem_toFinset _).mp hx))]
+        show (∑ x ∈ (hffib_fin y hy).toFinset,
+              (traceSummand f α x).comp ((mfderiv 𝓘(ℂ) 𝓘(ℂ) g y).inverse))
+            = (β.toFun y).comp ((mfderiv 𝓘(ℂ) 𝓘(ℂ) g y).inverse)
+        rw [← htf, finsum_mem_eq_finite_toFinset_sum _ (hffib_fin y hy)]
+        exact (ContinuousLinearMap.finset_sum_comp _ _).symm
+      show (∑ᶠ (x : X) (_ : x ∈ (g ∘ f) ⁻¹' {z}), traceSummand (g ∘ f) α x)
+          = ∑ᶠ (y : Y) (_ : y ∈ g ⁻¹' {z}), traceSummand g β y
+      have hLHS : (∑ᶠ (x : X) (_ : x ∈ (g ∘ f) ⁻¹' {z}), traceSummand (g ∘ f) α x)
+          = ∑ᶠ (y : Y) (_ : y ∈ g ⁻¹' {z}) (x : X) (_ : x ∈ f ⁻¹' {y}),
+              traceSummand (g ∘ f) α x := by
+        rw [hpart]
+        exact finsum_mem_biUnion hdisj hgfib_fin hffib_fin
+      rw [hLHS]
+      refine finsum_mem_congr rfl (fun y hy => ?_)
+      rw [hinner y hy]
+    show traceLocalCoeff (L'.toFun) z₀ z = traceLocalCoeff (R'.toFun) z₀ z
+    rw [traceLocalCoeff, traceLocalCoeff, hLeq, hReq, hfact]
+  have hsub : t ⊆ closure (t \ B) := by
+    intro z hz
+    rw [mem_closure_iff_nhdsWithin_neBot]
+    have htopen : IsOpen t := (chartAt ℂ z₀).open_source
+    have htmem : t ∈ 𝓝[≠] z := mem_nhdsWithin_of_mem_nhds (htopen.mem_nhds hz)
+    have hdiff : t \ B ∈ 𝓝[≠] z := nhdsNE_of_nhdsNE_sdiff_finite htmem hBfin.to_subtype
+    have hle : 𝓝[≠] z ≤ 𝓝[t \ B] z :=
+      le_inf nhdsWithin_le_nhds (le_principal_iff.mpr hdiff)
+    exact Filter.neBot_of_le hle
+  have heq : Set.EqOn (fun z => traceLocalCoeff (L'.toFun) z₀ z)
+      (fun z => traceLocalCoeff (R'.toFun) z₀ z) t :=
+    Set.EqOn.of_subset_closure hagree hcontL hcontR (Set.diff_subset) hsub
+  have hcenter : traceLocalCoeff (L'.toFun) z₀ z₀ = traceLocalCoeff (R'.toFun) z₀ z₀ :=
+    heq (mem_chart_source ℂ z₀)
+  rw [traceLocalCoeff_center, traceLocalCoeff_center] at hcenter
+  exact hcenter
 
 /-! ## Total trace wrapper (constant-map bookkeeping)
 
