@@ -76,13 +76,18 @@ that does not currently exist in Mathlib.
 
 The open classical theorems, named by what they are:
 
-- **Period lattice is discrete** and **is full-rank (a ℤ-lattice)** —
-  ground the Jacobian-as-complex-torus instances (Riemann bilinear /
-  Hodge; no Mathlib support).
-- **Branched-cover loop lifting** — homotope a loop off the branch
-  locus (manifold Stokes) and lift it to the preimage cycle. The
-  covering, fibre finiteness, manifold IFT, local sections, and the
-  off-branch trace are built; the loop homotopy + cycle assembly remain.
+- **Period lattice is a (discrete, full-rank) ℤ-lattice** — grounds the
+  Jacobian-as-complex-torus instances. As of 2026-05-31 this is reduced to a
+  *single* named input `exists_periodLattice_realBasis` (the lattice is the
+  ℤ-span of a real basis of ℂ^g); discreteness + full rank then follow
+  mechanically from Mathlib's `ZSpan`. The residual input is the Riemann
+  bilinear / Hodge content (`H¹ ≅ ℂ^{2g}`; no Mathlib support).
+- **Branched-cover loop lifting** — the §3 monodromy/orbit/projection geometry
+  is now fully proven (`exists_monodromyLiftFamily` + orbit loops, axiom-clean).
+  What remains on this path: the loop homotopy off the branch locus
+  (`exists_loop_off_branchLocus`, manifold Stokes) and the trace's branch-point
+  extension. The covering, fibre finiteness, manifold IFT, local sections, and
+  off-branch trace were already built.
 - **Pushforward ∘ pullback = degree** — remaining: the trace map's
   branch-point extension + projection formula, then the degree identity
   off the lattice (via full-rank).

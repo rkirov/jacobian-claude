@@ -835,16 +835,38 @@ theorem periodVec_pushforward
   -- Goal: ∑ i, v i * lineIntegral (periodBasisForm X i) γ = ∑ i, v i * (periodVec γ) i
   rfl
 
-/-- **Discrete topology on the period lattice** — classical fact
-(Forster §§20–21). Follows from Hodge decomposition + non-degeneracy
-of the period pairing. Not currently in Mathlib. -/
-instance : DiscreteTopology (truePeriodLattice X) := sorry
+/-- **Existence of a period ℝ-basis** — the *single* classical input behind the
+Jacobian-as-complex-torus structure (the Riemann bilinear relations, Forster §§20–21).
+It states the period lattice is generated, as a `ℤ`-module, by a **real basis** of
+`ℂ^(genus X) ≅ ℝ^(2·genus X)`: the `2g` periods of a symplectic homology basis are
+`ℝ`-linearly independent and `ℤ`-generate the lattice.
 
-/-- **Period lattice is a ℤ-lattice of full real rank** — classical
-fact (Forster §§20–21). Rank `2 * genus X` in `ℂ^(genus X) = ℝ^(2 g)`.
-Follows from Hodge decomposition + non-degeneracy of the period pairing.
-Not currently in Mathlib. -/
-instance : IsZLattice ℝ (truePeriodLattice X) := sorry
+From this, **both** the discreteness and the full-rank-`ℤ`-lattice instances below are
+*mechanical* — they are Mathlib's `ZSpan.instDiscreteTopology` / `instIsZLatticeRealSpan`
+for the `ℤ`-span of a real basis, transported across the lattice equality. So this is the
+only remaining classical content; everything downstream is unconditional given it.
+
+The existence itself is **not in Mathlib**: it needs Hodge / de Rham
+`H¹(X) ≅ ℂ^{2g}` with the holomorphic forms injecting (and this model carries no
+singular `H₁`), which is why it is isolated here rather than discharged. -/
+theorem exists_periodLattice_realBasis :
+    ∃ b : Module.Basis (Fin (2 * genus X)) ℝ (Fin (genus X) → ℂ),
+      truePeriodLattice X = Submodule.span ℤ (Set.range ⇑b) :=
+  sorry
+
+/-- **Discrete topology on the period lattice.** Mechanical from
+`exists_periodLattice_realBasis`: a `ℤ`-span of a real basis is discrete
+(`ZSpan.instDiscreteTopology`). -/
+instance : DiscreteTopology (truePeriodLattice X) := by
+  obtain ⟨b, hb⟩ := exists_periodLattice_realBasis (X := X)
+  rw [hb]; infer_instance
+
+/-- **Period lattice is a `ℤ`-lattice of full real rank** `2 * genus X` in
+`ℂ^(genus X) = ℝ^(2g)`. Mechanical from `exists_periodLattice_realBasis`: a `ℤ`-span
+of a real basis is a full-rank `ℤ`-lattice (`instIsZLatticeRealSpan`). -/
+instance : IsZLattice ℝ (truePeriodLattice X) := by
+  obtain ⟨b, hb⟩ := exists_periodLattice_realBasis (X := X)
+  exact { span_top := by rw [hb]; exact (instIsZLatticeRealSpan b).span_top }
 
 /-! ### Phase 4a: `ambientPhi` preserves the period lattice
 
