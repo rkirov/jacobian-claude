@@ -1237,6 +1237,36 @@ theorem sub_div_deriv_tendsto_zero {F : ℂ → ℂ} {w₀ z₀ : ℂ}
     rw [mul_div_mul_left _ _ hp]
   exact (hRlim.mono_left nhdsWithin_le_nhds).congr' hcongr.symm
 
+/-- **[REMAINING ANALYTIC FRONTIER — the manifold-side of the boundedness crux]**
+
+The `Y`-side of `traceLocalCoeff_mul_sub_tendsto_zero`: in the chart `c := chartAt ℂ y₀`, the
+scaled local coefficient `(c y − c y₀) · traceLocalCoeff (traceFun f α) y₀ y → 0` as `y → y₀`
+through `y ≠ y₀`. The crux itself follows by composing this with `c.symm` (which carries
+`𝓝[≠] (c y₀)` to `𝓝[≠] y₀`); that reduction is fully proven below, so this lemma is the *single*
+remaining input.
+
+**Internal decomposition (the actual remaining work).**
+1. *Norm bound.* `‖traceLocalCoeff coeff y₀ y‖ ≤ B · ‖coeff y‖` for `y` near `y₀`, where `B`
+   bounds the fixed-`y₀`-trivialization coordinate change `symmL` near `y₀` (continuous, and
+   `= id` at `y₀` by `tangent_symmL_center`). Reduces the goal to the raw operator norm
+   `(c y − c y₀) · ‖traceFun f α y‖`.
+2. *Fibre-sum triangle + per-preimage estimate.* Off-branch
+   `traceFun f α y = ∑_{x ∈ f⁻¹ y} traceSummand f α x` (finite), so
+   `|c y − c y₀| · ‖traceFun f α y‖ ≤ ∑_x ‖α x‖ · (|c (f x) − c y₀| · ‖(mfderiv f x)⁻¹‖)`. Near
+   each `x_j ∈ f⁻¹ y₀`, reading `f` in charts as `F` and using the manifold↔chart derivative
+   bridge `mfderiv f x ↔ fderiv F`, the per-preimage factor is `|F(w) − c y₀| / |F'(w)| → 0` by
+   `sub_div_deriv_tendsto_zero` (PROVEN).
+3. *Assembly.* Properness (`X` compact ⟹ `f⁻¹ W ⊆ ⋃_j U_j` for small `W ∋ y₀`) + the uniform
+   off-branch fibre cardinality reduce the finite fibre sum to a finite sum of terms each `→ 0`.
+
+Sound (Forster §10; Griffiths–Harris Ch. 2 §2.7). -/
+theorem traceLocalCoeff_mul_sub_tendsto_zero_Y (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X)
+    {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
+    Tendsto (fun y => ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)
+        * traceLocalCoeff (traceFun f α) y₀ y) (𝓝[≠] y₀) (𝓝 0) :=
+  sorry
+
 /-- **[THE TRACE'S ANALYTIC CRUX — local boundedness at a branch point, little-o form]**
 
 The single genuinely-analytic input. In the fixed chart `c := chartAt ℂ y₀`, the trace's
@@ -1270,8 +1300,27 @@ theorem traceLocalCoeff_mul_sub_tendsto_zero (f : X → Y) (hf : ContMDiff 𝓘(
     Tendsto
       (fun z : ℂ => (z - (chartAt ℂ y₀) y₀)
         * traceLocalCoeff (traceFun f α) y₀ ((chartAt ℂ y₀).symm z))
-      (𝓝[≠] ((chartAt ℂ y₀) y₀)) (𝓝 0) :=
-  sorry
+      (𝓝[≠] ((chartAt ℂ y₀) y₀)) (𝓝 0) := by
+  set c := chartAt ℂ y₀ with hc
+  set z₀ := c y₀ with hz₀
+  have hz₀tgt : z₀ ∈ c.target := c.map_source (mem_chart_source ℂ y₀)
+  have hsymm_z₀ : c.symm z₀ = y₀ := c.left_inv (mem_chart_source ℂ y₀)
+  -- `c.symm` carries the punctured nbhd of `z₀` to the punctured nbhd of `y₀`.
+  have hcs_cont : Tendsto c.symm (𝓝 z₀) (𝓝 y₀) := by
+    have := c.continuousAt_symm hz₀tgt; rwa [ContinuousAt, hsymm_z₀] at this
+  have hmap : Tendsto c.symm (𝓝[≠] z₀) (𝓝[≠] y₀) := by
+    rw [tendsto_nhdsWithin_iff]
+    refine ⟨hcs_cont.mono_left nhdsWithin_le_nhds, ?_⟩
+    filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds (c.open_target.mem_nhds hz₀tgt)]
+      with z hz_ne hz_tgt
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+    intro hcsy
+    exact hz_ne (by rw [Set.mem_singleton_iff, hz₀, ← hcsy, c.right_inv hz_tgt])
+  -- Compose the `Y`-side statement with `c.symm`, then rewrite `c (c.symm z) = z` on `c.target`.
+  refine Tendsto.congr' ?_
+    ((traceLocalCoeff_mul_sub_tendsto_zero_Y f hf hnonconst α hy₀).comp hmap)
+  filter_upwards [nhdsWithin_le_nhds (c.open_target.mem_nhds hz₀tgt)] with z hz_tgt
+  simp only [Function.comp_apply, ← hc, c.right_inv hz_tgt, ← hz₀]
 
 /-- **Branch-value local-coefficient matching (now PROVEN, no analytic input).** With the
 refactored `traceFunExt`, the branch value `traceFunExt f α y₀ = traceBranchValue f α y₀` is the
