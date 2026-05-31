@@ -917,3 +917,28 @@ research via a background agent while the main thread grinds. **New finding to r
 #3 (Abel) is logically independent of #7 — the hoped-for meet-in-the-middle does not exist;
 Riemann–Roch is the single highest-leverage missing theorem. Commits `672236e`→`2e35d59`
 (code) + `540e50e` (docs).
+
+---
+
+## 2026-05-31 (cont.) — "continue to bottom out #7" / "proving fully #7" + RR research
+
+**User steering:** "continue to bottom out on #7, consider sending a research agent on
+proving Riemann-Roch more precisely" → then "proving fully #7".
+
+**What I did:** (1) launched the RR-proof-plan research agent (background, read-only).
+(2) Pushed the provable #7 content: **proved `rectBoundaryIntegral_singleHandle`** (the
+boundary word for one handle, from gluing + jump=period, axiom-clean) — the genuine
+"prove the boundary word" mechanism. (3) Hit the honest wall: fully discharging
+`exists_cutSurface` (sorry-free #7) needs **surface classification (Radó + 4g-gon
+dissection existence + jump=period monodromy)** — a Mathlib-absent topology theorem at
+the same multi-k-LoC, no-scaffold scale as the Dolbeault/RR wall. Both research agents
+(Abel + RR) converge: #1, #3, and fully-#7 bottom out in the SAME missing analysis
+(Dolbeault ∂̄ / Serre duality / surface classification). Surfaced the scoping fork to the
+user (invest in the big shared build vs. keep grinding analytic content vs. keep isolated)
+rather than silently embarking on a multi-week topology build under a terse "prove fully"
+directive. Commits `c1fb845` (single-handle + RR plan).
+
+**Pattern:** when a terse "prove X fully" hits a genuine RR-scale Mathlib wall, make the
+real achievable progress (the mechanism), back the wall claim with verified research, and
+surface the scoping decision — don't either silently stop at the wall OR silently commit
+the user to a months-long build.
