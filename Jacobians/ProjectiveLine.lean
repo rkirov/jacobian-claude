@@ -308,6 +308,18 @@ instance : IsManifold 𝓘(ℂ) ω RiemannSphere := by
       rw [invMap_coe_zero, chartInfty_apply_infty]
     · rw [invMap_coe_of_ne hz0, chartInfty_apply_coe (inv_ne_zero hz0), inv_inv]
 
+/-! ### Milestone 4 — homeomorphism with the Euclidean 2-sphere
+
+Since `ℂ` has real dimension `2`, its one-point compactification is homeomorphic to the unit
+sphere in `ℝ³`. This is `onePointEquivSphereOfFinrankEq` with `V = ℂ`, `ι = Fin 3`
+(`finrank ℝ ℂ + 1 = 2 + 1 = 3 = Fintype.card (Fin 3)`), the stereographic projection. -/
+
+/-- The Riemann sphere is homeomorphic to the unit `2`-sphere `S² ⊆ ℝ³` (stereographic
+projection). -/
+def homeoSphere : RiemannSphere ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1 :=
+  onePointEquivSphereOfFinrankEq (V := ℂ) (ι := Fin 3) (by
+    simp [Complex.finrank_real_complex])
+
 end RiemannSphere
 
 end Jacobians
