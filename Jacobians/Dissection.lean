@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.SmoothPathCore
+import Jacobians.PeriodMatrixIndep
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 
@@ -34,18 +35,46 @@ set_option linter.unusedSectionVars false
 
 namespace Jacobians
 
-open scoped Manifold ContDiff Bundle Topology
+open scoped Manifold ContDiff Bundle Topology ComplexOrder
+open Matrix
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- **Canonical dissection of a compact Riemann surface.** A symplectic homology basis of `2g`
-closed smooth loops whose periods `ℤ`-generate the period lattice.
+/-- The `ℝ`-linear splitting `Fin g ⊕ Fin g ≃ Fin (2g)` separating the `a`-loops from the `b`-loops
+(`a₁,…,a_g` then `b₁,…,b_g`). -/
+def periodSplit (g : ℕ) : Fin g ⊕ Fin g ≃ Fin (2 * g) :=
+  finSumFinEquiv.trans (finCongr (two_mul g).symm)
 
-(Pass-1 scaffold: carries the loops + closedness + generation, which is all the *assembly* needs.
-The cut-surface 2-cell data — a polygon-gluing map + boundary word + intersection numbers — needed
-to *prove* `periodVec_linearIndependent` via Green's theorem will be added as further fields when
-that proof is built; see `docs/period_realbasis_plan.md`.) -/
+/-- The `a`-period block of a loop family: row `a`, column `j` is the period `∮_{a_a} ω_j` of the
+`j`-th basis form over the `a`-th `a`-loop. -/
+noncomputable def aPeriodBlock (loop : Fin (2 * genus X) → (ℝ → X)) :
+    Matrix (Fin (genus X)) (Fin (genus X)) ℂ :=
+  Matrix.of fun a j => periodVec (loop (periodSplit (genus X) (Sum.inl a))) j
+
+/-- The `b`-period block: row `b`, column `j` is the period `∮_{b_b} ω_j`. -/
+noncomputable def bPeriodBlock (loop : Fin (2 * genus X) → (ℝ → X)) :
+    Matrix (Fin (genus X)) (Fin (genus X)) ℂ :=
+  Matrix.of fun b j => periodVec (loop (periodSplit (genus X) (Sum.inr b))) j
+
+/-- The Riemann period Hermitian form `H = −i(AᵀB̄ − BᵀĀ)` (`A,B` the period blocks). Its
+positive-definiteness is Riemann's second bilinear relation. -/
+noncomputable def periodHermitian (loop : Fin (2 * genus X) → (ℝ → X)) :
+    Matrix (Fin (genus X)) (Fin (genus X)) ℂ :=
+  (-Complex.I) • ((aPeriodBlock loop)ᵀ * (bPeriodBlock loop).map (starRingEnd ℂ)
+    - (bPeriodBlock loop)ᵀ * (aPeriodBlock loop).map (starRingEnd ℂ))
+
+/-- **Canonical dissection of a compact Riemann surface.** A symplectic homology basis of `2g`
+closed smooth loops whose periods `ℤ`-generate the period lattice, **together with the two Riemann
+bilinear relations** for their period matrix.
+
+The loops + closedness + generation are the *topological* content. The two relation fields
+(`periodRel_vanishing`, `periodRel_posDef`) are the *analytic* Riemann bilinear relations, classically
+proven from the same cut-surface via Green's theorem (the box-level analytic core is built in
+`Jacobians.GreenPositivity`/`Jacobians.BoundaryPositivity`; the cut-chart/boundary-word that turns
+`∮_{∂box}` into the period sum, and the `4g`-gon Stokes for `g ≥ 2`, remain part of the isolated
+input `exists_canonicalDissection`). Bundling them here keeps the public API of
+`exists_periodLattice_realBasis` hypothesis-free. See `docs/period_realbasis_plan.md`. -/
 structure CanonicalDissection (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] where
   /-- The `2g` symplectic homology-basis loops `a₁,…,a_g,b₁,…,b_g`. -/
@@ -56,25 +85,47 @@ structure CanonicalDissection (X : Type*) [TopologicalSpace X] [T2Space X] [Comp
   (Encodes `H₁`-generation together with period homology-invariance, at the period level.) -/
   generates : closedLoopPeriods X ⊆
     Submodule.span ℤ (Set.range (fun k => periodVec (loop k)))
+  /-- **Riemann's first bilinear relation** (vanishing): `AᵀB = BᵀA` for the `a`/`b`-period blocks.
+  Classically `∑ₖ(A_{lk}B_{jk} − B_{lk}A_{jk}) = ∬_X ω_l∧ω_j = 0` (wedge of holomorphic `(1,0)`-forms). -/
+  periodRel_vanishing :
+    (aPeriodBlock loop)ᵀ * bPeriodBlock loop = (bPeriodBlock loop)ᵀ * aPeriodBlock loop
+  /-- **Riemann's second bilinear relation** (positivity): the Hermitian form `H = −i(AᵀB̄ − BᵀĀ)`
+  is positive definite. Classically `−i∑ₖ(A_kB̄_k − B_kĀ_k) = ∬_X ω∧ω̄ > 0` for `ω ≠ 0`. -/
+  periodRel_posDef : (periodHermitian loop).PosDef
 
-/-- **[ISOLATED TOPOLOGICAL INPUT]** Every compact connected Riemann surface admits a canonical
-dissection. This is the surface-topology content (`H₁(X;ℤ) ≅ ℤ^{2g}`, the canonical `4g`-gon
-dissection, period homology-invariance), which Mathlib has no path to for surfaces; it is therefore
-isolated here rather than discharged. (Forster §§20–21; Miranda Ch. V.) -/
+/-- **[ISOLATED INPUT]** Every compact connected Riemann surface admits a canonical dissection
+*satisfying the two Riemann bilinear relations*. This bundles the surface-topology content
+(`H₁(X;ℤ) ≅ ℤ^{2g}`, the canonical `4g`-gon dissection, period homology-invariance) — which Mathlib
+has no path to for surfaces — together with the analytic relations (`periodRel_vanishing`,
+`periodRel_posDef`). The analytic relations' box-level core is proven
+(`Jacobians.BoundaryPositivity.boundaryForm_pos`); what stays isolated is the cut-chart/boundary-word
+identification `∮_{∂box} ↦ ∑ₖ(AₖB̄ₖ − BₖĀₖ)` and, for `g ≥ 2`, Stokes on the `4g`-gon. Isolating the
+whole bundle keeps `exists_periodLattice_realBasis` hypothesis-free. (Forster §§20–21; Miranda Ch. V;
+Griffiths–Harris pp. 231–232.) -/
 theorem exists_canonicalDissection (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
     Nonempty (CanonicalDissection X) :=
   sorry
 
-/-- **[ANALYTIC CONTENT — Riemann bilinear relations, deferred to the Green build]** The `2g`
-periods of a canonical dissection are ℝ-linearly independent in `ℂ^g ≅ ℝ^{2g}`. The classical proof
-(Riemann; cut-surface + Green's theorem, NOT Hodge/de Rham) establishes the positivity of the
-Riemann form `−i∑_k (A_k B̄_k − B_k Ā_k) = ∬_X ω∧ω̄ > 0`, which is exactly this independence. See
-`docs/period_realbasis_plan.md` for the dependency sub-tree (`greenOnPolygon`,
-`exists_primitive_simplyConnected`, `riemann_relation_I`, `riemann_relation_positivity`). -/
+/-- **The `2g` periods of a canonical dissection are ℝ-linearly independent** in `ℂ^g ≅ ℝ^{2g}`.
+This is now *proven* from the dissection's two Riemann bilinear relations
+(`periodRel_vanishing` + `periodRel_posDef`) via the matrix-algebra core
+`linearIndependent_periodRows_of_posDef`: positive-definiteness of the period Hermitian form forces
+the doubled period matrix `[Π | Π̄]` to be nonsingular, hence the `2g` real period vectors independent.
+(Riemann; cut-surface + Green's theorem, NOT Hodge/de Rham.) -/
 theorem periodVec_linearIndependent (D : CanonicalDissection X) :
-    LinearIndependent ℝ (fun k => (periodVec (D.loop k) : Fin (genus X) → ℂ)) :=
-  sorry
+    LinearIndependent ℝ (fun k => (periodVec (D.loop k) : Fin (genus X) → ℂ)) := by
+  -- The matrix-algebra core gives independence of the rows of `fromRows A B`, indexed by `g ⊕ g`.
+  have habs := linearIndependent_periodRows_of_posDef
+    (aPeriodBlock D.loop) (bPeriodBlock D.loop) (periodHermitian D.loop) rfl
+    D.periodRel_vanishing D.periodRel_posDef
+  -- Those rows are exactly the period vectors, reindexed along `periodSplit`.
+  have hfr : (fun s : Fin (genus X) ⊕ Fin (genus X) =>
+        (Matrix.fromRows (aPeriodBlock D.loop) (bPeriodBlock D.loop) s : Fin (genus X) → ℂ))
+      = (fun k => periodVec (D.loop k)) ∘ (periodSplit (genus X)) := by
+    funext s; cases s <;> rfl
+  rw [hfr] at habs
+  exact (linearIndependent_equiv (periodSplit (genus X))).mp habs
 
 /-- The real dimension of `ℂ^g` is `2g`. -/
 theorem finrank_real_pi_complex :
