@@ -320,6 +320,51 @@ def homeoSphere : RiemannSphere ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fi
   onePointEquivSphereOfFinrankEq (V := ℂ) (ι := Fin 3) (by
     simp [Complex.finrank_real_complex])
 
+/-! ### Milestone 5 — genus zero
+
+`ℂℙ¹` carries no nonzero global holomorphic 1-form, so its space of such forms is a
+subsingleton and `genus = 0` (`Module.finrank_zero_of_subsingleton`).
+
+The structural reduction below is complete:
+
+```
+genus = finrank ℂ (HolomorphicOneForms ℂℙ¹)
+      = 0                              -- finrank_zero_of_subsingleton
+  ⇐  Subsingleton (HolomorphicOneForms ℂℙ¹)
+  ⇐  ∀ ω : HolomorphicOneForms ℂℙ¹, ω = 0          -- subsingleton_of_forall_eq 0
+  ⇐  ∀ ω x, ω x = 0                                 -- ContMDiffSection.ext
+```
+
+The remaining content is the **Liouville vanishing** `holomorphicOneForm_eq_zero`: a global
+holomorphic 1-form `ω` pulls back, in the affine chart `chartCoe`, to an entire function
+`f : ℂ → ℂ` (the coefficient of `dz`). Compatibility with `chartInfty` forces, on the overlap,
+`f(z) = -w⁻² g(w)` with `w = z⁻¹` and `g` the coefficient in the `∞`-chart; since `g` is
+holomorphic at `w = 0`, `f(z) = O(z⁻²) → 0` as `z → ∞`. Hence `f` is a bounded entire function,
+so constant by Liouville (`Differentiable.exists_eq_const_of_bounded`), and the limit `0` forces
+that constant to be `0`; therefore `ω` vanishes on the affine chart, and by density / continuity
+everywhere.
+
+This is the one genuinely theory-deficient step: Mathlib has Liouville
+(`Mathlib.Analysis.Complex.Liouville`) but not the bridge "global analytic section of the
+holomorphic cotangent bundle ↔ entire function in a chart with the `dz`-transformation law".
+Building that bridge is sizeable analytic-manifold infrastructure (cf. the period-lattice /
+Riemann–Roch gaps elsewhere in this development), so it is isolated here as a single sorry. -/
+
+/-- **Liouville vanishing.** Every global holomorphic 1-form on `ℂℙ¹` is zero.
+
+See the section docstring for the proof outline (chart pull-back → entire coefficient →
+`O(z⁻²)` decay at `∞` → bounded → constant by Liouville → constant `= 0`). The supporting
+"cotangent section ↔ entire chart-coefficient" infrastructure is not yet in Mathlib. -/
+theorem holomorphicOneForm_eq_zero (s : HolomorphicOneForms RiemannSphere) : s = 0 := by
+  sorry
+
+instance : Subsingleton (HolomorphicOneForms RiemannSphere) :=
+  subsingleton_of_forall_eq 0 holomorphicOneForm_eq_zero
+
+/-- The Riemann sphere `ℂℙ¹` has genus `0`. -/
+theorem genus_eq_zero : genus RiemannSphere = 0 :=
+  Module.finrank_zero_of_subsingleton
+
 end RiemannSphere
 
 end Jacobians
