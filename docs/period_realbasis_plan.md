@@ -3,7 +3,36 @@
 **Target** (`PeriodLattice.lean`): `∃ b : Basis (Fin 2g) ℝ (ℂ^g), truePeriodLattice X = span ℤ (range b)`,
 where `truePeriodLattice X = span ℤ (closedLoopPeriods X)` and `periodVec γ = (∮_γ ω₁,…,∮_γ ω_g)`.
 
-## Status: Pillar A DISCHARGED (2026-05-31). Only the isolated input `exists_canonicalDissection` remains.
+## ▶ 2026-05-31 (LATEST) — DIRECTIVE: prove the Riemann relations, isolate ONLY the chart existence.
+
+User: "this theorem is tricky, put all energy into formally proving it"; "isolate and prove — don't
+defer indefinitely (that's how you fool yourself)"; chose **"Chart existence only"** as the isolated
+scope. So: `exists_cutSurface` (Radó triangulation + surface classification — a *named* classical
+theorem absent from Mathlib) is the SINGLE permanent sorry; **everything downstream is proven** —
+pullback `cut^*ω=h dz`, edge change-of-variables, primitive jumps `=` periods, per-handle
+cancellation, the **boundary word**, R1, R2, generation. The bundled R1/R2 fields of
+`CanonicalDissection` become *theorems* derived from a `CutSurface`.
+
+**⚠ Sign bug found & fixed (g=1 audit).** `periodHermitian` was `−i(AᵀB̄−BᵀĀ)` (negative-definite for
+the standard torus!); corrected to **`+i(AᵀB̄−BᵀĀ)`**. Validated TWICE on `ℂ/(ℤ+ℤi)` (`A=1,B=i`):
+direct `∮_{∂box}(z̄ dz)=2i` matches `∑ₖ(BₖĀₖ−AₖB̄ₖ)=2i`, giving `(i/2)∑ₖ(AₖB̄ₖ−BₖĀₖ)=∬|h|²>0` ⟹ `+i`
+form PosDef. **Lesson: run a concrete g=1 example before asserting any sign/positivity.**
+
+**Proven so far in `Jacobians/CutSurface.lean` (axiom-clean):** `rectBoundaryIntegral` (box contour
+integral `∮ f dz`), `rectBoundaryIntegral_eq_zero_of_differentiableOn` (box Cauchy, wraps
+`Complex.integral_boundary_rect_eq_zero_of_differentiableOn`), `riemann_R1_of_boundaryWord` (R1 from
+the boundary word: `F_i·h_j` holomorphic ⟹ `∮=0` ⟹ `AᵀB=BᵀA`).
+
+**The boundary-word grind (next), bottom-up:**
+1. **edge change-of-variables**: `lineIntegral α (cut∘e) = ∫₀¹ (cut^*α)(e t)(e' t) dt` (chain rule
+   `pathSpeed(cut∘e)=mfderiv cut · e'`; repo `velCont_comp`/`pathSpeed_comp…`). Chart-local, reusable.
+2. **pullback holomorphic**: `cut^*ω_j = h_j dz`, `h_j` holomorphic (cut holo interior + ω_j holo).
+3. **primitive jumps**: `F_i|_{aₖ⁻¹} − F_i|_{aₖ} = B_{ki}` (the crossing path is homotopic to `bₖ`;
+   monodromy of the primitive = period). The deepest topological derivation.
+4. **per-handle cancellation** + **boundary word** assembly.
+5. **R2** from boundary word + `boundaryForm_pos`; **generation** from `H₁` generation.
+
+## Status (superseded for the analytic top): Pillar A reduction DONE; now proving the relations.
 
 `Jacobians/Dissection.lean` splits the goal into **two pillars** + a proven **assembly**:
 
