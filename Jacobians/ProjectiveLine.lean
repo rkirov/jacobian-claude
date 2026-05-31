@@ -8,6 +8,7 @@ import Mathlib.Topology.Compactification.OnePoint.Sphere
 import Mathlib.Geometry.Manifold.IsManifold.Basic
 import Mathlib.Geometry.Manifold.Instances.Sphere
 import Mathlib.Analysis.Complex.Basic
+import Mathlib.Analysis.Normed.Field.Lemmas
 import Jacobians.Genus
 
 /-!
@@ -63,6 +64,106 @@ instance : CompactSpace RiemannSphere := inferInstance
 instance : T2Space RiemannSphere := inferInstance
 instance : ConnectedSpace RiemannSphere := inferInstance
 instance : Nonempty RiemannSphere := inferInstance
+
+/-! ### Milestone 2a — the inversion homeomorphism `z ↦ z⁻¹`
+
+The chart at `∞` is built from the inversion `z ↦ 1/z`, which we first package as a
+self-homeomorphism of `OnePoint ℂ` swapping `0 ↔ ∞`. Continuity is checked via
+`OnePoint.continuous_iff`:
+
+* at `∞` (i.e. along `coclosedCompact ℂ = cobounded ℂ`), `z⁻¹ → 0` (`tendsto_inv₀_cobounded`);
+* on the affine part, `z ↦ z⁻¹` is continuous away from `0`, and at `0` the value `∞` is the
+  limit because `z⁻¹ → ∞` as `z → 0` (`tendsto_inv₀_nhdsNE_zero` + `tendsto_coe_infty`).
+
+It is an involution, so the same proof serves for both `toFun` and `invFun`. -/
+
+open Filter Bornology in
+/-- The underlying point map of the inversion: `∞ ↦ 0`, `0 ↦ ∞`, and `z ↦ z⁻¹` otherwise. -/
+def invMap : RiemannSphere → RiemannSphere :=
+  fun p => p.elim (((0 : ℂ)) : RiemannSphere)
+    (fun z => if z = 0 then (OnePoint.infty) else ((z⁻¹ : ℂ) : RiemannSphere))
+
+@[simp] lemma invMap_infty : invMap OnePoint.infty = (((0 : ℂ)) : RiemannSphere) := rfl
+
+lemma invMap_coe (z : ℂ) :
+    invMap (z : RiemannSphere) =
+      if z = 0 then (OnePoint.infty) else ((z⁻¹ : ℂ) : RiemannSphere) := rfl
+
+@[simp] lemma invMap_coe_zero : invMap ((0 : ℂ) : RiemannSphere) = OnePoint.infty := by
+  simp [invMap_coe]
+
+lemma invMap_coe_of_ne {z : ℂ} (hz : z ≠ 0) :
+    invMap (z : RiemannSphere) = ((z⁻¹ : ℂ) : RiemannSphere) := by
+  simp [invMap_coe, hz]
+
+lemma involutive_invMap : Function.Involutive invMap := by
+  intro p
+  induction p using OnePoint.rec with
+  | infty => simp [invMap]
+  | coe z =>
+    by_cases hz : z = 0
+    · subst hz; simp [invMap]
+    · have hz' : (z⁻¹ : ℂ) ≠ 0 := inv_ne_zero hz
+      simp only [invMap, OnePoint.elim_some, hz, if_false, hz', inv_inv]
+
+open Filter Bornology Topology in
+/-- The coercion `ℂ → OnePoint ℂ` tends to `∞` along `cobounded ℂ` (i.e. as `|z| → ∞`). -/
+lemma tendsto_coe_cobounded_infty :
+    Tendsto ((↑) : ℂ → RiemannSphere) (cobounded ℂ) (𝓝 OnePoint.infty) := by
+  have := @OnePoint.tendsto_coe_infty ℂ _
+  rwa [Filter.coclosedCompact_eq_cocompact, ← Metric.cobounded_eq_cocompact] at this
+
+open Filter Bornology Topology in
+lemma tendsto_invMap_infty :
+    Tendsto (fun z : ℂ => invMap (z : RiemannSphere)) (coclosedCompact ℂ) (𝓝 (invMap OnePoint.infty)) := by
+  rw [Filter.coclosedCompact_eq_cocompact, ← Metric.cobounded_eq_cocompact, invMap_infty]
+  have hcoe : Tendsto (fun z : ℂ => ((z⁻¹ : ℂ) : RiemannSphere)) (cobounded ℂ)
+      (𝓝 ((0 : ℂ) : RiemannSphere)) :=
+    (OnePoint.continuous_coe.tendsto _).comp tendsto_inv₀_cobounded
+  refine hcoe.congr' ?_
+  filter_upwards [eventually_ne_cobounded (0 : ℂ)] with z hz
+  simp [invMap_coe, hz]
+
+open Filter Bornology Topology in
+/-- The affine restriction `z ↦ invMap z : ℂ → OnePoint ℂ` is continuous. -/
+lemma continuous_invMap_coe : Continuous (fun z : ℂ => invMap (z : RiemannSphere)) := by
+  rw [continuous_iff_continuousAt]
+  intro z
+  by_cases hz : z = 0
+  · subst hz
+    rw [continuousAt_iff_punctured_nhds, invMap_coe_zero]
+    have key : Tendsto (fun z : ℂ => ((z⁻¹ : ℂ) : RiemannSphere)) (𝓝[≠] (0 : ℂ))
+        (𝓝 OnePoint.infty) :=
+      tendsto_coe_cobounded_infty.comp tendsto_inv₀_nhdsNE_zero
+    refine key.congr' ?_
+    filter_upwards [self_mem_nhdsWithin] with z hz
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hz
+    simp [invMap_coe, hz]
+  · have hev : (fun w : ℂ => invMap (w : RiemannSphere)) =ᶠ[𝓝 z]
+        (fun w : ℂ => ((w⁻¹ : ℂ) : RiemannSphere)) := by
+      filter_upwards [eventually_ne_nhds hz] with w hw
+      simp [invMap_coe, hw]
+    refine ContinuousAt.congr ?_ hev.symm
+    exact OnePoint.continuous_coe.continuousAt.comp (continuousAt_inv₀ hz)
+
+lemma continuous_invMap : Continuous invMap := by
+  rw [OnePoint.continuous_iff]
+  exact ⟨tendsto_invMap_infty, continuous_invMap_coe⟩
+
+/-- Inversion `z ↦ z⁻¹` as a self-homeomorphism of the Riemann sphere, swapping `0 ↔ ∞`.
+This is the change of coordinates between the two standard charts. -/
+def inversionHomeomorph : RiemannSphere ≃ₜ RiemannSphere where
+  toFun := invMap
+  invFun := invMap
+  left_inv := involutive_invMap
+  right_inv := involutive_invMap
+  continuous_toFun := continuous_invMap
+  continuous_invFun := continuous_invMap
+
+@[simp] lemma inversionHomeomorph_apply (p : RiemannSphere) : inversionHomeomorph p = invMap p := rfl
+
+@[simp] lemma inversionHomeomorph_symm_apply (p : RiemannSphere) :
+    inversionHomeomorph.symm p = invMap p := rfl
 
 end RiemannSphere
 
