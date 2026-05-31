@@ -538,12 +538,6 @@ via `divViaOrder`, now that `orderAtPoint_isolated_at` is closed. -/
 noncomputable def MeromorphicFunction.div (f : MeromorphicFunction X) : Divisor X :=
   MeromorphicFunction.divViaOrder X f
 
-/-- The principal divisors: image of `div`. Classical fact:
-every principal divisor has degree 0, so this sits inside
-`DivisorOfDegZero X`. Content sorry — requires the residue theorem. -/
-noncomputable def PrincipalDivisors : AddSubgroup (Divisor X) :=
-  AddSubgroup.closure (Set.range (MeromorphicFunction.div X))
-
 /-- The zero function is trivially meromorphic: chart pullbacks of
 constant functions are constant, hence meromorphic. -/
 theorem IsMeromorphic.zero : IsMeromorphic X (fun _ => 0) := by
@@ -551,47 +545,15 @@ theorem IsMeromorphic.zero : IsMeromorphic X (fun _ => 0) := by
   show MeromorphicAt (fun _ => (0 : ℂ)) ((chartAt (H := ℂ) x) x)
   exact MeromorphicAt.const 0 _
 
-/-! ### `PrincipalDivisors_eq_bot` removed
+/-! ### Principal-divisor scaffolding removed
 
-Under the previous placeholder `div ≡ 0`, `PrincipalDivisors X` was
-the trivial subgroup `⊥`. With `div` now defined as `divViaOrder`,
-this is no longer true in general (principal divisors are nontrivial
-on positive-genus surfaces). The placeholder-specific theorem has
-been removed; `ofCurve_inj`'s former proof via
-`no_distinct_points_placeholder` no longer applies and `ofCurve_inj`
-now needs the real Abel argument (content sorry). -/
-
-/-- **Degree of a principal divisor is zero** (Forster Cor 4.25): for every
-non-constant meromorphic `f`, `deg (div f) = #zeros − #poles = 0`.
-
-This is NOT the manifold-Stokes residue theorem (the "§4.24/triangulation"
-framing in earlier comments was a mis-citation). The clean route is the
-proper-map degree (Forster §4.24): viewing `f : X → ℙ¹`, properness (automatic
-on compact `X`) makes `f` an `n`-sheeted branched cover, so it takes every
-value — in particular `0` and `∞` — exactly `n` times counting multiplicity.
-Hence `#zeros = #poles = n`, i.e. `deg (div f) = 0`. So this shares the
-proper-map / covering machinery of S4 (`§4.22–4.25`), not Stokes. The constant
-case is degenerate (`div = 0`). -/
-theorem deg_div (f : MeromorphicFunction X) :
-    Divisor.deg X (MeromorphicFunction.div X f) = 0 :=
-  sorry
-
-/-- **Principal divisors have degree 0** (Forster Cor 4.25). Every
-principal divisor sits inside `DivisorOfDegZero X`. Reduces to
-`deg_div` (residue theorem) on each generator and extends to the
-subgroup closure by `AddSubgroup.closure_le`. -/
-theorem PrincipalDivisors_le_DivisorOfDegZero :
-    PrincipalDivisors X ≤ DivisorOfDegZero X := by
-  unfold PrincipalDivisors
-  rw [AddSubgroup.closure_le]
-  intro D hD
-  obtain ⟨f, hf⟩ := hD
-  -- hf : MeromorphicFunction.div X f = D
-  -- Goal: D ∈ DivisorOfDegZero X = (Divisor.deg X).ker
-  -- i.e., Divisor.deg X D = 0. Substitute hf and use deg_div.
-  subst hf
-  show Divisor.deg X (MeromorphicFunction.div X f) = 0
-  exact deg_div X f
+The `PrincipalDivisors` subgroup, the residue-theorem leaf `deg_div`
+(`deg (div f) = 0`), and `PrincipalDivisors_le_DivisorOfDegZero` were
+dead: nothing downstream consumed them. `ofCurve_inj` does not route
+through the principal-divisor formulation of Abel's theorem; it needs
+`abelJacobi_twoPoint_ne_zero` directly (content sorry below). The
+degree-0 *target* subgroup `DivisorOfDegZero` survives — `abelJacobi`
+is defined on it. -/
 
 /-! ### Abel–Jacobi map (on divisors of degree 0)
 
