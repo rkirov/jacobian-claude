@@ -829,3 +829,53 @@ assuming a math problem — here it was a benign defeq diamond, beaten by `exact
 large multi-file phase. Per the §3 lesson (checkpoint after a milestone, fresh context
 for the next big phase), surfaced it as the next focused session rather than grinding
 the port at the tail of a long session. #8 proven + isolated is committed (`16e59b2`).
+
+---
+
+## 2026-05-31 (overnight, autonomous) — #7 Pillar A discharged; cut-chart fork flagged
+
+### User direction
+"Keep going on #7" / "Press on" / (earlier) "scaffold deep, fill bottom-up, fill the
+riskiest/deepest part first; use agents but limit churn." Logged-off overnight: work
+autonomously, flag uncertain spots for later review.
+
+### What I did
+Finished the analytic Pillar A of #7 (`exists_periodLattice_realBasis`), bottom-up:
+- Proved the analytic leaves (all axiom-clean, own files): `integral_normSq_pos`
+  (surface positivity ∬box‖h‖²>0), `boundaryForm_pos` (box-level Riemann positivity
+  −(i/2)∮_{∂box} is a positive real) — combining the earlier Green bridge + the
+  surface positivity.
+- Delegated the correctness-critical **matrix-algebra core** to a subagent with a full
+  proof spec (det(NᵀJN)=(det N)²·det J, antidiagonal blocks ±(det H)²≠0 by PosDef.det_pos):
+  `linearIndependent_periodRows_of_posDef` (R1+R2 ⟹ 2g period vectors ℝ-independent),
+  sorry-free + axiom-clean. Reviewed it line-by-line.
+- **Wired it in: `periodVec_linearIndependent` is now PROVEN axiom-clean** (no sorryAx).
+  #7 + the DiscreteTopology/IsZLattice instances now rest on the SINGLE isolated input
+  `exists_canonicalDissection`. Actual sorry count 4 (Genus #1, Abel #3, loop-off-branch
+  #6, exists_canonicalDissection #7). Build green (3338 jobs).
+
+### Architecture decision I made (FLAG FOR REVIEW)
+The two Riemann bilinear relations (R1 `AᵀB=BᵀA`, R2 `H=−i(AᵀB̄−BᵀĀ)` PosDef) are bundled
+as **fields of `CanonicalDissection`**, so `exists_canonicalDissection` now provides topology
+*+* relations. This keeps `exists_periodLattice_realBasis` hypothesis-free (challenge API
+intact). Trade-off: the box analytic leaves (boundaryForm_pos etc.) are the PROVEN core
+*toward* R2 but are **not yet wired** into the final proof — wiring needs the cut-chart
+pullback `cut^*ω=h dz` + the boundary-word `∮_{∂box}↦∑ₖ(AₖB̄ₖ−BₖĀₖ)` + (g≥2) `4g`-gon Stokes,
+all of which are surface-topology/polygon-Green content Mathlib lacks. So I left them isolated.
+
+### Strategic fork awaiting your steer (per "stop-and-ask on architecture")
+Three ways forward on #7, none blocking:
+1. **Treat #7 as isolated-complete** (current state): provable content done; the residual is
+   the designated classical input. Move attention elsewhere.
+2. **Cut-chart refactor** — expose a `CutChart` interface and PROVE R1/R2 from it + the box
+   tools (wiring boundaryForm_pos). Sound analysis, but the boundary-word/4g-gon Stokes stay
+   hypotheses; large, architecture-heavy, mostly repackages the isolated content.
+3. **g=1 validation** — fully construct the torus cut-chart (square = fundamental domain) and
+   discharge R1/R2 for genus 1 end-to-end, exercising the box machinery. Concrete but g=1-only.
+I went with (1) as the default (most defensible, reversible) and am flagging (2)/(3) for you.
+
+### Pattern
+Reduced a deep frontier goal to a single isolated input by (a) building the verifiable
+analytic leaves, (b) delegating the mechanical-but-subtle matrix core to a spec'd subagent,
+(c) bundling the genuinely-missing-math relations into the existing isolated existence rather
+than inventing a new hypothesis class. The challenge API stayed clean throughout.
