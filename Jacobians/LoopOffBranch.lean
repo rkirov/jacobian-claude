@@ -473,6 +473,53 @@ lemma intervalIntegral_form_pathSpeed_eq_of_subball_endpoints
   simp only [hD] at hthis
   linear_combination hthis
 
+/-! ## §off-branch surgery — foundational pieces (Layer A)
+
+The remaining geometric construction for `exists_splicedLoop_off_branchLocus` is assembled here as
+reusable sub-lemmas, then wired together in `Jacobians/TracePullback.lean`.
+
+### A1. Flat seam velocities of `ChartBallPathSmooth`
+
+Every detour piece is a `ChartBallPathSmooth` (a `ChartBallPath` reparametrized by `smoothStep01`).
+Because `smoothStep01` has vanishing derivative at `0` and `1`, the pathSpeed of any such piece
+vanishes at its own endpoints. This is exactly the `pathSpeed γ 1 = 0` / `pathSpeed γ 0 = 0`
+hypothesis that `IsSmoothPath.concat` needs at each seam, so n-fold concatenation of these pieces is
+automatically C¹ with NO velocity-matching. -/
+
+/-- **Seam velocity of `ChartBallPathSmooth` vanishes at `t = 0`.** Via the smoothStep chain rule
+(`pathSpeed_smoothStep01_comp_eq`) and `smoothStep01_deriv 0 = 0`. The chart-pullback
+differentiability of the underlying `ChartBallPath` at `smoothStep01 0 = 0` is supplied by
+`ChartBallPath_chart_at_self_differentiableAt`. -/
+lemma pathSpeed_ChartBallPathSmooth_zero (Q₀ Q : X)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
+    Jacobians.pathSpeed (Jacobians.ChartBallPathSmooth Q₀ Q) 0 = 0 := by
+  have hdiff : DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (Jacobians.ChartBallPath Q₀ Q₀ Q (Jacobians.smoothStep01 0))).toFun ∘
+        Jacobians.ChartBallPath Q₀ Q₀ Q) (Jacobians.smoothStep01 0) :=
+    Jacobians.ChartBallPath_chart_at_self_differentiableAt Q₀ Q₀ Q (Jacobians.smoothStep01 0)
+      (h_chart_ball _ (Jacobians.smoothStep01_mem_unit 0))
+  have h := pathSpeed_smoothStep01_comp_eq (Jacobians.ChartBallPath Q₀ Q₀ Q) 0 hdiff
+  show Jacobians.pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q ∘ Jacobians.smoothStep01) 0 = 0
+  rw [h, Jacobians.smoothStep01_deriv_zero]; simp
+
+/-- **Seam velocity of `ChartBallPathSmooth` vanishes at `t = 1`.** Same as the `t = 0` case, with
+`smoothStep01 1 = 1` and `smoothStep01_deriv 1 = 0`. -/
+lemma pathSpeed_ChartBallPathSmooth_one (Q₀ Q : X)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+        (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
+    Jacobians.pathSpeed (Jacobians.ChartBallPathSmooth Q₀ Q) 1 = 0 := by
+  have hdiff : DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (Jacobians.ChartBallPath Q₀ Q₀ Q (Jacobians.smoothStep01 1))).toFun ∘
+        Jacobians.ChartBallPath Q₀ Q₀ Q) (Jacobians.smoothStep01 1) :=
+    Jacobians.ChartBallPath_chart_at_self_differentiableAt Q₀ Q₀ Q (Jacobians.smoothStep01 1)
+      (h_chart_ball _ (Jacobians.smoothStep01_mem_unit 1))
+  have h := pathSpeed_smoothStep01_comp_eq (Jacobians.ChartBallPath Q₀ Q₀ Q) 1 hdiff
+  show Jacobians.pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q ∘ Jacobians.smoothStep01) 1 = 0
+  rw [h, Jacobians.smoothStep01_deriv_one]; simp
+
 end Jacobians.OfCurveSkeleton
 
 namespace Jacobians
