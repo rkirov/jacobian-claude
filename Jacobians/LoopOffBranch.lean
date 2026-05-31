@@ -642,6 +642,190 @@ lemma exists_relay_dodge_finite (B : Set ℂ) (hB : B.Finite) (c : ℂ) (r : ℝ
       rw [show segment ℝ (cm + t • y) q = segment ℝ q (cm + t • y) from segment_symm _ _ _]
       rw [Set.inter_comm B]; exact ht_good.1
 
+/-! ### A3. General-anchor flat-ended chart path
+
+`ChartBallPathSmooth` (in `SmoothPath.lean`) is anchored at its own start point. For the off-branch
+detour we need a flat-ended chart path between two arbitrary points `P, Q` measured in a *third*
+anchor's chart `chartAt w` (the common cover anchor of the piece), so that all pieces of `δ'` over
+one sub-interval share the chart frame the splice lemma needs. We build it as `ChartBallPath w P Q ∘
+smoothStep01` and prove `IsSmoothPath P Q` for it. Every building block already exists for a general
+anchor (the `_self` in `ChartBallPath_chart_at_self_differentiableAt` refers to the *moving* frame
+`chartAt (γ t)`, not the anchor), so this is the self-anchored `isSmoothPath_ChartBallPathSmooth`
+argument with `chartAt w P`, `chartAt w Q` in place of `chartAt Q₀ Q₀`, `chartAt Q₀ Q`. -/
+
+/-- Flat-ended chart-linear path `P → Q` in the chart at anchor `w` (smoothStep-reparametrized so
+both endpoint velocities vanish). -/
+noncomputable def ChartBallPathSmooth3 (w P Q : X) : ℝ → X :=
+  fun t => Jacobians.ChartBallPath w P Q (Jacobians.smoothStep01 t)
+
+/-- `ChartBallPathSmooth3 w P Q 0 = P` when `P` is in the anchor chart's source. -/
+@[simp] lemma ChartBallPathSmooth3_zero (w P Q : X) (hP : P ∈ (chartAt (H := ℂ) w).source) :
+    ChartBallPathSmooth3 w P Q 0 = P := by
+  unfold ChartBallPathSmooth3
+  rw [Jacobians.smoothStep01_zero]; exact Jacobians.ChartBallPath.start w P Q hP
+
+/-- `ChartBallPathSmooth3 w P Q 1 = Q` when `Q` is in the anchor chart's source. -/
+@[simp] lemma ChartBallPathSmooth3_one (w P Q : X) (hQ : Q ∈ (chartAt (H := ℂ) w).source) :
+    ChartBallPathSmooth3 w P Q 1 = Q := by
+  unfold ChartBallPathSmooth3
+  rw [Jacobians.smoothStep01_one]; exact Jacobians.ChartBallPath.finish w P Q hQ
+
+/-- The chart-`w` pullback of `ChartBallPathSmooth3 w P Q` is the affine interpolation
+reparametrized by `smoothStep01` — used to read off the chart-coordinate endpoints for the splice. -/
+lemma chart_ChartBallPathSmooth3_eq (w P Q : X) (t : ℝ)
+    (h_in_target : ((1 - (Jacobians.smoothStep01 t : ℂ)) * (chartAt (H := ℂ) w) P +
+      (Jacobians.smoothStep01 t : ℂ) * (chartAt (H := ℂ) w) Q) ∈ (chartAt (H := ℂ) w).target) :
+    (chartAt (H := ℂ) w) (ChartBallPathSmooth3 w P Q t) =
+      (1 - (Jacobians.smoothStep01 t : ℂ)) * (chartAt (H := ℂ) w) P +
+        (Jacobians.smoothStep01 t : ℂ) * (chartAt (H := ℂ) w) Q := by
+  unfold ChartBallPathSmooth3
+  exact Jacobians.chart_ChartBallPath_eq w P Q (Jacobians.smoothStep01 t) h_in_target
+
+/-- `ChartBallPathSmooth3 w P Q` stays in the anchor chart source on `[0,1]` under the chart-ball
+hypothesis. -/
+lemma ChartBallPathSmooth3_mem_source (w P Q : X) (t : ℝ)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
+        ∈ (chartAt (H := ℂ) w).target) :
+    ChartBallPathSmooth3 w P Q t ∈ (chartAt (H := ℂ) w).source := by
+  unfold ChartBallPathSmooth3
+  exact Jacobians.ChartBallPath_mem_source w P Q (Jacobians.smoothStep01 t)
+    (h_chart_ball _ (Jacobians.smoothStep01_mem_unit t))
+
+/-- Continuity of `ChartBallPathSmooth3 w P Q` under the chart-ball hypothesis on `[0,1]`. -/
+lemma ChartBallPathSmooth3_continuous (w P Q : X)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
+        ∈ (chartAt (H := ℂ) w).target) :
+    Continuous (ChartBallPathSmooth3 w P Q) := by
+  unfold ChartBallPathSmooth3
+  refine (Jacobians.ChartBallPath_continuousOn_target_set w P Q (Set.Icc 0 1) ?_).comp_continuous
+    Jacobians.smoothStep01_continuous (fun t => Jacobians.smoothStep01_mem_unit t)
+  intro s hs; exact h_chart_ball s hs
+
+/-- Moving-frame chart-pullback differentiability of `ChartBallPathSmooth3` (the `IsSmoothPath.diff`
+field). Chain rule on `(general-anchor ChartBallPath chart-pullback) ∘ smoothStep01`. -/
+lemma ChartBallPathSmooth3_chart_at_differentiableAt (w P Q : X) (t : ℝ)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
+        ∈ (chartAt (H := ℂ) w).target) :
+    DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (ChartBallPathSmooth3 w P Q t)).toFun ∘ ChartBallPathSmooth3 w P Q) t := by
+  have h_at : ((1 - (Jacobians.smoothStep01 t : ℂ)) * (chartAt (H := ℂ) w) P +
+      (Jacobians.smoothStep01 t : ℂ) * (chartAt (H := ℂ) w) Q) ∈ (chartAt (H := ℂ) w).target :=
+    h_chart_ball _ (Jacobians.smoothStep01_mem_unit t)
+  have h_inner : DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (Jacobians.ChartBallPath w P Q (Jacobians.smoothStep01 t))).toFun ∘
+        Jacobians.ChartBallPath w P Q) (Jacobians.smoothStep01 t) :=
+    Jacobians.ChartBallPath_chart_at_self_differentiableAt w P Q (Jacobians.smoothStep01 t) h_at
+  have h_eq : ((chartAt (H := ℂ) (ChartBallPathSmooth3 w P Q t)).toFun ∘ ChartBallPathSmooth3 w P Q) =
+      ((chartAt (H := ℂ) (Jacobians.ChartBallPath w P Q (Jacobians.smoothStep01 t))).toFun ∘
+        Jacobians.ChartBallPath w P Q) ∘ Jacobians.smoothStep01 := by
+    funext s; rfl
+  rw [h_eq]
+  exact h_inner.comp t (Jacobians.smoothStep01_differentiable t)
+
+/-- Velocity-section continuity of `ChartBallPathSmooth3` (the `IsSmoothPath.velCont` field). The
+path is `(chartAt w).symm ∘ β` with `β` the smoothStep-reparametrized affine chart-coord curve;
+push the model-space velocity continuity through the holomorphic chart inverse via
+`velCont_compOn`. -/
+lemma ChartBallPathSmooth3_velCont (w P Q : X)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
+        ∈ (chartAt (H := ℂ) w).target) :
+    ContinuousOn (fun s : ℝ =>
+        Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+          (ChartBallPathSmooth3 w P Q s) (Jacobians.pathSpeed (ChartBallPathSmooth3 w P Q) s))
+      (Set.Icc 0 1) := by
+  set z₀ : ℂ := (chartAt (H := ℂ) w) P with hz₀
+  set z : ℂ := (chartAt (H := ℂ) w) Q with hz
+  set β : ℝ → ℂ := fun t : ℝ =>
+    (1 - (Jacobians.smoothStep01 t : ℂ)) * z₀ + (Jacobians.smoothStep01 t : ℂ) * z with hβ
+  have hβcont : Continuous β := by
+    refine Continuous.add ?_ ?_
+    · exact (continuous_const.sub
+        (Complex.continuous_ofReal.comp Jacobians.smoothStep01_continuous)).mul continuous_const
+    · exact (Complex.continuous_ofReal.comp Jacobians.smoothStep01_continuous).mul continuous_const
+  have hβderiv_eq : deriv β = fun t : ℝ => (Jacobians.smoothStep01_deriv t : ℂ) * (z - z₀) := by
+    funext t
+    have hσ : HasDerivAt (fun s : ℝ => (Jacobians.smoothStep01 s : ℂ))
+        (Jacobians.smoothStep01_deriv t : ℂ) t :=
+      (Jacobians.smoothStep01_hasDerivAt_explicit t).ofReal_comp
+    have hβhd : HasDerivAt β ((Jacobians.smoothStep01_deriv t : ℂ) * (z - z₀)) t := by
+      have h1 : HasDerivAt (fun s : ℝ => (1 - (Jacobians.smoothStep01 s : ℂ)) * z₀)
+          (-(Jacobians.smoothStep01_deriv t : ℂ) * z₀) t := by
+        simpa using (hσ.const_sub 1).mul_const z₀
+      have h2 : HasDerivAt (fun s : ℝ => (Jacobians.smoothStep01 s : ℂ) * z)
+          ((Jacobians.smoothStep01_deriv t : ℂ) * z) t := hσ.mul_const z
+      have hsum := h1.add h2
+      convert hsum using 1; ring
+    exact hβhd.deriv
+  have hβ' : Continuous (deriv β) := by
+    rw [hβderiv_eq]
+    exact (Complex.continuous_ofReal.comp Jacobians.smoothStep01_deriv_continuous).mul
+      continuous_const
+  have hβvel := velCont_modelPath β hβcont hβ'
+  have hVo : IsOpen (chartAt (H := ℂ) w).target := (chartAt (H := ℂ) w).open_target
+  have hg : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω (fun v : ℂ => (chartAt (H := ℂ) w).symm v)
+      (chartAt (H := ℂ) w).target := Jacobians.chartAt_symm_contMDiffOn w
+  have hβV : ∀ s ∈ Set.Icc (0 : ℝ) 1, β s ∈ (chartAt (H := ℂ) w).target := by
+    intro s hs; exact h_chart_ball (Jacobians.smoothStep01 s) (Jacobians.smoothStep01_mem_unit s)
+  have hβdiff : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (β s)).toFun ∘ β) s := by
+    intro s _
+    have hd : DifferentiableAt ℝ β s :=
+      ((differentiableAt_const _).sub
+        (Complex.ofRealCLM.differentiableAt.comp s (Jacobians.smoothStep01_differentiable s))
+          |>.mul (differentiableAt_const _)).add
+        ((Complex.ofRealCLM.differentiableAt.comp s (Jacobians.smoothStep01_differentiable s))
+          |>.mul (differentiableAt_const _))
+    exact hd
+  have hcompOn := velCont_compOn (fun v : ℂ => (chartAt (H := ℂ) w).symm v) hg hVo β hβV
+    hβcont hβdiff hβvel
+  exact hcompOn
+
+/-- **`IsSmoothPath` for the general-anchor flat-ended chart path.** Assembled from the fields
+above; this is the per-piece building block of the off-branch detour. -/
+lemma isSmoothPath_ChartBallPathSmooth3 (w P Q : X)
+    (hP : P ∈ (chartAt (H := ℂ) w).source) (hQ : Q ∈ (chartAt (H := ℂ) w).source)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
+        ∈ (chartAt (H := ℂ) w).target) :
+    Jacobians.IsSmoothPath P Q (ChartBallPathSmooth3 w P Q) :=
+  ⟨ChartBallPathSmooth3_zero w P Q hP, ChartBallPathSmooth3_one w P Q hQ,
+    ChartBallPathSmooth3_continuous w P Q h_chart_ball,
+    fun t _ => ChartBallPathSmooth3_chart_at_differentiableAt w P Q t h_chart_ball,
+    ChartBallPathSmooth3_velCont w P Q h_chart_ball⟩
+
+/-- Endpoint velocities of `ChartBallPathSmooth3` vanish (smoothStep chain rule, as in A1). -/
+lemma pathSpeed_ChartBallPathSmooth3_zero (w P Q : X)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
+        ∈ (chartAt (H := ℂ) w).target) :
+    Jacobians.pathSpeed (ChartBallPathSmooth3 w P Q) 0 = 0 := by
+  have hdiff : DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (Jacobians.ChartBallPath w P Q (Jacobians.smoothStep01 0))).toFun ∘
+        Jacobians.ChartBallPath w P Q) (Jacobians.smoothStep01 0) :=
+    Jacobians.ChartBallPath_chart_at_self_differentiableAt w P Q (Jacobians.smoothStep01 0)
+      (h_chart_ball _ (Jacobians.smoothStep01_mem_unit 0))
+  have h := pathSpeed_smoothStep01_comp_eq (Jacobians.ChartBallPath w P Q) 0 hdiff
+  show Jacobians.pathSpeed (Jacobians.ChartBallPath w P Q ∘ Jacobians.smoothStep01) 0 = 0
+  rw [h, Jacobians.smoothStep01_deriv_zero]; simp
+
+lemma pathSpeed_ChartBallPathSmooth3_one (w P Q : X)
+    (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
+        ∈ (chartAt (H := ℂ) w).target) :
+    Jacobians.pathSpeed (ChartBallPathSmooth3 w P Q) 1 = 0 := by
+  have hdiff : DifferentiableAt ℝ
+      ((chartAt (H := ℂ) (Jacobians.ChartBallPath w P Q (Jacobians.smoothStep01 1))).toFun ∘
+        Jacobians.ChartBallPath w P Q) (Jacobians.smoothStep01 1) :=
+    Jacobians.ChartBallPath_chart_at_self_differentiableAt w P Q (Jacobians.smoothStep01 1)
+      (h_chart_ball _ (Jacobians.smoothStep01_mem_unit 1))
+  have h := pathSpeed_smoothStep01_comp_eq (Jacobians.ChartBallPath w P Q) 1 hdiff
+  show Jacobians.pathSpeed (Jacobians.ChartBallPath w P Q ∘ Jacobians.smoothStep01) 1 = 0
+  rw [h, Jacobians.smoothStep01_deriv_one]; simp
+
 end Jacobians.OfCurveSkeleton
 
 namespace Jacobians
