@@ -84,6 +84,32 @@ theorem linearIndependent_periodRows_of_posDef
   have hLdet : L.det ≠ 0 := by
     rw [hLeq, Matrix.det_neg, Matrix.det_transpose, Fintype.card_fin]
     exact mul_ne_zero (pow_ne_zero _ (by norm_num)) hKdet
+  -- Step 5: det N ≠ 0.
+  -- The swap block matrix P = fromBlocks 0 1 1 0 is its own inverse, hence a unit.
+  set P : Matrix (Fin g ⊕ Fin g) (Fin g ⊕ Fin g) ℂ := Matrix.fromBlocks 0 1 1 0 with hP
+  have hPP : P * P = 1 := by
+    rw [hP, Matrix.fromBlocks_multiply]
+    simp [← Matrix.fromBlocks_one]
+  have hPdetsq : P.det * P.det = 1 := by
+    rw [← Matrix.det_mul, hPP, Matrix.det_one]
+  have hPdet : P.det ≠ 0 := by
+    intro hz
+    rw [hz, mul_zero] at hPdetsq
+    exact one_ne_zero hPdetsq.symm
+  -- The antidiagonal product factors through P and a block-diagonal matrix.
+  have hfac : Matrix.fromBlocks (0 : Matrix (Fin g) (Fin g) ℂ) K L 0
+      = P * Matrix.fromBlocks L 0 0 K := by
+    rw [hP, Matrix.fromBlocks_multiply]
+    simp
+  have hNJNdet : (Nᵀ * J * N).det ≠ 0 := by
+    rw [hNJN, hfac, Matrix.det_mul, Matrix.det_fromBlocks_zero₂₁]
+    exact mul_ne_zero hPdet (mul_ne_zero hLdet hKdet)
+  -- Expand (Nᵀ*J*N).det = N.det * J.det * N.det; nonzero ⟹ N.det ≠ 0.
+  have hNdet : N.det ≠ 0 := by
+    rw [Matrix.det_mul, Matrix.det_mul, Matrix.det_transpose] at hNJNdet
+    intro hz
+    apply hNJNdet
+    rw [hz]; ring
   sorry
 
 end Jacobians
