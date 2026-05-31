@@ -434,26 +434,10 @@ surjectivity of proper non-constant holomorphic maps); (b)
 noncomputable def _root_.ContMDiff.degree (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
   Jacobians.degreeFiber f hf
 
-/-- **Ambient degree identity** (`f_* ∘ f^* = deg(f) • id`; Griffiths–Harris
-Ch. 2 §2.7 — the trace map for forms): the genuine pushforward `ambientPhi`
-(= `Mᵀ`, dual to pullback-of-forms) composed with the genuine pullback
-`ambientPullbackJac` (= `Tᵀ`, transpose of the geometric trace `traceForm`) is
-multiplication by the degree, in ambient coordinates.
-
-`Mᵀ Tᵀ = (T M)ᵀ = (deg • I)ᵀ = deg • I`, where `T M = deg • I` is the trace
-identity `traceForm ∘ pullbackForm = deg • id` (G&H §2.7).
-
-**[open, honest]** Now a *true* statement (no longer the false `MᵀM = deg·I` of
-the old `ambientPhi_ambientPsi_eq`, which used the wrong pullback). Discharged in
-Phase 4 from the S4 §3 preimage cycle + the proven `periodVec_pushforward` + S3
-spanning: `ambientPhi(periodVec Γ) = periodVec(f∘Γ) = deg·periodVec δ` and
-`periodVec Γ = ambientPullbackJac(periodVec δ)`, extended off the lattice by
-full-rank (S3). See `docs/S8_TRACE_PLAN.md`. -/
-theorem ambientPhi_ambientPullback_eq (y : Fin (genus Y) → ℂ) :
-    Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf
-      (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf y) =
-      (ContMDiff.degree f hf) • y :=
-  sorry
+-- `ambientPhi_ambientPullback_eq` (the ambient degree identity `Mᵀ Tᵀ = deg • I`)
+-- is proven below, after the keystone `ambientPhi_ambientPullback_periodVec_of_cycle`
+-- it depends on. It extends the on-period identity off the lattice via the §3
+-- real-period basis (`exists_periodLattice_realBasis`).
 
 /-- **Connection keystone (S4 §3 ⟹ S8, on periods).** If the preimage cycle of a
 loop `δ` is realised by closed smooth loops `loops` with integer `coeffs`
@@ -485,6 +469,104 @@ lemma ambientPhi_ambientPullback_periodVec_of_cycle
   refine Finset.sum_congr rfl (fun i _ => ?_)
   rw [map_zsmul, Jacobians.periodVec_pushforward f hf (loops i) (loops_smooth i).cont
     (loops_smooth i).diff (loops_smooth i).integrable]
+
+/-! ### Off-lattice extension of the ambient degree identity
+
+The keystone `ambientPhi_ambientPullback_periodVec_of_cycle` gives
+`ambientPhi ∘ ambientPullbackJac = deg • id` on each period vector `periodVec δ`.
+We (1) feed it the §3 preimage cycle to get the identity on every `periodVec δ`
+(`…_periodVec_eq`), (2) extend to the whole period lattice by ℤ-linearity
+(`…_on_lattice`), and (3) extend off the lattice to all of `Fin gY → ℂ` using the
+real period basis (`exists_periodLattice_realBasis`, #7): two ℝ-linear maps
+agreeing on an ℝ-basis agree everywhere. -/
+
+/-- **[isolated classical input — discharged via degree well-definedness]** Every
+closed smooth loop `δ` in `Y` admits a preimage cycle whose sheet count is the
+analytic degree of `f`. The cycle from `exists_preimageCycle_of_nonconstant` has
+`sheets = M.n = #(f⁻¹{δ 0})`, a *regular* fibre (`δ 0 ∉ branchLocus f`), whose
+cardinality is `degreeFiber f` by degree well-definedness (ported from Bryan
+Sanchez's `jacobian-lean-challenge`, `degreeFiber_eq_card_of_regular_witness`). -/
+theorem exists_preimageCycle_sheets_eq_degree (δ : ℝ → Y)
+    (hδ : Jacobians.IsClosedSmoothLoop δ) :
+    ∃ c : Jacobians.PreimageCycle f hf δ, c.sheets = ContMDiff.degree f hf :=
+  sorry
+
+/-- The ambient degree identity on a single period vector `periodVec δ`: combine
+the §3 keystone with the cycle-sheets-equal-degree input. -/
+private lemma ambientPhi_ambientPullback_periodVec_eq (δ : ℝ → Y)
+    (hδ : Jacobians.IsClosedSmoothLoop δ) :
+    Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf
+      (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf
+        (Jacobians.periodVec δ)) =
+      (ContMDiff.degree f hf) • Jacobians.periodVec δ := by
+  obtain ⟨c, hc⟩ := exists_preimageCycle_sheets_eq_degree f hf δ hδ
+  have hpush : ∑ i, c.coeffs i • Jacobians.periodVec (f ∘ c.loops i) =
+      (ContMDiff.degree f hf) • Jacobians.periodVec δ := by
+    rw [c.pushforward_eq, hc]; exact natCast_zsmul _ _
+  exact ambientPhi_ambientPullback_periodVec_of_cycle f hf
+    c.loops c.loops_smooth c.coeffs δ c.pullback_eq hpush
+
+/-- The ambient degree identity on the whole period lattice of `Y`, by ℤ-linear
+extension from the `periodVec δ` generators (`Submodule.span_induction`). -/
+private lemma ambientPhi_ambientPullback_eq_on_lattice (v : Fin (genus Y) → ℂ)
+    (hv : v ∈ Jacobians.truePeriodLattice Y) :
+    Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf
+      (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf v) =
+      (ContMDiff.degree f hf) • v := by
+  rw [Jacobians.truePeriodLattice] at hv
+  induction hv using Submodule.span_induction with
+  | mem x hx =>
+    obtain ⟨δ, hδ, rfl⟩ := hx
+    exact ambientPhi_ambientPullback_periodVec_eq f hf δ hδ
+  | zero => simp
+  | add x y _ _ ihx ihy => rw [map_add, map_add, smul_add, ihx, ihy]
+  | smul a x _ ih => rw [map_zsmul, map_zsmul, ih, smul_comm]
+
+/-- **Ambient degree identity** (`f_* ∘ f^* = deg(f) • id`; Griffiths–Harris
+Ch. 2 §2.7 — the trace map for forms). The genuine pushforward `ambientPhi`
+(= `Mᵀ`) composed with the genuine pullback `ambientPullbackJac` (= `Tᵀ`) is
+multiplication by the degree, in ambient coordinates.
+
+Proven: the keystone gives it on every `periodVec δ`
+(`ambientPhi_ambientPullback_periodVec_eq`), ℤ-linearity extends it to the period
+lattice (`ambientPhi_ambientPullback_eq_on_lattice`), and the real period basis
+(#7, `exists_periodLattice_realBasis`) extends it off the lattice. The composite
+`ambientPhi ∘ ambientPullbackJac` is ℂ-linear and agrees with `deg • id` on the
+ℝ-basis `b`; writing `y = ∑ᵢ (b.repr y i) • b i` and pushing the ℂ-linear map
+through the sum (converting each real scalar to its complex coercion) gives the
+identity everywhere. The only remaining input is the cycle sheet-count = degree
+(`exists_preimageCycle_sheets_eq_degree`). -/
+theorem ambientPhi_ambientPullback_eq (y : Fin (genus Y) → ℂ) :
+    Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf
+      (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf y) =
+      (ContMDiff.degree f hf) • y := by
+  classical
+  obtain ⟨b, hb⟩ := Jacobians.exists_periodLattice_realBasis (X := Y)
+  -- The ℂ-linear composite `ambientPhi ∘ ambientPullbackJac`.
+  set Φ : (Fin (genus Y) → ℂ) →L[ℂ] (Fin (genus Y) → ℂ) :=
+    (Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf).comp
+      (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf) with hΦ
+  -- Real scalars on `Fin gY → ℂ` act as their complex coercion (componentwise).
+  have hsmul : ∀ (s : ℝ) (a : Fin (genus Y) → ℂ), s • a = (↑s : ℂ) • a :=
+    fun s a => by funext j; simp [Complex.real_smul]
+  -- `Φ` agrees with `deg • id` on each basis vector (each lies in the lattice).
+  have hlat : ∀ i, Φ (b i) = (ContMDiff.degree f hf) • b i := by
+    intro i
+    have hmem : b i ∈ Jacobians.truePeriodLattice Y := by
+      rw [hb]; exact Submodule.subset_span ⟨i, rfl⟩
+    show Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf
+        (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (b i)) = _
+    exact ambientPhi_ambientPullback_eq_on_lattice f hf (b i) hmem
+  -- Hence on every real multiple of a basis vector, by ℂ-linearity of `Φ`.
+  have per_term : ∀ (r : ℝ) (i : Fin (2 * genus Y)),
+      Φ (r • b i) = (ContMDiff.degree f hf) • (r • b i) := by
+    intro r i
+    rw [hsmul r (b i), map_smul, hlat i, smul_comm, ← hsmul r (b i)]
+  -- Expand `y` in the basis and push `Φ` through the sum.
+  show Φ y = (ContMDiff.degree f hf) • y
+  conv_lhs => rw [← b.sum_repr y, map_sum]
+  conv_rhs => rw [← b.sum_repr y, Finset.smul_sum]
+  exact Finset.sum_congr rfl (fun i _ => per_term (b.repr y i) i)
 
 lemma pushforward_pullback
     (P : Jacobian Y) :
