@@ -165,6 +165,94 @@ def inversionHomeomorph : RiemannSphere ≃ₜ RiemannSphere where
 @[simp] lemma inversionHomeomorph_symm_apply (p : RiemannSphere) :
     inversionHomeomorph.symm p = invMap p := rfl
 
+/-! ### Milestone 2b — the two charts and the `ChartedSpace ℂ` structure
+
+* `chartCoe : OpenPartialHomeomorph RiemannSphere ℂ` is the affine chart, the inverse of the
+  open embedding `ℂ ↪ OnePoint ℂ`. Its source is `{∞}ᶜ` and it is the identity on `ℂ`.
+* `chartInfty : OpenPartialHomeomorph RiemannSphere ℂ` is the chart at `∞`, obtained by
+  pre-composing `chartCoe` with the inversion. Its source is `{0}ᶜ`, it sends `∞ ↦ 0` and
+  `w ↦ w⁻¹` for finite `w ≠ 0`.
+
+`chartAt` chooses `chartInfty` at `∞` and `chartCoe` everywhere else. -/
+
+/-- The affine chart `ℂℙ¹ ⊇ {∞}ᶜ ≃ ℂ`: the inverse of the open embedding `ℂ ↪ OnePoint ℂ`. -/
+def chartCoe : OpenPartialHomeomorph RiemannSphere ℂ :=
+  (OnePoint.isOpenEmbedding_coe.toOpenPartialHomeomorph ((↑) : ℂ → RiemannSphere)).symm
+
+@[simp] lemma chartCoe_source : chartCoe.source = {OnePoint.infty}ᶜ := by
+  simp only [chartCoe, OpenPartialHomeomorph.symm_source,
+    Topology.IsOpenEmbedding.toOpenPartialHomeomorph_target]
+  exact OnePoint.compl_infty.symm
+
+@[simp] lemma chartCoe_target : chartCoe.target = Set.univ := by
+  simp only [chartCoe, OpenPartialHomeomorph.symm_target,
+    Topology.IsOpenEmbedding.toOpenPartialHomeomorph_source]
+
+lemma chartCoe_apply_coe (z : ℂ) : chartCoe (z : RiemannSphere) = z :=
+  OnePoint.isOpenEmbedding_coe.toOpenPartialHomeomorph_left_inv _
+
+@[simp] lemma chartCoe_symm_apply (z : ℂ) : chartCoe.symm z = (z : RiemannSphere) := rfl
+
+/-- The chart at `∞`: pre-compose the affine chart with the inversion `z ↦ z⁻¹`. -/
+def chartInfty : OpenPartialHomeomorph RiemannSphere ℂ :=
+  inversionHomeomorph.toOpenPartialHomeomorph.trans chartCoe
+
+@[simp] lemma chartInfty_source : chartInfty.source = {((0 : ℂ) : RiemannSphere)}ᶜ := by
+  rw [chartInfty, OpenPartialHomeomorph.trans_source]
+  simp only [Homeomorph.toOpenPartialHomeomorph_source, Set.univ_inter,
+    Homeomorph.toOpenPartialHomeomorph_apply, chartCoe_source]
+  ext p
+  simp only [Set.mem_preimage, Set.mem_compl_iff, Set.mem_singleton_iff,
+    inversionHomeomorph_apply]
+  constructor
+  · intro h hp; apply h; rw [hp]; simp
+  · intro h hp
+    apply h
+    have := congrArg invMap hp
+    rwa [involutive_invMap, invMap_infty] at this
+
+lemma chartInfty_apply_infty : chartInfty OnePoint.infty = 0 := by
+  rw [chartInfty, OpenPartialHomeomorph.trans_apply]
+  simp only [Homeomorph.toOpenPartialHomeomorph_apply, inversionHomeomorph_apply, invMap_infty]
+  exact chartCoe_apply_coe 0
+
+lemma chartInfty_apply_coe {z : ℂ} (hz : z ≠ 0) :
+    chartInfty (z : RiemannSphere) = z⁻¹ := by
+  rw [chartInfty, OpenPartialHomeomorph.trans_apply]
+  simp only [Homeomorph.toOpenPartialHomeomorph_apply, inversionHomeomorph_apply,
+    invMap_coe_of_ne hz]
+  exact chartCoe_apply_coe _
+
+/-- `chartAt` for the Riemann sphere: the chart at `∞` for the point `∞`, the affine chart
+on every finite point. Defined by the `OnePoint` eliminator to avoid a decidability instance. -/
+def chartAtRS (p : RiemannSphere) : OpenPartialHomeomorph RiemannSphere ℂ :=
+  p.elim chartInfty (fun _ => chartCoe)
+
+@[simp] lemma chartAtRS_infty : chartAtRS OnePoint.infty = chartInfty := rfl
+
+@[simp] lemma chartAtRS_coe (z : ℂ) : chartAtRS (z : RiemannSphere) = chartCoe := rfl
+
+lemma mem_chartAtRS_source (p : RiemannSphere) : p ∈ (chartAtRS p).source := by
+  induction p using OnePoint.rec with
+  | infty =>
+    rw [chartAtRS_infty, chartInfty_source]
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+    exact OnePoint.infty_ne_coe 0
+  | coe z =>
+    rw [chartAtRS_coe, chartCoe_source]
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+    exact OnePoint.coe_ne_infty z
+
+/-- The two standard charts make the Riemann sphere a `ChartedSpace ℂ`. -/
+instance : ChartedSpace ℂ RiemannSphere where
+  atlas := {chartCoe, chartInfty}
+  chartAt := chartAtRS
+  mem_chart_source := mem_chartAtRS_source
+  chart_mem_atlas p := by
+    induction p using OnePoint.rec with
+    | infty => exact Set.mem_insert_of_mem _ rfl
+    | coe z => exact Set.mem_insert _ _
+
 end RiemannSphere
 
 end Jacobians
