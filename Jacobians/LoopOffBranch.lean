@@ -1,5 +1,7 @@
 import Jacobians.SmoothPathCore
 import Mathlib.Analysis.Complex.HasPrimitives
+import Mathlib.Analysis.Normed.Module.Connected
+import Mathlib.Topology.Algebra.Module.Cardinality
 
 /-!
 # Chart-local FTC for the line integral, and the off-branch-loop foundations
@@ -519,6 +521,126 @@ lemma pathSpeed_ChartBallPathSmooth_one (Q₀ Q : X)
   have h := pathSpeed_smoothStep01_comp_eq (Jacobians.ChartBallPath Q₀ Q₀ Q) 1 hdiff
   show Jacobians.pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q ∘ Jacobians.smoothStep01) 1 = 0
   rw [h, Jacobians.smoothStep01_deriv_one]; simp
+
+/-! ### A2. Planar two-segment dodge in ℂ
+
+The geometric heart of the off-branch detour: given a finite set `B ⊆ ℂ` (the chart-coordinate
+image of the branch locus), an open ball `Metric.ball c r`, and two points `p, q` in the ball off
+`B`, there is a relay point `m` in the ball such that both segments `[p,m]` and `[m,q]` stay in the
+ball and avoid `B`. This is the convex/ball-confined analogue of Mathlib's
+`Set.Countable.isPathConnected_compl_of_one_lt_rank` (whose proof is the same two-segment dodge),
+specialized so the relay stays inside a prescribed ball. The detour `p → m → q` is then pulled back
+through the chart and reparametrized (smoothStep) to give a flat-ended off-branch chart path. -/
+
+/-- A neighborhood of `0` in the relay parameter keeps `c + t·y` inside the ball. -/
+private lemma eventually_relay_mem_ball (c : ℂ) (r : ℝ) (hr : 0 < r) (y : ℂ) :
+    ∀ᶠ t : ℝ in nhds 0, c + (t : ℂ) * y ∈ Metric.ball c r := by
+  have hcont : Continuous (fun t : ℝ => c + (t : ℂ) * y) :=
+    continuous_const.add (Complex.continuous_ofReal.mul continuous_const)
+  have h0 : Filter.Tendsto (fun t : ℝ => c + (t : ℂ) * y) (nhds 0) (nhds c) := by
+    simpa using hcont.tendsto 0
+  exact h0.eventually_mem (Metric.ball_mem_nhds c hr)
+
+/-- **Two-segment planar dodge, ball-confined.** For a finite `B ⊆ ℂ`, an open ball and two points
+`p, q` of the ball off `B`, a relay `m` in the ball exists with `[p,m]` and `[m,q]` inside the ball
+and disjoint from `B`.
+
+The argument is the ball-confined version of Mathlib's
+`Set.Countable.isPathConnected_compl_of_one_lt_rank`: writing `p = cm - x`, `q = cm + x` with `cm`
+the midpoint, pick a relay direction `y` linearly independent from `x`; the pencils of segments from
+`p` (resp. `q`) to `cm + t·y` are pairwise disjoint off their common vertex, so only countably many
+`t` let a segment meet the (countable) `B`. The midpoint `cm` lies in the convex ball, so a whole
+neighborhood of `t = 0` keeps `cm + t·y` in the ball; intersecting with the cofinite good set (dense
+complement) yields a valid `t`. -/
+lemma exists_relay_dodge_finite (B : Set ℂ) (hB : B.Finite) (c : ℂ) (r : ℝ)
+    (p q : ℂ) (hp : p ∈ Metric.ball c r) (hq : q ∈ Metric.ball c r)
+    (hpB : p ∉ B) (hqB : q ∉ B) :
+    ∃ m ∈ Metric.ball c r,
+      segment ℝ p m ⊆ Metric.ball c r ∧ segment ℝ m q ⊆ Metric.ball c r ∧
+      Disjoint (segment ℝ p m) B ∧ Disjoint (segment ℝ m q) B := by
+  classical
+  have hBc : B.Countable := hB.countable
+  have hr : 0 < r := Metric.pos_of_mem_ball hp
+  -- Midpoint / half-difference decomposition: p = cm - x, q = cm + x.
+  set cm : ℂ := (2 : ℝ)⁻¹ • (p + q) with hcm
+  set x : ℂ := (2 : ℝ)⁻¹ • (q - p) with hx
+  have Ip : cm - x = p := by simp only [hcm, hx]; module
+  have Iq : cm + x = q := by simp only [hcm, hx]; module
+  have hcm_ball : cm ∈ Metric.ball c r := by
+    have hmid : cm ∈ segment ℝ p q :=
+      ⟨(2:ℝ)⁻¹, (2:ℝ)⁻¹, by norm_num, by norm_num, by norm_num, by rw [hcm]; module⟩
+    exact (convex_ball c r).segment_subset hp hq hmid
+  -- Relay direction `y` linearly independent from `x`; if `x = 0` then `p = q`, handle separately.
+  rcases eq_or_ne x 0 with hx0 | hxne
+  · -- p = q: relay m = p works with degenerate segments.
+    have hpq : p = q := by rw [← Ip, ← Iq, hx0]; ring
+    refine ⟨p, hp, ?_, ?_, ?_, ?_⟩
+    · rw [show segment ℝ p p = {p} from segment_same ℝ p]; exact Set.singleton_subset_iff.2 hp
+    · rw [← hpq, show segment ℝ p p = {p} from segment_same ℝ p]
+      exact Set.singleton_subset_iff.2 hp
+    · rw [show segment ℝ p p = {p} from segment_same ℝ p]; exact Set.disjoint_singleton_left.2 hpB
+    · rw [← hpq, show segment ℝ p p = {p} from segment_same ℝ p]
+      exact Set.disjoint_singleton_left.2 hpB
+  · obtain ⟨y, hy⟩ : ∃ y, LinearIndependent ℝ ![x, y] :=
+      exists_linearIndependent_pair_of_one_lt_rank
+        (by rw [Complex.rank_real_complex]; exact_mod_cast one_lt_two) hxne
+    -- bad-t for the q-vertex (q = cm + x) and p-vertex (p = cm - x).
+    have A : Set.Countable {t : ℝ | (segment ℝ q (cm + t • y) ∩ B).Nonempty} := by
+      apply countable_setOf_nonempty_of_disjoint _ (fun t => Set.inter_subset_right) hBc
+      intro t t' htt'
+      apply Set.disjoint_iff_inter_eq_empty.2
+      have N : {cm + x} ∩ B = ∅ := by
+        rw [Set.singleton_inter_eq_empty]; rw [Iq]; exact hqB
+      have hseg : ∀ s : ℝ, segment ℝ q (cm + s • y) = segment ℝ (cm + x) (cm + s • y) := by
+        intro s; rw [Iq]
+      simp only [hseg t, hseg t']
+      rw [Set.inter_assoc, Set.inter_comm B, Set.inter_assoc, Set.inter_self,
+        ← Set.inter_assoc, ← Set.subset_empty_iff, ← N]
+      apply Set.inter_subset_inter_left
+      exact Eq.subset (segment_inter_eq_endpoint_of_linearIndependent_of_ne hy htt'.symm cm)
+    have Bc : Set.Countable {t : ℝ | (segment ℝ p (cm + t • y) ∩ B).Nonempty} := by
+      apply countable_setOf_nonempty_of_disjoint _ (fun t => Set.inter_subset_right) hBc
+      intro t t' htt'
+      apply Set.disjoint_iff_inter_eq_empty.2
+      have N : {cm - x} ∩ B = ∅ := by
+        rw [Set.singleton_inter_eq_empty]; rw [Ip]; exact hpB
+      have hseg : ∀ s : ℝ, segment ℝ p (cm + s • y) = segment ℝ (cm + -x) (cm + s • y) := by
+        intro s; rw [show cm + -x = p by rw [← Ip]; ring]
+      simp only [hseg t, hseg t']
+      rw [Set.inter_assoc, Set.inter_comm B, Set.inter_assoc, Set.inter_self,
+        ← Set.inter_assoc, ← Set.subset_empty_iff, ← N]
+      apply Set.inter_subset_inter_left
+      rw [show cm - x = cm + -x by ring]
+      refine Eq.subset (segment_inter_eq_endpoint_of_linearIndependent_of_ne ?_ htt'.symm cm)
+      have := hy.units_smul ![(-1 : ℝˣ), 1]
+      simpa [← List.ofFn_inj, Matrix.cons_val_zero, Matrix.cons_val_one] using this
+    -- good relay parameters: cofinite (off both bad sets) ∩ keeps cm+t•y in the ball.
+    have hgood : Set.Nonempty (({t : ℝ | (segment ℝ q (cm + t • y) ∩ B).Nonempty} ∪
+        {t : ℝ | (segment ℝ p (cm + t • y) ∩ B).Nonempty})ᶜ ∩
+        {t : ℝ | cm + t • y ∈ Metric.ball c r}) := by
+      have hUnhds : {t : ℝ | cm + t • y ∈ Metric.ball c r} ∈ nhds (0 : ℝ) := by
+        have hcont : Continuous (fun t : ℝ => cm + t • y) := by
+          have : (fun t : ℝ => cm + t • y) = fun t : ℝ => cm + (t : ℂ) * y := by
+            funext t; rw [Complex.real_smul]
+          rw [this]
+          exact continuous_const.add (Complex.continuous_ofReal.mul continuous_const)
+        have h0 : Filter.Tendsto (fun t : ℝ => cm + t • y) (nhds 0) (nhds cm) := by
+          simpa using hcont.tendsto 0
+        exact h0.eventually_mem (Metric.isOpen_ball.mem_nhds hcm_ball)
+      have hdense : Dense (({t : ℝ | (segment ℝ q (cm + t • y) ∩ B).Nonempty} ∪
+          {t : ℝ | (segment ℝ p (cm + t • y) ∩ B).Nonempty})ᶜ) :=
+        Set.Countable.dense_compl ℝ (A.union Bc)
+      exact hdense.inter_nhds_nonempty hUnhds
+    obtain ⟨t, ht_good, ht_ball⟩ := hgood
+    simp only [Set.mem_compl_iff, Set.mem_union, Set.mem_setOf_eq, not_or,
+      Set.not_nonempty_iff_eq_empty] at ht_good
+    refine ⟨cm + t • y, ht_ball, ?_, ?_, ?_, ?_⟩
+    · exact (convex_ball c r).segment_subset hp ht_ball
+    · exact (convex_ball c r).segment_subset ht_ball hq
+    · rw [Set.disjoint_iff_inter_eq_empty]; exact ht_good.2
+    · rw [Set.disjoint_iff_inter_eq_empty, Set.inter_comm]
+      rw [show segment ℝ (cm + t • y) q = segment ℝ q (cm + t • y) from segment_symm _ _ _]
+      rw [Set.inter_comm B]; exact ht_good.1
 
 end Jacobians.OfCurveSkeleton
 
