@@ -879,3 +879,41 @@ Reduced a deep frontier goal to a single isolated input by (a) building the veri
 analytic leaves, (b) delegating the mechanical-but-subtle matrix core to a spec'd subagent,
 (c) bundling the genuinely-missing-math relations into the existing isolated existence rather
 than inventing a new hypothesis class. The challenge API stayed clean throughout.
+
+---
+
+## 2026-05-31 (cont.) — "finish the core of #7" + parallelize Abel/RR research
+
+**User steering (sequence):** (1) "finish the core of #7". (2) Mid-work: *"Kick off an
+agent to research the Abel and Riemann roch path in parallel (can't touch the code but
+can experiment with sketch if needed, can search the web and Mathlib). Then continue
+this work."*
+
+**What I did (judgment + verify, not blind execution):**
+- Read the #7 state: box-level analytic tools (`boundaryForm_pos`, Green bridge), the
+  matrix core (`linearIndependent_periodRows_of_posDef`), and edge change-of-variables
+  were all proven; what was missing = the cut-surface interface + deriving R1/R2 from it.
+  Interpreted "core" = the analytic R1/R2-from-cut-surface derivation (the directive's
+  "prove the relations, isolate only chart existence").
+- **Scaffolded the interface first, compiled, committed, THEN filled the leaf** (repo
+  methodology): `CutSurface` structure + `cutSurface_R1`/`cutSurface_R2` +
+  `exists_cutSurface`(sorry) + `exists_canonicalDissection`(derived) — validated the
+  architecture compiles (R1 proven immediately) before grinding R2.
+- **De-risked the sign-critical R2 by testing every sub-piece standalone** via
+  `lean_run_code` (sum linearity, Hermitian `Mᴴ=−M`, ComplexOrder positivity,
+  dotProduct/mulVec expansion, integral distribution, `HasDerivAt.fun_sum`) BEFORE
+  committing to the file — then assembled `riemann_R2_posDef_of_boundaryWord` and it
+  built clean. Re-validated the R2 sign at g=1 (2·Im τ) as the standing caution requires.
+- **Verified axiom-clean myself** (`lean_verify`): R1, R2, and the R2 core are
+  `[propext,Classical.choice,Quot.sound]`; `exists_canonicalDissection` carries sorryAx
+  ONLY via the isolated `exists_cutSurface`. Didn't trust the build alone.
+- **Launched the Abel/RR research agent in the background** (read-only, web+Mathlib+sketch)
+  per the explicit ask; kept working on R2 meanwhile; folded its (high-quality) report
+  into `docs/abel_riemannroch_research.md` + a memory, and applied its doc correction.
+
+**Patterns reinforced:** scaffold→compile→commit→fill-leaf for a sign-critical analytic
+core; test sub-lemmas standalone before a long build cycle; parallelize independent
+research via a background agent while the main thread grinds. **New finding to remember:**
+#3 (Abel) is logically independent of #7 — the hoped-for meet-in-the-middle does not exist;
+Riemann–Roch is the single highest-leverage missing theorem. Commits `672236e`→`2e35d59`
+(code) + `540e50e` (docs).
