@@ -9,6 +9,7 @@ import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 import Jacobians.ManifoldIFT
 import Jacobians.SmoothPath
 import Jacobians.SmoothPathCore
+import Jacobians.Dissection
 import Jacobians.ZLatticeQuotient
 import Mathlib.Analysis.Complex.OpenMapping
 
@@ -846,13 +847,18 @@ From this, **both** the discreteness and the full-rank-`ℤ`-lattice instances b
 for the `ℤ`-span of a real basis, transported across the lattice equality. So this is the
 only remaining classical content; everything downstream is unconditional given it.
 
-The existence itself is **not in Mathlib**: it needs Hodge / de Rham
-`H¹(X) ≅ ℂ^{2g}` with the holomorphic forms injecting (and this model carries no
-singular `H₁`), which is why it is isolated here rather than discharged. -/
+**Now PROVEN modulo the two-pillar scaffold** (`Jacobians/Dissection.lean`): the *assembly*
+`realBasis_of_canonicalDissection` is unconditional; the remaining inputs are
+`exists_canonicalDissection` (the isolated surface-topology pillar — `H₁(X;ℤ) ≅ ℤ^{2g}` + the
+canonical dissection + period homology-invariance) and `periodVec_linearIndependent` (the analytic
+pillar — the Riemann bilinear relations, to be built via cut-surface + Green's theorem; see
+`docs/period_realbasis_plan.md`). -/
 theorem exists_periodLattice_realBasis :
     ∃ b : Module.Basis (Fin (2 * genus X)) ℝ (Fin (genus X) → ℂ),
-      truePeriodLattice X = Submodule.span ℤ (Set.range ⇑b) :=
-  sorry
+      truePeriodLattice X = Submodule.span ℤ (Set.range ⇑b) := by
+  obtain ⟨D⟩ := exists_canonicalDissection X
+  obtain ⟨b, hb⟩ := realBasis_of_canonicalDissection D
+  exact ⟨b, by rw [truePeriodLattice]; exact hb⟩
 
 /-- **Discrete topology on the period lattice.** Mechanical from
 `exists_periodLattice_realBasis`: a `ℤ`-span of a real basis is discrete
