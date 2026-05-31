@@ -1237,6 +1237,42 @@ theorem sub_div_deriv_tendsto_zero {F : ℂ → ℂ} {w₀ z₀ : ℂ}
     rw [mul_div_mul_left _ _ hp]
   exact (hRlim.mono_left nhdsWithin_le_nhds).congr' hcongr.symm
 
+/-! ### Foundations for the per-preimage estimate (consumed by `…_Y`'s eventual proof)
+
+Two small, reusable facts the exact per-preimage local-coefficient computation rests on:
+the operator-inverse norm `‖T.inverse‖ = ‖T 1‖⁻¹` on `ℂ →L[ℂ] ℂ`, and the scalar
+manifold→chart derivative bridge `mfderiv h x 1 = deriv (h ∘ chart.symm) (chart x)`. -/
+
+/-- **Operator-inverse norm on `ℂ →L[ℂ] ℂ`.** `‖T.inverse‖ = ‖T 1‖⁻¹`, unconditionally:
+at `T 1 = 0` the operator is `0` so both sides vanish (`0⁻¹ = 0`); otherwise `T = (T 1) • id`
+is invertible with inverse `(T 1)⁻¹ • id`. -/
+theorem norm_inverse_clm (T : ℂ →L[ℂ] ℂ) : ‖T.inverse‖ = ‖T (1 : ℂ)‖⁻¹ := by
+  set a : ℂ := T (1 : ℂ) with ha
+  have hT : T = a • ContinuousLinearMap.id ℂ ℂ := clm_eq_apply_one_smul_id T
+  by_cases h : a = 0
+  · have hT0 : T = 0 := by rw [hT, h]; exact zero_smul ℂ (ContinuousLinearMap.id ℂ ℂ)
+    rw [hT0, ContinuousLinearMap.inverse_zero]; simp [h]
+  · have hcomp1 : T.comp (a⁻¹ • ContinuousLinearMap.id ℂ ℂ) = ContinuousLinearMap.id ℂ ℂ := by
+      rw [hT, ContinuousLinearMap.smul_comp, ContinuousLinearMap.comp_smul,
+        ContinuousLinearMap.id_comp, smul_smul, mul_inv_cancel₀ h, one_smul]
+    have hcomp2 : (a⁻¹ • ContinuousLinearMap.id ℂ ℂ).comp T = ContinuousLinearMap.id ℂ ℂ := by
+      rw [hT, ContinuousLinearMap.smul_comp, ContinuousLinearMap.comp_smul,
+        ContinuousLinearMap.id_comp, smul_smul, inv_mul_cancel₀ h, one_smul]
+    rw [ContinuousLinearMap.inverse_eq hcomp1 hcomp2, norm_smul, norm_inv]; simp
+
+/-- **Scalar manifold→chart derivative bridge.** For `h : X → ℂ` MDifferentiable at `x`,
+`mfderiv h x` on the basis vector `1` is the ordinary derivative of the chart pullback
+`h ∘ (chartAt ℂ x).symm` at `(chartAt ℂ x) x`. (Target is the model space `ℂ`, whose charts are
+trivial, so `writtenInExtChartAt = h ∘ chart.symm`; then `fderiv … 1 = deriv` definitionally.) -/
+theorem mfderiv_apply_one_eq_deriv_chartPullback {h : X → ℂ} {x : X}
+    (hh : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) h x) :
+    mfderiv 𝓘(ℂ) 𝓘(ℂ) h x (1 : ℂ) = deriv (h ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := by
+  have hbridge : mfderiv 𝓘(ℂ) 𝓘(ℂ) h x
+      = fderiv ℂ (h ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := by
+    rw [hh.mfderiv, ModelWithCorners.range_eq_univ, fderivWithin_univ]
+    congr 1
+  rw [hbridge]; rfl
+
 /-- **[REMAINING ANALYTIC FRONTIER — the manifold-side of the boundedness crux]**
 
 The `Y`-side of `traceLocalCoeff_mul_sub_tendsto_zero`: in the chart `c := chartAt ℂ y₀`, the
@@ -1246,23 +1282,32 @@ through `y ≠ y₀`. The crux itself follows by composing this with `c.symm` (w
 remaining input.
 
 **Internal decomposition (the actual remaining work).**
-1. *Norm bound.* `‖traceLocalCoeff coeff y₀ y‖ ≤ B · ‖coeff y‖` for `y` near `y₀`, where `B`
-   bounds the fixed-`y₀`-trivialization coordinate change `symmL` near `y₀` (continuous, and
-   `= id` at `y₀` by `tangent_symmL_center`, so `B = 2` works eventually). Reduces the goal to
-   the raw operator norm `(c y − c y₀) · ‖traceFun f α y‖`.
-2. *Fibre-sum triangle + per-preimage estimate.* Off-branch
-   `traceFun f α y = ∑_{x ∈ f⁻¹ y} traceSummand f α x` (finite), so
-   `|c y − c y₀| · ‖traceFun f α y‖ ≤ ∑_x ‖α x‖ · (|c (f x) − c y₀| · ‖(mfderiv f x)⁻¹‖)`.
-   The key per-preimage factor is handled by working with the **scalar map** `g := c ∘ f : X → ℂ`
-   (target the *model space* `ℂ`, whose charts are trivial — no varying target chart): the
-   canonical chart bridge gives `mfderiv g x = fderiv ℂ F (c_{x_j} x)` for the FIXED
-   `F := c ∘ f ∘ (chartAt ℂ x_j).symm` (cf. `LineIntegral.lean` `h_mfderiv`), and the chain rule
-   `mfderiv g x = mfderiv c (f x) · mfderiv f x` gives
-   `‖(mfderiv f x)⁻¹‖ = |mfderiv c (f x)| · |F'(c_{x_j} x)|⁻¹`. Since `c (f x) = F(c_{x_j} x)`,
-   the per-preimage factor is `|mfderiv c (f x)| · (|F(w) − c y₀| / |F'(w)|)`, with
-   `|F(w) − c y₀|/|F'(w)| → 0` by `sub_div_deriv_tendsto_zero` (PROVEN) and `|mfderiv c (f x)|`
-   bounded near `y₀` (the chart `c` is a biholomorphism, `mfderiv c` continuous and nonzero).
-3. *Assembly.* Properness (`X` compact ⟹ `f⁻¹ W ⊆ ⋃_j U_j` for small `W ∋ y₀`) + the uniform
+
+⚠ **A naive `‖traceLocalCoeff coeff y₀ y‖ ≤ B·‖coeff y‖` with a uniform `B` is UNSOUND** (verified
+2026-05-31). For arbitrary operators it is *equivalent* to local boundedness of the bare-fibre
+coordinate `symmL(tangentTriv y₀) y 1`, which is exactly the **genus ≥ 2 obstruction**
+(`CotangentCoeff.lean` `const_one_section_continuous_of_coordChange_fixes_one`): the constant
+native-frame section is discontinuous and not locally bounded (no Riemannian metric is placed on
+`TY`, so no compactness rescue). Hence one must NOT peel the `inCoordinates`/`symmL` factor off
+the operator norm; the obstruction factors **cancel** only when the application
+`inCoordinates(…)(traceSummand f α x) 1` is kept *together* and evaluated *exactly* in one chart.
+
+1. *Exact per-preimage local coefficient (the real content).* Off-branch
+   `traceLocalCoeff (traceFun f α) y₀ y = ∑_{x ∈ f⁻¹ y} inCoordinates(…)(traceSummand f α x) 1`
+   (finite; `inCoordinates`-apply-`1` is additive over the fibre sum). Each term is the local
+   coefficient of a section-pullback and computes **exactly** to `a(w) · S'(z)`, where
+   `S := chart_X ∘ s ∘ c.symm` is the local section read in charts, `z = c y`, `w = S(z)`, and
+   `a` is `α`'s coefficient in `chart_X`. Since `S = F⁻¹` for `F := c ∘ f ∘ chart_X.symm`, we get
+   `S'(z) = 1/F'(w)`, so the term is `a(w)/F'(w)` — *no* `symmL` factor (the `(mfderiv f x)⁻¹`
+   and `e.symmL` chart factors cancel in the common `chart_X` frame). Leverage the operator
+   identity inside `contMDiffAt_pullback_section`
+   (`inCoordinates(sheetPullback) = inCoordinates_X(α) ∘ inCoordinates(mfderiv s)`), evaluated at
+   `1`. Then `(z − c y₀)·a(w)/F'(w) = a(w)·(F(w) − c y₀)/F'(w) → 0` by
+   `sub_div_deriv_tendsto_zero` (PROVEN), `a` bounded.
+   Helper lemmas already proven (kept in `scratch_E.lean` for integration): `norm_inverse_clm`
+   (`‖T.inverse‖ = ‖T 1‖⁻¹` on `ℂ →L ℂ`) and `mfderiv_apply_one_eq_deriv_chartPullback`
+   (`mfderiv h x 1 = deriv (h ∘ chart.symm) (chart x)` for `h : X → ℂ`).
+2. *Assembly.* Properness (`X` compact ⟹ `f⁻¹ W ⊆ ⋃_j U_j` for small `W ∋ y₀`) + the uniform
    off-branch fibre cardinality reduce the finite fibre sum to a finite sum of terms each `→ 0`.
 
 Sound (Forster §10; Griffiths–Harris Ch. 2 §2.7). -/
