@@ -25,6 +25,7 @@ import Jacobians.TracePullback
 import Jacobians.Abel
 import Jacobians.Degree
 import Jacobians.OfCurveAnalyticitySkeleton
+import Jacobians.ULiftManifold
 
 /-
 
@@ -117,39 +118,39 @@ downstream instance across that lift, which needs a `ChartedSpace`-over-
 `ULift` constructor that Mathlib does not currently provide. Left as
 explicit TODO; current signature is `Type`. -/
 @[reducible]
-noncomputable def Jacobian (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+noncomputable def JacobianTorus (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type :=
   (Fin (genus X) → ℂ) ⧸ (periodLattice X).toAddSubgroup
 
-namespace Jacobian
+namespace JacobianTorus
 
 -- data
 /-- The Jacobian of a compact Riemann surface is naturally an additive commutative group. -/
-noncomputable instance : AddCommGroup (Jacobian X) := inferInstance
+noncomputable instance : AddCommGroup (JacobianTorus X) := inferInstance
 
 -- data
 /-- The Jacobian of a compact Riemann surface is naturally a topological space. -/
-noncomputable instance : TopologicalSpace (Jacobian X) := inferInstance
+noncomputable instance : TopologicalSpace (JacobianTorus X) := inferInstance
 
 -- Prop
-noncomputable instance : T2Space (Jacobian X) := inferInstance
+noncomputable instance : T2Space (JacobianTorus X) := inferInstance
 
 -- Prop
-noncomputable instance : CompactSpace (Jacobian X) := inferInstance
+noncomputable instance : CompactSpace (JacobianTorus X) := inferInstance
 
 -- data
 /-- The Jacobian of a compact Riemann surface is a complex manifold, of dimension
 equal to the genus of the surface. -/
-noncomputable instance : ChartedSpace (Fin (genus X) → ℂ) (Jacobian X) := inferInstance
+noncomputable instance : ChartedSpace (Fin (genus X) → ℂ) (JacobianTorus X) := inferInstance
 
 -- Prop
 noncomputable instance :
-    IsManifold (𝓘(ℂ, Fin (genus X) → ℂ)) ω (Jacobian X) :=
+    IsManifold (𝓘(ℂ, Fin (genus X) → ℂ)) ω (JacobianTorus X) :=
   inferInstance
 
 -- Prop
 noncomputable instance :
-    LieAddGroup (𝓘(ℂ, Fin (genus X) → ℂ)) ω (Jacobian X) :=
+    LieAddGroup (𝓘(ℂ, Fin (genus X) → ℂ)) ω (JacobianTorus X) :=
   inferInstance
 
 /-- The Abel-Jacobi map from a compact Riemann surface to its Jacobian.
@@ -160,10 +161,10 @@ quotient. Under the `HasSmoothPaths X` axiom, this is honest content;
 the classical Abel-Jacobi map (Forster §21) integrates a basis of
 holomorphic 1-forms along the path, which is exactly what `periodVec`
 does via `lineIntegral`. -/
-noncomputable def ofCurve (P : X) : X → Jacobian X := fun Q =>
+noncomputable def ofCurve (P : X) : X → JacobianTorus X := fun Q =>
   QuotientAddGroup.mk (Jacobians.periodVec (Jacobians.smoothPath P Q))
 
-/-- **Holomorphic Abel-Jacobi map** (Forster §21): `ofCurve P : X → Jacobian X`
+/-- **Holomorphic Abel-Jacobi map** (Forster §21): `ofCurve P : X → JacobianTorus X`
 is holomorphic.
 
 **Proof structure (local-to-global via `localLift_contMDiffAt`).**
@@ -176,7 +177,7 @@ At each `Q₀ : X`:
   `ContDiffAt.comp_contMDiffAt` chain).
 * Composing with the smooth quotient projection
   `Jacobians.ZLatticeQuotient.contMDiff_mk`, this lands in
-  `Jacobian X` as `ContMDiffAt`.
+  `JacobianTorus X` as `ContMDiffAt`.
 * On a chart neighborhood of `Q₀`, the quotient of the local lift
   agrees with `ofCurve P` (`localLift_quotient_eq_ofCurve_eventually`,
   PROVEN — classical path algebra via `periodVec_concat` +
@@ -310,7 +311,7 @@ lemma ambientPhi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(
 Wired: `ZLatticeQuotient.pushforward` applied to `ambientPhi f hf`. -/
 noncomputable def pushforward (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    Jacobian X →ₜ+ Jacobian Y :=
+    JacobianTorus X →ₜ+ JacobianTorus Y :=
   Jacobians.ZLatticeQuotient.pushforward (periodLattice X) (periodLattice Y)
     (Jacobians.ambientPhi (gX := genus X) (gY := genus Y) f hf)
     (ambientPhi_preserves_lattice f hf)
@@ -325,7 +326,7 @@ theorem pushforward_contMDiff :
     (ambientPhi_preserves_lattice f hf)
 
 -- functoriality
-lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P :=
+lemma pushforward_id_apply (P : JacobianTorus X) : pushforward id contMDiff_id P = P :=
   Jacobians.ZLatticeQuotient.pushforward_id_of_ambient
     (periodLattice X)
     (Jacobians.ambientPhi (gX := genus X) (gY := genus X) id contMDiff_id)
@@ -339,7 +340,7 @@ variable {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [Connecte
 variable (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
 
 -- functoriality
-lemma pushforward_comp_apply (P : Jacobian X) :
+lemma pushforward_comp_apply (P : JacobianTorus X) :
     pushforward (g ∘ f) (hg.comp hf) P = pushforward g hg (pushforward f hf P) := by
   induction P using QuotientAddGroup.induction_on with
   | H x =>
@@ -375,7 +376,7 @@ Wired: `ZLatticeQuotient.pullback` applied to the genuine Jacobian pullback
 `ambientPullbackJac f hf` (= `Tᵀ`). -/
 noncomputable def pullback (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    Jacobian Y →ₜ+ Jacobian X :=
+    JacobianTorus Y →ₜ+ JacobianTorus X :=
   Jacobians.ZLatticeQuotient.pullback (periodLattice X) (periodLattice Y)
     (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus Y) f hf)
     (ambientPullbackJac_preserves_lattice f hf)
@@ -391,7 +392,7 @@ theorem pullback_contMDiff :
 
 -- functoriality
 lemma pullback_id_apply
-    (P : Jacobian X) : pullback id contMDiff_id P = P :=
+    (P : JacobianTorus X) : pullback id contMDiff_id P = P :=
   Jacobians.ZLatticeQuotient.pushforward_id_of_ambient
     (periodLattice X)
     (Jacobians.ambientPullbackJac (gX := genus X) (gY := genus X) id contMDiff_id)
@@ -401,7 +402,7 @@ lemma pullback_id_apply
 
 -- functoriality
 lemma pullback_comp_apply
-    (P : Jacobian Z) :
+    (P : JacobianTorus Z) :
     pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := by
   induction P using QuotientAddGroup.induction_on with
   | H z =>
@@ -596,7 +597,7 @@ theorem ambientPhi_ambientPullback_eq (y : Fin (genus Y) → ℂ) :
   exact Finset.sum_congr rfl (fun i _ => per_term (b.repr y i) i)
 
 lemma pushforward_pullback
-    (P : Jacobian Y) :
+    (P : JacobianTorus Y) :
     pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P :=
   Jacobians.ZLatticeQuotient.pushforward_pullback_of_ambient
     (periodLattice X) (periodLattice Y)
@@ -607,5 +608,127 @@ lemma pushforward_pullback
     (ContMDiff.degree f hf)
     (fun y => ambientPhi_ambientPullback_eq f hf y)
     P
+
+end JacobianTorus
+
+/-! ## Universe-polymorphic Jacobian (challenge v0.4 `Type u`)
+
+`JacobianTorus X` above is a concrete `Type 0` complex torus. The challenge
+signs `Jacobian : Type u` (matching the surface's universe), so we `ULift` the
+torus and re-expose the API as the `ULift`-conjugates of the torus maps. The
+manifold structure transports via `Jacobians.ULiftManifold` (charts /
+`IsManifold` / `LieAddGroup`) and the coordinate maps `contMDiff_uliftUp/Down`;
+the algebra/topology via Mathlib's `ULift` instances, `AddEquiv.ulift`, and
+`continuous_uliftUp/Down`. -/
+
+open Jacobians.ULiftManifold in
+universe u in
+/-- **The Jacobian of a compact Riemann surface**, in the surface's universe
+(`Type u`). Defined as `ULift.{u}` of the concrete `Type 0` complex torus
+`JacobianTorus X`. -/
+@[reducible]
+noncomputable def Jacobian (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type u :=
+  ULift.{u} (JacobianTorus X)
+
+universe v
+
+/-- `ULift.up` as a continuous additive monoid hom. -/
+noncomputable def uliftUpHom (M : Type*) [AddCommGroup M] [TopologicalSpace M] :
+    M →ₜ+ ULift.{v} M :=
+  { (AddEquiv.ulift (α := M)).symm.toAddMonoidHom with continuous_toFun := continuous_uliftUp }
+
+/-- `ULift.down` as a continuous additive monoid hom. -/
+noncomputable def uliftDownHom (M : Type*) [AddCommGroup M] [TopologicalSpace M] :
+    ULift.{v} M →ₜ+ M :=
+  { (AddEquiv.ulift (α := M)).toAddMonoidHom with continuous_toFun := continuous_uliftDown }
+
+namespace Jacobian
+
+open Jacobians.ULiftManifold
+
+-- the seven instances (manifold structure from `ULiftManifold`, algebra/topology
+-- from Mathlib's `ULift` instances)
+noncomputable instance : AddCommGroup (Jacobian X) := inferInstance
+noncomputable instance : TopologicalSpace (Jacobian X) := inferInstance
+noncomputable instance : T2Space (Jacobian X) := inferInstance
+noncomputable instance : CompactSpace (Jacobian X) := inferInstance
+noncomputable instance : ChartedSpace (Fin (genus X) → ℂ) (Jacobian X) := inferInstance
+noncomputable instance : IsManifold 𝓘(ℂ, Fin (genus X) → ℂ) ω (Jacobian X) := inferInstance
+noncomputable instance : LieAddGroup 𝓘(ℂ, Fin (genus X) → ℂ) ω (Jacobian X) := inferInstance
+
+/-- The Abel-Jacobi map from a compact Riemann surface to its Jacobian. -/
+noncomputable def ofCurve (P : X) : X → Jacobian X := fun Q => ULift.up (JacobianTorus.ofCurve P Q)
+
+/-- **Holomorphic Abel-Jacobi map**: `ofCurve P` is holomorphic — the
+`ULift.up`-conjugate of `JacobianTorus.ofCurve_contMDiff`. -/
+lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ) 𝓘(ℂ, Fin (genus X) → ℂ) ω (ofCurve P) :=
+  contMDiff_uliftUp.comp (JacobianTorus.ofCurve_contMDiff P)
+
+lemma ofCurve_self (P : X) : ofCurve P P = 0 := by
+  show ULift.up (JacobianTorus.ofCurve P P) = 0
+  rw [JacobianTorus.ofCurve_self]; rfl
+
+lemma ofCurve_inj (P : X) (h : 0 < genus X) : Function.Injective (ofCurve P) :=
+  fun _ _ hQQ' => JacobianTorus.ofCurve_inj P h (congrArg ULift.down hQQ')
+
+variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+  [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
+variable (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+
+/-- The pushforward map between Jacobians, the `ULift`-conjugate of
+`JacobianTorus.pushforward`. -/
+noncomputable def pushforward (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    Jacobian X →ₜ+ Jacobian Y :=
+  (uliftUpHom (JacobianTorus Y)).comp
+    ((JacobianTorus.pushforward f hf).comp (uliftDownHom (JacobianTorus X)))
+
+theorem pushforward_contMDiff :
+    ContMDiff 𝓘(ℂ, Fin (genus X) → ℂ) 𝓘(ℂ, Fin (genus Y) → ℂ) ω (pushforward f hf) :=
+  contMDiff_uliftUp.comp ((JacobianTorus.pushforward_contMDiff f hf).comp contMDiff_uliftDown)
+
+lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P := by
+  show ULift.up (JacobianTorus.pushforward id contMDiff_id (ULift.down P)) = P
+  rw [JacobianTorus.pushforward_id_apply]
+
+variable {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z]
+  [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+
+variable (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
+
+lemma pushforward_comp_apply (P : Jacobian X) :
+    pushforward (g ∘ f) (hg.comp hf) P = pushforward g hg (pushforward f hf P) := by
+  show ULift.up (JacobianTorus.pushforward (g ∘ f) (hg.comp hf) (ULift.down P)) = _
+  rw [JacobianTorus.pushforward_comp_apply]
+  rfl
+
+/-- The pullback map between Jacobians, the `ULift`-conjugate of
+`JacobianTorus.pullback`. -/
+noncomputable def pullback (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    Jacobian Y →ₜ+ Jacobian X :=
+  (uliftUpHom (JacobianTorus X)).comp
+    ((JacobianTorus.pullback f hf).comp (uliftDownHom (JacobianTorus Y)))
+
+theorem pullback_contMDiff :
+    ContMDiff 𝓘(ℂ, Fin (genus Y) → ℂ) 𝓘(ℂ, Fin (genus X) → ℂ) ω (pullback f hf) :=
+  contMDiff_uliftUp.comp ((JacobianTorus.pullback_contMDiff f hf).comp contMDiff_uliftDown)
+
+lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P := by
+  show ULift.up (JacobianTorus.pullback id contMDiff_id (ULift.down P)) = P
+  rw [JacobianTorus.pullback_id_apply]
+
+lemma pullback_comp_apply (P : Jacobian Z) :
+    pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := by
+  show ULift.up (JacobianTorus.pullback (g.comp f) (hg.comp hf) (ULift.down P)) = _
+  rw [JacobianTorus.pullback_comp_apply]
+  rfl
+
+lemma pushforward_pullback (P : Jacobian Y) :
+    pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P := by
+  show ULift.up (JacobianTorus.pushforward f hf (JacobianTorus.pullback f hf (ULift.down P)))
+    = (ContMDiff.degree f hf) • P
+  rw [JacobianTorus.pushforward_pullback]
+  rfl
 
 end Jacobian

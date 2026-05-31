@@ -12,11 +12,13 @@ The exact v0.4 spec is committed verbatim as
 [`Jacobian_challenge.lean`](Jacobian_challenge.lean) (byte-for-byte identical to
 the gist — `diff` is empty), and [`ChallengeConformance.lean`](ChallengeConformance.lean)
 machine-checks (`lake env lean ChallengeConformance.lean`) that this repo's
-declarations satisfy every v0.4 signature: no `[Nonempty X]` (v0.3), `𝓘(ℂ, E)`
-notation (v0.4). v0.4's notation/`Nonempty` changes are compatible with the pinned
-Mathlib, so no Mathlib bump is needed. (One documented gap: the spec signs
-`Jacobian : Type u`; our construction is `Type 0` — a pre-existing
-universe-polymorphism TODO.)
+declarations satisfy every v0.4 signature **exactly**: no `[Nonempty X]` (v0.3),
+`𝓘(ℂ, E)` notation (v0.4), and the universe-polymorphic `Jacobian : Type u`.
+v0.4's notation/`Nonempty` changes are compatible with the pinned Mathlib, so no
+Mathlib bump is needed. The `Type u` signature is met by `ULift`-ing the concrete
+`Type 0` complex torus to the surface's universe, via new reusable infrastructure
+([`Jacobians/ULiftManifold.lean`](Jacobians/ULiftManifold.lean): "a `ULift` of a
+complex manifold is a complex manifold", which Mathlib lacks).
 
 ## Disclaimer
 

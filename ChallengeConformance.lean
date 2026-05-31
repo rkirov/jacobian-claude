@@ -14,16 +14,18 @@ The whole file is a `noncomputable section`: the data declarations (`Jacobian`,
 `ofCurve`, `pushforward`, …) are noncomputable, and we only care that the
 *types* are inhabited by our declarations, not about code generation.
 
-The one *documented* discrepancy versus v0.4: the spec signs
-`Jacobian : Type u` (universe-polymorphic); our concrete construction is in
-`Type 0`. This is a pre-existing universe-polymorphism TODO (needs a
-`ChartedSpace`-over-`ULift` constructor Mathlib lacks; see `Jacobians.lean`),
-not a v0.4 change. Everything else matches; see the `Jacobian` example below.
+`Jacobian` is genuinely `Type u` (universe-polymorphic), matching the spec: the
+construction `ULift`s the concrete `Type 0` torus to the surface's universe via
+`Jacobians.ULiftManifold` (which supplies the missing "a `ULift` of a complex
+manifold is a complex manifold" instances). The `Jacobian` example below pins
+the `Type u` signature. There are now **no** documented discrepancies.
 -/
 import Jacobians
 
 open scoped ContDiff -- for ω notation
 open scoped Manifold -- for 𝓘 notation
+
+universe u
 
 noncomputable section
 
@@ -41,8 +43,9 @@ example :
     genus X = 0 ↔ Nonempty (X ≃ₜ (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) :=
   genus_eq_zero_iff_homeo
 
--- `Jacobian` — spec signs `Type u`; ours is `Type 0` (documented universe TODO).
-example : Type := Jacobian X
+-- `Jacobian` — genuinely universe-polymorphic `Type u`, matching the spec.
+example (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type u := Jacobian X
 
 namespace Jacobian
 
