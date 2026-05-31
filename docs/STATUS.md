@@ -7,12 +7,12 @@ declarations. Reproduce with `lake env lean AxiomCheck.lean` (clean core) or
 
 A declaration is **clean** iff `#print axioms` reports exactly
 `[propext, Classical.choice, Quot.sound]`. It **carries `sorryAx`** iff that
-appears in its axiom set — i.e. it (transitively) depends on one of the 6 open
+appears in its axiom set — i.e. it (transitively) depends on one of the 4 open
 `sorry`s. `sorryAx` is honest: it is Lean's record that *something* in the
 dependency tree is unproved. There are **0 custom `axiom`s** in the project;
 the only unproved surface is the 6 `sorry`s below.
 
-## The 6 open `sorry`s
+## The 4 open `sorry`s
 
 Every one is a **named classical theorem not in Mathlib** (not a mechanical
 gap). The §3 loop-lifting geometry — the last piece that was "hard Lean, no
@@ -27,7 +27,7 @@ missing math" — is now done (`exists_monodromyLiftFamily`, 2026-05-30); and
 | ~~4~~ | ~~`traceExtendsAt_branchPoint`~~ | — | **✅ DISCHARGED 2026-05-31** (axiom-clean; see below) | — |
 | ~~5~~ | ~~`traceForm_comp`~~ | — | **✅ DISCHARGED 2026-05-31** (axiom-clean; functoriality via off-branch factorization + density of the local coefficient) | — |
 | 6 | `exists_loop_off_branchLocus` | TracePullback.lean:349 | homotope a loop off the branch locus | **critical path** of `pushforward_pullback`; needs manifold Stokes (deferred) |
-| 7 | `exists_periodLattice_realBasis` | PeriodLattice.lean:855 | period lattice has a real basis of ℂ^g (Riemann bilinear) | **universal instance** (see below) |
+| 7 | `exists_canonicalDissection` | Dissection.lean:108 | a canonical dissection exists: surface topology (`H₁≅ℤ^{2g}`, `4g`-gon) **+** the two Riemann bilinear relations | **universal instance** (see below); the analytic core `periodVec_linearIndependent` is now **discharged** axiom-clean, so `exists_periodLattice_realBasis` rests on this single isolated input |
 
 > **Count history (transparency).** Earlier passes miscounted; a verified
 > `grep -rnE '(:=\s*sorry$|^\s*sorry$)' Jacobians.lean Jacobians/` is the
@@ -43,7 +43,13 @@ missing math" — is now done (`exists_monodromyLiftFamily`, 2026-05-30); and
 > `(g∘f)₊=g₊∘f₊`) is now **discharged** (2026-05-31, axiom-clean — sound proof via the
 > off-branch fibre factorization + density of the fixed-frame local coefficient, not the
 > unsound raw-fibre-continuity sketch). **TraceForm.lean is now entirely sorry-free.**
-> Net: **7 → 6 → 5 → 4**.
+> Finally, **#7's analytic core `periodVec_linearIndependent` is now discharged**
+> (2026-05-31, axiom-clean — Riemann bilinear relations ⟹ ℝ-independence via the
+> matrix-algebra core `linearIndependent_periodRows_of_posDef`); the two relations
+> are bundled into `exists_canonicalDissection`, so #7's residual sorry is now that
+> single isolated existence (topology + relations), `Dissection.lean:108`, not the
+> period-lattice theorem itself. Net: **7 → 6 → 5 → 4** (the last move kept the count
+> at 4 but shrank #7 to the isolated input).
 
 ### #4 `traceExtendsAt_branchPoint` — DISCHARGED (2026-05-31), AXIOM-CLEAN
 
@@ -102,9 +108,15 @@ depended on (#4, the trace branch-point, is now **discharged**). So
 
 `Jacobian X = (ℂ^g) ⧸ periodLattice` is only a **complex manifold / Lie group**
 *given* that `periodLattice` is a discrete, full-rank ℤ-lattice. As of 2026-05-31
-both of those are **derived mechanically** (Mathlib `ZSpan`) from the single input
-#7 `exists_periodLattice_realBasis`. Consequently **every statement asserting
-holomorphicity of a map into `Jacobian X` carries `sorryAx` through #7**, even
+both of those are **derived mechanically** (Mathlib `ZSpan`) from
+`exists_periodLattice_realBasis`, which is itself **proven** modulo the single
+isolated input #7 `exists_canonicalDissection` — its analytic Pillar A
+(`periodVec_linearIndependent`, the Riemann-bilinear-relations ⟹ independence step)
+is now discharged axiom-clean via the matrix-algebra core
+`linearIndependent_periodRows_of_posDef` (`PeriodMatrixIndep.lean`); the relations
+themselves are bundled as fields of `CanonicalDissection`. Consequently **every
+statement asserting holomorphicity of a map into `Jacobian X` carries `sorryAx`
+through #7** (now = `exists_canonicalDissection`), even
 though the underlying construction is itself clean: `ofCurve_contMDiff`,
 `pushforward_contMDiff`, `pullback_contMDiff`. Honest reading: *"the Abel–Jacobi
 map is holomorphic" is proven conditional on the period lattice being a lattice* —
