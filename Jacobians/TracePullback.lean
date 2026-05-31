@@ -337,6 +337,86 @@ theorem ambientPullbackJac_periodVec_mem_truePeriodLattice_of_preimageCycle
     Submodule.smul_mem _ (c.coeffs i)
       (periodVec_mem_truePeriodLattice_of_closed _ (c.loops_smooth i))
 
+/-! ### Off-branch detour — per-piece geometric kernel
+
+The chart-coordinate image of the branch locus inside one chart is finite (the branch locus is
+finite), so the proven planar two-segment dodge (`OfCurveSkeleton.exists_relay_dodge_finite`) gives a
+relay point dodging it; pulling the two segments back through the chart and gluing the two flat-ended
+general-anchor chart paths (`OfCurveSkeleton.ChartBallPathSmooth3`) produces a flat-ended off-branch
+smooth path between the two (off-branch) piece endpoints, whose chart image stays in the chosen
+sub-ball. This is the per-piece replacement arc used to build `δ'`. -/
+
+/-- The chart-coordinate image of the branch locus inside the chart at `w` is finite. -/
+lemma finite_chartImage_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ y, f y = y₀) (w : Y) :
+    ((chartAt (H := ℂ) w) '' (branchLocus f ∩ (chartAt (H := ℂ) w).source)).Finite :=
+  ((finite_branchLocus_of_nonconstant f hf hnonconst).inter_of_left _).image _
+
+/-- Off-branch transfer: a chart-target point off the chart-image of the branch locus pulls back to
+a point off the branch locus. -/
+lemma chartSymm_notMem_branchLocus {f : X → Y} {w : Y} {v : ℂ}
+    (hv_target : v ∈ (chartAt (H := ℂ) w).target)
+    (hvB : v ∉ (chartAt (H := ℂ) w) '' (branchLocus f ∩ (chartAt (H := ℂ) w).source)) :
+    (chartAt (H := ℂ) w).symm v ∉ branchLocus f := by
+  intro hmem
+  apply hvB
+  refine ⟨(chartAt (H := ℂ) w).symm v, ⟨hmem, (chartAt (H := ℂ) w).map_target hv_target⟩, ?_⟩
+  exact (chartAt (H := ℂ) w).right_inv hv_target
+
+/-- **Per-piece off-branch detour (geometric kernel).** Given a chart anchor `w`, a sub-ball
+`Metric.ball c r ⊆ (chartAt w).target`, and two points `P, Q` off `branchLocus f` whose chart
+images lie in the sub-ball, there is a flat-ended smooth path `γ : P → Q` that
+* avoids `branchLocus f` on all of `[0,1]`,
+* stays in `(chartAt w).source`,
+* has chart-`w` image inside `Metric.ball c r` on `[0,1]`,
+* has matching chart endpoints `chart (γ 0) = chart P`, `chart (γ 1) = chart Q`,
+* has vanishing endpoint velocities.
+
+The relay is `OfCurveSkeleton.exists_relay_dodge_finite` (planar dodge of the finite
+chart-image of the branch locus); the arc is the concatenation of two
+`OfCurveSkeleton.ChartBallPathSmooth3` hops `P → relay`, `relay → Q`. -/
+lemma exists_offBranch_detour_piece (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ y, f y = y₀)
+    (w P Q : Y) (c : ℂ) (r : ℝ)
+    (hball : Metric.ball c r ⊆ (chartAt (H := ℂ) w).target)
+    (hP_src : P ∈ (chartAt (H := ℂ) w).source) (hQ_src : Q ∈ (chartAt (H := ℂ) w).source)
+    (hP_ball : (chartAt (H := ℂ) w) P ∈ Metric.ball c r)
+    (hQ_ball : (chartAt (H := ℂ) w) Q ∈ Metric.ball c r)
+    (hP_off : P ∉ branchLocus f) (hQ_off : Q ∉ branchLocus f) :
+    ∃ γ : ℝ → Y, IsSmoothPath P Q γ ∧
+      (∀ t : ℝ, γ t ∉ branchLocus f) ∧
+      (∀ t ∈ Set.Icc (0:ℝ) 1, (chartAt (H := ℂ) w) (γ t) ∈ Metric.ball c r) ∧
+      (∀ t ∈ Set.Icc (0:ℝ) 1, γ t ∈ (chartAt (H := ℂ) w).source) ∧
+      pathSpeed γ 0 = 0 ∧ pathSpeed γ 1 = 0 := by
+  classical
+  set e := chartAt (H := ℂ) w with he
+  set B : Set ℂ := e '' (branchLocus f ∩ e.source) with hB
+  have hBfin : B.Finite := finite_chartImage_branchLocus f hf hnonconst w
+  -- chart images of P, Q are off B.
+  have hPB : e P ∉ B := by
+    intro hmem; exact hP_off (by
+      obtain ⟨y, ⟨hy_br, hy_src⟩, hy_eq⟩ := hmem
+      have : y = P := e.injOn hy_src hP_src hy_eq
+      rwa [this] at hy_br)
+  have hQB : e Q ∉ B := by
+    intro hmem; exact hQ_off (by
+      obtain ⟨y, ⟨hy_br, hy_src⟩, hy_eq⟩ := hmem
+      have : y = Q := e.injOn hy_src hQ_src hy_eq
+      rwa [this] at hy_br)
+  -- planar dodge: relay m ∈ ball, segments in ball off B.
+  obtain ⟨m, hm_ball, hseg1_ball, hseg2_ball, hseg1_off, hseg2_off⟩ :=
+    OfCurveSkeleton.exists_relay_dodge_finite B hBfin c r (e P) (e Q) hP_ball hQ_ball hPB hQB
+  set mPt : Y := e.symm m with hmPt
+  have hm_target : m ∈ e.target := hball hm_ball
+  have hmPt_src : mPt ∈ e.source := e.map_target hm_target
+  have he_mPt : e mPt = m := e.right_inv hm_target
+  -- `m` itself is off `B` (it is the shared endpoint of both off-`B` segments).
+  have hmB : m ∉ B := by
+    have hm_in : m ∈ segment ℝ (e P) m := right_mem_segment ℝ (e P) m
+    exact fun hmem => (Set.disjoint_left.mp hseg1_off hm_in) hmem
+  have hmPt_off : mPt ∉ branchLocus f := chartSymm_notMem_branchLocus hm_target hmB
+  sorry
+
 /-- **[open — GEOMETRIC obligation only].** The geometric heart of the off-branch surgery,
 isolated from the (now-proven) analytic telescoping. It asserts the existence of a closed smooth
 loop `δ'` avoiding `branchLocus f`, *together with a partition* `0 = s₀ ≤ ⋯ ≤ sₙ = 1` of `[0,1]`
