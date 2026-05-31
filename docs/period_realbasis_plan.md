@@ -32,11 +32,10 @@ be ADDED to `CanonicalDissection` when filling — "definitions may shift"):
 
 Then the tree, **deepest leaf first** (= fill order):
 
-1. **`greenOnBox`** *(DEEPEST LEAF — fill first; self-contained, pure Mathlib, planar)*.
-   `∮_{∂[0,1]²} α = ∬_{[0,1]²} dα` for a `C¹` 1-form `α = P dx + Q dy` on the box, i.e.
-   `∮_{∂box}(P,Q) = ∬_box (∂Q/∂x − ∂P/∂y)`. **Wrap Mathlib's
-   `MeasureTheory.integral2_divergence_prod_of_hasFDerivAt_off_countable`** (literally 2-D Green in
-   divergence form) into the `∮ = ∬ d` language. Validates the whole approach. [~150–400 LoC]
+1. **`greenOnUnitBox`** ✅ **DONE** (`Jacobians/GreenBox.lean`, axiom-clean, commit `e3f616d`).
+   `∮_{∂[0,1]²}(P dx + Q dy) = ∬_{[0,1]²}(∂Q/∂x − ∂P/∂y)` for ℂ-valued `C¹` `P,Q`, wrapping Mathlib's
+   `integral2_divergence_prod_of_hasFDerivAt` (`f=Q, g=−P`). Boundary orientation: counterclockwise
+   `∫P(·,0)+∫Q(1,·)−∫P(·,1)−∫Q(0,·)` (callers must match this sign). ~45 LoC.
 
 2. **`exists_primitive_on_box`** / **`exists_primitive_simplyConnected`**. A holomorphic `ω`'s
    primitive `f` (`f' = ω`-coeff) on the simply-connected cut box: termwise antiderivative on a
