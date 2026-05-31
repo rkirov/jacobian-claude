@@ -16,7 +16,8 @@ where `truePeriodLattice X = span ℤ (closedLoopPeriods X)` and `periodVec γ =
 
 **Pillar A is DONE.** `periodVec_linearIndependent` is proven via the self-contained matrix-algebra
 core `linearIndependent_periodRows_of_posDef` (`Jacobians/PeriodMatrixIndep.lean`, axiom-clean): the
-two Riemann bilinear relations (R1 `AᵀB=BᵀA`, R2 `H=−i(AᵀB̄−BᵀĀ)` positive-definite) force the doubled
+two Riemann bilinear relations (R1 `AᵀB=BᵀA`, R2 `H=i(AᵀB̄−BᵀĀ)` positive-definite; sign validated at
+`g=1` ↦ `2·Im τ>0`) force the doubled
 period matrix `[Π|Π̄]` nonsingular (`det(NᵀJN)=(det N)²·det J`, antidiagonal blocks `±(det H)²≠0` from
 `PosDef.det_pos`), hence the `2g` real period vectors are independent. The relations enter as fields
 `periodRel_vanishing`/`periodRel_posDef` of `CanonicalDissection`.
@@ -70,7 +71,8 @@ Then the tree, **deepest leaf first** (= fill order):
    on `S₀` (`d(f_jω_l)=ω_j∧ω_l=0`, wedge of holomorphic `(1,0)`-forms in complex-dim 1), so
    `∮_{∂box} cut^*(f_jω_l) = ∬ d = 0`; boundary bookkeeping gives the relation. [~400–800]
 
-5. **`riemann_relation_positivity`** `−i∑_k(A_{jk}\overline{B_{jk}} − B_{jk}\overline{A_{jk}}) > 0`.
+5. **`riemann_relation_positivity`** `i∑_k(A_{jk}\overline{B_{jk}} − B_{jk}\overline{A_{jk}}) > 0`
+   (sign per the `g=1` validation; `−i` would be the negative-definite form).
    - ✅ **Green positivity bridge DONE** (`Jacobians/GreenPositivity.lean`, `integral_normSq_eq_boundary`,
      axiom-clean): for holomorphic `h` on `U⊇[0,1]²` with primitive `F`,
      `∬_box ‖h‖² = −(i/2)·∮_{∂box} F̄ h dz`. (pointwise `d(F̄ h dz)=2i‖h‖²` + `greenOnUnitBox`.)

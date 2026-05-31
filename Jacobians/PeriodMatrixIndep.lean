@@ -17,14 +17,14 @@ variable {g : ℕ}
 /-- **Riemann period independence.** Let `A B : Matrix (Fin g) (Fin g) ℂ` be the `a`-period and
 `b`-period blocks (row = loop, column = holomorphic form). If
 * (R1, vanishing) `Aᵀ * B = Bᵀ * A`, and
-* (R2, positivity) the Hermitian matrix `H = (-I) • (Aᵀ * conj B - Bᵀ * conj A)` is positive
-  definite,
+* (R2, positivity) the Hermitian matrix `H = I • (Aᵀ * conj B - Bᵀ * conj A)` is positive
+  definite (this is the geometric Riemann form; at `g = 1` with `A = 1, B = τ` it is `2·Im τ`),
 then the `2g` period vectors (the rows of `fromRows A B`, indexed by `Fin g ⊕ Fin g`) are
 ℝ-linearly independent in `Fin g → ℂ`. -/
 theorem linearIndependent_periodRows_of_posDef
     (A B : Matrix (Fin g) (Fin g) ℂ)
     (H : Matrix (Fin g) (Fin g) ℂ)
-    (hH : H = (-Complex.I) • (Aᵀ * B.map (starRingEnd ℂ) - Bᵀ * A.map (starRingEnd ℂ)))
+    (hH : H = Complex.I • (Aᵀ * B.map (starRingEnd ℂ) - Bᵀ * A.map (starRingEnd ℂ)))
     (hR1 : Aᵀ * B = Bᵀ * A)
     (hR2 : H.PosDef) :
     LinearIndependent ℝ (fun k : Fin g ⊕ Fin g => (Matrix.fromRows A B k : Fin g → ℂ)) := by
@@ -65,15 +65,15 @@ theorem linearIndependent_periodRows_of_posDef
       rw [e1, e2, hR1]
       abel
   -- Step 4: K and L have nonzero determinant.
-  -- K = I • H.
-  have hKIH : K = Complex.I • H := by
+  -- K = -I • H  (since H = I • K).
+  have hKIH : K = (-Complex.I) • H := by
     rw [hH, smul_smul]
-    rw [show Complex.I * -Complex.I = 1 by rw [mul_neg, Complex.I_mul_I, neg_neg]]
+    rw [show -Complex.I * Complex.I = 1 by rw [neg_mul, Complex.I_mul_I, neg_neg]]
     rw [one_smul]
   have hHdet : H.det ≠ 0 := ne_of_gt hR2.det_pos
   have hKdet : K.det ≠ 0 := by
     rw [hKIH, Matrix.det_smul, Fintype.card_fin]
-    exact mul_ne_zero (pow_ne_zero _ Complex.I_ne_zero) hHdet
+    exact mul_ne_zero (pow_ne_zero _ (neg_ne_zero.mpr Complex.I_ne_zero)) hHdet
   -- L = -Kᵀ.
   have hLt : Lᵀ = -K := by
     rw [hL, hK, Matrix.transpose_sub, Matrix.transpose_mul, Matrix.transpose_mul,
