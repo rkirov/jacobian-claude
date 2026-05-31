@@ -7,16 +7,18 @@ declarations. Reproduce with `lake env lean AxiomCheck.lean` (clean core) or
 
 A declaration is **clean** iff `#print axioms` reports exactly
 `[propext, Classical.choice, Quot.sound]`. It **carries `sorryAx`** iff that
-appears in its axiom set — i.e. it (transitively) depends on one of the 8 open
+appears in its axiom set — i.e. it (transitively) depends on one of the 6 open
 `sorry`s. `sorryAx` is honest: it is Lean's record that *something* in the
 dependency tree is unproved. There are **0 custom `axiom`s** in the project;
-the only unproved surface is the 8 `sorry`s below.
+the only unproved surface is the 6 `sorry`s below.
 
-## The 7 open `sorry`s
+## The 6 open `sorry`s
 
 Every one is a **named classical theorem not in Mathlib** (not a mechanical
 gap). The §3 loop-lifting geometry — the last piece that was "hard Lean, no
-missing math" — is now done (`exists_monodromyLiftFamily`, 2026-05-30).
+missing math" — is now done (`exists_monodromyLiftFamily`, 2026-05-30); and
+#8′ degree well-definedness — the last *port-able* piece — is now discharged
+(2026-05-31, see below).
 
 | # | declaration | file:line | what it is | role |
 |---|---|---|---|---|
@@ -26,17 +28,17 @@ missing math" — is now done (`exists_monodromyLiftFamily`, 2026-05-30).
 | 5 | `traceForm_comp` | TraceForm.lean:1091 | trace functoriality `(g∘f)₊=g₊∘f₊` | **off-path leaf** |
 | 6 | `exists_loop_off_branchLocus` | TracePullback.lean:349 | homotope a loop off the branch locus | **critical path** of `pushforward_pullback`; needs manifold Stokes (deferred) |
 | 7 | `exists_periodLattice_realBasis` | PeriodLattice.lean:855 | period lattice has a real basis of ℂ^g (Riemann bilinear) | **universal instance** (see below) |
-| 8′ | `exists_preimageCycle_sheets_eq_degree` | Jacobians.lean:492 | a loop's preimage-cycle sheet count = analytic degree | **critical path** of `pushforward_pullback`; = degree well-definedness |
 
 > **Count history (transparency).** Earlier passes miscounted; a verified
 > `grep -rnE '(:=\s*sorry$|^\s*sorry$)' Jacobians.lean Jacobians/` is the
 > ground truth. Recent moves: the dead `deg_div`/`PrincipalDivisors` chain was
 > **deleted** (2026-05-31, was #2 — nothing depended on it); the old #8
 > `ambientPhi_ambientPullback_eq` (ambient degree identity `Φ∘Ψ = deg·id`) is
-> now **proven** and its sole remaining input is the crisper #8′
-> `exists_preimageCycle_sheets_eq_degree` (see below). Net: still **7**.
+> now **proven**; and **#8′ `exists_preimageCycle_sheets_eq_degree` is now
+> discharged** (2026-05-31) by porting Bryan Sanchez's axiom-clean degree
+> well-definedness (see below). Net: **7 → 6**.
 
-### #7 is the universal load-bearing sorry; #8′ is the degree headline's last gap
+### #7 is the universal load-bearing sorry; #8′ is now DISCHARGED
 
 #### Old #8 `ambientPhi_ambientPullback_eq` — now PROVEN (2026-05-31)
 
@@ -52,22 +54,28 @@ broke `restrictScalars`/`Basis.ext`; the working proof converts each real scalar
 its complex coercion componentwise and closes per-term with a defeq-aware `exact`.)
 Its sole remaining input is #8′.
 
-#### #8′ `exists_preimageCycle_sheets_eq_degree` = degree well-definedness
+#### #8′ `exists_preimageCycle_sheets_eq_degree` — DISCHARGED (2026-05-31)
 
 For a closed loop `δ`, the keystone needs the preimage cycle's `sheets` to equal
 `ContMDiff.degree f`. The cycle from `exists_preimageCycle_of_nonconstant` has
 `sheets = M.n = #(f⁻¹{δ 0})`, a **regular** fibre (`δ 0 ∉ branchLocus`); its
 cardinality is `degreeFiber f` precisely by **degree well-definedness** (all regular
-fibres have equal cardinality). This is **proven, axiom-clean, in Bryan Sanchez's
+fibres have equal cardinality). This was **proven, axiom-clean, in Bryan Sanchez's
 `jacobian-lean-challenge`** as `degreeFiber_eq_card_of_regular_witness`
-(`#print axioms` = `[propext, Classical.choice, Quot.sound]`; see
-`/tmp/jacobian-brsanch`). Discharging #8′ is a **port** of that well-definedness
-chain (the local project already has the *conditional* core
-`fibre_card_eq_of_locallyConstant_subtype_reg`; missing are the two *unconditional*
-inputs — locally-constant fibre cardinality [analytic, local normal form `z↦zᵏ`]
-and preconnectedness of the regular values [topological, connected surface minus a
-finite set]) **plus** exposing `M.n = #fibre` from the cycle construction. Tracked
-as the next phase.
+(`#print axioms` = `[propext, Classical.choice, Quot.sound]`), and is now **ported
+into this repo** (22 modules, ~3.3k LOC, `Jacobians/Discharge/Manifold/`; the local
+base already had the *conditional* core and shares brsanch's ZZ-tagged origin, so the
+port was mechanical). The cycle side exposes `sheets = #fibre` via
+`MonodromyLiftFamily.n_eq_fibre_ncard` (the lift bijection) threaded through
+`exists_preimageCycle_sheets_eq_fibreCard_of_nonconstant`; the regular value `y₀ =
+δ 0` (off the branch locus, `branchLocus = criticalValuesGeneral` defeq) is packaged
+as a `RegularValueWitnessReg` (`exists_regularValueWitnessReg_value_eq`), and
+`degreeFiber_eq_card_of_regularWitness` closes it: `sheets = #(f⁻¹{y₀}) = w.card =
+degreeFiber f = ContMDiff.degree f`. The degree-well-definedness content is verified
+axiom-clean (AxiomCheck.lean); `exists_preimageCycle_sheets_eq_degree` itself carries
+`sorryAx` only via the *inherited* #4 (trace branch-point) and #6 (Stokes homotopy),
+which the cycle already depended on. So `pushforward_pullback` now rests on
+**#4 + #6 + #7** (no separate degree gap).
 
 ### #7 the universal load-bearing sorry
 
@@ -96,7 +104,7 @@ equation — are clean.)
 | `pushforward_contMDiff` | sorryAx | #7 |
 | `pullback_contMDiff` | sorryAx | #7 (and the trace matrix, #4) |
 | `ofCurve_inj` | sorryAx | #3 (Abel) + #7 |
-| `pushforward_pullback` | sorryAx | #8′ (degree well-definedness, via the now-proven ambient identity) + #7 (manifold); #8′ in turn rests on #4+#6+#7 |
+| `pushforward_pullback` | sorryAx | #4 (trace branch-point) + #6 (Stokes homotopy) + #7 (manifold). #8′ degree well-definedness is now **discharged** (axiom-clean port), so it no longer contributes a separate gap |
 | `genus_eq_zero_iff_homeo` | sorryAx | #1 |
 | `traceForm` | sorryAx | #4 (branch-point extension) |
 
@@ -123,14 +131,18 @@ The real, unconditional content proved along the way:
   (`exists_holo_localInverse`), local holomorphic sections, Montel's theorem,
   chart-invariance of `meromorphicOrderAt`.
 - The discharge degree layer guarded by `AxiomCheck.lean` (`ContMDiff.degree`,
-  `degreeFiber`, regular-value existence, `finite_branchLocus_of_nonconstant`).
+  `degreeFiber`, regular-value existence, `finite_branchLocus_of_nonconstant`),
+  **including degree well-definedness** `degreeFiber_eq_card_of_regular_witness`
+  (every regular fibre has the same cardinality `= degreeFiber f`) — the ported
+  brsanch chain that discharges #8′.
 
 ## The honest verdict
 
-All 8 remaining `sorry`s are deep classical theorems Mathlib lacks
+All 6 remaining `sorry`s are deep classical theorems Mathlib lacks
 (uniformization, Abel 1826, Hodge/Riemann-bilinear period relations, manifold
-Stokes, branched-cover trace boundedness via Puiseux) — or, like #8, mechanical
-consequences gated on those. **There is no "prove-it-from-scratch" win left** —
+Stokes, branched-cover trace boundedness via Puiseux). **There is no
+"prove-it-from-scratch" win left**, and the last *port-able* win (#8′ degree
+well-definedness) is now taken —
 the §3 geometry was the last such piece. The 2026-05-31 lattice reduction did NOT
 discharge any classical content; it *isolated* it: the two lattice instances are
 now mechanical (Mathlib `ZSpan`) consequences of the single, precisely-stated
