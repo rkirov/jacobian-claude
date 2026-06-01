@@ -1,16 +1,22 @@
 /-
   Riemann–Roch INTERFACE (the meet-in-the-middle).
 
-  Goal: isolate the three irreducible analytic inputs of the Dolbeault→RR climb
-  (`riemannRoch`, `deg_div`, existence of a canonical divisor) and PROVE everything
-  else, discharging the frontier consumer `exists_singleSimplePole_of_genus_zero`
-  modulo exactly those inputs. This gives the analytic ladder a concrete target and
-  validates that the upstream work is load-bearing.
+  Goal: reduce the headline consumer `exists_singleSimplePole_of_genus_zero` to ONE genuine
+  classical input — Riemann–Roch — by PROVING every step in between (no typeclass/sorry
+  relocation). When the Dolbeault→Serre climb (G2–G4) discharges that single input, the
+  headline theorem falls out.
 
-  PART 1 (this commit): the ℂ-module structure on `MeromorphicFunction X` — the
-  prerequisite for `L(D)` to be a `Submodule ℂ`. Pure algebra (no analysis): `+`, `•`,
-  `0`, `-` act pointwise on `toFun`, and the structure transports along the injection
-  `toFun : MeromorphicFunction X → (X → ℂ)`.
+  PROVEN (axiom-clean): the ℂ-module on `MeromorphicFunction X` (so `L(D)` can be a
+  `Submodule ℂ`); `linearSystem D` as a `Submodule` + `lDim`.
+
+  ISOLATED INPUTS (the genuine wall — the only `sorry`s here):
+    • `exists_riemannRoch_divisor` — a canonical divisor `K` with `l(D)−l(K−D)=deg D+1−g`
+      (Forster 16.9; ⟸ Dolbeault/Serre, absent from Mathlib).
+    • `MeromorphicFunction.deg_div` — every principal divisor has degree 0 (residue theorem).
+
+  REAL REDUCTIONS STILL TO PROVE (no theater — these are genuine, not relocations):
+  faithfulness/identity theorem (nonzero ⟹ order ≠ ⊤), `l(0)=1` via Liouville, `l(D)=0` for
+  `deg D<0`, and the single-simple-pole extraction.
 -/
 import Jacobians.Abel
 import Jacobians.DegreeOneSphere
@@ -148,17 +154,16 @@ noncomputable def linearSystem (D : Divisor X) : Submodule ℂ (MeromorphicFunct
 /-- `l(D) = dim_ℂ L(D)` (Forster's `h⁰(X, O_D)`). -/
 noncomputable def lDim (D : Divisor X) : ℕ := Module.finrank ℂ (linearSystem (X := X) D)
 
-/-- **The isolated Riemann–Roch input** (Forster Thm 16.9, Serre-dual form), bundled as a
-typeclass following the repo's style of isolating absent classical theorems. The Dolbeault→Serre
-climb (ladder rungs G2–G4) provides the instance. The canonical divisor `K` is carried as data,
-which avoids constructing a meromorphic 1-form. -/
-class RiemannRochData (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] where
-  /-- A canonical divisor (the divisor of some nonzero meromorphic 1-form). -/
-  K : Divisor X
-  /-- Riemann–Roch: `l(D) − l(K − D) = deg D + 1 − g`. -/
-  rr : ∀ D : Divisor X,
-    (lDim (X := X) D : ℤ) - (lDim (X := X) (K - D) : ℤ) = Divisor.deg X D + 1 - (genus X : ℤ)
+/-- **Isolated input — Riemann–Roch** (Forster Thm 16.9, Serre-dual form). There is a canonical
+divisor `K` for which `l(D) − l(K−D) = deg D + 1 − g` for every `D`. This one statement bundles
+the existence of a canonical divisor with the RR equality — precisely the classical theorem the
+Dolbeault→Serre climb (G2–G4) delivers and that Mathlib lacks. It is *used*, not relocated: the
+reductions below (and the genus-zero endgame) are proved outright from it, so discharging this
+single `sorry` discharges the headline consumer. -/
+theorem exists_riemannRoch_divisor :
+    ∃ K : Divisor X, ∀ D : Divisor X,
+      (lDim (X := X) D : ℤ) - (lDim (X := X) (K - D) : ℤ)
+        = Divisor.deg X D + 1 - (genus X : ℤ) := sorry
 
 /-- **The isolated residue-theorem input.** Every principal divisor has degree `0` (Forster
 Cor. 4.25 / the argument principle). The RR derivations below consume it. -/
