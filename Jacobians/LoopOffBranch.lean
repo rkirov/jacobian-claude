@@ -1019,6 +1019,35 @@ pieces chain (`g k 1 = g (k+1) 0`), so each seam `t = k/n` is `C¹` for free —
 `HasDerivWithinAt … 0` union argument as `IsSmoothPath.concat`, with split point `k/n` and scale `n`.
 -/
 
+/-- **Moving-chart to fixed-anchor differentiability transfer.** If `γ` is continuous, `γ t` lies in
+the source of a fixed anchor chart `chartAt Q₀`, and `γ` is chart-pullback-differentiable at `t` in
+its own moving chart `chartAt (γ t)`, then it is also chart-pullback-differentiable in the fixed
+anchor chart. (Composition with the smooth chart-transition `chartAt Q₀ ∘ (chartAt (γ t)).symm`.) -/
+lemma differentiableAt_chart_anchor_of_self (Q₀ : X) (γ : ℝ → X) (t : ℝ)
+    (hγcont : Continuous γ)
+    (hmem : γ t ∈ (chartAt (H := ℂ) Q₀).source)
+    (hdiff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
+    DifferentiableAt ℝ ((chartAt (H := ℂ) Q₀).toFun ∘ γ) t := by
+  set e := chartAt (H := ℂ) (γ t) with he
+  set e0 := chartAt (H := ℂ) Q₀ with he0
+  have hmem_e : γ t ∈ e.source := mem_chart_source ℂ (γ t)
+  have hopen : IsOpen (e.source ∩ e0.source) := e.open_source.inter e0.open_source
+  have ht_mem : γ t ∈ e.source ∩ e0.source := ⟨hmem_e, hmem⟩
+  have hpre : (γ ⁻¹' (e.source ∩ e0.source)) ∈ nhds t :=
+    hγcont.continuousAt.preimage_mem_nhds (hopen.mem_nhds ht_mem)
+  have heq : ((chartAt (H := ℂ) Q₀).toFun ∘ γ) =ᶠ[nhds t]
+      ((fun v : ℂ => e0 (e.symm v)) ∘ (e.toFun ∘ γ)) := by
+    filter_upwards [hpre] with s hs
+    show e0 (γ s) = e0 (e.symm (e (γ s)))
+    rw [e.left_inv hs.1]
+  rw [heq.differentiableAt_iff]
+  have htrans : DifferentiableAt ℝ (fun v : ℂ => e0 (e.symm v)) ((e.toFun ∘ γ) t) := by
+    have h_target : (e.toFun ∘ γ) t ∈ e.target := e.map_source hmem_e
+    have h_source : e.symm ((e.toFun ∘ γ) t) ∈ e0.source := by
+      show e.symm (e (γ t)) ∈ e0.source; rw [e.left_inv hmem_e]; exact hmem
+    exact chart_transition_comp_differentiableAt_R (γ t) Q₀ ((e.toFun ∘ γ) t) h_target h_source
+  exact htrans.comp t hdiff
+
 /-- Piece index of `t` among `n` uniform sub-intervals of `[0,1]`, clamped to `[0, n-1]`. -/
 noncomputable def uIdx (n : ℕ) (t : ℝ) : ℕ := min (⌊(n:ℝ) * t⌋.toNat) (n - 1)
 
