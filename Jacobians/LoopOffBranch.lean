@@ -519,7 +519,7 @@ lemma intervalIntegral_form_pathSpeed_eq_of_subball_endpoints
 
 /-! ## §off-branch surgery — foundational pieces (Layer A)
 
-The remaining geometric construction for `exists_splicedLoop_off_branchLocus` is assembled here as
+The remaining geometric construction for `exists_loop_off_branchLocus` is assembled here as
 reusable sub-lemmas, then wired together in `Jacobians/TracePullback.lean`.
 
 ### A1. Flat seam velocities of `ChartBallPathSmooth`
@@ -1051,7 +1051,7 @@ lemma isSmoothPath_balancedGlue (g : ℕ → ℝ → X)
 /-! ### A4'. Uniform `n`-piece glue
 
 For the off-branch surgery the detour pieces must occupy the **uniform** sub-intervals `[k/n,(k+1)/n]`
-handed by `exists_offBranch_subBallChartCover`, so the dyadic `balancedGlue` is not directly usable.
+handed by `exists_subBallChartCover`, so the dyadic `balancedGlue` is not directly usable.
 `uniformGlue g n` glues the `n` flat-ended pieces `g 0, …, g (n-1)` at the uniform breakpoints `k/n`,
 reading off the value on the `k`-th piece as `g k` affinely reparametrized by `t ↦ n·t − k`.
 

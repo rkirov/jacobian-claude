@@ -670,123 +670,217 @@ lemma exists_offBranch_overlap_connector (f : X → Y) (hf : ContMDiff 𝓘(ℂ)
     rwa [he₂symm_ct t] at this
   exact ⟨p, c, hp_off, hsp, hv0, hv1, hc_src₁, fun t _ => hc_src₂ t, hc_ball₁, hc_ball₂⟩
 
-/-- **[ISOLATED GEOMETRIC INPUT for #6 — off-branch sub-ball cover].** For a closed smooth loop `δ`
-and the (finite) `branchLocus f`, there is a partition `s k = k/n` of `[0,1]` together with per-piece
-chart anchors `x k`, sub-ball centers `c k` and radii `r k > 0` such that, over the `k`-th piece,
-`δ`'s chart-image is confined to `ball (c k) (r k) ⊆ (chartAt (x k)).target`, **and every breakpoint
-image `δ (s k)` is off the branch locus**.
+/-- **[BATCH of off-branch overlap connectors, one per breakpoint].** From the proven sub-ball cover
+of `δ` (uniform `n`-partition, per-piece anchor `x k`, sub-ball `ball (c k) (r k) ⊆ target(x k)`,
+confining `δ`'s chart-image on piece `k`), produce, for every breakpoint `k : Fin n` (sitting at
+parameter `k/n`), an off-branch point `p k` and a flat-ended smooth connector `cc k : δ(k/n) → p k`
+whose body and chart-image are confined to *both* adjacent sub-balls: the "this" ball `k` (left end of
+piece `k`) and the "previous" ball `k-1` (right end of piece `k-1`, with the wrap `0-1 = n-1` handled
+via `δ 1 = δ 0`).
 
-This is the precise residual content of #6: it strengthens the proven
-`OfCurveSkeleton.exists_subBallChartCover` (which gives the sub-ball confinement, axiom-clean) with the
-**off-branch breakpoint** guarantee `δ (s k) ∉ branchLocus f`. That extra guarantee is the genuine
-remaining difficulty — the "transversality wrinkle": a merely-`C¹` loop `δ` can *linger* on a branch
-point over a whole sub-interval, so `δ ⁻¹' (branchLocus f)` may have nonempty interior and a uniform
-breakpoint can be forced onto the locus. Discharging it needs a perturbation of the breakpoints (or of
-`δ`) off the finite locus; no existing repo lemma provides it. Everything downstream
-(`exists_splicedLoop_off_branchLocus`) is assembled from this plus the already-proven detour, glue and
-telescoping toolkit. -/
-theorem exists_offBranch_subBallChartCover (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
-    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
-    ∃ (n : ℕ) (_hn : 0 < n) (x : Fin n → Y) (c : Fin n → ℂ) (r : Fin n → ℝ),
-      (∀ k, 0 < r k) ∧
-      (∀ k : Fin n, δ ((k : ℝ) / n) ∉ branchLocus f) ∧
-      ∀ (k : Fin n) (s : ℝ),
-        (k : ℝ) / n ≤ s → s ≤ ((k : ℝ) + 1) / n →
-          Metric.ball (c k) (r k) ⊆ (chartAt (H := ℂ) (x k)).target ∧
-          δ s ∈ (chartAt (H := ℂ) (x k)).source ∧
-          (chartAt (H := ℂ) (x k)) (δ s) ∈ Metric.ball (c k) (r k) := by
-  sorry
-
-/-- **[PROVEN — assembly complete; inherits only the isolated `exists_offBranch_subBallChartCover`
-crux].** The geometric heart of the off-branch surgery: there is a closed smooth loop `δ'` avoiding
-`branchLocus f`, together with a partition `0 = s₀ ≤ ⋯ ≤ sₙ = 1` of `[0,1]` (uniform, `sₖ = k/n`)
-witnessing that `δ'` was obtained from `δ` by replacing sub-arcs over sub-balls with
-same-chart-endpoints detours, so the partial line integrals match piece-by-piece.
-
-**Construction.** From the off-branch sub-ball cover (`exists_offBranch_subBallChartCover`, the one
-remaining isolated `sorry` — the transversality wrinkle) we obtain uniform breakpoints `k/n` with
-`δ(k/n) ∉ branchLocus f` and per-piece chart anchors + sub-balls. For each piece we build a
-flat-ended off-branch detour arc `exists_offBranch_detour_piece` from `δ(k/n)` to `δ((k+1)/n)`
-confined to the piece's sub-ball, and glue all `n` of them with `OfCurveSkeleton.uniformGlue` (the
-uniform-breakpoint `n`-piece C¹ glue, whose smoothness `isSmoothPath_uniformGlue` is the `n`-piece
-generalization of `IsSmoothPath.concat`). `δ' := uniformGlue g n` is a closed smooth loop avoiding
-`branchLocus f`; on each piece `δ' = (detour) ∘ (n·−k)` shares chart endpoints with `δ`, so the
-per-piece integral equality is exactly
-`OfCurveSkeleton.intervalIntegral_form_pathSpeed_eq_of_subball_endpoints`.
-
-The period equality `periodVec δ' = periodVec δ` is then derived in `exists_loop_off_branchLocus`
-from this output via the proven `periodVec_eq_of_partition_integral_eq` (telescoping). NO global
-Stokes / de Rham / homotopy content is involved. The dyadic `balancedGlue` could not be used (it
-forces dyadic breakpoints, incompatible with the cover's uniform off-branch breakpoints); the
-uniform glue is the correct vehicle. -/
-theorem exists_splicedLoop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
-    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
-    ∃ (δ' : ℝ → Y) (s : ℕ → ℝ) (n : ℕ),
-      IsClosedSmoothLoop δ' ∧ (∀ t : ℝ, δ' t ∉ branchLocus f) ∧
-      s 0 = 0 ∧ s n = 1 ∧ (∀ k, k < n → Set.uIcc (s k) (s (k+1)) ⊆ Set.Icc (0:ℝ) 1) ∧
-      (∀ (i : Fin (genus Y)) (k : ℕ), k < n →
-        (∫ t in (s k)..(s (k+1)), (periodBasisForm Y i).toFun (δ' t) (pathSpeed δ' t)) =
-        (∫ t in (s k)..(s (k+1)), (periodBasisForm Y i).toFun (δ t) (pathSpeed δ t))) := by
+The endpoint `p k` thus lies in `source(x k) ∩ source(x (k-1))` with chart-images in both balls — so
+adjacent detours can be built between the `p`'s — and the connector lies in the overlap, so the line
+integral of any period form along `cc k` is the same primitive-difference in either ball (the
+intrinsic correction term `corr` of the telescope). Single application of
+`exists_offBranch_overlap_connector` per breakpoint. -/
+lemma exists_overlap_connectors (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ y, f y = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ)
+    (n : ℕ) [NeZero n] (hn : 0 < n) (x : Fin n → Y) (c : Fin n → ℂ) (r : Fin n → ℝ)
+    (hconf : ∀ (k : Fin n) (s : ℝ), (k : ℝ) / n ≤ s → s ≤ ((k : ℝ) + 1) / n →
+      Metric.ball (c k) (r k) ⊆ (chartAt (H := ℂ) (x k)).target ∧
+      δ s ∈ (chartAt (H := ℂ) (x k)).source ∧
+      (chartAt (H := ℂ) (x k)) (δ s) ∈ Metric.ball (c k) (r k)) :
+    ∃ (p : Fin n → Y) (cc : Fin n → ℝ → Y),
+      ∀ k : Fin n,
+        p k ∉ branchLocus f ∧
+        IsSmoothPath (δ ((k : ℝ) / n)) (p k) (cc k) ∧
+        pathSpeed (cc k) 0 = 0 ∧ pathSpeed (cc k) 1 = 0 ∧
+        (∀ t ∈ Set.Icc (0:ℝ) 1, cc k t ∈ (chartAt (H := ℂ) (x (k - 1))).source) ∧
+        (∀ t ∈ Set.Icc (0:ℝ) 1, cc k t ∈ (chartAt (H := ℂ) (x k)).source) ∧
+        (∀ t ∈ Set.Icc (0:ℝ) 1, (chartAt (H := ℂ) (x (k - 1))) (cc k t) ∈ Metric.ball (c (k - 1)) (r (k - 1))) ∧
+        (∀ t ∈ Set.Icc (0:ℝ) 1, (chartAt (H := ℂ) (x k)) (cc k t) ∈ Metric.ball (c k) (r k)) := by
   classical
-  obtain ⟨n, hn, x, c, r, hr, hoff, hconf⟩ :=
-    exists_offBranch_subBallChartCover f hf hnonconst δ hδ
   have hnpos : (0:ℝ) < n := by exact_mod_cast hn
-  -- off-branch at every breakpoint k/n for k ≤ n (using closedness for k = n).
-  have hoff' : ∀ k : ℕ, k ≤ n → δ ((k:ℝ)/n) ∉ branchLocus f := by
+  -- per-breakpoint data via the overlap connector, choosing prev = k-1 (modular).
+  have hdata : ∀ k : Fin n, ∃ (p : Y) (cv : ℝ → Y),
+      p ∉ branchLocus f ∧ IsSmoothPath (δ ((k : ℝ) / n)) p cv ∧
+      pathSpeed cv 0 = 0 ∧ pathSpeed cv 1 = 0 ∧
+      (∀ t ∈ Set.Icc (0:ℝ) 1, cv t ∈ (chartAt (H := ℂ) (x (k - 1))).source) ∧
+      (∀ t ∈ Set.Icc (0:ℝ) 1, cv t ∈ (chartAt (H := ℂ) (x k)).source) ∧
+      (∀ t ∈ Set.Icc (0:ℝ) 1, (chartAt (H := ℂ) (x (k - 1))) (cv t) ∈ Metric.ball (c (k - 1)) (r (k - 1))) ∧
+      (∀ t ∈ Set.Icc (0:ℝ) 1, (chartAt (H := ℂ) (x k)) (cv t) ∈ Metric.ball (c k) (r k)) := by
+    intro k
+    -- this-ball confinement of the breakpoint (left end of piece k).
+    have hkself := hconf k ((k:ℝ)/n) (le_refl _)
+      (by rw [div_le_div_iff_of_pos_right hnpos]; linarith)
+    obtain ⟨hsub₂, hP_src₂, hP_ball₂⟩ := hkself
+    -- prev-ball confinement of the breakpoint (right end of piece k-1), modular wrap at k=0.
+    have hprev : δ ((k:ℝ)/n) ∈ (chartAt (H := ℂ) (x (k - 1))).source ∧
+        (chartAt (H := ℂ) (x (k - 1))) (δ ((k:ℝ)/n)) ∈ Metric.ball (c (k - 1)) (r (k - 1)) ∧
+        Metric.ball (c (k - 1)) (r (k - 1)) ⊆ (chartAt (H := ℂ) (x (k - 1))).target := by
+      rcases Nat.eq_zero_or_pos k.val with hk0 | hkpos
+      · -- k = 0: prev = n-1 ; breakpoint is δ 0 = δ 1, right end of piece (n-1) at parameter 1.
+        have hkval0 : (k:ℝ)/n = 0 := by rw [show (k:ℝ) = 0 from by exact_mod_cast hk0]; simp
+        -- (k-1).val = n-1, hence ((k-1):ℝ) = n-1.
+        have hprevval : (k - 1 : Fin n).val = n - 1 := by
+          have hone : ((1 : Fin n):ℕ) = 1 % n := Fin.val_one' n
+          rcases (by omega : 2 ≤ n ∨ n = 1) with h2 | h2
+          · have h1 : (1:ℕ) % n = 1 := Nat.mod_eq_of_lt h2
+            have hval : (k - 1 : Fin n).val = (n - 1 + 0) % n := by
+              rw [Fin.sub_def, hone, h1, hk0]
+            rw [hval, Nat.add_zero, Nat.mod_eq_of_lt (by omega)]
+          · subst h2; simp [Fin.val_eq_zero]
+        have hprevR : (((k - 1 : Fin n)):ℝ) = (n:ℝ) - 1 := by
+          rw [hprevval, Nat.cast_sub hn]; push_cast; ring
+        have hlast := hconf (k - 1) 1
+          (by rw [hprevR, div_le_one hnpos]; linarith)
+          (by rw [hprevR, show (n:ℝ) - 1 + 1 = (n:ℝ) from by ring,
+                div_self (ne_of_gt hnpos)])
+        obtain ⟨hsubL, hsrcL, hballL⟩ := hlast
+        rw [hkval0, hδ.closed]
+        exact ⟨hsrcL, hballL, hsubL⟩
+      · -- k > 0: prev = k-1 with (k-1).val = k.val - 1, breakpoint is right end of piece (k-1).
+        have hne : k ≠ 0 := fun h => by rw [h] at hkpos; simp at hkpos
+        have hkm1 : (((k - 1 : Fin n)):ℝ) = (k:ℝ) - 1 := by
+          rw [Fin.val_sub_one_of_ne_zero hne, Nat.cast_sub hkpos]; push_cast; ring
+        have hlo : (((k - 1 : Fin n)):ℝ)/n ≤ (k:ℝ)/n := by
+          rw [hkm1, div_le_div_iff_of_pos_right hnpos]; linarith
+        have hhi : (k:ℝ)/n ≤ ((((k - 1 : Fin n)):ℝ) + 1)/n := by
+          rw [hkm1, show (k:ℝ) - 1 + 1 = (k:ℝ) from by ring]
+        have hprevc := hconf (k - 1) ((k:ℝ)/n) hlo hhi
+        obtain ⟨hsubP, hsrcP, hballP⟩ := hprevc
+        exact ⟨hsrcP, hballP, hsubP⟩
+    obtain ⟨hP_src₁, hP_ball₁, hsub₁⟩ := hprev
+    obtain ⟨p, cv, hp_off, hsp, hv0, hv1, hsrc1, hsrc2, hb1, hb2⟩ :=
+      exists_offBranch_overlap_connector f hf hnonconst (x (k - 1)) (x k) (δ ((k:ℝ)/n))
+        (c (k - 1)) (c k) (r (k - 1)) (r k) hsub₁ hsub₂ hP_src₁ hP_src₂ hP_ball₁ hP_ball₂
+    exact ⟨p, cv, hp_off, hsp, hv0, hv1, hsrc1, hsrc2, hb1, hb2⟩
+  choose p cv hspec using hdata
+  exact ⟨p, cv, hspec⟩
+
+/-- **[off-branch surgery, period-preserving — the discharge of #6].** A closed smooth loop `δ` in
+`Y` can be deformed off the finite `branchLocus f` *without changing its period vector*.
+
+This is proven **directly** (no intermediate off-branch-breakpoint cover — that statement is false,
+since a `C¹` loop may linger on a branch value, so a uniform breakpoint `δ(k/n)` can be forced onto
+the locus). Instead we *perturb the breakpoints*:
+
+1. **Cover.** `OfCurveSkeleton.exists_subBallChartCover` gives a uniform `n`-partition with, per piece
+   `k`, a chart anchor `x k` and a sub-ball `ball (c k) (r k) ⊆ target(x k)` confining `δ`'s
+   chart-image on `[k/n,(k+1)/n]`. (No off-branch claim.)
+2. **Perturb.** `exists_overlap_connectors` dodges each breakpoint `δ(k/n)` to a nearby off-branch
+   `p k`, with a flat-ended connector `cc k : δ(k/n) → p k` confined to *both* adjacent sub-balls.
+3. **Detour + glue.** `exists_offBranch_detour_piece` builds, per piece, an off-branch detour
+   `p k → p(k+1)` confined to ball `k`; `OfCurveSkeleton.uniformGlue` glues them into a closed smooth
+   loop `δ'` avoiding `branchLocus f` (wrap `p n = p 0` from `δ 1 = δ 0`).
+4. **Period equality.** On piece `k`, working with the *single* ball-`k` holomorphic primitive `F` of
+   `chartFormCoeff (x k) i` (`intervalIntegral_form_pathSpeed_eq_primitive_diff_of_primitive`):
+   `∫δ'|ₖ − ∫δ|ₖ = corr(k+1) − corr(k)`, where `corr(j) := ∫₀¹ ωᵢ(cc j)` is the **intrinsic** line
+   integral of the connector (the same value in either adjacent ball, since `cc j` lies in the
+   overlap). The corrections telescope to `corr(n) − corr(0) = 0` (`cc n = cc 0`), giving
+   `periodVec δ' = periodVec δ` via `periodVec_eq_of_partition_integral_telescope`.
+
+NO global manifold Stokes / de Rham / homotopy is involved — only the 1-dimensional chart-disk FTC,
+ball-confined path-independence, and a telescoping sum. Consumers
+(`exists_preimageCycle_of_nonconstant`, `…sheets_eq_fibreCard_…`) require the period vector LITERALLY
+equal (threaded through `PreimageCycle.congr_periodVec`), which this provides. -/
+theorem exists_loop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
+    ∃ δ', IsClosedSmoothLoop δ' ∧ periodVec δ' = periodVec δ ∧
+      (∀ t : ℝ, δ' t ∉ branchLocus f) := by
+  classical
+  -- 1. Sub-ball cover of δ.
+  obtain ⟨n, hn, x, c, r, hr, hconf⟩ :=
+    OfCurveSkeleton.exists_subBallChartCover δ hδ.cont
+  haveI : NeZero n := ⟨hn.ne'⟩
+  have hnpos : (0:ℝ) < n := by exact_mod_cast hn
+  -- 2. Off-branch overlap connectors, one per breakpoint.
+  obtain ⟨p, cc, hcc⟩ :=
+    exists_overlap_connectors f hf hnonconst δ hδ n hn x c r hconf
+  -- The Fin index of the right breakpoint of piece k (k<n): (k+1) mod n.
+  set nextFin : ℕ → Fin n := fun k => ⟨(k+1) % n, Nat.mod_lt _ hn⟩ with hnextFin
+  -- Key index identity: (nextFin k) - 1 = ⟨k, hk⟩  (so cc(nextFin k)'s prev ball is ball k).
+  have hnextPrev : ∀ (k : ℕ) (hk : k < n), (nextFin k) - 1 = (⟨k, hk⟩ : Fin n) := by
     intro k hk
-    rcases lt_or_eq_of_le hk with hlt | heq
-    · exact hoff ⟨k, hlt⟩
-    · subst heq
-      rw [div_self (ne_of_gt hnpos), ← hδ.closed]
-      have h0 := hoff ⟨0, hn⟩
-      simpa only [Fin.val_zero, Nat.cast_zero, zero_div] using h0
-  -- per-piece detour data for k < n; junk for k ≥ n.
+    apply Fin.ext
+    show (nextFin k - 1).val = k
+    have hone : ((1 : Fin n):ℕ) = 1 % n := Fin.val_one' n
+    rcases (by omega : k + 1 < n ∨ k + 1 = n) with hlt | heq
+    · have hnf : (nextFin k).val = k + 1 := Nat.mod_eq_of_lt hlt
+      have hne : (nextFin k) ≠ 0 := by
+        intro h; have : (nextFin k).val = (0 : Fin n).val := by rw [h]
+        rw [hnf, Fin.val_zero] at this; omega
+      rw [Fin.val_sub_one_of_ne_zero hne, hnf]; omega
+    · -- k+1 = n, so nextFin k = 0, and (0 - 1).val = n-1 = k.
+      have hnf0 : (nextFin k).val = 0 := by show (k+1) % n = 0; rw [heq, Nat.mod_self]
+      have hz : nextFin k = 0 := Fin.ext (by rw [hnf0, Fin.val_zero])
+      rw [hz]
+      rcases (by omega : 2 ≤ n ∨ n = 1) with h2 | h2
+      · have h1 : (1:ℕ) % n = 1 := Nat.mod_eq_of_lt h2
+        have hval : ((0 : Fin n) - 1).val = (n - 1 + 0) % n := by rw [Fin.sub_def, hone, h1]; rfl
+        rw [hval, Nat.add_zero, Nat.mod_eq_of_lt (show n - 1 < n by omega)]; omega
+      · have hk0 : k = 0 := by omega
+        have : ((0 : Fin n) - 1).val = 0 := by subst h2; rfl
+        rw [this, hk0]
+  -- endpoint values of the connectors.
+  have hcc_start : ∀ k : Fin n, cc k 0 = δ ((k:ℝ)/n) := fun k => (hcc k).2.1.start
+  have hcc_finish : ∀ k : Fin n, cc k 1 = p k := fun k => (hcc k).2.1.finish
+  -- "this"-ball confinement of the right endpoint p k (left end of piece k).
+  have hp_self_src : ∀ k : Fin n, p k ∈ (chartAt (H := ℂ) (x k)).source := by
+    intro k; have := (hcc k).2.2.2.2.2.1 1 ⟨zero_le_one, le_refl _⟩
+    rwa [hcc_finish k] at this
+  have hp_self_ball : ∀ k : Fin n, (chartAt (H := ℂ) (x k)) (p k) ∈ Metric.ball (c k) (r k) := by
+    intro k; have := (hcc k).2.2.2.2.2.2.2 1 ⟨zero_le_one, le_refl _⟩
+    rwa [hcc_finish k] at this
+  -- 3. Per-piece off-branch detour data between p ⟨k,hk⟩ and p (nextFin k), confined to ball k.
   have hpieceData : ∀ (k : ℕ) (hk : k < n), ∃ γ : ℝ → Y,
-      IsSmoothPath (δ ((k:ℝ)/n)) (δ (((k:ℝ)+1)/n)) γ ∧
+      IsSmoothPath (p ⟨k, hk⟩) (p (nextFin k)) γ ∧
       (∀ t : ℝ, γ t ∉ branchLocus f) ∧
       (∀ t ∈ Set.Icc (0:ℝ) 1, (chartAt (H := ℂ) (x ⟨k, hk⟩)) (γ t) ∈ Metric.ball (c ⟨k, hk⟩) (r ⟨k, hk⟩)) ∧
       (∀ t ∈ Set.Icc (0:ℝ) 1, γ t ∈ (chartAt (H := ℂ) (x ⟨k, hk⟩)).source) ∧
       pathSpeed γ 0 = 0 ∧ pathSpeed γ 1 = 0 := by
     intro k hk
     set K : Fin n := ⟨k, hk⟩ with hK
-    have hlo : (k:ℝ)/n ≤ (k:ℝ)/n := le_refl _
-    have hhi : (k:ℝ)/n ≤ ((k:ℝ)+1)/n := by rw [div_le_div_iff_of_pos_right hnpos]; linarith
-    have hPconf := hconf K ((k:ℝ)/n) hlo hhi
-    have hQlo : (k:ℝ)/n ≤ ((k:ℝ)+1)/n := hhi
-    have hQhi : ((k:ℝ)+1)/n ≤ ((K:ℝ)+1)/n := by simp [hK]
-    have hQconf := hconf K (((k:ℝ)+1)/n) hQlo hQhi
-    have hKval : (K:ℕ) = k := rfl
-    obtain ⟨hball_sub, hP_src, hP_ball⟩ := hPconf
-    obtain ⟨_, hQ_src, hQ_ball⟩ := hQconf
-    have hP_off : δ ((k:ℝ)/n) ∉ branchLocus f := hoff' k (le_of_lt hk)
-    have hQ_off : δ (((k:ℝ)+1)/n) ∉ branchLocus f := by
-      have : ((k:ℝ)+1)/n = ((k+1 : ℕ):ℝ)/n := by push_cast; ring
-      rw [this]; exact hoff' (k+1) hk
+    have hball_sub : Metric.ball (c K) (r K) ⊆ (chartAt (H := ℂ) (x K)).target :=
+      (hconf K ((k:ℝ)/n) (le_refl _) (by rw [div_le_div_iff_of_pos_right hnpos]; linarith)).1
+    have hP_src : p K ∈ (chartAt (H := ℂ) (x K)).source := hp_self_src K
+    have hP_ball : (chartAt (H := ℂ) (x K)) (p K) ∈ Metric.ball (c K) (r K) := hp_self_ball K
+    have hidxeq : (nextFin k) - 1 = K := hnextPrev k hk
+    have hQ_src : p (nextFin k) ∈ (chartAt (H := ℂ) (x K)).source := by
+      have h := (hcc (nextFin k)).2.2.2.2.1 1 ⟨zero_le_one, le_refl _⟩
+      rw [hcc_finish (nextFin k), hidxeq] at h; exact h
+    have hQ_ball : (chartAt (H := ℂ) (x K)) (p (nextFin k)) ∈ Metric.ball (c K) (r K) := by
+      have h := (hcc (nextFin k)).2.2.2.2.2.2.1 1 ⟨zero_le_one, le_refl _⟩
+      rw [hcc_finish (nextFin k), hidxeq] at h; exact h
+    have hP_off : p K ∉ branchLocus f := (hcc K).1
+    have hQ_off : p (nextFin k) ∉ branchLocus f := (hcc (nextFin k)).1
     obtain ⟨γ, hsp, hγoff, hγball, hγsrc, hv0, hv1⟩ :=
-      exists_offBranch_detour_piece f hf hnonconst (x K) (δ ((k:ℝ)/n)) (δ (((k:ℝ)+1)/n))
+      exists_offBranch_detour_piece f hf hnonconst (x K) (p K) (p (nextFin k))
         (c K) (r K) hball_sub hP_src hQ_src hP_ball hQ_ball hP_off hQ_off
     exact ⟨γ, hsp, hγoff, hγball, hγsrc, hv0, hv1⟩
-  -- assemble the glue function.
-  set g : ℕ → ℝ → Y := fun k => if h : k < n then (hpieceData k h).choose else (fun _ => δ 1) with hg
-  -- endpoints of g k.
-  have hg_start : ∀ k (hk : k < n), g k 0 = δ ((k:ℝ)/n) := by
+  -- assemble the glue function (junk = constant p ⟨0⟩ for k ≥ n, so chaining wraps correctly).
+  set g : ℕ → ℝ → Y := fun k => if h : k < n then (hpieceData k h).choose
+    else (fun _ => p ⟨0, hn⟩) with hg
+  have hg_start : ∀ k (hk : k < n), g k 0 = p ⟨k, hk⟩ := by
     intro k hk; simp only [hg, dif_pos hk]; exact (hpieceData k hk).choose_spec.1.start
-  have hg_finish : ∀ k (hk : k < n), g k 1 = δ (((k:ℝ)+1)/n) := by
+  have hg_finish : ∀ k (hk : k < n), g k 1 = p (nextFin k) := by
     intro k hk; simp only [hg, dif_pos hk]; exact (hpieceData k hk).choose_spec.1.finish
+  -- chaining g j 1 = g (j+1) 0 : p (nextFin j) = p ⟨j+1,_⟩, and the wrap at j = n-1 gives p ⟨0⟩.
+  have hnextFin_eq_succ : ∀ (j : ℕ) (hj1 : j + 1 < n), nextFin j = (⟨j+1, hj1⟩ : Fin n) := by
+    intro j hj1; apply Fin.ext; show (j+1) % n = j+1; exact Nat.mod_eq_of_lt hj1
   have hchain : ∀ j, g j 1 = g (j+1) 0 := by
     intro j
     by_cases hj : j < n
     · rw [hg_finish j hj]
       by_cases hj1 : j + 1 < n
-      · rw [hg_start (j+1) hj1]; congr 1; push_cast; ring
-      · -- j = n-1
+      · rw [hg_start (j+1) hj1, hnextFin_eq_succ j hj1]
+      · -- j = n-1 : nextFin j = ⟨0,_⟩ ; g (j+1) 0 = p ⟨0⟩ (junk).
         have hjn : j + 1 = n := by omega
-        simp only [hg, dif_neg hj1]
-        rw [show ((j:ℝ)+1)/n = 1 from by
-          have : (n:ℝ) = (j:ℝ)+1 := by rw [← hjn]; push_cast; ring
-          rw [this]; field_simp]
+        have hnf0 : (nextFin j).val = 0 := by show (j+1) % n = 0; rw [hjn, Nat.mod_self]
+        rw [show nextFin j = (⟨0, hn⟩ : Fin n) from Fin.ext hnf0]
+        simp only [hg, dif_neg (show ¬ j + 1 < n from by omega)]
     · simp only [hg, dif_neg hj, dif_neg (show ¬ j + 1 < n from by omega)]
   -- piece smoothness/flatness hypotheses (k < n).
   have hpiece : ∀ k, k < n → IsSmoothPath (g k 0) (g k 1) (g k) := by
@@ -801,14 +895,14 @@ theorem exists_splicedLoop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(�
   set δ' : ℝ → Y := OfCurveSkeleton.uniformGlue g n with hδ'def
   have hsp_glue : IsSmoothPath (g 0 0) (g (n-1) 1) δ' :=
     OfCurveSkeleton.isSmoothPath_uniformGlue g hchain n hn hpiece hv0 hv1
-  -- δ' is a closed loop (g 0 0 = δ 0 = δ 1 = g (n-1) 1).
-  have hg00 : g 0 0 = δ 0 := by rw [hg_start 0 hn]; simp
-  have hgn1 : g (n-1) 1 = δ 1 := by
-    rw [hg_finish (n-1) (by omega)]
-    rw [show ((↑(n-1):ℝ)+1)/n = 1 from by
-      rw [Nat.cast_sub hn]; push_cast
-      rw [show (n:ℝ)-1+1 = n from by ring, div_self (ne_of_gt hnpos)]]
-  have heq_ends : g 0 0 = g (n-1) 1 := by rw [hg00, hgn1, hδ.closed]
+  -- δ' is a closed loop: g 0 0 = p ⟨0⟩ and g (n-1) 1 = p (nextFin (n-1)) = p ⟨0⟩.
+  have hg00 : g 0 0 = p ⟨0, hn⟩ := hg_start 0 hn
+  have hgn1 : g (n-1) 1 = p ⟨0, hn⟩ := by
+    rw [hg_finish (n-1) (by omega)]; congr 1
+    apply Fin.ext
+    show ((n-1)+1) % n = (0 : Fin n).val
+    rw [Nat.sub_add_cancel hn, Nat.mod_self, Fin.val_zero]
+  have heq_ends : g 0 0 = g (n-1) 1 := by rw [hg00, hgn1]
   have hloop : IsClosedSmoothLoop δ' :=
     { closed := by rw [hsp_glue.start, hsp_glue.finish, heq_ends]
       cont := hsp_glue.cont
@@ -824,12 +918,17 @@ theorem exists_splicedLoop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(�
     have hlt := hidx_lt t
     simp only [hg, dif_pos hlt]
     exact (hpieceData (OfCurveSkeleton.uIdx n t) hlt).choose_spec.2.1 _
-  -- the partition.
+  refine ⟨δ', hloop, ?_, hoff_glue⟩
+  -- 4. PERIOD EQUALITY via the per-piece correction telescope.
+  -- the uniform partition and the intrinsic correction term.
   set sfun : ℕ → ℝ := fun k => (k:ℝ)/n with hsfun
-  refine ⟨δ', sfun, n, hloop, hoff_glue, ?_, ?_, ?_, ?_⟩
-  · simp [hsfun]
-  · simp [hsfun, div_self (ne_of_gt hnpos)]
-  · intro k hk
+  set corr : Fin (genus Y) → ℕ → ℂ := fun i k =>
+    if h : k < n then lineIntegral (periodBasisForm Y i) (cc ⟨k, h⟩)
+    else lineIntegral (periodBasisForm Y i) (cc ⟨0, hn⟩) with hcorr
+  have hs0 : sfun 0 = 0 := by simp [hsfun]
+  have hsn : sfun n = 1 := by simp [hsfun, div_self (ne_of_gt hnpos)]
+  have hs_sub : ∀ k, k < n → Set.uIcc (sfun k) (sfun (k+1)) ⊆ Set.Icc (0:ℝ) 1 := by
+    intro k hk
     have hle : sfun k ≤ sfun (k+1) := by
       simp only [hsfun]; rw [div_le_div_iff_of_pos_right hnpos]; push_cast; linarith
     rw [Set.uIcc_of_le hle]
@@ -837,18 +936,37 @@ theorem exists_splicedLoop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(�
     simp only [hsfun, Set.mem_Icc] at hu ⊢
     refine ⟨le_trans ?_ hu.1, le_trans hu.2 ?_⟩
     · positivity
-    · rw [div_le_one hnpos]; push_cast; have : k + 1 ≤ n := hk; exact_mod_cast this
-  · -- per-piece integral equality.
+    · rw [div_le_one hnpos]; push_cast; exact_mod_cast hk
+  -- correction is periodic: corr i n = corr i 0.
+  have hcorr_per : ∀ i, corr i n = corr i 0 := by
+    intro i; simp only [hcorr, dif_neg (lt_irrefl n), dif_pos hn]
+  -- the per-piece correction identity.
+  have hpiece_corr : ∀ (i : Fin (genus Y)) (k : ℕ), k < n →
+      (∫ t in (sfun k)..(sfun (k+1)), (periodBasisForm Y i).toFun (δ' t) (pathSpeed δ' t)) =
+      (∫ t in (sfun k)..(sfun (k+1)), (periodBasisForm Y i).toFun (δ t) (pathSpeed δ t))
+        + corr i (k+1) - corr i k := by
     intro i k hk
-    simp only [hsfun]
-    have hk1cast : ((k+1:ℕ):ℝ)/n = ((k:ℝ)+1)/n := by push_cast; ring
-    rw [hk1cast]
     set K : Fin n := ⟨k, hk⟩ with hK
+    have hk1cast : sfun (k+1) = ((k:ℝ)+1)/n := by simp only [hsfun]; push_cast; ring
+    have hk0cast : sfun k = (k:ℝ)/n := by simp only [hsfun]
+    rw [hk0cast, hk1cast]
+    have hab_le : (k:ℝ)/n ≤ ((k:ℝ)+1)/n := by rw [div_le_div_iff_of_pos_right hnpos]; linarith
+    have huIcc_eq : Set.uIcc ((k:ℝ)/n) (((k:ℝ)+1)/n) = Set.Icc ((k:ℝ)/n) (((k:ℝ)+1)/n) :=
+      Set.uIcc_of_le hab_le
+    have hsubIcc : Set.uIcc ((k:ℝ)/n) (((k:ℝ)+1)/n) ⊆ Set.uIcc (0:ℝ) 1 := by
+      rw [huIcc_eq, Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; intro u hu
+      simp only [Set.mem_Icc] at hu ⊢
+      refine ⟨le_trans (by positivity) hu.1, le_trans hu.2 ?_⟩
+      rw [div_le_one hnpos]; exact_mod_cast hk
+    -- ball-K data and the single primitive F on ball K.
+    have hsub : Metric.ball (c K) (r K) ⊆ (chartAt (H := ℂ) (x K)).target :=
+      (hconf K ((k:ℝ)/n) (le_refl _) hab_le).1
+    obtain ⟨F, hF⟩ :=
+      ((OfCurveSkeleton.chartFormCoeff_differentiableOn (x K) i).mono hsub).isExactOn_ball
+    -- piece detour data.
     set γc : ℝ → Y := (hpieceData k hk).choose with hγc
     obtain ⟨hγc_sp, hγc_off, hγc_ball, hγc_src, hγc_v0, hγc_v1⟩ := (hpieceData k hk).choose_spec
     -- δ' = γc (n·-k) on the closed piece.
-    have hab_le : (k:ℝ)/n ≤ ((k:ℝ)+1)/n := by
-      rw [div_le_div_iff_of_pos_right hnpos]; linarith
     have hδ'_eq : ∀ t, (k:ℝ)/n ≤ t → t ≤ ((k:ℝ)+1)/n → δ' t = γc ((n:ℝ)*t - k) := by
       intro t ht0 ht1
       show OfCurveSkeleton.uniformGlue g n t = γc ((n:ℝ)*t - k)
@@ -859,80 +977,115 @@ theorem exists_splicedLoop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(�
       refine ⟨?_, ?_⟩
       · rw [div_le_iff₀ hnpos] at ht0; linarith
       · rw [le_div_iff₀ hnpos] at ht1; linarith
-    have huIcc_eq : Set.uIcc ((k:ℝ)/n) (((k:ℝ)+1)/n) = Set.Icc ((k:ℝ)/n) (((k:ℝ)+1)/n) :=
-      Set.uIcc_of_le hab_le
-    have hsubIcc : Set.uIcc ((k:ℝ)/n) (((k:ℝ)+1)/n) ⊆ Set.uIcc (0:ℝ) 1 := by
-      rw [huIcc_eq, Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; intro u hu
-      simp only [Set.mem_Icc] at hu ⊢
-      refine ⟨le_trans (by positivity) hu.1, le_trans hu.2 ?_⟩
-      rw [div_le_one hnpos]; exact_mod_cast hk
-    have hsub : Metric.ball (c K) (r K) ⊆ (chartAt (H := ℂ) (x K)).target :=
-      (hconf K ((k:ℝ)/n) (le_refl _) hab_le).1
-    -- apply the chart-local FTC.
-    apply OfCurveSkeleton.intervalIntegral_form_pathSpeed_eq_of_subball_endpoints
-      (x K) δ' δ i (c K) (r K) ((k:ℝ)/n) (((k:ℝ)+1)/n) hsub
-    · -- δ' chart-ball
-      intro t ht; rw [huIcc_eq, Set.mem_Icc] at ht
-      rw [hδ'_eq t ht.1 ht.2]
-      exact hγc_ball _ (harg_mem t ht.1 ht.2)
-    · -- δ chart-ball
-      intro t ht; rw [huIcc_eq, Set.mem_Icc] at ht
-      exact (hconf K t ht.1 ht.2).2.2
-    · -- δ' source
-      intro t ht; rw [huIcc_eq, Set.mem_Icc] at ht
-      rw [hδ'_eq t ht.1 ht.2]
-      exact hγc_src _ (harg_mem t ht.1 ht.2)
-    · -- δ source
-      intro t ht; rw [huIcc_eq, Set.mem_Icc] at ht
-      exact (hconf K t ht.1 ht.2).2.1
-    · exact hloop.cont
-    · exact hδ.cont
-    · intro t ht
-      rw [huIcc_eq, Set.mem_Icc] at ht
-      refine OfCurveSkeleton.differentiableAt_chart_anchor_of_self (x K) δ' t hloop.cont ?_
-        (hloop.diff t (hsubIcc (by rw [huIcc_eq, Set.mem_Icc]; exact ht)))
-      rw [hδ'_eq t ht.1 ht.2]; exact hγc_src _ (harg_mem t ht.1 ht.2)
-    · intro t ht
-      rw [huIcc_eq, Set.mem_Icc] at ht
-      refine OfCurveSkeleton.differentiableAt_chart_anchor_of_self (x K) δ t hδ.cont ?_
-        (hδ.diff t (hsubIcc (by rw [huIcc_eq, Set.mem_Icc]; exact ht)))
-      exact (hconf K t ht.1 ht.2).2.1
-    · exact (hloop.integrable i).mono_set hsubIcc
-    · exact (hδ.integrable i).mono_set hsubIcc
-    · -- endpoints at a = k/n.
-      rw [hδ'_eq ((k:ℝ)/n) (le_refl _) hab_le]
-      have : γc ((n:ℝ)*((k:ℝ)/n) - k) = γc 0 := by congr 1; rw [mul_div_cancel₀ _ (ne_of_gt hnpos)]; ring
-      rw [this]; congr 1; exact hγc_sp.start
-    · -- endpoints at b = (k+1)/n.
-      rw [hδ'_eq (((k:ℝ)+1)/n) hab_le (le_refl _)]
-      have : γc ((n:ℝ)*(((k:ℝ)+1)/n) - k) = γc 1 := by congr 1; rw [mul_div_cancel₀ _ (ne_of_gt hnpos)]; ring
-      rw [this]; congr 1; exact hγc_sp.finish
-
-
-/-- **[analytic content discharged; geometric content isolated in
-`exists_splicedLoop_off_branchLocus`].** A closed smooth loop in `Y` can be deformed off the finite
-branch locus without changing its period vector.
-
-The **period-preservation** conjunct — the part the project long flagged as needing manifold
-Stokes — is now **fully proven** and reduced to a 1-dimensional telescoping: it follows from the
-geometric witness (partition + per-piece partial-integral equality) via
-`periodVec_eq_of_partition_integral_eq` (`Jacobians/LoopOffBranch.lean`), whose per-piece input is in
-turn the proven sub-ball chart-local FTC (`intervalIntegral_form_pathSpeed_eq_of_subball_endpoints`).
-NO global manifold Stokes / de Rham / homotopy cylinder is involved.
-
-The only remaining `sorry` is the explicit off-branch smooth-detour construction, isolated in
-`exists_splicedLoop_off_branchLocus`; see its docstring. Consumers
-(`exists_preimageCycle_of_nonconstant`, `…sheets_eq_fibreCard_…`) require the period vector
-LITERALLY equal (threaded through `PreimageCycle.congr_periodVec`), which this provides. -/
-theorem exists_loop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
-    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
-    ∃ δ', IsClosedSmoothLoop δ' ∧ periodVec δ' = periodVec δ ∧
-      (∀ t : ℝ, δ' t ∉ branchLocus f) := by
-  obtain ⟨δ', s, n, hδ'_loop, hδ'_avoid, hs0, hsn, hs_sub, hpiece⟩ :=
-    exists_splicedLoop_off_branchLocus f hf hnonconst δ hδ
-  refine ⟨δ', hδ'_loop, ?_, hδ'_avoid⟩
-  exact periodVec_eq_of_partition_integral_eq δ δ' hδ hδ'_loop s n hs0 hsn hs_sub hpiece
+    -- helper to apply the given-primitive prim-diff on the piece for a path φ.
+    -- ∫δ' = F(chart(δ' b)) − F(chart(δ' a)).
+    have hInt_δ' :
+        (∫ t in ((k:ℝ)/n)..(((k:ℝ)+1)/n), (periodBasisForm Y i).toFun (δ' t) (pathSpeed δ' t)) =
+        F ((chartAt (H := ℂ) (x K)) (δ' (((k:ℝ)+1)/n)))
+          - F ((chartAt (H := ℂ) (x K)) (δ' ((k:ℝ)/n))) := by
+      apply OfCurveSkeleton.intervalIntegral_form_pathSpeed_eq_primitive_diff_of_primitive
+        (x K) δ' i (c K) (r K) ((k:ℝ)/n) (((k:ℝ)+1)/n) F hF
+      · intro t ht; rw [huIcc_eq, Set.mem_Icc] at ht
+        rw [hδ'_eq t ht.1 ht.2]; exact hγc_ball _ (harg_mem t ht.1 ht.2)
+      · intro t ht; rw [huIcc_eq, Set.mem_Icc] at ht
+        rw [hδ'_eq t ht.1 ht.2]; exact hγc_src _ (harg_mem t ht.1 ht.2)
+      · exact hloop.cont
+      · intro t ht; rw [huIcc_eq, Set.mem_Icc] at ht
+        refine OfCurveSkeleton.differentiableAt_chart_anchor_of_self (x K) δ' t hloop.cont ?_
+          (hloop.diff t (hsubIcc (by rw [huIcc_eq, Set.mem_Icc]; exact ht)))
+        rw [hδ'_eq t ht.1 ht.2]; exact hγc_src _ (harg_mem t ht.1 ht.2)
+      · exact (hloop.integrable i).mono_set hsubIcc
+    -- ∫δ = F(chart(δ b)) − F(chart(δ a)).
+    have hInt_δ :
+        (∫ t in ((k:ℝ)/n)..(((k:ℝ)+1)/n), (periodBasisForm Y i).toFun (δ t) (pathSpeed δ t)) =
+        F ((chartAt (H := ℂ) (x K)) (δ (((k:ℝ)+1)/n)))
+          - F ((chartAt (H := ℂ) (x K)) (δ ((k:ℝ)/n))) := by
+      apply OfCurveSkeleton.intervalIntegral_form_pathSpeed_eq_primitive_diff_of_primitive
+        (x K) δ i (c K) (r K) ((k:ℝ)/n) (((k:ℝ)+1)/n) F hF
+      · intro t ht; rw [huIcc_eq, Set.mem_Icc] at ht; exact (hconf K t ht.1 ht.2).2.2
+      · intro t ht; rw [huIcc_eq, Set.mem_Icc] at ht; exact (hconf K t ht.1 ht.2).2.1
+      · exact hδ.cont
+      · intro t ht; rw [huIcc_eq, Set.mem_Icc] at ht
+        refine OfCurveSkeleton.differentiableAt_chart_anchor_of_self (x K) δ t hδ.cont ?_
+          (hδ.diff t (hsubIcc (by rw [huIcc_eq, Set.mem_Icc]; exact ht)))
+        exact (hconf K t ht.1 ht.2).2.1
+      · exact (hδ.integrable i).mono_set hsubIcc
+    -- corr i k = F(chart(p K)) − F(chart(δ(k/n))), via cc K confined to ball K (this-ball).
+    have hcorr_k : corr i k = F ((chartAt (H := ℂ) (x K)) (p K))
+        - F ((chartAt (H := ℂ) (x K)) (δ ((k:ℝ)/n))) := by
+      simp only [hcorr, dif_pos hk]
+      show lineIntegral (periodBasisForm Y i) (cc K) = _
+      unfold lineIntegral
+      rw [OfCurveSkeleton.intervalIntegral_form_pathSpeed_eq_primitive_diff_of_primitive
+        (x K) (cc K) i (c K) (r K) 0 1 F hF
+        (fun t ht => (hcc K).2.2.2.2.2.2.2 t (by rwa [Set.uIcc_of_le zero_le_one] at ht))
+        (fun t ht => (hcc K).2.2.2.2.2.1 t (by rwa [Set.uIcc_of_le zero_le_one] at ht))
+        (hcc K).2.1.cont
+        (fun t ht => OfCurveSkeleton.differentiableAt_chart_anchor_of_self (x K) (cc K) t
+          (hcc K).2.1.cont ((hcc K).2.2.2.2.2.1 t (by rwa [Set.uIcc_of_le zero_le_one] at ht))
+          ((hcc K).2.1.diff t ht))
+        ((hcc K).2.1.integrable i)]
+      rw [hcc_finish K, hcc_start K]
+    -- corr i (k+1) = F(chart(p(nextFin k))) − F(chart(δ((k+1)/n))), via cc(nextFin k) in ball K
+    -- (prev-ball, since (nextFin k)-1 = K).
+    have hidxeq : (nextFin k) - 1 = K := hnextPrev k hk
+    -- cc (nextFin k) starts at δ((k+1)/n).  In the WRAP case (k+1=n) the breakpoint nextFin k = 0
+    -- sits at parameter 0, and δ 0 = δ 1 = δ((k+1)/n) via closedness; else (nextFin k:ℝ)/n = (k+1)/n.
+    have hcc_next_start : cc (nextFin k) 0 = δ (((k:ℝ)+1)/n) := by
+      rw [hcc_start (nextFin k)]
+      rcases (by omega : k + 1 < n ∨ k + 1 = n) with hlt | heq
+      · congr 1; rw [hnextFin_eq_succ k hlt]; push_cast; ring
+      · have hnf0 : (nextFin k).val = 0 := by show (k+1) % n = 0; rw [heq, Nat.mod_self]
+        have hzero : ((((nextFin k):ℝ))/n) = 0 := by
+          rw [show ((nextFin k : Fin n):ℝ) = ((nextFin k).val : ℝ) from rfl, hnf0]; simp
+        rw [hzero, hδ.closed]
+        congr 1
+        rw [show ((k:ℝ)+1) = (n:ℝ) from by rw [← heq]; push_cast; ring,
+          div_self (ne_of_gt hnpos)]
+    have hcorr_k1 : corr i (k+1) = F ((chartAt (H := ℂ) (x K)) (p (nextFin k)))
+        - F ((chartAt (H := ℂ) (x K)) (δ (((k:ℝ)+1)/n))) := by
+      -- corr i (k+1) = lineIntegral over cc (nextFin k) (whether k+1<n or =n).
+      have hval : corr i (k+1) = lineIntegral (periodBasisForm Y i) (cc (nextFin k)) := by
+        rcases (by omega : k + 1 < n ∨ k + 1 = n) with hlt | heq
+        · simp only [hcorr, dif_pos hlt]
+          rw [hnextFin_eq_succ k hlt]
+        · have hnf0 : (nextFin k).val = 0 := by show (k+1) % n = 0; rw [heq, Nat.mod_self]
+          simp only [hcorr, dif_neg (show ¬ k + 1 < n from by omega)]
+          rw [show nextFin k = (⟨0, hn⟩ : Fin n) from Fin.ext hnf0]
+      rw [hval]
+      show lineIntegral (periodBasisForm Y i) (cc (nextFin k)) = _
+      unfold lineIntegral
+      -- cc (nextFin k) confined to ball K via prev-ball (ball ((nextFin k)-1) = ball K).
+      have hball_prev : ∀ t ∈ Set.uIcc (0:ℝ) 1,
+          (chartAt (H := ℂ) (x K)) (cc (nextFin k) t) ∈ Metric.ball (c K) (r K) := by
+        intro t ht
+        have h := (hcc (nextFin k)).2.2.2.2.2.2.1 t (by rwa [Set.uIcc_of_le zero_le_one] at ht)
+        rw [hidxeq] at h; exact h
+      have hsrc_prev : ∀ t ∈ Set.uIcc (0:ℝ) 1, cc (nextFin k) t ∈ (chartAt (H := ℂ) (x K)).source := by
+        intro t ht
+        have h := (hcc (nextFin k)).2.2.2.2.1 t (by rwa [Set.uIcc_of_le zero_le_one] at ht)
+        rw [hidxeq] at h; exact h
+      rw [OfCurveSkeleton.intervalIntegral_form_pathSpeed_eq_primitive_diff_of_primitive
+        (x K) (cc (nextFin k)) i (c K) (r K) 0 1 F hF hball_prev hsrc_prev
+        (hcc (nextFin k)).2.1.cont
+        (fun t ht => OfCurveSkeleton.differentiableAt_chart_anchor_of_self (x K) (cc (nextFin k)) t
+          (hcc (nextFin k)).2.1.cont (hsrc_prev t ht) ((hcc (nextFin k)).2.1.diff t ht))
+        ((hcc (nextFin k)).2.1.integrable i)]
+      rw [hcc_finish (nextFin k), hcc_next_start]
+    -- δ' endpoints: δ'(k/n) = p K, δ'((k+1)/n) = p(nextFin k).
+    have hδ'_a : δ' ((k:ℝ)/n) = p K := by
+      rw [hδ'_eq ((k:ℝ)/n) (le_refl _) hab_le,
+        show (n:ℝ)*((k:ℝ)/n) - k = 0 from by rw [mul_div_cancel₀ _ (ne_of_gt hnpos)]; ring]
+      exact hγc_sp.start
+    have hδ'_b : δ' (((k:ℝ)+1)/n) = p (nextFin k) := by
+      rw [hδ'_eq (((k:ℝ)+1)/n) hab_le (le_refl _),
+        show (n:ℝ)*(((k:ℝ)+1)/n) - k = 1 from by rw [mul_div_cancel₀ _ (ne_of_gt hnpos)]; ring]
+      exact hγc_sp.finish
+    -- assemble: ∫δ' − ∫δ = corr(k+1) − corr(k).
+    rw [hInt_δ', hInt_δ, hcorr_k, hcorr_k1, hδ'_a, hδ'_b]
+    ring
+  exact periodVec_eq_of_partition_integral_telescope δ δ' hδ hloop sfun n hs0 hsn hs_sub
+    corr hcorr_per hpiece_corr
 
 /-- **Continuous path-lift off the branch locus.** A path `δ` in `Y` that avoids the
 branch locus lifts, through the proven covering
