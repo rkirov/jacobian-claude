@@ -113,6 +113,7 @@ theorem MeromorphicFunction.contMDiff_toSphere (f : MeromorphicFunction X) {P : 
     ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (f.toSphere P) := by
   sorry
 
+set_option linter.unusedSectionVars false in
 /-- Every charted space over `ℂ` is nontrivial at each point: there is always a
 second point.  Proof: the chart `e` at `P` is an open embedding into `ℂ`; its
 target is a nonempty open set, which cannot be the singleton `{e P}` (singletons
@@ -127,7 +128,7 @@ theorem exists_ne_of_chartedSpace_complex (P : X) : ∃ x : X, x ≠ P := by
     exact (not_isOpen_singleton (e P)) (hsingle ▸ e.open_target)
   obtain ⟨w, hw, hwne⟩ : ∃ w ∈ e.target, w ≠ e P := by
     by_contra hcon
-    push_neg at hcon
+    simp only [not_exists, not_and, not_not] at hcon
     exact hne (Set.eq_singleton_iff_unique_mem.mpr ⟨hPtgt, hcon⟩)
   refine ⟨e.symm w, fun hcontra => hwne ?_⟩
   have : e (e.symm w) = e P := by rw [hcontra]
@@ -139,7 +140,7 @@ theorem exists_ne_of_chartedSpace_complex (P : X) : ∃ x : X, x ≠ P := by
 `IsConstantMap` predicate (`∃ c, ∀ x, f x = c`), which is non-vacuous since `X` is
 nonempty. -/
 theorem MeromorphicFunction.toSphere_not_isConstant (f : MeromorphicFunction X)
-    {P : X} (hP : f.HasSingleSimplePole P) :
+    {P : X} (_hP : f.HasSingleSimplePole P) :
     ¬ IsConstantMap (f.toSphere P) := by
   rintro ⟨c, hc⟩
   obtain ⟨x, hx⟩ := exists_ne_of_chartedSpace_complex (X := X) P
@@ -151,15 +152,64 @@ theorem MeromorphicFunction.toSphere_not_isConstant (f : MeromorphicFunction X)
 
 /-! ### Step 2 — degree one -/
 
-/-- **Degree one** (Step 2).  `∞` is a regular value of `F = toSphere f P` with a
-single preimage `P`, so the fibre-cardinality degree is `1`.  Uses
-`degreeFiber_eq_card_of_regularWitness` with the witness at `∞`:
-`F⁻¹(∞) = {P}` has cardinality `1`. -/
+/-- **The pole is a regular point of `F = toSphere f P`** (Step 2's analytic core,
+and the genuine consumer of *simplicity*).  Reading `F` near `P` in the `∞`-chart,
+`F` is `z ↦ 1/f` whose derivative at `P` is nonzero **precisely because the pole is
+simple** (`orderAtPoint P = -1`): a double pole would give a vanishing derivative
+here (chart-pullback `z ↦ z²`-shaped), so its fibre-degree would be `2`, not `1`.
+This is the chart-pullback-derivative-nonzero certificate the regular-witness
+bundle (`RegularValueWitnessReg.is_regular`) requires at the unique preimage `P` of
+`∞`.
+
+This is the same analytic local-normal-form content as `contMDiff_toSphere`, here
+specialized to the first-derivative non-vanishing at the simple pole; isolated as a
+single documented residual. -/
+theorem MeromorphicFunction.toSphere_regular_at_pole (f : MeromorphicFunction X)
+    {P : X} (hP : f.HasSingleSimplePole P) :
+    ∀ x ∈ (f.toSphere P) ⁻¹' {OnePoint.infty},
+      deriv ((chartAt ℂ (OnePoint.infty : RiemannSphere)) ∘ (f.toSphere P) ∘
+          (chartAt ℂ x).symm) ((chartAt ℂ x) x) ≠ 0 := by
+  sorry
+
+/-- **Degree one** (Step 2).  `∞` is a regular value of `F = toSphere f P` with the
+single preimage `P` (`toSphere_preimage_infty`), and `P` is a regular point
+(`toSphere_regular_at_pole`, consuming pole simplicity).  Packaging this as a
+`RegularValueWitnessReg` whose fibre `{P}` has cardinality `1`, witness-independence
+of the fibre degree (`degreeFiber_eq_card_of_regularWitness`) gives
+`degreeFiber F hF = 1`.
+
+Note the genuine use of simplicity: the `RegularValueWitnessReg.is_regular`
+certificate fed in here is `toSphere_regular_at_pole`, which *fails* for a higher-
+order pole.  A double pole has the same singleton preimage `{P}` but is a critical
+point, so it would not yield a regular witness — and indeed its topological degree
+is `2`, not `1`. -/
 theorem MeromorphicFunction.degreeFiber_toSphere_eq_one (f : MeromorphicFunction X)
     {P : X} (hP : f.HasSingleSimplePole P)
     (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (f.toSphere P)) :
     degreeFiber (f.toSphere P) hF = 1 := by
-  sorry
+  classical
+  -- The regular-value witness at `∞`, with fibre `{P}` and the simplicity certificate.
+  set F := f.toSphere P with hFdef
+  have hfib : F ⁻¹' {OnePoint.infty} = {P} := f.toSphere_preimage_infty P
+  have hfin : (F ⁻¹' {OnePoint.infty}).Finite := by rw [hfib]; exact Set.finite_singleton P
+  -- underlying cardinality-bearing witness
+  let w₀ : RegularValueWitness F :=
+    { value := OnePoint.infty, fiber_finite := hfin }
+  -- promote to a regular witness using the simple-pole regularity certificate
+  let w : RegularValueWitnessReg F :=
+    w₀.toRegular (f.toSphere_regular_at_pole hP)
+  -- non-constancy
+  have hnc : ¬ IsConstantMap F := f.toSphere_not_isConstant hP
+  -- witness independence pins the degree to this witness's card …
+  have hdeg : degreeFiber F hF = w.card :=
+    degreeFiber_eq_card_of_regularWitness F hF hnc w
+  rw [hdeg]
+  -- … and that card is `(F⁻¹{∞}).ncard = |{P}| = 1`.
+  show (Jacobians.Discharge.ContMDiff.RegularValueWitnessReg.card w) = 1
+  have hcard : w.card = (F ⁻¹' {OnePoint.infty}).ncard :=
+    w₀.card_eq_ncard
+  rw [show (Jacobians.Discharge.ContMDiff.RegularValueWitnessReg.card w) = w.card from rfl,
+    hcard, hfib, Set.ncard_singleton]
 
 /-! ### Step 3 — degree one ⟹ homeomorphism -/
 
