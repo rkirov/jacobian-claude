@@ -266,6 +266,61 @@ theorem dbar_polar_identity (g : ℂ → ℂ) (w : ℂ) (θ : ℝ) :
   rw [Complex.I_sq]
   ring
 
+/-- The radial map `r ↦ z + r•c : ℝ → ℂ` (real scalar multiple), as the building block of the
+radial slice.  `C^∞` and, for `c ≠ 0`, a closed embedding (proper affine). -/
+private noncomputable def radialMap (z c : ℂ) : ℝ → ℂ := fun r => z + r • c
+
+theorem contDiff_radialMap (z c : ℂ) : ContDiff ℝ (⊤ : ℕ∞) (radialMap z c) := by
+  unfold radialMap; fun_prop
+
+/-- The radial slice `r ↦ g(z + r•c)` is `C^∞`. -/
+theorem contDiff_radial {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (z c : ℂ) :
+    ContDiff ℝ (⊤ : ℕ∞) (fun r : ℝ => g (radialMap z c r)) :=
+  hg.comp (contDiff_radialMap z c)
+
+theorem hasCompactSupport_radial {g : ℂ → ℂ} (hgsupp : HasCompactSupport g) {c : ℂ}
+    (hc : c ≠ 0) (z : ℂ) : HasCompactSupport (fun r : ℝ => g (radialMap z c r)) := by
+  -- `r ↦ z + r•c` is antilipschitz + (uniformly) continuous ⟹ closed embedding; support pulls back.
+  have hdist : ∀ a b : ℝ, dist (radialMap z c a) (radialMap z c b) = ‖c‖ * dist a b := by
+    intro a b
+    have h1 : radialMap z c a - radialMap z c b = ((a - b : ℝ) : ℂ) * c := by
+      simp only [radialMap, Complex.real_smul]
+      push_cast; ring
+    rw [dist_eq_norm, h1, norm_mul, Complex.norm_real, Real.norm_eq_abs, Real.dist_eq, mul_comm]
+  have hcpos : (0 : ℝ) < ‖c‖ := by positivity
+  have hanti : AntilipschitzWith ⟨‖c‖⁻¹, by positivity⟩ (radialMap z c) := by
+    refine AntilipschitzWith.of_le_mul_dist fun a b => ?_
+    rw [hdist a b]
+    show dist a b ≤ ‖c‖⁻¹ * (‖c‖ * dist a b)
+    rw [← mul_assoc, inv_mul_cancel₀ hcpos.ne', one_mul]
+  have hlip : LipschitzWith ⟨‖c‖, norm_nonneg c⟩ (radialMap z c) := by
+    refine LipschitzWith.of_dist_le_mul fun a b => ?_
+    rw [hdist a b]
+    show ‖c‖ * dist a b ≤ ‖c‖ * dist a b
+    rfl
+  exact hgsupp.comp_isClosedEmbedding (hanti.isClosedEmbedding hlip.uniformContinuous)
+
+/-- The radial derivative `deriv (fun r => g(z + r•c)) r = (fderiv ℝ g (z + r•c)) c`. -/
+theorem deriv_radial {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (z c : ℂ) (r : ℝ) :
+    deriv (fun r : ℝ => g (radialMap z c r)) r = (fderiv ℝ g (radialMap z c r)) c := by
+  have hg' : DifferentiableAt ℝ g (radialMap z c r) :=
+    hg.differentiable (by norm_num) _
+  have hmap : HasDerivAt (radialMap z c) c r := by
+    show HasDerivAt (fun r : ℝ => z + r • c) c r
+    simpa using ((hasDerivAt_id r).smul_const c).const_add z
+  exact (hg'.hasFDerivAt.comp_hasDerivAt r hmap).deriv
+
+/-- **The radial integral** produces the answer: `∫_{r>0} (fderiv ℝ g (z+r•c)) c dr = −g(z)`
+for `c ≠ 0` (1D fundamental theorem of calculus, compact support kills the `r→∞` endpoint). -/
+theorem radial_integral {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hgsupp : HasCompactSupport g)
+    {c : ℂ} (hc : c ≠ 0) (z : ℂ) :
+    ∫ r in Set.Ioi (0 : ℝ), (fderiv ℝ g (radialMap z c r)) c = -g z := by
+  have hkey := (hasCompactSupport_radial hgsupp hc z).integral_Ioi_deriv_eq
+    ((contDiff_radial hg z c).of_le (by exact_mod_cast le_top)) 0
+  simp only [deriv_radial hg z c] at hkey
+  rw [hkey]
+  simp [radialMap]
+
 /-- **D2 core — the Cauchy–Pompeiu area-integral identity.**  For `g ∈ C^∞_c`,
 `∬_ℂ (∂̄g)(ζ)/(ζ−z) dA(ζ) = −π·g(z)`.
 
