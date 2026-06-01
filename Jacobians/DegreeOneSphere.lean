@@ -65,6 +65,7 @@ def MeromorphicFunction.HasSingleSimplePole
 pole `P`: send finite points through `f` (composed with `ℂ ↪ ℂℙ¹`) and `P` to
 `∞`.  (We send *only* `P` to `∞`; with a single simple pole at `P` this is the
 honest "graph" of `f`.) -/
+open Classical in
 def MeromorphicFunction.toSphere (f : MeromorphicFunction X) (P : X) :
     X → RiemannSphere :=
   fun x => if x = P then OnePoint.infty else ((f.toFun x : ℂ) : RiemannSphere)
