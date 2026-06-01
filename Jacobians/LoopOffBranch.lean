@@ -428,6 +428,48 @@ lemma intervalIntegral_form_pathSpeed_eq_primitive_diff_in_subball
       (hint.congr (fun t ht => hintegrand (Set.uIoc_subset_uIcc ht)))]
   rfl
 
+/-- **Sub-interval primitive-difference, with a GIVEN primitive `F`.** Identical to
+`intervalIntegral_form_pathSpeed_eq_primitive_diff_in_subball`, but `F` (a primitive of
+`chartFormCoeff Q₀ i` on the ball) is *supplied as input* rather than produced existentially.
+This is what lets a *single* ball-`k` primitive `F` be reused across several confined paths
+(the original loop, the detour, and the connecting paths) so that their primitive-differences
+telescope — the line integral over each confined path is `F(chart endpoint) − F(chart start)`
+with the SAME `F`. -/
+lemma intervalIntegral_form_pathSpeed_eq_primitive_diff_of_primitive
+    (Q₀ : X) (γ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ) (a b : ℝ)
+    (F : ℂ → ℂ) (hF : ∀ w ∈ Metric.ball c r, HasDerivAt F (chartFormCoeff (X := X) Q₀ i w) w)
+    (hg_ball : ∀ t ∈ Set.uIcc a b, (chartAt (H := ℂ) Q₀) (γ t) ∈ Metric.ball c r)
+    (hγ_in : ∀ t ∈ Set.uIcc a b, γ t ∈ (chartAt (H := ℂ) Q₀).source)
+    (hγ_cont : Continuous γ)
+    (hγ_diff : ∀ t ∈ Set.uIcc a b,
+      DifferentiableAt ℝ ((chartAt (H := ℂ) Q₀).toFun ∘ γ) t)
+    (hint : IntervalIntegrable
+      (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t)) volume a b) :
+    (∫ t in a..b, (periodBasisForm X i).toFun (γ t) (pathSpeed γ t)) =
+      F ((chartAt (H := ℂ) Q₀) (γ b)) - F ((chartAt (H := ℂ) Q₀) (γ a)) := by
+  set e := chartAt (H := ℂ) Q₀ with he
+  set g : ℝ → ℂ := e.toFun ∘ γ with hg
+  have hg_ball' : ∀ t ∈ Set.uIcc a b, g t ∈ Metric.ball c r := hg_ball
+  have hFg_deriv : ∀ t ∈ Set.uIcc a b,
+      HasDerivAt (F ∘ g) (chartFormCoeff (X := X) Q₀ i (g t) * (fderiv ℝ g t 1)) t := by
+    intro t ht
+    have hg_deriv : HasDerivAt g (fderiv ℝ g t 1) t := (hγ_diff t ht).hasDerivAt
+    have hF_at : HasDerivAt F (chartFormCoeff (X := X) Q₀ i (g t)) (g t) := hF (g t) (hg_ball' t ht)
+    have := hF_at.comp t hg_deriv
+    convert this using 1
+  have hintegrand : Set.EqOn
+      (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
+      (fun t => chartFormCoeff (X := X) Q₀ i (g t) * (fderiv ℝ g t 1))
+      (Set.uIcc a b) := by
+    intro t ht
+    have h_src_nbhd : ∀ᶠ s : ℝ in nhds t, γ s ∈ e.source :=
+      (e.open_source.preimage hγ_cont).mem_nhds (hγ_in t ht)
+    exact chartFrame_cancel_general Q₀ γ i t h_src_nbhd (hγ_diff t ht)
+  rw [intervalIntegral.integral_congr hintegrand,
+    intervalIntegral.integral_eq_sub_of_hasDerivAt hFg_deriv
+      (hint.congr (fun t ht => hintegrand (Set.uIoc_subset_uIcc ht)))]
+  rfl
+
 /-- **Sub-interval splice.** Two paths `γ₁, γ₂` whose sub-arcs over `[a,b]` lie in a common
 sub-ball and share chart-coordinate endpoints (`chart γ₁ a = chart γ₂ a`, `chart γ₁ b = chart γ₂ b`)
 have equal partial line integrals over `[a,b]`. This is the telescoping step: it lets a bad sub-arc

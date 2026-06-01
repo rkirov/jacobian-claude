@@ -513,6 +513,163 @@ lemma exists_offBranch_detour_piece (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘
     rw [hγ, Jacobians.pathSpeed_concat_right γ₁ γ₂ 1 (by norm_num) hd,
       show (2:ℝ)*1-1 = 1 from by norm_num, hv2_1, mul_zero]
 
+/-- A nonempty open subset of `Y` (a complex `1`-manifold) is infinite: locally homeomorphic to a
+nonempty open subset of `ℂ`, which is infinite. (Local copy of `Jacobians.infinite_of_isOpen_nonempty`
+from `DegreeOneSphere.lean`, which is downstream of this file and so cannot be imported here.) -/
+private theorem infinite_of_isOpen_nonempty_local {W : Set Y} (hW : IsOpen W) (hne : W.Nonempty) :
+    W.Infinite := by
+  obtain ⟨y₀, hy₀⟩ := hne
+  set c : OpenPartialHomeomorph Y ℂ := chartAt ℂ y₀ with hc
+  set U : Set Y := c.source ∩ W with hU
+  have hUopen : IsOpen U := c.open_source.inter hW
+  have hy₀U : y₀ ∈ U := ⟨mem_chart_source ℂ y₀, hy₀⟩
+  have hcU_open : IsOpen (c '' U) := c.isOpen_image_of_subset_source hUopen Set.inter_subset_left
+  have hcy₀ : c y₀ ∈ c '' U := ⟨y₀, hy₀U, rfl⟩
+  haveI : Filter.NeBot (𝓝[≠] (c y₀)) := Module.punctured_nhds_neBot ℂ ℂ (c y₀)
+  have hcU_inf : (c '' U).Infinite := infinite_of_mem_nhds (c y₀) (hcU_open.mem_nhds hcy₀)
+  have hsub : c '' U ⊆ c.target := by rintro _ ⟨x, hx, rfl⟩; exact c.map_source hx.1
+  have himg : (c.symm '' (c '' U)).Infinite := hcU_inf.image (c.symm.injOn.mono hsub)
+  refine himg.mono ?_
+  rintro _ ⟨_, ⟨x, hx, rfl⟩, rfl⟩
+  rw [c.left_inv hx.1]; exact hx.2
+
+/-- Removing a finite set from a nonempty open subset of `Y` leaves a point. (Local copy of
+`Jacobians.exists_mem_open_notMem_finite`.) -/
+private theorem exists_mem_open_notMem_finite_local {W C : Set Y}
+    (hW : IsOpen W) (hne : W.Nonempty) (hC : C.Finite) : ∃ y ∈ W, y ∉ C := by
+  by_contra h
+  simp only [not_exists, not_and, not_not] at h
+  exact (infinite_of_isOpen_nonempty_local hW hne) (hC.subset (fun y hy => h y hy))
+
+/-- **[OVERLAP CONNECTOR — the off-branch breakpoint perturbation].** Let `P` be a point lying in
+the sources of two chart anchors `w₁, w₂` (the anchors of two adjacent cover pieces sharing the
+breakpoint `P = δ(k/n)`), with chart-image inside each anchor's sub-ball `ball (c_j) (r_j) ⊆
+target(w_j)`. Then there is a point `p` **off** `branchLocus f`, together with a flat-ended smooth
+**connecting path** `c : P → p`, whose chart-image stays inside *both* sub-balls (and whose body
+stays in both chart sources) on all of `[0,1]`.
+
+This is the perturbation that the false `exists_offBranch_subBallChartCover` was trying (and failing)
+to do at the level of `δ` itself: `δ(k/n)` may sit on the branch locus, but we dodge to a nearby
+off-branch `p` and record the short connecting path `c`. Because `c` lies in the *overlap* of the two
+sub-balls, the line integral of any period form along `c` is the **same** primitive-difference whether
+computed in ball `1` or ball `2` — which is exactly the intrinsic correction term that makes the
+telescope in `exists_loop_off_branchLocus` close.
+
+Construction: a small ball `D` around `chart₂ P` inside `ball (c₂) (r₂)` whose `chart₂.symm`-image is
+in `source w₁` with `chart₁`-image in `ball (c₁) (r₁)` (continuity of the transition `chart₁ ∘
+chart₂.symm` at `chart₂ P`, where `chart₁ P ∈ ball (c₁) (r₁)` is open). Any `p` with `chart₂ p ∈ D`
+then lies in both balls; pick `p ∈ chart₂.symm '' D` off the finite `branchLocus` (open-minus-finite).
+The connector is the chart-`2` straight segment `ChartBallPathSmooth3 w₂ P p`, confined to the convex
+`D` (so to ball `2`), hence to ball `1` via the transition. -/
+lemma exists_offBranch_overlap_connector (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ y, f y = y₀)
+    (w₁ w₂ P : Y) (c₁ c₂ : ℂ) (r₁ r₂ : ℝ)
+    (_hball₁ : Metric.ball c₁ r₁ ⊆ (chartAt (H := ℂ) w₁).target)
+    (hball₂ : Metric.ball c₂ r₂ ⊆ (chartAt (H := ℂ) w₂).target)
+    (hP₁_src : P ∈ (chartAt (H := ℂ) w₁).source) (hP₂_src : P ∈ (chartAt (H := ℂ) w₂).source)
+    (hP₁_ball : (chartAt (H := ℂ) w₁) P ∈ Metric.ball c₁ r₁)
+    (hP₂_ball : (chartAt (H := ℂ) w₂) P ∈ Metric.ball c₂ r₂) :
+    ∃ (p : Y) (c : ℝ → Y),
+      p ∉ branchLocus f ∧ IsSmoothPath P p c ∧
+      pathSpeed c 0 = 0 ∧ pathSpeed c 1 = 0 ∧
+      (∀ t ∈ Set.Icc (0:ℝ) 1, c t ∈ (chartAt (H := ℂ) w₁).source) ∧
+      (∀ t ∈ Set.Icc (0:ℝ) 1, c t ∈ (chartAt (H := ℂ) w₂).source) ∧
+      (∀ t ∈ Set.Icc (0:ℝ) 1, (chartAt (H := ℂ) w₁) (c t) ∈ Metric.ball c₁ r₁) ∧
+      (∀ t ∈ Set.Icc (0:ℝ) 1, (chartAt (H := ℂ) w₂) (c t) ∈ Metric.ball c₂ r₂) := by
+  classical
+  set e₁ := chartAt (H := ℂ) w₁ with he₁
+  set e₂ := chartAt (H := ℂ) w₂ with he₂
+  -- The transition `g := e₁ ∘ e₂.symm` is continuous at `e₂ P` and sends it into `ball c₁ r₁`.
+  -- `e₂.symm` is continuous at `e₂ P` (which is in `e₂.target`).
+  have hP₂_tgt : e₂ P ∈ e₂.target := e₂.map_source hP₂_src
+  have he₂symm_at : ContinuousAt e₂.symm (e₂ P) := e₂.continuousAt_symm hP₂_tgt
+  have he₂symm_P : e₂.symm (e₂ P) = P := e₂.left_inv hP₂_src
+  -- `e₁` is continuous at `P` (within nothing special — use continuousAt on its source).
+  have he₁_at : ContinuousAt e₁ P := e₁.continuousAt hP₁_src
+  -- Build the small ball `D = ball (e₂ P) ρ` with the three confinement properties.
+  -- (a) `e₂.symm` maps a nbhd of `e₂ P` into `e₁.source`.
+  have hpre₁_src : e₂.symm ⁻¹' e₁.source ∈ nhds (e₂ P) := by
+    have : e₁.source ∈ nhds (e₂.symm (e₂ P)) := by rw [he₂symm_P]; exact e₁.open_source.mem_nhds hP₁_src
+    exact he₂symm_at this
+  -- (b) `g = e₁ ∘ e₂.symm` maps a nbhd of `e₂ P` into `ball c₁ r₁`.
+  have hg_at : ContinuousAt (fun v => e₁ (e₂.symm v)) (e₂ P) := by
+    have hcomp : ContinuousAt e₁ (e₂.symm (e₂ P)) := by rw [he₂symm_P]; exact he₁_at
+    exact hcomp.comp he₂symm_at
+  have hpre₁_ball : e₂.symm ⁻¹' (e₁ ⁻¹' Metric.ball c₁ r₁) ∈ nhds (e₂ P) := by
+    have hball₁_nhds : Metric.ball c₁ r₁ ∈ nhds (e₁ (e₂.symm (e₂ P))) := by
+      rw [he₂symm_P]; exact Metric.isOpen_ball.mem_nhds hP₁_ball
+    have := hg_at hball₁_nhds
+    exact this
+  -- (c) `e₂ P` is in the open `ball c₂ r₂`.
+  have hball₂_nhds : Metric.ball c₂ r₂ ∈ nhds (e₂ P) := Metric.isOpen_ball.mem_nhds hP₂_ball
+  -- Intersect the three neighborhoods; extract a ball `D = ball (e₂ P) ρ` inside all of them.
+  have hInter : (e₂.symm ⁻¹' e₁.source) ∩ (e₂.symm ⁻¹' (e₁ ⁻¹' Metric.ball c₁ r₁)) ∩
+      Metric.ball c₂ r₂ ∈ nhds (e₂ P) :=
+    Filter.inter_mem (Filter.inter_mem hpre₁_src hpre₁_ball) hball₂_nhds
+  obtain ⟨ρ, hρpos, hρ_sub⟩ := Metric.mem_nhds_iff.mp hInter
+  set D : Set ℂ := Metric.ball (e₂ P) ρ with hD
+  -- Properties of D, decoded from hρ_sub.
+  have hD_src₁ : ∀ v ∈ D, e₂.symm v ∈ e₁.source := fun v hv => (hρ_sub hv).1.1
+  have hD_ball₁ : ∀ v ∈ D, e₁ (e₂.symm v) ∈ Metric.ball c₁ r₁ := fun v hv => (hρ_sub hv).1.2
+  have hD_ball₂ : ∀ v ∈ D, v ∈ Metric.ball c₂ r₂ := fun v hv => (hρ_sub hv).2
+  have hD_tgt₂ : ∀ v ∈ D, v ∈ e₂.target := fun v hv => hball₂ (hD_ball₂ v hv)
+  have hD_src₂ : ∀ v ∈ D, e₂.symm v ∈ e₂.source := fun v hv => e₂.map_target (hD_tgt₂ v hv)
+  have hP_in_D : e₂ P ∈ D := Metric.mem_ball_self hρpos
+  -- The open set `W := e₂.symm '' D` in Y, containing P, off which we dodge the finite branch locus.
+  have hD_open : IsOpen D := Metric.isOpen_ball
+  have hD_sub_tgt : D ⊆ e₂.target := fun v hv => hD_tgt₂ v hv
+  have hW_open : IsOpen (e₂.symm '' D) :=
+    e₂.symm.isOpen_image_of_subset_source hD_open (by rw [e₂.symm_source]; exact hD_sub_tgt)
+  have hW_ne : (e₂.symm '' D).Nonempty := ⟨P, e₂ P, hP_in_D, he₂symm_P⟩
+  obtain ⟨p, hp_W, hp_off⟩ :=
+    exists_mem_open_notMem_finite_local hW_open hW_ne
+      (finite_branchLocus_of_nonconstant f hf hnonconst)
+  obtain ⟨vp, hvp_D, hvp_eq⟩ := hp_W
+  -- `e₂ p = vp ∈ D`.
+  have hp_src₂ : p ∈ e₂.source := by rw [← hvp_eq]; exact hD_src₂ vp hvp_D
+  have he₂p : e₂ p = vp := by rw [← hvp_eq]; exact e₂.right_inv (hD_tgt₂ vp hvp_D)
+  have hp_D : e₂ p ∈ D := by rw [he₂p]; exact hvp_D
+  -- The connector: chart-2 straight segment P → p.
+  set c : ℝ → Y := OfCurveSkeleton.ChartBallPathSmooth3 w₂ P p with hc
+  -- chart-2 segment confinement: chart₂(c t) is a segment point of [chart₂ P, chart₂ p] ⊆ D.
+  have hseg_D : ∀ σ : ℝ, σ ∈ Set.Icc (0:ℝ) 1 →
+      (1 - (σ : ℂ)) * e₂ P + (σ : ℂ) * e₂ p ∈ D := by
+    intro σ hσ
+    have hmem : (1 - (σ : ℂ)) * e₂ P + (σ : ℂ) * e₂ p ∈ segment ℝ (e₂ P) (e₂ p) := by
+      refine ⟨1 - σ, σ, by linarith [hσ.2], hσ.1, by ring, ?_⟩
+      rw [Complex.real_smul, Complex.real_smul]; push_cast; ring
+    exact (convex_ball (e₂ P) ρ).segment_subset hP_in_D hp_D hmem
+  -- chart-ball hypothesis for the ChartBallPathSmooth3 machinery (segment ⊆ D ⊆ target₂).
+  have hcb : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      ((1 - (s : ℂ)) * e₂ P + (s : ℂ) * e₂ p) ∈ e₂.target :=
+    fun s hs => hD_tgt₂ _ (hseg_D s hs)
+  -- chart₂(c t) ∈ D, source₂, smoothness, flatness.
+  have hc_chart₂ : ∀ t : ℝ, e₂ (c t) ∈ D := by
+    intro t
+    have hσ := Jacobians.smoothStep01_mem_unit t
+    rw [hc, OfCurveSkeleton.chart_ChartBallPathSmooth3_eq w₂ P p t (hcb _ hσ)]
+    exact hseg_D _ hσ
+  have hc_src₂ : ∀ t : ℝ, c t ∈ e₂.source := fun t =>
+    OfCurveSkeleton.ChartBallPathSmooth3_mem_source w₂ P p t hcb
+  have hsp : IsSmoothPath P p c :=
+    OfCurveSkeleton.isSmoothPath_ChartBallPathSmooth3 w₂ P p hP₂_src hp_src₂ hcb
+  have hv0 : pathSpeed c 0 = 0 := OfCurveSkeleton.pathSpeed_ChartBallPathSmooth3_zero w₂ P p hcb
+  have hv1 : pathSpeed c 1 = 0 := OfCurveSkeleton.pathSpeed_ChartBallPathSmooth3_one w₂ P p hcb
+  -- chart₂(c t) ∈ ball c₂ r₂ via D.
+  have hc_ball₂ : ∀ t ∈ Set.Icc (0:ℝ) 1, e₂ (c t) ∈ Metric.ball c₂ r₂ :=
+    fun t _ => hD_ball₂ _ (hc_chart₂ t)
+  -- Transfer to chart-1: c t ∈ source₁ and chart₁(c t) ∈ ball c₁ r₁, using e₂.symm (e₂ (c t)) = c t.
+  have he₂symm_ct : ∀ t : ℝ, e₂.symm (e₂ (c t)) = c t := fun t => e₂.left_inv (hc_src₂ t)
+  have hc_src₁ : ∀ t ∈ Set.Icc (0:ℝ) 1, c t ∈ e₁.source := by
+    intro t _
+    have := hD_src₁ _ (hc_chart₂ t)
+    rwa [he₂symm_ct t] at this
+  have hc_ball₁ : ∀ t ∈ Set.Icc (0:ℝ) 1, e₁ (c t) ∈ Metric.ball c₁ r₁ := by
+    intro t _
+    have := hD_ball₁ _ (hc_chart₂ t)
+    rwa [he₂symm_ct t] at this
+  exact ⟨p, c, hp_off, hsp, hv0, hv1, hc_src₁, fun t _ => hc_src₂ t, hc_ball₁, hc_ball₂⟩
+
 /-- **[ISOLATED GEOMETRIC INPUT for #6 — off-branch sub-ball cover].** For a closed smooth loop `δ`
 and the (finite) `branchLocus f`, there is a partition `s k = k/n` of `[0,1]` together with per-piece
 chart anchors `x k`, sub-ball centers `c k` and radii `r k > 0` such that, over the `k`-th piece,
