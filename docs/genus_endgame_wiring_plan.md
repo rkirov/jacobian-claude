@@ -1,48 +1,36 @@
-# Wiring `genus_eq_zero_iff_homeo` to the DegreeOneSphere endgame
+# Wiring `genus_eq_zero_iff_homeo` to the DegreeOneSphere endgame — DONE (2026-06-01)
 
-**Goal.** Discharge the `→` (forward) direction of the challenge theorem
-`Jacobians.genus_eq_zero_iff_homeo` (`Genus.lean:81`, currently `sorry`) using the proven-modulo
-endgame `Jacobians.nonempty_homeo_sphere_of_singleSimplePole` (`DegreeOneSphere.lean:256`).
+**Status: COMPLETE** (commit `8c92864`). This doc is kept as a record of how it was resolved.
 
-## Two blockers (why this is a refactor, not a one-line edit)
+`genus_eq_zero_iff_homeo` (the #1 challenge theorem) is now **proven modulo two isolated analytic
+inputs**, wired to the proven-modulo degree-one endgame:
+- forward: `genus 0 → exists_singleSimplePole_of_genus_zero` (RR consequence `l(P)=2`, sorry) →
+  `nonempty_homeo_sphere_of_singleSimplePole` (degree-one endgame).
+- backward: `genus_zero_of_nonempty_homeo_sphere` (`Ω(ℂℙ¹)=0`, sorry).
 
-1. **Import cycle.** `DegreeOneSphere` imports `ProjectiveLine`, which imports `Genus`. So
-   `Genus.lean` **cannot** `import Jacobians.DegreeOneSphere` to fill its sorry — that's circular.
-   The forward implication must be assembled in a module **downstream of both** Genus and
-   DegreeOneSphere.
+## How the two apparent blockers were resolved
+1. **Import cycle** (`DegreeOneSphere → ProjectiveLine → Genus`) — REAL. Resolved by **moving the
+   theorem out of `Genus.lean` into `DegreeOneSphere.lean`** (downstream of both). Genus.lean now has
+   a pointer comment, 0 sorries.
+2. **`[Nonempty X]` gap — was a FALSE ALARM.** `ConnectedSpace` extends `Nonempty`
+   (`attribute [instance 50] ConnectedSpace.toNonempty`), so `[ConnectedSpace X]` supplies `[Nonempty X]`
+   for free. The spec signature is unchanged; no extra instance was added.
 
-2. **Typeclass gap.** `genus_eq_zero_iff_homeo` is stated with
-   `[TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
-   [IsManifold 𝓘(ℂ) ω X]` — **no `[Nonempty X]`**. The DegreeOneSphere endgame variable block
-   **requires `[Nonempty X]`** (used by `exists_ne_of_chartedSpace_complex` etc.). `[ConnectedSpace X]`
-   does NOT give `[Nonempty X]` in Lean. Either add `[Nonempty X]` to the challenge lemma (check the
-   challenge spec `Jacobian_challenge.lean` allows it — the conformance file pins the exact signature)
-   OR derive nonemptiness another way (e.g. a compact connected manifold modelled on ℂ is nonempty iff
-   the type is — but `genus X = 0` side may give a point).
+## The namespace subtlety that bit once (worth remembering)
+`genus` and `genus_eq_zero_iff_homeo` live in the **ROOT namespace**, NOT `namespace Jacobians`
+(in `Genus.lean`, `def genus` is *after* `end Jacobians`). The challenge-conformance file
+(`ChallengeConformance.lean`) references them BARE with no `open Jacobians`, so they MUST be in root
+namespace or conformance fails with `unknownIdentifier`. First attempt placed the moved theorem inside
+`namespace Jacobians` → conformance broke. Fix: declare it in root namespace, qualify the
+Jacobians-namespace helpers it calls (`Jacobians.MeromorphicFunction`,
+`Jacobians.nonempty_homeo_sphere_of_singleSimplePole`) while keeping `genus` (root) bare.
 
-## Recommended path
+## Verification
+`lake build` green (8392 jobs); `lake env lean ChallengeConformance.lean` PASSES;
+`genus_eq_zero_iff_homeo` axiom set `[propext, sorryAx, Classical.choice, Quot.sound]` (no new custom
+axioms — `sorryAx` only via the isolated inputs).
 
-- **Do NOT edit Genus.lean's statement-site proof inline.** Keep `genus_eq_zero_iff_homeo`'s sorry
-  where it is, OR convert it to consume a new downstream lemma.
-- Create/extend a module **downstream of both** (e.g. a new `Jacobians/GenusSphere.lean`, or extend
-  `DegreeOneSphere.lean` itself since it already imports the needed pieces) that proves:
-  `genus_eq_zero_forward : genus X = 0 → Nonempty (X ≃ₜ S²)` by
-  `exists_simplePole_of_genus_zero (RR input, still sorry) ▸ nonempty_homeo_sphere_of_singleSimplePole`.
-- The **backward** direction `Nonempty (X ≃ₜ S²) → genus X = 0` is `genus_zero_of_homeo_sphere`
-  (was a Roadmap input, now needs a real home — Ω(ℂℙ¹)=0 content).
-- Then discharge `Genus.genus_eq_zero_iff_homeo` by having it **import the downstream module** — but
-  that re-introduces the cycle (Genus ← downstream ← Genus). RESOLUTION: the challenge entry point is
-  `ChallengeConformance.lean` (imports `Jacobians`), which is ABOVE everything. The clean fix is to
-  state the iff in a top-level module that is NOT imported by ProjectiveLine — i.e. **move the
-  `genus_eq_zero_iff_homeo` statement out of Genus.lean** into a leaf module that imports both Genus
-  and DegreeOneSphere, and have ChallengeConformance pick it up from there. Verify the conformance file
-  resolves the name (`Jacobians.genus_eq_zero_iff_homeo`) regardless of which module defines it.
-
-## Remaining sorries this still rests on (NOT closed by wiring — the real math)
-- `exists_simplePole_of_genus_zero` (Riemann–Roch consequence `l(P)=2`; Dolbeault/Serre wall).
-- `genus_zero_of_homeo_sphere` (Ω(ℂℙ¹)=0).
-- DegreeOneSphere's own 3: `contMDiff_toSphere`, `toSphere_regular_at_pole`, `degreeOne_homeo`.
-
-So wiring is **plumbing that connects the reduction**, making the dependency real-in-code; it does NOT
-reduce the count of genuine analytic gaps. Worth doing for structure, but it's not a sorry-closing step.
-See `project_loop_off_branch_6_leftover.md`, `feedback_verify_agent_commits.md`.
+## Remaining genuine gaps under this theorem (the real math — unchanged by wiring)
+- `exists_singleSimplePole_of_genus_zero` (Riemann–Roch `l(P)=2`; Dolbeault/Serre wall).
+- `genus_zero_of_nonempty_homeo_sphere` (`Ω(ℂℙ¹)=0`; uses `ProjectiveLine.holomorphicOneForm_eq_zero`).
+- the endgame's own 3: `contMDiff_toSphere`, `toSphere_regular_at_pole`, `degreeOne_homeo`.
