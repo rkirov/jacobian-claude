@@ -930,6 +930,132 @@ lemma balancedGlue_apply_of_mem (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 =
         · rw [hkk']
         · rw [hk_cast, pow_succ]; push_cast; ring
 
+/-! ### A5. Sub-ball chart cover (subdivision infrastructure)
+
+`exists_chartCover` (in `Jacobians/SmoothPath.lean`) delivers, for a continuous `γ`, a uniform
+partition of `[0,1]` into `n` pieces with a chart anchor `x k` per piece such that `γ` stays in
+`(chartAt ℂ (x k)).source` over the `k`-th piece. The off-branch splice lemma
+`intervalIntegral_form_pathSpeed_eq_of_subball_endpoints` needs strictly more: a *ball*
+`Metric.ball (c k) (r k)` lying inside the chart **target**, with the chart-image of `γ` over the
+piece confined to that ball (so the holomorphic primitive on the ball applies). `exists_subBallChartCover`
+upgrades the cover to carry exactly that ball data. The construction is the same single Lebesgue-number
+argument as `exists_chartCover`, but each cover element also pins the chart-image into a target sub-ball. -/
+
+/-- **Sub-ball chart cover.** For a continuous `γ : ℝ → X`, there is a uniform partition into `n`
+pieces with, per piece `k`, a chart anchor `x k`, a center `c k` and radius `r k > 0` such that
+`Metric.ball (c k) (r k) ⊆ (chartAt ℂ (x k)).target`, and for every `s` in the `k`-th piece
+`[k/n, (k+1)/n]` the point `γ s` lies in `(chartAt ℂ (x k)).source` with chart-image
+`chartAt ℂ (x k) (γ s) ∈ Metric.ball (c k) (r k)`. This supplies the sub-ball confinement consumed by
+`intervalIntegral_form_pathSpeed_eq_of_subball_endpoints`. -/
+theorem exists_subBallChartCover (γ : ℝ → X) (hγ : Continuous γ) :
+    ∃ (n : ℕ) (_hn : 0 < n) (x : Fin n → X) (c : Fin n → ℂ) (r : Fin n → ℝ),
+      (∀ k, 0 < r k) ∧
+      ∀ (k : Fin n) (s : ℝ),
+        (k : ℝ) / n ≤ s → s ≤ ((k : ℝ) + 1) / n →
+          Metric.ball (c k) (r k) ⊆ (chartAt (H := ℂ) (x k)).target ∧
+          γ s ∈ (chartAt (H := ℂ) (x k)).source ∧
+          (chartAt (H := ℂ) (x k)) (γ s) ∈ Metric.ball (c k) (r k) := by
+  classical
+  set S : Set ℝ := Set.Icc (0 : ℝ) 1 with hS_def
+  -- Per base time `t`, a positive radius `ρ t` whose ball around the chart-image of `γ t` sits
+  -- inside the chart target.
+  have hrad : ∀ t : S, ∃ ρ : ℝ, 0 < ρ ∧
+      Metric.ball ((chartAt (H := ℂ) (γ t.1)) (γ t.1)) ρ ⊆ (chartAt (H := ℂ) (γ t.1)).target := by
+    intro t
+    have hmem : (chartAt (H := ℂ) (γ t.1)) (γ t.1) ∈ (chartAt (H := ℂ) (γ t.1)).target :=
+      mem_chart_target ℂ (γ t.1)
+    have hnhds : (chartAt (H := ℂ) (γ t.1)).target ∈
+        nhds ((chartAt (H := ℂ) (γ t.1)) (γ t.1)) :=
+      (chartAt (H := ℂ) (γ t.1)).open_target.mem_nhds hmem
+    obtain ⟨ρ, hρ_pos, hρ_sub⟩ := Metric.mem_nhds_iff.mp hnhds
+    exact ⟨ρ, hρ_pos, hρ_sub⟩
+  set ρ : S → ℝ := fun t => (hrad t).choose with hρ_def
+  have hρ_pos : ∀ t : S, 0 < ρ t := fun t => (hrad t).choose_spec.1
+  have hρ_sub : ∀ t : S, Metric.ball ((chartAt (H := ℂ) (γ t.1)) (γ t.1)) (ρ t) ⊆
+      (chartAt (H := ℂ) (γ t.1)).target := fun t => (hrad t).choose_spec.2
+  -- The open cover: `U t` is the set of times whose `γ`-image stays in the chart source of `γ t`
+  -- AND lands in the sub-ball around the chart-image of `γ t`.
+  set U : S → Set ℝ := fun t =>
+    γ ⁻¹' ((chartAt (H := ℂ) (γ t.1)).source ∩
+      (chartAt (H := ℂ) (γ t.1)) ⁻¹'
+        Metric.ball ((chartAt (H := ℂ) (γ t.1)) (γ t.1)) (ρ t)) with hU_def
+  have hU_open : ∀ t : S, IsOpen (U t) := by
+    intro t
+    have hVopen : IsOpen ((chartAt (H := ℂ) (γ t.1)).source ∩
+        (chartAt (H := ℂ) (γ t.1)) ⁻¹'
+          Metric.ball ((chartAt (H := ℂ) (γ t.1)) (γ t.1)) (ρ t)) :=
+      (chartAt (H := ℂ) (γ t.1)).continuousOn.isOpen_inter_preimage
+        (chartAt (H := ℂ) (γ t.1)).open_source Metric.isOpen_ball
+    exact hVopen.preimage hγ
+  have hU_cover : S ⊆ ⋃ t : S, U t := by
+    intro t ht
+    refine Set.mem_iUnion.mpr ⟨⟨t, ht⟩, ?_⟩
+    simp only [hU_def, Set.mem_preimage, Set.mem_inter_iff]
+    exact ⟨mem_chart_source ℂ (γ t), Metric.mem_ball_self (hρ_pos ⟨t, ht⟩)⟩
+  -- Lebesgue number for the cover of the compact `[0,1]`.
+  obtain ⟨lebδ, hlebδ_pos, hlebδ⟩ :=
+    lebesgue_number_lemma_of_metric (isCompact_Icc (a := (0:ℝ)) (b := 1)) hU_open hU_cover
+  obtain ⟨n, hn_gt⟩ : ∃ n : ℕ, 1 / lebδ < (n : ℝ) := exists_nat_gt _
+  have hn_pos : 0 < n := by
+    have h1 : (0 : ℝ) < 1 / lebδ := by positivity
+    exact_mod_cast lt_trans h1 hn_gt
+  have hn : (1 : ℝ) / n < lebδ := by
+    have hn_R : (0 : ℝ) < n := by exact_mod_cast hn_pos
+    rw [div_lt_iff₀ hn_R]
+    have h := mul_lt_mul_of_pos_left hn_gt hlebδ_pos
+    have h_simp : lebδ * (1 / lebδ) = 1 := by field_simp
+    linarith
+  -- Per `k`, anchor at the piece midpoint via the Lebesgue ball.
+  have key : ∀ k : Fin n, ∃ (xk : X) (ck : ℂ) (rk : ℝ), 0 < rk ∧
+      ∀ y : ℝ, (k : ℝ) / n ≤ y → y ≤ ((k : ℝ) + 1) / n →
+        Metric.ball ck rk ⊆ (chartAt (H := ℂ) xk).target ∧
+        γ y ∈ (chartAt (H := ℂ) xk).source ∧
+        (chartAt (H := ℂ) xk) (γ y) ∈ Metric.ball ck rk := by
+    intro k
+    set m : ℝ := ((k : ℝ) + 1/2) / n with hm_def
+    have hm_mem : m ∈ S := by
+      refine ⟨?_, ?_⟩
+      · apply div_nonneg
+        · have : (0 : ℝ) ≤ k := Nat.cast_nonneg _
+          linarith
+        · exact Nat.cast_nonneg _
+      · rw [hm_def, div_le_one (by exact_mod_cast hn_pos)]
+        have hk : (k : ℝ) + 1 ≤ n := by
+          have : (k.val + 1 : ℕ) ≤ n := k.isLt
+          exact_mod_cast this
+        linarith
+    obtain ⟨t₀, ht₀⟩ := hlebδ m hm_mem
+    refine ⟨γ t₀.1, (chartAt (H := ℂ) (γ t₀.1)) (γ t₀.1), ρ t₀, hρ_pos t₀, ?_⟩
+    intro y hy_low hy_high
+    -- `y` lies in the Lebesgue ball about `m`, hence in `U t₀`.
+    have hy_ball : y ∈ Metric.ball m lebδ := by
+      rw [Metric.mem_ball, Real.dist_eq]
+      have h_dist : |y - m| ≤ 1 / (2 * n) := by
+        rw [abs_sub_le_iff]
+        refine ⟨?_, ?_⟩
+        · have : y - m ≤ ((k : ℝ) + 1) / n - ((k : ℝ) + 1/2) / n := by linarith
+          have heq : ((k : ℝ) + 1) / n - ((k : ℝ) + 1/2) / n = 1 / (2 * n) := by
+            field_simp; ring
+          linarith
+        · have : m - y ≤ ((k : ℝ) + 1/2) / n - (k : ℝ) / n := by linarith
+          have heq : ((k : ℝ) + 1/2) / n - (k : ℝ) / n = 1 / (2 * n) := by
+            field_simp; ring
+          linarith
+      have h1 : (1 : ℝ) / (2 * n) ≤ 1 / n := by
+        apply div_le_div_of_nonneg_left (by norm_num) (by exact_mod_cast hn_pos)
+        have hnn : (0 : ℝ) < n := by exact_mod_cast hn_pos
+        nlinarith
+      linarith
+    have hyU : y ∈ U t₀ := ht₀ hy_ball
+    simp only [hU_def, Set.mem_preimage, Set.mem_inter_iff] at hyU
+    exact ⟨hρ_sub t₀, hyU.1, hyU.2⟩
+  refine ⟨n, hn_pos, fun k => (key k).choose,
+    fun k => (key k).choose_spec.choose,
+    fun k => (key k).choose_spec.choose_spec.choose,
+    fun k => (key k).choose_spec.choose_spec.choose_spec.1, ?_⟩
+  intro k s hs_low hs_high
+  exact (key k).choose_spec.choose_spec.choose_spec.2 s hs_low hs_high
+
 end Jacobians.OfCurveSkeleton
 
 namespace Jacobians
