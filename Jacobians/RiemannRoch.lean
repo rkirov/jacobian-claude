@@ -151,8 +151,32 @@ noncomputable def linearSystem (D : Divisor X) : Submodule ℂ (MeromorphicFunct
         meromorphicOrderAt_smul_of_ne_zero analyticAt_const (by simpa using hc)]
       exact hf x
 
-/-- `l(D) = dim_ℂ L(D)` (Forster's `h⁰(X, O_D)`). -/
-noncomputable def lDim (D : Divisor X) : ℕ := Module.finrank ℂ (linearSystem (X := X) D)
+/-- **Germ-zero "junk" functions.** `MeromorphicFunction.toFun` carries removable-singularity
+junk (cf. the `toSphere` note): e.g. the indicator of a single point is a *nonzero* meromorphic
+function whose germ is `0` everywhere (`orderW ≡ ⊤`). Such functions lie in EVERY `L(D)`, and
+point-indicators are linearly independent, so the naive `finrank ℂ (L(D))` is wrong (the space is
+infinite-dimensional, forcing `finrank = 0` for all `D`, which makes RR false). We quotient them
+out so `l(D)` is the genuine, finite dimension. -/
+noncomputable def germZeroSubmodule : Submodule ℂ (MeromorphicFunction X) where
+  carrier := {f | ∀ x, f.orderW x = ⊤}
+  add_mem' {f g} hf hg := fun x => by
+    have h : min (f.orderW x) (g.orderW x) ≤ (f + g).orderW x :=
+      meromorphicOrderAt_add (f.meromorphic x) (g.meromorphic x)
+    rw [hf x, hg x, min_self] at h
+    exact top_le_iff.mp h
+  zero_mem' := fun x => MeromorphicFunction.orderW_zero x
+  smul_mem' c f hf := fun x => by
+    rcases eq_or_ne c 0 with hc | hc
+    · rw [hc, zero_smul]; exact MeromorphicFunction.orderW_zero x
+    · rw [show (c • f).orderW x = f.orderW x from
+        meromorphicOrderAt_smul_of_ne_zero analyticAt_const (by simpa using hc)]
+      exact hf x
+
+/-- `l(D) = dim_ℂ (L(D) ⧸ germ-zero junk)` (Forster's `h⁰(X, O_D)`) — the genuine dimension of
+the linear system, with the `toFun`-junk quotiented out. -/
+noncomputable def lDim (D : Divisor X) : ℕ :=
+  Module.finrank ℂ
+    (↥(linearSystem (X := X) D) ⧸ (germZeroSubmodule (X := X)).submoduleOf (linearSystem (X := X) D))
 
 /-- **Isolated input — Riemann–Roch** (Forster Thm 16.9, Serre-dual form). There is a canonical
 divisor `K` for which `l(D) − l(K−D) = deg D + 1 − g` for every `D`. This one statement bundles
