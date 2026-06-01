@@ -213,27 +213,53 @@ theorem MeromorphicFunction.degreeFiber_toSphere_eq_one (f : MeromorphicFunction
 
 /-! ### Step 3 — degree one ⟹ homeomorphism -/
 
+/-- A nonempty open subset of a complex `1`-manifold `Y` is infinite: it is locally
+homeomorphic to a nonempty open subset of `ℂ`, and those are infinite. -/
+theorem infinite_of_isOpen_nonempty {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    {W : Set Y} (hW : IsOpen W) (hne : W.Nonempty) : W.Infinite := by
+  obtain ⟨y₀, hy₀⟩ := hne
+  set c : OpenPartialHomeomorph Y ℂ := chartAt ℂ y₀ with hc
+  -- The open set `U := c.source ∩ W` contains `y₀`; its chart image is open in `ℂ`.
+  set U : Set Y := c.source ∩ W with hU
+  have hUopen : IsOpen U := c.open_source.inter hW
+  have hy₀U : y₀ ∈ U := ⟨mem_chart_source ℂ y₀, hy₀⟩
+  -- `c '' U` is open in `ℂ` and contains `c y₀`.
+  have hcU_open : IsOpen (c '' U) := c.isOpen_image_of_subset_source hUopen Set.inter_subset_left
+  have hcy₀ : c y₀ ∈ c '' U := ⟨y₀, hy₀U, rfl⟩
+  -- Open sets in `ℂ` containing a point are infinite.
+  haveI : Filter.NeBot (𝓝[≠] (c y₀)) := Module.punctured_nhds_neBot ℂ ℂ (c y₀)
+  have hcU_inf : (c '' U).Infinite := infinite_of_mem_nhds (c y₀) (hcU_open.mem_nhds hcy₀)
+  -- Pull back through `c.symm` (injective on the chart image), landing in `U ⊆ W`.
+  have hsub : c '' U ⊆ c.target := by
+    rintro _ ⟨x, hx, rfl⟩; exact c.map_source hx.1
+  have himg : (c.symm '' (c '' U)).Infinite := hcU_inf.image (c.symm.injOn.mono hsub)
+  refine himg.mono ?_
+  rintro _ ⟨_, ⟨x, hx, rfl⟩, rfl⟩
+  rw [c.left_inv hx.1]; exact hx.2
+
+/-- In a complex `1`-manifold, removing a finite set from a nonempty open set leaves a
+nonempty set (open sets are infinite, finite sets removable). -/
+theorem exists_mem_open_notMem_finite {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    {W C : Set Y} (hW : IsOpen W) (hne : W.Nonempty) (hC : C.Finite) :
+    ∃ y ∈ W, y ∉ C := by
+  by_contra h
+  simp only [not_exists, not_and, not_not] at h
+  have hWsub : W ⊆ C := fun y hy => h y hy
+  exact (infinite_of_isOpen_nonempty hW hne) (hC.subset hWsub)
+
 /-- **Degree-one ⟹ homeomorphism** (Step 3, the crux).  A non-constant degree-one
 holomorphic map `F : X → Y` between compact connected Riemann surfaces is
 bijective and a local biholomorphism, hence a homeomorphism.
 
-Sketch:
-* **Surjective** — a non-constant holomorphic map between compact connected
-  Riemann surfaces is open (`isOpenMap_of_nonconstant`) and closed (compact ⇒
-  closed image into Hausdorff), so its image is clopen and nonempty, hence all of
-  `Y` by connectedness (`surjective_of_nonconstant`).
-* **Injective** — every fibre is finite, and for a degree-one map the generic
-  fibre has one point; combined with no-branching-drop this forces every fibre to
-  be a singleton.
-* **Continuous inverse** — a continuous bijection from a compact space to a
-  Hausdorff space is a homeomorphism (`Continuous.homeoOfEquivCompactToT2` /
-  `Homeomorph.homeoOfContinuousOpen`).
-
-The §3 cover/IFT machinery (`surjective_of_nonconstant`,
-`isOpenMap_of_nonconstant`, local-inverse / fibre-finiteness) lives in
-`Jacobians.TracePullback` / `Jacobians.ManifoldIFT`; assembling the
-degree-one-forces-injective step from it is the substantive remaining work, left
-as a single documented sorry. -/
+Proof:
+* **Surjective** — `surjective_of_nonconstant` (open + closed image, connected target).
+* **Injective** — every regular value `y` (off the finite critical-value set) has a
+  *singleton* fibre, because `degreeFiber F hF = (F⁻¹{y}).ncard = 1` by witness-
+  independence of the degree. If `F a = F b = c` with `a ≠ b`, take disjoint opens
+  `U ∋ a`, `V ∋ b` (Hausdorff); their open images `F '' U`, `F '' V` (open mapping)
+  both contain `c`, so the open intersection contains a regular value `y`; then `y`
+  has preimages in `U` and in `V`, contradicting the singleton fibre.
+* **Continuous open bijection ⟹ homeomorphism** (`Equiv.toHomeomorphOfContinuousOpen`). -/
 theorem degreeOne_homeo {Y : Type*} [TopologicalSpace Y] [T2Space Y]
     [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
     [IsManifold 𝓘(ℂ) ω Y]
@@ -241,7 +267,55 @@ theorem degreeOne_homeo {Y : Type*} [TopologicalSpace Y] [T2Space Y]
     (hnc : ¬ IsConstantMap F)
     (hdeg : degreeFiber F hF = 1) :
     Nonempty (X ≃ₜ Y) := by
-  sorry
+  classical
+  -- `¬ IsConstantMap F` unfolds to the form used by the open-mapping lemmas.
+  have hnc' : ¬ ∃ y₀ : Y, ∀ x, F x = y₀ := hnc
+  have hsurj : Function.Surjective F := surjective_of_nonconstant F hF hnc'
+  have hopen : IsOpenMap F := isOpenMap_of_nonconstant F hF hnc'
+  -- The finite critical-value set.
+  set C : Set Y := Jacobians.Discharge.Manifold.criticalValuesGeneral F with hC
+  have hCfin : C.Finite := Jacobians.Discharge.Manifold.criticalValues_finite_general F hF hnc
+  -- Every value off `C` has a singleton fibre (degree = 1).
+  have hsingleton : ∀ y ∉ C, ∃ p, F ⁻¹' {y} = {p} := by
+    intro y hy
+    obtain ⟨w, hwval⟩ :=
+      Jacobians.Discharge.ContMDiff.Degree.exists_regularValueWitnessReg_value_eq F hF hnc hy
+    have hwcard : degreeFiber F hF = w.card :=
+      degreeFiber_eq_card_of_regularWitness F hF hnc w
+    have hcard1 : (F ⁻¹' {y}).ncard = 1 := by
+      have hcardeq : w.card = (F ⁻¹' {w.toWitness.value}).ncard :=
+        w.toWitness.card_eq_ncard
+      rw [hwval] at hcardeq
+      have : (F ⁻¹' {y}).ncard = w.card := hcardeq.symm
+      rw [this, ← hwcard, hdeg]
+    exact Set.ncard_eq_one.mp hcard1
+  -- Injectivity.
+  have hinj : Function.Injective F := by
+    intro a b hab
+    by_contra hne
+    -- Disjoint opens around `a` and `b`.
+    obtain ⟨U, V, hUopen, hVopen, haU, hbV, hUV⟩ := t2_separation hne
+    -- Their open images both contain `c := F a = F b`.
+    have hcU : F a ∈ F '' U := ⟨a, haU, rfl⟩
+    have hcV : F a ∈ F '' V := ⟨b, hbV, hab.symm⟩
+    have hWopen : IsOpen (F '' U ∩ F '' V) := (hopen U hUopen).inter (hopen V hVopen)
+    have hWne : (F '' U ∩ F '' V).Nonempty := ⟨F a, hcU, hcV⟩
+    -- Pick a regular value `y` in the intersection.
+    obtain ⟨y, ⟨⟨u, huU, hFu⟩, ⟨v, hvV, hFv⟩⟩, hyC⟩ :=
+      exists_mem_open_notMem_finite hWopen hWne hCfin
+    -- Its fibre is a singleton, but `u ∈ U`, `v ∈ V` are distinct preimages.
+    obtain ⟨p, hp⟩ := hsingleton y hyC
+    have hup : u = p := by
+      have : u ∈ F ⁻¹' {y} := hFu
+      rw [hp] at this; exact this
+    have hvp : v = p := by
+      have : v ∈ F ⁻¹' {y} := hFv
+      rw [hp] at this; exact this
+    have huv : u = v := hup.trans hvp.symm
+    exact (hUV.ne_of_mem huU (huv ▸ hvV)) rfl
+  -- Assemble: continuous open bijection ⟹ homeomorphism.
+  refine ⟨Equiv.toHomeomorphOfContinuousOpen (Equiv.ofBijective F ⟨hinj, hsurj⟩)
+    hF.continuous hopen⟩
 
 /-! ### The endgame theorem -/
 
