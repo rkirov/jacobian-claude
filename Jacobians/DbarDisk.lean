@@ -321,6 +321,78 @@ theorem radial_integral {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (
   rw [hkey]
   simp [radialMap]
 
+/-- The angular slice `θ ↦ z + r·(cos θ + sin θ·I)` (fixed radius `r`). -/
+private noncomputable def angularMap (z : ℂ) (r : ℝ) : ℝ → ℂ :=
+  fun θ => z + (r : ℂ) * (Real.cos θ + Real.sin θ * I)
+
+theorem contDiff_angularMap (z : ℂ) (r : ℝ) : ContDiff ℝ (⊤ : ℕ∞) (angularMap z r) := by
+  unfold angularMap
+  have hcos : ContDiff ℝ (⊤ : ℕ∞) (fun θ : ℝ => (Real.cos θ : ℂ)) :=
+    Complex.ofRealCLM.contDiff.comp Real.contDiff_cos
+  have hsin : ContDiff ℝ (⊤ : ℕ∞) (fun θ : ℝ => (Real.sin θ : ℂ)) :=
+    Complex.ofRealCLM.contDiff.comp Real.contDiff_sin
+  have : ContDiff ℝ (⊤ : ℕ∞) (fun θ : ℝ => (Real.cos θ : ℂ) + Real.sin θ * I) :=
+    hcos.add (hsin.mul contDiff_const)
+  fun_prop
+
+/-- The angular derivative `deriv (fun θ => g(z + r·c(θ))) θ = (fderiv ℝ g w)(r·I·c(θ))`,
+where `w = z + r·c(θ)` and `c(θ) = cos θ + sin θ·I`, since `d/dθ c(θ) = I·c(θ)`. -/
+theorem deriv_angular {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (z : ℂ) (r : ℝ) (θ : ℝ) :
+    deriv (fun θ : ℝ => g (angularMap z r θ)) θ
+      = (fderiv ℝ g (angularMap z r θ))
+          ((r : ℂ) * (I * (Real.cos θ + Real.sin θ * I))) := by
+  have hg' : DifferentiableAt ℝ g (angularMap z r θ) :=
+    hg.differentiable (by norm_num) _
+  -- d/dθ [r·(cos θ + sin θ·I)] = r·(-sin θ + cos θ·I) = r·I·(cos θ + sin θ·I).
+  have hcderiv : HasDerivAt (fun θ : ℝ => (r : ℂ) * (Real.cos θ + Real.sin θ * I))
+      ((r : ℂ) * (I * (Real.cos θ + Real.sin θ * I))) θ := by
+    have hcos : HasDerivAt (fun θ : ℝ => (Real.cos θ : ℂ)) (-(Real.sin θ : ℂ)) θ := by
+      simpa using (Real.hasDerivAt_cos θ).ofReal_comp
+    have hsin : HasDerivAt (fun θ : ℝ => (Real.sin θ : ℂ)) ((Real.cos θ : ℂ)) θ := by
+      simpa using (Real.hasDerivAt_sin θ).ofReal_comp
+    have hbase : HasDerivAt (fun θ : ℝ => (Real.cos θ : ℂ) + Real.sin θ * I)
+        (-(Real.sin θ : ℂ) + (Real.cos θ : ℂ) * I) θ :=
+      hcos.add (hsin.mul_const I)
+    have := hbase.const_mul (r : ℂ)
+    convert this using 1
+    push_cast; ring_nf; rw [Complex.I_sq]; ring
+  have hmap : HasDerivAt (angularMap z r)
+      ((r : ℂ) * (I * (Real.cos θ + Real.sin θ * I))) θ := by
+    show HasDerivAt (fun θ : ℝ => z + (r : ℂ) * (Real.cos θ + Real.sin θ * I)) _ θ
+    simpa using hcderiv.const_add z
+  exact (hg'.hasFDerivAt.comp_hasDerivAt θ hmap).deriv
+
+/-- **The angular integral vanishes**: `∫_{θ∈(−π,π)} (fderiv ℝ g w)(I·c(θ)) dθ = 0`, where
+`w = z + r·c(θ)`, `c(θ) = cos θ + sin θ·I`.  By the angular FTC, the integral of the directional
+derivative collapses to the endpoints `θ=±π`, and `c(π)=c(−π)=−1`, so they cancel. -/
+theorem angular_integral {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (z : ℂ) {r : ℝ} (hr : r ≠ 0) :
+    ∫ θ in (-π)..π, (fderiv ℝ g (angularMap z r θ)) (I * (Real.cos θ + Real.sin θ * I)) = 0 := by
+  -- `deriv (g ∘ angularMap) θ = r·(fderiv g w)(I·c(θ))`, so the integrand is `r⁻¹·deriv(…)`.
+  have hintegrand : ∀ θ, (fderiv ℝ g (angularMap z r θ)) (I * (Real.cos θ + Real.sin θ * I))
+      = (r : ℂ)⁻¹ * deriv (fun θ : ℝ => g (angularMap z r θ)) θ := by
+    intro θ
+    rw [deriv_angular hg z r θ]
+    rw [show ((r : ℂ) * (I * (Real.cos θ + Real.sin θ * I)))
+          = (r : ℝ) • (I * (Real.cos θ + Real.sin θ * I)) from by rw [Complex.real_smul],
+      map_smul, Complex.real_smul]
+    rw [← mul_assoc, inv_mul_cancel₀ (by exact_mod_cast hr), one_mul]
+  have hcd : ContDiff ℝ (⊤ : ℕ∞) (fun θ : ℝ => g (angularMap z r θ)) :=
+    hg.comp (contDiff_angularMap z r)
+  simp only [hintegrand]
+  -- Pull out `r⁻¹` and apply the angular FTC over `(−π)..π`.
+  have hcm : ∫ θ in (-π)..π, (r : ℂ)⁻¹ * deriv (fun θ : ℝ => g (angularMap z r θ)) θ
+      = (r : ℂ)⁻¹ * ∫ θ in (-π)..π, deriv (fun θ : ℝ => g (angularMap z r θ)) θ :=
+    intervalIntegral.integral_const_mul _ _
+  rw [hcm, intervalIntegral.integral_deriv_eq_sub
+    (fun θ _ => (hcd.differentiable (by norm_num)).differentiableAt)
+    ((hcd.continuous_deriv (by norm_num)).intervalIntegrable _ _)]
+  -- `angularMap z r π = z − r = angularMap z r (−π)`, so the difference vanishes.
+  have hπ : angularMap z r π = z - r := by
+    simp only [angularMap, Real.cos_pi, Real.sin_pi]; push_cast; ring
+  have hmπ : angularMap z r (-π) = z - r := by
+    simp only [angularMap, Real.cos_neg, Real.sin_neg, Real.cos_pi, Real.sin_pi]; push_cast; ring
+  rw [hπ, hmπ, sub_self, mul_zero]
+
 /-- **D2 core — the Cauchy–Pompeiu area-integral identity.**  For `g ∈ C^∞_c`,
 `∬_ℂ (∂̄g)(ζ)/(ζ−z) dA(ζ) = −π·g(z)`.
 
@@ -332,15 +404,19 @@ annulus-divergence theorem entirely):
 2. Polar change of variables (`Complex.integral_comp_polarCoord_symm`): the Jacobian factor `r`
    cancels `1/w` (`r/(r e^{iθ}) = e^{−iθ}`), giving
    `∫_{(r,θ)∈(0,∞)×(−π,π)} e^{−iθ}·(∂̄g)(z + r e^{iθ}) dr dθ`.
-3. The polar-Wirtinger identity `dbar_polar_identity` (PROVEN below): rewrites the integrand as
-   `½(∂_r G + (i/r)∂_θ G)`, where `G(r,θ)=g(z+r e^{iθ})`.
-4. The `∂_r` term integrates over `r∈(0,∞)` to `−g(z)` (1D FTC for compact support,
-   `HasCompactSupport.integral_Ioi_deriv_eq`), then over `θ∈(−π,π)` to `−2π·g(z)`.
-   The `∂_θ` term integrates over `θ` to `0` by periodicity (Fubini-swapped, the `1/r` weight is
-   `θ`-independent).  Net `½·(−2π·g(z)) = −π·g(z)`.
+3. The polar-Wirtinger identity `dbar_polar_identity` (PROVEN): rewrites the integrand as a
+   ½-combination of the radial directional derivative `(fderiv g w) c` and the angular one
+   `(fderiv g w)(I·c)`, where `c = e^{iθ}`, `w = z + r·c`.
+4. The radial part integrates over `r∈(0,∞)` to `−g(z)` (`radial_integral`, PROVEN), then over
+   `θ` to `−2π·g(z)`.  The angular part integrates over `θ∈(−π,π)` to `0` (`angular_integral`,
+   PROVEN: `c(π)=c(−π)=−1`).  Net `½·(−2π·g(z)) = −π·g(z)`.
 
-REMAINING GAP: the Fubini/FTC assembly (step 4) wiring the proven polar-Wirtinger identity (step 3)
-through the change-of-variables of steps 1–2.  ~120–200 LoC.  See the probe report. -/
+BOTH genuine analytic pieces — the radial FTC (`radial_integral`) and the angular vanishing
+(`angular_integral`) — are PROVEN axiom-clean.  REMAINING GAP: only the measure-theoretic plumbing
+— the translation + `Complex.integral_comp_polarCoord_symm` change of variables (steps 1–2), the
+`e^{−iθ}` simplification on `polarCoord.target`, the split into radial+angular integrals, and the
+Fubini interchange feeding `radial_integral`/`angular_integral`.  ~80–150 LoC of integrability/
+Fubini bookkeeping.  See the probe report. -/
 theorem cauchyPompeiu_area {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hgsupp : HasCompactSupport g)
     (z : ℂ) : ∫ ζ, dbar g ζ / (ζ - z) = -π * g z := by
   sorry
