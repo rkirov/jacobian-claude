@@ -4,6 +4,39 @@ De-risk probe for the **fully-sorry-free** finish, run before committing to the 
 monolith (user directive: "go sorry-free; de-risk G3/G4 first"). Companion to
 `docs/riemann_roch_proof_plan.md` (the deep reference) and `docs/STATUS.md` (current snapshot).
 
+> **▶ UPDATE — Dolbeault-core empirical probe (the assault on the high-variance tier).** Directive:
+> "prefer biggest wins = removal of uncertainty." Attacked the Serre/Dolbeault core directly and
+> **measured a previously-unaccounted foundational prerequisite** (Lean-verified, this session):
+>
+> 1. **The (0,1)-form representation WORKS** — `ContMDiffSection 𝓘(?) (ℂ →SL[starRingEnd ℂ] ℂ) ⊤
+>    (fun x => TangentSpace · x →SL[starRingEnd ℂ] ℂ)` typechecks AND carries `AddCommGroup`/`Module ℂ`.
+>    The conjugate-linear hom bundle is the right object; the biggest fear (can't express (0,1)-forms)
+>    is dispelled.
+> 2. **BUT the ℂ-model gives the WRONG (holomorphic) spaces.** `ContMDiff 𝓘(ℂ) 𝓘(ℂ) ⊤` over `ℂ→ℂ`
+>    means *holomorphic* (`ContDiff ℂ 1 ⟹` holo), not real-`C^∞` (verified: `conj` is `ContDiff ℝ ⊤`
+>    but not `ContDiff ℂ`). So "smooth functions"/"(0,1)-forms" built over `𝓘(ℂ)` are the holomorphic
+>    (wrong, often-zero) spaces. **Real Dolbeault needs real-`C^∞`** functions/forms.
+> 3. **Real-`C^∞` requires the underlying REAL-manifold structure of `X` — which is ABSENT.**
+>    `IsManifold 𝓘(ℝ, ℂ) ⊤ X` does **not** synthesize from the repo's `IsManifold 𝓘(ℂ) ω X` (verified
+>    fail), and Mathlib has **no** complex→real manifold restriction (`ContDiff.restrictScalars` exists
+>    only at the *function* level, not lifted to `IsManifold`/the manifold groupoid).
+>
+> **Refined verdict:** the Serre/Dolbeault core is gated on a **foundational real-manifold-infra layer
+> the original de-risk did not account for** — viewing the complex manifold as a real one (real model
+> + real-`C^∞` sections + a real differential / the (0,1)-projection), built from scratch (holomorphic
+> transitions ⟹ real-smooth via `restrictScalars`, lifted to the groupoid). This sits *under* the
+> ~2–4k Serre estimate, raising the high-variance tier's cost/risk. **Two routes:**
+> (A) build the real-manifold structure (`IsManifold 𝓘(ℝ,ℂ) ⊤ X` from the ℂ-structure) + real-smooth
+>     sections + real ∂̄ — Mathlib-aligned, reusable, but the foundational layer is greenfield;
+> (B) chart-local cocycle — represent real-`C^∞` (0,1)-forms via chart functions on `ℂ` + the
+>     `conj(φ')` transition cocycle, `∂̄` = the scalar `dbar` (DONE, `DbarDisk`), gluing via PoU —
+>     avoids the real-manifold instance but needs bespoke cocycle bookkeeping (repo prior art:
+>     `Montel`/`CotangentCoeff`).
+> **Recommended next probe:** build route (A)'s first piece — `IsManifold 𝓘(ℝ,ℂ) ⊤ X` from the
+> ℂ-structure — a bounded, foundational, reusable artifact that de-risks the whole real-Dolbeault path.
+> Net: the assault converted "Serre ≈ 2–4k, believed feasible" into "Serre needs a real-manifold-infra
+> layer first; (0,1)-form representation validated; scalar ∂̄ in hand; two concrete routes."
+
 All "VERIFIED" claims below were checked this session by reading source at the repo's Mathlib pin
 `8e3c989104da` (`.lake/packages/mathlib/Mathlib`) and the repo files cited. LoC figures are
 engineering estimates (calibrated to the period-lattice / Abel notes), not measurements.
