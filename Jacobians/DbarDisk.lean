@@ -208,11 +208,80 @@ kills it).  Proof = the complex Green / divergence theorem applied to `ζ ↦ g(
 annulus `ε ≤ |ζ−z| ≤ R`: the outer boundary vanishes by support, the inner circle tends to
 `2πi·g(z)` as `ε→0` (the residue brick), and the area integral converges by D0. -/
 
+/-- `dbar g` is continuous when `g` is `C^∞` (it is a fixed continuous-linear combination of the
+first Fréchet derivative, which is itself continuous). -/
+theorem continuous_dbar {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) : Continuous (dbar g) := by
+  have hfd : Continuous (fderiv ℝ g) := hg.continuous_fderiv (by norm_num)
+  unfold dbar
+  fun_prop
+
+/-- `dbar g` has compact support when `g` does (`dbar` is built from `fderiv g`, whose support
+is contained in `tsupport g`). -/
+theorem hasCompactSupport_dbar {g : ℂ → ℂ}
+    (hgsupp : HasCompactSupport g) : HasCompactSupport (dbar g) := by
+  apply HasCompactSupport.intro (hgsupp.fderiv ℝ).isCompact
+  intro z hz
+  have : fderiv ℝ g z = 0 := image_eq_zero_of_notMem_tsupport hz
+  simp [dbar, this]
+
 open scoped Convolution in
-/-- **D2 (Cauchy–Pompeiu).** For `g ∈ C^∞_c`, `(∂̄g) ⋆ K = g`. -/
+/-- Integrability of the area integrand `ζ ↦ (∂̄g)(ζ)·K(z−ζ)`: `∂̄g` is continuous with compact
+support and `K(z−·)` is locally integrable (a reflection/translation of the kernel `K`). -/
+theorem integrable_dbar_mul_cauchyKernel {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g)
+    (hgsupp : HasCompactSupport g) (z : ℂ) :
+    Integrable (fun ζ => dbar g ζ * cauchyKernel (z - ζ)) volume := by
+  have h := (hasCompactSupport_dbar hgsupp).convolutionExists_left (ContinuousLinearMap.mul ℝ ℂ)
+    (continuous_dbar hg) locallyIntegrable_cauchyKernel z
+  simpa only [ContinuousLinearMap.mul_apply'] using h
+
+/-- **D2 core — the Cauchy–Pompeiu area-integral identity.**  For `g ∈ C^∞_c`,
+`∬_ℂ (∂̄g)(ζ)/(ζ−z) dA(ζ) = −π·g(z)`.
+
+This is THE genuine mathematical content of the ∂̄-disk atom and the single remaining gap.
+Classical proof (Forster §13.2 / Hörmander 1.2.1): fix `z` and `R` with `tsupport g ⊆ ball z R`.
+For `ε>0`, the complex Green / 2D-divergence theorem on the annulus `ε ≤ |ζ−z| ≤ R` applied to
+`F(ζ)=g(ζ)/(ζ−z)` (so `∂̄F = (∂̄g)/(ζ−z)`, since `1/(ζ−z)` is holomorphic on the annulus) gives
+`∬_{annulus} (∂̄g)/(ζ−z) dA = (1/2i)[∮_{|ζ−z|=R} − ∮_{|ζ−z|=ε}] g(ζ)/(ζ−z) dζ`.
+The outer integral vanishes (`g ≡ 0` on `|ζ−z|=R`); the inner integral `→ 2πi·g(z)` as `ε→0`
+(Mathlib residue brick `circleIntegral_sub_center_inv_smul_…_of_tendsto`); and the area integral
+`→ ∬_ℂ` by dominated convergence (kernel locally integrable, D0).  Hence
+`∬_ℂ (∂̄g)/(ζ−z) = (1/2i)(0 − 2πi·g(z)) = −π·g(z)`.
+
+UNSCAFFOLDED IN MATHLIB: the complex Green/divergence theorem on an **annulus** for a merely
+`C¹` (non-holomorphic) integrand.  Mathlib has only the *rectangle* version
+(`Complex.integral_boundary_rect_of_differentiableOn_real`) and the *holomorphic* annulus
+(`circleIntegral_…_annulus_off_countable`).  Bridging rectangle→annulus for a smooth `F` (exp-chart
++ Jacobian bookkeeping, mirroring `circleIntegral_sub_center_inv_smul_eq_of_differentiable_on_annulus_off_countable`)
+is the ~150–300 LoC core; see the probe report. -/
+theorem cauchyPompeiu_area {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hgsupp : HasCompactSupport g)
+    (z : ℂ) : ∫ ζ, dbar g ζ / (ζ - z) = -π * g z := by
+  sorry
+
+open scoped Convolution in
+/-- **D2 (Cauchy–Pompeiu).** For `g ∈ C^∞_c`, `(∂̄g) ⋆ K = g`.  Reduces by elementary algebra to
+the area-integral identity `cauchyPompeiu_area`. -/
 theorem cauchyPompeiu {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hgsupp : HasCompactSupport g)
     (z : ℂ) : (dbar g ⋆[ContinuousLinearMap.mul ℝ ℂ, volume] cauchyKernel) z = g z := by
-  sorry
+  -- Unfold the convolution and rewrite the kernel: `(∂̄g ⋆ K) z = ∫ (∂̄g ζ)·K(z−ζ)`.
+  rw [convolution_def]
+  simp only [ContinuousLinearMap.mul_apply', cauchyKernel]
+  -- `K(z−ζ) = 1/(π(z−ζ)) = -(1/π)·(1/(ζ−z))`, so the integral is `-(1/π)·∫ (∂̄g ζ)/(ζ−z)`.
+  have hker : ∀ ζ, dbar g ζ * (1 / (↑π * (z - ζ))) = (-(1 / ↑π)) * (dbar g ζ / (ζ - z)) := by
+    intro ζ
+    rcases eq_or_ne (ζ - z) 0 with h | h
+    · have hzζ : z - ζ = 0 := by linear_combination -h
+      simp [h, hzζ]
+    · have hpi : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+      have hzζ : z - ζ ≠ 0 := sub_ne_zero.mpr (sub_ne_zero.mp h).symm
+      field_simp
+      ring
+  have hfun : (fun ζ => dbar g ζ * (1 / (↑π * (z - ζ))))
+      = (fun ζ => (-(1 / ↑π)) * (dbar g ζ / (ζ - z))) := funext hker
+  rw [hfun]
+  have hcm : ∫ ζ, (-(1 / ↑π)) * (dbar g ζ / (ζ - z))
+      = (-(1 / ↑π)) * ∫ ζ, dbar g ζ / (ζ - z) := integral_const_mul _ _
+  rw [hcm, cauchyPompeiu_area hg hgsupp z]
+  field_simp
 
 /-! ## D3 — assemble: the ∂̄-solvability atom -/
 
