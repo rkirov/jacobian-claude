@@ -469,14 +469,138 @@ lemma inftyCoeff_eq_transition {z : ℂ} (hz : z ≠ 0) :
   show T (-z ^ 2) = -z ^ 2 * T 1
   rw [← smul_eq_mul, ← map_smul]; congr 1; rw [smul_eq_mul, mul_one]
 
+open Filter Bornology Topology in
+/-- **`O(z⁻²)` decay at `∞`.** The affine coefficient tends to `0` along `cobounded`
+(`|z| → ∞`): `f(z) = -z⁻² g(z⁻¹)` with `g(z⁻¹) → g(0)` bounded and `z⁻² → 0`. -/
+lemma affineCoeff_tendsto_cobounded :
+    Filter.Tendsto (affineCoeff s) (Bornology.cobounded ℂ) (𝓝 0) := by
+  -- The decay representative: `-(z⁻¹)² · g(z⁻¹)`, which equals `f(z)` for `z ≠ 0`.
+  have hg : Filter.Tendsto (fun z : ℂ => inftyCoeff s z⁻¹) (Bornology.cobounded ℂ)
+      (𝓝 (inftyCoeff s 0)) :=
+    (inftyCoeff_continuousAt_zero s).tendsto.comp tendsto_inv₀_cobounded
+  have hz2 : Filter.Tendsto (fun z : ℂ => -(z⁻¹) ^ 2) (Bornology.cobounded ℂ) (𝓝 0) := by
+    have := (tendsto_inv₀_cobounded (α := ℂ)).pow 2
+    simpa using this.neg
+  have hprod : Filter.Tendsto (fun z : ℂ => -(z⁻¹) ^ 2 * inftyCoeff s z⁻¹)
+      (Bornology.cobounded ℂ) (𝓝 0) := by
+    have := hz2.mul hg
+    simpa using this
+  refine hprod.congr' ?_
+  filter_upwards [eventually_ne_cobounded (0 : ℂ)] with z hz
+  -- `-(z⁻¹)² g(z⁻¹) = -(z⁻¹)² · (-z² f(z)) = (z⁻¹ z)² f(z) = f(z)`.
+  rw [inftyCoeff_eq_transition s hz]
+  have hzz : (z⁻¹) ^ 2 * z ^ 2 = 1 := by
+    rw [← mul_pow, inv_mul_cancel₀ hz, one_pow]
+  have hrw : -(z⁻¹) ^ 2 * (-z ^ 2 * affineCoeff s z)
+      = (z⁻¹ ^ 2 * z ^ 2) * affineCoeff s z := by ring
+  rw [hrw, hzz, one_mul]
+
+/-- **The affine coefficient vanishes identically.** `f` is entire and tends to `0` at `∞`
+(Liouville: a bounded entire function tending to a limit at infinity is that constant). -/
+lemma affineCoeff_eq_zero : affineCoeff s = 0 := by
+  have hcocompact : Filter.Tendsto (affineCoeff s) (Filter.cocompact ℂ) (𝓝 0) := by
+    rw [← Metric.cobounded_eq_cocompact]
+    exact affineCoeff_tendsto_cobounded s
+  have h := (affineCoeff_differentiable s).eq_const_of_tendsto_cocompact hcocompact
+  rw [h]; rfl
+
+/-- At a finite point `z`, the affine coefficient is `s.toFun (z:RS)` applied to the
+affine-frame unit `1`. -/
+lemma affineCoeff_eq_toFun_one (z : ℂ) :
+    affineCoeff s z = s.toFun (z : RiemannSphere) (1 : ℂ) := by
+  rw [affineCoeff]
+  show s.toFun (z : RiemannSphere)
+    ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := RiemannSphere)) ((0 : ℂ) : RiemannSphere)).symmL
+      ℂ (z : RiemannSphere) (1 : ℂ)) = _
+  rw [trivAt_zero_symmL_one]
+
+/-- The section vanishes at every **finite** point: `s.toFun (z:RS) = 0`. The affine-frame
+unit `1` spans the `1`-dimensional fibre `ℂ`, and `s.toFun (z:RS) 1 = f(z) = 0`. -/
+lemma section_apply_eq_zero_coe (z : ℂ) : s.toFun (z : RiemannSphere) = 0 := by
+  have h0 : s.toFun (z : RiemannSphere) (1 : ℂ) = 0 := by
+    rw [← affineCoeff_eq_toFun_one s z, show affineCoeff s = 0 from affineCoeff_eq_zero s]; rfl
+  -- `s.toFun (z:RS) : ℂ →L[ℂ] ℂ` (via defeq) vanishes at `1`, hence is `0` (`ext_ring`).
+  set T : ℂ →L[ℂ] ℂ := s.toFun (z : RiemannSphere) with hT
+  show T = 0
+  have hT1 : T 1 = 0 := by show s.toFun (z : RiemannSphere) (1 : ℂ) = 0; exact h0
+  exact ContinuousLinearMap.ext_ring (hT1.trans (ContinuousLinearMap.zero_apply 1).symm)
+
+/-- The **`∞`-frame unit tangent** at the point `∞` is `1 ∈ ℂ`: the chart transition
+`chartInfty ∘ chartInfty.symm` is the identity, so its derivative is `1`. -/
+lemma trivAt_infty_symmL_one_at_infty :
+    (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := RiemannSphere)) (OnePoint.infty)).symmL
+        ℂ (OnePoint.infty : RiemannSphere) (1 : ℂ) = (1 : ℂ) := by
+  have hmem : (OnePoint.infty : RiemannSphere) ∈ (chartAt ℂ (OnePoint.infty : RiemannSphere)).source :=
+    mem_chartAtRS_source OnePoint.infty
+  rw [Jacobians.OfCurveSkeleton.trivAt_symmL_one_eq_fderiv_C (OnePoint.infty : RiemannSphere)
+    (OnePoint.infty : RiemannSphere) hmem]
+  have hcong : ((chartAt (H := ℂ) (OnePoint.infty : RiemannSphere)) ∘
+      (chartAt (H := ℂ) (OnePoint.infty : RiemannSphere)).symm) =ᶠ[nhds ((chartAt ℂ (OnePoint.infty : RiemannSphere)) (OnePoint.infty : RiemannSphere))]
+      (id : ℂ → ℂ) := by
+    have htgt : (chartAt ℂ (OnePoint.infty : RiemannSphere)).target ∈
+        nhds ((chartAt ℂ (OnePoint.infty : RiemannSphere)) (OnePoint.infty : RiemannSphere)) :=
+      (chartAt ℂ (OnePoint.infty : RiemannSphere)).open_target.mem_nhds
+        ((chartAt ℂ (OnePoint.infty : RiemannSphere)).map_source hmem)
+    filter_upwards [htgt] with w hw
+    simp only [Function.comp_apply, id_eq]
+    exact (chartAt ℂ (OnePoint.infty : RiemannSphere)).right_inv hw
+  rw [hcong.fderiv_eq, fderiv_id]
+  rfl
+
+/-- `inftyCoeff s` vanishes on the **punctured** chart target: for `w ≠ 0`,
+`chartInfty.symm w = (w⁻¹ : RS)` is a finite point, where `s.toFun` is `0`. -/
+lemma inftyCoeff_eq_zero_of_ne {w : ℂ} (hw : w ≠ 0) : inftyCoeff s w = 0 := by
+  rw [inftyCoeff, chartInfty_symm_apply, invMap_coe_of_ne hw, Jacobians.Montel.localRep,
+    show s.toFun ((w⁻¹ : ℂ) : RiemannSphere) = 0 from section_apply_eq_zero_coe s w⁻¹]
+  rfl
+
+/-- `inftyCoeff s 0 = 0`: continuity at `0` plus vanishing on the punctured neighbourhood. -/
+lemma inftyCoeff_zero_eq_zero : inftyCoeff s 0 = 0 := by
+  have hcont := inftyCoeff_continuousAt_zero s
+  -- `inftyCoeff s` is eventually `0` near `0` (punctured), so its limit / value at `0` is `0`.
+  have heq : inftyCoeff s =ᶠ[𝓝[≠] (0 : ℂ)] fun _ => (0 : ℂ) := by
+    filter_upwards [self_mem_nhdsWithin] with w hw
+    exact inftyCoeff_eq_zero_of_ne s (by simpa using hw)
+  have hlim : Filter.Tendsto (inftyCoeff s) (𝓝[≠] (0 : ℂ)) (𝓝 (inftyCoeff s 0)) :=
+    hcont.continuousWithinAt
+  have hlim0 : Filter.Tendsto (inftyCoeff s) (𝓝[≠] (0 : ℂ)) (𝓝 (0 : ℂ)) :=
+    (tendsto_const_nhds (x := (0 : ℂ)) (f := 𝓝[≠] (0 : ℂ))).congr' heq.symm
+  exact tendsto_nhds_unique hlim hlim0
+
+/-- The section vanishes at `∞`: `s.toFun ∞ = 0`. The `∞`-frame unit at `∞` is `1`, and
+`s.toFun ∞ 1 = inftyCoeff s 0 = 0`; then `ext_ring`. -/
+lemma section_apply_eq_zero_infty : s.toFun (OnePoint.infty : RiemannSphere) = 0 := by
+  have h0 : s.toFun (OnePoint.infty : RiemannSphere) (1 : ℂ) = 0 := by
+    have hval : inftyCoeff s 0 = s.toFun (OnePoint.infty : RiemannSphere) (1 : ℂ) := by
+      rw [inftyCoeff]
+      have hsymm0 : chartInfty.symm 0 = (OnePoint.infty : RiemannSphere) := by
+        rw [chartInfty_symm_apply, invMap_coe_zero]
+      rw [hsymm0]
+      show s.toFun (OnePoint.infty : RiemannSphere)
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := RiemannSphere)) OnePoint.infty).symmL
+          ℂ (OnePoint.infty : RiemannSphere) (1 : ℂ)) = _
+      rw [trivAt_infty_symmL_one_at_infty]
+    rw [← hval, show inftyCoeff s 0 = 0 from inftyCoeff_zero_eq_zero s]
+  set T : ℂ →L[ℂ] ℂ := s.toFun (OnePoint.infty : RiemannSphere) with hT
+  show T = 0
+  exact ContinuousLinearMap.ext_ring (by
+    rw [show T 1 = s.toFun (OnePoint.infty : RiemannSphere) (1 : ℂ) from rfl, h0]; rfl)
+
+end LiouvilleVanishing
+
 /-- **Liouville vanishing.** Every global holomorphic 1-form on `ℂℙ¹` is zero.
 
 See the section docstring for the proof outline (chart pull-back → entire coefficient →
 `O(z⁻²)` decay at `∞` → bounded → constant by Liouville → constant `= 0`). -/
 theorem holomorphicOneForm_eq_zero (s : HolomorphicOneForms RiemannSphere) : s = 0 := by
-  sorry
-
-end LiouvilleVanishing
+  apply ContMDiffSection.ext
+  intro x
+  have hsx : s.toFun x = 0 := by
+    induction x using OnePoint.rec with
+    | coe z => exact section_apply_eq_zero_coe s z
+    | infty => exact section_apply_eq_zero_infty s
+  show s.toFun x = (0 : HolomorphicOneForms RiemannSphere).toFun x
+  rw [hsx]; rfl
 
 instance : Subsingleton (HolomorphicOneForms RiemannSphere) :=
   subsingleton_of_forall_eq 0 holomorphicOneForm_eq_zero
