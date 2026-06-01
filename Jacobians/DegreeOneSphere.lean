@@ -268,3 +268,49 @@ theorem nonempty_homeo_sphere_of_singleSimplePole
   exact ⟨e.trans RiemannSphere.homeoSphere⟩
 
 end Jacobians
+
+/-! ### The challenge theorem `genus_eq_zero_iff_homeo`
+
+Declared in the **root namespace** (matching `genus`, which lives in root namespace in `Genus.lean`),
+so the challenge-conformance file resolves the bare name. Lives in this module — not `Genus.lean` —
+because its forward direction needs the degree-one endgame, which sits downstream of `Genus` (via
+`ProjectiveLine → Genus`); declaring it here breaks the import cycle. Both directions rest on isolated
+analytic inputs (the `sorry`s below). `Nonempty X` is supplied for free by `[ConnectedSpace X]`
+(`ConnectedSpace.toNonempty`), so the signature matches the spec exactly. -/
+
+open scoped Manifold ContDiff in
+/-- **[INPUT — Riemann–Roch consequence `l(P) = 2`].** Genus `0` yields a meromorphic function with a
+single simple pole (Forster §16: `l(P) = deg P + 1 − g + l(K−P) = 1 + 1 − 0 + 0 = 2`). The genuine RR
+content, resting on the Dolbeault/Serre wall. -/
+theorem exists_singleSimplePole_of_genus_zero {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (h : genus X = 0) :
+    ∃ (P : X) (f : Jacobians.MeromorphicFunction X), f.HasSingleSimplePole P :=
+  sorry
+
+open scoped Manifold ContDiff in
+/-- **[INPUT — `Ω(ℂℙ¹) = 0`, the backward half].** A surface homeomorphic to `S²` has genus `0`.
+Genus is `Module.finrank ℂ (HolomorphicOneForms X)`; for the sphere this vanishes
+(`ProjectiveLine.holomorphicOneForm_eq_zero`), and the value is an invariant of the complex
+structure. -/
+theorem genus_zero_of_nonempty_homeo_sphere {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (h : Nonempty (X ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) :
+    genus X = 0 :=
+  sorry
+
+open scoped Manifold ContDiff in
+/-- A compact Riemann surface has genus `0` iff it is homeomorphic to the `2`-sphere — the challenge
+theorem (the "anti-hack" constraint preventing `∀ X, genus X = 0`).
+
+The **forward** direction is the genuine content: genus `0` ⟹ a single-simple-pole meromorphic
+function (`exists_singleSimplePole_of_genus_zero`, Riemann–Roch) ⟹ a degree-1 map `X → ℂℙ¹` ⟹
+`X ≃ₜ S²` (`Jacobians.nonempty_homeo_sphere_of_singleSimplePole`, the degree-one endgame). The
+**backward** direction is `Ω(ℂℙ¹) = 0` (`genus_zero_of_nonempty_homeo_sphere`). -/
+theorem genus_eq_zero_iff_homeo {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
+    genus X = 0 ↔ Nonempty (X ≃ₜ (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) :=
+  ⟨fun h => by
+    obtain ⟨P, f, hP⟩ := exists_singleSimplePole_of_genus_zero h
+    exact Jacobians.nonempty_homeo_sphere_of_singleSimplePole f hP,
+   genus_zero_of_nonempty_homeo_sphere⟩
