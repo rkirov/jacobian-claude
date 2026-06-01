@@ -234,25 +234,58 @@ theorem integrable_dbar_mul_cauchyKernel {g : ℂ → ℂ} (hg : ContDiff ℝ (�
     (continuous_dbar hg) locallyIntegrable_cauchyKernel z
   simpa only [ContinuousLinearMap.mul_apply'] using h
 
+/-- Evaluate the ℝ-linear map `fderiv ℝ g w` at a complex direction `a + b·I` in the `{1, I}`
+basis: `(fderiv ℝ g w)(a + b·I) = a·(fderiv … 1) + b·(fderiv … I)` for real `a, b`. -/
+theorem fderiv_apply_basis (g : ℂ → ℂ) (w : ℂ) (a b : ℝ) :
+    (fderiv ℝ g w) (a + b * I) = (a : ℂ) * (fderiv ℝ g w) 1 + (b : ℂ) * (fderiv ℝ g w) I := by
+  have h1 : ((a : ℂ) + b * I) = a • (1 : ℂ) + b • (I : ℂ) := by
+    simp only [Complex.real_smul]; ring
+  rw [h1, map_add, map_smul, map_smul, Complex.real_smul, Complex.real_smul]
+
+/-- **Polar–Wirtinger identity** (purely algebraic, from ℝ-linearity of `fderiv ℝ g`).
+With `c = cos θ + sin θ·I = e^{iθ}`, the anti-radial Wirtinger derivative decomposes into the
+radial (`fderiv … c`) and angular (`fderiv … (I·c)`) directional derivatives:
+`e^{−iθ}·(2·∂̄g w) = (fderiv ℝ g w) c + I·(fderiv ℝ g w) (I·c)`. -/
+theorem dbar_polar_identity (g : ℂ → ℂ) (w : ℂ) (θ : ℝ) :
+    (Real.cos θ - Real.sin θ * I) * ((2 : ℂ) * dbar g w)
+      = (fderiv ℝ g w) (Real.cos θ + Real.sin θ * I)
+        + I * (fderiv ℝ g w) (I * (Real.cos θ + Real.sin θ * I)) := by
+  set A := (fderiv ℝ g w) 1 with hA
+  set B := (fderiv ℝ g w) I with hB
+  -- The radial direction `c = cos θ + sin θ·I`.
+  have hbasis : (fderiv ℝ g w) (Real.cos θ + Real.sin θ * I)
+      = (Real.cos θ : ℂ) * A + (Real.sin θ : ℂ) * B := fderiv_apply_basis g w _ _
+  -- The angular direction `I·c = -sin θ + cos θ·I`.
+  have hIc : I * (Real.cos θ + Real.sin θ * I) = ((-Real.sin θ : ℝ) : ℂ) + (Real.cos θ : ℝ) * I := by
+    push_cast; ring_nf; rw [Complex.I_sq]; ring
+  have hbasisI : (fderiv ℝ g w) (I * (Real.cos θ + Real.sin θ * I))
+      = (-Real.sin θ : ℂ) * A + (Real.cos θ : ℂ) * B := by
+    rw [hIc, fderiv_apply_basis g w _ _]; push_cast; ring
+  rw [hbasis, hbasisI, dbar, ← hA, ← hB]
+  ring_nf
+  rw [Complex.I_sq]
+  ring
+
 /-- **D2 core — the Cauchy–Pompeiu area-integral identity.**  For `g ∈ C^∞_c`,
 `∬_ℂ (∂̄g)(ζ)/(ζ−z) dA(ζ) = −π·g(z)`.
 
 This is THE genuine mathematical content of the ∂̄-disk atom and the single remaining gap.
-Classical proof (Forster §13.2 / Hörmander 1.2.1): fix `z` and `R` with `tsupport g ⊆ ball z R`.
-For `ε>0`, the complex Green / 2D-divergence theorem on the annulus `ε ≤ |ζ−z| ≤ R` applied to
-`F(ζ)=g(ζ)/(ζ−z)` (so `∂̄F = (∂̄g)/(ζ−z)`, since `1/(ζ−z)` is holomorphic on the annulus) gives
-`∬_{annulus} (∂̄g)/(ζ−z) dA = (1/2i)[∮_{|ζ−z|=R} − ∮_{|ζ−z|=ε}] g(ζ)/(ζ−z) dζ`.
-The outer integral vanishes (`g ≡ 0` on `|ζ−z|=R`); the inner integral `→ 2πi·g(z)` as `ε→0`
-(Mathlib residue brick `circleIntegral_sub_center_inv_smul_…_of_tendsto`); and the area integral
-`→ ∬_ℂ` by dominated convergence (kernel locally integrable, D0).  Hence
-`∬_ℂ (∂̄g)/(ζ−z) = (1/2i)(0 − 2πi·g(z)) = −π·g(z)`.
 
-UNSCAFFOLDED IN MATHLIB: the complex Green/divergence theorem on an **annulus** for a merely
-`C¹` (non-holomorphic) integrand.  Mathlib has only the *rectangle* version
-(`Complex.integral_boundary_rect_of_differentiableOn_real`) and the *holomorphic* annulus
-(`circleIntegral_…_annulus_off_countable`).  Bridging rectangle→annulus for a smooth `F` (exp-chart
-+ Jacobian bookkeeping, mirroring `circleIntegral_sub_center_inv_smul_eq_of_differentiable_on_annulus_off_countable`)
-is the ~150–300 LoC core; see the probe report. -/
+PLANNED PROOF — polar coordinates (NOT Green's theorem; this route avoids the unscaffolded
+annulus-divergence theorem entirely):
+1. Translate `ζ ↦ z + w` (`integral_add_left_eq_self`): `∫ (∂̄g)(ζ)/(ζ−z) = ∫ (∂̄g)(z+w)/w`.
+2. Polar change of variables (`Complex.integral_comp_polarCoord_symm`): the Jacobian factor `r`
+   cancels `1/w` (`r/(r e^{iθ}) = e^{−iθ}`), giving
+   `∫_{(r,θ)∈(0,∞)×(−π,π)} e^{−iθ}·(∂̄g)(z + r e^{iθ}) dr dθ`.
+3. The polar-Wirtinger identity `dbar_polar_identity` (PROVEN below): rewrites the integrand as
+   `½(∂_r G + (i/r)∂_θ G)`, where `G(r,θ)=g(z+r e^{iθ})`.
+4. The `∂_r` term integrates over `r∈(0,∞)` to `−g(z)` (1D FTC for compact support,
+   `HasCompactSupport.integral_Ioi_deriv_eq`), then over `θ∈(−π,π)` to `−2π·g(z)`.
+   The `∂_θ` term integrates over `θ` to `0` by periodicity (Fubini-swapped, the `1/r` weight is
+   `θ`-independent).  Net `½·(−2π·g(z)) = −π·g(z)`.
+
+REMAINING GAP: the Fubini/FTC assembly (step 4) wiring the proven polar-Wirtinger identity (step 3)
+through the change-of-variables of steps 1–2.  ~120–200 LoC.  See the probe report. -/
 theorem cauchyPompeiu_area {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hgsupp : HasCompactSupport g)
     (z : ℂ) : ∫ ζ, dbar g ζ / (ζ - z) = -π * g z := by
   sorry
