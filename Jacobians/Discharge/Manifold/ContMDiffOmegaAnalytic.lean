@@ -88,11 +88,11 @@ theorem contMDiffAt_omega_analyticAt_chart_pullback
   -- `hA` to the desired form.
   -- We prove pointwise equality of the composite functions and of the basepoint.
   have hbase : extChartAt 𝓘(ℂ) x x = (chartAt ℂ x) x := by
-    simp [extChartAt_coe]
+    simp
   have hfun : (extChartAt 𝓘(ℂ) (f x) ∘ f ∘ (extChartAt 𝓘(ℂ) x).symm)
       = ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) := by
     funext z
-    simp [extChartAt_coe, extChartAt_coe_symm]
+    simp
   rw [hfun, hbase] at hA
   exact hA
 

@@ -157,7 +157,7 @@ noncomputable def kthRootsFinset (k : ℕ) (a : ℂ) : Finset ℂ :=
 
 /-- The set of k-th roots of `a` equals `(kthRootsFinset k a : Set ℂ)`,
 when `a ≠ 0` and `k ≥ 1`. -/
-lemma kth_roots_eq_finset {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (ha : a ≠ 0) :
+lemma kth_roots_eq_finset {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (_ha : a ≠ 0) :
     {ξ : ℂ | ξ ^ k = a} = (kthRootsFinset k a : Set ℂ) := by
   set p : Polynomial ℂ := Polynomial.X ^ k - Polynomial.C a with hp_def
   have hk0 : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
@@ -233,7 +233,7 @@ theorem localKFoldMultiplicity_preimage_card_of_substitution
     have hδ₁_half_nn : 0 ≤ δ₁ / 2 := by linarith
     have h2 : ‖ξ‖ < δ₁ / 2 := by
       by_contra h
-      push_neg at h
+      push Not at h
       have hh : (δ₁ / 2) ^ k ≤ ‖ξ‖ ^ k := pow_le_pow_left₀ hδ₁_half_nn h k
       linarith
     linarith
@@ -329,7 +329,7 @@ theorem localKFoldMultiplicity_preimage_card_of_substitution
   -- Pre.ncard = image.ncard (injOn) = F.card = k.
   have hPre_ncard : Pre.ncard = F.card := by
     have h1 : Pre.ncard = ((fun z => v z) '' Pre).ncard :=
-      (Set.ncard_image_of_injOn h_v_injOn).symm
+      (Set.InjOn.ncard_image h_v_injOn).symm
     rw [h1, h_image_eq, Set.ncard_coe_finset]
   rw [hPre_ncard, hF_card]
 

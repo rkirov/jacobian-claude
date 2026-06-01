@@ -132,7 +132,7 @@ lemma AnalyticAt.exists_off_centre_value_ne
         have htC : (t : ℂ) = 0 := by
           have h := heq
           -- z₀ + t = z₀ → t = 0
-          linear_combination h - z₀
+          linear_combination h
         have ht0 : t = 0 := by exact_mod_cast htC
         exact (ne_of_gt ht_pos) ht0
       have h_G_ne : G (z₀ + (t : ℂ)) ≠ 0 := hρ_imp h_dist h_ne_z0

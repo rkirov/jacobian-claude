@@ -168,7 +168,7 @@ directly gives the count of 1. -/
 theorem localKFoldMultiplicity_preimage_card_of_substitution_one
     {g : ℂ → ℂ} {x₀ w₀ : ℂ}
     (hsub : KthRootSubstitution g x₀ w₀ 1)
-    (h_w₀ : g x₀ = w₀) :
+    (_h_w₀ : g x₀ = w₀) :
     ∃ ε > (0 : ℝ), ∃ δ > (0 : ℝ),
       ∀ w ∈ Metric.ball (g x₀) δ, w ≠ g x₀ →
         ({z ∈ Metric.ball x₀ ε | g z = w} : Set ℂ).ncard = 1 := by

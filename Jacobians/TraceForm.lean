@@ -1148,8 +1148,8 @@ theorem contMDiffAt_of_analyticAt_chartPullback {g : Y → ℂ} {y₀ : Y}
   -- Identify the extended-chart pullback with `g ∘ (chartAt ℂ y₀).symm` (target chart = id).
   have hfun : (extChartAt 𝓘(ℂ) (g y₀) ∘ g ∘ (extChartAt 𝓘(ℂ) y₀).symm)
       = (g ∘ (chartAt ℂ y₀).symm) := by
-    funext z; simp [extChartAt_coe, extChartAt_coe_symm]
-  have hbase : extChartAt 𝓘(ℂ) y₀ y₀ = (chartAt ℂ y₀) y₀ := by simp [extChartAt_coe]
+    funext z; simp
+  have hbase : extChartAt 𝓘(ℂ) y₀ y₀ = (chartAt ℂ y₀) y₀ := by simp
   rw [hfun, hbase]
   exact han.contDiffAt
 
@@ -1553,7 +1553,7 @@ branch locus (`fibre_ncard_locally_const`), and on a **preconnected punctured ch
 globally constant (`IsPreconnected.constant`, `ℕ` discrete). This punctured nbhd is eventual in
 `𝓝[≠] y₀` (pushing `Metric.ball z₀ r \ Badℂ ∈ 𝓝[≠] z₀` along `c`), giving the uniform bound. -/
 theorem fibre_ncard_bddAbove_near_branch (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {y₀ : Y} (_hy₀ : y₀ ∈ branchLocus f) :
     ∃ N : ℕ, ∀ᶠ y in 𝓝[≠] y₀, y ∉ branchLocus f → (f ⁻¹' {y}).ncard ≤ N := by
   classical
   set c := chartAt ℂ y₀ with hc

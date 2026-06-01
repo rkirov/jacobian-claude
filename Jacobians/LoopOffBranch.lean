@@ -928,7 +928,7 @@ lemma balancedGlue_apply_of_mem (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 =
         rw [ih (fun j => g (2^d + j)) (fun j => hchain (2^d + j)) k' hk'lt (2*t-1) ht0' ht1']
         congr 1
         · rw [hkk']
-        · rw [hk_cast, pow_succ]; push_cast; ring
+        · rw [hk_cast, pow_succ]; ring
 
 /-- **`balancedGlue` is a flat-ended smooth path with vanishing endpoint velocities.** The
 `n`-piece (dyadic) generalization of `IsSmoothPath.concat`: every piece `g k` (`k < 2^d`) is a
@@ -1181,7 +1181,7 @@ lemma uniformGlue_seam (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 
   have ht₀eq : t₀ = (j:ℝ)/n := by field_simp at ht₀ ⊢; linarith
   have hval : uniformGlue g n t₀ = g j 0 := by
     have := uniformGlue_apply_of_mem g hchain n hn j hjlt t₀
-      (by rw [ht₀eq]) (by rw [ht₀eq, div_le_div_iff_of_pos_right hnpos]; push_cast; linarith)
+      (by rw [ht₀eq]) (by rw [ht₀eq, div_le_div_iff_of_pos_right hnpos]; linarith)
     rwa [ht₀, show (j:ℝ) - j = 0 from by ring] at this
   have hchainj : g (j-1) 1 = g j 0 := by
     have := hchain (j-1); rwa [Nat.sub_add_cancel hj1] at this
@@ -1203,7 +1203,7 @@ lemma uniformGlue_seam (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 
       simpa using ((hasDerivAt_id t₀).const_mul (n:ℝ)).sub_const ((j-1:ℕ):ℝ)
     have := hg_HDA.scomp_of_eq t₀ haff_HDA harg.symm; simpa [hgLdef] using this
   have hgR_HDA : HasDerivAt gR 0 t₀ := by
-    have harg : (n:ℝ)*t₀ - (j:ℕ) = 0 := by rw [ht₀]; push_cast; ring
+    have harg : (n:ℝ)*t₀ - (j:ℕ) = 0 := by rw [ht₀]; ring
     have hg_HDA : HasDerivAt ((chartAt (H := ℂ) c).toFun ∘ g j) 0 0 := by
       have hd : DifferentiableAt ℝ ((chartAt (H := ℂ) (g j 0)).toFun ∘ g j) 0 :=
         (hpiece j hjlt).diff 0 (by rw [Set.uIcc_of_le (by norm_num:(0:ℝ)≤1)]; exact ⟨le_refl _,zero_le_one⟩)
@@ -1276,7 +1276,7 @@ lemma uniformGlue_eventuallyEq_one (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n
               div_self (ne_of_gt hnpos)]; exact h)]
 
 /-- The affine reparam of piece `k` has pathSpeed `n · (pathSpeed of piece k at the rescaled arg)`. -/
-lemma piece_pathSpeed_eq (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n)
+lemma piece_pathSpeed_eq (g : ℕ → ℝ → X) (n : ℕ) (_hn : 0 < n)
     (hpiece : ∀ k, k < n → Jacobians.IsSmoothPath (g k 0) (g k 1) (g k))
     (k : ℕ) (hk : k < n) (s : ℝ) (hsmem : (n:ℝ)*s - k ∈ Icc (0:ℝ) 1) :
     Jacobians.pathSpeed (fun u => g k ((n:ℝ)*u - k)) s
@@ -1290,7 +1290,7 @@ lemma piece_pathSpeed_eq (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n)
     rw [this]
     exact (hpiece k hk).diff ((n:ℝ)*s-k) (by rw [Set.uIcc_of_le (by norm_num:(0:ℝ)≤1)]; exact hsmem)
   rw [pathSpeed_affine_comp (g k) (n:ℝ) (-(k:ℝ)) s hdiff]
-  congr 2 <;> ring
+  congr 2
 
 /-- **The glue's pathSpeed equals the affine-reparam piece's pathSpeed on the closed `k`-th piece.**
 On the open interior via locality; at the two endpoints both vanish (flat-ended seams / boundaries). -/
@@ -1400,7 +1400,7 @@ lemma isSmoothPath_uniformGlue (g : ℕ → ℝ → X)
         have hsplit : Set.Icc (0:ℝ) ((j+1:ℕ)/n) =
             Set.Icc 0 ((j:ℝ)/n) ∪ Set.Icc ((j:ℝ)/n) (((j:ℝ)+1)/n) := by
           rw [Set.Icc_union_Icc_eq_Icc (by positivity)
-            (by rw [div_le_div_iff_of_pos_right hnpos]; push_cast; linarith)]
+            (by rw [div_le_div_iff_of_pos_right hnpos]; linarith)]
           congr 1; push_cast; ring
         rw [hsplit]
         exact (ih (by omega)).union_of_isClosed (hpieceOn j hjn) isClosed_Icc isClosed_Icc
@@ -1469,13 +1469,13 @@ lemma isSmoothPath_uniformGlue (g : ℕ → ℝ → X)
         have hk_le : (k:ℝ) ≤ n * t := by rw [hcastk]; exact Int.floor_le _
         have hk_lt : (n:ℝ)*t < k + 1 := by rw [hcastk]; exact Int.lt_floor_add_one _
         have hkn : k < n := by
-          by_contra h; push_neg at h
+          by_contra h; push Not at h
           have : (n:ℝ) ≤ k := by exact_mod_cast h
           linarith
         have hhi : t < ((k:ℝ)+1)/n := by rw [lt_div_iff₀ hnpos]; linarith
         rcases eq_or_lt_of_le hk_le with hseam | hint
         · have hkpos : 0 < k := by
-            by_contra h; push_neg at h
+            by_contra h; push Not at h
             have hk0 : k = 0 := by omega
             rw [hk0] at hseam; simp only [Nat.cast_zero] at hseam
             have ht0' : t = 0 := by
@@ -1532,7 +1532,7 @@ lemma isSmoothPath_uniformGlue (g : ℕ → ℝ → X)
         have hsplit : Set.Icc (0:ℝ) ((j+1:ℕ)/n) =
             Set.Icc 0 ((j:ℝ)/n) ∪ Set.Icc ((j:ℝ)/n) (((j:ℝ)+1)/n) := by
           rw [Set.Icc_union_Icc_eq_Icc (by positivity)
-            (by rw [div_le_div_iff_of_pos_right hnpos]; push_cast; linarith)]
+            (by rw [div_le_div_iff_of_pos_right hnpos]; linarith)]
           congr 1; push_cast; ring
         rw [hsplit]
         exact (ih (by omega)).union_of_isClosed (hpieceVC j hjn) isClosed_Icc isClosed_Icc

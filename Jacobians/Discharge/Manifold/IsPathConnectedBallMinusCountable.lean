@@ -41,11 +41,11 @@ private lemma exists_delta_smul_mem_ball
   have hpre : IsOpen ((fun t : ℝ => c + t • y) ⁻¹' Metric.ball z r) :=
     Metric.isOpen_ball.preimage hcont
   have hmem : (0 : ℝ) ∈ (fun t : ℝ => c + t • y) ⁻¹' Metric.ball z r := by
-    simp [h0, hc]
+    simp [hc]
   obtain ⟨δ, hδpos, hδsub⟩ := Metric.isOpen_iff.mp hpre 0 hmem
   refine ⟨δ, hδpos, fun t ht => ?_⟩
   have : t ∈ Metric.ball (0 : ℝ) δ := by
-    simp [Real.dist_eq, abs_sub_comm, ht]
+    simp [ht]
   exact hδsub this
 
 /-- Ball-restricted analogue of

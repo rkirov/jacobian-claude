@@ -271,7 +271,7 @@ namespace MMeromorphicOn
 variable {f g : M → ℂ} {s : Set M}
 
 lemma zero : MMeromorphicOn I (0 : M → ℂ) s :=
-  fun x _ => MMeromorphicAt.zero
+  fun _ _ => MMeromorphicAt.zero
 
 lemma const (c : ℂ) : MMeromorphicOn I (fun _ : M => c) s :=
   fun _ _ => MMeromorphicAt.const c
@@ -357,7 +357,7 @@ variable {f : M → ℂ} {x : M} {e : OpenPartialHomeomorph M ℂ}
 On every `y ∈ e.target ∩ e.symm ⁻¹' (chartAt ℂ x).source`, the function
 `(f ∘ (chartAt ℂ x).symm) ∘ ((chartAt ℂ x) ∘ e.symm)` agrees with
 `f ∘ e.symm`. -/
-lemma comp_chart_transition_eqOn (hxe : x ∈ e.source) :
+lemma comp_chart_transition_eqOn (_hxe : x ∈ e.source) :
     Set.EqOn ((f ∘ (chartAt ℂ x).symm) ∘ ((chartAt ℂ x) ∘ e.symm))
       (f ∘ e.symm)
       (e.target ∩ e.symm ⁻¹' (chartAt ℂ x).source) := by

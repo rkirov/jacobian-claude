@@ -91,7 +91,7 @@ lemma exists_value_ne_in_nhds_of_witness
     not_eventually_eq_self_of_witness hF hU h₀ h₁ h_ne
   intro V hV
   by_contra h_all
-  push_neg at h_all
+  push Not at h_all
   apply h_not_ev
   exact Filter.mem_of_superset hV (fun z hz => h_all z hz)
 

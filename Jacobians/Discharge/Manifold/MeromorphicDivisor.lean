@@ -68,6 +68,8 @@ open Filter Set
 
 namespace Jacobians.Discharge
 
+set_option linter.unusedSectionVars false
+
 namespace MMeromorphicOn
 
 universe u

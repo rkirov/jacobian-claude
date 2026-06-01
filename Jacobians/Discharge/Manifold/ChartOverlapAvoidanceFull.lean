@@ -124,7 +124,7 @@ theorem exists_avoidance_in_open_chartedSpace_complex
   have hIoo_infinite : (Set.Ioo (0 : ℝ) r).Infinite := Set.Ioo_infinite hr_pos
   have hexists : ∃ δ : ℝ, δ ∈ Set.Ioo (0 : ℝ) r ∧ δ ∉ Bad := by
     by_contra hne
-    push_neg at hne
+    push Not at hne
     have : Set.Ioo (0 : ℝ) r ⊆ Bad := fun δ hδ => hne δ hδ
     exact hIoo_infinite (hBad_fin.subset this)
   obtain ⟨δ, hδ_mem, hδ_notBad⟩ := hexists

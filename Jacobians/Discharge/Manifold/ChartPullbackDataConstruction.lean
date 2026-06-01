@@ -5,7 +5,7 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.Discharge.Manifold.AnalyticFiberDiscrete
 import Jacobians.Discharge.Manifold.ContMDiffOmegaAnalytic
-import Mathlib.Topology.OpenPartialHomeomorph
+import Mathlib.Topology.OpenPartialHomeomorph.Constructions
 
 set_option autoImplicit true
 

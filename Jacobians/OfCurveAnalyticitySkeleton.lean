@@ -303,7 +303,7 @@ theorem localLift_contMDiffAt (Q₀ : X) (constants : Fin (genus X) → ℂ) :
     -- Their values agree pointwise (model is identity).
     have h_eq : (extChartAt 𝓘(ℂ) Q₀ : X → ℂ) = (chartAt (H := ℂ) Q₀ : X → ℂ) := by
       funext y
-      simp [extChartAt_coe]
+      simp
     rw [h_eq] at h_ext
     exact h_ext
   -- Step 2: chart-coord vector function is `ContDiffAt ℂ ω` at chart-image.

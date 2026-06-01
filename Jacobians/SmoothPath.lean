@@ -56,6 +56,8 @@ namespace Jacobians
 
 open scoped Manifold ContDiff Topology
 
+set_option linter.unusedSectionVars false
+
 universe u
 
 variable {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
@@ -272,8 +274,8 @@ noncomputable def smoothPathRaw (P Q : X) : ℝ → X :=
   let hn_pos : 0 < n := cover.choose_spec.choose
   let x := cover.choose_spec.choose_spec.choose
   fun t =>
-    if h : t ≤ 0 then P
-    else if h' : 1 ≤ t then Q
+    if _h : t ≤ 0 then P
+    else if _h' : 1 ≤ t then Q
     else
       -- t ∈ (0, 1). Determine which interval [k/n, (k+1)/n] contains t.
       let k_real : ℝ := t * n
@@ -359,7 +361,7 @@ lemma smoothStep01_nonneg (t : ℝ) : 0 ≤ smoothStep01 t := by
   · by_cases h1 : 1 ≤ t
     · simp [h0, h1]
     · simp only [h0, h1, if_false]
-      push_neg at h0 h1
+      push Not at h0 h1
       -- On (0, 1): 3t² - 2t³ ≥ 0.
       -- Factor: t²(3 - 2t). For t > 0, t² > 0; for t < 1, 3 - 2t > 1 > 0.
       have ht_sq_nn : 0 ≤ t^2 := sq_nonneg t
@@ -375,7 +377,7 @@ lemma smoothStep01_le_one (t : ℝ) : smoothStep01 t ≤ 1 := by
   · by_cases h1 : 1 ≤ t
     · simp [h0, h1]
     · simp only [h0, h1, if_false]
-      push_neg at h0 h1
+      push Not at h0 h1
       -- On (0, 1): 3t² - 2t³ ≤ 1.
       -- Equivalent: 1 - (3t² - 2t³) = 1 - 3t² + 2t³ = (1 - t)²(1 + 2t) ≥ 0.
       have h_expand : (1 - t)^2 * (1 + 2 * t) = 1 - 3 * t^2 + 2 * t^3 := by ring
@@ -539,7 +541,7 @@ lemma smoothStep01_one_sub (t : ℝ) :
   · by_cases h1 : 1 ≤ t
     · have h_1mt_le : 1 - t ≤ 0 := by linarith
       simp [h0, h1, h_1mt_le]
-    · push_neg at h0 h1
+    · push Not at h0 h1
       have h_1mt_pos : 0 < 1 - t := by linarith
       have h_1mt_lt : 1 - t < 1 := by linarith
       have h_1mt_not_le : ¬ (1 - t ≤ 0) := not_le.mpr h_1mt_pos
@@ -796,7 +798,7 @@ lemma piece_width (k n : ℕ) (hn : 0 < n) :
   ring
 
 /-- For `t ∈ [k/n, (k+1)/n]`: `t - k/n ∈ [0, 1/n]`. -/
-lemma piece_offset_mem_width (k n : ℕ) (hn : 0 < n) (t : ℝ)
+lemma piece_offset_mem_width (k n : ℕ) (_hn : 0 < n) (t : ℝ)
     (h_low : (k : ℝ) / n ≤ t) (h_high : t ≤ ((k : ℝ) + 1) / n) :
     t - (k : ℝ) / n ∈ Set.Icc (0 : ℝ) (1 / n) := by
   refine ⟨?_, ?_⟩
@@ -960,10 +962,10 @@ lemma ChartBallPath_self_at (anchor P : X) (hP : P ∈ (chartAt ℂ anchor).sour
 @[simp] lemma cast_one_to_C : ((1 : ℝ) : ℂ) = 1 := by push_cast; rfl
 
 /-- For real `t`, `(t : ℂ)` is real. -/
-lemma cast_C_im (t : ℝ) : (t : ℂ).im = 0 := by push_cast; simp
+lemma cast_C_im (t : ℝ) : (t : ℂ).im = 0 := by simp
 
 /-- For real `t`, `(t : ℂ).re = t`. -/
-lemma cast_C_re (t : ℝ) : (t : ℂ).re = t := by push_cast; simp
+lemma cast_C_re (t : ℝ) : (t : ℂ).re = t := by simp
 
 /-! ## Compact-interval continuity helpers -/
 
@@ -978,7 +980,7 @@ lemma continuous_image_Icc_isCompact {α : Type*} [TopologicalSpace α]
 /-- For a chart cover of `n` pieces, the boundary points of each piece
 agree with the path at `k/n`. -/
 lemma boundary_values_at_k_over_n {γ : ℝ → X} (n : ℕ) (k : ℕ)
-    (h : (k : ℝ) / n ≤ ((k : ℝ) + 1) / n) :
+    (_h : (k : ℝ) / n ≤ ((k : ℝ) + 1) / n) :
     γ ((k : ℝ) / n) = γ ((k : ℝ) / n) := rfl
 
 /-- The half-open interval `[k/n, (k+1)/n)` has measure `1/n`. -/
@@ -1126,7 +1128,7 @@ lemma smoothStep01_hasDerivAt_zero : HasDerivAt smoothStep01 0 0 := by
   have hh_lt_half : |h| < 1 / 2 := lt_of_lt_of_le hh (min_le_right _ _)
   have hh_lt_one : |h| < 1 := lt_of_lt_of_le hh_lt_half (by norm_num : (1:ℝ)/2 ≤ 1)
   -- Simplify the goal: |smoothStep01 (0 + h) - smoothStep01 0 - h • 0| ≤ ε * |h - 0|
-  simp only [zero_add, smoothStep01_zero, sub_zero, smul_zero, Real.norm_eq_abs]
+  simp only [smoothStep01_zero, sub_zero, smul_zero, Real.norm_eq_abs]
   -- Goal: |smoothStep01 h| ≤ ε * |h|
   by_cases h_neg : h ≤ 0
   · -- h ≤ 0: smoothStep01 h = 0
@@ -1134,7 +1136,7 @@ lemma smoothStep01_hasDerivAt_zero : HasDerivAt smoothStep01 0 0 := by
     · simp
     · rw [smoothStep01_eqOn_zero h_lt]
       simp; positivity
-  · push_neg at h_neg
+  · push Not at h_neg
     -- h > 0; combined with hh_lt_half, h < 1/2 < 1, so 0 < h < 1.
     have h_lt_one : h < 1 := by
       have h_abs_le_half : |h| ≤ 1 / 2 := le_of_lt hh_lt_half
@@ -1173,7 +1175,7 @@ lemma smoothStep01_hasDerivAt_one : HasDerivAt smoothStep01 0 1 := by
   intro ε hε
   filter_upwards [Metric.ball_mem_nhds (1 : ℝ) (by positivity : (0 : ℝ) < min (ε / 5) (1 / 2))]
     with x' hx'
-  simp only [Metric.mem_ball, Real.dist_eq, Real.norm_eq_abs] at hx'
+  simp only [Metric.mem_ball, Real.dist_eq] at hx'
   -- hx' : |x' - 1| < min (ε / 5) (1 / 2)
   have hx'_lt_eps : |x' - 1| < ε / 5 := lt_of_lt_of_le hx' (min_le_left _ _)
   have hx'_lt_half : |x' - 1| < 1 / 2 := lt_of_lt_of_le hx' (min_le_right _ _)
@@ -1194,7 +1196,7 @@ lemma smoothStep01_hasDerivAt_one : HasDerivAt smoothStep01 0 1 := by
     · -- h = 0
       have : h = 0 := h_eq.symm
       rw [this]; simp
-  · push_neg at h_pos
+  · push Not at h_pos
     -- h < 0; combined with hx'_lt_half = |h| < 1/2, so -1/2 < h < 0, so 1/2 < 1 + h < 1.
     have h_abs_eq : |h| = -h := abs_of_neg h_pos
     have h_gt_neg_half : h > -1/2 := by linarith [hx'_lt_half, h_abs_eq]
@@ -1342,13 +1344,13 @@ lemma smoothStep01_deriv_continuousOn_uIcc :
   smoothStep01_deriv_continuous.continuousOn
 
 /-- **`smoothStep01_deriv` is nonneg on `[0, 1]`.** -/
-lemma smoothStep01_deriv_nonneg_on_Icc {t : ℝ} (ht : t ∈ Set.Icc (0 : ℝ) 1) :
+lemma smoothStep01_deriv_nonneg_on_Icc {t : ℝ} (_ht : t ∈ Set.Icc (0 : ℝ) 1) :
     0 ≤ smoothStep01_deriv t := by
   unfold smoothStep01_deriv
   split_ifs with h0 h1
   · exact le_refl _
   · exact le_refl _
-  · push_neg at h0 h1
+  · push Not at h0 h1
     have h_t_nn : 0 ≤ t := le_of_lt h0
     have h_1mt_nn : 0 ≤ 1 - t := by linarith
     positivity
@@ -1473,7 +1475,7 @@ lemma ChartBallPathSmooth.continuous (Q₀ Q : X)
 /-! ## Helper: subtype membership simplifications -/
 
 /-- `t ∈ Icc a b ∧ t ∈ Ioo a b → t ∈ Ioo a b`. -/
-lemma mem_Ioo_of_Icc_and_Ioo {a b t : ℝ} (h1 : t ∈ Set.Icc a b)
+lemma mem_Ioo_of_Icc_and_Ioo {a b t : ℝ} (_h1 : t ∈ Set.Icc a b)
     (h2 : t ∈ Set.Ioo a b) : t ∈ Set.Ioo a b := h2
 
 /-- `Ioo a b ⊆ Icc a b`. -/
@@ -1502,7 +1504,7 @@ lemma t_mem_unit_open (t : ℝ) (h0 : 0 < t) (h1 : t < 1) :
 
 /-- ChartBallPath's image at `t ∈ [0, 1]` is `(chartAt anchor).symm` applied
 to a point in the convex hull of `c P` and `c Q`. -/
-lemma ChartBallPath_image (anchor P Q : X) (t : ℝ) (ht : t ∈ Set.Icc (0 : ℝ) 1) :
+lemma ChartBallPath_image (anchor P Q : X) (t : ℝ) (_ht : t ∈ Set.Icc (0 : ℝ) 1) :
     ∃ z : ℂ, z = (1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q
       ∧ ChartBallPath anchor P Q t = (chartAt ℂ anchor).symm z := by
   refine ⟨_, rfl, rfl⟩
@@ -1565,8 +1567,8 @@ lemma piece_rescale_mapsTo (k n : ℕ) (hn : 0 < n) :
   exact piece_reparam_mem_unit k n hn t ht.1 ht.2
 
 /-- The smoothstep of the piece-rescale at a point in the piece is well-defined. -/
-lemma smoothStep01_of_piece_rescale (k n : ℕ) (hn : 0 < n) (t : ℝ)
-    (h_low : (k : ℝ) / n ≤ t) (h_high : t ≤ ((k : ℝ) + 1) / n) :
+lemma smoothStep01_of_piece_rescale (k n : ℕ) (_hn : 0 < n) (t : ℝ)
+    (_h_low : (k : ℝ) / n ≤ t) (_h_high : t ≤ ((k : ℝ) + 1) / n) :
     smoothStep01 ((t - (k : ℝ) / n) * n) ∈ Set.Icc (0 : ℝ) 1 :=
   smoothStep01_mem_unit _
 
@@ -1634,7 +1636,7 @@ lemma chart_image_swap (anchor P Q : X) (t : ℝ) :
   ring
 
 /-- The smoothstep applied at piece-rescale's left endpoint is `0`. -/
-lemma smoothStep01_at_piece_left_eq (k n : ℕ) (hn : 0 < n) :
+lemma smoothStep01_at_piece_left_eq (k n : ℕ) (_hn : 0 < n) :
     smoothStep01 ((((k : ℝ) / n) - (k : ℝ) / n) * n) = 0 := by
   rw [piece_rescale_at_left_eq k n]
   exact smoothStep01_zero
@@ -1702,7 +1704,7 @@ lemma chart_transition_contDiffOn_simplified (x y : X) :
 
 /-- The trans as a function applied to a point. -/
 lemma chart_trans_apply (x y : X) (u : ℂ)
-    (hu : u ∈ ((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)).source) :
+    (_hu : u ∈ ((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)).source) :
     (((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)) : ℂ → ℂ) u = (chartAt ℂ y) ((chartAt ℂ x).symm u) := by
   rfl
 

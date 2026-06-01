@@ -225,7 +225,7 @@ theorem periodVec_concat_of_smooth {P Q R : X} {g₁ g₂ : ℝ → X}
         (fun t => (periodBasisForm X i).toFun (g₁ (2 * t)) (pathSpeed g₁ (2 * t)))
         MeasureTheory.volume 0 (1/2) := by
       have h_mul := (h₁.integrable i).comp_mul_left (c := 2)
-      convert h_mul using 2 <;> norm_num
+      convert h_mul using 2; norm_num
     refine (h_Ψ₁_shift.const_mul (2:ℂ)).congr_ae ?_
     refine (MeasureTheory.ae_restrict_iff' measurableSet_uIoc).mpr ?_
     filter_upwards [h_ae_neq] with t h_neq ht
@@ -248,7 +248,7 @@ theorem periodVec_concat_of_smooth {P Q R : X} {g₁ g₂ : ℝ → X}
         (fun t => (periodBasisForm X i).toFun (g₂ (2 * t)) (pathSpeed g₂ (2 * t)))
         MeasureTheory.volume 0 (1/2) := by
       have h_mul := (h₂.integrable i).comp_mul_left (c := 2)
-      convert h_mul using 2 <;> norm_num
+      convert h_mul using 2; norm_num
     have h_Ψ₂_shift_2 : IntervalIntegrable
         (fun t => (periodBasisForm X i).toFun (g₂ (2 * t - 1)) (pathSpeed g₂ (2 * t - 1)))
         MeasureTheory.volume (1/2) 1 := by

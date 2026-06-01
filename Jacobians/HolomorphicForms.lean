@@ -42,6 +42,8 @@ namespace Jacobians
 
 open scoped Manifold ContDiff Bundle
 
+set_option linter.unusedSectionVars false
+
 -- `HolomorphicOneForms` and its `AddCommGroup` / `Module ℂ` instances are
 -- defined in `Jacobians.Genus` (to allow `genus X := finrank ℂ (HOF X)`
 -- without a circular import).

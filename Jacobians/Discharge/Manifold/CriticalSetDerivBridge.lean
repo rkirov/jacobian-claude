@@ -413,7 +413,7 @@ theorem notInjOn_iff_deriv_zero_of_analytic_of_order
     -- by `deriv_ne_zero_of_analyticOrderAt_eq_one`). Then apply `notInjOn_of_analyticOrderAt_ge_two`.
     have hk_ge_two : 2 ≤ k := by
       by_contra hlt
-      push_neg at hlt
+      push Not at hlt
       have hk_eq_one : k = 1 := by linarith
       subst hk_eq_one
       have hord' : analyticOrderAt (fun z => g z - g x₀) x₀ = (1 : ℕ∞) := hord

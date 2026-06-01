@@ -77,7 +77,7 @@ lemma isConstantMap_const {X : Type u} {Y : Type v} (c : Y) :
 lemma not_isConstantMap_iff {X : Type u} {Y : Type v} (f : X → Y) :
     ¬ IsConstantMap f ↔ ∀ y, ∃ x, f x ≠ y := by
   unfold IsConstantMap
-  push_neg
+  push Not
   rfl
 
 namespace Manifold

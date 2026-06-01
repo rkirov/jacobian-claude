@@ -265,10 +265,10 @@ lemma deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
   obtain ⟨k, hk_eq⟩ : ∃ k : ℕ, ord = (k : ℕ∞) := by
     cases hord_eq : ord with
     | top => exact absurd hord_eq h_ord_ne_top
-    | coe n => exact ⟨n, by simp [hord_eq]⟩
+    | coe n => exact ⟨n, by simp⟩
   have hk_ge_one : 1 ≤ k := by
     by_contra hlt
-    push_neg at hlt
+    push Not at hlt
     interval_cases k
     apply h_ord_ne_zero
     exact hk_eq
