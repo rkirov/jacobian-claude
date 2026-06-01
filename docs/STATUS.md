@@ -1,5 +1,23 @@
 # Project status — verified ground truth
 
+> **2026-06-01 session delta (read first; line numbers below may be stale — grep, don't trust them).**
+> - **Build coverage fixed:** `lakefile.lean` now uses `globs := .andSubmodules Jacobians`, so
+>   `lake build` compiles **every** module (8392 jobs), not just those reachable from `Jacobians.lean`.
+>   This closed an orphan blind-spot that had let a **RED `DbarDisk` commit sit undetected on `main`**
+>   (now fixed). When verifying, `lake build` alone is now sufficient; no need to sweep leaf modules.
+> - **Scaffold deleted:** the temporary `Roadmap.lean` + `RiemannRoch.lean` staging files are **gone**
+>   (their content was duplicated by `DbarDisk` and `DegreeOneSphere`; `exists_pole_of_nonconstant`
+>   lives in `MeromorphicLiouville`). No parallel source-of-truth remains.
+> - **#6:** two new PROVEN axiom-clean lemmas (`exists_subBallChartCover`,
+>   isolated crux `exists_offBranch_subBallChartCover`); remaining #6 work + the lingering-transversality
+>   crux are mapped in `project_loop_off_branch_6_leftover` (memory) — #6 is genuine ~500-800 LoC work,
+>   NOT "plumbing," but Dolbeault-independent.
+> - **#1 endgame:** `DegreeOneSphere` recovered/improved — `degreeFiber_toSphere_eq_one` now a genuine
+>   proof consuming pole simplicity (3 isolated sorries: `contMDiff_toSphere`, `toSphere_regular_at_pole`,
+>   `degreeOne_homeo`). Wiring it into `genus_eq_zero_iff_homeo` is blocked by an import cycle +
+>   `[Nonempty X]` gap — plan in `docs/genus_endgame_wiring_plan.md`.
+> - Docs: stale plan docs moved to `docs/archive/`.
+
 Authoritative, **machine-verified** status of the Jacobians challenge. Last
 established 2026-05-31 by `#print axioms` (`lean_verify`) on the headline
 declarations. Reproduce with `lake env lean AxiomCheck.lean` (clean core) or
