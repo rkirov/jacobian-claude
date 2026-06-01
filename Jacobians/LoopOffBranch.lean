@@ -1399,10 +1399,116 @@ lemma isSmoothPath_uniformGlue (g : ℕ → ℝ → X)
         · exact Or.inl (Or.inr ⟨le_of_lt h, h2⟩)
         · exact Or.inr (le_of_lt h2)
     rw [huniv] at hAll; rwa [continuousOn_univ] at hAll
-  · -- chart-pullback differentiability at each t ∈ [0,1].
-    sorry
-  · -- velocity-section continuity.
-    sorry
+  · -- chart-pullback differentiability at each t ∈ [0,1]: interior chain rule + seam union.
+    intro t ht
+    rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht
+    have hfromEv : ∀ (k : ℕ), k < n → (n:ℝ)*t - k ∈ Set.Icc (0:ℝ) 1 →
+        uniformGlue g n =ᶠ[nhds t] (fun s => g k ((n:ℝ)*s - k)) →
+        DifferentiableAt ℝ ((chartAt (H := ℂ) (uniformGlue g n t)).toFun ∘ uniformGlue g n) t := by
+      intro k hk harg hev
+      have hpt : uniformGlue g n t = g k ((n:ℝ)*t - k) := hev.eq_of_nhds
+      have hev2 : ((chartAt (H := ℂ) (uniformGlue g n t)).toFun ∘ uniformGlue g n)
+          =ᶠ[nhds t]
+          ((chartAt (H := ℂ) (g k ((n:ℝ)*t - k))).toFun ∘ (fun s => g k ((n:ℝ)*s - k))) := by
+        rw [hpt]; exact hev.fun_comp _
+      rw [hev2.differentiableAt_iff]
+      have hcomp : ((chartAt (H := ℂ) (g k ((n:ℝ)*t - k))).toFun ∘ (fun s => g k ((n:ℝ)*s - k)))
+          = ((chartAt (H := ℂ) (g k ((n:ℝ)*t - k))).toFun ∘ g k) ∘ (fun s:ℝ => (n:ℝ)*s - k) := by
+        funext s; rfl
+      rw [hcomp]
+      have haff : DifferentiableAt ℝ (fun s:ℝ => (n:ℝ)*s - (k:ℝ)) t :=
+        ((differentiableAt_const _).mul differentiableAt_id).sub (differentiableAt_const _)
+      have hgd : DifferentiableAt ℝ ((chartAt (H := ℂ) (g k ((n:ℝ)*t - k))).toFun ∘ g k)
+          ((fun s:ℝ => (n:ℝ)*s - (k:ℝ)) t) :=
+        (hpiece k hk).diff ((n:ℝ)*t - k) (by rw [Set.uIcc_of_le (by norm_num:(0:ℝ)≤1)]; exact harg)
+      exact hgd.comp t haff
+    rcases eq_or_lt_of_le ht.1 with ht0 | ht0pos
+    · refine hfromEv 0 hn ?_ ?_
+      · rw [← ht0]; simp
+      · rw [← ht0]; simpa using uniformGlue_eventuallyEq_zero g n hn
+    · rcases eq_or_lt_of_le ht.2 with ht1 | ht1lt
+      · refine hfromEv (n-1) (by omega) ?_ ?_
+        · rw [ht1, show (n:ℝ)*1 - (n-1:ℕ) = 1 from by rw [Nat.cast_sub hn]; push_cast; ring]
+          exact ⟨zero_le_one, le_refl _⟩
+        · rw [ht1]; exact uniformGlue_eventuallyEq_one g n hn
+      · have hnt0 : (0:ℝ) < n * t := by positivity
+        have hntn : (n:ℝ) * t < n := by nlinarith
+        set k : ℕ := ⌊(n:ℝ)*t⌋.toNat with hkdef
+        have hfl_nonneg : 0 ≤ ⌊(n:ℝ)*t⌋ := Int.floor_nonneg.mpr (le_of_lt hnt0)
+        have hcastk : ((k:ℕ):ℝ) = (⌊(n:ℝ)*t⌋ : ℝ) := by
+          rw [hkdef]; exact_mod_cast Int.toNat_of_nonneg hfl_nonneg
+        have hk_le : (k:ℝ) ≤ n * t := by rw [hcastk]; exact Int.floor_le _
+        have hk_lt : (n:ℝ)*t < k + 1 := by rw [hcastk]; exact Int.lt_floor_add_one _
+        have hkn : k < n := by
+          by_contra h; push_neg at h
+          have : (n:ℝ) ≤ k := by exact_mod_cast h
+          linarith
+        have hhi : t < ((k:ℝ)+1)/n := by rw [lt_div_iff₀ hnpos]; linarith
+        rcases eq_or_lt_of_le hk_le with hseam | hint
+        · have hkpos : 0 < k := by
+            by_contra h; push_neg at h
+            have hk0 : k = 0 := by omega
+            rw [hk0] at hseam; simp only [Nat.cast_zero] at hseam
+            have ht0' : t = 0 := by
+              rcases mul_eq_zero.mp hseam.symm with hc | hc
+              · exact absurd hc (ne_of_gt hnpos)
+              · exact hc
+            linarith
+          exact (uniformGlue_seam g hchain n hn hpiece hv0 hv1 k hkpos (by omega) t
+            hseam.symm).differentiableAt
+        · refine hfromEv k hkn ?_ (uniformGlue_eventuallyEq_piece g n hn k hkn t ⟨?_, hhi⟩)
+          · exact ⟨by linarith, by linarith⟩
+          · rw [div_lt_iff₀ hnpos]; linarith
+  · -- velocity-section continuity: union over the closed uniform pieces.
+    have hpieceVC : ∀ k, k < n →
+        ContinuousOn (fun s : ℝ =>
+          Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+            (uniformGlue g n s) (Jacobians.pathSpeed (uniformGlue g n) s))
+          (Set.Icc ((k:ℝ)/n) (((k:ℝ)+1)/n)) := by
+      intro k hk
+      have hmaps : Set.MapsTo (fun s : ℝ => (n:ℝ) * s + (-(k:ℝ)))
+          (Set.Icc ((k:ℝ)/n) (((k:ℝ)+1)/n)) (Set.Icc 0 1) := by
+        intro s hs
+        simp only [Set.mem_Icc]
+        refine ⟨?_, ?_⟩
+        · have := hs.1; rw [div_le_iff₀ hnpos] at this; linarith
+        · have := hs.2; rw [le_div_iff₀ hnpos] at this; linarith
+      have haff := Jacobians.velCont_affineReparam (g k) (n:ℝ) (-(k:ℝ)) hmaps (hpiece k hk).velCont
+      apply haff.congr
+      intro s hs
+      have hval : uniformGlue g n s = g k ((n:ℝ)*s - k) :=
+        uniformGlue_apply_of_mem g hchain n hn k hk s hs.1 hs.2
+      have hsp : Jacobians.pathSpeed (uniformGlue g n) s
+          = (n:ℂ) * Jacobians.pathSpeed (g k) ((n:ℝ)*s - k) := by
+        rw [uniformGlue_pathSpeed_eqOn_piece g hchain n hn hpiece hv0 hv1 k hk s hs]
+        have harg : (n:ℝ)*s - k ∈ Set.Icc (0:ℝ) 1 := by
+          refine ⟨?_, ?_⟩
+          · have := hs.1; rw [div_le_iff₀ hnpos] at this; linarith
+          · have := hs.2; rw [le_div_iff₀ hnpos] at this; linarith
+        exact piece_pathSpeed_eq g n hn hpiece k hk s harg
+      show Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (uniformGlue g n s)
+          (Jacobians.pathSpeed (uniformGlue g n) s) = _
+      simp only []
+      rw [hval, hsp, show ((n:ℝ)*s + (-(k:ℝ))) = (n:ℝ)*s - k from by ring, smul_eq_mul]
+      norm_cast
+    have key : ∀ m, m ≤ n →
+        ContinuousOn (fun s : ℝ =>
+          Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X))
+            (uniformGlue g n s) (Jacobians.pathSpeed (uniformGlue g n) s)) (Set.Icc 0 ((m:ℝ)/n)) := by
+      intro m hm
+      induction m with
+      | zero => rw [Nat.cast_zero, zero_div, Set.Icc_self]; exact continuousOn_singleton _ _
+      | succ j ih =>
+        have hjn : j < n := by omega
+        have hsplit : Set.Icc (0:ℝ) ((j+1:ℕ)/n) =
+            Set.Icc 0 ((j:ℝ)/n) ∪ Set.Icc ((j:ℝ)/n) (((j:ℝ)+1)/n) := by
+          rw [Set.Icc_union_Icc_eq_Icc (by positivity)
+            (by rw [div_le_div_iff_of_pos_right hnpos]; push_cast; linarith)]
+          congr 1; push_cast; ring
+        rw [hsplit]
+        exact (ih (by omega)).union_of_isClosed (hpieceVC j hjn) isClosed_Icc isClosed_Icc
+    have := key n (le_refl n)
+    rwa [div_self (ne_of_gt hnpos)] at this
 
 /-! ### A5. Sub-ball chart cover (subdivision infrastructure)
 
