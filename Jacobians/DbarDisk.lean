@@ -560,12 +560,52 @@ theorem cauchyPompeiu_area {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g
   have hcmhalf : ∫ p in T, (2 : ℂ)⁻¹ * (Rfun p + I * Afun p)
       = (2 : ℂ)⁻¹ * ∫ p in T, (Rfun p + I * Afun p) := integral_const_mul _ _
   rw [hcmhalf, haddint, hcmI]
+  -- For each fixed `θ`, `c θ ≠ 0` (since `‖c θ‖ = 1`).
+  have hcne : ∀ θ : ℝ, c θ ≠ 0 := fun θ => by
+    rw [hc]; intro h
+    have := congrArg Complex.normSq h
+    rw [Complex.normSq_add_mul_I, Real.cos_sq_add_sin_sq] at this; simp at this
   -- Radial term: `∫_T R = ∫_θ (∫_r R) = ∫_θ (−g z) = −2π·g z` (Fubini, `radial_integral`).
   have hRval : (∫ p in T, Rfun p) = -π * (2 * g z) := by
-    sorry
-  -- Angular term: `∫_T A = ∫_r (∫_θ A) = ∫_r 0 = 0` (Fubini-swapped, `angular_integral`).
+    have hRint' : IntegrableOn Rfun (Set.Ioi (0:ℝ) ×ˢ Set.Ioo (-π) π) (volume.prod volume) := by
+      rw [← Measure.volume_eq_prod ℝ ℝ]; rw [hT] at hRint; exact hRint
+    rw [hT, show (volume : Measure (ℝ × ℝ)) = volume.prod volume from Measure.volume_eq_prod ℝ ℝ,
+      ← setIntegral_prod_swap (Set.Ioi (0:ℝ)) (Set.Ioo (-π) π) Rfun]
+    rw [setIntegral_prod (fun z => Rfun z.swap) hRint'.swap]
+    -- Inner integral over `r` is `radial_integral` (= −g z); then integrate the constant over θ.
+    rw [show (fun θ => ∫ r in Set.Ioi (0:ℝ), Rfun (Prod.swap (θ, r)))
+          = fun _ : ℝ => -g z from funext fun θ => by
+        simp only [Prod.swap]
+        exact radial_integral hg hgsupp (hcne θ) z]
+    have hpi : (0:ℝ) ≤ π - -π := by nlinarith [Real.pi_pos]
+    rw [setIntegral_const, Real.volume_real_Ioo, max_eq_left hpi]
+    -- `(π−−π) • (−g z) = −π·(2·g z)`: `setIntegral_const`'s `ℝ•ℂ` is a defeq-but-not-syntactic
+    -- instance vs `Complex.real_smul` (a `SMul ℝ ℂ` diamond), so `rw`/`simp [real_smul]` miss it.
+    -- `show` the mul-form (defeq unfolds the smul instance), then `push_cast; ring`.
+    show ((π - -π : ℝ) : ℂ) * (-g z) = -↑π * (2 * g z)
+    push_cast; ring
+  -- Angular term: `∫_T A = ∫_r (∫_θ A) = ∫_r 0 = 0` (Fubini, `angular_integral`).
   have hAval : (∫ p in T, Afun p) = 0 := by
-    sorry
+    have hAint' : IntegrableOn Afun (Set.Ioi (0:ℝ) ×ˢ Set.Ioo (-π) π) (volume.prod volume) := by
+      rw [← Measure.volume_eq_prod ℝ ℝ]; rw [hT] at hAint; exact hAint
+    rw [hT, show (volume : Measure (ℝ × ℝ)) = volume.prod volume from Measure.volume_eq_prod ℝ ℝ,
+      setIntegral_prod Afun hAint']
+    -- Inner `θ`-integral vanishes for each `r ∈ Ioi 0` (angular FTC, `c(π)=c(−π)=−1`).
+    rw [MeasureTheory.setIntegral_congr_fun (μ := volume) measurableSet_Ioi
+      (g := fun _ : ℝ => (0 : ℂ)) (fun r hr => ?_), integral_zero]
+    -- For `r > 0`: the inner `θ`-integral over `Ioo (−π) π` equals the interval integral over
+    -- `(−π)..π` (a.e.-equal endpoints), which is `angular_integral`'s `0`.
+    -- (Isolated `Ioo`-vs-`Ioc` set/interval reconciliation; see report.)
+    have hra : ∀ θ, Afun (r, θ) = (fderiv ℝ g (angularMap z r θ))
+        (I * (Real.cos θ + Real.sin θ * I)) := fun θ => by
+      rw [hA]; simp only
+      congr 2
+    have hang := angular_integral hg z (show (0:ℝ) < r by simpa using hr).ne'
+    rw [intervalIntegral.integral_of_le (by linarith [Real.pi_pos] : -π ≤ π)] at hang
+    simp only [hra]
+    -- Close the residual `∫_Ioo F = ∫_Ioc F ∂volume`: the two sets differ only by `{π}`
+    -- (measure zero), so the set-integrals agree (`volume` has `NoAtoms`).
+    rw [← hang, MeasureTheory.integral_Ioc_eq_integral_Ioo]
   rw [hRval, hAval, mul_zero, add_zero]
   field_simp
 
