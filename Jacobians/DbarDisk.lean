@@ -393,6 +393,42 @@ theorem angular_integral {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) 
     simp only [angularMap, Real.cos_neg, Real.sin_neg, Real.cos_pi, Real.sin_pi]; push_cast; ring
   rw [hπ, hmπ, sub_self, mul_zero]
 
+/-- A bound `M` beyond which the radial slice leaves `tsupport (fderiv ℝ g)`: there is `M` with
+`∀ r > M, ∀ θ, fderiv ℝ g (z + r·c(θ)) = 0` (where `‖c(θ)‖ = 1`). -/
+theorem exists_radius_fderiv_eq_zero {g : ℂ → ℂ} (hgsupp : HasCompactSupport g) (z : ℂ) :
+    ∃ M : ℝ, ∀ r : ℝ, M < r → ∀ θ : ℝ,
+      fderiv ℝ g (z + (r : ℂ) * (Real.cos θ + Real.sin θ * I)) = 0 := by
+  obtain ⟨M, hM⟩ := (hgsupp.fderiv ℝ).isBounded.subset_closedBall z
+  refine ⟨M, fun r hr θ => ?_⟩
+  -- `‖(z + r·c(θ)) − z‖ = r > M`, so the point is outside the closed ball ⊇ tsupport.
+  apply image_eq_zero_of_notMem_tsupport
+  intro hmem
+  have := hM hmem
+  rw [Metric.mem_closedBall, dist_eq_norm, add_sub_cancel_left, norm_mul] at this
+  have hc : ‖(Real.cos θ + Real.sin θ * I : ℂ)‖ = 1 := by
+    rw [Complex.norm_def, Complex.normSq_add_mul_I, Real.cos_sq_add_sin_sq, Real.sqrt_one]
+  rw [hc, mul_one, Complex.norm_real, Real.norm_eq_abs] at this
+  have : r ≤ M := le_trans (le_abs_self r) this
+  linarith
+
+/-- Integrability on the polar target `Ioi 0 ×ˢ Ioo (−π) π` for a continuous integrand that
+vanishes for `r = p.1 > M`: it then lives on the compact `Icc 0 M ×ˢ Icc (−π) π`. -/
+theorem integrableOn_target_of_continuous_of_vanishing {f : ℝ × ℝ → ℂ} (hf : Continuous f)
+    {M : ℝ} (hvanish : ∀ p : ℝ × ℝ, M < p.1 → f p = 0) :
+    IntegrableOn f (Set.Ioi 0 ×ˢ Set.Ioo (-π) π) volume := by
+  -- `f` is integrable on the compact box `K = Icc 0 M ×ˢ Icc (−π) π`.
+  have hKcompact : IsCompact (Set.Icc (0:ℝ) M ×ˢ Set.Icc (-π) π) := isCompact_Icc.prod isCompact_Icc
+  have hintK : IntegrableOn f (Set.Icc (0:ℝ) M ×ˢ Set.Icc (-π) π) volume :=
+    hf.continuousOn.integrableOn_compact hKcompact
+  -- It suffices to integrate over `target ∩ support f ⊆ box`.
+  refine IntegrableOn.of_inter_support (measurableSet_Ioi.prod measurableSet_Ioo) ?_
+  refine hintK.mono_set fun p hp => ?_
+  obtain ⟨⟨hr, hθ⟩, hsupp⟩ := hp
+  refine ⟨⟨le_of_lt hr, ?_⟩, ⟨le_of_lt hθ.1, le_of_lt hθ.2⟩⟩
+  -- `p.1 ≤ M`: else `f p = 0`, contradicting `p ∈ support f`.
+  by_contra h
+  exact hsupp (hvanish p (lt_of_not_ge h))
+
 /-- **D2 core — the Cauchy–Pompeiu area-integral identity.**  For `g ∈ C^∞_c`,
 `∬_ℂ (∂̄g)(ζ)/(ζ−z) dA(ζ) = −π·g(z)`.
 
@@ -481,7 +517,57 @@ theorem cauchyPompeiu_area {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g
       this]
   refine Eq.trans (MeasureTheory.setIntegral_congr_fun (μ := volume)
     Complex.polarCoord.open_target.measurableSet (fun p _ => hpw p)) ?_
-  sorry
+  -- Name the integrands and the polar target (`polarCoord.target = Ioi 0 ×ˢ Ioo (−π) π` by `rfl`).
+  set c : ℝ → ℂ := fun θ => Real.cos θ + Real.sin θ * I with hc
+  set Rfun : ℝ × ℝ → ℂ := fun p => (fderiv ℝ g (radialMap z (c p.2) p.1)) (c p.2) with hR
+  set Afun : ℝ × ℝ → ℂ := fun p => (fderiv ℝ g (radialMap z (c p.2) p.1)) (I * c p.2) with hA
+  set T : Set (ℝ × ℝ) := Set.Ioi 0 ×ˢ Set.Ioo (-π) π with hT
+  show ∫ p in T, (2 : ℂ)⁻¹ * (Rfun p + I * Afun p) = -π * g z
+  -- Continuity of the integrands (`fderiv g` is continuous, `radialMap`/`c` are smooth, and the
+  -- CLM-evaluation `(L, v) ↦ L v` is continuous).
+  have hfdcont : Continuous (fderiv ℝ g) := hg.continuous_fderiv (by norm_num)
+  have hccont : Continuous c := by rw [hc]; fun_prop
+  have hradcont : Continuous (fun p : ℝ × ℝ => radialMap z (c p.2) p.1) := by
+    have : (fun p : ℝ × ℝ => radialMap z (c p.2) p.1)
+        = fun p => z + (p.1 : ℂ) * c p.2 := by
+      funext p; rw [radialMap, Complex.real_smul]
+    rw [this]
+    fun_prop
+  have hRcont : Continuous Rfun :=
+    isBoundedBilinearMap_apply.continuous.comp ((hfdcont.comp hradcont).prodMk
+      (hccont.comp continuous_snd))
+  have hAcont : Continuous Afun :=
+    isBoundedBilinearMap_apply.continuous.comp ((hfdcont.comp hradcont).prodMk
+      (continuous_const.mul (hccont.comp continuous_snd)))
+  -- Both integrands vanish for `r = p.1 > M` (the radial slice leaves `tsupport (fderiv g)`).
+  obtain ⟨M, hMvanish⟩ := exists_radius_fderiv_eq_zero hgsupp z
+  have hwval : ∀ p : ℝ × ℝ, radialMap z (c p.2) p.1
+      = z + (p.1 : ℂ) * (Real.cos p.2 + Real.sin p.2 * I) := fun p => by
+    rw [radialMap, hc, Complex.real_smul]
+  have hRvanish : ∀ p : ℝ × ℝ, M < p.1 → Rfun p = 0 := fun p hp => by
+    rw [hR]; simp only; rw [hwval p, hMvanish p.1 hp p.2]; rfl
+  have hAvanish : ∀ p : ℝ × ℝ, M < p.1 → Afun p = 0 := fun p hp => by
+    rw [hA]; simp only; rw [hwval p, hMvanish p.1 hp p.2]; rfl
+  have hRint : IntegrableOn Rfun T volume :=
+    integrableOn_target_of_continuous_of_vanishing hRcont hRvanish
+  have hAint : IntegrableOn Afun T volume :=
+    integrableOn_target_of_continuous_of_vanishing hAcont hAvanish
+  -- Split: `∫ ½(R + I·A) = ½(∫R + I·∫A)`.
+  have haddint : ∫ p in T, (Rfun p + I * Afun p)
+      = (∫ p in T, Rfun p) + ∫ p in T, I * Afun p :=
+    integral_add hRint (hAint.const_mul I)
+  have hcmI : ∫ p in T, I * Afun p = I * ∫ p in T, Afun p := integral_const_mul _ _
+  have hcmhalf : ∫ p in T, (2 : ℂ)⁻¹ * (Rfun p + I * Afun p)
+      = (2 : ℂ)⁻¹ * ∫ p in T, (Rfun p + I * Afun p) := integral_const_mul _ _
+  rw [hcmhalf, haddint, hcmI]
+  -- Radial term: `∫_T R = ∫_θ (∫_r R) = ∫_θ (−g z) = −2π·g z` (Fubini, `radial_integral`).
+  have hRval : (∫ p in T, Rfun p) = -π * (2 * g z) := by
+    sorry
+  -- Angular term: `∫_T A = ∫_r (∫_θ A) = ∫_r 0 = 0` (Fubini-swapped, `angular_integral`).
+  have hAval : (∫ p in T, Afun p) = 0 := by
+    sorry
+  rw [hRval, hAval, mul_zero, add_zero]
+  field_simp
 
 open scoped Convolution in
 /-- **D2 (Cauchy–Pompeiu).** For `g ∈ C^∞_c`, `(∂̄g) ⋆ K = g`.  Reduces by elementary algebra to
