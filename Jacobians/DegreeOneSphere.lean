@@ -106,7 +106,7 @@ set_option linter.unusedSectionVars false in
 between complex-analytic manifolds modelled on `ℂ`, if `F` is continuous at `x` and its
 chart pullback `(chartAt ℂ (F x)) ∘ F ∘ (chartAt ℂ x).symm` is `AnalyticAt ℂ` at `(chartAt ℂ x) x`,
 then `F` is `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω` at `x`. (Reverse of `contMDiffAt_omega_analyticAt_chart_pullback`.) -/
-theorem contMDiffAt_of_analyticAt_chartPullback
+theorem contMDiffAt_omega_of_analyticAt_chartPullback
     {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
     {F : X → Y} {x : X} (hcont : ContinuousAt F x)
     (hana : AnalyticAt ℂ ((chartAt ℂ (F x)) ∘ F ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)) :
@@ -155,7 +155,7 @@ theorem MeromorphicFunction.contMDiffAt_toSphere_of_ne (f : MeromorphicFunction 
     exact (OnePoint.continuous_coe.continuousAt).comp hReprContX
   -- The value `F x = coe (holoRepr x)`, whose chart is the affine chart `chartCoe`.
   have hFval : f.toSphere P x = ((f.holoRepr x : ℂ) : RiemannSphere) := f.toSphere_of_ne hx
-  refine contMDiffAt_of_analyticAt_chartPullback hFcont ?_
+  refine contMDiffAt_omega_of_analyticAt_chartPullback hFcont ?_
   -- chart pullback equals `holoRepr ∘ φ.symm` near `φ x` (using `chartCoe ∘ coe = id` and y ≠ P).
   refine hana.congr ?_
   have hxne' : ∀ᶠ w in 𝓝 (φ x), φ.symm w ≠ P := by
@@ -313,7 +313,7 @@ theorem MeromorphicFunction.contMDiffAt_toSphere_at_pole (f : MeromorphicFunctio
       rw [φ.left_inv hy]
     rw [hGval, chartInfty.left_inv hy3]
   -- assemble via the converse bridge; `chartAt ℂ (toSphere P P) = chartInfty`.
-  refine contMDiffAt_of_analyticAt_chartPullback hFcont ?_
+  refine contMDiffAt_omega_of_analyticAt_chartPullback hFcont ?_
   have hchartInfty : chartAt ℂ (f.toSphere P P) = RiemannSphere.chartInfty := by
     rw [f.toSphere_pole P]; rfl
   rw [hchartInfty]
