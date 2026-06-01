@@ -200,4 +200,30 @@ theorem dbar_eq_zero_of_differentiableAt {f : ℂ → ℂ} {z : ℂ}
       Complex.I_mul_I]; ring
   rw [hII]; ring
 
+/-! ## D2 — the fundamental-solution identity (Cauchy–Pompeiu)
+
+The genuine content: for `g ∈ C^∞_c`, `(∂̄g) ⋆ K = g`, i.e. `∫ t, (∂̄g)(t)·K(z−t) dt = g(z)`.
+With `K ζ = 1/(πζ)` this is the Cauchy–Pompeiu formula with NO boundary term (compact support
+kills it).  Proof = the complex Green / divergence theorem applied to `ζ ↦ g(ζ)/(ζ−z)` on the
+annulus `ε ≤ |ζ−z| ≤ R`: the outer boundary vanishes by support, the inner circle tends to
+`2πi·g(z)` as `ε→0` (the residue brick), and the area integral converges by D0. -/
+
+open scoped Convolution in
+/-- **D2 (Cauchy–Pompeiu).** For `g ∈ C^∞_c`, `(∂̄g) ⋆ K = g`. -/
+theorem cauchyPompeiu {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hgsupp : HasCompactSupport g)
+    (z : ℂ) : (dbar g ⋆[ContinuousLinearMap.mul ℝ ℂ, volume] cauchyKernel) z = g z := by
+  sorry
+
+/-! ## D3 — assemble: the ∂̄-solvability atom -/
+
+/-- **Main theorem (∂̄-on-a-disk solvability atom).** For `g ∈ C^∞_c(ℂ)`, the Cauchy transform
+`u = g ⋆ K` is a `C^∞` solution of the inhomogeneous Cauchy–Riemann equation `∂̄u = g`
+everywhere.  Combines D1 (regularity), the D3 bridge `∂̄(g⋆K) = (∂̄g)⋆K`, and D2 (Cauchy–Pompeiu
+`(∂̄g)⋆K = g`). -/
+theorem dbar_solvable_of_compactSupport {g : ℂ → ℂ}
+    (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hgsupp : HasCompactSupport g) :
+    ∃ u : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) u ∧ ∀ z, dbar u z = g z := by
+  refine ⟨cauchyTransform g, contDiff_cauchyTransform hg hgsupp, fun z => ?_⟩
+  rw [dbar_cauchyTransform hg hgsupp z, cauchyPompeiu hg hgsupp z]
+
 end DbarDisk
