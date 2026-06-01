@@ -1,5 +1,12 @@
 # Riemann–Roch in Lean 4 / Mathlib — precise formalization plan (Jacobians repo)
 
+> **UPDATE 2026-06-01:** Frontier is now **4 deep-wall sorries** (#6, the ℂℙ¹ dz-law, and #1's
+> analytic core all discharged this session). The #1-fwd **touch point is grounded**:
+> `exists_singleSimplePole_of_genus_zero ⟸ RR + deg_div` (+ Liouville); `deg K = 2g−2` and
+> `lDim K = g` *derive from RR*, so the isolated-input surface for #1-fwd is exactly {RR, deg_div}.
+> G3's Montel engine is PROVEN in-repo. This plan's body remains the deep reference; current: `docs/STATUS.md`.
+
+
 Read-only research note for `/home/rado/jacobian`. Companion to
 `docs/abel_riemannroch_research.md` and `docs/period_lattice_realbasis_research.md`.
 Verified against the repo's Mathlib pin **`8e3c989104da`**, Lean **`v4.30.0-rc1`**

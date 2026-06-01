@@ -28,12 +28,27 @@
 > - **Build hygiene:** the `contMDiffAt_of_analyticAt_chartPullback` TraceForm/DegreeOneSphere name
 >   clash (a latent full-build break invisible to single-file builds) was caught by the full build +
 >   fixed (rename, commit 5590d31). Lint warnings resolved 130 → 2 (commit 094b28c).
-> - **Strategy:** non-wall scaffolding nearly complete (#6 now fully discharged). Remaining frontier =
->   the shared Dolbeault/Hodge/classification walls + the 1 remaining NON-wall gap (ℂℙ¹ dz-law). Dolbeault disk-atom decomposition
->   in `docs/dolbeault_disk_atom_decomposition.md`; the atom is Mathlib-scaffolded, the real wall is
->   H¹ finiteness + 𝒪_D-on-manifold. Steering: prefer standard textbook proofs (`feedback_prefer_standard_proofs`).
+> - **Strategy — non-wall scaffolding is 100% COMPLETE** (#6 AND the ℂℙ¹ dz-law both discharged this
+>   session). All 4 remaining sorries are the shared deep walls. Phase B (the wall) underway, scoped
+>   end-to-end as the Dolbeault→RR ladder:
+>   - **G1 ∂̄-disk atom** (Cauchy–Pompeiu, `DbarDisk.lean`) — in progress, ~done; rides convolution +
+>     2D divergence theorem + repo GreenBox. The clean polar decomposition worked.
+>   - **G2 globalize** — tool HAVE: `SmoothPartitionOfUnity.exists_isSubordinate_chartAt_source`
+>     applies directly to compact `X`.
+>   - **G3 `H¹(X,𝒪)` finiteness** — the Montel/Schwartz compactness ENGINE is **already PROVEN in-repo**
+>     (`Montel.lean` 0-sorry; `closedBall_isCompact` via `exists_convergent_subseq_of_bounded`). Remaining
+>     = adapt that proven technique to the Čech-H¹ cochains (Forster 14.9). NOT greenfield.
+>   - **G4 `𝒪_D`-on-a-manifold + Serre duality** — the concentrated remaining GREENFIELD risk
+>     (no structure sheaf on a manifold; residue pairing). See `riemann_roch_proof_plan.md §4`.
+>   - **Touch point (validated):** `exists_singleSimplePole_of_genus_zero` (#1-fwd) ⟸ **RR + `deg_div`**
+>     (residue thm) + Liouville; `deg K=2g−2` and `lDim K=g` *derive from RR*. So the isolated-input
+>     surface for #1-fwd is exactly {RR, `deg_div`}. Prototype: `/tmp/rr_interface_proto.lean` → `RiemannRoch.lean`.
+>   - **#7 best via Hodge** (reuse the Dolbeault/Hodge build for the period relations), NOT Radó (the
+>     highest-variance, no-Lean-prior-art tar-pit). Steering: prefer standard textbook proofs
+>     (`feedback_prefer_standard_proofs`); decomposition in `docs/dolbeault_disk_atom_decomposition.md`.
 
-> **2026-06-01 session delta (read first; line numbers below may be stale — grep, don't trust them).**
+> **2026-06-01 session delta — HISTORICAL (superseded by the block above; retained only for the
+> build-coverage + scaffold-deletion notes). Its #6/#1-endgame status lines are OUTDATED.**
 > - **Build coverage fixed:** `lakefile.lean` now uses `globs := .andSubmodules Jacobians`, so
 >   `lake build` compiles **every** module (8392 jobs), not just those reachable from `Jacobians.lean`.
 >   This closed an orphan blind-spot that had let a **RED `DbarDisk` commit sit undetected on `main`**

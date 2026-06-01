@@ -1,5 +1,12 @@
 # Feasibility & LoC estimate — a FULLY sorry-free Jacobians project
 
+> **UPDATE 2026-06-01:** **#6 is DISCHARGED** via a standard breakpoint-perturbation route — NOT the
+> de-Rham/Stokes path estimated in the (b) row below, so that #6 LoC line is moot. Frontier now **4
+> deep walls**. The G3 `H¹` compactness engine (`Montel.closedBall_isCompact`) is **PROVEN in-repo**,
+> so finiteness is an adaptation, not greenfield; the concentrated risk is **G4 (𝒪_D-on-manifold + Serre)**.
+> Current state + RR-ladder scope: `docs/STATUS.md`.
+
+
 Read-only research note for `/home/rado/jacobian`. Scopes the single analytic wall
 (**Dolbeault ∂̄-solvability + de Rham/Hodge theory on a compact Riemann surface**) that the
 whole open frontier (#1 genus⟺sphere, #3 Abel, #7 period full-rank, partly #6) bottoms out in.

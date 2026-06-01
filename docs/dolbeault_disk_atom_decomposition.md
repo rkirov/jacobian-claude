@@ -1,5 +1,12 @@
 # Dolbeault wall — concrete keystone decomposition of the ∂̄-on-a-disk atom
 
+> **UPDATE 2026-06-01 (later):** G1 disk atom is ~done (the polar Cauchy–Pompeiu route worked,
+> roughly on-estimate). **CORRECTION:** the G3 compactness engine `Montel.closedBall_isCompact` is
+> **PROVEN in-repo** (`Montel.lean` is 0-sorry), *not* a sorry as stated below — so G3 is "adapt a
+> proven normal-families technique to the Čech-H¹ cochains," not greenfield. The concentrated
+> remaining GREENFIELD risk is **G4 (𝒪_D-on-a-manifold + Serre duality)**. Ladder + frontier: `docs/STATUS.md`.
+
+
 Read-only research note for `/home/rado/jacobian`, 2026-06-01. Decomposes the **one
 thing the prior RR/Dolbeault docs hand-waved**: the actual keystone ladder of the Dolbeault
 ∂̄-solvability layer, starting from the disk atom (Cauchy transform). Companion to
@@ -21,12 +28,13 @@ Mathlib grep sharpens this materially:
 2. **Globalization is HAVE, not greenfield.** `SmoothPartitionOfUnity.exists_isSubordinate`
    exists and applies to the repo's compact `X` (needs only a free `SigmaCompactSpace` instance
    from `CompactSpace`). Forster's "patch local solutions" step is scaffolded. **[VERIFIED]**
-3. **The genuine remaining wall is NOT the disk atom — it is `H¹` finiteness.** The Montel/
-   Schwartz compactness argument on Čech cochains (Forster 14.9) is unscaffolded, AND even the
-   repo's *easier* global-`Ω(X)` Montel (`HolomorphicOneForms.closedBall_isCompact`,
-   `Montel.lean`) is **itself still a `sorry`** — so the compactness gate is not done even at the
-   simplest level. **[VERIFIED]** This + the `𝒪_D`-sheaf-on-a-manifold framing are the true
-   long poles, not the local ∂̄ solvability.
+3. **The genuine remaining wall is `H¹` finiteness — but its ENGINE is already proven in-repo.**
+   The Montel/Schwartz compactness for the Čech-`H¹` cochains (Forster 14.9) is the new work, BUT
+   the repo's global-`Ω(X)` Montel (`HolomorphicOneForms.closedBall_isCompact`, `Montel.lean`) is
+   **PROVEN, axiom-clean** (0-sorry; via `exists_convergent_subseq_of_bounded`) — so the
+   normal-families/sequential-compactness *technique* is demonstrated; G3 is *adapting* it to the
+   cochains, not building it from scratch. **[VERIFIED 2026-06-01]** The `𝒪_D`-sheaf-on-a-manifold
+   framing (G4) is the true remaining greenfield pole, not the compactness and not the local ∂̄.
 
 **Net:** the *local* Dolbeault atom + globalization are tractable (~400–600 LoC, mostly riding
 Mathlib); the cost and risk concentrate in **(i) `H¹` finiteness (compactness)** and **(ii) the
@@ -68,7 +76,7 @@ with "u solves the equation."
 |---|---|---|---|---|
 | **G1** | Disk atom (§1): local `∂̄u=f` solvable on a chart disk. | rides Mathlib (§1) | buildable | 350–600 |
 | **G2** | **Globalize:** patch local solutions via a smooth partition of unity subordinate to a finite chart cover ⟹ `∂̄`-solvable up to a smooth global error; iterate. | `SmoothPartitionOfUnity.exists_isSubordinate` (`Geometry/Manifold/PartitionOfUnity.lean`); needs `[SigmaCompactSpace X]` (free from `CompactSpace`). **[VERIFIED]** | **HAVE** | 150–350 |
-| **G3** | **`H¹(X,𝒪)` finite-dimensional** (Forster Thm 14.9): the Čech `δ` is "almost surjective" — a **Montel/Schwartz compactness** argument (sup-norm bounded holomorphic cochains have convergent subsequences ⟹ finite cokernel). | Mathlib **Arzelà–Ascoli** (`Topology/ContinuousMap/Bounded/ArzelaAscoli.lean`) + `TendstoLocallyUniformlyOn.differentiableOn` (`Analysis/Complex/LocallyUniformLimit.lean`); repo `Montel/*` has sup-norm + local-rep scaffold **but `closedBall_isCompact` is itself a `sorry`**. No Montel-on-Čech-cochains. **[VERIFIED]** | **PARTIAL — the real wall** | 1000–2500 |
+| **G3** | **`H¹(X,𝒪)` finite-dimensional** (Forster Thm 14.9): the Čech `δ` is "almost surjective" — a **Montel/Schwartz compactness** argument (sup-norm bounded holomorphic cochains have convergent subsequences ⟹ finite cokernel). | Mathlib **Arzelà–Ascoli** (`Topology/ContinuousMap/Bounded/ArzelaAscoli.lean`) + `TendstoLocallyUniformlyOn.differentiableOn` (`Analysis/Complex/LocallyUniformLimit.lean`); repo `Montel/*` is **0-sorry — `closedBall_isCompact` PROVEN** (the engine), only the Čech-cochain adaptation is new. **[VERIFIED 2026-06-01]** | **engine PROVEN; adapt to cochains** | 800–2000 |
 | **G4** | **`𝒪_D` / `H^i(X,𝒪_D)` as objects** on a complex manifold (to run the skyscraper SES + `χ`-additivity, which are *elementary given the objects* — Mathlib's snake lemma/LES/`eulerChar` are present). | **ABSENT** — no structure sheaf on a manifold, no `𝒪_D`. The abstract homological toolkit has nothing to apply to. **[VERIFIED]** | **ABSENT — the other long pole** | 1000–2500 |
 | **G5** | **Serre duality / residue pairing** `H¹(X,𝒪_D) ≅ H⁰(Ω(−D))^*`. Integral side (sum-of-residues=0) reuses the repo's `boundaryForm`/Green stack; analytic side (perfectness) rests on G1–G3. | repo Green stack for the integral half; analytic half greenfield on G1–G3. **[VERIFIED partial]** | PARTIAL | 1500–3000 |
 | **RR** | Assemble `l(D)−l(K−D)=deg D+1−g`. | abstract homological algebra present; gated on G4. | derivation | +500–1500 |

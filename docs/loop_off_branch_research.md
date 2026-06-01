@@ -1,5 +1,12 @@
 # Research: discharging sorry #6 `exists_loop_off_branchLocus`
 
+> ✅ **#6 DISCHARGED 2026-06-01 — THIS DOC IS SUPERSEDED.** `exists_loop_off_branchLocus` is
+> proven sorry-free + axiom-clean — NOT via the manifold de-Rham / Stokes route explored here, but
+> via a standard breakpoint-perturbation + within-ball telescoping (the crux this doc isolated was
+> later found *misformalized* and replaced). Retained as a record of the approaches considered.
+> Current state: `docs/STATUS.md`; memory `project_loop6_crux_misformalization` (RESOLVED).
+
+
 READ-ONLY research, 2026-05-31. Repo `/home/rado/jacobian`, Mathlib pin
 `8e3c989` / Lean `v4.30.0-rc1`. No tracked files edited.
 
