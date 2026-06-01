@@ -113,13 +113,41 @@ theorem MeromorphicFunction.contMDiff_toSphere (f : MeromorphicFunction X) {P : 
     ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (f.toSphere P) := by
   sorry
 
-/-- `toSphere` is non-constant: it takes the value `∞` (at `P`) and finite values
-(at any `x ≠ P`, which exist because removing a point from a connected — hence,
-here, infinite — surface leaves something). -/
+/-- Every charted space over `ℂ` is nontrivial at each point: there is always a
+second point.  Proof: the chart `e` at `P` is an open embedding into `ℂ`; its
+target is a nonempty open set, which cannot be the singleton `{e P}` (singletons
+are not open in `ℂ`), so it contains some `w ≠ e P`, whose preimage `e.symm w`
+differs from `P`. -/
+theorem exists_ne_of_chartedSpace_complex (P : X) : ∃ x : X, x ≠ P := by
+  set e := chartAt ℂ P with he
+  have hPsrc : P ∈ e.source := mem_chart_source ℂ P
+  have hPtgt : e P ∈ e.target := e.map_source hPsrc
+  have hne : e.target ≠ {e P} := by
+    intro hsingle
+    exact (not_isOpen_singleton (e P)) (hsingle ▸ e.open_target)
+  obtain ⟨w, hw, hwne⟩ : ∃ w ∈ e.target, w ≠ e P := by
+    by_contra hcon
+    push_neg at hcon
+    exact hne (Set.eq_singleton_iff_unique_mem.mpr ⟨hPtgt, hcon⟩)
+  refine ⟨e.symm w, fun hcontra => hwne ?_⟩
+  have : e (e.symm w) = e P := by rw [hcontra]
+  rwa [e.right_inv hw] at this
+
+/-- `toSphere` is non-constant: it takes the value `∞` (at `P`) and a finite value
+`coe (f x)` at any `x ≠ P` (such an `x` exists by
+`exists_ne_of_chartedSpace_complex`), and `coe (f x) ≠ ∞`.  This uses the genuine
+`IsConstantMap` predicate (`∃ c, ∀ x, f x = c`), which is non-vacuous since `X` is
+nonempty. -/
 theorem MeromorphicFunction.toSphere_not_isConstant (f : MeromorphicFunction X)
     {P : X} (hP : f.HasSingleSimplePole P) :
     ¬ IsConstantMap (f.toSphere P) := by
-  sorry
+  rintro ⟨c, hc⟩
+  obtain ⟨x, hx⟩ := exists_ne_of_chartedSpace_complex (X := X) P
+  -- `f.toSphere P x = c` and `f.toSphere P P = c`, so `coe (f x) = ∞`, impossible.
+  have hxv : f.toSphere P x = ((f.toFun x : ℂ) : RiemannSphere) := f.toSphere_of_ne hx
+  have key : ((f.toFun x : ℂ) : RiemannSphere) = OnePoint.infty := by
+    rw [← hxv, hc x, ← f.toSphere_pole P, hc P]
+  exact (OnePoint.coe_ne_infty _) key
 
 /-! ### Step 2 — degree one -/
 
