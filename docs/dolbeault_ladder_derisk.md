@@ -36,6 +36,23 @@ monolith (user directive: "go sorry-free; de-risk G3/G4 first"). Companion to
 > ℂ-structure — a bounded, foundational, reusable artifact that de-risks the whole real-Dolbeault path.
 > Net: the assault converted "Serre ≈ 2–4k, believed feasible" into "Serre needs a real-manifold-infra
 > layer first; (0,1)-form representation validated; scalar ∂̄ in hand; two concrete routes."
+>
+> **▶▶ FOLLOW-UP — attempted Route (A), found it trips the repo's ℂ-ℝ-module diamond.** Built the
+> `IsManifold 𝓘(ℝ,ℂ) ⊤ X` proof: the structure WORKS — `hasGroupoid_of_le hX.toHasGroupoid` + the
+> groupoid inclusion `contDiffGroupoid ω 𝓘(ℂ) ≤ contDiffGroupoid ⊤ 𝓘(ℝ,ℂ)` (unfold membership via
+> `mem_groupoid_of_pregroupoid`/`contDiffPregroupoid`, both self-models reduce `↑I` to `id`), reducing
+> to the single step `ContDiffOn ℂ ω e ⟹ ContDiffOn ℝ ⊤ e` (holomorphic ⟹ real-smooth). **That step
+> needs `ContDiffOn.restrict_scalars` (Operations.lean) which requires `IsScalarTower ℝ ℂ ℂ` — and that
+> instance, though it synthesizes STANDALONE, FAILS to synthesize inside a `ContDiff ℝ ⊤ (f : ℂ→ℂ)`
+> goal context** (verified: `IsScalarTower ℝ ℂ ℂ := inferInstance` errors there). This is the documented
+> [[reference_module_real_diamond]] (ℂ as ℝ-module: `Complex.instNormedSpaceReal` vs the
+> `NormedAlgebra ℝ ℂ`-induced one), context-triggered — a stubborn Mathlib-plumbing pathology, not a
+> math obstacle. **Implication — Route (B) is now favored:** the chart-local route works with explicit
+> `ℂ→ℂ` functions where real-`C^∞` is via `fderiv ℝ` directly — exactly what the **PROVEN `DbarDisk`**
+> (G1, `dbar f = ½(fderiv ℝ f 1 + I•fderiv ℝ f I)`, `dbar_solvable_of_compactSupport`) already does
+> without tripping the diamond. So: model-level real-manifold infra (Route A) is gated on resolving the
+> ℂ-ℝ diamond first (a focused foundational task); the chart-local cocycle (Route B), built on the
+> working `DbarDisk`, sidesteps it and is the recommended path into the Dolbeault core.
 
 All "VERIFIED" claims below were checked this session by reading source at the repo's Mathlib pin
 `8e3c989104da` (`.lake/packages/mathlib/Mathlib`) and the repo files cited. LoC figures are
