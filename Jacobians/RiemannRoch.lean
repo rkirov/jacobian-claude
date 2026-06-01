@@ -115,6 +115,54 @@ def toFunHom : MeromorphicFunction X →+ (X → ℂ) where
 noncomputable instance : Module ℂ (MeromorphicFunction X) :=
   toFun_injective.module ℂ toFunHom (fun _ _ => rfl)
 
+/-- The order of `f` at `x` as `WithTop ℤ` — the meromorphic order *before* the `untop₀` that
+defines `orderAtPoint`. It is `⊤` exactly when `f` vanishes in a punctured neighbourhood of `x`;
+phrasing `L(D)` on this order makes the zero function a member of every `L(D)` automatically. -/
+noncomputable def orderW (f : MeromorphicFunction X) (x : X) : WithTop ℤ :=
+  meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
+
+theorem orderW_zero (x : X) : (0 : MeromorphicFunction X).orderW x = ⊤ := by
+  rw [orderW, meromorphicOrderAt_eq_top_iff]
+  exact Filter.Eventually.of_forall fun _ => rfl
+
 end MeromorphicFunction
+
+/-! ## Part 2: the linear system `L(D)`, its dimension `l(D)`, and the isolated RR inputs -/
+
+/-- The complete linear system `L(D)` = meromorphic functions with `div f ≥ −D`, phrased on the
+`WithTop ℤ` order (so the zero function, order `⊤`, is automatically a member). A `Submodule ℂ`. -/
+noncomputable def linearSystem (D : Divisor X) : Submodule ℂ (MeromorphicFunction X) where
+  carrier := {f | ∀ x, (-(D x) : WithTop ℤ) ≤ f.orderW x}
+  add_mem' {f g} hf hg := fun x =>
+    le_trans (le_min (hf x) (hg x)) (meromorphicOrderAt_add (f.meromorphic x) (g.meromorphic x))
+  zero_mem' := fun x => by rw [MeromorphicFunction.orderW_zero]; exact le_top
+  smul_mem' c f hf := fun x => by
+    rcases eq_or_ne c 0 with hc | hc
+    · have h0 : (c • f).orderW x = ⊤ := by
+        rw [hc, zero_smul]; exact MeromorphicFunction.orderW_zero x
+      rw [h0]; exact le_top
+    · rw [show (c • f).orderW x = f.orderW x from
+        meromorphicOrderAt_smul_of_ne_zero analyticAt_const (by simpa using hc)]
+      exact hf x
+
+/-- `l(D) = dim_ℂ L(D)` (Forster's `h⁰(X, O_D)`). -/
+noncomputable def lDim (D : Divisor X) : ℕ := Module.finrank ℂ (linearSystem (X := X) D)
+
+/-- **The isolated Riemann–Roch input** (Forster Thm 16.9, Serre-dual form), bundled as a
+typeclass following the repo's style of isolating absent classical theorems. The Dolbeault→Serre
+climb (ladder rungs G2–G4) provides the instance. The canonical divisor `K` is carried as data,
+which avoids constructing a meromorphic 1-form. -/
+class RiemannRochData (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] where
+  /-- A canonical divisor (the divisor of some nonzero meromorphic 1-form). -/
+  K : Divisor X
+  /-- Riemann–Roch: `l(D) − l(K − D) = deg D + 1 − g`. -/
+  rr : ∀ D : Divisor X,
+    (lDim (X := X) D : ℤ) - (lDim (X := X) (K - D) : ℤ) = Divisor.deg X D + 1 - (genus X : ℤ)
+
+/-- **The isolated residue-theorem input.** Every principal divisor has degree `0` (Forster
+Cor. 4.25 / the argument principle). The RR derivations below consume it. -/
+theorem MeromorphicFunction.deg_div (f : MeromorphicFunction X) :
+    Divisor.deg X f.div = 0 := sorry
 
 end Jacobians
