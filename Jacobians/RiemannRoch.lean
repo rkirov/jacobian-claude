@@ -25,7 +25,7 @@ import Jacobians.DegreeOneSphere
 -- only `[ChartedSpace ℂ X]`, not the full compact-manifold hypotheses carried by the consumers.
 set_option linter.unusedSectionVars false
 
-open scoped Manifold ContDiff
+open scoped Manifold ContDiff Topology
 
 namespace Jacobians
 
@@ -130,6 +130,90 @@ noncomputable def orderW (f : MeromorphicFunction X) (x : X) : WithTop ℤ :=
 theorem orderW_zero (x : X) : (0 : MeromorphicFunction X).orderW x = ⊤ := by
   rw [orderW, meromorphicOrderAt_eq_top_iff]
   exact Filter.Eventually.of_forall fun _ => rfl
+
+/-- The chart is a local homeomorphism near `y`, so an eventually-property of `g` on the punctured
+neighbourhood `𝓝[≠] y` transfers to the chart-pulled-back function on `𝓝[≠] (chart y)`. -/
+theorem eventually_comp_chart_iff (g : X → ℂ) (y : X) (P : ℂ → Prop) :
+    (∀ᶠ w in 𝓝[≠] ((chartAt (H := ℂ) y) y), P ((g ∘ (chartAt (H := ℂ) y).symm) w))
+      ↔ ∀ᶠ z in 𝓝[≠] y, P (g z) := by
+  have hy : y ∈ (chartAt (H := ℂ) y).source := mem_chart_source ℂ y
+  have hyt : (chartAt (H := ℂ) y) y ∈ (chartAt (H := ℂ) y).target :=
+    (chartAt (H := ℂ) y).map_source hy
+  have hey : (chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y) = y :=
+    (chartAt (H := ℂ) y).left_inv hy
+  rw [eventually_nhdsWithin_iff, eventually_nhdsWithin_iff]
+  constructor
+  · intro h
+    have h2 := ((chartAt (H := ℂ) y).continuousAt hy).eventually h
+    filter_upwards [h2, (chartAt (H := ℂ) y).open_source.mem_nhds hy] with z hz hz_src
+    intro hz_mem
+    have hz_ne : z ≠ y := hz_mem
+    have hchart : (chartAt (H := ℂ) y) z ∈ ({(chartAt (H := ℂ) y) y} : Set ℂ)ᶜ :=
+      fun heq => hz_ne ((chartAt (H := ℂ) y).injOn hz_src hy heq)
+    have := hz hchart
+    rwa [Function.comp_apply, (chartAt (H := ℂ) y).left_inv hz_src] at this
+  · intro h
+    have hsymm : ContinuousAt (chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y) :=
+      (chartAt (H := ℂ) y).continuousAt_symm hyt
+    have h2 := hsymm.eventually (p := fun z => z ∈ ({y} : Set X)ᶜ → P (g z)) (by rw [hey]; exact h)
+    filter_upwards [h2, (chartAt (H := ℂ) y).open_target.mem_nhds hyt] with w hw hw_tgt
+    intro hw_mem
+    have hw_ne : w ≠ (chartAt (H := ℂ) y) y := hw_mem
+    have hsymm_ne : (chartAt (H := ℂ) y).symm w ∈ ({y} : Set X)ᶜ := by
+      intro heq
+      apply hw_ne
+      have hr := (chartAt (H := ℂ) y).right_inv hw_tgt
+      rw [Set.mem_singleton_iff.mp heq] at hr
+      exact hr.symm
+    have := hw hsymm_ne
+    rw [Function.comp_apply]; exact this
+
+/-- `orderW f y = ⊤` (the germ vanishes) iff `f.toFun` vanishes throughout a punctured
+neighbourhood of `y` (intrinsic — the chart drops out). -/
+theorem orderW_eq_top_iff (f : MeromorphicFunction X) (y : X) :
+    f.orderW y = ⊤ ↔ ∀ᶠ z in 𝓝[≠] y, f.toFun z = 0 := by
+  rw [orderW, meromorphicOrderAt_eq_top_iff]
+  exact eventually_comp_chart_iff f.toFun y (· = 0)
+
+/-- `orderW f y ≠ ⊤` (the germ is nonzero) iff `f.toFun` is eventually nonzero on a punctured
+neighbourhood of `y`. -/
+theorem orderW_ne_top_iff (f : MeromorphicFunction X) (y : X) :
+    f.orderW y ≠ ⊤ ↔ ∀ᶠ z in 𝓝[≠] y, f.toFun z ≠ 0 := by
+  rw [orderW, meromorphicOrderAt_ne_top_iff_eventually_ne_zero (f.meromorphic y)]
+  exact eventually_comp_chart_iff f.toFun y (· ≠ 0)
+
+/-- **Faithfulness / identity theorem.** If the germ of `f` is nonzero at even one point, it is
+nonzero (`orderW ≠ ⊤`) at *every* point. The set `{y | orderW f y = ⊤}` and its complement are
+both open (via the two intrinsic characterizations above), so on the connected `X` it is empty. -/
+theorem orderW_ne_top_of_exists (f : MeromorphicFunction X)
+    (h₀ : ∃ x₀, f.orderW x₀ ≠ ⊤) (x : X) : f.orderW x ≠ ⊤ := by
+  obtain ⟨x₀, hx₀⟩ := h₀
+  have hUopen : IsOpen {y : X | f.orderW y = ⊤} := by
+    rw [isOpen_iff_mem_nhds]
+    intro y hy
+    rw [Set.mem_setOf_eq, orderW_eq_top_iff, eventually_nhdsWithin_iff, eventually_nhds_iff] at hy
+    obtain ⟨V, hV, hVopen, hyV⟩ := hy
+    refine Filter.mem_of_superset (hVopen.mem_nhds hyV) fun y' hy'V => ?_
+    rw [Set.mem_setOf_eq, orderW_eq_top_iff, eventually_nhdsWithin_iff, eventually_nhds_iff]
+    rcases eq_or_ne y' y with rfl | hy'
+    · exact ⟨V, hV, hVopen, hy'V⟩
+    · exact ⟨V \ {y}, fun z hz _ => hV z hz.1 hz.2, hVopen.sdiff isClosed_singleton, ⟨hy'V, hy'⟩⟩
+  have hUclosed : IsClosed {y : X | f.orderW y = ⊤} := by
+    rw [← isOpen_compl_iff, isOpen_iff_mem_nhds]
+    intro y hy
+    have hyne : f.orderW y ≠ ⊤ := hy
+    rw [orderW_ne_top_iff, eventually_nhdsWithin_iff, eventually_nhds_iff] at hyne
+    obtain ⟨W, hW, hWopen, hyW⟩ := hyne
+    refine Filter.mem_of_superset (hWopen.mem_nhds hyW) fun y' hy'W => ?_
+    show f.orderW y' ≠ ⊤
+    rw [orderW_ne_top_iff, eventually_nhdsWithin_iff, eventually_nhds_iff]
+    rcases eq_or_ne y' y with rfl | hy'ne
+    · exact ⟨W, hW, hWopen, hy'W⟩
+    · exact ⟨W \ {y}, fun z hz _ => hW z hz.1 hz.2, hWopen.sdiff isClosed_singleton, ⟨hy'W, hy'ne⟩⟩
+  rcases isClopen_iff.mp ⟨hUclosed, hUopen⟩ with hU | hU
+  · show x ∉ {y : X | f.orderW y = ⊤}
+    rw [hU]; exact Set.notMem_empty x
+  · exact absurd (hU.ge (Set.mem_univ x₀)) hx₀
 
 end MeromorphicFunction
 
