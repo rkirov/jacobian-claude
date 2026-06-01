@@ -8,8 +8,11 @@ import Mathlib.Topology.Compactification.OnePoint.Sphere
 import Mathlib.Geometry.Manifold.IsManifold.Basic
 import Mathlib.Geometry.Manifold.Instances.Sphere
 import Mathlib.Analysis.Complex.Basic
+import Mathlib.Analysis.Complex.Liouville
+import Mathlib.Analysis.Calculus.Deriv.Inv
 import Mathlib.Analysis.Normed.Field.Lemmas
 import Jacobians.Genus
+import Jacobians.SmoothPathCore
 
 /-!
 # The complex Riemann sphere `ℂℙ¹` as a compact complex 1-manifold
@@ -350,13 +353,130 @@ holomorphic cotangent bundle ↔ entire function in a chart with the `dz`-transf
 Building that bridge is sizeable analytic-manifold infrastructure (cf. the period-lattice /
 Riemann–Roch gaps elsewhere in this development), so it is isolated here as a single sorry. -/
 
+section LiouvilleVanishing
+
+set_option linter.unusedSectionVars false
+
+variable (s : HolomorphicOneForms RiemannSphere)
+
+/-- The **affine coefficient** `f(z)` of the form `s`: the `dz`-coefficient read in the
+affine chart `chartCoe`, i.e. the local representative based at the finite point `0`,
+evaluated at the finite point `z`. By `localRep_analyticOn_chartTarget` (with
+`chartCoe.target = univ`) this is **entire**. -/
+noncomputable def affineCoeff (z : ℂ) : ℂ :=
+  Jacobians.Montel.localRep s ((0 : ℂ) : RiemannSphere) (z : RiemannSphere)
+
+/-- The **coefficient at `∞`**, `g(w)`: the local representative based at `∞`, read in the
+`∞`-chart `chartInfty`. Analytic on `chartInfty.target` (a neighbourhood of `0`), in
+particular continuous at `0`. -/
+noncomputable def inftyCoeff (w : ℂ) : ℂ :=
+  Jacobians.Montel.localRep s OnePoint.infty (chartInfty.symm w)
+
+lemma chartAt_coe (z : ℂ) : chartAt ℂ (z : RiemannSphere) = chartCoe := rfl
+
+lemma chartAt_infty : chartAt ℂ (OnePoint.infty : RiemannSphere) = chartInfty := rfl
+
+/-- `affineCoeff s` is **entire** (analytic on all of `ℂ`). -/
+lemma affineCoeff_analyticOnNhd : AnalyticOnNhd ℂ (affineCoeff s) Set.univ := by
+  have h := Jacobians.Montel.localRep_analyticOn_chartTarget s ((0 : ℂ) : RiemannSphere)
+  rw [chartAt_coe, chartCoe_target] at h
+  -- h : AnalyticOn ℂ (fun z => localRep s 0 (chartCoe.symm z)) univ
+  have hfun : (fun z : ℂ => Jacobians.Montel.localRep s ((0 : ℂ) : RiemannSphere)
+      (chartCoe.symm z)) = affineCoeff s := by
+    funext z; simp only [affineCoeff, chartCoe_symm_apply]
+  rw [hfun] at h
+  exact analyticOn_univ.mp h
+
+lemma affineCoeff_differentiable : Differentiable ℂ (affineCoeff s) := fun z =>
+  ((affineCoeff_analyticOnNhd s z (Set.mem_univ z)).differentiableAt)
+
+/-- `inftyCoeff s` is analytic on `chartInfty.target`, hence **continuous at `0`**
+(since `0 = chartInfty ∞ ∈ chartInfty.target`). -/
+lemma inftyCoeff_continuousAt_zero : ContinuousAt (inftyCoeff s) 0 := by
+  have h := Jacobians.Montel.localRep_analyticOn_chartTarget s (OnePoint.infty : RiemannSphere)
+  rw [chartAt_infty] at h
+  -- h : AnalyticOn ℂ (fun w => localRep s ∞ (chartInfty.symm w)) chartInfty.target
+  have h0 : (0 : ℂ) ∈ chartInfty.target := by
+    rw [← chartInfty_apply_infty]
+    exact chartInfty.map_source (by rw [chartInfty_source]; simp [OnePoint.infty_ne_coe])
+  have hnhd := (chartInfty.open_target.analyticOn_iff_analyticOnNhd.mp h)
+  exact (hnhd 0 h0).continuousAt
+
+/-- The **affine-frame unit tangent** at a finite point `z` is just `1 ∈ ℂ`: the chart
+transition `chartCoe ∘ chartCoe.symm` is the identity, so its derivative is `1`. -/
+lemma trivAt_zero_symmL_one (z : ℂ) :
+    (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := RiemannSphere)) ((0 : ℂ) : RiemannSphere)).symmL
+        ℂ (z : RiemannSphere) (1 : ℂ) = (1 : ℂ) := by
+  have hmem : (z : RiemannSphere) ∈ (chartAt ℂ ((0 : ℂ) : RiemannSphere)).source := by
+    rw [chartAt_coe, chartCoe_source]; simp [OnePoint.coe_ne_infty]
+  rw [Jacobians.OfCurveSkeleton.trivAt_symmL_one_eq_fderiv_C ((0 : ℂ) : RiemannSphere) (z : RiemannSphere) hmem]
+  -- The composition `chartAt (z:RS) ∘ (chartAt 0).symm` is the identity near `chartCoe (z:RS) = z`.
+  have hcong : ((chartAt (H := ℂ) (z : RiemannSphere)) ∘
+      (chartAt (H := ℂ) ((0 : ℂ) : RiemannSphere)).symm) =ᶠ[nhds ((chartAt ℂ ((0:ℂ):RiemannSphere)) (z : RiemannSphere))]
+      (id : ℂ → ℂ) := by
+    filter_upwards [Filter.univ_mem] with w _
+    simp only [chartAt_coe, Function.comp_apply, chartCoe_symm_apply, chartCoe_apply_coe, id_eq]
+  rw [hcong.fderiv_eq, fderiv_id]
+  rfl
+
+/-- The **`∞`-frame unit tangent** at a finite point `z ≠ 0` is `-z²`: the chart transition
+`chartCoe ∘ chartInfty.symm` is `w ↦ w⁻¹` near `chartInfty (z:RS) = z⁻¹`, with derivative
+`-(z⁻¹)⁻² = -z²`. This is the `dz = -w⁻² dw` Jacobian of the inversion. -/
+lemma trivAt_infty_symmL_one {z : ℂ} (hz : z ≠ 0) :
+    (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := RiemannSphere)) (OnePoint.infty)).symmL
+        ℂ (z : RiemannSphere) (1 : ℂ) = -z ^ 2 := by
+  have hmem : (z : RiemannSphere) ∈ (chartAt ℂ (OnePoint.infty : RiemannSphere)).source := by
+    rw [chartAt_infty, chartInfty_source]
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+    exact fun h => hz (by exact_mod_cast (OnePoint.coe_eq_coe.mp h))
+  rw [Jacobians.OfCurveSkeleton.trivAt_symmL_one_eq_fderiv_C (OnePoint.infty : RiemannSphere) (z : RiemannSphere) hmem]
+  have hpt : (chartAt ℂ (OnePoint.infty : RiemannSphere)) (z : RiemannSphere) = z⁻¹ := by
+    rw [chartAt_infty]; exact chartInfty_apply_coe hz
+  rw [hpt]
+  -- The composition `chartAt (z:RS) ∘ chartInfty.symm` is `w ↦ w⁻¹` near `w = z⁻¹`.
+  have hcong : ((chartAt (H := ℂ) (z : RiemannSphere)) ∘
+      (chartAt (H := ℂ) (OnePoint.infty : RiemannSphere)).symm) =ᶠ[nhds (z⁻¹)]
+      (fun w : ℂ => w⁻¹) := by
+    have hz' : z⁻¹ ≠ 0 := inv_ne_zero hz
+    filter_upwards [eventually_ne_nhds hz'] with w hw
+    simp only [chartAt_infty, chartAt_coe, Function.comp_apply, chartInfty_symm_apply,
+      invMap_coe_of_ne hw, chartCoe_apply_coe]
+  rw [hcong.fderiv_eq, fderiv_inv, ContinuousLinearMap.toSpanSingleton_apply_one]
+  rw [inv_pow, inv_inv]
+  rfl
+
+/-- **The transition law (`dz` ↦ `-w⁻² dw`).** For a finite point `z ≠ 0`, the affine
+coefficient and the `∞`-coefficient (read at the *same* sphere point `z`, i.e. at chart
+coordinate `w = z⁻¹` in the `∞`-chart) satisfy `g(z⁻¹) = -z² · f(z)`. Equivalently
+`f(z) = -z⁻² · g(z⁻¹)`. -/
+lemma inftyCoeff_eq_transition {z : ℂ} (hz : z ≠ 0) :
+    inftyCoeff s z⁻¹ = -z ^ 2 * affineCoeff s z := by
+  -- Unfold both `localRep`s; they share the sphere point `(z : RiemannSphere)`.
+  have hsymm : chartInfty.symm z⁻¹ = (z : RiemannSphere) := by
+    rw [chartInfty_symm_apply, invMap_coe_of_ne (inv_ne_zero hz), inv_inv]
+  have hg : inftyCoeff s z⁻¹ =
+      s.toFun (z : RiemannSphere)
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := RiemannSphere)) OnePoint.infty).symmL
+          ℂ (z : RiemannSphere) (1 : ℂ)) := by
+    rw [inftyCoeff, hsymm]; rfl
+  have hf : affineCoeff s z =
+      s.toFun (z : RiemannSphere)
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := RiemannSphere)) ((0 : ℂ) : RiemannSphere)).symmL
+          ℂ (z : RiemannSphere) (1 : ℂ)) := rfl
+  rw [hg, hf, trivAt_infty_symmL_one hz, trivAt_zero_symmL_one]
+  -- View `s.toFun (z:RS) : ℂ →L[ℂ] ℂ` (defeq) and pull the scalar `-z²` out by ℂ-linearity.
+  set T : ℂ →L[ℂ] ℂ := s.toFun (z : RiemannSphere)
+  show T (-z ^ 2) = -z ^ 2 * T 1
+  rw [← smul_eq_mul, ← map_smul]; congr 1; rw [smul_eq_mul, mul_one]
+
 /-- **Liouville vanishing.** Every global holomorphic 1-form on `ℂℙ¹` is zero.
 
 See the section docstring for the proof outline (chart pull-back → entire coefficient →
-`O(z⁻²)` decay at `∞` → bounded → constant by Liouville → constant `= 0`). The supporting
-"cotangent section ↔ entire chart-coefficient" infrastructure is not yet in Mathlib. -/
+`O(z⁻²)` decay at `∞` → bounded → constant by Liouville → constant `= 0`). -/
 theorem holomorphicOneForm_eq_zero (s : HolomorphicOneForms RiemannSphere) : s = 0 := by
   sorry
+
+end LiouvilleVanishing
 
 instance : Subsingleton (HolomorphicOneForms RiemannSphere) :=
   subsingleton_of_forall_eq 0 holomorphicOneForm_eq_zero
