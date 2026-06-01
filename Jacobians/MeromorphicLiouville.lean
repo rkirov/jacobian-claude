@@ -48,6 +48,14 @@ open Filter
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
+/-- `f` has a **single simple pole** at `P`: order `-1` at `P` and order `≥ 0`
+elsewhere. (Defined here, rather than in `DegreeOneSphere`, so that both the
+sphere endgame and the Riemann–Roch reduction can refer to it without a cyclic
+import.) -/
+def MeromorphicFunction.HasSingleSimplePole
+    (f : MeromorphicFunction X) (P : X) : Prop :=
+  f.orderAtPoint P = -1 ∧ ∀ x, x ≠ P → 0 ≤ f.orderAtPoint x
+
 /-! ### Order bridge: `ℤ`-order nonneg ↔ `WithTop ℤ`-order nonneg -/
 
 /-- The integer order `.untop₀` is `≥ 0` iff the raw `WithTop ℤ` order is `≥ 0`. (`⊤ ↦ 0 ≥ 0`.) -/

@@ -7,6 +7,7 @@ import Jacobians.ProjectiveLine
 import Jacobians.Degree
 import Jacobians.Abel
 import Jacobians.MeromorphicLiouville
+import Jacobians.RiemannRoch
 
 /-!
 # Degree-one ⟹ sphere endgame
@@ -52,15 +53,10 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 /-! ### The simple-pole predicate
 
-We define the predicate inline (the goal theorem must not depend on
-`Jacobians.Roadmap`).  A meromorphic function `f` has a *single simple pole* at
-`P` when its order at `P` is `-1` and its order is `≥ 0` everywhere else. -/
-
-/-- `f` has a **single simple pole** at `P`: order `-1` at `P` and order `≥ 0`
-elsewhere. -/
-def MeromorphicFunction.HasSingleSimplePole
-    (f : MeromorphicFunction X) (P : X) : Prop :=
-  f.orderAtPoint P = -1 ∧ ∀ x, x ≠ P → 0 ≤ f.orderAtPoint x
+`MeromorphicFunction.HasSingleSimplePole` is defined in `Jacobians.MeromorphicLiouville`
+(it depends only on `orderAtPoint`), so that both this sphere endgame and the
+Riemann–Roch reduction in `Jacobians.RiemannRoch` can refer to it without a cyclic
+import. -/
 
 /-! ### Step 1 — the map to the Riemann sphere -/
 
@@ -656,14 +652,16 @@ analytic inputs (the `sorry`s below). `Nonempty X` is supplied for free by `[Con
 (`ConnectedSpace.toNonempty`), so the signature matches the spec exactly. -/
 
 open scoped Manifold ContDiff in
-/-- **[INPUT — Riemann–Roch consequence `l(P) = 2`].** Genus `0` yields a meromorphic function with a
-single simple pole (Forster §16: `l(P) = deg P + 1 − g + l(K−P) = 1 + 1 − 0 + 0 = 2`). The genuine RR
-content, resting on the Dolbeault/Serre wall. -/
+/-- **Riemann–Roch consequence `l(P) = 2`.** Genus `0` yields a meromorphic function with a single
+simple pole (Forster §16: `l(P) = deg P + 1 − g + l(K−P) = 1 + 1 − 0 + 0 = 2`). The single-simple-pole
+extraction from `l(P) = 2` is fully proven in `Jacobians.RiemannRoch`; the only remaining inputs are
+the classical `exists_riemannRoch_divisor` (Dolbeault/Serre) and `MeromorphicFunction.deg_div`
+(argument principle), isolated there. -/
 theorem exists_singleSimplePole_of_genus_zero {X : Type*} [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (h : genus X = 0) :
     ∃ (P : X) (f : Jacobians.MeromorphicFunction X), f.HasSingleSimplePole P :=
-  sorry
+  Jacobians.exists_singleSimplePole_of_genus_zero_of_rr h
 
 open scoped Manifold ContDiff in
 /-- **[INPUT — `Ω(ℂℙ¹) = 0`, the backward half].** A surface homeomorphic to `S²` has genus `0`.

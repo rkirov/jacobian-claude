@@ -19,7 +19,7 @@
   `deg D<0`, and the single-simple-pole extraction.
 -/
 import Jacobians.Abel
-import Jacobians.DegreeOneSphere
+import Jacobians.MeromorphicLiouville
 
 -- Many declarations here are purely algebraic (the ℂ-module on `MeromorphicFunction`) and use
 -- only `[ChartedSpace ℂ X]`, not the full compact-manifold hypotheses carried by the consumers.
