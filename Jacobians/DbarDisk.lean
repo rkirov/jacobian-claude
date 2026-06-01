@@ -36,18 +36,18 @@ homogeneous Cauchy–Riemann equation `∂̄ f = 0` there.  This is the Wirtinge
 characterization and validates the definition of `dbar`. -/
 theorem dbar_eq_zero_of_differentiableAt {f : ℂ → ℂ} {z : ℂ}
     (hf : DifferentiableAt ℂ f z) : dbar f z = 0 := by
-  -- The real derivative is the complexified derivative restricted to ℝ-scalars.
-  have hr : fderiv ℝ f z = (fderiv ℂ f z).restrictScalars ℝ :=
-    (hf.hasFDerivAt.restrictScalars ℝ).fderiv
-  have h1 : fderiv ℝ f z 1 = fderiv ℂ f z 1 := by rw [hr]; rfl
-  have hI : fderiv ℝ f z Complex.I = fderiv ℂ f z Complex.I := by rw [hr]; rfl
-  -- ℂ-linearity: D(I) = I • D(1).
-  have hlin : fderiv ℂ f z Complex.I = Complex.I * fderiv ℂ f z 1 := by
-    have : (Complex.I : ℂ) • (1 : ℂ) = Complex.I := by simp
-    rw [← this, map_smul, smul_eq_mul]
-  rw [dbar, h1, hI, hlin]
-  have hII : Complex.I * (Complex.I * fderiv ℂ f z 1) = - fderiv ℂ f z 1 := by
-    rw [← mul_assoc, Complex.I_mul_I]; ring
+  -- For a `ℂ`-differentiable `f`, the real Fréchet derivative is multiplication by the
+  -- complex derivative `f'(z)`: `fderiv ℝ f z = f'(z) • (1 : ℂ →L[ℝ] ℂ)`.
+  -- (`HasDerivAt.complexToReal_fderiv` avoids the `restrictScalars` instance-synthesis snag.)
+  have hr : fderiv ℝ f z = (deriv f z) • (1 : ℂ →L[ℝ] ℂ) :=
+    hf.hasDerivAt.complexToReal_fderiv.fderiv
+  -- Evaluate `∂̄f = ½(D 1 + I · D I)` with `D = f'(z) • 1`: `D 1 = f'`, `D I = f'·I`,
+  -- so `∂̄f = ½(f' + I·(f'·I)) = ½(f' + I²·f') = 0`.
+  rw [dbar, hr]
+  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.one_apply, smul_eq_mul, mul_one]
+  have hII : Complex.I * (deriv f z * Complex.I) = - deriv f z := by
+    rw [show Complex.I * (deriv f z * Complex.I) = deriv f z * (Complex.I * Complex.I) by ring,
+      Complex.I_mul_I]; ring
   rw [hII]; ring
 
 end DbarDisk
