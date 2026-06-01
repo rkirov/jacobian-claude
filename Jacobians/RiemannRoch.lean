@@ -322,4 +322,68 @@ theorem lDim_eq_zero_of_deg_neg (D : Divisor X) (hD : Divisor.deg X D < 0) :
       (Submodule.Quotient.eq ⊤).mpr Submodule.mem_top⟩
   exact Module.finrank_zero_of_subsingleton
 
+/-- **A function in `L(0)` is germ-constant** (Liouville). With no pole (`orderW ≥ 0`), the
+limit-repair `holoRepr` is holomorphic (`mdifferentiable_holoRepr`), hence constant on the compact
+connected `X` (`exists_eq_const_of_compactSpace`); off-center the chart pullback equals that
+constant, so `f.toFun` agrees with it on every punctured neighbourhood. This is the repo's
+Liouville-for-meromorphic content (`MeromorphicLiouville`), reused — no new analysis. -/
+theorem germ_eq_const_of_mem_linearSystem_zero (f : MeromorphicFunction X)
+    (hf : f ∈ linearSystem (X := X) 0) : ∃ c : ℂ, ∀ x, ∀ᶠ z in 𝓝[≠] x, f.toFun z = c := by
+  have hpos : ∀ x, 0 ≤ f.orderAtPoint x := by
+    intro x
+    have hx := hf x
+    simp only [Finsupp.coe_zero, Pi.zero_apply, neg_zero] at hx
+    exact untop₀_nonneg_iff.mpr hx
+  obtain ⟨c, hc_const⟩ := (f.mdifferentiable_holoRepr hpos).exists_eq_const_of_compactSpace
+  have hc : ∀ y, f.holoRepr y = c := fun y => congrFun hc_const y
+  refine ⟨c, fun x => ?_⟩
+  set φ := chartAt (H := ℂ) x with hφ
+  obtain ⟨V, hVopen, hzV, hFV, hrepr⟩ := f.exists_holoRepr_eq_NFOn x (hpos x)
+  have hF_eq : (f.toFun ∘ φ.symm) =ᶠ[𝓝[≠] (φ x)] (fun _ => c) := by
+    have h1 := hFV.toMeromorphicNFOn_eq_self_on_nhdsNE hzV
+    have h2 : (fun w => toMeromorphicNFOn (f.toFun ∘ φ.symm) V w) =ᶠ[𝓝[≠] (φ x)] (fun _ => c) := by
+      filter_upwards [eventually_nhdsWithin_of_eventually_nhds (hVopen.mem_nhds hzV)] with w hw
+      rw [← hrepr w hw]; exact hc _
+    exact h1.symm.trans h2
+  exact (MeromorphicFunction.eventually_comp_chart_iff f.toFun x (· = c)).mp hF_eq
+
+/-- `l(0) = 1`: `L(0)/germZero ≅ ℂ` (the constants). Spanned by the class of the constant `1`
+(nonzero, since its order is `0 ≠ ⊤`), and every member is germ-constant by Liouville, hence a
+scalar multiple of it. Elementary finiteness — uses Liouville, not the wall. -/
+theorem lDim_zero_eq_one : lDim (X := X) 0 = 1 := by
+  have h1m : IsMeromorphic X (fun _ : X => (1 : ℂ)) := fun x => MeromorphicAt.const 1 _
+  have horder1 : ∀ x, MeromorphicFunction.orderW (⟨fun _ => 1, h1m⟩ : MeromorphicFunction X) x = 0 := by
+    intro x
+    show meromorphicOrderAt ((fun _ : X => (1 : ℂ)) ∘ (chartAt (H := ℂ) x).symm) _ = 0
+    rw [show ((fun _ : X => (1 : ℂ)) ∘ (chartAt (H := ℂ) x).symm) = (fun _ => (1 : ℂ)) from rfl,
+      meromorphicOrderAt_const]
+    simp
+  have hmem1 : (⟨fun _ => 1, h1m⟩ : MeromorphicFunction X) ∈ linearSystem (X := X) 0 := by
+    intro x
+    rw [horder1 x]
+    simp
+  set q : ↥(linearSystem (X := X) 0) := ⟨⟨fun _ => 1, h1m⟩, hmem1⟩ with hq
+  rw [lDim]
+  refine finrank_eq_one (Submodule.Quotient.mk q) ?_ ?_
+  · -- `[const 1] ≠ 0`: else `const 1 ∈ germZero`, but its order is `0 ≠ ⊤`.
+    rw [Ne, Submodule.Quotient.mk_eq_zero]
+    intro hmem
+    obtain ⟨x⟩ := (inferInstance : Nonempty X)
+    have : MeromorphicFunction.orderW (⟨fun _ => 1, h1m⟩ : MeromorphicFunction X) x = ⊤ :=
+      (Submodule.mem_comap.mp hmem) x
+    rw [horder1 x] at this
+    exact (by decide : (0 : WithTop ℤ) ≠ ⊤) this
+  · -- surjectivity: every class is `c • [const 1]` for the germ-constant value `c`.
+    intro w
+    obtain ⟨g, rfl⟩ := Submodule.Quotient.mk_surjective _ w
+    obtain ⟨c, hgc⟩ := germ_eq_const_of_mem_linearSystem_zero g.1 g.2
+    refine ⟨c, ?_⟩
+    rw [← Submodule.Quotient.mk_smul, Submodule.Quotient.eq]
+    show ((c • q - g : ↥(linearSystem (X := X) 0)) : MeromorphicFunction X) ∈ germZeroSubmodule
+    intro x
+    rw [MeromorphicFunction.orderW_eq_top_iff]
+    filter_upwards [hgc x] with z hz
+    show c • (1 : ℂ) - g.1.toFun z = 0
+    rw [hz]; simp
+
 end Jacobians
