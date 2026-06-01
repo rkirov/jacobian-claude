@@ -27,6 +27,15 @@ namespace Jacobians.Dolbeault
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
+/-- **Real-smooth `ℂ`-valued functions** `A⁰` on `X` — the source of `∂̄`. Smooth sections of the
+trivial `ℂ`-bundle over the real model (real-`C^∞`, i.e. NOT holomorphic). A real vector space. -/
+abbrev SmoothCFunctions (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type _ :=
+  ContMDiffSection (𝓘(ℝ, ℂ)) ℂ (⊤ : ℕ∞) (Bundle.Trivial X ℂ)
+
+noncomputable example : AddCommGroup (SmoothCFunctions X) := inferInstance
+noncomputable example : Module ℝ (SmoothCFunctions X) := inferInstance
+
 /-- The trivial `ℂ`-bundle is a continuous `ℝ`-module — the one instance Mathlib's hom-of-bundles
 machinery needs but does not auto-derive for the sub-field `ℝ` (`Trivial X ℂ x` is defeq `ℂ`, and the
 ℂ-`ℝ`-module diamond is resolved by the file `set_option`). -/
