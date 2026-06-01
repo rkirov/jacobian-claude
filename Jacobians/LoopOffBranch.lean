@@ -897,7 +897,7 @@ lemma balancedGlue_apply_of_mem (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 =
         have ht_le : t ≤ 1/2 := le_of_eq hhalf.symm
         rw [Jacobians.concat_apply_left _ _ ht_le]
         have hk_eq : k = 2^d := by
-          have hlo : (k:ℝ) / 2^(d+1) ≤ 1/2 := by rw [← hhalf]; exact ht0
+          have hlo : (k:ℝ) / 2^(d+1) ≤ 1/2 := by linarith
           rw [pow_succ, div_le_iff₀ (by positivity)] at hlo
           have : (k:ℝ) ≤ 2^d := by nlinarith
           have hkle : k ≤ 2^d := by exact_mod_cast this
