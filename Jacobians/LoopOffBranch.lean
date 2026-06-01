@@ -1006,6 +1006,77 @@ lemma isSmoothPath_balancedGlue (g : ℕ → ℝ → X)
       rw [Jacobians.pathSpeed_concat_right _ _ 1 (by norm_num) hdR1,
         show (2:ℝ) * 1 - 1 = 1 from by norm_num, hR1, mul_zero]
 
+/-! ### A4'. Uniform `n`-piece glue
+
+For the off-branch surgery the detour pieces must occupy the **uniform** sub-intervals `[k/n,(k+1)/n]`
+handed by `exists_offBranch_subBallChartCover`, so the dyadic `balancedGlue` is not directly usable.
+`uniformGlue g n` glues the `n` flat-ended pieces `g 0, …, g (n-1)` at the uniform breakpoints `k/n`,
+reading off the value on the `k`-th piece as `g k` affinely reparametrized by `t ↦ n·t − k`.
+
+`uIdx n t = min ⌊n·t⌋₊-clamped (n-1)` is the piece index; the glue is the closed form
+`g (uIdx n t) (n·t − uIdx n t)`. Every piece is flat-ended (zero endpoint velocity) and consecutive
+pieces chain (`g k 1 = g (k+1) 0`), so each seam `t = k/n` is `C¹` for free — the same
+`HasDerivWithinAt … 0` union argument as `IsSmoothPath.concat`, with split point `k/n` and scale `n`.
+-/
+
+/-- Piece index of `t` among `n` uniform sub-intervals of `[0,1]`, clamped to `[0, n-1]`. -/
+noncomputable def uIdx (n : ℕ) (t : ℝ) : ℕ := min (⌊(n:ℝ) * t⌋.toNat) (n - 1)
+
+/-- **Uniform `n`-piece glue** of `g 0, …, g (n-1)`: on `[k/n,(k+1)/n]` it is `g k (n·t − k)`. -/
+noncomputable def uniformGlue (g : ℕ → ℝ → X) (n : ℕ) : ℝ → X :=
+  fun t => g (uIdx n t) ((n:ℝ) * t - uIdx n t)
+
+/-- **Piece index on the half-open `k`-th sub-interval.** For `k < n` and `t ∈ [k/n, (k+1)/n)`,
+`uIdx n t = k`. -/
+lemma uIdx_eq (n : ℕ) (hn : 0 < n) (k : ℕ) (hk : k < n) (t : ℝ)
+    (h0 : (k:ℝ)/n ≤ t) (h1 : t < ((k:ℝ)+1)/n) : uIdx n t = k := by
+  unfold uIdx
+  have hnpos : (0:ℝ) < n := by exact_mod_cast hn
+  have hb0 : (k:ℝ) ≤ n * t := by rw [div_le_iff₀ hnpos] at h0; linarith
+  have hb1 : (n:ℝ) * t < k + 1 := by rw [lt_div_iff₀ hnpos] at h1; linarith
+  have hfloor : ⌊(n:ℝ)*t⌋ = (k:ℤ) := by
+    rw [Int.floor_eq_iff]; exact ⟨by push_cast; linarith, by push_cast; linarith⟩
+  rw [hfloor]; simp only [Int.toNat_natCast]; omega
+
+/-- **Piece index at the right endpoint `t = 1`.** `uIdx n 1 = n - 1`. -/
+lemma uIdx_one (n : ℕ) (hn : 0 < n) : uIdx n 1 = n - 1 := by
+  unfold uIdx
+  rw [mul_one, Int.floor_natCast]
+  simp only [Int.toNat_natCast]; omega
+
+/-- **Value of the uniform glue on the closed `k`-th sub-interval** (for `k < n`, with the right
+endpoint resolved by chaining `g k 1 = g (k+1) 0`). -/
+lemma uniformGlue_apply_of_mem (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
+    (n : ℕ) (hn : 0 < n) (k : ℕ) (hk : k < n) (t : ℝ)
+    (h0 : (k:ℝ)/n ≤ t) (h1 : t ≤ ((k:ℝ)+1)/n) :
+    uniformGlue g n t = g k ((n:ℝ) * t - k) := by
+  have hnpos : (0:ℝ) < n := by exact_mod_cast hn
+  rcases eq_or_lt_of_le h1 with htop | hlt
+  · -- t = (k+1)/n : the right node; resolved by chaining (handle last piece too).
+    have hnt : (n:ℝ) * t = k + 1 := by rw [htop]; field_simp
+    rcases eq_or_lt_of_le (show k + 1 ≤ n from hk) with hlast | hnext
+    · -- k+1 = n : last node t = 1, uIdx = n-1 = k.
+      have hncast : (n:ℝ) = (k:ℝ) + 1 := by rw [← hlast]; push_cast; ring
+      have ht1 : t = 1 := by rw [htop, hncast]; field_simp
+      rw [ht1] at hnt ⊢
+      unfold uniformGlue
+      rw [uIdx_one n hn, hnt]
+      have : n - 1 = k := by omega
+      rw [this]
+    · -- k+1 < n : node lies in piece (k+1) too; uIdx = k+1, value = g (k+1) 0 = g k 1.
+      have hidx : uIdx n t = k + 1 := by
+        apply uIdx_eq n hn (k+1) hnext
+        · rw [htop]; push_cast; rfl
+        · rw [htop]; rw [div_lt_div_iff_of_pos_right hnpos]; push_cast; linarith
+      unfold uniformGlue
+      rw [hidx, hnt]
+      rw [show (k:ℝ) + 1 - ((k+1 : ℕ):ℝ) = 0 from by push_cast; ring]
+      rw [show (k:ℝ) + 1 - (k:ℝ) = 1 from by ring]
+      exact (hchain k).symm
+  · -- t ∈ [k/n, (k+1)/n) : uIdx = k.
+    unfold uniformGlue
+    rw [uIdx_eq n hn k hk t h0 hlt]
+
 /-! ### A5. Sub-ball chart cover (subdivision infrastructure)
 
 `exists_chartCover` (in `Jacobians/SmoothPath.lean`) delivers, for a continuous `γ`, a uniform

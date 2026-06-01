@@ -6,6 +6,7 @@ Authors: Rado Kirov
 import Jacobians.ProjectiveLine
 import Jacobians.Degree
 import Jacobians.Abel
+import Jacobians.MeromorphicLiouville
 
 /-!
 # Degree-one ⟹ sphere endgame
@@ -63,12 +64,19 @@ def MeromorphicFunction.HasSingleSimplePole
 
 open Classical in
 /-- The map `X → ℂℙ¹` associated with a meromorphic function `f` and a chosen
-pole `P`: send finite points through `f` (composed with `ℂ ↪ ℂℙ¹`) and `P` to
-`∞`.  (We send *only* `P` to `∞`; with a single simple pole at `P` this is the
-honest "graph" of `f`.) -/
+pole `P`: send finite points through the **limit-repair** `holoRepr` (composed
+with `ℂ ↪ ℂℙ¹`) and `P` to `∞`.  (We send *only* `P` to `∞`; with a single
+simple pole at `P` this is the honest "graph" of `f`.)
+
+We use `f.holoRepr` rather than the raw `f.toFun` because `f.toFun` is pinned
+only up to its meromorphic germ — at a removable singularity it may carry an
+arbitrary junk value (see `Jacobians.MeromorphicLiouville`) — which would make
+`coe ∘ f.toFun` discontinuous off `P` and `toSphere` *not* `ContMDiff`.  The
+repair `holoRepr x = limUnder (𝓝[≠] x) f.toFun` discards that junk and is
+analytic wherever the order of `f` is `≥ 0`. -/
 def MeromorphicFunction.toSphere (f : MeromorphicFunction X) (P : X) :
     X → RiemannSphere :=
-  fun x => if x = P then OnePoint.infty else ((f.toFun x : ℂ) : RiemannSphere)
+  fun x => if x = P then OnePoint.infty else ((f.holoRepr x : ℂ) : RiemannSphere)
 
 @[simp] lemma MeromorphicFunction.toSphere_pole (f : MeromorphicFunction X) (P : X) :
     f.toSphere P P = OnePoint.infty := by
@@ -76,7 +84,7 @@ def MeromorphicFunction.toSphere (f : MeromorphicFunction X) (P : X) :
 
 lemma MeromorphicFunction.toSphere_of_ne (f : MeromorphicFunction X) {P x : X}
     (hx : x ≠ P) :
-    f.toSphere P x = ((f.toFun x : ℂ) : RiemannSphere) := by
+    f.toSphere P x = ((f.holoRepr x : ℂ) : RiemannSphere) := by
   simp [MeromorphicFunction.toSphere, hx]
 
 /-- Preimage of `∞` under `toSphere` is exactly `{P}` (since `coe` never hits `∞`
@@ -135,8 +143,8 @@ theorem exists_ne_of_chartedSpace_complex (P : X) : ∃ x : X, x ≠ P := by
   rwa [e.right_inv hw] at this
 
 /-- `toSphere` is non-constant: it takes the value `∞` (at `P`) and a finite value
-`coe (f x)` at any `x ≠ P` (such an `x` exists by
-`exists_ne_of_chartedSpace_complex`), and `coe (f x) ≠ ∞`.  This uses the genuine
+`coe (holoRepr x)` at any `x ≠ P` (such an `x` exists by
+`exists_ne_of_chartedSpace_complex`), and `coe _ ≠ ∞`.  This uses the genuine
 `IsConstantMap` predicate (`∃ c, ∀ x, f x = c`), which is non-vacuous since `X` is
 nonempty. -/
 theorem MeromorphicFunction.toSphere_not_isConstant (f : MeromorphicFunction X)
@@ -145,8 +153,8 @@ theorem MeromorphicFunction.toSphere_not_isConstant (f : MeromorphicFunction X)
   rintro ⟨c, hc⟩
   obtain ⟨x, hx⟩ := exists_ne_of_chartedSpace_complex (X := X) P
   -- `f.toSphere P x = c` and `f.toSphere P P = c`, so `coe (f x) = ∞`, impossible.
-  have hxv : f.toSphere P x = ((f.toFun x : ℂ) : RiemannSphere) := f.toSphere_of_ne hx
-  have key : ((f.toFun x : ℂ) : RiemannSphere) = OnePoint.infty := by
+  have hxv : f.toSphere P x = ((f.holoRepr x : ℂ) : RiemannSphere) := f.toSphere_of_ne hx
+  have key : ((f.holoRepr x : ℂ) : RiemannSphere) = OnePoint.infty := by
     rw [← hxv, hc x, ← f.toSphere_pole P, hc P]
   exact (OnePoint.coe_ne_infty _) key
 
