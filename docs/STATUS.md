@@ -2,29 +2,29 @@
 
 > **2026-06-01 session delta — LATER session (read first; supersedes counts below). All claims
 > re-verified by my own `lake build` (8392 jobs, exit 0) + `#print axioms`, not agent reports.**
-> - **Authoritative frontier = exactly 6 open sorries** (from the build log's `declaration uses
+> - **Authoritative frontier = exactly 5 open sorries** (from the build log's `declaration uses
 >   'sorry'`, the ground truth — a source grep over-counts on docstrings):
 >   `abelJacobi_twoPoint_ne_zero` (Abel:666, #3, Dolbeault→RR) · `exists_cutSurface`
 >   (CutSurfaceRelations:158, #7, surface classification) · `exists_singleSimplePole_of_genus_zero`
 >   (DegreeOneSphere:662, #1-fwd, RR) · `genus_zero_of_nonempty_homeo_sphere` (DegreeOneSphere:673,
->   #1-bwd, Hodge) · `holomorphicOneForm_eq_zero` (ProjectiveLine:358, ℂℙ¹ dz-law, NON-Dolbeault) ·
->   `exists_offBranch_subBallChartCover` (TracePullback:531, #6 crux, NON-Dolbeault).
+>   #1-bwd, Hodge) · `holomorphicOneForm_eq_zero` (ProjectiveLine:358, ℂℙ¹ dz-law, NON-Dolbeault).
 > - **#1 forward direction BANKED, axiom-clean:** `contMDiff_toSphere`, `toSphere_regular_at_pole`,
 >   `degreeOne_homeo` all `[propext, Classical.choice, Quot.sound]`; `degreeFiber_toSphere_eq_one`
 >   and `nonempty_homeo_sphere_of_singleSimplePole` fully sorryAx-free. `genus_eq_zero_iff_homeo`
 >   now inherits sorryAx from ONLY the 2 Dolbeault inputs above. **Soundness fix:** `toSphere`
 >   redefined via `coe ∘ holoRepr` (raw germ-`toFun` carried removable-singularity junk ⟹ the old
 >   `contMDiff_toSphere` was false-as-stated). See `project_tosphere_junk_value` (memory).
-> - **#6 splice DONE:** `exists_splicedLoop_off_branchLocus` + `exists_loop_off_branchLocus` proven
->   (inherit sorryAx only from the #6 crux). **BUT the crux `exists_offBranch_subBallChartCover` is
->   MISFORMALIZED — false as stated** (requires `δ(0)∉branchLocus`, underivable from
->   `IsClosedSmoothLoop`). Needs reformulation to perturb the loop (off-branch breakpoint VALUES near
->   `δ(k/n)`); atoms already proven; still Dolbeault-independent. See `project_loop6_crux_misformalization`.
+> - **#6 FULLY DISCHARGED, axiom-clean** (`exists_loop_off_branchLocus` + `exists_preimageCycle_of_nonconstant`
+>   both `[propext, Classical.choice, Quot.sound]`, NO sorryAx). The crux was found MISFORMALIZED
+>   (claimed `δ(0)∉branchLocus`, underivable) and DELETED; `exists_loop_off_branchLocus` proven directly
+>   by perturbing breakpoints to nearby off-branch points (connectors in adjacent-ball overlap; period
+>   preserved by an FTC-primitive telescoping whose corrections cancel — `δ 1 = δ 0` closes the wrap).
+>   See `project_loop6_crux_misformalization` (RESOLVED).
 > - **Build hygiene:** the `contMDiffAt_of_analyticAt_chartPullback` TraceForm/DegreeOneSphere name
 >   clash (a latent full-build break invisible to single-file builds) was caught by the full build +
 >   fixed (rename, commit 5590d31). Lint warnings resolved 130 → 2 (commit 094b28c).
-> - **Strategy:** non-wall scaffolding ~complete. Remaining frontier = the shared Dolbeault/Hodge/
->   classification walls + the 2 NON-wall gaps (#6 crux, ℂℙ¹ dz-law). Dolbeault disk-atom decomposition
+> - **Strategy:** non-wall scaffolding nearly complete (#6 now fully discharged). Remaining frontier =
+>   the shared Dolbeault/Hodge/classification walls + the 1 remaining NON-wall gap (ℂℙ¹ dz-law). Dolbeault disk-atom decomposition
 >   in `docs/dolbeault_disk_atom_decomposition.md`; the atom is Mathlib-scaffolded, the real wall is
 >   H¹ finiteness + 𝒪_D-on-manifold. Steering: prefer standard textbook proofs (`feedback_prefer_standard_proofs`).
 
