@@ -2,12 +2,17 @@
 
 > **2026-06-01 session delta — LATER session (read first; supersedes counts below). All claims
 > re-verified by my own `lake build` (8392 jobs, exit 0) + `#print axioms`, not agent reports.**
-> - **Authoritative frontier = exactly 5 open sorries** (from the build log's `declaration uses
->   'sorry'`, the ground truth — a source grep over-counts on docstrings):
+> - **Authoritative frontier = exactly 4 open sorries — ALL deep shared walls; the non-wall
+>   scaffolding is now 100% COMPLETE** (from the build log's `declaration uses 'sorry'`, ground truth):
 >   `abelJacobi_twoPoint_ne_zero` (Abel:666, #3, Dolbeault→RR) · `exists_cutSurface`
 >   (CutSurfaceRelations:158, #7, surface classification) · `exists_singleSimplePole_of_genus_zero`
 >   (DegreeOneSphere:662, #1-fwd, RR) · `genus_zero_of_nonempty_homeo_sphere` (DegreeOneSphere:673,
->   #1-bwd, Hodge) · `holomorphicOneForm_eq_zero` (ProjectiveLine:358, ℂℙ¹ dz-law, NON-Dolbeault).
+>   #1-bwd, Hodge).
+> - **ℂℙ¹ dz-law DISCHARGED, axiom-clean** (`holomorphicOneForm_eq_zero` + `genus_eq_zero` both
+>   `[propext, Classical.choice, Quot.sound]`, verified by my own build): a global holomorphic 1-form on
+>   ℂℙ¹ is 0, via the cotangent change-of-chart law `dz = -w⁻²dw` (from `trivAt_symmL_one_eq_fderiv_C`
+>   + `Montel.localRep` analyticity) ⟹ `f(z)=O(z⁻²)` ⟹ bounded entire ⟹ Liouville ⟹ 0. ℂℙ¹ is now a
+>   certified genus-0 Riemann surface. (Commits 0a26d65→14aeed6; ProjectiveLine now imports SmoothPathCore.)
 > - **#1 forward direction BANKED, axiom-clean:** `contMDiff_toSphere`, `toSphere_regular_at_pole`,
 >   `degreeOne_homeo` all `[propext, Classical.choice, Quot.sound]`; `degreeFiber_toSphere_eq_one`
 >   and `nonempty_homeo_sphere_of_singleSimplePole` fully sorryAx-free. `genus_eq_zero_iff_homeo`
