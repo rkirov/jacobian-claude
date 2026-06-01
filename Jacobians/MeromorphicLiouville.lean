@@ -213,6 +213,58 @@ theorem MeromorphicFunction.exists_holoRepr_eq_NFOn (f : MeromorphicFunction X) 
   filter_upwards [mem_nhdsWithin_of_mem_nhds hev] with y hy
   simp [hFdef, Function.comp, φ.left_inv hy]
 
+/-- **Off-center, the chart pullback of `holoRepr` equals the normal-form representative.**
+With NO order hypothesis at the center `x₀`: on the *punctured* neighborhood `𝓝[≠] (φ x₀)`
+(`φ = chartAt x₀`), the limit-repair `holoRepr` read back through the chart agrees with the
+normal-form representative `toMeromorphicNFAt F (φ x₀)` of the pullback `F = f.toFun ∘ φ.symm`.
+
+Off the center, `F` is genuinely analytic (`MeromorphicAt.eventually_analyticAt`), so `f.toFun`
+carries no junk and its punctured limit there is the analytic value `F w`; this equals `N w` since
+the normal form agrees with `F` off the center. This is the punctured-neighborhood input that the
+simple-pole analysis at a pole (where the center order is `< 0`, so `exists_holoRepr_eq_NFOn` does
+not apply) consumes. -/
+theorem MeromorphicFunction.holoRepr_chartPullback_eventuallyEq_NFAt
+    (f : MeromorphicFunction X) (x₀ : X) :
+    f.holoRepr ∘ (chartAt (H := ℂ) x₀).symm =ᶠ[𝓝[≠] ((chartAt (H := ℂ) x₀) x₀)]
+      toMeromorphicNFAt (f.toFun ∘ (chartAt (H := ℂ) x₀).symm) ((chartAt (H := ℂ) x₀) x₀) := by
+  set φ := chartAt (H := ℂ) x₀ with hφ
+  set F := f.toFun ∘ φ.symm with hFdef
+  have hxs : x₀ ∈ φ.source := mem_chart_source ℂ x₀
+  have hmero : MeromorphicAt F (φ x₀) := f.meromorphic x₀
+  -- `N =ᶠ[𝓝[≠] φx₀] F`.
+  have hNF : F =ᶠ[𝓝[≠] (φ x₀)] toMeromorphicNFAt F (φ x₀) :=
+    hmero.eq_nhdsNE_toMeromorphicNFAt
+  -- `F` is analytic on a punctured neighborhood of `φ x₀`.
+  have hana : ∀ᶠ w in 𝓝[≠] (φ x₀), AnalyticAt ℂ F w := hmero.eventually_analyticAt
+  -- For `w` in the target (so `φ.symm` is a genuine inverse) and `F` analytic at `w`,
+  -- `holoRepr (φ.symm w) = F w`.
+  have htgt : ∀ᶠ w in 𝓝[≠] (φ x₀), w ∈ φ.target :=
+    mem_nhdsWithin_of_mem_nhds (φ.open_target.mem_nhds (φ.map_source hxs))
+  filter_upwards [hana, htgt, hNF] with w hwana hwtgt hwNF
+  -- `holoRepr (φ.symm w) = F w`.
+  have hval : f.holoRepr (φ.symm w) = F w := by
+    show limUnder (𝓝[≠] (φ.symm w)) f.toFun = F w
+    have hys : φ.symm w ∈ φ.source := φ.map_target hwtgt
+    have htsymm : Tendsto φ.symm (𝓝[≠] w) (𝓝[≠] (φ.symm w)) := by
+      have := φ.symm.tendsto_nhdsNE (x := w) (by simpa using hwtgt)
+      simpa using this
+    haveI : (𝓝[≠] (φ.symm w)).NeBot := htsymm.neBot
+    apply Filter.Tendsto.limUnder_eq
+    -- F is continuous at w (analytic), so F has limit F w along 𝓝[≠] w.
+    have hFlim : Tendsto F (𝓝[≠] w) (𝓝 (F w)) :=
+      hwana.continuousAt.continuousWithinAt.tendsto
+    -- transfer to f.toFun along 𝓝[≠] (φ.symm w).
+    have hwr : φ (φ.symm w) = w := φ.right_inv hwtgt
+    have hfwd : Tendsto φ (𝓝[≠] (φ.symm w)) (𝓝[≠] w) := by
+      have := φ.tendsto_nhdsNE hys; rwa [hwr] at this
+    have hcomp : Tendsto (F ∘ φ) (𝓝[≠] (φ.symm w)) (𝓝 (F w)) := hFlim.comp hfwd
+    refine hcomp.congr' ?_
+    have hev : ∀ᶠ y in 𝓝 (φ.symm w), y ∈ φ.source := φ.open_source.mem_nhds hys
+    filter_upwards [mem_nhdsWithin_of_mem_nhds hev] with y hy
+    simp [hFdef, Function.comp, φ.left_inv hy]
+  show f.holoRepr (φ.symm w) = toMeromorphicNFAt F (φ x₀) w
+  rw [hval, hwNF]
+
 /-- **The chart pullback of `holoRepr` is analytic at a point of nonnegative order.**
 This is the local (pointwise) core of `mdifferentiable_holoRepr`, requiring `0 ≤ orderAtPoint`
 *only at `x₀`* (not globally). Read back through the chart `φ = chartAt x₀`, the limit-repair

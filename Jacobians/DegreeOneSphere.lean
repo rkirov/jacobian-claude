@@ -101,25 +101,78 @@ lemma MeromorphicFunction.toSphere_preimage_infty (f : MeromorphicFunction X) (P
   · rintro rfl
     simp
 
-/-- **Holomorphy of `toSphere`** (Step 1).  Off `P`, `toSphere = coe ∘ f`, which
-is holomorphic where `f` is holomorphic (and `f` is holomorphic away from its
-poles).  At `P`, reading in `chartInfty`, `toSphere` is `z ↦ 1/f`, which is
-holomorphic with value `0` because the pole is simple (`orderAtPoint P = -1`).
+/-- **Converse chart bridge `AnalyticAt → ContMDiffAt … ω`.** For a map `F : X → Y`
+between complex-analytic manifolds modelled on `ℂ`, if `F` is continuous at `x` and its
+chart pullback `(chartAt ℂ (F x)) ∘ F ∘ (chartAt ℂ x).symm` is `AnalyticAt ℂ` at `(chartAt ℂ x) x`,
+then `F` is `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω` at `x`. (Reverse of `contMDiffAt_omega_analyticAt_chart_pullback`.) -/
+set_option linter.unusedSectionVars false in
+theorem contMDiffAt_of_analyticAt_chartPullback
+    {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    {F : X → Y} {x : X} (hcont : ContinuousAt F x)
+    (hana : AnalyticAt ℂ ((chartAt ℂ (F x)) ∘ F ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)) :
+    ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω F x := by
+  rw [contMDiffAt_iff]
+  refine ⟨hcont, ?_⟩
+  have hrange : Set.range (𝓘(ℂ) : ModelWithCorners ℂ ℂ ℂ) = Set.univ :=
+    ModelWithCorners.Boundaryless.range_eq_univ
+  rw [hrange, contDiffWithinAt_univ]
+  have hbase : extChartAt 𝓘(ℂ) x x = (chartAt ℂ x) x := by simp
+  have hfun : (extChartAt 𝓘(ℂ) (F x) ∘ F ∘ (extChartAt 𝓘(ℂ) x).symm)
+      = ((chartAt ℂ (F x)) ∘ F ∘ (chartAt ℂ x).symm) := by
+    funext z; simp
+  rw [hfun, hbase]
+  exact hana.contDiffAt
 
-The supporting facts needed here are:
-* `f` is `MDifferentiable`/analytic on `{x | 0 ≤ orderAtPoint x}` (away from
-  poles), giving holomorphy of `coe ∘ f` off `P`;
-* `1/f` extends holomorphically over a simple pole with value `0`
-  (`MeromorphicLiouville`-style local normal form), giving holomorphy in the
-  `∞`-chart at `P`.
-
-These are exactly the "meromorphic ⇒ holomorphic chart representative" bridges
-isolated elsewhere in this development; we leave the analytic content as a single
-documented sorry at this interface. -/
-theorem MeromorphicFunction.contMDiff_toSphere (f : MeromorphicFunction X) {P : X}
-    (hP : f.HasSingleSimplePole P) :
-    ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (f.toSphere P) := by
-  sorry
+/-- **Off `P`, `toSphere` is `ContMDiff … ω`.** For `x ≠ P` the order of `f` is `≥ 0`,
+so `holoRepr` is analytic in the chart there; `toSphere = coe ∘ holoRepr` reads, in the
+affine chart `chartCoe` at the finite value `coe (holoRepr x)`, as `holoRepr ∘ (chartAt x).symm`,
+which is analytic (`analyticAt_holoRepr_chartPullback_of_orderNonneg`). -/
+theorem MeromorphicFunction.contMDiffAt_toSphere_of_ne (f : MeromorphicFunction X) {P x : X}
+    (hP : f.HasSingleSimplePole P) (hx : x ≠ P) :
+    ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (f.toSphere P) x := by
+  have hord : 0 ≤ f.orderAtPoint x := hP.2 x hx
+  -- analyticity of the chart pullback of holoRepr
+  have hana : AnalyticAt ℂ (f.holoRepr ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x) :=
+    f.analyticAt_holoRepr_chartPullback_of_orderNonneg hord
+  set φ := chartAt (H := ℂ) x with hφ
+  -- holoRepr is continuous at x: pull the analytic chart-rep back through the chart.
+  have hxsrc : x ∈ φ.source := mem_chart_source ℂ x
+  have hReprContX : ContinuousAt f.holoRepr x := by
+    have h1 : ContinuousAt (f.holoRepr ∘ φ.symm) (φ x) := hana.continuousAt
+    have h2 : ContinuousAt φ x := φ.continuousAt hxsrc
+    have hcomp : ContinuousAt ((f.holoRepr ∘ φ.symm) ∘ φ) x := h1.comp h2
+    refine hcomp.congr ?_
+    have hev : ∀ᶠ y in 𝓝 x, y ∈ φ.source := φ.open_source.mem_nhds hxsrc
+    filter_upwards [hev] with y hy
+    simp [Function.comp, φ.left_inv hy]
+  -- Away from P (an open condition, T2), `toSphere = coe ∘ holoRepr`.
+  have hxne : ∀ᶠ y in 𝓝 x, y ≠ P := isOpen_compl_singleton.mem_nhds hx
+  have hev : (f.toSphere P) =ᶠ[𝓝 x] (fun y => ((f.holoRepr y : ℂ) : RiemannSphere)) := by
+    filter_upwards [hxne] with y hy using f.toSphere_of_ne hy
+  -- `toSphere` near x is `coe ∘ holoRepr`, so it is continuous at x.
+  have hFcont : ContinuousAt (f.toSphere P) x := by
+    refine ContinuousAt.congr ?_ hev.symm
+    exact (OnePoint.continuous_coe.continuousAt).comp hReprContX
+  -- The value `F x = coe (holoRepr x)`, whose chart is the affine chart `chartCoe`.
+  have hFval : f.toSphere P x = ((f.holoRepr x : ℂ) : RiemannSphere) := f.toSphere_of_ne hx
+  refine contMDiffAt_of_analyticAt_chartPullback hFcont ?_
+  -- chart pullback equals `holoRepr ∘ φ.symm` near `φ x` (using `chartCoe ∘ coe = id` and y ≠ P).
+  refine hana.congr ?_
+  have hxne' : ∀ᶠ w in 𝓝 (φ x), φ.symm w ≠ P := by
+    have : ∀ᶠ w in 𝓝 (φ x), φ.symm w ∈ ({P}ᶜ : Set X) := by
+      have hcont : ContinuousAt φ.symm (φ x) :=
+        φ.symm.continuousAt (by simpa using φ.map_source hxsrc)
+      have hmem : φ.symm (φ x) ∈ ({P}ᶜ : Set X) := by rw [φ.left_inv hxsrc]; exact hx
+      exact hcont.preimage_mem_nhds (isOpen_compl_singleton.mem_nhds hmem)
+    exact this
+  -- `chartAt ℂ (coe c) = chartCoe` for any finite value.
+  have hchartcoe : ∀ c : ℂ, chartAt ℂ ((c : ℂ) : RiemannSphere) = RiemannSphere.chartCoe := by
+    intro c; rfl
+  filter_upwards [hxne'] with w hw
+  rw [hFval]
+  simp only [Function.comp_apply]
+  rw [show f.toSphere P (φ.symm w) = ((f.holoRepr (φ.symm w) : ℂ) : RiemannSphere) from
+    f.toSphere_of_ne hw, hchartcoe, RiemannSphere.chartCoe_apply_coe]
 
 set_option linter.unusedSectionVars false in
 /-- Every charted space over `ℂ` is nontrivial at each point: there is always a

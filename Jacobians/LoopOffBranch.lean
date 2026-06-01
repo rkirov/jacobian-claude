@@ -1044,6 +1044,22 @@ lemma uIdx_one (n : ℕ) (hn : 0 < n) : uIdx n 1 = n - 1 := by
   rw [mul_one, Int.floor_natCast]
   simp only [Int.toNat_natCast]; omega
 
+/-- **Piece index left of the loop** (`t ≤ 0`): `uIdx n t = 0`. -/
+lemma uIdx_zero_of_nonpos (n : ℕ) (t : ℝ) (ht : t ≤ 0) : uIdx n t = 0 := by
+  unfold uIdx
+  have hnt : (n:ℝ) * t ≤ 0 := mul_nonpos_of_nonneg_of_nonpos (by positivity) ht
+  have : ⌊(n:ℝ)*t⌋ ≤ 0 := Int.floor_nonpos hnt
+  omega
+
+/-- **Piece index right of the loop** (`t ≥ 1`): `uIdx n t = n - 1`. -/
+lemma uIdx_last_of_ge_one (n : ℕ) (hn : 0 < n) (t : ℝ) (ht : 1 ≤ t) : uIdx n t = n - 1 := by
+  unfold uIdx
+  have hnpos : (0:ℝ) < n := by exact_mod_cast hn
+  have hnt : (n:ℝ) ≤ n * t := by nlinarith
+  have : (n:ℤ) ≤ ⌊(n:ℝ)*t⌋ := by rw [Int.le_floor]; push_cast; linarith
+  have h2 : (n:ℕ) ≤ ⌊(n:ℝ)*t⌋.toNat := by omega
+  omega
+
 /-- **Value of the uniform glue on the closed `k`-th sub-interval** (for `k < n`, with the right
 endpoint resolved by chaining `g k 1 = g (k+1) 0`). -/
 lemma uniformGlue_apply_of_mem (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
@@ -1144,9 +1160,51 @@ lemma isSmoothPath_uniformGlue (g : ℕ → ℝ → X)
       rw [le_div_iff₀ hnpos, ← hcast]; ring_nf; linarith
     have := uniformGlue_apply_of_mem g hchain n hn (n-1) hk 1 h0 h1
     rwa [mul_one, ← hcast, sub_sub_cancel] at this
+  -- per-piece affine reparam (continuous) and its agreement with the glue on each closed piece.
+  have hcont_piece : ∀ k, k < n → Continuous (fun s : ℝ => g k ((n:ℝ)*s - k)) := fun k hk =>
+    (hpiece k hk).cont.comp ((continuous_const.mul continuous_id).sub continuous_const)
+  have hpieceOn : ∀ k, k < n →
+      ContinuousOn (uniformGlue g n) (Set.Icc ((k:ℝ)/n) (((k:ℝ)+1)/n)) := fun k hk =>
+    (hcont_piece k hk).continuousOn.congr (fun s hs => (uniformGlue_eqOn_piece g hchain n hn k hk hs))
+  -- continuity on `[0,1]` by unioning the `n` closed pieces.
+  have hOn01 : ContinuousOn (uniformGlue g n) (Set.Icc 0 1) := by
+    have key : ∀ m, m ≤ n → ContinuousOn (uniformGlue g n) (Set.Icc 0 ((m:ℝ)/n)) := by
+      intro m hm
+      induction m with
+      | zero => rw [Nat.cast_zero, zero_div, Set.Icc_self]; exact continuousOn_singleton _ _
+      | succ j ih =>
+        have hjn : j < n := by omega
+        have hsplit : Set.Icc (0:ℝ) ((j+1:ℕ)/n) =
+            Set.Icc 0 ((j:ℝ)/n) ∪ Set.Icc ((j:ℝ)/n) (((j:ℝ)+1)/n) := by
+          rw [Set.Icc_union_Icc_eq_Icc (by positivity)
+            (by rw [div_le_div_iff_of_pos_right hnpos]; push_cast; linarith)]
+          congr 1; push_cast; ring
+        rw [hsplit]
+        exact (ih (by omega)).union_of_isClosed (hpieceOn j hjn) isClosed_Icc isClosed_Icc
+    have := key n (le_refl n)
+    rwa [div_self (ne_of_gt hnpos)] at this
   refine ⟨hval0, hval1, ?_, ?_, ?_⟩
-  · -- continuity, via closed-cover union over pieces.
-    sorry
+  · -- continuity: glue `[0,1]` with the two clamped tails `Iic 0` and `Ici 1`.
+    have hOnLeft : ContinuousOn (uniformGlue g n) (Set.Iic 0) :=
+      ((hcont_piece 0 hn).continuousOn).congr (fun s hs => by
+        show uniformGlue g n s = g 0 ((n:ℝ)*s - (0:ℕ))
+        unfold uniformGlue; rw [uIdx_zero_of_nonpos n s hs])
+    have hOnRight : ContinuousOn (uniformGlue g n) (Set.Ici 1) := by
+      have hk : n - 1 < n := by omega
+      exact ((hcont_piece (n-1) hk).continuousOn).congr (fun s hs => by
+        show uniformGlue g n s = g (n-1) ((n:ℝ)*s - (n-1:ℕ))
+        unfold uniformGlue; rw [uIdx_last_of_ge_one n hn s hs])
+    have hAll : ContinuousOn (uniformGlue g n) ((Set.Iic 0 ∪ Set.Icc 0 1) ∪ Set.Ici 1) :=
+      (hOnLeft.union_of_isClosed hOn01 isClosed_Iic isClosed_Icc).union_of_isClosed
+        hOnRight (isClosed_Iic.union isClosed_Icc) isClosed_Ici
+    have huniv : (Set.Iic (0:ℝ) ∪ Set.Icc 0 1) ∪ Set.Ici 1 = Set.univ := by
+      ext x; simp only [Set.mem_union, Set.mem_Iic, Set.mem_Icc, Set.mem_Ici, Set.mem_univ, iff_true]
+      rcases le_or_gt x 0 with h | h
+      · exact Or.inl (Or.inl h)
+      · rcases le_or_gt x 1 with h2 | h2
+        · exact Or.inl (Or.inr ⟨le_of_lt h, h2⟩)
+        · exact Or.inr (le_of_lt h2)
+    rw [huniv] at hAll; rwa [continuousOn_univ] at hAll
   · -- chart-pullback differentiability at each t ∈ [0,1].
     sorry
   · -- velocity-section continuity.
