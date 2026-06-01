@@ -412,13 +412,75 @@ annulus-divergence theorem entirely):
    PROVEN: `c(π)=c(−π)=−1`).  Net `½·(−2π·g(z)) = −π·g(z)`.
 
 BOTH genuine analytic pieces — the radial FTC (`radial_integral`) and the angular vanishing
-(`angular_integral`) — are PROVEN axiom-clean.  REMAINING GAP: only the measure-theoretic plumbing
-— the translation + `Complex.integral_comp_polarCoord_symm` change of variables (steps 1–2), the
-`e^{−iθ}` simplification on `polarCoord.target`, the split into radial+angular integrals, and the
-Fubini interchange feeding `radial_integral`/`angular_integral`.  ~80–150 LoC of integrability/
-Fubini bookkeeping.  See the probe report. -/
+(`angular_integral`) — are PROVEN axiom-clean.  Steps 1–4 below are DONE sorry-free (translation,
+polar CoV, the `e^{−iθ}` simplification, and the `dbar_polar_identity` rewrite), reducing the goal
+to `∫_{target} ½·(R(p) + I·A(p)) = −π·g(z)` with `R = (fderiv g w) c` (radial), `A = (fderiv g w)(I·c)`
+(angular), `w = radialMap z (c θ) r`.  REMAINING GAP: only the final split + Fubini interchange:
+`½[∫_target R + I·∫_target A]`, with `∫_target R = ∫_θ (∫_r R) = ∫_θ (−g z) = −2π·g(z)` (Fubini,
+`radial_integral`) and `∫_target A = ∫_r (∫_θ A) = ∫_r 0 = 0` (Fubini-swapped, `angular_integral`).
+The blocker is the Fubini integrability side-conditions on `target = Ioi 0 ×ˢ Ioo(−π) π` (no
+packaged polar-integrability transport in Mathlib).  ~50–100 LoC.  See the probe report. -/
 theorem cauchyPompeiu_area {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hgsupp : HasCompactSupport g)
     (z : ℂ) : ∫ ζ, dbar g ζ / (ζ - z) = -π * g z := by
+  -- Step 1: translate `ζ = z + w`.
+  have htrans : ∫ ζ, dbar g ζ / (ζ - z) = ∫ w, dbar g (z + w) / w := by
+    rw [← integral_add_left_eq_self (fun ζ => dbar g ζ / (ζ - z)) z]
+    simp only [add_sub_cancel_left]
+  -- Step 2: polar change of variables `w = symm (r,θ) = r·(cos θ + sin θ·I)`.
+  rw [htrans, ← Complex.integral_comp_polarCoord_symm (fun w => dbar g (z + w) / w)]
+  -- Step 3: simplify the integrand on `target` (where `r = p.1 > 0`): the Jacobian `r` cancels
+  -- the `1/w`, leaving `(cos θ − sin θ·I)·dbar g(z + r·c(θ))`.
+  have hsimp : ∀ p ∈ Complex.polarCoord.target,
+      p.1 • (dbar g (z + Complex.polarCoord.symm p) / Complex.polarCoord.symm p)
+        = (Real.cos p.2 - Real.sin p.2 * I)
+            * dbar g (z + (p.1 : ℂ) * (Real.cos p.2 + Real.sin p.2 * I)) := by
+    rintro ⟨r, θ⟩ ⟨hr, hθ⟩
+    simp only [Complex.polarCoord_symm_apply, Set.mem_Ioi] at hr ⊢
+    rw [Complex.real_smul]
+    have hcne : (Real.cos θ + Real.sin θ * I : ℂ) ≠ 0 := by
+      intro h
+      have := congrArg Complex.normSq h
+      rw [Complex.normSq_add_mul_I, Real.cos_sq_add_sin_sq] at this
+      simp at this
+    have hrne : (r : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
+    -- `(cos − sin·I)·(cos + sin·I) = cos² + sin² = 1`, the key scalar cancellation.
+    have hconj : (Real.cos θ - Real.sin θ * I) * (Real.cos θ + Real.sin θ * I) = 1 := by
+      rw [show (Real.cos θ - Real.sin θ * I : ℂ) * (Real.cos θ + Real.sin θ * I)
+          = (Real.cos θ : ℂ)^2 - (Real.sin θ : ℂ)^2 * (Complex.I)^2 by ring, Complex.I_sq]
+      rw [show ((Real.cos θ : ℂ)^2 - (Real.sin θ : ℂ)^2 * (-1))
+          = ((Real.cos θ ^ 2 + Real.sin θ ^ 2 : ℝ) : ℂ) by push_cast; ring,
+        Real.cos_sq_add_sin_sq, Complex.ofReal_one]
+    -- Factor `dbar g(arg)` out and cancel.
+    generalize dbar g (z + (r : ℂ) * (Real.cos θ + Real.sin θ * I)) = D
+    rw [mul_div_assoc']
+    rw [div_eq_iff (mul_ne_zero hrne hcne)]
+    rw [show (Real.cos θ - Real.sin θ * I : ℂ) * D * ((r : ℂ) * (Real.cos θ + Real.sin θ * I))
+        = (r : ℂ) * ((Real.cos θ - Real.sin θ * I) * (Real.cos θ + Real.sin θ * I)) * D by ring,
+      hconj]
+    ring
+  refine Eq.trans (MeasureTheory.setIntegral_congr_fun (μ := volume)
+    Complex.polarCoord.open_target.measurableSet hsimp) ?_
+  -- Step 4: apply the polar–Wirtinger identity, rewriting the integrand as a ½-combination of the
+  -- radial and angular directional derivatives at `w = z + r·c(θ) = radialMap z (c θ) r`.
+  have hpw : ∀ p : ℝ × ℝ,
+      (Real.cos p.2 - Real.sin p.2 * I) * dbar g (z + (p.1 : ℂ) * (Real.cos p.2 + Real.sin p.2 * I))
+        = (2 : ℂ)⁻¹ * ((fderiv ℝ g (radialMap z (Real.cos p.2 + Real.sin p.2 * I) p.1))
+              (Real.cos p.2 + Real.sin p.2 * I)
+            + I * (fderiv ℝ g (radialMap z (Real.cos p.2 + Real.sin p.2 * I) p.1))
+              (I * (Real.cos p.2 + Real.sin p.2 * I))) := by
+    intro p
+    have hwarg : z + (p.1 : ℂ) * (Real.cos p.2 + Real.sin p.2 * I)
+        = radialMap z (Real.cos p.2 + Real.sin p.2 * I) p.1 := by
+      rw [radialMap, Complex.real_smul]
+    rw [hwarg]
+    have := dbar_polar_identity g (radialMap z (Real.cos p.2 + Real.sin p.2 * I) p.1) p.2
+    rw [show (Real.cos p.2 - Real.sin p.2 * I : ℂ)
+          * dbar g (radialMap z (Real.cos p.2 + Real.sin p.2 * I) p.1)
+        = (2 : ℂ)⁻¹ * ((Real.cos p.2 - Real.sin p.2 * I)
+          * ((2 : ℂ) * dbar g (radialMap z (Real.cos p.2 + Real.sin p.2 * I) p.1))) by ring,
+      this]
+  refine Eq.trans (MeasureTheory.setIntegral_congr_fun (μ := volume)
+    Complex.polarCoord.open_target.measurableSet (fun p _ => hpw p)) ?_
   sorry
 
 open scoped Convolution in
