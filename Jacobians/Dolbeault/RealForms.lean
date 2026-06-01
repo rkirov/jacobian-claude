@@ -17,6 +17,8 @@ import Mathlib.Geometry.Manifold.VectorBundle.Hom
 import Mathlib.Geometry.Manifold.VectorBundle.Tangent
 import Mathlib.Geometry.Manifold.VectorBundle.SmoothSection
 import Mathlib.Analysis.Normed.Module.Basic
+import Mathlib.Geometry.Manifold.ContMDiffMFDeriv
+import Mathlib.Geometry.Manifold.Algebra.SmoothFunctions
 
 open scoped Manifold ContDiff Bundle
 
@@ -27,14 +29,13 @@ namespace Jacobians.Dolbeault
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- **Real-smooth `ℂ`-valued functions** `A⁰` on `X` — the source of `∂̄`. Smooth sections of the
-trivial `ℂ`-bundle over the real model (real-`C^∞`, i.e. NOT holomorphic). A real vector space. -/
+/-- **Real-smooth `ℂ`-valued functions** `A⁰` on `X` — the source of `∂̄`: real-`C^∞` maps `X → ℂ`
+(over the real model, i.e. NOT holomorphic). A real vector space. -/
 abbrev SmoothCFunctions (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type _ :=
-  ContMDiffSection (𝓘(ℝ, ℂ)) ℂ (⊤ : ℕ∞) (Bundle.Trivial X ℂ)
+  ContMDiffMap (𝓘(ℝ, ℂ)) (𝓘(ℝ, ℂ)) X ℂ (⊤ : ℕ∞)
 
 noncomputable example : AddCommGroup (SmoothCFunctions X) := inferInstance
-noncomputable example : Module ℝ (SmoothCFunctions X) := inferInstance
 
 /-- The trivial `ℂ`-bundle is a continuous `ℝ`-module — the one instance Mathlib's hom-of-bundles
 machinery needs but does not auto-derive for the sub-field `ℝ` (`Trivial X ℂ x` is defeq `ℂ`, and the
@@ -53,5 +54,22 @@ abbrev SmoothCOneForms (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpac
 -- The intrinsic 1-form space is a genuine real vector space (validates the representation).
 noncomputable example : AddCommGroup (SmoothCOneForms X) := inferInstance
 noncomputable example : Module ℝ (SmoothCOneForms X) := inferInstance
+
+/-- The **de Rham differential** `d : A⁰ → A¹` — the real differential `du = mfderiv u` of a smooth
+`ℂ`-valued function, a smooth `ℂ`-valued 1-form. (`∂̄u` is its `(0,1)`-part; `∂u` the `(1,0)`-part.)
+The section-smoothness is the standard "the differential of a `C^∞` function is a `C^∞` 1-form"
+(`mfderiv_const` in tangent coordinates, bridged to the trivial-bundle codomain `ℂ`). -/
+noncomputable def differential (u : SmoothCFunctions X) : SmoothCOneForms X where
+  toFun := fun x => mfderiv (𝓘(ℝ, ℂ)) (𝓘(ℝ, ℂ)) u x
+  contMDiff_toFun := by
+    intro x₀
+    rw [contMDiffAt_hom_bundle]
+    refine ⟨contMDiffAt_id, ?_⟩
+    have h := (u.contMDiff x₀).mfderiv_const (m := (⊤ : ℕ∞)) (by simp)
+    convert h using 3 with x
+    simp only [inTangentCoordinates, ContinuousLinearMap.inCoordinates,
+      Bundle.Trivial.continuousLinearMapAt_trivialization,
+      Bundle.Trivial.fiberBundle_trivializationAt',
+      TangentBundle.continuousLinearMapAt_trivializationAt, ContinuousLinearMap.id_comp, mfld_simps]
 
 end Jacobians.Dolbeault
