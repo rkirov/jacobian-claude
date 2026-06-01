@@ -250,7 +250,7 @@ theorem MeromorphicFunction.contMDiffAt_toSphere_at_pole (f : MeromorphicFunctio
       rw [show f.holoRepr (φ.symm w) = N w from hwrepr]
       rw [RiemannSphere.chartInfty_apply_coe hwN0]
     · -- center: `N⁻¹ φP = 0 = chartInfty ∞ = G φP`.
-      simp only [Filter.eventually_pure, Function.comp_apply]
+      simp only [Filter.eventually_pure]
       rw [hNinvZero]
       show (0 : ℂ) = chartInfty (f.toSphere P (φ.symm (φ P)))
       rw [φ.left_inv hxsrc, f.toSphere_pole P, RiemannSphere.chartInfty_apply_infty]
@@ -370,6 +370,7 @@ theorem MeromorphicFunction.toSphere_not_isConstant (f : MeromorphicFunction X)
 
 /-! ### Step 2 — degree one -/
 
+open RiemannSphere in
 /-- **The pole is a regular point of `F = toSphere f P`** (Step 2's analytic core,
 and the genuine consumer of *simplicity*).  Reading `F` near `P` in the `∞`-chart,
 `F` is `z ↦ 1/f` whose derivative at `P` is nonzero **precisely because the pole is
@@ -380,14 +381,96 @@ bundle (`RegularValueWitnessReg.is_regular`) requires at the unique preimage `P`
 `∞`.
 
 This is the same analytic local-normal-form content as `contMDiff_toSphere`, here
-specialized to the first-derivative non-vanishing at the simple pole; isolated as a
-single documented residual. -/
+specialized to the first-derivative non-vanishing at the simple pole. -/
 theorem MeromorphicFunction.toSphere_regular_at_pole (f : MeromorphicFunction X)
     {P : X} (hP : f.HasSingleSimplePole P) :
     ∀ x ∈ (f.toSphere P) ⁻¹' {OnePoint.infty},
       deriv ((chartAt ℂ (OnePoint.infty : RiemannSphere)) ∘ (f.toSphere P) ∘
           (chartAt ℂ x).symm) ((chartAt ℂ x) x) ≠ 0 := by
-  sorry
+  -- The fibre `toSphere⁻¹{∞}` is `{P}`, so `x = P` and `chartAt x = chartAt P = φ`.
+  intro x hx
+  rw [f.toSphere_preimage_infty P] at hx
+  simp only [Set.mem_singleton_iff] at hx
+  obtain rfl : P = x := hx.symm
+  set φ := chartAt (H := ℂ) P with hφ
+  set F := f.toFun ∘ φ.symm with hFdef
+  have hxsrc : P ∈ φ.source := mem_chart_source ℂ P
+  have hmeroF : MeromorphicAt F (φ P) := f.meromorphic P
+  -- order of F at φP is -1.
+  have hordF : meromorphicOrderAt F (φ P) = (-1 : ℤ) := by
+    have h1 : f.orderAtPoint P = (meromorphicOrderAt F (φ P)).untop₀ := rfl
+    rw [hP.1] at h1
+    cases hv : meromorphicOrderAt F (φ P) with
+    | top => rw [hv] at h1; simp at h1
+    | coe n => rw [hv] at h1; simp only [WithTop.untop₀_coe] at h1; rw [← h1]
+  set N := toMeromorphicNFAt F (φ P) with hNdef
+  have hNF : MeromorphicNFAt N (φ P) := meromorphicNFAt_toMeromorphicNFAt
+  have hordN : meromorphicOrderAt N (φ P) = (-1 : ℤ) := by
+    rw [hNdef, meromorphicOrderAt_congr hmeroF.eq_nhdsNE_toMeromorphicNFAt.symm, hordF]
+  have hNFinv : MeromorphicNFAt (fun w => (N w)⁻¹) (φ P) := by
+    simpa [Pi.inv_def] using hNF.inv
+  have hordNinv : meromorphicOrderAt (fun w => (N w)⁻¹) (φ P) = (1 : ℤ) := by
+    have : meromorphicOrderAt (N⁻¹) (φ P) = -meromorphicOrderAt N (φ P) := meromorphicOrderAt_inv
+    rw [hordN] at this; simpa [Pi.inv_def] using this
+  have hNinvAna : AnalyticAt ℂ (fun w => (N w)⁻¹) (φ P) := by
+    refine hNFinv.meromorphicOrderAt_nonneg_iff_analyticAt.1 ?_; rw [hordNinv]; norm_num
+  -- `G = chartInfty ∘ toSphere ∘ φ.symm` agrees with `N⁻¹` near φP.
+  set G : ℂ → ℂ := chartInfty ∘ (f.toSphere P) ∘ φ.symm with hGdef
+  have hGeq : (fun w => (N w)⁻¹) =ᶠ[𝓝 (φ P)] G := by
+    rw [Filter.EventuallyEq, ← nhdsNE_sup_pure (φ P), Filter.eventually_sup]
+    refine ⟨?_, ?_⟩
+    · have htgt : ∀ᶠ w in 𝓝[≠] (φ P), w ∈ φ.target :=
+        mem_nhdsWithin_of_mem_nhds (φ.open_target.mem_nhds (φ.map_source hxsrc))
+      have hsymm_ne : ∀ᶠ w in 𝓝[≠] (φ P), φ.symm w ≠ P := by
+        filter_upwards [self_mem_nhdsWithin, htgt] with w hw hwt
+        simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hw
+        intro hcontra
+        apply hw
+        calc w = φ (φ.symm w) := (φ.right_inv hwt).symm
+          _ = φ P := by rw [hcontra]
+      have hN_ne : ∀ᶠ w in 𝓝[≠] (φ P), N w ≠ 0 := by
+        rw [← meromorphicOrderAt_ne_top_iff_eventually_ne_zero hNF.meromorphicAt, hordN]
+        exact WithTop.coe_ne_top
+      have hrepr : f.holoRepr ∘ φ.symm =ᶠ[𝓝[≠] (φ P)] N :=
+        f.holoRepr_chartPullback_eventuallyEq_NFAt P
+      filter_upwards [hsymm_ne, hN_ne, hrepr, htgt] with w hwne hwN0 hwrepr hwt
+      show (N w)⁻¹ = chartInfty (f.toSphere P (φ.symm w))
+      rw [f.toSphere_of_ne hwne, show f.holoRepr (φ.symm w) = N w from hwrepr,
+        RiemannSphere.chartInfty_apply_coe hwN0]
+    · simp only [Filter.eventually_pure]
+      show (N (φ P))⁻¹ = chartInfty (f.toSphere P (φ.symm (φ P)))
+      have hNinvZero : (N (φ P))⁻¹ = 0 := by
+        by_contra hne; rw [hNFinv.meromorphicOrderAt_eq_zero_iff.2 hne] at hordNinv; simp at hordNinv
+      rw [hNinvZero, φ.left_inv hxsrc, f.toSphere_pole P, RiemannSphere.chartInfty_apply_infty]
+  -- `deriv G (φP) = deriv N⁻¹ (φP)`, and order = 1 forces it nonzero.
+  have hderiv_eq : deriv G (φ P) = deriv (fun w => (N w)⁻¹) (φ P) :=
+    (Filter.EventuallyEq.deriv_eq hGeq).symm
+  -- chart-at-∞ and chart-at-P unfold to chartInfty, φ.
+  show deriv ((chartAt ℂ (OnePoint.infty : RiemannSphere)) ∘ (f.toSphere P) ∘ φ.symm) (φ P) ≠ 0
+  have hchart : (chartAt ℂ (OnePoint.infty : RiemannSphere)) = RiemannSphere.chartInfty := rfl
+  rw [hchart, show (chartInfty ∘ (f.toSphere P) ∘ φ.symm) = G from rfl, hderiv_eq]
+  -- order of `N⁻¹` (analytic) at φP is the natural number 1; factor `N⁻¹ = (·-φP) • g`, g(φP)≠0.
+  have hordNat : analyticOrderAt (fun w => (N w)⁻¹) (φ P) = ((1 : ℕ) : ℕ∞) := by
+    rw [hNinvAna.meromorphicOrderAt_eq] at hordNinv
+    have : ENat.map (Nat.cast : ℕ → ℤ) (analyticOrderAt (fun w => (N w)⁻¹) (φ P))
+        = ENat.map (Nat.cast : ℕ → ℤ) ((1 : ℕ) : ℕ∞) := by
+      rw [hordNinv]; simp
+    exact ENat.map_natCast_injective this
+  obtain ⟨g, hg, hg0, hgeq⟩ := (hNinvAna.analyticOrderAt_eq_natCast (n := 1)).mp (by
+    rw [hordNat])
+  -- `deriv (N⁻¹) φP = g φP ≠ 0`.
+  have hpow : (fun w => (N w)⁻¹) =ᶠ[𝓝 (φ P)] (fun w => (w - φ P) ^ 1 • g w) := by
+    filter_upwards [hgeq] with w hw using hw
+  rw [hpow.deriv_eq]
+  -- deriv of `(w - φP)^1 • g w` at φP = g φP.
+  have hd : HasDerivAt (fun w => (w - φ P) ^ 1 • g w) (g (φ P)) (φ P) := by
+    have h1 : HasDerivAt (fun w : ℂ => (w - φ P) ^ 1) (1 : ℂ) (φ P) := by
+      simpa using ((hasDerivAt_id (φ P)).sub_const (φ P)).pow 1
+    have h2 : HasDerivAt g (deriv g (φ P)) (φ P) := hg.differentiableAt.hasDerivAt
+    have := h1.smul h2
+    simpa using this
+  rw [hd.deriv]
+  exact hg0
 
 /-- **Degree one** (Step 2).  `∞` is a regular value of `F = toSphere f P` with the
 single preimage `P` (`toSphere_preimage_infty`), and `P` is a regular point
