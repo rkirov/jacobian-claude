@@ -513,6 +513,34 @@ lemma exists_offBranch_detour_piece (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘
     rw [hγ, Jacobians.pathSpeed_concat_right γ₁ γ₂ 1 (by norm_num) hd,
       show (2:ℝ)*1-1 = 1 from by norm_num, hv2_1, mul_zero]
 
+/-- **[ISOLATED GEOMETRIC INPUT for #6 — off-branch sub-ball cover].** For a closed smooth loop `δ`
+and the (finite) `branchLocus f`, there is a partition `s k = k/n` of `[0,1]` together with per-piece
+chart anchors `x k`, sub-ball centers `c k` and radii `r k > 0` such that, over the `k`-th piece,
+`δ`'s chart-image is confined to `ball (c k) (r k) ⊆ (chartAt (x k)).target`, **and every breakpoint
+image `δ (s k)` is off the branch locus**.
+
+This is the precise residual content of #6: it strengthens the proven
+`OfCurveSkeleton.exists_subBallChartCover` (which gives the sub-ball confinement, axiom-clean) with the
+**off-branch breakpoint** guarantee `δ (s k) ∉ branchLocus f`. That extra guarantee is the genuine
+remaining difficulty — the "transversality wrinkle": a merely-`C¹` loop `δ` can *linger* on a branch
+point over a whole sub-interval, so `δ ⁻¹' (branchLocus f)` may have nonempty interior and a uniform
+breakpoint can be forced onto the locus. Discharging it needs a perturbation of the breakpoints (or of
+`δ`) off the finite locus; no existing repo lemma provides it. Everything downstream
+(`exists_splicedLoop_off_branchLocus`) is assembled from this plus the already-proven detour, glue and
+telescoping toolkit. -/
+theorem exists_offBranch_subBallChartCover (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
+    ∃ (n : ℕ) (_hn : 0 < n) (x : Fin n → Y) (c : Fin n → ℂ) (r : Fin n → ℝ),
+      (∀ k, 0 < r k) ∧
+      (∀ k : Fin n, δ ((k : ℝ) / n) ∉ branchLocus f) ∧
+      ∀ (k : Fin n) (s : ℝ),
+        (k : ℝ) / n ≤ s → s ≤ ((k : ℝ) + 1) / n →
+          Metric.ball (c k) (r k) ⊆ (chartAt (H := ℂ) (x k)).target ∧
+          δ s ∈ (chartAt (H := ℂ) (x k)).source ∧
+          (chartAt (H := ℂ) (x k)) (δ s) ∈ Metric.ball (c k) (r k) := by
+  sorry
+
 /-- **[open — GEOMETRIC obligation only; the planar-geometry KERNELS are now proven].** The
 geometric heart of the off-branch surgery, isolated from the (proven) analytic telescoping. It
 asserts the existence of a closed smooth loop `δ'` avoiding `branchLocus f`, *together with a
