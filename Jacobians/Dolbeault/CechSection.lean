@@ -77,17 +77,58 @@ def openIncl (h : V ≤ U) : V → U := fun v => ⟨v.1, h v.2⟩
 
 @[simp] theorem openIncl_val (h : V ≤ U) (v : V) : (openIncl h v).1 = v.1 := rfl
 
-/-- **Mechanical leaf** (chart bookkeeping; to be discharged in the bottom-out pass): the order is
-preserved under restriction to a smaller open. Both charts are `subtypeRestr`s of the same ambient
-chart (`Opens.chartAt_eq`), so the chart pullbacks agree near the chart point and `meromorphicOrderAt`
-is unchanged (`MeromorphicAt.congr`). NOT a deep analytic gap. -/
-theorem ordU_comp_openIncl (h : V ≤ U) (f : U → ℂ) (v : V) :
-    ordU (f ∘ openIncl h) v = ordU f (openIncl h v) := sorry
+/-- The base point and the chart-pullback agree between `↥V`'s chart at `v` and `↥U`'s chart at
+`openIncl h v`: both charts are `subtypeRestr`s of the *same* ambient chart `chartAt ℂ v.1`
+(`Opens.chartAt_eq`), so they read `f` at the same ambient point near `v`. The shared core of the two
+restriction lemmas. -/
+private theorem restrict_chart_aux (h : V ≤ U) (f : U → ℂ) (v : V) :
+    (chartAt (H := ℂ) v) v = (chartAt (H := ℂ) (openIncl h v)) (openIncl h v) ∧
+    ((f ∘ openIncl h) ∘ (chartAt (H := ℂ) v).symm) =ᶠ[𝓝 ((chartAt (H := ℂ) v) v)]
+      (f ∘ (chartAt (H := ℂ) (openIncl h v)).symm) := by
+  have hbase : (chartAt (H := ℂ) v) v = (chartAt (H := ℂ) (openIncl h v)) (openIncl h v) := by
+    simp only [TopologicalSpace.Opens.chartAt_eq, OpenPartialHomeomorph.subtypeRestr_coe,
+      Set.restrict_apply]
+    rfl
+  refine ⟨hbase, ?_⟩
+  have ht1 : (chartAt (H := ℂ) v).target ∈ 𝓝 ((chartAt (H := ℂ) v) v) :=
+    (chartAt (H := ℂ) v).open_target.mem_nhds
+      ((chartAt (H := ℂ) v).map_source (mem_chart_source ℂ v))
+  have ht2 : (chartAt (H := ℂ) (openIncl h v)).target ∈ 𝓝 ((chartAt (H := ℂ) v) v) := by
+    rw [hbase]
+    exact (chartAt (H := ℂ) (openIncl h v)).open_target.mem_nhds
+      ((chartAt (H := ℂ) (openIncl h v)).map_source (mem_chart_source ℂ (openIncl h v)))
+  refine Filter.eventuallyEq_of_mem (Filter.inter_mem ht1 ht2) fun w hw => ?_
+  obtain ⟨hw1, hw2⟩ := hw
+  show f (openIncl h ((chartAt (H := ℂ) v).symm w)) = f ((chartAt (H := ℂ) (openIncl h v)).symm w)
+  congr 1
+  apply Subtype.ext
+  simp only [openIncl_val]
+  have e1 : ((chartAt (H := ℂ) v).symm w).1 = (chartAt (H := ℂ) v.1).symm w := by
+    simpa [Function.comp] using
+      OpenPartialHomeomorph.subtypeRestr_symm_apply (e := chartAt (H := ℂ) v.1) ⟨v⟩ hw1
+  have e2 : ((chartAt (H := ℂ) (openIncl h v)).symm w).1 = (chartAt (H := ℂ) v.1).symm w := by
+    simpa [Function.comp] using
+      OpenPartialHomeomorph.subtypeRestr_symm_apply (e := chartAt (H := ℂ) (openIncl h v).1)
+        ⟨openIncl h v⟩ hw2
+  rw [e1, e2]
 
-/-- **Mechanical leaf** (companion to `ordU_comp_openIncl`): meromorphy on `↥U` restricts to the open
-sub-submanifold `↥V`. -/
+/-- Restriction preserves the order at corresponding points (chart bookkeeping via
+`Opens.chartAt_eq` + `subtypeRestr`). -/
+theorem ordU_comp_openIncl (h : V ≤ U) (f : U → ℂ) (v : V) :
+    ordU (f ∘ openIncl h) v = ordU f (openIncl h v) := by
+  obtain ⟨hbase, hev⟩ := restrict_chart_aux h f v
+  unfold ordU
+  rw [show (chartAt (H := ℂ) (openIncl h v)) (openIncl h v) = (chartAt (H := ℂ) v) v from hbase.symm]
+  exact meromorphicOrderAt_congr (hev.filter_mono nhdsWithin_le_nhds)
+
+/-- Meromorphy on `↥U` restricts to the open sub-submanifold `↥V`. -/
 theorem isMeromorphic_comp_openIncl (h : V ≤ U) {f : U → ℂ}
-    (hf : IsMeromorphic (U : Type _) f) : IsMeromorphic (V : Type _) (f ∘ openIncl h) := sorry
+    (hf : IsMeromorphic (U : Type _) f) : IsMeromorphic (V : Type _) (f ∘ openIncl h) := by
+  intro v
+  obtain ⟨hbase, hev⟩ := restrict_chart_aux h f v
+  have hmer := hf (openIncl h v)
+  rw [← hbase] at hmer
+  exact hmer.congr (hev.filter_mono nhdsWithin_le_nhds).symm
 
 /-- Restriction of sections `𝒪_D(U) → 𝒪_D(V)` for `V ≤ U`. -/
 noncomputable def OmegaD.restrict (h : V ≤ U) : OmegaD D U →ₗ[ℂ] OmegaD D V :=
