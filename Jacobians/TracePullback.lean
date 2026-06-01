@@ -926,7 +926,7 @@ theorem exists_loop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘
     if h : k < n then lineIntegral (periodBasisForm Y i) (cc ⟨k, h⟩)
     else lineIntegral (periodBasisForm Y i) (cc ⟨0, hn⟩) with hcorr
   have hs0 : sfun 0 = 0 := by simp [hsfun]
-  have hsn : sfun n = 1 := by simp [hsfun, div_self (ne_of_gt hnpos)]
+  have hsn : sfun n = 1 := by simp only [hsfun]; exact div_self (ne_of_gt hnpos)
   have hs_sub : ∀ k, k < n → Set.uIcc (sfun k) (sfun (k+1)) ⊆ Set.Icc (0:ℝ) 1 := by
     intro k hk
     have hle : sfun k ≤ sfun (k+1) := by
