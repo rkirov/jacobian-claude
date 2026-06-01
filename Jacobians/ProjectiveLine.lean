@@ -338,20 +338,25 @@ genus = finrank ℂ (HolomorphicOneForms ℂℙ¹)
   ⇐  ∀ ω x, ω x = 0                                 -- ContMDiffSection.ext
 ```
 
-The remaining content is the **Liouville vanishing** `holomorphicOneForm_eq_zero`: a global
-holomorphic 1-form `ω` pulls back, in the affine chart `chartCoe`, to an entire function
-`f : ℂ → ℂ` (the coefficient of `dz`). Compatibility with `chartInfty` forces, on the overlap,
-`f(z) = -w⁻² g(w)` with `w = z⁻¹` and `g` the coefficient in the `∞`-chart; since `g` is
-holomorphic at `w = 0`, `f(z) = O(z⁻²) → 0` as `z → ∞`. Hence `f` is a bounded entire function,
-so constant by Liouville (`Differentiable.exists_eq_const_of_bounded`), and the limit `0` forces
-that constant to be `0`; therefore `ω` vanishes on the affine chart, and by density / continuity
-everywhere.
+The remaining content is the **Liouville vanishing** `holomorphicOneForm_eq_zero` (**PROVEN
+below, axiom-clean**): a global holomorphic 1-form `s` reads, in the affine chart `chartCoe`,
+as the entire coefficient `affineCoeff s : ℂ → ℂ` of `dz` (`localRep` based at `0`; entire via
+`Montel.localRep_analyticOn_chartTarget` since `chartCoe.target = univ`). Compatibility with
+`chartInfty` gives the **transition law** `inftyCoeff_eq_transition`: on the overlap (finite
+`z ≠ 0`, `w = z⁻¹`) `g(z⁻¹) = -z² f(z)`, equivalently `f(z) = -z⁻² g(z⁻¹)`, where the factor
+`-z²` is the tangent-frame derivative `(trivAt ∞).symmL/(trivAt 0).symmL` computed from
+`fderiv(w ↦ w⁻¹) = -w⁻²`. Since `g = inftyCoeff s` is analytic at `w = 0`,
+`f(z) = O(z⁻²) → 0` as `z → ∞` (`affineCoeff_tendsto_cobounded`); a complex-differentiable
+function with a finite limit at infinity is constant (`Differentiable.eq_const_of_tendsto_cocompact`),
+and the limit `0` forces `f ≡ 0` (`affineCoeff_eq_zero`). Then `f(z) = s.toFun (z:ℂℙ¹) 1 = 0`
+pins `s.toFun (z:ℂℙ¹) = 0` at every finite point (`ext_ring`; the affine-unit `1` spans the
+`1`-dimensional fibre), and `g ≡ 0` near `0` with continuity gives `s.toFun ∞ = 0` too; by
+`ContMDiffSection.ext`, `s = 0`.
 
-This is the one genuinely theory-deficient step: Mathlib has Liouville
-(`Mathlib.Analysis.Complex.Liouville`) but not the bridge "global analytic section of the
-holomorphic cotangent bundle ↔ entire function in a chart with the `dz`-transformation law".
-Building that bridge is sizeable analytic-manifold infrastructure (cf. the period-lattice /
-Riemann–Roch gaps elsewhere in this development), so it is isolated here as a single sorry. -/
+The supporting "cotangent section ↔ entire chart-coefficient with the `dz`-transformation law"
+bridge is assembled here from the existing `Montel.localRep` analyticity and the
+`trivAt_symmL_one_eq_fderiv` tangent-frame identity — a bounded computation, not the
+Dolbeault/Riemann–Roch infrastructure that gates the genus goals elsewhere. -/
 
 section LiouvilleVanishing
 
