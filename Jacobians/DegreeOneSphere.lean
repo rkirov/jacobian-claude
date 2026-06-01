@@ -101,11 +101,11 @@ lemma MeromorphicFunction.toSphere_preimage_infty (f : MeromorphicFunction X) (P
   · rintro rfl
     simp
 
+set_option linter.unusedSectionVars false in
 /-- **Converse chart bridge `AnalyticAt → ContMDiffAt … ω`.** For a map `F : X → Y`
 between complex-analytic manifolds modelled on `ℂ`, if `F` is continuous at `x` and its
 chart pullback `(chartAt ℂ (F x)) ∘ F ∘ (chartAt ℂ x).symm` is `AnalyticAt ℂ` at `(chartAt ℂ x) x`,
 then `F` is `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω` at `x`. (Reverse of `contMDiffAt_omega_analyticAt_chart_pullback`.) -/
-set_option linter.unusedSectionVars false in
 theorem contMDiffAt_of_analyticAt_chartPullback
     {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
     {F : X → Y} {x : X} (hcont : ContinuousAt F x)
@@ -173,6 +173,163 @@ theorem MeromorphicFunction.contMDiffAt_toSphere_of_ne (f : MeromorphicFunction 
   simp only [Function.comp_apply]
   rw [show f.toSphere P (φ.symm w) = ((f.holoRepr (φ.symm w) : ℂ) : RiemannSphere) from
     f.toSphere_of_ne hw, hchartcoe, RiemannSphere.chartCoe_apply_coe]
+
+open RiemannSphere in
+/-- **At the simple pole `P`, `toSphere` is `ContMDiffAt … ω`.** Reading in the `∞`-chart
+`chartInfty` at `toSphere P = ∞`, the chart pullback `G = chartInfty ∘ toSphere ∘ φ.symm`
+(`φ = chartAt P`) equals, near `φ P`, the **inverse of the normal-form representative** `Nw⁻¹`
+of the pullback `F = f.toFun ∘ φ.symm`.  Since `F` has `meromorphicOrderAt = -1` (the simple pole),
+its normal form `N` has order `-1`, so `N⁻¹` (which `=` the chart pullback) is in normal form of
+order `+1 ≥ 0`, hence **analytic at `φ P` with value `0`**. -/
+theorem MeromorphicFunction.contMDiffAt_toSphere_at_pole (f : MeromorphicFunction X) {P : X}
+    (hP : f.HasSingleSimplePole P) :
+    ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (f.toSphere P) P := by
+  set φ := chartAt (H := ℂ) P with hφ
+  set F := f.toFun ∘ φ.symm with hFdef
+  have hxsrc : P ∈ φ.source := mem_chart_source ℂ P
+  have hmeroF : MeromorphicAt F (φ P) := f.meromorphic P
+  -- order of F at φP is -1.
+  have hordF : meromorphicOrderAt F (φ P) = (-1 : ℤ) := by
+    have h1 : f.orderAtPoint P = (meromorphicOrderAt F (φ P)).untop₀ := rfl
+    rw [hP.1] at h1
+    -- (-1 : ℤ) = (meromorphicOrderAt F (φP)).untop₀, and -1 ≠ 0 forces the value to be coe (-1).
+    cases hv : meromorphicOrderAt F (φ P) with
+    | top => rw [hv] at h1; simp at h1
+    | coe n => rw [hv] at h1; simp only [WithTop.untop₀_coe] at h1; rw [← h1]
+  -- Normal-form representative N of F.
+  set N := toMeromorphicNFAt F (φ P) with hNdef
+  have hNF : MeromorphicNFAt N (φ P) := meromorphicNFAt_toMeromorphicNFAt
+  have hordN : meromorphicOrderAt N (φ P) = (-1 : ℤ) := by
+    rw [hNdef, meromorphicOrderAt_congr hmeroF.eq_nhdsNE_toMeromorphicNFAt.symm, hordF]
+  -- N⁻¹ (pointwise inverse) is in normal form, order +1, hence analytic with value 0.
+  have hNFinv : MeromorphicNFAt (fun w => (N w)⁻¹) (φ P) := by
+    have := hNF.inv
+    simpa [Pi.inv_def] using this
+  have hordNinv : meromorphicOrderAt (fun w => (N w)⁻¹) (φ P) = (1 : ℤ) := by
+    have : meromorphicOrderAt (N⁻¹) (φ P) = -meromorphicOrderAt N (φ P) := meromorphicOrderAt_inv
+    rw [hordN] at this
+    simpa [Pi.inv_def] using this
+  have hNinvAna : AnalyticAt ℂ (fun w => (N w)⁻¹) (φ P) := by
+    refine hNFinv.meromorphicOrderAt_nonneg_iff_analyticAt.1 ?_
+    rw [hordNinv]; norm_num
+  -- value 0: order +1 ≠ 0 forces vanishing at the center.
+  have hNinvZero : (N (φ P))⁻¹ = 0 := by
+    by_contra hne
+    rw [hNFinv.meromorphicOrderAt_eq_zero_iff.2 hne] at hordNinv
+    simp at hordNinv
+  -- chart at ∞ is chartInfty; the chart pullback `G = chartInfty ∘ toSphere ∘ φ.symm`
+  -- equals `fun w => (N w)⁻¹` near φP.
+  set G : ℂ → ℂ := chartInfty ∘ (f.toSphere P) ∘ φ.symm with hGdef
+  have hGeq : (fun w => (N w)⁻¹) =ᶠ[𝓝 (φ P)] G := by
+    -- Split `𝓝 φP = 𝓝[≠] φP ⊔ pure φP`.
+    rw [Filter.EventuallyEq, ← nhdsNE_sup_pure (φ P), Filter.eventually_sup]
+    refine ⟨?_, ?_⟩
+    · -- punctured part: off-center, both sides equal `(N w)⁻¹`.
+      -- Off-center facts: φ.symm w ≠ P (injectivity), N w ≠ 0, holoRepr (φ.symm w) = N w.
+      have htgt : ∀ᶠ w in 𝓝[≠] (φ P), w ∈ φ.target :=
+        mem_nhdsWithin_of_mem_nhds (φ.open_target.mem_nhds (φ.map_source hxsrc))
+      have hsymm_ne : ∀ᶠ w in 𝓝[≠] (φ P), φ.symm w ≠ P := by
+        filter_upwards [self_mem_nhdsWithin, htgt] with w hw hwt
+        simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hw
+        intro hcontra
+        apply hw
+        calc w = φ (φ.symm w) := (φ.right_inv hwt).symm
+          _ = φ P := by rw [hcontra]
+      -- N ≠ 0 off-center (order ≠ ⊤).
+      have hN_ne : ∀ᶠ w in 𝓝[≠] (φ P), N w ≠ 0 := by
+        rw [← meromorphicOrderAt_ne_top_iff_eventually_ne_zero hNF.meromorphicAt]
+        rw [hordN]; exact WithTop.coe_ne_top
+      -- holoRepr (φ.symm w) = N w off-center.
+      have hrepr : f.holoRepr ∘ φ.symm =ᶠ[𝓝[≠] (φ P)] N :=
+        f.holoRepr_chartPullback_eventuallyEq_NFAt P
+      filter_upwards [hsymm_ne, hN_ne, hrepr, htgt] with w hwne hwN0 hwrepr hwt
+      -- LHS = (N w)⁻¹.  RHS = chartInfty (toSphere P (φ.symm w)).
+      show (N w)⁻¹ = chartInfty (f.toSphere P (φ.symm w))
+      rw [f.toSphere_of_ne hwne]
+      -- holoRepr (φ.symm w) = N w ≠ 0, so chartInfty (coe (N w)) = (N w)⁻¹.
+      rw [show f.holoRepr (φ.symm w) = N w from hwrepr]
+      rw [RiemannSphere.chartInfty_apply_coe hwN0]
+    · -- center: `N⁻¹ φP = 0 = chartInfty ∞ = G φP`.
+      simp only [Filter.eventually_pure, Function.comp_apply]
+      rw [hNinvZero]
+      show (0 : ℂ) = chartInfty (f.toSphere P (φ.symm (φ P)))
+      rw [φ.left_inv hxsrc, f.toSphere_pole P, RiemannSphere.chartInfty_apply_infty]
+  -- `G` is analytic, hence continuous, at φP.
+  have hGana : AnalyticAt ℂ G (φ P) := hNinvAna.congr hGeq
+  have hGcont : ContinuousAt G (φ P) := hGana.continuousAt
+  -- Continuity of `toSphere` at `P`: near P, `toSphere = chartInfty.symm ∘ G ∘ φ`.
+  have hFcont : ContinuousAt (f.toSphere P) P := by
+    -- `chartInfty.symm` is continuous at `G (φ P) = 0` (which lies in `chartInfty.target`).
+    have hG0 : G (φ P) = 0 := by
+      have := hGeq.eq_of_nhds; rw [hNinvZero] at this; exact this.symm
+    have h0tgt : (0 : ℂ) ∈ chartInfty.target := by
+      have : chartInfty OnePoint.infty = 0 := RiemannSphere.chartInfty_apply_infty
+      rw [← this]
+      exact chartInfty.map_source (by
+        rw [RiemannSphere.chartInfty_source]
+        simp [OnePoint.infty_ne_coe])
+    have hsymm_cont : ContinuousAt chartInfty.symm (G (φ P)) := by
+      rw [hG0]; exact chartInfty.symm.continuousAt (by simpa using h0tgt)
+    have hφcont : ContinuousAt φ P := φ.continuousAt hxsrc
+    have hGφ : ContinuousAt (G ∘ φ) P := hGcont.comp hφcont
+    have hcomp : ContinuousAt (chartInfty.symm ∘ (G ∘ φ)) P :=
+      ContinuousAt.comp (g := chartInfty.symm) (f := G ∘ φ) hsymm_cont hGφ
+    refine hcomp.congr ?_
+    -- near P, `φ.symm (φ y) = y`, and `toSphere P y ∈ chartInfty.source` (so `chartInfty` round-trips).
+    have hev : ∀ᶠ y in 𝓝 P, y ∈ φ.source := φ.open_source.mem_nhds hxsrc
+    -- source-membership of `toSphere P y` near P (center: `∞`; punctured: `holoRepr = N ≠ 0`).
+    have hev3 : ∀ᶠ y in 𝓝 P, f.toSphere P y ∈ chartInfty.source := by
+      rw [← nhdsNE_sup_pure P, Filter.eventually_sup]
+      refine ⟨?_, ?_⟩
+      · -- punctured: y ≠ P, `holoRepr y = N (φ y) ≠ 0`, so `coe (holoRepr y) ≠ coe 0`.
+        -- transfer the ℂ-side punctured facts through `φ`.
+        have hN_ne : ∀ᶠ w in 𝓝[≠] (φ P), N w ≠ 0 := by
+          rw [← meromorphicOrderAt_ne_top_iff_eventually_ne_zero hNF.meromorphicAt, hordN]
+          exact WithTop.coe_ne_top
+        have hrepr : f.holoRepr ∘ φ.symm =ᶠ[𝓝[≠] (φ P)] N :=
+          f.holoRepr_chartPullback_eventuallyEq_NFAt P
+        -- pull `𝓝[≠] φP` facts back to `𝓝[≠] P` via `φ`.
+        have htfwd : Filter.Tendsto φ (𝓝[≠] P) (𝓝[≠] (φ P)) := φ.tendsto_nhdsNE hxsrc
+        filter_upwards [htfwd.eventually hN_ne, htfwd.eventually hrepr, self_mem_nhdsWithin,
+          (φ.open_source.mem_nhds hxsrc |> mem_nhdsWithin_of_mem_nhds)] with y hyN hyr hyne hys
+        simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hyne
+        rw [f.toSphere_of_ne hyne, RiemannSphere.chartInfty_source]
+        simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+        intro hcontra
+        -- `coe (holoRepr y) = coe 0 ⟹ holoRepr y = 0`, but `holoRepr y = N (φ y) ≠ 0`.
+        have hz : f.holoRepr y = 0 := OnePoint.coe_injective hcontra
+        have : f.holoRepr y = N (φ y) := by
+          have := hyr; simpa [Function.comp, φ.left_inv hys] using this
+        rw [this] at hz; exact hyN hz
+      · -- center: `toSphere P P = ∞ ∈ source`.
+        simp only [Filter.eventually_pure]
+        rw [f.toSphere_pole P, RiemannSphere.chartInfty_source]
+        simp [OnePoint.infty_ne_coe]
+    filter_upwards [hev, hev3] with y hy hy3
+    -- chartInfty.symm (G (φ y)) = chartInfty.symm (chartInfty (toSphere P y)) = toSphere P y
+    show chartInfty.symm (G (φ y)) = f.toSphere P y
+    have hGval : G (φ y) = chartInfty (f.toSphere P y) := by
+      show chartInfty (f.toSphere P (φ.symm (φ y))) = chartInfty (f.toSphere P y)
+      rw [φ.left_inv hy]
+    rw [hGval, chartInfty.left_inv hy3]
+  -- assemble via the converse bridge; `chartAt ℂ (toSphere P P) = chartInfty`.
+  refine contMDiffAt_of_analyticAt_chartPullback hFcont ?_
+  have hchartInfty : chartAt ℂ (f.toSphere P P) = RiemannSphere.chartInfty := by
+    rw [f.toSphere_pole P]; rfl
+  rw [hchartInfty]
+  exact hGana
+
+/-- **Holomorphy of `toSphere`** (Step 1).  Off `P`, `toSphere = coe ∘ holoRepr`, which is
+analytic where the order of `f` is `≥ 0` (`contMDiffAt_toSphere_of_ne`).  At `P`, reading in
+`chartInfty`, `toSphere` is `z ↦ 1/f`, which is analytic with value `0` because the pole is simple
+(`contMDiffAt_toSphere_at_pole`).  Together these give `ContMDiff … ω` everywhere. -/
+theorem MeromorphicFunction.contMDiff_toSphere (f : MeromorphicFunction X) {P : X}
+    (hP : f.HasSingleSimplePole P) :
+    ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (f.toSphere P) := by
+  intro x
+  by_cases hx : x = P
+  · subst hx; exact f.contMDiffAt_toSphere_at_pole hP
+  · exact f.contMDiffAt_toSphere_of_ne hP hx
 
 set_option linter.unusedSectionVars false in
 /-- Every charted space over `ℂ` is nontrivial at each point: there is always a

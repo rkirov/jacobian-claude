@@ -1126,6 +1126,200 @@ lemma uniformGlue_eqOn_piece (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g 
       (Set.Icc ((k:ℝ)/n) (((k:ℝ)+1)/n)) :=
   fun s hs => uniformGlue_apply_of_mem g hchain n hn k hk s hs.1 hs.2
 
+/-- On the open `k`-th sub-interval, the glue locally equals the affine reparam of piece `k`. -/
+lemma uniformGlue_eventuallyEq_piece (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n) (k : ℕ) (hk : k < n)
+    (t : ℝ) (ht : t ∈ Set.Ioo ((k:ℝ)/n) (((k:ℝ)+1)/n)) :
+    uniformGlue g n =ᶠ[nhds t] (fun s => g k ((n:ℝ)*s - k)) := by
+  have hmem : Set.Ioo ((k:ℝ)/n) (((k:ℝ)+1)/n) ∈ nhds t := isOpen_Ioo.mem_nhds ht
+  filter_upwards [hmem] with s hs
+  obtain ⟨hs1, hs2⟩ := hs
+  unfold uniformGlue
+  rw [uIdx_eq n hn k hk s (le_of_lt hs1) hs2]
+
+/-- **Seam `C¹`-junction of the uniform glue.** At an interior breakpoint `t₀ = j/n` (`0 < j < n`)
+the glue's chart-pullback has derivative `0`: both adjacent pieces are flat-ended, so each one-sided
+`HasDerivWithinAt` is `0`, and the two `Icc` halves union to a neighborhood. -/
+lemma uniformGlue_seam (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0) (n : ℕ) (hn : 0 < n)
+    (hpiece : ∀ k, k < n → Jacobians.IsSmoothPath (g k 0) (g k 1) (g k))
+    (hv0 : ∀ k, k < n → Jacobians.pathSpeed (g k) 0 = 0)
+    (hv1 : ∀ k, k < n → Jacobians.pathSpeed (g k) 1 = 0)
+    (j : ℕ) (hj1 : 1 ≤ j) (hjn : j ≤ n - 1) (t₀ : ℝ) (ht₀ : (n:ℝ) * t₀ = j) :
+    HasDerivAt ((chartAt (H := ℂ) (uniformGlue g n t₀)).toFun ∘ uniformGlue g n) 0 t₀ := by
+  classical
+  have hnpos : (0:ℝ) < n := by exact_mod_cast hn
+  have hjlt : j < n := by omega
+  have hj1lt : j - 1 < n := by omega
+  have ht₀eq : t₀ = (j:ℝ)/n := by field_simp at ht₀ ⊢; linarith
+  have hval : uniformGlue g n t₀ = g j 0 := by
+    have := uniformGlue_apply_of_mem g hchain n hn j hjlt t₀
+      (by rw [ht₀eq]) (by rw [ht₀eq, div_le_div_iff_of_pos_right hnpos]; push_cast; linarith)
+    rwa [ht₀, show (j:ℝ) - j = 0 from by ring] at this
+  have hchainj : g (j-1) 1 = g j 0 := by
+    have := hchain (j-1); rwa [Nat.sub_add_cancel hj1] at this
+  rw [hval]
+  set c : X := g j 0 with hc
+  set f : ℝ → ℂ := (chartAt (H := ℂ) c).toFun ∘ uniformGlue g n with hf
+  set gL : ℝ → ℂ := (chartAt (H := ℂ) c).toFun ∘ (fun s => g (j-1) ((n:ℝ)*s-(j-1:ℕ))) with hgLdef
+  set gR : ℝ → ℂ := (chartAt (H := ℂ) c).toFun ∘ (fun s => g j ((n:ℝ)*s-(j:ℕ))) with hgRdef
+  have hgL_HDA : HasDerivAt gL 0 t₀ := by
+    have harg : (n:ℝ)*t₀ - (j-1:ℕ) = 1 := by rw [ht₀, Nat.cast_sub hj1]; push_cast; ring
+    have hg_HDA : HasDerivAt ((chartAt (H := ℂ) c).toFun ∘ g (j-1)) 0 1 := by
+      have hd : DifferentiableAt ℝ ((chartAt (H := ℂ) (g (j-1) 1)).toFun ∘ g (j-1)) 1 :=
+        (hpiece (j-1) hj1lt).diff 1 (by rw [Set.uIcc_of_le (by norm_num:(0:ℝ)≤1)]; exact ⟨zero_le_one,le_refl _⟩)
+      have hdz : deriv ((chartAt (H := ℂ) (g (j-1) 1)).toFun ∘ g (j-1)) 1 = 0 := hv1 (j-1) hj1lt
+      have : HasDerivAt ((chartAt (H := ℂ) (g (j-1) 1)).toFun ∘ g (j-1)) 0 1 := by
+        rw [← hdz]; exact hd.hasDerivAt
+      rwa [hchainj] at this
+    have haff_HDA : HasDerivAt (fun s:ℝ => (n:ℝ)*s - (j-1:ℕ)) (n:ℝ) t₀ := by
+      simpa using ((hasDerivAt_id t₀).const_mul (n:ℝ)).sub_const ((j-1:ℕ):ℝ)
+    have := hg_HDA.scomp_of_eq t₀ haff_HDA harg.symm; simpa [hgLdef] using this
+  have hgR_HDA : HasDerivAt gR 0 t₀ := by
+    have harg : (n:ℝ)*t₀ - (j:ℕ) = 0 := by rw [ht₀]; push_cast; ring
+    have hg_HDA : HasDerivAt ((chartAt (H := ℂ) c).toFun ∘ g j) 0 0 := by
+      have hd : DifferentiableAt ℝ ((chartAt (H := ℂ) (g j 0)).toFun ∘ g j) 0 :=
+        (hpiece j hjlt).diff 0 (by rw [Set.uIcc_of_le (by norm_num:(0:ℝ)≤1)]; exact ⟨le_refl _,zero_le_one⟩)
+      have hdz : deriv ((chartAt (H := ℂ) (g j 0)).toFun ∘ g j) 0 = 0 := hv0 j hjlt
+      rw [← hdz]; exact hd.hasDerivAt
+    have haff_HDA : HasDerivAt (fun s:ℝ => (n:ℝ)*s - (j:ℕ)) (n:ℝ) t₀ := by
+      simpa using ((hasDerivAt_id t₀).const_mul (n:ℝ)).sub_const ((j:ℕ):ℝ)
+    have := hg_HDA.scomp_of_eq t₀ haff_HDA harg.symm; simpa [hgRdef] using this
+  have hlo : ((j-1:ℕ):ℝ)/n ≤ t₀ := by
+    rw [ht₀eq, div_le_div_iff_of_pos_right hnpos, Nat.cast_sub hj1]; push_cast; linarith
+  have hhi : t₀ ≤ (((j:ℝ))+1)/n := by
+    rw [ht₀eq, div_le_div_iff_of_pos_right hnpos]; linarith
+  have heqL : Set.EqOn f gL (Set.Icc (((j-1:ℕ):ℝ)/n) t₀) := by
+    intro s hs
+    simp only [hf, hgLdef, Function.comp_apply]; congr 1
+    have hcast : ((j-1:ℕ):ℝ) + 1 = (j:ℝ) := by rw [Nat.cast_sub hj1]; push_cast; ring
+    apply uniformGlue_apply_of_mem g hchain n hn (j-1) hj1lt s hs.1
+    rw [hcast]; rw [ht₀eq] at hs; exact hs.2
+  have heqR : Set.EqOn f gR (Set.Icc t₀ ((((j:ℝ))+1)/n)) := by
+    intro s hs
+    simp only [hf, hgRdef, Function.comp_apply]; congr 1
+    apply uniformGlue_apply_of_mem g hchain n hn j hjlt s _ hs.2
+    rw [ht₀eq] at hs; exact hs.1
+  have hL_WDA : HasDerivWithinAt f 0 (Set.Icc (((j-1:ℕ):ℝ)/n) t₀) t₀ :=
+    (hgL_HDA.hasDerivWithinAt).congr (fun s hs => heqL hs) (heqL (Set.right_mem_Icc.mpr hlo))
+  have hR_WDA : HasDerivWithinAt f 0 (Set.Icc t₀ ((((j:ℝ))+1)/n)) t₀ :=
+    (hgR_HDA.hasDerivWithinAt).congr (fun s hs => heqR hs) (heqR (Set.left_mem_Icc.mpr hhi))
+  have hunion : HasDerivWithinAt f 0
+      (Set.Icc (((j-1:ℕ):ℝ)/n) t₀ ∪ Set.Icc t₀ ((((j:ℝ))+1)/n)) t₀ := hL_WDA.union hR_WDA
+  have hnbhd : Set.Icc (((j-1:ℕ):ℝ)/n) t₀ ∪ Set.Icc t₀ ((((j:ℝ))+1)/n) ∈ nhds t₀ := by
+    rw [Set.Icc_union_Icc_eq_Icc hlo hhi]
+    apply Icc_mem_nhds
+    · rw [ht₀eq, div_lt_div_iff_of_pos_right hnpos, Nat.cast_sub hj1]; push_cast; linarith
+    · rw [ht₀eq, div_lt_div_iff_of_pos_right hnpos]; linarith
+  exact hunion.hasDerivAt hnbhd
+
+/-- `pathSpeed` is local: it agrees on functions equal near the point. -/
+lemma pathSpeed_congr_nhds (γ γ' : ℝ → X) (t : ℝ) (h : γ =ᶠ[nhds t] γ') :
+    Jacobians.pathSpeed γ t = Jacobians.pathSpeed γ' t := by
+  unfold Jacobians.pathSpeed
+  rw [h.eq_of_nhds]; congr 1; exact Filter.EventuallyEq.fderiv_eq (h.fun_comp _)
+
+/-- Near `t = 0` the glue equals the affine reparam of piece `0` (clamped index). -/
+lemma uniformGlue_eventuallyEq_zero (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n) :
+    uniformGlue g n =ᶠ[nhds 0] (fun s => g 0 ((n:ℝ)*s - (0:ℕ))) := by
+  have hnpos : (0:ℝ) < n := by exact_mod_cast hn
+  have hmem : Iio ((1:ℝ)/n) ∈ nhds (0:ℝ) := isOpen_Iio.mem_nhds (by simp only [mem_Iio]; positivity)
+  filter_upwards [hmem] with s hs
+  simp only [Nat.cast_zero, sub_zero]
+  rcases le_or_gt s 0 with h | h
+  · unfold uniformGlue; rw [uIdx_zero_of_nonpos n s h]; norm_num
+  · unfold uniformGlue
+    rw [uIdx_eq n hn 0 hn s (by rw [Nat.cast_zero, zero_div]; exact le_of_lt h) (by simpa using hs)]
+    norm_num
+
+/-- Near `t = 1` the glue equals the affine reparam of the last piece (clamped index). -/
+lemma uniformGlue_eventuallyEq_one (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n) :
+    uniformGlue g n =ᶠ[nhds 1] (fun s => g (n-1) ((n:ℝ)*s - (n-1:ℕ))) := by
+  have hnpos : (0:ℝ) < n := by exact_mod_cast hn
+  have hmem : Ioi (((n-1:ℕ):ℝ)/n) ∈ nhds (1:ℝ) := by
+    apply isOpen_Ioi.mem_nhds
+    simp only [mem_Ioi]
+    rw [div_lt_one hnpos, Nat.cast_sub hn]; push_cast; linarith
+  filter_upwards [hmem] with s hs
+  rcases le_or_gt 1 s with h | h
+  · unfold uniformGlue; rw [uIdx_last_of_ge_one n hn s h]
+  · unfold uniformGlue
+    rw [uIdx_eq n hn (n-1) (by omega) s (le_of_lt hs)
+        (by rw [show ((n-1:ℕ):ℝ)+1 = (n:ℝ) from by rw [Nat.cast_sub hn]; push_cast; ring,
+              div_self (ne_of_gt hnpos)]; exact h)]
+
+/-- The affine reparam of piece `k` has pathSpeed `n · (pathSpeed of piece k at the rescaled arg)`. -/
+lemma piece_pathSpeed_eq (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n)
+    (hpiece : ∀ k, k < n → Jacobians.IsSmoothPath (g k 0) (g k 1) (g k))
+    (k : ℕ) (hk : k < n) (s : ℝ) (hsmem : (n:ℝ)*s - k ∈ Icc (0:ℝ) 1) :
+    Jacobians.pathSpeed (fun u => g k ((n:ℝ)*u - k)) s
+      = (n:ℂ) * Jacobians.pathSpeed (g k) ((n:ℝ)*s - k) := by
+  have hform : (fun u => g k ((n:ℝ)*u - k)) = (fun u => g k ((n:ℝ)*u + (-(k:ℝ)))) := by
+    funext u; ring_nf
+  rw [hform]
+  have hdiff : DifferentiableAt ℝ ((chartAt (H := ℂ) (g k ((n:ℝ)*s + (-(k:ℝ))))).toFun ∘ g k)
+      ((n:ℝ)*s + (-(k:ℝ))) := by
+    have : (n:ℝ)*s + (-(k:ℝ)) = (n:ℝ)*s - k := by ring
+    rw [this]
+    exact (hpiece k hk).diff ((n:ℝ)*s-k) (by rw [Set.uIcc_of_le (by norm_num:(0:ℝ)≤1)]; exact hsmem)
+  rw [pathSpeed_affine_comp (g k) (n:ℝ) (-(k:ℝ)) s hdiff]
+  congr 2 <;> ring
+
+/-- **The glue's pathSpeed equals the affine-reparam piece's pathSpeed on the closed `k`-th piece.**
+On the open interior via locality; at the two endpoints both vanish (flat-ended seams / boundaries). -/
+lemma uniformGlue_pathSpeed_eqOn_piece (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
+    (n : ℕ) (hn : 0 < n)
+    (hpiece : ∀ k, k < n → Jacobians.IsSmoothPath (g k 0) (g k 1) (g k))
+    (hv0 : ∀ k, k < n → Jacobians.pathSpeed (g k) 0 = 0)
+    (hv1 : ∀ k, k < n → Jacobians.pathSpeed (g k) 1 = 0)
+    (k : ℕ) (hk : k < n) :
+    ∀ s ∈ Icc ((k:ℝ)/n) (((k:ℝ)+1)/n),
+      Jacobians.pathSpeed (uniformGlue g n) s
+        = Jacobians.pathSpeed (fun u => g k ((n:ℝ)*u - k)) s := by
+  have hnpos : (0:ℝ) < n := by exact_mod_cast hn
+  intro s hs
+  have harg_mem : (n:ℝ)*s - k ∈ Icc (0:ℝ) 1 := by
+    refine ⟨?_, ?_⟩
+    · have := hs.1; rw [div_le_iff₀ hnpos] at this; linarith
+    · have := hs.2; rw [le_div_iff₀ hnpos] at this; linarith
+  rcases eq_or_lt_of_le hs.1 with hesL | hgt
+  · have hns : (n:ℝ)*s = k := by rw [← hesL]; field_simp
+    have hargL : (n:ℝ)*s - k = 0 := by rw [hns]; ring
+    have hrhs : Jacobians.pathSpeed (fun u => g k ((n:ℝ)*u - k)) s = 0 := by
+      rw [piece_pathSpeed_eq g n hn hpiece k hk s harg_mem, hargL, hv0 k hk, mul_zero]
+    rw [hrhs]
+    rcases Nat.eq_zero_or_pos k with hk0 | hkpos
+    · subst hk0
+      have hs0 : s = 0 := by simpa using hesL.symm
+      subst hs0
+      rw [pathSpeed_congr_nhds _ _ 0 (uniformGlue_eventuallyEq_zero g n hn)]
+      rw [piece_pathSpeed_eq g n hn hpiece 0 hk 0 (by simpa using harg_mem)]
+      simp [hv0 0 hk]
+    · have hseam := uniformGlue_seam g hchain n hn hpiece hv0 hv1 k hkpos (by omega) s hns
+      show fderiv ℝ ((chartAt (H := ℂ) (uniformGlue g n s)).toFun ∘ uniformGlue g n) s (1:ℝ) = 0
+      rw [fderiv_apply_one_eq_deriv]; exact hseam.deriv
+  · rcases eq_or_lt_of_le hs.2 with hesR | hlt2
+    · have hns : (n:ℝ)*s = k + 1 := by rw [hesR]; field_simp
+      have hargR : (n:ℝ)*s - k = 1 := by rw [hns]; ring
+      have hrhs : Jacobians.pathSpeed (fun u => g k ((n:ℝ)*u - k)) s = 0 := by
+        rw [piece_pathSpeed_eq g n hn hpiece k hk s harg_mem, hargR, hv1 k hk, mul_zero]
+      rw [hrhs]
+      rcases lt_or_ge (k+1) n with hknext | hklast
+      · have hseam := uniformGlue_seam g hchain n hn hpiece hv0 hv1 (k+1) (by omega) (by omega) s
+          (by rw [hns]; push_cast; ring)
+        show fderiv ℝ ((chartAt (H := ℂ) (uniformGlue g n s)).toFun ∘ uniformGlue g n) s (1:ℝ) = 0
+        rw [fderiv_apply_one_eq_deriv]; exact hseam.deriv
+      · have hkn : k + 1 = n := by omega
+        have hncast : (n:ℝ) = (k:ℝ) + 1 := by rw [← hkn]; push_cast; ring
+        have hs1 : s = 1 := by rw [hesR, hncast]; field_simp
+        subst hs1
+        rw [pathSpeed_congr_nhds _ _ 1 (uniformGlue_eventuallyEq_one g n hn)]
+        have hk' : n - 1 < n := by omega
+        rw [piece_pathSpeed_eq g n hn hpiece (n-1) hk' 1 ?_]
+        · have hcast : (n:ℝ)*1 - (n-1:ℕ) = 1 := by rw [Nat.cast_sub hn]; push_cast; ring
+          rw [hcast, hv1 (n-1) hk', mul_zero]
+        · rw [show (n:ℝ)*1 - (n-1:ℕ) = 1 from by rw [Nat.cast_sub hn]; push_cast; ring]
+          exact ⟨zero_le_one, le_refl _⟩
+    · rw [pathSpeed_congr_nhds _ _ s (uniformGlue_eventuallyEq_piece g n hn k hk s ⟨hgt, hlt2⟩)]
+
 /-! ### A4''. Smoothness of the uniform glue -/
 
 /-- **The uniform glue is a flat-ended smooth path.** Given each piece `g k` (`k < n`) is an
