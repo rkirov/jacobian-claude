@@ -278,4 +278,48 @@ Cor. 4.25 / the argument principle). The RR derivations below consume it. -/
 theorem MeromorphicFunction.deg_div (f : MeromorphicFunction X) :
     Divisor.deg X f.div = 0 := sorry
 
+/-! ## Part 3: negative-degree vanishing (explicit finiteness, dim 0)
+
+The first genuine consequence, proved outright from `deg_div` + faithfulness: a linear system of
+negative degree is trivial. This is `FiniteDimensional` with `l(D) = 0`, the cleanest explicit
+finiteness — and it uses *only* the residue-theorem input, not the general finiteness theorem. -/
+
+/-- `l(D) = 0` when `deg D < 0`. Any `f ∈ L(D)` with nonzero germ would give (by faithfulness) a
+divisor `div f ≥ −D` with `deg(div f) = 0 ≥ −deg D > 0`, impossible; so every `f ∈ L(D)` is germ-
+zero, the quotient `L(D)/germZero` is trivial, and its dimension is `0`. -/
+theorem lDim_eq_zero_of_deg_neg (D : Divisor X) (hD : Divisor.deg X D < 0) :
+    lDim (X := X) D = 0 := by
+  have hsub : linearSystem (X := X) D ≤ germZeroSubmodule := by
+    intro f hf
+    by_contra hng
+    have hex : ∃ x₀, f.orderW x₀ ≠ ⊤ := by
+      by_contra h; push_neg at h; exact hng h
+    have hfaith : ∀ z : X, f.orderW z ≠ ⊤ := fun z =>
+      MeromorphicFunction.orderW_ne_top_of_exists f hex z
+    have hdiv : ∀ x, -(D x) ≤ (f.div : Divisor X) x := by
+      intro x
+      have hmem : (-(D x) : WithTop ℤ) ≤ f.orderW x := hf x
+      obtain ⟨n, hn⟩ := WithTop.ne_top_iff_exists.mp (hfaith x)
+      rw [← hn] at hmem
+      have hdivx : (f.div : Divisor X) x = n := by
+        show (f.orderW x).untop₀ = n
+        rw [← hn]; rfl
+      rw [hdivx]; exact WithTop.coe_le_coe.mp hmem
+    have heff : ∀ x, 0 ≤ (f.div + D) x := fun x => by
+      rw [Finsupp.add_apply]; linarith [hdiv x]
+    have hdeg_eff : (0 : ℤ) ≤ Divisor.deg X (f.div + D) := by
+      change (0 : ℤ) ≤ ∑ i ∈ (f.div + D).support, (f.div + D) i
+      exact Finset.sum_nonneg fun i _ => heff i
+    rw [map_add, MeromorphicFunction.deg_div f] at hdeg_eff
+    omega
+  rw [lDim]
+  have htop : (germZeroSubmodule (X := X)).submoduleOf (linearSystem (X := X) D) = ⊤ :=
+    Submodule.comap_subtype_eq_top.mpr hsub
+  rw [htop]
+  haveI : Subsingleton (↥(linearSystem (X := X) D) ⧸
+      (⊤ : Submodule ℂ ↥(linearSystem (X := X) D))) :=
+    ⟨fun a b => Quotient.inductionOn₂' a b fun x y =>
+      (Submodule.Quotient.eq ⊤).mpr Submodule.mem_top⟩
+  exact Module.finrank_zero_of_subsingleton
+
 end Jacobians
