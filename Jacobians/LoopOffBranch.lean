@@ -1077,6 +1077,81 @@ lemma uniformGlue_apply_of_mem (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = 
     unfold uniformGlue
     rw [uIdx_eq n hn k hk t h0 hlt]
 
+/-- **General affine-reparametrization pathSpeed.** `pathSpeed (s ↦ γ (a·s+b)) t = a · pathSpeed γ
+(a·t+b)`, given the chart-pullback of `γ` is differentiable at `a·t+b`. The general-`(a,b)` analogue
+of `pathSpeed_concat_left/right` (`a=2`), used at uniform-glue seams (`a=n`). -/
+lemma pathSpeed_affine_comp (γ : ℝ → X) (a b t : ℝ)
+    (hdiff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ (a*t+b))).toFun ∘ γ) (a*t+b)) :
+    Jacobians.pathSpeed (fun s => γ (a*s+b)) t = (a:ℂ) * Jacobians.pathSpeed γ (a*t+b) := by
+  unfold Jacobians.pathSpeed
+  show fderiv ℝ ((chartAt (H := ℂ) (γ (a*t+b))).toFun ∘ (fun s => γ (a*s+b))) t (1:ℝ)
+      = (a:ℂ) * fderiv ℝ ((chartAt (H := ℂ) (γ (a*t+b))).toFun ∘ γ) (a*t+b) (1:ℝ)
+  set ψ : ℝ → ℂ := (chartAt (H := ℂ) (γ (a*t+b))).toFun ∘ γ with hψ
+  have hcomp : (chartAt (H := ℂ) (γ (a*t+b))).toFun ∘ (fun s => γ (a*s+b))
+      = ψ ∘ (fun s : ℝ => a*s+b) := by funext s; rfl
+  rw [hcomp]
+  have haff : DifferentiableAt ℝ (fun s : ℝ => a*s+b) t :=
+    ((differentiableAt_const a).mul differentiableAt_id).add (differentiableAt_const b)
+  rw [fderiv_comp t hdiff haff]
+  have hfa : fderiv ℝ (fun s : ℝ => a*s+b) t (1:ℝ) = a := by
+    rw [fderiv_add_const, fderiv_const_mul differentiableAt_id]; simp
+  show (fderiv ℝ ψ (a*t+b)) (fderiv ℝ (fun s : ℝ => a*s+b) t 1) = _
+  rw [hfa]
+  calc (fderiv ℝ ψ (a*t+b)) a
+      = (fderiv ℝ ψ (a*t+b)) ((a:ℝ) • (1:ℝ)) := by rw [smul_eq_mul, mul_one]
+    _ = (a:ℝ) • (fderiv ℝ ψ (a*t+b)) 1 := (fderiv ℝ ψ (a*t+b)).map_smul a 1
+    _ = (a:ℂ) * (fderiv ℝ ψ (a*t+b)) 1 := by rw [Complex.real_smul]
+
+/-- `uniformGlue g n` agrees with the affine reparametrization `s ↦ g k (n·s − k)` of piece `k` on
+the closed `k`-th sub-interval `[k/n,(k+1)/n]`. -/
+lemma uniformGlue_eqOn_piece (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
+    (n : ℕ) (hn : 0 < n) (k : ℕ) (hk : k < n) :
+    Set.EqOn (uniformGlue g n) (fun s => g k ((n:ℝ) * s - k))
+      (Set.Icc ((k:ℝ)/n) (((k:ℝ)+1)/n)) :=
+  fun s hs => uniformGlue_apply_of_mem g hchain n hn k hk s hs.1 hs.2
+
+/-! ### A4''. Smoothness of the uniform glue -/
+
+/-- **The uniform glue is a flat-ended smooth path.** Given each piece `g k` (`k < n`) is an
+`IsSmoothPath (g k 0) (g k 1)` with vanishing endpoint velocities, and consecutive pieces chain,
+`uniformGlue g n` is an `IsSmoothPath (g 0 0) (g (n-1) 1)`: continuity and velocity-continuity glue
+over the closed uniform cover via the affine-reparam machinery; chart-pullback differentiability is
+the per-point chain rule on open pieces, and the `HasDerivWithinAt … 0` union at each seam (every
+piece flat-ended ⇒ both one-sided seam derivatives vanish). -/
+lemma isSmoothPath_uniformGlue (g : ℕ → ℝ → X)
+    (hchain : ∀ j, g j 1 = g (j+1) 0) (n : ℕ) (hn : 0 < n)
+    (hpiece : ∀ k, k < n → Jacobians.IsSmoothPath (g k 0) (g k 1) (g k))
+    (hv0 : ∀ k, k < n → Jacobians.pathSpeed (g k) 0 = 0)
+    (hv1 : ∀ k, k < n → Jacobians.pathSpeed (g k) 1 = 0) :
+    Jacobians.IsSmoothPath (g 0 0) (g (n-1) 1) (uniformGlue g n) := by
+  have hnpos : (0:ℝ) < n := by exact_mod_cast hn
+  -- chart-pullback differentiability of each piece's affine reparam, anywhere its arg lands in [0,1].
+  have hpiece_diff : ∀ k, k < n → ∀ u : ℝ, u ∈ Set.Icc (0:ℝ) 1 →
+      DifferentiableAt ℝ ((chartAt (H := ℂ) (g k u)).toFun ∘ g k) u :=
+    fun k hk u hu => (hpiece k hk).diff u (by rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact hu)
+  -- value at 0 and 1.
+  have hval0 : uniformGlue g n 0 = g 0 0 := by
+    have := uniformGlue_apply_of_mem g hchain n hn 0 hn 0
+      (by rw [Nat.cast_zero, zero_div])
+      (by rw [Nat.cast_zero, zero_add]; positivity)
+    rwa [Nat.cast_zero, mul_zero, sub_zero] at this
+  have hval1 : uniformGlue g n 1 = g (n-1) 1 := by
+    have hk : n - 1 < n := by omega
+    have hcast : ((n:ℝ) - 1) = ((n-1 : ℕ) : ℝ) := by
+      rw [Nat.cast_sub hn]; push_cast; ring
+    have h0 : ((n-1 : ℕ):ℝ)/n ≤ 1 := by rw [div_le_one hnpos]; rw [← hcast]; linarith
+    have h1 : (1:ℝ) ≤ (((n-1:ℕ):ℝ)+1)/n := by
+      rw [le_div_iff₀ hnpos, ← hcast]; ring_nf; linarith
+    have := uniformGlue_apply_of_mem g hchain n hn (n-1) hk 1 h0 h1
+    rwa [mul_one, ← hcast, sub_sub_cancel] at this
+  refine ⟨hval0, hval1, ?_, ?_, ?_⟩
+  · -- continuity, via closed-cover union over pieces.
+    sorry
+  · -- chart-pullback differentiability at each t ∈ [0,1].
+    sorry
+  · -- velocity-section continuity.
+    sorry
+
 /-! ### A5. Sub-ball chart cover (subdivision infrastructure)
 
 `exists_chartCover` (in `Jacobians/SmoothPath.lean`) delivers, for a continuous `γ`, a uniform

@@ -484,7 +484,7 @@ rescaled by `a`.** This is the shape of each half of `concat` (left: `a = 2, b =
 (itself the `a = -1, b = 1` case): base continuity from reparametrizing the projection, fibre
 continuity from the original trivialized fibre scaled by `a` (scaling is ℂ-linear, passes through
 `continuousLinearMapAt`). -/
-private theorem velCont_affineReparam (γ : ℝ → X) (a b : ℝ) {D : Set ℝ}
+theorem velCont_affineReparam (γ : ℝ → X) (a b : ℝ) {D : Set ℝ}
     (hmaps : Set.MapsTo (fun s : ℝ => a * s + b) D (Set.Icc 0 1))
     (hγ : ContinuousOn (fun s : ℝ =>
         Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s))

@@ -213,6 +213,32 @@ theorem MeromorphicFunction.exists_holoRepr_eq_NFOn (f : MeromorphicFunction X) 
   filter_upwards [mem_nhdsWithin_of_mem_nhds hev] with y hy
   simp [hFdef, Function.comp, φ.left_inv hy]
 
+/-- **The chart pullback of `holoRepr` is analytic at a point of nonnegative order.**
+This is the local (pointwise) core of `mdifferentiable_holoRepr`, requiring `0 ≤ orderAtPoint`
+*only at `x₀`* (not globally). Read back through the chart `φ = chartAt x₀`, the limit-repair
+`holoRepr ∘ φ.symm` agrees near `φ x₀` with the analytic normal-form representative of the
+pullback (`exists_holoRepr_eq_NFOn`), hence is `AnalyticAt ℂ`. -/
+theorem MeromorphicFunction.analyticAt_holoRepr_chartPullback_of_orderNonneg
+    (f : MeromorphicFunction X) {x₀ : X} (h₀ : 0 ≤ f.orderAtPoint x₀) :
+    AnalyticAt ℂ (f.holoRepr ∘ (chartAt (H := ℂ) x₀).symm) ((chartAt (H := ℂ) x₀) x₀) := by
+  set φ := chartAt (H := ℂ) x₀ with hφ
+  obtain ⟨V, hVopen, hzV, hFV, hrepr⟩ := f.exists_holoRepr_eq_NFOn x₀ h₀
+  -- NFOn is analytic at φ x₀ (its order there = order of F = orderAtPoint x₀ ≥ 0, and it's in NF).
+  have hNFana : AnalyticAt ℂ (toMeromorphicNFOn (f.toFun ∘ φ.symm) V) (φ x₀) := by
+    have hNF : MeromorphicNFAt (toMeromorphicNFOn (f.toFun ∘ φ.symm) V) (φ x₀) :=
+      meromorphicNFOn_toMeromorphicNFOn (f.toFun ∘ φ.symm) V hzV
+    have hord : meromorphicOrderAt (toMeromorphicNFOn (f.toFun ∘ φ.symm) V) (φ x₀) =
+        meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x₀) :=
+      meromorphicOrderAt_congr (hFV.toMeromorphicNFOn_eq_self_on_nhdsNE hzV)
+    have h₀' : 0 ≤ meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x₀) := by
+      rwa [show f.orderAtPoint x₀ =
+        (meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x₀)).untop₀ from rfl, untop₀_nonneg_iff] at h₀
+    exact hNF.meromorphicOrderAt_nonneg_iff_analyticAt.1 (hord ▸ h₀')
+  -- holoRepr ∘ φ.symm =ᶠ[𝓝 (φ x₀)] NFOn, so it's analytic at φ x₀.
+  have hEq : f.holoRepr ∘ φ.symm =ᶠ[𝓝 (φ x₀)] toMeromorphicNFOn (f.toFun ∘ φ.symm) V := by
+    filter_upwards [hVopen.mem_nhds hzV] with w hw using hrepr w hw
+  exact hNFana.congr hEq.symm
+
 /-- **The limit-repair is globally holomorphic.** If `f` has no pole (`∀ x, 0 ≤ orderAtPoint x`),
 then `f.holoRepr : X → ℂ` is `MDifferentiable`. In each chart, `holoRepr` read back equals the
 analytic normal-form representative of the pullback (`exists_holoRepr_eq_NFOn`), hence is analytic;
@@ -222,23 +248,8 @@ theorem MeromorphicFunction.mdifferentiable_holoRepr (f : MeromorphicFunction X)
     MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f.holoRepr := by
   intro x₀
   set φ := chartAt (H := ℂ) x₀ with hφ
-  obtain ⟨V, hVopen, hzV, hFV, hrepr⟩ := f.exists_holoRepr_eq_NFOn x₀ (hpos x₀)
-  -- NFOn is analytic at φ x₀ (its order there = order of F = orderAtPoint x₀ ≥ 0, and it's in NF).
-  have hNFana : AnalyticAt ℂ (toMeromorphicNFOn (f.toFun ∘ φ.symm) V) (φ x₀) := by
-    have hNF : MeromorphicNFAt (toMeromorphicNFOn (f.toFun ∘ φ.symm) V) (φ x₀) :=
-      meromorphicNFOn_toMeromorphicNFOn (f.toFun ∘ φ.symm) V hzV
-    have hord : meromorphicOrderAt (toMeromorphicNFOn (f.toFun ∘ φ.symm) V) (φ x₀) =
-        meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x₀) :=
-      meromorphicOrderAt_congr (hFV.toMeromorphicNFOn_eq_self_on_nhdsNE hzV)
-    have h₀ : 0 ≤ meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x₀) := by
-      have := hpos x₀
-      rwa [show f.orderAtPoint x₀ =
-        (meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x₀)).untop₀ from rfl, untop₀_nonneg_iff] at this
-    exact hNF.meromorphicOrderAt_nonneg_iff_analyticAt.1 (hord ▸ h₀)
-  -- holoRepr ∘ φ.symm =ᶠ[𝓝 (φ x₀)] NFOn, so it's analytic at φ x₀.
-  have hEq : f.holoRepr ∘ φ.symm =ᶠ[𝓝 (φ x₀)] toMeromorphicNFOn (f.toFun ∘ φ.symm) V := by
-    filter_upwards [hVopen.mem_nhds hzV] with w hw using hrepr w hw
-  have hReprAna : AnalyticAt ℂ (f.holoRepr ∘ φ.symm) (φ x₀) := hNFana.congr hEq.symm
+  have hReprAna : AnalyticAt ℂ (f.holoRepr ∘ φ.symm) (φ x₀) :=
+    f.analyticAt_holoRepr_chartPullback_of_orderNonneg (hpos x₀)
   -- Lift analyticity in the chart to MDifferentiableAt via the chart bridge.
   have hIM : IsManifold 𝓘(ℂ) 1 X := IsManifold.of_le le_top
   refine (mdifferentiableWithinAt_univ ..).mp ?_
