@@ -989,3 +989,37 @@ process on the 8 GB host); recover crashed agents' work from disk/stash before r
 "quick wiring" hits an import cycle right before a reset, STOP and document rather than force-refactor.
 Commits `accd405`→`6417b03`. See memory: `feedback_verify_agent_commits`,
 `project_loop_off_branch_6_leftover`.
+
+---
+
+## 2026-06-01 (latest) — RR reduction proven + wired; deg_div reassessed; clean-context checkpoint
+
+**User steering this session:**
+- *"do the RR ladder next"* → built the RR interface bottom-up.
+- *"be careful with things like Data, it just moves the missing stuff around — looks like work
+  without getting us closer"* → killed a `RiemannRochData` typeclass that was relocation theater;
+  chose **"prove the reduction for real"** — one genuine `riemannRoch` input, everything downstream
+  PROVEN. (Caught a soundness bug doing so: `toFun` germ-junk made `lDim≡0` ⟹ RR false; fixed with a
+  `germZeroSubmodule` quotient.)
+- *"push on faithfulness — hook up to things that need RR"* → wired the headline.
+- *"knock it out, and think whether we can parallelize"* → finished the single-pole extraction,
+  launched a worktree-isolated `deg_div` agent.
+- *"clean context — take stock, record the plan"* → rewrote `docs/STATUS.md` authoritative (this).
+
+**What landed:** `exists_singleSimplePole_of_genus_zero_of_rr` PROVEN (l(P)=2 → non-germ-const member →
+pole forced to order −1); **wired to the headline** `exists_singleSimplePole_of_genus_zero` (was an
+opaque sorry) by moving `HasSingleSimplePole` down to `MeromorphicLiouville` to break the import
+cycle. Forward genus-0 endgame now rests on exactly `{exists_riemannRoch_divisor, deg_div}`. Sorries
+6→5. Commits `712fbb6`(extraction)→`9af0e0f`(wire).
+
+**My self-correction (worth flagging):** I had scoped `deg_div` as a *separable ~150-250 LoC quick
+win*. The worktree agent verified that's **WRONG** — it's wall-class (manifold residue theorem
+`∑Res=0`, or a ramified map-degree whose order↔multiplicity bridge is itself open; the repo's own
+`riemann_roch_proof_plan.md §B4` pegs it 400-900 LoC). The agent did the right thing: honest BLOCKED
+report, no fake green, no relocation. Lesson: a rough first scope ("separable") needs a *deep* dig
+before committing a session to it.
+
+**Worktree/olean lesson:** a fresh git worktree does NOT inherit `.lake/` (it's gitignored) — so it
+can't corrupt main's cache (good), but it's cold and would rebuild Mathlib from source (hours/OOM).
+Fix used: symlink `WT/.lake/packages` → main's (share Mathlib read-only, it's never edited) while
+keeping `WT/.lake/build` separate. Worked — agent built without rebuilding Mathlib.
