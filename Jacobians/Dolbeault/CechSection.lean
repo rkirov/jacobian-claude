@@ -63,4 +63,42 @@ noncomputable def OmegaD (D : Divisor X) (U : Opens X) : Submodule ℂ (U → �
     f ∈ OmegaD D U ↔ IsMeromorphic (U : Type _) f ∧ ∀ x : U, (-(D x.1) : WithTop ℤ) ≤ ordU f x :=
   Iff.rfl
 
+/-! ### Sheaf restriction — the building block of the Čech differential
+
+For `V ≤ U` (opens), restriction `𝒪_D(U) → 𝒪_D(V)` is plain precomposition with the open inclusion
+`↥V → ↥U`. Both `↥V`- and `↥U`-charts are `OpenPartialHomeomorph.subtypeRestr`s of the *same* ambient
+chart `chartAt ℂ v.1` (`TopologicalSpace.Opens.chartAt_eq`), so meromorphy and order are preserved. -/
+
+section Restriction
+variable {D : Divisor X} {U V : Opens X}
+
+/-- The open inclusion `↥V → ↥U` for `V ≤ U`. -/
+def openIncl (h : V ≤ U) : V → U := fun v => ⟨v.1, h v.2⟩
+
+@[simp] theorem openIncl_val (h : V ≤ U) (v : V) : (openIncl h v).1 = v.1 := rfl
+
+/-- **Mechanical leaf** (chart bookkeeping; to be discharged in the bottom-out pass): the order is
+preserved under restriction to a smaller open. Both charts are `subtypeRestr`s of the same ambient
+chart (`Opens.chartAt_eq`), so the chart pullbacks agree near the chart point and `meromorphicOrderAt`
+is unchanged (`MeromorphicAt.congr`). NOT a deep analytic gap. -/
+theorem ordU_comp_openIncl (h : V ≤ U) (f : U → ℂ) (v : V) :
+    ordU (f ∘ openIncl h) v = ordU f (openIncl h v) := sorry
+
+/-- **Mechanical leaf** (companion to `ordU_comp_openIncl`): meromorphy on `↥U` restricts to the open
+sub-submanifold `↥V`. -/
+theorem isMeromorphic_comp_openIncl (h : V ≤ U) {f : U → ℂ}
+    (hf : IsMeromorphic (U : Type _) f) : IsMeromorphic (V : Type _) (f ∘ openIncl h) := sorry
+
+/-- Restriction of sections `𝒪_D(U) → 𝒪_D(V)` for `V ≤ U`. -/
+noncomputable def OmegaD.restrict (h : V ≤ U) : OmegaD D U →ₗ[ℂ] OmegaD D V :=
+  ((LinearMap.funLeft ℂ ℂ (openIncl h)).domRestrict (OmegaD D U)).codRestrict (OmegaD D V)
+    fun f => ⟨isMeromorphic_comp_openIncl h f.2.1, fun v => by
+      show (-(D v.1) : WithTop ℤ) ≤ ordU ((f : U → ℂ) ∘ openIncl h) v
+      rw [ordU_comp_openIncl h]; exact f.2.2 (openIncl h v)⟩
+
+@[simp] theorem OmegaD.restrict_coe (h : V ≤ U) (f : OmegaD D U) :
+    ((OmegaD.restrict h f : V → ℂ)) = (f : U → ℂ) ∘ openIncl h := rfl
+
+end Restriction
+
 end Jacobians.Dolbeault
