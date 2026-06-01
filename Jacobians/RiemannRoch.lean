@@ -386,4 +386,22 @@ theorem lDim_zero_eq_one : lDim (X := X) 0 = 1 := by
     show c • (1 : ℂ) - g.1.toFun z = 0
     rw [hz]; simp
 
+/-! ## Part 4: standard RR consequences (pure arithmetic from RR + `l(0)=1`) -/
+
+/-- `l(K) = g`, from Riemann–Roch at `D = 0` (and `l(0) = 1`). -/
+theorem lDim_canonical_eq_genus {K : Divisor X}
+    (hrr : ∀ D : Divisor X, (lDim (X := X) D : ℤ) - (lDim (X := X) (K - D) : ℤ)
+      = Divisor.deg X D + 1 - (genus X : ℤ)) : lDim (X := X) K = genus X := by
+  have h := hrr 0
+  rw [sub_zero, Divisor.deg_zero, lDim_zero_eq_one] at h
+  omega
+
+/-- `deg K = 2g − 2`, from Riemann–Roch at `D = K`. -/
+theorem deg_canonical {K : Divisor X}
+    (hrr : ∀ D : Divisor X, (lDim (X := X) D : ℤ) - (lDim (X := X) (K - D) : ℤ)
+      = Divisor.deg X D + 1 - (genus X : ℤ)) : Divisor.deg X K = 2 * (genus X : ℤ) - 2 := by
+  have h := hrr K
+  rw [sub_self, lDim_zero_eq_one, lDim_canonical_eq_genus hrr] at h
+  omega
+
 end Jacobians
