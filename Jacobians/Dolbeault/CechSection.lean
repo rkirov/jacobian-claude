@@ -11,13 +11,12 @@
     * because sections are genuine functions on `↥U`, the Čech differential is plain **restriction**
       (precomposition with `Set.inclusion`), with no chart-transition cocycle data.
 
-  NOTE (measured during the de-risk spike): the repo's `MeromorphicFunction` ℂ-module instances and
-  `IsMeromorphic.zero` carry spurious `CompactSpace`/`ConnectedSpace`/`Nonempty` hypotheses, so the
-  alternative encoding `Submodule ℂ (MeromorphicFunction ↥U)` does NOT type-check for a (non-compact)
-  open `↥U`. The bare-function encoding here sidesteps that; a clean follow-up is to generalise those
-  instances' typeclass footprint (they only use `[ChartedSpace ℂ]`). The `.add/.neg/.const_smul/…`
-  predicate lemmas are already generalised (under an `omit` in `RiemannRoch.lean`); only
-  `IsMeromorphic.zero` is inlined below.
+  NOTE: the meromorphy infrastructure's typeclass footprint was generalised (commit doing the
+  "IsMeromorphic cleanup"): `IsMeromorphic.zero` (Abel) and the `MeromorphicFunction` ℂ-module
+  instances (RiemannRoch) now require only `[ChartedSpace ℂ]`, so they apply to the non-compact
+  open submanifold `↥U`. We keep the bare-function encoding `Submodule ℂ (↥U → ℂ)` here because it
+  makes the Čech differential plain restriction; the `Submodule ℂ (MeromorphicFunction ↥U)` encoding
+  is now also available should it prove cleaner downstream.
 -/
 import Jacobians.RiemannRoch
 
@@ -38,13 +37,6 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 noncomputable def ordU {U : Opens X} (f : U → ℂ) (x : U) : WithTop ℤ :=
   meromorphicOrderAt (f ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
 
-/-- The zero function is meromorphic on `↥U` (inlined from `IsMeromorphic.zero`, which carries a
-spurious `CompactSpace` hypothesis). -/
-theorem isMeromorphic_zero_opens (U : Opens X) : IsMeromorphic (U : Type _) (fun _ => 0) := by
-  intro x
-  show MeromorphicAt (fun _ => (0 : ℂ)) ((chartAt (H := ℂ) x) x)
-  exact MeromorphicAt.const 0 _
-
 /-- The order of the zero function on `↥U` is `⊤`. -/
 theorem ordU_zero {U : Opens X} (x : U) : ordU (0 : U → ℂ) x = ⊤ := by
   rw [ordU, show ((0 : U → ℂ) ∘ (chartAt (H := ℂ) x).symm) = (fun _ => (0 : ℂ)) from rfl,
@@ -58,7 +50,7 @@ noncomputable def OmegaD (D : Divisor X) (U : Opens X) : Submodule ℂ (U → �
   add_mem' {f g} hf hg :=
     ⟨hf.1.add hg.1, fun x => le_trans (le_min (hf.2 x) (hg.2 x))
       (meromorphicOrderAt_add (hf.1 x) (hg.1 x))⟩
-  zero_mem' := ⟨isMeromorphic_zero_opens U, fun x => by rw [ordU_zero]; exact le_top⟩
+  zero_mem' := ⟨IsMeromorphic.zero _, fun x => by rw [ordU_zero]; exact le_top⟩
   smul_mem' c f hf := ⟨hf.1.const_smul c, fun x => by
     rcases eq_or_ne c 0 with hc | hc
     · simpa only [hc, zero_smul, ordU_zero] using le_top

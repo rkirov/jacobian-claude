@@ -538,8 +538,10 @@ via `divViaOrder`, now that `orderAtPoint_isolated_at` is closed. -/
 noncomputable def MeromorphicFunction.div (f : MeromorphicFunction X) : Divisor X :=
   MeromorphicFunction.divViaOrder X f
 
-/-- The zero function is trivially meromorphic: chart pullbacks of
-constant functions are constant, hence meromorphic. -/
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+/-- The zero function is trivially meromorphic: chart pullbacks of constant functions are constant,
+hence meromorphic. Needs only the charted-space structure (no compactness / connectedness), so it
+applies to open submanifolds `↥U` too. -/
 theorem IsMeromorphic.zero : IsMeromorphic X (fun _ => 0) := by
   intro x
   show MeromorphicAt (fun _ => (0 : ℂ)) ((chartAt (H := ℂ) x) x)

@@ -34,6 +34,11 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 namespace MeromorphicFunction
 
+-- The structural facts and the ℂ-module algebra below use only the charted-space structure (no
+-- compactness/connectedness), so they apply to open submanifolds `↥U` too. Omit the unused
+-- hypotheses so the derived instances have a minimal typeclass footprint.
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- Two meromorphic functions are equal iff their underlying maps agree (the meromorphy
 field is a `Prop`, hence proof-irrelevant). -/
 @[ext] theorem ext {f g : MeromorphicFunction X} (h : f.toFun = g.toFun) : f = g := by
@@ -85,6 +90,11 @@ Built by transporting the structure on `X → ℂ` along the injective map `toFu
 
 namespace MeromorphicFunction
 
+section Algebra
+-- The ℂ-vector-space algebra uses only the charted-space structure; omit the rest so the module
+-- instances apply to open submanifolds `↥U` (which are not compact) — used by the Dolbeault Čech layer.
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+
 noncomputable instance : Zero (MeromorphicFunction X) := ⟨⟨fun _ => 0, IsMeromorphic.zero X⟩⟩
 noncomputable instance : Add (MeromorphicFunction X) :=
   ⟨fun f g => ⟨f.toFun + g.toFun, IsMeromorphic.add f.meromorphic g.meromorphic⟩⟩
@@ -120,6 +130,8 @@ def toFunHom : MeromorphicFunction X →+ (X → ℂ) where
 
 noncomputable instance : Module ℂ (MeromorphicFunction X) :=
   toFun_injective.module ℂ toFunHom (fun _ _ => rfl)
+
+end Algebra
 
 /-- The order of `f` at `x` as `WithTop ℤ` — the meromorphic order *before* the `untop₀` that
 defines `orderAtPoint`. It is `⊤` exactly when `f` vanishes in a punctured neighbourhood of `x`;
