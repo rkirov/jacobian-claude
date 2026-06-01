@@ -37,9 +37,10 @@ The kernel `K ζ = -(1/(π·ζ))` has `‖K ζ‖ = (1/π)·‖ζ‖⁻¹`, whic
 locally integrable (`∫ r·(1/r) dr dθ < ∞`).  We synthesize this via polar coordinates; the
 isolated "`‖x‖⁻¹` loc-integrable on ℝ²" lemma is absent from Mathlib. -/
 
-/-- The Cauchy-transform kernel `K ζ = -(1/(π·ζ))`, so that
-`u(z) = (g ⋆ K)(z) = -(1/π)∬ g(ζ)/(ζ-z) dA(ζ)`. -/
-noncomputable def cauchyKernel (ζ : ℂ) : ℂ := -(1 / (π * ζ))
+/-- The Cauchy-transform kernel `K ζ = 1/(π·ζ)`, so that the convolution
+`u(z) = (g ⋆ K)(z) = (1/π)∬ g(ζ)/(z-ζ) dA(ζ)` satisfies `∂̄u = g` (Cauchy–Pompeiu, with this
+sign convention; see `cauchyPompeiu` / `dbar_cauchyTransform`). -/
+noncomputable def cauchyKernel (ζ : ℂ) : ℂ := 1 / (π * ζ)
 
 /-- The inverse function `ζ ↦ ζ⁻¹` is integrable on every closed ball of `ℂ`: in polar
 coordinates the area element `r dr dθ` exactly cancels the `1/r` singularity. -/
@@ -103,10 +104,82 @@ theorem locallyIntegrable_cauchyKernel : LocallyIntegrable cauchyKernel volume :
   obtain ⟨R, hR⟩ := hk.isBounded.subset_closedBall 0
   have hinv : IntegrableOn (fun ζ : ℂ => ζ⁻¹) k volume :=
     (integrableOn_inv_closedBall R).mono_set hR
-  have : cauchyKernel = fun ζ : ℂ => (-(1 / π) : ℂ) • ζ⁻¹ := by
-    funext ζ; simp only [cauchyKernel, smul_eq_mul, one_div, mul_inv, neg_mul]
+  have : cauchyKernel = fun ζ : ℂ => ((1 / π) : ℂ) • ζ⁻¹ := by
+    funext ζ; simp only [cauchyKernel, smul_eq_mul, one_div, mul_inv]
   rw [this]
-  exact hinv.smul (-(1 / π) : ℂ)
+  exact hinv.smul ((1 / π) : ℂ)
+
+/-! ## D1 — regularity of the Cauchy transform, derivative onto the smooth factor
+
+For `g ∈ C^∞_c`, the Cauchy transform `u = g ⋆ K` (with the kernel `K`) is `C^∞`, and its
+Fréchet derivative is the convolution of `fderiv g` against `K`.  The derivative transfers to
+the *smooth* factor `g`, so the rough kernel `K` is never differentiated; we need only
+`LocallyIntegrable K` (D0).  We use `L = ContinuousLinearMap.mul ℝ ℂ` (complex multiplication
+as an `ℝ`-bilinear map), so `(g ⋆[L] K) x = ∫ t, g t * K (x - t)`. -/
+
+open scoped Convolution in
+/-- The Cauchy transform of `g`: `u = g ⋆ K` with `K` the Cauchy kernel, computed against
+complex multiplication.  Pointwise `u(x) = ∫ g(t)·K(x−t) dt = -(1/π)∬ g(ζ)/(x−ζ) dA(ζ)`. -/
+noncomputable def cauchyTransform (g : ℂ → ℂ) : ℂ → ℂ :=
+  g ⋆[ContinuousLinearMap.mul ℝ ℂ, volume] cauchyKernel
+
+open scoped Convolution in
+/-- **D1 (regularity).** For `g ∈ C^∞_c`, the Cauchy transform `u = g ⋆ K` is `C^∞`. -/
+theorem contDiff_cauchyTransform {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g)
+    (hgsupp : HasCompactSupport g) : ContDiff ℝ (⊤ : ℕ∞) (cauchyTransform g) :=
+  hgsupp.contDiff_convolution_left _ hg locallyIntegrable_cauchyKernel
+
+open scoped Convolution in
+/-- **D1 (derivative).** For `g ∈ C^∞_c`, the Fréchet derivative of `u = g ⋆ K` is
+`(fderiv ℝ g) ⋆ K` (with the precomposed bilinear map), evaluated at each point. -/
+theorem hasFDerivAt_cauchyTransform {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g)
+    (hgsupp : HasCompactSupport g) (x : ℂ) :
+    HasFDerivAt (cauchyTransform g)
+      (((fderiv ℝ g) ⋆[(ContinuousLinearMap.mul ℝ ℂ).precompL ℂ, volume] cauchyKernel) x) x :=
+  hgsupp.hasFDerivAt_convolution_left _ (hg.of_le (by exact_mod_cast le_top))
+    locallyIntegrable_cauchyKernel x
+
+open scoped Convolution in
+/-- **D3 bridge.** `∂̄` commutes through the Cauchy transform onto the *smooth* factor:
+`∂̄(g ⋆ K) = (∂̄g) ⋆ K`.  Combined with D1's derivative formula and the fact that the
+evaluation maps `T ↦ T 1`, `T ↦ T I` (and hence `dbar`) commute with the Bochner integral. -/
+theorem dbar_cauchyTransform {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g)
+    (hgsupp : HasCompactSupport g) (z : ℂ) :
+    dbar (cauchyTransform g) z = (dbar g ⋆[ContinuousLinearMap.mul ℝ ℂ, volume] cauchyKernel) z := by
+  set L := ContinuousLinearMap.mul ℝ ℂ
+  -- The CLM-valued convolution integrand (D1's derivative) is integrable: `fderiv g` is
+  -- continuous with compact support, `K` is locally integrable.
+  have hfd_supp : HasCompactSupport (fderiv ℝ g) := hgsupp.fderiv ℝ
+  have hfd_cont : Continuous (fderiv ℝ g) :=
+    (hg.continuous_fderiv (by norm_num))
+  have hint : Integrable
+      (fun t => (L.precompL ℂ) (fderiv ℝ g t) (cauchyKernel (z - t))) volume :=
+    hfd_supp.convolutionExists_left (L.precompL ℂ) hfd_cont locallyIntegrable_cauchyKernel z
+  -- Integrability of the two scalar integrands (evaluations of the CLM integrand at `1`, `I`).
+  have hi1 : Integrable
+      (fun t => ((L.precompL ℂ) (fderiv ℝ g t) (cauchyKernel (z - t))) (1 : ℂ)) volume :=
+    (ContinuousLinearMap.apply ℝ ℂ (1 : ℂ)).integrable_comp hint
+  have hiI : Integrable
+      (fun t => ((L.precompL ℂ) (fderiv ℝ g t) (cauchyKernel (z - t))) Complex.I) volume :=
+    (ContinuousLinearMap.apply ℝ ℂ Complex.I).integrable_comp hint
+  -- Pull `dbar` (an evaluation-at-`1`/`I` combination) through the convolution integral.
+  rw [dbar, (hasFDerivAt_cauchyTransform hg hgsupp z).fderiv, convolution_def,
+    ContinuousLinearMap.integral_apply hint, ContinuousLinearMap.integral_apply hint,
+    convolution_def]
+  -- Merge the two scalar integrals into one (linearity), then compare integrands pointwise.
+  have hmul : (Complex.I * ∫ t, ((L.precompL ℂ) (fderiv ℝ g t) (cauchyKernel (z - t))) Complex.I)
+      = ∫ t, Complex.I * ((L.precompL ℂ) (fderiv ℝ g t) (cauchyKernel (z - t))) Complex.I :=
+    (integral_const_mul _ _).symm
+  rw [hmul, ← integral_add hi1 (hiI.const_mul Complex.I)]
+  have hhalf : (2⁻¹ : ℂ) * ∫ t, (((L.precompL ℂ) (fderiv ℝ g t) (cauchyKernel (z - t))) 1
+        + Complex.I * ((L.precompL ℂ) (fderiv ℝ g t) (cauchyKernel (z - t))) Complex.I)
+      = ∫ t, (2⁻¹ : ℂ) * (((L.precompL ℂ) (fderiv ℝ g t) (cauchyKernel (z - t))) 1
+        + Complex.I * ((L.precompL ℂ) (fderiv ℝ g t) (cauchyKernel (z - t))) Complex.I) :=
+    (integral_const_mul _ _).symm
+  rw [hhalf]
+  refine integral_congr_ae (Filter.Eventually.of_forall fun t => ?_)
+  simp only [ContinuousLinearMap.precompL_apply, L, ContinuousLinearMap.mul_apply', dbar]
+  ring
 
 /-- A function that is `ℂ`-differentiable (holomorphic) at `z` satisfies the
 homogeneous Cauchy–Riemann equation `∂̄ f = 0` there.  This is the Wirtinger
