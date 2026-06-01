@@ -53,6 +53,18 @@ monolith (user directive: "go sorry-free; de-risk G3/G4 first"). Companion to
 > without tripping the diamond. So: model-level real-manifold infra (Route A) is gated on resolving the
 > ℂ-ℝ diamond first (a focused foundational task); the chart-local cocycle (Route B), built on the
 > working `DbarDisk`, sidesteps it and is the recommended path into the Dolbeault core.
+>
+> **▶▶▶ RESOLVED — the diamond is fixed; Route A's foundation is BUILT** (commit `5cd0d69`). The
+> diamond is NOT irresolvable (user correctly pushed back): it is a defeq-transparency issue, fixed
+> exactly as Mathlib's own `Analysis/Complex/RealDeriv.lean` does —
+> `set_option backward.isDefEq.respectTransparency false`. With that one line, the full
+> `IsManifold 𝓘(ℝ,ℂ) ⊤ X` proof goes through: `Jacobians/Dolbeault/RealManifold.lean`
+> (`instance realManifold_of_complex`, sorry-free, axiom-clean) — and `IsManifold 𝓘(ℝ,ℂ) ⊤ X :=
+> inferInstance` now synthesizes (the exact prior failure). **So Route A IS the path** (clean,
+> Mathlib-aligned, reusable real-manifold layer), not blocked. **Next subtlety (measured):** over the
+> real model `TangentSpace 𝓘(ℝ,ℂ) x` is a `Module ℝ` (not ℂ), so (0,1)-forms use the REAL cotangent
+> `TangentSpace 𝓘(ℝ,ℂ) →L[ℝ] ℂ` (conjugate-ℂ-linear ones), not the ℂ-linear fiber — a refinement of
+> the representation, then ∂̄ via `DbarDisk`'s scalar `dbar` in charts + PoU globalization (G2).
 
 All "VERIFIED" claims below were checked this session by reading source at the repo's Mathlib pin
 `8e3c989104da` (`.lake/packages/mathlib/Mathlib`) and the repo files cited. LoC figures are
