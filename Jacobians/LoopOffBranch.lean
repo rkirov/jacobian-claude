@@ -930,6 +930,82 @@ lemma balancedGlue_apply_of_mem (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 =
         · rw [hkk']
         · rw [hk_cast, pow_succ]; push_cast; ring
 
+/-- **`balancedGlue` is a flat-ended smooth path with vanishing endpoint velocities.** The
+`n`-piece (dyadic) generalization of `IsSmoothPath.concat`: every piece `g k` (`k < 2^d`) is a
+flat-ended smooth path (zero endpoint velocity), consecutive pieces chain (`g k 1 = g (k+1) 0`), so
+each `concat` seam is `C¹` for free. Carried alongside the `IsSmoothPath` are the two endpoint
+velocities of the glue itself (`= pathSpeed (g 0) 0 = 0` and `= pathSpeed (g (2^d-1)) 1 = 0`),
+needed as the junction hypotheses of the next `concat` in the induction. -/
+lemma isSmoothPath_balancedGlue (g : ℕ → ℝ → X)
+    (hchain : ∀ j, g j 1 = g (j+1) 0) (d : ℕ)
+    (hpiece : ∀ k, k < 2^d → Jacobians.IsSmoothPath (g k 0) (g k 1) (g k))
+    (hv0 : ∀ k, k < 2^d → Jacobians.pathSpeed (g k) 0 = 0)
+    (hv1 : ∀ k, k < 2^d → Jacobians.pathSpeed (g k) 1 = 0) :
+    Jacobians.IsSmoothPath (g 0 0) (g (2^d - 1) 1) (balancedGlue g d) ∧
+      Jacobians.pathSpeed (balancedGlue g d) 0 = 0 ∧
+      Jacobians.pathSpeed (balancedGlue g d) 1 = 0 := by
+  induction d generalizing g with
+  | zero =>
+    have h2 : (2:ℕ)^0 = 1 := pow_zero 2
+    have hk0 : (0:ℕ) < 2^0 := by simp
+    have hidx : (2:ℕ)^0 - 1 = 0 := by simp
+    rw [balancedGlue_zero, hidx]
+    exact ⟨hpiece 0 hk0, hv0 0 hk0, hv1 0 hk0⟩
+  | succ d ih =>
+    have h2d_pos : (0:ℕ) < 2^d := pow_pos (by norm_num) d
+    -- left and right half-glues with their hypotheses.
+    have hpieceL : ∀ k, k < 2^d → Jacobians.IsSmoothPath (g k 0) (g k 1) (g k) :=
+      fun k hk => hpiece k (by have := pow_succ 2 d; omega)
+    have hv0L : ∀ k, k < 2^d → Jacobians.pathSpeed (g k) 0 = 0 :=
+      fun k hk => hv0 k (by have := pow_succ 2 d; omega)
+    have hv1L : ∀ k, k < 2^d → Jacobians.pathSpeed (g k) 1 = 0 :=
+      fun k hk => hv1 k (by have := pow_succ 2 d; omega)
+    set gR : ℕ → ℝ → X := fun k => g (2^d + k) with hgR
+    have hchainR : ∀ j, gR j 1 = gR (j+1) 0 := fun j => by
+      simp only [hgR]; rw [show 2^d + (j+1) = (2^d + j) + 1 from by ring]; exact hchain (2^d + j)
+    have hpieceR : ∀ k, k < 2^d → Jacobians.IsSmoothPath (gR k 0) (gR k 1) (gR k) :=
+      fun k hk => hpiece (2^d + k) (by have := pow_succ 2 d; omega)
+    have hv0R : ∀ k, k < 2^d → Jacobians.pathSpeed (gR k) 0 = 0 :=
+      fun k hk => hv0 (2^d + k) (by have := pow_succ 2 d; omega)
+    have hv1R : ∀ k, k < 2^d → Jacobians.pathSpeed (gR k) 1 = 0 :=
+      fun k hk => hv1 (2^d + k) (by have := pow_succ 2 d; omega)
+    obtain ⟨hspL, hL0, hL1⟩ := ih g hchain hpieceL hv0L hv1L
+    obtain ⟨hspR, hR0, hR1⟩ := ih gR hchainR hpieceR hv0R hv1R
+    -- the junction value matches: g (2^d - 1) 1 = gR 0 0 = g (2^d) 0.
+    have hmid : g (2^d - 1) 1 = gR 0 0 := by
+      simp only [hgR, Nat.add_zero]
+      have := hchain (2^d - 1)
+      rwa [Nat.sub_add_cancel (Nat.one_le_iff_ne_zero.mpr (by positivity))] at this
+    -- right half retargeted so its start point is the left half's finish.
+    have hspR' : Jacobians.IsSmoothPath (g (2^d - 1) 1) (gR (2^d - 1) 1) (balancedGlue gR d) := by
+      rw [hmid]; exact hspR
+    -- concat is a smooth path from `g 0 0` to `gR (2^d-1) 1`.
+    have hconcat : Jacobians.IsSmoothPath (g 0 0) (gR (2^d - 1) 1)
+        (Jacobians.concat (balancedGlue g d) (balancedGlue gR d)) :=
+      hspL.concat hspR' hL1 hR0
+    have hidx_succ : (2:ℕ)^(d+1) - 1 = 2^d + (2^d - 1) := by
+      have : (2:ℕ)^(d+1) = 2^d + 2^d := by rw [pow_succ]; ring
+      omega
+    have hfinish_eq : gR (2^d - 1) 1 = g (2^(d+1) - 1) 1 := by
+      simp only [hgR]; rw [hidx_succ]
+    rw [balancedGlue_succ]
+    refine ⟨?_, ?_, ?_⟩
+    · rw [← hfinish_eq]; exact hconcat
+    · -- endpoint velocity at 0: pathSpeed (concat L R) 0 = 2 * pathSpeed L 0 = 0.
+      have hdL0 : DifferentiableAt ℝ
+          ((chartAt (H := ℂ) (balancedGlue g d (2 * 0))).toFun ∘ balancedGlue g d) (2 * 0) := by
+        rw [show (2:ℝ) * 0 = 0 from by norm_num]
+        exact hspL.diff 0 (by rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨le_refl _, zero_le_one⟩)
+      rw [Jacobians.pathSpeed_concat_left _ _ 0 (by norm_num) hdL0,
+        show (2:ℝ) * 0 = 0 from by norm_num, hL0, mul_zero]
+    · -- endpoint velocity at 1: pathSpeed (concat L R) 1 = 2 * pathSpeed R 1 = 0.
+      have hdR1 : DifferentiableAt ℝ
+          ((chartAt (H := ℂ) (balancedGlue gR d (2 * 1 - 1))).toFun ∘ balancedGlue gR d) (2 * 1 - 1) := by
+        rw [show (2:ℝ) * 1 - 1 = 1 from by norm_num]
+        exact hspR.diff 1 (by rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact ⟨zero_le_one, le_refl _⟩)
+      rw [Jacobians.pathSpeed_concat_right _ _ 1 (by norm_num) hdR1,
+        show (2:ℝ) * 1 - 1 = 1 from by norm_num, hR1, mul_zero]
+
 /-! ### A5. Sub-ball chart cover (subdivision infrastructure)
 
 `exists_chartCover` (in `Jacobians/SmoothPath.lean`) delivers, for a continuous `γ`, a uniform
