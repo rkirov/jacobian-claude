@@ -68,9 +68,19 @@ noncomputable def cechDelta1 : 𝔘.Cochain1 →ₗ[ℂ] 𝔘.Cochain2 :=
       - rawRestrict (le_inf (inf_le_left.trans inf_le_left) inf_le_right) ∘ₗ LinearMap.proj (t.1, t.2.2)
       + rawRestrict inf_le_left ∘ₗ LinearMap.proj (t.1, t.2.1)
 
-/-- **Mechanical leaf** (`δ² = 0`): the alternating sum of restrictions telescopes
-(`restrict ∘ restrict = restrict`, then `f_k − f_j − f_k + f_i + f_j − f_i = 0`). Pure algebra. -/
-theorem cechDelta1_comp_cechDelta0 : (𝔘.cechDelta1) ∘ₗ (𝔘.cechDelta0) = 0 := sorry
+/-- `δ² = 0`: the alternating sum of restrictions cancels. Nested restrictions are precompositions
+with open inclusions, which evaluate to `⟨x.1, _⟩` independently of the `≤` proof (proof-irrelevance),
+so the six terms `f_k − f_j − f_k + f_i + f_j − f_i` pair up and vanish. -/
+theorem cechDelta1_comp_cechDelta0 : (𝔘.cechDelta1) ∘ₗ (𝔘.cechDelta0) = 0 := by
+  refine LinearMap.ext fun f => ?_
+  funext t
+  obtain ⟨i, j, k⟩ := t
+  funext x
+  simp only [LinearMap.comp_apply, LinearMap.zero_apply, Pi.zero_apply, cechDelta0, cechDelta1,
+    rawRestrict, LinearMap.pi_apply, LinearMap.sub_apply, LinearMap.add_apply, LinearMap.coe_comp,
+    Function.comp_apply, LinearMap.proj_apply, LinearMap.funLeft_apply, Pi.sub_apply, Pi.add_apply,
+    openIncl]
+  ring
 
 /-! ### The `𝒪_D` sheaf condition, as submodules of the raw cochain spaces. -/
 
