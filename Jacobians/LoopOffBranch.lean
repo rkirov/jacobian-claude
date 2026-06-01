@@ -1755,4 +1755,54 @@ theorem periodVec_eq_of_partition_integral_eq (δ δ' : ℝ → X)
   rw [← htel_δ, ← htel_δ']
   exact Finset.sum_congr rfl (fun k hk => hpiece i k (Finset.mem_range.mp hk))
 
+/-- **Period-vector telescoping with a per-piece correction term.** Generalizes
+`periodVec_eq_of_partition_integral_eq`: instead of demanding the partial line integrals agree
+piece-by-piece, we allow a *correction* `corr i : ℕ → ℂ` so that on piece `k`
+`∫δ' = ∫δ + corr (k+1) − corr k`. If the correction is **periodic** (`corr i n = corr i 0`) the
+correction terms telescope to `corr i n − corr i 0 = 0`, so `periodVec δ' = periodVec δ`.
+
+This is the analytic core of period-preservation for the off-branch surgery once the breakpoints are
+*perturbed* (so the per-piece integrals no longer match exactly): `corr i k` is the intrinsic line
+integral of the period form along the short connecting path from `δ(k/n)` to the perturbed off-branch
+breakpoint `p k`. Because that connector lies in the overlap of the two adjacent sub-balls, the same
+`corr i k` value serves both piece `k−1` (its right end) and piece `k` (its left end), and periodicity
+`corr i n = corr i 0` holds because breakpoint `n` *is* breakpoint `0` (`δ 1 = δ 0`, `p n = p 0`). -/
+theorem periodVec_eq_of_partition_integral_telescope (δ δ' : ℝ → X)
+    (hδ : IsClosedSmoothLoop δ) (hδ' : IsClosedSmoothLoop δ')
+    (s : ℕ → ℝ) (n : ℕ) (hs0 : s 0 = 0) (hsn : s n = 1)
+    (hs_sub : ∀ k, k < n → Set.uIcc (s k) (s (k+1)) ⊆ Set.Icc (0:ℝ) 1)
+    (corr : Fin (genus X) → ℕ → ℂ) (hcorr_per : ∀ i, corr i n = corr i 0)
+    (hpiece : ∀ (i : Fin (genus X)) (k : ℕ), k < n →
+      (∫ t in (s k)..(s (k+1)), (periodBasisForm X i).toFun (δ' t) (pathSpeed δ' t)) =
+      (∫ t in (s k)..(s (k+1)), (periodBasisForm X i).toFun (δ t) (pathSpeed δ t))
+        + corr i (k+1) - corr i k) :
+    periodVec δ' = periodVec δ := by
+  funext i
+  show lineIntegral (periodBasisForm X i) δ' = lineIntegral (periodBasisForm X i) δ
+  unfold lineIntegral
+  have hint_δ : ∀ k, k < n → IntervalIntegrable
+      (fun t => (periodBasisForm X i).toFun (δ t) (pathSpeed δ t)) volume (s k) (s (k+1)) :=
+    fun k hk => (hδ.integrable i).mono_set (by
+      rw [Set.uIcc_of_le (zero_le_one)]; exact hs_sub k hk)
+  have hint_δ' : ∀ k, k < n → IntervalIntegrable
+      (fun t => (periodBasisForm X i).toFun (δ' t) (pathSpeed δ' t)) volume (s k) (s (k+1)) :=
+    fun k hk => (hδ'.integrable i).mono_set (by
+      rw [Set.uIcc_of_le (zero_le_one)]; exact hs_sub k hk)
+  have htel_δ := intervalIntegral.sum_integral_adjacent_intervals (a := s) (n := n)
+    (f := fun t => (periodBasisForm X i).toFun (δ t) (pathSpeed δ t)) hint_δ
+  have htel_δ' := intervalIntegral.sum_integral_adjacent_intervals (a := s) (n := n)
+    (f := fun t => (periodBasisForm X i).toFun (δ' t) (pathSpeed δ' t)) hint_δ'
+  rw [hs0, hsn] at htel_δ htel_δ'
+  rw [← htel_δ, ← htel_δ']
+  -- Sum of the per-piece corrections telescopes to `corr i n − corr i 0 = 0`.
+  have hsum : ∑ k ∈ Finset.range n,
+      (∫ t in (s k)..(s (k+1)), (periodBasisForm X i).toFun (δ' t) (pathSpeed δ' t)) =
+      ∑ k ∈ Finset.range n,
+        ((∫ t in (s k)..(s (k+1)), (periodBasisForm X i).toFun (δ t) (pathSpeed δ t))
+          + (corr i (k+1) - corr i k)) :=
+    Finset.sum_congr rfl (fun k hk => by
+      rw [hpiece i k (Finset.mem_range.mp hk)]; ring)
+  rw [hsum, Finset.sum_add_distrib, Finset.sum_range_sub (corr i) n, hcorr_per i, sub_self,
+    add_zero]
+
 end Jacobians
