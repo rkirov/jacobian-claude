@@ -271,28 +271,125 @@ theorem dbarDisk_comp_holo (f : ℂ → ℂ) (τ : ℂ → ℂ) (ζ : ℂ)
       apply Complex.ext <;> simp [ha, hb]]
   linear_combination (2⁻¹ * (b : ℂ) * L Complex.I) * Complex.I_sq
 
-/-- **(Finer analytic sub-kernel — the irreducible remainder.)** The local primitive at the
-value-`1` level: near every point `x₀`, there is a smooth `u` whose intrinsic `∂̄` *Wirtinger scalar*
-`proj01 (mfderiv … u x) 1` matches `g`'s, i.e. `= g x 1`.
+/-- `DbarDisk.dbar` depends only on the germ of its argument: it agrees on functions equal in a
+neighborhood of the base point (it is a fixed combination of `fderiv ℝ`, which respects
+`Filter.EventuallyEq`). -/
+theorem dbarDisk_congr {f₁ f₂ : ℂ → ℂ} {z : ℂ} (h : f₁ =ᶠ[nhds z] f₂) :
+    DbarDisk.dbar f₁ z = DbarDisk.dbar f₂ z := by
+  rw [DbarDisk.dbar, DbarDisk.dbar, h.fderiv_eq]
 
-What is proven elsewhere in this file and feeds this sub-kernel:
-* the chart bridge `dbar_apply_one_eq_dbarDisk` — `proj01 (mfderiv … u x) 1 =
-  DbarDisk.dbar (u ∘ (extChartAt x).symm) (extChartAt x x)` (intrinsic `∂̄` = planar Wirtinger `∂̄`
-  in the chart centered at the *evaluation point* `x`);
-* the smooth lift `exists_smoothLift_of_chartFun` — turning the planar primitive into a global `u`;
-* the planar PDE `DbarLocal.dbar_solvable_locally` (DONE).
+/-- **The chart-transition `e₀ ∘ eₓ.symm` is holomorphic (`ℂ`-differentiable).** On the analytic
+(`ω`) manifold `X`, chart transition maps are holomorphic; here at the chart coordinate `eₓ x` of any
+point `x` in the `x₀`-chart's source. (`ContMDiffAt` of the two charts composed, transferred to
+`ContDiffAt ℂ ω` and hence `DifferentiableAt ℂ`; `chartAt ℂ = extChartAt 𝓘(ℝ,ℂ)` for the identity
+model.) -/
+theorem differentiableAt_chartTransition (x₀ x : X)
+    (hxsrc : x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
+    DifferentiableAt ℂ ((extChartAt 𝓘(ℝ, ℂ) x₀) ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm)
+      ((extChartAt 𝓘(ℝ, ℂ) x) x) := by
+  have hsrc_x : x ∈ (chartAt ℂ x).source := mem_chart_source ℂ x
+  have hcx_tgt : (chartAt ℂ x) x ∈ (chartAt ℂ x).target := (chartAt ℂ x).map_source hsrc_x
+  have h1 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (chartAt ℂ x).symm ((chartAt ℂ x) x) :=
+    ((contMDiffOn_chart_symm (I := 𝓘(ℂ)) (n := ω) (x := x)) _ hcx_tgt).contMDiffAt
+      ((chartAt ℂ x).open_target.mem_nhds hcx_tgt)
+  have hez : (chartAt ℂ x).symm ((chartAt ℂ x) x) = x := (chartAt ℂ x).left_inv hsrc_x
+  have hxsrc' : x ∈ (chartAt ℂ x₀).source := by rwa [extChartAt_source] at hxsrc
+  have h2 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (chartAt ℂ x₀)
+      ((chartAt ℂ x).symm ((chartAt ℂ x) x)) := by
+    rw [hez]
+    exact ((contMDiffOn_chart (I := 𝓘(ℂ)) (n := ω) (x := x₀)) _ hxsrc').contMDiffAt
+      ((chartAt ℂ x₀).open_source.mem_nhds hxsrc')
+  have hcomp : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω ((chartAt ℂ x₀) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) :=
+    ContMDiffAt.comp (I' := 𝓘(ℂ)) ((chartAt ℂ x) x) h2 h1
+  have hda : DifferentiableAt ℂ ((chartAt ℂ x₀) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) :=
+    (contMDiffAt_iff_contDiffAt.1 hcomp).differentiableAt (by norm_num)
+  have he : ((chartAt ℂ x₀) ∘ (chartAt ℂ x).symm)
+      = ((extChartAt 𝓘(ℝ, ℂ) x₀) ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm) := by
+    funext z; simp [mfld_simps]
+  have hpt : ((chartAt ℂ x) x) = ((extChartAt 𝓘(ℝ, ℂ) x) x) := by simp [mfld_simps]
+  rw [he, hpt] at hda
+  exact hda
 
-The irreducible remainder this sub-kernel still carries is the *chart-transition equivariance* of
-`∂̄`: a single planar solve lives in the `x₀`-chart, but the intrinsic value `dbar u x 1` is read in
-the chart centered at `x` (the canonical `TangentSpace 𝓘(ℝ,ℂ) x = ℂ` identification), and the two
-charts differ by the holomorphic transition `τ`, under which the Wirtinger derivative transforms by
-`conj(τ′)`. Matching these — equivalently, comparing `dbar u` and `g` as pulled-back `(0,1)`-*forms*
-rather than chart-`x`-scalars — together with the smoothness of the chart-read datum `z ↦ g (chart⁻¹
-z) 1`, is the genuine smooth-section/PDE dictionary that Mathlib lacks. -/
-theorem exists_localPrimitive_apply_one (g : SmoothCOneForms X) (x₀ : X) :
-    ∃ (V : Set X) (u : SmoothCFunctions X), IsOpen V ∧ x₀ ∈ V ∧
-      ∀ x ∈ V, proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x) (1 : ℂ) = (g x) (1 : ℂ) :=
+/-! #### The local primitive at the value-`1` level
+
+`exists_localPrimitive_apply_one` produces, near every `x₀`, a smooth `u` whose intrinsic `∂̄`
+Wirtinger scalar `proj01 (mfderiv … u x) 1` matches `g x 1`. It is now PROVEN by reduction to a single
+finer sub-kernel, the chart-pullback `(0,1)`-datum `exists_chartPullback_zeroOne_datum` (below): the
+planar PDE `DbarLocal.dbar_solvable_locally` (DONE) solves `∂̄f = G` in the `x₀`-chart for that datum
+`G`, the global smooth lift `exists_smoothLift_of_chartFun` (DONE) globalizes it to `u`, the chart
+bridge `dbar_apply_one_eq_dbarDisk` (DONE) reads `∂̄u` at `x` in its own chart, and the Wirtinger
+chain rule `dbarDisk_comp_holo` (DONE) produces the `conj(τ′)` frame factor that cancels exactly
+against the one in the datum's transformation law. The *only* remaining analytic content — the
+smoothness of the chart-read datum `G` and the `(0,1)`-transformation law — is isolated in
+`exists_chartPullback_zeroOne_datum`. -/
+
+/-- **(Finer analytic sub-kernel — the chart-pullback `(0,1)`-datum.)** A smooth `(0,1)`-form `g`
+read in the `x₀`-chart is a *smooth planar function* `G : ℂ → ℂ` (its Wirtinger / value-`1` datum)
+that reproduces the intrinsic value `g x 1` after the holomorphic frame change: for `x` in the
+`x₀`-chart, with `τ_x = e₀ ∘ eₓ.symm` the holomorphic transition,
+`conj(τ_x′(eₓ x)) · G(e₀ x) = g x 1`.
+
+This is the genuine smooth-section ↔ planar-form dictionary entry that Mathlib lacks: it packages
+(i) the smoothness of the chart-read datum `G` and (ii) the `(0,1)`-transformation law (the `conj(τ′)`
+frame factor) into the exact form consumed by `exists_localPrimitive_apply_one`. The `conj(τ′)` here
+is the *same* factor produced on the `∂̄u` side by the Wirtinger chain rule `dbarDisk_comp_holo`
+(PROVEN), so the two cancel and the planar PDE `DbarLocal.dbar_solvable_locally` (DONE) closes the
+local primitive. TRUE: it is the standard statement that a `(0,1)`-form pulls back along a chart to a
+smooth `(0,1)`-form, whose anti-holomorphic component transforms by `conj` of the transition
+derivative (`proj01_eq_conj_smul` gives the conjugate-homogeneity fiberwise; the content is the
+*smoothness* of `G` and the chart-derivative bookkeeping `mfderiv` of charts ↔ planar `deriv τ`). -/
+theorem exists_chartPullback_zeroOne_datum (g : SmoothCOneForms X)
+    (hg : g ∈ OneFormsZeroOne X) (x₀ : X) :
+    ∃ G : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) G ∧
+      ∀ x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source,
+        (starRingEnd ℂ) (deriv (extChartAt 𝓘(ℝ, ℂ) x₀ ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm)
+            (extChartAt 𝓘(ℝ, ℂ) x x)) * G (extChartAt 𝓘(ℝ, ℂ) x₀ x) = (g x) (1 : ℂ) :=
   sorry
+
+theorem exists_localPrimitive_apply_one (g : SmoothCOneForms X) (hg : g ∈ OneFormsZeroOne X)
+    (x₀ : X) :
+    ∃ (V : Set X) (u : SmoothCFunctions X), IsOpen V ∧ x₀ ∈ V ∧
+      ∀ x ∈ V, proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x) (1 : ℂ) = (g x) (1 : ℂ) := by
+  classical
+  -- The chart-pullback `(0,1)`-datum `G` (smooth planar function) with its transformation law.
+  obtain ⟨G, hGsmooth, hGlaw⟩ := exists_chartPullback_zeroOne_datum g hg x₀
+  -- STEP A: solve the planar `∂̄f = G` on a neighborhood `W` of the chart coordinate `e₀ x₀`.
+  obtain ⟨W, f, hWopen, hWmem, hfsmooth, hfsolve⟩ :=
+    DbarLocal.dbar_solvable_locally hGsmooth (extChartAt 𝓘(ℝ, ℂ) x₀ x₀)
+  -- STEP B: lift `f` to a global smooth `u` agreeing with `f ∘ e₀` near `x₀`.
+  obtain ⟨V₀, u, hV₀open, hx₀V₀, hlift⟩ := exists_smoothLift_of_chartFun f hfsmooth x₀
+  -- The working neighborhood: inside the lift set, inside the chart source, and `e₀`-preimage of `W`.
+  refine ⟨V₀ ∩ ((extChartAt 𝓘(ℝ, ℂ) x₀).source ∩
+      (extChartAt 𝓘(ℝ, ℂ) x₀) ⁻¹' W), u, ?_, ?_, ?_⟩
+  · exact hV₀open.inter (isOpen_extChartAt_preimage' x₀ hWopen)
+  · exact ⟨hx₀V₀, mem_extChartAt_source x₀, by simpa using hWmem⟩
+  · rintro x ⟨hxV₀, hxsrc, hxW⟩
+    simp only [Set.mem_preimage] at hxW
+    -- Read the intrinsic ∂̄ at `x` in `x`'s own chart (the chart bridge).
+    rw [dbar_apply_one_eq_dbarDisk u x]
+    -- The holomorphic transition `τ = e₀ ∘ eₓ.symm` and its key point value `τ (eₓ x) = e₀ x`.
+    set eₓ := extChartAt 𝓘(ℝ, ℂ) x with hex
+    set e₀ := extChartAt 𝓘(ℝ, ℂ) x₀ with he₀
+    have hτpt : (e₀ ∘ eₓ.symm) (eₓ x) = e₀ x := by
+      simp only [Function.comp_apply, hex, extChartAt_to_inv]
+    -- Near `eₓ x`, the chart-pullback of `u` equals `f ∘ τ` (lift identity on `V₀`).
+    have hmemV₀ : ∀ᶠ z in nhds (eₓ x), eₓ.symm z ∈ V₀ := by
+      have hcont : ContinuousAt eₓ.symm (eₓ x) := continuousAt_extChartAt_symm x
+      refine hcont.preimage_mem_nhds (hV₀open.mem_nhds ?_)
+      rw [hex, extChartAt_to_inv]; exact hxV₀
+    have heq : (fun z => u (eₓ.symm z)) =ᶠ[nhds (eₓ x)] (f ∘ (e₀ ∘ eₓ.symm)) := by
+      filter_upwards [hmemV₀] with z hz
+      simp only [Function.comp_apply]
+      exact hlift _ hz
+    rw [dbarDisk_congr heq]
+    -- Wirtinger chain rule: the `conj(τ′)` frame factor appears.
+    rw [dbarDisk_comp_holo f (e₀ ∘ eₓ.symm) (eₓ x)
+      (hfsmooth.differentiable (by norm_num) _)
+      (differentiableAt_chartTransition x₀ x hxsrc)]
+    -- `DbarDisk.dbar f` at `τ (eₓ x) = e₀ x` is `G (e₀ x)` (`f` solves `∂̄f = G` on `W`).
+    rw [hτpt, hfsolve (e₀ x) hxW]
+    -- Exactly the transformation law for the chart-pullback `(0,1)`-datum.
+    exact hGlaw x hxsrc
 
 /-- **(Analytic sub-kernel.)** Local `∂̄`-solvability on the manifold: any smooth `(0,1)`-form `g`
 (in `OneFormsZeroOne X`) is, near every point `x₀`, the `∂̄` of a smooth function `u`. Proven
@@ -304,7 +401,7 @@ Dolbeault → Čech cocycle. -/
 theorem dbar_solvable_locally_manifold (g : SmoothCOneForms X) (hg : g ∈ OneFormsZeroOne X)
     (x₀ : X) :
     ∃ (V : Set X) (u : SmoothCFunctions X), IsOpen V ∧ x₀ ∈ V ∧ ∀ x ∈ V, (dbar u) x = g x := by
-  obtain ⟨V, u, hV, hx₀, hval⟩ := exists_localPrimitive_apply_one g x₀
+  obtain ⟨V, u, hV, hx₀, hval⟩ := exists_localPrimitive_apply_one g hg x₀
   exact ⟨V, u, hV, hx₀, fun x hx => dbar_eq_of_apply_one hg u x (hval x hx)⟩
 
 /-- **Dolbeault → Čech** (honest named sub-kernel). The `ℝ`-linear map `H^{0,1}(X) → H¹(X, 𝒪)`:
@@ -409,19 +506,29 @@ theorem cechH1_dolbeault_comparison_proof :
   (`proj01_apply_one` / `proj01_conjLinear` / `proj01_eq_conj_smul` / `proj01_ext_of_apply_one`),
   the value-`1`-to-CLM upgrade `dbar_eq_of_apply_one`, and the global smooth lift
   `exists_smoothLift_of_chartFun` (via `SmoothBumpFunction.contMDiff_smul`);
-* `dbar_solvable_locally_manifold` itself — local `∂̄`-solvability on the MANIFOLD — is now **proven
-  sorry-free** from the finer kernel `exists_localPrimitive_apply_one` via the chart bridge + the
-  value-`1` upgrade.
+* **the Wirtinger chain rule `dbarDisk_comp_holo`** (the chart-transition equivariance of `∂̄`):
+  under a holomorphic coordinate change `τ`, `DbarDisk.dbar (f ∘ τ) = conj(τ′) · DbarDisk.dbar f ∘ τ`
+  — the `conj(τ′)` frame factor of a `(0,1)`-quantity. With the germ-locality `dbarDisk_congr` and
+  the holomorphy of chart transitions `differentiableAt_chartTransition`, this is the lever that
+  transports the planar `x₀`-chart solve to the intrinsic value read in the chart at `x`;
+* **`exists_localPrimitive_apply_one`** — the value-`1` local primitive — is now **proven sorry-free
+  modulo the single finer kernel `exists_chartPullback_zeroOne_datum`**: solve the planar `∂̄f = G`
+  in the `x₀`-chart (`DbarLocal.dbar_solvable_locally`, DONE), globalize to `u`
+  (`exists_smoothLift_of_chartFun`), read `∂̄u` at `x` in its own chart (`dbar_apply_one_eq_dbarDisk`),
+  and the Wirtinger chain rule `dbarDisk_comp_holo` produces the `conj(τ′)` factor that cancels
+  exactly against the one in the datum's transformation law;
+* `dbar_solvable_locally_manifold` itself — local `∂̄`-solvability on the MANIFOLD — is **proven
+  sorry-free** from `exists_localPrimitive_apply_one` via the value-`1`-to-CLM upgrade.
 
 **The named honest sub-kernels (each a TRUE statement; the irreducible remainder):**
-1. `exists_localPrimitive_apply_one` (the refined kernel 1) — local `∂̄`-solvability at the value-`1`
-   level. The chart bridge (`= DbarDisk.dbar` of the pullback), the global smooth lift, and the
-   planar PDE `DbarLocal.dbar_solvable_locally` are all DONE; the irreducible remainder this carries
-   is the *chart-transition equivariance* of `∂̄` (a single planar solve lives in the `x₀`-chart, but
-   the intrinsic value is read in the chart at `x`, the two differing by the holomorphic transition,
-   under which the Wirtinger derivative transforms by `conj(τ′)`) together with the smoothness of the
-   chart-read datum `z ↦ g (chart⁻¹ z) 1`. This is the genuine smooth-section/PDE dictionary Mathlib
-   lacks.
+1. `exists_chartPullback_zeroOne_datum` (the refined kernel 1) — the chart-pullback `(0,1)`-datum:
+   a smooth `(0,1)`-form `g` read in the `x₀`-chart is a *smooth planar function* `G` reproducing
+   the intrinsic value `g x 1` after the holomorphic frame change `conj(τ′)`. The chart bridge, the
+   Wirtinger chain rule (`dbarDisk_comp_holo`), the global smooth lift, and the planar PDE
+   `DbarLocal.dbar_solvable_locally` are all DONE; the irreducible remainder this carries is exactly
+   (i) the *smoothness* of the chart-read datum `G` and (ii) the chart-derivative bookkeeping relating
+   `mfderiv` of charts to the planar transition `deriv τ` (`proj01_eq_conj_smul` already supplies the
+   fiberwise conjugate-homogeneity). This is the genuine smooth-section/PDE dictionary Mathlib lacks.
 2. `dolbeault_to_cech` — the forward map *as a well-defined linear map on cohomology* (independence
    of the form representative and of the local primitive choices; builds on the now-proven
    `dbar_solvable_locally_manifold` + the cocycle backbone).
@@ -431,17 +538,18 @@ theorem cechH1_dolbeault_comparison_proof :
    `comparison_bijective`: the two maps are mutually inverse.
 
 **Assessment.** Dolbeault's theorem is the composite of (i) the local PDE (`DbarLocal`, DONE) plus
-its transport to the manifold operator — the chart bridge `dbar_apply_one_eq_dbarDisk` and the
-global smooth lift `exists_smoothLift_of_chartFun` are now both proven, so
-`dbar_solvable_locally_manifold` is sorry-free *modulo* the single finer kernel
-`exists_localPrimitive_apply_one` (the `∂̄` chart-transition equivariance); (ii) the Čech/coboundary
-*algebra* (sorry-free here); (iii) a partition-of-unity *globalization* (its PoU input sorry-free
-here; the smooth-section gluing remains); and (iv) the *well-definedness + mutual-inverse* of the
-resulting maps. We have mechanized the full bookkeeping spine, the discrete/algebraic skeleton (ii),
-the PoU existence, and the entire chart-transport bridge of `∂̄` sorry-free; the irreducible analytic
-remainder is concentrated in the `∂̄` transition-equivariance (kernel 1) and the construction of the
-two maps as honest cohomology homomorphisms (2,3) with their mutual inverseness (4,5) — the parts
-that genuinely require building the smooth-section ↔ holomorphic-germ dictionary that Mathlib
-lacks. -/
+its transport to the manifold operator — the chart bridge `dbar_apply_one_eq_dbarDisk`, the Wirtinger
+chain rule `dbarDisk_comp_holo`, and the global smooth lift `exists_smoothLift_of_chartFun` are now
+all proven, so both `exists_localPrimitive_apply_one` and `dbar_solvable_locally_manifold` are
+sorry-free *modulo* the single finer kernel `exists_chartPullback_zeroOne_datum` (the smoothness +
+`(0,1)`-transformation law of the chart-pullback datum); (ii) the Čech/coboundary *algebra*
+(sorry-free here); (iii) a partition-of-unity *globalization* (its PoU input sorry-free here; the
+smooth-section gluing remains); and (iv) the *well-definedness + mutual-inverse* of the resulting
+maps. We have mechanized the full bookkeeping spine, the discrete/algebraic skeleton (ii), the PoU
+existence, and the entire chart-transport machinery of `∂̄` (bridge + Wirtinger chain rule) sorry-free;
+the irreducible analytic remainder is concentrated in the chart-pullback datum (kernel 1) and the
+construction of the two maps as honest cohomology homomorphisms (2,3) with their mutual inverseness
+(4,5) — the parts that genuinely require building the smooth-section ↔ holomorphic-germ dictionary
+that Mathlib lacks. -/
 
 end Jacobians.Dolbeault
