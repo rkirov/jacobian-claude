@@ -136,4 +136,35 @@ noncomputable def proj01L : SmoothCOneForms X →ₗ[ℝ] SmoothCOneForms X wher
 
 @[simp] theorem proj01L_apply (α : SmoothCOneForms X) : proj01L α = proj01Section α := rfl
 
+/-! ### Deliverable 2: the `(0,1)`-forms `A^{0,1}` as a submodule of `A¹`. -/
+
+/-- **The `(0,1)`-forms** `A^{0,1} X` (deliverable 2): the image of the `(0,1)`-projection `proj01L`.
+A `Submodule ℝ` of `A¹ = SmoothCOneForms X`. (`proj01` is an idempotent picking out the
+conjugate-`ℂ`-linear part of each fiber, so its range is exactly the `(0,1)`-forms.) -/
+noncomputable def OneFormsZeroOne (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
+    Submodule ℝ (SmoothCOneForms X) :=
+  LinearMap.range (proj01L (X := X))
+
+/-! ### Deliverable 3: `∂̄` lands in `A^{0,1}`. -/
+
+/-- `∂̄u = proj01L (du)` as `1`-forms: both have fiber `x ↦ proj01 ((differential u) x)`. -/
+theorem dbarL_eq_proj01L_differential (u : SmoothCFunctions X) :
+    dbarL u = proj01L (differential u) := by
+  refine ContMDiffSection.ext fun x => ?_
+  rfl
+
+/-- **`im ∂̄ ⊆ A^{0,1}`** (deliverable 3): `∂̄u` is a `(0,1)`-form, since `∂̄u = proj01L (du)` lies in
+the range of `proj01L`. This is what makes `LinearMap.range dbarL` a submodule of `OneFormsZeroOne`,
+hence the cokernel `DolbeaultH01` below well-formed. -/
+theorem dbarL_mem_zeroOne (u : SmoothCFunctions X) : dbarL u ∈ OneFormsZeroOne X := by
+  rw [dbarL_eq_proj01L_differential]
+  exact LinearMap.mem_range_self _ _
+
+/-- The image of `∂̄` is contained in `A^{0,1}` (the submodule form of `dbarL_mem_zeroOne`). -/
+theorem range_dbarL_le_zeroOne :
+    LinearMap.range (dbarL (X := X)) ≤ OneFormsZeroOne X := by
+  rintro _ ⟨u, rfl⟩
+  exact dbarL_mem_zeroOne u
+
 end Jacobians.Dolbeault
