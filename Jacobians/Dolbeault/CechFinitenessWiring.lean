@@ -31,15 +31,16 @@
   proven full-disk ∂̄-solvability `DbarDiskCohomology.dbar_solvable_ball` and the holomorphic
   re-splitting `DbarDiskCohomology.dbar_holo_splitting_ball` (both sorry-free, axiom-clean).
 
-  WHAT IS LEFT AS NAMED, HONEST `sorry`s (the genuinely-hard chart-bookkeeping / comparison pieces):
+  WHAT IS LEFT AS THE SINGLE NAMED, HONEST `sorry` (the genuinely-hard manifold/Čech assembly):
     * `exists_cechModel`          — existence of the chart-disk Leray model (`DiskOverlapData` +
-      `Coboundaries`, INCLUDING its `leray` acyclicity field) for the cover: the CONSTRUCTION (chart
-      bookkeeping, Leray refinement, shrinking, and the disk-acyclicity assembly from the proven
-      ∂̄-solvability atoms).
-    * `cechH1_linearEquiv_supH1`  — the COMPARISON `𝔘.cechH1 D ≃ₗ supH1`, stated against the *given*
-      model (germ-class ↔ honest-bounded-holomorphic; codiscrete↔𝓝[≠] bridge of `CechH0`).
-  NOTHING ELSE is a `sorry`. STEPS 3 (`ρ` compact), 4 (Leray surjectivity), and 5 (the reduction
-  application) are fully proven.
+      `Coboundaries`, INCLUDING its `leray` acyclicity field) for the cover, TOGETHER WITH the
+      comparison `𝔘.cechH1 D ≃ₗ supH1` (bundled into the same existential, so the model is tied to
+      `(𝔘, D)`): chart bookkeeping, Leray refinement, shrinking, the disk-acyclicity assembly from the
+      proven ∂̄-solvability atoms, and the germ-class ↔ bounded-holomorphic comparison.
+  `cechH1_linearEquiv_supH1` is now a sorry-free *consumer* of `exists_cechModel` (the previous free-
+  `c` form was unsound — `supH1` and `cechH1 D` are unrelated for an arbitrary model — so the
+  comparison is correctly scoped via the bundled existential). NOTHING ELSE is a `sorry`. STEPS 3
+  (`ρ` compact), 4 (Leray surjectivity), and 5 (the reduction application) are fully proven.
 -/
 import Jacobians.Dolbeault.CechFinitenessAbstract
 import Jacobians.Dolbeault.BddHol
@@ -260,49 +261,61 @@ theorem leray_surjective (d : DiskOverlapData) (c : Coboundaries d) :
 
 /-! ### STEP 6a — existence of the chart-disk Leray model (named `sorry`, honest statement) -/
 
-/-- **STEP 6a — the chart-disk Leray model exists (HONEST `sorry`).** Every finite cover `𝔘` admits a
-chart-disk Leray cover/shrinking model: a `DiskOverlapData` (the per-overlap chart-images as disks in
-`ℂ`, each with a relatively-compact convex shrinking) and a `Coboundaries` bundle (the sup-norm
-`δ⁰/δ¹`, the restriction commuting square, AND the `leray` disk-acyclicity witness).
+/-- **STEP 6a — the chart-disk Leray model exists and computes `cechH1` (THE one honest `sorry`).**
+Every finite cover `𝔘` admits a chart-disk Leray model — a `DiskOverlapData` (per-overlap
+chart-images as disks in `ℂ`, each with a relatively-compact convex shrinking) and a `Coboundaries`
+bundle (the sup-norm `δ⁰/δ¹`, the restriction commuting square, AND the `leray` disk-acyclicity
+witness) — whose sup-norm `H¹` is `ℂ`-linearly isomorphic to the genuine germ-class `𝔘.cechH1 D`.
 
-This is the CONSTRUCTION half of the manifold side: reading each overlap in a chart as a disk in `ℂ`
-(the "chart bookkeeping"), refining to a Leray cover where each piece is `𝒪`-acyclic, shrinking
-(via `Montel/Cover.lean`'s `chartCover`/`chartOpen`/`innerChartOpen`), and — the genuine analytic
-core — supplying the `leray` field. That field is exactly `H¹(disk, 𝒪) = 0`, whose disk engine is
-now PROVEN: the full-disk ∂̄-solvability `DbarDiskCohomology.dbar_solvable_ball` and the holomorphic
-re-splitting `DbarDiskCohomology.dbar_holo_splitting_ball`. What remains unproven (hence the `sorry`)
-is the manifold/Čech assembly that turns those disk atoms into the cover-level `leray` witness plus
-the chart-image geometry. NOT proven here. (Separated from the comparison so the two distinct
-manifold facts are independently inspectable.) -/
+The comparison is bundled into the conclusion (rather than a free-`c` standalone) precisely because
+`supH1` depends only on the model and `cechH1 D` only on `(𝔘, D)`: the isomorphism holds only for the
+model *built from* `(𝔘, D)`.
+
+This is the entire manifold side: (i) reading each overlap in a chart as a disk in `ℂ` (the "chart
+bookkeeping" from `Montel/Cover.lean`'s `chartCover`/`chartOpen`/`innerChartOpen`), refining to a
+Leray cover and shrinking; (ii) the disk-acyclicity `leray` field, whose disk engine is now PROVEN —
+the full-disk ∂̄-solvability `DbarDiskCohomology.dbar_solvable_ball` and the holomorphic re-splitting
+`DbarDiskCohomology.dbar_holo_splitting_ball`; and (iii) the germ-class ↔ bounded-holomorphic
+comparison (codiscrete ↔ `𝓝[≠]` bridge of `CechH0` + Leray refinement). What remains unproven (hence
+the `sorry`) is the manifold/Čech assembly stitching the proven disk atoms into the cover-level model
+and the comparison. NOT proven here. -/
 theorem exists_cechModel (𝔘 : FiniteCover X) (D : Divisor X) :
-    ∃ (d : DiskOverlapData), Nonempty (Coboundaries d) := by
+    ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) := by
   sorry
 
-/-! ### STEP 6b — the comparison to the germ-class `cechH1` (named `sorry`, honest statement) -/
+/-! ### STEP 6b — the comparison to the germ-class `cechH1` (named `sorry`, honest statement)
 
-/-- **STEP 6b — comparison `cechH1 ≃ₗ supH1` (HONEST `sorry`).** For the chart-disk Leray model
-`(d, c)` of `(𝔘, D)`, the genuine germ-class `H¹` is `ℂ`-linearly isomorphic to the sup-norm `H¹` of
-the model. This is the COMPARISON proper (stated against the *given* model `c`, so it cannot be
-discharged by an unrelated finite-dimensional model): the germ-class cochains (`MGerm`, junk-free)
-and the honest bounded-holomorphic cochains have the same cocycles and coboundaries, because a
-holomorphic section with a bounded pole is determined by its germ (the codiscrete ↔ `𝓝[≠]` bridge of
-`CechH0`), and the cover-refinement `H¹(𝔘) ≅ H¹(refinement)` (Leray). NOT proven here. -/
-noncomputable def cechH1_linearEquiv_supH1 (𝔘 : FiniteCover X) (D : Divisor X)
-    (d : DiskOverlapData) (c : Coboundaries d) :
-    𝔘.cechH1 D ≃ₗ[ℂ] c.supH1 :=
-  sorry
+SOUNDNESS NOTE.  The comparison is bundled into `exists_cechModel`'s conclusion (above) rather than
+stated as a standalone equivalence `(𝔘 D d c) → 𝔘.cechH1 D ≃ₗ c.supH1`.  The latter is FALSE for a
+free `c`: `supH1` depends only on the model `c` while `cechH1 D` depends only on `(𝔘, D)`, so for an
+unrelated acyclic model (e.g. one chart-disk with `supH1 = 0`) against a high-genus `(𝔘, D)` the two
+sides have different dimensions.  The equivalence holds only for the model that is *built from*
+`(𝔘, D)` — hence the existential `∃ d c, …` tying `c` to `(𝔘, D)`.  `cechH1_linearEquiv_supH1` below
+is the corresponding correctly-scoped *consumer* (it extracts the bundled equivalence), kept as a
+named, inspectable entry point. -/
+
+/-- **STEP 6b — comparison `cechH1 ≃ₗ supH1` (consumer of `exists_cechModel`, sorry-free).** For the
+chart-disk Leray model produced by `exists_cechModel 𝔘 D`, the genuine germ-class `H¹` is
+`ℂ`-linearly isomorphic to the sup-norm `H¹` of that model.  This simply repackages the bundled
+equivalence (the actual analytic comparison — germ-class ↔ honest-bounded-holomorphic via the
+codiscrete ↔ `𝓝[≠]` bridge of `CechH0`, plus the Leray cover-refinement — is the content of the
+`exists_cechModel` sorry).  Stated as an existence of *a* model with the comparison, so it cannot be
+vacuously discharged by an unrelated finite-dimensional model. -/
+theorem cechH1_linearEquiv_supH1 (𝔘 : FiniteCover X) (D : Divisor X) :
+    ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
+  exists_cechModel 𝔘 D
 
 /-! ### STEP 7 — discharge `finiteDimensional_cechH1` -/
 
 /-- **The finiteness node, assembled.** `H¹(𝔘, 𝒪_D)` is finite-dimensional: take the chart-disk Leray
-model (`exists_cechModel`); its sup-norm `H¹` is finite-dimensional by `finiteDimensional_supH1`
-(STEP 5; `ρ` compact via the proven Montel atom + Leray surjectivity `leray_surjective`); and the
-comparison `cechH1_linearEquiv_supH1` transports finiteness back to the germ-class `cechH1`. The only
-unproven inputs are the three named analytic `sorry`s (`leray_surjective`, `exists_cechModel`,
-`cechH1_linearEquiv_supH1`). This discharges the exact statement of
-`DolbeaultLadder.finiteDimensional_cechH1`. -/
+model with its comparison (`exists_cechModel`, the single remaining honest `sorry`); its sup-norm
+`H¹` is finite-dimensional by `finiteDimensional_supH1` (STEP 5; `ρ` compact via the proven Montel
+atom + the PROVEN Leray surjectivity `leray_surjective`); and the bundled comparison `cechH1 ≃ₗ
+supH1` transports finiteness back to the germ-class `cechH1`. The ONLY unproven input is now the
+single named `exists_cechModel` (model construction + comparison); `leray_surjective` is proven. This
+discharges the exact statement of `DolbeaultLadder.finiteDimensional_cechH1`. -/
 theorem finiteDimensional_cechH1_wired (𝔘 : FiniteCover X) (D : Divisor X) :
     FiniteDimensional ℂ (𝔘.cechH1 D) := by
-  obtain ⟨d, ⟨c⟩⟩ := exists_cechModel 𝔘 D
+  obtain ⟨d, c, ⟨e⟩⟩ := exists_cechModel 𝔘 D
   haveI : FiniteDimensional ℂ c.supH1 := c.finiteDimensional_supH1 (leray_surjective d c)
-  exact (cechH1_linearEquiv_supH1 𝔘 D d c).symm.finiteDimensional
+  exact e.symm.finiteDimensional
