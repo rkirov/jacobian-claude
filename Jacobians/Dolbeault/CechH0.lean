@@ -254,6 +254,96 @@ theorem Gext_overlap_eventuallyEq {U V : Opens X} (gU : U → ℂ) (gV : V → �
   simp only [Function.comp_apply, openIncl] at hw
   exact hw.symm
 
+/-! ### Per-point normal form: chart-transport and chart-invariance
+
+The glued function is the per-point meromorphic *normal form* read in `X`'s chart at each point. Two
+facts are needed: the normal-form *value* at the chart centre is germ-determined
+(`toMeromorphicNFAt_chart_val_congr`), and *analyticity* (hence normal-form-ness) is chart-invariant
+(`analyticAt_chart_change`, via the analytic transition maps of the `ω`-manifold `X`). -/
+
+/-- Transport an `=ᶠ[𝓝[≠]]` from `X` to `X`'s chart at `x` (precompose with `chartAt x`'s inverse). -/
+theorem eventuallyEq_comp_chart {a b : X → ℂ} {x : X} (h : a =ᶠ[𝓝[≠] x] b) :
+    (a ∘ (chartAt (H := ℂ) x).symm) =ᶠ[𝓝[≠] ((chartAt (H := ℂ) x) x)]
+      (b ∘ (chartAt (H := ℂ) x).symm) := by
+  have key := (eventually_comp_chart_iff' (a - b) x (· = 0)).2
+  simp only [Pi.sub_apply, sub_eq_zero] at key
+  filter_upwards [key h] with w hw
+  simp only [Function.comp_apply, Pi.sub_apply, sub_eq_zero] at hw ⊢
+  exact hw
+
+/-- The normal-form *value* at the chart centre depends only on the germ: if `a` and `b` agree off a
+discrete set near `x` (and `a` is meromorphic in the chart), their per-point normal forms (read in
+`X`'s chart at `x`) take equal value at the chart centre. The `MeromorphicNFAt` local-identity
+theorem upgrades the punctured-neighbourhood agreement to a full-neighbourhood one. -/
+theorem toMeromorphicNFAt_chart_val_congr {a b : X → ℂ} {x : X} (h : a =ᶠ[𝓝[≠] x] b)
+    (hma : MeromorphicAt (a ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)) :
+    toMeromorphicNFAt (a ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
+        ((chartAt (H := ℂ) x) x)
+      = toMeromorphicNFAt (b ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
+        ((chartAt (H := ℂ) x) x) := by
+  set c := (chartAt (H := ℂ) x) x with hc
+  set fa := a ∘ (chartAt (H := ℂ) x).symm with hfa
+  set fb := b ∘ (chartAt (H := ℂ) x).symm with hfb
+  have hab : fa =ᶠ[𝓝[≠] c] fb := eventuallyEq_comp_chart h
+  have hmb : MeromorphicAt fb c := hma.congr hab
+  have hnfa : MeromorphicNFAt (toMeromorphicNFAt fa c) c := meromorphicNFAt_toMeromorphicNFAt
+  have hnfb : MeromorphicNFAt (toMeromorphicNFAt fb c) c := meromorphicNFAt_toMeromorphicNFAt
+  have e1 : toMeromorphicNFAt fa c =ᶠ[𝓝[≠] c] fa := (hma.eq_nhdsNE_toMeromorphicNFAt).symm
+  have e2 : fb =ᶠ[𝓝[≠] c] toMeromorphicNFAt fb c := hmb.eq_nhdsNE_toMeromorphicNFAt
+  have echain : toMeromorphicNFAt fa c =ᶠ[𝓝[≠] c] toMeromorphicNFAt fb c :=
+    e1.trans (hab.trans e2)
+  exact ((hnfa.eventuallyEq_nhdsNE_iff_eventuallyEq_nhds hnfb).1 echain).eq_of_nhds
+
+/-- The chart transition `chartAt y ∘ (chartAt z).symm` is analytic at `chartAt z z` (for `z` in the
+source of `chartAt y`): chart and inverse-chart are `C^ω` (`contMDiffOn_chart`), and `C^ω = analytic`
+(`ContDiffAt.analyticAt`) since the model `𝓘(ℂ)` is the identity. -/
+theorem transition_analyticAt {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).source) :
+    AnalyticAt ℂ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) z).symm) ((chartAt (H := ℂ) z) z) := by
+  have hsrc_z : z ∈ (chartAt (H := ℂ) z).source := mem_chart_source ℂ z
+  have hcz_tgt : (chartAt (H := ℂ) z) z ∈ (chartAt (H := ℂ) z).target :=
+    (chartAt (H := ℂ) z).map_source hsrc_z
+  have h1 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (chartAt (H := ℂ) z).symm ((chartAt (H := ℂ) z) z) :=
+    ((contMDiffOn_chart_symm (I := 𝓘(ℂ)) (n := ω) (x := z)) _ hcz_tgt).contMDiffAt
+      ((chartAt (H := ℂ) z).open_target.mem_nhds hcz_tgt)
+  have hez : (chartAt (H := ℂ) z).symm ((chartAt (H := ℂ) z) z) = z :=
+    (chartAt (H := ℂ) z).left_inv hsrc_z
+  have h2 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (chartAt (H := ℂ) y)
+      ((chartAt (H := ℂ) z).symm ((chartAt (H := ℂ) z) z)) := by
+    rw [hez]
+    exact ((contMDiffOn_chart (I := 𝓘(ℂ)) (n := ω) (x := y)) _ hz).contMDiffAt
+      ((chartAt (H := ℂ) y).open_source.mem_nhds hz)
+  exact (contMDiffAt_iff_contDiffAt.1
+    (ContMDiffAt.comp (I' := 𝓘(ℂ)) ((chartAt (H := ℂ) z) z) h2 h1)).analyticAt
+
+/-- **Chart-invariance of analyticity.** If `h` read in the chart at `y` is analytic at the image of
+`z` (with `z` in that chart's source), then `h` read in its *own* chart at `z` is analytic. Composes
+with the analytic transition map (`transition_analyticAt`). -/
+theorem analyticAt_chart_change {h : X → ℂ} {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).source)
+    (ha : AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) z)) :
+    AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) z).symm) ((chartAt (H := ℂ) z) z) := by
+  have hcz_tgt : (chartAt (H := ℂ) z) z ∈ (chartAt (H := ℂ) z).target :=
+    (chartAt (H := ℂ) z).map_source (mem_chart_source ℂ z)
+  have hez : (chartAt (H := ℂ) z).symm ((chartAt (H := ℂ) z) z) = z :=
+    (chartAt (H := ℂ) z).left_inv (mem_chart_source ℂ z)
+  have hφ := transition_analyticAt (y := y) (z := z) hz
+  have hφ_pt : ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) z).symm) ((chartAt (H := ℂ) z) z)
+      = (chartAt (H := ℂ) y) z := by simp only [Function.comp_apply, hez]
+  have hcomp : AnalyticAt ℂ ((h ∘ (chartAt (H := ℂ) y).symm) ∘
+      ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) z).symm)) ((chartAt (H := ℂ) z) z) :=
+    AnalyticAt.comp (hφ_pt ▸ ha) hφ
+  have hmem : ∀ᶠ w in 𝓝 ((chartAt (H := ℂ) z) z),
+      (chartAt (H := ℂ) z).symm w ∈ (chartAt (H := ℂ) y).source := by
+    have hcont : ContinuousAt (chartAt (H := ℂ) z).symm ((chartAt (H := ℂ) z) z) :=
+      (chartAt (H := ℂ) z).continuousAt_symm hcz_tgt
+    have hh : (chartAt (H := ℂ) z).symm ((chartAt (H := ℂ) z) z) ∈ (chartAt (H := ℂ) y).source := by
+      rw [hez]; exact hz
+    exact hcont.preimage_mem_nhds ((chartAt (H := ℂ) y).open_source.mem_nhds hh)
+  have heq : (h ∘ (chartAt (H := ℂ) z).symm) =ᶠ[𝓝 ((chartAt (H := ℂ) z) z)]
+      ((h ∘ (chartAt (H := ℂ) y).symm) ∘ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) z).symm)) := by
+    filter_upwards [hmem] with w hw
+    simp only [Function.comp_apply, (chartAt (H := ℂ) y).left_inv hw]
+  rw [analyticAt_congr heq]; exact hcomp
+
 /-! ### The forward map `L(D) → H⁰(𝔘, 𝒪_D)` -/
 
 namespace FiniteCover
@@ -325,6 +415,68 @@ theorem ker_cechRestrictL :
   exact Iff.rfl
 
 /-! ### Gluing (surjectivity) — the crux -/
+
+/-- The per-point glued function: at `x`, the meromorphic *normal-form* value of the local member
+`G (idx x)` read in `X`'s chart at `x`. -/
+noncomputable def gluedFun (G : 𝔘.ι → X → ℂ) (idx : X → 𝔘.ι) : X → ℂ :=
+  fun x => toMeromorphicNFAt (G (idx x) ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
+    ((chartAt (H := ℂ) x) x)
+
+/-- **NF-codiscreteness on `X`.** Near every `y ∈ U i`, the extension `Gext g` is in normal form
+(`nfX`, intrinsic to `X`'s per-point charts) off a discrete set: `Gext g` is meromorphic at `y`, so
+analytic at codiscretely-many nearby chart points, and analyticity is chart-invariant
+(`analyticAt_chart_change`), giving `nfX` at the point's own chart. -/
+theorem nfX_Gext_codiscrete {i : 𝔘.ι} {g : 𝔘.U i → ℂ} (hg : IsMeromorphic (𝔘.U i : Type _) g)
+    {y : X} (hy : y ∈ 𝔘.U i) :
+    ∀ᶠ z in 𝓝[≠] y, nfX (Gext g) z := by
+  have hmer : MeromorphicAt (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) :=
+    Gext_meromorphicAt hg hy
+  have hana : ∀ᶠ w in 𝓝[≠] ((chartAt (H := ℂ) y) y),
+      AnalyticAt ℂ (Gext g ∘ (chartAt (H := ℂ) y).symm) w := hmer.eventually_analyticAt
+  have htend : Filter.Tendsto (chartAt (H := ℂ) y) (𝓝[≠] y) (𝓝[≠] ((chartAt (H := ℂ) y) y)) := by
+    have hy' : y ∈ (chartAt (H := ℂ) y).source := mem_chart_source ℂ y
+    rw [tendsto_nhdsWithin_iff]
+    refine ⟨((chartAt (H := ℂ) y).continuousAt hy').continuousWithinAt.tendsto, ?_⟩
+    rw [eventually_nhdsWithin_iff]
+    filter_upwards [(chartAt (H := ℂ) y).open_source.mem_nhds hy'] with z hz hzne
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hzne ⊢
+    exact fun hc => hzne ((chartAt (H := ℂ) y).injOn hz hy' hc)
+  have hana' : ∀ᶠ z in 𝓝[≠] y,
+      AnalyticAt ℂ (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) z) :=
+    htend.eventually hana
+  have hsrc : ∀ᶠ z in 𝓝[≠] y, z ∈ (chartAt (H := ℂ) y).source :=
+    eventually_nhdsWithin_of_eventually_nhds
+      ((chartAt (H := ℂ) y).open_source.mem_nhds (mem_chart_source ℂ y))
+  filter_upwards [hana', hsrc] with z hz hzsrc
+  exact (analyticAt_chart_change hzsrc hz).meromorphicNFAt
+
+/-- **Central gluing property.** The glued function agrees off a discrete set near every point with
+the local family member `G i` whose patch `U i` contains that point. Hence (downstream) `gluedFun` is
+meromorphic, satisfies the order bound, and restricts to the prescribed germ on each `U i`.
+
+Needs: every point lies in `U (idx ·)` (`hidx`); each `G i` meromorphic on `U i` (`hmer`); the family
+agrees off a discrete set on overlaps (`hoverlap`); and `G i` is normal-form-codiscrete near `U i`
+(`hnf`). The proof: on the `𝓝[≠] y` set where `z ∈ U i` and `G i` is `nfX` at `z`, idx-independence
+(`toMeromorphicNFAt_chart_val_congr` + `hoverlap`) rewrites `gluedFun z` to the normal form of `G i`,
+which (being already normal form) equals `G i z` (`toMeromorphicNFAt_eq_self`). -/
+theorem gluedFun_eventuallyEq (G : 𝔘.ι → X → ℂ) (idx : X → 𝔘.ι)
+    (hidx : ∀ x, x ∈ 𝔘.U (idx x))
+    (hmer : ∀ i, ∀ y, y ∈ 𝔘.U i →
+      MeromorphicAt (G i ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y))
+    (hoverlap : ∀ i j, ∀ x, x ∈ 𝔘.U i → x ∈ 𝔘.U j → G i =ᶠ[𝓝[≠] x] G j)
+    (hnf : ∀ i, ∀ y, y ∈ 𝔘.U i → ∀ᶠ z in 𝓝[≠] y, nfX (G i) z)
+    {y : X} {i : 𝔘.ι} (hy : y ∈ 𝔘.U i) :
+    𝔘.gluedFun G idx =ᶠ[𝓝[≠] y] G i := by
+  have hUi : ∀ᶠ z in 𝓝[≠] y, z ∈ 𝔘.U i :=
+    eventually_nhdsWithin_of_eventually_nhds ((𝔘.U i).isOpen.mem_nhds hy)
+  filter_upwards [hUi, hnf i y hy] with z hz hznf
+  show toMeromorphicNFAt (G (idx z) ∘ (chartAt (H := ℂ) z).symm) ((chartAt (H := ℂ) z) z)
+      ((chartAt (H := ℂ) z) z) = G i z
+  rw [toMeromorphicNFAt_chart_val_congr (hoverlap (idx z) i z (hidx z) hz)
+    (hmer (idx z) z (hidx z))]
+  have hnfz : MeromorphicNFAt (G i ∘ (chartAt (H := ℂ) z).symm) ((chartAt (H := ℂ) z) z) := hznf
+  rw [toMeromorphicNFAt_eq_self.mpr hnfz]
+  simp only [Function.comp_apply, OpenPartialHomeomorph.left_inv _ (mem_chart_source ℂ z)]
 
 /-- **Gluing.** Every global matching `𝒪_D`-section over the cover glues to a single global
 meromorphic function in `L(D)`.
