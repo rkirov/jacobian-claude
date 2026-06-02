@@ -65,4 +65,29 @@ theorem isCompactOperator_pi {ι : Type*} [Fintype ι] [DecidableEq ι] {E F : �
     isCompactOperator_zero (fun i _ => ?_)
   exact ((hK i).comp_clm (proj i)).clm_comp (single ℂ F i)
 
+/-- **A compact operator into a closed subspace is compact.** If `g : E →L p` (into a *closed*
+submodule `p ≤ F`) becomes compact after including into `F` (`p.subtypeL ∘ g` compact), then `g` is
+compact. Needed so the cochain restriction `ρ`, viewed as landing in the closed cocycle subspace
+`Z¹(𝔙)`, is a compact operator (the `ρ` input of `finiteDimensional_h1_of_leray_compact`). -/
+theorem isCompactOperator_of_subtypeL_comp {E F : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℂ E] [NormedAddCommGroup F] [NormedSpace ℂ F]
+    {p : Submodule ℂ F} (hp : IsClosed (p : Set F)) (g : E →L[ℂ] p)
+    (h : IsCompactOperator (p.subtypeL.comp g)) : IsCompactOperator g := by
+  rw [isCompactOperator_iff_exists_mem_nhds_isCompact_closure_image] at h ⊢
+  obtain ⟨V, hV, hcpt⟩ := h
+  refine ⟨V, hV, ?_⟩
+  have hind : Topology.IsInducing (Subtype.val : p → F) :=
+    Topology.IsEmbedding.subtypeVal.isInducing
+  have hrange : IsClosed (Set.range (Subtype.val : p → F)) := by
+    rw [Subtype.range_coe_subtype]; exact hp
+  have key : (⇑(p.subtypeL.comp g)) '' V = Subtype.val '' (g '' V) := by
+    simp only [ContinuousLinearMap.coe_comp', Submodule.coe_subtypeL', Submodule.coe_subtype,
+      Set.image_comp]
+  have hcpt' : IsCompact ((Subtype.val : p → F) ⁻¹' closure (Subtype.val '' (g '' V))) := by
+    rw [← key]; exact hind.isCompact_preimage hrange hcpt
+  apply hcpt'.of_isClosed_subset isClosed_closure
+  apply closure_minimal _ (isClosed_closure.preimage continuous_subtype_val)
+  intro y hy
+  exact subset_closure ⟨y, hy, rfl⟩
+
 end Jacobians.Dolbeault.CechFiniteness
