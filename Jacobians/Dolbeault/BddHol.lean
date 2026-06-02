@@ -234,6 +234,59 @@ complete `↥U →ᵇ ℂ` whose image is closed. -/
 theorem completeSpace (hU : IsOpen U) : CompleteSpace (BddHol U) :=
   isUniformInducing_toBcf.completeSpace (isComplete_range_toBcf hU)
 
+/-- Pointwise bound: the sup-`U` norm dominates `|f|` at every point of `U`. -/
+theorem norm_toFun_le (f : BddHol U) {z : ℂ} (hz : z ∈ U) : ‖f.toFun z‖ ≤ ‖f‖ := by
+  rw [norm_def]
+  exact f.toBcf.norm_coe_le_norm ⟨z, hz⟩
+
+/-! ### The compact-restriction operator `BddHol U →L[ℂ] (K →ᵇ ℂ)`
+
+For a compact `K ⊆ U`, restricting a bounded-holomorphic function to `K` gives a bounded continuous
+function on the compact `K`. This restriction is `ℂ`-linear and norm-nonincreasing (operator norm
+`≤ 1`). When `K` is moreover convex and `K ⋐ U`, it is a *compact* operator (Montel). -/
+
+variable {K : Set ℂ} [CompactSpace K]
+
+/-- Restriction of `f : BddHol U` to a compact `K ⊆ U`, as a bounded continuous function on `K`.
+This is the exact element form consumed by the Montel atom
+`CechFiniteness.isCompact_closure_restrict_bddHolo`. -/
+noncomputable def restrict (hKU : K ⊆ U) (f : BddHol U) : K →ᵇ ℂ :=
+  mkOfCompact ⟨K.restrict f.toFun, (f.analyticOn.continuousOn.mono hKU).restrict⟩
+
+@[simp] theorem restrict_apply (hKU : K ⊆ U) (f : BddHol U) (z : K) :
+    restrict hKU f z = f.toFun z.1 := rfl
+
+/-- Restriction to `K ⊆ U` as a `ℂ`-linear map. -/
+noncomputable def restrictₗ (hKU : K ⊆ U) : BddHol U →ₗ[ℂ] (K →ᵇ ℂ) where
+  toFun := restrict hKU
+  map_add' f g := by
+    ext z
+    show (f + g).toFun z.1 = f.toFun z.1 + g.toFun z.1
+    rw [toFun_add]; rfl
+  map_smul' c f := by
+    ext z
+    show (c • f).toFun z.1 = c • f.toFun z.1
+    rw [toFun_smul]; rfl
+
+@[simp] theorem restrictₗ_apply (hKU : K ⊆ U) (f : BddHol U) : restrictₗ hKU f = restrict hKU f :=
+  rfl
+
+/-- **Restriction continuous-linear map** `BddHol U →L[ℂ] (K →ᵇ ℂ)` for `K ⊆ U` compact, with
+operator norm `≤ 1`. -/
+noncomputable def restrictCLM (hKU : K ⊆ U) : BddHol U →L[ℂ] (K →ᵇ ℂ) :=
+  (restrictₗ hKU).mkContinuous 1 fun f => by
+    rw [one_mul]
+    -- `‖restrict f‖ ≤ ‖f‖`: every value `|f z|` for `z ∈ K ⊆ U` is `≤ ‖f‖`
+    refine (BoundedContinuousFunction.norm_le (norm_nonneg f)).mpr fun z => ?_
+    show ‖f.toFun z.1‖ ≤ ‖f‖
+    exact f.norm_toFun_le (hKU z.2)
+
+@[simp] theorem restrictCLM_apply (hKU : K ⊆ U) (f : BddHol U) :
+    restrictCLM hKU f = restrict hKU f := rfl
+
+theorem norm_restrictCLM_le (hKU : K ⊆ U) : ‖restrictCLM hKU‖ ≤ 1 :=
+  LinearMap.mkContinuous_norm_le _ zero_le_one _
+
 end BddHol
 
 end Jacobians.Dolbeault
