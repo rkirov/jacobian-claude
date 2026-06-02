@@ -43,6 +43,38 @@ theorem ordU_zero {U : Opens X} (x : U) : ordU (0 : U → ℂ) x = ⊤ := by
     meromorphicOrderAt_eq_top_iff]
   exact Filter.Eventually.of_forall (fun _ => rfl)
 
+/-- `ordU f x = ⊤` forces `f` to be meromorphic at `x` (the order is the junk value `0` for
+non-meromorphic functions, and `0 ≠ ⊤`). -/
+private theorem meromorphicAt_of_ordU_eq_top {U : Opens X} {f : U → ℂ} {x : U}
+    (h : ordU f x = ⊤) :
+    MeromorphicAt (f ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x) := by
+  by_contra hc
+  rw [ordU, meromorphicOrderAt_of_not_meromorphicAt hc] at h
+  exact absurd h (by simp)
+
+/-- **Germ-zero "junk".** Functions on `↥U` that vanish as a germ at every point (`ordU ≡ ⊤`) — the
+removable-singularity junk (point-indicators etc.). `ordU ≡ ⊤ ⟹` meromorphic, so this is the
+codiscrete-zero class of `Analysis.Meromorphic.NormalForm` (`=ᶠ[codiscreteWithin] 0`), mirroring
+RiemannRoch's `germZeroSubmodule`. Quotienting it out is what makes the Čech `h⁰/h¹` the genuine,
+finite dimensions (the naive `finrank` over honest functions is `0`: point-indicators are infinitely
+many and independent). -/
+def germZeroFn (U : Opens X) : Submodule ℂ (U → ℂ) where
+  carrier := {f | ∀ x, ordU f x = ⊤}
+  add_mem' {f g} hf hg x := by
+    have h : min (ordU f x) (ordU g x) ≤ ordU (f + g) x :=
+      meromorphicOrderAt_add (meromorphicAt_of_ordU_eq_top (hf x))
+        (meromorphicAt_of_ordU_eq_top (hg x))
+    rw [hf x, hg x, min_self] at h
+    exact top_le_iff.mp h
+  zero_mem' x := ordU_zero x
+  smul_mem' c f hf x := by
+    rcases eq_or_ne c 0 with hc | hc
+    · rw [hc, zero_smul]; exact ordU_zero x
+    · have he : ordU (c • f) x = ordU f x := by
+        rw [ordU, ordU]
+        exact meromorphicOrderAt_smul_of_ne_zero analyticAt_const (by simpa using hc)
+      rw [he]; exact hf x
+
 /-- **Sections of `𝒪_D` over an open `U`** (Forster's `𝒪_D(U)`): functions meromorphic on the open
 submanifold `↥U` whose order is `≥ −D` at every point of `U`. A `Submodule ℂ` of `↥U → ℂ`. -/
 noncomputable def OmegaD (D : Divisor X) (U : Opens X) : Submodule ℂ (U → ℂ) where
@@ -129,6 +161,11 @@ theorem isMeromorphic_comp_openIncl (h : V ≤ U) {f : U → ℂ}
   have hmer := hf (openIncl h v)
   rw [← hbase] at hmer
   exact hmer.congr (hev.filter_mono nhdsWithin_le_nhds).symm
+
+/-- Restriction preserves germ-zero junk (`ordU` is preserved at corresponding points). -/
+theorem germZeroFn_restrict (h : V ≤ U) {f : U → ℂ} (hf : f ∈ germZeroFn U) :
+    (f ∘ openIncl h) ∈ germZeroFn V :=
+  fun v => by rw [ordU_comp_openIncl h]; exact hf (openIncl h v)
 
 /-- Restriction of sections `𝒪_D(U) → 𝒪_D(V)` for `V ≤ U`. -/
 noncomputable def OmegaD.restrict (h : V ≤ U) : OmegaD D U →ₗ[ℂ] OmegaD D V :=
