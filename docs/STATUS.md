@@ -4,6 +4,10 @@ Authoritative, machine-verified status of the Jacobians challenge (Buzzard v0.4)
 Reproduce: `lake build` (full, expects green) and `#print axioms <name>` on any
 declaration; conformance via `lake env lean ChallengeConformance.lean`.
 
+**Dependency map:** `docs/architecture_map.md` — the full DAG to a sorry-free finish
+(incorporates the 2026-06-02 finiteness-node finding: the RR wall's finiteness sub-tree is
+de-risked reuse, the greenfield is isolated to the Serre/Dolbeault core).
+
 A declaration is **clean** iff `#print axioms` is exactly `[propext, Classical.choice,
 Quot.sound]`; it **carries `sorryAx`** iff it transitively depends on one of the open
 `sorry`s. There are **0 custom `axiom`s**; the entire unproved surface is the 5 `sorry`s
