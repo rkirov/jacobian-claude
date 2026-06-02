@@ -18,12 +18,14 @@
       - `six_term_exact_alt_sum`: alternating dim sum of a 6-term exact sequence of fin-dim spaces
         is `0` (pure rank–nullity). PROVEN, axiom-clean.
       - the H⁰-inclusion `f₁ = h0Incl` (`globalSections D ↪ globalSections (D+P)`, order weakening),
-        its injectivity, the cokernel arrow `f₂ = h0ToSky`, and exactness at `H⁰(𝒪_{D+P})`
-        (`exact_h0Incl_h0ToSky`, definitional from the cokernel projection). PROVEN, axiom-clean.
+        its injectivity, and the inclusion-induced `f₄ = h1Map`. PROVEN, axiom-clean.
       - `chi_jump_of_LES`: runs the crank on a `SkyscraperLES` to get the jump. PROVEN, axiom-clean.
-      - `exists_skyscraperLES`: THE single named honest `sorry`, packaging the analytic
-        local-surjectivity (`skyDim`: skyscraper cokernel is 1-dimensional), the snake-lemma data
-        (`f₃`,`f₄`, exactness `exact₂`/`exact₃`/`surj₄`), and `H¹` finiteness. NOT faked.
+      - `exists_skyscraperLES`: THE single named honest `sorry` (a **TRUE** statement), packaging the
+        genuine `ℂ_P` (the 1-dim skyscraper, `finrank = 1` now trivial), the coefficient arrow
+        `f₂ = h0ToSky` with `range f₁ = ker f₂` (`exact₁₂`), the snake-lemma data
+        (`f₃`, exactness `exact₂`/`exact₃`/`surj₄`), and `H¹` finiteness. NOT faked.
+        SOUNDNESS FIX (2026-06-02): the middle term was the H⁰-cokernel with a `skyDim:finrank=1`
+        field that is FALSE at base points; re-pointed to the genuine `ℂ_P` (see `Skyscraper`).
   * **Iterated jump + induction on the divisor** (`Int.induction_on`, `Finsupp.induction`,
     `Divisor.deg` additivity): pure `ℤ`-bookkeeping built on `chi_jump`. CLOSED.
 
@@ -154,22 +156,16 @@ theorem h0Incl_injective (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
     Function.Injective (𝔘.h0Incl D P) :=
   Submodule.inclusion_injective _
 
-/-- The **skyscraper space** `ℂ_P`, realised as the cokernel of the H⁰-inclusion
-`H⁰(𝒪_{D+P}) ⧸ range(H⁰(𝒪_D) ↪ H⁰(𝒪_{D+P}))`. Analytically `≅ ℂ` (the order-`(−D(P)−1)`
-principal-part coefficient at `P`); the `≅ ℂ` is the analytic content `skyDim` of `SkyscraperLES`. -/
-noncomputable abbrev Skyscraper (𝔘 : FiniteCover X) (D : Divisor X) (P : X) : Type _ :=
-  ↥(𝔘.globalSections (D + Finsupp.single P 1)) ⧸ LinearMap.range (𝔘.h0Incl D P)
+/-- The **skyscraper space** `ℂ_P` at `P`: the genuine **1-dimensional** stalk of the skyscraper
+sheaf `𝒪_{D+P}/𝒪_D` (the order-`(−D(P)−1)` principal-part coefficient at `P`), realised as `ℂ`.
 
-/-- The skyscraper coefficient arrow `f₂ : H⁰(𝒪_{D+P}) → ℂ_P`, the cokernel projection. -/
-noncomputable def h0ToSky (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
-    ↥(𝔘.globalSections (D + Finsupp.single P 1)) →ₗ[ℂ] 𝔘.Skyscraper D P :=
-  Submodule.mkQ (LinearMap.range (𝔘.h0Incl D P))
-
-/-- **Exactness at `H⁰(𝒪_{D+P})` (PROVEN).** `range f₁ = ker f₂` holds definitionally because `f₂`
-is the cokernel projection of `f₁` (`LinearMap.exact_map_mkQ_range`). No analytic content. -/
-theorem exact_h0Incl_h0ToSky (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
-    Function.Exact (𝔘.h0Incl D P) (𝔘.h0ToSky D P) :=
-  LinearMap.exact_map_mkQ_range _
+NOTE (soundness fix, 2026-06-02): the *previous* definition `H⁰(𝒪_{D+P}) ⧸ range f₁` (the H⁰-cokernel)
+was WRONG — at a base point of `|D+P|` the cokernel is `0`-dimensional, so the `skyDim : finrank = 1`
+field made `exists_skyscraperLES` **provably false**. The genuine middle term of the cohomology LES of
+`0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` is `H⁰(X, ℂ_P) = ℂ` (always 1-dim); the coefficient arrow
+`f₂ : H⁰(𝒪_{D+P}) → ℂ_P` is **not** surjective in general (its image *is* the cokernel), so it now
+lives — together with the exactness `range f₁ = ker f₂` — as honest data in `SkyscraperLES`. -/
+abbrev Skyscraper (_𝔘 : FiniteCover X) (_D : Divisor X) (_P : X) : Type := ℂ
 
 /-! ### The inclusion-induced arrow `f₄ : H¹(𝒪_D) → H¹(𝒪_{D+P})` (provable, no analytic content)
 
@@ -229,13 +225,18 @@ Given a `SkyscraperLES`, the χ-jump is **pure linear algebra**: the alternating
 six-term exact sequence is `0` (`six_term_exact_alt_sum`, proven) and `finrank ℂ_P = 1`, which
 rearranges to `χ(D+P) = χ(D) + 1`. That crank, `chi_jump_of_LES`, is sorry-free. -/
 structure SkyscraperLES (𝔘 : FiniteCover X) (D : Divisor X) (P : X) where
+  /-- **The skyscraper coefficient arrow** `f₂ : H⁰(𝒪_{D+P}) → ℂ_P` — the order-`(−D(P)−1)`
+  principal-part coefficient at `P`. **Not** surjective in general (its image is the H⁰-cokernel,
+  which is `0` exactly when `P` is a base point of `|D+P|`): this is the genuine analytic content (a
+  meromorphic section realising a prescribed principal part) that the old false `skyDim` mis-stated. -/
+  h0ToSky : ↥(𝔘.globalSections (D + Finsupp.single P 1)) →ₗ[ℂ] 𝔘.Skyscraper D P
+  /-- Exactness at `H⁰(𝒪_{D+P})`: `range f₁ = ker f₂` — a section lies in `𝒪_D` iff its
+  order-`(−D(P)−1)` coefficient vanishes. (Was definitional for the cokernel; now honest data.) -/
+  exact₁₂ : Function.Exact (𝔘.h0Incl D P) h0ToSky
   /-- The connecting homomorphism `ℂ_P → H¹(𝒪_D)` (snake lemma of the SES of cochain complexes). -/
   f₃ : 𝔘.Skyscraper D P →ₗ[ℂ] 𝔘.cechH1 D
-  /-- **The analytic sub-kernel**: the skyscraper cokernel is 1-dimensional — local surjectivity of
-  meromorphic sections onto the order-`(−D(P)−1)` principal-part coefficient at `P`. -/
-  skyDim : Module.finrank ℂ (𝔘.Skyscraper D P) = 1
   /-- Exactness at `ℂ_P`: `range f₂ = ker f₃`. (Snake lemma.) -/
-  exact₂ : Function.Exact (𝔘.h0ToSky D P) f₃
+  exact₂ : Function.Exact h0ToSky f₃
   /-- Exactness at `H¹(𝒪_D)`: `range f₃ = ker f₄` (with `f₄ = h1Map`). (Snake lemma.) -/
   exact₃ : Function.Exact f₃ (𝔘.h1Map D P)
   /-- The last arrow `f₄ = h1Map : H¹(𝒪_D) → H¹(𝒪_{D+P})` is surjective (the skyscraper has
@@ -267,33 +268,34 @@ theorem chi_jump_of_LES {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
     (S : SkyscraperLES 𝔘 D P) : 𝔘.chi (D + Finsupp.single P 1) = 𝔘.chi D + 1 := by
   haveI := S.finH1D; haveI := S.finH1DP; haveI := S.finH0D; haveI := S.finH0DP
   have halt := six_term_exact_alt_sum
-    (𝔘.h0Incl D P) (𝔘.h0ToSky D P) S.f₃ (𝔘.h1Map D P)
-    (𝔘.h0Incl_injective D P) (𝔘.exact_h0Incl_h0ToSky D P) S.exact₂ S.exact₃ S.surj₄
-  -- substitute `finrank ℂ_P = 1` and identify the four `finrank`s with `h0Dim`/`h1Dim`.
-  rw [S.skyDim] at halt
+    (𝔘.h0Incl D P) S.h0ToSky S.f₃ (𝔘.h1Map D P)
+    (𝔘.h0Incl_injective D P) S.exact₁₂ S.exact₂ S.exact₃ S.surj₄
+  -- `finrank ℂ_P = finrank ℂ ℂ = 1` (genuine 1-dim stalk), and identify the four other `finrank`s.
+  rw [show Module.finrank ℂ (𝔘.Skyscraper D P) = 1 from Module.finrank_self ℂ] at halt
   simp only [chi, h0Dim, h1Dim, Nat.cast_one] at halt ⊢
   linarith
 
 /-- **Existence of the skyscraper long exact sequence — THE NAMED HONEST `sorry`.**
 
 This is the genuine cohomological content of Riemann–Roch (Forster §16), isolated as the single
-remaining gap. The structural part of the LES is already PROVEN above: the inclusion `f₁ = h0Incl`
-and its injectivity, the cokernel arrow `f₂ = h0ToSky`, the exactness at `H⁰(𝒪_{D+P})`
-(`exact_h0Incl_h0ToSky`), AND the inclusion-induced last arrow `f₄ = h1Map`. What remains, and what
-this `sorry` packages:
+remaining gap. The structural part is PROVEN above: the inclusion `f₁ = h0Incl` and its injectivity,
+and the inclusion-induced last arrow `f₄ = h1Map`. The middle term is the genuine **1-dimensional**
+skyscraper `ℂ_P` (NOT the H⁰-cokernel — see the soundness note on `Skyscraper`), so `finrank ℂ_P = 1`
+is now a TRUE triviality, and `exists_skyscraperLES` is a **true** statement. What this `sorry`
+packages (the genuine cohomology of the SES `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0`):
 
-1. **The analytic sub-kernel** (`skyDim`): the skyscraper cokernel
-   `H⁰(𝒪_{D+P}) ⧸ H⁰(𝒪_D)` is 1-dimensional, i.e. local surjectivity of meromorphic sections — a
-   section of `𝒪_{D+P}` near `P` realises *any* prescribed principal-part coefficient of order
-   `−D(P)−1`, and exactly one coefficient is the obstruction.
+1. **The coefficient arrow `f₂ = h0ToSky`** and exactness `range f₁ = ker f₂` (`exact₁₂`): the
+   order-`(−D(P)−1)` principal-part coefficient at `P`; `f₂` is **not** surjective in general (its
+   image is the H⁰-cokernel, which vanishes at base points — exactly the case the old `skyDim` got
+   wrong). The honest analytic content (a meromorphic section realising a prescribed coefficient).
 2. **The snake/LES content**: the SES of germ-class cochain complexes `0 → C^•(𝒪_D) →
    C^•(𝒪_{D+P}) → C^•(ℂ_P) → 0`, the skyscraper complex `H^{≥1} = 0`, and Mathlib's
    `Algebra.Homology.HomologySequence` snake lemma supplying the connecting map `f₃` and the
-   exactness `exact₂`, `exact₃` and surjectivity `surj₄` of the (already-built) arrows.
+   exactness `exact₂`, `exact₃` and surjectivity `surj₄`.
 3. **Finiteness** of the `H¹` groups (Forster 14.9; `CechFinitenessWiring.finiteDimensional_cechH1_wired`
    modulo `exists_cechModel`).
 
-It is stated honestly — *not* faked, *not* weakening the headline. Everything downstream
+Stated honestly — a TRUE statement (the genuine LES exists), *not* faked. Everything downstream
 (`chi_jump_of_LES`, the induction, `cohomological_riemannRoch`) is sorry-free. -/
 theorem exists_skyscraperLES (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) (P : X) :
     Nonempty (SkyscraperLES 𝔘 D P) :=
