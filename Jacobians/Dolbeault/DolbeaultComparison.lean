@@ -167,4 +167,26 @@ theorem range_dbarL_le_zeroOne :
   rintro _ ⟨u, rfl⟩
   exact dbarL_mem_zeroOne u
 
+/-! ### Deliverable 4: Dolbeault cohomology `H^{0,1}(X)` as the `∂̄`-cokernel on `A^{0,1}`. -/
+
+/-- `im ∂̄` viewed inside `A^{0,1}` (legitimate as a submodule of `↥(OneFormsZeroOne X)` precisely by
+`range_dbarL_le_zeroOne` / `dbarL_mem_zeroOne`). -/
+noncomputable def dbarImageInZeroOne (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
+    Submodule ℝ ↥(OneFormsZeroOne X) :=
+  (LinearMap.range (dbarL (X := X))).submoduleOf (OneFormsZeroOne X)
+
+/-- **Dolbeault cohomology `H^{0,1}(X)`** (deliverable 4): the cokernel of `∂̄` on the `(0,1)`-forms,
+`A^{0,1} ⧸ im ∂̄`. On a (compact) Riemann surface `A^{0,2} = 0`, so the Dolbeault complex
+`A⁰ →[∂̄] A^{0,1} → 0` has this single nontrivial cohomology and `H^{0,1}` *is* this cokernel.
+An `ℝ`-module (the section space `A¹` carries only `Module ℝ`; the hom-bundle fiber `ℂ →L[ℝ] ℂ` is
+not propagated to a `Module ℂ` on the sections — see the comparison's scalar note). -/
+abbrev DolbeaultH01 (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type _ :=
+  ↥(OneFormsZeroOne X) ⧸ dbarImageInZeroOne X
+
+-- `H^{0,1}` is a genuine real vector space (validates the representation).
+noncomputable example : AddCommGroup (DolbeaultH01 X) := inferInstance
+noncomputable example : Module ℝ (DolbeaultH01 X) := inferInstance
+
 end Jacobians.Dolbeault
