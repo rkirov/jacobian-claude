@@ -134,7 +134,15 @@ a TRUE classical theorem). Repo builds green throughout. New files (all green): 
 | `exists_cechModel` | CechFinitenessWiring | Forster-14.9 chart-disk Leray model + comparison | finiteness |
 | `exists_skyscraperLES` | CohomologicalRR | skyscraper SES connecting map + `skyDim=1` + snake | χ-additivity |
 | `exists_properMapDegree` | DegDivResidue | `#zeros=deg=#poles` (Rouché + ramified count + general `X→ℂℙ¹`) | `deg_div` |
-| `exists_localPrimitive_apply_one` + 4 | DolbeaultComparisonProof | ∂̄ chart-transition equivariance + maps well-defined/inverse | Dolbeault comparison (L3) |
+| `exists_chartPullback_zeroOne_datum` + 4 | DolbeaultComparisonProof | (0,1)-form chart-pullback datum: smoothness + mfderiv↔planar-`deriv` bookkeeping; + maps well-defined/inverse | Dolbeault comparison (L3) |
+
+**Kernel attack (latest):** the **Wirtinger chain rule** `dbarDisk_comp_holo` — `∂̄(f∘τ) = conj(τ′)·(∂̄f∘τ)`
+for holomorphic `τ` (the genuine analytic content of the Dolbeault comparison's local solvability) — is
+**PROVEN axiom-clean**. `exists_localPrimitive_apply_one` is reduced to the finer residue
+`exists_chartPullback_zeroOne_datum` and reformulated with `+hg` (the `(0,1)` hypothesis the sole caller
+already has) so the `conj(τ′)` frame factor **cancels** on both sides. Verified (`#print axioms`: only
+`sorryAx` via the one finer kernel). Residue = tangent-bundle/smoothness bookkeeping (~100-200 LoC), not
+new analysis.
 | `arithmeticGenus_eq_genus`, `serre_h1_eq` | DolbeaultLadder | Serre at `D=0` / general (need comparison + `H^{0,1}≅Ω(X)`) | RR |
 
 **Glue done:** `cohomological_riemannRoch` wired into the ladder (→ `exists_skyscraperLES`); `h0Dim_eq_lDim`
