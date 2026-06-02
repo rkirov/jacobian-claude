@@ -27,6 +27,7 @@
 -/
 import Jacobians.Dolbeault.DolbeaultComparison
 import Jacobians.Dolbeault.DbarLocal
+import Jacobians.Dolbeault.ChartDiskCover
 import Mathlib.Geometry.Manifold.PartitionOfUnity
 import Mathlib.Geometry.Manifold.BumpFunction
 
@@ -643,6 +644,102 @@ theorem exists_localPrimitive_apply_one (g : SmoothCOneForms X) (hg : g ∈ OneF
     rw [hτpt, hfsolve (e₀ x) hxW]
     -- Exactly the transformation law for the chart-pullback `(0,1)`-datum (valid on `Vdat`).
     exact hGlaw x hxVdat
+
+/-! ### Step 3 — the cutoff chart-pullback over a chart-disk cover (linear, smooth, compact support)
+
+For the *forward* Dolbeault → Čech operator we must solve `∂̄u_i = g` on the *whole* disk `U_i` of a
+`ChartDiskCover`, linearly in `g`. The planar datum fed to the (linear) Cauchy transform is the
+**cutoff chart-pullback** `χᵢ · (Φ_g ∘ eᵢ.symm)`: the `(0,1)`-form `g` read in the `center i`-chart
+(`Φ_g y = g y (frame 1)`), multiplied by the disk bump `χᵢ` (`= 1` on `U_i`, supported in the chart
+target). It is smooth, compactly supported, and `ℝ`-linear in `g` — exactly the input shape of
+`cauchyTransform_add` / `cauchyTransform_smul`. The smoothness reuses `contMDiffAt_chartRead_datum`
+(the same argument as `exists_chartPullback_zeroOne_datum`'s global-smoothness step). -/
+
+namespace ChartDiskCover
+
+/-- The cutoff bump for disk `i`: `1` on the closed disk `closedBall (eᵢ) (radius i)` (so on `U_i`),
+supported in `closedBall (eᵢ) R ⊆` target, with `R` from `exists_bumpOuterRadius`. -/
+noncomputable def diskBump (𝔇 : ChartDiskCover X) (i : 𝔇.ι) :
+    ContDiffBump (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) (𝔇.center i)) where
+  rIn := 𝔇.radius i
+  rOut := (𝔇.exists_bumpOuterRadius i).choose
+  rIn_pos := 𝔇.radius_pos i
+  rIn_lt_rOut := (𝔇.exists_bumpOuterRadius i).choose_spec.1
+
+theorem diskBump_support_subset_target (𝔇 : ChartDiskCover X) (i : 𝔇.ι) :
+    Metric.closedBall (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) (𝔇.center i)) (𝔇.diskBump i).rOut
+      ⊆ (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).target :=
+  (𝔇.exists_bumpOuterRadius i).choose_spec.2
+
+/-- The **cutoff chart-pullback** of `g` over disk `i`: the planar function
+`w ↦ χᵢ(w) · (g (eᵢ.symm w)) (frame 1)`. Smooth, compactly supported, `ℝ`-linear in `g`. -/
+noncomputable def cutoffPullback (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g : SmoothCOneForms X) :
+    ℂ → ℂ :=
+  fun w => ((𝔇.diskBump i) w : ℝ) •
+    (g ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).symm w))
+      ((Bundle.Trivialization.symmL ℝ
+        (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) (𝔇.center i))
+        ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).symm w)) (1 : ℂ))
+
+theorem cutoffPullback_add (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g₁ g₂ : SmoothCOneForms X) :
+    𝔇.cutoffPullback i (g₁ + g₂) = 𝔇.cutoffPullback i g₁ + 𝔇.cutoffPullback i g₂ := by
+  funext w
+  simp only [cutoffPullback, ContMDiffSection.coe_add, Pi.add_apply,
+    ContinuousLinearMap.add_apply, smul_add]
+
+theorem cutoffPullback_smul (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (c : ℝ) (g : SmoothCOneForms X) :
+    𝔇.cutoffPullback i (c • g) = c • 𝔇.cutoffPullback i g := by
+  funext w
+  simp only [cutoffPullback, ContMDiffSection.coe_smul, Pi.smul_apply,
+    ContinuousLinearMap.smul_apply, smul_comm (𝔇.diskBump i w : ℝ) c]
+
+/-- The cutoff chart-pullback is globally smooth (the bump `χᵢ` times the chart-read datum, which is
+smooth on the chart target by `contMDiffAt_chartRead_datum`; outside the support `χᵢ = 0`). -/
+theorem contDiff_cutoffPullback (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g : SmoothCOneForms X) :
+    ContDiff ℝ (⊤ : ℕ∞) (𝔇.cutoffPullback i g) := by
+  set x₀ := 𝔇.center i with hx₀
+  set e₀ := extChartAt 𝓘(ℝ, ℂ) x₀ with he₀
+  set χ := 𝔇.diskBump i with hχ
+  set Φ : X → ℂ := fun y => (g y) ((Bundle.Trivialization.symmL ℝ
+    (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) y) (1 : ℂ)) with hΦ
+  have htgt_open : IsOpen e₀.target := by rw [he₀]; exact isOpen_extChartAt_target x₀
+  have hΨ : ∀ w ∈ e₀.target, ContDiffAt ℝ (⊤ : ℕ∞) (fun w => Φ (e₀.symm w)) w := by
+    intro w hw
+    have hsymm_mem : e₀.symm w ∈ e₀.source := by rw [he₀]; exact PartialEquiv.map_target _ hw
+    have hsymm : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) e₀.symm e₀.target w :=
+      (contMDiffOn_extChartAt_symm x₀) _ hw
+    have hΦat : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) Φ (e₀.symm w) :=
+      contMDiffAt_chartRead_datum g x₀ (e₀.symm w) hsymm_mem
+    have hcomp : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun w => Φ (e₀.symm w)) e₀.target w :=
+      hΦat.contMDiffWithinAt.comp w hsymm (fun z _ => Set.mem_univ _)
+    exact contMDiffAt_iff_contDiffAt.mp (hcomp.contMDiffAt (htgt_open.mem_nhds hw))
+  have hcut : 𝔇.cutoffPullback i g = fun w => (χ w : ℝ) • Φ (e₀.symm w) := rfl
+  rw [hcut, contDiff_iff_contDiffAt]; intro w
+  by_cases hw : w ∈ Metric.closedBall (e₀ x₀) χ.rOut
+  · exact (χ.contDiff.contDiffAt).smul (hΨ w (𝔇.diskBump_support_subset_target i hw))
+  · refine (contDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq ?_
+    have hcompl : (Metric.closedBall (e₀ x₀) χ.rOut)ᶜ ∈ nhds w :=
+      (Metric.isClosed_closedBall.isOpen_compl).mem_nhds hw
+    filter_upwards [hcompl] with z hz
+    have hz0 : χ z = 0 := by
+      rw [← Function.notMem_support, χ.support_eq]
+      exact fun h => hz (Metric.ball_subset_closedBall h)
+    rw [hz0, zero_smul]
+
+/-- The cutoff chart-pullback is compactly supported (in `closedBall (eᵢ) χᵢ.rOut`, outside which the
+bump vanishes). -/
+theorem hasCompactSupport_cutoffPullback (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g : SmoothCOneForms X) :
+    HasCompactSupport (𝔇.cutoffPullback i g) := by
+  apply HasCompactSupport.intro
+    (isCompact_closedBall (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) (𝔇.center i)) (𝔇.diskBump i).rOut)
+  intro z hz
+  show ((𝔇.diskBump i) z : ℝ) • _ = 0
+  have hz0 : (𝔇.diskBump i) z = 0 := by
+    rw [← Function.notMem_support, (𝔇.diskBump i).support_eq]
+    exact fun h => hz (Metric.ball_subset_closedBall h)
+  rw [hz0, zero_smul]
+
+end ChartDiskCover
 
 /-- **(Analytic sub-kernel.)** Local `∂̄`-solvability on the manifold: any smooth `(0,1)`-form `g`
 (in `OneFormsZeroOne X`) is, near every point `x₀`, the `∂̄` of a smooth function `u`. Proven
