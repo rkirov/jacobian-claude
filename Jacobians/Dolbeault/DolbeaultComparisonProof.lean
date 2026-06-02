@@ -395,9 +395,14 @@ smoothness of the chart-read datum `G` and the `(0,1)`-transformation law — is
 
 /-- **(Finer analytic sub-kernel — the chart-pullback `(0,1)`-datum.)** A smooth `(0,1)`-form `g`
 read in the `x₀`-chart is a *smooth planar function* `G : ℂ → ℂ` (its Wirtinger / value-`1` datum)
-that reproduces the intrinsic value `g x 1` after the holomorphic frame change: for `x` in the
-`x₀`-chart, with `τ_x = e₀ ∘ eₓ.symm` the holomorphic transition,
+that reproduces the intrinsic value `g x 1` after the holomorphic frame change: on a *neighborhood*
+`V` of `x₀`, with `τ_x = e₀ ∘ eₓ.symm` the holomorphic transition,
 `conj(τ_x′(eₓ x)) · G(e₀ x) = g x 1`.
+
+LOCALITY (why a neighborhood `V`, not the whole chart source): the datum `G` is the chart-pullback of
+`g`; on a non-compact chart-disk it is genuinely *unbounded at the chart boundary*, so the global
+"for all `x ∈ e₀.source`" form is FALSE. The honest statement gives the law only near `x₀` (where the
+local primitive is built); this is all `exists_localPrimitive_apply_one` consumes.
 
 This is the genuine smooth-section ↔ planar-form dictionary entry that Mathlib lacks: it packages
 (i) the smoothness of the chart-read datum `G` and (ii) the `(0,1)`-transformation law (the `conj(τ′)`
@@ -410,9 +415,8 @@ derivative (`proj01_eq_conj_smul` gives the conjugate-homogeneity fiberwise; the
 *smoothness* of `G` and the chart-derivative bookkeeping `mfderiv` of charts ↔ planar `deriv τ`). -/
 theorem exists_chartPullback_zeroOne_datum (g : SmoothCOneForms X)
     (hg : g ∈ OneFormsZeroOne X) (x₀ : X) :
-    ∃ G : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) G ∧
-      ∀ x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source,
-        (starRingEnd ℂ) (deriv (extChartAt 𝓘(ℝ, ℂ) x₀ ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm)
+    ∃ (G : ℂ → ℂ) (V : Set X), ContDiff ℝ (⊤ : ℕ∞) G ∧ IsOpen V ∧ x₀ ∈ V ∧
+      ∀ x ∈ V, (starRingEnd ℂ) (deriv (extChartAt 𝓘(ℝ, ℂ) x₀ ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm)
             (extChartAt 𝓘(ℝ, ℂ) x x)) * G (extChartAt 𝓘(ℝ, ℂ) x₀ x) = (g x) (1 : ℂ) :=
   sorry
 
@@ -421,19 +425,22 @@ theorem exists_localPrimitive_apply_one (g : SmoothCOneForms X) (hg : g ∈ OneF
     ∃ (V : Set X) (u : SmoothCFunctions X), IsOpen V ∧ x₀ ∈ V ∧
       ∀ x ∈ V, proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x) (1 : ℂ) = (g x) (1 : ℂ) := by
   classical
-  -- The chart-pullback `(0,1)`-datum `G` (smooth planar function) with its transformation law.
-  obtain ⟨G, hGsmooth, hGlaw⟩ := exists_chartPullback_zeroOne_datum g hg x₀
+  -- The chart-pullback `(0,1)`-datum `G` (smooth planar function) with its transformation law,
+  -- valid on a neighborhood `Vdat` of `x₀` (the law is local — `G` is unbounded at the chart edge).
+  obtain ⟨G, Vdat, hGsmooth, hVdatopen, hx₀Vdat, hGlaw⟩ :=
+    exists_chartPullback_zeroOne_datum g hg x₀
   -- STEP A: solve the planar `∂̄f = G` on a neighborhood `W` of the chart coordinate `e₀ x₀`.
   obtain ⟨W, f, hWopen, hWmem, hfsmooth, hfsolve⟩ :=
     DbarLocal.dbar_solvable_locally hGsmooth (extChartAt 𝓘(ℝ, ℂ) x₀ x₀)
   -- STEP B: lift `f` to a global smooth `u` agreeing with `f ∘ e₀` near `x₀`.
   obtain ⟨V₀, u, hV₀open, hx₀V₀, hlift⟩ := exists_smoothLift_of_chartFun f hfsmooth x₀
-  -- The working neighborhood: inside the lift set, inside the chart source, and `e₀`-preimage of `W`.
-  refine ⟨V₀ ∩ ((extChartAt 𝓘(ℝ, ℂ) x₀).source ∩
-      (extChartAt 𝓘(ℝ, ℂ) x₀) ⁻¹' W), u, ?_, ?_, ?_⟩
-  · exact hV₀open.inter (isOpen_extChartAt_preimage' x₀ hWopen)
-  · exact ⟨hx₀V₀, mem_extChartAt_source x₀, by simpa using hWmem⟩
-  · rintro x ⟨hxV₀, hxsrc, hxW⟩
+  -- The working neighborhood: inside the datum nbhd `Vdat`, the lift set `V₀`, the chart source
+  -- (kept for `differentiableAt_chartTransition`), and the `e₀`-preimage of `W`.
+  refine ⟨Vdat ∩ (V₀ ∩ ((extChartAt 𝓘(ℝ, ℂ) x₀).source ∩
+      (extChartAt 𝓘(ℝ, ℂ) x₀) ⁻¹' W)), u, ?_, ?_, ?_⟩
+  · exact hVdatopen.inter (hV₀open.inter (isOpen_extChartAt_preimage' x₀ hWopen))
+  · exact ⟨hx₀Vdat, hx₀V₀, mem_extChartAt_source x₀, by simpa using hWmem⟩
+  · rintro x ⟨hxVdat, hxV₀, hxsrc, hxW⟩
     simp only [Set.mem_preimage] at hxW
     -- Read the intrinsic ∂̄ at `x` in `x`'s own chart (the chart bridge).
     rw [dbar_apply_one_eq_dbarDisk u x]
@@ -458,8 +465,8 @@ theorem exists_localPrimitive_apply_one (g : SmoothCOneForms X) (hg : g ∈ OneF
       (differentiableAt_chartTransition x₀ x hxsrc)]
     -- `DbarDisk.dbar f` at `τ (eₓ x) = e₀ x` is `G (e₀ x)` (`f` solves `∂̄f = G` on `W`).
     rw [hτpt, hfsolve (e₀ x) hxW]
-    -- Exactly the transformation law for the chart-pullback `(0,1)`-datum.
-    exact hGlaw x hxsrc
+    -- Exactly the transformation law for the chart-pullback `(0,1)`-datum (valid on `Vdat`).
+    exact hGlaw x hxVdat
 
 /-- **(Analytic sub-kernel.)** Local `∂̄`-solvability on the manifold: any smooth `(0,1)`-form `g`
 (in `OneFormsZeroOne X`) is, near every point `x₀`, the `∂̄` of a smooth function `u`. Proven
@@ -529,23 +536,23 @@ noncomputable def cech_to_dolbeault : 𝔘.cechH1 0 →ₗ[ℝ] DolbeaultH01 X :
 /-- **`comparison_bijective`, part 1** (honest named sub-kernel): Dolbeault → Čech → Dolbeault is the
 identity. Globalizing a locally-solved `(0,1)`-form via the partition of unity returns the same
 Dolbeault class. -/
-theorem cech_to_dolbeault_comp_dolbeault_to_cech :
+theorem cech_to_dolbeault_comp_dolbeault_to_cech (hL : 𝔘.IsLeray) :
     (cech_to_dolbeault 𝔘) ∘ₗ (dolbeault_to_cech 𝔘) = LinearMap.id :=
   sorry
 
 /-- **`comparison_bijective`, part 2** (honest named sub-kernel): Čech → Dolbeault → Čech is the
 identity. Local-solving the partition-of-unity primitive recovers the same Čech cohomology class. -/
-theorem dolbeault_to_cech_comp_cech_to_dolbeault :
+theorem dolbeault_to_cech_comp_cech_to_dolbeault (hL : 𝔘.IsLeray) :
     (dolbeault_to_cech 𝔘) ∘ₗ (cech_to_dolbeault 𝔘) = LinearMap.id :=
   sorry
 
 /-- **The Dolbeault isomorphism** `H^{0,1}(X) ≃ₗ[ℝ] H¹(X, 𝒪)` — assembled *sorry-free* from the two
 maps and the two round-trip identities above (`LinearEquiv.ofLinear`). All remaining content is in
 the four named sub-kernels. -/
-noncomputable def comparison_linearEquiv : DolbeaultH01 X ≃ₗ[ℝ] 𝔘.cechH1 0 :=
+noncomputable def comparison_linearEquiv (hL : 𝔘.IsLeray) : DolbeaultH01 X ≃ₗ[ℝ] 𝔘.cechH1 0 :=
   LinearEquiv.ofLinear (dolbeault_to_cech 𝔘) (cech_to_dolbeault 𝔘)
-    (dolbeault_to_cech_comp_cech_to_dolbeault 𝔘)
-    (cech_to_dolbeault_comp_dolbeault_to_cech 𝔘)
+    (dolbeault_to_cech_comp_cech_to_dolbeault 𝔘 hL)
+    (cech_to_dolbeault_comp_dolbeault_to_cech 𝔘 hL)
 
 /-- **The L3 kernel: Čech ↔ Dolbeault comparison** — the standalone proof of the statement at
 `DolbeaultComparison.lean:227` (`cechH1_dolbeault_comparison`; the caller wires it to this).
@@ -553,9 +560,9 @@ Proven *sorry-free* from `comparison_linearEquiv`: the `ℝ`-linear iso transpor
 `ℝ`-vs-`ℂ` factor on the `ℂ`-module `cechH1` is `finrank_real_of_complex`. The entire remaining
 content sits in the four named sub-kernels (`dolbeault_to_cech`, `cech_to_dolbeault`, and the two
 round-trip identities). -/
-theorem cechH1_dolbeault_comparison_proof :
+theorem cechH1_dolbeault_comparison_proof (hL : 𝔘.IsLeray) :
     Module.finrank ℝ (DolbeaultH01 X) = 2 * Module.finrank ℂ (𝔘.cechH1 0) := by
-  rw [(comparison_linearEquiv 𝔘).finrank_eq, finrank_real_of_complex]
+  rw [(comparison_linearEquiv 𝔘 hL).finrank_eq, finrank_real_of_complex]
 
 /-! ## Honest status of the mechanization
 
