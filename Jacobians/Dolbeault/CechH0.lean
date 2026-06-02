@@ -199,6 +199,41 @@ theorem ker_cechRestrictL :
     𝔘.cechRestrict_eq_zero_iff]
   exact Iff.rfl
 
+/-! ### Gluing (surjectivity) — the crux -/
+
+/-- **Gluing.** Every global matching `𝒪_D`-section over the cover glues to a single global
+meromorphic function in `L(D)`.
+
+CONSTRUCTION (rigidified normal-form gluing; the naive pointwise patch `x ↦ g_{idx x} x` is *not*
+meromorphic at cover-boundary points because the per-overlap disagreement set is only codiscrete
+*within* the overlap). Extract honest representatives `g i ∈ OmegaD D (U i)` with `[g i] = f i`
+(choice on `OmegaDGerm = map toGerm`). Extend each by `0` to `Gext i : X → ℂ`. Define
+
+  `F.toFun x := toMeromorphicNFAt (Gext (idx x) ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) (chartAt ℂ x x)`
+
+(the per-point normal-form value; `idx x` any index with `x ∈ U i`).
+  * **idx-independent**: the nf value at `x` depends only on the germ at `x`; the matching gives
+    `Gext i =ᶠ[𝓝[≠] x] Gext j` on overlaps, so (read in the shared chart `chartAt ℂ x`) the nf values
+    agree by NF-uniqueness (`MeromorphicNFAt.eventuallyEq_nhdsNE_iff_eventuallyEq_nhds`).
+  * **`F =ᶠ[𝓝[≠] y] Gext i` for `y ∈ U i`**: the normal form repairs only a *codiscrete* set
+    (`analyticAt_mem_codiscreteWithin`; `toMeromorphicNFAt = id` on nf-points,
+    `eq_nhdsNE_toMeromorphicNFAt`), so `F` and `Gext i` agree off a discrete set ⟹ `F` meromorphic at
+    `y` and (keystone `ordU = orderW`) `orderW F ≥ −D` ⟹ `F ∈ L(D)`; and `[F|_{U i}] = [g i] = f i`. -/
+theorem cechRestrictL_surjective : Function.Surjective (𝔘.cechRestrictL D) := by
+  sorry
+
+/-- `H⁰(𝔘, 𝒪_D) ≅ L(D) ⧸ germZero` as `ℂ`-modules (first isomorphism theorem + `ker = germZero`). -/
+noncomputable def globalSectionsEquivQuot :
+    (linearSystem (X := X) D ⧸ (germZeroSubmodule (X := X)).submoduleOf (linearSystem D))
+      ≃ₗ[ℂ] ↥(𝔘.globalSections D) :=
+  (Submodule.quotEquivOfEq _ _ (𝔘.ker_cechRestrictL D).symm).trans
+    (LinearMap.quotKerEquivOfSurjective _ (𝔘.cechRestrictL_surjective D))
+
+/-- **The bridge leaf** `h⁰(𝔘, 𝒪_D) = l(D)` — Čech global sections agree with the linear system. -/
+theorem h0Dim_eq_lDim (D : Divisor X) : 𝔘.h0Dim D = lDim D := by
+  rw [h0Dim, lDim]
+  exact ((𝔘.globalSectionsEquivQuot D).finrank_eq).symm
+
 end FiniteCover
 
 end Jacobians.Dolbeault

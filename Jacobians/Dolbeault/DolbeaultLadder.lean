@@ -20,7 +20,7 @@
   All five are `sorry` here; the first three are the genuine analytic wall, the last two are the
   remaining (Serre / bookkeeping) pieces for wiring to `exists_riemannRoch_divisor`.
 -/
-import Jacobians.Dolbeault.CechComplex
+import Jacobians.Dolbeault.CechH0
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -60,10 +60,9 @@ Serre; only needed for the general-`D` RR statement and `#3`, not for `genus 0 �
 theorem serre_h1_eq (𝔘 : FiniteCover X) (D K : Divisor X) :
     𝔘.h1Dim D = lDim (K - D) := sorry
 
-/-- **Bridge: Čech global sections = the linear system.** The matching `𝒪_D`-sections over a (Leray)
-cover glue to a single global meromorphic function with `div ≥ −D`, identifying `h⁰(𝔘, 𝒪_D)` with the
-RiemannRoch `l(D)`. Bookkeeping leaf (gluing + the `germZero` quotient). -/
-theorem h0Dim_eq_lDim (𝔘 : FiniteCover X) (D : Divisor X) : 𝔘.h0Dim D = lDim D := sorry
+/- **Bridge: Čech global sections = the linear system** (`h⁰(𝔘, 𝒪_D) = l(D)`). PROVEN in
+`CechH0` (`FiniteCover.h0Dim_eq_lDim`) modulo the single gluing/surjectivity `sorry`
+(`cechRestrictL_surjective`) — no longer a leaf of this file. -/
 
 /-- **The ladder composes** (sorry-free; no new content). Given any finite cover `𝔘` and canonical
 divisor `K`, the classical Riemann–Roch equality `l(D) − l(K−D) = deg D + 1 − g` falls out of the
@@ -74,7 +73,7 @@ and a canonical divisor). -/
 theorem riemannRoch_equality_of_ladder (𝔘 : FiniteCover X) (D K : Divisor X) :
     (lDim D : ℤ) - lDim (K - D) = Divisor.deg X D + 1 - genus X := by
   have h := cohomological_riemannRoch 𝔘 D
-  rw [h0Dim_eq_lDim 𝔘 D, serre_h1_eq 𝔘 D K, arithmeticGenus_eq_genus 𝔘] at h
+  rw [𝔘.h0Dim_eq_lDim D, serre_h1_eq 𝔘 D K, arithmeticGenus_eq_genus 𝔘] at h
   exact h
 
 end Jacobians.Dolbeault
