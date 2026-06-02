@@ -129,6 +129,33 @@ theorem contDiff_cauchyTransform {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ
     (hgsupp : HasCompactSupport g) : ContDiff ℝ (⊤ : ℕ∞) (cauchyTransform g) :=
   hgsupp.contDiff_convolution_left _ hg locallyIntegrable_cauchyKernel
 
+/-! ### Linearity of the Cauchy transform
+
+The Cauchy transform `g ↦ g ⋆ K` is `ℝ`-linear: `smul` pulls out of the convolution integral with no
+hypothesis, and additivity splits the integral whenever both convolutions exist (e.g. for
+compactly-supported continuous inputs). These are the linearity primitives used to make the
+Dolbeault → Čech cocycle operator an honest `ℝ`-linear map. -/
+
+open scoped Convolution in
+/-- **`ℝ`-homogeneity of the Cauchy transform** (free — `smul` commutes with the convolution
+integral; no integrability needed). -/
+theorem cauchyTransform_smul (c : ℝ) (g : ℂ → ℂ) :
+    cauchyTransform (c • g) = c • cauchyTransform g := by
+  show (c • g) ⋆[ContinuousLinearMap.mul ℝ ℂ, volume] cauchyKernel
+      = c • (g ⋆[ContinuousLinearMap.mul ℝ ℂ, volume] cauchyKernel)
+  exact smul_convolution
+
+open scoped Convolution in
+/-- **Additivity of the Cauchy transform** on compactly-supported continuous functions: both
+convolution integrands are integrable (`HasCompactSupport.convolutionExists_left` against the locally
+integrable kernel), so the integral of the sum splits (`ConvolutionExists.add_distrib`). -/
+theorem cauchyTransform_add {f g : ℂ → ℂ} (hf : Continuous f) (hfs : HasCompactSupport f)
+    (hg : Continuous g) (hgs : HasCompactSupport g) :
+    cauchyTransform (f + g) = cauchyTransform f + cauchyTransform g :=
+  ConvolutionExists.add_distrib
+    (hfs.convolutionExists_left (ContinuousLinearMap.mul ℝ ℂ) hf locallyIntegrable_cauchyKernel)
+    (hgs.convolutionExists_left (ContinuousLinearMap.mul ℝ ℂ) hg locallyIntegrable_cauchyKernel)
+
 open scoped Convolution in
 /-- **D1 (derivative).** For `g ∈ C^∞_c`, the Fréchet derivative of `u = g ⋆ K` is
 `(fderiv ℝ g) ⋆ K` (with the precomposed bilinear map), evaluated at each point. -/
