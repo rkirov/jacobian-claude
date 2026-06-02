@@ -87,6 +87,45 @@ noncomputable def proj01 : (ℂ →L[ℝ] ℂ) →L[ℝ] (ℂ →L[ℝ] ℂ) :=
 theorem proj01_apply (α : ℂ →L[ℝ] ℂ) :
     proj01 α = (2 : ℝ)⁻¹ • (α + mulI.comp (α.comp mulI)) := rfl
 
+/-! ### The complex structure `J` on the real tangent bundle is smooth
+
+The one genuinely complex-geometric input to `∂̄`: `mulI = J = (·*i)` is a `C^∞` section of the real
+tangent bundle's endomorphisms. The mechanism is that the tangent `coordChange` of a *complex*
+manifold is `ℂ`-linear — holomorphic charts have `ℂ`-linear `fderiv` (`fderiv ℝ = restrictScalars`
+of `fderiv ℂ`) — hence commutes with `mulI`; together with the cocycle this forces `J` in coordinates
+(`Jcoord = inCoordinates mulI`) to be the *constant* `mulI`, which is trivially smooth. -/
+
+/-- A real-restricted `ℂ`-linear map commutes with `mulI = (·*i)` (the `ℂ`-`(i·)` action). -/
+private theorem restrictScalars_comp_mulI (L : ℂ →L[ℂ] ℂ) :
+    (L.restrictScalars ℝ).comp mulI = mulI.comp (L.restrictScalars ℝ) := by
+  ext v
+  simp only [ContinuousLinearMap.coe_comp', Function.comp_apply, mulI,
+    ContinuousLinearMap.mul_apply', ContinuousLinearMap.coe_restrictScalars']
+  rw [← smul_eq_mul Complex.I v, map_smul, smul_eq_mul]
+
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+/-- The tangent `coordChange` of the complex manifold is `ℂ`-linear, hence commutes with `mulI`:
+`fderiv ℝ` of a holomorphic transition is `restrictScalars` of `fderiv ℂ`. -/
+private theorem tangentCoordChange_comp_mulI {a b z : X}
+    (hz : z ∈ (extChartAt 𝓘(ℝ, ℂ) a).source ∩ (extChartAt 𝓘(ℝ, ℂ) b).source) :
+    (tangentCoordChange 𝓘(ℝ, ℂ) a b z).comp mulI = mulI.comp (tangentCoordChange 𝓘(ℝ, ℂ) a b z) := by
+  have hℝ := hasFDerivWithinAt_tangentCoordChange (I := 𝓘(ℝ, ℂ)) (x := a) (y := b) (z := z) hz
+  have hmem : extChartAt 𝓘(ℝ, ℂ) a z ∈
+      ((extChartAt 𝓘(ℝ, ℂ) a).symm ≫ extChartAt 𝓘(ℝ, ℂ) b).source := by
+    rw [PartialEquiv.trans_source'', PartialEquiv.symm_symm, PartialEquiv.symm_target]
+    exact Set.mem_image_of_mem _ hz
+  have hℂ : DifferentiableWithinAt ℂ (extChartAt 𝓘(ℝ, ℂ) b ∘ (extChartAt 𝓘(ℝ, ℂ) a).symm)
+      (Set.range 𝓘(ℝ, ℂ)) (extChartAt 𝓘(ℝ, ℂ) a z) :=
+    (contDiffWithinAt_ext_coord_change (I := 𝓘(ℂ)) (n := ω) b a hmem).differentiableWithinAt
+      (by simp)
+  have huniq : UniqueDiffWithinAt ℝ (Set.range 𝓘(ℝ, ℂ)) (extChartAt 𝓘(ℝ, ℂ) a z) := by
+    rw [ModelWithCorners.Boundaryless.range_eq_univ]; exact uniqueDiffWithinAt_univ
+  have heq : tangentCoordChange 𝓘(ℝ, ℂ) a b z =
+      (fderivWithin ℂ (extChartAt 𝓘(ℝ, ℂ) b ∘ (extChartAt 𝓘(ℝ, ℂ) a).symm)
+        (Set.range 𝓘(ℝ, ℂ)) (extChartAt 𝓘(ℝ, ℂ) a z)).restrictScalars ℝ :=
+    huniq.eq hℝ (hℂ.hasFDerivWithinAt.restrictScalars ℝ)
+  rw [heq, restrictScalars_comp_mulI]
+
 /-- The **Dolbeault `∂̄` operator** `A⁰ → A^{0,1} ⊆ A¹`: the `(0,1)`-part of the de Rham differential,
 `∂̄u = proj01 ∘ du`. A smooth `ℂ`-valued 1-form. -/
 noncomputable def dbar (u : SmoothCFunctions X) : SmoothCOneForms X where
@@ -98,21 +137,31 @@ noncomputable def dbar (u : SmoothCFunctions X) : SmoothCOneForms X where
     simp only [ContinuousLinearMap.inCoordinates,
       Bundle.Trivial.continuousLinearMapAt_trivialization,
       Bundle.Trivial.fiberBundle_trivializationAt', ContinuousLinearMap.id_comp]
-    -- After trivialising the (trivial) `ℂ`-codomain the obligation reads
-    --   `x ↦ (proj01 (du x)).comp (symmL_tan x)`  is `C^∞`,   `du := differential u`,
-    --   `symmL_tan x := (trivializationAt ℂ (TangentSpace 𝓘(ℝ,ℂ)) x₀).symmL ℝ x : ℂ →L T_x`.
-    -- Expand `proj01 (du x) = ½ (du x + mulI ∘ du x ∘ mulI)` and distribute `.comp (symmL_tan x)`:
-    --   ½ ( A x  +  mulI ∘ ((A x) ∘ Jcoord x) ),
-    --     A x      := (du x) ∘ symmL_tan x          -- exactly `differential`'s reduced smoothness,
-    --     Jcoord x := (clmAt_tan x) ∘ mulI ∘ (symmL_tan x)
-    --               = `inCoordinates` of the *constant* `mulI` in the tangent bundle,
-    -- using the eventual identity `symmL_tan x ∘ clmAt_tan x =ᶠ id` (`x ∈ baseSet` near `x₀`).
-    -- `A` is `C^∞`; the combination is then `C^∞` by `clm_comp`/`const_smul` AS SOON AS `Jcoord` is.
-    -- `Jcoord` is the complex structure `J = (·*i)` on the real tangent bundle read in coordinates;
-    -- it is `C^∞` because the tangent `coordChange` is (`ContMDiffVectorBundle (TangentSpace …)`,
-    -- `contMDiffOn_coordChangeL`) and `Jcoord` conjugates the fixed `mulI` by it. Mathlib exposes no
-    -- `J`-as-smooth-section API for a complex manifold's real tangent bundle, so this last bundle-
-    -- coordinate step is the sole open obligation — the only genuinely complex-geometric input to ∂̄.
-    sorry
+    -- After trivialising the (trivial) `ℂ`-codomain the obligation is `x ↦ (proj01 (du x)).comp (Sₓ)`,
+    -- where `Sₓ := (trivializationAt ℂ (TangentSpace 𝓘(ℝ,ℂ)) x₀).symmL ℝ x` is the tangent symmL.
+    -- `Sₓ` IS a `tangentCoordChange`, so it commutes with `mulI`; hence `proj01` slides through the
+    -- `.comp Sₓ`, turning the goal into `proj01 ∘ A` with `A x := (du x).comp Sₓ` = `differential`'s
+    -- own (proven) reduced smoothness.  `proj01` is a fixed CLM, so `proj01 ∘ A` is `C^∞`.
+    have h := (differential u).contMDiff_toFun x₀
+    rw [contMDiffAt_hom_bundle] at h
+    simp only [ContinuousLinearMap.inCoordinates,
+      Bundle.Trivial.continuousLinearMapAt_trivialization,
+      Bundle.Trivial.fiberBundle_trivializationAt', ContinuousLinearMap.id_comp] at h
+    have heq : (fun x => (proj01 ((differential u).toFun x)).comp
+          (Bundle.Trivialization.symmL ℝ (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x))
+        =ᶠ[nhds x₀] (fun x => proj01 (((differential u).toFun x).comp
+          (Bundle.Trivialization.symmL ℝ (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x))) := by
+      filter_upwards [(chartAt ℂ x₀).open_source.mem_nhds (mem_chart_source ℂ x₀)] with x hx
+      have hS : mulI.comp
+            (Bundle.Trivialization.symmL ℝ (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x)
+          = (Bundle.Trivialization.symmL ℝ (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x).comp
+              mulI := by
+        rw [TangentBundle.symmL_trivializationAt_eq_core hx]
+        exact (tangentCoordChange_comp_mulI ⟨by rw [extChartAt_source]; exact hx,
+          by rw [extChartAt_source]; exact mem_chart_source ℂ x⟩).symm
+      rw [proj01_apply, proj01_apply]
+      simp only [ContinuousLinearMap.smul_comp, ContinuousLinearMap.add_comp,
+        ContinuousLinearMap.comp_assoc, hS]
+    exact (ContMDiffAt.clm_apply contMDiffAt_const h.2).congr_of_eventuallyEq heq
 
 end Jacobians.Dolbeault
