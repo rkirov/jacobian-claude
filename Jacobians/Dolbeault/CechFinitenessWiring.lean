@@ -20,19 +20,31 @@
     * `finiteDimensional_supH1` — STEP 5: builds the cocycle `δ`/`ρ`, transports compactness to the
       closed cocycle subspace, and applies the abstract reduction. Fully proven *given* the Leray
       surjectivity (an explicit argument).
+    * `leray_surjective` — STEP 4: the Leray surjectivity, derived from the model's `leray` field.
 
-  WHAT IS LEFT AS NAMED, HONEST `sorry`s (the genuinely-hard analytic / chart-bookkeeping pieces):
-    * `leray_surjective`          — the Leray condition (restriction onto on `H¹`); needs
-      `H¹(disk,𝒪)=0` from the proven `DbarDisk.dbar_solvable_of_compactSupport`. STATED, not weakened.
+  KEY DESIGN POINT (soundness): the Leray surjectivity `(η,ξ) ↦ δη + ρξ` is FALSE for an arbitrary
+  abstract `(δ, ρ)` — a *compact* `ρ` (which `rhoRaw_compact` proves ours is) cannot surject onto an
+  infinite-dimensional cocycle space. Surjectivity holds only for a genuine *acyclic* Leray model.
+  We therefore record the acyclicity as the `Coboundaries.leray` field (the disk-`H¹=0` witness):
+  `leray_surjective` then unpacks it (sorry-free), and the honest analytic obligation is concentrated
+  where the model is CONSTRUCTED — in `exists_cechModel`. The disk side of that obligation is the
+  proven full-disk ∂̄-solvability `DbarDiskCohomology.dbar_solvable_ball` and the holomorphic
+  re-splitting `DbarDiskCohomology.dbar_holo_splitting_ball` (both sorry-free, axiom-clean).
+
+  WHAT IS LEFT AS NAMED, HONEST `sorry`s (the genuinely-hard chart-bookkeeping / comparison pieces):
     * `exists_cechModel`          — existence of the chart-disk Leray model (`DiskOverlapData` +
-      `Coboundaries`) for the cover: the CONSTRUCTION (chart bookkeeping, Leray refinement, shrinking).
+      `Coboundaries`, INCLUDING its `leray` acyclicity field) for the cover: the CONSTRUCTION (chart
+      bookkeeping, Leray refinement, shrinking, and the disk-acyclicity assembly from the proven
+      ∂̄-solvability atoms).
     * `cechH1_linearEquiv_supH1`  — the COMPARISON `𝔘.cechH1 D ≃ₗ supH1`, stated against the *given*
       model (germ-class ↔ honest-bounded-holomorphic; codiscrete↔𝓝[≠] bridge of `CechH0`).
-  NOTHING ELSE is a `sorry`. STEPS 3 (`ρ` compact) and 5 (the reduction application) are fully proven.
+  NOTHING ELSE is a `sorry`. STEPS 3 (`ρ` compact), 4 (Leray surjectivity), and 5 (the reduction
+  application) are fully proven.
 -/
 import Jacobians.Dolbeault.CechFinitenessAbstract
 import Jacobians.Dolbeault.BddHol
 import Jacobians.Dolbeault.DolbeaultLadder
+import Jacobians.Dolbeault.DbarDiskCohomology
 
 open Jacobians.Dolbeault.CechFiniteness ContinuousLinearMap
 open BoundedContinuousFunction
@@ -145,6 +157,18 @@ structure Coboundaries (d : DiskOverlapData) where
   hδδ : δ1.comp δ0 = 0
   /-- Restriction carries cover-cocycles to shrinking-cocycles (the commuting square). -/
   hcomm : ∀ x : d.Ccov, δ1cov x = 0 → δ1 (d.rhoRaw x) = 0
+  /-- **The Leray / disk-acyclicity witness.** Every shrinking 1-cocycle `s` (i.e. `δ¹s = 0`) is,
+  modulo a shrinking-coboundary `δ⁰η`, the restriction `ρ x` of a COVER 1-cocycle `x`
+  (`δ¹_cov x = 0`). This is the genuine analytic content of the Leray model — it is precisely
+  `H¹(disk, 𝒪) = 0` on each chart-disk (the disk-acyclicity supplied by the proven full-disk
+  ∂̄-solvability `DbarDiskCohomology.dbar_solvable_ball` / `dbar_holo_splitting_ball`) together with
+  the Čech-refinement comparison. Without this field the abstract data is NOT a Leray model and
+  surjectivity is FALSE (a compact `ρ` cannot surject an infinite-dimensional `Z¹`); bundling it here
+  is what makes `Coboundaries d` mean "an acyclic chart-disk Leray model". The honest analytic
+  obligation therefore lives entirely in `exists_cechModel`, which must *construct* a model that
+  satisfies it. -/
+  leray : ∀ s : d.Cshr, δ1 s = 0 →
+    ∃ (η : C0) (x : d.Ccov), δ1cov x = 0 ∧ s = δ0 η + d.rhoRaw x
 
 attribute [instance] Coboundaries.ng0 Coboundaries.ns0 Coboundaries.cs0
   Coboundaries.ng2 Coboundaries.ns2 Coboundaries.ng2c Coboundaries.ns2c
@@ -207,31 +231,49 @@ theorem finiteDimensional_supH1
 
 end Coboundaries
 
-/-! ### STEP 4 — the Leray surjectivity (named `sorry`, honest statement) -/
+/-! ### STEP 4 — the Leray surjectivity (PROVEN from the model's `leray` field) -/
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- **STEP 4 — Leray surjectivity (HONEST `sorry`).** For the chart-disk Leray cover/shrinking model
-of `(𝔘, D)`, the combined map `(η, ξ) ↦ δη + ρξ` (coboundary on the shrinking ⊕ restriction from the
-cover) is surjective. This is the Leray condition: restriction is onto on `H¹`, which holds because
-each chart-disk has `H¹(disk, 𝒪) = 0` (solvability of `∂̄` on a disk — the proven
-`DbarDisk.dbar_solvable_of_compactSupport`) so every shrinking-cocycle is, modulo a coboundary, the
-restriction of a cover-cocycle. NOT proven here (the Čech-refinement/`∂̄` assembly is the genuine
-analytic wall). -/
+/-- **STEP 4 — Leray surjectivity (PROVEN).** For any chart-disk Leray model `c`, the combined map
+`(η, ξ) ↦ δη + ρξ` (shrinking-coboundary ⊕ cover-restriction) is surjective onto `Z¹(shrinking)`.
+
+This unpacks the model's `leray` field (the disk-acyclicity witness): given a shrinking cocycle
+`t ∈ Z¹(shrinking)` (so `δ¹ t = 0`), `c.leray` produces `η : C⁰` and a cover cocycle `x`
+(`δ¹_cov x = 0`) with `t = δ⁰η + ρ_raw x`; corestricting to the cocycle subspaces (`c.δ`, `c.ρ`),
+the pair `(η, ⟨x, _⟩)` maps to `t`. The genuine analytic content (`H¹(disk, 𝒪) = 0` + Čech
+refinement) is carried by the `leray` field and discharged where the model is built
+(`exists_cechModel`); here it is pure bookkeeping. -/
 theorem leray_surjective (d : DiskOverlapData) (c : Coboundaries d) :
     Function.Surjective (fun p : c.C0 × c.Z1cov => c.δ p.1 + c.ρ p.2) := by
-  sorry
+  intro t
+  -- `t : Z¹(shrinking)`, so `t.1 : Cshr` with `δ¹ t.1 = 0`.
+  have ht : c.δ1 t.1 = 0 := t.2
+  obtain ⟨η, x, hx, heq⟩ := c.leray t.1 ht
+  refine ⟨(η, ⟨x, hx⟩), ?_⟩
+  -- Both `δ` and `ρ` are corestrictions, so the underlying value of `δ η + ρ ⟨x,_⟩` is
+  -- `δ⁰η + ρ_raw x = t.1`; conclude by `Subtype.ext`.
+  apply Subtype.ext
+  show c.δ0 η + d.rhoRaw x = t.1
+  exact heq.symm
 
 /-! ### STEP 6a — existence of the chart-disk Leray model (named `sorry`, honest statement) -/
 
 /-- **STEP 6a — the chart-disk Leray model exists (HONEST `sorry`).** Every finite cover `𝔘` admits a
 chart-disk Leray cover/shrinking model: a `DiskOverlapData` (the per-overlap chart-images as disks in
 `ℂ`, each with a relatively-compact convex shrinking) and a `Coboundaries` bundle (the sup-norm
-`δ⁰/δ¹` and the restriction commuting square). This is the CONSTRUCTION half of the manifold side:
-reading each overlap in a chart as a disk in `ℂ` (the "chart bookkeeping"), refining to a Leray cover
-where each piece is `𝒪`-acyclic, and shrinking. NOT proven here. (Separated from the comparison so
-the two distinct manifold facts are independently inspectable.) -/
+`δ⁰/δ¹`, the restriction commuting square, AND the `leray` disk-acyclicity witness).
+
+This is the CONSTRUCTION half of the manifold side: reading each overlap in a chart as a disk in `ℂ`
+(the "chart bookkeeping"), refining to a Leray cover where each piece is `𝒪`-acyclic, shrinking
+(via `Montel/Cover.lean`'s `chartCover`/`chartOpen`/`innerChartOpen`), and — the genuine analytic
+core — supplying the `leray` field. That field is exactly `H¹(disk, 𝒪) = 0`, whose disk engine is
+now PROVEN: the full-disk ∂̄-solvability `DbarDiskCohomology.dbar_solvable_ball` and the holomorphic
+re-splitting `DbarDiskCohomology.dbar_holo_splitting_ball`. What remains unproven (hence the `sorry`)
+is the manifold/Čech assembly that turns those disk atoms into the cover-level `leray` witness plus
+the chart-image geometry. NOT proven here. (Separated from the comparison so the two distinct
+manifold facts are independently inspectable.) -/
 theorem exists_cechModel (𝔘 : FiniteCover X) (D : Divisor X) :
     ∃ (d : DiskOverlapData), Nonempty (Coboundaries d) := by
   sorry
