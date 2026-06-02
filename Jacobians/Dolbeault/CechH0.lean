@@ -315,6 +315,20 @@ theorem transition_analyticAt {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).sourc
   exact (contMDiffAt_iff_contDiffAt.1
     (ContMDiffAt.comp (I' := 𝓘(ℂ)) ((chartAt (H := ℂ) z) z) h2 h1)).analyticAt
 
+/-- The reverse of `eventually_nhdsNE_of_subtype`: pull a punctured-neighbourhood property on `X`
+back to the open submanifold `↥V` (precompose with `Subtype.val`, which is continuous and injective
+so tends `𝓝[≠] u → 𝓝[≠] u.1`). -/
+theorem eventually_subtype_of_nhdsNE {V : Opens X} {u : V} (P : X → Prop)
+    (h : ∀ᶠ z in 𝓝[≠] u.1, P z) : ∀ᶠ w : V in 𝓝[≠] u, P w.1 := by
+  have htend : Filter.Tendsto (Subtype.val : V → X) (𝓝[≠] u) (𝓝[≠] u.1) := by
+    rw [tendsto_nhdsWithin_iff]
+    refine ⟨continuous_subtype_val.continuousAt.continuousWithinAt.tendsto, ?_⟩
+    rw [eventually_nhdsWithin_iff]
+    filter_upwards with w hw
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hw ⊢
+    exact fun hc => hw (Subtype.ext hc)
+  exact htend.eventually h
+
 /-- **Chart-invariance of analyticity.** If `h` read in the chart at `y` is analytic at the image of
 `z` (with `z` in that chart's source), then `h` read in its *own* chart at `z` is analytic. Composes
 with the analytic transition map (`transition_analyticAt`). -/
@@ -497,7 +511,70 @@ meromorphic at cover-boundary points because the per-overlap disagreement set is
     `eq_nhdsNE_toMeromorphicNFAt`), so `F` and `Gext i` agree off a discrete set ⟹ `F` meromorphic at
     `y` and (keystone `ordU = orderW`) `orderW F ≥ −D` ⟹ `F ∈ L(D)`; and `[F|_{U i}] = [g i] = f i`. -/
 theorem cechRestrictL_surjective : Function.Surjective (𝔘.cechRestrictL D) := by
-  sorry
+  intro f
+  obtain ⟨fc, hfc⟩ := f
+  rw [globalSections, Submodule.mem_inf] at hfc
+  obtain ⟨hker, hsec⟩ := hfc
+  -- Extract honest representatives `g i ∈ OmegaD D (U i)` with `[g i] = fc i`.
+  have hchoose : ∀ i, ∃ g : 𝔘.U i → ℂ, g ∈ OmegaD D (𝔘.U i) ∧ toGerm (𝔘.U i) g = fc i :=
+    fun i => let ⟨g, hg, hgeq⟩ := hsec i; ⟨g, hg, hgeq⟩
+  choose g hg_mem hg_rep using hchoose
+  have hg_mer : ∀ i, IsMeromorphic (𝔘.U i : Type _) (g i) := fun i => ((mem_OmegaD).1 (hg_mem i)).1
+  have hg_ord : ∀ i, ∀ u : 𝔘.U i, (-(D u.1) : WithTop ℤ) ≤ ordU (g i) u :=
+    fun i => ((mem_OmegaD).1 (hg_mem i)).2
+  -- A choice of patch index for each point.
+  have hcov : ∀ x : X, ∃ i, x ∈ 𝔘.U i := fun x =>
+    TopologicalSpace.Opens.mem_iSup.mp (𝔘.covers ▸ Set.mem_univ x : x ∈ ⨆ i, 𝔘.U i)
+  choose idx hidx using hcov
+  -- The matching condition (from `ker δ⁰`).
+  rw [LinearMap.mem_ker] at hker
+  have hmatch : ∀ i j, rawRestrictG (inf_le_right : 𝔘.U i ⊓ 𝔘.U j ≤ 𝔘.U j) (fc j)
+      = rawRestrictG (inf_le_left : 𝔘.U i ⊓ 𝔘.U j ≤ 𝔘.U i) (fc i) := by
+    intro i j
+    have hp := congrFun hker (i, j)
+    simp only [cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply, LinearMap.comp_apply,
+      LinearMap.proj_apply, Pi.zero_apply] at hp
+    rwa [sub_eq_zero] at hp
+  -- The family of extensions-by-zero, and the four hypotheses of `gluedFun_eventuallyEq`.
+  set G : 𝔘.ι → X → ℂ := fun i => Gext (g i) with hG
+  have Hmer : ∀ i, ∀ y, y ∈ 𝔘.U i →
+      MeromorphicAt (G i ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) :=
+    fun i y hy => Gext_meromorphicAt (hg_mer i) hy
+  have Hoverlap : ∀ i j, ∀ x, x ∈ 𝔘.U i → x ∈ 𝔘.U j → G i =ᶠ[𝓝[≠] x] G j := by
+    intro i j x hxi hxj
+    have hm := hmatch i j
+    rw [← hg_rep i, ← hg_rep j] at hm
+    exact Gext_overlap_eventuallyEq (g i) (g j) hm hxi hxj
+  have Hnf : ∀ i, ∀ y, y ∈ 𝔘.U i → ∀ᶠ z in 𝓝[≠] y, nfX (G i) z :=
+    fun i y hy => 𝔘.nfX_Gext_codiscrete (hg_mer i) hy
+  -- The glued function and its central agreement property.
+  have hF_ev : ∀ {y : X} {i : 𝔘.ι}, y ∈ 𝔘.U i → 𝔘.gluedFun G idx =ᶠ[𝓝[≠] y] G i :=
+    fun {y i} hy => 𝔘.gluedFun_eventuallyEq G idx hidx Hmer Hoverlap Hnf hy
+  -- `gluedFun` is meromorphic on `X` (it agrees with a meromorphic `G i` near every point).
+  have hmer_F : IsMeromorphic X (𝔘.gluedFun G idx) := fun x =>
+    (Hmer (idx x) x (hidx x)).congr (eventuallyEq_comp_chart (hF_ev (hidx x))).symm
+  refine ⟨⟨⟨𝔘.gluedFun G idx, hmer_F⟩, ?_⟩, ?_⟩
+  · -- `F ∈ linearSystem D`: at each `x`, `orderW F x = ordU (g (idx x)) ⟨x⟩ ≥ -(D x)`.
+    intro x
+    show (-(D x) : WithTop ℤ) ≤ MeromorphicFunction.orderW ⟨𝔘.gluedFun G idx, hmer_F⟩ x
+    rw [MeromorphicFunction.orderW,
+      meromorphicOrderAt_congr (eventuallyEq_comp_chart (hF_ev (hidx x)))]
+    simp only [hG]
+    rw [← ordU_eq_orderAt_Gext (g (idx x)) (hidx x)]
+    exact hg_ord (idx x) ⟨x, hidx x⟩
+  · -- `cechRestrict ↑F = fc`: each component's germ is `[g i] = fc i`.
+    apply Subtype.ext
+    rw [cechRestrictL_coe]
+    funext i
+    rw [cechRestrict_apply]
+    show toGerm (𝔘.U i) ((𝔘.gluedFun G idx) ∘ Subtype.val) = fc i
+    rw [← hg_rep i, toGerm_eq_iff]
+    intro u
+    have hsub := eventually_subtype_of_nhdsNE (fun z => 𝔘.gluedFun G idx z = G i z)
+      (hF_ev (y := u.1) (i := i) u.2)
+    filter_upwards [hsub] with w hw
+    simp only [Function.comp_apply, hG] at hw ⊢
+    rw [hw, Gext_apply_mem (g i) w.2]
 
 /-- `H⁰(𝔘, 𝒪_D) ≅ L(D) ⧸ germZero` as `ℂ`-modules (first isomorphism theorem + `ker = germZero`). -/
 noncomputable def globalSectionsEquivQuot :
