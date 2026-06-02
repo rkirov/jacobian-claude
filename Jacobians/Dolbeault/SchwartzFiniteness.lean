@@ -85,6 +85,27 @@ theorem surjective_of_approx {G : Type*} [NormedAddCommGroup G] [NormedSpace ℂ
   apply tendsto_nhds_unique hlim1
   simpa only [hpartial] using hlim2
 
+omit [CompleteSpace E] [CompleteSpace F] in
+/-- **Finite-dimensional `δ`-net for a compact operator.** A compact operator `K` admits a
+finite-dimensional subspace `S ≤ F` that `δ`-approximates the image of the unit ball: every `K x`
+with `‖x‖ ≤ 1` lies within distance `δ` of `S`. The subspace is the span of a finite `δ`-net of the
+(relatively compact) image of the closed unit ball. -/
+theorem exists_finiteDim_approx
+    (K : E →L[ℂ] F) (hK : IsCompactOperator K) {δ : ℝ} (hδ : 0 < δ) :
+    ∃ S : Submodule ℂ F, FiniteDimensional ℂ S ∧
+      ∀ x : E, ‖x‖ ≤ 1 → infDist (K x) (S : Set F) ≤ δ := by
+  have hcompact : IsCompact (closure (K '' closedBall 0 1)) :=
+    hK.isCompact_closure_image_closedBall 1
+  obtain ⟨t, _ht_sub, ht_fin, ht_cover⟩ :=
+    exists_finite_cover_balls_of_isCompact_closure hcompact hδ
+  refine ⟨Submodule.span ℂ t, FiniteDimensional.span_of_finite ℂ ht_fin, ?_⟩
+  intro x hx
+  have hKx : K x ∈ K '' closedBall 0 1 := ⟨x, by simpa using hx, rfl⟩
+  obtain ⟨y, hy_mem, hy_dist⟩ := Set.mem_iUnion₂.mp (ht_cover hKx)
+  calc infDist (K x) (Submodule.span ℂ t : Set F)
+      ≤ dist (K x) y := infDist_le_dist_of_mem (Submodule.subset_span hy_mem)
+    _ ≤ δ := (mem_ball.mp hy_dist).le
+
 /-- **Schwartz finiteness (Forster 14.8).** A compact perturbation of a surjection between Banach
 spaces has finite-codimensional image: if `A : E →L[ℂ] F` is surjective and `K : E →L[ℂ] F` is a
 compact operator, then `F ⧸ range (A + K)` is finite-dimensional. (`K = 0` ⟹ codim 0; `A = id` ⟹
