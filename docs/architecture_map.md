@@ -115,3 +115,30 @@ Foundations already done (axiom-clean): G1 ∂̄-disk (`DbarDisk`), intrinsic �
 (`RealForms.dbar`), nested cover + disk-Montel (`Montel/*`), ℂℙ¹ shim + `≃ₜ S²` (`ProjectiveLine`),
 single-simple-pole extraction from `l(P)=2` (`RiemannRoch`/`MeromorphicLiouville`), #7 analytic core
 (`periodVec_linearIndependent`, R1/R2).
+
+---
+
+## 2026-06-02 autonomous run — the RR wall is now a map of named honest kernels
+
+The Dolbeault→Serre→RR foundation was built top-to-bottom this session; the entire connective tissue
+(skeletons, bookkeeping, the homological crank, the comparison spine) is **PROVEN axiom-clean**, and
+the irreducible analysis is isolated to a handful of **named, honest, single-statement `sorry`s** (each
+a TRUE classical theorem). Repo builds green throughout. New files (all green): `DbarLocal`,
+`DbarDiskCohomology` (full-disk ∂̄, no Mittag-Leffler), `DolbeaultH01` (`dbarL`), `DolbeaultComparison`
+(`H^{0,1}` constructed), `DolbeaultComparisonProof` (comparison spine + chart bridge proven),
+`CohomologicalRR` (χ-additivity crank), `DegDivResidue` (residue skeleton), + the finiteness stack.
+
+**The named kernels (= the entire remaining analytic content of RR):**
+| Kernel (`sorry`) | File | What it is | feeds |
+|---|---|---|---|
+| `exists_cechModel` | CechFinitenessWiring | Forster-14.9 chart-disk Leray model + comparison | finiteness |
+| `exists_skyscraperLES` | CohomologicalRR | skyscraper SES connecting map + `skyDim=1` + snake | χ-additivity |
+| `exists_properMapDegree` | DegDivResidue | `#zeros=deg=#poles` (Rouché + ramified count + general `X→ℂℙ¹`) | `deg_div` |
+| `exists_localPrimitive_apply_one` + 4 | DolbeaultComparisonProof | ∂̄ chart-transition equivariance + maps well-defined/inverse | Dolbeault comparison (L3) |
+| `arithmeticGenus_eq_genus`, `serre_h1_eq` | DolbeaultLadder | Serre at `D=0` / general (need comparison + `H^{0,1}≅Ω(X)`) | RR |
+
+**Glue done:** `cohomological_riemannRoch` wired into the ladder (→ `exists_skyscraperLES`); `h0Dim_eq_lDim`
+proven (→ `cechRestrictL_surjective`). **2 soundness bugs caught & fixed** (`leray_surjective` /
+`cechH1_linearEquiv_supH1` were vacuously-false free `∀`-statements; concentrated into `exists_cechModel`).
+**Worst-feared elliptic/Weyl kernel stayed OFF the table** (Čech-residue route). What remains is exactly
+these named kernels — research-grade analysis, but each a single isolated honest statement, not open design.
