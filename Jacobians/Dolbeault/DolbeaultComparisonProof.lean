@@ -381,6 +381,28 @@ theorem deriv_chartTransition_ne_zero (x₀ x : X)
   rw [h0, mul_zero] at hcomp
   exact one_ne_zero hcomp
 
+/-- **Transition holomorphy at a general overlap point.** The chart transition `e_a ∘ e_b.symm` is
+`ℂ`-differentiable at any `w` in `e_b`'s target whose `e_b`-preimage lies in `e_a`'s source (not only
+at the chart centre, as in `differentiableAt_chartTransition`). Same mechanism: the two analytic
+(`ω`) charts composed, `ContMDiffAt → ContDiffAt ℂ → DifferentiableAt ℂ`. -/
+theorem differentiableAt_transition_of_mem (a b : X) {w : ℂ}
+    (hwt : w ∈ (chartAt ℂ b).target) (hws : (chartAt ℂ b).symm w ∈ (chartAt ℂ a).source) :
+    DifferentiableAt ℂ ((extChartAt 𝓘(ℝ, ℂ) a) ∘ (extChartAt 𝓘(ℝ, ℂ) b).symm) w := by
+  have h1 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (chartAt ℂ b).symm w :=
+    ((contMDiffOn_chart_symm (I := 𝓘(ℂ)) (n := ω) (x := b)) _ hwt).contMDiffAt
+      ((chartAt ℂ b).open_target.mem_nhds hwt)
+  have h2 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (chartAt ℂ a) ((chartAt ℂ b).symm w) :=
+    ((contMDiffOn_chart (I := 𝓘(ℂ)) (n := ω) (x := a)) _ hws).contMDiffAt
+      ((chartAt ℂ a).open_source.mem_nhds hws)
+  have hcomp : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω ((chartAt ℂ a) ∘ (chartAt ℂ b).symm) w :=
+    ContMDiffAt.comp (I' := 𝓘(ℂ)) w h2 h1
+  have hda : DifferentiableAt ℂ ((chartAt ℂ a) ∘ (chartAt ℂ b).symm) w :=
+    (contMDiffAt_iff_contDiffAt.1 hcomp).differentiableAt (by norm_num)
+  have he : ((chartAt ℂ a) ∘ (chartAt ℂ b).symm)
+      = ((extChartAt 𝓘(ℝ, ℂ) a) ∘ (extChartAt 𝓘(ℝ, ℂ) b).symm) := by
+    funext z; simp [mfld_simps]
+  rwa [he] at hda
+
 /-! #### The local primitive at the value-`1` level
 
 `exists_localPrimitive_apply_one` produces, near every `x₀`, a smooth `u` whose intrinsic `∂̄`
@@ -790,6 +812,114 @@ theorem diskSection_add (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g₁ g₂ : Smo
 theorem diskSection_smul (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (c : ℝ) (g : SmoothCOneForms X) :
     𝔇.diskSection i (c • g) = c • 𝔇.diskSection i g := by
   funext x; simp only [diskSection, 𝔇.planarPrimitive_smul, Pi.smul_apply]
+
+/-! ### Step 4c — cross-chart cancellation: the cocycle is holomorphic on overlaps -/
+
+/-- **Cross-chart cancellation (planar form).** On the overlap `U_i ⊓ U_j`, the difference of disk
+primitives read in chart `i` — `z ↦ u_j(e_j(e_i⁻¹ z)) − u_i(z)` — has vanishing planar `∂̄` at `e_i x`
+for every `x ∈ U_i ∩ U_j`. Mechanism: `∂̄(u_j∘τ) = conj(τ′)·(∂̄u_j ∘ τ)` (Wirtinger chain rule),
+`∂̄u_i = cutoffPullback_i`, `∂̄u_j = cutoffPullback_j`; on the disks `χ = 1`, so these are
+`g x (frameᵢ 1)` and `g x (frameⱼ 1)`; the `(0,1)` law turns them into `conj(frame)·(g x 1)`, the
+frame is the inverse transition derivative, and the transition cocycle `A_j = τ′·A_i` cancels. -/
+theorem dbar_planarDiff_eq_zero (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
+    (hg : g ∈ OneFormsZeroOne X) (i j : 𝔇.ι) {x : X}
+    (hxi : x ∈ (𝔇.U i : Set X)) (hxj : x ∈ (𝔇.U j : Set X)) :
+    DbarDisk.dbar (fun z => 𝔇.planarPrimitive j g
+        ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center j)) ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).symm z))
+        - 𝔇.planarPrimitive i g z)
+      ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)) x) = 0 := by
+  set ei := extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) with hei
+  set ej := extChartAt 𝓘(ℝ, ℂ) (𝔇.center j) with hej
+  set ex := extChartAt 𝓘(ℝ, ℂ) x with hexx
+  set z₀ := ei x with hz0
+  set τ := ej ∘ ei.symm with hτ
+  -- Source memberships and the chart round-trips.
+  have hxsi : x ∈ ei.source := 𝔇.subset_chart_source i hxi
+  have hxsj : x ∈ ej.source := 𝔇.subset_chart_source j hxj
+  have hsymm_i : ei.symm z₀ = x := ei.left_inv hxsi
+  have hτz₀ : τ z₀ = ej x := by rw [hτ, Function.comp_apply, hsymm_i]
+  have hsymm_j : ej.symm (τ z₀) = x := by rw [hτz₀]; exact ej.left_inv hxsj
+  -- chartAt-level facts for the general transition lemma.
+  have hx_src_i : x ∈ (chartAt ℂ (𝔇.center i)).source := by
+    rw [hei, extChartAt_source] at hxsi; exact hxsi
+  have hx_src_j : x ∈ (chartAt ℂ (𝔇.center j)).source := by
+    rw [hej, extChartAt_source] at hxsj; exact hxsj
+  have hz0_eq : z₀ = (chartAt ℂ (𝔇.center i)) x := by rw [hz0, hei]; simp [mfld_simps]
+  have hz0t : z₀ ∈ (chartAt ℂ (𝔇.center i)).target := by
+    rw [hz0_eq]; exact (chartAt ℂ (𝔇.center i)).map_source hx_src_i
+  have hsymm_chart : (chartAt ℂ (𝔇.center i)).symm z₀ ∈ (chartAt ℂ (𝔇.center j)).source := by
+    rw [hz0_eq, (chartAt ℂ (𝔇.center i)).left_inv hx_src_i]; exact hx_src_j
+  -- Differentiability of the transition `τ` at `z₀`, and of the primitives.
+  have hτdiff : DifferentiableAt ℂ τ z₀ :=
+    differentiableAt_transition_of_mem (𝔇.center j) (𝔇.center i) hz0t hsymm_chart
+  have hppj_diff : ∀ w, DifferentiableAt ℝ (𝔇.planarPrimitive j g) w := fun w =>
+    (𝔇.contDiff_planarPrimitive j g).differentiable (by norm_num) w
+  have hppi_diff : ∀ w, DifferentiableAt ℝ (𝔇.planarPrimitive i g) w := fun w =>
+    (𝔇.contDiff_planarPrimitive i g).differentiable (by norm_num) w
+  -- `∂̄` of the difference splits; the first term via the Wirtinger chain rule.
+  have hsub : ∀ (P Q : ℂ → ℂ), DifferentiableAt ℝ P z₀ → DifferentiableAt ℝ Q z₀ →
+      DbarDisk.dbar (fun z => P z - Q z) z₀ = DbarDisk.dbar P z₀ - DbarDisk.dbar Q z₀ := by
+    intro P Q hP hQ
+    show DbarDisk.dbar (P - Q) z₀ = _
+    unfold DbarDisk.dbar
+    rw [fderiv_sub hP hQ]
+    simp only [ContinuousLinearMap.sub_apply]; ring
+  have hcomp_eq : (fun z => 𝔇.planarPrimitive j g (ej (ei.symm z)) - 𝔇.planarPrimitive i g z)
+      = (fun z => (𝔇.planarPrimitive j g ∘ τ) z - 𝔇.planarPrimitive i g z) := rfl
+  rw [hcomp_eq, hsub (𝔇.planarPrimitive j g ∘ τ) (𝔇.planarPrimitive i g)
+        ((hppj_diff (τ z₀)).comp z₀ (hτdiff.restrictScalars ℝ)) (hppi_diff z₀),
+      dbarDisk_comp_holo (𝔇.planarPrimitive j g) τ z₀ (hppj_diff (τ z₀)) hτdiff,
+      𝔇.dbar_planarPrimitive j g (τ z₀), 𝔇.dbar_planarPrimitive i g z₀]
+  -- Evaluate the two cutoff pullbacks: on the disks `χ = 1`, leaving `g x (frame 1)`.
+  have hballi : ei x ∈ Metric.ball (ei (𝔇.center i)) (𝔇.radius i) := by
+    have h := hxi; rw [𝔇.isDisk i] at h; exact h.1
+  have hballj : ej x ∈ Metric.ball (ej (𝔇.center j)) (𝔇.radius j) := by
+    have h := hxj; rw [𝔇.isDisk j] at h; exact h.1
+  have hχi : (𝔇.diskBump i) z₀ = 1 :=
+    (𝔇.diskBump i).one_of_mem_closedBall (by rw [hz0]; exact Metric.ball_subset_closedBall hballi)
+  have hχj : (𝔇.diskBump j) (τ z₀) = 1 :=
+    (𝔇.diskBump j).one_of_mem_closedBall (by rw [hτz₀]; exact Metric.ball_subset_closedBall hballj)
+  rw [show 𝔇.cutoffPullback j g (τ z₀) = ((𝔇.diskBump j) (τ z₀) : ℝ) •
+      (g (ej.symm (τ z₀))) ((Bundle.Trivialization.symmL ℝ
+        (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) (𝔇.center j)) (ej.symm (τ z₀))) (1 : ℂ)) from rfl,
+    show 𝔇.cutoffPullback i g z₀ = ((𝔇.diskBump i) z₀ : ℝ) •
+      (g (ei.symm z₀)) ((Bundle.Trivialization.symmL ℝ
+        (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) (𝔇.center i)) (ei.symm z₀)) (1 : ℂ)) from rfl,
+    hχi, hχj, hsymm_i, hsymm_j, one_smul, one_smul,
+    frameVector_eq_inv_deriv_transition (𝔇.center i) x hxsi,
+    frameVector_eq_inv_deriv_transition (𝔇.center j) x hxsj]
+  -- Abbreviate the two inverse transition derivatives; apply the `(0,1)` conjugate-linearity law.
+  set Ai := deriv (ei ∘ ex.symm) (ex x) with hAi
+  set Aj := deriv (ej ∘ ex.symm) (ex x) with hAj
+  rw [oneForm_apply_conjLinear hg x Aj⁻¹, oneForm_apply_conjLinear hg x Ai⁻¹]
+  -- The transition cocycle `Aj = (deriv τ z₀) · Ai` (chain rule on `ej∘ex.symm = τ∘(ei∘ex.symm)`).
+  have hψdiff : DifferentiableAt ℂ (ei ∘ ex.symm) (ex x) :=
+    differentiableAt_chartTransition (𝔇.center i) x hxsi
+  have hψpt : (ei ∘ ex.symm) (ex x) = z₀ := by
+    rw [Function.comp_apply, hexx, extChartAt_to_inv, hz0]
+  have hev : (ej ∘ ex.symm) =ᶠ[nhds (ex x)] (τ ∘ (ei ∘ ex.symm)) := by
+    have htgt : ∀ᶠ z in nhds (ex x), z ∈ ex.target := by
+      rw [hexx]; exact (isOpen_extChartAt_target x).mem_nhds (mem_extChartAt_target x)
+    have hmem : ∀ᶠ z in nhds (ex x), ex.symm z ∈ ei.source := by
+      have hcont : ContinuousAt ex.symm (ex x) := continuousAt_extChartAt_symm x
+      refine hcont.preimage_mem_nhds ?_
+      rw [hexx, extChartAt_to_inv]; exact (isOpen_extChartAt_source (𝔇.center i)).mem_nhds hxsi
+    filter_upwards [htgt, hmem] with z hztgt hzsrc
+    simp only [hτ, Function.comp_apply, ei.left_inv hzsrc]
+  have hcocycle : Aj = deriv τ z₀ * Ai := by
+    rw [hAi, hAj, hev.deriv_eq, deriv_comp (ex x) (hψpt ▸ hτdiff) hψdiff, hψpt]
+  -- Nonvanishing: the two frame derivatives are nonzero, hence so is `deriv τ z₀`.
+  have hAi0 : Ai ≠ 0 := deriv_chartTransition_ne_zero (𝔇.center i) x hxsi
+  have hAj0 : Aj ≠ 0 := deriv_chartTransition_ne_zero (𝔇.center j) x hxsj
+  have hτ0 : deriv τ z₀ ≠ 0 := by
+    intro h0; rw [h0, zero_mul] at hcocycle; exact hAj0 hcocycle
+  -- Final algebra: `conj(τ′)·conj(Aj⁻¹) = conj(Ai⁻¹)`, so the two terms cancel.
+  rw [hcocycle]
+  have hAic : (starRingEnd ℂ) Ai ≠ 0 := by rwa [map_ne_zero]
+  have hτc : (starRingEnd ℂ) (deriv τ z₀) ≠ 0 := by rwa [map_ne_zero]
+  simp only [map_inv₀, map_mul]
+  field_simp
+  ring
 
 /-- The **linear 0-cochain of disk primitives**: `g ↦ (i ↦ [u_i])`, the germ-classes of the local
 `∂̄`-primitives. `ℝ`-linear in `g` (via `planarPrimitive` linearity + `toGerm`). Its `cechDelta0` is
