@@ -1113,3 +1113,39 @@ quotient. All five leaves are now true-able. Full repo builds, axiom-clean.
 **Lesson:** before building ON a scaffold, sanity-check its *dimensions* — `finrank` over a junk
 space silently collapses to 0. The fix was a known Mathlib pattern, not a crisis; the user's two
 nudges (NF, avoid-quotients) steered straight to the clean `Filter.Germ` solution.
+
+---
+
+## 2026-06-02 (session) — completion plan + RR-ladder climb (h0Dim_eq_lDim landed)
+
+**User flow:** "research next steps + think hard about the final plan" → delivered the full
+dependency map + bimodal-RR analysis + 3 postures (sorry-free / conditional / hybrid). Offered an
+`AskUserQuestion` (posture + first target); user **declined the tool** and said **"Proceed"** —
+i.e. just execute my recommendation, don't over-ask. Then steered: "research next step while [agent]
+working" → "redo the architecture map with the new finding" → "save it" → "how to attack the serre
+tree" → "bank to memory first."
+
+**Built (all axiom-clean, committed):** `h0Dim_eq_lDim` — the first RR ladder leaf, in new
+`Jacobians/Dolbeault/CechH0.lean`. Bottom-up: keystone `ordU_val_eq_orderW`, forward `cechRestrict`,
+`ker = germZero`, 1st-iso-thm assembly. DolbeaultLadder leaf list 5→4.
+
+**Finding 1 — the gluing crux was UNDER-billed by memory** ("~200 lines pure algebra"). The naive
+glue `x↦g_{idx x}(x)` is *provably not meromorphic at cover-boundary points* (per-overlap disagreement
+set is codiscrete only *within* the overlap). Fix = rigidify via per-point meromorphic **normal form**
+(`toMeromorphicNFAt` in each point's chart), idx-independent by NF-value congruence. Needed
+`analyticAt_chart_change` proven from scratch (no Mathlib analyticGroupoid). Delegated the assembled
+crux to a `lean4:sorry-filler-deep` agent → clean `#print axioms` (verified independently).
+
+**Finding 2 — finiteness node de-risked** (`docs/cech_finiteness_research.md`): `finiteDimensional_cechH1`
+is *templated, not greenfield* — repo ALREADY has the nested triple cover (= Forster's `𝔘⋐𝔙`),
+disk-Montel, supNorm+Riesz endgame (the Ω(X) finiteness template). G2 ∂̄-globalize is OFF the
+finiteness path. New: Schwartz finite-codim lemma + germ↔supNorm comparison.
+
+**Finding 3 — Serre tree's irreducible kernel = Weyl / ∂̄-solvability-with-obstruction** (`∂̄u=g`
+solvable iff `∫g∧ω=0 ∀ω∈Ω(X)`), sitting ON TOP of finiteness (Forster §17, not elliptic PDE). Attack:
+finiteness→χ→Green pairing→Dolbeault comparison (reuse done ∂̄)→Weyl, D=0 first, Route D.
+
+**Artifacts:** `docs/architecture_map.md` (canonical DAG, Dolbeault root splits G1→finiteness /
+G2→Serre, greenfield isolated to Serre core). **Methodology that worked:** delegate isolated fiddly
+crux-lemmas to sorry-filler agents — the axiom check makes delegation SAFE (clean `#print axioms` =
+genuine proof, no hidden sorry). **Next build = `finiteDimensional_cechH1`.**
