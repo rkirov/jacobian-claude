@@ -72,4 +72,44 @@ noncomputable def differential (u : SmoothCFunctions X) : SmoothCOneForms X wher
       Bundle.Trivial.fiberBundle_trivializationAt',
       TangentBundle.continuousLinearMapAt_trivializationAt, ContinuousLinearMap.id_comp, mfld_simps]
 
+/-- Multiplication by `i` as a real-linear endomorphism of `ℂ` (`= J`, the complex structure on the
+real tangent space `T_x ≅ ℂ`). -/
+noncomputable def mulI : ℂ →L[ℝ] ℂ := (ContinuousLinearMap.mul ℝ ℂ) Complex.I
+
+/-- The **`(0,1)`-projection** on real-linear forms `ℂ →L[ℝ] ℂ`: `P(α) = ½(α + i·α(i·−))`, the
+conjugate-`ℂ`-linear (Cauchy–Riemann) part. A fixed continuous-linear fiber endomorphism; applied
+fiberwise to `du` it carves `∂̄u` out of the de Rham differential. -/
+noncomputable def proj01 : (ℂ →L[ℝ] ℂ) →L[ℝ] (ℂ →L[ℝ] ℂ) :=
+  (2 : ℝ)⁻¹ • (ContinuousLinearMap.id ℝ (ℂ →L[ℝ] ℂ) +
+    (ContinuousLinearMap.compL ℝ ℂ ℂ ℂ mulI).comp ((ContinuousLinearMap.compL ℝ ℂ ℂ ℂ).flip mulI))
+
+/-- The **Dolbeault `∂̄` operator** `A⁰ → A^{0,1} ⊆ A¹`: the `(0,1)`-part of the de Rham differential,
+`∂̄u = proj01 ∘ du`. A smooth `ℂ`-valued 1-form. Section-smoothness is `clm_bundle_apply` (apply the
+constant fiber endomorphism `proj01` to the smooth section `du`). -/
+noncomputable def dbar (u : SmoothCFunctions X) : SmoothCOneForms X where
+  toFun := fun x => proj01 ((differential u).toFun x)
+  contMDiff_toFun := by
+    intro x₀
+    rw [contMDiffAt_hom_bundle]
+    refine ⟨contMDiffAt_id, ?_⟩
+    simp only [ContinuousLinearMap.inCoordinates,
+      Bundle.Trivial.continuousLinearMapAt_trivialization,
+      Bundle.Trivial.fiberBundle_trivializationAt', ContinuousLinearMap.id_comp]
+    -- After trivialising the (trivial) `ℂ`-codomain the obligation reads
+    --   `x ↦ (proj01 (du x)).comp (symmL_tan x)`  is `C^∞`,   `du := differential u`,
+    --   `symmL_tan x := (trivializationAt ℂ (TangentSpace 𝓘(ℝ,ℂ)) x₀).symmL ℝ x : ℂ →L T_x`.
+    -- Expand `proj01 (du x) = ½ (du x + mulI ∘ du x ∘ mulI)` and distribute `.comp (symmL_tan x)`:
+    --   ½ ( A x  +  mulI ∘ ((A x) ∘ Jcoord x) ),
+    --     A x      := (du x) ∘ symmL_tan x          -- exactly `differential`'s reduced smoothness,
+    --     Jcoord x := (clmAt_tan x) ∘ mulI ∘ (symmL_tan x)
+    --               = `inCoordinates` of the *constant* `mulI` in the tangent bundle,
+    -- using the eventual identity `symmL_tan x ∘ clmAt_tan x =ᶠ id` (`x ∈ baseSet` near `x₀`).
+    -- `A` is `C^∞`; the combination is then `C^∞` by `clm_comp`/`const_smul` AS SOON AS `Jcoord` is.
+    -- `Jcoord` is the complex structure `J = (·*i)` on the real tangent bundle read in coordinates;
+    -- it is `C^∞` because the tangent `coordChange` is (`ContMDiffVectorBundle (TangentSpace …)`,
+    -- `contMDiffOn_coordChangeL`) and `Jcoord` conjugates the fixed `mulI` by it. Mathlib exposes no
+    -- `J`-as-smooth-section API for a complex manifold's real tangent bundle, so this last bundle-
+    -- coordinate step is the sole open obligation — the only genuinely complex-geometric input to ∂̄.
+    sorry
+
 end Jacobians.Dolbeault
