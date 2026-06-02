@@ -71,4 +71,52 @@ theorem isMeromorphic_val {U : Opens X} (F : MeromorphicFunction X) :
   rw [← hbase] at hmer
   exact hmer.congr (hev.filter_mono nhdsWithin_le_nhds).symm
 
+/-! ### The forward map `L(D) → H⁰(𝔘, 𝒪_D)` -/
+
+namespace FiniteCover
+
+variable (𝔘 : FiniteCover X) (D : Divisor X)
+
+/-- Restrict a global meromorphic function to the cover's germ-class 0-cochains:
+`F ↦ (i ↦ [F|_{U i}])`. `ℂ`-linear (depends only on the cover, not on `D`). -/
+noncomputable def cechRestrict : MeromorphicFunction X →ₗ[ℂ] 𝔘.Cochain0 where
+  toFun F i := toGerm (𝔘.U i) (F.toFun ∘ Subtype.val)
+  map_add' F G := by funext i; exact (map_add (toGerm (𝔘.U i)) _ _)
+  map_smul' c F := by funext i; exact (map_smul (toGerm (𝔘.U i)) _ _)
+
+@[simp] theorem cechRestrict_apply (F : MeromorphicFunction X) (i : 𝔘.ι) :
+    𝔘.cechRestrict F i = toGerm (𝔘.U i) (F.toFun ∘ Subtype.val) := rfl
+
+/-- The restriction of `F ∈ L(D)` is a global matching `𝒪_D`-section: each component is an
+`𝒪_D`-germ (keystone: `ordU = orderW ≥ −D`), and the components match on overlaps automatically
+(both restrict the *same* `F`). -/
+theorem cechRestrict_mem_globalSections {F : MeromorphicFunction X}
+    (hF : F ∈ linearSystem D) : 𝔘.cechRestrict F ∈ 𝔘.globalSections D := by
+  rw [globalSections, Submodule.mem_inf]
+  refine ⟨?_, ?_⟩
+  · -- matching: `cechRestrict F ∈ ker δ⁰`
+    rw [LinearMap.mem_ker]
+    funext p
+    obtain ⟨i, j⟩ := p
+    simp only [cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply, LinearMap.comp_apply,
+      LinearMap.proj_apply, cechRestrict_apply, rawRestrictG_coe, Pi.zero_apply]
+    rw [sub_eq_zero]
+    rfl
+  · -- sections: each component is an `𝒪_D`-germ
+    intro i
+    refine ⟨F.toFun ∘ Subtype.val, ⟨isMeromorphic_val F, fun u => ?_⟩, rfl⟩
+    rw [ordU_val_eq_orderW]
+    exact hF u.1
+
+/-- The forward map `Φ : L(D) →ₗ globalSections D` (domain/codomain restriction of `cechRestrict`). -/
+noncomputable def cechRestrictL :
+    linearSystem (X := X) D →ₗ[ℂ] ↥(𝔘.globalSections D) :=
+  ((𝔘.cechRestrict).domRestrict (linearSystem D)).codRestrict (𝔘.globalSections D)
+    fun F => 𝔘.cechRestrict_mem_globalSections D F.2
+
+@[simp] theorem cechRestrictL_coe (F : linearSystem (X := X) D) :
+    (𝔘.cechRestrictL D F : 𝔘.Cochain0) = 𝔘.cechRestrict (F : MeromorphicFunction X) := rfl
+
+end FiniteCover
+
 end Jacobians.Dolbeault
