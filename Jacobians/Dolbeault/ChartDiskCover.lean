@@ -34,9 +34,11 @@ structure ChartDiskCover (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSp
   /-- The coordinate radius of the disk `U i`. -/
   radius : ι → ℝ
   radius_pos : ∀ i, 0 < radius i
-  /-- The coordinate ball lies inside the chart target, so the chart is a homeomorphism onto it. -/
-  ball_subset_target : ∀ i,
-    Metric.ball (extChartAt 𝓘(ℝ, ℂ) (center i) (center i)) (radius i)
+  /-- The *closed* coordinate ball lies inside the (open) chart target. Being a compact set inside an
+  open one, it has positive distance to the target's complement — so a smooth bump that is `1` on the
+  whole disk and compactly supported inside the target exists (the cutoff the forward solve needs). -/
+  closedBall_subset_target : ∀ i,
+    Metric.closedBall (extChartAt 𝓘(ℝ, ℂ) (center i) (center i)) (radius i)
       ⊆ (extChartAt 𝓘(ℝ, ℂ) (center i)).target
   /-- `U i` is exactly the chart-preimage of the coordinate ball. -/
   isDisk : ∀ i, ((U i : Opens X) : Set X)
