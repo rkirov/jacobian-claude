@@ -2,9 +2,10 @@
   The **L3 kernel** — Dolbeault's comparison theorem `H^{0,1}(X) ≅ H¹(X, 𝒪)`, the single hardest
   analytic input of the `D = 0` Serre route (`arithmeticGenus_eq_genus`).
 
-  Target (proven standalone here, the caller in `DolbeaultComparison` wires it):
+  Target (proven standalone here as `cechH1_dolbeault_comparison_proof`, with the *exact* signature
+  of `DolbeaultComparison.cechH1_dolbeault_comparison`; the caller wires it):
 
-    `cechH1_dolbeault_comparison (𝔘 : FiniteCover X) :`
+    `cechH1_dolbeault_comparison_proof (𝔘 : FiniteCover X) :`
     `    finrank ℝ (DolbeaultH01 X) = 2 * finrank ℂ (𝔘.cechH1 0)`
 
   the `ℝ`-vs-`ℂ` dimension count of Dolbeault's iso (`H^{0,1}` is `Module ℝ` of real-dim `2g`;
@@ -117,6 +118,21 @@ cover. We provide it **sorry-free** from Mathlib (`SmoothPartitionOfUnity.exists
 available because a compact `T2` `ℂ`-manifold is a `σ`-compact finite-dimensional real manifold via
 `RealManifold`). This `ρ` is the actual analytic input `h_i := ∑_k ρ_k · f_ik` is built from. -/
 
+/-- **(Čech → Dolbeault backbone, sorry-free.)** The partition-of-unity *telescoping identity* — the
+algebraic heart of the Čech → Dolbeault coboundary construction. For any additive Čech `1`-cocycle
+`f` (`f_jk − f_ik + f_ij = 0`, the `cechDelta1 = 0` relation) and any weights `ρ` summing to `1`, the
+globalized functions `h_i := ∑_k ρ_k • f_ki` satisfy `h_j − h_i = f_ij` — i.e. the cocycle becomes a
+coboundary of the smooth (partition-of-unity-glued) `0`-cochain. Pure module algebra (it is what
+"`∂̄h_i` glue to a global form" rests on); proven here abstractly over any `ℂ`-module. -/
+theorem cechCoboundary_telescoping {ι : Type*} [Fintype ι] {M : Type*} [AddCommGroup M] [Module ℂ M]
+    (f : ι → ι → M) (hcoc : ∀ a b c, f b c - f a c + f a b = 0)
+    (ρ : ι → ℂ) (hρ : ∑ k, ρ k = 1) (i j : ι) :
+    (∑ k, ρ k • f k j) - (∑ k, ρ k • f k i) = f i j := by
+  rw [← Finset.sum_sub_distrib]
+  have hpt : ∀ k, ρ k • f k j - ρ k • f k i = ρ k • f i j := fun k => by
+    rw [← smul_sub]; congr 1; linear_combination (norm := module) -hcoc k i j
+  simp_rw [hpt, ← Finset.sum_smul, hρ, one_smul]
+
 /-- **(Čech → Dolbeault backbone, sorry-free.)** A smooth partition of unity subordinate to the
 finite cover `𝔘`, over the real-manifold structure `𝓘(ℝ, ℂ)`. The input for the globalization
 `h_i := ∑_k ρ_k · f_ik`. -/
@@ -130,8 +146,8 @@ theorem exists_smoothPartitionOfUnity_subordinate :
 
 /-- **Čech → Dolbeault** (honest named sub-kernel). The `ℝ`-linear inverse `H¹(X, 𝒪) → H^{0,1}(X)`:
 represent a class by a holomorphic Čech `1`-cocycle `{f_ij}`, choose a partition of unity `{ρ_k}`
-subordinate to the cover (`SmoothPartitionOfUnity.exists_isSubordinate_chartAt_source`, available
-since a compact manifold is `σ`-compact), set `h_i := ∑_k ρ_k · f_ik` (smooth), so that
+subordinate to the cover (`exists_smoothPartitionOfUnity_subordinate`, proven sorry-free above),
+set `h_i := ∑_k ρ_k · f_ik` (smooth), so that
 `f_ij = h_j − h_i` and the `∂̄h_i` agree on overlaps (`f_ij` holomorphic ⟹ `∂̄(h_j − h_i) = 0`),
 gluing to a global smooth `(0,1)`-form whose class is the image. Well-definedness (independence of
 the cocycle representative and of the partition of unity) is part of this sub-kernel. -/
@@ -168,5 +184,42 @@ round-trip identities). -/
 theorem cechH1_dolbeault_comparison_proof :
     Module.finrank ℝ (DolbeaultH01 X) = 2 * Module.finrank ℂ (𝔘.cechH1 0) := by
   rw [(comparison_linearEquiv 𝔘).finrank_eq, finrank_real_of_complex]
+
+/-! ## Honest status of the mechanization
+
+**Sorry-free (axiom-clean: `propext`/`Classical.choice`/`Quot.sound` only):**
+* the entire *bookkeeping spine* — `comparison_linearEquiv` (assembled from the two maps via
+  `LinearEquiv.ofLinear`) and the target `cechH1_dolbeault_comparison_proof` (the `2·` `ℝ`-vs-`ℂ`
+  count via `finrank_real_of_complex`); this is the part that would have been most error-prone
+  (the scalar-factor bookkeeping the `DolbeaultComparison` header flags);
+* `cechDelta0_mem_ker_cechDelta1` / `range_cechDelta0_le_ker_cechDelta1` — the Dolbeault → Čech
+  cochain is automatically a Čech cocycle (`δ²=0`), the algebraic backbone of that map;
+* `cechCoboundary_telescoping` — the partition-of-unity telescoping `h_j − h_i = f_ij`, the
+  algebraic heart of the Čech → Dolbeault coboundary construction;
+* `exists_smoothPartitionOfUnity_subordinate` — the smooth PoU subordinate to the cover (the actual
+  analytic input of the inverse map), from Mathlib + the `RealManifold` `σ`-compactness.
+
+**The five named honest sub-kernels (each a TRUE statement; the irreducible remainder):**
+1. `dbar_solvable_locally_manifold` — the *only* PDE appeal: local `∂̄`-solvability for the MANIFOLD
+   operator `dbar`. It is the DONE `DbarLocal.dbar_solvable_locally` (the Cauchy transform on
+   `ℂ → ℂ`, already axiom-clean) **modulo** the chart-transport bridge `dbar` (intrinsic) read in a
+   holomorphic chart `= DbarDisk.dbar` of the chart-pullback. That bridge has no Mathlib path and is
+   the genuine missing analysis here.
+2. `dolbeault_to_cech` — the forward map *as a well-defined linear map on cohomology* (independence
+   of the form representative and of the local primitive choices; builds on (1) + the cocycle
+   backbone).
+3. `cech_to_dolbeault` — the inverse map *as a well-defined linear map on cohomology* (the PoU
+   globalization; builds on `cechCoboundary_telescoping` + the PoU + the gluing of `∂̄h_i`).
+4–5. `cech_to_dolbeault_comp_dolbeault_to_cech` / `dolbeault_to_cech_comp_cech_to_dolbeault` —
+   `comparison_bijective`: the two maps are mutually inverse.
+
+**Assessment.** Dolbeault's theorem is the composite of (i) the local PDE (`DbarLocal`, DONE up to a
+chart bridge), (ii) the Čech/coboundary *algebra* (sorry-free here), (iii) a partition-of-unity
+*globalization* (its PoU input sorry-free here; the smooth-section gluing remains), and (iv) the
+*well-definedness + mutual-inverse* of the resulting maps. We have mechanized the full bookkeeping
+spine and the discrete/algebraic skeleton (ii) sorry-free, and the PoU existence; the irreducible
+analytic remainder is concentrated in the chart-transport of `∂̄` (1) and the construction of the two
+maps as honest cohomology homomorphisms (2,3) with their mutual inverseness (4,5) — the parts that
+genuinely require building the smooth-section ↔ holomorphic-germ dictionary that Mathlib lacks. -/
 
 end Jacobians.Dolbeault
