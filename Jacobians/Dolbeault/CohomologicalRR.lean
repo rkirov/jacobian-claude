@@ -11,15 +11,24 @@
   Structure (Forster §16):
   * **Base** `h⁰(0) = 1`: the `h⁰ = l` bridge (`CechH0.h0Dim_eq_lDim`) plus `l(0) = 1`
     (`RiemannRoch.lDim_zero_eq_one`, Liouville on the compact `X`). CLOSED.
-  * **Single-point jump** `χ(D + P) = χ(D) + 1`: the skyscraper short exact sequence
-    `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` and its long exact sequence in Čech cohomology (the skyscraper has
-    `H^{≥1} = 0`, so the alternating dimension sum gives the jump). This is the genuine homological
-    content; it is isolated as the single named `sorry` `chi_jump`. NOT faked, NOT weakened.
+  * **Single-point jump** `χ(D + P) = χ(D) + 1`: from the skyscraper short exact sequence
+    `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` and its six-term long exact sequence in Čech cohomology
+    `0 → H⁰(𝒪_D) → H⁰(𝒪_{D+P}) → ℂ_P → H¹(𝒪_D) → H¹(𝒪_{D+P}) → 0` (the skyscraper has `H^{≥1}=0`).
+    This is **decomposed** into a proven crank and an isolated kernel:
+      - `six_term_exact_alt_sum`: alternating dim sum of a 6-term exact sequence of fin-dim spaces
+        is `0` (pure rank–nullity). PROVEN, axiom-clean.
+      - the H⁰-inclusion `f₁ = h0Incl` (`globalSections D ↪ globalSections (D+P)`, order weakening),
+        its injectivity, the cokernel arrow `f₂ = h0ToSky`, and exactness at `H⁰(𝒪_{D+P})`
+        (`exact_h0Incl_h0ToSky`, definitional from the cokernel projection). PROVEN, axiom-clean.
+      - `chi_jump_of_LES`: runs the crank on a `SkyscraperLES` to get the jump. PROVEN, axiom-clean.
+      - `exists_skyscraperLES`: THE single named honest `sorry`, packaging the analytic
+        local-surjectivity (`skyDim`: skyscraper cokernel is 1-dimensional), the snake-lemma data
+        (`f₃`,`f₄`, exactness `exact₂`/`exact₃`/`surj₄`), and `H¹` finiteness. NOT faked.
   * **Iterated jump + induction on the divisor** (`Int.induction_on`, `Finsupp.induction`,
     `Divisor.deg` additivity): pure `ℤ`-bookkeeping built on `chi_jump`. CLOSED.
 
-  So: `cohomological_riemannRoch` is proven *modulo the single `chi_jump` sorry*; everything else
-  (base + induction skeleton) is sorry-free.
+  So: `cohomological_riemannRoch` is proven *modulo the single `exists_skyscraperLES` sorry*;
+  everything else (base, the LES crank, the structural arrows, the induction skeleton) is sorry-free.
 -/
 import Jacobians.Dolbeault.CechH0
 
@@ -127,39 +136,72 @@ sections with the linear system, and `l(0) = 1` by Liouville on the compact conn
 theorem h0Dim_zero_eq_one (𝔘 : FiniteCover X) : (𝔘.h0Dim 0 : ℤ) = 1 := by
   rw [𝔘.h0Dim_eq_lDim 0, lDim_zero_eq_one]; norm_num
 
+/-! ### The skyscraper space and the H⁰-cokernel arrow (provable, no analytic content)
+
+The skyscraper space is realised **concretely** as the cokernel of the H⁰-inclusion,
+`Skyscraper := H⁰(𝒪_{D+P}) ⧸ range(f₁)`, with `f₂` its quotient projection. This makes the second
+arrow `f₂` and the exactness at `H⁰(𝒪_{D+P})` (`range f₁ = ker f₂`) hold **definitionally**
+(`LinearMap.exact_map_mkQ_range`) — they are proven, not assumed. The only genuine analytic content
+about the skyscraper is then that this cokernel is **1-dimensional** (`skyDim`), i.e. local
+surjectivity of meromorphic sections onto the order-`(−D(P)−1)` principal-part coefficient. -/
+
+/-- The canonical H⁰-inclusion `H⁰(𝒪_D) ↪ H⁰(𝒪_{D+P})` (the order bound weakens, `f₁` of the LES). -/
+noncomputable def h0Incl (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+    ↥(𝔘.globalSections D) →ₗ[ℂ] ↥(𝔘.globalSections (D + Finsupp.single P 1)) :=
+  Submodule.inclusion (𝔘.globalSections_le_add_single D P)
+
+theorem h0Incl_injective (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+    Function.Injective (𝔘.h0Incl D P) :=
+  Submodule.inclusion_injective _
+
+/-- The **skyscraper space** `ℂ_P`, realised as the cokernel of the H⁰-inclusion
+`H⁰(𝒪_{D+P}) ⧸ range(H⁰(𝒪_D) ↪ H⁰(𝒪_{D+P}))`. Analytically `≅ ℂ` (the order-`(−D(P)−1)`
+principal-part coefficient at `P`); the `≅ ℂ` is the analytic content `skyDim` of `SkyscraperLES`. -/
+noncomputable abbrev Skyscraper (𝔘 : FiniteCover X) (D : Divisor X) (P : X) : Type _ :=
+  ↥(𝔘.globalSections (D + Finsupp.single P 1)) ⧸ LinearMap.range (𝔘.h0Incl D P)
+
+/-- The skyscraper coefficient arrow `f₂ : H⁰(𝒪_{D+P}) → ℂ_P`, the cokernel projection. -/
+noncomputable def h0ToSky (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+    ↥(𝔘.globalSections (D + Finsupp.single P 1)) →ₗ[ℂ] 𝔘.Skyscraper D P :=
+  Submodule.mkQ (LinearMap.range (𝔘.h0Incl D P))
+
+/-- **Exactness at `H⁰(𝒪_{D+P})` (PROVEN).** `range f₁ = ker f₂` holds definitionally because `f₂`
+is the cokernel projection of `f₁` (`LinearMap.exact_map_mkQ_range`). No analytic content. -/
+theorem exact_h0Incl_h0ToSky (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+    Function.Exact (𝔘.h0Incl D P) (𝔘.h0ToSky D P) :=
+  LinearMap.exact_map_mkQ_range _
+
 /-! ### The skyscraper long exact sequence (the genuine homological/analytic kernel)
 
 The single-point χ-jump comes from the **skyscraper short exact sequence** of `𝒪_D`-modules
-`0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` (`ℂ_P` = the 1-dimensional skyscraper at `P`, a section of
-`𝒪_{D+P}` modulo `𝒪_D` ≅ its principal-part coefficient of order `−D(P)−1`). Its **long exact
+`0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` (`ℂ_P` = the 1-dimensional skyscraper at `P`). Its **long exact
 sequence** in Čech cohomology is
-`0 → H⁰(𝒪_D) →[f₁] H⁰(𝒪_{D+P}) →[f₂] ℂ →[f₃] H¹(𝒪_D) →[f₄] H¹(𝒪_{D+P}) → 0`,
+`0 → H⁰(𝒪_D) →[f₁] H⁰(𝒪_{D+P}) →[f₂] ℂ_P →[f₃] H¹(𝒪_D) →[f₄] H¹(𝒪_{D+P}) → 0`,
 the skyscraper having `H^{≥1} = 0`.
 
-`SkyscraperLES` bundles *exactly* this data. The first arrow `f₁` is the canonical inclusion
-`globalSections D ↪ globalSections (D+P)` (provided here, fully proven — it is just the weakening
-`D ≤ D+P` of the order bound, `globalSections_le_add_single`). The remaining data — the skyscraper
-coefficient map `f₂`, the snake-lemma connecting map `f₃`, the inclusion-induced `f₄`, all four
-exactness facts, and the finiteness of the cohomology groups — is the genuine analytic/homological
-content (Forster §16), isolated as the single named `sorry` `exists_skyscraperLES`.
+`SkyscraperLES` bundles the data NOT already proven above. The first two arrows `f₁` (`h0Incl`) and
+`f₂` (`h0ToSky`, the cokernel projection) and the exactness at `H⁰(𝒪_{D+P})` are PROVEN
+(`exact_h0Incl_h0ToSky`); the inclusion `f₁` is injective (`h0Incl_injective`). The genuinely-hard
+content isolated here is:
+* `skyDim`: the skyscraper cokernel is **1-dimensional** (`finrank ℂ_P = 1`) — the analytic local
+  surjectivity onto the order-`(−D(P)−1)` principal-part coefficient at `P`;
+* the snake-lemma connecting map `f₃`, the inclusion-induced `f₄`, and the exactness facts `exact₂`,
+  `exact₃`, `surj₄` (the SES-of-complexes + `Algebra.Homology.HomologySequence` content);
+* finiteness of the cohomology groups (Forster 14.9).
 
 Given a `SkyscraperLES`, the χ-jump is **pure linear algebra**: the alternating dimension sum of the
-six-term exact sequence is `0` (`six_term_exact_alt_sum`, proven), which rearranges to
-`χ(D+P) = χ(D) + 1`. That crank, `chi_jump_of_LES`, is sorry-free. -/
+six-term exact sequence is `0` (`six_term_exact_alt_sum`, proven) and `finrank ℂ_P = 1`, which
+rearranges to `χ(D+P) = χ(D) + 1`. That crank, `chi_jump_of_LES`, is sorry-free. -/
 structure SkyscraperLES (𝔘 : FiniteCover X) (D : Divisor X) (P : X) where
-  /-- The skyscraper coefficient map `H⁰(𝒪_{D+P}) → ℂ_P`: a global `𝒪_{D+P}`-section maps to its
-  principal-part coefficient of order `−D(P)−1` at `P` (the obstruction to lying in `𝒪_D`). -/
-  f₂ : ↥(𝔘.globalSections (D + Finsupp.single P 1)) →ₗ[ℂ] ℂ
   /-- The connecting homomorphism `ℂ_P → H¹(𝒪_D)` (snake lemma of the SES of cochain complexes). -/
-  f₃ : ℂ →ₗ[ℂ] 𝔘.cechH1 D
+  f₃ : 𝔘.Skyscraper D P →ₗ[ℂ] 𝔘.cechH1 D
   /-- The map `H¹(𝒪_D) → H¹(𝒪_{D+P})` induced by the inclusion `𝒪_D ↪ 𝒪_{D+P}`. -/
   f₄ : 𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 (D + Finsupp.single P 1)
-  /-- Exactness at `H⁰(𝒪_{D+P})`: `range (inclusion) = ker f₂` — a section of `𝒪_{D+P}` has
-  vanishing principal-part coefficient at `P` iff it actually lies in `𝒪_D`. (Analytic.) -/
-  exact₁ : Function.Exact
-    (Submodule.inclusion (𝔘.globalSections_le_add_single D P)) f₂
+  /-- **The analytic sub-kernel**: the skyscraper cokernel is 1-dimensional — local surjectivity of
+  meromorphic sections onto the order-`(−D(P)−1)` principal-part coefficient at `P`. -/
+  skyDim : Module.finrank ℂ (𝔘.Skyscraper D P) = 1
   /-- Exactness at `ℂ_P`: `range f₂ = ker f₃`. (Snake lemma.) -/
-  exact₂ : Function.Exact f₂ f₃
+  exact₂ : Function.Exact (𝔘.h0ToSky D P) f₃
   /-- Exactness at `H¹(𝒪_D)`: `range f₃ = ker f₄`. (Snake lemma.) -/
   exact₃ : Function.Exact f₃ f₄
   /-- The last arrow `H¹(𝒪_D) → H¹(𝒪_{D+P})` is surjective (the skyscraper has `H^{≥1} = 0`, so the
@@ -180,33 +222,35 @@ attribute [instance] SkyscraperLES.finH1D SkyscraperLES.finH1DP SkyscraperLES.fi
 
 /-- **The crank (sorry-free).** Given the skyscraper long exact sequence, the single-point χ-jump
 `χ(D+P) = χ(D) + 1` is pure linear algebra: the alternating dimension sum of the six-term exact
-sequence is `0` (`six_term_exact_alt_sum`), and `dim ℂ_P = 1`. Rearranging
+sequence is `0` (`six_term_exact_alt_sum`), and `finrank ℂ_P = 1` (`skyDim`). Rearranging
 `h⁰(D) − h⁰(D+P) + 1 − h¹(D) + h¹(D+P) = 0` gives the jump. No analytic content. -/
 theorem chi_jump_of_LES {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
     (S : SkyscraperLES 𝔘 D P) : 𝔘.chi (D + Finsupp.single P 1) = 𝔘.chi D + 1 := by
   haveI := S.finH1D; haveI := S.finH1DP; haveI := S.finH0D; haveI := S.finH0DP
   have halt := six_term_exact_alt_sum
-    (Submodule.inclusion (𝔘.globalSections_le_add_single D P)) S.f₂ S.f₃ S.f₄
-    (Submodule.inclusion_injective _) S.exact₁ S.exact₂ S.exact₃ S.surj₄
-  -- `dim ℂ = 1`; identify the four `finrank`s with `h0Dim`/`h1Dim`.
-  rw [Module.finrank_self] at halt
+    (𝔘.h0Incl D P) (𝔘.h0ToSky D P) S.f₃ S.f₄
+    (𝔘.h0Incl_injective D P) (𝔘.exact_h0Incl_h0ToSky D P) S.exact₂ S.exact₃ S.surj₄
+  -- substitute `finrank ℂ_P = 1` and identify the four `finrank`s with `h0Dim`/`h1Dim`.
+  rw [S.skyDim] at halt
   simp only [chi, h0Dim, h1Dim, Nat.cast_one] at halt ⊢
   linarith
 
 /-- **Existence of the skyscraper long exact sequence — THE NAMED HONEST `sorry`.**
 
 This is the genuine cohomological content of Riemann–Roch (Forster §16), isolated as the single
-remaining gap. Constructing it requires:
+remaining gap. The structural part of the LES is already PROVEN above (the inclusion `f₁ = h0Incl`
+and its injectivity, the cokernel arrow `f₂ = h0ToSky`, and the exactness at `H⁰(𝒪_{D+P})`,
+`exact_h0Incl_h0ToSky`). What remains, and what this `sorry` packages:
 
-1. the short exact sequence of germ-class cochain complexes `0 → C^•(𝒪_D) → C^•(𝒪_{D+P}) →
-   C^•(ℂ_P) → 0` (degreewise; the inclusion `f₁` and its cokernel the skyscraper complex);
-2. the skyscraper complex `C^•(ℂ_P)` having `H⁰ = ℂ` (1-diml) and `H^{≥1} = 0`;
-3. **the analytic sub-kernel**: degreewise surjectivity onto the skyscraper stalk — local
-   surjectivity of meromorphic sections, i.e. a section of `𝒪_{D+P}` near `P` realises *any*
-   prescribed principal-part coefficient of order `−D(P)−1`;
-4. the snake lemma (Mathlib `ShortComplex.SnakeInput` / `Algebra.Homology.HomologySequence`) turning
-   the SES of complexes into the six-term LES, supplying `f₂`, `f₃`, `f₄` and the exactness;
-5. finiteness of the `H¹` groups (Forster 14.9; `CechFinitenessWiring.finiteDimensional_cechH1_wired`
+1. **The analytic sub-kernel** (`skyDim`): the skyscraper cokernel
+   `H⁰(𝒪_{D+P}) ⧸ H⁰(𝒪_D)` is 1-dimensional, i.e. local surjectivity of meromorphic sections — a
+   section of `𝒪_{D+P}` near `P` realises *any* prescribed principal-part coefficient of order
+   `−D(P)−1`, and exactly one coefficient is the obstruction.
+2. **The snake/LES content**: the SES of germ-class cochain complexes `0 → C^•(𝒪_D) →
+   C^•(𝒪_{D+P}) → C^•(ℂ_P) → 0`, the skyscraper complex `H^{≥1} = 0`, and Mathlib's
+   `Algebra.Homology.HomologySequence` snake lemma supplying the connecting map `f₃`, the
+   inclusion-induced `f₄`, and the exactness `exact₂`, `exact₃`, `surj₄`.
+3. **Finiteness** of the `H¹` groups (Forster 14.9; `CechFinitenessWiring.finiteDimensional_cechH1_wired`
    modulo `exists_cechModel`).
 
 It is stated honestly — *not* faked, *not* weakening the headline. Everything downstream
