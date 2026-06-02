@@ -49,21 +49,35 @@ def BddHolCarrier (U : Set ℂ) : Submodule ℂ (ℂ → ℂ) where
     · calc ‖(c • f) z‖ = ‖c‖ * ‖f z‖ := by rw [Pi.smul_apply, norm_smul]
         _ ≤ ‖c‖ * Cf := by gcongr; exact hfb z hz
 
-/-- The Banach space of bounded holomorphic functions on the open set `U ⊆ ℂ`. -/
-@[reducible] def BddHol (U : Set ℂ) : Type := ↥(BddHolCarrier U)
+/-- The Banach space of bounded holomorphic functions on the open set `U ⊆ ℂ`.
+
+Implemented as the subtype `↥(BddHolCarrier U)`, but kept *opaque* (non-`reducible`) so that the
+ambient subtype `UniformSpace`/`TopologicalSpace` instances do not leak and clash with the
+sup-`U`-norm `NormedAddCommGroup` we install below. -/
+def BddHol (U : Set ℂ) : Type := ↥(BddHolCarrier U)
 
 namespace BddHol
 
+noncomputable instance : AddCommGroup (BddHol U) :=
+  inferInstanceAs (AddCommGroup ↥(BddHolCarrier U))
+noncomputable instance : Module ℂ (BddHol U) := inferInstanceAs (Module ℂ ↥(BddHolCarrier U))
+
+/-- Reinterpret `f : BddHol U` as the underlying subtype element. Definitional identity. -/
+def toCarrier (f : BddHol U) : ↥(BddHolCarrier U) := f
+
+@[simp] theorem toCarrier_add (f g : BddHol U) : (f + g).toCarrier = f.toCarrier + g.toCarrier := rfl
+@[simp] theorem toCarrier_smul (c : ℂ) (f : BddHol U) : (c • f).toCarrier = c • f.toCarrier := rfl
+
 /-- The underlying `ℂ → ℂ` function of an element of `BddHol U`. -/
-def toFun (f : BddHol U) : ℂ → ℂ := (f : ℂ → ℂ)
+def toFun (f : BddHol U) : ℂ → ℂ := (f.toCarrier : ℂ → ℂ)
 
-@[simp] theorem toFun_coe (f : BddHol U) : f.toFun = (f : ℂ → ℂ) := rfl
+@[simp] theorem toFun_coe (f : BddHol U) : f.toFun = (f.toCarrier : ℂ → ℂ) := rfl
 
-theorem analyticOn (f : BddHol U) : AnalyticOn ℂ f.toFun U := f.2.1
+theorem analyticOn (f : BddHol U) : AnalyticOn ℂ f.toFun U := f.toCarrier.2.1
 
-theorem zero_off (f : BddHol U) : ∀ z ∉ U, f.toFun z = 0 := f.2.2.1
+theorem zero_off (f : BddHol U) : ∀ z ∉ U, f.toFun z = 0 := f.toCarrier.2.2.1
 
-theorem bddOn (f : BddHol U) : ∃ C, ∀ z ∈ U, ‖f.toFun z‖ ≤ C := f.2.2.2
+theorem bddOn (f : BddHol U) : ∃ C, ∀ z ∈ U, ‖f.toFun z‖ ≤ C := f.toCarrier.2.2.2
 
 @[simp] theorem toFun_add (f g : BddHol U) : (f + g).toFun = f.toFun + g.toFun := rfl
 @[simp] theorem toFun_smul (c : ℂ) (f : BddHol U) : (c • f).toFun = c • f.toFun := rfl
@@ -95,8 +109,14 @@ noncomputable def toBcf (f : BddHol U) : ↥U →ᵇ ℂ :=
 /-- The bcf embedding as a `ℂ`-linear map. -/
 noncomputable def toBcfₗ : BddHol U →ₗ[ℂ] (↥U →ᵇ ℂ) where
   toFun := toBcf
-  map_add' f g := by ext z; simp [toBcf_apply]
-  map_smul' c f := by ext z; simp [toBcf_apply]
+  map_add' f g := by
+    ext z
+    show (f + g).toFun z.1 = f.toFun z.1 + g.toFun z.1
+    rw [toFun_add]; rfl
+  map_smul' c f := by
+    ext z
+    show (c • f).toFun z.1 = c • f.toFun z.1
+    rw [toFun_smul]; rfl
 
 @[simp] theorem toBcfₗ_apply (f : BddHol U) : toBcfₗ f = f.toBcf := rfl
 
@@ -122,6 +142,23 @@ theorem norm_def (f : BddHol U) : ‖f‖ = ‖f.toBcf‖ := rfl
 theorem norm_eq_iSup (f : BddHol U) : ‖f‖ = ⨆ z : ↥U, ‖f.toFun z.1‖ := by
   rw [norm_def, BoundedContinuousFunction.norm_eq_iSup_norm]
   rfl
+
+/-! ### Completeness
+
+`toBcf` is an isometry into the Banach space `↥U →ᵇ ℂ`; `BddHol U` is therefore complete once we
+know its image is closed. Closedness uses that a uniform limit of functions analytic on `U` is
+analytic on `U` (`analyticOn_of_tendstoLocallyUniformlyOn`). -/
+
+theorem toBcf_sub (f g : BddHol U) : (f - g).toBcf = f.toBcf - g.toBcf :=
+  map_sub toBcfₗ f g
+
+theorem isometry_toBcf : Isometry (toBcf : BddHol U → (↥U →ᵇ ℂ)) := by
+  rw [isometry_iff_dist_eq]
+  intro f g
+  rw [dist_eq_norm, dist_eq_norm, norm_def, ← toBcf_sub]
+
+theorem isUniformInducing_toBcf : IsUniformInducing (toBcf : BddHol U → (↥U →ᵇ ℂ)) :=
+  isometry_toBcf.isUniformInducing
 
 end BddHol
 
