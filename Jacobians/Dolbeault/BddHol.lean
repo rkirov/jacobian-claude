@@ -160,6 +160,38 @@ theorem isometry_toBcf : Isometry (toBcf : BddHol U → (↥U →ᵇ ℂ)) := by
 theorem isUniformInducing_toBcf : IsUniformInducing (toBcf : BddHol U → (↥U →ᵇ ℂ)) :=
   isometry_toBcf.isUniformInducing
 
+open Classical in
+/-- Extend a bounded continuous function `φ : ↥U →ᵇ ℂ` to all of `ℂ` by zero off `U`. This is the
+canonical-normal-form preimage candidate for `φ` under `toBcf`. -/
+noncomputable def extend (φ : ↥U →ᵇ ℂ) : ℂ → ℂ := fun z => if hz : z ∈ U then φ ⟨z, hz⟩ else 0
+
+theorem extend_mem (φ : ↥U →ᵇ ℂ) {z : ℂ} (hz : z ∈ U) : extend φ z = φ ⟨z, hz⟩ := by
+  rw [extend]; exact dif_pos hz
+
+theorem extend_notMem (φ : ↥U →ᵇ ℂ) {z : ℂ} (hz : z ∉ U) : extend φ z = 0 := by
+  rw [extend]; exact dif_neg hz
+
+theorem extend_comp_coe (φ : ↥U →ᵇ ℂ) : extend φ ∘ (Subtype.val : ↥U → ℂ) = ⇑φ := by
+  funext z; exact extend_mem φ z.2
+
+/-- The limit (in `↥U →ᵇ ℂ`) of `toBcf`-images of `BddHol U` elements is analytic on `U`, after
+extending by zero. The uniform-on-`↥U` convergence transfers to uniform-on-`U` (functions on `ℂ`),
+hence locally uniform, so the uniform-limit lemma applies. -/
+theorem analyticOn_extend_of_tendsto (hU : IsOpen U) {ι : Type*} {p : Filter ι} [p.NeBot]
+    (g : ι → BddHol U) (φ : ↥U →ᵇ ℂ) (hφ : Filter.Tendsto (fun n => (g n).toBcf) p (nhds φ)) :
+    AnalyticOn ℂ (extend φ) U := by
+  -- bcf convergence ⇒ uniform convergence of the coe functions on `↥U`
+  have hunif : TendstoUniformly (fun n => ⇑((g n).toBcf)) (⇑φ) p :=
+    BoundedContinuousFunction.tendsto_iff_tendstoUniformly.mp hφ
+  -- transfer to `TendstoUniformlyOn` of the `ℂ → ℂ` functions on `U`
+  have huon : TendstoUniformlyOn (fun n => (g n).toFun) (extend φ) p U := by
+    rw [tendstoUniformlyOn_iff_tendstoUniformly_comp_coe]
+    rw [extend_comp_coe]
+    exact hunif
+  -- locally uniform ⇒ analytic limit (each `(g n).toFun` is analytic on `U`)
+  exact analyticOn_of_tendstoLocallyUniformlyOn hU huon.tendstoLocallyUniformlyOn
+    (Filter.Eventually.of_forall fun n => (g n).analyticOn)
+
 end BddHol
 
 end Jacobians.Dolbeault
