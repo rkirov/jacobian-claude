@@ -1057,3 +1057,28 @@ vector-bundle instance ambiguously (picks `Hom(Trivial,Trivial)` over `Hom(Tange
 
 **Stopped at the scaffold deliberately** rather than grind the bookkeeping — the math is settled and
 documented in-proof; flagged here + in memory for a focused follow-up if the user wants it sorry-free.
+
+---
+
+## 2026-06-02 (cont.) — "Build the J infra (route B)" → DONE, ∂̄ is sorry-free
+
+After I corrected the scope (J-smoothness = missing Mathlib infra, not a contained proof), the user
+chose **Build the J infra (route B)**. Built it — `dbar` (∂̄) is now **sorry-free and axiom-clean**
+(commit `38e63db`), full repo builds.
+
+The infra turned out SHORTER than my ~100-150 line estimate (~35 lines), because two facts I'd
+flagged as uncertain both landed cleanly:
+- `extChartAt 𝓘(ℝ,ℂ) x = extChartAt 𝓘(ℂ) x` is **`rfl`** (both are `modelWithCornersSelf`, defeq).
+  This lets the chart-transition holomorphy transfer straight from `IsManifold 𝓘(ℂ) ω X`.
+- `range 𝓘(ℝ,ℂ) = univ` (Boundaryless), so `fderivWithin` collapses to `fderiv`.
+
+Mechanism: tangent `coordChange` of a complex manifold is ℂ-linear (`fderiv ℝ` of a holomorphic
+transition = `restrictScalars` of `fderiv ℂ`, via `DifferentiableAt.fderiv_restrictScalars` /
+`UniqueDiffWithinAt.eq`), hence commutes with `mulI`. Since the tangent `symmL` in the goal IS a
+`tangentCoordChange`, `proj01` slides through the composition and the goal collapses to
+`proj01 ∘ (differential's reduced smoothness)`.
+
+**Lesson (mirror of the earlier scope-correction discipline):** my "~100-150 line, high-friction"
+estimate was pessimistic. The deep dig to *find* the route was the expensive part; once the two defeq
+facts were confirmed by probe, the build was small. Worth probing the load-bearing defeqs FIRST next
+time — they collapse or explode the whole estimate.
