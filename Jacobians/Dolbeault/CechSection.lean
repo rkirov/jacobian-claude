@@ -53,11 +53,10 @@ private theorem meromorphicAt_of_ordU_eq_top {U : Opens X} {f : U → ℂ} {x : 
   exact absurd h (by simp)
 
 /-- **Germ-zero "junk".** Functions on `↥U` that vanish as a germ at every point (`ordU ≡ ⊤`) — the
-removable-singularity junk (point-indicators etc.). `ordU ≡ ⊤ ⟹` meromorphic, so this is the
-codiscrete-zero class of `Analysis.Meromorphic.NormalForm` (`=ᶠ[codiscreteWithin] 0`), mirroring
-RiemannRoch's `germZeroSubmodule`. Quotienting it out is what makes the Čech `h⁰/h¹` the genuine,
-finite dimensions (the naive `finrank` over honest functions is `0`: point-indicators are infinitely
-many and independent). -/
+removable-singularity junk (point-indicators etc.); `= ker toGerm` characterised by the order.
+`ordU ≡ ⊤ ⟹` meromorphic, so this is the codiscrete-zero class of `Analysis.Meromorphic.NormalForm`
+(`=ᶠ[codiscreteWithin] 0`). KEPT (unused now) because the `h0Dim_eq_lDim` bridge needs exactly this
+order-characterisation to connect the `Filter.Germ` kernel to RR's `orderW ≡ ⊤` `germZeroSubmodule`. -/
 def germZeroFn (U : Opens X) : Submodule ℂ (U → ℂ) where
   carrier := {f | ∀ x, ordU f x = ⊤}
   add_mem' {f g} hf hg x := by
