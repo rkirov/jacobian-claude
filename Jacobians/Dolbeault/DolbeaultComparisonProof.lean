@@ -1360,6 +1360,22 @@ theorem exists_smoothPartitionOfUnity_subordinate :
   exact SmoothPartitionOfUnity.exists_isSubordinate 𝓘(ℝ, ℂ) isClosed_univ
     (fun i => (𝔘.U i : Set X)) (fun i => (𝔘.U i).isOpen) hcov
 
+/-- **(Inverse, phase 2.)** A holomorphic function representative of an `OmegaDGerm 0`-class: since
+`OmegaDGerm 0 U = map toGerm (OmegaD 0 U)` and `OmegaD 0 = ` holomorphic functions, the class has a
+holomorphic representative (chosen). The unique-up-to-nothing holomorphic lift the PoU globalization
+multiplies by `ρ_k`. -/
+noncomputable def holoRep {U : TopologicalSpace.Opens X} {g : MGerm U}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) U) : U → ℂ :=
+  (Submodule.mem_map.mp hg).choose
+
+theorem holoRep_mem {U : TopologicalSpace.Opens X} {g : MGerm U}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) U) : holoRep hg ∈ OmegaD (0 : Divisor X) U :=
+  (Submodule.mem_map.mp hg).choose_spec.1
+
+theorem toGerm_holoRep {U : TopologicalSpace.Opens X} {g : MGerm U}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) U) : toGerm U (holoRep hg) = g :=
+  (Submodule.mem_map.mp hg).choose_spec.2
+
 /-- **(Analytic sub-kernel — the Čech → Dolbeault glued-form operator.)** The `ℝ`-linear map sending
 a holomorphic Čech `1`-cocycle `f = {f_ij}` to the global `(0,1)`-form `ω` with `ω = ∂̄η_i` on `U_i`,
 `η_i := ∑_k ρ_k·f_ik` (partition-of-unity globalization). The genuine analytic content of the inverse:
