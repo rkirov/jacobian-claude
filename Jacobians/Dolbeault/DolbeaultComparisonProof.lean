@@ -404,6 +404,30 @@ theorem differentiableAt_transition_of_mem (a b : X) {w : ℂ}
     funext z; simp [mfld_simps]
   rwa [he] at hda
 
+/-- **The frame vector as the (forward) inverse-transition derivative** (direct form). For `x` in the
+`x₀`-chart, `Sₓ 1 = symmL ℝ (trivAt x₀) x 1` equals `deriv σ_x (e₀ x)` with `σ_x = eₓ ∘ e₀.symm` the
+*inverse* chart transition. (Same `symmL = tangentCoordChange = fderivWithin σ_x` chain as
+`frameVector_eq_inv_deriv_transition`, stopping at `fderiv σ_x = deriv σ_x • 1` before inverting; the
+reciprocal of the `deriv τ_x` form.) Used to read `∂̄h` in another chart without the inverse. -/
+theorem frameVector_eq_deriv_transition_symm (x₀ x : X)
+    (hxsrc : x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
+    (Bundle.Trivialization.symmL ℝ (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x) (1 : ℂ)
+      = deriv ((extChartAt 𝓘(ℝ, ℂ) x) ∘ (extChartAt 𝓘(ℝ, ℂ) x₀).symm) ((extChartAt 𝓘(ℝ, ℂ) x₀) x) := by
+  set eₓ := extChartAt 𝓘(ℝ, ℂ) x with hex
+  set e₀ := extChartAt 𝓘(ℝ, ℂ) x₀ with he₀
+  set σ := eₓ ∘ e₀.symm with hσ
+  have hxchart : x ∈ (chartAt ℂ x₀).source := by rwa [extChartAt_source] at hxsrc
+  have h1 : Bundle.Trivialization.symmL ℝ (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x
+      = tangentCoordChange 𝓘(ℝ, ℂ) x₀ x x := TangentBundle.symmL_trivializationAt_eq_core hxchart
+  have hσdiff : DifferentiableAt ℂ σ (e₀ x) := differentiableAt_chartTransition_symm x₀ x hxsrc
+  have hfd : fderiv ℝ σ (e₀ x) = (deriv σ (e₀ x)) • (1 : ℂ →L[ℝ] ℂ) :=
+    hσdiff.hasDerivAt.complexToReal_fderiv.fderiv
+  have h2 : tangentCoordChange 𝓘(ℝ, ℂ) x₀ x x = fderiv ℝ σ (e₀ x) := by
+    rw [tangentCoordChange_def, ModelWithCorners.Boundaryless.range_eq_univ, fderivWithin_univ]
+  rw [h1, h2, hfd]
+  change (deriv σ (e₀ x)) • ((1 : ℂ →L[ℝ] ℂ) 1) = _
+  simp
+
 /-! #### The local primitive at the value-`1` level
 
 `exists_localPrimitive_apply_one` produces, near every `x₀`, a smooth `u` whose intrinsic `∂̄`
@@ -986,6 +1010,80 @@ theorem differentiableAt_planarDiff (𝔇 : ChartDiskCover X) {g : SmoothCOneFor
       (fun z => 𝔇.planarPrimitive j g (ej (ei.symm z)) - 𝔇.planarPrimitive i g z) z₀ :=
     (hppj.comp z₀ (hτdiff.restrictScalars ℝ)).sub hppi
   exact differentiableAt_complex_of_dbar_eq_zero hHr (𝔇.dbar_planarDiff_eq_zero hg i j hxi hxj)
+
+/-- **Second cancellation (the `∂̄`-image is a coboundary).** For a global potential `h`, the chart-`i`
+read of `u_i − h` (with `u_i = planarPrimitive i (∂̄h)`) has vanishing planar `∂̄` at `e_i x`: both are
+`∂̄`-primitives of `∂̄h`. Mechanism mirrors Lemma A — `∂̄u_i = cutoffPullback i (∂̄h)`, while
+`∂̄(h∘e_i.symm) = conj(deriv σ)·(∂̄h x 1)` via the Wirtinger chain rule + the own-chart bridge
+`dbar_apply_one_eq_dbarDisk`; the *direct* frame form `frameVector_eq_deriv_transition_symm` makes the
+two equal (no inverse-derivative needed). -/
+theorem dbar_planarDiffH_eq_zero (𝔇 : ChartDiskCover X) (h : SmoothCFunctions X) (i : 𝔇.ι) {x : X}
+    (hxi : x ∈ (𝔇.U i : Set X)) :
+    DbarDisk.dbar (fun z => 𝔇.planarPrimitive i (dbarL h) z
+        - h ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).symm z))
+      ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)) x) = 0 := by
+  set ei := extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) with hei
+  set ex := extChartAt 𝓘(ℝ, ℂ) x with hexx
+  set z₀ := ei x with hz0
+  set σ := ex ∘ ei.symm with hσ
+  have hxsi : x ∈ ei.source := 𝔇.subset_chart_source i hxi
+  have hz0tgt : z₀ ∈ ei.target := by rw [hz0]; exact ei.map_source hxsi
+  have hsymm_i : ei.symm z₀ = x := ei.left_inv hxsi
+  have hσdiff : DifferentiableAt ℂ σ z₀ := by
+    rw [hσ, hz0, hei, hexx]; exact differentiableAt_chartTransition_symm (𝔇.center i) x hxsi
+  -- `B = h ∘ e_i.symm` is smooth at `z₀`.
+  have hBdiff : DifferentiableAt ℝ (fun z => h (ei.symm z)) z₀ := by
+    have hsymm : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) ei.symm ei.target z₀ :=
+      (contMDiffOn_extChartAt_symm (𝔇.center i)) _ hz0tgt
+    have hcomp : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun z => h (ei.symm z)) ei.target z₀ :=
+      (h.contMDiff (ei.symm z₀)).contMDiffWithinAt.comp z₀ hsymm (fun _ _ => Set.mem_univ _)
+    exact (contMDiffAt_iff_contDiffAt.mp
+      (hcomp.contMDiffAt ((isOpen_extChartAt_target (𝔇.center i)).mem_nhds hz0tgt))).differentiableAt
+      (by norm_num)
+  have hsub : DbarDisk.dbar (fun z => 𝔇.planarPrimitive i (dbarL h) z - h (ei.symm z)) z₀
+      = DbarDisk.dbar (𝔇.planarPrimitive i (dbarL h)) z₀
+        - DbarDisk.dbar (fun z => h (ei.symm z)) z₀ := by
+    show DbarDisk.dbar (𝔇.planarPrimitive i (dbarL h) - fun z => h (ei.symm z)) z₀ = _
+    unfold DbarDisk.dbar
+    rw [fderiv_sub ((𝔇.contDiff_planarPrimitive i (dbarL h)).differentiable (by norm_num) z₀) hBdiff]
+    simp only [ContinuousLinearMap.sub_apply]; ring
+  -- `∂̄(h∘e_i.symm) = conj(deriv σ)·∂̄h(x)(1)` via chart change + own-chart bridge.
+  have hσpt : σ z₀ = ex x := by rw [hσ, Function.comp_apply, hsymm_i]
+  have hBxdiff : DifferentiableAt ℝ (fun z => h (ex.symm z)) (σ z₀) := by
+    rw [hσpt]
+    have hxtgt : ex x ∈ ex.target := by rw [hexx]; exact mem_extChartAt_target x
+    have hsymm : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) ex.symm ex.target (ex x) :=
+      (contMDiffOn_extChartAt_symm x) _ hxtgt
+    have hcomp : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun z => h (ex.symm z)) ex.target (ex x) :=
+      (h.contMDiff (ex.symm (ex x))).contMDiffWithinAt.comp (ex x) hsymm (fun _ _ => Set.mem_univ _)
+    exact (contMDiffAt_iff_contDiffAt.mp
+      (hcomp.contMDiffAt ((isOpen_extChartAt_target x).mem_nhds hxtgt))).differentiableAt (by norm_num)
+  have hBval : DbarDisk.dbar (fun z => h (ei.symm z)) z₀
+      = (starRingEnd ℂ) (deriv σ z₀) * proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑h) x) 1 := by
+    have hev : (fun z => h (ei.symm z)) =ᶠ[nhds z₀] ((fun z => h (ex.symm z)) ∘ σ) := by
+      have hcont : ContinuousAt ei.symm z₀ :=
+        (continuousOn_extChartAt_symm (𝔇.center i)).continuousAt
+          ((isOpen_extChartAt_target (𝔇.center i)).mem_nhds hz0tgt)
+      have hmem : ∀ᶠ z in nhds z₀, ei.symm z ∈ ex.source := by
+        refine hcont.preimage_mem_nhds ?_
+        rw [hsymm_i, hexx]; exact (isOpen_extChartAt_source x).mem_nhds (mem_extChartAt_source x)
+      filter_upwards [hmem] with z hz
+      show h (ei.symm z) = h (ex.symm (σ z))
+      rw [hσ, Function.comp_apply, ex.left_inv hz]
+    rw [dbarDisk_congr hev,
+      dbarDisk_comp_holo (fun z => h (ex.symm z)) σ z₀ hBxdiff hσdiff, hσpt,
+      ← dbar_apply_one_eq_dbarDisk h x]
+  rw [hsub, 𝔇.dbar_planarPrimitive i (dbarL h) z₀, hBval,
+    show 𝔇.cutoffPullback i (dbarL h) z₀ = ((𝔇.diskBump i) z₀ : ℝ) •
+      ((dbarL h) (ei.symm z₀)) ((Bundle.Trivialization.symmL ℝ
+        (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) (𝔇.center i)) (ei.symm z₀)) (1 : ℂ)) from rfl]
+  have hχi : (𝔇.diskBump i) z₀ = 1 := by
+    have h' := hxi; rw [𝔇.isDisk i] at h'
+    exact (𝔇.diskBump i).one_of_mem_closedBall (by rw [hz0]; exact Metric.ball_subset_closedBall h'.1)
+  have hdbarL : (dbarL h) x (1 : ℂ) = proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑h) x) (1 : ℂ) := rfl
+  rw [hχi, hsymm_i, one_smul, frameVector_eq_deriv_transition_symm (𝔇.center i) x hxsi,
+    oneForm_apply_conjLinear (dbarL_mem_zeroOne h) x (deriv σ z₀), hdbarL]
+  ring
 
 /-- The **linear 0-cochain of disk primitives**: `g ↦ (i ↦ [u_i])`, the germ-classes of the local
 `∂̄`-primitives. `ℝ`-linear in `g` (via `planarPrimitive` linearity + `toGerm`). Its `cechDelta0` is
