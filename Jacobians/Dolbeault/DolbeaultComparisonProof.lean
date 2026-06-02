@@ -28,6 +28,7 @@
 import Jacobians.Dolbeault.DolbeaultComparison
 import Jacobians.Dolbeault.DbarLocal
 import Mathlib.Geometry.Manifold.PartitionOfUnity
+import Mathlib.Geometry.Manifold.BumpFunction
 
 open scoped Manifold ContDiff Bundle Topology
 open TopologicalSpace (Opens)
@@ -188,17 +189,78 @@ theorem dbar_apply_one_eq_dbarDisk (u : SmoothCFunctions X) (x : X) :
   · congr 1
     exact mfderiv_apply_eq_fderiv_pullback u x Complex.I
 
+/-- **A value-at-`1` equation upgrades to the full CLM equation `dbar u x = g x`** (sorry-free).
+Both `dbar u x = proj01 (mfderiv … u x)` and (since `g ∈ OneFormsZeroOne X`) `g x = proj01 (β x)`
+are `(0,1)`-forms, hence determined by their value at the tangent vector `1`
+(`proj01_ext_of_apply_one`). So matching the single Wirtinger scalar suffices. This is the
+mechanism by which the planar (scalar) `∂̄`-solvability recovers the intrinsic CLM-valued equation. -/
+theorem dbar_eq_of_apply_one {g : SmoothCOneForms X} (hg : g ∈ OneFormsZeroOne X)
+    (u : SmoothCFunctions X) (x : X)
+    (h1 : proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x) (1 : ℂ) = (g x) (1 : ℂ)) :
+    (dbar u) x = g x := by
+  obtain ⟨β, hβ⟩ := hg
+  have hgx : g x = proj01 (β x) := by rw [← hβ]; rfl
+  show proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x) = g x
+  rw [hgx]
+  exact proj01_ext_of_apply_one (by rw [← hgx]; exact h1)
+
+/-- **The smooth lift of a chart-local planar function to a global manifold function** (sorry-free).
+Given a smooth `f : ℂ → ℂ` and a base point `x₀`, the cutoff product `χ • (f ∘ extChartAt x₀)` —
+with `χ` a `SmoothBumpFunction` at `x₀` (`= 1` near `x₀`, supported in the chart) — is a *global*
+`SmoothCFunctions X` (via `SmoothBumpFunction.contMDiff_smul`) that equals `f ∘ extChartAt x₀` on the
+open neighborhood where `χ = 1`. This is the "extend a chart-local smooth function to the whole
+manifold" half of the smooth-section ↔ chart-function dictionary; it is exactly how the planar local
+primitive `ũ` becomes a global `u`. -/
+theorem exists_smoothLift_of_chartFun (f : ℂ → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (x₀ : X) :
+    ∃ (V : Set X) (u : SmoothCFunctions X), IsOpen V ∧ x₀ ∈ V ∧
+      ∀ x ∈ V, (u x : ℂ) = f (extChartAt 𝓘(ℝ, ℂ) x₀ x) := by
+  obtain ⟨χ⟩ : Nonempty (SmoothBumpFunction 𝓘(ℝ, ℂ) x₀) := inferInstance
+  have hg : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun x => f (extChartAt 𝓘(ℝ, ℂ) x₀ x))
+      (chartAt ℂ x₀).source := hf.contMDiff.comp_contMDiffOn contMDiffOn_extChartAt
+  have hsmul : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
+      (fun x => (χ x : ℝ) • f (extChartAt 𝓘(ℝ, ℂ) x₀ x)) := χ.contMDiff_smul hg
+  have h1 : {x : X | χ x = 1} ∈ 𝓝 x₀ := χ.eventuallyEq_one
+  obtain ⟨V, hVsub, hVopen, hx₀V⟩ := mem_nhds_iff.mp h1
+  refine ⟨V, ⟨fun x => (χ x : ℝ) • f (extChartAt 𝓘(ℝ, ℂ) x₀ x), hsmul⟩, hVopen, hx₀V, ?_⟩
+  intro x hx
+  show (χ x : ℝ) • f (extChartAt 𝓘(ℝ, ℂ) x₀ x) = f (extChartAt 𝓘(ℝ, ℂ) x₀ x)
+  rw [hVsub hx]; simp
+
+/-- **(Finer analytic sub-kernel — the irreducible remainder.)** The local primitive at the
+value-`1` level: near every point `x₀`, there is a smooth `u` whose intrinsic `∂̄` *Wirtinger scalar*
+`proj01 (mfderiv … u x) 1` matches `g`'s, i.e. `= g x 1`.
+
+What is proven elsewhere in this file and feeds this sub-kernel:
+* the chart bridge `dbar_apply_one_eq_dbarDisk` — `proj01 (mfderiv … u x) 1 =
+  DbarDisk.dbar (u ∘ (extChartAt x).symm) (extChartAt x x)` (intrinsic `∂̄` = planar Wirtinger `∂̄`
+  in the chart centered at the *evaluation point* `x`);
+* the smooth lift `exists_smoothLift_of_chartFun` — turning the planar primitive into a global `u`;
+* the planar PDE `DbarLocal.dbar_solvable_locally` (DONE).
+
+The irreducible remainder this sub-kernel still carries is the *chart-transition equivariance* of
+`∂̄`: a single planar solve lives in the `x₀`-chart, but the intrinsic value `dbar u x 1` is read in
+the chart centered at `x` (the canonical `TangentSpace 𝓘(ℝ,ℂ) x = ℂ` identification), and the two
+charts differ by the holomorphic transition `τ`, under which the Wirtinger derivative transforms by
+`conj(τ′)`. Matching these — equivalently, comparing `dbar u` and `g` as pulled-back `(0,1)`-*forms*
+rather than chart-`x`-scalars — together with the smoothness of the chart-read datum `z ↦ g (chart⁻¹
+z) 1`, is the genuine smooth-section/PDE dictionary that Mathlib lacks. -/
+theorem exists_localPrimitive_apply_one (g : SmoothCOneForms X) (x₀ : X) :
+    ∃ (V : Set X) (u : SmoothCFunctions X), IsOpen V ∧ x₀ ∈ V ∧
+      ∀ x ∈ V, proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x) (1 : ℂ) = (g x) (1 : ℂ) :=
+  sorry
+
 /-- **(Analytic sub-kernel.)** Local `∂̄`-solvability on the manifold: any smooth `(0,1)`-form `g`
-(in `OneFormsZeroOne X`) is, near every point `x₀`, the `∂̄` of a smooth function `u`. This is
-`DbarLocal.dbar_solvable_locally` (DONE, on `ℂ → ℂ`) transported through a holomorphic chart to the
-intrinsic operator `dbar` via the chart bridge `dbar_apply_one_eq_dbarDisk`; the only remaining gap
-is the smooth lift of the planar local primitive to a global manifold function, isolated below as the
-finer named sub-kernel `exists_smoothLift_of_chartFun`. The local primitives `u` it produces are
-the `u_i` whose differences `u_i − u_j` are the Dolbeault → Čech cocycle. -/
+(in `OneFormsZeroOne X`) is, near every point `x₀`, the `∂̄` of a smooth function `u`. Proven
+**sorry-free** from the value-`1` local primitive `exists_localPrimitive_apply_one` (the finer
+sub-kernel) via the value-`1`-to-CLM upgrade `dbar_eq_of_apply_one`: the full intrinsic CLM equation
+`dbar u x = g x` follows because both sides are `(0,1)`-forms determined by their Wirtinger scalar.
+The local primitives `u` it produces are the `u_i` whose differences `u_i − u_j` are the
+Dolbeault → Čech cocycle. -/
 theorem dbar_solvable_locally_manifold (g : SmoothCOneForms X) (hg : g ∈ OneFormsZeroOne X)
     (x₀ : X) :
-    ∃ (V : Set X) (u : SmoothCFunctions X), IsOpen V ∧ x₀ ∈ V ∧ ∀ x ∈ V, (dbar u) x = g x :=
-  sorry
+    ∃ (V : Set X) (u : SmoothCFunctions X), IsOpen V ∧ x₀ ∈ V ∧ ∀ x ∈ V, (dbar u) x = g x := by
+  obtain ⟨V, u, hV, hx₀, hval⟩ := exists_localPrimitive_apply_one g x₀
+  exact ⟨V, u, hV, hx₀, fun x hx => dbar_eq_of_apply_one hg u x (hval x hx)⟩
 
 /-- **Dolbeault → Čech** (honest named sub-kernel). The `ℝ`-linear map `H^{0,1}(X) → H¹(X, 𝒪)`:
 represent a class by a smooth `(0,1)`-form `g`, solve `∂̄u_i = g` on each chart-disk `U_i`
