@@ -91,11 +91,109 @@ the (currently absent) bridge `dbar u` (manifold) read in a holomorphic chart `=
 isolate the consequence as the named analytic sub-kernel below; it is the *only* place the file
 appeals to PDE content, and it is exactly `dbar_solvable_locally` modulo that chart bridge. -/
 
+/-! #### The `(0,1)`-fiber algebra: a `(0,1)`-form is determined by its value at the vector `1`
+
+`proj01 α` is the conjugate-`ℂ`-linear (Cauchy–Riemann) part of `α`. We record three purely
+fiberwise facts, all **sorry-free**, that make the chart transport go through:
+* `proj01_apply_one` — `proj01 α 1 = ½(α 1 + i·α i)`, the Wirtinger scalar (this is *exactly*
+  `DbarDisk.dbar`'s defining combination, evaluated on the differential);
+* `proj01_conjLinear`/`proj01_eq_conj_smul` — `proj01 α` is conjugate-linear, so `proj01 α v =
+  conj v · proj01 α 1`;
+* `proj01_ext_of_apply_one` — hence a `(0,1)`-form is determined by its value at `1`. -/
+
+/-- `proj01 α 1 = ½(α 1 + i·α i)` — the value of the `(0,1)`-projection at the tangent vector `1`
+is the Wirtinger combination (the same `½(· + i·(i·))` that defines `DbarDisk.dbar`). -/
+theorem proj01_apply_one (α : ℂ →L[ℝ] ℂ) :
+    proj01 α 1 = (2 : ℂ)⁻¹ * (α 1 + Complex.I * α Complex.I) := by
+  rw [proj01_apply]
+  simp only [ContinuousLinearMap.coe_smul', Pi.smul_apply, ContinuousLinearMap.add_apply,
+    ContinuousLinearMap.coe_comp', Function.comp_apply]
+  show (2 : ℝ)⁻¹ • (α 1 + mulI (α (mulI 1))) = _
+  rw [mulI]
+  simp only [ContinuousLinearMap.mul_apply', mul_one, Complex.real_smul]
+  push_cast; ring
+
+/-- `proj01 α` is conjugate-`ℂ`-linear: `(proj01 α)(i·v) = −i·(proj01 α) v`. (It is the `(0,1)` =
+anti-holomorphic part, by construction.) -/
+theorem proj01_conjLinear (α : ℂ →L[ℝ] ℂ) (v : ℂ) :
+    proj01 α (Complex.I * v) = -(Complex.I * proj01 α v) := by
+  rw [proj01_apply]
+  simp only [ContinuousLinearMap.coe_smul', Pi.smul_apply, ContinuousLinearMap.add_apply,
+    ContinuousLinearMap.coe_comp', Function.comp_apply, mulI, ContinuousLinearMap.mul_apply',
+    Complex.real_smul]
+  have hII : α (Complex.I * (Complex.I * v)) = -α v := by
+    have h : Complex.I * (Complex.I * v) = (-1 : ℝ) • v := by
+      rw [Complex.real_smul]; push_cast; rw [← mul_assoc, Complex.I_mul_I]
+    rw [h, map_smul, neg_one_smul]
+  rw [hII]; ring_nf; rw [Complex.I_sq]; ring
+
+/-- A `(0,1)`-form's value is `conj`-homogeneous: `proj01 α v = conj v · (proj01 α 1)`. -/
+theorem proj01_eq_conj_smul (α : ℂ →L[ℝ] ℂ) (v : ℂ) :
+    proj01 α v = (starRingEnd ℂ) v * proj01 α 1 := by
+  set β := proj01 α
+  have hI : β Complex.I = -(Complex.I * β 1) := by
+    have := proj01_conjLinear α 1; rwa [mul_one] at this
+  have hv : ((v.re : ℝ) • (1 : ℂ)) + (v.im : ℝ) • Complex.I = v := by
+    rw [Complex.real_smul, Complex.real_smul, mul_one]; exact Complex.re_add_im v
+  conv_lhs => rw [← hv]
+  rw [map_add, map_smul, map_smul, hI, Complex.real_smul, Complex.real_smul,
+    show (starRingEnd ℂ) v = (v.re : ℂ) - (v.im : ℂ) * Complex.I from by
+      apply Complex.ext <;> simp]
+  ring
+
+/-- **A `(0,1)`-form is determined by its value at the tangent vector `1`.** Anything in the range
+of `proj01` (fixed by it) that agrees at `1` agrees everywhere — this is what lets the single scalar
+equation `DbarDisk.dbar … = g …` recover the full CLM equation `dbar u x = g x`. -/
+theorem proj01_ext_of_apply_one {α β : ℂ →L[ℝ] ℂ} (hαβ : proj01 α 1 = proj01 β 1) :
+    proj01 α = proj01 β := by
+  ext v; rw [proj01_eq_conj_smul α v, proj01_eq_conj_smul β v, hαβ]
+
+/-! #### The chart bridge: intrinsic `dbar` read in a chart `=` `DbarDisk.dbar` of the pullback
+
+The genuine chart-transport identity (mirroring `RealForms.dbar`'s own `mfderiv`-in-a-chart
+mechanics and the `extChartAt 𝓘(ℝ,ℂ) = extChartAt 𝓘(ℂ)` `rfl`), proven **sorry-free**:
+`mfderiv` of `u` equals the plain `fderiv` of the chart-pullback `u ∘ (extChartAt _ x).symm`
+(`MDifferentiableAt.mfderiv` + boundaryless `range = univ` + `writtenInExtChartAt` = the pullback,
+since the codomain `ℂ`'s chart is the identity), and then the `(0,1)`-value at `1` is precisely
+`DbarDisk.dbar` of that pullback. -/
+
+/-- `mfderiv` of `u` at `x`, applied to a tangent vector `v`, is the plain `fderiv` of the
+chart-pullback `u ∘ (extChartAt _ x).symm` at the chart coordinate `extChartAt _ x x`, applied to
+`v`. (The boundaryless model has `range = univ`, so `fderivWithin = fderiv`; the codomain chart on
+`ℂ` is the identity, so `writtenInExtChartAt` is the bare pullback.) -/
+theorem mfderiv_apply_eq_fderiv_pullback (u : SmoothCFunctions X) (x : X) (v : ℂ) :
+    (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x) v =
+      fderiv ℝ (fun z => u ((extChartAt 𝓘(ℝ, ℂ) x).symm z)) (extChartAt 𝓘(ℝ, ℂ) x x) v := by
+  have hu : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x := (u.contMDiff x).mdifferentiableAt (by simp)
+  have hmf : mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x =
+      fderiv ℝ (writtenInExtChartAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) x ⇑u) (extChartAt 𝓘(ℝ, ℂ) x x) := by
+    rw [hu.mfderiv, ModelWithCorners.Boundaryless.range_eq_univ, fderivWithin_univ]
+  have hpull : writtenInExtChartAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) x ⇑u =
+      fun z => u ((extChartAt 𝓘(ℝ, ℂ) x).symm z) := by
+    ext z; simp only [writtenInExtChartAt, Function.comp_apply]; rfl
+  rw [hpull] at hmf
+  exact congrArg (fun L : ℂ →L[ℝ] ℂ => L v) hmf
+
+/-- **The chart bridge.** The intrinsic `dbar u` at `x` (i.e. `proj01 (mfderiv … u x)`), evaluated at
+the tangent vector `1`, equals the planar Wirtinger `DbarDisk.dbar` of the chart-pullback of `u`,
+read at the chart coordinate of `x`. This is the `dbar`(intrinsic)`= DbarDisk.dbar`(chart) identity
+that transports the DONE planar solvability to the manifold. -/
+theorem dbar_apply_one_eq_dbarDisk (u : SmoothCFunctions X) (x : X) :
+    proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x) (1 : ℂ) =
+      DbarDisk.dbar (fun z => u ((extChartAt 𝓘(ℝ, ℂ) x).symm z)) (extChartAt 𝓘(ℝ, ℂ) x x) := by
+  rw [proj01_apply_one, DbarDisk.dbar]
+  congr 1
+  congr 1
+  · exact mfderiv_apply_eq_fderiv_pullback u x 1
+  · congr 1
+    exact mfderiv_apply_eq_fderiv_pullback u x Complex.I
+
 /-- **(Analytic sub-kernel.)** Local `∂̄`-solvability on the manifold: any smooth `(0,1)`-form `g`
 (in `OneFormsZeroOne X`) is, near every point `x₀`, the `∂̄` of a smooth function `u`. This is
 `DbarLocal.dbar_solvable_locally` (DONE, on `ℂ → ℂ`) transported through a holomorphic chart to the
-intrinsic operator `dbar`; the chart-transport (`dbar` read in a chart `= DbarDisk.dbar` of the
-chart-pullback) is the genuine remaining analytic content. The local primitives `u` it produces are
+intrinsic operator `dbar` via the chart bridge `dbar_apply_one_eq_dbarDisk`; the only remaining gap
+is the smooth lift of the planar local primitive to a global manifold function, isolated below as the
+finer named sub-kernel `exists_smoothLift_of_chartFun`. The local primitives `u` it produces are
 the `u_i` whose differences `u_i − u_j` are the Dolbeault → Čech cocycle. -/
 theorem dbar_solvable_locally_manifold (g : SmoothCOneForms X) (hg : g ∈ OneFormsZeroOne X)
     (x₀ : X) :
