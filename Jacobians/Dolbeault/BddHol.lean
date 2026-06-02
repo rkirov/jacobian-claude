@@ -287,6 +287,43 @@ noncomputable def restrictCLM (hKU : K ⊆ U) : BddHol U →L[ℂ] (K →ᵇ ℂ
 theorem norm_restrictCLM_le (hKU : K ⊆ U) : ‖restrictCLM hKU‖ ≤ 1 :=
   LinearMap.mkContinuous_norm_le _ zero_le_one _
 
+/-- **The restriction operator is a compact operator** (Montel; Forster 14.9 STEP 1).
+
+For `U` open and `K ⋐ U` a compact *convex* subset, the restriction map
+`restrictCLM : BddHol U →L[ℂ] (K →ᵇ ℂ)` is a compact operator. The proof reduces, via the standard
+characterization `isCompactOperator_iff_isCompact_closure_image_closedBall`, to the relative
+compactness of the restricted closed ball — which is exactly the proven Montel atom
+`CechFiniteness.isCompact_closure_restrict_bddHolo` (Cauchy estimates + Arzelà–Ascoli). Convexity of
+`K` is required by the atom. -/
+theorem isCompactOperator_restrictCLM (hU : IsOpen U) (hKcpt : IsCompact K) (hKU : K ⊆ U)
+    (hKconv : Convex ℝ K) :
+    IsCompactOperator (restrictCLM (U := U) hKU) := by
+  -- characterise compactness of the operator by the closed ball image (use radius `1`)
+  show IsCompactOperator (⇑(restrictCLM (U := U) hKU).toLinearMap)
+  rw [isCompactOperator_iff_isCompact_closure_image_closedBall
+    (restrictCLM (U := U) hKU).toLinearMap (one_pos)]
+  -- the image of the unit ball is the atom's range, with `S := ↥(closedBall 0 1)`, `M := 1`
+  have hatom := CechFiniteness.isCompact_closure_restrict_bddHolo hU hKcpt hKU hKconv
+    (M := (1 : ℝ)) zero_le_one
+    (S := ↥(Metric.closedBall (0 : BddHol U) 1))
+    (g := fun s => (s : BddHol U).toFun)
+    (hg_an := fun s => (s : BddHol U).analyticOn)
+    (hg_bd := fun s z hz => by
+      have hs : ‖(s : BddHol U)‖ ≤ 1 := by
+        have := s.2
+        rwa [Metric.mem_closedBall, dist_zero_right] at this
+      exact le_trans ((s : BddHol U).norm_toFun_le hz) hs)
+    (hg_cont := fun s => (s : BddHol U).analyticOn.continuousOn)
+  -- match the two closure-of-set expressions
+  convert hatom using 3
+  ext φ
+  constructor
+  · rintro ⟨f, hf, rfl⟩
+    exact ⟨⟨f, by rwa [Metric.mem_closedBall, dist_zero_right]⟩, rfl⟩
+  · rintro ⟨s, rfl⟩
+    exact ⟨(s : BddHol U), by
+      have := s.2; rwa [Metric.mem_closedBall, dist_zero_right] at this, rfl⟩
+
 end BddHol
 
 end Jacobians.Dolbeault
