@@ -697,6 +697,18 @@ theorem mem_OmegaD_zero_of_gext_analytic {V : TopologicalSpace.Opens X} {F : V �
     rw [ordU_eq_orderAt_Gext F hvx]
     simpa using (hF ⟨vx, hvx⟩).meromorphicOrderAt_nonneg
 
+/-- **Local Cauchy–Riemann.** A function `ℝ`-differentiable at `x` whose planar `∂̄` vanishes there is
+`ℂ`-differentiable at `x`. The `DifferentiableAt`-hypothesis (local) form of
+`DbarDiskCohomology.differentiableAt_of_dbar_eq_zero`. -/
+private theorem differentiableAt_complex_of_dbar_eq_zero {f : ℂ → ℂ} {x : ℂ}
+    (hf : DifferentiableAt ℝ f x) (hdb : DbarDisk.dbar f x = 0) : DifferentiableAt ℂ f x := by
+  rw [differentiableAt_complex_iff_differentiableAt_real]
+  refine ⟨hf, ?_⟩
+  have h2 : (fderiv ℝ f x) 1 + Complex.I * (fderiv ℝ f x) Complex.I = 0 := by
+    have := hdb; rw [DbarDisk.dbar] at this; field_simp at this; linear_combination this
+  have hD1 : (fderiv ℝ f x) 1 = -(Complex.I * (fderiv ℝ f x) Complex.I) := by linear_combination h2
+  rw [hD1, smul_eq_mul, mul_neg, ← mul_assoc, Complex.I_mul_I]; ring
+
 namespace ChartDiskCover
 
 /-- The cutoff bump for disk `i`: `1` on the closed disk `closedBall (eᵢ) (radius i)` (so on `U_i`),
@@ -941,6 +953,40 @@ theorem dbar_planarDiff_eq_zero (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X
   field_simp
   ring
 
+/-- The chart-`i` read of the cochain difference is **holomorphic** (`ℂ`-differentiable) at `e_i x`
+for `x ∈ U_i ⊓ U_j`: Lemma A `dbar_planarDiff_eq_zero` (`∂̄ = 0`) + local smoothness (the transition
+is holomorphic, the primitives are `C^∞`) via local Cauchy–Riemann. -/
+theorem differentiableAt_planarDiff (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
+    (hg : g ∈ OneFormsZeroOne X) (i j : 𝔇.ι) {x : X}
+    (hxi : x ∈ (𝔇.U i : Set X)) (hxj : x ∈ (𝔇.U j : Set X)) :
+    DifferentiableAt ℂ (fun z => 𝔇.planarPrimitive j g
+        ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center j)) ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).symm z))
+        - 𝔇.planarPrimitive i g z)
+      ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)) x) := by
+  set ei := extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) with hei
+  set ej := extChartAt 𝓘(ℝ, ℂ) (𝔇.center j) with hej
+  set z₀ := ei x with hz0
+  set τ := ej ∘ ei.symm with hτ
+  have hxsi : x ∈ ei.source := 𝔇.subset_chart_source i hxi
+  have hxsj : x ∈ ej.source := 𝔇.subset_chart_source j hxj
+  have hx_src_i : x ∈ (chartAt ℂ (𝔇.center i)).source := by rw [hei, extChartAt_source] at hxsi; exact hxsi
+  have hx_src_j : x ∈ (chartAt ℂ (𝔇.center j)).source := by rw [hej, extChartAt_source] at hxsj; exact hxsj
+  have hz0_eq : z₀ = (chartAt ℂ (𝔇.center i)) x := by rw [hz0, hei]; simp [mfld_simps]
+  have hz0t : z₀ ∈ (chartAt ℂ (𝔇.center i)).target := by
+    rw [hz0_eq]; exact (chartAt ℂ (𝔇.center i)).map_source hx_src_i
+  have hsymm_chart : (chartAt ℂ (𝔇.center i)).symm z₀ ∈ (chartAt ℂ (𝔇.center j)).source := by
+    rw [hz0_eq, (chartAt ℂ (𝔇.center i)).left_inv hx_src_i]; exact hx_src_j
+  have hτdiff : DifferentiableAt ℂ τ z₀ :=
+    differentiableAt_transition_of_mem (𝔇.center j) (𝔇.center i) hz0t hsymm_chart
+  have hppj : DifferentiableAt ℝ (𝔇.planarPrimitive j g) (τ z₀) :=
+    (𝔇.contDiff_planarPrimitive j g).differentiable (by norm_num) (τ z₀)
+  have hppi : DifferentiableAt ℝ (𝔇.planarPrimitive i g) z₀ :=
+    (𝔇.contDiff_planarPrimitive i g).differentiable (by norm_num) z₀
+  have hHr : DifferentiableAt ℝ
+      (fun z => 𝔇.planarPrimitive j g (ej (ei.symm z)) - 𝔇.planarPrimitive i g z) z₀ :=
+    (hppj.comp z₀ (hτdiff.restrictScalars ℝ)).sub hppi
+  exact differentiableAt_complex_of_dbar_eq_zero hHr (𝔇.dbar_planarDiff_eq_zero hg i j hxi hxj)
+
 /-- The **linear 0-cochain of disk primitives**: `g ↦ (i ↦ [u_i])`, the germ-classes of the local
 `∂̄`-primitives. `ℝ`-linear in `g` (via `planarPrimitive` linearity + `toGerm`). Its `cechDelta0` is
 the Dolbeault → Čech cocycle. -/
@@ -955,6 +1001,70 @@ noncomputable def rawCochain (𝔇 : ChartDiskCover X) :
     funext i
     simp only [RingHom.id_apply, Pi.smul_apply, 𝔇.diskSection_smul]
     exact (toGerm (𝔇.U i)).map_smul_of_tower c (𝔇.diskSection i g)
+
+/-! ### Step 4d — the cocycle lands in `cocycles1 0`, and the operator `dolbeaultToCechCocycle` -/
+
+/-- The cochain difference `F = u_j − u_i` on the overlap `V = U_i ⊓ U_j`, read in *each point's own*
+chart via the extension-by-zero `Gext`, is analytic there. Chart-`i` holomorphy
+(`differentiableAt_planarDiff`, an open `DifferentiableOn` ⟹ `AnalyticAt`) transported to the point's
+own chart by `analyticAt_chart_change`. The hypothesis on `F` is its overlap value. -/
+theorem gext_diff_analyticAt (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
+    (hg : g ∈ OneFormsZeroOne X) (i j : 𝔇.ι) (F : ↥(𝔇.U i ⊓ 𝔇.U j) → ℂ)
+    (hFeq : ∀ w : ↥(𝔇.U i ⊓ 𝔇.U j), F w = 𝔇.planarPrimitive j g (extChartAt 𝓘(ℝ, ℂ) (𝔇.center j) w.1)
+        - 𝔇.planarPrimitive i g (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) w.1))
+    (w : ↥(𝔇.U i ⊓ 𝔇.U j)) :
+    AnalyticAt ℂ (Gext F ∘ (chartAt (H := ℂ) (w : X)).symm) ((chartAt (H := ℂ) (w : X)) (w : X)) := by
+  obtain ⟨wx, hwx⟩ := w
+  refine analyticAt_chart_change (y := 𝔇.center i) ?_ ?_
+  · have := 𝔇.subset_chart_source i hwx.1; rwa [extChartAt_source] at this
+  · set ci := chartAt (H := ℂ) (𝔇.center i) with hci
+    set Hi : ℂ → ℂ := fun z => 𝔇.planarPrimitive j g
+        ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center j)) ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).symm z))
+        - 𝔇.planarPrimitive i g z with hHi
+    set W : Set ℂ := ci.target ∩ ci.symm ⁻¹' ((𝔇.U i ⊓ 𝔇.U j : TopologicalSpace.Opens X) : Set X)
+      with hWdef
+    have hwsrc : wx ∈ ci.source := by
+      have := 𝔇.subset_chart_source i hwx.1; rwa [extChartAt_source] at this
+    have hWopen : IsOpen W := ci.isOpen_inter_preimage_symm (𝔇.U i ⊓ 𝔇.U j).isOpen
+    have hmemW : ci wx ∈ W :=
+      ⟨ci.map_source hwsrc, by simp only [Set.mem_preimage, ci.left_inv hwsrc]; exact hwx⟩
+    have hcoe : ∀ p : X, (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)) p = ci p := fun p => by
+      simp [hci, mfld_simps]
+    have hcoesymm : ∀ q : ℂ, (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).symm q = ci.symm q := fun q => by
+      simp [hci, mfld_simps]
+    have hHiOn : DifferentiableOn ℂ Hi W := by
+      intro z hz
+      have hzV : ci.symm z ∈ ((𝔇.U i ⊓ 𝔇.U j : TopologicalSpace.Opens X) : Set X) := hz.2
+      have hd := 𝔇.differentiableAt_planarDiff hg i j hzV.1 hzV.2
+      rw [hcoe (ci.symm z), ci.right_inv hz.1] at hd
+      exact hd.differentiableWithinAt
+    have hEq : Set.EqOn (Gext F ∘ ci.symm) Hi W := by
+      intro z hz
+      have hzV : ci.symm z ∈ ((𝔇.U i ⊓ 𝔇.U j : TopologicalSpace.Opens X) : Set X) := hz.2
+      simp only [Function.comp_apply, Gext_apply_mem F hzV, hFeq, hHi, hcoesymm,
+        hcoe (ci.symm z), ci.right_inv hz.1]
+    exact (hHiOn.congr hEq).analyticAt (hWopen.mem_nhds hmemW)
+
+/-- **The cocycle lands in `Z¹(𝒪)`.** `cechDelta0 (rawCochain g)` is a Čech `1`-cocycle of `𝒪`: it is
+in `ker cechDelta1` (any germ cochain) and its overlap germs are holomorphic
+(`gext_diff_analyticAt` + the `mem_OmegaD_zero_of_gext_analytic` bridge). Needs `g` a `(0,1)`-form
+(the conjugate-linearity used by Lemma A). -/
+theorem cechDelta0_rawCochain_mem_cocycles1 (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
+    (hg : g ∈ OneFormsZeroOne X) :
+    𝔇.toFiniteCover.cechDelta0 (𝔇.rawCochain g) ∈ 𝔇.toFiniteCover.cocycles1 (0 : Divisor X) := by
+  refine Submodule.mem_inf.2 ⟨cechDelta0_mem_ker_cechDelta1 _ _, fun p => ?_⟩
+  obtain ⟨i, j⟩ := p
+  set F : ↥(𝔇.U i ⊓ 𝔇.U j) → ℂ :=
+    𝔇.diskSection j g ∘ openIncl inf_le_right - 𝔇.diskSection i g ∘ openIncl inf_le_left with hFdef
+  have hcomp : 𝔇.toFiniteCover.cechDelta0 (𝔇.rawCochain g) (i, j) = toGerm (𝔇.U i ⊓ 𝔇.U j) F := by
+    simp only [FiniteCover.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
+      LinearMap.comp_apply, LinearMap.proj_apply]
+    rw [show 𝔇.rawCochain g j = toGerm (𝔇.U j) (𝔇.diskSection j g) from rfl,
+      show 𝔇.rawCochain g i = toGerm (𝔇.U i) (𝔇.diskSection i g) from rfl,
+      rawRestrictG_coe, rawRestrictG_coe, ← map_sub]
+  rw [hcomp]
+  refine ⟨F, mem_OmegaD_zero_of_gext_analytic (fun w => 𝔇.gext_diff_analyticAt hg i j F (fun w => ?_) w), rfl⟩
+  simp only [hFdef, Pi.sub_apply, Function.comp_apply, openIncl, diskSection]
 
 end ChartDiskCover
 
