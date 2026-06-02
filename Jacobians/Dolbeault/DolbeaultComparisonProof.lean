@@ -310,6 +310,76 @@ theorem differentiableAt_chartTransition (x₀ x : X)
   rw [he, hpt] at hda
   exact hda
 
+/-- **The inverse chart-transition `eₓ ∘ e₀.symm` is holomorphic at `e₀ x`.** Companion to
+`differentiableAt_chartTransition` with the two charts swapped and read at the point `e₀ x = τ_x(eₓ x)`
+(rather than `eₓ x`); the local inverse of the transition `e₀ ∘ eₓ.symm`. Same mechanism: the two
+charts of the analytic (`ω`) manifold composed, transferred to `DifferentiableAt ℂ`. -/
+theorem differentiableAt_chartTransition_symm (x₀ x : X)
+    (hxsrc : x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
+    DifferentiableAt ℂ ((extChartAt 𝓘(ℝ, ℂ) x) ∘ (extChartAt 𝓘(ℝ, ℂ) x₀).symm)
+      ((extChartAt 𝓘(ℝ, ℂ) x₀) x) := by
+  have hxsrc' : x ∈ (chartAt ℂ x₀).source := by rwa [extChartAt_source] at hxsrc
+  have hcx_tgt : (chartAt ℂ x₀) x ∈ (chartAt ℂ x₀).target := (chartAt ℂ x₀).map_source hxsrc'
+  have h1 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (chartAt ℂ x₀).symm ((chartAt ℂ x₀) x) :=
+    ((contMDiffOn_chart_symm (I := 𝓘(ℂ)) (n := ω) (x := x₀)) _ hcx_tgt).contMDiffAt
+      ((chartAt ℂ x₀).open_target.mem_nhds hcx_tgt)
+  have hez : (chartAt ℂ x₀).symm ((chartAt ℂ x₀) x) = x := (chartAt ℂ x₀).left_inv hxsrc'
+  have hsrc_x : x ∈ (chartAt ℂ x).source := mem_chart_source ℂ x
+  have h2 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (chartAt ℂ x)
+      ((chartAt ℂ x₀).symm ((chartAt ℂ x₀) x)) := by
+    rw [hez]
+    exact ((contMDiffOn_chart (I := 𝓘(ℂ)) (n := ω) (x := x)) _ hsrc_x).contMDiffAt
+      ((chartAt ℂ x).open_source.mem_nhds hsrc_x)
+  have hcomp : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω ((chartAt ℂ x) ∘ (chartAt ℂ x₀).symm) ((chartAt ℂ x₀) x) :=
+    ContMDiffAt.comp (I' := 𝓘(ℂ)) ((chartAt ℂ x₀) x) h2 h1
+  have hda : DifferentiableAt ℂ ((chartAt ℂ x) ∘ (chartAt ℂ x₀).symm) ((chartAt ℂ x₀) x) :=
+    (contMDiffAt_iff_contDiffAt.1 hcomp).differentiableAt (by norm_num)
+  have he : ((chartAt ℂ x) ∘ (chartAt ℂ x₀).symm)
+      = ((extChartAt 𝓘(ℝ, ℂ) x) ∘ (extChartAt 𝓘(ℝ, ℂ) x₀).symm) := by
+    funext z; simp [mfld_simps]
+  have hpt : ((chartAt ℂ x₀) x) = ((extChartAt 𝓘(ℝ, ℂ) x₀) x) := by simp [mfld_simps]
+  rw [he, hpt] at hda
+  exact hda
+
+/-- **Nonvanishing of the holomorphic transition derivative.** On the analytic (`ω`) manifold, for
+`x` in the `x₀`-chart, the complex derivative of the chart transition `τ_x = e₀ ∘ eₓ.symm` at `eₓ x`
+is nonzero: `τ_x` has the holomorphic local inverse `eₓ ∘ e₀.symm`, so `deriv τ_x · deriv (inverse) = 1`
+by the chain rule on `(eₓ ∘ e₀.symm) ∘ τ_x = id` near `eₓ x`, forcing the factor `≠ 0`. -/
+theorem deriv_chartTransition_ne_zero (x₀ x : X)
+    (hxsrc : x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
+    deriv ((extChartAt 𝓘(ℝ, ℂ) x₀) ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm) ((extChartAt 𝓘(ℝ, ℂ) x) x) ≠ 0 := by
+  set eₓ := extChartAt 𝓘(ℝ, ℂ) x with hex
+  set e₀ := extChartAt 𝓘(ℝ, ℂ) x₀ with he₀
+  set τ := e₀ ∘ eₓ.symm with hτ
+  set σ := eₓ ∘ e₀.symm with hσ
+  -- `τ (eₓ x) = e₀ x`.
+  have hτpt : τ (eₓ x) = e₀ x := by simp only [hτ, Function.comp_apply, hex, extChartAt_to_inv]
+  -- The two transitions are holomorphic at the relevant points.
+  have hτdiff : DifferentiableAt ℂ τ (eₓ x) := differentiableAt_chartTransition x₀ x hxsrc
+  have hσdiff : DifferentiableAt ℂ σ (e₀ x) := differentiableAt_chartTransition_symm x₀ x hxsrc
+  -- `σ ∘ τ = id` on a neighborhood of `eₓ x`: charts are mutual inverses near `x`.
+  -- Eventually in `z`: `z ∈ eₓ.target` and `eₓ.symm z ∈ e₀.source`.
+  have htgt : ∀ᶠ z in nhds (eₓ x), z ∈ eₓ.target := by
+    rw [hex]
+    exact (isOpen_extChartAt_target x).mem_nhds (mem_extChartAt_target x)
+  have hmem : ∀ᶠ z in nhds (eₓ x), eₓ.symm z ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source := by
+    have hcont : ContinuousAt eₓ.symm (eₓ x) := continuousAt_extChartAt_symm x
+    refine hcont.preimage_mem_nhds ?_
+    rw [hex, extChartAt_to_inv]
+    exact (isOpen_extChartAt_source x₀).mem_nhds hxsrc
+  have hinv : (σ ∘ τ) =ᶠ[nhds (eₓ x)] id := by
+    filter_upwards [htgt, hmem] with z hztgt hzsrc
+    simp only [hσ, hτ, Function.comp_apply, id_eq]
+    rw [(extChartAt 𝓘(ℝ, ℂ) x₀).left_inv hzsrc, (extChartAt 𝓘(ℝ, ℂ) x).right_inv hztgt]
+  -- Chain rule on `σ ∘ τ = id`: the product of derivatives is `1`.
+  have hcomp : deriv (σ ∘ τ) (eₓ x) = deriv σ (τ (eₓ x)) * deriv τ (eₓ x) :=
+    deriv_comp (eₓ x) (hτpt ▸ hσdiff) hτdiff
+  have hone : deriv (σ ∘ τ) (eₓ x) = 1 := by rw [hinv.deriv_eq, deriv_id]
+  rw [hone] at hcomp
+  intro h0
+  rw [h0, mul_zero] at hcomp
+  exact one_ne_zero hcomp
+
 /-! #### The local primitive at the value-`1` level
 
 `exists_localPrimitive_apply_one` produces, near every `x₀`, a smooth `u` whose intrinsic `∂̄`
