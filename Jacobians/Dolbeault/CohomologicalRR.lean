@@ -25,6 +25,7 @@ import Jacobians.Dolbeault.CechH0
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
+open Classical
 
 set_option linter.unusedSectionVars false
 
@@ -33,11 +34,91 @@ namespace Jacobians.Dolbeault
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
+/-! ### The homological crank: alternating dimension sum of a 6-term exact sequence
+
+The single non-trivial *algebraic* fact behind the χ-jump is that a 6-term exact sequence of
+finite-dimensional vector spaces `0 → A → B → C → D → E → 0` has alternating sum of dimensions `0`.
+This is pure linear algebra (rank–nullity at each map plus the exactness `range fₖ = ker fₖ₊₁`); it
+is proven here in full, with **no** `sorry` and **no** homological-algebra machinery. -/
+
+/-- **Alternating dimension sum of a 6-term exact sequence** (rank–nullity crank). For an exact
+sequence of finite-dimensional `K`-vector spaces
+`0 → A →[f₁] B →[f₂] C →[f₃] D →[f₄] E → 0`
+(`f₁` injective, exact at `B`, `C`, `D`, `f₄` surjective) the alternating sum of dimensions is `0`:
+`dim A − dim B + dim C − dim D + dim E = 0`.
+
+Proof: rank–nullity `dim (range fₖ) + dim (ker fₖ) = dim (source)` at each of the four maps;
+exactness rewrites every `ker fₖ₊₁` as `range fₖ`; `ker f₁ = 0` (injective) and `range f₄ = E`
+(surjective); `omega` finishes the integer bookkeeping. -/
+theorem six_term_exact_alt_sum {K A B C E F : Type*} [Field K]
+    [AddCommGroup A] [Module K A] [FiniteDimensional K A]
+    [AddCommGroup B] [Module K B] [FiniteDimensional K B]
+    [AddCommGroup C] [Module K C] [FiniteDimensional K C]
+    [AddCommGroup E] [Module K E] [FiniteDimensional K E]
+    [AddCommGroup F] [Module K F] [FiniteDimensional K F]
+    (f₁ : A →ₗ[K] B) (f₂ : B →ₗ[K] C) (f₃ : C →ₗ[K] E) (f₄ : E →ₗ[K] F)
+    (hf₁ : Function.Injective f₁)
+    (h₁ : Function.Exact f₁ f₂) (h₂ : Function.Exact f₂ f₃) (h₃ : Function.Exact f₃ f₄)
+    (hf₄ : Function.Surjective f₄) :
+    (Module.finrank K A : ℤ) - Module.finrank K B + Module.finrank K C
+      - Module.finrank K E + Module.finrank K F = 0 := by
+  have rn1 := f₁.finrank_range_add_finrank_ker
+  have rn2 := f₂.finrank_range_add_finrank_ker
+  have rn3 := f₃.finrank_range_add_finrank_ker
+  have rn4 := f₄.finrank_range_add_finrank_ker
+  rw [LinearMap.exact_iff] at h₁ h₂ h₃
+  rw [← LinearMap.ker_eq_bot] at hf₁
+  rw [← LinearMap.range_eq_top] at hf₄
+  have e1 : Module.finrank K (LinearMap.ker f₁) = 0 := by rw [hf₁]; simp
+  have e4 : Module.finrank K (LinearMap.range f₄) = Module.finrank K F := by rw [hf₄]; simp
+  rw [h₁] at rn2
+  rw [h₂] at rn3
+  rw [h₃] at rn4
+  rw [e1] at rn1
+  rw [e4] at rn4
+  omega
+
 namespace FiniteCover
 
 /-- The **Euler characteristic** `χ(D) := h⁰(D) − h¹(D)` (as an integer). -/
 noncomputable def chi (𝔘 : FiniteCover X) (D : Divisor X) : ℤ :=
   (𝔘.h0Dim D : ℤ) - 𝔘.h1Dim D
+
+/-! ### Structural inclusion `𝒪_D ↪ 𝒪_{D+P}` (provable, no analytic content)
+
+Adding the effective point divisor `P` only *weakens* the order bound (`D ≤ D + P` pointwise), so a
+section of `𝒪_D` is a section of `𝒪_{D+P}`; this gives a degreewise inclusion of the section
+submodules and hence of the global-section and cochain spaces. These facts are pure order
+bookkeeping — the genuinely-hard analytic/homological data (skyscraper quotient, connecting map) is
+isolated separately in `SkyscraperLES`. -/
+
+/-- Pointwise monotonicity of the divisor under adding an effective point: `D x ≤ (D + P) x`. -/
+theorem divisor_le_add_single (D : Divisor X) (P x : X) :
+    (D : Divisor X) x ≤ (D + Finsupp.single P 1 : Divisor X) x := by
+  rw [Finsupp.add_apply, Finsupp.single_apply]; split <;> omega
+
+/-- The order bound for `𝒪_D` implies that for `𝒪_{D+P}` (the bound `−(D+P) ≤ −D` weakens). -/
+theorem mem_OmegaD_add_single {D : Divisor X} {P : X} {U : Opens X} {f : U → ℂ}
+    (hf : f ∈ OmegaD D U) : f ∈ OmegaD (D + Finsupp.single P 1) U := by
+  refine ⟨hf.1, fun u => le_trans ?_ (hf.2 u)⟩
+  exact_mod_cast neg_le_neg (divisor_le_add_single D P u.1)
+
+/-- Germ-class sections inherit the inclusion `𝒪_D(U) ⊆ 𝒪_{D+P}(U)`. -/
+theorem OmegaDGerm_le_add_single (D : Divisor X) (P : X) (U : Opens X) :
+    OmegaDGerm D U ≤ OmegaDGerm (D + Finsupp.single P 1) U := by
+  rintro _ ⟨g, hg, rfl⟩
+  exact ⟨g, mem_OmegaD_add_single hg, rfl⟩
+
+/-- The `𝒪_D` 0-sections are contained in the `𝒪_{D+P}` 0-sections. -/
+theorem sections0_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+    𝔘.sections0 D ≤ 𝔘.sections0 (D + Finsupp.single P 1) :=
+  fun _ hf i => OmegaDGerm_le_add_single D P (𝔘.U i) (hf i)
+
+/-- The global `𝒪_D`-sections are contained in the global `𝒪_{D+P}`-sections (same `ker δ⁰`, weaker
+sheaf condition). This is the underlying map of the long-exact-sequence arrow `H⁰(D) → H⁰(D+P)`. -/
+theorem globalSections_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+    𝔘.globalSections D ≤ 𝔘.globalSections (D + Finsupp.single P 1) :=
+  inf_le_inf_left _ (𝔘.sections0_le_add_single D P)
 
 /-! ### Base: `h⁰(0) = 1` (Liouville) -/
 
@@ -46,31 +127,102 @@ sections with the linear system, and `l(0) = 1` by Liouville on the compact conn
 theorem h0Dim_zero_eq_one (𝔘 : FiniteCover X) : (𝔘.h0Dim 0 : ℤ) = 1 := by
   rw [𝔘.h0Dim_eq_lDim 0, lDim_zero_eq_one]; norm_num
 
-/-! ### The single-point χ-jump (the genuine homological content — NAMED SORRY) -/
+/-! ### The skyscraper long exact sequence (the genuine homological/analytic kernel)
 
-/-- **Single-point χ-jump (Forster §16, the homological nugget — ISOLATED `sorry`).**
-Adding one point `P` raises the Euler characteristic by exactly `1`:
-`χ(D + P) = χ(D) + 1`.
+The single-point χ-jump comes from the **skyscraper short exact sequence** of `𝒪_D`-modules
+`0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` (`ℂ_P` = the 1-dimensional skyscraper at `P`, a section of
+`𝒪_{D+P}` modulo `𝒪_D` ≅ its principal-part coefficient of order `−D(P)−1`). Its **long exact
+sequence** in Čech cohomology is
+`0 → H⁰(𝒪_D) →[f₁] H⁰(𝒪_{D+P}) →[f₂] ℂ →[f₃] H¹(𝒪_D) →[f₄] H¹(𝒪_{D+P}) → 0`,
+the skyscraper having `H^{≥1} = 0`.
 
-This is the genuine cohomological content of Riemann–Roch. It comes from the **skyscraper short
-exact sequence** of `𝒪_D`-modules
-`0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0`
-(the quotient is the 1-dimensional skyscraper sheaf `ℂ_P` supported at `P`). Its **long exact
-sequence** in Čech cohomology reads
-`0 → H⁰(𝒪_D) → H⁰(𝒪_{D+P}) → ℂ → H¹(𝒪_D) → H¹(𝒪_{D+P}) → 0`
-(`H^{≥1}` of a skyscraper vanishes). All five spaces are finite-dimensional
-(`finiteDimensional_cechH1`), so the alternating sum of dimensions is `0`:
-`h⁰(D) − h⁰(D+P) + 1 − h¹(D) + h¹(D+P) = 0`,
-i.e. `χ(D+P) − χ(D) = 1`.
+`SkyscraperLES` bundles *exactly* this data. The first arrow `f₁` is the canonical inclusion
+`globalSections D ↪ globalSections (D+P)` (provided here, fully proven — it is just the weakening
+`D ≤ D+P` of the order bound, `globalSections_le_add_single`). The remaining data — the skyscraper
+coefficient map `f₂`, the snake-lemma connecting map `f₃`, the inclusion-induced `f₄`, all four
+exactness facts, and the finiteness of the cohomology groups — is the genuine analytic/homological
+content (Forster §16), isolated as the single named `sorry` `exists_skyscraperLES`.
 
-Discharging this requires constructing the short exact sequence of the concrete germ-class cochain
-complexes and feeding it through Mathlib's `ShortComplex.SnakeInput` / `Algebra/Homology/
-HomologySequence` machinery — the one genuinely-hard homological step. It is stated here honestly,
-*not* faked and *not* weakening the headline. Everything else in this file is built on it and is
-sorry-free. -/
+Given a `SkyscraperLES`, the χ-jump is **pure linear algebra**: the alternating dimension sum of the
+six-term exact sequence is `0` (`six_term_exact_alt_sum`, proven), which rearranges to
+`χ(D+P) = χ(D) + 1`. That crank, `chi_jump_of_LES`, is sorry-free. -/
+structure SkyscraperLES (𝔘 : FiniteCover X) (D : Divisor X) (P : X) where
+  /-- The skyscraper coefficient map `H⁰(𝒪_{D+P}) → ℂ_P`: a global `𝒪_{D+P}`-section maps to its
+  principal-part coefficient of order `−D(P)−1` at `P` (the obstruction to lying in `𝒪_D`). -/
+  f₂ : ↥(𝔘.globalSections (D + Finsupp.single P 1)) →ₗ[ℂ] ℂ
+  /-- The connecting homomorphism `ℂ_P → H¹(𝒪_D)` (snake lemma of the SES of cochain complexes). -/
+  f₃ : ℂ →ₗ[ℂ] 𝔘.cechH1 D
+  /-- The map `H¹(𝒪_D) → H¹(𝒪_{D+P})` induced by the inclusion `𝒪_D ↪ 𝒪_{D+P}`. -/
+  f₄ : 𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 (D + Finsupp.single P 1)
+  /-- Exactness at `H⁰(𝒪_{D+P})`: `range (inclusion) = ker f₂` — a section of `𝒪_{D+P}` has
+  vanishing principal-part coefficient at `P` iff it actually lies in `𝒪_D`. (Analytic.) -/
+  exact₁ : Function.Exact
+    (Submodule.inclusion (𝔘.globalSections_le_add_single D P)) f₂
+  /-- Exactness at `ℂ_P`: `range f₂ = ker f₃`. (Snake lemma.) -/
+  exact₂ : Function.Exact f₂ f₃
+  /-- Exactness at `H¹(𝒪_D)`: `range f₃ = ker f₄`. (Snake lemma.) -/
+  exact₃ : Function.Exact f₃ f₄
+  /-- The last arrow `H¹(𝒪_D) → H¹(𝒪_{D+P})` is surjective (the skyscraper has `H^{≥1} = 0`, so the
+  LES terminates with `→ 0`). -/
+  surj₄ : Function.Surjective f₄
+  /-- `H¹(𝒪_D)` is finite-dimensional (Forster 14.9; `finiteDimensional_cechH1`). -/
+  [finH1D : FiniteDimensional ℂ (𝔘.cechH1 D)]
+  /-- `H¹(𝒪_{D+P})` is finite-dimensional (Forster 14.9; `finiteDimensional_cechH1`). -/
+  [finH1DP : FiniteDimensional ℂ (𝔘.cechH1 (D + Finsupp.single P 1))]
+  /-- `H⁰(𝒪_D)` is finite-dimensional (follows from finiteness of `H¹` and the skyscraper via the
+  LES; carried as a field since the construction supplies it). -/
+  [finH0D : FiniteDimensional ℂ ↥(𝔘.globalSections D)]
+  /-- `H⁰(𝒪_{D+P})` is finite-dimensional (likewise). -/
+  [finH0DP : FiniteDimensional ℂ ↥(𝔘.globalSections (D + Finsupp.single P 1))]
+
+attribute [instance] SkyscraperLES.finH1D SkyscraperLES.finH1DP SkyscraperLES.finH0D
+  SkyscraperLES.finH0DP
+
+/-- **The crank (sorry-free).** Given the skyscraper long exact sequence, the single-point χ-jump
+`χ(D+P) = χ(D) + 1` is pure linear algebra: the alternating dimension sum of the six-term exact
+sequence is `0` (`six_term_exact_alt_sum`), and `dim ℂ_P = 1`. Rearranging
+`h⁰(D) − h⁰(D+P) + 1 − h¹(D) + h¹(D+P) = 0` gives the jump. No analytic content. -/
+theorem chi_jump_of_LES {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
+    (S : SkyscraperLES 𝔘 D P) : 𝔘.chi (D + Finsupp.single P 1) = 𝔘.chi D + 1 := by
+  haveI := S.finH1D; haveI := S.finH1DP; haveI := S.finH0D; haveI := S.finH0DP
+  have halt := six_term_exact_alt_sum
+    (Submodule.inclusion (𝔘.globalSections_le_add_single D P)) S.f₂ S.f₃ S.f₄
+    (Submodule.inclusion_injective _) S.exact₁ S.exact₂ S.exact₃ S.surj₄
+  -- `dim ℂ = 1`; identify the four `finrank`s with `h0Dim`/`h1Dim`.
+  rw [Module.finrank_self] at halt
+  simp only [chi, h0Dim, h1Dim, Nat.cast_one] at halt ⊢
+  linarith
+
+/-- **Existence of the skyscraper long exact sequence — THE NAMED HONEST `sorry`.**
+
+This is the genuine cohomological content of Riemann–Roch (Forster §16), isolated as the single
+remaining gap. Constructing it requires:
+
+1. the short exact sequence of germ-class cochain complexes `0 → C^•(𝒪_D) → C^•(𝒪_{D+P}) →
+   C^•(ℂ_P) → 0` (degreewise; the inclusion `f₁` and its cokernel the skyscraper complex);
+2. the skyscraper complex `C^•(ℂ_P)` having `H⁰ = ℂ` (1-diml) and `H^{≥1} = 0`;
+3. **the analytic sub-kernel**: degreewise surjectivity onto the skyscraper stalk — local
+   surjectivity of meromorphic sections, i.e. a section of `𝒪_{D+P}` near `P` realises *any*
+   prescribed principal-part coefficient of order `−D(P)−1`;
+4. the snake lemma (Mathlib `ShortComplex.SnakeInput` / `Algebra.Homology.HomologySequence`) turning
+   the SES of complexes into the six-term LES, supplying `f₂`, `f₃`, `f₄` and the exactness;
+5. finiteness of the `H¹` groups (Forster 14.9; `CechFinitenessWiring.finiteDimensional_cechH1_wired`
+   modulo `exists_cechModel`).
+
+It is stated honestly — *not* faked, *not* weakening the headline. Everything downstream
+(`chi_jump_of_LES`, the induction, `cohomological_riemannRoch`) is sorry-free. -/
+theorem exists_skyscraperLES (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+    Nonempty (SkyscraperLES 𝔘 D P) :=
+  sorry
+
+/-! ### The single-point χ-jump (sorry-free GIVEN the skyscraper LES) -/
+
+/-- **Single-point χ-jump (Forster §16).** `χ(D + P) = χ(D) + 1`. Obtained by running the proven
+linear-algebra crank `chi_jump_of_LES` on the skyscraper long exact sequence
+(`exists_skyscraperLES`, the single isolated homological/analytic kernel). -/
 theorem chi_jump (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
     𝔘.chi (D + Finsupp.single P 1) = 𝔘.chi D + 1 :=
-  sorry
+  (exists_skyscraperLES 𝔘 D P).elim chi_jump_of_LES
 
 /-! ### Iterated jump along a single point — `Int.induction_on` (CLOSED, pure ℤ-bookkeeping) -/
 
