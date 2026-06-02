@@ -1085,6 +1085,65 @@ theorem dbar_planarDiffH_eq_zero (𝔇 : ChartDiskCover X) (h : SmoothCFunctions
     oneForm_apply_conjLinear (dbarL_mem_zeroOne h) x (deriv σ z₀), hdbarL]
   ring
 
+/-- The chart-`i` read of `u_i − h` is holomorphic at `e_i x` (`dbar_planarDiffH_eq_zero` + local
+smoothness + local Cauchy–Riemann). The single-chart analogue of `differentiableAt_planarDiff`. -/
+theorem differentiableAt_planarDiffH (𝔇 : ChartDiskCover X) (h : SmoothCFunctions X) (i : 𝔇.ι)
+    {x : X} (hxi : x ∈ (𝔇.U i : Set X)) :
+    DifferentiableAt ℂ (fun z => 𝔇.planarPrimitive i (dbarL h) z
+        - h ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).symm z))
+      ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)) x) := by
+  set ei := extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) with hei
+  set z₀ := ei x with hz0
+  have hxsi : x ∈ ei.source := 𝔇.subset_chart_source i hxi
+  have hz0tgt : z₀ ∈ ei.target := by rw [hz0]; exact ei.map_source hxsi
+  have hBdiff : DifferentiableAt ℝ (fun z => h (ei.symm z)) z₀ := by
+    have hsymm : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) ei.symm ei.target z₀ :=
+      (contMDiffOn_extChartAt_symm (𝔇.center i)) _ hz0tgt
+    have hcomp : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun z => h (ei.symm z)) ei.target z₀ :=
+      (h.contMDiff (ei.symm z₀)).contMDiffWithinAt.comp z₀ hsymm (fun _ _ => Set.mem_univ _)
+    exact (contMDiffAt_iff_contDiffAt.mp
+      (hcomp.contMDiffAt ((isOpen_extChartAt_target (𝔇.center i)).mem_nhds hz0tgt))).differentiableAt
+      (by norm_num)
+  exact differentiableAt_complex_of_dbar_eq_zero
+    (((𝔇.contDiff_planarPrimitive i (dbarL h)).differentiable (by norm_num) z₀).sub hBdiff)
+    (𝔇.dbar_planarDiffH_eq_zero h i hxi)
+
+/-- `Gext (u_i − h)`, read in each point's own chart, is analytic — single-chart analogue of
+`gext_diff_analyticAt` (using `differentiableAt_planarDiffH`). -/
+theorem gextH_diff_analyticAt (𝔇 : ChartDiskCover X) (h : SmoothCFunctions X) (i : 𝔇.ι)
+    (F : ↥(𝔇.U i) → ℂ)
+    (hFeq : ∀ v : ↥(𝔇.U i), F v
+      = 𝔇.planarPrimitive i (dbarL h) (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) v.1) - h v.1)
+    (w : ↥(𝔇.U i)) :
+    AnalyticAt ℂ (Gext F ∘ (chartAt (H := ℂ) (w : X)).symm) ((chartAt (H := ℂ) (w : X)) (w : X)) := by
+  obtain ⟨wx, hwx⟩ := w
+  refine analyticAt_chart_change (y := 𝔇.center i) ?_ ?_
+  · have := 𝔇.subset_chart_source i hwx; rwa [extChartAt_source] at this
+  · set ci := chartAt (H := ℂ) (𝔇.center i) with hci
+    set Hi : ℂ → ℂ := fun z => 𝔇.planarPrimitive i (dbarL h) z
+      - h ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).symm z) with hHi
+    set W : Set ℂ := ci.target ∩ ci.symm ⁻¹' ((𝔇.U i : TopologicalSpace.Opens X) : Set X) with hWdef
+    have hwsrc : wx ∈ ci.source := by
+      have := 𝔇.subset_chart_source i hwx; rwa [extChartAt_source] at this
+    have hWopen : IsOpen W := ci.isOpen_inter_preimage_symm (𝔇.U i).isOpen
+    have hmemW : ci wx ∈ W :=
+      ⟨ci.map_source hwsrc, by simp only [Set.mem_preimage, ci.left_inv hwsrc]; exact hwx⟩
+    have hcoe : ∀ p : X, (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)) p = ci p := fun p => by simp [hci, mfld_simps]
+    have hcoesymm : ∀ q : ℂ, (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).symm q = ci.symm q := fun q => by
+      simp [hci, mfld_simps]
+    have hHiOn : DifferentiableOn ℂ Hi W := by
+      intro z hz
+      have hzV : ci.symm z ∈ ((𝔇.U i : TopologicalSpace.Opens X) : Set X) := hz.2
+      have hd := 𝔇.differentiableAt_planarDiffH h i hzV
+      rw [hcoe (ci.symm z), ci.right_inv hz.1] at hd
+      exact hd.differentiableWithinAt
+    have hEq : Set.EqOn (Gext F ∘ ci.symm) Hi W := by
+      intro z hz
+      have hzV : ci.symm z ∈ ((𝔇.U i : TopologicalSpace.Opens X) : Set X) := hz.2
+      simp only [Function.comp_apply, Gext_apply_mem F hzV, hFeq, hHi, hcoesymm,
+        hcoe (ci.symm z), ci.right_inv hz.1]
+    exact (hHiOn.congr hEq).analyticAt (hWopen.mem_nhds hmemW)
+
 /-- The **linear 0-cochain of disk primitives**: `g ↦ (i ↦ [u_i])`, the germ-classes of the local
 `∂̄`-primitives. `ℝ`-linear in `g` (via `planarPrimitive` linearity + `toGerm`). Its `cechDelta0` is
 the Dolbeault → Čech cocycle. -/
@@ -1221,8 +1280,39 @@ theorem dolbeaultToCechCocycle_dbarImage_le (𝔇 : ChartDiskCover X) :
     dbarImageInZeroOne X ≤ LinearMap.ker
       ((Submodule.mkQ ((𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
           (𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))).restrictScalars ℝ
-        ∘ₗ dolbeaultToCechCocycle 𝔇) :=
-  sorry
+        ∘ₗ dolbeaultToCechCocycle 𝔇) := by
+  intro w hw
+  simp only [dbarImageInZeroOne, Submodule.submoduleOf, Submodule.mem_comap,
+    Submodule.subtype_apply] at hw
+  obtain ⟨h, hh⟩ := hw
+  -- `↑(dolbeaultToCechCocycle 𝔇 w) = cechDelta0 (rawCochain ↑w) = cechDelta0 (rawCochain (∂̄h))`.
+  have hval : ((dolbeaultToCechCocycle 𝔇 w : ↥(𝔇.toFiniteCover.cocycles1 0)) :
+        𝔇.toFiniteCover.Cochain1)
+      = 𝔇.toFiniteCover.cechDelta0 (𝔇.rawCochain (dbarL h)) := by
+    show 𝔇.toFiniteCover.cechDelta0 (𝔇.rawCochain (↑w : SmoothCOneForms X))
+      = 𝔇.toFiniteCover.cechDelta0 (𝔇.rawCochain (dbarL h))
+    rw [hh]
+  rw [LinearMap.mem_ker, LinearMap.comp_apply, LinearMap.restrictScalars_apply,
+    Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
+  simp only [Submodule.submoduleOf, Submodule.mem_comap, Submodule.subtype_apply]
+  rw [hval]
+  -- Coboundary witness: `{[u_i]} − {[h|U_i]} ∈ sections0`, and `cechDelta0` of the global `h` is `0`.
+  refine ⟨𝔇.rawCochain (dbarL h) - fun k => toGerm (𝔇.U k) (⇑h ∘ Subtype.val), ?_, ?_⟩
+  · intro k
+    rw [Pi.sub_apply,
+      show 𝔇.rawCochain (dbarL h) k = toGerm (𝔇.U k) (𝔇.diskSection k (dbarL h)) from rfl, ← map_sub]
+    exact ⟨𝔇.diskSection k (dbarL h) - ⇑h ∘ Subtype.val,
+      mem_OmegaD_zero_of_gext_analytic (fun v => 𝔇.gextH_diff_analyticAt h k _
+        (fun u => by simp only [Pi.sub_apply, Function.comp_apply, ChartDiskCover.diskSection]) v),
+      rfl⟩
+  · rw [map_sub]
+    have hc0 : 𝔇.toFiniteCover.cechDelta0 (fun k => toGerm (𝔇.U k) (⇑h ∘ Subtype.val)) = 0 := by
+      funext p
+      obtain ⟨a, b⟩ := p
+      simp only [FiniteCover.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
+        LinearMap.comp_apply, LinearMap.proj_apply, rawRestrictG_coe, Pi.zero_apply, sub_eq_zero]
+      rfl
+    rw [hc0, sub_zero]
 
 /-- **Dolbeault → Čech.** The `ℝ`-linear map `H^{0,1}(X) → H¹(X, 𝒪)`. Assembled **sorry-free** from
 the analytic cocycle operator `dolbeaultToCechCocycle` and its well-definedness
