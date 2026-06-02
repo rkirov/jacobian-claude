@@ -189,4 +189,41 @@ abbrev DolbeaultH01 (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X
 noncomputable example : AddCommGroup (DolbeaultH01 X) := inferInstance
 noncomputable example : Module ℝ (DolbeaultH01 X) := inferInstance
 
+/-! ### Deliverable 5: the L3 kernel — Čech ↔ Dolbeault comparison.
+
+This is the genuine analytic content of the `D = 0` Serre nugget (`H¹(X,𝒪) ≅ H^{0,1} ≅ Ω(X)^*`,
+cf. `DolbeaultLadder.arithmeticGenus_eq_genus`). The proof is the ∂̄-globalization / Čech patching
+argument — locally `∂̄`-solve a Čech `𝒪`-cocycle (`DbarLocal.dbar_solvable_locally`), glue with a
+partition of unity, and the `∂̄` of the glued primitive is a global `(0,1)`-form whose class is the
+image; conversely a global `(0,1)`-form is locally `∂̄`-exact and the local primitives' differences
+are a holomorphic Čech cocycle. PDE-free given local solvability. Left as the single honest `sorry`.
+
+**SCALAR NOTE (the ℂ-vs-ℝ question, resolved).** `cechH1 𝔘 0 = H¹(X, 𝒪)` is a `Module ℂ`; on a
+compact Riemann surface of genus `g` it has `finrank ℂ = g`. `DolbeaultH01 X` is, *as built here*,
+only a `Module ℝ`: the hom-bundle fiber `ℂ →L[ℝ] ℂ` is `Module ℂ` (via its codomain), but that
+ℂ-action is **not** propagated to the `ContMDiffSection` space `A¹` (Mathlib synthesises neither
+`SMul ℂ (SmoothCOneForms X)` nor `Module ℂ`), so the quotient inherits only `Module ℝ`. The honest
+underlying spaces:
+* `A^{0,1}` *is* genuinely a complex vector space (scale a `(0,1)`-form by `c ∈ ℂ` pointwise via the
+  codomain — it stays `(0,1)`), and `H^{0,1}` has `finrank ℂ = g` (Dolbeault `≅ H¹(𝒪)`). Hence its
+  **real** dimension is `2g`.
+* Therefore the *naïve* "respective-scalars" equality `finrank ℂ (cechH1 𝔘 0) = finrank ℝ
+  (DolbeaultH01 X)` would read `g = 2g` and is **FALSE** — we deliberately do NOT state that.
+
+The correctly-typed, scalar-honest equality (the form stated below) is
+`finrank ℝ (DolbeaultH01 X) = 2 * finrank ℂ (cechH1 𝔘 0)` (both sides `= 2g`). The cleaner
+`finrank ℂ`-equality / `≃ₗ[ℂ]` requires first equipping `DolbeaultH01 X` with its natural `Module ℂ`
+(the pointwise codomain action) — itself part of the L3 build — and is recorded as a comment for the
+downstream `arithmeticGenus_eq_genus` consumer, which only needs `finrank ℂ (cechH1 𝔘 0) = g`. -/
+
+/-- **The L3 kernel: Čech ↔ Dolbeault comparison** (deliverable 5, honest `sorry`).
+`H¹(X, 𝒪) = cechH1 𝔘 0` and the Dolbeault `H^{0,1}(X)` have equal dimension up to the real-vs-complex
+scalar factor: `finrank ℝ (DolbeaultH01 X) = 2 · finrank ℂ (cechH1 𝔘 0)` (both `= 2g`). See the
+SCALAR NOTE above for why this (not the mistyped `g = 2g` form) is the correct statement, and for the
+cleaner `≃ₗ[ℂ]`/`finrank ℂ`-equality once `DolbeaultH01` carries its natural `Module ℂ`. The content
+is ∂̄-globalization + Čech patching (PDE-free given local `∂̄`-solvability). -/
+theorem cechH1_dolbeault_comparison (𝔘 : FiniteCover X) :
+    Module.finrank ℝ (DolbeaultH01 X) = 2 * Module.finrank ℂ (𝔘.cechH1 0) :=
+  sorry
+
 end Jacobians.Dolbeault
