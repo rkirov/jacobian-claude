@@ -129,6 +129,16 @@ theorem toGerm_eq_zero_iff {U : Opens X} (g : U → ℂ) :
   simp only [Pi.zero_apply, Set.mem_univ, forall_const, Set.compl_univ, Set.union_empty]
   rfl
 
+/-- Two germ-classes are equal iff their representatives agree off a discrete set near every point.
+The two-function form of `toGerm_eq_zero_iff` (same codiscrete ⟺ `∀ 𝓝[≠]` bridge). -/
+theorem toGerm_eq_iff {U : Opens X} (a b : U → ℂ) :
+    toGerm U a = toGerm U b ↔ ∀ u : U, a =ᶠ[𝓝[≠] u] b := by
+  show (a : MGerm U) = (b : MGerm U) ↔ _
+  rw [Filter.Germ.coe_eq, Filter.EventuallyEq, Filter.Eventually,
+    mem_codiscreteWithin_iff_forall_mem_nhdsNE]
+  simp only [Set.mem_univ, forall_const, Set.compl_univ, Set.union_empty]
+  rfl
+
 /-! ### Extension-by-zero of an `↥U`-section and the `↥U ↔ X` chart bridge
 
 For the gluing crux we need to talk about a section `g : ↥U → ℂ` as a function on the *ambient* `X`,
@@ -205,6 +215,44 @@ theorem nfX_Gext_iff {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
         ((chartAt (H := ℂ) (⟨y, hy⟩ : U)) ⟨y, hy⟩) := by
   obtain ⟨hbase, hev⟩ := Gext_chart_bridge g hy
   rw [nfX, hbase, meromorphicNFAt_congr hev]
+
+/-- Transport a punctured-neighbourhood property from the open submanifold `↥V` to the ambient `X`:
+since `↥V ↪ X` is an open embedding and `V ∈ 𝓝 x`, a `𝓝[≠] ⟨x⟩`-statement on `↥V` becomes the
+corresponding `𝓝[≠] x`-statement on `X`. (`Subtype.val` maps `𝓝[≠] ⟨x⟩` to `𝓝[V\{x}] x = 𝓝[≠] x`.) -/
+theorem eventually_nhdsNE_of_subtype {V : Opens X} {x : X} (hx : x ∈ V) (P : X → Prop)
+    (h : ∀ᶠ w in 𝓝[≠] (⟨x, hx⟩ : V), P w.1) :
+    ∀ᶠ z in 𝓝[≠] x, P z := by
+  have hemb : Topology.IsEmbedding (Subtype.val : V → X) := Topology.IsEmbedding.subtypeVal
+  have hmap : Filter.map (Subtype.val : V → X) (𝓝[≠] (⟨x, hx⟩ : V)) = 𝓝[≠] x := by
+    rw [hemb.map_nhdsWithin_eq]
+    have himg : (Subtype.val : V → X) '' ({(⟨x, hx⟩ : V)}ᶜ) = (V : Set X) \ {x} := by
+      ext z
+      simp only [Set.mem_image, Set.mem_compl_iff, Set.mem_singleton_iff, Set.mem_diff,
+        SetLike.mem_coe]
+      refine ⟨?_, ?_⟩
+      · rintro ⟨w, hw, rfl⟩; exact ⟨w.2, fun hc => hw (Subtype.ext hc)⟩
+      · rintro ⟨hzV, hzx⟩; exact ⟨⟨z, hzV⟩, fun hc => hzx (congrArg Subtype.val hc), rfl⟩
+    rw [himg, Set.diff_eq]
+    exact nhdsWithin_inter_of_mem (mem_nhdsWithin_of_mem_nhds (V.isOpen.mem_nhds hx))
+  have h2 : ∀ᶠ z in Filter.map (Subtype.val : V → X) (𝓝[≠] (⟨x, hx⟩ : V)), P z := by
+    rw [Filter.eventually_map]; exact h
+  rwa [hmap] at h2
+
+/-- **Overlap agreement.** If two representatives' germs match after restriction to the overlap (the
+Čech matching condition, via `rawRestrictG`), their extensions-by-zero `Gext` agree off a discrete
+set near every overlap point. This is what makes the per-point normal forms glue *honestly*. -/
+theorem Gext_overlap_eventuallyEq {U V : Opens X} (gU : U → ℂ) (gV : V → ℂ)
+    (hmatch : rawRestrictG (inf_le_right : U ⊓ V ≤ V) (toGerm V gV)
+      = rawRestrictG (inf_le_left : U ⊓ V ≤ U) (toGerm U gU))
+    {x : X} (hxU : x ∈ U) (hxV : x ∈ V) :
+    Gext gU =ᶠ[𝓝[≠] x] Gext gV := by
+  rw [rawRestrictG_coe, rawRestrictG_coe, toGerm_eq_iff] at hmatch
+  have hxUV : x ∈ U ⊓ V := ⟨hxU, hxV⟩
+  refine eventually_nhdsNE_of_subtype hxUV (fun z => Gext gU z = Gext gV z) ?_
+  filter_upwards [hmatch ⟨x, hxUV⟩] with w hw
+  rw [Gext_apply_mem gU w.2.1, Gext_apply_mem gV w.2.2]
+  simp only [Function.comp_apply, openIncl] at hw
+  exact hw.symm
 
 /-! ### The forward map `L(D) → H⁰(𝔘, 𝒪_D)` -/
 
