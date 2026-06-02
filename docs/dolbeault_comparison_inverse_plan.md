@@ -28,7 +28,39 @@ Given a holomorphic Čech 1-cocycle `f = {f_ij}` (`δ¹f = 0`, each `f_ij ∈ �
 | `∂̄` of a function as a `(0,1)`-form | `RealForms.dbar` / `dbarL` (global `SmoothCFunctions`) | ✅ repo |
 | **smooth-section gluing** (local `(0,1)`-forms agreeing on overlaps → global section) | — | ❌ **not in Mathlib; the key new infra** |
 
-## The crux: building `ω` as a global `ContMDiffSection`
+## ⭐ BETTER CONSTRUCTION (Route DoubleSum — supersedes Route G below)
+
+**Avoid the per-point gluing entirely.** Build `ω` as a *finite sum of global smooth forms*:
+
+`ω := ∑_{(j,k)} ρ_j · (∂̄ρ_k) · F_{jk}`   (`F_{jk}` = holomorphic rep of `f_{jk}`).
+
+Each term `T_{jk} := ρ_j · (∂̄ρ_k) · F_{jk}` is **global smooth**: it is supported in `U_j ∩ U_k`
+(`ρ_j` vanishes off `U_j`, `∂̄ρ_k` off `U_k`), so it extends by `0` to all of `X`. Verified that
+`ω|_{U_i} = ∑_k (∂̄ρ_k)·f_ik = ±∂̄(local primitive)` via the cocycle (`f_jk = f_ik − f_ij` on triples,
+`∑ρ_j = 1`, `∑∂̄ρ_k = ∂̄1 = 0`) — so `[ω]` is the right Dolbeault class.
+
+**Infra that makes this work (all confirmed present):**
+- `ContMDiff.smul_section` / `ContMDiffOn.smul_section_of_tsupport`
+  (`…/VectorBundle/SmoothSection.lean`): smooth/`tsupport`-localized scaling of sections — builds
+  `T_{jk} = ρ_j • (F̃_{jk} • ∂̄ρ_k)` as a genuine `SmoothCOneForms` (no by-hand section).
+- `SmoothCOneForms` is a `Module ℝ`; the fiber `ℂ →L[ℝ] ℂ` is a `ℂ`-module (scale by `F̃_{jk} : X→ℂ`).
+- `∂̄ρ_k := dbarL ρ̃_k` where `ρ̃_k = ofReal ∘ ρ_k : SmoothCFunctions` (the only coe to watch).
+- `F̃_{jk} = Gext (holoRep f_jk)` (phase-2 `holoRep` + `Gext`), smooth on `U_j∩U_k`.
+
+**Linearity in `f` (no identity theorem needed):** `holoRep` uses choice, but two reps of the same
+class differ by a *codiscrete-zero* function; multiplied by the smooth `ρ_j·∂̄ρ_k` the difference is a
+*continuous form vanishing off a dense (codiscrete-complement) set* ⟹ `0`. So `ω(f₁+f₂) = ω(f₁)+ω(f₂)`
+and `ω(c•f) = c•ω(f)` hold at the form level. (`Filter.codiscreteWithin` complement is dense.)
+
+**Membership `ω ∈ OneFormsZeroOne`:** each `T_{jk}` is `(function) • (∂̄ρ_k)`, and `∂̄ρ_k ∈
+OneFormsZeroOne` (`dbarL_mem_zeroOne`); `OneFormsZeroOne` is closed under the fiber `ℂ`-scaling
+(it is `range proj01L`, and `proj01` commutes with codomain scaling) — small lemma.
+
+This is **far more tractable** than Route G (no `gluedFun`-for-forms, no `idx`, no `eventuallyEq`
+smoothness). Revised phase order: ②`holoRep` ✅ → ③ `ρ̃`/`∂̄ρ` + the `T_{jk}` term → ④ `ω` = finite
+sum, membership, linearity → ⑤ well-definedness → ⑥ round-trips.
+
+## (Superseded) Route G: building `ω` as a global `ContMDiffSection`
 
 `SmoothCOneForms = ContMDiffSection …`; a section is `{ toFun, contMDiff_toFun }`. Two viable routes:
 
