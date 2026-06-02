@@ -179,4 +179,65 @@ noncomputable def OmegaD.restrict (h : V ≤ U) : OmegaD D U →ₗ[ℂ] OmegaD 
 
 end Restriction
 
+/-! ### Germ-class sections — the junk-free representation (`Filter.Germ` over `codiscreteWithin`)
+
+Meromorphic functions are taken modulo `=ᶠ[codiscreteWithin]` (equality off a discrete set — the
+removable-singularity junk), the standard equivalence of `Analysis.Meromorphic.NormalForm`. Mathlib's
+`Filter.Germ` realises this quotient as a clean `ℂ`-algebra with *no* manual quotient bookkeeping, so
+`𝒪_D`-sections and `h⁰` are junk-free automatically. -/
+
+/-- **Germ-class functions on `↥U`**: `(↥U → ℂ)` modulo codiscrete equality — the junk-free section
+space. A `ℂ`-module via `Filter.Germ`. -/
+abbrev MGerm (U : Opens X) : Type _ := Filter.Germ (Filter.codiscreteWithin (Set.univ : Set U)) ℂ
+
+/-- The germ projection `(↥U → ℂ) →ₗ[ℂ] MGerm U` (quotient by germ-zero junk). -/
+def toGerm (U : Opens X) : (U → ℂ) →ₗ[ℂ] MGerm U where
+  toFun f := (f : MGerm U)
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+section GermRestriction
+variable {U V : Opens X}
+
+/-- The open inclusion `↥V → ↥U` pulls codiscrete sets back to codiscrete sets (it is an open
+embedding), so precomposition descends to germ-classes. -/
+theorem tendsto_openIncl (h : V ≤ U) :
+    Filter.Tendsto (openIncl h) (Filter.codiscreteWithin (Set.univ : Set V))
+      (Filter.codiscreteWithin (Set.univ : Set U)) := by
+  have hemb := TopologicalSpace.Opens.isOpenEmbedding_of_le h
+  rw [Filter.codiscreteWithin]
+  refine Filter.tendsto_iSup.2 fun v => Filter.tendsto_iSup.2 fun _ => ?_
+  refine Filter.Tendsto.mono_right ?_
+    (le_iSup₂_of_le (openIncl h v) (Set.mem_univ _) le_rfl)
+  refine (hemb.continuous.continuousWithinAt).tendsto_nhdsWithin (fun w hw => ?_)
+  simp only [Set.mem_diff, Set.mem_univ, Set.mem_singleton_iff, true_and] at hw ⊢
+  exact fun hc => hw (hemb.injective hc)
+
+/-- Restriction on germ-classes `MGerm U →ₗ[ℂ] MGerm V` (`V ≤ U`): precomposition with the open
+inclusion, descended to germs. -/
+noncomputable def rawRestrictG (h : V ≤ U) : MGerm U →ₗ[ℂ] MGerm V where
+  toFun f := f.compTendsto (openIncl h) (tendsto_openIncl h)
+  map_add' f g := by
+    induction f using Filter.Germ.inductionOn with | _ f =>
+    induction g using Filter.Germ.inductionOn with | _ g =>
+    rfl
+  map_smul' c f := by
+    induction f using Filter.Germ.inductionOn with | _ f => rfl
+
+@[simp] theorem rawRestrictG_coe (h : V ≤ U) (f : U → ℂ) :
+    rawRestrictG h (toGerm U f) = toGerm V (f ∘ openIncl h) := rfl
+
+end GermRestriction
+
+/-- **`𝒪_D`-sections as germ-classes**: the image of `OmegaD` under the germ projection — junk-free,
+no quotient. -/
+noncomputable def OmegaDGerm (D : Divisor X) (U : Opens X) : Submodule ℂ (MGerm U) :=
+  Submodule.map (toGerm U) (OmegaD D U)
+
+/-- Germ restriction preserves `𝒪_D`-sections. -/
+theorem rawRestrictG_omegaDGerm {D : Divisor X} {U V : Opens X} (h : V ≤ U) {f : MGerm U}
+    (hf : f ∈ OmegaDGerm D U) : rawRestrictG h f ∈ OmegaDGerm D V := by
+  obtain ⟨g, hg, rfl⟩ := hf
+  exact ⟨g ∘ openIncl h, (OmegaD.restrict h ⟨g, hg⟩).2, rfl⟩
+
 end Jacobians.Dolbeault
