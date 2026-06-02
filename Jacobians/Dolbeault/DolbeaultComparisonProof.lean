@@ -357,29 +357,46 @@ theorem cechH1_dolbeault_comparison_proof :
 * `cechCoboundary_telescoping` — the partition-of-unity telescoping `h_j − h_i = f_ij`, the
   algebraic heart of the Čech → Dolbeault coboundary construction;
 * `exists_smoothPartitionOfUnity_subordinate` — the smooth PoU subordinate to the cover (the actual
-  analytic input of the inverse map), from Mathlib + the `RealManifold` `σ`-compactness.
+  analytic input of the inverse map), from Mathlib + the `RealManifold` `σ`-compactness;
+* **the chart-transport bridge and its consequences** (the genuine analytic crux of kernel 1, now
+  fully proven): `dbar_apply_one_eq_dbarDisk` (intrinsic `∂̄` read in a chart `= DbarDisk.dbar` of
+  the chart-pullback), `mfderiv_apply_eq_fderiv_pullback`, the `(0,1)`-fiber algebra
+  (`proj01_apply_one` / `proj01_conjLinear` / `proj01_eq_conj_smul` / `proj01_ext_of_apply_one`),
+  the value-`1`-to-CLM upgrade `dbar_eq_of_apply_one`, and the global smooth lift
+  `exists_smoothLift_of_chartFun` (via `SmoothBumpFunction.contMDiff_smul`);
+* `dbar_solvable_locally_manifold` itself — local `∂̄`-solvability on the MANIFOLD — is now **proven
+  sorry-free** from the finer kernel `exists_localPrimitive_apply_one` via the chart bridge + the
+  value-`1` upgrade.
 
-**The five named honest sub-kernels (each a TRUE statement; the irreducible remainder):**
-1. `dbar_solvable_locally_manifold` — the *only* PDE appeal: local `∂̄`-solvability for the MANIFOLD
-   operator `dbar`. It is the DONE `DbarLocal.dbar_solvable_locally` (the Cauchy transform on
-   `ℂ → ℂ`, already axiom-clean) **modulo** the chart-transport bridge `dbar` (intrinsic) read in a
-   holomorphic chart `= DbarDisk.dbar` of the chart-pullback. That bridge has no Mathlib path and is
-   the genuine missing analysis here.
+**The named honest sub-kernels (each a TRUE statement; the irreducible remainder):**
+1. `exists_localPrimitive_apply_one` (the refined kernel 1) — local `∂̄`-solvability at the value-`1`
+   level. The chart bridge (`= DbarDisk.dbar` of the pullback), the global smooth lift, and the
+   planar PDE `DbarLocal.dbar_solvable_locally` are all DONE; the irreducible remainder this carries
+   is the *chart-transition equivariance* of `∂̄` (a single planar solve lives in the `x₀`-chart, but
+   the intrinsic value is read in the chart at `x`, the two differing by the holomorphic transition,
+   under which the Wirtinger derivative transforms by `conj(τ′)`) together with the smoothness of the
+   chart-read datum `z ↦ g (chart⁻¹ z) 1`. This is the genuine smooth-section/PDE dictionary Mathlib
+   lacks.
 2. `dolbeault_to_cech` — the forward map *as a well-defined linear map on cohomology* (independence
-   of the form representative and of the local primitive choices; builds on (1) + the cocycle
-   backbone).
+   of the form representative and of the local primitive choices; builds on the now-proven
+   `dbar_solvable_locally_manifold` + the cocycle backbone).
 3. `cech_to_dolbeault` — the inverse map *as a well-defined linear map on cohomology* (the PoU
    globalization; builds on `cechCoboundary_telescoping` + the PoU + the gluing of `∂̄h_i`).
 4–5. `cech_to_dolbeault_comp_dolbeault_to_cech` / `dolbeault_to_cech_comp_cech_to_dolbeault` —
    `comparison_bijective`: the two maps are mutually inverse.
 
-**Assessment.** Dolbeault's theorem is the composite of (i) the local PDE (`DbarLocal`, DONE up to a
-chart bridge), (ii) the Čech/coboundary *algebra* (sorry-free here), (iii) a partition-of-unity
-*globalization* (its PoU input sorry-free here; the smooth-section gluing remains), and (iv) the
-*well-definedness + mutual-inverse* of the resulting maps. We have mechanized the full bookkeeping
-spine and the discrete/algebraic skeleton (ii) sorry-free, and the PoU existence; the irreducible
-analytic remainder is concentrated in the chart-transport of `∂̄` (1) and the construction of the two
-maps as honest cohomology homomorphisms (2,3) with their mutual inverseness (4,5) — the parts that
-genuinely require building the smooth-section ↔ holomorphic-germ dictionary that Mathlib lacks. -/
+**Assessment.** Dolbeault's theorem is the composite of (i) the local PDE (`DbarLocal`, DONE) plus
+its transport to the manifold operator — the chart bridge `dbar_apply_one_eq_dbarDisk` and the
+global smooth lift `exists_smoothLift_of_chartFun` are now both proven, so
+`dbar_solvable_locally_manifold` is sorry-free *modulo* the single finer kernel
+`exists_localPrimitive_apply_one` (the `∂̄` chart-transition equivariance); (ii) the Čech/coboundary
+*algebra* (sorry-free here); (iii) a partition-of-unity *globalization* (its PoU input sorry-free
+here; the smooth-section gluing remains); and (iv) the *well-definedness + mutual-inverse* of the
+resulting maps. We have mechanized the full bookkeeping spine, the discrete/algebraic skeleton (ii),
+the PoU existence, and the entire chart-transport bridge of `∂̄` sorry-free; the irreducible analytic
+remainder is concentrated in the `∂̄` transition-equivariance (kernel 1) and the construction of the
+two maps as honest cohomology homomorphisms (2,3) with their mutual inverseness (4,5) — the parts
+that genuinely require building the smooth-section ↔ holomorphic-germ dictionary that Mathlib
+lacks. -/
 
 end Jacobians.Dolbeault
