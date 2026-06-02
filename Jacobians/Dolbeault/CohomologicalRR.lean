@@ -245,14 +245,19 @@ structure SkyscraperLES (𝔘 : FiniteCover X) (D : Divisor X) (P : X) where
   [finH1D : FiniteDimensional ℂ (𝔘.cechH1 D)]
   /-- `H¹(𝒪_{D+P})` is finite-dimensional (Forster 14.9; `finiteDimensional_cechH1`). -/
   [finH1DP : FiniteDimensional ℂ (𝔘.cechH1 (D + Finsupp.single P 1))]
-  /-- `H⁰(𝒪_D)` is finite-dimensional (follows from finiteness of `H¹` and the skyscraper via the
-  LES; carried as a field since the construction supplies it). -/
-  [finH0D : FiniteDimensional ℂ ↥(𝔘.globalSections D)]
-  /-- `H⁰(𝒪_{D+P})` is finite-dimensional (likewise). -/
+  /-- `H⁰(𝒪_{D+P})` is finite-dimensional (Forster compactness; the bridge `h0Dim_eq_lDim` to the
+  finite linear system `L(D+P)`). `H⁰(𝒪_D)` finiteness is then *derived* (it injects into this one,
+  `h0Incl_injective`), so it is not a separate field. -/
   [finH0DP : FiniteDimensional ℂ ↥(𝔘.globalSections (D + Finsupp.single P 1))]
 
-attribute [instance] SkyscraperLES.finH1D SkyscraperLES.finH1DP SkyscraperLES.finH0D
-  SkyscraperLES.finH0DP
+attribute [instance] SkyscraperLES.finH1D SkyscraperLES.finH1DP SkyscraperLES.finH0DP
+
+/-- `H⁰(𝒪_D)` is finite-dimensional, *derived* from `H⁰(𝒪_{D+P})` finiteness via the injective
+inclusion `h0Incl` (`FiniteDimensional.of_injective`). Not assumed. -/
+instance (priority := 100) SkyscraperLES.finH0D {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
+    (S : SkyscraperLES 𝔘 D P) : FiniteDimensional ℂ ↥(𝔘.globalSections D) :=
+  haveI := S.finH0DP
+  FiniteDimensional.of_injective (𝔘.h0Incl D P) (𝔘.h0Incl_injective D P)
 
 /-- **The crank (sorry-free).** Given the skyscraper long exact sequence, the single-point χ-jump
 `χ(D+P) = χ(D) + 1` is pure linear algebra: the alternating dimension sum of the six-term exact
