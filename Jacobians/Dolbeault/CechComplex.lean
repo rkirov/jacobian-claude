@@ -15,6 +15,7 @@
   `CechSection` plus `δ² = 0` (also mechanical).
 -/
 import Jacobians.Dolbeault.CechSection
+import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -39,6 +40,15 @@ attribute [instance] FiniteCover.fintype
 namespace FiniteCover
 
 variable (𝔘 : FiniteCover X) (D : Divisor X)
+
+/-- A finite cover is **Leray** (for `𝒪`): each cover set is simply connected (a simply-connected open
+subset of a Riemann surface is biholomorphic to a disk or `ℂ`, hence `H¹(𝒪)=0`), and pairwise
+intersections are connected. The standard hypothesis under which Čech `H¹` computes sheaf cohomology
+(Forster §12, Leray). The chart-disk cover satisfies it. NOTE: may be strengthened when the disk-cover
+construction pins the exact acyclicity; it is an honest *conditional* hypothesis, not the final word. -/
+def IsLeray (𝔘 : FiniteCover X) : Prop :=
+  (∀ i : 𝔘.ι, SimplyConnectedSpace ↥(𝔘.U i)) ∧
+  (∀ i j : 𝔘.ι, IsPreconnected ((𝔘.U i ⊓ 𝔘.U j : TopologicalSpace.Opens X) : Set X))
 
 /-! ### Cochain spaces — germ-classes (`MGerm`), the junk-free sections (no junk quotient). -/
 
