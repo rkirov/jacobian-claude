@@ -83,9 +83,12 @@ noncomputable def proj01 : (ℂ →L[ℝ] ℂ) →L[ℝ] (ℂ →L[ℝ] ℂ) :=
   (2 : ℝ)⁻¹ • (ContinuousLinearMap.id ℝ (ℂ →L[ℝ] ℂ) +
     (ContinuousLinearMap.compL ℝ ℂ ℂ ℂ mulI).comp ((ContinuousLinearMap.compL ℝ ℂ ℂ ℂ).flip mulI))
 
+/-- `proj01` written out: `P(α) = ½(α + i·α(i·−))`. -/
+theorem proj01_apply (α : ℂ →L[ℝ] ℂ) :
+    proj01 α = (2 : ℝ)⁻¹ • (α + mulI.comp (α.comp mulI)) := rfl
+
 /-- The **Dolbeault `∂̄` operator** `A⁰ → A^{0,1} ⊆ A¹`: the `(0,1)`-part of the de Rham differential,
-`∂̄u = proj01 ∘ du`. A smooth `ℂ`-valued 1-form. Section-smoothness is `clm_bundle_apply` (apply the
-constant fiber endomorphism `proj01` to the smooth section `du`). -/
+`∂̄u = proj01 ∘ du`. A smooth `ℂ`-valued 1-form. -/
 noncomputable def dbar (u : SmoothCFunctions X) : SmoothCOneForms X where
   toFun := fun x => proj01 ((differential u).toFun x)
   contMDiff_toFun := by
