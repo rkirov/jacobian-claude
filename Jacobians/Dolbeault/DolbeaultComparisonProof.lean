@@ -1092,6 +1092,7 @@ The cohomological assembly — lifting through the two quotients `DolbeaultH01 =
 `cechH1 = Z¹/B¹`, with the `ℂ→ℝ` scalar restriction — is then **sorry-free** (`Submodule.liftQ`).
 -/
 
+set_option maxHeartbeats 1000000 in
 /-- **(Analytic sub-kernel — the Dolbeault → Čech cocycle operator.)** The `ℝ`-linear map sending a
 `(0,1)`-form `g ∈ A^{0,1}` to the Čech `1`-cocycle `{[u_j] − [u_i]} = cechDelta0 {[u_i]} ∈ Z¹(𝔘, 𝒪)`,
 where `u_i` solves `∂̄u_i = g` on the (simply-connected / disk) cover set `U_i`.
@@ -1103,9 +1104,14 @@ Cauchy-transform solution operator is linear), so the whole assignment is `ℝ`-
 lands in `cocycles1` because (i) `cechDelta0 c ∈ ker cechDelta1` for *any* germ-class cochain `c`
 (`cechDelta0_mem_ker_cechDelta1`, sorry-free), and (ii) on each overlap `U_i ∩ U_j` the difference
 `u_j − u_i` is **holomorphic** (`∂̄(u_j − u_i) = g − g = 0`), so `cechDelta0 {[u_i]} ∈ sections1 0`. -/
-noncomputable def dolbeaultToCechCocycle :
-    ↥(OneFormsZeroOne X) →ₗ[ℝ] ↥(𝔘.cocycles1 (0 : Divisor X)) :=
-  sorry
+noncomputable def dolbeaultToCechCocycle (𝔇 : ChartDiskCover X) :
+    ↥(OneFormsZeroOne X) →ₗ[ℝ] ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) :=
+  LinearMap.codRestrict ((𝔇.toFiniteCover.cocycles1 0).restrictScalars ℝ)
+    ((𝔇.toFiniteCover.cechDelta0.restrictScalars ℝ) ∘ₗ 𝔇.rawCochain ∘ₗ (OneFormsZeroOne X).subtype)
+    (fun v => by
+      simp only [LinearMap.comp_apply, LinearMap.restrictScalars_apply,
+        Submodule.restrictScalars_mem]
+      exact 𝔇.cechDelta0_rawCochain_mem_cocycles1 v.2)
 
 /-- **(Analytic sub-kernel — well-definedness of Dolbeault → Čech.)** A global `∂̄`-image
 `g = ∂̄h` is sent to a Čech **coboundary**, hence to `0` in `H¹`: each local primitive difference
@@ -1113,10 +1119,11 @@ noncomputable def dolbeaultToCechCocycle :
 `cechDelta0 {[u_i]} = cechDelta0 {[u_i − h]} ∈ coboundaries1 0` (the global `h` contributes `0` to
 `cechDelta0`). This is exactly the statement that `dbarImageInZeroOne X` lies in the kernel of the
 composite `A^{0,1} → Z¹ → H¹`, which makes the lift to `DolbeaultH01 = A^{0,1}/im ∂̄` well-defined. -/
-theorem dolbeaultToCechCocycle_dbarImage_le :
+theorem dolbeaultToCechCocycle_dbarImage_le (𝔇 : ChartDiskCover X) :
     dbarImageInZeroOne X ≤ LinearMap.ker
-      ((Submodule.mkQ ((𝔘.coboundaries1 (0 : Divisor X)).submoduleOf
-          (𝔘.cocycles1 (0 : Divisor X)))).restrictScalars ℝ ∘ₗ dolbeaultToCechCocycle 𝔘) :=
+      ((Submodule.mkQ ((𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
+          (𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))).restrictScalars ℝ
+        ∘ₗ dolbeaultToCechCocycle 𝔇) :=
   sorry
 
 /-- **Dolbeault → Čech.** The `ℝ`-linear map `H^{0,1}(X) → H¹(X, 𝒪)`. Assembled **sorry-free** from
@@ -1125,11 +1132,12 @@ the analytic cocycle operator `dolbeaultToCechCocycle` and its well-definedness
 scalar-restricted `ℂ → ℝ`), then lift through the Dolbeault quotient `A^{0,1}/im ∂̄`
 (`Submodule.liftQ`, justified by the kernel inclusion). All genuine content lives in the two named
 sub-kernels above. -/
-noncomputable def dolbeault_to_cech : DolbeaultH01 X →ₗ[ℝ] 𝔘.cechH1 0 :=
+noncomputable def dolbeault_to_cech (𝔇 : ChartDiskCover X) :
+    DolbeaultH01 X →ₗ[ℝ] 𝔇.toFiniteCover.cechH1 0 :=
   Submodule.liftQ (dbarImageInZeroOne X)
-    ((Submodule.mkQ ((𝔘.coboundaries1 (0 : Divisor X)).submoduleOf
-        (𝔘.cocycles1 (0 : Divisor X)))).restrictScalars ℝ ∘ₗ dolbeaultToCechCocycle 𝔘)
-    (dolbeaultToCechCocycle_dbarImage_le 𝔘)
+    ((Submodule.mkQ ((𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
+        (𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))).restrictScalars ℝ ∘ₗ dolbeaultToCechCocycle 𝔇)
+    (dolbeaultToCechCocycle_dbarImage_le 𝔇)
 
 /-! ### Sorry-free backbone of the Čech → Dolbeault map: the partition of unity
 
@@ -1171,29 +1179,33 @@ set `h_i := ∑_k ρ_k · f_ik` (smooth), so that
 `f_ij = h_j − h_i` and the `∂̄h_i` agree on overlaps (`f_ij` holomorphic ⟹ `∂̄(h_j − h_i) = 0`),
 gluing to a global smooth `(0,1)`-form whose class is the image. Well-definedness (independence of
 the cocycle representative and of the partition of unity) is part of this sub-kernel. -/
-noncomputable def cech_to_dolbeault : 𝔘.cechH1 0 →ₗ[ℝ] DolbeaultH01 X :=
+noncomputable def cech_to_dolbeault (𝔇 : ChartDiskCover X) :
+    𝔇.toFiniteCover.cechH1 0 →ₗ[ℝ] DolbeaultH01 X :=
   sorry
 
 /-- **`comparison_bijective`, part 1** (honest named sub-kernel): Dolbeault → Čech → Dolbeault is the
 identity. Globalizing a locally-solved `(0,1)`-form via the partition of unity returns the same
 Dolbeault class. -/
-theorem cech_to_dolbeault_comp_dolbeault_to_cech (hL : 𝔘.IsLeray) :
-    (cech_to_dolbeault 𝔘) ∘ₗ (dolbeault_to_cech 𝔘) = LinearMap.id :=
+theorem cech_to_dolbeault_comp_dolbeault_to_cech (𝔇 : ChartDiskCover X)
+    (hL : 𝔇.toFiniteCover.IsLeray) :
+    (cech_to_dolbeault 𝔇) ∘ₗ (dolbeault_to_cech 𝔇) = LinearMap.id :=
   sorry
 
 /-- **`comparison_bijective`, part 2** (honest named sub-kernel): Čech → Dolbeault → Čech is the
 identity. Local-solving the partition-of-unity primitive recovers the same Čech cohomology class. -/
-theorem dolbeault_to_cech_comp_cech_to_dolbeault (hL : 𝔘.IsLeray) :
-    (dolbeault_to_cech 𝔘) ∘ₗ (cech_to_dolbeault 𝔘) = LinearMap.id :=
+theorem dolbeault_to_cech_comp_cech_to_dolbeault (𝔇 : ChartDiskCover X)
+    (hL : 𝔇.toFiniteCover.IsLeray) :
+    (dolbeault_to_cech 𝔇) ∘ₗ (cech_to_dolbeault 𝔇) = LinearMap.id :=
   sorry
 
 /-- **The Dolbeault isomorphism** `H^{0,1}(X) ≃ₗ[ℝ] H¹(X, 𝒪)` — assembled *sorry-free* from the two
 maps and the two round-trip identities above (`LinearEquiv.ofLinear`). All remaining content is in
 the four named sub-kernels. -/
-noncomputable def comparison_linearEquiv (hL : 𝔘.IsLeray) : DolbeaultH01 X ≃ₗ[ℝ] 𝔘.cechH1 0 :=
-  LinearEquiv.ofLinear (dolbeault_to_cech 𝔘) (cech_to_dolbeault 𝔘)
-    (dolbeault_to_cech_comp_cech_to_dolbeault 𝔘 hL)
-    (cech_to_dolbeault_comp_dolbeault_to_cech 𝔘 hL)
+noncomputable def comparison_linearEquiv (𝔇 : ChartDiskCover X) (hL : 𝔇.toFiniteCover.IsLeray) :
+    DolbeaultH01 X ≃ₗ[ℝ] 𝔇.toFiniteCover.cechH1 0 :=
+  LinearEquiv.ofLinear (dolbeault_to_cech 𝔇) (cech_to_dolbeault 𝔇)
+    (dolbeault_to_cech_comp_cech_to_dolbeault 𝔇 hL)
+    (cech_to_dolbeault_comp_dolbeault_to_cech 𝔇 hL)
 
 /-- **The L3 kernel: Čech ↔ Dolbeault comparison** — the standalone proof of the statement at
 `DolbeaultComparison.lean:227` (`cechH1_dolbeault_comparison`; the caller wires it to this).
@@ -1201,9 +1213,9 @@ Proven *sorry-free* from `comparison_linearEquiv`: the `ℝ`-linear iso transpor
 `ℝ`-vs-`ℂ` factor on the `ℂ`-module `cechH1` is `finrank_real_of_complex`. The entire remaining
 content sits in the four named sub-kernels (`dolbeault_to_cech`, `cech_to_dolbeault`, and the two
 round-trip identities). -/
-theorem cechH1_dolbeault_comparison_proof (hL : 𝔘.IsLeray) :
-    Module.finrank ℝ (DolbeaultH01 X) = 2 * Module.finrank ℂ (𝔘.cechH1 0) := by
-  rw [(comparison_linearEquiv 𝔘 hL).finrank_eq, finrank_real_of_complex]
+theorem cechH1_dolbeault_comparison_proof (𝔇 : ChartDiskCover X) (hL : 𝔇.toFiniteCover.IsLeray) :
+    Module.finrank ℝ (DolbeaultH01 X) = 2 * Module.finrank ℂ (𝔇.toFiniteCover.cechH1 0) := by
+  rw [(comparison_linearEquiv 𝔇 hL).finrank_eq, finrank_real_of_complex]
 
 /-! ## Honest status of the mechanization
 
