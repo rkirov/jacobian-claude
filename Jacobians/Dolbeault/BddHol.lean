@@ -72,6 +72,57 @@ theorem bddOn (f : BddHol U) : ∃ C, ∀ z ∈ U, ‖f.toFun z‖ ≤ C := f.2.
 theorem toFun_injective : Function.Injective (toFun : BddHol U → (ℂ → ℂ)) :=
   fun _ _ h => Subtype.ext h
 
+/-! ### The isometric embedding into `↥U →ᵇ ℂ` and the induced norm
+
+An element of `BddHol U`, restricted to the subtype `↥U`, is a bounded continuous function. The
+embedding `f ↦ U.restrict f.toFun` is `ℂ`-linear and injective (thanks to the vanishing-off-`U`
+normal form), so it induces a `NormedAddCommGroup`/`NormedSpace` on `BddHol U`, with norm
+`‖f‖ = ⨆ z : ↥U, ‖f z‖` (the bcf sup norm). Completeness then follows from closedness of the
+holomorphic subspace in the Banach space `↥U →ᵇ ℂ`. -/
+
+/-- The restriction of `f : BddHol U` to `↥U`, as a bounded continuous function. -/
+noncomputable def toBcf (f : BddHol U) : ↥U →ᵇ ℂ :=
+  ⟨⟨fun z => f.toFun z.1, f.analyticOn.continuousOn.restrict⟩,
+    2 * f.bddOn.choose, fun x y => by
+      have hC := f.bddOn.choose_spec
+      calc dist (f.toFun x.1) (f.toFun y.1) ≤ ‖f.toFun x.1‖ + ‖f.toFun y.1‖ :=
+            dist_le_norm_add_norm _ _
+        _ ≤ f.bddOn.choose + f.bddOn.choose := add_le_add (hC x.1 x.2) (hC y.1 y.2)
+        _ = 2 * f.bddOn.choose := by ring⟩
+
+@[simp] theorem toBcf_apply (f : BddHol U) (z : ↥U) : f.toBcf z = f.toFun z.1 := rfl
+
+/-- The bcf embedding as a `ℂ`-linear map. -/
+noncomputable def toBcfₗ : BddHol U →ₗ[ℂ] (↥U →ᵇ ℂ) where
+  toFun := toBcf
+  map_add' f g := by ext z; simp [toBcf_apply]
+  map_smul' c f := by ext z; simp [toBcf_apply]
+
+@[simp] theorem toBcfₗ_apply (f : BddHol U) : toBcfₗ f = f.toBcf := rfl
+
+theorem toBcf_injective : Function.Injective (toBcf : BddHol U → (↥U →ᵇ ℂ)) := by
+  intro f g h
+  apply toFun_injective
+  funext z
+  by_cases hz : z ∈ U
+  · have := congrArg (fun φ => φ (⟨z, hz⟩ : ↥U)) h
+    simpa [toBcf_apply] using this
+  · rw [f.zero_off z hz, g.zero_off z hz]
+
+/-- The `NormedAddCommGroup` on `BddHol U` induced by the bcf embedding: `‖f‖ = ‖f.toBcf‖`. -/
+noncomputable instance : NormedAddCommGroup (BddHol U) :=
+  NormedAddCommGroup.induced (BddHol U) (↥U →ᵇ ℂ) toBcfₗ toBcf_injective
+
+/-- `BddHol U` is a normed `ℂ`-space (induced from the bcf embedding). -/
+noncomputable instance : NormedSpace ℂ (BddHol U) :=
+  NormedSpace.induced ℂ (BddHol U) (↥U →ᵇ ℂ) toBcfₗ
+
+theorem norm_def (f : BddHol U) : ‖f‖ = ‖f.toBcf‖ := rfl
+
+theorem norm_eq_iSup (f : BddHol U) : ‖f‖ = ⨆ z : ↥U, ‖f.toFun z.1‖ := by
+  rw [norm_def, BoundedContinuousFunction.norm_eq_iSup_norm]
+  rfl
+
 end BddHol
 
 end Jacobians.Dolbeault
