@@ -51,29 +51,33 @@ So `cohomological_riemannRoch` is in scope here via the import — no longer a l
 /-- **Serre duality at `D = 0` — arithmetic genus = geometric genus.** `h¹(X, 𝒪) = dim Ω(X) = genus X`.
 The irreducible Dolbeault nugget (`H¹(X,𝒪) ≅ H^{0,1} ≅ Ω(X)^*`); the smallest Serre input, and all
 that `genus 0 → S²` needs beyond cohomological RR. **Deep analytic leaf.** -/
-theorem arithmeticGenus_eq_genus (𝔘 : FiniteCover X) : 𝔘.h1Dim 0 = genus X := sorry
+theorem arithmeticGenus_eq_genus (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) :
+    𝔘.h1Dim 0 = genus X := sorry
 
 /-- **General Serre duality.** `h¹(D) = l(K − D)` for a canonical divisor `K` (the perfect residue
 pairing `H¹(X,𝒪_D) × Ω(−D) → ℂ`). Together with `cohomological_riemannRoch` this turns the
 cohomological form into the classical `l(D) − l(K−D) = deg D + 1 − g`. **Deep analytic leaf** (full
 Serre; only needed for the general-`D` RR statement and `#3`, not for `genus 0 → S²`). -/
-theorem serre_h1_eq (𝔘 : FiniteCover X) (D K : Divisor X) :
-    𝔘.h1Dim D = lDim (K - D) := sorry
+theorem serre_h1_eq (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) :
+    ∃ K : Divisor X, ∀ D : Divisor X, 𝔘.h1Dim D = lDim (K - D) := sorry
 
 /- **Bridge: Čech global sections = the linear system** (`h⁰(𝔘, 𝒪_D) = l(D)`). PROVEN in
 `CechH0` (`FiniteCover.h0Dim_eq_lDim`) modulo the single gluing/surjectivity `sorry`
 (`cechRestrictL_surjective`) — no longer a leaf of this file. -/
 
-/-- **The ladder composes** (sorry-free; no new content). Given any finite cover `𝔘` and canonical
-divisor `K`, the classical Riemann–Roch equality `l(D) − l(K−D) = deg D + 1 − g` falls out of the
-ladder by substitution: cohomological RR + the `h⁰ = l` bridge + general Serre `h¹(D)=l(K−D)` +
-Serre-at-0 `h¹(0)=g`. This is what shows the scaffold is genuinely wired to the headline — once the
-five leaves above are discharged, `exists_riemannRoch_divisor` follows (modulo existence of a cover
-and a canonical divisor). -/
-theorem riemannRoch_equality_of_ladder (𝔘 : FiniteCover X) (D K : Divisor X) :
-    (lDim D : ℤ) - lDim (K - D) = Divisor.deg X D + 1 - genus X := by
-  have h := cohomological_riemannRoch 𝔘 D
-  rw [𝔘.h0Dim_eq_lDim D, serre_h1_eq 𝔘 D K, arithmeticGenus_eq_genus 𝔘] at h
+/-- **The ladder composes** (sorry-free; no new content). For any *Leray* finite cover `𝔘` there is a
+canonical divisor `K` (supplied by general Serre `serre_h1_eq`) such that the classical Riemann–Roch
+equality `l(D) − l(K−D) = deg D + 1 − g` holds for every `D`. It falls out of the ladder by
+substitution: cohomological RR + the `h⁰ = l` bridge + general Serre `h¹(D)=l(K−D)` + Serre-at-0
+`h¹(0)=g`. This is what shows the scaffold is genuinely wired to the headline — once the leaves above
+are discharged, `exists_riemannRoch_divisor` follows (modulo existence of a Leray cover). -/
+theorem riemannRoch_equality_of_ladder (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) :
+    ∃ K : Divisor X, ∀ D : Divisor X,
+      (lDim D : ℤ) - lDim (K - D) = Divisor.deg X D + 1 - genus X := by
+  obtain ⟨K, hK⟩ := serre_h1_eq 𝔘 hL
+  refine ⟨K, fun D => ?_⟩
+  have h := cohomological_riemannRoch 𝔘 hL D
+  rw [𝔘.h0Dim_eq_lDim D, hK D, arithmeticGenus_eq_genus 𝔘 hL] at h
   exact h
 
 end Jacobians.Dolbeault
