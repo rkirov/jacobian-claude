@@ -40,26 +40,17 @@ parameter, but require `[ChartedSpace ℂ M]` so that chart codomains are
 literally `ℂ` (not a generic model space `H`). This avoids having to write
 `I.symm ∘ (chartAt H x) ∘ ...` everywhere.
 
-## Open work (intentionally not in this file)
+## Notes
 
-The following are **not** proved here and are tracked in `OPEN.md`:
-
-1. **Chart-independence of `MMeromorphicAt`.** A first attempt at a
-   conditional `iff_of_chart` lemma at this mathlib pin required threading
-   `OpenPartialHomeomorph` continuity arguments through `comp_analyticAt`
-   and `meromorphicOrderAt_comp` (`MeromorphicAt.meromorphicOrderAt_comp`,
-   mathlib `Analysis/Meromorphic/Order.lean` line 779). The chart-pullback
-   definition uses the *canonical* chart `chartAt ℂ x`. Lifting to arbitrary
-   charts in the maximal analytic atlas requires
-   `analyticAt_chart_transition_of_analyticManifold` (transition maps are
-   analytic at every interior point of their source) — provable from
-   `compatible_of_mem_maximalAtlas` + `chart_mem_maximalAtlas` + the
-   omega-pregroupoid characterization (`ContDiffOn ω` ↔ `AnalyticOn` for
-   `𝓘(ℂ, ℂ)` since the model is the identity), but the unfold through the
-   `OpenPartialHomeomorph` API is API-heavy and is left to follow-up.
-
-2. **Operations dropped at this pin.** `MMeromorphicOn.iUnion` and a
-   `@[simp]` `mMeromorphicOn_empty` are not provided here.
+**Chart-independence of `MMeromorphicAt`** is proved in this file
+(`MMeromorphicAt.iff_of_isManifold` / `mmeromorphicOrderAt_eq_of_isManifold`,
+via `analyticAt_chart_transition_of_isManifold` and
+`deriv_chart_transition_of_isManifold_ne_zero`): the chart-pullback
+definition uses the canonical chart `chartAt ℂ x`, and the order is shown
+independent of the chart via `compatible_of_mem_maximalAtlas` plus the
+omega-pregroupoid characterization (`ContDiffOn ω` ↔ `AnalyticOn` for
+`𝓘(ℂ, ℂ)`). Not provided here: `MMeromorphicOn.iUnion` and a `@[simp]`
+`mMeromorphicOn_empty`.
 -/
 
 noncomputable section

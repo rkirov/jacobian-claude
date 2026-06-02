@@ -55,22 +55,21 @@ What is **proven** in this file:
    case (`k ≥ 0`) strengthens the punctured neighborhood to a full
    neighborhood (no zero-divisor singularity to remove).
 
-What is **stated but not proven** here:
+Stated as inert `Prop`-valued `def`s here (NOT axioms), kept for reference:
 
-6. `localMultiplicity_eq_localOrder_statement` — the headline
-   `Prop`-valued `def` matching the brief. It packages the connection between
-   `localOrder` and the topological local multiplicity (cardinality of
-   `f⁻¹{w}` near `x` for `w` near `f x`). Discharging this requires the
-   Rouché-style argument that `(z - x₀) ^ k · u(z) = w` has exactly `k`
-   solutions near `x₀` for `w` near `0` (when `u(x₀) ≠ 0`). That argument
-   is not in mathlib at the pin; it is deferred from a future
-   `Mathlib.Analysis.SpecialFunctions.Complex.LocalMultiplicity` (does not
-   exist).
+6. `localMultiplicity_eq_localOrder_statement` and the sibling `*_statement`
+   `def`s package the connection between `localOrder` and the topological
+   local multiplicity (cardinality of `f⁻¹{w}` near `x` for `w` near `f x`).
+   These specific placeholder `def`s are left unproven, but the underlying
+   fact — `(z - x₀) ^ k · u(z) = w` has exactly `k` solutions near `x₀` for
+   small `w ≠ 0` when `u(x₀) ≠ 0` — IS proven, via the k-th-root
+   substitution route, in `LocalKFoldMultiplicityUnconditional.lean` /
+   `LocalKFoldMultiplicityFullyUnconditional.lean` (not via Rouché).
 
-The file is therefore **the rails for R3**: definitions, structural
-identities, and the chart-coordinate local-form theorem, all proven; the
-topological-multiplicity bridge stated as a `Prop`-valued `def` (NOT an
-`axiom`) so future filling does not contaminate the kernel.
+The file therefore provides definitions, structural identities, and the
+chart-coordinate local-form theorem, all proven; the `*_statement` defs are
+inert `Prop`-valued placeholders (NOT axioms), superseded by the proven
+k-fold count in the sibling files.
 
 ## Open mathlib lemmas (catalogued for the next pass)
 

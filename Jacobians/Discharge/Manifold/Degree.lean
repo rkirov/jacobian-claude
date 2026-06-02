@@ -27,32 +27,36 @@ deg(f) = |f ⁻¹' {y}|   for any regular value y : Y.
   - a chosen value `y₀ : Y`,
   - a proof that the fibre `f ⁻¹' {y₀}` is finite, and
   - the cardinality is then `(h.toFinset).card`.
-  When no witness exists in `Classical.choice`'s sense at this mathlib pin
-  (because the deep theorem below is missing), the definition falls back to
-  `0`. This matches `degreeStub`'s constant-case answer and is strictly more
-  informative than `degreeStub` whenever a witness *does* exist.
+  A `RegularValueWitnessReg f` now provably exists for non-constant `f`
+  (see "## Status" below), so the no-witness fallback to `0` does not fire.
+  Caveat: the witness only requires the fibre `f ⁻¹' {y₀}` finite, not
+  non-empty, so positivity (`deg ≥ 1`) is not yet established — see below.
 
-## What is deferred (and is the deep classical input)
+## Status (classical inputs)
 
 For a non-constant holomorphic map `f : X → Y` between compact connected
-Riemann surfaces, the following are classical and **not yet in mathlib at the
-pin**:
+Riemann surfaces, the following classical inputs are now formalised in the
+`Discharge/Manifold/` chain:
 
-1. **Properness with finite fibres.** Every fibre `f ⁻¹' {y}` is a finite
-   subset of `X` (using `IsCompact.finite_of_discrete` once one knows the
-   fibre is discrete, which uses the identity theorem for analytic functions).
-2. **Existence of a regular value.** The set of critical values
-   `{y : Y | ∃ x ∈ f ⁻¹' {y}, ramification index ≥ 2}` is finite, so its
-   complement is non-empty (in fact, of full measure / open dense).
-3. **Constancy of fibre cardinality across regular values.** This is the
-   topological-degree statement; it relies on the local normal form
-   `z ↦ z ^ k` for ramified holomorphic maps and a covering-space argument on
-   `Y \ critical values`.
+1. **Properness with finite fibres.** Every fibre `f ⁻¹' {y}` is finite —
+   `fibres_finite_statement_unconditional` (discreteness via the identity
+   theorem for analytic functions).
+2. **Existence of a regular value.** The critical values are finite
+   (`criticalValues_finite_general`), so a regular value exists —
+   `regular_value_exists_reg_unconditional` produces a `RegularValueWitnessReg`.
+3. **Constancy of fibre cardinality across regular values.** The Hurwitz
+   patching / local-normal-form argument gives well-definedness —
+   `degreeFiber_eq_card_of_regular_witness`.
 
-The first two together produce a `RegularValueWitness f`. The third is what
-makes `degreeFiber f hf` independent of the chosen witness. None of (1)–(3)
-are formalised at this pin; their statements are recorded as `Degree.*`
-docstrings below for downstream.
+Together (1)–(3) make `degreeFiber f hf` a well-defined natural number,
+equal to the fibre cardinality at any regular witness.
+
+**Still open — positivity.** The regular value `y₀` is chosen from the
+complement of the critical values, with no guarantee `y₀ ∈ range f`. If
+`y₀ ∉ range f` the fibre is empty and `degreeFiber f hf = 0` even for a
+non-constant `f`. Establishing `deg ≥ 1` needs surjectivity of a
+non-constant holomorphic map on a compact connected surface (open-mapping
+theorem + compactness), which is not yet formalised.
 
 ## Why a separate definition (and not editing `_root_.ContMDiff.degree`)
 
