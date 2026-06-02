@@ -739,6 +739,42 @@ theorem hasCompactSupport_cutoffPullback (𝔇 : ChartDiskCover X) (i : 𝔇.ι)
     exact fun h => hz (Metric.ball_subset_closedBall h)
   rw [hz0, zero_smul]
 
+/-! ### Step 4a — the planar primitive `cauchyTransform (cutoffPullback)` (linear, solves ∂̄) -/
+
+/-- The **planar primitive** over disk `i`: the Cauchy transform of the cutoff chart-pullback. It is
+the explicit `ℝ`-linear witness whose planar `∂̄` is the cutoff pullback everywhere (so equals the
+chart-read `g` on `U_i`, where `χᵢ = 1`). -/
+noncomputable def planarPrimitive (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g : SmoothCOneForms X) :
+    ℂ → ℂ :=
+  DbarDisk.cauchyTransform (𝔇.cutoffPullback i g)
+
+theorem contDiff_planarPrimitive (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g : SmoothCOneForms X) :
+    ContDiff ℝ (⊤ : ℕ∞) (𝔇.planarPrimitive i g) :=
+  DbarDisk.contDiff_cauchyTransform (𝔇.contDiff_cutoffPullback i g)
+    (𝔇.hasCompactSupport_cutoffPullback i g)
+
+/-- The planar `∂̄` of the primitive is the cutoff pullback (Cauchy–Pompeiu). -/
+theorem dbar_planarPrimitive (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g : SmoothCOneForms X) (z : ℂ) :
+    DbarDisk.dbar (𝔇.planarPrimitive i g) z = 𝔇.cutoffPullback i g z := by
+  rw [planarPrimitive,
+    DbarDisk.dbar_cauchyTransform (𝔇.contDiff_cutoffPullback i g)
+      (𝔇.hasCompactSupport_cutoffPullback i g) z,
+    DbarDisk.cauchyPompeiu (𝔇.contDiff_cutoffPullback i g)
+      (𝔇.hasCompactSupport_cutoffPullback i g) z]
+
+theorem planarPrimitive_add (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g₁ g₂ : SmoothCOneForms X) :
+    𝔇.planarPrimitive i (g₁ + g₂) = 𝔇.planarPrimitive i g₁ + 𝔇.planarPrimitive i g₂ := by
+  rw [planarPrimitive, 𝔇.cutoffPullback_add i g₁ g₂,
+    DbarDisk.cauchyTransform_add
+      (𝔇.contDiff_cutoffPullback i g₁).continuous (𝔇.hasCompactSupport_cutoffPullback i g₁)
+      (𝔇.contDiff_cutoffPullback i g₂).continuous (𝔇.hasCompactSupport_cutoffPullback i g₂)]
+  rfl
+
+theorem planarPrimitive_smul (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (c : ℝ) (g : SmoothCOneForms X) :
+    𝔇.planarPrimitive i (c • g) = c • 𝔇.planarPrimitive i g := by
+  rw [planarPrimitive, 𝔇.cutoffPullback_smul i c g, DbarDisk.cauchyTransform_smul]
+  rfl
+
 end ChartDiskCover
 
 /-- **(Analytic sub-kernel.)** Local `∂̄`-solvability on the manifold: any smooth `(0,1)`-form `g`
