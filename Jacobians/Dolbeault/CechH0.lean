@@ -71,6 +71,64 @@ theorem isMeromorphic_val {U : Opens X} (F : MeromorphicFunction X) :
   rw [← hbase] at hmer
   exact hmer.congr (hev.filter_mono nhdsWithin_le_nhds).symm
 
+/-! ### Germ-vanishing ↔ order `⊤` (the kernel characterisation) -/
+
+/-- Chart-transport of an eventually-property across `𝓝[≠]`, for *any* `ℂ`-charted space `Y` (the
+repo's `eventually_comp_chart_iff` carries spurious `CompactSpace`/`ConnectedSpace`; the open
+submanifold `↥U` has neither). Proof copied verbatim — uses only the chart's local-homeo structure. -/
+theorem eventually_comp_chart_iff' {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    (g : Y → ℂ) (y : Y) (P : ℂ → Prop) :
+    (∀ᶠ w in 𝓝[≠] ((chartAt (H := ℂ) y) y), P ((g ∘ (chartAt (H := ℂ) y).symm) w))
+      ↔ ∀ᶠ z in 𝓝[≠] y, P (g z) := by
+  have hy : y ∈ (chartAt (H := ℂ) y).source := mem_chart_source ℂ y
+  have hyt : (chartAt (H := ℂ) y) y ∈ (chartAt (H := ℂ) y).target :=
+    (chartAt (H := ℂ) y).map_source hy
+  have hey : (chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y) = y :=
+    (chartAt (H := ℂ) y).left_inv hy
+  rw [eventually_nhdsWithin_iff, eventually_nhdsWithin_iff]
+  constructor
+  · intro h
+    have h2 := ((chartAt (H := ℂ) y).continuousAt hy).eventually h
+    filter_upwards [h2, (chartAt (H := ℂ) y).open_source.mem_nhds hy] with z hz hz_src
+    intro hz_mem
+    have hz_ne : z ≠ y := hz_mem
+    have hchart : (chartAt (H := ℂ) y) z ∈ ({(chartAt (H := ℂ) y) y} : Set ℂ)ᶜ :=
+      fun heq => hz_ne ((chartAt (H := ℂ) y).injOn hz_src hy heq)
+    have := hz hchart
+    rwa [Function.comp_apply, (chartAt (H := ℂ) y).left_inv hz_src] at this
+  · intro h
+    have hsymm : ContinuousAt (chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y) :=
+      (chartAt (H := ℂ) y).continuousAt_symm hyt
+    have h2 := hsymm.eventually (p := fun z => z ∈ ({y} : Set Y)ᶜ → P (g z)) (by rw [hey]; exact h)
+    filter_upwards [h2, (chartAt (H := ℂ) y).open_target.mem_nhds hyt] with w hw hw_tgt
+    intro hw_mem
+    have hw_ne : w ≠ (chartAt (H := ℂ) y) y := hw_mem
+    have hsymm_ne : (chartAt (H := ℂ) y).symm w ∈ ({y} : Set Y)ᶜ := by
+      intro heq
+      apply hw_ne
+      have hr := (chartAt (H := ℂ) y).right_inv hw_tgt
+      rw [Set.mem_singleton_iff.mp heq] at hr
+      exact hr.symm
+    have := hw hsymm_ne
+    rw [Function.comp_apply]; exact this
+
+/-- `ordU g u = ⊤` iff `g` vanishes throughout a punctured neighbourhood of `u` on `↥U`. -/
+theorem ordU_eq_top_iff {U : Opens X} (g : U → ℂ) (u : U) :
+    ordU g u = ⊤ ↔ ∀ᶠ z in 𝓝[≠] u, g z = 0 := by
+  rw [ordU, meromorphicOrderAt_eq_top_iff]
+  exact eventually_comp_chart_iff' g u (· = 0)
+
+/-- The germ-class of `g` is `0` iff `g` vanishes near every point (punctured) — i.e. `g` is
+germ-zero junk. This is the codiscrete ⟺ `∀ 𝓝[≠]` bridge (here on `T = univ`, so it needs no
+meromorphy). -/
+theorem toGerm_eq_zero_iff {U : Opens X} (g : U → ℂ) :
+    toGerm U g = 0 ↔ ∀ u : U, ∀ᶠ z in 𝓝[≠] u, g z = 0 := by
+  show (g : MGerm U) = 0 ↔ _
+  rw [← Filter.Germ.coe_zero, Filter.Germ.coe_eq]
+  rw [Filter.EventuallyEq, Filter.Eventually, mem_codiscreteWithin_iff_forall_mem_nhdsNE]
+  simp only [Pi.zero_apply, Set.mem_univ, forall_const, Set.compl_univ, Set.union_empty]
+  rfl
+
 /-! ### The forward map `L(D) → H⁰(𝔘, 𝒪_D)` -/
 
 namespace FiniteCover
@@ -116,6 +174,30 @@ noncomputable def cechRestrictL :
 
 @[simp] theorem cechRestrictL_coe (F : linearSystem (X := X) D) :
     (𝔘.cechRestrictL D F : 𝔘.Cochain0) = 𝔘.cechRestrict (F : MeromorphicFunction X) := rfl
+
+/-- The restriction of `F` is the zero cochain iff `F` is germ-zero junk everywhere (`orderW ≡ ⊤`).
+Uses the keystone (`ordU = orderW`), the germ-zero bridge, and that the `U i` cover `X`. -/
+theorem cechRestrict_eq_zero_iff (F : MeromorphicFunction X) :
+    𝔘.cechRestrict F = 0 ↔ ∀ x, F.orderW x = ⊤ := by
+  rw [funext_iff]
+  simp only [cechRestrict_apply, Pi.zero_apply, toGerm_eq_zero_iff, ← ordU_eq_top_iff,
+    ordU_val_eq_orderW]
+  constructor
+  · intro h x
+    obtain ⟨i, hi⟩ := TopologicalSpace.Opens.mem_iSup.mp (𝔘.covers ▸ Set.mem_univ x :
+      x ∈ ⨆ i, 𝔘.U i)
+    exact h i ⟨x, hi⟩
+  · intro h i u
+    exact h u.1
+
+/-- The kernel of the descended forward map is exactly the germ-zero junk: `Φ` descends to an
+*injective* map `L(D) ⧸ germZero ↪ H⁰`. -/
+theorem ker_cechRestrictL :
+    LinearMap.ker (𝔘.cechRestrictL D) = (germZeroSubmodule).submoduleOf (linearSystem D) := by
+  ext F
+  rw [LinearMap.mem_ker, ← Submodule.coe_eq_zero, cechRestrictL_coe,
+    𝔘.cechRestrict_eq_zero_iff]
+  exact Iff.rfl
 
 end FiniteCover
 
