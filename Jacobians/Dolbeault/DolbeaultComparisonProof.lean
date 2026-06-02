@@ -393,6 +393,113 @@ against the one in the datum's transformation law. The *only* remaining analytic
 smoothness of the chart-read datum `G` and the `(0,1)`-transformation law — is isolated in
 `exists_chartPullback_zeroOne_datum`. -/
 
+/-- The chart-read datum of `g` at the fixed `x₀`-trivialization is a smooth map `X → ℂ` at every
+point `y` of the `x₀`-chart source: `x ↦ (g x) (Sₓ 1)`, with `Sₓ = symmL ℝ (trivializationAt ℂ
+(TangentSpace 𝓘(ℝ,ℂ)) x₀) x` the `symmL` of the *fixed* `x₀`-trivialization.
+
+Mechanism: by `contMDiffAt_hom_bundle` at `y` (the codomain trivial `ℂ`-bundle has identity
+trivialisation), `x ↦ (g x).comp (symmL(trivAt y)(x))` is smooth into `ℂ →L[ℝ] ℂ`. The frame at `y`
+and at `x₀` differ by the bundle `coordChangeL` (`x ↦ coordChangeL (trivAt x₀) (trivAt y) x`, smooth
+by `contMDiffAt_coordChangeL`), so the value `(g x)(Sₓ 1)` rewrites as
+`((g x).comp (symmL(trivAt y)(x))) (coordChangeL (trivAt x₀) (trivAt y) x 1)` near `y`
+(`coordChangeL_apply` + `symmL_continuousLinearMapAt`); both factors are smooth, so `ContMDiffAt.clm_apply`
+closes it. (No varying chart-at-`x`: `Sₓ` uses only the fixed `x₀`-trivialization; the `y`-frame is an
+internal device.) -/
+private theorem contMDiffAt_chartRead_datum (g : SmoothCOneForms X) (x₀ y : X)
+    (hy : y ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
+      (fun x => (g x) ((Bundle.Trivialization.symmL ℝ
+        (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x) (1 : ℂ))) y := by
+  set ex₀ := trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀ with hex₀
+  set ey := trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) y with hey
+  -- (a) `x ↦ (g x).comp (symmL ey x)` is smooth at `y` (hom-bundle reduction in the `y`-frame).
+  have h := g.contMDiff_toFun y
+  rw [contMDiffAt_hom_bundle] at h
+  simp only [ContinuousLinearMap.inCoordinates,
+    Bundle.Trivial.continuousLinearMapAt_trivialization,
+    Bundle.Trivial.fiberBundle_trivializationAt', ContinuousLinearMap.id_comp, ← hey] at h
+  -- (b) `x ↦ coordChangeL ex₀ ey x 1` is smooth at `y` (`coordChangeL` smooth, eval at `1`).
+  have hyb : y ∈ ex₀.baseSet ∩ ey.baseSet :=
+    ⟨by rw [hex₀, TangentBundle.trivializationAt_baseSet, ← extChartAt_source 𝓘(ℝ, ℂ)]; exact hy,
+      by rw [hey, TangentBundle.trivializationAt_baseSet]; exact mem_chart_source ℂ y⟩
+  have hcc : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
+      (fun x => (Bundle.Trivialization.coordChangeL ℝ ex₀ ey x : ℂ →L[ℝ] ℂ) (1 : ℂ)) y :=
+    (contMDiffAt_coordChangeL (e := ex₀) (e' := ey) hyb.1 hyb.2).clm_apply contMDiffAt_const
+  -- The product, rewritten to the target via the frame identity (valid near `y`).
+  have hbase : ∀ᶠ x in nhds y, x ∈ ex₀.baseSet ∩ ey.baseSet :=
+    (ex₀.open_baseSet.inter ey.open_baseSet).mem_nhds hyb
+  refine (h.2.clm_apply hcc).congr_of_eventuallyEq ?_
+  filter_upwards [hbase] with x hx
+  -- `((g x).comp (symmL ey x)) (coordChangeL ex₀ ey x 1) = (g x) (symmL ex₀ x 1)`.
+  simp only [ContinuousLinearMap.comp_apply, ← hex₀]
+  congr 1
+  -- `symmL ey x (coordChangeL ex₀ ey x 1) = symmL ex₀ x 1`, via the frame identity.
+  simp only [ContinuousLinearEquiv.coe_coe]
+  rw [ex₀.coordChangeL_apply ey hx,
+    ← ey.continuousLinearMapAt_apply_of_mem (R := ℝ) hx.2 (ex₀.symm x 1),
+    ey.symmL_continuousLinearMapAt hx.2]
+  rfl
+
+/-- **The frame vector is the inverse transition derivative.** For `x` in the `x₀`-chart source, the
+constant `x₀`-frame tangent vector `Sₓ 1 = symmL ℝ (trivAt x₀) x 1` equals `(τ_x′(eₓ x))⁻¹`, the
+reciprocal of the holomorphic chart-transition derivative `τ_x = e₀ ∘ eₓ.symm`. (`symmL (trivAt x₀) x`
+is the tangent `coordChange (achart x₀) (achart x) x = tangentCoordChange x₀ x x = fderivWithin ℝ
+(eₓ ∘ e₀.symm) (range) (e₀ x)`; on the boundaryless model this is `fderiv ℝ σ_x (e₀ x)`, and `σ_x =
+eₓ ∘ e₀.symm` is holomorphic so `fderiv ℝ σ_x (e₀ x) = (deriv σ_x (e₀ x)) • 1`; finally `deriv σ_x
+(e₀ x) = (deriv τ_x (eₓ x))⁻¹` since `σ_x` is the local inverse of `τ_x`.) -/
+private theorem frameVector_eq_inv_deriv_transition (x₀ x : X)
+    (hxsrc : x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
+    (Bundle.Trivialization.symmL ℝ (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x) (1 : ℂ)
+      = (deriv ((extChartAt 𝓘(ℝ, ℂ) x₀) ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm)
+          ((extChartAt 𝓘(ℝ, ℂ) x) x))⁻¹ := by
+  set eₓ := extChartAt 𝓘(ℝ, ℂ) x with hex
+  set e₀ := extChartAt 𝓘(ℝ, ℂ) x₀ with he₀
+  set σ := eₓ ∘ e₀.symm with hσ
+  set τ := e₀ ∘ eₓ.symm with hτ
+  -- `symmL (trivAt x₀) x = tangentCoordChange x₀ x x = fderivWithin ℝ σ (range) (e₀ x)`.
+  have hxchart : x ∈ (chartAt ℂ x₀).source := by rwa [extChartAt_source] at hxsrc
+  have h1 : Bundle.Trivialization.symmL ℝ (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x
+      = tangentCoordChange 𝓘(ℝ, ℂ) x₀ x x := TangentBundle.symmL_trivializationAt_eq_core hxchart
+  -- It is the `ℝ`-`fderiv` of the holomorphic inverse transition `σ` at `e₀ x`.
+  have hσdiff : DifferentiableAt ℂ σ (e₀ x) := differentiableAt_chartTransition_symm x₀ x hxsrc
+  have hfd : fderiv ℝ σ (e₀ x) = (deriv σ (e₀ x)) • (1 : ℂ →L[ℝ] ℂ) :=
+    hσdiff.hasDerivAt.complexToReal_fderiv.fderiv
+  have h2 : tangentCoordChange 𝓘(ℝ, ℂ) x₀ x x = fderiv ℝ σ (e₀ x) := by
+    rw [tangentCoordChange_def, ModelWithCorners.Boundaryless.range_eq_univ, fderivWithin_univ]
+  -- The inverse-derivative relation `deriv σ (e₀ x) = (deriv τ (eₓ x))⁻¹`.
+  have hτpt : τ (eₓ x) = e₀ x := by simp only [hτ, Function.comp_apply, hex, extChartAt_to_inv]
+  have hτdiff : DifferentiableAt ℂ τ (eₓ x) := differentiableAt_chartTransition x₀ x hxsrc
+  have htgt : ∀ᶠ z in nhds (eₓ x), z ∈ eₓ.target := by
+    rw [hex]; exact (isOpen_extChartAt_target x).mem_nhds (mem_extChartAt_target x)
+  have hmem : ∀ᶠ z in nhds (eₓ x), eₓ.symm z ∈ e₀.source := by
+    have hcont : ContinuousAt eₓ.symm (eₓ x) := continuousAt_extChartAt_symm x
+    refine hcont.preimage_mem_nhds ?_
+    rw [hex, extChartAt_to_inv]; exact (isOpen_extChartAt_source x₀).mem_nhds hxsrc
+  have hinv : (σ ∘ τ) =ᶠ[nhds (eₓ x)] id := by
+    filter_upwards [htgt, hmem] with z hztgt hzsrc
+    simp only [hσ, hτ, Function.comp_apply, id_eq]
+    rw [e₀.left_inv hzsrc, eₓ.right_inv hztgt]
+  have hcomp : deriv (σ ∘ τ) (eₓ x) = deriv σ (e₀ x) * deriv τ (eₓ x) := by
+    rw [deriv_comp (eₓ x) (hτpt ▸ hσdiff) hτdiff, hτpt]
+  have hone : deriv (σ ∘ τ) (eₓ x) = 1 := by rw [hinv.deriv_eq, deriv_id]
+  have hτne : deriv τ (eₓ x) ≠ 0 := deriv_chartTransition_ne_zero x₀ x hxsrc
+  have hinvderiv : deriv σ (e₀ x) = (deriv τ (eₓ x))⁻¹ := by
+    rw [hone] at hcomp
+    exact (inv_eq_of_mul_eq_one_left hcomp.symm).symm
+  -- Assemble: `symmL … 1 = fderiv ℝ σ (e₀ x) 1 = deriv σ (e₀ x) • 1 = (deriv τ (eₓ x))⁻¹`.
+  rw [h1, h2, hfd, hinvderiv]
+  change (deriv τ (eₓ x))⁻¹ • ((1 : ℂ →L[ℝ] ℂ) 1) = _
+  simp
+
+/-- **The `(0,1)`-form `g x` is conjugate-`ℂ`-linear** (since `g ∈ OneFormsZeroOne X`): `(g x) v =
+conj v · (g x) 1`. Reduces to `proj01_eq_conj_smul` via `g x = proj01 (β x)` for the representative
+`β` with `proj01L β = g`. -/
+private theorem oneForm_apply_conjLinear {g : SmoothCOneForms X} (hg : g ∈ OneFormsZeroOne X)
+    (x : X) (v : ℂ) : (g x) v = (starRingEnd ℂ) v * (g x) (1 : ℂ) := by
+  obtain ⟨β, hβ⟩ := hg
+  have hgx : g x = proj01 (β x) := by rw [← hβ]; rfl
+  rw [hgx]; exact proj01_eq_conj_smul (β x) v
+
 /-- **(Finer analytic sub-kernel — the chart-pullback `(0,1)`-datum.)** A smooth `(0,1)`-form `g`
 read in the `x₀`-chart is a *smooth planar function* `G : ℂ → ℂ` (its Wirtinger / value-`1` datum)
 that reproduces the intrinsic value `g x 1` after the holomorphic frame change: on a *neighborhood*
@@ -417,8 +524,77 @@ theorem exists_chartPullback_zeroOne_datum (g : SmoothCOneForms X)
     (hg : g ∈ OneFormsZeroOne X) (x₀ : X) :
     ∃ (G : ℂ → ℂ) (V : Set X), ContDiff ℝ (⊤ : ℕ∞) G ∧ IsOpen V ∧ x₀ ∈ V ∧
       ∀ x ∈ V, (starRingEnd ℂ) (deriv (extChartAt 𝓘(ℝ, ℂ) x₀ ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm)
-            (extChartAt 𝓘(ℝ, ℂ) x x)) * G (extChartAt 𝓘(ℝ, ℂ) x₀ x) = (g x) (1 : ℂ) :=
-  sorry
+            (extChartAt 𝓘(ℝ, ℂ) x x)) * G (extChartAt 𝓘(ℝ, ℂ) x₀ x) = (g x) (1 : ℂ) := by
+  classical
+  set e₀ := extChartAt 𝓘(ℝ, ℂ) x₀ with he₀
+  -- The chart-read datum `Φ x = (g x) (Sₓ 1)` (smooth at each point of `e₀.source`, `contMDiffAt_chartRead_datum`).
+  set Φ : X → ℂ := fun x => (g x) ((Bundle.Trivialization.symmL ℝ
+    (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x) (1 : ℂ)) with hΦ
+  -- `e₀.target` is an open neighborhood of `e₀ x₀`; pick a bump `χ` with `closedBall r ⊆ e₀.target`.
+  have htgt_open : IsOpen e₀.target := by rw [he₀]; exact isOpen_extChartAt_target x₀
+  have hx₀tgt : e₀ x₀ ∈ e₀.target := by rw [he₀]; exact mem_extChartAt_target x₀
+  obtain ⟨r, hr_pos, hr_sub⟩ := Metric.isOpen_iff.mp htgt_open (e₀ x₀) hx₀tgt
+  set χ : ContDiffBump (e₀ x₀) := ⟨r / 4, r / 2, by positivity, by linarith⟩ with hχ
+  -- `closedBall (r/2) ⊆ ball r ⊆ e₀.target` (the bump's outer support lies safely inside the chart).
+  have hcball_sub : Metric.closedBall (e₀ x₀) (r / 2) ⊆ e₀.target := fun z hz =>
+    hr_sub (Metric.closedBall_subset_ball (by linarith) hz)
+  -- `Ψ := Φ ∘ e₀.symm` is `ContDiffAt` at every `w ∈ e₀.target` (helper + smooth chart inverse).
+  have hΨ : ∀ w ∈ e₀.target, ContDiffAt ℝ (⊤ : ℕ∞) (fun w => Φ (e₀.symm w)) w := by
+    intro w hw
+    have hsymm_mem : e₀.symm w ∈ e₀.source := by rw [he₀]; exact PartialEquiv.map_target _ hw
+    have hsymm : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) e₀.symm e₀.target w :=
+      (contMDiffOn_extChartAt_symm x₀) _ hw
+    have hΦat : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) Φ (e₀.symm w) :=
+      contMDiffAt_chartRead_datum g x₀ (e₀.symm w) hsymm_mem
+    have hcomp : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun w => Φ (e₀.symm w)) e₀.target w :=
+      hΦat.contMDiffWithinAt.comp w hsymm (fun z _ => Set.mem_univ _)
+    exact contMDiffAt_iff_contDiffAt.mp (hcomp.contMDiffAt (htgt_open.mem_nhds hw))
+  -- The global datum `G := χ • (Φ ∘ e₀.symm)` (smooth everywhere; `= Φ ∘ e₀.symm` near `e₀ x₀`).
+  refine ⟨fun w => (χ w : ℝ) • Φ (e₀.symm w),
+    e₀.source ∩ e₀ ⁻¹' Metric.ball (e₀ x₀) (r / 4), ?_, ?_, ?_, ?_⟩
+  · -- (1) Global smoothness of `G`.
+    rw [contDiff_iff_contDiffAt]; intro w
+    by_cases hw : w ∈ Metric.closedBall (e₀ x₀) (r / 2)
+    · -- Inside `closedBall (r/2) ⊆ e₀.target`: both factors smooth.
+      exact (χ.contDiff.contDiffAt).smul (hΨ w (hcball_sub hw))
+    · -- Outside: `χ = 0` on the open complement of `closedBall (r/2) ⊇ supp χ`, so `G = 0`.
+      refine (contDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq ?_
+      have hcompl : (Metric.closedBall (e₀ x₀) (r / 2))ᶜ ∈ nhds w :=
+        (Metric.isClosed_closedBall.isOpen_compl).mem_nhds hw
+      filter_upwards [hcompl] with z hz
+      have : χ z = 0 := by
+        rw [← Function.notMem_support, χ.support_eq]
+        exact fun h => hz (Metric.ball_subset_closedBall h)
+      rw [this, zero_smul]
+  · -- (2) `V` is open.
+    rw [he₀]; exact isOpen_extChartAt_preimage' x₀ Metric.isOpen_ball
+  · -- (3) `x₀ ∈ V`.
+    refine ⟨mem_extChartAt_source x₀, ?_⟩
+    simp only [Set.mem_preimage, he₀, Metric.mem_ball, dist_self]; positivity
+  · -- (4) The transformation law on `V`.
+    rintro x ⟨hxsrc, hxball⟩
+    rw [extChartAt_source] at hxsrc
+    have hxsrc' : x ∈ e₀.source := by rw [he₀, extChartAt_source]; exact hxsrc
+    -- On `V`, `e₀ x ∈ ball (r/2) ⊆ ball rIn`, so `χ (e₀ x) = 1` and `e₀.symm (e₀ x) = x`.
+    have hχ1 : (χ (e₀ x) : ℝ) = 1 := by
+      apply χ.one_of_mem_closedBall
+      simp only [Set.mem_preimage, Metric.mem_ball] at hxball
+      exact Metric.ball_subset_closedBall hxball
+    have hsymm_pt : e₀.symm (e₀ x) = x := e₀.left_inv hxsrc'
+    -- `G (e₀ x) = Φ x = (g x) (Sₓ 1)`.
+    show (starRingEnd ℂ) (deriv (e₀ ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm) (extChartAt 𝓘(ℝ, ℂ) x x))
+      * ((χ (e₀ x) : ℝ) • Φ (e₀.symm (e₀ x))) = (g x) (1 : ℂ)
+    rw [hχ1, one_smul, hsymm_pt, hΦ]
+    simp only []
+    -- Frame identity + conjugate-linearity: `conj(τ′) · (g x) (Sₓ 1) = (g x) 1`.
+    rw [frameVector_eq_inv_deriv_transition x₀ x hxsrc',
+      oneForm_apply_conjLinear hg x ((deriv (e₀ ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm)
+        (extChartAt 𝓘(ℝ, ℂ) x x))⁻¹)]
+    rw [map_inv₀]
+    have hne : (starRingEnd ℂ) (deriv (e₀ ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm)
+        (extChartAt 𝓘(ℝ, ℂ) x x)) ≠ 0 := by
+      rw [map_ne_zero]; exact deriv_chartTransition_ne_zero x₀ x hxsrc'
+    field_simp
 
 theorem exists_localPrimitive_apply_one (g : SmoothCOneForms X) (hg : g ∈ OneFormsZeroOne X)
     (x₀ : X) :
