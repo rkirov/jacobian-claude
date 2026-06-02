@@ -657,14 +657,55 @@ theorem dbar_solvable_locally_manifold (g : SmoothCOneForms X) (hg : g ∈ OneFo
   obtain ⟨V, u, hV, hx₀, hval⟩ := exists_localPrimitive_apply_one g hg x₀
   exact ⟨V, u, hV, hx₀, fun x hx => dbar_eq_of_apply_one hg u x (hval x hx)⟩
 
-/-- **Dolbeault → Čech** (honest named sub-kernel). The `ℝ`-linear map `H^{0,1}(X) → H¹(X, 𝒪)`:
-represent a class by a smooth `(0,1)`-form `g`, solve `∂̄u_i = g` on each chart-disk `U_i`
-(`DbarLocal.dbar_solvable_locally`), and send `[g]` to the class of the holomorphic Čech `1`-cocycle
-`{u_i − u_j}` (holomorphic because `∂̄(u_i − u_j) = g − g = 0` on `U_i ∩ U_j`). Well-definedness
-(independence of the representative `g` and of the local primitive choices `u_i`) is part of this
-sub-kernel. -/
-noncomputable def dolbeault_to_cech : DolbeaultH01 X →ₗ[ℝ] 𝔘.cechH1 0 :=
+/-! ### Dolbeault → Čech: the genuine PDE content, isolated; the quotient assembly, sorry-free
+
+The map `[g] ↦ [{u_i − u_j}]` factors through the Čech cocycle group. We isolate the *only* analytic
+content — a **linear** global `∂̄`-solution operator over the (Leray) cover — as the named kernel
+`dolbeaultToCechCocycle` (the cochain `{[u_i]}` of germ-classes of local primitives `∂̄u_i = g`,
+linear in `g`, whose `cechDelta0` is automatically a holomorphic cocycle), plus its
+well-definedness fact `dolbeaultToCechCocycle_dbarImage_le` (the `∂̄`-image maps to a coboundary).
+The cohomological assembly — lifting through the two quotients `DolbeaultH01 = A^{0,1}/im ∂̄` and
+`cechH1 = Z¹/B¹`, with the `ℂ→ℝ` scalar restriction — is then **sorry-free** (`Submodule.liftQ`).
+-/
+
+/-- **(Analytic sub-kernel — the Dolbeault → Čech cocycle operator.)** The `ℝ`-linear map sending a
+`(0,1)`-form `g ∈ A^{0,1}` to the Čech `1`-cocycle `{[u_j] − [u_i]} = cechDelta0 {[u_i]} ∈ Z¹(𝔘, 𝒪)`,
+where `u_i` solves `∂̄u_i = g` on the (simply-connected / disk) cover set `U_i`.
+
+This packages the *only* PDE content of the Dolbeault → Čech direction: **global** `∂̄`-solvability on
+each Leray cover set (`DbarLocal.dbar_solvable_locally` only gives a *point*-neighborhood; the
+disk-global solve, via the Cauchy transform, is what is needed) — crucially **linear in `g`** (the
+Cauchy-transform solution operator is linear), so the whole assignment is `ℝ`-linear. The output
+lands in `cocycles1` because (i) `cechDelta0 c ∈ ker cechDelta1` for *any* germ-class cochain `c`
+(`cechDelta0_mem_ker_cechDelta1`, sorry-free), and (ii) on each overlap `U_i ∩ U_j` the difference
+`u_j − u_i` is **holomorphic** (`∂̄(u_j − u_i) = g − g = 0`), so `cechDelta0 {[u_i]} ∈ sections1 0`. -/
+noncomputable def dolbeaultToCechCocycle :
+    ↥(OneFormsZeroOne X) →ₗ[ℝ] ↥(𝔘.cocycles1 (0 : Divisor X)) :=
   sorry
+
+/-- **(Analytic sub-kernel — well-definedness of Dolbeault → Čech.)** A global `∂̄`-image
+`g = ∂̄h` is sent to a Čech **coboundary**, hence to `0` in `H¹`: each local primitive difference
+`u_i − h` is holomorphic on `U_i` (`∂̄(u_i − h) = g − g = 0`), so `{[u_i − h]} ∈ sections0 0` and
+`cechDelta0 {[u_i]} = cechDelta0 {[u_i − h]} ∈ coboundaries1 0` (the global `h` contributes `0` to
+`cechDelta0`). This is exactly the statement that `dbarImageInZeroOne X` lies in the kernel of the
+composite `A^{0,1} → Z¹ → H¹`, which makes the lift to `DolbeaultH01 = A^{0,1}/im ∂̄` well-defined. -/
+theorem dolbeaultToCechCocycle_dbarImage_le :
+    dbarImageInZeroOne X ≤ LinearMap.ker
+      ((Submodule.mkQ ((𝔘.coboundaries1 (0 : Divisor X)).submoduleOf
+          (𝔘.cocycles1 (0 : Divisor X)))).restrictScalars ℝ ∘ₗ dolbeaultToCechCocycle 𝔘) :=
+  sorry
+
+/-- **Dolbeault → Čech.** The `ℝ`-linear map `H^{0,1}(X) → H¹(X, 𝒪)`. Assembled **sorry-free** from
+the analytic cocycle operator `dolbeaultToCechCocycle` and its well-definedness
+`dolbeaultToCechCocycle_dbarImage_le`: project the cocycle to `cechH1 = Z¹/B¹` (`Submodule.mkQ`,
+scalar-restricted `ℂ → ℝ`), then lift through the Dolbeault quotient `A^{0,1}/im ∂̄`
+(`Submodule.liftQ`, justified by the kernel inclusion). All genuine content lives in the two named
+sub-kernels above. -/
+noncomputable def dolbeault_to_cech : DolbeaultH01 X →ₗ[ℝ] 𝔘.cechH1 0 :=
+  Submodule.liftQ (dbarImageInZeroOne X)
+    ((Submodule.mkQ ((𝔘.coboundaries1 (0 : Divisor X)).submoduleOf
+        (𝔘.cocycles1 (0 : Divisor X)))).restrictScalars ℝ ∘ₗ dolbeaultToCechCocycle 𝔘)
+    (dolbeaultToCechCocycle_dbarImage_le 𝔘)
 
 /-! ### Sorry-free backbone of the Čech → Dolbeault map: the partition of unity
 
