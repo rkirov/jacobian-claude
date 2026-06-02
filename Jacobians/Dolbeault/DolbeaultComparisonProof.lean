@@ -775,6 +775,37 @@ theorem planarPrimitive_smul (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (c : ℝ) (
   rw [planarPrimitive, 𝔇.cutoffPullback_smul i c g, DbarDisk.cauchyTransform_smul]
   rfl
 
+/-! ### Step 4b — the linear 0-cochain of disk primitives -/
+
+/-- The disk-`i` primitive read back as a section on `U i`: `x ↦ planarPrimitive i g (eᵢ x)`. The
+local `∂̄`-primitive `u_i` of `g` on the disk `U_i`. -/
+noncomputable def diskSection (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g : SmoothCOneForms X) :
+    𝔇.U i → ℂ :=
+  fun x => 𝔇.planarPrimitive i g (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) x.1)
+
+theorem diskSection_add (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g₁ g₂ : SmoothCOneForms X) :
+    𝔇.diskSection i (g₁ + g₂) = 𝔇.diskSection i g₁ + 𝔇.diskSection i g₂ := by
+  funext x; simp only [diskSection, 𝔇.planarPrimitive_add, Pi.add_apply]
+
+theorem diskSection_smul (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (c : ℝ) (g : SmoothCOneForms X) :
+    𝔇.diskSection i (c • g) = c • 𝔇.diskSection i g := by
+  funext x; simp only [diskSection, 𝔇.planarPrimitive_smul, Pi.smul_apply]
+
+/-- The **linear 0-cochain of disk primitives**: `g ↦ (i ↦ [u_i])`, the germ-classes of the local
+`∂̄`-primitives. `ℝ`-linear in `g` (via `planarPrimitive` linearity + `toGerm`). Its `cechDelta0` is
+the Dolbeault → Čech cocycle. -/
+noncomputable def rawCochain (𝔇 : ChartDiskCover X) :
+    SmoothCOneForms X →ₗ[ℝ] 𝔇.toFiniteCover.Cochain0 where
+  toFun g i := toGerm (𝔇.U i) (𝔇.diskSection i g)
+  map_add' g₁ g₂ := by
+    funext i
+    simp only [Pi.add_apply, 𝔇.diskSection_add]
+    exact map_add (toGerm (𝔇.U i)) (𝔇.diskSection i g₁) (𝔇.diskSection i g₂)
+  map_smul' c g := by
+    funext i
+    simp only [RingHom.id_apply, Pi.smul_apply, 𝔇.diskSection_smul]
+    exact (toGerm (𝔇.U i)).map_smul_of_tower c (𝔇.diskSection i g)
+
 end ChartDiskCover
 
 /-- **(Analytic sub-kernel.)** Local `∂̄`-solvability on the manifold: any smooth `(0,1)`-form `g`
