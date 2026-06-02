@@ -62,6 +62,19 @@ theorem center_mem (i : 𝔇.ι) : 𝔇.center i ∈ ((𝔇.U i : Opens X) : Set
   exact ⟨by simp only [Set.mem_preimage]; exact Metric.mem_ball_self (𝔇.radius_pos i),
     mem_extChartAt_source (𝔇.center i)⟩
 
+/-- A radius `R` strictly larger than the disk whose *closed* ball still lies in the chart target.
+Exists because the closed disk `closedBall (e i) (radius i)` is compact inside the open target
+(`IsCompact.exists_cthickening_subset_open` + `cthickening_closedBall`). The forward-solve cutoff
+bump uses `rIn = radius i`, `rOut = R`: it is `1` on the whole disk and supported inside the target. -/
+theorem exists_bumpOuterRadius (i : 𝔇.ι) :
+    ∃ R, 𝔇.radius i < R ∧
+      Metric.closedBall (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) (𝔇.center i)) R
+        ⊆ (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).target := by
+  obtain ⟨δ, δpos, hδ⟩ := (isCompact_closedBall _ _).exists_cthickening_subset_open
+    (isOpen_extChartAt_target (𝔇.center i)) (𝔇.closedBall_subset_target i)
+  exact ⟨δ + 𝔇.radius i, by linarith,
+    by rwa [cthickening_closedBall δpos.le (𝔇.radius_pos i).le] at hδ⟩
+
 end ChartDiskCover
 
 end Jacobians.Dolbeault
