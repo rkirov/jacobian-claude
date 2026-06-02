@@ -222,7 +222,7 @@ scalar factor: `finrank ℝ (DolbeaultH01 X) = 2 · finrank ℂ (cechH1 𝔘 0)`
 SCALAR NOTE above for why this (not the mistyped `g = 2g` form) is the correct statement, and for the
 cleaner `≃ₗ[ℂ]`/`finrank ℂ`-equality once `DolbeaultH01` carries its natural `Module ℂ`. The content
 is ∂̄-globalization + Čech patching (PDE-free given local `∂̄`-solvability). -/
-theorem cechH1_dolbeault_comparison (𝔘 : FiniteCover X) :
+theorem cechH1_dolbeault_comparison (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) :
     Module.finrank ℝ (DolbeaultH01 X) = 2 * Module.finrank ℂ (𝔘.cechH1 0) :=
   sorry
 
