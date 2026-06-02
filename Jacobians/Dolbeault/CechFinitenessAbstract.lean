@@ -45,4 +45,24 @@ theorem finiteDimensional_h1_of_leray_compact
       LinearMap.range_eq_top.2 (Prod.fst_surjective (β := Z1U)), Submodule.map_top]
   rwa [hrange] at hfd
 
+/-- **Finite product of compact operators is compact.** For a finite index `ι`, the product map
+`Πᵢ Kᵢ : (∀ i, E i) →L (∀ i, F i)` of compact operators `Kᵢ` is compact (it is the finite sum
+`∑ᵢ single_i ∘ Kᵢ ∘ proj_i`). This makes the cochain restriction `C^q(𝔘) → C^q(𝔙)` (componentwise
+over the finite pair-index of the cover) a compact operator from the per-overlap
+`BddHol.isCompactOperator_restrictCLM` — the bridge from STEP 1 to STEP 3's `ρ` input. -/
+theorem isCompactOperator_pi {ι : Type*} [Fintype ι] [DecidableEq ι] {E F : ι → Type*}
+    [∀ i, NormedAddCommGroup (E i)] [∀ i, NormedSpace ℂ (E i)]
+    [∀ i, NormedAddCommGroup (F i)] [∀ i, NormedSpace ℂ (F i)]
+    (K : ∀ i, E i →L[ℂ] F i) (hK : ∀ i, IsCompactOperator (K i)) :
+    IsCompactOperator (pi (fun i => (K i).comp (proj i)) : (∀ i, E i) →L[ℂ] (∀ i, F i)) := by
+  have hsum : (pi (fun i => (K i).comp (proj i)) : (∀ i, E i) →L[ℂ] (∀ i, F i))
+      = ∑ i : ι, (single ℂ F i).comp ((K i).comp (proj i)) := by
+    ext x j
+    simp [ContinuousLinearMap.pi_apply, ContinuousLinearMap.sum_apply,
+      ContinuousLinearMap.single_apply, Pi.single_apply, Finset.sum_apply, Finset.sum_ite_eq]
+  rw [hsum, ContinuousLinearMap.coe_sum']
+  refine Finset.sum_induction _ IsCompactOperator (fun _ _ ha hb => ha.add hb)
+    isCompactOperator_zero (fun i _ => ?_)
+  exact ((hK i).comp_clm (proj i)).clm_comp (single ℂ F i)
+
 end Jacobians.Dolbeault.CechFiniteness
