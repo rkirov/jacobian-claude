@@ -1082,3 +1082,34 @@ transition = `restrictScalars` of `fderiv ℂ`, via `DifferentiableAt.fderiv_res
 estimate was pessimistic. The deep dig to *find* the route was the expensive part; once the two defeq
 facts were confirmed by probe, the build was small. Worth probing the load-bearing defeqs FIRST next
 time — they collapse or explode the whole estimate.
+
+---
+
+## 2026-06-02 (cont.) — Čech soundness fix via Filter.Germ (user-steered)
+
+While picking a ladder leaf to build, found a real soundness gap: the Čech `h0Dim`/`h1Dim`
+(`CechComplex`) were naive `finrank`s over *honest functions* on `↥U`, so removable-singularity
+junk (point-indicators: meromorphic, `ordU ≡ ⊤`) inflated them — `h0Dim ≡ 0`, breaking all five
+leaves. Same junk the RR side already quotients out of `lDim` (`germZeroSubmodule`); the fix never
+reached the later Čech scaffold.
+
+**User steers (worth recording):**
+- "Research more" + "look up meromorphicNF" → don't over-alarm or hand-roll; this is the *standard*
+  removable-singularity ambiguity. Mathlib's `Analysis.Meromorphic.NormalForm`: functions mod
+  `=ᶠ[codiscreteWithin]`, `toMeromorphicNFOn` canonical reps, `meromorphicOrderAt_congr` (order is
+  the codiscrete-invariant). The right object is meromorphic-functions-mod-codiscrete.
+- "Do we need quotients, they can be painful?" → correct instinct. The cohomology `H¹=Z/B` quotient
+  is inherent (only Hodge/harmonic avoids it = the deep wall). But the *junk* quotient is avoidable:
+  `Filter.Germ (codiscreteWithin U) ℂ` internalises it (clean ℂ-module, no manual `submoduleOf`/`mapQ`),
+  so `h⁰` becomes a **plain finrank**. User chose "Filter.Germ (drop junk quotient)".
+
+**Done (commits `781a99f`, `8ba3a7e`):** rebuilt the Čech complex on `Π MGerm`. `MGerm U :=
+Filter.Germ (codiscreteWithin univ) ℂ`; `toGerm`, `rawRestrictG` (via `Germ.compTendsto` +
+`tendsto_openIncl`: the open inclusion pulls codiscrete back, via `Opens.isOpenEmbedding_of_le`),
+`OmegaDGerm := map toGerm OmegaD`. `δ²=0` re-proven on germs (`rawRestrictG_comp_apply` + `abel`).
+`h0Dim` is now a plain submodule finrank — no quotient; `h1Dim` is the one inherent cohomology
+quotient. All five leaves are now true-able. Full repo builds, axiom-clean.
+
+**Lesson:** before building ON a scaffold, sanity-check its *dimensions* — `finrank` over a junk
+space silently collapses to 0. The fix was a known Mathlib pattern, not a crisis; the user's two
+nudges (NF, avoid-quotients) steered straight to the clean `Filter.Germ` solution.
