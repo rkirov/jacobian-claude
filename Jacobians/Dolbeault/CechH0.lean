@@ -129,6 +129,83 @@ theorem toGerm_eq_zero_iff {U : Opens X} (g : U → ℂ) :
   simp only [Pi.zero_apply, Set.mem_univ, forall_const, Set.compl_univ, Set.union_empty]
   rfl
 
+/-! ### Extension-by-zero of an `↥U`-section and the `↥U ↔ X` chart bridge
+
+For the gluing crux we need to talk about a section `g : ↥U → ℂ` as a function on the *ambient* `X`,
+so that the per-point normal form (read in `X`'s chart) makes sense. `Gext g` extends `g` by `0`;
+`Gext_chart_bridge` is the `↥U ↔ X` chart-pullback agreement (the `Gext` analogue of
+`incl_chart_aux`), from which meromorphy / order / normal-form on `X` all transfer from `↥U`. -/
+
+open Classical in
+/-- Extend a section on the open submanifold `↥U` by `0` to a function on the whole space `X`. -/
+noncomputable def Gext {U : Opens X} (g : U → ℂ) : X → ℂ :=
+  fun x => if hx : x ∈ U then g ⟨x, hx⟩ else 0
+
+theorem Gext_comp_val {U : Opens X} (g : U → ℂ) :
+    (Gext g) ∘ (Subtype.val : U → X) = g := by
+  funext u; simp only [Function.comp_apply, Gext, dif_pos u.2]
+
+theorem Gext_apply_mem {U : Opens X} (g : U → ℂ) {x : X} (hx : x ∈ U) :
+    Gext g x = g ⟨x, hx⟩ := by simp only [Gext, dif_pos hx]
+
+/-- The base point and chart-pullback agree between `↥U`'s chart at `⟨y⟩` and `X`'s chart at `y` for
+`y ∈ U`: both are `subtypeRestr`s of the *same* ambient chart `chartAt ℂ y` (`Opens.chartAt_eq`), and
+`Gext g` agrees with `g` near `y` (the point and its neighbours lie in `U`). The `Gext` analogue of
+`incl_chart_aux`. -/
+theorem Gext_chart_bridge {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
+    (chartAt (H := ℂ) (⟨y, hy⟩ : U)) ⟨y, hy⟩ = (chartAt (H := ℂ) y) y ∧
+    (g ∘ (chartAt (H := ℂ) (⟨y, hy⟩ : U)).symm) =ᶠ[𝓝 ((chartAt (H := ℂ) y) y)]
+      (Gext g ∘ (chartAt (H := ℂ) y).symm) := by
+  set u : U := ⟨y, hy⟩ with hu
+  have hbase : (chartAt (H := ℂ) u) u = (chartAt (H := ℂ) y) y := by
+    simp only [hu, TopologicalSpace.Opens.chartAt_eq, OpenPartialHomeomorph.subtypeRestr_coe,
+      Set.restrict_apply]
+  refine ⟨hbase, ?_⟩
+  have ht1 : (chartAt (H := ℂ) u).target ∈ 𝓝 ((chartAt (H := ℂ) u) u) :=
+    (chartAt (H := ℂ) u).open_target.mem_nhds
+      ((chartAt (H := ℂ) u).map_source (mem_chart_source ℂ u))
+  rw [hbase] at ht1
+  refine Filter.eventuallyEq_of_mem ht1 fun w hw => ?_
+  show g ((chartAt (H := ℂ) u).symm w) = Gext g ((chartAt (H := ℂ) y).symm w)
+  have e1 : ((chartAt (H := ℂ) u).symm w).1 = (chartAt (H := ℂ) y).symm w := by
+    simpa [Function.comp] using
+      OpenPartialHomeomorph.subtypeRestr_symm_apply (e := chartAt (H := ℂ) y) ⟨u⟩ hw
+  have hmem : (chartAt (H := ℂ) y).symm w ∈ U := e1 ▸ ((chartAt (H := ℂ) u).symm w).2
+  rw [show Gext g ((chartAt (H := ℂ) y).symm w) = g ⟨(chartAt (H := ℂ) y).symm w, hmem⟩ from by
+    simp only [Gext, dif_pos hmem]]
+  congr 1
+  exact Subtype.ext e1
+
+/-- `Gext g` is meromorphic at `y ∈ U` (in `X`'s chart), given `g` meromorphic on `↥U`. -/
+theorem Gext_meromorphicAt {U : Opens X} {g : U → ℂ} (hg : IsMeromorphic (U : Type _) g)
+    {y : X} (hy : y ∈ U) :
+    MeromorphicAt (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) := by
+  obtain ⟨hbase, hev⟩ := Gext_chart_bridge g hy
+  have hmer := hg ⟨y, hy⟩
+  rw [hbase] at hmer
+  exact hmer.congr (hev.filter_mono nhdsWithin_le_nhds)
+
+/-- The intrinsic order on `↥U` (`ordU g`) equals the order of `Gext g` read in `X`'s chart. -/
+theorem ordU_eq_orderAt_Gext {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
+    ordU g ⟨y, hy⟩ =
+      meromorphicOrderAt (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) := by
+  obtain ⟨hbase, hev⟩ := Gext_chart_bridge g hy
+  rw [ordU, hbase]
+  exact meromorphicOrderAt_congr (hev.filter_mono nhdsWithin_le_nhds)
+
+/-- The "normal form at `y`" predicate intrinsic to `X`: `h` read in `X`'s chart at `y` has
+meromorphic normal form at the chart centre. -/
+def nfX (h : X → ℂ) (y : X) : Prop :=
+  MeromorphicNFAt (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y)
+
+/-- `Gext g` is in normal form at `y ∈ U` iff `g` is (read in `↥U`'s chart at `⟨y⟩`). -/
+theorem nfX_Gext_iff {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
+    nfX (Gext g) y ↔
+      MeromorphicNFAt (g ∘ (chartAt (H := ℂ) (⟨y, hy⟩ : U)).symm)
+        ((chartAt (H := ℂ) (⟨y, hy⟩ : U)) ⟨y, hy⟩) := by
+  obtain ⟨hbase, hev⟩ := Gext_chart_bridge g hy
+  rw [nfX, hbase, meromorphicNFAt_congr hev]
+
 /-! ### The forward map `L(D) → H⁰(𝔘, 𝒪_D)` -/
 
 namespace FiniteCover
