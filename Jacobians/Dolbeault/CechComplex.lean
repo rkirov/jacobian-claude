@@ -40,60 +40,59 @@ namespace FiniteCover
 
 variable (𝔘 : FiniteCover X) (D : Divisor X)
 
-/-! ### Raw cochain spaces (products of full function spaces — diamond-free `ℂ`-modules). -/
+/-! ### Cochain spaces — germ-classes (`MGerm`), the junk-free sections (no junk quotient). -/
 
-/-- Raw 0-cochains: a function on each `↥(U i)`. -/
-abbrev Cochain0 : Type _ := Π i, (𝔘.U i → ℂ)
+/-- 0-cochains: a germ-class on each `↥(U i)`. -/
+abbrev Cochain0 : Type _ := Π i, MGerm (𝔘.U i)
 
-/-- Raw 1-cochains: a function on each pairwise intersection. -/
-abbrev Cochain1 : Type _ := Π p : 𝔘.ι × 𝔘.ι, (↥(𝔘.U p.1 ⊓ 𝔘.U p.2) → ℂ)
+/-- 1-cochains: a germ-class on each pairwise intersection. -/
+abbrev Cochain1 : Type _ := Π p : 𝔘.ι × 𝔘.ι, MGerm (𝔘.U p.1 ⊓ 𝔘.U p.2)
 
-/-- Raw 2-cochains: a function on each triple intersection. -/
-abbrev Cochain2 : Type _ := Π t : 𝔘.ι × 𝔘.ι × 𝔘.ι, (↥(𝔘.U t.1 ⊓ 𝔘.U t.2.1 ⊓ 𝔘.U t.2.2) → ℂ)
+/-- 2-cochains: a germ-class on each triple intersection. -/
+abbrev Cochain2 : Type _ := Π t : 𝔘.ι × 𝔘.ι × 𝔘.ι, MGerm (𝔘.U t.1 ⊓ 𝔘.U t.2.1 ⊓ 𝔘.U t.2.2)
 
-/-- Raw restriction `(↥U → ℂ) → (↥V → ℂ)` for `V ≤ U`: precomposition with the open inclusion. -/
-noncomputable abbrev rawRestrict {U V : Opens X} (h : V ≤ U) : (U → ℂ) →ₗ[ℂ] (V → ℂ) :=
-  LinearMap.funLeft ℂ ℂ (openIncl h)
+/-- Nested germ restriction collapses to a single one (`openIncl` composes; the order proofs are
+irrelevant). The cocycle identity that makes `δ² = 0`. -/
+theorem rawRestrictG_comp_apply {U V W : Opens X} (h1 : V ≤ U) (h2 : W ≤ V) (f : MGerm U) :
+    rawRestrictG h2 (rawRestrictG h1 f) = rawRestrictG (h2.trans h1) f := by
+  induction f using Filter.Germ.inductionOn with | _ f => rfl
 
 /-- Čech differential `δ⁰ : C⁰ → C¹`, `(δ⁰f)_{ij} = f_j|_{U_i∩U_j} − f_i|_{U_i∩U_j}`. -/
 noncomputable def cechDelta0 : 𝔘.Cochain0 →ₗ[ℂ] 𝔘.Cochain1 :=
   LinearMap.pi fun p =>
-    rawRestrict inf_le_right ∘ₗ LinearMap.proj p.2 - rawRestrict inf_le_left ∘ₗ LinearMap.proj p.1
+    rawRestrictG inf_le_right ∘ₗ LinearMap.proj p.2 - rawRestrictG inf_le_left ∘ₗ LinearMap.proj p.1
 
 /-- Čech differential `δ¹ : C¹ → C²`,
 `(δ¹g)_{ijk} = g_{jk}|_{ijk} − g_{ik}|_{ijk} + g_{ij}|_{ijk}`. -/
 noncomputable def cechDelta1 : 𝔘.Cochain1 →ₗ[ℂ] 𝔘.Cochain2 :=
   LinearMap.pi fun t =>
-    rawRestrict (le_inf (inf_le_left.trans inf_le_right) inf_le_right) ∘ₗ LinearMap.proj (t.2.1, t.2.2)
-      - rawRestrict (le_inf (inf_le_left.trans inf_le_left) inf_le_right) ∘ₗ LinearMap.proj (t.1, t.2.2)
-      + rawRestrict inf_le_left ∘ₗ LinearMap.proj (t.1, t.2.1)
+    rawRestrictG (le_inf (inf_le_left.trans inf_le_right) inf_le_right) ∘ₗ LinearMap.proj (t.2.1, t.2.2)
+      - rawRestrictG (le_inf (inf_le_left.trans inf_le_left) inf_le_right) ∘ₗ LinearMap.proj (t.1, t.2.2)
+      + rawRestrictG inf_le_left ∘ₗ LinearMap.proj (t.1, t.2.1)
 
-/-- `δ² = 0`: the alternating sum of restrictions cancels. Nested restrictions are precompositions
-with open inclusions, which evaluate to `⟨x.1, _⟩` independently of the `≤` proof (proof-irrelevance),
-so the six terms `f_k − f_j − f_k + f_i + f_j − f_i` pair up and vanish. -/
+/-- `δ² = 0`: the alternating sum of restrictions cancels. Nested restrictions collapse
+(`rawRestrictG_comp`), so the six terms `g_k − g_j − g_k + g_i + g_j − g_i` pair up and vanish. -/
 theorem cechDelta1_comp_cechDelta0 : (𝔘.cechDelta1) ∘ₗ (𝔘.cechDelta0) = 0 := by
   refine LinearMap.ext fun f => ?_
   funext t
   obtain ⟨i, j, k⟩ := t
-  funext x
-  simp only [LinearMap.comp_apply, LinearMap.zero_apply, Pi.zero_apply, cechDelta0, cechDelta1,
-    rawRestrict, LinearMap.pi_apply, LinearMap.sub_apply, LinearMap.add_apply, LinearMap.coe_comp,
-    Function.comp_apply, LinearMap.proj_apply, LinearMap.funLeft_apply, Pi.sub_apply, Pi.add_apply,
-    openIncl]
-  ring
+  simp only [cechDelta0, cechDelta1, LinearMap.comp_apply, LinearMap.pi_apply, LinearMap.sub_apply,
+    LinearMap.add_apply, LinearMap.proj_apply, map_sub, rawRestrictG_comp_apply,
+    LinearMap.zero_apply, Pi.zero_apply]
+  abel
 
-/-! ### The `𝒪_D` sheaf condition, as submodules of the raw cochain spaces. -/
+/-! ### The `𝒪_D` sheaf condition, as submodules of the germ-class cochains. -/
 
 /-- 0-cochains that are `𝒪_D`-sections on each `U i`. -/
 def sections0 : Submodule ℂ 𝔘.Cochain0 where
-  carrier := {f | ∀ i, f i ∈ OmegaD D (𝔘.U i)}
+  carrier := {f | ∀ i, f i ∈ OmegaDGerm D (𝔘.U i)}
   add_mem' hf hg i := add_mem (hf i) (hg i)
   zero_mem' i := Submodule.zero_mem _
   smul_mem' c f hf i := Submodule.smul_mem _ c (hf i)
 
 /-- 1-cochains that are `𝒪_D`-sections on each pairwise intersection. -/
 def sections1 : Submodule ℂ 𝔘.Cochain1 where
-  carrier := {g | ∀ p, g p ∈ OmegaD D (𝔘.U p.1 ⊓ 𝔘.U p.2)}
+  carrier := {g | ∀ p, g p ∈ OmegaDGerm D (𝔘.U p.1 ⊓ 𝔘.U p.2)}
   add_mem' hf hg p := add_mem (hf p) (hg p)
   zero_mem' p := Submodule.zero_mem _
   smul_mem' c g hg p := Submodule.smul_mem _ c (hg p)
@@ -106,17 +105,18 @@ noncomputable def cocycles1 : Submodule ℂ 𝔘.Cochain1 :=
 noncomputable def coboundaries1 : Submodule ℂ 𝔘.Cochain1 :=
   Submodule.map 𝔘.cechDelta0 (𝔘.sections0 D)
 
-/-- **Čech `H¹(𝔘, 𝒪_D) = Z¹/B¹`** — cocycles modulo coboundaries, a `ℂ`-module. The ambient is the
-raw function-Pi `Cochain1`, so the quotient is diamond-free. (`B¹ ⊆ Z¹` holds by `δ² = 0` and
-restriction preserving `𝒪_D`; the quotient is well-formed regardless.) -/
+/-- **Čech `H¹(𝔘, 𝒪_D) = Z¹/B¹`** — cocycles modulo coboundaries, a `ℂ`-module. The cochains are
+germ-classes (`MGerm`, junk-free), so this is the genuine `H¹`; `Z¹/B¹` is the one inherent
+cohomology quotient. (`B¹ ⊆ Z¹` by `δ² = 0` + restriction preserving `𝒪_D`.) -/
 abbrev cechH1 : Type _ :=
   ↥(𝔘.cocycles1 D) ⧸ (𝔘.coboundaries1 D).submoduleOf (𝔘.cocycles1 D)
 
-/-- `H⁰(𝔘, 𝒪_D)` = global matching `𝒪_D`-sections = `ker δ⁰ ∩ sections`. -/
+/-- `H⁰(𝔘, 𝒪_D)` = global matching `𝒪_D`-sections = `ker δ⁰ ∩ sections`. Junk-free (germ-class
+cochains), so `h⁰` below is a plain `finrank` — **no quotient**. -/
 noncomputable def globalSections : Submodule ℂ 𝔘.Cochain0 :=
   LinearMap.ker 𝔘.cechDelta0 ⊓ 𝔘.sections0 D
 
-/-- `h⁰(D)` (Forster's `h⁰(X, 𝒪_D)`). -/
+/-- `h⁰(D)` (Forster's `h⁰(X, 𝒪_D)`) — a plain submodule `finrank`, junk already quotiented by `MGerm`. -/
 noncomputable def h0Dim : ℕ := Module.finrank ℂ ↥(𝔘.globalSections D)
 
 /-- `h¹(D)` (Forster's `h¹(X, 𝒪_D)`). -/
