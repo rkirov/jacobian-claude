@@ -226,6 +226,51 @@ theorem exists_smoothLift_of_chartFun (f : ℂ → ℂ) (hf : ContDiff ℝ (⊤ 
   show (χ x : ℝ) • f (extChartAt 𝓘(ℝ, ℂ) x₀ x) = f (extChartAt 𝓘(ℝ, ℂ) x₀ x)
   rw [hVsub hx]; simp
 
+/-! #### The Wirtinger chain rule for a holomorphic inner map
+
+The single piece of genuine analytic content needed to transport the planar `∂̄`-solve (which lives
+in the `x₀`-chart) to the intrinsic value (read in the chart at the evaluation point `x`): under a
+*holomorphic* change of coordinates `τ`, the planar Wirtinger operator transforms by `conj(τ′)`. This
+is the chart-transition equivariance of `∂̄`; it is a Mathlib-gap-filling lemma (no `analyticGroupoid`
+Wirtinger calculus exists), proven here from `fderiv_comp` + `HasDerivAt.complexToReal_fderiv` (the
+holomorphic `fderiv ℝ τ ζ = (deriv τ ζ) • 1`). Reusable; could later move to `DbarDisk.lean`. -/
+
+/-- **Wirtinger chain rule for a holomorphic inner map.** For `f` real-differentiable and `τ`
+holomorphic at `ζ`, the planar `∂̄` of the composite transforms by the conjugate of the complex
+derivative of `τ`:
+`DbarDisk.dbar (f ∘ τ) ζ = conj(τ′(ζ)) · DbarDisk.dbar f (τ ζ)`.
+(The anti-holomorphic Wirtinger derivative is conjugate-linear in the holomorphic frame change — the
+defining feature of a `(0,1)`-quantity.) -/
+theorem dbarDisk_comp_holo (f : ℂ → ℂ) (τ : ℂ → ℂ) (ζ : ℂ)
+    (hf : DifferentiableAt ℝ f (τ ζ)) (hτ : DifferentiableAt ℂ τ ζ) :
+    DbarDisk.dbar (f ∘ τ) ζ = (starRingEnd ℂ) (deriv τ ζ) * DbarDisk.dbar f (τ ζ) := by
+  have hτℝ : DifferentiableAt ℝ τ ζ := hτ.hasDerivAt.complexToReal_fderiv.differentiableAt
+  have hτfd : fderiv ℝ τ ζ = (deriv τ ζ) • (1 : ℂ →L[ℝ] ℂ) :=
+    hτ.hasDerivAt.complexToReal_fderiv.fderiv
+  set c := deriv τ ζ with hc
+  set L := fderiv ℝ f (τ ζ) with hL
+  have hchain : fderiv ℝ (f ∘ τ) ζ = L.comp (fderiv ℝ τ ζ) := fderiv_comp ζ hf hτℝ
+  have e1 : fderiv ℝ (f ∘ τ) ζ 1 = L (c * 1) := by rw [hchain, hτfd]; simp [smul_eq_mul]
+  have eI : fderiv ℝ (f ∘ τ) ζ Complex.I = L (c * Complex.I) := by
+    rw [hchain, hτfd]; simp [smul_eq_mul]
+  rw [DbarDisk.dbar, DbarDisk.dbar, e1, eI, ← hL]
+  set a := c.re with ha
+  set b := c.im with hb
+  have hcab : c = (a : ℂ) + (b : ℂ) * Complex.I := (Complex.re_add_im c).symm
+  have hLc1 : L (c * 1) = (a : ℂ) * L 1 + (b : ℂ) * L Complex.I := by
+    rw [mul_one, hcab,
+      show ((a : ℂ) + (b : ℂ) * Complex.I) = (a : ℝ) • (1 : ℂ) + (b : ℝ) • Complex.I by
+        simp [Complex.real_smul],
+      map_add, map_smul, map_smul, Complex.real_smul, Complex.real_smul]
+  have hLcI : L (c * Complex.I) = -(b : ℂ) * L 1 + (a : ℂ) * L Complex.I := by
+    have hci : c * Complex.I = (-b : ℝ) • (1 : ℂ) + (a : ℝ) • Complex.I := by
+      rw [hcab, Complex.real_smul, Complex.real_smul]; push_cast; ring_nf; rw [Complex.I_sq]; ring
+    rw [hci, map_add, map_smul, map_smul, Complex.real_smul, Complex.real_smul]; push_cast; ring
+  rw [hLc1, hLcI,
+    show (starRingEnd ℂ) c = (a : ℂ) - (b : ℂ) * Complex.I from by
+      apply Complex.ext <;> simp [ha, hb]]
+  linear_combination (2⁻¹ * (b : ℂ) * L Complex.I) * Complex.I_sq
+
 /-- **(Finer analytic sub-kernel — the irreducible remainder.)** The local primitive at the
 value-`1` level: near every point `x₀`, there is a smooth `u` whose intrinsic `∂̄` *Wirtinger scalar*
 `proj01 (mfderiv … u x) 1` matches `g`'s, i.e. `= g x 1`.
