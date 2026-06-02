@@ -21,6 +21,7 @@
   remaining (Serre / bookkeeping) pieces for wiring to `exists_riemannRoch_divisor`.
 -/
 import Jacobians.Dolbeault.CechH0
+import Jacobians.Dolbeault.CohomologicalRR
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -37,16 +38,15 @@ restriction between a cover and a relatively-compact shrinking is *compact* (dis
 `Analysis.Complex.LocallyUniformLimit` + Arzelà–Ascoli), and a compact perturbation has finite-codim
 image (Schwartz / Riesz–Schauder, via Mathlib `IsCompactOperator` + `RieszLemma`). **Deep analytic
 leaf.** -/
+-- PROVEN as `CechFinitenessWiring.finiteDimensional_cechH1_wired` (same statement) modulo the single
+-- kernel `exists_cechModel`; not wired here because `CechFinitenessWiring` transitively imports this file.
 theorem finiteDimensional_cechH1 (𝔘 : FiniteCover X) (D : Divisor X) :
     FiniteDimensional ℂ (𝔘.cechH1 D) := sorry
 
-/-- **Cohomological Riemann–Roch (χ-additivity, Forster §16).** `l(D) − h¹(D) = deg D + 1 − g₁`,
-with the arithmetic genus `g₁ = h¹(0)`. From the skyscraper short exact sequence
-`0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0`, its long exact sequence (each dimension jumps by ≤ 1, so
-`χ(D+P) = χ(D)+1`), and `h⁰(0) = 1` (Liouville on compact `X`). Needs `finiteDimensional_cechH1`.
-**Analytic leaf (modulo finiteness it is homological bookkeeping).** -/
-theorem cohomological_riemannRoch (𝔘 : FiniteCover X) (D : Divisor X) :
-    (𝔘.h0Dim D : ℤ) - 𝔘.h1Dim D = Divisor.deg X D + 1 - 𝔘.h1Dim 0 := sorry
+/- **Cohomological Riemann–Roch (χ-additivity, Forster §16)** is now PROVEN in `CohomologicalRR.lean`
+(imported above) modulo the single isolated kernel `exists_skyscraperLES` (the skyscraper-SES connecting
+map + `skyDim=1`); base `h⁰(0)=1` + divisor induction + the 6-term alternating-sum crank are axiom-clean.
+So `cohomological_riemannRoch` is in scope here via the import — no longer a leaf-`sorry` of this file. -/
 
 /-- **Serre duality at `D = 0` — arithmetic genus = geometric genus.** `h¹(X, 𝒪) = dim Ω(X) = genus X`.
 The irreducible Dolbeault nugget (`H¹(X,𝒪) ≅ H^{0,1} ≅ Ω(X)^*`); the smallest Serre input, and all
