@@ -28,7 +28,22 @@ Given a holomorphic Čech 1-cocycle `f = {f_ij}` (`δ¹f = 0`, each `f_ij ∈ �
 | `∂̄` of a function as a `(0,1)`-form | `RealForms.dbar` / `dbarL` (global `SmoothCFunctions`) | ✅ repo |
 | **smooth-section gluing** (local `(0,1)`-forms agreeing on overlaps → global section) | — | ❌ **not in Mathlib; the key new infra** |
 
-## ⭐ BETTER CONSTRUCTION (Route DoubleSum — supersedes Route G below)
+## ROUTE DECISION (2026-06-02): use the STANDARD GLUING route, NOT the double-sum
+
+The canonical reference (**Forster §15/§17**; also Griffiths–Harris, Wells) builds the inverse by
+**local primitives `η_i = ∑_k ρ_k f_ik` + GLUING the `∂̄η_i` into a global form**. That is the route to
+use. The repo already templates the gluing: **`CechH0.gluedFun` / `gluedFun_eventuallyEq`** (proven,
+for H⁰ surjectivity of *functions*) — the inverse needs only the *form* analogue
+(`ω.toFun x := (∂̄η_{idx x})(x)`, smooth because it locally `= ∂̄η_i` on each `U_i`, i-independent by
+the cocycle). This is NOT novel infra.
+
+**The double-sum below is RECORDED but DEPRECATED.** `ω = ∑_{j,k} ρ_j(∂̄ρ_k)f_jk` is the Čech–de Rham
+double-complex "collating formula" (Bott–Tu §8–9, de Rham case) — correct and equivalent, but it is a
+reorganization chosen to dodge the section-gluing, and it is *not* the route the project's reference
+(Forster) takes. Per the user's directive (no non-canonical shortcuts), prefer the gluing route. Keep
+the double-sum only as a fallback if the form-gluing proves intractable in Lean.
+
+## ⭐ (RECORDED, DEPRECATED) Double-sum construction
 
 **Avoid the per-point gluing entirely.** Build `ω` as a *finite sum of global smooth forms*:
 
