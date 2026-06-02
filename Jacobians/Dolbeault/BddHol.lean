@@ -192,6 +192,48 @@ theorem analyticOn_extend_of_tendsto (hU : IsOpen U) {ι : Type*} {p : Filter ι
   exact analyticOn_of_tendstoLocallyUniformlyOn hU huon.tendstoLocallyUniformlyOn
     (Filter.Eventually.of_forall fun n => (g n).analyticOn)
 
+/-- `extend φ` is bounded on `U` by `‖φ‖`. -/
+theorem norm_extend_le (φ : ↥U →ᵇ ℂ) {z : ℂ} (hz : z ∈ U) : ‖extend φ z‖ ≤ ‖φ‖ := by
+  rw [extend_mem φ hz]
+  exact φ.norm_coe_le_norm ⟨z, hz⟩
+
+/-- The membership criterion for the image of `toBcf`: if `φ` is the `p`-limit of `toBcf`-images of
+`BddHol U` elements (for `U` open), then `φ` lies in the range — its extension by zero is a genuine
+element of `BddHol U`. -/
+theorem mem_range_toBcf_of_tendsto (hU : IsOpen U) {ι : Type*} {p : Filter ι} [p.NeBot]
+    (g : ι → BddHol U) (φ : ↥U →ᵇ ℂ) (hφ : Filter.Tendsto (fun n => (g n).toBcf) p (nhds φ)) :
+    φ ∈ Set.range (toBcf : BddHol U → (↥U →ᵇ ℂ)) := by
+  -- the extension by zero is a member of the carrier
+  have hmem : extend φ ∈ BddHolCarrier U :=
+    ⟨analyticOn_extend_of_tendsto hU g φ hφ, fun z hz => extend_notMem φ hz,
+      ‖φ‖, fun z hz => norm_extend_le φ hz⟩
+  refine ⟨(⟨extend φ, hmem⟩ : ↥(BddHolCarrier U)), ?_⟩
+  -- `toBcf` of this element is `φ`
+  ext z
+  show extend φ z.1 = φ z
+  rw [extend_mem φ z.2]
+
+/-- The image of `toBcf` is closed in `↥U →ᵇ ℂ` (uniform limits of bounded-holomorphic restrictions
+are bounded-holomorphic restrictions). -/
+theorem isClosed_range_toBcf (hU : IsOpen U) :
+    IsClosed (Set.range (toBcf : BddHol U → (↥U →ᵇ ℂ))) := by
+  rw [← isSeqClosed_iff_isClosed]
+  intro xs φ hxs hlim
+  -- each `xs n` is `toBcf (g n)` for some `g n`
+  choose g hg using hxs
+  refine mem_range_toBcf_of_tendsto (p := Filter.atTop) hU g φ ?_
+  simpa only [hg] using hlim
+
+/-- The image of `toBcf` is complete (closed in the Banach space `↥U →ᵇ ℂ`). -/
+theorem isComplete_range_toBcf (hU : IsOpen U) :
+    IsComplete (Set.range (toBcf : BddHol U → (↥U →ᵇ ℂ))) :=
+  (isClosed_range_toBcf hU).isComplete
+
+/-- **`BddHol U` is a Banach space.** Completeness follows from the isometric embedding into the
+complete `↥U →ᵇ ℂ` whose image is closed. -/
+theorem completeSpace (hU : IsOpen U) : CompleteSpace (BddHol U) :=
+  isUniformInducing_toBcf.completeSpace (isComplete_range_toBcf hU)
+
 end BddHol
 
 end Jacobians.Dolbeault
