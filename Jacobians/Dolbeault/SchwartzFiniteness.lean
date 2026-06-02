@@ -114,6 +114,75 @@ theorem finiteDimensional_quotient_range_add_compact
     (A : E →L[ℂ] F) (hA : Function.Surjective A)
     (K : E →L[ℂ] F) (hK : IsCompactOperator K) :
     FiniteDimensional ℂ (F ⧸ LinearMap.range (A + K).toLinearMap) := by
-  sorry
+  -- `A` is quantitatively surjective (Banach open mapping theorem): preimages with `‖x‖ ≤ C‖y‖`.
+  obtain ⟨C, hCpos, hAC⟩ := ContinuousLinearMap.exists_preimage_norm_le A hA
+  -- Choose `δ` so that, after the `2×` lift through the quotient, `q ∘ K` shrinks by a factor `1/2`.
+  set δ : ℝ := 1 / (4 * C) with hδdef
+  have hδpos : 0 < δ := by positivity
+  -- A finite-dimensional `S` whose `δ`-neighbourhood absorbs `K` of the unit ball.
+  obtain ⟨S, hSfin, hSnet⟩ := exists_finiteDim_approx K hK hδpos
+  haveI : FiniteDimensional ℂ S := hSfin
+  haveI hSclosed : IsClosed (S : Set F) := S.closed_of_finiteDimensional
+  -- The continuous quotient map `q : F →L[ℂ] F ⧸ S` (well-defined since `S` is closed).
+  set q : F →L[ℂ] (F ⧸ S) := S.mkQ.mkContinuous 1 (fun w => by
+    simpa using (Submodule.Quotient.norm_mk_le S w)) with hqdef
+  have hqmk : ∀ z : F, q z = Submodule.Quotient.mk z := fun _ => rfl
+  have hqnorm : ∀ z : F, ‖q z‖ = infDist z (S : Set F) := fun z =>
+    QuotientAddGroup.norm_mk (S := S.toAddSubgroup) z
+  -- `q ∘ K` has operator norm `≤ δ`, hence `‖q (K x)‖ ≤ δ‖x‖` pointwise.
+  have hqKbound : ∀ x : E, ‖q (K x)‖ ≤ δ * ‖x‖ := by
+    set qK : E →L[ℂ] (F ⧸ S) := q.comp K with hqKdef
+    have hqKnorm : ‖qK‖ ≤ δ := by
+      apply ContinuousLinearMap.opNorm_le_of_unit_norm hδpos.le
+      intro x hx
+      rw [show ‖qK x‖ = infDist (K x) (S : Set F) from hqnorm (K x)]
+      exact hSnet x hx.le
+    intro x
+    simpa [hqKdef] using qK.le_of_opNorm_le hqKnorm x
+  -- `q ∘ (A + K)` is surjective: a `< δ`-perturbation of the `δ`-open surjection `q ∘ A`.
+  have hsurj : Function.Surjective (q.comp (A + K)) := by
+    refine surjective_of_approx (C := 2 * C) (q.comp (A + K)) ?_
+    intro w
+    rcases eq_or_ne w 0 with hzero | hne
+    · exact ⟨0, by simp [hzero], by simp [hzero]⟩
+    · have hwpos : 0 < ‖w‖ := norm_pos_iff.mpr hne
+      obtain ⟨y, hy_mk, hy_norm⟩ := Submodule.Quotient.norm_mk_lt w hwpos
+      have hqy : q y = w := by rw [hqmk]; exact hy_mk
+      have hy_norm' : ‖y‖ < 2 * ‖w‖ := by linarith
+      obtain ⟨x, hAx, hx_norm⟩ := hAC y
+      refine ⟨x, ?_, ?_⟩
+      · have hcompute : (q.comp (A + K)) x = w + q (K x) := by
+          simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.add_apply]
+          rw [map_add, hAx, hqy]
+        rw [hcompute, dist_eq_norm, show w + q (K x) - w = q (K x) from by abel]
+        calc ‖q (K x)‖ ≤ δ * ‖x‖ := hqKbound x
+          _ ≤ δ * (C * ‖y‖) := by
+              apply mul_le_mul_of_nonneg_left hx_norm; rw [hδdef]; positivity
+          _ ≤ δ * (C * (2 * ‖w‖)) := by
+              apply mul_le_mul_of_nonneg_left _ (by rw [hδdef]; positivity)
+              exact mul_le_mul_of_nonneg_left hy_norm'.le hCpos.le
+          _ = 1 / 2 * ‖w‖ := by rw [hδdef]; field_simp; ring
+      · calc ‖x‖ ≤ C * ‖y‖ := hx_norm
+          _ ≤ C * (2 * ‖w‖) := mul_le_mul_of_nonneg_left hy_norm'.le hCpos.le
+          _ = 2 * C * ‖w‖ := by ring
+  -- Surjectivity of `q ∘ (A + K)` means `range (A + K) ⊔ S = ⊤`; then the quotient `F ⧸ range`
+  -- is the surjective image of the finite-dimensional `S`, hence finite-dimensional.
+  set T := (A + K).toLinearMap with hT
+  have hrange_top : LinearMap.range (S.mkQ.comp T) = ⊤ := by
+    rw [LinearMap.range_eq_top]
+    intro w
+    obtain ⟨x, hx⟩ := hsurj w
+    refine ⟨x, ?_⟩
+    rw [LinearMap.comp_apply, show S.mkQ (T x) = q (T x) from (hqmk (T x)).symm]
+    exact hx
+  have hmap : Submodule.map S.mkQ (LinearMap.range T) = ⊤ := by
+    rw [← LinearMap.range_comp]; exact hrange_top
+  have hsup : S ⊔ LinearMap.range T = ⊤ := (Submodule.map_mkQ_eq_top S _).mp hmap
+  have hsup' : LinearMap.range T ⊔ S = ⊤ := by rw [sup_comm]; exact hsup
+  have hrange2 : LinearMap.range ((LinearMap.range T).mkQ.comp S.subtype) = ⊤ := by
+    rw [LinearMap.range_comp, Submodule.range_subtype]
+    exact (Submodule.map_mkQ_eq_top _ _).mpr hsup'
+  exact FiniteDimensional.of_surjective ((LinearMap.range T).mkQ.comp S.subtype)
+    (LinearMap.range_eq_top.mp hrange2)
 
 end Jacobians.SchwartzFiniteness
