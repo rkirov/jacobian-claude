@@ -1149,3 +1149,30 @@ finiteness→χ→Green pairing→Dolbeault comparison (reuse done ∂̄)→Weyl
 G2→Serre, greenfield isolated to Serre core). **Methodology that worked:** delegate isolated fiddly
 crux-lemmas to sorry-filler agents — the axiom check makes delegation SAFE (clean `#print axioms` =
 genuine proof, no hidden sorry). **Next build = `finiteDimensional_cechH1`.**
+
+---
+
+## 2026-06-02 (session, cont.) — finiteness node: the whole abstract/FA spine PROVEN
+
+User drove a tight spike/scaffold/delegate loop ("kick it off" → "spike in the meantime" →
+"turn the spike into scaffold" → "check agent" → "do the bank"). Built the finiteness node
+(`finiteDimensional_cechH1`, Forster 14.9) **abstract/FA spine end-to-end, axiom-clean** — details
+in [[project_finiteness_node]]. The five proven lemmas: Schwartz 14.8
+(`finiteDimensional_quotient_range_add_compact`, the absent-from-Mathlib FA core — delegated to an
+agent), the de-bundled Montel atom (`isCompact_closure_restrict_bddHolo` — spike→promoted), the STEP-3
+abstract reduction (`finiteDimensional_h1_of_leray_compact` — spike→promoted; confirmed Schwartz plugs
+in exactly via `A:=δ⊕ρ`, `K:=0⊕−ρ`), `isCompactOperator_pi` (spike→promoted), and `BddHol` Banach +
+`isCompactOperator_restrictCLM` (STEP 1, delegated to an agent).
+
+**Workflow that clicked (bank it):** *spike throwaway → if green, PROMOTE to a committed named lemma*
+(did this 3×: atom, STEP-3 reduction, product-compact). And *delegate isolated hard pieces to
+`lean4:sorry-filler-deep` in the background while I spike adjacent abstract pieces* — the two agents
+(Schwartz, then BddHol) + my in-between spikes ran in parallel, and the axiom-check made every handoff
+sound. The "spike in the meantime" (STEP-3 reduction) retired the single riskiest wiring while an agent
+built STEP 1.
+
+**Measured win:** the de-risk's "finiteness = templated reuse, not greenfield" is now EMPIRICALLY
+confirmed — the repo's plain-function Montel + nested cover dropped straight in; the one genuinely-new
+FA piece (Schwartz) assembled from Mathlib OMT+Riesz+compact-op as predicted. **Remaining = pure
+manifold instantiation** (cochain rep over the chart-disk cover + Leray via G1 + germ↔supNorm
+comparison) — assembly against proven lemmas, no open uncertainty.
