@@ -8,7 +8,7 @@ fallback in `degreeFiber` no longer fires for non-constant maps.
 
 Original code MIT-licensed by Bryan Sanchez (2026); audit verifies
 `#print axioms` returns only `[propext, Classical.choice, Quot.sound]`.
-See `docs/EXTERNAL_AUDIT.md`.
+See `docs/archive/EXTERNAL_AUDIT.md`.
 -/
 import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 import Jacobians.Discharge.Manifold.DegreeWellDefined
