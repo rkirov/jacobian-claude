@@ -171,6 +171,42 @@ theorem exact_h0Incl_h0ToSky (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
     Function.Exact (𝔘.h0Incl D P) (𝔘.h0ToSky D P) :=
   LinearMap.exact_map_mkQ_range _
 
+/-! ### The inclusion-induced arrow `f₄ : H¹(𝒪_D) → H¹(𝒪_{D+P})` (provable, no analytic content)
+
+The inclusion `𝒪_D ↪ 𝒪_{D+P}` is monotone on the sheaf condition at each degree (`sections1`), hence
+on the 1-cocycles and 1-coboundaries; it therefore descends to a *canonical* map on `H¹ = Z¹/B¹`.
+This map `h1Map` is the LES arrow `f₄`; it is constructed and PROVEN here (only its surjectivity and
+the exactness `range f₃ = ker f₄` — which involve the snake/connecting map — remain in the kernel). -/
+
+/-- The `𝒪_D` 1-sections are contained in the `𝒪_{D+P}` 1-sections (order weakening). -/
+theorem sections1_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+    𝔘.sections1 D ≤ 𝔘.sections1 (D + Finsupp.single P 1) :=
+  fun _ hf p => OmegaDGerm_le_add_single D P _ (hf p)
+
+/-- The `𝒪_D` 1-cocycles are contained in the `𝒪_{D+P}` 1-cocycles (same `ker δ¹`, weaker sheaf). -/
+theorem cocycles1_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+    𝔘.cocycles1 D ≤ 𝔘.cocycles1 (D + Finsupp.single P 1) :=
+  inf_le_inf_left _ (𝔘.sections1_le_add_single D P)
+
+/-- The `𝒪_D` 1-coboundaries are contained in the `𝒪_{D+P}` 1-coboundaries (`δ⁰` of more sections). -/
+theorem coboundaries1_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+    𝔘.coboundaries1 D ≤ 𝔘.coboundaries1 (D + Finsupp.single P 1) :=
+  Submodule.map_mono (𝔘.sections0_le_add_single D P)
+
+/-- The 1-cocycle inclusion `Z¹(𝒪_D) ↪ Z¹(𝒪_{D+P})`. -/
+noncomputable def cocyclesIncl (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+    ↥(𝔘.cocycles1 D) →ₗ[ℂ] ↥(𝔘.cocycles1 (D + Finsupp.single P 1)) :=
+  Submodule.inclusion (𝔘.cocycles1_le_add_single D P)
+
+/-- **The inclusion-induced arrow `f₄ : H¹(𝒪_D) → H¹(𝒪_{D+P})`** (PROVEN). The cocycle inclusion
+sends `𝒪_D`-coboundaries to `𝒪_{D+P}`-coboundaries, so it descends to the `H¹` quotients
+(`Submodule.mapQ`). -/
+noncomputable def h1Map (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+    𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 (D + Finsupp.single P 1) := by
+  refine Submodule.mapQ _ _ (𝔘.cocyclesIncl D P) ?_
+  rintro ⟨c, _⟩ hcob
+  exact 𝔘.coboundaries1_le_add_single D P hcob
+
 /-! ### The skyscraper long exact sequence (the genuine homological/analytic kernel)
 
 The single-point χ-jump comes from the **skyscraper short exact sequence** of `𝒪_D`-modules
@@ -180,13 +216,13 @@ sequence** in Čech cohomology is
 the skyscraper having `H^{≥1} = 0`.
 
 `SkyscraperLES` bundles the data NOT already proven above. The first two arrows `f₁` (`h0Incl`) and
-`f₂` (`h0ToSky`, the cokernel projection) and the exactness at `H⁰(𝒪_{D+P})` are PROVEN
-(`exact_h0Incl_h0ToSky`); the inclusion `f₁` is injective (`h0Incl_injective`). The genuinely-hard
-content isolated here is:
+`f₂` (`h0ToSky`, the cokernel projection), the last arrow `f₄` (`h1Map`, the inclusion-induced map),
+and the exactness at `H⁰(𝒪_{D+P})` are all PROVEN (`exact_h0Incl_h0ToSky`, `h1Map`); the inclusion
+`f₁` is injective (`h0Incl_injective`). The genuinely-hard content isolated here is:
 * `skyDim`: the skyscraper cokernel is **1-dimensional** (`finrank ℂ_P = 1`) — the analytic local
   surjectivity onto the order-`(−D(P)−1)` principal-part coefficient at `P`;
-* the snake-lemma connecting map `f₃`, the inclusion-induced `f₄`, and the exactness facts `exact₂`,
-  `exact₃`, `surj₄` (the SES-of-complexes + `Algebra.Homology.HomologySequence` content);
+* the snake-lemma connecting map `f₃` and the exactness facts `exact₂`, `exact₃`, `surj₄` (the
+  SES-of-complexes + `Algebra.Homology.HomologySequence` content);
 * finiteness of the cohomology groups (Forster 14.9).
 
 Given a `SkyscraperLES`, the χ-jump is **pure linear algebra**: the alternating dimension sum of the
@@ -195,18 +231,16 @@ rearranges to `χ(D+P) = χ(D) + 1`. That crank, `chi_jump_of_LES`, is sorry-fre
 structure SkyscraperLES (𝔘 : FiniteCover X) (D : Divisor X) (P : X) where
   /-- The connecting homomorphism `ℂ_P → H¹(𝒪_D)` (snake lemma of the SES of cochain complexes). -/
   f₃ : 𝔘.Skyscraper D P →ₗ[ℂ] 𝔘.cechH1 D
-  /-- The map `H¹(𝒪_D) → H¹(𝒪_{D+P})` induced by the inclusion `𝒪_D ↪ 𝒪_{D+P}`. -/
-  f₄ : 𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 (D + Finsupp.single P 1)
   /-- **The analytic sub-kernel**: the skyscraper cokernel is 1-dimensional — local surjectivity of
   meromorphic sections onto the order-`(−D(P)−1)` principal-part coefficient at `P`. -/
   skyDim : Module.finrank ℂ (𝔘.Skyscraper D P) = 1
   /-- Exactness at `ℂ_P`: `range f₂ = ker f₃`. (Snake lemma.) -/
   exact₂ : Function.Exact (𝔘.h0ToSky D P) f₃
-  /-- Exactness at `H¹(𝒪_D)`: `range f₃ = ker f₄`. (Snake lemma.) -/
-  exact₃ : Function.Exact f₃ f₄
-  /-- The last arrow `H¹(𝒪_D) → H¹(𝒪_{D+P})` is surjective (the skyscraper has `H^{≥1} = 0`, so the
-  LES terminates with `→ 0`). -/
-  surj₄ : Function.Surjective f₄
+  /-- Exactness at `H¹(𝒪_D)`: `range f₃ = ker f₄` (with `f₄ = h1Map`). (Snake lemma.) -/
+  exact₃ : Function.Exact f₃ (𝔘.h1Map D P)
+  /-- The last arrow `f₄ = h1Map : H¹(𝒪_D) → H¹(𝒪_{D+P})` is surjective (the skyscraper has
+  `H^{≥1} = 0`, so the LES terminates with `→ 0`). -/
+  surj₄ : Function.Surjective (𝔘.h1Map D P)
   /-- `H¹(𝒪_D)` is finite-dimensional (Forster 14.9; `finiteDimensional_cechH1`). -/
   [finH1D : FiniteDimensional ℂ (𝔘.cechH1 D)]
   /-- `H¹(𝒪_{D+P})` is finite-dimensional (Forster 14.9; `finiteDimensional_cechH1`). -/
@@ -228,7 +262,7 @@ theorem chi_jump_of_LES {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
     (S : SkyscraperLES 𝔘 D P) : 𝔘.chi (D + Finsupp.single P 1) = 𝔘.chi D + 1 := by
   haveI := S.finH1D; haveI := S.finH1DP; haveI := S.finH0D; haveI := S.finH0DP
   have halt := six_term_exact_alt_sum
-    (𝔘.h0Incl D P) (𝔘.h0ToSky D P) S.f₃ S.f₄
+    (𝔘.h0Incl D P) (𝔘.h0ToSky D P) S.f₃ (𝔘.h1Map D P)
     (𝔘.h0Incl_injective D P) (𝔘.exact_h0Incl_h0ToSky D P) S.exact₂ S.exact₃ S.surj₄
   -- substitute `finrank ℂ_P = 1` and identify the four `finrank`s with `h0Dim`/`h1Dim`.
   rw [S.skyDim] at halt
@@ -238,9 +272,10 @@ theorem chi_jump_of_LES {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
 /-- **Existence of the skyscraper long exact sequence — THE NAMED HONEST `sorry`.**
 
 This is the genuine cohomological content of Riemann–Roch (Forster §16), isolated as the single
-remaining gap. The structural part of the LES is already PROVEN above (the inclusion `f₁ = h0Incl`
-and its injectivity, the cokernel arrow `f₂ = h0ToSky`, and the exactness at `H⁰(𝒪_{D+P})`,
-`exact_h0Incl_h0ToSky`). What remains, and what this `sorry` packages:
+remaining gap. The structural part of the LES is already PROVEN above: the inclusion `f₁ = h0Incl`
+and its injectivity, the cokernel arrow `f₂ = h0ToSky`, the exactness at `H⁰(𝒪_{D+P})`
+(`exact_h0Incl_h0ToSky`), AND the inclusion-induced last arrow `f₄ = h1Map`. What remains, and what
+this `sorry` packages:
 
 1. **The analytic sub-kernel** (`skyDim`): the skyscraper cokernel
    `H⁰(𝒪_{D+P}) ⧸ H⁰(𝒪_D)` is 1-dimensional, i.e. local surjectivity of meromorphic sections — a
@@ -248,8 +283,8 @@ and its injectivity, the cokernel arrow `f₂ = h0ToSky`, and the exactness at `
    `−D(P)−1`, and exactly one coefficient is the obstruction.
 2. **The snake/LES content**: the SES of germ-class cochain complexes `0 → C^•(𝒪_D) →
    C^•(𝒪_{D+P}) → C^•(ℂ_P) → 0`, the skyscraper complex `H^{≥1} = 0`, and Mathlib's
-   `Algebra.Homology.HomologySequence` snake lemma supplying the connecting map `f₃`, the
-   inclusion-induced `f₄`, and the exactness `exact₂`, `exact₃`, `surj₄`.
+   `Algebra.Homology.HomologySequence` snake lemma supplying the connecting map `f₃` and the
+   exactness `exact₂`, `exact₃` and surjectivity `surj₄` of the (already-built) arrows.
 3. **Finiteness** of the `H¹` groups (Forster 14.9; `CechFinitenessWiring.finiteDimensional_cechH1_wired`
    modulo `exists_cechModel`).
 
