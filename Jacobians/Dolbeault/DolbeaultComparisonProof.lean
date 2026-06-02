@@ -1360,16 +1360,37 @@ theorem exists_smoothPartitionOfUnity_subordinate :
   exact SmoothPartitionOfUnity.exists_isSubordinate 𝓘(ℝ, ℂ) isClosed_univ
     (fun i => (𝔘.U i : Set X)) (fun i => (𝔘.U i).isOpen) hcov
 
-/-- **Čech → Dolbeault** (honest named sub-kernel). The `ℝ`-linear inverse `H¹(X, 𝒪) → H^{0,1}(X)`:
-represent a class by a holomorphic Čech `1`-cocycle `{f_ij}`, choose a partition of unity `{ρ_k}`
-subordinate to the cover (`exists_smoothPartitionOfUnity_subordinate`, proven sorry-free above),
-set `h_i := ∑_k ρ_k · f_ik` (smooth), so that
-`f_ij = h_j − h_i` and the `∂̄h_i` agree on overlaps (`f_ij` holomorphic ⟹ `∂̄(h_j − h_i) = 0`),
-gluing to a global smooth `(0,1)`-form whose class is the image. Well-definedness (independence of
-the cocycle representative and of the partition of unity) is part of this sub-kernel. -/
+/-- **(Analytic sub-kernel — the Čech → Dolbeault glued-form operator.)** The `ℝ`-linear map sending
+a holomorphic Čech `1`-cocycle `f = {f_ij}` to the global `(0,1)`-form `ω` with `ω = ∂̄η_i` on `U_i`,
+`η_i := ∑_k ρ_k·f_ik` (partition-of-unity globalization). The genuine analytic content of the inverse:
+lift the germ-class cocycle to holomorphic reps, the PoU smooth globalization
+(`SmoothPartitionOfUnity.IsSubordinate.contMDiff_finsum_smul`), and glue the local `∂̄η_i` (which agree
+on overlaps, `cechCoboundary_telescoping`) into a global section (gluedFun-for-forms). Plan:
+`docs/dolbeault_comparison_inverse_plan.md`. -/
+noncomputable def cechToDolbeaultForm (𝔇 : ChartDiskCover X) :
+    ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) →ₗ[ℝ] ↥(OneFormsZeroOne X) :=
+  sorry
+
+/-- **(Analytic sub-kernel — well-definedness of Čech → Dolbeault.)** A Čech **coboundary** cocycle
+maps to a `∂̄`-image (its glued form `ω` is `∂̄` of the global primitive that the coboundary's
+holomorphic `0`-cochain supplies), hence to `0` in `H^{0,1} = A^{0,1}/im ∂̄`. This is the kernel
+inclusion that makes the lift to `cechH1 = Z¹/B¹` well-defined. -/
+theorem cechToDolbeaultForm_coboundary_le (𝔇 : ChartDiskCover X) :
+    ((𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
+        (𝔇.toFiniteCover.cocycles1 (0 : Divisor X))).restrictScalars ℝ
+      ≤ LinearMap.ker ((Submodule.mkQ (dbarImageInZeroOne X)) ∘ₗ cechToDolbeaultForm 𝔇) :=
+  sorry
+
+/-- **Čech → Dolbeault.** The `ℝ`-linear inverse `H¹(X, 𝒪) → H^{0,1}(X)`. Assembled **sorry-free** from
+the analytic glued-form operator `cechToDolbeaultForm` and its well-definedness
+`cechToDolbeaultForm_coboundary_le` via `Submodule.liftQ` through the Čech quotient `Z¹/B¹` (scalar
+`ℂ → ℝ`). All genuine content lives in the two named sub-kernels above. -/
 noncomputable def cech_to_dolbeault (𝔇 : ChartDiskCover X) :
     𝔇.toFiniteCover.cechH1 0 →ₗ[ℝ] DolbeaultH01 X :=
-  sorry
+  Submodule.liftQ (((𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
+      (𝔇.toFiniteCover.cocycles1 (0 : Divisor X))).restrictScalars ℝ)
+    ((Submodule.mkQ (dbarImageInZeroOne X)) ∘ₗ cechToDolbeaultForm 𝔇)
+    (cechToDolbeaultForm_coboundary_le 𝔇)
 
 /-- **`comparison_bijective`, part 1** (honest named sub-kernel): Dolbeault → Čech → Dolbeault is the
 identity. Globalizing a locally-solved `(0,1)`-form via the partition of unity returns the same
