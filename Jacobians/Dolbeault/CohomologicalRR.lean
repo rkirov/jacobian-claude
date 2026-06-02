@@ -295,7 +295,7 @@ this `sorry` packages:
 
 It is stated honestly — *not* faked, *not* weakening the headline. Everything downstream
 (`chi_jump_of_LES`, the induction, `cohomological_riemannRoch`) is sorry-free. -/
-theorem exists_skyscraperLES (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+theorem exists_skyscraperLES (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) (P : X) :
     Nonempty (SkyscraperLES 𝔘 D P) :=
   sorry
 
@@ -304,27 +304,27 @@ theorem exists_skyscraperLES (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
 /-- **Single-point χ-jump (Forster §16).** `χ(D + P) = χ(D) + 1`. Obtained by running the proven
 linear-algebra crank `chi_jump_of_LES` on the skyscraper long exact sequence
 (`exists_skyscraperLES`, the single isolated homological/analytic kernel). -/
-theorem chi_jump (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
+theorem chi_jump (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) (P : X) :
     𝔘.chi (D + Finsupp.single P 1) = 𝔘.chi D + 1 :=
-  (exists_skyscraperLES 𝔘 D P).elim chi_jump_of_LES
+  (exists_skyscraperLES 𝔘 hL D P).elim chi_jump_of_LES
 
 /-! ### Iterated jump along a single point — `Int.induction_on` (CLOSED, pure ℤ-bookkeeping) -/
 
 /-- **Iterated χ-jump.** `χ(D + n·P) = χ(D) + n` for every integer `n`, by induction on `n` built on
 the unit jump `chi_jump` (both directions). Pure `ℤ`-arithmetic; no analytic content. -/
-theorem chi_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) (n : ℤ) :
+theorem chi_add_single (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) (P : X) (n : ℤ) :
     𝔘.chi (D + Finsupp.single P n) = 𝔘.chi D + n := by
   induction n using Int.induction_on with
   | zero => simp [Finsupp.single_zero]
   | succ k ih =>
     -- `single P (k+1) = single P k + single P 1`, so we add one more point and apply `chi_jump`.
-    rw [Finsupp.single_add, ← add_assoc, 𝔘.chi_jump (D + Finsupp.single P (k : ℤ)) P, ih]
+    rw [Finsupp.single_add, ← add_assoc, 𝔘.chi_jump hL (D + Finsupp.single P (k : ℤ)) P, ih]
     ring
   | pred k ih =>
     -- Downward: `single P (-k-1) + single P 1 = single P (-k)`, so `chi_jump` relates the two.
     have hstep : 𝔘.chi (D + Finsupp.single P (-(k : ℤ) - 1)) + 1
         = 𝔘.chi (D + Finsupp.single P (-(k : ℤ))) := by
-      rw [← 𝔘.chi_jump (D + Finsupp.single P (-(k : ℤ) - 1)) P, add_assoc, ← Finsupp.single_add]
+      rw [← 𝔘.chi_jump hL (D + Finsupp.single P (-(k : ℤ) - 1)) P, add_assoc, ← Finsupp.single_add]
       ring_nf
     rw [ih] at hstep
     linarith
@@ -335,12 +335,12 @@ theorem chi_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) (n : ℤ) 
 finite support of `D` (`Finsupp.induction`): the empty divisor is the base, and each
 `single a b`-summand contributes `b = deg (single a b)` to both sides via the iterated jump
 `chi_add_single` and additivity of `deg` (`Divisor.deg_add`/`deg_single`). Pure `ℤ`-arithmetic. -/
-theorem chi_eq_deg_add_chi_zero (𝔘 : FiniteCover X) (D : Divisor X) :
+theorem chi_eq_deg_add_chi_zero (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) :
     𝔘.chi D = Divisor.deg X D + 𝔘.chi 0 := by
   induction D using Finsupp.induction with
   | zero => simp
   | single_add a b f _ _ ih =>
-    rw [add_comm (Finsupp.single a b) f, 𝔘.chi_add_single f a b, ih, Divisor.deg_add,
+    rw [add_comm (Finsupp.single a b) f, 𝔘.chi_add_single hL f a b, ih, Divisor.deg_add,
       Divisor.deg_single]
     ring
 
@@ -355,9 +355,9 @@ Rearrangement of `χ(D) = deg D + χ(0)` (`chi_eq_deg_add_chi_zero`, the iterate
 divisor induction) using the Liouville base `h⁰(0) = 1` (`h0Dim_zero_eq_one`), since then
 `χ(0) = 1 − h¹(0)`. This is the exact `DolbeaultLadder` leaf statement; it is proven *modulo the
 single named homological `sorry` `chi_jump`* — base and induction are sorry-free. -/
-theorem cohomological_riemannRoch (𝔘 : FiniteCover X) (D : Divisor X) :
+theorem cohomological_riemannRoch (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) :
     (𝔘.h0Dim D : ℤ) - 𝔘.h1Dim D = Divisor.deg X D + 1 - 𝔘.h1Dim 0 := by
-  have hχ := 𝔘.chi_eq_deg_add_chi_zero D
+  have hχ := 𝔘.chi_eq_deg_add_chi_zero hL D
   have hbase := 𝔘.h0Dim_zero_eq_one
   simp only [FiniteCover.chi] at hχ
   rw [hbase] at hχ
