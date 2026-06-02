@@ -28,6 +28,7 @@
 import Jacobians.Dolbeault.DolbeaultComparison
 import Jacobians.Dolbeault.DbarLocal
 import Jacobians.Dolbeault.ChartDiskCover
+import Jacobians.Dolbeault.CechH0
 import Mathlib.Geometry.Manifold.PartitionOfUnity
 import Mathlib.Geometry.Manifold.BumpFunction
 
@@ -676,6 +677,25 @@ For the *forward* Dolbeault → Čech operator we must solve `∂̄u_i = g` on t
 target). It is smooth, compactly supported, and `ℝ`-linear in `g` — exactly the input shape of
 `cauchyTransform_add` / `cauchyTransform_smul`. The smoothness reuses `contMDiffAt_chartRead_datum`
 (the same argument as `exists_chartPullback_zeroOne_datum`'s global-smoothness step). -/
+
+/-- **Chart-holomorphy ⟹ `𝒪`-section (`OmegaD 0`).** A function `F` on an open `V` whose
+extension-by-zero `Gext F`, read in each point's own `ℂ`-chart, is *analytic* there, is a holomorphic
+section: `F ∈ OmegaD 0 V`. Both halves go through the `Gext` bridge — `IsMeromorphic` via
+`Gext_chart_bridge` (analytic ⟹ meromorphic), and `0 ≤ ordU` via `ordU_eq_orderAt_Gext` plus
+`AnalyticAt.meromorphicOrderAt_nonneg`. The bridge that turns the planar cocycle holomorphy into a
+genuine `cechH1` cocycle. -/
+theorem mem_OmegaD_zero_of_gext_analytic {V : TopologicalSpace.Opens X} {F : V → ℂ}
+    (hF : ∀ v : V, AnalyticAt ℂ (Gext F ∘ (chartAt (H := ℂ) (v : X)).symm)
+      ((chartAt (H := ℂ) (v : X)) (v : X))) :
+    F ∈ OmegaD (0 : Divisor X) V := by
+  refine ⟨fun v => ?_, fun v => ?_⟩
+  · obtain ⟨vx, hvx⟩ := v
+    obtain ⟨hbase, hev⟩ := Gext_chart_bridge F hvx
+    rw [hbase]
+    exact ((hF ⟨vx, hvx⟩).meromorphicAt).congr (hev.symm.filter_mono nhdsWithin_le_nhds)
+  · obtain ⟨vx, hvx⟩ := v
+    rw [ordU_eq_orderAt_Gext F hvx]
+    simpa using (hF ⟨vx, hvx⟩).meromorphicOrderAt_nonneg
 
 namespace ChartDiskCover
 
