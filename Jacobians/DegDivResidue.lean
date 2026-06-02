@@ -33,15 +33,14 @@ order function:
 * `Divisor.deg X f.div = ∑_{x : ord>0} ord x + ∑_{x : ord<0} ord x` — split the
   support sum into the zero-part (positive order) and pole-part (negative
   order); there is no `ord = 0` part since the divisor support excludes it.
-* writing the pole part as `−(∑_{x : ord<0} (−ord x))`, the total is
-  `zeros − poles`.
-* Both `zeros := (∑_{ord>0} ord x).toNat` and `poles := (∑_{ord<0} (−ord x)).toNat`
-  equal the analytic degree `degDivResidueDeg f`, so the difference is `0`.
+* writing the pole part as `−polesCount f` where
+  `polesCount f := ∑_{x : ord<0} (−ord x)`, the total is `zerosCount − polesCount`
+  (`deg_div_eq_zeros_sub_poles`).
 
-The two analytic equalities `zeros = deg` and `poles = deg` are the **degree
-route's genuine analytic inputs**, isolated here as honest named sorries
-(`zeroOrderSum_eq_degree`, `poleOrderSum_eq_degree`).  Each rests on the two
-classical facts Mathlib lacks at this pin:
+The remaining analytic content is that both counts equal a common proper-map
+degree `d`, packaged as the single honest named sorry `exists_properMapDegree`
+(`∃ d : ℕ, zerosCount f = d ∧ polesCount f = d`).  It rests on the two classical
+facts Mathlib lacks at this pin:
 
 * the **order ↔ local-multiplicity bridge** (`rouche_mult`): the local degree of
   `f` at a zero/pole equals the order there (Rouché's theorem); and
@@ -49,8 +48,10 @@ classical facts Mathlib lacks at this pin:
   *regular* fibres): the fibre over `0` (resp. `∞`), counted with multiplicity,
   equals the topological degree.
 
-These two analytic inputs are deferred (see the `sorry`s below); everything
-that combines them into `deg (div f) = 0` is proved.
+The trivial `f.div = 0` sub-case of `exists_properMapDegree` *is* discharged
+(`exists_properMapDegree_of_div_eq_zero`), confirming the isolated statement is
+genuine and true.  Everything that combines `exists_properMapDegree` into
+`deg (div f) = 0` is proved.
 
 ## References
 
@@ -146,34 +147,14 @@ lemma deg_div_eq_zeros_sub_poles (f : MeromorphicFunction X) :
   rw [deg_div_eq_zeros_add_poles, poles_part_eq_neg_polesCount, ← sub_eq_add_neg]
   rfl
 
-/-- **The proper-map degree of `f : X → ℂℙ¹`.**  Classically (Forster §4) this
-is the common value of the fibre count over *any* value, with multiplicity;
-in particular it equals both `zerosCount f` (fibre over `0`) and `polesCount f`
-(fibre over `∞`).  We *define* it as `polesCount f` — the number of poles with
-multiplicity — which is one of the two fibre counts; the content of the residue
-theorem is precisely that the *other* fibre count `zerosCount f` agrees with it
-(`zeroOrderSum_eq_degree` below). -/
-def degDivResidueDeg (f : MeromorphicFunction X) : ℤ := polesCount f
+/-! ### The genuine analytic input: zeros = poles = degree (the argument principle)
 
-/-- **Analytic input (definitional anchor): poles = degree.**  The number of
-poles with multiplicity equals the proper-map degree.  This is the fibre count
-of `f : X → ℂℙ¹` over `∞`, with multiplicity; we have pinned `degDivResidueDeg`
-to it, so this direction is definitional.
-
-In the full degree route this is the statement that the ramified-with-
-multiplicity fibre count over `∞` equals the topological degree
-`ContMDiff.degree (f.toSphere …)` — see the file header and the
-`rouche_mult` / ramified-count discussion. -/
-lemma poleOrderSum_eq_degree (f : MeromorphicFunction X) :
-    polesCount f = degDivResidueDeg f := rfl
-
-/-! ### The genuine analytic input: zeros = poles (the argument principle)
-
-The single remaining mathematical content of the residue theorem is that the
-zero count equals the pole count.  Via the degree route this is
+The remaining mathematical content of the residue theorem is that the zero count
+equals the pole count.  Via the **degree route** both equal the proper-map degree
+`d` of `f : X → ℂℙ¹`:
 
 ```
-zerosCount f = #f⁻¹(0)  (with mult)  =  deg f  =  #f⁻¹(∞)  (with mult) = polesCount f,
+zerosCount f = #f⁻¹(0)  (with mult)  =  d  =  #f⁻¹(∞)  (with mult) = polesCount f,
 ```
 
 where the middle equalities are the **proper-map degree** statement (every fibre
@@ -189,8 +170,12 @@ same cardinality = the degree).  The two ingredients Mathlib lacks at this pin:
 * the **ramified fibre count = degree** extension of `degreeFiber` (which counts
   only *regular* fibres) to the special fibres over `0` and `∞`.
 
-We isolate the whole package as the single honest sorry `zeroOrderSum_eq_degree`.
--/
+We package the whole degree route as the single honest sorry
+`exists_properMapDegree`: there is a common degree `d : ℕ` with
+`zerosCount f = d` and `polesCount f = d`.  Pinning the degree to neither count
+keeps both equalities genuine (the statement is *true*: in the constant /
+germ-zero edge case both counts are `0`, witnessed by `d = 0`; in the
+non-constant case it is Forster Cor. 4.24–4.25). -/
 
 /-- **The order ↔ local-multiplicity bridge (Rouché).**  Restatement, in this
 file, of the open Prop-def `localMultiplicity_eq_localOrder_statement`
@@ -201,27 +186,51 @@ neighbourhood of `x` and `w ≠ f x` close to `f x`) equals `k.natAbs`.
 
 This is the standard Rouché-counting statement; it is **not** in Mathlib at this
 pin.  It (together with the ramified fibre-count extension of `degreeFiber`) is
-the analytic engine behind `zeroOrderSum_eq_degree`. -/
+the analytic engine behind `exists_properMapDegree`. -/
 def rouche_mult (f : MeromorphicFunction X) : Prop :=
   ∀ x : X, 0 < f.orderAtPoint x →
     ∃ (U : Set X) (V : Set ℂ), IsOpen U ∧ x ∈ U ∧ IsOpen V ∧ f.holoRepr x ∈ V ∧
       ∀ w ∈ V, w ≠ f.holoRepr x →
         ({y ∈ U | f.holoRepr y = w} : Set X).ncard = (f.orderAtPoint x).natAbs
 
-/-- **Analytic input (the argument principle): zeros = degree.**  The number of
-zeros of `f`, counted with multiplicity, equals the proper-map degree of
-`f : X → ℂℙ¹`.  Combined with `poleOrderSum_eq_degree` (poles = degree) this is
-the residue theorem.
+/-- **Analytic input (the argument principle): both counts equal the degree.**
+There is a common proper-map degree `d : ℕ` of `f : X → ℂℙ¹` for which the
+number of zeros and the number of poles (each with multiplicity) both equal `d`:
 
-**Status: honest named sorry.**  This is the genuine analytic content the degree
-route delivers but Mathlib lacks at this pin: it bundles `rouche_mult` (the
-order ↔ local-multiplicity bridge) with the ramified-fibre-count = degree
-extension of `degreeFiber`.  Applied at the value `0` it gives
-`zerosCount = deg`; applied (via `1/f`) at `∞` it gives `polesCount = deg`; here
-`degDivResidueDeg` is pinned to the latter, so this lemma carries exactly the
-`zeros = poles` content. -/
-theorem zeroOrderSum_eq_degree (f : MeromorphicFunction X) :
-    zerosCount f = degDivResidueDeg f := sorry
+```
+zerosCount f = d = polesCount f.
+```
+
+This is the residue theorem's full analytic content.  In the constant /
+germ-zero edge case `f.div = 0`, both counts vanish, so `d = 0` works (this part
+*is* provable, see `exists_properMapDegree_of_div_eq_zero`); the non-constant
+case is Forster Cor. 4.24–4.25 via the degree route.
+
+**Status: honest named sorry.**  Mathlib lacks, at this pin, both `rouche_mult`
+(the order ↔ local-multiplicity bridge) and the ramified-fibre-count = degree
+extension of `degreeFiber` (which counts only *regular* fibres).  Discharging
+this single statement discharges the residue theorem. -/
+theorem exists_properMapDegree (f : MeromorphicFunction X) :
+    ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) := sorry
+
+/-- The degree-route conclusion in the trivial case `f.div = 0` (constant or
+germ-zero `f`): both counts vanish, witnessed by `d = 0`.  This sub-case of
+`exists_properMapDegree` *is* provable with no analytic input — it shows the
+isolated statement is a genuine (true) one, not vacuous. -/
+theorem exists_properMapDegree_of_div_eq_zero (f : MeromorphicFunction X)
+    (h : (f.div : Divisor X) = 0) :
+    ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) := by
+  refine ⟨0, ?_, ?_⟩
+  · simp only [zerosCount, Nat.cast_zero]
+    apply Finset.sum_eq_zero
+    intro x hx
+    rw [Finset.mem_filter, h] at hx
+    simp at hx
+  · simp only [polesCount, Nat.cast_zero]
+    apply Finset.sum_eq_zero
+    intro x hx
+    rw [Finset.mem_filter, h] at hx
+    simp at hx
 
 /-! ### The residue theorem -/
 
@@ -232,13 +241,13 @@ Riemann surface has degree `0`:
 deg (div f) = zerosCount f − polesCount f = deg − deg = 0.
 ```
 
-The book-keeping (`deg_div_eq_zeros_sub_poles`) is fully proved; the two
-analytic equalities `zerosCount = deg` and `polesCount = deg` are
-`zeroOrderSum_eq_degree` (the genuine sorry: argument principle / degree route)
-and `poleOrderSum_eq_degree` (definitional anchor). -/
+The book-keeping (`deg_div_eq_zeros_sub_poles`: `deg = zerosCount − polesCount`)
+is fully proved; the single analytic input is `exists_properMapDegree` (the
+argument principle / degree route: both counts equal a common degree `d`), so
+the difference `d − d` is `0`. -/
 theorem degDiv_eq_zero (f : MeromorphicFunction X) :
     Divisor.deg X f.div = 0 := by
-  rw [deg_div_eq_zeros_sub_poles, zeroOrderSum_eq_degree, poleOrderSum_eq_degree,
-    sub_self]
+  obtain ⟨d, hz, hp⟩ := exists_properMapDegree f
+  rw [deg_div_eq_zeros_sub_poles, hz, hp, sub_self]
 
 end Jacobians
