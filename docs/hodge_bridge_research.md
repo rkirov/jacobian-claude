@@ -282,6 +282,42 @@ this path.
 
 ## Build order — DE-RISK THE NEVER-BUILT CORE FIRST
 
+### ⏳ BUILD LOG — upstream atoms (2026-06-03, in progress)
+
+Building Phase-0 **from upstream down**. Done so far (`Jacobians/Dolbeault/Residue.lean`, axiom-clean):
+- **The residue atom `resAt (f : ℂ → ℂ) (c : ℂ)`** — `(2πi)⁻¹ ∮_{|z-c|=r} f` as `r→0⁺` (`limUnder`,
+  mirrors `holoRepr`). Mathlib has **no** residue API (only `meromorphicTrailingCoeffAt` = leading
+  coeff), so built on Mathlib's `circleIntegral` + Cauchy–Goursat. Pure 1-var ℂ analysis, no manifold.
+- Properties: `resAt_const_mul_sub_inv` (`Res_c(a/(z-c))=a`, Forster 17.6 witness),
+  `resAt_eq_zero_of_differentiableOn_ball` (`Res_c(holo)=0`), `circleIntegral_annulus_eq`
+  (radius-independence), `resAt_eq_smul_circleIntegral` (compute by any small contour),
+  `resAt_add`/`resAt_smul` (ℂ-linearity), `MeromorphicAt.holoPunctured` (Mathlib bridge).
+
+**KEY ARCHITECTURE FINDING (avoids a hard lemma):** the residue of a *function* is chart-dependent, but
+Forster's §17.2 cover-independence (`ω_i,ω_j` give the same `Res_a`) needs only `Res(holo)=0` +
+additivity — **both proved**. So by always computing `Res_a` in the **canonical chart `chartAt ℂ a`**,
+we **never need the heavy "residue-of-a-1-form is chart-independent" change-of-variables lemma** (a
+contour-reparametrization proof Mathlib doesn't scaffold). This removes the scariest analytic plumbing
+from the route.
+
+**OPEN FORK (the next decision):** the `H⁰` side of the pairing — see the two-option scoping below.
+The shared next build is `Res : H¹(X,Ω) → ℂ` via Mittag–Leffler distributions (cochains of local
+meromorphic 1-forms with holomorphic coboundary), well-defined via `∑Res=0` (= `deg_div`, Phase 2) +
+the cover-independence above. Both options need a representation of **local meromorphic 1-forms** (on
+opens / in charts) — the next foundational object to build.
+
+**Option A — D=0 only (headline-critical, recommended first).** Pairing `HolomorphicOneForms X ×
+cechH1 𝔘 0 → ℂ`, `(ω,ξ) ↦ Res(ω·ξ)`. Targets `arithmeticGenus_eq_genus` (the leaf the forward
+headline `genus 0 → S²` actually needs). Uses the **existing** `HolomorphicOneForms` type; the `H⁰`
+side is *holomorphic* forms, so **no meromorphic-1-form global type and no `ω₀`-existence theorem**.
+Does NOT yield general `serre_h1_eq` (only needed for general-`D` RR / `#3` Abel).
+
+**Option B — general `D` (full Serre).** Build the meromorphic `Ω_{-D}` sheaf + fix a nonzero global
+meromorphic 1-form `ω₀` (Forster 17.4: `ω=df`; existence of a nonconstant meromorphic function on a
+compact RS is itself a theorem — comes from finiteness/RR) + the iso `Ω_{-D}≅𝒪_{K-D}`. Targets BOTH
+`arithmeticGenus_eq_genus` and `serre_h1_eq`. Strictly larger; the `ω₀`-existence sub-theorem is extra
+surface.
+
 ### ▶ PHASE 0 (do first — establishes the path, de-risks §17): build Serre duality §17
 
 This is the one piece never attempted and the whole point of "PDE-free." Build Forster §17.1–17.11 to
