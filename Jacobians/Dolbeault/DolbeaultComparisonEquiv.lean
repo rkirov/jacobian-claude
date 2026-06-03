@@ -22,6 +22,91 @@ namespace Jacobians.Dolbeault
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
+/-! ### The global primitive `h = ∑_k ρ_k·u_k` of the round-trip
+
+For `g ∈ A^{0,1}`, the forward map's local primitives are `u_k = diskSection k g` (`∂̄u_k = g` on
+`U_k`). The Dolbeault → Čech → Dolbeault round-trip glues these via the partition of unity into a
+global primitive `h = ∑_k ρ_k·u_k` whose `∂̄h = ω + g` (`ω = cechToDolbeaultForm` of the forward
+cocycle), so `[ω] = −[g]`. We build `h` here and compute its `∂̄` (Leibniz + the intrinsic
+`dbar_diskValue_eq_g`). -/
+
+/-- The disk-primitive **value function** `wₖ = planarPrimitive k g ∘ e_k : X → ℂ` (smooth on `U_k`;
+`= diskSection k g` there). The global stand-in for the local section `diskSection k g`. -/
+noncomputable def diskVal (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) (g : SmoothCOneForms X) :
+    X → ℂ :=
+  fun x => 𝔇.planarPrimitive k g ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center k)) x)
+
+theorem contMDiffAt_diskVal (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) (g : SmoothCOneForms X)
+    {y : X} (hy : y ∈ (𝔇.U k : Set X)) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (diskVal 𝔇 k g) y := by
+  have hsrc : y ∈ (chartAt ℂ (𝔇.center k)).source := by
+    have := 𝔇.subset_chart_source k hy; rwa [extChartAt_source] at this
+  have hek : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (extChartAt 𝓘(ℝ, ℂ) (𝔇.center k)) y :=
+    (contMDiffOn_extChartAt (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := 𝔇.center k) y hsrc).contMDiffAt
+      ((chartAt ℂ (𝔇.center k)).open_source.mem_nhds hsrc)
+  exact (((𝔇.contDiff_planarPrimitive k g).contMDiff).contMDiffAt).comp y hek
+
+/-- A value-at-`1` equation upgrades to the full `(0,1)`-CLM equation, for a *bare* function `w`
+(`MDifferentiableAt` version of `dbar_eq_of_apply_one`: both sides are `(0,1)`, determined by their
+value at `1`). -/
+theorem dbar_eq_of_apply_one' {g : SmoothCOneForms X} (hg : g ∈ OneFormsZeroOne X) {w : X → ℂ}
+    {x : X} (h1 : proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x) (1 : ℂ) = (g x) (1 : ℂ)) :
+    proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x) = g x := by
+  obtain ⟨β, hβ⟩ := hg
+  have hgx : g x = proj01 (β x) := by rw [← hβ]; rfl
+  rw [hgx]; exact proj01_ext_of_apply_one (by rw [← hgx]; exact h1)
+
+/-- The `k`-th **global primitive term** `ρ_k·wₖ : A⁰` (a genuine `SmoothCFunctions`; smooth because
+`ρ_k` is supported in `U_k` where `wₖ` is smooth — the `primFn` construction with `diskVal` in place
+of `holoFn`). -/
+noncomputable def gdTerm (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) (g : SmoothCOneForms X) :
+    SmoothCFunctions X :=
+  ⟨fun x => rhoC 𝔇 k x * diskVal 𝔇 k g x, by
+    intro x₀
+    by_cases hb : x₀ ∈ tsupport (cechPoU 𝔇 k)
+    · exact ((rhoC 𝔇 k).contMDiff x₀).mul (contMDiffAt_diskVal 𝔇 k g (cechPoU_subordinate 𝔇 k hb))
+    · refine (contMDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq ?_
+      filter_upwards [(isClosed_tsupport (cechPoU 𝔇 k)).isOpen_compl.mem_nhds hb] with x hx
+      have hr : rhoC 𝔇 k x = 0 := by
+        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hx]; rfl
+      simp only [hr, zero_mul]⟩
+
+@[simp] theorem gdTerm_apply (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) (g : SmoothCOneForms X)
+    (x : X) : gdTerm 𝔇 k g x = rhoC 𝔇 k x * diskVal 𝔇 k g x := rfl
+
+/-- **`∂̄(ρ_k·wₖ) = wₖ·∂̄ρ_k + ρ_k·g`** (the Leibniz identity; unlike `dbarL_primFn_apply` the
+`ρ_k·∂̄wₖ` term does **not** vanish — `∂̄wₖ = g` on `U_k` by `dbar_diskValue_eq_g`). Pointwise, 2-case
+(on `tsupport ρ_k ⊆ U_k` the product rule; off it `ρ_k = ∂̄ρ_k = 0`). -/
+theorem dbarL_gdTerm_apply (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
+    (hg : g ∈ OneFormsZeroOne X) (k : 𝔇.toFiniteCover.ι) (x : X) :
+    (dbarL (gdTerm 𝔇 k g)) x = diskVal 𝔇 k g x • (dbarRho 𝔇 k x) + rhoC 𝔇 k x • (g x) := by
+  by_cases hb : x ∈ tsupport (cechPoU 𝔇 k)
+  · have hxU : x ∈ (𝔇.U k : Set X) := cechPoU_subordinate 𝔇 k hb
+    have hr : HasMFDerivAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(rhoC 𝔇 k)) x
+        (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(rhoC 𝔇 k)) x) :=
+      ((rhoC 𝔇 k).contMDiff.mdifferentiable (by simp) x).hasMFDerivAt
+    have hh : HasMFDerivAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (diskVal 𝔇 k g) x
+        (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (diskVal 𝔇 k g) x) :=
+      ((contMDiffAt_diskVal 𝔇 k g hxU).mdifferentiableAt (by simp)).hasMFDerivAt
+    have hgdv : proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (diskVal 𝔇 k g) x) = g x :=
+      dbar_eq_of_apply_one' hg (𝔇.dbar_diskValue_eq_g hg k hxU)
+    show proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(gdTerm 𝔇 k g)) x)
+      = diskVal 𝔇 k g x • (dbarRho 𝔇 k x) + rhoC 𝔇 k x • (g x)
+    rw [show (⇑(gdTerm 𝔇 k g) : X → ℂ) = ⇑(rhoC 𝔇 k) * diskVal 𝔇 k g from rfl, (hr.mul hh).mfderiv,
+      map_add, proj01_smul, proj01_smul, hgdv,
+      show dbarRho 𝔇 k x = proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(rhoC 𝔇 k)) x) from rfl]
+    module
+  · have hr0 : (dbarL (gdTerm 𝔇 k g)) x = 0 := by
+      refine dbarL_eq_zero_of_notMem_tsupport (gdTerm 𝔇 k g) (fun hc => hb ?_)
+      refine closure_mono (fun y hy => ?_) hc
+      simp only [Function.mem_support, ne_eq, gdTerm_apply, mul_eq_zero, not_or] at hy
+      simp only [Function.mem_support, ne_eq]
+      exact fun h0 => hy.1 (by simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, h0]; rfl)
+    have hrc : rhoC 𝔇 k x = 0 := by
+      simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hb]; rfl
+    rw [hr0, dbarRho_eq_zero_of_notMem 𝔇 k hb, hrc]
+    module
+
 /-- **`comparison_bijective`, part 1** (honest named sub-kernel): Dolbeault → Čech → Dolbeault is the
 identity. Globalizing a locally-solved `(0,1)`-form via the partition of unity returns the same
 Dolbeault class. -/
