@@ -131,3 +131,39 @@ last — the foundation piece. Each lands as a named lemma; the monolithic sorry
 **Caveat (measured this session): no sub-piece lands sorry-free fully in isolation from `(𝔘,D)`** — the
 equiv ties them — so progress is "shrink the sorry by building K-bridge/C1/C2 as standalone lemmas the
 final assembly consumes," not "close a vacuous geometric lemma."
+
+### ✅ K-BRIDGE PRIMITIVE LAYER COMPLETE (2026-06-03, all axiom-clean)
+
+The reusable germ↔`BddHol` primitives are built (`CechModelBridge.lean` = pure ℂ; `CechModelManifold.lean`
+= manifold side):
+- `BddHol.ofAnalyticOn` — analytic+bounded on `U` ⟹ `BddHol U` (extend-by-zero normal form).
+- `bddOn_of_analyticOn_subset_compact` — analytic on `U` ⟹ bounded on any compact `K ⊆ U`.
+- `BddHol.ofAnalyticOnOfRelCompact` — `g` analytic on `U`, `U' ⋐ U` ⟹ `BddHol U'` (boundedness free).
+- (manifold) `transition_analyticAt_of_mem`, `analyticAt_chart_change_to` — chart transition / own-chart→
+  cover-chart analyticity at a GENERAL point (the existing `CechH0` versions are centre-only).
+- (manifold) `analyticOn_pullback_of_holo` — chart-pullback of a holo section is `AnalyticOn` chart-image.
+- (manifold) **`holoSectionToBddHol`** — the single-section bridge: holo `𝒪₀` section on `V ⊆
+  (chartAt y).source`, restricted to `U' ⋐ (chartAt y)''V`, is a `BddHol U'` element (value = chart
+  pullback). The per-overlap building block of the germ→`BddHol` cochain map.
+⚠ INFRA LESSON: `variable` must list `[ChartedSpace]` BEFORE `[IsManifold]` — the reverse triggers
+pathological instance resolution (400s timeout → 77s).
+
+### ⛔ THE NEXT BLOCKER — convexity of overlaps (a real design fork)
+
+The `DiskOverlapData.Kov` (per-overlap shrinking) must be **`Convex ℝ`** — the Montel restriction-
+compactness `BddHol.isCompactOperator_restrictCLM` requires it (it threads `hKconv` into
+`CechFiniteness.isCompact_closure_restrict_bddHolo`). But the chart-image of an overlap of *different*
+charts is NOT convex (the transition map `φ_i∘φ_j⁻¹` distorts disks). So a `DiskOverlapData` built from a
+generic cover cannot satisfy `hKconv`. Two resolutions:
+- **(A, recommended) Generalize restriction-compactness to non-convex compact `K`** — sorry-free, via a
+  finite cover of `K` by convex closed disks `Dᵢ ⊆ U` (compactness): `BddHol U → Π_i (Dᵢ →ᵇ ℂ)` is
+  compact (`isCompactOperator_pi` + the convex atom per `Dᵢ`); `(K →ᵇ ℂ)` embeds isometrically (closed)
+  into the product via `K ⊆ ∪Dᵢ`, and compactness reflects through a closed isometric embedding. ~80–150
+  LoC functional analysis (no convexity of `K` needed for the underlying Arzelà–Ascoli — equicontinuity
+  of bounded-holomorphic on compact `K ⊆ U` is from Cauchy estimates on small disks around each point).
+  Then drop `hKconv` from `DiskOverlapData` (a shared-struct edit) — `Kov` = chart-image of the shrunk
+  overlap (compact). **This is the concrete next executable lemma.**
+- **(B) Build a convex/good cover** — a geodesically-convex cover (needs a Riemannian metric / exp map);
+  heavier, brings in differential geometry the repo doesn't have.
+After this: `DiskOverlapData` construction from `Montel.chartCover`/`ChartDiskCover` + the cochain map
+(`Π_p holoSectionToBddHol`) + δ-commuting + the `leray` field (disk atoms) + the `cechH1≃supH1` comparison.
