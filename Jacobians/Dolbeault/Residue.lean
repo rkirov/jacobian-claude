@@ -177,4 +177,32 @@ theorem resAt_smul {f : ℂ → ℂ} {c : ℂ} (a : ℂ) (hf : HoloPunctured f c
     simp only [Pi.smul_apply]; exact circleIntegral.integral_smul a f c r
   rw [this, smul_comm]
 
+/-! ### Residue is a local invariant -/
+
+/-- **`resAt` depends only on the germ of `f` at `c`** (a punctured-neighbourhood invariant).  Two
+functions agreeing near `c` (off `c`) have the same residue — the small contour integrals coincide. -/
+theorem resAt_congr {f g : ℂ → ℂ} {c : ℂ} (h : f =ᶠ[𝓝[≠] c] g) : resAt f c = resAt g c := by
+  have h' : ∀ᶠ z in 𝓝[≠] c, f z = g z := h
+  rw [eventually_nhdsWithin_iff, Metric.eventually_nhds_iff] at h'
+  obtain ⟨ρ, hρ, hball⟩ := h'
+  have hint : (fun r => (2 * π * I : ℂ)⁻¹ • ∮ z in C(c, r), f z)
+      =ᶠ[𝓝[>] (0 : ℝ)] (fun r => (2 * π * I : ℂ)⁻¹ • ∮ z in C(c, r), g z) := by
+    filter_upwards [Ioo_mem_nhdsGT hρ] with r hr
+    congr 1
+    refine circleIntegral.integral_congr hr.1.le (fun z hz => ?_)
+    have hd : dist z c = r := Metric.mem_sphere.mp hz
+    have hzc : z ≠ c := fun he => by rw [he, dist_self] at hd; exact absurd hd.symm (ne_of_gt hr.1)
+    exact hball (show dist z c < ρ by rw [hd]; exact hr.2)
+      (by rw [Set.mem_compl_iff, Set.mem_singleton_iff]; exact hzc)
+  unfold resAt Filter.limUnder
+  rw [Filter.map_congr hint]
+
+/-- **Simple-pole residue.**  If `f` agrees near `c` with `z ↦ a·(z-c)⁻¹`, then `resAt f c = a`.
+This is what reads off the residue of `α·g` once it is shown to be a simple pole `a/(z-c)` locally
+(Forster §17.6's `dz/z` computation). -/
+theorem resAt_eq_of_eventuallyEq_sub_inv {f : ℂ → ℂ} {a c : ℂ}
+    (h : f =ᶠ[𝓝[≠] c] fun z => a * (z - c)⁻¹) :
+    resAt f c = a := by
+  rw [resAt_congr h, resAt_const_mul_sub_inv]
+
 end Jacobians.Dolbeault
