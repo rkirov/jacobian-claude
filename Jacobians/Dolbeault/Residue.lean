@@ -20,6 +20,7 @@
       holomorphic-difference property that makes `Res` well-defined on Mittag–Leffler cochains).
 -/
 import Mathlib.Analysis.Complex.CauchyIntegral
+import Mathlib.Analysis.Meromorphic.Order
 
 open Complex Metric Filter Topology
 open scoped Real
@@ -84,5 +85,96 @@ theorem resAt_eq_zero_of_differentiableOn_ball {f : ℂ → ℂ} {c : ℂ} {ρ :
     · exact lt_of_lt_of_le (mem_ball.mp hz.1) hr.2.le
   rw [resAt_eq_of_eventuallyEq_circleIntegral
     (eventuallyEq_circleIntegral_of_forall hρ hcint), smul_zero]
+
+/-! ### Radius independence and ℂ-linearity for an isolated singularity -/
+
+/-- `f` is holomorphic on a punctured ball `ball c ρ \ {c}`, i.e. has an isolated singularity (or
+none) at `c`.  The setting in which `resAt f c` is contour-independent and ℂ-linear; every
+meromorphic-at-`c` function qualifies (`MeromorphicAt.holoPunctured`). -/
+def HoloPunctured (f : ℂ → ℂ) (c : ℂ) : Prop :=
+  ∃ ρ > 0, ∀ z ∈ ball c ρ \ {c}, DifferentiableAt ℂ f z
+
+theorem MeromorphicAt.holoPunctured {f : ℂ → ℂ} {c : ℂ} (h : MeromorphicAt f c) :
+    HoloPunctured f c := by
+  have h2 : ∀ᶠ z in 𝓝[≠] c, AnalyticAt ℂ f z := h.eventually_analyticAt
+  rw [eventually_nhdsWithin_iff, Metric.eventually_nhds_iff] at h2
+  obtain ⟨ε, hε, hball⟩ := h2
+  exact ⟨ε, hε, fun z hz => (hball (mem_ball.mp hz.1) hz.2).differentiableAt⟩
+
+/-- **Annulus Cauchy–Goursat.**  For `f` holomorphic on `ball c ρ \ {c}`, the contour integral is
+independent of the radius: `∮_{|z-c|=R} f = ∮_{|z-c|=r} f` for `0 < r ≤ R < ρ`. -/
+theorem circleIntegral_annulus_eq {f : ℂ → ℂ} {c : ℂ} {ρ : ℝ}
+    (hf : ∀ z ∈ ball c ρ \ {c}, DifferentiableAt ℂ f z)
+    {r R : ℝ} (hr : 0 < r) (hrR : r ≤ R) (hRρ : R < ρ) :
+    (∮ z in C(c, R), f z) = ∮ z in C(c, r), f z := by
+  refine circleIntegral_eq_of_differentiable_on_annulus_off_countable hr hrR Set.countable_empty
+    ?_ ?_
+  · intro z hz
+    have hzc : z ≠ c := fun h => hz.2 (mem_ball.mpr (by rw [h, dist_self]; exact hr))
+    exact (hf z (Set.mem_diff_singleton.mpr
+      ⟨mem_ball.mpr (lt_of_le_of_lt (mem_closedBall.mp hz.1) hRρ), hzc⟩)).continuousAt.continuousWithinAt
+  · intro z hz
+    have hz' : z ∈ ball c R \ closedBall c r := hz.1
+    have hzc : z ≠ c := fun h => hz'.2 (mem_closedBall.mpr (by rw [h, dist_self]; exact hr.le))
+    exact hf z (Set.mem_diff_singleton.mpr ⟨mem_ball.mpr (lt_trans (mem_ball.mp hz'.1) hRρ), hzc⟩)
+
+/-- **Compute `resAt` by any small contour.**  For `f` holomorphic on `ball c ρ \ {c}` and `0 < r < ρ`,
+`resAt f c = (2πi)⁻¹ • ∮_{|z-c|=r} f`. -/
+theorem resAt_eq_smul_circleIntegral {f : ℂ → ℂ} {c : ℂ} {ρ : ℝ}
+    (hf : ∀ z ∈ ball c ρ \ {c}, DifferentiableAt ℂ f z) {r : ℝ} (hr : 0 < r) (hrρ : r < ρ) :
+    resAt f c = (2 * π * I : ℂ)⁻¹ • ∮ z in C(c, r), f z := by
+  refine resAt_eq_of_eventuallyEq_circleIntegral
+    (eventuallyEq_circleIntegral_of_forall (lt_trans hr hrρ) (fun r' hr' => ?_))
+  rcases le_total r' r with h | h
+  · exact (circleIntegral_annulus_eq hf hr'.1 h hrρ).symm
+  · exact circleIntegral_annulus_eq hf hr h hr'.2
+
+/-- `CircleIntegrable f c r` for `f` holomorphic on `ball c ρ \ {c}` and `0 < r < ρ` (the circle of
+radius `r` avoids the singularity). -/
+theorem circleIntegrable_of_holo {f : ℂ → ℂ} {c : ℂ} {ρ : ℝ}
+    (hf : ∀ z ∈ ball c ρ \ {c}, DifferentiableAt ℂ f z) {r : ℝ} (hr : 0 < r) (hrρ : r < ρ) :
+    CircleIntegrable f c r := by
+  refine ContinuousOn.circleIntegrable hr.le (fun z hz => ?_)
+  have hd : dist z c = r := Metric.mem_sphere.mp hz
+  have hzc : z ≠ c := fun h => by rw [h, dist_self] at hd; exact absurd hd (ne_of_lt hr)
+  exact (hf z (Set.mem_diff_singleton.mpr
+    ⟨mem_ball.mpr (hd ▸ hrρ), hzc⟩)).continuousAt.continuousWithinAt
+
+/-- **`resAt` is additive** on functions with isolated singularities at `c`. -/
+theorem resAt_add {f g : ℂ → ℂ} {c : ℂ} (hf : HoloPunctured f c) (hg : HoloPunctured g c) :
+    resAt (f + g) c = resAt f c + resAt g c := by
+  obtain ⟨ρf, hρf, hf'⟩ := hf
+  obtain ⟨ρg, hρg, hg'⟩ := hg
+  set ρ := min ρf ρg with hρdef
+  have hρ : 0 < ρ := lt_min hρf hρg
+  set r := ρ / 2 with hrdef
+  have hr : 0 < r := by positivity
+  have hrρ : r < ρ := by rw [hrdef]; exact half_lt_self hρ
+  have hfρ : ∀ z ∈ ball c ρ \ {c}, DifferentiableAt ℂ f z := fun z hz =>
+    hf' z ⟨mem_ball.mpr (lt_of_lt_of_le (mem_ball.mp hz.1) (min_le_left _ _)), hz.2⟩
+  have hgρ : ∀ z ∈ ball c ρ \ {c}, DifferentiableAt ℂ g z := fun z hz =>
+    hg' z ⟨mem_ball.mpr (lt_of_lt_of_le (mem_ball.mp hz.1) (min_le_right _ _)), hz.2⟩
+  have hfgρ : ∀ z ∈ ball c ρ \ {c}, DifferentiableAt ℂ (f + g) z := fun z hz =>
+    (hfρ z hz).add (hgρ z hz)
+  rw [resAt_eq_smul_circleIntegral hfgρ hr hrρ, resAt_eq_smul_circleIntegral hfρ hr hrρ,
+    resAt_eq_smul_circleIntegral hgρ hr hrρ]
+  have : (∮ z in C(c, r), (f + g) z) = (∮ z in C(c, r), f z) + ∮ z in C(c, r), g z := by
+    simpa using circleIntegral.integral_add (circleIntegrable_of_holo hfρ hr hrρ)
+      (circleIntegrable_of_holo hgρ hr hrρ)
+  rw [this, smul_add]
+
+/-- **`resAt` is ℂ-homogeneous** on functions with an isolated singularity at `c`. -/
+theorem resAt_smul {f : ℂ → ℂ} {c : ℂ} (a : ℂ) (hf : HoloPunctured f c) :
+    resAt (a • f) c = a • resAt f c := by
+  obtain ⟨ρ, hρ, hf'⟩ := hf
+  set r := ρ / 2 with hrdef
+  have hr : 0 < r := by positivity
+  have hrρ : r < ρ := by rw [hrdef]; exact half_lt_self hρ
+  have hafρ : ∀ z ∈ ball c ρ \ {c}, DifferentiableAt ℂ (a • f) z := fun z hz =>
+    (hf' z hz).const_smul a
+  rw [resAt_eq_smul_circleIntegral hafρ hr hrρ, resAt_eq_smul_circleIntegral hf' hr hrρ]
+  have : (∮ z in C(c, r), (a • f) z) = a • ∮ z in C(c, r), f z := by
+    simp only [Pi.smul_apply]; exact circleIntegral.integral_smul a f c r
+  rw [this, smul_comm]
 
 end Jacobians.Dolbeault
