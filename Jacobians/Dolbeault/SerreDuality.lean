@@ -27,6 +27,7 @@
   `docs/hodge_bridge_research.md` PHASE 0.
 -/
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
+import Mathlib.LinearAlgebra.Dual.Lemmas
 
 open Submodule Module
 
@@ -78,5 +79,16 @@ theorem serre_surjectivity_dim_core
   have hVn := hV n hdn
   have : ((finrank K (V n) : ℤ)) < (finrank K (Λ n) : ℤ) + (finrank K (I n) : ℤ) := by omega
   exact_mod_cast this
+
+/-- **§17.6 injectivity — abstract finite-dim core (the EASY half).**  An injective linear map from
+`V` into the dual of a finite-dimensional `W` forces `dim V ≤ dim W`.  This is the linear-algebra
+content of Forster's `ι_D` *injectivity* step: at `D = 0`, `ι₀ : H⁰(X,Ω) → H¹(X,𝒪)*` injective gives
+`genus = dim H⁰(X,Ω) ≤ dim H¹(X,𝒪) = h1Dim 0` — the PDE-free, one-directional inequality.  Counterpart
+to `serre_surjectivity_dim_core` (which supplies the reverse inequality from surjectivity). -/
+theorem finrank_le_of_injective_to_dual
+    {K V W : Type*} [Field K] [AddCommGroup V] [Module K V] [AddCommGroup W] [Module K W]
+    [FiniteDimensional K W] (ι : V →ₗ[K] Module.Dual K W) (hι : Function.Injective ι) :
+    finrank K V ≤ finrank K W :=
+  (LinearMap.finrank_le_finrank_of_injective hι).trans_eq Subspace.dual_finrank_eq
 
 end Jacobians.Dolbeault.SerreDuality
