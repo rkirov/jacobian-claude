@@ -9,6 +9,14 @@ Legend: **[VERIFIED]** read off Mathlib/repo this session; **[BOOK]** Forster/Gr
 
 ---
 
+## 🚩 FRESH SESSION: START HERE → jump to "## EXECUTION PLAN" at the bottom of this file.
+This doc is the **self-contained build plan** for the PDE-free Serre/RR path (the gate for the forward
+headline `genus_eq_zero_iff_homeo`). Read the CORRECTION (next) for the key finding, then the EXECUTION
+PLAN for what to build, in what order, reusing which files. Constraint: **no isolated/"modulo" kernel
+sorries as a deliverable; OK to prove weaker (conditional / one-directional / inequality) statements
+genuinely sorry-free.** RT2 (the Dolbeault comparison, `DolbeaultComparisonEquiv.lean:245`) is deferred —
+do the Serre/RR path first to de-risk and establish it.
+
 ## ⚠ CORRECTION (2026-06-03, after reading Forster §16–19 directly)
 
 **The earlier draft of this doc (below §0) wrongly claimed the hard direction's "irreducible core is
@@ -214,3 +222,116 @@ modulo a small, explicit set of named classical-theorem kernels* — `arithmetic
 surface), then *decide explicitly* whether to commit to the step-4 Serre-duality build or to declare the
 "modulo named classical kernels" milestone as the deliverable. Steps 1–3 are the right work regardless of
 that decision.
+
+---
+
+# EXECUTION PLAN — the PDE-free Serre/RR build (fresh session: execute this)
+
+**Goal.** Discharge the Riemann–Roch path sorry-free, establishing `exists_riemannRoch_divisor`
+(`RiemannRoch.lean:283`), which the repo already wires to the forward headline
+(`exists_singleSimplePole_of_genus_zero` → degree-1 map → `ℂℙ¹ ≃ₜ S²`, all done). The composition
+`riemannRoch_equality_of_ladder` (`DolbeaultLadder.lean`, PROVEN) reduces RR to **4 ladder leaves +
+`deg_div`**. Per the CORRECTION above, **all of these are PDE-free** (finiteness = functional analysis;
+Serre = residues + RR + linear algebra; residue thm = degree route). No Hodge/Weyl/elliptic anywhere on
+this path.
+
+## The open sorries on the RR path (the entire surface to discharge)
+
+| Forster | Lean target | file:anchor | status | kind |
+|---|---|---|---|---|
+| 14.9 finiteness | `finiteDimensional_cechH1` ⟸ `exists_cechModel` | `DolbeaultLadder.lean:44` ⟸ `CechFinitenessWiring.lean:282` | sorry; engine ~95% built (`Montel/*`) | functional analysis (Montel + Schwartz 14.8) |
+| 16.x χ-additivity | `cohomological_riemannRoch` ⟸ `exists_skyscraperLES` | `CohomologicalRR.lean:300` | proven **mod** skyscraper sorry | homological algebra (skyscraper SES + snake) |
+| 17.3/17.9 Serre @ D=0 | `arithmeticGenus_eq_genus` | `DolbeaultLadder.lean:55` | sorry | **residues + RR + finite-dim linalg (PDE-FREE)** |
+| 17.9 Serre general | `serre_h1_eq` | `DolbeaultLadder.lean:62` | sorry | same |
+| 4.25 residue thm | `deg_div` ⟸ `exists_properMapDegree` | `RiemannRoch.lean:290` ⟸ `DegDivResidue.lean:213` | sorry; `f.div=0` subcase done | degree route (Rouché + Riemann–Hurwitz count) |
+| h⁰=l bridge | `cechRestrictL_surjective` | `CechH0.lean:513` | sorry | Čech gluing/surjectivity |
+| RR headline | `exists_riemannRoch_divisor` | `RiemannRoch.lean:283` | sorry; composes the above | bookkeeping (ladder PROVEN) |
+
+## Build order — DE-RISK THE NEVER-BUILT CORE FIRST
+
+### ▶ PHASE 0 (do first — establishes the path, de-risks §17): build Serre duality §17
+
+This is the one piece never attempted and the whole point of "PDE-free." Build Forster §17.1–17.11 to
+prove `arithmeticGenus_eq_genus` (and `serre_h1_eq`) **from** `cohomological_riemannRoch` (RR dim
+counts) + `finiteDimensional_cechH1` (finiteness) + a residue pairing. These RR/finiteness lemmas are
+repo lemmas (currently sorry-backed — that is the inherited structure; Phases 1–2 discharge them). The
+**new content is the §17 duality argument**, which is residue calculus + homological algebra + a
+finite-dim linear-algebra pigeonhole — verify it formalizes. Sub-steps, following Forster (read PDF
+`GTM 81 … Forster ….pdf`, book pp. 132–139 = PDF pp. 138–145):
+
+1. **`Res : H¹(X,Ω) → ℂ`** via local residues / Mittag–Leffler (Forster 17.1–17.2). Define `Res(μ) =
+   ∑_a Res_a(μ)` for an M–L distribution of 1-forms (sum of local Laurent residues). Reuse
+   `CotangentCoeff.lean` (form-in-coordinates) + the repo residue infra. **Well-definedness on classes
+   needs the residue theorem `∑Res = 0`** (Phase 2 / `deg_div`) — so either thread it as a hypothesis
+   now and discharge in Phase 2, or do `deg_div` first. (Avoid Forster's 17.3 `∬_X d(·)=0` Stokes
+   identity — the Čech-residue route does NOT need manifold 2-form integration.)
+2. **Pairing `⟨ω,ξ⟩ = Res(ωξ)`** and `ι_D : H⁰(Ω_{-D}) → H¹(𝒪_D)*` (17.5). `Ω_{-D} ≅ 𝒪_{K-D}` (17.4).
+3. **`ι_D` injective** (17.6): explicit M–L distribution `ωη = (dz/z,0)` with `Res = 1`. Residue algebra.
+4. **functoriality** (17.7/17.8): cohomology exact-sequence duals + the multiplication-by-ψ diagram.
+5. **`ι_D` surjective** (17.9 — THE crux, and it is *pure finite-dim linear algebra*): with
+   `D_n = D − nP`, `dim Λ + dim Im(ι_{D_n}) > dim H¹(𝒪_{D_n})*` for large `n` (RR dim counts via
+   Lemmas 17.4, 17.8) forces `Λ ∩ Im ≠ ∅`. No analysis — just `Riemann–Roch` inequalities + a
+   pigeonhole. **This is the formalizability litmus test for the whole route.**
+6. **Conclude** `H⁰(X,Ω_{-D}) ≅ H¹(X,𝒪_D)*` (17.11); at `D=0`: `g = dim H¹(X,𝒪)` =
+   `arithmeticGenus_eq_genus`; general `D` ⟹ `serre_h1_eq`. Wire into `DolbeaultLadder.lean`.
+
+Estimate ~1000–2000 LoC. Reuse: `CotangentCoeff`, `LineIntegral`, `CechComplex`/`CechSection`,
+`RiemannRoch`/`DolbeaultLadder`/`CohomologicalRR`. Mathlib: `Module.Dual`, `Submodule.dualPairing`,
+finite-dim linear algebra. **If §17.9 formalizes cleanly, the PDE-free route is established.**
+
+### ▶ PHASE 1: finish finiteness (Forster 14.9) — functional analysis
+
+Discharge `exists_cechModel` (`CechFinitenessWiring.lean:282`) and the Schwartz finiteness lemma
+(Forster 14.8). The engine is ~95% reuse — see `docs/cech_finiteness_research.md` (the authoritative
+build plan for this node). Reuse `Montel/Cover.lean` (nested triple cover), `Montel/Compactness.lean`
+(disk-Montel, Arzelà–Ascoli), `Montel.lean`/`HolomorphicForms.lean` (sup-norm+bcf+Riesz), `DbarDisk.lean`
+(Leray vanishing `H¹(disk,𝒪)=0`). Mathlib: `IsCompactOperator` API, `riesz_lemma`,
+`FredholmAlternative`, `FiniteDimensional.of_isCompact_closedBall₀`, Banach open-mapping
+(`Analysis/Normed/Operator/Banach.lean`). The one genuinely-new FA lemma: Schwartz 14.8 (surjective +
+compact perturbation ⟹ finite-codim image), ~100–300 LoC. **No PDE.**
+
+### ▶ PHASE 2: the remaining homological / residue inputs
+
+- **`exists_skyscraperLES`** (`CohomologicalRR.lean:300`): skyscraper SES connecting map + `skyDim=1`
+  + snake lemma ⟹ `cohomological_riemannRoch` sorry-free. Homological algebra. (Soundness already
+  fixed once — see `[[project_ladder_soundness_audit]]`; the middle term is a genuine 1-dim `ℂ_P`.)
+- **`deg_div` / `exists_properMapDegree`** (`RiemannRoch.lean:290` / `DegDivResidue.lean:213`): the
+  residue theorem via the **degree route** (`#zeros = deg = #poles` for `f:X→ℂℙ¹`); needs Rouché +
+  ramified-degree count (Riemann–Hurwitz). The `f.div=0` subcase is done. PDE-free; see
+  `[[reference_abel_riemannroch_path]]` and `DegDivResidue.lean` header. Also unblocks Phase-0 Res
+  well-definedness.
+- **`cechRestrictL_surjective`** (`CechH0.lean:513`): the `h⁰(𝔘,𝒪_D)=l(D)` bridge's gluing/surjectivity
+  (rigidified normal-form; see `[[project_cech_germ_representation]]`).
+
+After Phases 0–2: the RR ladder is sorry-free ⟹ `exists_riemannRoch_divisor` ⟹ forward headline
+(`genus 0 → S²`).
+
+## The BACKWARD headline (`homeo S² → genus 0`) — separate, also PDE-free
+
+`genus_zero_of_nonempty_homeo_sphere` (`DegreeOneSphere.lean:675`). **Do NOT route through `g = ½b₁`
+(that needs Forster §19 harmonic forms = elliptic).** Instead: a nonzero holomorphic 1-form `ω` is
+**closed** (`dω=0`) but **not exact** (`ω=df` globally ⟹ `f` holomorphic on compact `X` ⟹ `f` const ⟹
+`ω=0`); a closed-not-exact form ⟹ some loop has `∮_γ ω ≠ 0` ⟹ `X` not simply connected ⟹ not `≃ₜ S²`
+(`S²` simply connected). Reuse: Mathlib homotopy-invariance of closed-form integrals
+(`MeasureTheory.Integral.CurveIntegral`, `Convex.exists_forall_hasDerivWithinAt`), the repo's
+period/primitive machinery (`SmoothPath*`, `PeriodLattice`), max-modulus (`Geometry/Manifold/Complex`),
+and `S²` simple-connectivity. **PDE-free.** (Verify this route formalizes; it is the cheap alternative
+to topological-invariance-of-genus.)
+
+## Read-first for the fresh session
+- **memory:** `[[reference_hodge_bridge_path]]` (this finding), `[[project_sorry_free_roadmap]]`,
+  `[[project_ladder_soundness_audit]]` (FALSE-as-stated leaf warnings — re-check statements before
+  trusting!), `[[reference_abel_riemannroch_path]]`, `[[project_finiteness_node]]`,
+  `[[project_cech_to_dolbeault_progress]]` (RT2, deferred), `[[feature_verify_agent_commits]]`.
+- **docs:** this file, `architecture_map.md`, `STATUS.md`, `cech_finiteness_research.md` (Phase-1 plan),
+  `riemann_roch_proof_plan.md` (deep RR reference).
+- **Forster GTM81 PDF** (repo root): §14 finiteness, §16 RR, **§17 Serre (the Phase-0 source)**,
+  §18 Mittag–Leffler. §19 (harmonic) is NOT on this path.
+
+## Discipline (carry over)
+Build one module at a time; `lake build <module>` then `#print axioms <name>` (clean =
+`[propext, Classical.choice, Quot.sound]`). Commit each verified step. The heavy comparison files
+(`DolbeaultComparison*Equiv/Proof`) are slow (~260s) and LSP-unloadable; Phase-0 should live in lighter
+files where possible. **Verify every leaf statement against Forster before proving** — the ladder has had
+FALSE-as-stated leaves (`[[project_ladder_soundness_audit]]`); a stronger-than-book statement is a
+misformalization smell.
