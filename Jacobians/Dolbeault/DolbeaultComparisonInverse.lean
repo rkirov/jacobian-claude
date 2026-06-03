@@ -473,6 +473,22 @@ theorem holoFn_congr {V : Opens X} {g g' : MGerm V} (hg : g ∈ OmegaDGerm (0 : 
     exact Gext_overlap_eventuallyEq (holoRep hg) (holoRep hg') hmatch hx hx
   exact congrArg Filter.lim (Filter.map_congr heq)
 
+/-- **`holoFn` reads off a continuous representative's value.** If the holomorphic germ class `g` has a
+representative `F : ↥V → ℂ` (`toGerm V F = g`) whose extension `Gext F` has limit `c` along `𝓝[≠] y`
+(e.g. `F` continuous at `y`), then `holoFn hg y = c`. The `holoRep` choice washes out: `Gext (holoRep
+hg) =ᶠ[𝓝[≠] y] Gext F` (same germ), so they share the limit. -/
+theorem holoFn_eq_of_tendsto {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V)
+    (F : V → ℂ) (hgF : toGerm V F = g) {y : X} (hy : y ∈ V) {c : ℂ}
+    (hc : Tendsto (Gext F) (𝓝[≠] y) (𝓝 c)) : holoFn hg y = c := by
+  haveI := nhdsNE_neBot_of_chart y
+  have heq : Gext (holoRep hg) =ᶠ[𝓝[≠] y] Gext F := by
+    have hmatch : rawRestrictG (inf_le_right : V ⊓ V ≤ V) (toGerm V F)
+        = rawRestrictG (inf_le_left : V ⊓ V ≤ V) (toGerm V (holoRep hg)) := by
+      rw [hgF, toGerm_holoRep]
+    exact Gext_overlap_eventuallyEq (holoRep hg) F hmatch hy hy
+  show limUnder (𝓝[≠] y) (Gext (holoRep hg)) = c
+  exact (hc.congr' heq.symm).limUnder_eq
+
 /-- The `(j,k)` component of a Čech `1`-cocycle is a holomorphic (`OmegaDGerm 0`) germ-class on the
 overlap `U_j ⊓ U_k` (the `sections1` part of `cocycles1`). -/
 theorem cocycle_mem (𝔇 : ChartDiskCover X) (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
