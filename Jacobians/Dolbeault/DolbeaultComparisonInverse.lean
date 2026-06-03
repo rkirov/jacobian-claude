@@ -604,6 +604,45 @@ theorem holoFn_restrict {U V : Opens X} (h : V ≤ U) {g : MGerm U}
     = limUnder (𝓝[≠] x) (Gext (holoRep hg))
   exact congrArg Filter.lim (Filter.map_congr heq.symm)
 
+/-- **The Čech cocycle relation, at the `holoFn` value level.** For a `1`-cocycle `f` (so `δ¹f = 0`)
+and `y ∈ U_i ⊓ U_j ⊓ U_k`, the holomorphic representatives satisfy `holoFn(f_ik) = holoFn(f_ij) +
+holoFn(f_jk)`. From `δ¹f = 0` the germs obey `f_ik = f_jk + f_ij` on the triple overlap; `holoFn` is
+additive (`holoFn_add`) and restriction-compatible (`holoFn_restrict`). The gateway to round-trip 2. -/
+theorem holoFn_cocycle_add (𝔇 : ChartDiskCover X)
+    (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i j k : 𝔇.toFiniteCover.ι) {y : X}
+    (hy : y ∈ (𝔇.U i ⊓ 𝔇.U j ⊓ 𝔇.U k : Opens X)) :
+    holoFn (cocycle_mem 𝔇 f i k) y
+      = holoFn (cocycle_mem 𝔇 f i j) y + holoFn (cocycle_mem 𝔇 f j k) y := by
+  have hjk : (𝔇.U i ⊓ 𝔇.U j ⊓ 𝔇.U k : Opens X) ≤ 𝔇.U j ⊓ 𝔇.U k :=
+    le_inf (inf_le_left.trans inf_le_right) inf_le_right
+  have hik : (𝔇.U i ⊓ 𝔇.U j ⊓ 𝔇.U k : Opens X) ≤ 𝔇.U i ⊓ 𝔇.U k :=
+    le_inf (inf_le_left.trans inf_le_left) inf_le_right
+  have hij : (𝔇.U i ⊓ 𝔇.U j ⊓ 𝔇.U k : Opens X) ≤ 𝔇.U i ⊓ 𝔇.U j := inf_le_left
+  have hk0 : 𝔇.toFiniteCover.cechDelta1 (f : 𝔇.toFiniteCover.Cochain1) = 0 :=
+    LinearMap.mem_ker.1 (Submodule.mem_inf.1 f.2).1
+  have h0 : rawRestrictG hjk ((f : 𝔇.toFiniteCover.Cochain1) (j, k))
+      - rawRestrictG hik ((f : 𝔇.toFiniteCover.Cochain1) (i, k))
+      + rawRestrictG hij ((f : 𝔇.toFiniteCover.Cochain1) (i, j)) = 0 := by
+    have hev := congrFun hk0 (i, j, k)
+    simpa only [FiniteCover.cechDelta1, LinearMap.pi_apply, LinearMap.sub_apply,
+      LinearMap.add_apply, LinearMap.comp_apply, LinearMap.proj_apply, Pi.zero_apply] using hev
+  have hrel : rawRestrictG hik ((f : 𝔇.toFiniteCover.Cochain1) (i, k))
+      = rawRestrictG hjk ((f : 𝔇.toFiniteCover.Cochain1) (j, k))
+        + rawRestrictG hij ((f : 𝔇.toFiniteCover.Cochain1) (i, j)) := by
+    have h1 : rawRestrictG hjk ((f : 𝔇.toFiniteCover.Cochain1) (j, k))
+        + rawRestrictG hij ((f : 𝔇.toFiniteCover.Cochain1) (i, j))
+        - rawRestrictG hik ((f : 𝔇.toFiniteCover.Cochain1) (i, k)) = 0 := by rw [← h0]; abel
+    exact (sub_eq_zero.1 h1).symm
+  rw [← holoFn_restrict hik (cocycle_mem 𝔇 f i k) hy,
+    holoFn_congr (rawRestrictG_omegaDGerm hik (cocycle_mem 𝔇 f i k))
+      (add_mem (rawRestrictG_omegaDGerm hjk (cocycle_mem 𝔇 f j k))
+        (rawRestrictG_omegaDGerm hij (cocycle_mem 𝔇 f i j))) hrel hy,
+    holoFn_add (rawRestrictG_omegaDGerm hjk (cocycle_mem 𝔇 f j k))
+      (rawRestrictG_omegaDGerm hij (cocycle_mem 𝔇 f i j)) _ hy,
+    holoFn_restrict hjk (cocycle_mem 𝔇 f j k) hy,
+    holoFn_restrict hij (cocycle_mem 𝔇 f i j) hy]
+  abel
+
 /-- The **global primitive summand** `ρ_k · holoFn(s_k)` as a `SmoothCFunctions` (globally smooth: on
 `U_k` both factors are smooth, off `tsupport ρ_k` it vanishes). The `∂̄` of `h = ∑_k primFn` is the
 coboundary's image, since each `holoFn(s_k)` is holomorphic (`holoFn_dbar_eq_zero`). -/
