@@ -284,6 +284,34 @@ this path.
 
 ### ⏳ BUILD LOG — upstream atoms (2026-06-03, in progress)
 
+**SORRY-FREE LOCAL RESIDUE CALCULUS FOR §17 — COMPLETE (all axiom-clean, depends on NO sorry).**
+Constraint honored: nothing below rests on `deg_div`/`finiteDimensional_cechH1`/ladder leaves. Files:
+- `Residue.lean` — `resAt` atom (below) + `resAt_add/_smul` (ℂ-linear), `resAt_congr` (germ-invariant),
+  `resAt_eq_of_eventuallyEq_sub_inv` (simple-pole reader), `resAt_eq_zero_of_differentiableOn_ball`.
+- `SerreDuality.lean` — both abstract finite-dim cores: `finrank_le_of_injective_to_dual` (EASY:
+  ι₀ inj ⟹ `genus ≤ h1Dim 0`) + `serre_surjectivity_dim_core` (HARD).
+- `FormCoeff.lean` — `coeffAt α a` (analytic chart coefficient, reusing the axiom-clean Montel bridge
+  `localRep_analyticOn_chartTarget`); `formFnResidue α g a` = `Res_a(α·g)` + `_eq_zero_of_analyticAt`
+  (`Res(holo)=0`); `exists_localRep_self_ne_zero` (`α≠0 ⟹` nonzero coeff somewhere);
+  **`exists_formFnResidue_eq_one_of_localRep_ne_zero`** (Forster §17.6 witness: at a nonzero-coeff
+  point, `g=1/(z·coeff)` gives `Res_a(α·g)=1`). This is the **local heart of ι₀ injectivity**.
+
+**⛔ SORRY-FREE BOUNDARY REACHED for the EASY half.** Assembling these into the actual map
+`ι₀ : H⁰(X,Ω) → (cechH1 0)*` and the inequality `genus ≤ h1Dim 0` requires two things that are
+currently sorries, so we stop here rather than depend on them:
+  (1) **`Res : H¹(X,Ω) → ℂ`** (Mittag–Leffler) — its *well-definedness on classes* needs the residue
+      theorem `∑Res=0` = `deg_div` (degree route, Phase 2 sorry);
+  (2) **`FiniteDimensional ℂ (cechH1 𝔘 0)`** = `finiteDimensional_cechH1` (Phase 1 sorry) — needed for
+      `finrank_le_of_injective_to_dual` to fire.
+The local witness (`Res_a(α·g)=1`) is sorry-free; the *global* `Res` and the finrank step are gated on
+(1)/(2). Resuming the EASY half requires discharging `deg_div` and finiteness first (Phases 1–2), OR
+stating a **conditional** `genus_le_h1Dim_of_residueTheorem_of_finite` (sorry-free, hypotheses (1)+(2))
+— the doc-blessed conditional form. Lesson: `lean_verify`(LSP) can falsely report `sorryAx` when an
+imported file changed mid-session; trust `lake build` (no "uses sorry" warning) +
+`lake env lean #print axioms`.
+
+LATER lines — original atom log (kept):
+
 Building Phase-0 **from upstream down**. Done so far (`Jacobians/Dolbeault/Residue.lean`, axiom-clean):
 - **The residue atom `resAt (f : ℂ → ℂ) (c : ℂ)`** — `(2πi)⁻¹ ∮_{|z-c|=r} f` as `r→0⁺` (`limUnder`,
   mirrors `holoRepr`). Mathlib has **no** residue API (only `meromorphicTrailingCoeffAt` = leading
