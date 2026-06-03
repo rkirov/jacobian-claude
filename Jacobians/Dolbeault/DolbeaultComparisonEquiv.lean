@@ -107,6 +107,38 @@ theorem dbarL_gdTerm_apply (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
     rw [hr0, dbarRho_eq_zero_of_notMem 𝔇 k hb, hrc]
     module
 
+/-- **The holomorphic representative of the forward cocycle is the disk-primitive difference.** For
+`y ∈ U_j ⊓ U_k`, the `holoFn` of the `(j,k)` component of the Dolbeault → Čech cocycle of `g` equals
+`wₖ y − wⱼ y` (the cocycle component is the germ of `diskSection k g − diskSection j g`, whose
+continuous representative `holoFn` reads off via `holoFn_eq_of_tendsto`). -/
+theorem holoFn_cocycle_eq_diskValDiff (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
+    (hg : g ∈ OneFormsZeroOne X) (j k : 𝔇.toFiniteCover.ι) {y : X}
+    (hy : y ∈ (𝔇.U j ⊓ 𝔇.U k : Opens X)) :
+    holoFn (cocycle_mem 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) j k) y
+      = diskVal 𝔇 k g y - diskVal 𝔇 j g y := by
+  set V : Opens X := 𝔇.U j ⊓ 𝔇.U k with hV
+  set F : V → ℂ :=
+    𝔇.diskSection k g ∘ openIncl inf_le_right - 𝔇.diskSection j g ∘ openIncl inf_le_left with hF
+  have hcomp : (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩ : 𝔇.toFiniteCover.Cochain1) (j, k) = toGerm V F := by
+    show 𝔇.toFiniteCover.cechDelta0 (𝔇.rawCochain g) (j, k) = toGerm V F
+    simp only [FiniteCover.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
+      LinearMap.comp_apply, LinearMap.proj_apply]
+    rw [show 𝔇.rawCochain g k = toGerm (𝔇.U k) (𝔇.diskSection k g) from rfl,
+      show 𝔇.rawCochain g j = toGerm (𝔇.U j) (𝔇.diskSection j g) from rfl,
+      rawRestrictG_coe, rawRestrictG_coe, ← map_sub]
+  have hyk : y ∈ (𝔇.U k : Set X) := hy.2
+  have hyj : y ∈ (𝔇.U j : Set X) := hy.1
+  have hev : Gext F =ᶠ[nhds y] (fun z => diskVal 𝔇 k g z - diskVal 𝔇 j g z) := by
+    filter_upwards [V.isOpen.mem_nhds hy] with z hz
+    rw [Gext_apply_mem F hz]
+    simp only [hF, Pi.sub_apply, Function.comp_apply, ChartDiskCover.diskSection, openIncl, diskVal]
+  have hcont : ContinuousAt (fun z => diskVal 𝔇 k g z - diskVal 𝔇 j g z) y :=
+    ((contMDiffAt_diskVal 𝔇 k g hyk).continuousAt).sub ((contMDiffAt_diskVal 𝔇 j g hyj).continuousAt)
+  have htend : Filter.Tendsto (Gext F) (𝓝[≠] y) (𝓝 (diskVal 𝔇 k g y - diskVal 𝔇 j g y)) :=
+    Filter.Tendsto.congr' (hev.filter_mono nhdsWithin_le_nhds).symm
+      ((hcont.tendsto).mono_left nhdsWithin_le_nhds)
+  exact holoFn_eq_of_tendsto (cocycle_mem 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) j k) F hcomp.symm hy htend
+
 /-- **`comparison_bijective`, part 1** (honest named sub-kernel): Dolbeault → Čech → Dolbeault is the
 identity. Globalizing a locally-solved `(0,1)`-form via the partition of unity returns the same
 Dolbeault class. -/
