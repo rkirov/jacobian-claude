@@ -279,6 +279,33 @@ theorem cSmulForm_mem_zeroOne (c : SmoothCFunctions X) {g : SmoothCOneForms X}
   simp only [proj01L_apply, proj01Section_apply, cSmulForm_apply]
   exact proj01_smul (c x) (h x)
 
+/-- `ℂ`-multiplication is real-`C^∞` (it is `ℝ`-bilinear) — the instance Mathlib provides only over the
+*complex* model `𝓘(ℂ)`, supplied here over the real model `𝓘(ℝ,ℂ)` so that `SmoothCFunctions X` is a
+ring (needed for the `∂̄` Leibniz rule). -/
+instance contMDiffMul_real_complex : ContMDiffMul 𝓘(ℝ, ℂ) (⊤ : ℕ∞) ℂ :=
+  { (inferInstance : IsManifold 𝓘(ℝ, ℂ) (⊤ : ℕ∞) ℂ) with
+    contMDiff_mul := by
+      rw [contMDiff_iff]
+      refine ⟨continuous_mul, fun x y => ?_⟩
+      simp only [mfld_simps]
+      rw [contDiffOn_univ]
+      exact contDiff_mul }
+
+/-- **The `∂̄` Leibniz rule** `∂̄(g₁·g₂) = g₂·∂̄g₁ + g₁·∂̄g₂` (`∂̄ = proj01 ∘ mfderiv`; `mfderiv` has the
+product rule `HasMFDerivAt.mul`, `proj01` commutes with the ℂ-scale `proj01_smul`). -/
+theorem dbarL_mul (g₁ g₂ : SmoothCFunctions X) :
+    dbarL (g₁ * g₂) = cSmulForm g₂ (dbarL g₁) + cSmulForm g₁ (dbarL g₂) := by
+  refine ContMDiffSection.ext fun x => ?_
+  have h1 : HasMFDerivAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑g₁) x (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑g₁) x) :=
+    (g₁.contMDiff.mdifferentiable (by simp) x).hasMFDerivAt
+  have h2 : HasMFDerivAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑g₂) x (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑g₂) x) :=
+    (g₂.contMDiff.mdifferentiable (by simp) x).hasMFDerivAt
+  show proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(g₁ * g₂)) x)
+    = g₂ x • proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑g₁) x)
+      + g₁ x • proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑g₂) x)
+  rw [show (⇑(g₁ * g₂) : X → ℂ) = ⇑g₁ * ⇑g₂ from rfl, (h1.mul h2).mfderiv, map_add,
+    proj01_smul, proj01_smul, add_comm]
+
 /-! ### Support of the gluing forms `∂̄ρ_k`
 
 Each double-sum term `ρ_j·F_jk·∂̄ρ_k` is globally smooth because `∂̄ρ_k` is supported in `U_k`
