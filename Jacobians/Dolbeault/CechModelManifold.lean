@@ -16,6 +16,7 @@
   Sorry-free; reuses only the axiom-clean chart machinery (`contMDiffOn_chart`, `ContDiffAt.analyticAt`).
 -/
 import Jacobians.Dolbeault.CechH0
+import Jacobians.Dolbeault.CechModelBridge
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -85,5 +86,24 @@ theorem analyticOn_pullback_of_holo {y : X} {V : Set X} (hV : V ⊆ (chartAt (H 
     AnalyticOn ℂ (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) '' V) := by
   rintro w ⟨x, hxV, rfl⟩
   exact (analyticAt_chart_change_to (hV hxV) (hh x hxV)).analyticWithinAt
+
+/-- **The single-section K-bridge.**  A holomorphic `𝒪₀` section `h` on `V ⊆ (chartAt y).source`,
+read through the cover-chart `y` and restricted to a relatively-compact open `U' ⋐ (chartAt y) '' V`,
+is a `BddHol U'` element (analytic via `analyticOn_pullback_of_holo`, bounded via the
+relatively-compact shrinking).  The value is the section's chart-pullback `h ∘ (chartAt y).symm`.
+This is the per-overlap building block of the germ→`BddHol` cochain map (`exists_cechModel`). -/
+noncomputable def holoSectionToBddHol {y : X} {V : Set X} (hV : V ⊆ (chartAt (H := ℂ) y).source)
+    {h : X → ℂ} (hh : ∀ x ∈ V, AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x))
+    {U' : Set ℂ} (hsub : closure U' ⊆ (chartAt (H := ℂ) y) '' V) (hcpt : IsCompact (closure U')) :
+    BddHol U' :=
+  BddHol.ofAnalyticOnOfRelCompact (analyticOn_pullback_of_holo hV hh) hsub hcpt
+
+@[simp] theorem holoSectionToBddHol_toFun_of_mem {y : X} {V : Set X}
+    (hV : V ⊆ (chartAt (H := ℂ) y).source) {h : X → ℂ}
+    (hh : ∀ x ∈ V, AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x))
+    {U' : Set ℂ} (hsub : closure U' ⊆ (chartAt (H := ℂ) y) '' V) (hcpt : IsCompact (closure U'))
+    {z : ℂ} (hz : z ∈ U') :
+    (holoSectionToBddHol hV hh hsub hcpt).toFun z = h ((chartAt (H := ℂ) y).symm z) :=
+  BddHol.ofAnalyticOnOfRelCompact_toFun_of_mem _ _ _ hz
 
 end Jacobians.Dolbeault
