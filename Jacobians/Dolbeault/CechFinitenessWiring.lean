@@ -44,6 +44,7 @@
 -/
 import Jacobians.Dolbeault.CechFinitenessAbstract
 import Jacobians.Dolbeault.BddHol
+import Jacobians.Dolbeault.CechModelBridge
 import Jacobians.Dolbeault.DolbeaultLadder
 import Jacobians.Dolbeault.DbarDiskCohomology
 
@@ -68,11 +69,13 @@ structure DiskOverlapData where
   /-- Chart-image of each overlap on the COVER (an open set in `ℂ`). -/
   Uov : J → Set ℂ
   hUov : ∀ p, IsOpen (Uov p)
-  /-- The relatively-compact convex SHRINKING of each overlap (a compact set in `ℂ`). -/
+  /-- The relatively-compact SHRINKING of each overlap (a compact set in `ℂ`).  No convexity is
+  required: the restriction operator is compact for any compact `K ⊆ U`
+  (`BddHol.isCompactOperator_restrictCLM_of_compact`), so `Kov` can be a chart-image of an overlap
+  (which is NOT convex across charts). -/
   Kov : J → Set ℂ
   hKcpt : ∀ p, IsCompact (Kov p)
   hKU : ∀ p, Kov p ⊆ Uov p
-  hKconv : ∀ p, Convex ℝ (Kov p)
 
 attribute [instance] DiskOverlapData.fintypeJ DiskOverlapData.decEqJ
 
@@ -118,12 +121,12 @@ noncomputable def rhoRaw : d.Ccov →L[ℂ] d.Cshr :=
 
 /-- **STEP 3 (the Montel payoff).** The cochain restriction `ρ` (cover → shrinking) is a COMPACT
 operator: componentwise it is `BddHol.restrictCLM`, compact by the disk-Montel atom
-(`BddHol.isCompactOperator_restrictCLM`, each shrunk overlap being convex), and a finite product of
-compacts is compact (`isCompactOperator_pi`). -/
+(`BddHol.isCompactOperator_restrictCLM_of_compact`, valid for any compact shrunk overlap — no
+convexity), and a finite product of compacts is compact (`isCompactOperator_pi`). -/
 theorem rhoRaw_compact : IsCompactOperator d.rhoRaw := by
   apply isCompactOperator_pi (fun p => BddHol.restrictCLM (d.hKU p))
   intro p
-  exact BddHol.isCompactOperator_restrictCLM (d.hUov p) (d.hKcpt p) (d.hKU p) (d.hKconv p)
+  exact BddHol.isCompactOperator_restrictCLM_of_compact (d.hUov p) (d.hKcpt p) (d.hKU p)
 
 end DiskOverlapData
 
