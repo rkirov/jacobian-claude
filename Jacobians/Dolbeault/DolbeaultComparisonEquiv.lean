@@ -139,13 +139,83 @@ theorem holoFn_cocycle_eq_diskValDiff (𝔇 : ChartDiskCover X) {g : SmoothCOneF
       ((hcont.tendsto).mono_left nhdsWithin_le_nhds)
   exact holoFn_eq_of_tendsto (cocycle_mem 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) j k) F hcomp.symm hy htend
 
-/-- **`comparison_bijective`, part 1** (honest named sub-kernel): Dolbeault → Čech → Dolbeault is the
-identity. Globalizing a locally-solved `(0,1)`-form via the partition of unity returns the same
-Dolbeault class. -/
+/-- **The global primitive's `∂̄` equals `ω + g`.** With `h = ∑_k ρ_k·wₖ`, the partition-of-unity
+telescoping (`∑ρ = 1`, `∑∂̄ρ = 0`) gives `∂̄h = ω + g`, where `ω = cechToDolbeaultForm` of the forward
+cocycle of `g`. This is the heart of the round-trip: it exhibits `ω + g` as a `∂̄`-image, so
+`[ω] = −[g]` in `H^{0,1}`. -/
+theorem dbarL_globalPrim_eq (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
+    (hg : g ∈ OneFormsZeroOne X) :
+    dbarL (∑ k, gdTerm 𝔇 k g)
+      = ((cechToDolbeaultForm 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) : ↥(OneFormsZeroOne X)) :
+          SmoothCOneForms X) + g := by
+  refine ContMDiffSection.ext fun x => ?_
+  have hTerm : ∀ j k : 𝔇.toFiniteCover.ι,
+      cechTerm 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) j k x
+        = (rhoC 𝔇 j x * (diskVal 𝔇 k g x - diskVal 𝔇 j g x)) • (dbarRho 𝔇 k x) := by
+    intro j k
+    show (rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) j k) x)
+        • (dbarRho 𝔇 k x)
+      = (rhoC 𝔇 j x * (diskVal 𝔇 k g x - diskVal 𝔇 j g x)) • (dbarRho 𝔇 k x)
+    by_cases hxV : x ∈ (𝔇.U j ⊓ 𝔇.U k : Opens X)
+    · rw [holoFn_cocycle_eq_diskValDiff 𝔇 hg j k hxV]
+    · rcases not_and_or.1 hxV with hj | hk
+      · have hr : rhoC 𝔇 j x = 0 := by
+          have hx : x ∉ tsupport (cechPoU 𝔇 j) := fun hc => hj (cechPoU_subordinate 𝔇 j hc)
+          simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hx]
+          rfl
+        rw [hr, zero_mul, zero_mul]
+      · have hd : dbarRho 𝔇 k x = 0 :=
+          dbarRho_eq_zero_of_notMem 𝔇 k (fun hc => hk (cechPoU_subordinate 𝔇 k hc))
+        rw [hd]; module
+  have hLHS : (dbarL (∑ k, gdTerm 𝔇 k g)) x
+      = (∑ k, diskVal 𝔇 k g x • (dbarRho 𝔇 k x)) + g x := by
+    rw [map_sum, section_finset_sum_apply,
+      show (∑ k, (dbarL (gdTerm 𝔇 k g)) x)
+        = ∑ k, (diskVal 𝔇 k g x • (dbarRho 𝔇 k x) + rhoC 𝔇 k x • (g x))
+        from Finset.sum_congr rfl fun k _ => dbarL_gdTerm_apply 𝔇 hg k x,
+      Finset.sum_add_distrib, ← Finset.sum_smul, sum_rhoC_apply, one_smul]
+  have hRHS : (((cechToDolbeaultForm 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) : ↥(OneFormsZeroOne X)) :
+        SmoothCOneForms X) + g) x = (∑ k, diskVal 𝔇 k g x • (dbarRho 𝔇 k x)) + g x := by
+    have h1 : (((cechToDolbeaultForm 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) : ↥(OneFormsZeroOne X)) :
+          SmoothCOneForms X) + g) x
+        = ((cechToDolbeaultForm 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) : ↥(OneFormsZeroOne X)) :
+            SmoothCOneForms X) x + g x := by
+      simp only [ContMDiffSection.coe_add, Pi.add_apply]
+    rw [h1, cechToDolbeaultForm_val, section_finset_sum_apply,
+      show (∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι,
+          cechTerm 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) p.1 p.2 x)
+        = ∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι,
+            (rhoC 𝔇 p.1 x * (diskVal 𝔇 p.2 g x - diskVal 𝔇 p.1 g x)) • (dbarRho 𝔇 p.2 x)
+        from Finset.sum_congr rfl fun p _ => hTerm p.1 p.2,
+      telescope_sum (fun j => rhoC 𝔇 j x) (fun k => diskVal 𝔇 k g x)
+        (fun k => dbarRho 𝔇 k x) (sum_rhoC_apply 𝔇 x) (sum_dbarRho_apply 𝔇 x)]
+  rw [hLHS, hRHS]
+
+set_option maxHeartbeats 1000000 in
+/-- **`comparison_bijective`, part 1**: Dolbeault → Čech → Dolbeault is the identity. Globalizing the
+forward cocycle of `g` via the partition of unity returns `[g]` (the global primitive `h = ∑ρ_k·wₖ`
+has `∂̄h = ω + g`, so `cech_to_dolbeault` — carrying the boundary sign — sends `[ω]` to `[g]`). -/
 theorem cech_to_dolbeault_comp_dolbeault_to_cech (𝔇 : ChartDiskCover X)
     (hL : 𝔇.toFiniteCover.IsLeray) :
-    (cech_to_dolbeault 𝔇) ∘ₗ (dolbeault_to_cech 𝔇) = LinearMap.id :=
-  sorry
+    (cech_to_dolbeault 𝔇) ∘ₗ (dolbeault_to_cech 𝔇) = LinearMap.id := by
+  refine LinearMap.ext fun cls => ?_
+  obtain ⟨⟨g, hg⟩, rfl⟩ := Submodule.Quotient.mk_surjective (dbarImageInZeroOne X) cls
+  rw [LinearMap.comp_apply, LinearMap.id_apply]
+  have hdol : dolbeault_to_cech 𝔇 (Submodule.Quotient.mk ⟨g, hg⟩)
+      = Submodule.Quotient.mk (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) := rfl
+  rw [hdol, cech_to_dolbeault_mk]
+  have hmem : (cechToDolbeaultForm 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) + ⟨g, hg⟩ :
+      ↥(OneFormsZeroOne X)) ∈ dbarImageInZeroOne X := by
+    rw [dbarImageInZeroOne, Submodule.submoduleOf, Submodule.mem_comap, Submodule.subtype_apply,
+      LinearMap.mem_range]
+    refine ⟨∑ k, gdTerm 𝔇 k g, ?_⟩
+    rw [dbarL_globalPrim_eq 𝔇 hg, Submodule.coe_add]
+  have hz : (Submodule.mkQ (dbarImageInZeroOne X)
+        (cechToDolbeaultForm 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩)))
+      + (Submodule.mkQ (dbarImageInZeroOne X) (⟨g, hg⟩ : ↥(OneFormsZeroOne X))) = 0 := by
+    rw [← map_add, Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]; exact hmem
+  rw [Submodule.mkQ_apply, Submodule.mkQ_apply] at hz
+  exact neg_eq_of_add_eq_zero_right hz
 
 /-- **`comparison_bijective`, part 2** (honest named sub-kernel): Čech → Dolbeault → Čech is the
 identity. Local-solving the partition-of-unity primitive recovers the same Čech cohomology class. -/

@@ -833,12 +833,20 @@ theorem cechToDolbeaultForm_coboundary_le (𝔇 : ChartDiskCover X) :
 /-- **Čech → Dolbeault.** The `ℝ`-linear inverse `H¹(X, 𝒪) → H^{0,1}(X)`. Assembled **sorry-free** from
 the analytic glued-form operator `cechToDolbeaultForm` and its well-definedness
 `cechToDolbeaultForm_coboundary_le` via `Submodule.liftQ` through the Čech quotient `Z¹/B¹` (scalar
-`ℂ → ℝ`). All genuine content lives in the two named sub-kernels above. -/
+`ℂ → ℝ`). The overall **minus sign** is the boundary-map sign convention (`(δc)(i,j) = c_j − c_i` in
+`cechDelta0`): without it the round-trips would be `−id`. All genuine content lives in the two named
+sub-kernels above. -/
 noncomputable def cech_to_dolbeault (𝔇 : ChartDiskCover X) :
     𝔇.toFiniteCover.cechH1 0 →ₗ[ℝ] DolbeaultH01 X :=
-  Submodule.liftQ (((𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
+  -Submodule.liftQ (((𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
       (𝔇.toFiniteCover.cocycles1 (0 : Divisor X))).restrictScalars ℝ)
     ((Submodule.mkQ (dbarImageInZeroOne X)) ∘ₗ cechToDolbeaultForm 𝔇)
     (cechToDolbeaultForm_coboundary_le 𝔇)
+
+/-- `cech_to_dolbeault` on a cocycle representative: `−[ω]` for `ω = cechToDolbeaultForm f`. -/
+theorem cech_to_dolbeault_mk (𝔇 : ChartDiskCover X)
+    (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) :
+    cech_to_dolbeault 𝔇 (Submodule.Quotient.mk f)
+      = -(Submodule.Quotient.mk (cechToDolbeaultForm 𝔇 f)) := rfl
 
 end Jacobians.Dolbeault
