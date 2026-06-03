@@ -306,6 +306,70 @@ theorem dbarRho_eq_zero_of_notMem (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCo
   simp only [Function.mem_support, ne_eq] at hy ⊢
   exact fun h0 => hy (by simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, h0]; rfl)
 
+/-! ### The holomorphic representative function and the double-sum terms -/
+
+/-- The **holomorphic representative function** `F = Gext(limit-repair(holoRep g)) : X → ℂ` of an
+`OmegaDGerm 0` class `g` on `↥V`: the (choice-free) limit-repair of a holomorphic representative,
+real-smooth at every point of `V` (`holoFn_contMDiffAt`). -/
+noncomputable def holoFn {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V) :
+    X → ℂ :=
+  fun x => limUnder (𝓝[≠] x) (Gext (holoRep hg))
+
+/-- `holoFn hg` is real-`C^∞` at every point of `V` (the analytic representative is chart-analytic,
+`gextLimRep_chart_analyticAt`, bridged to `ContMDiffAt` by `contMDiffAt_real_of_chart_analyticAt`). -/
+theorem holoFn_contMDiffAt {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V)
+    {y : X} (hy : y ∈ V) : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (holoFn hg) y :=
+  contMDiffAt_real_of_chart_analyticAt (gextLimRep_chart_analyticAt (holoRep_mem hg) hy)
+
+/-- The `(j,k)` component of a Čech `1`-cocycle is a holomorphic (`OmegaDGerm 0`) germ-class on the
+overlap `U_j ⊓ U_k` (the `sections1` part of `cocycles1`). -/
+theorem cocycle_mem (𝔇 : ChartDiskCover X) (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
+    (j k : 𝔇.toFiniteCover.ι) :
+    (f : 𝔇.toFiniteCover.Cochain1) (j, k) ∈ OmegaDGerm (0 : Divisor X) (𝔇.U j ⊓ 𝔇.U k) :=
+  (Submodule.mem_inf.1 f.2).2 (j, k)
+
+/-- The `(j,k)` **double-sum term** `T_jk = (ρ_j · F_jk) • ∂̄ρ_k`, a global smooth `(0,1)`-valued form
+(`F_jk = holoFn` = the analytic representative). Globally smooth by a 3-case `ContMDiffAt` argument:
+on the overlap `U_j ⊓ U_k` everything is smooth (`F_jk` via `holoFn_contMDiffAt`); off `tsupport ρ_j`
+the factor `ρ_j` vanishes; off `tsupport ρ_k` the factor `∂̄ρ_k` vanishes — and these three opens cover
+`X` (a point in neither support-complement lies in `tsupport ρ_j ∩ tsupport ρ_k ⊆ U_j ⊓ U_k`). -/
+noncomputable def cechTerm (𝔇 : ChartDiskCover X)
+    (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (j k : 𝔇.toFiniteCover.ι) :
+    SmoothCOneForms X where
+  toFun := fun x => (rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 f j k) x) • (dbarRho 𝔇 k x)
+  contMDiff_toFun := by
+    intro x₀
+    by_cases hbj : x₀ ∈ tsupport (cechPoU 𝔇 j)
+    · by_cases hbk : x₀ ∈ tsupport (cechPoU 𝔇 k)
+      · -- (a) x₀ ∈ U_j ⊓ U_k: the genuine smooth case.
+        have hxV : x₀ ∈ ((𝔇.U j ⊓ 𝔇.U k : Opens X) : Set X) :=
+          ⟨cechPoU_subordinate 𝔇 j hbj, cechPoU_subordinate 𝔇 k hbk⟩
+        have hmulrho : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ →L[ℝ] ℂ) (⊤ : ℕ∞)
+            (fun x => ContinuousLinearMap.mul ℝ ℂ (rhoC 𝔇 j x)) x₀ :=
+          ContMDiffAt.clm_apply contMDiffAt_const ((rhoC 𝔇 j).contMDiff x₀)
+        have hG : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
+            (fun x => rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 f j k) x) x₀ :=
+          (hmulrho.clm_apply (holoFn_contMDiffAt (cocycle_mem 𝔇 f j k) hxV)).congr_of_eventuallyEq
+            (Filter.Eventually.of_forall fun x => by simp [ContinuousLinearMap.mul_apply'])
+        exact contMDiffAt_cSmul_section hG ((dbarRho 𝔇 k).contMDiff_toFun x₀)
+      · -- (c) x₀ ∉ tsupport ρ_k: `∂̄ρ_k = 0` on a neighborhood, so the term is `0`.
+        refine ContMDiffAt.congr_of_eventuallyEq (Bundle.contMDiffAt_zeroSection ℝ
+        (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x)) ?_
+        filter_upwards [(isClosed_tsupport (cechPoU 𝔇 k)).isOpen_compl.mem_nhds hbk] with x hx
+        have hV : (rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 f j k) x) • (dbarRho 𝔇 k x) = 0 := by
+          rw [dbarRho_eq_zero_of_notMem 𝔇 k hx]; module
+        exact congrArg (Bundle.TotalSpace.mk x) hV
+    · -- (b) x₀ ∉ tsupport ρ_j: `ρ_j = 0` on a neighborhood, so the term is `0`.
+      refine ContMDiffAt.congr_of_eventuallyEq (Bundle.contMDiffAt_zeroSection ℝ
+        (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x)) ?_
+      filter_upwards [(isClosed_tsupport (cechPoU 𝔇 j)).isOpen_compl.mem_nhds hbj] with x hx
+      have hr : rhoC 𝔇 j x = 0 := by
+        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM,
+          image_eq_zero_of_notMem_tsupport hx]; rfl
+      have hV : (rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 f j k) x) • (dbarRho 𝔇 k x) = 0 := by
+        rw [hr, zero_mul]; module
+      exact congrArg (Bundle.TotalSpace.mk x) hV
+
 /-- **(Analytic sub-kernel — the Čech → Dolbeault glued-form operator.)** The `ℝ`-linear map sending
 a holomorphic Čech `1`-cocycle `f = {f_ij}` to the global `(0,1)`-form `ω` with `ω = ∂̄η_i` on `U_i`,
 `η_i := ∑_k ρ_k·f_ik` (partition-of-unity globalization). The genuine analytic content of the inverse:
