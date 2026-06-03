@@ -370,6 +370,42 @@ noncomputable def cechTerm (𝔇 : ChartDiskCover X)
         rw [hr, zero_mul]; module
       exact congrArg (Bundle.TotalSpace.mk x) hV
 
+/-- `proj01 α` at a vector, written out: `proj01 α v = ½(α v + i·α(i·v))` (the Wirtinger average). -/
+theorem proj01_apply_val (α : ℂ →L[ℝ] ℂ) (v : ℂ) :
+    proj01 α v = (2 : ℂ)⁻¹ * (α v + Complex.I * α (Complex.I * v)) := by
+  rw [proj01_apply]
+  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.add_apply,
+    ContinuousLinearMap.coe_comp', Function.comp_apply, mulI, ContinuousLinearMap.mul_apply',
+    Complex.real_smul]
+  push_cast; ring
+
+/-- The `(0,1)`-projection is idempotent (`proj01²= proj01`). -/
+theorem proj01_idempotent (α : ℂ →L[ℝ] ℂ) : proj01 (proj01 α) = proj01 α := by
+  refine ContinuousLinearMap.ext fun v => ?_
+  rw [proj01_apply_val (proj01 α) v, proj01_apply_val α v, proj01_apply_val α (Complex.I * v)]
+  have hI : Complex.I * (Complex.I * v) = -v := by rw [← mul_assoc, Complex.I_mul_I]; ring
+  rw [hI, map_neg]
+  linear_combination (-(1 / 4 : ℂ) * α v) * Complex.I_sq
+
+/-- Each double-sum term `T_jk` is a `(0,1)`-form: its fiber value `c • (∂̄ρ_k x)` lies in the range
+of `proj01` because `∂̄ρ_k x` does (`dbarL_mem_zeroOne`/idempotence) and `proj01` commutes with the
+ℂ-scale (`proj01_smul`). -/
+theorem cechTerm_mem_zeroOne (𝔇 : ChartDiskCover X)
+    (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (j k : 𝔇.toFiniteCover.ι) :
+    cechTerm 𝔇 f j k ∈ OneFormsZeroOne X := by
+  refine ⟨cechTerm 𝔇 f j k, ?_⟩
+  refine ContMDiffSection.ext fun x => ?_
+  show proj01 (cechTerm 𝔇 f j k x) = cechTerm 𝔇 f j k x
+  show proj01 ((rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 f j k) x) • (dbarRho 𝔇 k x))
+    = (rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 f j k) x) • (dbarRho 𝔇 k x)
+  rw [proj01_smul]
+  have hfix : proj01 ((dbarRho 𝔇 k) x) = (dbarRho 𝔇 k) x := by
+    show proj01 (dbarL (rhoC 𝔇 k) x) = dbarL (rhoC 𝔇 k) x
+    rw [dbarL_eq_proj01L_differential]
+    show proj01 (proj01 ((differential (rhoC 𝔇 k)) x)) = proj01 ((differential (rhoC 𝔇 k)) x)
+    exact proj01_idempotent _
+  rw [hfix]
+
 /-- **(Analytic sub-kernel — the Čech → Dolbeault glued-form operator.)** The `ℝ`-linear map sending
 a holomorphic Čech `1`-cocycle `f = {f_ij}` to the global `(0,1)`-form `ω` with `ω = ∂̄η_i` on `U_i`,
 `η_i := ∑_k ρ_k·f_ik` (partition-of-unity globalization). The genuine analytic content of the inverse:
