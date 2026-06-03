@@ -17,6 +17,39 @@ sorries as a deliverable; OK to prove weaker (conditional / one-directional / in
 genuinely sorry-free.** RT2 (the Dolbeault comparison, `DolbeaultComparisonEquiv.lean:245`) is deferred —
 do the Serre/RR path first to de-risk and establish it.
 
+## ✅ PROGRESS (2026-06-03): §17.9 litmus test PASSED + leaf statements verified vs Forster
+
+Read Forster §17.1–17.14 directly (PDF pp. 138–146). Two concrete results this session:
+
+**1. The §17.9 "formalizability litmus test" PASSED — axiom-clean.** The PDE-free route's keystone claim
+is that Serre surjectivity (`ι_D` onto) is *pure finite-dim linear algebra*. Confirmed by formalizing the
+two content-free abstractions of Forster's pigeonhole, both sorry-free + axiom-clean
+(`Jacobians/Dolbeault/SerreDuality.lean`, builds in 9s, commit `ff54bf8`):
+  - `subspaces_inf_ne_bot_of_finrank_add_gt` — `dim Λ + dim W > dim V ⟹ Λ ⊓ W ≠ ⊥` (via Mathlib
+    `Submodule.finrank_sup_add_finrank_inf_eq`). This is Forster's `Λ ∩ Im ι_{D_n} ≠ 0`.
+  - `serre_surjectivity_dim_core` — the full "for `n` sufficiently large,
+    `dim Λ_n + dim Im ι_{D_n} > dim H¹(𝒪_{D_n})*`" count, parametrized by the Riemann–Roch dimension
+    bounds (17.4/17.8) as hypotheses. The needed inequality is `n + 2 − 2g + k₀ > 0` (Forster's bounds:
+    `dimΛ ≥ 1−g+n`, `dim Im ι ≥ n+k₀−d`, `dim V = n+g−1−d`), so any `n > max(d, 2g−2−k₀)` works.
+  - **Conclusion:** §17.9 formalizes cleanly *given* the cohomology objects + maps. The wall is NOT in
+    the duality argument; it is in *building* `H¹(𝒪_{D_n})`, `H⁰(𝒪_{nP})`, `ι_D`, and the 17.8 `ψ`-action,
+    then *instantiating* `serre_surjectivity_dim_core`. That is the real PHASE-0 work (non-trivial but
+    PDE-free). See the file's header docstring for the instantiation map.
+
+**2. Leaf statements are faithful to Forster (resolves the soundness-audit `serre_h1_eq` worry).**
+  - `arithmeticGenus_eq_genus : h1Dim 0 = genus X` ✓ — Forster 17.10 `g = dim H¹(X,𝒪) = dim H⁰(X,Ω)`,
+    and `genus X := dim Ω(X)`. (Needs the `IsLeray` hyp so `cechH1` computes the true `H¹` — present.)
+  - `serre_h1_eq : ∃ K, ∀ D, h1Dim D = lDim (K−D)` ✓ — Forster 17.11 + 17.4 + 17.10 give
+    `dim H¹(𝒪_D) = dim H⁰(Ω_{−D}) = dim H⁰(𝒪_{K−D}) = l(K−D)` with `K=(ω)` a *single* canonical divisor.
+    The `∃K ∀D` order (K fixed before D) is exactly Forster — **not** the unsound "free-K" form the audit
+    flagged; the current statement is correct as written.
+
+**Key dependency confirmed while reading §17:** the Čech-residue `Res : H¹(X,Ω)→ℂ` (17.2 local-residue
+sum, the PDE-free substitute for 17.1's `∬_X`) needs the residue theorem `∑Res=0` for its
+*well-definedness on cohomology classes* — i.e. PHASE-0's `Res` depends on PHASE-2's `deg_div`. So either
+thread `∑Res=0` as a hypothesis through Phase 0, or do `deg_div` first. (Forster avoids this by using the
+17.1 `∬_X` definition + 17.3 Stokes; we trade Stokes for the residue theorem.)
+
 ## ⚠ CORRECTION (2026-06-03, after reading Forster §16–19 directly)
 
 **The earlier draft of this doc (below §0) wrongly claimed the hard direction's "irreducible core is
@@ -271,7 +304,11 @@ finite-dim linear-algebra pigeonhole — verify it formalizes. Sub-steps, follow
 5. **`ι_D` surjective** (17.9 — THE crux, and it is *pure finite-dim linear algebra*): with
    `D_n = D − nP`, `dim Λ + dim Im(ι_{D_n}) > dim H¹(𝒪_{D_n})*` for large `n` (RR dim counts via
    Lemmas 17.4, 17.8) forces `Λ ∩ Im ≠ ∅`. No analysis — just `Riemann–Roch` inequalities + a
-   pigeonhole. **This is the formalizability litmus test for the whole route.**
+   pigeonhole. **This was the formalizability litmus test for the whole route — ✅ PASSED 2026-06-03**
+   (`SerreDuality.serre_surjectivity_dim_core`, axiom-clean). The abstract count is *done*; this sub-step
+   now reduces to **instantiating** that lemma with the concrete cohomology objects/maps built in 1–4
+   (supply `Λ n`, `I n = Im ι_{D_n}`, and discharge the three RR-bound hypotheses `hΛ/hI/hV` from the
+   repo's RR dim counts).
 6. **Conclude** `H⁰(X,Ω_{-D}) ≅ H¹(X,𝒪_D)*` (17.11); at `D=0`: `g = dim H¹(X,𝒪)` =
    `arithmeticGenus_eq_genus`; general `D` ⟹ `serre_h1_eq`. Wire into `DolbeaultLadder.lean`.
 
