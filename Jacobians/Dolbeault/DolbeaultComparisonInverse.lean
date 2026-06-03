@@ -459,6 +459,20 @@ theorem holoFn_sub {V : Opens X} {g₁ g₂ : MGerm V} (hg₁ : g₁ ∈ OmegaDG
   rw [show holoFn hg₁ x = c₁ from hc₁.limUnder_eq, show holoFn hg₂ x = c₂ from hc₂.limUnder_eq]
   exact ((hc₁.sub hc₂).congr' heq.symm).limUnder_eq
 
+/-- **`holoFn` depends only on the germ class.** Two memberships of equal germs give the same `holoFn`
+at points of `V` (the `holoRep` choice washes out). -/
+theorem holoFn_congr {V : Opens X} {g g' : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V)
+    (hg' : g' ∈ OmegaDGerm (0 : Divisor X) V) (hgg : g = g') {x : X} (hx : x ∈ V) :
+    holoFn hg x = holoFn hg' x := by
+  haveI := nhdsNE_neBot_of_chart x
+  have heq : Gext (holoRep hg) =ᶠ[𝓝[≠] x] Gext (holoRep hg') := by
+    have hgerm : toGerm V (holoRep hg') = toGerm V (holoRep hg) := by
+      rw [toGerm_holoRep, toGerm_holoRep, hgg]
+    have hmatch : rawRestrictG (inf_le_right : V ⊓ V ≤ V) (toGerm V (holoRep hg'))
+        = rawRestrictG (inf_le_left : V ⊓ V ≤ V) (toGerm V (holoRep hg)) := by rw [hgerm]
+    exact Gext_overlap_eventuallyEq (holoRep hg) (holoRep hg') hmatch hx hx
+  exact congrArg Filter.lim (Filter.map_congr heq)
+
 /-- The `(j,k)` component of a Čech `1`-cocycle is a holomorphic (`OmegaDGerm 0`) germ-class on the
 overlap `U_j ⊓ U_k` (the `sections1` part of `cocycles1`). -/
 theorem cocycle_mem (𝔇 : ChartDiskCover X) (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
@@ -702,6 +716,41 @@ noncomputable def cechToDolbeaultForm (𝔇 : ChartDiskCover X) :
     refine Finset.sum_congr rfl fun p _ => ?_
     exact Subtype.ext (cechTerm_smul 𝔇 r f p.1 p.2)
 
+/-- `cechToDolbeaultForm 𝔇 f` is (the section underlying) the finite sum `∑_{(j,k)} T_jk`. Isolates the
+single subtype-coercion-through-a-`Finset.sum` step (the only place the transparency-option `isDefEq`
+cost on `cechTerm` bodies appears), so downstream uses go through `section_finset_sum_apply` cheaply. -/
+theorem cechToDolbeaultForm_val (𝔇 : ChartDiskCover X)
+    (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) :
+    ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
+      = ∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι, cechTerm 𝔇 f p.1 p.2 := by
+  show ((∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι,
+      (⟨cechTerm 𝔇 f p.1 p.2, cechTerm_mem_zeroOne 𝔇 f p.1 p.2⟩ : ↥(OneFormsZeroOne X)) :
+      ↥(OneFormsZeroOne X)) : SmoothCOneForms X) = _
+  rw [AddSubmonoidClass.coe_finset_sum]
+
+/-- Section-eval commutes with finite sums of `(0,1)`-forms (generic; applied by unification, so it
+never whnfs the heavy `cechTerm` body — avoiding the transparency-option `isDefEq` blowup). -/
+theorem section_finset_sum_apply {ι : Type*} (s : ι → SmoothCOneForms X) (t : Finset ι) (x : X) :
+    (∑ i ∈ t, s i) x = ∑ i ∈ t, (s i) x := by
+  have h1 : (⇑(∑ i ∈ t, s i)) = ∑ i ∈ t, ⇑(s i) := map_sum (ContMDiffSection.coeAddHom _ _ _ _) _ _
+  rw [show ((∑ i ∈ t, s i) x) = (⇑(∑ i ∈ t, s i)) x from rfl, h1, Finset.sum_apply]
+
+/-- The **double-sum telescoping** `∑_{j,k} ρ_j·(H_k − H_j) • D_k = ∑_k H_k • D_k` when `∑_j ρ_j = 1`
+and `∑_k D_k = 0` — pure module algebra over any `ℂ`-module `M`, extracted so it elaborates without the
+manifold-instance / transparency cost of the section setting. -/
+theorem telescope_sum {ι : Type*} [Fintype ι] {M : Type*} [AddCommGroup M] [Module ℂ M]
+    (R H : ι → ℂ) (D : ι → M) (hR : ∑ j, R j = 1) (hD : ∑ k, D k = 0) :
+    (∑ p : ι × ι, (R p.1 * (H p.2 - H p.1)) • D p.2) = ∑ k, H k • D k := by
+  rw [Fintype.sum_prod_type]
+  simp_rw [mul_sub, sub_smul, Finset.sum_sub_distrib]
+  rw [Finset.sum_comm]
+  have h2 : (∑ j, ∑ _k : ι, (R j * H j) • D _k) = 0 :=
+    Finset.sum_eq_zero fun j _ => by rw [← Finset.smul_sum, hD, smul_zero]
+  rw [h2, sub_zero]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [← Finset.sum_smul, ← Finset.sum_mul, hR, one_mul]
+
+set_option maxHeartbeats 1000000 in
 /-- **(Analytic sub-kernel — well-definedness of Čech → Dolbeault.)** A Čech **coboundary** cocycle
 maps to a `∂̄`-image (its glued form `ω` is `∂̄` of the global primitive that the coboundary's
 holomorphic `0`-cochain supplies), hence to `0` in `H^{0,1} = A^{0,1}/im ∂̄`. This is the kernel
@@ -709,8 +758,61 @@ inclusion that makes the lift to `cechH1 = Z¹/B¹` well-defined. -/
 theorem cechToDolbeaultForm_coboundary_le (𝔇 : ChartDiskCover X) :
     ((𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
         (𝔇.toFiniteCover.cocycles1 (0 : Divisor X))).restrictScalars ℝ
-      ≤ LinearMap.ker ((Submodule.mkQ (dbarImageInZeroOne X)) ∘ₗ cechToDolbeaultForm 𝔇) :=
-  sorry
+      ≤ LinearMap.ker ((Submodule.mkQ (dbarImageInZeroOne X)) ∘ₗ cechToDolbeaultForm 𝔇) := by
+  intro f hf
+  simp only [Submodule.restrictScalars_mem, Submodule.submoduleOf, Submodule.mem_comap,
+    Submodule.subtype_apply] at hf
+  obtain ⟨s, hs, hseq⟩ := hf
+  rw [LinearMap.mem_ker, LinearMap.comp_apply, Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero,
+    dbarImageInZeroOne, Submodule.submoduleOf, Submodule.mem_comap, Submodule.subtype_apply,
+    LinearMap.mem_range]
+  -- The global primitive `h = ∑_k ρ_k·holoFn(s_k)`; `∂̄h = ω(f)`.
+  refine ⟨∑ k, primFn 𝔇 k (hs k), ?_⟩
+  -- Per-(j,k) `holoFn` decomposition on the overlap (`f_jk = s_k − s_j`).
+  have hHol : ∀ (j k : 𝔇.toFiniteCover.ι) {y : X}, y ∈ (𝔇.U j ⊓ 𝔇.U k : Opens X) →
+      holoFn (cocycle_mem 𝔇 f j k) y = holoFn (hs k) y - holoFn (hs j) y := by
+    intro j k y hyV
+    have hgeq : (f : 𝔇.toFiniteCover.Cochain1) (j, k)
+        = rawRestrictG inf_le_right (s k) - rawRestrictG inf_le_left (s j) := by rw [← hseq]; rfl
+    rw [holoFn_congr (cocycle_mem 𝔇 f j k)
+        (sub_mem (rawRestrictG_omegaDGerm inf_le_right (hs k))
+          (rawRestrictG_omegaDGerm inf_le_left (hs j))) hgeq hyV,
+      holoFn_sub (rawRestrictG_omegaDGerm inf_le_right (hs k))
+        (rawRestrictG_omegaDGerm inf_le_left (hs j)) _ hyV,
+      holoFn_restrict inf_le_right (hs k) hyV, holoFn_restrict inf_le_left (hs j) hyV]
+  -- Per-(j,k) term identity, valid for all `x` (off the overlap both sides vanish).
+  have hTerm : ∀ (j k : 𝔇.toFiniteCover.ι) (x : X),
+      (cechTerm 𝔇 f j k) x
+        = (rhoC 𝔇 j x * (holoFn (hs k) x - holoFn (hs j) x)) • (dbarRho 𝔇 k x) := by
+    intro j k x
+    show (rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 f j k) x) • (dbarRho 𝔇 k x)
+      = (rhoC 𝔇 j x * (holoFn (hs k) x - holoFn (hs j) x)) • (dbarRho 𝔇 k x)
+    by_cases hxV : x ∈ (𝔇.U j ⊓ 𝔇.U k : Opens X)
+    · rw [hHol j k hxV]
+    · rcases not_and_or.1 hxV with hj | hk
+      · have hr : rhoC 𝔇 j x = 0 := by
+          have : x ∉ tsupport (cechPoU 𝔇 j) := fun hc => hj (cechPoU_subordinate 𝔇 j hc)
+          simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport this]
+          rfl
+        rw [hr, zero_mul, zero_mul]
+      · have hd : dbarRho 𝔇 k x = 0 :=
+          dbarRho_eq_zero_of_notMem 𝔇 k (fun hc => hk (cechPoU_subordinate 𝔇 k hc))
+        rw [hd]
+        module
+  -- Assemble: `∂̄(∑ primFn) = ∑ cechTerm`, pointwise via the telescoping `∑ρ=1`, `∑∂̄ρ=0`.
+  rw [map_sum]
+  refine ContMDiffSection.ext fun x => ?_
+  have hLHS : (∑ k, dbarL (primFn 𝔇 k (hs k))) x = ∑ k, holoFn (hs k) x • (dbarRho 𝔇 k x) := by
+    rw [section_finset_sum_apply]
+    exact Finset.sum_congr rfl fun k _ => dbarL_primFn_apply 𝔇 k (hs k) x
+  have hRHS : ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X) x
+      = ∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι,
+          (rhoC 𝔇 p.1 x * (holoFn (hs p.2) x - holoFn (hs p.1) x)) • (dbarRho 𝔇 p.2 x) := by
+    rw [cechToDolbeaultForm_val, section_finset_sum_apply]
+    exact Finset.sum_congr rfl fun p _ => hTerm p.1 p.2 x
+  rw [hLHS, hRHS]
+  exact (telescope_sum (fun j => rhoC 𝔇 j x) (fun k => holoFn (hs k) x)
+    (fun k => dbarRho 𝔇 k x) (sum_rhoC_apply 𝔇 x) (sum_dbarRho_apply 𝔇 x)).symm
 
 /-- **Čech → Dolbeault.** The `ℝ`-linear inverse `H¹(X, 𝒪) → H^{0,1}(X)`. Assembled **sorry-free** from
 the analytic glued-form operator `cechToDolbeaultForm` and its well-definedness
