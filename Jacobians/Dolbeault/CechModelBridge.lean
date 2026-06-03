@@ -75,4 +75,29 @@ noncomputable def ofAnalyticOnOfRelCompact {g : ℂ → ℂ} {U U' : Set ℂ} (h
 
 end BddHol
 
+/-! ### Non-convex restriction compactness — Step 1: finite convex-disk cover
+
+Toward generalizing `BddHol.isCompactOperator_restrictCLM` to a non-convex compact `K` (needed so a
+`DiskOverlapData` can use chart-images of overlaps, which are not convex across charts).  Step 1: any
+compact `K ⊆ U` (open) is covered by finitely many *closed balls* (convex compact) each `⊆ U`. -/
+
+/-- **Finite convex-disk cover.**  For `K` compact inside an open `U ⊆ ℂ`, there is a finite family of
+closed balls — centred on `K`, each contained in `U` (hence convex compact `⊆ U`) — whose open cores
+cover `K`. -/
+theorem exists_finite_closedBall_cover {K U : Set ℂ} (hK : IsCompact K) (hU : IsOpen U)
+    (hKU : K ⊆ U) :
+    ∃ (t : Finset K) (r : K → ℝ), (∀ z : K, 0 < r z) ∧
+      (∀ z : K, Metric.closedBall (z : ℂ) (r z) ⊆ U) ∧
+      K ⊆ ⋃ z ∈ t, Metric.ball (z : ℂ) (r z) := by
+  have hr : ∀ z : K, ∃ ρ : ℝ, 0 < ρ ∧ Metric.closedBall (z : ℂ) ρ ⊆ U := by
+    intro z
+    obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp (hU.mem_nhds (hKU z.2))
+    exact ⟨ε / 2, by positivity, (Metric.closedBall_subset_ball (by linarith)).trans hball⟩
+  choose r hr_pos hr_sub using hr
+  have hcover : K ⊆ ⋃ z : K, Metric.ball (z : ℂ) (r z) := fun x hx =>
+    Set.mem_iUnion.mpr ⟨⟨x, hx⟩, Metric.mem_ball_self (hr_pos ⟨x, hx⟩)⟩
+  obtain ⟨t, ht⟩ := hK.elim_finite_subcover (fun z : K => Metric.ball (z : ℂ) (r z))
+    (fun _ => Metric.isOpen_ball) hcover
+  exact ⟨t, r, hr_pos, hr_sub, ht⟩
+
 end Jacobians.Dolbeault
