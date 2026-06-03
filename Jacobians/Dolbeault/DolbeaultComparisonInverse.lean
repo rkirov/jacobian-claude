@@ -484,6 +484,37 @@ theorem proj01_idempotent (α : ℂ →L[ℝ] ℂ) : proj01 (proj01 α) = proj01
   rw [hI, map_neg]
   linear_combination (-(1 / 4 : ℂ) * α v) * Complex.I_sq
 
+/-- **`proj01` kills ℂ-linear maps.** A `ℂ`-linear `L : ℂ →L[ℂ] ℂ` (restricted to `ℝ`) is purely
+`(1,0)`: its `(0,1)`-part `proj01` is `0`, since `L(i·v) = i·L v` makes the Wirtinger average
+`½(L v + i·L(i v)) = ½(L v + i²·L v) = 0`. (Used to show a holomorphic function's `∂̄` vanishes.) -/
+theorem proj01_restrictScalars_eq_zero (L : ℂ →L[ℂ] ℂ) : proj01 (L.restrictScalars ℝ) = 0 := by
+  refine ContinuousLinearMap.ext fun v => ?_
+  rw [proj01_apply_val]
+  have hL : (L.restrictScalars ℝ) (Complex.I * v) = Complex.I * (L.restrictScalars ℝ) v := by
+    show L (Complex.I * v) = Complex.I * L v
+    rw [← smul_eq_mul, map_smul, smul_eq_mul]
+  rw [hL, ContinuousLinearMap.zero_apply]
+  linear_combination ((2 : ℂ)⁻¹ * (L.restrictScalars ℝ) v) * Complex.I_sq
+
+/-- **A holomorphic representative has vanishing `∂̄`.** For `g ∈ OmegaDGerm 0 V`, the intrinsic `∂̄` of
+its analytic representative `holoFn hg` is `0` at every `x ∈ V`: `holoFn hg` read in the chart is
+ℂ-analytic (`gextLimRep_chart_analyticAt`), so its `mfderiv` (= the chart `fderiv ℝ`, by the chart
+bridge) is `restrictScalars` of a ℂ-linear `fderiv ℂ`, and `proj01` kills ℂ-linear maps
+(`proj01_restrictScalars_eq_zero`). This is the "holomorphic ⟹ `∂̄=0`" fact `coboundary_le` needs. -/
+theorem holoFn_dbar_eq_zero {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V)
+    {x : X} (hx : x ∈ V) : proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn hg) x) = 0 := by
+  have hmdiff : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn hg) x :=
+    (holoFn_contMDiffAt hg hx).mdifferentiableAt (by simp)
+  have hpull : mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn hg) x
+      = fderiv ℝ (fun z => holoFn hg ((extChartAt 𝓘(ℝ, ℂ) x).symm z)) (extChartAt 𝓘(ℝ, ℂ) x x) := by
+    rw [hmdiff.mfderiv, ModelWithCorners.Boundaryless.range_eq_univ, fderivWithin_univ]
+    congr 1
+  have hCdiff : DifferentiableAt ℂ (fun z => holoFn hg ((extChartAt 𝓘(ℝ, ℂ) x).symm z))
+      (extChartAt 𝓘(ℝ, ℂ) x x) :=
+    (gextLimRep_chart_analyticAt (holoRep_mem hg) hx).differentiableAt
+  rw [hpull, hCdiff.fderiv_restrictScalars ℝ]
+  exact proj01_restrictScalars_eq_zero _
+
 /-- Each double-sum term `T_jk` is a `(0,1)`-form: its fiber value `c • (∂̄ρ_k x)` lies in the range
 of `proj01` because `∂̄ρ_k x` does (`dbarL_mem_zeroOne`/idempotence) and `proj01` commutes with the
 ℂ-scale (`proj01_smul`). -/
