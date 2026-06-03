@@ -141,6 +141,23 @@ theorem sum_dbarRho_eq_zero (𝔇 : ChartDiskCover X) :
   have h : ∑ k, dbarRho 𝔇 k = dbarL (∑ k, rhoC 𝔇 k) := (map_sum dbarL _ _).symm
   rw [h, sum_rhoC, dbarL_one_eq_zero]
 
+/-- Value form of `sum_rhoC`: `∑_k ρ_k x = 1` pointwise. -/
+theorem sum_rhoC_apply (𝔇 : ChartDiskCover X) (x : X) : ∑ k, (rhoC 𝔇 k x) = 1 := by
+  have h1 : (⇑(∑ k, rhoC 𝔇 k) : X → ℂ) = ∑ k, ⇑(rhoC 𝔇 k) :=
+    map_sum ContMDiffMap.coeFnAddMonoidHom _ _
+  have h2 : (∑ k, rhoC 𝔇 k) x = ∑ k, (rhoC 𝔇 k x) := by
+    rw [show ((∑ k, rhoC 𝔇 k) x : ℂ) = (⇑(∑ k, rhoC 𝔇 k) : X → ℂ) x from rfl, h1, Finset.sum_apply]
+  rw [← h2, sum_rhoC, ContMDiffMap.coe_one, Pi.one_apply]
+
+/-- Value form of `sum_dbarRho_eq_zero`: `∑_k ∂̄ρ_k x = 0` pointwise. -/
+theorem sum_dbarRho_apply (𝔇 : ChartDiskCover X) (x : X) :
+    ∑ k, ((dbarRho 𝔇 k) x) = 0 := by
+  have h1 : (⇑(∑ k, dbarRho 𝔇 k)) = ∑ k, ⇑(dbarRho 𝔇 k) :=
+    map_sum (ContMDiffSection.coeAddHom _ _ _ _) _ _
+  have h2 : (∑ k, dbarRho 𝔇 k) x = ∑ k, ((dbarRho 𝔇 k) x) := by
+    rw [show ((∑ k, dbarRho 𝔇 k) x) = (⇑(∑ k, dbarRho 𝔇 k)) x from rfl, h1, Finset.sum_apply]
+  rw [← h2, sum_dbarRho_eq_zero, ContMDiffSection.coe_zero, Pi.zero_apply]
+
 /-! ### ℂ-valued function scaling of `(0,1)`-forms (the double-sum term builder)
 
 Each Bott–Tu double-sum term is `(ρ_j·F_jk) • ∂̄ρ_k` — a `(0,1)`-form `∂̄ρ_k` scaled by a ℂ-valued
@@ -352,6 +369,12 @@ theorem Gext_smul {U : Opens X} (c : ℂ) (g : U → ℂ) : Gext (c • g) = c �
   simp only [Gext, Pi.smul_apply]
   split <;> simp
 
+/-- `Gext` respects subtraction (extension by `0`). -/
+theorem Gext_sub {U : Opens X} (f g : U → ℂ) : Gext (f - g) = Gext f - Gext g := by
+  funext x
+  simp only [Gext, Pi.sub_apply]
+  split <;> simp
+
 /-- For a holomorphic (`OmegaDGerm 0`) class, the analytic representative `Gext(holoRep)` has a genuine
 limit along `𝓝[≠] x` at every `x ∈ V` (order `≥ 0` ⟹ the limit exists; this is `holoFn x`). -/
 theorem holoFn_tendsto {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V) {x : X}
@@ -417,6 +440,24 @@ theorem holoFn_smul {V : Opens X} (c : ℂ) {g : MGerm V} (hg : g ∈ OmegaDGerm
   show limUnder (𝓝[≠] x) (Gext (holoRep hcg)) = c • holoFn hg x
   rw [show holoFn hg x = c₀ from hc₀.limUnder_eq]
   exact ((hc₀.const_smul c).congr' heq.symm).limUnder_eq
+
+/-- **`holoFn` respects subtraction** at `x ∈ V` (same washout as `holoFn_add`). -/
+theorem holoFn_sub {V : Opens X} {g₁ g₂ : MGerm V} (hg₁ : g₁ ∈ OmegaDGerm (0 : Divisor X) V)
+    (hg₂ : g₂ ∈ OmegaDGerm (0 : Divisor X) V) (hg : g₁ - g₂ ∈ OmegaDGerm (0 : Divisor X) V)
+    {x : X} (hx : x ∈ V) : holoFn hg x = holoFn hg₁ x - holoFn hg₂ x := by
+  haveI := nhdsNE_neBot_of_chart x
+  obtain ⟨c₁, hc₁⟩ := holoFn_tendsto hg₁ hx
+  obtain ⟨c₂, hc₂⟩ := holoFn_tendsto hg₂ hx
+  have hgerm : toGerm V (holoRep hg₁ - holoRep hg₂) = toGerm V (holoRep hg) := by
+    rw [map_sub, toGerm_holoRep hg₁, toGerm_holoRep hg₂, toGerm_holoRep hg]
+  have heq : Gext (holoRep hg) =ᶠ[𝓝[≠] x] Gext (holoRep hg₁) - Gext (holoRep hg₂) := by
+    have hmatch : rawRestrictG (inf_le_right : V ⊓ V ≤ V) (toGerm V (holoRep hg₁ - holoRep hg₂))
+        = rawRestrictG (inf_le_left : V ⊓ V ≤ V) (toGerm V (holoRep hg)) := by rw [hgerm]
+    have h := Gext_overlap_eventuallyEq (holoRep hg) (holoRep hg₁ - holoRep hg₂) hmatch hx hx
+    rwa [Gext_sub] at h
+  show limUnder (𝓝[≠] x) (Gext (holoRep hg)) = holoFn hg₁ x - holoFn hg₂ x
+  rw [show holoFn hg₁ x = c₁ from hc₁.limUnder_eq, show holoFn hg₂ x = c₂ from hc₂.limUnder_eq]
+  exact ((hc₁.sub hc₂).congr' heq.symm).limUnder_eq
 
 /-- The `(j,k)` component of a Čech `1`-cocycle is a holomorphic (`OmegaDGerm 0`) germ-class on the
 overlap `U_j ⊓ U_k` (the `sections1` part of `cocycles1`). -/
