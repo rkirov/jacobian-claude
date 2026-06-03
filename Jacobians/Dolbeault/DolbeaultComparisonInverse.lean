@@ -306,6 +306,39 @@ theorem dbarRho_eq_zero_of_notMem (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCo
   simp only [Function.mem_support, ne_eq] at hy ⊢
   exact fun h0 => hy (by simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, h0]; rfl)
 
+/-- The punctured neighborhood of any point of a `ℂ`-manifold is `NeBot` (no isolated points). -/
+theorem nhdsNE_neBot_of_chart (x : X) : (𝓝[≠] x).NeBot := by
+  have hsrc : x ∈ (chartAt (H := ℂ) x).source := mem_chart_source ℂ x
+  exact ((chartAt (H := ℂ) x).symm.tendsto_nhdsNE (x := (chartAt (H := ℂ) x) x)
+    (by simpa using (chartAt (H := ℂ) x).map_source hsrc)).neBot.mono
+    (by simp only [(chartAt (H := ℂ) x).left_inv hsrc]; exact le_rfl)
+
+/-- `Gext` is additive (extension by `0`). -/
+theorem Gext_add {U : Opens X} (f g : U → ℂ) : Gext (f + g) = Gext f + Gext g := by
+  funext x
+  simp only [Gext, Pi.add_apply]
+  split <;> simp
+
+/-- `Gext` is homogeneous (extension by `0`). -/
+theorem Gext_smul {U : Opens X} (c : ℂ) (g : U → ℂ) : Gext (c • g) = c • Gext g := by
+  funext x
+  simp only [Gext, Pi.smul_apply]
+  split <;> simp
+
+/-- For a holomorphic (`OmegaDGerm 0`) class, the analytic representative `Gext(holoRep)` has a genuine
+limit along `𝓝[≠] x` at every `x ∈ V` (order `≥ 0` ⟹ the limit exists; this is `holoFn x`). -/
+theorem holoFn_tendsto {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V) {x : X}
+    (hx : x ∈ V) : ∃ c, Tendsto (Gext (holoRep hg)) (𝓝[≠] x) (𝓝 c) := by
+  set φ := chartAt (H := ℂ) x with hφ
+  have hmero : MeromorphicAt (Gext (holoRep hg) ∘ φ.symm) (φ x) :=
+    Gext_meromorphicAt (holoRep_mem hg).1 hx
+  have hord : 0 ≤ meromorphicOrderAt (Gext (holoRep hg) ∘ φ.symm) (φ x) := by
+    rw [← ordU_eq_orderAt_Gext (holoRep hg) hx]; simpa using (mem_OmegaD.1 (holoRep_mem hg)).2 ⟨x, hx⟩
+  obtain ⟨c, hc⟩ := tendsto_nhds_of_meromorphicOrderAt_nonneg hmero hord
+  refine ⟨c, (hc.comp (φ.tendsto_nhdsNE (mem_chart_source ℂ x))).congr' ?_⟩
+  filter_upwards [mem_nhdsWithin_of_mem_nhds (φ.open_source.mem_nhds (mem_chart_source ℂ x))] with z hz
+  simp [Function.comp, φ.left_inv hz]
+
 /-! ### The holomorphic representative function and the double-sum terms -/
 
 /-- The **holomorphic representative function** `F = Gext(limit-repair(holoRep g)) : X → ℂ` of an
@@ -320,6 +353,43 @@ noncomputable def holoFn {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 :
 theorem holoFn_contMDiffAt {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V)
     {y : X} (hy : y ∈ V) : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (holoFn hg) y :=
   contMDiffAt_real_of_chart_analyticAt (gextLimRep_chart_analyticAt (holoRep_mem hg) hy)
+
+/-- **`holoFn` is additive** at every `x ∈ V` (the choice in `holoRep` washes out: the limit-repair
+`limUnder` is insensitive to codiscrete junk, so it depends only on the germ class, and the limit is
+additive). -/
+theorem holoFn_add {V : Opens X} {g₁ g₂ : MGerm V} (hg₁ : g₁ ∈ OmegaDGerm (0 : Divisor X) V)
+    (hg₂ : g₂ ∈ OmegaDGerm (0 : Divisor X) V) (hg : g₁ + g₂ ∈ OmegaDGerm (0 : Divisor X) V)
+    {x : X} (hx : x ∈ V) : holoFn hg x = holoFn hg₁ x + holoFn hg₂ x := by
+  haveI := nhdsNE_neBot_of_chart x
+  obtain ⟨c₁, hc₁⟩ := holoFn_tendsto hg₁ hx
+  obtain ⟨c₂, hc₂⟩ := holoFn_tendsto hg₂ hx
+  have hgerm : toGerm V (holoRep hg₁ + holoRep hg₂) = toGerm V (holoRep hg) := by
+    rw [map_add, toGerm_holoRep hg₁, toGerm_holoRep hg₂, toGerm_holoRep hg]
+  have heq : Gext (holoRep hg) =ᶠ[𝓝[≠] x] Gext (holoRep hg₁) + Gext (holoRep hg₂) := by
+    have hmatch : rawRestrictG (inf_le_right : V ⊓ V ≤ V) (toGerm V (holoRep hg₁ + holoRep hg₂))
+        = rawRestrictG (inf_le_left : V ⊓ V ≤ V) (toGerm V (holoRep hg)) := by rw [hgerm]
+    have h := Gext_overlap_eventuallyEq (holoRep hg) (holoRep hg₁ + holoRep hg₂) hmatch hx hx
+    rwa [Gext_add] at h
+  show limUnder (𝓝[≠] x) (Gext (holoRep hg)) = holoFn hg₁ x + holoFn hg₂ x
+  rw [show holoFn hg₁ x = c₁ from hc₁.limUnder_eq, show holoFn hg₂ x = c₂ from hc₂.limUnder_eq]
+  exact ((hc₁.add hc₂).congr' heq.symm).limUnder_eq
+
+/-- **`holoFn` is homogeneous** at every `x ∈ V` (same washout as `holoFn_add`). -/
+theorem holoFn_smul {V : Opens X} (c : ℂ) {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V)
+    (hcg : c • g ∈ OmegaDGerm (0 : Divisor X) V) {x : X} (hx : x ∈ V) :
+    holoFn hcg x = c • holoFn hg x := by
+  haveI := nhdsNE_neBot_of_chart x
+  obtain ⟨c₀, hc₀⟩ := holoFn_tendsto hg hx
+  have hgerm : toGerm V (c • holoRep hg) = toGerm V (holoRep hcg) := by
+    rw [map_smul, toGerm_holoRep hg, toGerm_holoRep hcg]
+  have heq : Gext (holoRep hcg) =ᶠ[𝓝[≠] x] c • Gext (holoRep hg) := by
+    have hmatch : rawRestrictG (inf_le_right : V ⊓ V ≤ V) (toGerm V (c • holoRep hg))
+        = rawRestrictG (inf_le_left : V ⊓ V ≤ V) (toGerm V (holoRep hcg)) := by rw [hgerm]
+    have h := Gext_overlap_eventuallyEq (holoRep hcg) (c • holoRep hg) hmatch hx hx
+    rwa [Gext_smul] at h
+  show limUnder (𝓝[≠] x) (Gext (holoRep hcg)) = c • holoFn hg x
+  rw [show holoFn hg x = c₀ from hc₀.limUnder_eq]
+  exact ((hc₀.const_smul c).congr' heq.symm).limUnder_eq
 
 /-- The `(j,k)` component of a Čech `1`-cocycle is a holomorphic (`OmegaDGerm 0`) germ-class on the
 overlap `U_j ⊓ U_k` (the `sections1` part of `cocycles1`). -/
