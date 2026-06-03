@@ -1176,3 +1176,17 @@ confirmed — the repo's plain-function Montel + nested cover dropped straight i
 FA piece (Schwartz) assembled from Mathlib OMT+Riesz+compact-op as predicted. **Remaining = pure
 manifold instantiation** (cochain rep over the chart-disk cover + Leray via G1 + germ↔supNorm
 comparison) — assembly against proven lemmas, no open uncertainty.
+
+---
+
+## 2026-06-03 (session "jacobian-diff")
+
+**User: "split the file"** (referring to `DolbeaultComparisonProof.lean`, ~1564 lines, flagged
+too-long in LATEST-6). Done at the forward/inverse seam: forward map + shared infra stay in
+`DolbeaultComparisonProof.lean` (1335 lines); inverse map + equivalence assembly + status doc moved to
+new `DolbeaultComparisonInverse.lean` (~262 lines). Commit a79a1de.
+
+**Bonus finding (resume task):** the LATEST-6 "form-sum diamond HARD BLOCKER" was a misdiagnosis —
+`∑` over `SmoothCOneForms` works once `set_option backward.isDefEq.respectTransparency false` is active
+(it already was, file-level). Proved the gluing relation `sum_dbarRho_eq_zero : ∑_k ∂̄ρ_k = 0`
+sorry-free. Inverse is unblocked; next build = `cechToDolbeaultForm` (smooth-section gluing).

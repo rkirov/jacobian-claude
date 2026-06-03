@@ -1,20 +1,25 @@
 /-
-  Dolbeault's comparison theorem — **inverse direction** (`Čech → Dolbeault`) and the final
-  assembly of the `ℝ`-linear equivalence `H^{0,1}(X) ≃ₗ[ℝ] H¹(X, 𝒪)`.
+  Dolbeault's comparison theorem — **inverse direction** (`Čech → Dolbeault`), the CONSTRUCTION.
 
-  Split out of `DolbeaultComparisonProof`, which holds the forward map `dolbeault_to_cech` together
-  with the shared analytic infrastructure (chart bridge, Wirtinger chain rule, cutoff/planar
-  primitives, the forward cocycle operator). This file adds: the partition-of-unity backbone, the
-  `∂̄ρ_k` gluing data, the inverse map `cech_to_dolbeault`, the two round-trip identities, and the
-  assembled `comparison_linearEquiv` / `cechH1_dolbeault_comparison_proof`.
+  This file builds the inverse map `cech_to_dolbeault : H¹(X, 𝒪) → H^{0,1}(X)` from the
+  partition-of-unity backbone, the `∂̄ρ_k` gluing data, the ℂ-scaling toolkit, and the glued-form
+  operator `cechToDolbeaultForm` (Bott–Tu double-sum). It deliberately imports only the *light*
+  dependencies (`DolbeaultComparison`, `CechH0`, `ChartDiskCover`, partitions of unity) and NOT the
+  heavy forward file `DolbeaultComparisonProof` — the construction uses no forward symbol, so keeping
+  this file off that import makes it fast to elaborate. The final assembly into the `ℝ`-linear
+  equivalence (which needs the forward map `dolbeault_to_cech`) lives in `DolbeaultComparisonEquiv`.
 -/
-import Jacobians.Dolbeault.DolbeaultComparisonProof
+import Jacobians.Dolbeault.DolbeaultComparison
+import Jacobians.Dolbeault.CechH0
+import Jacobians.Dolbeault.ChartDiskCover
+import Mathlib.Geometry.Manifold.PartitionOfUnity
+import Mathlib.Geometry.Manifold.BumpFunction
 
 open scoped Manifold ContDiff Bundle Topology
 open TopologicalSpace (Opens)
 
--- Same permissive transparency as the forward file / `RealForms` (the section hom-bundle instances,
--- and any `Finset.sum` over `SmoothCOneForms`, need it).
+-- Same permissive transparency as `RealForms` (the section hom-bundle instances, and any
+-- `Finset.sum` / ℂ-scaling over `SmoothCOneForms`, need it).
 set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedSectionVars false
 
@@ -24,6 +29,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 variable (𝔘 : FiniteCover X)
+
 
 /-! ### Sorry-free backbone of the Čech → Dolbeault map: the partition of unity
 
@@ -133,6 +139,73 @@ theorem sum_dbarRho_eq_zero (𝔇 : ChartDiskCover X) :
   have h : ∑ k, dbarRho 𝔇 k = dbarL (∑ k, rhoC 𝔇 k) := (map_sum dbarL _ _).symm
   rw [h, sum_rhoC, dbarL_one_eq_zero]
 
+/-! ### ℂ-valued function scaling of `(0,1)`-forms (the double-sum term builder)
+
+Each Bott–Tu double-sum term is `(ρ_j·F_jk) • ∂̄ρ_k` — a `(0,1)`-form `∂̄ρ_k` scaled by a ℂ-valued
+smooth function. The base manifold model `𝓘(ℝ,ℂ)` is an `ℝ`-model, so Mathlib's `smul_section` only
+covers `ℝ`-scaling; ℂ-scaling is recovered by writing `z • β = (mul ℝ ℂ z).comp β` (post-compose
+mult-by-`z`) and using `clm_comp`. The result stays `(0,1)` because `proj01` commutes with the
+ℂ-scale (`proj01_smul`). -/
+
+/-- Scaling a smooth `(0,1)`-valued form by a ℂ-valued smooth function, fiberwise, is smooth.
+Mirrors `contMDiff_proj01_section`: the ℂ-smul is post-composition on the trivial codomain
+(`z • β = (mul ℝ ℂ z).comp β`), so it slides through the tangent `symmL`, reducing to `clm_comp` of
+the smooth `x ↦ mul ℝ ℂ (c x)` and the smooth in-coordinates of `g`. -/
+theorem contMDiff_cSmul_section (c : SmoothCFunctions X) (g : SmoothCOneForms X) :
+    ContMDiff (𝓘(ℝ, ℂ)) (𝓘(ℝ, ℂ).prod 𝓘(ℝ, ℂ →L[ℝ] ℂ)) (⊤ : ℕ∞)
+      (fun x => (⟨x, (c x) • (g x)⟩ : Bundle.TotalSpace (ℂ →L[ℝ] ℂ)
+        (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) := by
+  intro x₀
+  rw [contMDiffAt_hom_bundle]
+  refine ⟨contMDiffAt_id, ?_⟩
+  simp only [ContinuousLinearMap.inCoordinates,
+    Bundle.Trivial.continuousLinearMapAt_trivialization,
+    Bundle.Trivial.fiberBundle_trivializationAt', ContinuousLinearMap.id_comp]
+  have h := g.contMDiff_toFun x₀
+  rw [contMDiffAt_hom_bundle] at h
+  simp only [ContinuousLinearMap.inCoordinates,
+    Bundle.Trivial.continuousLinearMapAt_trivialization,
+    Bundle.Trivial.fiberBundle_trivializationAt', ContinuousLinearMap.id_comp] at h
+  have hM : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ →L[ℝ] ℂ) (⊤ : ℕ∞)
+      (fun x => ContinuousLinearMap.mul ℝ ℂ (c x)) x₀ :=
+    ContMDiffAt.clm_apply contMDiffAt_const (c.contMDiff x₀)
+  have key := hM.clm_comp h.2
+  refine key.congr_of_eventuallyEq (Filter.Eventually.of_forall fun x => ?_)
+  refine ContinuousLinearMap.ext fun v => ?_
+  simp only [ContinuousLinearMap.smul_comp, ContinuousLinearMap.coe_comp', Function.comp_apply,
+    ContinuousLinearMap.mul_apply', ContinuousLinearMap.smul_apply, smul_eq_mul]
+  rfl
+
+/-- The `(0,1)`-projection commutes with ℂ-scaling of the codomain: `proj01 (z • α) = z • proj01 α`
+(`z` factors out of the Wirtinger average). -/
+theorem proj01_smul (z : ℂ) (α : ℂ →L[ℝ] ℂ) : proj01 (z • α) = z • proj01 α := by
+  refine ContinuousLinearMap.ext fun v => ?_
+  rw [proj01_apply, proj01_apply]
+  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.add_apply,
+    ContinuousLinearMap.coe_comp', Function.comp_apply, mulI, ContinuousLinearMap.mul_apply',
+    ContinuousLinearMap.smul_apply, smul_eq_mul, Complex.real_smul]
+  push_cast
+  ring
+
+/-- **ℂ-valued smooth-function scaling of a `(0,1)`-valued smooth form** (the double-sum term builder):
+`(c • g) x = c x • g x`, a smooth `(0,1)`-valued form. -/
+noncomputable def cSmulForm (c : SmoothCFunctions X) (g : SmoothCOneForms X) : SmoothCOneForms X where
+  toFun := fun x => (c x) • (g x)
+  contMDiff_toFun := contMDiff_cSmul_section c g
+
+@[simp] theorem cSmulForm_apply (c : SmoothCFunctions X) (g : SmoothCOneForms X) (x : X) :
+    cSmulForm c g x = (c x) • (g x) := rfl
+
+/-- ℂ-scaling preserves the `(0,1)`-forms: `c • g ∈ A^{0,1}` whenever `g ∈ A^{0,1}`. (Witness
+`c • h` where `g = proj01L h`; `proj01` commutes with the ℂ-scale, `proj01_smul`.) -/
+theorem cSmulForm_mem_zeroOne (c : SmoothCFunctions X) {g : SmoothCOneForms X}
+    (hg : g ∈ OneFormsZeroOne X) : cSmulForm c g ∈ OneFormsZeroOne X := by
+  obtain ⟨h, rfl⟩ := hg
+  refine ⟨cSmulForm c h, ?_⟩
+  refine ContMDiffSection.ext fun x => ?_
+  simp only [proj01L_apply, proj01Section_apply, cSmulForm_apply]
+  exact proj01_smul (c x) (h x)
+
 /-- **(Analytic sub-kernel — the Čech → Dolbeault glued-form operator.)** The `ℝ`-linear map sending
 a holomorphic Čech `1`-cocycle `f = {f_ij}` to the global `(0,1)`-form `ω` with `ω = ∂̄η_i` on `U_i`,
 `η_i := ∑_k ρ_k·f_ik` (partition-of-unity globalization). The genuine analytic content of the inverse:
@@ -164,109 +237,5 @@ noncomputable def cech_to_dolbeault (𝔇 : ChartDiskCover X) :
       (𝔇.toFiniteCover.cocycles1 (0 : Divisor X))).restrictScalars ℝ)
     ((Submodule.mkQ (dbarImageInZeroOne X)) ∘ₗ cechToDolbeaultForm 𝔇)
     (cechToDolbeaultForm_coboundary_le 𝔇)
-
-/-- **`comparison_bijective`, part 1** (honest named sub-kernel): Dolbeault → Čech → Dolbeault is the
-identity. Globalizing a locally-solved `(0,1)`-form via the partition of unity returns the same
-Dolbeault class. -/
-theorem cech_to_dolbeault_comp_dolbeault_to_cech (𝔇 : ChartDiskCover X)
-    (hL : 𝔇.toFiniteCover.IsLeray) :
-    (cech_to_dolbeault 𝔇) ∘ₗ (dolbeault_to_cech 𝔇) = LinearMap.id :=
-  sorry
-
-/-- **`comparison_bijective`, part 2** (honest named sub-kernel): Čech → Dolbeault → Čech is the
-identity. Local-solving the partition-of-unity primitive recovers the same Čech cohomology class. -/
-theorem dolbeault_to_cech_comp_cech_to_dolbeault (𝔇 : ChartDiskCover X)
-    (hL : 𝔇.toFiniteCover.IsLeray) :
-    (dolbeault_to_cech 𝔇) ∘ₗ (cech_to_dolbeault 𝔇) = LinearMap.id :=
-  sorry
-
-/-- **The Dolbeault isomorphism** `H^{0,1}(X) ≃ₗ[ℝ] H¹(X, 𝒪)` — assembled *sorry-free* from the two
-maps and the two round-trip identities above (`LinearEquiv.ofLinear`). All remaining content is in
-the four named sub-kernels. -/
-noncomputable def comparison_linearEquiv (𝔇 : ChartDiskCover X) (hL : 𝔇.toFiniteCover.IsLeray) :
-    DolbeaultH01 X ≃ₗ[ℝ] 𝔇.toFiniteCover.cechH1 0 :=
-  LinearEquiv.ofLinear (dolbeault_to_cech 𝔇) (cech_to_dolbeault 𝔇)
-    (dolbeault_to_cech_comp_cech_to_dolbeault 𝔇 hL)
-    (cech_to_dolbeault_comp_dolbeault_to_cech 𝔇 hL)
-
-/-- **The L3 kernel: Čech ↔ Dolbeault comparison** — the standalone proof of the statement at
-`DolbeaultComparison.lean:227` (`cechH1_dolbeault_comparison`; the caller wires it to this).
-Proven *sorry-free* from `comparison_linearEquiv`: the `ℝ`-linear iso transports `finrank ℝ`, and the
-`ℝ`-vs-`ℂ` factor on the `ℂ`-module `cechH1` is `finrank_real_of_complex`. The entire remaining
-content sits in the four named sub-kernels (`dolbeault_to_cech`, `cech_to_dolbeault`, and the two
-round-trip identities). -/
-theorem cechH1_dolbeault_comparison_proof (𝔇 : ChartDiskCover X) (hL : 𝔇.toFiniteCover.IsLeray) :
-    Module.finrank ℝ (DolbeaultH01 X) = 2 * Module.finrank ℂ (𝔇.toFiniteCover.cechH1 0) := by
-  rw [(comparison_linearEquiv 𝔇 hL).finrank_eq, finrank_real_of_complex]
-
-/-! ## Honest status of the mechanization
-
-**Sorry-free (axiom-clean: `propext`/`Classical.choice`/`Quot.sound` only):**
-* the entire *bookkeeping spine* — `comparison_linearEquiv` (assembled from the two maps via
-  `LinearEquiv.ofLinear`) and the target `cechH1_dolbeault_comparison_proof` (the `2·` `ℝ`-vs-`ℂ`
-  count via `finrank_real_of_complex`); this is the part that would have been most error-prone
-  (the scalar-factor bookkeeping the `DolbeaultComparison` header flags);
-* `cechDelta0_mem_ker_cechDelta1` / `range_cechDelta0_le_ker_cechDelta1` — the Dolbeault → Čech
-  cochain is automatically a Čech cocycle (`δ²=0`), the algebraic backbone of that map;
-* `cechCoboundary_telescoping` — the partition-of-unity telescoping `h_j − h_i = f_ij`, the
-  algebraic heart of the Čech → Dolbeault coboundary construction;
-* `exists_smoothPartitionOfUnity_subordinate` — the smooth PoU subordinate to the cover (the actual
-  analytic input of the inverse map), from Mathlib + the `RealManifold` `σ`-compactness;
-* **the chart-transport bridge and its consequences** (the genuine analytic crux of kernel 1, now
-  fully proven): `dbar_apply_one_eq_dbarDisk` (intrinsic `∂̄` read in a chart `= DbarDisk.dbar` of
-  the chart-pullback), `mfderiv_apply_eq_fderiv_pullback`, the `(0,1)`-fiber algebra
-  (`proj01_apply_one` / `proj01_conjLinear` / `proj01_eq_conj_smul` / `proj01_ext_of_apply_one`),
-  the value-`1`-to-CLM upgrade `dbar_eq_of_apply_one`, and the global smooth lift
-  `exists_smoothLift_of_chartFun` (via `SmoothBumpFunction.contMDiff_smul`);
-* **the Wirtinger chain rule `dbarDisk_comp_holo`** (the chart-transition equivariance of `∂̄`):
-  under a holomorphic coordinate change `τ`, `DbarDisk.dbar (f ∘ τ) = conj(τ′) · DbarDisk.dbar f ∘ τ`
-  — the `conj(τ′)` frame factor of a `(0,1)`-quantity. With the germ-locality `dbarDisk_congr` and
-  the holomorphy of chart transitions `differentiableAt_chartTransition`, this is the lever that
-  transports the planar `x₀`-chart solve to the intrinsic value read in the chart at `x`;
-* **`exists_chartPullback_zeroOne_datum`** — the chart-pullback `(0,1)`-datum (a smooth `(0,1)`-form
-  read in the `x₀`-chart is a *smooth planar function* `G` reproducing `g x 1` after the holomorphic
-  frame change `conj(τ′)`) — is now **PROVEN sorry-free** (helpers `contMDiffAt_chartRead_datum`,
-  `frameVector_eq_inv_deriv_transition`, `oneForm_apply_conjLinear`; `ContDiffBump` cutoff
-  `G = χ·(Φ ∘ e₀.symm)`);
-* **`exists_localPrimitive_apply_one`** — the value-`1` local primitive — is therefore **fully proven
-  sorry-free**: solve the planar `∂̄f = G` in the `x₀`-chart (`DbarLocal.dbar_solvable_locally`),
-  globalize to `u` (`exists_smoothLift_of_chartFun`), read `∂̄u` at `x` in its own chart
-  (`dbar_apply_one_eq_dbarDisk`), and the Wirtinger chain rule `dbarDisk_comp_holo` produces the
-  `conj(τ′)` factor that cancels exactly against the datum's transformation law;
-* `dbar_solvable_locally_manifold` — *point*-local `∂̄`-solvability on the MANIFOLD — is **proven
-  sorry-free** from `exists_localPrimitive_apply_one` via the value-`1`-to-CLM upgrade;
-* **`dolbeaultToCechCocycle`** — the forward **cocycle operator** `g ↦ cechDelta0 {[u_i]}`, where
-  `u_i` solves `∂̄u_i = g` on each chart-disk cover set (the disk-global PDE
-  `DbarDiskCohomology.dbar_solvable_ball` + the chart transport above), `ℝ`-linear in `g` — and its
-  **well-definedness** `dolbeaultToCechCocycle_dbarImage_le` (`g = ∂̄h` ↦ a Čech coboundary), both
-  **proven sorry-free**;
-* **`dolbeault_to_cech`** — the forward map on cohomology `H^{0,1}(X) → H¹(X, 𝒪)` — is therefore
-  **proven sorry-free** (a `Submodule.liftQ` of the scalar-restricted `cechH1` projection composed
-  with the cocycle operator); **the entire forward direction is sorry-free**;
-* **`sum_dbarRho_eq_zero`** (this file) — the gluing relation `∑_k ∂̄ρ_k = 0` (`∂̄` of `∑_k ρ_k = 1`),
-  a building block of the inverse map — is **proven sorry-free** (`dbarL`-linearity + `sum_rhoC`).
-
-**The named honest sub-kernels of the INVERSE direction (each a TRUE statement; the irreducible
-remainder — the forward direction is fully sorry-free):**
-1. `cechToDolbeaultForm` — the inverse **glued-form operator**: the `ℝ`-linear map sending a
-   holomorphic Čech `1`-cocycle `f` to the global `(0,1)`-form `ω = ∂̄η_i` on `U_i`,
-   `η_i := ∑_k ρ_k·f_ik` (PoU globalization). Builds on `cechCoboundary_telescoping`, the PoU, and
-   `sum_dbarRho_eq_zero` (all sorry-free); the gap is **smooth-section gluing** of the local `∂̄η_i`.
-2. `cechToDolbeaultForm_coboundary_le` — inverse **well-definedness**: a coboundary cocycle maps to a
-   `∂̄`-image, hence to `0` in `H^{0,1}`. Algebra, given kernel 1.
-3–4. `cech_to_dolbeault_comp_dolbeault_to_cech` / `dolbeault_to_cech_comp_cech_to_dolbeault` —
-   `comparison_bijective`: the two maps are mutually inverse (needs 1 explicit, then chase).
-
-**Assessment.** Dolbeault's theorem is the composite of (i) the local PDE (`DbarLocal` /
-`DbarDiskCohomology`, DONE — incl. the disk-global `dbar_solvable_ball` and `H¹(disk,𝒪)=0` engine)
-plus its transport to the manifold operator (chart bridge `dbar_apply_one_eq_dbarDisk` + Wirtinger
-chain rule `dbarDisk_comp_holo` + global lift `exists_smoothLift_of_chartFun`, all proven), so
-`exists_chartPullback_zeroOne_datum`, `exists_localPrimitive_apply_one`, and
-`dbar_solvable_locally_manifold` are all sorry-free; (ii) the Čech/coboundary *algebra* (sorry-free);
-(iii) a partition-of-unity *globalization* (PoU + telescoping sorry-free; smooth-section gluing
-remains); and (iv) the *well-definedness + mutual-inverse* of the maps (`dolbeault_to_cech` itself now
-sorry-free via `liftQ`). The irreducible analytic remainder is concentrated in the **forward cocycle
-operator** (kernel 1 — chart-disk transport + linearity, PDE already done), the **inverse map**
-(kernel 3 — smooth-section gluing), and their **mutual inverseness** (4,5). -/
 
 end Jacobians.Dolbeault
