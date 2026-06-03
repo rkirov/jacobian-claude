@@ -147,34 +147,38 @@ covers `ℝ`-scaling; ℂ-scaling is recovered by writing `z • β = (mul ℝ �
 mult-by-`z`) and using `clm_comp`. The result stays `(0,1)` because `proj01` commutes with the
 ℂ-scale (`proj01_smul`). -/
 
-/-- Scaling a smooth `(0,1)`-valued form by a ℂ-valued smooth function, fiberwise, is smooth.
-Mirrors `contMDiff_proj01_section`: the ℂ-smul is post-composition on the trivial codomain
-(`z • β = (mul ℝ ℂ z).comp β`), so it slides through the tangent `symmL`, reducing to `clm_comp` of
-the smooth `x ↦ mul ℝ ℂ (c x)` and the smooth in-coordinates of `g`. -/
-theorem contMDiff_cSmul_section (c : SmoothCFunctions X) (g : SmoothCOneForms X) :
-    ContMDiff (𝓘(ℝ, ℂ)) (𝓘(ℝ, ℂ).prod 𝓘(ℝ, ℂ →L[ℝ] ℂ)) (⊤ : ℕ∞)
-      (fun x => (⟨x, (c x) • (g x)⟩ : Bundle.TotalSpace (ℂ →L[ℝ] ℂ)
-        (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) := by
-  intro x₀
-  rw [contMDiffAt_hom_bundle]
+/-- **(`ContMDiffAt` form, the workhorse.)** Scaling a smooth `(0,1)`-valued section by a ℂ-valued
+function, fiberwise, is smooth at `x₀` when both are. The ℂ-smul is post-composition on the trivial
+codomain (`z • β = (mul ℝ ℂ z).comp β`), so it slides through the tangent `symmL`, reducing to
+`clm_comp` of the smooth `x ↦ mul ℝ ℂ (F x)` and the smooth in-coordinates of `s`. -/
+theorem contMDiffAt_cSmul_section {F : X → ℂ}
+    {s : ∀ x : X, TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x} {x₀ : X}
+    (hF : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) F x₀)
+    (hs : ContMDiffAt 𝓘(ℝ, ℂ) (𝓘(ℝ, ℂ).prod 𝓘(ℝ, ℂ →L[ℝ] ℂ)) (⊤ : ℕ∞)
+      (fun x => (⟨x, s x⟩ : Bundle.TotalSpace (ℂ →L[ℝ] ℂ)
+        (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) x₀) :
+    ContMDiffAt 𝓘(ℝ, ℂ) (𝓘(ℝ, ℂ).prod 𝓘(ℝ, ℂ →L[ℝ] ℂ)) (⊤ : ℕ∞)
+      (fun x => (⟨x, (F x) • (s x)⟩ : Bundle.TotalSpace (ℂ →L[ℝ] ℂ)
+        (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) x₀ := by
+  rw [contMDiffAt_hom_bundle] at hs ⊢
   refine ⟨contMDiffAt_id, ?_⟩
   simp only [ContinuousLinearMap.inCoordinates,
     Bundle.Trivial.continuousLinearMapAt_trivialization,
-    Bundle.Trivial.fiberBundle_trivializationAt', ContinuousLinearMap.id_comp]
-  have h := g.contMDiff_toFun x₀
-  rw [contMDiffAt_hom_bundle] at h
-  simp only [ContinuousLinearMap.inCoordinates,
-    Bundle.Trivial.continuousLinearMapAt_trivialization,
-    Bundle.Trivial.fiberBundle_trivializationAt', ContinuousLinearMap.id_comp] at h
+    Bundle.Trivial.fiberBundle_trivializationAt', ContinuousLinearMap.id_comp] at hs ⊢
   have hM : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ →L[ℝ] ℂ) (⊤ : ℕ∞)
-      (fun x => ContinuousLinearMap.mul ℝ ℂ (c x)) x₀ :=
-    ContMDiffAt.clm_apply contMDiffAt_const (c.contMDiff x₀)
-  have key := hM.clm_comp h.2
-  refine key.congr_of_eventuallyEq (Filter.Eventually.of_forall fun x => ?_)
+      (fun x => ContinuousLinearMap.mul ℝ ℂ (F x)) x₀ :=
+    ContMDiffAt.clm_apply contMDiffAt_const hF
+  refine (hM.clm_comp hs.2).congr_of_eventuallyEq (Filter.Eventually.of_forall fun x => ?_)
   refine ContinuousLinearMap.ext fun v => ?_
   simp only [ContinuousLinearMap.smul_comp, ContinuousLinearMap.coe_comp', Function.comp_apply,
     ContinuousLinearMap.mul_apply', ContinuousLinearMap.smul_apply, smul_eq_mul]
-  rfl
+
+/-- Global form of `contMDiffAt_cSmul_section` for a `SmoothCFunctions` scalar and a smooth form. -/
+theorem contMDiff_cSmul_section (c : SmoothCFunctions X) (g : SmoothCOneForms X) :
+    ContMDiff (𝓘(ℝ, ℂ)) (𝓘(ℝ, ℂ).prod 𝓘(ℝ, ℂ →L[ℝ] ℂ)) (⊤ : ℕ∞)
+      (fun x => (⟨x, (c x) • (g x)⟩ : Bundle.TotalSpace (ℂ →L[ℝ] ℂ)
+        (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) :=
+  fun x₀ => contMDiffAt_cSmul_section (c.contMDiff x₀) (g.contMDiff_toFun x₀)
 
 /-- The `(0,1)`-projection commutes with ℂ-scaling of the codomain: `proj01 (z • α) = z • proj01 α`
 (`z` factors out of the Wirtinger average). -/
@@ -205,6 +209,33 @@ theorem cSmulForm_mem_zeroOne (c : SmoothCFunctions X) {g : SmoothCOneForms X}
   refine ContMDiffSection.ext fun x => ?_
   simp only [proj01L_apply, proj01Section_apply, cSmulForm_apply]
   exact proj01_smul (c x) (h x)
+
+/-! ### Support of the gluing forms `∂̄ρ_k`
+
+Each double-sum term `ρ_j·F_jk·∂̄ρ_k` is globally smooth because `∂̄ρ_k` is supported in `U_k`
+(and `ρ_j` in `U_j`), confining the product to the overlap `U_j ∩ U_k` where `F_jk` lives. -/
+
+/-- `∂̄` shrinks support: `∂̄u x = 0` wherever `u` is locally constant (`x ∉ tsupport u`). (Stated
+pointwise — section coes are dependently typed, so `tsupport` of a section is not available.) -/
+theorem dbarL_eq_zero_of_notMem_tsupport (u : SmoothCFunctions X) {x : X}
+    (hx : x ∉ tsupport (⇑u : X → ℂ)) : (dbarL u) x = 0 := by
+  have h0 : (⇑u : X → ℂ) =ᶠ[nhds x] 0 := by
+    filter_upwards [(isClosed_tsupport (⇑u : X → ℂ)).isOpen_compl.mem_nhds hx] with y hy
+    exact image_eq_zero_of_notMem_tsupport hy
+  rw [dbarL_apply]
+  show proj01 ((differential u).toFun x) = 0
+  have hmf : (differential u).toFun x = 0 := by
+    show mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x = 0
+    rw [h0.mfderiv_eq]; exact mfderiv_const
+  rw [hmf, map_zero]
+
+/-- `∂̄ρ_k x = 0` for `x ∉ tsupport ρ_k` — so `∂̄ρ_k` is supported in `U_k` (`ρ_k` subordinate). -/
+theorem dbarRho_eq_zero_of_notMem (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) {x : X}
+    (hx : x ∉ tsupport (cechPoU 𝔇 k)) : (dbarRho 𝔇 k) x = 0 := by
+  refine dbarL_eq_zero_of_notMem_tsupport (rhoC 𝔇 k) (fun hc => hx ?_)
+  refine closure_mono (fun y hy => ?_) hc
+  simp only [Function.mem_support, ne_eq] at hy ⊢
+  exact fun h0 => hy (by simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, h0]; rfl)
 
 /-- **(Analytic sub-kernel — the Čech → Dolbeault glued-form operator.)** The `ℝ`-linear map sending
 a holomorphic Čech `1`-cocycle `f = {f_ij}` to the global `(0,1)`-form `ω` with `ω = ∂̄η_i` on `U_i`,
