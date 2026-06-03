@@ -46,6 +46,33 @@ theorem ofAnalyticOn_toFun_eqOn (g : ℂ → ℂ) (ha : AnalyticOn ℂ g U)
     Set.EqOn (ofAnalyticOn g ha hb).toFun g U :=
   fun _ hz => ofAnalyticOn_toFun_of_mem g ha hb hz
 
+/-- **Boundedness on a relatively-compact piece.**  An analytic function on `U` is bounded on any
+compact `K ⊆ U` (it is continuous, hence bounded on the compact).  This supplies the `BddHol`
+boundedness hypothesis: a cochain holomorphic on a cover-open is bounded on the (relatively-compact)
+shrinking. -/
+theorem bddOn_of_analyticOn_subset_compact {g : ℂ → ℂ} {U K : Set ℂ}
+    (hg : AnalyticOn ℂ g U) (hK : IsCompact K) (hKU : K ⊆ U) :
+    ∃ C, ∀ z ∈ K, ‖g z‖ ≤ C :=
+  hK.exists_bound_of_continuousOn (hg.continuousOn.mono hKU)
+
+/-- **The practical K-bridge constructor.**  A function analytic on an open `U`, restricted to an
+open `U'` whose closure is a compact subset of `U` (`U' ⋐ U`), is a `BddHol U'` element — the
+boundedness is automatic on the relatively-compact piece.  This is the shape the germ→`BddHol` cochain
+map uses: cover-cochains are holomorphic on the cover-open `U`, the model lives on the shrinking
+`U' ⋐ U`. -/
+noncomputable def ofAnalyticOnOfRelCompact {g : ℂ → ℂ} {U U' : Set ℂ} (hg : AnalyticOn ℂ g U)
+    (hsub : closure U' ⊆ U) (hcpt : IsCompact (closure U')) : BddHol U' :=
+  ofAnalyticOn g (hg.mono (subset_closure.trans hsub))
+    (by
+      obtain ⟨C, hC⟩ := bddOn_of_analyticOn_subset_compact hg hcpt hsub
+      exact ⟨C, fun z hz => hC z (subset_closure hz)⟩)
+
+@[simp] theorem ofAnalyticOnOfRelCompact_toFun_of_mem {g : ℂ → ℂ} {U U' : Set ℂ}
+    (hg : AnalyticOn ℂ g U) (hsub : closure U' ⊆ U) (hcpt : IsCompact (closure U'))
+    {z : ℂ} (hz : z ∈ U') :
+    (ofAnalyticOnOfRelCompact hg hsub hcpt).toFun z = g z :=
+  ofAnalyticOn_toFun_of_mem g _ _ hz
+
 end BddHol
 
 end Jacobians.Dolbeault
