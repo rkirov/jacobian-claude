@@ -1376,6 +1376,57 @@ theorem toGerm_holoRep {U : TopologicalSpace.Opens X} {g : MGerm U}
     (hg : g ∈ OmegaDGerm (0 : Divisor X) U) : toGerm U (holoRep hg) = g :=
   (Submodule.mem_map.mp hg).choose_spec.2
 
+/-! ### Inverse, phase 3 — the partition of unity and the `∂̄ρ_k` forms (gluing route, Forster §15) -/
+
+/-- `ℝ → ℂ` as a smooth map, for coercing the real-valued PoU functions to `SmoothCFunctions`. -/
+noncomputable def ofRealCM : ContMDiffMap (𝓘(ℝ)) (𝓘(ℝ, ℂ)) ℝ ℂ (⊤ : ℕ∞) :=
+  ⟨Complex.ofReal, Complex.ofRealCLM.contMDiff⟩
+
+/-- A fixed smooth partition of unity subordinate to the cover (`exists_smoothPartitionOfUnity_
+subordinate`) — the globalization input for the inverse map. -/
+noncomputable def cechPoU (𝔇 : ChartDiskCover X) :
+    SmoothPartitionOfUnity 𝔇.toFiniteCover.ι 𝓘(ℝ, ℂ) X (Set.univ : Set X) :=
+  (exists_smoothPartitionOfUnity_subordinate 𝔇.toFiniteCover).choose
+
+theorem cechPoU_subordinate (𝔇 : ChartDiskCover X) :
+    (cechPoU 𝔇).IsSubordinate (fun i => (𝔇.U i : Set X)) :=
+  (exists_smoothPartitionOfUnity_subordinate 𝔇.toFiniteCover).choose_spec
+
+/-- The `k`-th PoU function as a complex `SmoothCFunctions` (`ρ̃_k = ofReal ∘ ρ_k`). -/
+noncomputable def rhoC (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) : SmoothCFunctions X :=
+  ofRealCM.comp (cechPoU 𝔇 k)
+
+/-- `∂̄ρ_k` as a global `(0,1)`-form. -/
+noncomputable def dbarRho (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) : SmoothCOneForms X :=
+  dbarL (rhoC 𝔇 k)
+
+/-- The PoU functions sum to the constant `1` (finite cover ⇒ plain `Finset.sum`). -/
+theorem sum_rhoC (𝔇 : ChartDiskCover X) : ∑ k, rhoC 𝔇 k = 1 := by
+  refine ContMDiffMap.ext fun x => ?_
+  have h1 : (⇑(∑ k, rhoC 𝔇 k) : X → ℂ) = ∑ k, ⇑(rhoC 𝔇 k) :=
+    map_sum ContMDiffMap.coeFnAddMonoidHom _ _
+  rw [show (∑ k, rhoC 𝔇 k) x = (⇑(∑ k, rhoC 𝔇 k) : X → ℂ) x from rfl, h1, Finset.sum_apply,
+    ContMDiffMap.coe_one, Pi.one_apply]
+  show ∑ k, ((cechPoU 𝔇 k x : ℝ) : ℂ) = 1
+  rw [← Complex.ofReal_sum, ← finsum_eq_sum_of_fintype,
+    (cechPoU 𝔇).sum_eq_one (Set.mem_univ x), Complex.ofReal_one]
+
+/-- **The gluing relation** `∑_k ∂̄ρ_k = 0` (`∂̄` of `∑ρ_k = 1` is `∂̄1 = 0`). This is what makes the
+local `∂̄η_i` agree on overlaps. -/
+theorem dbarL_one_eq_zero : dbarL (1 : SmoothCFunctions X) = 0 := by
+  rw [dbarL_eq_proj01L_differential]
+  have hd : differential (1 : SmoothCFunctions X) = 0 := by
+    refine ContMDiffSection.ext fun x => ?_
+    show mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (fun _ : X => (1 : ℂ)) x = 0
+    exact mfderiv_const
+  rw [hd]; exact proj01L.map_zero
+
+-- NOTE (inverse blocker, 2026-06-03): the gluing relation `∑_k ∂̄ρ_k = 0` (TRUE) cannot even be
+-- *stated* yet — summing `SmoothCOneForms` (a `Finset.sum`) sends typeclass synthesis into the
+-- `Module ℝ`-instance diamond (`reference_module_real_diamond`) and it fails (nonsensical
+-- function-type synth goal, not mere slowness — `synthInstance.maxHeartbeats` bumps do not help).
+-- BOTH inverse routes (gluing and double-sum) sum forms, so this instance must be fixed first.
+
 /-- **(Analytic sub-kernel — the Čech → Dolbeault glued-form operator.)** The `ℝ`-linear map sending
 a holomorphic Čech `1`-cocycle `f = {f_ij}` to the global `(0,1)`-form `ω` with `ω = ∂̄η_i` on `U_i`,
 `η_i := ∑_k ρ_k·f_ik` (partition-of-unity globalization). The genuine analytic content of the inverse:
