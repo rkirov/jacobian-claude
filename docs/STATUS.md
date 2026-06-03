@@ -1,8 +1,39 @@
-# Project status — verified ground truth (2026-06-01, latest)
+# Project status — verified ground truth (2026-06-03, latest)
 
 Authoritative, machine-verified status of the Jacobians challenge (Buzzard v0.4).
 Reproduce: `lake build` (full, expects green) and `#print axioms <name>` on any
 declaration; conformance via `lake env lean ChallengeConformance.lean`.
+
+## 🟢 2026-06-03 SESSION — big-picture delta (RR/Serre/finiteness sub-tree advanced)
+
+The **5 challenge-critical sorries are UNCHANGED** (none discharged this session — see the table
+below). What changed is the **supporting infrastructure beneath the RR wall**: a large sorry-free
+foundation was built and one named kernel was eliminated. Headline deltas:
+
+- **The Dolbeault comparison is now FULLY SORRY-FREE** (a named kernel removed). RT2's last leaf
+  `toGerm_holoFn` is closed; `comparison_linearEquiv` and `cechH1_dolbeault_comparison_proof` are
+  axiom-clean (`finrank ℝ DolbeaultH01 = 2·h1Dim 0`). Built by two coordinated subagents, each
+  independently verified (`lake env lean #print axioms`). Only the L3 *wiring* leaf
+  `cechH1_dolbeault_comparison` (DolbeaultComparison.lean:227, Leray cover-independence) remains — and
+  it has **no consumers**. See [[project_cech_to_dolbeault_progress]].
+- **The PDE-free Serre §17 LOCAL residue calculus is fully built & sorry-free** (`Residue.lean`,
+  `SerreDuality.lean`, `FormCoeff.lean`): the `resAt` atom + full API; both abstract finite-dim duality
+  cores (injectivity→`g ≤ h1Dim 0`, the §17.9 surjectivity count — the litmus PASSED); `coeffAt`,
+  `formFnResidue`, and the **Forster §17.6 residue-1 witness**. This de-risks the residue-pairing
+  route to `arithmeticGenus_eq_genus`. The remaining Serre content needs the *global* `Res : H¹(X,Ω)→ℂ`
+  (well-defined via `∑Res=0`=`deg_div`) + finiteness — both gated on existing sorries, so not yet
+  assembled. See [[reference_hodge_bridge_path]], `docs/hodge_bridge_research.md`.
+- **The finiteness wall's K-bridge primitive layer is built & axiom-clean** (`CechModelBridge.lean`,
+  `CechModelManifold.lean`): `BddHol.ofAnalyticOn`/`ofAnalyticOnOfRelCompact` (germ→`BddHol` codomain),
+  `analyticOn_pullback_of_holo` (chart-pullback analyticity), `holoSectionToBddHol` (single-section
+  bridge), and `exists_finite_closedBall_cover` (step 1 of non-convex restriction-compactness — the
+  next blocker, since cross-chart overlaps aren't convex; step 2 in progress). See
+  `docs/cech_finiteness_research.md`, [[project_finiteness_node]].
+
+**Net:** the RR/Serre/finiteness sub-tree is materially de-risked (the worst-feared Dolbeault kernel is
+eliminated; the Serre route's local calculus and the finiteness K-bridge are sorry-free), but the
+*gating* analytic kernels (`deg_div`, `exists_cechModel`→finiteness, `arithmeticGenus_eq_genus`→Serre)
+remain. 22 commits; all individually `lake build`-green + `#print axioms`-clean.
 
 **Dependency map:** `docs/architecture_map.md` — the full DAG to a sorry-free finish
 (incorporates the 2026-06-02 finiteness-node finding: the RR wall's finiteness sub-tree is
@@ -15,9 +46,20 @@ below.
 
 ## Snapshot
 
-- **`lake build`: GREEN, 8393 jobs.** `lakefile` globs all submodules, so this compiles
-  every module (no orphan blind-spots).
-- **5 `sorry`s** (down from 6 this session), **0 custom axioms.**
+- **`lake build`: GREEN** (all 2026-06-03 commits individually verified green + `#print axioms`-clean;
+  full-build job count grows as the Serre/finiteness modules land). `lakefile` globs all submodules, so
+  this compiles every module (no orphan blind-spots).
+- **0 custom axioms.** **~12 `sorry`s total**, in two layers:
+  - **5 challenge-critical** (the entire surface the v0.4 API transitively depends on): the table below.
+  - **~7 RR/Serre/finiteness sub-tree scaffolding** sorries — a *parallel* Dolbeault-ladder/finiteness
+    attempt to eventually *replace* the `exists_riemannRoch_divisor` kernel with a from-first-principles
+    proof. NOT yet wired to the challenge headline (the headline still routes through the standalone
+    `exists_riemannRoch_divisor`+`deg_div`), so they don't add to the *critical* surface. They are:
+    `finiteDimensional_cechH1` ⟸ `exists_cechModel` (finiteness, Forster 14.9); `arithmeticGenus_eq_genus`
+    + `serre_h1_eq` (Serre §17); `exists_skyscraperLES`/`chi_jump` (χ-additivity); `exists_properMapDegree`
+    (= the `deg_div` engine); `cechH1_dolbeault_comparison` (L3 Leray-wiring, no consumers). The
+    2026-06-03 session built the sorry-free scaffolding *beneath* these (Serre §17 local calculus,
+    Dolbeault comparison, K-bridge) — see the session delta above.
 - **Conformance: `ChallengeConformance.lean` typechecks** — the *entire* v0.4 API (genus,
   `genus_eq_zero_iff_homeo`, `Jacobian` + its 7 instances, `ofCurve(_self/_contMDiff/_inj)`,
   `pushforward`/`pullback` + functoriality, `ContMDiff.degree`, `pushforward_pullback`) is

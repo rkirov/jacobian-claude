@@ -1,9 +1,27 @@
 # Architecture map — dependency DAG to a sorry-free finish
 
 Canonical dependency map for completing the Jacobians challenge (Buzzard v0.4). Current as of
-2026-06-02. Companion to `docs/STATUS.md` (per-theorem `sorryAx` ground truth),
-`docs/dolbeault_ladder_derisk.md` (the bimodal RR-wall cost analysis), and
+2026-06-02 (DAG) + 2026-06-03 delta (below). Companion to `docs/STATUS.md` (per-theorem `sorryAx`
+ground truth), `docs/dolbeault_ladder_derisk.md` (the bimodal RR-wall cost analysis), and
 `docs/cech_finiteness_research.md` (the finiteness-node finding that this map incorporates).
+
+## 2026-06-03 delta — three nodes advanced (re-color before reading the DAG below)
+
+- **`🔴 Dolbeault comparison` → ✅ DONE (sorry-free).** The `finrank ℝ DolbeaultH01 = 2·h1Dim 0` node
+  (incl. all 5 former sub-kernels + RT2/`toGerm_holoFn`) is axiom-clean. Only the `cechH1_dolbeault_
+  comparison` L3 *wiring* leaf (Leray cover-independence) remains, and it has no consumers. **NOTE:**
+  this node was over-weighted as the RR critical path — it gives `cechH1 ≅ H^{0,1}`, the *first* iso;
+  `arithmeticGenus_eq_genus` still needs the *second* (`H^{0,1}≅Ω(X)` = Serre/§17), so the comparison
+  being done does NOT by itself move `arithmeticGenus_eq_genus`.
+- **`🔴 arithmeticGenus_eq_genus` (Serre §17) — local calculus now ✅, global assembly still 🔴.** The
+  PDE-free §17 route's LOCAL residue calculus is fully sorry-free (`Residue.lean`/`SerreDuality.lean`/
+  `FormCoeff.lean`: `resAt` + API, both abstract duality cores incl. the §17.9 litmus, the §17.6
+  residue-1 witness). Remaining 🔴 = the *global* `Res : H¹(X,Ω)→ℂ` (needs `∑Res=0`=`deg_div`) + the
+  pairing assembly. See `docs/hodge_bridge_research.md`.
+- **`🟡 finiteDimensional_cechH1` ⟸ `exists_cechModel` — K-bridge layer now ✅.** The germ↔`BddHol`
+  comparison primitives are built sorry-free (`CechModelBridge.lean`/`CechModelManifold.lean`). Next
+  blocker = non-convex restriction-compactness (cross-chart overlaps aren't convex); step 1 done, step 2
+  in progress. See `docs/cech_finiteness_research.md`.
 
 ```
 LEGEND:  ✅ done/axiom-clean   🔧 in progress   🟢 templated/reuse (low risk)
