@@ -504,21 +504,8 @@ theorem cech_to_dolbeault_comp_dolbeault_to_cech (𝔇 : ChartDiskCover X)
   rw [Submodule.mkQ_apply, Submodule.mkQ_apply] at hz
   exact neg_eq_of_add_eq_zero_right hz
 
-/-- **(Decomposition sub-lemma — the analytic representative reads back the germ.)** For a holomorphic
-germ class `g ∈ OmegaDGerm 0 V`, the analytic representative `holoFn hg` (a total `X → ℂ` smooth on `V`)
-restricted to `↥V` represents `g`: `toGerm V (holoFn hg ∘ val) = g`.
-
-This is the one genuinely-new analytic fact of round-trip 2: `holoFn hg` is the choice-free *limit-repair*
-`limUnder (𝓝[≠] ·) (Gext (holoRep hg))` of an arbitrary holomorphic representative `holoRep hg` (which
-*does* represent `g`, `toGerm_holoRep`). The limit-repair changes the value only on the **codiscrete**
-set of non-analytic points of `holoRep hg`, so `holoFn hg ∘ val =ᶠ[codiscreteWithin univ] holoRep hg`,
-giving equal germs (`Filter.Germ.coe_eq`). The codiscrete-agreement is the residual; it mirrors the
-normal-form codiscrete machinery in `MeromorphicNFRepair`/`CechH0` (`toMeromorphicNFOn` agrees with the
-function off a discrete set). FLAGGED as the single decomposition `sorry` of round-trip 2 — everything
-downstream (the cocycle germ identity and the coboundary assembly) is pure algebra on top of it. -/
-theorem toGerm_holoFn {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V) :
-    toGerm V (fun v : V => holoFn hg v.1) = g := by
-  sorry
+-- `toGerm_holoFn` (the decomposition sub-lemma: the analytic representative `holoFn hg` reads back
+-- the germ `g`) is now proven, sorry-free, in `DolbeaultComparisonInverse` and used below via import.
 
 /-- **The eta-difference germ identity (`η_i − η_l = f_il` on the overlap).** As `MGerm (U_i ⊓ U_l)`:
 the germ of `(holoFn ∘ η_i) − (holoFn ∘ η_l)` restricted to the overlap equals `f_il`. On the overlap,

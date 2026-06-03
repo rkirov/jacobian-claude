@@ -489,6 +489,79 @@ theorem holoFn_eq_of_tendsto {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm 
   show limUnder (𝓝[≠] y) (Gext (holoRep hg)) = c
   exact (hc.congr' heq.symm).limUnder_eq
 
+/-- **`holoFn` reads off `holoRep` at analytic points.** If, at a point `z ∈ V`, the chart-read of
+`Gext (holoRep hg)` is complex-analytic at the chart image of `z`, then the limit-repair recovers the
+genuine value: `holoFn hg z = holoRep hg ⟨z, hz⟩`. (Analyticity ⟹ continuity in the chart ⟹ the
+punctured limit of `Gext (holoRep hg)` is the value `Gext (holoRep hg) z = holoRep hg ⟨z⟩`, which
+`holoFn_eq_of_tendsto` reads back.) -/
+theorem holoFn_eq_holoRep_of_chart_analyticAt {V : Opens X} {g : MGerm V}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) V) {z : X} (hz : z ∈ V)
+    (ha : AnalyticAt ℂ (Gext (holoRep hg) ∘ (chartAt (H := ℂ) z).symm) ((chartAt (H := ℂ) z) z)) :
+    holoFn hg z = holoRep hg ⟨z, hz⟩ := by
+  set φ := chartAt (H := ℂ) z with hφ
+  -- The chart-read is continuous at `φ z`, with value `Gext (holoRep hg) z` (since `φ.symm (φ z) = z`).
+  have hsrc : z ∈ φ.source := mem_chart_source ℂ z
+  have hcontAt : ContinuousAt (Gext (holoRep hg) ∘ φ.symm) (φ z) := ha.continuousAt
+  -- `Gext (holoRep hg)` tends to its value at `z` along `𝓝[≠] z` (pull back the chart limit).
+  have htend : Tendsto (Gext (holoRep hg)) (𝓝[≠] z) (𝓝 (Gext (holoRep hg) z)) := by
+    have hval : (Gext (holoRep hg) ∘ φ.symm) (φ z) = Gext (holoRep hg) z := by
+      simp only [Function.comp_apply, φ.left_inv hsrc]
+    rw [← hval]
+    refine (hcontAt.continuousWithinAt.tendsto.comp
+      (φ.tendsto_nhdsNE (mem_chart_source ℂ z))).congr' ?_
+    filter_upwards [mem_nhdsWithin_of_mem_nhds (φ.open_source.mem_nhds hsrc)] with w hw
+    simp only [Function.comp_apply, φ.left_inv hw]
+  rw [Gext_apply_mem (holoRep hg) hz] at htend
+  exact holoFn_eq_of_tendsto hg (holoRep hg) (toGerm_holoRep hg) hz htend
+
+/-- **The analytic representative reads back the germ.** For a holomorphic germ class
+`g ∈ OmegaDGerm 0 V`, the limit-repair `holoFn hg` restricted to `↥V` represents `g`:
+`toGerm V (holoFn hg ∘ val) = g`. The limit-repair `holoFn hg` agrees with the chosen holomorphic
+representative `holoRep hg` off the *codiscrete* set of non-analytic points of `Gext (holoRep hg)`
+(`holoFn_eq_holoRep_of_chart_analyticAt` on the eventually-analytic set
+`MeromorphicAt.eventually_analyticAt`, transported through the chart), so the two have equal germs
+(`toGerm_eq_iff`); then `toGerm_holoRep`. -/
+theorem toGerm_holoFn {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V) :
+    toGerm V (fun v : V => holoFn hg v.1) = g := by
+  refine Eq.trans ?_ (toGerm_holoRep hg)
+  rw [toGerm_eq_iff]
+  intro u
+  show (fun v : V => holoFn hg v.1) =ᶠ[𝓝[≠] u] holoRep hg
+  -- Work in `X`'s chart at `y = u.1`: `Gext (holoRep hg)` is meromorphic there, hence analytic off a
+  -- discrete set. Transport that ambient `𝓝[≠] y`-eventually statement back to `↥V`.
+  set y : X := u.1 with hy
+  have hyV : y ∈ V := u.2
+  set φ := chartAt (H := ℂ) y with hφ
+  have hysrc : y ∈ φ.source := mem_chart_source ℂ y
+  have hmer : MeromorphicAt (Gext (holoRep hg) ∘ φ.symm) (φ y) :=
+    Gext_meromorphicAt (holoRep_mem hg).1 hyV
+  have hana : ∀ᶠ w in 𝓝[≠] (φ y), AnalyticAt ℂ (Gext (holoRep hg) ∘ φ.symm) w :=
+    hmer.eventually_analyticAt
+  -- Pull the chart-image filter back to `𝓝[≠] y` (same idiom as `nfX_Gext_codiscrete`).
+  have htendφ : Tendsto φ (𝓝[≠] y) (𝓝[≠] (φ y)) := by
+    rw [tendsto_nhdsWithin_iff]
+    refine ⟨(φ.continuousAt hysrc).continuousWithinAt.tendsto, ?_⟩
+    rw [eventually_nhdsWithin_iff]
+    filter_upwards [φ.open_source.mem_nhds hysrc] with z hz hzne
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hzne ⊢
+    exact fun hc => hzne (φ.injOn hz hysrc hc)
+  have hanaX : ∀ᶠ z in 𝓝[≠] y,
+      AnalyticAt ℂ (Gext (holoRep hg) ∘ φ.symm) (φ z) := htendφ.eventually hana
+  have hsrcX : ∀ᶠ z in 𝓝[≠] y, z ∈ φ.source :=
+    eventually_nhdsWithin_of_eventually_nhds (φ.open_source.mem_nhds hysrc)
+  have hVev : ∀ᶠ z in 𝓝[≠] y, z ∈ V :=
+    eventually_nhdsWithin_of_eventually_nhds (V.isOpen.mem_nhds hyV)
+  -- The ambient statement: `holoFn hg z = holoRep hg ⟨z, _⟩` off a discrete set near `y`.
+  have hambient : ∀ᶠ z in 𝓝[≠] y,
+      ∀ (hzV : z ∈ V), holoFn hg z = holoRep hg ⟨z, hzV⟩ := by
+    filter_upwards [hanaX, hsrcX] with z hzana hzsrc hzV
+    exact holoFn_eq_holoRep_of_chart_analyticAt hg hzV (analyticAt_chart_change hzsrc hzana)
+  -- Pull back to `↥V` (`eventually_subtype_of_nhdsNE`) and discharge the membership proof.
+  have hpb := eventually_subtype_of_nhdsNE
+    (V := V) (u := u) (fun z => ∀ (hzV : z ∈ V), holoFn hg z = holoRep hg ⟨z, hzV⟩) hambient
+  filter_upwards [hpb] with w hw
+  simpa using hw w.2
+
 /-- The `(j,k)` component of a Čech `1`-cocycle is a holomorphic (`OmegaDGerm 0`) germ-class on the
 overlap `U_j ⊓ U_k` (the `sections1` part of `cocycles1`). -/
 theorem cocycle_mem (𝔇 : ChartDiskCover X) (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
