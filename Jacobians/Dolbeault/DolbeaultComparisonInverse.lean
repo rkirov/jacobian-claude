@@ -515,6 +515,71 @@ theorem holoFn_dbar_eq_zero {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (
   rw [hpull, hCdiff.fderiv_restrictScalars ℝ]
   exact proj01_restrictScalars_eq_zero _
 
+/-- **`holoFn` is restriction-compatible.** For `V ≤ U` and `x ∈ V`, the analytic rep of the restricted
+germ agrees with the original at `x` (`limUnder` depends only on the germ, which restriction preserves
+at `x`). -/
+theorem holoFn_restrict {U V : Opens X} (h : V ≤ U) {g : MGerm U}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) U) {x : X} (hx : x ∈ V) :
+    holoFn (rawRestrictG_omegaDGerm h hg) x = holoFn hg x := by
+  haveI := nhdsNE_neBot_of_chart x
+  have heq : Gext (holoRep hg) =ᶠ[𝓝[≠] x] Gext (holoRep (rawRestrictG_omegaDGerm h hg)) := by
+    have hmatch : rawRestrictG (inf_le_right : U ⊓ V ≤ V)
+          (toGerm V (holoRep (rawRestrictG_omegaDGerm h hg)))
+        = rawRestrictG (inf_le_left : U ⊓ V ≤ U) (toGerm U (holoRep hg)) := by
+      rw [toGerm_holoRep, toGerm_holoRep, FiniteCover.rawRestrictG_comp_apply]
+    exact Gext_overlap_eventuallyEq (holoRep hg) (holoRep (rawRestrictG_omegaDGerm h hg)) hmatch
+      (h hx) hx
+  show limUnder (𝓝[≠] x) (Gext (holoRep (rawRestrictG_omegaDGerm h hg)))
+    = limUnder (𝓝[≠] x) (Gext (holoRep hg))
+  exact congrArg Filter.lim (Filter.map_congr heq.symm)
+
+/-- The **global primitive summand** `ρ_k · holoFn(s_k)` as a `SmoothCFunctions` (globally smooth: on
+`U_k` both factors are smooth, off `tsupport ρ_k` it vanishes). The `∂̄` of `h = ∑_k primFn` is the
+coboundary's image, since each `holoFn(s_k)` is holomorphic (`holoFn_dbar_eq_zero`). -/
+noncomputable def primFn (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) {g : MGerm (𝔇.U k)}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) (𝔇.U k)) : SmoothCFunctions X :=
+  ⟨fun x => rhoC 𝔇 k x * holoFn hg x, by
+    intro x₀
+    by_cases hb : x₀ ∈ tsupport (cechPoU 𝔇 k)
+    · exact ((rhoC 𝔇 k).contMDiff x₀).mul (holoFn_contMDiffAt hg (cechPoU_subordinate 𝔇 k hb))
+    · refine (contMDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq ?_
+      filter_upwards [(isClosed_tsupport (cechPoU 𝔇 k)).isOpen_compl.mem_nhds hb] with x hx
+      have hr : rhoC 𝔇 k x = 0 := by
+        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hx]; rfl
+      simp only [hr, zero_mul]⟩
+
+@[simp] theorem primFn_apply (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) {g : MGerm (𝔇.U k)}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) (𝔇.U k)) (x : X) :
+    primFn 𝔇 k hg x = rhoC 𝔇 k x * holoFn hg x := rfl
+
+/-- **`∂̄(ρ_k·holoFn(s_k)) = holoFn(s_k)·∂̄ρ_k`** (the Leibniz identity, with the `holoFn` term killed
+since `holoFn(s_k)` is holomorphic, `holoFn_dbar_eq_zero`). Pointwise, 2-case (on `tsupport ρ_k ⊆ U_k`
+the product rule; off it both sides vanish). -/
+theorem dbarL_primFn_apply (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) {g : MGerm (𝔇.U k)}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) (𝔇.U k)) (x : X) :
+    (dbarL (primFn 𝔇 k hg)) x = holoFn hg x • (dbarRho 𝔇 k x) := by
+  by_cases hb : x ∈ tsupport (cechPoU 𝔇 k)
+  · have hxU : x ∈ 𝔇.U k := cechPoU_subordinate 𝔇 k hb
+    have hr : HasMFDerivAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(rhoC 𝔇 k)) x
+        (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(rhoC 𝔇 k)) x) :=
+      ((rhoC 𝔇 k).contMDiff.mdifferentiable (by simp) x).hasMFDerivAt
+    have hh : HasMFDerivAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn hg) x
+        (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn hg) x) :=
+      ((holoFn_contMDiffAt hg hxU).mdifferentiableAt (by simp)).hasMFDerivAt
+    show proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(primFn 𝔇 k hg)) x)
+      = holoFn hg x • proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(rhoC 𝔇 k)) x)
+    rw [show (⇑(primFn 𝔇 k hg) : X → ℂ) = ⇑(rhoC 𝔇 k) * holoFn hg from rfl, (hr.mul hh).mfderiv,
+      map_add, proj01_smul, proj01_smul, holoFn_dbar_eq_zero hg hxU]
+    module
+  · have hr0 : (dbarL (primFn 𝔇 k hg)) x = 0 := by
+      refine dbarL_eq_zero_of_notMem_tsupport (primFn 𝔇 k hg) (fun hc => hb ?_)
+      refine closure_mono (fun y hy => ?_) hc
+      simp only [Function.mem_support, ne_eq, primFn_apply, mul_eq_zero, not_or] at hy
+      simp only [Function.mem_support, ne_eq]
+      exact fun h0 => hy.1 (by simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, h0]; rfl)
+    rw [hr0, dbarRho_eq_zero_of_notMem 𝔇 k hb]
+    module
+
 /-- Each double-sum term `T_jk` is a `(0,1)`-form: its fiber value `c • (∂̄ρ_k x)` lies in the range
 of `proj01` because `∂̄ρ_k x` does (`dbarL_mem_zeroOne`/idempotence) and `proj01` commutes with the
 ℂ-scale (`proj01_smul`). -/
