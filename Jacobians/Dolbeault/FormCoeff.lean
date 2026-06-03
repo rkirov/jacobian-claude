@@ -71,4 +71,32 @@ theorem formFnResidue_eq_zero_of_analyticAt (α : HolomorphicOneForms X) (g : X 
     exact ⟨ε, hε, fun z hz => (hball (mem_ball.mp hz)).differentiableAt⟩
   exact resAt_eq_zero_of_differentiableOn_ball hρ hball
 
+/-- **A nonzero holomorphic 1-form has a nonzero coefficient at its own chart centre.**  Needed to
+place the `dz/z` pole in Forster's §17.6 injectivity witness.  (The coefficient `localRep α a a` is
+`α` paired with the unit coordinate tangent at `a`; that tangent spans the 1-dim fibre, so if every
+such pairing vanished, `α` would be the zero section.) -/
+theorem exists_localRep_self_ne_zero (α : HolomorphicOneForms X) (hα : α ≠ 0) :
+    ∃ a : X, Jacobians.Montel.localRep α a a ≠ 0 := by
+  by_contra hcon
+  push Not at hcon
+  apply hα
+  refine ContMDiffSection.ext (fun x => ?_)
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x with he
+  have hxbase : x ∈ e.baseSet := mem_baseSet_trivializationAt ℂ _ x
+  have hz : α.toFun x = 0 := by
+    refine ContinuousLinearMap.ext (fun v => ?_)
+    rw [ContinuousLinearMap.zero_apply]
+    have hv : e.symmL ℂ x (e.continuousLinearMapAt ℂ x v) = v :=
+      e.symmL_continuousLinearMapAt hxbase v
+    set c := e.continuousLinearMapAt ℂ x v with hc
+    have hsm : e.symmL ℂ x c = c • e.symmL ℂ x 1 := by
+      have h2 := (e.symmL ℂ x).map_smul c (1 : ℂ)
+      rwa [smul_eq_mul, mul_one] at h2
+    calc α.toFun x v = α.toFun x (e.symmL ℂ x c) := by rw [hv]
+      _ = α.toFun x (c • e.symmL ℂ x 1) := by rw [hsm]
+      _ = c • α.toFun x (e.symmL ℂ x 1) := by rw [(α.toFun x).map_smul]
+      _ = c • Jacobians.Montel.localRep α x x := rfl
+      _ = 0 := by rw [hcon x, smul_zero]
+  exact hz
+
 end Jacobians.Dolbeault
