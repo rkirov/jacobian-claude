@@ -95,3 +95,39 @@ finite-codim lemma (bounded functional analysis) and (ii) the Leray/closed-range
 representation clash is real but resolved by a cheap comparison iso, not a re-foundation. This
 confirms the de-risk's `~800–1500 LoC, Med` estimate and lowers its variance. See
 `docs/dolbeault_ladder_derisk.md`, `docs/riemann_roch_proof_plan.md §2`.
+
+---
+
+## ▶ DECOMPOSITION of the single remaining sorry `exists_cechModel` (2026-06-03)
+
+State: the **entire abstract/FA spine is proven axiom-clean** (`Schwartz 14.8`, `rhoRaw_compact`,
+`finiteDimensional_supH1`, `leray_surjective`). `finiteDimensional_cechH1_wired` is a sorry-free
+consumer. The ONLY sorry is `exists_cechModel 𝔘 D : ∃ d c, Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1)`
+(`CechFinitenessWiring.lean:282`). It is **monolithic** — these sub-obligations are entangled because
+`c` and the equiv must be the model *built from* `(𝔘,D)`:
+
+| # | Sub-obligation | Tractability | Reuse |
+|---|---|---|---|
+| G | `DiskOverlapData` geometry (`Uov` open, `Kov` convex compact ⋐ `Uov`) | **FREE** — round balls (`Metric.closedBall` convex compact); NOT the blocker | — |
+| C1 | `Coboundaries.{C0,C2,C2cov,δ0,δ1,δ1cov}` δ-complex on BddHol cochains of the cover, `hδδ`, `hcomm` | medium (Čech δ algebra on `BddHol`) | `CechComplex` δ pattern |
+| C2 | `Coboundaries.leray` field (every shrinking 1-cocycle = `δ⁰η + ρ·(cover cocycle)`) | **HARD** = disk-acyclicity `H¹(disk,𝒪)=0` assembled into the Čech leray field | `DbarDiskCohomology.dbar_solvable_ball` (PROVEN), `dbar_holo_splitting_ball` |
+| K | The comparison `𝔘.cechH1 D ≃ₗ[ℂ] supH1` | **HARDEST** = germ↔BddHol bridge ∘ **Leray refinement-invariance** of `H¹` | CechH0 codiscrete↔`𝓝[≠]` bridge; Mathlib has NO Leray thm |
+
+**The true wall is C2 (leray) + K (comparison incl. refinement).** K splits:
+- **K-bridge**: germ-class `𝒪_D` cochains ↔ `BddHol` cochains on chart-images. The function-level
+  analogue of `Montel.localRep_analyticOn_chartTarget` (chart-pullback of a holomorphic *function* is
+  analytic) + boundedness on the relatively-compact shrinking + the CechH0 codiscrete↔`𝓝[≠]` junk
+  identification. Templated, ~medium.
+- **K-refine**: `𝔘.cechH1 D ≃ cechH1(chart-disk cover) D` — Leray cover-refinement invariance. Mathlib
+  lacks Leray; this is a genuine Čech-cohomology theorem (refinement maps + acyclic-cover independence).
+  The single biggest greenfield piece. If `𝔘` is ALREADY a chart-disk Leray cover, K-refine is trivial
+  — so a first milestone is `exists_cechModel` **for chart-disk covers only**, deferring K-refine.
+
+**Recommended executable order (first session of the wall):** (1) K-bridge atom — chart-pullback of a
+holomorphic function is analytic (build/verify; likely partially in `CechH0`/`DolbeaultComparison`),
+then the bounded restriction to `BddHol`. (2) C1 δ-complex. (3) C2 leray from the proven disk atoms.
+(4) Assemble `exists_cechModel` for chart-disk covers (K-refine = id). (5) K-refine (Leray invariance)
+last — the foundation piece. Each lands as a named lemma; the monolithic sorry shrinks as they close.
+**Caveat (measured this session): no sub-piece lands sorry-free fully in isolation from `(𝔘,D)`** — the
+equiv ties them — so progress is "shrink the sorry by building K-bridge/C1/C2 as standalone lemmas the
+final assembly consumes," not "close a vacuous geometric lemma."
