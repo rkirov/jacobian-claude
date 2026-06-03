@@ -78,4 +78,24 @@ theorem MeromorphicAt.exists_isOpen_meromorphicOn {F : ℂ → ℂ} {z : ℂ} (h
   · exact hwz ▸ hF
   · exact (hVsub w hw hwz).meromorphicAt
 
+/-- The **limit-repair** `w ↦ limUnder (𝓝[≠] w) F` of a function meromorphic with order `≥ 0` on an
+open set `V` agrees pointwise with the normal-form representative `toMeromorphicNFOn F V`. -/
+theorem limUnder_eq_toMeromorphicNFOn {F : ℂ → ℂ} {V : Set ℂ} (hF : MeromorphicOn F V)
+    (hord : ∀ w ∈ V, 0 ≤ meromorphicOrderAt F w) {w : ℂ} (hw : w ∈ V) :
+    limUnder (𝓝[≠] w) F = toMeromorphicNFOn F V w := by
+  obtain ⟨c, hc⟩ := (tendsto_nhds_iff_meromorphicOrderAt_nonneg (hF w hw)).2 (hord w hw)
+  rw [toMeromorphicNFOn_eq_toMeromorphicNFAt hF hw,
+    toMeromorphicNFAt_self_eq_limUnder (hF w hw) (hord w hw) hc, hc.limUnder_eq]
+
+/-- The normal-form representative `toMeromorphicNFOn F V` is analytic at each point of `V` where the
+order of `F` is `≥ 0` (normal form + nonneg order ⟹ analytic). -/
+theorem analyticAt_toMeromorphicNFOn {F : ℂ → ℂ} {V : Set ℂ} (hF : MeromorphicOn F V)
+    (hord : ∀ w ∈ V, 0 ≤ meromorphicOrderAt F w) {w₀ : ℂ} (hw₀ : w₀ ∈ V) :
+    AnalyticAt ℂ (toMeromorphicNFOn F V) w₀ := by
+  have hNF : MeromorphicNFAt (toMeromorphicNFOn F V) w₀ := meromorphicNFOn_toMeromorphicNFOn F V hw₀
+  have hord' : 0 ≤ meromorphicOrderAt (toMeromorphicNFOn F V) w₀ := by
+    rw [meromorphicOrderAt_congr (hF.toMeromorphicNFOn_eq_self_on_nhdsNE hw₀)]
+    exact hord w₀ hw₀
+  exact hNF.meromorphicOrderAt_nonneg_iff_analyticAt.1 hord'
+
 end Jacobians
