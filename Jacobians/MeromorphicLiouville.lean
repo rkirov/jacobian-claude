@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.Abel
+import Jacobians.MeromorphicNFRepair
 import Mathlib.Analysis.Meromorphic.NormalForm
 import Mathlib.Geometry.Manifold.Complex
 
@@ -56,15 +57,11 @@ def MeromorphicFunction.HasSingleSimplePole
     (f : MeromorphicFunction X) (P : X) : Prop :=
   f.orderAtPoint P = -1 ∧ ∀ x, x ≠ P → 0 ≤ f.orderAtPoint x
 
-/-! ### Order bridge: `ℤ`-order nonneg ↔ `WithTop ℤ`-order nonneg -/
+/-! ### The limit repair of a meromorphic function
 
-/-- The integer order `.untop₀` is `≥ 0` iff the raw `WithTop ℤ` order is `≥ 0`. (`⊤ ↦ 0 ≥ 0`.) -/
-theorem untop₀_nonneg_iff {α : WithTop ℤ} : (0 : ℤ) ≤ α.untop₀ ↔ 0 ≤ α := by
-  cases α with
-  | top => simp
-  | coe n => simp [WithTop.untop₀_coe]
-
-/-! ### The limit repair of a meromorphic function -/
+(The chart-level helpers `untop₀_nonneg_iff`, `OpenPartialHomeomorph.tendsto_nhdsNE`,
+`toMeromorphicNFAt_self_eq_limUnder`, and `MeromorphicAt.exists_isOpen_meromorphicOn` now live in
+the shared `Jacobians.MeromorphicNFRepair`.) -/
 
 /-- The **limit repair** of `f`: at each point, the limit of `f` along the punctured neighborhood.
 Where the order of `f` is `≥ 0` this is a genuine value (Mathlib
@@ -80,20 +77,8 @@ pullback `f.toFun ∘ φ.symm` in a different chart `φ` needs chart-invariance 
 the (currently unproved) `orderAtPoint_chart_invariant` by characterizing nonnegativity of the order
 in a manifestly chart-independent way: **`f` has a limit along the punctured neighborhood `𝓝[≠] x`**
 (Mathlib `tendsto_nhds_iff_meromorphicOrderAt_nonneg`). Transferring a `Tendsto` statement through a
-chart homeomorphism is elementary. -/
-
-/-- An open partial homeomorphism carries the punctured neighborhood of a source point to the
-punctured neighborhood of its image: `Tendsto φ (𝓝[≠] x) (𝓝[≠] (φ x))` for `x ∈ φ.source`.
-(Continuity gives the unpunctured limit; injectivity on the source removes the center.) -/
-theorem _root_.OpenPartialHomeomorph.tendsto_nhdsNE {Y Z : Type*} [TopologicalSpace Y]
-    [TopologicalSpace Z] (φ : OpenPartialHomeomorph Y Z) {x : Y} (hx : x ∈ φ.source) :
-    Tendsto φ (𝓝[{x}ᶜ] x) (𝓝[{φ x}ᶜ] (φ x)) := by
-  apply tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within
-  · exact (φ.continuousAt hx).continuousWithinAt
-  · have hev : ∀ᶠ y in 𝓝 x, y ∈ φ.source := φ.open_source.mem_nhds hx
-    filter_upwards [self_mem_nhdsWithin, mem_nhdsWithin_of_mem_nhds hev] with y hy hys
-    simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hy ⊢
-    exact fun hcontra => hy (φ.injOn hys hx hcontra)
+chart homeomorphism is elementary (`OpenPartialHomeomorph.tendsto_nhdsNE`,
+`Jacobians.MeromorphicNFRepair`). -/
 
 /-- The order of `f` at `x` is `≥ 0` iff `f.toFun` has a limit along the punctured neighborhood of
 `x` — a manifestly chart-independent statement. -/
@@ -127,38 +112,10 @@ theorem MeromorphicFunction.orderAtPoint_nonneg_iff_tendsto
       simpa [φ.left_inv hxs] using this
     exact hc.comp htsymm
 
-/-! ### The repair is the normal-form representative, chart by chart -/
+/-! ### The repair is the normal-form representative, chart by chart
 
-/-- For a meromorphic function `F : ℂ → ℂ` whose order at `w` is `≥ 0`, the value of its
-normal-form representative at the center equals the limit along `𝓝[≠] w`. -/
-theorem toMeromorphicNFAt_self_eq_limUnder {F : ℂ → ℂ} {w c : ℂ}
-    (hF : MeromorphicAt F w) (ho : 0 ≤ meromorphicOrderAt F w)
-    (hc : Tendsto F (𝓝[≠] w) (𝓝 c)) :
-    toMeromorphicNFAt F w w = c := by
-  have hNF : MeromorphicNFAt (toMeromorphicNFAt F w) w := meromorphicNFAt_toMeromorphicNFAt
-  have hord : meromorphicOrderAt (toMeromorphicNFAt F w) w = meromorphicOrderAt F w :=
-    meromorphicOrderAt_congr hF.eq_nhdsNE_toMeromorphicNFAt.symm
-  have hAna : AnalyticAt ℂ (toMeromorphicNFAt F w) w :=
-    hNF.meromorphicOrderAt_nonneg_iff_analyticAt.1 (hord ▸ ho)
-  have h1 : Tendsto (toMeromorphicNFAt F w) (𝓝[≠] w) (𝓝 (toMeromorphicNFAt F w w)) :=
-    hAna.continuousAt.continuousWithinAt.tendsto
-  have h2 : Tendsto (toMeromorphicNFAt F w) (𝓝[≠] w) (𝓝 c) :=
-    hc.congr' hF.eq_nhdsNE_toMeromorphicNFAt
-  exact tendsto_nhds_unique h1 h2
-
-/-- From meromorphy of `F` *at* a point `z`, extract an **open neighborhood** `V ∋ z` on which `F`
-is meromorphic, and moreover **analytic away from `z`**. (Mathlib `MeromorphicAt.eventually_analyticAt`:
-`F` is analytic on a punctured neighborhood; together with meromorphy at `z` itself this is
-meromorphy on a full open `V`.) -/
-theorem MeromorphicAt.exists_isOpen_meromorphicOn {F : ℂ → ℂ} {z : ℂ} (hF : MeromorphicAt F z) :
-    ∃ V : Set ℂ, IsOpen V ∧ z ∈ V ∧ MeromorphicOn F V ∧
-      ∀ w ∈ V, w ≠ z → AnalyticAt ℂ F w := by
-  obtain ⟨V, hVsub, hVopen, hzV⟩ := eventually_nhds_iff.1
-    (eventually_nhdsWithin_iff.1 hF.eventually_analyticAt)
-  refine ⟨V, hVopen, hzV, fun w hw => ?_, fun w hw hwz => hVsub w hw hwz⟩
-  by_cases hwz : w = z
-  · exact hwz ▸ hF
-  · exact (hVsub w hw hwz).meromorphicAt
+(`toMeromorphicNFAt_self_eq_limUnder` and `MeromorphicAt.exists_isOpen_meromorphicOn` now live in the
+shared `Jacobians.MeromorphicNFRepair`.) -/
 
 /-- **The local repair lemma.** On a small open neighborhood `V` of `φ x₀` (with `φ = chartAt x₀`),
 the limit-repair `holoRepr`, read back through the chart, coincides with the normal-form

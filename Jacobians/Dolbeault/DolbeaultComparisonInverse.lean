@@ -12,6 +12,7 @@
 import Jacobians.Dolbeault.DolbeaultComparison
 import Jacobians.Dolbeault.CechH0
 import Jacobians.Dolbeault.ChartDiskCover
+import Jacobians.MeromorphicNFRepair
 import Mathlib.Geometry.Manifold.PartitionOfUnity
 import Mathlib.Geometry.Manifold.BumpFunction
 
