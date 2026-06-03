@@ -186,9 +186,18 @@ Goal: `isCompactOperator_restrictCLM` for `K` compact (NOT convex) `⊆ U` open.
   `[CompactSpace K]`, already in scope at the `DiskOverlapData.Kov` call site). **Still TODO: drop
   `hKconv` from `DiskOverlapData` (shared-struct edit) so `Kov` = chart-image of the shrunk overlap.**
 
-**Honest distance check:** non-convex compactness unblocks only the *geometry*; `exists_cechModel` still
-needs the `DiskOverlapData` construction (from `Montel.chartCover`/`ChartDiskCover`, now possible with
-non-convex `Kov`) + the cochain map (`Π_p holoSectionToBddHol`) + δ-complex + `leray` (disk atoms) + the
-`cechH1≃supH1` comparison (incl. Leray K-refine). The wall is genuinely far; the K-bridge layer + the
-non-convex FA lemma are the de-risked, reusable front of it. **NEXT executable step = the
-`DiskOverlapData` construction + the `Coboundaries` δ-complex.**
+**✅ DiskOverlapData GEOMETRY DONE (2026-06-03, commit 7bd9d23, `CechModelGeometry.lean`, axiom-clean).**
+`chartCoverOverlapData : DiskOverlapData` from **Montel's** chart cover (NOT `ChartDiskCover`: Montel's
+nested `innerShrunkChart ⊆ chartOpen ⊆ source` gives a genuine COVERING shrinking; `Finset.equivFin`
+reindex keeps `J : Type 0`). `Uov(a,b)` = chart-image of `chartOpen a ∩ chartOpen b`; `Kov(a,b)` =
+chart-image of `innerShrunkChart a ∩ innerShrunkChart b` (compact ⊆ Uov, non-convex). Reusable atoms:
+`isOpen_chartImage_of_subset_source`, `isCompact_chartImage_of_subset_source` (per-overlap facts the
+cochain map needs), `iUnion_innerShrunkChart_coverCenter_eq` (covering, for `leray`).
+
+**Honest distance check:** `exists_cechModel` now needs (geometry ✅): the cochain map
+(`Π_p holoSectionToBddHol`, using the geometry's `isOpen/isCompact_chartImage` atoms) → the
+`Coboundaries` δ-complex → the `leray` field (disk atoms `dbar_solvable_ball`) → the `cechH1≃supH1`
+comparison (germ↔BddHol ∘ Leray K-refine). The wall is far but the front (FA spine · K-bridge · non-convex
+compactness · geometry) is all sorry-free. ⚠ Geometry-agent flag: the `leray` ∂̄-solve is on a *ball*, but
+`Uov` = chartOpen-overlap-image (open, not a ball) — the assembly will want a ball `⊆ Uov` refinement.
+**NEXT executable step = the cochain map + `Coboundaries` δ-complex.**
