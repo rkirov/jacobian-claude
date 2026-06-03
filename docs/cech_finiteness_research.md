@@ -167,3 +167,26 @@ generic cover cannot satisfy `hKconv`. Two resolutions:
   heavier, brings in differential geometry the repo doesn't have.
 After this: `DiskOverlapData` construction from `Montel.chartCover`/`ChartDiskCover` + the cochain map
 (`Π_p holoSectionToBddHol`) + δ-commuting + the `leray` field (disk atoms) + the `cechH1≃supH1` comparison.
+
+#### Non-convex restriction-compactness — executable sub-plan (Step 1 ✅ done)
+
+Goal: `isCompactOperator_restrictCLM` for `K` compact (NOT convex) `⊆ U` open.
+- **Step 1 ✅** `exists_finite_closedBall_cover` (committed `a400d8e`): `K ⊆ ⋃_{z∈t} ball z (r z)`,
+  each `closedBall z (r z) ⊆ U` (convex compact). (Convexity used only in `Montel/Compactness:619`
+  `Convex.norm_image_sub_le_of_norm_hasDerivWithin_le` for the mean-value/equicontinuity step — so it's
+  fine on the small balls.)
+- **Step 2 (route a, ~100-150 LoC, the focused FA grind).** Per-ball: `restrictCLM (closedBall z (r z)
+  ⊆ U)` is compact (the convex atom `isCompactOperator_restrictCLM hU isCompact_closedBall hsub
+  (convex_closedBall)`). Product `Φ : BddHol U → Π_{z∈t} (↥(closedBall z (r z)) →ᵇ ℂ)` compact
+  (`isCompactOperator_pi`, finite `t`). Then `restrictCLM_K '' closedBall 0 1 =: S` is **totally
+  bounded**: the 1-Lipschitz reconstruction `ρ : (compatible tuples) → (↥K →ᵇ ℂ)` (`K ⊆ ∪ balls` ⟹
+  `sup_K = max_i sup_{ball∩K}`) sends the relatively-compact `Φ''ball` onto `S`; Lipschitz image of
+  totally-bounded is totally bounded. `(↥K →ᵇ ℂ)` complete ⟹ `IsCompact (closure S)` via
+  `TotallyBounded.isCompact_closure`; conclude with `isCompactOperator_iff_isCompact_closure_image_
+  closedBall`. Lemmas: `IsUniformEmbedding.totallyBounded_iff` / `Isometry.injective`+`isUniformEmbedding`,
+  `IsCompact.totallyBounded`, `IsCompactOperator.comp_clm`/`clm_comp`. Then drop `hKconv` from
+  `DiskOverlapData` (shared-struct edit) so `Kov` = chart-image of the shrunk overlap.
+
+**Honest distance check:** non-convex compactness unblocks only the *geometry*; `exists_cechModel` still
+needs the cochain map + δ-complex + `leray` + the `cechH1≃supH1` comparison (incl. K-refine). The wall is
+genuinely far; the K-bridge layer + this FA lemma are the de-risked, reusable front of it.
