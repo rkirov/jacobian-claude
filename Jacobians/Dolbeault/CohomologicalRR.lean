@@ -203,6 +203,38 @@ noncomputable def h1Map (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
   rintro ⟨c, _⟩ hcob
   exact 𝔘.coboundaries1_le_add_single D P hcob
 
+/-! ### Subcomplex backbone facts (sorry-free; the algebraic skeleton of the skyscraper snake lemma)
+
+These record that the Čech differential `δ⁰` preserves the `𝒪_D`-section condition degreewise and that
+`B¹ ⊆ Z¹` — the two purely-algebraic facts underpinning the SES-of-cochain-complexes used by the
+snake lemma (Forster §16). They are independent of all analytic content (no Laurent realization, no
+finiteness) and are proven here in full. -/
+
+/-- **`δ⁰` preserves the sections subcomplex.** The Čech coboundary of `𝒪_D`-0-sections is an
+`𝒪_D`-1-section: each component `(δ⁰f)_{ij} = f_j|_{ij} − f_i|_{ij}` is a difference of restrictions of
+`𝒪_D`-germs, hence an `𝒪_D`-germ on the overlap (`rawRestrictG_omegaDGerm`). Equivalently
+`B¹(𝒪_D) ⊆ C¹(𝒪_D)`. -/
+theorem cechDelta0_sections (𝔘 : FiniteCover X) (D : Divisor X) :
+    Submodule.map 𝔘.cechDelta0 (𝔘.sections0 D) ≤ 𝔘.sections1 D := by
+  rintro _ ⟨f, hf, rfl⟩ p
+  simp only [cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply, LinearMap.comp_apply,
+    LinearMap.proj_apply]
+  exact sub_mem (rawRestrictG_omegaDGerm inf_le_right (hf p.2))
+    (rawRestrictG_omegaDGerm inf_le_left (hf p.1))
+
+/-- **`B¹ ⊆ Z¹`** (coboundaries are cocycles). A `1`-coboundary `δ⁰f` lies in `ker δ¹` (since
+`δ¹ ∘ δ⁰ = 0`, `cechDelta1_comp_cechDelta0`) and is an `𝒪_D`-`1`-section (`cechDelta0_sections`), so it
+is an `𝒪_D` `1`-cocycle. This is the containment that makes `H¹ = Z¹/B¹` (`cechH1`) the genuine
+cohomology, and that lets the snake-lemma connecting map land a lifted coboundary in `Z¹(𝒪_D)`. -/
+theorem coboundaries1_le_cocycles1 (𝔘 : FiniteCover X) (D : Divisor X) :
+    𝔘.coboundaries1 D ≤ 𝔘.cocycles1 D := by
+  rw [coboundaries1, cocycles1, le_inf_iff]
+  refine ⟨?_, 𝔘.cechDelta0_sections D⟩
+  rw [Submodule.map_le_iff_le_comap]
+  intro f _
+  rw [Submodule.mem_comap, LinearMap.mem_ker, ← LinearMap.comp_apply, cechDelta1_comp_cechDelta0,
+    LinearMap.zero_apply]
+
 /-! ### The skyscraper long exact sequence (the genuine homological/analytic kernel)
 
 The single-point χ-jump comes from the **skyscraper short exact sequence** of `𝒪_D`-modules
