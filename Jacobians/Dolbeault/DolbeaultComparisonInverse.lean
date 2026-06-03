@@ -476,6 +476,48 @@ theorem cechTerm_mem_zeroOne (𝔇 : ChartDiskCover X)
     exact proj01_idempotent _
   rw [hfix]
 
+/-- The double-sum term is additive in the cocycle (`holoFn_add` washout on the overlap; off it both
+sides vanish). -/
+theorem cechTerm_add (𝔇 : ChartDiskCover X)
+    (f₁ f₂ : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (j k : 𝔇.toFiniteCover.ι) :
+    cechTerm 𝔇 (f₁ + f₂) j k = cechTerm 𝔇 f₁ j k + cechTerm 𝔇 f₂ j k := by
+  refine ContMDiffSection.ext fun x => ?_
+  show (rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 (f₁ + f₂) j k) x) • (dbarRho 𝔇 k x)
+    = (rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 f₁ j k) x) • (dbarRho 𝔇 k x)
+    + (rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 f₂ j k) x) • (dbarRho 𝔇 k x)
+  by_cases hxk : x ∈ tsupport (cechPoU 𝔇 k)
+  · by_cases hxj : x ∈ tsupport (cechPoU 𝔇 j)
+    · have hxV : x ∈ ((𝔇.U j ⊓ 𝔇.U k : Opens X) : Set X) :=
+        ⟨cechPoU_subordinate 𝔇 j hxj, cechPoU_subordinate 𝔇 k hxk⟩
+      rw [holoFn_add (cocycle_mem 𝔇 f₁ j k) (cocycle_mem 𝔇 f₂ j k) (cocycle_mem 𝔇 (f₁ + f₂) j k) hxV,
+        mul_add]
+      module
+    · have hr : rhoC 𝔇 j x = 0 := by
+        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hxj]; rfl
+      rw [hr]; module
+  · rw [dbarRho_eq_zero_of_notMem 𝔇 k hxk]; module
+
+/-- The double-sum term is `ℝ`-homogeneous in the cocycle (`holoFn_smul` washout; the `ℝ`-action on the
+`ℂ`-module is `↑r`-scaling). -/
+theorem cechTerm_smul (𝔇 : ChartDiskCover X) (r : ℝ)
+    (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (j k : 𝔇.toFiniteCover.ι) :
+    cechTerm 𝔇 (r • f) j k = r • cechTerm 𝔇 f j k := by
+  refine ContMDiffSection.ext fun x => ?_
+  show (rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 (r • f) j k) x) • (dbarRho 𝔇 k x)
+    = r • ((rhoC 𝔇 j x * holoFn (cocycle_mem 𝔇 f j k) x) • (dbarRho 𝔇 k x))
+  by_cases hxk : x ∈ tsupport (cechPoU 𝔇 k)
+  · by_cases hxj : x ∈ tsupport (cechPoU 𝔇 j)
+    · have hxV : x ∈ ((𝔇.U j ⊓ 𝔇.U k : Opens X) : Set X) :=
+        ⟨cechPoU_subordinate 𝔇 j hxj, cechPoU_subordinate 𝔇 k hxk⟩
+      rw [holoFn_smul (↑r) (cocycle_mem 𝔇 f j k) (cocycle_mem 𝔇 (r • f) j k) hxV, smul_eq_mul,
+        ← smul_assoc, Complex.real_smul]
+      congr 1
+      ring
+    · have hr : rhoC 𝔇 j x = 0 := by
+        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hxj]; rfl
+      rw [hr]; module
+  · rw [dbarRho_eq_zero_of_notMem 𝔇 k hxk]; module
+
 /-- **(Analytic sub-kernel — the Čech → Dolbeault glued-form operator.)** The `ℝ`-linear map sending
 a holomorphic Čech `1`-cocycle `f = {f_ij}` to the global `(0,1)`-form `ω` with `ω = ∂̄η_i` on `U_i`,
 `η_i := ∑_k ρ_k·f_ik` (partition-of-unity globalization). The genuine analytic content of the inverse:
@@ -484,8 +526,17 @@ lift the germ-class cocycle to holomorphic reps, the PoU smooth globalization
 on overlaps, `cechCoboundary_telescoping`) into a global section (gluedFun-for-forms). Plan:
 `docs/dolbeault_comparison_inverse_plan.md`. -/
 noncomputable def cechToDolbeaultForm (𝔇 : ChartDiskCover X) :
-    ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) →ₗ[ℝ] ↥(OneFormsZeroOne X) :=
-  sorry
+    ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) →ₗ[ℝ] ↥(OneFormsZeroOne X) where
+  toFun f := ∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι,
+    ⟨cechTerm 𝔇 f p.1 p.2, cechTerm_mem_zeroOne 𝔇 f p.1 p.2⟩
+  map_add' f₁ f₂ := by
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun p _ => ?_
+    exact Subtype.ext (cechTerm_add 𝔇 f₁ f₂ p.1 p.2)
+  map_smul' r f := by
+    rw [RingHom.id_apply, Finset.smul_sum]
+    refine Finset.sum_congr rfl fun p _ => ?_
+    exact Subtype.ext (cechTerm_smul 𝔇 r f p.1 p.2)
 
 /-- **(Analytic sub-kernel — well-definedness of Čech → Dolbeault.)** A Čech **coboundary** cocycle
 maps to a `∂̄`-image (its glued form `ω` is `∂̄` of the global primitive that the coboundary's
