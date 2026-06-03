@@ -1190,3 +1190,33 @@ new `DolbeaultComparisonInverse.lean` (~262 lines). Commit a79a1de.
 `∑` over `SmoothCOneForms` works once `set_option backward.isDefEq.respectTransparency false` is active
 (it already was, file-level). Proved the gluing relation `sum_dbarRho_eq_zero : ∑_k ∂̄ρ_k = 0`
 sorry-free. Inverse is unblocked; next build = `cechToDolbeaultForm` (smooth-section gluing).
+
+---
+
+## 2026-06-03 (overnight, autonomous): "prove arithmeticGenus_eq_genus, no sorries/axioms downstream"
+
+User to bed: "/goal prove arithmeticGenus_eq_genus without cheating (no sorries or axioms downstream).
+If done before I come back continue on the RR chain." Hard constraint: commit only verified,
+sorry-free, axiom-clean code.
+
+**Delivered (8 commits, all axiom-clean `[propext, Classical.choice, Quot.sound]`):**
+- `cechToDolbeaultForm_coboundary_le` + `cech_to_dolbeault` (the full inverse map H¹(𝒪)→H^{0,1}) — done.
+- The genuine analytic crux `dbar_diskValue_eq_g` (intrinsic ∂̄(diskSection)=g), via a generalized
+  chart bridge to bare MDifferentiableAt functions.
+- **Round-trip 1** of the Dolbeault comparison (`cech_to_dolbeault ∘ dolbeault_to_cech = id`), with the
+  boundary-sign negation resolved (the maps were inverse only up to sign).
+- Supporting: holoFn_eq_of_tendsto, diskVal/gdTerm/Leibniz, holoFn_cocycle_eq_diskValDiff, dbarL_globalPrim_eq.
+
+**Honest status — arithmeticGenus_eq_genus NOT reached, and is NOT reachable from the comparison alone.**
+Two genuinely deep theorems remain:
+1. **Round-trip 2** (`dolbeault_to_cech ∘ cech_to_dolbeault = id`) — full strategy derived + documented in
+   its sorry docstring (Equiv). ~200-400 lines; needs the germ-level cocycle relation + a germ Čech
+   coboundary computation. Completing both round-trips discharges `cechH1_dolbeault_comparison`.
+2. **The H^{0,1}≅Ω(X) (Serre/Hodge) bridge** — even with both round-trips, the comparison only gives the
+   tautology `2·h1Dim = 2·h1Dim`. `arithmeticGenus_eq_genus : h1Dim 0 = genus` additionally needs
+   `finrank ℝ DolbeaultH01 = 2·genus` (genus := finrank ℂ HolomorphicOneForms), which is Serre duality /
+   Hodge theory (harmonic representatives / elliptic regularity) — a separate deep analytic wall, NOT
+   produced by the Dolbeault comparison. Flagging for review: arithmeticGenus_eq_genus is a multi-session
+   node gated on Hodge/Serre, regardless of how much comparison machinery is built.
+
+Repo green throughout; no sorries/axioms introduced. Memory: [[project_cech_to_dolbeault_progress]].
