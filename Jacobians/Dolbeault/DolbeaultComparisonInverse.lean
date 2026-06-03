@@ -18,6 +18,7 @@ import Mathlib.Geometry.Manifold.BumpFunction
 
 open scoped Manifold ContDiff Bundle Topology
 open TopologicalSpace (Opens)
+open Filter
 
 -- Same permissive transparency as `RealForms` (the section hom-bundle instances, and any
 -- `Finset.sum` / ℂ-scaling over `SmoothCOneForms`, need it).
@@ -196,6 +197,57 @@ theorem contMDiffAt_real_of_chart_analyticAt {h : X → ℂ} {y : X}
   refine (hcd.comp y hchart).congr_of_eventuallyEq ?_
   filter_upwards [(chartAt (H := ℂ) y).open_source.mem_nhds (mem_chart_source ℂ y)] with z hz
   simp only [Function.comp_apply, (chartAt (H := ℂ) y).left_inv hz]
+
+/-- **The analytic representative.** For a holomorphic (`OmegaD 0`) function `g` on `↥V`, its
+**limit-repair** `x ↦ limUnder (𝓝[≠] x) (Gext g)` is chart-analytic at every `y ∈ V` (it discards the
+removable-singularity junk of `Gext g`, agreeing with the normal-form representative
+`toMeromorphicNFOn` of the chart-read). Adapts `MeromorphicLiouville.exists_holoRepr_eq_NFOn` to
+`Gext g`. With `contMDiffAt_real_of_chart_analyticAt` this gives a real-smooth `F_jk`. -/
+theorem gextLimRep_chart_analyticAt {V : Opens X} {g : V → ℂ} (hg : g ∈ OmegaD 0 V)
+    {y : X} (hy : y ∈ V) :
+    AnalyticAt ℂ ((fun x => limUnder (𝓝[≠] x) (Gext g)) ∘ (chartAt (H := ℂ) y).symm)
+      ((chartAt (H := ℂ) y) y) := by
+  set φ := chartAt (H := ℂ) y with hφ
+  set F := Gext g ∘ φ.symm with hFdef
+  have hmero₀ : MeromorphicAt F (φ y) := Gext_meromorphicAt hg.1 hy
+  obtain ⟨V₀, hV₀open, hzV₀, hFV₀, hana₀⟩ :=
+    Jacobians.MeromorphicAt.exists_isOpen_meromorphicOn hmero₀
+  set W := V₀ ∩ φ.target with hWdef
+  have hWopen : IsOpen W := hV₀open.inter φ.open_target
+  have hzW : φ y ∈ W := ⟨hzV₀, φ.map_source (mem_chart_source ℂ y)⟩
+  have hFW : MeromorphicOn F W := fun w hw => hFV₀ w hw.1
+  have hana : ∀ w ∈ W, w ≠ φ y → AnalyticAt ℂ F w := fun w hw hwz => hana₀ w hw.1 hwz
+  have hWtarget : W ⊆ φ.target := fun _ hw => hw.2
+  have hord : ∀ w ∈ W, 0 ≤ meromorphicOrderAt F w := by
+    intro w hw
+    by_cases hwz : w = φ y
+    · subst hwz
+      have hord0 := (mem_OmegaD.1 hg).2 ⟨y, hy⟩
+      rw [ordU_eq_orderAt_Gext g hy] at hord0
+      simpa using hord0
+    · exact (hana w hw hwz).meromorphicOrderAt_nonneg
+  refine (analyticAt_toMeromorphicNFOn hFW hord hzW).congr ?_
+  filter_upwards [hWopen.mem_nhds hzW] with w hw
+  show toMeromorphicNFOn F W w = limUnder (𝓝[≠] (φ.symm w)) (Gext g)
+  obtain ⟨c, hc⟩ := tendsto_nhds_of_meromorphicOrderAt_nonneg (hFW w hw) (hord w hw)
+  have hNFOn : toMeromorphicNFOn F W w = c := by
+    rw [toMeromorphicNFOn_eq_toMeromorphicNFAt hFW hw]
+    exact toMeromorphicNFAt_self_eq_limUnder (hFW w hw) (hord w hw) hc
+  rw [hNFOn]
+  have hys : φ.symm w ∈ φ.source := φ.map_target (hWtarget hw)
+  have htsymm : Tendsto φ.symm (𝓝[≠] w) (𝓝[≠] (φ.symm w)) := by
+    have := φ.symm.tendsto_nhdsNE (x := w) (by simpa using hWtarget hw)
+    simpa using this
+  haveI hNeBot : (𝓝[≠] (φ.symm w)).NeBot := htsymm.neBot
+  symm
+  apply Filter.Tendsto.limUnder_eq
+  have hfwd : Tendsto φ (𝓝[≠] (φ.symm w)) (𝓝[≠] (φ (φ.symm w))) := φ.tendsto_nhdsNE hys
+  have hwr : φ (φ.symm w) = w := φ.right_inv (hWtarget hw)
+  have hcomp : Tendsto (F ∘ φ) (𝓝[≠] (φ.symm w)) (𝓝 c) := by
+    rw [← hwr] at hc; exact hc.comp hfwd
+  refine hcomp.congr' ?_
+  filter_upwards [mem_nhdsWithin_of_mem_nhds (φ.open_source.mem_nhds hys)] with z hz
+  simp [hFdef, Function.comp, φ.left_inv hz]
 
 /-- The `(0,1)`-projection commutes with ℂ-scaling of the codomain: `proj01 (z • α) = z • proj01 α`
 (`z` factors out of the Wirtinger average). -/
