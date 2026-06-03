@@ -300,23 +300,32 @@ we **never need the heavy "residue-of-a-1-form is chart-independent" change-of-v
 contour-reparametrization proof Mathlib doesn't scaffold). This removes the scariest analytic plumbing
 from the route.
 
-**OPEN FORK (the next decision):** the `H⁰` side of the pairing — see the two-option scoping below.
-The shared next build is `Res : H¹(X,Ω) → ℂ` via Mittag–Leffler distributions (cochains of local
-meromorphic 1-forms with holomorphic coboundary), well-defined via `∑Res=0` (= `deg_div`, Phase 2) +
-the cover-independence above. Both options need a representation of **local meromorphic 1-forms** (on
-opens / in charts) — the next foundational object to build.
+**SCOPING DECISION (2026-06-03, user): D=0 only** — target just `arithmeticGenus_eq_genus`
+(`h1Dim 0 = genus`), the single Serre leaf the forward headline `genus 0 → S²` needs. Skip packaging
+general `serre_h1_eq` and the global `Ω_{-D}≅𝒪_{K-D}` iso (those are for general-`D` RR / `#3` Abel).
 
-**Option A — D=0 only (headline-critical, recommended first).** Pairing `HolomorphicOneForms X ×
-cechH1 𝔘 0 → ℂ`, `(ω,ξ) ↦ Res(ω·ξ)`. Targets `arithmeticGenus_eq_genus` (the leaf the forward
-headline `genus 0 → S²` actually needs). Uses the **existing** `HolomorphicOneForms` type; the `H⁰`
-side is *holomorphic* forms, so **no meromorphic-1-form global type and no `ω₀`-existence theorem**.
-Does NOT yield general `serre_h1_eq` (only needed for general-`D` RR / `#3` Abel).
+**Refined D=0 plan (the equality splits, both halves PDE-free):** `cohomological_riemannRoch` (verified
+exact statement `h0Dim D − h1Dim D = deg D + 1 − h1Dim 0`) bakes in `p_a = h1Dim 0` and so gives **no**
+shortcut to `p_a = g` — the equality genuinely needs both directions of the §17 residue pairing
+`ι₀ : H⁰(X,Ω) → H¹(X,𝒪)*`, `ι₀(ω) = (ξ ↦ Res(ω·ξ))`:
+- **EASY half `genus ≤ h1Dim 0`** = `ι₀` *injective* (Forster 17.6). PDE-free and the more tractable
+  piece: needs only the residue atom (✅) + the explicit 17.6 witness, built from the **existing**
+  `HolomorphicOneForms` (repo) and `MeromorphicFunction` (repo) types — **no global meromorphic-1-form
+  type, no `ω₀`-existence**. This is the doc-blessed *weaker, one-directional, genuinely sorry-free*
+  deliverable (see the START-HERE constraint) and the right next milestone.
+- **HARD half `h1Dim 0 ≤ genus`** = `ι₀` *surjective* (Forster 17.9). Reuses the abstract
+  `serre_surjectivity_dim_core` (✅) but its dimension count needs `H⁰(Ω_{nP})` = **global meromorphic
+  1-forms with poles ≤ nP**, hence DOES need a meromorphic-1-form representation + **`ω₀`-existence**
+  (a nonconstant meromorphic function/form on `X`; comes from finiteness/RR — itself a sub-theorem).
+  ⚠ Correction: my first Option-A note wrongly said D=0 avoids `ω₀`; only the EASY half does.
 
-**Option B — general `D` (full Serre).** Build the meromorphic `Ω_{-D}` sheaf + fix a nonzero global
-meromorphic 1-form `ω₀` (Forster 17.4: `ω=df`; existence of a nonconstant meromorphic function on a
-compact RS is itself a theorem — comes from finiteness/RR) + the iso `Ω_{-D}≅𝒪_{K-D}`. Targets BOTH
-`arithmeticGenus_eq_genus` and `serre_h1_eq`. Strictly larger; the `ω₀`-existence sub-theorem is extra
-surface.
+**Shared next module — `Res : H¹(X,Ω) → ℂ`** (needed by both halves), via Mittag–Leffler
+distributions, well-defined via `∑Res=0` (= `deg_div`, Phase 2) + the canonical-chart cover-independence
+above. Its upstream-most sub-piece: the **coefficient of a holomorphic form `ω` in the canonical chart**
+`coeffAt ω a : ℂ → ℂ` (analytic; via `CotangentCoeff.apply_eq_inCoordinates`), so that the local residue
+of `ω·f` at `a` is `resAt (coeffAt ω a · (f ∘ chartAt.symm)) (chartAt a a)` — note the appearing
+1-forms are all `ω·(meromorphic function)`, so the *holomorphic* `ω` serves as the local reference and
+**no abstract meromorphic-1-form type is needed for the EASY half**. Build `coeffAt` next.
 
 ### ▶ PHASE 0 (do first — establishes the path, de-risks §17): build Serre duality §17
 
