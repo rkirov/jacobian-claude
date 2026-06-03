@@ -110,11 +110,11 @@
 <text x="728" y="848" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12" font-weight="normal" fill="#527" text-anchor="start">•  analyticOn_pullback_of_holo  (chart-pullback of holo section is analytic)</text>
 <text x="728" y="872" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12" font-weight="normal" fill="#527" text-anchor="start">•  holoSectionToBddHol  (single-section bridge, per overlap)</text>
 <line x1="990.0" y1="780" x2="990.0" y2="758" stroke="#777" stroke-width="2.0" marker-end="url(#arr)"/>
-<rect x="710" y="904" width="560" height="56" rx="10" fill="#fdeebf" stroke="#333" stroke-width="2.2"/>
-<text x="990.0" y="928.0" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="600" fill="#111" text-anchor="middle">🔧 non-convex restriction-compactness  (cross-chart overlaps aren&#x27;t convex)</text>
-<text x="990.0" y="947.0" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12" font-weight="normal" fill="#444" text-anchor="middle">step 1 ✓ (finite disk cover)  ·  step 2 in progress (equicontinuity / Arzelà–Ascoli)</text>
-<text x="990.0" y="1004" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="12" font-weight="600" fill="#a23" text-anchor="middle">REMAINING 🔴 = non-convex compactness → geometry → cochain map → leray → comparison</text>
-<text x="990.0" y="1028" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="12" font-weight="normal" fill="#73a" text-anchor="middle" font-style="italic">K-bridge ✓  ·  FA spine ✓  ·  geometry free</text>
+<rect x="710" y="904" width="560" height="56" rx="10" fill="#bfe3c0" stroke="#333" stroke-width="2.2"/>
+<text x="990.0" y="928.0" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="600" fill="#111" text-anchor="middle">◆ non-convex restriction-compactness  —  sorry-free  (the geometry unblock)</text>
+<text x="990.0" y="947.0" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12" font-weight="normal" fill="#444" text-anchor="middle">Arzelà–Ascoli via uniform Cauchy bound on a thickened compact  (overlaps need not be convex)</text>
+<text x="990.0" y="1004" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="12" font-weight="600" fill="#a23" text-anchor="middle">REMAINING 🔴 = DiskOverlapData geometry → cochain map → leray → cechH1≅supH1 comparison</text>
+<text x="990.0" y="1028" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="12" font-weight="normal" fill="#73a" text-anchor="middle" font-style="italic">K-bridge ✓  ·  FA spine ✓  ·  non-convex compactness ✓</text>
 <rect x="40" y="1110" width="1260" height="120" rx="10" fill="#fff7e6" stroke="#e0b000" stroke-width="1.6"/>
 <text x="670.0" y="1136" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#7a5b00" text-anchor="middle">NET (2026-06-03):  no challenge-critical sorry discharged  —  these are genuine research-grade walls</text>
 <text x="60" y="1162" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#5a4500" text-anchor="start">•  Dolbeault comparison kernel ELIMINATED (fully sorry-free).   Serre §17 local calculus + finiteness K-bridge layer BUILT sorry-free.</text>
