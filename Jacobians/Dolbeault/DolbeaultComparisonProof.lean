@@ -196,6 +196,38 @@ theorem dbar_apply_one_eq_dbarDisk (u : SmoothCFunctions X) (x : X) :
   · congr 1
     exact mfderiv_apply_eq_fderiv_pullback u x Complex.I
 
+/-- **Generalized chart bridge** for a *bare* `MDifferentiableAt` function `w : X → ℂ` (not just a
+`SmoothCFunctions`): `mfderiv w x v` is the plain `fderiv` of the chart-pullback. Same proof as
+`mfderiv_apply_eq_fderiv_pullback` but with the smoothness replaced by the weaker `MDifferentiableAt`
+hypothesis — used to read the intrinsic `∂̄` of a *locally*-smooth value function like
+`planarPrimitive ∘ extChartAt`. -/
+theorem mfderiv_apply_eq_fderiv_pullback' {w : X → ℂ} {x : X}
+    (hw : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x) (v : ℂ) :
+    (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x) v =
+      fderiv ℝ (fun z => w ((extChartAt 𝓘(ℝ, ℂ) x).symm z)) (extChartAt 𝓘(ℝ, ℂ) x x) v := by
+  have hmf : mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x =
+      fderiv ℝ (writtenInExtChartAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) x w) (extChartAt 𝓘(ℝ, ℂ) x x) := by
+    rw [hw.mfderiv, ModelWithCorners.Boundaryless.range_eq_univ, fderivWithin_univ]
+  have hpull : writtenInExtChartAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) x w =
+      fun z => w ((extChartAt 𝓘(ℝ, ℂ) x).symm z) := by
+    ext z; simp only [writtenInExtChartAt, Function.comp_apply]; rfl
+  rw [hpull] at hmf
+  exact congrArg (fun L : ℂ →L[ℝ] ℂ => L v) hmf
+
+/-- **Generalized chart bridge at `1`** for a bare `MDifferentiableAt` function: the intrinsic
+Wirtinger scalar `proj01 (mfderiv w x) 1` equals the planar `DbarDisk.dbar` of the chart-pullback.
+The `MDifferentiableAt` form of `dbar_apply_one_eq_dbarDisk`. -/
+theorem dbar_apply_one_eq_dbarDisk' {w : X → ℂ} {x : X}
+    (hw : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x) :
+    proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x) (1 : ℂ) =
+      DbarDisk.dbar (fun z => w ((extChartAt 𝓘(ℝ, ℂ) x).symm z)) (extChartAt 𝓘(ℝ, ℂ) x x) := by
+  rw [proj01_apply_one, DbarDisk.dbar]
+  congr 1
+  congr 1
+  · exact mfderiv_apply_eq_fderiv_pullback' hw 1
+  · congr 1
+    exact mfderiv_apply_eq_fderiv_pullback' hw Complex.I
+
 /-- **A value-at-`1` equation upgrades to the full CLM equation `dbar u x = g x`** (sorry-free).
 Both `dbar u x = proj01 (mfderiv … u x)` and (since `g ∈ OneFormsZeroOne X`) `g x = proj01 (β x)`
 are `(0,1)`-forms, hence determined by their value at the tangent vector `1`
@@ -981,6 +1013,78 @@ theorem dbar_planarDiff_eq_zero (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X
   simp only [map_inv₀, map_mul]
   field_simp
   ring
+
+/-- **The disk primitive solves `∂̄ = g` intrinsically on `U_k`.** For `x ∈ U_k`, the intrinsic
+Wirtinger scalar of the disk-primitive *value function* `wₖ = planarPrimitive k g ∘ e_k` equals
+`g x 1` — i.e. `∂̄wₖ = g` at `x`. Mechanism (single-chart, mirroring `dbar_planarDiffH_eq_zero`): the
+generalized bridge `dbar_apply_one_eq_dbarDisk'` reads `∂̄wₖ` in `x`'s own chart as
+`DbarDisk.dbar (planarPrimitive k g ∘ τ')` (`τ' = e_k ∘ eₓ.symm`); the Wirtinger chain rule
+`dbarDisk_comp_holo` peels a `conj(deriv τ')` factor; `dbar_planarPrimitive` gives the cutoff pullback
+(`χ = 1` on the disk), and `frameVector_eq_deriv_transition_symm` + `oneForm_apply_conjLinear`
+introduce a second `conj(deriv σ)` factor (`σ = eₓ ∘ e_k.symm`). The two cancel because `σ ∘ τ' = id`
+(`deriv σ · deriv τ' = 1`), leaving exactly `g x 1`. -/
+theorem dbar_diskValue_eq_g (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
+    (hg : g ∈ OneFormsZeroOne X) (k : 𝔇.ι) {x : X} (hxk : x ∈ (𝔇.U k : Set X)) :
+    proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ)
+        (fun y => 𝔇.planarPrimitive k g ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center k)) y)) x) (1 : ℂ)
+      = (g x) (1 : ℂ) := by
+  set ek := extChartAt 𝓘(ℝ, ℂ) (𝔇.center k) with hek
+  set ex := extChartAt 𝓘(ℝ, ℂ) x with hexx
+  set wk : X → ℂ := fun y => 𝔇.planarPrimitive k g (ek y) with hwk
+  set z₀ := ek x with hz0
+  set τ' := ek ∘ ex.symm with hτ'
+  set σ := ex ∘ ek.symm with hσ
+  have hxsk : x ∈ ek.source := 𝔇.subset_chart_source k hxk
+  have hx_src_k : x ∈ (chartAt ℂ (𝔇.center k)).source := by rw [hek, extChartAt_source] at hxsk; exact hxsk
+  -- `wₖ` is `MDifferentiableAt x` (`e_k` smooth at `x ∈ source`, `planarPrimitive` is `C^∞`).
+  have hekmd : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ek x :=
+    ((contMDiffOn_extChartAt (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := 𝔇.center k) x hx_src_k).contMDiffAt
+      ((chartAt ℂ (𝔇.center k)).open_source.mem_nhds hx_src_k)).mdifferentiableAt (by simp)
+  have hppmd : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.planarPrimitive k g) (ek x) :=
+    ((𝔇.contDiff_planarPrimitive k g).contMDiff.contMDiffAt).mdifferentiableAt (by simp)
+  have hwkmd : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) wk x := hppmd.comp x hekmd
+  -- Read the intrinsic `∂̄` in `x`'s own chart; the pullback is `planarPrimitive k g ∘ τ'`.
+  rw [dbar_apply_one_eq_dbarDisk' hwkmd]
+  have hcomp : (fun z => wk (ex.symm z)) = (𝔇.planarPrimitive k g) ∘ τ' := by
+    funext z; simp only [hwk, hτ', Function.comp_apply]
+  rw [hcomp]
+  -- The transition `τ'` is holomorphic at `eₓ x`, with `τ' (eₓ x) = z₀`.
+  have hτ'pt : τ' (ex x) = z₀ := by
+    rw [hτ', Function.comp_apply, hexx, extChartAt_to_inv]
+  have hτ'diff : DifferentiableAt ℂ τ' (ex x) := by
+    rw [hτ', hexx, hek]; exact differentiableAt_chartTransition (𝔇.center k) x hxsk
+  rw [dbarDisk_comp_holo (𝔇.planarPrimitive k g) τ' (ex x)
+        ((𝔇.contDiff_planarPrimitive k g).differentiable (by norm_num) _) hτ'diff, hτ'pt,
+      𝔇.dbar_planarPrimitive k g z₀]
+  -- The cutoff is `1` on the disk; the frame law + `(0,1)`-conjugate-linearity give the second factor.
+  have hχk : (𝔇.diskBump k) z₀ = 1 := by
+    have h' := hxk; rw [𝔇.isDisk k] at h'
+    exact (𝔇.diskBump k).one_of_mem_closedBall (by rw [hz0]; exact Metric.ball_subset_closedBall h'.1)
+  have hsymm_k : ek.symm z₀ = x := ek.left_inv hxsk
+  rw [show 𝔇.cutoffPullback k g z₀ = ((𝔇.diskBump k) z₀ : ℝ) •
+      (g (ek.symm z₀)) ((Bundle.Trivialization.symmL ℝ
+        (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) (𝔇.center k)) (ek.symm z₀)) (1 : ℂ)) from rfl,
+    hχk, hsymm_k, one_smul, frameVector_eq_deriv_transition_symm (𝔇.center k) x hxsk,
+    oneForm_apply_conjLinear hg x (deriv σ z₀)]
+  -- `σ ∘ τ' = id` near `eₓ x`, so `deriv σ z₀ · deriv τ' (eₓ x) = 1`.
+  have hσdiff : DifferentiableAt ℂ σ z₀ := by
+    rw [hσ, hz0, hexx, hek]; exact differentiableAt_chartTransition_symm (𝔇.center k) x hxsk
+  have hev : (σ ∘ τ') =ᶠ[nhds (ex x)] id := by
+    have hcont : ContinuousAt ex.symm (ex x) := continuousAt_extChartAt_symm x
+    have hmem : ∀ᶠ z in nhds (ex x), ex.symm z ∈ ek.source := by
+      refine hcont.preimage_mem_nhds ?_
+      rw [hexx, extChartAt_to_inv]; exact (isOpen_extChartAt_source (𝔇.center k)).mem_nhds hxsk
+    have htgt : ∀ᶠ z in nhds (ex x), z ∈ ex.target := by
+      rw [hexx]; exact (isOpen_extChartAt_target x).mem_nhds (mem_extChartAt_target x)
+    filter_upwards [hmem, htgt] with z hzmem hztgt
+    simp only [hσ, hτ', Function.comp_apply, id_eq, ek.left_inv hzmem, ex.right_inv hztgt]
+  have hone : deriv σ z₀ * deriv τ' (ex x) = 1 := by
+    have hd := hev.deriv_eq
+    rw [deriv_comp (ex x) (hτ'pt ▸ hσdiff) hτ'diff, hτ'pt] at hd
+    simpa using hd
+  have hconj : (starRingEnd ℂ) (deriv τ' (ex x)) * (starRingEnd ℂ) (deriv σ z₀) = 1 := by
+    rw [← map_mul, mul_comm, hone, map_one]
+  rw [← mul_assoc, hconj, one_mul]
 
 /-- The chart-`i` read of the cochain difference is **holomorphic** (`ℂ`-differentiable) at `e_i x`
 for `x ∈ U_i ⊓ U_j`: Lemma A `dbar_planarDiff_eq_zero` (`∂̄ = 0`) + local smoothness (the transition
