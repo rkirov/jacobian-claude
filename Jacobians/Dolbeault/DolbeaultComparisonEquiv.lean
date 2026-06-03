@@ -218,7 +218,27 @@ theorem cech_to_dolbeault_comp_dolbeault_to_cech (𝔇 : ChartDiskCover X)
   exact neg_eq_of_add_eq_zero_right hz
 
 /-- **`comparison_bijective`, part 2** (honest named sub-kernel): Čech → Dolbeault → Čech is the
-identity. Local-solving the partition-of-unity primitive recovers the same Čech cohomology class. -/
+identity.
+
+**Strategy** (the harder round-trip, derived; uses the cocycle condition). Start with a cocycle `f`,
+`ω = cechToDolbeaultForm f = ∑_{j,k} ρ_j·f_jk·∂̄ρ_k`. Then `dolbeault_to_cech (cech_to_dolbeault [f])
+= −[cechDelta0 {diskSection_i ω}]`; the claim is this `= [f]`.
+
+1. **Local primitive identity.** On `U_i`, set `η_i = ∑_k ρ_k·f_ik`. The **cocycle relation**
+   `f_jk = f_ik − f_ij` (from `δ¹f = 0`, at the `holoFn` value level on triple overlaps) plus `∑ρ=1`,
+   `∑∂̄ρ=0` give `ω = ∑_k f_ik·∂̄ρ_k = ∂̄η_i` on `U_i` (the same telescoping as `dbarL_globalPrim_eq`,
+   here per-`i`; `f_ik` holomorphic ⟹ `∂̄f_ik = 0`).
+2. **Primitive difference is holomorphic.** `diskSection_i ω` also solves `∂̄· = ω` on `U_i`
+   (`dbar_diskValue_eq_g` for `ω`), so `hol_i := diskSection_i ω − η_i` is holomorphic on `U_i`
+   (`∂̄hol_i = ω − ω = 0`); `{hol_i}` is a holomorphic `0`-cochain (`∈ sections0 0`).
+3. **Čech computation.** `cechDelta0 {diskSection_i ω}_{il} = (η_l − η_i) + (hol_l − hol_i)`, and
+   `η_l − η_i = ∑_k ρ_k(f_lk − f_ik) = −f_il` (cocycle relation again, `∑ρ=1`). So
+   `cechDelta0 {diskSection_i ω} = −f + cechDelta0 {hol_i}` — i.e. `−f` plus a **coboundary** (of the
+   holomorphic `0`-cochain `{hol_i}`). Hence `[−cechDelta0 {diskSection_i ω}] = [f]` in `cechH1`.
+
+Genuinely harder than part 1: needs the germ-level cocycle relation `holoFn(f_ik) = holoFn(f_ij) +
+holoFn(f_jk)` on triple overlaps (from `δ¹f = 0`), `dbar_diskValue_eq_g` applied to the composite
+`ω`, and a germ-level coboundary identity in `cechDelta0`. ~200–400 lines. -/
 theorem dolbeault_to_cech_comp_cech_to_dolbeault (𝔇 : ChartDiskCover X)
     (hL : 𝔇.toFiniteCover.IsLeray) :
     (dolbeault_to_cech 𝔇) ∘ₗ (cech_to_dolbeault 𝔇) = LinearMap.id :=
