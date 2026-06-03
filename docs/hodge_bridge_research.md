@@ -9,14 +9,41 @@ Legend: **[VERIFIED]** read off Mathlib/repo this session; **[BOOK]** Forster/Gr
 
 ---
 
-## 0. Bottom line (recommendation)
+## ⚠ CORRECTION (2026-06-03, after reading Forster §16–19 directly)
 
-**The headline (`genus_eq_zero_iff_homeo`, forward) bottoms out in Serre duality at `D=0`, which is a
-genuine research-scale analysis formalization — not a "hard lemma." Mathlib has *zero* scaffolding for
-it (no differential forms on manifolds, no de Rham, no Hodge, no elliptic regularity; a known multi-year
-gap with no open PR).** The repo's own intrinsic ∂̄ + (0,1)-forms + finiteness make a *Forster-style*
-proof (residue-pairing perfectness, not full Hodge-Laplacian) the cheapest route, but it is still
-multi-month, research-grade work.
+**The earlier draft of this doc (below §0) wrongly claimed the hard direction's "irreducible core is
+Weyl's lemma / elliptic regularity." That is FALSE.** It described the *Hodge-harmonic* route
+(Griffiths–Harris), which we do **not** need and should **not** take. Reading Forster's *complete* Serre
+Duality proof (§17.1–17.12) settles it:
+
+**Serre duality (§17) and Riemann–Roch (§16) are proved BEFORE and WITHOUT the harmonic-forms machinery
+(§19).** Forster's §19 (`*`-operator, harmonic forms, the L² scalar product `∬ω∧*ω̄` — the elliptic/Hodge
+content) is used ONLY to prove genus is a *topological* invariant. **Serre/RR are entirely PDE-free.**
+
+The actual ingredients of Serre duality's hard direction (§17.9 surjectivity):
+| Ingredient | Kind | Repo |
+|---|---|---|
+| Finiteness `dim H¹<∞` (§14) | functional analysis (Montel + Schwartz compact-perturbation lemma) | ~95% reuse + Schwartz lemma; `exists_cechModel` open |
+| `Res: H¹(X,Ω)→ℂ` via Mittag–Leffler / **sum of local residues** (§17.2) | holomorphic residue algebra | residue/`deg_div` machinery |
+| Residue theorem `∑Res=0` (Res well-defined on classes) | Stokes-on-X **or** the repo's degree route | `deg_div` (degree route, PDE-free) |
+| Riemann–Roch dimension counts (§16) | finiteness + skyscraper SES | `cohomological_RR` (mod skyscraper) |
+| §17.9 surjectivity | **finite-dim linear algebra** (pigeonhole `dimΛ+dimIm>dim ⇒ ∩≠∅`) | trivial in Lean |
+
+No harmonic forms, no Weyl, no elliptic regularity, no ∂̄-Laplacian, no manifold 2-form integration
+(the Čech-residue route defines `Res` via local residues, getting well-definedness from `∑Res=0`, per
+§17.2 — sidestepping the §17.3 Stokes identity). **It is a large but PDE-free, functional-analytic +
+holomorphic-algebraic build — a fundamentally more tractable risk class than "Hodge from scratch."**
+
+The §2 EASY/HARD (conjugation + L² positivity) decomposition below describes the **Hodge route** and is
+moot for the recommended Forster route (the positivity is used by #7 and §19, not by Serre duality).
+
+---
+
+## 0. Bottom line (ORIGINAL DRAFT — superseded by the correction above on the PDE question)
+
+**The headline (`genus_eq_zero_iff_homeo`, forward) bottoms out in Serre duality at `D=0`.** ~~Mathlib has
+zero scaffolding... research-scale analysis...~~ — see the correction: it is PDE-free (Forster §16–17),
+gated on finiteness (functional analysis) + the residue/RR machinery, not on Hodge/elliptic.
 
 **The target `arithmeticGenus_eq_genus : h1Dim 0 = genus` splits into two very unequal halves:**
 
