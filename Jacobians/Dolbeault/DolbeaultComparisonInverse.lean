@@ -180,6 +180,22 @@ theorem contMDiff_cSmul_section (c : SmoothCFunctions X) (g : SmoothCOneForms X)
         (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) :=
   fun x₀ => contMDiffAt_cSmul_section (c.contMDiff x₀) (g.contMDiff_toFun x₀)
 
+/-- **Chart-analytic ⟹ real-smooth.** If a `ℂ`-valued function `h` read in the chart at `y` is
+complex-analytic at the chart image, then `h` is real-`C^∞` (`ContMDiffAt 𝓘(ℝ,ℂ)`) at `y`. (The
+`(0,1)`-form term needs this for the holomorphic representatives `F_jk = Gext(holoRep)`.) -/
+theorem contMDiffAt_real_of_chart_analyticAt {h : X → ℂ} {y : X}
+    (ha : AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y)) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) h y := by
+  have hcd : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (h ∘ (chartAt (H := ℂ) y).symm)
+      ((chartAt (H := ℂ) y) y) :=
+    ((ha.contDiffAt.restrict_scalars ℝ).contMDiffAt).of_le le_top
+  have hchart : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (chartAt (H := ℂ) y) y :=
+    (contMDiffOn_chart (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := y)).contMDiffAt
+      ((chartAt (H := ℂ) y).open_source.mem_nhds (mem_chart_source ℂ y))
+  refine (hcd.comp y hchart).congr_of_eventuallyEq ?_
+  filter_upwards [(chartAt (H := ℂ) y).open_source.mem_nhds (mem_chart_source ℂ y)] with z hz
+  simp only [Function.comp_apply, (chartAt (H := ℂ) y).left_inv hz]
+
 /-- The `(0,1)`-projection commutes with ℂ-scaling of the codomain: `proj01 (z • α) = z • proj01 α`
 (`z` factors out of the Wirtinger average). -/
 theorem proj01_smul (z : ℂ) (α : ℂ →L[ℝ] ℂ) : proj01 (z • α) = z • proj01 α := by
