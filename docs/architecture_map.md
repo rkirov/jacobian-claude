@@ -18,10 +18,12 @@ proof could never feed back. **Fixed:** (1) extracted `Jacobians/LinearSystem.le
 headline now routes `genus_eq_zero_iff_homeo → …_of_rr → exists_riemannRoch_divisor → ladder → {named
 leaves}` with NO separate opaque RR sorry.** Remaining RR-path sorries = the genuine named leaves
 (`arithmeticGenus_eq_genus`, `serre_h1_eq`, `cohomological_riemannRoch`/`exists_skyscraperLES`,
-`h0Dim_eq_lDim`/`cechRestrictL_surjective`, finiteness `exists_cechModel`) **+ one eliminable `hOverlaps`**.
-**NEXT (STEP 2a, sound, deferred for build cost):** weaken `FiniteFamily.IsLeray` to its first conjunct
-(acyclic SETS — all leaves are H¹, Cartan needs only that; `GoodCover` proves the overlap conjunct unused)
-⇒ `exists_lerayCover` unconditional ⇒ `hOverlaps` sorry deleted. (Re-triggers a full ladder recompile.)
+`h0Dim_eq_lDim`/`cechRestrictL_surjective`, finiteness `exists_cechModel`). **STEP 2a DONE (commit
+`0119760`):** weakened `FiniteFamily.IsLeray` to its first conjunct alone (acyclic SETS — all leaves are
+H¹, Cartan's `0→Ȟ¹→H¹→Ȟ⁰(ℋ¹)` needs only that; `GoodCover` proved the overlap conjunct unused) ⇒
+`exists_lerayCover` is now **UNCONDITIONAL and fully axiom-clean** (no `sorryAx`) ⇒ the good-cover
+`hOverlaps` sorry is **ELIMINATED**. So the forward-headline path (`genus 0 → S²`) now rests **purely on
+the named analytic ladder leaves** — no separate RR sorry, no good-cover geometric sorry.
 
 ⚠ **A "forward headline closed" result from the overnight run was VACUOUS — corrected.** A heavy
 multi-agent run produced many real reductions, but the apparent forward closure rested on
