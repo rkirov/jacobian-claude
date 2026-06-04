@@ -85,17 +85,87 @@ genus`, `h1Dim D = lDim(K−D)`), `CohomologicalRR:334`, `DolbeaultComparison:22
 
 ---
 
-## 4. W3 #7 cut-surface · W4 #3 Abel · W1b #1b backward   **[agent pending]**
+## 4. W3 #7 cut-surface · W4 #3 Abel · W1b #1b backward (the independent walls)
 
-Deep audit in progress (reuse of flat-Stokes/`CutSurface`, the period lattice, de Rham/`RealForms`, and the
-`S²` topology; and the cheapest in-repo route to `SimplyConnectedSpace S²` since we build everything
-ourselves). To be merged.
+### W3 — `exists_cutSurface` (`CutSurfaceRelations.lean:161`) — **MOST reuse-collapsible**
+- Consumption (all sorry-free): `exists_cutSurface` → `toCanonicalDissection` → `exists_canonicalDissection`
+  → `exists_periodLattice_realBasis` (`PeriodLattice.lean:856`) → the lattice full-rank API. Discharging
+  it closes #7 outright. Tighter scaffold: `exists_cutSurface_of_topology` (`CutSurfaceRecon.lean:114`)
+  reduces it to `Nonempty (CutSurfaceTopology X)`.
+- **Reuse (the whole analytic half is built, axiom-clean):** both Riemann bilinear relations
+  `cutSurface_R1`/`_R2` (`CutSurfaceRelations.lean:126,135`) PROVEN from the boundary-word fields;
+  `periodVec_linearIndependent` (`Dissection.lean:108`, posDef ⟹ 2g vecs ℝ-indep); the Green/box engine
+  (`rectBoundaryIntegral*`, `boundaryForm`, `GreenPositivity`) on Mathlib `DivergenceTheorem` +
+  `integral_boundary_rect_eq_zero` + `Convex.exists_forall_hasDerivWithinAt`; the handle aggregation
+  `rectBoundaryIntegral_handleSum` (`CutSurfaceRecon.lean:170`).
+- **Net-new:** construct the 14 `CutSurfaceTopology` fields — i.e. **surface topology only**: Radó
+  triangulability + classification ⟹ symplectic loop basis (`H₁≅ℤ^{2g}`); the holomorphic cut-chart to a
+  `4g`-gon; the gluing/monodromy "boundary word" (per-edge identifications + primitive's jump-by-period).
+- **Verdict: ~70% of the classical proof already proven; residue is pure topology. ~2–4k LoC, front-loaded
+  on topology.** Risk: Mathlib has *no* surface-topology API (no triangulation, no `4g`-gon normal form) —
+  the largest greenfield chunk, but conceptually bounded. The "gluing ⟹ boundary word" derivation is the
+  correctness crux.
+
+### W4 — `abelJacobi_twoPoint_ne_zero` (`Abel.lean:671`) — **reduction reused, core greenfield**
+- Consumed only by `ofCurve_inj` (the #3 theorem), proven modulo this leaf. `AbelRecon.lean` proves the
+  whole route EXCEPT Abel's theorem, axiom-clean: `abelJacobi_twoPoint_ne_zero_of_abel` (`:153`) derives the
+  target from `AbelStatement X` (`:134`) + the genus-0 fact. So **W4 is pinned to exactly `AbelStatement X`**
+  (Abel *sufficiency*: `abelJacobi(P−Q)=0 → ∃ f, HasSingleSimplePole Q`).
+- **Reuse:** the full reduction (`AbelRecon`) + `abelJacobi_twoPointDivisor` (`Abel.lean:595`). The trace
+  layer powers Abel *necessity* — the half NOT needed here.
+- **Net-new = `AbelStatement`**, the HARD half that constructs `f`. No RR-free *and* Hodge-free elementary
+  proof exists. Route A (Forster §20): weak divisor solution + **`∂̄`-solvability `H¹(X,𝒪)`** (the Dolbeault
+  tower). Route B (G–H): third-kind differential `ω_{PQ}` + reciprocity — gated on **RR** + ∑Res=0;
+  reciprocity reuses the `CutSurface`/`boundaryForm` toolkit (shared with W3).
+- **Verdict: ~3–6k+ LoC, the deepest of the three; reduction done, core absent.** W3 ⊥ W4 (logically
+  independent — the lattice says nothing about whether the open-path period is a lattice point; that
+  non-membership IS Abel). **Leverage:** Route B's RR input is exactly what the Dolbeault agents target — RR
+  unlocks W4 + the genus-comparison + forward #1 simultaneously.
+
+### W1b — `genus_zero_of_nonempty_homeo_sphere` (`DegreeOneSphere.lean:675`) — **a trap + the de Rham wall**
+- The `mpr` of `genus_eq_zero_iff_homeo`. Reuse already built: `RiemannSphere.genus_eq_zero` (`ProjectiveLine.lean:614`,
+  via Liouville — the entire `Ω(ℂℙ¹)=0` content, DONE & in scope), `homeoSphere`, and Step-1/Step-5 transport
+  in `GenusSphereBackward.lean` (`exists_ne_zero_holomorphicOneForm_of_genus_pos`, `simplyConnectedSpace_of_homeo_sphere`).
+- **KEY FINDING — the genus-transport shortcut is BLOCKED.** One wants `X ≃ₜ S² ≃ₜ ℂℙ¹ ⟹ genus X = 0` for
+  free; it FAILS because `genus := finrank ℂ HolomorphicOneForms` is **complex-analytic** (transports across a
+  *biholomorphism*, not a homeomorphism), and the endgame only ever produces a *topological* `X ≃ₜ S²`. So
+  `RiemannSphere.genus_eq_zero` is unreachable for this hypothesis. The honest route is the contrapositive
+  `genus ≥ 1 ⟹ X ≄ₜ S²` via de Rham, with two greenfield nodes: **(1) `SimplyConnectedSpace S²`** (absent —
+  only a Mathlib `proof_wanted`; we build it) and **(2) closed-not-exact ⟹ ∃ loop `∮_γ ω ≠ 0`** (manifold
+  loop-integration + homotopy-invariance — no Mathlib scaffolding; the repo even deleted the local version).
+- **Verdict: ~1.5–3k LoC across two absent nodes.** `SimplyConnectedSpace S²` is a clean, self-contained,
+  **Dolbeault-independent** sub-target (cheapest *isolated* win; also a `proof_wanted` Mathlib would accept) —
+  but alone it does NOT close W1b without the de Rham period slice (the same Hodge/∂̄-flavored gap as W4-A).
 
 ---
 
-## 5. Preliminary reuse-leverage ranking (to be finalized after the agent audits)
+## 5. Reuse-leverage ranking (W1 Serre verdict still **[agent pending §3]**)
 
-1. **W1 finiteness atom** (FunctionDiskAcyclic) — building now; reuse of `primFn`/`cechTerm` post-clash-fix.
-2. **W2 Rouché bridge + fibre assembly** — both hard atoms done; highest effort-to-impact remaining.
-3. **W1 Serre ladder** — the make-or-break; reuse-vs-Hodge-wall verdict pending §3.
-4. **W3 / W4 / W1b** — the independent classical walls; reuse extent pending §4.
+Ordered by effort-to-impact / reuse-collapsibility:
+
+1. **W1 finiteness atom** (`FunctionDiskAcyclic`) — building now; pure reuse of `primFn`/`cechTerm` post-clash-fix.
+2. **W2 Rouché bridge + fibre assembly** — both hard atoms (arg-principle, k-th-root) DONE; residue is the
+   open-mapping bridge `argumentPrinciple_implies_rouche_statement` + `exists_properMapDegree` assembly over
+   the 11.6k sorry-free degree dir. Highest effort-to-impact of the *open* items. ~few hundred LoC.
+3. **W3 #7 cut-surface** — most reuse-collapsible *classical* wall: ~70% proven (bilinear relations + matrix
+   core + box-Green + handle-sum); residue = pure surface topology (Radó/`4g`-gon), ~2–4k LoC.
+4. **`SimplyConnectedSpace S²`** (a W1b sub-node) — clean, self-contained, **Dolbeault-independent**; the
+   cheapest *isolated* topology win (also a Mathlib `proof_wanted`). Does NOT alone close W1b.
+5. **W1 Serre ladder** — the make-or-break; reuse-vs-Hodge-wall verdict **pending §3**.
+6. **W1b de Rham period slice** — manifold loop-integration + homotopy-invariance; no Mathlib scaffolding.
+7. **W4 #3 Abel** (`AbelStatement`) — deepest: reduction reused (axiom-clean), but the core is a multi-k-LoC
+   greenfield `∂̄`/RR theorem.
+
+### Cross-wall structural insights (the highest-value findings)
+- **RR is the single highest-leverage missing theorem.** Building it (the Dolbeault tower the agents target)
+  discharges W1, **and** W4 Route B (`AbelStatement` via `ω_{PQ}` + reciprocity), **and** the genus-comparison
+  /forward-#1 — three walls at once. It does NOT give W3 (deliberately PDE-free Green-on-polygon) or
+  `SimplyConnectedSpace S²` (pure homotopy).
+- **The genus-invariance trap (W1b):** `genus` is complex-analytic; the only available equivalence is
+  topological — so the "transport from `ℂℙ¹`" shortcut is false-as-applied. Forces the de Rham wall.
+- **Three sub-targets are Dolbeault-INDEPENDENT** and can proceed in parallel with the Serre tower: W2's
+  Rouché bridge+assembly, W3's surface topology, and `SimplyConnectedSpace S²`. These are the "keep the
+  other fronts moving" candidates.
+- **The shared Hodge/∂̄ gap:** W4-Route-A and W1b's period slice both bottom out at the *same* manifold-∂̄
+  analysis as W1's Serre ladder — so W1's verdict (§3) effectively decides whether that whole family is one
+  shared build or three separate walls.
