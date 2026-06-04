@@ -1220,3 +1220,22 @@ Two genuinely deep theorems remain:
    node gated on Hodge/Serre, regardless of how much comparison machinery is built.
 
 Repo green throughout; no sorries/axioms introduced. Memory: [[project_cech_to_dolbeault_progress]].
+
+---
+
+## 2026-06-04 — Scope correction: "done = everything, build it all, no Mathlib reliance"
+
+User redirect (verbatim): **"no done is everything, can't depend on anything landing in mathlib, we have to build it all."**
+
+Corrects two framings I had floated in the "how close to done" answer:
+1. "done = the genus headline (W1 + W1b), with W2/W3/W4 as narrower/separate deliverables" → **NO.**
+   Done = the FULL v0.4 challenge, every deliverable, ALL five walls (W1 RR/Serre, W2 deg_div,
+   W3 #7 cut-surface, W4 #3 Abel, W1b #1b backward) + everything else, sorry-free.
+2. "S² simple-connectivity is a Mathlib proof_wanted that could land upstream" / "an upstream
+   argument principle would collapse W2" (recon §7 watch) → **NO.** We build EVERY missing theorem
+   in-repo from scratch; zero reliance on future Mathlib. The disk argument-principle atom we just
+   proved axiom-clean from scratch (commit 318abbd) is the model — and evidence the approach works.
+
+How to apply: treat all five walls as in-scope, in-repo, sorry-free, axiom-clean; no "wait for
+upstream" escapes anywhere. Keep firing from-scratch atom builds at the walls. Memory:
+[[project_build_everything]].
