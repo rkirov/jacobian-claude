@@ -15,6 +15,7 @@ import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import Mathlib.Topology.Category.TopCat.Limits.Basic
 import Jacobians.Genus
 import Jacobians.DegreeOneSphere
+import Jacobians.GenusSphereHeadline
 import Jacobians.ZLatticeQuotient
 import Jacobians.ChartedSpaceOfLocalHomeomorph
 import Jacobians.HolomorphicForms
