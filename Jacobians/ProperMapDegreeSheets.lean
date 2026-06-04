@@ -464,13 +464,133 @@ theorem exists_sheetDatum_coe (f : MeromorphicFunction X) (hnc : (f.div : Diviso
       = (meromorphicOrderAt (fun ζ => f.holoRepr (e.symm ζ) - w') za).untop₀
     rw [horder_eq w' za hza.2]
 
+/-- **The per-point construction at `∞` (the pole fibre).**  At a pole `x` (`orderAtPoint x < 0`,
+so `F x = ∞`), with a clean separating neighbourhood `V`, the same conservation-of-number content
+holds via the reciprocal normal form `1/g` (a zero of order `= the pole order` at `e x`): a sheet
+`U ⊆ V` and an `∞`-neighbourhood `W` on which the per-sheet multiplicity sum is the pole order
+`m = localDeg f ∞ x = −orderAtPoint x`.
+
+TODO(∞-case): build via the `1/g` substitution (`meromorphicOrderAt_inv`) and the `OnePoint`
+neighbourhood of `∞`, mirroring `exists_sheetDatum_coe`.  The finite-value case (the bulk of the
+machinery — reconciliation toolkit, radius-bounded engine, reindexing) is complete; this pole row
+is the remaining isolated analytic sub-goal. -/
+theorem exists_sheetDatum_infty (f : MeromorphicFunction X) (hnc : (f.div : Divisor X) ≠ 0)
+    {x : X} (hx_pole : f.orderAtPoint x < 0)
+    {V : Set X} (hV_open : IsOpen V) (hxV : x ∈ V)
+    (hV_src : V ⊆ (chartAt (H := ℂ) x).source) :
+    Nonempty (SheetDatum f OnePoint.infty x V) :=
+  sorry
+
+/-- **Assembling `LocalMultiplicitySheets` from the per-sheet data.**  Given the finite fibre `xs`,
+pairwise-disjoint separating neighbourhoods `V0 ⊇ V`, and a per-point `SheetDatum` at each fibre
+point (in its sheet `V x`), this packages the full local conservation structure.  The total
+per-point fields are read off as `⋃ (h : x ∈ xs), (D x h).U` (= the datum on the fibre, `∅` off it),
+and disjointness descends from `U ⊆ V ⊆ V0` with `V0` pairwise disjoint. -/
+def ofSheetData (f : MeromorphicFunction X) (w₀ : RiemannSphere) (xs : Finset X)
+    (hxs_coe : (xs : Set X) = f.toRiemannSphere ⁻¹' {w₀})
+    (V0 : X → Set X) (hV0disj : (f.toRiemannSphere ⁻¹' {w₀}).PairwiseDisjoint V0)
+    (V : X → Set X) (hV_sub : ∀ x, V x ⊆ V0 x)
+    (hfin : ∀ w : RiemannSphere, (f.toRiemannSphere ⁻¹' {w}).Finite)
+    (hdatum : ∀ x ∈ xs, Nonempty (SheetDatum f w₀ x (V x))) :
+    LocalMultiplicitySheets f w₀ := by
+  classical
+  have D : ∀ x, x ∈ xs → SheetDatum f w₀ x (V x) := fun x hx => (hdatum x hx).some
+  -- The total per-point fields collapse to the chosen datum by proof irrelevance on `x ∈ xs`.
+  have hUif : ∀ x (hx : x ∈ xs), (⋃ (h : x ∈ xs), (D x h).U) = (D x hx).U := by
+    intro x hx; ext z; simp only [Set.mem_iUnion]
+    exact ⟨fun ⟨h, hz⟩ => by rwa [Subsingleton.elim h hx] at hz, fun hz => ⟨hx, hz⟩⟩
+  have hWif : ∀ x (hx : x ∈ xs), (⋃ (h : x ∈ xs), (D x h).W) = (D x hx).W := by
+    intro x hx; ext z; simp only [Set.mem_iUnion]
+    exact ⟨fun ⟨h, hz⟩ => by rwa [Subsingleton.elim h hx] at hz, fun hz => ⟨hx, hz⟩⟩
+  refine {
+    xs := xs
+    xs_coe := hxs_coe
+    U := fun x => ⋃ (h : x ∈ xs), (D x h).U
+    U_open := fun x hx => by rw [hUif x hx]; exact (D x hx).U_open
+    mem_U_self := fun x hx => by rw [hUif x hx]; exact (D x hx).mem_U_self
+    U_pairwiseDisjoint := ?_
+    m := fun x => if h : x ∈ xs then (D x h).m else 0
+    Wsheet := fun x => ⋃ (h : x ∈ xs), (D x h).W
+    Wsheet_open := fun x hx => by rw [hWif x hx]; exact (D x hx).W_open
+    w₀_mem_Wsheet := fun x hx => by rw [hWif x hx]; exact (D x hx).w₀_mem_W
+    sheetMult_eq := ?_
+    Wfin := Set.univ, Wfin_open := isOpen_univ, w₀_mem_Wfin := Set.mem_univ _
+    fibre_finite_Wfin := fun w _ => hfin w }
+  · intro x hx x' hx' hne
+    rw [hUif x hx, hUif x' hx']
+    exact Set.disjoint_of_subset ((D x hx).U_subset.trans (hV_sub x))
+      ((D x' hx').U_subset.trans (hV_sub x'))
+      (hV0disj (hxs_coe ▸ Finset.mem_coe.mpr hx) (hxs_coe ▸ Finset.mem_coe.mpr hx') hne)
+  · intro x hx w hw
+    rw [hWif x hx] at hw
+    rw [hUif x hx, dif_pos hx]
+    exact (D x hx).sheetMult_eq w hw
+
 /-- **The local conservation data at a value in the range** (`w₀ ∈ range F`), for a *non-constant*
 `f` (`f.div ≠ 0`, ensuring finite fibres): the genuine §17.9 content, built per fibre point from the
-planar normal form. -/
+planar normal form.  The finite fibre is enumerated by `xs`; pairwise-disjoint clean sheets are
+chosen by T2 separation (`Set.Finite.t2_separation`) intersected with the chart source and the
+non-pole locus, then the per-point datum (`exists_sheetDatum_coe` at a finite value,
+`exists_sheetDatum_infty` at `∞`) supplies each sheet's conservation. -/
 def localMultiplicitySheets_of_mem_range (f : MeromorphicFunction X) (hnc : (f.div : Divisor X) ≠ 0)
     {w₀ : RiemannSphere} (hmem : w₀ ∈ Set.range f.toRiemannSphere) :
-    LocalMultiplicitySheets f w₀ :=
-  sorry
+    LocalMultiplicitySheets f w₀ := by
+  classical
+  -- The non-pole locus is open (complement of the finite pole set, T1 ⟹ closed).
+  have hnp_open : IsOpen {y : X | 0 ≤ f.orderAtPoint y} := by
+    have : {y : X | 0 ≤ f.orderAtPoint y} = {y | f.orderAtPoint y < 0}ᶜ := by ext y; simp [not_lt]
+    rw [this]; exact (f.finite_poles.isClosed).isOpen_compl
+  -- Case on the value (the per-point datum and clean-sheet shape differ at `∞` vs a finite value).
+  -- We case *first* so the data-valued construction never eliminates the `Exists` of T2 separation.
+  cases w₀ with
+  | none =>
+    -- The pole fibre (`w₀ = ∞`): enumerate, separate, build sheets via the reciprocal normal form.
+    have hfib_fin : (f.toRiemannSphere ⁻¹' {OnePoint.infty}).Finite :=
+      fibre_finite_of_div_ne_zero f hnc OnePoint.infty
+    set xs : Finset X := hfib_fin.toFinset with hxs_def
+    have hxs_coe : (xs : Set X) = f.toRiemannSphere ⁻¹' {OnePoint.infty} := hfib_fin.coe_toFinset
+    set V0 : X → Set X := hfib_fin.t2_separation.choose with hV0_def
+    have hV0 : ∀ x, x ∈ V0 x ∧ IsOpen (V0 x) := hfib_fin.t2_separation.choose_spec.1
+    have hV0disj : (f.toRiemannSphere ⁻¹' {OnePoint.infty}).PairwiseDisjoint V0 :=
+      hfib_fin.t2_separation.choose_spec.2
+    have hfib_pole : ∀ x ∈ xs, f.orderAtPoint x < 0 := by
+      intro x hx
+      rw [hxs_def, Set.Finite.mem_toFinset, Set.mem_preimage, Set.mem_singleton_iff] at hx
+      have hxin : x ∈ {y | f.orderAtPoint y < 0} := by
+        rw [← f.toRiemannSphere_preimage_infty]; exact hx
+      exact hxin
+    refine ofSheetData f OnePoint.infty xs hxs_coe V0 hV0disj
+      (fun x => V0 x ∩ (chartAt (H := ℂ) x).source) (fun x => Set.inter_subset_left)
+      (fun w => fibre_finite_of_div_ne_zero f hnc w) (fun x hx => ?_)
+    exact exists_sheetDatum_infty f hnc (hfib_pole x hx)
+      ((hV0 x).2.inter (chartAt (H := ℂ) x).open_source) ⟨(hV0 x).1, mem_chart_source ℂ x⟩
+      Set.inter_subset_right
+  | some c =>
+    -- A finite value `w₀ = coe c`: enumerate and separate the fibre, build sheets via the engine.
+    have hfib_fin : (f.toRiemannSphere ⁻¹' {((c : ℂ) : RiemannSphere)}).Finite :=
+      fibre_finite_of_div_ne_zero f hnc _
+    set xs : Finset X := hfib_fin.toFinset with hxs_def
+    have hxs_coe : (xs : Set X) = f.toRiemannSphere ⁻¹' {((c : ℂ) : RiemannSphere)} :=
+      hfib_fin.coe_toFinset
+    set V0 : X → Set X := hfib_fin.t2_separation.choose with hV0_def
+    have hV0 : ∀ x, x ∈ V0 x ∧ IsOpen (V0 x) := hfib_fin.t2_separation.choose_spec.1
+    have hV0disj : (f.toRiemannSphere ⁻¹' {((c : ℂ) : RiemannSphere)}).PairwiseDisjoint V0 :=
+      hfib_fin.t2_separation.choose_spec.2
+    have hfib_val : ∀ x ∈ xs, f.toRiemannSphere x = ((c : ℂ) : RiemannSphere) := by
+      intro x hx; rw [hxs_def, Set.Finite.mem_toFinset] at hx; exact hx
+    refine ofSheetData f ((c : ℂ) : RiemannSphere) xs hxs_coe V0 hV0disj
+      (fun x => V0 x ∩ (chartAt (H := ℂ) x).source ∩ {y | 0 ≤ f.orderAtPoint y})
+      (fun x => Set.inter_subset_left.trans Set.inter_subset_left)
+      (fun w => fibre_finite_of_div_ne_zero f hnc w) (fun x hx => ?_)
+    have hxV : x ∈ V0 x ∩ (chartAt (H := ℂ) x).source ∩ {y | 0 ≤ f.orderAtPoint y} := by
+      refine ⟨⟨(hV0 x).1, mem_chart_source ℂ x⟩, ?_⟩
+      show 0 ≤ f.orderAtPoint x
+      by_contra h
+      have := hfib_val x hx; rw [f.toRiemannSphere_of_pole (not_le.mp h)] at this
+      exact (OnePoint.coe_ne_infty c) this.symm
+    exact exists_sheetDatum_coe f hnc c (hfib_val x hx)
+      (((hV0 x).2.inter (chartAt (H := ℂ) x).open_source).inter hnp_open) hxV
+      Set.inter_subset_right
 
 /-- **Pointwise local-conservation supply for non-constant `f`.** For every value `w₀ : ℂℙ¹` there
 is a `LocalMultiplicitySheets f w₀`: the empty-fibre witness off the range, and the §17.9
