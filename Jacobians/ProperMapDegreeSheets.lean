@@ -45,6 +45,30 @@ open Jacobians Jacobians.ProperMapDegree Jacobians.ProperMapDegreeConstruct
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
+/-- **Non-constancy bridge.** A meromorphic `f` with nontrivial divisor (`f.div ≠ 0`) has
+`toRiemannSphere` non-constant: `f.div ≠ 0` means some point has nonzero order, and a function
+with a nonzero order somewhere is non-constant on the sphere (`toRiemannSphere_not_isConstant`,
+the compact-Liouville corollary). -/
+theorem toRiemannSphere_not_isConstant_of_div_ne_zero (f : MeromorphicFunction X)
+    (hnc : (f.div : Divisor X) ≠ 0) :
+    ¬ Jacobians.Discharge.IsConstantMap f.toRiemannSphere := by
+  apply f.toRiemannSphere_not_isConstant
+  by_contra h
+  apply hnc
+  ext x
+  simp only [Finsupp.coe_zero, Pi.zero_apply, div_apply]
+  exact not_not.mp fun hx => h ⟨x, hx⟩
+
+/-- **All fibres of `F = toRiemannSphere` are finite** for a non-constant `f` (`f.div ≠ 0`).
+Direct from the unconditional finite-fibres theorem (`fibres_finite_statement_unconditional`)
+applied to the ContMDiff sphere map (`contMDiff_toRiemannSphere`), using the non-constancy bridge. -/
+theorem fibre_finite_of_div_ne_zero (f : MeromorphicFunction X)
+    (hnc : (f.div : Divisor X) ≠ 0) (w : RiemannSphere) :
+    (f.toRiemannSphere ⁻¹' {w}).Finite :=
+  Jacobians.Discharge.ContMDiff.Degree.fibres_finite_statement_unconditional
+    f.toRiemannSphere f.contMDiff_toRiemannSphere
+    (toRiemannSphere_not_isConstant_of_div_ne_zero f hnc) w
+
 /-- **The local conservation data at a value in the range** (`w₀ ∈ range F`), for a *non-constant*
 `f` (`f.div ≠ 0`, ensuring finite fibres): the genuine §17.9 content, built per fibre point from the
 planar normal form. -/
