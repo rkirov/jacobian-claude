@@ -380,9 +380,11 @@ every `w ∈ V`, the set `{y ∈ U | f y = w}` has exactly `(localOrder I f x).n
 elements (when the order is positive; the pole case is symmetric via
 `f⁻¹`).
 
-**Status.** Stated, not proven. The Rouché-side counting argument is deferred
-from a future mathlib `LocalMultiplicity` package. We state it in
-`Prop`-valued form to preserve the dependency surface. -/
+**Status.** Stated, not proven (the Rouché count). ⚠ The `f x = 0` hypothesis is
+REQUIRED (added 2026-06-04): without it the statement is FALSE — `f x` is a junk value
+on the punctured germ (e.g. `f z = z` for `z ≠ 0`, `f 0 = 5`: `localOrder = 1` yet
+`f 0 ≠ 0`), while the count is centered at `f x`. Under `f x = 0` the honest content is
+PROVEN in `RoucheBridge.lean` (`localMultiplicity_eq_localOrder_count_of_apply_eq_zero`). -/
 def localMultiplicity_eq_localOrder_statement : Prop :=
   ∀ (f : X → ℂ) (_ : MMeromorphicOn (modelWithCornersSelf ℂ ℂ) f Set.univ)
     (_ : ∀ x, mmeromorphicOrderAt (modelWithCornersSelf ℂ ℂ) f x ≠ ⊤)
@@ -394,7 +396,7 @@ def localMultiplicity_eq_localOrder_statement : Prop :=
     -- the type. The implicit content of "for sufficiently nearby `w`, the count
     -- equals `k`" includes the assertion that the preimage set is finite (and
     -- so `ncard` is the honest cardinality).
-    0 < localOrder (modelWithCornersSelf ℂ ℂ) f x →
+    0 < localOrder (modelWithCornersSelf ℂ ℂ) f x → f x = 0 →
       ∃ (U : Set X) (V : Set ℂ),
         IsOpen U ∧ x ∈ U ∧
         IsOpen V ∧ f x ∈ V ∧
