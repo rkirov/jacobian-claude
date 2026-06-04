@@ -126,13 +126,36 @@ untested (nobody has instantiated the pigeonhole).
   (`rectBoundaryIntegral*`, `boundaryForm`, `GreenPositivity`) on Mathlib `DivergenceTheorem` +
   `integral_boundary_rect_eq_zero` + `Convex.exists_forall_hasDerivWithinAt`; the handle aggregation
   `rectBoundaryIntegral_handleSum` (`CutSurfaceRecon.lean:170`).
-- **Net-new:** construct the 14 `CutSurfaceTopology` fields — i.e. **surface topology only**: Radó
-  triangulability + classification ⟹ symplectic loop basis (`H₁≅ℤ^{2g}`); the holomorphic cut-chart to a
-  `4g`-gon; the gluing/monodromy "boundary word" (per-edge identifications + primitive's jump-by-period).
-- **Verdict: ~70% of the classical proof already proven; residue is pure topology. ~2–4k LoC, front-loaded
-  on topology.** Risk: Mathlib has *no* surface-topology API (no triangulation, no `4g`-gon normal form) —
-  the largest greenfield chunk, but conceptually bounded. The "gluing ⟹ boundary word" derivation is the
-  correctness crux.
+- **Net-new (either route):** construct the 14 `CutSurfaceTopology` fields — the symplectic loop basis
+  (`H₁≅ℤ^{2g}`), the holomorphic cut-chart to a `4g`-gon, and the gluing/monodromy "boundary word". The
+  analytic half (bilinear relations + matrix core + Green) is reused *regardless of route*.
+
+**Two routes to those topology fields (+ a third, rejected):**
+- **Route A — Radó cut-surface (RR-independent):** build the symplectic basis + `4g`-gon from scratch via
+  Radó triangulability + classification of surfaces. Startable in parallel NOW. ~2–4k LoC, but Mathlib has
+  *zero* surface-topology API — the repo's own notes call Radó "the highest-variance, no-Lean-prior-art
+  tar-pit" (a hard, general Jordan–Schoenflies-flavored theorem). **High, independent risk.**
+- **Route B — branched-cover via RR (RR-gated):** a nonconstant meromorphic function (the `ω₀`/RR keystone)
+  makes `X` a branched cover of `S²`; lift `S²`'s explicit triangulation. The *classical, constructive* way
+  to triangulate a Riemann surface (general Radó is never invoked). **Reuses RR + the 11.6k-LoC sorry-free
+  `Discharge/Manifold` degree machinery (Riemann–Hurwitz / Euler-char → genus) + `S²`'s triangulation.**
+  Shorter and lower-variance on the topology; risk is *inherited* from `ω₀`/RR (already the critical-path
+  bet — adds no new project risk).
+- **Route C — Hodge-reuse (`STATUS.md:148`, `docs/archive/dolbeault_hodge_feasibility.md §3`): REJECTED.**
+  Get the period lattice from the Hodge/period-matrix instead of cutting. Tagged the "highest-variance
+  tar-pit" earlier, and this session's finding *reinforces* the rejection: W1's Serre route is PDE-free, so
+  it does NOT build the harmonic/Hodge `∗`-machinery this route would need — no piggyback, strictly costlier.
+
+> **DECISION (2026-06-04): Route B (branched-cover), build DEFERRED behind RR.** Shorter + lower-variance +
+> maximal reuse; the RR-gating is free because RR is the critical-path bottleneck anyway. Do NOT speculatively
+> build Radó (Route A) — spend the parallel slots on the genuinely-independent, lower-variance fronts (W2
+> Rouché bridge, `SimplyConnectedSpace S²`) instead. **Trigger:** scope Route B's branched-cover lift when
+> finiteness + `ω₀` land (RR in sight); fall back to Route A only if RR is abandoned (challenge-blocked
+> scenario anyway). **Watch:** extracting the symplectic `H₁≅ℤ^{2g}` basis from the CW pullback — if that
+> turns into its own tar-pit, reassess, with RR in hand either way.
+
+- **Verdict: ~70% of the classical proof already proven; residue is pure topology, built via Route B
+  (branched-cover) once RR lands.**
 
 ### W4 — `abelJacobi_twoPoint_ne_zero` (`Abel.lean:671`) — **reduction reused, core greenfield**
 - Consumed only by `ofCurve_inj` (the #3 theorem), proven modulo this leaf. `AbelRecon.lean` proves the
@@ -176,7 +199,8 @@ Ordered by effort-to-impact / reuse-collapsibility:
    open-mapping bridge `argumentPrinciple_implies_rouche_statement` + `exists_properMapDegree` assembly over
    the 11.6k sorry-free degree dir. Highest effort-to-impact of the *open* items. ~few hundred LoC.
 3. **W3 #7 cut-surface** — most reuse-collapsible *classical* wall: ~70% proven (bilinear relations + matrix
-   core + box-Green + handle-sum); residue = pure surface topology (Radó/`4g`-gon), ~2–4k LoC.
+   core + box-Green + handle-sum); residue = the topology fields, **built via Route B (branched-cover via RR),
+   deferred behind RR** — NOT the Radó tar-pit. Reuses the degree machinery + `S²` triangulation.
 4. **`SimplyConnectedSpace S²`** (a W1b sub-node) — clean, self-contained, **Dolbeault-independent**; the
    cheapest *isolated* topology win (also a Mathlib `proof_wanted`). Does NOT alone close W1b.
 5. **W1 Serre §17 pairing + `ω₀`-existence** — the make-or-break. §3 verdict: **PDE-free (no Hodge wall)**,
@@ -223,7 +247,8 @@ the RR ladder is **PROVEN modulo its leaves**, and 3 of those leaves are assembl
 1. **The §17 Serre pairing + `ω₀`-existence** — the make-or-break keystone (`ι₀` pairing, global `Res`-on-
    classes, `H⁰(Ω_{nP})`, and the nonconstant meromorphic-1-form `ω₀`). Untested (zero instantiators). ~1–2k.
 2. **W2 deg_div** — both hard atoms done; residue = Rouché bridge + fibre-assembly. Closest. ~few-hundred.
-3. **W3 #7 surface topology** — Radó/`4g`-gon (analysis done). ~2–4k.
+3. **W3 #7 surface topology** — via **Route B (branched-cover via RR)**, deferred behind RR; reuses the
+   degree machinery + `S²` triangulation, avoiding the Radó tar-pit (analysis already done).
 4. **W1b** — `SimplyConnectedSpace S²` + de Rham period slice. ~1.5–3k.
 5. **W4 `AbelStatement`** — or, cheaper, *fall out of RR* (Route B). ~3–6k standalone.
 
