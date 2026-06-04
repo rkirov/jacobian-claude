@@ -7,6 +7,22 @@ and memory `project_forward_headline_derisk`.
 
 ## 2026-06-04 delta — ⚠ MAJOR soundness correction + this session's reductions (READ FIRST)
 
+✅ **RR SPINE CONNECTED upstream→downstream (commits `46a7ba6` + `71954f3`, full build green).** The RR
+interface `exists_riemannRoch_divisor` (RiemannRoch.lean — what the headline consumes) was a STANDALONE
+`sorry` *duplicating but disconnected from* `DolbeaultLadder.riemannRoch_equality_of_ladder` (which proves
+it mod the ladder leaves): `CechSection → RiemannRoch` had put RiemannRoch UPSTREAM of the ladder, so the
+proof could never feed back. **Fixed:** (1) extracted `Jacobians/LinearSystem.lean` (the `MeromorphicFunction`
+ℂ-algebra + `orderW` + `linearSystem`/`lDim` + `l(0)=1` cluster, verbatim) and re-pointed `CechSection` to it
+⇒ the ladder is now free of RiemannRoch; (2) RiemannRoch imports the ladder and PROVES
+`exists_riemannRoch_divisor := riemannRoch_equality_of_ladder ∘ exists_lerayCover`. **NET: the forward
+headline now routes `genus_eq_zero_iff_homeo → …_of_rr → exists_riemannRoch_divisor → ladder → {named
+leaves}` with NO separate opaque RR sorry.** Remaining RR-path sorries = the genuine named leaves
+(`arithmeticGenus_eq_genus`, `serre_h1_eq`, `cohomological_riemannRoch`/`exists_skyscraperLES`,
+`h0Dim_eq_lDim`/`cechRestrictL_surjective`, finiteness `exists_cechModel`) **+ one eliminable `hOverlaps`**.
+**NEXT (STEP 2a, sound, deferred for build cost):** weaken `FiniteFamily.IsLeray` to its first conjunct
+(acyclic SETS — all leaves are H¹, Cartan needs only that; `GoodCover` proves the overlap conjunct unused)
+⇒ `exists_lerayCover` unconditional ⇒ `hOverlaps` sorry deleted. (Re-triggers a full ladder recompile.)
+
 ⚠ **A "forward headline closed" result from the overnight run was VACUOUS — corrected.** A heavy
 multi-agent run produced many real reductions, but the apparent forward closure rested on
 `SharedChartCover X`, which is **UNINHABITED for a compact Riemann surface**: it `extends FiniteCover X`
