@@ -25,6 +25,18 @@ H¹, Cartan's `0→Ȟ¹→H¹→Ȟ⁰(ℋ¹)` needs only that; `GoodCover` prove
 `hOverlaps` sorry is **ELIMINATED**. So the forward-headline path (`genus 0 → S²`) now rests **purely on
 the named analytic ladder leaves** — no separate RR sorry, no good-cover geometric sorry.
 
+✅ **Build speed + dedup + `exists_cechModel` started (latest session).** (1) **8 GB swap added** (the real
+fix — builds were memory-bound; Inverse 298s→52s, full-build tails 150–450s→10–48s; see
+`feedback_build_speed`). (2) **`holoFn`/`holoRep` toolkit deduped** (commit `f910d34`) into canonical
+`Jacobians/Dolbeault/HoloRep.lean` on the light comparison-free `CechH0` (−126 lines); lemma-level Phase 2
+deferred (a known `ContMDiffAt.mul` instance subtlety when re-pointing BallSolve to a `HoloRepSmooth`).
+(3) **`exists_cechModel` δ-complex STARTED** (commits `1b2e25f`, `583f047`, `Jacobians/Dolbeault/
+CechModelDelta.lean`, comparison-free, ~10s builds): sup-norm Čech cochain spaces built sorry-free
+(`Cochain0Model`/`Cochain2CovModel`/`Cochain2Model` + the 0/2-simplex chart-image geometry; C¹ is in
+`DiskOverlapData`). **NEXT = the CROSS-CHART differentials** `δ⁰`/`δ¹` (other components transported
+through the holomorphic transitions `φ_a∘φ_b⁻¹`, inputs `CechH0`/`HoloRep` `analyticAt_chart_change`),
+then `hδδ`/`hcomm`, the `leray` field (disk-acyclicity + PoU), and the comparison `cechH1 ≃ supH1`.
+
 ⚠ **A "forward headline closed" result from the overnight run was VACUOUS — corrected.** A heavy
 multi-agent run produced many real reductions, but the apparent forward closure rested on
 `SharedChartCover X`, which is **UNINHABITED for a compact Riemann surface**: it `extends FiniteCover X`
