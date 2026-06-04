@@ -37,7 +37,7 @@ The `(i,j)` component of an `𝒪`-cocycle is a holomorphic (`OmegaDGerm 0`) ger
 because `cocycles1`/`sections1` live in `CechComplex`, not in the un-importable file.) -/
 
 /-- The `(i,j)` component of a `1`-cocycle `s` is an `OmegaDGerm 0`-germ on `U_i ⊓ U_j`. -/
-theorem cocycleComp_mem (𝔙 : FiniteCover X) (s : ↥(𝔙.cocycles1 (0 : Divisor X)))
+theorem cocycleComp_mem (𝔙 : FiniteFamily X) (s : ↥(𝔙.cocycles1 (0 : Divisor X)))
     (i j : 𝔙.ι) :
     (s : 𝔙.Cochain1) (i, j) ∈ OmegaDGerm (0 : Divisor X) (𝔙.U i ⊓ 𝔙.U j) :=
   (Submodule.mem_inf.1 s.2).2 (i, j)
@@ -108,7 +108,7 @@ The germ-bookkeeping: on `U_i ⊓ U_j`, `(δ⁰[η])_{ij} = [η_j ∘ incl − �
 of `s_{ij}`; `toGerm_holoFn` gives `holoFn (s_{ij})` as such a representative, and the hypothesis
 supplies the `𝓝[≠]`-agreement (pulled back to the overlap submanifold).  Reuses `holoFn` /
 `toGerm_holoFn` from `CechDiskAcyclicProof`. -/
-theorem functionDiskAcyclic_of_holoCorrectors (𝔙 : FiniteCover X)
+theorem functionDiskAcyclic_of_holoCorrectors (𝔙 : FiniteFamily X)
     (η : Π i, 𝔙.U i → ℂ) (hη : ∀ i, η i ∈ OmegaD (0 : Divisor X) (𝔙.U i))
     (s : ↥(𝔙.cocycles1 (0 : Divisor X)))
     (hsplit : ∀ i j, ∀ x : X, x ∈ (𝔙.U i ⊓ 𝔙.U j : Opens X) →
@@ -151,7 +151,7 @@ the analytic representatives `holoFn (s_{ij})` off a discrete set on each overla
 output of the function-level finite-cover ball Čech split (`CechDiskAcyclicProof.ballSplit_glued` +
 `DbarDiskCohomology.dbar_solvable_ball`) transported back through the cover's shared chart — STEP C of
 the obstruction map.  Isolated as a predicate so the discharge below is sorry-free. -/
-def HasHoloCorrectors (𝔙 : FiniteCover X) : Prop :=
+def HasHoloCorrectors (𝔙 : FiniteFamily X) : Prop :=
   ∀ s : ↥(𝔙.cocycles1 (0 : Divisor X)),
     ∃ η : Π i, 𝔙.U i → ℂ, (∀ i, η i ∈ OmegaD (0 : Divisor X) (𝔙.U i)) ∧
       ∀ i j, ∀ x : X, x ∈ (𝔙.U i ⊓ 𝔙.U j : Opens X) →
@@ -167,7 +167,7 @@ This is strictly more natural than `HasHoloCorrectors` as the output of STEPs C.
 chart-analyticity (not an a-priori `OmegaD` membership) is exactly what it delivers.  The reverse
 chart dictionary `omegaD_zero_of_chart_analyticAt` upgrades chart-analyticity to `OmegaD 0`-membership
 of the restriction, so this implies `HasHoloCorrectors` (next lemma). -/
-def HasChartAnalyticCorrectors (𝔙 : FiniteCover X) : Prop :=
+def HasChartAnalyticCorrectors (𝔙 : FiniteFamily X) : Prop :=
   ∀ s : ↥(𝔙.cocycles1 (0 : Divisor X)),
     ∃ H : 𝔙.ι → X → ℂ,
       (∀ i, ∀ y ∈ 𝔙.U i, AnalyticAt ℂ (H i ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y)) ∧
@@ -178,7 +178,7 @@ def HasChartAnalyticCorrectors (𝔙 : FiniteCover X) : Prop :=
 chart-analytic corrector `H_i` to `η_i := H_i ∘ val ∈ OmegaD 0 (U_i)` (STEP-B reverse,
 `omegaD_zero_of_chart_analyticAt`); near an overlap point `Gext (η_i) = H_i` (both equal `H_i` on the
 open `U_i`), so the ambient splitting of the `H_i` transfers verbatim to the `Gext (η_i)`. -/
-theorem hasHoloCorrectors_of_chartAnalytic (𝔙 : FiniteCover X)
+theorem hasHoloCorrectors_of_chartAnalytic (𝔙 : FiniteFamily X)
     (h : HasChartAnalyticCorrectors 𝔙) : HasHoloCorrectors 𝔙 := by
   intro s
   obtain ⟨H, hana, hsplit⟩ := h s
@@ -200,7 +200,7 @@ theorem hasHoloCorrectors_of_chartAnalytic (𝔙 : FiniteCover X)
 /-- **`FunctionDiskAcyclic 𝔙 0` from the corrector input (sorry-free).**  The STEP-D descent
 (`functionDiskAcyclic_of_holoCorrectors`) turns each cocycle's correctors into the matching germ-class
 `0`-cochain primitive, witnessing `FunctionDiskAcyclic`. -/
-theorem functionDiskAcyclic_of_hasHoloCorrectors (𝔙 : FiniteCover X)
+theorem functionDiskAcyclic_of_hasHoloCorrectors (𝔙 : FiniteFamily X)
     (h : HasHoloCorrectors 𝔙) : FunctionDiskAcyclic 𝔙 (0 : Divisor X) := by
   intro s hs
   obtain ⟨η, hη, hsplit⟩ := h ⟨s, hs⟩
@@ -208,21 +208,21 @@ theorem functionDiskAcyclic_of_hasHoloCorrectors (𝔙 : FiniteCover X)
 
 /-- **The germ-level disk-acyclicity atom from the corrector input.**  `IsDiskAcyclic 𝔙 0` — every
 `𝒪` 1-cocycle is a coboundary — via `CechDiskAcyclic.isDiskAcyclic_of_funcLevel`. -/
-theorem isDiskAcyclic_of_hasHoloCorrectors (𝔙 : FiniteCover X)
+theorem isDiskAcyclic_of_hasHoloCorrectors (𝔙 : FiniteFamily X)
     (h : HasHoloCorrectors 𝔙) : IsDiskAcyclic 𝔙 (0 : Divisor X) :=
   isDiskAcyclic_of_funcLevel 𝔙 0 (functionDiskAcyclic_of_hasHoloCorrectors 𝔙 h)
 
 /-- **`H¹(disk, 𝒪) = 0` from the corrector input.**  Every class of `𝔙.cechH1 0` is `0` — the
 headline germ-level collapse the finiteness / Serre-D=0 consumers want — modulo the single honest
 corrector obligation `HasHoloCorrectors` (the ball solve over the shared chart). -/
-theorem cechH1_subsingleton_of_hasHoloCorrectors (𝔙 : FiniteCover X)
+theorem cechH1_subsingleton_of_hasHoloCorrectors (𝔙 : FiniteFamily X)
     (h : HasHoloCorrectors 𝔙) (q : 𝔙.cechH1 (0 : Divisor X)) : q = 0 :=
   cechH1_subsingleton_of_isDiskAcyclic 𝔙 0 (isDiskAcyclic_of_hasHoloCorrectors 𝔙 h) q
 
 /-- **`H¹(disk, 𝒪) = 0` from ambient chart-analytic correctors (sorry-free).**  The end-to-end
 collapse modulo the natural ball-solve output `HasChartAnalyticCorrectors`: STEP-B reverse +
 STEP D + the `IsDiskAcyclic`-collapse, all sorry-free here. -/
-theorem cechH1_subsingleton_of_chartAnalyticCorrectors (𝔙 : FiniteCover X)
+theorem cechH1_subsingleton_of_chartAnalyticCorrectors (𝔙 : FiniteFamily X)
     (h : HasChartAnalyticCorrectors 𝔙) (q : 𝔙.cechH1 (0 : Divisor X)) : q = 0 :=
   cechH1_subsingleton_of_hasHoloCorrectors 𝔙 (hasHoloCorrectors_of_chartAnalytic 𝔙 h) q
 

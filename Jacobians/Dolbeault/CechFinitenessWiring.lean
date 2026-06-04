@@ -329,7 +329,7 @@ assembly for exactly the case the completed disk-acyclicity produces (`H¹ = 0`)
 to `(𝔘, D)` via the existential (not a free `c`).  The geometric instantiation — a `SharedChartCover`
 at `D = 0` discharging the subsingleton hypothesis via `hasGluedDbarDatum` — is
 `CechModelConstruction.exists_cechModel_of_sharedChart_zero`. -/
-theorem exists_cechModel_of_subsingleton (𝔘 : FiniteCover X) (D : Divisor X)
+theorem exists_cechModel_of_subsingleton (𝔘 : FiniteFamily X) (D : Divisor X)
     [Subsingleton (𝔘.cechH1 D)] :
     ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
   ⟨DiskOverlapData.empty, DiskOverlapData.empty.trivialCoboundaries,

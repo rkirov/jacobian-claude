@@ -55,13 +55,14 @@ This wires the newly-unblocked `leray`/disk-acyclicity piece through the model-c
 door: the disk `∂̄`-solvability (`dbar_solvable_ball`) ⟹ `HasGluedDbarDatum` ⟹ `H¹(disk, 𝒪) = 0` ⟹ the
 assembled `exists_cechModel` on the shared-chart cover (the trivial acyclic model + the
 `LinearEquiv.ofSubsingleton` comparison). -/
-theorem exists_cechModel_of_sharedChart_zero (𝔇 : SharedChartCover X) :
+theorem exists_cechModel_of_sharedChart_zero (𝔇 : SharedChartCover X)
+    (H : HasGluedDbarDatum 𝔇) :
     ∃ (d : DiskOverlapData) (c : Coboundaries d),
-      Nonempty (𝔇.toFiniteCover.cechH1 (0 : Divisor X) ≃ₗ[ℂ] c.supH1) := by
-  haveI : Subsingleton (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) :=
+      Nonempty (𝔇.toFiniteFamily.cechH1 (0 : Divisor X) ≃ₗ[ℂ] c.supH1) := by
+  haveI : Subsingleton (𝔇.toFiniteFamily.cechH1 (0 : Divisor X)) :=
     subsingleton_iff.mpr fun a b => by
-      rw [cechH1_subsingleton_of_hasGluedDbarDatum 𝔇 𝔇.hasGluedDbarDatum a,
-        cechH1_subsingleton_of_hasGluedDbarDatum 𝔇 𝔇.hasGluedDbarDatum b]
-  exact exists_cechModel_of_subsingleton 𝔇.toFiniteCover 0
+      rw [cechH1_subsingleton_of_hasGluedDbarDatum 𝔇 H a,
+        cechH1_subsingleton_of_hasGluedDbarDatum 𝔇 H b]
+  exact exists_cechModel_of_subsingleton 𝔇.toFiniteFamily 0
 
 end Jacobians.Dolbeault

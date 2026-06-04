@@ -1,9 +1,63 @@
 # Architecture map — dependency DAG to a sorry-free finish
 
 Canonical dependency map for completing the Jacobians challenge (Buzzard v0.4). Current as of
-2026-06-02 (DAG) + 2026-06-03 delta (below). Companion to `docs/STATUS.md` (per-theorem `sorryAx`
-ground truth), `docs/archive/dolbeault_ladder_derisk.md` (the bimodal RR-wall cost analysis), and
-`docs/cech_finiteness_research.md` (the finiteness-node finding that this map incorporates).
+2026-06-02 (DAG) + 2026-06-03 + **2026-06-04 (below — read FIRST; partly supersedes the older DAG)**.
+Companion to `docs/STATUS.md`, `docs/archive/dolbeault_ladder_derisk.md`, `docs/cech_finiteness_research.md`,
+and memory `project_forward_headline_derisk`.
+
+## 2026-06-04 delta — ⚠ MAJOR soundness correction + this session's reductions (READ FIRST)
+
+⚠ **A "forward headline closed" result from the overnight run was VACUOUS — corrected.** A heavy
+multi-agent run produced many real reductions, but the apparent forward closure rested on
+`SharedChartCover X`, which is **UNINHABITED for a compact Riemann surface**: it `extends FiniteCover X`
+(⇒ `covers = ⊤`) while `subset_source` forces all sets into ONE chart ⇒ X would be a compact open subset
+of ℂ (impossible). So the disk-acyclicity (`cechH1_subsingleton_of_hasGluedDbarDatum`, commit 61484f5)
+and the forward endgame (15d9b1d) were true-but-VACUOUS (never instantiable; the forward endgame tellingly
+never used the `genus=0` hypothesis). Caught via verify-every-commit. See `project_forward_headline_derisk`.
+
+**Corrected forward path** (genus 0 → S²): needs the **Hodge/Serre comparison `h¹(𝒪)=genus`** (the vacuous
+cover faked `h¹(0)=0`) + the **genuine finiteness** (Leray, once disk-acyclicity is un-vacuumed) + the RR
+**INEQUALITY** arithmetic (✅ banked, `RRScout`, sound). **`deg_div` is genuinely OFF the forward path**
+(only the RR *equality* used it); **Serre IS needed** — this RE-corrects the 2026-06-03 "avoids Serre"
+note (that was an artifact of the vacuous cover).
+
+**Sound reductions this session (committed, axiom-clean):**
+- **deg_div cores ✅** — ℙ¹ residue theorem (`TraceResidue`), meromorphic trace + Lemma 3.2
+  (`MeromorphicTrace`), the m-fold multiplicity split `orderSum_eq_of_analyticOrder`
+  (`MultiplicityPatching`). Reduced to the structural **toSphere junk-value** (holoRepr vs f.toFun;
+  a known #1-endgame blocker), OFF the forward path.
+- **W1b (backward headline) ✅** reduced to TWO atoms — `HasHomotopyInvariantPeriods` (manifold Stokes,
+  **SHARED** with #7 periods + W3 Green) and `IsFTCForPathPrimitive` (local FTC) — wired to `genus=0`
+  (`HolomorphicPrimitives`, `GenusZeroOfSphere`).
+- **RR inequality ✅** banked (`RRScout`): `χ → l(P)≥2 → single pole`, Serre-free + deg_div-free.
+- **`IsLeray` overlap conjunct is dead weight** (linter-confirmed unused) ⇒ the good-cover/geodesic-
+  convexity wall is vacuous on the critical path (`GoodCover`).
+- Dolbeault comparison made `hL`-free (`GoodCover`).
+
+**The disk-rebase (un-vacuum the disk-acyclicity):**
+- **Stage 1 ✅** (02fd7ca): split `FiniteFamily` (no `covers`) out of `FiniteCover`; the Čech complex
+  (`cechH1`, `cocycles1`, …) now lives on `FiniteFamily`.
+- **Stage 2 🔧** (approved, scoped, sound): re-prove disk-acyclicity on a CLOSED CORE (`∑ρ=1` on closed
+  `C ⊂⊂ ⋃Uᵢ`, overlaps ⊆ int C) ⇒ `SharedChartCover` inhabited (witness verified). The old proof's
+  `∑ρ=1`-everywhere requirement IS the vacuity (a subordinate PoU can't sum to 1 on an open `Uᵢ`).
+
+**The genuine remaining walls (all manifold-foundation; NONE closed; 103 files still have `sorry`):**
+
+| Wall | Feeds | Status |
+|---|---|---|
+| Hodge/Serre `h¹(𝒪)=genus` | forward headline, general RR, #3 Abel | 🔴 greenfield |
+| Genuine finiteness (un-vacuumed disk-acyclicity + Leray) | forward headline | 🔧 Stage 2 |
+| Manifold Stokes / de Rham `HasHomotopyInvariantPeriods` | backward #1b, #7 periods, W3 Green | 🔴 SHARED greenfield |
+| toSphere junk-value (holoRepr redefine) | deg_div → #3 Abel + RR equality | 🔴 structural |
+| Surface classification (Radó) `CutSurfaceTopology` | #7 cut-surface | 🔴 greenfield |
+| `IsFTCForPathPrimitive` (local FTC) | backward #1b | 🟡 bounded |
+
+**Build times:** the 3 min+ builds = foundational-ripple recompiles (CechComplex → ~26 Dolbeault modules,
+memory-throttled at 0-swap, ~3.26 GB peak). The 9–11 s no-op overhead is noise. Levers: swapfile
+(parallelism, biggest), minimize foundational edits, split the heaviest modules. Lake is content-hash-based
+(no spurious mtime rebuilds).
+
+---
 
 ## 2026-06-03 delta — three nodes advanced (re-color before reading the DAG below)
 

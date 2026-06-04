@@ -133,7 +133,7 @@ theorem exists_omegaD_rep {D : Divisor X} {W : Opens X} {f : MGerm W} (hf : f �
 /-- A `0`-cochain of honest `𝒪_D`-representatives assembles to an `𝒪_D`-germ `0`-cochain.  The germ
 projection of a `sections0`-witness family lands in `sections0` (componentwise `toGerm` of an
 `OmegaD`-member is an `OmegaDGerm`-member). -/
-theorem toGerm_mem_sections0 (𝔙 : FiniteCover X) (D : Divisor X) (η : Π i, 𝔙.U i → ℂ)
+theorem toGerm_mem_sections0 (𝔙 : FiniteFamily X) (D : Divisor X) (η : Π i, 𝔙.U i → ℂ)
     (hη : ∀ i, η i ∈ OmegaD D (𝔙.U i)) :
     (fun i => toGerm (𝔙.U i) (η i)) ∈ 𝔙.sections0 D :=
   fun i => ⟨η i, hη i, rfl⟩
@@ -149,7 +149,7 @@ general case to a clean function-level chart-disk acyclicity predicate. -/
 1-coboundary — i.e. `H¹(𝔙, 𝒪_D) = 0` at the junk-free germ-class level.  This is exactly the atom
 that discharges the Leray strictly-finer surjectivity (`RefinementLift`) and the finiteness `leray`
 field on a chart disk. -/
-def IsDiskAcyclic (𝔙 : FiniteCover X) (D : Divisor X) : Prop :=
+def IsDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X) : Prop :=
   ∀ s ∈ 𝔙.cocycles1 D, s ∈ 𝔙.coboundaries1 D
 
 /-- **Degenerate case: an empty-indexed cover is disk-acyclic.**  When the cover has no patches, the
@@ -157,7 +157,7 @@ def IsDiskAcyclic (𝔙 : FiniteCover X) (D : Divisor X) : Prop :=
 type, so the only 1-cocycle is `0 = δ⁰0`.  Fully sorry-free; a sanity check that the
 `cocycles1`/`coboundaries1` plumbing is wired correctly.  (The substantive small case is the 2-patch
 chart-disk cover, handled by the function-level interface below + the ∂̄ engine.) -/
-theorem isDiskAcyclic_of_isEmpty (𝔙 : FiniteCover X) (D : Divisor X)
+theorem isDiskAcyclic_of_isEmpty (𝔙 : FiniteFamily X) (D : Divisor X)
     [IsEmpty 𝔙.ι] : IsDiskAcyclic 𝔙 D := by
   intro s _
   have hzero : s = 0 := Subsingleton.elim _ _
@@ -181,7 +181,7 @@ running `DbarDiskCohomology.dbar_holo_splitting_ball` (transported through the c
 
 It is stated as a predicate so the reduction `isDiskAcyclic_of_funcLevel` is sorry-free; producing it
 is the remaining honest analytic obligation (OBSTRUCTION 3 of `CechRefinementLeray`). -/
-def FunctionDiskAcyclic (𝔙 : FiniteCover X) (D : Divisor X) : Prop :=
+def FunctionDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X) : Prop :=
   ∀ s : 𝔙.Cochain1, s ∈ 𝔙.cocycles1 D →
     ∃ η : Π i, 𝔙.U i → ℂ, (∀ i, η i ∈ OmegaD D (𝔙.U i)) ∧
       𝔙.cechDelta0 (fun i => toGerm (𝔙.U i) (η i)) = s
@@ -190,7 +190,7 @@ def FunctionDiskAcyclic (𝔙 : FiniteCover X) (D : Divisor X) : Prop :=
 is germ-level disk-acyclic.  Sorry-free: the produced `0`-cochain primitive `η` assembles to a
 `sections0`-element (§3 `toGerm_mem_sections0`) whose `δ⁰`-image is `s`, witnessing
 `s ∈ coboundaries1 = map δ⁰ sections0`.  This is the clean interface to the disk engine. -/
-theorem isDiskAcyclic_of_funcLevel (𝔙 : FiniteCover X) (D : Divisor X)
+theorem isDiskAcyclic_of_funcLevel (𝔙 : FiniteFamily X) (D : Divisor X)
     (h : FunctionDiskAcyclic 𝔙 D) : IsDiskAcyclic 𝔙 D := by
   intro s hs
   obtain ⟨η, hη, hδ⟩ := h s hs
@@ -202,7 +202,7 @@ theorem isDiskAcyclic_of_funcLevel (𝔙 : FiniteCover X) (D : Divisor X)
 finiteness consumers actually want (`H¹(disk, 𝒪) = 0`): a cocycle `g` maps to `0` in the quotient
 exactly when `↑g ∈ coboundaries1` (`Submodule.Quotient.mk_eq_zero`, with `submoduleOf` membership defeq
 to `↑g ∈ coboundaries1`), which is precisely `IsDiskAcyclic` applied to the cocycle `↑g`. -/
-theorem cechH1_subsingleton_of_isDiskAcyclic (𝔙 : FiniteCover X) (D : Divisor X)
+theorem cechH1_subsingleton_of_isDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X)
     (h : IsDiskAcyclic 𝔙 D) (q : 𝔙.cechH1 D) : q = 0 := by
   induction q using Submodule.Quotient.induction_on with
   | _ g =>

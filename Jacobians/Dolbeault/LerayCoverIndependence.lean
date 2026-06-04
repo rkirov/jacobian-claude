@@ -75,29 +75,19 @@ theorem exists_cechModel_of_mutualRefinement_subsingleton {𝔙 𝔘 : FiniteCov
     ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
   haveI : Subsingleton (𝔘.cechH1 D) :=
     FiniteCover.subsingleton_cechH1_of_mutualRefinement hr hs D
-  exists_cechModel_of_subsingleton 𝔘 D
+  exists_cechModel_of_subsingleton 𝔘.toFiniteFamily D
 
-/-- **`exists_cechModel` at `D = 0` for any cover mutually refining a shared-chart cover (sorry-free).**
-Let `𝔇` be a `SharedChartCover` and `𝔘` any finite cover that mutually refines `𝔇.toFiniteCover`
-(`𝔇 ⪯ 𝔘` via `hr`, `𝔘 ⪯ 𝔇` via `hs`).  Then `exists_cechModel 𝔘 0` holds.
+/-! ### NOTE — the former `exists_cechModel_of_mutualRefinement_sharedChart_zero` is removed (un-vacuum)
 
-The acyclicity `Subsingleton (cechH1 𝔇 0)` comes from the COMPLETED disk-∂̄ engine on the shared-chart
-cover — `cechH1_subsingleton_of_hasGluedDbarDatum 𝔇 𝔇.hasGluedDbarDatum` (`H¹(disk, 𝒪) = 0`) — and is
-transported across the mutual-refinement equiv by
-`exists_cechModel_of_mutualRefinement_subsingleton`.  This wires the disk `∂̄`-solvability through the
-model-construction front door for the WHOLE mutual-refinement class of `𝔇`, not just `𝔇` itself
-(`CechModelConstruction.exists_cechModel_of_sharedChart_zero` is the special case `𝔘 = 𝔇` with the
-identity refinement). -/
-theorem exists_cechModel_of_mutualRefinement_sharedChart_zero (𝔇 : SharedChartCover X)
-    {𝔘 : FiniteCover X} {s : 𝔘.ι → 𝔇.toFiniteCover.ι} {r : 𝔇.toFiniteCover.ι → 𝔘.ι}
-    (hr : FiniteCover.IsRefinement 𝔇.toFiniteCover 𝔘 r)
-    (hs : FiniteCover.IsRefinement 𝔘 𝔇.toFiniteCover s) :
-    ∃ (d : DiskOverlapData) (c : Coboundaries d),
-      Nonempty (𝔘.cechH1 (0 : Divisor X) ≃ₗ[ℂ] c.supH1) :=
-  haveI : Subsingleton (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) :=
-    subsingleton_iff.mpr fun a b => by
-      rw [cechH1_subsingleton_of_hasGluedDbarDatum 𝔇 𝔇.hasGluedDbarDatum a,
-        cechH1_subsingleton_of_hasGluedDbarDatum 𝔇 𝔇.hasGluedDbarDatum b]
-  exists_cechModel_of_mutualRefinement_subsingleton (𝔙 := 𝔇.toFiniteCover) (𝔘 := 𝔘) hr hs 0
+Previously this file carried `exists_cechModel_of_mutualRefinement_sharedChart_zero`, which transported
+`Subsingleton (cechH1 𝔇 0)` from a `SharedChartCover 𝔇` across a *mutual refinement* `𝔇 ⪯ 𝔘 ⪯ 𝔇` with a
+genuine cover `𝔘`.  After the un-vacuum (`SharedChartCover` now `extends FiniteFamily`, NOT
+`FiniteCover`), `𝔇` is no longer a cover, so `FiniteCover.IsRefinement 𝔇.toFiniteCover 𝔘` cannot even be
+stated — and mathematically a single-chart *family* cannot mutually refine a genuine cover of compact
+`X` (the hypotheses were unsatisfiable).  Moreover the discharge relied on the now-removed unconditional
+`SharedChartCover.hasGluedDbarDatum` (see `GluedDbarDatum.dbarDatum_agrees_on_interiorCore` for the
+precise obstruction: closed-core agreement holds only on `interior core`, not all of `Ω_i ∩ ball`).  The
+sound, genuinely-non-vacuous mutual-refinement transport `exists_cechModel_of_mutualRefinement_subsingleton`
+(between two real covers) is retained above. -/
 
 end Jacobians.Dolbeault

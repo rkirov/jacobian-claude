@@ -24,6 +24,7 @@
   NO `sorry` anywhere: everything not sorry-free is a hypothesis predicate or written prose.
 -/
 import Jacobians.Dolbeault.CechDiskAcyclicAssembly
+import Jacobians.Dolbeault.DiskAcyclicCore
 import Jacobians.Dolbeault.DolbeaultComparison
 import Jacobians.Dolbeault.DbarDiskCohomology
 import Jacobians.Dolbeault.ChartDiskCover
@@ -59,54 +60,161 @@ noncomputable def ofRealCM : ContMDiffMap (𝓘(ℝ)) (𝓘(ℝ, ℂ)) ℝ ℂ (
 
 variable [Nonempty X]
 
-/-- A smooth partition of unity subordinate to a finite cover `𝔘`, over the real-manifold structure
-`𝓘(ℝ, ℂ)` (a compact `T2` `ℂ`-manifold is a `σ`-compact finite-dim real manifold). Port of
-`DolbeaultComparisonInverse.exists_smoothPartitionOfUnity_subordinate`. -/
-theorem exists_smoothPartitionOfUnity_subordinate (𝔘 : FiniteCover X) :
-    ∃ ρ : SmoothPartitionOfUnity 𝔘.ι 𝓘(ℝ, ℂ) X (Set.univ : Set X),
-      ρ.IsSubordinate (fun i => (𝔘.U i : Set X)) := by
-  have hcov : (Set.univ : Set X) ⊆ ⋃ i, (𝔘.U i : Set X) := by
-    rw [Set.univ_subset_iff, ← TopologicalSpace.Opens.coe_iSup, 𝔘.covers]; rfl
-  exact SmoothPartitionOfUnity.exists_isSubordinate 𝓘(ℝ, ℂ) isClosed_univ
-    (fun i => (𝔘.U i : Set X)) (fun i => (𝔘.U i).isOpen) hcov
+/-! ## §3′ — The shared-chart disk family (the inhabitable closed-core base)
 
-/-- A fixed smooth partition of unity subordinate to the cover. Port of
-`DolbeaultComparisonInverse.cechPoU`, over a generic `FiniteCover`. -/
-noncomputable def coverPoU (𝔘 : FiniteCover X) :
-    SmoothPartitionOfUnity 𝔘.ι 𝓘(ℝ, ℂ) X (Set.univ : Set X) :=
-  (exists_smoothPartitionOfUnity_subordinate 𝔘).choose
+A **shared-chart disk family** is a finite family of opens `U_i` all inside a single chart
+`φ = chartAt ℂ c₀`, with chart-images `φ '' U_i` in a fixed ball `ball cc r ⊆ ℂ`, carrying a CLOSED
+CORE `C ⊆ ⋃ U_i` whose interior contains every overlap.  Every overlap pulls back through the SINGLE
+chart `φ` to opens of the ball, so the planar `∂̄`-engine applies and the chart dictionary
+(`analyticAt_chart_change`) gives chart-analyticity in each point's own chart.
 
-theorem coverPoU_subordinate (𝔘 : FiniteCover X) :
-    (coverPoU 𝔘).IsSubordinate (fun i => (𝔘.U i : Set X)) :=
-  (exists_smoothPartitionOfUnity_subordinate 𝔘).choose_spec
+It is defined HERE (before §0–§2) because the partition of unity, being subordinate to `(U_i)` and
+summing to `1` on the closed core `C`, is built FROM this structure (it depends on `C`).  (Previously
+the struct lived after §2 and `extended FiniteCover`; the `covers = ⊤` made it uninhabited and the
+PoU's `∑ = 1`-on-`X` vacuous — see the struct docstring.) -/
+
+/-- A finite **family** of opens all living in one chart `φ = chartAt ℂ center`, with chart-images in a
+fixed ball, TOGETHER WITH a **closed core** `C` on which the partition of unity sums to `1`.
+
+This is the honest, *inhabitable* base for the disk-acyclicity (`extends FiniteFamily`, NOT
+`FiniteCover`): a single-chart family cannot cover a compact connected `X`, so the old
+`extends FiniteCover` (with `covers : ⨆ Uᵢ = ⊤`) made `SharedChartCover` UNINHABITED and the
+disk-acyclicity vacuous.  Re-based to `FiniteFamily`, `cechH1` is the genuine `H¹(disk-region, 𝒪)`.
+
+The **closed core** carries the sum-to-one locus: a partition of unity subordinate to `(Uᵢ)` cannot
+sum to `1` on the open `⋃ Uᵢ` (that would force `⋃ Uᵢ` clopen, hence `= X` on connected `X` — exactly
+the vacuity).  Instead we ask `∑ ρ = 1` only on the CLOSED `C` (Mathlib's `exists_isSubordinate` takes
+a closed `s ⊆ ⋃ Uᵢ`); since every overlap `Uᵢ ⊓ Uⱼ ⊆ interior C`, the germ-splitting the
+disk-acyclicity needs holds at every overlap point (where `∑ ρ = 1` on a neighbourhood). -/
+structure SharedChartCover (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] extends FiniteFamily X where
+  /-- The common chart center; the shared chart is `chartAt ℂ center`. -/
+  center : X
+  /-- The chart-coordinate center of the common ball. -/
+  ballCenter : ℂ
+  /-- The radius of the common ball. -/
+  radius : ℝ
+  radius_pos : 0 < radius
+  /-- Each family set lies in the shared chart's source. -/
+  subset_source : ∀ i, ((U i : Opens X) : Set X) ⊆ (chartAt (H := ℂ) center).source
+  /-- Each family set's chart-image lies in the common ball. -/
+  image_subset_ball : ∀ i,
+    (chartAt (H := ℂ) center) '' ((U i : Opens X) : Set X) ⊆ Metric.ball ballCenter radius
+  /-- The **closed core** `C` — the locus on which the partition of unity sums to `1`. -/
+  core : Set X
+  /-- The core is closed (so Mathlib's closed-set subordinate PoU applies with `s := core`). -/
+  coreClosed : IsClosed core
+  /-- The core is contained in the union of the family sets (the closed `s ⊆ ⋃ Uᵢ` PoU hypothesis). -/
+  core_subset : core ⊆ ⋃ i, (U i : Set X)
+  /-- Every pairwise overlap lives in the INTERIOR of the core — where `∑ ρ = 1` on a neighbourhood, so
+  the cocycle germ-splitting is consumed exactly where it holds. -/
+  overlaps_subset_interior : ∀ i j, i ≠ j → (U i ⊓ U j : Set X) ⊆ interior core
+
+namespace SharedChartCover
+
+/-- The shared chart `φ = chartAt ℂ center`. -/
+noncomputable abbrev φ (𝔇 : SharedChartCover X) : OpenPartialHomeomorph X ℂ :=
+  chartAt (H := ℂ) 𝔇.center
+
+/-- The chart-image `Ω_i = φ '' U_i ⊆ ℂ` of a cover set. -/
+def Ω (𝔇 : SharedChartCover X) (i : 𝔇.ι) : Set ℂ := 𝔇.φ '' ((𝔇.U i : Opens X) : Set X)
+
+/-- For `x ∈ U_i`, the chart point `φ x` lies in `Ω_i`. -/
+theorem mem_Ω (𝔇 : SharedChartCover X) {i : 𝔇.ι} {x : X} (hx : x ∈ 𝔇.U i) : 𝔇.φ x ∈ 𝔇.Ω i :=
+  ⟨x, hx, rfl⟩
+
+/-- For `x ∈ U_i`, the chart point `φ x` lies in the ball. -/
+theorem mem_ball (𝔇 : SharedChartCover X) {i : 𝔇.ι} {x : X} (hx : x ∈ 𝔇.U i) :
+    𝔇.φ x ∈ Metric.ball 𝔇.ballCenter 𝔇.radius :=
+  𝔇.image_subset_ball i ⟨x, hx, rfl⟩
+
+/-- For `x ∈ U_i`, `x` lies in the shared chart's source. -/
+theorem mem_source (𝔇 : SharedChartCover X) {i : 𝔇.ι} {x : X} (hx : x ∈ 𝔇.U i) :
+    x ∈ (chartAt (H := ℂ) 𝔇.center).source :=
+  𝔇.subset_source i hx
+
+/-! ### The un-vacuum witness — `SharedChartCover X` is INHABITED
+
+The single-set chart-ball family witnesses `Nonempty (SharedChartCover X)`.  Pick any `x₀`, let
+`φ = chartAt ℂ x₀`, and take the ONE open `U₀ = φ.source ∩ φ⁻¹(ball (φ x₀) r)` (the chart-ball
+neighbourhood, where `r > 0` fits inside `φ.target` because the target is open).  Its chart-image lies
+in `ball (φ x₀) r` by construction, and it sits in `φ.source`.  The closed core is taken EMPTY
+(`core = ∅`): it is trivially closed, `⊆ ⋃ U_i`, and the overlap condition is vacuous (a single index
+has no `i ≠ j`).  This makes the structure inhabited WITHOUT the old `covers : ⨆ Uᵢ = ⊤` field — which,
+for compact connected `X` and all `Uᵢ` inside one chart, was unsatisfiable (a single chart cannot cover
+a compact surface), rendering the whole disk-acyclicity vacuous.  (The empty core is the minimal
+witness of inhabitation; a genuine non-trivial core for the analytic content is supplied by the
+chart-disk-cover construction the finiteness assembly feeds in.) -/
+theorem nonempty_sharedChartCover [Nonempty X] : Nonempty (SharedChartCover X) := by
+  classical
+  obtain ⟨x₀⟩ := ‹Nonempty X›
+  set φ := chartAt (H := ℂ) x₀ with hφ
+  -- A coordinate ball around `φ x₀` inside the (open) chart target.
+  have hx₀tgt : φ x₀ ∈ φ.target := φ.map_source (mem_chart_source ℂ x₀)
+  obtain ⟨r, hr_pos, hr_sub⟩ := Metric.isOpen_iff.mp φ.open_target (φ x₀) hx₀tgt
+  -- The single chart-ball open `U₀ = φ.source ∩ φ⁻¹(ball (φ x₀) r)`.
+  set U0 : Set X := φ.source ∩ φ ⁻¹' Metric.ball (φ x₀) r with hU0
+  have hU0open : IsOpen U0 :=
+    φ.continuousOn.isOpen_inter_preimage φ.open_source Metric.isOpen_ball
+  refine ⟨{
+    ι := Fin 1
+    U := fun _ => ⟨U0, hU0open⟩
+    center := x₀
+    ballCenter := φ x₀
+    radius := r
+    radius_pos := hr_pos
+    subset_source := fun _ => Set.inter_subset_left
+    image_subset_ball := fun _ => ?_
+    core := (∅ : Set X)
+    coreClosed := isClosed_empty
+    core_subset := Set.empty_subset _
+    overlaps_subset_interior := fun i j hij => absurd (Subsingleton.elim i j) hij }⟩
+  -- `φ '' U₀ ⊆ ball (φ x₀) r`: `U₀ ⊆ φ⁻¹(ball)` and `φ '' (φ⁻¹ B) ⊆ B`.
+  rintro z ⟨w, hw, rfl⟩
+  exact hw.2
+
+end SharedChartCover
+
+/-! ## §0 — Ported partition-of-unity machinery (closed-core PoU)
+
+The partition of unity is subordinate to `(𝔇.U i)` and sums to `1` on the closed core `𝔇.core`
+(the closed-core PoU `DiskAcyclicCore.exists_smoothPartitionOfUnity_core`).  The sum-to-one is consumed
+ONLY on `𝔇.core` (in fact on `interior 𝔇.core`, where the overlaps live), never on all of `X`. -/
+
+/-- The closed-core subordinate smooth partition of unity over `𝓘(ℝ, ℂ)`: subordinate to `(𝔇.U i)`,
+summing to `1` on the closed core `𝔇.core` (`DiskAcyclicCore.exists_smoothPartitionOfUnity_core`). -/
+theorem exists_smoothPartitionOfUnity_subordinate (𝔇 : SharedChartCover X) :
+    ∃ ρ : SmoothPartitionOfUnity 𝔇.ι 𝓘(ℝ, ℂ) X 𝔇.core,
+      ρ.IsSubordinate (fun i => (𝔇.U i : Set X)) :=
+  exists_smoothPartitionOfUnity_core 𝔇.U 𝔇.coreClosed 𝔇.core_subset
+
+/-- A fixed closed-core smooth partition of unity subordinate to the family `(𝔇.U i)`, summing to `1`
+on the closed core `𝔇.core`. -/
+noncomputable def coverPoU (𝔇 : SharedChartCover X) :
+    SmoothPartitionOfUnity 𝔇.ι 𝓘(ℝ, ℂ) X 𝔇.core :=
+  (exists_smoothPartitionOfUnity_subordinate 𝔇).choose
+
+theorem coverPoU_subordinate (𝔇 : SharedChartCover X) :
+    (coverPoU 𝔇).IsSubordinate (fun i => (𝔇.U i : Set X)) :=
+  (exists_smoothPartitionOfUnity_subordinate 𝔇).choose_spec
 
 /-- The `k`-th PoU function as a complex `SmoothCFunctions` (`ρ̃_k = ofReal ∘ ρ_k`). Port of
 `DolbeaultComparisonInverse.rhoC`. -/
-noncomputable def rhoC (𝔘 : FiniteCover X) (k : 𝔘.ι) : SmoothCFunctions X :=
-  ofRealCM.comp (coverPoU 𝔘 k)
+noncomputable def rhoC (𝔇 : SharedChartCover X) (k : 𝔇.ι) : SmoothCFunctions X :=
+  ofRealCM.comp (coverPoU 𝔇 k)
 
-/-- The PoU functions sum to the constant `1`. Port of `DolbeaultComparisonInverse.sum_rhoC`. -/
-theorem sum_rhoC (𝔘 : FiniteCover X) : ∑ k, rhoC 𝔘 k = 1 := by
-  refine ContMDiffMap.ext fun x => ?_
-  have h1 : (⇑(∑ k, rhoC 𝔘 k) : X → ℂ) = ∑ k, ⇑(rhoC 𝔘 k) :=
-    map_sum ContMDiffMap.coeFnAddMonoidHom _ _
-  rw [show (∑ k, rhoC 𝔘 k) x = (⇑(∑ k, rhoC 𝔘 k) : X → ℂ) x from rfl, h1, Finset.sum_apply,
-    ContMDiffMap.coe_one, Pi.one_apply]
-  show ∑ k, ((coverPoU 𝔘 k x : ℝ) : ℂ) = 1
-  rw [← Complex.ofReal_sum, ← finsum_eq_sum_of_fintype,
-    (coverPoU 𝔘).sum_eq_one (Set.mem_univ x), Complex.ofReal_one]
+/-- **The PoU functions sum to `1` on the closed core.**  `∑_k ρ_k x = 1` for `x ∈ 𝔇.core` (the
+sum-to-one is consumed only on the core, where the overlaps live — `smoothPartitionOfUnity_sum_eq_one_of_mem`).
+This is the SOUND replacement for `∑ ρ = 1` on `X` (which is unavailable for a non-covering family). -/
+theorem sum_rhoC_apply (𝔇 : SharedChartCover X) {x : X} (hx : x ∈ 𝔇.core) :
+    ∑ k, (rhoC 𝔇 k x) = 1 := by
+  have hsum : ∑ k, ((coverPoU 𝔇 k x : ℝ) : ℂ) = ((1 : ℝ) : ℂ) := by
+    rw [← Complex.ofReal_sum, smoothPartitionOfUnity_sum_eq_one_of_mem (coverPoU 𝔇) hx]
+  simpa only [rhoC, ContMDiffMap.comp_apply, ofRealCM, Complex.ofReal_one] using hsum
 
-/-- Value form of `sum_rhoC`: `∑_k ρ_k x = 1` pointwise. -/
-theorem sum_rhoC_apply (𝔘 : FiniteCover X) (x : X) : ∑ k, (rhoC 𝔘 k x) = 1 := by
-  have h1 : (⇑(∑ k, rhoC 𝔘 k) : X → ℂ) = ∑ k, ⇑(rhoC 𝔘 k) :=
-    map_sum ContMDiffMap.coeFnAddMonoidHom _ _
-  have h2 : (∑ k, rhoC 𝔘 k) x = ∑ k, (rhoC 𝔘 k x) := by
-    rw [show ((∑ k, rhoC 𝔘 k) x : ℂ) = (⇑(∑ k, rhoC 𝔘 k) : X → ℂ) x from rfl, h1, Finset.sum_apply]
-  rw [← h2, sum_rhoC, ContMDiffMap.coe_one, Pi.one_apply]
-
-/-- `rhoC 𝔘 k x = 0` for `x ∉ tsupport ρ_k` (the real PoU function vanishes there). -/
-theorem rhoC_eq_zero_of_notMem (𝔘 : FiniteCover X) (k : 𝔘.ι) {x : X}
-    (hx : x ∉ tsupport (coverPoU 𝔘 k)) : rhoC 𝔘 k x = 0 := by
+/-- `rhoC 𝔇 k x = 0` for `x ∉ tsupport ρ_k` (the real PoU function vanishes there). -/
+theorem rhoC_eq_zero_of_notMem (𝔇 : SharedChartCover X) (k : 𝔇.ι) {x : X}
+    (hx : x ∉ tsupport (coverPoU 𝔇 k)) : rhoC 𝔇 k x = 0 := by
   simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hx]; rfl
 
 /-- **Chart-analytic ⟹ real-smooth.** If `h` read in the chart at `y` is `ℂ`-analytic at the chart
@@ -224,7 +332,7 @@ the triple overlap `U_q ⊓ U_i ⊓ U_j`, the analytic representatives satisfy
 `s_{qj} = s_{qi} + s_{ij}` on the triple overlap; `holoFn` is subtractive (`holoFn_sub`) and
 restriction-compatible (`holoFn_restrict`).  Port/adaptation of
 `DolbeaultComparisonInverse.holoFn_cocycle_add`. -/
-theorem holoFn_cocycle_sub (𝔙 : FiniteCover X) (s : ↥(𝔙.cocycles1 (0 : Divisor X)))
+theorem holoFn_cocycle_sub (𝔙 : FiniteFamily X) (s : ↥(𝔙.cocycles1 (0 : Divisor X)))
     (q i j : 𝔙.ι) {y : X} (hy : y ∈ (𝔙.U q ⊓ 𝔙.U i ⊓ 𝔙.U j : Opens X)) :
     holoFn (cocycleComp_mem 𝔙 s q j) y - holoFn (cocycleComp_mem 𝔙 s q i) y
       = holoFn (cocycleComp_mem 𝔙 s i j) y := by
@@ -261,6 +369,20 @@ theorem holoFn_cocycle_sub (𝔙 : FiniteCover X) (s : ↥(𝔙.cocycles1 (0 : D
       (rawRestrictG_omegaDGerm hij (cocycleComp_mem 𝔙 s i j)) hrel hy,
     holoFn_restrict hij (cocycleComp_mem 𝔙 s i j) hy]
 
+/-- **The diagonal analytic representative vanishes.**  `holoFn(s_{ii}) y = 0` for `y ∈ U_i`: the
+cocycle relation `holoFn_cocycle_sub` at all indices `= i` reads `holoFn(s_{ii}) − holoFn(s_{ii}) =
+holoFn(s_{ii})`, whose left side is `0`.  (This is the diagonal `s_{ii} = 0` fact, surfaced at the
+`holoFn` value level — exactly what the `i = j` case of the corrector-difference splitting needs, where
+the overlap `U_i ⊓ U_i = U_i` is NOT inside the closed core.) -/
+theorem holoFn_diag_eq_zero (𝔙 : FiniteFamily X) (s : ↥(𝔙.cocycles1 (0 : Divisor X)))
+    (i : 𝔙.ι) {y : X} (hy : y ∈ 𝔙.U i) :
+    holoFn (cocycleComp_mem 𝔙 s i i) y = 0 := by
+  have hyT : y ∈ (𝔙.U i ⊓ 𝔙.U i ⊓ 𝔙.U i : Opens X) := ⟨⟨hy, hy⟩, hy⟩
+  have h := holoFn_cocycle_sub 𝔙 s i i i hyT
+  -- `holoFn(s_{ii}) y − holoFn(s_{ii}) y = holoFn(s_{ii}) y`, i.e. `0 = holoFn(s_{ii}) y`.
+  rw [sub_self] at h
+  exact h.symm
+
 /-! ## §1 — The per-summand smoothness (fallback rung (b))
 
 For the partition-of-unity globalization we form, on each cover set `U_i`, the primitive
@@ -282,30 +404,30 @@ The crucial smoothness fact is therefore the *overlap* statement: `primSummand �
   `U_i`; see the status note.) -/
 
 /-- The `(q)`-summand `ρ_q · holoFn(s_{qi})` of the cover-set primitive `h_i`, as a bare function. -/
-noncomputable def primSummand (𝔙 : FiniteCover X) (s : ↥(𝔙.cocycles1 (0 : Divisor X)))
-    (q i : 𝔙.ι) : X → ℂ :=
-  fun x => rhoC 𝔙 q x * holoFn (cocycleComp_mem 𝔙 s q i) x
+noncomputable def primSummand (𝔇 : SharedChartCover X) (s : ↥(𝔇.cocycles1 (0 : Divisor X)))
+    (q i : 𝔇.ι) : X → ℂ :=
+  fun x => rhoC 𝔇 q x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q i) x
 
-@[simp] theorem primSummand_apply (𝔙 : FiniteCover X) (s : ↥(𝔙.cocycles1 (0 : Divisor X)))
-    (q i : 𝔙.ι) (x : X) :
-    primSummand 𝔙 s q i x = rhoC 𝔙 q x * holoFn (cocycleComp_mem 𝔙 s q i) x := rfl
+@[simp] theorem primSummand_apply (𝔇 : SharedChartCover X) (s : ↥(𝔇.cocycles1 (0 : Divisor X)))
+    (q i : 𝔇.ι) (x : X) :
+    primSummand 𝔇 s q i x = rhoC 𝔇 q x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q i) x := rfl
 
-/-- **The per-summand overlap smoothness (fallback rung (b)).** `primSummand 𝔙 s q i = ρ_q ·
+/-- **The per-summand overlap smoothness (fallback rung (b)).** `primSummand 𝔇 s q i = ρ_q ·
 holoFn(s_{qi})` is `ContMDiffAt 𝓘(ℝ,ℂ)` at every `x₀ ∈ U_i`.  Two-case `tsupport`/overlap argument:
 on `tsupport ρ_q` the point lies in `U_q ⊓ U_i` (so `holoFn(s_qi)` is `ContMDiffAt`), off it `ρ_q`
 vanishes locally.  This is the honest function-level content of `cechTerm`/`primFn`. -/
-theorem contMDiffAt_primSummand (𝔙 : FiniteCover X) (s : ↥(𝔙.cocycles1 (0 : Divisor X)))
-    (q i : 𝔙.ι) {x₀ : X} (hx₀ : x₀ ∈ 𝔙.U i) :
-    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (primSummand 𝔙 s q i) x₀ := by
-  by_cases hb : x₀ ∈ tsupport (coverPoU 𝔙 q)
+theorem contMDiffAt_primSummand (𝔇 : SharedChartCover X) (s : ↥(𝔇.cocycles1 (0 : Divisor X)))
+    (q i : 𝔇.ι) {x₀ : X} (hx₀ : x₀ ∈ 𝔇.U i) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (primSummand 𝔇 s q i) x₀ := by
+  by_cases hb : x₀ ∈ tsupport (coverPoU 𝔇 q)
   · -- (a) `x₀ ∈ U_q ⊓ U_i`: both factors smooth.
-    have hxq : x₀ ∈ 𝔙.U q := coverPoU_subordinate 𝔙 q hb
-    have hxov : x₀ ∈ (𝔙.U q ⊓ 𝔙.U i : Opens X) := ⟨hxq, hx₀⟩
-    exact ((rhoC 𝔙 q).contMDiff x₀).mul (holoFn_contMDiffAt (cocycleComp_mem 𝔙 s q i) hxov)
+    have hxq : x₀ ∈ 𝔇.U q := coverPoU_subordinate 𝔇 q hb
+    have hxov : x₀ ∈ (𝔇.U q ⊓ 𝔇.U i : Opens X) := ⟨hxq, hx₀⟩
+    exact ((rhoC 𝔇 q).contMDiff x₀).mul (holoFn_contMDiffAt (cocycleComp_mem 𝔇.toFiniteFamily s q i) hxov)
   · -- (b) `x₀ ∉ tsupport ρ_q`: `ρ_q = 0` on a neighbourhood, product locally `0`.
     refine (contMDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq ?_
-    filter_upwards [(isClosed_tsupport (coverPoU 𝔙 q)).isOpen_compl.mem_nhds hb] with x hx
-    simp only [primSummand_apply, rhoC_eq_zero_of_notMem 𝔙 q hx, zero_mul]
+    filter_upwards [(isClosed_tsupport (coverPoU 𝔇 q)).isOpen_compl.mem_nhds hb] with x hx
+    simp only [primSummand_apply, rhoC_eq_zero_of_notMem 𝔇 q hx, zero_mul]
 
 /-! ## §2 — The cover-set primitive `h_i` (fallback rung (c), manifold side)
 
@@ -315,101 +437,62 @@ pieces of §1), and its pairwise differences telescope to the analytic represent
 `h_j − h_i = holoFn(s_{ij})` on `U_i ⊓ U_j` (the cocycle relation `holoFn_cocycle_sub` + `∑ρ = 1`). -/
 
 /-- The cover-set primitive `h_i = ∑_q ρ_q · holoFn(s_{qi}) : X → ℂ`, smooth on `U_i`. -/
-noncomputable def coverPrim (𝔙 : FiniteCover X) (s : ↥(𝔙.cocycles1 (0 : Divisor X))) (i : 𝔙.ι) :
+noncomputable def coverPrim (𝔇 : SharedChartCover X) (s : ↥(𝔇.cocycles1 (0 : Divisor X))) (i : 𝔇.ι) :
     X → ℂ :=
-  fun x => ∑ q, primSummand 𝔙 s q i x
+  fun x => ∑ q, primSummand 𝔇 s q i x
 
-theorem coverPrim_apply (𝔙 : FiniteCover X) (s : ↥(𝔙.cocycles1 (0 : Divisor X))) (i : 𝔙.ι) (x : X) :
-    coverPrim 𝔙 s i x = ∑ q, rhoC 𝔙 q x * holoFn (cocycleComp_mem 𝔙 s q i) x := rfl
+theorem coverPrim_apply (𝔇 : SharedChartCover X) (s : ↥(𝔇.cocycles1 (0 : Divisor X))) (i : 𝔇.ι)
+    (x : X) :
+    coverPrim 𝔇 s i x = ∑ q, rhoC 𝔇 q x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q i) x := rfl
 
 /-- **`coverPrim` is `ContMDiffAt` on `U_i`** (finite sum of the per-summand smooth pieces). -/
-theorem contMDiffAt_coverPrim (𝔙 : FiniteCover X) (s : ↥(𝔙.cocycles1 (0 : Divisor X))) (i : 𝔙.ι)
-    {x₀ : X} (hx₀ : x₀ ∈ 𝔙.U i) :
-    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (coverPrim 𝔙 s i) x₀ :=
-  ContMDiffAt.sum (fun q _ => contMDiffAt_primSummand 𝔙 s q i hx₀)
+theorem contMDiffAt_coverPrim (𝔇 : SharedChartCover X) (s : ↥(𝔇.cocycles1 (0 : Divisor X))) (i : 𝔇.ι)
+    {x₀ : X} (hx₀ : x₀ ∈ 𝔇.U i) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (coverPrim 𝔇 s i) x₀ :=
+  ContMDiffAt.sum (fun q _ => contMDiffAt_primSummand 𝔇 s q i hx₀)
 
-/-- **The telescoping difference identity.** On the overlap `U_i ⊓ U_j`,
-`coverPrim s j − coverPrim s i = holoFn(s_{ij})` pointwise. The cocycle relation
+/-- **The telescoping difference identity (closed-core).** On the overlap `U_i ⊓ U_j`,
+`coverPrim s j − coverPrim s i = holoFn(s_{ij})` pointwise.
+
+Two cases.  **Off-diagonal `i ≠ j`:** the overlap `U_i ⊓ U_j ⊆ interior C ⊆ C`
+(`overlaps_subset_interior`), so `x ∈ C` where `∑ ρ = 1` (`sum_rhoC_apply`); the cocycle relation
 (`holoFn_cocycle_sub`) collapses each `q`-bracket to `holoFn(s_{ij})` on `tsupport ρ_q`, and the
-weights sum to `1` (`sum_rhoC_apply`). -/
-theorem coverPrim_diff (𝔙 : FiniteCover X) (s : ↥(𝔙.cocycles1 (0 : Divisor X))) (i j : 𝔙.ι)
-    {x : X} (hx : x ∈ (𝔙.U i ⊓ 𝔙.U j : Opens X)) :
-    coverPrim 𝔙 s j x - coverPrim 𝔙 s i x = holoFn (cocycleComp_mem 𝔙 s i j) x := by
-  rw [coverPrim_apply, coverPrim_apply, ← Finset.sum_sub_distrib]
-  -- Per-`q`: the bracket is `ρ_q x · holoFn(s_{ij}) x` (cocycle relation on `tsupport`, else `ρ_q=0`).
-  have hpt : ∀ q : 𝔙.ι,
-      rhoC 𝔙 q x * holoFn (cocycleComp_mem 𝔙 s q j) x
-        - rhoC 𝔙 q x * holoFn (cocycleComp_mem 𝔙 s q i) x
-      = rhoC 𝔙 q x * holoFn (cocycleComp_mem 𝔙 s i j) x := by
-    intro q
-    by_cases hb : x ∈ tsupport (coverPoU 𝔙 q)
-    · have hxq : x ∈ 𝔙.U q := coverPoU_subordinate 𝔙 q hb
-      have hxtri : x ∈ (𝔙.U q ⊓ 𝔙.U i ⊓ 𝔙.U j : Opens X) := ⟨⟨hxq, hx.1⟩, hx.2⟩
-      rw [← mul_sub, holoFn_cocycle_sub 𝔙 s q i j hxtri]
-    · rw [rhoC_eq_zero_of_notMem 𝔙 q hb]; ring
-  simp_rw [hpt, ← Finset.sum_mul, sum_rhoC_apply 𝔙 x, one_mul]
-
-/-! ## §3 — The shared-chart disk cover and the chart pushforward
-
-A **shared-chart disk cover** is a finite cover all of whose sets `U_i` live inside a single chart
-`φ = chartAt ℂ c₀` and whose chart-images `φ '' U_i` lie in a fixed Euclidean ball `ball cc r ⊆ ℂ`.
-This is the geometric situation STEP C of the obstruction map runs over: every overlap pulls back
-through the SINGLE chart `φ` to opens of the ball, so the planar `∂̄`-engine applies and the chart
-dictionary (`analyticAt_chart_change`) gives chart-analyticity in each point's own chart.
-
-(Such a cover exists around any point — shrink the chart cover so every set sits in one chart-disk —
-and is the input the `exists_cechModel` finiteness assembly produces a chart-disk Leray model from.) -/
-
-/-- A finite cover all of whose sets live in one chart `φ = chartAt ℂ center`, with chart-images in a
-fixed ball.  The geometric hypothesis STEP C of the obstruction map runs over. -/
-structure SharedChartCover (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] extends FiniteCover X where
-  /-- The common chart center; the shared chart is `chartAt ℂ center`. -/
-  center : X
-  /-- The chart-coordinate center of the common ball. -/
-  ballCenter : ℂ
-  /-- The radius of the common ball. -/
-  radius : ℝ
-  radius_pos : 0 < radius
-  /-- Each cover set lies in the shared chart's source. -/
-  subset_source : ∀ i, ((U i : Opens X) : Set X) ⊆ (chartAt (H := ℂ) center).source
-  /-- Each cover set's chart-image lies in the common ball. -/
-  image_subset_ball : ∀ i,
-    (chartAt (H := ℂ) center) '' ((U i : Opens X) : Set X) ⊆ Metric.ball ballCenter radius
-
-namespace SharedChartCover
-
-/-- The shared chart `φ = chartAt ℂ center`. -/
-noncomputable abbrev φ (𝔇 : SharedChartCover X) : OpenPartialHomeomorph X ℂ :=
-  chartAt (H := ℂ) 𝔇.center
-
-/-- The chart-image `Ω_i = φ '' U_i ⊆ ℂ` of a cover set. -/
-def Ω (𝔇 : SharedChartCover X) (i : 𝔇.ι) : Set ℂ := 𝔇.φ '' ((𝔇.U i : Opens X) : Set X)
-
-/-- For `x ∈ U_i`, the chart point `φ x` lies in `Ω_i`. -/
-theorem mem_Ω (𝔇 : SharedChartCover X) {i : 𝔇.ι} {x : X} (hx : x ∈ 𝔇.U i) : 𝔇.φ x ∈ 𝔇.Ω i :=
-  ⟨x, hx, rfl⟩
-
-/-- For `x ∈ U_i`, the chart point `φ x` lies in the ball. -/
-theorem mem_ball (𝔇 : SharedChartCover X) {i : 𝔇.ι} {x : X} (hx : x ∈ 𝔇.U i) :
-    𝔇.φ x ∈ Metric.ball 𝔇.ballCenter 𝔇.radius :=
-  𝔇.image_subset_ball i ⟨x, hx, rfl⟩
-
-/-- For `x ∈ U_i`, `x` lies in the shared chart's source. -/
-theorem mem_source (𝔇 : SharedChartCover X) {i : 𝔇.ι} {x : X} (hx : x ∈ 𝔇.U i) :
-    x ∈ (chartAt (H := ℂ) 𝔇.center).source :=
-  𝔇.subset_source i hx
-
-end SharedChartCover
+weights sum to `1`.  **Diagonal `i = j`:** both sides vanish — the left by `sub_self`, the right by
+`holoFn_diag_eq_zero` (`s_{ii} = 0`) — independently of the sum-to-one (the diagonal overlap `U_i` is
+not inside the closed core, so the telescoping is NOT available there; the diagonal is handled by
+`s_{ii} = 0` instead).  This is the SOUND closed-core replacement for the old `∑ ρ = 1`-on-`X` proof. -/
+theorem coverPrim_diff (𝔇 : SharedChartCover X) (s : ↥(𝔇.cocycles1 (0 : Divisor X))) (i j : 𝔇.ι)
+    {x : X} (hx : x ∈ (𝔇.U i ⊓ 𝔇.U j : Opens X)) :
+    coverPrim 𝔇 s j x - coverPrim 𝔇 s i x = holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) x := by
+  by_cases hij : i = j
+  · -- Diagonal: LHS `= 0` (`sub_self`), RHS `= holoFn(s_{ii}) = 0` (`holoFn_diag_eq_zero`).
+    subst hij
+    rw [sub_self, holoFn_diag_eq_zero 𝔇.toFiniteFamily s i hx.1]
+  · -- Off-diagonal: `x ∈ U_i ⊓ U_j ⊆ interior C ⊆ C`, so `∑ ρ = 1` at `x`.
+    have hxcore : x ∈ 𝔇.core :=
+      interior_subset (𝔇.overlaps_subset_interior i j hij ⟨hx.1, hx.2⟩)
+    rw [coverPrim_apply, coverPrim_apply, ← Finset.sum_sub_distrib]
+    -- Per-`q`: the bracket is `ρ_q x · holoFn(s_{ij}) x` (cocycle relation on `tsupport`, else `ρ_q=0`).
+    have hpt : ∀ q : 𝔇.ι,
+        rhoC 𝔇 q x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q j) x
+          - rhoC 𝔇 q x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q i) x
+        = rhoC 𝔇 q x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) x := by
+      intro q
+      by_cases hb : x ∈ tsupport (coverPoU 𝔇 q)
+      · have hxq : x ∈ 𝔇.U q := coverPoU_subordinate 𝔇 q hb
+        have hxtri : x ∈ (𝔇.U q ⊓ 𝔇.U i ⊓ 𝔇.U j : Opens X) := ⟨⟨hxq, hx.1⟩, hx.2⟩
+        rw [← mul_sub, holoFn_cocycle_sub 𝔇.toFiniteFamily s q i j hxtri]
+      · rw [rhoC_eq_zero_of_notMem 𝔇 q hb]; ring
+    simp_rw [hpt, ← Finset.sum_mul, sum_rhoC_apply 𝔇 hxcore, one_mul]
 
 /-- **Chart pushforward of the primitive is `ContDiffAt`.**  For `x ∈ U_i` (so `x` in the shared
 chart's source), the chart-read `coverPrim s i ∘ φ.symm` is `ContDiffAt ℝ ⊤` at `φ x`.  From the
 manifold smoothness `contMDiffAt_coverPrim` (on `U_i`) precomposed with the smooth inverse chart
 `φ.symm` (model `𝓘(ℝ,ℂ)` is the identity, so `ContMDiffAt ↔ ContDiffAt`). -/
 theorem contDiffAt_coverPrim_chart (𝔇 : SharedChartCover X)
-    (s : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i : 𝔇.toFiniteCover.ι) {x : X}
-    (hx : x ∈ 𝔇.toFiniteCover.U i) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (coverPrim 𝔇.toFiniteCover s i ∘ (𝔇.φ).symm) (𝔇.φ x) := by
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (i : 𝔇.toFiniteFamily.ι) {x : X}
+    (hx : x ∈ 𝔇.toFiniteFamily.U i) :
+    ContDiffAt ℝ (⊤ : ℕ∞) (coverPrim 𝔇 s i ∘ (𝔇.φ).symm) (𝔇.φ x) := by
   set φ := chartAt (H := ℂ) 𝔇.center with hφ
   have hsrc : x ∈ φ.source := 𝔇.subset_source i hx
   have hxtgt : φ x ∈ φ.target := φ.map_source hsrc
@@ -418,16 +501,16 @@ theorem contDiffAt_coverPrim_chart (𝔇 : SharedChartCover X)
     (contMDiffOn_chart_symm (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := 𝔇.center) _ hxtgt).contMDiffAt
       (φ.open_target.mem_nhds hxtgt)
   have hxeq : φ.symm (φ x) = x := φ.left_inv hsrc
-  have hprim : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (coverPrim 𝔇.toFiniteCover s i) x :=
-    contMDiffAt_coverPrim 𝔇.toFiniteCover s i hx
+  have hprim : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (coverPrim 𝔇 s i) x :=
+    contMDiffAt_coverPrim 𝔇 s i hx
   have hcomp : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
-      (coverPrim 𝔇.toFiniteCover s i ∘ φ.symm) (φ x) :=
+      (coverPrim 𝔇 s i ∘ φ.symm) (φ x) :=
     (hxeq ▸ hprim).comp (φ x) hsymm
   exact contMDiffAt_iff_contDiffAt.1 hcomp
 
 /-- The chart-image `Ω_i = φ '' U_i` is open in `ℂ` (`φ` is an `OpenPartialHomeomorph` and `U_i` is
 open `⊆ φ.source`). -/
-theorem isOpen_Ω (𝔇 : SharedChartCover X) (i : 𝔇.toFiniteCover.ι) : IsOpen (𝔇.Ω i) :=
+theorem isOpen_Ω (𝔇 : SharedChartCover X) (i : 𝔇.toFiniteFamily.ι) : IsOpen (𝔇.Ω i) :=
   (chartAt (H := ℂ) 𝔇.center).isOpen_image_of_subset_source (𝔇.U i).isOpen (𝔇.subset_source i)
 
 /-! ## §4 — Chart-analyticity of `H_i = η̂_i ∘ φ` and the difference (fallback rung (d), discharge)
@@ -442,9 +525,9 @@ predicate `HasBallSplitData`) is producing the ball-wide smooth primitives + glu
 `ball ∩ Ω_i`, then for `y ∈ U_i` the ambient `H_i := η̂_i ∘ φ` reads `ℂ`-analytically in the chart at
 `y` (`η̂_i` is analytic at `φ y ∈ ball ∩ Ω_i`, and `H_i ∘ φ.symm = η̂_i` there; transport to `y`'s own
 chart by `analyticAt_chart_change`). -/
-theorem analyticAt_compChart_of_differentiableOn (𝔇 : SharedChartCover X) (i : 𝔇.toFiniteCover.ι)
+theorem analyticAt_compChart_of_differentiableOn (𝔇 : SharedChartCover X) (i : 𝔇.toFiniteFamily.ι)
     {ηhat : ℂ → ℂ} (hη : DifferentiableOn ℂ ηhat (Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i))
-    {y : X} (hy : y ∈ 𝔇.toFiniteCover.U i) :
+    {y : X} (hy : y ∈ 𝔇.toFiniteFamily.U i) :
     AnalyticAt ℂ ((ηhat ∘ 𝔇.φ) ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) := by
   set φ := chartAt (H := ℂ) 𝔇.center with hφ
   have hsrc : y ∈ φ.source := 𝔇.subset_source i hy
@@ -502,8 +585,8 @@ theorem differentiableAt_of_dbar_eq_zero_local {g : ℂ → ℂ} {x : ℂ}
 pushed through the shared chart.  `C^∞` on `Ω_i` (`contDiffAt_coverPrim_chart`); its differences split
 `holoFn(s_{ij}) ∘ φ.symm` on overlaps (`coverPrim_diff`). -/
 noncomputable def chartPrim (𝔇 : SharedChartCover X)
-    (s : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i : 𝔇.toFiniteCover.ι) : ℂ → ℂ :=
-  coverPrim 𝔇.toFiniteCover s i ∘ (𝔇.φ).symm
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (i : 𝔇.toFiniteFamily.ι) : ℂ → ℂ :=
+  coverPrim 𝔇 s i ∘ (𝔇.φ).symm
 
 /-- **The chart-read difference is the chart-pushed analytic representative.**  On the overlap image
 `φ '' (U_i ⊓ U_j)`, the chart-read primitives differ by `holoFn(s_{ij}) ∘ φ.symm`:
@@ -514,13 +597,13 @@ to agree on overlaps (their differences `∂̄(holoFn(s_{ij}) ∘ φ.symm)` vani
 holomorphic function), so a common datum `ω̂` is the genuine Forster glued `∂̄`-datum, not a vacuous
 hypothesis. -/
 theorem chartPrim_diff (𝔇 : SharedChartCover X)
-    (s : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i j : 𝔇.toFiniteCover.ι) {x : X}
-    (hx : x ∈ (𝔇.toFiniteCover.U i ⊓ 𝔇.toFiniteCover.U j : Opens X)) :
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (i j : 𝔇.toFiniteFamily.ι) {x : X}
+    (hx : x ∈ (𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X)) :
     chartPrim 𝔇 s j (𝔇.φ x) - chartPrim 𝔇 s i (𝔇.φ x)
-      = holoFn (cocycleComp_mem 𝔇.toFiniteCover s i j) x := by
+      = holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) x := by
   have hsrc : x ∈ (chartAt (H := ℂ) 𝔇.center).source := 𝔇.subset_source i hx.1
   simp only [chartPrim, Function.comp_apply, (𝔇.φ).left_inv hsrc]
-  exact coverPrim_diff 𝔇.toFiniteCover s i j hx
+  exact coverPrim_diff 𝔇 s i j hx
 
 /-- **The remaining analytic obligation: the global glued `∂̄`-datum.**  For every cocycle `s` there is
 a globally-`C^∞` function `ω̂ : ℂ → ℂ` agreeing with `∂̄(ĥ_i) = ∂̄(coverPrim s i ∘ φ.symm)` on each
@@ -529,7 +612,7 @@ a globally-`C^∞` function `ω̂ : ℂ → ℂ` agreeing with `∂̄(ĥ_i) = �
 `cechTerm`'s 3-case `tsupport` argument).  Isolated as a predicate so the discharge below is
 sorry-free; the precise remaining gap. -/
 def HasGluedDbarDatum (𝔇 : SharedChartCover X) : Prop :=
-  ∀ s : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)),
+  ∀ s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X)),
     ∃ dbarDatum : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) dbarDatum ∧
       ∀ i, ∀ z ∈ Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i,
         DbarDisk.dbar (chartPrim 𝔇 s i) z = dbarDatum z
@@ -541,14 +624,14 @@ datum `ω̂`, solve `∂̄u = ω̂` on the ball (`dbar_solvable_ball`) and set `
 differences split `holoFn(s_{ij})` on each overlap (`η̂_j − η̂_i = ĥ_j − ĥ_i`, then `coverPrim_diff`).
 This is STEP C.4 + the §4 discharges, all sorry-free here. -/
 theorem hasChartAnalyticCorrectors_of_hasGluedDbarDatum (𝔇 : SharedChartCover X)
-    (H : HasGluedDbarDatum 𝔇) : HasChartAnalyticCorrectors 𝔇.toFiniteCover := by
+    (H : HasGluedDbarDatum 𝔇) : HasChartAnalyticCorrectors 𝔇.toFiniteFamily := by
   intro s
   obtain ⟨dbarDatum, hdatum, hagree⟩ := H s
   -- Solve `∂̄u = ω̂` on the ball.
   obtain ⟨u, hu_smooth, hu_dbar⟩ :=
     DbarDiskCohomology.dbar_solvable_ball hdatum 𝔇.ballCenter 𝔇.radius_pos
   -- The holomorphic chart correctors `η̂_i := ĥ_i − u` on `Ω_i ∩ ball`.
-  set ηhat : 𝔇.toFiniteCover.ι → ℂ → ℂ := fun i => chartPrim 𝔇 s i - u with hηhatdef
+  set ηhat : 𝔇.toFiniteFamily.ι → ℂ → ℂ := fun i => chartPrim 𝔇 s i - u with hηhatdef
   -- `η̂_i` is holomorphic on `ball ∩ Ω_i` (`∂̄η̂_i = ∂̄ĥ_i − ∂̄u = ω̂ − ω̂ = 0`).
   have hηhol : ∀ i, DifferentiableOn ℂ (ηhat i)
       (Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i) := by
@@ -576,17 +659,17 @@ theorem hasChartAnalyticCorrectors_of_hasGluedDbarDatum (𝔇 : SharedChartCover
   · -- Chart-analytic on `U_i`.
     exact analyticAt_compChart_of_differentiableOn 𝔇 i (hηhol i) hy
   · -- Difference identity, pointwise on the open overlap (gives the `𝓝[≠]`-eventual form).
-    have hUij : ∀ᶠ z in 𝓝[≠] x, z ∈ (𝔇.toFiniteCover.U i ⊓ 𝔇.toFiniteCover.U j : Opens X) :=
+    have hUij : ∀ᶠ z in 𝓝[≠] x, z ∈ (𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X) :=
       eventually_nhdsWithin_of_eventually_nhds
-        ((𝔇.toFiniteCover.U i ⊓ 𝔇.toFiniteCover.U j : Opens X).isOpen.mem_nhds hx)
+        ((𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X).isOpen.mem_nhds hx)
     filter_upwards [hUij] with z hz
     -- `(η̂_j ∘ φ) z − (η̂_i ∘ φ) z = (ĥ_j − ĥ_i)(φ z) = (coverPrim j − coverPrim i) z = holoFn(s_{ij}) z`.
-    show (ηhat j ∘ 𝔇.φ) z - (ηhat i ∘ 𝔇.φ) z = holoFn (cocycleComp_mem 𝔇.toFiniteCover s i j) z
+    show (ηhat j ∘ 𝔇.φ) z - (ηhat i ∘ 𝔇.φ) z = holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) z
     have hzsrc : z ∈ (chartAt (H := ℂ) 𝔇.center).source := 𝔇.subset_source i hz.1
     have hsymm_eq : (𝔇.φ).symm (𝔇.φ z) = z := (𝔇.φ).left_inv hzsrc
     simp only [hηhatdef, Function.comp_apply, Pi.sub_apply, chartPrim, hsymm_eq]
     -- The `u`-terms cancel; the rest is `coverPrim_diff`.
-    have hcd := coverPrim_diff 𝔇.toFiniteCover s i j hz
+    have hcd := coverPrim_diff 𝔇 s i j hz
     linear_combination hcd
 
 /-- **`H¹(disk, 𝒪) = 0` for a shared-chart disk cover, from the glued `∂̄`-datum (sorry-free).**  The
@@ -594,8 +677,8 @@ end-to-end germ-level collapse modulo the single remaining globalization obligat
 `HasGluedDbarDatum`: the §0–§5 discharge produces `HasChartAnalyticCorrectors`, and the imported
 `cechH1_subsingleton_of_chartAnalyticCorrectors` collapses every class of `cechH1 0`. -/
 theorem cechH1_subsingleton_of_hasGluedDbarDatum (𝔇 : SharedChartCover X)
-    (H : HasGluedDbarDatum 𝔇) (q : 𝔇.toFiniteCover.cechH1 (0 : Divisor X)) : q = 0 :=
-  cechH1_subsingleton_of_chartAnalyticCorrectors 𝔇.toFiniteCover
+    (H : HasGluedDbarDatum 𝔇) (q : 𝔇.toFiniteFamily.cechH1 (0 : Divisor X)) : q = 0 :=
+  cechH1_subsingleton_of_chartAnalyticCorrectors 𝔇.toFiniteFamily
     (hasChartAnalyticCorrectors_of_hasGluedDbarDatum 𝔇 H) q
 
 end Jacobians.Dolbeault
