@@ -7,6 +7,7 @@ import Jacobians.ProjectiveLine
 import Jacobians.Degree
 import Jacobians.Abel
 import Jacobians.MeromorphicLiouville
+import Jacobians.GenusZeroOfSphere
 
 /-!
 # Degree-one ⟹ sphere endgame
@@ -651,12 +652,27 @@ analytic inputs (the `sorry`s below). `Nonempty X` is supplied for free by `[Con
 (`ConnectedSpace.toNonempty`), so the signature matches the spec exactly. -/
 
 open scoped Manifold ContDiff in
-/-- **[INPUT — `Ω(ℂℙ¹) = 0`, the backward half].** A surface homeomorphic to `S²` has genus `0`.
-Genus is `Module.finrank ℂ (HolomorphicOneForms X)`; for the sphere this vanishes
-(`ProjectiveLine.holomorphicOneForm_eq_zero`), and the value is an invariant of the complex
-structure. -/
+/-- **[INPUT — the de Rham wall, the backward half].** A surface homeomorphic to `S²` has genus `0`.
+
+`genus X = Module.finrank ℂ (HolomorphicOneForms X)` is **analytic**, while `X ≃ₜ S²` is purely
+**topological**, so the bridge is the contrapositive route (`Jacobians.GenusSphereBackward`):
+`X ≃ₜ S²` makes `X` simply connected, on which every holomorphic `1`-form has a global primitive,
+hence (being constant on compact `X`, Liouville) vanishes, so `genus X = 0`.
+
+Two of the route's three former walls have fallen and are discharged here sorry-free:
+* **`S²` simply connected** — unconditional (`Jacobians.VanKampen.twoOpenVanKampen_holds`); `X ≃ₜ S²`
+  transports `SimplyConnectedSpace` to `X`.
+* **Liouville / max-modulus** — `MDifferentiable.exists_eq_const_of_compactSpace` (Mathlib).
+
+The *only* remaining input is the **holomorphic Poincaré lemma / monodromy theorem**
+`Jacobians.HasHolomorphicPrimitives X` (every holomorphic `1`-form on a simply connected surface has
+a global primitive); Mathlib has only the plane/ball version, the manifold de Rham globalisation is
+the open gap. The whole route, *modulo that single input*, is assembled axiom-clean in
+`Jacobians.genus_zero_of_nonempty_homeo_sphere_of_hasPrimitives`; the lone `sorry` below is exactly
+`HasHolomorphicPrimitives X`. -/
 theorem genus_zero_of_nonempty_homeo_sphere {X : Type*} [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (h : Nonempty (X ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) :
     genus X = 0 :=
-  sorry
+  Jacobians.genus_zero_of_nonempty_homeo_sphere_of_hasPrimitives
+    (sorry : Jacobians.HasHolomorphicPrimitives X) h
