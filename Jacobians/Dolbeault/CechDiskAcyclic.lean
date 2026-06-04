@@ -62,7 +62,7 @@ the Čech split needs (the `sub` case is inline in `DbarDiskCohomology.dbar_holo
 make it reusable). -/
 
 /-- `∂̄` is additive at a point where both summands are real-differentiable. -/
-theorem dbar_add {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
+theorem dbarFun_add {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
     DbarDisk.dbar (fun x => f x + g x) z = DbarDisk.dbar f z + DbarDisk.dbar g z := by
   unfold DbarDisk.dbar
   rw [fderiv_fun_add hf hg]
@@ -70,7 +70,7 @@ theorem dbar_add {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (
   ring
 
 /-- `∂̄` is subtractive at a point where both functions are real-differentiable. -/
-theorem dbar_sub {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
+theorem dbarFun_sub {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
     DbarDisk.dbar (fun x => f x - g x) z = DbarDisk.dbar f z - DbarDisk.dbar g z := by
   unfold DbarDisk.dbar
   rw [fderiv_fun_sub hf hg]
@@ -78,7 +78,7 @@ theorem dbar_sub {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (
   ring
 
 /-- `∂̄` commutes with multiplication by a complex constant. -/
-theorem dbar_const_smul (c : ℂ) {f : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) :
+theorem dbarFun_const_smul (c : ℂ) {f : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) :
     DbarDisk.dbar (fun x => c * f x) z = c * DbarDisk.dbar f z := by
   unfold DbarDisk.dbar
   rw [show (fun x => c * f x) = (fun x => c • f x) from rfl, fderiv_fun_const_smul hf c]
@@ -88,7 +88,7 @@ theorem dbar_const_smul (c : ℂ) {f : ℂ → ℂ} {z : ℂ} (hf : Differentiab
 /-- `∂̄` of a `ℝ`-differentiable function is `0` exactly when the function is `ℂ`-differentiable
 (Wirtinger).  This restates `DbarDiskCohomology.differentiableAt_of_dbar_eq_zero` together with the
 standard forward direction `DbarDisk.dbar_eq_zero_of_differentiableAt`. -/
-theorem dbar_eq_zero_iff {f : ℂ → ℂ} {z : ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+theorem dbarFun_eq_zero_iff {f : ℂ → ℂ} {z : ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     DbarDisk.dbar f z = 0 ↔ DifferentiableAt ℂ f z :=
   ⟨DbarDiskCohomology.differentiableAt_of_dbar_eq_zero hf,
     fun hd => DbarDisk.dbar_eq_zero_of_differentiableAt hd⟩
@@ -216,7 +216,7 @@ end Jacobians.Dolbeault
 
 WHAT IS DELIVERED HERE (all sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`):
 
-  * §1 `dbar_add` / `dbar_sub` / `dbar_const_smul` / `dbar_eq_zero_iff` — the reusable `ℝ`-linearity
+  * §1 `dbarFun_add` / `dbarFun_sub` / `dbarFun_const_smul` / `dbarFun_eq_zero_iff` — the reusable `ℝ`-linearity
     layer for `DbarDisk.dbar` (the Čech-split bookkeeping; the `sub` case was previously inline only).
   * §2 `ballSplit_two` — the function-level `H¹(ball, 𝒪) = 0` engine for a 2-set cover (the committed
     `DbarDiskCohomology.dbar_holo_splitting_ball`, recorded as the base case).

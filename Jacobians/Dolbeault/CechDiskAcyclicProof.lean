@@ -82,7 +82,7 @@ theorem dbar_fun_sum {ι : Type*} (t : Finset ι) (f : ι → ℂ → ℂ) {z : 
         = (fun x => f a x + ∑ i ∈ s, f i x) := by funext x; rw [Finset.sum_insert ha]
     have hadd : DbarDisk.dbar (fun x => f a x + ∑ i ∈ s, f i x) z
         = DbarDisk.dbar (f a) z + DbarDisk.dbar (fun x => ∑ i ∈ s, f i x) z :=
-      dbar_add hfa hsum
+      dbarFun_add hfa hsum
     rw [hsplit, hadd, ih hfs, Finset.sum_insert ha]
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
@@ -308,7 +308,7 @@ theorem ballSplit_pou {ι : Type*} [Nonempty ι] (c : ℂ) {r : ℝ} (hr : 0 < r
       ((hsmooth i).sub hu_smooth) ?_).differentiableWithinAt
     have hsub : DbarDisk.dbar (fun x => h i x - u x) z
         = DbarDisk.dbar (h i) z - DbarDisk.dbar u z :=
-      dbar_sub ((hsmooth i).differentiable (by norm_num) z)
+      dbarFun_sub ((hsmooth i).differentiable (by norm_num) z)
         (hu_smooth.differentiable (by norm_num) z)
     rw [hsub, hu_dbar z hz, ← hdbar i i₀ z hz]; ring
   · -- The corrected difference is unchanged: `(h_j − u) − (h_i − u) = h_j − h_i`.
@@ -337,7 +337,7 @@ theorem ballSplit_glued {ι : Type*} (c : ℂ) {r : ℝ} (hr : 0 < r)
       ((hsmooth i).sub hu_smooth) ?_).differentiableWithinAt
     have hsub : DbarDisk.dbar (fun x => h i x - u x) z
         = DbarDisk.dbar (h i) z - DbarDisk.dbar u z :=
-      dbar_sub ((hsmooth i).differentiable (by norm_num) z)
+      dbarFun_sub ((hsmooth i).differentiable (by norm_num) z)
         (hu_smooth.differentiable (by norm_num) z)
     rw [hsub, hu_dbar z hz.1, hagree i z hz]; ring
   · show h j z - h i z = (h j z - u z) - (h i z - u z)
