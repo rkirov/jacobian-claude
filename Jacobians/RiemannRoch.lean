@@ -49,20 +49,18 @@ by `LerayCoverExists.exists_lerayCover`. So discharging this is now exactly: the
 `h0Dim_eq_lDim`/`cechRestrictL_surjective`, finiteness) **plus** the one good-cover geometric input
 `hOverlaps` below — no separate opaque RR `sorry`.
 
-The `hOverlaps` argument (pairwise overlaps of `chartBallCover` preconnected) is the single
-Mathlib-absent good-cover fact, and it is **ELIMINABLE**: `FiniteFamily.IsLeray` can be weakened to its
-first conjunct alone, since for `H¹` (all ladder leaves are `H¹` statements) Cartan's comparison
-`0 → Ȟ¹(𝔘,𝒪) → H¹(X,𝒪) → Ȟ⁰(𝔘,ℋ¹)` is an isomorphism as soon as the cover SETS are acyclic
-(simply connected ⟹ `H¹(Uᵢ)=0`) — overlap acyclicity is only needed for `H²`+ (`GoodCover` proves the
-conjunct is unused). That weakening makes `exists_lerayCover` unconditional and removes this `sorry`
-(the planned next step); it is kept here as a single named honest `sorry` until then. -/
+The Leray cover is supplied **UNCONDITIONALLY** by `exists_lerayCover` (STEP 2a, done): `IsLeray` was
+weakened to its first conjunct alone (acyclic SETS), which for `H¹` is all Cartan's comparison
+`0 → Ȟ¹(𝔘,𝒪) → H¹(X,𝒪) → Ȟ⁰(𝔘,ℋ¹)` needs (overlap acyclicity is `H²`+ only; `GoodCover` proved the
+conjunct unused). So there is NO good-cover `hOverlaps` gap; the only sorries beneath this are now the
+genuine analytic ladder leaves. -/
 theorem exists_riemannRoch_divisor :
     ∃ K : Divisor X, ∀ D : Divisor X,
       (lDim (X := X) D : ℤ) - (lDim (X := X) (K - D) : ℤ)
         = Divisor.deg X D + 1 - (genus X : ℤ) := by
-  -- One Leray cover exists; `hOverlaps` is the eliminable good-cover input (see docstring).
-  obtain ⟨𝔘, hL⟩ := Dolbeault.exists_lerayCover (X := X) (by
-    sorry)
+  -- A Leray cover exists UNCONDITIONALLY (the canonical chart-ball cover; `IsLeray` is now just
+  -- "acyclic sets", which `chartBallCover_simplyConnected` discharges — STEP 2a, `hOverlaps` gone).
+  obtain ⟨𝔘, hL⟩ := Dolbeault.exists_lerayCover (X := X)
   -- The RR equality on that cover is the PROVEN ladder composition (mod the ladder's named leaves).
   exact Dolbeault.riemannRoch_equality_of_ladder 𝔘 hL
 

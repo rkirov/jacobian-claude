@@ -48,14 +48,20 @@ namespace FiniteFamily
 
 variable (𝔘 : FiniteFamily X) (D : Divisor X)
 
-/-- A finite family is **Leray** (for `𝒪`): each set is simply connected (a simply-connected open
-subset of a Riemann surface is biholomorphic to a disk or `ℂ`, hence `H¹(𝒪)=0`), and pairwise
-intersections are connected. The standard hypothesis under which Čech `H¹` computes sheaf cohomology
-(Forster §12, Leray). The chart-disk cover satisfies it. NOTE: may be strengthened when the disk-cover
-construction pins the exact acyclicity; it is an honest *conditional* hypothesis, not the final word. -/
+/-- A finite family is **Leray** (for `𝒪`): each set is simply connected — a simply-connected open
+subset of a Riemann surface is biholomorphic to a disk or `ℂ`, hence `H¹(U_i, 𝒪) = 0` (the sets are
+`𝒪`-acyclic).
+
+This is *exactly* the hypothesis under which Čech `H¹` computes sheaf cohomology, and no more: every
+node of the Riemann–Roch ladder is an `H¹` statement, and for `H¹` Cartan's comparison sequence
+`0 → Ȟ¹(𝔘, 𝒪) → H¹(X, 𝒪) → Ȟ⁰(𝔘, ℋ¹(𝒪))` is an isomorphism as soon as the cover SETS are acyclic
+(then the presheaf `ℋ¹(𝒪) : U ↦ H¹(U,𝒪)` vanishes on the cover, so `Ȟ⁰(𝔘, ℋ¹) = 0`). Acyclicity of
+the *pairwise overlaps* is needed only for `H²` and higher, so it is NOT part of this predicate — it
+was dead weight in the ladder (`GoodCover` proves the proven comparison never uses it), and dropping
+it makes `LerayCoverExists.exists_lerayCover` UNCONDITIONAL (the chart-ball cover's simply-connected
+sets are proven, `chartBallCover_simplyConnected`). The chart-disk cover satisfies this. -/
 def IsLeray (𝔘 : FiniteFamily X) : Prop :=
-  (∀ i : 𝔘.ι, SimplyConnectedSpace ↥(𝔘.U i)) ∧
-  (∀ i j : 𝔘.ι, IsPreconnected ((𝔘.U i ⊓ 𝔘.U j : TopologicalSpace.Opens X) : Set X))
+  ∀ i : 𝔘.ι, SimplyConnectedSpace ↥(𝔘.U i)
 
 /-! ### Cochain spaces — germ-classes (`MGerm`), the junk-free sections (no junk quotient). -/
 

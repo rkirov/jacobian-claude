@@ -217,37 +217,26 @@ only remaining clause is preconnectedness of the pairwise overlaps — the good-
 convexity input absent from Mathlib.  We expose it as one honest named hypothesis and assemble the
 Leray cover from it. -/
 
-/-- **`exists_lerayCover` — gated on the overlaps of the concrete `chartBallCover`.**  If the pairwise
-overlaps of the canonical chart-ball cover are preconnected (`hOverlaps` — the ONE good-cover fact
-Mathlib lacks; everything else, namely the simply-connected clause, is already proven by
-`chartBallCover_simplyConnected`), then `X` admits a finite Leray cover.
+/-- **`exists_lerayCover` — UNCONDITIONAL.**  `X` admits a finite Leray cover: the canonical chart-ball
+cover `chartBallCover`, whose sets are simply connected (`chartBallCover_simplyConnected`) — which is
+*all* `IsLeray` now requires (its overlap conjunct was dropped as dead weight; for `H¹` Cartan needs
+only acyclic sets — see `CechComplex.FiniteFamily.IsLeray` and `GoodCover`).
 
-The conclusion is exactly the statement that unlocks the ladder→headline wiring
-(`DolbeaultLadder.riemannRoch_equality_of_ladder 𝔘 hL` with this `𝔘 = chartBallCover` and `hL` the
-produced `IsLeray`).  The hypothesis is honest and non-vacuous: it is precisely the preconnected-
-overlap half of the Leray condition for the concrete cover this file constructs, which on a general
-surface requires a Whitney geodesically-convex refinement — the missing geometric theorem.  No
-`sorry`. -/
-theorem exists_lerayCover
-    (hOverlaps : ∀ i j : (chartBallCover (X := X)).ι,
-      IsPreconnected (((chartBallCover (X := X)).U i ⊓ (chartBallCover (X := X)).U j :
-        Opens X) : Set X)) :
-    ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray :=
-  ⟨chartBallCover, chartBallCover_simplyConnected, hOverlaps⟩
+This is the statement that unlocks the ladder→headline wiring
+(`RiemannRoch.exists_riemannRoch_divisor` via `DolbeaultLadder.riemannRoch_equality_of_ladder 𝔘 hL`
+with this `𝔘 = chartBallCover` and `hL` the produced `IsLeray`).  Previously gated on the good-cover
+overlap-preconnectedness `hOverlaps` (a Mathlib-absent Whitney geodesic-convexity fact); that
+hypothesis is now eliminated, so the wiring is unconditional. No `sorry`. -/
+theorem exists_lerayCover : ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray :=
+  ⟨chartBallCover, chartBallCover_simplyConnected⟩
 
-/-- **`exists_lerayCover` — variant taking the whole good cover as the honest input.**  If `X` admits
-*any* finite cover whose sets are simply connected and whose pairwise overlaps are preconnected
-(`hGood` — the good-cover existence theorem, Whitney geodesic convexity, the single piece Mathlib
-lacks), then `X` admits a finite Leray cover.  Trivial repackaging of `hGood` into the `IsLeray`
-conjunction; offered as the alternative entry point for an owner who would rather supply the good
-cover directly than the overlaps of `chartBallCover`.  (The genuine, file-local content is the
-unconditional simply-connectedness `chartBallCover_simplyConnected`; this variant does not use it.)
-No `sorry`. -/
+/-- **`exists_lerayCover` from any cover with simply-connected sets.**  Trivial repackaging — kept as
+an alternative entry point.  Subsumed by the unconditional `exists_lerayCover` (the canonical
+chart-ball cover already has simply-connected sets); offered for an owner who would rather supply a
+different good cover.  No `sorry`. -/
 theorem exists_lerayCover_of_goodCover
-    (hGood : ∃ 𝔘 : FiniteCover X, (∀ i, SimplyConnectedSpace ↥(𝔘.U i)) ∧
-      ∀ i j, IsPreconnected ((𝔘.U i ⊓ 𝔘.U j : Opens X) : Set X)) :
-    ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray := by
-  obtain ⟨𝔘, hsc, hconn⟩ := hGood
-  exact ⟨𝔘, hsc, hconn⟩
+    (hGood : ∃ 𝔘 : FiniteCover X, ∀ i, SimplyConnectedSpace ↥(𝔘.U i)) :
+    ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray :=
+  hGood
 
 end Jacobians.Dolbeault
