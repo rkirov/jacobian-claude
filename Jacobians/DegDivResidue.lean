@@ -193,6 +193,49 @@ def rouche_mult (f : MeromorphicFunction X) : Prop :=
       ∀ w ∈ V, w ≠ f.holoRepr x →
         ({y ∈ U | f.holoRepr y = w} : Set X).ncard = (f.orderAtPoint x).natAbs
 
+/-! ### Nonnegativity of the two counts, and the reduction to `zerosCount = polesCount`
+
+Both `zerosCount f` and `polesCount f` are sums of *nonnegative* integers (the
+positive orders, resp. the absolute values of the negative orders), so both are
+`≥ 0`.  Consequently the existential `exists_properMapDegree` (a single `d : ℕ`
+with `zerosCount f = d = polesCount f`) is **equivalent** to the bare equality
+`zerosCount f = polesCount f`: given the equality, both sides are a common
+nonnegative integer, which is the cast of some `d : ℕ`.  This isolates the entire
+analytic wall as the **argument-principle equality** `zerosCount f = polesCount f`
+(Forster Cor. 4.25), stripping away the `∃ d : ℕ` packaging. -/
+
+/-- `zerosCount f ≥ 0`: it is a sum of positive orders. -/
+lemma zerosCount_nonneg (f : MeromorphicFunction X) : 0 ≤ zerosCount f := by
+  rw [zerosCount]
+  apply Finset.sum_nonneg
+  intro x hx
+  rw [Finset.mem_filter] at hx
+  exact hx.2.le
+
+/-- `polesCount f ≥ 0`: it is a sum of absolute values of negative orders. -/
+lemma polesCount_nonneg (f : MeromorphicFunction X) : 0 ≤ polesCount f := by
+  rw [polesCount]
+  apply Finset.sum_nonneg
+  intro x hx
+  rw [Finset.mem_filter] at hx
+  have := hx.2
+  omega
+
+/-- **Reduction of `exists_properMapDegree` to the argument-principle equality.**
+Since both counts are nonnegative (`zerosCount_nonneg`, `polesCount_nonneg`), the
+existence of a common natural-number degree `d` with `zerosCount f = d` and
+`polesCount f = d` is exactly the equality `zerosCount f = polesCount f`.  The
+common `d` is the natural number whose cast is the (nonnegative) shared value.
+
+This is the bridge that turns the full analytic content of the residue theorem
+into the single classical statement "the number of zeros equals the number of
+poles" (the argument principle), with the `∃ d : ℕ` book-keeping discharged. -/
+theorem exists_properMapDegree_of_zerosCount_eq_polesCount (f : MeromorphicFunction X)
+    (h : zerosCount f = polesCount f) :
+    ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) := by
+  obtain ⟨d, hd⟩ := Int.eq_ofNat_of_zero_le (zerosCount_nonneg f)
+  exact ⟨d, hd, h ▸ hd⟩
+
 /-- **Analytic input (the argument principle): both counts equal the degree.**
 There is a common proper-map degree `d : ℕ` of `f : X → ℂℙ¹` for which the
 number of zeros and the number of poles (each with multiplicity) both equal `d`:
@@ -206,10 +249,18 @@ germ-zero edge case `f.div = 0`, both counts vanish, so `d = 0` works (this part
 *is* provable, see `exists_properMapDegree_of_div_eq_zero`); the non-constant
 case is Forster Cor. 4.24–4.25 via the degree route.
 
-**Status: honest named sorry.**  Mathlib lacks, at this pin, both `rouche_mult`
-(the order ↔ local-multiplicity bridge) and the ramified-fibre-count = degree
-extension of `degreeFiber` (which counts only *regular* fibres).  Discharging
-this single statement discharges the residue theorem. -/
+**Status: honest named sorry.**  By `exists_properMapDegree_of_zerosCount_eq_polesCount`
+this is equivalent to the bare argument-principle equality `zerosCount f =
+polesCount f`.  That equality is what Mathlib lacks at this pin: it needs
+**conservation of number** — the sum of local multiplicities over *every* fibre of
+a non-constant holomorphic `f : X → ℂℙ¹` is the same constant `d` (so both the
+zero-fibre sum `zerosCount f` and the pole-fibre sum `polesCount f` equal `d`).
+The per-point ingredient (`rouche_mult`, the order ↔ local-multiplicity bridge)
+*is* available (`RoucheBridge.localMultiplicity_eq_localOrder_count_of_apply_eq_zero`),
+and the *regular*-fibre degree is well-defined (`degreeFiber_eq_card_of_regularWitness`);
+the missing step is the global summation identifying a *ramified* fibre's
+multiplicity-sum with the regular degree.  Discharging this single statement
+discharges the residue theorem. -/
 theorem exists_properMapDegree (f : MeromorphicFunction X) :
     ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) := sorry
 
