@@ -72,16 +72,44 @@ headline — but per the "build everything" scope it is in-scope regardless.)
 
 ---
 
-## 3. W1 — Serre / RR (the make-or-break)   **[agent pending]**
+## 3. W1 — Serre / RR (the make-or-break)
 
-Deep audit in progress (the PDE-free Čech-residue route: is it a reuse-assembly over the built comparison +
-residue + finiteness + χ machinery, or does it hide a Hodge/elliptic wall at `H^{0,1} ≅ Ω` /
-`arithmeticGenus_eq_genus`?). To be merged.
+**Top-line: NO hidden Hodge/elliptic wall** (the Weyl/elliptic-regularity fear is retracted and well-
+supported — the entire §17 *local* calculus compiles with only `circleIntegral` + Cauchy–Goursat, no PDE,
+no `*`-operator, no manifold 2-form integration). But W1 is **not** pure reuse: it splits into assembly
+(reuse) + **two genuinely-new but PDE-free, bounded classical theorems**.
 
-Known reusable inputs: the Dolbeault comparison (`cechH1 ≅ H^{0,1}`), the residue calculus + §17.9 litmus,
-the finiteness node (FunctionDiskAcyclic atom building now), χ-additivity (`SkyscraperAssembly`). Known open
-sorries: `exists_riemannRoch_divisor` (RR), the three `DolbeaultLadder` sorries (finiteness, `h1Dim 0 =
-genus`, `h1Dim D = lDim(K−D)`), `CohomologicalRR:334`, `DolbeaultComparison:227`.
+`riemannRoch_equality_of_ladder` (`DolbeaultLadder.lean:74`, **PROVEN**) composes RR from four leaves + deg_div:
+```
+l(D) − l(K−D) = deg D + 1 − g
+  via  cohomological_riemannRoch (χ)  +  h0Dim_eq_lDim  +  serre_h1_eq  +  arithmeticGenus_eq_genus
+```
+
+| Leaf | Verdict | State |
+|---|---|---|
+| `h0Dim_eq_lDim` (h⁰ = l bridge) | **DONE** | ✅ sorry-free now (`CechH0`; the doc-listed `:513` sorry is discharged — **stale doc**) |
+| Dolbeault comparison `cechH1 ≅ H^{0,1}` | **DONE** | ✅ sorry-free now (`DolbeaultComparisonEquiv.comparison_linearEquiv:648`; the `DolbeaultComparison:227` sorry is a **stale wiring stub**) |
+| `cohomological_riemannRoch` ⟸ `exists_skyscraperLES` (`CohomologicalRR:334`) | **ASSEMBLY** | snake + `e0` (`H⁰(Q)≅ℂ`) + `subsingleton_H1Q` all axiom-clean; needs a **1-line wire** `⟨skyscraperLES_of_localRealization (localRealizationData_of_chartDisk …)⟩` + cover hyps (`hstar`/`hWsrc`/`hDsupp`) + an H⁰-finiteness instance |
+| `finiteDimensional_cechH1` ⟸ `exists_cechModel` (`CechFinitenessWiring:287`) | **ASSEMBLY** | FA spine (Montel compact-op + Schwartz + `leray_surjective`) all proven; only the chart-disk Leray **model construction** remains — *the FunctionDiskAcyclic agent is building exactly this now* |
+| `arithmeticGenus_eq_genus` / `serre_h1_eq` — EASY half (`genus ≤ h1Dim 0`) | **MOSTLY-NEW** | §17.6 residue-1 witness (`exists_formFnResidue_eq_one…`) ✅; needs the global `Res`-on-classes + the `ι₀` pairing map (the `ω·ξ` product) — unbuilt |
+| `arithmeticGenus_eq_genus` / `serre_h1_eq` — HARD half (§17.9 surjectivity) | **GENUINE NEW — THE make-or-break** | the abstract pigeonhole `serre_surjectivity_dim_core` is axiom-clean but **has ZERO instantiators**; instantiating surfaces an unbuilt global meromorphic-1-form space `H⁰(Ω_{nP})` + **`ω₀`-existence** (a nonconstant meromorphic 1-form, recursively gated on RR/finiteness). Forster §17.9. "Never attempted." |
+| `exists_riemannRoch_divisor` wire (`RiemannRoch:287`) | trivial + obligation | NOT yet wired to the ladder; ~1-line `exact riemannRoch_equality_of_ladder` **modulo a proven Leray cover** `𝔘.IsLeray` on a compact RS (Leray-cover *existence* is itself an unproven repo lemma) |
+
+**Reusable §17 assets (a real ~40% head-start, all axiom-clean):** `Residue.lean` (`resAt` + ℂ-linearity +
+`Res(holo)=0` + radius-independence), `FormCoeff.lean` (`coeffAt`, the §17.6 residue-1 witness),
+`MittagLeffler.lean` (`res`/`res_holomorphic`/`res_smul` — the global residue as a ℂ-linear functional of the
+distribution), `SerreDuality.lean` (BOTH finite-dim cores: `finrank_le_of_injective_to_dual` EASY-half +
+`serre_surjectivity_dim_core` §17.9 pigeonhole).
+
+**Net-new for W1 (PDE-free, bounded, ~1–2k LoC — `hodge_bridge_research.md:388`):** the global `Res : cechH1 Ω
+→ ℂ` well-defined on classes (gated on `deg_div`/`∑Res=0`), the `ω·ξ` pairing + `ι₀`, the global
+meromorphic-1-form space `H⁰(Ω_{nP})`, and **`ω₀`-existence** — the latter is the singular risk.
+
+**Verdict:** the comparison being done does NOT move the Serre leaf (it gives only the *first* iso, the
+tautology `2·h1Dim = 2·h1Dim`; Serre is the independent *second* iso `H^{0,1}≅Ω`). W1 = 3 assembly leaves
+(one done, two ~1-line-wire-modulo-hyps) + 2 genuine-new PDE-free theorems (the §17 pairing with `ω₀`, and
+deg_div = W2). The make-or-break is the §17.9 surjectivity's `ω₀`-existence — bounded and classical, but
+untested (nobody has instantiated the pigeonhole).
 
 ---
 
@@ -151,10 +179,16 @@ Ordered by effort-to-impact / reuse-collapsibility:
    core + box-Green + handle-sum); residue = pure surface topology (Radó/`4g`-gon), ~2–4k LoC.
 4. **`SimplyConnectedSpace S²`** (a W1b sub-node) — clean, self-contained, **Dolbeault-independent**; the
    cheapest *isolated* topology win (also a Mathlib `proof_wanted`). Does NOT alone close W1b.
-5. **W1 Serre ladder** — the make-or-break; reuse-vs-Hodge-wall verdict **pending §3**.
+5. **W1 Serre §17 pairing + `ω₀`-existence** — the make-or-break. §3 verdict: **PDE-free (no Hodge wall)**,
+   but GENUINE-NEW and untested (the §17.9 pigeonhole `serre_surjectivity_dim_core` has zero instantiators;
+   instantiation surfaces `H⁰(Ω_{nP})` + `ω₀`-existence). ~1–2k LoC.
 6. **W1b de Rham period slice** — manifold loop-integration + homotopy-invariance; no Mathlib scaffolding.
 7. **W4 #3 Abel** (`AbelStatement`) — deepest: reduction reused (axiom-clean), but the core is a multi-k-LoC
    greenfield `∂̄`/RR theorem.
+
+Plus the **cheap assembly wires** (not "walls" but real obligations): `exists_skyscraperLES` 1-line wire +
+cover hyps + H⁰-finiteness; `exists_riemannRoch_divisor` 1-line wire + Leray-cover existence;
+`exists_cechModel` (building now). These convert several 🔴 sorries to 🟢 once the geometry hyps are supplied.
 
 ### Cross-wall structural insights (the highest-value findings)
 - **RR is the single highest-leverage missing theorem.** Building it (the Dolbeault tower the agents target)
@@ -166,6 +200,47 @@ Ordered by effort-to-impact / reuse-collapsibility:
 - **Three sub-targets are Dolbeault-INDEPENDENT** and can proceed in parallel with the Serre tower: W2's
   Rouché bridge+assembly, W3's surface topology, and `SimplyConnectedSpace S²`. These are the "keep the
   other fronts moving" candidates.
-- **The shared Hodge/∂̄ gap:** W4-Route-A and W1b's period slice both bottom out at the *same* manifold-∂̄
-  analysis as W1's Serre ladder — so W1's verdict (§3) effectively decides whether that whole family is one
-  shared build or three separate walls.
+- **The "one shared Hodge build" hope is FALSE (resolved by §3).** W1's Serre route is **PDE-free** (Čech-
+  residue, no manifold-∂̄), so it does NOT collapse W1b's de Rham period slice (manifold loop-integration) or
+  supply W4-Route-A's `∂̄`-solvability. The three are **distinct builds**, linked only through **RR as the
+  keystone** (which unlocks W4-Route-B + the genus-comparison + forward-#1). No grand shared-analysis
+  collapse — but also no Hodge abyss.
+
+---
+
+## 6. Bottom line — the synthesized path
+
+**The biggest schedule risk is RULED OUT.** The PDE-free Serre route has no hidden Hodge/elliptic wall — the
+single scariest scenario for this project is off the table (well-supported: the §17 local calculus compiles
+with only `circleIntegral`+Cauchy–Goursat). Every remaining piece is classical, PDE-free, and bounded.
+
+**The repo is materially further along than the memory/docs indicated.** Stale-doc corrections found this
+audit: `h0Dim_eq_lDim` is sorry-free; the Dolbeault comparison `cechH1 ≅ H^{0,1}` is sorry-free; the entire
+skyscraper-LES (χ-additivity) content is proven *bar a 1-line wire*; the finiteness FA spine is complete. So
+the RR ladder is **PROVEN modulo its leaves**, and 3 of those leaves are assembly (one already done).
+
+**What is genuinely-new remaining (all PDE-free, all bounded):**
+1. **The §17 Serre pairing + `ω₀`-existence** — the make-or-break keystone (`ι₀` pairing, global `Res`-on-
+   classes, `H⁰(Ω_{nP})`, and the nonconstant meromorphic-1-form `ω₀`). Untested (zero instantiators). ~1–2k.
+2. **W2 deg_div** — both hard atoms done; residue = Rouché bridge + fibre-assembly. Closest. ~few-hundred.
+3. **W3 #7 surface topology** — Radó/`4g`-gon (analysis done). ~2–4k.
+4. **W1b** — `SimplyConnectedSpace S²` + de Rham period slice. ~1.5–3k.
+5. **W4 `AbelStatement`** — or, cheaper, *fall out of RR* (Route B). ~3–6k standalone.
+
+**RR is the keystone.** Closing the §17 pairing (1) ⟹ RR ⟹ also W4-Route-B + the genus-comparison +
+forward-#1. So effort on the §17 pairing has 3–4× leverage.
+
+**The maximal-reuse plan that falls out of this audit:**
+- **(A) Harvest the assembly wires now** (cheap, high-certainty): supply the chart-disk-cover geometry hyps
+  to fire the `exists_skyscraperLES` 1-line wire; finish `exists_cechModel` (building); prove Leray-cover
+  existence + wire `exists_riemannRoch_divisor` to the ladder. This collapses the RR ladder to exactly two
+  inputs: **{the §17 Serre pairing, deg_div}**.
+- **(B) Three Dolbeault-INDEPENDENT fronts can run in parallel** with the Serre work: **W2's Rouché bridge +
+  fibre-assembly** (closest), **W3's surface topology**, and **`SimplyConnectedSpace S²`**. None waits on RR.
+- **(C) The keystone:** attack the §17.9 surjectivity (`ω₀`-existence) — the one untested, highest-leverage,
+  make-or-break node. Its success cascades to W4 and forward-#1.
+
+**Honest residual uncertainty:** exactly one node is both load-bearing and never-attempted — the §17.9
+surjectivity's `ω₀`-existence (a nonconstant meromorphic 1-form, recursively gated on RR/finiteness). Whether
+it closes cleanly by the built §17 atoms + finiteness, or needs a further construction, is the one genuine
+unknown left in the path. Everything else is assembly, a bounded classical theorem, or both.
