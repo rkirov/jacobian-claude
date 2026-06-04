@@ -1239,3 +1239,29 @@ Corrects two framings I had floated in the "how close to done" answer:
 How to apply: treat all five walls as in-scope, in-repo, sorry-free, axiom-clean; no "wait for
 upstream" escapes anywhere. Keep firing from-scratch atom builds at the walls. Memory:
 [[project_build_everything]].
+
+---
+
+## 2026-06-04 — Methodology: connect upstream→downstream, don't isolate downstream kernels
+
+I had just committed a sound reduction (`HodgeSymmetry.lean`: split the D=0 Serre nugget, isolating
+`hodge_symmetry` as a downstream kernel) and then ASKED the user which multi-session wall to invest in.
+
+User redirect (verbatim): **"I don't follow the question, the goal is fully sorry/axiom free
+formalization, so work from upstream to downstream goals. Don't isolate downstream first, focus on
+connecting fully build up pieces. if they don't fit refactor them to fit."**
+
+What was wrong with my approach:
+1. **Isolating a downstream kernel (`hodge_symmetry`) is the WRONG direction.** Creating a new named
+   `sorry` further downstream does not advance a *fully* sorry-free finish; it just relocates the gap.
+2. **Asking "which wall" was the wrong question.** The goal is the whole thing, sorry-free. The right
+   move is to BUILD UPWARD: take pieces that are already fully proven (sorry-free, axiom-clean) and
+   CONNECT them into the next node up, **refactoring their interfaces to fit** when they don't.
+3. Treating the walls as independent "pick one" investments misses that they're a dependency chain to
+   be assembled bottom-up.
+
+How to apply: trace the dependency DAG; start at the most-upstream fully-built pieces and connect them
+into their consumers sorry-free; when interfaces mismatch (e.g. a lemma proven for `ChartDiskCover` vs.
+a consumer wanting arbitrary `FiniteCover`), REFACTOR to unify (e.g. thread one good cover via
+`exists_lerayCover`) rather than leaving / adding a kernel. Don't stop to ask "which wall"; keep
+connecting. Memory: [[feedback_connect_upstream_first]], [[project_jacobian_state_2026-05]].

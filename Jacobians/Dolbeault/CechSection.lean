@@ -18,7 +18,7 @@
   makes the Čech differential plain restriction; the `Submodule ℂ (MeromorphicFunction ↥U)` encoding
   is now also available should it prove cleaner downstream.
 -/
-import Jacobians.RiemannRoch
+import Jacobians.LinearSystem
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
