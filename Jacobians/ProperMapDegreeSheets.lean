@@ -464,16 +464,47 @@ theorem exists_sheetDatum_coe (f : MeromorphicFunction X) (hnc : (f.div : Diviso
       = (meromorphicOrderAt (fun ζ => f.holoRepr (e.symm ζ) - w') za).untop₀
     rw [horder_eq w' za hza.2]
 
+/-- **The reciprocal order-matching identity** (the keystone for the `∞` case).  At a point `z`
+where `G` is analytic with finite nonzero value `G z = c'`, the order of `1/G − 1/c'` equals the
+order of `G − c'`: writing `1/G − 1/c' = −(c'·G)⁻¹ · (G − c')` with `−(c'·G)⁻¹` analytic and nonzero
+at `z` (`meromorphicOrderAt_mul_of_ne_zero`).  This is what lets the planar engine applied to the
+reciprocal `1/G` (a zero of order `= the pole order` at the pole) re-deliver the finite-value local
+degrees `localDeg f (coe c')` in the pole fibre's `∞`-neighbourhood. -/
+theorem meromorphicOrderAt_inv_sub_eq (G : ℂ → ℂ) {z c' : ℂ} (hc' : c' ≠ 0) (hGz : G z = c')
+    (hGanal : AnalyticAt ℂ G z) :
+    meromorphicOrderAt (fun ζ => (G ζ)⁻¹ - c'⁻¹) z = meromorphicOrderAt (fun ζ => G ζ - c') z := by
+  have hfac_anal : AnalyticAt ℂ (fun ζ => -(c' * G ζ)⁻¹) z :=
+    ((analyticAt_const.mul hGanal).inv (by simp [hGz, hc'])).neg
+  have hfac_ne : (fun ζ => -(c' * G ζ)⁻¹) z ≠ 0 := by simp [hGz, hc']
+  have heq : (fun ζ => (G ζ)⁻¹ - c'⁻¹)
+      =ᶠ[𝓝[≠] z] (fun ζ => -(c' * G ζ)⁻¹) * (fun ζ => G ζ - c') := by
+    have hGne : ∀ᶠ ζ in 𝓝[≠] z, G ζ ≠ 0 :=
+      (hGanal.continuousAt.eventually_ne (by rw [hGz]; exact hc')).filter_mono nhdsWithin_le_nhds
+    filter_upwards [hGne] with ζ hζ
+    simp only [Pi.mul_apply]; field_simp; ring
+  rw [meromorphicOrderAt_congr heq, meromorphicOrderAt_mul_of_ne_zero hfac_anal hfac_ne]
+
 /-- **The per-point construction at `∞` (the pole fibre).**  At a pole `x` (`orderAtPoint x < 0`,
 so `F x = ∞`), with a clean separating neighbourhood `V`, the same conservation-of-number content
 holds via the reciprocal normal form `1/g` (a zero of order `= the pole order` at `e x`): a sheet
 `U ⊆ V` and an `∞`-neighbourhood `W` on which the per-sheet multiplicity sum is the pole order
 `m = localDeg f ∞ x = −orderAtPoint x`.
 
-TODO(∞-case): build via the `1/g` substitution (`meromorphicOrderAt_inv`) and the `OnePoint`
-neighbourhood of `∞`, mirroring `exists_sheetDatum_coe`.  The finite-value case (the bulk of the
-machinery — reconciliation toolkit, radius-bounded engine, reindexing) is complete; this pole row
-is the remaining isolated analytic sub-goal. -/
+PROOF STRATEGY (the remaining isolated analytic sub-goal; the keystone `meromorphicOrderAt_inv_sub_eq`
+above is proven, and the finite-value machinery — reconciliation toolkit, radius-bounded engine,
+`finsum_mem_image` reindexing — is reusable):
+
+* Build the *repaired reciprocal* `h : ℂ → ℂ` analytic at `e x` with `h =ᶠ[𝓝[≠] z] (holoRepr∘e.symm)⁻¹`
+  *throughout* the sheet (so the fibre `h = w'` matches `F⁻¹(coe c')`, `c' = 1/w'`), `h (e x) = 0`,
+  and `analyticOrderAt h (e x) = m = −orderAtPoint x > 0` (via `meromorphicOrderAt_inv`).  Cleanest as
+  the chart pullback of `toRiemannSphere (1/f)` in the `∞`-chart, or `1/f` as a `MeromorphicFunction`.
+* Apply `Planar.orderSum_eq_of_analyticOrder_radiusBounded` to `h` at `w₀ = 0`, order `m`.
+* Value-neighbourhood `W := invMap ⁻¹' ((↑) '' ball 0 δ)` (open, `∞ ∈ W` since `invMap ∞ = coe 0`).
+* Generic rows (`w = coe c'`, `c' ≠ 0`): reindex `{z | h z = w'}` to `U ∩ F⁻¹(coe c')` and match the
+  summand `localDeg f (coe c') (e.symm z) = (meromorphicOrderAt (h − w') z).untop₀` via
+  `meromorphicOrderAt_inv_sub_eq` (`c' = 1/w'`) + the `holoRepr`/`toFun` reconciliation toolkit.
+* Central row (`w = ∞`): the pole fibre in `U` is the isolated point `x`, with
+  `localDeg f ∞ x = −orderAtPoint x = m`. -/
 theorem exists_sheetDatum_infty (f : MeromorphicFunction X) (hnc : (f.div : Divisor X) ≠ 0)
     {x : X} (hx_pole : f.orderAtPoint x < 0)
     {V : Set X} (hV_open : IsOpen V) (hxV : x ∈ V)
