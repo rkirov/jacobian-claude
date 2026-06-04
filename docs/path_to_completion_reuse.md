@@ -67,7 +67,7 @@ on the sorry-free 11.6k-LoC degree apparatus. The chain, with current status:
 remainder is the open-mapping Rouché bridge (3)→(4) plus a fibre-count assembly (5) over an essentially-
 complete degree library. This is the **single best effort-to-impact wall to finish next** after the
 finiteness atom — a few hundred LoC of bridge+assembly, almost entirely wiring proven results. (Caveat from
-`deg_div_research.md §6.3`: W2 is needed for *general* RR + Serre's class-level `Res`, not the bare genus
+`deg_div_research.md §6.3`: W2 is needed for *general* RR, not the bare genus
 headline — but per the "build everything" scope it is in-scope regardless.)
 
 ---
@@ -102,14 +102,25 @@ distribution), `SerreDuality.lean` (BOTH finite-dim cores: `finrank_le_of_inject
 `serre_surjectivity_dim_core` §17.9 pigeonhole).
 
 **Net-new for W1 (PDE-free, bounded, ~1–2k LoC — `hodge_bridge_research.md:388`):** the global `Res : cechH1 Ω
-→ ℂ` well-defined on classes (gated on `deg_div`/`∑Res=0`), the `ω·ξ` pairing + `ι₀`, the global
+→ ℂ` well-defined on classes (gated on the **1-form residue theorem** `∑Res(α)=0` via the **trace-to-ℙ¹** route — Miranda *Algebraic Curves and Riemann Surfaces* §VIII.3, reusing `TraceForm`/`pushforwardForm` + the RR-branched cover; **NOT `deg_div`** — see ⚠ correction at end of §3), the `ω·ξ` pairing + `ι₀`, the global
 meromorphic-1-form space `H⁰(Ω_{nP})`, and **`ω₀`-existence** — the latter is the singular risk.
 
 **Verdict:** the comparison being done does NOT move the Serre leaf (it gives only the *first* iso, the
 tautology `2·h1Dim = 2·h1Dim`; Serre is the independent *second* iso `H^{0,1}≅Ω`). W1 = 3 assembly leaves
 (one done, two ~1-line-wire-modulo-hyps) + 2 genuine-new PDE-free theorems (the §17 pairing with `ω₀`, and
-deg_div = W2). The make-or-break is the §17.9 surjectivity's `ω₀`-existence — bounded and classical, but
-untested (nobody has instantiated the pigeonhole).
+the **1-form residue theorem** for the global `Res` — via trace-to-ℙ¹, **not** `deg_div`; see ⚠ below). The
+make-or-break is the §17.9 surjectivity's `ω₀`-existence — bounded and classical, but untested (nobody has
+instantiated the pigeonhole).
+
+> ⚠ **CORRECTION (2026-06-04, verified vs Forster §17 + Miranda §VIII.3).** The global `Res : cechH1 Ω → ℂ`
+> is **NOT gated on `deg_div`** — that was a conflation in `MittagLeffler.lean`'s plan and the earlier audit.
+> `deg_div` (`∑ ord f = 0`, the `df/f` case) ≠ the **general 1-form residue theorem** `∑Res(α)=0` that the
+> Serre `Res` descent needs (residues of `α=ω₀·f` are Laurent coefficients, not orders). Forster proves the
+> latter via `(2πi)⁻¹∬_X` (manifold Stokes, which this repo avoids); the **PDE-free fix is Miranda §VIII.3's
+> algebraic residue theorem via the trace to ℙ¹**: `∑Res_X(ω)=∑Res_{ℙ¹}(Tr ω)=0`, reusing the built
+> `TraceForm`/`pushforwardForm` + the RR-branched cover + one "residue-of-a-trace" lemma (Miranda Lemma 3.2)
+> + the elementary ℙ¹ residue theorem. So Serre `Res` ← **trace-residue theorem** (a separate, bounded,
+> reuse-heavy node), and `deg_div` keeps only its own consumers (`lDim_eq_zero_of_deg_neg`, general degree).
 
 ---
 

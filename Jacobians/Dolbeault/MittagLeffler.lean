@@ -7,9 +7,9 @@
   many poles, and `Res(μ) = ∑_a Res_a(μ)` is the sum of the local Laurent residues over those poles.
 
   This file builds the **sorry-free local pieces** of that construction — everything *except* the
-  global well-definedness on cohomology classes, which needs the residue theorem `∑Res = 0` (= the
-  repo's `deg_div`, a separate wall) and so is stated here only as a precise plan in the module
-  docstring, never as a `sorry`.
+  global well-definedness on cohomology classes, which needs the **1-form** residue theorem `∑Res = 0`
+  (a separate node — the trace-to-ℙ¹ route, NOT `deg_div`; see the ⚠ correction below) and so is stated
+  here only as a precise plan in the module docstring, never as a `sorry`.
 
   Concretely it provides:
     * `formFnHoloPunctured` — the "isolated singularity" predicate at a pole for `α·g` (the integrand
@@ -38,12 +38,22 @@
   `residueSum` is **independent of the Mittag–Leffler representative**, i.e. that a *coboundary* (a
   globally-holomorphic distribution `ωᵢ = α|_{Uᵢ}` for a single global meromorphic `α`) has total
   residue `0`. That is the **residue theorem** `∑_a Res_a(α) = 0` for a global meromorphic 1-form `α`
-  on the compact `X`. In this repo that is the content of `deg_div` (`RiemannRoch.lean:290`, the degree
-  route — Rouché + Riemann–Hurwitz), which is an open wall. So the global, class-level
-  `Res : cechH1 𝔘 Ω → ℂ` and its linearity-on-classes are gated on `deg_div` and are NOT built here;
-  the plan is: once `∑Res = 0` is available, descend `residueSum` through `cechH1`'s quotient (the
-  cocycle→cochain representative gives a finite pole set; two representatives differ by a coboundary
-  whose `residueSum` is `0` by the residue theorem), yielding the well-defined functional. Everything
+  on the compact `X`.
+
+  ⚠ CORRECTION (2026-06-04, verified vs Forster §17 + Miranda §VIII.3): this is the **general 1-form**
+  residue theorem, and it is **NOT `deg_div`**. `deg_div` (`∑ₓ ord_x f = 0` for a meromorphic *function*
+  `f`) is only the special case `α = df/f`; the residues of a general `α = ω₀·f` are Laurent
+  coefficients, not orders, so discharging `deg_div`/`exists_properMapDegree` does NOT give this. The
+  correct PDE-free route is the **algebraic residue theorem via the trace to ℙ¹** (Miranda, *Algebraic
+  Curves and Riemann Surfaces*, §VIII.3): `∑_{p∈X} Res_p α = ∑_{q∈ℙ¹} Res_q(Tr α) = 0` (partial fractions
+  on ℙ¹), reusing the repo's `TraceForm`/`pushforwardForm` + the RR-gated branched cover `X → ℙ¹` + one
+  new "residue-of-a-trace" lemma (Miranda Lemma 3.2). Forster §17.1/§17.3 instead defines `Res` by
+  `(2πi)⁻¹∬_X` (manifold Stokes), which this repo avoids. So the class-level `Res : cechH1 𝔘 Ω → ℂ` is
+  gated on **this trace residue theorem (a separate node), NOT on `deg_div`**, and is NOT built here.
+  The plan: once `∑Res = 0` (the 1-form residue theorem) is available, descend `residueSum` through
+  `cechH1`'s quotient (the cocycle→cochain representative gives a finite pole set; two representatives
+  differ by a coboundary whose `residueSum` is `0` by the residue theorem), yielding the well-defined
+  functional. Everything
   in *this* file is sorry-free and axiom-clean and depends on no sorry-backed lemma.
 -/
 import Jacobians.Dolbeault.FormCoeff
@@ -197,7 +207,8 @@ summand, so this `α·g` form captures the residue data, which is all `Res` depe
 
 `res μ := residueSum α g poles` is the total residue, and is the value of Forster's `Res` on the
 distribution.  Its well-definedness on **cohomology classes** (independence of the representative) is
-the residue theorem `∑Res = 0` = `deg_div`, NOT proved here — see the module docstring. -/
+the **1-form** residue theorem `∑Res = 0` (the trace-to-ℙ¹ route, NOT `deg_div` — see the ⚠ correction
+in the module docstring), NOT proved here. -/
 
 /-- A Mittag–Leffler distribution of 1-forms of the shape `α·g` (Forster §17.2): the global
 holomorphic form `α`, the principal-part function `g`, a finite pole set `poles`, the off-poles
