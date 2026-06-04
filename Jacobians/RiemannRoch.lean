@@ -22,6 +22,8 @@ import Jacobians.Abel
 import Jacobians.LinearSystem
 import Jacobians.MeromorphicLiouville
 import Jacobians.DegDivResidue
+import Jacobians.Dolbeault.DolbeaultLadder
+import Jacobians.Dolbeault.LerayCoverExists
 
 -- Many declarations here are purely algebraic (the ℂ-module on `MeromorphicFunction`) and use
 -- only `[ChartedSpace ℂ X]`, not the full compact-manifold hypotheses carried by the consumers.
@@ -35,16 +37,34 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 
-/-- **Isolated input — Riemann–Roch** (Forster Thm 16.9, Serre-dual form). There is a canonical
-divisor `K` for which `l(D) − l(K−D) = deg D + 1 − g` for every `D`. This one statement bundles
-the existence of a canonical divisor with the RR equality — precisely the classical theorem the
-Dolbeault→Serre climb (G2–G4) delivers and that Mathlib lacks. It is *used*, not relocated: the
-reductions below (and the genus-zero endgame) are proved outright from it, so discharging this
-single `sorry` discharges the headline consumer. -/
+/-- **Riemann–Roch** (Forster Thm 16.9, Serre-dual form): a canonical divisor `K` with
+`l(D) − l(K−D) = deg D + 1 − g` for every `D`.
+
+**Now CONNECTED to its proof** (it was previously a standalone `sorry` duplicating, but disconnected
+from, the ladder that proves it — the `CechSection → RiemannRoch` import cycle, broken by extracting
+`LinearSystem`). It is the PROVEN ladder composition `DolbeaultLadder.riemannRoch_equality_of_ladder`
+(cohomological RR + the `h⁰=l` bridge + Serre at `0`/general), instantiated at a Leray cover supplied
+by `LerayCoverExists.exists_lerayCover`. So discharging this is now exactly: the ladder leaves
+(`arithmeticGenus_eq_genus`, `serre_h1_eq`, `cohomological_riemannRoch`/`exists_skyscraperLES`,
+`h0Dim_eq_lDim`/`cechRestrictL_surjective`, finiteness) **plus** the one good-cover geometric input
+`hOverlaps` below — no separate opaque RR `sorry`.
+
+The `hOverlaps` argument (pairwise overlaps of `chartBallCover` preconnected) is the single
+Mathlib-absent good-cover fact, and it is **ELIMINABLE**: `FiniteFamily.IsLeray` can be weakened to its
+first conjunct alone, since for `H¹` (all ladder leaves are `H¹` statements) Cartan's comparison
+`0 → Ȟ¹(𝔘,𝒪) → H¹(X,𝒪) → Ȟ⁰(𝔘,ℋ¹)` is an isomorphism as soon as the cover SETS are acyclic
+(simply connected ⟹ `H¹(Uᵢ)=0`) — overlap acyclicity is only needed for `H²`+ (`GoodCover` proves the
+conjunct is unused). That weakening makes `exists_lerayCover` unconditional and removes this `sorry`
+(the planned next step); it is kept here as a single named honest `sorry` until then. -/
 theorem exists_riemannRoch_divisor :
     ∃ K : Divisor X, ∀ D : Divisor X,
       (lDim (X := X) D : ℤ) - (lDim (X := X) (K - D) : ℤ)
-        = Divisor.deg X D + 1 - (genus X : ℤ) := sorry
+        = Divisor.deg X D + 1 - (genus X : ℤ) := by
+  -- One Leray cover exists; `hOverlaps` is the eliminable good-cover input (see docstring).
+  obtain ⟨𝔘, hL⟩ := Dolbeault.exists_lerayCover (X := X) (by
+    sorry)
+  -- The RR equality on that cover is the PROVEN ladder composition (mod the ladder's named leaves).
+  exact Dolbeault.riemannRoch_equality_of_ladder 𝔘 hL
 
 /-- Every principal divisor has degree `0` (Forster Cor. 4.25 / the argument principle). Proved via
 the **degree route** (`degDiv_eq_zero`): `deg (div f) = zerosCount f − polesCount f`, and both counts
