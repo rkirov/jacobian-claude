@@ -178,6 +178,86 @@ theorem fibre_finite_of_div_ne_zero (f : MeromorphicFunction X)
     f.toRiemannSphere f.contMDiff_toRiemannSphere
     (toRiemannSphere_not_isConstant_of_div_ne_zero f hnc) w
 
+/-! ### The radius-bounded planar engine
+
+To make the sheets `U x` pairwise disjoint we must control their radius: choose disjoint open
+neighbourhoods `V x` of the (finite) fibre *first* (T2 separation), then apply the planar normal
+form with an outer radius small enough that `chart.symm '' (ball ε) ⊆ V x`.  The proven engine
+`Planar.orderSum_eq_of_analyticOrder` fixes `ε` internally; this radius-bounded restatement threads
+an external bound `R_ext` (the underlying `kFold_count_radiusBounded` already supports a prescribed
+radius), giving `ε ≤ R_ext` while keeping the conservation conclusion. -/
+
+namespace Planar
+
+open Metric Jacobians.Discharge.Manifold
+
+/-- **Radius-bounded planar conservation of number.** Identical to
+`Planar.orderSum_eq_of_analyticOrder` but with the counting radius `ε` bounded by a prescribed
+`R_ext > 0` — the freedom we need to fit each sheet inside a pre-chosen disjoint neighbourhood.
+The proof copies the engine, threading `R ≤ R_ext` through the deriv-nonzero radius choice. -/
+theorem orderSum_eq_of_analyticOrder_radiusBounded
+    {g : ℂ → ℂ} {x₀ w₀ : ℂ} {m : ℕ} {R_ext : ℝ} (hR_ext : 0 < R_ext)
+    (hm : 1 ≤ m)
+    (hg : AnalyticAt ℂ g x₀) (h_w₀ : g x₀ = w₀)
+    (hord : analyticOrderAt (fun z => g z - w₀) x₀ = (m : ℕ∞)) :
+    ∃ ε > (0 : ℝ), ε ≤ R_ext ∧ ∃ δ > (0 : ℝ),
+      ∀ w ∈ ball w₀ δ, w ≠ w₀ →
+        (∑ᶠ z ∈ {z ∈ ball x₀ ε | g z = w}, (meromorphicOrderAt (fun ζ => g ζ - w) z).untop₀)
+          = (m : ℤ) := by
+  classical
+  obtain ⟨R₀, hR₀_pos, u, hu_an, hu_x₀, hfact⟩ :=
+    analytic_local_factorization hm hg h_w₀ hord
+  have hsub : KthRootSubstitution g x₀ w₀ m :=
+    kthRootSubstitution_of_localFactorization hR₀_pos hm hu_an hu_x₀ hfact
+  obtain ⟨v, ρ, hρ_pos, hv_an, hv_x₀_eq, hv_d, hv_pow⟩ := hsub.exists_substitution
+  obtain ⟨R_g, hR_g_pos, hg_anBall⟩ :
+      ∃ r > (0 : ℝ), AnalyticOnNhd ℂ g (closedBall x₀ r) := by
+    obtain ⟨s, hs_mem, hs_an⟩ := hg.exists_mem_nhds_analyticOnNhd
+    rw [Metric.mem_nhds_iff] at hs_mem
+    obtain ⟨r, hr_pos, hr_sub⟩ := hs_mem
+    exact ⟨r / 2, by linarith, fun z hz => hs_an z (hr_sub (by
+      rw [Metric.mem_ball]; rw [Metric.mem_closedBall] at hz; linarith))⟩
+  obtain ⟨R, hR_pos, hR_le_ρ, hR_le_Rg, hR_le_ext, hdv_ball⟩ :
+      ∃ R > (0 : ℝ), R ≤ ρ ∧ R ≤ R_g ∧ R ≤ R_ext ∧ ∀ z ∈ ball x₀ R, deriv v z ≠ 0 := by
+    have hderiv_an : AnalyticOnNhd ℂ (deriv v) (closedBall x₀ ρ) := hv_an.deriv
+    have hcont : ContinuousAt (deriv v) x₀ :=
+      (hderiv_an x₀ (mem_closedBall_self hρ_pos.le)).continuousAt
+    have hpre : (deriv v) ⁻¹' {z : ℂ | z ≠ 0} ∈ 𝓝 x₀ :=
+      hcont.preimage_mem_nhds (isOpen_ne.mem_nhds hv_d)
+    rw [Metric.mem_nhds_iff] at hpre
+    obtain ⟨r, hr_pos, hr_sub⟩ := hpre
+    refine ⟨min r (min ρ (min R_g R_ext)),
+      lt_min hr_pos (lt_min hρ_pos (lt_min hR_g_pos hR_ext)),
+      (min_le_right _ _).trans (min_le_left _ _),
+      (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _)),
+      (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_right _ _)),
+      fun z hz => hr_sub (ball_subset_ball (min_le_left _ _) hz)⟩
+  have hg_anNhd : AnalyticOnNhd ℂ g (closedBall x₀ R) :=
+    hg_anBall.mono (closedBall_subset_closedBall hR_le_Rg)
+  obtain ⟨ε, hε_pos, hε_le_R, δ, hδ_pos, hcount⟩ :=
+    Jacobians.Discharge.MMeromorphicAt.kFold_count_radiusBounded hR_pos hm hg h_w₀ hord
+  refine ⟨ε, hε_pos, hε_le_R.trans hR_le_ext, δ, hδ_pos, ?_⟩
+  intro w hw_ball hw_ne
+  have hw_ball' : w ∈ ball (g x₀) δ := by rw [h_w₀]; exact hw_ball
+  have hw_ne' : w ≠ g x₀ := by rw [h_w₀]; exact hw_ne
+  have hncard : ({z ∈ ball x₀ ε | g z = w} : Set ℂ).ncard = m := hcount w hw_ball' hw_ne'
+  set S : Set ℂ := {z ∈ ball x₀ ε | g z = w} with hS_def
+  have hS_fin : S.Finite := Set.finite_of_ncard_ne_zero (by rw [hncard]; omega)
+  have hroot1 : ∀ z ∈ S, (meromorphicOrderAt (fun ζ => g ζ - w) z).untop₀ = 1 := by
+    intro z hz
+    obtain ⟨hz_ball, hz_g⟩ := hz
+    have hz_R : z ∈ ball x₀ R := ball_subset_ball hε_le_R hz_ball
+    exact Jacobians.MultiplicityPatching.Planar.orderAt_root_eq_one
+      (g := g) (v := v) (x₀ := x₀) (w₀ := w₀) (ρ := ρ) (m := m)
+      hm hR_le_ρ hv_an hg_anNhd hdv_ball hv_pow hz_R hz_g hw_ne
+  rw [finsum_mem_eq_finite_toFinset_sum _ hS_fin,
+    Finset.sum_congr rfl (fun z hz => hroot1 z (by rwa [hS_fin.mem_toFinset] at hz)),
+    Finset.sum_const]
+  have hc : hS_fin.toFinset.card = m := by rw [← Set.ncard_eq_toFinset_card S hS_fin, hncard]
+  rw [hc]; simp
+
+end Planar
+
 /-- **The local conservation data at a value in the range** (`w₀ ∈ range F`), for a *non-constant*
 `f` (`f.div ≠ 0`, ensuring finite fibres): the genuine §17.9 content, built per fibre point from the
 planar normal form. -/
