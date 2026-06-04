@@ -434,7 +434,7 @@ to topological-invariance-of-genus.)
   trusting!), `[[reference_abel_riemannroch_path]]`, `[[project_finiteness_node]]`,
   `[[project_cech_to_dolbeault_progress]]` (RT2, deferred), `[[feature_verify_agent_commits]]`.
 - **docs:** this file, `architecture_map.md`, `STATUS.md`, `cech_finiteness_research.md` (Phase-1 plan),
-  `riemann_roch_proof_plan.md` (deep RR reference).
+  `archive/riemann_roch_proof_plan.md` (deep RR reference).
 - **Forster GTM81 PDF** (repo root): §14 finiteness, §16 RR, **§17 Serre (the Phase-0 source)**,
   §18 Mittag–Leffler. §19 (harmonic) is NOT on this path.
 

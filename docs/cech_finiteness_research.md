@@ -2,7 +2,7 @@
 
 Research for the **next ladder node** after the `h0Dim_eq_lDim` bridge: proving
 `FiniteDimensional ℂ (𝔘.cechH1 D)` (Forster *Lectures on Riemann Surfaces* Thm 14.9). Done while
-the gluing/surjectivity agent finishes the bridge leaf. Companion to `docs/dolbeault_ladder_derisk.md`
+the gluing/surjectivity agent finishes the bridge leaf. Companion to `docs/archive/dolbeault_ladder_derisk.md`
 (which flagged this node as the biggest unmeasured risk: the germ-class vs sup-norm representation clash).
 
 ## Headline verdict — TEMPLATED, not greenfield
@@ -94,7 +94,7 @@ already-built nested cover + disk-Montel + G1. The dominant *new* risks are (i) 
 finite-codim lemma (bounded functional analysis) and (ii) the Leray/closed-range bookkeeping. The
 representation clash is real but resolved by a cheap comparison iso, not a re-foundation. This
 confirms the de-risk's `~800–1500 LoC, Med` estimate and lowers its variance. See
-`docs/dolbeault_ladder_derisk.md`, `docs/riemann_roch_proof_plan.md §2`.
+`docs/archive/dolbeault_ladder_derisk.md`, `docs/archive/riemann_roch_proof_plan.md §2`.
 
 ---
 

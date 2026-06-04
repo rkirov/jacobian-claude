@@ -132,7 +132,7 @@ What unlocks what:
   engine is **already proven in-repo** (`Montel.lean`, 0-sorry); remaining = adapt to Čech-H¹
   cochains. Not greenfield.
 - **G4 — `𝒪_D`-on-a-manifold + Serre duality** (residue pairing): the concentrated
-  greenfield risk (no structure sheaf on a manifold). See `docs/riemann_roch_proof_plan.md §4`.
+  greenfield risk (no structure sheaf on a manifold). See `docs/archive/riemann_roch_proof_plan.md §4`.
 - **`deg_div`/Res** rides the same manifold-Stokes build (G4-adjacent): `∑ Res_x(df/f) = 0`,
   `Res_x(df/f) = orderAtPoint f x`. The map-degree alternative is blocked (the repo's
   `degreeFiber_eq_card_of_regularWitness` counts only *regular* fibres; zeros/poles are

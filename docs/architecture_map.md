@@ -2,7 +2,7 @@
 
 Canonical dependency map for completing the Jacobians challenge (Buzzard v0.4). Current as of
 2026-06-02 (DAG) + 2026-06-03 delta (below). Companion to `docs/STATUS.md` (per-theorem `sorryAx`
-ground truth), `docs/dolbeault_ladder_derisk.md` (the bimodal RR-wall cost analysis), and
+ground truth), `docs/archive/dolbeault_ladder_derisk.md` (the bimodal RR-wall cost analysis), and
 `docs/cech_finiteness_research.md` (the finiteness-node finding that this map incorporates).
 
 ## 2026-06-03 delta — three nodes advanced (re-color before reading the DAG below)
