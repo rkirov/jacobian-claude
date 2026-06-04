@@ -258,6 +258,212 @@ theorem orderSum_eq_of_analyticOrder_radiusBounded
 
 end Planar
 
+/-! ### The per-sheet datum and the per-point construction
+
+For each fibre point `x` we package the local-conservation output: an open sheet `U` (inside a
+pre-chosen disjoint neighbourhood `V`), a value-neighbourhood `W` of `w₀`, the weight `m`, and the
+per-sheet multiplicity conservation on `W`.  `SheetDatum` bundles exactly the per-point fields of
+`LocalMultiplicitySheets`; the assembly `choose`s one per fibre point. -/
+
+/-- **Per-sheet local-conservation output** at a fibre point, parametrised by the ambient value
+`w₀` and a containing open set `V` (a disjoint-separating neighbourhood).  Bundles the open sheet
+`U ⊆ V` containing `x`, an open value-neighbourhood `W ∋ w₀`, the integer weight `m`, and the
+per-sheet multiplicity conservation `∑_{y ∈ U ∩ F⁻¹(w)} localDeg = m` for `w ∈ W`. -/
+structure SheetDatum (f : MeromorphicFunction X) (w₀ : RiemannSphere) (x : X) (V : Set X) where
+  /-- The sheet. -/
+  U : Set X
+  /-- The sheet is open. -/
+  U_open : IsOpen U
+  /-- The fibre point lies in its sheet. -/
+  mem_U_self : x ∈ U
+  /-- The sheet fits inside the separating neighbourhood. -/
+  U_subset : U ⊆ V
+  /-- The integer weight. -/
+  m : ℤ
+  /-- The value-neighbourhood. -/
+  W : Set RiemannSphere
+  /-- The value-neighbourhood is open. -/
+  W_open : IsOpen W
+  /-- `w₀` lies in the value-neighbourhood. -/
+  w₀_mem_W : w₀ ∈ W
+  /-- **Per-sheet multiplicity conservation.** -/
+  sheetMult_eq : ∀ w ∈ W, (∑ᶠ y ∈ U ∩ f.toRiemannSphere ⁻¹' {w}, localDeg f w y) = m
+
+open Metric in
+/-- **The per-point construction at a finite value `coe c`.**  At a fibre point `x` of `F⁻¹(coe c)`
+(so `holoRepr x = c`, `x` a non-pole), with a clean separating neighbourhood `V` (open, containing
+`x`, inside the chart source and the non-pole locus), the radius-bounded planar normal form applied
+to `g = holoRepr ∘ chart.symm` produces a sheet `U ⊆ V` and a value-disc `W = coe '' ball c δ` on
+which the per-sheet multiplicity sum is the local order `m = localDeg f (coe c) x`.  The generic
+rows (`w = coe c'`, `c' ≠ c`) come from the engine; the central row (`w = coe c`) holds because the
+`c`-fibre in `U` is the single isolated point `x`. -/
+theorem exists_sheetDatum_coe (f : MeromorphicFunction X) (hnc : (f.div : Divisor X) ≠ 0)
+    (c : ℂ) {x : X} (hx_fib : f.toRiemannSphere x = ((c : ℂ) : RiemannSphere))
+    {V : Set X} (hV_open : IsOpen V) (hxV : x ∈ V)
+    (hV_np : V ⊆ {y | 0 ≤ f.orderAtPoint y}) :
+    Nonempty (SheetDatum f ((c : ℂ) : RiemannSphere) x V) := by
+  classical
+  set e := chartAt (H := ℂ) x with he
+  have hfib_fin := fibre_finite_of_div_ne_zero f hnc (((c : ℂ) : RiemannSphere))
+  -- Non-pole at `x`, `holoRepr x = c`, and the analytic chart pullback `g = holoRepr ∘ e.symm`.
+  have hnonpole : 0 ≤ f.orderAtPoint x := hV_np hxV
+  have hrepr : f.holoRepr x = c := by
+    have := f.toRiemannSphere_of_nonneg hnonpole; rw [this] at hx_fib
+    exact OnePoint.coe_injective hx_fib
+  set g := f.holoRepr ∘ e.symm with hg
+  have hg_an : AnalyticAt ℂ g (e x) := f.analyticAt_holoRepr_chartPullback_of_orderNonneg hnonpole
+  have hg_val : g (e x) = c := by
+    show f.holoRepr (e.symm (e x)) = c; rw [e.left_inv (mem_chart_source ℂ x), hrepr]
+  have hgc_an : AnalyticAt ℂ (fun z => g z - c) (e x) := hg_an.sub analyticAt_const
+  -- The analytic order of `g − c` at `e x` is a natural `m ≥ 1` (value `0`, finite by finite fibre).
+  have hval0 : (fun z => g z - c) (e x) = 0 := by show g (e x) - c = 0; rw [hg_val]; ring
+  have hne_zero : analyticOrderAt (fun z => g z - c) (e x) ≠ 0 :=
+    (hgc_an.analyticOrderAt_ne_zero).mpr hval0
+  have hne_top : analyticOrderAt (fun z => g z - c) (e x) ≠ ⊤ := by
+    intro htop
+    rw [analyticOrderAt_eq_top] at htop
+    -- `g = c` on a nbhd ⟹ `holoRepr = c` ⟹ `F = coe c` on a nbhd ⟹ fibre infinite, contradiction.
+    have hge : ∀ᶠ y in 𝓝 x, f.holoRepr y = c := by
+      have hpre : e ⁻¹' {z | g z - c = 0} ∈ 𝓝 x :=
+        (e.continuousAt (mem_chart_source ℂ x)).preimage_mem_nhds htop
+      have hsrc : ∀ᶠ y in 𝓝 x, y ∈ e.source := e.open_source.mem_nhds (mem_chart_source ℂ x)
+      filter_upwards [hpre, hsrc] with y hy hysrc
+      simp only [Set.mem_preimage, Set.mem_setOf_eq, sub_eq_zero] at hy
+      show f.holoRepr y = c
+      rw [show f.holoRepr y = g (e y) from
+        (by show _ = f.holoRepr (e.symm (e y)); rw [e.left_inv hysrc]), hy]
+    have hFe : ∀ᶠ y in 𝓝 x, f.toRiemannSphere y = ((c : ℂ) : RiemannSphere) := by
+      filter_upwards [f.toRiemannSphere_eventuallyEq_coe_holoRepr hnonpole, hge] with y hy1 hy2
+      rw [hy1]; show ((f.holoRepr y : ℂ) : RiemannSphere) = _; rw [hy2]
+    rw [Filter.eventually_iff, _root_.mem_nhds_iff] at hFe
+    obtain ⟨U0, hU0sub, hU0open, hxU0⟩ := hFe
+    exact (Jacobians.infinite_of_isOpen_nonempty hU0open ⟨x, hxU0⟩)
+      (hfib_fin.subset (fun y hy => hU0sub hy))
+  set m : ℕ := (analyticOrderAt (fun z => g z - c) (e x)).toNat with hm_def
+  have hm_eq : analyticOrderAt (fun z => g z - c) (e x) = (m : ℕ∞) := (ENat.coe_toNat hne_top).symm
+  have hm1 : 1 ≤ m := by
+    rw [Nat.one_le_iff_ne_zero]; intro h0; apply hne_zero; rw [hm_eq, h0]; rfl
+  -- `localDeg f (coe c) x = m`.
+  have hlocalDeg_x : localDeg f ((c : ℂ) : RiemannSphere) x = (m : ℤ) := by
+    rw [localDeg_coe_eq_chartPullback_order f c e (chart_mem_atlas ℂ x) (mem_chart_source ℂ x),
+      ← meromorphicOrderAt_holoRepr_sub_eq f x c (e.map_source (mem_chart_source ℂ x)),
+      show (fun w => f.holoRepr (e.symm w) - c) = (fun w => g w - c) from rfl,
+      hgc_an.meromorphicOrderAt_eq, hm_eq]
+    simp
+  -- Choose the outer radius `R`: ball inside `e.target`, `e.symm '' ball ⊆ V`, and the `c`-zero
+  -- is isolated in it.
+  have htgt_nhds : e.target ∈ 𝓝 (e x) :=
+    e.open_target.mem_nhds (e.map_source (mem_chart_source ℂ x))
+  have hsymmV : e.symm ⁻¹' V ∈ 𝓝 (e x) := by
+    apply (e.continuousAt_symm (e.map_source (mem_chart_source ℂ x))).preimage_mem_nhds
+    rw [e.left_inv (mem_chart_source ℂ x)]; exact hV_open.mem_nhds hxV
+  have hiso : ∀ᶠ z in 𝓝[≠] (e x), g z ≠ c := by
+    rcases hgc_an.eventually_eq_zero_or_eventually_ne_zero with h | h
+    · exfalso; apply hne_top; rw [analyticOrderAt_eq_top]; exact h
+    · filter_upwards [h] with z hz; intro hzc; apply hz; rw [hzc]; ring
+  rw [eventually_nhdsWithin_iff] at hiso
+  have hiso' : ∀ᶠ z in 𝓝 (e x), z ≠ e x → g z ≠ c := by
+    filter_upwards [hiso] with z hz hzne; exact hz hzne
+  have hall : (e.target ∩ e.symm ⁻¹' V) ∩ {z | z ≠ e x → g z ≠ c} ∈ 𝓝 (e x) :=
+    Filter.inter_mem (Filter.inter_mem htgt_nhds hsymmV) hiso'
+  rw [Metric.mem_nhds_iff] at hall
+  obtain ⟨R, hR_pos, hR_sub⟩ := hall
+  have hcond_a : ball (e x) R ⊆ e.target := fun z hz => (hR_sub hz).1.1
+  have hcond_c : ∀ z ∈ ball (e x) R, z ≠ e x → g z ≠ c := fun z hz => (hR_sub hz).2
+  have hcond_b : e.symm '' (ball (e x) R ∩ e.target) ⊆ V := by
+    rintro y ⟨z, ⟨hz_ball, _⟩, rfl⟩; exact (hR_sub hz_ball).1.2
+  -- Apply the radius-bounded planar engine.
+  obtain ⟨ε, hε_pos, hε_le_R, δ, hδ_pos, hcount⟩ :=
+    Planar.orderSum_eq_of_analyticOrder_radiusBounded (w₀ := c) hR_pos hm1 hg_an hg_val hm_eq
+  -- Shrunk-radius facts (`ε ≤ R`).
+  have hε_tgt : ball (e x) ε ⊆ e.target := (ball_subset_ball hε_le_R).trans hcond_a
+  have hε_V : e.symm '' (ball (e x) ε ∩ e.target) ⊆ V := by
+    rintro y ⟨z, ⟨hz_ball, _⟩, rfl⟩
+    exact hcond_b ⟨z, ⟨ball_subset_ball hε_le_R hz_ball, hcond_a (ball_subset_ball hε_le_R hz_ball)⟩,
+      rfl⟩
+  have hε_c : ∀ z ∈ ball (e x) ε, z ≠ e x → g z ≠ c :=
+    fun z hz => hcond_c z (ball_subset_ball hε_le_R hz)
+  -- Non-pole on the sheet (`U ⊆ V ⊆ nonpoles`).
+  have hε_np : ∀ z ∈ ball (e x) ε, 0 ≤ f.orderAtPoint (e.symm z) := by
+    intro z hz
+    exact hV_np (hε_V ⟨z, ⟨hz, hε_tgt hz⟩, rfl⟩)
+  have hxball : e x ∈ ball (e x) ε := mem_ball_self hε_pos
+  -- The order-equation transfer (holoRepr ↔ toFun) for the reindexing.
+  have horder_eq : ∀ w' : ℂ, ∀ z ∈ e.target,
+      meromorphicOrderAt (fun w => f.holoRepr (e.symm w) - w') z =
+        meromorphicOrderAt (fun w => f.toFun (e.symm w) - w') z :=
+    fun w' z hz => meromorphicOrderAt_holoRepr_sub_eq f x w' hz
+  -- Assemble the datum.
+  refine ⟨{
+    U := e.symm '' (ball (e x) ε ∩ e.target)
+    U_open := e.symm.isOpen_image_of_subset_source (isOpen_ball.inter e.open_target)
+      (by rw [e.symm_source]; exact Set.inter_subset_right)
+    mem_U_self := ⟨e x, ⟨hxball, hε_tgt hxball⟩, e.left_inv (mem_chart_source ℂ x)⟩
+    U_subset := hε_V
+    m := (m : ℤ)
+    W := (fun z : ℂ => (z : RiemannSphere)) '' (ball c δ)
+    W_open := OnePoint.isOpenMap_coe _ isOpen_ball
+    w₀_mem_W := ⟨c, mem_ball_self hδ_pos, rfl⟩
+    sheetMult_eq := ?_ }⟩
+  -- The per-sheet conservation.
+  rintro w ⟨w', hw'_ball, rfl⟩
+  by_cases hw'c : w' = c
+  · -- Central row `w' = c`: the `c`-fibre in `U` is the single isolated point `x`.
+    subst hw'c
+    have hset_central : (e.symm '' (ball (e x) ε ∩ e.target)
+        ∩ f.toRiemannSphere ⁻¹' {((w' : ℂ) : RiemannSphere)}) = {x} := by
+      ext y
+      simp only [Set.mem_inter_iff, Set.mem_image, Set.mem_preimage, Set.mem_singleton_iff]
+      constructor
+      · rintro ⟨⟨z, ⟨hz_ball, hz_tgt⟩, rfl⟩, hFy⟩
+        have hrep : f.holoRepr (e.symm z) = w' := by
+          have := hFy; rw [f.toRiemannSphere_of_nonneg (hε_np z hz_ball)] at this
+          exact OnePoint.coe_injective this
+        by_cases hze : z = e x
+        · rw [hze, e.left_inv (mem_chart_source ℂ x)]
+        · exact absurd hrep (hε_c z hz_ball hze)
+      · intro hyx
+        rw [hyx]
+        exact ⟨⟨e x, ⟨hxball, hε_tgt hxball⟩, e.left_inv (mem_chart_source ℂ x)⟩, hx_fib⟩
+    rw [hset_central, finsum_mem_singleton, hlocalDeg_x]
+  · -- Generic row `w' ≠ c`: reindex the planar engine count.
+    set S' := (e.symm '' (ball (e x) ε ∩ e.target)
+      ∩ f.toRiemannSphere ⁻¹' {((w' : ℂ) : RiemannSphere)}) with hS'
+    have hset : {z ∈ ball (e x) ε | g z = w'} = e '' S' := by
+      ext z
+      simp only [hS', Set.mem_setOf_eq, Set.mem_image, Set.mem_inter_iff, Set.mem_preimage,
+        Set.mem_singleton_iff]
+      constructor
+      · rintro ⟨hz_ball, hz_g⟩
+        have hz_tgt : z ∈ e.target := hε_tgt hz_ball
+        exact ⟨e.symm z, ⟨⟨z, ⟨hz_ball, hz_tgt⟩, rfl⟩, by
+          rw [f.toRiemannSphere_of_nonneg (hε_np z hz_ball),
+            show f.holoRepr (e.symm z) = w' from hz_g]⟩, e.right_inv hz_tgt⟩
+      · rintro ⟨y, ⟨⟨z', ⟨hz'_ball, hz'_tgt⟩, hz'y⟩, hFy⟩, hyz⟩
+        have hz'_eq : e (e.symm z') = z' := e.right_inv hz'_tgt
+        subst hyz; subst hz'y; rw [hz'_eq]
+        refine ⟨hz'_ball, ?_⟩
+        have hF := hFy
+        rw [f.toRiemannSphere_of_nonneg (hε_np z' hz'_ball)] at hF
+        exact OnePoint.coe_injective hF
+    have hInj : Set.InjOn e S' := by
+      intro a ha b hb hab
+      obtain ⟨za, hza, rfl⟩ := ha.1
+      obtain ⟨zb, hzb, rfl⟩ := hb.1
+      rw [e.right_inv hza.2, e.right_inv hzb.2] at hab; rw [hab]
+    have hcount' := hcount _ hw'_ball hw'c
+    rw [hset, finsum_mem_image hInj] at hcount'
+    rw [← hcount']
+    apply finsum_mem_congr rfl
+    intro y hy
+    obtain ⟨za, hza, rfl⟩ := hy.1
+    have hy_src : e.symm za ∈ e.source := e.map_target hza.2
+    rw [localDeg_coe_eq_chartPullback_order f w' e (chart_mem_atlas ℂ x) hy_src,
+      e.right_inv hza.2]
+    show (meromorphicOrderAt (fun z => f.toFun (e.symm z) - w') za).untop₀
+      = (meromorphicOrderAt (fun ζ => f.holoRepr (e.symm ζ) - w') za).untop₀
+    rw [horder_eq w' za hza.2]
+
 /-- **The local conservation data at a value in the range** (`w₀ ∈ range F`), for a *non-constant*
 `f` (`f.div ≠ 0`, ensuring finite fibres): the genuine §17.9 content, built per fibre point from the
 planar normal form. -/
