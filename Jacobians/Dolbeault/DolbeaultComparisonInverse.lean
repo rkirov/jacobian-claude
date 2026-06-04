@@ -670,7 +670,7 @@ theorem holoFn_restrict {U V : Opens X} (h : V ≤ U) {g : MGerm U}
     have hmatch : rawRestrictG (inf_le_right : U ⊓ V ≤ V)
           (toGerm V (holoRep (rawRestrictG_omegaDGerm h hg)))
         = rawRestrictG (inf_le_left : U ⊓ V ≤ U) (toGerm U (holoRep hg)) := by
-      rw [toGerm_holoRep, toGerm_holoRep, FiniteCover.rawRestrictG_comp_apply]
+      rw [toGerm_holoRep, toGerm_holoRep, FiniteFamily.rawRestrictG_comp_apply]
     exact Gext_overlap_eventuallyEq (holoRep hg) (holoRep (rawRestrictG_omegaDGerm h hg)) hmatch
       (h hx) hx
   show limUnder (𝓝[≠] x) (Gext (holoRep (rawRestrictG_omegaDGerm h hg)))
@@ -697,7 +697,7 @@ theorem holoFn_cocycle_add (𝔇 : ChartDiskCover X)
       - rawRestrictG hik ((f : 𝔇.toFiniteCover.Cochain1) (i, k))
       + rawRestrictG hij ((f : 𝔇.toFiniteCover.Cochain1) (i, j)) = 0 := by
     have hev := congrFun hk0 (i, j, k)
-    simpa only [FiniteCover.cechDelta1, LinearMap.pi_apply, LinearMap.sub_apply,
+    simpa only [FiniteFamily.cechDelta1, LinearMap.pi_apply, LinearMap.sub_apply,
       LinearMap.add_apply, LinearMap.comp_apply, LinearMap.proj_apply, Pi.zero_apply] using hev
   have hrel : rawRestrictG hik ((f : 𝔇.toFiniteCover.Cochain1) (i, k))
       = rawRestrictG hjk ((f : 𝔇.toFiniteCover.Cochain1) (j, k))

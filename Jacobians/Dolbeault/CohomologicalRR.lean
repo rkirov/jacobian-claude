@@ -91,6 +91,8 @@ theorem six_term_exact_alt_sum {K A B C E F : Type*} [Field K]
 
 namespace FiniteCover
 
+open FiniteFamily
+
 /-- The **Euler characteristic** `χ(D) := h⁰(D) − h¹(D)` (as an integer). -/
 noncomputable def chi (𝔘 : FiniteCover X) (D : Divisor X) : ℤ :=
   (𝔘.h0Dim D : ℤ) - 𝔘.h1Dim D

@@ -459,6 +459,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 namespace FiniteCover
 
+open FiniteFamily
+
 /-- 2-cochains that are `𝒪_D`-sections on each triple intersection (the degree-2 section subcomplex —
 not previously needed in `CechComplex`, supplied here for the `Q`-degree-2 term of the snake). -/
 def sections2 (𝔘 : FiniteCover X) (D : Divisor X) : Submodule ℂ 𝔘.Cochain2 where

@@ -362,6 +362,10 @@ theorem analyticAt_chart_change {h : X → ℂ} {y z : X} (hz : z ∈ (chartAt (
 
 namespace FiniteCover
 
+-- The Čech complex (`cechDelta0`, `globalSections`, `h0Dim`, …) lives on the parent `FiniteFamily`;
+-- open it so the unqualified `rw`/`simp` unfold-lemma references below resolve.
+open FiniteFamily
+
 variable (𝔘 : FiniteCover X) (D : Divisor X)
 
 /-- Restrict a global meromorphic function to the cover's germ-class 0-cochains:

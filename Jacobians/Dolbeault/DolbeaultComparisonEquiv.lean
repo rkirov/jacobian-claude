@@ -121,7 +121,7 @@ theorem holoFn_cocycle_eq_diskValDiff (𝔇 : ChartDiskCover X) {g : SmoothCOneF
     𝔇.diskSection k g ∘ openIncl inf_le_right - 𝔇.diskSection j g ∘ openIncl inf_le_left with hF
   have hcomp : (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩ : 𝔇.toFiniteCover.Cochain1) (j, k) = toGerm V F := by
     show 𝔇.toFiniteCover.cechDelta0 (𝔇.rawCochain g) (j, k) = toGerm V F
-    simp only [FiniteCover.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
+    simp only [FiniteFamily.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
       LinearMap.comp_apply, LinearMap.proj_apply]
     rw [show 𝔇.rawCochain g k = toGerm (𝔇.U k) (𝔇.diskSection k g) from rfl,
       show 𝔇.rawCochain g j = toGerm (𝔇.U j) (𝔇.diskSection j g) from rfl,
@@ -592,7 +592,7 @@ theorem cechDelta0_holCochain_eq (𝔇 : ChartDiskCover X)
       = rawRestrictG (inf_le_right : 𝔇.U i ⊓ 𝔇.U l ≤ 𝔇.U l) (c l)
         - rawRestrictG (inf_le_left : 𝔇.U i ⊓ 𝔇.U l ≤ 𝔇.U i) (c i) := by
     intro c
-    simp only [FiniteCover.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
+    simp only [FiniteFamily.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
       LinearMap.comp_apply, LinearMap.proj_apply]
   simp only [Pi.add_apply, hcd]
   -- Express each germ as `toGerm (U_i⊓U_l) (· ∘ openIncl)` via `rawRestrictG_coe`.

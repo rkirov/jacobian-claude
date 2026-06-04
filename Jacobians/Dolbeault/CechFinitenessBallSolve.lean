@@ -211,7 +211,7 @@ theorem holoFn_restrict {U W : Opens X} (h : W ≤ U) {g : MGerm U}
     have hmatch : rawRestrictG (inf_le_right : U ⊓ W ≤ W)
           (toGerm W (holoRep (rawRestrictG_omegaDGerm h hg)))
         = rawRestrictG (inf_le_left : U ⊓ W ≤ U) (toGerm U (holoRep hg)) := by
-      rw [toGerm_holoRep, toGerm_holoRep, FiniteCover.rawRestrictG_comp_apply]
+      rw [toGerm_holoRep, toGerm_holoRep, FiniteFamily.rawRestrictG_comp_apply]
     exact Gext_overlap_eventuallyEq (holoRep hg) (holoRep (rawRestrictG_omegaDGerm h hg)) hmatch
       (h hx) hx
   show limUnder (𝓝[≠] x) (Gext (holoRep (rawRestrictG_omegaDGerm h hg)))
@@ -242,7 +242,7 @@ theorem holoFn_cocycle_sub (𝔙 : FiniteCover X) (s : ↥(𝔙.cocycles1 (0 : D
       - rawRestrictG hqj ((s : 𝔙.Cochain1) (q, j))
       + rawRestrictG hqi ((s : 𝔙.Cochain1) (q, i)) = 0 := by
     have hev := congrFun hk0 (q, i, j)
-    simpa only [FiniteCover.cechDelta1, LinearMap.pi_apply, LinearMap.sub_apply,
+    simpa only [FiniteFamily.cechDelta1, LinearMap.pi_apply, LinearMap.sub_apply,
       LinearMap.add_apply, LinearMap.comp_apply, LinearMap.proj_apply, Pi.zero_apply] using hev
   -- Rearranged: `s_{qj}|_△ − s_{qi}|_△ = s_{ij}|_△`.
   have hrel : rawRestrictG hqj ((s : 𝔙.Cochain1) (q, j))

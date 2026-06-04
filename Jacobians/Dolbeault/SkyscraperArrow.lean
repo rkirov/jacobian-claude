@@ -102,6 +102,8 @@ theorem mem_OmegaDGerm_of_overlap_match {U V : Opens X} {D : Divisor X} {P : X}
 
 namespace FiniteCover
 
+open FiniteFamily
+
 variable (𝔘 : FiniteCover X) (D : Divisor X) (P : X)
 
 /-! ### Restriction of a global section to a single cover-set germ -/

@@ -262,6 +262,79 @@ theorem leray_surjective (d : DiskOverlapData) (c : Coboundaries d) :
   show c.δ0 η + d.rhoRaw x = t.1
   exact heq.symm
 
+/-! ### The trivial acyclic model and the assembled `exists_cechModel` for the acyclic case
+
+These bank the END-TO-END model assembly (`DiskOverlapData` + `Coboundaries` with its `leray`
+disk-acyclicity field + the bundled comparison) for exactly the case the completed disk-acyclicity
+produces — a SUBSINGLETON germ-class `H¹` (`H¹(disk, 𝒪) = 0`).  The general `exists_cechModel` (an
+arbitrary cover with a non-acyclic `H¹`) still needs the genuine Montel-model comparison + Leray
+cover-independence (the named `sorry` below); but the acyclic case is fully discharged here, and the
+geometric instantiation via `SharedChartCover.hasGluedDbarDatum` is banked in
+`CechModelConstruction.lean` (which imports this file). -/
+
+namespace DiskOverlapData
+
+variable (d : DiskOverlapData)
+
+/-- **The trivial acyclic `Coboundaries`.**  For any `DiskOverlapData d`, the `Coboundaries d` with
+`C⁰ = Cshr`, `δ⁰ = id`, `δ¹ = 0`, `δ¹_cov = 0`.  Structural fields hold trivially; the genuine
+analytic `leray` field is DISCHARGED (every shrinking cocycle `s` is `δ⁰ s + ρ 0 = s`).  Its sup-norm
+`H¹` is `0` (`supH1_trivialCoboundaries_subsingleton`) — the `leray` disk-acyclicity field wired at the
+acyclic extreme, the shape the completed `hasGluedDbarDatum` lands in. -/
+noncomputable def trivialCoboundaries : Coboundaries d where
+  C0 := d.Cshr
+  C2 := PUnit
+  C2cov := PUnit
+  δ0 := ContinuousLinearMap.id ℂ d.Cshr
+  δ1 := 0
+  δ1cov := 0
+  hδδ := by simp
+  hcomm := fun _ _ => by simp
+  leray := fun s _ => ⟨s, 0, by simp, by simp⟩
+
+/-- **The trivial model is acyclic.**  `(trivialCoboundaries d).supH1` is a subsingleton: its
+`Z¹(shrinking) = ker δ¹ = Cshr` (`δ¹ = 0`) and `range δ = ⊤` (`δ` corestricts the surjective `δ⁰ =
+id`), so the quotient is trivial. -/
+theorem supH1_trivialCoboundaries_subsingleton :
+    Subsingleton (d.trivialCoboundaries).supH1 := by
+  rw [Submodule.Quotient.subsingleton_iff, LinearMap.range_eq_top]
+  intro z
+  refine ⟨(z : d.Cshr), Subtype.ext ?_⟩
+  rw [ContinuousLinearMap.coe_coe, Coboundaries.δ, ContinuousLinearMap.coe_codRestrict_apply]
+  rfl
+
+/-- A `DiskOverlapData` with empty overlap index (so `Ccov`/`Cshr` are subsingletons) — the carrier of
+the trivial model that witnesses the acyclic `exists_cechModel`. -/
+def empty : DiskOverlapData where
+  J := Fin 0
+  Uov := fun p => p.elim0
+  hUov := fun p => p.elim0
+  Kov := fun p => p.elim0
+  hKcpt := fun p => p.elim0
+  hKU := fun p => p.elim0
+
+/-- The sup-norm `H¹` of the empty model's trivial `Coboundaries` is a subsingleton (instance of
+`supH1_trivialCoboundaries_subsingleton`). -/
+instance : Subsingleton (DiskOverlapData.empty.trivialCoboundaries).supH1 :=
+  DiskOverlapData.empty.supH1_trivialCoboundaries_subsingleton
+
+end DiskOverlapData
+
+/-- **`exists_cechModel` for a subsingleton germ-class `H¹` (the assembled acyclic case, sorry-free).**
+If the genuine germ-class `𝔘.cechH1 D` is a SUBSINGLETON, then `exists_cechModel 𝔘 D` holds: take the
+trivial acyclic model (`DiskOverlapData.empty` with its `trivialCoboundaries`, whose `leray`
+disk-acyclicity field is discharged and whose `supH1` is `0`); the comparison `𝔘.cechH1 D ≃ₗ supH1` is
+then `LinearEquiv.ofSubsingleton` (both sides subsingleton `ℂ`-modules).  This is the end-to-end model
+assembly for exactly the case the completed disk-acyclicity produces (`H¹ = 0`); it is correctly tied
+to `(𝔘, D)` via the existential (not a free `c`).  The geometric instantiation — a `SharedChartCover`
+at `D = 0` discharging the subsingleton hypothesis via `hasGluedDbarDatum` — is
+`CechModelConstruction.exists_cechModel_of_sharedChart_zero`. -/
+theorem exists_cechModel_of_subsingleton (𝔘 : FiniteCover X) (D : Divisor X)
+    [Subsingleton (𝔘.cechH1 D)] :
+    ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
+  ⟨DiskOverlapData.empty, DiskOverlapData.empty.trivialCoboundaries,
+    ⟨LinearEquiv.ofSubsingleton _ _⟩⟩
+
 /-! ### STEP 6a — existence of the chart-disk Leray model (named `sorry`, honest statement) -/
 
 /-- **STEP 6a — the chart-disk Leray model exists and computes `cechH1` (THE one honest `sorry`).**
@@ -281,7 +354,28 @@ the full-disk ∂̄-solvability `DbarDiskCohomology.dbar_solvable_ball` and the 
 `DbarDiskCohomology.dbar_holo_splitting_ball`; and (iii) the germ-class ↔ bounded-holomorphic
 comparison (codiscrete ↔ `𝓝[≠]` bridge of `CechH0` + Leray refinement). What remains unproven (hence
 the `sorry`) is the manifold/Čech assembly stitching the proven disk atoms into the cover-level model
-and the comparison. NOT proven here. -/
+and the comparison. NOT proven here.
+
+WHAT IS ALREADY BANKED (sorry-free), narrowing this gap.  The ACYCLIC case is fully assembled:
+`exists_cechModel_of_subsingleton` (above) discharges this very statement whenever `𝔘.cechH1 D` is a
+SUBSINGLETON, via the trivial model `DiskOverlapData.empty.trivialCoboundaries` (whose `leray`
+disk-acyclicity field is discharged and whose `supH1 = 0`) and `LinearEquiv.ofSubsingleton`; and
+`CechModelConstruction.exists_cechModel_of_sharedChart_zero` instantiates it for a `SharedChartCover`
+at `D = 0`, the subsingleton hypothesis discharged by the COMPLETED disk-acyclicity
+`SharedChartCover.hasGluedDbarDatum` (`H¹(disk, 𝒪) = 0`).  The `leray`/disk-acyclicity engine the task
+unblocked is therefore wired through the model front door in the acyclic case.
+
+THE EXACT REMAINING OBSTRUCTION (the general, non-acyclic case).  For an arbitrary Leray `𝔘` with a
+NON-acyclic `H¹` (high genus / general `D`), `cechH1 𝔘 D` is NOT a subsingleton, so the above does not
+apply, and one needs the genuine Montel-model comparison `cechH1 𝔘 D ≃ₗ supH1` with `supH1 ≠ 0`.  Per
+`CechRefinement.lean`'s `## PLAN`, that decomposes as `cechH1 𝔘 D ≅ cechH1 𝔚 D ≅ cechH1 chartCover D ≅
+supH1` through a common refinement `𝔚`, and is blocked on STEP B — Leray cover-INDEPENDENCE
+(`refineH1` an iso for a strictly-finer Leray refinement; `RefinementLift`/`RefinementDescend` of
+`CechRefinementLeray.lean` are REDUCED but not produced).  That STEP B is a greenfield
+~several-hundred-LoC piece on top of the proven disk ∂̄-atoms (NOT what the disk-acyclicity work
+unblocked); the forward `germ → BddHol` cochain map of the last `≅` is built for `D = 0`
+(`CechModelCochain`/`CechModelDatum`), but its inverse, the δ-square, and STEP B are not.  This single
+`sorry` is exactly that remaining manifold/Čech assembly. -/
 theorem exists_cechModel (𝔘 : FiniteCover X) (D : Divisor X) :
     ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) := by
   sorry

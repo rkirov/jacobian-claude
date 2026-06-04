@@ -194,7 +194,7 @@ theorem isDiskAcyclic_of_funcLevel (𝔙 : FiniteCover X) (D : Divisor X)
     (h : FunctionDiskAcyclic 𝔙 D) : IsDiskAcyclic 𝔙 D := by
   intro s hs
   obtain ⟨η, hη, hδ⟩ := h s hs
-  rw [FiniteCover.coboundaries1, Submodule.mem_map]
+  rw [FiniteFamily.coboundaries1, Submodule.mem_map]
   exact ⟨fun i => toGerm (𝔙.U i) (η i), toGerm_mem_sections0 𝔙 D η hη, hδ⟩
 
 /-- **Disk-acyclicity collapses `H¹`.**  If the cover is germ-level disk-acyclic, then every class of

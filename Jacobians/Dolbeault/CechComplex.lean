@@ -27,26 +27,33 @@ namespace Jacobians.Dolbeault
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- A finite open cover of `X`. For the Leray/Stein property used by finiteness one takes the `U i`
-to be chart-disks; that refinement is recorded where needed, not here. -/
-structure FiniteCover (X : Type*) [TopologicalSpace X] where
+/-- A **finite family** of opens of `X` (no covering condition). The Čech complex and `H¹` below are
+defined at this level, so they apply both to a genuine `FiniteCover` (covering `X`) and to a family
+covering only a chart-disk subregion — the latter is the honest, *inhabited* base for the disk-
+acyclicity input (`H¹(disk, 𝒪) = 0`). (Previously the Čech complex lived on `FiniteCover`, whose
+`covers = ⊤` made the single-chart `SharedChartCover` uninhabited and the disk-acyclicity vacuous.) -/
+structure FiniteFamily (X : Type*) [TopologicalSpace X] where
   ι : Type
   [fintype : Fintype ι]
   U : ι → Opens X
+
+attribute [instance] FiniteFamily.fintype
+
+/-- A finite open **cover** of `X`: a finite family whose sets cover `X`. For the Leray/Stein property
+used by finiteness one takes the `U i` to be chart-disks; that refinement is recorded where needed. -/
+structure FiniteCover (X : Type*) [TopologicalSpace X] extends FiniteFamily X where
   covers : ⨆ i, U i = ⊤
 
-attribute [instance] FiniteCover.fintype
+namespace FiniteFamily
 
-namespace FiniteCover
+variable (𝔘 : FiniteFamily X) (D : Divisor X)
 
-variable (𝔘 : FiniteCover X) (D : Divisor X)
-
-/-- A finite cover is **Leray** (for `𝒪`): each cover set is simply connected (a simply-connected open
+/-- A finite family is **Leray** (for `𝒪`): each set is simply connected (a simply-connected open
 subset of a Riemann surface is biholomorphic to a disk or `ℂ`, hence `H¹(𝒪)=0`), and pairwise
 intersections are connected. The standard hypothesis under which Čech `H¹` computes sheaf cohomology
 (Forster §12, Leray). The chart-disk cover satisfies it. NOTE: may be strengthened when the disk-cover
 construction pins the exact acyclicity; it is an honest *conditional* hypothesis, not the final word. -/
-def IsLeray (𝔘 : FiniteCover X) : Prop :=
+def IsLeray (𝔘 : FiniteFamily X) : Prop :=
   (∀ i : 𝔘.ι, SimplyConnectedSpace ↥(𝔘.U i)) ∧
   (∀ i j : 𝔘.ι, IsPreconnected ((𝔘.U i ⊓ 𝔘.U j : TopologicalSpace.Opens X) : Set X))
 
@@ -132,6 +139,6 @@ noncomputable def h0Dim : ℕ := Module.finrank ℂ ↥(𝔘.globalSections D)
 /-- `h¹(D)` (Forster's `h¹(X, 𝒪_D)`). -/
 noncomputable def h1Dim : ℕ := Module.finrank ℂ (𝔘.cechH1 D)
 
-end FiniteCover
+end FiniteFamily
 
 end Jacobians.Dolbeault

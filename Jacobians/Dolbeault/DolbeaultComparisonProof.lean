@@ -1323,7 +1323,7 @@ theorem cechDelta0_rawCochain_mem_cocycles1 (𝔇 : ChartDiskCover X) {g : Smoot
   set F : ↥(𝔇.U i ⊓ 𝔇.U j) → ℂ :=
     𝔇.diskSection j g ∘ openIncl inf_le_right - 𝔇.diskSection i g ∘ openIncl inf_le_left with hFdef
   have hcomp : 𝔇.toFiniteCover.cechDelta0 (𝔇.rawCochain g) (i, j) = toGerm (𝔇.U i ⊓ 𝔇.U j) F := by
-    simp only [FiniteCover.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
+    simp only [FiniteFamily.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
       LinearMap.comp_apply, LinearMap.proj_apply]
     rw [show 𝔇.rawCochain g j = toGerm (𝔇.U j) (𝔇.diskSection j g) from rfl,
       show 𝔇.rawCochain g i = toGerm (𝔇.U i) (𝔇.diskSection i g) from rfl,
@@ -1418,7 +1418,7 @@ theorem dolbeaultToCechCocycle_dbarImage_le (𝔇 : ChartDiskCover X) :
     have hc0 : 𝔇.toFiniteCover.cechDelta0 (fun k => toGerm (𝔇.U k) (⇑h ∘ Subtype.val)) = 0 := by
       funext p
       obtain ⟨a, b⟩ := p
-      simp only [FiniteCover.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
+      simp only [FiniteFamily.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
         LinearMap.comp_apply, LinearMap.proj_apply, rawRestrictG_coe, Pi.zero_apply, sub_eq_zero]
       rfl
     rw [hc0, sub_zero]

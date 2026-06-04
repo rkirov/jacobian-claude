@@ -41,6 +41,11 @@ set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
+-- The Čech complex (`cechDelta0`, `globalSections`, …) lives on the parent `FiniteFamily`; open it
+-- file-wide so the unqualified `rw`/`simp` unfold-lemma refs in the `FiniteCover` sections resolve
+-- (this file has several `namespace FiniteCover` blocks).
+open FiniteFamily
+
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 

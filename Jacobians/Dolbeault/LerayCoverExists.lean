@@ -13,7 +13,7 @@
 
       `exists_lerayCover : ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray`
 
-  (`IsLeray` is `CechComplex.FiniteCover.IsLeray`: every cover set simply connected AND every pairwise
+  (`IsLeray` is `CechComplex.FiniteFamily.IsLeray`: every cover set simply connected AND every pairwise
   overlap preconnected — Forster §12's Leray hypothesis under which Čech `H¹` computes sheaf
   cohomology).  This is the target chosen here, and `CechRefinement.lean`'s own `PARTIAL SIDESTEP` note
   flags exactly this ("take the existence of a single Leray chart-disk cover as a hypothesis") as the

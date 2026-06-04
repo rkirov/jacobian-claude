@@ -46,6 +46,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 namespace FiniteCover
 
+open FiniteFamily
+
 /-! ### Refinement of finite covers -/
 
 /-- `r : 𝔙.ι → 𝔘.ι` exhibits `𝔙` as a **refinement** of `𝔘`: each refining set `𝔙.U j` is contained
@@ -299,7 +301,7 @@ REPO-AVAILABLE PIECES for STEP B:
   * the overlap-acyclicity input.  On a Leray cover the relevant `H¹(overlap, 𝒪) = 0` is exactly the
     disk-`H¹=0` engine already proven sorry-free: `DbarDiskCohomology.dbar_solvable_ball` /
     `dbar_holo_splitting_ball` (full-disk ∂̄-solvability) — the SAME atom `exists_cechModel`'s `leray`
-    field consumes.  The `IsLeray` predicate (`CechComplex.FiniteCover.IsLeray`) bundles
+    field consumes.  The `IsLeray` predicate (`CechComplex.FiniteFamily.IsLeray`) bundles
     simple-connectedness of the cover sets + connectedness of pairwise overlaps, the Forster §12
     hypothesis.
   * the chain-map + descent machinery: this file (`refineH1` + the chain-map lemmas) and the

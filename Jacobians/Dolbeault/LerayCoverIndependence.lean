@@ -46,6 +46,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 namespace FiniteCover
 
+open FiniteFamily
+
 /-- **Subsingleton `H¹` transports along a mutual refinement.**  If `𝔙 ⪯ 𝔘` (`hr`) and `𝔘 ⪯ 𝔙` (`hs`)
 mutually refine and `cechH1 𝔙 D` is a subsingleton, then `cechH1 𝔘 D` is a subsingleton too: the
 cover-independence isomorphism `refineH1_equiv D hr hs : cechH1 𝔘 D ≃ₗ[ℂ] cechH1 𝔙 D` (sorry-free, pure

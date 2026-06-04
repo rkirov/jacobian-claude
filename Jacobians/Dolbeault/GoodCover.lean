@@ -4,7 +4,7 @@
   ## What this file establishes (the high-value scout deliverable)
 
   The forward-headline finiteness keystone `LerayCoverExists.exists_lerayCover` is gated on one honest
-  hypothesis `hOverlaps`: the SECOND conjunct of `FiniteCover.IsLeray`, preconnectedness of the
+  hypothesis `hOverlaps`: the SECOND conjunct of `FiniteFamily.IsLeray`, preconnectedness of the
   pairwise overlaps of the concrete `chartBallCover`.  The task was to discharge `hOverlaps` — OR to
   scout whether that conjunct is consumed at all.
 
@@ -30,7 +30,7 @@
   Because the preconnected-overlap conjunct is dead weight in the ladder, the wall the task targeted
   does not exist on the critical path:
 
-    * `FiniteCover.IsLeray` can be WEAKENED to its first conjunct alone
+    * `FiniteFamily.IsLeray` can be WEAKENED to its first conjunct alone
       (`∀ i, SimplyConnectedSpace ↥(U i)`), which `LerayCoverExists.chartBallCover_simplyConnected`
       already discharges UNCONDITIONALLY.  Then `exists_lerayCover` is unconditional — `hOverlaps`
       vanishes — and every downstream theorem that took `hL : IsLeray` is fed the simply-connected-only

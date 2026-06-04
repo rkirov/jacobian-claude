@@ -44,6 +44,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 namespace FiniteCover
+
+open FiniteFamily
 namespace IsRefinement
 
 variable {𝔙 𝔘 : FiniteCover X} {r r' : 𝔙.ι → 𝔘.ι}
