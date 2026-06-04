@@ -33,6 +33,7 @@ import Jacobians.Dolbeault.CechModelGeometry
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Jacobians.Montel
+open BoundedContinuousFunction
 
 set_option linter.unusedSectionVars false
 
@@ -71,5 +72,80 @@ noncomputable instance : CompleteSpace (Cochain0Model (X := X)) := by
   haveI : ∀ a, CompleteSpace (BddHol (coverSetImage (X := X) a)) := fun a =>
     BddHol.completeSpace (isOpen_coverSetImage a)
   infer_instance
+
+/-! ### 2-simplex chart-images and the sup-norm 2-cochains `C²`
+
+The Čech `δ¹` lands in the 2-cochains over triple overlaps `(a,b,c)`, read (like the pairwise data) in
+the FIRST chart `a`.  Cover side `C²cov` is bounded-holomorphic on the OPEN triple chart-image; the
+shrinking side `C²` is bounded-continuous on the COMPACT inner triple chart-image (where the Montel
+restriction lands), matching `DiskOverlapData.Cshr`'s `→ᵇ` style. -/
+
+/-- Open chart-`a` image of the triple outer overlap `chartOpen a ∩ chartOpen b ∩ chartOpen c`. -/
+noncomputable def coverTripleImage (t : Fin ((chartCover : Finset X).card) ×
+    Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card)) : Set ℂ :=
+  (chartAt (H := ℂ) (coverCenter t.1)) ''
+    (chartOpen (X := X) (coverCenter t.1) ∩ chartOpen (X := X) (coverCenter t.2.1)
+      ∩ chartOpen (X := X) (coverCenter t.2.2))
+
+theorem isOpen_coverTripleImage (t : Fin ((chartCover : Finset X).card) ×
+    Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card)) :
+    IsOpen (coverTripleImage (X := X) t) :=
+  isOpen_chartImage_of_subset_source
+    (((chartOpen_isOpen (coverCenter t.1)).inter (chartOpen_isOpen (coverCenter t.2.1))).inter
+      (chartOpen_isOpen (coverCenter t.2.2)))
+    ((Set.inter_subset_left.trans Set.inter_subset_left).trans
+      (chartOpen_subset_chartAt_source (coverCenter t.1) (coverCenter_mem t.1)))
+
+/-- Compact chart-`a` image of the triple inner overlap
+`innerShrunkChart a ∩ innerShrunkChart b ∩ innerShrunkChart c` (the shrinking, `⊆ coverTripleImage`). -/
+noncomputable def coverTripleShrink (t : Fin ((chartCover : Finset X).card) ×
+    Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card)) : Set ℂ :=
+  (chartAt (H := ℂ) (coverCenter t.1)) ''
+    (innerShrunkChart (X := X) (coverCenter t.1) ∩ innerShrunkChart (X := X) (coverCenter t.2.1)
+      ∩ innerShrunkChart (X := X) (coverCenter t.2.2))
+
+theorem isCompact_coverTripleShrink (t : Fin ((chartCover : Finset X).card) ×
+    Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card)) :
+    IsCompact (coverTripleShrink (X := X) t) :=
+  isCompact_chartImage_of_subset_source
+    ((((innerShrunkChart_isClosed (coverCenter t.1)).inter
+      (innerShrunkChart_isClosed (coverCenter t.2.1))).inter
+      (innerShrunkChart_isClosed (coverCenter t.2.2))).isCompact)
+    (((Set.inter_subset_left.trans Set.inter_subset_left).trans
+      (innerShrunkChart_subset_chartOpen (coverCenter t.1))).trans
+      (chartOpen_subset_chartAt_source (coverCenter t.1) (coverCenter_mem t.1)))
+
+noncomputable instance (t : Fin ((chartCover : Finset X).card) ×
+    Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card)) :
+    CompactSpace (coverTripleShrink (X := X) t) :=
+  isCompact_iff_compactSpace.mp (isCompact_coverTripleShrink t)
+
+/-- **Sup-norm 2-cochains, cover side** `C²cov` — bounded-holomorphic on each open triple chart-image
+(target of the cover-side `δ¹`). -/
+abbrev Cochain2CovModel : Type :=
+  ∀ t : Fin ((chartCover : Finset X).card) ×
+    Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card),
+    BddHol (coverTripleImage (X := X) t)
+
+/-- **Sup-norm 2-cochains, shrinking side** `C²` — bounded-continuous on each compact inner triple
+chart-image (target of the shrinking-side `δ¹`). -/
+abbrev Cochain2Model : Type :=
+  ∀ t : Fin ((chartCover : Finset X).card) ×
+    Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card),
+    (coverTripleShrink (X := X) t →ᵇ ℂ)
+
+noncomputable instance : NormedAddCommGroup (Cochain2CovModel (X := X)) := inferInstance
+noncomputable instance : NormedSpace ℂ (Cochain2CovModel (X := X)) := inferInstance
+noncomputable instance : NormedAddCommGroup (Cochain2Model (X := X)) := inferInstance
+noncomputable instance : NormedSpace ℂ (Cochain2Model (X := X)) := inferInstance
+
+/-- `C²cov` is Banach (finite product of the Banach `BddHol`). -/
+noncomputable instance : CompleteSpace (Cochain2CovModel (X := X)) := by
+  haveI : ∀ t, CompleteSpace (BddHol (coverTripleImage (X := X) t)) := fun t =>
+    BddHol.completeSpace (isOpen_coverTripleImage t)
+  infer_instance
+
+/-- `C²` is Banach (finite product of `→ᵇ`). -/
+noncomputable instance : CompleteSpace (Cochain2Model (X := X)) := inferInstance
 
 end Jacobians.Dolbeault
