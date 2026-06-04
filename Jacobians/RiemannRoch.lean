@@ -20,6 +20,7 @@
 -/
 import Jacobians.Abel
 import Jacobians.MeromorphicLiouville
+import Jacobians.DegDivResidue
 
 -- Many declarations here are purely algebraic (the ℂ-module on `MeromorphicFunction`) and use
 -- only `[ChartedSpace ℂ X]`, not the full compact-manifold hypotheses carried by the consumers.
@@ -285,10 +286,13 @@ theorem exists_riemannRoch_divisor :
       (lDim (X := X) D : ℤ) - (lDim (X := X) (K - D) : ℤ)
         = Divisor.deg X D + 1 - (genus X : ℤ) := sorry
 
-/-- **The isolated residue-theorem input.** Every principal divisor has degree `0` (Forster
-Cor. 4.25 / the argument principle). The RR derivations below consume it. -/
+/-- Every principal divisor has degree `0` (Forster Cor. 4.25 / the argument principle). Proved via
+the **degree route** (`degDiv_eq_zero`): `deg (div f) = zerosCount f − polesCount f`, and both counts
+equal a common proper-map degree, so the difference is `0`. The sole remaining analytic input is the
+one honest named sorry `exists_properMapDegree` (in `Jacobians.DegDivResidue`); the RR derivations
+below consume this `deg_div`. -/
 theorem MeromorphicFunction.deg_div (f : MeromorphicFunction X) :
-    Divisor.deg X f.div = 0 := sorry
+    Divisor.deg X f.div = 0 := degDiv_eq_zero f
 
 /-! ## Part 3: negative-degree vanishing (explicit finiteness, dim 0)
 
