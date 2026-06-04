@@ -22,6 +22,7 @@
 -/
 import Jacobians.Dolbeault.CechH0
 import Jacobians.Dolbeault.CohomologicalRR
+import Jacobians.Dolbeault.SerreDualityPairing
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -49,17 +50,20 @@ map + `skyDim=1`); base `h⁰(0)=1` + divisor induction + the 6-term alternating
 So `cohomological_riemannRoch` is in scope here via the import — no longer a leaf-`sorry` of this file. -/
 
 /-- **Serre duality at `D = 0` — arithmetic genus = geometric genus.** `h¹(X, 𝒪) = dim Ω(X) = genus X`.
-The irreducible Dolbeault nugget (`H¹(X,𝒪) ≅ H^{0,1} ≅ Ω(X)^*`); the smallest Serre input, and all
-that `genus 0 → S²` needs beyond cohomological RR. **Deep analytic leaf.** -/
+Now PROVEN via the **direct Forster §17 route** (`SerreDualityPairing`, the residue-pairing perfectness),
+modulo the single §17 instantiation input `exists_serreDualityData` — **no `hodge_symmetry`, no Dolbeault
+comparison** (Forster §16–17 are PDE-free; the comparison/conjugation detour is not needed). -/
 theorem arithmeticGenus_eq_genus (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) :
-    𝔘.h1Dim 0 = genus X := sorry
+    𝔘.h1Dim 0 = genus X :=
+  arithmeticGenus_eq_genus_serre 𝔘 hL
 
 /-- **General Serre duality.** `h¹(D) = l(K − D)` for a canonical divisor `K` (the perfect residue
-pairing `H¹(X,𝒪_D) × Ω(−D) → ℂ`). Together with `cohomological_riemannRoch` this turns the
-cohomological form into the classical `l(D) − l(K−D) = deg D + 1 − g`. **Deep analytic leaf** (full
-Serre; only needed for the general-`D` RR statement and `#3`, not for `genus 0 → S²`). -/
+pairing). Together with `cohomological_riemannRoch` this turns the cohomological form into the classical
+`l(D) − l(K−D) = deg D + 1 − g`. Now PROVEN via the **direct Forster §17 route** (`SerreDualityPairing`),
+modulo the single §17 instantiation input `exists_serreDualityData` (Forster 17.11). -/
 theorem serre_h1_eq (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) :
-    ∃ K : Divisor X, ∀ D : Divisor X, 𝔘.h1Dim D = lDim (K - D) := sorry
+    ∃ K : Divisor X, ∀ D : Divisor X, 𝔘.h1Dim D = lDim (K - D) :=
+  serre_h1_eq_serre 𝔘 hL
 
 /- **Bridge: Čech global sections = the linear system** (`h⁰(𝔘, 𝒪_D) = l(D)`). PROVEN in
 `CechH0` (`FiniteCover.h0Dim_eq_lDim`) modulo the single gluing/surjectivity `sorry`
