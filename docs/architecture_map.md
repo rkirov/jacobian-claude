@@ -33,6 +33,16 @@ note (that was an artifact of the vacuous cover).
 - **`IsLeray` overlap conjunct is dead weight** (linter-confirmed unused) ⇒ the good-cover/geodesic-
   convexity wall is vacuous on the critical path (`GoodCover`).
 - Dolbeault comparison made `hL`-free (`GoodCover`).
+- **Serre node `D=0` SPLIT into its two isos** (`HodgeSymmetry.lean`, axiom-clean reduction): the opaque
+  "Dolbeault nugget" `arithmeticGenus_eq_genus` (`h1Dim 0 = genus`) is now `arithmeticGenus_eq_genus_chartDisk`
+  — **sorry-free modulo the SINGLE crisp kernel `hodge_symmetry`** (`finrank ℝ H^{0,1} = 2·genus`, the
+  SECOND iso `H^{0,1}≅H^{1,0}`), by composing with the **already-proven FIRST iso** (the Dolbeault
+  comparison `cechH1_dolbeault_comparison_proof`, axiom-clean). For a chart-disk cover NO cover-
+  independence is needed (the forward-headline "partial sidestep"); the arbitrary-cover form
+  (`arithmeticGenus_eq_genus_of_hodge`) additionally rests on `cechH1_dolbeault_comparison` (the
+  cover-independence gap). This formalises the map's own note that the comparison node gives only the
+  first iso — the remaining wall is now exactly `hodge_symmetry` (conjugation `ω↦[ω̄]`: EASY ≤ via L²
+  positivity, HARD ≥ via Hodge/Serre existence).
 
 **The disk-rebase (un-vacuum the disk-acyclicity):**
 - **Stage 1 ✅** (02fd7ca): split `FiniteFamily` (no `covers`) out of `FiniteCover`; the Čech complex
@@ -176,7 +186,7 @@ scoping win). `serre_h1_eq` is needed only for the all-`D` RR statement and for 
 | `h0Dim_eq_lDim` (bridge) | CechH0.lean | 🔧 keystone+forward+ker+assembly ✅; gluing/surjectivity in progress |
 | `finiteDimensional_cechH1` | DolbeaultLadder.lean | 🟡 templated (see `cech_finiteness_research.md`) |
 | `cohomological_riemannRoch` (χ-add) | DolbeaultLadder.lean | 🟡 homological once finiteness lands |
-| `arithmeticGenus_eq_genus` (D=0 Serre) | DolbeaultLadder.lean | 🔴 Dolbeault nugget |
+| `arithmeticGenus_eq_genus` (D=0 Serre) | DolbeaultLadder.lean / HodgeSymmetry.lean | 🔴 → reduced: first iso ✅ (comparison), wall = `hodge_symmetry` (2nd iso, Hodge symm.) |
 | `serre_h1_eq` (general Serre) | DolbeaultLadder.lean | 🔴 residue-pairing perfectness |
 | `deg_div` (residue thm) | RiemannRoch.lean | 🔴 manifold Stokes |
 | `genus_zero_of_nonempty_homeo_sphere` (#1b) | DegreeOneSphere.lean | 🔴 Hodge (g = ½·b₁) |
