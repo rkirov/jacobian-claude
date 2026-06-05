@@ -105,7 +105,7 @@ automation:
         modules are swept; each commit is `lake build`-green.
       cost:
         wall_time: "multi-session over several weeks (incl. long overnight autonomous runs)"
-        spend_usd: "subscription-based usage"
+        spend_usd: "subscription-based usage, $100/month subscription."
         hardware: "single 4-core / ~8 GB laptop (+ swap); API-only model access"
       prompting_notes: >
         Steered with terse high-level directives ("finish the project, work upstream→downstream", "read
@@ -114,7 +114,7 @@ automation:
         commit; flag (don't fake) false-as-stated statements.
   spend_usd: "subscription-based usage"
   notes: >
-    ~49k LoC across ~140 modules. The repo isolates each remaining classical theorem into a single named,
+    34k lines of Lean (cloc; +19k of docstrings) across 171 files. The repo isolates each remaining classical theorem into a single named,
     non-vacuous `sorry` (a true statement, not open design). Two false-as-stated statements were caught and
     flagged (not faked) this session via the kernel-axiom discipline (`ChartCoverLeray` continuous-vs-
     holomorphic cochain mismatch; `exists_skyscraperLES` fixed-cover obstruction).
