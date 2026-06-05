@@ -85,4 +85,26 @@ theorem finiteDimensional_chartCoverSupH1 (hleray : ChartCoverLeray X) :
   (chartCoverCoboundaries hleray).finiteDimensional_supH1
     (leray_surjective _ (chartCoverCoboundaries hleray))
 
+/-! ### The chart-cover model as a witness for `exists_cechModel` (the exact remaining gap)
+
+`exists_cechModel 𝔘 D` asks for SOME `DiskOverlapData d` + `Coboundaries d` with `𝔘.cechH1 D ≃ₗ
+c.supH1`.  The work in `CechModelDifferential` builds exactly such a `(d, c)` for the canonical chart
+cover — `d = chartCoverOverlapData`, `c = chartCoverCoboundaries hleray` — with all structural fields
+proven.  The reduction below makes this explicit: `exists_cechModel 𝔘 D` follows from the two precisely-
+named remaining obligations, the disk-acyclicity `ChartCoverLeray X` and the comparison
+`𝔘.cechH1 D ≃ₗ (chartCoverCoboundaries hleray).supH1`.  This pins down what is left and prevents the
+δ-complex work from drifting away from the actual goal. -/
+
+/-- **The chart-cover model discharges `exists_cechModel` given its two named obligations.**  For any
+cover `𝔘` and divisor `D`, if there is a chart-cover disk-acyclicity witness `hleray : ChartCoverLeray
+X` and a comparison `𝔘.cechH1 D ≃ₗ[ℂ] (chartCoverCoboundaries hleray).supH1`, then `exists_cechModel
+𝔘 D` holds (with `d = chartCoverOverlapData`, `c = chartCoverCoboundaries hleray`).  This isolates the
+EXACT remaining gap: the structural δ-complex (`δ⁰`/`δ¹`/`δ²=0`/commuting square) is proven; only
+(a) the disk-acyclicity `leray` field and (b) the germ-class↔sup-norm comparison are still owed. -/
+theorem exists_cechModel_of_chartCoverLeray_comparison (𝔘 : FiniteCover X) (D : Divisor X)
+    (hleray : ChartCoverLeray X)
+    (e : 𝔘.cechH1 D ≃ₗ[ℂ] (chartCoverCoboundaries (X := X) hleray).supH1) :
+    ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
+  ⟨chartCoverOverlapData, chartCoverCoboundaries hleray, ⟨e⟩⟩
+
 end Jacobians.Dolbeault
