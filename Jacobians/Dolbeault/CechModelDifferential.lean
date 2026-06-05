@@ -447,4 +447,50 @@ theorem delta1_rhoRaw_eq_zero_of_delta1Cov_eq_zero
   simp only [ContinuousLinearMap.comp_apply] at h
   rw [h, hx, map_zero]
 
+/-! ### Assembling the chart-cover `Coboundaries` (structural fields PROVEN; `leray` isolated)
+
+All FOUR structural `Coboundaries` fields for the chart cover are now proven:
+`δ⁰ = delta0Model`, `δ¹ = delta1Model`, `δ¹cov = delta1CovModel`, `hδδ = delta1_comp_delta0_eq_zero`,
+`hcomm = delta1_rhoRaw_eq_zero_of_delta1Cov_eq_zero`.  The ONE remaining field is `leray` — the genuine
+disk-acyclicity / Leray content (every shrinking 1-cocycle is, modulo a shrinking coboundary, the
+restriction of a COVER 1-cocycle).  This is NOT a structural identity: it is the analytic theorem
+`H¹(disk, 𝒪) = 0` (proven: `DbarDiskCohomology.dbar_solvable_ball`) globalised over the cover via a
+partition of unity + Čech refinement.  We therefore expose `leray` as an explicit HYPOTHESIS
+(`ChartCoverLeray`) rather than fabricate it — a vacuous `leray` field would make `Coboundaries` a false
+("acyclic") model and silently break the finiteness conclusion.  `chartCoverCoboundaries` then assembles
+the genuine δ-complex against that hypothesis. -/
+
+/-- **The chart-cover Leray / disk-acyclicity obligation** (the honest analytic content of the model).
+Every shrinking 1-cocycle `s` of the chart cover (`delta1Model s = 0`) is, modulo a shrinking coboundary
+`delta0Model η`, the restriction `rhoRaw x` of a COVER 1-cocycle `x` (`delta1CovModel x = 0`).  This is
+`H¹` of the chart-disk cover vanishing into the cover refinement — supplied by the proven full-disk
+∂̄-solvability (`DbarDiskCohomology.dbar_solvable_ball`/`dbar_holo_splitting_ball`) globalised by a
+partition of unity.  Carrying it as a named predicate keeps the genuine analytic obligation explicit and
+prevents a vacuous acyclic model. -/
+def ChartCoverLeray (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Prop :=
+  ∀ s : (chartCoverOverlapData (X := X)).Cshr, delta1Model s = 0 →
+    ∃ (η : Cochain0Model (X := X)) (x : DiskOverlapData.Ccov (chartCoverOverlapData (X := X))),
+      delta1CovModel x = 0 ∧ s = delta0Model η + (chartCoverOverlapData (X := X)).rhoRaw x
+
+/-- **The chart-cover `Coboundaries` model** (structural fields PROVEN, `leray` from the hypothesis).
+Given the chart-cover Leray/disk-acyclicity witness `hleray : ChartCoverLeray X`, the chart cover's
+sup-norm cochains form a genuine acyclic `Coboundaries chartCoverOverlapData`: the cross-chart Čech
+`δ⁰`/`δ¹` (`delta0Model`/`delta1Model`), the cover-side `δ¹cov` (`delta1CovModel`), `δ²=0`
+(`delta1_comp_delta0_eq_zero`), the restriction commuting square (`delta1_rhoRaw_eq_zero_of_…`), and the
+disk-acyclicity `leray` (= `hleray`).  This is the chart-cover instance of the abstract `Coboundaries`
+the finiteness reduction consumes; its `supH1` is then finite-dimensional
+(`Coboundaries.finiteDimensional_supH1` + `leray_surjective`). -/
+noncomputable def chartCoverCoboundaries (hleray : ChartCoverLeray X) :
+    Coboundaries (chartCoverOverlapData (X := X)) where
+  C0 := Cochain0Model (X := X)
+  C2 := Cochain2Model (X := X)
+  C2cov := Cochain2CovModel (X := X)
+  δ0 := delta0Model
+  δ1 := delta1Model
+  δ1cov := delta1CovModel
+  hδδ := delta1_comp_delta0_eq_zero
+  hcomm := delta1_rhoRaw_eq_zero_of_delta1Cov_eq_zero
+  leray := hleray
+
 end Jacobians.Dolbeault
