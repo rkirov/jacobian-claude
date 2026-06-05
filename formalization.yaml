@@ -15,7 +15,7 @@ sources:
     type: "specification / API blueprint"
     license: ""
     author_contacted: "no"
-    prior_work: ""
+    prior_work: "https://github.com/Brsanch/jacobian-lean-challenge (B. Sanchez, MIT) — degree/fibre/Hurwitz well-definedness ported into Discharge/Manifold; audited axiom-clean (docs/archive/EXTERNAL_AUDIT.md)"
   - title: "Lectures on Riemann Surfaces"
     authors: ["Otto Forster"]
     id: "GTM 81, Springer 1981; DOI 10.1007/978-1-4612-5961-9"
@@ -36,7 +36,7 @@ sources:
     type: "textbook"
     license: ""
     author_contacted: "n/a"
-    prior_work: "https://github.com/<brsanch> degree well-definedness (MIT) — ported as Discharge/Manifold; audited axiom-clean"
+    prior_work: ""
 
 status:
   scope: >
@@ -127,7 +127,10 @@ fidelity:
     symmetry/Dolbeault-comparison route (no harmonic forms / elliptic regularity). Junk-free encodings
     replace naive ones: Filter.Germ (codiscreteWithin) for Čech 𝒪_D cochains, and a "limit-repair"
     `holoRepr` for meromorphic point-values (the raw `toFun` is only a germ representative). `Jacobian X`
-    is genuinely universe-polymorphic (ULift of the concrete torus). Signatures otherwise match v0.4 verbatim.
+    is genuinely universe-polymorphic (ULift of the concrete torus). NB: the above are PROOF-INTERNAL
+    choices (vs. the textbook sources) — the v0.4 API *signatures* are matched VERBATIM
+    (`ChallengeConformance.lean` restates each and discharges it by ours; compiles, exit 0; no documented
+    discrepancies). Caveat: matching a signature ≠ a sorry-free proof — many such decls still carry `sorryAx`.
 
 review:
   status: "self-assessed"
@@ -189,5 +192,5 @@ alignment:
 
 acknowledgements: >
   Built on Mathlib (Lean 4, pin 8e3c989). Degree/fibre well-definedness ported from B. Sanchez's
-  jacobian work (MIT) and audited axiom-clean. Primary mathematical sources: Forster GTM 81, Miranda
+  jacobian work (https://github.com/Brsanch/jacobian-lean-challenge, MIT) and audited axiom-clean. Primary mathematical sources: Forster GTM 81, Miranda
   GSM 5, Griffiths–Harris. Challenge by Kevin Buzzard.
