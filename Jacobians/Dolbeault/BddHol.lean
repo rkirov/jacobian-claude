@@ -287,6 +287,61 @@ noncomputable def restrictCLM (hKU : K ⊆ U) : BddHol U →L[ℂ] (K →ᵇ ℂ
 theorem norm_restrictCLM_le (hKU : K ⊆ U) : ‖restrictCLM hKU‖ ≤ 1 :=
   LinearMap.mkContinuous_norm_le _ zero_le_one _
 
+/-! ### Precomposition with a continuous reindexing `τ : K → U`
+
+The cross-chart Čech `δ⁰`/`δ¹` transport a cochain component holomorphic on one chart-image to a
+neighbouring chart-image through the holomorphic transition `τ = φ_b ∘ φ_a⁻¹`. At the
+functional-analysis level this is **precomposition**: `g ↦ (z ↦ g(τ z))`, where `τ` is continuous on a
+compact `K ⊆ ℂ` and maps `K` into the open `U` where `g : BddHol U` lives. The result is a
+bounded-continuous function on `K` (NOT a `BddHol`, since `τ`'s image need not be open), with operator
+norm `≤ 1` (precomposition cannot increase the sup-norm). The manifold side supplies `τ` together with
+its `ContinuousOn`/`MapsTo` witnesses (from the analytic transition `transition_analyticAt_of_mem`);
+this section is pure one-variable analysis. (`restrictCLM` is the special case `τ = id`.) -/
+
+/-- Bounded-continuous precomposition `g ↦ (z ↦ g(τ z))` on the compact `K`, for `τ` continuous on `K`
+mapping into the open `U` where `g` lives. Continuity of the composite is `g.toFun` continuous on `U`
+composed with `τ : K → U`. -/
+noncomputable def precompBcf {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (hτmaps : Set.MapsTo τ K U)
+    (g : BddHol U) : K →ᵇ ℂ :=
+  mkOfCompact ⟨fun z => g.toFun (τ z.1), by
+    exact g.analyticOn.continuousOn.comp_continuous hτcont.restrict (fun z => hτmaps z.2)⟩
+
+@[simp] theorem precompBcf_apply {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (hτmaps : Set.MapsTo τ K U)
+    (g : BddHol U) (z : K) : precompBcf hτcont hτmaps g z = g.toFun (τ z.1) := rfl
+
+/-- Precomposition as a `ℂ`-linear map `BddHol U →ₗ[ℂ] (K →ᵇ ℂ)`. -/
+noncomputable def precompₗ {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (hτmaps : Set.MapsTo τ K U) :
+    BddHol U →ₗ[ℂ] (K →ᵇ ℂ) where
+  toFun := precompBcf hτcont hτmaps
+  map_add' f g := by
+    ext z; show (f + g).toFun (τ z.1) = f.toFun (τ z.1) + g.toFun (τ z.1)
+    rw [toFun_add]; rfl
+  map_smul' c f := by
+    ext z; show (c • f).toFun (τ z.1) = c • f.toFun (τ z.1)
+    rw [toFun_smul]; rfl
+
+@[simp] theorem precompₗ_apply {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (hτmaps : Set.MapsTo τ K U)
+    (g : BddHol U) : precompₗ hτcont hτmaps g = precompBcf hτcont hτmaps g := rfl
+
+/-- **Precomposition continuous-linear map** `BddHol U →L[ℂ] (K →ᵇ ℂ)` for `τ` continuous `K → U`,
+operator norm `≤ 1`. The cross-chart transport of a sup-norm cochain component: a function
+bounded-holomorphic on chart-`b`'s image, read on the compact `K` (a chart-`a` overlap shrinking)
+through the transition `τ = φ_b ∘ φ_a⁻¹`. -/
+noncomputable def precompCLM {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (hτmaps : Set.MapsTo τ K U) :
+    BddHol U →L[ℂ] (K →ᵇ ℂ) :=
+  (precompₗ hτcont hτmaps).mkContinuous 1 fun g => by
+    rw [one_mul]
+    refine (BoundedContinuousFunction.norm_le (norm_nonneg g)).mpr fun z => ?_
+    show ‖g.toFun (τ z.1)‖ ≤ ‖g‖
+    exact g.norm_toFun_le (hτmaps z.2)
+
+@[simp] theorem precompCLM_apply {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (hτmaps : Set.MapsTo τ K U)
+    (g : BddHol U) : precompCLM hτcont hτmaps g = precompBcf hτcont hτmaps g := rfl
+
+theorem norm_precompCLM_le {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (hτmaps : Set.MapsTo τ K U) :
+    ‖precompCLM hτcont hτmaps‖ ≤ 1 :=
+  LinearMap.mkContinuous_norm_le _ zero_le_one _
+
 /-- **The restriction operator is a compact operator** (Montel; Forster 14.9 STEP 1).
 
 For `U` open and `K ⋐ U` a compact *convex* subset, the restriction map
