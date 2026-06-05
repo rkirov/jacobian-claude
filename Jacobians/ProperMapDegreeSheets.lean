@@ -484,6 +484,77 @@ theorem meromorphicOrderAt_inv_sub_eq (G : ℂ → ℂ) {z c' : ℂ} (hc' : c' �
     simp only [Pi.mul_apply]; field_simp; ring
   rw [meromorphicOrderAt_congr heq, meromorphicOrderAt_mul_of_ne_zero hfac_anal hfac_ne]
 
+/-- **The chart-pullback order of `f.toFun` at the chart centre equals `orderAtPoint`** (as a
+`WithTop ℤ`, *finite*).  At a pole (`orderAtPoint x < 0`) the order is not `⊤` (else `orderAtPoint`
+would be the junk `0`), so `meromorphicOrderAt (f.toFun ∘ e.symm) (e x) = (orderAtPoint x : ℤ)`.
+This pins the negative order `−m` of the pullback `G`, whose reciprocal `1/G` then has the positive
+order `m` that drives the reciprocal normal form. -/
+theorem meromorphicOrderAt_chartPullback_eq_orderAtPoint (f : MeromorphicFunction X) {x : X}
+    (hx_pole : f.orderAtPoint x < 0) :
+    meromorphicOrderAt (fun z => f.toFun ((chartAt (H := ℂ) x).symm z)) ((chartAt (H := ℂ) x) x)
+      = (f.orderAtPoint x : WithTop ℤ) := by
+  set e := chartAt (H := ℂ) x with he
+  have hord : f.orderAtPoint x = (meromorphicOrderAt (f.toFun ∘ e.symm) (e x)).untop₀ := rfl
+  have hne_top : meromorphicOrderAt (f.toFun ∘ e.symm) (e x) ≠ ⊤ := by
+    intro htop; rw [hord, htop] at hx_pole; simp at hx_pole
+  rw [show (fun z => f.toFun (e.symm z)) = (f.toFun ∘ e.symm) from rfl, hord]
+  exact (WithTop.coe_untop₀_of_ne_top hne_top).symm
+
+/-- **The repaired reciprocal at a pole.**  At a pole `x` (`orderAtPoint x < 0`), with
+`G = f.toFun ∘ (chartAt x).symm` the (meromorphic, order `−m`) chart pullback, the normal-form
+representative `h := toMeromorphicNFAt G⁻¹ (e x)` of the reciprocal `1/G` is **analytic** at `e x`,
+agrees with `(G ·)⁻¹` on the punctured neighbourhood `𝓝[≠] (e x)`, vanishes at `e x`
+(`h (e x) = 0`), and has analytic order exactly `m = (orderAtPoint x).natAbs ≥ 1`
+(`meromorphicOrderAt G⁻¹ = −meromorphicOrderAt G = m`, transported through the normal form, with
+`AnalyticAt.meromorphicOrderAt_eq` converting the meromorphic order to the analytic order).  This is
+the analytic input the planar engine consumes at `w₀ = 0`. -/
+theorem exists_reciprocal_NF (f : MeromorphicFunction X) {x : X} (hx_pole : f.orderAtPoint x < 0) :
+    ∃ (h : ℂ → ℂ) (m : ℕ), 1 ≤ m ∧ (m : ℤ) = -f.orderAtPoint x ∧
+      AnalyticAt ℂ h ((chartAt (H := ℂ) x) x) ∧
+      ((fun z => (f.toFun ((chartAt (H := ℂ) x).symm z))⁻¹) =ᶠ[𝓝[≠] ((chartAt (H := ℂ) x) x)] h) ∧
+      h ((chartAt (H := ℂ) x) x) = 0 ∧
+      analyticOrderAt h ((chartAt (H := ℂ) x) x) = (m : ℕ∞) := by
+  set e := chartAt (H := ℂ) x with he
+  set G : ℂ → ℂ := fun z => f.toFun (e.symm z) with hG
+  have hmeroG : MeromorphicAt G (e x) := f.meromorphic x
+  have hordG : meromorphicOrderAt G (e x) = (f.orderAtPoint x : WithTop ℤ) :=
+    meromorphicOrderAt_chartPullback_eq_orderAtPoint f hx_pole
+  -- `G⁻¹` meromorphic, order `−orderAtPoint x = m > 0`.
+  have hmeroInv : MeromorphicAt G⁻¹ (e x) := hmeroG.inv
+  have hordInv : meromorphicOrderAt G⁻¹ (e x) = -(f.orderAtPoint x : WithTop ℤ) := by
+    rw [meromorphicOrderAt_inv, hordG]
+  set h : ℂ → ℂ := toMeromorphicNFAt G⁻¹ (e x) with hh
+  have hheq : G⁻¹ =ᶠ[𝓝[≠] (e x)] h := hmeroInv.eq_nhdsNE_toMeromorphicNFAt
+  have hNF : MeromorphicNFAt h (e x) := meromorphicNFAt_toMeromorphicNFAt
+  have hordh : meromorphicOrderAt h (e x) = -(f.orderAtPoint x : WithTop ℤ) := by
+    rw [← hordInv]; exact (meromorphicOrderAt_congr hheq).symm
+  -- `m := (−orderAtPoint x).toNat ≥ 1`.
+  set m : ℕ := (-f.orderAtPoint x).toNat with hm_def
+  have hm_eq : (m : ℤ) = -f.orderAtPoint x := Int.toNat_of_nonneg (by omega)
+  have hm1 : 1 ≤ m := by omega
+  have hordh' : meromorphicOrderAt h (e x) = (m : WithTop ℤ) := by
+    rw [hordh]
+    have : ((m : ℤ) : WithTop ℤ) = ((-f.orderAtPoint x : ℤ) : WithTop ℤ) := by rw [hm_eq]
+    push_cast at this ⊢; rw [this]
+  have hnonneg : 0 ≤ meromorphicOrderAt h (e x) := by rw [hordh']; exact_mod_cast (Nat.zero_le m)
+  have hana : AnalyticAt ℂ h (e x) := hNF.meromorphicOrderAt_nonneg_iff_analyticAt.mp hnonneg
+  -- `analyticOrderAt h (e x) = m`, and `h (e x) = 0`.
+  have hbridge : meromorphicOrderAt h (e x) = ENat.map Nat.cast (analyticOrderAt h (e x)) :=
+    hana.meromorphicOrderAt_eq
+  rw [hordh'] at hbridge
+  have hAO : analyticOrderAt h (e x) = (m : ℕ∞) := by
+    cases hAO' : analyticOrderAt h (e x) with
+    | top => rw [hAO'] at hbridge; simp at hbridge
+    | coe n =>
+      rw [hAO'] at hbridge; simp only [ENat.map_coe] at hbridge; norm_cast at hbridge ⊢; omega
+  have hval0 : h (e x) = 0 := by
+    have hne0 : analyticOrderAt h (e x) ≠ 0 := by rw [hAO]; exact_mod_cast (by omega : m ≠ 0)
+    rwa [hana.analyticOrderAt_ne_zero] at hne0
+  refine ⟨h, m, hm1, hm_eq, hana, ?_, hval0, hAO⟩
+  -- `(fun z => (f.toFun (e.symm z))⁻¹) = G⁻¹` (definitionally `Pi.inv G`).
+  have hpi : (fun z => (f.toFun (e.symm z))⁻¹) = G⁻¹ := rfl
+  rw [hpi]; exact hheq
+
 /-- **The per-point construction at `∞` (the pole fibre).**  At a pole `x` (`orderAtPoint x < 0`,
 so `F x = ∞`), with a clean separating neighbourhood `V`, the same conservation-of-number content
 holds via the reciprocal normal form `1/g` (a zero of order `= the pole order` at `e x`): a sheet
