@@ -73,6 +73,82 @@ noncomputable def ofAnalyticOnOfRelCompact {g : ℂ → ℂ} {U U' : Set ℂ} (h
     (ofAnalyticOnOfRelCompact hg hsub hcpt).toFun z = g z :=
   ofAnalyticOn_toFun_of_mem g _ _ hz
 
+/-! ### Cross-chart transport `BddHol U → BddHol U'` (the open-set, analytic counterpart of
+`precompCLM`)
+
+The cross-chart Čech differentials on the COVER side (`δ¹cov`) and the δ-square of the `cechH1 ≃
+supH1` comparison transport a cochain component holomorphic on one chart-image to a neighbouring
+chart-image and must land back in `BddHol` (analytic on an OPEN set), not merely `→ᵇ` on a compact.
+This is precomposition with an **analytic** reindexing `τ : U' → U` (the holomorphic chart transition):
+`g ∘ τ` is analytic on `U'` (`AnalyticOn.comp`), bounded there by `‖g‖`, hence a `BddHol U'`. The map
+`g ↦ g ∘ τ` is `ℂ`-linear with operator norm `≤ 1` (precomposition cannot increase the sup-norm). The
+manifold side supplies `τ` analytic on `U'` mapping into `U` (from `transition_analyticAt_of_mem`).
+Cf. `precompCLM`, which lands in `→ᵇ` on a compact and needs only `ContinuousOn`. -/
+
+/-- Transport `g : BddHol U` across an **analytic** reindexing `τ : U' → U`, landing in `BddHol U'`
+(value `g ∘ τ`, extended by zero off `U'`). The cross-chart cover-side transport of a sup-norm cochain
+component. -/
+noncomputable def precompHol {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
+    (hτmaps : Set.MapsTo τ U' U) (g : BddHol U) : BddHol U' :=
+  ofAnalyticOn (g.toFun ∘ τ) (g.analyticOn.comp hτ hτmaps)
+    ⟨‖g‖, fun _ hz => g.norm_toFun_le (hτmaps hz)⟩
+
+@[simp] theorem precompHol_toFun_of_mem {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
+    (hτmaps : Set.MapsTo τ U' U) (g : BddHol U) {z : ℂ} (hz : z ∈ U') :
+    (precompHol hτ hτmaps g).toFun z = g.toFun (τ z) :=
+  ofAnalyticOn_toFun_of_mem _ _ _ hz
+
+theorem precompHol_add {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
+    (hτmaps : Set.MapsTo τ U' U) (g₁ g₂ : BddHol U) :
+    precompHol hτ hτmaps (g₁ + g₂) = precompHol hτ hτmaps g₁ + precompHol hτ hτmaps g₂ := by
+  refine toFun_injective (funext fun z => ?_)
+  by_cases hz : z ∈ U'
+  · rw [precompHol_toFun_of_mem _ _ _ hz, toFun_add, Pi.add_apply, toFun_add, Pi.add_apply,
+      precompHol_toFun_of_mem _ _ _ hz, precompHol_toFun_of_mem _ _ _ hz]
+  · rw [toFun_add, Pi.add_apply, (precompHol hτ hτmaps (g₁ + g₂)).zero_off z hz,
+      (precompHol hτ hτmaps g₁).zero_off z hz, (precompHol hτ hτmaps g₂).zero_off z hz, add_zero]
+
+theorem precompHol_smul {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
+    (hτmaps : Set.MapsTo τ U' U) (c : ℂ) (g : BddHol U) :
+    precompHol hτ hτmaps (c • g) = c • precompHol hτ hτmaps g := by
+  refine toFun_injective (funext fun z => ?_)
+  by_cases hz : z ∈ U'
+  · rw [precompHol_toFun_of_mem _ _ _ hz, toFun_smul, Pi.smul_apply, toFun_smul, Pi.smul_apply,
+      precompHol_toFun_of_mem _ _ _ hz]
+  · rw [toFun_smul, Pi.smul_apply, (precompHol hτ hτmaps (c • g)).zero_off z hz,
+      (precompHol hτ hτmaps g).zero_off z hz, smul_zero]
+
+/-- Cross-chart transport as a `ℂ`-linear map `BddHol U →ₗ[ℂ] BddHol U'`. -/
+noncomputable def precompHolₗ {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
+    (hτmaps : Set.MapsTo τ U' U) : BddHol U →ₗ[ℂ] BddHol U' where
+  toFun := precompHol hτ hτmaps
+  map_add' := precompHol_add hτ hτmaps
+  map_smul' c g := precompHol_smul hτ hτmaps c g
+
+@[simp] theorem precompHolₗ_apply {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
+    (hτmaps : Set.MapsTo τ U' U) (g : BddHol U) : precompHolₗ hτ hτmaps g = precompHol hτ hτmaps g :=
+  rfl
+
+/-- **Cross-chart transport continuous-linear map** `BddHol U →L[ℂ] BddHol U'` for `τ` analytic
+`U' → U`, operator norm `≤ 1`. The open-set (analytic) counterpart of `precompCLM`, used to transport
+cover-side sup-norm cochain components across the holomorphic chart transitions. -/
+noncomputable def precompHolCLM {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
+    (hτmaps : Set.MapsTo τ U' U) : BddHol U →L[ℂ] BddHol U' :=
+  (precompHolₗ hτ hτmaps).mkContinuous 1 fun g => by
+    rw [one_mul, norm_def]
+    refine (BoundedContinuousFunction.norm_le (norm_nonneg g)).mpr fun z => ?_
+    show ‖(precompHol hτ hτmaps g).toFun z.1‖ ≤ ‖g‖
+    rw [precompHol_toFun_of_mem _ _ _ z.2]
+    exact g.norm_toFun_le (hτmaps z.2)
+
+@[simp] theorem precompHolCLM_apply {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
+    (hτmaps : Set.MapsTo τ U' U) (g : BddHol U) :
+    precompHolCLM hτ hτmaps g = precompHol hτ hτmaps g := rfl
+
+theorem norm_precompHolCLM_le {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
+    (hτmaps : Set.MapsTo τ U' U) : ‖precompHolCLM hτ hτmaps‖ ≤ 1 :=
+  LinearMap.mkContinuous_norm_le _ zero_le_one _
+
 end BddHol
 
 /-! ### Non-convex restriction compactness — Step 1: finite convex-disk cover
