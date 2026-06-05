@@ -390,4 +390,61 @@ theorem delta1_comp_delta0_eq_zero :
   simp only [BoundedContinuousFunction.coe_zero, Pi.zero_apply]
   ring
 
+/-! ### The 2-cochain restriction `ρ²` cover → shrinking, and the commuting square `hcomm` -/
+
+/-- The compact triple shrinking lies in the open triple-image (chart-`a` image of `innerShrunk a ∩
+innerShrunk b ∩ innerShrunk c ⊆ chartOpen a ∩ chartOpen b ∩ chartOpen c`).  So a 2-cochain holomorphic
+on the open triple-image restricts to a bounded-continuous function on the compact triple shrinking. -/
+theorem coverTripleShrink_subset_coverTripleImage (t : Fin ((chartCover : Finset X).card) ×
+    Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card)) :
+    coverTripleShrink (X := X) t ⊆ coverTripleImage (X := X) t :=
+  Set.image_mono (Set.inter_subset_inter
+    (Set.inter_subset_inter (innerShrunkChart_subset_chartOpen (coverCenter t.1))
+      (innerShrunkChart_subset_chartOpen (coverCenter t.2.1)))
+    (innerShrunkChart_subset_chartOpen (coverCenter t.2.2)))
+
+/-- **The 2-cochain restriction `ρ² : Cochain2CovModel →L Cochain2Model`** (cover → shrinking),
+componentwise `BddHol.restrictCLM` from the open triple-image to the compact triple shrinking.  Carries
+the cover-side `δ¹` to the shrinking-side `δ¹` (the commuting square `rho2_comp_delta1Cov`). -/
+noncomputable def rho2Model : Cochain2CovModel (X := X) →L[ℂ] Cochain2Model (X := X) :=
+  ContinuousLinearMap.pi fun t =>
+    (BddHol.restrictCLM (coverTripleShrink_subset_coverTripleImage t)).comp (proj t)
+
+@[simp] theorem rho2Model_apply (g : Cochain2CovModel (X := X))
+    (t : Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card) ×
+      Fin ((chartCover : Finset X).card)) :
+    rho2Model g t = BddHol.restrictCLM (coverTripleShrink_subset_coverTripleImage t) (g t) := by
+  simp only [rho2Model, ContinuousLinearMap.pi_apply, ContinuousLinearMap.comp_apply,
+    ContinuousLinearMap.proj_apply]
+
+/-- **The commuting square** `δ¹_shr ∘ ρ = ρ² ∘ δ¹_cov`.  Restricting a cover 1-cochain to the shrinking
+and applying the shrinking `δ¹` is the same as applying the cover `δ¹` and restricting the resulting
+2-cochain — the Čech naturality of `δ¹` under cover-refinement.  Pointwise both sides equal
+`x_{bc}(τ_{ab} z) − x_{ac}(z) + x_{ab}(z)` on the triple shrinking.  This is the bridge that gives the
+`Coboundaries.hcomm` field (restriction carries cocycles to cocycles). -/
+theorem delta1_comp_rhoRaw_eq_rho2_comp_delta1Cov :
+    (delta1Model (X := X)).comp (chartCoverOverlapData (X := X)).rhoRaw
+      = rho2Model.comp delta1CovModel := by
+  ext x t z
+  rw [ContinuousLinearMap.comp_apply, ContinuousLinearMap.comp_apply]
+  -- LHS: shrinking δ¹ of the restricted cochain, at z
+  rw [delta1Model_apply_apply]
+  -- each `rhoRaw x` component is `x`-component restricted; evaluate
+  simp only [DiskOverlapData.rhoRaw_apply, BddHol.restrictCLM_apply, BddHol.restrict_apply]
+  -- RHS: restrict the cover δ¹ to the shrinking, at z
+  rw [rho2Model_apply, BddHol.restrictCLM_apply, BddHol.restrict_apply,
+    delta1CovModel_toFun_of_mem _ _ (coverTripleShrink_subset_coverTripleImage t z.2)]
+
+/-- **`hcomm` for the chart cover (restriction carries cover-cocycles to shrinking-cocycles).**  If a
+cover 1-cochain `x` is a cocycle (`δ¹_cov x = 0`), then its restriction `ρ x` is a shrinking cocycle
+(`δ¹_shr (ρ x) = 0`).  Immediate from the commuting square `δ¹_shr∘ρ = ρ²∘δ¹_cov`: `δ¹_shr(ρ x) =
+ρ²(δ¹_cov x) = ρ²(0) = 0`.  This is the `Coboundaries.hcomm` field for the chart-cover model. -/
+theorem delta1_rhoRaw_eq_zero_of_delta1Cov_eq_zero
+    (x : DiskOverlapData.Ccov (chartCoverOverlapData (X := X)))
+    (hx : delta1CovModel x = 0) :
+    delta1Model ((chartCoverOverlapData (X := X)).rhoRaw x) = 0 := by
+  have h := congrArg (fun T => T x) delta1_comp_rhoRaw_eq_rho2_comp_delta1Cov
+  simp only [ContinuousLinearMap.comp_apply] at h
+  rw [h, hx, map_zero]
+
 end Jacobians.Dolbeault
