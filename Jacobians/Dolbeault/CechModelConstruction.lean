@@ -35,6 +35,7 @@
   All declarations here are sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`.
 -/
 import Jacobians.Dolbeault.CechFinitenessWiring
+import Jacobians.Dolbeault.CechModelDifferential
 import Jacobians.Dolbeault.GluedDbarDatum
 
 open scoped Manifold ContDiff Topology
@@ -64,5 +65,24 @@ theorem exists_cechModel_of_sharedChart_zero (𝔇 : SharedChartCover X)
       rw [cechH1_subsingleton_of_hasGluedDbarDatum 𝔇 H a,
         cechH1_subsingleton_of_hasGluedDbarDatum 𝔇 H b]
   exact exists_cechModel_of_subsingleton 𝔇.toFiniteFamily 0
+
+/-! ### The chart-cover sup-norm `H¹` is finite-dimensional (consumes the assembled δ-complex)
+
+This wires the cross-chart Čech δ-complex of `CechModelDifferential` (the cover/shrinking `δ⁰`/`δ¹`,
+`δ²=0`, and the restriction commuting square, all PROVEN) into the abstract finiteness reduction:
+given ONLY the disk-acyclicity hypothesis `ChartCoverLeray X` (the genuine analytic obligation), the
+chart-cover sup-norm `H¹` is finite-dimensional. -/
+
+/-- **Finiteness of the chart-cover sup-norm `H¹` (given disk-acyclicity).**  For the chart-cover
+Čech δ-complex `chartCoverCoboundaries hleray` (all structural fields proven in `CechModelDifferential`),
+the sup-norm `H¹` is finite-dimensional: the Montel restriction `ρ` is compact
+(`Coboundaries.ρ_compact`, from the proven disk-Montel atom), the Leray map `(η,ξ) ↦ δη + ρξ` is
+surjective (`leray_surjective`, unpacking the model's `leray = hleray`), and the abstract reduction
+`finiteDimensional_h1_of_leray_compact` (Schwartz 14.8) concludes.  The ONLY non-structural input is the
+disk-acyclicity `hleray : ChartCoverLeray X`. -/
+theorem finiteDimensional_chartCoverSupH1 (hleray : ChartCoverLeray X) :
+    FiniteDimensional ℂ (chartCoverCoboundaries (X := X) hleray).supH1 :=
+  (chartCoverCoboundaries hleray).finiteDimensional_supH1
+    (leray_surjective _ (chartCoverCoboundaries hleray))
 
 end Jacobians.Dolbeault
