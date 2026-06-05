@@ -501,24 +501,31 @@ theorem meromorphicOrderAt_chartPullback_eq_orderAtPoint (f : MeromorphicFunctio
   exact (WithTop.coe_untop₀_of_ne_top hne_top).symm
 
 /-- **The repaired reciprocal at a pole.**  At a pole `x` (`orderAtPoint x < 0`), with
-`G = f.toFun ∘ (chartAt x).symm` the (meromorphic, order `−m`) chart pullback, the normal-form
-representative `h := toMeromorphicNFAt G⁻¹ (e x)` of the reciprocal `1/G` is **analytic** at `e x`,
-agrees with `(G ·)⁻¹` on the punctured neighbourhood `𝓝[≠] (e x)`, vanishes at `e x`
-(`h (e x) = 0`), and has analytic order exactly `m = (orderAtPoint x).natAbs ≥ 1`
-(`meromorphicOrderAt G⁻¹ = −meromorphicOrderAt G = m`, transported through the normal form, with
+`g = f.holoRepr ∘ (chartAt x).symm` the *junk-free* chart pullback (meromorphic, order `−m`; equal
+to `f.toFun ∘ (chartAt x).symm` off the centre, so it cuts the geometric value fibre `F⁻¹(coe ·)`),
+the normal-form representative `h := toMeromorphicNFAt g⁻¹ (e x)` of the reciprocal `1/g` is
+**analytic** at `e x`, agrees with `(g ·)⁻¹` on the punctured neighbourhood `𝓝[≠] (e x)`, vanishes
+at `e x` (`h (e x) = 0`), and has analytic order exactly `m = (orderAtPoint x).natAbs ≥ 1`
+(`meromorphicOrderAt g⁻¹ = −meromorphicOrderAt g = m`, transported through the normal form, with
 `AnalyticAt.meromorphicOrderAt_eq` converting the meromorphic order to the analytic order).  This is
 the analytic input the planar engine consumes at `w₀ = 0`. -/
 theorem exists_reciprocal_NF (f : MeromorphicFunction X) {x : X} (hx_pole : f.orderAtPoint x < 0) :
     ∃ (h : ℂ → ℂ) (m : ℕ), 1 ≤ m ∧ (m : ℤ) = -f.orderAtPoint x ∧
       AnalyticAt ℂ h ((chartAt (H := ℂ) x) x) ∧
-      ((fun z => (f.toFun ((chartAt (H := ℂ) x).symm z))⁻¹) =ᶠ[𝓝[≠] ((chartAt (H := ℂ) x) x)] h) ∧
+      ((fun z => (f.holoRepr ((chartAt (H := ℂ) x).symm z))⁻¹) =ᶠ[𝓝[≠] ((chartAt (H := ℂ) x) x)] h) ∧
       h ((chartAt (H := ℂ) x) x) = 0 ∧
       analyticOrderAt h ((chartAt (H := ℂ) x) x) = (m : ℕ∞) := by
   set e := chartAt (H := ℂ) x with he
-  set G : ℂ → ℂ := fun z => f.toFun (e.symm z) with hG
-  have hmeroG : MeromorphicAt G (e x) := f.meromorphic x
-  have hordG : meromorphicOrderAt G (e x) = (f.orderAtPoint x : WithTop ℤ) :=
-    meromorphicOrderAt_chartPullback_eq_orderAtPoint f hx_pole
+  set G : ℂ → ℂ := fun z => f.holoRepr (e.symm z) with hG
+  have htgt : e x ∈ e.target := e.map_source (mem_chart_source ℂ x)
+  -- `G = holoRepr ∘ e.symm` agrees with `toFun ∘ e.symm` off the centre (the junk-repair toolkit).
+  have hGtF : G =ᶠ[𝓝[≠] (e x)] (fun z => f.toFun (e.symm z)) :=
+    holoRepr_pullback_eventuallyEq_toFun f x htgt
+  have hmeroG : MeromorphicAt G (e x) :=
+    (meromorphicAt_toFun_chartPullback f x htgt).congr hGtF.symm
+  have hordG : meromorphicOrderAt G (e x) = (f.orderAtPoint x : WithTop ℤ) := by
+    rw [meromorphicOrderAt_congr hGtF]
+    exact meromorphicOrderAt_chartPullback_eq_orderAtPoint f hx_pole
   -- `G⁻¹` meromorphic, order `−orderAtPoint x = m > 0`.
   have hmeroInv : MeromorphicAt G⁻¹ (e x) := hmeroG.inv
   have hordInv : meromorphicOrderAt G⁻¹ (e x) = -(f.orderAtPoint x : WithTop ℤ) := by
@@ -551,36 +558,111 @@ theorem exists_reciprocal_NF (f : MeromorphicFunction X) {x : X} (hx_pole : f.or
     have hne0 : analyticOrderAt h (e x) ≠ 0 := by rw [hAO]; exact_mod_cast (by omega : m ≠ 0)
     rwa [hana.analyticOrderAt_ne_zero] at hne0
   refine ⟨h, m, hm1, hm_eq, hana, ?_, hval0, hAO⟩
-  -- `(fun z => (f.toFun (e.symm z))⁻¹) = G⁻¹` (definitionally `Pi.inv G`).
-  have hpi : (fun z => (f.toFun (e.symm z))⁻¹) = G⁻¹ := rfl
+  -- `(fun z => (f.holoRepr (e.symm z))⁻¹) = G⁻¹` (definitionally `Pi.inv G`).
+  have hpi : (fun z => (f.holoRepr (e.symm z))⁻¹) = G⁻¹ := rfl
   rw [hpi]; exact hheq
 
+open Metric in
 /-- **The per-point construction at `∞` (the pole fibre).**  At a pole `x` (`orderAtPoint x < 0`,
 so `F x = ∞`), with a clean separating neighbourhood `V`, the same conservation-of-number content
 holds via the reciprocal normal form `1/g` (a zero of order `= the pole order` at `e x`): a sheet
 `U ⊆ V` and an `∞`-neighbourhood `W` on which the per-sheet multiplicity sum is the pole order
 `m = localDeg f ∞ x = −orderAtPoint x`.
 
-PROOF STRATEGY (the remaining isolated analytic sub-goal; the keystone `meromorphicOrderAt_inv_sub_eq`
-above is proven, and the finite-value machinery — reconciliation toolkit, radius-bounded engine,
-`finsum_mem_image` reindexing — is reusable):
+PROOF (mirrors `exists_sheetDatum_coe`; the keystone `meromorphicOrderAt_inv_sub_eq` and the
+reciprocal extraction `exists_reciprocal_NF` are proven, and the radius-bounded engine +
+`finsum_mem_image` reindexing are reusable):
 
-* Build the *repaired reciprocal* `h : ℂ → ℂ` analytic at `e x` with `h =ᶠ[𝓝[≠] z] (holoRepr∘e.symm)⁻¹`
-  *throughout* the sheet (so the fibre `h = w'` matches `F⁻¹(coe c')`, `c' = 1/w'`), `h (e x) = 0`,
-  and `analyticOrderAt h (e x) = m = −orderAtPoint x > 0` (via `meromorphicOrderAt_inv`).  Cleanest as
-  the chart pullback of `toRiemannSphere (1/f)` in the `∞`-chart, or `1/f` as a `MeromorphicFunction`.
-* Apply `Planar.orderSum_eq_of_analyticOrder_radiusBounded` to `h` at `w₀ = 0`, order `m`.
+* `exists_reciprocal_NF` gives the *repaired reciprocal* `h : ℂ → ℂ` analytic at `e x` with
+  `h =ᶠ[𝓝[≠] (e x)] (G ·)⁻¹` (`G = f.toFun ∘ e.symm`), `h (e x) = 0`, `analyticOrderAt h (e x) = m`.
+* `Planar.orderSum_eq_of_analyticOrder_radiusBounded` applied to `h` at `w₀ = 0`, order `m`.
 * Value-neighbourhood `W := invMap ⁻¹' ((↑) '' ball 0 δ)` (open, `∞ ∈ W` since `invMap ∞ = coe 0`).
-* Generic rows (`w = coe c'`, `c' ≠ 0`): reindex `{z | h z = w'}` to `U ∩ F⁻¹(coe c')` and match the
-  summand `localDeg f (coe c') (e.symm z) = (meromorphicOrderAt (h − w') z).untop₀` via
-  `meromorphicOrderAt_inv_sub_eq` (`c' = 1/w'`) + the `holoRepr`/`toFun` reconciliation toolkit.
+* Generic rows (`w = coe c'`, `c' ≠ 0`): the engine count `{z ∈ ball ε | h z = w'}` (`w' = c'⁻¹`)
+  reindexes to `U ∩ F⁻¹(coe c')` via `h z = w' ↔ G z = c'` off the centre, and the summand
+  `localDeg f (coe c') (e.symm z) = (meromorphicOrderAt (h − w') z).untop₀` matches by
+  `meromorphicOrderAt_inv_sub_eq` plus the `holoRepr`/`toFun` reconciliation toolkit.
 * Central row (`w = ∞`): the pole fibre in `U` is the isolated point `x`, with
   `localDeg f ∞ x = −orderAtPoint x = m`. -/
 theorem exists_sheetDatum_infty (f : MeromorphicFunction X) (hnc : (f.div : Divisor X) ≠ 0)
     {x : X} (hx_pole : f.orderAtPoint x < 0)
     {V : Set X} (hV_open : IsOpen V) (hxV : x ∈ V)
     (hV_src : V ⊆ (chartAt (H := ℂ) x).source) :
-    Nonempty (SheetDatum f OnePoint.infty x V) :=
+    Nonempty (SheetDatum f OnePoint.infty x V) := by
+  classical
+  set e := chartAt (H := ℂ) x with he
+  -- `G = holoRepr ∘ e.symm` is the *junk-free* pullback: it cuts the geometric value fibre and
+  -- agrees with `f.toFun ∘ e.symm` off the centre (so orders transport to `localDeg`).
+  set G : ℂ → ℂ := fun z => f.holoRepr (e.symm z) with hG
+  -- The repaired reciprocal `h` (analytic, order `m`, `=ᶠ (G ·)⁻¹` on `𝓝[≠] (e x)`).
+  obtain ⟨h, m, hm1, hm_eq, hana, hheq, hval0, hAO⟩ := exists_reciprocal_NF f hx_pole
+  -- `localDeg f ∞ x = m` (the central-row weight).
+  have hlocalDeg_x : localDeg f OnePoint.infty x = (m : ℤ) := by
+    rw [localDeg_infty, hm_eq]
+  -- The punctured reciprocal identity `h = (G ·)⁻¹` off `e x`, as an eventual statement.
+  have hheq' : ∀ᶠ z in 𝓝[≠] (e x), (G z)⁻¹ = h z := hheq
+  rw [eventually_nhdsWithin_iff] at hheq'
+  have hrecip' : ∀ᶠ z in 𝓝 (e x), z ≠ e x → h z = (G z)⁻¹ := by
+    filter_upwards [hheq'] with z hz hzne; exact (hz hzne).symm
+  have htgt_nhds : e.target ∈ 𝓝 (e x) :=
+    e.open_target.mem_nhds (e.map_source (mem_chart_source ℂ x))
+  -- Pole isolation: `e.symm z` is a non-pole (order `0`) for `z ≠ e x` near `e x`.
+  obtain ⟨t, ht_nhds, ht⟩ := f.orderAtPoint_isolated_at x
+  have hiso' : ∀ᶠ z in 𝓝 (e x), z ≠ e x → f.orderAtPoint (e.symm z) = 0 := by
+    have hsymm_t : e.symm ⁻¹' t ∈ 𝓝 (e x) := by
+      apply (e.continuousAt_symm (e.map_source (mem_chart_source ℂ x))).preimage_mem_nhds
+      rw [e.left_inv (mem_chart_source ℂ x)]; exact ht_nhds
+    have hsymm_ne : ∀ᶠ z in 𝓝 (e x), z ≠ e x → e.symm z ≠ x := by
+      filter_upwards [htgt_nhds] with z hzt hzne hcontra
+      apply hzne
+      calc z = e (e.symm z) := (e.right_inv hzt).symm
+        _ = e x := by rw [hcontra]
+    filter_upwards [hsymm_t, hsymm_ne] with z hzt hzne hne
+    exact ht (e.symm z) hzt (hzne hne)
+  -- Choose the outer radius `R`: ball inside `e.target`, `e.symm '' ball ⊆ V`, `h = (G ·)⁻¹` off the
+  -- centre, and no other pole of `f` (order `0` off the centre) throughout it.
+  have hsymmV : e.symm ⁻¹' V ∈ 𝓝 (e x) := by
+    apply (e.continuousAt_symm (e.map_source (mem_chart_source ℂ x))).preimage_mem_nhds
+    rw [e.left_inv (mem_chart_source ℂ x)]; exact hV_open.mem_nhds hxV
+  have hall : ((e.target ∩ e.symm ⁻¹' V) ∩ {z | z ≠ e x → h z = (G z)⁻¹})
+      ∩ {z | z ≠ e x → f.orderAtPoint (e.symm z) = 0} ∈ 𝓝 (e x) :=
+    Filter.inter_mem (Filter.inter_mem (Filter.inter_mem htgt_nhds hsymmV) hrecip') hiso'
+  rw [Metric.mem_nhds_iff] at hall
+  obtain ⟨R, hR_pos, hR_sub⟩ := hall
+  have hcond_a : ball (e x) R ⊆ e.target := fun z hz => (hR_sub hz).1.1.1
+  have hcond_recip : ∀ z ∈ ball (e x) R, z ≠ e x → h z = (G z)⁻¹ := fun z hz => (hR_sub hz).1.2
+  have hcond_np : ∀ z ∈ ball (e x) R, z ≠ e x → f.orderAtPoint (e.symm z) = 0 :=
+    fun z hz => (hR_sub hz).2
+  have hcond_b : e.symm '' (ball (e x) R ∩ e.target) ⊆ V := by
+    rintro y ⟨z, ⟨hz_ball, _⟩, rfl⟩; exact (hR_sub hz_ball).1.1.2
+  -- Apply the radius-bounded planar engine to `h` at `w₀ = 0`, order `m`.
+  obtain ⟨ε, hε_pos, hε_le_R, δ, hδ_pos, hcount⟩ :=
+    Planar.orderSum_eq_of_analyticOrder_radiusBounded (g := h) (w₀ := 0) (m := m) hR_pos hm1 hana
+      hval0 (by simp only [sub_zero]; exact hAO)
+  -- Shrunk-radius facts (`ε ≤ R`).
+  have hε_tgt : ball (e x) ε ⊆ e.target := (ball_subset_ball hε_le_R).trans hcond_a
+  have hε_V : e.symm '' (ball (e x) ε ∩ e.target) ⊆ V := by
+    rintro y ⟨z, ⟨hz_ball, _⟩, rfl⟩
+    exact hcond_b ⟨z, ⟨ball_subset_ball hε_le_R hz_ball, hcond_a (ball_subset_ball hε_le_R hz_ball)⟩,
+      rfl⟩
+  have hε_recip : ∀ z ∈ ball (e x) ε, z ≠ e x → h z = (G z)⁻¹ :=
+    fun z hz => hcond_recip z (ball_subset_ball hε_le_R hz)
+  have hxball : e x ∈ ball (e x) ε := mem_ball_self hε_pos
+  -- The pole fibre point `x` lies in the sheet and `F x = ∞`.
+  have hFx : f.toRiemannSphere x = OnePoint.infty := f.toRiemannSphere_of_pole hx_pole
+  -- Assemble the datum.
+  refine ⟨{
+    U := e.symm '' (ball (e x) ε ∩ e.target)
+    U_open := e.symm.isOpen_image_of_subset_source (isOpen_ball.inter e.open_target)
+      (by rw [e.symm_source]; exact Set.inter_subset_right)
+    mem_U_self := ⟨e x, ⟨hxball, hε_tgt hxball⟩, e.left_inv (mem_chart_source ℂ x)⟩
+    U_subset := hε_V
+    m := (m : ℤ)
+    W := RiemannSphere.invMap ⁻¹' ((fun z : ℂ => (z : RiemannSphere)) '' (ball 0 δ))
+    W_open := (OnePoint.isOpenMap_coe _ isOpen_ball).preimage RiemannSphere.continuous_invMap
+    w₀_mem_W := by
+      simp only [Set.mem_preimage, RiemannSphere.invMap_infty, Set.mem_image]
+      exact ⟨0, mem_ball_self hδ_pos, rfl⟩
+    sheetMult_eq := ?_ }⟩
   sorry
 
 /-- **Assembling `LocalMultiplicitySheets` from the per-sheet data.**  Given the finite fibre `xs`,
