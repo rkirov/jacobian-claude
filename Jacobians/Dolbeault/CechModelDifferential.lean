@@ -345,8 +345,49 @@ theorem delta1Model_apply_apply (s : (chartCoverOverlapData (X := X)).Cshr)
   obtain ⟨a, b, c⟩ := t
   rw [delta1Model_apply]
   simp only [BoundedContinuousFunction.add_apply, BoundedContinuousFunction.sub_apply,
-    BoundedContinuousFunction.compContinuous_apply, coverTransitionTripleCM, inclTripleFstTrdCM,
-    subtypeCM_apply]
+    BoundedContinuousFunction.compContinuous_apply, coverTransitionTripleCM, inclTripleFstTrdCM]
   rfl
+
+/-! ### The Čech cocycle identity `δ¹ ∘ δ⁰ = 0` (`hδδ`) -/
+
+/-- **The chart-transition cocycle identity** on the triple shrinking: `τ_{bc}(τ_{ab} z) = τ_{ac} z`
+for `z ∈ coverTripleShrink (a,b,c)`.  Geometrically `φ_c ∘ φ_b⁻¹ ∘ φ_b ∘ φ_a⁻¹ = φ_c ∘ φ_a⁻¹` where the
+inner cancellations `φ_b⁻¹∘φ_b`, `φ_a⁻¹∘φ_a` hold because the triple-overlap point `x` lies in all three
+chart sources.  This is the algebraic heart of `δ¹∘δ⁰ = 0` (the `f_c`-terms land at the SAME point). -/
+theorem coverTransition_cocycle (a b c : Fin ((chartCover : Finset X).card)) {z : ℂ}
+    (hz : z ∈ coverTripleShrink (X := X) (a, b, c)) :
+    coverTransition b c (coverTransition a b z) = coverTransition a c z := by
+  obtain ⟨x, ⟨⟨hxa, hxb⟩, _hxc⟩, rfl⟩ := hz
+  have hxa_src : x ∈ (chartAt (H := ℂ) (coverCenter a)).source :=
+    chartOpen_subset_chartAt_source (coverCenter a) (coverCenter_mem a)
+      (innerShrunkChart_subset_chartOpen (coverCenter a) hxa)
+  have hxb_src : x ∈ (chartAt (H := ℂ) (coverCenter b)).source :=
+    chartOpen_subset_chartAt_source (coverCenter b) (coverCenter_mem b)
+      (innerShrunkChart_subset_chartOpen (coverCenter b) hxb)
+  simp only [coverTransition, Function.comp_apply,
+    (chartAt (H := ℂ) (coverCenter a)).left_inv hxa_src,
+    (chartAt (H := ℂ) (coverCenter b)).left_inv hxb_src]
+
+/-- **`δ¹ ∘ δ⁰ = 0` (the Čech `hδδ`).**  The composite of the cross-chart `δ⁰` and the shrinking-side
+`δ¹` vanishes — the defining Čech-complex identity `δ² = 0`.  Pointwise on the triple shrinking the
+six terms of `(δ¹(δ⁰f))_{abc}(z)` collapse to `f_c(τ_{bc}(τ_{ab} z)) − f_c(τ_{ac} z)`, which is `0` by
+the cocycle identity `coverTransition_cocycle` (the two `f_c`-arguments coincide).  This makes the
+sup-norm cochains a genuine Čech `δ`-complex (`B¹ ⊆ Z¹`), the `Coboundaries.hδδ` field for the
+chart-cover model. -/
+theorem delta1_comp_delta0_eq_zero :
+    (delta1Model (X := X)).comp delta0Model = 0 := by
+  ext f t z
+  -- reduce the LHS value to the explicit six-term form
+  rw [ContinuousLinearMap.comp_apply, ContinuousLinearMap.zero_apply]
+  show delta1Model (delta0Model f) t z = (0 : Cochain2Model (X := X)) t z
+  rw [delta1Model_apply_apply]
+  -- the three `δ⁰` components, evaluated at the relevant points
+  rw [delta0Model_apply_apply, delta0Model_apply_apply, delta0Model_apply_apply]
+  -- after the rewrites the `f_c` arguments are `τ_{bc}(τ_{ab} z)` and `τ_{ac} z`; identify them
+  obtain ⟨a, b, c⟩ := t
+  rw [coverTransition_cocycle a b c z.2]
+  show _ = (0 : Cochain2Model (X := X)) (a, b, c) z
+  simp only [BoundedContinuousFunction.coe_zero, Pi.zero_apply]
+  ring
 
 end Jacobians.Dolbeault
