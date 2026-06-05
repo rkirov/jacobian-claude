@@ -37,6 +37,7 @@
 import Jacobians.Dolbeault.CechFinitenessWiring
 import Jacobians.Dolbeault.CechModelDifferential
 import Jacobians.Dolbeault.GluedDbarDatum
+import Jacobians.Dolbeault.ChartCoverDbarGlue
 
 open scoped Manifold ContDiff Topology
 
