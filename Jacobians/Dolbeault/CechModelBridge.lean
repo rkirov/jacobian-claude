@@ -17,6 +17,37 @@ open Metric Topology BoundedContinuousFunction
 
 namespace Jacobians.Dolbeault
 
+/-! ### Bounded-continuous precomposition as a continuous-linear map (the shrinking-side transport)
+
+The shrinking-side Čech differentials `δ⁰`/`δ¹` transport a 1-cochain component living in
+`(K →ᵇ ℂ)` (bounded-continuous on a compact overlap shrinking) to a SMALLER compact (a finer overlap
+shrinking) through a continuous reindexing — either a holomorphic chart transition `τ` or an inclusion.
+At the bounded-continuous level this is precomposition with a `C(K', K)`, which Mathlib provides as
+`BoundedContinuousFunction.compContinuous`; it is `ℂ`-linear (`add_compContinuous`, `smul`) and
+norm-nonincreasing (`norm_compContinuous_le`).  We bundle it as a `(K →ᵇ ℂ) →L[ℂ] (K' →ᵇ ℂ)`. -/
+
+/-- Bounded-continuous precomposition `f ↦ f ∘ g` as a `ℂ`-linear map `(α →ᵇ ℂ) →ₗ[ℂ] (β →ᵇ ℂ)` for
+`g : C(β, α)`. -/
+noncomputable def bcfCompContinuousₗ {α β : Type*} [TopologicalSpace α] [TopologicalSpace β]
+    (g : C(β, α)) : (α →ᵇ ℂ) →ₗ[ℂ] (β →ᵇ ℂ) where
+  toFun f := f.compContinuous g
+  map_add' f₁ f₂ := by ext z; simp [BoundedContinuousFunction.compContinuous_apply]
+  map_smul' c f := by ext z; simp [BoundedContinuousFunction.compContinuous_apply]
+
+@[simp] theorem bcfCompContinuousₗ_apply {α β : Type*} [TopologicalSpace α] [TopologicalSpace β]
+    (g : C(β, α)) (f : α →ᵇ ℂ) : bcfCompContinuousₗ g f = f.compContinuous g := rfl
+
+/-- **Bounded-continuous precomposition continuous-linear map** `(α →ᵇ ℂ) →L[ℂ] (β →ᵇ ℂ)` for
+`g : C(β, α)`, operator norm `≤ 1`.  The shrinking-side transport of a sup-norm cochain component
+(through a chart transition or an inclusion of compacts). -/
+noncomputable def bcfCompContinuousCLM {α β : Type*} [TopologicalSpace α] [TopologicalSpace β]
+    (g : C(β, α)) : (α →ᵇ ℂ) →L[ℂ] (β →ᵇ ℂ) :=
+  (bcfCompContinuousₗ g).mkContinuous 1 fun f => by
+    rw [one_mul]; exact (bcfCompContinuousₗ_apply g f).symm ▸ f.norm_compContinuous_le g
+
+@[simp] theorem bcfCompContinuousCLM_apply {α β : Type*} [TopologicalSpace α] [TopologicalSpace β]
+    (g : C(β, α)) (f : α →ᵇ ℂ) : bcfCompContinuousCLM g f = f.compContinuous g := rfl
+
 namespace BddHol
 
 variable {U : Set ℂ}

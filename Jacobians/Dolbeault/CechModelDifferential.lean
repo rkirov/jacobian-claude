@@ -234,4 +234,119 @@ theorem delta1CovModel_toFun_of_mem (f : DiskOverlapData.Ccov (chartCoverOverlap
   rw [transportCovTriple, BddHol.precompHolCLM_apply, BddHol.precompHol_toFun_of_mem _ _ _ hz,
     BddHol.restrictOpenCLM_toFun_of_mem _ _ hz, BddHol.restrictOpenCLM_toFun_of_mem _ _ hz]
 
+/-! ### The cross-chart Čech `δ¹` on the SHRINKING side `Cshr →L Cochain2Model`
+
+The shrinking-side `δ¹` lands in the compact-triple 2-cochains `Cochain2Model t = (coverTripleShrink t
+→ᵇ ℂ)`.  On the triple `(a,b,c)`, read in the FIRST chart `a` (matching `coverTripleShrink`), the Čech
+`δ¹` is
+    `(δ¹s)_{abc} = (s_{bc} ∘ τ_{ab}) − s_{ac} + s_{ab}`     on `coverTripleShrink (a,b,c)`,
+where `s_{ac}`, `s_{ab}` restrict directly (both `coverTripleShrink (a,b,c) ⊆ Kov (a,c)`, `⊆ Kov
+(a,b)`, same chart `a`) and `s_{bc}` (chart-`b` coordinates) is transported through `τ_{ab}` (continuous
+on the triple shrinking, mapping it into `Kov (b,c)`).  Everything lives in `→ᵇ` on compacts, so the
+transport/restriction are bounded-continuous precompositions `bcfCompContinuousCLM` with the
+appropriate `C(↥coverTripleShrink, ↥Kov ·)` reindexings. -/
+
+/-- Build a `C(↥S, ↥T)` from a `ContinuousOn f S` mapping `S` into `T`. The continuous reindexing the
+shrinking-side `δ¹` precomposes with. -/
+noncomputable def subtypeCM {S T : Set ℂ} {f : ℂ → ℂ} (hf : ContinuousOn f S)
+    (hmaps : Set.MapsTo f S T) : C(↥S, ↥T) :=
+  ⟨fun z => ⟨f z.1, hmaps z.2⟩,
+    continuous_induced_rng.mpr (hf.comp_continuous continuous_subtype_val Subtype.coe_prop)⟩
+
+@[simp] theorem subtypeCM_apply {S T : Set ℂ} {f : ℂ → ℂ} (hf : ContinuousOn f S)
+    (hmaps : Set.MapsTo f S T) (z : ↥S) : (subtypeCM hf hmaps z : ℂ) = f z.1 := rfl
+
+/-- The transition `τ_{ab}` is continuous on the compact triple shrinking `coverTripleShrink (a,b,c)`
+(at each point analytic, hence continuous). -/
+theorem continuousOn_coverTransition_triple (a b c : Fin ((chartCover : Finset X).card)) :
+    ContinuousOn (coverTransition (X := X) a b) (coverTripleShrink (X := X) (a, b, c)) := by
+  rintro w ⟨x, ⟨⟨hxa, hxb⟩, _hxc⟩, rfl⟩
+  apply ContinuousAt.continuousWithinAt
+  have hxa_src : x ∈ (chartAt (H := ℂ) (coverCenter a)).source :=
+    chartOpen_subset_chartAt_source (coverCenter a) (coverCenter_mem a)
+      (innerShrunkChart_subset_chartOpen (coverCenter a) hxa)
+  have hxb_src : x ∈ (chartAt (H := ℂ) (coverCenter b)).source :=
+    chartOpen_subset_chartAt_source (coverCenter b) (coverCenter_mem b)
+      (innerShrunkChart_subset_chartOpen (coverCenter b) hxb)
+  exact (transition_analyticAt_of_mem hxa_src hxb_src).continuousAt
+
+/-- The transition `τ_{ab}` maps the compact triple shrinking `coverTripleShrink (a,b,c)` (chart-`a`
+coordinates) into `Kov (b,c)` (chart-`b` image of `innerShrunk b ∩ innerShrunk c`). -/
+theorem mapsTo_coverTransition_triple_shrink (a b c : Fin ((chartCover : Finset X).card)) :
+    Set.MapsTo (coverTransition (X := X) a b) (coverTripleShrink (X := X) (a, b, c))
+      ((chartCoverOverlapData (X := X)).Kov (b, c)) := by
+  rintro w ⟨x, ⟨⟨hxa, hxb⟩, hxc⟩, rfl⟩
+  have hxa_src : x ∈ (chartAt (H := ℂ) (coverCenter a)).source :=
+    chartOpen_subset_chartAt_source (coverCenter a) (coverCenter_mem a)
+      (innerShrunkChart_subset_chartOpen (coverCenter a) hxa)
+  exact ⟨x, ⟨hxb, hxc⟩, by
+    simp only [coverTransition, Function.comp_apply,
+      (chartAt (H := ℂ) (coverCenter a)).left_inv hxa_src]⟩
+
+/-- The compact triple shrinking `coverTripleShrink (a,b,c)` lies in `Kov (a,b)` (chart-`a` image of
+`innerShrunk a ∩ innerShrunk b ⊇ innerShrunk a ∩ innerShrunk b ∩ innerShrunk c`). -/
+theorem coverTripleShrink_subset_Kov_fst_snd (a b c : Fin ((chartCover : Finset X).card)) :
+    coverTripleShrink (X := X) (a, b, c) ⊆ (chartCoverOverlapData (X := X)).Kov (a, b) :=
+  Set.image_mono (Set.inter_subset_left)
+
+/-- The compact triple shrinking `coverTripleShrink (a,b,c)` lies in `Kov (a,c)`. -/
+theorem coverTripleShrink_subset_Kov_fst_trd (a b c : Fin ((chartCover : Finset X).card)) :
+    coverTripleShrink (X := X) (a, b, c) ⊆ (chartCoverOverlapData (X := X)).Kov (a, c) :=
+  Set.image_mono (fun _ hx => ⟨hx.1.1, hx.2⟩)
+
+/-- The transition reindexing `C(↥coverTripleShrink (a,b,c), ↥Kov (b,c))` for the cross-chart `s_{bc}`
+transport. -/
+noncomputable def coverTransitionTripleCM (a b c : Fin ((chartCover : Finset X).card)) :
+    C(↥(coverTripleShrink (X := X) (a, b, c)), ↥((chartCoverOverlapData (X := X)).Kov (b, c))) :=
+  subtypeCM (continuousOn_coverTransition_triple a b c) (mapsTo_coverTransition_triple_shrink a b c)
+
+/-- The inclusion reindexing `C(↥coverTripleShrink (a,b,c), ↥Kov (a,b))` for the diagonal `s_{ab}`. -/
+noncomputable def inclTripleFstSndCM (a b c : Fin ((chartCover : Finset X).card)) :
+    C(↥(coverTripleShrink (X := X) (a, b, c)), ↥((chartCoverOverlapData (X := X)).Kov (a, b))) :=
+  subtypeCM continuousOn_id (fun _ hz => coverTripleShrink_subset_Kov_fst_snd a b c hz)
+
+/-- The inclusion reindexing `C(↥coverTripleShrink (a,b,c), ↥Kov (a,c))` for the diagonal `s_{ac}`. -/
+noncomputable def inclTripleFstTrdCM (a b c : Fin ((chartCover : Finset X).card)) :
+    C(↥(coverTripleShrink (X := X) (a, b, c)), ↥((chartCoverOverlapData (X := X)).Kov (a, c))) :=
+  subtypeCM continuousOn_id (fun _ hz => coverTripleShrink_subset_Kov_fst_trd a b c hz)
+
+/-- **The cross-chart Čech `δ¹` on the SHRINKING side** `Cshr →L[ℂ] Cochain2Model`.  Componentwise on
+the triple `(a,b,c)`,
+    `(δ¹s)_{abc} = (s_{bc} ∘ τ_{ab}) − (s_{ac}|·) + (s_{ab}|·)`   on `coverTripleShrink (a,b,c)`,
+the genuine Čech coboundary with the `(b,c)`-component transported chart-`b`→chart-`a` through the
+holomorphic transition `τ_{ab}`.  Assembled by `ContinuousLinearMap.pi` over the bounded-continuous
+precompositions `bcfCompContinuousCLM` with the transition reindexing and the two inclusions. -/
+noncomputable def delta1Model :
+    (chartCoverOverlapData (X := X)).Cshr →L[ℂ] Cochain2Model (X := X) :=
+  ContinuousLinearMap.pi fun t =>
+    (bcfCompContinuousCLM (coverTransitionTripleCM t.1 t.2.1 t.2.2)).comp (proj (t.2.1, t.2.2))
+      - (bcfCompContinuousCLM (inclTripleFstTrdCM t.1 t.2.1 t.2.2)).comp (proj (t.1, t.2.2))
+      + (bcfCompContinuousCLM (inclTripleFstSndCM t.1 t.2.1 t.2.2)).comp (proj (t.1, t.2.1))
+
+/-- The component identity for the shrinking-side `δ¹` at the triple `t = (a,b,c)`. -/
+theorem delta1Model_apply (s : (chartCoverOverlapData (X := X)).Cshr)
+    (t : Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card) ×
+      Fin ((chartCover : Finset X).card)) :
+    delta1Model s t = (s (t.2.1, t.2.2)).compContinuous (coverTransitionTripleCM t.1 t.2.1 t.2.2)
+      - (s (t.1, t.2.2)).compContinuous (inclTripleFstTrdCM t.1 t.2.1 t.2.2)
+      + (s (t.1, t.2.1)).compContinuous (inclTripleFstSndCM t.1 t.2.1 t.2.2) := rfl
+
+/-- **The shrinking-side Čech coboundary pointwise formula.**  On the compact triple shrinking, the
+`δ¹` value at `z` is `s_{bc}` at the transported point `τ_{ab} z` minus `s_{ac}` at `z` plus `s_{ab}` at
+`z` — the explicit cross-chart Čech `δ¹` formula `(δ¹s)_{abc}(z) = s_{bc}(τ_{ab} z) − s_{ac}(z) +
+s_{ab}(z)` (`s_{ac}`, `s_{ab}` at the *same point* `z`, via the inclusion of compacts). -/
+theorem delta1Model_apply_apply (s : (chartCoverOverlapData (X := X)).Cshr)
+    (t : Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card) ×
+      Fin ((chartCover : Finset X).card)) (z : ↥(coverTripleShrink (X := X) t)) :
+    delta1Model s t z
+      = s (t.2.1, t.2.2) ⟨coverTransition t.1 t.2.1 z.1, mapsTo_coverTransition_triple_shrink _ _ _ z.2⟩
+        - s (t.1, t.2.2) ⟨z.1, coverTripleShrink_subset_Kov_fst_trd _ _ _ z.2⟩
+        + s (t.1, t.2.1) ⟨z.1, coverTripleShrink_subset_Kov_fst_snd _ _ _ z.2⟩ := by
+  obtain ⟨a, b, c⟩ := t
+  rw [delta1Model_apply]
+  simp only [BoundedContinuousFunction.add_apply, BoundedContinuousFunction.sub_apply,
+    BoundedContinuousFunction.compContinuous_apply, coverTransitionTripleCM, inclTripleFstTrdCM,
+    subtypeCM_apply]
+  rfl
+
 end Jacobians.Dolbeault
