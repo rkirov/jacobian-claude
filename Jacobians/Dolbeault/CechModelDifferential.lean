@@ -134,4 +134,104 @@ theorem delta0Model_apply_apply (f : Cochain0Model (X := X))
   rw [h, transportComp, restrictComp, BddHol.precompCLM_apply, BddHol.precompBcf_apply,
     BddHol.restrictCLM_apply, BddHol.restrict_apply]
 
+/-! ### The cross-chart Čech `δ¹` on the COVER side `Ccov →L Cochain2CovModel`
+
+The cover-side `δ¹` lands in the open-triple 2-cochains `Cochain2CovModel` (target of the cover-side
+coboundary, whose kernel is `Z¹(cover)`).  On the triple `(a,b,c)`, read in the FIRST chart `a`
+(matching `coverTripleImage`), the Čech `δ¹` is
+    `(δ¹f)_{abc} = (f_{bc} ∘ τ_{ab}) − f_{ac} + f_{ab}`     on `coverTripleImage (a,b,c)`,
+where `f_{ac}`, `f_{ab}` restrict directly to the smaller open triple-image (both `coverTripleImage
+(a,b,c) ⊆ Uov (a,c)`, `⊆ Uov (a,b)`, same chart `a`), while `f_{bc}` (chart-`b` coordinates) is
+transported to chart-`a` through the holomorphic transition `τ_{ab}` (analytic on the triple-image,
+mapping it into `Uov (b,c)`).  All three components stay holomorphic on the OPEN triple-image, so the
+result is `BddHol`; the transport is `BddHol.precompHolCLM` (analytic, open-set) and the diagonal
+restrictions are `BddHol.restrictOpenCLM`. -/
+
+/-- The cover transition `τ_{ab}` is analytic on the OPEN triple chart-image `coverTripleImage
+(a,b,c)`: at each point it is analytic (`transition_analyticAt_of_mem`, both centres' sources containing
+the triple outer-overlap point), hence analytic on the set. -/
+theorem analyticOn_coverTransition_triple (a b c : Fin ((chartCover : Finset X).card)) :
+    AnalyticOn ℂ (coverTransition (X := X) a b) (coverTripleImage (X := X) (a, b, c)) := by
+  rintro w ⟨x, ⟨⟨hxa, hxb⟩, _hxc⟩, rfl⟩
+  apply AnalyticAt.analyticWithinAt
+  have hxa_src : x ∈ (chartAt (H := ℂ) (coverCenter a)).source :=
+    chartOpen_subset_chartAt_source (coverCenter a) (coverCenter_mem a) hxa
+  have hxb_src : x ∈ (chartAt (H := ℂ) (coverCenter b)).source :=
+    chartOpen_subset_chartAt_source (coverCenter b) (coverCenter_mem b) hxb
+  exact transition_analyticAt_of_mem hxa_src hxb_src
+
+/-- The cover transition `τ_{ab}` maps the OPEN triple chart-image `coverTripleImage (a,b,c)` (chart-`a`
+coordinates) into `Uov (b,c)` (chart-`b` image of `chartOpen b ∩ chartOpen c`).  A point `φ_a x` with
+`x ∈ chartOpen a ∩ chartOpen b ∩ chartOpen c` maps to `φ_b x` with `x ∈ chartOpen b ∩ chartOpen c`. -/
+theorem mapsTo_coverTransition_triple (a b c : Fin ((chartCover : Finset X).card)) :
+    Set.MapsTo (coverTransition (X := X) a b) (coverTripleImage (X := X) (a, b, c))
+      ((chartCoverOverlapData (X := X)).Uov (b, c)) := by
+  rintro w ⟨x, ⟨⟨hxa, hxb⟩, hxc⟩, rfl⟩
+  have hxa_src : x ∈ (chartAt (H := ℂ) (coverCenter a)).source :=
+    chartOpen_subset_chartAt_source (coverCenter a) (coverCenter_mem a) hxa
+  exact ⟨x, ⟨hxb, hxc⟩, by
+    simp only [coverTransition, Function.comp_apply,
+      (chartAt (H := ℂ) (coverCenter a)).left_inv hxa_src]⟩
+
+/-- The open triple chart-image `coverTripleImage (a,b,c)` lies in `Uov (a,b)` (chart-`a` image of
+`chartOpen a ∩ chartOpen b ⊇ chartOpen a ∩ chartOpen b ∩ chartOpen c`), so `f_{ab}` restricts. -/
+theorem coverTripleImage_subset_Uov_fst_snd (a b c : Fin ((chartCover : Finset X).card)) :
+    coverTripleImage (X := X) (a, b, c) ⊆ (chartCoverOverlapData (X := X)).Uov (a, b) :=
+  Set.image_mono (Set.inter_subset_left)
+
+/-- The open triple chart-image `coverTripleImage (a,b,c)` lies in `Uov (a,c)` (chart-`a` image of
+`chartOpen a ∩ chartOpen c ⊇ chartOpen a ∩ chartOpen b ∩ chartOpen c`), so `f_{ac}` restricts. -/
+theorem coverTripleImage_subset_Uov_fst_trd (a b c : Fin ((chartCover : Finset X).card)) :
+    coverTripleImage (X := X) (a, b, c) ⊆ (chartCoverOverlapData (X := X)).Uov (a, c) :=
+  Set.image_mono (fun _ hx => ⟨hx.1.1, hx.2⟩)
+
+/-- **The cover-side transport CLM.**  The `(b,c)`-component `f_{bc} : BddHol (Uov (b,c))`, transported
+to chart-`a` coordinates through the analytic transition `τ_{ab}` and landing on the open triple-image,
+as a `BddHol (coverTripleImage (a,b,c))`.  The cross-chart `+` piece of `(δ¹f)_{abc}`, via
+`BddHol.precompHolCLM`. -/
+noncomputable def transportCovTriple (a b c : Fin ((chartCover : Finset X).card)) :
+    BddHol ((chartCoverOverlapData (X := X)).Uov (b, c)) →L[ℂ]
+      BddHol (coverTripleImage (X := X) (a, b, c)) :=
+  BddHol.precompHolCLM (analyticOn_coverTransition_triple a b c) (mapsTo_coverTransition_triple a b c)
+
+/-- **The cross-chart Čech `δ¹` on the COVER side** `Cochain2CovModel`.  Componentwise on the triple
+`(a,b,c)`,
+    `(δ¹f)_{abc} = (transport of f_{bc} to chart-a) − (restriction of f_{ac}) + (restriction of f_{ab})`
+on the open triple-image `coverTripleImage (a,b,c)` — the genuine Čech coboundary with the cross-chart
+`(b,c)`-component transported through the holomorphic transition `τ_{ab}`.  Assembled by
+`ContinuousLinearMap.pi` over the cover-side transport `transportCovTriple` and the two diagonal
+open-restrictions `BddHol.restrictOpenCLM`. -/
+noncomputable def delta1CovModel :
+    DiskOverlapData.Ccov (chartCoverOverlapData (X := X)) →L[ℂ] Cochain2CovModel (X := X) :=
+  ContinuousLinearMap.pi fun t =>
+    (transportCovTriple t.1 t.2.1 t.2.2).comp (proj (t.2.1, t.2.2))
+      - (BddHol.restrictOpenCLM (coverTripleImage_subset_Uov_fst_trd t.1 t.2.1 t.2.2)).comp
+          (proj (t.1, t.2.2))
+      + (BddHol.restrictOpenCLM (coverTripleImage_subset_Uov_fst_snd t.1 t.2.1 t.2.2)).comp
+          (proj (t.1, t.2.1))
+
+/-- The component identity for the cover-side `δ¹` at the triple `t = (a,b,c)`. -/
+theorem delta1CovModel_apply (f : DiskOverlapData.Ccov (chartCoverOverlapData (X := X)))
+    (t : Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card) ×
+      Fin ((chartCover : Finset X).card)) :
+    delta1CovModel f t = transportCovTriple t.1 t.2.1 t.2.2 (f (t.2.1, t.2.2))
+      - BddHol.restrictOpenCLM (coverTripleImage_subset_Uov_fst_trd t.1 t.2.1 t.2.2) (f (t.1, t.2.2))
+      + BddHol.restrictOpenCLM (coverTripleImage_subset_Uov_fst_snd t.1 t.2.1 t.2.2)
+          (f (t.1, t.2.1)) := rfl
+
+/-- **The cover-side Čech coboundary pointwise formula.**  On the open triple-image, the `δ¹` value at
+`z` is `f_{bc}` at the transported point `τ_{ab} z` minus `f_{ac}` at `z` plus `f_{ab}` at `z` — the
+explicit cross-chart Čech `δ¹` formula `(δ¹f)_{abc}(z) = f_{bc}(τ_{ab} z) − f_{ac}(z) + f_{ab}(z)`. -/
+theorem delta1CovModel_toFun_of_mem (f : DiskOverlapData.Ccov (chartCoverOverlapData (X := X)))
+    (t : Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card) ×
+      Fin ((chartCover : Finset X).card)) {z : ℂ} (hz : z ∈ coverTripleImage (X := X) t) :
+    (delta1CovModel f t).toFun z
+      = (f (t.2.1, t.2.2)).toFun (coverTransition t.1 t.2.1 z)
+        - (f (t.1, t.2.2)).toFun z + (f (t.1, t.2.1)).toFun z := by
+  obtain ⟨a, b, c⟩ := t
+  rw [delta1CovModel_apply]
+  rw [BddHol.toFun_add, Pi.add_apply, BddHol.toFun_sub, Pi.sub_apply]
+  rw [transportCovTriple, BddHol.precompHolCLM_apply, BddHol.precompHol_toFun_of_mem _ _ _ hz,
+    BddHol.restrictOpenCLM_toFun_of_mem _ _ hz, BddHol.restrictOpenCLM_toFun_of_mem _ _ hz]
+
 end Jacobians.Dolbeault

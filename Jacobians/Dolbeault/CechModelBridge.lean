@@ -21,6 +21,9 @@ namespace BddHol
 
 variable {U : Set ℂ}
 
+@[simp] theorem toFun_neg (f : BddHol U) : (-f).toFun = -f.toFun := rfl
+@[simp] theorem toFun_sub (f g : BddHol U) : (f - g).toFun = f.toFun - g.toFun := rfl
+
 /-- **The `BddHol` codomain constructor (most-upstream K-bridge atom).**  An analytic, bounded function
 on an open `U ⊆ ℂ` gives a `BddHol U` element, via the canonical extend-by-zero normal form off `U`
 (which `BddHolCarrier` requires and which changes nothing on `U`). -/
@@ -148,6 +151,27 @@ noncomputable def precompHolCLM {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : Analy
 theorem norm_precompHolCLM_le {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
     (hτmaps : Set.MapsTo τ U' U) : ‖precompHolCLM hτ hτmaps‖ ≤ 1 :=
   LinearMap.mkContinuous_norm_le _ zero_le_one _
+
+/-! ### Open-subset restriction `BddHol U → BddHol U'` (the diagonal cover-side transport)
+
+The cross-chart Čech differentials on the COVER side also need the *same-chart* (diagonal) component:
+restricting a cochain holomorphic on `U` to a smaller OPEN subset `U' ⊆ U`, landing back in `BddHol U'`
+(analytic on the OPEN `U'`).  This is `precompHol` with the identity reindexing `τ = id` (`g ∘ id = g`,
+analytic on `U'`, mapping `U' → U` by `U' ⊆ U`), but we expose it as a dedicated atom because the
+diagonal δ¹/δ⁰ pieces read more clearly as "restrict to the smaller open". -/
+
+/-- Open-subset restriction `g ↦ g|_{U'}` as a `BddHol U →L[ℂ] BddHol U'` (`U' ⊆ U` open),
+operator norm `≤ 1`.  The same-chart (diagonal) cover-side transport of a sup-norm cochain component:
+`precompHol` with the identity reindexing. -/
+noncomputable def restrictOpenCLM {U U' : Set ℂ} (hsub : U' ⊆ U) : BddHol U →L[ℂ] BddHol U' :=
+  precompHolCLM (τ := id) analyticOnNhd_id.analyticOn (fun _ hz => hsub hz)
+
+@[simp] theorem restrictOpenCLM_toFun_of_mem {U U' : Set ℂ} (hsub : U' ⊆ U) (g : BddHol U)
+    {z : ℂ} (hz : z ∈ U') : (restrictOpenCLM hsub g).toFun z = g.toFun z := by
+  rw [restrictOpenCLM, precompHolCLM_apply, precompHol_toFun_of_mem _ _ _ hz, id]
+
+theorem norm_restrictOpenCLM_le {U U' : Set ℂ} (hsub : U' ⊆ U) : ‖restrictOpenCLM hsub‖ ≤ 1 :=
+  norm_precompHolCLM_le _ _
 
 end BddHol
 
