@@ -22,6 +22,7 @@ import Jacobians.Abel
 import Jacobians.LinearSystem
 import Jacobians.MeromorphicLiouville
 import Jacobians.DegDivResidue
+import Jacobians.ProperMapDegreeSheets
 import Jacobians.Dolbeault.DolbeaultLadder
 import Jacobians.Dolbeault.LerayCoverExists
 
@@ -64,13 +65,16 @@ theorem exists_riemannRoch_divisor :
   -- The RR equality on that cover is the PROVEN ladder composition (mod the ladder's named leaves).
   exact Dolbeault.riemannRoch_equality_of_ladder 𝔘 hL
 
-/-- Every principal divisor has degree `0` (Forster Cor. 4.25 / the argument principle). Proved via
-the **degree route** (`degDiv_eq_zero`): `deg (div f) = zerosCount f − polesCount f`, and both counts
-equal a common proper-map degree, so the difference is `0`. The sole remaining analytic input is the
-one honest named sorry `exists_properMapDegree` (in `Jacobians.DegDivResidue`); the RR derivations
-below consume this `deg_div`. -/
+/-- Every principal divisor has degree `0` (Forster Cor. 4.25 / the argument principle). **PROVEN**
+via the **degree route**: `deg (div f) = zerosCount f − polesCount f` (`deg_div_eq_zeros_sub_poles`),
+and both counts equal a common proper-map degree `d` (`ProperMapDegreeSheets.exists_properMapDegree_proven`,
+the §17.9 conservation-of-number construction — now axiom-clean), so the difference is `0`. The RR
+derivations below consume this `deg_div`. (The old standalone `DegDivResidue.exists_properMapDegree`
+sorry is now superseded by this proven route and no longer on any critical path.) -/
 theorem MeromorphicFunction.deg_div (f : MeromorphicFunction X) :
-    Divisor.deg X f.div = 0 := degDiv_eq_zero f
+    Divisor.deg X f.div = 0 := by
+  obtain ⟨d, hz, hp⟩ := Jacobians.ProperMapDegreeSheets.exists_properMapDegree_proven f
+  rw [deg_div_eq_zeros_sub_poles, hz, hp, sub_self]
 
 /-! ## Part 3: negative-degree vanishing (explicit finiteness, dim 0)
 
