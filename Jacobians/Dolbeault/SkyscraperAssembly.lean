@@ -550,6 +550,35 @@ noncomputable def localRealizationData_of_chartDisk {i : 𝔘.ι} (hP : P ∈ �
     𝔘.LocalRealizationData D P :=
   𝔘.localRealizationData D P hP (witnessFn_mem_OmegaD_add_single hP hWsrc hDsupp) hstar
 
+/-! ### The skyscraper LES from the chart-disk-cover hypotheses (the full assembly, discharged)
+
+This is `CohomologicalRR.exists_skyscraperLES` with its genuine geometric prerequisites made *explicit*
+rather than (impossibly) derived from `IsLeray`.  It feeds the chart-disk realization datum
+(`localRealizationData_of_chartDisk`) through the snake assembly
+(`skyscraperLES_of_localRealization`) and is **fully proven** — no `sorry` in its own body and the
+*only* axiom dependency beyond `propext/Classical.choice/Quot.sound` is the `sorryAx` carried by the
+`H¹`-finiteness instances (`finiteDimensional_cechH1_wired`, sorry-backed via the OTHER track
+`exists_cechModel`).  Together with the `H⁰(𝒪_{D+P})` finiteness *instance* hypothesis (Forster
+compactness, `l(D+P) < ∞`; no such lemma exists in the repo, kept honest as an instance), it pins down
+*exactly* the residual content of `exists_skyscraperLES`:
+
+  `exists_skyscraperLES 𝔘 hL D P` reduces to supplying, for the given `D`/`P`,
+    1. a cover-set `U i ∋ P` (`hP`),
+    2. `hWsrc`: `↥(U i)`'s chart at `P` has source all of `U i`,
+    3. `hDsupp`: `D` is supported on `U i` only at `P`,
+    4. `hstar`: the star of `P` is the single vertex `i`,
+    5. `[FiniteDimensional ℂ H⁰(𝒪_{D+P})]`,
+  none of which follow from `IsLeray` alone (a generic Leray cover need not be a chart-disk cover with
+  a singleton star at `P` and `D` supported only at `P`).  The snake lemma, local realization, witness
+  surjectivity, and `H¹(Q) = 0` are all genuinely proven above. -/
+noncomputable def skyscraperLES_of_chartDisk {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
+    (hWsrc : ∀ Q : 𝔘.U i, Q ∈ (chartAt (H := ℂ) (⟨P, hP⟩ : 𝔘.U i)).source)
+    (hDsupp : ∀ Q : 𝔘.U i, Q ≠ ⟨P, hP⟩ → D Q.1 = 0)
+    (hstar : ∀ j, P ∈ 𝔘.U j → j = i)
+    [FiniteDimensional ℂ ↥(𝔘.globalSections (D + Finsupp.single P 1))] :
+    SkyscraperLES 𝔘 D P :=
+  skyscraperLES_of_localRealization (𝔘.localRealizationData_of_chartDisk D P hP hWsrc hDsupp hstar)
+
 end FiniteCover
 
 end Jacobians.Dolbeault
