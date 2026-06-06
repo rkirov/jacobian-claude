@@ -22,7 +22,7 @@
   `SharedChartCover` lacked.  This unblocks the PoU-globalization OVER THE COVERED REGION (here all of
   `X`), the right tool for the cross-chart Forster argument once the model's shrinking-side cochains are
   in the holomorphic (`BddHol`) representation (see the `⚠ SOUNDNESS NOTE` in `CechModelDifferential.lean`
-  — the current continuous `Cshr` makes the literal `ChartCoverLeray` unprovable, so the telescoping is
+  — the current continuous `Cshr` makes the literal `ChartCoverContinuousLeray` unprovable, so the telescoping is
   intentionally NOT plugged into that unsound field here).
 
   ## What is delivered (all sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`)
@@ -45,6 +45,7 @@
 -/
 import Jacobians.Dolbeault.CechModelGeometry
 import Jacobians.Dolbeault.DiskAcyclicCore
+import Jacobians.Dolbeault.GluedDbarDatum
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -115,5 +116,105 @@ its planar `∂̄(ofReal ∘ ρ_a)`).  Composing with `Complex.ofReal` gives the
 theorem contMDiff_genuineCoverPoU (a : Fin ((chartCover : Finset X).card)) :
     ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) (genuineCoverPoU (X := X) a) :=
   (genuineCoverPoU (X := X) a).contMDiff
+
+
+/-! ## Chart-read genuine-cover PoU functions
+
+These are the cross-chart analogues of `SharedChartCover.rhoHat` / `dRhoHat`, but for the genuine
+Montel chart cover.  Unlike the single-chart closed-core prototype, the PoU sums to `1` on all of `X`,
+so the chart-read identities have no core restriction. -/
+
+/-- The complex-valued genuine-cover PoU function `ρ_a : X → ℂ`. -/
+noncomputable def genuineRhoC (a : Fin ((chartCover : Finset X).card)) : X → ℂ :=
+  fun x => ((genuineCoverPoU (X := X) a x : ℝ) : ℂ)
+
+/-- The genuine-cover PoU functions sum to `1`, as complex-valued functions. -/
+theorem sum_genuineRhoC_eq_one (x : X) :
+    ∑ a, genuineRhoC (X := X) a x = 1 := by
+  have h := sum_genuineCoverPoU_eq_one (X := X) x
+  change (∑ a, ((genuineCoverPoU (X := X) a x : ℝ) : ℂ)) = 1
+  rw [← Complex.ofReal_sum]
+  exact_mod_cast h
+
+/-- The chart-read PoU function in the chart indexed by `c`: `ρ̂_a = ρ_a ∘ φ_c.symm`. -/
+noncomputable def genuineRhoHat (c a : Fin ((chartCover : Finset X).card)) : ℂ → ℂ :=
+  genuineRhoC (X := X) a ∘ (chartAt (H := ℂ) (coverCenter c)).symm
+
+/-- The planar `∂̄` of the chart-read genuine-cover PoU function. -/
+noncomputable def genuineDRhoHat (c a : Fin ((chartCover : Finset X).card)) : ℂ → ℂ :=
+  DbarDisk.dbar (genuineRhoHat (X := X) c a)
+
+/-- `ρ̂_a` is real-smooth at every point of the chart target. -/
+theorem contDiffAt_genuineRhoHat (c a : Fin ((chartCover : Finset X).card)) {z : ℂ}
+    (hz : z ∈ (chartAt (H := ℂ) (coverCenter c)).target) :
+    ContDiffAt ℝ (⊤ : ℕ∞) (genuineRhoHat (X := X) c a) z := by
+  set φ := chartAt (H := ℂ) (coverCenter c) with hφ
+  have hsymm : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) φ.symm z :=
+    (contMDiffOn_chart_symm (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := coverCenter c) _ hz).contMDiffAt
+      (φ.open_target.mem_nhds hz)
+  have hρ : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞)
+      (fun w : ℂ => genuineCoverPoU (X := X) a (φ.symm w)) z :=
+    (contMDiff_genuineCoverPoU (X := X) a).contMDiffAt.comp z hsymm
+  have hcomplex : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
+      (fun w : ℂ => ((genuineCoverPoU (X := X) a (φ.symm w) : ℝ) : ℂ)) z :=
+    ofRealCM.contMDiff.contMDiffAt.comp z hρ
+  exact contMDiffAt_iff_contDiffAt.1 (by
+    simpa only [genuineRhoHat, genuineRhoC, Function.comp_apply, hφ] using hcomplex)
+
+/-- In every chart, the chart-read genuine-cover PoU functions sum to `1`. -/
+theorem sum_genuineRhoHat_eq_one (c : Fin ((chartCover : Finset X).card)) (z : ℂ) :
+    ∑ a, genuineRhoHat (X := X) c a z = 1 := by
+  simpa only [genuineRhoHat, Function.comp_apply] using
+    sum_genuineRhoC_eq_one (X := X) ((chartAt (H := ℂ) (coverCenter c)).symm z)
+
+/-- In every chart target, the chart-read planar `∂̄`s of the genuine-cover PoU functions sum to `0`. -/
+theorem sum_genuineDRhoHat_eq_zero (c : Fin ((chartCover : Finset X).card)) {z : ℂ}
+    (hz : z ∈ (chartAt (H := ℂ) (coverCenter c)).target) :
+    ∑ a, genuineDRhoHat (X := X) c a z = 0 := by
+  have hdiff : ∀ a ∈ (Finset.univ : Finset (Fin ((chartCover : Finset X).card))),
+      DifferentiableAt ℝ (genuineRhoHat (X := X) c a) z := fun a _ =>
+    (contDiffAt_genuineRhoHat (X := X) c a hz).differentiableAt (by simp)
+  have hsum : DbarDisk.dbar (fun w => ∑ a, genuineRhoHat (X := X) c a w) z =
+      ∑ a, genuineDRhoHat (X := X) c a z := by
+    rw [dbarFun_finset_sum Finset.univ (fun a => genuineRhoHat (X := X) c a) hdiff]
+    rfl
+  have hconst : DbarDisk.dbar (fun w => ∑ a, genuineRhoHat (X := X) c a w) z = 0 := by
+    have heq : (fun w => ∑ a, genuineRhoHat (X := X) c a w) =ᶠ[𝓝 z] (fun _ => (1 : ℂ)) :=
+      Filter.Eventually.of_forall (sum_genuineRhoHat_eq_one (X := X) c)
+    rw [DbarDisk.dbar, heq.fderiv_eq]
+    simp
+  rw [← hsum, hconst]
+
+/-- `ρ_a x = 0` for `x ∉ tsupport ρ_a` (the real PoU function vanishes there). -/
+theorem genuineRhoC_eq_zero_of_notMem (a : Fin ((chartCover : Finset X).card)) {x : X}
+    (hx : x ∉ tsupport (genuineCoverPoU (X := X) a)) : genuineRhoC (X := X) a x = 0 := by
+  simp only [genuineRhoC, image_eq_zero_of_notMem_tsupport hx]
+  rfl
+
+/-- In chart `c`, `ρ̂_a z = 0` whenever the chart preimage is outside `tsupport ρ_a`. -/
+theorem genuineRhoHat_eq_zero_of_notMem_tsupport
+    (c a : Fin ((chartCover : Finset X).card)) {z : ℂ}
+    (hzρ : (chartAt (H := ℂ) (coverCenter c)).symm z ∉ tsupport (genuineCoverPoU (X := X) a)) :
+    genuineRhoHat (X := X) c a z = 0 := by
+  simpa only [genuineRhoHat, Function.comp_apply] using
+    genuineRhoC_eq_zero_of_notMem (X := X) a hzρ
+
+/-- In chart `c`, `∂̄ρ̂_a z = 0` whenever `z` lies in the chart target and the chart preimage is outside
+`tsupport ρ_a`. -/
+theorem genuineDRhoHat_eq_zero_of_notMem_tsupport
+    (c a : Fin ((chartCover : Finset X).card)) {z : ℂ}
+    (hz : z ∈ (chartAt (H := ℂ) (coverCenter c)).target)
+    (hzρ : (chartAt (H := ℂ) (coverCenter c)).symm z ∉ tsupport (genuineCoverPoU (X := X) a)) :
+    genuineDRhoHat (X := X) c a z = 0 := by
+  set φ := chartAt (H := ℂ) (coverCenter c) with hφ
+  show DbarDisk.dbar (genuineRhoHat (X := X) c a) z = 0
+  have hcont : ContinuousAt φ.symm z := φ.continuousAt_symm hz
+  have hzero : genuineRhoHat (X := X) c a =ᶠ[𝓝 z] (fun _ => (0 : ℂ)) := by
+    filter_upwards [hcont.preimage_mem_nhds
+        ((isClosed_tsupport (genuineCoverPoU (X := X) a)).isOpen_compl.mem_nhds hzρ)] with w hw
+    exact genuineRhoHat_eq_zero_of_notMem_tsupport (X := X) c a (by simpa only [hφ] using hw)
+  rw [DbarDisk.dbar, hzero.fderiv_eq]
+  simp
+
 
 end Jacobians.Dolbeault
