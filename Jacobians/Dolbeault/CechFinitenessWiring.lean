@@ -45,8 +45,8 @@
 import Jacobians.Dolbeault.CechFinitenessAbstract
 import Jacobians.Dolbeault.BddHol
 import Jacobians.Dolbeault.CechModelBridge
-import Jacobians.Dolbeault.DolbeaultLadder
 import Jacobians.Dolbeault.DbarDiskCohomology
+import Jacobians.Dolbeault.CechH0
 
 open Jacobians.Dolbeault.CechFiniteness ContinuousLinearMap
 open BoundedContinuousFunction

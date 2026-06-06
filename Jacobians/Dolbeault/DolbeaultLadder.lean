@@ -23,6 +23,7 @@
 import Jacobians.Dolbeault.CechH0
 import Jacobians.Dolbeault.CohomologicalRR
 import Jacobians.Dolbeault.SerreDualityPairing
+import Jacobians.Dolbeault.CechFinitenessWiring
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -39,10 +40,9 @@ restriction between a cover and a relatively-compact shrinking is *compact* (dis
 `Analysis.Complex.LocallyUniformLimit` + Arzelà–Ascoli), and a compact perturbation has finite-codim
 image (Schwartz / Riesz–Schauder, via Mathlib `IsCompactOperator` + `RieszLemma`). **Deep analytic
 leaf.** -/
--- PROVEN as `CechFinitenessWiring.finiteDimensional_cechH1_wired` (same statement) modulo the single
--- kernel `exists_cechModel`; not wired here because `CechFinitenessWiring` transitively imports this file.
 theorem finiteDimensional_cechH1 (𝔘 : FiniteCover X) (D : Divisor X) :
-    FiniteDimensional ℂ (𝔘.cechH1 D) := sorry
+    FiniteDimensional ℂ (𝔘.cechH1 D) :=
+  finiteDimensional_cechH1_wired 𝔘 D
 
 /- **Cohomological Riemann–Roch (χ-additivity, Forster §16)** is now PROVEN in `CohomologicalRR.lean`
 (imported above) modulo the single isolated kernel `exists_skyscraperLES` (the skyscraper-SES connecting
