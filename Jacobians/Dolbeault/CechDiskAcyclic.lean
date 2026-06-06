@@ -130,6 +130,20 @@ theorem exists_omegaD_rep {D : Divisor X} {W : Opens X} {f : MGerm W} (hf : f �
   obtain ⟨g, hg, hgeq⟩ := hf
   exact ⟨g, hg, hgeq⟩
 
+/-- **`𝒪₀` germ → representative with analytic normal forms.**  A germ-class holomorphic section on
+`W` can be represented by an honest `OmegaD 0 W` function whose ambient-chart normal form is analytic
+at every point of `W`.  This is the single-section bridge consumed by the chart-disk acyclicity
+construction before pushing representatives through coordinate disks. -/
+theorem exists_omegaD_zero_rep_analyticNF {W : Opens X} {f : MGerm W}
+    (hf : f ∈ OmegaDGerm (0 : Divisor X) W) :
+    ∃ g : W → ℂ, g ∈ OmegaD (0 : Divisor X) W ∧ toGerm W g = f ∧
+      ∀ y : W,
+        AnalyticAt ℂ
+          (toMeromorphicNFAt (Gext g ∘ (chartAt (H := ℂ) y.1).symm) ((chartAt (H := ℂ) y.1) y.1))
+          ((chartAt (H := ℂ) y.1) y.1) := by
+  obtain ⟨g, hg, hgf⟩ := exists_omegaD_rep hf
+  exact ⟨g, hg, hgf, fun y => analyticAt_toMeromorphicNFAt_Gext_of_mem_OmegaD_zero hg y.2⟩
+
 /-- A `0`-cochain of honest `𝒪_D`-representatives assembles to an `𝒪_D`-germ `0`-cochain.  The germ
 projection of a `sections0`-witness family lands in `sections0` (componentwise `toGerm` of an
 `OmegaD`-member is an `OmegaDGerm`-member). -/
