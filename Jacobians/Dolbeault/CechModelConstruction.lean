@@ -38,6 +38,7 @@ import Jacobians.Dolbeault.CechFinitenessWiring
 import Jacobians.Dolbeault.CechModelDifferential
 import Jacobians.Dolbeault.GluedDbarDatum
 import Jacobians.Dolbeault.ChartCoverDbarGlue
+import Jacobians.Dolbeault.CechModelHolomorphic
 
 open scoped Manifold ContDiff Topology
 
@@ -67,45 +68,41 @@ theorem exists_cechModel_of_sharedChart_zero (𝔇 : SharedChartCover X)
         cechH1_subsingleton_of_hasGluedDbarDatum 𝔇 H b]
   exact exists_cechModel_of_subsingleton 𝔇.toFiniteFamily 0
 
-/-! ### The chart-cover sup-norm `H¹` is finite-dimensional (consumes the assembled δ-complex)
+/-- **`exists_holomorphicCechModel` for a shared-chart disk cover at `D = 0` (the corrected branch).**
+This is the same disk-acyclicity wiring as the older wrapper above, but routed to the corrected
+holomorphic-shrinking model. -/
+theorem exists_holomorphicCechModel_of_sharedChart_zero (𝔇 : SharedChartCover X)
+    (H : HasGluedDbarDatum 𝔇) :
+    ∃ (d : HolomorphicDiskOverlapData) (c : HolomorphicCoboundaries d),
+      Nonempty (𝔇.toFiniteFamily.cechH1 (0 : Divisor X) ≃ₗ[ℂ] c.supH1) := by
+  haveI : Subsingleton (𝔇.toFiniteFamily.cechH1 (0 : Divisor X)) :=
+    subsingleton_iff.mpr fun a b => by
+      rw [cechH1_subsingleton_of_hasGluedDbarDatum 𝔇 H a,
+        cechH1_subsingleton_of_hasGluedDbarDatum 𝔇 H b]
+  exact HolomorphicDiskOverlapData.exists_holomorphicCechModel_of_subsingleton 𝔇.toFiniteFamily 0
 
-This wires the cross-chart Čech δ-complex of `CechModelDifferential` (the cover/shrinking `δ⁰`/`δ¹`,
-`δ²=0`, and the restriction commuting square, all PROVEN) into the abstract finiteness reduction:
-given ONLY the diagnostic continuous-shrinking hypothesis `ChartCoverContinuousLeray X`, the
-chart-cover sup-norm `H¹` is finite-dimensional. -/
-
-/-- **Finiteness of the chart-cover sup-norm `H¹` from the diagnostic continuous-shrinking hypothesis.**  For the chart-cover
-Čech δ-complex `chartCoverCoboundaries hleray` (all structural fields proven in `CechModelDifferential`),
-the sup-norm `H¹` is finite-dimensional: the Montel restriction `ρ` is compact
-(`Coboundaries.ρ_compact`, from the proven disk-Montel atom), the Leray map `(η,ξ) ↦ δη + ρξ` is
-surjective (`leray_surjective`, unpacking the model's `leray = hleray`), and the abstract reduction
-`finiteDimensional_h1_of_leray_compact` (Schwartz 14.8) concludes.  The ONLY non-structural input is the false-shaped continuous predicate
-`hleray : ChartCoverContinuousLeray X`; the corrected target must use holomorphic shrinking cochains. -/
-theorem finiteDimensional_chartCoverSupH1_of_continuousLeray (hleray : ChartCoverContinuousLeray X) :
-    FiniteDimensional ℂ (chartCoverCoboundaries (X := X) hleray).supH1 :=
-  (chartCoverCoboundaries hleray).finiteDimensional_supH1
-    (leray_surjective _ (chartCoverCoboundaries hleray))
-
-/-! ### The chart-cover model as a witness for `exists_cechModel` (the exact remaining gap)
-
-`exists_cechModel 𝔘 D` asks for SOME `DiskOverlapData d` + `Coboundaries d` with `𝔘.cechH1 D ≃ₗ
-c.supH1`.  The work in `CechModelDifferential` builds exactly such a `(d, c)` for the canonical chart
-cover — `d = chartCoverOverlapData`, `c = chartCoverCoboundaries hleray` — with all structural fields
-proven.  The reduction below makes this explicit: `exists_cechModel 𝔘 D` follows from the two precisely-
-named remaining obligations, the diagnostic continuous-shrinking predicate `ChartCoverContinuousLeray X` and the comparison
-`𝔘.cechH1 D ≃ₗ (chartCoverCoboundaries hleray).supH1`.  This pins down what is left and prevents the
-δ-complex work from drifting away from the actual goal. -/
-
-/-- **The chart-cover model discharges `exists_cechModel` given its two named obligations.**  For any
-cover `𝔘` and divisor `D`, if there is a diagnostic continuous-shrinking witness `hleray : ChartCoverContinuousLeray
-X` and a comparison `𝔘.cechH1 D ≃ₗ[ℂ] (chartCoverCoboundaries hleray).supH1`, then `exists_cechModel
-𝔘 D` holds (with `d = chartCoverOverlapData`, `c = chartCoverCoboundaries hleray`).  This isolates the
-EXACT remaining gap: the structural δ-complex (`δ⁰`/`δ¹`/`δ²=0`/commuting square) is proven; only
-(a) a corrected holomorphic-shrinking `leray` field and (b) the germ-class↔sup-norm comparison are still owed. -/
-theorem exists_cechModel_of_chartCoverContinuousLeray_comparison (𝔘 : FiniteCover X) (D : Divisor X)
-    (hleray : ChartCoverContinuousLeray X)
-    (e : 𝔘.cechH1 D ≃ₗ[ℂ] (chartCoverCoboundaries (X := X) hleray).supH1) :
-    ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
-  ⟨chartCoverOverlapData, chartCoverCoboundaries hleray, ⟨e⟩⟩
+/-- The sound interior-core glued datum witness, re-exposed at the model-construction layer so the
+rebased branch is available from the consumer side. -/
+theorem hasGluedDbarDatumOnInteriorCore (𝔇 : SharedChartCover X) :
+    ∀ s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X)),
+      ∃ dbarDatum : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) dbarDatum ∧
+        ∀ i, ∀ z ∈ Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i ∩ (𝔇.φ '' interior 𝔇.core),
+          DbarDisk.dbar (chartPrim 𝔇 s i) z = dbarDatum z := by
+  intro s
+  refine ⟨𝔇.dbarDatum s, 𝔇.contDiff_dbarDatum s, ?_⟩
+  intro i z hz
+  have hzΩ : z ∈ 𝔇.Ω i := hz.1.2
+  have hzcoreimg : z ∈ (𝔇.φ '' interior 𝔇.core) := hz.2
+  rcases hzΩ with ⟨x₁, hxU, rfl⟩
+  rcases hzcoreimg with ⟨x₂, hxcore, hφ⟩
+  have hsrc₁ : x₁ ∈ (𝔇.φ).source := 𝔇.subset_source i hxU
+  have hxunion : x₂ ∈ ⋃ i, (𝔇.U i : Set X) := 𝔇.core_subset (interior_subset hxcore)
+  rcases Set.mem_iUnion.mp hxunion with ⟨j, hxj⟩
+  have hsrc₂ : x₂ ∈ (𝔇.φ).source := 𝔇.subset_source j hxj
+  have hxEq : x₁ = x₂ := by
+    apply (𝔇.φ).injOn hsrc₁ hsrc₂
+    simpa using hφ.symm
+  subst hxEq
+  exact 𝔇.dbarDatum_agrees_on_interiorCore s i hxU hxcore
 
 end Jacobians.Dolbeault

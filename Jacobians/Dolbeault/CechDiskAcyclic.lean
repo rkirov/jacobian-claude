@@ -200,6 +200,24 @@ def FunctionDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X) : Prop :=
     ∃ η : Π i, 𝔙.U i → ℂ, (∀ i, η i ∈ OmegaD D (𝔙.U i)) ∧
       𝔙.cechDelta0 (fun i => toGerm (𝔙.U i) (η i)) = s
 
+/-- Germ restriction along the reflexive containment `U ≤ U` is the identity. -/
+@[simp] theorem rawRestrictG_le_rfl {U : Opens X} (f : MGerm U) :
+    rawRestrictG (show U ≤ U from le_rfl) f = f := by
+  induction f using Filter.Germ.inductionOn with | _ f => rfl
+
+/-- **Function-level base case: empty cover.**  On the empty index type, the `1`-cochain space is
+empty too, so the function-level acyclicity statement is vacuous. This is the function-side analogue
+of `isDiskAcyclic_of_isEmpty`. -/
+theorem functionDiskAcyclic_of_isEmpty (𝔙 : FiniteFamily X) (D : Divisor X)
+    [IsEmpty 𝔙.ι] : FunctionDiskAcyclic 𝔙 D := by
+  intro s hs
+  refine ⟨fun i => False.elim (IsEmpty.false i), ?_, ?_⟩
+  · intro i
+    exact False.elim (IsEmpty.false i)
+  · funext p
+    cases p with
+    | mk i j => exact False.elim (IsEmpty.false i)
+
 /-- **The reduction.**  If the function-level chart-disk acyclicity input is available, then the cover
 is germ-level disk-acyclic.  Sorry-free: the produced `0`-cochain primitive `η` assembles to a
 `sections0`-element (§3 `toGerm_mem_sections0`) whose `δ⁰`-image is `s`, witnessing

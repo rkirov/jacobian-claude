@@ -19,11 +19,14 @@
   germ).  The `∂̄`/`ContMDiff`/algebra lemmas built on top stay with their analytic consumers.
 -/
 import Jacobians.Dolbeault.CechH0
+import Jacobians.Dolbeault.RealManifold
+import Jacobians.Dolbeault.RealForms
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Complex Metric Filter
 
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
@@ -112,6 +115,66 @@ theorem holoFn_chart_analyticAt {W : Opens X} {g : MGerm W}
     (hg : g ∈ OmegaDGerm (0 : Divisor X) W) {y : X} (hy : y ∈ W) :
     AnalyticAt ℂ (holoFn hg ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) :=
   gextLimRep_chart_analyticAt (holoRep_mem hg) hy
+
+/-- **Chart-analytic ⟹ real-smooth.** If a `ℂ`-valued function `h` read in the chart at `y` is
+complex-analytic at the chart image, then `h` is real-`C^∞` at `y`. -/
+theorem contMDiffAt_real_of_chart_analyticAt {h : X → ℂ} {y : X}
+    (ha : AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y)) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) h y := by
+  have hcd : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (h ∘ (chartAt (H := ℂ) y).symm)
+      ((chartAt (H := ℂ) y) y) :=
+    by
+      set_option backward.isDefEq.respectTransparency false in
+        exact ((ha.contDiffAt.restrict_scalars (𝕜 := ℝ)).contMDiffAt).of_le le_top
+  have hchart : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (chartAt (H := ℂ) y) y :=
+    (contMDiffOn_chart (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := y)).contMDiffAt
+      ((chartAt (H := ℂ) y).open_source.mem_nhds (mem_chart_source ℂ y))
+  refine (hcd.comp y hchart).congr_of_eventuallyEq ?_
+  filter_upwards [(chartAt (H := ℂ) y).open_source.mem_nhds (mem_chart_source ℂ y)] with z hz
+  simp only [Function.comp_apply, (chartAt (H := ℂ) y).left_inv hz]
+
+/-- The analytic representative is real-smooth at every point of the open. -/
+theorem holoFn_contMDiffAt {W : Opens X} {g : MGerm W}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) W) {y : X} (hy : y ∈ W) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (holoFn hg) y :=
+  contMDiffAt_real_of_chart_analyticAt (holoFn_chart_analyticAt hg hy)
+
+/-- `proj01` annihilates the `ℝ`-restriction of a complex-linear map. -/
+theorem proj01_restrictScalars_eq_zero (L : ℂ →L[ℂ] ℂ) : proj01 (L.restrictScalars ℝ) = 0 := by
+  refine ContinuousLinearMap.ext fun v => ?_
+  rw [proj01_apply]
+  have hL : mulI (L (mulI v)) = -L v := by
+    calc
+      mulI (L (mulI v)) = Complex.I * (L (Complex.I * v)) := by rfl
+      _ = Complex.I * (Complex.I * L v) := by
+        simpa using congrArg (fun w => Complex.I * w) (L.map_smulₛₗ Complex.I v)
+      _ = -L v := by
+        have hi : (Complex.I : ℂ) * Complex.I = -1 := by
+          simpa [pow_two] using Complex.I_sq
+        calc
+          Complex.I * (Complex.I * L v) = ((Complex.I : ℂ) * Complex.I) * L v := by
+            rw [mul_assoc]
+          _ = -L v := by
+            rw [hi]
+            simp
+  simp [hL]
+
+/-- **A holomorphic representative has vanishing `∂̄`.** For `g ∈ OmegaDGerm 0 W`, the intrinsic
+`∂̄` of its analytic representative `holoFn hg` is `0` at every `x ∈ W`. -/
+theorem holoFn_dbar_eq_zero {W : Opens X} {g : MGerm W}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) W) {x : X} (hx : x ∈ W) :
+    proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn hg) x) = 0 := by
+  have hmdiff : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn hg) x :=
+    (holoFn_contMDiffAt hg hx).mdifferentiableAt (by simp)
+  have hpull : mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn hg) x
+      = fderiv ℝ (fun z => holoFn hg ((extChartAt 𝓘(ℝ, ℂ) x).symm z)) (extChartAt 𝓘(ℝ, ℂ) x x) := by
+    rw [hmdiff.mfderiv, ModelWithCorners.Boundaryless.range_eq_univ, fderivWithin_univ]
+    congr 1
+  have hCdiff : DifferentiableAt ℂ (fun z => holoFn hg ((extChartAt 𝓘(ℝ, ℂ) x).symm z))
+      (extChartAt 𝓘(ℝ, ℂ) x x) :=
+    (gextLimRep_chart_analyticAt (holoRep_mem hg) hx).differentiableAt
+  rw [hpull, hCdiff.fderiv_restrictScalars ℝ]
+  exact proj01_restrictScalars_eq_zero _
 
 /-- **`holoFn` reads off a continuous representative's value.**  If the holomorphic germ class `g` has
 a representative `F : ↥W → ℂ` (`toGerm W F = g`) whose extension `Gext F` has limit `c` along

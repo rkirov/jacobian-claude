@@ -168,11 +168,9 @@ theorem ballSplit_pou {ι : Type*} [Nonempty ι] (c : ℂ) {r : ℝ} (hr : 0 < r
 assembly actually produces).  Smooth primitives `h_i` whose `∂̄` agrees on `ball ∩ Ω_i` with a SINGLE
 global smooth function `ω` (the glued `∂̄`-datum `∂̄h_i`-on-`Ω_i`, well-defined because the `∂̄h_i`
 agree on overlaps) admit holomorphic correctors `η_i = h_i − u` on `ball ∩ Ω_i`, where `∂̄u = ω`
-(`dbar_solvable_ball`), with `η_j − η_i = h_j − h_i`.  This is the directly-assembly-usable shape: the
-remaining obligation is to BUILD `h_i` and the glued `ω` from the cocycle via PoU (OBSTRUCTION 3); the
-`∂̄`-solve and holomorphic correction are then exactly this lemma.  Strictly more usable than
-`ballSplit_pou` (whose hypothesis demands the `∂̄h_i` agree on ALL of the ball, not just on overlaps).
-Sorry-free. -/
+(`dbar_solvable_ball`), with `η_j − η_i = h_j − h_i`.  This is the directly-assembly-usable shape:
+the remaining obligation is to BUILD `h_i` and the glued `ω` from the cocycle via PoU (OBSTRUCTION 3);
+the `∂̄`-solve and holomorphic correction are then exactly this lemma. -/
 theorem ballSplit_glued {ι : Type*} (c : ℂ) {r : ℝ} (hr : 0 < r)
     (Ω : ι → Set ℂ) (h : ι → ℂ → ℂ) (hsmooth : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (h i))
     (dbarDatum : ℂ → ℂ) (hdatum : ContDiff ℝ (⊤ : ℕ∞) dbarDatum)
@@ -181,8 +179,7 @@ theorem ballSplit_glued {ι : Type*} (c : ℂ) {r : ℝ} (hr : 0 < r)
       ∀ i j, ∀ z ∈ ball c r, h j z - h i z = η j z - η i z := by
   obtain ⟨u, hu_smooth, hu_dbar⟩ := DbarDiskCohomology.dbar_solvable_ball hdatum c hr
   refine ⟨fun i => h i - u, fun i z hz => ?_, fun i j z hz => ?_⟩
-  · -- `η_i = h_i − u` holomorphic on `ball ∩ Ω_i`: `∂̄(h_i − u) = ∂̄h_i − ω = 0` there.
-    refine (DbarDiskCohomology.differentiableAt_of_dbar_eq_zero
+  · refine (DbarDiskCohomology.differentiableAt_of_dbar_eq_zero
       ((hsmooth i).sub hu_smooth) ?_).differentiableWithinAt
     have hsub : DbarDisk.dbar (fun x => h i x - u x) z
         = DbarDisk.dbar (h i) z - DbarDisk.dbar u z :=

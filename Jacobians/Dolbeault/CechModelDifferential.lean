@@ -455,51 +455,8 @@ All FOUR structural `Coboundaries` fields for the chart cover are now proven:
 disk-acyclicity / Leray content (every shrinking 1-cocycle is, modulo a shrinking coboundary, the
 restriction of a COVER 1-cocycle).  This is NOT a structural identity: it is the analytic theorem
 `H¹(disk, 𝒪) = 0` (proven: `DbarDiskCohomology.dbar_solvable_ball`) globalised over the cover via a
-partition of unity + Čech refinement.  We therefore expose `leray` as an explicit HYPOTHESIS
-(the diagnostic continuous-shrinking predicate `ChartCoverContinuousLeray`) rather than fabricate it — a vacuous `leray` field would make `Coboundaries` a false
-("acyclic") model and silently break the finiteness conclusion.  `chartCoverCoboundaries` then assembles
-the genuine δ-complex against that hypothesis. -/
-
-/-- **Diagnostic continuous-shrinking Leray predicate.** This is the surjectivity statement the current
-continuous `Cshr` model would need, and it is intentionally named as a continuous-shrinking predicate
-because the soundness note below explains why it is not the corrected analytic target.
-Every shrinking 1-cocycle `s` of the chart cover (`delta1Model s = 0`) is, modulo a shrinking coboundary
-`delta0Model η`, the restriction `rhoRaw x` of a COVER 1-cocycle `x` (`delta1CovModel x = 0`).  This is
-`H¹` of the chart-disk cover vanishing into the cover refinement — supplied by the proven full-disk
-∂̄-solvability (`DbarDiskCohomology.dbar_solvable_ball`/`dbar_holo_splitting_ball`) globalised by a
-partition of unity.  Carrying it as a named predicate keeps the false-shaped continuous obligation visible and
-prevents a vacuous acyclic model from being mistaken for a proof. -/
-def ChartCoverContinuousLeray (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Prop :=
-  ∀ s : (chartCoverOverlapData (X := X)).Cshr, delta1Model s = 0 →
-    ∃ (η : Cochain0Model (X := X)) (x : DiskOverlapData.Ccov (chartCoverOverlapData (X := X))),
-      delta1CovModel x = 0 ∧ s = delta0Model η + (chartCoverOverlapData (X := X)).rhoRaw x
-
-/-! ### ⚠ SOUNDNESS NOTE on `ChartCoverContinuousLeray` (the `Cshr`-representation gap)
-
-`ChartCoverContinuousLeray` quantifies over EVERY `s : Cshr`, where `Cshr = ∀ p, (Kov p →ᵇ ℂ)` is the space of
-bounded-**CONTINUOUS** 1-cochains on the compact shrinkings (`DiskOverlapData.Cshr`), while the witnesses
-`η : Cochain0Model` and `x : Ccov` range over bounded-**HOLOMORPHIC** cochains (`BddHol`).  So the claim
-`s = δ⁰η + ρx` asks every continuous shrinking cocycle to be a holomorphic-coboundary plus a holomorphic-
-cover-cocycle restriction.  That is FALSE: continuous cocycles modulo holomorphic coboundaries form an
-infinite-dimensional space, so `(η,x) ↦ δ⁰η + ρx` cannot surject onto the continuous `Z¹(shrinking)`
-(`Coboundaries.Z1shr`).  Equivalently, via the SOUND abstract reduction
-`CechFiniteness.finiteDimensional_h1_of_leray_compact` (which `finiteDimensional_chartCoverSupH1_of_continuousLeray`
-consumes), `ChartCoverContinuousLeray X` would force `Z1shr ⧸ range δ⁰` to be finite-dimensional — but that
-quotient (continuous-cochains mod holomorphic-coboundaries on a non-empty overlap) is infinite-dimensional.
-Hence `ChartCoverContinuousLeray X` is UNPROVABLE as literally stated and the ∂̄-globalization cannot honestly
-discharge it: the planar Bott–Tu glue / `dbar_solvable_ball` engine produces only HOLOMORPHIC correctors,
-matching only a holomorphic `s`.
-
-THE FIX (statement redraft, outside the disk-acyclicity scope): make the shrinking-side representation
-holomorphic — `Cshr := ∀ p, BddHol (Wov p)` on a relatively-compact OPEN shrinking `Wov p ⋐ Uov p` (so
-the Montel restriction `BddHol(Uov) → BddHol(Wov)` is still compact and `δ¹s = 0` constrains `s` to be
-holomorphic), OR restrict the `leray` field to `s ∈ range ρ + range δ⁰` (the holomorphic locus, which is
-where the genuine Forster argument lives).  With either fix the ∂̄-globalization below (genuine-cover PoU
-summing to `1` on all of `X` — available because `chartOpen` covers `X`, unlike a `SharedChartCover`)
-becomes the right tool.  See `Jacobians/Dolbeault/ChartCoverDbarGlue.lean` for the verified PoU
-foundation and the holomorphic per-overlap ∂̄ setup, and `GluedDbarDatum.lean` for the single-chart
-prototype of the telescoping. -/
+partition of unity + Čech refinement.  The soundness note and the continuous-shrinking branch have now
+been deleted; the corrected holomorphic-shrinking model lives in `CechModelHolomorphic.lean`. -/
 
 /-- **The diagonal of a shrinking 1-cocycle vanishes** (a structural necessary condition for the
 `ChartCoverContinuousLeray` hypothesis).  For any cocycle `s` (`delta1Model s = 0`) and any cover index `a`, the
@@ -529,25 +486,5 @@ theorem delta1Model_diagonal_eq_zero (s : (chartCoverOverlapData (X := X)).Cshr)
       = ⟨z.1, coverTripleShrink_subset_Kov_fst_snd a a a z.2⟩ from Subtype.ext rfl] at hz0
   -- `s_{aa}(z) − s_{aa}(z) + s_{aa}(z) = 0`.
   linear_combination hz0
-
-/-- **The chart-cover `Coboundaries` model** (structural fields PROVEN, `leray` from the hypothesis).
-Given the diagnostic continuous-shrinking witness `hleray : ChartCoverContinuousLeray X`, the chart cover's
-sup-norm cochains form a genuine acyclic `Coboundaries chartCoverOverlapData`: the cross-chart Čech
-`δ⁰`/`δ¹` (`delta0Model`/`delta1Model`), the cover-side `δ¹cov` (`delta1CovModel`), `δ²=0`
-(`delta1_comp_delta0_eq_zero`), the restriction commuting square (`delta1_rhoRaw_eq_zero_of_…`), and the
-disk-acyclicity `leray` (= `hleray`).  This is the chart-cover instance of the abstract `Coboundaries`
-the finiteness reduction consumes; its `supH1` is then finite-dimensional
-(`Coboundaries.finiteDimensional_supH1` + `leray_surjective`). -/
-noncomputable def chartCoverCoboundaries (hleray : ChartCoverContinuousLeray X) :
-    Coboundaries (chartCoverOverlapData (X := X)) where
-  C0 := Cochain0Model (X := X)
-  C2 := Cochain2Model (X := X)
-  C2cov := Cochain2CovModel (X := X)
-  δ0 := delta0Model
-  δ1 := delta1Model
-  δ1cov := delta1CovModel
-  hδδ := delta1_comp_delta0_eq_zero
-  hcomm := delta1_rhoRaw_eq_zero_of_delta1Cov_eq_zero
-  leray := hleray
 
 end Jacobians.Dolbeault

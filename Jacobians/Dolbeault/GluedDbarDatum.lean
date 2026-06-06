@@ -592,6 +592,110 @@ theorem dbarDatum_agrees_on_interiorCore (𝔇 : SharedChartCover X)
     DbarDisk.dbar (chartPrim 𝔇 s i) (𝔇.φ x) = 𝔇.dbarDatum s (𝔇.φ x) := by
   rw [𝔇.dbar_chartPrim_apply s i hxU, 𝔇.dbarDatum_apply s i hxU hxc]
 
+/-- **Rebased sound glued `∂̄` datum predicate.**  The right interface for the current construction:
+agreement on `ball ∩ Ω_i` is only claimed on the open core image `φ '' interior 𝔇.core`, exactly
+where the PoU sum-to-one calculation is available. -/
+def HasGluedDbarDatumOnInteriorCore (𝔇 : SharedChartCover X) : Prop :=
+  ∀ s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X)),
+    ∃ dbarDatum : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) dbarDatum ∧
+      ∀ i, ∀ z ∈ Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i ∩ (𝔇.φ '' interior 𝔇.core),
+        DbarDisk.dbar (chartPrim 𝔇 s i) z = dbarDatum z
+
+/-- The rebased sound glued `∂̄` datum exists. -/
+theorem hasGluedDbarDatumOnInteriorCore (𝔇 : SharedChartCover X) :
+    HasGluedDbarDatumOnInteriorCore 𝔇 := by
+  intro s
+  refine ⟨𝔇.dbarDatum s, 𝔇.contDiff_dbarDatum s, ?_⟩
+  intro i z hz
+  have hzΩ : z ∈ 𝔇.Ω i := hz.1.2
+  have hzcoreimg : z ∈ (𝔇.φ '' interior 𝔇.core) := hz.2
+  rcases hzΩ with ⟨x₁, hxU, rfl⟩
+  rcases hzcoreimg with ⟨x₂, hxcore, hφ⟩
+  have hsrc₁ : x₁ ∈ (𝔇.φ).source := 𝔇.subset_source i hxU
+  have hxunion : x₂ ∈ ⋃ i, (𝔇.U i : Set X) := 𝔇.core_subset (interior_subset hxcore)
+  rcases Set.mem_iUnion.mp hxunion with ⟨j, hxj⟩
+  have hsrc₂ : x₂ ∈ (𝔇.φ).source := 𝔇.subset_source j hxj
+  have hxEq : x₁ = x₂ := by
+    apply (𝔇.φ).injOn hsrc₁ hsrc₂
+    simpa using hφ.symm
+  subst hxEq
+  exact 𝔇.dbarDatum_agrees_on_interiorCore s i hxU hxcore
+
+/-- **Core-restricted chart-differentiable correctors from the rebased glued datum.**  This is the
+largest immediately sound corrector statement available from the current interior-core datum: the
+ambient correctors are differentiable in the chart on the open core, and their overlaps split the
+analytic cocycle representatives on that same locus. -/
+def HasChartDifferentiableCorrectorsOnInteriorCore (𝔇 : SharedChartCover X) : Prop :=
+  ∀ s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X)),
+    ∃ H : 𝔇.toFiniteFamily.ι → X → ℂ,
+      (∀ i, ∀ y : X, y ∈ 𝔇.toFiniteFamily.U i → y ∈ interior 𝔇.core →
+        DifferentiableAt ℂ (fun z => H i ((chartAt (H := ℂ) y).symm z)) ((chartAt (H := ℂ) y) y)) ∧
+      ∀ i j, ∀ x : X, x ∈ 𝔇.toFiniteFamily.U i → x ∈ 𝔇.toFiniteFamily.U j → x ∈ interior 𝔇.core →
+        (fun z => H j z - H i z) =ᶠ[𝓝[≠] x] holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j)
+
+/-- **Sound core-restricted correctors from the rebased glued datum.** -/
+theorem hasChartDifferentiableCorrectors_of_hasGluedDbarDatumOnInteriorCore (𝔇 : SharedChartCover X)
+    (H : HasGluedDbarDatumOnInteriorCore 𝔇) : HasChartDifferentiableCorrectorsOnInteriorCore 𝔇 := by
+  intro s
+  obtain ⟨dbarDatum, hdatum, hagree⟩ := H s
+  obtain ⟨u, hu_smooth, hu_dbar⟩ :=
+    DbarDiskCohomology.dbar_solvable_ball hdatum 𝔇.ballCenter 𝔇.radius_pos
+  set ηhat : 𝔇.toFiniteFamily.ι → ℂ → ℂ := fun i => chartPrim 𝔇 s i - u with hηhatdef
+  have hηdiff : ∀ i, ∀ y : X, y ∈ 𝔇.toFiniteFamily.U i → y ∈ interior 𝔇.core →
+      DifferentiableAt ℂ (fun z => ηhat i (𝔇.φ ((chartAt (H := ℂ) y).symm z)))
+        ((chartAt (H := ℂ) y) y) := by
+    intro i y hyU hycore
+    have hz : (𝔇.φ) y ∈ Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i ∩ (𝔇.φ '' interior 𝔇.core) := by
+      refine ⟨⟨𝔇.mem_ball hyU, 𝔇.mem_Ω hyU⟩, ?_⟩
+      exact ⟨y, hycore, rfl⟩
+    have hηcd : DifferentiableAt ℝ (ηhat i) (𝔇.φ y) := by
+      have hĥ_cd : ContDiffAt ℝ (⊤ : ℕ∞) (chartPrim 𝔇 s i) (𝔇.φ y) := by
+        simpa [chartPrim] using contDiffAt_coverPrim_chart 𝔇 s i hyU
+      rw [hηhatdef]
+      exact (hĥ_cd.differentiableAt (by norm_num)).sub
+        (hu_smooth.differentiable (by norm_num) (𝔇.φ y))
+    have hdb_eta : DbarDisk.dbar (ηhat i) (𝔇.φ y) = 0 := by
+      have hsub0 : DbarDisk.dbar (fun w => chartPrim 𝔇 s i w - u w) (𝔇.φ y)
+          = DbarDisk.dbar (chartPrim 𝔇 s i) (𝔇.φ y) - DbarDisk.dbar u (𝔇.φ y) := by
+        have hprim_diff : DifferentiableAt ℝ (chartPrim 𝔇 s i) (𝔇.φ y) := by
+          simpa [chartPrim] using (contDiffAt_coverPrim_chart 𝔇 s i hyU).differentiableAt
+        have hu_diff : DifferentiableAt ℝ u (𝔇.φ y) :=
+          hu_smooth.differentiable (by norm_num) (𝔇.φ y)
+        exact dbarFun_sub hprim_diff hu_diff
+      have hsub : DbarDisk.dbar (ηhat i) (𝔇.φ y)
+          = DbarDisk.dbar (chartPrim 𝔇 s i) (𝔇.φ y) - DbarDisk.dbar u (𝔇.φ y) := by
+        simpa [hηhatdef] using hsub0
+      rcases hz with ⟨hzballΩ, hzimg⟩
+      rcases hzballΩ with ⟨hzball, hzΩ⟩
+      rw [hsub, hu_dbar (𝔇.φ y) hzball, hagree i (𝔇.φ y) ⟨⟨hzball, hzΩ⟩, hzimg⟩]; ring
+    have hηc : DifferentiableAt ℂ (ηhat i) (𝔇.φ y) :=
+      differentiableAt_of_dbar_eq_zero_local hηcd hdb_eta
+    have htrans : DifferentiableAt ℂ (fun z => (𝔇.φ) ((chartAt (H := ℂ) y).symm z))
+        ((chartAt (H := ℂ) y) y) :=
+      (transition_analyticAt (y := 𝔇.center) (z := y) (𝔇.subset_source i hyU)).differentiableAt
+    have hsymm : (chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y) = y := by
+      simp
+    have hηc' : DifferentiableAt ℂ (ηhat i) ((𝔇.φ) ((chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y))) := by
+      simpa [hsymm] using hηc
+    simpa [ηhat, Function.comp_assoc] using hηc'.comp ((chartAt (H := ℂ) y) y) htrans
+  refine ⟨fun i => ηhat i ∘ 𝔇.φ, hηdiff, ?_⟩
+  intro i j x hxUi hxUj hxcore
+  have hopen : IsOpen (((𝔇.toFiniteFamily.U i : Set X) ∩ (𝔇.toFiniteFamily.U j : Set X) ∩ interior 𝔇.core) : Set X) := by
+    simpa [Set.inter_assoc, Set.inter_left_comm, Set.inter_comm] using
+      ((𝔇.toFiniteFamily.U i).isOpen.inter ((𝔇.toFiniteFamily.U j).isOpen.inter isOpen_interior))
+  have hUij : ∀ᶠ z in 𝓝[≠] x,
+      z ∈ ((𝔇.toFiniteFamily.U i : Set X) ∩ (𝔇.toFiniteFamily.U j : Set X) ∩ interior 𝔇.core) := by
+    exact eventually_nhdsWithin_of_eventually_nhds (hopen.mem_nhds ⟨⟨hxUi, hxUj⟩, hxcore⟩)
+  filter_upwards [hUij] with z hz
+  rcases hz with ⟨hzIJ, hzcore⟩
+  rcases hzIJ with ⟨hzUi, hzUj⟩
+  show (ηhat j ∘ 𝔇.φ) z - (ηhat i ∘ 𝔇.φ) z = holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) z
+  have hzsrc : z ∈ (chartAt (H := ℂ) 𝔇.center).source := 𝔇.subset_source i hzUi
+  have hsymm_eq : (𝔇.φ).symm (𝔇.φ z) = z := (𝔇.φ).left_inv hzsrc
+  simp only [hηhatdef, Function.comp_apply, Pi.sub_apply, chartPrim, hsymm_eq]
+  have hcd := coverPrim_diff 𝔇 s i j ⟨hzUi, hzUj⟩
+  linear_combination hcd
+
 end SharedChartCover
 
 end Jacobians.Dolbeault

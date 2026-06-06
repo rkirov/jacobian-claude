@@ -217,6 +217,63 @@ theorem rhoC_eq_zero_of_notMem (𝔇 : SharedChartCover X) (k : 𝔇.ι) {x : X}
     (hx : x ∉ tsupport (coverPoU 𝔇 k)) : rhoC 𝔇 k x = 0 := by
   simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hx]; rfl
 
+/-- The `∂̄` of the `k`-th PoU function, as a smooth `ℂ`-valued function. -/
+noncomputable def dbarRho (𝔇 : SharedChartCover X) (k : 𝔇.ι) : SmoothCOneForms X :=
+  dbarL (rhoC 𝔇 k)
+
+/-- `∂̄` shrinks support: `∂̄u x = 0` wherever `u` is locally constant (`x ∉ tsupport u`). -/
+theorem dbarL_eq_zero_of_notMem_tsupport (u : SmoothCFunctions X) {x : X}
+    (hx : x ∉ tsupport (⇑u : X → ℂ)) : (dbarL u) x = 0 := by
+  have h0 : (⇑u : X → ℂ) =ᶠ[nhds x] 0 := by
+    filter_upwards [(isClosed_tsupport (⇑u : X → ℂ)).isOpen_compl.mem_nhds hx] with y hy
+    exact image_eq_zero_of_notMem_tsupport hy
+  rw [dbarL_apply]
+  show proj01 ((differential u).toFun x) = 0
+  have hmf : (differential u).toFun x = 0 := by
+    show mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x = 0
+    rw [h0.mfderiv_eq]
+    exact mfderiv_const
+  rw [hmf, map_zero]
+
+/-- `∂̄ρ_k x = 0` for `x ∉ tsupport ρ_k` — so `∂̄ρ_k` is supported in `U_k` (`ρ_k` subordinate). -/
+theorem dbarRho_eq_zero_of_notMem (𝔇 : SharedChartCover X) (k : 𝔇.ι) {x : X}
+    (hx : x ∉ tsupport (coverPoU 𝔇 k)) : (dbarRho 𝔇 k) x = 0 := by
+  simpa [dbarRho] using dbarL_eq_zero_of_notMem_tsupport (rhoC 𝔇 k)
+    (fun hc => hx (by
+      refine closure_mono (fun y hy => ?_) hc
+      simp only [Function.mem_support, ne_eq] at hy ⊢
+      exact fun h0 => hy (by simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, h0]; rfl)))
+
+/-- `ContMDiffAt` for multiplying a smooth scalar into a smooth `(0,1)` section. -/
+theorem contMDiffAt_cSmul_section {F : X → ℂ}
+    {s : ∀ x : X, TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x} {x₀ : X}
+    (hF : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) F x₀)
+    (hs : ContMDiffAt 𝓘(ℝ, ℂ) (𝓘(ℝ, ℂ).prod 𝓘(ℝ, ℂ →L[ℝ] ℂ)) (⊤ : ℕ∞)
+      (fun x => (⟨x, s x⟩ : Bundle.TotalSpace (ℂ →L[ℝ] ℂ)
+        (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) x₀) :
+    ContMDiffAt 𝓘(ℝ, ℂ) (𝓘(ℝ, ℂ).prod 𝓘(ℝ, ℂ →L[ℝ] ℂ)) (⊤ : ℕ∞)
+      (fun x => (⟨x, (F x) • (s x)⟩ : Bundle.TotalSpace (ℂ →L[ℝ] ℂ)
+        (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) x₀ := by
+  rw [contMDiffAt_hom_bundle] at hs ⊢
+  refine ⟨contMDiffAt_id, ?_⟩
+  simp only [ContinuousLinearMap.inCoordinates,
+    Bundle.Trivial.continuousLinearMapAt_trivialization,
+    Bundle.Trivial.fiberBundle_trivializationAt', ContinuousLinearMap.id_comp] at hs ⊢
+  have hM : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ →L[ℝ] ℂ) (⊤ : ℕ∞)
+      (fun x => ContinuousLinearMap.mul ℝ ℂ (F x)) x₀ :=
+    ContMDiffAt.clm_apply contMDiffAt_const hF
+  refine (hM.clm_comp hs.2).congr_of_eventuallyEq (Filter.Eventually.of_forall fun x => ?_)
+  refine ContinuousLinearMap.ext fun v => ?_
+  simp only [ContinuousLinearMap.smul_comp, ContinuousLinearMap.coe_comp', Function.comp_apply,
+    ContinuousLinearMap.mul_apply', ContinuousLinearMap.smul_apply, smul_eq_mul]
+
+/-- Global form of `contMDiffAt_cSmul_section` for a `SmoothCFunctions` scalar and a smooth form. -/
+theorem contMDiff_cSmul_section (c : SmoothCFunctions X) (g : SmoothCOneForms X) :
+    ContMDiff (𝓘(ℝ, ℂ)) (𝓘(ℝ, ℂ).prod 𝓘(ℝ, ℂ →L[ℝ] ℂ)) (⊤ : ℕ∞)
+      (fun x => (⟨x, (c x) • (g x)⟩ : Bundle.TotalSpace (ℂ →L[ℝ] ℂ)
+        (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) :=
+  fun x₀ => contMDiffAt_cSmul_section (c.contMDiff x₀) (g.contMDiff_toFun x₀)
+
 /-- **Chart-analytic ⟹ real-smooth.** If `h` read in the chart at `y` is `ℂ`-analytic at the chart
 image, then `h` is real-`C^∞` (`ContMDiffAt 𝓘(ℝ,ℂ)`) at `y`. Port of
 `DolbeaultComparisonInverse.contMDiffAt_real_of_chart_analyticAt`. -/
@@ -251,6 +308,46 @@ instance contMDiffMul_real_complex : ContMDiffMul 𝓘(ℝ, ℂ) (⊤ : ℕ∞) 
 theorem holoFn_contMDiffAt {W : Opens X} {g : MGerm W} (hg : g ∈ OmegaDGerm (0 : Divisor X) W)
     {y : X} (hy : y ∈ W) : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (holoFn hg) y :=
   contMDiffAt_real_of_chart_analyticAt (holoFn_chart_analyticAt hg hy)
+
+/-- The chart-side double-sum term, as a smooth `(0,1)`-form. This is the shared-chart analogue of
+`DolbeaultComparisonInverse.cechTerm`. -/
+noncomputable def chartTerm (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (j k : 𝔇.toFiniteFamily.ι) :
+    SmoothCOneForms X where
+  toFun := fun x => (rhoC 𝔇 j x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s j k) x) •
+    (dbarRho 𝔇 k x)
+  contMDiff_toFun := by
+    intro x₀
+    by_cases hbj : x₀ ∈ tsupport (coverPoU 𝔇 j)
+    · by_cases hbk : x₀ ∈ tsupport (coverPoU 𝔇 k)
+      · have hxV : x₀ ∈ ((𝔇.U j ⊓ 𝔇.U k : Opens X) : Set X) :=
+          ⟨coverPoU_subordinate 𝔇 j hbj, coverPoU_subordinate 𝔇 k hbk⟩
+        have hmulrho : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ →L[ℝ] ℂ) (⊤ : ℕ∞)
+            (fun x => ContinuousLinearMap.mul ℝ ℂ (rhoC 𝔇 j x)) x₀ :=
+          ContMDiffAt.clm_apply contMDiffAt_const ((rhoC 𝔇 j).contMDiff x₀)
+        have hG : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
+            (fun x => rhoC 𝔇 j x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s j k) x) x₀ :=
+          (hmulrho.clm_apply (holoFn_contMDiffAt
+            (cocycleComp_mem 𝔇.toFiniteFamily s j k) hxV)).congr_of_eventuallyEq
+            (Filter.Eventually.of_forall fun x => by simp [ContinuousLinearMap.mul_apply'])
+        exact contMDiffAt_cSmul_section hG ((dbarRho 𝔇 k).contMDiff_toFun x₀)
+      · refine ContMDiffAt.congr_of_eventuallyEq (Bundle.contMDiffAt_zeroSection ℝ
+          (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x)) ?_
+        filter_upwards [(isClosed_tsupport (coverPoU 𝔇 k)).isOpen_compl.mem_nhds hbk] with x hx
+        have hV : (rhoC 𝔇 j x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s j k) x) •
+            (dbarRho 𝔇 k x) = 0 := by
+          rw [dbarRho_eq_zero_of_notMem 𝔇 k hx]; module
+        exact congrArg (Bundle.TotalSpace.mk x) hV
+    · refine ContMDiffAt.congr_of_eventuallyEq (Bundle.contMDiffAt_zeroSection ℝ
+        (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x)) ?_
+      filter_upwards [(isClosed_tsupport (coverPoU 𝔇 j)).isOpen_compl.mem_nhds hbj] with x hx
+      have hr : rhoC 𝔇 j x = 0 := by
+        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM,
+          image_eq_zero_of_notMem_tsupport hx]; rfl
+      have hV : (rhoC 𝔇 j x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s j k) x) •
+          (dbarRho 𝔇 k x) = 0 := by
+        rw [hr, zero_mul]; module
+      exact congrArg (Bundle.TotalSpace.mk x) hV
 
 /-! ### Ported `holoFn` algebra (limit-repair washout lemmas)
 

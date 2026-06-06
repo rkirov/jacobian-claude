@@ -367,7 +367,59 @@ theorem isCompactOperator_restrictCLM_of_compact {U K : Set ℂ} [CompactSpace K
     exact ⟨⟨f, by rwa [Metric.mem_closedBall, dist_zero_right]⟩, rfl⟩
   · rintro ⟨s, rfl⟩
     exact ⟨(s : BddHol U), by
-      have := s.2; rwa [Metric.mem_closedBall, dist_zero_right] at this, rfl⟩
+      have := s.2
+      rwa [Metric.mem_closedBall, dist_zero_right] at this, rfl⟩
+
+/-- Restriction to a relatively compact open, viewed as a bounded-continuous function on `U'`, is
+compact via the compact closure `closure U'`. This is the corrected-model bridge: first restrict to
+the compact closure, then postcompose by inclusion `U' ↪ closure U'`. -/
+theorem isCompactOperator_restrictCLM_toBcf_of_compact {U U' : Set ℂ} [CompactSpace (closure U')]
+    (hU : IsOpen U) (hKcpt : IsCompact (closure U')) (hsub : closure U' ⊆ U) :
+    IsCompactOperator (fun f : BddHol U =>
+      (restrictCLM (U := U) (K := closure U') hsub f).compContinuous
+        (ContinuousMap.inclusion (subset_closure : U' ⊆ closure U'))) := by
+  have hρK : IsCompactOperator (restrictCLM (U := U) (K := closure U') hsub) :=
+    isCompactOperator_restrictCLM_of_compact (U := U) (K := closure U') hU hKcpt hsub
+  have hcomp :
+      IsCompactOperator
+        ((bcfCompContinuousCLM (ContinuousMap.inclusion (subset_closure : U' ⊆ closure U'))) ∘
+          (restrictCLM (U := U) (K := closure U') hsub)) :=
+    hρK.clm_comp (bcfCompContinuousCLM (ContinuousMap.inclusion (subset_closure : U' ⊆ closure U')))
+  simpa [Function.comp, bcfCompContinuousCLM_apply] using hcomp
+
+/-- The `U'`-level bounded-continuous restriction obtained by restricting to `closure U'` and then
+including `U' ↪ closure U'` is the same as the direct open restriction `BddHol U → BddHol U'`
+followed by `toBcf`. This is the exact bridge a corrected holomorphic-shrinking model will consume. -/
+@[simp] theorem restrictCLM_toBcf_eq_restrictOpenCLM_toBcf {U U' : Set ℂ}
+    [CompactSpace (closure U')] (hsub : closure U' ⊆ U) (f : BddHol U) :
+    (bcfCompContinuousCLM (ContinuousMap.inclusion (subset_closure : U' ⊆ closure U')))
+      (restrictCLM (U := U) (K := closure U') hsub f) =
+      (restrictOpenCLM (U := U) (U' := U') (subset_closure.trans hsub) f).toBcf := by
+  ext z
+  simp [ContinuousMap.inclusion, Set.inclusion, BddHol.restrictCLM_apply, BddHol.toBcf_apply,
+    restrictOpenCLM_toFun_of_mem]
+
+/-- The open-to-open holomorphic restriction `BddHol U → BddHol U'` is compact when `U' ⋐ U`.
+We prove compactness after embedding into `U' →ᵇ ℂ` via `toBcf`, then pull compactness back
+through the closed embedding `toBcf`. -/
+theorem isCompactOperator_restrictOpenCLM_of_compact {U U' : Set ℂ}
+    (hU : IsOpen U) (hU' : IsOpen U') (hKcpt : IsCompact (closure U')) (hsub : closure U' ⊆ U) :
+    IsCompactOperator (restrictOpenCLM (U := U) (U' := U') (subset_closure.trans hsub)) := by
+  letI : CompactSpace (closure U') := isCompact_iff_compactSpace.mp hKcpt
+  letI : CompleteSpace (BddHol U') := BddHol.completeSpace (hU := hU')
+  let r : BddHol U →L[ℂ] BddHol U' :=
+    restrictOpenCLM (U := U) (U' := U') (subset_closure.trans hsub)
+  let e : BddHol U' → (↥U' →ᵇ ℂ) := toBcf
+  have he : IsClosedEmbedding e := (isometry_toBcf).isClosedEmbedding
+  have hcomp : IsCompactOperator (fun f : BddHol U => e (r f)) := by
+    convert (isCompactOperator_restrictCLM_toBcf_of_compact (U := U) (U' := U') hU hKcpt hsub)
+        using 1
+    funext f
+    simpa [r, e, Function.comp] using
+      (restrictCLM_toBcf_eq_restrictOpenCLM_toBcf (U := U) (U' := U') hsub f).symm
+  rcases hcomp with ⟨K, hK, hKpre⟩
+  refine ⟨e ⁻¹' K, he.isCompact_preimage hK, ?_⟩
+  simpa [r, e, Function.comp] using hKpre
 
 end BddHol
 
