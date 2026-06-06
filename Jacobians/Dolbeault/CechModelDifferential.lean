@@ -456,36 +456,38 @@ disk-acyclicity / Leray content (every shrinking 1-cocycle is, modulo a shrinkin
 restriction of a COVER 1-cocycle).  This is NOT a structural identity: it is the analytic theorem
 `H¹(disk, 𝒪) = 0` (proven: `DbarDiskCohomology.dbar_solvable_ball`) globalised over the cover via a
 partition of unity + Čech refinement.  We therefore expose `leray` as an explicit HYPOTHESIS
-(`ChartCoverLeray`) rather than fabricate it — a vacuous `leray` field would make `Coboundaries` a false
+(the diagnostic continuous-shrinking predicate `ChartCoverContinuousLeray`) rather than fabricate it — a vacuous `leray` field would make `Coboundaries` a false
 ("acyclic") model and silently break the finiteness conclusion.  `chartCoverCoboundaries` then assembles
 the genuine δ-complex against that hypothesis. -/
 
-/-- **The chart-cover Leray / disk-acyclicity obligation** (the honest analytic content of the model).
+/-- **Diagnostic continuous-shrinking Leray predicate.** This is the surjectivity statement the current
+continuous `Cshr` model would need, and it is intentionally named as a continuous-shrinking predicate
+because the soundness note below explains why it is not the corrected analytic target.
 Every shrinking 1-cocycle `s` of the chart cover (`delta1Model s = 0`) is, modulo a shrinking coboundary
 `delta0Model η`, the restriction `rhoRaw x` of a COVER 1-cocycle `x` (`delta1CovModel x = 0`).  This is
 `H¹` of the chart-disk cover vanishing into the cover refinement — supplied by the proven full-disk
 ∂̄-solvability (`DbarDiskCohomology.dbar_solvable_ball`/`dbar_holo_splitting_ball`) globalised by a
-partition of unity.  Carrying it as a named predicate keeps the genuine analytic obligation explicit and
-prevents a vacuous acyclic model. -/
-def ChartCoverLeray (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+partition of unity.  Carrying it as a named predicate keeps the false-shaped continuous obligation visible and
+prevents a vacuous acyclic model from being mistaken for a proof. -/
+def ChartCoverContinuousLeray (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Prop :=
   ∀ s : (chartCoverOverlapData (X := X)).Cshr, delta1Model s = 0 →
     ∃ (η : Cochain0Model (X := X)) (x : DiskOverlapData.Ccov (chartCoverOverlapData (X := X))),
       delta1CovModel x = 0 ∧ s = delta0Model η + (chartCoverOverlapData (X := X)).rhoRaw x
 
-/-! ### ⚠ SOUNDNESS NOTE on `ChartCoverLeray` (the `Cshr`-representation gap)
+/-! ### ⚠ SOUNDNESS NOTE on `ChartCoverContinuousLeray` (the `Cshr`-representation gap)
 
-`ChartCoverLeray` quantifies over EVERY `s : Cshr`, where `Cshr = ∀ p, (Kov p →ᵇ ℂ)` is the space of
+`ChartCoverContinuousLeray` quantifies over EVERY `s : Cshr`, where `Cshr = ∀ p, (Kov p →ᵇ ℂ)` is the space of
 bounded-**CONTINUOUS** 1-cochains on the compact shrinkings (`DiskOverlapData.Cshr`), while the witnesses
 `η : Cochain0Model` and `x : Ccov` range over bounded-**HOLOMORPHIC** cochains (`BddHol`).  So the claim
 `s = δ⁰η + ρx` asks every continuous shrinking cocycle to be a holomorphic-coboundary plus a holomorphic-
 cover-cocycle restriction.  That is FALSE: continuous cocycles modulo holomorphic coboundaries form an
 infinite-dimensional space, so `(η,x) ↦ δ⁰η + ρx` cannot surject onto the continuous `Z¹(shrinking)`
 (`Coboundaries.Z1shr`).  Equivalently, via the SOUND abstract reduction
-`CechFiniteness.finiteDimensional_h1_of_leray_compact` (which `finiteDimensional_chartCoverSupH1`
-consumes), `ChartCoverLeray X` would force `Z1shr ⧸ range δ⁰` to be finite-dimensional — but that
+`CechFiniteness.finiteDimensional_h1_of_leray_compact` (which `finiteDimensional_chartCoverSupH1_of_continuousLeray`
+consumes), `ChartCoverContinuousLeray X` would force `Z1shr ⧸ range δ⁰` to be finite-dimensional — but that
 quotient (continuous-cochains mod holomorphic-coboundaries on a non-empty overlap) is infinite-dimensional.
-Hence `ChartCoverLeray X` is UNPROVABLE as literally stated and the ∂̄-globalization cannot honestly
+Hence `ChartCoverContinuousLeray X` is UNPROVABLE as literally stated and the ∂̄-globalization cannot honestly
 discharge it: the planar Bott–Tu glue / `dbar_solvable_ball` engine produces only HOLOMORPHIC correctors,
 matching only a holomorphic `s`.
 
@@ -500,7 +502,7 @@ foundation and the holomorphic per-overlap ∂̄ setup, and `GluedDbarDatum.lean
 prototype of the telescoping. -/
 
 /-- **The diagonal of a shrinking 1-cocycle vanishes** (a structural necessary condition for the
-`ChartCoverLeray` hypothesis).  For any cocycle `s` (`delta1Model s = 0`) and any cover index `a`, the
+`ChartCoverContinuousLeray` hypothesis).  For any cocycle `s` (`delta1Model s = 0`) and any cover index `a`, the
 diagonal component `s (a,a)` is `0` on `Kov (a,a)`: the triple `(a,a,a)` gives
 `(δ¹s)_{aaa}(z) = s_{aa}(τ_{aa} z) − s_{aa}(z) + s_{aa}(z)`, and `τ_{aa} = id` on `Kov (a,a)`, so this
 collapses to `s_{aa}(z) = 0`.  This pins the cocycle structure used by the (corrected) disk-acyclicity
@@ -529,14 +531,14 @@ theorem delta1Model_diagonal_eq_zero (s : (chartCoverOverlapData (X := X)).Cshr)
   linear_combination hz0
 
 /-- **The chart-cover `Coboundaries` model** (structural fields PROVEN, `leray` from the hypothesis).
-Given the chart-cover Leray/disk-acyclicity witness `hleray : ChartCoverLeray X`, the chart cover's
+Given the diagnostic continuous-shrinking witness `hleray : ChartCoverContinuousLeray X`, the chart cover's
 sup-norm cochains form a genuine acyclic `Coboundaries chartCoverOverlapData`: the cross-chart Čech
 `δ⁰`/`δ¹` (`delta0Model`/`delta1Model`), the cover-side `δ¹cov` (`delta1CovModel`), `δ²=0`
 (`delta1_comp_delta0_eq_zero`), the restriction commuting square (`delta1_rhoRaw_eq_zero_of_…`), and the
 disk-acyclicity `leray` (= `hleray`).  This is the chart-cover instance of the abstract `Coboundaries`
 the finiteness reduction consumes; its `supH1` is then finite-dimensional
 (`Coboundaries.finiteDimensional_supH1` + `leray_surjective`). -/
-noncomputable def chartCoverCoboundaries (hleray : ChartCoverLeray X) :
+noncomputable def chartCoverCoboundaries (hleray : ChartCoverContinuousLeray X) :
     Coboundaries (chartCoverOverlapData (X := X)) where
   C0 := Cochain0Model (X := X)
   C2 := Cochain2Model (X := X)

@@ -116,7 +116,7 @@ automation:
   notes: >
     34k lines of Lean (cloc; +19k of docstrings) across 171 files. The repo isolates each remaining classical theorem into a single named,
     non-vacuous `sorry` (a true statement, not open design). Two false-as-stated statements were caught and
-    flagged (not faked) this session via the kernel-axiom discipline (`ChartCoverLeray` continuous-vs-
+    flagged (not faked) this session via the kernel-axiom discipline (`ChartCoverContinuousLeray` continuous-vs-
     holomorphic cochain mismatch; `exists_skyscraperLES` fixed-cover obstruction).
 
 fidelity:

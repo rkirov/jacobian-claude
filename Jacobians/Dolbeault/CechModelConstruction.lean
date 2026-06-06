@@ -71,17 +71,17 @@ theorem exists_cechModel_of_sharedChart_zero (𝔇 : SharedChartCover X)
 
 This wires the cross-chart Čech δ-complex of `CechModelDifferential` (the cover/shrinking `δ⁰`/`δ¹`,
 `δ²=0`, and the restriction commuting square, all PROVEN) into the abstract finiteness reduction:
-given ONLY the disk-acyclicity hypothesis `ChartCoverLeray X` (the genuine analytic obligation), the
+given ONLY the diagnostic continuous-shrinking hypothesis `ChartCoverContinuousLeray X`, the
 chart-cover sup-norm `H¹` is finite-dimensional. -/
 
-/-- **Finiteness of the chart-cover sup-norm `H¹` (given disk-acyclicity).**  For the chart-cover
+/-- **Finiteness of the chart-cover sup-norm `H¹` from the diagnostic continuous-shrinking hypothesis.**  For the chart-cover
 Čech δ-complex `chartCoverCoboundaries hleray` (all structural fields proven in `CechModelDifferential`),
 the sup-norm `H¹` is finite-dimensional: the Montel restriction `ρ` is compact
 (`Coboundaries.ρ_compact`, from the proven disk-Montel atom), the Leray map `(η,ξ) ↦ δη + ρξ` is
 surjective (`leray_surjective`, unpacking the model's `leray = hleray`), and the abstract reduction
-`finiteDimensional_h1_of_leray_compact` (Schwartz 14.8) concludes.  The ONLY non-structural input is the
-disk-acyclicity `hleray : ChartCoverLeray X`. -/
-theorem finiteDimensional_chartCoverSupH1 (hleray : ChartCoverLeray X) :
+`finiteDimensional_h1_of_leray_compact` (Schwartz 14.8) concludes.  The ONLY non-structural input is the false-shaped continuous predicate
+`hleray : ChartCoverContinuousLeray X`; the corrected target must use holomorphic shrinking cochains. -/
+theorem finiteDimensional_chartCoverSupH1_of_continuousLeray (hleray : ChartCoverContinuousLeray X) :
     FiniteDimensional ℂ (chartCoverCoboundaries (X := X) hleray).supH1 :=
   (chartCoverCoboundaries hleray).finiteDimensional_supH1
     (leray_surjective _ (chartCoverCoboundaries hleray))
@@ -92,18 +92,18 @@ theorem finiteDimensional_chartCoverSupH1 (hleray : ChartCoverLeray X) :
 c.supH1`.  The work in `CechModelDifferential` builds exactly such a `(d, c)` for the canonical chart
 cover — `d = chartCoverOverlapData`, `c = chartCoverCoboundaries hleray` — with all structural fields
 proven.  The reduction below makes this explicit: `exists_cechModel 𝔘 D` follows from the two precisely-
-named remaining obligations, the disk-acyclicity `ChartCoverLeray X` and the comparison
+named remaining obligations, the diagnostic continuous-shrinking predicate `ChartCoverContinuousLeray X` and the comparison
 `𝔘.cechH1 D ≃ₗ (chartCoverCoboundaries hleray).supH1`.  This pins down what is left and prevents the
 δ-complex work from drifting away from the actual goal. -/
 
 /-- **The chart-cover model discharges `exists_cechModel` given its two named obligations.**  For any
-cover `𝔘` and divisor `D`, if there is a chart-cover disk-acyclicity witness `hleray : ChartCoverLeray
+cover `𝔘` and divisor `D`, if there is a diagnostic continuous-shrinking witness `hleray : ChartCoverContinuousLeray
 X` and a comparison `𝔘.cechH1 D ≃ₗ[ℂ] (chartCoverCoboundaries hleray).supH1`, then `exists_cechModel
 𝔘 D` holds (with `d = chartCoverOverlapData`, `c = chartCoverCoboundaries hleray`).  This isolates the
 EXACT remaining gap: the structural δ-complex (`δ⁰`/`δ¹`/`δ²=0`/commuting square) is proven; only
-(a) the disk-acyclicity `leray` field and (b) the germ-class↔sup-norm comparison are still owed. -/
-theorem exists_cechModel_of_chartCoverLeray_comparison (𝔘 : FiniteCover X) (D : Divisor X)
-    (hleray : ChartCoverLeray X)
+(a) a corrected holomorphic-shrinking `leray` field and (b) the germ-class↔sup-norm comparison are still owed. -/
+theorem exists_cechModel_of_chartCoverContinuousLeray_comparison (𝔘 : FiniteCover X) (D : Divisor X)
+    (hleray : ChartCoverContinuousLeray X)
     (e : 𝔘.cechH1 D ≃ₗ[ℂ] (chartCoverCoboundaries (X := X) hleray).supH1) :
     ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
   ⟨chartCoverOverlapData, chartCoverCoboundaries hleray, ⟨e⟩⟩
