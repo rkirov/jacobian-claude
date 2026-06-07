@@ -39,8 +39,10 @@ import Jacobians.Dolbeault.CechModelDifferential
 import Jacobians.Dolbeault.GluedDbarDatum
 import Jacobians.Dolbeault.ChartCoverDbarGlue
 import Jacobians.Dolbeault.CechModelHolomorphic
+import Jacobians.Dolbeault.CechFinitenessBallSolve
 
 open scoped Manifold ContDiff Topology
+open TopologicalSpace (Opens)
 
 namespace Jacobians.Dolbeault
 
@@ -104,5 +106,246 @@ theorem hasGluedDbarDatumOnInteriorCore (𝔇 : SharedChartCover X) :
     simpa using hφ.symm
   subst hxEq
   exact 𝔇.dbarDatum_agrees_on_interiorCore s i hxU hxcore
+
+/-- The consumer-side core-restricted chart-differentiable corrector bridge.  This is the downstream
+hook for the new interior-core glued datum, and it keeps the sound branch visible without pretending
+to discharge the full `HasChartAnalyticCorrectors` predicate. -/
+def HasChartDifferentiableCorrectorsOnInteriorCore (𝔇 : SharedChartCover X) : Prop :=
+  ∀ s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X)),
+    ∃ H : 𝔇.toFiniteFamily.ι → X → ℂ,
+      (∀ i, ∀ y : X, y ∈ 𝔇.toFiniteFamily.U i → y ∈ interior 𝔇.core →
+        DifferentiableAt ℂ (fun z => H i ((chartAt (H := ℂ) y).symm z)) ((chartAt (H := ℂ) y) y)) ∧
+      ∀ i j, ∀ x : X, x ∈ 𝔇.toFiniteFamily.U i → x ∈ 𝔇.toFiniteFamily.U j → x ∈ interior 𝔇.core →
+        (fun z => H j z - H i z) =ᶠ[𝓝[≠] x] holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j)
+
+theorem hasChartDifferentiableCorrectorsOnInteriorCore (𝔇 : SharedChartCover X) :
+    HasChartDifferentiableCorrectorsOnInteriorCore 𝔇 := by
+  intro s
+  obtain ⟨dbarDatum, hdatum, hagree⟩ := hasGluedDbarDatumOnInteriorCore 𝔇 s
+  obtain ⟨u, hu_smooth, hu_dbar⟩ :=
+    DbarDiskCohomology.dbar_solvable_ball hdatum 𝔇.ballCenter 𝔇.radius_pos
+  set ηhat : 𝔇.toFiniteFamily.ι → ℂ → ℂ := fun i => chartPrim 𝔇 s i - u with hηhatdef
+  have hηdiff : ∀ i, ∀ y : X, y ∈ 𝔇.toFiniteFamily.U i → y ∈ interior 𝔇.core →
+      DifferentiableAt ℂ (fun z => ηhat i (𝔇.φ ((chartAt (H := ℂ) y).symm z)))
+        ((chartAt (H := ℂ) y) y) := by
+    intro i y hyU hycore
+    have hz : (𝔇.φ) y ∈ Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i ∩ (𝔇.φ '' interior 𝔇.core) := by
+      refine ⟨⟨𝔇.mem_ball hyU, 𝔇.mem_Ω hyU⟩, ?_⟩
+      exact ⟨y, hycore, rfl⟩
+    have hηcd : DifferentiableAt ℝ (ηhat i) (𝔇.φ y) := by
+      have hĥ_cd : ContDiffAt ℝ (⊤ : ℕ∞) (chartPrim 𝔇 s i) (𝔇.φ y) := by
+        simpa [chartPrim] using contDiffAt_coverPrim_chart 𝔇 s i hyU
+      rw [hηhatdef]
+      exact (hĥ_cd.differentiableAt (by norm_num)).sub
+        (hu_smooth.differentiable (by norm_num) (𝔇.φ y))
+    have hdb_eta : DbarDisk.dbar (ηhat i) (𝔇.φ y) = 0 := by
+      have hsub0 : DbarDisk.dbar (fun w => chartPrim 𝔇 s i w - u w) (𝔇.φ y)
+          = DbarDisk.dbar (chartPrim 𝔇 s i) (𝔇.φ y) - DbarDisk.dbar u (𝔇.φ y) := by
+        have hprim_diff : DifferentiableAt ℝ (chartPrim 𝔇 s i) (𝔇.φ y) := by
+          simpa [chartPrim] using (contDiffAt_coverPrim_chart 𝔇 s i hyU).differentiableAt
+        have hu_diff : DifferentiableAt ℝ u (𝔇.φ y) :=
+          hu_smooth.differentiable (by norm_num) (𝔇.φ y)
+        exact dbarFun_sub hprim_diff hu_diff
+      have hsub : DbarDisk.dbar (ηhat i) (𝔇.φ y)
+          = DbarDisk.dbar (chartPrim 𝔇 s i) (𝔇.φ y) - DbarDisk.dbar u (𝔇.φ y) := by
+        simpa [hηhatdef] using hsub0
+      rcases hz with ⟨hzballΩ, hzimg⟩
+      rcases hzballΩ with ⟨hzball, hzΩ⟩
+      rw [hsub, hu_dbar (𝔇.φ y) hzball, hagree i (𝔇.φ y) ⟨⟨hzball, hzΩ⟩, hzimg⟩]; ring
+    have hηc : DifferentiableAt ℂ (ηhat i) (𝔇.φ y) :=
+      differentiableAt_of_dbar_eq_zero_local hηcd hdb_eta
+    have htrans : DifferentiableAt ℂ (fun z => (𝔇.φ) ((chartAt (H := ℂ) y).symm z))
+        ((chartAt (H := ℂ) y) y) :=
+      (transition_analyticAt (y := 𝔇.center) (z := y) (𝔇.subset_source i hyU)).differentiableAt
+    have hsymm : (chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y) = y := by
+      simp
+    have hηc' : DifferentiableAt ℂ (ηhat i) ((𝔇.φ) ((chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y))) := by
+      simpa [hsymm] using hηc
+    simpa [ηhat, Function.comp_assoc] using hηc'.comp ((chartAt (H := ℂ) y) y) htrans
+  refine ⟨fun i => ηhat i ∘ 𝔇.φ, hηdiff, ?_⟩
+  intro i j x hxUi hxUj hxcore
+  have hopen : IsOpen (((𝔇.toFiniteFamily.U i : Set X) ∩ (𝔇.toFiniteFamily.U j : Set X) ∩ interior 𝔇.core) : Set X) := by
+    simpa [Set.inter_assoc, Set.inter_left_comm, Set.inter_comm] using
+      ((𝔇.toFiniteFamily.U i).isOpen.inter ((𝔇.toFiniteFamily.U j).isOpen.inter isOpen_interior))
+  have hUij : ∀ᶠ z in 𝓝[≠] x,
+      z ∈ ((𝔇.toFiniteFamily.U i : Set X) ∩ (𝔇.toFiniteFamily.U j : Set X) ∩ interior 𝔇.core) := by
+    exact eventually_nhdsWithin_of_eventually_nhds (hopen.mem_nhds ⟨⟨hxUi, hxUj⟩, hxcore⟩)
+  filter_upwards [hUij] with z hz
+  rcases hz with ⟨hzIJ, hzcore⟩
+  rcases hzIJ with ⟨hzUi, hzUj⟩
+  show (ηhat j ∘ 𝔇.φ) z - (ηhat i ∘ 𝔇.φ) z = holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) z
+  have hzsrc : z ∈ (chartAt (H := ℂ) 𝔇.center).source := 𝔇.subset_source i hzUi
+  have hsymm_eq : (𝔇.φ).symm (𝔇.φ z) = z := (𝔇.φ).left_inv hzsrc
+  simp only [hηhatdef, Function.comp_apply, Pi.sub_apply, chartPrim, hsymm_eq]
+  have hcd := coverPrim_diff 𝔇 s i j ⟨hzUi, hzUj⟩
+  linear_combination hcd
+
+/-- The core-restricted chart-analytic correctors, on the actual open locus controlled by the
+current construction. -/
+def HasChartAnalyticCorrectorsOnInteriorCore (𝔇 : SharedChartCover X) : Prop :=
+  ∀ s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X)),
+    ∃ H : 𝔇.toFiniteFamily.ι → X → ℂ,
+      (∀ i, ∀ y : X, y ∈ 𝔇.toFiniteFamily.U i → y ∈ interior 𝔇.core →
+        AnalyticAt ℂ (H i ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y)) ∧
+      ∀ i j, ∀ x : X, x ∈ 𝔇.toFiniteFamily.U i → x ∈ 𝔇.toFiniteFamily.U j → x ∈ interior 𝔇.core →
+        (fun z => H j z - H i z) =ᶠ[𝓝[≠] x] holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j)
+
+/-- The interior-core differentiable bridge upgrades to an interior-core analytic bridge on the
+open locus where the construction actually proves differentiability. -/
+theorem hasChartAnalyticCorrectorsOnInteriorCore (𝔇 : SharedChartCover X) :
+    HasChartAnalyticCorrectorsOnInteriorCore 𝔇 := by
+  intro s
+  obtain ⟨dbarDatum, hdatum, hagree⟩ := hasGluedDbarDatumOnInteriorCore 𝔇 s
+  obtain ⟨u, hu_smooth, hu_dbar⟩ :=
+    DbarDiskCohomology.dbar_solvable_ball hdatum 𝔇.ballCenter 𝔇.radius_pos
+  set ηhat : 𝔇.toFiniteFamily.ι → ℂ → ℂ := fun i => chartPrim 𝔇 s i - u with hηhatdef
+  have hcore_source : interior 𝔇.core ⊆ (𝔇.φ).source := by
+    intro x hx
+    have hxunion : x ∈ ⋃ i, (𝔇.U i : Set X) := 𝔇.core_subset (interior_subset hx)
+    rcases Set.mem_iUnion.mp hxunion with ⟨j, hxj⟩
+    exact 𝔇.subset_source j hxj
+  have hcore_img_open : IsOpen (𝔇.φ '' interior 𝔇.core) :=
+    (𝔇.φ).isOpen_image_of_subset_source isOpen_interior hcore_source
+  have hηhol : ∀ i, DifferentiableOn ℂ (ηhat i)
+      (Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i ∩ (𝔇.φ '' interior 𝔇.core)) := by
+    intro i
+    have hSopen : IsOpen (Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i ∩ (𝔇.φ '' interior 𝔇.core)) :=
+      (Metric.isOpen_ball.inter (isOpen_Ω 𝔇 i)).inter hcore_img_open
+    have hηR : DifferentiableOn ℝ (ηhat i)
+        (Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i ∩ (𝔇.φ '' interior 𝔇.core)) := by
+      intro z hz
+      rcases hz with ⟨hzballΩ, hzimg⟩
+      rcases hzballΩ with ⟨hzball, hzΩ⟩
+      rcases hzimg with ⟨x, hxcore, rfl⟩
+      rcases hzΩ with ⟨xU, hxU, hφ⟩
+      have hηcd : DifferentiableAt ℝ (ηhat i) (𝔇.φ x) := by
+        have hĥ_cd : ContDiffAt ℝ (⊤ : ℕ∞) (chartPrim 𝔇 s i) (𝔇.φ x) := by
+          rw [← hφ]
+          simpa [chartPrim] using contDiffAt_coverPrim_chart 𝔇 s i hxU
+        rw [hηhatdef]
+        exact (hĥ_cd.differentiableAt (by norm_num)).sub
+          (hu_smooth.differentiable (by norm_num) (𝔇.φ x))
+      exact hηcd.differentiableWithinAt
+    have hdb_eta : ∀ z ∈ Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i ∩ (𝔇.φ '' interior 𝔇.core),
+        DbarDisk.dbar (ηhat i) z = 0 := by
+      intro z hz
+      rcases hz with ⟨hzballΩ, hzimg⟩
+      rcases hzballΩ with ⟨hzball, hzΩ⟩
+      rcases hzimg with ⟨x, hxcore, rfl⟩
+      rcases hzΩ with ⟨xU, hxU, hφ⟩
+      have hsub0 : DbarDisk.dbar (fun w => chartPrim 𝔇 s i w - u w) (𝔇.φ x)
+          = DbarDisk.dbar (chartPrim 𝔇 s i) (𝔇.φ x) - DbarDisk.dbar u (𝔇.φ x) := by
+        have hprim_diff : DifferentiableAt ℝ (chartPrim 𝔇 s i) (𝔇.φ x) := by
+          rw [← hφ]
+          simpa [chartPrim] using (contDiffAt_coverPrim_chart 𝔇 s i hxU).differentiableAt
+        have hu_diff : DifferentiableAt ℝ u (𝔇.φ x) :=
+          hu_smooth.differentiable (by norm_num) (𝔇.φ x)
+        exact dbarFun_sub hprim_diff hu_diff
+      have hsub : DbarDisk.dbar (ηhat i) (𝔇.φ x)
+          = DbarDisk.dbar (chartPrim 𝔇 s i) (𝔇.φ x) - DbarDisk.dbar u (𝔇.φ x) := by
+        simpa [hηhatdef] using hsub0
+      have hzΩx : 𝔇.φ x ∈ 𝔇.Ω i := by
+        simpa [hφ] using 𝔇.mem_Ω hxU
+      rw [hsub, hu_dbar (𝔇.φ x) hzball,
+        hagree i (𝔇.φ x) ⟨⟨hzball, hzΩx⟩, ⟨x, hxcore, rfl⟩⟩]; ring
+    exact differentiableOn_complex_of_dbar_eq_zero_local hSopen hηR hdb_eta
+  refine ⟨fun i => ηhat i ∘ 𝔇.φ, ?_, ?_⟩
+  · intro i y hyU hycore
+    have hopen : IsOpen (Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i ∩ (𝔇.φ '' interior 𝔇.core)) :=
+      (Metric.isOpen_ball.inter (isOpen_Ω 𝔇 i)).inter hcore_img_open
+    have hzopen : 𝔇.φ y ∈ Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i ∩ (𝔇.φ '' interior 𝔇.core) := by
+      refine ⟨⟨𝔇.mem_ball hyU, 𝔇.mem_Ω hyU⟩, ?_⟩
+      exact ⟨y, hycore, rfl⟩
+    have hηana : AnalyticAt ℂ (ηhat i) (𝔇.φ y) :=
+      (hηhol i).analyticOnNhd hopen (𝔇.φ y) hzopen
+    have hηana' : AnalyticAt ℂ (ηhat i)
+        ((𝔇.φ) ((chartAt (H := ℂ) y).symm ((chartAt (H := ℂ) y) y))) := by
+      simpa using hηana
+    have htrans : AnalyticAt ℂ (fun z => (𝔇.φ) ((chartAt (H := ℂ) y).symm z))
+        ((chartAt (H := ℂ) y) y) :=
+      (transition_analyticAt (y := 𝔇.center) (z := y) (𝔇.subset_source i hyU))
+    have hcomp : AnalyticAt ℂ (fun z => ηhat i ((𝔇.φ) ((chartAt (H := ℂ) y).symm z)))
+        ((chartAt (H := ℂ) y) y) := by
+      simpa [Function.comp_assoc] using
+        (AnalyticAt.comp (g := ηhat i)
+          (f := fun z => (𝔇.φ) ((chartAt (H := ℂ) y).symm z))
+          (x := (chartAt (H := ℂ) y) y) hηana' htrans)
+    simpa [Function.comp_assoc, hηhatdef] using hcomp
+  · intro i j x hxUi hxUj hxcore
+    have hopen : IsOpen (((𝔇.toFiniteFamily.U i : Set X) ∩ (𝔇.toFiniteFamily.U j : Set X) ∩ interior 𝔇.core) : Set X) := by
+      simpa [Set.inter_assoc, Set.inter_left_comm, Set.inter_comm] using
+        ((𝔇.toFiniteFamily.U i).isOpen.inter ((𝔇.toFiniteFamily.U j).isOpen.inter isOpen_interior))
+    have hUij : ∀ᶠ z in 𝓝[≠] x,
+        z ∈ ((𝔇.toFiniteFamily.U i : Set X) ∩ (𝔇.toFiniteFamily.U j : Set X) ∩ interior 𝔇.core) := by
+      exact eventually_nhdsWithin_of_eventually_nhds (hopen.mem_nhds ⟨⟨hxUi, hxUj⟩, hxcore⟩)
+    filter_upwards [hUij] with z hz
+    rcases hz with ⟨hzIJ, hzcore⟩
+    rcases hzIJ with ⟨hzUi, hzUj⟩
+    show (ηhat j ∘ 𝔇.φ) z - (ηhat i ∘ 𝔇.φ) z = holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) z
+    have hzsrc : z ∈ (chartAt (H := ℂ) 𝔇.center).source := 𝔇.subset_source i hzUi
+    have hsymm_eq : (𝔇.φ).symm (𝔇.φ z) = z := (𝔇.φ).left_inv hzsrc
+    simp only [hηhatdef, Function.comp_apply, Pi.sub_apply, chartPrim, hsymm_eq]
+    have hcd := coverPrim_diff 𝔇 s i j ⟨hzUi, hzUj⟩
+    linear_combination hcd
+
+/-- Core-restricted holomorphic correctors on the open locus where the construction is actually
+available.  This is the holomorphic analogue of `HasChartAnalyticCorrectorsOnInteriorCore`, and it is
+the honest bridge from the interior-core analytic output to the `OmegaD`-valued language used by the
+germ descent side. -/
+noncomputable def interiorCoreOpen (𝔇 : SharedChartCover X) : Opens X :=
+  ⟨interior 𝔇.core, isOpen_interior⟩
+
+noncomputable def interiorCoreU (𝔇 : SharedChartCover X) (i : 𝔇.toFiniteFamily.ι) : Opens X :=
+  (𝔇.toFiniteFamily.U i) ⊓ interiorCoreOpen 𝔇
+
+def HasHoloCorrectorsOnInteriorCore (𝔇 : SharedChartCover X) : Prop :=
+  ∀ s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X)),
+    ∃ η : Π i, interiorCoreU 𝔇 i → ℂ,
+      (∀ i, η i ∈ OmegaD (0 : Divisor X) (interiorCoreU 𝔇 i)) ∧
+      ∀ i j, ∀ x : X, x ∈ 𝔇.toFiniteFamily.U i → x ∈ 𝔇.toFiniteFamily.U j → x ∈ interior 𝔇.core →
+        (fun z => Gext (η j) z - Gext (η i) z) =ᶠ[𝓝[≠] x] holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j)
+
+/-- The interior-core analytic bridge implies the corresponding interior-core holomorphic bridge. -/
+theorem hasHoloCorrectorsOnInteriorCore_of_hasChartAnalyticCorrectorsOnInteriorCore
+    (𝔇 : SharedChartCover X) :
+    HasChartAnalyticCorrectorsOnInteriorCore 𝔇 →
+      HasHoloCorrectorsOnInteriorCore 𝔇 := by
+  intro h s
+  rcases h s with ⟨H, hana, hsplit⟩
+  refine ⟨fun i => H i ∘ (Subtype.val : interiorCoreU 𝔇 i → X), ?_, ?_⟩
+  · intro i
+    apply omegaD_zero_of_chart_analyticAt
+    intro y hy
+    exact hana i y hy.1 hy.2
+  · intro i j x hxUi hxUj hxcore
+    have hGextEq : ∀ (k : 𝔇.toFiniteFamily.ι),
+        x ∈ 𝔇.toFiniteFamily.U k →
+          Gext (fun y : interiorCoreU 𝔇 k =>
+            H k y.1) =ᶠ[𝓝[≠] x] H k := by
+      intro k hxk
+      have hopen' : IsOpen (interiorCoreU 𝔇 k : Set X) := by
+        simpa [interiorCoreU, interiorCoreOpen, Set.inter_assoc, Set.inter_left_comm, Set.inter_comm]
+          using ((𝔇.toFiniteFamily.U k).isOpen.inter isOpen_interior)
+      have hUk : ∀ᶠ z in 𝓝[≠] x,
+          z ∈ (interiorCoreU 𝔇 k : Set X) := by
+        exact eventually_nhdsWithin_of_eventually_nhds
+          (hopen'.mem_nhds ⟨hxk, hxcore⟩)
+      filter_upwards [hUk] with z hz
+      simpa [Function.comp_apply] using
+        Gext_apply_mem (H k ∘ (Subtype.val : interiorCoreU 𝔇 k → X)) hz
+    have hj := hGextEq j hxUj
+    have hi := hGextEq i hxUi
+    exact (Filter.EventuallyEq.sub hj hi).trans (hsplit i j x hxUi hxUj hxcore)
+
+/-- The interior-core analytic bridge immediately yields the interior-core differentiable bridge. -/
+theorem hasChartDifferentiableCorrectorsOnInteriorCore_of_hasChartAnalyticCorrectorsOnInteriorCore
+    (𝔇 : SharedChartCover X) :
+    HasChartAnalyticCorrectorsOnInteriorCore 𝔇 →
+      HasChartDifferentiableCorrectorsOnInteriorCore 𝔇 := by
+  intro h s
+  rcases h s with ⟨H, hana, hsplit⟩
+  refine ⟨H, ?_, hsplit⟩
+  intro i y hyU hycore
+  exact (hana i y hyU hycore).differentiableAt
 
 end Jacobians.Dolbeault

@@ -23,7 +23,7 @@
 -/
 import Jacobians.Dolbeault.CechModelGeometry
 import Jacobians.Dolbeault.CechModelManifold
-import Jacobians.Dolbeault.DolbeaultComparisonInverse
+import Jacobians.Dolbeault.CechFinitenessBallSolve
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -76,6 +76,33 @@ noncomputable def germSectionToBddHol {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : 
 on the section module `OmegaDGerm 0 V` the atom is `ℂ`-linear. We prove the value-level identities, then
 package the map as a `ℂ`-linear map on the submodule. -/
 
+theorem holoFn_add_at {W : Opens X} {g₁ g₂ : MGerm W}
+    (hg₁ : g₁ ∈ OmegaDGerm (0 : Divisor X) W) (hg₂ : g₂ ∈ OmegaDGerm (0 : Divisor X) W)
+    (hg : g₁ + g₂ ∈ OmegaDGerm (0 : Divisor X) W) {x : X} (hx : x ∈ W) :
+    holoFn hg x = holoFn hg₁ x + holoFn hg₂ x := by
+  have hsub := holoFn_sub (W := W) (g₁ := g₁ + g₂) (g₂ := g₂)
+    (hg₁ := Submodule.add_mem _ hg₁ hg₂) (hg₂ := hg₂)
+    (hg := by simpa using hg₁) (x := x) hx
+  have h := congrArg (fun t => t + holoFn hg₂ x) hsub
+  ring_nf at h ⊢
+  exact h.symm
+
+theorem holoFn_smul_at {W : Opens X} (c : ℂ) {g : MGerm W}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) W) (hcg : c • g ∈ OmegaDGerm (0 : Divisor X) W)
+    {x : X} (hx : x ∈ W) : holoFn hcg x = c • holoFn hg x := by
+  haveI := nhdsNE_neBot x
+  obtain ⟨c₀, hc₀⟩ := holoFn_tendsto hg hx
+  have hgerm : toGerm W (c • holoRep hg) = toGerm W (holoRep hcg) := by
+    rw [map_smul, toGerm_holoRep hg, toGerm_holoRep hcg]
+  have heq : Gext (holoRep hcg) =ᶠ[𝓝[≠] x] c • Gext (holoRep hg) := by
+    have hmatch : rawRestrictG (inf_le_right : W ⊓ W ≤ W) (toGerm W (c • holoRep hg))
+        = rawRestrictG (inf_le_left : W ⊓ W ≤ W) (toGerm W (holoRep hcg)) := by rw [hgerm]
+    have h := Gext_overlap_eventuallyEq (holoRep hcg) (c • holoRep hg) hmatch hx hx
+    rwa [Gext_smul] at h
+  show limUnder (𝓝[≠] x) (Gext (holoRep hcg)) = c • holoFn hg x
+  rw [show holoFn hg x = c₀ from hc₀.limUnder_eq]
+  exact ((hc₀.const_smul c).congr' heq.symm).limUnder_eq
+
 /-- The atom is additive (`holoFn` is additive on `U'`, where `(chartAt y).symm z ∈ V`). -/
 theorem germSectionToBddHol_add {g₁ g₂ : MGerm V}
     (hg₁ : g₁ ∈ OmegaDGerm (0 : Divisor X) V) (hg₂ : g₂ ∈ OmegaDGerm (0 : Divisor X) V) :
@@ -92,7 +119,7 @@ theorem germSectionToBddHol_add {g₁ g₂ : MGerm V}
       germSectionToBddHol_toFun_of_mem hV hsub hcpt _ hz,
       germSectionToBddHol_toFun_of_mem hV hsub hcpt hg₁ hz,
       germSectionToBddHol_toFun_of_mem hV hsub hcpt hg₂ hz]
-    exact holoFn_add hg₁ hg₂ (Submodule.add_mem _ hg₁ hg₂) hzV
+    exact holoFn_add_at hg₁ hg₂ (Submodule.add_mem _ hg₁ hg₂) hzV
   · rw [BddHol.toFun_add, Pi.add_apply,
       (germSectionToBddHol hV hsub hcpt (Submodule.add_mem _ hg₁ hg₂)).zero_off z hz,
       (germSectionToBddHol hV hsub hcpt hg₁).zero_off z hz,
@@ -112,7 +139,7 @@ theorem germSectionToBddHol_smul (c : ℂ) {g : MGerm V}
     rw [BddHol.toFun_smul, Pi.smul_apply,
       germSectionToBddHol_toFun_of_mem hV hsub hcpt _ hz,
       germSectionToBddHol_toFun_of_mem hV hsub hcpt hg hz]
-    exact holoFn_smul c hg (Submodule.smul_mem _ c hg) hzV
+    exact holoFn_smul_at c hg (Submodule.smul_mem _ c hg) hzV
   · rw [BddHol.toFun_smul, Pi.smul_apply,
       (germSectionToBddHol hV hsub hcpt (Submodule.smul_mem _ c hg)).zero_off z hz,
       (germSectionToBddHol hV hsub hcpt hg).zero_off z hz, smul_zero]

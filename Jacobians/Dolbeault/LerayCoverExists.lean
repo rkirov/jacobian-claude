@@ -59,6 +59,7 @@
   All declarations are `sorry`-free; `#print axioms` is `[propext, Classical.choice, Quot.sound]`.
 -/
 import Jacobians.Dolbeault.CechComplex
+import Jacobians.Dolbeault.ChartDiskCover
 import Mathlib.Analysis.Normed.Module.Connected
 
 open scoped Manifold ContDiff Topology
@@ -135,108 +136,126 @@ theorem ball_chartBallRadius_subset_target (x : X) :
     Metric.ball ((chartAt ℂ x) x) (chartBallRadius x) ⊆ (chartAt ℂ x).target :=
   (chartBallRadius_spec x).2
 
-/-- The chart-ball neighborhood of `x`: the chart-preimage of the coordinate ball
-`ball ((chartAt ℂ x) x) (chartBallRadius x)`.  An open neighborhood of `x`, biholomorphic to a
-Euclidean ball (hence simply connected, `simplyConnectedSpace_chartBallNbhd`). -/
-def chartBallNbhd (x : X) : Set X :=
-  (chartAt ℂ x).source ∩ (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) (chartBallRadius x)
-
-theorem chartBallNbhd_isOpen (x : X) : IsOpen (chartBallNbhd x) :=
-  (chartAt ℂ x).continuousOn.isOpen_inter_preimage (chartAt ℂ x).open_source Metric.isOpen_ball
-
-theorem mem_chartBallNbhd (x : X) : x ∈ chartBallNbhd x :=
-  ⟨mem_chart_source ℂ x, by
-    simp only [Set.mem_preimage]; exact Metric.mem_ball_self (chartBallRadius_pos x)⟩
-
-/-- Each chart-ball neighborhood is simply connected (instance of
-`simplyConnectedSpace_chartBallPreimage` for `e = chartAt ℂ x`). -/
-theorem simplyConnectedSpace_chartBallNbhd (x : X) :
-    SimplyConnectedSpace ↥(chartBallNbhd x) :=
-  simplyConnectedSpace_chartBallPreimage (chartAt ℂ x) _ _ (chartBallRadius_pos x)
-    (ball_chartBallRadius_subset_target x)
-
-/-! ### The finite chart-ball cover -/
-
-/-- Compactness yields a finite set of points whose chart-ball neighborhoods cover `X`. -/
-theorem exists_finite_chartBallNbhd_cover :
-    ∃ s : Finset X, (⋃ x ∈ s, chartBallNbhd (X := X) x) = Set.univ := by
-  have hcov : Set.univ ⊆ ⋃ x : X, chartBallNbhd (X := X) x := fun y _ =>
-    Set.mem_iUnion.mpr ⟨y, mem_chartBallNbhd y⟩
-  obtain ⟨s, hs⟩ := IsCompact.elim_finite_subcover isCompact_univ
-    (fun x : X => chartBallNbhd (X := X) x) (fun x => chartBallNbhd_isOpen x) hcov
-  exact ⟨s, Set.eq_univ_of_univ_subset hs⟩
-
-/-- The finite set of centres of the canonical chart-ball cover. -/
-noncomputable def chartBallCenters : Finset X :=
-  Classical.choose (exists_finite_chartBallNbhd_cover (X := X))
-
-theorem chartBallCenters_cover :
-    (⋃ x ∈ (chartBallCenters : Finset X), chartBallNbhd (X := X) x) = Set.univ :=
-  Classical.choose_spec (exists_finite_chartBallNbhd_cover (X := X))
-
-/-- The element of `X` indexed by a `Fin (chartBallCenters.card)` value, via the finite-set
-enumeration `Finset.equivFin`.  Used to give the cover a `Type 0` index (`FiniteCover.ι : Type`). -/
-noncomputable def chartBallCenter (i : Fin (chartBallCenters (X := X)).card) : X :=
-  ((chartBallCenters (X := X)).equivFin.symm i : X)
-
-/-- **The canonical finite chart-ball cover of a compact Riemann surface.**  A `FiniteCover X` indexed
-by `Fin (chartBallCenters.card)` (a `Type 0` index, as `FiniteCover.ι` requires), whose `i`-th set is
-the chart-ball neighborhood `chartBallNbhd (chartBallCenter i)` — an open coordinate disk biholomorphic
-to a Euclidean ball.  Covers `X` by compactness (the centres enumerate `chartBallCenters`); each set is
-simply connected (`chartBallCover_simplyConnected`).  This is the concrete cover the Leray-cover
-existence is built on; only its overlap-connectedness (the good-cover input Mathlib lacks) is left
-open. -/
-noncomputable def chartBallCover : FiniteCover X where
-  ι := Fin (chartBallCenters (X := X)).card
-  U := fun i => ⟨chartBallNbhd (chartBallCenter i), chartBallNbhd_isOpen _⟩
-  covers := by
-    rw [← TopologicalSpace.Opens.coe_inj, TopologicalSpace.Opens.coe_iSup]
-    show (⋃ i : Fin (chartBallCenters (X := X)).card, chartBallNbhd (chartBallCenter i)) = _
-    have hreindex :
-        (⋃ i : Fin (chartBallCenters (X := X)).card, chartBallNbhd (chartBallCenter i))
-          = ⋃ j : {x // x ∈ (chartBallCenters (X := X))}, chartBallNbhd j.1 :=
-      ((chartBallCenters (X := X)).equivFin.symm.surjective).iUnion_comp
-        (fun j : {x // x ∈ (chartBallCenters (X := X))} => chartBallNbhd j.1)
-    rw [hreindex, Set.iUnion_subtype, chartBallCenters_cover]
-    rfl
-
-@[simp] theorem chartBallCover_U (i : (chartBallCover (X := X)).ι) :
-    ((chartBallCover (X := X)).U i : Set X) = chartBallNbhd (chartBallCenter i) := rfl
-
-/-- **Every set of the canonical chart-ball cover is simply connected.**  The FIRST conjunct of
-`IsLeray` for `chartBallCover`, proven UNCONDITIONALLY: each `U i` is the chart-ball neighborhood
-`chartBallNbhd (chartBallCenter i)`, simply connected by `simplyConnectedSpace_chartBallNbhd`. -/
-theorem chartBallCover_simplyConnected (i : (chartBallCover (X := X)).ι) :
-    SimplyConnectedSpace ↥((chartBallCover (X := X)).U i) :=
-  simplyConnectedSpace_chartBallNbhd (chartBallCenter i)
-
-/-! ### The Leray cover existence — gated on the honest good-cover (overlap) input
-
-The simply-connected clause of `IsLeray` is proven above for the concrete `chartBallCover`.  The
-only remaining clause is preconnectedness of the pairwise overlaps — the good-cover / geodesic-
-convexity input absent from Mathlib.  We expose it as one honest named hypothesis and assemble the
-Leray cover from it. -/
-
-/-- **`exists_lerayCover` — UNCONDITIONAL.**  `X` admits a finite Leray cover: the canonical chart-ball
-cover `chartBallCover`, whose sets are simply connected (`chartBallCover_simplyConnected`) — which is
-*all* `IsLeray` now requires (its overlap conjunct was dropped as dead weight; for `H¹` Cartan needs
-only acyclic sets — see `CechComplex.FiniteFamily.IsLeray` and `GoodCover`).
-
-This is the statement that unlocks the ladder→headline wiring
-(`RiemannRoch.exists_riemannRoch_divisor` via `DolbeaultLadder.riemannRoch_equality_of_ladder 𝔘 hL`
-with this `𝔘 = chartBallCover` and `hL` the produced `IsLeray`).  Previously gated on the good-cover
-overlap-preconnectedness `hOverlaps` (a Mathlib-absent Whitney geodesic-convexity fact); that
-hypothesis is now eliminated, so the wiring is unconditional. No `sorry`. -/
-theorem exists_lerayCover : ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray :=
-  ⟨chartBallCover, chartBallCover_simplyConnected⟩
-
 /-- **`exists_lerayCover` from any cover with simply-connected sets.**  Trivial repackaging — kept as
 an alternative entry point.  Subsumed by the unconditional `exists_lerayCover` (the canonical
-chart-ball cover already has simply-connected sets); offered for an owner who would rather supply a
+chart-disk cover already has simply-connected sets); offered for an owner who would rather supply a
 different good cover.  No `sorry`. -/
 theorem exists_lerayCover_of_goodCover
     (hGood : ∃ 𝔘 : FiniteCover X, ∀ i, SimplyConnectedSpace ↥(𝔘.U i)) :
     ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray :=
   hGood
+
+/-! ### A concrete chart-disk cover
+
+The `chartBallCover` above is enough for `IsLeray`, but the downstream Dolbeault comparison and
+skyscraper assembly want the stronger `ChartDiskCover` shape.  We obtain it by halving the radius:
+the open ball around each point still contains the center, the family still covers by compactness,
+and the closed ball of the half-radius lies inside the open ball used above. -/
+
+/-- The radius of a smaller chart disk around `x`, chosen as half of `chartBallRadius x`. -/
+noncomputable def chartDiskRadius (x : X) : ℝ :=
+  chartBallRadius (X := X) x / 2
+
+theorem chartDiskRadius_pos (x : X) : 0 < chartDiskRadius (X := X) x := by
+  dsimp [chartDiskRadius]
+  simpa using (half_pos (chartBallRadius_pos (X := X) x))
+
+theorem closedBall_chartDiskRadius_subset_target (x : X) :
+    Metric.closedBall ((chartAt ℂ x) x) (chartDiskRadius (X := X) x) ⊆
+      (chartAt ℂ x).target := by
+  dsimp [chartDiskRadius]
+  have hlt : chartBallRadius (X := X) x / 2 < chartBallRadius x := by
+    simpa [chartDiskRadius] using (half_lt_self (chartBallRadius_pos (X := X) x))
+  exact (Metric.closedBall_subset_ball hlt).trans (ball_chartBallRadius_subset_target (X := X) x)
+
+/-- The smaller chart-disk neighborhood of `x`. This is the cover set that feeds the
+`ChartDiskCover` API. -/
+def chartDiskNbhd (x : X) : Set X :=
+  (chartAt ℂ x).source ∩ (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) (chartDiskRadius (X := X) x)
+
+theorem chartDiskNbhd_isOpen (x : X) : IsOpen (chartDiskNbhd (X := X) x) :=
+  (chartAt ℂ x).continuousOn.isOpen_inter_preimage (chartAt ℂ x).open_source Metric.isOpen_ball
+
+theorem mem_chartDiskNbhd (x : X) : x ∈ chartDiskNbhd (X := X) x :=
+  ⟨mem_chart_source ℂ x, by
+    simp only [Set.mem_preimage]; exact Metric.mem_ball_self (chartDiskRadius_pos (X := X) x)⟩
+
+theorem simplyConnectedSpace_chartDiskNbhd (x : X) :
+    SimplyConnectedSpace ↥(chartDiskNbhd (X := X) x) :=
+  simplyConnectedSpace_chartBallPreimage (chartAt ℂ x) _ _ (chartDiskRadius_pos (X := X) x)
+    (by
+      intro z hz
+      exact closedBall_chartDiskRadius_subset_target (X := X) x
+        (by simpa [Metric.mem_closedBall] using le_of_lt hz))
+
+theorem exists_finite_chartDiskNbhd_cover :
+    ∃ s : Finset X, (⋃ x ∈ s, chartDiskNbhd (X := X) x) = Set.univ := by
+  have hcov : Set.univ ⊆ ⋃ x : X, chartDiskNbhd (X := X) x := fun y _ =>
+    Set.mem_iUnion.mpr ⟨y, mem_chartDiskNbhd (X := X) y⟩
+  obtain ⟨s, hs⟩ := IsCompact.elim_finite_subcover isCompact_univ
+    (fun x : X => chartDiskNbhd (X := X) x) (fun x => chartDiskNbhd_isOpen (X := X) x) hcov
+  exact ⟨s, Set.eq_univ_of_univ_subset hs⟩
+
+/-- The finite set of centres of the canonical chart-disk cover. -/
+noncomputable def chartDiskCenters : Finset X :=
+  Classical.choose (exists_finite_chartDiskNbhd_cover (X := X))
+
+theorem chartDiskCenters_cover :
+    (⋃ x ∈ (chartDiskCenters : Finset X), chartDiskNbhd (X := X) x) = Set.univ :=
+  Classical.choose_spec (exists_finite_chartDiskNbhd_cover (X := X))
+
+/-- The element of `X` indexed by `Fin (chartDiskCenters.card)`. -/
+noncomputable def chartDiskCenter (i : Fin (chartDiskCenters (X := X)).card) : X :=
+  ((chartDiskCenters (X := X)).equivFin.symm i : X)
+
+/-- The canonical finite chart-disk cover of a compact Riemann surface. -/
+noncomputable def chartDiskCover : ChartDiskCover X where
+  ι := Fin (chartDiskCenters (X := X)).card
+  U := fun i => ⟨chartDiskNbhd (chartDiskCenter i), chartDiskNbhd_isOpen (X := X) _⟩
+  covers := by
+    rw [← TopologicalSpace.Opens.coe_inj, TopologicalSpace.Opens.coe_iSup]
+    show (⋃ i : Fin (chartDiskCenters (X := X)).card, chartDiskNbhd (chartDiskCenter i)) = _
+    have hreindex :
+        (⋃ i : Fin (chartDiskCenters (X := X)).card, chartDiskNbhd (chartDiskCenter i))
+          = ⋃ j : {x // x ∈ (chartDiskCenters (X := X))}, chartDiskNbhd j.1 :=
+      ((chartDiskCenters (X := X)).equivFin.symm.surjective).iUnion_comp
+        (fun j : {x // x ∈ (chartDiskCenters (X := X))} => chartDiskNbhd j.1)
+    rw [hreindex, Set.iUnion_subtype, chartDiskCenters_cover]
+    rfl
+  center := chartDiskCenter (X := X)
+  radius := fun _ => chartDiskRadius (X := X) _
+  radius_pos := fun i => chartDiskRadius_pos (X := X) _
+  closedBall_subset_target := fun i => by
+    simpa using closedBall_chartDiskRadius_subset_target (X := X) (chartDiskCenter i)
+  isDisk := by
+    intro i
+    simp [chartDiskNbhd, chartDiskRadius, Set.inter_comm, mfld_simps]
+
+@[simp] theorem chartDiskCover_U (i : (chartDiskCover (X := X)).ι) :
+    ((chartDiskCover (X := X)).U i : Set X) = chartDiskNbhd (chartDiskCenter i) := rfl
+
+/-- Every set of the canonical chart-disk cover is simply connected. -/
+theorem chartDiskCover_simplyConnected (i : (chartDiskCover (X := X)).ι) :
+    SimplyConnectedSpace ↥((chartDiskCover (X := X)).U i) :=
+  simplyConnectedSpace_chartDiskNbhd (chartDiskCenter (X := X) i)
+
+/-- A concrete chart-disk Leray cover exists. -/
+theorem exists_chartDiskCover : ∃ 𝔇 : ChartDiskCover X, 𝔇.toFiniteCover.IsLeray :=
+  ⟨chartDiskCover (X := X), chartDiskCover_simplyConnected (X := X)⟩
+
+/-- **`exists_lerayCover` — UNCONDITIONAL.**  `X` admits a finite Leray cover: the canonical chart-disk
+cover `chartDiskCover`, whose sets are simply connected (`chartDiskCover_simplyConnected`) — which is
+*all* `IsLeray` now requires (its overlap conjunct was dropped as dead weight; for `H¹` Cartan needs
+only acyclic sets — see `CechComplex.FiniteFamily.IsLeray` and `GoodCover`).
+
+This is the statement that unlocks the ladder→headline wiring
+(`RiemannRoch.exists_riemannRoch_divisor` via `DolbeaultLadder.riemannRoch_equality_of_ladder 𝔘 hL`
+with this `𝔘 = chartDiskCover` and `hL` the produced `IsLeray`).  Previously gated on the good-cover
+overlap-preconnectedness `hOverlaps` (a Mathlib-absent Whitney geodesic-convexity fact); that
+hypothesis is now eliminated, so the wiring is unconditional. No `sorry`. -/
+theorem exists_lerayCover : ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray :=
+  ⟨(chartDiskCover (X := X)).toFiniteCover, by
+    intro i
+    simpa using chartDiskCover_simplyConnected (X := X) i⟩
 
 end Jacobians.Dolbeault

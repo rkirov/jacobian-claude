@@ -25,6 +25,7 @@
 -/
 import Jacobians.Dolbeault.CechDiskAcyclicAssembly
 import Jacobians.Dolbeault.DiskAcyclicCore
+import Jacobians.Dolbeault.HoloRep
 import Jacobians.Dolbeault.DolbeaultComparison
 import Jacobians.Dolbeault.DbarDiskCohomology
 import Jacobians.Dolbeault.ChartDiskCover
@@ -198,6 +199,125 @@ theorem coverPoU_subordinate (𝔇 : SharedChartCover X) :
     (coverPoU 𝔇).IsSubordinate (fun i => (𝔇.U i : Set X)) :=
   (exists_smoothPartitionOfUnity_subordinate 𝔇).choose_spec
 
+/-- The open union of the family `(𝔇.U i)`.  This is the sound domain for a partition of unity that
+sums to `1` on the whole open union, not just on a closed core. -/
+noncomputable def openUnionU (𝔇 : SharedChartCover X) : Opens X :=
+  ⟨⋃ i, (𝔇.U i : Set X), isOpen_iUnion fun i => (𝔇.U i).isOpen⟩
+
+/-- A smooth partition of unity on the open union of the shared-chart family. -/
+noncomputable def coverOpenUnionPoU (𝔇 : SharedChartCover X) :
+    SmoothPartitionOfUnity 𝔇.ι 𝓘(ℝ, ℂ) ↥(openUnionU 𝔇) (Set.univ : Set ↥(openUnionU 𝔇)) := by
+  classical
+  haveI : SecondCountableTopology X := ChartedSpace.secondCountable_of_sigmaCompact (M := X) (H := ℂ)
+  simpa [openUnionU] using
+    (openUnionPoU (X := X) (U := fun i => 𝔇.U i))
+
+theorem coverOpenUnionPoU_subordinate (𝔇 : SharedChartCover X) :
+    (coverOpenUnionPoU 𝔇).IsSubordinate
+      (fun i => {x : ↥(openUnionU 𝔇) | (x : X) ∈ 𝔇.U i}) := by
+  classical
+  haveI : SecondCountableTopology X := ChartedSpace.secondCountable_of_sigmaCompact (M := X) (H := ℂ)
+  simpa [openUnionU] using (openUnionPoU_subordinate (X := X) (U := fun i => 𝔇.U i))
+
+/-- The open-union partition of unity sums to one everywhere on the open union. -/
+theorem sum_coverOpenUnionPoU_eq_one (𝔇 : SharedChartCover X) {x : ↥(openUnionU 𝔇)} :
+    ∑ i, coverOpenUnionPoU 𝔇 i x = 1 := by
+  classical
+  haveI : SecondCountableTopology X := ChartedSpace.secondCountable_of_sigmaCompact (M := X) (H := ℂ)
+  simpa [openUnionU] using (openUnionPoU_sum_eq_one (X := X) (U := fun i => 𝔇.U i) (x := x))
+
+/-- The open-union PoU sums to `1` as a complex-valued function on the open union. -/
+theorem sum_coverOpenUnionRhoC_eq_one (𝔇 : SharedChartCover X) {x : ↥(openUnionU 𝔇)} :
+    ∑ i, ((coverOpenUnionPoU 𝔇 i x : ℝ) : ℂ) = 1 := by
+  have h := sum_coverOpenUnionPoU_eq_one (𝔇 := 𝔇) (x := x)
+  exact_mod_cast h
+
+/-- The complex-valued open-union PoU function `ρ_i : openUnionU → ℂ`. -/
+noncomputable def openUnionRhoC (𝔇 : SharedChartCover X) (i : 𝔇.ι) :
+    ↥(openUnionU 𝔇) → ℂ :=
+  ofRealCM.comp (coverOpenUnionPoU 𝔇 i)
+
+/-- The open-union PoU is smooth as a complex-valued function on the open union itself. -/
+theorem contMDiff_openUnionRhoC (𝔇 : SharedChartCover X) (i : 𝔇.ι) :
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (openUnionRhoC 𝔇 i) := by
+  simpa [openUnionRhoC] using
+    (ofRealCM.contMDiff.comp (coverOpenUnionPoU 𝔇 i).contMDiff)
+
+/-- `openUnionRhoC 𝔇 i x = 0` outside the support of the `i`-th open-union PoU function. -/
+theorem openUnionRhoC_eq_zero_of_notMem (𝔇 : SharedChartCover X) (i : 𝔇.ι)
+    {x : ↥(openUnionU 𝔇)} (hx : x ∉ tsupport (coverOpenUnionPoU 𝔇 i)) :
+    openUnionRhoC 𝔇 i x = 0 := by
+  simpa [openUnionRhoC, ContMDiffMap.comp_apply, ofRealCM] using
+    image_eq_zero_of_notMem_tsupport hx
+
+/-- The `(q)`-summand `ρ_q · holoFn(s_{qi})` of the open-union primitive, as a bare function on the
+open-union subtype. -/
+noncomputable def openUnionPrimSummand (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (q i : 𝔇.ι) :
+    ↥(openUnionU 𝔇) → ℂ :=
+  fun x => openUnionRhoC 𝔇 q x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q i) x
+
+@[simp] theorem openUnionPrimSummand_apply (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (q i : 𝔇.ι) (x : ↥(openUnionU 𝔇)) :
+    openUnionPrimSummand 𝔇 s q i x =
+      openUnionRhoC 𝔇 q x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q i) x := rfl
+
+/-- The open-union summand is `ContMDiffAt` on `U_i` (open-union version of the shared-chart
+primitive summand). -/
+theorem contMDiffAt_openUnionPrimSummand (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (q i : 𝔇.ι)
+    {x₀ : ↥(openUnionU 𝔇)} (hx₀ : (x₀ : X) ∈ 𝔇.toFiniteFamily.U i) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (openUnionPrimSummand 𝔇 s q i) x₀ := by
+  by_cases hb : x₀ ∈ tsupport (coverOpenUnionPoU 𝔇 q)
+  · have hxq : (x₀ : X) ∈ 𝔇.toFiniteFamily.U q := coverOpenUnionPoU_subordinate 𝔇 q hb
+    have hxov : (x₀ : X) ∈ (𝔇.toFiniteFamily.U q ⊓ 𝔇.toFiniteFamily.U i : Opens X) :=
+      ⟨hxq, hx₀⟩
+    have hρ : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
+        (fun x : ↥(openUnionU 𝔇) => openUnionRhoC 𝔇 q x) x₀ := by
+      simpa [openUnionRhoC] using
+        ((ofRealCM.contMDiff.comp (coverOpenUnionPoU 𝔇 q).contMDiff).contMDiffAt)
+    have hhol0 : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
+        (fun x : X => holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q i) x) (x₀ : X) :=
+      holoFn_contMDiffAt (cocycleComp_mem 𝔇.toFiniteFamily s q i) hxov
+    have hhol : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
+        (fun x : ↥(openUnionU 𝔇) =>
+          holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q i) (x : X)) x₀ := by
+      simpa using hhol0.comp x₀ contMDiff_subtype_val.contMDiffAt
+    have hmulρ : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ →L[ℝ] ℂ) (⊤ : ℕ∞)
+        (fun x => ContinuousLinearMap.mul ℝ ℂ (openUnionRhoC 𝔇 q x)) x₀ :=
+      ContMDiffAt.clm_apply contMDiffAt_const hρ
+    have hG0 : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
+        (fun x : ↥(openUnionU 𝔇) =>
+          (ContinuousLinearMap.mul ℝ ℂ (openUnionRhoC 𝔇 q x))
+            (holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q i) (x : X))) x₀ :=
+      hmulρ.clm_apply hhol
+    have hG : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
+        (fun x : ↥(openUnionU 𝔇) =>
+          openUnionRhoC 𝔇 q x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q i) x) x₀ := by
+      simpa [ContinuousLinearMap.mul_apply'] using hG0
+    simpa [openUnionPrimSummand_apply] using hG
+  · refine (contMDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq ?_
+    filter_upwards [(isClosed_tsupport (coverOpenUnionPoU 𝔇 q)).isOpen_compl.mem_nhds hb] with x hx
+    have hρ : openUnionRhoC 𝔇 q x = 0 := openUnionRhoC_eq_zero_of_notMem 𝔇 q hx
+    simp [openUnionPrimSummand_apply, hρ]
+
+/-- The open-union primitive `h_i = ∑_q ρ_q · holoFn(s_{qi})` on the open union. -/
+noncomputable def openUnionCoverPrim (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (i : 𝔇.ι) :
+    ↥(openUnionU 𝔇) → ℂ :=
+  fun x => ∑ q, openUnionPrimSummand 𝔇 s q i x
+
+@[simp] theorem openUnionCoverPrim_apply (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (i : 𝔇.ι) (x : ↥(openUnionU 𝔇)) :
+    openUnionCoverPrim 𝔇 s i x = ∑ q, openUnionPrimSummand 𝔇 s q i x := rfl
+
+/-- The open-union primitive is `ContMDiffAt` on `U_i`. -/
+theorem contMDiffAt_openUnionCoverPrim (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (i : 𝔇.ι)
+    {x₀ : ↥(openUnionU 𝔇)} (hx₀ : (x₀ : X) ∈ 𝔇.toFiniteFamily.U i) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (openUnionCoverPrim 𝔇 s i) x₀ :=
+  ContMDiffAt.sum (fun q _ => contMDiffAt_openUnionPrimSummand 𝔇 s q i hx₀)
+
 /-- The `k`-th PoU function as a complex `SmoothCFunctions` (`ρ̃_k = ofReal ∘ ρ_k`). Port of
 `DolbeaultComparisonInverse.rhoC`. -/
 noncomputable def rhoC (𝔇 : SharedChartCover X) (k : 𝔇.ι) : SmoothCFunctions X :=
@@ -274,22 +394,6 @@ theorem contMDiff_cSmul_section (c : SmoothCFunctions X) (g : SmoothCOneForms X)
         (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) :=
   fun x₀ => contMDiffAt_cSmul_section (c.contMDiff x₀) (g.contMDiff_toFun x₀)
 
-/-- **Chart-analytic ⟹ real-smooth.** If `h` read in the chart at `y` is `ℂ`-analytic at the chart
-image, then `h` is real-`C^∞` (`ContMDiffAt 𝓘(ℝ,ℂ)`) at `y`. Port of
-`DolbeaultComparisonInverse.contMDiffAt_real_of_chart_analyticAt`. -/
-theorem contMDiffAt_real_of_chart_analyticAt {h : X → ℂ} {y : X}
-    (ha : AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y)) :
-    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) h y := by
-  have hcd : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (h ∘ (chartAt (H := ℂ) y).symm)
-      ((chartAt (H := ℂ) y) y) :=
-    ((ha.contDiffAt.restrict_scalars ℝ).contMDiffAt).of_le le_top
-  have hchart : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (chartAt (H := ℂ) y) y :=
-    (contMDiffOn_chart (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := y)).contMDiffAt
-      ((chartAt (H := ℂ) y).open_source.mem_nhds (mem_chart_source ℂ y))
-  refine (hcd.comp y hchart).congr_of_eventuallyEq ?_
-  filter_upwards [(chartAt (H := ℂ) y).open_source.mem_nhds (mem_chart_source ℂ y)] with z hz
-  simp only [Function.comp_apply, (chartAt (H := ℂ) y).left_inv hz]
-
 /-- `ℂ`-multiplication is real-`C^∞` (it is `ℝ`-bilinear). Port of
 `DolbeaultComparisonInverse.contMDiffMul_real_complex` — makes `SmoothCFunctions X` a ring. -/
 instance contMDiffMul_real_complex : ContMDiffMul 𝓘(ℝ, ℂ) (⊤ : ℕ∞) ℂ :=
@@ -300,14 +404,6 @@ instance contMDiffMul_real_complex : ContMDiffMul 𝓘(ℝ, ℂ) (⊤ : ℕ∞) 
       simp only [mfld_simps]
       rw [contDiffOn_univ]
       exact contDiff_mul }
-
-/-- The analytic representative `holoFn hg` of a holomorphic germ on `↥W` is real-`C^∞`
-(`ContMDiffAt 𝓘(ℝ,ℂ)`) at every `y ∈ W` (chart-analytic, `holoFn_chart_analyticAt`, bridged to
-`ContMDiffAt` by `contMDiffAt_real_of_chart_analyticAt`). The function-level analogue of
-`DolbeaultComparisonInverse.holoFn_contMDiffAt`, here over the imported `CechDiskAcyclicProof.holoFn`. -/
-theorem holoFn_contMDiffAt {W : Opens X} {g : MGerm W} (hg : g ∈ OmegaDGerm (0 : Divisor X) W)
-    {y : X} (hy : y ∈ W) : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (holoFn hg) y :=
-  contMDiffAt_real_of_chart_analyticAt (holoFn_chart_analyticAt hg hy)
 
 /-- The chart-side double-sum term, as a smooth `(0,1)`-form. This is the shared-chart analogue of
 `DolbeaultComparisonInverse.cechTerm`. -/
@@ -362,6 +458,18 @@ theorem Gext_sub {U : Opens X} (f g : U → ℂ) : Gext (f - g) = Gext f - Gext 
   simp only [Gext, Pi.sub_apply]
   split <;> simp
 
+/-- `Gext` respects addition (extension by `0`). -/
+theorem Gext_add {U : Opens X} (f g : U → ℂ) : Gext (f + g) = Gext f + Gext g := by
+  funext x
+  simp only [Gext, Pi.add_apply]
+  split <;> simp
+
+/-- `Gext` respects scalar multiplication (extension by `0`). -/
+theorem Gext_smul {U : Opens X} (c : ℂ) (f : U → ℂ) : Gext (c • f) = c • Gext f := by
+  funext x
+  simp only [Gext, Pi.smul_apply]
+  split <;> simp
+
 /-- For a holomorphic germ class, `Gext (holoRep hg)` has a genuine limit along `𝓝[≠] x` at every
 `x ∈ W`. Port of `DolbeaultComparisonInverse.holoFn_tendsto`. -/
 theorem holoFn_tendsto {W : Opens X} {g : MGerm W} (hg : g ∈ OmegaDGerm (0 : Divisor X) W) {x : X}
@@ -393,6 +501,41 @@ theorem holoFn_sub {W : Opens X} {g₁ g₂ : MGerm W} (hg₁ : g₁ ∈ OmegaDG
   show limUnder (𝓝[≠] x) (Gext (holoRep hg)) = holoFn hg₁ x - holoFn hg₂ x
   rw [show holoFn hg₁ x = c₁ from hc₁.limUnder_eq, show holoFn hg₂ x = c₂ from hc₂.limUnder_eq]
   exact ((hc₁.sub hc₂).congr' heq.symm).limUnder_eq
+
+/-- **`holoFn` is additive** at every `x ∈ W`. -/
+theorem holoFn_add {W : Opens X} {g₁ g₂ : MGerm W} (hg₁ : g₁ ∈ OmegaDGerm (0 : Divisor X) W)
+    (hg₂ : g₂ ∈ OmegaDGerm (0 : Divisor X) W) (hg : g₁ + g₂ ∈ OmegaDGerm (0 : Divisor X) W)
+    {x : X} (hx : x ∈ W) : holoFn hg x = holoFn hg₁ x + holoFn hg₂ x := by
+  haveI := nhdsNE_neBot x
+  obtain ⟨c₁, hc₁⟩ := holoFn_tendsto hg₁ hx
+  obtain ⟨c₂, hc₂⟩ := holoFn_tendsto hg₂ hx
+  have hgerm : toGerm W (holoRep hg₁ + holoRep hg₂) = toGerm W (holoRep hg) := by
+    rw [map_add, toGerm_holoRep hg₁, toGerm_holoRep hg₂, toGerm_holoRep hg]
+  have heq : Gext (holoRep hg) =ᶠ[𝓝[≠] x] Gext (holoRep hg₁) + Gext (holoRep hg₂) := by
+    have hmatch : rawRestrictG (inf_le_right : W ⊓ W ≤ W) (toGerm W (holoRep hg₁ + holoRep hg₂))
+        = rawRestrictG (inf_le_left : W ⊓ W ≤ W) (toGerm W (holoRep hg)) := by rw [hgerm]
+    have h := Gext_overlap_eventuallyEq (holoRep hg) (holoRep hg₁ + holoRep hg₂) hmatch hx hx
+    rwa [Gext_add] at h
+  show limUnder (𝓝[≠] x) (Gext (holoRep hg)) = holoFn hg₁ x + holoFn hg₂ x
+  rw [show holoFn hg₁ x = c₁ from hc₁.limUnder_eq, show holoFn hg₂ x = c₂ from hc₂.limUnder_eq]
+  exact ((hc₁.add hc₂).congr' heq.symm).limUnder_eq
+
+/-- **`holoFn` is homogeneous** at every `x ∈ W`. -/
+theorem holoFn_smul {W : Opens X} (c : ℂ) {g : MGerm W} (hg : g ∈ OmegaDGerm (0 : Divisor X) W)
+    (hcg : c • g ∈ OmegaDGerm (0 : Divisor X) W) {x : X} (hx : x ∈ W) :
+    holoFn hcg x = c • holoFn hg x := by
+  haveI := nhdsNE_neBot x
+  obtain ⟨c₀, hc₀⟩ := holoFn_tendsto hg hx
+  have hgerm : toGerm W (c • holoRep hg) = toGerm W (holoRep hcg) := by
+    rw [map_smul, toGerm_holoRep hg, toGerm_holoRep hcg]
+  have heq : Gext (holoRep hcg) =ᶠ[𝓝[≠] x] c • Gext (holoRep hg) := by
+    have hmatch : rawRestrictG (inf_le_right : W ⊓ W ≤ W) (toGerm W (c • holoRep hg))
+        = rawRestrictG (inf_le_left : W ⊓ W ≤ W) (toGerm W (holoRep hcg)) := by rw [hgerm]
+    have h := Gext_overlap_eventuallyEq (holoRep hcg) (c • holoRep hg) hmatch hx hx
+    rwa [Gext_smul] at h
+  show limUnder (𝓝[≠] x) (Gext (holoRep hcg)) = c • holoFn hg x
+  rw [show holoFn hg x = c₀ from hc₀.limUnder_eq]
+  exact ((hc₀.const_smul c).congr' heq.symm).limUnder_eq
 
 /-- **`holoFn` depends only on the germ class.** Port of `DolbeaultComparisonInverse.holoFn_congr`. -/
 theorem holoFn_congr {W : Opens X} {g g' : MGerm W} (hg : g ∈ OmegaDGerm (0 : Divisor X) W)
@@ -479,6 +622,74 @@ theorem holoFn_diag_eq_zero (𝔙 : FiniteFamily X) (s : ↥(𝔙.cocycles1 (0 :
   -- `holoFn(s_{ii}) y − holoFn(s_{ii}) y = holoFn(s_{ii}) y`, i.e. `0 = holoFn(s_{ii}) y`.
   rw [sub_self] at h
   exact h.symm
+
+/-- **The open-union telescoping difference identity.**  On the overlap `U_i ⊓ U_j` inside the open
+union, the open-union primitive difference is the analytic cocycle representative:
+`openUnionCoverPrim s j - openUnionCoverPrim s i = holoFn(s_{ij})`.  This is the open-union analogue
+of `coverPrim_diff`, now without any closed-core restriction because the PoU sums to `1` on the whole
+open union. -/
+theorem openUnionCoverPrim_diff (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (i j : 𝔇.ι)
+    {x : ↥(openUnionU 𝔇)} (hx : (x : X) ∈ (𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X)) :
+    openUnionCoverPrim 𝔇 s j x - openUnionCoverPrim 𝔇 s i x
+      = holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) (x : X) := by
+  by_cases hij : i = j
+  · subst hij
+    rw [sub_self, holoFn_diag_eq_zero 𝔇.toFiniteFamily s i hx.1]
+  · rw [openUnionCoverPrim_apply, openUnionCoverPrim_apply, ← Finset.sum_sub_distrib]
+    have hpt : ∀ q : 𝔇.ι,
+        openUnionRhoC 𝔇 q x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q j) (x : X)
+          - openUnionRhoC 𝔇 q x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s q i) (x : X)
+        = openUnionRhoC 𝔇 q x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) (x : X) := by
+      intro q
+      by_cases hb : x ∈ tsupport (coverOpenUnionPoU 𝔇 q)
+      · have hxq : (x : X) ∈ 𝔇.toFiniteFamily.U q := coverOpenUnionPoU_subordinate 𝔇 q hb
+        have hxtri : (x : X) ∈ (𝔇.toFiniteFamily.U q ⊓ 𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X) :=
+          ⟨⟨hxq, hx.1⟩, hx.2⟩
+        rw [← mul_sub, holoFn_cocycle_sub 𝔇.toFiniteFamily s q i j hxtri]
+      · rw [openUnionRhoC_eq_zero_of_notMem 𝔇 q hb]; ring
+    simp_rw [openUnionPrimSummand_apply, hpt, ← Finset.sum_mul]
+    have hsum : ∑ q, openUnionRhoC 𝔇 q x = 1 := by
+      simpa [openUnionRhoC] using (sum_coverOpenUnionRhoC_eq_one (𝔇 := 𝔇) (x := x))
+    rw [hsum, one_mul]
+
+/-- **Open-union chart correctors.**  This packages the open-union primitive and its telescoping
+identity into a consumer-facing predicate.  It is the open-union analogue of the closed-core
+`HasChartAnalyticCorrectors` bridge: the primitive is smooth on the open union and the overlap
+difference is the analytic cocycle representative. -/
+def HasOpenUnionChartCorrectors (𝔇 : SharedChartCover X) : Prop :=
+  ∀ s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X)),
+    ∃ H : 𝔇.toFiniteFamily.ι → ↥(openUnionU 𝔇) → ℂ,
+      (∀ i, ∀ x : ↥(openUnionU 𝔇), (x : X) ∈ 𝔇.toFiniteFamily.U i →
+        ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (H i) x) ∧
+      ∀ i j, ∀ x : ↥(openUnionU 𝔇), (x : X) ∈ 𝔇.toFiniteFamily.U i →
+        (x : X) ∈ 𝔇.toFiniteFamily.U j →
+        (fun z => H j z - H i z) =ᶠ[𝓝[≠] x]
+          fun z => holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) (z : X)
+
+/-- The open-union primitive gives the consumer-facing open-union corrector predicate. -/
+theorem hasOpenUnionChartCorrectors (𝔇 : SharedChartCover X) :
+    HasOpenUnionChartCorrectors 𝔇 := by
+  intro s
+  refine ⟨fun i => openUnionCoverPrim 𝔇 s i, ?_, ?_⟩
+  · intro i x hxU
+    exact contMDiffAt_openUnionCoverPrim 𝔇 s i hxU
+  · intro i j x hxUi hxUj
+    let S : Set ↥(openUnionU 𝔇) :=
+      {z | (z : X) ∈ (𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X)}
+    have hSopen : IsOpen S := by
+      dsimp [S]
+      simpa using
+        ((𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X).isOpen.preimage
+          continuous_subtype_val)
+    have hxS : x ∈ S := by
+      dsimp [S]
+      exact ⟨hxUi, hxUj⟩
+    have hUij : ∀ᶠ z : ↥(openUnionU 𝔇) in 𝓝[≠] x,
+        (z : X) ∈ (𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X) := by
+      exact mem_nhdsWithin_of_mem_nhds (hSopen.mem_nhds hxS)
+    filter_upwards [hUij] with z hz
+    simpa using (openUnionCoverPrim_diff 𝔇 s i j hz)
 
 /-! ## §1 — The per-summand smoothness (fallback rung (b))
 
@@ -677,6 +888,17 @@ theorem differentiableAt_of_dbar_eq_zero_local {g : ℂ → ℂ} {x : ℂ}
     linear_combination this
   have hD1 : (fderiv ℝ g x) 1 = -(Complex.I * (fderiv ℝ g x) Complex.I) := by linear_combination h2
   rw [hD1, smul_eq_mul, mul_neg, ← mul_assoc, Complex.I_mul_I]; ring
+
+/-- **Open-set Wirtinger criterion.**  If a function is `ℝ`-differentiable on an open set and its
+`∂̄` vanishes there, then it is `ℂ`-differentiable there.  This is the set-level version of
+`differentiableAt_of_dbar_eq_zero_local`, and is the reusable upstream shape the chart-side ball solve
+actually consumes. -/
+theorem differentiableOn_complex_of_dbar_eq_zero_local {U : Set ℂ} (hU : IsOpen U) {g : ℂ → ℂ}
+    (hg : DifferentiableOn ℝ g U) (hdb : ∀ z ∈ U, DbarDisk.dbar g z = 0) :
+    DifferentiableOn ℂ g U := by
+  intro z hz
+  exact (differentiableAt_of_dbar_eq_zero_local
+    ((hg z hz).differentiableAt (hU.mem_nhds hz)) (hdb z hz)).differentiableWithinAt
 
 /-- **The chart-read primitive** `ĥ_i := coverPrim s i ∘ φ.symm : ℂ → ℂ` — the §2 cover-set primitive
 pushed through the shared chart.  `C^∞` on `Ω_i` (`contDiffAt_coverPrim_chart`); its differences split

@@ -183,21 +183,14 @@ theorem contMDiff_cSmul_section (c : SmoothCFunctions X) (g : SmoothCOneForms X)
         (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) :=
   fun x₀ => contMDiffAt_cSmul_section (c.contMDiff x₀) (g.contMDiff_toFun x₀)
 
-/-- **Chart-analytic ⟹ real-smooth.** If a `ℂ`-valued function `h` read in the chart at `y` is
-complex-analytic at the chart image, then `h` is real-`C^∞` (`ContMDiffAt 𝓘(ℝ,ℂ)`) at `y`. (The
-`(0,1)`-form term needs this for the holomorphic representatives `F_jk = Gext(holoRep)`.) -/
-theorem contMDiffAt_real_of_chart_analyticAt {h : X → ℂ} {y : X}
-    (ha : AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y)) :
-    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) h y := by
-  have hcd : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (h ∘ (chartAt (H := ℂ) y).symm)
-      ((chartAt (H := ℂ) y) y) :=
-    ((ha.contDiffAt.restrict_scalars ℝ).contMDiffAt).of_le le_top
-  have hchart : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (chartAt (H := ℂ) y) y :=
-    (contMDiffOn_chart (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := y)).contMDiffAt
-      ((chartAt (H := ℂ) y).open_source.mem_nhds (mem_chart_source ℂ y))
-  refine (hcd.comp y hchart).congr_of_eventuallyEq ?_
-  filter_upwards [(chartAt (H := ℂ) y).open_source.mem_nhds (mem_chart_source ℂ y)] with z hz
-  simp only [Function.comp_apply, (chartAt (H := ℂ) y).left_inv hz]
+/-- **ℂ-valued smooth-function scaling of a `(0,1)`-valued smooth form** (the double-sum term builder):
+`(c • g) x = c x • g x`, a smooth `(0,1)`-valued form. -/
+noncomputable def cSmulForm (c : SmoothCFunctions X) (g : SmoothCOneForms X) : SmoothCOneForms X where
+  toFun := fun x => (c x) • (g x)
+  contMDiff_toFun := contMDiff_cSmul_section c g
+
+@[simp] theorem cSmulForm_apply (c : SmoothCFunctions X) (g : SmoothCOneForms X) (x : X) :
+    cSmulForm c g x = (c x) • (g x) := rfl
 
 /-- The `(0,1)`-projection commutes with ℂ-scaling of the codomain: `proj01 (z • α) = z • proj01 α`
 (`z` factors out of the Wirtinger average). -/
@@ -207,17 +200,7 @@ theorem proj01_smul (z : ℂ) (α : ℂ →L[ℝ] ℂ) : proj01 (z • α) = z �
   simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.add_apply,
     ContinuousLinearMap.coe_comp', Function.comp_apply, mulI, ContinuousLinearMap.mul_apply',
     ContinuousLinearMap.smul_apply, smul_eq_mul, Complex.real_smul]
-  push_cast
   ring
-
-/-- **ℂ-valued smooth-function scaling of a `(0,1)`-valued smooth form** (the double-sum term builder):
-`(c • g) x = c x • g x`, a smooth `(0,1)`-valued form. -/
-noncomputable def cSmulForm (c : SmoothCFunctions X) (g : SmoothCOneForms X) : SmoothCOneForms X where
-  toFun := fun x => (c x) • (g x)
-  contMDiff_toFun := contMDiff_cSmul_section c g
-
-@[simp] theorem cSmulForm_apply (c : SmoothCFunctions X) (g : SmoothCOneForms X) (x : X) :
-    cSmulForm c g x = (c x) • (g x) := rfl
 
 /-- ℂ-scaling preserves the `(0,1)`-forms: `c • g ∈ A^{0,1}` whenever `g ∈ A^{0,1}`. (Witness
 `c • h` where `g = proj01L h`; `proj01` commutes with the ℂ-scale, `proj01_smul`.) -/
@@ -323,12 +306,6 @@ theorem holoFn_tendsto {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : D
   simp [Function.comp, φ.left_inv hz]
 
 /-! ### The holomorphic representative function and the double-sum terms -/
-
-/-- `holoFn hg` is real-`C^∞` at every point of `V` (the analytic representative is chart-analytic,
-`gextLimRep_chart_analyticAt`, bridged to `ContMDiffAt` by `contMDiffAt_real_of_chart_analyticAt`). -/
-theorem holoFn_contMDiffAt {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V)
-    {y : X} (hy : y ∈ V) : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (holoFn hg) y :=
-  contMDiffAt_real_of_chart_analyticAt (gextLimRep_chart_analyticAt (holoRep_mem hg) hy)
 
 /-- **`holoFn` is additive** at every `x ∈ V` (the choice in `holoRep` washes out: the limit-repair
 `limUnder` is insensitive to codiscrete junk, so it depends only on the germ class, and the limit is
@@ -465,37 +442,6 @@ theorem proj01_idempotent (α : ℂ →L[ℝ] ℂ) : proj01 (proj01 α) = proj01
   have hI : Complex.I * (Complex.I * v) = -v := by rw [← mul_assoc, Complex.I_mul_I]; ring
   rw [hI, map_neg]
   linear_combination (-(1 / 4 : ℂ) * α v) * Complex.I_sq
-
-/-- **`proj01` kills ℂ-linear maps.** A `ℂ`-linear `L : ℂ →L[ℂ] ℂ` (restricted to `ℝ`) is purely
-`(1,0)`: its `(0,1)`-part `proj01` is `0`, since `L(i·v) = i·L v` makes the Wirtinger average
-`½(L v + i·L(i v)) = ½(L v + i²·L v) = 0`. (Used to show a holomorphic function's `∂̄` vanishes.) -/
-theorem proj01_restrictScalars_eq_zero (L : ℂ →L[ℂ] ℂ) : proj01 (L.restrictScalars ℝ) = 0 := by
-  refine ContinuousLinearMap.ext fun v => ?_
-  rw [proj01_apply_val]
-  have hL : (L.restrictScalars ℝ) (Complex.I * v) = Complex.I * (L.restrictScalars ℝ) v := by
-    show L (Complex.I * v) = Complex.I * L v
-    rw [← smul_eq_mul, map_smul, smul_eq_mul]
-  rw [hL, ContinuousLinearMap.zero_apply]
-  linear_combination ((2 : ℂ)⁻¹ * (L.restrictScalars ℝ) v) * Complex.I_sq
-
-/-- **A holomorphic representative has vanishing `∂̄`.** For `g ∈ OmegaDGerm 0 V`, the intrinsic `∂̄` of
-its analytic representative `holoFn hg` is `0` at every `x ∈ V`: `holoFn hg` read in the chart is
-ℂ-analytic (`gextLimRep_chart_analyticAt`), so its `mfderiv` (= the chart `fderiv ℝ`, by the chart
-bridge) is `restrictScalars` of a ℂ-linear `fderiv ℂ`, and `proj01` kills ℂ-linear maps
-(`proj01_restrictScalars_eq_zero`). This is the "holomorphic ⟹ `∂̄=0`" fact `coboundary_le` needs. -/
-theorem holoFn_dbar_eq_zero {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V)
-    {x : X} (hx : x ∈ V) : proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn hg) x) = 0 := by
-  have hmdiff : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn hg) x :=
-    (holoFn_contMDiffAt hg hx).mdifferentiableAt (by simp)
-  have hpull : mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn hg) x
-      = fderiv ℝ (fun z => holoFn hg ((extChartAt 𝓘(ℝ, ℂ) x).symm z)) (extChartAt 𝓘(ℝ, ℂ) x x) := by
-    rw [hmdiff.mfderiv, ModelWithCorners.Boundaryless.range_eq_univ, fderivWithin_univ]
-    congr 1
-  have hCdiff : DifferentiableAt ℂ (fun z => holoFn hg ((extChartAt 𝓘(ℝ, ℂ) x).symm z))
-      (extChartAt 𝓘(ℝ, ℂ) x x) :=
-    (gextLimRep_chart_analyticAt (holoRep_mem hg) hx).differentiableAt
-  rw [hpull, hCdiff.fderiv_restrictScalars ℝ]
-  exact proj01_restrictScalars_eq_zero _
 
 /-- **`holoFn` is restriction-compatible.** For `V ≤ U` and `x ∈ V`, the analytic rep of the restricted
 germ agrees with the original at `x` (`limUnder` depends only on the germ, which restriction preserves
