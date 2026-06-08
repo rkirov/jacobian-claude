@@ -441,6 +441,172 @@ theorem dbar_globalPrim (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0
   rw [hmf, map_sum, 𝔇.glueForm_apply_on_V s hs a hxa]
   exact Finset.sum_congr rfl fun c _ => 𝔇.dbar_globalPrimTerm s a c hxa
 
+/-! ## §D — The holomorphic corrector `η_a := u_a − G_a`
+
+`u_a := diskVal a ω̂` is the per-disk `∂̄`-primitive (`proj01(mfderiv u_a) = ω̂` on `U_a`,
+`dbar_diskValue_eq_g`).  Then `η_a := u_a − G_a` has `proj01(mfderiv η_a) = ω̂ − ω̂ = 0` on `V_a` —
+holomorphic — and is bounded on `V_a` (`u_a` continuous on the compact `closure V_a ⊆ U_a`; `G_a`
+bounded by `∑ ‖s_{·a}‖`).  So `η_a ∈ BddHol (Wov (a,a))`. -/
+
+/-- The per-disk `∂̄`-primitive value `u_a := diskVal a ω̂` (a smooth function on `U_a`). -/
+noncomputable def primVal (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) : X → ℂ :=
+  diskVal 𝔇 a (𝔇.glueForm s)
+
+/-- `proj01(mfderiv u_a x) = ω̂ x` on `U_a` (Forster 13.2 primitive; `dbar_diskValue_eq_g` upgraded to
+the full CLM by `dbar_eq_of_apply_one'`). -/
+theorem dbar_primVal (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) {x : X} (hxa : x ∈ (𝔇.U a : Set X)) :
+    proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.primVal s a) x)
+      = ((𝔇.glueForm s : ↥(OneFormsZeroOne X)) : SmoothCOneForms X) x :=
+  dbar_eq_of_apply_one' (𝔇.glueForm s).2 (𝔇.dbar_diskValue_eq_g (𝔇.glueForm s).2 a hxa)
+
+theorem mdifferentiableAt_primVal (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) {x : X}
+    (hxa : x ∈ (𝔇.U a : Set X)) :
+    MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.primVal s a) x :=
+  (contMDiffAt_diskVal 𝔇 a (𝔇.glueForm s) hxa).mdifferentiableAt (by simp)
+
+/-- **Chart-`a` Wirtinger bridge from intrinsic vanishing.**  If `w` is `MDifferentiableAt y` with
+intrinsic Wirtinger scalar `proj01(mfderiv w y)(1) = 0`, then for any chart `a` whose source contains
+`y`, the chart-`a` planar `∂̄(w ∘ φ_a⁻¹)(φ_a y) = 0`.  Proof: `w∘φ_a⁻¹ = (w∘φ_y⁻¹)∘(φ_y∘φ_a⁻¹)`, the
+inner map is holomorphic, so by the Wirtinger chain rule the chart-`a` `∂̄` is `conj(τ′)` times the
+own-chart `∂̄(w∘φ_y⁻¹)(φ_y y) = proj01(mfderiv w y)(1) = 0`. -/
+theorem dbar_chartFixed_of_intrinsic_zero {w : X → ℂ} {y : X} (a : 𝔇.ι)
+    (hya : y ∈ (chartAt (H := ℂ) (𝔇.center a)).source)
+    (hwmd : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w y)
+    (hw0 : proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w y) (1 : ℂ) = 0) :
+    DbarDisk.dbar (fun z => w ((chartAt (H := ℂ) (𝔇.center a)).symm z))
+      ((chartAt (H := ℂ) (𝔇.center a)) y) = 0 := by
+  set φa := chartAt (H := ℂ) (𝔇.center a) with hφa
+  set φy := chartAt (H := ℂ) y with hφy
+  set τ : ℂ → ℂ := φy ∘ φa.symm with hτ
+  have hyy : y ∈ φy.source := mem_chart_source ℂ y
+  -- own-chart `∂̄(w∘φ_y.symm)(φ_y y) = proj01(mfderiv w y)(1) = 0`.
+  have hown : DbarDisk.dbar (fun z => w (φy.symm z)) (φy y) = 0 := by
+    have := dbar_apply_one_eq_dbarDisk' hwmd
+    rw [hw0] at this
+    -- `extChartAt 𝓘(ℝ,ℂ) y = chartAt ℂ y = φy` (identity model).
+    simpa only [hφy, show (extChartAt 𝓘(ℝ, ℂ) y : X → ℂ) = (chartAt (H := ℂ) y : X → ℂ) from rfl,
+      show ((extChartAt 𝓘(ℝ, ℂ) y) y : ℂ) = (chartAt (H := ℂ) y) y from rfl] using this.symm
+  -- `τ` holomorphic at `φ_a y`, `τ (φ_a y) = φ_y y`.
+  have hτdiff : DifferentiableAt ℂ τ (φa y) := by
+    rw [hτ, hφy, hφa]
+    exact (transition_analyticAt_of_mem (y := 𝔇.center a) (z := y) (x := y)
+      hya hyy).differentiableAt
+  have hτpt : τ (φa y) = φy y := by
+    rw [hτ, Function.comp_apply, φa.left_inv hya]
+  -- `w∘φ_y.symm` is `ℝ`-diff at `φ_y y` (= `τ(φ_a y)`).
+  have hwsymm_md : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w (φy.symm (φy y)) := by
+    rw [φy.left_inv hyy]; exact hwmd
+  have hℝ : DifferentiableAt ℝ (fun z => w (φy.symm z)) (φy y) := by
+    have hsymm : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) φy.symm (φy y) :=
+      (contMDiffOn_chart_symm (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := y) _
+        (φy.map_source hyy)).contMDiffAt
+        (φy.open_target.mem_nhds (φy.map_source hyy)) |>.mdifferentiableAt (by simp)
+    have hcomp : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (fun z => w (φy.symm z)) (φy y) :=
+      hwsymm_md.comp (φy y) hsymm
+    have := hcomp.differentiableWithinAt_writtenInExtChartAt
+    rw [writtenInExtChartAt, ModelWithCorners.Boundaryless.range_eq_univ,
+      differentiableWithinAt_univ] at this
+    simpa only [Function.comp, mfld_simps] using this
+  -- Wirtinger chain rule: `∂̄((w∘φ_y.symm)∘τ)(φ_a y) = conj(τ′)·∂̄(w∘φ_y.symm)(φ_y y) = conj·0 = 0`.
+  have hchain : DbarDisk.dbar ((fun z => w (φy.symm z)) ∘ τ) (φa y)
+      = (starRingEnd ℂ) (deriv τ (φa y)) * DbarDisk.dbar (fun z => w (φy.symm z)) (τ (φa y)) :=
+    dbarDisk_comp_holo (fun z => w (φy.symm z)) τ (φa y) (hτpt ▸ hℝ) hτdiff
+  -- `w∘φ_a.symm = (w∘φ_y.symm)∘τ` on a NEIGHBOURHOOD of `φ_a y` (where `φ_a.symm ∈ φ_a.source`).
+  have hcompfun : (fun z => w (φa.symm z)) =ᶠ[nhds (φa y)] ((fun z => w (φy.symm z)) ∘ τ) := by
+    have hcont : ContinuousAt φa.symm (φa y) := φa.continuousAt_symm (φa.map_source hya)
+    filter_upwards [hcont.preimage_mem_nhds (φy.open_source.mem_nhds (by
+      rw [φa.left_inv hya]; exact hyy))] with z hz
+    -- `hz : φa.symm z ∈ φy.source`; `τ z = φy (φa.symm z)`, `φy.symm (φy (φa.symm z)) = φa.symm z`.
+    simp only [hτ, Function.comp_apply, φy.left_inv hz]
+  rw [dbarDisk_congr hcompfun, hchain, hτpt, hown, mul_zero]
+
+/-- **The corrector function** `η_a := u_a − G_a` (a bare `X → ℂ`, holomorphic on `V_a`). -/
+noncomputable def etaFn (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) : X → ℂ :=
+  fun x => 𝔇.primVal s a x - 𝔇.globalPrim s a x
+
+/-- `η_a` is `MDifferentiableAt` at `x ∈ V_a` (difference of two `MDifferentiableAt` functions). -/
+theorem mdifferentiableAt_etaFn (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) {x : X}
+    (hxa : x ∈ (𝔇.shrinkOpens a : Opens X)) :
+    MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.etaFn s a) x := by
+  have hxaU : x ∈ (𝔇.U a : Set X) := 𝔇.shrinkOpens_le_U a hxa
+  have hpu : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.primVal s a) x := 𝔇.mdifferentiableAt_primVal s a hxaU
+  have hpg : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrim s a) x := by
+    rw [𝔇.globalPrim_eq_sum s a]
+    exact MDifferentiableAt.sum fun c _ => 𝔇.mdifferentiableAt_globalPrimTerm s a c hxa
+  exact hpu.sub hpg
+
+/-- The intrinsic Wirtinger scalar of `η_a` vanishes on `V_a`: `proj01(mfderiv η_a y)(1) = 0` (both
+`u_a` and `G_a` have it `= (ω̂ y)(1)`). -/
+theorem dbar1_etaFn (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a : 𝔇.ι) {y : X}
+    (hya : y ∈ (𝔇.shrinkOpens a : Opens X)) :
+    proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.etaFn s a) y) (1 : ℂ) = 0 := by
+  have hyaU : y ∈ (𝔇.U a : Set X) := 𝔇.shrinkOpens_le_U a hya
+  have hpu : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.primVal s a) y := 𝔇.mdifferentiableAt_primVal s a hyaU
+  have hpg : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrim s a) y := by
+    rw [𝔇.globalPrim_eq_sum s a]
+    exact MDifferentiableAt.sum fun c _ => 𝔇.mdifferentiableAt_globalPrimTerm s a c hya
+  -- own-chart planar `∂̄` of `η_a` = `∂̄(pu) − ∂̄(pg)` = `(ω̂)(1) − (ω̂)(1) = 0`; transfer back to scalar.
+  set e := (extChartAt 𝓘(ℝ, ℂ) y) with he
+  have hmd : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.etaFn s a) y := 𝔇.mdifferentiableAt_etaFn s a hya
+  rw [dbar_apply_one_eq_dbarDisk' hmd]
+  have hpullEq : (fun z => 𝔇.etaFn s a (e.symm z))
+      = fun z => 𝔇.primVal s a (e.symm z) - 𝔇.globalPrim s a (e.symm z) := by
+    funext z; simp only [etaFn]
+  have hℝu : DifferentiableAt ℝ (fun z => 𝔇.primVal s a (e.symm z)) (e y) := by
+    have := hpu.differentiableWithinAt_writtenInExtChartAt
+    rw [writtenInExtChartAt, ModelWithCorners.Boundaryless.range_eq_univ,
+      differentiableWithinAt_univ] at this
+    simpa only [Function.comp, he, mfld_simps] using this
+  have hℝg : DifferentiableAt ℝ (fun z => 𝔇.globalPrim s a (e.symm z)) (e y) := by
+    have := hpg.differentiableWithinAt_writtenInExtChartAt
+    rw [writtenInExtChartAt, ModelWithCorners.Boundaryless.range_eq_univ,
+      differentiableWithinAt_univ] at this
+    simpa only [Function.comp, he, mfld_simps] using this
+  rw [hpullEq, dbarFun_sub hℝu hℝg]
+  rw [← dbar_apply_one_eq_dbarDisk' hpu, ← dbar_apply_one_eq_dbarDisk' hpg,
+    𝔇.dbar_primVal s a hyaU, 𝔇.dbar_globalPrim s hs a hya, sub_self]
+
+/-- **`η_a` chart-`a`-read is `AnalyticOn` `Wov (a,a)`.**  At each `z = φ_a y` (`y ∈ V_a`) the chart-`a`
+planar `∂̄(η_a ∘ φ_a⁻¹) = 0` (`dbar_chartFixed_of_intrinsic_zero` + `dbar1_etaFn`), and the pullback is
+`ℝ`-differentiable on the open `W = φ_a.target ∩ φ_a.symm⁻¹'(V_a)`; an open `DifferentiableOn ℂ` ⟹
+`AnalyticOn`. -/
+theorem etaFn_chartA_analyticOn (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a : 𝔇.ι) :
+    AnalyticOn ℂ (𝔇.etaFn s a ∘ (chartAt (H := ℂ) (𝔇.center a)).symm) (𝔇.Wov (a, a)) := by
+  set φa := chartAt (H := ℂ) (𝔇.center a) with hφa
+  set W : Set ℂ := φa.target ∩ φa.symm ⁻¹' ((𝔇.shrinkOpens a : Opens X) : Set X) with hW
+  have hWopen : IsOpen W := φa.isOpen_inter_preimage_symm (𝔇.shrinkOpens a).isOpen
+  -- `DifferentiableOn ℂ (η_a∘φa.symm) W`.
+  have hDiffOn : DifferentiableOn ℂ (𝔇.etaFn s a ∘ φa.symm) W := by
+    intro z hz
+    have hzV : φa.symm z ∈ ((𝔇.shrinkOpens a : Opens X) : Set X) := hz.2
+    have hzsrc : φa.symm z ∈ φa.source := φa.map_target hz.1
+    have hmd : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.etaFn s a) (φa.symm z) :=
+      𝔇.mdifferentiableAt_etaFn s a hzV
+    -- `ℝ`-differentiability of the chart-`a` pullback at `z = φa (φa.symm z)`.
+    have hℝ : DifferentiableAt ℝ (𝔇.etaFn s a ∘ φa.symm) z := by
+      have hsymm : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) φa.symm z :=
+        (contMDiffOn_chart_symm (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := 𝔇.center a) _ hz.1).contMDiffAt
+          (φa.open_target.mem_nhds hz.1) |>.mdifferentiableAt (by simp)
+      have hcomp : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.etaFn s a ∘ φa.symm) z :=
+        hmd.comp z hsymm
+      have := hcomp.differentiableWithinAt_writtenInExtChartAt
+      rw [writtenInExtChartAt, ModelWithCorners.Boundaryless.range_eq_univ,
+        differentiableWithinAt_univ] at this
+      simpa only [Function.comp, mfld_simps] using this
+    -- chart-`a` planar `∂̄ = 0` (bridge from intrinsic zero).
+    have hdb0 : DbarDisk.dbar (fun w => 𝔇.etaFn s a (φa.symm w)) z = 0 := by
+      have hzz : φa (φa.symm z) = z := φa.right_inv hz.1
+      have := 𝔇.dbar_chartFixed_of_intrinsic_zero a hzsrc hmd (𝔇.dbar1_etaFn s hs a hzV)
+      rwa [hzz] at this
+    exact (differentiableAt_of_dbar_eq_zero_chartDisk hℝ hdb0).differentiableWithinAt
+  -- `AnalyticOn` on `Wov (a,a) = φ_a '' (V_a ∩ V_a) ⊆ W`-image.
+  rintro w ⟨y, hyVV, rfl⟩
+  have hyV : y ∈ ((𝔇.shrinkOpens a : Opens X) : Set X) := hyVV.1
+  have hysrc : y ∈ φa.source := 𝔇.shrinkOpens_subset_source a hyV
+  have hwW : φa y ∈ W := ⟨φa.map_source hysrc, by
+    simp only [hW, Set.mem_preimage, φa.left_inv hysrc]; exact hyV⟩
+  exact (hDiffOn.analyticOnNhd hWopen (φa y) hwW).analyticWithinAt
+
 end ChartDiskCover
 
 end Jacobians.Dolbeault
