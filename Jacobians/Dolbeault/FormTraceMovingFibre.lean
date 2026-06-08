@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.Dolbeault.FormTraceCoherentSelection
+import Jacobians.Dolbeault.FormTraceSheetFibreBridge
 import Jacobians.TraceForm
 
 /-!
@@ -149,6 +150,140 @@ theorem fibreTrace_eventuallyEq_movingSum (ω₀ : HolomorphicOneForms X) (f : M
     exact this
   exact traceCoeff_eventuallyEq_sum_rightInverse ω₀ f D rinv
     (fun i => (hrinv_props i).1) (fun i => (hrinv_props i).2.1) (fun i => (hrinv_props i).2.2)
+
+/-! ### Chart-frame independence of the moving summand (the `dz`-Jacobian, derived planar)
+
+The moving-fibre summand `chartIntegrand ω₀ g xs (chart_xs (s b'))·deriv(chart_xs ∘ s) b'` — the
+push-forward of `α = ω₀·g` along the section `s : ℂ → X`, read in the canonical chart at a *base point*
+`xs` (with `s b'` in its source) — is **independent of the choice of `xs`**: it equals the self-chart
+(intrinsic) summand `g (s b')·localRep ω₀ (s b')(s b')·deriv(chart_{s b'} ∘ s) b'`.  This is the
+`dz`-Jacobian cancellation, derived purely planar from the proved frame-transition law
+`localRep_eq_transition_mul_self` and the chain rule: changing the source chart rescales `coeffAt =
+localRep` and `deriv(chart ∘ s)` inversely.  (No bundle / no compactness on the base `ℂ`.) -/
+
+/-- **The moving summand equals the self-chart (intrinsic) summand.**  For a section `s : ℂ → X` and a
+base point `xs` with `s b' ∈ chart_xs.source`, with the chart pullback `chart_{s b'} ∘ s`
+differentiable at `b'` and the chart transition `chart_xs ∘ chart_{s b'}.symm` differentiable at
+`chart_{s b'}(s b')`, the chart-`xs` moving summand of `α = ω₀·g` equals the self-chart summand:
+
+> `chartIntegrand ω₀ g xs (chart_xs (s b'))·deriv (fun z => chart_xs (s z)) b'
+>    = g (s b')·localRep ω₀ (s b')(s b')·deriv (fun z => chart_{s b'} (s z)) b'`.
+
+*Proof.*  Unfold `chartIntegrand`: `coeffAt ω₀ xs (chart_xs(s b')) = localRep ω₀ xs (s b')` and `g`
+evaluates at `s b'` (since `chart_xs.symm (chart_xs(s b')) = s b'`).  The frame-transition law rewrites
+`localRep ω₀ xs (s b') = deriv(chart_{s b'} ∘ chart_xs.symm)(chart_xs(s b'))·localRep ω₀ (s b')(s b')`;
+the chain rule factors `deriv(chart_xs ∘ s) b' = deriv(chart_xs ∘ chart_{s b'}.symm)(chart_{s b'}(s b'))
+·deriv(chart_{s b'} ∘ s) b'`, and the two transition `deriv`s are mutual inverses (the chart-transition
+and its inverse compose to the identity), so they cancel. -/
+theorem movingSummand_eq_selfChart (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (s : ℂ → X) {b' : ℂ}
+    (xs : X) (hmem : s b' ∈ (chartAt ℂ xs).source) (hcont : ContinuousAt s b')
+    (hsP_diff : DifferentiableAt ℂ (fun z => (chartAt ℂ (s b')) (s z)) b')
+    (htrans_diff : DifferentiableAt ℂ
+      (fun w => (chartAt ℂ xs) ((chartAt ℂ (s b')).symm w)) ((chartAt ℂ (s b')) (s b')))
+    (htrans_diff_inv : DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (s b')) ((chartAt ℂ xs).symm w)) ((chartAt ℂ xs) (s b'))) :
+    chartIntegrand ω₀ g xs ((chartAt ℂ xs) (s b')) * deriv (fun z => (chartAt ℂ xs) (s z)) b'
+      = g (s b') * Jacobians.Montel.localRep ω₀ (s b') (s b')
+        * deriv (fun z => (chartAt ℂ (s b')) (s z)) b' := by
+  -- Abbreviations.
+  set P : X := s b' with hP
+  have hPsrc : P ∈ (chartAt ℂ P).source := mem_chart_source ℂ P
+  -- `chartIntegrand ω₀ g xs (chart_xs P) = localRep ω₀ xs P · g P`.
+  have hg_eval : g ((chartAt ℂ xs).symm ((chartAt ℂ xs) P)) = g P := by
+    rw [(chartAt ℂ xs).left_inv hmem]
+  have hcoeff : coeffAt ω₀ xs ((chartAt ℂ xs) P) = Jacobians.Montel.localRep ω₀ xs P := by
+    rw [coeffAt]; congr 1; exact (chartAt ℂ xs).left_inv hmem
+  rw [chartIntegrand, hg_eval, hcoeff]
+  -- Frame-transition: `localRep ω₀ xs P = J · localRep ω₀ P P`, `J := deriv(chart_P ∘ chart_xs.symm)(chart_xs P)`.
+  rw [Jacobians.Dolbeault.FormTraceSheet.localRep_eq_transition_mul_self ω₀ xs P hmem]
+  set J : ℂ := deriv (fun w => (chartAt ℂ P) ((chartAt ℂ xs).symm w)) ((chartAt ℂ xs) P) with hJ
+  set J' : ℂ := deriv (fun w => (chartAt ℂ xs) ((chartAt ℂ P).symm w)) ((chartAt ℂ P) P) with hJ'
+  -- Chain rule for `deriv (chart_xs ∘ s) b' = J' · deriv(chart_P ∘ s) b'`.
+  have hsymm_comp : (fun z => (chartAt ℂ xs) (s z)) =ᶠ[𝓝 b']
+      (fun z => (chartAt ℂ xs) ((chartAt ℂ P).symm ((chartAt ℂ P) (s z)))) := by
+    have hsrc : ∀ᶠ z in 𝓝 b', s z ∈ (chartAt ℂ P).source :=
+      hcont.eventually_mem ((chartAt ℂ P).open_source.mem_nhds hPsrc)
+    filter_upwards [hsrc] with z hz
+    rw [(chartAt ℂ P).left_inv hz]
+  -- The outer transition `chart_xs ∘ chart_P.symm` is differentiable at `chart_P (s b') = chart_P P`.
+  have htrans_diff_at : DifferentiableAt ℂ (fun w => (chartAt ℂ xs) ((chartAt ℂ P).symm w))
+      ((chartAt ℂ P) (s b')) := by rw [← hP]; exact htrans_diff
+  have hchain : deriv (fun z => (chartAt ℂ xs) (s z)) b'
+      = J' * deriv (fun z => (chartAt ℂ P) (s z)) b' := by
+    rw [hsymm_comp.deriv_eq]
+    -- `deriv ((chart_xs ∘ chart_P.symm) ∘ (chart_P ∘ s)) b' = J' · deriv(chart_P ∘ s) b'`.
+    rw [show (fun z => (chartAt ℂ xs) ((chartAt ℂ P).symm ((chartAt ℂ P) (s z))))
+        = (fun w => (chartAt ℂ xs) ((chartAt ℂ P).symm w)) ∘ (fun z => (chartAt ℂ P) (s z)) from rfl]
+    rw [deriv_comp b' htrans_diff_at hsP_diff, hJ', ← hP]
+  -- `J · J' = 1`: the chart transitions `chart_P ∘ chart_xs.symm` and `chart_xs ∘ chart_P.symm`
+  -- compose to identity near the points; their derivatives multiply to `1`.
+  have hJJ' : J * J' = 1 := by
+    -- `(chart_P ∘ chart_xs.symm) ∘ (chart_xs ∘ chart_P.symm) =ᶠ id` near `chart_P P`.
+    have hcomp_id : (fun w => (chartAt ℂ P) ((chartAt ℂ xs).symm
+        ((chartAt ℂ xs) ((chartAt ℂ P).symm w)))) =ᶠ[𝓝 ((chartAt ℂ P) P)] id := by
+      -- near `chart_P P`, `chart_P.symm w ∈ chart_xs.source`, then `chart_xs.symm ∘ chart_xs = id`,
+      -- and `chart_P ∘ chart_P.symm = id`.
+      have hcont_symm : ContinuousAt (chartAt ℂ P).symm ((chartAt ℂ P) P) :=
+        (chartAt ℂ P).continuousAt_symm ((chartAt ℂ P).map_source hPsrc)
+      have hval_symm : (chartAt ℂ P).symm ((chartAt ℂ P) P) = P := (chartAt ℂ P).left_inv hPsrc
+      have h1 : ∀ᶠ w in 𝓝 ((chartAt ℂ P) P), (chartAt ℂ P).symm w ∈ (chartAt ℂ xs).source :=
+        hcont_symm.eventually_mem (by rw [hval_symm]; exact (chartAt ℂ xs).open_source.mem_nhds hmem)
+      have h2 : ∀ᶠ w in 𝓝 ((chartAt ℂ P) P), w ∈ (chartAt ℂ P).target :=
+        (chartAt ℂ P).open_target.mem_nhds ((chartAt ℂ P).map_source hPsrc)
+      filter_upwards [h1, h2] with w hw1 hw2
+      show (chartAt ℂ P) ((chartAt ℂ xs).symm ((chartAt ℂ xs) ((chartAt ℂ P).symm w))) = w
+      rw [(chartAt ℂ xs).left_inv hw1, (chartAt ℂ P).right_inv hw2]
+    -- Chain rule on the composite-`= id` at `chart_P P`; `chart_P.symm (chart_P P) = P` simplifies
+    -- the inner evaluation point in the first factor to `chart_xs P` (= `J`'s eval point).
+    have hPP : (chartAt ℂ P).symm ((chartAt ℂ P) P) = P := (chartAt ℂ P).left_inv hPsrc
+    have hderiv_id : deriv (fun w => (chartAt ℂ P) ((chartAt ℂ xs).symm
+        ((chartAt ℂ xs) ((chartAt ℂ P).symm w)))) ((chartAt ℂ P) P) = 1 := by
+      rw [hcomp_id.deriv_eq, deriv_id']
+    rw [show (fun w => (chartAt ℂ P) ((chartAt ℂ xs).symm ((chartAt ℂ xs) ((chartAt ℂ P).symm w))))
+        = (fun w => (chartAt ℂ P) ((chartAt ℂ xs).symm w)) ∘ (fun w => (chartAt ℂ xs) ((chartAt ℂ P).symm w))
+        from rfl] at hderiv_id
+    rw [deriv_comp ((chartAt ℂ P) P)
+      (by show DifferentiableAt ℂ (fun w => (chartAt ℂ P) ((chartAt ℂ xs).symm w))
+            ((chartAt ℂ xs) ((chartAt ℂ P).symm ((chartAt ℂ P) P)))
+          rw [hPP]; exact htrans_diff_inv)
+      htrans_diff] at hderiv_id
+    -- Simplify the inner `chart_P.symm (chart_P P)` to `P`, identifying the two factors with `J, J'`.
+    simp only [hPP] at hderiv_id
+    rw [← hJ, ← hJ'] at hderiv_id
+    exact hderiv_id
+  -- Assemble: `g P·(J·localRep P P)·(J'·deriv(chart_P∘s)) = g P·localRep P P·deriv(chart_P∘s)`,
+  -- using `J·J' = 1` (the `dz`-Jacobian cancellation).
+  rw [hchain]
+  linear_combination (g P * Jacobians.Montel.localRep ω₀ P P
+    * deriv (fun z => (chartAt ℂ P) (s z)) b') * hJJ'
+
+/-- **Chart-frame independence of the moving summand.**  For a section `s : ℂ → X` whose value `s b'`
+lies in *both* chart sources `chart_{xs₁}` and `chart_{xs₂}` (with the section-pullback differentiable
+at `b'` and the two chart transitions differentiable both ways), the chart-`xs₁` and chart-`xs₂` moving
+summands of `α = ω₀·g` are equal:
+
+> `chartIntegrand ω₀ g xs₁ (chart_{xs₁}(s b'))·deriv(chart_{xs₁} ∘ s) b'
+>    = chartIntegrand ω₀ g xs₂ (chart_{xs₂}(s b'))·deriv(chart_{xs₂} ∘ s) b'`.
+
+Both equal the self-chart summand `g (s b')·localRep ω₀ (s b')(s b')·deriv(chart_{s b'} ∘ s) b'`
+(`movingSummand_eq_selfChart`), hence each other.  The source-chart independence of the trace summand —
+"the trace `Tr_F α` is a well-defined form" (Miranda §VIII.3). -/
+theorem movingSummand_chartIndep (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (s : ℂ → X) {b' : ℂ}
+    (xs₁ xs₂ : X) (hcont : ContinuousAt s b')
+    (hsP_diff : DifferentiableAt ℂ (fun z => (chartAt ℂ (s b')) (s z)) b')
+    (hmem₁ : s b' ∈ (chartAt ℂ xs₁).source) (hmem₂ : s b' ∈ (chartAt ℂ xs₂).source)
+    (htrans_diff₁ : DifferentiableAt ℂ
+      (fun w => (chartAt ℂ xs₁) ((chartAt ℂ (s b')).symm w)) ((chartAt ℂ (s b')) (s b')))
+    (htrans_diff₂ : DifferentiableAt ℂ
+      (fun w => (chartAt ℂ xs₂) ((chartAt ℂ (s b')).symm w)) ((chartAt ℂ (s b')) (s b')))
+    (htrans_diff_inv₁ : DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (s b')) ((chartAt ℂ xs₁).symm w)) ((chartAt ℂ xs₁) (s b')))
+    (htrans_diff_inv₂ : DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (s b')) ((chartAt ℂ xs₂).symm w)) ((chartAt ℂ xs₂) (s b'))) :
+    chartIntegrand ω₀ g xs₁ ((chartAt ℂ xs₁) (s b')) * deriv (fun z => (chartAt ℂ xs₁) (s z)) b'
+      = chartIntegrand ω₀ g xs₂ ((chartAt ℂ xs₂) (s b')) * deriv (fun z => (chartAt ℂ xs₂) (s z)) b' := by
+  rw [movingSummand_eq_selfChart ω₀ g s xs₁ hmem₁ hcont hsP_diff htrans_diff₁ htrans_diff_inv₁,
+    movingSummand_eq_selfChart ω₀ g s xs₂ hmem₂ hcont hsP_diff htrans_diff₂ htrans_diff_inv₂]
 
 /-! ### The self-coherence core (moving fibre vs fixed fibre)
 
