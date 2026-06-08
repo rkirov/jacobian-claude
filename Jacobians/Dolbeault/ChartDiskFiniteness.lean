@@ -423,6 +423,119 @@ theorem forster146_lift (𝒮 : 𝔇.BallSplitData) :
 
 end ChartDiskCover
 
+/-! ## §3b — The covering relatively-compact shrinking (Forster §12) and the `HolomorphicDiskOverlapData`
+
+The shrinking lemma `exists_iUnion_eq_closure_subset` (normal space — `X` compact T2) gives a COVERING
+open shrinking `V_i ⋐ U_i` of the cover sets, with `closure V_i ⊆ U_i`.  Its chart-image overlaps
+`Wov (i,j) := φ_i '' (V_i ∩ V_j)` are relatively compact inside `Uov (i,j)` (the chart restricts to a
+homeomorphism on the compact `closure (V_i ∩ V_j) ⊆ U_i ⊆ φ_i.source`).  This builds the
+`HolomorphicDiskOverlapData` for the chart-disk cover — whose `ρ` is compact for free (Montel) — closing
+the relatively-compact-shrinking part of the structural plumbing. -/
+
+namespace ChartDiskCover
+
+variable (𝔇 : ChartDiskCover X)
+
+/-- The cover sets cover `X` as sets: `⋃ i, U i = univ` (from `FiniteCover.covers`). -/
+theorem iUnion_U_eq_univ : (⋃ i, ((𝔇.U i : Opens X) : Set X)) = Set.univ := by
+  have h : ((⨆ i, 𝔇.U i : Opens X) : Set X) = ((⊤ : Opens X) : Set X) := by rw [𝔇.covers]
+  rwa [Opens.coe_iSup, Opens.coe_top] at h
+
+/-- A **covering relatively-compact open shrinking** `V_i ⋐ U_i` of the cover sets: `V_i` open, the
+`V_i` cover `X`, and `closure V_i ⊆ U_i` (compact, since `X` is compact).  From the shrinking lemma
+`exists_iUnion_eq_closure_subset` on the normal space `X`. -/
+theorem exists_coveringShrinking :
+    ∃ V : 𝔇.ι → Set X, (⋃ i, V i = Set.univ) ∧ (∀ i, IsOpen (V i)) ∧
+      ∀ i, closure (V i) ⊆ ((𝔇.U i : Opens X) : Set X) :=
+  exists_iUnion_eq_closure_subset (fun i => (𝔇.U i).isOpen)
+    (fun _ => Set.toFinite _) 𝔇.iUnion_U_eq_univ
+
+/-- The chosen covering shrinking. -/
+noncomputable def shrinkSet (i : 𝔇.ι) : Set X := 𝔇.exists_coveringShrinking.choose i
+
+theorem shrinkSet_isOpen (i : 𝔇.ι) : IsOpen (𝔇.shrinkSet i) :=
+  𝔇.exists_coveringShrinking.choose_spec.2.1 i
+
+theorem closure_shrinkSet_subset_U (i : 𝔇.ι) :
+    closure (𝔇.shrinkSet i) ⊆ ((𝔇.U i : Opens X) : Set X) :=
+  𝔇.exists_coveringShrinking.choose_spec.2.2 i
+
+theorem iUnion_shrinkSet_eq_univ : (⋃ i, 𝔇.shrinkSet i) = Set.univ :=
+  𝔇.exists_coveringShrinking.choose_spec.1
+
+/-- The shrinking overlap image `Wov (i,j) := φ_i '' (V_i ∩ V_j)`. -/
+noncomputable def Wov (p : 𝔇.ι × 𝔇.ι) : Set ℂ :=
+  (chartAt (H := ℂ) (𝔇.center p.1)) '' (𝔇.shrinkSet p.1 ∩ 𝔇.shrinkSet p.2)
+
+theorem isOpen_Wov (p : 𝔇.ι × 𝔇.ι) : IsOpen (𝔇.Wov p) := by
+  refine (chartAt (H := ℂ) (𝔇.center p.1)).isOpen_image_of_subset_source
+    ((𝔇.shrinkSet_isOpen p.1).inter (𝔇.shrinkSet_isOpen p.2)) ?_
+  exact (Set.inter_subset_left.trans ((subset_closure).trans (𝔇.closure_shrinkSet_subset_U p.1))).trans
+    (𝔇.U_subset_chartAt_source p.1)
+
+/-- `closure (V_i ∩ V_j)` (in the COMPACT `X`) is compact. -/
+theorem closure_shrinkInter_compact (p : 𝔇.ι × 𝔇.ι) :
+    IsCompact (closure (𝔇.shrinkSet p.1 ∩ 𝔇.shrinkSet p.2)) :=
+  isClosed_closure.isCompact
+
+theorem closure_shrinkInter_subset_source (p : 𝔇.ι × 𝔇.ι) :
+    closure (𝔇.shrinkSet p.1 ∩ 𝔇.shrinkSet p.2) ⊆ (chartAt (H := ℂ) (𝔇.center p.1)).source := by
+  refine ((closure_mono Set.inter_subset_left).trans (𝔇.closure_shrinkSet_subset_U p.1)).trans ?_
+  exact 𝔇.U_subset_chartAt_source p.1
+
+/-- **`Wov` is relatively compact in `Uov`** (the key structural fact).  `φ_i` is a homeomorphism on the
+compact `closure (V_i ∩ V_j) ⊆ φ_i.source`, so it maps closure to closure:
+`closure (Wov (i,j)) = φ_i '' (closure (V_i ∩ V_j)) ⊆ φ_i '' (U_i ∩ U_j) = Uov (i,j)`. -/
+theorem closure_Wov_subset_Uov (p : 𝔇.ι × 𝔇.ι) : closure (𝔇.Wov p) ⊆ 𝔇.Uov p := by
+  -- `φ_i '' (closure (V_i∩V_j))` is closed (compact image), contains `Wov`, so contains its closure.
+  have hcptImg : IsClosed ((chartAt (H := ℂ) (𝔇.center p.1)) ''
+      closure (𝔇.shrinkSet p.1 ∩ 𝔇.shrinkSet p.2)) :=
+    ((𝔇.closure_shrinkInter_compact p).image_of_continuousOn
+      ((chartAt (H := ℂ) (𝔇.center p.1)).continuousOn.mono
+        (𝔇.closure_shrinkInter_subset_source p))).isClosed
+  have hWsub : 𝔇.Wov p ⊆ (chartAt (H := ℂ) (𝔇.center p.1)) ''
+      closure (𝔇.shrinkSet p.1 ∩ 𝔇.shrinkSet p.2) :=
+    Set.image_mono subset_closure
+  refine (closure_minimal hWsub hcptImg).trans ?_
+  -- `φ_i '' (closure (V_i∩V_j)) ⊆ φ_i '' (U_i∩U_j) = Uov` (`closure (V_i∩V_j) ⊆ U_i∩U_j`)
+  refine Set.image_mono ?_
+  exact Set.subset_inter
+    ((closure_mono Set.inter_subset_left).trans (𝔇.closure_shrinkSet_subset_U p.1))
+    ((closure_mono Set.inter_subset_right).trans (𝔇.closure_shrinkSet_subset_U p.2))
+
+/-- `closure (Wov p)` is compact: it is closed and contained in the compact chart-image
+`φ_i '' (closure (V_i ∩ V_j))`. -/
+theorem isCompact_closure_Wov (p : 𝔇.ι × 𝔇.ι) : IsCompact (closure (𝔇.Wov p)) := by
+  have hcptImg : IsCompact ((chartAt (H := ℂ) (𝔇.center p.1)) ''
+      closure (𝔇.shrinkSet p.1 ∩ 𝔇.shrinkSet p.2)) :=
+    (𝔇.closure_shrinkInter_compact p).image_of_continuousOn
+      ((chartAt (H := ℂ) (𝔇.center p.1)).continuousOn.mono (𝔇.closure_shrinkInter_subset_source p))
+  refine hcptImg.of_isClosed_subset isClosed_closure ?_
+  refine closure_minimal (Set.image_mono subset_closure) hcptImg.isClosed
+
+/-- **The `HolomorphicDiskOverlapData` of a chart-disk cover.**  Cover side `Uov` (ball overlaps),
+shrinking side `Wov` (covering-shrinking overlaps, relatively compact in `Uov`).  Its restriction `ρ` is
+a COMPACT operator for free (`HolomorphicDiskOverlapData.rhoRaw_compact`, Montel) — the FA-engine input
+that needed only the relatively-compact shrinking, now supplied. -/
+noncomputable def overlapData (𝔇 : ChartDiskCover X) : HolomorphicDiskOverlapData where
+  J := 𝔇.ι × 𝔇.ι
+  fintypeJ := inferInstance
+  decEqJ := Classical.decEq _
+  Uov := 𝔇.Uov
+  hUov := 𝔇.isOpen_Uov
+  Wov := 𝔇.Wov
+  hWov := 𝔇.isOpen_Wov
+  hKcpt := 𝔇.isCompact_closure_Wov
+  hWU := 𝔇.closure_Wov_subset_Uov
+
+/-- The chart-disk model's restriction `ρ` is compact (Montel) — inherited from
+`HolomorphicDiskOverlapData.rhoRaw_compact`, with no further analytic input. -/
+theorem overlapData_rhoRaw_compact (𝔇 : ChartDiskCover X) :
+    IsCompactOperator 𝔇.overlapData.rhoRaw :=
+  𝔇.overlapData.rhoRaw_compact
+
+end ChartDiskCover
+
 /-! ## §4 — Connecting the analytic heart to `FiniteDimensional ℂ (cechH1 𝔇 0)`
 
 The FA finiteness engine `CechFiniteness.finiteDimensional_h1_of_leray_compact` (Forster 14.8/14.7,
