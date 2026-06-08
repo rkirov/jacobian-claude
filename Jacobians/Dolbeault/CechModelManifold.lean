@@ -49,6 +49,47 @@ theorem transition_analyticAt_of_mem {y z x : X}
   exact (contMDiffAt_iff_contDiffAt.1
     (ContMDiffAt.comp (I' := 𝓘(ℂ)) ((chartAt (H := ℂ) y) x) h2 h1)).analyticAt
 
+/-- **The chart transition `chartAt z ∘ (chartAt y).symm` has nonvanishing derivative at `chartAt y x`**
+for any point `x` in the overlap of the two chart sources.  The transition is a biholomorphism: its
+inverse `chartAt y ∘ (chartAt z).symm` (analytic by `transition_analyticAt_of_mem`) composes with it to
+the identity near `chartAt y x`, so the chain rule forces the derivative to be nonzero.  Companion to
+`transition_analyticAt_of_mem`; the pair is exactly the hypothesis bundle of Mathlib's
+`meromorphicOrderAt_comp_of_deriv_ne_zero`. -/
+theorem transition_deriv_ne_zero {y z x : X}
+    (hxy : x ∈ (chartAt (H := ℂ) y).source) (hxz : x ∈ (chartAt (H := ℂ) z).source) :
+    deriv ((chartAt (H := ℂ) z) ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) x) ≠ 0 := by
+  set yc := (chartAt (H := ℂ) y) x with hyc
+  have hψ : AnalyticAt ℂ ((chartAt (H := ℂ) z) ∘ (chartAt (H := ℂ) y).symm) yc :=
+    transition_analyticAt_of_mem hxy hxz
+  have hψ_pt : ((chartAt (H := ℂ) z) ∘ (chartAt (H := ℂ) y).symm) yc = (chartAt (H := ℂ) z) x := by
+    simp only [hyc, Function.comp_apply, (chartAt (H := ℂ) y).left_inv hxy]
+  have hψ' : AnalyticAt ℂ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) z).symm)
+      ((chartAt (H := ℂ) z) x) := transition_analyticAt_of_mem hxz hxy
+  -- `(chartAt y ∘ (chartAt z).symm) ∘ (chartAt z ∘ (chartAt y).symm) =ᶠ id` near `yc`.
+  have hwy_tgt : yc ∈ (chartAt (H := ℂ) y).target := hyc ▸ (chartAt (H := ℂ) y).map_source hxy
+  have hmem : ∀ᶠ w in 𝓝 yc, (chartAt (H := ℂ) y).symm w ∈ (chartAt (H := ℂ) z).source := by
+    have hcont : ContinuousAt (chartAt (H := ℂ) y).symm yc :=
+      (chartAt (H := ℂ) y).continuousAt_symm hwy_tgt
+    have hh : (chartAt (H := ℂ) y).symm yc ∈ (chartAt (H := ℂ) z).source := by
+      rw [hyc, (chartAt (H := ℂ) y).left_inv hxy]; exact hxz
+    exact hcont.preimage_mem_nhds ((chartAt (H := ℂ) z).open_source.mem_nhds hh)
+  have hmem_tgt : ∀ᶠ w in 𝓝 yc, w ∈ (chartAt (H := ℂ) y).target :=
+    (chartAt (H := ℂ) y).open_target.mem_nhds hwy_tgt
+  have hcomp_id : (((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) z).symm) ∘
+      ((chartAt (H := ℂ) z) ∘ (chartAt (H := ℂ) y).symm)) =ᶠ[𝓝 yc] id := by
+    filter_upwards [hmem, hmem_tgt] with w hw hwt
+    show (chartAt (H := ℂ) y) ((chartAt (H := ℂ) z).symm
+        ((chartAt (H := ℂ) z) ((chartAt (H := ℂ) y).symm w))) = w
+    rw [(chartAt (H := ℂ) z).left_inv hw, (chartAt (H := ℂ) y).right_inv hwt]
+  intro hderiv0
+  have hdiff_inner : DifferentiableAt ℂ ((chartAt (H := ℂ) z) ∘ (chartAt (H := ℂ) y).symm) yc :=
+    hψ.differentiableAt
+  have hdiff_outer : DifferentiableAt ℂ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) z).symm)
+      (((chartAt (H := ℂ) z) ∘ (chartAt (H := ℂ) y).symm) yc) := hψ_pt ▸ hψ'.differentiableAt
+  have hchain := deriv_comp yc hdiff_outer hdiff_inner
+  rw [hcomp_id.deriv_eq, deriv_id, hderiv0, mul_zero] at hchain
+  exact one_ne_zero hchain
+
 /-- **Own-chart → cover-chart analyticity.** If `h` read in its *own* chart at `x` is analytic, then
 `h` read in the cover-chart `y` is analytic at `chartAt y x` (for `x` in that chart's source). The
 reverse of `CechH0.analyticAt_chart_change`, at a general point. -/
