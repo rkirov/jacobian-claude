@@ -307,4 +307,42 @@ theorem exists_finitePrincipalPart {h : ℂ → ℂ} {S : Finset ℂ}
         simp only [Pi.sub_apply] at hz ⊢
         rw [show h z - (negTail c₀ b N z + P z) = (h z - P z) - negTail c₀ b N z by ring, hz]
 
+/-! ### The global finite `hentire` bridge
+
+Assembling the multi-point subtraction into a **global analyticity** statement.  If `h` is analytic
+off a finite set `C` and meromorphic at each `c ∈ C`, then after subtracting the finite principal part
+`P` the remainder `h − P` is analytic off `C` and *germ-analytic* (`=ᶠ[𝓝[≠] c] (analytic)`) at each
+`c ∈ C`.  The promotion to a **full** `AnalyticAt c` (the shape of `GlobalTrace.hentire`) holds exactly
+when `h − P` is additionally continuous at each `c ∈ C` (the junk-value is the analytic-continuation
+value); we record that as the explicit hypothesis `hcont`, isolating the junk-freeness condition that
+the global trace construction must supply. -/
+
+/-- **The global finite `hentire` bridge.**  Let `h` be analytic at every point off a finite set `C`
+(`hoff`), meromorphic at every `c ∈ C` (`hmero`), and such that, after the finite principal-part
+subtraction `P` (from `exists_finitePrincipalPart`), `h − P` is **continuous at every `c ∈ C`**
+(`hcont` — the junk-free condition).  Then there is a finite principal part `P` with `h − P`
+`AnalyticOnNhd ℂ … Set.univ` (entire) — the finite half of `GlobalTrace.hentire`.
+
+The continuity hypothesis is the precise, irreducible junk-value requirement: a meromorphic `h` whose
+*pole is removed* by `P` has a removable singularity at each `c ∈ C`, and `MeromorphicAt.analyticAt`
+upgrades "meromorphic + continuous" to "analytic".  The global trace `T` built from the geometric
+pushforward is junk-free by construction, so `hcont` is automatic there. -/
+theorem exists_entire_of_finitePoles {h : ℂ → ℂ} {C : Finset ℂ}
+    (hoff : ∀ c ∉ C, AnalyticAt ℂ h c) (hmero : ∀ c ∈ C, MeromorphicAt h c) :
+    ∃ P : ℂ → ℂ, (∀ c ∉ C, AnalyticAt ℂ P c) ∧
+      (∀ c ∈ C, ∃ R : ℂ → ℂ, AnalyticAt ℂ R c ∧ (h - P) =ᶠ[𝓝[≠] c] R) ∧
+      ((∀ c ∈ C, ContinuousAt (h - P) c) → AnalyticOnNhd ℂ (h - P) Set.univ) := by
+  classical
+  obtain ⟨P, hP_an, hP_centres⟩ := exists_finitePrincipalPart hmero
+  refine ⟨P, hP_an, hP_centres, fun hcont z _ => ?_⟩
+  by_cases hzC : z ∈ C
+  · -- At a centre: meromorphic (pole removed) + continuous ⟹ analytic.
+    obtain ⟨R, hR_an, hR_eq⟩ := hP_centres z hzC
+    -- `h − P` is meromorphic at `z` (`h` meromorphic, `P` analytic since... P meromorphic at z too).
+    -- `h − P =ᶠ[𝓝[≠]z] R` (analytic ⟹ meromorphic), so `h − P` is meromorphic at `z`.
+    have hmeroHP : MeromorphicAt (h - P) z := hR_an.meromorphicAt.congr hR_eq.symm
+    exact hmeroHP.analyticAt (hcont z hzC)
+  · -- Off `C`: `h` analytic and `P` analytic.
+    exact (hoff z hzC).sub (hP_an z hzC)
+
 end Jacobians.Dolbeault.FormTracePrincipalPart
