@@ -228,6 +228,14 @@ noncomputable def rawRestrictG (h : V ≤ U) : MGerm U →ₗ[ℂ] MGerm V where
 
 end GermRestriction
 
+/-- Germ restriction along the reflexive containment `U ≤ U` is the identity (`openIncl h` is the
+identity map on `↥U` for any `h : U ≤ U`, so the germ pullback is the identity).  The `≤`-proof is
+taken explicitly so this canonical form covers every call site (`le_rfl`, `le_refl U`, or a generic
+`h : U ≤ U`); the `@[simp]` form fires regardless of which proof is supplied. -/
+@[simp] theorem rawRestrictG_le_rfl {U : Opens X} (h : U ≤ U) (f : MGerm U) :
+    rawRestrictG h f = f := by
+  induction f using Filter.Germ.inductionOn with | _ f => rfl
+
 /-- **`𝒪_D`-sections as germ-classes**: the image of `OmegaD` under the germ projection — junk-free,
 no quotient. -/
 noncomputable def OmegaDGerm (D : Divisor X) (U : Opens X) : Submodule ℂ (MGerm U) :=

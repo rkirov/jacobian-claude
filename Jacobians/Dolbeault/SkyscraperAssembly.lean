@@ -428,10 +428,6 @@ theorem sections1_component_omegaD_off_diag {i : 𝔘.ι}
 
 end FiniteCover
 
-/-- `rawRestrictG` along the reflexive `≤` is the identity (the open inclusion `U → U` is `id`). -/
-theorem rawRestrictG_le_rfl {U : Opens X} (h : U ≤ U) (γ : MGerm U) : rawRestrictG h γ = γ := by
-  induction γ using Filter.Germ.inductionOn with | _ f => rfl
-
 namespace FiniteCover
 
 variable (𝔘 : FiniteCover X) (D : Divisor X) (P : X)

@@ -200,11 +200,6 @@ def FunctionDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X) : Prop :=
     ∃ η : Π i, 𝔙.U i → ℂ, (∀ i, η i ∈ OmegaD D (𝔙.U i)) ∧
       𝔙.cechDelta0 (fun i => toGerm (𝔙.U i) (η i)) = s
 
-/-- Germ restriction along the reflexive containment `U ≤ U` is the identity. -/
-@[simp] theorem rawRestrictG_le_rfl {U : Opens X} (f : MGerm U) :
-    rawRestrictG (show U ≤ U from le_rfl) f = f := by
-  induction f using Filter.Germ.inductionOn with | _ f => rfl
-
 /-- **Function-level base case: empty cover.**  On the empty index type, the `1`-cochain space is
 empty too, so the function-level acyclicity statement is vacuous. This is the function-side analogue
 of `isDiskAcyclic_of_isEmpty`. -/
@@ -228,6 +223,19 @@ theorem isDiskAcyclic_of_funcLevel (𝔙 : FiniteFamily X) (D : Divisor X)
   obtain ⟨η, hη, hδ⟩ := h s hs
   rw [FiniteFamily.coboundaries1, Submodule.mem_map]
   exact ⟨fun i => toGerm (𝔙.U i) (η i), toGerm_mem_sections0 𝔙 D η hη, hδ⟩
+
+/-- **The converse bridge.**  A germ-level coboundary witness can be represented by honest
+`OmegaD` functions componentwise, so `IsDiskAcyclic` also supplies the function-level interface. -/
+theorem functionDiskAcyclic_of_isDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X)
+    (h : IsDiskAcyclic 𝔙 D) : FunctionDiskAcyclic 𝔙 D := by
+  intro s hs
+  have hcob : s ∈ 𝔙.coboundaries1 D := h s hs
+  rw [FiniteFamily.coboundaries1, Submodule.mem_map] at hcob
+  obtain ⟨c, hc, hδ⟩ := hcob
+  choose η hη hη_germ using fun i => exists_omegaD_rep (hc i)
+  refine ⟨η, hη, ?_⟩
+  have hcochain : (fun i => toGerm (𝔙.U i) (η i)) = c := funext hη_germ
+  rw [hcochain, hδ]
 
 /-- **Disk-acyclicity collapses `H¹`.**  If the cover is germ-level disk-acyclic, then every class of
 `𝔙.cechH1 D` is `0` — i.e. `H¹(𝔙, 𝒪_D)` is the trivial module.  This is the form the Serre-D=0 and
