@@ -112,6 +112,22 @@ It must produce, for an **arbitrary** finite cover `𝔘` and divisor `D`: a sup
 `Jacobians/Dolbeault/DbarOpenDisk.lean` (new): **Forster 13.2**, `dbar_solvable_open_disk`. Self-
 contained analysis on top of `DbarDisk.dbar_solvable_of_compactSupport`; unblocks steps 2–5.
 
+## 5b. LIVE STATUS (2026-06-08, driving toward fully sorry+axiom-free `exists_cechModel`)
+
+**Done (axiom-clean):** 13.2 `dbar_solvable_open_disk`; **13.4 atom** `SharedChartCover.cechH1_subsingleton_of_unionBall` (`DiskAcyclicSolve.lean` — `H¹(disk,𝒪)=0` when the cover's chart-images fill the ball, via open-union PoU split + glued `∂̄`-datum + 13.2). Pre-existing & reusable: `genuineCoverPoU` (sum-to-1 on all of `X`, `ChartCoverDbarGlue`); holomorphic model geometry + `rhoRaw_compact` + `finiteDimensional_supH1`(given leray) + `leray_surjective` (`CechModelHolomorphic`); forward germ→BddHol map `cochainToCcov` (`CechModelCochain`); `comparison_linearEquiv'` (cechH1 chart-disk 0 ≃ DolbeaultH01).
+
+**KEY DECISION — the continuous `Coboundaries` is unsound for `leray`** (Forster 14.6's lift is *holomorphic*; `ChartCoverDbarGlue:25`). So: do the genuine finiteness on the **holomorphic branch** (`HolomorphicCoboundaries`), and discharge the continuous `exists_cechModel` via an **artificial single-point-`Kov` model** (`Cshr ≅ ℂ^k`, finite-dim, trivially-surjective `ρ`) that reduces it to `FiniteDimensional ℂ (cechH1 𝔘 D)`.
+
+**In progress (background agents):** artificial-model reduction `exists_cechModel_of_finiteDimensional` (`CechModelArtificial.lean`); holomorphic δ-complex port `CechModelHolomorphicDelta.lean` (δ⁰/δ¹/δ¹cov + δ²=0 + hcomm on the `Wov` shrinking).
+
+**Remaining hard pieces (the real walls):**
+- **B′ — holomorphic `leray` field (Forster 14.6):** the cover→shrinking lift on the `Wov` model. Construction: smooth-split `s` via `genuineCoverPoU` → `g_a`; `ω = ∂̄g_a` glues; cutoff `ψ` (=1 on `innerChartOpen`, supp in `chartOpen` — `innerChartOpen ⋐ chartOpen`); solve `∂̄h_a = ψω` per chart disk via the EXISTING `dbar_solvable_ball` (global datum); `x_{ab}=h_b−h_a` (cover cocycle), `η_a=h_a−g_a` (holo on `Wov`); `s = δ⁰η + ρx`. Foundation in `ChartCoverDbarGlue`. Nesting: `innerChartOpen ⊂ chartOpen ⊂ coverOpen`(=chart disk/ball). Blocked on the δ-complex port.
+- **C′ — comparison `cechH1 𝔘 D ↪/≃ supH1`:** forward `cochainToCcov` built; need it to descend to `cechH1 → supH1` + be injective (a linear *injection* suffices to transport finiteness). For chart-disk covers at D=0, `comparison_linearEquiv'` may shortcut.
+- **A2 — Leray assembly (atom → `refineH1_equiv`):** SUBTLETY — `CechRefinementLeray.RefinementLift` is currently reduced via two-set `overlapFamily` (union `Uᵢ∩Uⱼ`, *not* a ball), but Forster 12.8 needs `H¹(coverof-Uᵢ)=0` (one-set, union `Uᵢ` = a disk = ball, where the atom applies). Re-point to one-set covers of `Uᵢ`.
+  **Forster 12.8 surjectivity construction (for `refinementLift_of_atom`, `𝔅=(Vα) ⪯ 𝔘=(Uᵢ)` via `τ`, sheaf `ℱ=𝒪_D`):** given a `𝔅`-cocycle `(f_{αβ})`: (1) for each coarse `i`, `{Uᵢ ∩ Vα}_α` covers the chart-disk `Uᵢ` (union chart-image = ball ⇒ package as a `SharedChartCover`, apply the **atom** `cechH1_subsingleton_of_unionBall` ⇒ split `f_{αβ} = g_{iα} − g_{iβ}` on `Uᵢ∩Vα∩Vβ` with `g_{iα} ∈ 𝒪_D(Uᵢ∩Vα)`); (2) on `Uᵢ∩Uⱼ`, `g_{jα} − g_{iα}` is α-independent (from the split) ⇒ **sheaf-glue** to `F_{ij} ∈ 𝒪_D(Uᵢ∩Uⱼ)`; (3) `(F_{ij}) ∈ Z¹(𝔘)`; (4) `h_α := g_{τα,α}|Vα` gives `F_{τα,τβ} − f_{αβ} = h_β − h_α = (δ⁰h)_{αβ}` ⇒ `refineC1 F − f ∈ coboundaries1 𝔙`. Needs only: the atom (DONE) + germ-class `𝒪_D` sheaf-gluing (`OmegaDGerm` is a sheaf via `Filter.Germ codiscreteWithin`). `RefinementDescend` is the same one degree down (Forster 12.4/12.8 injectivity).
+- **D — general-`D` twist:** the holomorphic model/atom are D=0; general `D` needs principal-part splitting (or a skyscraper-LES reduction to D=0). Last.
+- **Final:** `FiniteDimensional ℂ (cechH1 𝔘 D)` from B′+C′(+A2) ⟹ `exists_cechModel` via the artificial model.
+
 ## 6. Architecture fork (decide after the atom lands)
 
 Consumers (`CohomologicalRR`, `DolbeaultLadder`, `SkyscraperSnake`) take an **arbitrary** Leray cover.
