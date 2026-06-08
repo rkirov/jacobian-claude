@@ -241,6 +241,110 @@ theorem tendsto_zero_valueChartTrace_of_sections (ω₀ : HolomorphicOneForms X)
     = (z - b₀) * valueChartTrace ω₀ f Φ z
   rw [hz]
 
+/-- **The branch-value boundedness crux from smooth sheet sections.**  The reduced interface for
+`tendsto_zero_valueChartTrace_of_sections`: the per-sheet differentiability/right-inverse data is
+*derived* from a family of smooth cover sheets `sec : ι → ℂ → X` through the preimages `x j := sec j b₀`
+of `b₀`.  The caller supplies only the genuine geometric content:
+
+* `hsmooth` — each `sec j` is `C^ω` at `b₀`;
+* `hsec_sec` — each `sec j` is a section of `f.holoRepr` near `b₀` (`f.holoRepr (sec j b') = b'`);
+* `hnp` — each `x j = sec j b₀` is a **non-pole** of `f` (`0 ≤ orderAtPoint`), so `φ_j := f.holoRepr ∘
+  chart_{x j}.symm` is analytic at `chart_{x j}(x j)`;
+* `hFnc` — `φ_j` is not eventually constant `≡ b₀` near `chart_{x j}(x j)` (the cover is nonconstant);
+* `hcoeff` — `chartIntegrand ω₀ g (x j)` is continuous at `chart_{x j}(x j)` (`α` holomorphic at the
+  non-pole `x j`);
+* `hgerm` — the moving-sum germ-equality of `valueChartTrace` with the fibre sum along the chart pullbacks
+  `chart_{x j} ∘ sec j` (the per-value monodromy content).
+
+The right-inverse identity `hsec`, the base/continuity, the analytic left-inverse `hF_an`/`hFw₀`, and the
+chain-rule identity `hchain` are all discharged from the section smoothness + non-poleness via
+`chartPullback_section_rinv`, `analyticAt_holoRepr_chartPullback_of_orderNonneg`, and
+`differentiableAt_chart_pullback_section`. -/
+theorem tendsto_zero_valueChartTrace_of_sheetSections (ω₀ : HolomorphicOneForms X)
+    (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) {b₀ : ℂ}
+    {ι : Type*} [Fintype ι] (sec : ι → ℂ → X)
+    (hsmooth : ∀ j, ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (sec j) b₀)
+    (hsec_sec : ∀ j, ∀ᶠ b' in 𝓝 b₀, f.holoRepr (sec j b') = b')
+    (hnp : ∀ j, 0 ≤ f.orderAtPoint (sec j b₀))
+    (hFnc : ∀ j, ¬ ∀ᶠ w in 𝓝 ((chartAt ℂ (sec j b₀)) (sec j b₀)),
+      f.holoRepr ((chartAt ℂ (sec j b₀)).symm w) = b₀)
+    (hcoeff : ∀ j, ContinuousAt (chartIntegrand ω₀ g (sec j b₀)) ((chartAt ℂ (sec j b₀)) (sec j b₀)))
+    (hgerm : valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] b₀]
+      fun z => ∑ j, chartIntegrand ω₀ g (sec j b₀)
+        ((chartAt ℂ (sec j b₀)) (sec j z)) * deriv (fun w => (chartAt ℂ (sec j b₀)) (sec j w)) z) :
+    Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0) := by
+  classical
+  -- Abbreviations: the fibre points `x j` and the chart pullbacks `rinv j`.
+  set x : ι → X := fun j => sec j b₀ with hx
+  set rinv : ι → ℂ → ℂ := fun j z => (chartAt ℂ (x j)) (sec j z) with hrinv
+  -- The right-inverse data from `chartPullback_section_rinv` (on `𝓝 b₀`).
+  have hrinv_props : ∀ j, rinv j b₀ = (chartAt ℂ (x j)) (x j) ∧
+      ContinuousAt (rinv j) b₀ ∧
+      ∀ᶠ b' in 𝓝 b₀, f.holoRepr ((chartAt ℂ (x j)).symm (rinv j b')) = b' :=
+    fun j => chartPullback_section_rinv f (sec := sec j) (b₀ := b₀) (x := x j) rfl
+      (hsmooth j).continuousAt (hsec_sec j)
+  -- `φ_j := f.holoRepr ∘ chart_{x j}.symm` analytic at `chart_{x j}(x j)` (non-pole).
+  have hF_an : ∀ j, AnalyticAt ℂ (fun w => f.holoRepr ((chartAt ℂ (x j)).symm w))
+      ((chartAt ℂ (x j)) (x j)) := fun j =>
+    f.analyticAt_holoRepr_chartPullback_of_orderNonneg (hnp j)
+  -- `φ_j (chart_{x j}(x j)) = f.holoRepr (x j) = b₀` (from the section identity at `b₀`).
+  have hFw₀ : ∀ j, f.holoRepr ((chartAt ℂ (x j)).symm ((chartAt ℂ (x j)) (x j))) = b₀ := by
+    intro j
+    -- The section identity at `b₀`: `f.holoRepr (chart⁻¹ (rinv j b₀)) = b₀`, with `rinv j b₀ = chart (x j)`.
+    have h := ((hrinv_props j).2.2).self_of_nhds
+    rwa [(hrinv_props j).1] at h
+  -- `rinv j` differentiable on a neighbourhood of `b₀` (the chart pullback of a `C^ω` section).
+  have hrinv_diff : ∀ j, ∀ᶠ z in 𝓝 b₀, DifferentiableAt ℂ (rinv j) z := by
+    intro j
+    have hsmooth_nhds : ∀ᶠ z in 𝓝 b₀, ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (sec j) z :=
+      (contMDiffAt_iff_contMDiffAt_nhds (by decide : (ω : WithTop ℕ∞) ≠ ∞)).mp (hsmooth j)
+    -- At each `z` near `b₀`, `rinv j = chart_{x j} ∘ sec j` is differentiable — but the chart base is
+    -- `x j = sec j b₀`, fixed.  Use that `chart_{x j}` is `C^ω` on its source, which contains `sec j z`
+    -- for `z` near `b₀` (continuity), so `chart_{x j} ∘ sec j` is `C^ω` at `z`.
+    have hmem : ∀ᶠ z in 𝓝 b₀, sec j z ∈ (chartAt ℂ (x j)).source :=
+      (hsmooth j).continuousAt.eventually_mem
+        ((chartAt ℂ (x j)).open_source.mem_nhds (mem_chart_source ℂ (x j)))
+    filter_upwards [hsmooth_nhds, hmem] with z hz_smooth hz_mem
+    have hchart : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (chartAt ℂ (x j)) (sec j z) :=
+      ((contMDiffOn_chart (I := 𝓘(ℂ)) (n := ω) (x := x j)) _ hz_mem).contMDiffAt
+        ((chartAt ℂ (x j)).open_source.mem_nhds hz_mem)
+    exact (contMDiffAt_iff_contDiffAt.1 (hchart.comp z hz_smooth)).differentiableAt (by decide)
+  -- `φ_j` differentiable near `chart_{x j}(x j)` (analytic), pulled to `rinv j z` near `b₀`.
+  have hF_diff_at : ∀ j, ∀ᶠ z in 𝓝 b₀,
+      DifferentiableAt ℂ (fun w => f.holoRepr ((chartAt ℂ (x j)).symm w)) (rinv j z) := by
+    intro j
+    have hcontinv : ContinuousAt (rinv j) b₀ := (hrinv_props j).2.1
+    have hF_diff_nhds : ∀ᶠ w in 𝓝 ((chartAt ℂ (x j)) (x j)),
+        DifferentiableAt ℂ (fun w => f.holoRepr ((chartAt ℂ (x j)).symm w)) w :=
+      (hF_an j).eventually_analyticAt.mono (fun _ h => h.differentiableAt)
+    have hval : rinv j b₀ = (chartAt ℂ (x j)) (x j) := (hrinv_props j).1
+    exact hcontinv.eventually_mem (hval ▸ hF_diff_nhds)
+  -- The chain-rule identity (on `𝓝[≠] b₀`) from `φ_j ∘ rinv_j = id` (on `𝓝 b₀`) + differentiability.
+  have hchain : ∀ j, ∀ᶠ z in 𝓝[≠] b₀,
+      deriv (rinv j) z * deriv (fun w => f.holoRepr ((chartAt ℂ (x j)).symm w)) (rinv j z) = 1 := by
+    intro j
+    have hsec_nhds : ∀ᶠ z in 𝓝 b₀,
+        (fun w => f.holoRepr ((chartAt ℂ (x j)).symm (rinv j w))) =ᶠ[𝓝 z] id := by
+      filter_upwards [eventually_eventually_nhds.mpr (hrinv_props j).2.2] with z hz
+      filter_upwards [hz] with w hw using hw
+    have key : ∀ᶠ z in 𝓝 b₀,
+        deriv (rinv j) z * deriv (fun w => f.holoRepr ((chartAt ℂ (x j)).symm w)) (rinv j z) = 1 := by
+      filter_upwards [hrinv_diff j, hF_diff_at j, hsec_nhds] with z hrz hFz hsecz
+      have hcomp : deriv (fun w => f.holoRepr ((chartAt ℂ (x j)).symm (rinv j w))) z
+          = deriv (fun w => f.holoRepr ((chartAt ℂ (x j)).symm w)) (rinv j z) * deriv (rinv j) z :=
+        deriv_comp z hFz hrz
+      have hid : deriv (fun w => f.holoRepr ((chartAt ℂ (x j)).symm (rinv j w))) z = 1 := by
+        rw [hsecz.deriv_eq]; simp
+      rw [hid] at hcomp
+      linear_combination -hcomp
+    exact key.filter_mono nhdsWithin_le_nhds
+  -- The right-inverse `hsec` on `𝓝[≠] b₀`.
+  have hsec : ∀ j, ∀ᶠ z in 𝓝[≠] b₀, f.holoRepr ((chartAt ℂ (x j)).symm (rinv j z)) = z :=
+    fun j => ((hrinv_props j).2.2).filter_mono nhdsWithin_le_nhds
+  -- Apply the section-level boundedness lemma.
+  exact tendsto_zero_valueChartTrace_of_sections ω₀ f Φ x rinv hgerm
+    (fun j => (hrinv_props j).1) (fun j => (hrinv_props j).2.1) hF_an hFw₀ hFnc hsec hchain hcoeff
+
 /-! ### Off-centre analyticity of the patched trace (`hT_off`)
 
 `hT_off` for the patched trace dispatches each value off the pole-centres to either:
