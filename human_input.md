@@ -1359,3 +1359,36 @@ traces. Sidesteps the obstruction entirely (no `BranchAwareTraceSelection`). The
 local boundedness, same character as the proven `traceLocalCoeff_mul_sub_tendsto_zero_Y`. NOT a quick
 finish — the apparatus bridge is genuine. Memory: [[feedback_prefer_standard_proofs]],
 [[feedback_connect_upstream_first]].
+
+---
+
+## 2026-06-08 (session: value-correct patched-trace unification + boundedness port)
+
+Goal: CLOSE Gate A by UNIFYING the 32 proven FormTrace* engines into one instantiation of
+globalTrace_of_glue (value-correct patched trace), + the ONE genuinely-new boundedness port. Avoid the
+false BranchAwareTraceSelection.hbranch route. Built (all axiom-clean [propext, Classical.choice,
+Quot.sound], zero custom axiom, zero sorry), ONE new file Jacobians/Dolbeault/FormTraceGlobalTPatched.lean:
+
+- valueChartTracePatched (= valueChartTrace patched to its removable limit at the finitely-many branch
+  values) — the value-correct trace, analytic ACROSS branch points (partial-sum junk repaired to limit).
+  Germ-equal to valueChartTrace off br; recipCoeff germ-equal near 0 (carries ∞-glue unchanged).
+- BOUNDEDNESS PORT (the genuinely-new analytic step): tendsto_zero_valueChartTrace_of_sections discharges
+  hbnd from the PROVEN per-sheet ratio atom FormTraceBranchPlanarExtend.tendsto_zero_section_deriv — the
+  planar shadow of the proven bundle TraceForm.traceLocalCoeff_mul_sub_tendsto_zero_Y (uniform-card/
+  subcover REPLACED by explicit sheet enumeration; same ratio atom, no Puiseux). Reduced interface
+  tendsto_zero_valueChartTrace_of_sheetSections derives ALL per-sheet diff/chain-rule data from smooth
+  sections (chartPullback_section_rinv + analyticAt_holoRepr_chartPullback_of_orderNonneg + chain rule).
+- UNIFICATION: PatchedTraceSelection + residueSum_eq_zero_of_patchedTraceSelection = Gate A ∑Res=0 via
+  the proven residueSum_eq_zero_of_glue with T := the patched trace. hT_off at branch values =
+  analyticAt_branchExtension_valueChartTrace (resting on hbnd, NEVER on continuity). Non-vacuity witness
+  (empty-pole) confirms satisfiable, not disguised False.
+
+Gate A ∑Res=0 is NOT yet unconditional. SINGLE minimal remaining obligation (precise diagnosis, doc
+gate_a_patched_trace_unification_2026-06-08.md): construct a non-empty PatchedTraceSelection = the global
+selection Φ enumerating the FULL fibre by a continuously-varying sheet frame at every value. The
+conceptual walls are down (monodromy dissolved by symmetric lever; boundedness ported to proven atom;
+false hbranch avoided). The genuine residual for hbnd is the moving-sum germ hgerm AT a branch value:
+the full fibre Φ z near b₀ enumerated by sheets through b₀'s preimages INCLUDING the m colliding sheets
+through the ramified point (z=w^m roots-of-unity frame). _of_sections does NOT require base points
+injective, so colliding sheets are admissible — what is needed is the branched full-fibre enumeration.
+Memory: [[feedback_prefer_standard_proofs]], [[feedback_connect_upstream_first]], [[project_rr_interface]].
