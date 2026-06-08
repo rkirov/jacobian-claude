@@ -239,4 +239,72 @@ theorem exists_principalPart_meromorphicAt {h : ℂ → ℂ} {c : ℂ} (hh : Mer
       rw [show n + (N : ℤ) = 0 by omega]
       simp
 
+/-! ### A negative-power tail at a different centre is analytic
+
+A `negTail` centred at `c'` is analytic at any other point `c ≠ c'` (its only pole is at `c'`). -/
+
+/-- **A `negTail` is analytic away from its centre.**  `negTail c' b N` is `AnalyticAt c` for `c ≠ c'`
+(its only singularity is the pole at `c'`). -/
+theorem analyticAt_negTail_of_ne {c c' : ℂ} (b : ℕ → ℂ) (N : ℕ) (hne : c ≠ c') :
+    AnalyticAt ℂ (negTail c' b N) c := by
+  show AnalyticAt ℂ (fun z => ∑ k ∈ Finset.Icc 1 N, b k * (z - c') ^ (-(k : ℤ))) c
+  refine Finset.analyticAt_fun_sum _ (fun k _ => ?_)
+  refine analyticAt_const.mul ?_
+  have hbase : AnalyticAt ℂ (fun z : ℂ => z - c') c := analyticAt_id.sub analyticAt_const
+  exact hbase.zpow (sub_ne_zero.mpr hne)
+
+/-! ### Multi-point finite principal-part subtraction (assembly-ready)
+
+For finitely many centres `S : Finset ℂ`, with `h` meromorphic at every `c ∈ S`, there is a single
+function `P` — a finite sum of `negTail`s, one per centre — such that `h − P` is **analytic at every
+`c ∈ S`** (the principal part at each centre is subtracted, removing the pole; the tails at the other
+centres are analytic at `c`).  This is the finite-pole half of Miranda §VIII.3 step 2/3 (subtract all
+finite principal parts to leave a remainder holomorphic at every finite pole). -/
+
+/-- **Multi-point finite principal-part subtraction.**  Given a finite centre set `S` and a coefficient
+`h` that is `MeromorphicAt` at every `c ∈ S`, there is a function `P` (a finite sum of `negTail`s, one
+per centre — so `P` is itself analytic away from `S`) such that `h − P` is `AnalyticAt c` for every
+`c ∈ S` (germ-equal off `c` to an analytic function, with the pole removed).  More precisely we return,
+per centre, the degree/coefficients and the global subtrahend `P`, with `h − P` analytic at each
+centre. -/
+theorem exists_finitePrincipalPart {h : ℂ → ℂ} {S : Finset ℂ}
+    (hh : ∀ c ∈ S, MeromorphicAt h c) :
+    ∃ P : ℂ → ℂ, (∀ c ∉ S, AnalyticAt ℂ P c) ∧
+      ∀ c ∈ S, ∃ R : ℂ → ℂ, AnalyticAt ℂ R c ∧ (h - P) =ᶠ[𝓝[≠] c] R := by
+  classical
+  induction S using Finset.induction with
+  | empty => exact ⟨fun _ => 0, fun c _ => analyticAt_const, fun c hc => absurd hc (Finset.notMem_empty c)⟩
+  | insert c₀ S hc₀ ih =>
+    -- Extract the principal part of `h` at the new centre `c₀`.
+    obtain ⟨N, b, R₀, hR₀_an, hR₀_eq⟩ :=
+      exists_principalPart_meromorphicAt (hh c₀ (Finset.mem_insert_self c₀ S))
+    -- Recurse on `S` (each `c ∈ S` is still a meromorphic point of `h`).
+    obtain ⟨P, hP_an, hP_centres⟩ :=
+      ih (fun c hc => hh c (Finset.mem_insert_of_mem hc))
+    refine ⟨fun z => negTail c₀ b N z + P z, ?_, ?_⟩
+    · -- `negTail c₀ b N + P` is analytic away from `insert c₀ S`.
+      intro c hc
+      rw [Finset.mem_insert, not_or] at hc
+      exact (analyticAt_negTail_of_ne (c := c) (c' := c₀) b N hc.1).add (hP_an c hc.2)
+    · -- `h − (negTail c₀ + P)` is analytic at every centre of `insert c₀ S`.
+      intro c hc
+      rw [Finset.mem_insert] at hc
+      rcases hc with heq | hcS
+      · -- At `c₀` (`c = c₀`): `h − negTail c₀ b N` is analytic (`R₀`); subtracting the
+        -- off-centre-analytic `P` keeps it analytic.
+        subst heq
+        refine ⟨fun z => R₀ z - P z, hR₀_an.sub (hP_an c hc₀), ?_⟩
+        filter_upwards [hR₀_eq] with z hz
+        simp only [Pi.sub_apply]
+        rw [show h z - (negTail c b N z + P z) = (h z - negTail c b N z) - P z by ring, hz]
+        ring
+      · -- At `c ∈ S` (so `c ≠ c₀`): `h − P` is analytic (`R`); subtracting the off-centre-analytic
+        -- `negTail c₀` keeps it analytic.
+        obtain ⟨R, hR_an, hR_eq⟩ := hP_centres c hcS
+        have hne : c ≠ c₀ := fun h => hc₀ (h ▸ hcS)
+        refine ⟨fun z => R z - negTail c₀ b N z, hR_an.sub (analyticAt_negTail_of_ne b N hne), ?_⟩
+        filter_upwards [hR_eq] with z hz
+        simp only [Pi.sub_apply] at hz ⊢
+        rw [show h z - (negTail c₀ b N z + P z) = (h z - P z) - negTail c₀ b N z by ring, hz]
+
 end Jacobians.Dolbeault.FormTracePrincipalPart
