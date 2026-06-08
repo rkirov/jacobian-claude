@@ -377,6 +377,45 @@ theorem dbar_globalPrimTerm (s : 𝔇.overlapData.Cshr) (a c : 𝔇.ι) {x : X}
     rw [hr0, 𝔇.shrinkDbarRho_eq_zero_of_notMem c hb]
     module
 
+/-- Antisymmetry of `holoFn σ` (from diagonal vanishing + cocycle): `holoFn σ_{pa} = −holoFn σ_{ap}`
+on `V_a ∩ V_p`. -/
+theorem shrinkGerm_antisymm (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a p : 𝔇.ι) {y : X}
+    (hya : y ∈ (𝔇.shrinkOpens a : Opens X)) (hyp : y ∈ (𝔇.shrinkOpens p : Opens X)) :
+    holoFn (𝔇.shrinkGerm s p a).2 y = -holoFn (𝔇.shrinkGerm s a p).2 y := by
+  have h := 𝔇.shrinkGerm_cocycle_add s hs p a p (y := y) ⟨⟨hyp, hya⟩, hyp⟩
+  rw [𝔇.shrinkGerm_diag_eq_zero s hs p hyp] at h
+  linear_combination -h
+
+/-- **`glueForm` value telescopes on `V_a`**: `ω̂ x = ∑_c holoFn σ_{ac}(x) • ∂̄ρ_c(x)` for `x ∈ V_a`.
+Via the cocycle substitution `holoFn σ_{pq} = holoFn σ_{aq} − holoFn σ_{ap}` (on `V_a`) and
+`telescope_sum` (`∑ ρ = 1`, `∑ ∂̄ρ = 0`). -/
+theorem glueForm_apply_on_V (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a : 𝔇.ι) {x : X}
+    (hxa : x ∈ (𝔇.shrinkOpens a : Opens X)) :
+    ((𝔇.glueForm s : ↥(OneFormsZeroOne X)) : SmoothCOneForms X) x
+      = ∑ c, holoFn (𝔇.shrinkGerm s a c).2 x • (𝔇.shrinkDbarRho c x) := by
+  rw [glueForm_val, section_finset_sum_apply]
+  -- rewrite each term `(ρ_p·holoFn σ_{pq})•∂̄ρ_q` to `(ρ_p·(H_q − H_p))•∂̄ρ_q` with `H_q = holoFn σ_{aq}`.
+  have hterm : ∀ p : 𝔇.ι × 𝔇.ι, (𝔇.shrinkTerm s p.1 p.2) x
+      = (𝔇.shrinkRhoC p.1 x
+          * (holoFn (𝔇.shrinkGerm s a p.2).2 x - holoFn (𝔇.shrinkGerm s a p.1).2 x))
+        • (𝔇.shrinkDbarRho p.2 x) := by
+    intro p
+    obtain ⟨p, q⟩ := p
+    rw [shrinkTerm_apply]
+    by_cases hp : x ∈ tsupport (𝔇.shrinkPoU p)
+    · by_cases hq : x ∈ tsupport (𝔇.shrinkPoU q)
+      · have hxp : x ∈ (𝔇.shrinkOpens p : Opens X) := 𝔇.shrinkPoU_tsupport_subset p hp
+        have hxq : x ∈ (𝔇.shrinkOpens q : Opens X) := 𝔇.shrinkPoU_tsupport_subset q hq
+        -- cocycle `holoFn σ_{pq} = holoFn σ_{pa} + holoFn σ_{aq}` and antisymm `σ_{pa} = −σ_{ap}`.
+        rw [𝔇.shrinkGerm_cocycle_add s hs p a q ⟨⟨hxp, hxa⟩, hxq⟩,
+          𝔇.shrinkGerm_antisymm s hs a p hxa hxp]
+        congr 2; ring
+      · rw [𝔇.shrinkDbarRho_eq_zero_of_notMem q hq]; module
+    · rw [𝔇.shrinkRhoC_eq_zero_of_notMem p hp]; module
+  simp_rw [hterm]
+  exact telescope_sum (fun p => 𝔇.shrinkRhoC p x) (fun q => holoFn (𝔇.shrinkGerm s a q).2 x)
+    (fun q => 𝔇.shrinkDbarRho q x) (𝔇.sum_shrinkRhoC_apply x) (𝔇.sum_shrinkDbarRho_apply x)
+
 end ChartDiskCover
 
 end Jacobians.Dolbeault
