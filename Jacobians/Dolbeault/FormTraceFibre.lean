@@ -135,4 +135,107 @@ theorem exists_planar_section {φ : ℂ → ℂ} {x₀ b : ℂ} (hφ : AnalyticA
   subst hb
   exact ⟨s, hsana, hsx₀, hsderiv', hrinv⟩
 
+/-! ### The `FibreTrace` over an unramified fibre
+
+Assembling (a)+(b)+(c): given a base value `b : ℂ` and a finite family of fibre points `xs : ι → X`,
+each a **regular non-pole point** of `f` mapping to `b` (the chart pullback `g_{xs i} = f.holoRepr ∘
+chart⁻¹` is analytic with nonzero derivative at `pre i = chart (xs i)`, and `f.holoRepr (xs i) = b`),
+we build a `FibreTrace` over `b` whose per-sheet coefficient is the chart integrand of `α = ω₀·g` at
+`xs i`.  Lemma 3.2 (`resAt_traceCoeff'`) then identifies its trace residue with the fibre residue sum
+`∑ i, formFnResidue ω₀ g (xs i)`.
+
+The per-sheet section `sheet i` is the planar inverse `s_i` of `g_{xs i}` (bridge (a)); `coeff_mero`
+holds via bridge (b).  We bundle the *regularity inputs* (per-point analytic + deriv-nonzero) as
+explicit hypotheses; they are exactly "`b` is a regular value off the pole/branch locus", to be
+supplied by the global assembly from the finite critical-value set. -/
+
+/-- **Per-fibre regularity data** for the cover `f` over the base value `b : ℂ`: a finite family of
+fibre points `xs : ι → X`, each a non-pole regular point with `f.holoRepr (xs i) = b` and chart
+pullback `g_{xs i}` a local biholomorphism at `pre i = chart (xs i)`.  This is the *honest geometric
+input* the unramified-fibre `FibreTrace` is built from (supplied by the regular-value/IFT machinery
+in the global assembly).  Parameterized by the form function `g` (its chart-pullback meromorphy
+`hg_mero` is recorded so each per-sheet coefficient is meromorphic). -/
+structure FibreRegularData (g : X → ℂ) (f : MeromorphicFunction X) (b : ℂ) where
+  /-- The sheet index. -/
+  ι : Type
+  /-- Finiteness of the index. -/
+  fintype_ι : Fintype ι
+  /-- The fibre points. -/
+  xs : ι → X
+  /-- The chart pullback `f.holoRepr ∘ chart⁻¹` is analytic at `pre i = chart (xs i)`. -/
+  hg_an : ∀ i, AnalyticAt ℂ (fun z => f.holoRepr ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i))
+  /-- `xs i` is a regular point: the chart-pullback derivative is nonzero. -/
+  hg_deriv : ∀ i, deriv (fun z => f.holoRepr ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i)) ≠ 0
+  /-- `xs i` maps to the base value `b`: `f.holoRepr (xs i) = b`. -/
+  hval : ∀ i, f.holoRepr (xs i) = b
+  /-- `g`'s chart-pullback is meromorphic at each `pre i` (so `α·g` has an isolated singularity). -/
+  hg_mero : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i))
+
+attribute [instance] FibreRegularData.fintype_ι
+
+variable {g : X → ℂ}
+
+/-- The chart pullback `f.holoRepr ∘ chart⁻¹` evaluated at `pre i = chart (xs i)` is `b`. -/
+theorem FibreRegularData.gval (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X) {b : ℂ}
+    (D : FibreRegularData g f b) (i : D.ι) :
+    (fun z => f.holoRepr ((chartAt ℂ (D.xs i)).symm z)) ((chartAt ℂ (D.xs i)) (D.xs i)) = b := by
+  show f.holoRepr ((chartAt ℂ (D.xs i)).symm ((chartAt ℂ (D.xs i)) (D.xs i))) = b
+  rw [(chartAt ℂ (D.xs i)).left_inv (mem_chart_source ℂ (D.xs i))]
+  exact D.hval i
+
+/-- **The `FibreTrace` over an unramified fibre.**  From the regularity data `D`, build the fibre
+trace over `b` whose sheets are the planar section germs (bridge (a)) and whose coefficients are the
+chart integrands of `α = ω₀·g` (bridges (b)/(c)).  The `pre i` are the source-chart coordinates of
+the fibre points, so `resAt (coeff i) (pre i) = formFnResidue ω₀ g (xs i)` definitionally. -/
+noncomputable def fibreTrace (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X) {b : ℂ}
+    (D : FibreRegularData g f b) : FibreTrace where
+  ι := D.ι
+  fintype_ι := D.fintype_ι
+  b := b
+  sheet := fun i =>
+    Classical.choose (exists_planar_section (D.hg_an i) (D.hg_deriv i) (D.gval ω₀ f i))
+  pre := fun i => (chartAt ℂ (D.xs i)) (D.xs i)
+  sheet_analytic := fun i =>
+    (Classical.choose_spec (exists_planar_section (D.hg_an i) (D.hg_deriv i) (D.gval ω₀ f i))).1
+  sheet_deriv_ne := fun i =>
+    (Classical.choose_spec (exists_planar_section (D.hg_an i) (D.hg_deriv i) (D.gval ω₀ f i))).2.2.1
+  sheet_base := fun i =>
+    (Classical.choose_spec (exists_planar_section (D.hg_an i) (D.hg_deriv i) (D.gval ω₀ f i))).2.1
+  coeff := fun i => chartIntegrand ω₀ g (D.xs i)
+  coeff_mero := fun i => meromorphicAt_chartIntegrand ω₀ g (D.xs i) (D.hg_mero i)
+
+@[simp] theorem fibreTrace_b (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X) {b : ℂ}
+    (D : FibreRegularData g f b) : (fibreTrace ω₀ f D).b = b := rfl
+
+@[simp] theorem fibreTrace_pre (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X) {b : ℂ}
+    (D : FibreRegularData g f b) (i : D.ι) :
+    (fibreTrace ω₀ f D).pre i = (chartAt ℂ (D.xs i)) (D.xs i) := rfl
+
+@[simp] theorem fibreTrace_coeff (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X) {b : ℂ}
+    (D : FibreRegularData g f b) (i : D.ι) :
+    (fibreTrace ω₀ f D).coeff i = chartIntegrand ω₀ g (D.xs i) := rfl
+
+/-- **Bridge (c), assembled.**  The per-sheet residue of the fibre trace equals `formFnResidue`:
+`resAt ((fibreTrace ω₀ f D).coeff i) ((fibreTrace ω₀ f D).pre i) = formFnResidue ω₀ g (xs i)`. -/
+@[simp] theorem resAt_fibreTrace_coeff (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    {b : ℂ} (D : FibreRegularData g f b) (i : D.ι) :
+    resAt ((fibreTrace ω₀ f D).coeff i) ((fibreTrace ω₀ f D).pre i)
+      = formFnResidue ω₀ g (D.xs i) := by
+  rw [fibreTrace_coeff, fibreTrace_pre]
+  exact resAt_chartIntegrand_eq_formFnResidue ω₀ g (D.xs i)
+
+/-- **Lemma 3.2 over the unramified fibre.**  The trace residue at the base equals the fibre residue
+sum of `α = ω₀·g`:
+
+> `Res_b (Tr_F α over the fibre) = ∑ i, formFnResidue ω₀ g (xs i)`.
+
+This is the now-unconditional `FibreTrace.resAt_traceCoeff'` composed with bridge (c)
+(`resAt_fibreTrace_coeff`).  It is the per-fibre identity the `FormResidueTrace` aggregates. -/
+theorem resAt_traceCoeff_fibreTrace (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X) {b : ℂ}
+    (D : FibreRegularData g f b) :
+    resAt (fibreTrace ω₀ f D).traceCoeff (fibreTrace ω₀ f D).b
+      = ∑ i, formFnResidue ω₀ g (D.xs i) := by
+  rw [(fibreTrace ω₀ f D).resAt_traceCoeff']
+  exact Finset.sum_congr rfl (fun i _ => resAt_fibreTrace_coeff ω₀ f D i)
+
 end Jacobians.Dolbeault.FormTraceFibre
