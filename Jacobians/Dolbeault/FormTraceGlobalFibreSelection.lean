@@ -164,4 +164,116 @@ noncomputable def FibreRegularData.ofFullFibre (f : MeromorphicFunction X)
     (FibreRegularData.ofFullFibre (g := g) f hdiv b hoff hmero).xs i = fullFibreEnum f hdiv b i :=
   rfl
 
+/-! ### The canonical global full-fibre selection `Φ`
+
+`Φ b` is the full-fibre datum at every value where it can be built — the **good values** `b`, where
+`coe b` is off the branch locus and `g`'s chart pullback is meromorphic at each fibre point.  At every
+other value (branch values, or values with bad `g`-data) `Φ b` is the empty datum.  This is the
+*canonical* selection: at regular values it enumerates the **full** fibre with no labeling, exactly the
+symmetric-lever input of `MovingCoherenceDatum.ofSphereSheetSystemCanon`.
+
+The empty fallback at branch values is harmless: the branch-value crux of
+`residueSum_eq_zero_of_globalCoverData` is handled by the **bundle trace SUM** (`αBr`, the
+monodromy-free symmetric extension), not by `Φ` at the branch value; the canonical-fibre conditions
+`hΦrangeReg`/`hΦinjReg` are required only *near regular values* (off `cs ∪ branchValues f`), where `Φ`
+*is* the full fibre. -/
+
+/-- **The good-value predicate.**  `b` is *good* when `coe b` is off the branch locus of `F =
+f.toRiemannSphere` and `g`'s chart pullback is meromorphic at every full-fibre point over `coe b`.  At
+good values the canonical selection enumerates the full fibre as a regular non-pole family. -/
+def GoodValue (g : X → ℂ) (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) (b : ℂ) :
+    Prop :=
+  (((b : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere ∧
+  ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (fullFibreEnum f hdiv b i)).symm z))
+    ((chartAt ℂ (fullFibreEnum f hdiv b i)) (fullFibreEnum f hdiv b i))
+
+/-- **The canonical full-fibre selection.**  `Φ b` is the full-fibre datum at good values and the empty
+datum elsewhere. -/
+noncomputable def canonicalFibreSelection (g : X → ℂ) (f : MeromorphicFunction X)
+    (hdiv : (f.div : Divisor X) ≠ 0) : (b : ℂ) → FibreRegularData g f b :=
+  fun b => if h : GoodValue g f hdiv b then FibreRegularData.ofFullFibre f hdiv b h.1 h.2
+    else emptyFibreRegularData g f b
+
+/-- At a **good value**, the canonical selection *is* the full-fibre datum. -/
+theorem canonicalFibreSelection_eq_ofFullFibre (g : X → ℂ) (f : MeromorphicFunction X)
+    (hdiv : (f.div : Divisor X) ≠ 0) {b : ℂ} (h : GoodValue g f hdiv b) :
+    canonicalFibreSelection g f hdiv b = FibreRegularData.ofFullFibre f hdiv b h.1 h.2 := by
+  rw [canonicalFibreSelection, dif_pos h]
+
+/-- At a **good value**, the canonical selection's fibre points are `fullFibreEnum` — so the underlying
+fibre-point map has **range exactly the full fibre** `F⁻¹(coe b)`. -/
+theorem canonicalFibreSelection_xs_range (g : X → ℂ) (f : MeromorphicFunction X)
+    (hdiv : (f.div : Divisor X) ≠ 0) {b : ℂ} (h : GoodValue g f hdiv b) :
+    Set.range (canonicalFibreSelection g f hdiv b).xs
+      = f.toRiemannSphere ⁻¹' {(((b : ℂ) : RiemannSphere))} := by
+  rw [canonicalFibreSelection_eq_ofFullFibre g f hdiv h]
+  -- `(ofFullFibre …).xs = fullFibreEnum …` definitionally; `fullFibreEnum`'s range is the fibre.
+  exact fullFibreEnum_range f hdiv b
+
+/-- At a **good value**, the canonical selection's fibre points are **injective**. -/
+theorem canonicalFibreSelection_xs_injective (g : X → ℂ) (f : MeromorphicFunction X)
+    (hdiv : (f.div : Divisor X) ≠ 0) {b : ℂ} (h : GoodValue g f hdiv b) :
+    Function.Injective (canonicalFibreSelection g f hdiv b).xs := by
+  rw [canonicalFibreSelection_eq_ofFullFibre g f hdiv h]
+  exact fullFibreEnum_injective f hdiv b
+
+/-! ### Off-branch good-value neighbourhoods
+
+A value `z` with `coe z ∉ branchLocus` has a whole neighbourhood of values `b'` with `coe b' ∉
+branchLocus`: the branch locus is closed (finite, for a nonconstant `f`), so its complement is open,
+and `coe` is continuous.  This is the first half of the good-value condition near a regular value. -/
+
+/-- **Off-branch is an open condition (finite-value side).**  If `coe z ∉ branchLocus
+f.toRiemannSphere`, then `coe b' ∉ branchLocus f.toRiemannSphere` for all `b'` near `z`. -/
+theorem eventually_notMem_branchLocus (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0)
+    {z : ℂ} (hz : (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere) :
+    ∀ᶠ b' in 𝓝 z, (((b' : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere := by
+  -- The branch locus is closed (finite), so its complement is open and `coe ⁻¹' (branchLocusᶜ)` is a
+  -- neighbourhood of `z` (continuity of `coe`, `z` in it).
+  have hfin : (branchLocus f.toRiemannSphere).Finite :=
+    finite_branchLocus_of_nonconstant f.toRiemannSphere f.contMDiff_toRiemannSphere
+      (hncF_of_div_ne_zero f hdiv)
+  have hopen : IsOpen ((branchLocus f.toRiemannSphere)ᶜ) := hfin.isClosed.isOpen_compl
+  have hmem : ((fun w : ℂ => ((w : ℂ) : RiemannSphere)) ⁻¹' (branchLocus f.toRiemannSphere)ᶜ)
+      ∈ 𝓝 z :=
+    (OnePoint.continuous_coe.continuousAt).preimage_mem_nhds (hopen.mem_nhds hz)
+  filter_upwards [hmem] with b' hb' using hb'
+
+/-! ### The canonical-fibre conditions `hΦrangeReg` / `hΦinjReg`
+
+At a regular value `z` (off the finite branch values), the canonical selection enumerates the full
+fibre `F⁻¹(coe b')` for every `b'` near `z` — *provided* `g`'s chart pullback is meromorphic at the
+fibre points there (the standard regular-value `g`-data, the only datum-dependent input).  This gives
+both `hΦrangeReg` (the range is the fibre) and `hΦinjReg` (the enumeration is injective) — the two
+canonical-fibre conditions of `residueSum_eq_zero_of_globalCoverData`. -/
+
+/-- **`hΦrangeReg` for the canonical selection.**  At a value `z` off the branch values (`coe z ∉
+branchLocus`), the canonical full-fibre selection enumerates the **full fibre** `F⁻¹(coe b')` for `b'`
+near `z`, given the regular-value `g`-meromorphy `hgmero` (`g`'s chart pullback meromorphic at the
+full-fibre points, eventually near `z`).  Off-branch is an open condition (`eventually_notMem_branchLocus`)
+so each such `b'` is a *good value*, where the canonical selection is the full-fibre datum. -/
+theorem canonicalFibreSelection_hΦrangeReg (g : X → ℂ) (f : MeromorphicFunction X)
+    (hdiv : (f.div : Divisor X) ≠ 0) {z : ℂ}
+    (hz : (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
+    (hgmero : ∀ᶠ b' in 𝓝 z, ∀ i,
+      MeromorphicAt (fun w => g ((chartAt ℂ (fullFibreEnum f hdiv b' i)).symm w))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' i)) (fullFibreEnum f hdiv b' i))) :
+    ∀ᶠ b' in 𝓝 z, Set.range (canonicalFibreSelection g f hdiv b').xs
+      = f.toRiemannSphere ⁻¹' {(((b' : ℂ) : RiemannSphere))} := by
+  filter_upwards [eventually_notMem_branchLocus f hdiv hz, hgmero] with b' hb'off hb'mero
+  exact canonicalFibreSelection_xs_range g f hdiv ⟨hb'off, hb'mero⟩
+
+/-- **`hΦinjReg` for the canonical selection.**  At a value `z` off the branch values, the canonical
+full-fibre selection's fibre points are **injective** for `b'` near `z`, given the regular-value
+`g`-meromorphy `hgmero`.  (Same good-value neighbourhood as `hΦrangeReg`.) -/
+theorem canonicalFibreSelection_hΦinjReg (g : X → ℂ) (f : MeromorphicFunction X)
+    (hdiv : (f.div : Divisor X) ≠ 0) {z : ℂ}
+    (hz : (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
+    (hgmero : ∀ᶠ b' in 𝓝 z, ∀ i,
+      MeromorphicAt (fun w => g ((chartAt ℂ (fullFibreEnum f hdiv b' i)).symm w))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' i)) (fullFibreEnum f hdiv b' i))) :
+    ∀ᶠ b' in 𝓝 z, Function.Injective (canonicalFibreSelection g f hdiv b').xs := by
+  filter_upwards [eventually_notMem_branchLocus f hdiv hz, hgmero] with b' hb'off hb'mero
+  exact canonicalFibreSelection_xs_injective g f hdiv ⟨hb'off, hb'mero⟩
+
 end Jacobians.Dolbeault.FormTraceGlobal
