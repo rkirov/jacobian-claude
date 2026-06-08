@@ -86,6 +86,21 @@ theorem analyticAt_traceCoeff_base (ω₀ : HolomorphicOneForms X) (f : Meromorp
   have h := analyticAt_traceCoeff ω₀ f D hg
   rwa [fibreTrace_b] at h
 
+/-- **Off-centre analyticity from a regular-fibre germ.**  If the global trace `T` agrees, on a full
+neighbourhood of a regular value `b`, with the local trace coefficient `(fibreTrace ω₀ f D).traceCoeff`
+of a regular fibre `D` over `b` (with `g`'s chart-pullback analytic at each fibre point, so `b` is off
+the poles of `α`), then `T` is **analytic at `b`**.  This is the off-exceptional-set half of the
+`GlobalTrace` `hT_off` obligation: at every value off the finite exceptional set the geometric trace
+agrees with a regular fibre trace, which is analytic by `analyticAt_traceCoeff_base`.  *Proof.*
+`AnalyticAt.congr` with `analyticAt_traceCoeff_base`. -/
+theorem analyticAt_of_eventuallyEq_regularFibreTrace (ω₀ : HolomorphicOneForms X)
+    (f : MeromorphicFunction X) {T : ℂ → ℂ} {b : ℂ} (D : FibreRegularData g f b)
+    (hg : ∀ i, AnalyticAt ℂ (fun z => g ((chartAt ℂ (D.xs i)).symm z))
+      ((chartAt ℂ (D.xs i)) (D.xs i)))
+    (hT : T =ᶠ[𝓝 b] (fibreTrace ω₀ f D).traceCoeff) :
+    AnalyticAt ℂ T b :=
+  (analyticAt_traceCoeff_base ω₀ f D hg).congr hT.symm
+
 /-! ### Principal-part extraction for the local trace coefficient
 
 At a finite pole-value `b`, the local trace coefficient `(fibreTrace ω₀ f D).traceCoeff` is
@@ -323,5 +338,38 @@ theorem continuousAt_recipCoeff_of_vanishing {h : ℂ → ℂ} {R₀ : ℂ → �
     intro s hs
     rw [hval0]
     exact mem_of_mem_nhds hs
+
+/-! ### `hentire` over the centre set `Finset.univ.image L.a`
+
+A variant of `analyticOnNhd_remainder_of_junkFree` phrased directly over the centre *set*
+`S = Finset.univ.image L.a` (rather than an indexed family) — the form the `GlobalTrace` constructor
+uses, since the `GlobalTrace.hglue_fin`/`hcenters` fields range over `Finset.univ.image L.a`. -/
+
+/-- **The remainder is entire (centre-set form).**  `L.R` is analytic off `S = Finset.univ.image L.a`;
+if `T` is analytic off `S` (`hT_off`), `T − L.R` is germ-analytic at every `p ∈ S` (`hrem`, the pole
+removed), and `T − L.R` is continuous at every `p ∈ S` (`hcont`, junk-free), then `T − L.R` is entire.
+This is the `GlobalTrace.hentire` field, ranging over `Finset.univ.image L.a`. -/
+theorem analyticOnNhd_remainder_of_junkFree' {T : ℂ → ℂ} {L : LaurentForm}
+    (hT_off : ∀ z ∉ Finset.univ.image L.a, AnalyticAt ℂ T z)
+    (hrem : ∀ p ∈ Finset.univ.image L.a, ∃ R : ℂ → ℂ, AnalyticAt ℂ R p ∧ (T - L.R) =ᶠ[𝓝[≠] p] R)
+    (hcont : ∀ p ∈ Finset.univ.image L.a, ContinuousAt (T - L.R) p) :
+    AnalyticOnNhd ℂ (T - L.R) Set.univ := by
+  classical
+  -- `L.R` is analytic off `S` (its monomial centres lie in `S = image L.a`).
+  have hLR_off : ∀ z ∉ Finset.univ.image L.a, AnalyticAt ℂ L.R z := by
+    intro z hz
+    show AnalyticAt ℂ (fun w => ∑ p, L.c p * (w - L.a p) ^ L.n p) z
+    refine Finset.analyticAt_fun_sum _ (fun p _ => ?_)
+    refine analyticAt_const.mul ?_
+    have hbase : AnalyticAt ℂ (fun w : ℂ => w - L.a p) z := analyticAt_id.sub analyticAt_const
+    have hzap : z ≠ L.a p := by
+      intro h; exact hz (h ▸ Finset.mem_image_of_mem L.a (Finset.mem_univ p))
+    exact hbase.zpow (sub_ne_zero.mpr hzap)
+  intro z _
+  by_cases hzS : z ∈ Finset.univ.image L.a
+  · obtain ⟨R, hR_an, hR_eq⟩ := hrem z hzS
+    have hmero : MeromorphicAt (T - L.R) z := hR_an.meromorphicAt.congr hR_eq.symm
+    exact hmero.analyticAt (hcont z hzS)
+  · exact (hT_off z hzS).sub (hLR_off z hzS)
 
 end Jacobians.Dolbeault.FormTraceGlobal
