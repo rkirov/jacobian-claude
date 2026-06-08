@@ -290,6 +290,45 @@ theorem glueForm_val (s : 𝔇.overlapData.Cshr) :
       ↥(OneFormsZeroOne X)) : ↥(OneFormsZeroOne X)) : SmoothCOneForms X) = _
   rw [AddSubmonoidClass.coe_finset_sum]
 
+/-! ## §C — The local smooth split `G_a` and its two key identities
+
+`G_a(x) := ∑_c ρ_c(x) · holoFn σ_{ac}(x)` — a function smooth on `V_a` (each term confined to
+`tsupport ρ_c ∩ V_a ⊆ V_c ∩ V_a`, where `holoFn σ_{ac}` is smooth).  Two identities drive the lift:
+  * the **difference identity** `G_a(x) − G_b(x) = holoFn σ_{ab}(x) = s_{ab}.toFun(φ_a x)` on `V_a ∩ V_b`
+    (cocycle telescoping `∑ ρ = 1`);
+  * the **`∂̄` identity** `proj01(mfderiv G_a x) = ω̂ x` on `V_a` (Wirtinger product rule + cocycle
+    telescoping `∑ ∂̄ρ = 0`), built in §D.
+-/
+
+/-- The chart-`a` smooth split `G_a := ∑_c ρ_c · holoFn σ_{ac}` (a function on `V_a`). -/
+noncomputable def globalPrim (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) : X → ℂ :=
+  fun x => ∑ c, 𝔇.shrinkRhoC c x * holoFn (𝔇.shrinkGerm s a c).2 x
+
+theorem globalPrim_apply (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) (x : X) :
+    𝔇.globalPrim s a x = ∑ c, 𝔇.shrinkRhoC c x * holoFn (𝔇.shrinkGerm s a c).2 x := rfl
+
+/-- **The difference identity** `G_a(x) − G_b(x) = holoFn σ_{ab}(x)` on `V_a ∩ V_b`.  Pointwise via the
+cocycle relation `holoFn σ_{ac} = holoFn σ_{ab} + holoFn σ_{bc}` and `∑ ρ = 1`.  (Mirror of
+`chartDiskCoverPrim_diff`.) -/
+theorem globalPrim_diff (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a b : 𝔇.ι) {x : X}
+    (hx : x ∈ (𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b : Opens X)) :
+    𝔇.globalPrim s a x - 𝔇.globalPrim s b x = holoFn (𝔇.shrinkGerm s a b).2 x := by
+  rw [globalPrim, globalPrim, ← Finset.sum_sub_distrib]
+  have hpt : ∀ c : 𝔇.ι,
+      𝔇.shrinkRhoC c x * holoFn (𝔇.shrinkGerm s a c).2 x
+        - 𝔇.shrinkRhoC c x * holoFn (𝔇.shrinkGerm s b c).2 x
+      = 𝔇.shrinkRhoC c x * holoFn (𝔇.shrinkGerm s a b).2 x := by
+    intro c
+    by_cases hb : x ∈ tsupport (𝔇.shrinkPoU c)
+    · have hxc : x ∈ (𝔇.shrinkOpens c : Opens X) := 𝔇.shrinkPoU_tsupport_subset c hb
+      -- cocycle: `holoFn σ_{ac} = holoFn σ_{ab} + holoFn σ_{bc}` (middle `b`), on `V_a∩V_b∩V_c`.
+      have htri : x ∈ (𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b ⊓ 𝔇.shrinkOpens c : Opens X) :=
+        ⟨⟨hx.1, hx.2⟩, hxc⟩
+      rw [𝔇.shrinkGerm_cocycle_add s hs a b c htri]
+      ring
+    · rw [𝔇.shrinkRhoC_eq_zero_of_notMem c hb]; ring
+  simp_rw [hpt, ← Finset.sum_mul, 𝔇.sum_shrinkRhoC_apply x, one_mul]
+
 end ChartDiskCover
 
 end Jacobians.Dolbeault
