@@ -140,4 +140,50 @@ theorem residueSum_eq_zero_of_data (hac : AdaptedCover ω₀ g f poles)
     (globalTrace_of_data hac T L hcenters Dinf hxs_inj hxs_mem hxs_surj hglue_fin hglue_inf
       hT_off hrem hcont R₀ hR₀_an hR₀0 hR₀_eq)
 
+/-! ### Non-vacuity of the constructor (end-to-end soundness)
+
+The constructor `globalTrace_of_data` is *satisfiable*, not a disguised `False`: in the
+globally-holomorphic (empty-pole) case it builds a `GlobalTrace` with `T ≡ 0`, the empty `LaurentForm`
+(no centres), the empty `∞`-fibre, and the vanishing genus-`0` continuation `R₀ ≡ 0`.  All the deep
+inputs (glue, junk-freeness) are vacuous over the empty centre set; the `∞`-glue is `recipCoeff 0 ≡ 0`
+matching the empty `∞`-trace; `R₀ 0 = 0` and `recipCoeff (0 − 0) =ᶠ 0` hold trivially.  This mirrors
+`globalTrace_holomorphic` and confirms the constructor produces a genuine `∑Res = 0`. -/
+
+/-- **`globalTrace_of_data` non-vacuity.**  In the empty-pole case the constructor builds a
+`GlobalTrace` (hence `∑Res = 0`) from `T ≡ 0`, the empty `LaurentForm`, the empty `∞`-fibre, and
+`R₀ ≡ 0`: every deep input is vacuous (no centres) or trivial (the empty `∞`-trace, `R₀ 0 = 0`).
+Confirms the constructor is honest (satisfiable). -/
+theorem residueSum_eq_zero_of_data_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
+    ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 := by
+  classical
+  refine residueSum_eq_zero_of_data (adaptedCover_empty ω₀ g f hdiv)
+    (fun _ => 0) Jacobians.ResidueTheoremX.emptyLaurentForm
+    (by rw [Jacobians.ResidueTheoremX.emptyLaurentForm_image_a]; simp)
+    (emptyInftyFibreData g f)
+    (fun i => i.elim) (fun i => i.elim) (fun a ha _ => absurd ha (Finset.notMem_empty a))
+    ?_ ?_ ?_ ?_ ?_ (fun _ => 0) analyticAt_const rfl ?_
+  · -- hglue_fin: vacuous (no centres).
+    intro p hp
+    rw [Jacobians.ResidueTheoremX.emptyLaurentForm_image_a] at hp
+    exact absurd hp (Finset.notMem_empty p)
+  · -- hglue_inf: `recipCoeff 0 =ᶠ 0` (empty `∞`-trace).
+    rw [inftyFibreTrace_emptyData_traceCoeff ω₀ f]
+    filter_upwards with ζ; simp [recipCoeff]
+  · -- hT_off: `T = 0` analytic everywhere.
+    intro z _; exact analyticAt_const
+  · -- hrem: vacuous (no centres).
+    intro p hp
+    rw [Jacobians.ResidueTheoremX.emptyLaurentForm_image_a] at hp
+    exact absurd hp (Finset.notMem_empty p)
+  · -- hcont: vacuous (no centres).
+    intro p hp
+    rw [Jacobians.ResidueTheoremX.emptyLaurentForm_image_a] at hp
+    exact absurd hp (Finset.notMem_empty p)
+  · -- hR₀_eq: `recipCoeff (0 − emptyLaurentForm.R) =ᶠ 0`.
+    rw [Jacobians.ResidueTheoremX.emptyLaurentForm_R]
+    filter_upwards with ζ
+    show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
+    simp [recipCoeff]
+
 end Jacobians.Dolbeault.FormTraceGlobal
