@@ -7,21 +7,27 @@
   honest `sorry` (`ChartDiskCover.finiteDimensional_cechH1_chartDisk`): the structural δ-complex
   `HolomorphicCoboundaries 𝔇.overlapData` together with a comparison `cechH1 𝔇 0 ≃ₗ supH1`.
 
-  This file discharges that `sorry` SORRY-FREE.  It supplies the two missing pieces for the proven
+  This file builds the δ-complex + comparison for that `sorry`, supplying the two pieces for the proven
   reduction `ChartDiskCover.finiteDimensional_cechH1_of_holomorphicModel`:
 
-    * **(A) the δ-complex** `HolomorphicCoboundaries 𝔇.overlapData` — mirroring
-      `CechModelHolomorphicDelta.lean` (which builds the same data for the MONTEL cover
-      `chartCoverHolomorphicDiskOverlapData`) but for `𝔇.overlapData`, whose geometry is the chart-disk
-      ball-overlaps `𝔇.Uov`/`𝔇.Wov`.  Its `leray` field is the proven `forster146_lift` (the analytic
-      heart), wired through a `BallSplitData` built from a smooth partition of unity subordinate to the
-      cover `(𝔇.U i)` (`X` compact).
+    * **(A) the δ-complex** `HolomorphicCoboundaries 𝔇.overlapData` (`holomorphicCoboundaries`) —
+      mirroring `CechModelHolomorphicDelta.lean` (the MONTEL cover) but for `𝔇.overlapData`, the
+      chart-disk ball-overlaps `𝔇.Uov`/`𝔇.Wov`.  ALL STRUCTURAL FIELDS are proven sorry-free
+      (`δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm`).
 
-    * **(B) the comparison.**  For FINITENESS a linear INJECTION `cechH1 𝔇 0 ↪ supH1` suffices
-      (`FiniteDimensional.of_injective` + `supH1` finite).  The forward germ→`BddHol` cochain map
-      (`CechModelCochain.cochainToCcov`) descends to `cechH1 𝔇 0 → supH1`; its INJECTIVITY is the
-      same germ-class `𝒪_D` sheaf-gluing used for Forster 12.4
-      (`CechRefinementInjective.{omegaDGerm_separated, omegaDGerm_glue}`).
+    * **(B) the comparison** `comparisonMap : cechH1 𝔇 0 →ₗ[ℂ] supH1` — PROVEN SORRY-FREE, AND
+      INJECTIVE (`comparisonMap_injective`).  The forward germ→`BddHol` cochain map lands in the
+      SHRINKING side `Cshr` (boundedness automatic on the relatively-compact `Wov`), is a cocycle
+      (`cechToCshr_mem_Z1shr`), descends (well-definedness `coboundaries_le_ker_cechToSupH1`), and is
+      injective by reduction to Forster 12.4 refinement-injectivity
+      (`CechRefinementInjective.refinementDescend_unconditional`) along the shrinking cover `(V a)`.
+
+  THE ONE REMAINING `sorry` is the `leray` field of `holomorphicCoboundaries` — the genuine analytic
+  content (Forster 14.6, the cross-chart Bott–Tu smooth split + per-disk ∂̄-solve into a holomorphic
+  cover cocycle).  `forster146_lift` (the proven heart) is NOT sufficient on its own: its `BallSplitData`
+  interface needs a cocycle holomorphic on the FULL overlaps, strictly stronger than the shrinking
+  cocycle `leray` is given.  See `holomorphicCoboundaries`'s LERAY DIAGNOSIS.  The final theorem
+  `finiteDimensional_cechH1_chartDisk_complete` therefore depends on exactly that one sorry.
 
   Conventions follow `ChartDiskFiniteness.lean` / `CechModelHolomorphicDelta.lean`.
 -/
@@ -403,15 +409,29 @@ the resulting `η`/`x`).  This is the single honest `sorry` of the file; see `le
 (`δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm`) are the proven model differentials of §A; `leray` is the Forster
 14.6 lift whose analytic heart is `forster146_lift`.
 
-LERAY DIAGNOSIS.  The remaining gap in `leray` is the cross-chart Bott–Tu smooth split: from a
-shrinking cocycle `s : Cshr` (`s_{ab} ∈ BddHol (Wov (a,b))`, holomorphic, `δ¹s = 0`), build a
-`BallSplitData` `𝒮` with `𝒮.g a` smooth on the ball `U_a` (the PoU split `g_a = ∑_c ψ_c·ŝ_{ca}`
-subordinate to the cover `(U_c)`, `X` compact) and `𝒮.s a b` the chart-read of `s (a,b)`, with the
-telescoping identity `g_b∘τ_{ab} − g_a = 𝒮.s a b` on the overlap; then `forster146_lift 𝒮` produces
-holomorphic `η_a` (on the ball) and `x_{ab}` (on the overlap) with `s = δ⁰η + ρx`, and the function
-data is repackaged as `C0`/`Ccov` cochains.  The cross-chart support tracking of the PoU split and the
-function↔`BddHol` repackaging are ~hundreds of lines of analytic plumbing, documented as unbuilt in
-`ChartCoverDbarGlue.lean`. -/
+LERAY DIAGNOSIS (the single honest sorry).  The Forster 14.6 lift `forster146_lift` (the proven
+analytic heart, `ChartDiskFiniteness.lean`) takes a `BallSplitData 𝒮` whose cocycle field `𝒮.s a b`
+is **holomorphic on the FULL overlap `Uov (a,b)`** (`s_holo`) and telescopes a smooth split there.
+That interface models a cocycle that is *already* holomorphic on the full overlaps — STRICTLY STRONGER
+than the `leray` input, a SHRINKING cocycle `s : Cshr` (`s_{ab} ∈ BddHol (Wov (a,b))`, holomorphic
+only on the relatively-compact `Wov`).  Bridging the two is the genuine remaining analytic gap and
+needs MORE than `forster146_lift`:
+
+  * the cross-chart Bott–Tu smooth split of the shrinking cocycle — a PoU `(ψ_c)` subordinate to the
+    cover `(U_c)` (`X` compact, `SmoothPartitionOfUnity.exists_isSubordinate`) gives `g_a := ∑_c ψ_c ·
+    (chart-read of s_{ca})`, smooth on the ball `U_a`, with `g_b∘τ_{ab} − g_a = s_{ab}` ON `Wov` (the
+    cocycle relation + `∑ψ=1`).  But `g_b∘τ − g_a` is SMOOTH, not holomorphic, on `Uov` — so it is NOT
+    a valid `BallSplitData.s` (which `s_holo` requires holomorphic on `Uov`).  The correct argument
+    instead solves `∂̄h_a = ∂̄g_a` per ball-disk (Forster 13.2 / `DbarOpenDisk.dbar_solvable_open_disk`,
+    proven) and sets `η_a := g_a − h_a` (holomorphic on the ball), `x_{ab} := h_b∘τ − h_a` (holomorphic
+    on the overlap by the Wirtinger frame identity, `BallSplitData.dbar_g_frame`-style) — i.e. the body
+    of `forster146_lift`, but driven by the smooth split rather than fed a ready `BallSplitData`;
+  * the function ↔ `BddHol`/germ repackaging of the resulting `η`/`x` into the model's `C0`/`Ccov`
+    cochains, and the restriction of the split identity to `Wov` to match `s = δ0 η + ρx` as `Cshr`.
+
+This cross-chart support tracking + ∂̄-split + repackaging is ~hundreds of lines, documented as unbuilt
+in `ChartCoverDbarGlue.lean` ("the cross-chart telescoping … assembly into the holomorphic cover
+cocycle … left for the corrected model").  It is the one piece NOT covered by `forster146_lift`. -/
 noncomputable def holomorphicCoboundaries : HolomorphicCoboundaries 𝔇.overlapData where
   C0 := 𝔇.C0Holo
   C2 := 𝔇.C2Holo
