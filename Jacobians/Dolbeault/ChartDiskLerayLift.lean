@@ -171,6 +171,125 @@ theorem shrinkGerm_diag_eq_zero (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Mod
   have h := 𝔇.shrinkGerm_cocycle_add s hs i i i (y := y) ⟨⟨hy, hy⟩, hy⟩
   linear_combination -h
 
+/-! ## §B — The global Bott–Tu `(0,1)`-form `ω̂` from `s`
+
+`ω̂ := ∑_{a,c} (ρ_a · holoFn σ_{ac}) • ∂̄ρ_c`, with `ρ = shrinkPoU` (subordinate to `(V_a)`, sum-to-one
+on `X`).  Each summand is a global smooth `(0,1)`-form by the confining 3-case `tsupport` argument
+(mirrors `cechTerm` of `DolbeaultComparisonInverse`).  This is the global form whose chart-`a` read on
+the FULL ball `U_a` is smooth — the input the per-disk solve consumes. -/
+
+/-- `ρ_a` as a complex `SmoothCFunctions` (`ρ̃_a = ofReal ∘ shrinkPoU a`). -/
+noncomputable def shrinkRhoC (a : 𝔇.ι) : SmoothCFunctions X :=
+  ofRealCM.comp (𝔇.shrinkPoU a)
+
+/-- `∂̄ρ_a` as a global `(0,1)`-form. -/
+noncomputable def shrinkDbarRho (a : 𝔇.ι) : SmoothCOneForms X :=
+  dbarL (𝔇.shrinkRhoC a)
+
+theorem shrinkRhoC_eq_zero_of_notMem (a : 𝔇.ι) {x : X}
+    (hx : x ∉ tsupport (𝔇.shrinkPoU a)) : 𝔇.shrinkRhoC a x = 0 := by
+  simp only [shrinkRhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hx]; rfl
+
+theorem shrinkDbarRho_eq_zero_of_notMem (a : 𝔇.ι) {x : X}
+    (hx : x ∉ tsupport (𝔇.shrinkPoU a)) : (𝔇.shrinkDbarRho a) x = 0 := by
+  refine dbarL_eq_zero_of_notMem_tsupport (𝔇.shrinkRhoC a) (fun hc => hx ?_)
+  refine closure_mono (fun y hy => ?_) hc
+  simp only [Function.mem_support, ne_eq] at hy ⊢
+  exact fun h0 => hy (by simp only [shrinkRhoC, ContMDiffMap.comp_apply, ofRealCM, h0]; rfl)
+
+theorem sum_shrinkRhoC (𝔇 : ChartDiskCover X) : ∑ a, 𝔇.shrinkRhoC a = 1 := by
+  refine ContMDiffMap.ext fun x => ?_
+  have h1 : (⇑(∑ a, 𝔇.shrinkRhoC a) : X → ℂ) = ∑ a, ⇑(𝔇.shrinkRhoC a) :=
+    map_sum ContMDiffMap.coeFnAddMonoidHom _ _
+  rw [show (∑ a, 𝔇.shrinkRhoC a) x = (⇑(∑ a, 𝔇.shrinkRhoC a) : X → ℂ) x from rfl, h1,
+    Finset.sum_apply, ContMDiffMap.coe_one, Pi.one_apply]
+  show ∑ a, ((𝔇.shrinkPoU a x : ℝ) : ℂ) = 1
+  rw [← Complex.ofReal_sum, 𝔇.sum_shrinkPoU_eq_one x, Complex.ofReal_one]
+
+theorem sum_shrinkRhoC_apply (𝔇 : ChartDiskCover X) (x : X) : ∑ a, (𝔇.shrinkRhoC a x) = 1 := by
+  have h1 : (⇑(∑ a, 𝔇.shrinkRhoC a) : X → ℂ) = ∑ a, ⇑(𝔇.shrinkRhoC a) :=
+    map_sum ContMDiffMap.coeFnAddMonoidHom _ _
+  have h2 : (∑ a, 𝔇.shrinkRhoC a) x = ∑ a, (𝔇.shrinkRhoC a x) := by
+    rw [show ((∑ a, 𝔇.shrinkRhoC a) x : ℂ) = (⇑(∑ a, 𝔇.shrinkRhoC a) : X → ℂ) x from rfl, h1,
+      Finset.sum_apply]
+  rw [← h2, sum_shrinkRhoC, ContMDiffMap.coe_one, Pi.one_apply]
+
+theorem sum_shrinkDbarRho (𝔇 : ChartDiskCover X) : ∑ a, 𝔇.shrinkDbarRho a = 0 := by
+  have h : ∑ a, 𝔇.shrinkDbarRho a = dbarL (∑ a, 𝔇.shrinkRhoC a) := (map_sum dbarL _ _).symm
+  rw [h, sum_shrinkRhoC, dbarL_one_eq_zero]
+
+theorem sum_shrinkDbarRho_apply (𝔇 : ChartDiskCover X) (x : X) :
+    ∑ a, ((𝔇.shrinkDbarRho a) x) = 0 := by
+  have h1 : (⇑(∑ a, 𝔇.shrinkDbarRho a)) = ∑ a, ⇑(𝔇.shrinkDbarRho a) :=
+    map_sum (ContMDiffSection.coeAddHom _ _ _ _) _ _
+  have h2 : (∑ a, 𝔇.shrinkDbarRho a) x = ∑ a, ((𝔇.shrinkDbarRho a) x) := by
+    rw [show ((∑ a, 𝔇.shrinkDbarRho a) x) = (⇑(∑ a, 𝔇.shrinkDbarRho a)) x from rfl, h1,
+      Finset.sum_apply]
+  rw [← h2, sum_shrinkDbarRho, ContMDiffSection.coe_zero, Pi.zero_apply]
+
+/-- **The Bott–Tu double-sum term `(ρ_a · holoFn σ_{ac}) • ∂̄ρ_c`** as a global smooth `(0,1)`-form.
+Globally smooth by the 3-case `tsupport` argument: on `V_a ∩ V_c` (where `holoFn σ_{ac}` is smooth)
+everything is smooth; off `tsupport ρ_a` the factor `ρ_a` vanishes; off `tsupport ρ_c` the factor
+`∂̄ρ_c` vanishes. -/
+noncomputable def shrinkTerm (s : 𝔇.overlapData.Cshr) (a c : 𝔇.ι) : SmoothCOneForms X where
+  toFun := fun x => (𝔇.shrinkRhoC a x * holoFn (𝔇.shrinkGerm s a c).2 x) • (𝔇.shrinkDbarRho c x)
+  contMDiff_toFun := by
+    intro x₀
+    by_cases hba : x₀ ∈ tsupport (𝔇.shrinkPoU a)
+    · by_cases hbc : x₀ ∈ tsupport (𝔇.shrinkPoU c)
+      · have hxV : x₀ ∈ ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens c : Opens X) : Set X) :=
+          ⟨𝔇.shrinkPoU_tsupport_subset a hba, 𝔇.shrinkPoU_tsupport_subset c hbc⟩
+        have hmulrho : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ →L[ℝ] ℂ) (⊤ : ℕ∞)
+            (fun x => ContinuousLinearMap.mul ℝ ℂ (𝔇.shrinkRhoC a x)) x₀ :=
+          ContMDiffAt.clm_apply contMDiffAt_const ((𝔇.shrinkRhoC a).contMDiff x₀)
+        have hG : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
+            (fun x => 𝔇.shrinkRhoC a x * holoFn (𝔇.shrinkGerm s a c).2 x) x₀ :=
+          (hmulrho.clm_apply (holoFn_contMDiffAt (𝔇.shrinkGerm s a c).2 hxV)).congr_of_eventuallyEq
+            (Filter.Eventually.of_forall fun x => by simp [ContinuousLinearMap.mul_apply'])
+        exact contMDiffAt_cSmul_section hG ((𝔇.shrinkDbarRho c).contMDiff_toFun x₀)
+      · refine ContMDiffAt.congr_of_eventuallyEq (Bundle.contMDiffAt_zeroSection ℝ
+          (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x)) ?_
+        filter_upwards [(isClosed_tsupport (𝔇.shrinkPoU c)).isOpen_compl.mem_nhds hbc] with x hx
+        have hV : (𝔇.shrinkRhoC a x * holoFn (𝔇.shrinkGerm s a c).2 x) • (𝔇.shrinkDbarRho c x) = 0 := by
+          rw [𝔇.shrinkDbarRho_eq_zero_of_notMem c hx]; module
+        exact congrArg (Bundle.TotalSpace.mk x) hV
+    · refine ContMDiffAt.congr_of_eventuallyEq (Bundle.contMDiffAt_zeroSection ℝ
+        (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x)) ?_
+      filter_upwards [(isClosed_tsupport (𝔇.shrinkPoU a)).isOpen_compl.mem_nhds hba] with x hx
+      have hV : (𝔇.shrinkRhoC a x * holoFn (𝔇.shrinkGerm s a c).2 x) • (𝔇.shrinkDbarRho c x) = 0 := by
+        rw [𝔇.shrinkRhoC_eq_zero_of_notMem a hx, zero_mul]; module
+      exact congrArg (Bundle.TotalSpace.mk x) hV
+
+@[simp] theorem shrinkTerm_apply (s : 𝔇.overlapData.Cshr) (a c : 𝔇.ι) (x : X) :
+    (𝔇.shrinkTerm s a c) x
+      = (𝔇.shrinkRhoC a x * holoFn (𝔇.shrinkGerm s a c).2 x) • (𝔇.shrinkDbarRho c x) := rfl
+
+/-- Each Bott–Tu term is a `(0,1)`-form (`∂̄ρ_c` is, and ℂ-scaling preserves `(0,1)`). -/
+theorem shrinkTerm_mem_zeroOne (s : 𝔇.overlapData.Cshr) (a c : 𝔇.ι) :
+    𝔇.shrinkTerm s a c ∈ OneFormsZeroOne X := by
+  refine ⟨𝔇.shrinkTerm s a c, ?_⟩
+  refine ContMDiffSection.ext fun x => ?_
+  show proj01 (𝔇.shrinkTerm s a c x) = 𝔇.shrinkTerm s a c x
+  rw [shrinkTerm_apply, proj01_smul]
+  have hfix : proj01 ((𝔇.shrinkDbarRho c) x) = (𝔇.shrinkDbarRho c x) := by
+    show proj01 (dbarL (𝔇.shrinkRhoC c) x) = dbarL (𝔇.shrinkRhoC c) x
+    rw [dbarL_eq_proj01L_differential]
+    show proj01 (proj01 ((differential (𝔇.shrinkRhoC c)) x)) = proj01 ((differential (𝔇.shrinkRhoC c)) x)
+    exact proj01_idempotent _
+  rw [hfix]
+
+/-- **The global Bott–Tu form `ω̂`** as a `(0,1)`-form: `∑_{a,c} (ρ_a · holoFn σ_{ac}) • ∂̄ρ_c`. -/
+noncomputable def glueForm (s : 𝔇.overlapData.Cshr) : ↥(OneFormsZeroOne X) :=
+  ∑ p : 𝔇.ι × 𝔇.ι, ⟨𝔇.shrinkTerm s p.1 p.2, 𝔇.shrinkTerm_mem_zeroOne s p.1 p.2⟩
+
+/-- The underlying form of `glueForm` is the finite sum of `shrinkTerm`s. -/
+theorem glueForm_val (s : 𝔇.overlapData.Cshr) :
+    ((𝔇.glueForm s : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
+      = ∑ p : 𝔇.ι × 𝔇.ι, 𝔇.shrinkTerm s p.1 p.2 := by
+  show ((∑ p : 𝔇.ι × 𝔇.ι, (⟨𝔇.shrinkTerm s p.1 p.2, 𝔇.shrinkTerm_mem_zeroOne s p.1 p.2⟩ :
+      ↥(OneFormsZeroOne X)) : ↥(OneFormsZeroOne X)) : SmoothCOneForms X) = _
+  rw [AddSubmonoidClass.coe_finset_sum]
+
 end ChartDiskCover
 
 end Jacobians.Dolbeault
