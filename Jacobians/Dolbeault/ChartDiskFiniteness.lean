@@ -603,34 +603,31 @@ theorem finiteDimensional_cechH1_of_holomorphicModel
 /-- **`H¹` finiteness on a chart-disk cover (Forster 14.9).**  `FiniteDimensional ℂ (cechH1 𝔇 0)` for
 a `ChartDiskCover 𝔇`.
 
-STATUS.  The ANALYTIC HEART — the Forster 14.6 cover-level ∂̄-lift, the field that is a genuine `sorry`
-for the Montel model (`CechModelHolomorphicLeray.lean`) — is PROVEN axiom-clean here as
-`ChartDiskCover.forster146_lift` (the ball geometry removes the two-scale cutoff dilemma).  The
-reduction `finiteDimensional_cechH1_of_holomorphicModel` (above, PROVEN) shows this discharges
-finiteness once two pieces of pure cover/sheaf PLUMBING (no ∂̄, no Montel) are supplied:
+STATUS.  Two of the three ingredients are PROVEN axiom-clean here:
 
-  * **(G-shrink)** a relatively-compact open shrinking `Wov ⋐ Uov` of the ball overlaps whose inner
-    balls still COVER `X` — Forster §12's "a relatively-compact shrinking of a cover is a cover".  This
-    builds the `HolomorphicDiskOverlapData d` (and, via a subordinate PoU summing to `1` on `X`, the
-    `BallSplitData` that `forster146_lift` consumes).  Its `ρ` is compact for free
-    (`HolomorphicDiskOverlapData.rhoRaw_compact`).
-  * **(G-bridge)** the germ↔`BddHol` identification giving the δ-complex `HolomorphicCoboundaries d`
-    (the structural δ⁰/δ¹/`hδδ`/`hcomm` fields — cf. `CechModelHolomorphicDelta` for the Montel cover)
-    and the comparison `cechH1 𝔇 0 ≃ₗ[ℂ] c.supH1` (the forward map is `CechModelCochain.cochainToCcov`;
-    the round-trip is the remaining bridge).
+  * The ANALYTIC HEART — the Forster 14.6 cover-level ∂̄-lift, the field that is a genuine `sorry` for
+    the Montel model (`CechModelHolomorphicLeray.lean`) — is `ChartDiskCover.forster146_lift` (the ball
+    geometry removes the two-scale cutoff dilemma).
+  * The relatively-compact COVERING SHRINKING and the `HolomorphicDiskOverlapData` (`𝔇.overlapData`,
+    with COMPACT `ρ` for free, Montel) — built from the shrinking lemma (Forster §12).
 
-These are documented as ONE honest `sorry` producing the model: the analytic wall is gone, only the
-cover-algebra plumbing remains.  Equivalently (by `finiteDimensional_cechH1_iff_dolbeault`) this is
-`FiniteDimensional ℝ (DolbeaultH01 X)`. -/
+The remaining gap is ONE honest `sorry` of pure cover/sheaf PLUMBING (NO ∂̄, NO Montel — the analytic
+wall is GONE): the **(G-bridge)** — the δ-complex `HolomorphicCoboundaries 𝔇.overlapData` (the
+structural cross-chart δ⁰/δ¹/`hδδ`/`hcomm` fields plus the `leray` field, the latter discharged by
+`forster146_lift`+a PoU split — cf. `CechModelHolomorphicDelta` for the Montel cover) together with the
+germ↔`BddHol` comparison `cechH1 𝔇 0 ≃ₗ[ℂ] c.supH1` (the forward map is
+`CechModelCochain.cochainToCcov`; the round-trip is the remaining bridge).  We pin the `sorry` to the
+ALREADY-BUILT `𝔇.overlapData` so it is exactly this δ-complex+comparison.  Equivalently (by
+`finiteDimensional_cechH1_iff_dolbeault`) this is `FiniteDimensional ℝ (DolbeaultH01 X)`. -/
 theorem finiteDimensional_cechH1_chartDisk [ConnectedSpace X] [Nonempty X] :
     FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) := by
-  -- Reduce to producing the holomorphic model + comparison; the `leray` analytic core is
-  -- `forster146_lift` (PROVEN). The remaining `sorry` is the (G-shrink)+(G-bridge) cover plumbing.
-  obtain ⟨d, c, ⟨e⟩⟩ :
-      ∃ (d : HolomorphicDiskOverlapData) (c : HolomorphicCoboundaries d),
+  -- The model `𝔇.overlapData` (compact `ρ`) is BUILT; only its δ-complex + comparison remain.
+  -- The `leray` field of that δ-complex is the PROVEN `forster146_lift`.
+  obtain ⟨c, ⟨e⟩⟩ :
+      ∃ (c : HolomorphicCoboundaries 𝔇.overlapData),
         Nonempty (𝔇.toFiniteCover.cechH1 (0 : Divisor X) ≃ₗ[ℂ] c.supH1) := by
     sorry
-  exact 𝔇.finiteDimensional_cechH1_of_holomorphicModel d c e
+  exact 𝔇.finiteDimensional_cechH1_of_holomorphicModel 𝔇.overlapData c e
 
 /-- **`H^{0,1}` finiteness** (the Dolbeault form), via `finiteDimensional_cechH1_iff_dolbeault`.  Same
 status as `finiteDimensional_cechH1_chartDisk`. -/
