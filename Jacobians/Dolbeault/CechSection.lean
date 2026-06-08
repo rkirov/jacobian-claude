@@ -112,7 +112,7 @@ def openIncl (h : V ≤ U) : V → U := fun v => ⟨v.1, h v.2⟩
 `openIncl h v`: both charts are `subtypeRestr`s of the *same* ambient chart `chartAt ℂ v.1`
 (`Opens.chartAt_eq`), so they read `f` at the same ambient point near `v`. The shared core of the two
 restriction lemmas. -/
-private theorem restrict_chart_aux (h : V ≤ U) (f : U → ℂ) (v : V) :
+theorem restrict_chart_aux (h : V ≤ U) (f : U → ℂ) (v : V) :
     (chartAt (H := ℂ) v) v = (chartAt (H := ℂ) (openIncl h v)) (openIncl h v) ∧
     ((f ∘ openIncl h) ∘ (chartAt (H := ℂ) v).symm) =ᶠ[𝓝 ((chartAt (H := ℂ) v) v)]
       (f ∘ (chartAt (H := ℂ) (openIncl h v)).symm) := by
