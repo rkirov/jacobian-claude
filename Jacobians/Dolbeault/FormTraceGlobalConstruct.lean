@@ -35,7 +35,7 @@ deferred (it is *not* the deep core; the deep core is trace rationality).
 
 * `fibreReg` / `FibreEnumeration` — the per-center `FibreRegularData` from the adapted cover, with
   `(fibreReg p).xs` the subtype enumeration of `poles ∩ F⁻¹(coe p)`;
-* `fibreEnumeration_hxs_inj` / `_hxs_mem` / `_hxs_surj` — the three enumeration fields, *proved*;
+* `fibreReg_hxs_inj` / `_hxs_mem` / `_hxs_surj` — the three enumeration fields, *proved*;
 * `globalTraceData_of_adapted` — assembles `GlobalTraceData` from an `AdaptedCover` **plus** a
   `TraceRationalityWitness` (the deep `L`/`hL32`/`infty_eq`), discharging `D`/`hxs_*`/`hcenters`.
 
@@ -45,11 +45,27 @@ After this file, Gate A is reduced to:
 
 > `∃ (f) (adapted : AdaptedCover ω₀ g f poles), TraceRationalityWitness ω₀ g f poles adapted`
 
-i.e. **(i)** an adapted cover (genericity — finite bad set), and **(ii)** the trace `Tr_F α` is a
-rational `LaurentForm` matching the per-fibre residues at the finite centers and at `∞`.  (ii) is the
-genuine §VIII.3 wall ("every meromorphic function on the compact `ℂℙ¹` is rational"); (i) is a finite
-genericity choice.  Everything else — the per-fibre Lemma 3.2 (`FormTraceFibre`), the fibre
-enumeration (here), and the descent to `∑Res = 0` (`FormTraceGlobal`) — is *proved*, axiom-clean.
+i.e. **(i)** an adapted cover, and **(ii)** the trace `Tr_F α` is a rational `LaurentForm` matching
+the per-fibre residues at the finite centers (`hL32`) and at `∞` (`infty_eq`).
+
+**Why the deep core is irreducible (the `infty_eq` circularity).**  One might hope to *fabricate* `L`
+as a sum of simple poles `r_p·(z − p)⁻¹` at the finite centers `p`, with `r_p` the (already-computed)
+fibre residue sums — then `hcenters` and `hL32` hold *by construction* (`resAt_center_eq`,
+`resAt_fibreTrace_coeff`).  But the `ℂℙ¹` residue theorem baked into `LaurentForm`
+(`resAtInfty_eq`) forces `resAtInfty L.R = −∑_p r_p`, so `infty_eq` would then *demand*
+`−∑_p r_p = ∑_{a : F a = ∞} Res_a(α)`, i.e. `∑_{a ∈ poles} Res_a(α) = 0` — **the residue theorem
+itself**.  So `infty_eq` for the *genuine* trace (whose `resAtInfty` is an honest large-circle contour
+integral of the actual pushforward, *not* fabricated) is the real content: it is Lemma 3.2 at `∞` for
+`Tr_F α`, and combined with the proved finite-center Lemma 3.2 and the `ℂℙ¹` residue theorem it
+*is* Gate A.  Hence `L` must be the actual rational trace; there is no shortcut.
+
+This makes (ii) the genuine §VIII.3 wall: build `Tr_F α` as a global meromorphic function on the
+compact `ℂℙ¹` (holomorphic off the finite exceptional set — critical values + pole-images + `∞` — by
+the per-sheet pushforwards, meromorphic at the exceptional points), extract its principal parts into a
+`LaurentForm`, and read off the `∞`-residue.  (i) is a finite genericity choice (the bad source set
+`criticalSet f ∪ poles f` is finite; perturb `f` off the finitely many poles of `α`).  Everything
+else — the per-fibre Lemma 3.2 (`FormTraceFibre`), the fibre enumeration (here), and the descent to
+`∑Res = 0` (`FormTraceGlobal`) — is *proved*, axiom-clean.
 
 ## References
 
@@ -269,5 +285,43 @@ theorem residueSum_eq_zero_of_adapted (hac : AdaptedCover ω₀ g f poles)
     (W : TraceRationalityWitness ω₀ g f poles hac) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
   (globalTraceData_of_adapted hac W).residueSum_eq_zero
+
+/-! ### Non-vacuity of the new structures
+
+The `AdaptedCover` and `TraceRationalityWitness` obligations are genuine (true, satisfiable), not a
+disguised `False`: for the **empty pole set** (`α = ω₀·g` globally holomorphic) any nonconstant `f`
+(`f.div ≠ 0`) gives an `AdaptedCover` (the `hnp`/`hderiv`/`hg_mero` fields are vacuous), and the empty
+`LaurentForm` gives a `TraceRationalityWitness` (no centers, trace `≡ 0`, vacuous `hL32`, `∞`-fibre
+sum `0`).  This confirms the structures are honest, mirroring `globalTraceData_empty`. -/
+
+/-- **`AdaptedCover` non-vacuity.**  For the empty pole set, any nonconstant `f` (`f.div ≠ 0`) is an
+adapted cover (the regularity fields are vacuous). -/
+theorem adaptedCover_empty (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
+    (hdiv : (f.div : Divisor X) ≠ 0) : AdaptedCover ω₀ g f ∅ where
+  hdiv := hdiv
+  hnp := fun a ha => absurd ha (Finset.notMem_empty a)
+  hderiv := fun a ha => absurd ha (Finset.notMem_empty a)
+  hg_mero := fun a ha => absurd ha (Finset.notMem_empty a)
+
+/-- **`TraceRationalityWitness` non-vacuity.**  For the empty pole set, the empty `LaurentForm` is a
+trace-rationality witness: no centers (`hcenters`/`hL32` vacuous), and the `∞`-fibre sum over `∅`
+vanishes (matching `Res_∞ ≡ 0`). -/
+noncomputable def traceRationalityWitness_empty (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
+    TraceRationalityWitness ω₀ g f ∅ (adaptedCover_empty ω₀ g f hdiv) where
+  L := Jacobians.ResidueTheoremX.emptyLaurentForm
+  hcenters := by
+    rw [Jacobians.ResidueTheoremX.emptyLaurentForm_image_a]; simp
+  hL32 := by
+    intro p hp
+    rw [Jacobians.ResidueTheoremX.emptyLaurentForm_image_a] at hp
+    exact absurd hp (Finset.notMem_empty p)
+  infty_eq := by
+    rw [resAtInfty, Jacobians.ResidueTheoremX.emptyLaurentForm_R]
+    show -(2 * π * I : ℂ)⁻¹ • (∮ _z in C((0 : ℂ),
+      Jacobians.ResidueTheoremX.emptyLaurentForm.ρ), (0 : ℂ)) = _
+    rw [show Jacobians.ResidueTheoremX.emptyLaurentForm.ρ = 0 from rfl,
+      circleIntegral.integral_radius_zero, smul_zero]
+    simp
 
 end Jacobians.Dolbeault.FormTraceGlobal
