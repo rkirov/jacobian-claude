@@ -238,4 +238,37 @@ theorem resAt_traceCoeff_fibreTrace (ω₀ : HolomorphicOneForms X) (f : Meromor
   rw [(fibreTrace ω₀ f D).resAt_traceCoeff']
   exact Finset.sum_congr rfl (fun i _ => resAt_fibreTrace_coeff ω₀ f D i)
 
+/-! ### The per-fibre residue sum as a fibre-restricted sum over the pole set (bridge (d), part 1)
+
+For the global assembly we need the per-center fibre residue sum `∑ i, formFnResidue ω₀ g ((D p).xs i)`
+(over a `FibreRegularData` whose `xs` *enumerates* the poles in the fibre `F⁻¹(coe p)`) to equal the
+fibre-restricted sum `∑_{a ∈ poles, F a = coe p} formFnResidue ω₀ g a` that appears in
+`FormResidueTrace.finite_eq`.  When `xs` is an injective enumeration of exactly that pole fibre, this
+is `Finset.sum_image` / a bijection re-indexing — pure `Finset` combinatorics, no analysis. -/
+
+/-- **Per-fibre residue sum = fibre-restricted pole-set sum.**  If the regularity data `D` over the
+finite center `p` has `xs` injectively enumerating exactly the poles in the fibre `F⁻¹(coe p)`
+(`hxs_inj`, `hxs_mem`, `hxs_surj`), then the per-fibre residue sum over `D` equals the
+fibre-restricted residue sum over the pole set:
+
+> `∑ i, formFnResidue ω₀ g ((D p).xs i) = ∑_{a ∈ poles, F a = coe p} formFnResidue ω₀ g a`. -/
+theorem fibreResidueSum_eq_filter (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    {p : ℂ} (D : FibreRegularData g f p) (poles : Finset X)
+    (hxs_inj : Function.Injective D.xs)
+    (hxs_mem : ∀ i, D.xs i ∈ poles ∧ f.toRiemannSphere (D.xs i) = ((p : ℂ) : RiemannSphere))
+    (hxs_surj : ∀ a ∈ poles, f.toRiemannSphere a = ((p : ℂ) : RiemannSphere) → ∃ i, D.xs i = a) :
+    ∑ i, formFnResidue ω₀ g (D.xs i)
+      = ∑ a ∈ poles with f.toRiemannSphere a = ((p : ℂ) : RiemannSphere), formFnResidue ω₀ g a := by
+  classical
+  -- The fibre filter set is the image of the (injective) enumeration `xs`.
+  have hImg : (Finset.univ : Finset D.ι).image D.xs
+      = poles.filter (fun a => f.toRiemannSphere a = ((p : ℂ) : RiemannSphere)) := by
+    ext a
+    simp only [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_filter]
+    constructor
+    · rintro ⟨i, rfl⟩; exact ⟨(hxs_mem i).1, (hxs_mem i).2⟩
+    · rintro ⟨ha_pole, ha_fib⟩; exact hxs_surj a ha_pole ha_fib
+  -- `∑ i = ∑_{a ∈ univ.image xs}` (injective re-indexing), and that image is the filter set.
+  rw [← hImg, Finset.sum_image (fun i _ j _ h => hxs_inj h)]
+
 end Jacobians.Dolbeault.FormTraceFibre
