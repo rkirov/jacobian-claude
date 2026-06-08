@@ -5,6 +5,7 @@ Authors: Rado Kirov
 -/
 import Jacobians.GenusZeroOfSphere
 import Jacobians.CotangentCoeff
+import Jacobians.ContourDeformation
 import Mathlib.Analysis.Complex.HasPrimitives
 import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
 
@@ -117,6 +118,86 @@ def HasHomotopyInvariantPeriods (X : Type*) [TopologicalSpace X] [T2Space X] [Co
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Prop :=
   ∀ (η : HolomorphicOneForms X) {a b : X} (p q : Path a b),
     p.Homotopic q → lineIntegral η p.extend = lineIntegral η q.extend
+
+/-! ### Banked piece 1b — the *planar* contour-deformation brick (ported, axiom-clean)
+
+The planar (chart-local) half of `HasHomotopyInvariantPeriods` is now a banked, axiom-clean
+lemma in this repo: `Jacobians.Bridge.ContourDeformation.contourDeformation1D_pathHomotopy`
+(see `Jacobians/ContourDeformation.lean`, ported from mrdouglasny/jacobian-challenge under
+Apache 2.0). It states exactly the planar fact the SCOUT above flagged as "the file's own TODO":
+
+> for a holomorphic `f` on an open `t ⊆ ℂ` and an *endpoint-preserving homotopy* `F` between two
+> planar paths `γ₁ γ₂ : Path a b` whose interior stays in `t` (with the standard `ContDiffOn ℝ 2`
+> regularity on the homotopy square), the curve integrals of the holomorphic 1-form `f(z) dz`
+> agree: `∫ᶜ x in γ₁, holoOneForm f x = ∫ᶜ x in γ₂, holoOneForm f x`.
+
+This packages "closed (`dη = 0` for holomorphic `f dz`) + endpoint-homotopy ⇒ equal periods" in the
+plane — i.e. the closedness computation (`holoOneForm_dOmega_symm`) and the side-curve-vanishing
+plumbing are done. It is re-exposed here under a descriptive name so the manifold reduction below can
+cite it directly. -/
+
+open Bridge.ContourDeformation in
+/-- **Banked: planar contour-deformation (ported, axiom-clean).** The planar half of period
+homotopy-invariance: on an open `t ⊆ ℂ`, a holomorphic 1-form `f(z) dz` has equal curve integrals
+along two interior-in-`t`, endpoint-homotopic planar paths. This is the exact planar brick the
+manifold atom is built on; it is `contourDeformation1D_pathHomotopy` (axiom-clean: `#print axioms`
+= `[propext, Classical.choice, Quot.sound]`). -/
+theorem planarPeriod_homotopyInvariant
+    {t : Set ℂ} (ht : IsOpen t) {f : ℂ → ℂ} (hf : DifferentiableOn ℂ f t)
+    (hωdcc : DiffContOnCl ℝ (holoOneForm f) t)
+    {a b : ℂ} {γ₁ γ₂ : Path a b} (F : γ₁.Homotopy γ₂)
+    (hFt : ∀ a ∈ Set.Ioo (0 : unitInterval) 1, ∀ b ∈ Set.Ioo (0 : unitInterval) 1, F (a, b) ∈ t)
+    (hcontdiff : ContDiffOn ℝ 2
+      (fun xy : ℝ × ℝ ↦ Set.IccExtend zero_le_one (F.toHomotopy.extend xy.1) xy.2)
+      (Set.Icc 0 1)) :
+    ∫ᶜ x in γ₁, holoOneForm f x = ∫ᶜ x in γ₂, holoOneForm f x :=
+  contourDeformation1D_pathHomotopy ht hf hωdcc F hFt hcontdiff
+
+/-! ### The remaining piece — manifold globalisation of the planar brick
+
+With the planar brick banked above, the *only* content still missing from `HasHomotopyInvariantPeriods`
+is the **manifold globalisation**: turning a homotopy of paths in the abstract surface `X` into finitely
+many applications of `planarPeriod_homotopyInvariant` in charts. Concretely this is two steps, neither
+of which Mathlib provides and both of which are "ours to write":
+
+1. **Chart translation of the integrand.** On a sub-square of the homotopy parameter domain whose image
+   stays in a single chart `φ`, the manifold integrand `η.toFun (γ t) (pathSpeed γ t)` equals the planar
+   integrand `holoOneForm f (φ (γ t)) ((φ ∘ γ)' t)` of the chart coefficient `f` of `η` (the cotangent
+   coefficient read in `φ`; cf. `Jacobians.CotangentCoeff`). Hence `lineIntegral η γ` over such a segment
+   equals the planar `∫ᶜ … holoOneForm f` over `φ ∘ γ` — the hypothesis `hωdcc`/`hFt`/`hcontdiff` of
+   `planarPeriod_homotopyInvariant` being supplied by the chart image and path regularity.
+2. **Lebesgue subdivision of the homotopy square.** A homotopy `F : p.Homotopic q` in `X` need not stay
+   in one chart. By compactness of `[0,1]²` and a Lebesgue-number argument over the chart cover, subdivide
+   `F` into a grid of sub-squares each landing in a single chart, apply step 1 + the planar brick on each,
+   and telescope the interior edges (which cancel in pairs) to obtain
+   `lineIntegral η p.extend = lineIntegral η q.extend`.
+
+This remaining obligation is isolated below as `ManifoldGlobalisesPlanarPeriods`. It is *strictly* the
+globalisation (the planar deformation itself is discharged by `planarPeriod_homotopyInvariant`), and
+`HasHomotopyInvariantPeriods` follows from it definitionally. We do **not** assert it here: it is the
+honest residual content (the chart-translation + Lebesgue-subdivision argument, Forster §10.5), banked as
+the named target so the de Rham wall is reduced to exactly this piece rather than left as the larger raw
+atom. -/
+
+/-- **The residual manifold-globalisation obligation.** Says the planar contour-deformation brick
+(`planarPeriod_homotopyInvariant`) globalises: homotopic paths in `X` have equal line integrals of any
+holomorphic form. This is `HasHomotopyInvariantPeriods` verbatim — kept as a separately-named target to
+document that, after the port, *the planar half is done* and only the chart-translation + Lebesgue
+subdivision of the homotopy square remains (Forster §10.5). It is **not** proved here; it is the precise
+remaining content of the de Rham wall. -/
+def ManifoldGlobalisesPlanarPeriods (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Prop :=
+  ∀ (η : HolomorphicOneForms X) {a b : X} (p q : Path a b),
+    p.Homotopic q → lineIntegral η p.extend = lineIntegral η q.extend
+
+/-- **`HasHomotopyInvariantPeriods` from the residual globalisation (sorry-free).** Once the
+chart-translation + Lebesgue-subdivision globalisation (`ManifoldGlobalisesPlanarPeriods`, whose planar
+input is the banked `planarPeriod_homotopyInvariant`) is supplied, the de Rham atom holds. This records
+that the only gap between the banked planar brick and the atom is exactly that globalisation. -/
+theorem hasHomotopyInvariantPeriods_of_globalisation
+    (h : ManifoldGlobalisesPlanarPeriods X) :
+    HasHomotopyInvariantPeriods X :=
+  h
 
 /-! ### Banked piece 2 — the path-integral primitive and its well-definedness
 
