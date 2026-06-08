@@ -182,4 +182,52 @@ theorem residueSum_eq_zero_of_geometricSelection (hac : AdaptedCover ω₀ g f p
   residueSum_eq_zero_of_glue hac (valueChartTrace ω₀ f Φ) cs ρ hcs_ball hcs_inj hcenters_cs
     Dinf hxs_inj hxs_mem hxs_surj hglue_fin hglue_inf hT_off hcont_int R₀ hR₀_an hR₀0 hR₀_eq
 
+/-! ### Discharging `hT_off` from per-regular-value coherence
+
+The off-exceptional analyticity `hT_off` is itself reducible to the same kind of germ-coherence as the
+finite glue: at every value `z` off the finite centres, the geometric trace germ-equals a *fixed*
+regular fibre `Dreg z` over `z` (the off-branch sheet-gluing), and that regular fibre has `g`'s
+chart-pullback analytic at each fibre point (`z` is a regular value off the poles of `α`).  Packaging
+that per-value coherence as `hreg` discharges `hT_off` via `analyticAt_valueChartTrace_of_eventuallyEq`,
+so the *only* inputs left are the finite/∞ glue, the per-value off-exceptional coherence, junk-freeness,
+and the genus-`0` `∞`-vanishing — the minimal §VIII.3 obligation. -/
+
+/-- **Gate A from the geometric selection with `hT_off` discharged from coherence.**  Identical to
+`residueSum_eq_zero_of_geometricSelection` except the off-centre analyticity `hT_off` is *replaced* by
+the per-regular-value coherence `hreg`: for every `z` off the finite centres, a regular fibre `Dreg z`
+over `z` with `g`'s chart-pullback analytic at each fibre point and the geometric trace germ-equal to
+`(fibreTrace ω₀ f (Dreg z)).traceCoeff` near `z`.  `hT_off` is then
+`analyticAt_valueChartTrace_of_eventuallyEq`.  This isolates the irreducible content to exactly the
+germ-coherence (finite, `∞`, and off-exceptional) + junk-freeness + the genus-`0` `∞`-vanishing. -/
+theorem residueSum_eq_zero_of_geometricSelection_coh (hac : AdaptedCover ω₀ g f poles)
+    (Φ : (b : ℂ) → FibreRegularData g f b) {m : ℕ} (cs : Fin m → ℂ) (ρ : ℝ)
+    (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ) (hcs_inj : Function.Injective cs)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (Dinf : InftyFibreData g f)
+    (hxs_inj : Function.Injective Dinf.xs)
+    (hxs_mem : ∀ i, Dinf.xs i ∈ poles ∧ f.toRiemannSphere (Dinf.xs i) = OnePoint.infty)
+    (hxs_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, Dinf.xs i = a)
+    (hglue_fin : ∀ i, valueChartTrace ω₀ f Φ
+      =ᶠ[𝓝[≠] cs i] (fibreTrace ω₀ f (fibreReg hac (cs i))).traceCoeff)
+    (hglue_inf : recipCoeff (valueChartTrace ω₀ f Φ)
+      =ᶠ[𝓝[≠] 0] (inftyFibreTrace ω₀ f Dinf).traceCoeff)
+    (hreg : ∀ z ∉ Finset.univ.image cs, ∃ Dreg : FibreRegularData g f z,
+      (∀ i, AnalyticAt ℂ (fun w => g ((chartAt ℂ (Dreg.xs i)).symm w))
+        ((chartAt ℂ (Dreg.xs i)) (Dreg.xs i))) ∧
+      valueChartTrace ω₀ f Φ =ᶠ[𝓝 z] (fibreTrace ω₀ f Dreg).traceCoeff)
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTrace ω₀ f Φ - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (valueChartTrace ω₀ f Φ - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTrace ω₀ f Φ - L.R) =ᶠ[𝓝[≠] 0] R₀) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 := by
+  refine residueSum_eq_zero_of_geometricSelection hac Φ cs ρ hcs_ball hcs_inj hcenters_cs
+    Dinf hxs_inj hxs_mem hxs_surj hglue_fin hglue_inf ?_ hcont_int R₀ hR₀_an hR₀0 hR₀_eq
+  intro z hz
+  obtain ⟨Dreg, hg_an, hcoh⟩ := hreg z hz
+  exact analyticAt_valueChartTrace_of_eventuallyEq ω₀ f Φ Dreg hg_an hcoh
+
 end Jacobians.Dolbeault.FormTraceGlobal
