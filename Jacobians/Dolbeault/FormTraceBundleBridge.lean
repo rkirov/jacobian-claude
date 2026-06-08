@@ -374,4 +374,44 @@ theorem residueSum_eq_zero_ofBundleBranchCoherence (hac : AdaptedCover ω₀ g f
       hbridgeBr_of_eventual_sphereCoherence ω₀ (αBr b₀) g f Φ (hevBr b₀ hb₀br hb₀cs))
     hglue_inf hcont_int R₀ hR₀_an hR₀0 hR₀_eq
 
+/-! ### Discharging the geometric-trace half of `hevBr` from the regular-value data
+
+Part (2) of `hevBr` — the geometric trace agrees with the sphere-sheet fibre trace at `z` — is *exactly*
+the regular-value coherence already available from the `Sreg`/`Creg` machinery: the
+`MovingCoherenceDatum.ofSphereSheetSystemCanon` datum has `.D = ofSphereSheetSystem (Sreg z) …`, so its
+`.coherent` (taken at `z` via `self_of_nhds`) gives the identity.  Hence the bundle-branch path needs
+*no new* geometric trace input at branch values; the same regular-value sphere data that handles every
+regular value discharges it. -/
+
+/-- **The geometric trace agrees with the sphere-sheet fibre trace at a regular value.**  From the
+canonical-fibre regular-value data of a sphere sheet system `S` at `z` (`hderiv`/`hmero` + the
+canonical-fibre conditions `hΦinj`/`hΦrange`/`hsheetInj`/`hsheetMem`), the geometric trace
+`valueChartTrace ω₀ f Φ` evaluated *at* `z` equals the planar fibre trace of the sphere-sheet fibre:
+
+> `valueChartTrace ω₀ f Φ z = (fibreTrace ω₀ f (ofSphereSheetSystem S hderiv hmero)).traceCoeff z`.
+
+This is `MovingCoherenceDatum.ofSphereSheetSystemCanon … |>.coherent` evaluated at `z`
+(`Filter.EventuallyEq.self_of_nhds`); the datum's fixed fibre `.D` *is* `ofSphereSheetSystem S …`. -/
+theorem valueChartTrace_eq_sphereSheetFibreTrace (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) {z : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+    (hderiv : ∀ i, deriv (fun w => f.holoRepr
+        ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+        (S.sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0)
+    (hmero : ∀ i, MeromorphicAt
+      (fun w => g ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+        (S.sheet i (((z : ℂ) : RiemannSphere)))))
+    (hΦinj : ∀ᶠ b' in 𝓝 z, Function.Injective (Φ b').xs)
+    (hΦrange : ∀ᶠ b' in 𝓝 z,
+      Set.range (Φ b').xs = f.toRiemannSphere ⁻¹' {(((b' : ℂ) : RiemannSphere))})
+    (hsheetInj : ∀ᶠ b' in 𝓝 z, Function.Injective (fun i => S.sheet i (((b' : ℂ) : RiemannSphere))))
+    (hsheetMem : ∀ᶠ b' in 𝓝 z, ∀ i, S.sheet i (((b' : ℂ) : RiemannSphere)) ∈
+      (chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).source) :
+    valueChartTrace ω₀ f Φ z
+      = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv hmero)).traceCoeff z :=
+  (MovingCoherenceDatum.ofSphereSheetSystemCanon (ω₀ := ω₀) (Φ := Φ) S hderiv hmero
+    hΦinj hΦrange hsheetInj hsheetMem).coherent.self_of_nhds
+
 end Jacobians.Dolbeault.FormTraceGlobal
