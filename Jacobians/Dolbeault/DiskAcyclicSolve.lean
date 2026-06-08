@@ -281,5 +281,73 @@ theorem dbar_openChartPrim_agree (𝔇 : SharedChartCover X)
     rw [← DbarOpenDisk.dbar_sub hdj hdi, hdb_diff_eq, hdb_holo]
   exact (sub_eq_zero.1 hsubeq).symm
 
+/-! ## Step 3 — The glued `∂̄`-datum `ω`
+
+`ω z = ∂̄(openChartPrim s i₀) z` for any `i₀` with `z ∈ Ω i₀` (well-defined by Step 2), junk off the
+union's chart-image.  It is `ContDiffOn ℝ ⊤` on the ball: at `z₀ ∈ ball = openUnionChartImage = ⋃ Ω i`,
+`z₀ ∈ Ω i₀`, and `ω =ᶠ[𝓝 z₀] ∂̄(openChartPrim i₀)` (Step 2 on the open `Ω i₀`), which is `ContDiffAt`
+(∂̄ of the `C^∞` `openChartPrim i₀`, Step 1). -/
+
+/-- **`∂̄` of a `C^∞`-at-`z` function is `C^∞` at `z`** (`∂̄g` is a fixed CLM-combination of `fderiv ℝ g`
+evaluated at `1, I`; `fderiv ℝ g` is `C^∞` near `z`).  Local port of `GluedDbarDatum.contDiffAt_dbar`
+(that file is not in this import cone). -/
+theorem contDiffAt_dbar_local {g : ℂ → ℂ} {z : ℂ} (hg : ContDiffAt ℝ (⊤ : ℕ∞) g z) :
+    ContDiffAt ℝ (⊤ : ℕ∞) (DbarDisk.dbar g) z := by
+  have hfd : ContDiffAt ℝ (⊤ : ℕ∞) (fderiv ℝ g) z :=
+    hg.fderiv_right (m := (⊤ : ℕ∞)) (by exact_mod_cast le_top)
+  have h1 : ContDiffAt ℝ (⊤ : ℕ∞) (fun w => (fderiv ℝ g w) (1 : ℂ)) z :=
+    (ContinuousLinearMap.apply ℝ ℂ (1 : ℂ)).contDiff.contDiffAt.comp z hfd
+  have hI : ContDiffAt ℝ (⊤ : ℕ∞) (fun w => (fderiv ℝ g w) Complex.I) z :=
+    (ContinuousLinearMap.apply ℝ ℂ Complex.I).contDiff.contDiffAt.comp z hfd
+  have hsum : ContDiffAt ℝ (⊤ : ℕ∞)
+      (fun w => (2 : ℂ)⁻¹ * ((fderiv ℝ g w) (1 : ℂ) + Complex.I * (fderiv ℝ g w) Complex.I)) z :=
+    contDiffAt_const.mul (h1.add (contDiffAt_const.mul hI))
+  exact hsum.congr_of_eventuallyEq (Filter.Eventually.of_forall fun w => by rw [DbarDisk.dbar])
+
+/-- The open-union chart image is the union of the chart-images `Ω_i` (`φ '' (⋃ Uᵢ) = ⋃ (φ '' Uᵢ)`). -/
+theorem openUnionChartImage_eq_iUnion_Ω (𝔇 : SharedChartCover X) :
+    openUnionChartImage 𝔇 = ⋃ i, 𝔇.Ω i := by
+  simp only [openUnionChartImage, openUnionU, Ω, Opens.coe_mk, Set.image_iUnion]
+
+/-- **The glued `∂̄`-datum** `ω : ℂ → ℂ` — equals `∂̄(openChartPrim s i)` on each `Ω_i`, junk off the
+union's chart-image. -/
+noncomputable def gluedDatum (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) : ℂ → ℂ := by
+  classical
+  exact fun z => if h : ∃ i, z ∈ 𝔇.Ω i then
+    DbarDisk.dbar (openChartPrim 𝔇 s h.choose) z else 0
+
+/-- **`gluedDatum` reads `∂̄(openChartPrim s i)` on `Ω_i`** (well-defined by the Step-2 overlap
+agreement). -/
+theorem gluedDatum_apply (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (i : 𝔇.ι) {z : ℂ} (hz : z ∈ 𝔇.Ω i) :
+    gluedDatum 𝔇 s z = DbarDisk.dbar (openChartPrim 𝔇 s i) z := by
+  have hex : ∃ i, z ∈ 𝔇.Ω i := ⟨i, hz⟩
+  simp only [gluedDatum, hex, dif_pos]
+  exact dbar_openChartPrim_agree 𝔇 s hex.choose i hex.choose_spec hz
+
+/-- **`gluedDatum` is `ContDiffOn ℝ ⊤` on the ball** (assuming the chart-images fill the ball).  At
+`z₀ ∈ ball = openUnionChartImage = ⋃ Ω i`, `z₀ ∈ Ω i₀`, and `gluedDatum =ᶠ[𝓝 z₀] ∂̄(openChartPrim i₀)`
+(Step 2 on the open `Ω i₀`), which is `ContDiffAt` (Step 1 + `contDiffAt_dbar_local`). -/
+theorem contDiffOn_gluedDatum (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X)))
+    (hunion : openUnionChartImage 𝔇 = Metric.ball 𝔇.ballCenter 𝔇.radius) :
+    ContDiffOn ℝ (⊤ : ℕ∞) (gluedDatum 𝔇 s) (Metric.ball 𝔇.ballCenter 𝔇.radius) := by
+  intro z₀ hz₀
+  -- `z₀ ∈ openUnionChartImage = ⋃ Ω i`, so `z₀ ∈ Ω i₀` for some `i₀`.
+  have hz₀union : z₀ ∈ openUnionChartImage 𝔇 := by rw [hunion]; exact hz₀
+  rw [openUnionChartImage_eq_iUnion_Ω] at hz₀union
+  obtain ⟨i₀, hz₀Ω⟩ := Set.mem_iUnion.mp hz₀union
+  obtain ⟨x₀, hx₀U, hx₀z⟩ := hz₀Ω
+  -- `openChartPrim i₀` is `C^∞` at `z₀ = φ x₀` (Step 1), so `∂̄(openChartPrim i₀)` is `C^∞` at `z₀`.
+  have hcd : ContDiffAt ℝ (⊤ : ℕ∞) (DbarDisk.dbar (openChartPrim 𝔇 s i₀)) z₀ := by
+    refine contDiffAt_dbar_local ?_
+    rw [← hx₀z]; exact contDiffAt_openChartPrim 𝔇 s i₀ hx₀U
+  -- `gluedDatum =ᶠ[𝓝 z₀] ∂̄(openChartPrim i₀)` (on the open `Ω i₀`, by `gluedDatum_apply`).
+  have heq : gluedDatum 𝔇 s =ᶠ[𝓝 z₀] DbarDisk.dbar (openChartPrim 𝔇 s i₀) := by
+    filter_upwards [(isOpen_Ω 𝔇 i₀).mem_nhds (hx₀z ▸ 𝔇.mem_Ω hx₀U)] with z hz
+    exact gluedDatum_apply 𝔇 s i₀ hz
+  exact (hcd.congr_of_eventuallyEq heq).contDiffWithinAt
+
 end SharedChartCover
 end Jacobians.Dolbeault
