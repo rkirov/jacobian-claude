@@ -77,7 +77,14 @@ theorem finiteDimensional_stalkQuotient_of_not_mem {W : Opens X} {D : Divisor X}
     FiniteDimensional ℂ
       (OmegaDGerm (D + Finsupp.single P 1) W ⧸
         (OmegaDGerm D W).submoduleOf (OmegaDGerm (D + Finsupp.single P 1) W)) := by
-  sorry
+  -- The two section spaces coincide, so the quotient is by `⊤` (subsingleton, hence finite-dim).
+  have heq : OmegaDGerm (D + Finsupp.single P 1) W = OmegaDGerm D W :=
+    OmegaDGerm_add_single_eq_of_not_mem hP
+  haveI : Subsingleton (OmegaDGerm (D + Finsupp.single P 1) W ⧸
+      (OmegaDGerm D W).submoduleOf (OmegaDGerm (D + Finsupp.single P 1) W)) := by
+    rw [Submodule.Quotient.subsingleton_iff, Submodule.submoduleOf, heq,
+      Submodule.comap_subtype_self]
+  infer_instance
 
 /-! ### Finite-dimensionality of the section-quotient correction spaces -/
 
@@ -150,7 +157,19 @@ theorem finiteDimensional_cechH1_add_single_iff :
 theorem finiteDimensional_cechH1_add_singlePoint_iff (k : ℤ) :
     FiniteDimensional ℂ (𝔘.cechH1 (D + Finsupp.single P k)) ↔
       FiniteDimensional ℂ (𝔘.cechH1 D) := by
-  sorry
+  induction k using Int.induction_on with
+  | zero => rw [Finsupp.single_zero, add_zero]
+  | succ k ih =>
+    -- `D + single P (↑k+1) = (D + single P ↑k) + single P 1`; per-point step, then `ih`.
+    rw [show (Finsupp.single P ((k : ℤ) + 1) : Divisor X)
+        = Finsupp.single P (k : ℤ) + Finsupp.single P 1 from by rw [← Finsupp.single_add],
+      ← add_assoc, 𝔘.finiteDimensional_cechH1_add_single_iff (D + Finsupp.single P (k : ℤ)) P]
+    exact ih
+  | pred k ih =>
+    -- `(D + single P (−↑k−1)) + single P 1 = D + single P (−↑k)`; per-point step bridges them.
+    rw [← ih,
+      (𝔘.finiteDimensional_cechH1_add_single_iff (D + Finsupp.single P (-(k : ℤ) - 1)) P).symm,
+      add_assoc, ← Finsupp.single_add, show (-(k : ℤ) - 1 + 1) = -(k : ℤ) from by ring]
 
 /-- **Finiteness of `H¹(𝒪_D)` for any divisor `D`, on a FIXED cover, from the `D = 0` case** (the
 divisor induction).  `Finsupp.induction` on `D` adds one point at a time; each addition is the
@@ -158,7 +177,12 @@ single-point step. -/
 theorem finiteDimensional_cechH1_of_zero (h0 : FiniteDimensional ℂ (𝔘.cechH1 (0 : Divisor X)))
     (D : Divisor X) :
     FiniteDimensional ℂ (𝔘.cechH1 D) := by
-  sorry
+  induction D using Finsupp.induction with
+  | zero => exact h0
+  | single_add a b f _ _ ih =>
+    -- `single a b + f = f + single a b`; the single-point step bridges `cechH1 f` and `cechH1 (…)`.
+    rw [add_comm]
+    exact (𝔘.finiteDimensional_cechH1_add_singlePoint_iff f a b).mpr ih
 
 end FiniteCover
 
