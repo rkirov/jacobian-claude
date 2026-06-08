@@ -238,6 +238,21 @@ theorem residueSum_eq_zero_of_formResidueTrace' (ω₀ : HolomorphicOneForms X) 
     residueSum ω₀ g T.poles = 0 :=
   residueSum_eq_zero_of_formResidueTrace ω₀ g T
 
+/-- **Forster's residue `Res(μ) = 0` for a coboundary distribution.**  A Mittag–Leffler distribution
+`μ` of the shape `ω₀·g` whose recorded pole set has a `FormResidueTrace` (i.e. the global meromorphic
+1-form `α = ω₀·g` it represents has a rational trace) has total residue `Res(μ) = 0`.  This is the
+precise statement Forster 17.3 needs: a globally-defined (coboundary) Mittag–Leffler distribution has
+zero residue, which makes the residue functional `Res : H¹(X, Ω) → ℂ` well-defined on cohomology
+classes (the node-4 `globalRes` descent).
+
+The hypothesis `hpoles` records that `μ`'s bookkeeping pole set is the trace's pole set; combined with
+`MittagLefflerForm.res = residueSum` this gives `Res(μ) = residueSum ω₀ μ.g T.poles = 0`. -/
+theorem MittagLefflerForm_res_eq_zero (μ : MittagLefflerForm X) (T : FormResidueTrace μ.α μ.g)
+    (hpoles : μ.poles = T.poles) :
+    μ.res = 0 := by
+  rw [MittagLefflerForm.res_def, hpoles]
+  exact residueSum_eq_zero_of_formResidueTrace μ.α μ.g T
+
 /-! ### Non-vacuity of `FormResidueTrace`
 
 The `FormResidueTrace ω₀ g` obligations are genuine (true, satisfiable), not an impossible
