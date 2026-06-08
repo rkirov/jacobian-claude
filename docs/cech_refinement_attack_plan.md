@@ -87,14 +87,11 @@ It must produce, for an **arbitrary** finite cover `𝔘` and divisor `D`: a sup
 
 ## 4. Plan (bottom-up; each step is needed regardless of the §6 fork)
 
-1. **Forster 13.2 — `dbar_solvable_open_disk`** *(first deliverable; the single missing engine).*
-   `∀ R>0, ∀ g : ℂ→ℂ smooth on ball c R, ∃ u smooth on ball c R, ∂̄u = g on ball c R`.
-   Proof (Forster p.106): exhaust `Rₙ ↑ R`; cutoffs `ψₙ` (=1 on `ball Rₙ`, supp in `ball Rₙ₊₁`); solve
-   `∂̄fₙ = ψₙg` via 13.1; inductively Runge-correct by Taylor polynomials so
-   `‖f̃ₙ₊₁ − f̃ₙ‖_{ball Rₙ₋₁} ≤ 2⁻ⁿ` (`fₙ₊₁−f̃ₙ` is holo on `ball Rₙ`, approximate by a Taylor partial
-   sum); locally-uniform limit `f` is smooth, the holomorphic corrections preserve `∂̄f=g`.
-   Mathlib pieces: `ContDiffBump`, power-series partial-sum uniform convergence on subdisks,
-   locally-uniform-limit-of-holomorphic.
+1. ✅ **DONE — Forster 13.2, `DbarOpenDisk.dbar_solvable_open_disk`** (axiom-clean, 2026-06-08).
+   `g` smooth on `ball c R` ⟹ `∃ u, ContDiffOn ℝ ⊤ u (ball c R) ∧ ∀ z ∈ ball c R, ∂̄u z = g z`.
+   Proof exactly as Forster p.106 (exhaustion `ρₙ↑R`, cutoff solve via 13.1, Runge/Taylor corrections
+   with `2⁻ⁿ` control, M-test + locally-uniform-limit). The `restrictScalars ℂ→ℝ` diamond is resolved
+   by `set_option backward.isDefEq.respectTransparency false` (file-level).
 
 2. **13.4 atom — honest `FunctionDiskAcyclic` for a chart-disk region cover.** Smooth-split the cocycle
    on `↥(⋃Uᵢ)` (open-union PoU); glue `∂̄gᵢ` to a form `h` on the chart-image ball; solve `∂̄g=h` via
