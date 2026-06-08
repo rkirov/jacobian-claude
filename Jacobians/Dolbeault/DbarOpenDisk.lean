@@ -99,6 +99,59 @@ theorem dbar_sub {f h : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (
   simp only [ContinuousLinearMap.sub_apply]
   ring
 
+/-! ### Exhaustion radii and the per-ball solve -/
+
+/-- The exhaustion radii `ρₙ = R(1 − 2⁻⁽ⁿ⁺¹⁾) ↑ R`. -/
+noncomputable def rho (R : ℝ) (n : ℕ) : ℝ := R * (1 - (1 / 2) ^ (n + 1))
+
+/-- The exhaustion radii are positive, strictly increasing, bounded by `R`, and tend to `R`. -/
+theorem rho_props {R : ℝ} (hR : 0 < R) :
+    (∀ n, 0 < rho R n) ∧ StrictMono (rho R) ∧ (∀ n, rho R n < R) ∧
+      Tendsto (rho R) atTop (nhds R) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro n
+    have h1 : (1 / 2 : ℝ) ^ (n + 1) < 1 := pow_lt_one₀ (by norm_num) (by norm_num) (by omega)
+    have : (0 : ℝ) < 1 - (1 / 2) ^ (n + 1) := by linarith
+    rw [rho]; positivity
+  · intro a b hab
+    have : (1 / 2 : ℝ) ^ (b + 1) < (1 / 2) ^ (a + 1) :=
+      pow_lt_pow_right_of_lt_one₀ (by norm_num) (by norm_num) (by omega)
+    simp only [rho]; nlinarith
+  · intro n
+    have h1 : (0 : ℝ) < (1 / 2) ^ (n + 1) := by positivity
+    simp only [rho]; nlinarith
+  · have h1 : Tendsto (fun n => (1 / 2 : ℝ) ^ (n + 1)) atTop (nhds 0) :=
+      (tendsto_pow_atTop_nhds_zero_of_lt_one (by norm_num) (by norm_num)).comp
+        (tendsto_add_atTop_nat 1)
+    have h2 := (tendsto_const_nhds (x := R)).mul ((tendsto_const_nhds (x := (1 : ℝ))).sub h1)
+    have hrw : rho R = fun n => R * (1 - (1 / 2) ^ (n + 1)) := rfl
+    rw [hrw]; simpa using h2
+
+/-- **The per-ball solve.** With the open-disk datum `g`, solve `∂̄u = g` on `ball c a` for radii
+`0 < a < b < R`: cut off `g` by a bump (`= 1` on `closedBall c a`, supported in `closedBall c b ⊆
+ball c R`) so `χ·g` is globally smooth with compact support, then apply Forster 13.1. -/
+theorem solve_on_ball (c : ℂ) {R : ℝ} {g : ℂ → ℂ} (hg : ContDiffOn ℝ (⊤ : ℕ∞) g (ball c R))
+    {a b : ℝ} (ha : 0 < a) (hab : a < b) (hbR : b < R) :
+    ∃ u : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) u ∧ ∀ z ∈ ball c a, DbarDisk.dbar u z = g z := by
+  set χ : ContDiffBump c := { rIn := a, rOut := b, rIn_pos := ha, rIn_lt_rOut := hab } with hχ
+  set χℂ : ℂ → ℂ := fun z => ((χ z : ℝ) : ℂ) with hχℂ
+  obtain ⟨hχℂ_smooth, hχℂ_supp⟩ := DbarLocal.contDiff_hasCompactSupport_ofReal_contDiffBump χ
+  have htsupp : tsupport χℂ ⊆ ball c R := by
+    have h1 : tsupport χℂ ⊆ tsupport (fun z => (χ z : ℝ)) := by
+      apply closure_mono; intro z hz
+      simp only [Function.mem_support, hχℂ, ne_eq] at hz ⊢
+      intro h0; exact hz (by rw [h0]; rfl)
+    exact (χ.tsupport_eq ▸ h1).trans (closedBall_subset_ball hbR)
+  have hG_smooth : ContDiff ℝ (⊤ : ℕ∞) (fun z => χℂ z * g z) :=
+    contDiff_cutoff_mul isOpen_ball hg hχℂ_smooth htsupp
+  have hG_supp : HasCompactSupport (fun z => χℂ z * g z) := hχℂ_supp.mul_right
+  obtain ⟨u, hu_smooth, hu_dbar⟩ := DbarDisk.dbar_solvable_of_compactSupport hG_smooth hG_supp
+  refine ⟨u, hu_smooth, fun z hz => ?_⟩
+  rw [hu_dbar z]
+  show ((χ z : ℝ) : ℂ) * g z = g z
+  rw [χ.one_of_mem_closedBall (ball_subset_closedBall hz)]
+  simp only [Complex.ofReal_one, one_mul]
+
 /-! ### Forster 13.2 — the main theorem -/
 
 /-- **Forster 13.2 — `∂̄`-solvability on an open disk.**  For `g` smooth on the *open* ball
