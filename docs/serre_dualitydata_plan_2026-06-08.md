@@ -252,6 +252,53 @@ clean, g-independent piece and unblocks the *general* fibre Lemma 3.2). Defer th
 assembly until the W2 fibre apparatus is consolidated, and build it as a generalization of the
 `deg_div` assembly so the plumbing is shared.
 
+### 4.4 CURRENT STATE (2026-06-08, updated) — A-i DONE, A-ii reduced to one structure `GlobalTrace`
+
+The `FormTrace*` leaf modules (`Jacobians/Dolbeault/`) have carried gate A much further than §4.2:
+
+- ✅ **(A-i) `ResidueChangeOfVariables` is PROVEN** axiom-clean: `Jacobians/ResidueChangeOfVariables.lean:434`
+  `residueChangeOfVariables`, giving the unconditional general Lemma 3.2 `FibreTrace.resAt_traceCoeff'`.
+  §4.2's "(A-i) remaining" is stale — it is closed.
+- ✅ **The whole descent `GlobalTrace → TraceAgreementData → ∑Res = 0` is PROVEN** axiom-clean and
+  **non-vacuous**, via:
+  - `FormTraceFibre`/`FormTraceInftyFibre` — per-fibre + ∞-fibre Lemma 3.2 (residue ↔ formFnResidue);
+  - `FormTraceInftyRecip.resAtInfty_eq_resAt_recipCoeff` — the ∞-residue ↔ reciprocal-chart bridge;
+  - `FormTraceRationalAssemble.residueSum_eq_zero_of_agreementData` — `TraceAgreementData → ∑Res=0`;
+  - `FormTraceLiouville.coeff_eq_zero_of_entire_of_recipCoeff_continuousAt` — **the genus-0 vanishing
+    at coefficient level** (`H⁰(ℂℙ¹,Ω)=0`): an *entire* `h:ℂ→ℂ` with `recipCoeff h` continuous at 0
+    is `0` (port of `holomorphicOneForm_eq_zero`'s Liouville core to raw `dz`-coefficients, so the
+    trace remainder need not be packaged as a bundle section);
+  - `FormTraceGlobalAssemble.traceAgreementData_of_globalTrace` / `residueSum_eq_zero_of_globalTrace`
+    — assembles the full `TraceAgreementData` (hence `∑Res=0`) from a **`GlobalTrace`** datum.
+- ✅ **Step-1 foundation**: `FormTraceGlobalFunction.analyticAt_traceCoeff` (local trace analytic at a
+  regular value off poles) + `FormTraceMeromorphic.meromorphicAt_traceCoeff_{fibreTrace,inftyFibreTrace}`
+  (local trace meromorphic at any base, incl. the finite pole-values and ∞).
+
+**THE SINGLE REMAINING OBLIGATION for gate A** is now: construct a
+`GlobalTrace ω₀ g f poles hac` (`FormTraceGlobalAssemble.lean`). Its honest fields:
+  - `T : ℂ → ℂ` — the trace `Tr_F α` as **one global value-chart coefficient function** on the finite
+    part of ℂℙ¹ (the geometric pushforward `b ↦ ∑_{x∈F⁻¹(coe b)} push(α,x)`);
+  - `L : LaurentForm` + `hcenters` — the partial-fraction expansion at the finite pole-values (PLUS a
+    polynomial part, written with a finite-pole-value centre, capturing the trace's ∞-pole);
+  - `hglue_fin` / `hglue_inf` — `T` (resp. `recipCoeff T`) germ-agrees with the local `fibreTrace`
+    (resp. `inftyFibreTrace`) near each finite centre (resp. near 0). **Near-tautological once `T` is
+    DEFINED as the trace** (the local fibre traces ARE the trace germ; only the `Classical.choose`
+    section representatives differ — a germ-agreement, supplied by uniqueness of the pushforward germ).
+  - `hentire` / `hrecip` — **the irreducible analytic core**: `T − L.R` is entire on ℂ and
+    holomorphic across ∞, i.e. the trace minus its principal parts is a global holomorphic 1-form on
+    the compact ℂℙ¹. TRUE/constructible (NOT a false-statement sorry); satisfiable (empty-pole witness
+    `globalTrace_holomorphic` exhibits it).
+
+The deep work is: (1) **define the single global meromorphic `T`** — the genuine wall (gluing the
+per-value canonical pushforward germs; the `Classical.choose`-section issue is a germ-uniqueness
+plumbing, the global meromorphy uses W2 finite-fibres `fibre_finite_of_div_ne_zero` +
+`analyticAt`/`meromorphicAt_traceCoeff`); (2) **principal-part extraction** into `L` (Mathlib has NO
+principal-part API for `MeromorphicAt` — must extract finitely many negative Laurent coeffs at each of
+the finitely many poles, `CriticalValuesFiniteGeneral`/`fibres_finite`, and the ∞-pole polynomial,
+then prove the cancellation `hentire`/`hrecip`). Both feed `GlobalTrace`; everything downstream is
+proved. The `AdaptedCover` genericity (unramified over pole-values) remains the secondary finite
+genericity choice (bad set `criticalValues f ∪ poleValues` finite — `criticalValues_finite_general`).
+
 ---
 
 ## 5. Risks / uncertainties / decision points
