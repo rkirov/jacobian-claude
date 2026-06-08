@@ -228,7 +228,7 @@ theorem cechDelta0_coneB0_sub_mem_sections1 (hR : 𝔘.LocallyRealizable) (cw : 
 /-- The `coneB0` class lies in `H0Q = ker dQ0` when `cw` is `g = 0`-compatible (so `δ⁰(coneB0) ∈
 sections1 D`). -/
 theorem coneB0_mk_mem_H0Q (hR : 𝔘.LocallyRealizable) (cw : 𝔘.ι → ℂ)
-    (hcompat : ∀ (j k : 𝔘.ι) (hjk : P ∈ 𝔘.U j ⊓ 𝔘.U k), cw k - cw j = 0) :
+    (hcompat : ∀ (j k : 𝔘.ι) (_hjk : P ∈ 𝔘.U j ⊓ 𝔘.U k), cw k - cw j = 0) :
     Submodule.Quotient.mk (𝔘.coneB0 D P hR cw) ∈ (𝔘.skyscraperTwoStep D P).H0Q := by
   rw [TwoStepSES.H0Q, LinearMap.mem_ker, TwoStepSES.dQ0_mk, Submodule.Quotient.mk_eq_zero,
     mem_submoduleOf]
