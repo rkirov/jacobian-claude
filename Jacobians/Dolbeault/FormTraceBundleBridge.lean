@@ -187,4 +187,48 @@ theorem movingSummand_eq_g_sheetPullback (ω₀ : HolomorphicOneForms X) (g : X 
     (mem_chart_source ℂ (s (((z : ℂ) : RiemannSphere))))]
   ring
 
+/-! ### The pointwise planar↔bundle identity at a regular value
+
+Assembling the two sides: at a regular value `z` (sheet system `S`), the planar fibre trace of the
+sphere-sheet fibre equals the bundle trace SUM local coefficient.  Both are `∑` over `Fin S.n` of the
+*same* per-sheet summand (`movingSummand_eq_g_sheetPullback`); the planar side is read via
+`fibreTrace_eventuallyEq_movingSum`, the bundle side via `traceLocalCoeff_traceFun_eq_sheetSum`. -/
+
+/-- **Planar fibre trace = bundle trace SUM coefficient (pointwise, regular value).**  Let `S` be a
+local sheet system of `F = f.toRiemannSphere` at the regular value `coe z`, `αBr` a holomorphic form
+with `αBr.toFun (S.sheet i (coe z)) = g (S.sheet i (coe z)) • ω₀.toFun (S.sheet i (coe z))`, and `D :=
+FibreRegularData.ofSphereSheetSystem S hderiv hmero` the sphere-sheet fibre over `z`.  Then for any base
+point `coe b₀`,
+
+> `(fibreTrace ω₀ f D).traceCoeff z = traceLocalCoeff (traceFun F αBr) (coe b₀) (coe z)`. -/
+theorem fibreTrace_traceCoeff_eq_traceLocalCoeff (ω₀ αBr : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) {b₀ z : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+    (hderiv : ∀ i, deriv (fun w => f.holoRepr
+        ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+        (S.sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0)
+    (hmero : ∀ i, MeromorphicAt
+      (fun w => g ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+        (S.sheet i (((z : ℂ) : RiemannSphere)))))
+    (hαBr : ∀ i, αBr.toFun (S.sheet i (((z : ℂ) : RiemannSphere)))
+      = g (S.sheet i (((z : ℂ) : RiemannSphere))) • ω₀.toFun (S.sheet i (((z : ℂ) : RiemannSphere)))) :
+    (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv hmero)).traceCoeff z
+      = traceLocalCoeff (traceFun f.toRiemannSphere αBr) (((b₀ : ℂ) : RiemannSphere))
+          (((z : ℂ) : RiemannSphere)) := by
+  -- The bundle side: the sheet sum.
+  rw [traceLocalCoeff_traceFun_eq_sheetSum ω₀ αBr g f S hαBr]
+  -- The planar side: the moving sum along the sphere sheets `sec i := S.holoReprSheet i`, AT `z`
+  -- (`D.xs i = S.sheet i (coe z)` definitionally, so `holoReprSheet i z = D.xs i` is `rfl`).
+  have hmoving := (fibreTrace_eventuallyEq_movingSum ω₀ f
+    (FibreRegularData.ofSphereSheetSystem S hderiv hmero) (fun i => S.holoReprSheet i)
+    (fun _ => rfl)
+    (fun i => (S.holoReprSheet_contMDiffAt i).continuousAt)
+    (fun i => S.holoReprSheet_section i)).self_of_nhds
+  rw [hmoving]
+  -- Term-by-term: `D.xs i = S.sheet i (coe z)` (defeq), `sec i z = S.sheet i (coe z)`.
+  exact Finset.sum_congr rfl (fun i _ =>
+    movingSummand_eq_g_sheetPullback ω₀ g (S.sheet i) (S.sheet_mdifferentiableAt i S.mem_V))
+
 end Jacobians.Dolbeault.FormTraceGlobal
