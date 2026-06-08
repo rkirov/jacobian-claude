@@ -166,6 +166,81 @@ theorem recipCoeff_valueChartTracePatched_eventuallyEq (ω₀ : HolomorphicOneFo
     = -(valueChartTrace ω₀ f Φ (ζ⁻¹)) * ζ ^ (-2 : ℤ)
   rw [valueChartTracePatched_of_not_mem ω₀ f Φ br hζnotbr]
 
+/-! ### The branch-value boundedness crux from sheet sections (the §VIII.3 analytic port)
+
+This is **the one genuinely-new analytic step** of the close: discharge the boundedness crux `hbnd`
+`(z − b₀)·valueChartTrace z → 0` at a branch value `b₀` from the proven planar per-sheet ratio atom
+`FormTraceBranchPlanarExtend.tendsto_zero_section_deriv`.
+
+Near a branch value `b₀`, the geometric trace is, on a punctured neighbourhood, the **moving fibre sum**
+`∑ j, chartIntegrand ω₀ g x_j (rinv_j z)·deriv (rinv_j) z` read along the chart pullbacks `rinv_j =
+chart_{x_j} ∘ sec_j` of the cover sheets `sec_j : ℂ → X` through *all* the preimages `x_j` of `b₀`
+(ramified **and** unramified — `sec_j` is a continuous section of `f.holoRepr`, its chart pullback a
+right-inverse of `φ_j := f.holoRepr ∘ chart_{x_j}.symm`).  Each per-sheet term satisfies the bound:
+
+* `(z − b₀)·deriv (rinv_j) z → 0` — the proven ratio atom `tendsto_zero_section_deriv`, with the section
+  `s := rinv_j` and its analytic left-inverse `F := φ_j` (`φ_j (rinv_j z) = z` near `b₀`, `φ_j w₀ = b₀`,
+  `φ_j` not eventually constant since `f` is nonconstant; the ramified-sheet derivative blow-up is killed
+  by the `z − b₀` factor — *no* Puiseux/symmetric-function machinery, just `φ_j − b₀ = (w − w₀)^e·g`);
+* `chartIntegrand ω₀ g x_j` is continuous at `rinv_j b₀ = w₀` (`α = ω₀·g` holomorphic at the non-pole
+  `x_j` — the adapted cover separates poles from the branch locus).
+
+Summed over the finite fibre (`tendsto_zero_fibreSum`/`tendsto_zero_perSheet`) and transported along the
+moving-sum germ-equality, this gives `hbnd`.  This is the planar shadow of the proven bundle-side
+`TraceForm.traceLocalCoeff_mul_sub_tendsto_zero_Y` — but the uniform-cardinality/finite-subcover
+machinery is *replaced* by the explicit sheet enumeration `sec_j` supplied per branch value (the moving
+selection's fibre data), and the per-sheet content is the same proven ratio atom. -/
+
+/-- **The branch-value boundedness crux from sheet sections.**  Let `b₀ : ℂ` and `ι : Type*` finite.
+Suppose the geometric trace germ-equals, on the *punctured* neighbourhood of `b₀`, the moving fibre sum
+along chart pullbacks `rinv : ι → ℂ → ℂ` of sheet sections through preimages `x : ι → X` of `b₀`:
+
+* `hgerm` — `valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] b₀] fun z => ∑ j, chartIntegrand ω₀ g (x j) (rinv j z)·deriv
+  (rinv j) z`;
+* per sheet `j`: `rinv j b₀ = w₀ j := (chartAt ℂ (x j)) (x j)` (`hbase`); `rinv j` continuous at `b₀`
+  (`hcont`); `φ_j := f.holoRepr ∘ chart_{x j}.symm` analytic at `w₀ j` (`hF_an`), with `φ_j (w₀ j) = b₀`
+  (`hFw₀`) and `φ_j` not eventually constant near `w₀ j` (`hFnc`); `φ_j (rinv j z) = z` near `b₀`
+  (`hsec`); the chain-rule identity `deriv (rinv j) z · deriv φ_j (rinv j z) = 1` near `b₀` (`hchain`);
+  and `chartIntegrand ω₀ g (x j)` continuous at `w₀ j` (`hcoeff` — `α` holomorphic at the non-pole `x j`).
+
+Then the boundedness crux `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds.  *Proof.*  Each per-sheet term
+`→ 0` by `tendsto_zero_perSheet` (the coeff continuous × the ratio atom `tendsto_zero_section_deriv`);
+sum over the finite fibre (`tendsto_zero_fibreSum`); transport along `hgerm`. -/
+theorem tendsto_zero_valueChartTrace_of_sections (ω₀ : HolomorphicOneForms X)
+    (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) {b₀ : ℂ}
+    {ι : Type*} [Fintype ι] (x : ι → X) (rinv : ι → ℂ → ℂ)
+    (hgerm : valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] b₀]
+      fun z => ∑ j, chartIntegrand ω₀ g (x j) (rinv j z) * deriv (rinv j) z)
+    (hbase : ∀ j, rinv j b₀ = (chartAt ℂ (x j)) (x j))
+    (hcont : ∀ j, ContinuousAt (rinv j) b₀)
+    (hF_an : ∀ j, AnalyticAt ℂ (fun w => f.holoRepr ((chartAt ℂ (x j)).symm w))
+      ((chartAt ℂ (x j)) (x j)))
+    (hFw₀ : ∀ j, f.holoRepr ((chartAt ℂ (x j)).symm ((chartAt ℂ (x j)) (x j))) = b₀)
+    (hFnc : ∀ j, ¬ ∀ᶠ w in 𝓝 ((chartAt ℂ (x j)) (x j)),
+      f.holoRepr ((chartAt ℂ (x j)).symm w) = b₀)
+    (hsec : ∀ j, ∀ᶠ z in 𝓝[≠] b₀, f.holoRepr ((chartAt ℂ (x j)).symm (rinv j z)) = z)
+    (hchain : ∀ j, ∀ᶠ z in 𝓝[≠] b₀,
+      deriv (rinv j) z * deriv (fun w => f.holoRepr ((chartAt ℂ (x j)).symm w)) (rinv j z) = 1)
+    (hcoeff : ∀ j, ContinuousAt (chartIntegrand ω₀ g (x j)) ((chartAt ℂ (x j)) (x j))) :
+    Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0) := by
+  -- The fibre-sum boundedness from per-sheet boundedness.
+  have hsum : Tendsto (fun z => (z - b₀) *
+      ∑ j, chartIntegrand ω₀ g (x j) (rinv j z) * deriv (rinv j) z) (𝓝[≠] b₀) (𝓝 0) := by
+    refine tendsto_zero_fibreSum (ι := ι) (fun j => ?_)
+    -- Per sheet: `(z − b₀)·coeff(rinv z)·deriv(rinv) z → 0`.
+    refine tendsto_zero_perSheet ?_ (hcont j) ?_
+    · -- `(z − b₀)·deriv (rinv j) z → 0` from the ratio atom on the left inverse `φ_j`.
+      exact tendsto_zero_section_deriv (hcont j) (hbase j) (hF_an j) (hFw₀ j) (hFnc j)
+        (hsec j) (hchain j)
+    · -- `chartIntegrand` continuous at `rinv j b₀ = w₀ j`.
+      rw [hbase j]; exact hcoeff j
+  -- Transport along the germ-equality `hgerm`.
+  refine hsum.congr' ?_
+  filter_upwards [hgerm] with z hz
+  show (z - b₀) * ∑ j, chartIntegrand ω₀ g (x j) (rinv j z) * deriv (rinv j) z
+    = (z - b₀) * valueChartTrace ω₀ f Φ z
+  rw [hz]
+
 /-! ### Off-centre analyticity of the patched trace (`hT_off`)
 
 `hT_off` for the patched trace dispatches each value off the pole-centres to either:
