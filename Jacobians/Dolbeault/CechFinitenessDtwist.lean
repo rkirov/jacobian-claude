@@ -419,4 +419,16 @@ theorem finiteDimensional_cechH1_general (𝔘 : FiniteCover X) (D : Divisor X) 
     FiniteDimensional ℂ (𝔘.cechH1 D) :=
   𝔘.finiteDimensional_cechH1_of_zero (finiteDimensional_cechH1_zero 𝔘) D
 
+/-- **`exists_cechModel 𝔘 D` — the full, general-divisor statement, PROVEN sorry-free.**  Combines the
+general-divisor finiteness `finiteDimensional_cechH1_general` (this file) with the artificial
+single-point Montel model `exists_cechModel_of_finiteDimensional` (`CechModelArtificial`).  This is
+exactly the statement of `CechFinitenessWiring.exists_cechModel` for an ARBITRARY divisor `D` — the
+finiteness node's keystone — with no remaining hypotheses.  (The `CechFinitenessWiring.exists_cechModel`
+declaration itself is discharged by this term once the model-types import cycle is broken; see the
+project notes.) -/
+theorem exists_cechModel_general (𝔘 : FiniteCover X) (D : Divisor X) :
+    ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
+  haveI : FiniteDimensional ℂ (𝔘.cechH1 D) := finiteDimensional_cechH1_general 𝔘 D
+  exists_cechModel_of_finiteDimensional 𝔘 D
+
 end Jacobians.Dolbeault
