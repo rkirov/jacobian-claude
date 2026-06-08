@@ -22,14 +22,19 @@
       injective by reduction to Forster 12.4 refinement-injectivity
       (`CechRefinementInjective.refinementDescend_unconditional`) along the shrinking cover `(V a)`.
 
-  THE ONE REMAINING `sorry` is the `leray` field of `holomorphicCoboundaries` — the genuine analytic
-  content (Forster 14.6, the cross-chart Bott–Tu smooth split + per-disk ∂̄-solve into a holomorphic
-  cover cocycle).  `forster146_lift` (the proven heart) is NOT sufficient on its own: its `BallSplitData`
-  interface needs a cocycle holomorphic on the FULL overlaps, strictly stronger than the shrinking
-  cocycle `leray` is given.  See `holomorphicCoboundaries`'s LERAY DIAGNOSIS.  The final theorem
-  `finiteDimensional_cechH1_chartDisk_complete` therefore depends on exactly that one sorry.
+  The `leray` field of `holomorphicCoboundaries` — the genuine analytic content (Forster 14.6) — is
+  now PROVEN (§A2-* below), via the global Bott–Tu `(0,1)`-form route (NOT the cross-chart `∂̄g_a`
+  gluing the earlier attempts hit): a shrinking cocycle `s : Cshr` is read back to germ sections `σ`
+  (`shrinkGerm`); the global smooth form `ω̂ := ∑_{a,c} (ρ_a·holoFn σ_{ac})·∂̄ρ_c` (`glueForm`, shrinking
+  PoU) is built directly; the PROVEN per-disk solve `dolbeaultToCechCocycle ω̂` gives a holomorphic
+  cover cocycle on the FULL overlaps (`coverCochain`); the corrector `η_a := diskVal a ω̂ − G_a` is
+  holomorphic (`etaCochain`); and `s = δ⁰η + ρx` holds (`leray_identity`).  The whole file — including
+  `holomorphicCoboundaries` and `finiteDimensional_cechH1_chartDisk_complete` — is now SORRY-FREE
+  (axioms: `propext, Classical.choice, Quot.sound`).
 
-  Conventions follow `ChartDiskFiniteness.lean` / `CechModelHolomorphicDelta.lean`.
+  Conventions follow `ChartDiskFiniteness.lean` / `CechModelHolomorphicDelta.lean`.  The lift reuses the
+  proven Dolbeault-comparison machinery (`diskVal`/`planarPrimitive`/`dolbeaultToCechCocycle`,
+  `DolbeaultComparisonProof`/`Inverse`/`Equiv`) and the shrinking-level PoU `shrinkPoU` (`ChartDiskLeray`).
 -/
 import Jacobians.Dolbeault.ChartDiskFiniteness
 import Jacobians.Dolbeault.ChartDiskLeray
@@ -1287,64 +1292,25 @@ theorem leray_identity (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0)
       (𝔇.overlapData.rhoRaw (𝔇.coverCochain s) (a, b)).zero_off z hz, add_zero]
 
 
-/-- **The structural δ-complex on `𝔇.overlapData`, with the `leray` field.**  All structural fields
-(`δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm`) are the proven model differentials of §A; `leray` is the Forster
-14.6 lift.
+/-- **The structural δ-complex on `𝔇.overlapData`, with the `leray` field** — all fields PROVEN.
+`δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm` are the model differentials of §A; `leray` (Forster 14.6) is
+discharged by the global Bott–Tu form route of §A2-*:
 
-LERAY DIAGNOSIS (the single honest sorry — CORRECTED; the construction IS sound on a ball cover, the
-earlier "needs overlap-acyclicity / blocked like Montel" reading was WRONG).
+  Given a shrinking cocycle `s : Cshr` (`δ¹s = 0`):
+  * `σ := shrinkGerm s` reads each `s_{ab}` back to an `𝒪_0` germ on `V_a ⊓ V_b`, a germ cocycle.
+  * `ω̂ := glueForm s = ∑_{a,c} (ρ_a · holoFn σ_{ac}) • ∂̄ρ_c` (shrinking PoU `shrinkPoU`) is a GLOBAL
+    smooth `(0,1)`-form, built directly (NO cross-chart `∂̄g_a` gluing).
+  * `x := coverCochain s` is the per-disk ∂̄-solve cocycle `dolbeaultToCechCocycle ω̂` (PROVEN, the
+    no-cutoff ball solve), holomorphic on the FULL overlaps `Uov`; `δ¹cov x = 0`
+    (`coverCochain_mem_Z1cov`).
+  * `η := etaCochain s` has `η_a = diskVal a ω̂ − G_a` (`G_a := ∑_c ρ_c · holoFn σ_{ac}`, the local
+    split), holomorphic on `V_a` since both `diskVal a ω̂` and `G_a` have intrinsic ∂̄ `= ω̂` there
+    (`dbar_globalPrim`/`dbar_diskValue_eq_g`).
+  * `s = δ⁰η + ρx` (`leray_identity`): the `diskVal` terms cancel, leaving `G_a − G_b = holoFn σ_{ab}`
+    (`globalPrim_diff`, cocycle telescoping `∑ρ = 1`).
 
-Input: a SHRINKING cocycle `s : Cshr` (`s_{ab} ∈ BddHol (Wov (a,b))`, holomorphic only on the
-relatively-compact shrinking `Wov (a,b) = φ_a '' (V_a ∩ V_b)`), with `δ¹s = 0`.  Output: `η : C0`,
-`x : Ccov` (a holomorphic COVER cocycle, on the FULL ball overlaps `Uov`), with `s = δ⁰η + ρ x`.
-
-THE SOUND CONSTRUCTION (the global-form-via-shrinking-cover route — this is what the BALL geometry
-unblocks, NOT a cutoff bump):
-
-  STEP 1 (shrinking-level split).  Take the SHRINKING-level smooth PoU `(ρ_c) = 𝔇.shrinkPoU`
-    (`ChartDiskLeray.lean`: subordinate to `(V_c)`, `∑ρ = 1` on all of `X`).  Chart-`a`-read
-    `g_a := ∑_c ρ̂_c · (s_{ca} ∘ τ_{ac})`.  KEY: `g_a` is smooth ON `V_a` (i.e. on the diagonal
-    shrinking image `Wov (a,a)`) — the two opens `φ_a '' (V_c ∩ V_a)` (where `s_{ca}` lives) and
-    `φ_a '' (V_a \ tsupport ρ_c)` (where `ρ_c = 0`) cover `φ_a '' (V_a)`, so each term is smooth there
-    with no boundary discontinuity.  (`g_a` is NOT smooth on the full ball `U_a` — the cocycle is only
-    on the shrinkings; this is why the COVER-level PoU of the Montel model fails.)  The cocycle
-    relation + `∑ρ=1` give the telescoping `g_b∘τ_{ab} − g_a = s_{ab}` on `Wov (a,b)`.
-
-  STEP 2 (glue to a GLOBAL `(0,1)`-form).  `ω̂_a := ∂̄g_a` on `V_a`.  Since `g_b∘τ_{ab} − g_a = s_{ab}`
-    is HOLOMORPHIC on `Wov (a,b)`, the cross-chart Wirtinger frame identity (`BallSplitData.dbar_g_frame`
-    / `dbarDisk_comp_holo`) gives `∂̄g_a = conj(τ_{ab}′)·∂̄g_b∘τ_{ab}` on `Wov (a,b) = V_a ∩ V_b`.  So
-    the `∂̄g_a` AGREE as a `(0,1)`-form on overlaps and — because the SHRINKINGS `(V_a)` COVER `X`
-    (`iUnion_shrinkSet_eq_univ`) — GLUE to a single GLOBAL smooth `(0,1)`-form `ω̂` on `X`.  THIS is the
-    crux the ball geometry permits: the global form's chart-`a` read `Ω_a` is smooth on the FULL ball
-    `φ_a '' (U_a)` (a chart read of a global smooth form), and the frame identity `Ω_a =
-    conj(τ_{ab}′)·Ω_b∘τ_{ab}` then holds on the FULL `Uov (a,b)` (a global-form identity), NOT merely
-    on `Wov`.  (On the Montel cover the cover sets are not balls, so this last step — full-ball chart
-    read + per-ball solve — has no `dbar_solvable_open_disk` to call; on a `ChartDiskCover` it does.)
-
-  STEP 3 (per-ball solve, NO cutoff).  Solve `∂̄h_a = Ω_a` on the FULL ball `φ_a '' (U_a)` via Forster
-    13.2 `DbarOpenDisk.dbar_solvable_open_disk` (the datum `Ω_a` is smooth on the ball).  No cutoff is
-    needed (the datum is the global form's chart read, already defined on the whole ball).
-
-  STEP 4 (assemble).  `x_{ab} := h_b∘τ_{ab} − h_a` is `ℂ`-differentiable on the FULL `Uov (a,b)`:
-    `∂̄(h_b∘τ) = conj(τ′)·Ω_b∘τ = Ω_a = ∂̄h_a` there (frame identity on full `Uov`), so `∂̄x_{ab} = 0`
-    (`BallSplitData.differentiableOn_x`-style).  `η_a := g_a − h_a` is `ℂ`-differentiable on `V_a`
-    (`∂̄η_a = ∂̄g_a − Ω_a = 0` there).  On `Wov (a,b)`: `s_{ab} = g_b∘τ − g_a = (η_b∘τ − η_a) + x_{ab}`
-    (the `h`-terms regroup) — i.e. `s = δ⁰η + ρ x`.
-
-  STEP 5 (package as `BddHol`).  `x a b := BddHol.ofAnalyticOnOfRelCompact` of `x_{ab}` (analytic on
-    the OPEN `Uov`; an element of `Ccov`); `δ¹cov x = 0` (the same frame/cocycle algebra as
-    `cechToCshr_mem_Z1shr`).  `η a := BddHol.ofAnalyticOnOfRelCompact` of `η_a` on the diagonal
-    shrinking `Wov (a,a) ⋐ φ_a '' (V_a)` (an element of `C0Holo`).  The `Cshr` identity `s = δ0 η +
-    rhoRaw x` is the STEP-4 pointwise identity on each `Wov (a,b)` lifted through `BddHol.toFun_injective`.
-
-WHAT IS BUILT (`ChartDiskLeray.lean`): the shrinking-level PoU `shrinkPoU` (STEP 1's PoU) — the
-foundational unblock the Montel model lacked.  WHAT REMAINS (this honest `sorry`): STEPs 1b–5 — the
-chart-read split `g_a` + its `V_a`-smoothness + telescoping (STEP 1 body), the GLUING of `∂̄g_a` into
-the global form `ω̂` with a smooth full-ball chart read (STEP 2 — the manifold-section gluing, the bulk),
-the per-ball solve (STEP 3, = `dbar_solvable_open_disk`), the assembly (STEP 4, = the body of
-`forster146_lift`'s member theorems with `Ω_a` in place of `∂̄g_a`), and the `BddHol` packaging (STEP 5).
-It is ~hundreds of lines of manifold-form gluing + planar ∂̄; the analytic engine (13.2, the frame
-identity, the per-ball assembly) is all proven, so the residual is the global-form gluing + bookkeeping. -/
+This is the ball geometry's genuine unblock over the Montel cover: the global form has a smooth
+full-ball chart read, so the per-disk solve produces a cover cocycle on the FULL overlap. -/
 noncomputable def holomorphicCoboundaries : HolomorphicCoboundaries 𝔇.overlapData where
   C0 := 𝔇.C0Holo
   C2 := 𝔇.C2Holo
@@ -1868,15 +1834,14 @@ theorem finiteDimensional_cechH1_of_holomorphicModel_inj
 `FiniteDimensional ℂ (cechH1 𝔇 0)` for a `ChartDiskCover 𝔇`.
 
 This restates `ChartDiskCover.finiteDimensional_cechH1_chartDisk` (which has an honest `sorry` at
-`ChartDiskFiniteness.lean:629` for the δ-complex + comparison) with the δ-complex + comparison BUILT
-here: the model `𝔇.holomorphicCoboundaries` (δ-data of §A; analytic heart `forster146_lift` in the
-`leray` field) and the injection `𝔇.comparisonMap` (forward germ→`BddHol` cochain map of §B).
+`ChartDiskFiniteness.lean` for the δ-complex + comparison) with the δ-complex + comparison BUILT
+here: the model `𝔇.holomorphicCoboundaries` (δ-data of §A; the `leray` field discharged in §A2-*) and
+the injection `𝔇.comparisonMap` (forward germ→`BddHol` cochain map of §B).
 
-Two honest, well-isolated sorries remain (each a documented genuine gap): the `leray` field (the
-cross-chart Bott–Tu PoU split into a `BallSplitData`; see `holomorphicCoboundaries`'s
-`leray_diagnosis`) and `comparisonMap_injective` (the Forster-12.4 sheaf-gluing; see its DIAGNOSIS).
-Everything else — the entire δ-complex, the forward map, the cocycle property, the coboundary descent,
-and this assembly — is sorry-free. -/
+This theorem is SORRY-FREE and axiom-clean (`propext, Classical.choice, Quot.sound`): the entire
+δ-complex, the `leray` lift (Forster 14.6, global Bott–Tu form route — see `holomorphicCoboundaries`),
+the comparison `comparisonMap` and its injectivity (Forster 12.4 sheaf-gluing), and this assembly are
+all proven. -/
 theorem finiteDimensional_cechH1_chartDisk_complete [Nonempty X] :
     FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) :=
   𝔇.finiteDimensional_cechH1_of_holomorphicModel_inj 𝔇.holomorphicCoboundaries
