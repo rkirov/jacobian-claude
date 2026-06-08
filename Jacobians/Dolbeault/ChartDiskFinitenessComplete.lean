@@ -705,6 +705,96 @@ theorem cechToCshr_coboundary_eq_delta0 (η₀ : 𝔇.toFiniteCover.Cochain0)
     show _ = (𝔇.delta0Model (fun a => 𝔇.diagAtom a (hη₀ a)) (a, b)).toFun z
     rw [(𝔇.delta0Model (fun a => 𝔇.diagAtom a (hη₀ a)) (a, b)).zero_off z hz]
 
+/-! ### The descended comparison map `cechH1 𝔇 0 → supH1` and injectivity -/
+
+/-- The composite `↥(cocycles1 0) → Z1shr → supH1` (the forward map followed by the `supH1`
+quotient). -/
+noncomputable def cechToSupH1 :
+    ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) →ₗ[ℂ] (𝔇.holomorphicCoboundaries).supH1 :=
+  (Submodule.mkQ _).comp 𝔇.cechToZ1shr
+
+theorem cechToSupH1_apply (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) :
+    𝔇.cechToSupH1 g = Submodule.Quotient.mk (𝔇.cechToZ1shr g) := rfl
+
+/-- **The forward map kills germ coboundaries** (well-definedness of the descent): the submodule of
+cocycles that are germ coboundaries is contained in `ker cechToSupH1`.  An element is a germ coboundary
+`cechDelta0 η₀`, so its forward image is `δ0 (diagAtom ...) ∈ range δ`
+(`cechToCshr_coboundary_eq_delta0`), hence `0` in `supH1`. -/
+theorem coboundaries_le_ker_cechToSupH1 :
+    (𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
+        (𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) ≤ LinearMap.ker 𝔇.cechToSupH1 := by
+  intro g hg
+  -- `g`'s underlying cochain is a germ coboundary `cechDelta0 η₀`, `η₀ ∈ sections0 0`
+  simp only [Submodule.submoduleOf, Submodule.mem_comap, Submodule.subtype_apply,
+    FiniteFamily.coboundaries1, Submodule.mem_map] at hg
+  obtain ⟨η₀, hη₀, hηeq⟩ := hg
+  rw [LinearMap.mem_ker, cechToSupH1_apply, Submodule.Quotient.mk_eq_zero]
+  -- `cechToZ1shr g = δ (diagAtom ...)`, which lies in `range δ`
+  refine ⟨fun a => 𝔇.diagAtom a (hη₀ a), ?_⟩
+  apply Subtype.ext
+  show (𝔇.holomorphicCoboundaries).δ (fun a => 𝔇.diagAtom a (hη₀ a)) = 𝔇.cechToCshr g
+  rw [HolomorphicCoboundaries.δ, ContinuousLinearMap.coe_codRestrict_apply]
+  exact (𝔇.cechToCshr_coboundary_eq_delta0 η₀ hη₀ g hηeq.symm).symm
+
+/-- **The descended comparison map** `cechH1 𝔇 0 →ₗ[ℂ] supH1` (the forward germ→`BddHol` cochain map,
+descended to the cohomology quotients via `coboundaries_le_ker_cechToSupH1`). -/
+noncomputable def comparisonMap :
+    𝔇.toFiniteCover.cechH1 (0 : Divisor X) →ₗ[ℂ] (𝔇.holomorphicCoboundaries).supH1 :=
+  Submodule.liftQ _ 𝔇.cechToSupH1 𝔇.coboundaries_le_ker_cechToSupH1
+
+theorem comparisonMap_mk (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) :
+    𝔇.comparisonMap (Submodule.Quotient.mk g) = 𝔇.cechToSupH1 g :=
+  Submodule.liftQ_apply _ _ _
+
+/-- **Injectivity of the comparison map** — the crux, by germ-class `𝒪_D` sheaf-gluing (Forster 12.4).
+
+DIAGNOSIS (HONEST SORRY).  Injectivity reduces to: a germ cocycle `g` whose forward `BddHol` image is
+a `supH1`-coboundary `δ0 f` (`f : C0Holo`, bounded-holomorphic on the diagonal shrinkings `Wov (a,a)`)
+is a GERM coboundary.  Reading `ζ_a := f_a ∘ chart_a` as a holomorphic section on the shrinking
+`shrinkSet a` (= `V a`), the hypothesis `cechToCshr g = δ0 f` says (pointwise on `Wov (a,b)`, via
+`holoFn` and the transition point identity) that `g_{ab} = [ζ_b] − [ζ_a]` as germs on `V a ⊓ V b` —
+i.e. `refineC1 g = δ⁰[ζ]` is a coboundary for the SHRINKING cover `(V a)` (a `FiniteCover` refining
+`(U a)` by `iUnion_shrinkSet_eq_univ` + `closure_shrinkSet_subset_U`).  Since `g` is a `(U a)`-cocycle
+and the refinement map `refineH1 : H¹((U a)) → H¹((V a))` is INJECTIVE UNCONDITIONALLY (Forster 12.4,
+`CechRefinementInjective.refineH1_injective_unconditional`), `g ∈ coboundaries1`.  The remaining
+plumbing — packaging `(shrinkSet a)` as a `FiniteCover`, the refinement witness, and the germ
+identification of the `BddHol` shrinking datum `f` with the section family `[ζ]` — is the structural
+sheaf bridge (~hundreds of lines). -/
+theorem comparisonMap_injective : Function.Injective 𝔇.comparisonMap := by
+  sorry
+
+/-! ## §C — The finiteness reduction (injective variant) and the COMPLETE theorem -/
+
+/-- **The finiteness reduction via a linear INJECTION** (lighter than the full iso of
+`finiteDimensional_cechH1_of_holomorphicModel`).  Given a `HolomorphicCoboundaries` model `c` for the
+chart-disk cover with its `supH1` finite (via `leray`), a linear injection `cechH1 𝔇 0 ↪ c.supH1`
+suffices to conclude `cechH1 𝔇 0` finite (`FiniteDimensional.of_injective`). -/
+theorem finiteDimensional_cechH1_of_holomorphicModel_inj
+    (c : HolomorphicCoboundaries 𝔇.overlapData)
+    (f : 𝔇.toFiniteCover.cechH1 (0 : Divisor X) →ₗ[ℂ] c.supH1) (hf : Function.Injective f) :
+    FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) := by
+  haveI : FiniteDimensional ℂ c.supH1 :=
+    c.finiteDimensional_supH1 (HolomorphicCoboundaries.leray_surjective 𝔇.overlapData c)
+  exact FiniteDimensional.of_injective f hf
+
+/-- **`H¹` finiteness on a chart-disk cover (Forster 14.9) — the COMPLETE statement.**
+`FiniteDimensional ℂ (cechH1 𝔇 0)` for a `ChartDiskCover 𝔇`.
+
+This restates `ChartDiskCover.finiteDimensional_cechH1_chartDisk` (which has an honest `sorry` at
+`ChartDiskFiniteness.lean:629` for the δ-complex + comparison) with the δ-complex + comparison BUILT
+here: the model `𝔇.holomorphicCoboundaries` (δ-data of §A; analytic heart `forster146_lift` in the
+`leray` field) and the injection `𝔇.comparisonMap` (forward germ→`BddHol` cochain map of §B).
+
+Two honest, well-isolated sorries remain (each a documented genuine gap): the `leray` field (the
+cross-chart Bott–Tu PoU split into a `BallSplitData`; see `holomorphicCoboundaries`'s
+`leray_diagnosis`) and `comparisonMap_injective` (the Forster-12.4 sheaf-gluing; see its DIAGNOSIS).
+Everything else — the entire δ-complex, the forward map, the cocycle property, the coboundary descent,
+and this assembly — is sorry-free. -/
+theorem finiteDimensional_cechH1_chartDisk_complete [Nonempty X] :
+    FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) :=
+  𝔇.finiteDimensional_cechH1_of_holomorphicModel_inj 𝔇.holomorphicCoboundaries
+    𝔇.comparisonMap 𝔇.comparisonMap_injective
+
 end ChartDiskCover
 
 end Jacobians.Dolbeault
