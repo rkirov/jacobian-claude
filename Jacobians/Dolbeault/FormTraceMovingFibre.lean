@@ -555,4 +555,29 @@ noncomputable def MovingCoherenceDatum.ofBijection {ω₀ : HolomorphicOneForms 
     exact traceCoeff_diagonal_eq_fixedSum ω₀ f D sec (Φ b') e hxs hsheet_deriv hcontb hsP_diff hmem
       htrans_diff htrans_diff_inv
 
+/-! ### Non-vacuity of the coherence datum (end-to-end soundness)
+
+The `MovingCoherenceDatum` obligation is *satisfiable*, not a disguised `False`: for the **empty fibre
+selection** `Φ b' := emptyFibreRegularData g f b'` (the globally-holomorphic case, `valueChartTrace ≡
+0`), the empty datum (no sheets, `D = emptyFibreRegularData`, `sec` vacuous) is a coherence datum — the
+diagonal identity is `0 = 0` (both empty sums).  Its `.coherent` gives `0 =ᶠ 0`, confirming the datum
+produces a genuine self-coherence. -/
+
+/-- **The empty moving coherence datum.**  For the empty fibre selection (no fibre points over any
+value) the empty datum (`D = emptyFibreRegularData g f b₀`, `sec := Empty.elim`) is a valid
+`MovingCoherenceDatum`: all per-sheet fields are vacuous (`ι = Empty`) and the diagonal identity is the
+empty-sum tautology `0 = 0`.  The honest non-vacuity witness. -/
+noncomputable def movingCoherenceDatum_empty (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (b₀ : ℂ) :
+    MovingCoherenceDatum ω₀ g f (fun b => emptyFibreRegularData g f b) b₀ where
+  D := emptyFibreRegularData g f b₀
+  sec := Empty.elim
+  hbase := fun i => i.elim
+  hcont := fun i => i.elim
+  hsec := fun i => i.elim
+  hdiag := by
+    filter_upwards with b'
+    -- Both sides are empty fibre sums (`ι = Empty`), definitionally `0`.
+    rfl
+
 end Jacobians.Dolbeault.FormTraceMovingFibre

@@ -197,4 +197,68 @@ theorem residueSum_eq_zero_of_movingCoherenceFamily (hac : AdaptedCover ω₀ g 
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
   residueSum_eq_zero_of_coherentSelection hac F.toCoherentTraceSelection
 
+/-! ### Non-vacuity of the moving-fibre coherence family (end-to-end soundness)
+
+The `MovingCoherenceFamily` obligation is *satisfiable*, not a disguised `False`: for the **empty pole
+set** (`α = ω₀·g` globally holomorphic) the empty fibre selection gives a family — the per-regular-value
+data is the empty datum (`movingCoherenceDatum_empty`, `valueChartTrace ≡ 0`), no finite pole-values, the
+empty `∞`-trace (`recipCoeff 0 ≡ 0`), vacuous junk-freeness, and the vanishing genus-`0` continuation.
+This confirms the family produces a genuine `∑Res = 0`, mirroring `coherentTraceSelection_empty`. -/
+
+/-- **The empty moving coherence family.**  For the empty pole set, the empty fibre selection assembles
+into a `MovingCoherenceFamily`: per-regular-value empty data, vacuous finite/∞-pole fields, and the
+vanishing genus-`0` continuation.  The honest non-vacuity witness. -/
+noncomputable def movingCoherenceFamily_empty (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
+    MovingCoherenceFamily ω₀ g f ∅ (adaptedCover_empty ω₀ g f hdiv) where
+  Φ := fun p => emptyFibreRegularData g f p
+  m := 0
+  cs := Fin.elim0
+  ρ := 0
+  hcs_ball := fun i => i.elim0
+  hcs_inj := fun i => i.elim0
+  hcenters_cs := by simp
+  Dinf := emptyInftyFibreData g f
+  hxs_inj := fun i => i.elim
+  hxs_mem := fun i => i.elim
+  hxs_surj := fun a ha _ => absurd ha (Finset.notMem_empty a)
+  Cfin := fun i => i.elim0
+  hCfin_D := fun i => i.elim0
+  Creg := fun z _ => movingCoherenceDatum_empty ω₀ g f z
+  hCreg_g := fun z _ i => i.elim
+  hglue_inf := by
+    rw [valueChartTrace_emptySelection ω₀ f, inftyFibreTrace_emptyData_traceCoeff ω₀ f,
+      recipCoeff_zero]
+  hcont_int := by
+    intro L hLa _ p hp
+    rw [hLa, Finset.image_eq_empty.mpr (Finset.univ_eq_empty (α := Fin 0))] at hp
+    exact absurd hp (Finset.notMem_empty p)
+  R₀ := fun _ => 0
+  hR₀_an := analyticAt_const
+  hR₀0 := rfl
+  hR₀_eq := by
+    intro L hLa
+    rw [valueChartTrace_emptySelection ω₀ f]
+    have hLR0 : L.R = fun _ => (0 : ℂ) := by
+      have hempty : (Finset.univ : Finset L.ι) = ∅ :=
+        Finset.image_eq_empty.mp
+          (by rw [hLa]; exact Finset.image_eq_empty.mpr (Finset.univ_eq_empty (α := Fin 0)))
+      funext z
+      show (∑ p : L.ι, L.c p * (z - L.a p) ^ L.n p) = 0
+      rw [hempty, Finset.sum_empty]
+    rw [hLR0]
+    filter_upwards with ζ
+    show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
+    simp [recipCoeff]
+
+/-- **Non-vacuity of the moving-fibre Gate-A reduction.**  For the empty pole set the reduction
+`residueSum_eq_zero_of_movingCoherenceFamily` is satisfiable via the empty family
+(`movingCoherenceFamily_empty`), yielding `∑Res = 0`.  Confirms the family reduction is honest (not a
+disguised `False`). -/
+theorem residueSum_eq_zero_of_movingCoherenceFamily_holomorphic (ω₀ : HolomorphicOneForms X)
+    (g : X → ℂ) (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
+    ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 :=
+  residueSum_eq_zero_of_movingCoherenceFamily (adaptedCover_empty ω₀ g f hdiv)
+    (movingCoherenceFamily_empty ω₀ g f hdiv)
+
 end Jacobians.Dolbeault.FormTraceMovingFibre
