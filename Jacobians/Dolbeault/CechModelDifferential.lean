@@ -487,4 +487,51 @@ theorem delta1Model_diagonal_eq_zero (s : (chartCoverOverlapData (X := X)).Cshr)
   -- `s_{aa}(z) − s_{aa}(z) + s_{aa}(z) = 0`.
   linear_combination hz0
 
+/-! ### Packaging the standard Čech differential construction
+
+The pieces above already prove the standard cross-chart Čech differential construction for the
+chart-cover model.  This bundle packages the proven `δ⁰/δ¹` data so downstream code can refer to the
+construction as a single object; the genuine Leray/globalization theorem still lives in the finiteness
+node. -/
+
+/-- The standard chart-cover Čech differential bundle, packaging the proven `δ⁰`, `δ¹`, `δ¹cov`,
+`δ¹∘δ⁰ = 0`, and commuting-square data.  This is the structural half of the model construction; the
+`leray` field is handled separately downstream. -/
+structure ChartCoverDifferentialData where
+  /-- The 0-cochain space. -/
+  C0 : Type
+  [ng0 : NormedAddCommGroup C0]
+  [ns0 : NormedSpace ℂ C0]
+  [cs0 : CompleteSpace C0]
+  /-- The 2-cochain space on the shrinking. -/
+  C2 : Type
+  [ng2 : NormedAddCommGroup C2]
+  [ns2 : NormedSpace ℂ C2]
+  /-- The 2-cochain space on the cover. -/
+  C2cov : Type
+  [ng2c : NormedAddCommGroup C2cov]
+  [ns2c : NormedSpace ℂ C2cov]
+  /-- The cross-chart `δ⁰`. -/
+  δ0 : C0 →L[ℂ] (chartCoverOverlapData (X := X)).Cshr
+  /-- The shrinking-side `δ¹`. -/
+  δ1 : (chartCoverOverlapData (X := X)).Cshr →L[ℂ] C2
+  /-- The cover-side `δ¹`. -/
+  δ1cov : (chartCoverOverlapData (X := X)).Ccov →L[ℂ] C2cov
+  /-- `δ¹ ∘ δ⁰ = 0`. -/
+  hδδ : δ1.comp δ0 = 0
+  /-- Restriction carries cover cocycles to shrinking cocycles. -/
+  hcomm : ∀ x : (chartCoverOverlapData (X := X)).Ccov, δ1cov x = 0 →
+    δ1 ((chartCoverOverlapData (X := X)).rhoRaw x) = 0
+
+/-- The standard chart-cover Čech differential data, packaged as a single record. -/
+noncomputable def chartCoverDifferentialData : ChartCoverDifferentialData (X := X) where
+  C0 := Cochain0Model (X := X)
+  C2 := Cochain2Model (X := X)
+  C2cov := Cochain2CovModel (X := X)
+  δ0 := delta0Model
+  δ1 := delta1Model
+  δ1cov := delta1CovModel
+  hδδ := delta1_comp_delta0_eq_zero
+  hcomm := delta1_rhoRaw_eq_zero_of_delta1Cov_eq_zero
+
 end Jacobians.Dolbeault

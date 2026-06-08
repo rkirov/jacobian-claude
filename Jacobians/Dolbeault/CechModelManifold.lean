@@ -17,6 +17,7 @@
 -/
 import Jacobians.Dolbeault.CechH0
 import Jacobians.Dolbeault.CechModelBridge
+import Jacobians.Dolbeault.CechDiskAcyclicAssembly
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -105,5 +106,105 @@ noncomputable def holoSectionToBddHol {y : X} {V : Set X} (hV : V ⊆ (chartAt (
     {z : ℂ} (hz : z ∈ U') :
     (holoSectionToBddHol hV hh hsub hcpt).toFun z = h ((chartAt (H := ℂ) y).symm z) :=
   BddHol.ofAnalyticOnOfRelCompact_toFun_of_mem _ _ _ hz
+
+/-- **Inverse local K-bridge atom.** A bounded holomorphic function on an open chart-image `U'`
+pulls back along a chart to a function that is analytic in each point's own chart, provided the
+chart value lands in `U'`. This is the local analytic input for the `BddHol → OmegaD 0` direction. -/
+theorem bddHol_pullback_analyticAt {y x : X} {U' : Set ℂ} (hU' : IsOpen U')
+    (g : BddHol U') (hx : x ∈ (chartAt (H := ℂ) y).source)
+    (hmem : (chartAt (H := ℂ) y) x ∈ U') :
+    AnalyticAt ℂ
+      ((fun z : X => g.toFun ((chartAt (H := ℂ) y) z)) ∘ (chartAt (H := ℂ) x).symm)
+      ((chartAt (H := ℂ) x) x) := by
+  have hga : AnalyticAt ℂ g.toFun ((chartAt (H := ℂ) y) x) :=
+    g.analyticOn.analyticAt (hU'.mem_nhds hmem)
+  have htrans : AnalyticAt ℂ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) x).symm)
+      ((chartAt (H := ℂ) x) x) :=
+    transition_analyticAt_of_mem (y := x) (z := y) (x := x) (mem_chart_source ℂ x) hx
+  have hpt :
+      ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x) =
+        (chartAt (H := ℂ) y) x := by
+    simp only [Function.comp_apply, (chartAt (H := ℂ) x).left_inv (mem_chart_source ℂ x)]
+  have hcomp :
+      AnalyticAt ℂ (g.toFun ∘ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) x).symm))
+        ((chartAt (H := ℂ) x) x) :=
+    AnalyticAt.comp (hpt ▸ hga) htrans
+  simpa [Function.comp, Function.comp_assoc] using hcomp
+
+/-- **Inverse K-bridge to `OmegaD 0`.** A bounded holomorphic function on an open chart-image can be
+pulled back along a chart to a holomorphic section on the corresponding open domain in `X`. This is
+the missing inverse atom for the `BddHol ↔ OmegaD 0` comparison direction. -/
+theorem bddHol_pullback_mem_OmegaD_zero {y : X} {V : Opens X} {U' : Set ℂ}
+    (hV : (V : Set X) ⊆ (chartAt (H := ℂ) y).source) (hU' : IsOpen U')
+    (himg : (chartAt (H := ℂ) y) '' (V : Set X) ⊆ U') (g : BddHol U') :
+    ((fun x : X => g.toFun ((chartAt (H := ℂ) y) x)) ∘ (Subtype.val : V → X)) ∈
+      OmegaD (0 : Divisor X) V := by
+  refine omegaD_zero_of_chart_analyticAt ?_
+  intro v hv
+  have hmem : (chartAt (H := ℂ) y) (v : X) ∈ U' := himg ⟨v, hv, rfl⟩
+  simpa using bddHol_pullback_analyticAt (y := y) (x := v) (U' := U') hU' g (hV hv) hmem
+
+/-- **Exact-image inverse K-bridge.** If the `BddHol` domain is exactly the chart image of an open
+`V`, then pulling back along the chart gives a holomorphic `OmegaD 0`-section on `V`. This is the
+clean local inverse on exact chart-image domains. -/
+theorem bddHol_pullback_mem_OmegaD_zero_image {y : X} {V : Opens X}
+    (hV : (V : Set X) ⊆ (chartAt (H := ℂ) y).source)
+    (g : BddHol ((chartAt (H := ℂ) y) '' (V : Set X))) :
+    ((fun x : X => g.toFun ((chartAt (H := ℂ) y) x)) ∘ (Subtype.val : V → X)) ∈
+      OmegaD (0 : Divisor X) V := by
+  refine bddHol_pullback_mem_OmegaD_zero (y := y) (V := V)
+      hV (U' := (chartAt (H := ℂ) y) '' (V : Set X))
+      (show IsOpen ((chartAt (H := ℂ) y) '' (V : Set X)) from
+        (chartAt (H := ℂ) y).isOpen_image_of_subset_source V.isOpen hV)
+      (by
+        intro z hz
+        exact hz) g
+
+/-- **Inverse exact-image K-bridge as a linear map.**  Pulling a `BddHol` function back along the
+chart on the exact image of `V` yields an `OmegaD 0` section of `V`. -/
+noncomputable def bddHolToOmegaD_zero_image {y : X} {V : Opens X}
+    (hV : (V : Set X) ⊆ (chartAt (H := ℂ) y).source) :
+    BddHol ((chartAt (H := ℂ) y) '' (V : Set X)) →ₗ[ℂ] OmegaD (0 : Divisor X) V where
+  toFun g :=
+    ⟨fun x : V => g.toFun ((chartAt (H := ℂ) y) x),
+      bddHol_pullback_mem_OmegaD_zero_image (y := y) hV g⟩
+  map_add' g₁ g₂ := by
+    ext x
+    rfl
+  map_smul' c g := by
+    ext x
+    rfl
+
+/-- **Inverse exact-image K-bridge at the germ level.** Pulling a `BddHol` function back along the
+chart on the exact image of `V` yields an `OmegaDGerm 0` section of `V`. This is the germ-class
+version of `bddHolToOmegaD_zero_image`, and the bridge the cochain comparison can consume. -/
+noncomputable def bddHolToOmegaDGerm_zero_image {y : X} {V : Opens X}
+    (hV : (V : Set X) ⊆ (chartAt (H := ℂ) y).source) :
+    BddHol ((chartAt (H := ℂ) y) '' (V : Set X)) →ₗ[ℂ] OmegaDGerm (0 : Divisor X) V where
+  toFun g :=
+    ⟨toGerm V (fun x : V => g.toFun ((chartAt (H := ℂ) y) x)),
+      ⟨fun x : V => g.toFun ((chartAt (H := ℂ) y) x),
+        bddHol_pullback_mem_OmegaD_zero_image (y := y) hV g, rfl⟩⟩
+  map_add' g₁ g₂ := by
+    ext x
+    rfl
+  map_smul' c g := by
+    ext x
+    rfl
+
+/-- **Inverse exact-image K-bridge as a linear map.**  Pulling a `BddHol` function back along the
+chart on the exact image of `V` yields an `OmegaD 0` section of `V`. -/
+noncomputable def bddHolToOmegaD_zero {y : X} {V : Opens X}
+    (hV : (V : Set X) ⊆ (chartAt (H := ℂ) y).source) :
+    BddHol ((chartAt (H := ℂ) y) '' (V : Set X)) →ₗ[ℂ] OmegaD (0 : Divisor X) V where
+  toFun g :=
+    ⟨fun x : V => g.toFun ((chartAt (H := ℂ) y) x),
+      bddHol_pullback_mem_OmegaD_zero_image (y := y) hV g⟩
+  map_add' g₁ g₂ := by
+    ext x
+    rfl
+  map_smul' c g := by
+    ext x
+    rfl
 
 end Jacobians.Dolbeault

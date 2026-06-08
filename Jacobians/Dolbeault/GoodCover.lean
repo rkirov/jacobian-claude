@@ -52,6 +52,7 @@ open scoped Manifold ContDiff Bundle Topology
 open TopologicalSpace (Opens)
 
 set_option backward.isDefEq.respectTransparency false
+set_option synthInstance.maxHeartbeats 80000
 set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
@@ -115,7 +116,7 @@ theorem dolbeault_to_cech_comp_cech_to_dolbeault' (𝔇 : ChartDiskCover X) :
       + Submodule.Quotient.mk f = (0 : 𝔇.toFiniteCover.cechH1 0) := by
     rw [← Submodule.Quotient.mk_add, Submodule.Quotient.mk_eq_zero]
     simp only [Submodule.submoduleOf, Submodule.mem_comap, Submodule.subtype_apply,
-      AddSubmonoid.coe_add, Submodule.coe_toAddSubmonoid, Submodule.coe_add]
+      Submodule.coe_add]
     exact hcob
   exact neg_eq_of_add_eq_zero_right hzero
 
@@ -131,6 +132,27 @@ noncomputable def comparison_linearEquiv' (𝔇 : ChartDiskCover X) :
   LinearEquiv.ofLinear (dolbeault_to_cech 𝔇) (cech_to_dolbeault 𝔇)
     (dolbeault_to_cech_comp_cech_to_dolbeault' 𝔇)
     (cech_to_dolbeault_comp_dolbeault_to_cech' 𝔇)
+
+/-- **Exact Bott-Tu form gives a Čech coboundary.**  If the Čech-to-Dolbeault form attached to a
+chart-disk `𝒪`-cocycle is a global `∂̄`-image, then the original cocycle is already a Čech
+coboundary.  This packages the injectivity half of the comparison in the form needed by the local
+disk/refinement route: the analytic side only has to prove exactness of the Bott-Tu form; this theorem
+turns that exactness into the germ-level coboundary statement. -/
+theorem cech_coboundary_of_cechToDolbeaultForm_exact (𝔇 : ChartDiskCover X)
+    (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
+    (hexact : (cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) ∈ dbarImageInZeroOne X) :
+    (f : 𝔇.toFiniteCover.Cochain1) ∈ 𝔇.toFiniteCover.coboundaries1 (0 : Divisor X) := by
+  have hmkForm : Submodule.Quotient.mk (cechToDolbeaultForm 𝔇 f) = (0 : DolbeaultH01 X) := by
+    rw [Submodule.Quotient.mk_eq_zero]
+    exact hexact
+  have hcech : cech_to_dolbeault 𝔇 (Submodule.Quotient.mk f) = 0 := by
+    rw [cech_to_dolbeault_mk, hmkForm, neg_zero]
+  have hsymm : (comparison_linearEquiv' 𝔇).symm (Submodule.Quotient.mk f) = 0 := hcech
+  have hq : Submodule.Quotient.mk f = (0 : 𝔇.toFiniteCover.cechH1 0) :=
+    (comparison_linearEquiv' 𝔇).symm.injective (by simpa using hsymm)
+  exact (Submodule.Quotient.mk_eq_zero
+    ((𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
+      (𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))).1 hq
 
 /-- **The L3 comparison `finrank ℝ (DolbeaultH01 X) = 2 · finrank ℂ (cechH1 𝔇 0)`, with NO `IsLeray`
 hypothesis.**  This is exactly `DolbeaultComparison.cechH1_dolbeault_comparison`'s statement (the one

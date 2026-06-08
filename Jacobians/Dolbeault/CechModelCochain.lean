@@ -158,6 +158,13 @@ noncomputable def germSectionToBddHolCLM :
     germSectionToBddHolCLM hV hsub hcpt ⟨g, hg⟩ = germSectionToBddHol hV hsub hcpt hg :=
   rfl
 
+/-- **The inverse exact-image atom as a `ℂ`-linear map.** On exact chart-image domains, `BddHol`
+pulls back to an `OmegaDGerm 0` section. This is the local inverse bridge complementing the forward
+overlap atom. -/
+noncomputable def bddHolToOmegaDGermCLM_zero_image :
+    BddHol ((chartAt (H := ℂ) y) '' (V : Set X)) →ₗ[ℂ] OmegaDGerm (0 : Divisor X) V :=
+  bddHolToOmegaDGerm_zero_image (y := y) hV
+
 end Atom
 
 /-! ### Assembling the full cochain map into `DiskOverlapData.Ccov`
