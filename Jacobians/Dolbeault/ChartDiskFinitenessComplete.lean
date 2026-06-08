@@ -851,9 +851,99 @@ theorem diagPullbackGerm_holoFn (f : 𝔇.C0Holo) (a : 𝔇.ι) {y : X}
   rw [← hval]
   exact holoFn_eq_of_tendsto (𝔇.diagPullbackGerm f a).2 F hgerm hy htend
 
-/-- **Injectivity of the comparison map** (Forster 12.4 sheaf-gluing). -/
+/-- The germ section `diagPullbackGerm f a` is `𝒪_0` on `V a`. -/
+theorem diagPullbackGerm_mem (f : 𝔇.C0Holo) (a : 𝔇.ι) :
+    (𝔇.diagPullbackGerm f a).1 ∈ OmegaDGerm (0 : Divisor X) (𝔇.shrinkOpens a) :=
+  (𝔇.diagPullbackGerm f a).2
+
+/-- For `v ∈ V a ⊓ V b`, the chart-`a` value `chartAt (center a) v ∈ Wov (a,b)`. -/
+theorem chart_mem_Wov_of_shrinkInter (a b : 𝔇.ι) {v : X}
+    (hv : v ∈ (𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b : Opens X)) :
+    (chartAt (H := ℂ) (𝔇.center a)) v ∈ 𝔇.Wov (a, b) :=
+  ⟨v, ⟨hv.1, hv.2⟩, rfl⟩
+
+/-- **The key germ identity for injectivity.**  If `δ0 f = cechToCshr g`, then on each shrinking
+overlap `V a ⊓ V b` the germ `g_{ab}` (restricted) equals `[ζ_b] − [ζ_a]` (the diagonal pullback
+germs), i.e. `refineC1 g = δ⁰_𝔙 (diagPullbackGerm f)`.  Pointwise via `holoFn`/`diagPullbackGerm_holoFn`
+and the transition point identity. -/
+theorem refineC1_eq_delta0_shrink (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
+    (f : 𝔇.C0Holo) (hf : (𝔇.holomorphicCoboundaries).δ0 f = 𝔇.cechToCshr g) :
+    (𝔇.isRefinement_shrinkCover).refineC1 (g : 𝔇.toFiniteCover.Cochain1)
+      = 𝔇.shrinkCover.cechDelta0 (fun a => (𝔇.diagPullbackGerm f a).1) := by
+  funext p
+  obtain ⟨a, b⟩ := p
+  -- both sides are germs on `V a ⊓ V b`; reduce to a pointwise function identity via `toGerm_holoFn`
+  rw [FiniteCover.IsRefinement.refineC1_apply]
+  show rawRestrictG (𝔇.isRefinement_shrinkCover.pair_le a b) ((g : 𝔇.toFiniteCover.Cochain1) (a, b))
+      = (rawRestrictG inf_le_right ((𝔇.diagPullbackGerm f b).1)
+          - rawRestrictG inf_le_left ((𝔇.diagPullbackGerm f a).1))
+  -- LHS = germ of `holoFn(g_{ab})` restricted to `V a ⊓ V b`
+  rw [← toGerm_holoFn (cocycle_mem 𝔇 g a b)]
+  -- RHS = germ of `ζ_b − ζ_a` (= `holoFn(diagPullbackGerm f ·)`) restricted to `V a ⊓ V b`
+  rw [← toGerm_holoFn (𝔇.diagPullbackGerm_mem f b), ← toGerm_holoFn (𝔇.diagPullbackGerm_mem f a)]
+  simp only [rawRestrictG_coe, id_eq, shrinkCover_U]
+  rw [← map_sub, toGerm_eq_iff]
+  -- the two representatives are EQUAL at every point of `V a ⊓ V b`, hence germ-equal at each `u`
+  intro _u
+  refine Filter.Eventually.of_forall ?_
+  rintro ⟨v, hv⟩
+  show holoFn (cocycle_mem 𝔇 g a b) ((openIncl _ ⟨v, hv⟩ : ↥(𝔇.U a ⊓ 𝔇.U b)) : X)
+      = (fun w : ↥(𝔇.shrinkOpens b) => holoFn (𝔇.diagPullbackGerm_mem f b) w.1)
+          (openIncl inf_le_right ⟨v, hv⟩)
+        - (fun w : ↥(𝔇.shrinkOpens a) => holoFn (𝔇.diagPullbackGerm_mem f a) w.1)
+          (openIncl inf_le_left ⟨v, hv⟩)
+  simp only [openIncl, Pi.sub_apply]
+  -- `v ∈ V a ⊓ V b`, hence in `U a ⊓ U b` and in each `V a`, `V b`
+  have hva : v ∈ (𝔇.shrinkOpens a : Opens X) := hv.1
+  have hvb : v ∈ (𝔇.shrinkOpens b : Opens X) := hv.2
+  have hvU : v ∈ ((𝔇.U a ⊓ 𝔇.U b : Opens X) : Set X) :=
+    ⟨𝔇.shrinkOpens_le_U a hva, 𝔇.shrinkOpens_le_U b hvb⟩
+  -- evaluate `holoFn(ζ_a)`, `holoFn(ζ_b)`
+  rw [𝔇.diagPullbackGerm_holoFn f a hva, 𝔇.diagPullbackGerm_holoFn f b hvb]
+  -- the `δ0 f = cechToCshr g` identity at `z = chart_a v ∈ Wov (a,b)`
+  have hzW : (chartAt (H := ℂ) (𝔇.center a)) v ∈ 𝔇.Wov (a, b) :=
+    𝔇.chart_mem_Wov_of_shrinkInter a b hv
+  have hδ := congrFun (congrArg (fun (s : 𝔇.overlapData.Cshr) => (s (a, b)).toFun) hf)
+    ((chartAt (H := ℂ) (𝔇.center a)) v)
+  simp only [show (𝔇.holomorphicCoboundaries).δ0 f = 𝔇.delta0Model f from rfl] at hδ
+  -- LHS of `hδ`: `(δ0 f)_{ab}(z) = f_b(τ z) − f_a(z)`; RHS: `holoFn(g_{ab})((chart_a).symm z)`
+  rw [𝔇.delta0Model_apply_apply f (a, b) hzW, 𝔇.cechToCshr_apply_toFun g (a, b) hzW,
+    (chartAt (H := ℂ) (𝔇.center a)).left_inv (𝔇.U_subset_source a hvU.1),
+    𝔇.coverTransition_apply a b ⟨hvU.1, hvU.2⟩] at hδ
+  -- assemble: `holoFn(g_{ab}) v = (f b).toFun(chart_b v) − (f a).toFun(chart_a v)`
+  rw [← hδ]
+
+/-- **Injectivity of the comparison map** (Forster 12.4 sheaf-gluing).  `comparisonMap (mk g) = 0`
+gives `δ0 f = cechToCshr g` for some `f : C0Holo`; then `refineC1 g = δ⁰_𝔙 (diagPullbackGerm f)`
+(`refineC1_eq_delta0_shrink`) so `refineC1 g` is a `𝔙`-coboundary, and Forster 12.4
+(`refinementDescend_unconditional`) gives `g ∈ coboundaries1 𝔇`, i.e. `mk g = 0`. -/
 theorem comparisonMap_injective : Function.Injective 𝔇.comparisonMap := by
-  sorry
+  rw [← LinearMap.ker_eq_bot, Submodule.eq_bot_iff]
+  intro fcl hfcl
+  -- write `fcl = mk g`
+  obtain ⟨g, rfl⟩ := Submodule.Quotient.mk_surjective _ fcl
+  rw [LinearMap.mem_ker, comparisonMap_mk, cechToSupH1_apply, Submodule.Quotient.mk_eq_zero,
+    LinearMap.mem_range] at hfcl
+  obtain ⟨f, hf⟩ := hfcl
+  -- `δ f = cechToZ1shr g`, i.e. `δ0 f = cechToCshr g`
+  have hf0 : (𝔇.holomorphicCoboundaries).δ0 f = 𝔇.cechToCshr g := by
+    have hval := congrArg (Subtype.val) hf
+    rw [𝔇.cechToZ1shr_coe g] at hval
+    simpa only [HolomorphicCoboundaries.δ, ContinuousLinearMap.coe_codRestrict_apply] using hval
+  -- `refineC1 g` is a `𝔙`-coboundary
+  have hcob : (𝔇.isRefinement_shrinkCover).refineC1 (g : 𝔇.toFiniteCover.Cochain1)
+      ∈ 𝔇.shrinkCover.coboundaries1 (0 : Divisor X) := by
+    rw [FiniteFamily.coboundaries1, Submodule.mem_map]
+    exact ⟨fun a => (𝔇.diagPullbackGerm f a).1, fun a => (𝔇.diagPullbackGerm f a).2,
+      (𝔇.refineC1_eq_delta0_shrink g f hf0).symm⟩
+  -- Forster 12.4: `g ∈ coboundaries1 𝔇`
+  have hgcob : (g : 𝔇.toFiniteCover.Cochain1) ∈ 𝔇.toFiniteCover.coboundaries1 (0 : Divisor X) :=
+    FiniteCover.IsRefinement.refinementDescend_unconditional (0 : Divisor X)
+      𝔇.isRefinement_shrinkCover g hcob
+  -- hence `mk g = 0`
+  rw [Submodule.Quotient.mk_eq_zero]
+  simp only [Submodule.submoduleOf, Submodule.mem_comap, Submodule.subtype_apply]
+  exact hgcob
 
 /-! ## §C — The finiteness reduction (injective variant) and the COMPLETE theorem -/
 
