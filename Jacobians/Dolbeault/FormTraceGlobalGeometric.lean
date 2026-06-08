@@ -230,4 +230,63 @@ theorem residueSum_eq_zero_of_geometricSelection_coh (hac : AdaptedCover ω₀ g
   obtain ⟨Dreg, hg_an, hcoh⟩ := hreg z hz
   exact analyticAt_valueChartTrace_of_eventuallyEq ω₀ f Φ Dreg hg_an hcoh
 
+/-! ### Non-vacuity of the geometric reduction (end-to-end soundness)
+
+The geometric constructors are *satisfiable*, not a disguised `False`: in the globally-holomorphic
+(empty-pole) case the **empty fibre selection** `Φ p := emptyFibreRegularData g f p` gives
+`valueChartTrace ω₀ f Φ ≡ 0` (an empty fibre sum), with all the deep inputs (glue, off-exceptional
+coherence, junk-freeness) vacuous over the empty centre set, the `∞`-glue `recipCoeff 0 ≡ 0` matching
+the empty `∞`-trace, and the genus-`0` continuation `R₀ ≡ 0` vanishing.  This confirms the geometric
+reduction produces a genuine `∑Res = 0`. -/
+
+/-- **The empty fibre selection gives the zero geometric trace.**  With `Φ p := emptyFibreRegularData
+g f p` (no fibre points over any value), `valueChartTrace ω₀ f Φ ≡ 0` — the empty fibre sum.  The base
+case the non-vacuity witness uses. -/
+theorem valueChartTrace_emptySelection (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X) :
+    valueChartTrace ω₀ f (fun p => emptyFibreRegularData g f p) = fun _ => (0 : ℂ) := by
+  funext b
+  rw [valueChartTrace_apply]
+  show (∑ _i : Empty, _) = (0 : ℂ)
+  rw [Finset.univ_eq_empty, Finset.sum_empty]
+
+/-- **Non-vacuity of the geometric Gate-A reduction.**  For the empty pole set the geometric reduction
+`residueSum_eq_zero_of_geometricSelection` is satisfiable via the empty fibre selection: the geometric
+trace is `≡ 0` (`valueChartTrace_emptySelection`), all deep inputs are vacuous over the empty centre
+set, the `∞`-glue is `recipCoeff 0 ≡ 0`, and `R₀ ≡ 0` vanishes — yielding `∑Res = 0`.  Confirms the
+geometric reduction is honest (not a disguised `False`), mirroring `residueSum_eq_zero_of_data_holomorphic`. -/
+theorem residueSum_eq_zero_of_geometricSelection_holomorphic (ω₀ : HolomorphicOneForms X)
+    (g : X → ℂ) (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
+    ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 := by
+  classical
+  have hzero := valueChartTrace_emptySelection (g := g) ω₀ f
+  refine residueSum_eq_zero_of_geometricSelection (adaptedCover_empty ω₀ g f hdiv)
+    (fun p => emptyFibreRegularData g f p) (m := 0) (Fin.elim0) 0
+    (fun i => i.elim0) (fun i => i.elim0)
+    (by simp) (emptyInftyFibreData g f)
+    (fun i => i.elim) (fun i => i.elim) (fun a ha _ => absurd ha (Finset.notMem_empty a))
+    (fun i => i.elim0) ?_ (fun z _ => ?_) ?_ (fun _ => 0) analyticAt_const rfl ?_
+  · -- hglue_inf: `recipCoeff 0 =ᶠ 0` (empty `∞`-trace).
+    rw [hzero, inftyFibreTrace_emptyData_traceCoeff ω₀ f, recipCoeff_zero]
+  · -- hT_off: `valueChartTrace ≡ 0` analytic everywhere.
+    rw [hzero]; exact analyticAt_const
+  · -- hcont_int: vacuous (the centre image is empty, `cs = Fin.elim0`).
+    intro L hLa _ p hp
+    rw [hLa, Finset.image_eq_empty.mpr (Finset.univ_eq_empty (α := Fin 0))] at hp
+    exact absurd hp (Finset.notMem_empty p)
+  · -- hR₀_eq: `recipCoeff (0 − L.R) =ᶠ 0`.  The centre image `univ.image L.a = univ.image cs = ∅`
+    -- (empty centres, `cs = Fin.elim0`), so `univ : Finset L.ι = ∅` and `L.R ≡ 0`.
+    intro L hLa
+    rw [hzero]
+    have hLR0 : L.R = fun _ => (0 : ℂ) := by
+      have hempty : (Finset.univ : Finset L.ι) = ∅ :=
+        Finset.image_eq_empty.mp
+          (by rw [hLa]; exact Finset.image_eq_empty.mpr (Finset.univ_eq_empty (α := Fin 0)))
+      funext z
+      show (∑ p : L.ι, L.c p * (z - L.a p) ^ L.n p) = 0
+      rw [hempty, Finset.sum_empty]
+    rw [hLR0]
+    filter_upwards with ζ
+    show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
+    simp [recipCoeff]
+
 end Jacobians.Dolbeault.FormTraceGlobal
