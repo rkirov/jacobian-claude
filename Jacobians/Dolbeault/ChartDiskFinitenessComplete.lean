@@ -426,6 +426,177 @@ noncomputable def holomorphicCoboundaries : HolomorphicCoboundaries 𝔇.overlap
     -- Forster 14.6 lift; see `leray_diagnosis`.  Honest sorry: cross-chart Bott–Tu split.
     sorry
 
+/-! ## §B — The comparison `cechH1 𝔇 0 ↪ supH1`
+
+For FINITENESS a linear INJECTION `cechH1 𝔇 0 ↪ c.supH1` suffices (`FiniteDimensional.of_injective`).
+We build the FORWARD germ→`BddHol` cochain map landing in the SHRINKING side `Cshr` (where boundedness
+is automatic on the relatively-compact `Wov`), show it is a cocycle (lands in `Z1shr`) and kills
+coboundaries (descends to `cechH1 → supH1`), and prove injectivity by the germ-class `𝒪_D`
+sheaf-gluing (`omegaDGerm_separated`/`omegaDGerm_glue`).
+
+The per-overlap atom reads a germ section `g (a,b) ∈ OmegaDGerm 0 (U a ⊓ U b)` through chart `center a`
+and restricts it to the relatively-compact `Wov (a,b)` (whose closure lies in `Uov (a,b) = chartAt ''
+(U a ⊓ U b)`, i.e. `closure_Wov_subset_Uov`).  This is the `holoSectionToBddHol` K-bridge atom; it is
+re-derived inline (the packaged `CechModelCochain.germSectionToBddHolCLM` is import-incompatible with
+`ChartDiskFiniteness` — the `dbarRho_eq_zero_of_notMem` duplicate-def collision). -/
+
+variable (D : Divisor X)
+
+/-- The per-overlap holomorphy domain for the forward map: the ball overlap `U a ⊓ U b`, read in chart
+`center a`.  `U a ⊓ U b ⊆ (chartAt (center a)).source`. -/
+theorem overlap_subset_source (a b : 𝔇.ι) :
+    ((𝔇.U a ⊓ 𝔇.U b : Opens X) : Set X) ⊆ (chartAt (H := ℂ) (𝔇.center a)).source :=
+  (Set.inter_subset_left).trans (𝔇.U_subset_chartAt_source a)
+
+/-- `closure (Wov (a,b)) ⊆ chartAt (center a) '' (U a ⊓ U b)` — the relatively-compact nesting that
+makes the analytic representative bounded on `Wov`.  This is `closure_Wov_subset_Uov` read against the
+defining `Uov = chartAt '' (U a ⊓ U b)`. -/
+theorem closure_Wov_subset_chartImage_overlap (a b : 𝔇.ι) :
+    closure (𝔇.Wov (a, b)) ⊆ (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.U a ⊓ 𝔇.U b : Opens X) : Set X) :=
+  𝔇.closure_Wov_subset_Uov (a, b)
+
+/-- **The per-overlap atom** (inline `germSectionToBddHol` on the shrinking `Wov`).  A germ section
+`g ∈ OmegaDGerm 0 (U a ⊓ U b)`, read through chart `center a` and restricted to `Wov (a,b)`, is a
+`BddHol (Wov (a,b))`.  Value: `holoFn hg ∘ (chartAt (center a)).symm`. -/
+noncomputable def overlapAtom (a b : 𝔇.ι) {g : MGerm (𝔇.U a ⊓ 𝔇.U b)}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) (𝔇.U a ⊓ 𝔇.U b)) :
+    BddHol (𝔇.Wov (a, b)) :=
+  holoSectionToBddHol (𝔇.overlap_subset_source a b)
+    (fun x hx => gextLimRep_chart_analyticAt (holoRep_mem hg) hx)
+    (𝔇.closure_Wov_subset_chartImage_overlap a b) (𝔇.isCompact_closure_Wov (a, b))
+
+@[simp] theorem overlapAtom_toFun_of_mem (a b : 𝔇.ι) {g : MGerm (𝔇.U a ⊓ 𝔇.U b)}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) (𝔇.U a ⊓ 𝔇.U b)) {z : ℂ} (hz : z ∈ 𝔇.Wov (a, b)) :
+    (𝔇.overlapAtom a b hg).toFun z = holoFn hg ((chartAt (H := ℂ) (𝔇.center a)).symm z) :=
+  holoSectionToBddHol_toFun_of_mem _ _ _ _ hz
+
+/-- For `z ∈ Wov (a,b)`, the chart-`a` preimage `(chartAt (center a)).symm z` lies in the overlap
+`U a ⊓ U b` — so `holoFn` (germ-invariant, additive, …) applies there. -/
+theorem chartSymm_mem_overlap (a b : 𝔇.ι) {z : ℂ} (hz : z ∈ 𝔇.Wov (a, b)) :
+    (chartAt (H := ℂ) (𝔇.center a)).symm z ∈ ((𝔇.U a ⊓ 𝔇.U b : Opens X) : Set X) := by
+  obtain ⟨w, hwUV, hwz⟩ := 𝔇.closure_Wov_subset_chartImage_overlap a b (subset_closure hz)
+  have hsrc : w ∈ (chartAt (H := ℂ) (𝔇.center a)).source := 𝔇.overlap_subset_source a b hwUV
+  rwa [← hwz, (chartAt (H := ℂ) (𝔇.center a)).left_inv hsrc]
+
+theorem overlapAtom_add (a b : 𝔇.ι) {g₁ g₂ : MGerm (𝔇.U a ⊓ 𝔇.U b)}
+    (hg₁ : g₁ ∈ OmegaDGerm (0 : Divisor X) (𝔇.U a ⊓ 𝔇.U b))
+    (hg₂ : g₂ ∈ OmegaDGerm (0 : Divisor X) (𝔇.U a ⊓ 𝔇.U b)) :
+    𝔇.overlapAtom a b (Submodule.add_mem _ hg₁ hg₂)
+      = 𝔇.overlapAtom a b hg₁ + 𝔇.overlapAtom a b hg₂ := by
+  refine BddHol.toFun_injective (funext fun z => ?_)
+  by_cases hz : z ∈ 𝔇.Wov (a, b)
+  · rw [BddHol.toFun_add, Pi.add_apply,
+      overlapAtom_toFun_of_mem _ _ _ (Submodule.add_mem _ hg₁ hg₂) hz,
+      overlapAtom_toFun_of_mem _ _ _ hg₁ hz, overlapAtom_toFun_of_mem _ _ _ hg₂ hz]
+    exact holoFn_add hg₁ hg₂ (Submodule.add_mem _ hg₁ hg₂) (𝔇.chartSymm_mem_overlap a b hz)
+  · rw [BddHol.toFun_add, Pi.add_apply,
+      (𝔇.overlapAtom a b (Submodule.add_mem _ hg₁ hg₂)).zero_off z hz,
+      (𝔇.overlapAtom a b hg₁).zero_off z hz,
+      (𝔇.overlapAtom a b hg₂).zero_off z hz, add_zero]
+
+theorem overlapAtom_smul (a b : 𝔇.ι) (c : ℂ) {g : MGerm (𝔇.U a ⊓ 𝔇.U b)}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) (𝔇.U a ⊓ 𝔇.U b)) :
+    𝔇.overlapAtom a b (Submodule.smul_mem _ c hg) = c • 𝔇.overlapAtom a b hg := by
+  refine BddHol.toFun_injective (funext fun z => ?_)
+  by_cases hz : z ∈ 𝔇.Wov (a, b)
+  · rw [BddHol.toFun_smul, Pi.smul_apply,
+      overlapAtom_toFun_of_mem _ _ _ (Submodule.smul_mem _ c hg) hz,
+      overlapAtom_toFun_of_mem _ _ _ hg hz]
+    exact holoFn_smul c hg (Submodule.smul_mem _ c hg) (𝔇.chartSymm_mem_overlap a b hz)
+  · rw [BddHol.toFun_smul, Pi.smul_apply,
+      (𝔇.overlapAtom a b (Submodule.smul_mem _ c hg)).zero_off z hz,
+      (𝔇.overlapAtom a b hg).zero_off z hz, smul_zero]
+
+/-- **The per-overlap atom as a `ℂ`-linear map** `OmegaDGerm 0 (U a ⊓ U b) →ₗ[ℂ] BddHol (Wov (a,b))`. -/
+noncomputable def overlapAtomCLM (a b : 𝔇.ι) :
+    (OmegaDGerm (0 : Divisor X) (𝔇.U a ⊓ 𝔇.U b)) →ₗ[ℂ] BddHol (𝔇.Wov (a, b)) where
+  toFun g := 𝔇.overlapAtom a b g.2
+  map_add' g₁ g₂ := 𝔇.overlapAtom_add a b g₁.2 g₂.2
+  map_smul' c g := 𝔇.overlapAtom_smul a b c g.2
+
+@[simp] theorem overlapAtomCLM_apply (a b : 𝔇.ι) {g : MGerm (𝔇.U a ⊓ 𝔇.U b)}
+    (hg : g ∈ OmegaDGerm (0 : Divisor X) (𝔇.U a ⊓ 𝔇.U b)) :
+    𝔇.overlapAtomCLM a b ⟨g, hg⟩ = 𝔇.overlapAtom a b hg := rfl
+
+/-! ### The forward cochain map `↥(cocycles1 0) → Cshr`, and its image in `Z1shr` -/
+
+/-- **The forward germ→`BddHol` cochain map** `↥(cocycles1 0) →ₗ[ℂ] Cshr`.  Componentwise the
+per-overlap atom: a Čech germ cocycle `g`'s `(a,b)`-component (an `OmegaDGerm 0 (U a ⊓ U b)` section,
+`cocycle_mem`) becomes a `BddHol (Wov (a,b))` via its analytic representative restricted to the
+relatively-compact `Wov (a,b)`.  `ℂ`-linear (each component is, `overlapAtomCLM`). -/
+noncomputable def cechToCshr :
+    ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) →ₗ[ℂ] 𝔇.overlapData.Cshr where
+  toFun g := fun p => 𝔇.overlapAtom p.1 p.2 (cocycle_mem 𝔇 g p.1 p.2)
+  map_add' g₁ g₂ := by
+    funext p
+    exact 𝔇.overlapAtom_add p.1 p.2 (cocycle_mem 𝔇 g₁ p.1 p.2) (cocycle_mem 𝔇 g₂ p.1 p.2)
+  map_smul' c g := by
+    funext p
+    exact 𝔇.overlapAtom_smul p.1 p.2 c (cocycle_mem 𝔇 g p.1 p.2)
+
+theorem cechToCshr_apply_toFun (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
+    (p : 𝔇.overlapData.J) {z : ℂ} (hz : z ∈ 𝔇.Wov p) :
+    (𝔇.cechToCshr g p).toFun z
+      = holoFn (cocycle_mem 𝔇 g p.1 p.2) ((chartAt (H := ℂ) (𝔇.center p.1)).symm z) := by
+  obtain ⟨a, b⟩ := p
+  exact 𝔇.overlapAtom_toFun_of_mem a b (cocycle_mem 𝔇 g a b) hz
+
+/-- The transition point identity for a triple-overlap chart point: for `x ∈ U a ⊓ U b ⊓ U c`,
+`(chart_b).symm (τ_{ab} (chart_a x)) = x`.  (`τ_{ab} (chart_a x) = chart_b x` by
+`coverTransition_apply`, then `(chart_b).symm (chart_b x) = x`.) -/
+theorem chartSymm_coverTransition_eq (a b c : 𝔇.ι) {x : X}
+    (hx : x ∈ (𝔇.U a ⊓ 𝔇.U b ⊓ 𝔇.U c : Opens X)) :
+    (chartAt (H := ℂ) (𝔇.center b)).symm
+        (𝔇.coverTransition a b ((chartAt (H := ℂ) (𝔇.center a)) x)) = x := by
+  rw [𝔇.coverTransition_apply a b ⟨hx.1.1, hx.1.2⟩,
+    (chartAt (H := ℂ) (𝔇.center b)).left_inv (𝔇.U_subset_chartAt_source b hx.1.2)]
+
+/-- **The forward map lands in `Z1shr`** (`δ¹` vanishes).  Pointwise on `WovTriple t`, the three terms
+reduce — via the transition point identity and the cocycle relation at the `holoFn` level
+(`holoFn_cocycle_add`) — to `0`. -/
+theorem cechToCshr_mem_Z1shr (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) :
+    𝔇.cechToCshr g ∈ (𝔇.holomorphicCoboundaries).Z1shr := by
+  rw [HolomorphicCoboundaries.Z1shr, LinearMap.mem_ker]
+  show 𝔇.delta1Model (𝔇.cechToCshr g) = 0
+  ext t
+  apply BddHol.toFun_injective
+  funext z
+  by_cases hz : z ∈ 𝔇.WovTriple t
+  · rw [show ((0 : 𝔇.C2Holo) t).toFun z = 0 from rfl, delta1Model_apply_apply _ _ _ hz]
+    obtain ⟨a, b, c⟩ := t
+    -- the base point `x ∈ U a ⊓ U b ⊓ U c`, with `z = chart_a x`
+    obtain ⟨x, hx, hxz⟩ := id hz
+    have hxmem : x ∈ (𝔇.U a ⊓ 𝔇.U b ⊓ 𝔇.U c : Opens X) :=
+      ⟨⟨𝔇.closure_shrinkSet_subset_U a (subset_closure hx.1.1),
+        𝔇.closure_shrinkSet_subset_U b (subset_closure hx.1.2)⟩,
+        𝔇.closure_shrinkSet_subset_U c (subset_closure hx.2)⟩
+    -- evaluate the three components
+    rw [𝔇.cechToCshr_apply_toFun _ _ (𝔇.mapsTo_coverTransition_WovTriple_shrink a b c hz),
+      𝔇.cechToCshr_apply_toFun _ _ (𝔇.WovTriple_subset_Wov_fst_trd a b c hz),
+      𝔇.cechToCshr_apply_toFun _ _ (𝔇.WovTriple_subset_Wov_fst_snd a b c hz)]
+    -- rewrite the chart-symm of each point to `x`
+    have hza : (chartAt (H := ℂ) (𝔇.center a)).symm z = x := by
+      rw [← hxz, (chartAt (H := ℂ) (𝔇.center a)).left_inv
+        (𝔇.U_subset_chartAt_source a hxmem.1.1)]
+    have hzb : (chartAt (H := ℂ) (𝔇.center b)).symm
+        (𝔇.coverTransition a b z) = x := by
+      rw [← hxz]; exact 𝔇.chartSymm_coverTransition_eq a b c hxmem
+    rw [hza, hzb]
+    -- `holoFn (g(b,c)) x - holoFn (g(a,c)) x + holoFn (g(a,b)) x = 0`
+    rw [holoFn_cocycle_add 𝔇 g a b c hxmem]
+    ring
+  · rw [show ((0 : 𝔇.C2Holo) t).toFun z = 0 from rfl,
+      (𝔇.delta1Model (𝔇.cechToCshr g) t).zero_off z hz]
+
+/-- **The forward map corestricted to `Z1shr`** `↥(cocycles1 0) →ₗ[ℂ] Z1shr`. -/
+noncomputable def cechToZ1shr :
+    ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) →ₗ[ℂ] (𝔇.holomorphicCoboundaries).Z1shr :=
+  (𝔇.cechToCshr).codRestrict (𝔇.holomorphicCoboundaries).Z1shr 𝔇.cechToCshr_mem_Z1shr
+
+@[simp] theorem cechToZ1shr_coe (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) :
+    ((𝔇.cechToZ1shr g : (𝔇.holomorphicCoboundaries).Z1shr) : 𝔇.overlapData.Cshr)
+      = 𝔇.cechToCshr g := rfl
+
 end ChartDiskCover
 
 end Jacobians.Dolbeault
