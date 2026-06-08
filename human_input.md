@@ -1289,3 +1289,35 @@ even though `inferInstance` finds it standalone, add `set_option backward.isDefE
 false` (the repo's Dolbeault files already do). (c) Keep a canonical book open (Forster) and map each
 Lean object to its theorem number before coding. Memory: [[project_forster_13_2_done]],
 [[reference_module_real_diamond]].
+
+---
+
+## 2026-06-08 (later) — Gate A §VIII.3 monodromy: symmetric-invariance lever
+
+Input: "Close the §VIII.3 monodromy (∑Res=0, Gate A) using the KEY LEVER prior rounds missed: the
+trace is monodromy-INVARIANT (symmetric sum over the fibre), so it needs the canonical fibre, NOT a
+global continuous sheet-labeling."
+
+Decisive finding: the prior `MovingSheetSelection.hsel` (`∀ᶠ b', ∃ e : (Φ b').ι ≃ D.ι, …`) was ALREADY
+pointwise-existential — the "no global continuous sheet-labeling" obstruction was indeed false. The
+residual was purely to PRODUCE the per-`b'` bijection, which exists from set-equality of the two fibre
+enumerations (the symmetric/labeling-independent content). Built (all axiom-clean):
+- `equivOfInjective_image_eq` (two injective same-image enumerations ⇒ value-matching bijection) +
+  `MovingCoherenceDatum.ofSheetSectionsSet` (set-form, no labeling) — `FormTraceMovingFibreSymm.lean`.
+- `MovingSheetSelectionSet` / `residueSum_eq_zero_of_movingSheetSelectionSet` — set-form Gate-A
+  reduction, NO labeling — `FormTraceMovingFibreSetSelection.lean`.
+- `MovingCoherenceDatum.ofSphereSheetSystemSet` + `canon_of_fibre_enumeration` (set-equality from
+  `LocalSheetSystem.fibre_eq`; Φ-content = "Φ b' is the fibre as a set") — `FormTraceMovingFibreSphereSet.lean`.
+- BRANCH VALUES (the genuine residual, not labeling): `analyticAt_valueChartTrace_off_centres` extends
+  the trace across branch points via Riemann's removable singularity
+  (`Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt`) — only input is continuity,
+  never a sheet system — `FormTraceBranchExtension.lean`.
+- Capstone `BranchAwareTraceSelection` / `residueSum_eq_zero_of_branchAwareSelection` (symmetric lever +
+  removable singularity, via `residueSum_eq_zero_of_glue`) — `FormTraceBranchAwareSelection.lean`.
+
+Remaining for UNCONDITIONAL Gate A (diagnosed): construct one `BranchAwareTraceSelection` for a real
+adapted cover = (i) global canonical `Φ` enumerating the fibre at each value, (ii) the per-value
+moving-sheet coherence data from sphere sheets (set-form, dischargeable at regular values), (iii) the
+branch-value CONTINUITY `hbranch` (the §VIII.3 boundedness/Riemann-extension — genuine analytic content),
+(iv) `∞`-glue / junk-freeness / genus-0. The monodromy-LABELING obstruction is GONE. Memory:
+[[project_serre_17_repointing]], [[feedback_prefer_standard_proofs]].
