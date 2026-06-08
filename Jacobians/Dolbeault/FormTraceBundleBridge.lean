@@ -154,4 +154,37 @@ theorem traceLocalCoeff_traceFun_eq_sheetSum (ω₀ αBr : HolomorphicOneForms X
     (Finset.sum_congr rfl (fun i _ =>
       sheetPullback_one_eq_g_mul ω₀ αBr g (S.sheet i) (((z : ℂ) : RiemannSphere)) (hαBr i)))
 
+/-! ### The per-sheet match: planar moving summand = bundle summand
+
+Both the planar fibre-trace summand (read in the value chart along the sphere sheet) and the bundle
+per-sheet summand reduce to the *self-chart intrinsic* summand `g (P)·localRep ω₀ P P·deriv(…)`.  Hence
+they are equal, term by term over the sheet index — *no reindexing*, the two sums share the index
+`Fin S.n`. -/
+
+/-- **Planar moving summand = bundle summand (per sheet).**  For the sphere sheet `s := S.sheet i`,
+read at the value point `coe z`, the planar moving summand (value-chart `chartIntegrand·deriv` along
+`s (coe ·)`) equals the `g`-weighted bundle per-sheet covector:
+
+> `chartIntegrand ω₀ g (s (coe z)) (chart_{s(coe z)}(s (coe z)))·deriv (fun w => chart_{s(coe z)}(s (coe w))) z
+>    = g (s (coe z))·sheetPullback ω₀ s (coe z) 1`.
+
+Both equal `g (s(coe z))·localRep ω₀ (s(coe z))(s(coe z))·deriv(chart_{s(coe z)} ∘ s(coe ·)) z`: the LHS
+by `movingSummand_eq_selfChart` (the `dz`-Jacobian cancellation at the self chart `xs = s(coe z)`), the
+RHS by the linchpin `sheetPullback_one_eq_coeffAt_mul_deriv` + `coeffAt_chartCenter`. -/
+theorem movingSummand_eq_g_sheetPullback (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (s : RiemannSphere → X) {z : ℂ} (hs : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) s (((z : ℂ) : RiemannSphere))) :
+    chartIntegrand ω₀ g (s (((z : ℂ) : RiemannSphere)))
+        ((chartAt ℂ (s (((z : ℂ) : RiemannSphere)))) (s (((z : ℂ) : RiemannSphere))))
+        * deriv (fun w => (chartAt ℂ (s (((z : ℂ) : RiemannSphere)))) (s (((w : ℂ) : RiemannSphere)))) z
+      = g (s (((z : ℂ) : RiemannSphere))) * sheetPullback ω₀ s (((z : ℂ) : RiemannSphere)) (1 : ℂ) := by
+  -- RHS via the linchpin (read in the moving `s(coe z)`-chart, source chart `chartCoe` on the sphere).
+  rw [FormTraceSheet.sheetPullback_one_eq_coeffAt_mul_deriv ω₀ s hs]
+  -- The source sphere chart is `chartCoe`: `(chartAt (coe z)).symm w = coe w`, `chartCoe (coe z) = z`.
+  simp only [RiemannSphere.chartAt_coe, RiemannSphere.chartCoe_symm_apply,
+    RiemannSphere.chartCoe_apply_coe]
+  -- LHS: unfold `chartIntegrand`, the `g`-eval at the chart centre, and `coeffAt = localRep`.
+  rw [chartIntegrand, (chartAt ℂ (s (((z : ℂ) : RiemannSphere)))).left_inv
+    (mem_chart_source ℂ (s (((z : ℂ) : RiemannSphere))))]
+  ring
+
 end Jacobians.Dolbeault.FormTraceGlobal
