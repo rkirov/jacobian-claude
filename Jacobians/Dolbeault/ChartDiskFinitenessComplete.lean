@@ -32,6 +32,7 @@
   Conventions follow `ChartDiskFiniteness.lean` / `CechModelHolomorphicDelta.lean`.
 -/
 import Jacobians.Dolbeault.ChartDiskFiniteness
+import Jacobians.Dolbeault.ChartDiskLeray
 import Jacobians.Dolbeault.CechModelHolomorphicDelta
 import Jacobians.Dolbeault.CechRefinementInjective
 
@@ -398,40 +399,68 @@ We package the δ-complex above into a `HolomorphicCoboundaries 𝔇.overlapData
 space is `∀ a, BddHol (Uov (a,a))` (bounded-holomorphic on each diagonal cover-open), `C2`/`C2cov`
 are the triple-overlap 2-cochains built above, and the δ's are the model differentials.
 
-The `leray` field is the Forster 14.6 cover→shrinking lift.  Its ANALYTIC HEART is the proven
-`ChartDiskCover.forster146_lift` (the ball geometry removes the two-scale cutoff dilemma).  Wiring it
-to the `Cshr`/`Ccov` cochains needs the cross-chart Bott–Tu smooth split of the shrinking cocycle into
-a `BallSplitData` (the documented gap in `ChartCoverDbarGlue` — the cross-chart telescoping of the
-PoU split into the `BallSplitData.split` identity, plus the function ↔ `BddHol`/germ identification of
-the resulting `η`/`x`).  This is the single honest `sorry` of the file; see `leray_diagnosis`. -/
+The `leray` field is the Forster 14.6 cover→shrinking lift; see the (corrected) `leray_diagnosis`.
+The genuinely-new foundational input — a SHRINKING-level smooth partition of unity on `𝔇`, summing to
+`1` on all of `X` — is built in `ChartDiskLeray.lean` (`ChartDiskCover.shrinkPoU`). -/
 
 /-- **The structural δ-complex on `𝔇.overlapData`, with the `leray` field.**  All structural fields
 (`δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm`) are the proven model differentials of §A; `leray` is the Forster
-14.6 lift whose analytic heart is `forster146_lift`.
+14.6 lift.
 
-LERAY DIAGNOSIS (the single honest sorry).  The Forster 14.6 lift `forster146_lift` (the proven
-analytic heart, `ChartDiskFiniteness.lean`) takes a `BallSplitData 𝒮` whose cocycle field `𝒮.s a b`
-is **holomorphic on the FULL overlap `Uov (a,b)`** (`s_holo`) and telescopes a smooth split there.
-That interface models a cocycle that is *already* holomorphic on the full overlaps — STRICTLY STRONGER
-than the `leray` input, a SHRINKING cocycle `s : Cshr` (`s_{ab} ∈ BddHol (Wov (a,b))`, holomorphic
-only on the relatively-compact `Wov`).  Bridging the two is the genuine remaining analytic gap and
-needs MORE than `forster146_lift`:
+LERAY DIAGNOSIS (the single honest sorry — CORRECTED; the construction IS sound on a ball cover, the
+earlier "needs overlap-acyclicity / blocked like Montel" reading was WRONG).
 
-  * the cross-chart Bott–Tu smooth split of the shrinking cocycle — a PoU `(ψ_c)` subordinate to the
-    cover `(U_c)` (`X` compact, `SmoothPartitionOfUnity.exists_isSubordinate`) gives `g_a := ∑_c ψ_c ·
-    (chart-read of s_{ca})`, smooth on the ball `U_a`, with `g_b∘τ_{ab} − g_a = s_{ab}` ON `Wov` (the
-    cocycle relation + `∑ψ=1`).  But `g_b∘τ − g_a` is SMOOTH, not holomorphic, on `Uov` — so it is NOT
-    a valid `BallSplitData.s` (which `s_holo` requires holomorphic on `Uov`).  The correct argument
-    instead solves `∂̄h_a = ∂̄g_a` per ball-disk (Forster 13.2 / `DbarOpenDisk.dbar_solvable_open_disk`,
-    proven) and sets `η_a := g_a − h_a` (holomorphic on the ball), `x_{ab} := h_b∘τ − h_a` (holomorphic
-    on the overlap by the Wirtinger frame identity, `BallSplitData.dbar_g_frame`-style) — i.e. the body
-    of `forster146_lift`, but driven by the smooth split rather than fed a ready `BallSplitData`;
-  * the function ↔ `BddHol`/germ repackaging of the resulting `η`/`x` into the model's `C0`/`Ccov`
-    cochains, and the restriction of the split identity to `Wov` to match `s = δ0 η + ρx` as `Cshr`.
+Input: a SHRINKING cocycle `s : Cshr` (`s_{ab} ∈ BddHol (Wov (a,b))`, holomorphic only on the
+relatively-compact shrinking `Wov (a,b) = φ_a '' (V_a ∩ V_b)`), with `δ¹s = 0`.  Output: `η : C0`,
+`x : Ccov` (a holomorphic COVER cocycle, on the FULL ball overlaps `Uov`), with `s = δ⁰η + ρ x`.
 
-This cross-chart support tracking + ∂̄-split + repackaging is ~hundreds of lines, documented as unbuilt
-in `ChartCoverDbarGlue.lean` ("the cross-chart telescoping … assembly into the holomorphic cover
-cocycle … left for the corrected model").  It is the one piece NOT covered by `forster146_lift`. -/
+THE SOUND CONSTRUCTION (the global-form-via-shrinking-cover route — this is what the BALL geometry
+unblocks, NOT a cutoff bump):
+
+  STEP 1 (shrinking-level split).  Take the SHRINKING-level smooth PoU `(ρ_c) = 𝔇.shrinkPoU`
+    (`ChartDiskLeray.lean`: subordinate to `(V_c)`, `∑ρ = 1` on all of `X`).  Chart-`a`-read
+    `g_a := ∑_c ρ̂_c · (s_{ca} ∘ τ_{ac})`.  KEY: `g_a` is smooth ON `V_a` (i.e. on the diagonal
+    shrinking image `Wov (a,a)`) — the two opens `φ_a '' (V_c ∩ V_a)` (where `s_{ca}` lives) and
+    `φ_a '' (V_a \ tsupport ρ_c)` (where `ρ_c = 0`) cover `φ_a '' (V_a)`, so each term is smooth there
+    with no boundary discontinuity.  (`g_a` is NOT smooth on the full ball `U_a` — the cocycle is only
+    on the shrinkings; this is why the COVER-level PoU of the Montel model fails.)  The cocycle
+    relation + `∑ρ=1` give the telescoping `g_b∘τ_{ab} − g_a = s_{ab}` on `Wov (a,b)`.
+
+  STEP 2 (glue to a GLOBAL `(0,1)`-form).  `ω̂_a := ∂̄g_a` on `V_a`.  Since `g_b∘τ_{ab} − g_a = s_{ab}`
+    is HOLOMORPHIC on `Wov (a,b)`, the cross-chart Wirtinger frame identity (`BallSplitData.dbar_g_frame`
+    / `dbarDisk_comp_holo`) gives `∂̄g_a = conj(τ_{ab}′)·∂̄g_b∘τ_{ab}` on `Wov (a,b) = V_a ∩ V_b`.  So
+    the `∂̄g_a` AGREE as a `(0,1)`-form on overlaps and — because the SHRINKINGS `(V_a)` COVER `X`
+    (`iUnion_shrinkSet_eq_univ`) — GLUE to a single GLOBAL smooth `(0,1)`-form `ω̂` on `X`.  THIS is the
+    crux the ball geometry permits: the global form's chart-`a` read `Ω_a` is smooth on the FULL ball
+    `φ_a '' (U_a)` (a chart read of a global smooth form), and the frame identity `Ω_a =
+    conj(τ_{ab}′)·Ω_b∘τ_{ab}` then holds on the FULL `Uov (a,b)` (a global-form identity), NOT merely
+    on `Wov`.  (On the Montel cover the cover sets are not balls, so this last step — full-ball chart
+    read + per-ball solve — has no `dbar_solvable_open_disk` to call; on a `ChartDiskCover` it does.)
+
+  STEP 3 (per-ball solve, NO cutoff).  Solve `∂̄h_a = Ω_a` on the FULL ball `φ_a '' (U_a)` via Forster
+    13.2 `DbarOpenDisk.dbar_solvable_open_disk` (the datum `Ω_a` is smooth on the ball).  No cutoff is
+    needed (the datum is the global form's chart read, already defined on the whole ball).
+
+  STEP 4 (assemble).  `x_{ab} := h_b∘τ_{ab} − h_a` is `ℂ`-differentiable on the FULL `Uov (a,b)`:
+    `∂̄(h_b∘τ) = conj(τ′)·Ω_b∘τ = Ω_a = ∂̄h_a` there (frame identity on full `Uov`), so `∂̄x_{ab} = 0`
+    (`BallSplitData.differentiableOn_x`-style).  `η_a := g_a − h_a` is `ℂ`-differentiable on `V_a`
+    (`∂̄η_a = ∂̄g_a − Ω_a = 0` there).  On `Wov (a,b)`: `s_{ab} = g_b∘τ − g_a = (η_b∘τ − η_a) + x_{ab}`
+    (the `h`-terms regroup) — i.e. `s = δ⁰η + ρ x`.
+
+  STEP 5 (package as `BddHol`).  `x a b := BddHol.ofAnalyticOnOfRelCompact` of `x_{ab}` (analytic on
+    the OPEN `Uov`; an element of `Ccov`); `δ¹cov x = 0` (the same frame/cocycle algebra as
+    `cechToCshr_mem_Z1shr`).  `η a := BddHol.ofAnalyticOnOfRelCompact` of `η_a` on the diagonal
+    shrinking `Wov (a,a) ⋐ φ_a '' (V_a)` (an element of `C0Holo`).  The `Cshr` identity `s = δ0 η +
+    rhoRaw x` is the STEP-4 pointwise identity on each `Wov (a,b)` lifted through `BddHol.toFun_injective`.
+
+WHAT IS BUILT (`ChartDiskLeray.lean`): the shrinking-level PoU `shrinkPoU` (STEP 1's PoU) — the
+foundational unblock the Montel model lacked.  WHAT REMAINS (this honest `sorry`): STEPs 1b–5 — the
+chart-read split `g_a` + its `V_a`-smoothness + telescoping (STEP 1 body), the GLUING of `∂̄g_a` into
+the global form `ω̂` with a smooth full-ball chart read (STEP 2 — the manifold-section gluing, the bulk),
+the per-ball solve (STEP 3, = `dbar_solvable_open_disk`), the assembly (STEP 4, = the body of
+`forster146_lift`'s member theorems with `Ω_a` in place of `∂̄g_a`), and the `BddHol` packaging (STEP 5).
+It is ~hundreds of lines of manifold-form gluing + planar ∂̄; the analytic engine (13.2, the frame
+identity, the per-ball assembly) is all proven, so the residual is the global-form gluing + bookkeeping. -/
 noncomputable def holomorphicCoboundaries : HolomorphicCoboundaries 𝔇.overlapData where
   C0 := 𝔇.C0Holo
   C2 := 𝔇.C2Holo
@@ -442,7 +471,9 @@ noncomputable def holomorphicCoboundaries : HolomorphicCoboundaries 𝔇.overlap
   hδδ := 𝔇.delta1_comp_delta0
   hcomm := 𝔇.hcomm
   leray := by
-    -- Forster 14.6 lift; see `leray_diagnosis`.  Honest sorry: cross-chart Bott–Tu split.
+    -- Forster 14.6 lift; see the CORRECTED `leray_diagnosis` above.  Foundation (the shrinking-level
+    -- PoU `𝔇.shrinkPoU`) is built in `ChartDiskLeray.lean`; the honest sorry is STEPs 1b–5 (the
+    -- global-form gluing of `∂̄g_a` + per-ball solve + assembly + `BddHol` packaging).
     sorry
 
 /-! ## §B — The comparison `cechH1 𝔇 0 ↪ supH1`
