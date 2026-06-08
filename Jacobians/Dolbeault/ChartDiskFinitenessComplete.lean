@@ -1173,9 +1173,118 @@ theorem coverBddHol_toFun_of_mem (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) {z 
       = holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b) ((chartAt (H := ℂ) (𝔇.center a)).symm z) :=
   BddHol.ofAnalyticOn_toFun_of_mem _ _ _ hz
 
-/-- `x : Ccov` — the holomorphic cover cocycle. -/
+/-- `x : Ccov` — the holomorphic cover cocycle (the NEGATED per-disk cocycle: the boundary-map sign
+convention `(δ⁰c)(a,b) = c_b − c_a` makes the lift `s = δ⁰η + ρx` come out with `x = −x'`). -/
 noncomputable def coverCochain (s : 𝔇.overlapData.Cshr) : 𝔇.overlapData.Ccov :=
-  fun p => 𝔇.coverBddHol s p.1 p.2
+  fun p => -(𝔇.coverBddHol s p.1 p.2)
+
+theorem coverCochain_toFun_of_mem (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) {z : ℂ}
+    (hz : z ∈ 𝔇.Uov (a, b)) :
+    (𝔇.coverCochain s (a, b)).toFun z
+      = -holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b) ((chartAt (H := ℂ) (𝔇.center a)).symm z) := by
+  show (-(𝔇.coverBddHol s a b)).toFun z = _
+  rw [BddHol.toFun_neg, Pi.neg_apply, 𝔇.coverBddHol_toFun_of_mem s a b hz]
+
+/-! ## §A2-leray — the cocycle property of `x` and the lift identity `s = δ⁰η + ρx` -/
+
+/-- `chart_a w ∈ UovTriple (a,b,c)` for `w ∈ U_a ∩ U_b ∩ U_c`. -/
+theorem chart_mem_UovTriple (a b c : 𝔇.ι) {w : X}
+    (hw : w ∈ (𝔇.U a ⊓ 𝔇.U b ⊓ 𝔇.U c : Opens X)) :
+    (chartAt (H := ℂ) (𝔇.center a)) w ∈ 𝔇.UovTriple (a, b, c) :=
+  ⟨w, hw, rfl⟩
+
+/-- **`δ¹cov x = 0`** — the cover cochain `x` is a cocycle.  Pointwise on `UovTriple`, the three
+`holoFn(x'_{··})` values obey the cocycle relation `holoFn_cocycle_add` (`x' ∈ cocycles1`). -/
+theorem coverCochain_mem_Z1cov (s : 𝔇.overlapData.Cshr) :
+    𝔇.delta1CovModel (𝔇.coverCochain s) = 0 := by
+  ext t
+  apply BddHol.toFun_injective
+  funext z
+  by_cases hz : z ∈ 𝔇.UovTriple t
+  · rw [show ((0 : 𝔇.C2Cov) t).toFun z = 0 from rfl,
+      𝔇.delta1CovModel_apply_apply (𝔇.coverCochain s) t hz]
+    obtain ⟨a, b, c⟩ := t
+    obtain ⟨w, hw, hwz⟩ := id hz
+    -- chart round-trips: `chart_a.symm z = w`, `chart_b.symm (τ_{ab} z) = w`, `chart_a.symm z = w`.
+    have hwa : (chartAt (H := ℂ) (𝔇.center a)).symm z = w := by
+      rw [← hwz, (chartAt (H := ℂ) (𝔇.center a)).left_inv (𝔇.U_subset_chartAt_source a hw.1.1)]
+    have hτw : 𝔇.coverTransition a b z = (chartAt (H := ℂ) (𝔇.center b)) w := by
+      rw [← hwz]; exact 𝔇.coverTransition_apply a b ⟨hw.1.1, hw.1.2⟩
+    have hwb : (chartAt (H := ℂ) (𝔇.center b)).symm (𝔇.coverTransition a b z) = w := by
+      rw [hτw, (chartAt (H := ℂ) (𝔇.center b)).left_inv (𝔇.U_subset_chartAt_source b hw.1.2)]
+    -- evaluate the three negated `holoFn(x')` components.
+    rw [𝔇.coverCochain_toFun_of_mem s b c (𝔇.mapsTo_coverTransition_UovTriple a b c hz),
+      𝔇.coverCochain_toFun_of_mem s a c (𝔇.UovTriple_subset_Uov_fst_trd a b c hz),
+      𝔇.coverCochain_toFun_of_mem s a b (𝔇.UovTriple_subset_Uov_fst_snd a b c hz), hwa, hwb]
+    -- cocycle relation `holoFn x'_{ac} = holoFn x'_{ab} + holoFn x'_{bc}`.
+    rw [holoFn_cocycle_add 𝔇 (𝔇.coverCocycleGerm s) a b c hw]
+    ring
+  · rw [show ((0 : 𝔇.C2Cov) t).toFun z = 0 from rfl,
+      (𝔇.delta1CovModel (𝔇.coverCochain s) t).zero_off z hz]
+
+/-- **The lift identity** `s = δ⁰ η + ρ x` on each `Wov (a,b)`.  Pointwise at `z = φ_a x`
+(`x ∈ V_a ∩ V_b`):
+`(δ⁰η + ρx)_{ab}(z) = (η_b(x) − η_a(x)) + (−(u_b(x) − u_a(x)))`
+`= ((u_b − G_b) − (u_a − G_a)) − (u_b − u_a) = G_a(x) − G_b(x) = holoFn σ_{ab}(x) = s_{ab}(z)`. -/
+theorem leray_identity (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) :
+    s = 𝔇.delta0Model (𝔇.etaCochain s hs) + 𝔇.overlapData.rhoRaw (𝔇.coverCochain s) := by
+  ext p
+  apply BddHol.toFun_injective
+  funext z
+  obtain ⟨a, b⟩ := p
+  by_cases hz : z ∈ 𝔇.Wov (a, b)
+  · obtain ⟨x, ⟨hxa, hxb⟩, hxz⟩ := id hz
+    have hxab : x ∈ ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b : Opens X) : Set X) := ⟨hxa, hxb⟩
+    have hxaU : x ∈ ((𝔇.U a : Opens X) : Set X) := 𝔇.shrinkOpens_le_U a hxa
+    have hxbU : x ∈ ((𝔇.U b : Opens X) : Set X) := 𝔇.shrinkOpens_le_U b hxb
+    have hxUov : x ∈ ((𝔇.U a ⊓ 𝔇.U b : Opens X) : Set X) := ⟨hxaU, hxbU⟩
+    -- chart round-trips.
+    have hwa : (chartAt (H := ℂ) (𝔇.center a)).symm z = x := by
+      rw [← hxz, (chartAt (H := ℂ) (𝔇.center a)).left_inv (𝔇.U_subset_chartAt_source a hxaU)]
+    have hτz : 𝔇.coverTransition a b z = (chartAt (H := ℂ) (𝔇.center b)) x := by
+      rw [← hxz]; exact 𝔇.coverTransition_apply a b ⟨hxaU, hxbU⟩
+    have hwb : (chartAt (H := ℂ) (𝔇.center b)).symm (𝔇.coverTransition a b z) = x := by
+      rw [hτz, (chartAt (H := ℂ) (𝔇.center b)).left_inv (𝔇.U_subset_chartAt_source b hxbU)]
+    have hzWaa : z ∈ 𝔇.Wov (a, a) := by rw [← hxz]; exact ⟨x, ⟨hxa, hxa⟩, rfl⟩
+    have hτzWbb : 𝔇.coverTransition a b z ∈ 𝔇.Wov (b, b) := by
+      rw [hτz]; exact ⟨x, ⟨hxb, hxb⟩, rfl⟩
+    have hzUov : z ∈ 𝔇.Uov (a, b) := ⟨x, hxUov, hxz⟩
+    -- LHS `s_{ab}(z) = holoFn σ_{ab}(x)`.
+    have hLHS : (s (a, b)).toFun z = holoFn (𝔇.shrinkGerm s a b).2 x := by
+      rw [𝔇.shrinkGerm_holoFn s a b hxab, hxz]
+    rw [hLHS]
+    -- RHS.
+    show holoFn (𝔇.shrinkGerm s a b).2 x
+      = (𝔇.delta0Model (𝔇.etaCochain s hs) (a, b)
+          + 𝔇.overlapData.rhoRaw (𝔇.coverCochain s) (a, b)).toFun z
+    rw [BddHol.toFun_add, Pi.add_apply]
+    -- `(δ0 η)(a,b)(z) = η_b(τ z) − η_a(z)`.
+    rw [𝔇.delta0Model_apply_apply (𝔇.etaCochain s hs) (a, b) hz]
+    show holoFn (𝔇.shrinkGerm s a b).2 x
+      = ((𝔇.etaCochain s hs b).toFun (𝔇.coverTransition a b z)
+          - (𝔇.etaCochain s hs a).toFun z)
+        + (𝔇.overlapData.rhoRaw (𝔇.coverCochain s) (a, b)).toFun z
+    rw [show 𝔇.etaCochain s hs b = 𝔇.etaBddHol s hs b from rfl,
+      show 𝔇.etaCochain s hs a = 𝔇.etaBddHol s hs a from rfl,
+      𝔇.etaBddHol_toFun_of_mem s hs b hτzWbb, 𝔇.etaBddHol_toFun_of_mem s hs a hzWaa,
+      hwb, hwa]
+    -- `(ρ x)(a,b)(z) = x(a,b)(z) = −(u_b(x) − u_a(x))`.
+    simp only [HolomorphicDiskOverlapData.rhoRaw_apply, overlapData_Wov_eq, overlapData_Uov_eq]
+    rw [BddHol.restrictOpenCLM_toFun_of_mem _ _ hz,
+      𝔇.coverCochain_toFun_of_mem s a b hzUov, hwa, 𝔇.coverCocycleGerm_holoFn s a b hxUov]
+    -- `η_a x = u_a x − G_a x`, `η_b x = u_b x − G_b x`; assemble to `G_a − G_b = holoFn σ_{ab}`.
+    show holoFn (𝔇.shrinkGerm s a b).2 x
+      = (𝔇.etaFn s b x - 𝔇.etaFn s a x)
+        + -(diskVal 𝔇 b (𝔇.glueForm s) x - diskVal 𝔇 a (𝔇.glueForm s) x)
+    simp only [etaFn, primVal]
+    have hdiff := 𝔇.globalPrim_diff s hs a b hxab
+    linear_combination -hdiff
+  · show (s (a, b)).toFun z
+      = (𝔇.delta0Model (𝔇.etaCochain s hs) (a, b)
+          + 𝔇.overlapData.rhoRaw (𝔇.coverCochain s) (a, b)).toFun z
+    rw [(s (a, b)).zero_off z hz, BddHol.toFun_add, Pi.add_apply,
+      (𝔇.delta0Model (𝔇.etaCochain s hs) (a, b)).zero_off z hz,
+      (𝔇.overlapData.rhoRaw (𝔇.coverCochain s) (a, b)).zero_off z hz, add_zero]
 
 
 /-- **The structural δ-complex on `𝔇.overlapData`, with the `leray` field.**  All structural fields
@@ -1245,11 +1354,14 @@ noncomputable def holomorphicCoboundaries : HolomorphicCoboundaries 𝔇.overlap
   δ1cov := 𝔇.delta1CovModel
   hδδ := 𝔇.delta1_comp_delta0
   hcomm := 𝔇.hcomm
-  leray := by
-    -- Forster 14.6 lift; see the CORRECTED `leray_diagnosis` above.  Foundation (the shrinking-level
-    -- PoU `𝔇.shrinkPoU`) is built in `ChartDiskLeray.lean`; the honest sorry is STEPs 1b–5 (the
-    -- global-form gluing of `∂̄g_a` + per-ball solve + assembly + `BddHol` packaging).
-    sorry
+  leray := fun s hs => by
+    -- The global Bott–Tu form route, fully discharged (§A2-* above): `η := etaCochain` (the
+    -- holomorphic corrector `u_a − G_a`), `x := coverCochain` (the per-disk ∂̄-solve cocycle,
+    -- `dolbeaultToCechCocycle`), `δ¹cov x = 0` (`coverCochain_mem_Z1cov`), and the lift identity
+    -- `s = δ⁰η + ρx` (`leray_identity`).
+    have hs' : 𝔇.delta1Model s = 0 := hs
+    exact ⟨𝔇.etaCochain s hs', 𝔇.coverCochain s, 𝔇.coverCochain_mem_Z1cov s,
+      𝔇.leray_identity s hs'⟩
 
 /-! ## §B — The comparison `cechH1 𝔇 0 ↪ supH1`
 
