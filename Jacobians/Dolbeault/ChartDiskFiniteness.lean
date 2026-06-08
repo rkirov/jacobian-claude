@@ -40,6 +40,7 @@ import Jacobians.Dolbeault.CechModelManifold
 import Jacobians.Dolbeault.DbarDiskCohomology
 import Jacobians.Dolbeault.CechDiskAcyclic
 import Jacobians.Dolbeault.GoodCover
+import Jacobians.Dolbeault.DbarOpenDisk
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -191,6 +192,37 @@ structure BallSplitData where
   split : ∀ a b, ∀ z ∈ 𝔇.Uov (a, b),
     g b (𝔇.coverTransition a b z) - g a z = s a b z
 
+/-- **Local Wirtinger criterion** `∂̄g x = 0 ⟹ ℂ`-differentiable, for `g` only `ℝ`-differentiable at
+`x`.  Local copy (the `CechFinitenessBallSolve` branch is excluded by an import collision with
+`GoodCover`; this avoids it). -/
+theorem differentiableAt_of_dbar_eq_zero_chartDisk {g : ℂ → ℂ} {x : ℂ}
+    (hg : DifferentiableAt ℝ g x) (hdb : DbarDisk.dbar g x = 0) : DifferentiableAt ℂ g x := by
+  rw [differentiableAt_complex_iff_differentiableAt_real]
+  refine ⟨hg, ?_⟩
+  have h2 : (fderiv ℝ g x) 1 + Complex.I * (fderiv ℝ g x) Complex.I = 0 := by
+    have := hdb
+    rw [DbarDisk.dbar] at this
+    field_simp at this
+    linear_combination this
+  have hD1 : (fderiv ℝ g x) 1 = -(Complex.I * (fderiv ℝ g x) Complex.I) := by linear_combination h2
+  rw [hD1, smul_eq_mul, mul_neg, ← mul_assoc, Complex.I_mul_I]; ring
+
+/-- **Planar `∂̄` of a `C^∞`-at-`z` function is `C^∞` at `z`** (`∂̄g z` is a fixed CLM-combination of
+`fderiv ℝ g` at `1, I`; `fderiv ℝ g` is `C^∞` near `z`).  Local copy (the `CechFinitenessBallSolve`
+branch is excluded by an import collision with `GoodCover`; this avoids it). -/
+theorem contDiffAt_dbar_chartDisk {g : ℂ → ℂ} {z : ℂ} (hg : ContDiffAt ℝ (⊤ : ℕ∞) g z) :
+    ContDiffAt ℝ (⊤ : ℕ∞) (DbarDisk.dbar g) z := by
+  have hfd : ContDiffAt ℝ (⊤ : ℕ∞) (fderiv ℝ g) z :=
+    hg.fderiv_right (m := (⊤ : ℕ∞)) (by exact_mod_cast le_top)
+  have h1 : ContDiffAt ℝ (⊤ : ℕ∞) (fun w => (fderiv ℝ g w) (1 : ℂ)) z :=
+    (ContinuousLinearMap.apply ℝ ℂ (1 : ℂ)).contDiff.contDiffAt.comp z hfd
+  have hI : ContDiffAt ℝ (⊤ : ℕ∞) (fun w => (fderiv ℝ g w) Complex.I) z :=
+    (ContinuousLinearMap.apply ℝ ℂ Complex.I).contDiff.contDiffAt.comp z hfd
+  have hsum : ContDiffAt ℝ (⊤ : ℕ∞)
+      (fun w => (2 : ℂ)⁻¹ * ((fderiv ℝ g w) (1 : ℂ) + Complex.I * (fderiv ℝ g w) Complex.I)) z :=
+    contDiffAt_const.mul (h1.add (contDiffAt_const.mul hI))
+  exact hsum.congr_of_eventuallyEq (Filter.Eventually.of_forall fun w => by rw [DbarDisk.dbar])
+
 namespace BallSplitData
 
 variable {𝔇} (𝒮 : 𝔇.BallSplitData)
@@ -253,6 +285,52 @@ theorem dbar_g_frame {a b : 𝔇.ι} {x : X} (hx : x ∈ (𝔇.U a ⊓ 𝔇.U b 
   have hsab0 : DbarDisk.dbar (𝒮.s a b) z = 0 := DbarDisk.dbar_eq_zero_of_differentiableAt hsab
   -- assemble
   rw [← hchain, hcong, hadd, hsab0, add_zero]
+
+/-! ### The per-ball ∂̄-solve and the holomorphic correctors
+
+Solve `∂̄h_a = ∂̄g_a` on the FULL ball `ball (e a) (radius a)` (Forster 13.2 — no cutoff, the cover set
+IS a ball).  `∂̄g_a` is smooth on the ball (∂̄ of the smooth `g_a`), so `dbar_solvable_open_disk`
+applies.  Then `η_a := g_a − h_a` is holomorphic on the ball, and the cover cochain `x_{ab} := h_b∘τ −
+h_a` is holomorphic on the FULL overlap (the frame identity makes `∂̄(h_b∘τ) = ∂̄h_a` there). -/
+
+/-- `∂̄g_a` is `C^∞` on the ball (∂̄ of the smooth split `g_a`). -/
+theorem contDiffOn_dbar_g (a : 𝔇.ι) :
+    ContDiffOn ℝ (⊤ : ℕ∞) (DbarDisk.dbar (𝒮.g a)) (Metric.ball (𝔇.e a) (𝔇.radius a)) := by
+  intro z hz
+  exact (contDiffAt_dbar_chartDisk
+    ((𝒮.g_smooth a).contDiffAt (Metric.isOpen_ball.mem_nhds hz))).contDiffWithinAt
+
+/-- The per-ball ∂̄-solve: `h_a` smooth on `ball (e a) (radius a)` with `∂̄h_a = ∂̄g_a` there (Forster
+13.2 on the full ball — the no-cutoff solve the ball geometry permits). -/
+noncomputable def solve (a : 𝔇.ι) : ℂ → ℂ :=
+  (DbarOpenDisk.dbar_solvable_open_disk (𝔇.e a) (𝔇.radius_pos a) (𝒮.contDiffOn_dbar_g a)).choose
+
+theorem solve_smooth (a : 𝔇.ι) :
+    ContDiffOn ℝ (⊤ : ℕ∞) (𝒮.solve a) (Metric.ball (𝔇.e a) (𝔇.radius a)) :=
+  (DbarOpenDisk.dbar_solvable_open_disk (𝔇.e a) (𝔇.radius_pos a)
+    (𝒮.contDiffOn_dbar_g a)).choose_spec.1
+
+theorem solve_dbar (a : 𝔇.ι) {z : ℂ} (hz : z ∈ Metric.ball (𝔇.e a) (𝔇.radius a)) :
+    DbarDisk.dbar (𝒮.solve a) z = DbarDisk.dbar (𝒮.g a) z :=
+  (DbarOpenDisk.dbar_solvable_open_disk (𝔇.e a) (𝔇.radius_pos a)
+    (𝒮.contDiffOn_dbar_g a)).choose_spec.2 z hz
+
+theorem differentiableAt_solve {a : 𝔇.ι} {z : ℂ} (hz : z ∈ Metric.ball (𝔇.e a) (𝔇.radius a)) :
+    DifferentiableAt ℝ (𝒮.solve a) z :=
+  (𝒮.solve_smooth a).differentiableOn (by norm_num) z hz
+    |>.differentiableAt (Metric.isOpen_ball.mem_nhds hz)
+
+/-- **The holomorphic corrector `η_a := g_a − h_a`** is `ℂ`-differentiable on the FULL ball
+`ball (e a) (radius a)`: `∂̄η_a = ∂̄g_a − ∂̄h_a = 0` (Wirtinger ⟹ holomorphic). -/
+theorem differentiableOn_eta (a : 𝔇.ι) :
+    DifferentiableOn ℂ (fun z => 𝒮.g a z - 𝒮.solve a z)
+      (Metric.ball (𝔇.e a) (𝔇.radius a)) := by
+  intro z hz
+  have hga : DifferentiableAt ℝ (𝒮.g a) z := 𝒮.differentiableAt_g hz
+  have hsa : DifferentiableAt ℝ (𝒮.solve a) z := 𝒮.differentiableAt_solve hz
+  have hdb : DbarDisk.dbar (fun w => 𝒮.g a w - 𝒮.solve a w) z = 0 := by
+    rw [dbarFun_sub hga hsa, 𝒮.solve_dbar a hz, sub_self]
+  exact (differentiableAt_of_dbar_eq_zero_chartDisk (hga.sub hsa) hdb).differentiableWithinAt
 
 end BallSplitData
 
