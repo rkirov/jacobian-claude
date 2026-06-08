@@ -142,4 +142,37 @@ theorem g_weighted_sheetPullback_eq_chartIntegrand_mul_deriv (ω₀ : Holomorphi
     (chartAt ℂ xs).left_inv hmem]
   ring
 
+/-! ### Uniqueness of the holomorphic local inverse (section identification core, step 2 (A))
+
+The planar section `exists_planar_section` (the `fibreTrace` sheet) and the chart-representation of a
+bundle sheet are *both* right-inverses of the same chart map `φ` (analytic, `deriv ≠ 0`) through the
+same point.  By uniqueness of the holomorphic local inverse they germ-agree — the section
+identification half of step 2.  We prove the clean planar uniqueness here. -/
+
+/-- **Uniqueness of the holomorphic local inverse (germ form).**  If `φ` is analytic at `x₀` with
+`deriv φ x₀ ≠ 0` and `φ x₀ = b`, then any two continuous right-inverses `s₁`, `s₂` of `φ` through `x₀`
+(`sₖ b = x₀`, `φ (sₖ w) = w` near `b`, `sₖ` continuous at `b`) germ-agree near `b`:
+`s₁ =ᶠ[𝓝 b] s₂`.  Both equal the canonical `localInverse` near `b` (via
+`HasStrictDerivAt.eventually_left_inverse` composed with the right-inverse property). -/
+theorem eventuallyEq_of_rightInverse_of_rightInverse {φ s₁ s₂ : ℂ → ℂ} {x₀ b : ℂ}
+    (hφ : AnalyticAt ℂ φ x₀) (hφ' : deriv φ x₀ ≠ 0) (hb : φ x₀ = b)
+    (hs₁b : s₁ b = x₀) (hs₂b : s₂ b = x₀)
+    (hs₁c : ContinuousAt s₁ b) (hs₂c : ContinuousAt s₂ b)
+    (hrinv₁ : ∀ᶠ w in 𝓝 b, φ (s₁ w) = w) (hrinv₂ : ∀ᶠ w in 𝓝 b, φ (s₂ w) = w) :
+    s₁ =ᶠ[𝓝 b] s₂ := by
+  -- The canonical local inverse `L` of `φ` at `x₀`; `L (φ x) = x` near `x₀`.
+  have hsd : HasStrictDerivAt φ (deriv φ x₀) x₀ := hφ.hasStrictDerivAt
+  set L : ℂ → ℂ := hsd.localInverse φ (deriv φ x₀) x₀ hφ' with hL
+  have hLleft : ∀ᶠ x in 𝓝 x₀, L (φ x) = x := hsd.eventually_left_inverse hφ'
+  -- Each `sₖ w = L (φ (sₖ w)) = L w` near `b`: pull the left-inverse back through `sₖ` (continuous,
+  -- `sₖ b = x₀`), then use the right-inverse `φ (sₖ w) = w`.
+  have hkey : ∀ {s : ℂ → ℂ}, s b = x₀ → ContinuousAt s b → (∀ᶠ w in 𝓝 b, φ (s w) = w) →
+      s =ᶠ[𝓝 b] L := by
+    intro s hsb hsc hrinv
+    have hsLleft : ∀ᶠ w in 𝓝 b, L (φ (s w)) = s w :=
+      hsc.eventually (p := fun x => L (φ x) = x) (by rw [hsb]; exact hLleft)
+    filter_upwards [hsLleft, hrinv] with w hw hrw
+    rw [← hw, hrw]
+  exact (hkey hs₁b hs₁c hrinv₁).trans (hkey hs₂b hs₂c hrinv₂).symm
+
 end Jacobians.Dolbeault.FormTraceSheet
