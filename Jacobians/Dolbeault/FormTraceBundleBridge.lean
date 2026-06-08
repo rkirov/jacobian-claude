@@ -414,4 +414,165 @@ theorem valueChartTrace_eq_sphereSheetFibreTrace (ω₀ : HolomorphicOneForms X)
   (MovingCoherenceDatum.ofSphereSheetSystemCanon (ω₀ := ω₀) (Φ := Φ) S hderiv hmero
     hΦinj hΦrange hsheetInj hsheetMem).coherent.self_of_nhds
 
+/-! ### Assembling the per-branch `hevBr` from the regular-value data
+
+The per-branch eventual sphere coherence `hevBr` is *entirely* discharged from the regular-value data
+already supplied to `patchedTraceSelection_ofBundleBranch` (the `Sreg` family with its canonical-fibre
+conditions) PLUS the per-branch `αBr`-agreement-at-fibre-points (the form `αBr b₀ = ω₀·g` near the
+fibre — the standard Mittag-Leffler/cutoff residual).  No new geometric input at branch values: the
+SAME `Sreg z` data that handles every regular value, applied to regular `z` near `b₀`, gives both the
+sphere sheet system and the geometric-trace coherence.  Eventually-`z`-regular near `b₀` is the
+finite-bad-set avoidance (`br ∪ image cs` is finite, `b₀` isolated). -/
+
+/-- **The per-branch `hevBr` from the regular-value data + the `αBr`-agreement.**  For a branch value
+`b₀ ∈ br` off the pole-values, the eventual sphere-sheet coherence `hevBr b₀` holds, given:
+
+* the regular-value sphere data `Sreg`/`hderivReg`/`hmeroReg` + the canonical-fibre conditions
+  `hΦinjReg`/`hΦrangeReg`/`hsheetInjReg`/`hsheetMemReg` (already supplied to the constructor);
+* `hαBrAgree` — `αBr b₀ = ω₀·g` at the fibre points `(Sreg z hz).sheet i (coe z)` for `z` near `b₀`
+  (the only genuine per-branch residual: the local-holomorphic form agreeing with `ω₀·g` near the fibre).
+
+Eventually-`z`-regular near `b₀` is the finite-bad-set avoidance; at each such `z`, part (2) is
+`valueChartTrace_eq_sphereSheetFibreTrace` and (1)/(3) are the supplied data + `hαBrAgree`. -/
+theorem hevBr_of_regularData (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
+    (Φ : (b : ℂ) → FibreRegularData g f b) {m : ℕ} (cs : Fin m → ℂ) (br : Finset ℂ) {b₀ : ℂ}
+    (αBr : HolomorphicOneForms X)
+    (Sreg : ∀ z, z ∉ Finset.univ.image cs ∪ br →
+      Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+    (hderivReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
+      deriv (fun w => f.holoRepr
+          ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+        ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere))))
+          ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0)
+    (hmeroReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
+      MeromorphicAt (fun w => g
+          ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+        ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere))))
+          ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))))
+    (hΦinjReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      ∀ᶠ b' in 𝓝 z, Function.Injective (Φ b').xs)
+    (hΦrangeReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      ∀ᶠ b' in 𝓝 z, Set.range (Φ b').xs = f.toRiemannSphere ⁻¹' {(((b' : ℂ) : RiemannSphere))})
+    (hsheetInjReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      ∀ᶠ b' in 𝓝 z, Function.Injective (fun i => (Sreg z hz).sheet i (((b' : ℂ) : RiemannSphere))))
+    (hsheetMemReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      ∀ᶠ b' in 𝓝 z, ∀ i, (Sreg z hz).sheet i (((b' : ℂ) : RiemannSphere)) ∈
+        (chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).source)
+    (hαBrAgree : ∀ᶠ z in 𝓝[≠] b₀, ∀ (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
+      αBr.toFun ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))
+        = g ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))
+          • ω₀.toFun ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))) :
+    ∀ᶠ z in 𝓝[≠] b₀,
+      ∃ (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+        (hderiv : ∀ i, deriv (fun w => f.holoRepr
+            ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+          ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+            (S.sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0)
+        (_hmero : ∀ i, MeromorphicAt
+          (fun w => g ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+          ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+            (S.sheet i (((z : ℂ) : RiemannSphere))))),
+        valueChartTrace ω₀ f Φ z
+            = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv _hmero)).traceCoeff z ∧
+        (∀ i, αBr.toFun (S.sheet i (((z : ℂ) : RiemannSphere)))
+          = g (S.sheet i (((z : ℂ) : RiemannSphere))) • ω₀.toFun (S.sheet i (((z : ℂ) : RiemannSphere)))) := by
+  -- Eventually `z ∉ image cs ∪ br` on `𝓝[≠] b₀`: the finite bad set minus `{b₀}` is closed and avoids `b₀`.
+  have hfin : (((Finset.univ.image cs ∪ br : Finset ℂ) : Set ℂ) \ {b₀}).Finite :=
+    ((Finset.univ.image cs ∪ br).finite_toSet).diff
+  have hcompl : ((((Finset.univ.image cs ∪ br : Finset ℂ) : Set ℂ) \ {b₀}))ᶜ ∈ 𝓝 b₀ :=
+    hfin.isClosed.compl_mem_nhds (by simp)
+  filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds hcompl, hαBrAgree]
+    with z hz_ne hz_compl hz_agree
+  have hzb : z ≠ b₀ := by simpa using hz_ne
+  have hz : z ∉ Finset.univ.image cs ∪ br := by
+    intro hmem
+    exact hz_compl ⟨hmem, fun h => hzb (by simpa using h)⟩
+  refine ⟨Sreg z hz, hderivReg z hz, hmeroReg z hz, ?_, hz_agree hz⟩
+  exact valueChartTrace_eq_sphereSheetFibreTrace ω₀ g f Φ (Sreg z hz) (hderivReg z hz)
+    (hmeroReg z hz) (hΦinjReg z hz) (hΦrangeReg z hz) (hsheetInjReg z hz) (hsheetMemReg z hz)
+
+/-! ### Gate A `∑Res = 0` with the branch input reduced to the `αBr`-agreement only
+
+The cleanest close: wiring `hevBr_of_regularData` into `residueSum_eq_zero_ofBundleBranchCoherence`, so
+the per-branch input is reduced from the (false/hard) Puiseux frame all the way to the **single standard
+residual** `αBr b₀ = ω₀·g near the fibre` (`hαBrAgreeBr`) — every other branch-value obligation is
+discharged from the regular-value data the constructor already requires.  This is the §VIII.3 branch
+crux closed along the monodromy-free symmetric-SUM path: at branch values, only the local-holomorphic
+form `αBr = ω₀·g` remains, exactly the plan's step 1. -/
+
+/-- **Gate A `∑Res = 0`, branch input = the `αBr`-agreement only.**  Identical scaffolding to
+`residueSum_eq_zero_ofBundleBranch`, but the entire per-branch bundle data (`hbridgeBr`) is discharged
+from the **regular-value data** (already required) + the per-branch local form-agreement `hαBrAgreeBr`
+(`αBr b₀ = ω₀·g` at the fibre points near `b₀`).  No monodromy, no Puiseux frame, no new geometric input
+at branch values: the same regular-value sphere machinery closes the branch-value crux. -/
+theorem residueSum_eq_zero_ofBundleBranchAgree (hac : AdaptedCover ω₀ g f poles)
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (Dinf : InftyFibreData g f) (hxs_inj : Function.Injective Dinf.xs)
+    (hxs_mem : ∀ i, Dinf.xs i ∈ poles ∧ f.toRiemannSphere (Dinf.xs i) = OnePoint.infty)
+    (hxs_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, Dinf.xs i = a)
+    (secFin : ∀ i, (fibreReg hac (cs i)).ι → ℂ → X)
+    (hsecFin_base : ∀ i j, secFin i j (cs i) = (fibreReg hac (cs i)).xs j)
+    (hsecFin_smooth : ∀ i j, ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (secFin i j) (cs i))
+    (hsecFin_sec : ∀ i j, ∀ᶠ b' in 𝓝 (cs i), f.holoRepr (secFin i j b') = b')
+    (hselFin : ∀ i, ∀ᶠ b' in 𝓝 (cs i), ∃ e : (Φ b').ι ≃ (fibreReg hac (cs i)).ι,
+      (∀ i', (Φ b').xs i' = secFin i (e i') b') ∧
+      (∀ j, secFin i j b' ∈ (chartAt ℂ ((fibreReg hac (cs i)).xs j)).source))
+    (br : Finset ℂ)
+    (Sreg : ∀ z, z ∉ Finset.univ.image cs ∪ br →
+      Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+    (hderivReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
+      deriv (fun w => f.holoRepr
+          ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+        ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere))))
+          ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0)
+    (hmeroReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
+      MeromorphicAt (fun w => g
+          ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+        ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere))))
+          ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))))
+    (hΦinjReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      ∀ᶠ b' in 𝓝 z, Function.Injective (Φ b').xs)
+    (hΦrangeReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      ∀ᶠ b' in 𝓝 z, Set.range (Φ b').xs = f.toRiemannSphere ⁻¹' {(((b' : ℂ) : RiemannSphere))})
+    (hsheetInjReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      ∀ᶠ b' in 𝓝 z, Function.Injective (fun i => (Sreg z hz).sheet i (((b' : ℂ) : RiemannSphere))))
+    (hsheetMemReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      ∀ᶠ b' in 𝓝 z, ∀ i, (Sreg z hz).sheet i (((b' : ℂ) : RiemannSphere)) ∈
+        (chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).source)
+    (hCreg_g : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
+      AnalyticAt ℂ (fun w => g ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+        ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere))))
+          ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))))
+    (hncF : ¬ ∃ y₀ : RiemannSphere, ∀ x, f.toRiemannSphere x = y₀)
+    (αBr : ℂ → HolomorphicOneForms X)
+    (hbrBr : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      ((b₀ : ℂ) : RiemannSphere) ∈ branchLocus f.toRiemannSphere)
+    -- The single per-branch residual: the local-holomorphic form `αBr b₀ = ω₀·g` at the fibre points.
+    (hαBrAgreeBr : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      ∀ᶠ z in 𝓝[≠] b₀, ∀ (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
+        (αBr b₀).toFun ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))
+          = g ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))
+            • ω₀.toFun ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere))))
+    (hglue_inf : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] (inftyFibreTrace ω₀ f Dinf).traceCoeff)
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (valueChartTracePatched ω₀ f Φ br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] 0] R₀) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueSum_eq_zero_ofBundleBranchCoherence hac Φ m cs ρ hcs_ball hcs_inj hcenters_cs Dinf hxs_inj
+    hxs_mem hxs_surj secFin hsecFin_base hsecFin_smooth hsecFin_sec hselFin br Sreg hderivReg
+    hmeroReg hΦinjReg hΦrangeReg hsheetInjReg hsheetMemReg hCreg_g hncF αBr hbrBr
+    (fun b₀ hb₀br hb₀cs =>
+      hevBr_of_regularData ω₀ g f Φ cs br (αBr b₀) Sreg hderivReg hmeroReg hΦinjReg hΦrangeReg
+        hsheetInjReg hsheetMemReg (hαBrAgreeBr b₀ hb₀br hb₀cs))
+    hglue_inf hcont_int R₀ hR₀_an hR₀0 hR₀_eq
+
 end Jacobians.Dolbeault.FormTraceGlobal
