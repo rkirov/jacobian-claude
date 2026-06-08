@@ -149,4 +149,50 @@ theorem residueSum_eq_zero (T : GlobalTraceData ω₀ g f poles) :
 
 end GlobalTraceData
 
+/-! ### Non-vacuity of `GlobalTraceData`
+
+The `GlobalTraceData` obligations are genuine (true, satisfiable), not a disguised `False`: in the
+**globally-holomorphic** case (`α = ω₀·g` has no poles), we exhibit a `GlobalTraceData` with the
+**empty pole set** — the empty `LaurentForm` (no centers, trace `≡ 0`), empty per-center fibre data
+(`ι = Empty`), and vacuous `hcenters`/`hL32`/`infty_eq`.  This confirms the structure is honest (it
+*is* satisfiable, and the residue theorem does hold in this case with the trivial trace), mirroring
+`Jacobians.Dolbeault.FormResidueTheorem.formResidueTrace_of_holomorphic`. -/
+
+/-- The **empty `FibreRegularData`** over any base value `p`: no fibre points (`ι = Empty`), so all
+field hypotheses are vacuous.  The fibre datum over a value with no (recorded) preimages. -/
+def emptyFibreRegularData (g : X → ℂ) (f : MeromorphicFunction X) (p : ℂ) :
+    FibreRegularData g f p where
+  ι := Empty
+  fintype_ι := inferInstance
+  xs := Empty.elim
+  hg_an := fun i => i.elim
+  hg_deriv := fun i => i.elim
+  hval := fun i => i.elim
+  hg_mero := fun i => i.elim
+
+/-- **Non-vacuity witness.**  A `GlobalTraceData ω₀ g f ∅` always exists (empty pole set): the empty
+`LaurentForm`, empty per-center fibre data, and vacuous identifications.  Hence the `GlobalTraceData`
+obligations are *satisfiable* — the structure is not a disguised `False`. -/
+noncomputable def globalTraceData_empty (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) : GlobalTraceData ω₀ g f ∅ where
+  L := Jacobians.ResidueTheoremX.emptyLaurentForm
+  D := fun p => emptyFibreRegularData g f p
+  hxs_inj := by intro _ i; exact i.elim
+  hxs_mem := fun _ i => i.elim
+  hxs_surj := fun _ a ha => absurd ha (Finset.notMem_empty a)
+  hcenters := by
+    rw [Jacobians.ResidueTheoremX.emptyLaurentForm_image_a]
+    simp
+  hL32 := by
+    intro p hp
+    rw [Jacobians.ResidueTheoremX.emptyLaurentForm_image_a] at hp
+    exact absurd hp (Finset.notMem_empty p)
+  infty_eq := by
+    rw [resAtInfty, Jacobians.ResidueTheoremX.emptyLaurentForm_R]
+    show -(2 * π * I : ℂ)⁻¹ • (∮ _z in C((0 : ℂ),
+      Jacobians.ResidueTheoremX.emptyLaurentForm.ρ), (0 : ℂ)) = _
+    rw [show Jacobians.ResidueTheoremX.emptyLaurentForm.ρ = 0 from rfl,
+      circleIntegral.integral_radius_zero, smul_zero]
+    simp
+
 end Jacobians.Dolbeault.FormTraceGlobal
