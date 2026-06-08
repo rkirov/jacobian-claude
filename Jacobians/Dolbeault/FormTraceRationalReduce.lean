@@ -11,11 +11,12 @@ import Jacobians.Dolbeault.FormTraceGlobalFunction
 
 `Jacobians.Dolbeault.FormTraceGlobalConstruct` isolated the deep §VIII.3 core of Gate A into the
 `TraceRationalityWitness` — a rational `LaurentForm L` representing `Tr_F α` on `ℂℙ¹`, with the three
-fields `hcenters`/`hL32`/`infty_eq`.  This file reduces the two *analytic* fields `hL32` and
-`infty_eq` to a single honest geometric input: **`L.R` agrees with the local trace coefficient near
-each value**.
+fields `hcenters`/`hL32`/`infty_eq`.  This file reduces the field `hL32` — one of the two *analytic*
+fields — to a single honest geometric input: **`L.R` agrees with the local trace coefficient near
+each finite value**.  It then packages the full witness and pins down the precise minimal remaining
+obligation, isolating `infty_eq` as the sole irreducible analytic atom.
 
-## The reduction (Miranda Lemma 3.2 read through the agreement)
+## The `hL32` reduction (Miranda Lemma 3.2 read through the agreement)
 
 The fibre trace `fibreTrace ω₀ f (fibreReg hac p)` over a finite center `p` has base `b = p`, and
 Miranda's Lemma 3.2 (`resAt_traceCoeff_fibreTrace`, *proved*, unconditional via the residue
@@ -28,18 +29,31 @@ So if the rational `L.R` **agrees with the local trace coefficient on a puncture
 then `resAt L.R p = resAt (Tr_F α) p = ∑ᵢ Res_{xᵢ}(α)`, which is exactly the `hL32` field
 (`FibreTrace.resAt_traceCoeff'` turns its `∑ᵢ resAt (coeff i) (pre i)` LHS into `resAt traceCoeff p`).
 
-This file proves:
+## `infty_eq` is the genuinely-irreducible analytic atom (the circularity)
 
-* `hL32_of_agree` — the `hL32` field from the per-center agreement;
-* `traceRationalityWitness_of_agree` — the full `TraceRationalityWitness` from a `LaurentForm` with
-  `hcenters` (the discrete center-bookkeeping, an explicit choice of representation), the per-center
-  agreement (`hL32`), and the `∞`-fibre residue identity (`infty_eq`, the reciprocal-chart Lemma 3.2,
-  the genuinely-honest large-circle contour content carried as a field).
+One cannot derive `infty_eq` from `hcenters` + `hL32` + rationality: by the `ℂℙ¹` residue theorem
+baked into `LaurentForm` (`resAtInfty_eq`), `resAtInfty L.R L.ρ = −∑_{finite centres} resAt L.R p`,
+which under `hL32` is `−∑_{finite fibres} Res`.  Asking `infty_eq` — that this equal the `∞`-fibre
+residue sum `∑_{∞-fibre} Res` — is therefore equivalent to `∑_{all fibres} Res = 0`, i.e. **the
+residue theorem itself**.  So `infty_eq` carries genuinely new content: it is the *independent*
+analytic computation of `resAtInfty L.R` as the `∞`-fibre residue sum (Lemma 3.2 at `∞`, the
+reciprocal-chart contour content), which the finite data cannot supply.  This is the precise minimal
+remaining obligation; its close-path is the reciprocal-chart change-of-variables
+`resAtInfty R ρ = resAt (ζ ↦ −R(ζ⁻¹)·ζ⁻²) 0` (the `z = 1/ζ` contour substitution, Mathlib-lacking)
+composed with the same `resAt_traceCoeff_fibreTrace` machinery applied to the reciprocal-chart pole
+fibre.
 
-The reduction makes the remaining obligation precise: **construct the global trace coefficient as a
-rational `LaurentForm L` agreeing with the local `Tr_F α` near each value** (finite centres) and
-matching the `∞`-fibre residue at infinity.  The per-center agreement is exactly "`L.R` is the
-partial-fraction expansion of the meromorphic `Tr_F α`" (Miranda's rationality on the compact `ℂℙ¹`).
+## What this file proves (axiom-clean)
+
+* `hL32_of_agree` / `resAt_eq_fibreResidueSum_of_agree` — the `hL32` field, and the fibre-residue
+  identity, from the per-center agreement;
+* `traceRationalityWitness_of_agree` — the full `TraceRationalityWitness` from `L` + `hcenters` (the
+  discrete centre bookkeeping) + the per-center agreement (`hL32`) + the `∞`-fibre residue identity
+  (`infty_eq`, carried as the isolated atom);
+* `residueSum_eq_zero_of_agree` — Gate A `∑Res=0` from these honest inputs;
+* `agree_holomorphic` / `traceRationalityWitness_holomorphic` — **non-vacuity end-to-end**: in the
+  empty-pole (globally-holomorphic) case the agreement, `hcenters`, and `infty_eq` all hold for the
+  empty `LaurentForm`, so the whole reduction chain is sound (not a disguised `False`).
 
 ## References
 
@@ -67,13 +81,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
 
-/-! ### Lemma 3.2 at a finite centre, read through the agreement
-
-The fibre trace over the finite center `p` is `fibreTrace ω₀ f (fibreReg hac p)`, with base `b = p`.
-By `FibreTrace.resAt_traceCoeff'` its `∑ᵢ resAt (coeff i) (pre i)` is `resAt (Tr_F α) p`, and by
-`resAt_traceCoeff_fibreTrace` that equals the fibre residue sum `∑ᵢ formFnResidue ω₀ g (xs i)`.  So
-the `hL32` field is exactly `resAt L.R p = resAt (Tr_F α) p`, which holds whenever `L.R` agrees with
-the trace coefficient off `p`. -/
+/-! ### Lemma 3.2 at a finite centre, read through the agreement -/
 
 /-- **Lemma 3.2 at a finite centre, from the trace agreement.**  If the rational coefficient `L.R`
 agrees with the local trace coefficient `(fibreTrace ω₀ f (fibreReg hac p)).traceCoeff` on a
@@ -109,8 +117,7 @@ theorem resAt_eq_fibreResidueSum_of_agree (hac : AdaptedCover ω₀ g f poles) (
 
 With `hL32` reduced to the per-center agreement (`hL32_of_agree`), the only remaining genuinely-deep
 content is `hcenters` (a discrete choice of which centres `L` carries — the finite pole-values) and
-`infty_eq` (Lemma 3.2 at `∞`, the honest large-circle contour content).  We package the assembly:
-given `L`, `hcenters`, the per-center agreement, and `infty_eq`, a `TraceRationalityWitness` exists. -/
+`infty_eq` (Lemma 3.2 at `∞`, the honest large-circle contour content; see the file header). -/
 
 /-- **`TraceRationalityWitness` from the trace agreement.**  Given:
 
@@ -119,9 +126,10 @@ given `L`, `hcenters`, the per-center agreement, and `infty_eq`, a `TraceRationa
   choice of representation),
 * `hagree` — for each centre `p` of `L`, `L.R` agrees with the local trace coefficient off `p` (the
   honest "`L.R` is the partial-fraction expansion of the meromorphic `Tr_F α`" condition), and
-* `infty_eq` — Lemma 3.2 at `∞` (the `∞`-residue of `L.R` is the `∞`-fibre residue sum),
+* `hinfty` — Lemma 3.2 at `∞` (the `∞`-residue of `L.R` is the `∞`-fibre residue sum; the isolated
+  analytic atom),
 
-a `TraceRationalityWitness ω₀ g f poles hac` exists.  *Proof:* `hcenters`/`infty_eq` are passed
+a `TraceRationalityWitness ω₀ g f poles hac` exists.  *Proof:* `hcenters`/`hinfty` are passed
 through; `hL32` is `hL32_of_agree` applied at each centre. -/
 def traceRationalityWitness_of_agree (hac : AdaptedCover ω₀ g f poles) (L : LaurentForm)
     (hcenters : (Finset.univ.image L.a).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
@@ -150,5 +158,43 @@ theorem residueSum_eq_zero_of_agree (hac : AdaptedCover ω₀ g f poles) (L : La
       = ∑ a ∈ poles with f.toRiemannSphere a = OnePoint.infty, formFnResidue ω₀ g a) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
   residueSum_eq_zero_of_adapted hac (traceRationalityWitness_of_agree hac L hcenters hagree hinfty)
+
+/-! ### Non-vacuity of the reduction (end-to-end soundness)
+
+The reduction's hypotheses are *genuine* (true, satisfiable), not a disguised `False`: in the
+globally-holomorphic (empty-pole) case, the empty `LaurentForm` satisfies `hcenters`, the (vacuous)
+agreement, and `hinfty`, so `traceRationalityWitness_of_agree` produces a witness and Gate A holds.
+This confirms the entire reduction chain — `hL32_of_agree` and the agreement framing — is sound. -/
+
+/-- **The agreement is vacuously satisfiable** for the empty `LaurentForm` (no centres). -/
+theorem agree_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
+    (hdiv : (f.div : Divisor X) ≠ 0) :
+    ∀ p ∈ (Finset.univ.image (Jacobians.ResidueTheoremX.emptyLaurentForm.a)),
+      Jacobians.ResidueTheoremX.emptyLaurentForm.R
+        =ᶠ[𝓝[≠] p] (fibreTrace ω₀ f
+          (fibreReg (adaptedCover_empty ω₀ g f hdiv) p)).traceCoeff := by
+  intro p hp
+  rw [Jacobians.ResidueTheoremX.emptyLaurentForm_image_a] at hp
+  exact absurd hp (Finset.notMem_empty p)
+
+/-- **Non-vacuity witness for the reduction (end-to-end).**  In the globally-holomorphic (empty-pole)
+case, `traceRationalityWitness_of_agree` applied to the empty `LaurentForm` yields a
+`TraceRationalityWitness` — the agreement is vacuous, `hcenters` holds (both sides empty), and the
+`∞`-fibre residue sum over `∅` matches `Res_∞ ≡ 0`.  Hence the agreement-based reduction is honest
+(satisfiable), not a disguised `False`. -/
+def traceRationalityWitness_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
+    TraceRationalityWitness ω₀ g f ∅ (adaptedCover_empty ω₀ g f hdiv) :=
+  traceRationalityWitness_of_agree (adaptedCover_empty ω₀ g f hdiv)
+    Jacobians.ResidueTheoremX.emptyLaurentForm
+    (by rw [Jacobians.ResidueTheoremX.emptyLaurentForm_image_a]; simp)
+    (agree_holomorphic ω₀ g f hdiv)
+    (by
+      rw [resAtInfty, Jacobians.ResidueTheoremX.emptyLaurentForm_R]
+      show -(2 * π * I : ℂ)⁻¹ • (∮ _z in C((0 : ℂ),
+        Jacobians.ResidueTheoremX.emptyLaurentForm.ρ), (0 : ℂ)) = _
+      rw [show Jacobians.ResidueTheoremX.emptyLaurentForm.ρ = 0 from rfl,
+        circleIntegral.integral_radius_zero, smul_zero]
+      simp)
 
 end Jacobians.Dolbeault.FormTraceGlobal
