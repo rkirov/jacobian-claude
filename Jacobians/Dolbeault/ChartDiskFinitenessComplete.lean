@@ -746,20 +746,112 @@ theorem comparisonMap_mk (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
     𝔇.comparisonMap (Submodule.Quotient.mk g) = 𝔇.cechToSupH1 g :=
   Submodule.liftQ_apply _ _ _
 
-/-- **Injectivity of the comparison map** — the crux, by germ-class `𝒪_D` sheaf-gluing (Forster 12.4).
+/-! #### The shrinking cover `(V a)` and Forster-12.4 injectivity
 
-DIAGNOSIS (HONEST SORRY).  Injectivity reduces to: a germ cocycle `g` whose forward `BddHol` image is
-a `supH1`-coboundary `δ0 f` (`f : C0Holo`, bounded-holomorphic on the diagonal shrinkings `Wov (a,a)`)
-is a GERM coboundary.  Reading `ζ_a := f_a ∘ chart_a` as a holomorphic section on the shrinking
-`shrinkSet a` (= `V a`), the hypothesis `cechToCshr g = δ0 f` says (pointwise on `Wov (a,b)`, via
-`holoFn` and the transition point identity) that `g_{ab} = [ζ_b] − [ζ_a]` as germs on `V a ⊓ V b` —
-i.e. `refineC1 g = δ⁰[ζ]` is a coboundary for the SHRINKING cover `(V a)` (a `FiniteCover` refining
-`(U a)` by `iUnion_shrinkSet_eq_univ` + `closure_shrinkSet_subset_U`).  Since `g` is a `(U a)`-cocycle
-and the refinement map `refineH1 : H¹((U a)) → H¹((V a))` is INJECTIVE UNCONDITIONALLY (Forster 12.4,
-`CechRefinementInjective.refineH1_injective_unconditional`), `g ∈ coboundaries1`.  The remaining
-plumbing — packaging `(shrinkSet a)` as a `FiniteCover`, the refinement witness, and the germ
-identification of the `BddHol` shrinking datum `f` with the section family `[ζ]` — is the structural
-sheaf bridge (~hundreds of lines). -/
+`comparisonMap` injectivity reduces, by germ-class `𝒪_D` sheaf-gluing (Forster 12.4), to: a germ
+cocycle `g` whose forward `BddHol` image is a `supH1`-coboundary `δ0 f` (`f : C0Holo`,
+bounded-holomorphic on the diagonal shrinkings `Wov (a,a) = chartAt (center a) '' (V a)`) is a germ
+coboundary.  The shrinking sets `V a := shrinkSet a` form a `FiniteCover` refining `𝔇`
+(`iUnion_shrinkSet_eq_univ` + `shrinkSet ⊆ U`), and `f` pulls back to a germ 0-cochain `η a = [ζ_a]`
+(`bddHolToOmegaDGerm`) on `V a` with `refineC1 g = δ⁰_𝔙 η` (pointwise via `holoFn`/`toGerm_holoFn` and
+the transition point identity).  Then `refinementDescend_unconditional` (Forster 12.4) gives
+`g ∈ coboundaries1 𝔇`. -/
+
+/-- The shrinking sets `V a := shrinkSet a` as `Opens X`. -/
+noncomputable def shrinkOpens (a : 𝔇.ι) : Opens X := ⟨𝔇.shrinkSet a, 𝔇.shrinkSet_isOpen a⟩
+
+@[simp] theorem shrinkOpens_coe (a : 𝔇.ι) : ((𝔇.shrinkOpens a : Opens X) : Set X) = 𝔇.shrinkSet a :=
+  rfl
+
+/-- The **shrinking cover** `(V a)` — a `FiniteCover` (covers `X` by `iUnion_shrinkSet_eq_univ`). -/
+noncomputable def shrinkCover : FiniteCover X where
+  ι := 𝔇.ι
+  fintype := inferInstance
+  U := 𝔇.shrinkOpens
+  covers := by
+    apply TopologicalSpace.Opens.ext
+    rw [TopologicalSpace.Opens.coe_iSup, TopologicalSpace.Opens.coe_top]
+    simpa only [shrinkOpens_coe] using 𝔇.iUnion_shrinkSet_eq_univ
+
+@[simp] theorem shrinkCover_U (a : 𝔇.ι) : 𝔇.shrinkCover.U a = 𝔇.shrinkOpens a := rfl
+
+/-- `V a ⊆ U a` (the shrinking sits in the cover set). -/
+theorem shrinkOpens_le_U (a : 𝔇.ι) : 𝔇.shrinkOpens a ≤ 𝔇.U a := by
+  intro x hx
+  exact 𝔇.closure_shrinkSet_subset_U a (subset_closure hx)
+
+/-- **The refinement** `shrinkCover ⪯ 𝔇` via the identity index map. -/
+theorem isRefinement_shrinkCover :
+    FiniteCover.IsRefinement 𝔇.shrinkCover 𝔇.toFiniteCover id :=
+  fun a => 𝔇.shrinkOpens_le_U a
+
+/-- `V a ⊆ (chartAt (center a)).source`. -/
+theorem shrinkOpens_subset_source (a : 𝔇.ι) :
+    ((𝔇.shrinkOpens a : Opens X) : Set X) ⊆ (chartAt (H := ℂ) (𝔇.center a)).source :=
+  fun x hx => 𝔇.U_subset_source a (𝔇.shrinkOpens_le_U a hx)
+
+/-- `Wov (a,a) = chartAt (center a) '' (V a)` (the diagonal shrinking IS the chart-image of `V a`). -/
+theorem Wov_diag_eq_chartImage_shrinkOpens (a : 𝔇.ι) :
+    𝔇.Wov (a, a) = (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.shrinkOpens a : Opens X) : Set X) := by
+  show (chartAt (H := ℂ) (𝔇.center a)) '' (𝔇.shrinkSet a ∩ 𝔇.shrinkSet a) = _
+  rw [Set.inter_self, shrinkOpens_coe]
+
+/-- `chart_a '' (V a) ⊆ Wov (a,a)` (in fact equal). -/
+theorem chartImage_shrinkOpens_subset_Wov_diag (a : 𝔇.ι) :
+    (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.shrinkOpens a : Opens X) : Set X) ⊆ 𝔇.Wov (a, a) :=
+  (𝔇.Wov_diag_eq_chartImage_shrinkOpens a).ge
+
+/-- The diagonal `C0Holo` element `f a`, restricted to the exact chart-image `chart_a '' (V a)` (which
+equals `Wov (a,a)`).  Avoids a propositional set-equality cast in `diagPullbackGerm`. -/
+noncomputable def diagRestrict (f : 𝔇.C0Holo) (a : 𝔇.ι) :
+    BddHol ((chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.shrinkOpens a : Opens X) : Set X)) :=
+  BddHol.restrictOpenCLM (𝔇.chartImage_shrinkOpens_subset_Wov_diag a) (f a)
+
+theorem diagRestrict_toFun_of_mem (f : 𝔇.C0Holo) (a : 𝔇.ι) {z : ℂ}
+    (hz : z ∈ (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.shrinkOpens a : Opens X) : Set X)) :
+    (𝔇.diagRestrict f a).toFun z = (f a).toFun z :=
+  BddHol.restrictOpenCLM_toFun_of_mem _ _ hz
+
+/-- The germ section `ζ_a := [f_a ∘ chart_a]` on `V a` from a diagonal `C0Holo` element `f`
+(`bddHolToOmegaDGerm` on the exact chart-image `chart_a '' (V a)`). -/
+noncomputable def diagPullbackGerm (f : 𝔇.C0Holo) (a : 𝔇.ι) :
+    ↥(OmegaDGerm (0 : Divisor X) (𝔇.shrinkOpens a)) :=
+  bddHolToOmegaDGerm_zero_image (y := 𝔇.center a) (V := 𝔇.shrinkOpens a)
+    (𝔇.shrinkOpens_subset_source a) (𝔇.diagRestrict f a)
+
+theorem diagPullbackGerm_holoFn (f : 𝔇.C0Holo) (a : 𝔇.ι) {y : X}
+    (hy : y ∈ (𝔇.shrinkOpens a : Opens X)) :
+    holoFn (𝔇.diagPullbackGerm f a).2 y
+      = (f a).toFun ((chartAt (H := ℂ) (𝔇.center a)) y) := by
+  -- the representative `F` of `diagPullbackGerm` is `(diagRestrict f a) ∘ chart_a`
+  set g' := 𝔇.diagRestrict f a with hg'
+  set F : ↥(𝔇.shrinkOpens a) → ℂ :=
+    fun x => g'.toFun ((chartAt (H := ℂ) (𝔇.center a)) x.1) with hF
+  have hgerm : toGerm (𝔇.shrinkOpens a) F = (𝔇.diagPullbackGerm f a).1 := rfl
+  have hmem : (chartAt (H := ℂ) (𝔇.center a)) y
+      ∈ (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.shrinkOpens a : Opens X) : Set X) := ⟨y, hy, rfl⟩
+  -- `g'.toFun (chart_a y) = (f a).toFun (chart_a y)` (`diagRestrict` agrees on the image)
+  have hval : g'.toFun ((chartAt (H := ℂ) (𝔇.center a)) y)
+      = (f a).toFun ((chartAt (H := ℂ) (𝔇.center a)) y) :=
+    𝔇.diagRestrict_toFun_of_mem f a hmem
+  -- `Gext F` is continuous at `y` (analytic `g'` ∘ chart), agreeing with `F`-value near `y`
+  have hcont : ContinuousAt (fun z : X => g'.toFun ((chartAt (H := ℂ) (𝔇.center a)) z)) y := by
+    refine (g'.analyticOn.continuousOn.continuousAt ?_).comp
+      ((chartAt (H := ℂ) (𝔇.center a)).continuousAt (𝔇.shrinkOpens_subset_source a hy))
+    exact ((chartAt (H := ℂ) (𝔇.center a)).isOpen_image_of_subset_source
+      (𝔇.shrinkOpens a).isOpen (𝔇.shrinkOpens_subset_source a)).mem_nhds hmem
+  have hev : Gext F =ᶠ[nhds y]
+      (fun z : X => g'.toFun ((chartAt (H := ℂ) (𝔇.center a)) z)) := by
+    filter_upwards [(𝔇.shrinkOpens a).isOpen.mem_nhds hy] with z hz
+    rw [Gext_apply_mem F hz]
+  have htend : Filter.Tendsto (Gext F) (𝓝[≠] y)
+      (𝓝 (g'.toFun ((chartAt (H := ℂ) (𝔇.center a)) y))) :=
+    Filter.Tendsto.congr' (hev.filter_mono nhdsWithin_le_nhds).symm
+      ((hcont.tendsto).mono_left nhdsWithin_le_nhds)
+  rw [← hval]
+  exact holoFn_eq_of_tendsto (𝔇.diagPullbackGerm f a).2 F hgerm hy htend
+
+/-- **Injectivity of the comparison map** (Forster 12.4 sheaf-gluing). -/
 theorem comparisonMap_injective : Function.Injective 𝔇.comparisonMap := by
   sorry
 
