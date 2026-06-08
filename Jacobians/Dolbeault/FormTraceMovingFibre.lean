@@ -317,14 +317,93 @@ theorem valueChartTrace_eventuallyEq_fibreTrace_of_sharedSheets (ω₀ : Holomor
     valueChartTrace ω₀ f Φ =ᶠ[𝓝 b₀] (fibreTrace ω₀ f D).traceCoeff :=
   hdiag.trans (fibreTrace_eventuallyEq_movingSum ω₀ f D sec hbase hcont hsec).symm
 
+/-! ### The diagonal trace as the fixed-chart fibre sum (chart-independence applied)
+
+We now *derive* the per-point diagonal identity from the genuine index-bijection data, using the proved
+chart-frame independence.  The diagonal trace `(fibreTrace ω₀ f D').traceCoeff b'` of any fibre `D'`
+over `b'` equals, summand by summand, the self-chart push-forward along `D'`'s fibre points; via the
+section identification (the planar sheet = the manifold-section chart pullback) and chart-frame
+independence, each summand equals the *fixed-chart* (`D.xs (e i')`) push-forward of `α` along the
+matched moving section `sec (e i')`.  Summing over the bijection `e : D'.ι ≃ D.ι` gives the fixed-chart
+fibre sum.  This reduces the residual to exactly the **index bijection + section identification** at
+each point — the concrete monodromy data. -/
+
+/-- **The diagonal trace equals the fixed-chart moving fibre sum (per point, via the index bijection).**
+Let `D' : FibreRegularData g f b'` be the re-selected fibre over `b'`, `e : D'.ι ≃ D.ι` a bijection to
+the fixed index, and `sec : D.ι → ℂ → X` the moving sections.  Assume, for each `i' : D'.ι` (writing
+`i := e i'`):
+* `D'.xs i' = sec i b'` — the fibre point matches the moving section's value;
+* `deriv ((fibreTrace ω₀ f D').sheet i') b' = deriv (fun z => chart_{sec i b'} (sec i z)) b'` — the
+  planar sheet derivative matches the manifold-section chart-pullback derivative (section identification);
+* `sec i b' ∈ chart_{D.xs i}.source`, `MDifferentiableAt (sec i) b'`, and the chart transitions are
+  differentiable (the data feeding chart-frame independence).
+
+Then the diagonal trace equals the fixed-chart fibre sum:
+
+> `(fibreTrace ω₀ f D').traceCoeff b'
+>    = ∑ i, chartIntegrand ω₀ g (D.xs i) (chart_{D.xs i}(sec i b'))·deriv(chart_{D.xs i} ∘ sec i) b'`.
+
+*Proof.*  The diagonal trace is `∑ i', chartIntegrand ω₀ g (D'.xs i') (chart_{D'.xs i'}(D'.xs i'))·
+deriv((fibreTrace D').sheet i') b'` (`sheet_base`).  Per summand: rewrite `D'.xs i' = sec i b'` and the
+sheet derivative to the manifold-section chart-pullback derivative; this is the **self-chart** moving
+summand for `sec i` (chart `xs := sec i b'`).  By `movingSummand_chartIndep` it equals the
+**`D.xs i`-chart** moving summand.  Reindex the sum along `e`. -/
+theorem traceCoeff_diagonal_eq_fixedSum (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    {b₀ : ℂ} (D : FibreRegularData g f b₀) (sec : D.ι → ℂ → X) {b' : ℂ}
+    (D' : FibreRegularData g f b') (e : D'.ι ≃ D.ι)
+    (hxs : ∀ i', D'.xs i' = sec (e i') b')
+    (hsheet_deriv : ∀ i', deriv ((fibreTrace ω₀ f D').sheet i') b'
+      = deriv (fun z => (chartAt ℂ (sec (e i') b')) (sec (e i') z)) b')
+    (hcont : ∀ i, ContinuousAt (sec i) b')
+    (hsP_diff : ∀ i, DifferentiableAt ℂ (fun z => (chartAt ℂ (sec i b')) (sec i z)) b')
+    (hmem : ∀ i, sec i b' ∈ (chartAt ℂ (D.xs i)).source)
+    (htrans_diff : ∀ i, DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (D.xs i)) ((chartAt ℂ (sec i b')).symm w)) ((chartAt ℂ (sec i b')) (sec i b')))
+    (htrans_diff_inv : ∀ i, DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (sec i b')) ((chartAt ℂ (D.xs i)).symm w)) ((chartAt ℂ (D.xs i)) (sec i b'))) :
+    (fibreTrace ω₀ f D').traceCoeff b'
+      = ∑ i, chartIntegrand ω₀ g (D.xs i) ((chartAt ℂ (D.xs i)) (sec i b'))
+        * deriv (fun z => (chartAt ℂ (D.xs i)) (sec i z)) b' := by
+  -- The diagonal trace as the self-chart sum over `D'`'s fibre points.
+  have hdiagsum : (fibreTrace ω₀ f D').traceCoeff b'
+      = ∑ i', chartIntegrand ω₀ g (D'.xs i') ((chartAt ℂ (D'.xs i')) (D'.xs i'))
+        * deriv ((fibreTrace ω₀ f D').sheet i') b' := by
+    show (∑ i', (fibreTrace ω₀ f D').coeff i' ((fibreTrace ω₀ f D').sheet i' b')
+        * deriv ((fibreTrace ω₀ f D').sheet i') b') = _
+    refine Finset.sum_congr rfl (fun i' _ => ?_)
+    rw [fibreTrace_coeff,
+      show (fibreTrace ω₀ f D').sheet i' b' = (chartAt ℂ (D'.xs i')) (D'.xs i') from
+        (fibreTrace ω₀ f D').sheet_base i']
+  rw [hdiagsum]
+  -- Reindex `∑ i'` along `e : D'.ι ≃ D.ι`, matching each `D'`-summand to the fixed-chart `D`-summand.
+  rw [← Equiv.sum_comp e (fun i => chartIntegrand ω₀ g (D.xs i) ((chartAt ℂ (D.xs i)) (sec i b'))
+    * deriv (fun z => (chartAt ℂ (D.xs i)) (sec i z)) b')]
+  refine Finset.sum_congr rfl (fun i' _ => ?_)
+  -- The `D'`-summand (after `hxs`, `hsheet_deriv`) is the self-chart moving summand for `sec (e i')`.
+  rw [hxs i', hsheet_deriv i']
+  -- The self-chart transition `chart_{sec (e i') b'} ∘ chart_{...}.symm =ᶠ id` near the target point.
+  have hself_diff : DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (sec (e i') b')) ((chartAt ℂ (sec (e i') b')).symm w))
+      ((chartAt ℂ (sec (e i') b')) (sec (e i') b')) := by
+    have heqid : (fun w => (chartAt ℂ (sec (e i') b')) ((chartAt ℂ (sec (e i') b')).symm w))
+        =ᶠ[𝓝 ((chartAt ℂ (sec (e i') b')) (sec (e i') b'))] id := by
+      filter_upwards [(chartAt ℂ (sec (e i') b')).open_target.mem_nhds
+        ((chartAt ℂ (sec (e i') b')).map_source (mem_chart_source ℂ (sec (e i') b')))] with w hw
+      simp only [(chartAt ℂ (sec (e i') b')).right_inv hw, id_eq]
+    exact (differentiableAt_id).congr_of_eventuallyEq heqid
+  -- Now: self-chart moving summand (chart `sec (e i') b'`) = fixed-chart summand (chart `D.xs (e i')`).
+  exact movingSummand_chartIndep ω₀ g (sec (e i')) (sec (e i') b') (D.xs (e i')) (hcont (e i'))
+    (hsP_diff (e i')) (mem_chart_source ℂ (sec (e i') b')) (hmem (e i')) hself_diff
+    (htrans_diff (e i')) hself_diff (htrans_diff_inv (e i'))
+
 /-! ### The diagonal hypothesis at a non-pole, regular point — a sufficient reduction
 
 The diagonal hypothesis `hdiag` is the monodromy core; the obstruction to deriving it outright is the
 dependent typing of the *re-selected* fibre `Φ b'` (whose index, sheets, and fibre points vary with
-`b'`).  The honest sufficient condition that produces it is that, *near `b₀`*, the selection `Φ b'`
-is **pointwise the moving fibre** `sec · b'`: its index is `D.ι`, its fibre points are `sec i b'`, and
-its planar sheets germ-match the chart pullbacks of `sec i` — at which point the diagonal trace literally
-*is* the moving fibre sum.  We package that pointwise-diagonal condition and derive `hdiag` from it. -/
+`b'`).  `traceCoeff_diagonal_eq_fixedSum` discharges its *per-point* content from the index bijection +
+section identification; what remains is to supply that data uniformly for `b'` near `b₀` (the global
+selection's pointwise-moving-fibre property).  We package the pointwise-diagonal condition and derive
+`hdiag` from it. -/
 
 /-- **The pointwise-diagonal selection produces the diagonal hypothesis.**  Suppose, for `b'` in a
 neighbourhood of `b₀`, the re-selected fibre `Φ b'` is the moving fibre along `sec`: there is an
