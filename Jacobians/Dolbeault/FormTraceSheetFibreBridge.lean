@@ -175,4 +175,31 @@ theorem eventuallyEq_of_rightInverse_of_rightInverse {φ s₁ s₂ : ℂ → ℂ
     rw [← hw, hrw]
   exact (hkey hs₁b hs₁c hrinv₁).trans (hkey hs₂b hs₂c hrinv₂).symm
 
+/-- **The `fibreTrace` planar sheet is *the* local inverse (germ).**  The `FormTraceFibre.fibreTrace`
+sheet `i` (the `exists_planar_section` inverse of the chart pullback `φ = f.holoRepr ∘ chart_{xs i}.symm`)
+germ-equals any continuous right-inverse `s` of `φ` through `chart_{xs i}(xs i)`:
+
+> `(fibreTrace ω₀ f D).sheet i =ᶠ[𝓝 b] s`,
+
+provided `s (b) = chart_{xs i}(xs i)`, `s` continuous at `b`, and `φ (s w) = w` near `b` (where
+`b = f.holoRepr (xs i)`).  Direct from `eventuallyEq_of_rightInverse_of_rightInverse`: the planar sheet
+*is* such a right-inverse (its `exists_planar_section` spec), so any other one agrees.  This is the
+**section identification** — the bridge from the abstract `Classical.choose` planar sheet to the
+chart-representation of a bundle sheet (which, being a section of `F`, is such a right-inverse). -/
+theorem fibreTrace_sheet_eventuallyEq (ω₀ : HolomorphicOneForms X) {g : X → ℂ}
+    (f : MeromorphicFunction X)
+    {b : ℂ} (D : Jacobians.Dolbeault.FormTraceFibre.FibreRegularData g f b) (i : D.ι)
+    {s : ℂ → ℂ} (hsb : s b = (chartAt ℂ (D.xs i)) (D.xs i)) (hsc : ContinuousAt s b)
+    (hrinv : ∀ᶠ w in 𝓝 b,
+      (fun z => f.holoRepr ((chartAt ℂ (D.xs i)).symm z)) (s w) = w) :
+    (Jacobians.Dolbeault.FormTraceFibre.fibreTrace ω₀ f D).sheet i =ᶠ[𝓝 b] s := by
+  -- The planar sheet's `exists_planar_section` spec.
+  set spec := Classical.choose_spec
+    (Jacobians.Dolbeault.FormTraceFibre.exists_planar_section (D.hg_an i) (D.hg_deriv i)
+      (D.gval ω₀ f i)) with hspec
+  -- Apply uniqueness: both the planar sheet and `s` are right-inverses of `φ` through `x₀`.
+  refine eventuallyEq_of_rightInverse_of_rightInverse (φ := fun z => f.holoRepr ((chartAt ℂ (D.xs i)).symm z))
+    (x₀ := (chartAt ℂ (D.xs i)) (D.xs i)) (b := b) (D.hg_an i) (D.hg_deriv i) (D.gval ω₀ f i)
+    spec.2.1 hsb spec.1.continuousAt hsc spec.2.2.2 hrinv
+
 end Jacobians.Dolbeault.FormTraceSheet
