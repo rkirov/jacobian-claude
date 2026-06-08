@@ -20,6 +20,7 @@
 import Jacobians.Dolbeault.CechRefinementInjective
 import Jacobians.Dolbeault.ChartDiskRefinement
 import Jacobians.Dolbeault.CechModelArtificial
+import Jacobians.Dolbeault.ChartDiskFinitenessComplete
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -58,5 +59,28 @@ theorem exists_cechModel_zero_of_chartDiskMontel
   haveI : FiniteDimensional ℂ (𝔘.cechH1 (0 : Divisor X)) :=
     finiteDimensional_cechH1_zero_of_chartDiskMontel hMontel 𝔘
   exists_cechModel_of_finiteDimensional 𝔘 (0 : Divisor X)
+
+/-- **The chart-disk Montel finiteness, discharged unconditionally** (Forster 14.9, D = 0).  This is
+exactly `ChartDiskCover.finiteDimensional_cechH1_chartDisk_complete` — now sorry-free and axiom-clean
+(the `leray` field / global Bott–Tu (0,1)-form is proven) — packaged as the `hMontel` hypothesis the
+assembly above consumes.  `[Nonempty X]` is supplied by `[ConnectedSpace X]`. -/
+theorem chartDiskMontel_zero :
+    ∀ 𝔇 : ChartDiskCover X, FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) :=
+  fun 𝔇 => 𝔇.finiteDimensional_cechH1_chartDisk_complete
+
+/-- **Finiteness of `H¹(𝔘, 𝒪)` for an arbitrary finite cover (Forster 14.9, D = 0) — UNCONDITIONAL.**
+Discharges the Montel hypothesis of `finiteDimensional_cechH1_zero_of_chartDiskMontel` with the proven
+`chartDiskMontel_zero`. -/
+theorem finiteDimensional_cechH1_zero (𝔘 : FiniteCover X) :
+    FiniteDimensional ℂ (𝔘.cechH1 (0 : Divisor X)) :=
+  finiteDimensional_cechH1_zero_of_chartDiskMontel chartDiskMontel_zero 𝔘
+
+/-- **`exists_cechModel 𝔘 0` — UNCONDITIONAL (the 14.7 route, D = 0, fully discharged).**  Combines the
+arbitrary-cover finiteness `finiteDimensional_cechH1_zero` with the artificial single-point model.  This
+is the sorry-free, axiom-clean D = 0 instance of `CechFinitenessWiring.exists_cechModel`. -/
+theorem exists_cechModel_zero (𝔘 : FiniteCover X) :
+    ∃ (d : DiskOverlapData) (c : Coboundaries d),
+      Nonempty (𝔘.cechH1 (0 : Divisor X) ≃ₗ[ℂ] c.supH1) :=
+  exists_cechModel_zero_of_chartDiskMontel chartDiskMontel_zero 𝔘
 
 end Jacobians.Dolbeault
