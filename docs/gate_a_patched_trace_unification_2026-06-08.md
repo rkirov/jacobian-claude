@@ -148,3 +148,86 @@ engine + the per-sheet ratio atom), `FormTraceMovingFibre*` (the symmetric-lever
 * Miranda, *Algebraic Curves and Riemann Surfaces*, §VIII.3 (the trace `Tr` is single-valued by
   *symmetry* and extends across branch points; Lemma 3.2).
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §10, §17.
+
+---
+
+# Update (2026-06-08, later) — the full-fibre frame wiring + the sharpened single obligation
+
+**New file** `Jacobians/Dolbeault/FormTracePatchedFrame.lean` (axiom-clean
+`[propext, Classical.choice, Quot.sound]`, verified by authoritative `lake env lean #print axioms`; no
+`sorry`, no custom `axiom`).  It performs the final wiring of the global full-fibre sheet frame into a
+`PatchedTraceSelection`, discharging the three *substantial* fields from the proven engines:
+
+* **`hbnd_of_sheetFrame`** — the per-branch-value boundedness crux `(z − b₀)·valueChartTrace z → 0` from
+  a **branched full-fibre frame** (smooth sheets through *all* preimages of `b₀`, the colliding ramified
+  `z = wᵐ` Puiseux branches *admitted* — no injectivity of `sec · b₀` demanded), via the proven
+  `tendsto_zero_valueChartTrace_of_sheetSections`.
+* **`patchedTraceSelection_ofFrame`** — assembles a full `PatchedTraceSelection` from the global frame
+  data:
+  - `Cfin i` ← `MovingCoherenceDatum.ofSheetSections` over the **pole sub-fibre** `fibreReg hac (cs i)`
+    (the honest pole/regular separation; the symmetric lever supplies the per-`b'` index bijection
+    pointwise, no labeling);
+  - `Creg z` ← `MovingCoherenceDatum.ofSphereSheetSystemCanon` over the **full fibre** (the symmetric
+    lever; the only `Φ`-content is the canonical-fibre condition "`Φ b'` enumerates `F⁻¹(coe b')`");
+  - `hbnd b₀` ← `hbnd_of_sheetFrame` (the branched Puiseux frame).
+  The `∞`/junk/genus-`0` fields are carried as the genuine rationality residual.
+* **`residueSum_eq_zero_ofFrame`** — Gate A `∑Res = 0` from the frame data, via
+  `residueSum_eq_zero_of_patchedTraceSelection`.
+* **`residueSum_eq_zero_ofFrame_holomorphic`** — re-exported non-vacuity (empty-pole witness), so the
+  reduction is honest end-to-end.
+
+**No new reduction structure** was added: `patchedTraceSelection_ofFrame`'s hypotheses are the genuine
+residual geometric inputs as ordinary constructor arguments (the standard "reduced interface" idiom of
+this repo, cf. `MovingCoherenceDatum.ofSheetSections`), and the unramified + branched analytic content is
+*proven* here from the engines — not re-stated as new fields.
+
+## Gate A status: REDUCED (axiom-clean), not yet UNCONDITIONAL
+
+Gate A `∑Res = 0` is now reduced — axiom-clean — to supplying `patchedTraceSelection_ofFrame`'s
+arguments for a real adapted cover.  The substantial analytic heart (the symmetric-lever per-value
+coherence; the branch-value boundedness, including the colliding ramified sheets) is **closed**.  What
+remains is the global geometric *construction* of the frame data, which splits into three genuinely
+distinct residuals:
+
+1. **THE single hardest atom — the branched full-fibre frame `hgermBr` at each branch value.**  A finite
+   family of smooth cover sheets `secBr b₀ : ιBr b₀ → ℂ → X` through *all* preimages of `b₀` — the
+   unramified ones (available off the branch locus) **and the `m` colliding ramified Puiseux branches**
+   (the `z = wᵐ` local model's `m`-th-root sections, as continuously-varying functions of the base
+   value), together with the **moving-sum germ equality** `hgermBr`: near `b₀`, the full-fibre
+   `valueChartTrace` equals the fibre sum along these sheets.  `LocalNormalForm`/`LocalKFoldMultiplicity`
+   supply the `z = wᵐ` structure and the *cardinality* count of the `m` roots, but **not** a
+   continuously-varying *section family* `secBr j : ℂ → X` realizing the `m` Puiseux branches as smooth
+   functions of the base, nor the moving-sum representation.  This is the one well-defined geometric
+   construction still open (Forster §5 normal form ⟶ continuous `m`-root frame).
+
+2. **The global selection `Φ` + the canonical-fibre condition** (`hΦinjReg`/`hΦrangeReg` + `hselFin`).
+   `Φ` must, near every regular value, enumerate the full fibre `F⁻¹(coe ·)` as a set, and near every
+   pole-value re-select the pole sub-fibre.  Off the branch locus the sphere sheet systems exist
+   (`exists_sphereSheetSystem`); the residual is the *coherent global choice* of `Φ` agreeing with them
+   as sets (the labeling is dissolved by the symmetric lever, so only the set-equality is needed).
+
+3. **The `∞`-adaptedness + rationality bookkeeping** (`Dinf`/`hxs_*`, `hglue_inf`, `hcont_int`,
+   `R₀ 0 = 0`).  The cover unramified over `∞` (the `∞`-fibre `InftyFibreData`), the `∞`-glue (Lemma 3.2
+   in the reciprocal chart), junk-freeness (the meromorphic normal form at each centre), and the
+   genus-`0` `∞`-vanishing (`H⁰(ℂℙ¹, Ω) = 0`).
+
+The off-branch sphere-sheet *existence* and *regularity* (`Sreg`/`hderivReg`/`hsheetInjReg`/
+`hsheetMemReg`) are mechanically dischargeable from `exists_sphereSheetSystem` +
+`criticalValues_finite_general` once `br` is taken to contain the (finite) branch values; they are kept
+as arguments here only to avoid duplicating that off-branch bookkeeping inside the wiring file.
+
+**Bottom line.**  Gate A `∑Res = 0` is axiom-clean-reduced to the global full-fibre frame; the single
+minimal *new* obligation is residual (1), the continuously-varying branched `m`-sheet Puiseux frame +
+its moving-sum germ equality.  Residuals (2) and (3) are the previously-known global-`Φ` and
+`∞`-rationality content.  Gate A is **not** yet unconditional.
+
+## Files (this update)
+
+* `Jacobians/Dolbeault/FormTracePatchedFrame.lean` (new) — `hbnd_of_sheetFrame`,
+  `patchedTraceSelection_ofFrame`, `residueSum_eq_zero_ofFrame`, `residueSum_eq_zero_ofFrame_holomorphic`.
+
+Reuse (unchanged, PROVEN): `FormTraceGlobalTPatched` (`PatchedTraceSelection`,
+`residueSum_eq_zero_of_patchedTraceSelection`, `tendsto_zero_valueChartTrace_of_sheetSections`, the empty
+witness), `FormTraceRegularValueDatum` (`MovingCoherenceDatum.ofSphereSheetSystemCanon`),
+`FormTraceMovingFibreSheet` (`MovingCoherenceDatum.ofSheetSections`), `FormTraceSphereSheetTranslate` /
+`FormTraceMovingFibreSphereSet` (`exists_sphereSheetSystem`, the canonical-fibre lever).
