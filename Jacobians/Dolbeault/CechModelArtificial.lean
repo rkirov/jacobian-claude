@@ -26,7 +26,7 @@
   (the one-point `Kov` keeps the shrinking side finite-dimensional). It is NOT a replacement for the
   honest manifold/Čech assembly.
 -/
-import Jacobians.Dolbeault.CechModelBase
+import Jacobians.Dolbeault.CechFinitenessWiring
 
 open Jacobians.Dolbeault
 open BoundedContinuousFunction
