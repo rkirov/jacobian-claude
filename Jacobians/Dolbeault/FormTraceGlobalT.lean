@@ -114,4 +114,136 @@ theorem exists_principalPart_traceCoeff_inftyFibreTrace (ω₀ : HolomorphicOneF
       (inftyFibreTrace ω₀ f D).traceCoeff =ᶠ[𝓝[≠] 0] fun z => negTail 0 b' N z + R z :=
   exists_principalPart_meromorphicAt (meromorphicAt_traceCoeff_inftyFibreTrace ω₀ f D)
 
+/-! ### Packaging a finite family of principal parts as a `LaurentForm`
+
+The `GlobalTrace.L` field is a `LaurentForm` — an explicit finite family of Laurent monomials
+`c·(z − a)^n` with all centres inside a fixed ball `ball 0 ρ`.  The principal-part extraction
+(`exists_principalPart_meromorphicAt`) produces, per centre `cs i`, a `negTail cs i (b i) (N i)`
+(`∑_{k=1}^{N i} b i k·(z − cs i)^{−k}`).  This section assembles a finite family of such `negTail`s,
+one per centre, into a single `LaurentForm` whose coefficient `R` is the pointwise sum and whose
+centre-image is exactly `{cs i}`.
+
+Index: `(i : Fin m) × Fin (N i)`; the `(i, k)`-th monomial is the `(k + 1)`-th tail term at centre
+`cs i`, exponent `−(k + 1)`, coefficient `b i (k + 1)`. -/
+
+/-- **`LaurentForm` from a finite family of principal parts.**  Given `m` centres `cs : Fin m → ℂ`
+all inside `ball 0 ρ` (`hcs`), per-centre degrees `N : Fin m → ℕ` and coefficients
+`b : Fin m → ℕ → ℂ`, the `LaurentForm` whose `(i, k)`-th monomial is `b i (k + 1)·(z − cs i)^{−(k+1)}`
+(the `negTail` of centre `i`, reindexed).  Its coefficient `R` is `∑ i, negTail (cs i) (b i) (N i)`
+(`laurentOfNegTails_R`), and its centre-image is `{cs i}` (modulo the `Fin (N i)` collapse). -/
+noncomputable def laurentOfNegTails {m : ℕ} (cs : Fin m → ℂ) (N : Fin m → ℕ) (b : Fin m → ℕ → ℂ)
+    (ρ : ℝ) (hcs : ∀ i, cs i ∈ ball (0 : ℂ) ρ) : LaurentForm where
+  ι := (i : Fin m) × Fin (N i)
+  fintype_ι := inferInstance
+  decEq_ι := inferInstance
+  c := fun p => b p.1 (p.2.1 + 1)
+  a := fun p => cs p.1
+  n := fun p => -((p.2.1 : ℤ) + 1)
+  ρ := ρ
+  centers_mem := fun p => hcs p.1
+
+@[simp] theorem laurentOfNegTails_a {m : ℕ} (cs : Fin m → ℂ) (N : Fin m → ℕ) (b : Fin m → ℕ → ℂ)
+    (ρ : ℝ) (hcs : ∀ i, cs i ∈ ball (0 : ℂ) ρ) (p : (i : Fin m) × Fin (N i)) :
+    (laurentOfNegTails cs N b ρ hcs).a p = cs p.1 := rfl
+
+/-- **The coefficient of `laurentOfNegTails` is the sum of the `negTail`s.**  `R = ∑ i, negTail (cs i)
+(b i) (N i)` — pointwise, the family of principal parts.  *Proof.*  Expand `LaurentForm.R` (a sum
+over the sigma index), regroup as `∑ i, ∑ k`, and reindex each inner sum `Fin (N i) → Icc 1 (N i)` by
+`k ↦ k + 1` to recover `negTail`. -/
+theorem laurentOfNegTails_R {m : ℕ} (cs : Fin m → ℂ) (N : Fin m → ℕ) (b : Fin m → ℕ → ℂ)
+    (ρ : ℝ) (hcs : ∀ i, cs i ∈ ball (0 : ℂ) ρ) :
+    (laurentOfNegTails cs N b ρ hcs).R = fun z => ∑ i, negTail (cs i) (b i) (N i) z := by
+  funext z
+  show (∑ p : (i : Fin m) × Fin (N i), b p.1 (p.2.1 + 1) * (z - cs p.1) ^ (-((p.2.1 : ℤ) + 1)))
+    = ∑ i, negTail (cs i) (b i) (N i) z
+  simp_rw [Fintype.sum_sigma]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  -- inner sum over `Fin (N i)`, reindex `k ↦ k + 1` onto `Icc 1 (N i)`.
+  show (∑ k : Fin (N i), b i (k.1 + 1) * (z - cs i) ^ (-((k.1 : ℤ) + 1)))
+    = ∑ k ∈ Finset.Icc 1 (N i), b i k * (z - cs i) ^ (-(k : ℤ))
+  rw [Fin.sum_univ_eq_sum_range (fun k => b i (k + 1) * (z - cs i) ^ (-((k : ℤ) + 1))) (N i)]
+  rw [show Finset.Icc 1 (N i) = Finset.Ico 1 (N i + 1) by ext x; simp,
+    Finset.sum_Ico_eq_sum_range]
+  refine Finset.sum_congr rfl (fun k _ => ?_)
+  rw [show 1 + k = k + 1 from Nat.add_comm 1 k]
+  push_cast
+  ring
+
+/-! ### Finite principal-part subtraction into a `LaurentForm`
+
+`exists_finitePrincipalPart` (`FormTracePrincipalPart`) subtracts the finite principal parts of a
+coefficient meromorphic at finitely many centres, but returns an *opaque* subtrahend `P` — not the
+explicit `LaurentForm` the `GlobalTrace.L` field demands.  Here we re-run the per-centre extraction
+(`exists_principalPart_meromorphicAt`) over a finite *indexed* family of centres `cs : Fin m → ℂ`,
+collect the `negTail` data, and package it as `laurentOfNegTails`.  The result is a genuine
+`LaurentForm L` with explicit centres `cs` such that `T − L.R` is analytic at every centre (the pole
+is removed) — the form the `GlobalTrace.hentire` step consumes. -/
+
+/-- **Finite principal-part subtraction into a `LaurentForm`.**  Given `m` centres `cs : Fin m → ℂ`
+all inside `ball 0 ρ` and a coefficient `T` that is `MeromorphicAt` at each centre, there is a
+`LaurentForm L` with centre-family `cs` (`L.a = cs ∘ ·.1`, `laurentOfNegTails_a`) such that, at each
+centre `cs i`, `T − L.R` germ-agrees off `cs i` with an analytic function (the pole at `cs i` is
+removed).  *Construction.*  Per centre, `exists_principalPart_meromorphicAt` gives a `negTail` and an
+analytic remainder; `laurentOfNegTails` assembles the `negTail`s; `laurentOfNegTails_R` identifies
+`L.R = ∑ negTail (cs i)`.  At `cs j`, the `j`-tail removes the pole and the other tails are analytic
+at `cs j` (`analyticAt_negTail_of_ne`) — *provided* the centres are distinct, carried as `hcs_inj`. -/
+theorem exists_laurentForm_principalPart {T : ℂ → ℂ} {m : ℕ} (cs : Fin m → ℂ) (ρ : ℝ)
+    (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ) (hcs_inj : Function.Injective cs)
+    (hT : ∀ i, MeromorphicAt T (cs i)) :
+    ∃ L : LaurentForm, (Finset.univ.image L.a = Finset.univ.image cs) ∧
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧ (T - L.R) =ᶠ[𝓝[≠] (cs j)] R) := by
+  classical
+  -- Per-centre principal-part extraction.  Pad each degree to `N i + 1` (coefficient `0` on the
+  -- extra index) so every centre carries at least one monomial and appears in `image L.a`.
+  choose N b R hR_an hR_eq using fun i => exists_principalPart_meromorphicAt (hT i)
+  -- Padded coefficients: `b i` on `[1, N i]`, `0` beyond — `negTail (cs i) bpad (N i + 1)
+  -- = negTail (cs i) (b i) (N i)` since the extra term `bpad (N i + 1) = 0`.
+  set bpad : Fin m → ℕ → ℂ := fun i k => if k ≤ N i then b i k else 0 with hbpad
+  set Npad : Fin m → ℕ := fun i => N i + 1 with hNpad
+  have hnegpad : ∀ i z, negTail (cs i) (bpad i) (Npad i) z = negTail (cs i) (b i) (N i) z := by
+    intro i z
+    simp only [negTail, hNpad, hbpad]
+    rw [Finset.sum_Icc_succ_top (by omega : 1 ≤ N i + 1)]
+    rw [if_neg (by omega), zero_mul, add_zero]
+    refine Finset.sum_congr rfl (fun k hk => ?_)
+    rw [if_pos (Finset.mem_Icc.mp hk).2]
+  refine ⟨laurentOfNegTails cs Npad bpad ρ hcs_ball, ?_, ?_⟩
+  · -- centre-image: `image a = image cs`.  Each `a p = cs p.1`; conversely every centre `cs i`
+    -- carries the monomial at `⟨i, 0⟩` (since `Npad i = N i + 1 ≥ 1`).
+    apply Finset.Subset.antisymm
+    · intro x hx
+      simp only [Finset.mem_image, Finset.mem_univ, true_and] at hx ⊢
+      obtain ⟨p, rfl⟩ := hx
+      exact ⟨p.1, (laurentOfNegTails_a cs Npad bpad ρ hcs_ball p)⟩
+    · intro x hx
+      simp only [Finset.mem_image, Finset.mem_univ, true_and] at hx ⊢
+      obtain ⟨i, rfl⟩ := hx
+      refine ⟨⟨i, ⟨0, Nat.succ_pos (N i)⟩⟩, ?_⟩
+      rw [laurentOfNegTails_a cs Npad bpad ρ hcs_ball]
+  have hLR : (laurentOfNegTails cs Npad bpad ρ hcs_ball).R
+      = fun z => ∑ i, negTail (cs i) (b i) (N i) z := by
+    rw [laurentOfNegTails_R cs Npad bpad ρ hcs_ball]
+    funext z; exact Finset.sum_congr rfl (fun i _ => hnegpad i z)
+  intro j
+  -- The other-centre tails, analytic at `cs j` (distinct centres).
+  refine ⟨fun z => R j z - ∑ i ∈ Finset.univ.erase j, negTail (cs i) (b i) (N i) z, ?_, ?_⟩
+  · -- analytic at `cs j`: `R j` analytic, minus a finite sum of off-centre `negTail`s.
+    refine (hR_an j).sub (Finset.analyticAt_fun_sum _ (fun i hi => ?_))
+    have hne : cs j ≠ cs i := fun h => (Finset.mem_erase.mp hi).1 (hcs_inj h.symm)
+    exact analyticAt_negTail_of_ne (b i) (N i) hne
+  · -- germ off `cs j`: `T − L.R = (T − negTail_j) − ∑_{i≠j} negTail_i = R j − ∑_{i≠j} negTail_i`.
+    have hsplit : ∀ z, (∑ i, negTail (cs i) (b i) (N i) z)
+        = negTail (cs j) (b j) (N j) z + ∑ i ∈ Finset.univ.erase j, negTail (cs i) (b i) (N i) z :=
+      fun z => (Finset.add_sum_erase Finset.univ (fun i => negTail (cs i) (b i) (N i) z)
+        (Finset.mem_univ j)).symm
+    filter_upwards [hR_eq j] with z hz
+    simp only [Pi.sub_apply, hLR, hsplit z]
+    -- `T z − (negTail_j + ∑_{i≠j}) = (T z − negTail_j) − ∑_{i≠j}`, and `T z − negTail_j = R j z`.
+    have hTj : T z - negTail (cs j) (b j) (N j) z = R j z := by
+      have := hz; simp only [Pi.add_apply] at this; rw [this]; ring
+    rw [show T z - (negTail (cs j) (b j) (N j) z
+        + ∑ i ∈ Finset.univ.erase j, negTail (cs i) (b i) (N i) z)
+        = (T z - negTail (cs j) (b j) (N j) z)
+          - ∑ i ∈ Finset.univ.erase j, negTail (cs i) (b i) (N i) z by ring, hTj]
+
 end Jacobians.Dolbeault.FormTraceGlobal
