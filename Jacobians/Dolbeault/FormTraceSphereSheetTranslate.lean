@@ -212,6 +212,43 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
 
+/-- **A reference fibre from a sphere sheet system at a regular value.**  The fibre points are the
+translated sheet bases `xs i := S.sheet i (coe b₀)`.  Each is a non-pole with `f.holoRepr (xs i) =
+b₀` — *discharged* from the sheet section property via the translation
+(`nonpole_of_toRiemannSphere_eq_coe`), since the sphere value `coe b₀` is finite.  The two genuine
+regular-value residuals are explicit: `hderiv` (the chart-pullback derivative of `f.holoRepr` is
+nonzero at each fibre point — i.e. `b₀` is off the critical set / the fibre is unramified) and `hmero`
+(`g`'s chart-pullback is meromorphic at each fibre point).  This packages the sphere sheets into the
+`FibreRegularData` the `fibreTrace` machinery consumes, with the geometry of the fibre points read off
+the sheet system. -/
+noncomputable def FibreRegularData.ofSphereSheetSystem {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere)))
+    (hderiv : ∀ i, deriv (fun z => f.holoRepr ((chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))).symm z))
+      ((chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))) (S.sheet i (((b₀ : ℂ) : RiemannSphere)))) ≠ 0)
+    (hmero : ∀ i, MeromorphicAt
+      (fun z => g ((chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))).symm z))
+      ((chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))) (S.sheet i (((b₀ : ℂ) : RiemannSphere))))) :
+    FibreRegularData g f b₀ :=
+  FibreRegularData.ofRegular g f b₀
+    (ι := Fin S.n)
+    (xs := fun i => S.sheet i (((b₀ : ℂ) : RiemannSphere)))
+    (hnp := fun i => (f.nonpole_of_toRiemannSphere_eq_coe
+      (S.sheet_section i (((b₀ : ℂ) : RiemannSphere)) S.mem_V)).1)
+    (hderiv := hderiv)
+    (hval := fun i => (f.nonpole_of_toRiemannSphere_eq_coe
+      (S.sheet_section i (((b₀ : ℂ) : RiemannSphere)) S.mem_V)).2)
+    (hmero := hmero)
+
+@[simp] theorem FibreRegularData.ofSphereSheetSystem_xs {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere)))
+    (hderiv : ∀ i, deriv (fun z => f.holoRepr ((chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))).symm z))
+      ((chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))) (S.sheet i (((b₀ : ℂ) : RiemannSphere)))) ≠ 0)
+    (hmero : ∀ i, MeromorphicAt
+      (fun z => g ((chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))).symm z))
+      ((chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))) (S.sheet i (((b₀ : ℂ) : RiemannSphere))))) (i : Fin S.n) :
+    (FibreRegularData.ofSphereSheetSystem (g := g) S hderiv hmero).xs i
+      = S.sheet i (((b₀ : ℂ) : RiemannSphere)) := rfl
+
 /-- **A moving-fibre coherence datum from a sphere sheet system.**  The sphere-side packaging of
 `MovingCoherenceDatum.ofSheetSections`: a `LocalSheetSystem S` for the compact sphere map
 `f.toRiemannSphere` at the finite base value `coe b₀` supplies the moving sections `sec i :=
@@ -232,6 +269,36 @@ noncomputable def MovingCoherenceDatum.ofSphereSheetSystem
     (fun i => (hxsD i).symm)
     (fun i => S.holoReprSheet_contMDiffAt (eD i))
     (fun i => S.holoReprSheet_section (eD i))
+    hsel
+
+/-- **A moving-fibre coherence datum from a sphere sheet system at a regular value, with the
+reference fibre `= the sheet fibre`.**  The cleanest sphere-side constructor: the reference fibre is
+`FibreRegularData.ofSphereSheetSystem` itself (so `eD = Equiv.refl`, `D.xs i = S.sheet i (coe b₀)`),
+and the §VIII.3 re-selection bijection collapses to the **identity-indexed** form
+
+> near `b₀`: `∃ e : (Φ b').ι ≃ Fin S.n`, `(Φ b').xs i' = S.sheet (e i') (coe b')` and each `S.sheet
+> i (coe b')` lies in `chart_{S.sheet i (coe b₀)}.source`,
+
+i.e. the global selection `Φ b'` re-selects exactly the moving sphere sheets (the plan's "assemble `Φ`
+AS the sheet fibre data" — the bijection is the identity once `Φ` is so chosen).  This isolates the
+*sole* remaining geometric obligation per regular value: the re-selection agreement `hsel` of the
+global selection with the sphere sheets, plus the two regularity residuals (`hderiv`, `hmero`). -/
+noncomputable def MovingCoherenceDatum.ofSphereSheetSystemReg
+    {Φ : (b : ℂ) → FibreRegularData g f b} {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere)))
+    (hderiv : ∀ i, deriv (fun z => f.holoRepr ((chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))).symm z))
+      ((chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))) (S.sheet i (((b₀ : ℂ) : RiemannSphere)))) ≠ 0)
+    (hmero : ∀ i, MeromorphicAt
+      (fun z => g ((chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))).symm z))
+      ((chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))) (S.sheet i (((b₀ : ℂ) : RiemannSphere)))))
+    (hsel : ∀ᶠ b' in 𝓝 b₀, ∃ e : (Φ b').ι ≃ Fin S.n,
+      (∀ i', (Φ b').xs i' = S.sheet (e i') (((b' : ℂ) : RiemannSphere))) ∧
+      (∀ i, S.sheet i (((b' : ℂ) : RiemannSphere)) ∈
+        (chartAt ℂ (S.sheet i (((b₀ : ℂ) : RiemannSphere)))).source)) :
+    MovingCoherenceDatum ω₀ g f Φ b₀ :=
+  MovingCoherenceDatum.ofSphereSheetSystem (Φ := Φ) S
+    (FibreRegularData.ofSphereSheetSystem (g := g) S hderiv hmero) (Equiv.refl (Fin S.n))
+    (fun _ => rfl)
     hsel
 
 end Jacobians.Dolbeault.FormTraceMovingFibre
