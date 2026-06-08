@@ -160,5 +160,126 @@ theorem contDiffAt_openChartPrim (𝔇 : SharedChartCover X)
     rw [openChartPrim_apply_mem 𝔇 s i hz, Function.comp_apply, liftSymm_apply_mem 𝔇 p hz]
   exact contMDiffAt_iff_contDiffAt.1 (hcomp.congr_of_eventuallyEq heq)
 
+/-! ## Step 2 — `∂̄ openChartPrim` agrees on overlaps
+
+On `Ω_i ∩ Ω_j` the two chart-read primitives have the same `∂̄`: their difference equals the chart-read
+`holoFn(s_{ij}) ∘ φ.symm`, which is holomorphic there (its `∂̄` vanishes).  We first record that
+chart-read analytic representatives are `AnalyticAt ℂ` (replicating the `GluedDbarDatum.analyticAt_holoHat`
+argument over the bare composite, since that file is not in this import cone), then conclude via
+`dbar_sub` + `dbar_eq_zero_of_differentiableAt`. -/
+
+/-- **The chart-read analytic representative is `AnalyticAt ℂ`.**  For `x ∈ U_a ⊓ U_b`,
+`holoFn(s_{a,b}) ∘ φ.symm` is `AnalyticAt ℂ` at `φ x`: `holoFn(s_{a,b})` is chart-analytic in `x`'s own
+chart (`holoFn_chart_analyticAt`); transport to the shared chart `φ` by the analytic transition map. -/
+theorem analyticAt_holoFn_comp_symm (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (a b : 𝔇.ι) {x : X}
+    (hx : x ∈ (𝔇.toFiniteFamily.U a ⊓ 𝔇.toFiniteFamily.U b : Opens X)) :
+    AnalyticAt ℂ (holoFn (cocycleComp_mem 𝔇.toFiniteFamily s a b) ∘ (𝔇.φ).symm) (𝔇.φ x) := by
+  set φ := chartAt (H := ℂ) 𝔇.center with hφ
+  have hsrc : x ∈ φ.source := 𝔇.subset_source a hx.1
+  set h := holoFn (cocycleComp_mem 𝔇.toFiniteFamily s a b) with hh
+  -- `h` read in `x`'s OWN chart is analytic at `(chartAt x) x`.
+  have hown : AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x) :=
+    holoFn_chart_analyticAt (cocycleComp_mem 𝔇.toFiniteFamily s a b) hx
+  have hsymm_pt : φ.symm (φ x) = x := φ.left_inv hsrc
+  have hxtgt : φ x ∈ φ.target := φ.map_source hsrc
+  -- The transition `(chartAt x) ∘ φ.symm` is `AnalyticAt ℂ` at `φ x` (it maps `φ x ↦ (chartAt x) x`).
+  have h_symm_cmd : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω φ.symm (φ x) :=
+    ((contMDiffOn_chart_symm (I := 𝓘(ℂ)) (n := ω) (x := 𝔇.center)) _ hxtgt).contMDiffAt
+      (φ.open_target.mem_nhds hxtgt)
+  have h_cx_cmd : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (chartAt (H := ℂ) x) (φ.symm (φ x)) := by
+    rw [hsymm_pt]
+    exact ((contMDiffOn_chart (I := 𝓘(ℂ)) (n := ω) (x := x)) _ (mem_chart_source ℂ x)).contMDiffAt
+      ((chartAt (H := ℂ) x).open_source.mem_nhds (mem_chart_source ℂ x))
+  have htrans_ana : AnalyticAt ℂ ((chartAt (H := ℂ) x) ∘ φ.symm) (φ x) :=
+    (contMDiffAt_iff_contDiffAt.1 (h_cx_cmd.comp (φ x) h_symm_cmd)).analyticAt
+  have htrans_pt : ((chartAt (H := ℂ) x) ∘ φ.symm) (φ x) = (chartAt (H := ℂ) x) x := by
+    simp only [Function.comp_apply, hsymm_pt]
+  have hcomp : AnalyticAt ℂ ((h ∘ (chartAt (H := ℂ) x).symm) ∘ ((chartAt (H := ℂ) x) ∘ φ.symm)) (φ x) :=
+    AnalyticAt.comp (htrans_pt ▸ hown) htrans_ana
+  -- Near `φ x`, `h ∘ φ.symm` equals that composite (where `φ.symm` lands in `(chartAt x).source`).
+  have hmem : ∀ᶠ w in 𝓝 (φ x), φ.symm w ∈ (chartAt (H := ℂ) x).source := by
+    have hcont : ContinuousAt φ.symm (φ x) := φ.continuousAt_symm hxtgt
+    have hh0 : φ.symm (φ x) ∈ (chartAt (H := ℂ) x).source := by
+      rw [hsymm_pt]; exact mem_chart_source ℂ x
+    exact hcont.preimage_mem_nhds ((chartAt (H := ℂ) x).open_source.mem_nhds hh0)
+  have heq : (h ∘ φ.symm) =ᶠ[𝓝 (φ x)]
+      ((h ∘ (chartAt (H := ℂ) x).symm) ∘ ((chartAt (H := ℂ) x) ∘ φ.symm)) := by
+    filter_upwards [hmem] with w hw
+    simp only [Function.comp_apply, (chartAt (H := ℂ) x).left_inv hw]
+  exact (analyticAt_congr heq).2 hcomp
+
+/-- If `z` lies in both chart-images `Ω_i` and `Ω_j`, its chart-preimage lands in the overlap
+`U_i ⊓ U_j` (`φ` is injective on its source). -/
+theorem symm_mem_overlap_of_mem_Ω (𝔇 : SharedChartCover X) {i j : 𝔇.ι} {z : ℂ}
+    (hzi : z ∈ 𝔇.Ω i) (hzj : z ∈ 𝔇.Ω j) :
+    (𝔇.φ).symm z ∈ (𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X) := by
+  obtain ⟨xi, hxi, hxiz⟩ := hzi
+  obtain ⟨xj, hxj, hxjz⟩ := hzj
+  have hsrci : xi ∈ (𝔇.φ).source := 𝔇.subset_source i hxi
+  have hsrcj : xj ∈ (𝔇.φ).source := 𝔇.subset_source j hxj
+  have hsymmi : (𝔇.φ).symm z = xi := by rw [← hxiz]; exact (𝔇.φ).left_inv hsrci
+  have hsymmj : (𝔇.φ).symm z = xj := by rw [← hxjz]; exact (𝔇.φ).left_inv hsrcj
+  refine ⟨?_, ?_⟩
+  · rw [hsymmi]; exact hxi
+  · rw [hsymmj]; exact hxj
+
+/-- **Step 2 — `∂̄ openChartPrim` agrees on overlaps.**  For `z ∈ Ω_i ∩ Ω_j`,
+`∂̄(openChartPrim s i) z = ∂̄(openChartPrim s j) z`.  The difference `openChartPrim j − openChartPrim i`
+equals `holoFn(s_{ij}) ∘ φ.symm` near `z` (from `openChartPrim_diff`, read at `φ.symm`), which is
+holomorphic there (`analyticAt_holoFn_comp_symm`), so its `∂̄` vanishes (`dbar_sub` +
+`dbar_eq_zero_of_differentiableAt`). -/
+theorem dbar_openChartPrim_agree (𝔇 : SharedChartCover X)
+    (s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X))) (i j : 𝔇.ι) {z : ℂ}
+    (hzi : z ∈ 𝔇.Ω i) (hzj : z ∈ 𝔇.Ω j) :
+    DbarDisk.dbar (openChartPrim 𝔇 s i) z = DbarDisk.dbar (openChartPrim 𝔇 s j) z := by
+  set φ := chartAt (H := ℂ) 𝔇.center with hφ
+  -- `x := φ.symm z ∈ U_i ⊓ U_j`, and `φ x = z`.
+  set x : X := φ.symm z with hxdef
+  have hxov : x ∈ (𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X) :=
+    symm_mem_overlap_of_mem_Ω 𝔇 hzi hzj
+  obtain ⟨xi, hxi, hxiz⟩ := hzi
+  have hsrc : xi ∈ φ.source := 𝔇.subset_source i hxi
+  have hztgt : z ∈ φ.target := by rw [← hxiz]; exact φ.map_source hsrc
+  have hφx : φ x = z := by rw [hxdef]; exact φ.right_inv hztgt
+  -- `openChartPrim j w − openChartPrim i w = holoFn(s_{ij})(φ.symm w)` for `w` near `z`.
+  have hdiffEq : (fun w => openChartPrim 𝔇 s j w - openChartPrim 𝔇 s i w)
+      =ᶠ[𝓝 z] (holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) ∘ φ.symm) := by
+    -- Near `z`: `w ∈ φ.target` and `φ.symm w ∈ U_i ⊓ U_j` (both open conditions holding at `z`).
+    have hcont : ContinuousAt φ.symm z := φ.continuousAt_symm hztgt
+    have hovnhds : ∀ᶠ w in 𝓝 z, φ.symm w ∈
+        (𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X) :=
+      hcont.preimage_mem_nhds
+        ((𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X).isOpen.mem_nhds hxov)
+    have htgtnhds : ∀ᶠ w in 𝓝 z, w ∈ φ.target := φ.open_target.mem_nhds hztgt
+    filter_upwards [hovnhds, htgtnhds] with w hwov hwtgt
+    -- `openChartPrim k w = openChartPrim k (φ (φ.symm w))`, then `openChartPrim_diff` at `φ.symm w`.
+    have hwback : φ (φ.symm w) = w := φ.right_inv hwtgt
+    have hd := openChartPrim_diff 𝔇 s i j (x := φ.symm w) hwov
+    rw [hwback] at hd
+    simpa only [Function.comp_apply] using hd
+  -- `holoFn(s_{ij}) ∘ φ.symm` is `DifferentiableAt ℂ` at `z` (analytic), so its `∂̄` is `0`.
+  have hana : AnalyticAt ℂ (holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) ∘ φ.symm) z := by
+    have := analyticAt_holoFn_comp_symm 𝔇 s i j hxov
+    rwa [hφx] at this
+  have hdiffC : DifferentiableAt ℂ (holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) ∘ φ.symm) z :=
+    hana.differentiableAt
+  -- `openChartPrim k` is `ℝ`-differentiable at `z = φ x` (Step 1, `x ∈ U_k`).
+  have hdi : DifferentiableAt ℝ (openChartPrim 𝔇 s i) z :=
+    (hφx ▸ contDiffAt_openChartPrim 𝔇 s i (x := x) hxov.1).differentiableAt (by norm_num)
+  have hdj : DifferentiableAt ℝ (openChartPrim 𝔇 s j) z :=
+    (hφx ▸ contDiffAt_openChartPrim 𝔇 s j (x := x) hxov.2).differentiableAt (by norm_num)
+  -- `∂̄(holoFn ∘ φ.symm) z = 0` (holomorphic), and `∂̄` of the difference equals it (`=ᶠ` congr).
+  have hdb_holo : DbarDisk.dbar (holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) ∘ φ.symm) z = 0 :=
+    DbarDisk.dbar_eq_zero_of_differentiableAt hdiffC
+  have hdb_diff_eq :
+      DbarDisk.dbar (fun w => openChartPrim 𝔇 s j w - openChartPrim 𝔇 s i w) z
+        = DbarDisk.dbar (holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) ∘ φ.symm) z := by
+    simp only [DbarDisk.dbar, hdiffEq.fderiv_eq]
+  -- Assemble: `∂̄(openChartPrim i) z = ∂̄(openChartPrim j) z`.
+  have hsubeq : DbarDisk.dbar (openChartPrim 𝔇 s j) z - DbarDisk.dbar (openChartPrim 𝔇 s i) z = 0 := by
+    rw [← DbarOpenDisk.dbar_sub hdj hdi, hdb_diff_eq, hdb_holo]
+  exact (sub_eq_zero.1 hsubeq).symm
+
 end SharedChartCover
 end Jacobians.Dolbeault
