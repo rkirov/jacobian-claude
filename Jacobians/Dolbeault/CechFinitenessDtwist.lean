@@ -86,7 +86,75 @@ theorem finiteDimensional_stalkQuotient_of_not_mem {W : Opens X} {D : Divisor X}
       Submodule.comap_subtype_self]
   infer_instance
 
-/-! ### Finite-dimensionality of the section-quotient correction spaces -/
+/-! ### The Pi-section quotient is finite-dimensional (the common shape of `sections0`/`sections1`) -/
+
+/-- The `𝒪_D` Pi-section submodule over a finite family of opens `W : ι → Opens X`: tuples of germs
+with each component a `𝒪_D`-germ.  Both `sections0 D` and `sections1 D` are instances of this (with
+`W` the cover-sets resp. the pairwise overlaps).  Definitionally a `Submodule` of `∀ i, MGerm (W i)`. -/
+def piSec {ι : Type*} (W : ι → Opens X) (D : Divisor X) : Submodule ℂ (∀ i, MGerm (W i)) where
+  carrier := {f | ∀ i, f i ∈ OmegaDGerm D (W i)}
+  add_mem' hf hg i := add_mem (hf i) (hg i)
+  zero_mem' i := Submodule.zero_mem _
+  smul_mem' c f hf i := Submodule.smul_mem _ c (hf i)
+
+open scoped Classical in
+/-- The component coefficient functional `piSec W (D+P) →ₗ[ℂ] ℂ` at index `i`: the order-`(−D(P)−1)`
+principal-part coefficient at `P` on `W i` when `P ∈ W i` (`coeffGermLin`), and `0` otherwise.  Its
+vanishing characterises `𝒪_D`-membership of the `i`-component (`piSec_coeff_eq_zero_iff`). -/
+noncomputable def piSec_coeff {ι : Type*} (W : ι → Opens X) (D : Divisor X) (P : X) (i : ι) :
+    piSec W (D + Finsupp.single P 1) →ₗ[ℂ] ℂ :=
+  if h : P ∈ W i then
+    (coeffGermLin h).comp
+      (((LinearMap.proj i).comp (piSec W (D + Finsupp.single P 1)).subtype).codRestrict
+        (OmegaDGerm (D + Finsupp.single P 1) (W i)) (fun f => f.2 i))
+  else 0
+
+/-- The component coefficient vanishes iff the `i`-component is a `𝒪_D`-germ.  When `P ∈ W i` this is
+`ker_coeffGermLin`; when `P ∉ W i` the coefficient is `0` and the `D` / `D+P` section spaces coincide
+(`OmegaDGerm_add_single_eq_of_not_mem`), so membership is automatic. -/
+theorem piSec_coeff_eq_zero_iff {ι : Type*} (W : ι → Opens X) (D : Divisor X) (P : X) (i : ι)
+    (f : piSec W (D + Finsupp.single P 1)) :
+    piSec_coeff W D P i f = 0 ↔ (f : ∀ i, MGerm (W i)) i ∈ OmegaDGerm D (W i) := by
+  unfold piSec_coeff
+  by_cases h : P ∈ W i
+  · rw [dif_pos h, LinearMap.comp_apply, ← LinearMap.mem_ker, ker_coeffGermLin,
+      Submodule.submoduleOf, Submodule.mem_comap, Submodule.coe_subtype]
+    rfl
+  · rw [dif_neg h]
+    simp only [LinearMap.zero_apply, true_iff]
+    rw [← OmegaDGerm_add_single_eq_of_not_mem h]
+    exact f.2 i
+
+/-- **The Pi-section skyscraper-correction quotient is finite-dimensional.**  Over a *finite* family
+`W : ι → Opens X`, the quotient `piSec W (D+P) ⧸ piSec W D` injects, via the tuple of component
+principal-part coefficients `piSec_coeff`, into the clean finite-dimensional `ι → ℂ`; the kernel of
+that tuple map is exactly `piSec W D` (`piSec_coeff_eq_zero_iff`), so the quotient is
+finite-dimensional.  (Routing through `ι → ℂ` rather than the product of stalk quotients avoids the
+heavy `Module`-instance synthesis on the dependent product of `OmegaDGerm`-quotients.) -/
+theorem finiteDimensional_piSec_quotient {ι : Type*} [Fintype ι] (W : ι → Opens X)
+    (D : Divisor X) (P : X) :
+    FiniteDimensional ℂ
+      (piSec W (D + Finsupp.single P 1) ⧸ (piSec W D).submoduleOf (piSec W (D + Finsupp.single P 1))) := by
+  classical
+  -- The tuple-of-coefficients map `G : piSec W (D+P) →ₗ (ι → ℂ)`.
+  set G : piSec W (D + Finsupp.single P 1) →ₗ[ℂ] (ι → ℂ) :=
+    LinearMap.pi (fun i => piSec_coeff W D P i) with hG
+  -- `ker G = piSec W D`: componentwise via `piSec_coeff_eq_zero_iff`.
+  have hkerG : LinearMap.ker G = (piSec W D).submoduleOf (piSec W (D + Finsupp.single P 1)) := by
+    refine Submodule.ext fun f => ?_
+    rw [LinearMap.mem_ker, hG, funext_iff, Submodule.submoduleOf, Submodule.mem_comap,
+      Submodule.coe_subtype]
+    constructor
+    · intro hf i
+      have := hf i
+      rw [LinearMap.pi_apply, Pi.zero_apply] at this
+      exact (piSec_coeff_eq_zero_iff W D P i f).mp this
+    · intro hf i
+      rw [LinearMap.pi_apply, Pi.zero_apply]
+      exact (piSec_coeff_eq_zero_iff W D P i f).mpr (hf i)
+  -- The quotient by `ker G` injects into `ι → ℂ` (finite-dim), hence is finite-dim.
+  rw [← hkerG]
+  exact Module.Finite.equiv (LinearMap.quotKerEquivRange G).symm
 
 namespace FiniteCover
 
@@ -100,15 +168,15 @@ overlaps `p : ι × ι`). -/
 theorem finiteDimensional_sections1_quotient :
     FiniteDimensional ℂ
       (𝔘.sections1 (D + Finsupp.single P 1) ⧸
-        (𝔘.sections1 D).submoduleOf (𝔘.sections1 (D + Finsupp.single P 1))) := by
-  sorry
+        (𝔘.sections1 D).submoduleOf (𝔘.sections1 (D + Finsupp.single P 1))) :=
+  finiteDimensional_piSec_quotient (fun p : 𝔘.ι × 𝔘.ι => 𝔘.U p.1 ⊓ 𝔘.U p.2) D P
 
 /-- `sections0 (D+P) ⧸ sections0 D` is finite-dimensional (degree-0 analogue). -/
 theorem finiteDimensional_sections0_quotient :
     FiniteDimensional ℂ
       (𝔘.sections0 (D + Finsupp.single P 1) ⧸
-        (𝔘.sections0 D).submoduleOf (𝔘.sections0 (D + Finsupp.single P 1))) := by
-  sorry
+        (𝔘.sections0 D).submoduleOf (𝔘.sections0 (D + Finsupp.single P 1))) :=
+  finiteDimensional_piSec_quotient (fun i : 𝔘.ι => 𝔘.U i) D P
 
 /-- `cocycles1 (D+P) ⧸ cocycles1 D` is finite-dimensional: the cocycle quotient injects into the
 section quotient `sections1 (D+P) ⧸ sections1 D` (`cocycles1 = ker δ¹ ⊓ sections1`). -/
