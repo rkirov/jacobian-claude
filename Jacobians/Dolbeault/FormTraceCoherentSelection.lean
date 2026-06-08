@@ -96,8 +96,8 @@ pushforward summands germ-agree near `b`:
 > `(fun w => c (s₁ w) · deriv s₁ w) =ᶠ[𝓝 b] (fun w => c (s₂ w) · deriv s₂ w)`.
 
 *Proof.*  `s₁ =ᶠ[𝓝 b] s₂` gives both `c (s₁ w) = c (s₂ w)` (congruence under `c`) and
-`deriv s₁ w = deriv s₂ w` near `b` (`Filter.EventuallyEq.deriv_eq` holds on a neighbourhood since
-`deriv` is germ-local), so the products germ-agree. -/
+`deriv s₁ =ᶠ[𝓝 b] deriv s₂` (`Filter.EventuallyEq.deriv`, since `deriv` is germ-local), so the
+products germ-agree. -/
 theorem traceSummand_eventuallyEq_of_section_eventuallyEq (c : ℂ → ℂ) {s₁ s₂ : ℂ → ℂ} {b : ℂ}
     (hs : s₁ =ᶠ[𝓝 b] s₂) :
     (fun w => c (s₁ w) * deriv s₁ w) =ᶠ[𝓝 b] (fun w => c (s₂ w) * deriv s₂ w) := by
