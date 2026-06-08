@@ -301,4 +301,24 @@ noncomputable def MovingCoherenceDatum.ofSphereSheetSystemReg
     (fun _ => rfl)
     hsel
 
+/-! ### The sphere sheet system genuinely exists (non-vacuity of the close-path)
+
+The sphere sheet systems my constructors consume are not hypothetical: for a nonconstant `f`, the
+compact sphere map `f.toRiemannSphere` is `ContMDiff` (`contMDiff_toRiemannSphere`) and nonconstant
+(`toRiemannSphere_not_isConstant`), so `exists_localSheetSystem` (Forster §4.22) provides a
+`LocalSheetSystem` at any finite value `coe b₀` *off the branch locus*.  This confirms part (A)'s
+close-path is real (the translation feeds genuinely-available data). -/
+
+/-- **The sphere sheet system exists at a finite value off the branch locus.**  For a nonconstant
+`f` (`∃ x, orderAtPoint x ≠ 0`), the compact sphere map `f.toRiemannSphere` is `ContMDiff` and
+nonconstant; off the branch locus, `exists_localSheetSystem` gives a `LocalSheetSystem` at `coe b₀`.
+The genuinely-available input the sphere-side constructors translate into `f.holoRepr`-sections. -/
+theorem exists_sphereSheetSystem (f : MeromorphicFunction X) (hnc : ∃ x, f.orderAtPoint x ≠ 0)
+    {b₀ : ℂ} (hb₀ : (((b₀ : ℂ) : RiemannSphere)) ∉ Jacobians.branchLocus f.toRiemannSphere) :
+    Nonempty (Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere))) := by
+  -- `f.toRiemannSphere` is nonconstant in the `∃ y, ∀ x` form `exists_localSheetSystem` consumes.
+  have hncF : ¬ ∃ y₀ : RiemannSphere, ∀ x, f.toRiemannSphere x = y₀ :=
+    f.toRiemannSphere_not_isConstant hnc
+  exact Jacobians.exists_localSheetSystem f.toRiemannSphere f.contMDiff_toRiemannSphere hncF hb₀
+
 end Jacobians.Dolbeault.FormTraceMovingFibre
