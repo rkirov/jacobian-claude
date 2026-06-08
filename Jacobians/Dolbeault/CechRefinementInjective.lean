@@ -354,7 +354,38 @@ theorem refinementDescend_unconditional (hr : IsRefinement 𝔙 𝔘 r) :
   funext p
   obtain ⟨i, j⟩ := p
   show (𝔘.cechDelta0 hC) (i, j) = gc (i, j)
-  sorry
+  -- Separation over the cover `{U_i ⊓ U_j ⊓ V_k}_k` of `U_i ⊓ U_j`.
+  refine omegaDGerm_separated (fun k => 𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k) (fun _ => inf_le_left)
+    (coverInf2_iSup i j) _ _ (fun k => ?_)
+  -- Restrict both sides to `A k = U_i ⊓ U_j ⊓ V_k` and reduce to the cocycle relation `(i, j, r k)`.
+  -- The restrictions of `hC i`, `hC j` to `A k` are `sFam i k`, `sFam j k` (from `hC_spec`).
+  have hi : rawRestrictG (le_inf (inf_le_left.trans inf_le_left) inf_le_right :
+        𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k ≤ 𝔘.U i ⊓ 𝔙.U k) (sFam i k)
+      = rawRestrictG (inf_le_left.trans inf_le_left : 𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k ≤ 𝔘.U i) (hC i) := by
+    rw [← hC_spec i k, rawRestrictG_comp_apply]
+  have hj : rawRestrictG (le_inf (inf_le_left.trans inf_le_right) inf_le_right :
+        𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k ≤ 𝔘.U j ⊓ 𝔙.U k) (sFam j k)
+      = rawRestrictG (inf_le_left.trans inf_le_right : 𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k ≤ 𝔘.U j) (hC j) := by
+    rw [← hC_spec j k, rawRestrictG_comp_apply]
+  -- The cocycle relation `(i, j, r k)`, restricted to `A k`.
+  have hcr := congrArg (rawRestrictG (show 𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k ≤ 𝔘.U i ⊓ 𝔘.U j ⊓ 𝔘.U (r k) from
+      le_inf inf_le_left (inf_le_right.trans (hr k)))) (cocycleRel hker i j (r k))
+  rw [← hgc] at hcr
+  simp only [map_add, rawRestrictG_comp_apply] at hcr
+  -- Expand `δ⁰`, collapse restrictions, substitute `hi`, `hj`, `sFam`, and finish with `hcr`.
+  simp only [cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply, LinearMap.comp_apply,
+    LinearMap.proj_apply, map_sub, rawRestrictG_comp_apply]
+  rw [← hi, ← hj]
+  simp only [hsFam, map_sub, rawRestrictG_comp_apply]
+  linear_combination (norm := abel) hcr
+
+/-- **Forster 12.4: the refinement map on `H¹` is injective UNCONDITIONALLY.**  For ANY refinement
+`hr : IsRefinement 𝔙 𝔘 r`, `refineH1 hr` is injective — with NO acyclicity / Leray hypothesis on either
+cover (contrast `refineH1_injective`, which needs a back-refinement).  Immediate from
+`refinementDescend_unconditional` via `refineH1_injective_iff_descend`. -/
+theorem refineH1_injective_unconditional (hr : IsRefinement 𝔙 𝔘 r) :
+    Function.Injective (hr.refineH1 D) :=
+  (refineH1_injective_iff_descend D hr).2 (refinementDescend_unconditional D hr)
 
 end IsRefinement
 end FiniteCover
