@@ -6,6 +6,7 @@ Authors: Rado Kirov
 import Jacobians.Dolbeault.FormTraceGlobalConstruct
 import Jacobians.Dolbeault.FormTraceMeromorphic
 import Jacobians.Dolbeault.FormTracePrincipalPart
+import Jacobians.Dolbeault.FormTracePrincipalPartInfty
 
 /-!
 # The global trace function `T : ℂ → ℂ` over a fibre family (Gate A, §VIII.3 step 1)
@@ -55,7 +56,7 @@ namespace Jacobians.Dolbeault.FormTraceGlobal
 
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
   Jacobians.Dolbeault.FormTraceFibre Jacobians.Dolbeault.FormTraceInftyFibre
-  Jacobians.Dolbeault.FormTracePrincipalPart
+  Jacobians.Dolbeault.FormTracePrincipalPart Jacobians.Dolbeault.FormTraceInftyRecip
 
 set_option linter.unusedSectionVars false
 
@@ -245,5 +246,82 @@ theorem exists_laurentForm_principalPart {T : ℂ → ℂ} {m : ℕ} (cs : Fin m
         + ∑ i ∈ Finset.univ.erase j, negTail (cs i) (b i) (N i) z)
         = (T z - negTail (cs j) (b j) (N j) z)
           - ∑ i ∈ Finset.univ.erase j, negTail (cs i) (b i) (N i) z by ring, hTj]
+
+/-! ### The `hentire` field: the remainder `T − L.R` is entire
+
+Combining the principal-part subtraction with the junk-freeness (continuity after pole removal): if
+`T` is analytic off the centres, `L.R` is analytic off the centres (its only poles are the centres),
+and at each centre `T − L.R` is continuous and germ-analytic (the pole removed by the principal-part
+subtraction), then `T − L.R` is **entire** (`AnalyticOnNhd ℂ (T − L.R) univ`).  This is the
+`GlobalTrace.hentire` field. -/
+
+/-- **The remainder is entire, from junk-freeness.**  Let `L` be a `LaurentForm` whose centres are
+exactly `cs` (so `L.R` is analytic off `{cs i}`), with `T − L.R` germ-analytic at each `cs j` (the
+pole removed — the conclusion of `exists_laurentForm_principalPart`).  If `T` is analytic off the
+centres (`hT_off`) and `T − L.R` is **continuous at each centre** (`hcont` — the junk-free condition),
+then `T − L.R` is entire.  *Proof.*  Off the centres, `T − L.R` is `T` analytic minus `L.R` analytic;
+at a centre, `T − L.R` is meromorphic (germ-equal to an analytic function) and continuous, hence
+analytic (`MeromorphicAt.analyticAt`). -/
+theorem analyticOnNhd_remainder_of_junkFree {T : ℂ → ℂ} {m : ℕ} {cs : Fin m → ℂ} {L : LaurentForm}
+    (hLa : Finset.univ.image L.a = Finset.univ.image cs)
+    (hLrem : ∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧ (T - L.R) =ᶠ[𝓝[≠] (cs j)] R)
+    (hT_off : ∀ z, (∀ i, z ≠ cs i) → AnalyticAt ℂ T z)
+    (hcont : ∀ j, ContinuousAt (T - L.R) (cs j)) :
+    AnalyticOnNhd ℂ (T - L.R) Set.univ := by
+  classical
+  -- `L.R` is analytic off the centres: its monomials have centres in `image L.a = image cs`.
+  have hLR_off : ∀ z, (∀ i, z ≠ cs i) → AnalyticAt ℂ L.R z := by
+    intro z hz
+    show AnalyticAt ℂ (fun w => ∑ p, L.c p * (w - L.a p) ^ L.n p) z
+    refine Finset.analyticAt_fun_sum _ (fun p _ => ?_)
+    refine analyticAt_const.mul ?_
+    have hbase : AnalyticAt ℂ (fun w : ℂ => w - L.a p) z := analyticAt_id.sub analyticAt_const
+    -- `z ≠ L.a p`: `L.a p ∈ image L.a = image cs`, so `L.a p = cs i` for some `i`, and `z ≠ cs i`.
+    have hLap : L.a p ∈ Finset.univ.image cs := by
+      rw [← hLa]; exact Finset.mem_image_of_mem L.a (Finset.mem_univ p)
+    simp only [Finset.mem_image, Finset.mem_univ, true_and] at hLap
+    obtain ⟨i, hi⟩ := hLap
+    exact hbase.zpow (sub_ne_zero.mpr (hi ▸ hz i))
+  intro z _
+  by_cases hzc : ∃ i, z = cs i
+  · -- at a centre `cs j`: meromorphic (pole removed) + continuous ⟹ analytic.
+    obtain ⟨j, rfl⟩ := hzc
+    obtain ⟨R, hR_an, hR_eq⟩ := hLrem j
+    have hmero : MeromorphicAt (T - L.R) (cs j) := hR_an.meromorphicAt.congr hR_eq.symm
+    exact hmero.analyticAt (hcont j)
+  · -- off the centres: `T` analytic minus `L.R` analytic.
+    push_neg at hzc
+    exact (hT_off z hzc).sub (hLR_off z hzc)
+
+/-! ### The `hrecip` field: the remainder is holomorphic across `∞`
+
+The reciprocal-chart analogue of `hentire`.  `recipCoeff h 0 = 0` always (the junk `0^{-2}` Jacobian,
+`recipCoeff_zero_eval`), so `ContinuousAt (recipCoeff h) 0` is exactly "`recipCoeff h` *tends to* `0`
+at `0`".  When the analytic continuation of `recipCoeff h` off `0` is an analytic function `R₀`
+**vanishing at `0`** (`R₀ 0 = 0` — the holomorphic remainder has no `dζ`-term at `∞`, the genus-`0`
+content), the continuity to `0` holds.  This is the `GlobalTrace.hrecip` field; it isolates `R₀ 0 = 0`
+as the single irreducible `∞` obligation.  (Specialisation of
+`continuousAt_recipRemainder_of_vanishing` to a trivial recip-chart principal part `negTail 0 0 0`.) -/
+
+/-- **The remainder is holomorphic across `∞`, from a vanishing analytic continuation.**  If
+`recipCoeff h` germ-agrees off `0` with an analytic function `R₀` (`hR_eq`) that vanishes at `0`
+(`hR0 : R₀ 0 = 0`), then `recipCoeff h` is **continuous at `0`** (continuity to the junk value `0`).
+This is the honest `GlobalTrace.hrecip` shape — `R₀ 0 = 0` is the genus-`0` "no `dζ`-term at `∞`"
+input.  *Proof.*  Along `𝓝[≠] 0` agreement with the continuous `R₀`; at `0` the value is `0 = R₀ 0`. -/
+theorem continuousAt_recipCoeff_of_vanishing {h : ℂ → ℂ} {R₀ : ℂ → ℂ}
+    (hR_an : AnalyticAt ℂ R₀ 0) (hR0 : R₀ 0 = 0) (hR_eq : recipCoeff h =ᶠ[𝓝[≠] 0] R₀) :
+    ContinuousAt (recipCoeff h) 0 := by
+  have hval0 : recipCoeff h 0 = R₀ 0 := by rw [recipCoeff_zero_eval, hR0]
+  rw [ContinuousAt]
+  show Tendsto (recipCoeff h) (𝓝 0) (𝓝 (recipCoeff h 0))
+  rw [hval0, ← nhdsNE_sup_pure (0 : ℂ), tendsto_sup]
+  refine ⟨?_, ?_⟩
+  · -- along `𝓝[≠] 0`: agreement off `0` with the continuous `R₀`.
+    exact (hR_an.continuousAt.continuousWithinAt.tendsto).congr' hR_eq.symm
+  · -- along `pure 0`: the value at `0` is `R₀ 0`.
+    rw [tendsto_pure_left]
+    intro s hs
+    rw [hval0]
+    exact mem_of_mem_nhds hs
 
 end Jacobians.Dolbeault.FormTraceGlobal
