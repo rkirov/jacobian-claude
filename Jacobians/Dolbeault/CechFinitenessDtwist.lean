@@ -156,6 +156,64 @@ theorem finiteDimensional_piSec_quotient {ι : Type*} [Fintype ι] (W : ι → O
   rw [← hkerG]
   exact Module.Finite.equiv (LinearMap.quotKerEquivRange G).symm
 
+/-! ### Abstract finiteness propagation through `⊓` and `map` (for cocycles / coboundaries) -/
+
+/-- **Finiteness through `⊓`.**  For `A ≤ B` and any `K`, the quotient `(K ⊓ B) ⧸ (K ⊓ A)` injects into
+`B ⧸ A` (the inclusion `K ⊓ B ↪ B`), so it is finite-dimensional whenever `B ⧸ A` is.  (Used for
+`cocycles1 = ker δ¹ ⊓ sections1`: `K = ker δ¹`, `A/B = sections1 D / sections1 (D+P)`.) -/
+theorem finiteDimensional_inf_quotient {M : Type*} [AddCommGroup M] [Module ℂ M]
+    (K A B : Submodule ℂ M) (hAB : A ≤ B)
+    (hfin : FiniteDimensional ℂ (B ⧸ A.submoduleOf B)) :
+    FiniteDimensional ℂ
+      ((K ⊓ B : Submodule ℂ M) ⧸ (K ⊓ A).submoduleOf (K ⊓ B : Submodule ℂ M)) := by
+  refine FiniteDimensional.of_injective
+    (Submodule.mapQ ((K ⊓ A).submoduleOf (K ⊓ B : Submodule ℂ M)) (A.submoduleOf B)
+      (Submodule.inclusion (inf_le_right : (K ⊓ B : Submodule ℂ M) ≤ B)) ?_) ?_
+  · -- the inclusion carries `(K⊓A).submoduleOf(K⊓B)` into `A.submoduleOf B`.
+    intro x hx
+    rw [Submodule.mem_comap, Submodule.submoduleOf, Submodule.mem_comap, Submodule.coe_subtype]
+    rw [Submodule.submoduleOf, Submodule.mem_comap, Submodule.coe_subtype] at hx
+    exact (Submodule.mem_inf.mp hx).2
+  · -- injectivity: `x ∈ K⊓B` with `(x:M) ∈ A` ⟹ `x ∈ K⊓A` (so `comap incl q ≤ ker mkQ`).
+    rw [← LinearMap.ker_eq_bot, Submodule.ker_mapQ, ← le_bot_iff,
+      Submodule.map_le_iff_le_comap]
+    intro y hy
+    rw [Submodule.mem_comap, Submodule.submoduleOf, Submodule.mem_comap, Submodule.coe_subtype] at hy
+    rw [Submodule.mem_comap, Submodule.mem_bot, Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero,
+      Submodule.submoduleOf, Submodule.mem_comap, Submodule.coe_subtype, Submodule.mem_inf]
+    exact ⟨(Submodule.mem_inf.mp y.2).1, hy⟩
+
+/-- **Finiteness through `map`.**  For `A0 ≤ B0` and a linear map `f`, the quotient
+`(map f B0) ⧸ (map f A0)` is a quotient (surjective image) of `B0 ⧸ A0` (via `f` descended), so it is
+finite-dimensional whenever `B0 ⧸ A0` is.  (Used for `coboundaries1 = map δ⁰ sections0`.) -/
+theorem finiteDimensional_map_quotient {M N : Type*} [AddCommGroup M] [Module ℂ M]
+    [AddCommGroup N] [Module ℂ N] (f : M →ₗ[ℂ] N) (A0 B0 : Submodule ℂ M) (hAB : A0 ≤ B0)
+    (hfin : FiniteDimensional ℂ (B0 ⧸ A0.submoduleOf B0)) :
+    FiniteDimensional ℂ ((B0.map f) ⧸ (A0.map f).submoduleOf (B0.map f)) := by
+  -- `f` restricted to `B0` corestricted to `map f B0`, surjective and carrying `A0`-classes.
+  set g : B0 →ₗ[ℂ] B0.map f :=
+    (f.domRestrict B0).codRestrict (B0.map f) (fun b => ⟨b.1, b.2, rfl⟩) with hg
+  have hgsurj : Function.Surjective g := by
+    rintro ⟨n, b, hb, rfl⟩
+    exact ⟨⟨b, hb⟩, rfl⟩
+  -- descend `mkQ ∘ g : B0 → (map f B0)/(map f A0)`, killing `A0`.
+  set h : B0 →ₗ[ℂ] (B0.map f) ⧸ (A0.map f).submoduleOf (B0.map f) :=
+    ((A0.map f).submoduleOf (B0.map f)).mkQ.comp g with hh
+  have hhsurj : Function.Surjective h :=
+    (Submodule.mkQ_surjective _).comp hgsurj
+  have hker : A0.submoduleOf B0 ≤ LinearMap.ker h := by
+    intro a ha
+    rw [Submodule.submoduleOf, Submodule.mem_comap, Submodule.coe_subtype] at ha
+    rw [LinearMap.mem_ker, hh, LinearMap.comp_apply, Submodule.mkQ_apply,
+      Submodule.Quotient.mk_eq_zero, Submodule.submoduleOf, Submodule.mem_comap,
+      Submodule.coe_subtype]
+    exact ⟨a.1, ha, rfl⟩
+  -- the descended surjection `B0/A0 ↠ (map f B0)/(map f A0)`.
+  have hsurj : Function.Surjective ((A0.submoduleOf B0).liftQ h hker) := by
+    rw [← LinearMap.range_eq_top, Submodule.range_liftQ, LinearMap.range_eq_top]
+    exact hhsurj
+  exact FiniteDimensional.of_surjective _ hsurj
+
 namespace FiniteCover
 
 open FiniteFamily
@@ -183,16 +241,20 @@ section quotient `sections1 (D+P) ⧸ sections1 D` (`cocycles1 = ker δ¹ ⊓ se
 theorem finiteDimensional_cocycles1_quotient :
     FiniteDimensional ℂ
       (𝔘.cocycles1 (D + Finsupp.single P 1) ⧸
-        (𝔘.cocycles1 D).submoduleOf (𝔘.cocycles1 (D + Finsupp.single P 1))) := by
-  sorry
+        (𝔘.cocycles1 D).submoduleOf (𝔘.cocycles1 (D + Finsupp.single P 1))) :=
+  finiteDimensional_inf_quotient (LinearMap.ker 𝔘.cechDelta1) (𝔘.sections1 D)
+    (𝔘.sections1 (D + Finsupp.single P 1)) (𝔘.sections1_le_add_single D P)
+    (𝔘.finiteDimensional_sections1_quotient D P)
 
 /-- `coboundaries1 (D+P) ⧸ coboundaries1 D` is finite-dimensional: it is a quotient of the degree-0
 section quotient `sections0 (D+P) ⧸ sections0 D` (`coboundaries1 = δ⁰(sections0)`). -/
 theorem finiteDimensional_coboundaries1_quotient :
     FiniteDimensional ℂ
       (𝔘.coboundaries1 (D + Finsupp.single P 1) ⧸
-        (𝔘.coboundaries1 D).submoduleOf (𝔘.coboundaries1 (D + Finsupp.single P 1))) := by
-  sorry
+        (𝔘.coboundaries1 D).submoduleOf (𝔘.coboundaries1 (D + Finsupp.single P 1))) :=
+  finiteDimensional_map_quotient 𝔘.cechDelta0 (𝔘.sections0 D)
+    (𝔘.sections0 (D + Finsupp.single P 1)) (𝔘.sections0_le_add_single D P)
+    (𝔘.finiteDimensional_sections0_quotient D P)
 
 /-! ### The per-point step (both directions) -/
 
