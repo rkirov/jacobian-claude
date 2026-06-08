@@ -186,4 +186,107 @@ theorem residueSum_eq_zero_of_data_holomorphic (ω₀ : HolomorphicOneForms X) (
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
+/-! ### `GlobalTrace` from the glue alone — `L` built internally
+
+The maximally-reduced constructor: the caller supplies the global trace `T` and the **glue** (`T`
+germ-agrees with the local fibre traces at the finite centres `cs` and at `∞`), `T`'s analyticity off
+the centres, junk-freeness, and the genus-`0` `∞`-vanishing — *but not `L`*.  The rational
+`LaurentForm L` is built **internally** from `T`'s principal parts at the centres
+(`exists_laurentForm_principalPart`), which exist because `T` germ-agrees with the meromorphic local
+fibre traces `Sₚ` near each centre.  This isolates the irreducible §VIII.3 content to exactly the
+glue, the off-centre analyticity, junk-freeness, and the genus-`0` vanishing — no principal-part
+bookkeeping left for the caller. -/
+
+/-- **`GlobalTrace` from the glue (`L` built internally).**  Given `m` finite centres `cs : Fin m → ℂ`
+(the finite pole-values), distinct (`hcs_inj`) and inside a ball `ball 0 ρ` (`hcs_ball`), with the
+sphere-image identification `hcenters_cs`, the `∞`-fibre enumeration `Dinf`/`hxs_*`, and:
+
+* `hglue_fin` — `T` germ-agrees with the pole sub-fibre trace `(fibreTrace ω₀ f (fibreReg hac (cs i)))`
+  near each centre (the finite glue);
+* `hglue_inf` — `recipCoeff T` germ-agrees with the `∞`-fibre trace near `0`;
+* `hT_off` — `T` is analytic off the centre set `{cs i}`;
+* the genus-`0` `∞`-vanishing `R₀` (`hR₀_an`/`hR₀0`) with the reciprocal germ data `hR₀_eq`;
+* `hcont_int` — junk-freeness phrased *internally* (continuity of `T − L.R` at each centre), supplied
+  for the internally-built `L`;
+
+a `GlobalTrace` exists.  `L` is built from `T`'s principal parts at the centres; `hrem` is automatic
+from the extraction; `hentire`/`hrecip` are discharged as in `globalTrace_of_data`. -/
+noncomputable def globalTrace_of_glue (hac : AdaptedCover ω₀ g f poles)
+    (T : ℂ → ℂ) {m : ℕ} (cs : Fin m → ℂ) (ρ : ℝ)
+    (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ) (hcs_inj : Function.Injective cs)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (Dinf : InftyFibreData g f)
+    (hxs_inj : Function.Injective Dinf.xs)
+    (hxs_mem : ∀ i, Dinf.xs i ∈ poles ∧ f.toRiemannSphere (Dinf.xs i) = OnePoint.infty)
+    (hxs_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, Dinf.xs i = a)
+    (hglue_fin : ∀ i, T =ᶠ[𝓝[≠] cs i] (fibreTrace ω₀ f (fibreReg hac (cs i))).traceCoeff)
+    (hglue_inf : recipCoeff T =ᶠ[𝓝[≠] 0] (inftyFibreTrace ω₀ f Dinf).traceCoeff)
+    (hT_off : ∀ z ∉ Finset.univ.image cs, AnalyticAt ℂ T z)
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧ (T - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (T - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (T - L.R) =ᶠ[𝓝[≠] 0] R₀) :
+    GlobalTrace ω₀ g f poles hac := by
+  classical
+  -- `T` is meromorphic at each centre (germ-equal to the meromorphic local fibre trace `Sₚ`).
+  have hT_mero : ∀ i, MeromorphicAt T (cs i) := fun i =>
+    (meromorphicAt_traceCoeff_fibreTrace ω₀ f (fibreReg hac (cs i))).congr (hglue_fin i).symm
+  -- Build `L` from `T`'s principal parts at the centres (via `Classical.choose`, as this is data).
+  set hex := exists_laurentForm_principalPart cs ρ hcs_ball hcs_inj hT_mero with hex_def
+  set L : LaurentForm := hex.choose with hL_def
+  have hLa : Finset.univ.image L.a = Finset.univ.image cs := hex.choose_spec.1
+  have hLrem : ∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧ (T - L.R) =ᶠ[𝓝[≠] (cs j)] R :=
+    hex.choose_spec.2
+  -- `hrem` in membership form over `univ.image L.a = univ.image cs`.
+  have hrem_mem : ∀ p ∈ Finset.univ.image L.a,
+      ∃ R : ℂ → ℂ, AnalyticAt ℂ R p ∧ (T - L.R) =ᶠ[𝓝[≠] p] R := by
+    intro p hp
+    rw [hLa] at hp
+    simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
+    obtain ⟨i, rfl⟩ := hp
+    exact hLrem i
+  -- Glue, off-analyticity, junk-freeness, ∞-vanishing — all transported to `L`'s centre set.
+  refine globalTrace_of_data hac T L (by rw [hLa]; exact hcenters_cs) Dinf hxs_inj hxs_mem hxs_surj
+    ?_ hglue_inf ?_ hrem_mem (hcont_int L hLa hLrem) R₀ hR₀_an hR₀0 (hR₀_eq L hLa)
+  · -- hglue_fin over `univ.image L.a = univ.image cs`.
+    intro p hp
+    rw [hLa] at hp
+    simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
+    obtain ⟨i, rfl⟩ := hp
+    exact hglue_fin i
+  · -- hT_off over `univ.image L.a = univ.image cs`.
+    intro z hz
+    rw [hLa] at hz
+    exact hT_off z hz
+
+/-- **Gate A from the glue (`L` built internally).**  Composes `globalTrace_of_glue` with
+`residueSum_eq_zero_of_globalTrace`: if an adapted cover and the glue data exist (the global trace
+function `T` germ-agreeing with the local fibre traces, analytic off the centres, junk-free, with the
+genus-`0` `∞`-vanishing), then `∑ₐ Resₐ(α) = 0` holds *unconditionally* for `α = ω₀·g`. -/
+theorem residueSum_eq_zero_of_glue (hac : AdaptedCover ω₀ g f poles)
+    (T : ℂ → ℂ) {m : ℕ} (cs : Fin m → ℂ) (ρ : ℝ)
+    (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ) (hcs_inj : Function.Injective cs)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (Dinf : InftyFibreData g f)
+    (hxs_inj : Function.Injective Dinf.xs)
+    (hxs_mem : ∀ i, Dinf.xs i ∈ poles ∧ f.toRiemannSphere (Dinf.xs i) = OnePoint.infty)
+    (hxs_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, Dinf.xs i = a)
+    (hglue_fin : ∀ i, T =ᶠ[𝓝[≠] cs i] (fibreTrace ω₀ f (fibreReg hac (cs i))).traceCoeff)
+    (hglue_inf : recipCoeff T =ᶠ[𝓝[≠] 0] (inftyFibreTrace ω₀ f Dinf).traceCoeff)
+    (hT_off : ∀ z ∉ Finset.univ.image cs, AnalyticAt ℂ T z)
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧ (T - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (T - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (T - L.R) =ᶠ[𝓝[≠] 0] R₀) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueSum_eq_zero_of_globalTrace hac
+    (globalTrace_of_glue hac T cs ρ hcs_ball hcs_inj hcenters_cs Dinf hxs_inj hxs_mem hxs_surj
+      hglue_fin hglue_inf hT_off hcont_int R₀ hR₀_an hR₀0 hR₀_eq)
+
 end Jacobians.Dolbeault.FormTraceGlobal
