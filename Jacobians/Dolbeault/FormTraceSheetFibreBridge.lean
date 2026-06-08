@@ -155,7 +155,7 @@ identification half of step 2.  We prove the clean planar uniqueness here. -/
 `s₁ =ᶠ[𝓝 b] s₂`.  Both equal the canonical `localInverse` near `b` (via
 `HasStrictDerivAt.eventually_left_inverse` composed with the right-inverse property). -/
 theorem eventuallyEq_of_rightInverse_of_rightInverse {φ s₁ s₂ : ℂ → ℂ} {x₀ b : ℂ}
-    (hφ : AnalyticAt ℂ φ x₀) (hφ' : deriv φ x₀ ≠ 0) (hb : φ x₀ = b)
+    (hφ : AnalyticAt ℂ φ x₀) (hφ' : deriv φ x₀ ≠ 0) (_hb : φ x₀ = b)
     (hs₁b : s₁ b = x₀) (hs₂b : s₂ b = x₀)
     (hs₁c : ContinuousAt s₁ b) (hs₂c : ContinuousAt s₂ b)
     (hrinv₁ : ∀ᶠ w in 𝓝 b, φ (s₁ w) = w) (hrinv₂ : ∀ᶠ w in 𝓝 b, φ (s₂ w) = w) :

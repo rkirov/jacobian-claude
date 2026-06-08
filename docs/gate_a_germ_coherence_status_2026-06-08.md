@@ -45,10 +45,17 @@ Files (new, both axiom-clean `[propext, Classical.choice, Quot.sound]`, zero cus
 8. **`g_weighted_sheetPullback_eq_chartIntegrand_mul_deriv`** — the `g`-weighted bridge:
    `g(s y) · sheetPullback ω₀ s y 1 = chartIntegrand ω₀ g xs (sh w) · deriv(sh) w` — the **exact**
    `FormTraceFibre.fibreTrace.traceCoeff` summand (`coeff i = chartIntegrand ω₀ g (xs i)`).
+9. **`eventuallyEq_of_rightInverse_of_rightInverse`** — **uniqueness of the holomorphic local
+   inverse**: two continuous right-inverses of an analytic `φ` (`deriv ≠ 0`) agreeing at the base
+   germ-agree (both equal the canonical `localInverse`).
+10. **`fibreTrace_sheet_eventuallyEq`** — the **section identification**: the `fibreTrace` planar
+   sheet (`Classical.choose` inverse of `f.holoRepr ∘ chart⁻¹`) germ-equals any continuous
+   right-inverse of that chart pullback through the fibre point — in particular the
+   chart-representation of a bundle sheet (a section of `F`).
 
-These discharge the predecessor's **step 1 (the linchpin, ~200–400 LoC estimate)** and the analytic
-core of **step 2 (section identification — the Jacobian-cancellation half)** and the **step 4
-`g`-weighting**, all axiom-clean.
+These discharge the predecessor's **step 1 (the linchpin, ~200–400 LoC estimate)**, the **step 2
+section identification** (both the uniqueness-of-local-inverse half **and** the Jacobian-cancellation
+half), and the **step 4 `g`-weighting** — all axiom-clean.
 
 ---
 
@@ -58,20 +65,16 @@ To make `residueSum_eq_zero_of_geometricSelection_coh` discharge Gate A uncondit
 hypotheses `hglue_fin`/`hglue_inf`/`hreg` (germ-coherence) + junk-freeness + the genus-`0`
 `∞`-vanishing.  After the bridges above, what remains is:
 
-### (A) Section identification (the uniqueness-of-local-inverse half of step 2)
+### (A) Section identification — **CORE PROVEN** (`fibreTrace_sheet_eventuallyEq`)
 
-The planar section `(fibreTrace ω₀ f D).sheet i` (from `FormTraceFibre.exists_planar_section`, the
-local inverse of `f.holoRepr ∘ chart_{xs i}.symm`) germ-coincides with the **chart-representation**
-`chart_{D.xs i} ∘ bsₖ ∘ chartCoe.symm` of a bundle sheet `bsₖ : RiemannSphere → X` (from
-`TraceForm.LocalSheetSystem` / `exists_twoSided_localInverse`).  Both are local holomorphic inverses
-of the same chart map (using `toRiemannSphere_eventuallyEq_coe_holoRepr` to match
-`chartCoe ∘ F ∘ chart_{xs}.symm` with `f.holoRepr ∘ chart_{xs}.symm` near a non-pole), so they
-germ-agree by **uniqueness of the holomorphic local inverse**.
-
-* Hypotheses already dischargeable: `bsₖ` is `MDifferentiableAt` (`LocalSheetSystem.sheet_mdifferentiableAt`);
-  `s y ∈ chart_{xs}.source` (continuity, locally); the `deriv`-differentiabilities (analyticity of the
-  planar section + chart transitions).
-* Estimated ~100–200 LoC (uniqueness of biholo inverse + the `holoRepr`/`toRiemannSphere` chart match).
+The planar section `(fibreTrace ω₀ f D).sheet i` germ-equals any continuous right-inverse of
+`f.holoRepr ∘ chart_{xs i}.symm` through the fibre point (`fibreTrace_sheet_eventuallyEq`, axiom-clean,
+via the uniqueness lemma).  **What remains for (A):** verify that the chart-representation
+`chart_{D.xs i} ∘ bsₖ ∘ chartCoe.symm` of a bundle sheet `bsₖ` (from `TraceForm.LocalSheetSystem`)
+**is** such a right-inverse — i.e. `f.holoRepr (bsₖ (coe w)) = w` near `b` — which follows from `bsₖ`
+being a section of `F = f.toRiemannSphere` plus `toRiemannSphere_eventuallyEq_coe_holoRepr` (matching
+`F` with `coe ∘ holoRepr` near a non-pole).  This is the only mechanical residue of (A) (~40–80 LoC,
+no new geometry — just feeding the right-inverse hypothesis of `fibreTrace_sheet_eventuallyEq`).
 
 ### (B) Coherent global selection `Φ`
 
@@ -98,7 +101,17 @@ From the meromorphic normal form of `T − L.R` at each centre (the principal pa
 
 `residueSum_eq_zero_of_geometricSelection_coh` (PROVEN, `FormTraceGlobalGeometric.lean`) turns the key
 on exactly {(A) section identification, (B) coherent `Φ`, (C) `∞`-vanishing, (D) junk-freeness}.  The
-**deepest geometric content (step 1 linchpin + the step-2 Jacobian cancellation + step-4 `g`-weighting)
-is now PROVEN axiom-clean** (this session).  The remainder is the uniqueness-of-local-inverse section
-identification (A) — mechanical given Mathlib's `HasStrictDerivAt.localInverse` uniqueness — and the
-coherent-selection bookkeeping (B), plus the concrete (C)/(D).
+**deepest geometric content is now PROVEN axiom-clean** (this session): the step-1 linchpin, the
+step-2 section identification (uniqueness of local inverse **and** the Jacobian-cancellation single-
+sheet bridge), and the step-4 `g`-weighting.  The remainder is:
+
+* **(A) residue** — feed the bundle sheet's right-inverse property to `fibreTrace_sheet_eventuallyEq`
+  (~40–80 LoC, mechanical, no new geometry);
+* **(B)** the coherent-selection `Φ` bookkeeping (sum the per-sheet bridge over the fibre → a single
+  holomorphic germ; phrase against the pole sub-fibre `fibreReg`);
+* **(C)** the genus-`0` `∞`-vanishing (`holomorphicOneForm_eq_zero`, concrete);
+* **(D)** junk-freeness (meromorphic normal form, concrete).
+
+No unsound shortcut was taken: every new lemma is axiom-clean `[propext, Classical.choice, Quot.sound]`
+with zero custom axioms, and the honest pole-sub-fibre soundness nuance is preserved (the bridges are
+stated per-sheet and frame-independently — no false full-fibre germ-equality is asserted).
