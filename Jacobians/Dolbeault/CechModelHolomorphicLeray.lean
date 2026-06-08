@@ -71,6 +71,53 @@ noncomputable def chartCoverHolomorphicCoboundaries :
   hδδ := delta1_comp_delta0_holo
   hcomm := hcomm_holo
   leray := by
+    -- **THE GENUINE FORSTER 14.6 ANALYTIC STEP — one honest `sorry`.**
+    --
+    -- Goal: for a holomorphic shrinking 1-cocycle `s` (`δ¹s = 0`), produce
+    --   `η : Cochain0Model`, `x : Ccov`  with  `δ¹cov x = 0`  and  `s = δ⁰η + ρ·x`.
+    --
+    -- The smooth-split → glued-`∂̄` → per-disk-solve construction (Forster, mirroring the proven
+    -- single-chart prototype `GluedDbarDatum.dbarDatum`) is set up by:
+    --   • the genuine-cover PoU `genuineCoverPoU` (∑ρ = 1 on ALL of `X`, subordinate to `chartOpen`),
+    --   • the planar Wirtinger algebra `dbarFun_mul` / `dbarFun_finset_sum`,
+    --   • the cross-chart Wirtinger chain rule `dbarDisk_comp_holo`
+    --       (`∂̄(f∘τ) = conj(τ′)·(∂̄f)∘τ`), making `ω̂_a := ∂̄g_a` the chart-`a` read of a global
+    --       `(0,1)`-datum,
+    --   • the compactly-supported per-disk solver `DbarDisk.dbar_solvable_of_compactSupport`
+    --       (solves `∂̄h_a = ψ_a·ω̂_a` GLOBALLY on `ℂ` once `ψ_a·ω̂_a` is `C^∞` with compact support),
+    --   • `differentiableAt_of_dbar_eq_zero` for the holomorphy of the corrected pieces.
+    --
+    -- **WHERE THE PROOF GETS STUCK (the structural residual, not a packaging gap).**
+    -- The construction's `η_a := h_a − g_a` and `x_{ab} := h_b∘τ_{ab} − h_a` are holomorphic only on
+    -- the SHRINKING region `Wov`, NOT on the FULL cover sets that the model's `C0`/`Ccov` demand:
+    --   · `C0 = Cochain0Model = ∀a, BddHol (coverSetImage a)` — `η_a` must be holo on the FULL
+    --     `coverSetImage a = φ_a '' chartOpen a`;
+    --   · `Ccov = ∀p, BddHol (Uov p)` — `x_{ab}` must be holo on the FULL `Uov(a,b)`.
+    -- `η_a` is holo exactly where `∂̄h_a = ∂̄g_a`, i.e. where the cutoff `ψ_a = 1`; `x_{ab}` is holo
+    -- exactly where the chart-`a`/chart-`b` data `∂̄`-cancel, i.e. where `ψ_a(z) = ψ_b(τ_{ab}z)`.
+    --
+    -- The per-disk solver requires `ψ_a·ω̂_a` to be globally `C^∞` with COMPACT support in `ℂ`
+    -- (the glued primitive `g_a` is smooth only on `coverSetImage a`, with the `BddHol` zero-extension
+    -- junk at its boundary, so a compactly-supported cutoff `ψ_a` is genuinely needed). But:
+    --   • a GLOBAL cutoff `ψ_a = Ψ∘φ_a⁻¹` gives the cross-chart compatibility `ψ_a = ψ_b∘τ`
+    --     automatically (so `x` would be holo on the full `Uov`) — yet `Ψ` must be `1` on the
+    --     SHRINKING cover, which already covers the compact `X` (`iUnion_innerChartOpen_eq = univ`),
+    --     forcing `Ψ ≡ 1` and destroying the per-chart compact support;
+    --   • a PER-CHART cutoff `ψ_a` (=1 on `Wov`, supp `⋐ coverSetImage a`) restores compact support
+    --     but breaks `ψ_a = ψ_b∘τ`, so `x_{ab}` is holo only on `Wov(a,b)`, NOT on `Uov(a,b)`.
+    -- These two requirements are in genuine tension. Equivalently: producing `η ∈ C⁰(𝔘)` and
+    -- `x ∈ Z¹(𝔘)` holomorphic on the FULL cover overlaps from data holomorphic only on the
+    -- shrinkings is the LERAY COMPARISON `Z¹(𝔙) = δC⁰(𝔘) + Z¹(𝔘)|_𝔙`, whose surjectivity needs the
+    -- cover overlaps `Uov` to be ACYCLIC (`H¹(Uov,𝒪) = 0`). This is NOT available: the repo's
+    -- `IsLeray` requires only the cover SETS to be simply connected and explicitly documents overlap
+    -- acyclicity as unused dead weight (`CechComplex.IsLeray`), and the per-disk Dolbeault solve alone
+    -- (the available analytic tool) delivers holomorphy only on the cutoff-=1 shrinking region — the
+    -- SAME residual the single-chart prototype documents as `dbarDatum_agrees_on_interiorCore`.
+    --
+    -- Closing this requires EITHER (a) proving the chart-disk cover overlaps `Uov` acyclic and
+    -- invoking the Leray extension, OR (b) re-pointing the model's `C0`/`Ccov` to the shrinking
+    -- 0-/1-cochains (Forster's natural `C⁰(𝔙)`/`Z¹(𝔘)` two-scale statement) — a change to
+    -- `CechModelHolomorphic.lean`, out of scope for this file. The honest analytic content is left here.
     sorry
 
 end Jacobians.Dolbeault
