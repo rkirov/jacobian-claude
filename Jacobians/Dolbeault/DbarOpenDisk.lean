@@ -31,6 +31,12 @@ import Jacobians.Dolbeault.DbarDiskCohomology
 open Complex Metric Filter Topology
 open scoped NNReal ENNReal
 
+-- The transparency option resolves the `IsScalarTower ℝ ℂ ℂ` diamond (the documented `Module ℝ`
+-- clash) so `restrictScalars`/`ContDiff.restrict_scalars` from `ℂ` to `ℝ` elaborate; the repo's other
+-- Dolbeault files set the same option.
+set_option backward.isDefEq.respectTransparency false
+set_option linter.unusedSectionVars false
+
 namespace Jacobians.Dolbeault
 namespace DbarOpenDisk
 
@@ -99,6 +105,24 @@ theorem dbar_sub {f h : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (
   simp only [ContinuousLinearMap.sub_apply]
   ring
 
+/-- `∂̄` is additive at a point where both functions are real-differentiable. -/
+theorem dbar_add {f h : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (hh : DifferentiableAt ℝ h z) :
+    DbarDisk.dbar (fun x => f x + h x) z = DbarDisk.dbar f z + DbarDisk.dbar h z := by
+  unfold DbarDisk.dbar
+  rw [fderiv_fun_add hf hh]
+  simp only [ContinuousLinearMap.add_apply]
+  ring
+
+/-- An entire function is `ℝ`-smooth (holomorphic ⟹ `ℝ`-analytic ⟹ `C^∞`). -/
+theorem entire_contDiffR {P : ℂ → ℂ} (hP : Differentiable ℂ P) : ContDiff ℝ (⊤ : ℕ∞) P := by
+  have hC : AnalyticOnNhd ℂ P Set.univ := hP.differentiableOn.analyticOnNhd isOpen_univ
+  exact (hC.restrictScalars (𝕜 := ℝ)).contDiff
+
+/-- A holomorphic function on an open set is `ℝ`-smooth there. -/
+theorem holo_contDiffOnR {f : ℂ → ℂ} {s : Set ℂ} (hs : IsOpen s) (hf : DifferentiableOn ℂ f s) :
+    ContDiffOn ℝ (⊤ : ℕ∞) f s :=
+  ((hf.analyticOnNhd hs).restrictScalars (𝕜 := ℝ)).contDiffOn hs.uniqueDiffOn
+
 /-! ### Exhaustion radii and the per-ball solve -/
 
 /-- The exhaustion radii `ρₙ = R(1 − 2⁻⁽ⁿ⁺¹⁾) ↑ R`. -/
@@ -162,7 +186,133 @@ theorem dbar_solvable_open_disk (c : ℂ) {R : ℝ} (hR : 0 < R) {g : ℂ → �
     (hg : ContDiffOn ℝ (⊤ : ℕ∞) g (ball c R)) :
     ∃ u : ℂ → ℂ, ContDiffOn ℝ (⊤ : ℕ∞) u (ball c R) ∧
       ∀ z ∈ ball c R, DbarDisk.dbar u z = g z := by
-  sorry
+  obtain ⟨ρpos, ρmono, ρltR, ρtend⟩ := rho_props hR
+  set ρ := rho R with hρ
+  -- **Base case.**  Solve on `ball c (ρ 1)`.
+  obtain ⟨φ0, hφ0_smooth, hφ0_dbar⟩ :=
+    solve_on_ball c hg (a := ρ 1) (b := ρ 2) (ρpos 1) (ρmono (by norm_num)) (ρltR 2)
+  -- **Step.**  Correct a solution on `ball c (ρ (n+1))` to one on `ball c (ρ (n+2))`, controlling the
+  -- change on `closedBall c (ρ n)` by `2⁻ⁿ` via a holomorphic (Taylor) correction.
+  have step : ∀ (n : ℕ) (φ : ℂ → ℂ), ContDiff ℝ (⊤ : ℕ∞) φ →
+      (∀ z ∈ ball c (ρ (n + 1)), DbarDisk.dbar φ z = g z) →
+      ∃ φ' : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) φ' ∧
+        (∀ z ∈ ball c (ρ (n + 2)), DbarDisk.dbar φ' z = g z) ∧
+        ∀ z ∈ closedBall c (ρ n), ‖φ' z - φ z‖ ≤ (1 / 2) ^ n := by
+    intro n φ hφ_smooth hφ_dbar
+    obtain ⟨f, hf_smooth, hf_dbar⟩ :=
+      solve_on_ball c hg (a := ρ (n + 2)) (b := ρ (n + 3)) (ρpos _) (ρmono (by omega)) (ρltR _)
+    have hfφ_holo : DifferentiableOn ℂ (fun z => f z - φ z) (ball c (ρ (n + 1))) := by
+      intro z hz
+      have hdb : DbarDisk.dbar (fun x => f x - φ x) z = 0 := by
+        rw [dbar_sub (hf_smooth.differentiable (by norm_num) z)
+              (hφ_smooth.differentiable (by norm_num) z),
+          hf_dbar z (ball_subset_ball (ρmono (by omega)).le hz), hφ_dbar z hz, sub_self]
+      exact (DbarDiskCohomology.differentiableAt_of_dbar_eq_zero (hf_smooth.sub hφ_smooth)
+        hdb).differentiableWithinAt
+    obtain ⟨P, hP_diff, hP_approx⟩ :=
+      exists_holo_approx (fun z => f z - φ z) c (ρ (n + 1)) hfφ_holo (ρ n) (ρpos n).le
+        (ρmono (by omega)) ((1 / 2) ^ n) (by positivity)
+    refine ⟨fun z => f z - P z, hf_smooth.sub (entire_contDiffR hP_diff), ?_, ?_⟩
+    · intro z hz
+      rw [dbar_sub (hf_smooth.differentiable (by norm_num) z)
+          ((entire_contDiffR hP_diff).differentiable (by norm_num) z),
+        hf_dbar z hz, DbarDisk.dbar_eq_zero_of_differentiableAt (hP_diff z), sub_zero]
+    · intro z hz
+      have heq : f z - P z - φ z = f z - φ z - P z := by ring
+      rw [heq]; exact hP_approx z hz
+  -- **Build the corrected sequence** `φₙ` by recursion (`choose!` removes the proof-dependence).
+  choose! nxt hnxt_smooth hnxt_dbar hnxt_bd using step
+  set seq : ℕ → ℂ → ℂ := fun n => Nat.rec φ0 (fun k φ => nxt k φ) n with hseqdef
+  have hseq0 : seq 0 = φ0 := rfl
+  have hseqS : ∀ n, seq (n + 1) = nxt n (seq n) := fun n => rfl
+  have hseq_inv : ∀ n, ContDiff ℝ (⊤ : ℕ∞) (seq n) ∧
+      ∀ z ∈ ball c (ρ (n + 1)), DbarDisk.dbar (seq n) z = g z := by
+    intro n
+    induction n with
+    | zero => exact ⟨hφ0_smooth, hφ0_dbar⟩
+    | succ k ih =>
+      rw [hseqS k]
+      exact ⟨hnxt_smooth k (seq k) ih.1 ih.2, hnxt_dbar k (seq k) ih.1 ih.2⟩
+  have hseq_smooth : ∀ n, ContDiff ℝ (⊤ : ℕ∞) (seq n) := fun n => (hseq_inv n).1
+  have hseq_dbar : ∀ n, ∀ z ∈ ball c (ρ (n + 1)), DbarDisk.dbar (seq n) z = g z :=
+    fun n => (hseq_inv n).2
+  have hseq_bd : ∀ n, ∀ z ∈ closedBall c (ρ n), ‖seq (n + 1) z - seq n z‖ ≤ (1 / 2) ^ n := by
+    intro n; rw [hseqS n]; exact hnxt_bd n (seq n) (hseq_smooth n) (hseq_dbar n)
+  -- **Differences.**  `D k = φₖ₊₁ − φₖ`; each is holomorphic on `ball c (ρ (k+1))`.
+  set D : ℕ → ℂ → ℂ := fun k z => seq (k + 1) z - seq k z with hD
+  have hDholo : ∀ k, DifferentiableOn ℂ (D k) (ball c (ρ (k + 1))) := by
+    intro k z hz
+    have hdb : DbarDisk.dbar (D k) z = 0 := by
+      have h := dbar_sub (hseq_smooth (k + 1) |>.differentiable (by norm_num) z)
+        (hseq_smooth k |>.differentiable (by norm_num) z)
+      rw [show D k = (fun x => seq (k + 1) x - seq k x) from rfl, h,
+        hseq_dbar (k + 1) z (ball_subset_ball (ρmono (by omega)).le hz), hseq_dbar k z hz, sub_self]
+    exact (DbarDiskCohomology.differentiableAt_of_dbar_eq_zero
+      ((hseq_smooth (k + 1)).sub (hseq_smooth k)) hdb).differentiableWithinAt
+  -- **Pointwise bound** of the shifted differences on `closedBall c (ρ m)`.
+  have hDbd : ∀ m k, ∀ z ∈ closedBall c (ρ m), ‖D (k + m) z‖ ≤ (1 / 2) ^ (k + m) := by
+    intro m k z hz
+    exact hseq_bd (k + m) z (closedBall_subset_closedBall (ρmono.le_iff_le.mpr (by omega)) hz)
+  have hgeom : ∀ m, Summable (fun k => (1 / 2 : ℝ) ^ (k + m)) := by
+    intro m; simp_rw [pow_add]
+    exact (summable_geometric_of_lt_one (by norm_num) (by norm_num)).mul_right _
+  -- **Summability** of the difference series at points of `ball c R`.
+  have hsummable : ∀ z ∈ ball c R, Summable (fun k => D k z) := by
+    intro z hz
+    obtain ⟨m, hm⟩ := (ρtend.eventually (Ioi_mem_nhds (mem_ball.mp hz))).exists
+    rw [← summable_nat_add_iff m]
+    refine Summable.of_norm_bounded (hgeom m) (fun k => ?_)
+    exact hDbd m k z (mem_closedBall.mpr (le_of_lt hm))
+  -- **The tail series** `T m = ∑' k, D (k+m)` is holomorphic on `ball c (ρ m)` (M-test +
+  -- locally-uniform limit of holomorphic partial sums).
+  set T : ℕ → ℂ → ℂ := fun m z => ∑' k, D (k + m) z with hT
+  have hTm_holo : ∀ m, DifferentiableOn ℂ (T m) (ball c (ρ m)) := by
+    intro m
+    have hMtest := tendstoUniformlyOn_tsum (hgeom m)
+      (s := closedBall c (ρ m)) (fun k z hz => hDbd m k z hz)
+    have hlu : TendstoLocallyUniformlyOn (fun t z => ∑ k ∈ t, D (k + m) z) (T m) atTop
+        (ball c (ρ m)) :=
+      (hMtest.mono ball_subset_closedBall).tendstoLocallyUniformlyOn
+    refine hlu.differentiableOn (Filter.Eventually.of_forall (fun t => ?_)) isOpen_ball
+    exact DifferentiableOn.fun_sum (fun k _ =>
+      (hDholo (k + m)).mono (ball_subset_ball (ρmono.le_iff_le.mpr (by omega))))
+  -- **Local representation** `u = seq m + T m` on `ball c (ρ m)` (telescope + tsum split).
+  have hrepr : ∀ m, ∀ w ∈ ball c (ρ m), seq 0 w + ∑' k, D k w = seq m w + T m w := by
+    intro m w hw
+    have hsw : Summable (fun k => D k w) := hsummable w (ball_subset_ball (ρltR m).le hw)
+    have h1 : ∑' k, D k w = (∑ i ∈ Finset.range m, D i w) + ∑' k, D (k + m) w :=
+      (hsw.sum_add_tsum_nat_add m).symm
+    have h2 : ∑ i ∈ Finset.range m, D i w = seq m w - seq 0 w :=
+      Finset.sum_range_sub (fun k => seq k w) m
+    rw [h1, h2]
+    show seq 0 w + ((seq m w - seq 0 w) + T m w) = seq m w + T m w
+    ring
+  -- **The candidate solution** `u = seq 0 + ∑' D`.
+  refine ⟨fun z => seq 0 z + ∑' k, D k z, ?_, ?_⟩
+  · -- `ContDiffOn`: locally `u = seq m + T m`, both `ℝ`-smooth.
+    intro z hz
+    obtain ⟨m, hm⟩ := (ρtend.eventually (Ioi_mem_nhds (mem_ball.mp hz))).exists
+    have hzm : z ∈ ball c (ρ m) := mem_ball.mpr hm
+    have heq : (fun w => seq 0 w + ∑' k, D k w) =ᶠ[𝓝 z] (fun w => seq m w + T m w) :=
+      Filter.eventuallyEq_of_mem (isOpen_ball.mem_nhds hzm) (hrepr m)
+    have hcd : ContDiffAt ℝ (⊤ : ℕ∞) (fun w => seq m w + T m w) z :=
+      (hseq_smooth m).contDiffAt.add
+        ((holo_contDiffOnR isOpen_ball (hTm_holo m)).contDiffAt (isOpen_ball.mem_nhds hzm))
+    exact (hcd.congr_of_eventuallyEq heq).contDiffWithinAt
+  · -- The `∂̄` equation: locally `∂̄u = ∂̄(seq m) + ∂̄(T m) = g + 0`.
+    intro z hz
+    obtain ⟨m, hm⟩ := (ρtend.eventually (Ioi_mem_nhds (mem_ball.mp hz))).exists
+    have hzm : z ∈ ball c (ρ m) := mem_ball.mpr hm
+    have heq : (fun w => seq 0 w + ∑' k, D k w) =ᶠ[𝓝 z] (fun w => seq m w + T m w) :=
+      Filter.eventuallyEq_of_mem (isOpen_ball.mem_nhds hzm) (hrepr m)
+    have hTm_diffC : DifferentiableAt ℂ (T m) z := (hTm_holo m z hzm).differentiableAt
+      (isOpen_ball.mem_nhds hzm)
+    have hcongr : DbarDisk.dbar (fun w => seq 0 w + ∑' k, D k w) z
+        = DbarDisk.dbar (fun w => seq m w + T m w) z := by
+      simp only [DbarDisk.dbar, heq.fderiv_eq]
+    rw [hcongr, dbar_add ((hseq_smooth m).differentiable (by norm_num) z)
+        (hTm_diffC.restrictScalars ℝ), DbarDisk.dbar_eq_zero_of_differentiableAt hTm_diffC,
+      add_zero, hseq_dbar m z (ball_subset_ball (ρmono (by omega)).le hzm)]
 
 end DbarOpenDisk
 end Jacobians.Dolbeault
