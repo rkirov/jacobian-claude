@@ -1392,3 +1392,38 @@ the full fibre Φ z near b₀ enumerated by sheets through b₀'s preimages INCL
 through the ramified point (z=w^m roots-of-unity frame). _of_sections does NOT require base points
 injective, so colliding sheets are admissible — what is needed is the branched full-fibre enumeration.
 Memory: [[feedback_prefer_standard_proofs]], [[feedback_connect_upstream_first]], [[project_rr_interface]].
+
+---
+
+## 2026-06-08 (session: branch-value boundedness via the bundle trace SUM — the monodromy-free port)
+
+Goal: CLOSE Gate A branch-value boundedness `hbnd` via the ARCHITECTURALLY-CORRECT path (derive from
+the bundle trace SUM `TraceForm.traceFun`, whose branch-extension boundedness is PROVEN, ported to
+`α=ω₀·g`), NOT from individual continuously-varying sheets (the monodromy trap: the m Puiseux branches
+permute; only the symmetric SUM extends). ONE new leaf file
+`Jacobians/Dolbeault/FormTraceBundleBranchBound.lean` (axiom-clean [propext, Classical.choice,
+Quot.sound], verified by authoritative `lake env lean #print axioms`; zero sorry, zero custom axiom):
+
+- `tendsto_zero_valueChartTrace_of_bundleGerm` — THE genuinely-new step. Discharges the §VIII.3
+  branch-value boundedness crux `(z−b₀)·valueChartTrace ω₀ f Φ z → 0` from the PROVEN bundle SUM
+  boundedness `TraceForm.traceLocalCoeff_mul_sub_tendsto_zero` (holomorphic α' on F=toRiemannSphere) +
+  a bundle-trace germ bridge. KEY simplification: chartAt on RiemannSphere at EVERY finite coe-point is
+  the single global affine chart chartCoe (RiemannSphere.chartAt_coe), chartCoe(coe z)=z, chartCoe.symm
+  z=coe z — so the bundle crux (stated in chartAt (coe b₀), center coord = b₀) reads in the affine ℂ
+  coordinate EXACTLY as hbnd's shape; transport along the bridge. NO individual sheets, NO Puiseux frame
+  (the bundle proof is properness + finite-subcover over the fibre, all preimages at once).
+- `patchedTraceSelection_ofBundleBranch` / `residueSum_eq_zero_ofBundleBranch` — the §VIII.3 close
+  with the ENTIRE branched full-fibre frame block (secBr/hgermBr — the colliding ramified Puiseux sheets,
+  the prior "single hardest atom") REPLACED by per-branch-value bundle data: hncF (nonconstant cover),
+  hbrBr (coe b₀ ∈ branchLocus F), αBr (holomorphic form = ω₀·g near the fibre), hbridgeBr (the SUM germ
+  bridge). Regular/pole/∞ fields unchanged (symmetric lever ofSphereSheetSystemCanon / ofSheetSections).
+  Non-vacuity re-exported (empty-pole).
+
+Gate A ∑Res=0 is NOT yet unconditional. The branch boundedness wall is now MONODROMY-FREE: the open
+colliding-Puiseux-frame construction is GONE, replaced by hbridgeBr (a single-valued SUM germ equality,
+TRUE by Miranda's trace def — valueChartTrace = Tr_F(ω₀·g) in the value chart on the PUNCTURED nbhd at
+regular values). The SINGLE genuine remaining new obligation for hbnd is hbridgeBr + αBr (the
+local-holomorphic ω₀·g near F⁻¹(coe b₀), exists since b₀ off poles). Residuals (2)/(3) (global Φ +
+canonical-fibre, ∞-rationality bookkeeping) unchanged. Doc:
+docs/gate_a_bundle_branch_boundedness_2026-06-08.md. Memory: [[feedback_prefer_standard_proofs]],
+[[feedback_connect_upstream_first]], [[project_rr_interface]].
