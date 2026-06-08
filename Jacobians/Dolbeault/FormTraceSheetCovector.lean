@@ -93,6 +93,32 @@ theorem toFun_apply_eq_mul_localRep (ω₀ : HolomorphicOneForms X) (a : X) (w :
   show T w = w * T 1
   rw [← smul_eq_mul, ← map_smul]; congr 1; rw [smul_eq_mul, mul_one]
 
+/-! ### The frame-transition law for the local representative -/
+
+/-- **Frame-transition law for `localRep`.**  For `y` in the chart source of `a`, the local
+representative of `ω₀` based at `a` and read at `y` equals the centred representative at `y` times the
+`dz`-transition Jacobian `deriv(chart_y ∘ chart_a.symm)(chart_a y)`:
+
+> `localRep ω₀ a y = deriv (chart_y ∘ chart_a.symm) (chart_a y) · localRep ω₀ y y`.
+
+This is the general cotangent-coefficient change-of-frame (cf. the `∞`-case
+`ProjectiveLine.inftyCoeff_eq_transition`).  It is the cancellation that reconciles the bundle
+per-sheet covector (read at the moving fibre point `P`'s *own* chart) with the planar fibre trace
+coefficient (read in a *fixed* sheet chart): the `localRep` ratio is the inverse of the `deriv`
+ratio, so the `dz`-coefficient `localRep·deriv(section)` is frame-independent. -/
+theorem localRep_eq_transition_mul_self (ω₀ : HolomorphicOneForms X) (a y : X)
+    (hy : y ∈ (chartAt ℂ a).source) :
+    Jacobians.Montel.localRep ω₀ a y
+      = deriv (fun w => (chartAt ℂ y) ((chartAt ℂ a).symm w)) ((chartAt ℂ a) y)
+        * Jacobians.Montel.localRep ω₀ y y := by
+  -- `localRep ω₀ a y = ω₀.toFun y (symmL_a y 1)`, and `symmL_a y 1 = deriv(chart_y ∘ chart_a.symm)`.
+  show ω₀.toFun y ((trivTS a).symmL ℂ y 1) = _
+  rw [Jacobians.OfCurveSkeleton.trivAt_symmL_one_eq_fderiv_C a y hy]
+  -- The covector pairing against the scalar tangent, by ℂ-linearity.
+  rw [toFun_apply_eq_mul_localRep ω₀ y]
+  -- `fderiv ℂ h (chart_a y) 1 = deriv h (chart_a y)`.
+  rw [deriv, Function.comp_def]
+
 /-! ### `mfderiv` as the planar chart-pullback derivative -/
 
 /-- **`mfderiv` is the chart-pullback `fderiv`.**  For `s : Y → X` `MDifferentiable` at `y`, the
