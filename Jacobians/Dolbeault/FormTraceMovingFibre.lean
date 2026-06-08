@@ -430,6 +430,38 @@ theorem diagonal_of_pointwise (ω₀ : HolomorphicOneForms X) (f : MeromorphicFu
   rw [valueChartTrace_apply]
   exact hb'
 
+/-- **The diagonal hypothesis from a continuously-varying index bijection.**  The sharpened
+constructor of the diagonal hypothesis: instead of the raw trace equality, supply — for `b'` near `b₀`
+— the **index bijection + section identification** data feeding `traceCoeff_diagonal_eq_fixedSum`.  That
+is, near `b₀` there is a bijection `e : (Φ b').ι ≃ D.ι` with the re-selected fibre points matching the
+moving sections (`(Φ b').xs i' = sec (e i') b'`), the planar sheet derivatives matching the
+manifold-section chart-pullback derivatives, and the chart-pullback/transition differentiability.  Then
+the diagonal hypothesis `hdiag` holds.  This reduces the monodromy obligation to its irreducible core:
+the **continuously-varying index bijection** between the re-selected fibre and the fixed frame, plus the
+local section identification — *all the geometric germ content is now discharged* (it is
+`traceCoeff_diagonal_eq_fixedSum`, proved). -/
+theorem diagonal_of_pointwiseBijection (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (Φ : (b : ℂ) → FibreRegularData g f b) {b₀ : ℂ} (D : FibreRegularData g f b₀) (sec : D.ι → ℂ → X)
+    (hbij : ∀ᶠ b' in 𝓝 b₀, ∃ e : (Φ b').ι ≃ D.ι,
+      (∀ i', (Φ b').xs i' = sec (e i') b') ∧
+      (∀ i', deriv ((fibreTrace ω₀ f (Φ b')).sheet i') b'
+        = deriv (fun z => (chartAt ℂ (sec (e i') b')) (sec (e i') z)) b') ∧
+      (∀ i, ContinuousAt (sec i) b') ∧
+      (∀ i, DifferentiableAt ℂ (fun z => (chartAt ℂ (sec i b')) (sec i z)) b') ∧
+      (∀ i, sec i b' ∈ (chartAt ℂ (D.xs i)).source) ∧
+      (∀ i, DifferentiableAt ℂ
+        (fun w => (chartAt ℂ (D.xs i)) ((chartAt ℂ (sec i b')).symm w)) ((chartAt ℂ (sec i b')) (sec i b'))) ∧
+      (∀ i, DifferentiableAt ℂ
+        (fun w => (chartAt ℂ (sec i b')) ((chartAt ℂ (D.xs i)).symm w)) ((chartAt ℂ (D.xs i)) (sec i b')))) :
+    valueChartTrace ω₀ f Φ
+      =ᶠ[𝓝 b₀] fun b' => ∑ i, chartIntegrand ω₀ g (D.xs i) ((chartAt ℂ (D.xs i)) (sec i b'))
+        * deriv (fun z => (chartAt ℂ (D.xs i)) (sec i z)) b' := by
+  refine diagonal_of_pointwise ω₀ f Φ D sec ?_
+  filter_upwards [hbij] with b' hb'
+  obtain ⟨e, hxs, hsheet_deriv, hcont, hsP_diff, hmem, htrans_diff, htrans_diff_inv⟩ := hb'
+  exact traceCoeff_diagonal_eq_fixedSum ω₀ f D sec (Φ b') e hxs hsheet_deriv hcont hsP_diff hmem
+    htrans_diff htrans_diff_inv
+
 /-! ### The moving-fibre coherence datum (the monodromy obligation, packaged)
 
 We bundle the monodromy heart into one structure `MovingCoherenceDatum`: a global selection `Φ`, a
@@ -486,5 +518,41 @@ theorem MovingCoherenceDatum.coherent_punctured {ω₀ : HolomorphicOneForms X} 
     (C : MovingCoherenceDatum ω₀ g f Φ b₀) :
     valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] b₀] (fibreTrace ω₀ f C.D).traceCoeff :=
   C.coherent.filter_mono nhdsWithin_le_nhds
+
+/-- **Building a coherence datum from a continuously-varying index bijection.**  The sharpest honest
+constructor: given the fixed fibre `D`, the moving sections `sec` (base/continuity/section hypotheses),
+and — for `b'` near `b₀` — the **index bijection + section identification** data (`hbij`, exactly as in
+`diagonal_of_pointwiseBijection`), assemble the full `MovingCoherenceDatum`.  The diagonal field is
+*discharged* via `traceCoeff_diagonal_eq_fixedSum` (all the germ/`dz`-Jacobian content is proved); the
+caller supplies only the bijection between the re-selected fibre and the fixed frame.  This is the
+genuine §VIII.3 monodromy obligation in its irreducible form — the continuously-varying index
+bijection. -/
+noncomputable def MovingCoherenceDatum.ofBijection {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {b₀ : ℂ}
+    (D : FibreRegularData g f b₀) (sec : D.ι → ℂ → X)
+    (hbase : ∀ i, sec i b₀ = D.xs i) (hcont : ∀ i, ContinuousAt (sec i) b₀)
+    (hsec : ∀ i, ∀ᶠ b' in 𝓝 b₀, f.holoRepr (sec i b') = b')
+    (hbij : ∀ᶠ b' in 𝓝 b₀, ∃ e : (Φ b').ι ≃ D.ι,
+      (∀ i', (Φ b').xs i' = sec (e i') b') ∧
+      (∀ i', deriv ((fibreTrace ω₀ f (Φ b')).sheet i') b'
+        = deriv (fun z => (chartAt ℂ (sec (e i') b')) (sec (e i') z)) b') ∧
+      (∀ i, ContinuousAt (sec i) b') ∧
+      (∀ i, DifferentiableAt ℂ (fun z => (chartAt ℂ (sec i b')) (sec i z)) b') ∧
+      (∀ i, sec i b' ∈ (chartAt ℂ (D.xs i)).source) ∧
+      (∀ i, DifferentiableAt ℂ
+        (fun w => (chartAt ℂ (D.xs i)) ((chartAt ℂ (sec i b')).symm w)) ((chartAt ℂ (sec i b')) (sec i b'))) ∧
+      (∀ i, DifferentiableAt ℂ
+        (fun w => (chartAt ℂ (sec i b')) ((chartAt ℂ (D.xs i)).symm w)) ((chartAt ℂ (D.xs i)) (sec i b')))) :
+    MovingCoherenceDatum ω₀ g f Φ b₀ where
+  D := D
+  sec := sec
+  hbase := hbase
+  hcont := hcont
+  hsec := hsec
+  hdiag := by
+    filter_upwards [hbij] with b' hb'
+    obtain ⟨e, hxs, hsheet_deriv, hcontb, hsP_diff, hmem, htrans_diff, htrans_diff_inv⟩ := hb'
+    exact traceCoeff_diagonal_eq_fixedSum ω₀ f D sec (Φ b') e hxs hsheet_deriv hcontb hsP_diff hmem
+      htrans_diff htrans_diff_inv
 
 end Jacobians.Dolbeault.FormTraceMovingFibre
