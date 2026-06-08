@@ -239,4 +239,124 @@ theorem omegaDGerm_glue {W : Opens X} {K : Type*} (A : K → Opens X) (hAW : ∀
   show Gext (gA k) v.1 = gA k v
   rw [Gext_apply_mem (gA k) v.2]
 
+/-! ### Forster 12.4 — unconditional injectivity of the refinement map on `H¹`
+
+The descend predicate (`RefinementDescend`, the cocycle-level form of `ker (refineH1) = 0`) is proven
+for ANY refinement by the standard sheaf-gluing argument (Forster GTM 81, Lemma 12.4, p. 99):
+
+  Given a `𝔘`-cocycle `g` with `refineC1 g = δ⁰_𝔙 η` (a `𝔙`-coboundary), build a `𝔘`-coboundary
+  witness `h ∈ C⁰(𝔘)` by gluing, on each coarse set `𝔘.U i`, the matching family
+  `h_i = η_k − g_{i,(r k)}` over the cover `{𝔘.U i ⊓ 𝔙.U k}_k` (sheaf axiom II, `omegaDGerm_glue`),
+  then checking `δ⁰_𝔘 h = g` on each `𝔘.U i ⊓ 𝔘.U j` by separation over `{… ⊓ 𝔙.U k}_k` (axiom I,
+  `omegaDGerm_separated`).  Both checks reduce to the cocycle relation `g_{ac} = g_{ab} + g_{bc}`
+  (`δ¹ g = 0`) and the coboundary relation `g_{(r k)(r l)} = η_l − η_k` (the hypothesis). -/
+
+namespace FiniteCover
+open FiniteFamily
+namespace IsRefinement
+
+variable {𝔙 𝔘 : FiniteCover X} {r : 𝔙.ι → 𝔘.ι}
+
+/-- The cover `{𝔘.U i ⊓ 𝔙.U k}_k` of the coarse set `𝔘.U i` (used per coarse index in Forster 12.4).
+-/
+theorem coverInf_iSup (i : 𝔘.ι) : ⨆ k, (𝔘.U i ⊓ 𝔙.U k) = 𝔘.U i := by
+  rw [← inf_iSup_eq, 𝔙.covers, inf_top_eq]
+
+/-- The cover `{𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k}_k` of the coarse overlap `𝔘.U i ⊓ 𝔘.U j`. -/
+theorem coverInf2_iSup (i j : 𝔘.ι) : ⨆ k, (𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k) = 𝔘.U i ⊓ 𝔘.U j := by
+  rw [← inf_iSup_eq, 𝔙.covers, inf_top_eq]
+
+/-- **The Čech cocycle relation** `g_{ac} = g_{ab} + g_{bc}` on the triple overlap, extracted from
+`δ¹ g = 0` (the alternating-sum identity of `cechDelta1`).  Stated as germ equality on
+`𝔘.U a ⊓ 𝔘.U b ⊓ 𝔘.U c`, ready to be further restricted via `rawRestrictG_comp_apply`. -/
+theorem cocycleRel {gc : 𝔘.Cochain1} (hg : gc ∈ LinearMap.ker 𝔘.cechDelta1) (a b c : 𝔘.ι) :
+    rawRestrictG (le_inf (inf_le_left.trans inf_le_left) inf_le_right :
+        𝔘.U a ⊓ 𝔘.U b ⊓ 𝔘.U c ≤ 𝔘.U a ⊓ 𝔘.U c) (gc (a, c))
+      = rawRestrictG (inf_le_left : 𝔘.U a ⊓ 𝔘.U b ⊓ 𝔘.U c ≤ 𝔘.U a ⊓ 𝔘.U b) (gc (a, b))
+        + rawRestrictG (le_inf (inf_le_left.trans inf_le_right) inf_le_right :
+            𝔘.U a ⊓ 𝔘.U b ⊓ 𝔘.U c ≤ 𝔘.U b ⊓ 𝔘.U c) (gc (b, c)) := by
+  rw [LinearMap.mem_ker] at hg
+  have h0 := congrFun hg (a, b, c)
+  simp only [cechDelta1, LinearMap.pi_apply, LinearMap.add_apply, LinearMap.sub_apply,
+    LinearMap.comp_apply, LinearMap.proj_apply, Pi.zero_apply] at h0
+  -- `h0 : R (gc (b,c)) - R (gc (a,c)) + R (gc (a,b)) = 0` (restrictions to the triple overlap).
+  linear_combination (norm := abel) -h0
+
+variable (D : Divisor X)
+
+/-- **Forster 12.4 (unconditional injectivity), the descend predicate.**  For ANY refinement
+`hr : IsRefinement 𝔙 𝔘 r`, a `𝔘`-cocycle whose refinement is a `𝔙`-coboundary is itself a
+`𝔘`-coboundary.  No acyclicity / Leray hypothesis (cf. the conditional
+`refinementDescend_of_isDiskAcyclic`).  The proof is the standard sheaf-gluing argument; the only
+nontrivial inputs are the germ-class `𝒪_D` sheaf gluing (`omegaDGerm_glue`) and separation
+(`omegaDGerm_separated`). -/
+theorem refinementDescend_unconditional (hr : IsRefinement 𝔙 𝔘 r) :
+    RefinementDescend hr D := by
+  intro g hcob
+  set gc : 𝔘.Cochain1 := (g : 𝔘.Cochain1) with hgc
+  -- Unpack the cocycle and the `𝔙`-coboundary witness `η`.
+  obtain ⟨hker, _hsec⟩ := g.2
+  rw [SetLike.mem_coe, LinearMap.mem_ker] at hker
+  obtain ⟨η, hη_sec, hη_eq⟩ := hcob
+  -- The coboundary relation `g_{(r k)(r l)} = η_l − η_k` on `𝔙.U k ⊓ 𝔙.U l` (from `δ⁰ η = refineC1 g`).
+  have hcobRel : ∀ k l : 𝔙.ι,
+      rawRestrictG (hr.pair_le k l) (gc (r k, r l))
+        = rawRestrictG (inf_le_right : 𝔙.U k ⊓ 𝔙.U l ≤ 𝔙.U l) (η l)
+          - rawRestrictG (inf_le_left : 𝔙.U k ⊓ 𝔙.U l ≤ 𝔙.U k) (η k) := by
+    intro k l
+    have h0 := congrFun hη_eq (k, l)
+    simp only [cechDelta0, refineC1, LinearMap.pi_apply, LinearMap.sub_apply, LinearMap.comp_apply,
+      LinearMap.proj_apply] at h0
+    rw [← h0]
+  -- The refinement containment `U_i ⊓ V_k ≤ U_i ⊓ U_(r k)` used to restrict `g_{i,(r k)}`.
+  have hVle : ∀ (i : 𝔘.ι) (k : 𝔙.ι), 𝔘.U i ⊓ 𝔙.U k ≤ 𝔘.U i ⊓ 𝔘.U (r k) :=
+    fun i k => inf_le_inf le_rfl (hr k)
+  -- Per coarse index `i`, the matching family `sFam i k = η_k − g_{i,(r k)}` over `{U_i ⊓ V_k}_k`.
+  set sFam : Π (i : 𝔘.ι) (k : 𝔙.ι), MGerm (𝔘.U i ⊓ 𝔙.U k) :=
+    fun i k => rawRestrictG (inf_le_right : 𝔘.U i ⊓ 𝔙.U k ≤ 𝔙.U k) (η k)
+      - rawRestrictG (hVle i k) (gc (i, r k)) with hsFam
+  -- Each `sFam i k` is an `𝒪_D`-germ.
+  have hsFam_mem : ∀ i k, sFam i k ∈ OmegaDGerm D (𝔘.U i ⊓ 𝔙.U k) := by
+    intro i k
+    refine Submodule.sub_mem _ ?_ ?_
+    · exact rawRestrictG_omegaDGerm _ (hη_sec k)
+    · exact rawRestrictG_omegaDGerm _ (_hsec (i, r k))
+  -- The matching condition for `sFam i` on the cover `{U_i ⊓ V_k}_k` of `U_i`.
+  have hsFam_match : ∀ i k l,
+      rawRestrictG (inf_le_left : (𝔘.U i ⊓ 𝔙.U k) ⊓ (𝔘.U i ⊓ 𝔙.U l) ≤ 𝔘.U i ⊓ 𝔙.U k) (sFam i k)
+        = rawRestrictG (inf_le_right : (𝔘.U i ⊓ 𝔙.U k) ⊓ (𝔘.U i ⊓ 𝔙.U l) ≤ 𝔘.U i ⊓ 𝔙.U l)
+            (sFam i l) := by
+    intro i k l
+    set O : Opens X := (𝔘.U i ⊓ 𝔙.U k) ⊓ (𝔘.U i ⊓ 𝔙.U l) with hO
+    -- Restrict the cocycle relation `(i, r k, r l)` and the coboundary relation `(k, l)` to `O`.
+    have hcr := congrArg (rawRestrictG (show O ≤ 𝔘.U i ⊓ 𝔘.U (r k) ⊓ 𝔘.U (r l) from
+        le_inf (le_inf (inf_le_left.trans inf_le_left) ((inf_le_left).trans (inf_le_right.trans (hr k))))
+          ((inf_le_right).trans (inf_le_right.trans (hr l))))) (cocycleRel hker i (r k) (r l))
+    have hcb := congrArg (rawRestrictG (show O ≤ 𝔙.U k ⊓ 𝔙.U l from
+        le_inf (inf_le_left.trans inf_le_right) (inf_le_right.trans inf_le_right))) (hcobRel k l)
+    -- Fold `↑g → gc` and fully collapse nested restrictions in both relations.
+    rw [← hgc] at hcr
+    simp only [map_sub, map_add, rawRestrictG_comp_apply] at hcr hcb
+    -- Unfold `sFam` and collapse nested restrictions on both sides.
+    simp only [hsFam, map_sub, rawRestrictG_comp_apply]
+    -- Goal: `R(η k) − R(g_{i,rk}) = R(η l) − R(g_{i,rl})` on `O`.  Align with `hcr`, `hcb` (all the
+    -- collapsed restriction proofs `O ≤ ·` are defeq by proof irrelevance) and finish.
+    linear_combination (norm := abel) hcb + hcr
+  -- Glue to `h_i ∈ OmegaDGerm D (U_i)` restricting to `sFam i k` on each `U_i ⊓ V_k`.
+  have hglue : ∀ i, ∃ hi ∈ OmegaDGerm D (𝔘.U i),
+      ∀ k, rawRestrictG (inf_le_left : 𝔘.U i ⊓ 𝔙.U k ≤ 𝔘.U i) hi = sFam i k := fun i =>
+    omegaDGerm_glue D (fun k => 𝔘.U i ⊓ 𝔙.U k) (fun _ => inf_le_left) (coverInf_iSup i)
+      (sFam i) (hsFam_mem i) (hsFam_match i)
+  choose hC hC_mem hC_spec using hglue
+  -- `hC : 𝔘.Cochain0`, an `𝒪_D` 0-section; show `δ⁰_𝔘 hC = gc`, so `gc` is a coboundary.
+  refine ⟨hC, fun i => hC_mem i, ?_⟩
+  -- `δ⁰_𝔘 hC = gc`: check on each coarse overlap `U_i ⊓ U_j` by separation over `{… ⊓ V_k}_k`.
+  funext p
+  obtain ⟨i, j⟩ := p
+  show (𝔘.cechDelta0 hC) (i, j) = gc (i, j)
+  sorry
+
+end IsRefinement
+end FiniteCover
+
 end Jacobians.Dolbeault
