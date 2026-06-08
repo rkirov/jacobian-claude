@@ -1265,3 +1265,27 @@ into their consumers sorry-free; when interfaces mismatch (e.g. a lemma proven f
 a consumer wanting arbitrary `FiniteCover`), REFACTOR to unify (e.g. thread one good cover via
 `exists_lerayCover`) rather than leaving / adding a kernel. Don't stop to ask "which wall"; keep
 connecting. Memory: [[feedback_connect_upstream_first]], [[project_jacobian_state_2026-05]].
+
+---
+
+## 2026-06-08 — continue exists_cechModel; PDF offer; attack-plan critique; transparency-option tip
+
+Inputs (this session):
+1. "do you need a reference book pdf?" — Forster GTM 81 already in repo root (gitignored); confirmed I'm
+   using it as the canonical reference for §12 Leray / §13 Dolbeault / §14 finiteness.
+2. "did you read cech_refinement_attack_plan.md, do you agree with that path or you have different path"
+   — prompted a full critique: agree on the GOAL (disk-acyclicity atom feeding the refinement
+   reduction) but the doc's proposed execution (`OverlapChartDiskDolbeaultExact`) is VACUOUS and
+   `ChartDiskDolbeaultExact ⟺ genus 0`. Rewrote the plan grounded in Forster.
+3. "write your plan in the .md when ready" — rewrote `docs/cech_refinement_attack_plan.md`.
+4. "sometimes you use the `backward.isDefEq.respectTransparency false`" — DECISIVE tip. It resolves the
+   `IsScalarTower ℝ ℂ ℂ` synth diamond on `restrictScalars`/`ContDiff.restrict_scalars` (ℂ→ℝ), letting
+   the open-disk solver keep a clean `ContDiff ℝ ⊤` conclusion instead of weakening to C¹.
+
+How to apply: (a) before committing to a scaffolded predicate, sanity-check it's satisfiable (the
+`Overlap*` route required an overlap-family to equal a covering `ChartDiskCover X` — impossible). (b)
+When `restrictScalars`/`ContDiff.restrict_scalars` ℂ→ℝ fails instance synth (`IsScalarTower ℝ ℂ ℂ`)
+even though `inferInstance` finds it standalone, add `set_option backward.isDefEq.respectTransparency
+false` (the repo's Dolbeault files already do). (c) Keep a canonical book open (Forster) and map each
+Lean object to its theorem number before coding. Memory: [[project_forster_13_2_done]],
+[[reference_module_real_diamond]].
