@@ -1321,3 +1321,41 @@ moving-sheet coherence data from sphere sheets (set-form, dischargeable at regul
 branch-value CONTINUITY `hbranch` (the §VIII.3 boundedness/Riemann-extension — genuine analytic content),
 (iv) `∞`-glue / junk-freeness / genus-0. The monodromy-LABELING obstruction is GONE. Memory:
 [[project_serre_17_repointing]], [[feedback_prefer_standard_proofs]].
+
+---
+
+## 2026-06-08 (session: construct real `BranchAwareTraceSelection`)
+
+Goal: build ONE `BranchAwareTraceSelection` for a real adapted cover ⇒ Gate A `∑Res=0`
+UNCONDITIONAL. Built (i)+(ii) as engines; FOUND a genuine structural obstruction in (iii).
+
+Built (all axiom-clean `[propext, Classical.choice, Quot.sound]`, zero custom axioms, zero sorry):
+- `MovingCoherenceDatum.ofSphereSheetSystemCanon` (regular-value coherence engine = pieces (i)+(ii);
+  chains `ofSphereSheetSystemSet` + `canon_of_fibre_enumeration`; only Φ-content = canonical-fibre
+  condition) — `Jacobians/Dolbeault/FormTraceRegularValueDatum.lean`.
+- `continuousAt_valueChartTrace_of_tendsto` (reduces `hbranch` to: (1) punctured limit exists +
+  (2) value-matching `valueChartTrace z = L`) — `Jacobians/Dolbeault/FormTraceBranchContinuity.lean`.
+- Status doc: `docs/gate_a_branch_aware_selection_status_2026-06-08.md`.
+
+KEY FINDING (corrects the plan's "(iii) = standard analysis" framing): `BranchAwareTraceSelection`
+is **NOT instantiable for any real ramified cover** as stated. `valueChartTrace ω₀ f Φ z =
+(fibreTrace (Φ z)).traceCoeff z` is a finite sum over UNRAMIFIED sheets (`FibreRegularData.hg_deriv ≠ 0`).
+`hbranch` needs this value at branch values to equal the limit L, but `Φ z` can only enumerate
+unramified fibre points (`hval` forces fibre membership) — so it MISSES the ramified points' nonzero
+contribution to L (the `wᵉ`-normal-form blow-ups cancel by roots-of-unity to a finite NONZERO residue).
+⟹ `hbranch` is FALSE for the canonical-fibre Φ at every cover branch-value-off-poles. NOT papered over
+(structure left untouched, no false `hbranch`).
+
+UNLOCK: the deepest analytic content of (iii) — the §VIII.3 boundedness — is ALREADY PROVEN axiom-clean
+in `Jacobians/TraceForm.lean` (`traceLocalCoeff_mul_sub_tendsto_zero`/`_Y`, `traceExtendsAt_branchPoint`,
+`exists_traceForm`, `traceForm`) but for HOLOMORPHIC forms on a general `f:X→Y` (different apparatus:
+`traceFun`/`traceSummand`, NOT `valueChartTrace`/`chartIntegrand`).
+
+MINIMAL REMAINING OBLIGATION (re-pointed): port the proven `TraceForm` branch-boundedness to the
+MEROMORPHIC `α=ω₀·g` value-chart trace. Best close-path = **A (decouple `T` from Φ)**:
+`residueSum_eq_zero_of_glue` takes ARBITRARY `T:ℂ→ℂ`; feed it the removable-extension trace (analytic
+everywhere off pole-values ⇒ `hT_off` free, no `hbranch`), prove off-pole germ-equality with fibre
+traces. Sidesteps the obstruction entirely (no `BranchAwareTraceSelection`). The only NEW analysis is the
+local boundedness, same character as the proven `traceLocalCoeff_mul_sub_tendsto_zero_Y`. NOT a quick
+finish — the apparatus bridge is genuine. Memory: [[feedback_prefer_standard_proofs]],
+[[feedback_connect_upstream_first]].
