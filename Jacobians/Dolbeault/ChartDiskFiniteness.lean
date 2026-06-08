@@ -332,6 +332,60 @@ theorem differentiableOn_eta (a : 𝔇.ι) :
     rw [dbarFun_sub hga hsa, 𝒮.solve_dbar a hz, sub_self]
   exact (differentiableAt_of_dbar_eq_zero_chartDisk (hga.sub hsa) hdb).differentiableWithinAt
 
+/-- **The holomorphic cover cocycle `x_{ab} := h_b∘τ_{ab} − h_a` is `ℂ`-differentiable on the FULL
+overlap image `Uov (a,b)`.**  This is the payoff of the ball geometry: `h_a` is defined on the full
+ball `U_a`, so `x_{ab}` is defined and holomorphic on the WHOLE overlap (not merely a shrinking — the
+two-scale cutoff dilemma that blocks the Montel model is absent).
+
+`∂̄(h_b∘τ_{ab}) = conj(τ′)·(∂̄h_b)∘τ` (Wirtinger chain rule) `= conj(τ′)·(∂̄g_b)∘τ` (`solve_dbar` at
+`τ z ∈ ball b`) `= ∂̄g_a` (the frame identity `dbar_g_frame`) `= ∂̄h_a` (`solve_dbar` at `z ∈ ball a`),
+so `∂̄x_{ab} = 0`. -/
+theorem differentiableOn_x (a b : 𝔇.ι) :
+    DifferentiableOn ℂ (fun z => 𝒮.solve b (𝔇.coverTransition a b z) - 𝒮.solve a z)
+      (𝔇.Uov (a, b)) := by
+  intro z hzUov
+  -- `z = φ_a x` for `x ∈ U_a ∩ U_b`
+  obtain ⟨x, hx, rfl⟩ := hzUov
+  set z := (chartAt (H := ℂ) (𝔇.center a)) x with hzdef
+  have hzUov' : z ∈ 𝔇.Uov (a, b) := ⟨x, hx, rfl⟩
+  have hzballa : z ∈ Metric.ball (𝔇.e a) (𝔇.radius a) := 𝔇.Uov_subset_ball (a, b) hzUov'
+  -- `τ z = φ_b x ∈ ball b`
+  have hτz : 𝔇.coverTransition a b z = (chartAt (H := ℂ) (𝔇.center b)) x := 𝔇.coverTransition_apply a b hx
+  have hτzballb : 𝔇.coverTransition a b z ∈ Metric.ball (𝔇.e b) (𝔇.radius b) := by
+    rw [hτz]; exact 𝔇.Uov_subset_ball (b, a) ⟨x, ⟨hx.2, hx.1⟩, rfl⟩
+  -- differentiabilities
+  have hτ : DifferentiableAt ℂ (𝔇.coverTransition a b) z := 𝔇.differentiableAt_coverTransition a b hx
+  have hhb : DifferentiableAt ℝ (𝒮.solve b) (𝔇.coverTransition a b z) := 𝒮.differentiableAt_solve hτzballb
+  have hha : DifferentiableAt ℝ (𝒮.solve a) z := 𝒮.differentiableAt_solve hzballa
+  -- `∂̄(h_b∘τ) z = conj(τ′)·(∂̄h_b)(τ z)` (Wirtinger chain rule)
+  have hchain : DbarDisk.dbar (fun w => 𝒮.solve b (𝔇.coverTransition a b w)) z
+      = (starRingEnd ℂ) (deriv (𝔇.coverTransition a b) z)
+        * DbarDisk.dbar (𝒮.solve b) (𝔇.coverTransition a b z) :=
+    dbarDisk_comp_holo (𝒮.solve b) (𝔇.coverTransition a b) z hhb hτ
+  -- chain: `∂̄(h_b∘τ) z = conj(τ′)·(∂̄g_b)(τ z) = ∂̄g_a z = ∂̄h_a z`
+  have key : DbarDisk.dbar (fun w => 𝒮.solve b (𝔇.coverTransition a b w)) z
+      = DbarDisk.dbar (𝒮.solve a) z := by
+    rw [hchain, 𝒮.solve_dbar b hτzballb, ← 𝒮.dbar_g_frame hx, 𝒮.solve_dbar a hzballa]
+  -- `∂̄x_{ab} z = ∂̄(h_b∘τ) z − ∂̄h_a z = 0`
+  have hcompℝ : DifferentiableAt ℝ (fun w => 𝒮.solve b (𝔇.coverTransition a b w)) z :=
+    hhb.comp z (hτ.restrictScalars ℝ)
+  have hdb : DbarDisk.dbar (fun w => 𝒮.solve b (𝔇.coverTransition a b w) - 𝒮.solve a w) z = 0 := by
+    rw [dbarFun_sub hcompℝ hha, key, sub_self]
+  exact (differentiableAt_of_dbar_eq_zero_chartDisk
+    (hcompℝ.sub hha) hdb).differentiableWithinAt
+
+/-- **The Forster 14.6 split identity** on the overlap: `s_{ab} = (η_b∘τ_{ab} − η_a) + x_{ab}`, where
+`η_a = g_a − h_a` (holomorphic) and `x_{ab} = h_b∘τ − h_a` (holomorphic).  Algebra: the `h`-terms
+telescope, leaving `g_b∘τ − g_a = s_{ab}` (the smooth-split identity).  This is `s = δ⁰η + x` at the
+function level — `s` is a holomorphic coboundary of `η` PLUS the holomorphic cover cocycle `x`. -/
+theorem split_eq (a b : 𝔇.ι) {z : ℂ} (hz : z ∈ 𝔇.Uov (a, b)) :
+    𝒮.s a b z
+      = ((𝒮.g b (𝔇.coverTransition a b z) - 𝒮.solve b (𝔇.coverTransition a b z))
+          - (𝒮.g a z - 𝒮.solve a z))
+        + (𝒮.solve b (𝔇.coverTransition a b z) - 𝒮.solve a z) := by
+  have h := 𝒮.split a b z hz
+  linear_combination -h
+
 end BallSplitData
 
 end ChartDiskCover
