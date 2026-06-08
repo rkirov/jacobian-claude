@@ -33,6 +33,7 @@
   everything else (base, the LES crank, the structural arrows, the induction skeleton) is sorry-free.
 -/
 import Jacobians.Dolbeault.CohomologicalRRChartDisk
+import Jacobians.Dolbeault.SkyscraperConeRealization
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -125,86 +126,63 @@ theorem chi_jump_of_LES {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
   simp only [chi, h0Dim, h1Dim, Nat.cast_one] at halt ⊢
   linarith
 
-/-- **Existence of the local-realization datum — THE NAMED HONEST `sorry`** (the single irreducible
-analytic+combinatorial core of cohomological Riemann–Roch, Forster §16).
+/-- **Existence of the local-realization datum** (the skyscraper-irreducible core of cohomological
+Riemann–Roch, Forster §16) — now PROVEN from local realizability of the cover.
 
 `LocalRealizationData 𝔘 D P` (`SkyscraperSnake`) packages **exactly** the two pieces that the snake
-lemma cannot supply — and nothing else (finiteness is now discharged unconditionally):
+lemma cannot supply (plus finiteness, discharged unconditionally):
   * `e0 : H⁰(Q) ≅ ℂ` with `hcompat` — the **local realization** of the degree-0 quotient cohomology
     with the skyscraper stalk `ℂ` (the order-`(−D(P)−1)` principal-part coefficient at `P`);
   * `Subsingleton H¹(Q)` — **acyclicity** of the skyscraper quotient complex.
-Everything else (the snake connecting map, all exactness, the LES termination, AND the three
-`FiniteDimensional` inputs — `H¹` by `finiteDimensional_cechH1_general` axiom-clean, `H⁰(𝒪_{D+P})` by
-the `CohomologicalH0Finiteness.finiteDimensional_globalSections` instance) is PROVEN, so
-`exists_skyscraperLES` is now a *theorem* (below), reducing the whole cohomological-RR `sorry` to this
-single datum. This is strictly smaller than the old `exists_skyscraperLES` `sorry`: the snake and
-finiteness have been stripped off.
 
-WHY IT IS STILL A `sorry` (the precise, *corrected* diagnosis — see also `CohomologicalRRChartDisk`):
-the proven chart-disk assembly `SkyscraperAssembly.skyscraperLES_of_chartDisk` /
-`localRealizationData_of_chartDisk` produces this datum only under geometric hypotheses
-(`hP`/`hWsrc`/`hDsupp`/`hstar`) that **cannot hold on a fixed finite cover of a compact connected `X`**
-for all `(D, P)`:
-* `hstar` (`P ∈ U j → j = i`, singleton star) at *every* `P` would force the cover sets pairwise
-  disjoint — disconnecting `X` — or a single chart-disk `= X` (impossible for compact `X`). Overlap
-  points always exist, so the χ-induction's per-support-point demand is never met. (The earlier
-  "shrink to an adapted singleton-star cover" framing asked for a cover that does **not exist**.)
-* `hWsrc` (`U i ⊆ (chartAt ℂ P).source`) and `hDsupp` (`D` supported on `U i` only at `P`) also fail
-  for a fixed cover and general `(D, P)`.
-
-Closing `exists_localRealizationData` therefore needs **one of** two genuinely-unbanked, substantial
-builds:
-  (A) a *multi-vertex / full-simplex-star* construction of `LocalRealizationData` for GENERAL `(D, P)`
-      on the chart-disk cover (dropping `hstar`/`hWsrc`/`hDsupp`). Its keystone missing primitive is
-      the **general-`D` local realization (Mittag–Leffler on a disk)**: `coeffGermLin` surjective via
-      the explicit *product* witness in the cover-set's CENTER chart `φ`,
-      `a·(z−φP)^{−(D P)−1}·∏_{Q∈ supp D∩U i, Q≠P}(z−φQ)^{−(D Q)}` (forced poles/zeros at the other
-      support points so it lies in `𝒪_{D+P}(U i)`; `meromorphicOrderAt_prod` for the orders), coupled
-      with the full-simplex cochain cone-contraction for `Subsingleton H¹(Q)`;
-  (B) `h¹` cover-independence among Leray covers (strictly-finer `refineH1` surjectivity,
-      `CechRefinementLeray`'s `## SURJECTIVITY`, NOT the global `IsDiskAcyclic`), to switch to a
-      `P`-adapted cover per jump (the explicitly-unbanked STEP B).
-
-Route (A) is the task's "cochain-LES" plan; the keystone is the general-`D` product-witness
-realization. Neither is a quick win — this is the single honest `sorry`, *not* faked. -/
-theorem exists_localRealizationData (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) (P : X) :
-    Nonempty (𝔘.LocalRealizationData D P) :=
-  sorry
+Both are built by the **star-of-`P` cone construction** (`SkyscraperConeRealization`), which drops the
+impossible singleton-star hypothesis `hstar` (`P ∈ U j → j = i` cannot hold at every overlap point on a
+compact connected `X`).  The construction consumes a single analytic input, `LocallyRealizable 𝔘`:
+the principal-part coefficient `coeffGermLin` is surjective at every cover-set `U j ∋ P` (local
+Mittag–Leffler).  The apex vertex is any `U i ∋ P` (exists since `𝔘` covers `X`). -/
+theorem exists_localRealizationData (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable)
+    (D : Divisor X) (P : X) :
+    Nonempty (𝔘.LocalRealizationData D P) := by
+  -- the apex vertex: `P` lies in some cover-set since `𝔘` covers `X`.
+  obtain ⟨i, hPi⟩ : ∃ i, P ∈ 𝔘.U i := by
+    have hP : P ∈ (⨆ i, 𝔘.U i : Opens X) := by rw [𝔘.covers]; trivial
+    rwa [TopologicalSpace.Opens.mem_iSup] at hP
+  exact ⟨𝔘.localRealizationData_of_realizable D P hR hPi⟩
 
 /-- **The skyscraper long exact sequence** (Forster §16) — now a *theorem*, reduced to the single
 local-realization datum `exists_localRealizationData` via the proven snake assembly
 `skyscraperLES_of_localRealization` (which builds the connecting map, all exactness, the LES
 termination, and carries the finiteness instances). -/
-theorem exists_skyscraperLES (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) (P : X) :
+theorem exists_skyscraperLES (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X) (P : X) :
     Nonempty (SkyscraperLES 𝔘 D P) :=
-  (exists_localRealizationData 𝔘 hL D P).elim fun L => ⟨skyscraperLES_of_localRealization L⟩
+  (exists_localRealizationData 𝔘 hR D P).elim fun L => ⟨skyscraperLES_of_localRealization L⟩
 
 /-! ### The single-point χ-jump (sorry-free GIVEN the skyscraper LES) -/
 
 /-- **Single-point χ-jump (Forster §16).** `χ(D + P) = χ(D) + 1`. Obtained by running the proven
 linear-algebra crank `chi_jump_of_LES` on the skyscraper long exact sequence
 (`exists_skyscraperLES`, the single isolated homological/analytic kernel). -/
-theorem chi_jump (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) (P : X) :
+theorem chi_jump (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X) (P : X) :
     𝔘.chi (D + Finsupp.single P 1) = 𝔘.chi D + 1 :=
-  (exists_skyscraperLES 𝔘 hL D P).elim chi_jump_of_LES
+  (exists_skyscraperLES 𝔘 hR D P).elim chi_jump_of_LES
 
 /-! ### Iterated jump along a single point — `Int.induction_on` (CLOSED, pure ℤ-bookkeeping) -/
 
 /-- **Iterated χ-jump.** `χ(D + n·P) = χ(D) + n` for every integer `n`, by induction on `n` built on
 the unit jump `chi_jump` (both directions). Pure `ℤ`-arithmetic; no analytic content. -/
-theorem chi_add_single (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) (P : X) (n : ℤ) :
+theorem chi_add_single (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X) (P : X) (n : ℤ) :
     𝔘.chi (D + Finsupp.single P n) = 𝔘.chi D + n := by
   induction n using Int.induction_on with
   | zero => simp [Finsupp.single_zero]
   | succ k ih =>
     -- `single P (k+1) = single P k + single P 1`, so we add one more point and apply `chi_jump`.
-    rw [Finsupp.single_add, ← add_assoc, 𝔘.chi_jump hL (D + Finsupp.single P (k : ℤ)) P, ih]
+    rw [Finsupp.single_add, ← add_assoc, 𝔘.chi_jump hR (D + Finsupp.single P (k : ℤ)) P, ih]
     ring
   | pred k ih =>
     -- Downward: `single P (-k-1) + single P 1 = single P (-k)`, so `chi_jump` relates the two.
     have hstep : 𝔘.chi (D + Finsupp.single P (-(k : ℤ) - 1)) + 1
         = 𝔘.chi (D + Finsupp.single P (-(k : ℤ))) := by
-      rw [← 𝔘.chi_jump hL (D + Finsupp.single P (-(k : ℤ) - 1)) P, add_assoc, ← Finsupp.single_add]
+      rw [← 𝔘.chi_jump hR (D + Finsupp.single P (-(k : ℤ) - 1)) P, add_assoc, ← Finsupp.single_add]
       ring_nf
     rw [ih] at hstep
     linarith
@@ -215,12 +193,12 @@ theorem chi_add_single (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X
 finite support of `D` (`Finsupp.induction`): the empty divisor is the base, and each
 `single a b`-summand contributes `b = deg (single a b)` to both sides via the iterated jump
 `chi_add_single` and additivity of `deg` (`Divisor.deg_add`/`deg_single`). Pure `ℤ`-arithmetic. -/
-theorem chi_eq_deg_add_chi_zero (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) :
+theorem chi_eq_deg_add_chi_zero (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X) :
     𝔘.chi D = Divisor.deg X D + 𝔘.chi 0 := by
   induction D using Finsupp.induction with
   | zero => simp
   | single_add a b f _ _ ih =>
-    rw [add_comm (Finsupp.single a b) f, 𝔘.chi_add_single hL f a b, ih, Divisor.deg_add,
+    rw [add_comm (Finsupp.single a b) f, 𝔘.chi_add_single hR f a b, ih, Divisor.deg_add,
       Divisor.deg_single]
     ring
 
@@ -235,9 +213,9 @@ Rearrangement of `χ(D) = deg D + χ(0)` (`chi_eq_deg_add_chi_zero`, the iterate
 divisor induction) using the Liouville base `h⁰(0) = 1` (`h0Dim_zero_eq_one`), since then
 `χ(0) = 1 − h¹(0)`. This is the exact `DolbeaultLadder` leaf statement; it is proven *modulo the
 single named homological `sorry` `chi_jump`* — base and induction are sorry-free. -/
-theorem cohomological_riemannRoch (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) :
+theorem cohomological_riemannRoch (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X) :
     (𝔘.h0Dim D : ℤ) - 𝔘.h1Dim D = Divisor.deg X D + 1 - 𝔘.h1Dim 0 := by
-  have hχ := 𝔘.chi_eq_deg_add_chi_zero hL D
+  have hχ := 𝔘.chi_eq_deg_add_chi_zero hR D
   have hbase := 𝔘.h0Dim_zero_eq_one
   simp only [FiniteCover.chi] at hχ
   rw [hbase] at hχ

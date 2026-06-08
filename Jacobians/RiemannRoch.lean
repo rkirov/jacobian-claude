@@ -25,6 +25,7 @@ import Jacobians.DegDivResidue
 import Jacobians.ProperMapDegreeSheets
 import Jacobians.Dolbeault.DolbeaultLadder
 import Jacobians.Dolbeault.LerayCoverExists
+import Jacobians.Dolbeault.SkyscraperProductWitness
 
 -- Many declarations here are purely algebraic (the ℂ-module on `MeromorphicFunction`) and use
 -- only `[ChartedSpace ℂ X]`, not the full compact-manifold hypotheses carried by the consumers.
@@ -59,11 +60,11 @@ theorem exists_riemannRoch_divisor :
     ∃ K : Divisor X, ∀ D : Divisor X,
       (lDim (X := X) D : ℤ) - (lDim (X := X) (K - D) : ℤ)
         = Divisor.deg X D + 1 - (genus X : ℤ) := by
-  -- A Leray cover exists UNCONDITIONALLY (the canonical chart-ball cover; `IsLeray` is now just
-  -- "acyclic sets", which `chartBallCover_simplyConnected` discharges — STEP 2a, `hOverlaps` gone).
-  obtain ⟨𝔘, hL⟩ := Dolbeault.exists_lerayCover (X := X)
+  -- A *realizable* Leray cover exists: the canonical chart-disk cover is both Leray (acyclic sets)
+  -- and locally realizable (the product witness, `locallyRealizable_chartDiskCover`).
+  obtain ⟨𝔘, hL, hR⟩ := Dolbeault.exists_realizableLerayCover (X := X)
   -- The RR equality on that cover is the PROVEN ladder composition (mod the ladder's named leaves).
-  exact Dolbeault.riemannRoch_equality_of_ladder 𝔘 hL
+  exact Dolbeault.riemannRoch_equality_of_ladder 𝔘 hL hR
 
 /-- Every principal divisor has degree `0` (Forster Cor. 4.25 / the argument principle). **PROVEN**
 via the **degree route**: `deg (div f) = zerosCount f − polesCount f` (`deg_div_eq_zeros_sub_poles`),

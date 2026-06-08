@@ -75,12 +75,13 @@ equality `l(D) − l(K−D) = deg D + 1 − g` holds for every `D`. It falls out
 substitution: cohomological RR + the `h⁰ = l` bridge + general Serre `h¹(D)=l(K−D)` + Serre-at-0
 `h¹(0)=g`. This is what shows the scaffold is genuinely wired to the headline — once the leaves above
 are discharged, `exists_riemannRoch_divisor` follows (modulo existence of a Leray cover). -/
-theorem riemannRoch_equality_of_ladder (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) :
+theorem riemannRoch_equality_of_ladder (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray)
+    (hR : 𝔘.LocallyRealizable) :
     ∃ K : Divisor X, ∀ D : Divisor X,
       (lDim D : ℤ) - lDim (K - D) = Divisor.deg X D + 1 - genus X := by
   obtain ⟨K, hK⟩ := serre_h1_eq 𝔘 hL
   refine ⟨K, fun D => ?_⟩
-  have h := cohomological_riemannRoch 𝔘 hL D
+  have h := cohomological_riemannRoch 𝔘 hR D
   rw [𝔘.h0Dim_eq_lDim D, hK D, arithmeticGenus_eq_genus 𝔘 hL] at h
   exact h
 
