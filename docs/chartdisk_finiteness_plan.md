@@ -43,3 +43,29 @@ Wirtinger chain rule `dbarDisk_comp_holo`). NO cutoff dilemma.
 ## Honest-sorry policy
 Steps 1–2 are large geometric plumbing duplicating the Montel δ-complex; step 4's germ↔BddHol bridge
 may be left as the honest `sorry` per the task. The ANALYTIC HEART (step 3 ball-lift) is the priority.
+
+## DELIVERED STATUS (final)
+
+**Analytic heart — PROVEN axiom-clean `[propext, Classical.choice, Quot.sound]`:**
+- `ChartDiskCover.image_U_eq_ball`, `Uov`, `isOpen_Uov`, `Uov_subset_ball` — ball geometry.
+- `ChartDiskCover.coverTransition` + `differentiableAt_coverTransition` — transitions.
+- `BallSplitData` (Bott–Tu smooth-split hypothesis bundle) and its analytic core:
+  - `dbar_g_frame` — the Forster 14.6 (0,1)-frame identity `∂̄g_a = conj(τ′)·(∂̄g_b)∘τ` (Wirtinger).
+  - `solve` + `solve_dbar` — per-ball ∂̄-solve on the FULL ball (Forster 13.2, no cutoff).
+  - `differentiableOn_eta` — holomorphic correctors `η_a` on the FULL ball.
+  - `differentiableOn_x` — cover cocycle `x_{ab}` holomorphic on the FULL overlap (the ball-geometry
+    payoff that unblocks the Montel two-scale dilemma).
+  - `split_eq` / `forster146_lift` — the `s = δ⁰η + ρx` lift, packaged.
+
+**Reductions — PROVEN axiom-clean:**
+- `finiteDimensional_cechH1_of_holomorphicModel` — model + comparison ⟹ `cechH1` finite (via the
+  proven `HolomorphicCoboundaries.finiteDimensional_supH1` + `leray_surjective`).
+- `finiteDimensional_cechH1_iff_dolbeault` — the two goal halves are equivalent (proven
+  `comparison_linearEquiv'` + ℝ/ℂ transport).
+
+**Top-level — ONE honest `sorry` (no analytic content):**
+- `finiteDimensional_cechH1_chartDisk` / `finiteDimensional_dolbeaultH01_of_chartDisk` reduce to
+  producing the `HolomorphicCoboundaries` model + comparison.  The `sorry` is the (G-shrink) covering
+  relatively-compact shrinking (Forster §12) + (G-bridge) germ↔BddHol δ-complex/comparison — pure
+  cover/sheaf plumbing, NO ∂̄, NO Montel.  The analytic wall (the `leray` field that is a genuine sorry
+  in `CechModelHolomorphicLeray.lean`) is GONE: `forster146_lift` is its discharge.
