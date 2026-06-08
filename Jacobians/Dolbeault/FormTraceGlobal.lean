@@ -40,6 +40,33 @@ last §VIII.3-level analytic content (see the diagnosis at the bottom).
 * Miranda, *Algebraic Curves and Riemann Surfaces*, §VIII.3 (the trace `Tr`, Lemma 3.2; rationality
   / partial fractions on `ℂℙ¹`).
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.
+
+## The minimal remaining obligation (precise diagnosis)
+
+Gate A is now reduced — **fully sorry-free and axiom-clean below `GlobalTraceData`** — to the single
+construction `∃ T, GlobalTraceData ω₀ g f poles` for a general nonconstant `f` (where `poles` is the
+pole set of `α = ω₀·g`).  Concretely the remaining content is:
+
+1. **Choice of cover `f`** unramified over the (finite) `F`-images of the poles of `α`, so each finite
+   center's fibre consists of regular non-pole points of `f` — feeding `FibreRegularData.ofRegular`
+   (whose interface is already the reduced non-pole + regular + value data, `hg_an` discharged).  A
+   generic nonconstant meromorphic `f` works; existence is Riemann–Roch (Gate D) + the finite
+   critical-value set `Jacobians.Discharge.Manifold.criticalValues_finite_general`.
+2. **Per-center fibre enumeration** `(D p).xs` of `poles ∩ F⁻¹(coe p)` (a finite set, T2-separated):
+   pure `Finset`/`Fintype` packaging, no analysis — feeds `hxs_inj`/`hxs_mem`/`hxs_surj`.
+3. **Trace rationality** — the meromorphic trace `Tr_F α` on `ℂℙ¹` is *rational*, i.e. realizable as
+   a `LaurentForm L` with `hcenters` (the `L`-centers = the finite pole values) and `hL32` (Lemma 3.2
+   at the finite centers, `L.R`'s residue = the fibre residue sum).  This is the genuinely deep
+   §VIII.3 content (every meromorphic function on the compact `ℂℙ¹` is rational), the last analytic
+   wall; it reuses `FibreTrace.resAt_traceCoeff'` (Lemma 3.2, *proved*) for the residue identity and
+   the partial-fraction `LaurentForm` machinery (`Jacobians.TraceResidue`, *proved*).
+4. **Lemma 3.2 at `∞`** (`infty_eq`): the residue at infinity of `L.R` is the `∞`-fibre residue sum —
+   the reciprocal-chart analogue of (3) at the pole fibre (cf. `exists_sheetDatum_infty`'s reciprocal
+   normal form).
+
+Everything *downstream* of `GlobalTraceData` — the per-fibre Lemma 3.2 (bridges a/b/c,
+`FormTraceFibre`), the finite-center re-indexing (`finite_eq`), and the descent to `∑ₐ Resₐ(α) = 0`
+(`residueSum_eq_zero`, `toFormResidueTrace`) — is **proved**, axiom-clean.  See the report.
 -/
 
 noncomputable section
@@ -148,6 +175,18 @@ theorem residueSum_eq_zero (T : GlobalTraceData ω₀ g f poles) :
   simpa only [toFormResidueTrace_poles] using h
 
 end GlobalTraceData
+
+/-- **The Gate-A reduction, existential form.**  If a `GlobalTraceData ω₀ g f poles` exists (the trace
+of `α = ω₀·g` is rational and `f` is unramified over the finite pole values), then a
+`FormResidueTrace ω₀ g` exists — hence the represented `α` satisfies the 1-form residue theorem
+`∑ₐ Resₐ(α) = 0` *unconditionally* (the downstream consumers `residueSum_eq_zero_of_formResidueTrace`
+and `MittagLefflerForm_res_eq_zero` are *proved*).  This packages "Gate A is reduced to constructing a
+`GlobalTraceData`" as a single statement. -/
+theorem exists_formResidueTrace_of_globalTraceData (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (poles : Finset X)
+    (h : Nonempty (GlobalTraceData ω₀ g f poles)) :
+    Nonempty (FormResidueTrace ω₀ g) :=
+  ⟨h.some.toFormResidueTrace⟩
 
 /-! ### Non-vacuity of `GlobalTraceData`
 
