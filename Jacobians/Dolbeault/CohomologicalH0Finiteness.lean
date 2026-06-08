@@ -191,4 +191,11 @@ theorem finiteDimensional_globalSections (𝔘 : FiniteCover X) (D : Divisor X) 
     FiniteDimensional ℂ ↥(𝔘.globalSections D) :=
   𝔘.finiteDimensional_globalSections_of_zero D
 
+/-- **Instance form** of `finiteDimensional_globalSections`, so that the skyscraper assembly's
+`[FiniteDimensional ℂ H⁰(𝒪_{D+P})]` instance hypothesis is discharged automatically. -/
+instance (priority := 100) finiteDimensional_globalSections_instance
+    (𝔘 : FiniteCover X) (D : Divisor X) :
+    FiniteDimensional ℂ ↥(𝔘.globalSections D) :=
+  finiteDimensional_globalSections 𝔘 D
+
 end Jacobians.Dolbeault

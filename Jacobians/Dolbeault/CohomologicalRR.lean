@@ -280,9 +280,10 @@ structure SkyscraperLES (𝔘 : FiniteCover X) (D : Divisor X) (P : X) where
   [finH1D : FiniteDimensional ℂ (𝔘.cechH1 D)]
   /-- `H¹(𝒪_{D+P})` is finite-dimensional (Forster 14.9; `finiteDimensional_cechH1`). -/
   [finH1DP : FiniteDimensional ℂ (𝔘.cechH1 (D + Finsupp.single P 1))]
-  /-- `H⁰(𝒪_{D+P})` is finite-dimensional (Forster compactness; the bridge `h0Dim_eq_lDim` to the
-  finite linear system `L(D+P)`). `H⁰(𝒪_D)` finiteness is then *derived* (it injects into this one,
-  `h0Incl_injective`), so it is not a separate field. -/
+  /-- `H⁰(𝒪_{D+P})` is finite-dimensional (Forster compactness `l(D+P) < ∞`). Now an *instance*
+  globally (`CohomologicalH0Finiteness.finiteDimensional_globalSections`, Gap 1), so a `SkyscraperLES`
+  carries no genuine finiteness obligation here; kept as a field so the structure is self-contained.
+  `H⁰(𝒪_D)` finiteness is *derived* (it injects into this one, `h0Incl_injective`). -/
   [finH0DP : FiniteDimensional ℂ ↥(𝔘.globalSections (D + Finsupp.single P 1))]
 
 attribute [instance] SkyscraperLES.finH1D SkyscraperLES.finH1DP SkyscraperLES.finH0DP
@@ -309,32 +310,42 @@ theorem chi_jump_of_LES {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
   simp only [chi, h0Dim, h1Dim, Nat.cast_one] at halt ⊢
   linarith
 
-/-- **Existence of the skyscraper long exact sequence — THE NAMED HONEST `sorry`.**
+/-- **Existence of the skyscraper long exact sequence — THE NAMED HONEST `sorry`** (general Leray
+cover).
 
-This is the genuine cohomological content of Riemann–Roch (Forster §16). The full assembly is now
-PROVEN as `SkyscraperAssembly.skyscraperLES_of_chartDisk` — the snake/connecting map (`f₃`),
-exactness (`exact₂`, `exact₃`), surjectivity (`surj₄`), the local-realization iso `H⁰(Q) ≅ ℂ`, the
-coefficient arrow `f₂ = h0ToSky` with `exact₁₂`, and the acyclicity `H¹(Q) = 0` are all genuinely
-built (axiom-clean: only the `H¹`-finiteness instances carry a `sorryAx`, via the OTHER track
-`exists_cechModel`/`finiteDimensional_cechH1_wired`). So the **only** reason this particular wrapper
-remains a `sorry` is the *hypotheses* it would need to invoke that assembly, which do **not** follow
-from `IsLeray` alone:
+This is the genuine cohomological content of Riemann–Roch (Forster §16). The full assembly is PROVEN
+as `SkyscraperAssembly.skyscraperLES_of_chartDisk` — the snake/connecting map (`f₃`), exactness
+(`exact₂`, `exact₃`), surjectivity (`surj₄`), the local-realization iso `H⁰(Q) ≅ ℂ`, the coefficient
+arrow `f₂ = h0ToSky` with `exact₁₂`, and the acyclicity `H¹(Q) = 0`. Both finiteness inputs are now
+fully discharged (the stale comments here predated that): `H¹` by `finiteDimensional_cechH1_general`
+(axiom-clean) and `H⁰(𝒪_{D+P})` by the `CohomologicalH0Finiteness.finiteDimensional_globalSections`
+instance (Gap 1, Forster compactness `l(D+P) < ∞`). The packaged, fully-PROVEN, **axiom-clean**
+deliverable is `CohomologicalRRChartDisk.exists_skyscraperLES_of_chartDisk` (downstream — it cannot be
+imported here, as the assembly depends on this file's `SkyscraperLES`/`h0Incl`/`Skyscraper` defs).
 
-  `skyscraperLES_of_chartDisk` requires, for the given `D`/`P`,
+So the **only** reason this particular wrapper remains a `sorry` is the *geometric hypotheses* that
+assembly needs, which do **not** follow from `IsLeray` alone:
+
+  `exists_skyscraperLES_of_chartDisk` requires, for the given `D`/`P`,
     1. a cover-set `U i ∋ P`;
     2. `hWsrc`: `↥(U i)`'s chart at `P` has source all of `U i` (a chart-disk cover-set);
     3. `hDsupp`: `D` is supported on `U i` only at `P`;
-    4. `hstar`: the star of `P` is the single vertex `i` (singleton-star, a chart-disk shrinking);
-    5. `[FiniteDimensional ℂ H⁰(𝒪_{D+P})]` (Forster compactness `l(D+P) < ∞`; no repo lemma).
+    4. `hstar`: the star of `P` is the single vertex `i` (singleton-star, a chart-disk shrinking).
 
-A generic Leray cover (each `U i` merely simply-connected) need not be a chart-disk cover with a
-singleton star at `P` and `D` supported only at `P` there, so `exists_skyscraperLES` as stated cannot
-be discharged from `hL`; supplying it requires either threading a per-point chart-disk refinement
-into the cover, or a cover-independence transport of the whole 6-term LES (cf. the finiteness track's
-`LerayCoverIndependence.refineH1_equiv`, which transports `H¹` only). The middle term is the genuine
-**1-dimensional** skyscraper `ℂ_P` (NOT the H⁰-cokernel — see the soundness note on `Skyscraper`), so
-the statement is **true**; it is the single honest `sorry`, *not* faked. Everything downstream
-(`chi_jump_of_LES`, the induction, `cohomological_riemannRoch`) is sorry-free. -/
+A generic Leray cover (each `U i` merely simply-connected) is not such an adapted chart-disk cover, so
+`exists_skyscraperLES` as stated cannot be discharged from `hL`. Closing it needs, for each `(D, P)`:
+(1) a chart-disk cover **adapted** to `(D, P)` (the singleton-star + `D`-supported-only-at-`P`
+shrinking — a standard but currently-unbuilt construction), and (2) cover-independence of `χ` between
+that adapted cover and `𝔘`. Since `h⁰` is *already* unconditionally cover-independent
+(`h0Dim_eq_lDim`, `= l(D)`), (2) is exactly **`h¹` cover-independence among Leray covers** — Forster's
+Leray theorem 12.8 / surjectivity of the strictly-finer `refineH1` (the unbanked per-overlap-acyclicity
+gluing of `CechRefinementLeray`'s `## SURJECTIVITY` plan, NOT the trivialising global `IsDiskAcyclic`).
+Both are genuine unbanked work.
+
+The middle term is the genuine **1-dimensional** skyscraper `ℂ_P` (NOT the H⁰-cokernel — see the
+soundness note on `Skyscraper`), so the statement is **true**; it is the single honest `sorry`, *not*
+faked. Everything downstream (`chi_jump_of_LES`, the induction, `cohomological_riemannRoch`) is
+sorry-free, and the chart-disk discharge above carries no non-geometric content. -/
 theorem exists_skyscraperLES (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) (P : X) :
     Nonempty (SkyscraperLES 𝔘 D P) :=
   sorry
