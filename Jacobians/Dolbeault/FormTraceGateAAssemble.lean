@@ -6,6 +6,7 @@ Authors: Rado Kirov
 import Jacobians.Dolbeault.FormTraceBundleBridge
 import Jacobians.Dolbeault.FormTraceSphereSheetTranslate
 import Jacobians.Dolbeault.SerreOmega0
+import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 
 /-!
 # Gate A `∑Res = 0`: global-cover selection assembly (Miranda §VIII.3)
@@ -23,9 +24,11 @@ genuinely-remaining obligations is exposed precisely:
 * `hncF` — the cover is nonconstant — is *free* from `f.div ≠ 0`
   (`MeromorphicFunction.toRiemannSphere_not_isConstant_of_div_ne_zero`);
 * the **regular-value sphere sheet family** `Sreg` is *constructed* (choice over the per-value
-  `exists_sphereSheetSystem`) for every `z` off the finite branch locus, together with the two
-  sheet-intrinsic canonical-fibre conditions `hsheetInjReg` (`LocalSheetSystem.sheet_inj`) and
-  `hsheetMemReg` (each sheet passes through its own chart source near the base);
+  `exists_sphereSheetSystem`) for every `z` off the finite branch locus, together with the
+  canonical-fibre conditions `hsheetInjReg` (`LocalSheetSystem.sheet_inj`), `hsheetMemReg` (each sheet
+  passes through its own chart source near the base), and `hderivReg` (each fibre point is a regular
+  point of `f` — off-branch local injectivity ⟹ nonzero chart-pullback derivative, transferred from
+  `f.toRiemannSphere` to `f.holoRepr` via the non-pole comparison);
 * `hbrBr` — branch-locus membership of the `br` centers — holds *by construction* when `br` is taken
   to be the finite set of branch values.
 
@@ -187,19 +190,97 @@ theorem sregFamily_hsheetMemReg (f : MeromorphicFunction X) (hdiv : (f.div : Div
   rw [eventually_all]
   exact hev
 
+/-! ### `hderivReg` — regular-value derivative nonvanishing (from off-branch local injectivity)
+
+At a regular value `z` (off the branch locus), every fibre point `p` is a *regular point of `f`*: the
+chart-pullback derivative of `f.holoRepr` is nonzero.  This is intrinsic to being off the branch locus
+(local injectivity of the sphere cover `f.toRiemannSphere` ⟹ nonzero pullback derivative,
+`deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood`), transferred from `f.toRiemannSphere` to
+`f.holoRepr` via the non-pole chart comparison `toRiemannSphere =ᶠ coe ∘ holoRepr`. -/
+
+/-- **Chart-pullback derivative comparison at a non-pole.**  At a non-pole `p` (`0 ≤ orderAtPoint p`),
+the derivative of `f.holoRepr`'s chart pullback equals that of `chartAt(F p) ∘ F`'s chart pullback
+(`F = f.toRiemannSphere`): near `chart p p`, `F ∘ chart⁻¹ = coe ∘ holoRepr ∘ chart⁻¹`
+(`toRiemannSphere_eventuallyEq_coe_holoRepr`) and `chartCoe ∘ coe = id` at the finite value. -/
+theorem holoRepr_deriv_eq_toRiemannSphere_deriv (f : MeromorphicFunction X) {p : X}
+    (hp : 0 ≤ f.orderAtPoint p) :
+    deriv (fun w => f.holoRepr ((chartAt ℂ p).symm w)) ((chartAt ℂ p) p)
+    = deriv (fun w => (chartAt ℂ (f.toRiemannSphere p)) (f.toRiemannSphere ((chartAt ℂ p).symm w)))
+        ((chartAt ℂ p) p) := by
+  have hval : f.toRiemannSphere p = ((f.holoRepr p : ℂ) : RiemannSphere) :=
+    f.toRiemannSphere_of_nonneg hp
+  apply Filter.EventuallyEq.deriv_eq
+  symm
+  have hTS : f.toRiemannSphere =ᶠ[𝓝 p] (fun y => ((f.holoRepr y : ℂ) : RiemannSphere)) :=
+    f.toRiemannSphere_eventuallyEq_coe_holoRepr hp
+  have hcont : ContinuousAt (chartAt ℂ p).symm ((chartAt ℂ p) p) :=
+    (chartAt ℂ p).continuousAt_symm ((chartAt ℂ p).map_source (mem_chart_source ℂ p))
+  have hsymm0 : (chartAt ℂ p).symm ((chartAt ℂ p) p) = p :=
+    (chartAt ℂ p).left_inv (mem_chart_source ℂ p)
+  have hpull : (fun w => f.toRiemannSphere ((chartAt ℂ p).symm w))
+      =ᶠ[𝓝 ((chartAt ℂ p) p)]
+        (fun w => ((f.holoRepr ((chartAt ℂ p).symm w) : ℂ) : RiemannSphere)) :=
+    hcont.eventually
+      (p := fun y => f.toRiemannSphere y = ((f.holoRepr y : ℂ) : RiemannSphere))
+      (by rw [hsymm0]; exact hTS)
+  filter_upwards [hpull] with w hw
+  show (chartAt ℂ (f.toRiemannSphere p)) (f.toRiemannSphere ((chartAt ℂ p).symm w))
+      = f.holoRepr ((chartAt ℂ p).symm w)
+  rw [hw, hval, RiemannSphere.chartAt_coe, RiemannSphere.chartCoe_apply_coe]
+
+/-- **A fibre point of a non-branch value is a regular point of `f`.**  If `coe z ∉ branchLocus
+f.toRiemannSphere` and `f.toRiemannSphere p = coe z`, then `p` is a non-pole (finite value) and the
+chart-pullback derivative of `f.holoRepr` at `chart p p` is nonzero.  Off-branch ⟹ `f.toRiemannSphere`
+locally injective at `p` (`branchLocus = criticalValuesGeneral`) ⟹ nonzero pullback derivative
+(`deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood`) ⟹ (comparison) nonzero `holoRepr` pullback
+derivative. -/
+theorem sheet_holoRepr_deriv_ne_zero (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0)
+    {z : ℂ} {p : X} (hz : ((z : ℂ) : RiemannSphere) ∉ branchLocus f.toRiemannSphere)
+    (hpz : f.toRiemannSphere p = ((z : ℂ) : RiemannSphere)) :
+    deriv (fun w => f.holoRepr ((chartAt ℂ p).symm w)) ((chartAt ℂ p) p) ≠ 0 := by
+  have hnpval := f.nonpole_of_toRiemannSphere_eq_coe hpz
+  have h_inj : ∃ U ∈ 𝓝 p, Set.InjOn f.toRiemannSphere U := by
+    have hpcrit : p ∉ Jacobians.Discharge.Manifold.criticalSetGeneral f.toRiemannSphere := by
+      intro hcrit; exact hz ⟨p, hcrit, hpz⟩
+    by_contra h; exact hpcrit h
+  have htool :=
+    Jacobians.Discharge.ContMDiff.Degree.deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
+      f.contMDiff_toRiemannSphere (hncF_of_div_ne_zero f hdiv) p h_inj
+  rw [holoRepr_deriv_eq_toRiemannSphere_deriv f hnpval.1]
+  convert htool using 2
+
+/-- `hderivReg` for `sregFamily`: at every regular value `z` off `branchValues f`, each fibre point
+`S.sheet i (coe z)` is a regular point of `f`.  The sheet point has sphere value `coe z`
+(`sheet_section` at the base `coe z ∈ S.V`), which is off the branch locus, so
+`sheet_holoRepr_deriv_ne_zero` applies. -/
+theorem sregFamily_hderivReg (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0)
+    {m : ℕ} (cs : Fin m → ℂ) (z : ℂ) (hz : z ∉ Finset.univ.image cs ∪ branchValues f hdiv) :
+    ∀ i, deriv (fun w => f.holoRepr
+        ((chartAt ℂ ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere))))
+        ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0 := by
+  set S := sregFamily f hdiv cs z hz with hS
+  intro i
+  have hzbr : z ∉ branchValues f hdiv := fun h => hz (Finset.mem_union_right _ h)
+  have hoff : ((z : ℂ) : RiemannSphere) ∉ branchLocus f.toRiemannSphere :=
+    coe_notMem_branchLocus_of_notMem_branchValues f hdiv hzbr
+  have hpz : f.toRiemannSphere (S.sheet i (((z : ℂ) : RiemannSphere))) = ((z : ℂ) : RiemannSphere) :=
+    S.sheet_section i (((z : ℂ) : RiemannSphere)) S.mem_V
+  exact sheet_holoRepr_deriv_ne_zero f hdiv hoff hpz
+
 /-! ### The clean reduction: Gate A `∑Res = 0` with the directly-derivable fields discharged
 
 We now wire `residueSum_eq_zero_ofBundleBranchAgree` with the **canonical** regular-value sphere
-family `Sreg := sregFamily` and branch set `br := branchValues f`, so that the four fields
-`hncF` (cover nonconstant), `hbrBr` (branch-locus membership), `hsheetInjReg`, `hsheetMemReg` are
-*discharged* from the constructions above.  The remaining hypotheses are exactly the three honest
-§VIII.3 walls:
+family `Sreg := sregFamily` and branch set `br := branchValues f`, so that the five fields
+`hncF` (cover nonconstant), `hbrBr` (branch-locus membership), `hderivReg` (regular-value derivative
+nonvanishing, from off-branch local injectivity), `hsheetInjReg`, `hsheetMemReg` are *discharged* from
+the constructions above.  The remaining hypotheses are exactly the three honest §VIII.3 walls:
 
 * the **adapted cover** `hac` and its finite-center fibre data `cs`/`ρ`/`Dinf` + the per-center moving
   sections `secFin`/`hselFin` (the cover genericity + moving-fibre coherence);
-* the **regular-value local data** `hderivReg`/`hmeroReg`/`hCreg_g` (`f`-regularity + `g`-meromorphy at
-  the regular fibres — automatic once `α` is a genuine global meromorphic form on the unramified locus)
-  and the **selection range/injectivity** `hΦinjReg`/`hΦrangeReg`;
+* the **regular-value `g`-data** `hmeroReg`/`hCreg_g` (`g`-meromorphy/holomorphy at the regular fibres —
+  automatic once `α` is a genuine global meromorphic form on the unramified locus) and the **selection
+  range/injectivity** `hΦinjReg`/`hΦrangeReg`;
 * the **branch agreement** `hαBrAgreeBr` and the **`∞`-rationality** `hglue_inf`/`hcont_int`/`R₀`/`hR₀_eq`
   (the irreducible trace-rationality wall, `TraceRationalityWitness`).
 
@@ -222,11 +303,6 @@ theorem residueSum_eq_zero_of_globalCoverData (hdiv : (f.div : Divisor X) ≠ 0)
     (hselFin : ∀ i, ∀ᶠ b' in 𝓝 (cs i), ∃ e : (Φ b').ι ≃ (fibreReg hac (cs i)).ι,
       (∀ i', (Φ b').xs i' = secFin i (e i') b') ∧
       (∀ j, secFin i j b' ∈ (chartAt ℂ ((fibreReg hac (cs i)).xs j)).source))
-    (hderivReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ branchValues f hdiv), ∀ i,
-      deriv (fun w => f.holoRepr
-          ((chartAt ℂ ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere)))).symm w))
-        ((chartAt ℂ ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere))))
-          ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0)
     (hmeroReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ branchValues f hdiv), ∀ i,
       MeromorphicAt (fun w => g
           ((chartAt ℂ ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere)))).symm w))
@@ -260,7 +336,8 @@ theorem residueSum_eq_zero_of_globalCoverData (hdiv : (f.div : Divisor X) ≠ 0)
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
   residueSum_eq_zero_ofBundleBranchAgree hac Φ m cs ρ hcs_ball hcs_inj hcenters_cs Dinf hxs_inj
     hxs_mem hxs_surj secFin hsecFin_base hsecFin_smooth hsecFin_sec hselFin
-    (branchValues f hdiv) (sregFamily f hdiv cs) hderivReg hmeroReg hΦinjReg hΦrangeReg
+    (branchValues f hdiv) (sregFamily f hdiv cs)
+    (fun z hz => sregFamily_hderivReg f hdiv cs z hz) hmeroReg hΦinjReg hΦrangeReg
     (fun z hz => sregFamily_hsheetInjReg f hdiv cs z hz)
     (fun z hz => sregFamily_hsheetMemReg f hdiv cs z hz)
     hCreg_g (hncF_of_div_ne_zero f hdiv) αBr
