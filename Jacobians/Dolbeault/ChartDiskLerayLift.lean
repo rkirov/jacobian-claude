@@ -416,6 +416,31 @@ theorem glueForm_apply_on_V (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s
   exact telescope_sum (fun p => 𝔇.shrinkRhoC p x) (fun q => holoFn (𝔇.shrinkGerm s a q).2 x)
     (fun q => 𝔇.shrinkDbarRho q x) (𝔇.sum_shrinkRhoC_apply x) (𝔇.sum_shrinkDbarRho_apply x)
 
+/-- `G_a = ∑_c (ρ_c · holoFn σ_{ac})` as a sum of functions. -/
+theorem globalPrim_eq_sum (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) :
+    𝔇.globalPrim s a = ∑ c, 𝔇.globalPrimTerm s a c := by
+  funext x
+  rw [globalPrim_apply, Finset.sum_apply]
+  rfl
+
+/-- **The intrinsic `∂̄` identity** `proj01(mfderiv G_a x) = ω̂ x` for `x ∈ V_a`.  The per-term Wirtinger
+values (`dbar_globalPrimTerm`) summed (`HasMFDerivAt.sum`), matched to `glueForm` by its `V_a`
+telescoping. -/
+theorem dbar_globalPrim (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a : 𝔇.ι) {x : X}
+    (hxa : x ∈ (𝔇.shrinkOpens a : Opens X)) :
+    proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrim s a) x)
+      = ((𝔇.glueForm s : ↥(OneFormsZeroOne X)) : SmoothCOneForms X) x := by
+  -- `mfderiv G_a x = ∑_c mfderiv (term_c) x`.
+  have hsum : HasMFDerivAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (∑ c, 𝔇.globalPrimTerm s a c) x
+      (∑ c, mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrimTerm s a c) x) :=
+    HasMFDerivAt.sum (fun c _ =>
+      (𝔇.mdifferentiableAt_globalPrimTerm s a c hxa).hasMFDerivAt)
+  have hmf : mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrim s a) x
+      = ∑ c, mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrimTerm s a c) x := by
+    rw [𝔇.globalPrim_eq_sum s a]; exact hsum.mfderiv
+  rw [hmf, map_sum, 𝔇.glueForm_apply_on_V s hs a hxa]
+  exact Finset.sum_congr rfl fun c _ => 𝔇.dbar_globalPrimTerm s a c hxa
+
 end ChartDiskCover
 
 end Jacobians.Dolbeault
