@@ -167,7 +167,7 @@ theorem resAt_recip_pospow (c a : ℂ) (n : ℕ) :
     rw [show ((ζ⁻¹ : ℂ)) = ζ ^ (-1 : ℤ) from by rw [zpow_neg_one]]
     rw [← zpow_natCast (ζ ^ (-1:ℤ)) (n - k), ← zpow_mul,
       show ((-1 : ℤ) * ((n - k : ℕ) : ℤ)) = (k : ℤ) - n from by
-        rw [Nat.cast_sub hkle]; push_cast; ring,
+        rw [Nat.cast_sub hkle]; ring,
       ← zpow_add₀ hζne]
     norm_num [sub_eq_add_neg]
 

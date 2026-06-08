@@ -5,6 +5,7 @@ Authors: Rado Kirov
 -/
 import Jacobians.Dolbeault.FormTraceGlobalConstruct
 import Jacobians.Dolbeault.FormTraceGlobalFunction
+import Jacobians.Dolbeault.FormTraceInftyRecip
 
 /-!
 # Reducing `TraceRationalityWitness` to the trace-representation agreement (Gate A, §VIII.3 step 4)
@@ -158,6 +159,34 @@ theorem residueSum_eq_zero_of_agree (hac : AdaptedCover ω₀ g f poles) (L : La
       = ∑ a ∈ poles with f.toRiemannSphere a = OnePoint.infty, formFnResidue ω₀ g a) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
   residueSum_eq_zero_of_adapted hac (traceRationalityWitness_of_agree hac L hcenters hagree hinfty)
+
+/-! ### `infty_eq` via the reciprocal chart at `0`
+
+Using the proved one-variable bridge `resAtInfty_eq_resAt_recipCoeff`
+(`Jacobians.Dolbeault.FormTraceInftyRecip`), the `infty_eq` field can be stated as a residue at `0`
+of the reciprocal-chart coefficient — the honest Lemma-3.2-at-`∞` content, structurally identical to
+the finite case.  This variant of the witness assembly takes that reciprocal form directly. -/
+
+open Jacobians.Dolbeault.FormTraceInftyRecip in
+/-- **`TraceRationalityWitness` with `infty_eq` in reciprocal-chart form.**  Identical to
+`traceRationalityWitness_of_agree`, but the `∞`-residue identity is supplied as a residue at `0` of
+the reciprocal-chart coefficient `recipCoeff L.R` (the honest Lemma-3.2-at-`∞` form, via the proved
+`resAtInfty_eq_resAt_recipCoeff` bridge):
+
+> `resAt (recipCoeff L.R) 0 = ∑_{a : F a = ∞} Res_a(α)`.
+
+This is the precise minimal remaining `∞`-obligation: the residue at `0` of the reciprocal-chart trace
+coefficient is the `∞`-fibre residue sum (Lemma 3.2 over the pole fibre, in the reciprocal chart). -/
+def traceRationalityWitness_of_agree_recip (hac : AdaptedCover ω₀ g f poles) (L : LaurentForm)
+    (hcenters : (Finset.univ.image L.a).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hagree : ∀ p ∈ (Finset.univ.image L.a),
+      L.R =ᶠ[𝓝[≠] p] (fibreTrace ω₀ f (fibreReg hac p)).traceCoeff)
+    (hinftyRecip : resAt (recipCoeff L.R) 0
+      = ∑ a ∈ poles with f.toRiemannSphere a = OnePoint.infty, formFnResidue ω₀ g a) :
+    TraceRationalityWitness ω₀ g f poles hac :=
+  traceRationalityWitness_of_agree hac L hcenters hagree
+    (by rw [resAtInfty_eq_resAt_recipCoeff]; exact hinftyRecip)
 
 /-! ### Non-vacuity of the reduction (end-to-end soundness)
 
