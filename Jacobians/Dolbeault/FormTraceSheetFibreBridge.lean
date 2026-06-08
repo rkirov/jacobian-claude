@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.Dolbeault.FormTraceSheetCovector
+import Jacobians.Dolbeault.FormTraceFibre
 
 /-!
 # The fibre-sum bridge: bundle trace ↔ planar fibre trace (Gate A step 2/3)
@@ -103,6 +104,42 @@ theorem sheetPullback_one_eq_fixedChart_coeffAt_mul_deriv (ω₀ : HolomorphicOn
   rw [hcomp_eq.deriv_eq]
   -- Chain rule for `tr ∘ sh` at `b'`, with `sh b' = chart_xs P`.
   rw [deriv_comp b' (by rw [hshb']; exact htrans_diff) hsh_diff, hshb']
+  ring
+
+/-! ### The `g`-weighted single-sheet bridge (the `fibreTrace` summand)
+
+`α = ω₀·g` is meromorphic, so the `g`-weight rides per-sheet inside the coefficient
+`coeff i = chartIntegrand ω₀ g (xs i)`.  The `g`-weighted bundle summand is the holomorphic
+per-sheet covector times the per-sheet scalar `g (s y)` (the value of `g` at the fibre point); it
+equals the planar `FormTraceFibre.chartIntegrand·deriv` summand. -/
+
+/-- **`g`-weighted single-sheet bridge.**  The holomorphic per-sheet bundle covector
+`sheetPullback ω₀ s y 1` weighted by `g (s y)` (the value of `g` at the fibre point) equals the
+planar `FormTraceFibre.fibreTrace` summand `chartIntegrand ω₀ g xs (sh w)·deriv(sh) w` for the section
+`sh := chart_xs ∘ s ∘ chart_y.symm` read in the fixed `xs`-chart.  This is
+`sheetPullback_one_eq_fixedChart_coeffAt_mul_deriv` multiplied by the per-sheet `g`-scalar, with
+`chartIntegrand ω₀ g xs (sh b') = coeffAt ω₀ xs (sh b')·g (s y)` (the `g`-pullback at `chart_xs.symm
+(sh b') = s y`). -/
+theorem g_weighted_sheetPullback_eq_chartIntegrand_mul_deriv (ω₀ : HolomorphicOneForms X)
+    (g : X → ℂ) (s : Y → X) {y : Y} (xs : X) (hs : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) s y)
+    (hmem : s y ∈ (chartAt ℂ xs).source)
+    (hsh_diff : DifferentiableAt ℂ (fun z => (chartAt ℂ xs) (s ((chartAt ℂ y).symm z)))
+      ((chartAt ℂ y) y))
+    (htrans_diff : DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (s y)) ((chartAt ℂ xs).symm w)) ((chartAt ℂ xs) (s y))) :
+    g (s y) * sheetPullback ω₀ s y (1 : ℂ)
+      = Jacobians.Dolbeault.FormTraceFibre.chartIntegrand ω₀ g xs
+          ((fun z => (chartAt ℂ xs) (s ((chartAt ℂ y).symm z))) ((chartAt ℂ y) y))
+        * deriv (fun z => (chartAt ℂ xs) (s ((chartAt ℂ y).symm z))) ((chartAt ℂ y) y) := by
+  rw [sheetPullback_one_eq_fixedChart_coeffAt_mul_deriv ω₀ s xs hs hmem hsh_diff htrans_diff]
+  -- `chartIntegrand ω₀ g xs (sh b') = coeffAt ω₀ xs (sh b') · g (chart_xs.symm (sh b'))`, and
+  -- `chart_xs.symm (sh b') = chart_xs.symm (chart_xs (s y)) = s y`.
+  have hshb' : (fun z => (chartAt ℂ xs) (s ((chartAt ℂ y).symm z))) ((chartAt ℂ y) y)
+      = (chartAt ℂ xs) (s y) := by
+    show (chartAt ℂ xs) (s ((chartAt ℂ y).symm ((chartAt ℂ y) y))) = _
+    rw [(chartAt ℂ y).left_inv (mem_chart_source ℂ y)]
+  rw [Jacobians.Dolbeault.FormTraceFibre.chartIntegrand, hshb',
+    (chartAt ℂ xs).left_inv hmem]
   ring
 
 end Jacobians.Dolbeault.FormTraceSheet
