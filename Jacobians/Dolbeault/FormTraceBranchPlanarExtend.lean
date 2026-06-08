@@ -5,6 +5,7 @@ Authors: Rado Kirov
 -/
 import Mathlib.Analysis.Complex.RemovableSingularity
 import Mathlib.Analysis.Analytic.Order
+import Jacobians.TraceForm
 import Jacobians.Dolbeault.FormTraceFibre
 
 /-!
@@ -206,5 +207,69 @@ theorem tendsto_zero_fibreSum {ι : Type*} [Fintype ι] {s coeff : ι → ℂ �
   rw [Finset.sum_const, smul_zero] at hsum
   refine hsum.congr (fun z => ?_)
   rw [Finset.mul_sum]
+
+/-! ### The section-derivative atom (the planar §VIII.3 boundedness, from the proven ratio atom)
+
+The per-sheet hypothesis `(z − b₀)·deriv s z → 0` of `tendsto_zero_perSheet` is the planar §VIII.3
+boundedness for one sheet.  We discharge it from the proven one-variable ratio atom
+`TraceForm.sub_div_deriv_tendsto_zero`.  The geometry: a regular-fibre section `s` near a *branch*
+value `b₀` is the local inverse of `f`'s chart-pullback `F` at a *ramification* point `w₀ = lim s`,
+so `F ∘ s = id` on the punctured neighbourhood and `F w₀ = b₀`.  Then `deriv s z = 1/F'(s z)` and
+`z − b₀ = F(s z) − b₀`, so `(z − b₀)·deriv s z = (F w − b₀)/F'(w)` with `w = s z → w₀`, which `→ 0`
+because `F − b₀ = (w − w₀)^e·g` with `g w₀ ≠ 0` (the ramification factorisation). -/
+
+/-- **The section pushes the punctured neighbourhood forward.**  A section `s` continuous at `b₀`
+with `s b₀ = w₀`, a left inverse `F` (`F ∘ s = id` near `b₀`), and `F w₀ = b₀`, maps `𝓝[≠] b₀` to
+`𝓝[≠] w₀`: continuity gives `s z → w₀`, and `z ≠ b₀ ⟹ s z ≠ w₀` (else `z = F(s z) = F w₀ = b₀`). -/
+theorem tendsto_section_nhdsNE {s F : ℂ → ℂ} {b₀ w₀ : ℂ}
+    (hs_cont : ContinuousAt s b₀) (hsb₀ : s b₀ = w₀) (hFw₀ : F w₀ = b₀)
+    (hsec : ∀ᶠ z in 𝓝[≠] b₀, F (s z) = z) :
+    Tendsto s (𝓝[≠] b₀) (𝓝[≠] w₀) := by
+  rw [tendsto_nhdsWithin_iff]
+  refine ⟨?_, ?_⟩
+  · rw [← hsb₀]; exact hs_cont.mono_left nhdsWithin_le_nhds
+  · filter_upwards [hsec, self_mem_nhdsWithin] with z hz_sec hz_ne
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+    intro hcontra
+    -- `s z = w₀ ⟹ z = F (s z) = F w₀ = b₀`, contradicting `z ≠ b₀`.
+    exact hz_ne (by rw [Set.mem_singleton_iff, ← hz_sec, hcontra, hFw₀])
+
+/-- **Planar section-derivative boundedness atom.**  Let `s` be a regular-fibre section near a branch
+value `b₀`: continuous at `b₀` with limit `w₀ = s b₀`, differentiable on a punctured neighbourhood,
+with left inverse `F` analytic at `w₀` (`F w₀ = b₀`, `F ∘ s = id` near `b₀`), `F` not eventually
+constant `≡ b₀`, and `F` differentiable along the section (the chain-rule input).  Then
+`(z − b₀)·deriv s z → 0` as `z → b₀`.
+
+This is the planar §VIII.3 boundedness for one sheet, discharged from the proven ratio atom
+`TraceForm.sub_div_deriv_tendsto_zero` (no Puiseux/symmetric-function machinery — just the
+factorisation `F − b₀ = (w − w₀)^e·g`).  It feeds `tendsto_zero_perSheet`. -/
+theorem tendsto_zero_section_deriv {s F : ℂ → ℂ} {b₀ w₀ : ℂ}
+    (hs_cont : ContinuousAt s b₀) (hsb₀ : s b₀ = w₀)
+    (hF_an : AnalyticAt ℂ F w₀) (hFw₀ : F w₀ = b₀)
+    (hFnc : ¬ ∀ᶠ w in 𝓝 w₀, F w = b₀)
+    (hsec : ∀ᶠ z in 𝓝[≠] b₀, F (s z) = z)
+    (hchain : ∀ᶠ z in 𝓝[≠] b₀, deriv s z * deriv F (s z) = 1) :
+    Tendsto (fun z => (z - b₀) * deriv s z) (𝓝[≠] b₀) (𝓝 0) := by
+  -- The proven ratio atom, composed with the section pushforward `s : 𝓝[≠] b₀ → 𝓝[≠] w₀`.
+  have hratio : Tendsto (fun w => (F w - b₀) / deriv F w) (𝓝[≠] w₀) (𝓝 0) :=
+    Jacobians.sub_div_deriv_tendsto_zero hF_an hFw₀ hFnc
+  have hpush : Tendsto s (𝓝[≠] b₀) (𝓝[≠] w₀) :=
+    tendsto_section_nhdsNE hs_cont hsb₀ hFw₀ hsec
+  have hcomp : Tendsto (fun z => (F (s z) - b₀) / deriv F (s z)) (𝓝[≠] b₀) (𝓝 0) :=
+    hratio.comp hpush
+  refine hcomp.congr' ?_
+  -- `(z − b₀)·deriv s z = (F (s z) − b₀)/deriv F (s z)` on the punctured nbhd:
+  -- `F (s z) = z` (so the numerator is `z − b₀`), and `deriv s z = (deriv F (s z))⁻¹` (chain rule).
+  filter_upwards [hsec, hchain] with z hz_sec hz_chain
+  rw [hz_sec]
+  -- From `deriv s z · deriv F (s z) = 1`: `deriv F (s z) ≠ 0` and `deriv s z = (deriv F (s z))⁻¹`.
+  have hF'ne : deriv F (s z) ≠ 0 := by
+    intro h0; rw [h0, mul_zero] at hz_chain; exact one_ne_zero hz_chain.symm
+  -- `(z − b₀)·deriv s z = (z − b₀)/deriv F (s z)`: multiply both sides by `deriv F (s z) ≠ 0`
+  -- and use `deriv s z · deriv F (s z) = 1`.
+  rw [div_eq_mul_inv]
+  rw [show deriv s z = (deriv F (s z))⁻¹ from by
+    field_simp
+    exact hz_chain]
 
 end Jacobians.Dolbeault.FormTraceBranchPlanar
