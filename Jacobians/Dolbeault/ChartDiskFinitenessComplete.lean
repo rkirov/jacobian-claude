@@ -100,26 +100,39 @@ theorem Wov_subset_Uov_diag_fst (a b : 𝔇.ι) :
     𝔇.closure_shrinkSet_subset_U a (subset_closure hx.1)
   exact ⟨hxU, hxU⟩
 
-/-- **The cross-chart Čech `δ⁰`** of the chart-disk model: `c.Cshr`-valued from `Cochain0Holo`.
+/-- **Sup-norm 0-cochains, holomorphic side** `C0Holo` — bounded-holomorphic on each diagonal
+cover-open `Uov (a,a) = chartAt (center a) '' (U a)`. -/
+abbrev C0Holo (𝔇 : ChartDiskCover X) : Type _ :=
+  ∀ a : 𝔇.ι, BddHol (𝔇.Uov (a, a))
+
+noncomputable instance : NormedAddCommGroup 𝔇.C0Holo := inferInstance
+noncomputable instance : NormedSpace ℂ 𝔇.C0Holo := inferInstance
+
+noncomputable instance : CompleteSpace 𝔇.C0Holo := by
+  haveI : ∀ a : 𝔇.ι, CompleteSpace (BddHol (𝔇.Uov (a, a))) := fun a =>
+    BddHol.completeSpace (𝔇.isOpen_Uov (a, a))
+  infer_instance
+
+/-- **The cross-chart Čech `δ⁰`** of the chart-disk model: `c.Cshr`-valued from `C0Holo`.
 Componentwise on overlap `(a,b)`,
     `(δ⁰f)_{ab} = (transport of f_b to chart-a) − (restriction of f_a)`   on the OPEN `Wov (a,b)`,
 the genuine Čech coboundary with the `b`-side transported through the holomorphic transition `τ_{ab}`.
 Both pieces stay `BddHol` on the open `Wov`. -/
 noncomputable def delta0Model :
-    (∀ a : 𝔇.ι, BddHol (𝔇.Uov (a, a))) →L[ℂ] 𝔇.overlapData.Cshr :=
+    𝔇.C0Holo →L[ℂ] 𝔇.overlapData.Cshr :=
   ContinuousLinearMap.pi fun p =>
     (BddHol.precompHolCLM (𝔇.analyticOn_coverTransition_Wov p.1 p.2)
         (𝔇.mapsTo_coverTransition_Wov p.1 p.2)).comp (proj p.2)
       - (BddHol.restrictOpenCLM (𝔇.Wov_subset_Uov_diag_fst p.1 p.2)).comp (proj p.1)
 
-theorem delta0Model_apply (f : ∀ a : 𝔇.ι, BddHol (𝔇.Uov (a, a)))
+theorem delta0Model_apply (f : 𝔇.C0Holo)
     (p : 𝔇.overlapData.J) :
     𝔇.delta0Model f p
       = BddHol.precompHolCLM (𝔇.analyticOn_coverTransition_Wov p.1 p.2)
           (𝔇.mapsTo_coverTransition_Wov p.1 p.2) (f p.2)
         - BddHol.restrictOpenCLM (𝔇.Wov_subset_Uov_diag_fst p.1 p.2) (f p.1) := rfl
 
-theorem delta0Model_apply_apply (f : ∀ a : 𝔇.ι, BddHol (𝔇.Uov (a, a)))
+theorem delta0Model_apply_apply (f : 𝔇.C0Holo)
     (p : 𝔇.overlapData.J) {z : ℂ} (hz : z ∈ 𝔇.Wov p) :
     (𝔇.delta0Model f p).toFun z
       = (f p.2).toFun (𝔇.coverTransition p.1 p.2 z) - (f p.1).toFun z := by
@@ -373,6 +386,45 @@ theorem hcomm (x : 𝔇.overlapData.Ccov) (hx : 𝔇.delta1CovModel x = 0) :
   have h := congrArg (fun T => T x) 𝔇.delta1_comp_rhoRaw_eq_rho2_comp_delta1Cov
   simp only [ContinuousLinearMap.comp_apply] at h
   rw [h, hx, map_zero]
+
+/-! ## §A2 — The `HolomorphicCoboundaries` δ-data with the `leray` field
+
+We package the δ-complex above into a `HolomorphicCoboundaries 𝔇.overlapData`.  The `C0` 0-cochain
+space is `∀ a, BddHol (Uov (a,a))` (bounded-holomorphic on each diagonal cover-open), `C2`/`C2cov`
+are the triple-overlap 2-cochains built above, and the δ's are the model differentials.
+
+The `leray` field is the Forster 14.6 cover→shrinking lift.  Its ANALYTIC HEART is the proven
+`ChartDiskCover.forster146_lift` (the ball geometry removes the two-scale cutoff dilemma).  Wiring it
+to the `Cshr`/`Ccov` cochains needs the cross-chart Bott–Tu smooth split of the shrinking cocycle into
+a `BallSplitData` (the documented gap in `ChartCoverDbarGlue` — the cross-chart telescoping of the
+PoU split into the `BallSplitData.split` identity, plus the function ↔ `BddHol`/germ identification of
+the resulting `η`/`x`).  This is the single honest `sorry` of the file; see `leray_diagnosis`. -/
+
+/-- **The structural δ-complex on `𝔇.overlapData`, with the `leray` field.**  All structural fields
+(`δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm`) are the proven model differentials of §A; `leray` is the Forster
+14.6 lift whose analytic heart is `forster146_lift`.
+
+LERAY DIAGNOSIS.  The remaining gap in `leray` is the cross-chart Bott–Tu smooth split: from a
+shrinking cocycle `s : Cshr` (`s_{ab} ∈ BddHol (Wov (a,b))`, holomorphic, `δ¹s = 0`), build a
+`BallSplitData` `𝒮` with `𝒮.g a` smooth on the ball `U_a` (the PoU split `g_a = ∑_c ψ_c·ŝ_{ca}`
+subordinate to the cover `(U_c)`, `X` compact) and `𝒮.s a b` the chart-read of `s (a,b)`, with the
+telescoping identity `g_b∘τ_{ab} − g_a = 𝒮.s a b` on the overlap; then `forster146_lift 𝒮` produces
+holomorphic `η_a` (on the ball) and `x_{ab}` (on the overlap) with `s = δ⁰η + ρx`, and the function
+data is repackaged as `C0`/`Ccov` cochains.  The cross-chart support tracking of the PoU split and the
+function↔`BddHol` repackaging are ~hundreds of lines of analytic plumbing, documented as unbuilt in
+`ChartCoverDbarGlue.lean`. -/
+noncomputable def holomorphicCoboundaries : HolomorphicCoboundaries 𝔇.overlapData where
+  C0 := 𝔇.C0Holo
+  C2 := 𝔇.C2Holo
+  C2cov := 𝔇.C2Cov
+  δ0 := 𝔇.delta0Model
+  δ1 := 𝔇.delta1Model
+  δ1cov := 𝔇.delta1CovModel
+  hδδ := 𝔇.delta1_comp_delta0
+  hcomm := 𝔇.hcomm
+  leray := by
+    -- Forster 14.6 lift; see `leray_diagnosis`.  Honest sorry: cross-chart Bott–Tu split.
+    sorry
 
 end ChartDiskCover
 
