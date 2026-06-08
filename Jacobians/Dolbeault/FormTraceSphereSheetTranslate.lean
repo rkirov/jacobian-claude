@@ -191,3 +191,47 @@ theorem holoReprSheet_section (i : Fin S.n) :
 end LocalSheetSystem
 
 end Jacobians
+
+/-! ### The moving-fibre coherence datum from a sphere sheet system
+
+We now feed the translated sections into `MovingCoherenceDatum.ofSheetSections`.  Given a
+`LocalSheetSystem` for the *compact* sphere map `f.toRiemannSphere` at the finite base value `coe
+b₀`, a reference fibre `D` enumerated by the (translated) sheets, and the §VIII.3 re-selection
+bijection, we obtain a `MovingCoherenceDatum` at `b₀`.  This is the sphere-side analogue of
+`MovingCoherenceDatum.ofLocalSheetSystem` (which assumed a sheet system for the non-compact
+`f.holoRepr` directly) — it uses the genuinely-available sphere sheets. -/
+
+namespace Jacobians.Dolbeault.FormTraceMovingFibre
+
+open Jacobians Jacobians.Dolbeault Jacobians.Dolbeault.FormTraceFibre
+
+set_option linter.unusedSectionVars false
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
+
+/-- **A moving-fibre coherence datum from a sphere sheet system.**  The sphere-side packaging of
+`MovingCoherenceDatum.ofSheetSections`: a `LocalSheetSystem S` for the compact sphere map
+`f.toRiemannSphere` at the finite base value `coe b₀` supplies the moving sections `sec i :=
+holoReprSheet S (eD i) = (b' ↦ S.sheet (eD i) (coe b'))` (smooth + sections of `f.holoRepr` near
+`b₀` by the translation lemmas) through the reference fibre `D` (re-indexed by `eD : D.ι ≃ Fin S.n`
+with `D.xs i = S.sheet (eD i) (coe b₀)`); the caller supplies the §VIII.3 re-selection bijection
+`hsel`.  Produces the `MovingCoherenceDatum`. -/
+noncomputable def MovingCoherenceDatum.ofSphereSheetSystem
+    {Φ : (b : ℂ) → FibreRegularData g f b} {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere)))
+    (D : FibreRegularData g f b₀) (eD : D.ι ≃ Fin S.n)
+    (hxsD : ∀ i, D.xs i = S.sheet (eD i) (((b₀ : ℂ) : RiemannSphere)))
+    (hsel : ∀ᶠ b' in 𝓝 b₀, ∃ e : (Φ b').ι ≃ D.ι,
+      (∀ i', (Φ b').xs i' = S.holoReprSheet (eD (e i')) b') ∧
+      (∀ i, S.holoReprSheet (eD i) b' ∈ (chartAt ℂ (D.xs i)).source)) :
+    MovingCoherenceDatum ω₀ g f Φ b₀ :=
+  MovingCoherenceDatum.ofSheetSections D (fun i => S.holoReprSheet (eD i))
+    (fun i => (hxsD i).symm)
+    (fun i => S.holoReprSheet_contMDiffAt (eD i))
+    (fun i => S.holoReprSheet_section (eD i))
+    hsel
+
+end Jacobians.Dolbeault.FormTraceMovingFibre
