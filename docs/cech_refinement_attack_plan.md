@@ -120,6 +120,19 @@ contained analysis on top of `DbarDisk.dbar_solvable_of_compactSupport`; unblock
 
 **In progress (background agents):** artificial-model reduction `exists_cechModel_of_finiteDimensional` (`CechModelArtificial.lean`); holomorphic δ-complex port `CechModelHolomorphicDelta.lean` (δ⁰/δ¹/δ¹cov + δ²=0 + hcomm on the `Wov` shrinking).
 
+**✅ STRATEGIC PIVOT (2026-06-08) — avoid the Riemann-mapping wall via Forster 12.4 injectivity.**
+Cover-independence between *arbitrary* covers is blocked (simply-connected ≠ disk needs Riemann
+mapping / Behnke–Stein, absent in Mathlib). But **Forster 12.4** proves refinement maps
+`refineH1 : H¹(𝔘) → H¹(𝔚)` are **injective UNCONDITIONALLY** (sheaf axioms I+II only — no acyclicity).
+So `FiniteDimensional ℂ (cechH1 𝔘 D)` for ARBITRARY `𝔘` follows from:
+  (i) a chart-disk refinement `𝔚 ⪯ 𝔘` exists (refine `𝔘` by chart disks — geometry, repo has chart-disk covers);
+  (ii) `refineH1 (𝔚 ⪯ 𝔘)` injective (Forster 12.4 — germ-class `𝒪_D` sheaf-gluing on opens; repo has
+       *global* `CechH0.gluedFun`, needs a `Uᵢ`-local version — pure sheaf algebra, tractable);
+  (iii) `cechH1 𝔚 D` finite for the ONE chart-disk cover `𝔚` (Montel — B′+C′ below).
+Then `cechH1 𝔘 D ↪ cechH1 𝔚 D` (finite) ⟹ finite ⟹ `exists_cechModel` via `exists_cechModel_of_finiteDimensional` (DONE).
+**This drops A2 (cover-independence iso) entirely** — replaced by the weaker, unconditional 12.4.
+`exists_cechModel_of_finiteDimensional` is PROVEN (`CechModelArtificial.lean`, axiom-clean).
+
 **Remaining hard pieces (the real walls):**
 - **B′ — holomorphic `leray` field (Forster 14.6):** the cover→shrinking lift on the `Wov` model. Construction: smooth-split `s` via `genuineCoverPoU` → `g_a`; `ω = ∂̄g_a` glues; cutoff `ψ` (=1 on `innerChartOpen`, supp in `chartOpen` — `innerChartOpen ⋐ chartOpen`); solve `∂̄h_a = ψω` per chart disk via the EXISTING `dbar_solvable_ball` (global datum); `x_{ab}=h_b−h_a` (cover cocycle), `η_a=h_a−g_a` (holo on `Wov`); `s = δ⁰η + ρx`. Foundation in `ChartCoverDbarGlue`. Nesting: `innerChartOpen ⊂ chartOpen ⊂ coverOpen`(=chart disk/ball). Blocked on the δ-complex port.
 - **C′ — comparison `cechH1 𝔘 D ↪/≃ supH1`:** forward `cochainToCcov` built; need it to descend to `cechH1 → supH1` + be injective (a linear *injection* suffices to transport finiteness). For chart-disk covers at D=0, `comparison_linearEquiv'` may shortcut.
