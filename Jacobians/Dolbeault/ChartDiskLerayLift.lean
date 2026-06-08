@@ -329,6 +329,54 @@ theorem globalPrim_diff (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0
     · rw [𝔇.shrinkRhoC_eq_zero_of_notMem c hb]; ring
   simp_rw [hpt, ← Finset.sum_mul, 𝔇.sum_shrinkRhoC_apply x, one_mul]
 
+/-- A single summand `ρ_c · holoFn σ_{ac}` of `G_a`, as a bare function `X → ℂ`. -/
+noncomputable def globalPrimTerm (s : 𝔇.overlapData.Cshr) (a c : 𝔇.ι) : X → ℂ :=
+  fun x => 𝔇.shrinkRhoC c x * holoFn (𝔇.shrinkGerm s a c).2 x
+
+/-- Each summand of `G_a` is `MDifferentiableAt` at any point of `V_a` (in `tsupport ρ_c` both
+factors are smooth — using `x ∈ V_a ∩ V_c`; off `tsupport ρ_c` the term is locally `0`). -/
+theorem mdifferentiableAt_globalPrimTerm (s : 𝔇.overlapData.Cshr) (a c : 𝔇.ι) {x : X}
+    (hxa : x ∈ (𝔇.shrinkOpens a : Opens X)) :
+    MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrimTerm s a c) x := by
+  by_cases hb : x ∈ tsupport (𝔇.shrinkPoU c)
+  · have hxc : x ∈ (𝔇.shrinkOpens c : Opens X) := 𝔇.shrinkPoU_tsupport_subset c hb
+    have hxac : x ∈ ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens c : Opens X) : Set X) := ⟨hxa, hxc⟩
+    exact (((𝔇.shrinkRhoC c).contMDiff x).mul
+      (holoFn_contMDiffAt (𝔇.shrinkGerm s a c).2 hxac)).mdifferentiableAt (by simp)
+  · refine (mdifferentiableAt_const (I := 𝓘(ℝ, ℂ)) (I' := 𝓘(ℝ, ℂ)) (c := (0 : ℂ))).congr_of_eventuallyEq ?_
+    filter_upwards [(isClosed_tsupport (𝔇.shrinkPoU c)).isOpen_compl.mem_nhds hb] with y hy
+    simp only [globalPrimTerm, 𝔇.shrinkRhoC_eq_zero_of_notMem c hy, zero_mul]
+
+/-- **The Wirtinger value of one summand** `proj01(mfderiv (ρ_c·holoFn σ_{ac}) x) = holoFn σ_{ac}(x) •
+∂̄ρ_c x` at `x ∈ V_a` (product rule + `holoFn` holomorphic; off `tsupport ρ_c` both sides vanish). -/
+theorem dbar_globalPrimTerm (s : 𝔇.overlapData.Cshr) (a c : 𝔇.ι) {x : X}
+    (hxa : x ∈ (𝔇.shrinkOpens a : Opens X)) :
+    proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrimTerm s a c) x)
+      = holoFn (𝔇.shrinkGerm s a c).2 x • (𝔇.shrinkDbarRho c x) := by
+  by_cases hb : x ∈ tsupport (𝔇.shrinkPoU c)
+  · have hxc : x ∈ (𝔇.shrinkOpens c : Opens X) := 𝔇.shrinkPoU_tsupport_subset c hb
+    have hxac : x ∈ ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens c : Opens X) : Set X) := ⟨hxa, hxc⟩
+    have hr : HasMFDerivAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(𝔇.shrinkRhoC c)) x
+        (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(𝔇.shrinkRhoC c)) x) :=
+      ((𝔇.shrinkRhoC c).contMDiff.mdifferentiable (by simp) x).hasMFDerivAt
+    have hh : HasMFDerivAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn (𝔇.shrinkGerm s a c).2) x
+        (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (holoFn (𝔇.shrinkGerm s a c).2) x) :=
+      ((holoFn_contMDiffAt (𝔇.shrinkGerm s a c).2 hxac).mdifferentiableAt (by simp)).hasMFDerivAt
+    show proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrimTerm s a c) x)
+      = holoFn (𝔇.shrinkGerm s a c).2 x • proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(𝔇.shrinkRhoC c)) x)
+    rw [show (𝔇.globalPrimTerm s a c : X → ℂ)
+        = ⇑(𝔇.shrinkRhoC c) * holoFn (𝔇.shrinkGerm s a c).2 from rfl,
+      (hr.mul hh).mfderiv, map_add, proj01_smul, proj01_smul,
+      holoFn_dbar_eq_zero (𝔇.shrinkGerm s a c).2 hxac]
+    module
+  · have hr0 : proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrimTerm s a c) x) = 0 := by
+      have hconst : (𝔇.globalPrimTerm s a c) =ᶠ[nhds x] (fun _ => (0 : ℂ)) := by
+        filter_upwards [(isClosed_tsupport (𝔇.shrinkPoU c)).isOpen_compl.mem_nhds hb] with y hy
+        simp only [globalPrimTerm, 𝔇.shrinkRhoC_eq_zero_of_notMem c hy, zero_mul]
+      rw [hconst.mfderiv_eq, mfderiv_const, map_zero]
+    rw [hr0, 𝔇.shrinkDbarRho_eq_zero_of_notMem c hb]
+    module
+
 end ChartDiskCover
 
 end Jacobians.Dolbeault
