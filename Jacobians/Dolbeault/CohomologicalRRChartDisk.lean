@@ -31,18 +31,31 @@
 
   ## The remaining gap to the GENERAL `exists_skyscraperLES` (the honest diagnosis)
 
-  Going from `exists_skyscraperLES_of_chartDisk` to the unconditional `exists_skyscraperLES` (general
-  Leray `𝔘`) needs, for each `(D, P)`:
-    1. a chart-disk cover `𝔇` **adapted** to `(D, P)` — singleton star at `P` and `D` supported on the
-       star set only at `P` (a standard but unbuilt shrinking construction);
-    2. cover-independence of `χ = h⁰ − h¹` between `𝔘` and `𝔇` (both Leray).  Since `h⁰` is already
-       unconditionally cover-independent (`h0Dim_eq_lDim`, `= l(D)`), this is exactly
-       **`h¹` cover-independence among Leray covers** — Forster's Leray theorem 12.8 / surjectivity of
-       the strictly-finer `refineH1` (`CechRefinementLeray`'s `## SURJECTIVITY` plan, the unbanked
-       per-overlap-acyclicity gluing — NOT the trivialising global `IsDiskAcyclic`).
+  ⚠ The `hstar` (singleton-star) hypothesis here — `P ∈ U j → j = i` — **cannot hold at every point**
+  on a finite cover of a *compact connected* `X` (it would force the cover sets pairwise disjoint,
+  disconnecting `X`, or be the single set `U = X`, impossible for a chart-disk cover of compact `X`).
+  Since the χ-induction needs the LES for *every* support point `P`, and overlap points always exist,
+  **this banked chart-disk LES is unconsumable as-is** — it does NOT discharge `exists_skyscraperLES`
+  on `chartDiskCover` (or any fixed cover).  The earlier framing ("a standard but unbuilt adapted
+  singleton-star shrinking") asked for a cover that does not exist; see the corrected diagnosis on
+  `CohomologicalRR.exists_skyscraperLES`.
 
-  Both are genuine, currently-unbanked work, so the general `exists_skyscraperLES` stays the single
-  honest `sorry`.  This file removes *all* of its non-geometric content from the obligation.
+  Closing the unconditional `exists_skyscraperLES` therefore needs **one of**:
+    (A) a *multi-vertex / full-simplex-star* skyscraper LES on the chart-disk cover for GENERAL `(D, P)`
+        — replacing all three of `hWsrc`/`hDsupp`/`hstar`.  Its keystone missing primitive is the
+        general-`D` local realization (Mittag–Leffler on a disk): `coeffGermLin` surjective via the
+        explicit *product* witness in the cover-set's CENTER chart,
+        `a·(z−φP)^{−(D P)−1}·∏_{Q∈ supp D∩U i, Q≠P}(z−φQ)^{−(D Q)}` (forced poles/zeros at the other
+        support points; `meromorphicOrderAt_prod` for the orders), coupled with the full-simplex
+        cochain cone-contraction for `H¹(Q) = 0`;
+    (B) `h¹` cover-independence among Leray covers (the strictly-finer `refineH1` surjectivity,
+        `CechRefinementLeray`'s `## SURJECTIVITY`, NOT the global `IsDiskAcyclic`), to switch to a
+        `P`-adapted cover per jump.
+
+  Both are genuine, currently-unbanked, substantial work, so the general `exists_skyscraperLES` stays
+  the single honest `sorry`.  This file's chart-disk LES removes the *snake / exactness / finiteness*
+  content from that obligation but, because of the unsatisfiable `hstar`, does not itself wire to the
+  headline.
 -/
 import Jacobians.Dolbeault.SkyscraperAssembly
 import Jacobians.Dolbeault.CohomologicalH0Finiteness

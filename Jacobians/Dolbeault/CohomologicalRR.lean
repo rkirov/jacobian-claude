@@ -32,7 +32,7 @@
   So: `cohomological_riemannRoch` is proven *modulo the single `exists_skyscraperLES` sorry*;
   everything else (base, the LES crank, the structural arrows, the induction skeleton) is sorry-free.
 -/
-import Jacobians.Dolbeault.CechH0
+import Jacobians.Dolbeault.CohomologicalRRChartDisk
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -97,41 +97,11 @@ open FiniteFamily
 noncomputable def chi (𝔘 : FiniteCover X) (D : Divisor X) : ℤ :=
   (𝔘.h0Dim D : ℤ) - 𝔘.h1Dim D
 
-/-! ### Structural inclusion `𝒪_D ↪ 𝒪_{D+P}` (provable, no analytic content)
+/-! ### Structural inclusion `𝒪_D ↪ 𝒪_{D+P}`, `Skyscraper`, `h0Incl`, `h1Map`, `SkyscraperLES`
 
-Adding the effective point divisor `P` only *weakens* the order bound (`D ≤ D + P` pointwise), so a
-section of `𝒪_D` is a section of `𝒪_{D+P}`; this gives a degreewise inclusion of the section
-submodules and hence of the global-section and cochain spaces. These facts are pure order
-bookkeeping — the genuinely-hard analytic/homological data (skyscraper quotient, connecting map) is
-isolated separately in `SkyscraperLES`. -/
-
-/-- Pointwise monotonicity of the divisor under adding an effective point: `D x ≤ (D + P) x`. -/
-theorem divisor_le_add_single (D : Divisor X) (P x : X) :
-    (D : Divisor X) x ≤ (D + Finsupp.single P 1 : Divisor X) x := by
-  rw [Finsupp.add_apply, Finsupp.single_apply]; split <;> omega
-
-/-- The order bound for `𝒪_D` implies that for `𝒪_{D+P}` (the bound `−(D+P) ≤ −D` weakens). -/
-theorem mem_OmegaD_add_single {D : Divisor X} {P : X} {U : Opens X} {f : U → ℂ}
-    (hf : f ∈ OmegaD D U) : f ∈ OmegaD (D + Finsupp.single P 1) U := by
-  refine ⟨hf.1, fun u => le_trans ?_ (hf.2 u)⟩
-  exact_mod_cast neg_le_neg (divisor_le_add_single D P u.1)
-
-/-- Germ-class sections inherit the inclusion `𝒪_D(U) ⊆ 𝒪_{D+P}(U)`. -/
-theorem OmegaDGerm_le_add_single (D : Divisor X) (P : X) (U : Opens X) :
-    OmegaDGerm D U ≤ OmegaDGerm (D + Finsupp.single P 1) U := by
-  rintro _ ⟨g, hg, rfl⟩
-  exact ⟨g, mem_OmegaD_add_single hg, rfl⟩
-
-/-- The `𝒪_D` 0-sections are contained in the `𝒪_{D+P}` 0-sections. -/
-theorem sections0_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
-    𝔘.sections0 D ≤ 𝔘.sections0 (D + Finsupp.single P 1) :=
-  fun _ hf i => OmegaDGerm_le_add_single D P (𝔘.U i) (hf i)
-
-/-- The global `𝒪_D`-sections are contained in the global `𝒪_{D+P}`-sections (same `ker δ⁰`, weaker
-sheaf condition). This is the underlying map of the long-exact-sequence arrow `H⁰(D) → H⁰(D+P)`. -/
-theorem globalSections_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
-    𝔘.globalSections D ≤ 𝔘.globalSections (D + Finsupp.single P 1) :=
-  inf_le_inf_left _ (𝔘.sections0_le_add_single D P)
+These order-bookkeeping arrows and the `SkyscraperLES` structure now live in the base file
+`SkyscraperLESBase` (imported transitively via `CohomologicalRRChartDisk`), so that the proven
+downstream assembly can sit *upstream* of this χ-induction and discharge `exists_skyscraperLES`. -/
 
 /-! ### Base: `h⁰(0) = 1` (Liouville) -/
 
@@ -139,161 +109,6 @@ theorem globalSections_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P :
 sections with the linear system, and `l(0) = 1` by Liouville on the compact connected `X`. -/
 theorem h0Dim_zero_eq_one (𝔘 : FiniteCover X) : (𝔘.h0Dim 0 : ℤ) = 1 := by
   rw [𝔘.h0Dim_eq_lDim 0, lDim_zero_eq_one]; norm_num
-
-/-! ### The skyscraper space and the H⁰-cokernel arrow (provable, no analytic content)
-
-The skyscraper space is realised **concretely** as the cokernel of the H⁰-inclusion,
-`Skyscraper := H⁰(𝒪_{D+P}) ⧸ range(f₁)`, with `f₂` its quotient projection. This makes the second
-arrow `f₂` and the exactness at `H⁰(𝒪_{D+P})` (`range f₁ = ker f₂`) hold **definitionally**
-(`LinearMap.exact_map_mkQ_range`) — they are proven, not assumed. The only genuine analytic content
-about the skyscraper is then that this cokernel is **1-dimensional** (`skyDim`), i.e. local
-surjectivity of meromorphic sections onto the order-`(−D(P)−1)` principal-part coefficient. -/
-
-/-- The canonical H⁰-inclusion `H⁰(𝒪_D) ↪ H⁰(𝒪_{D+P})` (the order bound weakens, `f₁` of the LES). -/
-noncomputable def h0Incl (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
-    ↥(𝔘.globalSections D) →ₗ[ℂ] ↥(𝔘.globalSections (D + Finsupp.single P 1)) :=
-  Submodule.inclusion (𝔘.globalSections_le_add_single D P)
-
-theorem h0Incl_injective (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
-    Function.Injective (𝔘.h0Incl D P) :=
-  Submodule.inclusion_injective _
-
-/-- The **skyscraper space** `ℂ_P` at `P`: the genuine **1-dimensional** stalk of the skyscraper
-sheaf `𝒪_{D+P}/𝒪_D` (the order-`(−D(P)−1)` principal-part coefficient at `P`), realised as `ℂ`.
-
-NOTE (soundness fix, 2026-06-02): the *previous* definition `H⁰(𝒪_{D+P}) ⧸ range f₁` (the H⁰-cokernel)
-was WRONG — at a base point of `|D+P|` the cokernel is `0`-dimensional, so the `skyDim : finrank = 1`
-field made `exists_skyscraperLES` **provably false**. The genuine middle term of the cohomology LES of
-`0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` is `H⁰(X, ℂ_P) = ℂ` (always 1-dim); the coefficient arrow
-`f₂ : H⁰(𝒪_{D+P}) → ℂ_P` is **not** surjective in general (its image *is* the cokernel), so it now
-lives — together with the exactness `range f₁ = ker f₂` — as honest data in `SkyscraperLES`. -/
-abbrev Skyscraper (_𝔘 : FiniteCover X) (_D : Divisor X) (_P : X) : Type := ℂ
-
-/-! ### The inclusion-induced arrow `f₄ : H¹(𝒪_D) → H¹(𝒪_{D+P})` (provable, no analytic content)
-
-The inclusion `𝒪_D ↪ 𝒪_{D+P}` is monotone on the sheaf condition at each degree (`sections1`), hence
-on the 1-cocycles and 1-coboundaries; it therefore descends to a *canonical* map on `H¹ = Z¹/B¹`.
-This map `h1Map` is the LES arrow `f₄`; it is constructed and PROVEN here (only its surjectivity and
-the exactness `range f₃ = ker f₄` — which involve the snake/connecting map — remain in the kernel). -/
-
-/-- The `𝒪_D` 1-sections are contained in the `𝒪_{D+P}` 1-sections (order weakening). -/
-theorem sections1_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
-    𝔘.sections1 D ≤ 𝔘.sections1 (D + Finsupp.single P 1) :=
-  fun _ hf p => OmegaDGerm_le_add_single D P _ (hf p)
-
-/-- The `𝒪_D` 1-cocycles are contained in the `𝒪_{D+P}` 1-cocycles (same `ker δ¹`, weaker sheaf). -/
-theorem cocycles1_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
-    𝔘.cocycles1 D ≤ 𝔘.cocycles1 (D + Finsupp.single P 1) :=
-  inf_le_inf_left _ (𝔘.sections1_le_add_single D P)
-
-/-- The `𝒪_D` 1-coboundaries are contained in the `𝒪_{D+P}` 1-coboundaries (`δ⁰` of more sections). -/
-theorem coboundaries1_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
-    𝔘.coboundaries1 D ≤ 𝔘.coboundaries1 (D + Finsupp.single P 1) :=
-  Submodule.map_mono (𝔘.sections0_le_add_single D P)
-
-/-- The 1-cocycle inclusion `Z¹(𝒪_D) ↪ Z¹(𝒪_{D+P})`. -/
-noncomputable def cocyclesIncl (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
-    ↥(𝔘.cocycles1 D) →ₗ[ℂ] ↥(𝔘.cocycles1 (D + Finsupp.single P 1)) :=
-  Submodule.inclusion (𝔘.cocycles1_le_add_single D P)
-
-/-- **The inclusion-induced arrow `f₄ : H¹(𝒪_D) → H¹(𝒪_{D+P})`** (PROVEN). The cocycle inclusion
-sends `𝒪_D`-coboundaries to `𝒪_{D+P}`-coboundaries, so it descends to the `H¹` quotients
-(`Submodule.mapQ`). -/
-noncomputable def h1Map (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
-    𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 (D + Finsupp.single P 1) := by
-  refine Submodule.mapQ _ _ (𝔘.cocyclesIncl D P) ?_
-  rintro ⟨c, _⟩ hcob
-  exact 𝔘.coboundaries1_le_add_single D P hcob
-
-/-! ### Subcomplex backbone facts (sorry-free; the algebraic skeleton of the skyscraper snake lemma)
-
-These record that the Čech differential `δ⁰` preserves the `𝒪_D`-section condition degreewise and that
-`B¹ ⊆ Z¹` — the two purely-algebraic facts underpinning the SES-of-cochain-complexes used by the
-snake lemma (Forster §16). They are independent of all analytic content (no Laurent realization, no
-finiteness) and are proven here in full. -/
-
-/-- **`δ⁰` preserves the sections subcomplex.** The Čech coboundary of `𝒪_D`-0-sections is an
-`𝒪_D`-1-section: each component `(δ⁰f)_{ij} = f_j|_{ij} − f_i|_{ij}` is a difference of restrictions of
-`𝒪_D`-germs, hence an `𝒪_D`-germ on the overlap (`rawRestrictG_omegaDGerm`). Equivalently
-`B¹(𝒪_D) ⊆ C¹(𝒪_D)`. -/
-theorem cechDelta0_sections (𝔘 : FiniteCover X) (D : Divisor X) :
-    Submodule.map 𝔘.cechDelta0 (𝔘.sections0 D) ≤ 𝔘.sections1 D := by
-  rintro _ ⟨f, hf, rfl⟩ p
-  simp only [cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply, LinearMap.comp_apply,
-    LinearMap.proj_apply]
-  exact sub_mem (rawRestrictG_omegaDGerm inf_le_right (hf p.2))
-    (rawRestrictG_omegaDGerm inf_le_left (hf p.1))
-
-/-- **`B¹ ⊆ Z¹`** (coboundaries are cocycles). A `1`-coboundary `δ⁰f` lies in `ker δ¹` (since
-`δ¹ ∘ δ⁰ = 0`, `cechDelta1_comp_cechDelta0`) and is an `𝒪_D`-`1`-section (`cechDelta0_sections`), so it
-is an `𝒪_D` `1`-cocycle. This is the containment that makes `H¹ = Z¹/B¹` (`cechH1`) the genuine
-cohomology, and that lets the snake-lemma connecting map land a lifted coboundary in `Z¹(𝒪_D)`. -/
-theorem coboundaries1_le_cocycles1 (𝔘 : FiniteCover X) (D : Divisor X) :
-    𝔘.coboundaries1 D ≤ 𝔘.cocycles1 D := by
-  rw [coboundaries1, cocycles1, le_inf_iff]
-  refine ⟨?_, 𝔘.cechDelta0_sections D⟩
-  rw [Submodule.map_le_iff_le_comap]
-  intro f _
-  rw [Submodule.mem_comap, LinearMap.mem_ker, ← LinearMap.comp_apply, cechDelta1_comp_cechDelta0,
-    LinearMap.zero_apply]
-
-/-! ### The skyscraper long exact sequence (the genuine homological/analytic kernel)
-
-The single-point χ-jump comes from the **skyscraper short exact sequence** of `𝒪_D`-modules
-`0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` (`ℂ_P` = the 1-dimensional skyscraper at `P`). Its **long exact
-sequence** in Čech cohomology is
-`0 → H⁰(𝒪_D) →[f₁] H⁰(𝒪_{D+P}) →[f₂] ℂ_P →[f₃] H¹(𝒪_D) →[f₄] H¹(𝒪_{D+P}) → 0`,
-the skyscraper having `H^{≥1} = 0`.
-
-`SkyscraperLES` bundles the data NOT already proven above. The first two arrows `f₁` (`h0Incl`) and
-`f₂` (`h0ToSky`, the cokernel projection), the last arrow `f₄` (`h1Map`, the inclusion-induced map),
-and the exactness at `H⁰(𝒪_{D+P})` are all PROVEN (`exact_h0Incl_h0ToSky`, `h1Map`); the inclusion
-`f₁` is injective (`h0Incl_injective`). The genuinely-hard content isolated here is:
-* `skyDim`: the skyscraper cokernel is **1-dimensional** (`finrank ℂ_P = 1`) — the analytic local
-  surjectivity onto the order-`(−D(P)−1)` principal-part coefficient at `P`;
-* the snake-lemma connecting map `f₃` and the exactness facts `exact₂`, `exact₃`, `surj₄` (the
-  SES-of-complexes + `Algebra.Homology.HomologySequence` content);
-* finiteness of the cohomology groups (Forster 14.9).
-
-Given a `SkyscraperLES`, the χ-jump is **pure linear algebra**: the alternating dimension sum of the
-six-term exact sequence is `0` (`six_term_exact_alt_sum`, proven) and `finrank ℂ_P = 1`, which
-rearranges to `χ(D+P) = χ(D) + 1`. That crank, `chi_jump_of_LES`, is sorry-free. -/
-structure SkyscraperLES (𝔘 : FiniteCover X) (D : Divisor X) (P : X) where
-  /-- **The skyscraper coefficient arrow** `f₂ : H⁰(𝒪_{D+P}) → ℂ_P` — the order-`(−D(P)−1)`
-  principal-part coefficient at `P`. **Not** surjective in general (its image is the H⁰-cokernel,
-  which is `0` exactly when `P` is a base point of `|D+P|`): this is the genuine analytic content (a
-  meromorphic section realising a prescribed principal part) that the old false `skyDim` mis-stated. -/
-  h0ToSky : ↥(𝔘.globalSections (D + Finsupp.single P 1)) →ₗ[ℂ] 𝔘.Skyscraper D P
-  /-- Exactness at `H⁰(𝒪_{D+P})`: `range f₁ = ker f₂` — a section lies in `𝒪_D` iff its
-  order-`(−D(P)−1)` coefficient vanishes. (Was definitional for the cokernel; now honest data.) -/
-  exact₁₂ : Function.Exact (𝔘.h0Incl D P) h0ToSky
-  /-- The connecting homomorphism `ℂ_P → H¹(𝒪_D)` (snake lemma of the SES of cochain complexes). -/
-  f₃ : 𝔘.Skyscraper D P →ₗ[ℂ] 𝔘.cechH1 D
-  /-- Exactness at `ℂ_P`: `range f₂ = ker f₃`. (Snake lemma.) -/
-  exact₂ : Function.Exact h0ToSky f₃
-  /-- Exactness at `H¹(𝒪_D)`: `range f₃ = ker f₄` (with `f₄ = h1Map`). (Snake lemma.) -/
-  exact₃ : Function.Exact f₃ (𝔘.h1Map D P)
-  /-- The last arrow `f₄ = h1Map : H¹(𝒪_D) → H¹(𝒪_{D+P})` is surjective (the skyscraper has
-  `H^{≥1} = 0`, so the LES terminates with `→ 0`). -/
-  surj₄ : Function.Surjective (𝔘.h1Map D P)
-  /-- `H¹(𝒪_D)` is finite-dimensional (Forster 14.9; `finiteDimensional_cechH1`). -/
-  [finH1D : FiniteDimensional ℂ (𝔘.cechH1 D)]
-  /-- `H¹(𝒪_{D+P})` is finite-dimensional (Forster 14.9; `finiteDimensional_cechH1`). -/
-  [finH1DP : FiniteDimensional ℂ (𝔘.cechH1 (D + Finsupp.single P 1))]
-  /-- `H⁰(𝒪_{D+P})` is finite-dimensional (Forster compactness `l(D+P) < ∞`). Now an *instance*
-  globally (`CohomologicalH0Finiteness.finiteDimensional_globalSections`, Gap 1), so a `SkyscraperLES`
-  carries no genuine finiteness obligation here; kept as a field so the structure is self-contained.
-  `H⁰(𝒪_D)` finiteness is *derived* (it injects into this one, `h0Incl_injective`). -/
-  [finH0DP : FiniteDimensional ℂ ↥(𝔘.globalSections (D + Finsupp.single P 1))]
-
-attribute [instance] SkyscraperLES.finH1D SkyscraperLES.finH1DP SkyscraperLES.finH0DP
-
-/-- `H⁰(𝒪_D)` is finite-dimensional, *derived* from `H⁰(𝒪_{D+P})` finiteness via the injective
-inclusion `h0Incl` (`FiniteDimensional.of_injective`). Not assumed. -/
-instance (priority := 100) SkyscraperLES.finH0D {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
-    (S : SkyscraperLES 𝔘 D P) : FiniteDimensional ℂ ↥(𝔘.globalSections D) :=
-  haveI := S.finH0DP
-  FiniteDimensional.of_injective (𝔘.h0Incl D P) (𝔘.h0Incl_injective D P)
 
 /-- **The crank (sorry-free).** Given the skyscraper long exact sequence, the single-point χ-jump
 `χ(D+P) = χ(D) + 1` is pure linear algebra: the alternating dimension sum of the six-term exact
@@ -310,45 +125,59 @@ theorem chi_jump_of_LES {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
   simp only [chi, h0Dim, h1Dim, Nat.cast_one] at halt ⊢
   linarith
 
-/-- **Existence of the skyscraper long exact sequence — THE NAMED HONEST `sorry`** (general Leray
-cover).
+/-- **Existence of the local-realization datum — THE NAMED HONEST `sorry`** (the single irreducible
+analytic+combinatorial core of cohomological Riemann–Roch, Forster §16).
 
-This is the genuine cohomological content of Riemann–Roch (Forster §16). The full assembly is PROVEN
-as `SkyscraperAssembly.skyscraperLES_of_chartDisk` — the snake/connecting map (`f₃`), exactness
-(`exact₂`, `exact₃`), surjectivity (`surj₄`), the local-realization iso `H⁰(Q) ≅ ℂ`, the coefficient
-arrow `f₂ = h0ToSky` with `exact₁₂`, and the acyclicity `H¹(Q) = 0`. Both finiteness inputs are now
-fully discharged (the stale comments here predated that): `H¹` by `finiteDimensional_cechH1_general`
-(axiom-clean) and `H⁰(𝒪_{D+P})` by the `CohomologicalH0Finiteness.finiteDimensional_globalSections`
-instance (Gap 1, Forster compactness `l(D+P) < ∞`). The packaged, fully-PROVEN, **axiom-clean**
-deliverable is `CohomologicalRRChartDisk.exists_skyscraperLES_of_chartDisk` (downstream — it cannot be
-imported here, as the assembly depends on this file's `SkyscraperLES`/`h0Incl`/`Skyscraper` defs).
+`LocalRealizationData 𝔘 D P` (`SkyscraperSnake`) packages **exactly** the two pieces that the snake
+lemma cannot supply — and nothing else (finiteness is now discharged unconditionally):
+  * `e0 : H⁰(Q) ≅ ℂ` with `hcompat` — the **local realization** of the degree-0 quotient cohomology
+    with the skyscraper stalk `ℂ` (the order-`(−D(P)−1)` principal-part coefficient at `P`);
+  * `Subsingleton H¹(Q)` — **acyclicity** of the skyscraper quotient complex.
+Everything else (the snake connecting map, all exactness, the LES termination, AND the three
+`FiniteDimensional` inputs — `H¹` by `finiteDimensional_cechH1_general` axiom-clean, `H⁰(𝒪_{D+P})` by
+the `CohomologicalH0Finiteness.finiteDimensional_globalSections` instance) is PROVEN, so
+`exists_skyscraperLES` is now a *theorem* (below), reducing the whole cohomological-RR `sorry` to this
+single datum. This is strictly smaller than the old `exists_skyscraperLES` `sorry`: the snake and
+finiteness have been stripped off.
 
-So the **only** reason this particular wrapper remains a `sorry` is the *geometric hypotheses* that
-assembly needs, which do **not** follow from `IsLeray` alone:
+WHY IT IS STILL A `sorry` (the precise, *corrected* diagnosis — see also `CohomologicalRRChartDisk`):
+the proven chart-disk assembly `SkyscraperAssembly.skyscraperLES_of_chartDisk` /
+`localRealizationData_of_chartDisk` produces this datum only under geometric hypotheses
+(`hP`/`hWsrc`/`hDsupp`/`hstar`) that **cannot hold on a fixed finite cover of a compact connected `X`**
+for all `(D, P)`:
+* `hstar` (`P ∈ U j → j = i`, singleton star) at *every* `P` would force the cover sets pairwise
+  disjoint — disconnecting `X` — or a single chart-disk `= X` (impossible for compact `X`). Overlap
+  points always exist, so the χ-induction's per-support-point demand is never met. (The earlier
+  "shrink to an adapted singleton-star cover" framing asked for a cover that does **not exist**.)
+* `hWsrc` (`U i ⊆ (chartAt ℂ P).source`) and `hDsupp` (`D` supported on `U i` only at `P`) also fail
+  for a fixed cover and general `(D, P)`.
 
-  `exists_skyscraperLES_of_chartDisk` requires, for the given `D`/`P`,
-    1. a cover-set `U i ∋ P`;
-    2. `hWsrc`: `↥(U i)`'s chart at `P` has source all of `U i` (a chart-disk cover-set);
-    3. `hDsupp`: `D` is supported on `U i` only at `P`;
-    4. `hstar`: the star of `P` is the single vertex `i` (singleton-star, a chart-disk shrinking).
+Closing `exists_localRealizationData` therefore needs **one of** two genuinely-unbanked, substantial
+builds:
+  (A) a *multi-vertex / full-simplex-star* construction of `LocalRealizationData` for GENERAL `(D, P)`
+      on the chart-disk cover (dropping `hstar`/`hWsrc`/`hDsupp`). Its keystone missing primitive is
+      the **general-`D` local realization (Mittag–Leffler on a disk)**: `coeffGermLin` surjective via
+      the explicit *product* witness in the cover-set's CENTER chart `φ`,
+      `a·(z−φP)^{−(D P)−1}·∏_{Q∈ supp D∩U i, Q≠P}(z−φQ)^{−(D Q)}` (forced poles/zeros at the other
+      support points so it lies in `𝒪_{D+P}(U i)`; `meromorphicOrderAt_prod` for the orders), coupled
+      with the full-simplex cochain cone-contraction for `Subsingleton H¹(Q)`;
+  (B) `h¹` cover-independence among Leray covers (strictly-finer `refineH1` surjectivity,
+      `CechRefinementLeray`'s `## SURJECTIVITY`, NOT the global `IsDiskAcyclic`), to switch to a
+      `P`-adapted cover per jump (the explicitly-unbanked STEP B).
 
-A generic Leray cover (each `U i` merely simply-connected) is not such an adapted chart-disk cover, so
-`exists_skyscraperLES` as stated cannot be discharged from `hL`. Closing it needs, for each `(D, P)`:
-(1) a chart-disk cover **adapted** to `(D, P)` (the singleton-star + `D`-supported-only-at-`P`
-shrinking — a standard but currently-unbuilt construction), and (2) cover-independence of `χ` between
-that adapted cover and `𝔘`. Since `h⁰` is *already* unconditionally cover-independent
-(`h0Dim_eq_lDim`, `= l(D)`), (2) is exactly **`h¹` cover-independence among Leray covers** — Forster's
-Leray theorem 12.8 / surjectivity of the strictly-finer `refineH1` (the unbanked per-overlap-acyclicity
-gluing of `CechRefinementLeray`'s `## SURJECTIVITY` plan, NOT the trivialising global `IsDiskAcyclic`).
-Both are genuine unbanked work.
+Route (A) is the task's "cochain-LES" plan; the keystone is the general-`D` product-witness
+realization. Neither is a quick win — this is the single honest `sorry`, *not* faked. -/
+theorem exists_localRealizationData (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) (P : X) :
+    Nonempty (𝔘.LocalRealizationData D P) :=
+  sorry
 
-The middle term is the genuine **1-dimensional** skyscraper `ℂ_P` (NOT the H⁰-cokernel — see the
-soundness note on `Skyscraper`), so the statement is **true**; it is the single honest `sorry`, *not*
-faked. Everything downstream (`chi_jump_of_LES`, the induction, `cohomological_riemannRoch`) is
-sorry-free, and the chart-disk discharge above carries no non-geometric content. -/
+/-- **The skyscraper long exact sequence** (Forster §16) — now a *theorem*, reduced to the single
+local-realization datum `exists_localRealizationData` via the proven snake assembly
+`skyscraperLES_of_localRealization` (which builds the connecting map, all exactness, the LES
+termination, and carries the finiteness instances). -/
 theorem exists_skyscraperLES (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) (D : Divisor X) (P : X) :
     Nonempty (SkyscraperLES 𝔘 D P) :=
-  sorry
+  (exists_localRealizationData 𝔘 hL D P).elim fun L => ⟨skyscraperLES_of_localRealization L⟩
 
 /-! ### The single-point χ-jump (sorry-free GIVEN the skyscraper LES) -/
 

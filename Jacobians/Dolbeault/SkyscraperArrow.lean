@@ -16,7 +16,7 @@
   `exists_skyscraperLES` assembly are OUT OF SCOPE here.
 -/
 import Jacobians.Dolbeault.LocalRealization
-import Jacobians.Dolbeault.CohomologicalRR
+import Jacobians.Dolbeault.SkyscraperLESBase
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
