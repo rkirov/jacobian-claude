@@ -78,39 +78,38 @@ theorem analyticOn_coverTransition_Wov (a b : 𝔇.ι) :
     (𝔇.U_subset_chartAt_source b (𝔇.closure_shrinkSet_subset_U b (subset_closure hxb)))
 
 /-- The cover transition `τ_{ab}` maps the OPEN shrinking overlap `𝔇.Wov (a,b)` (chart-`a`
-coordinates) into the `b`-side cover-open `𝔇.Uov (b,b)` (chart-`b` image of `U b`).  A point `φ_a x`
-with `x ∈ V a ∩ V b` maps to `φ_b x` with `x ∈ V b ⊆ U b`, so `φ_b x ∈ φ_b '' (U b) = Uov (b,b)`. -/
+coordinates) into the `b`-side DIAGONAL shrinking `𝔇.Wov (b,b)` (chart-`b` image of `V b`).  A point
+`φ_a x` with `x ∈ V a ∩ V b` maps to `φ_b x` with `x ∈ V b`, so `φ_b x ∈ φ_b '' (V b) = Wov (b,b)`.
+(Using the diagonal SHRINKING `Wov (b,b)` rather than the full `Uov (b,b)` makes the 0-cochain space
+`C0Holo` a SHRINKING space — bounded on a relatively-compact image — so the comparison descent of a
+germ coboundary to a `δ⁰`-image is provable; cf. the Montel model's full-image `C0`.) -/
 theorem mapsTo_coverTransition_Wov (a b : 𝔇.ι) :
-    Set.MapsTo (𝔇.coverTransition a b) (𝔇.Wov (a, b)) (𝔇.Uov (b, b)) := by
+    Set.MapsTo (𝔇.coverTransition a b) (𝔇.Wov (a, b)) (𝔇.Wov (b, b)) := by
   rintro w ⟨x, ⟨hxa, hxb⟩, rfl⟩
   have hxa_src : x ∈ (chartAt (H := ℂ) (𝔇.center a)).source :=
     𝔇.U_subset_chartAt_source a (𝔇.closure_shrinkSet_subset_U a (subset_closure hxa))
-  have hxbU : x ∈ ((𝔇.U b : Opens X) : Set X) :=
-    𝔇.closure_shrinkSet_subset_U b (subset_closure hxb)
-  refine ⟨x, ⟨hxbU, hxbU⟩, ?_⟩
+  refine ⟨x, ⟨hxb, hxb⟩, ?_⟩
   rw [coverTransition, Function.comp_apply,
     (chartAt (H := ℂ) (𝔇.center a)).left_inv hxa_src]
 
-/-- The shrinking overlap `𝔇.Wov (a,b)` lies in the `a`-side cover-open `𝔇.Uov (a,a)` (chart-`a`
-image of `V a ∩ V b ⊆ U a`), so the diagonal `a`-component restricts directly. -/
-theorem Wov_subset_Uov_diag_fst (a b : 𝔇.ι) :
-    𝔇.Wov (a, b) ⊆ 𝔇.Uov (a, a) := by
-  refine Set.image_mono (fun x hx => ?_)
-  have hxU : x ∈ ((𝔇.U a : Opens X) : Set X) :=
-    𝔇.closure_shrinkSet_subset_U a (subset_closure hx.1)
-  exact ⟨hxU, hxU⟩
+/-- The shrinking overlap `𝔇.Wov (a,b)` lies in the `a`-side DIAGONAL shrinking `𝔇.Wov (a,a)` (chart-`a`
+image of `V a ∩ V b ⊆ V a`), so the diagonal `a`-component restricts directly. -/
+theorem Wov_subset_Wov_diag_fst (a b : 𝔇.ι) :
+    𝔇.Wov (a, b) ⊆ 𝔇.Wov (a, a) :=
+  Set.image_mono (fun _ hx => ⟨hx.1, hx.1⟩)
 
-/-- **Sup-norm 0-cochains, holomorphic side** `C0Holo` — bounded-holomorphic on each diagonal
-cover-open `Uov (a,a) = chartAt (center a) '' (U a)`. -/
+/-- **Sup-norm 0-cochains, holomorphic side** `C0Holo` — bounded-holomorphic on each DIAGONAL shrinking
+`Wov (a,a) = chartAt (center a) '' (V a)`.  The shrinking (relatively-compact) image makes a germ
+section's analytic representative bounded there (the descent of coboundaries needs this). -/
 abbrev C0Holo (𝔇 : ChartDiskCover X) : Type _ :=
-  ∀ a : 𝔇.ι, BddHol (𝔇.Uov (a, a))
+  ∀ a : 𝔇.ι, BddHol (𝔇.Wov (a, a))
 
 noncomputable instance : NormedAddCommGroup 𝔇.C0Holo := inferInstance
 noncomputable instance : NormedSpace ℂ 𝔇.C0Holo := inferInstance
 
 noncomputable instance : CompleteSpace 𝔇.C0Holo := by
-  haveI : ∀ a : 𝔇.ι, CompleteSpace (BddHol (𝔇.Uov (a, a))) := fun a =>
-    BddHol.completeSpace (𝔇.isOpen_Uov (a, a))
+  haveI : ∀ a : 𝔇.ι, CompleteSpace (BddHol (𝔇.Wov (a, a))) := fun a =>
+    BddHol.completeSpace (𝔇.isOpen_Wov (a, a))
   infer_instance
 
 /-- **The cross-chart Čech `δ⁰`** of the chart-disk model: `c.Cshr`-valued from `C0Holo`.
@@ -123,14 +122,14 @@ noncomputable def delta0Model :
   ContinuousLinearMap.pi fun p =>
     (BddHol.precompHolCLM (𝔇.analyticOn_coverTransition_Wov p.1 p.2)
         (𝔇.mapsTo_coverTransition_Wov p.1 p.2)).comp (proj p.2)
-      - (BddHol.restrictOpenCLM (𝔇.Wov_subset_Uov_diag_fst p.1 p.2)).comp (proj p.1)
+      - (BddHol.restrictOpenCLM (𝔇.Wov_subset_Wov_diag_fst p.1 p.2)).comp (proj p.1)
 
 theorem delta0Model_apply (f : 𝔇.C0Holo)
     (p : 𝔇.overlapData.J) :
     𝔇.delta0Model f p
       = BddHol.precompHolCLM (𝔇.analyticOn_coverTransition_Wov p.1 p.2)
           (𝔇.mapsTo_coverTransition_Wov p.1 p.2) (f p.2)
-        - BddHol.restrictOpenCLM (𝔇.Wov_subset_Uov_diag_fst p.1 p.2) (f p.1) := rfl
+        - BddHol.restrictOpenCLM (𝔇.Wov_subset_Wov_diag_fst p.1 p.2) (f p.1) := rfl
 
 theorem delta0Model_apply_apply (f : 𝔇.C0Holo)
     (p : 𝔇.overlapData.J) {z : ℂ} (hz : z ∈ 𝔇.Wov p) :
@@ -596,6 +595,115 @@ noncomputable def cechToZ1shr :
 @[simp] theorem cechToZ1shr_coe (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) :
     ((𝔇.cechToZ1shr g : (𝔇.holomorphicCoboundaries).Z1shr) : 𝔇.overlapData.Cshr)
       = 𝔇.cechToCshr g := rfl
+
+/-! ### The diagonal atom and the descent of coboundaries to `range δ` -/
+
+/-- `U a ⊆ (chartAt (center a)).source`. -/
+theorem U_subset_source (a : 𝔇.ι) :
+    ((𝔇.U a : Opens X) : Set X) ⊆ (chartAt (H := ℂ) (𝔇.center a)).source :=
+  𝔇.U_subset_chartAt_source a
+
+/-- `closure (Wov (a,a)) ⊆ chartAt (center a) '' (U a)` — the diagonal relatively-compact nesting. -/
+theorem closure_Wov_diag_subset_chartImage_U (a : 𝔇.ι) :
+    closure (𝔇.Wov (a, a)) ⊆ (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.U a : Opens X) : Set X) := by
+  refine (𝔇.closure_Wov_subset_Uov (a, a)).trans ?_
+  show 𝔇.Uov (a, a) ⊆ _
+  exact Set.image_mono (fun _ hx => hx.1)
+
+/-- **The diagonal atom.**  A germ section `η ∈ OmegaDGerm 0 (U a)`, read through chart `center a` and
+restricted to the diagonal shrinking `Wov (a,a)`, is a `BddHol (Wov (a,a))`.  Value:
+`holoFn hη ∘ (chartAt (center a)).symm`. -/
+noncomputable def diagAtom (a : 𝔇.ι) {η : MGerm (𝔇.U a)}
+    (hη : η ∈ OmegaDGerm (0 : Divisor X) (𝔇.U a)) :
+    BddHol (𝔇.Wov (a, a)) :=
+  holoSectionToBddHol (𝔇.U_subset_source a)
+    (fun x hx => gextLimRep_chart_analyticAt (holoRep_mem hη) hx)
+    (𝔇.closure_Wov_diag_subset_chartImage_U a) (𝔇.isCompact_closure_Wov (a, a))
+
+@[simp] theorem diagAtom_toFun_of_mem (a : 𝔇.ι) {η : MGerm (𝔇.U a)}
+    (hη : η ∈ OmegaDGerm (0 : Divisor X) (𝔇.U a)) {z : ℂ} (hz : z ∈ 𝔇.Wov (a, a)) :
+    (𝔇.diagAtom a hη).toFun z = holoFn hη ((chartAt (H := ℂ) (𝔇.center a)).symm z) :=
+  holoSectionToBddHol_toFun_of_mem _ _ _ _ hz
+
+/-- For `z ∈ Wov (a,b)`, the chart-`a` preimage lies in `U a` (the `a`-side ball). -/
+theorem chartSymm_mem_U_fst (a b : 𝔇.ι) {z : ℂ} (hz : z ∈ 𝔇.Wov (a, b)) :
+    (chartAt (H := ℂ) (𝔇.center a)).symm z ∈ ((𝔇.U a : Opens X) : Set X) :=
+  (𝔇.chartSymm_mem_overlap a b hz).1
+
+/-- For `z ∈ Wov (a,b)`, the chart-`b` preimage of `τ_{ab} z` lies in `U b` (the `b`-side ball). -/
+theorem chartSymm_coverTransition_mem_U_snd (a b : 𝔇.ι) {z : ℂ} (hz : z ∈ 𝔇.Wov (a, b)) :
+    (chartAt (H := ℂ) (𝔇.center b)).symm (𝔇.coverTransition a b z)
+      ∈ ((𝔇.U b : Opens X) : Set X) := by
+  obtain ⟨x, ⟨hxa, hxb⟩, rfl⟩ := hz
+  have hxbU : x ∈ ((𝔇.U b : Opens X) : Set X) :=
+    𝔇.closure_shrinkSet_subset_U b (subset_closure hxb)
+  have hxa_src : x ∈ (chartAt (H := ℂ) (𝔇.center a)).source :=
+    𝔇.U_subset_chartAt_source a (𝔇.closure_shrinkSet_subset_U a (subset_closure hxa))
+  rw [coverTransition, Function.comp_apply,
+    (chartAt (H := ℂ) (𝔇.center a)).left_inv hxa_src,
+    (chartAt (H := ℂ) (𝔇.center b)).left_inv (𝔇.U_subset_chartAt_source b hxbU)]
+  exact hxbU
+
+/-- The `b`-side transition point `(chart_b).symm (τ_{ab} z)` equals the `a`-side preimage
+`(chart_a).symm z` for `z ∈ Wov (a,b)` (both `= x`). -/
+theorem chartSymm_coverTransition_eq_chartSymm (a b : 𝔇.ι) {z : ℂ} (hz : z ∈ 𝔇.Wov (a, b)) :
+    (chartAt (H := ℂ) (𝔇.center b)).symm (𝔇.coverTransition a b z)
+      = (chartAt (H := ℂ) (𝔇.center a)).symm z := by
+  obtain ⟨x, ⟨hxa, hxb⟩, rfl⟩ := hz
+  have hxa_src : x ∈ (chartAt (H := ℂ) (𝔇.center a)).source :=
+    𝔇.U_subset_chartAt_source a (𝔇.closure_shrinkSet_subset_U a (subset_closure hxa))
+  have hxbU : x ∈ ((𝔇.U b : Opens X) : Set X) :=
+    𝔇.closure_shrinkSet_subset_U b (subset_closure hxb)
+  have hxaU : x ∈ ((𝔇.U a : Opens X) : Set X) :=
+    𝔇.closure_shrinkSet_subset_U a (subset_closure hxa)
+  rw [𝔇.coverTransition_apply a b ⟨hxaU, hxbU⟩,
+    (chartAt (H := ℂ) (𝔇.center b)).left_inv (𝔇.U_subset_chartAt_source b hxbU),
+    (chartAt (H := ℂ) (𝔇.center a)).left_inv hxa_src]
+
+/-- **The forward map sends a germ coboundary to `δ⁰` of a diagonal `C0Holo` cochain.**  If `g` is the
+germ coboundary `cechDelta0 η₀` of a germ 0-cochain `η₀ ∈ sections0 0`, then
+`cechToCshr g = δ0 (fun a => diagAtom a (η₀ a))` — so `cechToCshr g ∈ range δ`.
+
+Pointwise on `Wov (a,b)`: `(cechToCshr g)_{ab}(z) = holoFn(g_{ab}) x = holoFn(η₀ b) x − holoFn(η₀ a) x`
+(`holoFn_restrict` + `holoFn_sub`, `x = (chart_a).symm z`), and `(δ0 f)_{ab}(z) = f_b(τ z) − f_a(z) =
+holoFn(η₀ b)((chart_b).symm (τ z)) − holoFn(η₀ a) x = holoFn(η₀ b) x − holoFn(η₀ a) x` (the transition
+point identity). -/
+theorem cechToCshr_coboundary_eq_delta0 (η₀ : 𝔇.toFiniteCover.Cochain0)
+    (hη₀ : η₀ ∈ 𝔇.toFiniteCover.sections0 (0 : Divisor X))
+    (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
+    (hgeq : (g : 𝔇.toFiniteCover.Cochain1) = 𝔇.toFiniteCover.cechDelta0 η₀) :
+    𝔇.cechToCshr g
+      = (𝔇.holomorphicCoboundaries).δ0 (fun a => 𝔇.diagAtom a (hη₀ a)) := by
+  ext p
+  apply BddHol.toFun_injective
+  funext z
+  obtain ⟨a, b⟩ := p
+  by_cases hz : z ∈ 𝔇.Wov (a, b)
+  · -- LHS
+    rw [𝔇.cechToCshr_apply_toFun _ _ hz]
+    -- the cocycle component is the germ coboundary `rawRestrictG (η₀ b) − rawRestrictG (η₀ a)`
+    have hcomp : (g : 𝔇.toFiniteCover.Cochain1) (a, b)
+        = rawRestrictG inf_le_right (η₀ b) - rawRestrictG inf_le_left (η₀ a) := by
+      rw [hgeq]; rfl
+    -- so `holoFn (g_{ab}) x = holoFn(η₀ b restricted) x − holoFn(η₀ a restricted) x`
+    have hx : (chartAt (H := ℂ) (𝔇.center a)).symm z ∈ ((𝔇.U a ⊓ 𝔇.U b : Opens X) : Set X) :=
+      𝔇.chartSymm_mem_overlap a b hz
+    rw [holoFn_congr (cocycle_mem 𝔇 g a b)
+      (sub_mem (rawRestrictG_omegaDGerm inf_le_right (hη₀ b))
+        (rawRestrictG_omegaDGerm inf_le_left (hη₀ a))) hcomp hx,
+      holoFn_sub (rawRestrictG_omegaDGerm inf_le_right (hη₀ b))
+        (rawRestrictG_omegaDGerm inf_le_left (hη₀ a)) _ hx,
+      holoFn_restrict inf_le_right (hη₀ b) hx, holoFn_restrict inf_le_left (hη₀ a) hx]
+    -- RHS: `δ0 (diagAtom ...) = diagAtom_b(τ z) − diagAtom_a(z)`
+    show _ = (𝔇.delta0Model (fun a => 𝔇.diagAtom a (hη₀ a)) (a, b)).toFun z
+    rw [𝔇.delta0Model_apply_apply _ _ hz,
+      𝔇.diagAtom_toFun_of_mem b (hη₀ b) (𝔇.mapsTo_coverTransition_Wov a b hz),
+      𝔇.diagAtom_toFun_of_mem a (hη₀ a) (𝔇.Wov_subset_Wov_diag_fst a b hz),
+      𝔇.chartSymm_coverTransition_eq_chartSymm a b hz]
+  · -- off `Wov (a,b)` both sides are `0`
+    rw [(𝔇.cechToCshr g (a, b)).zero_off z hz]
+    show _ = (𝔇.delta0Model (fun a => 𝔇.diagAtom a (hη₀ a)) (a, b)).toFun z
+    rw [(𝔇.delta0Model (fun a => 𝔇.diagAtom a (hη₀ a)) (a, b)).zero_off z hz]
 
 end ChartDiskCover
 
