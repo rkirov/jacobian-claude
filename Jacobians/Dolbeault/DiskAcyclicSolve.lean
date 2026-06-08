@@ -349,5 +349,79 @@ theorem contDiffOn_gluedDatum (𝔇 : SharedChartCover X)
     exact gluedDatum_apply 𝔇 s i₀ hz
   exact (hcd.congr_of_eventuallyEq heq).contDiffWithinAt
 
+/-! ## Steps 4–7 — Solve, holomorphic correctors, and the disk-acyclicity conclusion
+
+Solve `∂̄u = ω` on the open ball (Forster 13.2, `dbar_solvable_open_disk`).  Then `η̂ᵢ := openChartPrimᵢ − u`
+is holomorphic on `ball ∩ Ω_i` (its `∂̄` is `ω − ω = 0`), so `Hᵢ := η̂ᵢ ∘ φ` are chart-analytic correctors
+(`analyticAt_compChart_of_differentiableOn`) whose differences split `holoFn(s_{ij})` on overlaps
+(`openChartPrim_diff`, the `u`-terms cancel) — exactly `HasChartAnalyticCorrectors`.  The imported
+`cechH1_subsingleton_of_chartAnalyticCorrectors` then collapses every class of `cechH1 0`. -/
+
+/-- Each chart-image `Ω_i` lies inside the ball (so `ball ∩ Ω_i = Ω_i`). -/
+theorem Ω_subset_ball (𝔇 : SharedChartCover X) (i : 𝔇.ι) :
+    𝔇.Ω i ⊆ Metric.ball 𝔇.ballCenter 𝔇.radius :=
+  𝔇.image_subset_ball i
+
+/-- **`HasChartAnalyticCorrectors` for a shared-chart cover whose chart-images fill the ball.**  Steps
+4–6 assembled: solve `∂̄u = ω` on the ball, set `η̂ᵢ := openChartPrimᵢ − u` (holomorphic on `ball ∩ Ω_i`,
+`∂̄η̂ᵢ = ω − ω = 0`), `Hᵢ := η̂ᵢ ∘ φ` chart-analytic with `Hⱼ − Hᵢ =ᶠ holoFn(s_{ij})`. -/
+theorem hasChartAnalyticCorrectors_of_unionBall (𝔇 : SharedChartCover X)
+    (hunion : openUnionChartImage 𝔇 = Metric.ball 𝔇.ballCenter 𝔇.radius) :
+    HasChartAnalyticCorrectors 𝔇.toFiniteFamily := by
+  intro s
+  -- **Step 4.** Solve `∂̄u = ω` on the open ball (Forster 13.2).
+  obtain ⟨u, hu_smooth, hu_dbar⟩ :=
+    DbarOpenDisk.dbar_solvable_open_disk 𝔇.ballCenter 𝔇.radius_pos (contDiffOn_gluedDatum 𝔇 s hunion)
+  -- **Step 5.** The holomorphic chart correctors `η̂ᵢ := openChartPrimᵢ − u` on `ball ∩ Ω_i`.
+  set ηhat : 𝔇.ι → ℂ → ℂ := fun i => openChartPrim 𝔇 s i - u with hηhatdef
+  have hηhol : ∀ i, DifferentiableOn ℂ (ηhat i)
+      (Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i) := by
+    intro i z hz
+    obtain ⟨x, hxU, hxz⟩ := hz.2
+    -- `openChartPrimᵢ` is `C^∞` at `z = φ x` (Step 1, `x ∈ U_i`); `u` is `C^∞` at `z ∈ ball`.
+    have hĥ_cd : ContDiffAt ℝ (⊤ : ℕ∞) (openChartPrim 𝔇 s i) z := by
+      rw [← hxz]; exact contDiffAt_openChartPrim 𝔇 s i hxU
+    have hu_cd : ContDiffAt ℝ (⊤ : ℕ∞) u z :=
+      (hu_smooth z hz.1).contDiffAt (Metric.isOpen_ball.mem_nhds hz.1)
+    -- `∂̄η̂ᵢ z = ∂̄(openChartPrimᵢ) z − ∂̄u z = ω z − ω z = 0`.
+    have hdb_eta : DbarDisk.dbar (ηhat i) z = 0 := by
+      have hsub : DbarDisk.dbar (fun w => openChartPrim 𝔇 s i w - u w) z
+          = DbarDisk.dbar (openChartPrim 𝔇 s i) z - DbarDisk.dbar u z :=
+        DbarOpenDisk.dbar_sub (hĥ_cd.differentiableAt (by norm_num))
+          (hu_cd.differentiableAt (by norm_num))
+      rw [hηhatdef]
+      show DbarDisk.dbar (fun w => openChartPrim 𝔇 s i w - u w) z = 0
+      rw [hsub, hu_dbar z hz.1, gluedDatum_apply 𝔇 s i hz.2, sub_self]
+    -- `∂̄η̂ᵢ = 0` + `η̂ᵢ` `ℝ`-differentiable ⟹ `ℂ`-differentiable (Wirtinger), on the open set.
+    have hηcd : DifferentiableAt ℝ (ηhat i) z := by
+      rw [hηhatdef]
+      exact (hĥ_cd.differentiableAt (by norm_num)).sub (hu_cd.differentiableAt (by norm_num))
+    exact (differentiableAt_of_dbar_eq_zero_local hηcd hdb_eta).differentiableWithinAt
+  -- **Step 6.** The ambient correctors `H_i := η̂_i ∘ φ`.
+  refine ⟨fun i => ηhat i ∘ 𝔇.φ, fun i y hy => ?_, fun i j x hx => ?_⟩
+  · -- Chart-analytic on `U_i` (`analyticAt_compChart_of_differentiableOn`).
+    exact analyticAt_compChart_of_differentiableOn 𝔇 i (hηhol i) hy
+  · -- Difference identity, pointwise on the open overlap (gives the `𝓝[≠]`-eventual form).
+    have hUij : ∀ᶠ z in 𝓝[≠] x, z ∈ (𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X) :=
+      eventually_nhdsWithin_of_eventually_nhds
+        ((𝔇.toFiniteFamily.U i ⊓ 𝔇.toFiniteFamily.U j : Opens X).isOpen.mem_nhds hx)
+    filter_upwards [hUij] with z hz
+    -- `(η̂_j ∘ φ) z − (η̂_i ∘ φ) z = openChartPrim_j(φz) − openChartPrim_i(φz) = holoFn(s_{ij}) z`.
+    show (ηhat j ∘ 𝔇.φ) z - (ηhat i ∘ 𝔇.φ) z = holoFn (cocycleComp_mem 𝔇.toFiniteFamily s i j) z
+    simp only [hηhatdef, Function.comp_apply, Pi.sub_apply]
+    -- The `u`-terms cancel; the rest is `openChartPrim_diff`.
+    have hd := openChartPrim_diff 𝔇 s i j hz
+    linear_combination hd
+
+/-- **`H¹(disk, 𝒪) = 0` for a shared-chart cover whose chart-images fill the ball (Forster 13.4).**
+The genuine disk-acyclicity: every class of `cechH1 0` is `0`.  Built from the open-disk ∂̄-solver
+(Forster 13.2) via the open-union partition of unity — the sound replacement for the dead closed-core
+`HasGluedDbarDatum` route. -/
+theorem cechH1_subsingleton_of_unionBall (𝔇 : SharedChartCover X)
+    (hunion : openUnionChartImage 𝔇 = Metric.ball 𝔇.ballCenter 𝔇.radius)
+    (q : 𝔇.toFiniteFamily.cechH1 (0 : Divisor X)) : q = 0 :=
+  cechH1_subsingleton_of_chartAnalyticCorrectors 𝔇.toFiniteFamily
+    (hasChartAnalyticCorrectors_of_unionBall 𝔇 hunion) q
+
 end SharedChartCover
 end Jacobians.Dolbeault
