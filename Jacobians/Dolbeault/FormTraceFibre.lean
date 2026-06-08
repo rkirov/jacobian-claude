@@ -175,6 +175,38 @@ attribute [instance] FibreRegularData.fintype_ι
 
 variable {g : X → ℂ}
 
+/-- **`FibreRegularData` from per-point non-pole + regular + value data.**  The `hg_an` field (chart
+pullback analytic at `pre i`) is *automatic* from non-poleness via the proven
+`Jacobians.ProperMapDegreeSheets.analyticAt_holoRepr_chartPullback_target` (so it need not be
+supplied); the caller provides only:
+
+* `xs : ι → X` — the fibre points;
+* `hnp` — each `xs i` is a **non-pole** (`0 ≤ orderAtPoint (xs i)`), so `f.holoRepr` is analytic there;
+* `hderiv` — each `xs i` is a **regular point** (chart-pullback derivative of `f.holoRepr` nonzero);
+* `hval` — `f.holoRepr (xs i) = b`;
+* `hmero` — `g`'s chart-pullback is meromorphic at each `pre i`.
+
+This is the honest reduced interface the regular-value machinery feeds — `hg_an` is discharged. -/
+noncomputable def FibreRegularData.ofRegular (g : X → ℂ) (f : MeromorphicFunction X) (b : ℂ)
+    {ι : Type} [Fintype ι] (xs : ι → X)
+    (hnp : ∀ i, 0 ≤ f.orderAtPoint (xs i))
+    (hderiv : ∀ i, deriv (fun z => f.holoRepr ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i)) ≠ 0)
+    (hval : ∀ i, f.holoRepr (xs i) = b)
+    (hmero : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i))) :
+    FibreRegularData g f b where
+  ι := ι
+  fintype_ι := inferInstance
+  xs := xs
+  hg_an := fun i => by
+    have hz : (chartAt ℂ (xs i)) (xs i) ∈ (chartAt ℂ (xs i)).target :=
+      (chartAt ℂ (xs i)).map_source (mem_chart_source ℂ (xs i))
+    have hnp' : 0 ≤ f.orderAtPoint ((chartAt ℂ (xs i)).symm ((chartAt ℂ (xs i)) (xs i))) := by
+      rw [(chartAt ℂ (xs i)).left_inv (mem_chart_source ℂ (xs i))]; exact hnp i
+    exact ProperMapDegreeSheets.analyticAt_holoRepr_chartPullback_target f (xs i) hz hnp'
+  hg_deriv := hderiv
+  hval := hval
+  hg_mero := hmero
+
 /-- The chart pullback `f.holoRepr ∘ chart⁻¹` evaluated at `pre i = chart (xs i)` is `b`. -/
 theorem FibreRegularData.gval (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X) {b : ℂ}
     (D : FibreRegularData g f b) (i : D.ι) :
