@@ -43,7 +43,7 @@ theorem finiteDimensional_cechH1_zero_of_chartDiskMontel
   obtain ⟨𝔇, r, hr⟩ := exists_chartDiskCover_refinement 𝔘
   haveI : FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) := hMontel 𝔇
   have hinj : Function.Injective (hr.refineH1 (0 : Divisor X)) :=
-    FiniteCover.IsRefinement.refineH1_injective_unconditional hr (0 : Divisor X)
+    FiniteCover.IsRefinement.refineH1_injective_unconditional (D := (0 : Divisor X)) hr
   exact FiniteDimensional.of_injective _ hinj
 
 /-- **`exists_cechModel 𝔘 0` from the chart-disk Montel finiteness (the 14.7 route, D = 0).**  Combines
