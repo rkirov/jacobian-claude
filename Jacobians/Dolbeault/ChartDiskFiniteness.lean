@@ -423,4 +423,70 @@ theorem forster146_lift (𝒮 : 𝔇.BallSplitData) :
 
 end ChartDiskCover
 
+/-! ## §4 — Connecting the analytic heart to `FiniteDimensional ℂ (cechH1 𝔇 0)`
+
+The FA finiteness engine `CechFiniteness.finiteDimensional_h1_of_leray_compact` (Forster 14.8/14.7,
+Schwartz–Riesz) needs a `HolomorphicCoboundaries` model `c` for a `HolomorphicDiskOverlapData` with:
+  * `ρ` compact (Montel) — PROVEN for ANY `HolomorphicDiskOverlapData` (`ρ_compact`), the only input
+    being a relatively-compact open shrinking `Wov ⋐ Uov`;
+  * the `leray` surjectivity — the analytic heart, whose function-level content is now PROVEN
+    (`ChartDiskCover.forster146_lift`).
+
+The remaining structural plumbing to reach the literal germ-class `cechH1 𝔇 0` (NOT analytic content):
+  * **(G-shrink)** a concrete relatively-compact open shrinking `Wov (i,j) ⋐ Uov (i,j)` of the ball
+    overlaps whose inner balls STILL cover `X` (so a subordinate PoU summing to `1` on `X` exists — the
+    Bott–Tu split that produces `BallSplitData`).  A generic `ChartDiskCover` does not carry this
+    covering-shrinking; it is the geometric refinement Forster builds (a "relatively-compact shrinking
+    of a cover is a cover", Forster §12).
+  * **(G-bridge)** the germ↔`BddHol` identification of the chart-read holomorphic functions with the
+    model's `Cshr`/`Ccov` cochains, descending to and inverting the forward `CechModelCochain.cochainToCcov`
+    (the round-trip `cechH1 ≃ supH1`).
+
+These two are pure cover/sheaf plumbing (no ∂̄, no Montel) — the analytic wall is gone.  We package the
+reduction so the connection is explicit and the heart is plugged in. -/
+
+namespace ChartDiskCover
+
+variable (𝔇 : ChartDiskCover X)
+
+/-- **The two finiteness statements are equivalent** (PROVEN, via `GoodCover.comparison_linearEquiv'`).
+`FiniteDimensional ℂ (cechH1 𝔇 0) ↔ FiniteDimensional ℝ (DolbeaultH01 X)`: the proven Dolbeault
+comparison `DolbeaultH01 X ≃ₗ[ℝ] cechH1 𝔇 0` transports `ℝ`-finiteness, and `ℂ`-finiteness of the
+`ℂ`-module `cechH1 𝔇 0` is equivalent to its `ℝ`-finiteness (`ℂ` is finite over `ℝ`).  So either half
+of the goal yields the other for free. -/
+theorem finiteDimensional_cechH1_iff_dolbeault
+    [ConnectedSpace X] [Nonempty X] :
+    FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X))
+      ↔ FiniteDimensional ℝ (DolbeaultH01 X) := by
+  constructor
+  · intro h
+    -- ℂ-finite ⟹ ℝ-finite (ℂ fin over ℝ) ⟹ (transport along the equiv) ℝ-finite DolbeaultH01
+    haveI : FiniteDimensional ℝ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) :=
+      Module.Finite.trans (R := ℝ) ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X))
+    exact (comparison_linearEquiv' 𝔇).symm.finiteDimensional
+  · intro h
+    -- ℝ-finite DolbeaultH01 ⟹ (transport) ℝ-finite cechH1 ⟹ ℂ-finite cechH1
+    haveI : FiniteDimensional ℝ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) :=
+      (comparison_linearEquiv' 𝔇).finiteDimensional
+    exact FiniteDimensional.right ℝ ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X))
+
+/-- **The finiteness reduction (heart plugged in).**  Given a `HolomorphicDiskOverlapData` `d` for the
+chart-disk cover together with a `HolomorphicCoboundaries d` `c` (the δ-complex with the `leray` field —
+whose analytic core is exactly `forster146_lift`, the genuinely-unblocked content) and a comparison
+`cechH1 𝔇 0 ≃ₗ[ℂ] c.supH1`, the Čech `H¹` is finite-dimensional.
+
+This is the assembly via the proven `HolomorphicCoboundaries.finiteDimensional_supH1` (= Forster
+14.8/14.7: compact `ρ` + `leray` surjectivity ⟹ finite `supH1`) transported across the comparison.
+The two inputs are the structural plumbing (G-shrink builds `d`'s shrinking, G-bridge builds the
+comparison); the analytic wall (the `leray` field) is discharged by the heart. -/
+theorem finiteDimensional_cechH1_of_holomorphicModel
+    (d : HolomorphicDiskOverlapData) (c : HolomorphicCoboundaries d)
+    (e : 𝔇.toFiniteCover.cechH1 (0 : Divisor X) ≃ₗ[ℂ] c.supH1) :
+    FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) := by
+  haveI : FiniteDimensional ℂ c.supH1 :=
+    c.finiteDimensional_supH1 (HolomorphicCoboundaries.leray_surjective d c)
+  exact e.symm.finiteDimensional
+
+end ChartDiskCover
+
 end Jacobians.Dolbeault
