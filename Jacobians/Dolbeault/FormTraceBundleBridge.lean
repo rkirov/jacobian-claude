@@ -231,4 +231,51 @@ theorem fibreTrace_traceCoeff_eq_traceLocalCoeff (ω₀ αBr : HolomorphicOneFor
   exact Finset.sum_congr rfl (fun i _ =>
     movingSummand_eq_g_sheetPullback ω₀ g (S.sheet i) (S.sheet_mdifferentiableAt i S.mem_V))
 
+/-! ### The bundle-trace germ bridge `hbridgeBr`
+
+Lifting the pointwise identity to the germ equality `hbridgeBr` of `patchedTraceSelection_ofBundleBranch`.
+On the punctured neighbourhood `𝓝[≠] b₀`, eventually each `z` is a regular value carrying a sphere sheet
+system `S_z`, with (i) the geometric trace agreeing with the sphere-sheet planar fibre trace at `z` (the
+`Creg`-coherence, available from the moving-fibre machinery), and (ii) `αBr.toFun = g·ω₀.toFun` at the
+fibre points of `S_z` (the form `αBr` is `ω₀·g` near the fibre).  At each such `z` the pointwise identity
+`fibreTrace_traceCoeff_eq_traceLocalCoeff` finishes. -/
+
+/-- **The bundle-trace germ bridge `hbridgeBr` from the eventual sphere-sheet coherence.**  Suppose on
+`𝓝[≠] b₀`, eventually each `z` carries a sphere sheet system `S_z` of `F = f.toRiemannSphere` at `coe z`
+(with regular fibre — `hderiv`, `hmero`) such that the geometric trace agrees with the sphere-sheet fibre
+trace at `z` and `αBr` is `ω₀·g` at the fibre points:
+
+> eventually: `valueChartTrace ω₀ f Φ z = (fibreTrace ω₀ f (ofSphereSheetSystem S_z …)).traceCoeff z`
+> and `∀ i, αBr.toFun (S_z.sheet i (coe z)) = g (S_z.sheet i (coe z)) • ω₀.toFun (S_z.sheet i (coe z))`.
+
+Then the bundle-trace germ bridge holds:
+
+> `valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] b₀] z ↦ traceLocalCoeff (traceFun F αBr) (coe b₀) (coe z)`.
+
+This is exactly the `hbridgeBr` input of `patchedTraceSelection_ofBundleBranch`, reduced to the eventual
+regular-value sphere-sheet coherence (the standard §VIII.3 residual — *no* monodromy/Puiseux frame). -/
+theorem hbridgeBr_of_eventual_sphereCoherence (ω₀ αBr : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) {b₀ : ℂ}
+    (hev : ∀ᶠ z in 𝓝[≠] b₀,
+      ∃ (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+        (hderiv : ∀ i, deriv (fun w => f.holoRepr
+            ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+          ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+            (S.sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0)
+        (_hmero : ∀ i, MeromorphicAt
+          (fun w => g ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+          ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+            (S.sheet i (((z : ℂ) : RiemannSphere))))),
+        valueChartTrace ω₀ f Φ z
+            = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv _hmero)).traceCoeff z ∧
+        (∀ i, αBr.toFun (S.sheet i (((z : ℂ) : RiemannSphere)))
+          = g (S.sheet i (((z : ℂ) : RiemannSphere))) • ω₀.toFun (S.sheet i (((z : ℂ) : RiemannSphere))))) :
+    valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] b₀]
+      fun z : ℂ => traceLocalCoeff (traceFun f.toRiemannSphere αBr)
+        (((b₀ : ℂ) : RiemannSphere)) (((z : ℂ) : RiemannSphere)) := by
+  filter_upwards [hev] with z hz
+  obtain ⟨S, hderiv, hmero, hvct, hαBr⟩ := hz
+  rw [hvct]
+  exact fibreTrace_traceCoeff_eq_traceLocalCoeff ω₀ αBr g f S hderiv hmero hαBr
+
 end Jacobians.Dolbeault.FormTraceGlobal
