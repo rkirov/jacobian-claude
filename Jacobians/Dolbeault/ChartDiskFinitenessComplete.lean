@@ -1066,6 +1066,117 @@ theorem etaBddHol_toFun_of_mem (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Mode
 noncomputable def etaCochain (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) : 𝔇.C0Holo :=
   fun a => 𝔇.etaBddHol s hs a
 
+/-! ## §A2-x — The holomorphic COVER cocycle `x : Ccov` (Forster 14.6 per-disk solve)
+
+`x'_{ab} := dolbeaultToCechCocycle 𝔇 ω̂` (the PROVEN per-disk ∂̄-solve via the Cauchy transform on each
+ball, `DolbeaultComparisonProof`) is a germ Čech cocycle, holomorphic on the FULL overlaps, with
+component value `holoFn(x'_{ab}) = u_b − u_a` (`u_a := diskVal a ω̂`).  We package each component as a
+`BddHol (Uov (a,b))` (analytic via `analyticOn_pullback_of_holo`; bounded since `u_a = planarPrimitive
+a ω̂ ∘ φ_a` and `planarPrimitive a ω̂` is continuous on the compact `closedBall ⊇ φ_a '' U_a`). -/
+
+/-- The germ cover cocycle `x' := dolbeaultToCechCocycle 𝔇 ω̂` (an element of `cocycles1`). -/
+noncomputable def coverCocycleGerm (s : 𝔇.overlapData.Cshr) :
+    ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) :=
+  dolbeaultToCechCocycle 𝔇 (𝔇.glueForm s)
+
+/-- The `(a,b)`-component germ is `cechDelta0 (rawCochain ω̂)` — its representative on `U_a ⊓ U_b` is
+`diskSection b ω̂ − diskSection a ω̂`. -/
+theorem coverCocycleGerm_component (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) :
+    ((𝔇.coverCocycleGerm s : 𝔇.toFiniteCover.Cochain1)) (a, b)
+      = toGerm (𝔇.U a ⊓ 𝔇.U b)
+          (𝔇.diskSection b (𝔇.glueForm s) ∘ openIncl inf_le_right
+            - 𝔇.diskSection a (𝔇.glueForm s) ∘ openIncl inf_le_left) := by
+  show 𝔇.toFiniteCover.cechDelta0 (𝔇.rawCochain (𝔇.glueForm s)) (a, b) = _
+  simp only [FiniteFamily.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
+    LinearMap.comp_apply, LinearMap.proj_apply]
+  rw [show 𝔇.rawCochain (𝔇.glueForm s) b = toGerm (𝔇.U b) (𝔇.diskSection b (𝔇.glueForm s)) from rfl,
+    show 𝔇.rawCochain (𝔇.glueForm s) a = toGerm (𝔇.U a) (𝔇.diskSection a (𝔇.glueForm s)) from rfl,
+    rawRestrictG_coe, rawRestrictG_coe, ← map_sub]
+
+/-- **`holoFn(x'_{ab}) y = u_b y − u_a y`** on `U_a ∩ U_b` (`u := diskVal ω̂`).  The germ's
+representative `diskSection b − diskSection a` extends continuously to `diskVal b − diskVal a`. -/
+theorem coverCocycleGerm_holoFn (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) {y : X}
+    (hy : y ∈ (𝔇.U a ⊓ 𝔇.U b : Opens X)) :
+    holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b) y
+      = diskVal 𝔇 b (𝔇.glueForm s) y - diskVal 𝔇 a (𝔇.glueForm s) y := by
+  set F : ↥(𝔇.U a ⊓ 𝔇.U b) → ℂ :=
+    𝔇.diskSection b (𝔇.glueForm s) ∘ openIncl inf_le_right
+      - 𝔇.diskSection a (𝔇.glueForm s) ∘ openIncl inf_le_left with hF
+  have hgermeq : toGerm (𝔇.U a ⊓ 𝔇.U b) F
+      = ((𝔇.coverCocycleGerm s : 𝔇.toFiniteCover.Cochain1)) (a, b) :=
+    (𝔇.coverCocycleGerm_component s a b).symm
+  -- `Gext F` agrees with the continuous `diskVal b − diskVal a` near `y`, and is continuous there.
+  have hcont : ContinuousAt (fun z : X => diskVal 𝔇 b (𝔇.glueForm s) z - diskVal 𝔇 a (𝔇.glueForm s) z) y :=
+    ((contMDiffAt_diskVal 𝔇 b (𝔇.glueForm s) hy.2).continuousAt).sub
+      ((contMDiffAt_diskVal 𝔇 a (𝔇.glueForm s) hy.1).continuousAt)
+  have hFval : ∀ w : ↥(𝔇.U a ⊓ 𝔇.U b),
+      F w = diskVal 𝔇 b (𝔇.glueForm s) w.1 - diskVal 𝔇 a (𝔇.glueForm s) w.1 := by
+    intro w; simp only [hF, Pi.sub_apply, Function.comp_apply, openIncl, diskSection, diskVal]
+  have hev : Gext F =ᶠ[nhds y]
+      (fun z : X => diskVal 𝔇 b (𝔇.glueForm s) z - diskVal 𝔇 a (𝔇.glueForm s) z) := by
+    filter_upwards [(𝔇.U a ⊓ 𝔇.U b).isOpen.mem_nhds hy] with z hz
+    rw [Gext_apply_mem F hz, hFval ⟨z, hz⟩]
+  have htend : Filter.Tendsto (Gext F) (𝓝[≠] y)
+      (𝓝 (diskVal 𝔇 b (𝔇.glueForm s) y - diskVal 𝔇 a (𝔇.glueForm s) y)) :=
+    Filter.Tendsto.congr' (hev.filter_mono nhdsWithin_le_nhds).symm
+      ((hcont.tendsto).mono_left nhdsWithin_le_nhds)
+  exact holoFn_eq_of_tendsto (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b) F hgermeq hy htend
+
+/-- `φ_a.symm z ∈ U_a ∩ U_b` for `z ∈ Uov (a,b)`. -/
+theorem chartSymm_mem_Uov (a b : 𝔇.ι) {z : ℂ} (hz : z ∈ 𝔇.Uov (a, b)) :
+    (chartAt (H := ℂ) (𝔇.center a)).symm z ∈ ((𝔇.U a ⊓ 𝔇.U b : Opens X) : Set X) := by
+  obtain ⟨x, hx, rfl⟩ := hz
+  rwa [(chartAt (H := ℂ) (𝔇.center a)).left_inv
+    ((Set.inter_subset_left).trans (𝔇.U_subset_chartAt_source a) hx)]
+
+/-- `‖diskVal a ω̂ x‖` is bounded (uniformly in `x`) by the sup of `planarPrimitive a ω̂` on the compact
+`closedBall (e a) (radius a)` (`diskVal a ω̂ x = planarPrimitive a ω̂ (φ_a x)`). -/
+theorem exists_bound_diskVal (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) :
+    ∃ C, ∀ x : X, x ∈ (𝔇.U a : Set X) → ‖diskVal 𝔇 a (𝔇.glueForm s) x‖ ≤ C := by
+  obtain ⟨C, hC⟩ := (isCompact_closedBall (𝔇.e a) (𝔇.radius a)).exists_bound_of_continuousOn
+    (f := 𝔇.planarPrimitive a (𝔇.glueForm s))
+    (𝔇.contDiff_planarPrimitive a (𝔇.glueForm s)).continuous.continuousOn
+  refine ⟨C, fun x hx => ?_⟩
+  show ‖𝔇.planarPrimitive a (𝔇.glueForm s) ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center a)) x)‖ ≤ C
+  refine hC _ (Metric.ball_subset_closedBall ?_)
+  rw [← 𝔇.image_U_eq_ball a]; exact ⟨x, hx, rfl⟩
+
+/-- **The cover-cochain analyticity input**: `holoFn(x'_{ab}) ∘ φ_a⁻¹` is `AnalyticOn (Uov (a,b))`. -/
+theorem coverCocycle_analyticOn (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) :
+    AnalyticOn ℂ (holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b)
+      ∘ (chartAt (H := ℂ) (𝔇.center a)).symm) (𝔇.Uov (a, b)) := by
+  have : AnalyticOn ℂ (holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b)
+      ∘ (chartAt (H := ℂ) (𝔇.center a)).symm)
+      ((chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.U a ⊓ 𝔇.U b : Opens X) : Set X)) :=
+    analyticOn_pullback_of_holo ((Set.inter_subset_left).trans (𝔇.U_subset_chartAt_source a))
+      (fun x hx => gextLimRep_chart_analyticAt
+        (holoRep_mem (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b)) hx)
+  exact this
+
+/-- **The cover cochain component** `x_{ab} ∈ BddHol (Uov (a,b))` (analytic + bounded by `2·max diskVal`). -/
+noncomputable def coverBddHol (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) : BddHol (𝔇.Uov (a, b)) :=
+  BddHol.ofAnalyticOn
+    (holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b) ∘ (chartAt (H := ℂ) (𝔇.center a)).symm)
+    (𝔇.coverCocycle_analyticOn s a b)
+    (by
+      obtain ⟨Cb, hCb⟩ := 𝔇.exists_bound_diskVal s b
+      obtain ⟨Ca, hCa⟩ := 𝔇.exists_bound_diskVal s a
+      refine ⟨Cb + Ca, fun z hz => ?_⟩
+      have hxmem : (chartAt (H := ℂ) (𝔇.center a)).symm z ∈ ((𝔇.U a ⊓ 𝔇.U b : Opens X) : Set X) :=
+        𝔇.chartSymm_mem_Uov a b hz
+      rw [Function.comp_apply, 𝔇.coverCocycleGerm_holoFn s a b hxmem]
+      refine (norm_sub_le _ _).trans (add_le_add (hCb _ hxmem.2) (hCa _ hxmem.1)))
+
+theorem coverBddHol_toFun_of_mem (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) {z : ℂ}
+    (hz : z ∈ 𝔇.Uov (a, b)) :
+    (𝔇.coverBddHol s a b).toFun z
+      = holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b) ((chartAt (H := ℂ) (𝔇.center a)).symm z) :=
+  BddHol.ofAnalyticOn_toFun_of_mem _ _ _ hz
+
+/-- `x : Ccov` — the holomorphic cover cocycle. -/
+noncomputable def coverCochain (s : 𝔇.overlapData.Cshr) : 𝔇.overlapData.Ccov :=
+  fun p => 𝔇.coverBddHol s p.1 p.2
+
 
 /-- **The structural δ-complex on `𝔇.overlapData`, with the `leray` field.**  All structural fields
 (`δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm`) are the proven model differentials of §A; `leray` is the Forster
