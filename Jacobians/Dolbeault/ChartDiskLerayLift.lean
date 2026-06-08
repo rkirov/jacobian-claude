@@ -125,6 +125,52 @@ theorem shrinkGerm_holoFn (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) {y : X}
   rw [← hval]
   exact holoFn_eq_of_tendsto (𝔇.shrinkGerm s a b).2 F hgerm hy htend
 
+/-- `chart_i y ∈ WovTriple (i,j,k)` for `y ∈ V_i ∩ V_j ∩ V_k`. -/
+theorem chart_mem_WovTriple (i j k : 𝔇.ι) {y : X}
+    (hy : y ∈ (𝔇.shrinkOpens i ⊓ 𝔇.shrinkOpens j ⊓ 𝔇.shrinkOpens k : Opens X)) :
+    (chartAt (H := ℂ) (𝔇.center i)) y ∈ 𝔇.WovTriple (i, j, k) :=
+  ⟨y, ⟨⟨hy.1.1, hy.1.2⟩, hy.2⟩, rfl⟩
+
+/-- For `y ∈ V_i ∩ V_j ⊆ V_i ∩ V_j`, the transition point identity `(chart_j).symm (τ_{ij}(chart_i y))
+= ...` collapses: `τ_{ij}(chart_i y) = chart_j y`. -/
+theorem coverTransition_chart_shrink (i j : 𝔇.ι) {y : X}
+    (hyi : y ∈ (𝔇.shrinkOpens i : Opens X)) (hyj : y ∈ (𝔇.shrinkOpens j : Opens X)) :
+    𝔇.coverTransition i j ((chartAt (H := ℂ) (𝔇.center i)) y) = (chartAt (H := ℂ) (𝔇.center j)) y := by
+  have hyiU : y ∈ ((𝔇.U i : Opens X) : Set X) := 𝔇.shrinkOpens_le_U i hyi
+  have hyjU : y ∈ ((𝔇.U j : Opens X) : Set X) := 𝔇.shrinkOpens_le_U j hyj
+  exact 𝔇.coverTransition_apply i j ⟨hyiU, hyjU⟩
+
+/-- **The germ cocycle relation at the `holoFn` value level.**  For a `Cshr` cocycle `s` (i.e.
+`δ¹s = 0`) and `y ∈ V_i ∩ V_j ∩ V_k`, `holoFn σ_{ik} y = holoFn σ_{ij} y + holoFn σ_{jk} y`.  Direct
+from `delta1Model s = 0` evaluated at `chart_i y ∈ WovTriple (i,j,k)`, via `shrinkGerm_holoFn` and the
+transition identity. -/
+theorem shrinkGerm_cocycle_add (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0)
+    (i j k : 𝔇.ι) {y : X} (hy : y ∈ (𝔇.shrinkOpens i ⊓ 𝔇.shrinkOpens j ⊓ 𝔇.shrinkOpens k : Opens X)) :
+    holoFn (𝔇.shrinkGerm s i k).2 y
+      = holoFn (𝔇.shrinkGerm s i j).2 y + holoFn (𝔇.shrinkGerm s j k).2 y := by
+  have hyi : y ∈ (𝔇.shrinkOpens i : Opens X) := hy.1.1
+  have hyj : y ∈ (𝔇.shrinkOpens j : Opens X) := hy.1.2
+  have hyk : y ∈ (𝔇.shrinkOpens k : Opens X) := hy.2
+  set z := (chartAt (H := ℂ) (𝔇.center i)) y with hz
+  have hzW : z ∈ 𝔇.WovTriple (i, j, k) := 𝔇.chart_mem_WovTriple i j k hy
+  -- `δ¹s = 0` value at `z`.
+  have h0 : (𝔇.delta1Model s (i, j, k)).toFun z = 0 := by rw [hs]; rfl
+  rw [𝔇.delta1Model_apply_apply s (i, j, k) hzW] at h0
+  -- rewrite `s` components into `holoFn σ` via `shrinkGerm_holoFn` and the transition identity.
+  rw [show 𝔇.coverTransition (i, j, k).1 (i, j, k).2.1 z = (chartAt (H := ℂ) (𝔇.center j)) y from
+    𝔇.coverTransition_chart_shrink i j hyi hyj] at h0
+  rw [← 𝔇.shrinkGerm_holoFn s i k ⟨hyi, hyk⟩,
+    ← 𝔇.shrinkGerm_holoFn s i j ⟨hyi, hyj⟩, ← 𝔇.shrinkGerm_holoFn s j k ⟨hyj, hyk⟩] at h0
+  linear_combination -h0
+
+/-- `holoFn σ_{ii} y = 0` on `V_i` (diagonal vanishing).  From the cocycle relation with `j = k = i`:
+`holoFn σ_{ii} = holoFn σ_{ii} + holoFn σ_{ii}`. -/
+theorem shrinkGerm_diag_eq_zero (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0)
+    (i : 𝔇.ι) {y : X} (hy : y ∈ (𝔇.shrinkOpens i : Opens X)) :
+    holoFn (𝔇.shrinkGerm s i i).2 y = 0 := by
+  have h := 𝔇.shrinkGerm_cocycle_add s hs i i i (y := y) ⟨⟨hy, hy⟩, hy⟩
+  linear_combination -h
+
 end ChartDiskCover
 
 end Jacobians.Dolbeault
