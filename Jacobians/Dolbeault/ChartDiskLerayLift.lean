@@ -607,6 +607,82 @@ theorem etaFn_chartA_analyticOn (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Mod
     simp only [hW, Set.mem_preimage, φa.left_inv hysrc]; exact hyV⟩
   exact (hDiffOn.analyticOnNhd hWopen (φa y) hwW).analyticWithinAt
 
+/-- `‖holoFn σ_{ac} x‖ ≤ ‖s_{ac}‖` on `V_a ∩ V_c` (the germ-section value is `s.toFun∘φ_a`, bounded by
+the `BddHol` norm). -/
+theorem norm_shrinkGerm_holoFn_le (s : 𝔇.overlapData.Cshr) (a c : 𝔇.ι) {x : X}
+    (hx : x ∈ (𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens c : Opens X)) :
+    ‖holoFn (𝔇.shrinkGerm s a c).2 x‖ ≤ ‖s (a, c)‖ := by
+  rw [𝔇.shrinkGerm_holoFn s a c hx]
+  exact (s (a, c)).norm_toFun_le (𝔇.chart_mem_Wov_of_shrinkInter a c hx)
+
+/-- `G_a` is bounded by `∑_c ‖s_{ac}‖` on `V_a`. -/
+theorem norm_globalPrim_le (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) {x : X}
+    (hxa : x ∈ (𝔇.shrinkOpens a : Opens X)) :
+    ‖𝔇.globalPrim s a x‖ ≤ ∑ c, ‖s (a, c)‖ := by
+  rw [globalPrim_apply]
+  refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun c _ => ?_)
+  by_cases hb : x ∈ tsupport (𝔇.shrinkPoU c)
+  · have hxc : x ∈ (𝔇.shrinkOpens c : Opens X) := 𝔇.shrinkPoU_tsupport_subset c hb
+    rw [norm_mul]
+    refine (mul_le_of_le_one_left (norm_nonneg _) ?_).trans (𝔇.norm_shrinkGerm_holoFn_le s a c ⟨hxa, hxc⟩)
+    -- `‖ρ̃_c x‖ = |ρ_c x| ≤ 1` (nonneg + `∑ρ = 1`).
+    show ‖((𝔇.shrinkPoU c x : ℝ) : ℂ)‖ ≤ 1
+    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ((𝔇.shrinkPoU).nonneg c x)]
+    calc (𝔇.shrinkPoU c x : ℝ) ≤ ∑ d, 𝔇.shrinkPoU d x :=
+          Finset.single_le_sum (fun d _ => (𝔇.shrinkPoU).nonneg d x) (Finset.mem_univ c)
+      _ = 1 := 𝔇.sum_shrinkPoU_eq_one x
+  · rw [𝔇.shrinkRhoC_eq_zero_of_notMem c hb, zero_mul, norm_zero]
+    exact norm_nonneg _
+
+/-- `primVal s a (φ_a.symm z) = planarPrimitive a ω̂ z` for `z ∈ φ_a.target` (chart round-trip). -/
+theorem primVal_chartSymm (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) {z : ℂ}
+    (hz : z ∈ (chartAt (H := ℂ) (𝔇.center a)).target) :
+    𝔇.primVal s a ((chartAt (H := ℂ) (𝔇.center a)).symm z)
+      = 𝔇.planarPrimitive a (𝔇.glueForm s) z := by
+  show 𝔇.planarPrimitive a (𝔇.glueForm s)
+      ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center a)) ((chartAt (H := ℂ) (𝔇.center a)).symm z)) = _
+  rw [show (extChartAt 𝓘(ℝ, ℂ) (𝔇.center a) : X → ℂ) = (chartAt (H := ℂ) (𝔇.center a) : X → ℂ) from rfl,
+    (chartAt (H := ℂ) (𝔇.center a)).right_inv hz]
+
+/-- **`η_a` chart-`a`-read is bounded on `Wov (a,a)`**: `‖planarPrimitive a ω̂ z‖` is bounded on the
+compact `closure (Wov (a,a))` (`planarPrimitive` is globally continuous), and `‖G_a‖ ≤ ∑‖s_{a·}‖`. -/
+theorem etaFn_chartA_bounded (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) :
+    ∃ C, ∀ z ∈ 𝔇.Wov (a, a),
+      ‖(𝔇.etaFn s a ∘ (chartAt (H := ℂ) (𝔇.center a)).symm) z‖ ≤ C := by
+  obtain ⟨M, hM⟩ := (𝔇.isCompact_closure_Wov (a, a)).exists_bound_of_continuousOn
+    (f := 𝔇.planarPrimitive a (𝔇.glueForm s))
+    (𝔇.contDiff_planarPrimitive a (𝔇.glueForm s)).continuous.continuousOn
+  refine ⟨M + ∑ c, ‖s (a, c)‖, fun z hz => ?_⟩
+  obtain ⟨y, hyVV, rfl⟩ := hz
+  have hyV : y ∈ ((𝔇.shrinkOpens a : Opens X) : Set X) := hyVV.1
+  have hysrc : y ∈ (chartAt (H := ℂ) (𝔇.center a)).source := 𝔇.shrinkOpens_subset_source a hyV
+  have htgt : (chartAt (H := ℂ) (𝔇.center a)) y ∈ (chartAt (H := ℂ) (𝔇.center a)).target :=
+    (chartAt (H := ℂ) (𝔇.center a)).map_source hysrc
+  -- value: `η_a∘φa.symm (φa y) = planarPrimitive a ω̂ (φa y) − G_a y`.
+  have hval : (𝔇.etaFn s a ∘ (chartAt (H := ℂ) (𝔇.center a)).symm) ((chartAt (H := ℂ) (𝔇.center a)) y)
+      = 𝔇.planarPrimitive a (𝔇.glueForm s) ((chartAt (H := ℂ) (𝔇.center a)) y) - 𝔇.globalPrim s a y := by
+    simp only [Function.comp_apply, etaFn, (chartAt (H := ℂ) (𝔇.center a)).left_inv hysrc]
+    -- `primVal s a y = planarPrimitive a ω̂ (extChartAt(center a) y) = planarPrimitive a ω̂ (φa y)`.
+    rfl
+  rw [hval]
+  refine (norm_sub_le _ _).trans (add_le_add ?_ (𝔇.norm_globalPrim_le s a hyV))
+  exact hM _ (subset_closure ⟨y, hyVV, rfl⟩)
+
+/-- **The holomorphic corrector `η_a ∈ BddHol (Wov (a,a))`** (`C0Holo`'s `a`-component). -/
+noncomputable def etaBddHol (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a : 𝔇.ι) :
+    BddHol (𝔇.Wov (a, a)) :=
+  BddHol.ofAnalyticOn (𝔇.etaFn s a ∘ (chartAt (H := ℂ) (𝔇.center a)).symm)
+    (𝔇.etaFn_chartA_analyticOn s hs a) (𝔇.etaFn_chartA_bounded s a)
+
+theorem etaBddHol_toFun_of_mem (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a : 𝔇.ι)
+    {z : ℂ} (hz : z ∈ 𝔇.Wov (a, a)) :
+    (𝔇.etaBddHol s hs a).toFun z = 𝔇.etaFn s a ((chartAt (H := ℂ) (𝔇.center a)).symm z) :=
+  BddHol.ofAnalyticOn_toFun_of_mem _ _ _ hz
+
+/-- `η : C0Holo` — the holomorphic 0-cochain. -/
+noncomputable def etaCochain (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) : 𝔇.C0Holo :=
+  fun a => 𝔇.etaBddHol s hs a
+
 end ChartDiskCover
 
 end Jacobians.Dolbeault
