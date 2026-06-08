@@ -25,7 +25,10 @@
   standalone so the final `exists_cechModel` assembly (cochain map + δ-complex + `leray` + comparison)
   can consume them.
 -/
-import Jacobians.Dolbeault.CechFinitenessWiring
+-- Only the model TYPES (`DiskOverlapData`) are needed here, so we import `CechModelBase` (not
+-- `CechFinitenessWiring`); this keeps the `CechFinitenessWiring → CechFinitenessDtwist → … →
+-- CechModelGeometry` chain acyclic.
+import Jacobians.Dolbeault.CechModelBase
 import Jacobians.Montel.Cover
 
 open scoped Manifold ContDiff Topology

@@ -24,6 +24,7 @@
   NO `sorry` anywhere: everything not sorry-free is a hypothesis predicate or written prose.
 -/
 import Jacobians.Dolbeault.CechDiskAcyclicAssembly
+import Jacobians.Dolbeault.CechDiskAcyclicProof
 import Jacobians.Dolbeault.DiskAcyclicCore
 import Jacobians.Dolbeault.HoloRep
 import Jacobians.Dolbeault.DolbeaultComparison
@@ -237,11 +238,45 @@ noncomputable def openUnionRhoC (𝔇 : SharedChartCover X) (i : 𝔇.ι) :
     ↥(openUnionU 𝔇) → ℂ :=
   ofRealCM.comp (coverOpenUnionPoU 𝔇 i)
 
-/-- The open-union PoU is smooth as a complex-valued function on the open union itself. -/
-theorem contMDiff_openUnionRhoC (𝔇 : SharedChartCover X) (i : 𝔇.ι) :
-    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (openUnionRhoC 𝔇 i) := by
-  simpa [openUnionRhoC] using
-    (ofRealCM.contMDiff.comp (coverOpenUnionPoU 𝔇 i).contMDiff)
+/-- The image of the open union in the shared chart. -/
+noncomputable def openUnionChartImage (𝔇 : SharedChartCover X) : Set ℂ :=
+  (chartAt (H := ℂ) 𝔇.center) '' ((openUnionU 𝔇 : Opens X) : Set X)
+
+/-- The chart-read open-union PoU function in the shared chart, extended by `0` away from the chart
+image of the open union. -/
+noncomputable def openUnionRhoHat (𝔇 : SharedChartCover X) (i : 𝔇.ι) : ℂ → ℂ :=
+  by
+    classical
+    exact fun z => if hz : z ∈ openUnionChartImage 𝔇 then
+    openUnionRhoC 𝔇 i
+      ⟨(chartAt (H := ℂ) 𝔇.center).symm z,
+        by
+          rcases hz with ⟨x, hxU, hxz⟩
+          have hsrc : x ∈ (chartAt (H := ℂ) 𝔇.center).source := by
+            rcases Set.mem_iUnion.mp hxU with ⟨j, hxj⟩
+            exact 𝔇.subset_source j hxj
+          have hsymm : (chartAt (H := ℂ) 𝔇.center).symm z = x := by
+            simpa [hxz] using (chartAt (H := ℂ) 𝔇.center).left_inv hsrc
+          subst hsymm
+          exact hxU⟩
+  else 0
+
+/-- In the chart image of the open union, the chart-read open-union PoU functions sum to `1`. -/
+theorem sum_openUnionRhoHat_eq_one (𝔇 : SharedChartCover X) {z : ℂ}
+    (hz : z ∈ openUnionChartImage 𝔇) :
+    ∑ i, openUnionRhoHat 𝔇 i z = 1 := by
+  rcases hz with ⟨x, hxU, hxz⟩
+  have hsrc : x ∈ (chartAt (H := ℂ) 𝔇.center).source := by
+    rcases Set.mem_iUnion.mp hxU with ⟨j, hxj⟩
+    exact 𝔇.subset_source j hxj
+  have hsymm : (chartAt (H := ℂ) 𝔇.center).symm z = x := by
+    simpa [hxz] using (chartAt (H := ℂ) 𝔇.center).left_inv hsrc
+  have hzimg : z ∈ openUnionChartImage 𝔇 := ⟨x, hxU, hxz⟩
+  have hterm : ∀ i, openUnionRhoHat 𝔇 i z = openUnionRhoC 𝔇 i ⟨x, hxU⟩ := by
+    intro i
+    simp [openUnionRhoHat, hzimg, hsymm]
+  have hsum := sum_coverOpenUnionRhoC_eq_one (𝔇 := 𝔇) (x := ⟨x, hxU⟩)
+  simpa [hterm] using hsum
 
 /-- `openUnionRhoC 𝔇 i x = 0` outside the support of the `i`-th open-union PoU function. -/
 theorem openUnionRhoC_eq_zero_of_notMem (𝔇 : SharedChartCover X) (i : 𝔇.ι)
@@ -355,8 +390,10 @@ theorem dbarL_eq_zero_of_notMem_tsupport (u : SmoothCFunctions X) {x : X}
     exact mfderiv_const
   rw [hmf, map_zero]
 
-/-- `∂̄ρ_k x = 0` for `x ∉ tsupport ρ_k` — so `∂̄ρ_k` is supported in `U_k` (`ρ_k` subordinate). -/
-theorem dbarRho_eq_zero_of_notMem (𝔇 : SharedChartCover X) (k : 𝔇.ι) {x : X}
+/-- `∂̄ρ_k x = 0` for `x ∉ tsupport ρ_k` — so `∂̄ρ_k` is supported in `U_k` (`ρ_k` subordinate).
+(`_shared`: the `SharedChartCover` analogue of `DolbeaultComparisonInverse.dbarRho_eq_zero_of_notMem`
+for `ChartDiskCover`; renamed to avoid the same-name clash once both files are co-imported.) -/
+theorem dbarRho_eq_zero_of_notMem_shared (𝔇 : SharedChartCover X) (k : 𝔇.ι) {x : X}
     (hx : x ∉ tsupport (coverPoU 𝔇 k)) : (dbarRho 𝔇 k) x = 0 := by
   simpa [dbarRho] using dbarL_eq_zero_of_notMem_tsupport (rhoC 𝔇 k)
     (fun hc => hx (by
@@ -432,7 +469,7 @@ noncomputable def chartTerm (𝔇 : SharedChartCover X)
         filter_upwards [(isClosed_tsupport (coverPoU 𝔇 k)).isOpen_compl.mem_nhds hbk] with x hx
         have hV : (rhoC 𝔇 j x * holoFn (cocycleComp_mem 𝔇.toFiniteFamily s j k) x) •
             (dbarRho 𝔇 k x) = 0 := by
-          rw [dbarRho_eq_zero_of_notMem 𝔇 k hx]; module
+          rw [dbarRho_eq_zero_of_notMem_shared 𝔇 k hx]; module
         exact congrArg (Bundle.TotalSpace.mk x) hV
     · refine ContMDiffAt.congr_of_eventuallyEq (Bundle.contMDiffAt_zeroSection ℝ
         (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x)) ?_
@@ -991,14 +1028,35 @@ theorem hasChartAnalyticCorrectors_of_hasGluedDbarDatum (𝔇 : SharedChartCover
     have hcd := coverPrim_diff 𝔇 s i j hz
     linear_combination hcd
 
+/-- **Holomorphic correctors from the glued `∂̄`-datum.**  This packages the §5 ball solve in the
+direct function-level shape: the solved chart-analytic correctors restrict to honest holomorphic
+sections on each cover set. -/
+theorem hasHoloCorrectors_of_hasGluedDbarDatum (𝔇 : SharedChartCover X)
+    (H : HasGluedDbarDatum 𝔇) : HasHoloCorrectors 𝔇.toFiniteFamily :=
+  hasHoloCorrectors_of_chartAnalytic 𝔇.toFiniteFamily
+    (hasChartAnalyticCorrectors_of_hasGluedDbarDatum 𝔇 H)
+
+/-- **Function-level disk acyclicity from the glued `∂̄`-datum.**  This is the exact
+`FunctionDiskAcyclic` shape consumed by the refinement API once the local glued datum is available. -/
+theorem functionDiskAcyclic_of_hasGluedDbarDatum (𝔇 : SharedChartCover X)
+    (H : HasGluedDbarDatum 𝔇) : FunctionDiskAcyclic 𝔇.toFiniteFamily (0 : Divisor X) :=
+  functionDiskAcyclic_of_hasHoloCorrectors 𝔇.toFiniteFamily
+    (hasHoloCorrectors_of_hasGluedDbarDatum 𝔇 H)
+
+/-- **Germ-level disk acyclicity from the glued `∂̄`-datum.** -/
+theorem isDiskAcyclic_of_hasGluedDbarDatum (𝔇 : SharedChartCover X)
+    (H : HasGluedDbarDatum 𝔇) : IsDiskAcyclic 𝔇.toFiniteFamily (0 : Divisor X) :=
+  isDiskAcyclic_of_funcLevel 𝔇.toFiniteFamily (0 : Divisor X)
+    (functionDiskAcyclic_of_hasGluedDbarDatum 𝔇 H)
+
 /-- **`H¹(disk, 𝒪) = 0` for a shared-chart disk cover, from the glued `∂̄`-datum (sorry-free).**  The
 end-to-end germ-level collapse modulo the single remaining globalization obligation
 `HasGluedDbarDatum`: the §0–§5 discharge produces `HasChartAnalyticCorrectors`, and the imported
 `cechH1_subsingleton_of_chartAnalyticCorrectors` collapses every class of `cechH1 0`. -/
 theorem cechH1_subsingleton_of_hasGluedDbarDatum (𝔇 : SharedChartCover X)
     (H : HasGluedDbarDatum 𝔇) (q : 𝔇.toFiniteFamily.cechH1 (0 : Divisor X)) : q = 0 :=
-  cechH1_subsingleton_of_chartAnalyticCorrectors 𝔇.toFiniteFamily
-    (hasChartAnalyticCorrectors_of_hasGluedDbarDatum 𝔇 H) q
+  cechH1_subsingleton_of_isDiskAcyclic 𝔇.toFiniteFamily (0 : Divisor X)
+    (isDiskAcyclic_of_hasGluedDbarDatum 𝔇 H) q
 
 end Jacobians.Dolbeault
 

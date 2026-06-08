@@ -26,7 +26,10 @@
   (the one-point `Kov` keeps the shrinking side finite-dimensional). It is NOT a replacement for the
   honest manifold/Čech assembly.
 -/
-import Jacobians.Dolbeault.CechFinitenessWiring
+-- Only the model TYPES / abstract spine (`DiskOverlapData`, `Coboundaries`, `supH1`) are needed
+-- here, so we import `CechModelBase` (not `CechFinitenessWiring`); this is what keeps
+-- `CechFinitenessWiring → CechFinitenessDtwist → … → CechModelArtificial` acyclic.
+import Jacobians.Dolbeault.CechModelBase
 
 open Jacobians.Dolbeault
 open BoundedContinuousFunction

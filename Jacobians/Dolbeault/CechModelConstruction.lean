@@ -34,7 +34,13 @@
 
   All declarations here are sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`.
 -/
-import Jacobians.Dolbeault.CechFinitenessWiring
+-- Only the model TYPES / abstract spine (`DiskOverlapData`, `Coboundaries`, `supH1`,
+-- `exists_cechModel_of_subsingleton`, `trivialCoboundaries`, `DiskOverlapData.empty`) are needed
+-- here, so we import `CechModelBase` rather than `CechFinitenessWiring`.  This also keeps
+-- `DolbeaultComparisonInverse` (pulled in by the now-`CechFinitenessDtwist`-importing
+-- `CechFinitenessWiring`) out of this file's import closure, avoiding the ported-twin name
+-- collisions with `CechFinitenessBallSolve` (imported below).
+import Jacobians.Dolbeault.CechModelBase
 import Jacobians.Dolbeault.CechModelDifferential
 import Jacobians.Dolbeault.GluedDbarDatum
 import Jacobians.Dolbeault.ChartCoverDbarGlue
