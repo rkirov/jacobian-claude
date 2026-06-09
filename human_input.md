@@ -2132,3 +2132,32 @@ with the global holomorphic `ω₀` (not `ω₀·g`). No custom axiom, no sorry,
 is a genuine TRUE existential (the only gap), not a disguised `False`. Gate A is NOT yet fully closed: it
 rests on the single, honest, mathematically-true `ExistsAdaptedF` (= Miranda "choose any nonconstant f" +
 generic position; needs RR-jets or the FibreTrace ramified-fibre refactor).
+
+---
+
+## 2026-06-09 — Forster §17.4 `CanonicalForm17Data` FULLY INSTANTIATED (ω₀ = df, K = div ω₀), sorry-free + axiom-clean
+
+(Separate thread from Gate A / `hbnd`; did NOT touch the Gate A trace files.)
+
+`Jacobians/Dolbeault/CanonicalFormDifferential.lean` (NEW): `nonempty_canonicalForm17Data : Nonempty (CanonicalForm17Data X)`,
+making `CanonicalFormIso`'s §17.4 isomorphism `omega17Equiv : L(D+K) ≃ₗ[ℂ] Ω_D` and `lDim K = genus X`
+**unconditional** (previously gated on a `CanonicalForm17Data` instance). EVERYTHING axiom-clean
+(`[propext, Classical.choice, Quot.sound]`), NO sorry, NO false/junk field.
+
+The construction (Forster GTM 81 §17.4, `ω = df`):
+- `ω₀ = df` = `mfderiv 𝓘(ℂ) 𝓘(ℂ) f` of the nonconstant `f` from `exists_nonconstant_meromorphic` (genuine
+  differential; junk-0 at poles is invisible to the germ object). Sanity: `f=z ⟹ df=dz`, `K=0`.
+- Meromorphy: `formCoeff(df)` germ-equals `(f∘chart⁻¹)'` (`MeromorphicAt.deriv`), via the keystone
+  `mfderiv_apply_symmL_eq_deriv` (mfderiv paired with the frame `symmL 1` = chart-pullback derivative).
+- `df ≠ 0` (SOUNDNESS-CRITICAL): no-pole reduction `deriv_eventually_zero_meromorphicOrderAt_nonneg`
+  (Laurent: a pole order n<0 ⟹ deriv order n−1<0≠⊤) ⟹ if df=0 then f∈L(0) ⟹ repo Liouville
+  `germ_eq_const_of_mem_linearSystem_zero` ⟹ f germ-constant, contradiction. No connectedness gap.
+- `K = div(df)`: `exists_form_divisor` (1-form analog of `MeromorphicFunction.div`). Needed
+  **chart-invariance of `formOrderW`** (`formOrderW_chart_invariant`), whose crux is `symmL_frame_change`
+  (the classical `dz_y = ψ'(z)·dz` law via the mfderiv chain rule) + `formCoeff_change` (`c_z = ψ'·(c_y∘ψ)`).
+  Isolation `planar_order_zero` + `LocallyFiniteSupport` + compactness ⟹ finite support.
+
+LEAN NOTE: deduped `lSysModule` — `SerreOmega0` now imports `CanonicalFormIso` and shares its single copy
+(was a local duplicate; the new file imports both, which clashed). `SerreOmega0`/`DolbeaultLadder`/Gate A
+assemble all still build (8503 jobs green). Recurring gotcha: `mfderiv%`-display + `OfNat (TangentSpace) 1`
+break `rw` on applied-CLM-at-`1` goals — use `DFunLike.congr_fun`/`refine eq.trans ?_`/`change _ = _ * (1:ℂ)`.
