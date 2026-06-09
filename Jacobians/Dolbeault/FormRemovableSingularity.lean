@@ -35,6 +35,7 @@
   `MeromorphicAt.analyticAt` / `toMeromorphicNFAt` removable singularity.
 -/
 import Jacobians.Dolbeault.CanonicalFormIso
+import Jacobians.Montel
 
 open scoped Manifold ContDiff Topology Bundle
 open Module Filter
@@ -246,5 +247,71 @@ theorem formCoeff_eventuallyEq_repairedCoeff (α : MeromorphicOneForm X) (y : X)
     formCoeff α.toFun y =ᶠ[𝓝[≠] ((chartAt ℂ y) y)]
       toMeromorphicNFAt (formCoeff α.toFun y) ((chartAt ℂ y) y) :=
   (α.meromorphic y).eq_nhdsNE_toMeromorphicNFAt
+
+/-! ### Raw chart representative of a bare cotangent section, and its chart-transition law
+
+`rawLocalRep σ x₀ y := σ y (e_{x₀}.symmL ℂ y 1)` reads a *bare* section `σ : ∀ x, FormFiber x` in the
+`x₀`-trivialisation (the analogue of `Montel.localRep` without the smoothness bundling).  It satisfies
+`formCoeff σ x = rawLocalRep σ x ∘ (chart x).symm` and the chart-transition law
+`rawLocalRep σ x₀' y = chartTransitionFactor x₀ x₀' y · rawLocalRep σ x₀ y`, re-derived from the
+trivialisation identity `symmL_apply_chartTransitionFactor`. -/
+
+/-- The bare chart representative of a section `σ` in the `x₀`-trivialisation. -/
+noncomputable def rawLocalRep (σ : ∀ x, FormFiber X x) (x₀ y : X) : ℂ :=
+  σ y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)
+
+theorem formCoeff_eq_rawLocalRep (σ : ∀ x, FormFiber X x) (x : X) (z : ℂ) :
+    formCoeff σ x z = rawLocalRep σ x ((chartAt ℂ x).symm z) := rfl
+
+/-- `rawLocalRep σ y y = formCoeff σ y (chart y y)`: the chart-centre value. -/
+theorem rawLocalRep_self_eq_formCoeff (σ : ∀ x, FormFiber X x) (y : X) :
+    rawLocalRep σ y y = formCoeff σ y ((chartAt ℂ y) y) := by
+  rw [formCoeff_eq_rawLocalRep, (chartAt ℂ y).left_inv (mem_chart_source ℂ y)]
+
+/-- **Chart-transition for `rawLocalRep`** (raw analogue of `Montel.localRep_chart_transition`):
+`rawLocalRep σ x₀' y = chartTransitionFactor x₀ x₀' y · rawLocalRep σ x₀ y` for `y` in both base
+sets.  The proof reuses the trivialisation identity `symmL_apply_chartTransitionFactor`. -/
+theorem rawLocalRep_chart_transition (σ : ∀ x, FormFiber X x) (x₀ x₀' y : X)
+    (hy₀' : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀').baseSet)
+    (hy₀ : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet) :
+    rawLocalRep σ x₀' y = chartTransitionFactor (X := X) x₀ x₀' y * rawLocalRep σ x₀ y := by
+  unfold rawLocalRep
+  rw [← symmL_apply_chartTransitionFactor x₀ x₀' y hy₀' hy₀]
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+  set c := chartTransitionFactor (X := X) x₀ x₀' y with hc_def
+  have h : e.symmL ℂ y c = c • e.symmL ℂ y 1 := by
+    have : (c : ℂ) = c • (1 : ℂ) := by rw [smul_eq_mul, mul_one]
+    conv_lhs => rw [this]
+    exact map_smul (e.symmL ℂ y) c 1
+  rw [h, map_smul, smul_eq_mul]
+
+/-- **Self-frame reconstruction** (raw analogue of `Montel.toFun_eq_localRep_smul` at `x₀ = y`):
+`σ y = rawLocalRep σ y y • φ_y` where `φ_y = frameCovector y`.  In particular
+`σ y (e_{x₀}.symmL ℂ y 1) = rawLocalRep σ y y · φ_y (e_{x₀}.symmL ℂ y 1)`. -/
+theorem section_eq_rawLocalRep_smul_frame (σ : ∀ x, FormFiber X x) (y : X) :
+    σ y = (rawLocalRep σ y y) • frameCovector y := by
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) y with he
+  have hy : y ∈ e.baseSet := by
+    rw [TangentBundle.trivializationAt_baseSet]; exact mem_chart_source ℂ y
+  set φ := e.continuousLinearEquivAt ℂ y hy with hφ
+  apply ContinuousLinearMap.ext
+  intro v
+  change σ y v = (rawLocalRep σ y y) • (φ v)
+  have hv_eq : v = (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) (φ v) :=
+    (ContinuousLinearEquiv.symm_apply_apply φ v).symm
+  have hφv_smul : (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) (φ v) =
+      (φ v) • ((φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) 1) := by
+    have h1 : (φ v : ℂ) = (φ v) • (1 : ℂ) := by rw [smul_eq_mul, mul_one]
+    conv_lhs => rw [h1]
+    exact (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y).map_smul (φ v) 1
+  have h_symmL : (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) = e.symmL ℂ y :=
+    Bundle.Trivialization.symm_continuousLinearEquivAt_eq' e hy
+  calc σ y v
+      = σ y ((φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) (φ v)) := by rw [← hv_eq]
+    _ = σ y ((φ v) • ((φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) 1)) := by rw [hφv_smul]
+    _ = (φ v) • (σ y ((φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) 1)) := (σ y).map_smul (φ v) _
+    _ = (φ v) • (σ y (e.symmL ℂ y 1)) := by rw [h_symmL]
+    _ = (φ v) • (rawLocalRep σ y y) := rfl
+    _ = (rawLocalRep σ y y) • (φ v) := by rw [smul_eq_mul, smul_eq_mul]; ring
 
 end Jacobians.Dolbeault
