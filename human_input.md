@@ -2344,3 +2344,55 @@ The atom is the concrete keystone win and is DONE+committed+axiom-clean. The rem
 large (multi-file, parallel ramified structure), matching the localization's "genuine multi-thousand-line
 refactor" verdict. The cheap analytic/algebraic core is no longer the blocker; the blocker is now the
 manifold normal-form plumbing (the `z=wᵐ` chart model + ramified fibre structure), NOT a Mathlib gap.
+
+---
+
+## 2026-06-09 — Removable-singularity reverse bound: `hKgenus` made UNCONDITIONAL (Forster §17.4)
+
+**Context.** Separate thread from the Gate-A `hoff_cs`/ramified work above (I did NOT touch the
+`SerreResidue*` files). Goal: discharge the `SerreDualityData.hKgenus : lDim K = genus X` input by
+proving Gate C's isolated removable-singularity reverse bound `omegaDim 0 ≤ genus X` + finiteness of
+`omegaDModule 0`, making `CanonicalForm17Data.hKgenus` (which previously TOOK these as hypotheses)
+unconditional.
+
+**DONE — fully sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`.** New file
+`Jacobians/Dolbeault/FormRemovableSingularity.lean` (only file I created/edited). Headlines:
+- `exists_canonicalForm17Data_hKgenus : ∃ data : CanonicalForm17Data X, lDim data.K = genus X` —
+  the unconditional Serre-duality input.
+- `omegaDim_zero_eq_genus : omegaDim 0 = genus X` (both directions of Forster §17.4 at `D=0` now proven).
+- `instance : FiniteDimensional ℂ (omegaDModule 0)` (transported from `HolomorphicOneForms`).
+- `holOmega0Equiv : HolomorphicOneForms X ≃ₗ[ℂ] omegaDModule 0` (the §17.4 iso, both bijectivity halves).
+
+**The math (the reverse of `holToMeroₗ`).** A meromorphic 1-form `α ∈ omegaD 0` (order ≥0 at every
+chart centre) is holomorphic modulo germ-junk. Built the genuine reverse map by:
+1. **Section-assembly lemma** `holOfLocalRepAnalyticAt` — extracted/generalised the smooth-from-analytic
+   half of the Montel completeness reconstruction (`Montel.contMDiffOn_totalSpaceMk_L_inner`): a bare
+   cotangent section whose chart pullback is `AnalyticAt` each point's OWN-chart centre IS a
+   `HolomorphicOneForms X`. (Local-at-centre hypothesis ⇒ no chart-transition needed for assembly.)
+2. **Junk-is-isolated crux** `eventually_repVal_eq` — the genuinely-new analytic content: for `w` in a
+   PUNCTURED nbhd of `x₀`, `α.toFun w` is pinned by `α`'s meromorphy at `x₀` (raw chart-transition law
+   `rawLocalRep_chart_transition` + self-frame `section_eq_rawLocalRep_smul_frame` + continuity of the
+   transition factor `continuousOn_chartTransitionFactor`), so `formCoeff α.toFun w` is continuous, hence
+   (via `MeromorphicAt.analyticAt`) analytic, at its own centre — NO junk off centres. So the per-point
+   normal-form repair `repVal α w` equals the actual value `rawLocalRep α.toFun w w`.
+3. **Repaired section** `repairedSection α y := repVal α y • frameCovector y`; its chart pullback equals
+   the analytic normal-form repair of `formCoeff α.toFun x₀` near every centre
+   (`analyticAt_pullback_repairedSection`), so `repairedHOF : HolomorphicOneForms X` is genuine.
+4. **Surjectivity** of `holToOmega0Module` (`holToMero (repairedHOF) − α` is germ-zero everywhere) +
+   the already-proven injectivity ⇒ the `LinearEquiv` ⇒ finiteness + the bound.
+
+**Lean gotchas worth remembering (for the next agent):**
+- The repaired-section term embeds the whole analytic proof; any `rfl`/defeq through it caused
+  KERNEL `whnf` timeouts in the §17.4 wiring. Fix that WORKED: package the germ-equality as an
+  EXISTENCE lemma (`exists_holomorphic_germEq_of_mem_omegaD_zero`) so the big term is hidden behind an
+  `obtain`; use rewrite-lemmas (`holToMero_toFun`, `repairedHOF_toFun`, `MeromorphicOneForm.sub_toFun`,
+  `map_sub`) instead of `rfl`, and `attribute [local irreducible]` on the repair defs. (Bumping
+  `maxHeartbeats` only helped one decl; the existence-packaging was the real fix.)
+- Reused (do NOT re-derive): `CechH0.analyticAt_chart_change`/`transition_analyticAt` exist but the
+  CONTINUITY route (via `continuousOn_chartTransitionFactor`) was lighter and sufficed.
+  `ResidueChangeOfVariables.exists_analyticAt_eventuallyEq_of_meromorphicOrderAt_nonneg` +
+  `MeromorphicNFRepair` helpers are the order≥0⇒analytic-repair toolkit.
+
+**Remaining.** None for this input — `hKgenus` is unconditional. `SerreDualityData` still bundles the
+other Serre-wall fields (the make-or-break); wiring my headline into that structure's `hKgenus` field is
+trivial when the rest of `SerreDualityData` is assembled.
