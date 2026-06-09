@@ -385,6 +385,55 @@ theorem residueSum_eq_zero_of_realCoverCenters {ω₀ : HolomorphicOneForms X} {
     A.hfullInf_inj A.xsInf_po A.hpoInf_inj A.hpoInf_mem A.hpoInf_surj A.hpole_image_inf
     A.hnonpole_inf_an
 
+/-- **Non-vacuity of `RealCoverRamifiedCenters` (no finite pole-value centres).**  When there are no
+finite pole-value centres (`m = 0` — e.g. `α` holomorphic except possibly at `∞`), the per-centre data
+is vacuously inhabited.  This confirms `RealCoverRamifiedCenters` is **not** a disguised `False`; the
+genuinely-ramified non-vacuity (a single `m = 2` centre) rides on the `√(z − c)` slit-branch witness
+`ramifiedSheetData_sqrt` (`SerreResidueRamifiedNormalForm.lean`), which inhabits one `RamifiedSheetData`
+at a ramification multiplicity. -/
+theorem realCoverRamifiedCenters_empty (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) (poles : Finset X) :
+    RealCoverRamifiedCenters ω₀ g f hdiv poles (m := 0) Fin.elim0 :=
+  ⟨fun i => i.elim0, fun i => i.elim0, fun i => i.elim0, fun i => i.elim0⟩
+
+/-! ## The precise remaining real-cover obligation (the Forster §5 sheet-tracking wall)
+
+`RealCoverRamifiedCenters` is the per-centre `RamifiedSheetData` for the canonical selection.  Its hard
+fields, isolated:
+
+* **`hvct_mero`** — now *reduced* to a finite-pole-order bound `(z − cs i)^N · valueChartTrace → 0` via
+  `hvct_mero_of_pow_bound` (using the already-available off-centre `hreg`).  This is the meromorphy side
+  (Miranda (3.1)), and is the strictly-easier obligation.
+* **`hgeom_slit`** — the genuine geometric wall: on a slit accumulating at `cs i`, the geometric trace
+  `valueChartTrace` (the full-fibre sum) equals the `m`-sheet sum `∑_{j<m} chartIntegrand(w_p + ζʲ w₀)·
+  (d/dz)[…]` at the ramification preimage `p`.  This is the **Forster §5 `z = wᵐ` local normal form +
+  fibre-cluster splitting** — the ramified analogue of `valueChartTrace_eq_sphereSheetFibreTrace`
+  (`FormTraceBundleBridge.lean`), a genuine multi-hundred-line branch-aware sheet build not yet in the
+  repo.
+
+We record the exact target as a named predicate.  It is the *single* genuinely-remaining analytic input
+to the `hoff_cs`-free Gate-A route; everything else (the residue/algebra atom, the identity-theorem
+globalisation, the meromorphy reduction, the off-centre/∞ machinery, the wiring) is done. -/
+
+/-- **The precise remaining per-centre geometric obligation** (the Forster §5 sheet-tracking wall).  At a
+finite pole-value centre `c` with ramification preimage `p` of multiplicity `m`, a primitive `m`-th root
+`ζ`, and the slit `S` carrying the `m`-th-root branch `w₀`, the two hard `RamifiedSheetData` facts:
+
+* a **finite-pole-order bound** `(z − c)^N · valueChartTrace ω₀ f Φ → 0` (feeds `hvct_mero` via
+  `hvct_mero_of_pow_bound`);
+* the **geometric `m`-sheet identification on the slit** `hgeom_slit` (Forster §5 `z = wᵐ`).
+
+Stated as the precise minimal residual — a *true* statement (Miranda (3.1) + Forster §5), the ramified
+analogue of `valueChartTrace_eq_sphereSheetFibreTrace`, to be discharged by the local normal-form +
+fibre-cluster build.  **Not** asserted as a free lemma; it is the named target for the remaining work. -/
+def RealCoverSlitGeometry (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
+    (Φ : (b : ℂ) → FibreRegularData g f b) (c : ℂ) (p : X) (m : ℕ) (ζ : ℂ) (S : Set ℂ)
+    (w₀ : ℂ → ℂ) : Prop :=
+  (∃ N : ℕ, Tendsto (fun z => (z - c) ^ N * valueChartTrace ω₀ f Φ z) (𝓝[≠] c) (𝓝 0)) ∧
+  (∀ z ∈ S, valueChartTrace ω₀ f Φ z = ∑ j ∈ Finset.range m,
+    chartIntegrand ω₀ g p ((chartAt ℂ p) p + ζ ^ j * w₀ z)
+      * deriv (fun ζz => (chartAt ℂ p) p + ζ ^ j * w₀ ζz) z)
+
 /-! ## The simple-`∞` reduction skeleton (item #2/#3, the genericity)
 
 Miranda §VIII.3 (p. 254): for the residue theorem it suffices to "choose *any* nonconstant `f`".  The
