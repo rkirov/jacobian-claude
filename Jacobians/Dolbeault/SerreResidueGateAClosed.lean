@@ -742,4 +742,55 @@ theorem residueTheorem_of_adaptedF (ω₀ : HolomorphicOneForms X) (g : Meromorp
     (fun b₀ hb₀br _ hb₀nbr => absurd hb₀br hb₀nbr)
     (fun b₀ hb₀br _ hb₀nbr => absurd hb₀br hb₀nbr)
 
+/-- **`residueSum` form of the adapted-cover residue theorem.**  `residueSum ω₀ g.toFun poles = 0` for a
+genuine meromorphic `g` with an adapted cover `A` — i.e. `MittagLefflerForm.res = 0`, the well-definedness
+content `Res : H¹(X,Ω) → ℂ` (Forster 17.3) rests on. -/
+theorem residueSum_of_adaptedF (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
+    (poles : Finset X) (A : AdaptedF ω₀ g poles) :
+    residueSum ω₀ g.toFun poles = 0 :=
+  residueTheorem_of_adaptedF ω₀ g poles A
+
+/-! ### The precise remaining genericity obligation `ExistsAdaptedF`
+
+The unconditional 1-form residue theorem `∑Res = 0` for `α = ω₀·g` rests, via `residueTheorem_of_adaptedF`,
+on **exactly one** remaining obligation: the existence of an adapted cover.  This is Miranda §VIII.3's
+"simply choose any nonconstant `f`" together with the standard generic-position adjustment, and it is
+mathematically TRUE (achievable, see the soundness note) but its Lean construction needs
+`MeromorphicFunction.Inv` (to form `f' = (f − a·1)⁻¹` for a generic `a`) plus the generic-position lemma
+relating `branchValues f'` and `orderAtPoint` of `f'`'s poles to `f`'s zeros — infrastructure not yet in
+the repo. -/
+
+/-- **The remaining genericity obligation.**  An adapted cover exists for `α = ω₀·g` over any finite
+`poles` off which `g`'s chart-pullback is analytic (so `poles ⊇` the actual poles of `α`).
+
+**Soundness (non-false).**  This is genuinely achievable for a general meromorphic `g`: take any
+nonconstant meromorphic function (`exists_nonconstant_meromorphic`, the Riemann inequality) and replace
+it by `f' = (f − a·1)⁻¹` for a value `a` that is *not* a critical value of `f` and is chosen so that the
+finite pole-values of `α` under `f'` avoid `f'`'s (finite) branch values.  `a` not a critical value ⟹
+`f'`'s poles (the simple zeros of `f − a`) are all SIMPLE (`hsimpleInf`); the finite "bad `a`" set
+(critical values + the finitely many `a` making a pole-value collide with a branch value) is finite, so a
+good `a` exists (Miranda p. 254 + generic position).  Hence `ExistsAdaptedF` is a TRUE existential, not a
+disguised `False`. -/
+def ExistsAdaptedF (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X) (poles : Finset X) : Prop :=
+  (∀ x : X, x ∉ poles →
+    AnalyticAt ℂ (fun z => g.toFun ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x)) →
+  Nonempty (AdaptedF ω₀ g poles)
+
+/-- **UNCONDITIONAL 1-form residue theorem `∑Res = 0`, modulo the single genericity obligation.**
+For a genuine meromorphic numerator `g` and any finite `poles` containing the poles of `α = ω₀·g`
+(`hpoles` — off `poles`, `g` is analytic), the total residue of `α` vanishes:
+
+> `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`,
+
+given `ExistsAdaptedF` (the adapted-cover genericity, the *only* remaining gap — Miranda §VIII.3's
+"choose any nonconstant `f`", mathematically true).  This is the well-definedness content underlying the
+global `Res : H¹(X,Ω) → ℂ` (Forster 17.3) → the 17.5 Serre pairing. -/
+theorem residueTheorem_general (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
+    (poles : Finset X)
+    (hpoles : ∀ x : X, x ∉ poles →
+      AnalyticAt ℂ (fun z => g.toFun ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x))
+    (hAdapt : ExistsAdaptedF ω₀ g poles) :
+    ∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0 :=
+  (hAdapt hpoles).elim (residueTheorem_of_adaptedF ω₀ g poles)
+
 end Jacobians.Dolbeault.SerreResidueTheorem
