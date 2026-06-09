@@ -237,4 +237,169 @@ noncomputable def globalTraceData_of_residueTrace
     rw [hLHS, ← hres_fin i, hTL]
   infty_eq := infty_eq
 
+/-! ## The top-level residue-level close: `SerreTraceExists` and `∑Res = 0`
+
+Combining the genuine trace (`genuineTrace_ofPatched`) with the residue-level bridge
+(`globalTraceData_of_residueTrace`), Gate A `∑Res = 0` follows from the §VIII.3 geometric inputs of
+the patched trace **plus** the two RESIDUE identities (Lemma 3.2 at the finite centres and at `∞`) —
+**never** the germ-equality `agree`/`agree_infty`. -/
+
+/-- **`SerreTraceExists` from the patched geometry + the residue identities (no germ `agree`).**  With
+`T := valueChartTracePatched ω₀ f Φ br`:
+
+* `Φ`, `cs`/`ρ`, `br`, the off-centre analyticity `hreg`/`hbnd`, `Cfin`/`hCfin_D`, junk-freeness
+  `hcont_int`, the genus-`0` `∞`-vanishing `R₀` — the inputs of the *genuine rational trace*
+  `genuineTrace_ofPatched` (`Tr_F α = L.R`, the sound prefix, no `agree`);
+* `D`/`hxs_*`, `hcenters_cs` — the pole-only fibre data + centre bookkeeping;
+* `hres_fin i : resAt T (cs i) = ∑ⱼ formFnResidue ω₀ g ((D (cs i)).xs j)` — the **finite Lemma-3.2
+  residue identity** (the honest pole-only-fibre residue reading; non-pole sheets contribute `0`);
+* `infty_eq` (here as a function of `L` through `hinfty`) — the **`∞`-residue identity**.
+
+Because `infty_eq` mentions `L.R`/`L.ρ` (the as-yet-unconstructed trace), it is supplied as
+`hinfty : ∀ L, valueChartTracePatched ω₀ f Φ br = L.R → Finset.univ.image L.a = Finset.univ.image cs →
+resAtInfty L.R L.ρ = ∑_{F a = ∞} formFnResidue ω₀ g a` — a statement about *the* genuine trace `L`.
+
+Yields `SerreTraceExists ω₀ g poles`, hence `∑Res = 0`. -/
+theorem serreTraceExists_of_residueGeometry
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (D : (p : ℂ) → FibreRegularData g f p)
+    (Cfin : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
+    (hCfin_D : ∀ i, (Cfin i).D = D (cs i))
+    (hxs_inj : ∀ p, Function.Injective (D p).xs)
+    (hxs_mem : ∀ p, ∀ i,
+      (D p).xs i ∈ poles ∧ f.toRiemannSphere ((D p).xs i) = ((p : ℂ) : RiemannSphere))
+    (hxs_surj : ∀ p, ∀ a ∈ poles, f.toRiemannSphere a = ((p : ℂ) : RiemannSphere) →
+      ∃ i, (D p).xs i = a)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (valueChartTracePatched ω₀ f Φ br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] 0] R₀)
+    (hres_fin : ∀ i, resAt (valueChartTracePatched ω₀ f Φ br) (cs i)
+      = ∑ j, formFnResidue ω₀ g ((D (cs i)).xs j))
+    (hinfty : ∀ (L : LaurentForm), valueChartTracePatched ω₀ f Φ br = L.R →
+      Finset.univ.image L.a = Finset.univ.image cs →
+      resAtInfty L.R L.ρ
+        = ∑ a ∈ poles with f.toRiemannSphere a = OnePoint.infty, formFnResidue ω₀ g a) :
+    SerreTraceExists ω₀ g poles := by
+  -- The genuine rational trace `L` with `T = L.R`.
+  obtain ⟨L, hLcenters, hTL⟩ :=
+    genuineTrace_ofPatched Φ m cs ρ hcs_ball hcs_inj br hreg hbnd D Cfin hCfin_D
+      hcont_int R₀ hR₀_an hR₀0 hR₀_eq
+  -- The residue-level `GlobalTraceData`, then `SerreTraceExists` (bridge already in
+  -- `SerreResidueTheorem`, pole set preserved by `rfl`).
+  exact serreTraceExists_of_globalTraceData
+    (globalTraceData_of_residueTrace hLcenters hTL D hxs_inj hxs_mem hxs_surj hcenters_cs
+      hres_fin (hinfty L hTL hLcenters))
+
+/-- **Gate A `∑Res = 0` from the patched geometry + the residue identities (no germ `agree`).**  The
+total residue of `α = ω₀·g` over its poles vanishes — Steps 1–4 (genuine rational trace, Lemma 3.2 at
+the residue level, the `ℂℙ¹` residue theorem, the descent) all proven; the inputs are the §VIII.3
+geometric data + the two RESIDUE identities, **never** the germ-equality `agree`/`agree_infty`. -/
+theorem residueTheorem_of_residueGeometry
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (D : (p : ℂ) → FibreRegularData g f p)
+    (Cfin : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
+    (hCfin_D : ∀ i, (Cfin i).D = D (cs i))
+    (hxs_inj : ∀ p, Function.Injective (D p).xs)
+    (hxs_mem : ∀ p, ∀ i,
+      (D p).xs i ∈ poles ∧ f.toRiemannSphere ((D p).xs i) = ((p : ℂ) : RiemannSphere))
+    (hxs_surj : ∀ p, ∀ a ∈ poles, f.toRiemannSphere a = ((p : ℂ) : RiemannSphere) →
+      ∃ i, (D p).xs i = a)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (valueChartTracePatched ω₀ f Φ br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] 0] R₀)
+    (hres_fin : ∀ i, resAt (valueChartTracePatched ω₀ f Φ br) (cs i)
+      = ∑ j, formFnResidue ω₀ g ((D (cs i)).xs j))
+    (hinfty : ∀ (L : LaurentForm), valueChartTracePatched ω₀ f Φ br = L.R →
+      Finset.univ.image L.a = Finset.univ.image cs →
+      resAtInfty L.R L.ρ
+        = ∑ a ∈ poles with f.toRiemannSphere a = OnePoint.infty, formFnResidue ω₀ g a) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueTheorem_of_traceExists ω₀ g poles
+    (serreTraceExists_of_residueGeometry Φ m cs ρ hcs_ball hcs_inj br hreg hbnd D Cfin hCfin_D
+      hxs_inj hxs_mem hxs_surj hcenters_cs hcont_int R₀ hR₀_an hR₀0 hR₀_eq hres_fin hinfty)
+
+/-! ## Non-vacuity (soundness witness): the residue identities are satisfiable
+
+The residue-level inputs `hres_fin`/`hinfty` of `serreTraceExists_of_residueGeometry` are **genuine
+(true, satisfiable)**, not a disguised `False`: for the empty pole set (the globally-holomorphic case)
+the empty selection (no centres, `br = ∅`, the zero trace `T ≡ 0`) satisfies every field — `hres_fin`
+vacuously (`m = 0`), and `hinfty` because `L.R = T = 0` (empty image) has `resAtInfty = 0 = ∑_∅`.  This
+confirms the residue-level bridge is honest — it uses no false field (in particular **not** the germ
+`agree`/`agree_infty`). -/
+
+/-- **The residue at infinity of the zero coefficient vanishes.**  `resAtInfty 0 ρ = 0` (the contour
+integral of `0`). -/
+theorem resAtInfty_eq_zero_of_zero (ρ : ℝ) : resAtInfty (fun _ => (0 : ℂ)) ρ = 0 := by
+  rw [resAtInfty]
+  simp only [circleIntegral, smul_zero, intervalIntegral.integral_zero]
+
+/-- **Non-vacuity of the residue-level bridge.**  For the empty pole set,
+`serreTraceExists_of_residueGeometry` is satisfiable via the empty fibre selection and `br = ∅` — every
+field, including the residue identities `hres_fin`/`hinfty`, holds — so `SerreTraceExists ω₀ g ∅`.
+Confirms the bridge inputs are not a disguised `False` (no germ `agree` is used). -/
+theorem serreTraceExists_of_residueGeometry_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) :
+    SerreTraceExists ω₀ g (∅ : Finset X) := by
+  -- `valueChartTracePatched … ∅ = valueChartTrace(empty) = 0` for the empty selection.
+  have hpatch0 : valueChartTracePatched ω₀ f (fun p => emptyFibreRegularData g f p) ∅
+      = fun _ => (0 : ℂ) := by
+    funext z
+    rw [valueChartTracePatched_of_not_mem ω₀ f _ _ (Finset.notMem_empty z),
+      valueChartTrace_emptySelection ω₀ f]
+  refine serreTraceExists_of_residueGeometry (g := g) (poles := (∅ : Finset X))
+    (fun p => emptyFibreRegularData g f p)
+    0 Fin.elim0 0 (fun i => i.elim0) (fun i => i.elim0) (∅ : Finset ℂ)
+    (fun w _ => by rw [valueChartTrace_emptySelection ω₀ f]; exact analyticAt_const)
+    (fun b₀ hb₀ _ => absurd hb₀ (Finset.notMem_empty b₀))
+    (fun p => emptyFibreRegularData g f p)
+    (fun i => i.elim0) (fun i => i.elim0)
+    (fun _ i => i.elim) (fun _ i => i.elim)
+    (fun _ a ha => absurd ha (Finset.notMem_empty a))
+    (by simp)
+    ?_ (fun _ => (0 : ℂ)) analyticAt_const rfl ?_
+    (fun i => i.elim0) ?_
+  · -- junk-freeness: `T − L.R = 0 − 0 = 0` is continuous (empty centres ⟹ `L.R = 0`).
+    intro L hLa _ p hp
+    have hLR0 : L.R = fun _ => (0 : ℂ) :=
+      laurentForm_R_eq_zero_of_emptyImage
+        (by rw [hLa]; exact Finset.image_eq_empty.mpr (Finset.univ_eq_empty (α := Fin 0)))
+    rw [hpatch0, hLR0]
+    have h0 : ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) = fun _ : ℂ => (0 : ℂ) := by funext z; simp
+    rw [h0]; exact continuousAt_const
+  · -- genus-`0` `∞`-vanishing: `recipCoeff (0 − 0) =ᶠ 0`.
+    intro L hLa
+    have hLR0 : L.R = fun _ => (0 : ℂ) :=
+      laurentForm_R_eq_zero_of_emptyImage
+        (by rw [hLa]; exact Finset.image_eq_empty.mpr (Finset.univ_eq_empty (α := Fin 0)))
+    rw [hpatch0, hLR0]
+    have h0 : ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) = fun _ : ℂ => (0 : ℂ) := by funext z; simp
+    rw [h0, recipCoeff_zero]
+  · -- the `∞`-residue identity: `resAtInfty L.R L.ρ = 0 = ∑_∅` (genuine empty trace `L.R = T = 0`).
+    intro L hTL _
+    have hLR0 : L.R = fun _ => (0 : ℂ) := by rw [← hTL, hpatch0]
+    rw [hLR0, resAtInfty_eq_zero_of_zero]
+    simp
+
 end Jacobians.Dolbeault.SerreResidueTheorem
