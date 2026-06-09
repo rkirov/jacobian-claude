@@ -2573,3 +2573,124 @@ greenfield descent):**
    `lDim (K−D) ≤ h1Dim D` becomes unconditional.
 The §17.9 surjectivity (HARD half) is untouched here (the `toSerreDualityData` `ι_surj` field), to be
 built from cohomological RR via `serre_surjectivity_dim_core` (later).
+
+---
+
+## 2026-06-09 — SerreResidueRealization make-or-break (Serre §17.5/17.6 wall)
+
+### Task & key architectural finding
+
+Tasked with building `SerreResidueRealization 𝔘 K` (Forster §17.5 residue pairing `ι_D : L(K−D) →
+(H¹(𝒪_D))*`, `⟨f,ξ⟩ = Res((f·ω₀)·ξ)`, + §17.6 `dz/z` non-degeneracy witness) — the make-or-break
+foundation that unblocks 17.6+17.9. Independent of the Gate-A `hcoh` trace thread
+(`SerreResidueRamifiedCenter.lean`, another agent) — did NOT touch it.
+
+**KEY SIMPLIFICATION (sound, big reuse win):** The spec suggested building a free-standing Ω-sheaf
+Čech `H¹(X,Ω)` complex (greenfield, covector-section germs). But `Filter.Germ` CANNOT germ-ify
+covector sections (the fiber `FormFiber ↥U y = TangentSpace 𝓘(ℂ) y →L[ℂ] ℂ` is a DEPENDENT type, and
+`Filter.Germ l β` needs a fixed `β`); a custom covector-germ quotient would also need the covector
+PULLBACK through the inclusion's tangent map (mfderiv along subtype inclusion) — genuinely heavy.
+
+INSTEAD, via Forster §17.4's iso `ω₀·: 𝒪_K ≅ Ω` (the PROVEN `CanonicalFormIso` layer), the Ω-sheaf
+≅ the `𝒪_K` STRUCTURE sheaf (α ↦ α/ω₀, holomorphic α ⟺ α/ω₀ has poles ≤ K = div ω₀). So
+**`H¹(X,Ω) ≅ 𝔘.cechH1 K`** — the ALREADY-BUILT structure-sheaf Čech H¹! And the cup product
+`(f·ω₀)·ξ ↦ ((f·ω₀)·ξ)/ω₀ = f·ξ` reduces to FUNCTION-germ multiplication
+`L(K−D) × cechH1 D → cechH1 K` (`MGerm` is a `Filter.Germ` CommRing, `meromorphicOrderAt_mul` gives
+order-additivity for the poles-cancel well-definedness). This reuses ALL the proven 𝒪_D Čech
+machinery and needs NO new bundle/covector work. Forster §17.4 is exactly this iso, so it is SOUND.
+
+Architecture: pairing `⟨f,ξ⟩ = Res_K(cup(f,ξ))` where cup : L(K−D)×cechH1 D → cechH1 K (germ mul) and
+Res_K : cechH1 K → ℂ is the global residue via Mittag-Leffler (`formFnResidue ω₀`, descent =
+PROVEN `res_eq_of_globalMeromorphic_diff`, Part 1 of SerreResiduePairing). The remaining HARD piece is
+the Mittag-Leffler CONNECTING map (Forster 17.2: cechH1 K class → distribution of functions) for the
+Res descent — genuinely multi-thousand-LoC.
+
+### Deliverable (maximal sound prefix, see report)
+[to be filled at end of session]
+
+---
+
+## 2026-06-09 — Gate A `hcoh` PROVEN: ramified `z=wᵐ` normal-form trace identification (`RamifiedCenterFacts.hcoh`)
+
+**Branch:** `gate-a-trace-rationality-assembly`. **Thread:** the LAST analytic obligation of Gate A
+`∑Res(α)=0` — the ramified `z=wᵐ` geometric-trace identification `RamifiedCenterFacts.hcoh` (the
+ramified analogue of `exists_planar_section`). NEW FILE `Jacobians/Dolbeault/SerreResidueRamifiedNormalForm.lean`
+(588 LoC, builds STANDALONE green = 8516 jobs, every decl axiom-clean `[propext, Classical.choice,
+Quot.sound]`, ZERO sorry). Independent of + did NOT touch the Serre-pairing thread
+(`SerreDualityPairing.lean`/`MittagLeffler.lean`).
+
+### WHAT WAS PROVEN (the genuine new analytic content, FULLY proven)
+- **`ramifiedSheetSum_laurentPoly`** (the reusable core): the geometric `m`-sheet sum of a Laurent-poly
+  integrand `∑ᵢ cfᵢ(W−wp)^{nᵢ}` along the sheets `w = wp + ζʲ w₀(z)` equals `ramifiedTraceTerm` — via
+  the PROVEN atom `RamifiedTrace.laurentTraceCoeff_eq_sheetSum` + the chain-rule derivative
+  `(d/dz)[wp+ζʲ w₀] = ζʲ w₀'` (`deriv_sheet_eq`). This is the roots-of-unity collapse on the actual
+  geometry.
+- **`RamifiedSheetData.exists_split`** (the ramified Lemma 3.2, the meat): the FULL geometric `m`-sheet
+  trace germ splits on `𝓝[≠] c` as `ramifiedTraceTerm(principal part of chartIntegrand) + (analytic
+  remainder trace)`, with residue of the `ramifiedTraceTerm` part = upstairs `formFnResidue ω₀ g p`.
+  Uses `exists_principalPart_meromorphicAt` + pulling the integrand split back along the `m` sheet maps
+  (`EventuallyEq.comp_tendsto` + `tendsto_sheet`: the sheet map `z↦wp+ζʲ w₀ z` tends to `wp` within
+  `{≠wp}`) + the atom + `resAt_add`/shift-covariance (`resAt_comp_sub_const`).
+- **`RamifiedSheetData.meromorphicAt_traceFull` / `resAt_traceFull`** (Facts A/B): the full trace is
+  meromorphic at `c` with residue = upstairs residue (from the split: atom-meromorphic + analytic-rem
+  residue-0).
+
+### THE SOUND CONSTRUCTOR — `RamifiedCenterFacts.ofSheetData` (fixes a latent soundness trap)
+⚠ **The documented `RamifiedCenterFacts.ofFibreRamified` sets `T := ramifiedTraceTerm` (principal part
+ONLY), which forces `hcoh : valueChartTrace =ᶠ ramifiedTraceTerm` — FALSE for genuine data** (the full
+geometric trace ≠ its principal-part trace; they differ by the holomorphic remainder trace, which is
+holomorphic but NONzero). Its `hcoh` is therefore unprovable-except-vacuously. My `ofSheetData` sets
+`T := traceFull` (the HONEST full geometric `m`-sheet trace), so `hcoh := S.hgeom` is the genuine
+punctured germ-equality `valueChartTrace =ᶠ T` (traceFull def is *identical* to hgeom's RHS — verified),
+and `hmero`/`hres` are DERIVED via the split. THIS is the sound `hcoh`. (The human_input map's stated
+`hcoh` form `valueChartTrace =ᶠ ∑ laurentTraceCoeff(z−c)` was the principal-part-only form = the trap;
+corrected here.)
+
+### THE ABSTRACTION BOUNDARY (the genuine remaining content, as DATA — Forster §5)
+`RamifiedSheetData` bundles the Forster §5 normal-form geometry as *data* (exactly as the unramified
+`MovingCoherenceDatum` bundles its monodromy bijection `hbij`): the primitive `m`-th root `ζ`, the
+holomorphic `m`-th-root branch `w₀` of `(z−c)^{1/m}` with its 4 analytic properties
+(`hw₀_an/_ne/_tendsto/_pow/_deriv`), the geometric identification `hgeom` (= valueChartTrace germ IS the
+`m`-sheet sum), and `hrem_an` (trace-of-holomorphic-is-holomorphic). EACH is a TRUE Forster §5 fact,
+supplied as data, NONE asserted as a free lemma. The remaining analytic build is exactly constructing a
+`RamifiedSheetData` from real manifold charts (the `z=wᵐ` normal form + the analytic branch section) —
+the "manifold normal-form plumbing" (several hundred LoC of Forster-§5 local-coordinate work).
+
+### SOUNDNESS LEDGER (all clean — NO false/circular field, NO custom axiom, NO sorry)
+- `T = traceFull` (FULL trace, not principal part) ⇒ `hcoh` genuinely TRUE (no "full=principal" junk).
+- Every trace statement is the `m`-sheet SUM (single-sheet `m·Res` is FALSE, absent).
+- `m=1` reduction VERIFIED (`traceFull_unramified_eq`): at `m=1`,`ζ=1`,`w₀=(·−c)` traceFull = the single
+  `exists_planar_section` summand — genuine generalization, correct degeneration.
+- **NON-VACUITY VERIFIED** (`ramifiedSheetData_zero`): `RamifiedSheetData` is INHABITABLE (g≡0, empty
+  selection, m=1) — so `ofSheetData` is not a disguised `False`. (Degenerate g≡0 witness; a *non-trivial*
+  ramified instance needs real Forster-§5 geometry.)
+- All `𝓝[≠]`-germ statements (the empty-canonical-selection-at-ramified-value subtlety is handled).
+
+### WIRING (down to the precise Forster-§5 data)
+- `existsRamifiedCenterFacts_ofSheetData`: `RamifiedSheetData` ⇒ `ExistsRamifiedCenterFacts` (the named
+  per-centre obligation `SerreResidueRamifiedCenter` already exposes).
+- `residueTheorem_ofSheetData_genus0`: end-to-end `hoff_cs`-FREE Gate A `∑Res=0` from per-centre
+  `RamifiedSheetData` (composes the above into the existing `residueTheorem_ofRamifiedCenters_genus0_mod`).
+
+### IS `AdaptedF.hoff_cs` DROPPABLE NOW? — NOT mechanically; needs the canonical-selection refactor
+`hcoh`/`ExistsRamifiedCenterFacts` is now reducible to precise Forster-§5 `RamifiedSheetData`, and the
+`hoff_cs`-free capstone `residueTheorem_ofRamifiedCenters_genus0_mod` consumes it. BUT
+`residueTheorem_of_adaptedF` (`SerreResidueGateAClosed.lean`) routes through the CANONICAL chain
+`residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg_inftyClosed_soundBnd` which hard-consumes
+`hoff_cs` at the bottom. To drop `AdaptedF.hoff_cs` you must reconstruct that chain's internal
+`Φ/hreg/hbnd/Dinf_full/∞-NF` data and feed `residueTheorem_ofRamifiedCenters_genus0_mod` instead — the
+"multi-thousand-line canonical-selection refactor" the localization doc flags, NOT touched here
+(entangled with the canonical machinery). So: `hcoh` DONE (modulo Forster-§5 data); the `hoff_cs` DROP
+itself remains gated on that refactor + actually building `RamifiedSheetData` from charts.
+
+### LEAN GOTCHAS (for the next agent)
+- `RamifiedCenterFacts`'s `T` is a FREE field — keep `T := traceFull` (full trace), NEVER
+  `ramifiedTraceTerm` (principal part), or `hcoh` becomes the false full=principal identity.
+- `resAt_add`/`MeromorphicAt.add` need the `Pi.add` form `f + g`, NOT `fun z => f z + g z`; the split's
+  RHS is the lambda — bridge with `have hsplit' : … = (P) + Rem := hsplit` (defeq cast).
+- `deriv_const_add`/`deriv_const_mul_field` are UNCONDITIONAL (no differentiability) — `deriv_sheet_eq`
+  needs no hypothesis. `deriv_const_add` wants the `(c + f ·)` function form.
+- `AnalyticAt.comp_of_eq'` gives the `fun z => g (f z)` form with a separate point-equality hyp (for
+  `hrem_an` in the m=1 witness).
+- Inline `show … from by rw[…]; exact …` inside an outer `rw […]` BREAKS the parser (the `;`); use
+  separate `have` steps instead.
