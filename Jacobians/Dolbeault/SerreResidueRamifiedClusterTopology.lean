@@ -49,6 +49,38 @@ maximal-atlas coordinate change), and the proven `hderiv_match_of_section`.
   `FibreClusterTopology`, discharging every routine analytic field.  This is the reduction: the
   full-fibre cluster identity `hgeom_fibre` at `z` now rests on *only* the bijection + coincidence (+
   the two genuine geometric residuals).
+* **`FibreClusterTopology.ofClusterEmbedding`** — builds the datum from a cluster→sheet *assignment*
+  `cl` + its injectivity + the conservation-of-number count `∑ᵢ D.mult i = S.n` (the bijection `e` is
+  the bijectivization: an injection between equicardinal finite types).
+* **`FibreClusterTopology.ofClusterFibrePoints`** — the **minimal residual**: the assignment is
+  recovered from `S.fibre_eq`, so the irreducible input shrinks to *three* facts — the cluster sheets
+  are genuine preimages of `coe z` (`hcl_fibre`), are pairwise distinct (`hcl_distinct`), and number
+  `∑ᵢ D.mult i = S.n` (`hcard`, the §4 conservation-of-number degree count).
+* **`FibreClusterReindex.ofFibreClusterTopologyFamily`** / **`residueSum_eq_zero_of_fibreClusterTopology`**
+  — the full chain: a slit-wide family of `FibreClusterTopology` discharges the per-centre
+  `FibreClusterReindex`, hence (with the concurrent genericity `AdaptedFRamified`) Gate-A `∑Res = 0`.
+* **`FibreClusterTopology.sum_mult_eq_sheetCount`** — the soundness fact: the datum forces
+  `∑ᵢ D.mult i = S.n`, genuinely multi-preimage.
+
+## The precise remaining clustering-topology content
+
+After this file, Gate-A TARGET 1 (`hgeom_fibre` for the real cover) reduces, at each regular slit value
+`z`, to supplying the three minimal facts of `ofClusterFibrePoints`:
+
+1. **`hcl_fibre`** — the cluster sheet points are preimages of `coe z` (the sphere-level §5
+   `clusterSheet_sect`: `f.toRiemannSphere (clusterSection D Cl i j z) = coe z`).  Derivable from the
+   normal-form section property (`exists_clusterSplit_at_fibrePoint` gives `f.holoRepr (clusterSheet …)
+   = z`, hence the finite sphere value `coe z` at the non-pole cluster point).
+2. **`hcl_distinct`** — the cluster sheet points are pairwise distinct (the clusters are disjoint:
+   different preimages `D.xs i` are separated, and the `mᵢ` cluster sheets at one preimage are distinct
+   via the primitive root `ζ`).
+3. **`hcard`** — the conservation of number `∑ᵢ D.mult i = S.n` (`= deg f`).  The genuine §4 degree
+   identity: at the regular `z` every `localDeg = 1` so `S.n = fibreMult f (coe z)`; `N f` is locally
+   constant (`ProperMapDegreeConstruct`/`MultiplicityPatchingConstruct`, the proven
+   `exists_properMapDegree` engine), so `fibreMult f (coe z) = fibreMult f (coe c) = ∑ᵢ localDeg f (coe
+   c) (D.xs i) = ∑ᵢ D.mult i` (with `D.mult i = localDeg`, the `analyticOrderAt_holoRepr_sub_eq_mult`
+   bridge).  This is the irreducible conservation-of-number wall, isolated to a single equality of
+   naturals.
 
 ## ⚠ Soundness
 
