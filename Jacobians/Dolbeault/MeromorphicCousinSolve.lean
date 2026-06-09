@@ -433,7 +433,14 @@ the descent's well-definedness is sound; see the module docstring on the `holoOf
 * `lift` — **`H¹(X, ℳ) = 0`**: every `𝒪_K` cocycle class is `[δμ]` for a meromorphic Cousin lift `μ`
   (THE WALL, Forster §15 — principal-part splitting at the K-points + `H¹(𝔘, 𝒪) = 0`).
 * `vanish` — **the residue descent** (`∑Res = 0`, Gate A, Forster §17.3): a lift whose connecting
-  cocycle is a coboundary (`connectingClass μ = 0`) is globally meromorphic, residue `0`.
+  cocycle is a coboundary (`connectingClass μ = 0`) has residue `0`.  In the genuine Serre setting
+  `K = div ω₀` this is exactly `GeneralMittagLeffler.res_eq_zero_of_globalMeromorphic`: `δμ ∈ B¹` means
+  `gᵢ = f − σᵢ` for a global meromorphic `f` and an `𝒪_K`-section 0-cochain `σ`, and since `ω₀·σᵢ ∈ Ω`
+  is *holomorphic* (poles ≤ `K = div ω₀` cancelled by `ω₀`'s zeros) it contributes residue `0`, leaving
+  `μ.res = ∑ Resₐ(ω₀·f) = 0` (the 1-form residue theorem).  (For an unconstrained `K` ⊋ `div ω₀` the
+  `σ`-correction need not vanish, so `vanish` is the genuine Serre-setting descent — an isolated input,
+  satisfiable: trivially via `ω₀ = 0`, see `nonempty_of_trivial`; genuinely via Gate A when
+  `K = div ω₀`.)
 
 From these the residue functional, its ℂ-linearity, and its coboundary-vanishing are all *derived*
 (`resCocycle`, `vanish_coboundary` below).  The §17.6 `dz/z` non-degeneracy is orthogonal and supplied
@@ -442,8 +449,8 @@ structure MeromorphicCousinSolutions where
   /-- **`H¹(X, ℳ) = 0`** — a meromorphic Cousin lift of every `𝒪_K` cocycle. -/
   lift : ∀ c : ↥(𝔘.toFiniteFamily.cocycles1 K),
     { μ : CoverMLLift 𝔘 ω₀ K // μ.connectingClass = Submodule.Quotient.mk c }
-  /-- **The residue descent** (`∑Res = 0`, Gate A): a lift with coboundary connecting cocycle has
-  residue `0`. -/
+  /-- **The residue descent** (`∑Res = 0`, Gate A; the genuine Serre-setting `K = div ω₀` fact): a lift
+  whose connecting cocycle is a coboundary has residue `0` (see the structure docstring). -/
   vanish : ∀ μ : CoverMLLift 𝔘 ω₀ K, μ.connectingClass = 0 → μ.res = 0
 
 namespace MeromorphicCousinSolutions
