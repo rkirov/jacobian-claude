@@ -188,4 +188,63 @@ noncomputable def holOfLocalRepAnalyticAt
         ((chartAt ℂ x₀) x₀)) :
     (holOfLocalRepAnalyticAt L hAn).toFun = L := rfl
 
+/-! ## Part 2: the repaired holomorphic section of an order-`≥ 0` meromorphic 1-form
+
+For `α ∈ omegaD 0`, the chart coefficient `formCoeff α.toFun x` is `MeromorphicAt` with order `≥ 0`
+at every chart centre.  We repair the section to its analytic value.
+
+The single key structural fact is that the removable-singularity *junk* of `α.toFun` is isolated to
+chart centres: for `w` in a *punctured* neighbourhood of any `x₀`, the covector `α.toFun w` is pinned
+by `α`'s meromorphy at `x₀` (`toFun_eq_localRep_smul`), so reading it in `w`'s own chart it equals the
+analytic normal-form value (`repVal`).  Hence the per-point repair `repairedSection` is a genuine
+holomorphic section whose germ matches `α` everywhere off the centres. -/
+
+/-- The frame covector at `y` from the canonical tangent trivialisation: `φ_y : T_y X →L[ℂ] ℂ`. -/
+noncomputable def frameCovector (y : X) : TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ :=
+  letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) y
+  (e.continuousLinearEquivAt ℂ y (by
+    rw [TangentBundle.trivializationAt_baseSet]; exact mem_chart_source ℂ y) :
+    TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ)
+
+/-- `φ_y (e_y.symmL ℂ y 1) = 1`: the frame covector evaluated on the canonical frame vector. -/
+theorem frameCovector_symmL_self (y : X) :
+    letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) y
+    frameCovector y (e.symmL ℂ y 1) = 1 := by
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) y
+  have hy : y ∈ e.baseSet := by
+    rw [TangentBundle.trivializationAt_baseSet]; exact mem_chart_source ℂ y
+  set φ := e.continuousLinearEquivAt ℂ y hy with hφ
+  show φ (e.symmL ℂ y 1) = 1
+  have h_symmL : (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) = e.symmL ℂ y :=
+    Bundle.Trivialization.symm_continuousLinearEquivAt_eq' e hy
+  rw [show e.symmL ℂ y 1 = (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) 1 from by rw [h_symmL]]
+  exact φ.apply_symm_apply 1
+
+/-- The **repaired chart value** of `α` at `y`: the normal-form value of the chart coefficient at the
+chart centre — the removable-singularity limit `lim_{z → chart y y} formCoeff α.toFun y (z)`. -/
+noncomputable def repVal (α : MeromorphicOneForm X) (y : X) : ℂ :=
+  toMeromorphicNFAt (formCoeff α.toFun y) ((chartAt ℂ y) y) ((chartAt ℂ y) y)
+
+/-- The repaired chart coefficient `toMeromorphicNFAt (formCoeff α.toFun y) (chart y y)` is
+`AnalyticAt (chart y y)` when `α ∈ omegaD 0` (order `≥ 0` ⟹ removable singularity).  Reuses the
+repo's `exists_analyticAt_eventuallyEq_of_meromorphicOrderAt_nonneg`. -/
+theorem analyticAt_repairedCoeff {α : MeromorphicOneForm X} (hα : α ∈ omegaD (X := X) 0) (y : X) :
+    AnalyticAt ℂ (toMeromorphicNFAt (formCoeff α.toFun y) ((chartAt ℂ y) y)) ((chartAt ℂ y) y) := by
+  have hmero : MeromorphicAt (formCoeff α.toFun y) ((chartAt ℂ y) y) := α.meromorphic y
+  have hord : 0 ≤ meromorphicOrderAt (formCoeff α.toFun y) ((chartAt ℂ y) y) := by
+    have := hα y
+    simpa [MeromorphicOneForm.formOrderW] using this
+  have hNF : MeromorphicNFAt (toMeromorphicNFAt (formCoeff α.toFun y) ((chartAt ℂ y) y))
+      ((chartAt ℂ y) y) := meromorphicNFAt_toMeromorphicNFAt
+  have hord_nf : 0 ≤ meromorphicOrderAt (toMeromorphicNFAt (formCoeff α.toFun y) ((chartAt ℂ y) y))
+      ((chartAt ℂ y) y) := by
+    rwa [meromorphicOrderAt_congr hmero.eq_nhdsNE_toMeromorphicNFAt] at hord
+  exact hNF.meromorphicOrderAt_nonneg_iff_analyticAt.mp hord_nf
+
+/-- The chart coefficient agrees, off the centre, with its repaired (normal-form) coefficient. -/
+theorem formCoeff_eventuallyEq_repairedCoeff (α : MeromorphicOneForm X) (y : X) :
+    formCoeff α.toFun y =ᶠ[𝓝[≠] ((chartAt ℂ y) y)]
+      toMeromorphicNFAt (formCoeff α.toFun y) ((chartAt ℂ y) y) :=
+  (α.meromorphic y).eq_nhdsNE_toMeromorphicNFAt
+
 end Jacobians.Dolbeault
