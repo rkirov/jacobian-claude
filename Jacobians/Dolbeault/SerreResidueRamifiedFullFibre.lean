@@ -239,4 +239,146 @@ theorem clusterTraceSum_collapse (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
   exact ramifiedSheetSum_laurentPoly (Finset.Icc 1 N) b (fun k => -(k : ℤ)) hm hζ
     hw₀_ne hw₀_pow hw₀_deriv
 
+/-! ## The per-cluster genuine data and the full-fibre `RamifiedCenterFacts`
+
+A `ClusterTraceData` packages, at one preimage `p` of the value-centre `c`, the genuine Forster §5
+normal-form cluster data on the slit: the local inverse `s = η⁻¹`, the slit-branch `w₀`, the Laurent
+principal-part split of the straightened integrand `H = h(s ·)·s'(·)`, and the single-valued analytic
+remainder trace `Rem` (the symmetric-function descent of the `m`-sheet remainder sum, supplied as data —
+exactly the honest decomposition of `RamifiedSheetData`, but at the **genuine** `clusterSheet` points,
+with **no** single-preimage restriction).
+
+Summing the per-cluster collapses over the whole fibre (`RamifiedFullFibreClusterGeometry`) builds the
+SOUND full-fibre `RamifiedCenterFacts`. -/
+
+/-- **Per-cluster genuine trace data** at one preimage `p` of the value-centre `c` (the `clusterSheet`
+analogue of `RamifiedSheetData`, with no single-preimage restriction).  Carries the Forster §5
+normal-form local inverse `s = η⁻¹`, the slit-branch `w₀`, the Laurent principal-part split of the
+straightened integrand `H = chartIntegrand ω₀ g p (s ·)·s'(·)` at `0`, and the single-valued analytic
+remainder trace `Rem`. -/
+structure ClusterTraceData (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (p : X) (c : ℂ) (S : Set ℂ) where
+  /-- The ramification multiplicity (`≥ 1`). -/
+  m : ℕ
+  /-- Positivity. -/
+  hm : 0 < m
+  /-- A primitive `m`-th root of unity. -/
+  ζ : ℂ
+  /-- `ζ` is primitive. -/
+  hζ : IsPrimitiveRoot ζ m
+  /-- The normal-form local inverse `s = η⁻¹` (analytic at `0`). -/
+  s : ℂ → ℂ
+  /-- `s` is analytic at `0`. -/
+  hs_an : AnalyticAt ℂ s 0
+  /-- `s 0 = chartAt ℂ p p` (the cluster centre is the preimage `p`). -/
+  hs0 : s 0 = (chartAt ℂ p) p
+  /-- `s` is a local biholomorphism (`deriv s 0 ≠ 0`). -/
+  hs_deriv : deriv s 0 ≠ 0
+  /-- The slit-branch of `(z − c)^{1/m}`. -/
+  w₀ : ℂ → ℂ
+  /-- The branch is nonzero on the slit. -/
+  hw₀_ne : ∀ z ∈ S, w₀ z ≠ 0
+  /-- The branch is an `m`-th root on the slit. -/
+  hw₀_pow : ∀ z ∈ S, w₀ z ^ (m : ℤ) = z - c
+  /-- The chain-rule derivative on the slit. -/
+  hw₀_deriv : ∀ z ∈ S, deriv w₀ z = (m : ℂ)⁻¹ * w₀ z ^ (1 - (m : ℤ))
+  /-- `w₀` is differentiable on the slit. -/
+  hw₀_diff : ∀ z ∈ S, DifferentiableAt ℂ w₀ z
+  /-- The cluster sheet arguments stay in `s`'s analyticity domain on the slit. -/
+  hs_an_sheet : ∀ z ∈ S, ∀ j ∈ Finset.range m, AnalyticAt ℂ s (ζ ^ j * w₀ z)
+  /-- `g`'s chart-pullback is meromorphic at `p`'s chart centre. -/
+  hg_mero : MeromorphicAt (fun z => g ((chartAt ℂ p).symm z)) ((chartAt ℂ p) p)
+  /-- Degree of the Laurent principal part of the straightened integrand `H` at `0`. -/
+  ppN : ℕ
+  /-- Coefficients of the Laurent principal part of `H`. -/
+  ppb : ℕ → ℂ
+  /-- Analytic remainder of `H` at `0`. -/
+  ppR : ℂ → ℂ
+  /-- The remainder is analytic at `0`. -/
+  hppR_an : AnalyticAt ℂ ppR 0
+  /-- **The principal-part split at the sheet points** (true by `exists_principalPart_meromorphicAt`):
+  on the slit, the straightened integrand `H` decomposes as `negTail 0 + ppR` at each sheet argument. -/
+  hpp_split_sheet : ∀ z ∈ S, ∀ j ∈ Finset.range m,
+    straightenedIntegrand ω₀ g p s (ζ ^ j * w₀ z)
+      = negTail 0 ppb ppN (ζ ^ j * w₀ z) + ppR (ζ ^ j * w₀ z)
+  /-- The single-valued analytic remainder trace at `c`. -/
+  Rem : ℂ → ℂ
+  /-- The remainder trace is analytic at `c`. -/
+  hRem_an : AnalyticAt ℂ Rem c
+  /-- The remainder trace agrees, on the slit, with the `m`-sheet sum of `ppR`. -/
+  hRem_slit : ∀ z ∈ S, Rem z = ∑ j ∈ Finset.range m,
+    ppR (ζ ^ j * w₀ z) * deriv (fun ζz => (0 : ℂ) + ζ ^ j * w₀ ζz) z
+
+namespace ClusterTraceData
+
+variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {p : X} {c : ℂ} {S : Set ℂ}
+
+/-- The single-valued **per-cluster trace germ** `Tₗ := ramifiedTraceTerm (principal part of H) + Rem`
+(a meromorphic function of `z − c` by construction). -/
+noncomputable def clusterTrace (D : ClusterTraceData ω₀ g p c S) : ℂ → ℂ :=
+  fun z => ramifiedTraceTerm (Finset.Icc 1 D.ppN) D.ppb (fun k => -(k : ℤ)) D.m c z + D.Rem z
+
+/-- **The per-cluster slit identity.**  On the slit, the geometric `m`-sheet cluster sum (over the
+genuine `clusterSheet` points) equals the single-valued per-cluster trace `Tₗ`.  Proof: the per-cluster
+collapse `clusterTraceSum_collapse` (the genuine sheet points + the roots-of-unity atom) gives
+`ramifiedTraceTerm + remainder sheet sum`, and `hRem_slit` rewrites the remainder sheet sum as `Rem`. -/
+theorem clusterSum_eq_clusterTrace_slit (D : ClusterTraceData ω₀ g p c S) {z : ℂ} (hz : z ∈ S) :
+    (∑ j ∈ Finset.range D.m,
+        chartIntegrand ω₀ g p (clusterSheet D.s D.ζ D.w₀ j z) * deriv (clusterSheet D.s D.ζ D.w₀ j) z)
+      = D.clusterTrace z := by
+  rw [clusterTraceSum_collapse ω₀ g p D.hm D.hζ (D.hw₀_ne z hz) (D.hw₀_pow z hz) (D.hw₀_deriv z hz)
+    (D.hw₀_diff z hz) (D.hs_an_sheet z hz) (D.hpp_split_sheet z hz), ← D.hRem_slit z hz]
+  rfl
+
+/-- The per-cluster trace germ `Tₗ` is **meromorphic at `c`** by construction (`ramifiedTraceTerm`
+meromorphic + `Rem` analytic). -/
+theorem meromorphicAt_clusterTrace (D : ClusterTraceData ω₀ g p c S) :
+    MeromorphicAt D.clusterTrace c :=
+  (meromorphicAt_ramifiedTraceTerm (Finset.Icc 1 D.ppN) D.ppb (fun k => -(k : ℤ)) D.m c).add
+    D.hRem_an.meromorphicAt
+
+/-- **The per-cluster residue is the upstairs form residue.**  `Res_c Tₗ = formFnResidue ω₀ g p`.  The
+residue of `ramifiedTraceTerm` is the residue of the principal part of `H` at `0`
+(`resAt_ramifiedTraceTerm`), which equals `formFnResidue ω₀ g p` by residue change-of-variables
+(`resAt_straightenedIntegrand`, since the principal part of `H` carries the same residue as `H`); the
+analytic `Rem` adds `0`. -/
+theorem resAt_clusterTrace (D : ClusterTraceData ω₀ g p c S)
+    (hsplit0 : straightenedIntegrand ω₀ g p D.s =ᶠ[𝓝[≠] 0]
+      fun u => negTail 0 D.ppb D.ppN u + D.ppR u) :
+    resAt D.clusterTrace c = formFnResidue ω₀ g p := by
+  -- Residue of `Tₗ = ramifiedTraceTerm + Rem`: the `Rem` (analytic) contributes `0`.
+  have hRes : resAt D.clusterTrace c
+      = resAt (fun w => ∑ k ∈ Finset.Icc 1 D.ppN, D.ppb k * (w - 0) ^ (-(k : ℤ))) 0 := by
+    show resAt (fun z => ramifiedTraceTerm (Finset.Icc 1 D.ppN) D.ppb (fun k => -(k : ℤ)) D.m c z
+        + D.Rem z) c = _
+    rw [show (fun z => ramifiedTraceTerm (Finset.Icc 1 D.ppN) D.ppb (fun k => -(k : ℤ)) D.m c z
+          + D.Rem z)
+        = (ramifiedTraceTerm (Finset.Icc 1 D.ppN) D.ppb (fun k => -(k : ℤ)) D.m c) + D.Rem from rfl,
+      resAt_add
+        (meromorphicAt_ramifiedTraceTerm (Finset.Icc 1 D.ppN) D.ppb (fun k => -(k : ℤ))
+          D.m c).holoPunctured
+        D.hRem_an.meromorphicAt.holoPunctured,
+      resAt_eq_zero_of_analyticAt D.hRem_an, add_zero,
+      resAt_ramifiedTraceTerm (Finset.Icc 1 D.ppN) D.ppb (fun k => -(k : ℤ)) D.hm c]
+  rw [hRes]
+  -- The residue of `H`'s principal part at `0` = residue of `H` at `0` (the remainder `ppR` is analytic)
+  -- = `formFnResidue ω₀ g p` (change of variables).
+  have hHmero : MeromorphicAt (straightenedIntegrand ω₀ g p D.s) 0 :=
+    meromorphicAt_straightenedIntegrand ω₀ g p D.hs_an D.hs0 D.hg_mero
+  have hnegTail_mero : MeromorphicAt (fun u => negTail 0 D.ppb D.ppN u) 0 := by
+    rw [show (fun u => negTail 0 D.ppb D.ppN u)
+        = fun u => ∑ k ∈ Finset.Icc 1 D.ppN, D.ppb k * (u - 0) ^ (-(k : ℤ)) from rfl]
+    exact MeromorphicAt.fun_sum (fun k _ => (MeromorphicAt.const (D.ppb k) 0).mul
+      ((analyticAt_id.sub analyticAt_const).meromorphicAt.zpow _))
+  have hResH : resAt (straightenedIntegrand ω₀ g p D.s) 0
+      = resAt (fun w => ∑ k ∈ Finset.Icc 1 D.ppN, D.ppb k * (w - 0) ^ (-(k : ℤ))) 0 := by
+    rw [resAt_congr hsplit0]
+    rw [show (fun u => negTail 0 D.ppb D.ppN u + D.ppR u)
+        = (fun u => negTail 0 D.ppb D.ppN u) + D.ppR from rfl,
+      resAt_add hnegTail_mero.holoPunctured D.hppR_an.meromorphicAt.holoPunctured,
+      resAt_eq_zero_of_analyticAt D.hppR_an, add_zero]
+    rfl
+  rw [← hResH, resAt_straightenedIntegrand ω₀ g p D.hs_an D.hs_deriv D.hs0 D.hg_mero]
+
+end ClusterTraceData
+
 end Jacobians.Dolbeault.SerreResidueTheorem
