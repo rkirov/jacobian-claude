@@ -822,4 +822,57 @@ noncomputable def realCenterSlitSectionData_of_bound {ω₀ : HolomorphicOneForm
       intro i' i'' j k hii
       exact hVsep z₀ (hSset_Vsep z₀ hz₀) i' i'' j k hii
 
+/-! ## The residue theorem from the per-centre pole-order bound (the precise residual)
+
+`realCenterSlitSectionData_of_bound` reduces the per-centre §5-section datum to **exactly** the
+Miranda-(3.1) finite pole-order bound `(z − c)^N · valueChartTrace → 0` at each finite pole-value centre.
+We package that as the single obligation `RealCoverPoleBound` and prove the residue theorem `∑Res = 0`
+from it, exhibiting the precise remaining content of the §5-section route as the per-centre pole-order
+bound (the single-valued-trace meromorphy at a ramified pole-value centre — Miranda *Algebraic Curves and
+Riemann Surfaces* §VIII.3 (3.1) / Forster GTM 81 §17).  Every other field of the geometry is PROVEN. -/
+
+/-- **The per-centre pole-order bound obligation.**  For every adapted cover `A` and finite pole-value
+centre `A.cs i`, the geometric trace has a finite pole order there:
+
+> `∃ N, (z − A.cs i)^N · valueChartTrace ω₀ A.f (canonical) z → 0` as `z → A.cs i`.
+
+This is the single remaining content the §5-section residue route needs — the Miranda-(3.1) single-valued
+meromorphy of the symmetric trace sum at a ramified pole-value centre. -/
+def RealCoverPoleBound (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X) (poles : Finset X) :
+    Prop :=
+  ∀ (A : AdaptedFRamified ω₀ g poles) (i : Fin A.m), ∃ N : ℕ,
+    Tendsto (fun z => (z - A.cs i) ^ N *
+      valueChartTrace ω₀ A.f (canonicalFibreSelection g.toFun A.f A.hdiv) z)
+      (𝓝[≠] (A.cs i)) (𝓝 0)
+
+/-- **`RealCoverSlitSectionGeometry` from the per-centre pole-order bound.**  The full §5-section
+geometry follows from the per-centre pole-order bound: each `RealCenterSlitSectionData` is built by
+`realCenterSlitSectionData_of_bound` from the (chosen) bound, all other fields PROVEN. -/
+noncomputable def realCoverSlitSectionGeometry_of_poleBound {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {poles : Finset X} (H : RealCoverPoleBound ω₀ g poles) :
+    RealCoverSlitSectionGeometry ω₀ g poles :=
+  fun A i => realCenterSlitSectionData_of_bound A i (H A i).choose (H A i).choose_spec
+
+/-- **The 1-form residue theorem `∑Res = 0` from the per-centre pole-order bound.**  For a genuine
+meromorphic numerator `g` and any finite `poles` containing the poles of `α = ω₀·g` (off which `g` is
+analytic), the total residue vanishes:
+
+> `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`,
+
+given the single obligation `RealCoverPoleBound` (the per-centre finite pole-order bound).  Routes through
+the PROVEN §5 slit-geometry assembly (`realCoverSlitSectionGeometry_of_poleBound` →
+`residueTheorem_of_realCoverSlitSectionGeometry`).  This is the precise residual content of the residue
+theorem on the real-cover §5-section route: the entire §5 normal-form slit geometry (the cluster sections,
+the symmetric-function descent, the conservation-of-number topology, the regular-value primitives, the
+off-centre/∞ machinery, the genericity) is PROVEN; only the Miranda-(3.1) per-centre pole-order bound
+remains. -/
+theorem residueTheorem_of_realCoverPoleBound (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
+    (poles : Finset X)
+    (hpoles : ∀ x : X, x ∉ poles →
+      AnalyticAt ℂ (fun z => g.toFun ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x))
+    (hbound : RealCoverPoleBound ω₀ g poles) :
+    ∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0 :=
+  residueTheorem_of_realCoverSlitSectionGeometry ω₀ g poles hpoles
+    (realCoverSlitSectionGeometry_of_poleBound hbound)
+
 end Jacobians.Dolbeault.SerreResidueTheorem
