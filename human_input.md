@@ -1427,3 +1427,40 @@ local-holomorphic ω₀·g near F⁻¹(coe b₀), exists since b₀ off poles). 
 canonical-fibre, ∞-rationality bookkeeping) unchanged. Doc:
 docs/gate_a_bundle_branch_boundedness_2026-06-08.md. Memory: [[feedback_prefer_standard_proofs]],
 [[feedback_connect_upstream_first]], [[project_rr_interface]].
+
+---
+
+## 2026-06-09 — Gate A close-Gate-A assembly: CRITICAL `InftyFibreData` soundness finding
+
+Goal (this session): CLOSE Gate A `∑Res=0` via the `TraceCoherenceData` route (latest engine
+`FormTraceCoherenceFromMoving.lean`, commit 623fa6b): build `InftyFibreData.ofRegular`, the
+`T:=traceFun` assembly (`hentire`/`hrecip_cont` from `traceExtendsAt_branchPoint`), then the
+`AdaptedCover` genericity. Use T:=traceFun (NOT valueChartTrace). Plan = Miranda §VIII.3.
+
+**CRITICAL FINDING (soundness review): the existing `InftyFibreData` structure
+(`FormTraceInftyFibre.lean:99`) has two PROVABLY-FALSE-when-instantiated fields for genuine
+`∞`-poles**, so `InftyFibreData.ofRegular` as a literal mirror of `FibreRegularData.ofRegular` is
+UNSOUND / unprovable:
+
+- `hrecip_an : AnalyticAt ℂ (fun z => (f.holoRepr (chart⁻¹ z))⁻¹) (chart (xs i))` — at a pole `xs i`,
+  `f.holoRepr (xs i) = limUnder (𝓝[≠] xs i) f.toFun` is a JUNK value (the limit doesn't exist at a
+  pole; `holoRepr` is repaired only where order ≥ 0, `MeromorphicLiouville.holoRepr` +
+  `holoRepr_eq_zero_of_orderPos`). The literal reciprocal `(holoRepr (chart⁻¹ ·))⁻¹` agrees with the
+  genuine analytic representative only on `𝓝[≠]` (`ProperMapDegreeSheets.exists_reciprocal_NF`), NOT
+  at the centre, so it is NOT `AnalyticAt` there (discontinuous unless centre value matches the limit).
+- `hrecip_val : (f.holoRepr (xs i))⁻¹ = 0` — needs `holoRepr (xs i) = 0` (since `0⁻¹=0` in Mathlib),
+  but at a pole `holoRepr` is junk, generically ≠ 0. Also generically false.
+
+Evidence it was never real: EVERY `InftyFibreData` in the repo is the EMPTY one
+(`emptyInftyFibreData`, `FormTraceRationalAssemble.lean:154`); there is NO non-empty instance. The
+`∞`-fibre trace `inftyFibreTrace` consumes these fields via `exists_planar_section` (needs literal
+`AnalyticAt` of the sheet), so the falsity is load-bearing.
+
+**SOUND FIX (chosen):** build a corrected `∞`-fibre datum carrying the REPAIRED reciprocal
+`h := toMeromorphicNFAt (holoRepr∘chart⁻¹)⁻¹` from `exists_reciprocal_NF` (analytic at centre,
+`h(centre)=0`, `=ᶠ[𝓝[≠]]` the literal reciprocal), in a NEW file; rebuild the `∞`-fibre trace +
+residue identity off it; wire `hcoh_inf` through that. Existing `InftyFibreData`/`inftyFibreTrace`
+untouched (empty case still valid). NO false-field witness. This is bigger than the "mechanical mirror"
+the plan assumed for Piece 2.
+
+This does NOT block Pieces 3/1; but the `∞`-fibre is no longer mechanical. Reporting honestly.
