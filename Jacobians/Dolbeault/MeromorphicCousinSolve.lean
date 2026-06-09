@@ -288,6 +288,12 @@ noncomputable def combine (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) : CoverMLLift
 @[simp] theorem combine_g (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) (i : 𝔘.ι) :
     (combine μ₁ μ₂).g i = μ₁.g i + μ₂.g i := rfl
 
+@[simp] theorem combine_toDistribution_g (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) (i : 𝔘.ι) :
+    (combine μ₁ μ₂).toDistribution.g i = μ₁.toDistribution.g i + μ₂.toDistribution.g i := rfl
+
+@[simp] theorem smul_toDistribution_g (c : ℂ) (μ : CoverMLLift 𝔘 ω₀ K) (i : 𝔘.ι) :
+    (smul c μ).toDistribution.g i = c • μ.toDistribution.g i := rfl
+
 open scoped Classical in
 @[simp] theorem combine_poles (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) :
     (combine μ₁ μ₂).poles = μ₁.poles ∪ μ₂.poles := rfl
@@ -327,6 +333,67 @@ noncomputable def sub (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) : CoverMLLift �
 
 theorem res_sub (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) : (sub μ₁ μ₂).res = μ₁.res - μ₂.res := by
   rw [sub, res_combine, res_neg]; ring
+
+/-! ### The connecting cocycle is a homomorphism of the algebra
+
+`δμ = (cᵢⱼ) = ([gᵢ − gⱼ])` is ℂ-linear in `μ`: scaling/adding the principal parts scales/adds the
+difference-germs (`toGerm` is linear).  Hence `connectingClass` is additive/ℂ-homogeneous — the key
+fact for the descent (the residue functional on classes is well-defined and linear). -/
+
+/-- The connecting cochain of a sum is the sum of the connecting cochains (`toGerm` linearity:
+`(μ₁.gᵢ+μ₂.gᵢ) − (μ₁.gⱼ+μ₂.gⱼ) = (μ₁.gᵢ−μ₁.gⱼ) + (μ₂.gᵢ−μ₂.gⱼ)` pointwise). -/
+theorem connectingCochain_combine (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) :
+    (combine μ₁ μ₂).toDistribution.connectingCochain
+      = μ₁.toDistribution.connectingCochain + μ₂.toDistribution.connectingCochain := by
+  funext p
+  rw [Pi.add_apply]
+  show toGerm _ _ = toGerm _ _ + toGerm _ _
+  rw [← map_add]
+  refine congrArg (toGerm _) ?_
+  funext x
+  simp only [combine_toDistribution_g, Function.comp_apply, Pi.add_apply, Pi.sub_apply]
+  ring
+
+/-- The connecting cochain of a scaling is the scaling of the connecting cochain. -/
+theorem connectingCochain_smul (c : ℂ) (μ : CoverMLLift 𝔘 ω₀ K) :
+    (smul c μ).toDistribution.connectingCochain = c • μ.toDistribution.connectingCochain := by
+  funext p
+  rw [Pi.smul_apply]
+  show toGerm _ _ = c • toGerm _ _
+  rw [← map_smul]
+  refine congrArg (toGerm _) ?_
+  funext x
+  simp only [smul_toDistribution_g, Function.comp_apply, Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
+  ring
+
+/-- **The connecting cocycle of a sum is the sum** (as elements of `cocycles1 K`). -/
+theorem connectingCocycle_combine (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) :
+    (combine μ₁ μ₂).connectingCocycle = μ₁.connectingCocycle + μ₂.connectingCocycle := by
+  apply Subtype.ext
+  simp only [CoverMLLift.connectingCocycle, CoverMLDistribution.connectingCocycle_coe,
+    Submodule.coe_add]
+  exact connectingCochain_combine μ₁ μ₂
+
+/-- **The connecting cocycle of a scaling is the scaling.** -/
+theorem connectingCocycle_smul (c : ℂ) (μ : CoverMLLift 𝔘 ω₀ K) :
+    (smul c μ).connectingCocycle = c • μ.connectingCocycle := by
+  apply Subtype.ext
+  simp only [CoverMLLift.connectingCocycle, CoverMLDistribution.connectingCocycle_coe,
+    SetLike.val_smul]
+  exact connectingCochain_smul c μ
+
+/-- **The connecting cocycle of a difference is the difference.** -/
+theorem connectingCocycle_sub (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) :
+    (sub μ₁ μ₂).connectingCocycle = μ₁.connectingCocycle - μ₂.connectingCocycle := by
+  rw [sub, connectingCocycle_combine, neg, connectingCocycle_smul]
+  module
+
+/-- **The connecting class of a difference is the difference** (so `[δ(sub μ₁ μ₂)] = [δμ₁] − [δμ₂]`). -/
+theorem connectingClass_sub (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) :
+    (sub μ₁ μ₂).connectingClass = μ₁.connectingClass - μ₂.connectingClass := by
+  show Submodule.Quotient.mk (sub μ₁ μ₂).connectingCocycle
+    = Submodule.Quotient.mk μ₁.connectingCocycle - Submodule.Quotient.mk μ₂.connectingCocycle
+  rw [connectingCocycle_sub, Submodule.Quotient.mk_sub]
 
 end CoverMLLift
 
