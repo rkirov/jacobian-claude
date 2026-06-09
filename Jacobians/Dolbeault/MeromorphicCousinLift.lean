@@ -38,14 +38,22 @@ Leray cover):
 * `CousinSplitData.toCoverMLLift` / `connectingCocycle_eq` / `connectingClass_eq` — the **sorry-free
   germ ↔ function assembly**: the split data assembles to a `CoverMLLift` whose connecting cocycle is
   *exactly* `ξ`.
-* `liftField_of_cousinSplit` — the **reduction**: a `CousinSplitData` for every cocycle gives the
-  `lift` field of `MeromorphicCousinSolutions`.
-* `MeromorphicCousinSolutions.ofSplit` — assemble the full `MeromorphicCousinSolutions` from the
-  per-cocycle split data (`lift`) and the Gate-A descent (`vanish`).
+* `liftField_of_cousinSplit` / `MeromorphicCousinSolutions.ofSplit` — the **reduction**: a
+  `CousinSplitData` for every cocycle gives the `lift` field, and (with the Gate-A descent `vanish`)
+  the full `MeromorphicCousinSolutions`.
+* `CousinSplitData.mk'` — the **smart constructor** (drops the redundant `diffMem` field): `𝒪_K`-
+  membership of `gᵢ − gⱼ` is *derived* from the cochain match by germ-invariance (`diffMem_of_match`,
+  `omegaD_congr_germ`).  A §15 builder supplies only the form-side fields + the cochain match.
+* `exists_holoSplit_of_isDiskAcyclic` — the **`(A)` engine**: from `IsDiskAcyclic 𝔘 0` (`H¹(𝔘,𝒪)=0`)
+  every holomorphic cocycle splits into honest holomorphic correctors with the matching difference
+  identity (the engine that clears the holomorphic remainder).
+* `CousinSplittable` / `MeromorphicCousinSolutions.ofSplittable` — the residual §15 obligation
+  (per-cocycle `CousinSplitData`) and the conditional apex it feeds.
 
-The remaining genuinely-greenfield input is the per-cocycle `CousinSplitData` (the principal-part
-splitting + holomorphic acyclicity), isolated as a clean predicate, NEVER faked with a `sorry` on a
-false statement.
+The remaining genuinely-greenfield input is the per-cocycle `CousinSplitData` (`CousinSplittable`): the
+principal-part splitting at the `K`-points + the normal-form / `coeffAt ω₀`-form bookkeeping for the
+form-side fields, on top of the `(A)` engine.  Isolated as a clean predicate, NEVER faked with a
+`sorry` on a false statement (the honest authorized fallback).
 
 ## Soundness
 
