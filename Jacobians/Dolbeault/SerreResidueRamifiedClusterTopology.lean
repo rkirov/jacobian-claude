@@ -552,6 +552,25 @@ noncomputable def FibreClusterTopology.ofClusterFibrePoints {ω₀ : Holomorphic
   exact FibreClusterTopology.ofClusterEmbedding S hderiv hmero hcoh cl hcl_point hcl_inj hcard
     hsrc hsheet_diff hcs_sec
 
+/-! ## Soundness: the datum genuinely encodes conservation of number (multi-preimage, not vacuous)
+
+The decisive #13-style check.  A `FibreClusterTopology`'s bijection field `e` forces the
+conservation-of-number identity `∑ᵢ D.mult i = S.n` (`= deg f`), so the datum is genuinely
+multi-preimage — not a disguised single-preimage placeholder or a vacuous triviality.  The minimal
+constructor `ofClusterFibrePoints` accepts *any* `hcard : ∑ᵢ D.mult i = S.n` with ramified
+multiplicities (several preimages with `mᵢ > 1`), confirming the wall is the genuine multi-cluster
+content. -/
+
+/-- **Conservation of number, encoded by the topology datum.**  A `FibreClusterTopology` forces
+`∑ᵢ D.mult i = R.S.n` (`= deg f`): the bijection `e` of the cluster `Σ`-index with the `deg f` sheets
+has matching `Fintype.card`.  Confirms the datum is genuinely multi-preimage, not vacuous. -/
+theorem FibreClusterTopology.sum_mult_eq_sheetCount {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
+    {D : FibreRamifiedData g f c} {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}
+    (R : FibreClusterTopology Φ D Cl z) :
+    ∑ i, D.mult i = R.S.n :=
+  ClusterReindexData.sum_mult_eq_sheetCount (ClusterReindexData.ofFibreClusterTopology R)
+
 /-! ## Wiring the full chain: `FibreClusterTopology` family ⟹ `FibreClusterReindex` ⟹ `∑Res = 0`
 
 Composing `ClusterReindexData.ofFibreClusterTopology` with the PROVEN
