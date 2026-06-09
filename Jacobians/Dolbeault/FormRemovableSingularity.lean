@@ -395,4 +395,100 @@ theorem eventually_repVal_eq (α : MeromorphicOneForm X) (x₀ : X) :
     toMeromorphicNFAt_eq_self.mpr hana_w.meromorphicNFAt
   rw [repVal, hNFself, rawLocalRep_self_eq_formCoeff]
 
+/-! ### The repaired section and its holomorphy
+
+`repairedSection α y := repVal α y • frameCovector y` is the per-point removable-singularity repair.
+Its chart pullback in *any* chart `x₀` agrees off the centre with `formCoeff α.toFun x₀` (junk-free
+crux) and at the centre with the normal-form value, hence equals the analytic normal-form repair near
+the centre — so it is a genuine `HolomorphicOneForms X` (`holOfLocalRepAnalyticAt`). -/
+
+/-- The **repaired section** of an order-`≥ 0` meromorphic 1-form: the per-point normal-form value
+times the canonical frame covector.  A bare cotangent-bundle section. -/
+noncomputable def repairedSection (α : MeromorphicOneForm X) : ∀ y, FormFiber X y :=
+  fun y => (repVal α y) • frameCovector y
+
+theorem rawLocalRep_repairedSection_self (α : MeromorphicOneForm X) (y : X) :
+    rawLocalRep (repairedSection α) y y = repVal α y := by
+  show (repairedSection α y) ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) y).symmL ℂ y 1) = _
+  rw [repairedSection, ContinuousLinearMap.smul_apply, frameCovector_symmL_self, smul_eq_mul,
+    mul_one]
+
+/-- **The repaired section's chart pullback is analytic at every centre.**  In chart `x₀`, the
+pullback agrees off the centre with `formCoeff α.toFun x₀` (the junk-free crux + self-frame), and at
+the centre takes the normal-form value, so it equals the analytic normal-form repair of
+`formCoeff α.toFun x₀` near the centre. -/
+theorem analyticAt_pullback_repairedSection {α : MeromorphicOneForm X}
+    (hα : α ∈ omegaD (X := X) 0) (x₀ : X) :
+    letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
+    AnalyticAt ℂ
+      (fun z : ℂ => repairedSection α ((chartAt ℂ x₀).symm z)
+        (e.symmL ℂ ((chartAt ℂ x₀).symm z) 1))
+      ((chartAt ℂ x₀) x₀) := by
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀ with he
+  set c₀ := (chartAt ℂ x₀) x₀ with hc₀
+  -- The pullback is `Pb z = rawLocalRep (repairedSection α) x₀ ((chart x₀).symm z)`.
+  set Pb : ℂ → ℂ := fun z => rawLocalRep (repairedSection α) x₀ ((chartAt ℂ x₀).symm z) with hPb
+  have hPb_eq : (fun z : ℂ => repairedSection α ((chartAt ℂ x₀).symm z)
+      (e.symmL ℂ ((chartAt ℂ x₀).symm z) 1)) = Pb := rfl
+  rw [hPb_eq]
+  set NF : ℂ → ℂ := toMeromorphicNFAt (formCoeff α.toFun x₀) c₀ with hNF
+  have hNFana : AnalyticAt ℂ NF c₀ := analyticAt_repairedCoeff hα x₀
+  -- Step A: `Pb =ᶠ[𝓝[≠] c₀] formCoeff α.toFun x₀`.
+  -- Transport the junk-free crux from `𝓝[≠] x₀` to `𝓝[≠] c₀` via `(chart x₀).symm`.
+  have htsymm : Tendsto (chartAt ℂ x₀).symm (𝓝[≠] c₀) (𝓝[≠] x₀) := by
+    have := (chartAt ℂ x₀).symm.tendsto_nhdsNE (x := c₀)
+      (by simpa [hc₀] using (chartAt ℂ x₀).map_source (mem_chart_source ℂ x₀))
+    simpa [hc₀, (chartAt ℂ x₀).left_inv (mem_chart_source ℂ x₀)] using this
+  have hcrux : ∀ᶠ z in 𝓝[≠] c₀,
+      repVal α ((chartAt ℂ x₀).symm z) = rawLocalRep α.toFun ((chartAt ℂ x₀).symm z)
+        ((chartAt ℂ x₀).symm z) := htsymm.eventually (eventually_repVal_eq α x₀)
+  have hsrc : ∀ᶠ z in 𝓝[≠] c₀, (chartAt ℂ x₀).symm z ∈ (chartAt ℂ x₀).source := by
+    apply eventually_nhdsWithin_of_eventually_nhds
+    have hmem : c₀ ∈ (chartAt ℂ x₀).target := by
+      simpa [hc₀] using (chartAt ℂ x₀).map_source (mem_chart_source ℂ x₀)
+    filter_upwards [(chartAt ℂ x₀).open_target.mem_nhds hmem,
+      ((chartAt ℂ x₀).continuousAt_symm hmem).preimage_mem_nhds
+        ((chartAt ℂ x₀).open_source.mem_nhds ((chartAt ℂ x₀).map_target hmem))] with z _ hz
+    exact hz
+  have hStepA : Pb =ᶠ[𝓝[≠] c₀] formCoeff α.toFun x₀ := by
+    filter_upwards [hcrux, hsrc] with z hz_crux hz_src
+    set w := (chartAt ℂ x₀).symm z with hw
+    -- `Pb z = rawLocalRep (repairedSection α) x₀ w`, and at `w` (off centre) it is `formCoeff`.
+    show rawLocalRep (repairedSection α) x₀ w = formCoeff α.toFun x₀ z
+    -- `repairedSection α w = repVal α w • φ_w`, so its `x₀`-rawLocalRep at `w` is
+    -- `repVal α w · φ_w(e.symmL w 1) = rawLocalRep α.toFun w w · φ_w(e.symmL w 1)`.
+    have h1 : rawLocalRep (repairedSection α) x₀ w
+        = repVal α w * frameCovector w (e.symmL ℂ w 1) := by
+      show (repairedSection α w) (e.symmL ℂ w 1) = _
+      rw [repairedSection, ContinuousLinearMap.smul_apply, smul_eq_mul]
+    -- `α.toFun w = rawLocalRep α.toFun w w • φ_w` (self-frame), so `formCoeff α.toFun x₀ z`
+    -- `= α.toFun w (e.symmL w 1) = rawLocalRep α.toFun w w · φ_w(e.symmL w 1)`.
+    have h2 : formCoeff α.toFun x₀ z = rawLocalRep α.toFun w w * frameCovector w (e.symmL ℂ w 1) := by
+      rw [formCoeff_eq_rawLocalRep]
+      show α.toFun w (e.symmL ℂ w 1) = _
+      conv_lhs => rw [section_eq_rawLocalRep_smul_frame α.toFun w]
+      rw [ContinuousLinearMap.smul_apply, smul_eq_mul]
+    rw [h1, h2, hz_crux]
+  -- Step B: combine `=ᶠ[𝓝[≠]]` (Pb ~ formCoeff ~ NF) with the centre value to get `=ᶠ[𝓝]`.
+  have hPb_NF_punct : Pb =ᶠ[𝓝[≠] c₀] NF :=
+    hStepA.trans (α.meromorphic x₀).eq_nhdsNE_toMeromorphicNFAt
+  have hPb_NF_center : Pb c₀ = NF c₀ := by
+    -- `Pb c₀ = rawLocalRep (repairedSection α) x₀ x₀ = repVal α x₀ = NF c₀`.
+    have hsymm_center : (chartAt ℂ x₀).symm c₀ = x₀ := by
+      rw [hc₀, (chartAt ℂ x₀).left_inv (mem_chart_source ℂ x₀)]
+    show rawLocalRep (repairedSection α) x₀ ((chartAt ℂ x₀).symm c₀) = NF c₀
+    rw [hsymm_center, rawLocalRep_repairedSection_self]
+    rw [hNF, repVal]
+  have hPb_NF : Pb =ᶠ[𝓝 c₀] NF :=
+    eventuallyEq_nhds_of_eventuallyEq_nhdsNE hPb_NF_punct hPb_NF_center
+  exact hNFana.congr hPb_NF.symm
+
+/-- **The repaired holomorphic 1-form** of an order-`≥ 0` meromorphic 1-form. -/
+noncomputable def repairedHOF {α : MeromorphicOneForm X} (hα : α ∈ omegaD (X := X) 0) :
+    HolomorphicOneForms X :=
+  holOfLocalRepAnalyticAt (repairedSection α) (analyticAt_pullback_repairedSection hα)
+
+@[simp] theorem repairedHOF_toFun {α : MeromorphicOneForm X} (hα : α ∈ omegaD (X := X) 0) :
+    (repairedHOF hα).toFun = repairedSection α := rfl
+
 end Jacobians.Dolbeault
