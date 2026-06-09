@@ -6,6 +6,8 @@ Authors: Rado Kirov
 import Jacobians.Dolbeault.FormTraceFullFibreRationalityNF
 import Jacobians.Dolbeault.FormTraceCoherenceFromMoving
 import Jacobians.Dolbeault.FormTraceGlobalTPatched
+import Jacobians.Dolbeault.FormTraceBundleBranchBound
+import Jacobians.Dolbeault.FormTraceBundleBridge
 
 /-!
 # Gate A `∑Res = 0` from the **branch-patched** geometric trace, *sound* `∞` fibre (Miranda §VIII.3)
@@ -278,6 +280,67 @@ theorem residueSum_eq_zero_of_patchedTraceRationalityNF
     (traceRationalityDataNF_ofPatched Φ m cs ρ hcs_ball hcs_inj br hreg hbnd D Cfin hCfin_D
       hxs_inj hxs_mem hxs_surj Dinf hxsInf_inj hxsInf_mem hxsInf_surj hcenters_cs hcoh_inf
       hcont_int R₀ hR₀_an hR₀0 hR₀_eq)
+
+/-! ### Discharging the off-centre analyticity inputs (`hreg` / `hbnd`)
+
+The two off-centre analyticity inputs of `traceRationalityDataNF_ofPatched` reduce, via *proven*
+atoms, to the standard regular-value geometry — *no* Puiseux frame:
+
+* `hreg` (regular-value analyticity) is `analyticAt_valueChartTrace_of_movingDatum` (the symmetric-lever
+  moving coherence + `g`-analyticity at the fibre);
+* `hbnd` (branch-value boundedness `(z − b₀)·valueChartTrace z → 0`) is the **bundle trace SUM**
+  boundedness `tendsto_zero_valueChartTrace_of_bundleGerm` (resting on the axiom-clean
+  `TraceForm.traceLocalCoeff_mul_sub_tendsto_zero`), with the bundle-trace germ bridge `hbridgeBr`
+  discharged from the eventual sphere-sheet coherence `hbridgeBr_of_eventual_sphereCoherence` — Miranda's
+  "the SUM extends across branch points", never an individual colliding sheet.
+
+This is the `T := traceFun` discharge of the genus-`0` analyticity content: the planar trace inherits
+analyticity across branch points from the proven bundle trace `traceFun` extension. -/
+
+/-- **`hbnd` (branch-value boundedness) from the eventual sphere coherence + a local form `αBr`.**  At a
+branch value `b₀` (in the branch locus of the cover, `hbr`; `f` nonconstant, `hncF`) with a holomorphic
+local representative `αBr` of `α = ω₀·g` near the fibre, the boundedness crux
+`(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds, *provided* the eventual sphere-sheet coherence `hev`
+(the value-correct symmetric-SUM identification: near `b₀` each regular value carries a sphere sheet
+system whose planar fibre trace equals the geometric trace, and `αBr = ω₀·g` at the fibre).
+
+The bundle-trace germ bridge is `hbridgeBr_of_eventual_sphereCoherence`; the boundedness is the proven
+bundle SUM `tendsto_zero_valueChartTrace_of_bundleGerm` (axiom-clean
+`TraceForm.traceLocalCoeff_mul_sub_tendsto_zero`). -/
+theorem hbnd_of_eventual_sphereCoherence (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) {b₀ : ℂ}
+    (αBr : HolomorphicOneForms X)
+    (hncF : ¬ ∃ y₀ : RiemannSphere, ∀ x, f.toRiemannSphere x = y₀)
+    (hbr : ((b₀ : ℂ) : RiemannSphere) ∈ branchLocus f.toRiemannSphere)
+    (hev : ∀ᶠ z in 𝓝[≠] b₀,
+      ∃ (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+        (hderiv : ∀ i, deriv (fun w => f.holoRepr
+            ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+          ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+            (S.sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0)
+        (_hmero : ∀ i, MeromorphicAt
+          (fun w => g ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+          ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+            (S.sheet i (((z : ℂ) : RiemannSphere))))),
+        valueChartTrace ω₀ f Φ z
+            = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv _hmero)).traceCoeff z ∧
+        (∀ i, αBr.toFun (S.sheet i (((z : ℂ) : RiemannSphere)))
+          = g (S.sheet i (((z : ℂ) : RiemannSphere))) • ω₀.toFun (S.sheet i (((z : ℂ) : RiemannSphere))))) :
+    Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0) :=
+  Jacobians.Dolbeault.FormTraceGlobal.tendsto_zero_valueChartTrace_of_bundleGerm ω₀ f Φ αBr hncF hbr
+    (Jacobians.Dolbeault.FormTraceGlobal.hbridgeBr_of_eventual_sphereCoherence ω₀ αBr g f Φ hev)
+
+/-- **`hreg` (regular-value analyticity) from a moving coherence datum.**  At a regular value `z` with a
+moving coherence datum `C` whose fixed fibre `C.D` has `g`'s chart-pullback analytic at each fibre point
+(`hg`), the geometric trace `valueChartTrace ω₀ f Φ` is analytic at `z` (the symmetric-lever coherence
+`MovingCoherenceDatum.coherent` + `analyticAt_valueChartTrace_of_eventuallyEq`).  Re-export of
+`FormTraceMovingFibre.analyticAt_valueChartTrace_of_movingDatum`. -/
+theorem hreg_of_movingDatum {Φ : (b : ℂ) → FibreRegularData g f b} {z : ℂ}
+    (C : MovingCoherenceDatum ω₀ g f Φ z)
+    (hg : ∀ i, AnalyticAt ℂ (fun w => g ((chartAt ℂ (C.D.xs i)).symm w))
+      ((chartAt ℂ (C.D.xs i)) (C.D.xs i))) :
+    AnalyticAt ℂ (valueChartTrace ω₀ f Φ) z :=
+  Jacobians.Dolbeault.FormTraceMovingFibre.analyticAt_valueChartTrace_of_movingDatum C hg
 
 /-! ### Non-vacuity (end-to-end soundness)
 
