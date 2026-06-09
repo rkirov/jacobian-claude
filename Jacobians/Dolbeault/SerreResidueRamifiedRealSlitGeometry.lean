@@ -629,4 +629,48 @@ noncomputable def slitSectionGerm_of_fibre5 {ω₀ : HolomorphicOneForms X} {g :
   hnonpole := fun j => hnonpole i j
   hsep := fun i' j k hii => hsep i i' j k hii
 
+/-! ## The cluster section points are non-poles on a centre neighbourhood (the `hnonpole` content)
+
+Each cluster section point tends to its preimage `D.xs i` (a non-pole at a finite value-centre), so it is
+a non-pole for `z` in a centre neighbourhood (non-poles are open).  We produce one open `Vnp ∋ c` serving
+every preimage/sheet (finitely many). -/
+
+/-- **The cluster section points are non-poles on a centre neighbourhood.**  For the whole-fibre data
+`D = realFibreData g hdiv c hnp` (every preimage a non-pole) and a per-preimage cluster family `Cl` with
+`(Cl i).s` continuous at `0` (`(Cl i).s 0 = chart_{D.xs i}`) and `(Cl i).w₀` the `cpow` branch near `c`,
+there is an open `Vnp ∋ c` such that for every `z ∈ Vnp`, preimage `i`, and sheet `j`, the cluster section
+point is a non-pole:
+
+> `0 ≤ f.orderAtPoint (clusterSection D Cl i j z)`. -/
+theorem exists_open_clusterSection_nonpole {ω₀ : HolomorphicOneForms X} {g : MeromorphicFunction X}
+    {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0} {c : ℂ}
+    {hnp : ∀ i, 0 ≤ f.orderAtPoint (fullFibreEnum f hdiv c i)} {Sset : Set ℂ}
+    (Cl : ∀ i, ClusterTraceData ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) c Sset)
+    (hs_cont : ∀ i, ContinuousAt (Cl i).s 0)
+    (hs0 : ∀ i, (Cl i).s 0 = (chartAt ℂ ((realFibreData g hdiv c hnp).xs i))
+      ((realFibreData g hdiv c hnp).xs i))
+    (hw₀_eq : ∀ i, (Cl i).w₀ =ᶠ[𝓝 c] fun z => (z - c) ^ (((Cl i).m : ℂ)⁻¹)) :
+    ∃ Vnp : Set ℂ, IsOpen Vnp ∧ c ∈ Vnp ∧
+      ∀ z ∈ Vnp, ∀ (i : (realFibreData g hdiv c hnp).ι)
+        (j : Fin ((realFibreData g hdiv c hnp).mult i)),
+        0 ≤ f.orderAtPoint (clusterSection (realFibreData g hdiv c hnp) Cl i j z) := by
+  classical
+  -- For each preimage `i` and sheet `j`, the cluster section point is eventually a non-pole.
+  have hev_ij : ∀ (i : (realFibreData g hdiv c hnp).ι) (j : Fin ((realFibreData g hdiv c hnp).mult i)),
+      ∀ᶠ z in 𝓝 c, 0 ≤ f.orderAtPoint (clusterSection (realFibreData g hdiv c hnp) Cl i j z) := by
+    intro i j
+    -- `D.xs i = fullFibreEnum f hdiv c i` is a non-pole.
+    have hp_np : 0 ≤ f.orderAtPoint ((realFibreData g hdiv c hnp).xs i) := by
+      rw [realFibreData_xs]; exact hnp i
+    exact eventually_clusterSectionPoint_nonpole f hp_np (c := c) (m := (Cl i).m) (ζ := (Cl i).ζ)
+      (j := (j : ℕ)) (Cl i).hm (hs_cont i) (hs0 i) (hw₀_eq i)
+  -- Intersect over the finite index `Σ i, Fin (D.mult i)`.
+  have hev : ∀ᶠ z in 𝓝 c, ∀ (p : Σ i : (realFibreData g hdiv c hnp).ι,
+      Fin ((realFibreData g hdiv c hnp).mult i)),
+      0 ≤ f.orderAtPoint (clusterSection (realFibreData g hdiv c hnp) Cl p.1 p.2 z) := by
+    rw [eventually_all]
+    rintro ⟨i, j⟩; exact hev_ij i j
+  obtain ⟨Vnp, hVo, hcV, hV⟩ := exists_open_of_eventually_nhds c hev
+  exact ⟨Vnp, hVo, hcV, fun z hz i j => hV z hz ⟨i, j⟩⟩
+
 end Jacobians.Dolbeault.SerreResidueTheorem
