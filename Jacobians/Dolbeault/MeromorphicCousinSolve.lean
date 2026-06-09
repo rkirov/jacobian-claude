@@ -219,6 +219,115 @@ theorem res_smul (c : ℂ) (μ : CoverMLLift 𝔘 ω₀ K) : (smul c μ).res = c
   exact formFnResidue_smul ω₀ c (μ.g (patchOf 𝔘 a)) a
     (μ.formFnHoloPunctured_everywhere (patchOf 𝔘 a) (patchOf_mem 𝔘 a))
 
+/-! ### Additive combination -/
+
+open scoped Classical in
+/-- **Sum of two Cousin lifts** `combine μ₁ μ₂`: `gᵢ := μ₁.gᵢ + μ₂.gᵢ`, pole set the union, patch the
+left one on `μ₁.poles` and the right one elsewhere.  All overlap conditions add (`𝒪_K` is a submodule,
+analytic forms add); isolated/holomorphic structure adds via `formFnHoloPunctured_everywhere`/`holoOff`. -/
+noncomputable def combine (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) : CoverMLLift 𝔘 ω₀ K where
+  toDistribution :=
+    { g := fun i => μ₁.g i + μ₂.g i
+      poles := μ₁.poles ∪ μ₂.poles
+      patch := fun a => if a ∈ μ₁.poles then μ₁.toDistribution.patch a else μ₂.toDistribution.patch a
+      patch_mem := fun a ha => by
+        by_cases h : a ∈ μ₁.poles
+        · rw [if_pos h]; exact μ₁.toDistribution.patch_mem a h
+        · rw [if_neg h]
+          exact μ₂.toDistribution.patch_mem a ((Finset.mem_union.mp ha).resolve_left h)
+      diffMem := fun i j => by
+        have h1 := μ₁.toDistribution.diffMem i j
+        have h2 := μ₂.toDistribution.diffMem i j
+        have heq : ((μ₁.g i + μ₂.g i - (μ₁.g j + μ₂.g j))
+              ∘ (Subtype.val : ↥(𝔘.U i ⊓ 𝔘.U j) → X))
+            = ((μ₁.g i - μ₁.g j) ∘ (Subtype.val : ↥(𝔘.U i ⊓ 𝔘.U j) → X))
+              + ((μ₂.g i - μ₂.g j) ∘ (Subtype.val : ↥(𝔘.U i ⊓ 𝔘.U j) → X)) := by
+          funext x; simp only [Function.comp_apply, Pi.add_apply, Pi.sub_apply]; ring
+        rw [heq]; exact Submodule.add_mem _ h1 h2
+      formHoloDiff := fun i j a hi hj => by
+        have h1 := μ₁.toDistribution.formHoloDiff i j a hi hj
+        have h2 := μ₂.toDistribution.formHoloDiff i j a hi hj
+        have heq : (fun z => coeffAt ω₀ a z *
+              (μ₁.g i + μ₂.g i - (μ₁.g j + μ₂.g j)) ((chartAt ℂ a).symm z))
+            = (fun z => coeffAt ω₀ a z * (μ₁.g i - μ₁.g j) ((chartAt ℂ a).symm z))
+              + (fun z => coeffAt ω₀ a z * (μ₂.g i - μ₂.g j) ((chartAt ℂ a).symm z)) := by
+          funext z; simp only [Pi.add_apply, Pi.sub_apply]; ring
+        rw [heq]; exact h1.add h2
+      iso := fun a ha => by
+        -- patch `p` contains `a`; both `ω₀·μ₁.gₚ`, `ω₀·μ₂.gₚ` isolated there, so their sum is.
+        set p := if a ∈ μ₁.poles then μ₁.toDistribution.patch a else μ₂.toDistribution.patch a with hp
+        have hpmem : a ∈ 𝔘.U p := by
+          rw [hp]; by_cases h : a ∈ μ₁.poles
+          · rw [if_pos h]; exact μ₁.toDistribution.patch_mem a h
+          · rw [if_neg h]
+            exact μ₂.toDistribution.patch_mem a ((Finset.mem_union.mp ha).resolve_left h)
+        have h1 := μ₁.formFnHoloPunctured_everywhere p hpmem
+        have h2 := μ₂.formFnHoloPunctured_everywhere p hpmem
+        obtain ⟨ρ₁, hρ₁, hb₁⟩ := h1
+        obtain ⟨ρ₂, hρ₂, hb₂⟩ := h2
+        refine ⟨min ρ₁ ρ₂, lt_min hρ₁ hρ₂, fun z hz => ?_⟩
+        have hz1 : z ∈ ball ((chartAt ℂ a) a) ρ₁ \ {(chartAt ℂ a) a} :=
+          ⟨mem_ball.mpr (lt_of_lt_of_le (mem_ball.mp hz.1) (min_le_left _ _)), hz.2⟩
+        have hz2 : z ∈ ball ((chartAt ℂ a) a) ρ₂ \ {(chartAt ℂ a) a} :=
+          ⟨mem_ball.mpr (lt_of_lt_of_le (mem_ball.mp hz.1) (min_le_right _ _)), hz.2⟩
+        have heq : (fun z => coeffAt ω₀ a z * (μ₁.g p + μ₂.g p) ((chartAt ℂ a).symm z))
+            = (fun z => coeffAt ω₀ a z * μ₁.g p ((chartAt ℂ a).symm z))
+              + fun z => coeffAt ω₀ a z * μ₂.g p ((chartAt ℂ a).symm z) := by
+          funext w; simp only [Pi.add_apply]; ring
+        rw [heq]; exact (hb₁ z hz1).add (hb₂ z hz2) }
+  holoOff := fun i a ha hb => by
+    have hb1 : a ∉ μ₁.poles := fun h => hb (Finset.mem_union_left _ h)
+    have hb2 : a ∉ μ₂.poles := fun h => hb (Finset.mem_union_right _ h)
+    have h1 := μ₁.holoOff i a ha hb1
+    have h2 := μ₂.holoOff i a ha hb2
+    have heq : (fun z => (μ₁.g i + μ₂.g i) ((chartAt ℂ a).symm z))
+        = (fun z => μ₁.g i ((chartAt ℂ a).symm z)) + fun z => μ₂.g i ((chartAt ℂ a).symm z) := by
+      funext z; simp only [Pi.add_apply]
+    rw [heq]; exact h1.add h2
+
+@[simp] theorem combine_g (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) (i : 𝔘.ι) :
+    (combine μ₁ μ₂).g i = μ₁.g i + μ₂.g i := rfl
+
+open scoped Classical in
+@[simp] theorem combine_poles (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) :
+    (combine μ₁ μ₂).poles = μ₁.poles ∪ μ₂.poles := rfl
+
+open scoped Classical in
+/-- **`res (combine μ₁ μ₂) = res μ₁ + res μ₂`** (Forster §17.2 additivity).  Both residues are read over
+the common pole-union via `res_eq_sum_patchOf_superset`, where the integrand splits (`formFnResidue_add`,
+both summands isolated everywhere). -/
+theorem res_combine (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) :
+    (combine μ₁ μ₂).res = μ₁.res + μ₂.res := by
+  rw [(combine μ₁ μ₂).res_eq_sum_patchOf,
+    μ₁.res_eq_sum_patchOf_superset (Finset.subset_union_left (s₁ := μ₁.poles) (s₂ := μ₂.poles)),
+    μ₂.res_eq_sum_patchOf_superset (Finset.subset_union_right (s₁ := μ₁.poles) (s₂ := μ₂.poles)),
+    combine_poles, ← Finset.sum_add_distrib]
+  refine Finset.sum_congr rfl fun a _ => ?_
+  rw [combine_g]
+  exact formFnResidue_add ω₀ (μ₁.g (patchOf 𝔘 a)) (μ₂.g (patchOf 𝔘 a)) a
+    (μ₁.formFnHoloPunctured_everywhere (patchOf 𝔘 a) (patchOf_mem 𝔘 a))
+    (μ₂.formFnHoloPunctured_everywhere (patchOf 𝔘 a) (patchOf_mem 𝔘 a))
+
+/-- **Negation** `neg μ := (-1) • μ`. -/
+noncomputable def neg (μ : CoverMLLift 𝔘 ω₀ K) : CoverMLLift 𝔘 ω₀ K := smul (-1) μ
+
+@[simp] theorem neg_g (μ : CoverMLLift 𝔘 ω₀ K) (i : 𝔘.ι) : (neg μ).g i = -μ.g i := by
+  simp only [neg, smul_g, neg_smul, one_smul]
+
+theorem res_neg (μ : CoverMLLift 𝔘 ω₀ K) : (neg μ).res = -μ.res := by
+  rw [neg, res_smul]; simp
+
+/-- **Difference** `sub μ₁ μ₂ := combine μ₁ (neg μ₂)`, with `gᵢ = μ₁.gᵢ − μ₂.gᵢ` and `res = res μ₁ −
+res μ₂`.  The lift whose connecting cocycle is `δμ₁ − δμ₂`. -/
+noncomputable def sub (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) : CoverMLLift 𝔘 ω₀ K := combine μ₁ (neg μ₂)
+
+@[simp] theorem sub_g (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) (i : 𝔘.ι) :
+    (sub μ₁ μ₂).g i = μ₁.g i - μ₂.g i := by
+  simp only [sub, combine_g, neg_g]; ring
+
+theorem res_sub (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) : (sub μ₁ μ₂).res = μ₁.res - μ₂.res := by
+  rw [sub, res_combine, res_neg]; ring
+
 end CoverMLLift
 
 end Jacobians.Dolbeault
