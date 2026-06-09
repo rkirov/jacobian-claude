@@ -915,6 +915,47 @@ theorem eventuallyEq_of_analyticOn_punctured_eqOn_open {F T : ℂ → ℂ} {c : 
       intro z hz; exact ⟨hz.1, by simpa using hz.2⟩⟩
   filter_upwards [hball_nhds] with z hz using hEqOn hz
 
+/-- **A meromorphic germ has a finite pole-order bound.**  If `T` is meromorphic at `c`, then for some
+`N : ℕ`, `(z − c)^N · T → 0` as `z → c`.  (Write `T =ᶠ[𝓝[≠] c] (z − c)^n • g` with `g` analytic; take
+`N` large enough that `N + n ≥ 1`, so `(z − c)^N · T =ᶠ (z − c)^{N+n} · g → 0`.) -/
+theorem exists_pow_bound_of_meromorphicAt {T : ℂ → ℂ} {c : ℂ} (hT : MeromorphicAt T c) :
+    ∃ N : ℕ, Tendsto (fun z => (z - c) ^ N * T z) (𝓝[≠] c) (𝓝 0) := by
+  rw [MeromorphicAt.iff_eventuallyEq_zpow_smul_analyticAt] at hT
+  obtain ⟨n, g, hg_an, hg_eq⟩ := hT
+  -- Choose `N` with `(N : ℤ) + n ≥ 1`.
+  obtain ⟨N, hN⟩ : ∃ N : ℕ, (1 : ℤ) ≤ (N : ℤ) + n := by
+    by_cases hn : 0 ≤ n
+    · exact ⟨1, by omega⟩
+    · exact ⟨(1 - n).toNat, by omega⟩
+  refine ⟨N, ?_⟩
+  -- `(z − c)^{N + n} · g → 0` since the exponent is `≥ 1` (so `(z − c)^{…} → 0`) and `g` is bounded.
+  have hexp : Tendsto (fun z => (z - c) ^ ((N : ℤ) + n)) (𝓝[≠] c) (𝓝 0) := by
+    have h1 : Tendsto (fun z : ℂ => z - c) (𝓝[≠] c) (𝓝[≠] 0) := by
+      rw [tendsto_nhdsWithin_iff]
+      refine ⟨?_, ?_⟩
+      · have : Tendsto (fun z : ℂ => z - c) (𝓝 c) (𝓝 0) := by
+          simpa using (continuous_sub_right c).tendsto c
+        exact this.mono_left nhdsWithin_le_nhds
+      · filter_upwards [self_mem_nhdsWithin] with z hz
+        simpa [sub_ne_zero] using hz
+    have h2 : Tendsto (fun w : ℂ => w ^ ((N : ℤ) + n)) (𝓝[≠] 0) (𝓝 0) := by
+      have hpow : Tendsto (fun w : ℂ => w ^ (((N : ℤ) + n).toNat)) (𝓝 0) (𝓝 0) := by
+        have hpos : 0 < ((N : ℤ) + n).toNat := by omega
+        simpa using (continuous_pow ((N : ℤ) + n).toNat).tendsto' 0 0 (by simp [hpos.ne'])
+      refine (hpow.mono_left nhdsWithin_le_nhds).congr' ?_
+      filter_upwards [self_mem_nhdsWithin] with w hw
+      rw [← zpow_natCast w, Int.toNat_of_nonneg (by omega)]
+    have := h2.comp h1
+    simpa [Function.comp] using this
+  have hg_cont : Tendsto g (𝓝[≠] c) (𝓝 (g c)) :=
+    hg_an.continuousAt.tendsto.mono_left nhdsWithin_le_nhds
+  have htend1 : Tendsto (fun z => (z - c) ^ ((N : ℤ) + n) * g z) (𝓝[≠] c) (𝓝 0) := by
+    have := hexp.mul hg_cont; simpa using this
+  refine htend1.congr' ?_
+  filter_upwards [hg_eq, self_mem_nhdsWithin] with z hz hzc
+  have hzc' : z - c ≠ 0 := sub_ne_zero.mpr hzc
+  rw [hz, smul_eq_mul, ← mul_assoc, ← zpow_natCast (z - c) N, ← zpow_add₀ hzc']
+
 /-! ## The residue theorem from the per-centre pole-order bound (the precise residual)
 
 `realCenterSlitSectionData_of_bound` reduces the per-centre §5-section datum to **exactly** the
