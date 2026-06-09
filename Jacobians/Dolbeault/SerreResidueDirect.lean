@@ -122,13 +122,16 @@ needed for the principal-part extraction is supplied by the per-pole moving data
 datum's fixed fibre is irrelevant here — only `MeromorphicAt T (cs i)` is used). -/
 
 /-- **The genuine rational trace from the patched geometry.**  With `T := valueChartTracePatched ω₀ f Φ
-br`, the off-centre analyticity inputs `hreg`/`hbnd` (giving the value-correct `hT_off`), the per-pole
-meromorphy `Cfin`/`hCfin_D` (giving `MeromorphicAt T (cs i)`), junk-freeness `hcont_int`, and the
-genus-`0` `∞`-vanishing `R₀`, there is a `LaurentForm L` whose centres are the `cs` (`hLcenters`) with
-`T = L.R` (the Liouville agreement — `Tr_F α` *is* the rational form `L.R`).
+br`, the off-centre analyticity inputs `hreg`/`hbnd` (giving the value-correct `hT_off`), the meromorphy
+of `T` at the centres `hT_mero`, junk-freeness `hcont_int`, and the genus-`0` `∞`-vanishing `R₀`, there
+is a `LaurentForm L` whose centres are the `cs` (`hLcenters`) with `T = L.R` (the Liouville agreement —
+`Tr_F α` *is* the rational form `L.R`).
 
 This is the sound prefix of `traceRationalityDataNF_ofPatched`, reusing its analytic engines, but
-exposing only the genuine `L`/`hTL` — **not** the germ-equality `agree` (the 6th false field). -/
+exposing only the genuine `L`/`hTL` — **not** the germ-equality `agree` (the 6th false field).  The
+meromorphy `hT_mero` is itself produced from a moving datum by
+`meromorphicAt_valueChartTracePatched_of_movingDatum` (any datum — full *or* pole-only — at each
+centre). -/
 theorem genuineTrace_ofPatched
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
@@ -136,9 +139,7 @@ theorem genuineTrace_ofPatched
     (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
     (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
       Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
-    (D : (p : ℂ) → FibreRegularData g f p)
-    (Cfin : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
-    (hCfin_D : ∀ i, (Cfin i).D = D (cs i))
+    (hT_mero : ∀ i, MeromorphicAt (valueChartTracePatched ω₀ f Φ br) (cs i))
     (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
       (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
         (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
@@ -150,9 +151,6 @@ theorem genuineTrace_ofPatched
       valueChartTracePatched ω₀ f Φ br = L.R := by
   classical
   set T := valueChartTracePatched ω₀ f Φ br with hT
-  -- Meromorphy at the centres from the per-pole moving data.
-  have hT_mero : ∀ i, MeromorphicAt T (cs i) := fun i =>
-    meromorphicAt_valueChartTracePatched_of_movingDatum br (Cfin i) (hCfin_D i)
   -- Principal-part `LaurentForm`.
   set hPP := exists_laurentForm_principalPart cs ρ hcs_ball hcs_inj hT_mero with hPP_def
   set L := hPP.choose with hL_def
@@ -267,9 +265,8 @@ theorem serreTraceExists_of_residueGeometry
     (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
     (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
       Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (hT_mero : ∀ i, MeromorphicAt (valueChartTracePatched ω₀ f Φ br) (cs i))
     (D : (p : ℂ) → FibreRegularData g f p)
-    (Cfin : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
-    (hCfin_D : ∀ i, (Cfin i).D = D (cs i))
     (hxs_inj : ∀ p, Function.Injective (D p).xs)
     (hxs_mem : ∀ p, ∀ i,
       (D p).xs i ∈ poles ∧ f.toRiemannSphere ((D p).xs i) = ((p : ℂ) : RiemannSphere))
@@ -293,7 +290,7 @@ theorem serreTraceExists_of_residueGeometry
     SerreTraceExists ω₀ g poles := by
   -- The genuine rational trace `L` with `T = L.R`.
   obtain ⟨L, hLcenters, hTL⟩ :=
-    genuineTrace_ofPatched Φ m cs ρ hcs_ball hcs_inj br hreg hbnd D Cfin hCfin_D
+    genuineTrace_ofPatched Φ m cs ρ hcs_ball hcs_inj br hreg hbnd hT_mero
       hcont_int R₀ hR₀_an hR₀0 hR₀_eq
   -- The residue-level `GlobalTraceData`, then `SerreTraceExists` (bridge already in
   -- `SerreResidueTheorem`, pole set preserved by `rfl`).
@@ -312,9 +309,8 @@ theorem residueTheorem_of_residueGeometry
     (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
     (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
       Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (hT_mero : ∀ i, MeromorphicAt (valueChartTracePatched ω₀ f Φ br) (cs i))
     (D : (p : ℂ) → FibreRegularData g f p)
-    (Cfin : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
-    (hCfin_D : ∀ i, (Cfin i).D = D (cs i))
     (hxs_inj : ∀ p, Function.Injective (D p).xs)
     (hxs_mem : ∀ p, ∀ i,
       (D p).xs i ∈ poles ∧ f.toRiemannSphere ((D p).xs i) = ((p : ℂ) : RiemannSphere))
@@ -337,7 +333,7 @@ theorem residueTheorem_of_residueGeometry
         = ∑ a ∈ poles with f.toRiemannSphere a = OnePoint.infty, formFnResidue ω₀ g a) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
   residueTheorem_of_traceExists ω₀ g poles
-    (serreTraceExists_of_residueGeometry Φ m cs ρ hcs_ball hcs_inj br hreg hbnd D Cfin hCfin_D
+    (serreTraceExists_of_residueGeometry Φ m cs ρ hcs_ball hcs_inj br hreg hbnd hT_mero D
       hxs_inj hxs_mem hxs_surj hcenters_cs hcont_int R₀ hR₀_an hR₀0 hR₀_eq hres_fin hinfty)
 
 /-! ## Non-vacuity (soundness witness): the residue identities are satisfiable
@@ -373,8 +369,8 @@ theorem serreTraceExists_of_residueGeometry_holomorphic (ω₀ : HolomorphicOneF
     0 Fin.elim0 0 (fun i => i.elim0) (fun i => i.elim0) (∅ : Finset ℂ)
     (fun w _ => by rw [valueChartTrace_emptySelection ω₀ f]; exact analyticAt_const)
     (fun b₀ hb₀ _ => absurd hb₀ (Finset.notMem_empty b₀))
+    (fun i => i.elim0)
     (fun p => emptyFibreRegularData g f p)
-    (fun i => i.elim0) (fun i => i.elim0)
     (fun _ i => i.elim) (fun _ i => i.elim)
     (fun _ a ha => absurd ha (Finset.notMem_empty a))
     (by simp)
@@ -568,5 +564,109 @@ theorem hinfty_of_fullInftyCoherence
   rw [residueSum_full_eq_poleOnly Dinf_full.xs xsInf_po hfull_inj hpo_inj hpole_image hnonpole]
   -- The pole-only `∞`-enumeration residue sum = the `∞`-fibre-restricted pole-set sum (pure `Finset`).
   exact residueSum_xs_eq_inftyFilter xsInf_po hpo_inj hpo_mem hpo_surj
+
+/-! ## The fully-assembled residue-level close of Gate A (no germ `agree`)
+
+Combining `genuineTrace_ofPatched` (the genuine rational trace), the Level-2 discharges
+(`hres_fin_of_fullFibreCoherence` / `hinfty_of_fullInftyCoherence`), and the structural bridge
+(`serreTraceExists_of_residueGeometry`), Gate A `∑Res = 0` follows from the §VIII.3 geometry with the
+**full-fibre** coherence and the **non-pole analyticity** — the genuine genericity content — and
+**never** the germ-equality `agree`/`agree_infty`.
+
+The full-fibre moving coherence `Cfull i` at each finite centre serves double duty: it gives both the
+meromorphy of `T` at `cs i` (for the principal-part extraction) and the finite Lemma-3.2 residue
+identity (the genuine, sound germ equality at the full fibre).  The non-pole points (full fibre `\` poles)
+contribute residue `0` (`α` holomorphic there), so the full-fibre residue sum collapses to the pole-only
+sum — the honest §VIII.3 reading at the residue level. -/
+
+/-- **Gate A `∑Res = 0` from the residue-level §VIII.3 geometry (full-fibre coherence, no germ
+`agree`).**  This is the definitive residue-level close: every input is a *genuine, satisfiable*
+geometric/analytic datum (the full-fibre coherence is the **sound** germ equality, full fibre ≠
+pole-only; the non-pole analyticity gives residue `0`), and the germ-equality `agree`/`agree_infty` (the
+6th false field) is **never** used.
+
+Inputs (the genuine genericity for a nonconstant cover `f`):
+
+* `Φ`, `cs`/`ρ`, `br`, `hreg`/`hbnd` — the global selection, centres, branch set, and off-centre
+  analyticity inputs of the genuine rational trace;
+* `Cfull i` — the **full-fibre** moving coherence at each finite centre (sound; gives meromorphy + the
+  finite residue identity);
+* `D`/`hxs_*`, `hcenters_cs` — the pole-only finite fibre data + centre bookkeeping;
+* `hfull_inj i` / `hpole_image i` / `hnonpole_an i` — the full-fibre enumeration is injective, its pole
+  points are exactly the pole-only enumeration `(D (cs i)).xs`, and its non-pole points have analytic
+  `g`-pullback (⟹ residue `0`);
+* `hcont_int`, `R₀`/`hR₀_*` — junk-freeness + the genus-`0` `∞`-vanishing;
+* the `∞`-fibre data: `Dinf_full` (full `∞`-fibre, sound) + `hcoh_full` (the `∞`-single-valuedness),
+  `hfullInf_inj`, the pole-only `xsInf_po`/`hpoInf_*`, `hpole_image_inf`, `hnonpole_inf_an`.
+
+Yields `∑_{a ∈ poles} formFnResidue ω₀ g a = 0`, **unconditional** downstream. -/
+theorem residueTheorem_of_directGeometry
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (Cfull : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
+    (D : (p : ℂ) → FibreRegularData g f p)
+    (hxs_inj : ∀ p, Function.Injective (D p).xs)
+    (hxs_mem : ∀ p, ∀ i,
+      (D p).xs i ∈ poles ∧ f.toRiemannSphere ((D p).xs i) = ((p : ℂ) : RiemannSphere))
+    (hxs_surj : ∀ p, ∀ a ∈ poles, f.toRiemannSphere a = ((p : ℂ) : RiemannSphere) →
+      ∃ i, (D p).xs i = a)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hfull_inj : ∀ i, Function.Injective (Cfull i).D.xs)
+    (hpole_image : ∀ i, (Finset.univ.image (Cfull i).D.xs).filter (· ∈ poles)
+      = Finset.univ.image (D (cs i)).xs)
+    (hnonpole_an : ∀ i, ∀ k, (Cfull i).D.xs k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ ((Cfull i).D.xs k)).symm z))
+        ((chartAt ℂ ((Cfull i).D.xs k)) ((Cfull i).D.xs k)))
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (valueChartTracePatched ω₀ f Φ br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] 0] R₀)
+    (Dinf_full : InftyFibreDataNF g f)
+    (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf_full))
+    (hfullInf_inj : Function.Injective Dinf_full.xs)
+    {ιInfP : Type} [Fintype ιInfP] (xsInf_po : ιInfP → X)
+    (hpoInf_inj : Function.Injective xsInf_po)
+    (hpoInf_mem : ∀ j, xsInf_po j ∈ poles ∧ f.toRiemannSphere (xsInf_po j) = OnePoint.infty)
+    (hpoInf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ j, xsInf_po j = a)
+    (hpole_image_inf : (Finset.univ.image Dinf_full.xs).filter (· ∈ poles)
+      = Finset.univ.image xsInf_po)
+    (hnonpole_inf_an : ∀ k, Dinf_full.xs k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (Dinf_full.xs k)).symm z))
+        ((chartAt ℂ (Dinf_full.xs k)) (Dinf_full.xs k))) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 := by
+  -- Meromorphy of `T` at the centres: `T =ᶠ valueChartTrace =ᶠ (fibreTrace (Cfull i).D).traceCoeff`
+  -- (full-fibre coherence), which is meromorphic.
+  have hT_mero : ∀ i, MeromorphicAt (valueChartTracePatched ω₀ f Φ br) (cs i) := by
+    intro i
+    have hgerm : valueChartTracePatched ω₀ f Φ br
+        =ᶠ[𝓝[≠] (cs i)] (fibreTrace ω₀ f (Cfull i).D).traceCoeff :=
+      (valueChartTracePatched_eventuallyEq ω₀ f Φ br (cs i)).trans (Cfull i).coherent_punctured
+    exact (meromorphicAt_traceCoeff_fibreTrace ω₀ f (Cfull i).D).congr hgerm.symm
+  -- The finite Lemma-3.2 residue identity, discharged from the full-fibre coherence.
+  have hres_fin : ∀ i, resAt (valueChartTracePatched ω₀ f Φ br) (cs i)
+      = ∑ j, formFnResidue ω₀ g ((D (cs i)).xs j) := fun i =>
+    hres_fin_of_fullFibreCoherence D i (Cfull i) (hfull_inj i) (hxs_inj (cs i)) (hpole_image i)
+      (fun k hk => formFnResidue_eq_zero_of_analyticAt ω₀ g _ (hnonpole_an i k hk))
+  -- The `∞`-residue identity, discharged from the full `∞`-fibre coherence.
+  have hinfty : ∀ (L : LaurentForm), valueChartTracePatched ω₀ f Φ br = L.R →
+      Finset.univ.image L.a = Finset.univ.image cs →
+      resAtInfty L.R L.ρ
+        = ∑ a ∈ poles with f.toRiemannSphere a = OnePoint.infty, formFnResidue ω₀ g a := by
+    intro L hTL _
+    exact hinfty_of_fullInftyCoherence hTL Dinf_full hcoh_full hfullInf_inj xsInf_po hpoInf_inj
+      hpoInf_mem hpoInf_surj hpole_image_inf
+      (fun k hk => formFnResidue_eq_zero_of_analyticAt ω₀ g _ (hnonpole_inf_an k hk))
+  -- The residue-level close.
+  exact residueTheorem_of_residueGeometry Φ m cs ρ hcs_ball hcs_inj br hreg hbnd hT_mero D
+    hxs_inj hxs_mem hxs_surj hcenters_cs hcont_int R₀ hR₀_an hR₀0 hR₀_eq hres_fin hinfty
 
 end Jacobians.Dolbeault.SerreResidueTheorem
