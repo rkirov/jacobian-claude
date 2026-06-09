@@ -567,6 +567,25 @@ theorem lDim_le_h1Dim (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
     lDim (X := X) (K - D) ≤ 𝔘.toFiniteFamily.h1Dim D :=
   (S.toCousinResidueData nondeg).lDim_le_h1Dim D hfin
 
+/-- **The full ladder target `SerreDualityData 𝔘`** from the Cousin solutions — the end-to-end chain
+`MeromorphicCousinSolutions → CousinResidueData → GlobalResidue → SerreDualityData`.  The remaining
+ladder inputs are exactly the standard ones the §17 plan records: the §17.6 `dz/z` non-degeneracy
+(`nondeg`), the HARD §17.9 pairing surjectivity (`ι_surj`), Forster §17.4's `hKgenus`
+(`lDim K = genus X`, proven via `CanonicalFormIso`), and Forster §14 finiteness (`finH1`, PROVEN
+unconditionally by `finiteDimensional_cechH1_wired`).  This exhibits that an inhabitant of
+`MeromorphicCousinSolutions` (the meromorphic Cousin wall + Gate-A descent) feeds the entire Serre
+duality ladder. -/
+def toSerreDualityData (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
+    (nondeg : ∀ (D : Divisor X) (v : lSysModule (K - D)), v ≠ 0 →
+      ∃ ξ : 𝔘.toFiniteFamily.cechH1 D,
+        (Submodule.liftQ _ S.resCocycle (S.resCocycle_vanish_coboundary))
+          (cup (𝔘 := 𝔘.toFiniteFamily) D K v ξ) = 1)
+    (hKgenus : lDim (X := X) K = genus X)
+    (ι_surj : ∀ D : Divisor X, Function.Surjective ((S.toCousinResidueData nondeg).pairing D))
+    (finH1 : ∀ D : Divisor X, FiniteDimensional ℂ (𝔘.toFiniteFamily.cechH1 D)) :
+    SerreDualityData 𝔘 :=
+  (S.toCousinResidueData nondeg).toSerreDualityData hKgenus ι_surj finH1
+
 /-! ### Soundness — non-vacuity / inhabitability (NOT a disguised `False`)
 
 `MeromorphicCousinSolutions` is **inhabitable**: in the degenerate configuration `cechH1 K` trivial
