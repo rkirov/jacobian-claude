@@ -332,6 +332,116 @@ noncomputable def meroFormDiv (α : MeromorphicOneForm X) : MeromorphicFunction 
       (apply_symmL_ne_zero_of_ne_zero (x := y) (data.ω₀.toFun y) hω0
         (mem_baseSet_trivializationAt ℂ _ y))).symm
 
+/-- The chart pullback of `α/ω₀` agrees, on a punctured neighbourhood of `chart x x`, with the
+quotient `formCoeff α x / formCoeff ω₀ x` (the covector-ratio identity of the `meromorphic` field,
+extracted for reuse in the order computation). -/
+theorem meroFormDiv_comp_chart_eq (α : MeromorphicOneForm X) (x : X) :
+    (data.meroFormDiv α).toFun ∘ (chartAt ℂ x).symm
+      =ᶠ[𝓝[≠] ((chartAt ℂ x) x)] formCoeff α.toFun x / formCoeff data.ω₀.toFun x := by
+  -- this is the (symmetrised) `EventuallyEq` proven inside `meroFormDiv.meromorphic`.
+  have htarget : (chartAt ℂ x).target ∈ 𝓝 ((chartAt ℂ x) x) :=
+    (chartAt ℂ x).open_target.mem_nhds ((chartAt ℂ x).map_source (mem_chart_source ℂ x))
+  have hneC : ∀ᶠ z in 𝓝[≠] ((chartAt ℂ x) x),
+      data.ω₀.toFun ((chartAt ℂ x).symm z) ≠ 0 := by
+    have hyt : (chartAt ℂ x) x ∈ (chartAt ℂ x).target :=
+      (chartAt ℂ x).map_source (mem_chart_source ℂ x)
+    have hey : (chartAt ℂ x).symm ((chartAt ℂ x) x) = x := (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
+    have hsymm : ContinuousAt (chartAt ℂ x).symm ((chartAt ℂ x) x) :=
+      (chartAt ℂ x).continuousAt_symm hyt
+    have hev0 : ∀ᶠ w in 𝓝 x, w ∈ ({x} : Set X)ᶜ → data.ω₀.toFun w ≠ 0 := by
+      rw [← eventually_nhdsWithin_iff]; exact data.ω₀_eventually_ne_zero x
+    have h2 := hsymm.eventually (p := fun w => w ∈ ({x} : Set X)ᶜ → data.ω₀.toFun w ≠ 0)
+      (by rw [hey]; exact hev0)
+    rw [eventually_nhdsWithin_iff]
+    filter_upwards [h2, (chartAt ℂ x).open_target.mem_nhds hyt] with w hw hw_tgt hw_mem
+    apply hw
+    rw [Set.mem_compl_iff, Set.mem_singleton_iff]
+    intro heq
+    apply hw_mem
+    have hr := (chartAt ℂ x).right_inv hw_tgt
+    rw [heq] at hr; rw [Set.mem_singleton_iff]; exact hr.symm
+  filter_upwards [hneC, nhdsWithin_le_nhds htarget] with z hz hztgt
+  set y := (chartAt ℂ x).symm z with hy
+  have hysrc : y ∈ (chartAt ℂ x).source := (chartAt ℂ x).map_target hztgt
+  have hybase : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).baseSet := by
+    rw [TangentBundle.trivializationAt_baseSet]; exact hysrc
+  show (data.meroFormDiv α).toFun y = formCoeff α.toFun x z / formCoeff data.ω₀.toFun x z
+  show α.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
+      / data.ω₀.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
+      = formCoeff α.toFun x z / formCoeff data.ω₀.toFun x z
+  simp only [formCoeff, ← hy]
+  exact covector_ratio_eq (x := x) (α.toFun y) (data.ω₀.toFun y) hybase
+    ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
+    (apply_symmL_ne_zero_of_ne_zero (x := y) (data.ω₀.toFun y) hz
+      (mem_baseSet_trivializationAt ℂ _ y))
+
+/-- **Order subtractivity of `α/ω₀`** (Forster §17.4 bookkeeping): `orderW (α/ω₀) x = formOrderW α x
+− formOrderW ω₀ x = formOrderW α x − (K x)`.  From `meroFormDiv_comp_chart_eq` + `meromorphicOrderAt_div`
++ `order_eq`. -/
+theorem meroFormDiv_orderW (α : MeromorphicOneForm X) (x : X) :
+    (data.meroFormDiv α).orderW x = α.formOrderW x - (data.K x : WithTop ℤ) := by
+  rw [MeromorphicFunction.orderW, meromorphicOrderAt_congr (data.meroFormDiv_comp_chart_eq α x)]
+  rw [show (formCoeff α.toFun x / formCoeff data.ω₀.toFun x)
+      = (formCoeff α.toFun x) / (formCoeff data.ω₀.toFun x) from rfl,
+    meromorphicOrderAt_div (α.meromorphic x) (data.ω₀.meromorphic x)]
+  rw [show meromorphicOrderAt (formCoeff α.toFun x) ((chartAt ℂ x) x) = α.formOrderW x from rfl,
+    show meromorphicOrderAt (formCoeff data.ω₀.toFun x) ((chartAt ℂ x) x) = data.ω₀.formOrderW x from rfl,
+    data.order_eq x]
+
+/-! ### `(α/ω₀)·ω₀ = α` modulo germ-junk, and the `meroFormSMul ω₀` order law -/
+
+/-- **Covector extensionality on the frame vector.**  Two covectors on the (1-dim) cotangent fibre
+at `y` are equal iff they agree on the spanning frame vector `symmL 1` of any trivialization. -/
+theorem covector_ext_symmL {x y : X} (a b : TangentSpace 𝓘(ℂ) (M := X) y →L[ℂ] ℂ)
+    (hy : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).baseSet)
+    (h : a ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ y 1)
+       = b ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ y 1)) :
+    a = b := by
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x with he
+  refine ContinuousLinearMap.ext fun v => ?_
+  set c := e.continuousLinearMapAt ℂ y v with hc
+  have hvexp : v = c • e.symmL ℂ y 1 := by
+    have h1 : e.symmL ℂ y c = v := e.symmL_continuousLinearMapAt hy v
+    have h2 : e.symmL ℂ y c = c • e.symmL ℂ y 1 := by
+      have := (e.symmL ℂ y).map_smul c (1 : ℂ); rwa [smul_eq_mul, mul_one] at this
+    rw [← h1, h2]
+  rw [hvexp, a.map_smul, b.map_smul, h]
+
+/-- **The reconstruction identity** `(α/ω₀)·ω₀ = α` where `ω₀ ≠ 0`.  At a point `y` with
+`ω₀.toFun y ≠ 0`, the covector `α.toFun y` is the scalar `(α/ω₀)(y)` times `ω₀.toFun y` (covectors
+are proportional on the 1-dim fibre), so `meroFormSMul (α/ω₀) ω₀` agrees with `α` there. -/
+theorem meroFormSMul_meroFormDiv_apply (α : MeromorphicOneForm X) {y : X}
+    (hy : data.ω₀.toFun y ≠ 0) :
+    (meroFormSMul (data.meroFormDiv α) data.ω₀).toFun y = α.toFun y := by
+  rw [meroFormSMul_toFun]
+  show (data.meroFormDiv α).toFun y • data.ω₀.toFun y = α.toFun y
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y with he
+  have hbase : y ∈ e.baseSet := mem_baseSet_trivializationAt ℂ _ y
+  have hω0v : data.ω₀.toFun y (e.symmL ℂ y 1) ≠ 0 :=
+    apply_symmL_ne_zero_of_ne_zero (x := y) (data.ω₀.toFun y) hy hbase
+  -- it suffices that both covectors agree on the frame vector `e.symmL y 1`.
+  refine covector_ext_symmL (x := y) _ _ hbase ?_
+  rw [ContinuousLinearMap.smul_apply, smul_eq_mul]
+  show (data.meroFormDiv α).toFun y * data.ω₀.toFun y (e.symmL ℂ y 1) = α.toFun y (e.symmL ℂ y 1)
+  show (α.toFun y (e.symmL ℂ y 1) / data.ω₀.toFun y (e.symmL ℂ y 1)) * data.ω₀.toFun y (e.symmL ℂ y 1)
+      = α.toFun y (e.symmL ℂ y 1)
+  field_simp
+
+/-- **`(α/ω₀)·ω₀` and `α` have the same class** in `omegaDModule D`: their difference is germ-zero
+everywhere (they agree on a punctured neighbourhood of every point, where `ω₀ ≠ 0`). -/
+theorem formOrderW_meroFormSMul_meroFormDiv_sub_top (α : MeromorphicOneForm X) (x : X) :
+    (meroFormSMul (data.meroFormDiv α) data.ω₀ - α).formOrderW x = ⊤ := by
+  rw [MeromorphicOneForm.formOrderW_eq_top_iff]
+  filter_upwards [data.ω₀_eventually_ne_zero x] with y hy
+  show (meroFormSMul (data.meroFormDiv α) data.ω₀).toFun y - α.toFun y = 0
+  rw [data.meroFormSMul_meroFormDiv_apply α hy, sub_self]
+
+/-- **Order law for `meroFormSMul · ω₀`** (Forster §17.4): `formOrderW (f·ω₀) x = orderW f x + (K x)`
+(order additivity `formOrderW_meroFormSMul` + `K = div ω₀`). -/
+theorem formOrderW_meroFormSMul_ω₀ (f : MeromorphicFunction X) (x : X) :
+    (meroFormSMul f data.ω₀).formOrderW x = f.orderW x + (data.K x : WithTop ℤ) := by
+  rw [formOrderW_meroFormSMul, data.order_eq x]
+
 end CanonicalForm17Data
 
 end Jacobians.Dolbeault
