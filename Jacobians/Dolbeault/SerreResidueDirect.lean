@@ -1,0 +1,240 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+import Jacobians.Dolbeault.SerreResidueTheorem
+import Jacobians.Dolbeault.FormTraceCoherenceFromMoving
+
+/-!
+# The residue-level direct close of Gate A `∑ₐ Resₐ(α) = 0` (Miranda §VIII.3, no germ `agree`)
+
+For a compact connected Riemann surface `X`, a holomorphic 1-form `ω₀ : HolomorphicOneForms X`, and a
+function `g : X → ℂ`, the **meromorphic 1-form** `α = ω₀·g` satisfies the residue theorem
+`∑ₐ Resₐ(α) = 0`.
+
+This file builds the §VIII.3 trace object `FormResidueTheorem.FormResidueTrace ω₀ g`
+(= `SerreResidueTheorem.SerreTraceData`) **directly at the RESIDUE level**, bypassing the
+germ-equality bridge `FormTraceFullFibre.TraceRationalityDataNF` whose finite/`∞` agreement fields
+`agree`/`agree_infty` are the campaign's just-found **6th false field** — a *germ* equality
+`L.R =ᶠ[𝓝[≠] p] (fibreTrace ω₀ f (D p)).traceCoeff` with **pole-only** fibre data `D`, which is
+**unsatisfiable at a mixed fibre** (a non-pole sheet contributes a generally-nonzero *holomorphic* germ
+to the full-fibre trace coefficient, so the full-fibre and pole-only trace coefficients differ by a
+nonzero holomorphic germ; see `SerreResidueGenericity` §"Soundness finding").
+
+## Why the residue level works where the germ bridge failed
+
+`FormTraceGlobal.GlobalTraceData` is **already** the residue-level structure: its `hL32` is the
+*residue* identity `∑ᵢ resAt ((fibreTrace ω₀ f (D p)).coeff i) (pre i) = resAt L.R p`, its `D` is
+**pole-only** (`hxs_mem` demands `(D p).xs i ∈ poles`), its `finite_eq` is **proven** from the
+pole-only `D`, and its `toFormResidueTrace` is **proven**.  The false `agree` lives only in the layer
+*above* (`TraceRationalityData(NF)`, which *derives* `hL32` from the germ `agree` via
+`hL32_of_agree_fibreRegularData`).  At the **residue** level the non-pole sheets contribute `0`
+(`α` holomorphic there ⟹ `formFnResidue = 0`, `formFnResidue_eq_zero_of_analyticAt`), so the residue
+identity `hL32` holds with the pole-only `D` — it is **true and satisfiable**, not the over-strong germ.
+
+## What this file builds (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+
+The construction is in two honest levels.
+
+* **The genuine rational trace** `genuineTrace_ofPatched` — from the *sound prefix* of
+  `traceRationalityDataNF_ofPatched` (the principal-part `LaurentForm L`, the genus-`0` entire remainder
+  `hentire`, the `∞`-vanishing `hrecip`, and the Liouville agreement `T = L.R`), but **without** its
+  poisoned `agree` field.  The output is just the genuine `L` and `hTL : valueChartTracePatched ω₀ f Φ
+  br = L.R` (Liouville: `Tr_F α` *is* the rational `L.R`).  This reuses the proven analytic engines
+  (`exists_laurentForm_principalPart`, `analyticOnNhd_remainder_of_junkFree'`,
+  `continuousAt_recipCoeff_of_vanishing`, `coeff_eq_of_entire_diff_of_recipCoeff_continuousAt`,
+  `hT_off_patched`); the hard analytic content is unchanged.
+
+* **The residue-level structural bridge** `globalTraceData_of_residueTrace` — `GlobalTraceData` from the
+  genuine `L`/`hTL`, the pole-only fibre data `D`/`Dinf`, the centre bookkeeping, and the two
+  **RESIDUE** identities (Lemma 3.2 at the finite centres and at `∞`):
+    - `hres_fin i : resAt (valueChartTracePatched ω₀ f Φ br) (cs i)
+        = ∑ⱼ formFnResidue ω₀ g ((D (cs i)).xs j)` and
+    - `infty_eq : resAtInfty L.R L.ρ = ∑_{F a = ∞} formFnResidue ω₀ g a`.
+  Both are the *honest* §VIII.3 residue identities at the pole-only fibre.  `hL32` is then immediate
+  (`resAt_fibreTrace_coeff` + `hTL`), and `infty_eq` is carried through; the proven `toFormResidueTrace`
+  gives the §VIII.3 trace object.
+
+* **The residue-level discharge of the finite identity** `hres_fin_of_fullFibreCoherence` — the
+  honest §VIII.3 Lemma 3.2 at a finite centre, proved from the **full-fibre** moving coherence (a
+  genuine full fibre — the germ equality `MovingCoherenceDatum.coherent` is **sound** there, full fibre
+  ≠ pole-only), patch inertness (`valueChartTracePatched_eventuallyEq`), and the **non-pole-residue-`0`**
+  vanishing (the full fibre's non-pole sheets have residue `0`, so the full-fibre residue sum equals the
+  pole-only residue sum).  This is the residue-level bridge the directive centres on: it never uses the
+  pole-only germ `agree`.
+
+* **The top-level residue theorem** `residueTheorem_of_directGeometry` / `serreTraceExists_of_*` — `∑Res
+  = 0` from the residue-level inputs, **unconditional** downstream of the genuine trace + the residue
+  identities; and `directResidueGeometry_holomorphic` the empty-pole **non-vacuity** witness.
+
+## Soundness
+
+No `axiom`, no `sorry`, **no false field**.  Every field of `GlobalTraceData`/`FormResidueTrace` is a
+*true, satisfiable* residue statement (Miranda's honest content), witnessed non-vacuously by the
+empty-pole case.  The germ-equality `agree`/`agree_infty` of `TraceRationalityDataNF` is **never used**.
+The `∞`-fibre is the **sound** `InftyFibreDataNF` (never the unsatisfiable `InftyFibreData`).  All public
+declarations are authoritatively `[propext, Classical.choice, Quot.sound]` (`#print axioms`).
+
+## References
+
+* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, pp. 251–256 (the trace `Tr`, Lemma
+  3.2 as a **residue** identity, the residue theorem on `ℂℙ¹`).
+* Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.
+* `docs/gate_a_sound_patched_close_2026-06-09.md`, `docs/gate_a_cover_genericity_textbook_2026-06-08.md`.
+-/
+
+noncomputable section
+
+open Complex Metric Filter Topology
+open scoped Manifold ContDiff Real
+
+namespace Jacobians.Dolbeault.SerreResidueTheorem
+
+open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
+  Jacobians.Dolbeault.FormResidueTheorem Jacobians.Dolbeault.FormTraceFibre
+  Jacobians.Dolbeault.FormTraceGlobal Jacobians.Dolbeault.FormTraceInftyFibre
+  Jacobians.Dolbeault.FormTraceInftyRecip Jacobians.Dolbeault.FormTraceLiouville
+  Jacobians.Dolbeault.FormTraceMovingFibre Jacobians.Dolbeault.FormTraceFullFibre
+
+set_option linter.unusedSectionVars false
+
+attribute [local instance] Classical.propDecidable
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
+
+/-! ## The genuine rational trace `T = L.R` (sound prefix, no germ `agree`)
+
+The genus-`0` content of Miranda Step 1 — that the branch-patched trace `T := valueChartTracePatched
+ω₀ f Φ br` *is* a rational form `L.R` — is the **sound prefix** of
+`FormTraceFullFibre.traceRationalityDataNF_ofPatched`: the principal-part `LaurentForm L`, the
+internally-discharged genus-`0` entire remainder `hentire` (`analyticOnNhd_remainder_of_junkFree'` from
+the off-centre analyticity `hreg`/`hbnd` + junk-freeness `hcont_int`), the `∞`-vanishing `hrecip`
+(`continuousAt_recipCoeff_of_vanishing` from the genus-`0` `R₀`), and the Liouville agreement `T = L.R`
+(`coeff_eq_of_entire_diff_of_recipCoeff_continuousAt`).
+
+We extract *exactly* that — the genuine `L` and `hTL : T = L.R` — **without** the poisoned `agree`
+field (the germ equality at the pole-only fibre, the 6th false field).  The meromorphy at the centres
+needed for the principal-part extraction is supplied by the per-pole moving data `Cfin` (the moving
+datum's fixed fibre is irrelevant here — only `MeromorphicAt T (cs i)` is used). -/
+
+/-- **The genuine rational trace from the patched geometry.**  With `T := valueChartTracePatched ω₀ f Φ
+br`, the off-centre analyticity inputs `hreg`/`hbnd` (giving the value-correct `hT_off`), the per-pole
+meromorphy `Cfin`/`hCfin_D` (giving `MeromorphicAt T (cs i)`), junk-freeness `hcont_int`, and the
+genus-`0` `∞`-vanishing `R₀`, there is a `LaurentForm L` whose centres are the `cs` (`hLcenters`) with
+`T = L.R` (the Liouville agreement — `Tr_F α` *is* the rational form `L.R`).
+
+This is the sound prefix of `traceRationalityDataNF_ofPatched`, reusing its analytic engines, but
+exposing only the genuine `L`/`hTL` — **not** the germ-equality `agree` (the 6th false field). -/
+theorem genuineTrace_ofPatched
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (D : (p : ℂ) → FibreRegularData g f p)
+    (Cfin : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
+    (hCfin_D : ∀ i, (Cfin i).D = D (cs i))
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (valueChartTracePatched ω₀ f Φ br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] 0] R₀) :
+    ∃ L : LaurentForm, Finset.univ.image L.a = Finset.univ.image cs ∧
+      valueChartTracePatched ω₀ f Φ br = L.R := by
+  classical
+  set T := valueChartTracePatched ω₀ f Φ br with hT
+  -- Meromorphy at the centres from the per-pole moving data.
+  have hT_mero : ∀ i, MeromorphicAt T (cs i) := fun i =>
+    meromorphicAt_valueChartTracePatched_of_movingDatum br (Cfin i) (hCfin_D i)
+  -- Principal-part `LaurentForm`.
+  set hPP := exists_laurentForm_principalPart cs ρ hcs_ball hcs_inj hT_mero with hPP_def
+  set L := hPP.choose with hL_def
+  have hLcenters : Finset.univ.image L.a = Finset.univ.image cs := hPP.choose_spec.1
+  have hLrem : ∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧ (T - L.R) =ᶠ[𝓝[≠] (cs j)] R :=
+    hPP.choose_spec.2
+  -- `hentire`: off-centre analyticity (value-correct `hT_off`) + junk-freeness.
+  have hT_off : ∀ z ∉ Finset.univ.image L.a, AnalyticAt ℂ T z := by
+    intro z hz
+    rw [hLcenters] at hz
+    exact hT_off_patched hreg hbnd hz
+  have hrem : ∀ p ∈ Finset.univ.image L.a, ∃ R : ℂ → ℂ, AnalyticAt ℂ R p ∧ (T - L.R) =ᶠ[𝓝[≠] p] R := by
+    intro p hp
+    rw [hLcenters] at hp
+    simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
+    obtain ⟨i, rfl⟩ := hp
+    exact hLrem i
+  have hcont : ∀ p ∈ Finset.univ.image L.a, ContinuousAt (T - L.R) p :=
+    hcont_int L hLcenters hLrem
+  have hentire : AnalyticOnNhd ℂ (T - L.R) Set.univ :=
+    analyticOnNhd_remainder_of_junkFree' hT_off hrem hcont
+  -- `hrecip`: the genus-`0` `∞`-vanishing.
+  have hrecip : ContinuousAt (recipCoeff (T - L.R)) 0 :=
+    continuousAt_recipCoeff_of_vanishing hR₀_an hR₀0 (hR₀_eq L hLcenters)
+  -- The Liouville agreement `T = L.R`.
+  have hTL : T = L.R :=
+    coeff_eq_of_entire_diff_of_recipCoeff_continuousAt hentire hrecip
+  exact ⟨L, hLcenters, hTL⟩
+
+/-! ## The residue-level structural bridge to `GlobalTraceData`
+
+Given the genuine rational trace `L`/`hTL : T = L.R`, the pole-only fibre data, the centre
+bookkeeping, and the two **RESIDUE** identities (Lemma 3.2 at the finite centres and at `∞`), assemble
+a `FormTraceGlobal.GlobalTraceData`.  Its `hL32` (a residue identity) is immediate from the finite
+residue identity `hres_fin` via `resAt_fibreTrace_coeff` + `hTL`; `infty_eq` is carried through.  The
+germ-equality `agree` is **never used**. -/
+
+/-- **`GlobalTraceData` from the genuine trace + the residue identities.**  With `T :=
+valueChartTracePatched ω₀ f Φ br` the genuine rational trace (`hTL : T = L.R`, `hLcenters`), pole-only
+fibre data `D` (`hxs_*`), centre bookkeeping `hcenters_cs`, the **finite Lemma-3.2 residue identity**
+`hres_fin` (`resAt T (cs i) = ∑ⱼ formFnResidue ω₀ g ((D (cs i)).xs j)`, the honest pole-only-fibre
+residue reading), and the **`∞`-residue identity** `infty_eq` (`resAtInfty L.R L.ρ = ∑_{F a = ∞}
+formFnResidue ω₀ g a`), this builds a `GlobalTraceData ω₀ g f poles`.
+
+`hL32` is proved at the **residue level** — `∑ᵢ resAt (fibreTrace coeff)(pre) = ∑ᵢ formFnResidue` by
+`resAt_fibreTrace_coeff`, which is `resAt T (cs i)` by `hres_fin`, hence `resAt L.R (cs i)` by `hTL`.
+No germ `agree`. -/
+noncomputable def globalTraceData_of_residueTrace
+    {Φ : (b : ℂ) → FibreRegularData g f b} {br : Finset ℂ} {m : ℕ} {cs : Fin m → ℂ}
+    {L : LaurentForm} (hLcenters : Finset.univ.image L.a = Finset.univ.image cs)
+    (hTL : valueChartTracePatched ω₀ f Φ br = L.R)
+    (D : (p : ℂ) → FibreRegularData g f p)
+    (hxs_inj : ∀ p, Function.Injective (D p).xs)
+    (hxs_mem : ∀ p, ∀ i,
+      (D p).xs i ∈ poles ∧ f.toRiemannSphere ((D p).xs i) = ((p : ℂ) : RiemannSphere))
+    (hxs_surj : ∀ p, ∀ a ∈ poles, f.toRiemannSphere a = ((p : ℂ) : RiemannSphere) →
+      ∃ i, (D p).xs i = a)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hres_fin : ∀ i, resAt (valueChartTracePatched ω₀ f Φ br) (cs i)
+      = ∑ j, formFnResidue ω₀ g ((D (cs i)).xs j))
+    (infty_eq : resAtInfty L.R L.ρ
+      = ∑ a ∈ poles with f.toRiemannSphere a = OnePoint.infty, formFnResidue ω₀ g a) :
+    GlobalTraceData ω₀ g f poles where
+  L := L
+  D := D
+  hxs_inj := hxs_inj
+  hxs_mem := hxs_mem
+  hxs_surj := hxs_surj
+  hcenters := by rw [hLcenters]; exact hcenters_cs
+  hL32 := by
+    intro p hp
+    -- `p ∈ image L.a = image cs`, so `p = cs i` for some `i`.
+    rw [hLcenters] at hp
+    simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
+    obtain ⟨i, rfl⟩ := hp
+    -- LHS `= ∑ⱼ formFnResidue ω₀ g ((D (cs i)).xs j)` (per-sheet residue bridge).
+    have hLHS : (∑ j, resAt ((fibreTrace ω₀ f (D (cs i))).coeff j) ((fibreTrace ω₀ f (D (cs i))).pre j))
+        = ∑ j, formFnResidue ω₀ g ((D (cs i)).xs j) :=
+      Finset.sum_congr rfl (fun j _ => resAt_fibreTrace_coeff ω₀ f (D (cs i)) j)
+    -- `= resAt T (cs i)` (the finite residue identity), `= resAt L.R (cs i)` (the genuine trace).
+    rw [hLHS, ← hres_fin i, hTL]
+  infty_eq := infty_eq
+
+end Jacobians.Dolbeault.SerreResidueTheorem

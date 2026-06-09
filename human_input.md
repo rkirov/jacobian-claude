@@ -1464,3 +1464,39 @@ untouched (empty case still valid). NO false-field witness. This is bigger than 
 the plan assumed for Piece 2.
 
 This does NOT block Pieces 3/1; but the `∞`-fibre is no longer mechanical. Reporting honestly.
+
+---
+
+## 2026-06-09 (residue-level direct bridge — bypass the false `agree` germ field)
+
+**Directive:** Close Gate A (`∑Res(α)=0`) by constructing `FormResidueTheorem.FormResidueTrace`
+(= `SerreTraceData`) DIRECTLY at the residue level, bypassing the germ-equality
+`TraceRationalityDataNF.agree` (the 6th false field, unsatisfiable at mixed fibres). Use the RESIDUE
+equalities `hL32`/`infty_eq` (TRUE: non-pole sheets contribute residue 0), NOT the germ `agree`. Use
+the SOUND `InftyFibreDataNF`. New sibling file; reuse proven lemmas; every lemma axiom-clean.
+
+**Key structural finding (confirms the directive):** `FormTraceGlobal.GlobalTraceData` is ALREADY the
+residue-level structure — its `hL32` is a residue identity (`∑ resAt = resAt L.R p`), its `D` is
+pole-only (`hxs_mem` demands `∈ poles`), its `finite_eq` is PROVEN from pole-only `D`, and its
+`toFormResidueTrace` is proven. The false `agree` lives ONLY in the layer ABOVE
+(`TraceRationalityData(NF)`, which DERIVES `hL32` from the germ `agree` via
+`hL32_of_agree_fibreRegularData`). So the sound move is: discharge `GlobalTraceData.hL32`/`infty_eq`
+at the residue level DIRECTLY — from the genuine trace `L.R = T` + the FULL-fibre coherence (sound
+germ eq, full fibre ≠ pole-only) + non-pole-residue-0 (`formFnResidue_eq_zero_of_analyticAt`) — never
+the pole-only germ `agree`.
+
+**Design (two levels):**
+1. Structural bridge: a constructor taking the genuine `L`/`hTL : T = L.R` + per-centre RESIDUE
+   identity `resAt T (cs i) = ∑ⱼ formFnResidue (D(cs i).xs j)` (pole-only fibre) + the `∞` residue
+   identity, producing `GlobalTraceData` → `FormResidueTrace` → `SerreTraceExists` → `∑Res = 0`. Fully
+   sound, no false field. The genuine `L`/`hTL` reuse the proven engines
+   (`exists_laurentForm_principalPart`, `analyticOnNhd_remainder_of_junkFree'`,
+   `continuousAt_recipCoeff_of_vanishing`, `coeff_eq_of_entire_diff_of_recipCoeff_continuousAt`,
+   `hT_off_patched`) — the sound prefix of `traceRationalityDataNF_ofPatched`, WITHOUT its poisoned
+   `agree`.
+2. Discharge the residue identity from geometry: a helper proving `resAt T (cs i) = ∑ pole-only` from
+   the FULL-fibre `MovingCoherenceDatum` (genuine full fibre — sound) + patch inertness + residue-0 of
+   non-pole sheets + pole-only enumeration.
+
+Leftover after this = `∃ adapted f` (the genuine genericity: full-fibre coherence + non-pole
+analyticity + pole enumeration for some nonconstant `f`), NOT a false field.
