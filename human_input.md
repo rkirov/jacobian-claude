@@ -2872,3 +2872,90 @@ axiom-clean.
 - Witness fields with beta-reduced lambdas (`ppb := fun _ => 0` ⟹ goal shows literal `0`): avoid
   `show`/`rw` on the un-reduced lambda (pattern won't match `(-↑k)`); use
   `simp only [show Finset.Icc 1 0 = ∅ from rfl, Finset.sum_empty, resAt_zero, …]` instead.
+
+## 2026-06-09 — Gate A `hoff_cs`-free real-cover route (`SerreResidueRamifiedRealCover.lean`)
+
+**Branch:** `gate-a-trace-rationality-assembly`. **Thread:** close Gate A (`∑Res=0` unconditional) via
+the SOUND slit-branch `RamifiedSheetData` route (`residueTheorem_ofSheetData_genus0`), for the REAL
+cover. NEW FILE `Jacobians/Dolbeault/SerreResidueRamifiedRealCover.lean` (axiom-clean
+`[propext, Classical.choice, Quot.sound]`, builds STANDALONE green 8520 jobs; downstream
+SerreResiduePairing/RealizationAssembly green 8526). Did NOT touch the Cousin/∂̄ thread
+(GeneralMittagLeffler/CousinResidueConstruct/GlobalResidueConstruct), the 2 untracked orphans, or any
+PROVEN decl outside the new file.
+
+### WHAT WAS BUILT (genuinely complete + sound)
+1. **`MeromorphicFunction.Inv`** (item #2): the pointwise reciprocal `f⁻¹` (Mathlib `MeromorphicAt.inv`)
+   + order laws `orderW_inv`/`orderAtPoint_inv` (`= −orderW`/`= −orderAtPoint`, via
+   `meromorphicOrderAt_inv`). `orderAtPoint_inv_eq_neg_one_of_simpleZero`: a simple zero of `f₀−a` is a
+   simple pole (order −1) of `(f₀−a)⁻¹` — the algebraic heart of `hsimpleInf`. (Put in the NEW file, NOT
+   LinearSystem.lean, to avoid slowing the heavily-imported foundational file + respect discipline.)
+2. **Removable-singularity meromorphy atoms** (the engine for `hvct_mero`, Miranda (3.1)):
+   `meromorphicAt_of_analyticOn_punctured_of_mul_sub_tendsto` (analytic-on-punctured + `(z−c)·f→0` ⟹
+   meromorphic) + the power form `…_pow_mul_sub_tendsto` (`(z−c)^N·f→0`). Riemann removable singularity
+   (`Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt`) on `(z−c)^N·f` via
+   `Function.update … c 0`, then divide back (`zpow_neg`). REUSABLE complex-analysis atoms.
+3. `eventually_analyticAt_of_hreg` (off-finite-set `hreg` ⟹ eventual analyticity on `𝓝[≠] c`) +
+   **`hvct_mero_of_pow_bound`**: REDUCES the opaque `RamifiedSheetData.hvct_mero` field to the single
+   finite-pole-order bound `(z−c)^N·valueChartTrace→0` (strictly easier than the geometric
+   identification).
+4. **`RealCoverRamifiedCenters`** = the precise per-centre remaining obligation (item #1): a slit-branch
+   `RamifiedSheetData` for the CANONICAL selection at each finite pole-value centre, enumerating the
+   pole fibre. Non-vacuity `realCoverRamifiedCenters_empty` (m=0) + the genuinely-ramified m=2 witness
+   `ramifiedSheetData_sqrt` ⟹ NOT a disguised False.
+5. **`GateAInftyData`** (the off-centre `hreg`/`hbnd` + ∞-group bundle that
+   `residueTheorem_ofSheetData_genus0` consumes — the already-Gate-A-discharged canonical-selection
+   machinery) + **`residueSum_eq_zero_of_realCoverCenters`** (`∑Res=0` from `RealCoverRamifiedCenters` +
+   `GateAInftyData`, routed through the hoff_cs-FREE capstone — item #4 the re-route) +
+   `ExistsAdaptedRealCover`/`residueTheorem_realCover` (the hoff_cs-free unconditional `∑Res=0` modulo
+   the single real-cover obligation).
+6. **`RealCoverSlitGeometry`** = the exact minimal residual stated as a named predicate: the power bound
+   (feeds hvct_mero) + `hgeom_slit` (Forster §5 `z=wᵐ`).
+
+### THE HONEST OUTCOME — `∑Res=0` is NOT yet unconditional; the wall is `hgeom_slit` for the real cover
+The `hoff_cs`-free sheet-data route is now FULLY WIRED (residue/algebra atom done, identity-theorem
+globalisation done — predecessor's slit fix; meromorphy `hvct_mero` REDUCED to a power bound; off-centre
++ ∞ machinery bundled; re-route theorem proven). The SINGLE genuinely-remaining analytic input is the
+per-centre `RamifiedSheetData` for the REAL cover, specifically **`hgeom_slit`** (`RealCoverSlitGeometry`):
+on a slit accumulating at the centre, the geometric trace `valueChartTrace` (the full-fibre sum from
+`canonicalFibreSelection`) = the `m`-sheet sum `∑_{j<m} chartIntegrand(w_p+ζʲw₀)·(d/dz)[…]` at the
+ramification preimage `p`. This is the **ramified analogue of `valueChartTrace_eq_sphereSheetFibreTrace`**
+(`FormTraceBundleBridge.lean`) — the Forster §5 local normal form `f=wᵐ` + the full-fibre cluster-split
+(the `m` regular sheets over a nearby `z` ARE `w_p+ζʲw₀(z)`). The repo has NO packaged `f=wᵐ` normal form
+giving those branches (only `MultiplicityPatching`'s `m·1=m` conservation + `ProperMapDegreeSheets`'s
+`localDeg`); building `hgeom_slit` is a genuine multi-hundred-LoC branch-aware sheet build. NOT faked.
+
+The `∃f` genericity (#3) is similarly a TRUE existential (`exists_nonconstant_meromorphic` +
+reciprocal-for-simple-∞ via `orderAtPoint_inv`) but its full discharge needs the generic-position lemma
+relating `branchValues f'`/`orderAtPoint` of `f'`-poles to `f₀`'s zeros — recorded as
+`ExistsAdaptedRealCover`, NOT discharged.
+
+### WHY NOT re-point the existing headline `residueTheorem_general`/`ExistsAdaptedF`
+The Cousin/∂̄ thread consumes `ExistsAdaptedF` (unramified, carries `hoff_cs`). BOTH `ExistsAdaptedF` and
+my `ExistsAdaptedRealCover` remain OPEN obligations — re-pointing gains no soundness (both rest on an
+unbuilt genericity/geometry). Kept the route PARALLEL (no touch to the consumed headline / concurrent
+thread). The honest gain: the hoff_cs-free route is now available and the per-centre wall is isolated to
+exactly `RealCoverSlitGeometry`.
+
+### SOUNDNESS LEDGER (clean — NO false/circular/junk field, NO custom axiom, NO sorry)
+- Every new decl axiom-clean `[propext, Classical.choice, Quot.sound]` (authoritative `lake env lean
+  #print axioms`). `MeromorphicFunction.Inv` is the genuine reciprocal; the order laws are true; the
+  removable-singularity atoms are real Riemann. `RealCoverRamifiedCenters`/`RealCoverSlitGeometry` are
+  honest remaining content supplied as data/predicate, NEVER asserted. Non-vacuity witnessed (m=0 +
+  ramifiedSheetData_sqrt). The re-route `residueSum_eq_zero_of_realCoverCenters` is pure wiring of the
+  PROVEN `residueTheorem_ofSheetData_genus0`.
+
+### LEAN GOTCHAS (for the next agent)
+- `MeromorphicFunction.Inv`: `IsMeromorphic.inv` via `(f∘chart.symm)⁻¹ = f⁻¹∘chart.symm` (rfl) +
+  Mathlib `MeromorphicAt.inv`. `orderAtPoint_inv` = `untop₀(−w)`: case `w=⊤` (`simp`) vs `lift to ℤ`.
+- Removable singularity: `Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt`
+  (namespace `Complex`!) wants `∀ᶠ z in 𝓝[≠]c, DifferentiableAt` + `ContinuousAt f c`. Build
+  `h := Function.update (fun z => (z−c)^N*f z) c 0`; `continuousAt_update_same` reduces `ContinuousAt h
+  c` to the tendsto; on the punctured nbhd `h =ᶠ[𝓝 z] (z−c)^N*f` via `isOpen_ne.mem_nhds` +
+  `Function.update_apply`/`if_neg`. Final `f = (z−c)^(−N)·h`: `zpow_neg, zpow_natCast,
+  inv_mul_cancel₀ (pow_ne_zero …)`.
+- `GateAInftyData`: make `hdiv` a PARAMETER (not a field) — fields referencing `hdiv` (hreg/hbnd/…)
+  forward-ref otherwise. `RealCoverRamifiedCenters`/`residueSum_eq_zero_of_realCoverCenters` take `hdiv`
+  too. `attribute [local instance] Classical.propDecidable` needed for the `Finset` filter/erase in the
+  ∞-group fields (`DecidableEq RiemannSphere`/`X`/`DecidablePred (·∈poles)`).
+- m=0 non-vacuity: `Sf` is dependent (`∀ i:Fin 0, RamifiedSheetData … (cs i)`) ⟹ `fun i => i.elim0`
+  (NOT bare `Fin.elim0`, type mismatch).
