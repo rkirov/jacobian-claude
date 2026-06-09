@@ -359,6 +359,17 @@ noncomputable def res (μ : CoverMLDistribution 𝔘 ω₀ K) : ℂ := μ.toForm
 theorem res_def (μ : CoverMLDistribution 𝔘 ω₀ K) :
     μ.res = ∑ a ∈ μ.poles, formFnResidue ω₀ (μ.g (μ.patch a)) a := rfl
 
+/-- **Soundness sanity check: `res` reads the genuine `dz/z` residue `= 1`.**  At a single pole `a`
+with the `dz/z` principal part (where `ω₀`'s coefficient is nonzero), the per-pole residue
+`formFnResidue ω₀ g a` is the genuine Laurent contour residue `1` (`resAt`, NOT smooth junk).  Since
+`res` is exactly `∑ formFnResidue ω₀ (gᵢ) a` (`res_def`), this confirms `CoverMLDistribution.res` —
+and hence the connecting-map functional `resCocycle_connecting` is tied to — reads the **genuine**
+residue.  (Inherited from `exists_formFnResidue_eq_one_of_localRep_ne_zero`, the `ℂℙ¹`-style check.) -/
+theorem exists_g_formFnResidue_eq_one (a : X)
+    (ha : Jacobians.Montel.localRep ω₀ a a ≠ 0) :
+    ∃ g : X → ℂ, formFnResidue ω₀ g a = 1 :=
+  exists_formFnResidue_eq_one_of_localRep_ne_zero ω₀ a ha
+
 /-! ### The connecting cocycle `δμ ∈ Z¹(𝔘, 𝒪_K)` -/
 
 /-- The 1-cochain `(cᵢⱼ) = ([gᵢ − gⱼ])` of `𝒪_K`-germs over `𝔘` (the connecting map at cochain level).
