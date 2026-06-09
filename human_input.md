@@ -4223,3 +4223,89 @@ axiom-clean via `#print axioms`. `residueTheorem_of_realCoverSlitSectionGeometry
   `HasFPowerSeriesOnBall.hasSum` field's ball membership.
 - `ramifiedTrace_slit_eq`: `(w₀ z)^(m-1)` (NAT pow) vs `w₀ z^(1-m)` (ZPOW) — bridge via `zpow_natCast` +
   `zpow_add₀ hw₀_ne` with `(1-(m:ℤ))+((m:ℤ)-1)=0`.
+
+## 2026-06-09 (session 4) — Gate-A `∑Res = 0` CLOSED UNCONDITIONALLY (the §5 slit-geometry assembly + the Miranda-(3.1) pole-order bound)
+
+**STATUS: `∑Res = 0` is now UNCONDITIONAL and axiom-clean.** `residueTheorem_unconditional`
+(`Jacobians/Dolbeault/SerreResidueRamifiedRealSlitGeometry.lean`, NEW file) proves, for any genuine
+meromorphic `g` and finite `poles` (with `g` analytic off `poles`), `∑ a∈poles, formFnResidue ω₀ g.toFun
+a = 0` with NO remaining obligation. `#print axioms` = `[propext, Classical.choice, Quot.sound]`. Full
+glob build green (8587 jobs, HEAD standalone). The predecessor's named target
+`residueTheorem_of_realCoverSlitSectionGeometry` now gets `RealCoverSlitSectionGeometry` supplied
+unconditionally via `realCoverSlitSectionGeometry`.
+
+### What was built (all axiom-clean, NEW file `SerreResidueRamifiedRealSlitGeometry.lean`, ~1025 LoC)
+The predecessor had reduced `∑Res=0` to `RealCoverSlitSectionGeometry` (per-centre `RealCenterSlitSectionData`,
+13 fields). The §5 section half (`RealSlitSectionData.ofSlitSectionGerm`) + the `Rem` descent
+(`exists_clusterTraceData_descent_at_fibrePoint`) + the shrunk slit (`exists_descentSlit`) were proven.
+This session built the full per-centre datum AND closed the last deep field (the pole-order bound):
+
+1. **Cluster→preimage convergence** (`clusterSectionPoint_tendsto_preimage`): cluster section point
+   `chart.symm(s(ζʲ·w₀ z)) → p` as `z→c` (cpow branch →0, `s` cont, `chart.symm` cont). Drives
+   `hnonpole`/`hsep`.
+2. **cpow-branch transport devices** (`exists_open_cpowBranch_mem`/`exists_open_cpowSheetArg_punctured`/
+   `sComp_cpowSheetArg_tendsto`): push a `𝓝 0`/`𝓝[≠]0`/`𝓝(chart p)` fact onto the cpow sheet args on an
+   open `𝓝 c` slit nbhd. Feeds the `SlitSectionGerm` fields.
+3. **`Fibre5Datum`** + `exists_fibre5Datum`: per-preimage slit-INDEPENDENT §5 atom
+   (`exists_clusterSplit_at_fibrePoint`) + Laurent principal part (`exists_principalPart_meromorphicAt`)
+   + descent germ (`analyticAt_weightedSymSum_descent`) + one open `V∋c` carrying all 6 per-slit facts.
+4. **`Fibre5Datum.toClusterTraceData`** (term-mode, fields transparent: `s`/`w₀`/`ζ`/`m` defeq the
+   datum's): concrete `ClusterTraceData` on a shrunk slit, `Rem := G(·-c)` via `ramifiedTrace_slit_eq`.
+5. **`slitSectionGerm_of_fibre5`** + `eventually_cpow_pow_eq`: the 8-field §5 section germ from the
+   `Fibre5Datum` V-facts + cpow calculus + centre-level `hnonpole`/`hsep`.
+6. **Centre-level `hsep`/`hnonpole`** (`exists_open_clusterSection_separated`/`_nonpole`): open `Vsep`/
+   `Vnp ∋ c` on which cluster sections at distinct preimages are separated (T2) / are non-poles
+   (non-poles open), via the convergence lemma intersected over the finite fibre.
+7. **`shrunkSlit_accumulates`**: the shrunk slit `(open V∋c)∩slitPlane\(finite)` accumulates at c.
+8. **`realCenterSlitSectionData_of_adaptedFRamified`**: assembles the whole per-centre datum. Uses a
+   PROVISIONAL `Clprov` on `Sprov` to compute `Vnp`/`Vsep` (slit-independent), then `Sset := Sprov∩Vnp∩
+   Vsep`, the final `Cl`. The `Clprov→Cl` `hnonpole`/`hsep` transfer is by DEFEQ (same `s/ζ/w₀`).
+
+### THE LAST DEEP FIELD — the Miranda-(3.1) pole-order bound `hbnd` (the genuinely-new analysis, CLOSED)
+**The pole-order bound `(z−c)^N·valueChartTrace → 0` at the ramified pole-value centre is the
+single-valued-trace meromorphy (Miranda §VIII.3 (3.1)); it was carried as DATA (`hvct_mero`) in EVERY
+prior version of the ramified-residue subtree (`RamifiedSheetData`/`FullFibreClusterData`/
+`FibreClusterReindex` all have it as a field).** This session DERIVED it:
+- `isConnected_punctured_ball` (NEW): `ball c r \ {c}` connected in ℂ (polar image of `Ioo×sphere`,
+  `sphere` connected since `rank ℝ ℂ = 2`).
+- `eventuallyEq_of_analyticOn_punctured_eqOn_open` (NEW): `F` analytic on punctured nbhd + `T`
+  meromorphic + `F=T` on an OPEN set `O` accumulating at `c` (with `c∉O`) ⟹ `F =ᶠ[𝓝[≠]c] T`. Via
+  `AnalyticOnNhd.eqOn_of_preconnected_of_frequently_eq` on the punctured ball, seeded at a point of `O`.
+- `exists_pow_bound_of_meromorphicAt` (NEW): `MeromorphicAt T c ⟹ ∃ N, (z−c)^N·T → 0` (zpow-smul
+  characterization, `N+n≥1`).
+- Inside the assembly: build the `FibreClusterTopology` family on `Sset` (from the §5 section facts via
+  `toClusterSplitData`/`toFibreClusterTopology`), get the geometric identity `valueChartTrace =[Sset]
+  ∑ᵢ (Clᵢ).clusterTrace =: T` (via `valueChartTrace_eq_clusterSum_of_clusterReindexData` +
+  `clusterSum_eq_clusterTrace_slit`). `Sset` is OPEN (= open ∩ slitPlane \ finite-branchValues), `c∉Sset`
+  (0∉slitPlane), `c∈closure Sset` (= `hS_acc`). So the open-set identity-theorem lemma applies with
+  `O := Sset`, giving `valueChartTrace =ᶠ[𝓝[≠]c] T` meromorphic, hence the bound. NO punctured-disk
+  monodromy issue (the cluster sum `T` is single-valued; `w₀` lives only on the slit).
+
+### SOUNDNESS (verified). No custom axiom, no sorry, no false/junk/circular field.
+`D` = WHOLE fibre (#17, `realFibreData`). Slit values regular (off-branch). §5 sections genuine
+(`exists_clusterSplit_at_fibrePoint`). `Rem` = the genuine symmetric-function descent (single-valued via
+roots of unity). The pole-order bound is the GENUINE Miranda-(3.1) trace meromorphy (derived, not assumed).
+NO full RR (only `existsAdaptedFRamified` = Riemann-inequality genericity, upstream of RR). `hmult`/
+`hsplit0` are `rfl`/the datum's `hsplit0`. `residueTheorem_unconditional` axiom list =
+`[propext, Classical.choice, Quot.sound]`. Did NOT touch the 2 untracked orphans, the buggy
+`FibreClusterReindex`, or PROVEN decls (NEW file only, reuse by import).
+
+### LEAN GOTCHAS (this session)
+- `RealCenterSlitSectionData` is a `structure` in `Type` (DATA), NOT `Prop` — its builder must be
+  `noncomputable def`, NOT `theorem`; and `obtain ⟨x, h⟩ := (h : ∃ ...)` FAILS into a data goal
+  ("Exists.casesOn can only eliminate into Prop") — use `.choose`/`.choose_spec` instead.
+- Set-difference precedence: `z ∈ A ∩ B \ C` parses as `(z ∈ A ∩ B) \ C` (type error) — PARENTHESIZE
+  `(A ∩ B) \ C`. And `(A∩B)\C` membership = `⟨⟨hA,hB⟩, hnotC⟩` (And of And).
+- `IsOpen {z | z - c ∈ slitPlane}` = `Complex.isOpen_slitPlane.preimage (continuous_sub_right c)` (NOT
+  `isOpen_slitPlane`, which is the UNSHIFTED `IsOpen slitPlane`).
+- `isConnected_punctured_ball`: `ball c r \ {c} = (fun (ρ,u) => c + ρ•u) '' (Ioo 0 r ×ˢ sphere 0 1)`;
+  forward dir picks `ρ=‖z-c‖, u=(z-c)/‖z-c‖`; use `smul_eq_mul`+`mul_div_cancel₀` (the `•` is ℂ-smul
+  after the `(ℝ→ℂ)` cast). `rank ℝ ℂ`: `rw [show Module.rank ℝ ℂ = 2 from Complex.rank_real_complex]`
+  (the bare `rw [Complex.rank_real_complex]` flaked in-file; the `show` form is robust).
+- `Filter.Eventually.eventually_nhds` / `eventually_eventually_nhds` (`∀ᶠ y in 𝓝 x, ∀ᶠ z in 𝓝 y, p z`)
+  is the device to upgrade an `∀ᶠ in 𝓝 0`-of-open-membership fact to feed `exists_open_cpowBranch_mem`'s
+  `P`; set `P w := <fact at ζ^j·w>` so the conclusion lands at the sheet arg `ζ^j·(z-c)^{1/m}`.
+- `mem_nhds_iff`/`mem_closure_iff` are ambiguous (Metric vs root) — use `_root_.mem_nhds_iff` /
+  `_root_.mem_closure_iff` (the latter gives `(ball ∩ s).Nonempty`, mind the order).
+- `AnalyticAt.eventually_analyticAt` (∀ᶠ nearby analytic), `MeromorphicAt.eventually_analyticAt`,
+  `MeromorphicAt.iff_eventuallyEq_zpow_smul_analyticAt` are the key Mathlib analytic/meromorphic tools.
