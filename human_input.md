@@ -2250,3 +2250,97 @@ g-weighted ramified Lemma 3.2 + a ramified `FibreTrace`; or (b) keep `hoff_cs` a
 alternative. Route (a) is the textbook-honest elimination; route (b) needs the RR-jets infra. Both are
 large; neither is a quick win. The localization above pinpoints exactly the 3 call sites + 2 consumed
 facts to retarget.
+
+---
+
+## 2026-06-09 (later): RAMIFIED RESIDUE CHANGE-OF-VARIABLES ATOM BUILT (Miranda (3.1) + Lemma 3.2 ramified)
+
+**Branch:** `gate-a-trace-rationality-assembly`. Built the keystone ramified `z = wᵐ` trace atom that
+the localization (`docs/gate_a_hoff_cs_localization_2026-06-09.md`) pinned as the genuine textbook
+content Gate A needs to drop `hoff_cs` (admit ramified pole fibres). **NEW orphan file**
+`Jacobians/RamifiedResidueChangeOfVariables.lean` (namespace `Jacobians.RamifiedTrace`), reuses by
+import the unramified `ResidueChangeOfVariables.lean`/`TraceResidue.lean` `resAt` machinery as template
+(the `m=1` case). Builds standalone (2679 jobs); ALL decls axiom-clean `[propext, Classical.choice,
+Quot.sound]` (authoritative `lake env lean #print axioms`). Commits 031768c, 0a7b14b.
+
+### What was proven (the concrete win — the clean roots-of-unity atom)
+The prior thread's recommendation was **route (a) via the Mathlib-gap `circleIntegral`-under-`wᵐ`
+substitution atom** (a several-hundred-LoC analytic build). I took the OTHER route the localization
+listed — **route 2, roots-of-unity (pure algebra)** — which turned out FAR cheaper and is fully
+self-contained (no contour change-of-variables needed):
+
+- `rootsOfUnity_geom_zsum`: `∑_{j<m}(ζ^j)^N = if m∣N then m else 0` for `ζ` primitive `m`-th root,
+  `N : ℤ`. The cross-term collapse. Proof: `geom_sum_eq` + `IsPrimitiveRoot.zpow_eq_one_iff_dvd`.
+- `monomialTraceCoeff c n m`: the closed-form `dz`-coefficient of `Tr_m(c·wⁿ)` = `c·z^{(n+1)/m−1}` if
+  `m∣(n+1)` else `0` (a single Laurent `z`-monomial; Miranda (3.1)).
+- `resAt_monomialTraceCoeff`: `Res_{z=0}(Tr_m(c·wⁿ)) = Res_{w=0}(c·wⁿ) = if n=−1 then c else 0`. The
+  residue read-off is BRANCH-FREE (just `resAt_laurentMonomial` on the closed form).
+- `monomialTraceCoeff_eq_sheetSum`: the explicit (3.1) **soundness** identity — the closed form equals
+  the honest `m`-sheet sum `∑_{j<m} c·(ζ^j w₀)^n · (ζ^j · (1/m) w₀^{1−m})` at `z=w₀ᵐ`, `w₀≠0`. This is
+  where roots-of-unity collapses; the branch `w₀` appears ONLY here (and the result is
+  branch-independent).
+- `laurentTraceCoeff` / `resAt_laurentTraceCoeff` / `laurentTraceCoeff_eq_sheetSum`: same, summed over
+  a finite Laurent **principal part** `h=∑_i c_i wⁿⁱ`. Since the residue sees only the principal part,
+  this is the FULL ramified Lemma 3.2 residue content for any meromorphic `α`.
+- `meromorphicAt_monomialTraceCoeff` / `meromorphicAt_laurentTraceCoeff`: the downstairs trace is
+  meromorphic at the branch value `z=0` (the ramified analogue of fact A's engine
+  `meromorphicAt_traceCoeff_fibreTrace`).
+
+### KEY METHOD WIN (record for reuse)
+The contour `circleIntegral`-under-`wᵐ` substitution that the repo lacks (and that both
+`ResidueChangeOfVariables.lean:29-31` and the localization flagged as a ~several-hundred-LoC Mathlib
+gap) is **NOT needed**. The roots-of-unity route computes the trace algebraically and reads the residue
+off the explicit closed form via the EXISTING `resAt_laurentMonomial`. The "heavy RootsOfUnity
+machinery the repo avoided" is in fact a ~3-line `geom_sum_eq` argument. This route is the cheap one;
+the contour-substitution route was a red herring on cost.
+
+### SOUNDNESS (no false field — the 9th bad-field candidate avoided again)
+EVERY statement is the `m`-sheet SUM over `range m`. The `1/m` of the chain rule (a single sheet has
+residue `m·Res_w`, NOT `Res_w`) is exactly cancelled by the `m` surviving sheets in the roots-of-unity
+factor `∑_j (ζ^j)^0 = m`. There is NO "single-sheet residue = upstairs residue" lemma anywhere.
+Sanity-checked in-Lean via the closed form: `m=2, h=w⁻¹ (n=−1)` ⟹ `monomialTraceCoeff = z⁻¹`, res `1`;
+`m=2, h=w⁻³ (n=−3)` ⟹ `monomialTraceCoeff = z⁻²`, res `0` — both match `Res_w`.
+
+### THE FibreTrace INTEGRATION MAP (the refactor surface — NOT built, large per localization)
+The atom lives at a DIFFERENT level than the call-site plumbing, which is built entirely on
+`FibreRegularData` (the unramified `deriv≠0` sheet model). Integration requires a **parallel ramified
+structure**, not a drop-in. Precise surface (consumers in
+`SerreResidueDirectGenus0GermDischarge.lean`/`SerreResidueDirectGenus0Germ.lean`):
+
+1. The 2 consumed facts at a ramified centre `cs i`, currently from the unramified Lemma 3.2:
+   - (A) `MeromorphicAt T (cs i)` — `globalTraceData_of_genus0_germ` `hT_mero` via
+     `meromorphicAt_traceCoeff_fibreTrace (Cfull i).D`. Ramified replacement = `meromorphicAt_laurentTraceCoeff`
+     (already proven) after the trace-germ identification below.
+   - (B) `resAt T (cs i) = ∑_{j∈fibre} formFnResidue ω₀ g ((D (cs i)).xs j)` — `hres_fin_of_fullFibreCoherence`
+     (`SerreResidueDirect.lean:494`) via `resAt_traceCoeff_fibreTrace`. Ramified replacement: at a
+     single ramified preimage `p` (mult `m`), `formFnResidue ω₀ g p = resAt (chartIntegrand ω₀ g p) 0`
+     (centered chart, `chart_p p = 0`), and `chartIntegrand ω₀ g p` IS the upstairs `h(w)`; so
+     `resAt_laurentTraceCoeff` (applied to `h`'s principal part) gives `Res_{z=0}(Tr_m) = Res_{w=0}(h)`.
+     A general fibre is a MIX of preimages of multiplicities `mᵢ` (`∑mᵢ=deg`); the per-point atom sums
+     over the fibre (additivity, like `resAt_traceCoeff_fibreTrace`'s `Finset.sum`).
+2. The STRUCTURAL WALL (why this is large, per localization): the trace `T = valueChartTracePatched …`
+   is DEFINED via `valueChartTrace = (fibreTrace ω₀ f (Φ b)).traceCoeff`, and `MovingCoherenceDatum.D :
+   FibreRegularData` bakes in `hg_deriv ≠ 0` at EVERY fibre point — structurally impossible at a
+   ramification point. So one cannot just swap the residue lemma; one must (i) define a RAMIFIED fibre
+   datum (single preimage + normal form `z=wᵐ`, or a mixed fibre with per-point multiplicities), (ii)
+   give a ramified `traceCoeff` whose germ near `cs i` equals my `laurentTraceCoeff` of the per-preimage
+   principal parts (the genuine analytic content: identify the geometric `valueChartTrace` germ with the
+   `z=wᵐ` normal-form sheet sum — this needs the local `z=wᵐ` chart normal form + the analytic branch
+   section `w₀`, i.e. `monomialTraceCoeff_eq_sheetSum` applied with the geometric branch), then (iii)
+   re-thread `cs i` (drop `hoff_cs`/`exists_sphereSheetSystem`/`movingCoherenceDatum_canonical`) up
+   through `globalTraceData_of_genus0_germ` → `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull`
+   → `AdaptedF.hoff_cs` in `SerreResidueGateAClosed.lean`.
+   The hardest single new piece in (ii) is identifying the geometric trace germ with the `z=wᵐ`
+   normal-form sheet sum — the local biholomorphism to the `z=wᵐ` model (Miranda's "choose centered
+   coords so F = wᵐ"), which the repo has for the UNRAMIFIED case (`exists_planar_section`) but not the
+   ramified one. That is the genuine remaining analytic build; the residue/algebra core (this atom) is
+   DONE. **g-weighting is FREE in this route** — `h = chartIntegrand ω₀ g p` already folds `g`'s poles
+   into `h`'s Laurent coefficients (no separate bounded-`g` `hbnd` assumption); the atom handles `α`'s
+   own coefficients.
+
+### NEXT STEP (recommendation)
+The atom is the concrete keystone win and is DONE+committed+axiom-clean. The remaining refactor is the
+(ii) geometric-germ↔`z=wᵐ`-normal-form identification + (iii) the multi-file `hoff_cs` re-thread — both
+large (multi-file, parallel ramified structure), matching the localization's "genuine multi-thousand-line
+refactor" verdict. The cheap analytic/algebraic core is no longer the blocker; the blocker is now the
+manifold normal-form plumbing (the `z=wᵐ` chart model + ramified fibre structure), NOT a Mathlib gap.
