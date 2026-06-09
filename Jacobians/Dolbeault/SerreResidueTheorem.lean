@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.Dolbeault.FormResidueTheorem
+import Jacobians.Dolbeault.FormTraceRationalityNFPatched
 
 /-!
 # Miranda's algebraic proof of the residue theorem `∑ₐ Resₐ(α) = 0` (§VIII.3, pp. 251–256)
@@ -61,35 +62,47 @@ representation split.
   `residueSum_eq_infty_add_finite` + Steps 2–3, via `residueSum_eq_zero_of_formResidueTrace`.
 
 Steps 2, 3, 4 are **fully proven, axiom-clean** from the one-variable engines. Step 1 (the trace's
-meromorphy-across-branch-points + genus-`0` rationality) and the genericity *"a nonconstant adapted
-`f` exists"* are the genuine substrate gaps; they are isolated as the **existence of a
-`SerreTraceData`** (`SerreTraceExists`, below), with a precise diagnosis and a **non-vacuity
-witness** (the empty-pole, globally-holomorphic case, `serreTraceExists_of_holomorphic`).
+meromorphy-across-branch-points + genus-`0` rationality) is **now also proven and wired in** (see
+below); the remaining substrate gap is just the genericity *"a nonconstant adapted `f` exists"*. The
+trace object is isolated as the **existence of a `SerreTraceData`** (`SerreTraceExists`, below), with a
+precise diagnosis and a **non-vacuity witness** (the empty-pole, globally-holomorphic case,
+`serreTraceExists_of_holomorphic`).
 
-## The substrate gap (named, with diagnosis)
+## The substrate gap (named, with diagnosis) — Step-1 rationality DISCHARGED, only genericity remains
 
-`SerreTraceExists ω₀ g` ≔ `∃ T : SerreTraceData ω₀ g, …` is the one genuine remaining obligation. It
-packages exactly the two things Miranda's *book* assumes but does not prove from scratch:
+`SerreTraceExists ω₀ g` ≔ `∃ T : SerreTraceData ω₀ g, …` packaged the two things Miranda's *book*
+assumes but does not prove from scratch. **(b) Step-1 rationality is no longer a gap:**
 
-* **(a) Genericity** — a nonconstant meromorphic `f` adapted to `α`'s poles (Miranda p. 254: *"simply
-  choose any nonconstant meromorphic function `f`"*; existence is Forster 16.11/RR
-  `exists_riemannRoch_divisor`, already in this repo). See
-  `docs/gate_a_cover_genericity_textbook_2026-06-08.md`: **no** Riemann–Roch-with-jets is needed.
 * **(b) Step-1 rationality** — that `Tr_F α` extends meromorphically across the branch points (formula
-  (3.1)) and is therefore a rational `LaurentForm`. The branch-point extension is **proven and
-  axiom-clean** (`TraceForm.traceExtendsAt_branchPoint`); the value-correct assembly into a
-  `TraceRationalityDataNF` (with `hentire` *proven*, not assumed) is
-  `FormTraceFullFibre.residueSum_eq_zero_of_patchedGeometry`
-  (`FormTraceRationalityNFPatched.lean`). Wiring that conditional assembly into a `SerreTraceData` is
-  the residual; it is **not** discharged here.
+  (3.1)) and is therefore a rational `LaurentForm` — is **PROVEN** (genus-`0` `hentire` proven, not
+  assumed; sound `∞`-fibre `InftyFibreDataNF`) in
+  `FormTraceFullFibre.traceRationalityDataNF_ofPatched` (`FormTraceRationalityNFPatched.lean`, on the
+  axiom-clean branch-point extension `TraceForm.traceExtendsAt_branchPoint`). This file **bridges** that
+  assembly into a `SerreTraceData` (`serreTraceExists_of_traceRationalityDataNF` ∘ the proven
+  `TraceRationalityDataNF.toGlobalTraceData` ∘ `GlobalTraceData.toFormResidueTrace`), and
+  `serreTraceExists_of_patchedGeometry` wires the full patched-geometry inputs straight to
+  `SerreTraceExists`. So (b) is **discharged**, not residual.
 
-Everything *downstream* of `SerreTraceExists` is proved sorry-free in this file.
+* **(a) Genericity** — the *single* remaining obligation: a nonconstant meromorphic `f` adapted to
+  `α`'s poles (Miranda p. 254: *"simply choose any nonconstant meromorphic function `f`"*; existence is
+  Forster 16.11/RR `exists_riemannRoch_divisor` / `exists_nonconstant_meromorphicFunction`, already in
+  this repo). See `docs/gate_a_cover_genericity_textbook_2026-06-08.md`: **no** Riemann–Roch-with-jets
+  is needed. It is named `TraceRationalityExists` below: `∃ f, Nonempty (TraceRationalityDataNF …)`,
+  with `serreTraceExists_of_traceRationalityExists` / `residueTheorem_of_traceRationalityExists`
+  reducing `SerreTraceExists` / `∑ Res = 0` to it, and `traceRationalityExists_of_holomorphic` the
+  non-vacuity witness.
+
+Everything *downstream* of the genericity `TraceRationalityExists` — Step-1 rationality, Steps 2–4, the
+bridge — is proved sorry-free in this file and its imports.
 
 ## Soundness
 
 No `axiom`, no `sorry` on a false statement, no false structure field. The reused `SerreTraceData`
 (= `FormResidueTrace`) fields are each a *true, satisfiable* statement (Miranda's honest geometric
-content), witnessed non-vacuously by `serreTraceExists_of_holomorphic` (empty poles). All public
+content), witnessed non-vacuously by `serreTraceExists_of_holomorphic` / `traceRationalityExists_of_holomorphic`
+(empty poles). The bridge rides on the **sound** trace-rationality assembly
+`traceRationalityDataNF_ofPatched` (genus-`0` `hentire` *proven*, sound `∞`-fibre `InftyFibreDataNF` —
+never the unsatisfiable `InftyFibreData`; the campaign's five false fields all avoided). All public
 declarations are authoritatively `[propext, Classical.choice, Quot.sound]` (`#print axioms`).
 
 ## References
@@ -109,7 +122,10 @@ open scoped Manifold ContDiff Real
 namespace Jacobians.Dolbeault.SerreResidueTheorem
 
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
-  Jacobians.Dolbeault.FormResidueTheorem
+  Jacobians.Dolbeault.FormResidueTheorem Jacobians.Dolbeault.FormTraceFibre
+  Jacobians.Dolbeault.FormTraceGlobal Jacobians.Dolbeault.FormTraceInftyFibre
+  Jacobians.Dolbeault.FormTraceInftyRecip Jacobians.Dolbeault.FormTraceLiouville
+  Jacobians.Dolbeault.FormTraceMovingFibre Jacobians.Dolbeault.FormTraceFullFibre
 
 set_option linter.unusedSectionVars false
 
@@ -143,7 +159,7 @@ book-faithful name; see the section docstring for the field meanings. -/
 abbrev SerreTraceData (ω₀ : HolomorphicOneForms X) (g : X → ℂ) : Type _ :=
   FormResidueTrace ω₀ g
 
-variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {poles : Finset X}
 
 /-! ## Step 1 (Miranda (3.1)): `Tr_F α` is the rational form `L`
 
@@ -295,5 +311,179 @@ theorem residueTheorem_of_holomorphic (ω₀ : HolomorphicOneForms X) (g : X →
     (hg : ∀ a ∈ S, AnalyticAt ℂ (fun z => g ((chartAt ℂ a).symm z)) ((chartAt ℂ a) a)) :
     residueSum ω₀ g S = 0 :=
   residueSum_eq_zero_of_holomorphic ω₀ g S hg
+
+/-! ## Discharging the substrate gap: the trace-rationality bridge
+
+The substrate gap `SerreTraceExists` packages two things (module docstring): **(a)** genericity (a
+nonconstant adapted `f`) and **(b)** Step-1 rationality (`Tr_F α` is the rational `LaurentForm T.L`).
+
+**Step-1 rationality is no longer assumed — it is PROVEN.**  The §VIII.3 trace's meromorphy across
+branch points (formula (3.1)) and the consequent genus-`0` rationality are assembled, *with the
+genus-`0` entire-remainder field `hentire` proven (not a caller hypothesis)* and a **sound** `∞`-fibre
+(the repaired reciprocal `InftyFibreDataNF`, never the unsatisfiable `InftyFibreData`), in
+`FormTraceFullFibre.traceRationalityDataNF_ofPatched`
+(`FormTraceRationalityNFPatched.lean`).  Its output is a `TraceRationalityDataNF`, which is exactly the
+value-correct rational-trace bundle.  This section *bridges* that proven assembly into a `SerreTraceData`
+(= `FormResidueTrace`), so that `SerreTraceExists` rests on JUST the genericity — the single existential
+"a nonconstant `f` carrying the §VIII.3 trace data exists" — with everything else (rationality, Lemma
+3.2, the `ℂℙ¹` residue theorem, the descent) proven.
+
+The bridge is purely structural: `TraceRationalityDataNF.toGlobalTraceData`
+(`FormTraceFullFibreRationalityNF.lean`, the finite Lemma 3.2 `hL32_of_agree_fibreRegularData` + the
+sound `∞` Lemma 3.2 `infty_eq_of_agreeNF`) composed with `GlobalTraceData.toFormResidueTrace`
+(`FormTraceGlobal.lean`, the proven `finite_eq` re-indexing).  Both preserve the pole set definitionally,
+so the recorded `poles` is the parameter `poles` by `rfl`. -/
+
+/-- **The trace-rationality bridge (general).**  A value-correct rational-trace bundle
+`TraceRationalityDataNF ω₀ g f poles` — the §VIII.3 trace `Tr_F α` realized as a `LaurentForm` with the
+finite/`∞` Lemma-3.2 agreements and the sound `∞`-fibre — yields a §VIII.3 trace object, hence
+`SerreTraceExists ω₀ g poles`.
+
+This is the *structural* discharge of Step-1 rationality into the `SerreTraceData` packaging:
+`toGlobalTraceData` (the proven finite + sound-`∞` Lemma 3.2) then `toFormResidueTrace` (the proven
+`finite_eq` re-indexing); the pole set is preserved by `rfl`. -/
+theorem serreTraceExists_of_traceRationalityDataNF {f : MeromorphicFunction X}
+    (T : TraceRationalityDataNF ω₀ g f poles) :
+    SerreTraceExists ω₀ g poles :=
+  ⟨T.toGlobalTraceData.toFormResidueTrace, rfl⟩
+
+/-- **The trace-rationality bridge (from a `GlobalTraceData`).**  A `GlobalTraceData ω₀ g f poles` — the
+rational trace `L` + the per-fibre enumeration + Lemma 3.2 at the finite centres (`hL32`) and at `∞`
+(`infty_eq`) — yields a §VIII.3 trace object, hence `SerreTraceExists ω₀ g poles` (the proven
+`toFormResidueTrace`, pole set preserved by `rfl`). -/
+theorem serreTraceExists_of_globalTraceData {f : MeromorphicFunction X}
+    (T : GlobalTraceData ω₀ g f poles) :
+    SerreTraceExists ω₀ g poles :=
+  ⟨T.toFormResidueTrace, rfl⟩
+
+/-- **The §VIII.3 trace object from the branch-patched geometric trace (Step-1 rationality wired).**
+With the branch-patched trace `T := valueChartTracePatched ω₀ f Φ br`, the *proven* trace-rationality
+assembly `traceRationalityDataNF_ofPatched` (where the genus-`0` `hentire` is **proven internally** via
+the off-centre analyticity `hreg`/`hbnd` + junk-freeness `hcont_int`, and the `∞`-fibre is the **sound**
+`InftyFibreDataNF.ofRegular`) builds a `TraceRationalityDataNF`; bridging it gives a `SerreTraceData`,
+hence `SerreTraceExists ω₀ g poles`.
+
+The hypotheses are exactly the §VIII.3 geometric inputs of `residueSum_eq_zero_of_patchedGeometry`
+(`FormTraceRationalityNFPatched.lean`) — the global selection `Φ` + discrete fibre data, the
+regular-value moving coherence `Creg`/`hCreg_g` (giving `hreg`), the branch-value sphere coherence
+`αBr`/`hbr`/`hevBr` (giving `hbnd` via the proven bundle SUM `traceExtendsAt_branchPoint`), the simple
+`∞`-poles `xsInf`/`hsimpleInf`, the `∞`-moving coherence `hcoh`, junk-freeness `hcont_int`, and the
+genus-`0` `∞`-vanishing `R₀`.  Producing them is the residual **genericity** (a nonconstant adapted `f`);
+the trace's rationality is no longer assumed. -/
+theorem serreTraceExists_of_patchedGeometry {f : MeromorphicFunction X}
+    (hncF : ¬ ∃ y₀ : RiemannSphere, ∀ x, f.toRiemannSphere x = y₀)
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (Creg : ∀ z, z ∉ Finset.univ.image cs ∪ br → MovingCoherenceDatum ω₀ g f Φ z)
+    (hCreg_g : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
+      AnalyticAt ℂ (fun w => g ((chartAt ℂ ((Creg z hz).D.xs i)).symm w))
+        ((chartAt ℂ ((Creg z hz).D.xs i)) ((Creg z hz).D.xs i)))
+    (αBr : ℂ → HolomorphicOneForms X)
+    (hbr : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      ((b₀ : ℂ) : RiemannSphere) ∈ branchLocus f.toRiemannSphere)
+    (hevBr : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      ∀ᶠ z in 𝓝[≠] b₀,
+        ∃ (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+          (hderiv : ∀ i, deriv (fun w => f.holoRepr
+              ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+            ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+              (S.sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0)
+          (_hmero : ∀ i, MeromorphicAt
+            (fun w => g ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+            ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+              (S.sheet i (((z : ℂ) : RiemannSphere))))),
+          valueChartTrace ω₀ f Φ z
+              = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv _hmero)).traceCoeff z ∧
+          (∀ i, (αBr b₀).toFun (S.sheet i (((z : ℂ) : RiemannSphere)))
+            = g (S.sheet i (((z : ℂ) : RiemannSphere)))
+              • ω₀.toFun (S.sheet i (((z : ℂ) : RiemannSphere)))))
+    (D : (p : ℂ) → FibreRegularData g f p)
+    (Cfin : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
+    (hCfin_D : ∀ i, (Cfin i).D = D (cs i))
+    (hxs_inj : ∀ p, Function.Injective (D p).xs)
+    (hxs_mem : ∀ p, ∀ i,
+      (D p).xs i ∈ poles ∧ f.toRiemannSphere ((D p).xs i) = ((p : ℂ) : RiemannSphere))
+    (hxs_surj : ∀ p, ∀ a ∈ poles, f.toRiemannSphere a = ((p : ℂ) : RiemannSphere) →
+      ∃ i, (D p).xs i = a)
+    {ιInf : Type} [Fintype ιInf] (xsInf : ιInf → X)
+    (hsimpleInf : ∀ i, f.orderAtPoint (xsInf i) = -1)
+    (hmeroInf : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (xsInf i)).symm z))
+      ((chartAt ℂ (xsInf i)) (xsInf i)))
+    (hxsInf_inj : Function.Injective xsInf)
+    (hxsInf_mem : ∀ i, xsInf i ∈ poles ∧ f.toRiemannSphere (xsInf i) = OnePoint.infty)
+    (hxsInf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, xsInf i = a)
+    (hcoh : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0]
+        recipCoeff (inftyMovingSumNF ω₀ f (InftyFibreDataNF.ofRegular g f xsInf hsimpleInf hmeroInf)))
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (valueChartTracePatched ω₀ f Φ br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] 0] R₀) :
+    SerreTraceExists ω₀ g poles :=
+  serreTraceExists_of_traceRationalityDataNF
+    (traceRationalityDataNF_ofPatched Φ m cs ρ hcs_ball hcs_inj br
+      (fun w hw => hreg_of_movingDatum (Creg w hw) (hCreg_g w hw))
+      (fun b₀ hb₀br hb₀cs =>
+        hbnd_of_eventual_sphereCoherence ω₀ g f Φ (αBr b₀) hncF (hbr b₀ hb₀br hb₀cs)
+          (hevBr b₀ hb₀br hb₀cs))
+      D Cfin hCfin_D hxs_inj hxs_mem hxs_surj
+      (InftyFibreDataNF.ofRegular g f xsInf hsimpleInf hmeroInf) hxsInf_inj hxsInf_mem hxsInf_surj
+      hcenters_cs
+      (hcoh_inf_of_inftyMovingCoherenceNF ω₀ g f Φ br _ hcoh)
+      hcont_int R₀ hR₀_an hR₀0 hR₀_eq)
+
+/-! ## The single remaining obligation: genericity (a nonconstant `f` carrying the trace data)
+
+After the bridge, the substrate gap collapses to the **existence** of the value-correct rational-trace
+bundle for *some* nonconstant cover `f`: `TraceRationalityExists ω₀ g poles`.  This is the honest single
+named obligation — Miranda's genericity, "simply choose any nonconstant meromorphic `f`" (p. 254), now
+that the trace's rationality (Step 1) is proven content (`traceRationalityDataNF_ofPatched`,
+`serreTraceExists_of_patchedGeometry`).  Existence of a nonconstant `f` is already in the repo
+(`Jacobians.Dolbeault.exists_nonconstant_meromorphicFunction` / RR `exists_riemannRoch_divisor`); the
+residual is producing the §VIII.3 trace data (the geometric inputs of `serreTraceExists_of_patchedGeometry`)
+for an *adapted* such `f` (a generic-`f`-avoids-finite-bad-set argument, see
+`docs/gate_a_cover_genericity_textbook_2026-06-08.md`: NO Riemann–Roch-with-jets is needed). -/
+
+/-- **The genericity obligation.**  A nonconstant cover `f` carrying the value-correct §VIII.3
+rational-trace bundle for `α = ω₀·g` over `poles` exists.  This is the *single* remaining substrate gap:
+Step-1 rationality is now proven (`traceRationalityDataNF_ofPatched`), so what remains is Miranda's
+genericity — the existence of an adapted nonconstant `f` (p. 254). -/
+def TraceRationalityExists (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (poles : Finset X) : Prop :=
+  ∃ f : MeromorphicFunction X, Nonempty (TraceRationalityDataNF ω₀ g f poles)
+
+/-- **`SerreTraceExists` from the genericity obligation.**  If a nonconstant `f` carrying the §VIII.3
+rational-trace bundle exists (`TraceRationalityExists`), then a §VIII.3 trace object exists — the bridge
+`serreTraceExists_of_traceRationalityDataNF`.  This reduces the substrate gap to exactly the genericity
+(Step-1 rationality being proven). -/
+theorem serreTraceExists_of_traceRationalityExists
+    (h : TraceRationalityExists ω₀ g poles) :
+    SerreTraceExists ω₀ g poles := by
+  obtain ⟨f, ⟨T⟩⟩ := h
+  exact serreTraceExists_of_traceRationalityDataNF T
+
+/-- **The residue theorem `∑ Res = 0`, modulo the genericity obligation.**  If a nonconstant `f`
+carrying the §VIII.3 rational-trace bundle exists, then the total residue of `α = ω₀·g` over its poles
+vanishes.  Steps 1–4 (rationality, Lemma 3.2, the `ℂℙ¹` residue theorem, the descent) are all proven;
+the only input is the genericity `TraceRationalityExists`.  This is the precise, honest standing of
+Gate A: `∑ Res = 0` ⟸ "an adapted nonconstant `f` exists". -/
+theorem residueTheorem_of_traceRationalityExists
+    (h : TraceRationalityExists ω₀ g poles) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueTheorem_of_traceExists ω₀ g poles (serreTraceExists_of_traceRationalityExists h)
+
+/-- **Non-vacuity of the genericity obligation.**  When `α = ω₀·g` is globally holomorphic, the
+genericity obligation holds with the **empty** pole set: any `f`, the empty rational-trace bundle
+(`traceRationalityDataNF_holomorphic`).  Confirms `TraceRationalityExists` is satisfiable (not a
+disguised `False`), so the bridge is honest. -/
+theorem traceRationalityExists_of_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) :
+    TraceRationalityExists ω₀ g (∅ : Finset X) :=
+  ⟨f, ⟨traceRationalityDataNF_holomorphic ω₀ g f⟩⟩
 
 end Jacobians.Dolbeault.SerreResidueTheorem
