@@ -88,6 +88,18 @@ genuine strength. -/
 
 variable [Nonempty X]
 
+/-- **Integrand analytic ⟹ isolated singularity (`formFnHoloPunctured`).**  If the chart integrand
+`z ↦ coeffAt α a z · g(chart.symm z)` of the form `α·g` is analytic at the chart image of `a`, then
+`α·g` has an isolated singularity (in fact none) there.  The "form holomorphic ⟹ isolated" bridge,
+the genuine-strength analogue of `formFnHoloPunctured_of_analyticAt` (which assumes `g` analytic). -/
+theorem formFnHoloPunctured_of_form_analyticAt (α : HolomorphicOneForms X) (g : X → ℂ) (a : X)
+    (hprod : AnalyticAt ℂ (fun z => coeffAt α a z * g ((chartAt ℂ a).symm z)) ((chartAt ℂ a) a)) :
+    formFnHoloPunctured α g a := by
+  have hev := hprod.eventually_analyticAt
+  rw [Metric.eventually_nhds_iff] at hev
+  obtain ⟨ε, hε, hball⟩ := hev
+  exact ⟨ε, hε, fun z hz => (hball (mem_ball.mp hz.1)).differentiableAt⟩
+
 /-- **`Res(holomorphic form) = 0`, integrand form.**  If the chart integrand `z ↦ coeffAt α a z ·
 g(chart.symm z)` (the local representative of the 1-form `α·g`) is analytic at the chart image of `a`
 — i.e. the *form* `α·g` is holomorphic at `a`, with no pole — then `formFnResidue α g a = 0`.
@@ -136,18 +148,131 @@ theorem formFnResidue_eq_of_form_analyticAt_sub (α : HolomorphicOneForms X) (g�
     filter_upwards with z
     simp only [Pi.neg_apply, Pi.sub_apply]; ring
   -- `α·(g₂ − g₁)` holomorphic ⟹ isolated singularity, so `α·g₂` has one too (sum with `α·g₁`).
-  have hhp21 : formFnHoloPunctured α (g₂ - g₁) a := by
-    obtain ⟨ρ, hρ, hball⟩ : ∃ ρ > 0, ∀ z ∈ ball ((chartAt ℂ a) a) ρ,
-        DifferentiableAt ℂ (fun z => coeffAt α a z * (g₂ - g₁) ((chartAt ℂ a).symm z)) z := by
-      have hev := hformneg.eventually_analyticAt
-      rw [Metric.eventually_nhds_iff] at hev
-      obtain ⟨ε, hε, hball⟩ := hev
-      exact ⟨ε, hε, fun z hz => (hball (mem_ball.mp hz)).differentiableAt⟩
-    exact ⟨ρ, hρ, fun z hz => hball z hz.1⟩
+  have hhp21 : formFnHoloPunctured α (g₂ - g₁) a :=
+    formFnHoloPunctured_of_form_analyticAt α (g₂ - g₁) a hformneg
   -- `g₂ = g₁ + (g₂ − g₁)`, and the second summand contributes residue `0` (its form is holomorphic).
   have hsplit : g₂ = g₁ + (g₂ - g₁) := by ext x; simp only [Pi.add_apply, Pi.sub_apply]; ring
   rw [hsplit, formFnResidue_add α g₁ (g₂ - g₁) a h₁ hhp21,
     formFnResidue_eq_zero_of_form_analyticAt α (g₂ - g₁) a hformneg, add_zero]
+
+/-! ## The form-holomorphic-difference Mittag–Leffler distribution
+
+The existing `GeneralMLDistribution` carries the overlap condition `holoDiff` = the *function*
+difference `gᵢ − gⱼ` chart-analytic (`∈ 𝒪₀`).  But Forster's genuine `δμ ∈ Z¹(Ω)` only requires the
+*form* difference `(gᵢ − gⱼ)·ω₀` to be holomorphic — a strictly weaker condition that permits poles of
+`gᵢ − gⱼ` cancelled by zeros of `ω₀` (the canonical divisor `K = div ω₀`).  A general Čech cocycle of
+`𝒪_K` has exactly such differences (poles up to `K`), so the existing `holoDiff` cannot represent the
+lift of a general cocycle.
+
+We supply `FormMLDistribution ω₀` with the correct `formHoloDiff` (the chart integrand of the form
+`(gᵢ − gⱼ)·ω₀` analytic), and re-derive the residue API at this strength via the form-level lemmas
+above.  This is the genuine domain of the Mittag–Leffler connecting map. -/
+
+/-- **A form-holomorphic-difference Mittag–Leffler distribution of 1-forms** (Forster §17.2 at the
+genuine `δμ ∈ Z¹(Ω)` strength), in the `ωᵢ = gᵢ·ω₀` shape.
+
+Identical to `GeneralMLDistribution` except the overlap condition `formHoloDiff` requires the *form*
+difference `(gᵢ − gⱼ)·ω₀` to be holomorphic (the chart integrand `coeffAt ω₀ a · (gᵢ−gⱼ)(chart.symm)`
+analytic), rather than the *function* `gᵢ − gⱼ` analytic.  This is what a general `𝒪_K` Čech cocycle's
+Mittag–Leffler lift satisfies (`δμ ∈ Z¹(Ω)`, poles of `gᵢ − gⱼ` bounded by `K = div ω₀`). -/
+structure FormMLDistribution (ω₀ : HolomorphicOneForms X) where
+  /-- The (finite) cover index. -/
+  ι : Type
+  /-- Finiteness of the index. -/
+  [fintype : Fintype ι]
+  /-- The cover opens. -/
+  U : ι → Opens X
+  /-- The local principal-part function on each patch (`ωᵢ = gᵢ·ω₀`). -/
+  g : ι → (X → ℂ)
+  /-- The finite pole set. -/
+  poles : Finset X
+  /-- A designated patch containing each pole. -/
+  patch : X → ι
+  /-- Each pole lies in its designated patch. -/
+  patch_mem : ∀ a ∈ poles, a ∈ U (patch a)
+  /-- **Form-holomorphic-difference condition** (`δμ ∈ Z¹(Ω)`): on every overlap the *form*
+  difference `(gᵢ − gⱼ)·ω₀` is holomorphic, i.e. its chart integrand is analytic. -/
+  formHoloDiff : ∀ (i j : ι) (a : X), a ∈ U i → a ∈ U j →
+    AnalyticAt ℂ (fun z => coeffAt ω₀ a z * (g i - g j) ((chartAt ℂ a).symm z)) ((chartAt ℂ a) a)
+  /-- **Isolated singularity** at each pole (in its designated patch). -/
+  iso : ∀ a ∈ poles, formFnHoloPunctured ω₀ (g (patch a)) a
+
+attribute [instance] FormMLDistribution.fintype
+
+namespace FormMLDistribution
+
+variable {ω₀ : HolomorphicOneForms X}
+
+/-- **Each patch of a pole has an isolated singularity there.**  At a pole `a`, any patch `i ∋ a` gives
+`ω₀·gᵢ` an isolated singularity: `gᵢ = (gᵢ − g_{patch a}) + g_{patch a}`, the form of the first summand
+holomorphic at `a` (`formHoloDiff`) — hence isolated — and the second isolated (`iso`); isolated-
+singularity is closed under addition. -/
+theorem formFnHoloPunctured_of_mem (μ : FormMLDistribution ω₀) {a : X} (ha : a ∈ μ.poles)
+    {i : μ.ι} (hi : a ∈ μ.U i) :
+    formFnHoloPunctured ω₀ (μ.g i) a := by
+  have hdiff : formFnHoloPunctured ω₀ (μ.g i - μ.g (μ.patch a)) a :=
+    formFnHoloPunctured_of_form_analyticAt ω₀ _ a (μ.formHoloDiff i (μ.patch a) a hi (μ.patch_mem a ha))
+  have hsum : μ.g i = (μ.g i - μ.g (μ.patch a)) + μ.g (μ.patch a) := by
+    ext x; simp only [Pi.add_apply, Pi.sub_apply]; ring
+  rw [hsum]
+  obtain ⟨ρ₁, hρ₁, hb₁⟩ := hdiff
+  obtain ⟨ρ₂, hρ₂, hb₂⟩ := μ.iso a ha
+  refine ⟨min ρ₁ ρ₂, lt_min hρ₁ hρ₂, fun z hz => ?_⟩
+  have hz1 : z ∈ ball ((chartAt ℂ a) a) ρ₁ \ {(chartAt ℂ a) a} :=
+    ⟨mem_ball.mpr (lt_of_lt_of_le (mem_ball.mp hz.1) (min_le_left _ _)), hz.2⟩
+  have hz2 : z ∈ ball ((chartAt ℂ a) a) ρ₂ \ {(chartAt ℂ a) a} :=
+    ⟨mem_ball.mpr (lt_of_lt_of_le (mem_ball.mp hz.1) (min_le_right _ _)), hz.2⟩
+  have heq : (fun z => coeffAt ω₀ a z * ((μ.g i - μ.g (μ.patch a)) + μ.g (μ.patch a))
+        ((chartAt ℂ a).symm z))
+      = (fun z => coeffAt ω₀ a z * (μ.g i - μ.g (μ.patch a)) ((chartAt ℂ a).symm z))
+        + fun z => coeffAt ω₀ a z * μ.g (μ.patch a) ((chartAt ℂ a).symm z) := by
+    funext w; simp only [Pi.add_apply]; ring
+  rw [heq]; exact (hb₁ z hz1).add (hb₂ z hz2)
+
+/-- **The per-pole residue** `Resₐ(μ) = Resₐ(ω₀·g_{patch a})` (Forster §17.2). -/
+noncomputable def resAtPole (μ : FormMLDistribution ω₀) (a : X) : ℂ :=
+  formFnResidue ω₀ (μ.g (μ.patch a)) a
+
+/-- **Patch-independence of the per-pole residue** at the genuine Forster strength.  For a pole `a`,
+any patch `i ∋ a` computes the same residue: the two local forms differ by the *holomorphic form*
+`(gᵢ − g_{patch a})·ω₀` (`formHoloDiff`), residue `0` (`formFnResidue_eq_of_form_analyticAt_sub`). -/
+theorem resAtPole_eq_of_mem (μ : FormMLDistribution ω₀) {a : X} (ha : a ∈ μ.poles) {i : μ.ι}
+    (hi : a ∈ μ.U i) :
+    formFnResidue ω₀ (μ.g i) a = μ.resAtPole a :=
+  formFnResidue_eq_of_form_analyticAt_sub ω₀ (μ.g i) (μ.g (μ.patch a)) a
+    (μ.formFnHoloPunctured_of_mem ha hi) (μ.formHoloDiff i (μ.patch a) a hi (μ.patch_mem a ha))
+
+/-- **Forster's residue `Res(μ)`** of a form-holomorphic-difference distribution: the sum of the
+per-pole residues over the finite pole set. -/
+noncomputable def res (μ : FormMLDistribution ω₀) : ℂ :=
+  ∑ a ∈ μ.poles, μ.resAtPole a
+
+theorem res_def (μ : FormMLDistribution ω₀) : μ.res = ∑ a ∈ μ.poles, μ.resAtPole a := rfl
+
+/-- **A `GeneralMLDistribution` is a `FormMLDistribution`** — its (stronger) `holoDiff` (function
+analytic) implies the form `(gᵢ − gⱼ)·ω₀` is holomorphic (`coeffAt ω₀ a` analytic times an analytic
+function), and the residue agrees (both read `formFnResidue ω₀ g_{patch a}`).  This confirms the form
+distribution genuinely generalises the existing one (non-vacuity at any pole count). -/
+def ofGeneral (μ : GeneralMLDistribution ω₀) : FormMLDistribution ω₀ where
+  ι := μ.ι
+  U := μ.U
+  g := μ.g
+  poles := μ.poles
+  patch := μ.patch
+  patch_mem := μ.patch_mem
+  formHoloDiff := fun i j a hi hj => by
+    have hmem : (chartAt ℂ a) a ∈ (chartAt ℂ a).target :=
+      (chartAt ℂ a).map_source (mem_chart_source ℂ a)
+    exact (coeffAt_analyticAt ω₀ a hmem).mul (μ.holoDiff i j a hi hj)
+  iso := μ.iso
+
+@[simp] theorem ofGeneral_resAtPole (μ : GeneralMLDistribution ω₀) (a : X) :
+    (ofGeneral μ).resAtPole a = μ.resAtPole a := rfl
+
+theorem res_ofGeneral (μ : GeneralMLDistribution ω₀) : (ofGeneral μ).res = μ.res :=
+  Finset.sum_congr rfl fun _ _ => rfl
+
+end FormMLDistribution
 
 end Jacobians.Dolbeault
 
