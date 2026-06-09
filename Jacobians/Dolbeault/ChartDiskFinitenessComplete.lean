@@ -3,11 +3,11 @@
 
   `ChartDiskFiniteness.lean` proves the analytic heart — the Forster 14.6 cover-level ∂̄-lift
   (`ChartDiskCover.forster146_lift`) — and the relatively-compact covering shrinking + the
-  `HolomorphicDiskOverlapData` (`𝔇.overlapData`, with compact `ρ` for free, Montel).  It leaves ONE
-  honest remaining gap (`ChartDiskCover.finiteDimensional_cechH1_chartDisk`): the structural δ-complex
-  `HolomorphicCoboundaries 𝔇.overlapData` together with a comparison `cechH1 𝔇 0 ≃ₗ supH1`.
+  `HolomorphicDiskOverlapData` (`𝔇.overlapData`, with compact `ρ` for free, Montel).  The two pieces
+  it does not build are the structural δ-complex `HolomorphicCoboundaries 𝔇.overlapData` and a
+  comparison `cechH1 𝔇 0 ≃ₗ supH1`.
 
-  This file builds the δ-complex + comparison for that gap, supplying the two pieces for the proven
+  This file builds that δ-complex + comparison, supplying the two pieces for the proven
   reduction `ChartDiskCover.finiteDimensional_cechH1_of_holomorphicModel`:
 
     * **(A) the δ-complex** `HolomorphicCoboundaries 𝔇.overlapData` (`holomorphicCoboundaries`) —
@@ -1833,9 +1833,8 @@ theorem finiteDimensional_cechH1_of_holomorphicModel_inj
 /-- **`H¹` finiteness on a chart-disk cover (Forster 14.9) — the COMPLETE statement.**
 `FiniteDimensional ℂ (cechH1 𝔇 0)` for a `ChartDiskCover 𝔇`.
 
-This restates `ChartDiskCover.finiteDimensional_cechH1_chartDisk` (which has an honest remaining gap at
-`ChartDiskFiniteness.lean` for the δ-complex + comparison) with the δ-complex + comparison BUILT
-here: the model `𝔇.holomorphicCoboundaries` (δ-data of §A; the `leray` field discharged in §A2-*) and
+The δ-complex + comparison that `ChartDiskFiniteness.lean` leaves open are BUILT here: the model
+`𝔇.holomorphicCoboundaries` (δ-data of §A; the `leray` field discharged in §A2-*) and
 the injection `𝔇.comparisonMap` (forward germ→`BddHol` cochain map of §B).
 
 This theorem is SORRY-FREE and axiom-clean (`propext, Classical.choice, Quot.sound`): the entire

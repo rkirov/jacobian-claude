@@ -8,8 +8,8 @@
 
   The repo's generic finiteness engine `CechFiniteness.finiteDimensional_h1_of_leray_compact` (Forster
   14.8 / Schwartz–Riesz) needs a SURJECTIVITY ("leray") field: every shrinking-cocycle is
-  `δ⁰(holomorphic 0-cochain) + ρ(cover-cocycle)`.  For the Montel `chartCover` this field is a genuine
-  gap (`CechModelHolomorphicLeray.lean`): the Montel cover sets `Uov` are chart-images of
+  `δ⁰(holomorphic 0-cochain) + ρ(cover-cocycle)`.  For the Montel `chartCover` this field was a genuine
+  obstruction (that route is abandoned): the Montel cover sets `Uov` are chart-images of
   `chartOpen ∩ chartOpen`, i.e. ARBITRARY planar opens, not balls; the per-chart cutoff ∂̄-solve then
   produces the cover cocycle only on the shrinking `Wov`, not the full overlap `Uov` (the two-scale
   cutoff dilemma), and the no-cutoff route would need ∂̄-solvability on an arbitrary planar open
@@ -32,8 +32,9 @@
   * The Forster 14.6 ball-lift, the ANALYTIC HEART (the genuinely-unblocked content).
   * The FA finiteness assembly via `finiteDimensional_h1_of_leray_compact`.
 
-  Honest gaps with precise diagnosis mark genuinely-stuck structural sub-steps; the analytic content
-  (the ball-lift) is the priority.
+  The δ-complex + germ↔`BddHol` comparison that feed the assembly are BUILT downstream in
+  `ChartDiskFinitenessComplete.lean` (`finiteDimensional_cechH1_chartDisk_complete`, complete and
+  axiom-clean).
 -/
 import Jacobians.Dolbeault.CechModelHolomorphic
 import Jacobians.Dolbeault.CechModelManifold
@@ -599,42 +600,6 @@ theorem finiteDimensional_cechH1_of_holomorphicModel
   haveI : FiniteDimensional ℂ c.supH1 :=
     c.finiteDimensional_supH1 (HolomorphicCoboundaries.leray_surjective d c)
   exact e.symm.finiteDimensional
-
-/-- **`H¹` finiteness on a chart-disk cover (Forster 14.9).**  `FiniteDimensional ℂ (cechH1 𝔇 0)` for
-a `ChartDiskCover 𝔇`.
-
-STATUS.  Two of the three ingredients are PROVEN axiom-clean here:
-
-  * The ANALYTIC HEART — the Forster 14.6 cover-level ∂̄-lift, the field that is a genuine gap for
-    the Montel model (`CechModelHolomorphicLeray.lean`) — is `ChartDiskCover.forster146_lift` (the ball
-    geometry removes the two-scale cutoff dilemma).
-  * The relatively-compact COVERING SHRINKING and the `HolomorphicDiskOverlapData` (`𝔇.overlapData`,
-    with COMPACT `ρ` for free, Montel) — built from the shrinking lemma (Forster §12).
-
-The remaining gap is ONE unproved obligation of pure cover/sheaf PLUMBING (NO ∂̄, NO Montel — the
-analytic wall is GONE): the **(G-bridge)** — the δ-complex `HolomorphicCoboundaries 𝔇.overlapData` (the
-structural cross-chart δ⁰/δ¹/`hδδ`/`hcomm` fields plus the `leray` field, the latter discharged by
-`forster146_lift`+a PoU split — cf. `CechModelHolomorphicDelta` for the Montel cover) together with the
-germ↔`BddHol` comparison `cechH1 𝔇 0 ≃ₗ[ℂ] c.supH1` (the forward map is
-`CechModelCochain.cochainToCcov`; the round-trip is the remaining bridge).  We pin the one remaining gap to the
-ALREADY-BUILT `𝔇.overlapData` so it is exactly this δ-complex+comparison.  Equivalently (by
-`finiteDimensional_cechH1_iff_dolbeault`) this is `FiniteDimensional ℝ (DolbeaultH01 X)`. -/
-theorem finiteDimensional_cechH1_chartDisk [ConnectedSpace X] [Nonempty X] :
-    FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) := by
-  -- The model `𝔇.overlapData` (compact `ρ`) is BUILT; only its δ-complex + comparison remain.
-  -- The `leray` field of that δ-complex is the PROVEN `forster146_lift`.
-  obtain ⟨c, ⟨e⟩⟩ :
-      ∃ (c : HolomorphicCoboundaries 𝔇.overlapData),
-        Nonempty (𝔇.toFiniteCover.cechH1 (0 : Divisor X) ≃ₗ[ℂ] c.supH1) := by
-    sorry
-  exact 𝔇.finiteDimensional_cechH1_of_holomorphicModel 𝔇.overlapData c e
-
-/-- **`H^{0,1}` finiteness** (the Dolbeault form), via `finiteDimensional_cechH1_iff_dolbeault`.  Same
-status as `finiteDimensional_cechH1_chartDisk`. -/
-theorem finiteDimensional_dolbeaultH01_of_chartDisk (𝔇 : ChartDiskCover X)
-    [ConnectedSpace X] [Nonempty X] :
-    FiniteDimensional ℝ (DolbeaultH01 X) :=
-  (finiteDimensional_cechH1_iff_dolbeault 𝔇).1 (finiteDimensional_cechH1_chartDisk 𝔇)
 
 end ChartDiskCover
 

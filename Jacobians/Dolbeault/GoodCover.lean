@@ -13,9 +13,10 @@
   docstring of `exists_lerayCover_overlap_unused` below), `hL : 𝔘.IsLeray` reaches a proven (gap-free)
   proof body in exactly one place — the Dolbeault comparison spine
   (`DolbeaultComparisonEquiv.comparison_linearEquiv` and its two round-trips) — and there the proof body
-  NEVER references `hL`.  Everywhere else `hL` is either (a) an unused hypothesis of an open leaf
-  (`arithmeticGenus_eq_genus`, `serre_h1_eq`, `exists_skyscraperLES`, `cechH1_dolbeault_comparison`), or
-  (b) threaded through proven χ-bookkeeping that bottoms out at the open `exists_skyscraperLES`.  The
+  NEVER references `hL`.  Everywhere else `hL` is either (a) an unused hypothesis of a ladder leaf
+  (`arithmeticGenus_eq_genus`, `serre_h1_eq` — at scout time also `exists_skyscraperLES`, since
+  proven, and the comparison statement, since proven and pruned), or
+  (b) threaded through proven χ-bookkeeping that bottoms out at `exists_skyscraperLES`.  The
   genuine finiteness engine `CechFinitenessWiring.finiteDimensional_cechH1_wired` takes **no** `IsLeray`
   hypothesis whatsoever.
 
@@ -155,9 +156,9 @@ theorem cech_coboundary_of_cechToDolbeaultForm_exact (𝔇 : ChartDiskCover X)
       (𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))).1 hq
 
 /-- **The L3 comparison `finrank ℝ (DolbeaultH01 X) = 2 · finrank ℂ (cechH1 𝔇 0)`, with NO `IsLeray`
-hypothesis.**  This is exactly `DolbeaultComparison.cechH1_dolbeault_comparison`'s statement (the one
-the headline-facing `arithmeticGenus_eq_genus` consumes) but with `hL` dropped — proving the comparison
-half of the Serre-at-`0` route does not need a Leray/good-cover hypothesis on the overlaps. -/
+hypothesis.**  This is the Čech↔Dolbeault comparison statement (`DolbeaultComparison.lean`'s
+deliverable 5) with `hL` dropped — proving the comparison half of the Serre-at-`0` route does not
+need a Leray/good-cover hypothesis on the overlaps. -/
 theorem cechH1_dolbeault_comparison' (𝔇 : ChartDiskCover X) :
     Module.finrank ℝ (DolbeaultH01 X) = 2 * Module.finrank ℂ (𝔇.toFiniteCover.cechH1 0) := by
   rw [(comparison_linearEquiv' 𝔇).finrank_eq, finrank_real_of_complex]

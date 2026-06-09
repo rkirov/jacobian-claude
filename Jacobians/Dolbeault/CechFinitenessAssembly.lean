@@ -6,16 +6,16 @@
       on `H¹` are injective UNCONDITIONALLY (germ-class `𝒪_D` sheaf-gluing).
     * **chart-disk refinement existence** (`exists_chartDiskCover_refinement`, `ChartDiskRefinement`):
       every finite cover is refined by a `ChartDiskCover` (ball sets).
-    * **Montel finiteness** (`ChartDiskFiniteness.finiteDimensional_cechH1_chartDisk`): `cechH1 𝔇 0` is
-      finite-dimensional for a `ChartDiskCover 𝔇` — the analytic heart (Forster 14.6/14.7).
+    * **Montel finiteness** (`ChartDiskCover.finiteDimensional_cechH1_chartDisk_complete`,
+      `ChartDiskFinitenessComplete.lean`): `cechH1 𝔇 0` is finite-dimensional for a
+      `ChartDiskCover 𝔇` — the analytic heart (Forster 14.6/14.7), complete and axiom-clean.
 
   Given the Montel finiteness, finiteness for an ARBITRARY cover follows by the injection
   `cechH1 𝔘 0 ↪ cechH1 𝔇 0` (12.4) into the finite-dimensional `cechH1 𝔇 0` — NO cover-independence
   isomorphism (hence NO Riemann mapping) is needed.  This is the key to the 14.7 route.
 
-  The Montel finiteness is taken here as an explicit HYPOTHESIS `hMontel` so this assembly file is
-  complete and builds independently of the (in-progress) `ChartDiskFiniteness`; the final wiring
-  discharges `hMontel` with that theorem.
+  The Montel finiteness is taken in the assembly lemmas as an explicit HYPOTHESIS `hMontel` (so they
+  are parametric in the analytic input); the wiring below discharges `hMontel` with that theorem.
 -/
 import Jacobians.Dolbeault.CechRefinementInjective
 import Jacobians.Dolbeault.ChartDiskRefinement

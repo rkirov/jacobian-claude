@@ -2,8 +2,8 @@
   The **L3 kernel** — Dolbeault's comparison theorem `H^{0,1}(X) ≅ H¹(X, 𝒪)`, the single hardest
   analytic input of the `D = 0` Serre route (`arithmeticGenus_eq_genus`).
 
-  Target (proven standalone here as `cechH1_dolbeault_comparison_proof`, with the *exact* signature
-  of `DolbeaultComparison.cechH1_dolbeault_comparison`; the caller wires it):
+  Target (proven standalone as `cechH1_dolbeault_comparison_proof`; the `IsLeray`-free form is
+  `GoodCover.cechH1_dolbeault_comparison'`):
 
     `cechH1_dolbeault_comparison_proof (𝔘 : FiniteCover X) :`
     `    finrank ℝ (DolbeaultH01 X) = 2 * finrank ℂ (𝔘.cechH1 0)`

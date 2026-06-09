@@ -651,8 +651,8 @@ noncomputable def comparison_linearEquiv (𝔇 : ChartDiskCover X) (hL : 𝔇.to
     (dolbeault_to_cech_comp_cech_to_dolbeault 𝔇 hL)
     (cech_to_dolbeault_comp_dolbeault_to_cech 𝔇 hL)
 
-/-- **The L3 kernel: Čech ↔ Dolbeault comparison** — the standalone proof of the statement at
-`DolbeaultComparison.lean:227` (`cechH1_dolbeault_comparison`; the caller wires it to this).
+/-- **The L3 kernel: Čech ↔ Dolbeault comparison** — the standalone proof of the comparison
+statement (`DolbeaultComparison.lean`'s deliverable 5; `IsLeray`-free form in `GoodCover.lean`).
 Proven completely from `comparison_linearEquiv`: the `ℝ`-linear iso transports `finrank ℝ`, and the
 `ℝ`-vs-`ℂ` factor on the `ℂ`-module `cechH1` is `finrank_real_of_complex`. The entire remaining
 content sits in the four named sub-kernels (`dolbeault_to_cech`, `cech_to_dolbeault`, and the two
