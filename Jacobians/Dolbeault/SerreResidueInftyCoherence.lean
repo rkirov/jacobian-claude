@@ -210,6 +210,20 @@ theorem infty_notMem_branchLocus_of_simpleInfty (f : MeromorphicFunction X)
   have ha_simple : f.orderAtPoint a = -1 := by rw [← hi]; exact hsimpleInf i
   exact notMem_criticalSet_of_orderAtPoint_eq_neg_one f ha_simple ha_crit
 
+/-- **A `LocalSheetSystem` of `F = f.toRiemannSphere` at `∞`**, from simple `∞`-poles.  Since `∞ ∉
+branchLocus F` (`infty_notMem_branchLocus_of_simpleInfty`) and `F` is a nonconstant holomorphic map to
+`ℂℙ¹` (`f.div ≠ 0`), Forster §4.22 (`exists_localSheetSystem`) provides the moving sheets sweeping the
+`∞`-fibre over a sphere neighbourhood `V ∋ ∞`.  This is the `∞`-analogue of `exists_sphereSheetSystem`
+(specialized to finite values); it is the geometric source of an `InftyMovingCoherenceData` (the moving
+sheets supply the index bijection at `∞`), exactly as the finite sphere sheet system supplies the finite
+`Cfull` datum via `ofSphereSheetSystemCanon`. -/
+theorem exists_inftySheetSystem (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0)
+    (hsimpleInf : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = -1) :
+    Nonempty (Jacobians.LocalSheetSystem f.toRiemannSphere OnePoint.infty) :=
+  Jacobians.exists_localSheetSystem f.toRiemannSphere f.contMDiff_toRiemannSphere
+    (f.toRiemannSphere_not_isConstant (exists_orderAtPoint_ne_zero f hdiv))
+    (infty_notMem_branchLocus_of_simpleInfty f hsimpleInf)
+
 /-! ## The reduction of `hcoh_geom` to the large-`z` diagonal
 
 The target `∞`-coherence is `recipCoeff (valueChartTrace ω₀ f Φ) =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF
