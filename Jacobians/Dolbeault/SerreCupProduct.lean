@@ -27,15 +27,17 @@ by `f` commutes with the Čech differential and preserves cocycles/coboundaries)
 
 ## What is built here (sorry-free, axiom-clean)
 
-* `mulConstG f U` — left-multiplication of `MGerm U` by the germ of a *global* meromorphic function
-  `f` on `↥U`, as an ℂ-linear map `MGerm U →ₗ[ℂ] MGerm U`.
+* `mulLeftG a` — left-multiplication of `MGerm U` by a fixed germ `a`, as an ℂ-linear map; and
+  `globalGerm f U` — the germ on `↥U` of a *global* meromorphic function `f` (the function-side avatar
+  of `f·ω₀` after dividing by `ω₀`).
 * `mulConstG_omegaDGerm` — multiplying a `𝒪_D` germ by `f ∈ L(K−D)` lands in `𝒪_K` (order additivity).
-* `cupCochain1 f` — the induced map on 1-cochains, commuting with `rawRestrictG` and `cechDelta1`.
-* `cupCocycles1 f`, `cupCoboundaries1 f` — it maps `𝒪_D`-cocycles to `𝒪_K`-cocycles and
-  `𝒪_D`-coboundaries to `𝒪_K`-coboundaries (so it descends to cohomology).
-* `cupH1 f : 𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 K` — the descended cup product on cohomology classes.
-* `cup f D : lSysModule (K − D) →ₗ[ℂ] (𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 K)` — ℂ-linearity in `f` too (the
-  junk-free `lSysModule` source), bundled as a bilinear map; the input to the §17.5 residue pairing.
+* `cupCochain0/1/2 f` — the induced maps on cochains, commuting with `rawRestrictG` and `cechDelta0/1`.
+* `cupCochain1_cocycles1`, `cupCochain1_coboundaries1` — they map `𝒪_D`-cocycles to `𝒪_K`-cocycles and
+  `𝒪_D`-coboundaries to `𝒪_K`-coboundaries (so the cup descends to cohomology).
+* `cupH1 hf : 𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 K` — the descended cup product on cohomology classes.
+* `cup D K : lSysModule (K − D) →ₗ[ℂ] (𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 K)` — ℂ-linear in `f` too (the
+  junk-free `lSysModule` source, via `cupH1_add`/`cupH1_smul` + germ-zero descent), bundled as a
+  bilinear map; the algebraic input to the §17.5 residue pairing.
 
 The remaining §17.5 piece — the global residue `Res : 𝔘.cechH1 K → ℂ` (Forster 17.3, via the
 Mittag–Leffler connecting map, the genuinely-greenfield analytic descent) — is built separately; this
