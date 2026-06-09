@@ -34,7 +34,7 @@
   Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.4; Mathlib's
   `MeromorphicAt.analyticAt` / `toMeromorphicNFAt` removable singularity.
 -/
-import Jacobians.Dolbeault.CanonicalFormIso
+import Jacobians.Dolbeault.CanonicalFormDifferential
 import Jacobians.Montel
 
 open scoped Manifold ContDiff Topology Bundle
@@ -199,6 +199,11 @@ chart centres: for `w` in a *punctured* neighbourhood of any `x₀`, the covecto
 by `α`'s meromorphy at `x₀` (`toFun_eq_localRep_smul`), so reading it in `w`'s own chart it equals the
 analytic normal-form value (`repVal`).  Hence the per-point repair `repairedSection` is a genuine
 holomorphic section whose germ matches `α` everywhere off the centres. -/
+
+/-- `formCoeff` subtracts (combining `formCoeff_add` and `formCoeff_neg`). -/
+theorem formCoeff_sub (σ τ : ∀ x, FormFiber X x) (x : X) :
+    formCoeff (σ - τ) x = formCoeff σ x - formCoeff τ x := by
+  rw [sub_eq_add_neg, formCoeff_add, formCoeff_neg, sub_eq_add_neg]
 
 /-- The frame covector at `y` from the canonical tangent trivialisation: `φ_y : T_y X →L[ℂ] ℂ`. -/
 noncomputable def frameCovector (y : X) : TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ :=
@@ -413,6 +418,39 @@ theorem rawLocalRep_repairedSection_self (α : MeromorphicOneForm X) (y : X) :
   rw [repairedSection, ContinuousLinearMap.smul_apply, frameCovector_symmL_self, smul_eq_mul,
     mul_one]
 
+/-- **The repaired section germ-matches `α` off every centre.**  In chart `x₀`, the chart
+coefficient of `repairedSection α` agrees on a punctured neighbourhood of the centre with
+`formCoeff α.toFun x₀` (the junk-free crux + self-frame reconstruction).  This drives both the
+analyticity of the repaired section and the germ-equality `holToMero (repaired) ≡ α`. -/
+theorem formCoeff_repairedSection_eventuallyEq (α : MeromorphicOneForm X) (x₀ : X) :
+    formCoeff (repairedSection α) x₀ =ᶠ[𝓝[≠] ((chartAt ℂ x₀) x₀)] formCoeff α.toFun x₀ := by
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀ with he
+  set c₀ := (chartAt ℂ x₀) x₀ with hc₀
+  -- Transport the junk-free crux from `𝓝[≠] x₀` to `𝓝[≠] c₀` via `(chart x₀).symm`.
+  have htsymm : Tendsto (chartAt ℂ x₀).symm (𝓝[≠] c₀) (𝓝[≠] x₀) := by
+    have := (chartAt ℂ x₀).symm.tendsto_nhdsNE (x := c₀)
+      (by simpa [hc₀] using (chartAt ℂ x₀).map_source (mem_chart_source ℂ x₀))
+    simpa [hc₀, (chartAt ℂ x₀).left_inv (mem_chart_source ℂ x₀)] using this
+  have hcrux : ∀ᶠ z in 𝓝[≠] c₀,
+      repVal α ((chartAt ℂ x₀).symm z) = rawLocalRep α.toFun ((chartAt ℂ x₀).symm z)
+        ((chartAt ℂ x₀).symm z) := htsymm.eventually (eventually_repVal_eq α x₀)
+  filter_upwards [hcrux] with z hz_crux
+  set w := (chartAt ℂ x₀).symm z with hw
+  show rawLocalRep (repairedSection α) x₀ w = rawLocalRep α.toFun x₀ w
+  -- `repairedSection α w = repVal α w • φ_w`, so its `x₀`-rawLocalRep at `w` is
+  -- `repVal α w · φ_w(e.symmL w 1)`.
+  have h1 : rawLocalRep (repairedSection α) x₀ w
+      = repVal α w * frameCovector w (e.symmL ℂ w 1) := by
+    show (repairedSection α w) (e.symmL ℂ w 1) = _
+    rw [repairedSection, ContinuousLinearMap.smul_apply, smul_eq_mul]
+  -- `α.toFun w = rawLocalRep α.toFun w w • φ_w` (self-frame), so its `x₀`-rawLocalRep at `w` is
+  -- `rawLocalRep α.toFun w w · φ_w(e.symmL w 1)`.
+  have h2 : rawLocalRep α.toFun x₀ w = rawLocalRep α.toFun w w * frameCovector w (e.symmL ℂ w 1) := by
+    show α.toFun w (e.symmL ℂ w 1) = _
+    conv_lhs => rw [section_eq_rawLocalRep_smul_frame α.toFun w]
+    rw [ContinuousLinearMap.smul_apply, smul_eq_mul]
+  rw [h1, h2, hz_crux]
+
 /-- **The repaired section's chart pullback is analytic at every centre.**  In chart `x₀`, the
 pullback agrees off the centre with `formCoeff α.toFun x₀` (the junk-free crux + self-frame), and at
 the centre takes the normal-form value, so it equals the analytic normal-form repair of
@@ -426,62 +464,19 @@ theorem analyticAt_pullback_repairedSection {α : MeromorphicOneForm X}
       ((chartAt ℂ x₀) x₀) := by
   set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀ with he
   set c₀ := (chartAt ℂ x₀) x₀ with hc₀
-  -- The pullback is `Pb z = rawLocalRep (repairedSection α) x₀ ((chart x₀).symm z)`.
-  set Pb : ℂ → ℂ := fun z => rawLocalRep (repairedSection α) x₀ ((chartAt ℂ x₀).symm z) with hPb
-  have hPb_eq : (fun z : ℂ => repairedSection α ((chartAt ℂ x₀).symm z)
-      (e.symmL ℂ ((chartAt ℂ x₀).symm z) 1)) = Pb := rfl
-  rw [hPb_eq]
+  -- The pullback is exactly `formCoeff (repairedSection α) x₀`.
+  show AnalyticAt ℂ (formCoeff (repairedSection α) x₀) c₀
   set NF : ℂ → ℂ := toMeromorphicNFAt (formCoeff α.toFun x₀) c₀ with hNF
   have hNFana : AnalyticAt ℂ NF c₀ := analyticAt_repairedCoeff hα x₀
-  -- Step A: `Pb =ᶠ[𝓝[≠] c₀] formCoeff α.toFun x₀`.
-  -- Transport the junk-free crux from `𝓝[≠] x₀` to `𝓝[≠] c₀` via `(chart x₀).symm`.
-  have htsymm : Tendsto (chartAt ℂ x₀).symm (𝓝[≠] c₀) (𝓝[≠] x₀) := by
-    have := (chartAt ℂ x₀).symm.tendsto_nhdsNE (x := c₀)
-      (by simpa [hc₀] using (chartAt ℂ x₀).map_source (mem_chart_source ℂ x₀))
-    simpa [hc₀, (chartAt ℂ x₀).left_inv (mem_chart_source ℂ x₀)] using this
-  have hcrux : ∀ᶠ z in 𝓝[≠] c₀,
-      repVal α ((chartAt ℂ x₀).symm z) = rawLocalRep α.toFun ((chartAt ℂ x₀).symm z)
-        ((chartAt ℂ x₀).symm z) := htsymm.eventually (eventually_repVal_eq α x₀)
-  have hsrc : ∀ᶠ z in 𝓝[≠] c₀, (chartAt ℂ x₀).symm z ∈ (chartAt ℂ x₀).source := by
-    apply eventually_nhdsWithin_of_eventually_nhds
-    have hmem : c₀ ∈ (chartAt ℂ x₀).target := by
-      simpa [hc₀] using (chartAt ℂ x₀).map_source (mem_chart_source ℂ x₀)
-    filter_upwards [(chartAt ℂ x₀).open_target.mem_nhds hmem,
-      ((chartAt ℂ x₀).continuousAt_symm hmem).preimage_mem_nhds
-        ((chartAt ℂ x₀).open_source.mem_nhds ((chartAt ℂ x₀).map_target hmem))] with z _ hz
-    exact hz
-  have hStepA : Pb =ᶠ[𝓝[≠] c₀] formCoeff α.toFun x₀ := by
-    filter_upwards [hcrux, hsrc] with z hz_crux hz_src
-    set w := (chartAt ℂ x₀).symm z with hw
-    -- `Pb z = rawLocalRep (repairedSection α) x₀ w`, and at `w` (off centre) it is `formCoeff`.
-    show rawLocalRep (repairedSection α) x₀ w = formCoeff α.toFun x₀ z
-    -- `repairedSection α w = repVal α w • φ_w`, so its `x₀`-rawLocalRep at `w` is
-    -- `repVal α w · φ_w(e.symmL w 1) = rawLocalRep α.toFun w w · φ_w(e.symmL w 1)`.
-    have h1 : rawLocalRep (repairedSection α) x₀ w
-        = repVal α w * frameCovector w (e.symmL ℂ w 1) := by
-      show (repairedSection α w) (e.symmL ℂ w 1) = _
-      rw [repairedSection, ContinuousLinearMap.smul_apply, smul_eq_mul]
-    -- `α.toFun w = rawLocalRep α.toFun w w • φ_w` (self-frame), so `formCoeff α.toFun x₀ z`
-    -- `= α.toFun w (e.symmL w 1) = rawLocalRep α.toFun w w · φ_w(e.symmL w 1)`.
-    have h2 : formCoeff α.toFun x₀ z = rawLocalRep α.toFun w w * frameCovector w (e.symmL ℂ w 1) := by
-      rw [formCoeff_eq_rawLocalRep]
-      show α.toFun w (e.symmL ℂ w 1) = _
-      conv_lhs => rw [section_eq_rawLocalRep_smul_frame α.toFun w]
-      rw [ContinuousLinearMap.smul_apply, smul_eq_mul]
-    rw [h1, h2, hz_crux]
-  -- Step B: combine `=ᶠ[𝓝[≠]]` (Pb ~ formCoeff ~ NF) with the centre value to get `=ᶠ[𝓝]`.
-  have hPb_NF_punct : Pb =ᶠ[𝓝[≠] c₀] NF :=
-    hStepA.trans (α.meromorphic x₀).eq_nhdsNE_toMeromorphicNFAt
-  have hPb_NF_center : Pb c₀ = NF c₀ := by
-    -- `Pb c₀ = rawLocalRep (repairedSection α) x₀ x₀ = repVal α x₀ = NF c₀`.
+  -- `formCoeff (repaired) =ᶠ[𝓝[≠] c₀] formCoeff α ~ NF`, and centre values match.
+  have hPunct : formCoeff (repairedSection α) x₀ =ᶠ[𝓝[≠] c₀] NF :=
+    (formCoeff_repairedSection_eventuallyEq α x₀).trans
+      (α.meromorphic x₀).eq_nhdsNE_toMeromorphicNFAt
+  have hCenter : formCoeff (repairedSection α) x₀ c₀ = NF c₀ := by
     have hsymm_center : (chartAt ℂ x₀).symm c₀ = x₀ := by
       rw [hc₀, (chartAt ℂ x₀).left_inv (mem_chart_source ℂ x₀)]
-    show rawLocalRep (repairedSection α) x₀ ((chartAt ℂ x₀).symm c₀) = NF c₀
-    rw [hsymm_center, rawLocalRep_repairedSection_self]
-    rw [hNF, repVal]
-  have hPb_NF : Pb =ᶠ[𝓝 c₀] NF :=
-    eventuallyEq_nhds_of_eventuallyEq_nhdsNE hPb_NF_punct hPb_NF_center
-  exact hNFana.congr hPb_NF.symm
+    rw [formCoeff_eq_rawLocalRep, hsymm_center, rawLocalRep_repairedSection_self, hNF, repVal]
+  exact hNFana.congr (eventuallyEq_nhds_of_eventuallyEq_nhdsNE hPunct hCenter).symm
 
 /-- **The repaired holomorphic 1-form** of an order-`≥ 0` meromorphic 1-form. -/
 noncomputable def repairedHOF {α : MeromorphicOneForm X} (hα : α ∈ omegaD (X := X) 0) :
@@ -490,5 +485,104 @@ noncomputable def repairedHOF {α : MeromorphicOneForm X} (hα : α ∈ omegaD (
 
 @[simp] theorem repairedHOF_toFun {α : MeromorphicOneForm X} (hα : α ∈ omegaD (X := X) 0) :
     (repairedHOF hα).toFun = repairedSection α := rfl
+
+-- From here on, treat the repair definitions as opaque (the wiring uses only their lemmas, never
+-- their unfoldings); this keeps the kernel from unfolding the embedded analytic proofs.
+attribute [local irreducible] repVal frameCovector repairedSection repairedHOF
+
+/-! ## Part 3: `Ω_0 ≅ HolomorphicOneForms`, finiteness, and the unconditional `hKgenus`
+
+`holToMero (repairedHOF hα)` germ-matches `α` everywhere (the repaired section agrees with `α` off
+every centre), so `holToMero (repairedHOF hα) − α ∈ formGermZeroSubmodule`.  Hence the injection
+`holToOmega0Module : HolomorphicOneForms X → omegaDModule 0` is **surjective**, giving a `LinearEquiv`,
+finite-dimensionality of `omegaDModule 0` (transported from `HolomorphicOneForms`), and the §17.4
+equality `omegaDim 0 = genus X`.  Chaining with `CanonicalForm17Data.hKgenus` makes `lDim K = genus X`
+unconditional. -/
+
+set_option maxHeartbeats 1000000 in
+/-- **Every order-`≥ 0` meromorphic 1-form is holomorphic modulo germ-junk.**  There is a holomorphic
+1-form `β` (the repaired section) with `holToMero β − α` germ-zero everywhere (order `⊤` at every
+centre): their chart coefficients agree on a punctured neighbourhood of each centre.  Packaging it as
+an existence keeps the large `repairedHOF` proof term out of downstream goals. -/
+theorem exists_holomorphic_germEq_of_mem_omegaD_zero {α : MeromorphicOneForm X}
+    (hα : α ∈ omegaD (X := X) 0) :
+    ∃ β : HolomorphicOneForms X, holToMero β - α ∈ formGermZeroSubmodule (X := X) := by
+  refine ⟨repairedHOF hα, ?_⟩
+  intro x
+  rw [MeromorphicOneForm.formOrderW, meromorphicOrderAt_eq_top_iff]
+  -- chart coefficient of the difference is `formCoeff (repairedSection α) x − formCoeff α.toFun x`.
+  have htoFun : (holToMero (repairedHOF hα) - α).toFun = repairedSection α - α.toFun := by
+    rw [MeromorphicOneForm.sub_toFun, holToMero_toFun, repairedHOF_toFun]
+  have hcoeff : formCoeff (holToMero (repairedHOF hα) - α).toFun x
+      = formCoeff (repairedSection α) x - formCoeff α.toFun x := by
+    rw [htoFun, formCoeff_sub]
+  rw [hcoeff]
+  filter_upwards [formCoeff_repairedSection_eventuallyEq α x] with z hz
+  show formCoeff (repairedSection α) x z - formCoeff α.toFun x z = 0
+  rw [hz, sub_self]
+
+/-- **`holToOmega0Module` is surjective**: every class `[α] ∈ omegaDModule 0` is the image of a
+holomorphic form (the removable-singularity repair, which differs from `α` by germ-zero junk). -/
+theorem holToOmega0Module_surjective :
+    Function.Surjective (holToOmega0Module (X := X)) := by
+  intro q
+  obtain ⟨⟨α, hα⟩, rfl⟩ := Submodule.Quotient.mk_surjective _ q
+  obtain ⟨β, hβ⟩ := exists_holomorphic_germEq_of_mem_omegaD_zero hα
+  refine ⟨β, ?_⟩
+  -- `[holInOmega0 β] = [⟨α, hα⟩]` since their difference `holToMero β − α` lies in the germ-zero sub.
+  rw [holToOmega0Module, LinearMap.coe_mk, AddHom.coe_mk, Submodule.Quotient.eq]
+  rw [Submodule.submoduleOf, Submodule.mem_comap, map_sub]
+  show holToMero β - α ∈ formGermZeroSubmodule (X := X)
+  exact hβ
+
+/-- **`Ω_0 ≅ HolomorphicOneForms`** (Forster §17.4 at `D = 0`): the holomorphic-to-meromorphic-1-form
+map is a linear isomorphism `HolomorphicOneForms X ≃ₗ[ℂ] omegaDModule 0` (injective from
+`holToOmega0Module_injective`, surjective from the removable-singularity repair). -/
+noncomputable def holOmega0Equiv : HolomorphicOneForms X ≃ₗ[ℂ] omegaDModule (X := X) 0 :=
+  LinearEquiv.ofBijective holToOmega0Module
+    ⟨holToOmega0Module_injective, holToOmega0Module_surjective⟩
+
+/-- **`Ω_0` is finite-dimensional** (Forster §17.4): transported across `holOmega0Equiv` from the
+finite-dimensional `HolomorphicOneForms X` (Montel/Cartan–Serre). -/
+instance : FiniteDimensional ℂ (omegaDModule (X := X) 0) :=
+  LinearEquiv.finiteDimensional holOmega0Equiv
+
+/-- **`omegaDim 0 = genus X`** (Forster §17.4 at `D = 0`), UNCONDITIONAL: the isomorphism
+`Ω_0 ≅ HolomorphicOneForms X` preserves finrank, and `genus X = finrank ℂ (HolomorphicOneForms X)`
+by definition. -/
+theorem omegaDim_zero_eq_genus : omegaDim (X := X) 0 = genus X := by
+  rw [omegaDim_eq_finrank, ← holOmega0Equiv.finrank_eq]
+  rfl
+
+/-- **The reverse bound `omegaDim 0 ≤ genus X`** (Gate C's removable-singularity direction). -/
+theorem omegaDim_zero_le_genus : omegaDim (X := X) 0 ≤ genus X :=
+  le_of_eq omegaDim_zero_eq_genus
+
+end Jacobians.Dolbeault
+
+/-! ## Part 4: the unconditional `hKgenus` headline (Forster §17.4)
+
+`CanonicalForm17Data.hKgenus` takes `FiniteDimensional ℂ (omegaDModule 0)` + `omegaDim 0 ≤ genus X`
+as hypotheses.  Both are now proven unconditionally, so for any `CanonicalForm17Data` (which
+`nonempty_canonicalForm17Data` supplies) we get `lDim K = genus X` with no remaining gaps. -/
+
+namespace Jacobians.Dolbeault
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+/-- **Unconditional `hKgenus`** for a given §17.4 datum: `lDim data.K = genus X`, with the two
+removable-singularity inputs (`Ω_0` finite-dimensional and `omegaDim 0 ≤ genus X`) now discharged. -/
+theorem CanonicalForm17Data.hKgenus_unconditional (data : CanonicalForm17Data X) :
+    lDim (X := X) data.K = genus X :=
+  data.hKgenus omegaDim_zero_le_genus
+
+/-- **The unconditional Serre-duality input** `∃ data, lDim data.K = genus X` (Forster §17.4).  Chains
+the proven existence of a §17.4 datum (`nonempty_canonicalForm17Data`) with the now-unconditional
+`hKgenus`.  This discharges the `SerreDualityData.hKgenus` field with no hypotheses. -/
+theorem exists_canonicalForm17Data_hKgenus :
+    ∃ data : CanonicalForm17Data X, lDim (X := X) data.K = genus X := by
+  obtain ⟨data⟩ := nonempty_canonicalForm17Data (X := X)
+  exact ⟨data, data.hKgenus_unconditional⟩
 
 end Jacobians.Dolbeault
