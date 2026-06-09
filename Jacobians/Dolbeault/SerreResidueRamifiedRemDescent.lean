@@ -127,4 +127,41 @@ theorem exists_clusterTraceData_descent_at_fibrePoint (ω₀ : HolomorphicOneFor
   have := hRem_slit z hz
   simpa using this
 
+/-! ## The shrunk-slit smallness for the descent (the linchpin of STEP 3's smallness discharge)
+
+The descent identity `∑_{j<m} ppR(ζʲ·u)·ζʲ = m·u^{m−1}·G(uᵐ)` holds only for `u` near `0`.  In the
+slit form one substitutes `u = w₀ z` for the `cpow` branch `w₀ z = (z − c)^{1/m}`, which `→ 0` as
+`z → c` (`cpow_slitBranch_tendsto_zero`).  So the descent identity holds for *all `z` near `c`* — the
+**shrunk slit** smallness.  This transports the descent's `𝓝 0` neighbourhood to a `𝓝 c` neighbourhood
+along the branch, supplying the `hsmall` hypothesis of `exists_clusterTraceData_descent_at_fibrePoint`
+on a slit shrunk to that neighbourhood. -/
+
+/-- **The descent identity holds near `c` along the `cpow` branch** (the smallness transport).  For any
+property `P` holding on a `𝓝 0` neighbourhood (e.g. the descent identity), `P` holds at `w₀ z := (z−c)^{1/m}`
+for all `z` in a `𝓝 c` neighbourhood, since `w₀ z → 0` as `z → c`. -/
+theorem eventually_cpowBranch_mem (c : ℂ) {m : ℕ} (hm : 0 < m) {P : ℂ → Prop}
+    (hP : ∀ᶠ u in 𝓝 (0 : ℂ), P u) :
+    ∀ᶠ z in 𝓝 c, P ((z - c) ^ ((m : ℂ)⁻¹)) :=
+  (cpow_slitBranch_tendsto_zero c hm).eventually hP
+
+/-- **The shrunk slit carrying the descent smallness.**  Given the descent's `∀ᶠ u in 𝓝 0`
+identity (for the `cpow`-branch multiplicity `m`), there is an open neighbourhood `V` of `c` on which the
+descent identity holds at the `cpow` branch `w₀ z = (z − c)^{1/m}` for every `z ∈ V`.  Intersecting `V`
+with the standard slit `{z | z − c ∈ slitPlane}` (minus the finitely-many branch values) yields the
+shrunk slit `S` on which `hsmall` holds and which still accumulates at `c`.  This isolates the smallness
+discharge as a pure `𝓝 c`-openness fact. -/
+theorem exists_descentSlit (c : ℂ) {m : ℕ} (hm : 0 < m) {Q : ℂ → ℂ} (hQ : AnalyticAt ℂ Q 0)
+    {ζ : ℂ} (hζ : IsPrimitiveRoot ζ m) :
+    ∃ (G : ℂ → ℂ) (V : Set ℂ), AnalyticAt ℂ G 0 ∧ IsOpen V ∧ c ∈ V ∧
+      ∀ z ∈ V, (∑ j ∈ Finset.range m, Q (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) * ζ ^ j)
+        = m * ((z - c) ^ ((m : ℂ)⁻¹)) ^ (m - 1) * G (((z - c) ^ ((m : ℂ)⁻¹)) ^ m) := by
+  obtain ⟨G, hG_an, hGev⟩ := analyticAt_weightedSymSum_descent hQ hm hζ
+  -- transport the descent's `𝓝 0` identity to a `𝓝 c` neighbourhood along the branch
+  have hev : ∀ᶠ z in 𝓝 c, (∑ j ∈ Finset.range m, Q (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) * ζ ^ j)
+      = m * ((z - c) ^ ((m : ℂ)⁻¹)) ^ (m - 1) * G (((z - c) ^ ((m : ℂ)⁻¹)) ^ m) :=
+    eventually_cpowBranch_mem c hm hGev
+  rw [Filter.eventually_iff, _root_.mem_nhds_iff] at hev
+  obtain ⟨V, hVsub, hVopen, hcV⟩ := hev
+  exact ⟨G, V, hG_an, hVopen, hcV, fun z hz => hVsub hz⟩
+
 end Jacobians.Dolbeault.SerreResidueTheorem
