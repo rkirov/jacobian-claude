@@ -552,4 +552,55 @@ noncomputable def FibreClusterTopology.ofClusterFibrePoints {ω₀ : Holomorphic
   exact FibreClusterTopology.ofClusterEmbedding S hderiv hmero hcoh cl hcl_point hcl_inj hcard
     hsrc hsheet_diff hcs_sec
 
+/-! ## Wiring the full chain: `FibreClusterTopology` family ⟹ `FibreClusterReindex` ⟹ `∑Res = 0`
+
+Composing `ClusterReindexData.ofFibreClusterTopology` with the PROVEN
+`FibreClusterReindex.ofClusterReindexFamily` (`SerreResidueRamifiedClusterPartition.lean`), a slit-wide
+family of `FibreClusterTopology` discharges the whole per-centre `FibreClusterReindex` — i.e. building
+the cover's `FibreClusterReindex` reduces to supplying, at each slit value, the conservation-of-number
+datum (bijection + coincidence + the geometric residuals), or — via `ofClusterFibrePoints` — the three
+minimal facts (cluster sheets are distinct fibre points numbering `deg f`). -/
+
+/-- **`FibreClusterReindex` from a slit-wide family of `FibreClusterTopology`.**  The full reduction:
+the per-centre fibre-cluster reindexing follows from the routine bookkeeping plus a `FibreClusterTopology`
+at every slit value `z` (the conservation-of-number datum).  Discharges `hgeom_fibre` pointwise by
+`ClusterReindexData.ofFibreClusterTopology` ∘ `valueChartTrace_eq_clusterSum_of_clusterReindexData`. -/
+noncomputable def FibreClusterReindex.ofFibreClusterTopologyFamily {ω₀ : HolomorphicOneForms X}
+    {g : X → ℂ} {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0} {poles : Finset X}
+    {c : ℂ} {Sset : Set ℂ}
+    (hanalytic : ∀ᶠ z in 𝓝[≠] c,
+      AnalyticAt ℂ (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv)) z)
+    (D : FibreRamifiedData g f c) (hD_inj : Function.Injective D.xs)
+    (hD_mem : ∀ i, D.xs i ∈ poles)
+    (hD_surj : ∀ a ∈ poles, f.toRiemannSphere a = ((c : ℂ) : RiemannSphere) → ∃ i, D.xs i = a)
+    (hS_acc : ∃ᶠ z in 𝓝[≠] c, z ∈ Sset)
+    (Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset)
+    (hmult : ∀ i, (Cl i).m = D.mult i)
+    (hsplit0 : ∀ i, straightenedIntegrand ω₀ g (D.xs i) (Cl i).s =ᶠ[𝓝[≠] 0]
+      fun u => negTail 0 (Cl i).ppb (Cl i).ppN u + (Cl i).ppR u)
+    (ppord : ℕ)
+    (hbnd : Tendsto (fun z => (z - c) ^ ppord *
+      valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z) (𝓝[≠] c) (𝓝 0))
+    (hfam : ∀ z ∈ Sset, FibreClusterTopology (canonicalFibreSelection g f hdiv) D Cl z) :
+    FibreClusterReindex ω₀ g f hdiv poles c :=
+  FibreClusterReindex.ofClusterReindexFamily hanalytic D hD_inj hD_mem hD_surj hS_acc Cl hmult
+    hsplit0 ppord hbnd (fun z hz => ClusterReindexData.ofFibreClusterTopology (hfam z hz))
+
+/-- **Gate A `∑Res = 0` from per-centre `FibreClusterTopology` families** (the precise residual
+exhibited).  For a genuine meromorphic numerator `g`, an `AdaptedFRamified` datum `A`, and at each finite
+pole-value centre a per-centre `FibreClusterReindex` (e.g. built via
+`FibreClusterReindex.ofFibreClusterTopologyFamily` from a slit-wide family of `FibreClusterTopology`),
+the total residue of `α = ω₀·g` vanishes:
+
+> `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`.
+
+This anchors the conservation-of-number datum to the Gate-A goal: the *only* genuinely-remaining content
+is the per-centre `FibreClusterTopology` — and, via `ofClusterFibrePoints`, exactly the three minimal
+clustering facts (cluster sheets are distinct fibre points numbering `deg f`). -/
+theorem residueSum_eq_zero_of_fibreClusterTopology {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {poles : Finset X} (A : AdaptedFRamified ω₀ g poles)
+    (R : ∀ i, FibreClusterReindex ω₀ g.toFun A.f A.hdiv poles (A.cs i)) :
+    ∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0 :=
+  residueSum_eq_zero_of_clusterReindex A R
+
 end Jacobians.Dolbeault.SerreResidueTheorem
