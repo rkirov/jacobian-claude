@@ -1935,3 +1935,52 @@ custom axiom, NO sorry, NO false/circular field, NO germ `agree`. Did NOT touch 
 only EXTENDED `SerreResidueInftyCoherence.lean`. Reused (not re-derived): `equivOfInjective_image_eq`,
 `differentiableAt_chart_pullback_section`, `transition_differentiableAt_overlap`,
 `fibreTrace_sheet_eventuallyEq`, `chartPullback_section_rinv`, the whole `LocalSheetSystem` API.
+
+---
+
+## 2026-06-09 — Forster §17.4 canonical-form iso `ω₀·: 𝒪_{D+K} ≅ Ω_D` + `K` + `hKgenus` (NEW `CanonicalFormIso.lean`)
+
+Built the **canonical-form / Forster 17.4 layer** of the Serre-duality tower directly on Gate (C)
+(`MeromorphicOneFormSystem.lean`), branch `gate-a-trace-rationality-assembly`. Independent of the
+in-progress Gate A residue/trace work (did NOT touch trace files).
+
+**KEY DELIVERABLES (`Jacobians/Dolbeault/CanonicalFormIso.lean`, all AXIOM-CLEAN
+`[propext, Classical.choice, Quot.sound]`, zero `sorry`/custom-axiom):**
+* **Form identity theorem** `MeromorphicOneForm.formOrderW_ne_top_of_exists` (nonzero germ at one
+  point ⟹ nonzero everywhere). Proven via the INTRINSIC `formOrderW_eq_top_iff` (a form's germ
+  vanishes iff the *section* `α.toFun` vanishes nearby — `formCoeff` is the covector against the
+  spanning tangent vector `symmL 1`), so NO chart-coefficient change-of-variables / no form
+  chart-invariance needed (the expensive `orderAtPoint_isolated_at`-style port is AVOIDED).
+* `covector_ratio_eq` (covector ratio `a v / b v` is test-vector-independent on the 1-dim cotangent
+  fibre) + `covector_ext_symmL` (covectors equal iff they agree on `symmL 1`) + `apply_symmL_ne_zero_of_ne_zero`.
+* `meroFormDiv` — the division `α/ω₀` as a `MeromorphicFunction` (intrinsic covector ratio, chart
+  coefficient `= formCoeff α / formCoeff ω₀`), with `meroFormDiv_orderW` (order subtractivity) and
+  `meroFormSMul_meroFormDiv_apply` ((α/ω₀)·ω₀ = α where ω₀≠0).
+* **`omega17Equiv D : lSysModule (D + K) ≃ₗ[ℂ] omegaDModule D`** — the FULL Forster 17.4 iso, BOTH
+  directions proven: `omega17_injective` (kernel = germ-junk, `ker_omega17Map`) + `omega17_surjective`
+  (preimage `[α/ω₀]`, `meroFormDiv_mem_linearSystem`). `lDim_add_K_eq_omegaDim` (dimension form).
+* **`hKgenus : lDim K = genus X`** (17.4 at D=0): `lDim_K_eq_omegaDim_zero` (UNCONDITIONAL,
+  `lDim K = omegaDim 0`) ∘ Gate C `omegaDim_zero_eq_genus_of_le`.
+* `genus_le_lDim_K` — non-vacuity soundness check (the iso sends genus-dim holomorphic forms
+  faithfully into `𝒪_K`, so it is never a collapsed junk identity).
+
+**ISOLATED ANALYTIC INPUT (one structure, both fields TRUE for `ω₀ = df`):**
+`CanonicalForm17Data` bundles `ω₀ : MeromorphicOneForm X` + `nontrivial` (`∃x, formOrderW ω₀ x ≠ ⊤`,
+i.e. `ω₀ ≠ 0`) + `K : Divisor X` + `order_eq` (`formOrderW ω₀ = K`, i.e. `K = div ω₀`). This is the
+honest analytic gap: constructing `ω₀ = df` (the meromorphic differential of the nonconstant `f` from
+`exists_nonconstant_meromorphic`) + its finite-support divisor `K = div ω₀` (1-form analog of
+`MeromorphicFunction.div`'s local finiteness). **Everything else (the whole 17.4 tower + hKgenus) is
+proven purely algebraically on top.** `df` was NOT constructed (it is the intrinsic-differential /
+discontinuity-trap analytic build flagged in `CotangentCoeff.lean`; isolated per task fallback).
+
+**REMAINING toward unconditional `hKgenus`:** exactly Gate C's isolated removable-singularity reverse
+bound `omegaDim 0 ≤ genus X` (an order-≥0 meromorphic 1-form is holomorphic modulo germ-junk — needs
+the `holoRepr`-style limit-repair for sections + `ContMDiffSection` reconstruction, the machinery in
+`Montel/Complete.lean` `contMDiffOn_limit_inner` is the smooth-from-analytic half). Taken as the `hle`
+hypothesis of `hKgenus`, matching Gate C's `omegaDim_zero_eq_genus_of_le`.
+
+**SOUNDNESS:** seven-bad-field warning respected. No false/junk field: `K = div ω₀` is real (`ω₀ ≠ 0`
+essential, bundled), the iso is GENUINE (`LinearEquiv.ofBijective` of the proven-bijective `f ↦ f·ω₀`,
+non-vacuous: `genus ≤ lDim K = omegaDim 0`). Authoritative `lake env lean #print axioms` confirmed
+clean on all deliverables. Did NOT touch the 2 orphans, Gate A trace files, Gate C's file (imported),
+or PROVEN decls; only the NEW `CanonicalFormIso.lean`. Did NOT attempt 17.5/17.6/17.9.
