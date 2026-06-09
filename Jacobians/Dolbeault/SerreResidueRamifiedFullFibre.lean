@@ -161,4 +161,82 @@ theorem resAt_straightenedIntegrand (ω₀ : HolomorphicOneForms X) (g : X → �
   rw [hcov, hs0]
   exact resAt_chartIntegrand_eq_formFnResidue ω₀ g p
 
+/-- **The geometric cluster sum equals the straightened sheet sum.**  Using the chain rule
+`clusterSheet_deriv`, the geometric `m`-sheet cluster sum of `h = chartIntegrand ω₀ g p` along the
+cluster sheets `clusterSheet s ζ w₀ j` equals the *first-order* `m`-sheet sum of the straightened
+integrand `H(u) = h(s u)·s'(u)` along `u_j = ζʲ w₀ z`:
+
+> `∑_{j<m} h(clusterSheet s ζ w₀ j z)·(d/dz)[clusterSheet s ζ w₀ j z]`
+>   `= ∑_{j<m} H(ζʲ w₀ z)·(d/dz)[0 + ζʲ w₀ z]`.
+
+(`h(s(ζʲ w₀ z))·s'(ζʲ w₀ z) = H(ζʲ w₀ z)`, and the cluster-sheet derivative
+`s'(ζʲ w₀ z)·ζʲ·w₀'(z)` reassociates against the straightened first-order derivative `ζʲ·w₀'(z)`.) -/
+theorem clusterSheetSum_eq_straightenedSheetSum (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (p : X)
+    {s w₀ : ℂ → ℂ} {ζ : ℂ} {m : ℕ} {z : ℂ} (hw₀_diff : DifferentiableAt ℂ w₀ z)
+    (hs_an : ∀ j ∈ Finset.range m, AnalyticAt ℂ s (ζ ^ j * w₀ z)) :
+    (∑ j ∈ Finset.range m,
+        chartIntegrand ω₀ g p (clusterSheet s ζ w₀ j z) * deriv (clusterSheet s ζ w₀ j) z)
+      = ∑ j ∈ Finset.range m,
+        straightenedIntegrand ω₀ g p s (ζ ^ j * w₀ z)
+          * deriv (fun ζz => (0 : ℂ) + ζ ^ j * w₀ ζz) z := by
+  refine Finset.sum_congr rfl (fun j hj => ?_)
+  rw [clusterSheet_deriv (hs_an j hj) hw₀_diff, deriv_sheet_eq w₀ z 0 (ζ ^ j),
+    straightenedIntegrand, clusterSheet]
+  ring
+
+/-- **The per-cluster symmetric collapse (piece (b), on the genuine cluster sheets).**  At a preimage
+`p` with normal-form local inverse `s = η⁻¹`, a primitive `m`-th root `ζ`, and a slit-branch `w₀`
+(`w₀ z ≠ 0`, `w₀(z)ᵐ = z − c`, `w₀'(z) = (1/m) w₀(z)^{1−m}`), the geometric `m`-sheet cluster sum of the
+chart integrand `h = chartIntegrand ω₀ g p` along the *genuine* cluster sheets `clusterSheet s ζ w₀ j`
+collapses to the single-valued `ramifiedTraceTerm` of the straightened integrand's Laurent principal
+part, plus the remainder sheet sum:
+
+> `∑_{j<m} h(clusterSheet s ζ w₀ j z)·(d/dz)[clusterSheet s ζ w₀ j z]`
+>   `= ramifiedTraceTerm (Icc 1 N) b (k ↦ −k) m c z + ∑_{j<m} R(ζʲ w₀ z)·(d/dz)[0 + ζʲ w₀ z]`,
+
+where `(N, b, R)` is the Laurent principal-part split of the straightened integrand `H(u) = h(s u)·s'(u)`
+at `0` (`H =ᶠ[𝓝[≠] 0] negTail 0 b N + R`), *provided* the split holds at each sheet argument `ζʲ w₀ z`
+(`hH_split`).  Pure algebra (the proven roots-of-unity atom `ramifiedSheetSum_laurentPoly`), with the
+genuine sheet points. -/
+theorem clusterTraceSum_collapse (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (p : X)
+    {s w₀ : ℂ → ℂ} {ζ : ℂ} {m : ℕ} (hm : 0 < m) (hζ : IsPrimitiveRoot ζ m)
+    {c z : ℂ} {N : ℕ} {b : ℕ → ℂ} {R : ℂ → ℂ}
+    (hw₀_ne : w₀ z ≠ 0) (hw₀_pow : w₀ z ^ (m : ℤ) = z - c)
+    (hw₀_deriv : deriv w₀ z = (m : ℂ)⁻¹ * w₀ z ^ (1 - (m : ℤ)))
+    (hw₀_diff : DifferentiableAt ℂ w₀ z)
+    (hs_an : ∀ j ∈ Finset.range m, AnalyticAt ℂ s (ζ ^ j * w₀ z))
+    (hH_split : ∀ j ∈ Finset.range m,
+      straightenedIntegrand ω₀ g p s (ζ ^ j * w₀ z)
+        = negTail 0 b N (ζ ^ j * w₀ z) + R (ζ ^ j * w₀ z)) :
+    (∑ j ∈ Finset.range m,
+        chartIntegrand ω₀ g p (clusterSheet s ζ w₀ j z) * deriv (clusterSheet s ζ w₀ j) z)
+      = ramifiedTraceTerm (Finset.Icc 1 N) b (fun k => -(k : ℤ)) m c z
+        + ∑ j ∈ Finset.range m,
+            R (ζ ^ j * w₀ z) * deriv (fun ζz => (0 : ℂ) + ζ ^ j * w₀ ζz) z := by
+  classical
+  -- Step 1: geometric cluster sum = straightened first-order sheet sum.
+  rw [clusterSheetSum_eq_straightenedSheetSum ω₀ g p hw₀_diff hs_an]
+  -- Step 2: split each straightened term into `negTail` + `R`, distribute.
+  have hsplit : (∑ j ∈ Finset.range m,
+        straightenedIntegrand ω₀ g p s (ζ ^ j * w₀ z)
+          * deriv (fun ζz => (0 : ℂ) + ζ ^ j * w₀ ζz) z)
+      = (∑ j ∈ Finset.range m,
+          negTail 0 b N (ζ ^ j * w₀ z) * deriv (fun ζz => (0 : ℂ) + ζ ^ j * w₀ ζz) z)
+        + (∑ j ∈ Finset.range m,
+            R (ζ ^ j * w₀ z) * deriv (fun ζz => (0 : ℂ) + ζ ^ j * w₀ ζz) z) := by
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl (fun j hj => ?_)
+    rw [hH_split j hj]; ring
+  rw [hsplit]
+  -- Step 3: the `negTail`-sheet sum collapses to `ramifiedTraceTerm` (the proven atom).
+  congr 1
+  rw [show (∑ j ∈ Finset.range m,
+        negTail 0 b N (ζ ^ j * w₀ z) * deriv (fun ζz => (0 : ℂ) + ζ ^ j * w₀ ζz) z)
+      = ∑ j ∈ Finset.range m,
+          (∑ k ∈ Finset.Icc 1 N, b k * ((0 : ℂ) + ζ ^ j * w₀ z - 0) ^ (-(k : ℤ)))
+            * deriv (fun ζz => (0 : ℂ) + ζ ^ j * w₀ ζz) z
+    from Finset.sum_congr rfl (fun j _ => by rw [negTail]; ring_nf)]
+  exact ramifiedSheetSum_laurentPoly (Finset.Icc 1 N) b (fun k => -(k : ℤ)) hm hζ
+    hw₀_ne hw₀_pow hw₀_deriv
+
 end Jacobians.Dolbeault.SerreResidueTheorem
