@@ -151,6 +151,90 @@ theorem connectingClass_eq :
 
 end CousinSplitData
 
+/-! ### `diffMem` is determined by the cochain match (the `𝒪_K`-membership is germ-invariant)
+
+The `diffMem` field of `CousinSplitData` (the function difference `gᵢ − gⱼ` is an `𝒪_K`-section on the
+overlap) is **redundant** given `match_cochain` (`[gᵢ − gⱼ] = ξᵢⱼ`) and the fact that `ξᵢⱼ` is an
+`𝒪_K`-germ (from `ξ ∈ sections1 K`): `𝒪_K`-membership depends only on the germ (meromorphy and order
+are `𝓝[≠]`-congruence-invariant).  So a §15 builder need not separately prove `diffMem` — the smart
+constructor `CousinSplitData.mk'` derives it from `match_cochain`. -/
+
+/-- **`a ∘ chart⁻¹ =ᶠ[𝓝[≠]] b ∘ chart⁻¹` from `a =ᶠ[𝓝[≠]] b` on `↥U`** (transport through `↥U`'s own
+chart, the `↥U` analogue of `CechH0.eventuallyEq_comp_chart`). -/
+theorem eventuallyEq_comp_chartU {U : Opens X} {a b : U → ℂ} {u : U} (h : a =ᶠ[𝓝[≠] u] b) :
+    (a ∘ (chartAt (H := ℂ) u).symm) =ᶠ[𝓝[≠] ((chartAt (H := ℂ) u) u)]
+      (b ∘ (chartAt (H := ℂ) u).symm) := by
+  filter_upwards [(eventually_comp_chart_iff' (Y := U) (fun w => a w - b w) u (· = 0)).2
+    (by filter_upwards [h] with z hz; simpa using sub_eq_zero.mpr hz)] with w hw
+  simpa [Function.comp_apply, sub_eq_zero] using hw
+
+/-- **`ordU` is `𝓝[≠]`-congruence-invariant.**  If `a` and `b` agree off a discrete set near `u` on
+`↥U`, their orders at `u` agree (read in `↥U`'s chart). -/
+theorem ordU_congr_nhdsNE {U : Opens X} {a b : U → ℂ} {u : U} (h : a =ᶠ[𝓝[≠] u] b) :
+    ordU a u = ordU b u := by
+  rw [ordU, ordU]
+  exact meromorphicOrderAt_congr (eventuallyEq_comp_chartU h)
+
+/-- **Meromorphy on `↥U` is `𝓝[≠]`-congruence-invariant** (pointwise, transferred through the chart). -/
+theorem isMeromorphic_congr_germ {U : Opens X} {a b : U → ℂ}
+    (hmatch : ∀ u : U, a =ᶠ[𝓝[≠] u] b) (ha : IsMeromorphic (U : Type _) a) :
+    IsMeromorphic (U : Type _) b :=
+  fun u => (ha u).congr (eventuallyEq_comp_chartU (hmatch u))
+
+/-- **`𝒪_K`-membership on `↥U` is determined by the germ.**  If `a ∈ OmegaD K U` and `b` agrees with
+`a` off a discrete set near every point, then `b ∈ OmegaD K U` (meromorphy and the order bound are
+`𝓝[≠]`-invariant).  This is what makes `diffMem` redundant given the cochain match. -/
+theorem omegaD_congr_germ {U : Opens X} {a b : U → ℂ}
+    (hmatch : ∀ u : U, a =ᶠ[𝓝[≠] u] b) (ha : a ∈ OmegaD K U) :
+    b ∈ OmegaD K U := by
+  rw [mem_OmegaD] at ha ⊢
+  refine ⟨isMeromorphic_congr_germ hmatch ha.1, fun u => ?_⟩
+  rw [← ordU_congr_nhdsNE (hmatch u)]
+  exact ha.2 u
+
+/-- **`diffMem` from the cochain match.**  Given that the difference germ `[(gᵢ − gⱼ)∘val]` equals an
+`𝒪_K`-germ `ξᵢⱼ`, the honest function `(gᵢ − gⱼ)∘val` is itself an `𝒪_K`-section (germ-invariance of
+`𝒪_K`-membership).  The lever that lets the smart constructor `mk'` drop the `diffMem` field. -/
+theorem diffMem_of_match (ξ : ↥(𝔘.toFiniteFamily.cocycles1 K)) {g : 𝔘.ι → (X → ℂ)} (i j : 𝔘.ι)
+    (hmatch : toGerm (𝔘.U i ⊓ 𝔘.U j)
+        ((g i - g j) ∘ (Subtype.val : ↥(𝔘.U i ⊓ 𝔘.U j) → X))
+      = (ξ : 𝔘.toFiniteFamily.Cochain1) (i, j)) :
+    ((g i - g j) ∘ (Subtype.val : ↥(𝔘.U i ⊓ 𝔘.U j) → X)) ∈ OmegaD K (𝔘.U i ⊓ 𝔘.U j) := by
+  -- `ξᵢⱼ ∈ OmegaDGerm K` (from `ξ ∈ sections1 K`) = `toGerm cᵢⱼ` for an honest `cᵢⱼ ∈ OmegaD K`;
+  -- the match gives `(gᵢ−gⱼ)∘val =ᶠ cᵢⱼ` everywhere, so it is an `𝒪_K`-section.
+  obtain ⟨c, hc, hceq⟩ := ξ.2.2 (i, j)
+  have hmatchU : ∀ u, c =ᶠ[𝓝[≠] u] ((g i - g j) ∘ (Subtype.val : ↥(𝔘.U i ⊓ 𝔘.U j) → X)) :=
+    (toGerm_eq_iff c _).mp (by rw [hceq, ← hmatch])
+  exact omegaD_congr_germ (K := K) (a := c) hmatchU hc
+
+/-- **The smart constructor for `CousinSplitData`** (drops the redundant `diffMem` field).  A §15
+builder supplies only the per-patch principal parts `g`, the pole/patch data, the *form*-side
+overlap/isolation/off-poles holomorphy (`formHoloDiff`/`iso`/`holoOff`), and the exact cochain match —
+`diffMem` (the function-side `𝒪_K`-membership of the difference) is *derived* from the match by
+germ-invariance (`diffMem_of_match`).  This is the cleanest interface for the genuine Cousin solve. -/
+def CousinSplitData.mk' {ξ : ↥(𝔘.toFiniteFamily.cocycles1 K)}
+    (g : 𝔘.ι → (X → ℂ)) (poles : Finset X) (patch : X → 𝔘.ι)
+    (patch_mem : ∀ a ∈ poles, a ∈ 𝔘.U (patch a))
+    (formHoloDiff : ∀ (i j : 𝔘.ι) (a : X), a ∈ 𝔘.U i → a ∈ 𝔘.U j →
+      AnalyticAt ℂ (fun z => coeffAt ω₀ a z * (g i - g j) ((chartAt ℂ a).symm z)) ((chartAt ℂ a) a))
+    (iso : ∀ a ∈ poles, formFnHoloPunctured ω₀ (g (patch a)) a)
+    (holoOff : ∀ (i : 𝔘.ι) (a : X), a ∈ 𝔘.U i → a ∉ poles →
+      AnalyticAt ℂ (fun z => g i ((chartAt ℂ a).symm z)) ((chartAt ℂ a) a))
+    (match_cochain : ∀ p : 𝔘.ι × 𝔘.ι,
+      toGerm (𝔘.U p.1 ⊓ 𝔘.U p.2)
+          ((g p.1 - g p.2) ∘ (Subtype.val : ↥(𝔘.U p.1 ⊓ 𝔘.U p.2) → X))
+        = (ξ : 𝔘.toFiniteFamily.Cochain1) p) :
+    CousinSplitData 𝔘 ω₀ K ξ where
+  g := g
+  poles := poles
+  patch := patch
+  patch_mem := patch_mem
+  diffMem := fun i j => diffMem_of_match ξ i j (match_cochain (i, j))
+  formHoloDiff := formHoloDiff
+  iso := iso
+  holoOff := holoOff
+  match_cochain := match_cochain
+
 /-! ## §B — the reduction to the `lift` field -/
 
 /-- **The `lift` field of `MeromorphicCousinSolutions` from per-cocycle Cousin splits.**  Given a
