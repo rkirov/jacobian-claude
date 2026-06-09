@@ -693,4 +693,33 @@ theorem residueSum_eq_zero_of_canonicalSelection (hdiv : (f.div : Divisor X) ≠
       (hgmero z (coe_notMem_branchLocus_of_notMem_branchValues f hdiv
         (fun h => hz (Finset.mem_union_right _ h))))
 
+/-! ### Non-vacuity of the canonical-selection Φ-fields (soundness)
+
+The Φ-field obligations are genuine — *not* a disguised `False`.  The datum-dependent `g`-meromorphy
+input `hgmero` is satisfied for the zero numerator `g = 0` (the constantly-`0` chart pullback is
+analytic, hence meromorphic) at every value off the branch locus.  This confirms the regular-value
+canonical-fibre conditions are honestly satisfiable. -/
+
+/-- **The `g`-meromorphy input holds for `g = 0`.**  With the zero numerator, the chart pullback of
+`g` at every full-fibre point is the constant `0`, which is analytic, hence meromorphic — so `hgmero`
+holds (eventually, indeed everywhere) near every value.  Honest non-vacuity of the regular-value
+`g`-data. -/
+theorem hgmero_zero (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) (z : ℂ) :
+    ∀ᶠ b' in 𝓝 z, ∀ i, MeromorphicAt
+      (fun w => (0 : X → ℂ) ((chartAt ℂ (fullFibreEnum f hdiv b' i)).symm w))
+      ((chartAt ℂ (fullFibreEnum f hdiv b' i)) (fullFibreEnum f hdiv b' i)) := by
+  filter_upwards with b' i
+  exact (analyticAt_const (v := (0 : ℂ))).meromorphicAt
+
+/-- **The regular-value canonical-fibre conditions are non-vacuous.**  At any value `z` off the branch
+locus, the canonical full-fibre selection for the zero numerator `g = 0` enumerates the full fibre near
+`z` (`hΦrangeReg` with injectivity) — a concrete satisfiable instance, confirming the Φ-fields are not
+disguised `False`. -/
+theorem canonicalFibreSelection_hΦrangeReg_nonvacuous (f : MeromorphicFunction X)
+    (hdiv : (f.div : Divisor X) ≠ 0) {z : ℂ}
+    (hz : (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere) :
+    ∀ᶠ b' in 𝓝 z, Set.range (canonicalFibreSelection (0 : X → ℂ) f hdiv b').xs
+      = f.toRiemannSphere ⁻¹' {(((b' : ℂ) : RiemannSphere))} :=
+  canonicalFibreSelection_hΦrangeReg (0 : X → ℂ) f hdiv hz (hgmero_zero f hdiv z)
+
 end Jacobians.Dolbeault.FormTraceGlobal
