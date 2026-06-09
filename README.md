@@ -26,19 +26,22 @@ guarantee is **Lean's kernel**: anything reported as *proven* here is `#print ax
 `sorryAx`). Everything else — proof strategy, prose, mathematical judgment — may be wrong. Have a subject
 expert check before relying on anything.
 
-## Status — ~60% (foundations + several walls done; the hard analysis remains)
+## Status — ~65% (foundations + several walls done; the hard analysis remains)
 
-- **Builds green** (`lake build`, exit 0; **57k lines of Lean** (`cloc`) across 279 files) with **0 custom axioms** — the
-  entire unproved surface is **7 named `sorry`s**, each a true classical theorem absent from Mathlib.
+- **Builds green** (`lake build`, exit 0; **~57k lines of Lean** (`cloc`) across 277 files) with **0 custom axioms** — the
+  entire unproved surface is **4 named `sorry`s**, each a true classical theorem absent from Mathlib.
 - **Machine-verified (`#print axioms`):** `genus`, `ContMDiff.degree`, the 7 `Jacobian` instances,
   `ofCurve_self`, and the pushforward/pullback functoriality lemmas are sorry-free. The **residue
   theorem** is closed and axiom-clean in two forms — `MeromorphicFunction.deg_div` (Forster Cor. 4.25)
   and the general `∑ Res = 0` for any meromorphic 1-form (`residueTheorem_unconditional`, Miranda §VIII.3).
+  The **finiteness theorem** (`exists_cechModel`, Forster §14), the **skyscraper χ-step**
+  (`exists_skyscraperLES`, §16), and the **Čech↔Dolbeault comparison**
+  (`cechH1_dolbeault_comparison_proof`) are likewise closed and axiom-clean.
 - **The marquee deliverables still carry `sorryAx`** — `genus_eq_zero_iff_homeo`, `ofCurve_inj`, and the
   holomorphicity statements are gated on the open walls below. *Matching a signature is not the same as a
   finished proof.*
-- **Honest scope:** the remaining ~40% is genuinely-hard greenfield analysis (Riemann–Roch / Serre
-  duality, the finiteness theorem, Abel, surface topology, manifold de Rham) — a multi-session effort.
+- **Honest scope:** the remaining ~35% is genuinely-hard greenfield analysis (the Serre §17 residue
+  pairing, Abel, surface topology, manifold de Rham) — a multi-session effort.
 
 📊 See **[`docs/DESIGN.md`](docs/DESIGN.md)** for the long-term design choices,
 **[`docs/REFERENCES.md`](docs/REFERENCES.md)** for the canonical textbook sources, and
@@ -48,14 +51,13 @@ For authoritative per-theorem status, prefer the tree itself (`lake build` + `#p
 
 ### The remaining walls — the keystone first
 
-**Finiteness (`exists_cechModel`, Forster §14) is the chokepoint:** Riemann–Roch, Serre duality, and the
-residue theorem's inputs all bottom out there. Downstream of it:
+**The Serre §17 residue pairing (`exists_serreDualityData`) is the chokepoint:** Riemann–Roch — and
+through it Abel and the forward headline — is gated on exactly this one `sorry` (finiteness §14, the
+skyscraper χ-step §16, and the residue theorem `∑Res = 0` beneath it are all closed). The four walls:
 
 | Wall | Gives | Status |
 |---|---|---|
-| `exists_cechModel` (finiteness, §14) | the RR/Serre tower | δ-complex proven; ∂̄-globalization + cover-independence open |
-| `exists_serreDualityData` (§17 residue pairing) | the forward headline | abstract cores proven; the pairing open |
-| `exists_skyscraperLES` (χ-additivity, §16) | cohomological RR | assembly proven; cover-independence open |
+| `exists_serreDualityData` (§17 residue pairing) | Riemann–Roch → the forward headline | residue theorem + finiteness + abstract 17.6/17.9 cores proven; the `H¹(X,Ω)` realization (connecting map) + 17.9 instantiation open |
 | `abelJacobi_twoPoint_ne_zero` (#3, Abel) | `ofCurve_inj` | reduction proven; core open |
 | `exists_cutSurface` (#7, surface topology) | the Jacobian manifold structure | bilinear relations proven; cut chart open |
 | `HasHolomorphicPrimitives` (#1b, manifold de Rham) | the backward headline | S²-simply-connected proven; period slice open |
