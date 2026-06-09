@@ -671,4 +671,67 @@ theorem residueSum_eq_zero_of_Cfull
   rw [hres i, fibreResidueSum_eq_filter ω₀ f (D (cs i)) poles (hxs_inj (cs i)) (hxs_mem (cs i))
     (hxs_surj (cs i))]
 
+/-! ### The precise remaining per-centre obligation (the geometric normal-form gap)
+
+The `hoff_cs`-free capstone `residueTheorem_ofRamifiedCenters_genus0` rests, per finite centre, on a
+`RamifiedCenterFacts`.  Its residue/algebra core (Facts (A)/(B)) is **done** — discharged by the proven
+ramified atom in `RamifiedCenterFacts.ofFibreRamified`.  The *single* remaining gap, isolated as a named
+predicate below, is the geometric-trace identification `RamifiedCenterFacts.hcoh`: that the geometric
+trace germ near `c` *is* the algebraic `m`-sheet-sum trace of the per-preimage chart integrands.
+
+This is genuinely TRUE (Forster GTM 81 §5: at a ramification point of multiplicity `m` the cover is
+biholomorphic to `z = wᵐ`, and the §VIII.3 trace germ is then the `m`-sheet sum
+`laurentTraceCoeff_eq_sheetSum` — the atom's soundness identity).  Its Lean construction is the ramified
+analogue of `exists_planar_section` (the unramified local biholomorphism), needing the local `z = wᵐ`
+normal form + the analytic branch section `w₀ = z^{1/m}` — the genuine remaining analytic build.  It is
+*not asserted* without the normal form (no false/circular field, no custom axiom). -/
+
+/-- **The remaining per-centre ramified obligation.**  At a finite pole-value centre `c` of `α = ω₀·g`
+(with `g`'s chart-pullback meromorphic at each preimage), there is a `RamifiedCenterFacts` — equivalently
+(by `RamifiedCenterFacts.ofFibreRamified`), a ramified fibre datum + per-preimage Laurent principal-part
+data + the geometric-trace identification `hcoh`.
+
+**Soundness (non-false).**  Genuinely achievable: enumerate the pole fibre `F⁻¹(coe c)` with
+multiplicities (Forster §5), take the Laurent principal part of each `chartIntegrand ω₀ g pⱼ` (a true
+Laurent expansion), and identify the geometric trace germ with the `m`-sheet sum via the local `z = wᵐ`
+normal form (`laurentTraceCoeff_eq_sheetSum`, the atom's soundness identity).  Hence a TRUE existential
+— the precise statement of "the §VIII.3 ramified trace exists at `c`", the ramified analogue of the
+unramified moving coherence `MovingCoherenceDatum`. -/
+def ExistsRamifiedCenterFacts (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
+    (Φ : (b : ℂ) → FibreRegularData g f b) (poles : Finset X) (c : ℂ) : Prop :=
+  Nonempty (RamifiedCenterFacts ω₀ g f Φ poles c)
+
+/-- **Gate A `∑Res = 0` (genus `0`) modulo the per-centre ramified obligation, `hoff_cs`-FREE.**  The
+cleanest statement of the elimination: given `ExistsRamifiedCenterFacts` at every finite pole-value
+centre (the *only* remaining per-centre gap — the geometric `z = wᵐ` identification, Forster §5,
+mathematically true) plus the off-centre analyticity and the `∞`-group, Gate A holds with **no**
+`hoff_cs`.  The finite centres may be ramified. -/
+theorem residueTheorem_ofRamifiedCenters_genus0_mod
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hRfacts : ∀ i, ExistsRamifiedCenterFacts ω₀ g f Φ poles (cs i))
+    (Dinf_full : InftyFibreDataNF g f)
+    (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf_full))
+    (hfullInf_inj : Function.Injective Dinf_full.xs)
+    {ιInfP : Type} [Fintype ιInfP] (xsInf_po : ιInfP → X)
+    (hpoInf_inj : Function.Injective xsInf_po)
+    (hpoInf_mem : ∀ j, xsInf_po j ∈ poles ∧ f.toRiemannSphere (xsInf_po j) = OnePoint.infty)
+    (hpoInf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ j, xsInf_po j = a)
+    (hpole_image_inf : (Finset.univ.image Dinf_full.xs).filter (· ∈ poles)
+      = Finset.univ.image xsInf_po)
+    (hnonpole_inf_an : ∀ k, Dinf_full.xs k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (Dinf_full.xs k)).symm z))
+        ((chartAt ℂ (Dinf_full.xs k)) (Dinf_full.xs k))) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueTheorem_ofRamifiedCenters_genus0 (poles := poles) Φ m cs ρ hcs_ball hcs_inj br hreg hbnd
+    hcenters_cs (fun i => (hRfacts i).some) Dinf_full hcoh_full hfullInf_inj xsInf_po hpoInf_inj
+    hpoInf_mem hpoInf_surj hpole_image_inf hnonpole_inf_an
+
 end Jacobians.Dolbeault.SerreResidueTheorem
