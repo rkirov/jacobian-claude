@@ -66,6 +66,7 @@ variable {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connec
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
 
 /-! ### The `g`-weighted per-preimage summand boundedness
 
@@ -215,6 +216,9 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
 
 attribute [local instance] Classical.propDecidable
 
+set_option linter.unusedSimpArgs false
+set_option linter.unusedSectionVars false
+
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -292,5 +296,176 @@ theorem fibreTrace_traceCoeff_eq_gWeighted_finsum (ω₀ : HolomorphicOneForms X
   rw [S.fibre_eq _ S.mem_V, finsum_mem_range (S.sheet_inj _ S.mem_V), finsum_eq_sum_of_fintype]
   exact (Finset.sum_congr rfl (fun i _ => by
     rw [localCoeffLin_traceSummand_eq_sheetPullback ω₀ S i])).symm
+
+/-! ### The αBr-free eventual sphere-sheet coherence at a branch value
+
+The first conjunct of `hev_canonical_of_offBranch` — `valueChartTrace = fibreTrace(ofSphereSheetSystem)`
+near `b₀` — *without* any `αBr`.  Built from the canonical-selection regular-value data exactly as
+`hev_canonical_of_offBranch`, but ending in `valueChartTrace_eq_sphereSheetFibreTrace` (αBr-free) rather
+than the αBr-bundled `hevBr_of_regularData`. -/
+
+/-- **αBr-free eventual sphere-sheet coherence at a branch value (canonical selection).**  For `b₀` off
+the pole-centres `cs` (and `br ⊇ branchValues f`), eventually each `z` near `b₀` carries a sphere sheet
+system `S_z` with `valueChartTrace ω₀ f (canonical) z = (fibreTrace ω₀ f (ofSphereSheetSystem S_z …))
+.traceCoeff z` — the regular-value coherence (NO global form `αBr`). -/
+theorem hev_coherence_canonical_of_offBranch (hdiv : (f.div : Divisor X) ≠ 0) {m : ℕ} {cs : Fin m → ℂ}
+    {br : Finset ℂ} (hbr : branchValues f hdiv ⊆ br) {b₀ : ℂ}
+    (hgood_reg : ∀ w ∉ Finset.univ.image cs ∪ br, GoodValue g f hdiv w)
+    (hgmero_reg : ∀ w (_hw : w ∉ Finset.univ.image cs ∪ br), ∀ᶠ b' in 𝓝 w, ∀ j,
+      MeromorphicAt (fun u => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm u))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j))) :
+    ∀ᶠ z in 𝓝[≠] b₀,
+      ∃ (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+        (hderiv : ∀ i, deriv (fun w => f.holoRepr
+            ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+          ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+            (S.sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0)
+        (_hmero : ∀ i, MeromorphicAt
+          (fun w => g ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+          ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+            (S.sheet i (((z : ℂ) : RiemannSphere))))),
+        valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z
+          = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv _hmero)).traceCoeff z := by
+  classical
+  -- The off-branch sphere system at each regular value `z` (off `image cs ∪ br`).
+  set Sreg : ∀ z, z ∉ Finset.univ.image cs ∪ br →
+      Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)) := fun z hz =>
+    (exists_sphereSheetSystem f (exists_orderAtPoint_ne_zero f hdiv)
+      (coe_notMem_branchLocus_of_notMem_branchValues f hdiv
+        (fun h => (fun hmem => hz (Finset.mem_union_right _ hmem)) (hbr h)))).some with hSreg
+  have hoff : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere := fun z hz =>
+    coe_notMem_branchLocus_of_notMem_branchValues f hdiv
+      (fun h => (fun hmem => hz (Finset.mem_union_right _ hmem)) (hbr h))
+  -- Each sheet point is a regular point of `f` (off-branch local injectivity).
+  have hderivReg' : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
+      deriv (fun w => f.holoRepr
+          ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+        ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere))))
+          ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0 := fun z hz i =>
+    sheet_holoRepr_deriv_ne_zero f hdiv (hoff z hz)
+      ((Sreg z hz).sheet_section i _ (Sreg z hz).mem_V)
+  -- The sphere-sheet fibre point lies in the full fibre `F⁻¹(coe z)` (good value); `g`-data follows.
+  have hmeroReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
+      MeromorphicAt (fun w => g
+          ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+        ((chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere))))
+          ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))) := by
+    intro z hz i
+    have hfib : (Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)) ∈
+        f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))} := by
+      rw [Set.mem_preimage, Set.mem_singleton_iff]
+      exact (Sreg z hz).sheet_section i _ (Sreg z hz).mem_V
+    rw [← canonicalFibreSelection_xs_range g f hdiv (hgood_reg z hz),
+      canonicalFibreSelection_eq_ofFullFibre g f hdiv (hgood_reg z hz)] at hfib
+    obtain ⟨j, hj⟩ := hfib
+    have hpt : (Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)) = fullFibreEnum f hdiv z j := hj.symm
+    rw [hpt]; exact (hgood_reg z hz).2 j
+  -- The canonical-fibre conditions near each regular `z` (same as `hev_canonical_of_offBranch`).
+  have hΦinjReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      ∀ᶠ b' in 𝓝 z, Function.Injective (canonicalFibreSelection g f hdiv b').xs := fun z hz =>
+    canonicalFibreSelection_hΦinjReg g f hdiv (hoff z hz) (hgmero_reg z hz)
+  have hΦrangeReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      ∀ᶠ b' in 𝓝 z, Set.range (canonicalFibreSelection g f hdiv b').xs
+        = f.toRiemannSphere ⁻¹' {(((b' : ℂ) : RiemannSphere))} := fun z hz =>
+    canonicalFibreSelection_hΦrangeReg g f hdiv (hoff z hz) (hgmero_reg z hz)
+  have hsheetInjReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      ∀ᶠ b' in 𝓝 z, Function.Injective
+        (fun i => (Sreg z hz).sheet i (((b' : ℂ) : RiemannSphere))) := fun z hz => by
+    have hVnhds : ((fun w : ℂ => ((w : ℂ) : RiemannSphere)) ⁻¹' (Sreg z hz).V) ∈ 𝓝 z :=
+      (OnePoint.continuous_coe.continuousAt).preimage_mem_nhds
+        ((Sreg z hz).isOpen_V.mem_nhds (Sreg z hz).mem_V)
+    filter_upwards [hVnhds] with b' hb'
+    exact (Sreg z hz).sheet_inj (((b' : ℂ) : RiemannSphere)) hb'
+  have hsheetMemReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br),
+      ∀ᶠ b' in 𝓝 z, ∀ i, (Sreg z hz).sheet i (((b' : ℂ) : RiemannSphere)) ∈
+        (chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).source := fun z hz => by
+    have hev : ∀ i : Fin (Sreg z hz).n, ∀ᶠ b' in 𝓝 z,
+        (Sreg z hz).sheet i (((b' : ℂ) : RiemannSphere)) ∈
+          (chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).source := by
+      intro i
+      have hcont : ContinuousAt ((Sreg z hz).holoReprSheet i) z :=
+        ((Sreg z hz).holoReprSheet_contMDiffAt i).continuousAt
+      have hsrc : (chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).source ∈
+          𝓝 ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere))) :=
+        (chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).open_source.mem_nhds
+          (mem_chart_source ℂ _)
+      have := hcont.preimage_mem_nhds (show
+        (chartAt ℂ ((Sreg z hz).sheet i (((z : ℂ) : RiemannSphere)))).source ∈
+          𝓝 ((Sreg z hz).holoReprSheet i z) from hsrc)
+      filter_upwards [this] with b' hb' using hb'
+    rw [eventually_all]; exact hev
+  -- Eventually `z ∉ image cs ∪ br` on `𝓝[≠] b₀`: the finite bad set minus `{b₀}` is closed, avoids `b₀`.
+  have hfin : (((Finset.univ.image cs ∪ br : Finset ℂ) : Set ℂ) \ {b₀}).Finite :=
+    ((Finset.univ.image cs ∪ br).finite_toSet).diff
+  have hcompl : ((((Finset.univ.image cs ∪ br : Finset ℂ) : Set ℂ) \ {b₀}))ᶜ ∈ 𝓝 b₀ :=
+    hfin.isClosed.compl_mem_nhds (by simp)
+  filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds hcompl] with z hz_ne hz_compl
+  have hzb : z ≠ b₀ := by simpa using hz_ne
+  have hz : z ∉ Finset.univ.image cs ∪ br := by
+    intro hmem
+    exact hz_compl ⟨hmem, fun h => hzb (by simpa using h)⟩
+  refine ⟨Sreg z hz, hderivReg' z hz, hmeroReg z hz, ?_⟩
+  exact valueChartTrace_eq_sphereSheetFibreTrace ω₀ g f (canonicalFibreSelection g f hdiv)
+    (Sreg z hz) (hderivReg' z hz) (hmeroReg z hz) (hΦinjReg z hz) (hΦrangeReg z hz)
+    (hsheetInjReg z hz) (hsheetMemReg z hz)
+
+/-! ### The SOUND branch-value boundedness `hbnd` (canonical selection, general `g`)
+
+Assembling the sound `hbnd`: at a branch value `b₀` (off pole-centres), the geometric trace germ-equals
+the `g`-weighted bundle finsum (αBr-free coherence + the finsum bridge), and the `g`-weighted bundle SUM
+boundedness crux gives `(z − b₀)·trace → 0`.  The form fed to the crux is the GLOBAL HOLOMORPHIC `ω₀`;
+`g` enters only as the bounded fibre weight (continuous at the branch fibre, off the pole-values). -/
+
+/-- **The SOUND `hbnd` for the canonical selection at a branch value (general meromorphic `g`).**
+For a genuine branch value `b₀ ∈ branchValues f` off the pole-centres `cs`, the canonical full-fibre
+trace satisfies `(z − b₀)·valueChartTrace ω₀ f (canonical) z → 0`.  Discharged via:
+
+* `hev_coherence_canonical_of_offBranch` — `valueChartTrace =ᶠ[𝓝[≠] b₀] fibreTrace(ofSphereSheetSystem)`
+  (αBr-FREE);
+* `fibreTrace_traceCoeff_eq_gWeighted_finsum` — `fibreTrace.traceCoeff z = ∑ᶠ g·localCoeffLin(traceSummand
+  ω₀)`;
+* `traceLocalCoeff_mul_sub_gWeighted_tendsto_zero_Y` — the `g`-weighted bundle SUM boundedness (the form
+  is the GLOBAL HOLOMORPHIC `ω₀`; `g` is the bounded weight, continuous at the branch fibre off the
+  pole-values).
+
+NO global `αBr` — the SOUND replacement of `hbnd_canonical_of_offBranch` for general `α = ω₀·g`. -/
+theorem hbnd_canonical_sound (hdiv : (f.div : Divisor X) ≠ 0) {m : ℕ} {cs : Fin m → ℂ}
+    {br : Finset ℂ} (hbr : branchValues f hdiv ⊆ br) {b₀ : ℂ}
+    (hb₀branch : b₀ ∈ branchValues f hdiv)
+    (hgood_reg : ∀ w ∉ Finset.univ.image cs ∪ br, GoodValue g f hdiv w)
+    (hgmero_reg : ∀ w (_hw : w ∉ Finset.univ.image cs ∪ br), ∀ᶠ b' in 𝓝 w, ∀ j,
+      MeromorphicAt (fun u => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm u))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j)))
+    (hg_fibre : ∀ x ∈ f.toRiemannSphere ⁻¹' {(((b₀ : ℂ) : RiemannSphere))}, ContinuousAt g x) :
+    Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z)
+      (𝓝[≠] b₀) (𝓝 0) := by
+  classical
+  -- `coe b₀ ∈ branchLocus`.
+  have hbrloc : (((b₀ : ℂ) : RiemannSphere)) ∈ branchLocus f.toRiemannSphere :=
+    (mem_branchValues f hdiv).mp hb₀branch
+  -- The g-weighted bundle SUM boundedness (sphere side), read at `coe b₀`.
+  have hcruxY := Jacobians.TraceResidue.traceLocalCoeff_mul_sub_gWeighted_tendsto_zero_Y
+    f.toRiemannSphere f.contMDiff_toRiemannSphere (hncF_of_div_ne_zero f hdiv) ω₀ g hbrloc hg_fibre
+  -- Pull back along `coe : ℂ → RiemannSphere` (carries `𝓝[≠] b₀` to `𝓝[≠] (coe b₀)`).
+  have hmap : Tendsto (fun z : ℂ => ((z : ℂ) : RiemannSphere)) (𝓝[≠] b₀)
+      (𝓝[≠] (((b₀ : ℂ) : RiemannSphere))) := by
+    rw [tendsto_nhdsWithin_iff]
+    refine ⟨(OnePoint.continuous_coe.continuousAt).mono_left nhdsWithin_le_nhds, ?_⟩
+    filter_upwards [self_mem_nhdsWithin] with z hz_ne
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+    intro hcoe
+    exact hz_ne (by rw [Set.mem_singleton_iff]; exact OnePoint.coe_injective hcoe)
+  have hcrux := hcruxY.comp hmap
+  -- Read in the affine value chart: `chart(coe b₀)(coe b₀) = b₀`, `coe z` is the sphere value.
+  simp only [Function.comp_apply, RiemannSphere.chartAt_coe, RiemannSphere.chartCoe_apply_coe]
+    at hcrux
+  -- Transport along the eventual coherence + the g-weighted finsum bridge.
+  refine hcrux.congr' ?_
+  filter_upwards [hev_coherence_canonical_of_offBranch hdiv hbr hgood_reg hgmero_reg]
+    with z hz
+  obtain ⟨S, hderiv, hmero, hcoh⟩ := hz
+  rw [hcoh, fibreTrace_traceCoeff_eq_gWeighted_finsum ω₀ g f S hderiv hmero (b₀ := b₀)]
+  simp only [Function.comp_apply, RiemannSphere.chartCoe_apply_coe]
 
 end Jacobians.Dolbeault.FormTraceGlobal
