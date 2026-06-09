@@ -390,4 +390,72 @@ noncomputable def RealCenterClusterFamily.ofSlitClusterSplitFamily {ω₀ : Holo
   hbnd := hbnd
   hfam := fun z hz => (hfam z hz).toFibreClusterTopology
 
+/-! ## Building `Cl` at a real-cover fibre preimage (the per-preimage §5 cluster data)
+
+The per-preimage `ClusterTraceData` `Cl i` is built from the Forster §5 normal form at the preimage
+`p = D.xs i` (the local inverse `s = η⁻¹`, `exists_clusterSplit_at_fibrePoint`) and the `cpow` slit
+branch `w₀ z = (z − c)^{1/m}`.  We supply a constructor that *derives* the mechanical pieces — the slit
+branch `w₀` and its differential calculus, and the Laurent principal part of the straightened integrand
+`H` at `0` (`exists_principalPart_meromorphicAt`) — leaving as the genuine remaining §5 analytic content
+exactly the three slit-locality residuals: the sheet arguments land in `s`'s analyticity domain
+(`hs_an_sheet`), the principal-part split holds at the sheet arguments (`hpp_split_sheet`), and the
+single-valued analytic remainder trace `Rem` (the symmetric-function descent, `hRem_an`/`hRem_slit`). -/
+
+/-- **`ClusterTraceData` at a real-cover fibre preimage from the §5 normal form** (the per-preimage
+builder).  At a non-pole fibre preimage `p` over `coe c` of the cover `f` (`f.div ≠ 0`), with
+`m := (localDeg f (coe c) p).toNat` the genuine multiplicity, `ζ` a primitive `m`-th root, the §5
+local-inverse data `s`/`hs_an`/`hs0`/`hs_deriv` (from `exists_clusterSplit_at_fibrePoint`), the Laurent
+principal-part data `ppN`/`ppb`/`ppR` of the straightened integrand at `0` (supplied by the caller via
+`exists_principalPart_meromorphicAt`, exactly as `ofNormalForm` does), and the three genuine
+slit-analytic residuals (`hs_an_sheet`, `hpp_split_sheet`, `Rem`/`hRem_an`/`hRem_slit`) on the standard
+`cpow` slit `S = {z | z − c ∈ slitPlane}`, build the `ClusterTraceData`.
+
+The value-add over `ofNormalForm` is that the multiplicity `m` is the genuine intrinsic `localDeg` (the
+multiplicity bridge supplies `hm`, so `m` is *not* asserted) and the slit branch `w₀ z = (z − c)^{1/m}`
+and its differential calculus are derived from the proven `clusterTraceData_slit` `cpow` data — so the
+caller supplies only the `s`-data (from the §5 atom), the principal part, and the three slit residuals.
+`hg_mero` is `g.meromorphic`.  This connects `exists_clusterSplit_at_fibrePoint` directly to a
+`ClusterTraceData`, isolating the genuine §5 analytic content as exactly those three residuals. -/
+noncomputable def ClusterTraceData.ofFibrePointNormalForm (ω₀ : HolomorphicOneForms X)
+    (g : MeromorphicFunction X) {f : MeromorphicFunction X} (hdiv : (f.div : Divisor X) ≠ 0)
+    {c : ℂ} {p : X} (hp_fib : f.toRiemannSphere p = ((c : ℂ) : RiemannSphere))
+    (hp_np : 0 ≤ f.orderAtPoint p)
+    {ζ : ℂ} (hζ : IsPrimitiveRoot ζ (localDeg f ((c : ℂ) : RiemannSphere) p).toNat)
+    (s : ℂ → ℂ) (hs_an : AnalyticAt ℂ s 0) (hs0 : s 0 = (chartAt ℂ p) p) (hs_deriv : deriv s 0 ≠ 0)
+    (ppN : ℕ) (ppb : ℕ → ℂ) (ppR : ℂ → ℂ) (hppR_an : AnalyticAt ℂ ppR 0)
+    (hs_an_sheet : ∀ z ∈ {z : ℂ | z - c ∈ slitPlane},
+      ∀ j ∈ Finset.range (localDeg f ((c : ℂ) : RiemannSphere) p).toNat,
+      AnalyticAt ℂ s (ζ ^ j * (clusterTraceData_slit ω₀ p c
+        (localDeg f ((c : ℂ) : RiemannSphere) p).toNat
+        ((Jacobians.analyticOrderAt_holoRepr_sub_eq_mult f hdiv hp_fib hp_np).1) ζ hζ).w₀ z))
+    (hpp_split_sheet : ∀ z ∈ {z : ℂ | z - c ∈ slitPlane},
+      ∀ j ∈ Finset.range (localDeg f ((c : ℂ) : RiemannSphere) p).toNat,
+      straightenedIntegrand ω₀ g.toFun p s (ζ ^ j * (clusterTraceData_slit ω₀ p c
+          (localDeg f ((c : ℂ) : RiemannSphere) p).toNat
+          ((Jacobians.analyticOrderAt_holoRepr_sub_eq_mult f hdiv hp_fib hp_np).1) ζ hζ).w₀ z)
+        = negTail 0 ppb ppN (ζ ^ j * (clusterTraceData_slit ω₀ p c
+            (localDeg f ((c : ℂ) : RiemannSphere) p).toNat
+            ((Jacobians.analyticOrderAt_holoRepr_sub_eq_mult f hdiv hp_fib hp_np).1) ζ hζ).w₀ z)
+          + ppR (ζ ^ j * (clusterTraceData_slit ω₀ p c
+            (localDeg f ((c : ℂ) : RiemannSphere) p).toNat
+            ((Jacobians.analyticOrderAt_holoRepr_sub_eq_mult f hdiv hp_fib hp_np).1) ζ hζ).w₀ z))
+    (Rem : ℂ → ℂ) (hRem_an : AnalyticAt ℂ Rem c)
+    (hRem_slit : ∀ z ∈ {z : ℂ | z - c ∈ slitPlane},
+      Rem z = ∑ j ∈ Finset.range (localDeg f ((c : ℂ) : RiemannSphere) p).toNat,
+        ppR (ζ ^ j * (clusterTraceData_slit ω₀ p c
+            (localDeg f ((c : ℂ) : RiemannSphere) p).toNat
+            ((Jacobians.analyticOrderAt_holoRepr_sub_eq_mult f hdiv hp_fib hp_np).1) ζ hζ).w₀ z)
+          * deriv (fun ζz => (0 : ℂ) + ζ ^ j * (clusterTraceData_slit ω₀ p c
+            (localDeg f ((c : ℂ) : RiemannSphere) p).toNat
+            ((Jacobians.analyticOrderAt_holoRepr_sub_eq_mult f hdiv hp_fib hp_np).1) ζ hζ).w₀ ζz) z) :
+    ClusterTraceData ω₀ g.toFun p c {z : ℂ | z - c ∈ slitPlane} :=
+  let m := (localDeg f ((c : ℂ) : RiemannSphere) p).toNat
+  let hm : 0 < m := (Jacobians.analyticOrderAt_holoRepr_sub_eq_mult f hdiv hp_fib hp_np).1
+  let W := clusterTraceData_slit ω₀ p c m hm ζ hζ
+  ClusterTraceData.ofNormalForm ω₀ g.toFun p c {z : ℂ | z - c ∈ slitPlane} m hm ζ hζ
+    s hs_an hs0 hs_deriv
+    W.w₀ W.hw₀_ne W.hw₀_pow W.hw₀_deriv W.hw₀_diff hs_an_sheet
+    (by simpa [Function.comp] using g.meromorphic p) ppN ppb ppR hppR_an
+    hpp_split_sheet Rem hRem_an hRem_slit
+
 end Jacobians.Dolbeault.SerreResidueTheorem
