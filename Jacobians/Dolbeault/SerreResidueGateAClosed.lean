@@ -750,18 +750,19 @@ theorem residueSum_of_adaptedF (ω₀ : HolomorphicOneForms X) (g : MeromorphicF
     residueSum ω₀ g.toFun poles = 0 :=
   residueTheorem_of_adaptedF ω₀ g poles A
 
-/-! ### The precise remaining genericity obligation `ExistsAdaptedF`
+/-! ### The unramified-route genericity `ExistsAdaptedF` (SUPERSEDED — Gate A closed)
 
-The unconditional 1-form residue theorem `∑Res = 0` for `α = ω₀·g` rests, via `residueTheorem_of_adaptedF`,
-on **exactly one** remaining obligation: the existence of an adapted cover.  This is Miranda §VIII.3's
-"simply choose any nonconstant `f`" together with the standard generic-position adjustment, and it is
-mathematically TRUE (achievable, see the soundness note) but its Lean construction needs
-`MeromorphicFunction.Inv` (to form `f' = (f − a·1)⁻¹` for a generic `a`) plus the generic-position lemma
-relating `branchValues f'` and `orderAtPoint` of `f'`'s poles to `f`'s zeros — infrastructure not yet in
-the repo. -/
+The unramified route closes `∑Res = 0` via `residueTheorem_of_adaptedF` *given* the existence of an
+adapted cover (`ExistsAdaptedF`, below).  That existence demand is now **superseded**: the ramified
+route proves its genericity outright (`existsAdaptedFRamified`, `SerreResidueGateAGenericity.lean`)
+and closes the residue theorem with **no hypothesis** (`residueTheorem_unconditional`,
+`SerreResidueRamifiedRealSlitGeometry.lean`).  The definition is kept because
+`ExistsAdaptedFRamified.of_existsAdaptedF` (`SerreResidueGateAInftyBuilder.lean`) records that the
+proven ramified genericity is formally *weaker* (no harder) than this unramified one. -/
 
-/-- **The remaining genericity obligation.**  An adapted cover exists for `α = ω₀·g` over any finite
-`poles` off which `g`'s chart-pullback is analytic (so `poles ⊇` the actual poles of `α`).
+/-- **The unramified-route genericity (superseded; see the section header).**  An adapted cover exists
+for `α = ω₀·g` over any finite `poles` off which `g`'s chart-pullback is analytic (so `poles ⊇` the
+actual poles of `α`).
 
 **Soundness (non-false).**  This is genuinely achievable for a general meromorphic `g`: take any
 nonconstant meromorphic function (`exists_nonconstant_meromorphic`, the Riemann inequality) and replace
@@ -775,22 +776,5 @@ def ExistsAdaptedF (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X) (
   (∀ x : X, x ∉ poles →
     AnalyticAt ℂ (fun z => g.toFun ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x)) →
   Nonempty (AdaptedF ω₀ g poles)
-
-/-- **UNCONDITIONAL 1-form residue theorem `∑Res = 0`, modulo the single genericity obligation.**
-For a genuine meromorphic numerator `g` and any finite `poles` containing the poles of `α = ω₀·g`
-(`hpoles` — off `poles`, `g` is analytic), the total residue of `α` vanishes:
-
-> `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`,
-
-given `ExistsAdaptedF` (the adapted-cover genericity, the *only* remaining gap — Miranda §VIII.3's
-"choose any nonconstant `f`", mathematically true).  This is the well-definedness content underlying the
-global `Res : H¹(X,Ω) → ℂ` (Forster 17.3) → the 17.5 Serre pairing. -/
-theorem residueTheorem_general (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
-    (poles : Finset X)
-    (hpoles : ∀ x : X, x ∉ poles →
-      AnalyticAt ℂ (fun z => g.toFun ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x))
-    (hAdapt : ExistsAdaptedF ω₀ g poles) :
-    ∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0 :=
-  (hAdapt hpoles).elim (residueTheorem_of_adaptedF ω₀ g poles)
 
 end Jacobians.Dolbeault.SerreResidueTheorem

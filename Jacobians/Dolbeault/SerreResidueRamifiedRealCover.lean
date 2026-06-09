@@ -27,7 +27,7 @@ It also builds the concrete prerequisite infrastructure the genericity step need
 
 There are two assemblies of Gate A in the repo:
 
-1. The **unramified** route `residueTheorem_general` (`SerreResidueGateAClosed.lean`), which rests on
+1. The **unramified** route `residueTheorem_of_adaptedF` (`SerreResidueGateAClosed.lean`), which rests on
    `ExistsAdaptedF` — a genericity datum carrying `hoff_cs` (*all* finite pole-value fibres unramified).
    Its `hreg`/`hbnd`/`∞`-group are fully discharged for the canonical selection
    (`hbnd_canonical_sound_full`, the `g`-weighted bundle SUM — αBr-free, sound for general `g`).
