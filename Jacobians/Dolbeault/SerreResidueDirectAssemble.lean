@@ -205,6 +205,65 @@ theorem poleSubEnum_hpole_image {ι : Type} [Fintype ι] (poles : Finset X) (xs 
   · rintro ⟨⟨i, hi⟩, rfl⟩
     exact ⟨⟨i, rfl⟩, hi⟩
 
+/-! ## The full `∞`-fibre datum from simple poles (`Dinf_full`)
+
+The full `∞`-fibre is `F⁻¹(∞) = {x | f.orderAtPoint x < 0}` (the poles of `f`), finite on the compact
+`X` (`f.finite_poles`).  When every pole of `f` is **simple** (`orderAtPoint = −1`, the cover unramified
+over `∞`) and `g`'s chart pullback is meromorphic at each, `InftyFibreDataNF.ofRegular` packages the
+whole `∞`-fibre into a sound `InftyFibreDataNF`.  This **fully discharges** the `∞`-fibre-data group
+`Dinf_full`/`hfullInf_inj`/`hinf_mem`/`hinf_surj` of `directTraceGeometry_ofAdapted` from the adapted
+inputs (simple `∞`-poles + `g`-meromorphy) — no residual. -/
+
+/-- The full `∞`-fibre as a `Fin`-enumeration: `Subtype.val ∘ (poles-of-`f`).toFinset.equivFin.symm`. -/
+noncomputable def inftyFibreEnum (f : MeromorphicFunction X) :
+    Fin (f.finite_poles.toFinset.card) → X :=
+  fun i => (f.finite_poles.toFinset.equivFin.symm i : X)
+
+theorem inftyFibreEnum_lt (f : MeromorphicFunction X) (i : Fin (f.finite_poles.toFinset.card)) :
+    f.orderAtPoint (inftyFibreEnum f i) < 0 := by
+  have hmem := (f.finite_poles.toFinset.equivFin.symm i).2
+  rwa [Set.Finite.mem_toFinset, Set.mem_setOf_eq] at hmem
+
+theorem inftyFibreEnum_mem (f : MeromorphicFunction X) (i : Fin (f.finite_poles.toFinset.card)) :
+    f.toRiemannSphere (inftyFibreEnum f i) = OnePoint.infty :=
+  f.toRiemannSphere_of_pole (inftyFibreEnum_lt f i)
+
+theorem inftyFibreEnum_injective (f : MeromorphicFunction X) :
+    Function.Injective (inftyFibreEnum f) := by
+  intro i j h
+  exact f.finite_poles.toFinset.equivFin.symm.injective (Subtype.ext h)
+
+/-- `inftyFibreEnum` enumerates **all** poles of `f` (every `a` with `F a = ∞` is hit). -/
+theorem inftyFibreEnum_surj (f : MeromorphicFunction X) {a : X}
+    (hfa : f.toRiemannSphere a = OnePoint.infty) : ∃ i, inftyFibreEnum f i = a := by
+  classical
+  -- `F a = ∞ ⟹ a` is a pole, so `a ∈ (poles-of-f).toFinset`.
+  have ha_pole : f.orderAtPoint a < 0 := by
+    by_contra h
+    rw [f.toRiemannSphere_of_nonneg (not_lt.mp h)] at hfa
+    exact (OnePoint.coe_ne_infty _) hfa
+  have haF : a ∈ f.finite_poles.toFinset := by
+    rw [Set.Finite.mem_toFinset, Set.mem_setOf_eq]; exact ha_pole
+  refine ⟨f.finite_poles.toFinset.equivFin ⟨a, haF⟩, ?_⟩
+  show (f.finite_poles.toFinset.equivFin.symm (f.finite_poles.toFinset.equivFin ⟨a, haF⟩) : X) = a
+  rw [Equiv.symm_apply_apply]
+
+/-- **The full `∞`-fibre datum from simple poles.**  When every pole of `f` is simple
+(`hsimple : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = −1`) with `g`-meromorphy `hmero`, the
+`InftyFibreDataNF g f` enumerating the *entire* `∞`-fibre `F⁻¹(∞)`. -/
+noncomputable def inftyFibreDataNF_full (g : X → ℂ) (f : MeromorphicFunction X)
+    (hsimple : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = -1)
+    (hmero : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (inftyFibreEnum f i)).symm z))
+      ((chartAt ℂ (inftyFibreEnum f i)) (inftyFibreEnum f i))) :
+    InftyFibreDataNF g f :=
+  InftyFibreDataNF.ofRegular g f (inftyFibreEnum f) hsimple hmero
+
+@[simp] theorem inftyFibreDataNF_full_xs (g : X → ℂ) (f : MeromorphicFunction X)
+    (hsimple : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = -1)
+    (hmero : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (inftyFibreEnum f i)).symm z))
+      ((chartAt ℂ (inftyFibreEnum f i)) (inftyFibreEnum f i))) :
+    (inftyFibreDataNF_full g f hsimple hmero).xs = inftyFibreEnum f := rfl
+
 /-! ## The maximal proven-prefix constructor `directTraceGeometry_ofAdapted`
 
 The honest reduction of Miranda's genericity for a *general* adapted cover `f`.  Given:
