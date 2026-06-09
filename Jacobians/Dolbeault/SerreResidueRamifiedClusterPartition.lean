@@ -491,4 +491,72 @@ theorem ClusterReindexData.sum_mult_eq_sheetCount {ω₀ : HolomorphicOneForms X
   rwa [Fintype.card_sigma, Fintype.card_fin, Finset.sum_congr rfl (fun i _ => Fintype.card_fin (D.mult i))]
     at hcard
 
+/-! ## The section-derivative agreement is DERIVABLE (holomorphic-local-inverse uniqueness)
+
+The `hderiv_match` field of `ClusterReindexData` is **not** an extra assumption: it is the genuine fact
+that two holomorphic local sections of `f` through the *same* fibre point germ-agree (uniqueness of the
+holomorphic local inverse).  We isolate the discharger, so `hderiv_match` reduces to the two sections
+being genuine local sections of `f.holoRepr` through the coincident point `q` (the `clusterSection`
+section property is `clusterSheet_sect`; the `holoReprSheet` one is `holoReprSheet_section`).  This
+confirms the only irreducible fields of `ClusterReindexData` are the **bijection** and the **point
+coincidence** (the conservation-of-number content). -/
+
+/-- **The section-derivative agreement from the two right-inverse properties** (holomorphic-local-inverse
+uniqueness).  Let `q := s₁ z` be a regular non-pole with `f.holoRepr q = z` (so the chart-pullback
+`φ = f.holoRepr ∘ chart_q.symm` is analytic at `chart_q q` with nonzero derivative).  If two sections
+`s₁ s₂ : ℂ → X` both pass through `q` at `z` (`s₁ z = q = s₂ z`), are continuous at `z`, lie in `q`'s
+chart source near `z`, and are sections of `f.holoRepr` near `z` (`f.holoRepr (sₖ w) = w`), then their
+self-chart pullbacks have equal derivatives at `z`:
+
+> `deriv (fun w => chart_q (s₁ w)) z = deriv (fun w => chart_q (s₂ w)) z`.
+
+*Proof.*  The chart-pullbacks `chart_q ∘ sₖ` are continuous right-inverses of `φ` through `chart_q q`
+(`φ (chart_q (sₖ w)) = f.holoRepr (sₖ w) = w` near `z`, using `sₖ w ∈ chart_q.source`), so they
+germ-agree by `eventuallyEq_of_rightInverse_of_rightInverse`; equal germs have equal derivatives. -/
+theorem hderiv_match_of_section {f : MeromorphicFunction X} {s₁ s₂ : ℂ → X} {z : ℂ}
+    (hq_np : 0 ≤ f.orderAtPoint (s₁ z)) (hq_val : f.holoRepr (s₁ z) = z)
+    (hreg : deriv (fun u => f.holoRepr ((chartAt ℂ (s₁ z)).symm u)) ((chartAt ℂ (s₁ z)) (s₁ z)) ≠ 0)
+    (hs₂z : s₂ z = s₁ z)
+    (hs₁_cont : ContinuousAt s₁ z) (hs₂_cont : ContinuousAt s₂ z)
+    (hs₁_src : ∀ᶠ w in 𝓝 z, s₁ w ∈ (chartAt ℂ (s₁ z)).source)
+    (hs₂_src : ∀ᶠ w in 𝓝 z, s₂ w ∈ (chartAt ℂ (s₁ z)).source)
+    (hs₁_sec : ∀ᶠ w in 𝓝 z, f.holoRepr (s₁ w) = w)
+    (hs₂_sec : ∀ᶠ w in 𝓝 z, f.holoRepr (s₂ w) = w) :
+    deriv (fun w => (chartAt ℂ (s₁ z)) (s₁ w)) z
+      = deriv (fun w => (chartAt ℂ (s₁ z)) (s₂ w)) z := by
+  classical
+  set q : X := s₁ z with hqdef
+  set φ : ℂ → ℂ := fun u => f.holoRepr ((chartAt ℂ q).symm u) with hφ
+  -- `φ` is analytic at `chart_q q` (q non-pole) with `φ (chart_q q) = z` (q's holoRepr value).
+  have hφ_an : AnalyticAt ℂ φ ((chartAt ℂ q) q) :=
+    f.analyticAt_holoRepr_chartPullback_of_orderNonneg hq_np
+  have hφ_base : φ ((chartAt ℂ q) q) = z := by
+    show f.holoRepr ((chartAt ℂ q).symm ((chartAt ℂ q) q)) = z
+    rw [(chartAt ℂ q).left_inv (mem_chart_source ℂ q)]; exact hq_val
+  -- `chart_q` is continuous at `q`.
+  have hchart_cont : ContinuousAt (chartAt ℂ q) q := (chartAt ℂ q).continuousAt (mem_chart_source ℂ q)
+  -- Each `chart_q ∘ sₖ` is a continuous right-inverse of `φ` through `chart_q q`.
+  have hcont : ∀ {s : ℂ → X}, s z = q → ContinuousAt s z →
+      ContinuousAt (fun w => (chartAt ℂ q) (s w)) z := by
+    intro s hsz hsc
+    refine ContinuousAt.comp ?_ hsc
+    rw [hsz]; exact hchart_cont
+  have hrinv : ∀ {s : ℂ → X}, (∀ᶠ w in 𝓝 z, s w ∈ (chartAt ℂ q).source) →
+      (∀ᶠ w in 𝓝 z, f.holoRepr (s w) = w) → ∀ᶠ w in 𝓝 z, φ ((chartAt ℂ q) (s w)) = w := by
+    intro s hsrc hsec
+    filter_upwards [hsrc, hsec] with w hw hsw
+    show f.holoRepr ((chartAt ℂ q).symm ((chartAt ℂ q) (s w))) = w
+    rw [(chartAt ℂ q).left_inv hw]; exact hsw
+  -- The two chart-pullbacks germ-agree (uniqueness of the holomorphic local inverse).
+  have hbase₁ : (fun w => (chartAt ℂ q) (s₁ w)) z = (chartAt ℂ q) q := by
+    show (chartAt ℂ q) (s₁ z) = _; rw [hqdef]
+  have hbase₂ : (fun w => (chartAt ℂ q) (s₂ w)) z = (chartAt ℂ q) q := by
+    show (chartAt ℂ q) (s₂ z) = _; rw [hs₂z, hqdef]
+  have heq : (fun w => (chartAt ℂ q) (s₁ w)) =ᶠ[𝓝 z] (fun w => (chartAt ℂ q) (s₂ w)) :=
+    Jacobians.Dolbeault.FormTraceSheet.eventuallyEq_of_rightInverse_of_rightInverse
+      hφ_an hreg hφ_base hbase₁ hbase₂
+      (hcont rfl hs₁_cont) (hcont hs₂z hs₂_cont)
+      (hrinv hs₁_src hs₁_sec) (hrinv hs₂_src hs₂_sec)
+  exact heq.deriv_eq
+
 end Jacobians.Dolbeault.SerreResidueTheorem
