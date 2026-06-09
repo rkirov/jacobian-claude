@@ -699,129 +699,6 @@ theorem shrunkSlit_accumulates (c : ℂ) {V : Set ℂ} (hVopen : IsOpen V) (hcV 
   refine ⟨⟨hzV, hzslit⟩, fun hzbad' => hzbad ⟨hzbad', fun h => hzc ?_⟩⟩
   rw [Set.mem_singleton_iff] at h; exact h
 
-/-! ## The per-centre §5-section datum, modulo the pole-order bound
-
-We assemble the full `RealCenterSlitSectionData` at a finite pole-value centre `c = A.cs idx` of an
-adapted cover, taking the finite pole-order bound `(ppord, hbnd)` as input.  Every other field is
-discharged: the per-preimage `Fibre5Datum` family (`exists_fibre5Datum`), the shrunk slit (the finite
-intersection of the per-preimage neighbourhoods + the non-pole/separation neighbourhoods, off the branch
-values, accumulating at `c`), the cluster data (`Fibre5Datum.toClusterTraceData`), the §5 section facts
-(`slitSectionGerm_of_fibre5` → `RealSlitSectionData.ofSlitSectionGerm`), the sphere sheet systems
-(`exists_sphereSheetSystem`), and the off-centre analyticity (`eventually_analyticAt_of_hreg`).  This
-isolates the residue obligation to **exactly** the pole-order bound `hbnd`. -/
-
-/-- **The per-centre §5-section datum from an adapted cover, modulo the pole-order bound.**  At the finite
-pole-value centre `c = A.cs idx`, given a finite pole-order bound `(z − c)^ppord · valueChartTrace → 0`,
-the bundled `RealCenterSlitSectionData` holds.  Everything but the bound is constructed from the proven
-§5/descent/regular-value machinery. -/
-noncomputable def realCenterSlitSectionData_of_bound {ω₀ : HolomorphicOneForms X}
-    {g : MeromorphicFunction X} {poles : Finset X} (A : AdaptedFRamified ω₀ g poles) (idx : Fin A.m)
-    (ppord : ℕ)
-    (hbnd : Tendsto (fun z => (z - A.cs idx) ^ ppord *
-      valueChartTrace ω₀ A.f (canonicalFibreSelection g.toFun A.f A.hdiv) z)
-      (𝓝[≠] (A.cs idx)) (𝓝 0)) :
-    RealCenterSlitSectionData ω₀ g A.hdiv (A.cs idx) := by
-  classical
-  set f := A.f with hf_def
-  set hdiv := A.hdiv with hdiv_def
-  set c := A.cs idx with hc_def
-  -- Every fibre preimage over `coe c` is a non-pole (finite value-centre).
-  have hnp : ∀ i, 0 ≤ f.orderAtPoint (fullFibreEnum f hdiv c i) := fun i => realFibre_nonpole hdiv c i
-  -- The per-preimage §5 data family.
-  have hFD : ∀ i, Nonempty (Fibre5Datum ω₀ g f c ((realFibreData g hdiv c hnp).xs i)
-      ((realFibreData g hdiv c hnp).mult i)) := by
-    intro i
-    have hfib : f.toRiemannSphere ((realFibreData g hdiv c hnp).xs i) = ((c : ℂ) : RiemannSphere) := by
-      rw [realFibreData_xs]; exact fullFibreEnum_mem f hdiv c i
-    have hnpi : 0 ≤ f.orderAtPoint ((realFibreData g hdiv c hnp).xs i) := by
-      rw [realFibreData_xs]; exact hnp i
-    have hroot : IsPrimitiveRoot (Complex.exp (2 * Real.pi * Complex.I /
-        (localDeg f ((c : ℂ) : RiemannSphere) (fullFibreEnum f hdiv c i)).toNat))
-        (localDeg f ((c : ℂ) : RiemannSphere) (fullFibreEnum f hdiv c i)).toNat :=
-      Complex.isPrimitiveRoot_exp _ (realFibre_mult_pos hdiv (fullFibreEnum_mem f hdiv c i) (hnp i)).ne'
-    have h := exists_fibre5Datum ω₀ g hdiv hfib hnpi (by rw [realFibreData_xs] at hfib ⊢; exact hroot)
-    rw [realFibreData_mult]; exact h
-  -- Choose a per-preimage §5 datum.
-  set FD : ∀ i, Fibre5Datum ω₀ g f c ((realFibreData g hdiv c hnp).xs i)
-    ((realFibreData g hdiv c hnp).mult i) := fun i => (hFD i).some with hFD_def
-  -- The provisional slit (no `Vnp`/`Vsep` yet).
-  set Sprov : Set ℂ := ((⋂ i, (FD i).V) ∩ {z : ℂ | z - c ∈ slitPlane}) \ (branchValues f hdiv : Set ℂ)
-    with hSprov_def
-  have hSprov_sub : ∀ i, ∀ z ∈ Sprov, z ∈ (FD i).V ∧ z - c ∈ slitPlane := by
-    intro i z hz
-    exact ⟨(Set.mem_iInter.mp hz.1.1) i, hz.1.2⟩
-  -- The provisional cluster family.
-  set Clprov : ∀ i, ClusterTraceData ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) c Sprov :=
-    fun i => (FD i).toClusterTraceData Sprov (hSprov_sub i) with hClprov_def
-  -- The §5-data continuity facts (slit-independent), for the non-pole / separation neighbourhoods.
-  have hs_cont : ∀ i, ContinuousAt (Clprov i).s 0 := fun i => (FD i).hs_an.continuousAt
-  have hs0 : ∀ i, (Clprov i).s 0 = (chartAt ℂ ((realFibreData g hdiv c hnp).xs i))
-      ((realFibreData g hdiv c hnp).xs i) := fun i => (FD i).hs0
-  have hw₀_eq : ∀ i, (Clprov i).w₀ =ᶠ[𝓝 c] fun z => (z - c) ^ (((Clprov i).m : ℂ)⁻¹) :=
-    fun i => Filter.Eventually.of_forall (fun z => rfl)
-  -- The non-pole and separation neighbourhoods (chosen by `.choose` since the goal is data).
-  set Vnp : Set ℂ := (exists_open_clusterSection_nonpole Clprov hs_cont hs0 hw₀_eq).choose
-    with hVnp_def
-  obtain ⟨hVnp_o, hVnp_c, hVnp⟩ :=
-    (exists_open_clusterSection_nonpole Clprov hs_cont hs0 hw₀_eq).choose_spec
-  set Vsep : Set ℂ := (exists_open_clusterSection_separated Clprov hs_cont hs0 hw₀_eq).choose
-    with hVsep_def
-  obtain ⟨hVsep_o, hVsep_c, hVsep⟩ :=
-    (exists_open_clusterSection_separated Clprov hs_cont hs0 hw₀_eq).choose_spec
-  -- The final shrunk slit.
-  set Sset : Set ℂ := (((⋂ i, (FD i).V) ∩ Vnp ∩ Vsep) ∩ {z : ℂ | z - c ∈ slitPlane})
-    \ (branchValues f hdiv : Set ℂ) with hSset_def
-  have hSset_sub : ∀ i, ∀ z ∈ Sset, z ∈ (FD i).V ∧ z - c ∈ slitPlane := by
-    intro i z hz
-    exact ⟨(Set.mem_iInter.mp hz.1.1.1.1) i, hz.1.2⟩
-  have hSset_subprov : Sset ⊆ Sprov := by
-    intro z hz
-    exact ⟨⟨hz.1.1.1.1, hz.1.2⟩, hz.2⟩
-  have hSset_Vnp : ∀ z ∈ Sset, z ∈ Vnp := fun z hz => hz.1.1.1.2
-  have hSset_Vsep : ∀ z ∈ Sset, z ∈ Vsep := fun z hz => hz.1.1.2
-  have hSset_offBranch : ∀ z ∈ Sset, (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere := by
-    intro z hz
-    exact coe_notMem_branchLocus_of_notMem_branchValues f hdiv (fun h => hz.2 h)
-  -- The final cluster family (on `Sset`).
-  set Cl : ∀ i, ClusterTraceData ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) c Sset :=
-    fun i => (FD i).toClusterTraceData Sset (hSset_sub i) with hCl_def
-  -- `hanalytic` from the off-centre analyticity of the canonical selection.
-  have hanalytic : ∀ᶠ z in 𝓝[≠] c,
-      AnalyticAt ℂ (valueChartTrace ω₀ f (canonicalFibreSelection g.toFun f hdiv)) z :=
-    eventually_analyticAt_of_hreg (gateAInftyData_of_adaptedFRamified A).hreg
-  refine
-    { hnp := hnp
-      hanalytic := hanalytic
-      Sset := Sset
-      hS_acc := ?_
-      hSset_offBranch := hSset_offBranch
-      hSsys := ?_
-      Cl := Cl
-      hmult := fun i => rfl
-      hsplit0 := fun i => (FD i).hsplit0
-      ppord := ppord
-      hbnd := hbnd
-      hsec := ?_ }
-  · -- `hS_acc`: the shrunk slit accumulates at `c`.
-    have hVopen : IsOpen ((⋂ i, (FD i).V) ∩ Vnp ∩ Vsep) :=
-      ((isOpen_iInter_of_finite (fun i => (FD i).hVopen)).inter hVnp_o).inter hVsep_o
-    have hcV : c ∈ (⋂ i, (FD i).V) ∩ Vnp ∩ Vsep :=
-      ⟨⟨Set.mem_iInter.2 (fun i => (FD i).hcV), hVnp_c⟩, hVsep_c⟩
-    exact shrunkSlit_accumulates c hVopen hcV (branchValues f hdiv)
-  · -- `hSsys`: a sphere sheet system at each off-branch slit value.
-    exact fun z hz => (exists_sphereSheetSystem f (exists_orderAtPoint_ne_zero f hdiv)
-      (hSset_offBranch z hz)).some
-  · -- `hsec`: the §5 section facts at each slit value, via the section germ family.
-    intro z₀ hz₀
-    refine RealSlitSectionData.ofSlitSectionGerm (Cl := Cl) hz₀ (fun i => rfl) (fun i => ?_)
-    refine slitSectionGerm_of_fibre5 FD hSset_sub hz₀ i ?_ ?_
-    · -- `hnonpole` at `z₀` (from `Vnp`, transferred from the provisional cluster family).
-      intro i' j
-      exact hVnp z₀ (hSset_Vnp z₀ hz₀) i' j
-    · -- `hsep` at `z₀` (from `Vsep`, transferred from the provisional cluster family).
-      intro i' i'' j k hii
-      exact hVsep z₀ (hSset_Vsep z₀ hz₀) i' i'' j k hii
-
 /-! ## The pole-order bound from the cluster identity (the Miranda-(3.1) meromorphy)
 
 The geometric trace `valueChartTrace`, analytic on a punctured neighbourhood of the pole-value centre `c`,
@@ -956,57 +833,192 @@ theorem exists_pow_bound_of_meromorphicAt {T : ℂ → ℂ} {c : ℂ} (hT : Mero
   have hzc' : z - c ≠ 0 := sub_ne_zero.mpr hzc
   rw [hz, smul_eq_mul, ← mul_assoc, ← zpow_natCast (z - c) N, ← zpow_add₀ hzc']
 
-/-! ## The residue theorem from the per-centre pole-order bound (the precise residual)
+/-! ## The per-centre §5-section datum, modulo the pole-order bound
 
-`realCenterSlitSectionData_of_bound` reduces the per-centre §5-section datum to **exactly** the
-Miranda-(3.1) finite pole-order bound `(z − c)^N · valueChartTrace → 0` at each finite pole-value centre.
-We package that as the single obligation `RealCoverPoleBound` and prove the residue theorem `∑Res = 0`
-from it, exhibiting the precise remaining content of the §5-section route as the per-centre pole-order
-bound (the single-valued-trace meromorphy at a ramified pole-value centre — Miranda *Algebraic Curves and
-Riemann Surfaces* §VIII.3 (3.1) / Forster GTM 81 §17).  Every other field of the geometry is PROVEN. -/
+We assemble the full `RealCenterSlitSectionData` at a finite pole-value centre `c = A.cs idx` of an
+adapted cover, taking the finite pole-order bound `(ppord, hbnd)` as input.  Every other field is
+discharged: the per-preimage `Fibre5Datum` family (`exists_fibre5Datum`), the shrunk slit (the finite
+intersection of the per-preimage neighbourhoods + the non-pole/separation neighbourhoods, off the branch
+values, accumulating at `c`), the cluster data (`Fibre5Datum.toClusterTraceData`), the §5 section facts
+(`slitSectionGerm_of_fibre5` → `RealSlitSectionData.ofSlitSectionGerm`), the sphere sheet systems
+(`exists_sphereSheetSystem`), and the off-centre analyticity (`eventually_analyticAt_of_hreg`).  This
+isolates the residue obligation to **exactly** the pole-order bound `hbnd`. -/
 
-/-- **The per-centre pole-order bound obligation.**  For every adapted cover `A` and finite pole-value
-centre `A.cs i`, the geometric trace has a finite pole order there:
+/-- **The per-centre §5-section datum from an adapted cover (UNCONDITIONAL).**  At every finite
+pole-value centre `c = A.cs idx`, the bundled `RealCenterSlitSectionData` holds.  Every field — including
+the Miranda-(3.1) finite pole-order bound — is constructed from the proven §5/descent/regular-value
+machinery: the per-preimage `Fibre5Datum` family, the shrunk slit, the cluster data, the §5 section facts,
+the sphere sheet systems, the off-centre analyticity, and the pole-order bound (the geometric trace agrees
+on the slit with the single-valued meromorphic cluster sum `T = ∑ᵢ (Clᵢ).clusterTrace`; the analytic
+identity theorem on the punctured ball globalises this to `valueChartTrace =ᶠ[𝓝[≠] c] T`, meromorphic,
+giving the finite pole-order bound). -/
+noncomputable def realCenterSlitSectionData_of_adaptedFRamified {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {poles : Finset X} (A : AdaptedFRamified ω₀ g poles) (idx : Fin A.m) :
+    RealCenterSlitSectionData ω₀ g A.hdiv (A.cs idx) := by
+  classical
+  set f := A.f with hf_def
+  set hdiv := A.hdiv with hdiv_def
+  set c := A.cs idx with hc_def
+  -- Every fibre preimage over `coe c` is a non-pole (finite value-centre).
+  have hnp : ∀ i, 0 ≤ f.orderAtPoint (fullFibreEnum f hdiv c i) := fun i => realFibre_nonpole hdiv c i
+  -- The per-preimage §5 data family.
+  have hFD : ∀ i, Nonempty (Fibre5Datum ω₀ g f c ((realFibreData g hdiv c hnp).xs i)
+      ((realFibreData g hdiv c hnp).mult i)) := by
+    intro i
+    have hfib : f.toRiemannSphere ((realFibreData g hdiv c hnp).xs i) = ((c : ℂ) : RiemannSphere) := by
+      rw [realFibreData_xs]; exact fullFibreEnum_mem f hdiv c i
+    have hnpi : 0 ≤ f.orderAtPoint ((realFibreData g hdiv c hnp).xs i) := by
+      rw [realFibreData_xs]; exact hnp i
+    have hroot : IsPrimitiveRoot (Complex.exp (2 * Real.pi * Complex.I /
+        (localDeg f ((c : ℂ) : RiemannSphere) (fullFibreEnum f hdiv c i)).toNat))
+        (localDeg f ((c : ℂ) : RiemannSphere) (fullFibreEnum f hdiv c i)).toNat :=
+      Complex.isPrimitiveRoot_exp _ (realFibre_mult_pos hdiv (fullFibreEnum_mem f hdiv c i) (hnp i)).ne'
+    have h := exists_fibre5Datum ω₀ g hdiv hfib hnpi (by rw [realFibreData_xs] at hfib ⊢; exact hroot)
+    rw [realFibreData_mult]; exact h
+  -- Choose a per-preimage §5 datum.
+  set FD : ∀ i, Fibre5Datum ω₀ g f c ((realFibreData g hdiv c hnp).xs i)
+    ((realFibreData g hdiv c hnp).mult i) := fun i => (hFD i).some with hFD_def
+  -- The provisional slit (no `Vnp`/`Vsep` yet).
+  set Sprov : Set ℂ := ((⋂ i, (FD i).V) ∩ {z : ℂ | z - c ∈ slitPlane}) \ (branchValues f hdiv : Set ℂ)
+    with hSprov_def
+  have hSprov_sub : ∀ i, ∀ z ∈ Sprov, z ∈ (FD i).V ∧ z - c ∈ slitPlane := by
+    intro i z hz
+    exact ⟨(Set.mem_iInter.mp hz.1.1) i, hz.1.2⟩
+  -- The provisional cluster family.
+  set Clprov : ∀ i, ClusterTraceData ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) c Sprov :=
+    fun i => (FD i).toClusterTraceData Sprov (hSprov_sub i) with hClprov_def
+  -- The §5-data continuity facts (slit-independent), for the non-pole / separation neighbourhoods.
+  have hs_cont : ∀ i, ContinuousAt (Clprov i).s 0 := fun i => (FD i).hs_an.continuousAt
+  have hs0 : ∀ i, (Clprov i).s 0 = (chartAt ℂ ((realFibreData g hdiv c hnp).xs i))
+      ((realFibreData g hdiv c hnp).xs i) := fun i => (FD i).hs0
+  have hw₀_eq : ∀ i, (Clprov i).w₀ =ᶠ[𝓝 c] fun z => (z - c) ^ (((Clprov i).m : ℂ)⁻¹) :=
+    fun i => Filter.Eventually.of_forall (fun z => rfl)
+  -- The non-pole and separation neighbourhoods (chosen by `.choose` since the goal is data).
+  set Vnp : Set ℂ := (exists_open_clusterSection_nonpole Clprov hs_cont hs0 hw₀_eq).choose
+    with hVnp_def
+  obtain ⟨hVnp_o, hVnp_c, hVnp⟩ :=
+    (exists_open_clusterSection_nonpole Clprov hs_cont hs0 hw₀_eq).choose_spec
+  set Vsep : Set ℂ := (exists_open_clusterSection_separated Clprov hs_cont hs0 hw₀_eq).choose
+    with hVsep_def
+  obtain ⟨hVsep_o, hVsep_c, hVsep⟩ :=
+    (exists_open_clusterSection_separated Clprov hs_cont hs0 hw₀_eq).choose_spec
+  -- The final shrunk slit.
+  set Sset : Set ℂ := (((⋂ i, (FD i).V) ∩ Vnp ∩ Vsep) ∩ {z : ℂ | z - c ∈ slitPlane})
+    \ (branchValues f hdiv : Set ℂ) with hSset_def
+  have hSset_sub : ∀ i, ∀ z ∈ Sset, z ∈ (FD i).V ∧ z - c ∈ slitPlane := by
+    intro i z hz
+    exact ⟨(Set.mem_iInter.mp hz.1.1.1.1) i, hz.1.2⟩
+  have hSset_subprov : Sset ⊆ Sprov := by
+    intro z hz
+    exact ⟨⟨hz.1.1.1.1, hz.1.2⟩, hz.2⟩
+  have hSset_Vnp : ∀ z ∈ Sset, z ∈ Vnp := fun z hz => hz.1.1.1.2
+  have hSset_Vsep : ∀ z ∈ Sset, z ∈ Vsep := fun z hz => hz.1.1.2
+  have hSset_offBranch : ∀ z ∈ Sset, (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere := by
+    intro z hz
+    exact coe_notMem_branchLocus_of_notMem_branchValues f hdiv (fun h => hz.2 h)
+  -- The final cluster family (on `Sset`).
+  set Cl : ∀ i, ClusterTraceData ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) c Sset :=
+    fun i => (FD i).toClusterTraceData Sset (hSset_sub i) with hCl_def
+  -- `hanalytic` from the off-centre analyticity of the canonical selection.
+  have hanalytic : ∀ᶠ z in 𝓝[≠] c,
+      AnalyticAt ℂ (valueChartTrace ω₀ f (canonicalFibreSelection g.toFun f hdiv)) z :=
+    eventually_analyticAt_of_hreg (gateAInftyData_of_adaptedFRamified A).hreg
+  -- `hSset` is open and `c ∈ closure Sset`, `c ∉ Sset` (the slit is open off `c`).
+  have hSset_open : IsOpen Sset := by
+    refine IsOpen.sdiff ?_ (branchValues f hdiv).finite_toSet.isClosed
+    exact (((isOpen_iInter_of_finite (fun i => (FD i).hVopen)).inter hVnp_o).inter hVsep_o).inter
+      (Complex.isOpen_slitPlane.preimage (continuous_sub_right c))
+  have hcnSset : c ∉ Sset := by
+    intro h
+    exact Complex.slitPlane_ne_zero h.1.2 (sub_self c)
+  have hS_acc : ∃ᶠ z in 𝓝[≠] c, z ∈ Sset := by
+    have hVopen : IsOpen ((⋂ i, (FD i).V) ∩ Vnp ∩ Vsep) :=
+      ((isOpen_iInter_of_finite (fun i => (FD i).hVopen)).inter hVnp_o).inter hVsep_o
+    have hcV : c ∈ (⋂ i, (FD i).V) ∩ Vnp ∩ Vsep :=
+      ⟨⟨Set.mem_iInter.2 (fun i => (FD i).hcV), hVnp_c⟩, hVsep_c⟩
+    exact shrunkSlit_accumulates c hVopen hcV (branchValues f hdiv)
+  have hcSset : c ∈ closure Sset := by
+    rw [mem_closure_iff_frequently]; exact hS_acc.filter_mono nhdsWithin_le_nhds
+  -- `hSsys`: a sphere sheet system at each off-branch slit value.
+  set hSsys : ∀ z ∈ Sset, Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)) :=
+    fun z hz => (exists_sphereSheetSystem f (exists_orderAtPoint_ne_zero f hdiv)
+      (hSset_offBranch z hz)).some with hSsys_def
+  -- `hsec`: the §5 section facts at each slit value, via the section germ family.
+  have hsec : ∀ z ∈ Sset, RealSlitSectionData ω₀ g hdiv c hnp Cl z := by
+    intro z₀ hz₀
+    refine RealSlitSectionData.ofSlitSectionGerm (Cl := Cl) hz₀ (fun i => rfl) (fun i => ?_)
+    refine slitSectionGerm_of_fibre5 FD hSset_sub hz₀ i ?_ ?_
+    · intro i' j
+      exact hVnp z₀ (hSset_Vnp z₀ hz₀) i' j
+    · intro i' i'' j k hii
+      exact hVsep z₀ (hSset_Vsep z₀ hz₀) i' i'' j k hii
+  -- The per-slit-value `FibreClusterTopology` (the conservation-of-number geometry).
+  have htop : ∀ z ∈ Sset, FibreClusterTopology (canonicalFibreSelection g.toFun f hdiv)
+      (realFibreData g hdiv c hnp) Cl z := fun z hz =>
+    ((hsec z hz).toClusterSplitData (hSset_offBranch z hz) hz (fun i => rfl)
+      (hSsys z hz)).toFibreClusterTopology
+  -- The single-valued meromorphic cluster sum `T`.
+  set T : ℂ → ℂ := fun z => ∑ i, (Cl i).clusterTrace z with hT_def
+  have hT_mero : MeromorphicAt T c :=
+    MeromorphicAt.fun_sum (fun i _ => (Cl i).meromorphicAt_clusterTrace)
+  -- The geometric identity `valueChartTrace = T` on the slit.
+  have hident : ∀ z ∈ Sset,
+      valueChartTrace ω₀ f (canonicalFibreSelection g.toFun f hdiv) z = T z := by
+    intro z hz
+    rw [valueChartTrace_eq_clusterSum_of_clusterReindexData
+      (ClusterReindexData.ofFibreClusterTopology (htop z hz))]
+    exact Finset.sum_congr rfl (fun i _ => (Cl i).clusterSum_eq_clusterTrace_slit hz)
+  -- The pole-order bound, via the punctured-ball identity theorem + the cluster sum's meromorphy.
+  have hvct_eq : valueChartTrace ω₀ f (canonicalFibreSelection g.toFun f hdiv) =ᶠ[𝓝[≠] c] T :=
+    eventuallyEq_of_analyticOn_punctured_eqOn_open hanalytic hT_mero hSset_open hcSset hcnSset hident
+  have hvct_mero : MeromorphicAt
+      (valueChartTrace ω₀ f (canonicalFibreSelection g.toFun f hdiv)) c := hT_mero.congr hvct_eq.symm
+  have hbnd_ex := exists_pow_bound_of_meromorphicAt hvct_mero
+  exact
+    { hnp := hnp
+      hanalytic := hanalytic
+      Sset := Sset
+      hS_acc := hS_acc
+      hSset_offBranch := hSset_offBranch
+      hSsys := hSsys
+      Cl := Cl
+      hmult := fun i => rfl
+      hsplit0 := fun i => (FD i).hsplit0
+      ppord := hbnd_ex.choose
+      hbnd := hbnd_ex.choose_spec
+      hsec := hsec }
 
-> `∃ N, (z − A.cs i)^N · valueChartTrace ω₀ A.f (canonical) z → 0` as `z → A.cs i`.
+/-! ## The UNCONDITIONAL residue theorem `∑Res = 0` (the §5-section route, closed)
 
-This is the single remaining content the §5-section residue route needs — the Miranda-(3.1) single-valued
-meromorphy of the symmetric trace sum at a ramified pole-value centre. -/
-def RealCoverPoleBound (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X) (poles : Finset X) :
-    Prop :=
-  ∀ (A : AdaptedFRamified ω₀ g poles) (i : Fin A.m), ∃ N : ℕ,
-    Tendsto (fun z => (z - A.cs i) ^ N *
-      valueChartTrace ω₀ A.f (canonicalFibreSelection g.toFun A.f A.hdiv) z)
-      (𝓝[≠] (A.cs i)) (𝓝 0)
+`realCenterSlitSectionData_of_adaptedFRamified` builds the per-centre §5-section datum at every finite
+pole-value centre with NO remaining hypothesis — including the Miranda-(3.1) pole-order bound, derived
+from the cluster identity + the punctured-ball identity theorem.  So `RealCoverSlitSectionGeometry` holds
+unconditionally, and the 1-form residue theorem `∑Res = 0` closes. -/
 
-/-- **`RealCoverSlitSectionGeometry` from the per-centre pole-order bound.**  The full §5-section
-geometry follows from the per-centre pole-order bound: each `RealCenterSlitSectionData` is built by
-`realCenterSlitSectionData_of_bound` from the (chosen) bound, all other fields PROVEN. -/
-noncomputable def realCoverSlitSectionGeometry_of_poleBound {ω₀ : HolomorphicOneForms X}
-    {g : MeromorphicFunction X} {poles : Finset X} (H : RealCoverPoleBound ω₀ g poles) :
+/-- **`RealCoverSlitSectionGeometry` holds unconditionally.**  At every adapted cover `A` and finite
+pole-value centre `A.cs i`, the bundled §5-section datum is built by
+`realCenterSlitSectionData_of_adaptedFRamified`. -/
+noncomputable def realCoverSlitSectionGeometry {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {poles : Finset X} :
     RealCoverSlitSectionGeometry ω₀ g poles :=
-  fun A i => realCenterSlitSectionData_of_bound A i (H A i).choose (H A i).choose_spec
+  fun A i => realCenterSlitSectionData_of_adaptedFRamified A i
 
-/-- **The 1-form residue theorem `∑Res = 0` from the per-centre pole-order bound.**  For a genuine
-meromorphic numerator `g` and any finite `poles` containing the poles of `α = ω₀·g` (off which `g` is
-analytic), the total residue vanishes:
+/-- **The 1-form residue theorem `∑Res = 0` for `α = ω₀·g` (UNCONDITIONAL).**  For a genuine meromorphic
+numerator `g` and any finite `poles` containing the poles of `α = ω₀·g` (off which `g` is analytic), the
+total residue vanishes:
 
-> `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`,
+> `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`.
 
-given the single obligation `RealCoverPoleBound` (the per-centre finite pole-order bound).  Routes through
-the PROVEN §5 slit-geometry assembly (`realCoverSlitSectionGeometry_of_poleBound` →
-`residueTheorem_of_realCoverSlitSectionGeometry`).  This is the precise residual content of the residue
-theorem on the real-cover §5-section route: the entire §5 normal-form slit geometry (the cluster sections,
-the symmetric-function descent, the conservation-of-number topology, the regular-value primitives, the
-off-centre/∞ machinery, the genericity) is PROVEN; only the Miranda-(3.1) per-centre pole-order bound
-remains. -/
-theorem residueTheorem_of_realCoverPoleBound (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
+This is the SOUND well-definedness content underlying the global `Res : H¹(X,Ω) → ℂ` (Forster 17.3) →
+§17.5.  The entire §5 normal-form slit geometry — the cluster sections, the symmetric-function descent,
+the conservation-of-number topology, the regular-value primitives, the off-centre/∞ machinery, the
+genericity (`existsAdaptedFRamified`), AND the Miranda-(3.1) pole-order bound (via the cluster identity +
+the punctured-ball analytic identity theorem) — is PROVEN.  No remaining hypothesis. -/
+theorem residueTheorem_unconditional (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
     (poles : Finset X)
     (hpoles : ∀ x : X, x ∉ poles →
-      AnalyticAt ℂ (fun z => g.toFun ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x))
-    (hbound : RealCoverPoleBound ω₀ g poles) :
+      AnalyticAt ℂ (fun z => g.toFun ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x)) :
     ∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0 :=
-  residueTheorem_of_realCoverSlitSectionGeometry ω₀ g poles hpoles
-    (realCoverSlitSectionGeometry_of_poleBound hbound)
+  residueTheorem_of_realCoverSlitSectionGeometry ω₀ g poles hpoles realCoverSlitSectionGeometry
 
 end Jacobians.Dolbeault.SerreResidueTheorem
