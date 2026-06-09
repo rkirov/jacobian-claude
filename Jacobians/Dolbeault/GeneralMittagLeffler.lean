@@ -254,6 +254,28 @@ theorem res_ofMittagLefflerForm (μ : MittagLefflerForm X) :
   rw [res_def, MittagLefflerForm.res, residueSum]
   exact Finset.sum_congr rfl fun a _ => rfl
 
+/-! ### Sanity check — the machinery reads the genuine `dz/z` residue `= 1`
+
+The per-pole residue `resAtPole` reads `formFnResidue ω₀ (g_{patch a}) a`, the **genuine Laurent
+contour residue** (`resAt`), not a smooth-junk value.  We confirm it computes the correct value on the
+Forster §17.6 `dz/z` configuration: for `ω₀` with a nonzero coefficient at `a` there is a principal
+part `g` (the `dz/z` witness) whose per-pole residue is **`1 ≠ 0`** — exactly Forster's `Res(dz/z) = 1`,
+the non-degeneracy heart.  This is the `ℂℙ¹`-style sanity check that the residue machinery is correct
+(the residue genuinely sees the meromorphic singular part). -/
+
+/-- **Sanity / non-degeneracy heart: the residue machinery reads the genuine `dz/z` residue `= 1`.**
+At a point `a` where `α` has a nonzero coefficient, there is a principal-part function `g` such that
+**any** general Mittag–Leffler distribution `μ` whose principal part at `a`'s designated patch is this
+`g` has `resAtPole a = 1`.  Since `resAtPole a = formFnResidue α (μ.g (μ.patch a)) a` is the genuine
+Laurent contour residue (`resAt`, not a smooth-junk value), this confirms the machinery computes the
+**genuine** residue — and is exactly the Forster §17.6 `dz/z` residue-1 datum the non-degeneracy rests
+on.  (`exists_formFnResidue_eq_one_of_localRep_ne_zero`, the `ℂℙ¹`-style sanity check.) -/
+theorem exists_g_resAtPole_eq_one (α : HolomorphicOneForms X) {a : X}
+    (ha : Jacobians.Montel.localRep α a a ≠ 0) :
+    ∃ g : X → ℂ, ∀ μ : GeneralMLDistribution α, μ.g (μ.patch a) = g → μ.resAtPole a = 1 := by
+  obtain ⟨g, hg⟩ := exists_formFnResidue_eq_one_of_localRep_ne_zero α a ha
+  exact ⟨g, fun μ hμ => by rw [resAtPole, hμ]; exact hg⟩
+
 end GeneralMLDistribution
 
 end Jacobians.Dolbeault
