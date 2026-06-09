@@ -608,6 +608,31 @@ theorem lDim_add_K_eq_omegaDim (D : Divisor X) :
   rwa [show lDim (X := X) (D + data.K) = finrank ℂ (lSysModule (X := X) (D + data.K)) from rfl,
     show omegaDim (X := X) D = finrank ℂ (omegaDModule (X := X) D) from rfl]
 
+/-! ## Part 5: `lDim K = genus X` (Forster §17.4 at `D = 0`)
+
+At `D = 0` the §17.4 iso is `𝒪_K ≅ Ω_0`, giving `lDim K = omegaDim 0` **unconditionally** (no gaps).
+Composing with Gate C's `Ω_0 ≅ HolomorphicOneForms` (`omegaDim_zero_eq_genus_of_le`) gives
+`lDim K = genus X` — the `hKgenus` field of `SerreDualityData`.  The remaining input is exactly Gate
+C's isolated removable-singularity reverse bound `omegaDim 0 ≤ genus X` (an order-`≥ 0` meromorphic
+1-form is, modulo germ-junk, holomorphic). -/
+
+/-- **`lDim K = omegaDim 0`** (Forster §17.4 at `D = 0`, the iso `𝒪_K ≅ Ω_0`) — UNCONDITIONAL.
+A direct corollary of `lDim_add_K_eq_omegaDim` at `D = 0` (`0 + K = K`). -/
+theorem lDim_K_eq_omegaDim_zero : lDim (X := X) data.K = omegaDim (X := X) 0 := by
+  have h := data.lDim_add_K_eq_omegaDim 0
+  rwa [zero_add] at h
+
+/-- **`hKgenus` — `lDim K = genus X`** (Forster §17.4 at `D = 0`).  Chains the unconditional
+`lDim K = omegaDim 0` with `omegaDim 0 = genus X` (Gate C's `omegaDim_zero_eq_genus_of_le`).  The two
+hypotheses are exactly Gate C's isolated removable-singularity inputs: finiteness of `Ω_0` and the
+reverse bound `omegaDim 0 ≤ genus X` (an order-`≥ 0` meromorphic 1-form is holomorphic modulo
+germ-junk).  This is the `SerreDualityData.hKgenus` field. -/
+theorem hKgenus [FiniteDimensional ℂ (omegaDModule (X := X) 0)]
+    (hle : omegaDim (X := X) 0 ≤ genus X) :
+    lDim (X := X) data.K = genus X := by
+  rw [data.lDim_K_eq_omegaDim_zero]
+  exact omegaDim_zero_eq_genus_of_le hle
+
 end CanonicalForm17Data
 
 end Jacobians.Dolbeault
