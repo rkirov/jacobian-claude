@@ -294,4 +294,61 @@ theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull (hdiv : (f.div :
     (fun i k hk => hg_an_offpoles _ hk)
     hsimpleInf hmeroInf hnonpole_inf_an hreg hbnd hcoh_full
 
+/-! ## The `∞`-coherence in its cleanest (unpatched) form
+
+The patched `∞`-coherence `hcoh_full` differs from the unpatched geometric `∞`-coherence
+`recipCoeff (valueChartTrace …) =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF …)` only at the finitely-many
+branch values, which escape to `∞` under `ζ ↦ ζ⁻¹` (`recipCoeff_valueChartTracePatched_eventuallyEq`).
+So the genuine `∞`-residual is the **unpatched** geometric `∞`-coherence — the §VIII.3
+`∞`-single-valuedness "the trace = the moving `∞`-fibre sum near `∞`, read in the reciprocal chart" —
+which we expose as the cleaner input below.  This is *not* a disguise of `∑Res = 0`: it is the moving
+fibre-sum identity at `∞` (the reciprocal-chart analogue of `MovingCoherenceDatum.coherent`), never
+referencing the residue cancellation. -/
+
+/-- **Gate A `∑Res = 0` (genus `0`, simple `∞`-poles, canonical selection) with `Cfull` discharged and
+the `∞`-coherence taken in its cleanest *unpatched* geometric form.**  Identical to
+`residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull` except the patched `∞`-coherence `hcoh_full` is
+replaced by the **unpatched geometric `∞`-coherence** `hcoh_geom`:
+
+> `recipCoeff (valueChartTrace ω₀ f Φ) =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf_full)`,
+
+the genuine §VIII.3 `∞`-single-valuedness (the trace germ-equals the fixed `∞`-fibre moving sum along the
+shared reciprocal-chart sheets near `∞`).  The patched form is recovered via
+`recipCoeff_valueChartTracePatched_eventuallyEq` (the patch escapes to `∞`).  This is the smallest honest
+`∞`-residual remaining after `Cfull` is discharged. -/
+theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull_geomInfty
+    (hdiv : (f.div : Divisor X) ≠ 0)
+    (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
+      GoodValue g f hdiv p)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hoff_cs : ∀ i, (((cs i : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
+    (hc_good : ∀ i, GoodValue g f hdiv (cs i))
+    (hgmero : ∀ i, ∀ᶠ b' in 𝓝 (cs i), ∀ j,
+      MeromorphicAt (fun w => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm w))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j)))
+    (hg_an_offpoles : ∀ x : X, x ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x))
+    (hsimpleInf : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = -1)
+    (hmeroInf : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (inftyFibreEnum f i)).symm z))
+      ((chartAt ℂ (inftyFibreEnum f i)) (inftyFibreEnum f i)))
+    (hnonpole_inf_an : ∀ k, inftyFibreEnum f k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (inftyFibreEnum f k)).symm z))
+        ((chartAt ℂ (inftyFibreEnum f k)) (inftyFibreEnum f k)))
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br,
+      AnalyticAt ℂ (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv)) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z)
+        (𝓝[≠] b₀) (𝓝 0))
+    (hcoh_geom : recipCoeff (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv))
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull hdiv hgood m cs ρ hcs_ball hcs_inj br
+    hcenters_cs hoff_cs hc_good hgmero hg_an_offpoles hsimpleInf hmeroInf hnonpole_inf_an hreg hbnd
+    -- Patch the `∞`-coherence: `recipCoeff (patched) =ᶠ recipCoeff (raw) =ᶠ recipCoeff (inftyMovingSumNF)`.
+    ((recipCoeff_valueChartTracePatched_eventuallyEq ω₀ f
+      (canonicalFibreSelection g f hdiv) br).trans hcoh_geom)
+
 end Jacobians.Dolbeault.SerreResidueTheorem
