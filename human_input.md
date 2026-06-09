@@ -3178,3 +3178,83 @@ interface (the task's authorized fallback).
 - `Nonempty 𝔘.ι` from `𝔘.covers`: `Nonempty X`→`x∈⊤=⨆U i`→`Opens.mem_iSup`.
 - Multi-field structure non-vacuity: use the `⟨{ field := …; field := fun … => by … }⟩` term form, NOT
   `refine ⟨{… := ?_ …}⟩` across line breaks (parses badly).
+
+## 2026-06-09 — Gate A FullFibreClusterData instantiation: per-centre builder + fibre-cluster reindexing isolated (branch gate-a-trace-rationality-assembly)
+
+NEW FILE `Jacobians/Dolbeault/SerreResidueRamifiedFullFibreBuilder.lean` (builds STANDALONE green
+= 8523 jobs; every decl axiom-clean `[propext, Classical.choice, Quot.sound]`; ZERO sorry; ZERO custom
+axiom). Did NOT touch the Serre `H¹(ℳ)=0` Cousin thread (`MeromorphicCousin*`/`GeneralMittagLeffler`),
+the 2 untracked orphans, or any PROVEN decl. Target: instantiate `FullFibreClusterData` for the real
+canonical cover → feed the PROVEN `residueSum_eq_zero_of_fullFibreCluster` → Gate A `∑Res=0`.
+
+### OUTCOME: `∑Res=0` is NOT unconditional yet — reduced to TWO precise named residuals
+The full chain `residueSum_eq_zero_of_reindex` is PROVEN modulo exactly:
+  (1) per-centre `FibreClusterReindex` (the geometric fibre-cluster reindexing wall — see below), and
+  (2) `GateAInftyData` (the off-centre/∞ bundle — consumed by ALL three Gate-A capstones, NEVER yet
+      constructed; its fields ARE dischargeable for the canonical selection via
+      `hreg_canonical_at_goodValue_sound`/`hbnd_canonical_sound_full`/`inftyFibreDataNF_full` + the
+      simple-∞ coherence, but assembling that bundle is the same genericity `AdaptedF`/`ExistsAdaptedF`
+      isolate as OPEN — a separate large wiring, NOT this target).
+So the honest statement: the per-centre GEOMETRIC obligation (#1 of the morning map) is now reduced to
+the single precise `FibreClusterReindex`, fully wired to `∑Res=0`; `GateAInftyData` is the orthogonal
+remaining bundle.
+
+### WHAT WAS BUILT (genuine, sound, axiom-clean)
+- `ClusterTraceData.ofNormalForm` — PROVEN per-preimage cluster-data builder. From the genuine Forster
+  §5 normal-form local inverse `s=η⁻¹` (`exists_clusterSplit`) + a `cpow` slit branch `w₀`, packages a
+  `ClusterTraceData`. The Laurent principal-part data of the straightened integrand `H=h(s·)·s'(·)` is
+  the caller's `exists_principalPart_meromorphicAt` output; the two genuine slit-analytic residuals
+  (the split holds AT the cluster sheet args `ζʲw₀z` on `S`, and the symmetric remainder trace `Rem`
+  is analytic at `c`) are DATA — exactly as `RamifiedSheetData` supplies its geometric fields. NOTE:
+  these two are genuinely pointwise-on-the-slit, NOT derivable from the eventual-near-0 split (the
+  cluster args `ζʲw₀z` are FIXED nonzero points for fixed `z∈S`, not covered by `𝓝[≠]0`). Honest.
+- `FibreClusterReindex` (the PRECISE remaining geometric wall, isolated as a Type-valued structure —
+  it CARRIES data `D`/`S`/`Cl`, so it CANNOT be `: Prop`, else no field projections). Fields: eventual
+  off-centre analyticity `hanalytic`, the whole pole fibre `D`+injectivity+pole enumeration, the common
+  slit `S` accumulating at `c`, per-preimage `Cl i : ClusterTraceData` (matching mult), the residue
+  split `hsplit0` on `𝓝[≠]0`, a finite pole-order bound `(z−c)^ppord·trace→0` (`hbnd`), and the
+  full-fibre cluster geometric identity `hgeom_fibre` (IDENTICAL type to the PROVEN-sound
+  `FullFibreClusterData.hgeom_fibre`). This is the genuine multi-hundred-LoC chart-coord reconciliation.
+- `FibreClusterReindex.hvct_mero` — `valueChartTrace` meromorphic at `c`, DERIVED from `hanalytic`+
+  `hbnd` via the PROVEN removable-singularity atom `meromorphicAt_of_analyticOn_punctured_of_pow_mul_
+  sub_tendsto` (so `ppord`/`hbnd` is the only meromorphy input; Miranda (3.1)).
+- `toFullFibreClusterData` / `fullFibreRamifiedCenters_of_reindex` / `residueSum_eq_zero_of_reindex` —
+  the assembly + wiring into the PROVEN capstone.
+- SOUNDNESS (#13 guard): `valueChartTrace_zero_numerator` (`g≡0`⟹canonical trace ≡0, since
+  `chartIntegrand ω₀ 0 ·=0`), `fibreClusterReindex_zero` (a GENUINE MULTI-PREIMAGE RAMIFIED inhabitant:
+  ANY injective ramified `D` over `c` for `g≡0` with `poles:=image D.xs` inhabits `FibreClusterReindex`
+  — per-preimage `clusterTraceData_slit` (`cpow` √ branch), pole-order bound 0, `0=∑∑0`). Plus
+  `fullFibreRamifiedCenters_of_reindex_empty` (m=0 vacuity). So the structure is NOT a disguised False
+  and imposes NO single-preimage restriction.
+
+### THE PRECISE REMAINING `hgeom_fibre` WORK (what the next agent must build — the genuine wall)
+At a regular `z` on the slit near `c`: `valueChartTrace z = (fibreTrace (ofSphereSheetSystem S_z))
+.traceCoeff z` (PROVEN `valueChartTrace_eq_sphereSheetFibreTrace`, sums over the WHOLE fibre via the
+`LocalSheetSystem.fibre_eq`). Must reindex the `deg f` distinct sphere sheets into clusters:
+(a) PROPERNESS — near `c` every sheet point lies in some ramification preimage `pₗ`'s chart source, and
+    the `mₗ` sheets clustering at `pₗ` are exactly `clusterSheet (sec ℓ)(ζ ℓ)(w₀ ℓ) j z`, `j<mₗ` (via
+    `exists_clusterSplit` applied to `F=holoRepr∘chart_{pₗ}⁻¹` of `analyticOrderAt`-order `mₗ`).
+(b) CHART RECONCILIATION — the sphere-side summand uses `chartIntegrand ω₀ g (sheet_i(coe z))` (chart
+    at the MOVING sheet point); `hgeom_fibre` needs `chartIntegrand ω₀ g (D.xs i)` (chart at the FIXED
+    preimage `pₗ`). KEY EXISTING PRIMITIVE: `g_weighted_sheetPullback_eq_chartIntegrand_mul_deriv`
+    (`FormTraceSheetFibreBridge.lean:123`) already reads the `g`-weighted sheet pushforward as
+    `chartIntegrand ω₀ g xs (…)·deriv` for ANY fixed `xs` whose chart source contains the sheet point —
+    this is the reconciliation lever (combine with `fibreTrace_traceCoeff_eq_gWeighted_finsum`
+    `SerreResidueGateAClosed.lean:262`, the αBr-free `g`-weighted finsum form of the sphere trace).
+(c) the multiplicity bridge `analyticOrderAt (holoRepr∘chart⁻¹ − c) = ramification index = D.mult` is
+    UNBUILT (no `analyticOrderAt_holoRepr` lemma in repo).
+This is the genuine multi-hundred-LoC build; isolated now as `FibreClusterReindex`, with the
+per-preimage atoms (`exists_clusterSplit`, `ClusterTraceData.ofNormalForm`) and the reconciliation
+primitive (`g_weighted_sheetPullback_eq_chartIntegrand_mul_deriv`) all in place.
+
+### LEAN GOTCHAS (for the next agent)
+- A structure CARRYING data (`D`/`S`/`Cl : …`) must NOT be `: Prop` — Prop-structures emit no field
+  projections, so `R.D`/`R.Cl` fail with "environment does not contain …`.field`". Make it Type-valued.
+- `valueChartTrace_zero_numerator`: `simp only [valueChartTrace_apply, FibreTrace.traceCoeff]` then
+  `Finset.sum_eq_zero` + `rw [fibreTrace_coeff]; simp [chartIntegrand]` (`coeffAt ω₀ a w · 0 = 0`).
+- `fibreClusterReindex_zero` reuses the PROVEN `fullFibreClusterData_zero`'s `hS_acc` directly
+  (`(fullFibreClusterData_zero …).hS_acc`) — don't re-prove the slit accumulation.
+- `hbnd` (ppord=0): rewrite `(fun z => (z−c)^0*0) = fun _ => 0` via `funext;ring`, then
+  `tendsto_const_nhds` (NOT `simpa`, which trips the unused-`simpa` linter here).
+- `hdiv` must be an EXPLICIT parameter of `fibreClusterReindex_zero` (it types the canonical selection;
+  cannot be synthesized from `D`).
