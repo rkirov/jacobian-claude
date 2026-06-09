@@ -3839,3 +3839,81 @@ reference its fields) — added the sound PARALLEL `FullFibreCenterReindex` inst
   the full→pole-only residue collapse (mirrors `hres_fin_of_fullFibreCoherence`).
 - `fun a ha _ => hpoles_sub ha` with `a` used only via `ha`'s type triggers `unusedVariables` lint →
   rename to `fun _ ha _ => …` (membership coercion `a ∈ ↑poles → a ∈ range D.xs` is defeq to `∃ i, …`).
+
+---
+
+## 2026-06-09 — Gate-A `∑Res = 0`: the per-centre §5-data assembly for the real cover (assembled prefix)
+
+**File:** `Jacobians/Dolbeault/SerreResidueRamifiedRealFibreFamily.lean` (new; imports
+`…FullFibreReindexBuilder` + `…FibreConservation` + `…MultiplicityBridge` + `…GateAGenericity`).
+ALL decls axiom-clean `[propext, Classical.choice, Quot.sound]`. HEAD builds standalone (full glob 8581).
+
+**Status: `∑Res = 0` is NOT unconditional** (it never was in-repo). The genuine remaining content is the
+per-slit conservation-of-number + §5 normal-form geometry for the real cover (a multi-hundred-line
+analytic build, per the existing docs). This session delivered the SOUND **assembled prefix** that
+reduces `∑Res = 0` to EXACTLY one named obligation, with all mechanical/constructible pieces discharged.
+
+**What was built (the reduction chain, top-down).**
+- `realFibreData` — the WHOLE pole-value fibre `F⁻¹(coe c)` as a genuine `FibreRamifiedData g.toFun f c`:
+  index `Fin (fullFibreCard f hdiv c)`, preimages `fullFibreEnum`, multiplicities the genuine intrinsic
+  `localDeg` (`mult i = (localDeg f (coe c) (xs i)).toNat`), `g.toFun` chart-pullback meromorphic via
+  `g.meromorphic`. Injective/range-the-whole-fibre/pole-surjective. **NOT poles only** (the #17 fix).
+  `hmult_pos` from the multiplicity bridge `analyticOrderAt_holoRepr_sub_eq_mult`.
+- `realFibre_nonpole` — every finite-centre preimage is a non-pole (`nonpole_of_toRiemannSphere_eq_coe`);
+  discharges the `hnp` hypothesis — confirming it is TRUE, never an all-poles assumption.
+- `slitPlane_shift_accumulates` — reusable `hS_acc` atom for the standard slit `{z | z-c ∈ slitPlane}`
+  (extracted from the zero-numerator witness).
+- `RealCenterClusterFamily` — the precise per-centre residual predicate (slit + whole-fibre `D` +
+  per-preimage `Cl` + meromorphy bookkeeping + slit-wide `FibreClusterTopology` family). NOT asserted.
+- `FullFibreCenterReindex.ofRealCenterClusterFamily` + `residueSum_eq_zero_of_realCenterClusterFamily` —
+  feeds it through the SOUND capstone `ofFibreClusterTopologyFamily_adaptedFRamified` → `∑Res = 0`
+  (`hnonpole` AUTOMATIC from `A.hg_an_offpoles`; `hD_surj` from the whole-fibre range).
+- `RealSlitClusterSplitData` + `toFibreClusterTopology` + `RealCenterClusterFamily.ofSlitClusterSplitFamily`
+  — reduces the abstract `hfam` to the per-slit-value `FibreClusterTopology.ofClusterSplitData` inputs;
+  the `realFibreData` whole-fibre fields (`hD_inj`/`hrange`/`hnp`/`hmult_eq`) are discharged automatically
+  (**`hmult_eq` is `rfl`** — the multiplicity IS `(localDeg).toNat`).
+- `ClusterTraceData.ofFibrePointNormalForm` — per-preimage `Cl` from the §5 atom
+  (`exists_clusterSplit_at_fibrePoint` gives `s = η⁻¹`) + the supplied principal part + the three genuine
+  slit residuals (`hs_an_sheet`, `hpp_split_sheet`, `Rem`/`hRem_an`/`hRem_slit`) on the `cpow` slit. The
+  multiplicity `m` is the genuine `localDeg` (bridge, not asserted); `w₀ z = (z-c)^{1/m}` + calculus reused
+  from `clusterTraceData_slit`.
+- `RealCoverClusterGeometry` (data, `Type _` — `RealCenterClusterFamily` carries data, not a Prop) +
+  `residueTheorem_of_realCoverClusterGeometry` — `∑Res = 0` for `α=ω₀·g` from this ONE obligation + the
+  PROVEN genericity `existsAdaptedFRamified` (adapted cover for free).
+- `residueTheorem_of_realCover_no_finite_centres` — non-vacuity: `m=0` ⇒ vacuous ⇒ `∑Res=0`; the
+  obligation is NOT a disguised `False`.
+
+**The PRECISE remaining §5-geometry lemma** (the single obligation `RealCoverClusterGeometry`,
+reducible to per-slit-value primitives via the two reducers above): at each finite pole-value centre,
+per slit value `z`, the `RealSlitClusterSplitData` fields — the sphere sheet system `S` + regularity
+(`exists_localSheetSystem`, off-branch), the coherence `hcoh` (PROVEN off-branch by
+`valueChartTrace_eq_sphereSheetFibreTrace` — wiring it for the canonical selection is moderate, NOT
+attempted to avoid risk), the §5 section facts `hcs_sec`/`hcs_np`/`hwithin`/`hcross` (the genuine
+normal-form section + uniqueness + cluster disjointness), the regular-fibre `hfin_z`/`hreg_z`, and
+`hsrc`/`hsheet_diff` — PLUS the three `ofFibrePointNormalForm` slit residuals (the adaptive slit-shrinking
+so sheet args `ζʲ·w₀ z` land near 0, and the symmetric-function remainder `Rem`). This is the genuine
+multi-hundred-line analytic build; the conservation-of-number `hcard` is already PROVEN
+(`sum_mult_eq_sheetCount_of_primitives`).
+
+**Soundness (no false/circular field).** `D` = WHOLE fibre (NOT poles); genuine `localDeg` multiplicities
+(`hmult_eq = rfl`); `hnp` is the TRUE non-pole fact (`realFibre_nonpole`); no `hD_mem`; slit branch on a
+SLIT; no full RR (only `existsAdaptedFRamified` = Riemann-inequality genericity, UPSTREAM of RR). The
+whole chain type-checks end-to-end (verified by an `example` composing
+`residueSum_eq_zero_of_realCenterClusterFamily`). No custom axiom, no sorry, no false field.
+
+### LEAN GOTCHAS (this session)
+- `RealCenterClusterFamily` is a STRUCTURE (`Type`), so `∀ A i, RealCenterClusterFamily …` is `Type`, NOT
+  `Prop` → the obligation `RealCoverClusterGeometry` must be `def … : Type _`, not `: Prop` (sort
+  mismatch "Type (u+1) vs Type" otherwise).
+- `localDeg` lives in `Jacobians.ProperMapDegreeConstruct` — needs `open` (else "Unknown identifier").
+- `FibreRegularData.ofSphereSheetSystem` / `fibreTrace` (sheet version) live in
+  `Jacobians.Dolbeault.FormTraceMovingFibre` — needs `open`.
+- `existsAdaptedFRamified` is in `SerreResidueTheorem` but the FILE `SerreResidueGateAGenericity` must be
+  imported (it is NOT transitively pulled by the reindex builder).
+- `g.meromorphic p : MeromorphicAt (g.toFun ∘ chart.symm) (chart p)` ⇒ `hg_mero` via
+  `simpa [Function.comp] using g.meromorphic p`.
+- `i : Fin 0` after `rw [hm0 A] at i` ⇒ `exact i.elim0` (NOT `absurd i.isLt …` — `▸`/projection
+  inference fails in the term-mode lambda).
+- Avoid `Classical.choose`-in-hypothesis designs: pass the principal part `ppN`/`ppb`/`ppR` EXPLICITLY
+  (as `ofNormalForm` does); referencing `(exists_principalPart_meromorphicAt …).choose` in a hypothesis
+  type won't match the `obtain`-introduced witnesses inside the proof.
