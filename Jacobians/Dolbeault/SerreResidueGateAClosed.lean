@@ -212,7 +212,7 @@ open OnePoint
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
   Jacobians.Dolbeault.FormTraceFibre Jacobians.RiemannSphere
   Jacobians.Dolbeault.FormTraceMovingFibre Jacobians.Dolbeault.FormTraceInftyFibre
-  Jacobians.Dolbeault.FormTraceInftyRecip
+  Jacobians.Dolbeault.FormTraceInftyRecip Jacobians.Dolbeault.SerreResidueTheorem
 
 attribute [local instance] Classical.propDecidable
 
@@ -467,5 +467,93 @@ theorem hbnd_canonical_sound (hdiv : (f.div : Divisor X) ≠ 0) {m : ℕ} {cs : 
   obtain ⟨S, hderiv, hmero, hcoh⟩ := hz
   rw [hcoh, fibreTrace_traceCoeff_eq_gWeighted_finsum ω₀ g f S hderiv hmero (b₀ := b₀)]
   simp only [Function.comp_apply, RiemannSphere.chartCoe_apply_coe]
+
+/-- **Trace analytic at a good value** (the non-branch `br`-value case, αBr-free).  At a good value `w`
+with near-value `g`-meromorphy `hgmero_w` and fibre points non-poles (`hg_an`), the canonical full-fibre
+trace is `AnalyticAt w` — the moving-datum coherence `analyticAt_valueChartTrace_of_movingDatum ∘
+movingCoherenceDatum_canonical` (re-derived here so the file is independent of the unsound
+`hbnd_canonical_of_offBranch`). -/
+theorem hreg_canonical_at_goodValue_sound (hdiv : (f.div : Divisor X) ≠ 0) {w : ℂ}
+    (hw_good : GoodValue g f hdiv w)
+    (hgmero_w : ∀ᶠ b' in 𝓝 w, ∀ j,
+      MeromorphicAt (fun u => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm u))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j)))
+    (hg_an : ∀ y : X, f.toRiemannSphere y = (((w : ℂ) : RiemannSphere)) →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ y).symm z)) ((chartAt ℂ y) y)) :
+    AnalyticAt ℂ (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv)) w := by
+  classical
+  set hoff := hw_good.1 with hoffdef
+  set S : Jacobians.LocalSheetSystem f.toRiemannSphere (((w : ℂ) : RiemannSphere)) :=
+    (exists_sphereSheetSystem f (exists_orderAtPoint_ne_zero f hdiv) hoff).some with hS
+  have hmeroS : ∀ k, MeromorphicAt
+      (fun z => g ((chartAt ℂ (S.sheet k (((w : ℂ) : RiemannSphere)))).symm z))
+      ((chartAt ℂ (S.sheet k (((w : ℂ) : RiemannSphere)))) (S.sheet k (((w : ℂ) : RiemannSphere)))) := by
+    intro k
+    have hfib : S.sheet k (((w : ℂ) : RiemannSphere)) ∈
+        f.toRiemannSphere ⁻¹' {(((w : ℂ) : RiemannSphere))} := by
+      rw [Set.mem_preimage, Set.mem_singleton_iff]; exact S.sheet_section k _ S.mem_V
+    rw [← canonicalFibreSelection_xs_range g f hdiv hw_good,
+      canonicalFibreSelection_eq_ofFullFibre g f hdiv hw_good] at hfib
+    obtain ⟨j, hj⟩ := hfib
+    have hpt : S.sheet k (((w : ℂ) : RiemannSphere)) = fullFibreEnum f hdiv w j := hj.symm
+    rw [hpt]; exact hw_good.2 j
+  set C : MovingCoherenceDatum ω₀ g f (canonicalFibreSelection g f hdiv) w :=
+    movingCoherenceDatum_canonical hdiv hoff S hmeroS hgmero_w with hC
+  refine analyticAt_valueChartTrace_of_movingDatum C (fun k => ?_)
+  have himg : Finset.univ.image C.D.xs
+      = Finset.univ.image (canonicalFibreSelection g f hdiv w).xs := by
+    rw [hC]
+    exact movingCoherenceDatum_canonical_D_image (ω₀ := ω₀) hdiv hoff S hmeroS hgmero_w hw_good
+  have hmemImg : C.D.xs k ∈ Finset.univ.image (canonicalFibreSelection g f hdiv w).xs := by
+    rw [← himg]; exact Finset.mem_image_of_mem C.D.xs (Finset.mem_univ k)
+  rw [Finset.mem_image] at hmemImg
+  obtain ⟨j, _, hj⟩ := hmemImg
+  have hfib : f.toRiemannSphere (C.D.xs k) = (((w : ℂ) : RiemannSphere)) := by
+    rw [← hj]
+    have : (canonicalFibreSelection g f hdiv w).xs j ∈
+        Set.range (canonicalFibreSelection g f hdiv w).xs := ⟨j, rfl⟩
+    rw [canonicalFibreSelection_xs_range g f hdiv hw_good] at this
+    rwa [Set.mem_preimage, Set.mem_singleton_iff] at this
+  exact hg_an _ hfib
+
+/-- **The SOUND `hbnd` for the canonical selection at a `br`-value off the pole-centres (general `g`).**
+Both cases of the boundedness, αBr-FREE:
+
+* `b₀ ∈ branchValues f` — the sound `g`-weighted bundle SUM route (`hbnd_canonical_sound`);
+* `b₀ ∉ branchValues f` — the trace is analytic at `b₀` (`hreg_canonical_at_goodValue_sound`), hence
+  continuous, so `(z − b₀)·trace → 0`.
+
+This is the SOUND replacement of `hbnd_canonical_of_offBranch` — no global form `αBr`, no unsatisfiable
+field; valid for a general meromorphic numerator `g`. -/
+theorem hbnd_canonical_sound_full (hdiv : (f.div : Divisor X) ≠ 0) {m : ℕ} {cs : Fin m → ℂ}
+    {br : Finset ℂ} (hbr : branchValues f hdiv ⊆ br) {b₀ : ℂ} (_hb₀br : b₀ ∈ br)
+    (hgood_reg : ∀ w ∉ Finset.univ.image cs ∪ br, GoodValue g f hdiv w)
+    (hgmero_reg : ∀ w (_hw : w ∉ Finset.univ.image cs ∪ br), ∀ᶠ b' in 𝓝 w, ∀ j,
+      MeromorphicAt (fun u => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm u))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j)))
+    (hg_fibre : ∀ x ∈ f.toRiemannSphere ⁻¹' {(((b₀ : ℂ) : RiemannSphere))}, ContinuousAt g x)
+    (hgood_b₀ : b₀ ∉ branchValues f hdiv → GoodValue g f hdiv b₀)
+    (hgmero_b₀ : b₀ ∉ branchValues f hdiv → ∀ᶠ b' in 𝓝 b₀, ∀ j,
+      MeromorphicAt (fun u => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm u))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j)))
+    (hg_an_b₀ : b₀ ∉ branchValues f hdiv → ∀ y : X,
+      f.toRiemannSphere y = (((b₀ : ℂ) : RiemannSphere)) →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ y).symm z)) ((chartAt ℂ y) y)) :
+    Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z)
+      (𝓝[≠] b₀) (𝓝 0) := by
+  by_cases hb₀branch : b₀ ∈ branchValues f hdiv
+  · exact hbnd_canonical_sound hdiv hbr hb₀branch hgood_reg hgmero_reg hg_fibre
+  · -- Regular `br`-value: trace analytic at `b₀`, hence `(z − b₀)·trace → 0` by continuity.
+    have han : AnalyticAt ℂ (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv)) b₀ :=
+      hreg_canonical_at_goodValue_sound hdiv (hgood_b₀ hb₀branch) (hgmero_b₀ hb₀branch)
+        (hg_an_b₀ hb₀branch)
+    have hcont : ContinuousAt (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv)) b₀ :=
+      han.continuousAt
+    have hsub : Tendsto (fun z : ℂ => z - b₀) (𝓝[≠] b₀) (𝓝 0) := by
+      have : Tendsto (fun z : ℂ => z - b₀) (𝓝 b₀) (𝓝 0) := by
+        have := (continuous_sub_right b₀).tendsto b₀; simpa using this
+      exact this.mono_left nhdsWithin_le_nhds
+    have hmul := hsub.mul (hcont.tendsto.mono_left nhdsWithin_le_nhds)
+    simpa using hmul
 
 end Jacobians.Dolbeault.FormTraceGlobal
