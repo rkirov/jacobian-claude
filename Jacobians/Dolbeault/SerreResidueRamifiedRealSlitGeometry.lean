@@ -822,6 +822,99 @@ noncomputable def realCenterSlitSectionData_of_bound {ω₀ : HolomorphicOneForm
       intro i' i'' j k hii
       exact hVsep z₀ (hSset_Vsep z₀ hz₀) i' i'' j k hii
 
+/-! ## The pole-order bound from the cluster identity (the Miranda-(3.1) meromorphy)
+
+The geometric trace `valueChartTrace`, analytic on a punctured neighbourhood of the pole-value centre `c`,
+agrees on the slit `Sset` with the single-valued meromorphic cluster sum `T = ∑ᵢ (Clᵢ).clusterTrace`.  By
+the analytic identity theorem on the (preconnected) punctured ball, this agreement spreads to the whole
+punctured neighbourhood, so `valueChartTrace =ᶠ[𝓝[≠] c] T` is meromorphic at `c` with a finite pole order
+— Miranda *Algebraic Curves and Riemann Surfaces* §VIII.3 (3.1). -/
+
+/-- **The punctured ball in `ℂ` is connected.**  For `r > 0`, `ball c r \ {c}` is connected (it is the
+continuous image of the connected product `Ioo 0 r ×ˢ sphere 0 1` under `(ρ, u) ↦ c + ρ • u`, the polar
+parametrisation; `sphere 0 1` is connected since `ℂ` has real rank `2`). -/
+theorem isConnected_punctured_ball (c : ℂ) {r : ℝ} (hr : 0 < r) :
+    IsConnected (Metric.ball c r \ {c}) := by
+  have hrank : (1 : ℕ) < Module.rank ℝ ℂ := by
+    rw [show Module.rank ℝ ℂ = 2 from Complex.rank_real_complex]; exact_mod_cast one_lt_two
+  have hsphere : IsConnected (Metric.sphere (0 : ℂ) 1) := isConnected_sphere hrank 0 (by norm_num)
+  have hprod : IsConnected ((Set.Ioo (0 : ℝ) r) ×ˢ (Metric.sphere (0 : ℂ) 1)) :=
+    (isConnected_Ioo hr).prod hsphere
+  have hcont : Continuous (fun p : ℝ × ℂ => c + (p.1 : ℂ) • p.2) := by fun_prop
+  have himg := hprod.image _ hcont.continuousOn
+  convert himg using 1
+  ext z
+  simp only [Set.mem_diff, Metric.mem_ball, Set.mem_singleton_iff, Set.mem_image, Set.mem_prod,
+    Set.mem_Ioo, mem_sphere_zero_iff_norm, Complex.dist_eq, Prod.exists]
+  constructor
+  · rintro ⟨hzr, hzc⟩
+    have hne : z - c ≠ 0 := sub_ne_zero.mpr hzc
+    have hnpos : 0 < ‖z - c‖ := norm_pos_iff.mpr hne
+    have hnne : ((‖z - c‖ : ℝ) : ℂ) ≠ 0 := by rw [Ne, Complex.ofReal_eq_zero]; exact ne_of_gt hnpos
+    refine ⟨‖z - c‖, (z - c) / (‖z - c‖ : ℂ), ⟨⟨hnpos, hzr⟩, ?_⟩, ?_⟩
+    · rw [norm_div, Complex.norm_real, Real.norm_of_nonneg hnpos.le, div_self (ne_of_gt hnpos)]
+    · rw [smul_eq_mul, mul_div_cancel₀ _ hnne, add_sub_cancel]
+  · rintro ⟨ρ, u, ⟨⟨hρ0, hρr⟩, hu⟩, hz⟩
+    subst hz
+    refine ⟨?_, ?_⟩
+    · rw [add_sub_cancel_left, norm_smul, Complex.norm_real, Real.norm_of_nonneg hρ0.le, hu,
+        mul_one]; exact hρr
+    · rw [add_eq_left]; intro h
+      rw [smul_eq_zero] at h
+      rcases h with h | h
+      · rw [Complex.ofReal_eq_zero] at h; exact (ne_of_gt hρ0) h
+      · rw [h, norm_zero] at hu; exact one_ne_zero hu.symm
+
+/-- **Meromorphy at `c` from analyticity on a punctured nbhd + open agreement with a meromorphic germ.**
+If `F` is analytic on a punctured neighbourhood of `c`, `T` is meromorphic at `c`, `O` is an open set with
+`c ∈ closure O` and `c ∉ O`, and `F = T` on `O`, then `F =ᶠ[𝓝[≠] c] T`.  Proof: shrink to a punctured
+ball `ball c r \ {c}` (preconnected, both `F` and `T` analytic on it) and seed the analytic identity
+theorem (`AnalyticOnNhd.eqOn_of_preconnected_of_frequently_eq`) from a point `z₀ ∈ O ∩ ball c r` (which
+exists since `c ∈ closure O`): `F = T` on `O ∋ z₀` (open) gives the frequently-equality at `z₀`, so
+`F = T` on the whole punctured ball, hence `=ᶠ[𝓝[≠] c]`. -/
+theorem eventuallyEq_of_analyticOn_punctured_eqOn_open {F T : ℂ → ℂ} {c : ℂ}
+    (hF_an : ∀ᶠ z in 𝓝[≠] c, AnalyticAt ℂ F z) (hT : MeromorphicAt T c)
+    {O : Set ℂ} (hO_open : IsOpen O) (hcO : c ∈ closure O) (hcnO : c ∉ O)
+    (hFT : ∀ z ∈ O, F z = T z) :
+    F =ᶠ[𝓝[≠] c] T := by
+  classical
+  -- `T` is analytic on a punctured nbhd of `c`.
+  have hT_an : ∀ᶠ z in 𝓝[≠] c, AnalyticAt ℂ T z := hT.eventually_analyticAt
+  -- A common open nbhd `U ∋ c` (minus `c`) where both are analytic.
+  rw [eventually_nhdsWithin_iff] at hF_an hT_an
+  obtain ⟨UF, hUF_sub, hUF_open, hcUF⟩ := _root_.mem_nhds_iff.1 hF_an
+  obtain ⟨UT, hUT_sub, hUT_open, hcUT⟩ := _root_.mem_nhds_iff.1 hT_an
+  -- A ball `ball c r ⊆ UF ∩ UT`.
+  obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 (hUF_open.inter hUT_open) c ⟨hcUF, hcUT⟩
+  -- Both `F` and `T` are `AnalyticOnNhd` on the punctured ball `ball c r \ {c}`.
+  have hFan_ball : AnalyticOnNhd ℂ F (Metric.ball c r \ {c}) := by
+    intro z hz
+    exact hUF_sub (hball hz.1).1 (by simpa using hz.2)
+  have hTan_ball : AnalyticOnNhd ℂ T (Metric.ball c r \ {c}) := by
+    intro z hz
+    exact hUT_sub (hball hz.1).2 (by simpa using hz.2)
+  -- A point `z₀ ∈ ball c r ∩ O` (exists since `c ∈ closure O` and `ball c r ∈ 𝓝 c`).
+  have hmeet : (Metric.ball c r ∩ O).Nonempty :=
+    _root_.mem_closure_iff.1 hcO _ Metric.isOpen_ball (Metric.mem_ball_self hr)
+  obtain ⟨z₀, hz₀ball, hz₀O⟩ := hmeet
+  have hz₀c : z₀ ≠ c := fun h => hcnO (h ▸ hz₀O)
+  have hz₀_mem : z₀ ∈ Metric.ball c r \ {c} := ⟨hz₀ball, by simpa using hz₀c⟩
+  -- `F = T` frequently near `z₀` (on the open `O ∋ z₀`).
+  have hfreq : ∃ᶠ z in 𝓝[≠] z₀, F z = T z := by
+    have hOnhds : ∀ᶠ z in 𝓝[≠] z₀, z ∈ O :=
+      Filter.eventually_iff.2 (nhdsWithin_le_nhds (hO_open.mem_nhds hz₀O))
+    exact hOnhds.frequently.mono (fun z hz => hFT z hz)
+  -- The analytic identity theorem on the preconnected punctured ball.
+  have hEqOn : Set.EqOn F T (Metric.ball c r \ {c}) :=
+    hFan_ball.eqOn_of_preconnected_of_frequently_eq hTan_ball
+      (isConnected_punctured_ball c hr).isPreconnected hz₀_mem hfreq
+  -- Read off the punctured-neighbourhood germ equality.
+  have hball_nhds : Metric.ball c r \ {c} ∈ 𝓝[≠] c := by
+    rw [mem_nhdsWithin]
+    exact ⟨Metric.ball c r, Metric.isOpen_ball, Metric.mem_ball_self hr, by
+      intro z hz; exact ⟨hz.1, by simpa using hz.2⟩⟩
+  filter_upwards [hball_nhds] with z hz using hEqOn hz
+
 /-! ## The residue theorem from the per-centre pole-order bound (the precise residual)
 
 `realCenterSlitSectionData_of_bound` reduces the per-centre §5-section datum to **exactly** the
