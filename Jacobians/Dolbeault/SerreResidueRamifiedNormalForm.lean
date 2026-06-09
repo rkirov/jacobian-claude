@@ -89,6 +89,8 @@ namespace Jacobians.Dolbeault.SerreResidueTheorem
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
   Jacobians.Dolbeault.FormResidueTheorem Jacobians.Dolbeault.FormTraceFibre
   Jacobians.Dolbeault.FormTraceGlobal Jacobians.Dolbeault.FormTracePrincipalPart
+  Jacobians.Dolbeault.FormTraceInftyFibre Jacobians.Dolbeault.FormTraceInftyRecip
+  Jacobians.Dolbeault.FormTraceFullFibre
   Jacobians.RamifiedTrace
 
 set_option linter.unusedSectionVars false
@@ -454,6 +456,68 @@ theorem traceFull_unramified_eq {ω₀ : HolomorphicOneForms X} {g : X → ℂ} 
   rw [hm1, hζ1]
   simp
 
+/-! ### Non-vacuity of `RamifiedSheetData` (end-to-end soundness — not a disguised `False`)
+
+`RamifiedSheetData`'s fields are *jointly satisfiable*, so `RamifiedCenterFacts.ofSheetData` is **not**
+vacuous (and the construction is sound, not a disguised `False`).  Witness: the zero numerator
+`g ≡ 0` (so `α = ω₀·g = 0`), the empty fibre selection (`valueChartTrace ≡ 0`), at `m = 1`, `ζ = 1`,
+`w₀ = (· − c)` — every field then holds by direct computation (`hgeom`: `0 =ᶠ 0`; `hrem_an`: the
+`m = 1` sheet sum of `R` is `R ∘ (affine)`, analytic; the branch fields hold for `w₀ = (· − c)`).
+This confirms the genuine ramified-data interface is inhabitable. -/
+
+/-- **`RamifiedSheetData` is inhabitable** (non-vacuity / soundness witness).  For the zero numerator
+`g ≡ 0`, the empty fibre selection, any centre `c` and point `p`, the `m = 1`/`ζ = 1`/`w₀ = (· − c)`
+data is a valid `RamifiedSheetData`.  Hence the sheet-data interface is not a disguised `False`. -/
+noncomputable def ramifiedSheetData_zero (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (c : ℂ) (p : X) :
+    RamifiedSheetData ω₀ (fun _ => (0 : ℂ)) f (fun b => emptyFibreRegularData (fun _ => 0) f b) c where
+  p := p
+  m := 1
+  hm := one_pos
+  ζ := 1
+  hζ := IsPrimitiveRoot.one
+  w₀ := fun z => z - c
+  hw₀_an := Filter.Eventually.of_forall (fun _ => analyticAt_id.sub analyticAt_const)
+  hw₀_ne := by
+    filter_upwards [self_mem_nhdsWithin] with z hz
+    exact sub_ne_zero.mpr (by simpa using hz)
+  hw₀_tendsto := by
+    have : Tendsto (fun z : ℂ => z - c) (𝓝 c) (𝓝 (c - c)) :=
+      (continuous_id.sub continuous_const).tendsto c
+    rw [sub_self] at this
+    exact this.mono_left nhdsWithin_le_nhds
+  hw₀_pow := Filter.Eventually.of_forall (fun z => by simp)
+  hw₀_deriv := Filter.Eventually.of_forall (fun z => by
+    rw [deriv_sub_const]; simp)
+  hg_mero := by
+    show MeromorphicAt (fun z => (0 : ℂ)) ((chartAt ℂ p) p)
+    exact analyticAt_const.meromorphicAt
+  hgeom := by
+    -- Both sides are `0`: LHS is the empty fibre sum; RHS is the `m`-sheet sum of `chartIntegrand of 0`.
+    have hL : valueChartTrace ω₀ f (fun b => emptyFibreRegularData (fun _ => (0 : ℂ)) f b)
+        = fun _ => (0 : ℂ) := valueChartTrace_emptySelection ω₀ f
+    rw [hL]
+    filter_upwards with z
+    show (0 : ℂ) = ∑ j ∈ Finset.range 1,
+      chartIntegrand ω₀ (fun _ => (0 : ℂ)) p ((chartAt ℂ p) p + (1 : ℂ) ^ j * (z - c))
+        * deriv (fun ζz => (chartAt ℂ p) p + (1 : ℂ) ^ j * (ζz - c)) z
+    simp only [chartIntegrand, mul_zero, zero_mul, Finset.sum_const_zero]
+  hrem_an := by
+    intro R hR
+    -- `m = 1`, `ζ = 1`: the sheet sum is `R(wp + (z − c))·1 = R ∘ (affine)`, analytic at `c`.
+    have heq : (fun z => ∑ j ∈ Finset.range 1,
+        R ((chartAt ℂ p) p + (1 : ℂ) ^ j * (z - c))
+          * deriv (fun ζz => (chartAt ℂ p) p + (1 : ℂ) ^ j * (ζz - c)) z)
+        = fun z => R ((chartAt ℂ p) p + (z - c)) := by
+      funext z
+      rw [Finset.sum_range_one]
+      rw [deriv_sheet_eq (fun z => z - c) z ((chartAt ℂ p) p) ((1 : ℂ) ^ (0 : ℕ))]
+      rw [deriv_sub_const]
+      simp
+    rw [heq]
+    exact hR.comp_of_eq' (analyticAt_const.add (analyticAt_id.sub analyticAt_const))
+      (by simp)
+
 /-! ### Wiring to `ExistsRamifiedCenterFacts` (the precise remaining obligation, now Forster §5 data)
 
 `RamifiedCenterFacts.ofSheetData` reduces the per-centre obligation `ExistsRamifiedCenterFacts`
@@ -476,5 +540,49 @@ theorem existsRamifiedCenterFacts_ofSheetData {ω₀ : HolomorphicOneForms X} {g
     (hp_unique : ∀ a ∈ poles, f.toRiemannSphere a = ((c : ℂ) : RiemannSphere) → a = S.p) :
     ExistsRamifiedCenterFacts ω₀ g f Φ poles c :=
   ⟨RamifiedCenterFacts.ofSheetData S hp_pole hp_fibre hp_unique⟩
+
+/-- **Gate A `∑Res = 0` (genus `0`) from per-centre Forster §5 sheet data — `hoff_cs`-FREE, end to
+end.**  The cleanest fully-reduced statement: each finite pole-value centre `cs i` carries a
+`RamifiedSheetData` `Sf i` (the Forster §5 `z = wᵐ` normal-form geometry) at a single ramified
+preimage that is the unique pole of `α = ω₀·g` in the fibre `F⁻¹(coe (cs i))`, together with the
+off-centre analyticity `hreg`/`hbnd` and the `∞`-group.  Gate A then holds with **NO** `hoff_cs` (the
+finite centres may be ramified).  This composes `existsRamifiedCenterFacts_ofSheetData` (the proven
+`hcoh` via the normal form + the atom) into `residueTheorem_ofRamifiedCenters_genus0_mod`.  The genuine
+remaining content is *only* the per-centre `RamifiedSheetData` — the holomorphic `m`-th-root branch and
+the geometric trace identification (Forster §5), supplied as data. -/
+theorem residueTheorem_ofSheetData_genus0 {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {poles : Finset X}
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    -- The per-centre Forster §5 sheet data (the only genuine remaining content; admits ramification).
+    (Sf : ∀ i, RamifiedSheetData ω₀ g f Φ (cs i))
+    (hp_pole : ∀ i, (Sf i).p ∈ poles)
+    (hp_fibre : ∀ i, f.toRiemannSphere (Sf i).p = ((cs i : ℂ) : RiemannSphere))
+    (hp_unique : ∀ i, ∀ a ∈ poles, f.toRiemannSphere a = ((cs i : ℂ) : RiemannSphere) → a = (Sf i).p)
+    (Dinf_full : InftyFibreDataNF g f)
+    (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf_full))
+    (hfullInf_inj : Function.Injective Dinf_full.xs)
+    {ιInfP : Type} [Fintype ιInfP] (xsInf_po : ιInfP → X)
+    (hpoInf_inj : Function.Injective xsInf_po)
+    (hpoInf_mem : ∀ j, xsInf_po j ∈ poles ∧ f.toRiemannSphere (xsInf_po j) = OnePoint.infty)
+    (hpoInf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ j, xsInf_po j = a)
+    (hpole_image_inf : (Finset.univ.image Dinf_full.xs).filter (· ∈ poles)
+      = Finset.univ.image xsInf_po)
+    (hnonpole_inf_an : ∀ k, Dinf_full.xs k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (Dinf_full.xs k)).symm z))
+        ((chartAt ℂ (Dinf_full.xs k)) (Dinf_full.xs k))) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueTheorem_ofRamifiedCenters_genus0_mod (poles := poles) Φ m cs ρ hcs_ball hcs_inj br hreg hbnd
+    hcenters_cs
+    (fun i => existsRamifiedCenterFacts_ofSheetData (Sf i) (hp_pole i) (hp_fibre i) (hp_unique i))
+    Dinf_full hcoh_full hfullInf_inj xsInf_po hpoInf_inj hpoInf_mem hpoInf_surj hpole_image_inf
+    hnonpole_inf_an
 
 end Jacobians.Dolbeault.SerreResidueTheorem
