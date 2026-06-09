@@ -272,8 +272,10 @@ The honest reduction of Miranda's genericity for a *general* adapted cover `f`. 
   `hΦ_mem` / `hΦ_surj` (`Φ p` enumerates exactly the fibre `F⁻¹(coe p)`, injectively, catching all
   poles — the genuine selection content);
 * the finite centre data `m`/`cs`/`ρ`/`hcs_ball`/`hcs_inj`/`br` and `hcenters_cs`;
-* the per-centre **full-fibre** moving coherence `Cfull` with `hCfull_D : (Cfull i).D = Φ (cs i)` (the
-  moving datum's fixed fibre *is* the canonical selection fibre — sound, full fibre);
+* the per-centre **full-fibre** moving coherence `Cfull` with `hCfull_inj` (its fibre enumeration is
+  injective) and `hCfull_image : univ.image (Cfull i).D.xs = univ.image (Φ (cs i)).xs` (the moving
+  datum's fixed fibre and the selection fibre have the *same image* — both the full fibre over `cs i`;
+  the weaker image-equality, not data-equality, which is all the residue-level matching needs);
 * the **non-pole residue-`0` analyticity** `hnonpole_an` (the full fibre's non-pole points have analytic
   `g`-pullback);
 * the **full `∞`-fibre** sound datum `Dinf_full` with `hfullInf_inj` / `hinf_mem` / `hinf_surj` (it
@@ -304,7 +306,8 @@ noncomputable def directTraceGeometry_ofAdapted
     (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
       = (poles.image f.toRiemannSphere).erase OnePoint.infty)
     (Cfull : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
-    (hCfull_D : ∀ i, (Cfull i).D = Φ (cs i))
+    (hCfull_inj : ∀ i, Function.Injective (Cfull i).D.xs)
+    (hCfull_image : ∀ i, Finset.univ.image (Cfull i).D.xs = Finset.univ.image (Φ (cs i)).xs)
     (hnonpole_an : ∀ i, ∀ k, (Cfull i).D.xs k ∉ poles →
       AnalyticAt ℂ (fun z => g ((chartAt ℂ ((Cfull i).D.xs k)).symm z))
         ((chartAt ℂ ((Cfull i).D.xs k)) ((Cfull i).D.xs k)))
@@ -348,10 +351,11 @@ noncomputable def directTraceGeometry_ofAdapted
     obtain ⟨i, rfl⟩ := hΦ_surj p a ha hfa
     exact ⟨⟨i, ha⟩, rfl⟩
   hcenters_cs := hcenters_cs
-  hfull_inj := fun i => by rw [hCfull_D i]; exact hΦ_inj (cs i)
+  hfull_inj := hCfull_inj
   hpole_image := fun i => by
-    rw [hCfull_D i]
-    -- `D (cs i) = poleSubfibre poles (Φ (cs i))` and `(Cfull i).D = Φ (cs i)`.
+    -- `D (cs i) = poleSubfibre poles (Φ (cs i))`; rewrite the full-fibre filter through the
+    -- image-equality `hCfull_image i`, then `poleSubfibre_hpole_image`.
+    rw [hCfull_image i]
     exact poleSubfibre_hpole_image poles (Φ (cs i))
   hnonpole_an := hnonpole_an
   hcont_int := hcont_int
@@ -389,7 +393,8 @@ noncomputable def directTraceGeometry_ofAdaptedSimpleInfty
     (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
       = (poles.image f.toRiemannSphere).erase OnePoint.infty)
     (Cfull : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
-    (hCfull_D : ∀ i, (Cfull i).D = Φ (cs i))
+    (hCfull_inj : ∀ i, Function.Injective (Cfull i).D.xs)
+    (hCfull_image : ∀ i, Finset.univ.image (Cfull i).D.xs = Finset.univ.image (Φ (cs i)).xs)
     (hnonpole_an : ∀ i, ∀ k, (Cfull i).D.xs k ∉ poles →
       AnalyticAt ℂ (fun z => g ((chartAt ℂ ((Cfull i).D.xs k)).symm z))
         ((chartAt ℂ ((Cfull i).D.xs k)) ((Cfull i).D.xs k)))
@@ -415,7 +420,7 @@ noncomputable def directTraceGeometry_ofAdaptedSimpleInfty
       =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
     DirectTraceGeometry ω₀ g f poles :=
   directTraceGeometry_ofAdapted Φ hΦ_inj hΦ_mem hΦ_surj m cs ρ hcs_ball hcs_inj br hcenters_cs
-    Cfull hCfull_D hnonpole_an
+    Cfull hCfull_inj hCfull_image hnonpole_an
     (inftyFibreDataNF_full g f hsimpleInf hmeroInf)
     (inftyFibreEnum_injective f)
     (fun k => inftyFibreEnum_mem f k)
@@ -481,7 +486,9 @@ noncomputable def directTraceGeometry_ofCanonicalSimpleInfty (hdiv : (f.div : Di
     (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
       = (poles.image f.toRiemannSphere).erase OnePoint.infty)
     (Cfull : ∀ i, MovingCoherenceDatum ω₀ g f (canonicalFibreSelection g f hdiv) (cs i))
-    (hCfull_D : ∀ i, (Cfull i).D = canonicalFibreSelection g f hdiv (cs i))
+    (hCfull_inj : ∀ i, Function.Injective (Cfull i).D.xs)
+    (hCfull_image : ∀ i,
+      Finset.univ.image (Cfull i).D.xs = Finset.univ.image (canonicalFibreSelection g f hdiv (cs i)).xs)
     (hnonpole_an : ∀ i, ∀ k, (Cfull i).D.xs k ∉ poles →
       AnalyticAt ℂ (fun z => g ((chartAt ℂ ((Cfull i).D.xs k)).symm z))
         ((chartAt ℂ ((Cfull i).D.xs k)) ((Cfull i).D.xs k)))
@@ -513,7 +520,7 @@ noncomputable def directTraceGeometry_ofCanonicalSimpleInfty (hdiv : (f.div : Di
     (canonicalFibreSelection_hΦ_inj f hdiv)
     (canonicalFibreSelection_hΦ_mem f hdiv)
     (canonicalFibreSelection_hΦ_surj f hdiv hgood)
-    m cs ρ hcs_ball hcs_inj br hcenters_cs Cfull hCfull_D hnonpole_an
+    m cs ρ hcs_ball hcs_inj br hcenters_cs Cfull hCfull_inj hCfull_image hnonpole_an
     hsimpleInf hmeroInf hnonpole_inf_an hreg hbnd hcont_int R₀ hR₀_an hR₀0 hR₀_eq hcoh_full
 
 end Jacobians.Dolbeault.SerreResidueTheorem
