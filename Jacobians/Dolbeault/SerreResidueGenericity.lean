@@ -42,11 +42,57 @@ unconditionally, and `adaptedTraceGeometry_holomorphic` is the empty-pole **non-
 
 ## Soundness
 
-No `axiom`, no `sorry`, no false structure field.  Every field of `AdaptedTraceGeometry` is a *true,
-satisfiable* statement (the empty-pole witness instantiates each).  The `∞`-fibre is the **sound**
-`InftyFibreDataNF` (never the unsatisfiable `InftyFibreData`); the trace is the **value-correct**
-branch-patched trace; the false `PoleValueSeparated`/`hsep` predicate is **not** used.  All public
-declarations are authoritatively `[propext, Classical.choice, Quot.sound]` (`#print axioms`).
+No `axiom`, no `sorry`.  This file asserts nothing false: `AdaptedTraceGeometry` is a faithful bundling
+of the *existing* `TraceRationalityDataNF`/`traceRationalityDataNF_ofPatched` input contract, and
+`traceRationalityExists_of_adaptedGeometry` is a sound reduction.  All public declarations are
+authoritatively `[propext, Classical.choice, Quot.sound]` (`#print axioms`), and the empty-pole
+`adaptedTraceGeometry_holomorphic` is a genuine non-vacuity witness for `poles = ∅`.
+
+### ⚠ Soundness finding (the genericity is **blocked upstream**, not satisfiable for mixed fibres)
+
+`AdaptedTraceGeometry` is **NOT known to be satisfiable for a general nonempty `poles` whose fibres are
+"mixed"** (a fibre over a pole-value containing both poles of `α` and points where `α` is holomorphic).
+The obstruction is *upstream*, in the input contract of `FormTraceFullFibre.TraceRationalityDataNF`
+(`FormTraceFullFibreRationalityNF.lean`), and is inherited by `SerreResidueTheorem.TraceRationalityExists`:
+
+* `D` / `Dinf` must enumerate **exactly the poles** in each fibre (the fields `hxs_mem`/`hxsInf_mem`
+  demand `D.xs i ∈ poles`, and `hxs_surj`/`hxsInf_surj` demand all poles are hit — so `D` is *pole-only*).
+* But the field `agree` is the **germ**-equality `L.R =ᶠ[𝓝[≠] p] (fibreTrace ω₀ f (D p)).traceCoeff`, and
+  in the constructor `agree` is produced from the moving-coherence identity
+  `valueChartTrace ω₀ f Φ =ᶠ (fibreTrace ω₀ f (Cfin.D)).traceCoeff` with `Cfin.D = D (cs i)`.  The
+  geometric trace `valueChartTrace ω₀ f Φ` is the **full-fibre** symmetric sum (Miranda's `Tr_F α`,
+  `Φ` = the full fibre — forced both by the moving coherence's `hdiag`, which sums over `D.ι` matched to
+  `Φ b'`, and by `hbnd`, whose boundedness-across-branch-points argument is the *full* bundle SUM).  A
+  **non-pole** sheet contributes `chartIntegrand ω₀ g x · deriv` to the trace coefficient, which is a
+  *generally nonzero holomorphic* germ (`chartIntegrand = coeffAt ω₀ · g`, not a principal-part
+  extraction).  Hence the full-fibre and pole-only trace coefficients **differ by a nonzero holomorphic
+  germ**, and the germ-equality `agree` with a pole-only `D` is **false** at a mixed fibre.
+
+The two constraints — `D` pole-only (`hxs_mem`) and `D` full-fibre (`agree`/`hCfin_D`/`hdiag`/`hbnd`) —
+coincide *only* when every fibre point over a pole-value is itself a pole (the
+`PoleValueSeparated`/`hsep` condition the campaign already flagged as **generically false**).  So for
+mixed fibres the joint contract is unsatisfiable: `AdaptedTraceGeometry` (and `TraceRationalityExists`)
+is a *disguised `False`* there, NOT honestly dischargeable as stated.
+
+**The field is over-strong, not the downstream use.**  `agree`/`agree_infty` are consumed **only** at the
+*residue* level: `hL32_of_agree_fibreRegularData` / `infty_eq_of_agreeNF` use them solely through
+`resAt_congr` (the residue of `L.R` at the centre).  At the residue level the non-pole sheets *do*
+contribute `0` (`α` holomorphic there ⟹ residue `0`), so the **residue** equality holds with pole-only
+`D`.  The misformalization is exactly that `agree` is stated as a *germ* equality where only the *residue*
+is needed.  The correct fix (in the FormTrace* scaffold, out of scope for this single-thread file) is one
+of:
+
+1. weaken `agree`/`agree_infty` to the residue equality `resAt L.R p = ∑ᵢ resAt (coeff i) (pre i)`
+   (exactly `hL32`/`infty_eq`), which is satisfiable with pole-only `D` and is all the descent uses; or
+2. make `D`/`Dinf` the **full** fibre (drop `∈ poles` from `hxs_mem`/`hxsInf_mem`) and adjust
+   `fibreResidueSum_eq_filter`/`inftyResidueSumNF_eq_filter` to sum over the full fibre with the
+   non-pole-residue-`0` vanishing (rather than via the image-set equality they currently use).
+
+Either repair restores satisfiability and keeps the descent intact, after which the genericity wiring of
+this file (`canonicalFibreSelection` Φ, `MovingCoherenceDatum.ofSphereSheetSystemSet`,
+`hevBr_of_regularData`, `InftyFibreDataNF.ofRegular`) goes through.  Until then, this file is the honest
+*localization* of the gap: every analytic input is reachable; the obstruction is the pole-only-`D`
+vs. full-fibre-`agree` contract in `TraceRationalityDataNF`.
 
 ## References
 
