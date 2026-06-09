@@ -475,4 +475,50 @@ theorem poleSecFin_section (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
     ∀ᶠ b' in 𝓝 p, f.holoRepr (poleSecFin hac S j b') = b' :=
   poleMovingSection_section S (fibreReg_hxs_mem hac p j).2
 
+/-- **The per-pole section values enumerate the full fibre (under separation).**  At a separated
+pole-value `p`, the section values `j ↦ poleSecFin hac S j b'` enumerate the **full** fibre `F⁻¹(coe
+b')` for `b'` with `coe b' ∈ S.V`: their range is the image of the *surjective* index map
+`poleSheetIndex hac S` under `k ↦ S.sheet k (coe b')`, i.e. the full sheet-value range
+(`sheetValues_range_eq_fibre`). -/
+theorem poleSecFin_range_eq_fibre (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((p : ℂ) : RiemannSphere)))
+    (hsep : PoleValueSeparated f poles p) {b' : ℂ}
+    (hb' : (((b' : ℂ) : RiemannSphere)) ∈ S.V) :
+    Set.range (fun j => poleSecFin hac S j b')
+      = f.toRiemannSphere ⁻¹' {(((b' : ℂ) : RiemannSphere))} := by
+  -- `poleSecFin hac S j b' = S.sheet (poleSheetIndex hac S j) (coe b')`, so the range is the image of
+  -- `range (poleSheetIndex hac S) = univ` (surjective) under `k ↦ S.sheet k (coe b')`.
+  have hcomp : (fun j => poleSecFin hac S j b')
+      = (fun k => S.sheet k (((b' : ℂ) : RiemannSphere))) ∘ (poleSheetIndex hac S) := by
+    funext j; rw [poleSecFin_eq]; rfl
+  rw [hcomp, Set.range_comp, (poleSheetIndex_surjective hac S hsep).range_eq, Set.image_univ]
+  exact sheetValues_range_eq_fibre S hb'
+
+/-- **The pole sheet-index map is injective.**  `poleSheetIndex hac S j` recovers the sheet index
+through the `j`-th pole, so distinct poles give distinct indices (`fibreReg`-points injective +
+`sheet_sheetIndexOf`). -/
+theorem poleSheetIndex_injective (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((p : ℂ) : RiemannSphere))) :
+    Function.Injective (poleSheetIndex hac S) := by
+  intro j₁ j₂ h
+  -- `(fibreReg).xs j = S.sheet (poleSheetIndex hac S j) (coe p)` (`sheet_sheetIndexOf`); equal indices
+  -- give equal poles, hence equal `j` (`fibreReg`-points injective).
+  apply fibreReg_hxs_inj hac p
+  have e₁ : S.sheet (poleSheetIndex hac S j₁) (((p : ℂ) : RiemannSphere)) = (fibreReg hac p).xs j₁ :=
+    sheet_sheetIndexOf S (fibreReg_hxs_mem hac p j₁).2
+  have e₂ : S.sheet (poleSheetIndex hac S j₂) (((p : ℂ) : RiemannSphere)) = (fibreReg hac p).xs j₂ :=
+    sheet_sheetIndexOf S (fibreReg_hxs_mem hac p j₂).2
+  rw [← e₁, ← e₂, h]
+
+/-- **The per-pole section values are injective (under separation, near the base).**  For `b'` with
+`coe b' ∈ S.V`, `j ↦ poleSecFin hac S j b'` is injective: it is `poleSheetIndex hac S` (injective)
+followed by `k ↦ S.sheet k (coe b')` (injective on `S.V`, `sheet_inj`). -/
+theorem poleSecFin_injective (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((p : ℂ) : RiemannSphere))) {b' : ℂ}
+    (hb' : (((b' : ℂ) : RiemannSphere)) ∈ S.V) :
+    Function.Injective (fun j => poleSecFin hac S j b') := by
+  intro j₁ j₂ h
+  simp only [poleSecFin_eq] at h
+  exact poleSheetIndex_injective hac S (S.sheet_inj _ hb' h)
+
 end Jacobians.Dolbeault.FormTraceGlobal
