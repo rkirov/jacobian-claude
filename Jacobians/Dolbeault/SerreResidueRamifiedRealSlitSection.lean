@@ -27,6 +27,37 @@ is close to `c` (`w₀ z = (z − c)^{1/m} → 0` as `z → c`).  The resolution
 stays in the §5 inverse-property domain.  Then, for `z` interior to the shrunk slit, a *full* ℂ-neighbourhood
 of `z` keeps the cluster arguments in that domain, so the eventual section facts (`hcs_sec`, `hsrc`) hold.
 
+## What is delivered (the SECTION half — axiom-clean, sorry-free)
+
+* the per-`(z₀,i)` §5 section primitives (`cpow_slitBranch_tendsto_zero`,
+  `eventually_nonpole_of_nonpole`, `eventually_holoRepr_clusterSheet_eq`,
+  `eventually_clusterSheet_mem_target`, `clusterArg_inverse_self`, `ne_of_mem_disjoint`);
+* `SlitSectionGerm` — the per-`(z₀,i)` §5 normal-form section germ data;
+* **`RealSlitSectionData.ofSlitSectionGerm`** — assembles a full `RealSlitSectionData` (all five
+  section fields `hcs_sec`/`hcs_np`/`hwithin`/`hcross`/`hsrc`) from a slit-wide germ family.
+
+So the **section half** of `RealCoverSlitSectionGeometry` is DONE.
+
+## The two remaining pieces (to close `∑Res = 0` unconditionally)
+
+1. **The cluster data `Cl`** — a `ClusterTraceData` per preimage via `ClusterTraceData.ofNormalForm` on
+   the shrunk slit, whose ONLY non-mechanical input is the **`Rem` symmetric-function descent**:
+   for the analytic remainder `ppR` of the straightened integrand, the trace
+   `Rem z = ∑_{j<m} ppR(ζʲ·w₀ z)·deriv(ζz ↦ ζʲ·w₀ ζz) z` is **analytic at `c`** (`hRem_an`).  This is the
+   standard "trace of a holomorphic form is holomorphic"; closed form
+   `Rem z = ∑_{k≥0} a_{m(k+1)-1}·(z − c)^k` (`a_n` the Taylor coefficients of `ppR` at `0`).  It is NOT in
+   Mathlib and has been carried as a *data hypothesis* throughout the ramified-residue subtree
+   (`RamifiedSheetData`/`ClusterTraceData`); it is the single genuinely-new analytic lemma.  Its cleanest
+   formulation is the reusable atom: *a `ζ`-invariant analytic germ `P` (`P(ζ·u) = P(u)`, `ζ` a primitive
+   `m`-th root) factors as `P = Q ∘ (·^m)` with `Q` analytic* — equivalently the symmetric trace
+   `z ↦ ∑_{j<m} G(ζʲ·(z − c)^{1/m})` is analytic at `c` for `G` analytic at `0`.
+
+2. **The shrunk slit `Sset` + the germ hypotheses** — a slit `Sset ⊆ {z | z − c ∈ slitPlane}` shrunk near
+   `c` (off the finitely-many branch values, still accumulating at `c`) on which the `SlitSectionGerm`
+   smallness hypotheses hold for every `z₀ ∈ Sset` (the cluster arguments `ζʲ·w₀ z₀` lie in the §5
+   inverse-property domain).  This is mechanical (continuity + `cpow_slitBranch_tendsto_zero` + the §5
+   atom's open domains + T2 separation of the preimages) but voluminous.
+
 ## ⚠ Soundness
 
 The §5 sections are genuine (`exists_clusterSplit_at_fibrePoint`).  The shrunk slit is a genuine slit
