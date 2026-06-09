@@ -416,4 +416,79 @@ theorem valueChartTrace_eq_clusterSum_of_clusterReindexData {ω₀ : Holomorphic
     (R.hpoint i j) (R.hcw i j) (R.hmem_a i j) (R.hcs_cont i j) (R.hcsP_diff i j)
     (R.htrans_diff i j) (R.htrans_diff_inv i j) (R.hderiv_match i j)).symm
 
+/-! ## Building `FibreClusterReindex` from a slit-wide family of clustering data
+
+The `FibreClusterReindex` structure (`SerreResidueRamifiedFullFibreBuilder.lean`) — the precise input
+the `hoff_cs`-free Gate-A capstone `residueSum_eq_zero_of_reindex` consumes — has, besides the routine
+bookkeeping (`hanalytic`/`hD_*`/`hS_acc`/`hmult`/`hsplit0`/`ppord`/`hbnd`), the single hard field
+`hgeom_fibre`.  We discharge `hgeom_fibre` from a **slit-wide family** of `ClusterReindexData` (one per
+slit value `z`), so building the cover's `FibreClusterReindex` reduces to supplying that family — i.e.,
+at each slit value, the conservation-of-number bijection + point coincidence (the genuine wall). -/
+
+/-- **`FibreClusterReindex` from a slit-wide family of `ClusterReindexData`.**  Given the pole fibre `D`
+(injective, enumerating the `α`-poles of the fibre), the per-preimage cluster data `Cl` on the slit
+`Sset` (with matching multiplicity + the residue split), the eventual off-centre analyticity, the slit
+accumulation, the finite pole-order bound, **and** a `ClusterReindexData` at every slit value `z`
+(the conservation-of-number bijection + point coincidence), the per-centre fibre-cluster reindexing
+`FibreClusterReindex` holds.  The hard `hgeom_fibre` field is discharged pointwise on the slit by
+`valueChartTrace_eq_clusterSum_of_clusterReindexData`; all other fields are passed through. -/
+noncomputable def FibreClusterReindex.ofClusterReindexFamily {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0} {poles : Finset X} {c : ℂ}
+    {Sset : Set ℂ}
+    (hanalytic : ∀ᶠ z in 𝓝[≠] c,
+      AnalyticAt ℂ (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv)) z)
+    (D : FibreRamifiedData g f c) (hD_inj : Function.Injective D.xs)
+    (hD_mem : ∀ i, D.xs i ∈ poles)
+    (hD_surj : ∀ a ∈ poles, f.toRiemannSphere a = ((c : ℂ) : RiemannSphere) → ∃ i, D.xs i = a)
+    (hS_acc : ∃ᶠ z in 𝓝[≠] c, z ∈ Sset)
+    (Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset)
+    (hmult : ∀ i, (Cl i).m = D.mult i)
+    (hsplit0 : ∀ i, straightenedIntegrand ω₀ g (D.xs i) (Cl i).s =ᶠ[𝓝[≠] 0]
+      fun u => negTail 0 (Cl i).ppb (Cl i).ppN u + (Cl i).ppR u)
+    (ppord : ℕ)
+    (hbnd : Tendsto (fun z => (z - c) ^ ppord *
+      valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z) (𝓝[≠] c) (𝓝 0))
+    (hfam : ∀ z ∈ Sset, ClusterReindexData (canonicalFibreSelection g f hdiv) D Cl z) :
+    FibreClusterReindex ω₀ g f hdiv poles c where
+  hanalytic := hanalytic
+  D := D
+  hD_inj := hD_inj
+  hD_mem := hD_mem
+  hD_surj := hD_surj
+  S := Sset
+  hS_acc := hS_acc
+  Cl := Cl
+  hmult := hmult
+  hsplit0 := hsplit0
+  ppord := ppord
+  hbnd := hbnd
+  hgeom_fibre := fun z hz =>
+    valueChartTrace_eq_clusterSum_of_clusterReindexData (hfam z hz)
+
+/-! ## Soundness: `ClusterReindexData` genuinely encodes conservation of number
+
+The decisive #13-style check on the new datum: its bijection field `e` is **not** a vacuous or
+single-preimage placeholder — it forces the conservation-of-number identity `∑ᵢ mᵢ = deg f`
+(`= S.n`, the number of sphere sheets).  A `ClusterReindexData` at a genuinely ramified fibre (several
+preimages with multiplicities `> 1`) is therefore exactly a witness that the `deg f` moving sheets
+partition into the per-preimage clusters of total size `∑ᵢ mᵢ` — the genuine §17.9/Forster §4
+conservation-of-number content, not a disguised triviality. -/
+
+/-- **Conservation of number, encoded by the clustering datum.**  A `ClusterReindexData` forces the
+total cluster multiplicity to equal the sheet count `S.n` (`= deg f`):
+
+> `∑ᵢ D.mult i = R.S.n`.
+
+This is `Fintype.card` of the bijection `e : (Σ i, Fin (D.mult i)) ≃ Fin S.n`
+(`card (Σ i, Fin (mult i)) = ∑ᵢ mult i`, `card (Fin S.n) = S.n`).  It confirms the bijection field is
+the genuine conservation-of-number content — no single-preimage restriction, not a vacuous placeholder. -/
+theorem ClusterReindexData.sum_mult_eq_sheetCount {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
+    {D : FibreRamifiedData g f c} {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}
+    (R : ClusterReindexData Φ D Cl z) :
+    ∑ i, D.mult i = R.S.n := by
+  have hcard := Fintype.card_congr R.e
+  rwa [Fintype.card_sigma, Fintype.card_fin, Finset.sum_congr rfl (fun i _ => Fintype.card_fin (D.mult i))]
+    at hcard
+
 end Jacobians.Dolbeault.SerreResidueTheorem
