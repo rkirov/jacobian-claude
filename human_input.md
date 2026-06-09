@@ -1500,3 +1500,28 @@ the pole-only germ `agree`.
 
 Leftover after this = `∃ adapted f` (the genuine genericity: full-fibre coherence + non-pole
 analyticity + pole enumeration for some nonconstant `f`), NOT a false field.
+
+### Outcome (2026-06-09, same session)
+
+DONE, axiom-clean `[propext, Classical.choice, Quot.sound]`, NO false field, NO sorry, in NEW file
+`Jacobians/Dolbeault/SerreResidueDirect.lean` (namespace `Jacobians.Dolbeault.SerreResidueTheorem`;
+existing files untouched). The residue-level bridge is COMPLETE:
+
+- `genuineTrace_ofPatched` — genuine `L`/`T = L.R` (sound prefix of `traceRationalityDataNF_ofPatched`,
+  reusing its analytic engines), NO `agree`.
+- `globalTraceData_of_residueTrace` — `GlobalTraceData` from `L`/`hTL` + pole-only `D` + RESIDUE
+  identities; `hL32` proved at residue level (`resAt_fibreTrace_coeff`+`hTL`), NO germ.
+- `hres_fin_of_fullFibreCoherence` / `hinfty_of_fullInftyCoherence` — Level-2 discharge of the residue
+  identities from the FULL-fibre coherence (sound germ eq, full≠pole-only) + patch inertness +
+  non-pole-residue-0. Shared engine `residueSum_full_eq_poleOnly`.
+- `residueTheorem_of_directGeometry` — `∑Res=0` from the §VIII.3 geometry, unconditional downstream.
+- `DirectTraceGeometry` + `residueTheorem_of_exists_directTraceGeometry` — Gate A on the SINGLE named
+  genericity obligation `∃ f, Nonempty (DirectTraceGeometry …)`, HONEST (non-vacuity
+  `directTraceGeometry_holomorphic` is genuine, unlike `AdaptedTraceGeometry` = disguised False).
+
+`residueTheorem_of_traceExists` is NOT unconditional (it's a conditional bridge by design). But Gate A
+`∑Res=0` now rests on the single named genericity obligation `∃ adapted f` (full-fibre coherence +
+non-pole analyticity + pole enumerations) with the 6th false field (germ `agree`/`agree_infty`)
+ELIMINATED — a strict improvement over the prior state where the genericity was a disguised False
+upstream. The hard analytic content (genuine trace, `hentire`, sound ∞, Lemma 3.2) is reused, not
+re-derived.
