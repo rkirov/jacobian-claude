@@ -3330,3 +3330,77 @@ What's NEEDED to prove it (the genuine multi-hundred-LoC build):
   non-poles (`notMem_poles_of_fibrePoint_offCentres`) ⟹ `hg_an_offpoles`+`continuousAt_of_chartPullback_
   analyticAt`. `hgood_b₀`/`hg_an_b₀` take `b₀∉branchValues` (compose `coe_notMem_branchLocus_of_notMem_
   branchValues` with the off-branch `GoodValue`).
+
+## 2026-06-09 (afternoon) — Meromorphic Cousin descent + lift algebra (branch gate-a-trace-rationality-assembly)
+
+NEW FILE `Jacobians/Dolbeault/MeromorphicCousinSolve.lean` (the ONLY file this thread touched —
+8 commits, each touching ONLY this file; did NOT touch the Gate-A `SerreResidueRamified*`/`*Builder`
+files, the 2 untracked orphans, or any PROVEN decl). Continues `MeromorphicCousin.lean` (the connecting
+map δ + residue calculus). Goal: instantiate `MeromorphicCousinSolvable` ⟹ full Serre pairing. Outcome:
+**the FULL mechanical descent is BUILT sorry-free + axiom-clean, reducing the entire Serre residue
+pairing to exactly TWO precisely-isolated greenfield inputs (the §15 Cousin wall + the Gate-A residue
+descent); the wall `surjective`/`H¹(ℳ)=0` itself is NOT built (the authorized fallback).** Every decl
+`[propext, Classical.choice, Quot.sound]`; circularity guard PASSES (RiemannRoch absent from the import
+closure); the whole tree builds standalone (8528 jobs).
+
+### TWO SOUNDNESS FINDINGS (read before extending)
+1. **The bare `CoverMLDistribution` lacks `holoOff`** (off-poles holomorphy, which `GeneralMLDistribution`
+   has). Without it (a) the distribution ALGEBRA (`combine`'s `iso` at a pole of only one summand) is
+   unbuildable, and (b) `μ.res = ∑_{poles} Resₐ` need NOT be the genuine total residue (a "global" pole
+   of every `gᵢ` outside `poles`, cancelled in all differences, is invisible to `poles` yet contributes).
+   FIX: introduced `CoverMLLift 𝔘 ω₀ K` = `CoverMLDistribution` + `holoOff` (a NEW structure; did not
+   mutate the committed one). Built the algebra + descent on it. A genuine Cousin lift always has holoOff.
+2. **The committed `MeromorphicCousinSolvable.resCocycle_connecting` is OVER-STRONG / unprovable as
+   stated**: it quantifies `resCocycle(δμ) = μ.res` over ALL bare `CoverMLDistribution μ`, but for a bare
+   μ without holoOff, `μ.res` ≠ genuine residue, so no genuine residue functional can satisfy it for all
+   such μ. So I did NOT instantiate the committed `MeromorphicCousinSolvable`; instead I route through
+   `CousinResidueData` (in `GlobalResidueConstruct.lean`, which has NO `resCocycle_connecting` field) —
+   the actual downstream consumer of the Serre pairing. Recommend: future work should weaken
+   `MeromorphicCousinSolvable.resCocycle_connecting` to `CoverMLLift` (my `resCocycle_connecting` is the
+   sound analogue), or just drop `MeromorphicCousinSolvable` in favour of `CousinResidueData`.
+
+### What was BUILT (sorry-free, axiom-clean)
+- `CoverMLLift` + `formFnHoloPunctured_everywhere`/`formFnResidue_eq_zero_off`/`formFnResidue_patch_indep`
+  (forms isolated everywhere: iso at poles, holoOff off them; cross-patch residue agreement).
+- `patchOf`/`exists_patch`/`res_eq_sum_patchOf{,_superset}`: the GENUINE TOTAL RESIDUE bridge — `res`
+  read via any patch over any finite superset of poles (extra points residue-0 by holoOff). The lever
+  for residue-additivity.
+- The DISTRIBUTION ALGEBRA: `smul`/`combine`(add)/`neg`/`sub` + `res_smul`/`res_combine`/`res_neg`/
+  `res_sub` (Res ℂ-linear, Forster §17.2). `combine.patch` = left-on-μ₁.poles, classical.
+- The CONNECTING-MAP HOMOMORPHISM: `connectingCochain/Cocycle/Class_{combine,smul,sub}` (δ ℂ-linear via
+  toGerm linearity) ⟹ `connectingClass_sub: [δ(μ₁−μ₂)] = [δμ₁]−[δμ₂]`.
+- `MeromorphicCousinSolutions 𝔘 ω₀ K` (the ISOLATED inputs): `lift` (= `H¹(ℳ)=0`, the WALL: every 𝒪_K
+  cocycle is `[δμ]` for a CoverMLLift) + `vanish` (= Gate-A descent: `connectingClass μ=0 ⟹ μ.res=0`,
+  the genuine Forster §17.3 fact, TRUE in the Serre setting `K=div ω₀` where ω₀·σ∈Ω ⟹ σ-correction
+  residue 0, reducing to `res_eq_zero_of_globalMeromorphic`).
+- The DESCENT (all DERIVED from lift+vanish, no interface fields): `res_eq_of_connectingClass_eq`
+  (well-defined via res_sub+vanish), `resCocycle` (ℂ-LINEAR), `resCocycle_vanish_coboundary`,
+  `resCocycle_connecting` (sound CoverMLLift form), `toCousinResidueData`/`toGlobalResidue`/
+  `lDim_le_h1Dim`/`toSerreDualityData` (the full ladder target).
+- `zeroLift` + `nonempty_of_trivial` (inhabitable, not a disguised False: exercises lift+vanish genuinely
+  over ω₀=0).
+
+### THE REMAINING WALL (precise) — exactly the two `MeromorphicCousinSolutions` inputs
+`lift` and `vanish` are isolated INPUTS, not built. `lift` (`H¹(ℳ)=0`, Forster §15) reduces to:
+(A) holomorphic Čech acyclicity `H¹(𝔘,𝒪)=0` — available as `CechDiskAcyclic.IsDiskAcyclic 𝔘 0` (proven
+for chart-disk/Leray covers via the `HasGluedDbarDatum` engine, needs the cover to be Leray); plus
+(B) principal-part splitting at the K-points (assign per-patch `pᵢ` with `pᵢ−pⱼ` matching `cᵢⱼ` modulo
+𝒪, holomorphic remainder a coboundary by (A)); then assemble `gᵢ=pᵢ+Gext hᵢ`. The assembly (germ↔fn via
+`Gext`, the 4 CoverMLLift fields) is heavy bookkeeping, NOT built. `vanish` = Gate-A `∑Res=0` in the
+`K=div ω₀` setting (`res_eq_zero_of_globalMeromorphic` discharges it given the global-fn gluing of the
+coboundary). NOT FAKED — stopped at the precise isolated interface (the authorized fallback). The
+descent below them is COMPLETE, so an inhabitant of `MeromorphicCousinSolutions` (+ §17.6 nondeg +
+§17.9 ι_surj + §17.4 hKgenus + §14 finH1-PROVEN) ⟹ `SerreDualityData` (the entire ladder).
+
+### Lean gotchas
+- `AnalyticAt` const-mul: use `analyticAt_const.mul h` (NOT `h.const_mul`); for the `congr` of a scaled
+  integrand, `have heq : (fun z => …) = (fun z => c * …) := by funext z; simp only […]; ring` then
+  `rw [heq]; exact analyticAt_const.mul h` (the `.congr`+`filter_upwards` route fails to synthesize `f`).
+- `combine`/union needs `DecidableEq X`: wrap the union lemmas in `open scoped Classical in`; pass
+  `Finset.subset_union_left (s₁:=…) (s₂:=…)` explicitly (the inst must match the classical union).
+- `combine_toDistribution_g`/`smul_toDistribution_g` rfl-simp-lemmas (the `CoverMLLift.g`=`toDistribution.g`
+  vs `toDistribution.g` mismatch blocks `combine_g`); then `refine congrArg (toGerm _) ?_; funext x; simp
+  only [combine_toDistribution_g, …]; ring` for the cochain homomorphism.
+- `res_sub`/`connectingCocycle_sub`: `module` closes the submodule-element arithmetic (NOT `ring`/`abel`).
+- Section `variable (S : …)` does NOT auto-include `S` when only used in the proof body of a lemma whose
+  STATEMENT omits `S` — make `S` an explicit `(S : …)` argument in each lemma.
