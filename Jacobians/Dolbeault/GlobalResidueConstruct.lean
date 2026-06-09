@@ -34,7 +34,7 @@ differences `ωᵢ − ωⱼ = cᵢⱼ·ω₀ ∈ Ω` on overlaps — a genuine 
 
 * **Well-definedness on classes (PROVEN, reused).**  Two Cousin lifts of the same class differ by a
   *global* meromorphic form, whose total residue vanishes by the 1-form residue theorem `∑Res = 0`
-  (`MittagLefflerForm.res_eq_of_globalMeromorphic_diff`, modulo Gate A's `ExistsAdaptedF`).  So `res`
+  (`MittagLefflerForm.res_eq_of_globalMeromorphic_diff`, unconditional — Gate A closed).  So `res`
   descends to `cechH1 K` linearly.
 
 * **Non-degeneracy (PROVEN local datum, reused).**  The §17.6 `dz/z` residue-1 witness

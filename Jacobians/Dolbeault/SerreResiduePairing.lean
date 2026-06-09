@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.Dolbeault.SerreResidueGateAClosed
+import Jacobians.Dolbeault.SerreResidueRamifiedRealSlitGeometry
 import Jacobians.Dolbeault.FormRemovableSingularity
 import Jacobians.Dolbeault.SerreDuality
 import Jacobians.Dolbeault.CechComplex
@@ -23,11 +24,11 @@ residue functional `Res` on the Mittag–Leffler distribution picture (Forster �
   Mittag–Leffler distribution `μ = ω₀·g` whose principal part `g = f.toFun` comes from a *global*
   meromorphic function `f` (so `α = ω₀·f` is a genuine global meromorphic 1-form — a *coboundary* in
   Forster's terms) has total residue `μ.res = 0`. This is exactly the **1-form residue theorem
-  `∑Res = 0`** (`SerreResidueTheorem.residueTheorem_general`, Gate A) repackaged as the
+  `∑Res = 0`** (`SerreResidueTheorem.residueTheorem_unconditional`, Gate A) repackaged as the
   representative-independence content the global `Res : H¹(X,Ω) → ℂ` rests on: two Mittag–Leffler
   representatives of the same `H¹(X,Ω)` class differ by such a global form, so they have equal residue.
-  *This genuinely uses `∑Res = 0`* (it is its conclusion), under the Gate-A residual `ExistsAdaptedF`
-  taken as a hypothesis (it is being closed concurrently; see `SerreResidueGateAClosed.lean`).
+  *This genuinely uses `∑Res = 0`* (it is its conclusion), now **unconditional** via
+  `residueTheorem_unconditional` (Gate A closed; `SerreResidueRamifiedRealSlitGeometry.lean`).
 
 * **The abstract §17.6 reduction `injective_of_residueOne_witness`** and the dimension corollary
   `lDim_le_h1Dim_of_residueOne_witness`: an `ℂ`-linear `ι : L(K−D) → (H¹(𝒪_D))*` for which every
@@ -76,7 +77,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 Forster defines `Res : H¹(X,Ω) → ℂ` on cohomology classes by `Res([δμ]) = Res(μ)` for a Mittag–Leffler
 distribution `μ`; this is well-defined precisely because the total residue of a *global* meromorphic
 1-form (a coboundary, the difference of two Mittag–Leffler representatives of the same class) vanishes —
-the **1-form residue theorem `∑Res = 0`** (Gate A's `residueTheorem_general`). We record that
+the **1-form residue theorem `∑Res = 0`** (Gate A's `residueTheorem_unconditional`). We record that
 representative-independence content here as the vanishing of `MittagLefflerForm.res` on a globally
 meromorphic distribution. -/
 
@@ -86,22 +87,20 @@ its principal-part function `μ.g = f.toFun` for a *global* meromorphic function
 
 > `μ.res = 0`.
 
-This is the **1-form residue theorem `∑ Res = 0`** (`SerreResidueTheorem.residueTheorem_general`,
-Gate A) read as representative-independence: it is exactly what makes the global functional
+This is the **1-form residue theorem `∑ Res = 0`** (`SerreResidueTheorem.residueTheorem_unconditional`,
+Gate A — closed) read as representative-independence: it is exactly what makes the global functional
 `Res : H¹(X,Ω) → ℂ` well-defined on cohomology classes (two Mittag–Leffler representatives of one class
 differ by such a global form).  `μ.poles` contains the actual poles of `α` (`μ.holo`), so the
-`residueTheorem_general` hypothesis is met; `hAdapt` is the Gate-A residual `ExistsAdaptedF`, taken as a
-hypothesis (it is being closed concurrently). -/
+analyticity hypothesis is met; no residual hypothesis remains. -/
 theorem MittagLefflerForm.res_eq_zero_of_globalMeromorphic (μ : MittagLefflerForm X)
-    (f : MeromorphicFunction X) (hgf : μ.g = f.toFun)
-    (hAdapt : SerreResidueTheorem.ExistsAdaptedF μ.α f μ.poles) :
+    (f : MeromorphicFunction X) (hgf : μ.g = f.toFun) :
     μ.res = 0 := by
   -- Off the recorded pole set, `f.toFun = μ.g` is chart-analytic (the `holo` field), so the
-  -- `residueTheorem_general` genericity hypothesis holds; its conclusion is `μ.res = 0`.
+  -- `residueTheorem_unconditional` analyticity hypothesis holds; its conclusion is `μ.res = 0`.
   have hpoles : ∀ x : X, x ∉ μ.poles →
       AnalyticAt ℂ (fun z => f.toFun ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x) := by
     intro x hx; rw [← hgf]; exact μ.holo x hx
-  have hsum := SerreResidueTheorem.residueTheorem_general μ.α f μ.poles hpoles hAdapt
+  have hsum := SerreResidueTheorem.residueTheorem_unconditional μ.α f μ.poles hpoles
   -- `μ.res = residueSum μ.α μ.g μ.poles = ∑ a ∈ poles, formFnResidue μ.α f.toFun a = 0`.
   rw [MittagLefflerForm.res, residueSum, hgf]
   exact hsum
@@ -118,18 +117,14 @@ The difference distribution `μ₁ − μ₂` (formed as `μ₁ + (−1)·μ₂`
 theorem `∑Res = 0`); `res_combine`/`res_smul` then give `μ₁.res − μ₂.res = 0`.  This is precisely the
 representative-independence that defines the global `Res : H¹(X,Ω) → ℂ`. -/
 theorem MittagLefflerForm.res_eq_of_globalMeromorphic_diff (μ₁ μ₂ : MittagLefflerForm X)
-    (hα : μ₁.α = μ₂.α) (f : MeromorphicFunction X) (hgf : μ₁.g + (-1 : ℂ) • μ₂.g = f.toFun)
-    (hAdapt : SerreResidueTheorem.ExistsAdaptedF μ₁.α f (μ₁.combine (μ₂.smul (-1)) (by
-      rw [MittagLefflerForm.smul_α]; exact hα)).poles) :
+    (hα : μ₁.α = μ₂.α) (f : MeromorphicFunction X) (hgf : μ₁.g + (-1 : ℂ) • μ₂.g = f.toFun) :
     μ₁.res = μ₂.res := by
   -- The difference distribution `δ = μ₁ + (−1)·μ₂`, with `δ.α = μ₁.α` and `δ.g = μ₁.g + (−1)•μ₂.g`.
   set δ := μ₁.combine (μ₂.smul (-1)) (by rw [MittagLefflerForm.smul_α]; exact hα) with hδ
-  have hδα : δ.α = μ₁.α := by rw [hδ, MittagLefflerForm.combine_α]
   have hδg : δ.g = f.toFun := by
     rw [hδ, MittagLefflerForm.combine_g, MittagLefflerForm.smul_g]; exact hgf
   -- `δ` is a coboundary, so `δ.res = 0` (the 1-form residue theorem).
-  have hAdapt' : SerreResidueTheorem.ExistsAdaptedF δ.α f δ.poles := by rw [hδα]; exact hAdapt
-  have hδres : δ.res = 0 := δ.res_eq_zero_of_globalMeromorphic f hδg hAdapt'
+  have hδres : δ.res = 0 := δ.res_eq_zero_of_globalMeromorphic f hδg
   -- `δ.res = μ₁.res + (−1)·μ₂.res = μ₁.res − μ₂.res`, so `μ₁.res = μ₂.res`.
   rw [hδ, MittagLefflerForm.res_combine, MittagLefflerForm.res_smul] at hδres
   simp only [neg_one_smul] at hδres
