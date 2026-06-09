@@ -351,4 +351,158 @@ theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull_geomInfty
     ((recipCoeff_valueChartTracePatched_eventuallyEq ω₀ f
       (canonicalFibreSelection g f hdiv) br).trans hcoh_geom)
 
+/-! ## Discharging the off-centre analyticity `hreg`
+
+At a value `w` off the centres `cs` and off the branch values, `coe w` is off the branch locus *and*
+not a pole-value (`hcenters_cs` + `w ∉ image cs` + `coe` injectivity), so every full-fibre point over
+`coe w` is a regular **non-pole** of `α`.  The canonical selection then has a `MovingCoherenceDatum` at
+`w` (`movingCoherenceDatum_canonical`) whose fixed-fibre points are non-poles, so
+`analyticAt_valueChartTrace_of_movingDatum` (the self-coherence ⟹ analyticity bridge) gives `hreg` at
+`w` from the global "`g` holomorphic off the poles" `hg_an_offpoles`.  This eliminates `hreg` for
+`br ⊇ branchValues f`. -/
+
+/-- **A fibre point at a non-pole-value is not a pole of `α`.**  If `coe w` is finite, `w ∉ image cs`,
+and `hcenters_cs` identifies the finite pole-values with `image cs`, then any `p` with `F p = coe w` is
+**not** in `poles`: otherwise `coe w = F p ∈ (poles.image F).erase ∞ = (image cs).image coe`, forcing
+`w = cs i` (`coe` injective) — contradicting `w ∉ image cs`. -/
+theorem notMem_poles_of_fibrePoint_offCentres {m : ℕ} {cs : Fin m → ℂ}
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    {w : ℂ} (hw : w ∉ Finset.univ.image cs) {p : X}
+    (hp : f.toRiemannSphere p = (((w : ℂ) : RiemannSphere))) : p ∉ poles := by
+  classical
+  intro hpole
+  -- `coe w = F p ∈ poles.image F`, and `coe w ≠ ∞`, so `coe w ∈ (poles.image F).erase ∞`.
+  have hmem : (((w : ℂ) : RiemannSphere)) ∈ (poles.image f.toRiemannSphere).erase OnePoint.infty := by
+    rw [Finset.mem_erase]
+    exact ⟨OnePoint.coe_ne_infty w, by
+      rw [Finset.mem_image]; exact ⟨p, hpole, hp⟩⟩
+  rw [← hcenters_cs, Finset.mem_image] at hmem
+  obtain ⟨c, hc_mem, hc_eq⟩ := hmem
+  -- `coe c = coe w ⟹ c = w`, and `c ∈ image cs`, so `w ∈ image cs` — contradiction.
+  have : c = w := OnePoint.coe_injective hc_eq
+  rw [this] at hc_mem
+  exact hw hc_mem
+
+/-- **`hreg` discharged for the canonical selection.**  At every value `w` off `image cs ∪ br` with
+`br ⊇ branchValues f`, `valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv)` is `AnalyticAt`.  `coe w`
+is off the branch locus (`br ⊇ branchValues`) so `w` is a good value (with the regular-value `g`-data
+`hgood_reg`); the canonical selection has a `MovingCoherenceDatum` at `w` whose fixed fibre points are
+non-poles (`notMem_poles_of_fibrePoint_offCentres`), so `analyticAt_valueChartTrace_of_movingDatum`
+applies with `hg_an_offpoles`. -/
+theorem hreg_canonical_of_offBranch (hdiv : (f.div : Divisor X) ≠ 0) {m : ℕ} {cs : Fin m → ℂ}
+    {br : Finset ℂ} (hbr : branchValues f hdiv ⊆ br)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hgood_reg : ∀ w ∉ Finset.univ.image cs ∪ br, GoodValue g f hdiv w)
+    (hgmero_reg : ∀ w (_hw : w ∉ Finset.univ.image cs ∪ br), ∀ᶠ b' in 𝓝 w, ∀ j,
+      MeromorphicAt (fun u => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm u))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j)))
+    (hg_an_offpoles : ∀ x : X, x ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x)) :
+    ∀ w ∉ Finset.univ.image cs ∪ br,
+      AnalyticAt ℂ (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv)) w := by
+  classical
+  intro w hw
+  have hwcs : w ∉ Finset.univ.image cs := fun h => hw (Finset.mem_union_left _ h)
+  have hwbr : w ∉ br := fun h => hw (Finset.mem_union_right _ h)
+  have hoff : (((w : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere :=
+    coe_notMem_branchLocus_of_notMem_branchValues f hdiv (fun h => hwbr (hbr h))
+  -- The sphere sheet system at `coe w` (off-branch) and the moving coherence datum.
+  set S : Jacobians.LocalSheetSystem f.toRiemannSphere (((w : ℂ) : RiemannSphere)) :=
+    (exists_sphereSheetSystem f (exists_orderAtPoint_ne_zero f hdiv) hoff).some with hS
+  -- The reference sheet-fibre `g`-meromorphy at `coe w` (good value ⟹ full fibre = sphere fibre).
+  have hmeroS : ∀ k, MeromorphicAt
+      (fun z => g ((chartAt ℂ (S.sheet k (((w : ℂ) : RiemannSphere)))).symm z))
+      ((chartAt ℂ (S.sheet k (((w : ℂ) : RiemannSphere)))) (S.sheet k (((w : ℂ) : RiemannSphere)))) := by
+    intro k
+    have hfib : S.sheet k (((w : ℂ) : RiemannSphere)) ∈
+        f.toRiemannSphere ⁻¹' {(((w : ℂ) : RiemannSphere))} := by
+      rw [Set.mem_preimage, Set.mem_singleton_iff]; exact S.sheet_section k _ S.mem_V
+    rw [← canonicalFibreSelection_xs_range g f hdiv (hgood_reg w hw),
+      canonicalFibreSelection_eq_ofFullFibre g f hdiv (hgood_reg w hw)] at hfib
+    obtain ⟨j, hj⟩ := hfib
+    have hpt : S.sheet k (((w : ℂ) : RiemannSphere)) = fullFibreEnum f hdiv w j := hj.symm
+    rw [hpt]; exact (hgood_reg w hw).2 j
+  set C : MovingCoherenceDatum ω₀ g f (canonicalFibreSelection g f hdiv) w :=
+    movingCoherenceDatum_canonical hdiv hoff S hmeroS (hgmero_reg w hw) with hC
+  -- The fixed fibre points `C.D.xs k` lie in the full fibre `F⁻¹(coe w)` (its range equals the canonical
+  -- range, which is the fibre at the good value `w`), hence are non-poles (non-pole-value `w`); so `g` is
+  -- analytic there by `hg_an_offpoles`.
+  refine analyticAt_valueChartTrace_of_movingDatum C (fun k => ?_)
+  -- `C.D.xs k` lies in the canonical range = full fibre `F⁻¹(coe w)` (via the proven image-equality).
+  have himg : Finset.univ.image C.D.xs
+      = Finset.univ.image (canonicalFibreSelection g f hdiv w).xs := by
+    rw [hC]
+    exact movingCoherenceDatum_canonical_D_image (ω₀ := ω₀) hdiv hoff S hmeroS
+      (hgmero_reg w hw) (hgood_reg w hw)
+  have hmemImg : C.D.xs k ∈ Finset.univ.image (canonicalFibreSelection g f hdiv w).xs := by
+    rw [← himg]; exact Finset.mem_image_of_mem C.D.xs (Finset.mem_univ k)
+  rw [Finset.mem_image] at hmemImg
+  obtain ⟨j, _, hj⟩ := hmemImg
+  have hfib : f.toRiemannSphere (C.D.xs k) = (((w : ℂ) : RiemannSphere)) := by
+    rw [← hj]
+    have : (canonicalFibreSelection g f hdiv w).xs j ∈
+        Set.range (canonicalFibreSelection g f hdiv w).xs := ⟨j, rfl⟩
+    rw [canonicalFibreSelection_xs_range g f hdiv (hgood_reg w hw)] at this
+    rwa [Set.mem_preimage, Set.mem_singleton_iff] at this
+  exact hg_an_offpoles _ (notMem_poles_of_fibrePoint_offCentres hcenters_cs hwcs hfib)
+
+/-! ## The genus-`0` capstone with both `Cfull` and `hreg` discharged
+
+Combining `movingCoherenceDatum_canonical` (the per-centre `Cfull`) with `hreg_canonical_of_offBranch`
+(the off-centre analyticity `hreg`), Gate A `∑Res = 0` rests on:
+
+* the per-centre genericity (off-branch pole-values `hoff_cs`, good values `hc_good`, near-centre
+  `g`-meromorphy `hgmero`);
+* the regular-value genericity (every value off `cs ∪ br` is a good value `hgood_reg` with near-value
+  `g`-meromorphy `hgmero_reg`), with `br ⊇ branchValues f` (the branch-patch covers the branch values);
+* `hg_an_offpoles` (`g` holomorphic off the poles);
+* the branch-value boundedness `hbnd` (the one remaining analytic input besides `∞`); and
+* the `∞`-coherence `hcoh_geom` (the unpatched §VIII.3 `∞`-single-valuedness).
+
+The finite full-fibre moving coherence `Cfull` and the off-centre analyticity `hreg` are **discharged**. -/
+
+/-- **Gate A `∑Res = 0` (genus `0`, simple `∞`-poles, canonical selection) with `Cfull` AND `hreg`
+discharged.**  The most-reduced sound form: only the genericity bookkeeping, the branch-value boundedness
+`hbnd`, and the `∞`-coherence `hcoh_geom` remain.  The per-centre full-fibre moving coherence `Cfull` is
+built by `movingCoherenceDatum_canonical`; the off-centre analyticity `hreg` is discharged by
+`hreg_canonical_of_offBranch`.  Both rest on the symmetric-invariance lever (Miranda §VIII.3, no
+labeling). -/
+theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg
+    (hdiv : (f.div : Divisor X) ≠ 0)
+    (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
+      GoodValue g f hdiv p)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ) (hbr : branchValues f hdiv ⊆ br)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hoff_cs : ∀ i, (((cs i : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
+    (hc_good : ∀ i, GoodValue g f hdiv (cs i))
+    (hgmero : ∀ i, ∀ᶠ b' in 𝓝 (cs i), ∀ j,
+      MeromorphicAt (fun w => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm w))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j)))
+    (hgood_reg : ∀ w ∉ Finset.univ.image cs ∪ br, GoodValue g f hdiv w)
+    (hgmero_reg : ∀ w (_hw : w ∉ Finset.univ.image cs ∪ br), ∀ᶠ b' in 𝓝 w, ∀ j,
+      MeromorphicAt (fun u => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm u))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j)))
+    (hg_an_offpoles : ∀ x : X, x ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x))
+    (hsimpleInf : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = -1)
+    (hmeroInf : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (inftyFibreEnum f i)).symm z))
+      ((chartAt ℂ (inftyFibreEnum f i)) (inftyFibreEnum f i)))
+    (hnonpole_inf_an : ∀ k, inftyFibreEnum f k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (inftyFibreEnum f k)).symm z))
+        ((chartAt ℂ (inftyFibreEnum f k)) (inftyFibreEnum f k)))
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z)
+        (𝓝[≠] b₀) (𝓝 0))
+    (hcoh_geom : recipCoeff (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv))
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull_geomInfty hdiv hgood m cs ρ hcs_ball hcs_inj
+    br hcenters_cs hoff_cs hc_good hgmero hg_an_offpoles hsimpleInf hmeroInf hnonpole_inf_an
+    (hreg_canonical_of_offBranch hdiv hbr hcenters_cs hgood_reg hgmero_reg hg_an_offpoles) hbnd
+    hcoh_geom
+
 end Jacobians.Dolbeault.SerreResidueTheorem
