@@ -442,6 +442,76 @@ theorem formOrderW_meroFormSMul_ω₀ (f : MeromorphicFunction X) (x : X) :
     (meroFormSMul f data.ω₀).formOrderW x = f.orderW x + (data.K x : WithTop ℤ) := by
   rw [formOrderW_meroFormSMul, data.order_eq x]
 
+/-! ## Part 4: Forster §17.4 — `ω₀· : 𝒪_{D+K} ≅ Ω_D`
+
+The multiplication map `f ↦ f·ω₀` is, for each `D`, an isomorphism `lSysModule (D + K) ≃ omegaDModule D`.
+Well-defined (`L(D+K)·ω₀ ⊆ Ω_D`, order law), injective (kernel = germ-junk), surjective (division). -/
+
+/-- **`L(D+K)·ω₀ ⊆ Ω_D`** (Forster §17.4 well-definedness): if `f ∈ L(D+K)` then `f·ω₀ ∈ Ω_D`.
+Orders add: `formOrderW (f·ω₀) = orderW f + K ≥ −(D+K) + K = −D`. -/
+theorem meroFormSMul_ω₀_mem_omegaD {D : Divisor X} {f : MeromorphicFunction X}
+    (hf : f ∈ linearSystem (X := X) (D + data.K)) :
+    meroFormSMul f data.ω₀ ∈ omegaD (X := X) D := by
+  intro x
+  rw [data.formOrderW_meroFormSMul_ω₀ f x]
+  have h1 : (-((D + data.K) x) : WithTop ℤ) ≤ f.orderW x := hf x
+  have heq : (-((D + data.K) x) : WithTop ℤ) = (-(D x) : WithTop ℤ) + (-(data.K x) : WithTop ℤ) := by
+    rw [Finsupp.add_apply]; norm_cast; ring
+  rw [heq] at h1
+  -- `−D + (−K) ≤ orderW f` ⟹ `−D ≤ orderW f + K` (add `K` to both sides, cancel).
+  have hstep : (-(D x) + -(data.K x) : WithTop ℤ) + (data.K x : WithTop ℤ)
+      ≤ f.orderW x + (data.K x : WithTop ℤ) := by gcongr
+  calc (-(D x) : WithTop ℤ) = (-(D x) + -(data.K x) : WithTop ℤ) + (data.K x : WithTop ℤ) := by
+            norm_cast; ring
+        _ ≤ f.orderW x + (data.K x : WithTop ℤ) := hstep
+
+/-- The multiplication-by-`ω₀` linear map `MeromorphicFunction X →ₗ[ℂ] MeromorphicOneForm X`,
+`f ↦ f·ω₀` (the §17.4 structure map at the section level). -/
+noncomputable def meroFormSMulω₀ₗ : MeromorphicFunction X →ₗ[ℂ] MeromorphicOneForm X where
+  toFun f := meroFormSMul f data.ω₀
+  map_add' f g := by
+    refine MeromorphicOneForm.ext ?_
+    funext y
+    show (f.toFun y + g.toFun y) • data.ω₀.toFun y
+      = f.toFun y • data.ω₀.toFun y + g.toFun y • data.ω₀.toFun y
+    module
+  map_smul' c f := by
+    refine MeromorphicOneForm.ext ?_
+    funext y
+    show (c * f.toFun y) • data.ω₀.toFun y = c • (f.toFun y • data.ω₀.toFun y)
+    module
+
+@[simp] theorem meroFormSMulω₀ₗ_apply (f : MeromorphicFunction X) :
+    data.meroFormSMulω₀ₗ f = meroFormSMul f data.ω₀ := rfl
+
+/-- **The §17.4 map on representatives** `L(D+K) → omegaDModule D`, `f ↦ [f·ω₀]` (multiply by `ω₀`,
+land in `Ω_D` by `meroFormSMul_ω₀_mem_omegaD`, project to the junk-free quotient).  ℂ-linear. -/
+noncomputable def omega17Map (D : Divisor X) :
+    ↥(linearSystem (X := X) (D + data.K)) →ₗ[ℂ] omegaDModule (X := X) D where
+  toFun f := Submodule.Quotient.mk ⟨meroFormSMul f.1 data.ω₀, data.meroFormSMul_ω₀_mem_omegaD f.2⟩
+  map_add' f g := by
+    rw [← Submodule.Quotient.mk_add]
+    congr 1
+    refine Subtype.ext (MeromorphicOneForm.ext ?_)
+    funext y
+    show (f.1 + g.1).toFun y • data.ω₀.toFun y
+      = f.1.toFun y • data.ω₀.toFun y + g.1.toFun y • data.ω₀.toFun y
+    show (f.1.toFun y + g.1.toFun y) • data.ω₀.toFun y
+      = f.1.toFun y • data.ω₀.toFun y + g.1.toFun y • data.ω₀.toFun y
+    module
+  map_smul' c f := by
+    rw [← Submodule.Quotient.mk_smul]
+    congr 1
+    refine Subtype.ext (MeromorphicOneForm.ext ?_)
+    funext y
+    show (c • f.1).toFun y • data.ω₀.toFun y = c • (f.1.toFun y • data.ω₀.toFun y)
+    show (c * f.1.toFun y) • data.ω₀.toFun y = c • (f.1.toFun y • data.ω₀.toFun y)
+    module
+
+@[simp] theorem omega17Map_mk (D : Divisor X) (f : ↥(linearSystem (X := X) (D + data.K))) :
+    data.omega17Map D f =
+      Submodule.Quotient.mk ⟨meroFormSMul f.1 data.ω₀, data.meroFormSMul_ω₀_mem_omegaD f.2⟩ := rfl
+
 end CanonicalForm17Data
 
 end Jacobians.Dolbeault
