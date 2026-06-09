@@ -326,7 +326,7 @@ noncomputable def meroFormDiv (α : MeromorphicOneForm X) : MeromorphicFunction 
       α.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
         / data.ω₀.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
     have hω0 : data.ω₀.toFun y ≠ 0 := hz
-    simp only [formCoeff, ← hy]
+    simp only [formCoeff]
     exact (covector_ratio_eq (x := x) (α.toFun y) (data.ω₀.toFun y) hybase
       ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
       (apply_symmL_ne_zero_of_ne_zero (x := y) (data.ω₀.toFun y) hω0
@@ -369,7 +369,7 @@ theorem meroFormDiv_comp_chart_eq (α : MeromorphicOneForm X) (x : X) :
   show α.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
       / data.ω₀.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
       = formCoeff α.toFun x z / formCoeff data.ω₀.toFun x z
-  simp only [formCoeff, ← hy]
+  simp only [formCoeff]
   exact covector_ratio_eq (x := x) (α.toFun y) (data.ω₀.toFun y) hybase
     ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
     (apply_symmL_ne_zero_of_ne_zero (x := y) (data.ω₀.toFun y) hz
