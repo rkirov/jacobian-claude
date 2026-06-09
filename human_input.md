@@ -2500,3 +2500,76 @@ Build `RamifiedCenterFacts.ofFibreRamified`'s `hcoh` for a single ramified centr
 discharged and `residueTheorem_ofRamifiedCenters_genus0_mod` makes Gate A need only `{f nonconstant,
 hsimpleInf}` (drop `AdaptedF.hoff_cs`). Until then, the integration is COMPLETE down to that one named,
 true, geometric obligation — the atom is wired and the `hoff_cs`-free capstone exists.
+
+---
+
+## 2026-06-09 — Forster §17.5 residue pairing + §17.6 injectivity (the global `Res` descent)
+
+**Context.** Separate thread from the Gate-A `hoff_cs`/ramified work above (did NOT touch the
+`SerreResidue*` trace stack: `SerreResidueDirectGenus0GermDischarge`/`SerreResidueGateAClosed`/
+`SerreResidueRamifiedCenter`, nor the untracked orphans). Goal (docs/serre_17_build_plan.md step 4):
+build the §17.5 residue pairing `ι_D : L(K−D) → (H¹(𝒪_D))*` and §17.6 injectivity — "the first
+genuinely-Serre sorry-free result" — building on the PROVEN `residueTheorem_general` (∑Res=0 modulo
+Gate-A's `ExistsAdaptedF`), `MittagLefflerForm`, `exists_canonicalForm17Data_hKgenus`,
+`finrank_le_of_injective_to_dual`, `exists_formFnResidue_eq_one_of_localRep_ne_zero`.
+
+**SCOPING FINDING (the make-or-break wall, confirmed).** The pairing `⟨f,ξ⟩ = Res((f·ω₀)·ξ)` needs a
+realization of `H¹(X,𝒪_D)` *cohomology classes* (`FiniteFamily.cechH1`, the 𝒪_D germ-cocycle quotient,
+`CechComplex.lean`) as Mittag–Leffler distributions (Forster's connecting map `H⁰(principal parts) →
+H¹(𝒪_D)`) PLUS the cup product into `H¹(X,Ω)` carrying the global `Res`. **The repo has NONE of this**:
+no Ω-sheaf Čech complex, no cup product, no `cechH1 ↔ MittagLeffler` connecting map (verified by
+exhaustive grep — the `cechH1`/`MittagLeffler` co-occurrences are docstring-only). This is the
+multi-thousand-LoC greenfield descent. Per the run-ahead/scope-realistically guidance I delivered the
+**maximal sound prefix + a precise interface**, NOT a guessed full construction.
+
+**DONE — fully sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]` (7 decls).** New file
+`Jacobians/Dolbeault/SerreResiduePairing.lean` (+ a 1-line de-dup edit to `SerreDualityPairing.lean`):
+- **Part 1 — the global `Res` well-definedness (Forster §17.3, genuinely USES ∑Res=0):**
+  `MittagLefflerForm.res_eq_zero_of_globalMeromorphic` — an ML distribution `μ=ω₀·g` whose principal
+  part `g = f.toFun` is a global meromorphic `f` (a coboundary) has `μ.res = 0`; this is
+  `residueTheorem_general` repackaged as representative-independence. Plus the two-representative form
+  `res_eq_of_globalMeromorphic_diff` (`μ₁.res = μ₂.res` when `μ₁.g − μ₂.g` is global) via
+  `combine`/`smul`/`res_combine`.
+- **Part 2 — abstract §17.6 mechanics:** `injective_of_residueOne_witness` (an ℂ-linear `ι : V → W*`
+  with a value-1 witness at every nonzero `v` is injective) + `finrank_le_of_residueOne_witness`
+  (chained with the abstract core `finrank_le_of_injective_to_dual`).
+- **Part 3 — the isolated input + downstream:** structure `SerreResidueRealization 𝔘 K` bundling the
+  greenfield descent's OUTPUT (the residue pairing `pairing D : L(K−D) → (H¹(𝒪_D))*` + the §17.6
+  residue-1 non-degeneracy `witness`); from it `pairing_injective` (§17.6) and `lDim_le_h1Dim`
+  (`lDim (K−D) ≤ h1Dim D`, at D=0 `genus ≤ h1Dim 0`) are DERIVED sorry-free; and
+  `toSerreDualityData` assembles the full ladder-target `SerreDualityData` (ι_inj derived; needs
+  hKgenus[proven] + §17.9 surjectivity + finiteness).
+
+**SOUNDNESS (no false/circular/junk field).** `SerreResidueRealization.witness` genuinely forces
+non-degeneracy: a zero pairing CANNOT inhabit it (`0 ≠ 1`), so no `lDim≡0`-style junk collapse;
+`L(K−D)` is the junk-free `lSysModule`; no RR routing (RR depends on this — no circularity); `Res`
+well-definedness genuinely consumes ∑Res=0 (it IS its conclusion). The interface bundles only TRUE
+statements (pairing exists, witness exists at D=0 by Forster 17.6), so it is non-vacuous, not a
+disguised `False`. Authoritative `lake env lean #print axioms` on all 7 decls = `[propext,
+Classical.choice, Quot.sound]`.
+
+**Lean gotcha (de-dup).** `lSysModule` was declared textually-identically in BOTH `CanonicalFormIso`
+and `SerreDualityPairing`, blocking joint import (the residue chain needs CanonicalFormIso for K;
+SerreDualityPairing has the target struct). Fix: `SerreDualityPairing` now imports `CanonicalFormIso`
+(lightweight — no Gate-A/residue dep, no cycle; sole consumer `DolbeaultLadder` still builds) and drops
+its local copy. The Gate-A `SerreResidueGateAClosed` chain does NOT transitively import CanonicalFormIso,
+so my file importing both is clean.
+
+**`lDim (K−D) ≤ h1Dim D` STATUS.** PROVEN *modulo* `SerreResidueRealization` (the isolated greenfield
+input). Not unconditional — it rests on the residue-pairing+witness realization, exactly the descent
+that is unbuilt.
+
+**REMAINING SCOPE for the §17.5/17.6 construction (what `SerreResidueRealization` must supply — the
+greenfield descent):**
+1. A Čech complex for the **Ω-sheaf** (holomorphic 1-forms) over the cover, i.e. `H¹(X,Ω)` as a
+   `cechH1`-analogue (currently only the 𝒪_D structure-sheaf `cechH1` exists).
+2. The **connecting/Mittag–Leffler realization** of `cechH1 D` classes: every class `ξ ∈ H¹(𝒪_D)`
+   ← a Mittag–Leffler distribution (Forster 17.2's `δ`-surjectivity from the principal-parts SES).
+3. The **cup product** `L(K−D) × H¹(𝒪_D) → H¹(X,Ω)` at the cochain level (`MGerm` is a `Filter.Germ`
+   CommRing, so cochain-level multiplication EXISTS — the mechanical part), descending to classes.
+4. Wire `Res` (Part 1, now well-defined on classes via `res_eq_of_globalMeromorphic_diff`) ∘ cup ⟹
+   `pairing`; push `exists_formFnResidue_eq_one_of_localRep_ne_zero` (the `dz/z` residue-1 witness,
+   PROVEN) through the realization ⟹ `witness`. Then `SerreResidueRealization` is inhabited and
+   `lDim (K−D) ≤ h1Dim D` becomes unconditional.
+The §17.9 surjectivity (HARD half) is untouched here (the `toSerreDualityData` `ι_surj` field), to be
+built from cohomological RR via `serre_surjectivity_dim_core` (later).
