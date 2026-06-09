@@ -4109,3 +4109,117 @@ residue theorem `residueTheorem_of_realCoverSlitSectionGeometry` axiom list UNCH
 - `FormalMultilinearSeries.ofScalars E c` (Mathlib `Analysis/Analytic/OfScalars.lean`) builds a 1-D series
   from a coeff sequence — the right tool for the `Rem` `Q`-construction; `noncomputable`; radius via
   `inv_le_ofScalars_radius_of_tendsto` (ratio) or generic `le_radius_of_bound`.
+
+## 2026-06-09 (session 3) — Gate-A `∑Res = 0`: the `Rem` symmetric-function descent CLOSED (STEP 1+2+3a/3b); residue theorem reduced to the §5 `SlitSectionGerm`/slit-system assembly only
+
+**Status: `∑Res = 0` is NOT yet unconditional, but the SINGLE genuinely-new analytic lemma (the `Rem`
+symmetric-function descent) is now PROVEN and WIRED.** The residue theorem no longer carries the
+descent as a data hypothesis; what remains is exactly the mechanical §5 normal-form *slit-geometry*
+assembly (the `SlitSectionGerm` per `(z₀,i)` + the slit/sheet-system bookkeeping). All new decls
+axiom-clean `[propext, Classical.choice, Quot.sound]`; full glob green (8586 jobs).
+
+### STEP 1 — the genuinely-new analytic lemma (CLOSED). New file `Jacobians/SymmetricFunctionDescent.lean`.
+`analyticAt_weightedSymSum_descent`: for `Q` analytic at `0`, `m>0`, `ζ` a primitive `m`-th root,
+> `∑_{j<m} Q(ζʲ·u)·ζʲ = m·u^{m−1}·G(uᵐ)` for `u` near `0`, with `G` analytic at `0`
+(`G = ofScalarsSum (fun k => pf.coeff (m·k+(m−1)))`, the divisible subsequence series). This IS the
+"trace of a holomorphic germ is holomorphic" (Forster §5 / Miranda §VIII.3). Supporting decls:
+- `norm_coeff_le` (`‖pf.coeff n‖ ≤ ‖pf n‖`), `le_radius_ofScalars_subseq` (subseries radius `≥ (radius Q)^m`
+  via `le_radius_of_bound` with `C/ρ^d`, NOT the ratio-test radius lemmas), `analyticAt_ofScalars_subseq`.
+- `apIdx_injective` / `mem_range_apIdx_iff` (`n ∈ range (k↦m·k+(m−1)) ↔ m∣(n+1)`, the divisibility reindex).
+- `hasSum_symSheetSum_aux` (the weighted `m`-sheet HasSum form — per-sheet `hasFPowerSeriesAt_iff` pulled
+  back along the continuous `u↦ζʲ·u`, scaled by `ζʲ`, summed via `hasSum_sum`, common factor pulled out).
+- `hasSum_ofScalarsSum_of_lt_radius` (defining HasSum of `ofScalarsSum` inside radius).
+- The descent proof: `rootsOfUnity_geom_zsum` collapse `∑_j ζ^{j(n+1)}=m·[m∣n+1]`, then the divisibility
+  reindex via `Function.Injective.hasSum_iff (apIdx_injective hm) (zero-off-range)`, then `HasSum.unique`.
+- **Sanity (verified):** for `Q=u^d` (monomial), RHS nonzero iff `m∣d+1` ⟺ LHS condition; and the value
+  matches (`m·u^d`); internally consistent.
+
+### STEP 2 — wiring `Rem`/`hRem_an`/`hRem_slit` (CLOSED, same file).
+- `ramifiedTrace_slit_eq` (the per-`z` bridge): the chain-rule factor `(d/dz)[wp+ζʲ·w₀ z]=ζʲ·(1/m)·w₀ z^{1−m}`
+  contributes the `1/m` that cancels the descent's `m`, and `w₀ z^{1−m}·w₀ z^{m−1}=w₀ z^0=1` (needs
+  `w₀ z≠0`), leaving exactly `Rem z = G(z−c)`. (The `m⁻¹` and the `m` CANCEL — `Rem z := G(z−c)`, NOT
+  `m⁻¹·G(z−c)`; got this right.)
+- `analyticAt_reCentre` (`Q t:=ppR(wp+t)` analytic at 0), `exists_ramifiedTrace_descent` (produces `Rem`
+  analytic at `c` + the slit identity on `S`, given the shrunk-slit smallness as the pointwise descent
+  identity at each `w₀ z`). **`hw₀_diff` is NOT needed** for the slit identity (`deriv_const_mul_field`/
+  `deriv_const_add` suffice) — dropped it.
+
+### STEP 3a — the descent inside a REAL ramified `ClusterTraceData` (CLOSED). New file
+`Jacobians/Dolbeault/SerreResidueRamifiedRemDescent.lean`.
+`exists_clusterTraceData_descent_at_fibrePoint`: builds `Nonempty (ClusterTraceData ω₀ g.toFun p c S)` on
+a (shrunk) slit `S` at a non-pole fibre preimage, with `Rem`/`hRem_an`/`hRem_slit` **supplied by STEP 2's
+`exists_ramifiedTrace_descent` (with `wp=0`)** — NOT assumed. Uses `ClusterTraceData.ofNormalForm` (NOT
+`ofFibrePointNormalForm`, because the latter hardcodes the FULL `slitPlane` slit, on which the descent
+identity does NOT hold — the descent needs the SHRUNK slit; `ofNormalForm` takes a general `S`).
+**KEY:** `ofNormalForm`'s `hRem_slit` has `wp=0` baked in (`ppR(ζ^j·w₀ z)`, `deriv (fun ζz => 0+ζ^j·w₀ ζz)`),
+so STEP 2 with `wp=0` matches it exactly. This ELIMINATES the `Rem` descent as a data hypothesis carried
+throughout the ramified-residue subtree — it is now a theorem.
+
+### STEP 3b — the descent smallness as a `𝓝 c`-openness fact (CLOSED, same file).
+- `eventually_cpowBranch_mem` (`P` on `𝓝 0` ⟹ `P(w₀ z)` on `𝓝 c`, via `cpow_slitBranch_tendsto_zero`).
+- `exists_descentSlit` (an OPEN `V∋c` on which the descent identity holds at the cpow branch for all `z∈V`).
+  The shrunk slit `S ⊆ V ∩ {z|z−c∈slitPlane}` carries `hsmall`. **This isolates STEP 3's smallness leg to
+  pure `𝓝 c`-openness** — no longer a wall.
+
+### THE PRECISE REMAINING PLUMBING (STEP 3 full assembly → unconditional `∑Res = 0`)
+To make `∑Res = 0` unconditional, construct `RealCoverSlitSectionGeometry ω₀ g poles` — i.e. for every
+`AdaptedFRamified` cover `A` and centre `A.cs i`, a `RealCenterSlitSectionData` (13 fields). The reducers
+`ofCenterSlitSectionData → ofRegularSlitData → residueTheorem_of_realCoverSlitSectionGeometry` are PROVEN;
+`existsAdaptedFRamified` is PROVEN; the section half (`RealSlitSectionData.ofSlitSectionGerm`) is PROVEN.
+What remains is to BUILD, at each centre `c`:
+1. **The shrunk slit `Sset`** = `V ∩ {z|z−c∈slitPlane}` minus the finitely-many branch values, where `V`
+   is from `exists_descentSlit` (per-preimage, take the intersection over the finite fibre). `hS_acc`:
+   removing finitely many points from a slit accumulating at `c` preserves accumulation (slitPlane
+   accumulates at 0; intersect with open `V∋c`). `hSset_offBranch`: `eventually_notMem_branchLocus`.
+2. **`Cl i`** via `exists_clusterTraceData_descent_at_fibrePoint` (STEP 3a) — needs, on `Sset`:
+   `hs_an_sheet` (sheet args `ζʲ·w₀ z` in `s`'s analyticity domain — `s` analytic at 0 from the §5 atom,
+   `ζʲ·w₀ z→0` by shrunk slit; `AnalyticAt.eventually` + smallness), `hpp_split_sheet` (the principal-part
+   split at the sheet args — `exists_principalPart_meromorphicAt` gives the split on `𝓝[≠] 0`, transport
+   to sheet args via smallness), `hsmall` (STEP 3b). `s`-data from `exists_clusterSplit_at_fibrePoint`;
+   `ppN/ppb/ppR` from `exists_principalPart_meromorphicAt` on `meromorphicAt_straightenedIntegrand`; `G`/`hG`
+   from `analyticAt_weightedSymSum_descent`.
+3. **`hsec`** via `RealSlitSectionData.ofSlitSectionGerm` (PROVEN) — needs a `SlitSectionGerm` per `(z₀,i)`,
+   `z₀∈Sset`. The germ's 8 fields from the §5 atom evaluated at the shrunk slit:
+   - `hinv`/`hnf` from the atom's eventual `η(s a)=a` near 0 / normal form near `chart p`, transported to
+     `ζʲ·w₀ z₀` (near 0, shrunk slit) / `s(ζʲ·w₀ z₀)` (near `chart p`, continuity of `s` + `s 0=chart p`).
+   - `hpow` from `(Cl i).hw₀_pow` (eventual since `w₀` cpow); `hs_cont`/`hw₀_cont` from analyticity/diff.
+   - `htgt` (cluster sheet value in chart target) — `s(ζʲ·w₀ z₀)→chart p∈target` (open).
+   - **`hnonpole`** (cluster section point a non-pole) — the HARD-ISH field: cluster point `→ p` (a non-pole)
+     as `z₀→c`, then `eventually_nonpole_of_nonpole` (PROVEN, non-pole is open). Needs cluster→preimage
+     convergence (from the §5 normal form `s(·)→s 0`, `chart.symm` continuity).
+   - **`hsep`** (cross-cluster separation) — `ne_of_mem_disjoint` (PROVEN) + T2-separating nbhds of distinct
+     preimages `p≠p'`; needs each cluster point near its own preimage on the shrunk slit.
+4. **`hSsys`** (`exists_sphereSheetSystem`/`Sreg`), **`hanalytic`** (eventual trace analyticity — the EXISTING
+   symmetric-lever machinery `analyticAt_valueChartTrace_of_eventuallyEq`/`MovingCoherenceDatum.ofSphereSheetSystemCanon`),
+   **`hbnd`** (pole-order bound), **`hmult`** (multiplicity match — `localDeg`), **`hsplit0`** (principal-part
+   split on `𝓝[≠] 0` — `exists_principalPart_meromorphicAt`).
+All reachable; voluminous (the `SlitSectionGerm` + slit bookkeeping ≈ 600+ LoC of nested
+continuity/smallness/T2 manifold work; `hnonpole`/`hsep` need the cluster→preimage convergence; `hanalytic`/
+`hbnd` reuse the symmetric-lever machinery). NOT a new lemma — pure §5 normal-form slit geometry.
+
+### SOUNDNESS. No custom axiom, no sorry, no false/junk/circular field. The descent is the GENUINE
+symmetric sum (single-valued via roots of unity, NOT a single-valued `w₀` on `𝓝[≠]` — #11 monodromy; `w₀`
+is on the SLIT, `Rem`'s single-valuedness is the symmetric sum). `D`=whole fibre (#17). NO full RR
+(`existsAdaptedFRamified`=Riemann-inequality genericity only, upstream of RR). All 11 new decls verified
+axiom-clean via `#print axioms`. `residueTheorem_of_realCoverSlitSectionGeometry` axiom list UNCHANGED.
+
+### LEAN GOTCHAS (this session)
+- `FormalMultilinearSeries.ofScalars E c` / `ofScalarsSum (E := ℂ) c`: `E` is EXPLICIT, `c` implicit (from
+  `variable`); MUST write `ofScalarsSum (E := ℂ) (...)` or Lean infers `E:=ℕ` from the coeff function's
+  domain (wrong) → `Ring ℕ`/`NormedAddCommGroup ℕ` synth failures. `ofScalarsSum c = (ofScalars ℂ c).sum`
+  by `rfl`.
+- The `ofScalars` RADIUS: do NOT use `ofScalars_radius_eq_inv_of_tendsto` (needs a ratio `tendsto`, which a
+  subsequence-with-zeros lacks). Use `le_radius_of_bound C/ρ^d` directly with `r:=ρ^m`,
+  `‖coeff(mk+d)‖·(ρ^m)^k = (‖coeff(mk+d)‖·ρ^{mk+d})·ρ^{-d} ≤ C/ρ^d` (the `ρ^{-d}` absorbs the offset; needs
+  `ρ>0`, handle `ρ=0` separately). `ofScalars_norm` (NormOneClass) gives `‖ofScalars c k‖=‖c k‖`.
+- `hasFPowerSeriesAt_iff`: `HasFPowerSeriesAt f p z₀ ↔ ∀ᶠ z in 𝓝 0, HasSum (fun n => z^n • p.coeff n) (f(z₀+z))`
+  — the `f(0+z)` needs `zero_add`/`simpa` after pulling back along `u↦ζʲ·u`.
+- `Function.Injective.hasSum_iff (hg) (hf : ∀ x∉range g, f x=0) : HasSum (f∘g) a ↔ HasSum f a` — the right
+  reindex tool; the off-range vanishing is the `m∤(n+1)` ⟹ `if`-coeff `=0` (convert ℤ↔ℕ divisibility via
+  `Int.natCast_dvd_natCast` + `(n:ℤ)+1=((n+1:ℕ):ℤ)`).
+- `omega` can't expand `m*(k±1)` (nonlinear); pre-`rw [Nat.mul_succ]`/`conv ... rw [show k=(k-1)+1]` first,
+  and beta-reduce un-applied `fun k ↦ ...` with `show` before `omega`.
+- `Metric.eball`/`Metric.mem_eball` (NOT deprecated `EMetric.ball`/`EMetric.mem_ball`) for the
+  `HasFPowerSeriesOnBall.hasSum` field's ball membership.
+- `ramifiedTrace_slit_eq`: `(w₀ z)^(m-1)` (NAT pow) vs `w₀ z^(1-m)` (ZPOW) — bridge via `zpow_natCast` +
+  `zpow_add₀ hw₀_ne` with `(1-(m:ℤ))+((m:ℤ)-1)=0`.
