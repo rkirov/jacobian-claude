@@ -5,6 +5,7 @@ Authors: Rado Kirov
 -/
 import Jacobians.Dolbeault.SerreResidueRamifiedFullFibreBuilder
 import Jacobians.Dolbeault.SerreResidueRamifiedMultiplicityBridge
+import Jacobians.Dolbeault.SerreResidueGateAInftyBuilder
 
 /-!
 # The fibre-cluster partition: reducing `FibreClusterReindex.hgeom_fibre` to the bijection (TARGET 1)
@@ -558,5 +559,33 @@ theorem hderiv_match_of_section {f : MeromorphicFunction X} {s₁ s₂ : ℂ →
       (hcont rfl hs₁_cont) (hcont hs₂z hs₂_cont)
       (hrinv hs₁_src hs₁_sec) (hrinv hs₂_src hs₂_sec)
   exact heq.deriv_eq
+
+/-! ## The Gate-A capstone via the clustering datum
+
+Composing `FibreClusterReindex.ofClusterReindexFamily` with the PROVEN Gate-A theorem
+`residueSum_eq_zero_of_reindex_adaptedFRamified` exhibits the full reduction: for a genuine meromorphic
+numerator `g`, the total residue `∑Res = 0` follows from an `AdaptedFRamified` (TARGET 2's off-centre/∞
+genericity, already discharged into `GateAInftyData`) together with, at each finite pole-value centre, a
+per-centre `FibreClusterReindex` built from a slit-wide family of `ClusterReindexData` (TARGET 1, with
+the chart reconciliation discharged — only the conservation-of-number bijection + point coincidence
+remain). -/
+
+/-- **Gate A `∑Res = 0` from the clustering datum** (the precise residual exhibited).  For a genuine
+meromorphic numerator `g`, an `AdaptedFRamified` datum `A`, and at each finite pole-value centre `A.cs i`
+a per-centre `FibreClusterReindex` (e.g. built via `FibreClusterReindex.ofClusterReindexFamily` from a
+slit-wide family of `ClusterReindexData`), the total residue of `α = ω₀·g` vanishes:
+
+> `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`.
+
+This is `residueSum_eq_zero_of_reindex_adaptedFRamified`, restated here to anchor the partition skeleton
+to the Gate-A goal: the *only* genuinely-remaining analytic content is the per-centre
+`FibreClusterReindex`, whose hard `hgeom_fibre` field is now reduced (via this file's
+`valueChartTrace_eq_clusterSum_of_clusterReindexData`) to the conservation-of-number bijection + point
+coincidence at each slit value. -/
+theorem residueSum_eq_zero_of_clusterReindex {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {poles : Finset X} (A : AdaptedFRamified ω₀ g poles)
+    (R : ∀ i, FibreClusterReindex ω₀ g.toFun A.f A.hdiv poles (A.cs i)) :
+    ∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0 :=
+  residueSum_eq_zero_of_reindex_adaptedFRamified A R
 
 end Jacobians.Dolbeault.SerreResidueTheorem
