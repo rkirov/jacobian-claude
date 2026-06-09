@@ -4000,3 +4000,112 @@ left as the precise residual are the genuine Forster §4/§5 geometry, NOT faked
   `z ∈ Sset` + the multiplicity match.
 - `fun x hx => lemma … hx` where `x` is used only in `hx`'s type (lemma takes `{x}` implicit) → rename to
   `fun _ hx` to avoid the `unusedVariables` lint.
+
+---
+
+## 2026-06-09 (session 2) — Gate-A `∑Res = 0`: the per-slit §5 SECTION half DONE; the residue theorem is gated on exactly ONE genuinely-new analytic lemma (the `Rem` symmetric-function descent) + mechanical slit plumbing
+
+**Status: `∑Res = 0` is NOT yet unconditional.** This session built and committed (all axiom-clean
+`[propext, Classical.choice, Quot.sound]`, full glob green 8584) the **entire SECTION half** of the
+residue obligation `RealCoverSlitSectionGeometry`, and DEFINITIVELY characterised the remaining content
+as exactly TWO pieces, only ONE of which is a genuinely-new analytic lemma.
+
+**New file: `Jacobians/Dolbeault/SerreResidueRamifiedRealSlitSection.lean`** (sibling, imports
+`SerreResidueRamifiedRealSlitAssembly`). Delivered:
+- `cpow_slitBranch_tendsto_zero` — the slit branch `(z−c)^{1/m} → 0` at `c` (the slit-shrinking
+  mechanism: pushes the cluster args `ζʲ·w₀ z` into the §5 inverse-property domain).
+- `eventually_nonpole_of_nonpole` — **non-pole is an OPEN condition** (`toRiemannSphere` continuous near a
+  non-pole, finite value `≠ ∞`); gives `hcs_np` for cluster points near a non-pole fibre preimage.
+- `eventually_holoRepr_clusterSheet_eq` — the eventual §5 section property `f.holoRepr(chart.symm(
+  clusterSheet … j w)) = w` near a slit value `z₀`, by **continuity-pullback** of
+  `exists_clusterSplit_at_fibrePoint`'s eventual `𝓝 0` inverse + `𝓝(chart p)` normal-form facts
+  (`clusterSheet_sect` localised). THE HEART of `hcs_sec`.
+- `eventually_clusterSheet_mem_target` (`hsrc`), `clusterArg_inverse_self` (feeds `hwithin` via the proven
+  `clusterSection_within_cluster_inj`), `ne_of_mem_disjoint` (`hcross` via T2-disjoint nbhds).
+- `SlitSectionGerm` — the per-`(z₀,i)` §5 normal-form section germ data (the straightening coord `η`
+  matching `(Cl i).s`; the eventual inverse/normal-form/slit-power facts; chart-target locality; the
+  at-`z₀` non-pole; cross-cluster separation).
+- **`RealSlitSectionData.ofSlitSectionGerm`** — assembles a FULL `RealSlitSectionData` (ALL FIVE fields
+  `hcs_sec`/`hcs_np`/`hwithin`/`hcross`/`hsrc`) from a slit-wide germ family + the multiplicity match +
+  `z₀ ∈ Sset`. **So the SECTION half of `RealCoverSlitSectionGeometry` is DONE.**
+
+### DEFINITIVE ASSESSMENT — exactly what remains to make `∑Res = 0` unconditional
+
+The two reducers `RealSlitSectionData.toClusterSplitData → RealCenterClusterFamily.ofRegularSlitData →
+RealCenterSlitSectionData → residueTheorem_of_realCoverSlitSectionGeometry` are PROVEN. To inhabit
+`RealCenterSlitSectionData` at each finite pole-value centre `c`, two pieces remain:
+
+**(1) THE GENUINELY-NEW ANALYTIC LEMMA — the `Rem` symmetric-function descent.** To construct the
+per-preimage cluster data `Cl i : ClusterTraceData` (a required FIELD of `RealCenterSlitSectionData`) via
+`ClusterTraceData.ofNormalForm` / `ofFibrePointNormalForm`, the caller must supply `Rem`/`hRem_an`/
+`hRem_slit` (and `hpp_split_sheet`, `hsplit0` — mechanical from `exists_principalPart_meromorphicAt`).
+The one hard input is:
+> **`hRem_an : AnalyticAt ℂ Rem c`** where, on the slit, `Rem z = ∑_{j<m} ppR(ζʲ·w₀ z)·deriv(ζz ↦ ζʲ·w₀ ζz) z`,
+> `ppR` the ANALYTIC remainder of the straightened integrand `H(u)=chartIntegrand·s'(u)`, `w₀ z=(z−c)^{1/m}`.
+
+This is the standard "**the trace of a holomorphic form is holomorphic**" (Miranda §VIII.3 (3.1), Forster
+§5). It is TRUE (closed form `Rem z = ∑_{k≥0} a_{m(k+1)-1}·(z−c)^k`, `a_n` = Taylor coeffs of `ppR` at 0,
+via the roots-of-unity collapse `∑_j ζ^{j(n+1)} = m·[m∣n+1]` already in repo as `rootsOfUnity_geom_zsum`).
+It is NOT a triviality: term-by-term it's UNBOUNDED at `c` (`w₀'(z)=(1/m)w₀^{1−m}→∞` for `m≥2`); only the
+SYMMETRIC sum cancels — so `MeromorphicAt.analyticAt` (needs continuity) doesn't trivially apply.
+**It is NOT in Mathlib and has been carried as a DATA HYPOTHESIS throughout the entire ramified-residue
+subtree** (`RamifiedSheetData.hRem_an`, `ClusterTraceData.hRem_an`, `ofNormalForm`, `ofFibrePointNormalForm`)
+— it is the single genuinely-new analytic lemma blocking the residue theorem. Cleanest reusable
+formulation (a real ~200–300 LoC formal-power-series development):
+> **`symmetricTrace_analyticAt`**: a `ζ`-invariant analytic germ `P` (`P(ζ·u)=P(u)`, `ζ` primitive `m`-th
+> root) factors as `P = Q ∘ (·^m)` with `Q` analytic — equivalently `z ↦ ∑_{j<m} G(ζʲ·(z−c)^{1/m})` is
+> analytic at `c` for `G` analytic at `0`.
+
+Scoped route (all tools EXIST, verified): `pf := P`'s `HasFPowerSeriesOnBall`; `iteratedDeriv_comp_const_mul`
+gives the coeff scaling `coeff n · ζ^n = coeff n` ⟹ non-`m|n` coeffs vanish; `FormalMultilinearSeries.ofScalars`
+builds `Q` from `b k := pf.coeff (m*k)`; radius `qf.radius ≥ (pf.radius)^m` via
+`FormalMultilinearSeries.norm_mul_pow_le_of_lt_radius` + `le_radius_of_bound`; the factorization
+`P(w)=Q(w^m)` via `HasSum` reindex (`hasSum_sum` over `Fin m` + the roots collapse + divisibility reindex
+`n=mk`). RISK: the `HasSum`-divisibility reindex and the `ofScalarsSum`↔`Q` connection are delicate
+(several hundred LoC, genuine effort). This was NOT attempted to closure this session (high risk of a
+broken intermediate state); it is the precise make-or-break.
+
+**(2) THE MECHANICAL SLIT PLUMBING (reachable, voluminous, NOT a new lemma).** Construct the shrunk slit
+`Sset ⊆ {z | z−c ∈ slitPlane}` near `c` (off the finitely-many branch VALUES so `hSset_offBranch`; still
+accumulating at `c` for `hS_acc` — removing finitely many points preserves accumulation) on which the
+`SlitSectionGerm` smallness hypotheses hold for every `z₀ ∈ Sset`: the cluster args `ζʲ·w₀ z₀` lie in the
+§5 atom's open `𝓝 0` inverse domain (use `cpow_slitBranch_tendsto_zero` + `‖ζ^j‖=1` from
+`IsPrimitiveRoot.norm'_eq_one` ⟹ `|ζʲ·w₀ z₀|=|z₀−c|^{1/m}`; pick `δ` per-preimage, take min over the
+finite fibre), the cluster point is in the non-pole nbhd of `D.xs i` (`eventually_nonpole_of_nonpole` +
+cluster point `→ p`), and `hsep` via `t2_separation` of the distinct preimages. Also need `hSsys`
+(sphere sheet system off-branch, from `exists_sphereSheetSystem`/`Sreg`), `hanalytic` (eventual trace
+analyticity — the EXISTING symmetric-lever machinery `analyticAt_valueChartTrace_of_eventuallyEq` /
+`MovingCoherenceDatum.ofSphereSheetSystemCanon`), and `hbnd` (pole-order bound). All reachable;
+voluminous; blocked anyway by (1).
+
+### Are the §5 SECTION facts reachable? YES — all five are DONE (this session).
+- `hcs_sec` ✅ `eventually_holoRepr_clusterSheet_eq` (continuity-pullback of the §5 atom's eventual facts).
+- `hcs_np` ✅ `eventually_nonpole_of_nonpole` (non-pole is open) — supplied at-`z₀` in `SlitSectionGerm.hnonpole`.
+- `hwithin` ✅ proven `clusterSection_within_cluster_inj` + `clusterArg_inverse_self` + branch-≠0 (`z₀∈Sset`).
+- `hcross` ✅ `ne_of_mem_disjoint` (T2) — supplied at-`z₀` in `SlitSectionGerm.hsep`.
+- `hsrc` ✅ `eventually_clusterSheet_mem_target`.
+
+### Soundness (no false/circular field). The §5 sections are genuine (`exists_clusterSplit_at_fibrePoint`).
+`D`=WHOLE fibre (#17). Slit values regular (off-branch). The `Rem` descent left as the residual is the
+GENUINE symmetric-function descent (its closed form is correct; it's TRUE, not faked); it is NOT the
+multivalued `w₀` on `𝓝[≠]` (#11 monodromy — `w₀` lives on the SLIT, `Rem`'s single-valuedness is the
+SYMMETRIC sum). No full RR (only `existsAdaptedFRamified` = Riemann-inequality genericity, upstream of RR).
+All new decls verified axiom-clean via `#print axioms`; no sorry, no custom axiom, no false field. The
+residue theorem `residueTheorem_of_realCoverSlitSectionGeometry` axiom list UNCHANGED
+`[propext, Classical.choice, Quot.sound]`.
+
+### LEAN GOTCHAS (this session)
+- `Complex.continuousAt_cpow_zero_of_re_pos {z}` is the EXPONENT-implicit BINARY-cpow continuity at
+  `(0, z)` (`fun p => p.1^p.2`); for the unary `fun w => w^(m⁻¹)` at 0, compose with
+  `Tendsto.prodMk_nhds … tendsto_const_nhds` then `simpa [Complex.zero_cpow hne]`.
+- `‖ζ^j‖=1` for a primitive `m`-th root: `IsPrimitiveRoot.norm'_eq_one hζ hm.ne'` then `norm_pow`+`one_pow`.
+- `clusterSection_within_cluster_inj` takes `hm : D.mult i = (Cl i).m` (NOT the reverse) — pass
+  `(hmult i).symm` when `hmult : (Cl i).m = D.mult i`.
+- `clusterSheet_sect` only uses `hζ.pow_eq_one`, but its signature demands `IsPrimitiveRoot ζ m` — pass the
+  real root (free from `(Cl i).hζ`).
+- `eventually_nonpole_of_nonpole`: `{∞}ᶜ` open (`isOpen_compl_singleton`), pull back along the continuous
+  `toRiemannSphere` (`contMDiffAt_toRiemannSphere_of_nonneg.continuousAt`), then `toRiemannSphere_of_pole`
+  contrapositive.
+- `FormalMultilinearSeries.ofScalars E c` (Mathlib `Analysis/Analytic/OfScalars.lean`) builds a 1-D series
+  from a coeff sequence — the right tool for the `Rem` `Q`-construction; `noncomputable`; radius via
+  `inv_le_ofScalars_radius_of_tendsto` (ratio) or generic `le_radius_of_bound`.
