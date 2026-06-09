@@ -311,6 +311,21 @@ theorem sheet_sheetIndexOf {b₀ : ℂ}
   rw [S.fibre_eq _ S.mem_V] at hmem
   exact hmem.choose_spec
 
+/-- **`sheetIndexOf` inverts the sheet map at the base.**  For `x = S.sheet k (coe b₀)`, the recovered
+index `sheetIndexOf S hx` is `k` — the sheets are injective in the index at the base (`sheet_inj`), so
+the index hitting `S.sheet k (coe b₀)` is `k` itself.  (`σ` is a section of `k ↦ S.sheet k (coe b₀)`.) -/
+theorem sheetIndexOf_sheet {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere))) (k : Fin S.n)
+    (hk : f.toRiemannSphere (S.sheet k (((b₀ : ℂ) : RiemannSphere)))
+      = (((b₀ : ℂ) : RiemannSphere))) :
+    sheetIndexOf S hk = k := by
+  -- Both `sheetIndexOf S hk` and `k` are sheet indices hitting `S.sheet k (coe b₀)`; sheets are
+  -- injective in the index at the base, so the indices coincide.
+  apply S.sheet_inj (((b₀ : ℂ) : RiemannSphere)) S.mem_V
+  show S.sheet (sheetIndexOf S hk) (((b₀ : ℂ) : RiemannSphere))
+    = S.sheet k (((b₀ : ℂ) : RiemannSphere))
+  exact sheet_sheetIndexOf S hk
+
 /-- **The per-pole moving section through the `j`-th pole.**  Given a sphere sheet system `S` at `coe
 b₀` and a pole `x` in the fibre `F⁻¹(coe b₀)`, the moving section `b' ↦ S.sheet (sheetIndexOf S hx)
 (coe b')` of `f.holoRepr` through `x` at the base.  This is `holoReprSheet S (sheetIndexOf S hx)`,
@@ -348,5 +363,41 @@ theorem poleMovingSection_mem_fibre {b₀ : ℂ}
     (hx : f.toRiemannSphere x = (((b₀ : ℂ) : RiemannSphere))) :
     poleMovingSection S hx = (fun b' => S.sheet (sheetIndexOf S hx) (((b' : ℂ) : RiemannSphere))) :=
   rfl
+
+/-! ### The separation at a pole-value: pole sub-fibre = full fibre
+
+The per-pole field `secFin`/`hselFin` of `residueSum_eq_zero_of_globalCoverData` glues the moving
+sections (indexed by the **pole sub-fibre** `fibreReg hac (cs i)`) to the moving fibre `Φ b'` (the
+**full** fibre), via a bijection `(Φ b').ι ≃ (fibreReg hac (cs i)).ι`.  This requires the pole
+sub-fibre over `cs i` to be the *whole* fibre — the **separation condition**: every point of
+`F⁻¹(coe cs_i)` is a pole of `α`.
+
+This is the repo's honest pole/regular separation (the Gate-D refinement of the global selection;
+cf. the soundness note in `FormTraceGlobalGeometric`): with a full-fibre `Φ`, the finite glue
+germ-equals the pole sub-fibre trace *iff* the cover separates the poles from the regular fibre points
+over each pole-value — and a full-fibre selection forces the strong form (full fibre = poles). -/
+
+/-- **The pole-value separation condition.**  At the finite pole-value `c`, every point of the fibre
+`F⁻¹(coe c)` is a pole of `α` (`x ∈ poles`).  Equivalently, the pole sub-fibre over `c` is the whole
+fibre.  This is the Gate-D separation that makes the per-pole moving sections enumerate the full fibre. -/
+def PoleValueSeparated (f : MeromorphicFunction X) (poles : Finset X) (c : ℂ) : Prop :=
+  ∀ x, f.toRiemannSphere x = (((c : ℂ) : RiemannSphere)) → x ∈ poles
+
+/-- **`sheetIndexOf` of the poles is surjective under separation.**  At a separated pole-value `coe b₀`
+(every fibre point a pole), the indices `sheetIndexOf S (h : pole in fibre)` ranging over the poles
+`poleFibre f poles b₀` hit **every** sheet index: each `S.sheet k (coe b₀)` is a fibre point, hence a
+pole, hence equal to some `poleFibre`-point whose recovered index is `k` (`sheetIndexOf_sheet`). -/
+theorem sheetIndexOf_pole_surjective {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere)))
+    (poles : Finset X) (hsep : PoleValueSeparated f poles b₀) (k : Fin S.n) :
+    ∃ x : poleFibre f poles b₀,
+      sheetIndexOf S (x := (x : X)) (mem_poleFibre.mp x.2).2 = k := by
+  -- `S.sheet k (coe b₀)` is a fibre point over `coe b₀`, hence a pole (separation), hence a member of
+  -- `poleFibre f poles b₀`; its recovered index is `k` by `sheetIndexOf_sheet`.
+  have hfib : f.toRiemannSphere (S.sheet k (((b₀ : ℂ) : RiemannSphere)))
+      = (((b₀ : ℂ) : RiemannSphere)) := S.sheet_section k _ S.mem_V
+  have hpole : S.sheet k (((b₀ : ℂ) : RiemannSphere)) ∈ poles := hsep _ hfib
+  refine ⟨⟨S.sheet k (((b₀ : ℂ) : RiemannSphere)), mem_poleFibre.mpr ⟨hpole, hfib⟩⟩, ?_⟩
+  exact sheetIndexOf_sheet S k hfib
 
 end Jacobians.Dolbeault.FormTraceGlobal
