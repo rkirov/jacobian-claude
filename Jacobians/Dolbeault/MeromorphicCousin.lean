@@ -5,6 +5,7 @@ Authors: Rado Kirov
 -/
 import Jacobians.Dolbeault.GeneralMittagLeffler
 import Jacobians.Dolbeault.CechH0
+import Jacobians.Dolbeault.CousinResidueConnecting
 
 /-!
 # Forster §17.2–17.3 + §15 — the meromorphic Cousin connecting map and the Serre residue functional
@@ -405,6 +406,109 @@ noncomputable def connectingClass (μ : CoverMLDistribution 𝔘 ω₀ K) : 𝔘
   Submodule.Quotient.mk μ.connectingCocycle
 
 end CoverMLDistribution
+
+/-! ## The meromorphic Cousin solvability `H¹(X, ℳ) = 0` and the Serre residue functional
+
+The genuinely-greenfield Serre wall is the **surjectivity of the connecting map on cohomology
+classes** — equivalently `H¹(X, ℳ⁽¹⁾) = 0` (every additive meromorphic Cousin problem on the Leray
+cover solves; Forster §15).  Concretely: every Čech 1-cocycle of `𝒪_K` is, *up to a coboundary*, the
+connecting cocycle `δμ` of some Mittag–Leffler distribution `μ`.
+
+We isolate this — together with the Gate-A residue descent — into the structure
+`MeromorphicCousinSolvable`, whose inhabitants build the full `MittagLefflerConnection` (hence
+`CousinResidueData` → the entire Serre pairing).  The structure is **sound**: the soundness field
+`resCocycle_connecting` *forces* `resCocycle` to read the genuine Laurent residue (`μ.res`) of every
+distribution's connecting cocycle, so it cannot be a junk/zero map; and `nondegenerate` forces it
+nonzero on the cup.  No custom axiom, no false field. -/
+
+variable {𝔘 ω₀ K}
+
+/-- **[ISOLATED WALL — meromorphic Cousin solvability `H¹(X, ℳ) = 0` + the residue descent].**
+
+The genuinely-new Serre cohomology datum (Forster §15 + §17.2–17.3): the global residue functional on
+`𝒪_K` cocycles, *pinned to the genuine Laurent residue of the Mittag–Leffler connecting map*, with the
+connecting map surjective on cohomology classes.
+
+* `resCocycle` — Forster's `Res` on cocycles, ℂ-linear.
+* `resCocycle_connecting` — **the soundness/definition tie**: `resCocycle (δμ) = μ.res` for every
+  cover-adapted distribution `μ`, where `μ.res = ∑ₐ Resₐ(ω₀·gᵢ)` is the genuine Laurent residue sum
+  (`CoverMLDistribution.res`).  This forces `resCocycle` to be the genuine residue (not smooth junk),
+  and — combined with `surjective` — determines it on a cohomologically-spanning set.
+* `vanish_coboundary` — `resCocycle` vanishes on `B¹` (the descent to `cechH1`; a coboundary's lift is
+  holomorphic, residue `0`, Forster §17.3 — the Gate-A-wired well-definedness).
+* `surjective` — **`H¹(X, ℳ) = 0`**: every cocycle class is `[δμ]` for some distribution `μ` (the
+  connecting map is surjective onto `cechH1 K`; Forster §15 Mittag–Leffler solvability).
+* `nondegenerate` — the §17.6 `dz/z` non-degeneracy on the cup-then-residue. -/
+structure MeromorphicCousinSolvable (𝔘 : FiniteCover X) (ω₀ : HolomorphicOneForms X)
+    (K : Divisor X) where
+  /-- The global residue of a representing Čech 1-cocycle, ℂ-linear (Forster's `Res(c)`). -/
+  resCocycle : ↥(𝔘.toFiniteFamily.cocycles1 K) →ₗ[ℂ] ℂ
+  /-- **Soundness/definition tie**: `resCocycle` reads the genuine Laurent residue `μ.res` of every
+  distribution's connecting cocycle (forcing it to be the genuine residue, not junk). -/
+  resCocycle_connecting : ∀ μ : CoverMLDistribution 𝔘 ω₀ K,
+    resCocycle μ.connectingCocycle = μ.res
+  /-- **Well-definedness on classes**: `resCocycle` vanishes on coboundaries `B¹`. -/
+  vanish_coboundary : ∀ c : ↥(𝔘.toFiniteFamily.cocycles1 K),
+    c ∈ (𝔘.toFiniteFamily.coboundaries1 K).submoduleOf (𝔘.toFiniteFamily.cocycles1 K) →
+      resCocycle c = 0
+  /-- **`H¹(X, ℳ) = 0`** — the connecting map is surjective on cohomology: every cocycle class is
+  `[δμ]` for some Mittag–Leffler distribution `μ` (Forster §15 meromorphic Cousin solvability). -/
+  surjective : ∀ c : ↥(𝔘.toFiniteFamily.cocycles1 K),
+    ∃ μ : CoverMLDistribution 𝔘 ω₀ K, Submodule.Quotient.mk c = μ.connectingClass
+  /-- **§17.6 `dz/z` non-degeneracy** on the descended functional composed with the cup product. -/
+  nondegenerate : ∀ (D : Divisor X) (v : lSysModule (K - D)), v ≠ 0 →
+    ∃ ξ : 𝔘.toFiniteFamily.cechH1 D,
+      (Submodule.liftQ _ resCocycle vanish_coboundary)
+        (cup (𝔘 := 𝔘.toFiniteFamily) D K v ξ) = 1
+
+namespace MeromorphicCousinSolvable
+
+/-- **The residue of a class via the connecting map.**  For any cocycle `c`, the descended residue of
+its class equals `μ.res` for any distribution `μ` whose connecting cocycle is cohomologous to `c`.
+This is the connecting-map formula `Res([c]) = ∑ₐ Resₐ(μ)` — the genuine Laurent residue, read on a
+Mittag–Leffler lift.  *Proof.*  `c ~ δμ` (cohomologous), so `liftQ resCocycle (mk c) = liftQ
+resCocycle (mk (δμ)) = resCocycle (δμ) = μ.res` (`resCocycle_connecting`). -/
+theorem res_class_eq (S : MeromorphicCousinSolvable 𝔘 ω₀ K)
+    {c : ↥(𝔘.toFiniteFamily.cocycles1 K)} {μ : CoverMLDistribution 𝔘 ω₀ K}
+    (h : Submodule.Quotient.mk c = μ.connectingClass) :
+    (Submodule.liftQ _ S.resCocycle S.vanish_coboundary) (Submodule.Quotient.mk c) = μ.res := by
+  rw [h, CoverMLDistribution.connectingClass, Submodule.liftQ_apply, S.resCocycle_connecting]
+
+/-- **The assembled Mittag–Leffler connecting map** (`CousinResidueConnecting.MittagLefflerConnection`)
+from the Cousin solvability.  The three `MittagLefflerConnection` fields are exactly the residue
+functional, its coboundary-vanishing, and the non-degeneracy — re-exposed here with the *additional*
+soundness that `resCocycle` is the genuine residue (`resCocycle_connecting`) and that the connecting
+map is surjective (`surjective`, `H¹(ℳ) = 0`). -/
+def toMittagLefflerConnection (S : MeromorphicCousinSolvable 𝔘 ω₀ K) :
+    MittagLefflerConnection ω₀ 𝔘 K where
+  resCocycle := S.resCocycle
+  vanish_coboundary := S.vanish_coboundary
+  nondegenerate := S.nondegenerate
+
+@[simp] theorem toMittagLefflerConnection_resCocycle (S : MeromorphicCousinSolvable 𝔘 ω₀ K) :
+    S.toMittagLefflerConnection.resCocycle = S.resCocycle :=
+  rfl
+
+/-- **The full `CousinResidueData`** from the Cousin solvability (via the connecting map). -/
+def toCousinResidueData (S : MeromorphicCousinSolvable 𝔘 ω₀ K) : CousinResidueData 𝔘 K :=
+  S.toMittagLefflerConnection.toCousinResidueData
+
+/-- **The full Serre residue realization** `GlobalResidue 𝔘 K` from the Cousin solvability. -/
+def toGlobalResidue (S : MeromorphicCousinSolvable 𝔘 ω₀ K) : GlobalResidue 𝔘 K :=
+  S.toMittagLefflerConnection.toGlobalResidue
+
+/-- **§17.6 injectivity of the residue pairing** from the Cousin solvability. -/
+theorem pairing_injective (S : MeromorphicCousinSolvable 𝔘 ω₀ K) (D : Divisor X) :
+    Function.Injective (S.toCousinResidueData.pairing D) :=
+  S.toCousinResidueData.pairing_injective D
+
+/-- **§17.6 — the EASY-half dimension bound `lDim (K−D) ≤ h1Dim D`** from the Cousin solvability. -/
+theorem lDim_le_h1Dim (S : MeromorphicCousinSolvable 𝔘 ω₀ K) (D : Divisor X)
+    (hfin : FiniteDimensional ℂ (𝔘.toFiniteFamily.cechH1 D)) :
+    lDim (X := X) (K - D) ≤ 𝔘.toFiniteFamily.h1Dim D :=
+  S.toCousinResidueData.lDim_le_h1Dim D hfin
+
+end MeromorphicCousinSolvable
 
 end Jacobians.Dolbeault
 
