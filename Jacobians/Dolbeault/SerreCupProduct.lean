@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.Dolbeault.CechH0
+import Jacobians.Dolbeault.CanonicalFormIso
 
 /-!
 # Forster §17.5 — the cup product `L(K−D) × H¹(𝒪_D) → H¹(𝒪_K)` (the residue-pairing's product)
@@ -351,5 +352,50 @@ theorem cupH1_eq_zero_of_germZero {D K : Divisor X} {f : MeromorphicFunction X}
     simp only [cupCochain1_apply, globalGerm_eq_zero_of_germZero hf0, zero_mul, Pi.zero_apply]
   have : cupCocyclesMap hf c = 0 := Subtype.ext hzero
   rw [this]; exact Submodule.zero_mem _
+
+/-! ## Part 7 — the bundled bilinear cup `cup : lSysModule (K−D) →ₗ (cechH1 D →ₗ cechH1 K)`
+
+Bundling Parts 5–6: the cup product as an ℂ-linear map *in `f`* into the space of linear maps
+`cechH1 D →ₗ[ℂ] cechH1 K` (each `cupH1 hf` is already linear *in `ξ`*).  It is first defined on
+`↥(linearSystem (K−D))` (`cupSubtype`, ℂ-linear by `cupH1_add`/`cupH1_smul`) and then descends through
+the germ-zero junk (`cupH1_eq_zero_of_germZero`) to the junk-free `lSysModule (K−D)` — exactly the
+junk-free source the §17.5 residue pairing `ι_D : L(K−D) → (cechH1 D)*` uses (no `lDim ≡ 0` collapse). -/
+
+/-- The cup product as an ℂ-linear map *in `f`* on the linear system `↥(linearSystem (K−D))`, valued
+in `cechH1 D →ₗ[ℂ] cechH1 K`. -/
+noncomputable def cupSubtype (D K : Divisor X) :
+    ↥(linearSystem (X := X) (K - D)) →ₗ[ℂ] (𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 K) where
+  toFun f := cupH1 f.2
+  map_add' f g := by
+    refine LinearMap.ext fun ξ => ?_
+    exact cupH1_add f.2 g.2 (add_mem f.2 g.2) ξ
+  map_smul' a f := by
+    refine LinearMap.ext fun ξ => ?_
+    exact cupH1_smul a f.2 (Submodule.smul_mem _ a f.2) ξ
+
+@[simp] theorem cupSubtype_apply (D K : Divisor X) (f : ↥(linearSystem (X := X) (K - D)))
+    (ξ : 𝔘.cechH1 D) :
+    cupSubtype D K f ξ = cupH1 f.2 ξ := rfl
+
+/-- **The bundled bilinear cup product** `cup : lSysModule (K−D) →ₗ[ℂ] (cechH1 D →ₗ[ℂ] cechH1 K)`.
+ℂ-linear in `f` (the junk-free source `lSysModule`) and in `ξ` — the algebraic input the Forster
+§17.5 residue pairing `⟨f, ξ⟩ = Res(f·ω₀·ξ)` consumes, with the global residue `Res : cechH1 K → ℂ`
+applied afterwards.  Descends from `cupSubtype` because a germ-zero `f` gives the zero cup map
+(`cupH1_eq_zero_of_germZero`), so the cup is well-defined on germ classes. -/
+noncomputable def cup (D K : Divisor X) :
+    lSysModule (K - D) →ₗ[ℂ] (𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 K) :=
+  Submodule.liftQ ((germZeroSubmodule (X := X)).submoduleOf (linearSystem (X := X) (K - D)))
+    (cupSubtype D K) (by
+    -- kernel inclusion: a germ-zero `f` (in `germZeroSubmodule.submoduleOf (linearSystem (K−D))`)
+    -- maps to the zero linear map.
+    intro f hf
+    rw [Submodule.submoduleOf, Submodule.mem_comap] at hf
+    rw [LinearMap.mem_ker]
+    refine LinearMap.ext fun ξ => ?_
+    exact cupH1_eq_zero_of_germZero f.2 (fun x => hf x) ξ)
+
+@[simp] theorem cup_mk (D K : Divisor X) (f : ↥(linearSystem (X := X) (K - D))) (ξ : 𝔘.cechH1 D) :
+    cup D K (Submodule.Quotient.mk f) ξ = cupH1 f.2 ξ :=
+  rfl
 
 end Jacobians.Dolbeault
