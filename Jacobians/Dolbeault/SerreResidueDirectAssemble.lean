@@ -422,4 +422,98 @@ noncomputable def directTraceGeometry_ofAdaptedSimpleInfty
     (fun a _ha hfa => inftyFibreEnum_surj f hfa)
     hnonpole_inf_an hreg hbnd hcont_int R₀ hR₀_an hR₀0 hR₀_eq hcoh_full
 
+/-! ## The canonical-selection enumeration discharge (`hΦ_inj`/`hΦ_mem`/`hΦ_surj`)
+
+The canonical full-fibre selection `canonicalFibreSelection g f hdiv` discharges the three
+`Φ`-enumeration inputs of `directTraceGeometry_ofAdapted` from a *single* genericity hypothesis: every
+**pole-value** `coe p` (a value with some `α`-pole over it) is a **good value** (off the branch locus,
+`g`-meromorphic at the fibre — `GoodValue`).  At a good value the canonical selection injectively
+enumerates the full fibre (range = fibre); at a non-good value it is the empty datum, whose `xs` is
+vacuous, and the genericity forces *no* `α`-pole over such a value (so `hΦ_surj` holds vacuously). -/
+
+/-- **`hΦ_inj` for the canonical selection.**  Always holds: at good values by
+`canonicalFibreSelection_xs_injective`; at non-good values the datum is empty (`xs` over `Empty`). -/
+theorem canonicalFibreSelection_hΦ_inj (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0)
+    (p : ℂ) : Function.Injective (canonicalFibreSelection g f hdiv p).xs := by
+  by_cases h : GoodValue g f hdiv p
+  · exact canonicalFibreSelection_xs_injective g f hdiv h
+  · rw [canonicalFibreSelection, dif_neg h]; intro i; exact i.elim
+
+/-- **`hΦ_mem` for the canonical selection.**  Each enumerated point lies in the fibre `F⁻¹(coe p)`:
+at good values from `canonicalFibreSelection_xs_range`; at non-good values vacuously (no points). -/
+theorem canonicalFibreSelection_hΦ_mem (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0)
+    (p : ℂ) (i : (canonicalFibreSelection g f hdiv p).ι) :
+    f.toRiemannSphere ((canonicalFibreSelection g f hdiv p).xs i) = (((p : ℂ) : RiemannSphere)) := by
+  by_cases h : GoodValue g f hdiv p
+  · have hmem : (canonicalFibreSelection g f hdiv p).xs i ∈ Set.range (canonicalFibreSelection g f hdiv p).xs :=
+      ⟨i, rfl⟩
+    rw [canonicalFibreSelection_xs_range g f hdiv h, Set.mem_preimage, Set.mem_singleton_iff] at hmem
+    exact hmem
+  · rw [canonicalFibreSelection, dif_neg h] at i; exact i.elim
+
+/-- **`hΦ_surj` for the canonical selection, from pole-value goodness.**  If every value with an
+`α`-pole over it is good (`hgood`), the canonical selection catches all poles: at a good pole-value the
+fibre range covers it; a non-good value has no `α`-pole (contrapositive of `hgood`). -/
+theorem canonicalFibreSelection_hΦ_surj (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0)
+    {poles : Finset X}
+    (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
+      GoodValue g f hdiv p)
+    (p : ℂ) (a : X) (ha : a ∈ poles) (hfa : f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) :
+    ∃ i, (canonicalFibreSelection g f hdiv p).xs i = a := by
+  have h : GoodValue g f hdiv p := hgood p ⟨a, ha, hfa⟩
+  have hmem : a ∈ Set.range (canonicalFibreSelection g f hdiv p).xs := by
+    rw [canonicalFibreSelection_xs_range g f hdiv h, Set.mem_preimage, Set.mem_singleton_iff]
+    exact hfa
+  exact hmem
+
+/-- **`DirectTraceGeometry` from the canonical selection with simple `∞`-poles.**  The most-wired
+constructor: `Φ := canonicalFibreSelection g f hdiv` (so the three `Φ`-enumeration inputs are
+discharged from the single pole-value-goodness genericity `hgood`), and the full `∞`-fibre is
+constructed from simple poles.  The *remaining* inputs are the finite centre data + the deep analytic
+residuals (per-centre full-fibre coherence `Cfull`, regular-value analyticity `hreg`, branch
+boundedness `hbnd`, junk-freeness `hcont_int`, genus-`0` `∞`-vanishing `R₀`, `∞`-single-valuedness
+`hcoh_full`) — the smallest honest residual of Gate A's genericity. -/
+noncomputable def directTraceGeometry_ofCanonicalSimpleInfty (hdiv : (f.div : Divisor X) ≠ 0)
+    (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
+      GoodValue g f hdiv p)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (Cfull : ∀ i, MovingCoherenceDatum ω₀ g f (canonicalFibreSelection g f hdiv) (cs i))
+    (hCfull_D : ∀ i, (Cfull i).D = canonicalFibreSelection g f hdiv (cs i))
+    (hnonpole_an : ∀ i, ∀ k, (Cfull i).D.xs k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ ((Cfull i).D.xs k)).symm z))
+        ((chartAt ℂ ((Cfull i).D.xs k)) ((Cfull i).D.xs k)))
+    (hsimpleInf : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = -1)
+    (hmeroInf : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (inftyFibreEnum f i)).symm z))
+      ((chartAt ℂ (inftyFibreEnum f i)) (inftyFibreEnum f i)))
+    (hnonpole_inf_an : ∀ k, inftyFibreEnum f k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (inftyFibreEnum f k)).symm z))
+        ((chartAt ℂ (inftyFibreEnum f k)) (inftyFibreEnum f k)))
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br,
+      AnalyticAt ℂ (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv)) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z)
+        (𝓝[≠] b₀) (𝓝 0))
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv) br - L.R)
+          =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a,
+        ContinuousAt (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv) br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv) br - L.R)
+        =ᶠ[𝓝[≠] 0] R₀)
+    (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv) br)
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
+    DirectTraceGeometry ω₀ g f poles :=
+  directTraceGeometry_ofAdaptedSimpleInfty (canonicalFibreSelection g f hdiv)
+    (canonicalFibreSelection_hΦ_inj f hdiv)
+    (canonicalFibreSelection_hΦ_mem f hdiv)
+    (canonicalFibreSelection_hΦ_surj f hdiv hgood)
+    m cs ρ hcs_ball hcs_inj br hcenters_cs Cfull hCfull_D hnonpole_an
+    hsimpleInf hmeroInf hnonpole_inf_an hreg hbnd hcont_int R₀ hR₀_an hR₀0 hR₀_eq hcoh_full
+
 end Jacobians.Dolbeault.SerreResidueTheorem
