@@ -277,4 +277,57 @@ theorem differentialForm_ne_zero {f : MeromorphicFunction X} (hf : ¬ IsGermCons
     exact deriv_eventually_zero_meromorphicOrderAt_nonneg (f.meromorphic x) htop
   exact germ_eq_const_of_mem_linearSystem_zero f hf0
 
+/-! ## Part 4: the canonical divisor `K = div ω₀` and the `CanonicalForm17Data` instance
+
+`K = div (df)` is the order function `x ↦ (formOrderW (df) x).untop₀`; it has **finite support** because
+`df`'s zeros/poles are isolated (the chart coefficient `formCoeff (df)` is meromorphic, plus
+chart-invariance of `formOrderW`).  Given `K`, the §17.4 datum assembles immediately (`ω₀ = df`,
+`nontrivial = differentialForm_ne_zero`, `order_eq`).  The final `canonicalForm17Data` wires this
+through the nonconstant `f` of `exists_nonconstant_meromorphic`. -/
+
+/-- **Assembly of `CanonicalForm17Data` from `f`, `df ≠ 0`, and the canonical divisor `K`.**  Given a
+meromorphic function `f` (whose `df ≠ 0` is supplied by `hf : ¬ IsGermConstant f`) together with its
+form-divisor `K` (a `Divisor X` with `formOrderW (df) x = K x` for all `x`), this is the Forster §17.4
+canonical-form datum `ω₀ = df`, `K = div ω₀`.  Fully proven (modulo the divisor input). -/
+noncomputable def canonicalForm17DataOfDivisor (f : MeromorphicFunction X)
+    (hf : ¬ IsGermConstant f) (K : Divisor X)
+    (hK : ∀ x, (differentialForm f).formOrderW x = (K x : WithTop ℤ)) :
+    CanonicalForm17Data X where
+  ω₀ := differentialForm f
+  nontrivial := differentialForm_ne_zero hf
+  K := K
+  order_eq := hK
+
+/-- **[ISOLATED ANALYTIC INPUT — finite support of the form divisor].**  A nonzero meromorphic
+1-form of the shape `df` (so `formOrderW (df) ≠ ⊤` everywhere, by `differentialForm_ne_zero` +
+the form identity theorem) has a genuine *canonical divisor*: the order function
+`x ↦ (formOrderW (df) x).untop₀` has finite support, giving a `K : Divisor X` with
+`formOrderW (df) x = (K x : WithTop ℤ)` for all `x`.
+
+This is the 1-form analog of `MeromorphicFunction.div` (the local finiteness
+`Jacobians.Abel.MeromorphicFunction.orderAtPoint_isolated_at`).  Concretely: near each `z`, in the
+canonical chart `chart_z`, the coefficient `formCoeff (df) z` is `MeromorphicAt`, so its zeros/poles
+are isolated; combined with the **chart-invariance of `formOrderW`** (`formOrderW (df) y` computed in
+`chart_y` equals the order of `formCoeff (df) z` at `chart_z y`, because the two chart coefficients
+differ by the non-vanishing holomorphic transition Jacobian `ψ' = (chart_z ∘ chart_y⁻¹)'` —
+`formCoeff (df) y = ψ' · (formCoeff (df) z ∘ ψ)`, an order-preserving change), the support is
+locally `⊆ {z}`; compactness of `X` then makes it finite (the `locallyFinsuppWithin.finiteSupport`
+route of `orderLocallyFinsupp`).  Since `formOrderW (df) ≠ ⊤` everywhere, `(·).untop₀` loses nothing,
+so `order_eq` holds. -/
+theorem exists_differentialForm_divisor (f : MeromorphicFunction X)
+    (hf : ∃ x, (differentialForm f).formOrderW x ≠ ⊤) :
+    ∃ K : Divisor X, ∀ x, (differentialForm f).formOrderW x = (K x : WithTop ℤ) := by
+  sorry
+
+/-- **Forster §17.4 — the canonical-form datum `ω₀ = df`, `K = div ω₀` exists.**  Combining the
+nonconstant meromorphic function `f` of `exists_nonconstant_meromorphic` (`SerreOmega0`), its
+differential `df` (a genuine `MeromorphicOneForm`, nonzero by `differentialForm_ne_zero`), and its
+canonical divisor `K` (`exists_differentialForm_divisor`), this instantiates `CanonicalForm17Data X`
+— making the already-proven §17.4 isomorphism `omega17Equiv : L(D+K) ≃ₗ[ℂ] Ω_D` of `CanonicalFormIso`
+unconditional. -/
+theorem nonempty_canonicalForm17Data : Nonempty (CanonicalForm17Data X) := by
+  obtain ⟨_D, f, _hmem, hf⟩ := exists_nonconstant_meromorphic (X := X)
+  obtain ⟨K, hK⟩ := exists_differentialForm_divisor f (differentialForm_ne_zero hf)
+  exact ⟨canonicalForm17DataOfDivisor f hf K hK⟩
+
 end Jacobians.Dolbeault
