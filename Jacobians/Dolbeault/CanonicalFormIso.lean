@@ -512,6 +512,102 @@ noncomputable def omega17Map (D : Divisor X) :
     data.omega17Map D f =
       Submodule.Quotient.mk ⟨meroFormSMul f.1 data.ω₀, data.meroFormSMul_ω₀_mem_omegaD f.2⟩ := rfl
 
+/-- **`f·ω₀` is germ-zero iff `f` is germ-zero** (multiplication by `ω₀ ≠ 0` preserves and reflects
+the germ-junk): `formOrderW (f·ω₀) x = orderW f x + K x`, and `K x ≠ ⊤`, so `= ⊤ ↔ orderW f x = ⊤`. -/
+theorem meroFormSMul_ω₀_formGermZero_iff (f : MeromorphicFunction X) :
+    meroFormSMul f data.ω₀ ∈ formGermZeroSubmodule (X := X) ↔ f ∈ germZeroSubmodule (X := X) := by
+  constructor
+  · intro h x
+    have hx : (meroFormSMul f data.ω₀).formOrderW x = ⊤ := h x
+    rw [data.formOrderW_meroFormSMul_ω₀ f x] at hx
+    -- `orderW f x + (K x) = ⊤` with `K x ≠ ⊤` forces `orderW f x = ⊤`.
+    by_contra hne
+    rw [WithTop.add_eq_top] at hx
+    rcases hx with h1 | h2
+    · exact hne h1
+    · exact (WithTop.coe_ne_top : ((data.K x : ℤ) : WithTop ℤ) ≠ ⊤) h2
+  · intro h x
+    have hx : f.orderW x = ⊤ := h x
+    rw [data.formOrderW_meroFormSMul_ω₀ f x, hx, top_add]
+
+/-- **The §17.4 map has kernel exactly the germ-junk.**  `ker (omega17Map D) = germZeroSubmodule.submoduleOf`.
+(`[f·ω₀] = 0 ↔ f·ω₀` germ-zero `↔ f` germ-zero, by `meroFormSMul_ω₀_formGermZero_iff`.) -/
+theorem ker_omega17Map (D : Divisor X) :
+    LinearMap.ker (data.omega17Map D)
+      = (germZeroSubmodule (X := X)).submoduleOf (linearSystem (X := X) (D + data.K)) := by
+  ext f
+  rw [LinearMap.mem_ker, omega17Map_mk, Submodule.Quotient.mk_eq_zero,
+    Submodule.submoduleOf, Submodule.mem_comap, Submodule.submoduleOf, Submodule.mem_comap]
+  -- LHS: `⟨f·ω₀, _⟩ ∈ formGermZeroSubmodule.submoduleOf (omegaD D)` i.e. `f·ω₀ ∈ formGermZeroSubmodule`.
+  -- RHS: `f.1 ∈ germZeroSubmodule`.
+  exact data.meroFormSMul_ω₀_formGermZero_iff f.1
+
+/-- **`α/ω₀ ∈ L(D+K)`** for `α ∈ Ω_D` (the surjectivity preimage of §17.4): orders subtract,
+`orderW (α/ω₀) x = formOrderW α x − K x ≥ −D − K = −(D+K)`. -/
+theorem meroFormDiv_mem_linearSystem {D : Divisor X} {α : MeromorphicOneForm X}
+    (hα : α ∈ omegaD (X := X) D) :
+    data.meroFormDiv α ∈ linearSystem (X := X) (D + data.K) := by
+  intro x
+  rw [data.meroFormDiv_orderW α x, sub_eq_add_neg]
+  have h1 : (-(D x) : WithTop ℤ) ≤ α.formOrderW x := hα x
+  -- `−(D+K) = −D + (−K) ≤ formOrderW α + (−K)`.
+  have heq : (-((D + data.K) x) : WithTop ℤ) = (-(D x) : WithTop ℤ) + (-(data.K x) : WithTop ℤ) := by
+    rw [Finsupp.add_apply]; norm_cast; ring
+  rw [heq]
+  -- add `−K x` to both sides of `−D ≤ formOrderW α`.
+  gcongr
+
+/-- **Forster §17.4 surjectivity.**  `omega17Map D` is surjective: every class `[α] ∈ omegaDModule D`
+is the image of `[α/ω₀]` (with `α/ω₀ ∈ L(D+K)`), since `(α/ω₀)·ω₀` and `α` have the same class. -/
+theorem omega17Map_surjective (D : Divisor X) : Function.Surjective (data.omega17Map D) := by
+  intro q
+  obtain ⟨α, rfl⟩ := Submodule.Quotient.mk_surjective _ q
+  refine ⟨⟨data.meroFormDiv α.1, data.meroFormDiv_mem_linearSystem α.2⟩, ?_⟩
+  rw [omega17Map_mk]
+  -- `[ (α/ω₀)·ω₀ ] = [α]`: difference germ-zero everywhere.
+  rw [Submodule.Quotient.eq, Submodule.submoduleOf, Submodule.mem_comap]
+  intro x
+  exact data.formOrderW_meroFormSMul_meroFormDiv_sub_top α.1 x
+
+/-! ### The descended §17.4 map on the junk-free modules, and the isomorphism -/
+
+/-- **The §17.4 map descended to `lSysModule (D+K)`** (the junk-free domain), via `liftQ` using
+`germZero.submoduleOf ≤ ker (omega17Map D)` (in fact equality, `ker_omega17Map`). -/
+noncomputable def omega17 (D : Divisor X) :
+    lSysModule (X := X) (D + data.K) →ₗ[ℂ] omegaDModule (X := X) D :=
+  Submodule.liftQ _ (data.omega17Map D) (le_of_eq (data.ker_omega17Map D).symm)
+
+@[simp] theorem omega17_mk (D : Divisor X) (f : ↥(linearSystem (X := X) (D + data.K))) :
+    data.omega17 D (Submodule.Quotient.mk f) = data.omega17Map D f :=
+  Submodule.liftQ_apply _ _ _
+
+/-- **`omega17 D` is injective** (Forster §17.4 injectivity): its kernel is `⊥` because
+`ker (omega17Map D) = germZeroSubmodule.submoduleOf` (the submodule we quotient by). -/
+theorem omega17_injective (D : Divisor X) : Function.Injective (data.omega17 D) := by
+  rw [← LinearMap.ker_eq_bot]
+  exact Submodule.ker_liftQ_eq_bot' _ _ (data.ker_omega17Map D).symm
+
+/-- **`omega17 D` is surjective** (Forster §17.4 surjectivity), lifted from `omega17Map_surjective`. -/
+theorem omega17_surjective (D : Divisor X) : Function.Surjective (data.omega17 D) := by
+  intro q
+  obtain ⟨f, hf⟩ := data.omega17Map_surjective D q
+  exact ⟨Submodule.Quotient.mk f, by rw [omega17_mk]; exact hf⟩
+
+/-- **Forster §17.4 — `ω₀· : 𝒪_{D+K} ≅ Ω_D`.**  The multiplication-by-`ω₀` isomorphism
+`lSysModule (D + K) ≃ₗ[ℂ] omegaDModule D` for every divisor `D`.  Injective (mult by `ω₀ ≠ 0`,
+kernel = germ-junk) and surjective (the division `α/ω₀`). -/
+noncomputable def omega17Equiv (D : Divisor X) :
+    lSysModule (X := X) (D + data.K) ≃ₗ[ℂ] omegaDModule (X := X) D :=
+  LinearEquiv.ofBijective (data.omega17 D) ⟨data.omega17_injective D, data.omega17_surjective D⟩
+
+/-- **Forster §17.4 as a dimension equality**: `lDim (D + K) = omegaDim D` (the iso `𝒪_{D+K} ≅ Ω_D`
+preserves finrank). -/
+theorem lDim_add_K_eq_omegaDim (D : Divisor X) :
+    lDim (X := X) (D + data.K) = omegaDim (X := X) D := by
+  have h := (data.omega17Equiv D).finrank_eq
+  rwa [show lDim (X := X) (D + data.K) = finrank ℂ (lSysModule (X := X) (D + data.K)) from rfl,
+    show omegaDim (X := X) D = finrank ℂ (omegaDModule (X := X) D) from rfl]
+
 end CanonicalForm17Data
 
 end Jacobians.Dolbeault
