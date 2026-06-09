@@ -3404,3 +3404,82 @@ descent below them is COMPLETE, so an inhabitant of `MeromorphicCousinSolutions`
 - `res_sub`/`connectingCocycle_sub`: `module` closes the submodule-element arithmetic (NOT `ring`/`abel`).
 - Section `variable (S : …)` does NOT auto-include `S` when only used in the proof body of a lemma whose
   STATEMENT omits `S` — make `S` an explicit `(S : …)` argument in each lemma.
+
+## 2026-06-09 (later) — Building the `lift` field of `MeromorphicCousinSolutions` (Forster §15, `H¹(X,ℳ)=0`)
+
+NEW FILE `Jacobians/Dolbeault/MeromorphicCousinLift.lean` (the ONLY file this thread touched — 5
+commits, each touching ONLY this file; did NOT touch the Gate-A `SerreResidueRamified*`/`*Builder`/
+`*ClusterPartition` files (another agent), the 2 untracked orphans, or any PROVEN decl). Continues
+`MeromorphicCousinSolve.lean` (the descent `lift`+`vanish` → full Serre pairing). Goal: build the
+`lift` field (the §15 wall). Outcome: **the germ↔function ASSEMBLY is BUILT sorry-free + axiom-clean,
+reducing `lift` to a single precise per-cocycle predicate `CousinSplittable`; the deep analytic core
+(principal-part splitting + the form-side fields) is the authorized fallback, isolated NOT faked.**
+Every decl `[propext, Classical.choice, Quot.sound]`; circularity guard PASSES (RiemannRoch absent
+from the **231-module** transitive import closure, verified programmatically); builds standalone (8529).
+
+### What was BUILT (sorry-free, axiom-clean) — the germ↔function assembly + reduction
+- `CousinSplitData 𝔘 ω₀ K ξ` — the honest function-level §15 output (the meromorphic-Cousin analogue of
+  `CechDiskAcyclic.FunctionDiskAcyclic`): per-patch meromorphic `gᵢ : X → ℂ` with the four CoverMLLift
+  analytic fields (`holoOff`/`iso`/`formHoloDiff`/`diffMem`) + the EXACT cochain match `[gᵢ−gⱼ]=ξᵢⱼ`.
+- `CousinSplitData.toCoverMLLift`/`connectingCocycle_eq`/`connectingClass_eq` — the ASSEMBLY: the split
+  data builds a `CoverMLLift` whose connecting cocycle is EXACTLY `ξ` (no coboundary correction needed,
+  since `gᵢ−gⱼ=ξᵢⱼ` on the nose via the match) ⟹ `connectingClass = [ξ]`.
+- `liftField_of_cousinSplit` + `MeromorphicCousinSolutions.ofSplit`/`ofSplittable` — the REDUCTION:
+  `(∀ξ, CousinSplitData ξ)` (= `CousinSplittable`) + `vanish` ⟹ the full `MeromorphicCousinSolutions`
+  (hence, via the proven descent, the whole Serre pairing `toSerreDualityData`). The apex.
+- **GERM-INVARIANCE reduction** (`ordU_congr_nhdsNE`/`isMeromorphic_congr_germ`/`omegaD_congr_germ`/
+  `diffMem_of_match` + smart constructor `CousinSplitData.mk'`): `𝒪_K`-membership is `𝓝[≠]`-congruence-
+  invariant (order + meromorphy are), so `diffMem` (function-side `gᵢ−gⱼ∈𝒪_K`) is DERIVED from
+  `match_cochain` + `ξ∈sections1 K`. `mk'` drops `diffMem` — the §15 builder supplies only the
+  form-side fields + the match.
+- `exists_holoSplit_of_isDiskAcyclic` — the **(A) engine**: from `IsDiskAcyclic 𝔘 0` (`H¹(𝔘,𝒪)=0`)
+  every holomorphic cocycle `r` splits into honest holomorphic `Ĥᵢ ∈ OmegaD 0 (Uᵢ)` with
+  `[Ĥⱼ−Ĥᵢ]=rᵢⱼ` on overlaps (repackaged `functionDiskAcyclic_of_isDiskAcyclic`, in the §15-assembly
+  shape — the engine that clears the holomorphic remainder once principal parts are subtracted).
+- `CousinSplitData.zero`/`nonempty_cousinSplitData_zero` — honest non-vacuity (zero split of the ZERO
+  cocycle; NOT a disguised False).
+
+### THE REMAINING WALL (precise) = `CousinSplittable` (per-cocycle `CousinSplitData`)
+After the descent (`MeromorphicCousinSolve`) and the (A) engine, `lift` reduces to producing
+`CousinSplitData` per cocycle. Decomposes Forster §15-style into:
+(A) holomorphic acyclicity `IsDiskAcyclic 𝔘 0` — **available** for the Leray cover via the
+`HasGluedDbarDatum`/`HasChartAnalyticCorrectors` ∂̄ engine (`CechFinitenessBallSolve`), BUT that engine
+is itself behind the greenfield predicate `HasGluedDbarDatum` (OBSTRUCTION 3, NOT yet discharged — so
+`IsDiskAcyclic 𝔘 0` is available as a REDUCTION-FROM-PREDICATE, not a discharged fact). Built the (A)
+half as `exists_holoSplit_of_isDiskAcyclic` taking `IsDiskAcyclic 𝔘 0` as hypothesis.
+(B) PRINCIPAL-PART SPLITTING at the K-points (local Mittag–Leffler) + the NORMAL-FORM/`coeffAt ω₀`-form
+bookkeeping for the form-side fields. These are the genuine deep analytic content, NOT built.
+
+### KEY SOUNDNESS FINDINGS (why the form-side fields can't be cheaply derived)
+1. `diffMem` (function-side `𝒪_K`-membership) IS germ-derivable from the match (built: `mk'`).
+2. `formHoloDiff`/`iso`/`holoOff` are POINTWISE analyticity ⟹ NOT germ-invariant: `gᵢ−gⱼ` agrees with
+   the honest rep `cᵢⱼ` only CODISCRETELY (`𝓝[≠]`, off a discrete set), which does NOT control the
+   value AT junk points; a junk value at `a` breaks analyticity even if `cᵢⱼ·ω₀` is analytic. So the
+   `gᵢ` MUST be normal-form-clean (junk-free) — exactly CechH0's `gluedFun`/`nfX` rigidification — and
+   `formHoloDiff` additionally needs the `K=div ω₀` ⟹ form-holomorphic bridge (the §17.4 `coeffAt ω₀`-
+   order↔K bridge, in `CanonicalFormIso`/`CanonicalFormDifferential`). These stay as `CousinSplitData`
+   fields (they encode the genuine junk-freeness + form bridge), correctly isolated.
+3. `CousinSplittable` full non-vacuity (∀ξ) is the genuine §15 content EVEN for trivial `cechH1 K`: a
+   coboundary `ξ=δ⁰σ` is split by `gᵢ=−σ̂ᵢ`, but the form-side fields still need the normal-form/form
+   bookkeeping. So only `CousinSplitData.zero` (ξ=0) is unconditionally non-vacuous — did NOT fake a
+   `cousinSplittable_of_trivial` (would need the bookkeeping).
+
+### NET: where `lift`/Serre stands after this thread
+`MeromorphicCousinSolutions` now has BOTH a clean apex (`ofSplittable`) and the proven descent. The FULL
+Serre pairing rests on EXACTLY: (i) `CousinSplittable` (this thread's isolated §15 residual = principal
+parts + normal-form/form bookkeeping, on top of the (A) engine which itself needs `HasGluedDbarDatum`),
+(ii) `vanish` (Gate-A `∑Res=0`, the concurrent thread), (iii) the §17.6 nondeg / §17.9 ι_surj / §17.4
+hKgenus inputs (unchanged), (iv) §14 finH1 (PROVEN). `lift` is NOT unconditional (both (A) and (B)
+bottom out at greenfield analytic predicates) — the germ↔function assembly + (A) engine + diffMem
+reduction ARE built; the deep analytic core is the precise, honestly-isolated remainder.
+
+### Lean gotchas
+- `eventually_comp_chart_iff'` (CechH0) is GENERIC over any ℂ-charted `Y` — use `(Y := U)` to get the
+  `↥U`-chart transport. For `=ᶠ[𝓝[≠]]` transport through `↥U`'s chart, the clean route is
+  `(eventually_comp_chart_iff' (Y:=U) (fun w=>a w−b w) u (·=0)).2 (…sub_eq_zero…)` then
+  `filter_upwards … simpa [Function.comp_apply, sub_eq_zero]` (built as `eventuallyEq_comp_chartU`).
+- `toGerm_eq_iff` (CechH0) is the `∀u, a=ᶠ[𝓝[≠]u]b ↔ toGerm a = toGerm b` bridge — use `.mp` to turn a
+  germ equality into the per-point `𝓝[≠]` family for `omegaD_congr_germ`.
+- `rw [← hp, ← map_sub]` auto-closes a `rfl`-true goal — a trailing `rfl` then errors "No goals"; drop it.
+- `cocycles1 K = ker δ¹ ⊓ sections1 K` so `ξ.2.2 : ξ ∈ sections1 K` gives `ξᵢⱼ ∈ OmegaDGerm K` (the rep).
+- `CoverMLDistribution.nonempty_ι 𝔘` for the empty-poles `patch` default.
