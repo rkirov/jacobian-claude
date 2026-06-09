@@ -91,6 +91,15 @@ its genuine intrinsic ramification multiplicity `(localDeg f (coe c) ·).toNat`.
 genuine meromorphic `g : MeromorphicFunction X`, `g.toFun`'s chart pullback is meromorphic at every
 preimage (`g.meromorphic`).  This is the SOUND whole fibre — *all* `deg f` preimages, NOT poles only. -/
 
+/-- **Every preimage of a finite value-centre is a non-pole** (`hnp` is automatic, not a hidden false
+assumption).  At a finite centre `c` (`coe c ≠ ∞`), every fibre preimage `fullFibreEnum f hdiv c i` has
+sphere value `coe c` which is finite, so `0 ≤ f.orderAtPoint` there
+(`nonpole_of_toRiemannSphere_eq_coe`).  This discharges the `hnp` hypothesis of `realFibreData` /
+`RealCenterClusterFamily` for any finite value-centre — it is TRUE, never an all-poles assumption. -/
+theorem realFibre_nonpole {f : MeromorphicFunction X} (hdiv : (f.div : Divisor X) ≠ 0) (c : ℂ)
+    (i : Fin (fullFibreCard f hdiv c)) : 0 ≤ f.orderAtPoint (fullFibreEnum f hdiv c i) :=
+  (f.nonpole_of_toRiemannSphere_eq_coe (fullFibreEnum_mem f hdiv c i)).1
+
 /-- **The genuine intrinsic multiplicity of a non-pole fibre preimage is positive.**  At a preimage `p`
 over `coe c` with `0 ≤ f.orderAtPoint p` (a non-pole — the case at a finite value-centre), the
 multiplicity bridge gives `1 ≤ (localDeg f (coe c) p).toNat`. -/
