@@ -1593,3 +1593,46 @@ every exposed hypothesis is a TRUE statement (satisfiable; the empty-pole witnes
 honest), just not-yet-proven-in-general. Strict improvement: the pole-only/∞/matching/centre/Φ/∞-fibre
 field-groups are now PROVEN wiring, reducing Gate A to the deep analytic residuals 3/5/6/7 + genericity
 1/4.
+
+---
+
+## 2026-06-09: Residual #5/#6 — genus-0 ∞-vanishing DISCHARGED (non-circular, Cauchy at ∞)
+
+**Agent task:** discharge residual #5 (the `R₀`/`hR₀_an`/`hR₀0`/`hR₀_eq` group above) — the genus-0
+∞-vanishing of the trace remainder — for the GENERAL (nonempty-pole) trace.
+
+**Key soundness finding (CIRCULARITY confirmed, then bypassed):** With the finite-only principal-part
+`LaurentForm L`, the field `hR₀0 : R₀ 0 = 0` is — via `continuousAt_recipCoeff_of_vanishing` —
+equivalent to `recipCoeff (T − L.R)` being CONTINUOUS at 0 with VALUE 0, i.e. `T − L.R = o(z⁻²)` at ∞.
+Since `recipCoeff L.R` has a simple pole at 0 (residue `resAtInfty L.R`) and `recipCoeff T` has a simple
+pole (residue `∑_{F a=∞} formFnResidue`, via hcoh_full), continuity at 0 FORCES those residues to
+cancel = the ∞-residue identity `infty_eq`, which + finite Lemma 3.2 + ℂℙ¹ residue thm = the residue
+theorem itself. So `R₀ 0 = 0` via the `T=L.R` route is CIRCULAR (repo already notes this at
+FormTraceGlobalConstruct.lean:51-60, the "infty_eq circularity"). Per directive, did NOT prove the
+circular thing.
+
+**The honest non-circular fix:** The §VIII.3 close does NOT need the full vanishing `R₀ 0 = 0`; it needs
+only `resAt (recipCoeff (T − L.R)) 0 = 0` (just the RESIDUE, the ζ⁻¹-coefficient, strictly weaker). That
+is *Cauchy's theorem at infinity*: the ∞-residue of an ENTIRE 1-form coefficient vanishes, because
+`recipCoeff h = d/dζ[H(ζ⁻¹)]` for a global primitive H (Differentiable.isExactOn_univ), so its
+small-circle integral is the integral of a derivative around a closed loop = 0. Entire-ness of `T − L.R`
+is the FINITE junk-freeness `hcont_int` (about finite centres, NOT ∞) — non-circular, already an input.
+
+**Delivered (axiom-clean [propext, Classical.choice, Quot.sound], 2 new files, 688 LoC):**
+- `Jacobians/Dolbeault/SerreResidueDirectGenus0.lean`:
+  - `resAt_recipCoeff_eq_zero_of_entire` — Cauchy at ∞ (THE non-circular replacement of `R₀ 0 = 0`).
+  - `resAt_eq_laurentR_of_principalPart` — finite residue match `resAt T (cs i)=resAt L.R (cs i)` FREE
+    from the principal-part extraction (no R₀, no global T=L.R).
+  - `infty_eq_of_remainderResZero` — ∞-residue identity from the above + hcoh_full.
+  - `globalTraceData_of_genus0` / `residueTheorem_of_directGeometry_genus0` (+ non-vacuity witness) —
+    Gate A ∑Res=0 WITHOUT the R₀/hR₀_an/hR₀0/hR₀_eq group.
+- `Jacobians/Dolbeault/SerreResidueDirectGenus0Assemble.lean`:
+  - `residueTheorem_ofAdapted_genus0` / `...SimpleInfty_genus0` / `...ofCanonicalSimpleInfty_genus0` —
+    the adapted-cover capstones (reuse proven poleSubfibre/poleSubEnum combinatorics), R₀-group dropped.
+
+**Net effect on the residual map:** residual group #6 is now `hcont_int` (FINITE junk-freeness only) +
+`hcoh_full` (#7). The genus-0 ∞-vanishing `R₀`/`hR₀_an`/`hR₀0`/`hR₀_eq` is ELIMINATED (discharged
+internally, non-circular). The `DirectTraceGeometry` *structure* still has the R₀ fields, so the
+residual-#5-free constructors return `∑Res=0` directly rather than the structure. Remaining Gate A
+residuals: 1 (hgood genericity), 2 (centre/branch enumeration wiring), 3 (Cfull full-fibre coherence),
+4 (∞ genericity), 5 (hreg/hbnd wiring), `hcont_int` (finite junk-freeness), 7 (hcoh_full ∞-coherence).
