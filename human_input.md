@@ -2396,3 +2396,107 @@ chart centre) is holomorphic modulo germ-junk. Built the genuine reverse map by:
 **Remaining.** None for this input — `hKgenus` is unconditional. `SerreDualityData` still bundles the
 other Serre-wall fields (the make-or-break); wiring my headline into that structure's `hKgenus` field is
 trivial when the rest of `SerreDualityData` is assembled.
+
+---
+
+## 2026-06-09 (later): RAMIFIED Lemma 3.2 ATOM INTEGRATED — Gate A `hoff_cs` ELIMINATED modulo ONE named geometric obligation
+
+**Branch:** `gate-a-trace-rationality-assembly`. Thread: plug the now-PROVEN ramified residue atom
+(`Jacobians/RamifiedResidueChangeOfVariables.lean`, Miranda §VIII.3 (3.1) / Lemma 3.2 ramified) into the
+trace stack at ramified pole-value centres, eliminating `hoff_cs` (α's finite pole-values off `f`'s
+branch locus). INDEPENDENT of the removable-singularity thread (`FormRemovableSingularity.lean`,
+untouched). **NEW FILE** `Jacobians/Dolbeault/SerreResidueRamifiedCenter.lean` (imports the atom +
+`SerreResidueDirectGenus0Germ`); 13 decls, ALL axiom-clean `[propext, Classical.choice, Quot.sound]`
+(authoritative `#print axioms`); full tree green standalone at HEAD (8515 jobs). Existing verified
+capstone `residueTheorem_of_adaptedF` STILL builds + axiom-clean (not broken; all new work is additive
+`_ramified`/`_facts` variants). 6 incremental commits, each touching ONLY the new file.
+
+### OUTCOME: `hoff_cs` is DROPPED in a new `hoff_cs`-free capstone, modulo ONE precise geometric obligation.
+The residue/algebra core (the ramified atom) is DONE and genuinely WIRED IN. The single remaining gap is
+the geometric `z = wᵐ` normal-form identification (`RamifiedCenterFacts.hcoh`), isolated as a named TRUE
+predicate `ExistsRamifiedCenterFacts`. NO `hoff_cs` reappears under another name; NO custom axiom; NO
+sorry; NO false/circular field; NO full RR.
+
+### THE STRUCTURAL FINDING (why `D` and `finite_eq` were the real wall — sharper than the localization)
+The localization (`docs/gate_a_hoff_cs_localization_2026-06-09.md`) said `Cfull i` supplies exactly two
+facts at `cs i`: (A) `MeromorphicAt T (cs i)`, (B) `resAt T (cs i) = ∑ fibre formFnResidue` (`T :=
+valueChartTracePatched ω₀ f Φ br`). TRUE — but TWO further structural walls surfaced:
+1. **The canonical selection is EMPTY at a ramified value.** `GoodValue` REQUIRES `coe b ∉ branchLocus`
+   (`FormTraceGlobalFibreSelection.lean:188`), so `canonicalFibreSelection g f hdiv (cs i) =
+   emptyFibreRegularData` at a ramified `cs i`. The trace VALUE there is junk (≡0), but the **germ** on
+   `𝓝[≠] cs i` is genuine (ramification is isolated; nearby values are unramified). So fact (A)/(B) and
+   `hcoh` must be PUNCTURED-germ statements (`𝓝[≠]`) — which they are.
+2. **`GlobalTraceData`/`FormResidueTrace.finite_eq` HARDWIRE the unramified model.** `finite_eq` (and the
+   combine `finiteResidueSum_trace_eq_zero_of_fibres'`) compute the finite residue via `resAt
+   (fibreTrace (D p)).traceCoeff` → `FibreTrace.resAt_traceCoeff'` (the UNRAMIFIED Lemma 3.2, `deriv≠0`).
+   `FibreTrace`/`FibreRegularData` both bake `deriv≠0`, so `D p` CANNOT be a ramified fibre. ⇒ feeding a
+   ramified `D` to `GlobalTraceData` is structurally impossible (and feeding the EMPTY canonical pole
+   subfibre gives the WRONG residue 0). **The fix:** BYPASS `FibreTrace`/`GlobalTraceData` — the GENERAL
+   combine `MeromorphicTrace.finiteResidueSum_trace_eq_zero` (`MeromorphicTrace.lean:447`) takes a PLAIN
+   per-centre residue function `fibreRes : ℂ → ℂ` with `fibreRes p = resAt L.R p` and gives `∑ fibreRes +
+   Res∞ = 0` — NO `FibreTrace`. Route the finite combine through THIS.
+
+### WHAT WAS BUILT (the 4 layers, bottom-up)
+- **Layer 1 — fact-based discharge (pure refactor):** `globalTraceData_of_genus0_germ_facts` =
+  `globalTraceData_of_genus0_germ` with the `Cfull` field-group replaced by facts (A)/(B) as direct
+  per-centre hypotheses. The abstraction boundary. `facts_of_Cfull` confirms the unramified `Cfull`
+  route supplies them (so this is a strict generalisation).
+- **Layer 2 — ramified provider:** `FibreRamifiedData` (preimages + multiplicities `mult i ≥ 1`, **NO
+  `deriv≠0` field** — the ramified analogue of `FibreRegularData`). `RamifiedCenterFacts` bundles (A)/(B)
+  + the geometric germ identification `hcoh` + the carried trace `T`; `meromorphicAt_patched` /
+  `resAt_patched` / `resAt_patched_filter` derive the consumed facts (the last converts the `D.xs`-sum to
+  the filtered pole sum, pure combinatorics). The ATOM is genuinely invoked: `ramifiedTraceTerm` (the
+  `m`-sheet trace `laurentTraceCoeff` shifted to the centre value `c` via `resAt_comp_sub_const`, a clean
+  reusable resAt-shift lemma), `meromorphicAt_ramifiedTraceTerm` (atom `meromorphicAt_laurentTraceCoeff`),
+  `resAt_ramifiedTraceTerm` (atom `resAt_laurentTraceCoeff`). `RamifiedCenterFacts.ofFibreRamified`
+  assembles it all from the ramified fibre datum + per-preimage Laurent principal-part data + `hcoh`,
+  discharging (A)/(B) summed over the MIXED-multiplicity fibre.
+- **Layer 3 — the `hoff_cs`-free residue theorem:** `residueSum_eq_zero_of_centerFacts` — takes facts
+  (A) + (B filtered) per centre + `hreg`/`hbnd` + the `∞`-group, routes the finite combine through
+  `finiteResidueSum_trace_eq_zero` (NO `FibreTrace`), concludes `∑Res = 0` admitting RAMIFIED centres.
+  `infty_eq_of_remainderRegular` (germ-Cauchy, the `hcont_int`-free `∞`) is reused verbatim.
+- **Layer 4 — capstones:** `residueTheorem_ofRamifiedCenters_genus0` (per-centre `RamifiedCenterFacts`,
+  NO `hoff_cs`) and `residueTheorem_ofRamifiedCenters_genus0_mod` (modulo `ExistsRamifiedCenterFacts`).
+  `residueSum_eq_zero_of_Cfull` is the m=1 SOUNDNESS SANITY: the unramified `Cfull` route is RE-DERIVED
+  through the new fact-based theorem, proving it's a genuine superset (not weaker/false).
+
+### THE SINGLE REMAINING OBLIGATION (the genuine geometric content, NOT a Mathlib gap)
+`ExistsRamifiedCenterFacts ω₀ g f Φ poles c := Nonempty (RamifiedCenterFacts …)`. The hard part is the
+field `RamifiedCenterFacts.hcoh`:
+> `valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] c] fun z => ∑ᵢ (laurentTraceCoeff (ppᵢ principal part) (mᵢ))(z − c)`,
+i.e. the geometric trace germ near `c` IS the `m`-sheet-sum algebraic trace of the per-preimage chart
+integrands. This is TRUE (Forster GTM 81 §5: at a ramification point of mult `m` the cover is
+biholomorphic to `z = wᵐ`; then the §VIII.3 trace germ is the `m`-sheet sum — exactly the atom's
+soundness identity `laurentTraceCoeff_eq_sheetSum`). Its Lean construction is the **ramified analogue of
+`exists_planar_section`** (the unramified local biholomorphism): the local `z = wᵐ` normal form + the
+analytic branch section `w₀ = z^{1/m}`. THAT is the remaining analytic build; the residue/algebra core is
+done. Estimate: it's the genuine "manifold normal-form plumbing", several hundred LoC of Forster-§5
+local-coordinate work, NOT a quick win and NOT a Mathlib gap (the gap-flagged contour-substitution atom
+was bypassed by the roots-of-unity atom already).
+
+### SOUNDNESS LEDGER (all clean)
+- Every trace statement is the `m`-sheet SUM (the atom enforces this; single-sheet residue `m·Res` is a
+  FALSE field, NOT present). `hcoh` is the GENUINE geometric content (a punctured germ-equality, the
+  cover REALLY is `z=wᵐ`), NOT a disguised residue identity — and it is supplied as a HYPOTHESIS, never
+  asserted without the normal form. m=1 reduction verified (`residueSum_eq_zero_of_Cfull`). No `hoff_cs`
+  alias, no full RR, no custom axiom, no sorry. The empty-canonical-selection-at-ramified-value subtlety
+  (wall #1 above) is handled because all consumed facts are `𝓝[≠]`-germ statements.
+
+### LEAN GOTCHAS (for the next agent)
+- `MeromorphicAt.comp_analyticAt` unifies the inner map greedily — for `fun z => z − c` you MUST pass
+  `(g := fun z : ℂ => z − c)` explicitly or it grabs `HSub.hSub c` (= `fun z => c − z`). It also yields
+  `MeromorphicAt (f ∘ g)`, defeq to the lambda but a `def` like `ramifiedTraceTerm` won't auto-unfold —
+  use `show … from rfl` to bridge.
+- `set fibreRes : ℂ → ℂ := fun p => …` then `rw [hfibreRes]` leaves a BETA-REDEX `(fun p => …) (cs i)`;
+  `rw` of the body then fails. Fix: `show <beta-reduced goal>` instead of `rw [hset]`.
+- The general combine is `MeromorphicTrace.finiteResidueSum_trace_eq_zero` (plain `fibreRes : ℂ → ℂ`);
+  the `_of_fibres'` form is FibreTrace-bound (unramified-only). Use the former for ramified centres.
+- `fibreResidueSum_eq_filter` / `resAt_patched_filter` only need the injective enumeration `xs` +
+  mem/surj (NO regularity) — so the `D.xs`→filtered-pole-sum conversion works for `FibreRamifiedData`.
+
+### NEXT STEP (recommendation)
+Build `RamifiedCenterFacts.ofFibreRamified`'s `hcoh` for a single ramified centre via the Forster §5
+`z = wᵐ` local normal form (the ramified `exists_planar_section`): then `ExistsRamifiedCenterFacts` is
+discharged and `residueTheorem_ofRamifiedCenters_genus0_mod` makes Gate A need only `{f nonconstant,
+hsimpleInf}` (drop `AdaptedF.hoff_cs`). Until then, the integration is COMPLETE down to that one named,
+true, geometric obligation — the atom is wired and the `hoff_cs`-free capstone exists.
