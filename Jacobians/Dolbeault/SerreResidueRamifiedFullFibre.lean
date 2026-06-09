@@ -489,6 +489,69 @@ noncomputable def toRamifiedCenterFacts (F : FullFibreClusterData ω₀ g f Φ c
   hmero := F.meromorphicAt_fibreTrace
   hres := F.resAt_fibreTrace
 
+/-- **`ExistsRamifiedCenterFacts` from a `FullFibreClusterData`** (the SOUND bridge).  Packaging the
+SOUND full-fibre `RamifiedCenterFacts` (`toRamifiedCenterFacts`) as the `Nonempty`-wrapped per-centre
+obligation `ExistsRamifiedCenterFacts` that the `hoff_cs`-free capstone consumes.  This is the corrected
+analogue of `existsRamifiedCenterFacts_ofSheetData` (which used the false single-cluster `hgeom_slit`). -/
+theorem existsRamifiedCenterFacts_ofFullFibre (F : FullFibreClusterData ω₀ g f Φ c) {poles : Finset X}
+    (hD_mem : ∀ i, F.D.xs i ∈ poles)
+    (hD_surj : ∀ a ∈ poles, f.toRiemannSphere a = ((c : ℂ) : RiemannSphere) → ∃ i, F.D.xs i = a) :
+    ExistsRamifiedCenterFacts ω₀ g f Φ poles c :=
+  ⟨F.toRamifiedCenterFacts hD_mem hD_surj⟩
+
 end FullFibreClusterData
+
+/-! ## The `∑Res = 0` capstone via the SOUND full-fibre cluster geometry
+
+Routing the SOUND full-fibre `RamifiedCenterFacts` through the `hoff_cs`-free capstone
+`residueTheorem_ofRamifiedCenters_genus0_mod` gives the corrected `∑Res = 0`, replacing the unsound
+single-cluster `RealCoverSlitGeometry`/`hgeom_slit` route by the full-fibre geometry. -/
+
+open Jacobians.Dolbeault.FormTraceInftyFibre Jacobians.Dolbeault.FormTraceInftyRecip
+  Jacobians.Dolbeault.FormTraceFullFibre
+
+/-- **The per-centre full-fibre obligation** (item #1, corrected/sound).  At every finite pole-value
+centre `cs i` of `α = ω₀·g`, the canonical full-fibre selection carries a `FullFibreClusterData` (the
+genuine full-fibre Forster §5 cluster geometry — *all* preimages, genuine `clusterSheet` points) whose
+preimages enumerate exactly the poles of `α` in the fibre `F⁻¹(coe (cs i))`.  This is the SOUND
+replacement of `RealCoverRamifiedCenters` (which packaged the single-cluster `RamifiedSheetData`). -/
+def FullFibreRamifiedCenters (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
+    (hdiv : (f.div : Divisor X) ≠ 0) (poles : Finset X) {m : ℕ} (cs : Fin m → ℂ) : Prop :=
+  ∃ (Ff : ∀ i, FullFibreClusterData ω₀ g f (canonicalFibreSelection g f hdiv) (cs i)),
+    (∀ i, ∀ k, (Ff i).D.xs k ∈ poles) ∧
+    (∀ i, ∀ a ∈ poles, f.toRiemannSphere a = ((cs i : ℂ) : RiemannSphere) → ∃ k, (Ff i).D.xs k = a)
+
+/-- **Gate A `∑Res = 0` for the real cover via the SOUND full-fibre cluster geometry, `hoff_cs`-FREE.**
+Given the per-centre full-fibre cluster data `FullFibreRamifiedCenters` (the corrected, SOUND geometric
+input — full fibre, genuine `clusterSheet` points) and the off-centre + `∞` input bundle `GateAInftyData`
+(the already-Gate-A-discharged machinery), the total residue of `α = ω₀·g` vanishes:
+
+> `∑ a ∈ poles, formFnResidue ω₀ g a = 0`.
+
+This routes through the `hoff_cs`-free capstone `residueTheorem_ofRamifiedCenters_genus0_mod`, fed the
+SOUND full-fibre `RamifiedCenterFacts` (`existsRamifiedCenterFacts_ofFullFibre`) at each centre — the
+finite centres may be **ramified**, and the geometry is the genuine full-fibre cluster identity (NOT the
+unsound single-cluster `hgeom_slit`). -/
+theorem residueSum_eq_zero_of_fullFibreCluster {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0} {poles : Finset X} {m : ℕ}
+    {cs : Fin m → ℂ} {br : Finset ℂ}
+    (A : Jacobians.GateAInftyData ω₀ g f hdiv poles cs br)
+    (hFC : FullFibreRamifiedCenters ω₀ g f hdiv poles cs) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 := by
+  obtain ⟨Ff, hxs_mem, hxs_surj⟩ := hFC
+  exact residueTheorem_ofRamifiedCenters_genus0_mod (canonicalFibreSelection g f hdiv) m cs A.ρ
+    A.hcs_ball A.hcs_inj br A.hreg A.hbnd A.hcenters_cs
+    (fun i => FullFibreClusterData.existsRamifiedCenterFacts_ofFullFibre (Ff i) (hxs_mem i)
+      (hxs_surj i))
+    A.Dinf_full A.hcoh_full A.hfullInf_inj A.xsInf_po A.hpoInf_inj A.hpoInf_mem A.hpoInf_surj
+    A.hpole_image_inf A.hnonpole_inf_an
+
+/-- **Non-vacuity of `FullFibreRamifiedCenters` (no finite pole-value centres).**  When there are no
+finite pole-value centres (`m = 0`), the per-centre data is vacuously inhabited — `FullFibreRamifiedCenters`
+is **not** a disguised `False`. -/
+theorem fullFibreRamifiedCenters_empty (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) (poles : Finset X) :
+    FullFibreRamifiedCenters ω₀ g f hdiv poles (m := 0) Fin.elim0 :=
+  ⟨fun i => i.elim0, fun i => i.elim0, fun i => i.elim0⟩
 
 end Jacobians.Dolbeault.SerreResidueTheorem
