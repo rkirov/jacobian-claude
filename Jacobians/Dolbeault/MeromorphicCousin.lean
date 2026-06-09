@@ -274,6 +274,138 @@ theorem res_ofGeneral (μ : GeneralMLDistribution ω₀) : (ofGeneral μ).res = 
 
 end FormMLDistribution
 
+/-! ## The cover-adapted distribution and the Mittag–Leffler connecting map `δ`
+
+A **cover-adapted** Mittag–Leffler distribution is one whose cover is exactly a fixed finite cover
+`𝔘`, so its local principal parts `gᵢ` are indexed by `𝔘.ι`.  From it the connecting map produces a
+Čech 1-cocycle of `𝒪_K`: `cᵢⱼ = [gᵢ − gⱼ]` on the overlap `Uᵢ ∩ Uⱼ`, a genuine `𝒪_K`-section germ
+(the `δμ ∈ Z¹(Ω)` condition `gᵢ − gⱼ ∈ 𝒪_K`), with the cocycle identity automatic.
+
+This is Forster's connecting homomorphism `δ : H⁰(ℳ⁽¹⁾/Ω) → H¹(Ω) ≅ cechH1 K` at the cochain level. -/
+
+variable (𝔘 : FiniteCover X) (ω₀ : HolomorphicOneForms X) (K : Divisor X)
+
+/-- **A cover-adapted Mittag–Leffler distribution** over the fixed cover `𝔘` (Forster §17.2's
+`μ = (ωᵢ) ∈ C⁰(𝔘, ℳ⁽¹⁾)` with `δμ ∈ Z¹(𝔘, Ω)`).  The local principal parts `g i : X → ℂ` are indexed
+by `𝔘.ι` (so `ωᵢ = gᵢ·ω₀` lives on `𝔘.U i`).  The overlap data is carried at *both* genuine strengths
+of `δμ ∈ Z¹(Ω)`:
+
+* `diffMem` — the **cocycle side**: `gᵢ − gⱼ` is an `𝒪_K`-section on the overlap (poles bounded by
+  `K = div ω₀`), which makes `[gᵢ − gⱼ]` a genuine `𝒪_K` germ — the entry of the produced cocycle.
+* `formHoloDiff` — the **residue side**: the *form* `(gᵢ − gⱼ)·ω₀` is holomorphic on overlaps (chart
+  integrand analytic), which makes the per-pole residue patch-independent.
+
+(Both are equivalent translations of `δμ ∈ Z¹(Ω)` given `K = div ω₀`; we carry both rather than prove
+their equivalence, an orthogonal `coeffAt ω₀`-order ↔ `K` bridge.)  `poles`/`patch`/`iso` are as in
+`FormMLDistribution`. -/
+structure CoverMLDistribution where
+  /-- The local principal-part function on each patch (`ωᵢ = gᵢ·ω₀`). -/
+  g : 𝔘.ι → (X → ℂ)
+  /-- The finite pole set. -/
+  poles : Finset X
+  /-- A designated patch containing each pole. -/
+  patch : X → 𝔘.ι
+  /-- Each pole lies in its designated patch. -/
+  patch_mem : ∀ a ∈ poles, a ∈ 𝔘.U (patch a)
+  /-- **Cocycle side** (`δμ ∈ Z¹(Ω)` as functions): `gᵢ − gⱼ` is an `𝒪_K`-section on the overlap. -/
+  diffMem : ∀ i j : 𝔘.ι,
+    ((g i - g j) ∘ (Subtype.val : ↥(𝔘.U i ⊓ 𝔘.U j) → X)) ∈ OmegaD K (𝔘.U i ⊓ 𝔘.U j)
+  /-- **Residue side** (`δμ ∈ Z¹(Ω)` as forms): the form `(gᵢ − gⱼ)·ω₀` is holomorphic on overlaps. -/
+  formHoloDiff : ∀ (i j : 𝔘.ι) (a : X), a ∈ 𝔘.U i → a ∈ 𝔘.U j →
+    AnalyticAt ℂ (fun z => coeffAt ω₀ a z * (g i - g j) ((chartAt ℂ a).symm z)) ((chartAt ℂ a) a)
+  /-- **Isolated singularity** at each pole (in its designated patch). -/
+  iso : ∀ a ∈ poles, formFnHoloPunctured ω₀ (g (patch a)) a
+
+namespace CoverMLDistribution
+
+variable {𝔘 ω₀ K}
+
+/-- The underlying `FormMLDistribution` (cover `= 𝔘`), used for the residue. -/
+def toFormMLDistribution (μ : CoverMLDistribution 𝔘 ω₀ K) : FormMLDistribution ω₀ where
+  ι := 𝔘.ι
+  U := 𝔘.U
+  g := μ.g
+  poles := μ.poles
+  patch := μ.patch
+  patch_mem := μ.patch_mem
+  formHoloDiff := μ.formHoloDiff
+  iso := μ.iso
+
+/-- **The total residue of a cover-adapted distribution** `Res(μ) = ∑ₐ Resₐ(ω₀·gᵢ)` (Forster §17.2).
+This is the genuine Laurent residue sum (`FormMLDistribution.res`). -/
+noncomputable def res (μ : CoverMLDistribution 𝔘 ω₀ K) : ℂ := μ.toFormMLDistribution.res
+
+theorem res_def (μ : CoverMLDistribution 𝔘 ω₀ K) :
+    μ.res = ∑ a ∈ μ.poles, formFnResidue ω₀ (μ.g (μ.patch a)) a := rfl
+
+/-! ### The connecting cocycle `δμ ∈ Z¹(𝔘, 𝒪_K)` -/
+
+/-- The 1-cochain `(cᵢⱼ) = ([gᵢ − gⱼ])` of `𝒪_K`-germs over `𝔘` (the connecting map at cochain level).
+Each entry is the germ on the overlap `Uᵢ ∩ Uⱼ` of the *difference* `gᵢ − gⱼ` (restricted to the
+overlap submanifold). -/
+noncomputable def connectingCochain (μ : CoverMLDistribution 𝔘 ω₀ K) : 𝔘.toFiniteFamily.Cochain1 :=
+  fun p => toGerm (𝔘.U p.1 ⊓ 𝔘.U p.2)
+    ((μ.g p.1 - μ.g p.2) ∘ (Subtype.val : ↥(𝔘.U p.1 ⊓ 𝔘.U p.2) → X))
+
+/-- The connecting cochain's entries are `𝒪_K`-sections (`diffMem`), so it lies in `sections1 K`. -/
+theorem connectingCochain_mem_sections1 (μ : CoverMLDistribution 𝔘 ω₀ K) :
+    μ.connectingCochain ∈ 𝔘.toFiniteFamily.sections1 K := by
+  intro p
+  exact ⟨_, μ.diffMem p.1 p.2, rfl⟩
+
+/-- Restricting the connecting cochain entry `cᵢⱼ` to a finer overlap (`W ≤ Uᵢ ⊓ Uⱼ`) gives the germ
+of the *same* difference `gᵢ − gⱼ` there (germ restriction is precomposition with the inclusion). -/
+theorem rawRestrictG_connectingCochain {μ : CoverMLDistribution 𝔘 ω₀ K} {i j : 𝔘.ι}
+    {W : Opens X} (h : W ≤ 𝔘.U i ⊓ 𝔘.U j) :
+    rawRestrictG h (toGerm (𝔘.U i ⊓ 𝔘.U j)
+        ((μ.g i - μ.g j) ∘ (Subtype.val : ↥(𝔘.U i ⊓ 𝔘.U j) → X)))
+      = toGerm W ((μ.g i - μ.g j) ∘ (Subtype.val : ↥W → X)) := by
+  rw [rawRestrictG_coe]
+  rfl
+
+/-- **The connecting cochain is a cocycle** (`δ¹(δμ) = 0`).  On every triple overlap the alternating
+sum of the difference-germs telescopes: `(gⱼ − gₖ) − (gᵢ − gₖ) + (gᵢ − gⱼ) = 0` pointwise, so the germs
+sum to `0`. -/
+theorem cechDelta1_connectingCochain (μ : CoverMLDistribution 𝔘 ω₀ K) :
+    𝔘.toFiniteFamily.cechDelta1 μ.connectingCochain = 0 := by
+  funext t
+  obtain ⟨i, j, k⟩ := t
+  simp only [FiniteFamily.cechDelta1, LinearMap.pi_apply, LinearMap.sub_apply, LinearMap.add_apply,
+    LinearMap.comp_apply, LinearMap.proj_apply, Pi.zero_apply]
+  -- the three projected entries are difference-germs; restrict each to the triple overlap.
+  rw [show μ.connectingCochain (j, k) = toGerm (𝔘.U j ⊓ 𝔘.U k)
+        ((μ.g j - μ.g k) ∘ (Subtype.val : ↥(𝔘.U j ⊓ 𝔘.U k) → X)) from rfl,
+    show μ.connectingCochain (i, k) = toGerm (𝔘.U i ⊓ 𝔘.U k)
+        ((μ.g i - μ.g k) ∘ (Subtype.val : ↥(𝔘.U i ⊓ 𝔘.U k) → X)) from rfl,
+    show μ.connectingCochain (i, j) = toGerm (𝔘.U i ⊓ 𝔘.U j)
+        ((μ.g i - μ.g j) ∘ (Subtype.val : ↥(𝔘.U i ⊓ 𝔘.U j) → X)) from rfl,
+    rawRestrictG_connectingCochain, rawRestrictG_connectingCochain, rawRestrictG_connectingCochain]
+  -- combine via `toGerm` linearity; the pointwise alternating sum of differences is `0`.
+  rw [← map_sub, ← map_add]
+  convert map_zero (toGerm (𝔘.U i ⊓ 𝔘.U j ⊓ 𝔘.U k)) using 2
+  funext x
+  simp only [Function.comp_apply, Pi.add_apply, Pi.sub_apply, Pi.zero_apply]
+  ring
+
+/-- **The connecting cocycle `δμ ∈ Z¹(𝔘, 𝒪_K)`** — the connecting map at the cocycle level, a genuine
+element of `𝔘.cocycles1 K` (`ker δ¹ ∩ sections1 K`).  This is Forster's `δ : H⁰(ℳ⁽¹⁾/Ω) → H¹(Ω)`
+realised on a Mittag–Leffler distribution. -/
+noncomputable def connectingCocycle (μ : CoverMLDistribution 𝔘 ω₀ K) :
+    ↥(𝔘.toFiniteFamily.cocycles1 K) :=
+  ⟨μ.connectingCochain,
+    LinearMap.mem_ker.mpr μ.cechDelta1_connectingCochain, μ.connectingCochain_mem_sections1⟩
+
+@[simp] theorem connectingCocycle_coe (μ : CoverMLDistribution 𝔘 ω₀ K) :
+    (μ.connectingCocycle : 𝔘.toFiniteFamily.Cochain1) = μ.connectingCochain :=
+  rfl
+
+/-- **The connecting class** `[δμ] ∈ cechH1 K` — the cohomology class of the connecting cocycle.  The
+Serre residue functional `res` is defined to send this class to `μ.res` (well-defined by Gate A). -/
+noncomputable def connectingClass (μ : CoverMLDistribution 𝔘 ω₀ K) : 𝔘.toFiniteFamily.cechH1 K :=
+  Submodule.Quotient.mk μ.connectingCocycle
+
+end CoverMLDistribution
+
 end Jacobians.Dolbeault
 
 end
