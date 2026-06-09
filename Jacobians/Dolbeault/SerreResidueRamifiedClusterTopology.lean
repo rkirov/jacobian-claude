@@ -407,4 +407,69 @@ noncomputable def ClusterReindexData.ofFibreClusterTopology {ω₀ : Holomorphic
       hs₁_sec hs₂_sec
     exact hderiv
 
+/-! ## The bijection skeleton: building `FibreClusterTopology` from a cluster→sheet embedding
+
+The bijection `e` and the point coincidence `hpoint` are the genuine conservation-of-number content.
+We package the cleanest form of that content as a **cluster→sheet assignment** `cl : (i) → Fin
+(D.mult i) → Fin S.n` together with:
+
+* `hcl_point` — each cluster sheet point IS the assigned moving sheet point (`clusterSection D Cl i j z
+  = S.sheet (cl i j) (coe z)`);
+* `hcl_inj` — distinct cluster `(i,j)` go to distinct sheets (the clusters are disjoint — different
+  preimages are far apart, cluster sheets at one preimage are distinct by the primitive root);
+* `hcard` — the **conservation of number** `∑ᵢ D.mult i = S.n` (the §4 degree identity: the `deg f`
+  regular sheets partition into the per-preimage clusters of total size `∑ᵢ mᵢ`).
+
+From these, `e := Equiv.ofBijective` of the injective+equicardinal assignment, and `hpoint` is exactly
+`hcl_point` (`e ⟨i,j⟩ = cl i j` by construction).  This is the precise remaining clustering-topology
+input: the assignment + its injectivity + the degree count.  Everything else is DERIVED. -/
+
+/-- **`FibreClusterTopology` from a cluster→sheet embedding** (the bijection skeleton).  Given the
+sphere sheet system data, the cluster→sheet assignment `cl` with the point coincidence `hcl_point`, its
+injectivity `hcl_inj`, the conservation-of-number count `hcard : ∑ᵢ D.mult i = S.n`, and the two
+genuine geometric residuals (`hsrc`, `hcs_sec`) plus the cluster sheet differentiability, the
+`FibreClusterTopology` datum holds — with `e` the bijectivization of `cl` (an injection between
+equicardinal finite types is a bijection) and `hpoint` exactly `hcl_point`. -/
+noncomputable def FibreClusterTopology.ofClusterEmbedding {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
+    {D : FibreRamifiedData g f c} {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+    (hderiv : ∀ k, deriv (fun w => f.holoRepr
+        ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+        (S.sheet k (((z : ℂ) : RiemannSphere)))) ≠ 0)
+    (hmero : ∀ k, MeromorphicAt
+      (fun w => g ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+        (S.sheet k (((z : ℂ) : RiemannSphere)))))
+    (hcoh : valueChartTrace ω₀ f Φ z
+      = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv hmero)).traceCoeff z)
+    (cl : (i : D.ι) → Fin (D.mult i) → Fin S.n)
+    (hcl_point : ∀ (i : D.ι) (j : Fin (D.mult i)),
+      clusterSection D Cl i j z = S.sheet (cl i j) (((z : ℂ) : RiemannSphere)))
+    (hcl_inj : Function.Injective (fun p : Σ i : D.ι, Fin (D.mult i) => cl p.1 p.2))
+    (hcard : ∑ i, D.mult i = S.n)
+    (hsrc : ∀ (i : D.ι) (j : Fin (D.mult i)),
+      ∀ᶠ w in 𝓝 z, clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j w ∈ (chartAt ℂ (D.xs i)).target)
+    (hsheet_diff : ∀ (i : D.ι) (j : Fin (D.mult i)),
+      DifferentiableAt ℂ (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z)
+    (hcs_sec : ∀ (i : D.ι) (j : Fin (D.mult i)),
+      ∀ᶠ w in 𝓝 z, f.holoRepr (clusterSection D Cl i j w) = w) :
+    FibreClusterTopology Φ D Cl z where
+  S := S
+  hderiv := hderiv
+  hmero := hmero
+  hcoh := hcoh
+  e := by
+    -- The assignment as a single function `(Σ i, Fin (mult i)) → Fin S.n`.
+    refine Equiv.ofBijective (fun p : Σ i : D.ι, Fin (D.mult i) => cl p.1 p.2) ?_
+    rw [Fintype.bijective_iff_injective_and_card]
+    refine ⟨hcl_inj, ?_⟩
+    rw [Fintype.card_sigma, Fintype.card_fin,
+      Finset.sum_congr rfl (fun i _ => Fintype.card_fin (D.mult i)), hcard]
+  hpoint := hcl_point
+  hsrc := hsrc
+  hsheet_diff := hsheet_diff
+  hcs_sec := hcs_sec
+
 end Jacobians.Dolbeault.SerreResidueTheorem
