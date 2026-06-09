@@ -28,11 +28,12 @@ expert check before relying on anything.
 
 ## Status — ~60% (foundations + several walls done; the hard analysis remains)
 
-- **Builds green** (`lake build`, exit 0; **34k lines of Lean** (`cloc`) across 171 files) with **0 custom axioms** — the
-  entire unproved surface is **~10 named `sorry`s**, each a true classical theorem absent from Mathlib.
+- **Builds green** (`lake build`, exit 0; **57k lines of Lean** (`cloc`) across 279 files) with **0 custom axioms** — the
+  entire unproved surface is **7 named `sorry`s**, each a true classical theorem absent from Mathlib.
 - **Machine-verified (`#print axioms`):** `genus`, `ContMDiff.degree`, the 7 `Jacobian` instances,
   `ofCurve_self`, and the pushforward/pullback functoriality lemmas are sorry-free. The **residue
-  theorem** `MeromorphicFunction.deg_div` (Forster Cor. 4.25) is now closed and axiom-clean.
+  theorem** is closed and axiom-clean in two forms — `MeromorphicFunction.deg_div` (Forster Cor. 4.25)
+  and the general `∑ Res = 0` for any meromorphic 1-form (`residueTheorem_unconditional`, Miranda §VIII.3).
 - **The marquee deliverables still carry `sorryAx`** — `genus_eq_zero_iff_homeo`, `ofCurve_inj`, and the
   holomorphicity statements are gated on the open walls below. *Matching a signature is not the same as a
   finished proof.*
