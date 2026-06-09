@@ -2605,8 +2605,43 @@ PROVEN `res_eq_of_globalMeromorphic_diff`, Part 1 of SerreResiduePairing). The r
 the Mittag-Leffler CONNECTING map (Forster 17.2: cechH1 K class → distribution of functions) for the
 Res descent — genuinely multi-thousand-LoC.
 
-### Deliverable (maximal sound prefix, see report)
-[to be filled at end of session]
+### Deliverable (maximal sound prefix)
+
+TWO new files, all axiom-clean [propext, Classical.choice, Quot.sound], full tree builds standalone
+(8523 jobs); touched ONLY these + human_input.md (NOT the Gate-A trace stack / orphans / pre-existing
+M files — those were committed by the concurrent Gate-A agent, additive, no conflict).
+
+1. `Jacobians/Dolbeault/SerreCupProduct.lean` — the §17.5 **cup product, FULLY PROVEN**:
+   `cup 𝔘 D K : lSysModule (K−D) →ₗ[ℂ] (cechH1 D →ₗ[ℂ] cechH1 K)`, bilinear (ℂ-linear in BOTH f and
+   ξ), `[ξ] ↦ [f·ξ]`. Built bottom-up: mulLeftG (ℂ-linear germ mult) → mulConstG_omegaDGerm (poles
+   cancel 𝒪_D·L(K−D) ⊆ 𝒪_K via meromorphicOrderAt_mul) → cochain maps commuting with δ⁰/δ¹
+   (rawRestrictG is a ring hom) → cocycle/coboundary preservation → cupH1 (Submodule.mapQ descent) →
+   cupH1_add/cupH1_smul (linearity in f) + cupH1_eq_zero_of_germZero (descent to junk-free lSysModule).
+
+2. `Jacobians/Dolbeault/SerreResidueRealizationAssembly.lean` — the **ASSEMBLY**:
+   `GlobalResidue.toSerreResidueRealization` DERIVES the full `SerreResidueRealization 𝔘 K` (pairing =
+   res∘cup + §17.6 witness) from the proven cup + ONE isolated input `GlobalResidue 𝔘 K` (the global
+   residue functional `res : cechH1 K →ₗ ℂ` on H¹(X,Ω)≅cechH1 K, + its §17.6 non-degeneracy). Also
+   `pairing_injective`, `lDim_le_h1Dim`, and `toSerreDualityData` (full chain to the ladder target).
+
+THE HONEST RESIDUAL (smallest): only `GlobalResidue` remains greenfield = the global residue functional
+`res` + its non-degeneracy. `res` IS the Mittag-Leffler CONNECTING map (Forster 17.2: solve the
+additive Cousin problem g_i − g_j = ξ_{ij} on the Leray cover ⟹ a distribution of LOCAL meromorphic
+1-forms α_i with holomorphic differences ⟹ res = ∑Res_a(α_i)) — confirmed irreducible (NO shortcut:
+the Ω-cocycle ω₀·ξ is holomorphic, so its residue is NOT a sum of residues of η; it needs the
+meromorphic Cousin lift). Well-definedness on classes = the PROVEN res_eq_of_globalMeromorphic_diff
+(∑Res=0, Part 1 of SerreResiduePairing, modulo Gate-A's ExistsAdaptedF). The §17.6 witness routes
+through the PROVEN dz/z lemma exists_formFnResidue_eq_one_of_localRep_ne_zero (the non-degeneracy field
+forces res(cup f ξ)=1≠0 — genuinely non-degenerate, NOT a junk zero / lDim≡0 collapse). SOUND &
+non-circular (no RR route). The remaining res is the long-flagged Serre analytic wall (Cousin/∂̄-solve),
+genuinely multi-thousand-LoC; isolated cleanly rather than faked.
+
+Lean gotchas: (a) Filter.Germ CANNOT germ-ify covector sections (dependent fiber) → use the §17.4
+reduction to the function sheaf 𝒪_K instead of a free-standing Ω-Čech complex. (b) MGerm has Module ℂ
++ CommRing but NO Algebra ℂ / IsScalarTower → prove (a•x)*y=a•(x*y) (smul_mul_MGerm) directly by
+Germ.inductionOn. (c) `cup`'s 𝔘 is implicit (in a `variable {𝔘}` section) → call as
+`cup (𝔘 := 𝔘.toFiniteFamily) D K`, else whnf timeout. (d) WithTop ℤ divisor arithmetic:
+`rw [Finsupp.sub_apply]; norm_cast; ring` (not push_cast/ring — WithTop isn't a ring).
 
 ---
 
