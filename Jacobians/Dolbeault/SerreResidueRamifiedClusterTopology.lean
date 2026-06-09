@@ -127,6 +127,29 @@ theorem transition_analyticAt' {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).sour
   exact (contMDiffAt_iff_contDiffAt.1
     (ContMDiffAt.comp (I' := 𝓘(ℂ)) ((chartAt (H := ℂ) z) z) h2 h1)).analyticAt
 
+/-- **The chart transition `chart_b ∘ chart_a.symm` is analytic at an interior target point** `w₀`
+(maximal-atlas coordinate change at `ω`): if `w₀ ∈ chart_a.target` and `chart_a.symm w₀ ∈
+chart_b.source`, then `chart_b ∘ chart_a.symm` is analytic at `w₀`.  Unlike `transition_analyticAt'`
+(evaluated at the chart centre `chart_a a`), this is at an arbitrary overlap point — exactly what the
+cluster section's self-chart pullback needs (`w₀ = clusterSheet … z = chart_{D.xs i} q`). -/
+theorem transition_analyticAt_target {a b : X} {w₀ : ℂ}
+    (hw₀ : w₀ ∈ (chartAt (H := ℂ) a).target)
+    (hb : (chartAt (H := ℂ) a).symm w₀ ∈ (chartAt (H := ℂ) b).source) :
+    AnalyticAt ℂ ((chartAt (H := ℂ) b) ∘ (chartAt (H := ℂ) a).symm) w₀ := by
+  set ea := chartAt (H := ℂ) a with hea
+  set y₀ := ea.symm w₀ with hy₀
+  have ha_max : ea ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X :=
+    IsManifold.subset_maximalAtlas (chart_mem_atlas ℂ a)
+  have hb_max : chartAt (H := ℂ) b ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X :=
+    IsManifold.chart_mem_maximalAtlas b
+  have hy₀src : y₀ ∈ ea.source := ea.map_target hw₀
+  have h := ModelWithCorners.contDiffWithinAt_extendCoordChange' ha_max hb_max hy₀src hb
+  rw [ModelWithCorners.range_eq_univ, contDiffWithinAt_univ] at h
+  have hpt : (ea.extend 𝓘(ℂ)) y₀ = w₀ := by
+    show ea y₀ = w₀; rw [hy₀, ea.right_inv hw₀]
+  rw [hpt] at h
+  exact h.analyticAt
+
 /-- **Chart-change of an analytic chart pullback.**  If `h ∘ chart_y.symm` is analytic at `chart_y z`
 (for `z ∈ chart_y.source`), then `h ∘ chart_z.symm` is analytic at `chart_z z`.  Local copy of the
 Čech-side `analyticAt_chart_change`. -/
@@ -155,5 +178,40 @@ theorem analyticAt_chart_change' {h : X → ℂ} {y z : X} (hz : z ∈ (chartAt 
     filter_upwards [hmem] with w hw
     simp only [Function.comp_apply, (chartAt (H := ℂ) y).left_inv hw]
   rw [analyticAt_congr heq]; exact hcomp
+
+/-- **The self-chart pullback of the cluster section is differentiable at `z`.**  Writing `a := D.xs i`
+and `q := clusterSection D Cl i j z`, the map `w ↦ chart_q (clusterSection D Cl i j w)` is differentiable
+at `z`, given: the cluster sheet value `clusterSheet (Cl i).s … j z ∈ chart_a.target` (`htgt`), the
+cluster sheet differentiable at `z` (`hsheet_diff`).  Proof: `chart_q ∘ clusterSection = (chart_q ∘
+chart_a.symm) ∘ clusterSheet`; the transition is analytic at `clusterSheet … z = chart_a q`
+(`transition_analyticAt_target`), and `clusterSheet` is differentiable. -/
+theorem clusterSection_chartPullback_differentiableAt {g : X → ℂ} {f : MeromorphicFunction X}
+    {c : ℂ} {Sset : Set ℂ} {ω₀ : HolomorphicOneForms X} (D : FibreRamifiedData g f c)
+    (Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset) (i : D.ι) (j : Fin (D.mult i)) {z : ℂ}
+    (htgt : clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j z ∈ (chartAt ℂ (D.xs i)).target)
+    (hsheet_diff : DifferentiableAt ℂ (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z) :
+    DifferentiableAt ℂ (fun w => (chartAt ℂ (clusterSection D Cl i j z))
+      (clusterSection D Cl i j w)) z := by
+  set a : X := D.xs i with ha
+  set q : X := clusterSection D Cl i j z with hq
+  -- `chart_a q = clusterSheet … z`.
+  have hchart_a_q : (chartAt ℂ a) q = clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j z := by
+    rw [hq, clusterSection]; exact (chartAt ℂ a).right_inv htgt
+  -- `q ∈ chart_a.source` (it is `chart_a.symm` of an interior target point).
+  have hq_src : q ∈ (chartAt ℂ a).source := by
+    rw [hq, clusterSection]; exact (chartAt ℂ a).map_target htgt
+  -- The chart transition `chart_q ∘ chart_a.symm` is analytic at `clusterSheet … z = chart_a q`.
+  have htrans_an : AnalyticAt ℂ ((chartAt ℂ q) ∘ (chartAt ℂ a).symm)
+      (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j z) := by
+    rw [← hchart_a_q]
+    refine transition_analyticAt_target (a := a) (b := q) ?_ ?_
+    · rw [hchart_a_q]; exact htgt
+    · rw [(chartAt ℂ a).left_inv hq_src]; exact mem_chart_source ℂ q
+  -- `chart_q ∘ clusterSection = (chart_q ∘ chart_a.symm) ∘ clusterSheet`.
+  have heq : (fun w => (chartAt ℂ q) (clusterSection D Cl i j w))
+      = ((chartAt ℂ q) ∘ (chartAt ℂ a).symm) ∘ (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) := by
+    funext w; rw [clusterSection]; rfl
+  rw [heq]
+  exact htrans_an.differentiableAt.comp z hsheet_diff
 
 end Jacobians.Dolbeault.SerreResidueTheorem
