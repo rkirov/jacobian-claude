@@ -371,4 +371,55 @@ noncomputable def directTraceGeometry_ofAdapted
   hpole_image_inf := poleSubEnum_hpole_image poles Dinf_full.xs
   hnonpole_inf_an := hnonpole_inf_an
 
+/-- **`DirectTraceGeometry` from an adapted cover with simple `∞`-poles.**  A specialization of
+`directTraceGeometry_ofAdapted` that **closes the entire `∞`-fibre-data group**: the full `∞`-fibre
+datum `Dinf_full` is *constructed* as `inftyFibreDataNF_full` (enumerating all poles of `f`, each
+simple), so the four `∞`-fibre inputs `Dinf_full`/`hfullInf_inj`/`hinf_mem`/`hinf_surj` are discharged
+from the adapted inputs `hsimpleInf` (every `f`-pole simple) + `hmeroInf` (`g`-meromorphy over `∞`).
+The remaining inputs are the finite-fibre selection `Φ`, the per-centre full-fibre coherence `Cfull`,
+and the deep analytic residuals — exactly the smallest honest residual of Gate A. -/
+noncomputable def directTraceGeometry_ofAdaptedSimpleInfty
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (hΦ_inj : ∀ p, Function.Injective (Φ p).xs)
+    (hΦ_mem : ∀ p, ∀ i, f.toRiemannSphere ((Φ p).xs i) = (((p : ℂ) : RiemannSphere)))
+    (hΦ_surj : ∀ p, ∀ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere)) →
+      ∃ i, (Φ p).xs i = a)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (Cfull : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
+    (hCfull_D : ∀ i, (Cfull i).D = Φ (cs i))
+    (hnonpole_an : ∀ i, ∀ k, (Cfull i).D.xs k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ ((Cfull i).D.xs k)).symm z))
+        ((chartAt ℂ ((Cfull i).D.xs k)) ((Cfull i).D.xs k)))
+    -- The `∞`-fibre genericity: every `f`-pole simple + `g`-meromorphy over `∞`.
+    (hsimpleInf : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = -1)
+    (hmeroInf : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (inftyFibreEnum f i)).symm z))
+      ((chartAt ℂ (inftyFibreEnum f i)) (inftyFibreEnum f i)))
+    (hnonpole_inf_an : ∀ k, inftyFibreEnum f k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (inftyFibreEnum f k)).symm z))
+        ((chartAt ℂ (inftyFibreEnum f k)) (inftyFibreEnum f k)))
+    -- The deep analytic residuals (genus-`0` content + coherence), exposed as hypotheses.
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (valueChartTracePatched ω₀ f Φ br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] 0] R₀)
+    (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
+    DirectTraceGeometry ω₀ g f poles :=
+  directTraceGeometry_ofAdapted Φ hΦ_inj hΦ_mem hΦ_surj m cs ρ hcs_ball hcs_inj br hcenters_cs
+    Cfull hCfull_D hnonpole_an
+    (inftyFibreDataNF_full g f hsimpleInf hmeroInf)
+    (inftyFibreEnum_injective f)
+    (fun k => inftyFibreEnum_mem f k)
+    (fun a _ha hfa => inftyFibreEnum_surj f hfa)
+    hnonpole_inf_an hreg hbnd hcont_int R₀ hR₀_an hR₀0 hR₀_eq hcoh_full
+
 end Jacobians.Dolbeault.SerreResidueTheorem
