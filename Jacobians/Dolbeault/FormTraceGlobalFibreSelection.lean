@@ -62,6 +62,8 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.Dolbeault.FormTraceMovingFibre
 
 set_option linter.unusedSectionVars false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
 
 attribute [local instance] Classical.propDecidable
 
@@ -399,5 +401,78 @@ theorem sheetIndexOf_pole_surjective {b₀ : ℂ}
   have hpole : S.sheet k (((b₀ : ℂ) : RiemannSphere)) ∈ poles := hsep _ hfib
   refine ⟨⟨S.sheet k (((b₀ : ℂ) : RiemannSphere)), mem_poleFibre.mpr ⟨hpole, hfib⟩⟩, ?_⟩
   exact sheetIndexOf_sheet S k hfib
+
+/-! ### The per-pole moving sections and the set-form re-selection
+
+We now assemble the per-pole field for the canonical full-fibre selection at a separated off-branch
+pole-value `cs i`.  The moving sections are `secFin j := poleMovingSection S (j-th pole in fibre)`; the
+re-selection `hselFin` follows from the **symmetric lever** (`equivOfInjective_image_eq`) once the
+moving fibre `Φ b' = full fibre` and the section values enumerate the *same* set near `cs i`. -/
+
+variable {poles : Finset X}
+
+/-- The sheet-index of the `j`-th pole in the fibre over a pole-value `p`, for a sphere sheet system
+`S` at `coe p`. -/
+noncomputable def poleSheetIndex (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((p : ℂ) : RiemannSphere)))
+    (j : (fibreReg hac p).ι) : Fin S.n :=
+  sheetIndexOf S (x := (fibreReg hac p).xs j) (fibreReg_hxs_mem hac p j).2
+
+/-- **The pole sheet-index map is surjective under separation.**  Over a separated pole-value `p`,
+every sheet index `k` is `poleSheetIndex` of some pole `j`: `S.sheet k (coe p)` is a fibre point,
+hence a pole (separation), hence equal to `(fibreReg hac p).xs j` for some `j` (`fibreReg_hxs_surj`);
+the recovered index of that pole is `k` (`sheetIndexOf_sheet`, via proof-irrelevance of the fibre
+witness). -/
+theorem poleSheetIndex_surjective (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((p : ℂ) : RiemannSphere)))
+    (hsep : PoleValueSeparated f poles p) :
+    Function.Surjective (poleSheetIndex hac S) := by
+  intro k
+  -- `S.sheet k (coe p)` is a fibre point over `coe p`, hence a pole, hence a `fibreReg`-point.
+  have hfib : f.toRiemannSphere (S.sheet k (((p : ℂ) : RiemannSphere)))
+      = (((p : ℂ) : RiemannSphere)) := S.sheet_section k _ S.mem_V
+  have hpole : S.sheet k (((p : ℂ) : RiemannSphere)) ∈ poles := hsep _ hfib
+  obtain ⟨j, hj⟩ := fibreReg_hxs_surj hac p _ hpole hfib
+  refine ⟨j, ?_⟩
+  -- `poleSheetIndex hac S j = sheetIndexOf S (…)`; the index depends only on the point `(fibreReg).xs
+  -- j = S.sheet k (coe p)` (proof-irrelevant witness), so it is `k` by `sheetIndexOf_sheet`.
+  show sheetIndexOf S (x := (fibreReg hac p).xs j) (fibreReg_hxs_mem hac p j).2 = k
+  rw [show sheetIndexOf S (x := (fibreReg hac p).xs j) (fibreReg_hxs_mem hac p j).2
+      = sheetIndexOf S (x := S.sheet k (((p : ℂ) : RiemannSphere))) hfib from by
+    congr 1 <;> rw [hj]]
+  rw [sheetIndexOf_sheet S k hfib]
+
+/-- **The per-pole moving sections.**  For a pole-value `p` with sphere sheet system `S`, the moving
+section through the `j`-th pole: `secFin j := poleMovingSection S (…)`. -/
+noncomputable def poleSecFin (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((p : ℂ) : RiemannSphere)))
+    (j : (fibreReg hac p).ι) : ℂ → X :=
+  poleMovingSection S (x := (fibreReg hac p).xs j) (fibreReg_hxs_mem hac p j).2
+
+@[simp] theorem poleSecFin_eq (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((p : ℂ) : RiemannSphere)))
+    (j : (fibreReg hac p).ι) (b' : ℂ) :
+    poleSecFin hac S j b' = S.sheet (poleSheetIndex hac S j) (((b' : ℂ) : RiemannSphere)) := rfl
+
+/-- `poleSecFin` passes through the `j`-th pole at the base. -/
+theorem poleSecFin_base (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((p : ℂ) : RiemannSphere)))
+    (j : (fibreReg hac p).ι) :
+    poleSecFin hac S j p = (fibreReg hac p).xs j :=
+  poleMovingSection_base S (fibreReg_hxs_mem hac p j).2
+
+/-- `poleSecFin` is `C^ω` at the base. -/
+theorem poleSecFin_contMDiffAt (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((p : ℂ) : RiemannSphere)))
+    (j : (fibreReg hac p).ι) :
+    ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (poleSecFin hac S j) p :=
+  poleMovingSection_contMDiffAt S (fibreReg_hxs_mem hac p j).2
+
+/-- `poleSecFin` is a section of `f.holoRepr` near the base. -/
+theorem poleSecFin_section (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((p : ℂ) : RiemannSphere)))
+    (j : (fibreReg hac p).ι) :
+    ∀ᶠ b' in 𝓝 p, f.holoRepr (poleSecFin hac S j b') = b' :=
+  poleMovingSection_section S (fibreReg_hxs_mem hac p j).2
 
 end Jacobians.Dolbeault.FormTraceGlobal
