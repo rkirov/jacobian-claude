@@ -567,4 +567,66 @@ noncomputable def Fibre5Datum.toClusterTraceData {ω₀ : HolomorphicOneForms X}
     (hsub : ∀ z ∈ Sset, z ∈ FD.V ∧ z - c ∈ slitPlane) :
     (FD.toClusterTraceData Sset hsub).m = m := rfl
 
+/-! ## The §5 power identity on a neighbourhood (the `hpow` field)
+
+The cpow `m`-th-root identity `((z − c)^{1/m})^m = z − c` holds on the open slit `{z | z − c ∈ slitPlane}`,
+hence on a whole neighbourhood of any interior slit value `z₀` (the slit is open, `slitPlane` open). -/
+
+/-- **The cpow power identity holds on a neighbourhood of an interior slit value.**  For `m ≥ 1` and
+`z₀ − c ∈ slitPlane`, the identity `((z − c)^{1/m})^{(m:ℤ)} = z − c` holds for `z` in a neighbourhood of
+`z₀` (the slit is open). -/
+theorem eventually_cpow_pow_eq (c : ℂ) {m : ℕ} (hm : 0 < m) {z₀ : ℂ} (hz₀ : z₀ - c ∈ slitPlane) :
+    ∀ᶠ z in 𝓝 z₀, ((z - c) ^ ((m : ℂ)⁻¹)) ^ (m : ℤ) = z - c := by
+  have hopen : ∀ᶠ z in 𝓝 z₀, z - c ∈ slitPlane := by
+    have hcont : ContinuousAt (fun z : ℂ => z - c) z₀ := (continuous_sub_right c).continuousAt
+    exact hcont.eventually (Complex.isOpen_slitPlane.mem_nhds hz₀)
+  filter_upwards [hopen] with z _
+  rw [zpow_natCast]; exact Complex.cpow_nat_inv_pow _ hm.ne'
+
+/-! ## The §5 section germ from a per-preimage `Fibre5Datum` family
+
+Assemble the per-`(z₀,i)` `SlitSectionGerm` from the per-preimage `Fibre5Datum` family, the cluster data
+`Cl i := (FD i).toClusterTraceData …`, a slit value `z₀ ∈ Sset`, and the two centre-level facts
+(`hnonpole`/`hsep`).  Each germ field reads off the corresponding `Fibre5Datum` `V`-fact (`hVinv_mem`,
+`hVnf_mem`, `hVtgt`, `hVs_an`), the cpow calculus (`hw₀_cont`, `hpow`), and the centre-level data. -/
+
+/-- **The §5 section germ from a `Fibre5Datum` family.**  For the whole-fibre `D = realFibreData g hdiv c
+hnp`, the per-preimage data `FD i : Fibre5Datum ω₀ g f c (D.xs i) (D.mult i)`, the cluster family
+`Cl i = (FD i).toClusterTraceData Sset (hsub i)`, a slit value `z₀ ∈ Sset`, and the centre-level
+non-pole (`hnonpole`) / separation (`hsep`) facts at `z₀`, build a `SlitSectionGerm`.  Discharges the
+eight germ fields from the `Fibre5Datum` `V`-facts, the cpow calculus, and the two centre-level data. -/
+noncomputable def slitSectionGerm_of_fibre5 {ω₀ : HolomorphicOneForms X} {g : MeromorphicFunction X}
+    {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0} {c : ℂ}
+    {hnp : ∀ i, 0 ≤ f.orderAtPoint (fullFibreEnum f hdiv c i)} {Sset : Set ℂ}
+    (FD : ∀ i, Fibre5Datum ω₀ g f c ((realFibreData g hdiv c hnp).xs i)
+      ((realFibreData g hdiv c hnp).mult i))
+    (hsub : ∀ i, ∀ z ∈ Sset, z ∈ (FD i).V ∧ z - c ∈ slitPlane)
+    {z₀ : ℂ} (hz₀ : z₀ ∈ Sset) (i : (realFibreData g hdiv c hnp).ι)
+    (hnonpole : ∀ (i : (realFibreData g hdiv c hnp).ι)
+      (j : Fin ((realFibreData g hdiv c hnp).mult i)),
+      0 ≤ f.orderAtPoint (clusterSection (realFibreData g hdiv c hnp)
+        (fun i => (FD i).toClusterTraceData Sset (hsub i)) i j z₀))
+    (hsep : ∀ (i i' : (realFibreData g hdiv c hnp).ι)
+      (j : Fin ((realFibreData g hdiv c hnp).mult i)) (k : Fin ((realFibreData g hdiv c hnp).mult i')),
+      i ≠ i' → clusterSection (realFibreData g hdiv c hnp)
+          (fun i => (FD i).toClusterTraceData Sset (hsub i)) i j z₀
+        ≠ clusterSection (realFibreData g hdiv c hnp)
+          (fun i => (FD i).toClusterTraceData Sset (hsub i)) i' k z₀) :
+    SlitSectionGerm ω₀ g hdiv c hnp (fun i => (FD i).toClusterTraceData Sset (hsub i)) z₀ i where
+  η := (FD i).η
+  hs_cont := fun j => ((FD i).hVs_an z₀ (hsub i z₀ hz₀).1 (hsub i z₀ hz₀).2 (j : ℕ)
+    (Finset.mem_range.2 j.isLt)).continuousAt
+  hw₀_cont := ((clusterTraceData_slit ω₀ ((realFibreData g hdiv c hnp).xs i) c
+    ((realFibreData g hdiv c hnp).mult i) (FD i).hm (FD i).ζ (FD i).hζ).hw₀_diff z₀
+    (hsub i z₀ hz₀).2).continuousAt
+  hinv := fun j => (FD i).hVinv_mem z₀ (hsub i z₀ hz₀).1 (hsub i z₀ hz₀).2 (j : ℕ)
+    (Finset.mem_range.2 j.isLt)
+  hnf := fun j => (FD i).hVnf_mem z₀ (hsub i z₀ hz₀).1 (hsub i z₀ hz₀).2 (j : ℕ)
+    (Finset.mem_range.2 j.isLt)
+  hpow := eventually_cpow_pow_eq c (FD i).hm (hsub i z₀ hz₀).2
+  htgt := fun j => (FD i).hVtgt z₀ (hsub i z₀ hz₀).1 (hsub i z₀ hz₀).2 (j : ℕ)
+    (Finset.mem_range.2 j.isLt)
+  hnonpole := fun j => hnonpole i j
+  hsep := fun i' j k hii => hsep i i' j k hii
+
 end Jacobians.Dolbeault.SerreResidueTheorem
