@@ -172,4 +172,166 @@ theorem formOrderW_ne_top_of_exists (α : MeromorphicOneForm X)
 
 end MeromorphicOneForm
 
+/-! ## Part 2: the canonical form `ω₀`, its divisor `K`, and the isolated analytic input
+
+Forster §17.4 fixes a nonzero meromorphic 1-form `ω₀` (he takes `ω₀ = df` for a nonconstant
+meromorphic `f`) and sets `K := div ω₀`.  The whole §17.4 tower is *algebraic* once we have:
+  * `ω₀ : MeromorphicOneForm X` with germ nonzero somewhere (`∃ x, formOrderW ω₀ x ≠ ⊤`);
+  * its divisor `K : Divisor X` (the order function `(formOrderW ω₀ ·).untop₀`, which has finite
+    support since `ω₀` has finitely many zeros/poles on the compact `X`), satisfying
+    `formOrderW ω₀ x = (K x : WithTop ℤ)` for all `x`.
+
+The form identity theorem (`formOrderW_ne_top_of_exists`) upgrades "germ nonzero somewhere" to
+`formOrderW ω₀ x ≠ ⊤` *everywhere*, which is exactly what makes `formOrderW ω₀ = K` consistent
+(`untop₀` loses nothing).  We bundle this — the construction of `ω₀ = df` and its finite-support
+divisor `K = div ω₀` — into one isolated hypothesis structure; it is **non-vacuous** (witnessed by
+`df` of `exists_nonconstant_meromorphic` + the 1-form analog of `MeromorphicFunction.div`). -/
+
+/-- **[ISOLATED ANALYTIC INPUT].**  The canonical-form datum of Forster §17.4: a nonzero meromorphic
+1-form `ω₀` together with its canonical divisor `K = div ω₀`.
+
+The two fields encode `ω₀ ≠ 0` (`nontrivial`) and `K = div ω₀` (`order_eq`, i.e. the divisor's
+coefficients are the form's orders).  Both are TRUE for `ω₀ = df` of a nonconstant meromorphic
+function `f` (which exists by Riemann–Roch — `exists_nonconstant_meromorphic`); the finite support
+of `K` is the 1-form analog of `MeromorphicFunction.div`'s local finiteness
+(`Jacobians.Abel.orderAtPoint_isolated_at`).  The remaining §17.4 content built on this datum is
+purely algebraic and fully proven below. -/
+structure CanonicalForm17Data (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] where
+  /-- The canonical meromorphic 1-form `ω₀` (Forster's `ω₀ = df`). -/
+  ω₀ : MeromorphicOneForm X
+  /-- `ω₀ ≠ 0`: its germ is nonzero at some point (so, by the identity theorem, everywhere). -/
+  nontrivial : ∃ x, ω₀.formOrderW x ≠ ⊤
+  /-- The canonical divisor `K = div ω₀`. -/
+  K : Divisor X
+  /-- `K = div ω₀`: the divisor's coefficients are exactly the form's orders. -/
+  order_eq : ∀ x, ω₀.formOrderW x = (K x : WithTop ℤ)
+
+namespace CanonicalForm17Data
+
+variable (data : CanonicalForm17Data X)
+
+/-- `ω₀`'s germ is nonzero at **every** point (the form identity theorem applied to `nontrivial`). -/
+theorem formOrderW_ω₀_ne_top (x : X) : data.ω₀.formOrderW x ≠ ⊤ :=
+  MeromorphicOneForm.formOrderW_ne_top_of_exists data.ω₀ data.nontrivial x
+
+/-- `ω₀.toFun` is eventually nonzero on a punctured neighbourhood of every point (so the covector
+ratio `α/ω₀` is well-defined as a meromorphic function). -/
+theorem ω₀_eventually_ne_zero (x : X) : ∀ᶠ y in 𝓝[≠] x, data.ω₀.toFun y ≠ 0 :=
+  (MeromorphicOneForm.formOrderW_ne_top_iff data.ω₀ x).mp (data.formOrderW_ω₀_ne_top x)
+
+end CanonicalForm17Data
+
+/-! ## Part 3: the intrinsic covector ratio and the division `α/ω₀`
+
+The cotangent fibre at `y` is 1-dimensional, so for two covectors `a, b` with `b ≠ 0`, the ratio
+`a v / b v` is **independent of the test vector `v`** (as long as `b v ≠ 0`).  This makes the
+function-level division `α/ω₀` intrinsic: `(α/ω₀)(y) := α y v / ω₀ y v` is chart-independent, and
+its chart coefficient is `formCoeff α / formCoeff ω₀`, hence meromorphic.  This is the surjectivity
+content of Forster §17.4 (`α = (α/ω₀)·ω₀`). -/
+
+/-- **Covector ratio is test-vector-independent.**  For covectors `a b : TangentSpace 𝓘(ℂ) y →L[ℂ] ℂ`,
+the trivialization `e = trivializationAt _ _ x` with `y ∈ e.baseSet`, and any `v`, the ratio
+`a v / b v` equals the ratio on the frame vector `a (e.symmL 1) / b (e.symmL 1)` (the cotangent fibre
+being 1-dim, every `v` is a scalar multiple of `e.symmL 1`, and the scalar cancels). -/
+theorem covector_ratio_eq {x y : X} (a b : TangentSpace 𝓘(ℂ) (M := X) y →L[ℂ] ℂ)
+    (hy : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).baseSet)
+    (v : TangentSpace 𝓘(ℂ) (M := X) y) (hbv0 : b v ≠ 0) :
+    a v / b v = a ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ y 1)
+      / b ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ y 1) := by
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x with he
+  set c := e.continuousLinearMapAt ℂ y v with hc
+  have hv : e.symmL ℂ y c = v := e.symmL_continuousLinearMapAt hy v
+  have hsm : e.symmL ℂ y c = c • e.symmL ℂ y 1 := by
+    have h2 := (e.symmL ℂ y).map_smul c (1 : ℂ); rwa [smul_eq_mul, mul_one] at h2
+  have hav : a v = c • a (e.symmL ℂ y 1) := by
+    rw [← hv, hsm, (a).map_smul]
+  have hbv : b v = c • b (e.symmL ℂ y 1) := by
+    rw [← hv, hsm, (b).map_smul]
+  have hc0 : c ≠ 0 := by
+    intro h; apply hbv0; rw [hbv, h, zero_smul]
+  rw [hav, hbv, smul_eq_mul, smul_eq_mul, mul_div_mul_left _ _ hc0]
+
+/-- A nonzero covector on the (1-dim) cotangent fibre is nonzero on the frame vector `symmL 1`
+(contrapositive of `MeromorphicOneForm.toFun_eq_zero_of_formCoeff_zero`). -/
+theorem apply_symmL_ne_zero_of_ne_zero {x y : X}
+    (a : TangentSpace 𝓘(ℂ) (M := X) y →L[ℂ] ℂ) (ha : a ≠ 0)
+    (hy : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).baseSet) :
+    a ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ y 1) ≠ 0 := by
+  intro h
+  apply ha
+  -- the covector kills the frame vector, hence (1-dim) it is zero
+  set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x with he
+  refine ContinuousLinearMap.ext (fun v => ?_)
+  rw [ContinuousLinearMap.zero_apply]
+  set c := e.continuousLinearMapAt ℂ y v with hc
+  have hv : e.symmL ℂ y c = v := e.symmL_continuousLinearMapAt hy v
+  have hsm : e.symmL ℂ y c = c • e.symmL ℂ y 1 := by
+    have h2 := (e.symmL ℂ y).map_smul c (1 : ℂ); rwa [smul_eq_mul, mul_one] at h2
+  calc a v = a (e.symmL ℂ y c) := by rw [hv]
+    _ = a (c • e.symmL ℂ y 1) := by rw [hsm]
+    _ = c • a (e.symmL ℂ y 1) := by rw [a.map_smul]
+    _ = 0 := by rw [h, smul_zero]
+
+namespace CanonicalForm17Data
+
+variable (data : CanonicalForm17Data X)
+
+/-- **The division `α/ω₀` as a meromorphic function.**  Pointwise the intrinsic covector ratio
+`(α/ω₀)(y) := α y v / ω₀ y v` (test vector `v = symmL 1` in `y`'s own trivialization).  It is
+chart-independent (`covector_ratio_eq`), with chart coefficient `formCoeff α / formCoeff ω₀`, hence
+meromorphic.  This is the surjectivity witness of Forster §17.4: `α = (α/ω₀)·ω₀`. -/
+noncomputable def meroFormDiv (α : MeromorphicOneForm X) : MeromorphicFunction X where
+  toFun y := α.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
+    / data.ω₀.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
+  meromorphic := by
+    intro x
+    -- The chart pullback agrees, on a punctured neighbourhood of `chart x x`, with
+    -- `formCoeff α x / formCoeff ω₀ x` (covector-ratio independence), which is meromorphic.
+    have hquot : MeromorphicAt (formCoeff α.toFun x / formCoeff data.ω₀.toFun x) ((chartAt ℂ x) x) :=
+      (α.meromorphic x).div (data.ω₀.meromorphic x)
+    refine hquot.congr ?_
+    -- Goal: `(formCoeff α x / formCoeff ω₀ x) =ᶠ[𝓝[≠] (chart x x)] (div ∘ chart.symm)`.
+    -- Pull `ω₀.toFun ≠ 0 near x` to the ℂ-side, plus chart-target membership.
+    have htarget : (chartAt ℂ x).target ∈ 𝓝 ((chartAt ℂ x) x) :=
+      (chartAt ℂ x).open_target.mem_nhds ((chartAt ℂ x).map_source (mem_chart_source ℂ x))
+    -- ℂ-side nonvanishing of ω₀: `ω₀.toFun (chart.symm z) ≠ 0` near `chart x x` (punctured).
+    have hneC : ∀ᶠ z in 𝓝[≠] ((chartAt ℂ x) x),
+        data.ω₀.toFun ((chartAt ℂ x).symm z) ≠ 0 := by
+      -- transfer `ω₀.toFun ≠ 0 near x (punctured)` via continuity of `chart.symm`.
+      have hyt : (chartAt ℂ x) x ∈ (chartAt ℂ x).target :=
+        (chartAt ℂ x).map_source (mem_chart_source ℂ x)
+      have hey : (chartAt ℂ x).symm ((chartAt ℂ x) x) = x := (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
+      have hsymm : ContinuousAt (chartAt ℂ x).symm ((chartAt ℂ x) x) :=
+        (chartAt ℂ x).continuousAt_symm hyt
+      have hev0 : ∀ᶠ w in 𝓝 x, w ∈ ({x} : Set X)ᶜ → data.ω₀.toFun w ≠ 0 := by
+        rw [← eventually_nhdsWithin_iff]; exact data.ω₀_eventually_ne_zero x
+      have h2 := hsymm.eventually (p := fun w => w ∈ ({x} : Set X)ᶜ → data.ω₀.toFun w ≠ 0)
+        (by rw [hey]; exact hev0)
+      rw [eventually_nhdsWithin_iff]
+      filter_upwards [h2, (chartAt ℂ x).open_target.mem_nhds hyt] with w hw hw_tgt hw_mem
+      apply hw
+      rw [Set.mem_compl_iff, Set.mem_singleton_iff]
+      intro heq
+      apply hw_mem
+      have hr := (chartAt ℂ x).right_inv hw_tgt
+      rw [heq] at hr; rw [Set.mem_singleton_iff]; exact hr.symm
+    filter_upwards [hneC, nhdsWithin_le_nhds htarget] with z hz hztgt
+    set y := (chartAt ℂ x).symm z with hy
+    have hysrc : y ∈ (chartAt ℂ x).source := (chartAt ℂ x).map_target hztgt
+    have hybase : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).baseSet := by
+      rw [TangentBundle.trivializationAt_baseSet]; exact hysrc
+    -- LHS: `(formCoeff α x / formCoeff ω₀ x) z`; rewrite `chart.symm z = y` and `chart y = ...`.
+    show formCoeff α.toFun x z / formCoeff data.ω₀.toFun x z =
+      α.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
+        / data.ω₀.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
+    have hω0 : data.ω₀.toFun y ≠ 0 := hz
+    simp only [formCoeff, ← hy]
+    exact (covector_ratio_eq (x := x) (α.toFun y) (data.ω₀.toFun y) hybase
+      ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ y 1)
+      (apply_symmL_ne_zero_of_ne_zero (x := y) (data.ω₀.toFun y) hω0
+        (mem_baseSet_trivializationAt ℂ _ y))).symm
+
+end CanonicalForm17Data
+
 end Jacobians.Dolbeault
