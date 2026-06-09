@@ -147,4 +147,47 @@ theorem eventually_holoRepr_clusterSheet_eq (f : MeromorphicFunction X) {c : ℂ
   filter_upwards [ha, hb, hpow] with w hwa hwb hwp
   exact clusterSheet_sect (F := fun u => f.holoRepr ((chartAt (H := ℂ) p).symm u)) hζ hwp hwa hwb
 
+/-- **The eventual chart-target locality near a slit value `z₀` (the heart of `hsrc`).**  Given the
+cluster sheet value `s a₀` (`a₀ := ζʲ · w₀ z₀`) lies in the (open) chart target at `p` (`hmem`), the
+cluster sheet value stays in that target for `w` in a full ℂ-neighbourhood of `z₀` (continuity of
+`w ↦ s (ζʲ · w₀ w)`). -/
+theorem eventually_clusterSheet_mem_target (p : X) {s w₀ : ℂ → ℂ} {ζ : ℂ} {j : ℕ} {z₀ : ℂ}
+    (hs_cont : ContinuousAt s (ζ ^ j * w₀ z₀)) (hw₀_cont : ContinuousAt w₀ z₀)
+    (hmem : s (ζ ^ j * w₀ z₀) ∈ (chartAt (H := ℂ) p).target) :
+    ∀ᶠ w in 𝓝 z₀, clusterSheet s ζ w₀ j w ∈ (chartAt (H := ℂ) p).target := by
+  have harg : Tendsto (fun w => s (ζ ^ j * w₀ w)) (𝓝 z₀) (𝓝 (s (ζ ^ j * w₀ z₀))) :=
+    hs_cont.tendsto.comp (tendsto_const_nhds.mul hw₀_cont.tendsto)
+  filter_upwards [harg.eventually ((chartAt (H := ℂ) p).open_target.mem_nhds hmem)] with w hw
+  exact hw
+
+/-! ## The within-cluster injectivity at a slit value (the `hwithin` content)
+
+Within one preimage's cluster, the `m` sheet points are distinct because the §5 straightening coordinate
+`η` recovers the sheet argument: `η (s (ζʲ · w₀ z)) = ζʲ · w₀ z`.  The proven
+`clusterSection_within_cluster_inj` derives `j = k` from a point coincidence, given the chart-target
+memberships, the inverse recoveries `hinv_j`/`hinv_k`, the nonzero branch, and the primitivity.  We
+package the inverse recoveries from the §5 atom's `at-z₀` inverse property. -/
+
+/-- **The §5 inverse recovery at a slit value.**  `η (s a₀) = a₀` at `a₀ := ζʲ · w₀ z₀`, the `at-z₀`
+instance of the §5 atom's inverse property (valid when `a₀` lies in the inverse-property domain). -/
+theorem clusterArg_inverse_self {η s w₀ : ℂ → ℂ} {ζ : ℂ} {j : ℕ} {z₀ : ℂ}
+    (hinv : ∀ᶠ a in 𝓝 (ζ ^ j * w₀ z₀), η (s a) = a) :
+    η (s (ζ ^ j * w₀ z₀)) = ζ ^ j * w₀ z₀ := hinv.self_of_nhds
+
+/-! ## The cross-cluster separation at a slit value (the `hcross` content)
+
+At *distinct* preimages `p ≠ p'`, the clusters are disjoint: the cluster sheet points cluster at `p`,
+`p'` respectively, which are T2-separated.  We package the separation as a standalone fact: two points
+lying in disjoint sets are distinct.  At the assembly the two cluster section points lie in disjoint
+neighbourhoods of `p` and `p'` (the cluster points are near their respective preimages on the shrunk
+slit). -/
+
+/-- **Cross-cluster separation from disjoint neighbourhoods.**  If `q ∈ U`, `q' ∈ U'`, and `U`, `U'` are
+disjoint, then `q ≠ q'`.  Used with `U`/`U'` the T2-separating neighbourhoods of distinct preimages
+`p ≠ p'` (the cluster section points lie near their preimages on the shrunk slit). -/
+theorem ne_of_mem_disjoint {q q' : X} {U U' : Set X} (hq : q ∈ U) (hq' : q' ∈ U')
+    (hdisj : Disjoint U U') : q ≠ q' := by
+  intro h; subst h
+  exact (Set.disjoint_left.mp hdisj hq) hq'
+
 end Jacobians.Dolbeault.SerreResidueTheorem
