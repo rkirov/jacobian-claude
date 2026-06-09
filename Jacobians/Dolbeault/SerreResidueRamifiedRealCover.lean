@@ -157,6 +157,83 @@ theorem orderAtPoint_inv (f : MeromorphicFunction X) (x : X) :
 
 end MeromorphicFunction
 
+/-! ## Removable-singularity meromorphy atoms (the engine for `hvct_mero`)
+
+The hard `RamifiedSheetData` field `hvct_mero`  — `valueChartTrace` is meromorphic at the centre `c` —
+is Miranda (3.1) (the symmetric trace SUM has a finite-order Laurent expansion at a ramified value).
+We reduce it to a *boundedness* statement via two reusable complex-analytic atoms: a function analytic
+on a punctured neighbourhood of `c` whose growth is killed by some power `(z − c)^N` is meromorphic at
+`c` (Riemann's removable-singularity theorem applied to `(z − c)^N · f`, then divided back).  Combined
+with the off-centre analyticity `hreg` (which is eventually true on `𝓝[≠] c` since the bad set is
+finite), this turns `hvct_mero` into the single bound `(z − c)^N · valueChartTrace → 0` — the
+finite-pole-order content, strictly easier than the full geometric identification. -/
+
+open Complex in
+/-- **Removable-singularity meromorphy (simple, `N = 1`).**  If `f` is analytic on a punctured
+neighbourhood of `c` and `(z − c)·f(z) → 0` as `z → c`, then `f` is meromorphic at `c` (with at worst a
+removable singularity).  Proof: `h := (z − c)·f`, updated to `0` at `c`, is differentiable on the
+punctured nbhd and continuous at `c`, hence analytic at `c` by Riemann (`Complex.
+analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt`); then `f =ᶠ[𝓝[≠] c] (z − c)⁻¹·h` is
+meromorphic. -/
+theorem meromorphicAt_of_analyticOn_punctured_of_mul_sub_tendsto {f : ℂ → ℂ} {c : ℂ}
+    (han : ∀ᶠ z in 𝓝[≠] c, AnalyticAt ℂ f z)
+    (hbnd : Tendsto (fun z => (z - c) * f z) (𝓝[≠] c) (𝓝 0)) :
+    MeromorphicAt f c := by
+  set h : ℂ → ℂ := Function.update (fun z => (z - c) * f z) c 0 with hh
+  have hdiff : ∀ᶠ z in 𝓝[≠] c, DifferentiableAt ℂ h z := by
+    filter_upwards [han, self_mem_nhdsWithin] with z hz hzc
+    have hzc' : z ≠ c := hzc
+    have hupd : h =ᶠ[𝓝 z] (fun w => (w - c) * f w) := by
+      filter_upwards [isOpen_ne.mem_nhds hzc'] with w hw
+      simp only [hh, Function.update_apply, if_neg hw]
+    exact DifferentiableAt.congr_of_eventuallyEq
+      (((differentiableAt_id.sub_const c)).mul hz.differentiableAt) hupd
+  have hcont : ContinuousAt h c := by
+    rw [hh, continuousAt_update_same]; exact hbnd
+  have hana : AnalyticAt ℂ h c :=
+    Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt hdiff hcont
+  have hmero : MeromorphicAt (fun z => (z - c)⁻¹ * h z) c :=
+    ((analyticAt_id.sub analyticAt_const).meromorphicAt.inv).mul hana.meromorphicAt
+  refine hmero.congr ?_
+  filter_upwards [self_mem_nhdsWithin] with z hzc
+  have hzc' : z ≠ c := hzc
+  show (z - c)⁻¹ * h z = f z
+  simp only [hh, Function.update_apply, if_neg hzc']
+  rw [← mul_assoc, inv_mul_cancel₀ (sub_ne_zero.mpr hzc'), one_mul]
+
+open Complex in
+/-- **Removable-singularity meromorphy (power form).**  If `f` is analytic on a punctured neighbourhood
+of `c` and `(z − c)^N·f(z) → 0` as `z → c` for *some* `N : ℕ`, then `f` is meromorphic at `c`.  This is
+the finite-pole-order criterion (a pole of order `< N` is killed by `(z − c)^N`): `(z − c)^N·f` extends
+analytically across `c` (Riemann), and `f =ᶠ[𝓝[≠] c] (z − c)^(−N)·[(z − c)^N·f]` is meromorphic.  This
+is the form `hvct_mero` uses at a ramified pole-value centre (Miranda (3.1)). -/
+theorem meromorphicAt_of_analyticOn_punctured_of_pow_mul_sub_tendsto {f : ℂ → ℂ} {c : ℂ} (N : ℕ)
+    (han : ∀ᶠ z in 𝓝[≠] c, AnalyticAt ℂ f z)
+    (hbnd : Tendsto (fun z => (z - c) ^ N * f z) (𝓝[≠] c) (𝓝 0)) :
+    MeromorphicAt f c := by
+  set h : ℂ → ℂ := Function.update (fun z => (z - c) ^ N * f z) c 0 with hh
+  have hdiff : ∀ᶠ z in 𝓝[≠] c, DifferentiableAt ℂ h z := by
+    filter_upwards [han, self_mem_nhdsWithin] with z hz hzc
+    have hzc' : z ≠ c := hzc
+    have hupd : h =ᶠ[𝓝 z] (fun w => (w - c) ^ N * f w) := by
+      filter_upwards [isOpen_ne.mem_nhds hzc'] with w hw
+      simp only [hh, Function.update_apply, if_neg hw]
+    exact DifferentiableAt.congr_of_eventuallyEq
+      (((differentiableAt_id.sub_const c).pow N).mul hz.differentiableAt) hupd
+  have hcont : ContinuousAt h c := by
+    rw [hh, continuousAt_update_same]; exact hbnd
+  have hana : AnalyticAt ℂ h c :=
+    Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt hdiff hcont
+  have hmero : MeromorphicAt (fun z => (z - c) ^ (-(N : ℤ)) * h z) c :=
+    (((analyticAt_id.sub analyticAt_const).meromorphicAt).zpow (-(N : ℤ))).mul hana.meromorphicAt
+  refine hmero.congr ?_
+  filter_upwards [self_mem_nhdsWithin] with z hzc
+  have hzc' : z ≠ c := hzc
+  show (z - c) ^ (-(N : ℤ)) * h z = f z
+  simp only [hh, Function.update_apply, if_neg hzc']
+  rw [zpow_neg, zpow_natCast, ← mul_assoc, inv_mul_cancel₀ (pow_ne_zero N (sub_ne_zero.mpr hzc')),
+    one_mul]
+
 /-! ## The per-centre real-cover obligation (item #1, the genuine geometric content)
 
 The `hoff_cs`-free capstone `residueTheorem_ofSheetData_genus0`
@@ -175,6 +252,46 @@ open Jacobians.Dolbeault Jacobians.Dolbeault.FormTraceFibre Jacobians.Dolbeault.
   Jacobians.Dolbeault.SerreResidueTheorem Jacobians.Dolbeault.FormTraceInftyFibre
   Jacobians.Dolbeault.FormTraceInftyRecip Jacobians.Dolbeault.FormTraceFullFibre
   Jacobians.TraceResidue
+
+/-- **Eventual analyticity of the geometric trace on a punctured centre nbhd, from `hreg`.**  The
+off-centre analyticity `hreg` (analytic off the finite bad set `image cs ∪ br`) gives analyticity on a
+whole *punctured* neighbourhood of any single centre `c`: the bad set minus `{c}` is finite hence
+closed, so eventually on `𝓝[≠] c` we are off `image cs ∪ br`.  This is the analytic-on-punctured input
+to the removable-singularity meromorphy atoms. -/
+theorem eventually_analyticAt_of_hreg {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {m : ℕ} {cs : Fin m → ℂ}
+    {br : Finset ℂ} {c : ℂ}
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w) :
+    ∀ᶠ z in 𝓝[≠] c, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) z := by
+  classical
+  have hfin : (((Finset.univ.image cs ∪ br : Finset ℂ) : Set ℂ) \ {c}).Finite :=
+    ((Finset.univ.image cs ∪ br).finite_toSet).diff
+  have hcompl : ((((Finset.univ.image cs ∪ br : Finset ℂ) : Set ℂ) \ {c}))ᶜ ∈ 𝓝 c :=
+    hfin.isClosed.compl_mem_nhds (by simp)
+  filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds hcompl] with z hz_ne hz_compl
+  have hzc : z ≠ c := by simpa using hz_ne
+  refine hreg z ?_
+  intro hmem
+  exact hz_compl ⟨hmem, fun h => hzc (by simpa using h)⟩
+
+/-- **`hvct_mero` from a finite-pole-order bound (the genuine reduction of Miranda (3.1)).**  At a
+finite pole-value centre `c`, the `RamifiedSheetData` field `hvct_mero` — `valueChartTrace ω₀ f Φ`
+meromorphic at `c` — follows from:
+
+* the off-centre analyticity `hreg` (eventual analyticity on `𝓝[≠] c`, via `eventually_analyticAt_of_hreg`);
+* a single **finite-pole-order bound** `(z − c)^N · valueChartTrace → 0` for some `N`.
+
+This converts the opaque `hvct_mero` field into the concrete bound (the trace's pole at `c` has finite
+order `< N` — bounded by the upstairs pole order of `α` times the ramification, Miranda (3.1)).  It is
+the meromorphy-side reduction of the per-centre real-cover obligation. -/
+theorem hvct_mero_of_pow_bound {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {m : ℕ} {cs : Fin m → ℂ}
+    {br : Finset ℂ} {c : ℂ}
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (N : ℕ) (hbnd : Tendsto (fun z => (z - c) ^ N * valueChartTrace ω₀ f Φ z) (𝓝[≠] c) (𝓝 0)) :
+    MeromorphicAt (valueChartTrace ω₀ f Φ) c :=
+  meromorphicAt_of_analyticOn_punctured_of_pow_mul_sub_tendsto N
+    (eventually_analyticAt_of_hreg hreg) hbnd
 
 /-- **The per-centre real-cover ramified data** (item #1, the genuine geometric obligation).  At every
 finite pole-value centre `cs i` of `α = ω₀·g`, the canonical full-fibre selection
