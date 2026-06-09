@@ -70,6 +70,17 @@ noncomputable def mulLeftG {U : Opens X} (a : MGerm U) : MGerm U →ₗ[ℂ] MGe
 
 @[simp] theorem mulLeftG_apply {U : Opens X} (a g : MGerm U) : mulLeftG a g = a * g := rfl
 
+/-- Scalar-multiplication / ring-multiplication associativity on `MGerm` (`(a • x) * y = a • (x*y)`):
+the `Module ℂ` action is the pointwise `(a • ·)` (definitionally `↑(a • ·)`).  Proven directly to
+avoid an `IsScalarTower ℂ (MGerm U) (MGerm U)` synthesis gap (the `Germ` `Module ℂ` comes from the
+C*-algebra path, not registered as a scalar tower with the ring multiplication). -/
+theorem smul_mul_MGerm {U : Opens X} (a : ℂ) (x y : MGerm U) : (a • x) * y = a • (x * y) := by
+  induction x using Filter.Germ.inductionOn with | _ x =>
+  induction y using Filter.Germ.inductionOn with | _ y =>
+  show (↑(a • x) : MGerm U) * ↑y = a • (↑(x * y) : MGerm U)
+  rw [show a • (↑(x * y) : MGerm U) = (↑(a • (x * y)) : MGerm U) from rfl, ← Filter.Germ.coe_mul]
+  congr 1; funext z; simp only [Pi.mul_apply, Pi.smul_apply, smul_eq_mul]; ring
+
 /-- Germ restriction is a ring hom (`rawRestrictG (a*b) = rawRestrictG a * rawRestrictG b`): both
 sides are the germ of the pointwise product precomposed with the open inclusion. -/
 theorem rawRestrictG_mul {U V : Opens X} (h : V ≤ U) (a b : MGerm U) :
@@ -258,5 +269,87 @@ noncomputable def cupH1 {D K : Divisor X} {f : MeromorphicFunction X}
     rw [Submodule.submoduleOf, Submodule.mem_comap] at hc
     rw [Submodule.submoduleOf, Submodule.mem_comap]
     exact cupCochain1_coboundaries1 hf hc)
+
+/-- The action of `cupH1` on a class `[ξ]` represented by a cocycle `c`: `cupH1 hf [c] = [f·c]`. -/
+@[simp] theorem cupH1_mk {D K : Divisor X} {f : MeromorphicFunction X}
+    (hf : f ∈ linearSystem (X := X) (K - D)) (c : ↥(𝔘.cocycles1 D)) :
+    cupH1 hf (Submodule.Quotient.mk c) = Submodule.Quotient.mk (cupCocyclesMap hf c) :=
+  rfl
+
+/-! ## Part 6 — ℂ-linearity in `f` and the bilinear cup `lSysModule (K−D) → (cechH1 D →ₗ cechH1 K)`
+
+`globalGerm` is ℂ-linear in `f` (it is `toGerm ∘ (· ∘ val)`, a composition of linear maps), so the
+cup product is ℂ-linear in `f`; and a germ-zero `f` (`orderW f ≡ ⊤`) gives `globalGerm f U = 0`, hence
+`cupH1 = 0`, so the cup descends through the junk-free quotient `lSysModule (K−D)`.  This is the bundled
+bilinear input the §17.5 residue pairing consumes (ℂ-linear in `f` from `globalGerm` linearity;
+ℂ-linear in `ξ` is `cupH1` being a `LinearMap`). -/
+
+/-- `globalGerm` is **additive** in the meromorphic function. -/
+theorem globalGerm_add (f g : MeromorphicFunction X) (U : Opens X) :
+    globalGerm (f + g) U = globalGerm f U + globalGerm g U := by
+  rw [globalGerm, globalGerm, globalGerm, ← map_add]; rfl
+
+/-- `globalGerm` is **ℂ-homogeneous** in the meromorphic function. -/
+theorem globalGerm_smul (c : ℂ) (f : MeromorphicFunction X) (U : Opens X) :
+    globalGerm (c • f) U = c • globalGerm f U := by
+  rw [globalGerm, globalGerm, ← map_smul]; rfl
+
+/-- **A germ-zero global function has zero germ on every open** (`orderW f ≡ ⊤ ⟹ globalGerm f U = 0`):
+`f.toFun` vanishes on a punctured neighbourhood of every point, which transfers to `↥U` along the open
+inclusion. -/
+theorem globalGerm_eq_zero_of_germZero {f : MeromorphicFunction X}
+    (hf : ∀ x, f.orderW x = ⊤) (U : Opens X) : globalGerm f U = 0 := by
+  rw [globalGerm, toGerm_eq_zero_iff]
+  intro u
+  have hvanish : ∀ᶠ z in 𝓝[≠] u.1, f.toFun z = 0 := (f.orderW_eq_top_iff u.1).mp (hf u.1)
+  have htend : Filter.Tendsto (Subtype.val : U → X) (𝓝[≠] u) (𝓝[≠] u.1) := by
+    refine continuous_subtype_val.continuousWithinAt.tendsto_nhdsWithin (fun z hz => ?_)
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hz ⊢
+    exact fun hc => hz (Subtype.ext hc)
+  exact htend.eventually hvanish
+
+/-- The cup product is **additive** in `f` (over a common cocycle representative): the two
+cocycle-level maps agree (germ multiplication distributes over `globalGerm_add`), so the descended
+maps agree. -/
+theorem cupH1_add {D K : Divisor X} {f g : MeromorphicFunction X}
+    (hf : f ∈ linearSystem (X := X) (K - D)) (hg : g ∈ linearSystem (X := X) (K - D))
+    (hfg : f + g ∈ linearSystem (X := X) (K - D)) (ξ : 𝔘.cechH1 D) :
+    cupH1 hfg ξ = cupH1 hf ξ + cupH1 hg ξ := by
+  obtain ⟨c, rfl⟩ := Submodule.Quotient.mk_surjective _ ξ
+  rw [cupH1_mk, cupH1_mk, cupH1_mk, ← Submodule.Quotient.mk_add]
+  congr 1
+  apply Subtype.ext
+  show cupCochain1 𝔘 (f + g) (c : 𝔘.Cochain1) = cupCochain1 𝔘 f c + cupCochain1 𝔘 g c
+  funext p
+  simp only [cupCochain1_apply, Pi.add_apply, globalGerm_add, add_mul]
+
+/-- The cup product is **ℂ-homogeneous** in `f`. -/
+theorem cupH1_smul {D K : Divisor X} (a : ℂ) {f : MeromorphicFunction X}
+    (hf : f ∈ linearSystem (X := X) (K - D)) (haf : a • f ∈ linearSystem (X := X) (K - D))
+    (ξ : 𝔘.cechH1 D) :
+    cupH1 haf ξ = a • cupH1 hf ξ := by
+  obtain ⟨c, rfl⟩ := Submodule.Quotient.mk_surjective _ ξ
+  rw [cupH1_mk, cupH1_mk, ← Submodule.Quotient.mk_smul]
+  congr 1
+  apply Subtype.ext
+  show cupCochain1 𝔘 (a • f) (c : 𝔘.Cochain1) = a • cupCochain1 𝔘 f c
+  funext p
+  rw [cupCochain1_apply, Pi.smul_apply, cupCochain1_apply, globalGerm_smul, smul_mul_MGerm]
+
+/-- **A germ-zero `f` gives the zero cup map** (`cupH1 = 0`): `globalGerm f U = 0` so every cochain is
+multiplied to `0`.  This is the descent condition for the junk-free `lSysModule (K−D)` — the cup
+product depends only on the germ class of `f`. -/
+theorem cupH1_eq_zero_of_germZero {D K : Divisor X} {f : MeromorphicFunction X}
+    (hf : f ∈ linearSystem (X := X) (K - D)) (hf0 : ∀ x, f.orderW x = ⊤) (ξ : 𝔘.cechH1 D) :
+    cupH1 hf ξ = 0 := by
+  obtain ⟨c, rfl⟩ := Submodule.Quotient.mk_surjective _ ξ
+  rw [cupH1_mk, Submodule.Quotient.mk_eq_zero]
+  -- `cupCocyclesMap hf c = 0` as an element of `cocycles1 K`, hence in any submodule.
+  have hzero : (cupCocyclesMap hf c : 𝔘.Cochain1) = 0 := by
+    show cupCochain1 𝔘 f (c : 𝔘.Cochain1) = 0
+    funext p
+    simp only [cupCochain1_apply, globalGerm_eq_zero_of_germZero hf0, zero_mul, Pi.zero_apply]
+  have : cupCocyclesMap hf c = 0 := Subtype.ext hzero
+  rw [this]; exact Submodule.zero_mem _
 
 end Jacobians.Dolbeault
