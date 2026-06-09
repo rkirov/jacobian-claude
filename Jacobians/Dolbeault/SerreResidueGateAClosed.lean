@@ -658,4 +658,88 @@ theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg_inftyClosed_
         (fun _hbv y hy => hg_an_offpoles y
           (notMem_poles_of_fibrePoint_offCentres hcenters_cs hb₀cs hy)))
 
+/-! ## The genericity bundle `AdaptedF` and the unconditional reduction
+
+For a **genuine meromorphic** numerator `g : MeromorphicFunction X`, the `g`-meromorphy/holomorphy
+hypotheses of the sound capstone are ALL automatic (`g` is meromorphic at every point, analytic off its
+poles).  What remains is exactly the **generic-position data of the adapted cover `f`** — the pole-values
+of `α = ω₀·g` off the branch locus, and the simple `∞`-poles.  We bundle that residual as `AdaptedF` and
+reduce the unconditional `∑Res = 0` to `∃ f, AdaptedF`. -/
+
+/-- **The adapted-cover genericity datum** for `α = ω₀·g` (genuine meromorphic `g`) over `poles`.  Bundles
+*only* the generic-position facts about a single nonconstant `f` that the sound genus-`0` capstone
+consumes; every `g`-meromorphy/holomorphy field is discharged automatically from `g`'s global meromorphy
+(`hg_an_offpoles`/`hg_mero_pt`), so they are NOT fields here. -/
+structure AdaptedF (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X) (poles : Finset X) where
+  /-- The cover `f` is nonconstant. -/
+  f : MeromorphicFunction X
+  /-- `f.div ≠ 0`. -/
+  hdiv : (f.div : Divisor X) ≠ 0
+  /-- The enumeration `cs` of the finite pole-values of `α` (the `f`-images of `poles`, off `∞`). -/
+  m : ℕ
+  cs : Fin m → ℂ
+  ρ : ℝ
+  hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ
+  hcs_inj : Function.Injective cs
+  hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+    = (poles.image f.toRiemannSphere).erase OnePoint.infty
+  /-- **Genericity 1:** the finite pole-values of `α` lie off `f`'s branch locus (the pole fibres are
+  unramified). -/
+  hoff_cs : ∀ i, (((cs i : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere
+  /-- **Genericity 2:** `f` has simple poles over `∞`. -/
+  hsimpleInf : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = -1
+  /-- `poles` is exactly the pole set of `α = ω₀·g`: off `poles`, `g`'s chart-pullback is analytic (so
+  `α` is holomorphic there).  This is the *definition* of `poles`, not a genericity demand. -/
+  hg_an_offpoles : ∀ x : X, x ∉ poles →
+    AnalyticAt ℂ (fun z => g.toFun ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x)
+
+/-- **Unconditional Gate A `∑Res = 0` from an adapted cover.**  For a genuine meromorphic `g`, an
+`AdaptedF` datum discharges the SOUND genus-`0` capstone: every `g`-meromorphy field is automatic from
+`g.meromorphic` (g meromorphic at every point), the `g`-analyticity-off-poles is `hg_an_offpoles`, the
+off-branch good-value conditions follow from `hoff_cs`/`hg_an_offpoles`, and `br := branchValues f` makes
+the non-branch `br`-fields vacuous.  Hence `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`. -/
+theorem residueTheorem_of_adaptedF (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
+    (poles : Finset X) (A : AdaptedF ω₀ g poles) :
+    ∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0 := by
+  classical
+  -- `GoodValue` at every value off the branch locus whose fibre is `g`-meromorphic — automatic for a
+  -- genuine meromorphic `g` once the value is off the branch locus.
+  have hmero_pt : ∀ y : X, MeromorphicAt (fun w => g.toFun ((chartAt ℂ y).symm w)) ((chartAt ℂ y) y) :=
+    fun y => g.meromorphic y
+  -- `GoodValue` from off-branch (the `g`-meromorphy of fibre points is free).
+  have hgood_of_off : ∀ w, (((w : ℂ) : RiemannSphere)) ∉ branchLocus A.f.toRiemannSphere →
+      GoodValue g.toFun A.f A.hdiv w := fun w hw =>
+    ⟨hw, fun i => hmero_pt (fullFibreEnum A.f A.hdiv w i)⟩
+  -- `hgmero`-style eventual fibre `g`-meromorphy: holds for ALL `b'` (genuine meromorphic `g`).
+  have hgmero_all : ∀ w : ℂ, ∀ᶠ b' in 𝓝 w, ∀ j,
+      MeromorphicAt (fun u => g.toFun ((chartAt ℂ (fullFibreEnum A.f A.hdiv b' j)).symm u))
+        ((chartAt ℂ (fullFibreEnum A.f A.hdiv b' j)) (fullFibreEnum A.f A.hdiv b' j)) := fun w =>
+    Filter.Eventually.of_forall (fun b' j => hmero_pt (fullFibreEnum A.f A.hdiv b' j))
+  -- A finite pole-value `coe p` (image of a pole `a`) is off the branch locus, via `hcenters_cs` +
+  -- `hoff_cs`: `coe p ∈ (poles.image F).erase ∞ = (image cs).image coe`, so `coe p = coe (cs i)`.
+  have hpoleval_off : ∀ p : ℂ, (∃ a ∈ poles, A.f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
+      (((p : ℂ) : RiemannSphere)) ∉ branchLocus A.f.toRiemannSphere := by
+    intro p ⟨a, ha, hfa⟩
+    have hmem : (((p : ℂ) : RiemannSphere)) ∈
+        (poles.image A.f.toRiemannSphere).erase OnePoint.infty := by
+      rw [Finset.mem_erase]
+      exact ⟨OnePoint.coe_ne_infty p, hfa ▸ Finset.mem_image_of_mem _ ha⟩
+    rw [← A.hcenters_cs, Finset.mem_image] at hmem
+    obtain ⟨q, hq, hqp⟩ := hmem
+    rw [Finset.mem_image] at hq
+    obtain ⟨i, _, hi⟩ := hq
+    have : (((A.cs i : ℂ) : RiemannSphere)) = (((p : ℂ) : RiemannSphere)) := by rw [hi, hqp]
+    rw [← this]; exact A.hoff_cs i
+  refine residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg_inftyClosed_soundBnd
+    A.hdiv (fun p hp => hgood_of_off p (hpoleval_off p hp)) A.m A.cs A.ρ A.hcs_ball A.hcs_inj
+    (branchValues A.f A.hdiv) (Finset.Subset.refl _) A.hcenters_cs A.hoff_cs
+    (fun i => hgood_of_off (A.cs i) (A.hoff_cs i)) (fun i => hgmero_all (A.cs i))
+    (fun w hw => hgood_of_off w (coe_notMem_branchLocus_of_notMem_branchValues A.f A.hdiv
+      (fun h => hw (Finset.mem_union_right _ h))))
+    (fun w _ => hgmero_all w) A.hg_an_offpoles A.hsimpleInf
+    (fun i => hmero_pt (inftyFibreEnum A.f i)) (fun k hk => A.hg_an_offpoles (inftyFibreEnum A.f k) hk)
+    -- `hgood_brOff`/`hgmero_brOff`: vacuous (`br = branchValues f`, so `b₀ ∈ br ∧ b₀ ∉ branchValues f`).
+    (fun b₀ hb₀br _ hb₀nbr => absurd hb₀br hb₀nbr)
+    (fun b₀ hb₀br _ hb₀nbr => absurd hb₀br hb₀nbr)
+
 end Jacobians.Dolbeault.SerreResidueTheorem
