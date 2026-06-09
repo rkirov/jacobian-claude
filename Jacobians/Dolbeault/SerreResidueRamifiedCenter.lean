@@ -564,3 +564,52 @@ theorem residueSum_eq_zero_of_centerFacts
   rw [hregroup, hinfty] at hcombine
   rw [residueSum_eq_infty_add_finite ω₀ g f poles, add_comm]
   exact hcombine
+
+/-! ## Layer 4 — the `hoff_cs`-free capstones (per-centre `RamifiedCenterFacts`)
+
+Feeding `residueSum_eq_zero_of_centerFacts` with a per-centre `RamifiedCenterFacts` — which supplies
+facts (A)/(B) from the ramified atom (and reduces to the unramified `Cfull` route at `m = 1`) — gives the
+genus-`0` Gate A `∑Res = 0` *without* the per-centre off-branch genericity `hoff_cs`.  The finite
+centres may be **ramified**.  The remaining per-centre obligation is exactly the geometric-trace
+identification `RamifiedCenterFacts.hcoh` (the Forster §5 `f = wᵐ` normal form). -/
+
+/-- **Gate A `∑Res = 0` (genus `0`) from per-centre ramified facts — `hoff_cs`-FREE.**  The
+ramified-capable analogue of `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull`: each finite
+pole-value centre `cs i` carries a `RamifiedCenterFacts ω₀ g f Φ poles (cs i)` (which supplies facts
+(A)/(B) through the proven ramified atom, admitting ramification — no off-branch genericity), and the
+off-centre analyticity `hreg`/`hbnd` + the `∞`-group are as before.  Gate A then holds with **no**
+`hoff_cs` (no off-branch pole-value hypothesis).  At an unramified centre the datum reduces to the
+`Cfull` route (`facts_of_Cfull`); the genuine per-centre content is the geometric identification
+`RamifiedCenterFacts.hcoh`. -/
+theorem residueTheorem_ofRamifiedCenters_genus0
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    -- The per-centre ramified provider (facts (A)/(B) via the atom; NO `hoff_cs`).
+    (Rfacts : ∀ i, RamifiedCenterFacts ω₀ g f Φ poles (cs i))
+    (Dinf_full : InftyFibreDataNF g f)
+    (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf_full))
+    (hfullInf_inj : Function.Injective Dinf_full.xs)
+    {ιInfP : Type} [Fintype ιInfP] (xsInf_po : ιInfP → X)
+    (hpoInf_inj : Function.Injective xsInf_po)
+    (hpoInf_mem : ∀ j, xsInf_po j ∈ poles ∧ f.toRiemannSphere (xsInf_po j) = OnePoint.infty)
+    (hpoInf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ j, xsInf_po j = a)
+    (hpole_image_inf : (Finset.univ.image Dinf_full.xs).filter (· ∈ poles)
+      = Finset.univ.image xsInf_po)
+    (hnonpole_inf_an : ∀ k, Dinf_full.xs k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (Dinf_full.xs k)).symm z))
+        ((chartAt ℂ (Dinf_full.xs k)) (Dinf_full.xs k))) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueSum_eq_zero_of_centerFacts (poles := poles) Φ m cs ρ hcs_ball hcs_inj br hreg hbnd hcenters_cs
+    (fun i => (Rfacts i).meromorphicAt_patched br)
+    (fun i => (Rfacts i).resAt_patched_filter br)
+    Dinf_full hcoh_full hfullInf_inj xsInf_po hpoInf_inj hpoInf_mem hpoInf_surj hpole_image_inf
+    hnonpole_inf_an
+
+end Jacobians.Dolbeault.SerreResidueTheorem
