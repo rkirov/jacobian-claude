@@ -669,4 +669,62 @@ theorem residueTheorem_of_directGeometry
   exact residueTheorem_of_residueGeometry Φ m cs ρ hcs_ball hcs_inj br hreg hbnd hT_mero D
     hxs_inj hxs_mem hxs_surj hcenters_cs hcont_int R₀ hR₀_an hR₀0 hR₀_eq hres_fin hinfty
 
-end Jacobians.Dolbeault.SerreResidueTheorem
+/-! ### Non-vacuity of the headline (end-to-end soundness)
+
+`residueTheorem_of_directGeometry` is satisfiable, not a disguised `False`: for the empty pole set the
+empty fibre selection (`Φ` empty, `m = 0`, `br = ∅`, the zero trace) satisfies **every** input —
+including the full-fibre coherence `Cfull` (vacuous), the non-pole analyticity (vacuous), the full
+`∞`-fibre `Dinf_full` (empty, sound), and `hcoh_full` (both sides `0`).  Hence `∑_{a ∈ ∅} formFnResidue
+ω₀ g a = 0` through the residue-level headline — confirming the genericity inputs are honest (no false
+field, in particular **not** the germ `agree`/`agree_infty`). -/
+
+/-- **Non-vacuity of the residue-level headline.**  For the empty pole set, `residueTheorem_of_directGeometry`
+is satisfiable via the empty selection and `br = ∅` — every input, including the full-fibre coherence and
+the non-pole analyticity, holds — yielding `∑_{a ∈ ∅} formFnResidue ω₀ g a = 0`.  Confirms the headline
+inputs are not a disguised `False`. -/
+theorem residueTheorem_of_directGeometry_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) :
+    ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 := by
+  -- `valueChartTracePatched … ∅ = valueChartTrace(empty) = 0` for the empty selection.
+  have hpatch0 : valueChartTracePatched ω₀ f (fun p => emptyFibreRegularData g f p) ∅
+      = fun _ => (0 : ℂ) := by
+    funext z
+    rw [valueChartTracePatched_of_not_mem ω₀ f _ _ (Finset.notMem_empty z),
+      valueChartTrace_emptySelection ω₀ f]
+  refine residueTheorem_of_directGeometry (g := g) (poles := (∅ : Finset X))
+    (fun p => emptyFibreRegularData g f p)
+    0 Fin.elim0 0 (fun i => i.elim0) (fun i => i.elim0) (∅ : Finset ℂ)
+    (fun w _ => by rw [valueChartTrace_emptySelection ω₀ f]; exact analyticAt_const)
+    (fun b₀ hb₀ _ => absurd hb₀ (Finset.notMem_empty b₀))
+    (fun i => i.elim0)
+    (fun p => emptyFibreRegularData g f p)
+    (fun _ i => i.elim) (fun _ i => i.elim)
+    (fun _ a ha => absurd ha (Finset.notMem_empty a))
+    (by simp)
+    (fun i => i.elim0) (fun i => i.elim0) (fun i => i.elim0)
+    ?_ (fun _ => (0 : ℂ)) analyticAt_const rfl ?_
+    (emptyInftyFibreDataNF g f) ?_ (by intro i; exact i.elim)
+    (ιInfP := Empty) Empty.elim (by intro i; exact i.elim)
+    (fun i => i.elim) (fun a ha => absurd ha (Finset.notMem_empty a))
+    (by simp) (fun i => i.elim)
+  · -- junk-freeness: `T − L.R = 0 − 0 = 0` is continuous (empty centres ⟹ `L.R = 0`).
+    intro L hLa _ p hp
+    have hLR0 : L.R = fun _ => (0 : ℂ) :=
+      laurentForm_R_eq_zero_of_emptyImage
+        (by rw [hLa]; exact Finset.image_eq_empty.mpr (Finset.univ_eq_empty (α := Fin 0)))
+    rw [hpatch0, hLR0]
+    have h0 : ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) = fun _ : ℂ => (0 : ℂ) := by funext z; simp
+    rw [h0]; exact continuousAt_const
+  · -- genus-`0` `∞`-vanishing: `recipCoeff (0 − 0) =ᶠ 0`.
+    intro L hLa
+    have hLR0 : L.R = fun _ => (0 : ℂ) :=
+      laurentForm_R_eq_zero_of_emptyImage
+        (by rw [hLa]; exact Finset.image_eq_empty.mpr (Finset.univ_eq_empty (α := Fin 0)))
+    rw [hpatch0, hLR0]
+    have h0 : ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) = fun _ : ℂ => (0 : ℂ) := by funext z; simp
+    rw [h0, recipCoeff_zero]
+  · -- the full `∞`-coherence: `recipCoeff 0 =ᶠ recipCoeff (inftyMovingSumNF empty) = recipCoeff 0`.
+    have hmoving0 : inftyMovingSumNF ω₀ f (emptyInftyFibreDataNF g f) = fun _ => (0 : ℂ) := by
+      funext b'; rw [inftyMovingSumNF]
+      exact @Finset.sum_of_isEmpty _ _ _ _ (inferInstanceAs (IsEmpty Empty)) _
+    rw [hpatch0, hmoving0]
