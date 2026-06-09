@@ -381,4 +381,47 @@ theorem resAt_ramifiedTraceTerm {ι : Type*} (s : Finset ι) (cf : ι → ℂ) (
         = fun z => Jacobians.RamifiedTrace.laurentTraceCoeff s cf n m (z - c) from rfl,
     resAt_comp_sub_const, Jacobians.RamifiedTrace.resAt_laurentTraceCoeff s cf n hm]
 
+/-- **The ramified centre provider** (the genuine §VIII.3 (3.1) assembly).  Given:
+
+* a ramified fibre datum `D : FibreRamifiedData g f c` (preimages with multiplicities) enumerating
+  exactly the poles of `α` in `F⁻¹(coe c)` (`hD_inj`/`hD_mem`/`hD_surj`);
+* per-preimage Laurent **principal-part data** `pp` of `chartIntegrand ω₀ g (D.xs i)` whose residue at
+  `0` is the geometric residue of `α` at the preimage (`hpp_res` — the principal part captures the
+  residue; a true geometric input);
+* the **geometric-trace ramified identification** `hcoh`: the geometric trace germ near `c` equals the
+  fibre sum `T = ∑ᵢ (mᵢ-sheet trace of ppᵢ shifted to c)` of the per-preimage `mᵢ`-sheet-sum traces
+  (the Forster §5 `f = wᵐ` normal form — the one hard analytic piece, supplied as a precise hypothesis),
+
+builds the `RamifiedCenterFacts`.  Meromorphy (Fact A) and the residue identity (Fact B) are discharged
+by the proven atom (`meromorphicAt_ramifiedTraceTerm` / `resAt_ramifiedTraceTerm`), summed over the
+mixed-multiplicity fibre.  **No `deriv ≠ 0`** is required (the constructor admits ramification);
+**no false/circular field** — `hcoh` is the genuine geometric content, not a residue identity. -/
+noncomputable def RamifiedCenterFacts.ofFibreRamified {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {poles : Finset X} {c : ℂ}
+    (D : FibreRamifiedData g f c) (hD_inj : Function.Injective D.xs)
+    (hD_mem : ∀ i, D.xs i ∈ poles)
+    (hD_surj : ∀ a ∈ poles, f.toRiemannSphere a = ((c : ℂ) : RiemannSphere) → ∃ i, D.xs i = a)
+    (ppι : D.ι → Type) [∀ i, DecidableEq (ppι i)]
+    (pps : ∀ i, Finset (ppι i)) (ppc : ∀ i, ppι i → ℂ) (ppn : ∀ i, ppι i → ℤ)
+    (hpp_res : ∀ i, resAt (fun w => ∑ k ∈ pps i, ppc i k * (w - 0) ^ ppn i k) 0
+      = formFnResidue ω₀ g (D.xs i))
+    (hcoh : valueChartTrace ω₀ f Φ
+      =ᶠ[𝓝[≠] c] fun z => ∑ i, ramifiedTraceTerm (pps i) (ppc i) (ppn i) (D.mult i) c z) :
+    RamifiedCenterFacts ω₀ g f Φ poles c where
+  D := D
+  hD_inj := hD_inj
+  hD_mem := hD_mem
+  hD_surj := hD_surj
+  T := fun z => ∑ i, ramifiedTraceTerm (pps i) (ppc i) (ppn i) (D.mult i) c z
+  hcoh := hcoh
+  hmero := MeromorphicAt.fun_sum
+    (fun i _ => meromorphicAt_ramifiedTraceTerm (pps i) (ppc i) (ppn i) (D.mult i) c)
+  hres := by
+    -- Residue of the finite fibre sum splits termwise; each term is the atom's per-preimage residue.
+    rw [LaurentForm.resAt_finsum Finset.univ
+      (fun i z => ramifiedTraceTerm (pps i) (ppc i) (ppn i) (D.mult i) c z)
+      (fun i _ => meromorphicAt_ramifiedTraceTerm (pps i) (ppc i) (ppn i) (D.mult i) c)]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    rw [resAt_ramifiedTraceTerm (pps i) (ppc i) (ppn i) (D.hmult_pos i) c, hpp_res i]
+
 end Jacobians.Dolbeault.SerreResidueTheorem
