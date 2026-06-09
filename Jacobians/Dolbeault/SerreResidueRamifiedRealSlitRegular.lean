@@ -187,4 +187,95 @@ theorem regularFibre_primitives_of_notMem_branchLocus (f : MeromorphicFunction X
   ⟨Jacobians.ProperMapDegreeSheets.fibre_finite_of_div_ne_zero f hdiv _,
     fun _ hx => localDeg_eq_one_of_notMem_branchLocus f hdiv hz hx⟩
 
+/-! ## The sheet-system regularity `hderiv`/`hmero` (from a sphere sheet system off the branch locus) -/
+
+/-- **`hderiv` for a sphere sheet system off the branch locus.**  For a nonconstant cover `f` and a
+value `z` off the branch locus, with `S` a sphere sheet system of `F = f.toRiemannSphere` at `coe z`,
+every sheet point `S.sheet k (coe z)` is a regular point of `f`: the chart-pullback derivative of
+`f.holoRepr` there is nonzero.  Each sheet point has sphere value `coe z` (`sheet_section` at the base
+`coe z ∈ S.V`), off the branch locus, so `sheet_holoRepr_deriv_ne_zero` applies. -/
+theorem sphereSheet_hderiv (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) {z : ℂ}
+    (hz : (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))) :
+    ∀ k, deriv (fun w => f.holoRepr
+        ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+        (S.sheet k (((z : ℂ) : RiemannSphere)))) ≠ 0 := fun k =>
+  sheet_holoRepr_deriv_ne_zero f hdiv hz (S.sheet_section k _ S.mem_V)
+
+/-- **`hmero` for a sphere sheet system from a genuine meromorphic numerator.**  For `g :
+MeromorphicFunction X` and a sphere sheet system `S`, `g.toFun`'s chart pullback is meromorphic at every
+sheet point (`g.meromorphic`). -/
+theorem sphereSheet_hmero (g : MeromorphicFunction X) {f : MeromorphicFunction X} {z : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))) :
+    ∀ k, MeromorphicAt
+      (fun w => g.toFun ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+        (S.sheet k (((z : ℂ) : RiemannSphere)))) := fun k => g.meromorphic _
+
+/-! ## The eventual sheet-system conditions `hsheetInj`/`hsheetMem` (near a value `z`) -/
+
+/-- **`hsheetInj` near `z` from a sphere sheet system.**  The sheets are injective on `S.V` (a
+neighbourhood of `coe z`), so they are injective at every `coe b'` for `b'` near `z` (pull back `S.V`
+along the continuous `coe`). -/
+theorem sphereSheet_hsheetInj {f : MeromorphicFunction X} {z : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))) :
+    ∀ᶠ b' in 𝓝 z, Function.Injective (fun i => S.sheet i (((b' : ℂ) : RiemannSphere))) := by
+  have hVnhds : ((fun w : ℂ => ((w : ℂ) : RiemannSphere)) ⁻¹' S.V) ∈ 𝓝 z :=
+    (OnePoint.continuous_coe.continuousAt).preimage_mem_nhds (S.isOpen_V.mem_nhds S.mem_V)
+  filter_upwards [hVnhds] with b' hb'
+  exact S.sheet_inj (((b' : ℂ) : RiemannSphere)) hb'
+
+/-- **`hsheetMem` near `z` from a sphere sheet system.**  Each sheet `b' ↦ S.sheet i (coe b')` is
+continuous at `z` (the moving section `holoReprSheet i` is `ContMDiffAt`), so it stays in the chart
+source of `S.sheet i (coe z)` for `b'` near `z`. -/
+theorem sphereSheet_hsheetMem {f : MeromorphicFunction X} {z : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))) :
+    ∀ᶠ b' in 𝓝 z, ∀ i, S.sheet i (((b' : ℂ) : RiemannSphere)) ∈
+      (chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).source := by
+  have hev : ∀ i : Fin S.n, ∀ᶠ b' in 𝓝 z,
+      S.sheet i (((b' : ℂ) : RiemannSphere)) ∈
+        (chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).source := by
+    intro i
+    have hcont : ContinuousAt (S.holoReprSheet i) z := (S.holoReprSheet_contMDiffAt i).continuousAt
+    have hsrc : (chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).source ∈
+        𝓝 (S.sheet i (((z : ℂ) : RiemannSphere))) :=
+      (chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).open_source.mem_nhds (mem_chart_source ℂ _)
+    have := hcont.preimage_mem_nhds (show
+      (chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).source ∈ 𝓝 (S.holoReprSheet i z) from hsrc)
+    filter_upwards [this] with b' hb' using hb'
+  rw [eventually_all]; exact hev
+
+/-! ## The regular-value coherence `hcoh` for the canonical selection -/
+
+/-- **The regular-value coherence `hcoh` for the canonical full-fibre selection.**  At a value `z` off
+the branch locus, with a sphere sheet system `S` of `F = f.toRiemannSphere` at `coe z`, the geometric
+trace of the canonical selection equals the sphere-sheet fibre trace:
+
+> `valueChartTrace ω₀ f (canonicalFibreSelection g.toFun f hdiv) z
+>    = (fibreTrace ω₀ f (ofSphereSheetSystem S (sphereSheet_hderiv …) (sphereSheet_hmero …))).traceCoeff z`.
+
+This is the PROVEN `valueChartTrace_eq_sphereSheetFibreTrace`, wired for the canonical selection: the
+sheet regularity is `sphereSheet_hderiv`/`sphereSheet_hmero`, the canonical-fibre conditions are
+`canonicalFibreSelection_hΦinjReg`/`hΦrangeReg` (the `g`-meromorphy is `g.meromorphic`, free), and the
+sheet-system conditions are `sphereSheet_hsheetInj`/`sphereSheet_hsheetMem`. -/
+theorem canonicalSelection_hcoh (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
+    {f : MeromorphicFunction X} (hdiv : (f.div : Divisor X) ≠ 0) {z : ℂ}
+    (hz : (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))) :
+    valueChartTrace ω₀ f (canonicalFibreSelection g.toFun f hdiv) z
+      = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S
+          (sphereSheet_hderiv f hdiv hz S) (sphereSheet_hmero g S))).traceCoeff z := by
+  -- The `g`-meromorphy near `z` (free from `g.meromorphic`), feeding the canonical-fibre conditions.
+  have hgmero : ∀ᶠ b' in 𝓝 z, ∀ i,
+      MeromorphicAt (fun w => g.toFun ((chartAt ℂ (fullFibreEnum f hdiv b' i)).symm w))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' i)) (fullFibreEnum f hdiv b' i)) :=
+    Filter.Eventually.of_forall (fun b' i => g.meromorphic _)
+  exact valueChartTrace_eq_sphereSheetFibreTrace ω₀ g.toFun f
+    (canonicalFibreSelection g.toFun f hdiv) S (sphereSheet_hderiv f hdiv hz S)
+    (sphereSheet_hmero g S)
+    (canonicalFibreSelection_hΦinjReg g.toFun f hdiv hz hgmero)
+    (canonicalFibreSelection_hΦrangeReg g.toFun f hdiv hz hgmero)
+    (sphereSheet_hsheetInj S) (sphereSheet_hsheetMem S)
+
 end Jacobians.Dolbeault.SerreResidueTheorem
