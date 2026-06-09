@@ -210,6 +210,70 @@ theorem T_eq_L_R : C.T = C.L.R :=
     (C.hentire C.L C.L_centers C.L_remainder)
     (C.hrecip_cont C.L C.L_centers C.L_remainder)
 
+/-! ### The two agreements, proved
+
+`agree` and `agree_infty` of `TraceRationalityData` now follow by chaining the Liouville agreement
+`L.R = T` (so `L.R` germ-equals `T` at every point) with the per-centre / `∞` coherence. -/
+
+/-- **The finite agreement, proved.**  For each `L`-centre `p ∈ image L.a` (`= image cs`, so `p = cs i`),
+`L.R =ᶠ[𝓝[≠] p] (fibreTrace ω₀ f (D p)).traceCoeff`: `L.R = T` everywhere (`T_eq_L_R`), and `T` germ-equals
+the fixed full-fibre trace at `cs i` (`hcoh_fin`). -/
+theorem agree_proved (p : ℂ) (hp : p ∈ Finset.univ.image C.L.a) :
+    C.L.R =ᶠ[𝓝[≠] p] (fibreTrace ω₀ f (C.D p)).traceCoeff := by
+  -- `p ∈ image L.a = image cs`, so `p = cs i`.
+  rw [C.L_centers] at hp
+  simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
+  obtain ⟨i, rfl⟩ := hp
+  -- `L.R = T` everywhere, and `T =ᶠ[𝓝 (cs i)] (fibreTrace …).traceCoeff` (coherence), restricted.
+  rw [← C.T_eq_L_R]
+  exact (C.hcoh_fin i).filter_mono nhdsWithin_le_nhds
+
+/-- **The `∞` agreement, proved.**  `recipCoeff L.R =ᶠ[𝓝[≠] 0] (inftyFibreTrace ω₀ f Dinf).traceCoeff`:
+`L.R = T` everywhere (so `recipCoeff L.R = recipCoeff T`), and `recipCoeff T` germ-equals the `∞`-fibre
+trace off `0` (`hcoh_inf`). -/
+theorem agree_infty_proved :
+    recipCoeff C.L.R =ᶠ[𝓝[≠] 0] (inftyFibreTrace ω₀ f C.Dinf).traceCoeff := by
+  rw [← C.T_eq_L_R]
+  exact C.hcoh_inf
+
+/-! ### Assembling the `TraceRationalityData` -/
+
+/-- **The `TraceRationalityData` from a `TraceCoherenceData`.**  The discrete fibre bookkeeping is
+carried through; the two genuine §VIII.3 agreements `agree`/`agree_infty` are the *proved*
+`agree_proved`/`agree_infty_proved` (the Liouville engine + the coherence).  This is the clean
+reduction of the full-fibre `TraceRationalityData` to the honest coherence inputs. -/
+noncomputable def toTraceRationalityData : TraceRationalityData ω₀ g f poles where
+  L := C.L
+  D := C.D
+  hxs_inj := C.hxs_inj
+  hxs_mem := C.hxs_mem
+  hxs_surj := C.hxs_surj
+  Dinf := C.Dinf
+  hxsInf_inj := C.hxsInf_inj
+  hxsInf_mem := C.hxsInf_mem
+  hxsInf_surj := C.hxsInf_surj
+  hcenters := by rw [C.L_centers]; exact C.hcenters_cs
+  agree := C.agree_proved
+  agree_infty := C.agree_infty_proved
+
+/-- **Gate A `∑Res = 0` from a `TraceCoherenceData`.**  The total residue of `α = ω₀·g` over its poles
+vanishes: assemble the `TraceRationalityData` and invoke the proven descent
+`residueSum_eq_zero_of_traceRationalityData`. -/
+theorem residueSum_eq_zero (C : TraceCoherenceData ω₀ g f poles) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueSum_eq_zero_of_traceRationalityData ω₀ g f poles C.toTraceRationalityData
+
 end TraceCoherenceData
+
+/-- **The Gate-A reduction, existential form (trace-coherence route).**  If a `TraceCoherenceData ω₀ g f
+poles` exists — i.e. the geometric trace `Tr_F α` coheres to the per-fibre traces (single-valuedness)
+and the holomorphic remainder vanishes (genus `0`) — then the represented `α = ω₀·g` satisfies the
+1-form residue theorem `∑ₐ Resₐ(α) = 0` *unconditionally* (the principal-part extraction and the
+Liouville vanishing are discharged here; the entire downstream is proven). -/
+theorem residueSum_eq_zero_of_traceCoherenceData (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (poles : Finset X)
+    (C : TraceCoherenceData ω₀ g f poles) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  C.residueSum_eq_zero
 
 end Jacobians.Dolbeault.FormTraceFullFibre
