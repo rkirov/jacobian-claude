@@ -171,4 +171,110 @@ theorem formOrderW_differentialForm (f : MeromorphicFunction X) (x : X) :
   rw [MeromorphicOneForm.formOrderW]
   exact (meromorphicOrderAt_congr (formCoeff_differentialSection_eventuallyEq f x)).symm
 
+/-! ## Part 3: `df ≠ 0` for a nonconstant `f` (the soundness-critical field)
+
+If `f` is nonconstant (`¬ IsGermConstant`), then `df ≠ 0` (`∃ x, formOrderW (df) x ≠ ⊤`).  The
+contrapositive `df = 0 ⟹ IsGermConstant f` goes through the **no-pole reduction**: if
+`deriv (f ∘ chart⁻¹)` vanishes on a punctured neighbourhood at every point, then `f` has no pole
+(`deriv_eventually_zero_meromorphicOrderAt_nonneg`: a pole of order `n < 0` forces `deriv` to have a
+pole of order `n − 1 < 0 ≠ ⊤`), so `f ∈ L(0)`, and then the repo's Liouville
+`germ_eq_const_of_mem_linearSystem_zero` makes `f` germ-constant. -/
+
+/-- **No pole from a vanishing-derivative germ.**  If `g` is meromorphic at `z₀` and its derivative
+vanishes on a punctured neighbourhood of `z₀`, then `g` has *no pole* at `z₀`
+(`meromorphicOrderAt g z₀ ≥ 0`).  Proof: were `meromorphicOrderAt g z₀ = n < 0`, the Laurent form
+`g =ᶠ (·−z₀)ⁿ • G` (`G` analytic, `G z₀ ≠ 0`) makes `deriv g =ᶠ (n·(·−z₀)ⁿ⁻¹)·G + (·−z₀)ⁿ·G'`, whose
+order is exactly `n − 1` (the first term dominates, as `n ≠ 0`, `G z₀ ≠ 0`); but `deriv g =ᶠ 0` forces
+order `⊤ ≠ n − 1`.  Pure planar complex analysis (mirrors Mathlib's `MeromorphicAt.deriv`). -/
+theorem deriv_eventually_zero_meromorphicOrderAt_nonneg {g : ℂ → ℂ} {z₀ : ℂ}
+    (hg : MeromorphicAt g z₀) (hdz : ∀ᶠ z in 𝓝[≠] z₀, deriv g z = 0) :
+    0 ≤ meromorphicOrderAt g z₀ := by
+  by_contra hlt
+  push Not at hlt
+  have hne_top : meromorphicOrderAt g z₀ ≠ ⊤ := hlt.ne_top
+  lift meromorphicOrderAt g z₀ to ℤ using hne_top with n hn
+  have hn_neg : n < 0 := by exact_mod_cast hlt
+  obtain ⟨G, hG_an, hG_ne, hG_eq⟩ := (meromorphicOrderAt_eq_int_iff hg).1 hn.symm
+  have hderiv_eq1 : deriv g =ᶠ[𝓝[≠] z₀] deriv (fun z => (z - z₀) ^ n • G z) :=
+    Filter.EventuallyEq.nhdsNE_deriv hG_eq
+  -- the explicit derivative of `(·−z₀)ⁿ • G` (mirror of the computation in `MeromorphicAt.deriv`)
+  have hderiv_eq2 : deriv (fun z => (z - z₀) ^ n • G z)
+      =ᶠ[𝓝[≠] z₀] fun z => (n * (z - z₀) ^ (n - 1)) • G z + (z - z₀) ^ n • deriv G z := by
+    filter_upwards [eventually_nhdsWithin_of_eventually_nhds hG_an.eventually_analyticAt,
+      eventually_nhdsWithin_of_forall fun _ a => a] with z h₁ h₂
+    rw [deriv_fun_smul (DifferentiableAt.zpow (by fun_prop) (by simp_all [sub_ne_zero_of_ne h₂]))
+      (by fun_prop), add_comm, deriv_comp_sub_const (f := (· ^ n))]
+    aesop
+  have hsum_eq : (fun z => (n * (z - z₀) ^ (n - 1)) • G z + (z - z₀) ^ n • deriv G z)
+      =ᶠ[𝓝[≠] z₀] (0 : ℂ → ℂ) := (hderiv_eq2.symm.trans hderiv_eq1.symm).trans hdz
+  have hord_sum_top : meromorphicOrderAt
+      (fun z => (n * (z - z₀) ^ (n - 1)) • G z + (z - z₀) ^ n • deriv G z) z₀ = ⊤ := by
+    rw [meromorphicOrderAt_congr hsum_eq, meromorphicOrderAt_eq_top_iff]
+    exact eventually_nhdsWithin_of_forall (fun _ _ => rfl)
+  have hcoeff_mero : MeromorphicAt (fun z => (n : ℂ) * (z - z₀) ^ (n - 1)) z₀ := by
+    apply MeromorphicAt.mul (MeromorphicAt.const _ _)
+    exact (MeromorphicAt.id z₀ |>.sub (MeromorphicAt.const z₀ z₀)).zpow _
+  have hterm2_mero : MeromorphicAt (fun z => (z - z₀) ^ n • deriv G z) z₀ := by
+    apply MeromorphicAt.smul _ hG_an.meromorphicAt.deriv
+    exact (MeromorphicAt.id z₀ |>.sub (MeromorphicAt.const z₀ z₀)).zpow _
+  -- the first term has order exactly `n − 1`
+  have hord1 : meromorphicOrderAt (fun z => (↑n * (z - z₀) ^ (n - 1)) • G z) z₀
+      = ((n - 1 : ℤ) : WithTop ℤ) := by
+    rw [show (fun z => (↑n * (z - z₀) ^ (n - 1)) • G z)
+          = (fun z => (n : ℂ) * (z - z₀) ^ (n - 1)) • G from rfl,
+        meromorphicOrderAt_smul hcoeff_mero hG_an.meromorphicAt,
+        hG_an.meromorphicOrderAt_eq, (hG_an.analyticOrderAt_eq_zero).mpr hG_ne]
+    have hcoeff_ord : meromorphicOrderAt (fun z => (n : ℂ) * (z - z₀) ^ (n - 1)) z₀
+        = ((n - 1 : ℤ) : WithTop ℤ) := by
+      have hn0 : (n : ℂ) ≠ 0 := by exact_mod_cast hn_neg.ne
+      rw [meromorphicOrderAt_eq_int_iff hcoeff_mero]
+      exact ⟨fun _ => (n : ℂ), analyticAt_const, hn0,
+        by filter_upwards [] with z; rw [smul_eq_mul, mul_comm]⟩
+    rw [hcoeff_ord]; simp
+  -- the second term has order ≥ n
+  have hord2_ge : (n : WithTop ℤ) ≤ meromorphicOrderAt (fun z => (z - z₀) ^ n • deriv G z) z₀ := by
+    have hm : MeromorphicAt (fun z => (z - z₀) ^ n) z₀ :=
+      (MeromorphicAt.id z₀ |>.sub (MeromorphicAt.const z₀ z₀)).zpow _
+    rw [show (fun z => (z - z₀) ^ n • deriv G z) = (fun z => (z - z₀) ^ n) • deriv G from rfl,
+        meromorphicOrderAt_smul hm hG_an.meromorphicAt.deriv]
+    have hzpow_ord : meromorphicOrderAt (fun z => (z - z₀) ^ n) z₀ = (n : WithTop ℤ) := by
+      rw [meromorphicOrderAt_eq_int_iff hm]
+      exact ⟨fun _ => 1, analyticAt_const, one_ne_zero, by filter_upwards [] with z; simp⟩
+    rw [hzpow_ord]
+    calc (n : WithTop ℤ) = (n : WithTop ℤ) + 0 := by rw [add_zero]
+      _ ≤ (n : WithTop ℤ) + meromorphicOrderAt (deriv G) z₀ := by
+            gcongr; exact hG_an.deriv.meromorphicOrderAt_nonneg
+  have hlt12 : meromorphicOrderAt (fun z => (↑n * (z - z₀) ^ (n - 1)) • G z) z₀
+      < meromorphicOrderAt (fun z => (z - z₀) ^ n • deriv G z) z₀ := by
+    rw [hord1]
+    exact lt_of_lt_of_le (by exact_mod_cast (by omega : (n - 1 : ℤ) < n)) hord2_ge
+  have hsum_ord : meromorphicOrderAt
+      (fun z => (n * (z - z₀) ^ (n - 1)) • G z + (z - z₀) ^ n • deriv G z) z₀
+      = ((n - 1 : ℤ) : WithTop ℤ) := by
+    rw [show (fun z => (↑n * (z - z₀) ^ (n - 1)) • G z + (z - z₀) ^ n • deriv G z)
+          = (fun z => (↑n * (z - z₀) ^ (n - 1)) • G z) + (fun z => (z - z₀) ^ n • deriv G z) from rfl,
+        meromorphicOrderAt_add_eq_left_of_lt hterm2_mero hlt12, hord1]
+  rw [hsum_ord] at hord_sum_top
+  exact WithTop.coe_ne_top hord_sum_top
+
+/-- **`df ≠ 0` for a nonconstant `f`** (Forster §17.4's nontriviality of `ω₀ = df`).  If `f` is not
+germ-constant then `df`'s germ is nonzero somewhere.  Contrapositive: if `formOrderW (df) = ⊤`
+everywhere, then `deriv (f ∘ chart⁻¹)` vanishes on a punctured neighbourhood at every point, so `f`
+has no pole anywhere (`deriv_eventually_zero_meromorphicOrderAt_nonneg`), i.e. `f ∈ L(0)`; then `f`
+is germ-constant by the repo Liouville `germ_eq_const_of_mem_linearSystem_zero`. -/
+theorem differentialForm_ne_zero {f : MeromorphicFunction X} (hf : ¬ IsGermConstant f) :
+    ∃ x, (differentialForm f).formOrderW x ≠ ⊤ := by
+  by_contra hcon
+  push Not at hcon
+  apply hf
+  have hf0 : f ∈ linearSystem (X := X) 0 := by
+    intro x
+    simp only [Finsupp.coe_zero, Pi.zero_apply]
+    show (0 : WithTop ℤ) ≤ MeromorphicFunction.orderW f x
+    rw [MeromorphicFunction.orderW]
+    have htop := hcon x
+    rw [formOrderW_differentialForm, meromorphicOrderAt_eq_top_iff] at htop
+    exact deriv_eventually_zero_meromorphicOrderAt_nonneg (f.meromorphic x) htop
+  exact germ_eq_const_of_mem_linearSystem_zero f hf0
+
 end Jacobians.Dolbeault
