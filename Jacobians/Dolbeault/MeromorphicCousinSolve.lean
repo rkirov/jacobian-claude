@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.Dolbeault.MeromorphicCousin
+import Jacobians.Dolbeault.GlobalResidueConstruct
 
 /-!
 # Forster §15 + §17.2–17.3 — the meromorphic Cousin solve, the distribution algebra, and the descent
@@ -94,6 +95,9 @@ noncomputable def connectingCocycle : ↥(𝔘.toFiniteFamily.cocycles1 K) :=
 /-- The connecting class `[δμ] ∈ cechH1 K` (inherited). -/
 noncomputable def connectingClass : 𝔘.toFiniteFamily.cechH1 K :=
   μ.toDistribution.connectingClass
+
+theorem connectingClass_eq :
+    μ.connectingClass = Submodule.Quotient.mk μ.connectingCocycle := rfl
 
 @[simp] theorem res_def : μ.res = ∑ a ∈ μ.poles, formFnResidue ω₀ (μ.g (μ.toDistribution.patch a)) a :=
   CoverMLDistribution.res_def μ.toDistribution
@@ -396,6 +400,167 @@ theorem connectingClass_sub (μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K) :
   rw [connectingCocycle_sub, Submodule.Quotient.mk_sub]
 
 end CoverMLLift
+
+/-! ## The meromorphic Cousin solutions datum and the descent to `CousinResidueData`
+
+We isolate the two genuinely-greenfield inputs the Serre residue functional needs into a single sound
+datum `MeromorphicCousinSolutions`, and build the **descent** — the full `CousinResidueData` (hence the
+entire Serre pairing, `pairing_injective`, `lDim_le_h1Dim`) — from it, sorry-free.
+
+The two inputs are exactly Forster §15 + §17.3:
+
+* `lift` — **`H¹(X, ℳ) = 0`** (the wall): every `𝒪_K` cocycle `c` is the connecting cocycle of a
+  meromorphic Cousin lift `μ : CoverMLLift` (the local-meromorphic `gᵢ` with `gᵢ − gⱼ = cᵢⱼ`,
+  `holoOff` off the K-points), `[δμ] = [c]`.  Solved (Forster §15) by splitting off the finite
+  principal parts at the K-points and clearing the holomorphic remainder by `H¹(𝔘, 𝒪) = 0`.
+* `vanish` — **the residue descent** (`∑Res = 0`, Gate A): a lift whose connecting cocycle is a
+  coboundary (`connectingClass μ = 0`, i.e. `δμ ∈ B¹`) is *globally meromorphic* (its `gᵢ` glue to a
+  single global `f` modulo the holomorphic coboundary), so `μ.res = ∑ Resₐ(ω₀·f) = 0` by the 1-form
+  residue theorem.
+
+From `lift` + `vanish` the residue functional `resCocycle(c) := (lift c).res` is well-defined,
+ℂ-linear (the algebra: `combine`/`smul` lifts are cohomologous to the chosen lift, so `vanish` forces
+res-additivity), and vanishes on `B¹`.  `nondegenerate` (the §17.6 `dz/z` cup datum) is orthogonal and
+carried as a field. -/
+
+variable (𝔘 ω₀ K)
+
+/-- **[ISOLATED — the meromorphic Cousin solutions].**  The two genuinely-new Serre inputs (Forster §15
++ §17.3), on the `holoOff`-equipped lift `CoverMLLift` (so the residue is the genuine total residue and
+the descent's well-definedness is sound; see the module docstring on the `holoOff` gap of the bare
+`CoverMLDistribution`).
+
+* `lift` — **`H¹(X, ℳ) = 0`**: every `𝒪_K` cocycle class is `[δμ]` for a meromorphic Cousin lift `μ`
+  (THE WALL, Forster §15 — principal-part splitting at the K-points + `H¹(𝔘, 𝒪) = 0`).
+* `vanish` — **the residue descent** (`∑Res = 0`, Gate A, Forster §17.3): a lift whose connecting
+  cocycle is a coboundary (`connectingClass μ = 0`) is globally meromorphic, residue `0`.
+
+From these the residue functional, its ℂ-linearity, and its coboundary-vanishing are all *derived*
+(`resCocycle`, `vanish_coboundary` below).  The §17.6 `dz/z` non-degeneracy is orthogonal and supplied
+as a hypothesis to `toCousinResidueData`. -/
+structure MeromorphicCousinSolutions where
+  /-- **`H¹(X, ℳ) = 0`** — a meromorphic Cousin lift of every `𝒪_K` cocycle. -/
+  lift : ∀ c : ↥(𝔘.toFiniteFamily.cocycles1 K),
+    { μ : CoverMLLift 𝔘 ω₀ K // μ.connectingClass = Submodule.Quotient.mk c }
+  /-- **The residue descent** (`∑Res = 0`, Gate A): a lift with coboundary connecting cocycle has
+  residue `0`. -/
+  vanish : ∀ μ : CoverMLLift 𝔘 ω₀ K, μ.connectingClass = 0 → μ.res = 0
+
+namespace MeromorphicCousinSolutions
+
+variable {𝔘 ω₀ K}
+
+/-- The chosen meromorphic Cousin lift of a cocycle `c` (with `[δ(lift c)] = [c]`). -/
+noncomputable def liftOf (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
+    (c : ↥(𝔘.toFiniteFamily.cocycles1 K)) : CoverMLLift 𝔘 ω₀ K := (S.lift c).1
+
+theorem liftOf_connectingClass (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
+    (c : ↥(𝔘.toFiniteFamily.cocycles1 K)) :
+    (S.liftOf c).connectingClass = Submodule.Quotient.mk c := (S.lift c).2
+
+/-- **Well-definedness on classes** (the heart of the descent): if two lifts have the same connecting
+class, their residues agree.  `μ₁.res − μ₂.res = res(μ₁ − μ₂) = 0` by `vanish` (the difference's
+connecting class is `0`). -/
+theorem res_eq_of_connectingClass_eq (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
+    {μ₁ μ₂ : CoverMLLift 𝔘 ω₀ K} (h : μ₁.connectingClass = μ₂.connectingClass) :
+    μ₁.res = μ₂.res := by
+  have hv := S.vanish (CoverMLLift.sub μ₁ μ₂)
+    (by rw [CoverMLLift.connectingClass_sub, h, sub_self])
+  rw [CoverMLLift.res_sub, sub_eq_zero] at hv
+  exact hv
+
+/-- **The residue read on any lift of a cocycle** equals the chosen lift's residue (well-definedness). -/
+theorem res_liftOf_eq (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
+    {c : ↥(𝔘.toFiniteFamily.cocycles1 K)} {μ : CoverMLLift 𝔘 ω₀ K}
+    (h : μ.connectingClass = Submodule.Quotient.mk c) : μ.res = (S.liftOf c).res :=
+  S.res_eq_of_connectingClass_eq (by rw [h, S.liftOf_connectingClass])
+
+/-- The connecting class of a combine of two chosen lifts is `[c₁ + c₂]`. -/
+theorem connectingClass_combine_liftOf (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
+    (c₁ c₂ : ↥(𝔘.toFiniteFamily.cocycles1 K)) :
+    (CoverMLLift.combine (S.liftOf c₁) (S.liftOf c₂)).connectingClass
+      = Submodule.Quotient.mk (c₁ + c₂) := by
+  rw [CoverMLLift.connectingClass_eq, CoverMLLift.connectingCocycle_combine,
+    Submodule.Quotient.mk_add, Submodule.Quotient.mk_add,
+    ← CoverMLLift.connectingClass_eq, ← CoverMLLift.connectingClass_eq,
+    S.liftOf_connectingClass, S.liftOf_connectingClass]
+
+/-- The connecting class of a scaling of a chosen lift is `[a • c]`. -/
+theorem connectingClass_smul_liftOf (S : MeromorphicCousinSolutions 𝔘 ω₀ K) (a : ℂ)
+    (c : ↥(𝔘.toFiniteFamily.cocycles1 K)) :
+    (CoverMLLift.smul a (S.liftOf c)).connectingClass = Submodule.Quotient.mk (a • c) := by
+  rw [CoverMLLift.connectingClass_eq, CoverMLLift.connectingCocycle_smul,
+    Submodule.Quotient.mk_smul, Submodule.Quotient.mk_smul, ← CoverMLLift.connectingClass_eq,
+    S.liftOf_connectingClass]
+
+/-- **The residue functional `Res(c) := (lift c).res` on cocycles, ℂ-linear** (Forster's `Res`).
+Linearity is exactly the well-definedness: `lift (c₁+c₂)` and `combine (lift c₁) (lift c₂)` are
+cohomologous (their connecting classes agree), so `res_eq_of_connectingClass_eq` + `res_combine` give
+additivity; similarly `smul` gives homogeneity. -/
+noncomputable def resCocycle (S : MeromorphicCousinSolutions 𝔘 ω₀ K) :
+    ↥(𝔘.toFiniteFamily.cocycles1 K) →ₗ[ℂ] ℂ where
+  toFun c := (S.liftOf c).res
+  map_add' c₁ c₂ := by
+    rw [← S.res_liftOf_eq (S.connectingClass_combine_liftOf c₁ c₂), CoverMLLift.res_combine]
+  map_smul' a c := by
+    rw [RingHom.id_apply, ← S.res_liftOf_eq (S.connectingClass_smul_liftOf a c),
+      CoverMLLift.res_smul, smul_eq_mul]
+
+@[simp] theorem resCocycle_apply (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
+    (c : ↥(𝔘.toFiniteFamily.cocycles1 K)) : S.resCocycle c = (S.liftOf c).res := rfl
+
+/-- **`resCocycle` vanishes on coboundaries `B¹`** (the descent to `cechH1`): a coboundary has zero
+class, so its chosen lift's connecting class is `0`, hence residue `0` by `vanish`. -/
+theorem resCocycle_vanish_coboundary (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
+    (c : ↥(𝔘.toFiniteFamily.cocycles1 K))
+    (hc : c ∈ (𝔘.toFiniteFamily.coboundaries1 K).submoduleOf (𝔘.toFiniteFamily.cocycles1 K)) :
+    S.resCocycle c = 0 := by
+  rw [resCocycle_apply]
+  exact S.vanish (S.liftOf c)
+    (by rw [S.liftOf_connectingClass, (Submodule.Quotient.mk_eq_zero _).mpr hc])
+
+/-- **The genuine-residue tie**: `resCocycle (δμ) = μ.res` for **every `holoOff`-equipped lift** `μ`
+(the sound analogue of `MeromorphicCousinSolvable.resCocycle_connecting`, which over-quantifies to all
+bare `CoverMLDistribution` — see the module docstring).  This forces `resCocycle` to read the genuine
+total Laurent residue, NOT smooth/PoU junk. -/
+theorem resCocycle_connecting (S : MeromorphicCousinSolutions 𝔘 ω₀ K) (μ : CoverMLLift 𝔘 ω₀ K) :
+    S.resCocycle μ.connectingCocycle = μ.res := by
+  rw [resCocycle_apply]
+  exact (S.res_liftOf_eq (μ := μ) (c := μ.connectingCocycle) rfl).symm
+
+/-- **The descent to `CousinResidueData`** — the full Serre residue data (hence `toGlobalResidue`,
+`pairing_injective`, `lDim_le_h1Dim`, `toSerreDualityData`) from the Cousin solutions plus the §17.6
+`dz/z` non-degeneracy datum.  `resCocycle`/`vanish_coboundary` are *derived* (not interface fields). -/
+def toCousinResidueData (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
+    (nondeg : ∀ (D : Divisor X) (v : lSysModule (K - D)), v ≠ 0 →
+      ∃ ξ : 𝔘.toFiniteFamily.cechH1 D,
+        (Submodule.liftQ _ S.resCocycle (S.resCocycle_vanish_coboundary))
+          (cup (𝔘 := 𝔘.toFiniteFamily) D K v ξ) = 1) :
+    CousinResidueData 𝔘 K where
+  resCocycle := S.resCocycle
+  vanish_coboundary := S.resCocycle_vanish_coboundary
+  nondegenerate := nondeg
+
+/-- **The full Serre residue realization** `GlobalResidue 𝔘 K` from the Cousin solutions. -/
+def toGlobalResidue (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
+    (nondeg : ∀ (D : Divisor X) (v : lSysModule (K - D)), v ≠ 0 →
+      ∃ ξ : 𝔘.toFiniteFamily.cechH1 D,
+        (Submodule.liftQ _ S.resCocycle (S.resCocycle_vanish_coboundary))
+          (cup (𝔘 := 𝔘.toFiniteFamily) D K v ξ) = 1) :
+    GlobalResidue 𝔘 K :=
+  (S.toCousinResidueData nondeg).toGlobalResidue
+
+/-- **§17.6 — the EASY-half dimension bound `lDim (K−D) ≤ h1Dim D`** from the Cousin solutions. -/
+theorem lDim_le_h1Dim (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
+    (nondeg : ∀ (D : Divisor X) (v : lSysModule (K - D)), v ≠ 0 →
+      ∃ ξ : 𝔘.toFiniteFamily.cechH1 D,
+        (Submodule.liftQ _ S.resCocycle (S.resCocycle_vanish_coboundary))
+          (cup (𝔘 := 𝔘.toFiniteFamily) D K v ξ) = 1)
+    (D : Divisor X) (hfin : FiniteDimensional ℂ (𝔘.toFiniteFamily.cechH1 D)) :
+    lDim (X := X) (K - D) ≤ 𝔘.toFiniteFamily.h1Dim D :=
+  (S.toCousinResidueData nondeg).lDim_le_h1Dim D hfin
+
+end MeromorphicCousinSolutions
 
 end Jacobians.Dolbeault
 
