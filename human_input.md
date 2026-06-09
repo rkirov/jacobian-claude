@@ -3632,3 +3632,66 @@ orphans, or any PROVEN decl. New file only; reused `ProperMapDegreeSheets`/`Serr
   dot-notation `(hfam …).ofFibreClusterTopology` does NOT resolve.
 - `hpoint := hcl_point` typechecks by defeq when `e := Equiv.ofBijective φ` and `φ ⟨i,j⟩ = cl i j` (the
   `Equiv.ofBijective` toFun is `φ` definitionally).
+
+---
+
+## 2026-06-09 — Gate-A TARGET 2 CLOSED: `ExistsAdaptedFRamified` fully proven (off-centre/∞ genericity)
+
+**Agent task:** Close TARGET 2 of Gate A — prove `ExistsAdaptedFRamified ω₀ g poles` (the `hoff_cs`-free
+adapted-cover genericity selection, the *input* to the ramified Gate-A residue route). Stokes-free wiring,
+Miranda §VIII.3 "choose any nonconstant `f`". INDEPENDENT of the concurrent cluster thread (did NOT touch
+`SerreResidueRamifiedClusterPartition`/`ProperMapDegreeSheets`/`SerreResidueGateAInftyBuilder`).
+
+### RESULT: PROVEN, axiom-clean `[propext, Classical.choice, Quot.sound]` (NO sorry, NO custom axiom)
+New file `Jacobians/Dolbeault/SerreResidueGateAGenericity.lean` (builds STANDALONE, 8525 jobs green).
+Headline `Jacobians.Dolbeault.SerreResidueTheorem.existsAdaptedFRamified` : `ExistsAdaptedFRamified ω₀ g poles`
+for EVERY `ω₀`, genuine meromorphic `g`, finite `poles` (verified type-identical to the consumer's def +
+produces a genuine `Nonempty (AdaptedFRamified …)`). So the ramified Gate-A `∑Res=0` route now rests on
+EXACTLY ONE residual: TARGET 1 (`FibreClusterReindex`, the concurrent cluster thread). NO RR-with-jets used.
+
+### The construction (generic position; reciprocal-at-a-regular-value — NOT RR-with-jets)
+`f₀` = the nonconstant meromorphic fn of `exists_nonconstant_meromorphic` (Riemann inequality,
+Serre-independent). Pick a FINITE regular value `a : ℂ` of `f₀.toRiemannSphere`
+(`coe a ∉ criticalValuesGeneral f₀.toRiemannSphere`; critical values finite + `coe '' ℂ` cofinite). Set the
+cover `f := (f₀ − a·1)⁻¹`. Poles of `f` = zeros of `f₀ − a·1` (via `orderAtPoint_inv`); each such zero is a
+preimage of the regular value `coe a`, hence SIMPLE (deriv≠0 ⟹ `analyticOrderAt = 1`), so `orderAtPoint f = −1`.
+
+### The 6 reusable bridges proven (all axiom-clean), key dependencies
+- `div_ne_zero_of_not_isGermConstant` — nonconstant ⟹ `div ≠ 0` (compact Liouville bridge from
+  `exists_nonconstant_meromorphic`'s `¬ IsGermConstant` output to the cover hyp `f.div ≠ 0`;
+  via `germ_eq_const_of_mem_linearSystem_zero` + `untop₀_nonneg_iff`).
+- `exists_finite_regularValue` — `coe a ∉ criticalValuesGeneral f₀.toRiemannSphere` exists
+  (`criticalValues_finite_general` + `Set.infinite_univ.diff`).
+- `toRiemannSphere_eq_coe_of_sub_orderPos` — a zero of `f₀−a·1` (order>0) is a preimage of `coe a`
+  (`f₀.toFun → a`, so `f₀` non-pole with `holoRepr = a`; `orderW` no-pole via `meromorphicOrderAt_add` of
+  `f₀ = (f₀−a·1) + a·1`, the `min(orderW h, orderW const) ≥ 0` algebraic route — NO pole-limit lemma needed).
+- `orderAtPoint_sub_eq_one_of_regular_fibrePoint` — the genericity HEART: regular sphere-fibre point ⟹ simple
+  zero. Routes `chartCoe ∘ F ∘ chart⁻¹ =ᶠ holoRepr ∘ chart⁻¹` (deriv transfers via `EventuallyEq.deriv_eq`),
+  `AnalyticAt.analyticOrderAt_eq_one_of_zero_deriv_ne_zero`, `ProperMapDegreeSheets.meromorphicOrderAt_holoRepr_sub_eq`.
+- `orderAtPoint_inv_eq_neg_one_of_regularValue` — pole of `f` ⟹ `orderAtPoint f = −1` (combines the above +
+  `Discharge.ContMDiff.Degree.exists_regularValueWitnessReg_value_eq`'s `is_regular` certificate).
+- `exists_cs_enumeration` — pole-value enumeration `cs`/`hcenters_cs` (pull `(poles.image F).erase ∞` back
+  along `chartCoe`, a `coe`-section off ∞). `ρ := ∑ ‖cs i‖ + 1` via `Finset.single_le_sum`.
+
+### Soundness self-audit (NO false/junk/circular field — all 4 AdaptedFRamified fields genuine)
+- `hsimpleInf` is NOT vacuous: `hdiv : f.div ≠ 0` forces `f` to HAVE poles (compact Liouville), and the
+  regular-value choice makes the (nonempty) ∞-fibre genuinely simple. A regular value can have empty fibre
+  in general, but here `f` nonconstant ⟹ poles exist ⟹ the fibre of `coe a` is forced nonempty
+  (internally consistent). Single-sheet pushforward residue subtlety is irrelevant (no residue/trace here,
+  pure order/criticality argument). NO RR (would be circular). The inv-trick IS achievable for general `f₀`.
+
+### LEAN GOTCHAS (this session)
+- FQNs: `RegularValueWitnessReg` ∈ `Jacobians.Discharge.ContMDiff`; `exists_regularValueWitnessReg_value_eq`
+  ∈ `Jacobians.Discharge.ContMDiff.Degree`; `criticalValuesGeneral`/`criticalValues_finite_general` ∈
+  `Jacobians.Discharge.Manifold`. `RegularValueWitnessReg.is_regular` is the deriv-≠0-at-preimages field.
+- A theorem named `MeromorphicFunction.foo` declared INSIDE `namespace Jacobians.Dolbeault.SerreResidueTheorem`
+  gets FQN `…SerreResidueTheorem.MeromorphicFunction.foo`, so dot-notation `expr.foo` (looking for
+  `MeromorphicFunction.foo` in root) FAILS. Drop the `MeromorphicFunction.` prefix → plain name.
+- In a data-bearing `noncomputable def`, cannot `obtain ⟨…⟩ :=` an `∃`-lemma (eliminates into Prop only);
+  use `.choose`/`.choose_spec.choose`/`.choose_spec.choose_spec.1/.2`.
+- `f₀ = (f₀ - a•c) + a•c` for `MeromorphicFunction` (a module): `abel` (not `ring`).
+- `rw [hij]` after `intro i j hij` where the function is a lambda: `simp only at hij` first to beta-reduce.
+- `(φ.continuousAt_symm hyt).tendsto` then `rwa [φ.left_inv …]` to get `Tendsto φ.symm (𝓝 (φ y)) (𝓝 y)`.
+- Scratch-file artifact: `open Jacobians.Dolbeault` then `namespace Jacobians.Dolbeault.SerreResidueTheorem`
+  can make `end Jacobians.Dolbeault.SerreResidueTheorem` report "too many components" (irrelevant in the
+  real target file, which sets up the namespace correctly).
