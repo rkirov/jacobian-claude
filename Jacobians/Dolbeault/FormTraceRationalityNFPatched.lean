@@ -430,6 +430,93 @@ theorem hcoh_inf_of_inftyMovingCoherenceNF (ω₀ : HolomorphicOneForms X) (g : 
       =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf).traceCoeff :=
   hcoh.trans (recipCoeff_inftyMovingSumNF_eq_traceCoeff ω₀ f Dinf)
 
+/-! ### The top-level sound geometric assembly (Gate A on the precise residuals)
+
+Wiring all the discharge helpers, this reduces Gate A `∑Res = 0` — *soundly* (sound `∞`-fibre,
+value-correct branch-patched trace) and axiom-clean — to a precise list of **genuine §VIII.3
+geometric residuals**, with `f` a nonconstant cover (`hncF`):
+
+* `Φ`, `cs`/`ρ`, `D`/`hxs_*`, `hcenters_cs`, the enumeration bookkeeping — the global selection + discrete
+  fibre data (wall 2 bookkeeping);
+* `Creg z` (off `cs ∪ br`) + `hCreg_g` — the per-regular-value moving coherence (symmetric lever, giving
+  `hreg`);
+* `br`, `hbr`, `αBr`, `hevBr` — the finite branch values, their branch-locus membership, a local
+  holomorphic representative of `α = ω₀·g`, and the eventual sphere-sheet coherence (giving `hbnd` via the
+  proven bundle SUM);
+* `xsInf`/`hsimpleInf` (simple `∞`-poles) — the sound `∞`-fibre data `InftyFibreDataNF.ofRegular`;
+* `hcoh` — the `∞`-moving coherence (the `∞`-single-valuedness; giving `hcoh_inf`);
+* `hcont_int`, `R₀`/`hR₀_*` — junk-freeness + the genus-`0` `∞`-vanishing.
+
+This is the sound replacement of the *raw*-trace route: `hentire` is **proven** (not assumed), the
+`∞`-fibre is the sound `InftyFibreDataNF`, and the genus-`0` analyticity rides on the proven bundle trace
+`traceFun` extension (`TraceForm.traceExtendsAt_branchPoint`, axiom-clean). -/
+theorem residueSum_eq_zero_of_patchedGeometry
+    (hncF : ¬ ∃ y₀ : RiemannSphere, ∀ x, f.toRiemannSphere x = y₀)
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (Creg : ∀ z, z ∉ Finset.univ.image cs ∪ br → MovingCoherenceDatum ω₀ g f Φ z)
+    (hCreg_g : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
+      AnalyticAt ℂ (fun w => g ((chartAt ℂ ((Creg z hz).D.xs i)).symm w))
+        ((chartAt ℂ ((Creg z hz).D.xs i)) ((Creg z hz).D.xs i)))
+    (αBr : ℂ → HolomorphicOneForms X)
+    (hbr : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      ((b₀ : ℂ) : RiemannSphere) ∈ branchLocus f.toRiemannSphere)
+    (hevBr : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      ∀ᶠ z in 𝓝[≠] b₀,
+        ∃ (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+          (hderiv : ∀ i, deriv (fun w => f.holoRepr
+              ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+            ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+              (S.sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0)
+          (_hmero : ∀ i, MeromorphicAt
+            (fun w => g ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+            ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+              (S.sheet i (((z : ℂ) : RiemannSphere))))),
+          valueChartTrace ω₀ f Φ z
+              = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv _hmero)).traceCoeff z ∧
+          (∀ i, (αBr b₀).toFun (S.sheet i (((z : ℂ) : RiemannSphere)))
+            = g (S.sheet i (((z : ℂ) : RiemannSphere)))
+              • ω₀.toFun (S.sheet i (((z : ℂ) : RiemannSphere)))))
+    (D : (p : ℂ) → FibreRegularData g f p)
+    (Cfin : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
+    (hCfin_D : ∀ i, (Cfin i).D = D (cs i))
+    (hxs_inj : ∀ p, Function.Injective (D p).xs)
+    (hxs_mem : ∀ p, ∀ i,
+      (D p).xs i ∈ poles ∧ f.toRiemannSphere ((D p).xs i) = ((p : ℂ) : RiemannSphere))
+    (hxs_surj : ∀ p, ∀ a ∈ poles, f.toRiemannSphere a = ((p : ℂ) : RiemannSphere) →
+      ∃ i, (D p).xs i = a)
+    {ιInf : Type} [Fintype ιInf] (xsInf : ιInf → X)
+    (hsimpleInf : ∀ i, f.orderAtPoint (xsInf i) = -1)
+    (hmeroInf : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (xsInf i)).symm z))
+      ((chartAt ℂ (xsInf i)) (xsInf i)))
+    (hxsInf_inj : Function.Injective xsInf)
+    (hxsInf_mem : ∀ i, xsInf i ∈ poles ∧ f.toRiemannSphere (xsInf i) = OnePoint.infty)
+    (hxsInf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, xsInf i = a)
+    (hcoh : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0]
+        recipCoeff (inftyMovingSumNF ω₀ f (InftyFibreDataNF.ofRegular g f xsInf hsimpleInf hmeroInf)))
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (valueChartTracePatched ω₀ f Φ br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] 0] R₀) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueSum_eq_zero_of_patchedTraceRationalityNF Φ m cs ρ hcs_ball hcs_inj br
+    (fun w hw => hreg_of_movingDatum (Creg w hw) (hCreg_g w hw))
+    (fun b₀ hb₀br hb₀cs =>
+      hbnd_of_eventual_sphereCoherence ω₀ g f Φ (αBr b₀) hncF (hbr b₀ hb₀br hb₀cs)
+        (hevBr b₀ hb₀br hb₀cs))
+    D Cfin hCfin_D hxs_inj hxs_mem hxs_surj
+    (InftyFibreDataNF.ofRegular g f xsInf hsimpleInf hmeroInf) hxsInf_inj hxsInf_mem hxsInf_surj
+    hcenters_cs
+    (hcoh_inf_of_inftyMovingCoherenceNF ω₀ g f Φ br _ hcoh)
+    hcont_int R₀ hR₀_an hR₀0 hR₀_eq
+
 /-! ### Non-vacuity (end-to-end soundness)
 
 For the empty pole set the empty fibre selection assembles into a `TraceRationalityDataNF` through the
