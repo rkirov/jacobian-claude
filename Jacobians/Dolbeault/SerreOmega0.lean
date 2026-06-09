@@ -32,6 +32,7 @@
 -/
 import Jacobians.Dolbeault.CohomologicalRR
 import Jacobians.Dolbeault.SkyscraperProductWitness
+import Jacobians.Dolbeault.CanonicalFormIso
 
 open scoped Manifold ContDiff Topology
 open Module
@@ -41,12 +42,9 @@ namespace Jacobians.Dolbeault
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- The **junk-free linear-system module** `L(D)` (= `H⁰(X, 𝒪_D)`): the linear system with the
-`toFun`-germ junk quotiented out. By definition `lDim D = finrank ℂ (lSysModule D)`. (A local copy
-of the abbreviation in `SerreDualityPairing` so this gate-D node stays free of the
-`exists_serreDualityData` `sorry` it feeds.) -/
-abbrev lSysModule (D : Divisor X) : Type _ :=
-  ↥(linearSystem (X := X) D) ⧸ (germZeroSubmodule (X := X)).submoduleOf (linearSystem (X := X) D)
+-- `lSysModule` (= `L(D)/germZero`, with `lDim D = finrank ℂ (lSysModule D)`) is shared from
+-- `Jacobians.Dolbeault.CanonicalFormIso` (a single definition, used by both the §17.4 isomorphism
+-- layer and this gate-D node).
 
 /-! ### The constant function `1` as a member of every effective linear system -/
 
