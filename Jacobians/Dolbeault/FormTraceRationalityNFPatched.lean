@@ -342,6 +342,94 @@ theorem hreg_of_movingDatum {Φ : (b : ℂ) → FibreRegularData g f b} {z : ℂ
     AnalyticAt ℂ (valueChartTrace ω₀ f Φ) z :=
   Jacobians.Dolbeault.FormTraceMovingFibre.analyticAt_valueChartTrace_of_movingDatum C hg
 
+/-! ### The sound `∞`-moving reparametrization bridge (the `hcoh_inf` engine, repaired reciprocal)
+
+The sound `∞`-coherence `hcoh_inf` is `recipCoeff (valueChartTracePatched) =ᶠ[𝓝[≠] 0]
+(inftyFibreTraceNF ω₀ f Dinf).traceCoeff` (against the *repaired* `∞`-fibre trace, `FormTraceInftyFibreNF`).
+As in the finite case, the `∞`-fibre trace coefficient is the `recipCoeff` of a *finite* `∞`-moving sum
+read in the reciprocal chart — the `−ζ⁻²` Jacobian of `z = 1/ζ` cancels the moving-sum reparametrization
+(Miranda's "the SUM extends across `∞`").  We mirror the proven `recipCoeff_inftyMovingSum_eq_traceCoeff`
+verbatim, but with the **sound** `inftyFibreTraceNF` sheets (the genuinely-analytic repaired reciprocal),
+so the resulting bridge feeds the sound `agree_infty`/`hcoh_inf` *without* the buggy `InftyFibreData`.
+
+The proof is structure-driven (only the `FibreTrace` interface + `inftyFibreTraceNF_b`/`_coeff`), so it
+is a clean transcription. -/
+
+/-- **The finite `∞`-moving sum along the *repaired* reciprocal sheets** of an `InftyFibreDataNF`: the
+value-coordinate fibre sum `∑ i, chartIntegrand ω₀ g (Dinf.xs i) (sheet i (b'⁻¹)) · deriv (b' ↦ sheet i
+(b'⁻¹)) b'`, read at the finite value `b'`, with `sheet := (inftyFibreTraceNF ω₀ f Dinf).sheet` (the
+planar inverses of the genuinely-analytic repaired reciprocal).  The sound `∞`-analogue of
+`inftyMovingSum`. -/
+noncomputable def inftyMovingSumNF (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (Dinf : InftyFibreDataNF g f) : ℂ → ℂ :=
+  fun b' => ∑ i, chartIntegrand ω₀ g (Dinf.xs i) ((inftyFibreTraceNF ω₀ f Dinf).sheet i (b'⁻¹))
+    * deriv (fun w => (inftyFibreTraceNF ω₀ f Dinf).sheet i (w⁻¹)) b'
+
+/-- **The sound reparametrization identity (the `dζ` Jacobian cancellation, repaired reciprocal).**
+`recipCoeff (inftyMovingSumNF ω₀ f Dinf)` equals the sound `∞`-fibre trace coefficient
+`(inftyFibreTraceNF ω₀ f Dinf).traceCoeff` on a punctured neighbourhood of `0`.  Verbatim transcription
+of `recipCoeff_inftyMovingSum_eq_traceCoeff` with the `inftyFibreTraceNF` sheets (the genuinely-analytic
+repaired reciprocal — `sheet_analytic`, `inftyFibreTraceNF_b = 0`, `inftyFibreTraceNF_coeff =
+chartIntegrand` all hold identically). -/
+theorem recipCoeff_inftyMovingSumNF_eq_traceCoeff (ω₀ : HolomorphicOneForms X)
+    (f : MeromorphicFunction X) (Dinf : InftyFibreDataNF g f) :
+    recipCoeff (inftyMovingSumNF ω₀ f Dinf) =ᶠ[𝓝[≠] 0]
+      (inftyFibreTraceNF ω₀ f Dinf).traceCoeff := by
+  classical
+  -- Each repaired reciprocal-chart sheet is differentiable on a punctured neighbourhood of `0`.
+  have hdiff : ∀ i : Dinf.ι, ∀ᶠ ζ in 𝓝[≠] (0 : ℂ),
+      DifferentiableAt ℂ ((inftyFibreTraceNF ω₀ f Dinf).sheet i) ζ := by
+    intro i
+    have hev : ∀ᶠ ζ in 𝓝 (0 : ℂ),
+        DifferentiableAt ℂ ((inftyFibreTraceNF ω₀ f Dinf).sheet i) ζ := by
+      have han := ((inftyFibreTraceNF ω₀ f Dinf).sheet_analytic i).eventually_analyticAt
+      rw [inftyFibreTraceNF_b] at han
+      filter_upwards [han] with ζ hζ using hζ.differentiableAt
+    exact nhdsWithin_le_nhds hev
+  have hall : ∀ᶠ ζ in 𝓝[≠] (0 : ℂ),
+      (∀ i : Dinf.ι, DifferentiableAt ℂ ((inftyFibreTraceNF ω₀ f Dinf).sheet i) ζ) ∧ ζ ≠ 0 := by
+    rw [Filter.eventually_and]
+    refine ⟨?_, ?_⟩
+    · rw [eventually_all]; exact hdiff
+    · filter_upwards [self_mem_nhdsWithin] with ζ hζ; simpa using hζ
+  filter_upwards [hall] with ζ ⟨hdζ, hζne⟩
+  show -(inftyMovingSumNF ω₀ f Dinf (ζ⁻¹)) * ζ ^ (-2 : ℤ)
+    = ∑ i, (inftyFibreTraceNF ω₀ f Dinf).coeff i ((inftyFibreTraceNF ω₀ f Dinf).sheet i ζ)
+        * deriv ((inftyFibreTraceNF ω₀ f Dinf).sheet i) ζ
+  rw [inftyMovingSumNF]
+  rw [neg_mul, Finset.sum_mul, ← Finset.sum_neg_distrib]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  have hchain : deriv (fun w => (inftyFibreTraceNF ω₀ f Dinf).sheet i (w⁻¹)) (ζ⁻¹)
+      = deriv ((inftyFibreTraceNF ω₀ f Dinf).sheet i) ζ * (-((ζ⁻¹ ^ 2)⁻¹)) := by
+    rw [show (fun w => (inftyFibreTraceNF ω₀ f Dinf).sheet i (w⁻¹))
+        = (inftyFibreTraceNF ω₀ f Dinf).sheet i ∘ (fun w : ℂ => w⁻¹) from rfl]
+    rw [deriv_comp (ζ⁻¹) (by rw [inv_inv]; exact hdζ i) (differentiableAt_inv (by simpa using hζne)),
+      deriv_inv, inv_inv]
+  rw [inv_inv, hchain, inftyFibreTraceNF_coeff]
+  set c := chartIntegrand ω₀ g (Dinf.xs i) ((inftyFibreTraceNF ω₀ f Dinf).sheet i ζ) with hc
+  set d := deriv ((inftyFibreTraceNF ω₀ f Dinf).sheet i) ζ with hd
+  rw [zpow_neg, zpow_two]
+  field_simp
+
+/-- **The sound `∞`-coherence `hcoh_inf` from the `∞`-moving coherence (repaired reciprocal).**  If the
+reciprocal coefficient of the patched trace germ-equals the `recipCoeff` of the sound `∞`-moving sum off
+`0` (`hcoh` — the §VIII.3 `∞`-single-valuedness, the `∞`-analogue of the finite moving coherence), then it
+germ-equals the sound `∞`-fibre trace coefficient:
+
+> `recipCoeff (valueChartTracePatched ω₀ f Φ br) =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf).traceCoeff`.
+
+This is the exact `hcoh_inf` input of `traceRationalityDataNF_ofPatched`, reduced to the single genuine
+`∞`-moving residual `hcoh` (chained through the proven reparametrization
+`recipCoeff_inftyMovingSumNF_eq_traceCoeff`). -/
+theorem hcoh_inf_of_inftyMovingCoherenceNF (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (br : Finset ℂ)
+    (Dinf : InftyFibreDataNF g f)
+    (hcoh : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf)) :
+    recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf).traceCoeff :=
+  hcoh.trans (recipCoeff_inftyMovingSumNF_eq_traceCoeff ω₀ f Dinf)
+
 /-! ### Non-vacuity (end-to-end soundness)
 
 For the empty pole set the empty fibre selection assembles into a `TraceRationalityDataNF` through the
