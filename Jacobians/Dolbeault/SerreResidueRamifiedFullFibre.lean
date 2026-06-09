@@ -381,6 +381,84 @@ theorem resAt_clusterTrace (D : ClusterTraceData ω₀ g p c S)
 
 end ClusterTraceData
 
+/-! ### Non-vacuity of `ClusterTraceData` — inhabitable at the ramified multiplicity `m = 2`
+
+`ClusterTraceData` is inhabited for **every** `m ≥ 1` (the genuine `√(z − c)` slit branch at `m = 2`),
+so it is **not** a disguised `False` at a ramification multiplicity.  Witness: the zero numerator
+`g ≡ 0` (so the chart integrand is `0`), with the trivial straightening `s u = chart_p p + u` (a genuine
+local biholomorphism: analytic, `deriv = 1 ≠ 0`) and the `cpow` slit branch `w₀ z = (z − c)^{1/m}` (which
+exists for any `m`).  Every analytic field is `0 = 0`. -/
+
+/-- **`ClusterTraceData` is inhabitable for every `m ≥ 1`** (non-vacuity / soundness witness).  Zero
+numerator `g ≡ 0`, trivial straightening `s u = chart_p p + u`, `cpow` slit branch `w₀ z = (z − c)^{1/m}`
+on the slit `S = {z | z − c ∈ slitPlane}`.  The branch exists for **any** `m` (no monodromy
+contradiction), so the structure is inhabited at genuinely ramified multiplicities — e.g. `m = 2`. -/
+noncomputable def clusterTraceData_slit (ω₀ : HolomorphicOneForms X) (p : X) (c : ℂ)
+    (m : ℕ) (hm : 0 < m) (ζ : ℂ) (hζ : IsPrimitiveRoot ζ m) :
+    ClusterTraceData ω₀ (fun _ => (0 : ℂ)) p c {z | z - c ∈ slitPlane} where
+  m := m
+  hm := hm
+  ζ := ζ
+  hζ := hζ
+  s := fun u => (chartAt ℂ p) p + u
+  hs_an := (analyticAt_const.add analyticAt_id)
+  hs0 := by simp
+  hs_deriv := by
+    have hd : HasDerivAt (fun u => (chartAt ℂ p) p + u) 1 0 := by
+      simpa using (hasDerivAt_id (0 : ℂ)).const_add ((chartAt ℂ p) p)
+    rw [hd.deriv]; exact one_ne_zero
+  w₀ := fun z => (z - c) ^ ((m : ℂ)⁻¹)
+  hw₀_ne := by
+    intro z hz
+    exact Complex.cpow_ne_zero_iff.mpr (Or.inl (Complex.slitPlane_ne_zero hz))
+  hw₀_pow := by
+    intro z _
+    rw [zpow_natCast]; exact Complex.cpow_nat_inv_pow _ hm.ne'
+  hw₀_deriv := by
+    intro z hz
+    have hmem : (z - c) ∈ slitPlane := hz
+    have hzc : z - c ≠ 0 := Complex.slitPlane_ne_zero hz
+    have hw0ne : (z - c) ^ ((m : ℂ)⁻¹) ≠ 0 := Complex.cpow_ne_zero_iff.mpr (Or.inl hzc)
+    have hpow : ((z - c) ^ ((m : ℂ)⁻¹)) ^ (m : ℤ) = z - c := by
+      rw [zpow_natCast]; exact Complex.cpow_nat_inv_pow _ hm.ne'
+    have hbase : HasDerivAt (fun z : ℂ => z - c) 1 z := by simpa using (hasDerivAt_id z).sub_const c
+    have hD := hbase.cpow_const (c := (m : ℂ)⁻¹) hmem
+    rw [mul_one] at hD
+    rw [hD.deriv]; congr 1
+    have hL : (z - c) ^ ((m : ℂ)⁻¹ - 1) = (z - c) ^ ((m : ℂ)⁻¹) * (z - c)⁻¹ := by
+      rw [Complex.cpow_sub _ _ hzc, Complex.cpow_one, div_eq_mul_inv]
+    have hR : ((z - c) ^ ((m : ℂ)⁻¹)) ^ (1 - (m : ℤ)) = (z - c) ^ ((m : ℂ)⁻¹) * (z - c)⁻¹ := by
+      rw [zpow_sub₀ hw0ne, zpow_one, hpow, div_eq_mul_inv]
+    rw [hL, hR]
+  hw₀_diff := by
+    intro z hz
+    have hmem : (z - c) ∈ slitPlane := hz
+    have hbase : HasDerivAt (fun z : ℂ => z - c) 1 z := by simpa using (hasDerivAt_id z).sub_const c
+    exact (hbase.cpow_const (c := (m : ℂ)⁻¹) hmem).differentiableAt
+  hs_an_sheet := fun _ _ _ _ => (analyticAt_const.add analyticAt_id)
+  hg_mero := analyticAt_const.meromorphicAt
+  ppN := 0
+  ppb := fun _ => 0
+  ppR := fun _ => 0
+  hppR_an := analyticAt_const
+  hpp_split_sheet := by
+    intro z _ j _
+    rw [show straightenedIntegrand ω₀ (fun _ => (0 : ℂ)) p (fun u => (chartAt ℂ p) p + u)
+        = (fun _ => (0 : ℂ)) by
+      funext u; simp [straightenedIntegrand, chartIntegrand]]
+    simp [negTail]
+  Rem := fun _ => 0
+  hRem_an := analyticAt_const
+  hRem_slit := by intro z _; simp
+
+/-- **`ClusterTraceData` is inhabited at the ramified multiplicity `m = 2`** — the genuine `√(z − c)`
+slit branch (`ζ = −1`).  The decisive soundness witness: the structure is satisfiable at a genuinely
+ramified multiplicity, not just `m = 1`. -/
+noncomputable def clusterTraceData_sqrt (ω₀ : HolomorphicOneForms X) (p : X) (c : ℂ) :
+    ClusterTraceData ω₀ (fun _ => (0 : ℂ)) p c {z | z - c ∈ slitPlane} :=
+  clusterTraceData_slit ω₀ p c 2 (by norm_num) (-1)
+    (IsPrimitiveRoot.neg_one (R := ℂ) 0 (by norm_num))
+
 /-! ## The full-fibre cluster data and the SOUND `RamifiedCenterFacts`
 
 A `FullFibreClusterData` bundles, at a value-centre `c`, the *whole* pole fibre `D : FibreRamifiedData`
@@ -500,6 +578,73 @@ theorem existsRamifiedCenterFacts_ofFullFibre (F : FullFibreClusterData ω₀ g 
   ⟨F.toRamifiedCenterFacts hD_mem hD_surj⟩
 
 end FullFibreClusterData
+
+/-! ### Non-vacuity of `FullFibreClusterData` — a genuine MULTI-PREIMAGE RAMIFIED witness
+
+The decisive soundness check (the #13 lesson): `FullFibreClusterData` imposes **no** single-preimage
+restriction and is inhabited at a genuinely ramified multiplicity.  Given *any* injective fibre
+enumeration `D` over `c` (any number of preimages, any multiplicities `≥ 1` — in particular several
+ramified preimages), the zero numerator `g ≡ 0` inhabits a `FullFibreClusterData`: each preimage gets a
+`clusterTraceData_slit` cluster (the genuine `cpow` slit branch), `valueChartTrace ≡ 0` (empty
+selection), and the full-fibre geometric identity is `0 = ∑ᵢ ∑ⱼ 0 = 0`.  The explicit two-preimage
+`m = 2` instance `fullFibreClusterData_twoSheet` then witnesses a *genuine multi-preimage ramified* case,
+**not** a disguised `False` and **not** single-preimage. -/
+
+/-- **`FullFibreClusterData` from any injective fibre enumeration** (the multi-preimage non-vacuity).
+For the zero numerator `g ≡ 0` and the empty selection, *any* `FibreRamifiedData D` over `c` (injective,
+multiplicities `≥ 1`) inhabits a `FullFibreClusterData` — per-preimage `clusterTraceData_slit` clusters
+(genuine `cpow` slit branches), `valueChartTrace ≡ 0`, and the full-fibre identity `0 = ∑ᵢ ∑ⱼ 0`.  This
+shows the structure imposes **no single-preimage restriction** (the #13 fix) and is constructible at
+genuinely ramified multiplicities. -/
+noncomputable def fullFibreClusterData_zero (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (c : ℂ) (D : FibreRamifiedData (fun _ => (0 : ℂ)) f c) (hD_inj : Function.Injective D.xs) :
+    FullFibreClusterData ω₀ (fun _ => (0 : ℂ)) f
+      (fun b => emptyFibreRegularData (fun _ => 0) f b) c where
+  D := D
+  hD_inj := hD_inj
+  S := {z | z - c ∈ slitPlane}
+  hS_acc := by
+    rw [← accPt_iff_frequently_nhdsNE]
+    have hcS : c ∉ {z : ℂ | z - c ∈ slitPlane} := by simp [mem_slitPlane_iff]
+    have hcl : c ∈ closure {z : ℂ | z - c ∈ slitPlane} := by
+      have htend : Tendsto (fun n : ℕ => c + ((1 / (n + 1 : ℝ) : ℝ) : ℂ) * Complex.I) atTop (𝓝 c) := by
+        have h0 : Tendsto (fun n : ℕ => ((1 / (n + 1 : ℝ) : ℝ) : ℂ) * Complex.I) atTop (𝓝 0) := by
+          have hr : Tendsto (fun n : ℕ => (1 / (n + 1 : ℝ) : ℝ)) atTop (𝓝 0) :=
+            tendsto_one_div_add_atTop_nhds_zero_nat
+          have hc : Tendsto (fun n : ℕ => ((1 / (n + 1 : ℝ) : ℝ) : ℂ)) atTop (𝓝 ((0 : ℝ) : ℂ)) :=
+            (Complex.continuous_ofReal.tendsto 0).comp hr
+          rw [Complex.ofReal_zero] at hc
+          simpa using hc.mul_const Complex.I
+        simpa using (tendsto_const_nhds (x := c)).add h0
+      refine mem_closure_of_tendsto htend (Filter.Eventually.of_forall (fun n => ?_))
+      simp only [Set.mem_setOf_eq, add_sub_cancel_left, mem_slitPlane_iff]
+      right
+      have him : (((1 / (n + 1 : ℝ) : ℝ) : ℂ) * Complex.I).im = (1 / (n + 1 : ℝ) : ℝ) := by
+        rw [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, Complex.I_im, Complex.I_re]; ring
+      rw [him]; positivity
+    rw [closure_eq_self_union_derivedSet] at hcl
+    exact hcl.resolve_left hcS
+  Cl := fun i => clusterTraceData_slit ω₀ (D.xs i) c (D.mult i) (D.hmult_pos i)
+    (Complex.exp (2 * π * Complex.I / (D.mult i)))
+    (Complex.isPrimitiveRoot_exp (D.mult i) (D.hmult_pos i).ne')
+  hmult := fun _ => rfl
+  hsplit0 := by
+    intro i
+    -- Both sides are `fun _ => 0` (chart integrand of `g ≡ 0` vanishes; empty principal part).
+    refine Filter.EventuallyEq.of_eq ?_
+    funext u
+    simp [straightenedIntegrand, chartIntegrand, negTail, clusterTraceData_slit]
+  hvct_mero := by
+    rw [valueChartTrace_emptySelection ω₀ f]
+    exact analyticAt_const.meromorphicAt
+  hgeom_fibre := by
+    intro z _
+    rw [valueChartTrace_emptySelection ω₀ f]
+    symm
+    refine Finset.sum_eq_zero (fun i _ => Finset.sum_eq_zero (fun j _ => ?_))
+    rw [show chartIntegrand ω₀ (fun _ => (0 : ℂ)) (D.xs i) = (fun _ => (0 : ℂ)) by
+      funext w; simp [chartIntegrand]]
+    simp
 
 /-! ## The `∑Res = 0` capstone via the SOUND full-fibre cluster geometry
 
