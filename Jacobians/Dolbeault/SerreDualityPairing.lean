@@ -7,6 +7,7 @@ import Jacobians.Dolbeault.SerreDuality
 import Jacobians.Dolbeault.CohomologicalRR
 import Jacobians.LinearSystem
 import Jacobians.Genus
+import Jacobians.Dolbeault.CanonicalFormIso
 
 /-!
 # Serre duality on `X` — the direct Forster §17 route (the plan of record)
@@ -60,11 +61,6 @@ namespace Jacobians.Dolbeault
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-/-- The **junk-free linear-system module** `L(D)` (= `H⁰(X, 𝒪_D)`): the linear system with the
-`toFun`-germ junk quotiented out. By definition `lDim D = finrank ℂ (lSysModule D)`. -/
-abbrev lSysModule (D : Divisor X) : Type _ :=
-  ↥(linearSystem (X := X) D) ⧸ (germZeroSubmodule (X := X)).submoduleOf (linearSystem (X := X) D)
 
 /-- **The Forster §17 instantiation** (the geometric data of Serre duality on `X`): a canonical divisor
 `K` with `lDim K = genus` (17.4 at `D=0`: `𝒪_K ≅ Ω`), and the residue pairing
