@@ -1,0 +1,332 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+import Jacobians.Dolbeault.FormTraceFullFibreRationalityNF
+import Jacobians.Dolbeault.FormTraceCoherenceFromMoving
+import Jacobians.Dolbeault.FormTraceGlobalTPatched
+
+/-!
+# Gate A `∑Res = 0` from the **branch-patched** geometric trace, *sound* `∞` fibre (Miranda §VIII.3)
+
+`Jacobians.Dolbeault.FormTraceFullFibre.traceRationalityDataNF_ofMovingData`
+(`FormTraceCoherenceFromMovingNF`) builds the sound full-fibre reduction target `TraceRationalityDataNF`
+from a global selection `Φ`, per-pole moving data, and — as *caller hypotheses* — the genus-`0`
+remainder vanishing `hentire`/`hrecip_cont` against the **raw** trace `valueChartTrace ω₀ f Φ`.
+
+That `hentire` (`AnalyticOnNhd ℂ (valueChartTrace ω₀ f Φ - L.R) Set.univ`) is, however, a
+**latent false hypothesis for the canonical full-fibre selection**: at a *branch value* of the cover the
+raw geometric trace `valueChartTrace` takes a *partial-sum* value, **not** the removable-singularity
+limit (`FormTraceGlobalTPatched`, the docstring explicitly flags `BranchAwareTraceSelection.hbranch` —
+continuity of the raw trace at a branch value — as **false**).  So the raw trace is *discontinuous*
+across branch points and cannot be entire.
+
+This file is the **value-correct** analogue.  It assembles `TraceRationalityDataNF` with the geometric
+trace replaced by the **branch-patched** trace
+
+> `T := valueChartTracePatched ω₀ f Φ br`,
+
+which equals `valueChartTrace` off the finite branch values `br` and the removable-singularity limit at
+each of them — the *planar shadow* of the proven bundle trace `traceFun` extension
+(`TraceForm.traceExtendsAt_branchPoint`, axiom-clean).  With this `T`:
+
+* the genus-`0` `hentire` is **proven internally** (not assumed) via the off-centre analyticity
+  `analyticAt_valueChartTracePatched_off_centres` (regular values by the moving coherence; branch values
+  by the value-correct removable extension `tendsto_zero_valueChartTrace_of_bundleGerm`/the boundedness
+  crux) + the junk-freeness `hcont_int`, through `analyticOnNhd_remainder_of_junkFree'`;
+* `hrecip_cont` is `continuousAt_recipCoeff_of_vanishing` (the genus-`0` `R₀ 0 = 0` `∞`-vanishing);
+* `agree` (finite) uses `valueChartTracePatched =ᶠ[𝓝[≠] p] valueChartTrace` (the patch is inert off the
+  branch values) chained with the per-pole moving coherence `hcoh_fin_of_movingDatum`;
+* `agree_infty` uses `recipCoeff (valueChartTracePatched) =ᶠ[𝓝[≠] 0] recipCoeff (valueChartTrace)`
+  (`recipCoeff_valueChartTracePatched_eventuallyEq`) chained with the **sound** `∞`-coherence `hcoh_inf`
+  against `inftyFibreTraceNF` (the repaired reciprocal — `FormTraceInftyFibreNF`).
+
+So this constructor removes the `hentire`/`hrecip_cont` *false-field risk* of the raw route, replacing
+them by the genuinely-satisfiable boundedness-crux/junk-free inputs, and keeps the sound `∞`-fibre.
+
+## What this file proves (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+
+* `traceRationalityDataNF_ofPatched` — a sound `TraceRationalityDataNF` from a global selection `Φ`, the
+  branch set `br`, the off-centre analyticity inputs (`hreg` regular-value analyticity + `hbnd`
+  branch-value boundedness), per-pole moving data, junk-freeness `hcont_int`, the genus-`0`
+  `∞`-vanishing `R₀`, and the **sound** `∞`-fibre data + coherence;
+* `residueSum_eq_zero_of_patchedTraceRationalityNF` — Gate A `∑Res = 0` from it;
+* `traceRationalityDataNF_ofPatched_holomorphic` — end-to-end non-vacuity (empty-pole), confirming the
+  reduction is honest (not a disguised `False`).
+
+## References
+
+* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3 (the trace `Tr`, Lemma 3.2; the
+  trace is single-valued and meromorphic on `ℂℙ¹`, extending across branch points; the residue at `∞`).
+* Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.
+-/
+
+noncomputable section
+
+open Complex Metric Filter Topology
+open scoped Manifold ContDiff Real
+
+namespace Jacobians.Dolbeault.FormTraceFullFibre
+
+open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
+  Jacobians.Dolbeault.FormTraceFibre Jacobians.Dolbeault.FormResidueTheorem
+  Jacobians.Dolbeault.FormTraceGlobal Jacobians.Dolbeault.FormTraceInftyFibre
+  Jacobians.Dolbeault.FormTraceInftyRecip Jacobians.Dolbeault.FormTraceLiouville
+  Jacobians.Dolbeault.FormTraceMovingFibre
+
+set_option linter.unusedSectionVars false
+
+attribute [local instance] Classical.propDecidable
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
+
+/-! ### Meromorphy of the patched trace at the finite centres
+
+The patched trace germ-equals the raw trace on every punctured neighbourhood
+(`valueChartTracePatched_eventuallyEq`); the raw trace is meromorphic at each pole-value via the moving
+datum (`meromorphicAt_valueChartTrace_of_movingDatum`).  Hence the patched trace is too — the input the
+principal-part extraction consumes. -/
+
+/-- **Meromorphy of the patched trace at a centre.**  At a finite pole-value `p` with a moving datum
+`C` whose fixed fibre is `D p`, the branch-patched trace `valueChartTracePatched ω₀ f Φ br` is
+`MeromorphicAt p`: it germ-equals the raw trace off `p` (`valueChartTracePatched_eventuallyEq`), which
+is meromorphic at `p` (`meromorphicAt_valueChartTrace_of_movingDatum`). -/
+theorem meromorphicAt_valueChartTracePatched_of_movingDatum
+    {Φ : (b : ℂ) → FibreRegularData g f b} {D : (p : ℂ) → FibreRegularData g f p} {p : ℂ}
+    (br : Finset ℂ) (C : MovingCoherenceDatum ω₀ g f Φ p) (hCD : C.D = D p) :
+    MeromorphicAt (valueChartTracePatched ω₀ f Φ br) p :=
+  (meromorphicAt_valueChartTrace_of_movingDatum C hCD).congr
+    (valueChartTracePatched_eventuallyEq ω₀ f Φ br p).symm
+
+/-! ### The off-centre analyticity of the patched trace (`hT_off`)
+
+Mirrors `PatchedTraceSelection.hT_off`: regular values via the moving coherence (`hreg`), branch values
+via the value-correct removable extension (`hbnd` boundedness + punctured analyticity from `hreg`).  The
+punctured-analyticity input of the branch-value engine is supplied from `hreg`
+(`eventually_analyticAt_valueChartTrace_of_reg`), so the only branch-specific datum is `hbnd`. -/
+
+/-- **Off-centre analyticity of the patched trace.**  With `centres := Finset.univ.image cs`: given the
+regular-value analyticity of the *raw* trace off `centres ∪ br` (`hreg`) and the branch-value
+boundedness crux off `centres` (`hbnd`), the **patched** trace is analytic at every value off
+`centres`.  This is the value-correct `hT_off` — branch values handled by the removable extension, *no*
+false continuity demand.  (`analyticAt_valueChartTracePatched_off_centres`, with the punctured
+analyticity fed from `hreg`.) -/
+theorem hT_off_patched {Φ : (b : ℂ) → FibreRegularData g f b} {m : ℕ} {cs : Fin m → ℂ} {br : Finset ℂ}
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    {z : ℂ} (hz : z ∉ Finset.univ.image cs) :
+    AnalyticAt ℂ (valueChartTracePatched ω₀ f Φ br) z :=
+  analyticAt_valueChartTracePatched_off_centres ω₀ f Φ (Finset.univ.image cs) br hreg
+    (fun b₀ hb₀br hb₀cs =>
+      ⟨eventually_analyticAt_valueChartTrace_of_reg ω₀ f Φ (Finset.univ.image cs) br hreg b₀,
+        hbnd b₀ hb₀br hb₀cs⟩)
+    hz
+
+/-! ### The sound `TraceRationalityDataNF` from the patched trace
+
+We assemble `TraceRationalityDataNF` with `T := valueChartTracePatched ω₀ f Φ br`.  The internal
+`LaurentForm L` is `T`'s finite principal parts; the genus-`0` Liouville agreement `T = L.R` is proven
+from the *internally-discharged* `hentire` (`analyticOnNhd_remainder_of_junkFree'` from `hT_off_patched`
++ the junk-freeness `hcont_int`) and `hrecip_cont` (`continuousAt_recipCoeff_of_vanishing` from the
+genus-`0` `∞`-vanishing `R₀`).  Then `agree`/`agree_infty` follow from `T = L.R` + the per-pole moving
+coherence / the sound `∞`-coherence. -/
+
+/-- **A sound `TraceRationalityDataNF` from the branch-patched geometric trace.**  With
+`T := valueChartTracePatched ω₀ f Φ br`:
+
+* `hreg` / `hbnd` — the off-centre analyticity inputs (regular-value analyticity of the *raw* trace off
+  `centres ∪ br`; the branch-value boundedness crux off `centres`).  These give the value-correct
+  `hT_off` (`hT_off_patched`) — the genuinely-satisfiable replacement of the false raw-trace continuity;
+* `Cfin` / `hCfin_D` — the per-pole-value moving coherence data (fixed fibre `D (cs i)`), giving both
+  the meromorphy at the centres and the finite coherence;
+* `hcont_int` — junk-freeness (`T − L.R` continuous at each centre), giving `hentire` via
+  `analyticOnNhd_remainder_of_junkFree'`;
+* `R₀` (`hR₀_an`/`hR₀0`/`hR₀_eq`) — the genus-`0` `∞`-vanishing, giving `hrecip_cont` via
+  `continuousAt_recipCoeff_of_vanishing`;
+* `Dinf` (sound `InftyFibreDataNF`) + `hcoh_inf` — the sound `∞`-fibre data and coherence against
+  `inftyFibreTraceNF`.
+
+Producing one ⇒ Gate A `∑Res = 0` (sound `∞`-fibre, value-correct trace). -/
+noncomputable def traceRationalityDataNF_ofPatched
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (D : (p : ℂ) → FibreRegularData g f p)
+    (Cfin : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
+    (hCfin_D : ∀ i, (Cfin i).D = D (cs i))
+    (hxs_inj : ∀ p, Function.Injective (D p).xs)
+    (hxs_mem : ∀ p, ∀ i,
+      (D p).xs i ∈ poles ∧ f.toRiemannSphere ((D p).xs i) = ((p : ℂ) : RiemannSphere))
+    (hxs_surj : ∀ p, ∀ a ∈ poles, f.toRiemannSphere a = ((p : ℂ) : RiemannSphere) →
+      ∃ i, (D p).xs i = a)
+    (Dinf : InftyFibreDataNF g f) (hxsInf_inj : Function.Injective Dinf.xs)
+    (hxsInf_mem : ∀ i, Dinf.xs i ∈ poles ∧ f.toRiemannSphere (Dinf.xs i) = OnePoint.infty)
+    (hxsInf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, Dinf.xs i = a)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hcoh_inf : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf).traceCoeff)
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (valueChartTracePatched ω₀ f Φ br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] 0] R₀) :
+    TraceRationalityDataNF ω₀ g f poles := by
+  classical
+  -- The branch-patched geometric trace and its meromorphy at the centres.
+  set T := valueChartTracePatched ω₀ f Φ br with hT
+  have hT_mero : ∀ i, MeromorphicAt T (cs i) := fun i =>
+    meromorphicAt_valueChartTracePatched_of_movingDatum br (Cfin i) (hCfin_D i)
+  -- Finite principal-part `LaurentForm`.
+  set hPP := exists_laurentForm_principalPart cs ρ hcs_ball hcs_inj hT_mero with hPP_def
+  set L := hPP.choose with hL_def
+  have hLcenters : Finset.univ.image L.a = Finset.univ.image cs := hPP.choose_spec.1
+  have hLrem : ∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧ (T - L.R) =ᶠ[𝓝[≠] (cs j)] R :=
+    hPP.choose_spec.2
+  -- `hentire`: the off-centre analyticity (value-correct `hT_off`) + junk-freeness, packaged by
+  -- `analyticOnNhd_remainder_of_junkFree'`.
+  have hT_off : ∀ z ∉ Finset.univ.image L.a, AnalyticAt ℂ T z := by
+    intro z hz
+    rw [hLcenters] at hz
+    exact hT_off_patched hreg hbnd hz
+  have hrem : ∀ p ∈ Finset.univ.image L.a, ∃ R : ℂ → ℂ, AnalyticAt ℂ R p ∧ (T - L.R) =ᶠ[𝓝[≠] p] R := by
+    intro p hp
+    rw [hLcenters] at hp
+    simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
+    obtain ⟨i, rfl⟩ := hp
+    exact hLrem i
+  have hcont : ∀ p ∈ Finset.univ.image L.a, ContinuousAt (T - L.R) p :=
+    hcont_int L hLcenters hLrem
+  have hentire : AnalyticOnNhd ℂ (T - L.R) Set.univ :=
+    analyticOnNhd_remainder_of_junkFree' hT_off hrem hcont
+  -- `hrecip_cont`: the genus-`0` `∞`-vanishing.
+  have hrecip : ContinuousAt (recipCoeff (T - L.R)) 0 :=
+    continuousAt_recipCoeff_of_vanishing hR₀_an hR₀0 (hR₀_eq L hLcenters)
+  -- The Liouville agreement `T = L.R`.
+  have hTL : T = L.R :=
+    coeff_eq_of_entire_diff_of_recipCoeff_continuousAt hentire hrecip
+  refine
+    { L := L
+      D := D
+      hxs_inj := hxs_inj
+      hxs_mem := hxs_mem
+      hxs_surj := hxs_surj
+      Dinf := Dinf
+      hxsInf_inj := hxsInf_inj
+      hxsInf_mem := hxsInf_mem
+      hxsInf_surj := hxsInf_surj
+      hcenters := by rw [hLcenters]; exact hcenters_cs
+      agree := ?_
+      agree_infty := ?_ }
+  · -- finite agreement: `L.R = T`, and `T =ᶠ[𝓝[≠] cs i] (fibreTrace …).traceCoeff` (patched germ-equals
+    -- raw off branches, then moving coherence).
+    intro p hp
+    rw [hLcenters] at hp
+    simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
+    obtain ⟨i, rfl⟩ := hp
+    rw [← hTL]
+    -- `T =ᶠ[𝓝[≠] cs i] valueChartTrace =ᶠ[𝓝[≠] cs i] (fibreTrace …).traceCoeff`.
+    refine (valueChartTracePatched_eventuallyEq ω₀ f Φ br (cs i)).trans ?_
+    exact (hcoh_fin_of_movingDatum (Cfin i) (hCfin_D i)).filter_mono nhdsWithin_le_nhds
+  · -- `∞` agreement: `recipCoeff L.R = recipCoeff T`, and the sound `∞`-coherence.
+    rw [← hTL]
+    exact hcoh_inf
+
+/-- **Gate A `∑Res = 0` from the branch-patched geometric trace (sound `∞`).**  The sound
+`TraceRationalityDataNF` route closed via `residueSum_eq_zero_of_traceRationalityDataNF`. -/
+theorem residueSum_eq_zero_of_patchedTraceRationalityNF
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (D : (p : ℂ) → FibreRegularData g f p)
+    (Cfin : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
+    (hCfin_D : ∀ i, (Cfin i).D = D (cs i))
+    (hxs_inj : ∀ p, Function.Injective (D p).xs)
+    (hxs_mem : ∀ p, ∀ i,
+      (D p).xs i ∈ poles ∧ f.toRiemannSphere ((D p).xs i) = ((p : ℂ) : RiemannSphere))
+    (hxs_surj : ∀ p, ∀ a ∈ poles, f.toRiemannSphere a = ((p : ℂ) : RiemannSphere) →
+      ∃ i, (D p).xs i = a)
+    (Dinf : InftyFibreDataNF g f) (hxsInf_inj : Function.Injective Dinf.xs)
+    (hxsInf_mem : ∀ i, Dinf.xs i ∈ poles ∧ f.toRiemannSphere (Dinf.xs i) = OnePoint.infty)
+    (hxsInf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, Dinf.xs i = a)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hcoh_inf : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf).traceCoeff)
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (valueChartTracePatched ω₀ f Φ br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] 0] R₀) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueSum_eq_zero_of_traceRationalityDataNF ω₀ g f poles
+    (traceRationalityDataNF_ofPatched Φ m cs ρ hcs_ball hcs_inj br hreg hbnd D Cfin hCfin_D
+      hxs_inj hxs_mem hxs_surj Dinf hxsInf_inj hxsInf_mem hxsInf_surj hcenters_cs hcoh_inf
+      hcont_int R₀ hR₀_an hR₀0 hR₀_eq)
+
+/-! ### Non-vacuity (end-to-end soundness)
+
+For the empty pole set the empty fibre selection assembles into a `TraceRationalityDataNF` through the
+patched constructor: no finite pole-values (the per-pole moving data vacuous), no branch values (`br = ∅`,
+so the patch is inert and the raw/patched traces coincide and are the zero function), the empty sound
+`∞`-fibre, the zero trace, and the trivially-true genus-`0`/`∞` fields.  Confirms the sound *value-correct*
+reduction is honest (not a disguised `False`). -/
+
+/-- **Non-vacuity of the patched sound `TraceRationalityDataNF` reduction.**  For the empty pole set the
+reduction is satisfiable via the empty selection and `br = ∅`, yielding `∑Res = 0`. -/
+theorem residueSum_eq_zero_of_patchedTraceRationalityNF_holomorphic (ω₀ : HolomorphicOneForms X)
+    (g : X → ℂ) (f : MeromorphicFunction X) :
+    ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 := by
+  -- `valueChartTracePatched … ∅ = valueChartTrace … = 0` for the empty selection.
+  have hpatch0 : valueChartTracePatched ω₀ f (fun p => emptyFibreRegularData g f p) ∅
+      = fun _ => (0 : ℂ) := by
+    funext z
+    rw [valueChartTracePatched_of_not_mem ω₀ f _ _ (Finset.notMem_empty z),
+      valueChartTrace_emptySelection ω₀ f]
+  refine residueSum_eq_zero_of_patchedTraceRationalityNF (g := g) (poles := (∅ : Finset X))
+    (fun p => emptyFibreRegularData g f p)
+    0 Fin.elim0 0 (fun i => i.elim0) (fun i => i.elim0) (∅ : Finset ℂ)
+    (fun w _ => by rw [valueChartTrace_emptySelection ω₀ f]; exact analyticAt_const)
+    (fun b₀ hb₀ _ => absurd hb₀ (Finset.notMem_empty b₀))
+    (fun p => emptyFibreRegularData g f p)
+    (fun i => i.elim0) (fun i => i.elim0)
+    (fun _ i => i.elim) (fun _ i => i.elim)
+    (fun _ a ha => absurd ha (Finset.notMem_empty a))
+    (emptyInftyFibreDataNF g f) (fun i => i.elim) (fun i => i.elim)
+    (fun a ha => absurd ha (Finset.notMem_empty a))
+    (by simp)
+    (by rw [hpatch0, recipCoeff_zero, traceCoeff_inftyFibreTraceNF_empty ω₀ f])
+    ?_ (fun _ => (0 : ℂ)) analyticAt_const rfl ?_
+  · -- junk-freeness: `T − L.R = 0 − 0 = 0` is continuous (empty centres ⟹ `L.R = 0`).
+    intro L hLa _ p hp
+    have hLR0 : L.R = fun _ => (0 : ℂ) :=
+      laurentForm_R_eq_zero_of_emptyImage
+        (by rw [hLa]; exact Finset.image_eq_empty.mpr (Finset.univ_eq_empty (α := Fin 0)))
+    rw [hpatch0, hLR0]
+    have h0 : ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) = fun _ : ℂ => (0 : ℂ) := by funext z; simp
+    rw [h0]; exact continuousAt_const
+  · -- genus-`0` `∞`-vanishing: `recipCoeff (0 − 0) =ᶠ 0`.
+    intro L hLa
+    have hLR0 : L.R = fun _ => (0 : ℂ) :=
+      laurentForm_R_eq_zero_of_emptyImage
+        (by rw [hLa]; exact Finset.image_eq_empty.mpr (Finset.univ_eq_empty (α := Fin 0)))
+    rw [hpatch0, hLR0]
+    have h0 : ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) = fun _ : ℂ => (0 : ℂ) := by funext z; simp
+    rw [h0, recipCoeff_zero]
+
+end Jacobians.Dolbeault.FormTraceFullFibre
