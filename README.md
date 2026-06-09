@@ -21,7 +21,7 @@ Mathlib lacks).
 The human author ([rkirov](https://github.com/rkirov)) does not know the mathematics involved
 (algebraic geometry, Riemann surfaces, Serre duality, Abel's theorem) and has **not** reviewed the
 content. The code, proofs, and documentation were produced by **Claude** (Anthropic's LLM) across many
-sessions with light human scoping/steering (see [`human_input.md`](human_input.md)). The one hard
+sessions with light human scoping/steering. The one hard
 guarantee is **Lean's kernel**: anything reported as *proven* here is `#print axioms`-clean (no
 `sorryAx`). Everything else — proof strategy, prose, mathematical judgment — may be wrong. Have a subject
 expert check before relying on anything.
@@ -39,11 +39,11 @@ expert check before relying on anything.
 - **Honest scope:** the remaining ~40% is genuinely-hard greenfield analysis (Riemann–Roch / Serre
   duality, the finiteness theorem, Abel, surface topology, manifold de Rham) — a multi-session effort.
 
-📊 **See [`docs/architecture_map.html`](docs/architecture_map.html)** for the visual dependency map +
-progress, **[`formalization.yaml`](formalization.yaml)** for the
-[mathlib-initiative](https://github.com/mathlib-initiative/formalization.yaml) self-reporting metadata,
-and **[`docs/STATUS.md`](docs/STATUS.md)** / **[`docs/rethink_2026-06-05.md`](docs/rethink_2026-06-05.md)**
-for per-theorem status and the plan.
+📊 See **[`docs/DESIGN.md`](docs/DESIGN.md)** for the long-term design choices,
+**[`docs/REFERENCES.md`](docs/REFERENCES.md)** for the canonical textbook sources, and
+**[`formalization.yaml`](formalization.yaml)** for the
+[mathlib-initiative](https://github.com/mathlib-initiative/formalization.yaml) self-reporting metadata.
+For authoritative per-theorem status, prefer the tree itself (`lake build` + `#print axioms`).
 
 ### The remaining walls — the keystone first
 
@@ -85,9 +85,8 @@ pointer, isolated so the unproved surface stays visible and `#print axioms`-audi
   `Abel.lean` (divisors, Abel–Jacobi, meromorphic functions), `PeriodLattice.lean`, `RiemannRoch.lean`,
   `Dolbeault/` (Čech/Serre/finiteness), `Discharge/Manifold/` (degree/fibre machinery), `Montel/`,
   `ZLatticeQuotient.lean`, …
-- `docs/` — [`architecture_map.html`](docs/architecture_map.html) (visual map), `STATUS.md`,
-  `rethink_2026-06-05.md` (the plan), `serre_17_build_plan.md`, `REFERENCES.md`, `DESIGN.md`, the
-  research notes, and `archive/` (older designs + the external-port audit).
+- `docs/` — [`DESIGN.md`](docs/DESIGN.md) (long-term design choices) and
+  [`REFERENCES.md`](docs/REFERENCES.md) (canonical textbook sources).
 - [`formalization.yaml`](formalization.yaml) — repo-root self-reporting metadata.
 
 ## References
@@ -96,4 +95,4 @@ pointer, isolated so the unproved surface stays visible and `#print axioms`-audi
 - Miranda, *Algebraic Curves and Riemann Surfaces*; Griffiths–Harris, *Principles of Algebraic Geometry*.
 - Degree/fibre well-definedness infrastructure ported (MIT) from
   [Brsanch/jacobian-lean-challenge](https://github.com/Brsanch/jacobian-lean-challenge); audited
-  axiom-clean (`docs/archive/EXTERNAL_AUDIT.md`).
+  axiom-clean.

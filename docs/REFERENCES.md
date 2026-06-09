@@ -24,7 +24,8 @@ and in comments above difficult proofs.
 > defines `Res` via `(2πi)⁻¹∬_X` (manifold Stokes) — which this repo **avoids**. The repo's PDE-free route
 > is **Miranda §VIII.3's algebraic residue theorem via the trace to ℙ¹** (`∑Res_X(ω)=∑Res_{ℙ¹}(Tr ω)=0`,
 > reusing `TraceForm`/`pushforwardForm`). This is the **general 1-form residue theorem and is distinct from
-> `deg_div`** (which is only the `df/f` special case). See `docs/path_to_completion_reuse.md` §3.
+> `deg_div`** (which is only the `df/f` special case), and is now proven sorry-free and axiom-clean as
+> `residueTheorem_unconditional` (`Jacobians/Dolbeault/SerreResidueRamifiedRealSlitGeometry.lean`).
 
 ## Per-sorry canonical references
 
