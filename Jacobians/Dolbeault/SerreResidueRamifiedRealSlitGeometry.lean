@@ -150,4 +150,63 @@ theorem exists_open_of_eventually_nhds (c : ℂ) {P : ℂ → Prop} (hP : ∀ᶠ
   obtain ⟨V, hVsub, hVopen, hcV⟩ := hP
   exact ⟨V, hVopen, hcV, fun z hz => hVsub hz⟩
 
+/-! ## Transporting a punctured `𝓝[≠] 0` property along the cpow branch (the `hpp_split_sheet` device)
+
+The principal-part split holds on a *punctured* neighbourhood `𝓝[≠] 0` of the straightening coordinate.
+Pulled back along the cpow branch `z ↦ ζʲ · (z − c)^{1/m}` restricted to the slit `{z | z − c ∈ slitPlane}`
+(where the branch is nonzero, `ζʲ ≠ 0`, and `→ 0`), the split holds at the sheet argument for every slit
+value near `c`. -/
+
+/-- **The cpow sheet argument maps the slit-at-`c` filter into `𝓝[≠] 0`.**  For `m ≥ 1`, `ζ` a primitive
+`m`-th root, and the slit `slit := {z | z − c ∈ slitPlane}`, the map `z ↦ ζʲ · (z − c)^{1/m}` carries
+`𝓝[slit] c` into `𝓝[≠] 0`: it tends to `0` (cpow branch), and on the slit the value is nonzero
+(`slitPlane_ne_zero` + `ζʲ ≠ 0`). -/
+theorem cpowSheetArg_tendsto_punctured (c : ℂ) {m : ℕ} (hm : 0 < m) {ζ : ℂ} (hζ : IsPrimitiveRoot ζ m)
+    (j : ℕ) :
+    Tendsto (fun z => ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) (𝓝[{z : ℂ | z - c ∈ slitPlane}] c) (𝓝[≠] 0) := by
+  rw [tendsto_nhdsWithin_iff]
+  refine ⟨?_, ?_⟩
+  · -- tends to 0
+    have h0 : Tendsto (fun z => (z - c) ^ ((m : ℂ)⁻¹))
+        (𝓝[{z : ℂ | z - c ∈ slitPlane}] c) (𝓝 0) :=
+      (cpow_slitBranch_tendsto_zero c hm).mono_left nhdsWithin_le_nhds
+    simpa using (tendsto_const_nhds (x := ζ ^ j)).mul h0
+  · -- eventually nonzero on the slit
+    filter_upwards [self_mem_nhdsWithin] with z hz
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+    have hζne : ζ ^ j ≠ 0 := pow_ne_zero _ (hζ.ne_zero hm.ne')
+    have hw₀ne : (z - c) ^ ((m : ℂ)⁻¹) ≠ 0 :=
+      Complex.cpow_ne_zero_iff.mpr (Or.inl (Complex.slitPlane_ne_zero hz))
+    exact mul_ne_zero hζne hw₀ne
+
+/-- **Transport of a `𝓝[≠] 0` property to an open `𝓝 c` set along the cpow sheet argument.**  For `P`
+holding eventually in `𝓝[≠] 0`, there is an open `V ∋ c` such that, for every slit value `z ∈ V`
+(`z − c ∈ slitPlane`), `P (ζʲ · (z − c)^{1/m})` holds.  This supplies the `hpp_split_sheet` punctured-
+split hypothesis on the shrunk slit `V ∩ slit`. -/
+theorem exists_open_cpowSheetArg_punctured (c : ℂ) {m : ℕ} (hm : 0 < m) {ζ : ℂ}
+    (hζ : IsPrimitiveRoot ζ m) (j : ℕ) {P : ℂ → Prop} (hP : ∀ᶠ u in 𝓝[≠] (0 : ℂ), P u) :
+    ∃ V : Set ℂ, IsOpen V ∧ c ∈ V ∧
+      ∀ z ∈ V, z - c ∈ slitPlane → P (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) := by
+  have hev : ∀ᶠ z in 𝓝[{z : ℂ | z - c ∈ slitPlane}] c, P (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) :=
+    (cpowSheetArg_tendsto_punctured c hm hζ j).eventually hP
+  rw [eventually_nhdsWithin_iff, Filter.eventually_iff, _root_.mem_nhds_iff] at hev
+  obtain ⟨V, hVsub, hVopen, hcV⟩ := hev
+  exact ⟨V, hVopen, hcV, fun z hz hslit => hVsub hz hslit⟩
+
+/-! ## The `s`-composed cpow branch lands near `chart p` (the `hnf`/`htgt` device)
+
+For the §5 local inverse `s` (continuous at `0`, `s 0 = chart_p p`), the composed map
+`z ↦ s (ζʲ · (z − c)^{1/m})` tends to `chart_p p` as `z → c`.  So `s (sheet arg)` lands in any given open
+neighbourhood of `chart_p p` for `z` near `c` — supplying the normal-form domain (`hnf`) and the chart-
+target membership (`htgt`) on the shrunk slit. -/
+
+/-- **The `s`-composed cpow sheet argument tends to `chart_p p`.**  For `m ≥ 1`, `s` continuous at `0`
+with `s 0 = chart_p p`, the map `z ↦ s (ζʲ · (z − c)^{1/m})` tends to `chart_p p` as `z → c`. -/
+theorem sComp_cpowSheetArg_tendsto (p : X) {s : ℂ → ℂ} {ζ : ℂ} {j : ℕ} (c : ℂ) {m : ℕ}
+    (hm : 0 < m) (hs_cont : ContinuousAt s 0) (hs0 : s 0 = (chartAt ℂ p) p) :
+    Tendsto (fun z => s (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹))) (𝓝 c) (𝓝 ((chartAt ℂ p) p)) := by
+  have harg : Tendsto (fun z => ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) (𝓝 c) (𝓝 0) := by
+    simpa using (tendsto_const_nhds (x := ζ ^ j)).mul (cpow_slitBranch_tendsto_zero c hm)
+  rw [← hs0]; exact hs_cont.tendsto.comp harg
+
 end Jacobians.Dolbeault.SerreResidueTheorem
