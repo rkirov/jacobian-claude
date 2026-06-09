@@ -59,7 +59,8 @@ namespace Jacobians.Dolbeault.FormTraceGlobal
 
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
   Jacobians.Dolbeault.FormTraceFibre Jacobians.RiemannSphere Jacobians.ProperMapDegreeSheets
-  Jacobians.Dolbeault.FormTraceMovingFibre
+  Jacobians.Dolbeault.FormTraceMovingFibre Jacobians.Dolbeault.FormTraceInftyFibre
+  Jacobians.Dolbeault.FormTraceInftyRecip
 
 set_option linter.unusedSectionVars false
 set_option linter.unusedTactic false
@@ -585,5 +586,111 @@ theorem canonicalFibreSelection_hselFin (hac : AdaptedCover ω₀ g f poles)
   -- The symmetric lever: a value-matching bijection from equal ranges.
   obtain ⟨e, he⟩ := equivOfInjective_image_eq hΦinj hsecinj (by rw [hΦrange, hsecrange])
   exact ⟨e, fun i' => he i', hb'mem⟩
+
+/-! ### Wall 2 eliminated: Gate A `∑Res = 0` with the canonical full-fibre selection
+
+The capstone.  Wiring the canonical full-fibre selection `Φ := canonicalFibreSelection` and its
+discharged fields (`hΦrangeReg`/`hΦinjReg` from `canonicalFibreSelection_hΦrangeReg`/`_hΦinjReg`; the
+per-pole `secFin := poleSecFin hac (S i)` with `hselFin` from `canonicalFibreSelection_hselFin`) into
+`residueSum_eq_zero_of_globalCoverData`, **wall 2 is eliminated**: the global coherent selection and its
+moving coherence are *constructed*, monodromy-free (the symmetric lever).
+
+What remains are exactly:
+
+* **Wall 1** — the adapted-cover genericity packaged here as: the finite pole-value data, each
+  pole-value off the branch locus (`hcsoff`) and **separated** (`hsep`: its whole fibre is poles), plus
+  the regular-value `g`-data (`hgmero` at the full-fibre points, `hmeroReg`/`hCreg_g` at the sphere
+  sheets);
+* **Wall 3** — the `∞`-rationality bookkeeping (`Dinf`/`hxs_*`/`αBr`/`hαBrAgreeBr`/`hglue_inf`/
+  `hcont_int`/`R₀`/`hR₀_*`), handled separately.
+
+The separation `hsep` is the Gate-D pole/regular separation the repo's own soundness note isolates: a
+full-fibre selection germ-coheres to the pole sub-fibre trace at a pole-value iff that value's fibre is
+entirely poles. -/
+
+/-- **Gate A `∑Res = 0`, wall 2 eliminated by the canonical full-fibre selection.**  With `Φ` the
+canonical full-fibre selection, all of `residueSum_eq_zero_of_globalCoverData`'s Φ-fields — the
+selection, the regular-value canonical-fibre conditions `hΦrangeReg`/`hΦinjReg`, and the per-pole
+moving sections `secFin`/`hselFin` — are discharged from the construction (the symmetric lever, no
+labeling).  The hypotheses are the wall-1 genericity (finite pole-value data, off-branch + separated
+pole-values, regular-value `g`-data) and the wall-3 `∞`-bookkeeping. -/
+theorem residueSum_eq_zero_of_canonicalSelection (hdiv : (f.div : Divisor X) ≠ 0)
+    (hac : AdaptedCover ω₀ g f poles)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    -- Wall-1 genericity for the canonical selection: pole-values off-branch + separated.
+    (hcsoff : ∀ i, (((cs i : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
+    (hsep : ∀ i, PoleValueSeparated f poles (cs i))
+    -- The regular-value `g`-meromorphy at the full-fibre points (the only datum-dependent Φ-input).
+    (hgmero : ∀ z, (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere →
+      ∀ᶠ b' in 𝓝 z, ∀ i, MeromorphicAt
+        (fun w => g ((chartAt ℂ (fullFibreEnum f hdiv b' i)).symm w))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' i)) (fullFibreEnum f hdiv b' i)))
+    (Dinf : InftyFibreData g f) (hxs_inj : Function.Injective Dinf.xs)
+    (hxs_mem : ∀ i, Dinf.xs i ∈ poles ∧ f.toRiemannSphere (Dinf.xs i) = OnePoint.infty)
+    (hxs_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, Dinf.xs i = a)
+    (hmeroReg : ∀ z (hz : z ∉ Finset.univ.image cs ∪ branchValues f hdiv), ∀ i,
+      MeromorphicAt (fun w => g
+          ((chartAt ℂ ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+        ((chartAt ℂ ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere))))
+          ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere)))))
+    (hCreg_g : ∀ z (hz : z ∉ Finset.univ.image cs ∪ branchValues f hdiv), ∀ i,
+      AnalyticAt ℂ
+        (fun w => g ((chartAt ℂ ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+        ((chartAt ℂ ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere))))
+          ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere)))))
+    (αBr : ℂ → HolomorphicOneForms X)
+    (hαBrAgreeBr : ∀ b₀ ∈ branchValues f hdiv, b₀ ∉ Finset.univ.image cs →
+      ∀ᶠ z in 𝓝[≠] b₀, ∀ (hz : z ∉ Finset.univ.image cs ∪ branchValues f hdiv), ∀ i,
+        (αBr b₀).toFun ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere)))
+          = g ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere)))
+            • ω₀.toFun ((sregFamily f hdiv cs z hz).sheet i (((z : ℂ) : RiemannSphere))))
+    (hglue_inf : recipCoeff (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv)
+        (branchValues f hdiv))
+      =ᶠ[𝓝[≠] 0] (inftyFibreTrace ω₀ f Dinf).traceCoeff)
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv) (branchValues f hdiv) - L.R)
+          =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a,
+        ContinuousAt (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv)
+          (branchValues f hdiv) - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv)
+        (branchValues f hdiv) - L.R) =ᶠ[𝓝[≠] 0] R₀) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 := by
+  classical
+  -- A sphere sheet system at each (off-branch) pole-value `cs i` (`exists_sphereSheetSystem` gives
+  -- `Nonempty`; pick one with `.some`).
+  have hnc : ∃ x, f.orderAtPoint x ≠ 0 := exists_orderAtPoint_ne_zero f hdiv
+  set S : ∀ i, Jacobians.LocalSheetSystem f.toRiemannSphere (((cs i : ℂ) : RiemannSphere)) :=
+    fun i => (exists_sphereSheetSystem f hnc (hcsoff i)).some with hS
+  refine residueSum_eq_zero_of_globalCoverData hdiv hac (canonicalFibreSelection g f hdiv)
+    m cs ρ hcs_ball hcs_inj hcenters_cs Dinf hxs_inj hxs_mem hxs_surj
+    (fun i => poleSecFin hac (S i)) (fun i j => poleSecFin_base hac (S i) j)
+    (fun i j => poleSecFin_contMDiffAt hac (S i) j)
+    (fun i j => poleSecFin_section hac (S i) j) ?_ hmeroReg ?_ ?_ hCreg_g αBr hαBrAgreeBr
+    hglue_inf hcont_int R₀ hR₀_an hR₀0 hR₀_eq
+  · -- `hselFin`: the per-pole re-selection, from `canonicalFibreSelection_hselFin`.
+    intro i
+    exact canonicalFibreSelection_hselFin hac hdiv (hcsoff i) (hsep i) (S i)
+      (hgmero (cs i) (hcsoff i))
+  · -- `hΦinjReg`: at a regular value `z` off `cs ∪ branchValues`, `coe z ∉ branchLocus`.
+    intro z hz
+    exact canonicalFibreSelection_hΦinjReg g f hdiv
+      (coe_notMem_branchLocus_of_notMem_branchValues f hdiv
+        (fun h => hz (Finset.mem_union_right _ h)))
+      (hgmero z (coe_notMem_branchLocus_of_notMem_branchValues f hdiv
+        (fun h => hz (Finset.mem_union_right _ h))))
+  · -- `hΦrangeReg`: same off-branch witness.
+    intro z hz
+    exact canonicalFibreSelection_hΦrangeReg g f hdiv
+      (coe_notMem_branchLocus_of_notMem_branchValues f hdiv
+        (fun h => hz (Finset.mem_union_right _ h)))
+      (hgmero z (coe_notMem_branchLocus_of_notMem_branchValues f hdiv
+        (fun h => hz (Finset.mem_union_right _ h))))
 
 end Jacobians.Dolbeault.FormTraceGlobal
