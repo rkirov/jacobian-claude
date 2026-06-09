@@ -298,6 +298,82 @@ noncomputable def canonicalForm17DataOfDivisor (f : MeromorphicFunction X)
   K := K
   order_eq := hK
 
+/-- **Frame-change law for the canonical trivialization.**  The spanning tangent vector `symmL_x q 1`
+(of the canonical trivialization at `x`, read at `q`) and `symmL_y q 1` (at `y`) are related by the
+holomorphic chart-transition derivative: `symmL_x q 1 = (chart_y ∘ chart_x⁻¹)' (chart_x q) • symmL_y q 1`.
+This is the chain rule `mfderiv (chart_x⁻¹) = mfderiv (chart_y⁻¹) ∘ mfderiv (chart_y ∘ chart_x⁻¹)`
+(`symmL_· = mfderiv (chart_·⁻¹)`). -/
+theorem symmL_frame_change {x y q : X} (hqx : q ∈ (chartAt ℂ x).source)
+    (hqy : q ∈ (chartAt ℂ y).source) :
+    (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ q (1 : ℂ)
+      = deriv (chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q)
+          • (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ q (1 : ℂ) := by
+  have hqx_target : (extChartAt 𝓘(ℂ) x) q ∈ (extChartAt 𝓘(ℂ) x).target :=
+    (extChartAt 𝓘(ℂ) x).map_source (by rwa [extChartAt_source])
+  have hqx_back : (extChartAt 𝓘(ℂ) x).symm ((extChartAt 𝓘(ℂ) x) q) = q :=
+    (extChartAt 𝓘(ℂ) x).left_inv (by rwa [extChartAt_source])
+  have hchartx_symm_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ x).symm ((chartAt ℂ x) q) := by
+    have := mdifferentiableWithinAt_extChartAt_symm (I := 𝓘(ℂ)) (x := x) hqx_target
+    rwa [ModelWithCorners.range_eq_univ, mdifferentiableWithinAt_univ] at this
+  have hchartY_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y) q := by
+    have h := mdifferentiableAt_extChartAt (I := 𝓘(ℂ)) (x := y) hqy
+    have heq : (extChartAt 𝓘(ℂ) y : X → ℂ) = (chartAt ℂ y : X → ℂ) := rfl
+    rwa [heq] at h
+  have hψ_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q) := by
+    have h2 : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y) ((chartAt ℂ x).symm ((chartAt ℂ x) q)) := by
+      rw [(chartAt ℂ x).left_inv hqx]; exact hchartY_diff
+    exact h2.comp _ hchartx_symm_diff
+  have hcomp_eq : (chartAt ℂ x).symm =ᶠ[𝓝 ((chartAt ℂ x) q)]
+      (chartAt ℂ y).symm ∘ (chartAt ℂ y ∘ (chartAt ℂ x).symm) := by
+    have htarget : (chartAt ℂ x).target ∈ 𝓝 ((chartAt ℂ x) q) :=
+      (chartAt ℂ x).open_target.mem_nhds ((chartAt ℂ x).map_source hqx)
+    have hpre : (chartAt ℂ x).symm ⁻¹' (chartAt ℂ y).source ∈ 𝓝 ((chartAt ℂ x) q) := by
+      apply (continuousAt_extChartAt_symm'' (I := 𝓘(ℂ)) hqx_target).preimage_mem_nhds
+      rw [hqx_back]; exact (chartAt ℂ y).open_source.mem_nhds hqy
+    filter_upwards [htarget, hpre] with w _ hw_pre
+    show (chartAt ℂ x).symm w = (chartAt ℂ y).symm (chartAt ℂ y ((chartAt ℂ x).symm w))
+    rw [(chartAt ℂ y).left_inv hw_pre]
+  have hψ_val : (chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q) = (chartAt ℂ y) q := by
+    show (chartAt ℂ y) ((chartAt ℂ x).symm ((chartAt ℂ x) q)) = _
+    rw [(chartAt ℂ x).left_inv hqx]
+  have hchartY_symm_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y).symm
+      ((chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q)) := by
+    rw [hψ_val]
+    have hqy_target : (extChartAt 𝓘(ℂ) y) q ∈ (extChartAt 𝓘(ℂ) y).target :=
+      (extChartAt 𝓘(ℂ) y).map_source (by rwa [extChartAt_source])
+    have := mdifferentiableWithinAt_extChartAt_symm (I := 𝓘(ℂ)) (x := y) hqy_target
+    rwa [ModelWithCorners.range_eq_univ, mdifferentiableWithinAt_univ] at this
+  have hsymmL_x : (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ q =
+      mfderiv 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ x).symm ((chartAt ℂ x) q) := by
+    rw [TangentBundle.symmL_trivializationAt hqx, ModelWithCorners.range_eq_univ,
+      mfderivWithin_univ]; rfl
+  have hsymmL_y : (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ q =
+      mfderiv 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y).symm ((chartAt ℂ y) q) := by
+    rw [TangentBundle.symmL_trivializationAt hqy, ModelWithCorners.range_eq_univ,
+      mfderivWithin_univ]; rfl
+  have hchain : mfderiv 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ x).symm ((chartAt ℂ x) q)
+      = (mfderiv 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y).symm
+            ((chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q))).comp
+          (mfderiv 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q)) := by
+    rw [hcomp_eq.mfderiv_eq]
+    exact mfderiv_comp ((chartAt ℂ x) q) hchartY_symm_diff hψ_diff
+  -- the inner factor applied to `1` is the chart-transition derivative
+  have hf1 : mfderiv 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q) (1 : ℂ)
+      = deriv (chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q) := by
+    rw [mfderiv_eq_fderiv]; rfl
+  have happ := DFunLike.congr_fun hchain (1 : ℂ)
+  rw [hsymmL_x, hsymmL_y]
+  refine happ.trans ?_
+  show mfderiv 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y).symm ((chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q))
+      (mfderiv 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q) (1 : ℂ)) = _
+  rw [hf1, hψ_val]
+  -- `g (c) = c • g 1`  via linearity (`c • 1 = c`, the tangent-fibre smul being `ℂ`-mul)
+  have hsmul := (mfderiv 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y).symm ((chartAt ℂ y) q)).map_smul
+    (deriv (chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q)) (1 : ℂ)
+  convert hsmul using 2
+  change _ = _ * (1 : ℂ)
+  ring
+
 /-- **[ISOLATED ANALYTIC INPUT — finite support of the form divisor].**  A nonzero meromorphic
 1-form of the shape `df` (so `formOrderW (df) ≠ ⊤` everywhere, by `differentialForm_ne_zero` +
 the form identity theorem) has a genuine *canonical divisor*: the order function
