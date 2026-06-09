@@ -3573,3 +3573,62 @@ wall; left as the predecessor's sound reduction.
   emits no field projections (the #13/Type-valued gotcha from the predecessor's note still applies).
 - `FibreClusterReindex`/`AdaptedFRamified`/`residueSum_eq_zero_of_reindex_adaptedFRamified` need
   `import …SerreResidueGateAInftyBuilder` (not just `…FullFibreBuilder`).
+
+---
+
+## 2026-06-09 — Gate-A TARGET 1: reduce `ClusterReindexData` to the minimal conservation-of-number residual
+
+New sibling file `Jacobians/Dolbeault/SerreResidueRamifiedClusterTopology.lean` (axiom-clean
+`[propext, Classical.choice, Quot.sound]` throughout; standalone `lake build Jacobians.Dolbeault.SerreResidueRamifiedClusterTopology` green, 8527 jobs). It DRIVES the chain `FibreClusterTopology` → `ClusterReindexData` → `FibreClusterReindex` → `∑Res = 0`, reducing TARGET 1 to **three minimal clustering facts**.
+
+### What was built (all PROVEN)
+- **`ClusterReindexData.ofFibreClusterTopology`** — DISCHARGES every routine analytic field of
+  `ClusterReindexData` (`hcw`/`hmem_a`/`hcs_cont`/`hcsP_diff`/`htrans_diff`/`htrans_diff_inv`/`hderiv_match`)
+  from a new `FibreClusterTopology` datum. So `ClusterReindexData` reduces to: sphere sheet system +
+  bijection `e` + point coincidence `hpoint` + 2 genuine geometric residuals (`hsrc` = cluster sheet stays
+  in chart target; `hcs_sec` = cluster section is a section of `f.holoRepr`).
+  - `hderiv_match` discharged via the PROVEN `hderiv_match_of_section`: the matched sphere sheet point
+    `q := S.sheet (e⟨i,j⟩) (coe z)` is regular (`hderiv`/non-pole/`holoRepr q = z` from `nonpole_of_toRiemannSphere_eq_coe`),
+    and BOTH `clusterSection` and `holoReprSheet (e⟨i,j⟩)` are sections of `f.holoRepr` through `q`.
+  - `hcsP_diff`/`htrans_*` discharged via new `transition_analyticAt_target` (maximal-atlas coordinate
+    change at an ARBITRARY interior point, not just chart centre — via `ModelWithCorners.contDiffWithinAt_extendCoordChange'`, mirrors `ProperMapDegreeSheets.meromorphicAt_toFun_chartPullback`) + `clusterSheet_differentiableAt`.
+- **`FibreClusterTopology.ofClusterEmbedding`** — builds the datum from a cluster→sheet assignment `cl`
+  + injectivity `hcl_inj` + count `∑ᵢ D.mult i = S.n`; `e := Equiv.ofBijective` (`Fintype.bijective_iff_injective_and_card`).
+- **`FibreClusterTopology.ofClusterFibrePoints`** — the MINIMAL residual: recovers `cl` from `S.fibre_eq`
+  (every preimage of `coe z` is a sheet point), so the irreducible input is **three facts**:
+  1. `hcl_fibre`: `f.toRiemannSphere (clusterSection D Cl i j z) = coe z` (cluster sheets are preimages —
+     sphere-level `clusterSheet_sect`; derivable from `exists_clusterSplit_at_fibrePoint`'s `holoRepr = z` + non-pole).
+  2. `hcl_distinct`: `Function.Injective (fun p => clusterSection D Cl p.1 p.2 z)` (clusters disjoint).
+  3. `hcard`: `∑ᵢ D.mult i = S.n` (the §4 conservation-of-number degree count — the irreducible wall).
+- **`FibreClusterReindex.ofFibreClusterTopologyFamily`** + **`residueSum_eq_zero_of_fibreClusterTopology`**
+  — the full chain to `∑Res = 0` (composes with the PROVEN `ofClusterReindexFamily` /
+  `residueSum_eq_zero_of_clusterReindex`; consumes the concurrent genericity thread's `AdaptedFRamified`).
+- **`FibreClusterTopology.sum_mult_eq_sheetCount`** — soundness: the bijection forces `∑ mult = S.n`
+  (multi-preimage, not vacuous; #13 check).
+
+### The PRECISE remaining clustering-topology content (the genuine wall, isolated)
+`hcard` = `∑ᵢ D.mult i = S.n` is the irreducible §4 conservation-of-number count. ROUTE (documented in the
+module docstring; NOT yet built — competes for build budget + spans `ProperMapDegreeConstruct`/`MultiplicityPatchingConstruct`):
+at regular `z` every `localDeg = 1` so `S.n = fibreMult f (coe z)`; `N f` is locally constant (PROVEN
+`exists_properMapDegree` engine) so `fibreMult f (coe z) = fibreMult f (coe c) = ∑ᵢ localDeg f (coe c) (D.xs i)
+= ∑ᵢ D.mult i` (with `D.mult i = localDeg` via the PROVEN `analyticOrderAt_holoRepr_sub_eq_mult` bridge).
+`hcl_fibre`/`hcl_distinct` are derivable from the §5 normal form (`exists_clusterSplit_at_fibrePoint`); `hcard`
+is the one genuinely-§17.9 equality.
+
+### NO false/circular/junk field
+Did NOT touch the concurrent genericity thread (`SerreResidueGateAInftyBuilder`/adapted-`f`), the 2 untracked
+orphans, or any PROVEN decl. New file only; reused `ProperMapDegreeSheets`/`SerreResidueRamifiedClusterPartition`/
+`SerreResidueRamifiedMultiplicityBridge` by import. No custom axiom, no sorry, no full-RR circularity.
+
+### LEAN GOTCHAS (this session)
+- `ContMDiffAt … ω → AnalyticAt`: use `(contMDiffAt_iff_contDiffAt.1 (…)).analyticAt`, NOT `.contMDiffAt.analyticAt`
+  (no `Function.analyticAt` projection). Pattern copied from `CechH0.transition_analyticAt`.
+- `transition_analyticAt'` is at the chart CENTRE `chart_z z`; for an interior overlap point use the new
+  `transition_analyticAt_target` (`ModelWithCorners.contDiffWithinAt_extendCoordChange'` + `range_eq_univ`).
+- After `set q := clusterSection … z`, a `have hderiv : … chartAt ℂ (clusterSection … z) …` and the goal
+  `… chartAt ℂ q …` differ only by the `set`-fold → close with bare `exact hderiv` (defeq), NOT `rw [← hq]`.
+- Field-as-constructor: `ClusterReindexData.ofFibreClusterTopology` lives in namespace `ClusterReindexData`
+  with first arg `R : FibreClusterTopology …` — call `ClusterReindexData.ofFibreClusterTopology (hfam …)`,
+  dot-notation `(hfam …).ofFibreClusterTopology` does NOT resolve.
+- `hpoint := hcl_point` typechecks by defeq when `e := Equiv.ofBijective φ` and `φ ⟨i,j⟩ = cl i j` (the
+  `Equiv.ofBijective` toFun is `φ` definitionally).
