@@ -1636,3 +1636,61 @@ internally, non-circular). The `DirectTraceGeometry` *structure* still has the R
 residual-#5-free constructors return `∑Res=0` directly rather than the structure. Remaining Gate A
 residuals: 1 (hgood genericity), 2 (centre/branch enumeration wiring), 3 (Cfull full-fibre coherence),
 4 (∞ genericity), 5 (hreg/hbnd wiring), `hcont_int` (finite junk-freeness), 7 (hcoh_full ∞-coherence).
+
+---
+
+## 2026-06-09: Gate A `hcont_int` is FALSE (junk-value) — ELIMINATED via germ-Cauchy at ∞
+
+**Agent task:** discharge the genuine analytic heart of Gate A — `Cfull`/`hcont_int`/`hcoh_full` (the
+trace-coherence residuals of `residueTheorem_ofCanonicalSimpleInfty_genus0`). Prioritize `hcont_int`.
+
+**KEY SOUNDNESS FINDING (`hcont_int` is FALSE, not merely hard or circular):** `hcont_int` is
+`ContinuousAt (T − L.R) (cs j)` (T := valueChartTracePatched), equivalent to the LITERAL-value match
+`(T − L.R)(cs j) = R(cs j)` (R = removable/regular-part limit). VERIFIED by direct computation
+(lean_run_code, axiom-clean) that the literal trace value is
+`valueChartTrace ω₀ f Φ b = ∑ i, (coeffAt ω₀ (Φ b).xs i · g ((Φ b).xs i)) · deriv(sheetᵢ) b` —
+i.e. `chartIntegrand` reads `g` AT the fibre point. At a pole-VALUE `cs j` the canonical FULL-fibre
+selection enumerates the whole fibre `F⁻¹(coe cs j)`, which (since `cs j` is a pole-value, `hcenters_cs`)
+contains a genuine α-pole `a ∈ poles` ⟹ the summand carries `g a` = junk value of g at its own pole.
+Perturbing `g` only at the isolated `a` changes `T(cs j)` (coeff `coeffAt ω₀ a · deriv(sheet_a)(cs j)`,
+generically ≠0) WITHOUT changing the punctured germ of T (hence not R(cs j) nor L.R(cs j)). So
+`(T−L.R)(cs j)=R(cs j)` cannot hold for all g ⟹ **hcont_int is junk-value-dependent = NOT a theorem.**
+Same class as the raw-trace branch-value falsity the repo already fixed (FormTraceGlobalTPatched:432-433),
+but at pole-centres where the branch-patch provides NO fix (trace genuinely diverges there; limUnder of a
+divergent fn is junk too). The prior `human_input` note "hcont_int TRUE (not false) but never built" was
+WRONG. (No unsoundness committed: all capstones keep hcont_int as a HYPOTHESIS, never proved it. The #5
+Cauchy-at-∞ "fix" merely relocated the unsound dependency from circular-`R₀0` to false-`hcont_int`.)
+
+**THE NON-CIRCULAR FIX — ELIMINATE hcont_int (germ-Cauchy at ∞):** hcont_int was used ONLY to get
+`hentire : AnalyticOnNhd ℂ (T−L.R) univ` (literal-entire) for the ∞-residue `resAt(recipCoeff(T−L.R))0=0`.
+But that residue depends only on the GERM of T−L.R for large z; junk at finite pole-centres is
+irrelevant. So literal-entire is too strong — GERM-regularity suffices (T−L.R analytic off centres +
+pole-removed at centres), which is FREE from exists_laurentForm_principalPart (hT_off + hLrem). NO
+junk-freeness. Germ-Cauchy lemma: build a genuinely-entire h' agreeing with T−L.R off the finite centre
+set (patch junk values to regular-part values; analytic continuation ⟹ h' entire), then
+recipCoeff(T−L.R) =ᶠ[𝓝[≠]0] recipCoeff h' (agree for large z, centres bounded), so
+resAt(recipCoeff(T−L.R))0 = resAt(recipCoeff h')0 = 0 by the EXISTING Cauchy for entire h'. Sound +
+non-circular (analytic continuation + Cauchy for a genuinely-entire fn, never ∑Res=0).
+
+**Delivered (NEW FILE `Jacobians/Dolbeault/SerreResidueDirectGenus0Germ.lean`, all 12 decls axiom-clean
+`[propext, Classical.choice, Quot.sound]`, authoritative #print axioms; existing files + 2 orphans
+untouched; builds standalone, full glob green 8511 jobs):**
+- `exists_entire_agree_of_regular` — entire h' agreeing off finite S, from germ-regular data.
+- `recipCoeff_eventuallyEq_of_agree_off_finset` / `HoloPunctured.congr_nhdsNE` — germ transfer.
+- `resAt_recipCoeff_eq_zero_of_regular` / `holoPunctured_recipCoeff_of_regular` — GERM-CAUCHY at ∞
+  (the hcont_int-free replacement of resAt_recipCoeff_eq_zero_of_entire).
+- `infty_eq_of_remainderRegular` — ∞-residue identity from germ-regularity + hcoh_full (no hentire).
+- `globalTraceData_of_genus0_germ` / `residueTheorem_of_directGeometry_genus0_germ` — residue-level
+  close, hcont_int DROPPED.
+- `residueTheorem_ofAdapted_genus0_germ` / `…SimpleInfty_germ` / `…ofCanonicalSimpleInfty_germ` —
+  capstones, hcont_int DROPPED (reuse proven poleSubfibre/poleSubEnum/inftyFibreDataNF_full/canonical-Φ).
+- `…_holomorphic` — empty-pole non-vacuity witness.
+
+**NET:** the most-wired genus-0 capstone `residueTheorem_ofCanonicalSimpleInfty_genus0_germ` now rests on
+EXACTLY {Cfull (per-centre full-fibre coherence), hreg/hbnd (off-centre analyticity + branch
+boundedness), hcoh_full (∞-coherence), + genericity hgood/hsimpleInf/hmeroInf/centre-enum}. The FALSE
+hcont_int is GONE. `hcoh_full` and `Cfull` VERIFIED genuinely TRUE+LOCAL (germ-equalities on punctured
+nbhds, never evaluate at the singularity — no junk problem); both are the genuine §VIII.3 sheet-system
+content (DEEP, not discharged this pass). hreg/hbnd have proven cruxes (traceLocalCoeff_*,
+traceExtendsAt_branchPoint) but need substantial wiring (not quick). Did NOT discharge Cfull/hcoh_full/
+hreg/hbnd (deep, would risk unsound shortcut); the honest win is removing the false field.
