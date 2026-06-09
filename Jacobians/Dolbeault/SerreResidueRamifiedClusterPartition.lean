@@ -45,10 +45,28 @@ PROVEN machinery:
   `clusterSheet … j z` is the `D.xs i`-chart coordinate of the moving sheet point `S.sheet (e ⟨i,j⟩)
   (coe z)`, together with the differentiability data feeding the chart-reconciliation.
 
-* **`valueChartTrace_eq_clusterSum_of_clusterReindexData`** — `hgeom_fibre` at `z` from a
-  `ClusterReindexData`: the point coincidence + the chart-reconciliation (`movingSummand_chartIndep` +
-  the holomorphic-local-inverse uniqueness for the section derivatives) discharge the per-`(i,j)`
-  summand equality, so this consumes only the bijection + coincidence (the genuine wall).
+* **`clusterSummand_eq_sphereSummand`** — the per-`(i,j)` chart reconciliation: the fixed-preimage
+  cluster summand equals the moving sphere summand at the coincident point (via `movingSummand_chartIndep`
+  + the section-derivative agreement).
+
+* **`valueChartTrace_eq_clusterSum_of_sphereReindex`** — the moving-sheet form of the reduction (working
+  directly with a sphere sheet system `S` at `coe z`, the `holoReprSheet` moving sum).
+
+* **`ClusterReindexData`** + **`valueChartTrace_eq_clusterSum_of_clusterReindexData`** — the **precise
+  remaining clustering datum** at a regular slit value `z` (the sphere system, the bijection `e`, the
+  point coincidence, the differentiability + section-derivative agreement) and the discharge of
+  `hgeom_fibre` at `z` from it: the chart reconciliation is proven, so this consumes only the bijection +
+  coincidence (the genuine wall).
+
+* **`FibreClusterReindex.ofClusterReindexFamily`** — builds the whole per-centre `FibreClusterReindex`
+  (the input `residueSum_eq_zero_of_reindex_adaptedFRamified` consumes) from the routine fields + a
+  slit-wide family `∀ z ∈ Sset, ClusterReindexData …`.
+
+* **`ClusterReindexData.sum_mult_eq_sheetCount`** / **`hderiv_match_of_section`** — the soundness facts
+  (the bijection forces `∑ᵢ mᵢ = deg f`; the section-derivative agreement is derivable).
+
+* **`residueSum_eq_zero_of_clusterReindex`** — the Gate-A capstone: `∑Res = 0` from `AdaptedFRamified`
+  (TARGET 2, discharged) + per-centre `FibreClusterReindex` (TARGET 1).
 
 So `FibreClusterReindex.hgeom_fibre` is reduced, for the real cover, to **exactly** the
 conservation-of-number bijection between the `deg f` moving sheets of a nearby regular fibre and the
@@ -60,9 +78,16 @@ algebraic/chart-reconciliation step PROVEN.
 The reduction is sound: `ClusterReindexData` carries the **genuine** geometric data (the real sphere
 sheet system, the genuine `clusterSheet` points, a genuine bijection), supplied as data exactly as
 `RamifiedSheetData`/`FullFibreClusterData` supply their geometric fields — never asserted, no
-single-preimage restriction, no false/junk/circular field, no custom axiom.  The per-summand equality
-is DERIVED from the proven chart-reconciliation, not assumed.  Non-vacuity is exercised by the
-zero-numerator witness `clusterReindexData_zero` (a genuine multi-preimage ramified inhabitant).
+false/junk/circular field, no custom axiom.  The per-summand equality is DERIVED from the proven
+chart-reconciliation (`clusterSummand_eq_sphereSummand`), not assumed.  Two soundness facts confirm the
+structure is genuine and not single-preimage:
+
+* `ClusterReindexData.sum_mult_eq_sheetCount` — the bijection field **forces** the conservation-of-number
+  identity `∑ᵢ D.mult i = S.n` (`= deg f`); the structure is therefore meaningfully multi-preimage, not a
+  disguised single-preimage placeholder, and its `e`/`hpoint` fields carry genuine content.
+* `hderiv_match_of_section` — the `hderiv_match` field is **derivable** (holomorphic-local-inverse
+  uniqueness), so the only irreducible fields are the bijection `e` and the point coincidence `hpoint`
+  (the genuine §17.9/Forster §4 conservation-of-number / properness topology).
 
 ## References
 
