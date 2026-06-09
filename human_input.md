@@ -1799,3 +1799,72 @@ no sorry, no false field. Prompt's claim that `SerreOmega0.lean` "already builds
 (that file is the gate-D nonconstant-function existence); no concrete meromorphic-1-form space existed —
 built it from scratch. NOT added to the `Jacobians.lean` challenge-API root (internal §17 infra, like the
 other Dolbeault §17 files); reachable when 17.4/17.5 import it.
+
+---
+
+## 2026-06-09 — Gate A: REDUCE the deep ∞-coherence `hcoh_geom` to its monodromy datum
+
+**Agent task:** discharge the deep ∞-coherence residual `hcoh_geom` of the proven capstone
+`residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg` — the genuine remaining analytic heart of
+Gate A (the ∞-analogue of the finite moving coherence `Cfull`, which had NO engine in the repo).
+
+**KEY FINDING (the ∞ fixed frame is the POLE set, not a finite-value fibre):** the finite
+`traceCoeff_diagonal_eq_fixedSum` ties the fixed chart frame to a `FibreRegularData` over a *finite* base
+value; at ∞ the natural frame is the pole set (mapping to ∞), which is NOT a finite-value fibre — so the
+finite engine does not directly apply. RESOLUTION: the finite proof never uses the reference fibre's
+analytic fields, only its `ι`/`xs` as the chart frame, so it transcribes verbatim with a *bare* frame
+`xsD : ιD → X` (`traceCoeff_diagonal_eq_fixedFrame`), the pole charts as the frame, bridged by the proven
+`movingSummand_chartIndep` (the §VIII.3 chart-independence / `dz`-Jacobian content — REUSED, not
+re-derived). The `−ζ⁻²` reciprocal Jacobian is REUSED from the proven
+`recipCoeff_inftyMovingSumNF_eq_traceCoeff`.
+
+**DELIVERED (NEW FILE `Jacobians/Dolbeault/SerreResidueInftyCoherence.lean`, all decls axiom-clean
+`[propext, Classical.choice, Quot.sound]`, authoritative `lake env lean #print axioms`; builds STANDALONE
+(all untracked incl. orphans + the concurrent `MeromorphicOneFormSystem.lean` moved aside, targeted build
+green 8513 jobs); existing files + orphans untouched):**
+
+* **Sub-lemma (1) — ∞ off branchLocus from simple poles:**
+  `analyticAt_chartInfty_toRiemannSphere_pullback_of_pole` (reciprocal chart pullback analytic, order
+  `−orderAtPoint`), `notMem_criticalSet_of_orderAtPoint_eq_neg_one` (simple pole ⟹ recip pullback deriv
+  `≠0` via `deriv_ne_zero_of_analyticOrderAt_eq_one` ⟹ locally injective via `injOn_nhds_of_deriv_ne_zero`,
+  transported through the charts), `infty_notMem_branchLocus_of_simpleInfty`. PREVIOUSLY UNPROVEN, NEEDED.
+* **Sub-lemma (2) — the ∞ `LocalSheetSystem`:** `exists_inftySheetSystem` (a `LocalSheetSystem F ∞` via
+  Forster §4.22 `exists_localSheetSystem`, gated by (1)) — the ∞-analogue of `exists_sphereSheetSystem`
+  (which was specialized to finite values). The geometric source of the monodromy datum.
+* **Reduction:** `recipCoeff_eventuallyEq_of_eventuallyEq_inv` / `hcoh_geom_of_diagonalInfty` — `hcoh_geom`
+  from the large-`z` diagonal `valueChartTrace(ζ⁻¹) =ᶠ inftyMovingSumNF(ζ⁻¹)` (`recipCoeff R ζ = −R(ζ⁻¹)·ζ⁻²`
+  depends on `R` only through `R(ζ⁻¹)`).
+* **Sub-lemma (3) — the reciprocal-chart diagonal engine:** `inftyManifoldSec` (manifold sections through
+  the ∞-fibre poles = chart-inverse of the reciprocal-chart planar sections), `inftyMovingSumNF_eq_fixedSum`
+  (the ∞-moving sum = the fixed-chart moving fibre sum along `inftyManifoldSec`, pure reciprocal-chart
+  bookkeeping, full chart-cancellation, no monodromy), `traceCoeff_diagonal_eq_fixedFrame` (bare-frame
+  diagonal), `diagonalInfty_pointwise` (per-`ζ` diagonal from the index bijection + section
+  identification).
+* **Assembly:** `InftyMovingCoherenceData` (the §VIII.3 ∞-monodromy datum: the eventually-quantified index
+  bijection `(Φ ζ⁻¹).ι ≃ Dinf.ι` at ∞ + section identification, the reciprocal-chart analogue of
+  `MovingCoherenceDatum.ofBijection`'s `hbij`; chart-target memberships discharged INTERNALLY from
+  analyticity of the reciprocal sections near `0`), `hcoh_geom_of_inftyMovingCoherenceData` (`hcoh_geom`
+  from the datum — the assembled ∞-single-valuedness, analogue of `MovingCoherenceDatum.coherent`).
+* **Capstone wiring:** `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg_inftyData` — the
+  most-reduced genus-0 Gate A capstone: replaces the bare `hcoh_geom` hypothesis by the
+  `InftyMovingCoherenceData` datum. Every analytic heart is now a *geometric datum* (Cfull/hreg via the
+  symmetric lever; ∞-coherence via its monodromy datum); only `hbnd` + discrete genericity bookkeeping
+  remain.
+
+**NET RESIDUAL MAP (genus-0 Gate A, after this pass):** `hcoh_geom` is REDUCED from an opaque germ-
+hypothesis to the genuine §VIII.3 ∞-monodromy datum `InftyMovingCoherenceData` (the continuously-varying
+index bijection at ∞). The PRECISE remaining residual = **produce an `InftyMovingCoherenceData` from
+`exists_inftySheetSystem`** — the reciprocal-chart analogue of the finite
+`MovingCoherenceDatum.ofSphereSheetSystemCanon` (`FormTraceRegularValueDatum`/
+`FormTraceMovingFibreSphereSet`/`FormTraceMovingFibreSetSelection`/`FormTraceSphereSheetTranslate`,
+~hundreds of lines). Concretely the `hbij` field needs, for large `z`: the ∞-sheets `S.sheet k (coe z)`
+(from `exists_inftySheetSystem`) enumerate the same fibre `F⁻¹(coe z)` as the canonical selection `Φ z`
+(the index bijection `e`, MIRRORS `canon_of_fibre_enumeration`), and `S.sheet k (coe z)` matches
+`inftyManifoldSec (e ·) z` (the reciprocal-chart sheet ↔ the planar-section reparametrization, MIRRORS
+`sheetValues_range_eq_fibre` + the planar-section identification in the reciprocal chart). This is "the
+size of the finite stack" — left as the precise next-stage residual (would risk an unsound shortcut to
+rush). Every sub-lemma sanity-checked: germ-equalities on `𝓝[≠] 0` (large `z`), never evaluating at ∞ (no
+junk-value defect, the value-trace reads `g` only at finite moving fibre points); the moving-fibre-sum
+identity, NOT the residue cancellation (non-circular — confirmed against the empty/holomorphic case and
+the `recipCoeff R ζ = −R(ζ⁻¹)·ζ⁻²` shape). NO custom axiom, NO sorry, NO false/circular field, NO germ
+`agree`. Did NOT touch the 2 orphans or `MeromorphicOneFormSystem.lean` (concurrent Gate-C work).
