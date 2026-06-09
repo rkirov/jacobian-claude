@@ -2729,3 +2729,76 @@ itself remains gated on that refactor + actually building `RamifiedSheetData` fr
   `hrem_an` in the m=1 witness).
 - Inline `show … from by rw[…]; exact …` inside an outer `rw […]` BREAKS the parser (the `;`); use
   separate `have` steps instead.
+
+---
+
+## 2026-06-09 — GlobalResidue isolated to the Cousin/Mittag-Leffler solve (`GlobalResidueConstruct.lean`)
+
+**Branch:** `gate-a-trace-rationality-assembly`. **Thread:** the make-or-break Serre analytic wall —
+the global residue `GlobalResidue 𝔘 K` (Forster §17.2-17.3, the Mittag-Leffler/Cousin connecting map),
+the LAST isolated input the cup-product assembly (`SerreResidueRealizationAssembly.lean`) needs to
+complete the full Serre pairing. NEW FILE `Jacobians/Dolbeault/GlobalResidueConstruct.lean` (240 LoC,
+builds STANDALONE green = 8524 jobs, every decl axiom-clean `[propext, Classical.choice, Quot.sound]`,
+ZERO sorry). Did NOT touch the concurrent corrected-`hcoh` thread
+(`SerreResidueRamifiedNormalForm.lean`, still `M` from the other agent).
+
+### THE HONEST OUTCOME: wall confirmed irreducible; isolated to the smallest concrete residual
+The global ∂̄/Cousin solve is the genuine multi-thousand-LoC wall (confirmed by my analysis AND the
+prior cup-product agent's note above: "NO shortcut: the Ω-cocycle ω₀·ξ is holomorphic, so its residue
+is NOT a sum of residues of η; it needs the meromorphic Cousin lift"). The repo's `MittagLefflerForm`
+is the *restricted* `α·g` (single global function) shape — it provably CANNOT represent a general
+cocycle's distribution (the local `gᵢ` don't glue: their differences ARE the cocycle, nonzero). So the
+general Forster §17.2 distribution `(ωᵢ)` is not yet a repo object, and producing it from a cocycle is
+the global ∂̄-solve (local engine `DbarDiskCohomology.dbar_solvable_ball` ✅ + the global
+∂̄-globalisation, the unbuilt part). I did NOT fake it; I isolated it precisely.
+
+### WHAT WAS BUILT (sorry-free, axiom-clean, RiemannRoch NOT in the 226-module closure = non-circular)
+1. `CousinResidueData 𝔘 K` — the isolated interface phrased to MATCH the Cousin-solve's natural output
+   (closer to the connecting map than the bare `GlobalResidue`): `resCocycle` (residue of a representing
+   Čech 1-COCYCLE, ℂ-linear) + `vanish_coboundary` (kills B¹ — the well-definedness via ∑Res=0) +
+   `nondegenerate` (the §17.6 dz/z residue-1 on the cup). NB this is an EQUIVALENT reformulation of
+   `GlobalResidue` (both directions hold), not a strict reduction — honest value = it's stated in the
+   shape the Cousin solve produces (compute Res on a cocycle representative, prove well-defined) + the
+   new local lemma below.
+2. `CousinResidueData.toGlobalResidue` — DERIVES `GlobalResidue 𝔘 K` sorry-free: `res` descends through
+   the Z¹/B¹ quotient via `Submodule.liftQ … vanish_coboundary`, `nondegenerate` is the field. Then
+   `pairing_injective` / `lDim_le_h1Dim` / `toSerreDualityData` all follow (reuse the PROVEN assembly).
+3. `formFnResidue_eq_of_analyticAt_sub` — THE GENUINE NEW CONTENT (the connecting map's local heart):
+   the per-pole residue `Res_a(ω₀·g)` is INDEPENDENT of the local meromorphic representative when two
+   reps have an analytic (holomorphic) difference in the chart — Forster §17.2's well-definedness of
+   `Res_a(μ)` for a Mittag-Leffler distribution (which patch `i∋a` you use doesn't matter). Reuses the
+   proven `formFnResidue_add` + `formFnResidue_eq_zero_of_analyticAt`. This lemma IS needed by any
+   Cousin-solve realization of `resCocycle`.
+4. `nonempty_of_lSysModule_trivial` — formal NON-VACUITY witness: the 3 fields are mutually consistent
+   (CousinResidueData is NOT a disguised False); also proves `nondegenerate` is a GENUINE constraint
+   (vacuous ONLY when the junk-free source `lSysModule (K−D)` is trivial), so a non-trivial instance is
+   provably no junk/zero map (no lDim≡0 collapse) — the soundness the guard demands.
+
+### SOUNDNESS LEDGER (all clean — NO false/circular/junk field, NO custom axiom, NO sorry)
+- `res` GENUINELY descends (via `vanish_coboundary`/∑Res=0, `Submodule.liftQ` — not assumed
+  well-defined). `nondegenerate` is the genuine dz/z `res=1≠0` (source = junk-free lSysModule).
+- NON-CIRCULAR: `RiemannRoch` absent from the full 226-module transitive import closure (verified by
+  import-graph walk) — RR depends on this, not vice versa.
+- NON-VACUOUS: the genuine Serre residue inhabits it; formal consistency witness built (item 4).
+
+### THE PRECISE REMAINING WALL (the smallest honest residual)
+Produce a `CousinResidueData 𝔘 K` ⟺ the global Cousin/∂̄ solve: for the canonical `ω₀`/`K` of
+`CanonicalForm17Data`, give the ℂ-linear `resCocycle : Z¹(𝒪_K) → ℂ` = `∑ₐ formFnResidue ω₀ gₐ a` over
+the finite pole set of the meromorphic Cousin lift `(gᵢ)` (`gᵢ − gⱼ = cᵢⱼ`, `gᵢ ∈ OmegaD K (Uᵢ)`,
+obtained by smooth PoU splitting + a GLOBAL ∂̄-correction), with `vanish_coboundary` from
+`MittagLefflerForm.res_eq_of_globalMeromorphic_diff` (∑Res=0, modulo Gate-A `ExistsAdaptedF`) and
+`nondegenerate` from `exists_formFnResidue_eq_one_of_localRep_ne_zero` (FormCoeff.lean) pushed through
+the lift. The per-pole well-definedness (item 3) is in place; the unbuilt core = the general §17.2
+distribution object (relaxing the `α·g` shape) + the global ∂̄-globalisation + pole finiteness on
+compact X + linearity of the lift. Genuinely multi-thousand-LoC; isolated rather than faked.
+
+### LEAN GOTCHAS (for the next agent)
+- `GlobalResidue.nondegenerate` is stated via `R.res` (`GlobalResidue.res`); in `CousinResidueData` the
+  matching field is phrased with the literal `Submodule.liftQ _ resCocycle vanish_coboundary`, which is
+  DEFEQ to `CousinResidueData.res` — so `toGlobalResidue { res := R.res, nondegenerate := R.nondegenerate }`
+  typechecks by defeq (no rewrite needed).
+- Structure-instance with tactic fields: `refine { f := ?_, g := ?_ }` then bullet the goals; the
+  one-liner `{ f := fun .. => rfl, g := .. }` mis-parses the field separator.
+- `(g₁ - g₂) ∘ chart.symm` analyticity: `AnalyticAt.neg` gives the `g₁−g₂` form; bridge to the
+  `−(g₁−g₂)` lambda with `.congr (filter_upwards with z; simp only [Pi.neg_apply])` (plain `simpa`
+  rewrites the subtraction the wrong way). `Pi.add/neg/sub_apply` for the funext `ring` step.
