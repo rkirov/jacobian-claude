@@ -57,71 +57,69 @@ The proof mirrors `Montel.contMDiffOn_totalSpaceMk_L_inner` (the smooth-from-ana
 Montel completeness reconstruction), but feeds analyticity directly (no sequence limit) and works on
 the full chart source, so smoothness at any `y` is read in `y`'s own chart. -/
 
-/-- **Scalar smoothness from chart-pullback analyticity** (full chart source).  If the chart
-pullback `z ↦ L ((chart x₀).symm z) (e.symmL ℂ ((chart x₀).symm z) 1)` is analytic on the chart
-target, then the scalar `y ↦ L y (e.symmL ℂ y 1)` is `ContMDiffOn ω` on the chart source.  This is
-the inverse of `localRep_analyticOn_chartTarget`; the argument is `Montel.contMDiffOn_limit_inner`
-generalised from `innerChartOpen` to `(chart x₀).source`. -/
+/-- **Scalar smoothness from chart-pullback analyticity** on an open subset `S` of the chart source.
+If the chart pullback is analytic on `chart x₀ '' S`, then the scalar `y ↦ L y (e.symmL ℂ y 1)` is
+`ContMDiffOn ω` on `S`.  The inverse of `localRep_analyticOn_chartTarget`; the argument is
+`Montel.contMDiffOn_limit_inner` with `S` in place of `innerChartOpen`. -/
 theorem contMDiffOn_scalar_of_pullback_analyticOn
     (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y) (x₀ : X)
+    {S : Set X} (hSopen : IsOpen S) (hSsub : S ⊆ (chartAt ℂ x₀).source)
     (hAn : letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
       AnalyticOn ℂ
         (fun z : ℂ => L ((chartAt ℂ x₀).symm z) (e.symmL ℂ ((chartAt ℂ x₀).symm z) 1))
-        (chartAt ℂ x₀).target) :
+        ((chartAt ℂ x₀) '' S)) :
     letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
     ContMDiffOn 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω
-      (fun y : X => L y (e.symmL ℂ y 1)) (chartAt ℂ x₀).source := by
+      (fun y : X => L y (e.symmL ℂ y 1)) S := by
   set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
-  have hs : (chartAt ℂ x₀).source ⊆ (extChartAt 𝓘(ℂ, ℂ) x₀).source := by
+  have hs : S ⊆ (extChartAt 𝓘(ℂ, ℂ) x₀).source := by
     have : (extChartAt 𝓘(ℂ, ℂ) x₀).source = (chartAt ℂ x₀).source := by simp [extChartAt]
-    rw [this]
+    rw [this]; exact hSsub
   have h2s : Set.MapsTo (fun y : X => L y (e.symmL ℂ y 1))
-      (chartAt ℂ x₀).source (extChartAt 𝓘(ℂ, ℂ) (0 : ℂ)).source := by
+      S (extChartAt 𝓘(ℂ, ℂ) (0 : ℂ)).source := by
     have h_src : (extChartAt 𝓘(ℂ, ℂ) (0 : ℂ)).source = Set.univ := by simp [extChartAt]
     rw [h_src]; exact fun _ _ => Set.mem_univ _
   rw [contMDiffOn_iff_of_subset_source' hs h2s]
-  have h_set_eq : extChartAt 𝓘(ℂ, ℂ) x₀ '' (chartAt ℂ x₀).source =
-      (chartAt ℂ x₀).target := by
-    have h1 : extChartAt 𝓘(ℂ, ℂ) x₀ '' (chartAt ℂ x₀).source =
-        (chartAt ℂ x₀) '' (chartAt ℂ x₀).source := by simp [extChartAt]
-    rw [h1, (chartAt ℂ x₀).image_source_eq_target]
+  have h_set_eq : extChartAt 𝓘(ℂ, ℂ) x₀ '' S = (chartAt ℂ x₀) '' S := by simp [extChartAt]
   have h_fun_eq : (extChartAt 𝓘(ℂ, ℂ) (0 : ℂ) ∘
       (fun y : X => L y (e.symmL ℂ y 1)) ∘ (extChartAt 𝓘(ℂ, ℂ) x₀).symm) =
       fun z : ℂ => L ((chartAt ℂ x₀).symm z) (e.symmL ℂ ((chartAt ℂ x₀).symm z) 1) := by
     funext z; simp [extChartAt, Function.comp_def]
   rw [h_set_eq, h_fun_eq]
-  exact (contDiffOn_omega_iff_analyticOn (chartAt ℂ x₀).open_target.uniqueDiffOn).mpr hAn
+  have hSimg_open : IsOpen ((chartAt ℂ x₀) '' S) :=
+    (chartAt ℂ x₀).isOpen_image_iff_of_subset_source hSsub |>.mpr hSopen
+  exact (contDiffOn_omega_iff_analyticOn hSimg_open.uniqueDiffOn).mpr hAn
 
-/-- **Section smoothness from chart-pullback analyticity** (full chart source).  The bundle-section
-`y ↦ (y, L y)` is `ContMDiffOn ω` on the chart source, given chart-pullback analyticity at `x₀`.
-This is `Montel.contMDiffOn_totalSpaceMk_L_inner` re-derived on `(chart x₀).source` from the scalar
-smoothness above. -/
+/-- **Section smoothness from chart-pullback analyticity** on an open subset `S` of the chart source.
+The bundle-section `y ↦ (y, L y)` is `ContMDiffOn ω` on `S`.  This is
+`Montel.contMDiffOn_totalSpaceMk_L_inner` re-derived on an arbitrary open `S ⊆ (chart x₀).source`. -/
 theorem contMDiffOn_totalSpaceMk_of_pullback_analyticOn
     (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y) (x₀ : X)
+    {S : Set X} (hSopen : IsOpen S) (hSsub : S ⊆ (chartAt ℂ x₀).source)
     (hAn : letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
       AnalyticOn ℂ
         (fun z : ℂ => L ((chartAt ℂ x₀).symm z) (e.symmL ℂ ((chartAt ℂ x₀).symm z) 1))
-        (chartAt ℂ x₀).target) :
+        ((chartAt ℂ x₀) '' S)) :
     ContMDiffOn 𝓘(ℂ, ℂ) (𝓘(ℂ, ℂ).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
       (fun y : X => Bundle.TotalSpace.mk' (ℂ →L[ℂ] ℂ)
         (E := fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)
         y (L y))
-      (chartAt ℂ x₀).source := by
+      S := by
   set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀ with he_def
   have h_scalar : ContMDiffOn 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω
-      (fun y : X => L y (e.symmL ℂ y 1)) (chartAt ℂ x₀).source :=
-    contMDiffOn_scalar_of_pullback_analyticOn L x₀ hAn
+      (fun y : X => L y (e.symmL ℂ y 1)) S :=
+    contMDiffOn_scalar_of_pullback_analyticOn L x₀ hSopen hSsub hAn
   set eHom := trivializationAt (ℂ →L[ℂ] ℂ)
     (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) x₀ with heHom_def
-  have h_src_sub_hom : (chartAt ℂ x₀).source ⊆ eHom.baseSet := by
+  have h_src_sub_hom : S ⊆ eHom.baseSet := by
     intro y hy
     rw [heHom_def, hom_trivializationAt_baseSet]
     refine ⟨?_tangent, Set.mem_univ _⟩
     rw [TangentBundle.trivializationAt_baseSet]
-    exact hy
+    exact hSsub hy
   intro y₀ hy₀
   rw [Bundle.Trivialization.contMDiffWithinAt_section _ (h_src_sub_hom hy₀)]
-  have h_simpl : ∀ y ∈ (chartAt ℂ x₀).source,
+  have h_simpl : ∀ y ∈ S,
       (eHom (Bundle.TotalSpace.mk' (ℂ →L[ℂ] ℂ) y (L y))).2 =
         (L y (e.symmL ℂ y 1)) • (ContinuousLinearMap.id ℂ ℂ) := by
     intro y hy
@@ -140,36 +138,54 @@ theorem contMDiffOn_totalSpaceMk_of_pullback_analyticOn
     simp only [smul_eq_mul]; ring
   have h_smul_smooth : ContMDiffWithinAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ω
       (fun y : X => (L y (e.symmL ℂ y 1)) • (ContinuousLinearMap.id ℂ ℂ))
-      (chartAt ℂ x₀).source y₀ :=
+      S y₀ :=
     (h_scalar y₀ hy₀).smul contMDiffWithinAt_const
   exact h_smul_smooth.congr (fun y hy => h_simpl y hy) (h_simpl y₀ hy₀)
 
-/-- **The section-assembly lemma** (converse of `localRep_analyticOn_chartTarget`).  A bundle section
-`L` whose chart pullback is analytic on the chart target *for every chart center* is `ContMDiff`,
-hence a `HolomorphicOneForms X`.  Smoothness at `y` is read in `y`'s own chart, whose source is a
-neighbourhood of `y`. -/
-noncomputable def holOfLocalRepAnalytic
+/-- **The section-assembly lemma, local form.**  A bundle section `L` whose chart pullback in *each
+point's own chart* is `AnalyticAt` the chart centre is `ContMDiff`, hence a `HolomorphicOneForms X`.
+Smoothness at `y` is read in `y`'s own chart: `AnalyticAt` gives analyticity on an open neighbourhood
+of `chart y y`, whose chart-preimage is an open neighbourhood of `y`. -/
+noncomputable def holOfLocalRepAnalyticAt
     (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
     (hAn : ∀ x₀ : X,
       letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
-      AnalyticOn ℂ
+      AnalyticAt ℂ
         (fun z : ℂ => L ((chartAt ℂ x₀).symm z) (e.symmL ℂ ((chartAt ℂ x₀).symm z) 1))
-        (chartAt ℂ x₀).target) :
+        ((chartAt ℂ x₀) x₀)) :
     HolomorphicOneForms X where
   toFun := L
   contMDiff_toFun := by
     intro y
-    have h_on := contMDiffOn_totalSpaceMk_of_pullback_analyticOn L y (hAn y)
-    exact (h_on y (mem_chart_source ℂ y)).contMDiffAt
-      ((chartAt ℂ y).open_source.mem_nhds (mem_chart_source ℂ y))
+    set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) y
+    -- `AnalyticAt` ⇒ analytic on an open ball `U := ball (chart y y) r` around `chart y y`.
+    obtain ⟨r, hr, hUan⟩ := (hAn y).exists_ball_analyticOnNhd
+    set U : Set ℂ := Metric.ball ((chartAt ℂ y) y) r with hU_def
+    have hUopen : IsOpen U := Metric.isOpen_ball
+    have hUmem : (chartAt ℂ y) y ∈ U := Metric.mem_ball_self hr
+    -- restrict to the chart source ∩ chart⁻¹ U, an open nbhd of `y`.
+    set S : Set X := (chartAt ℂ y).source ∩ (chartAt ℂ y) ⁻¹' U with hS_def
+    have hSopen : IsOpen S :=
+      (chartAt ℂ y).continuousOn.isOpen_inter_preimage (chartAt ℂ y).open_source hUopen
+    have hSsub : S ⊆ (chartAt ℂ y).source := Set.inter_subset_left
+    have hyS : y ∈ S := ⟨mem_chart_source ℂ y, by
+      simp only [hS_def, Set.mem_preimage]; exact hUmem⟩
+    -- pullback analytic on `chart y '' S ⊆ U`.
+    have himg : (chartAt ℂ y) '' S ⊆ U := by
+      rintro z ⟨w, hw, rfl⟩; exact hw.2
+    have hAnS : AnalyticOn ℂ
+        (fun z : ℂ => L ((chartAt ℂ y).symm z) (e.symmL ℂ ((chartAt ℂ y).symm z) 1))
+        ((chartAt ℂ y) '' S) := (hUan.mono himg).analyticOn
+    have h_on := contMDiffOn_totalSpaceMk_of_pullback_analyticOn L y hSopen hSsub hAnS
+    exact (h_on y hyS).contMDiffAt (hSopen.mem_nhds hyS)
 
-@[simp] theorem holOfLocalRepAnalytic_toFun
+@[simp] theorem holOfLocalRepAnalyticAt_toFun
     (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
     (hAn : ∀ x₀ : X,
       letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
-      AnalyticOn ℂ
+      AnalyticAt ℂ
         (fun z : ℂ => L ((chartAt ℂ x₀).symm z) (e.symmL ℂ ((chartAt ℂ x₀).symm z) 1))
-        (chartAt ℂ x₀).target) :
-    (holOfLocalRepAnalytic L hAn).toFun = L := rfl
+        ((chartAt ℂ x₀) x₀)) :
+    (holOfLocalRepAnalyticAt L hAn).toFun = L := rfl
 
 end Jacobians.Dolbeault
