@@ -472,4 +472,84 @@ noncomputable def FibreClusterTopology.ofClusterEmbedding {ω₀ : HolomorphicOn
   hsheet_diff := hsheet_diff
   hcs_sec := hcs_sec
 
+/-! ## The minimal conservation-of-number residual: fibre points + distinctness + degree count
+
+We refine the embedding once more, deriving the assignment `cl` and its injectivity `hcl_inj` from the
+genuine geometry, so the irreducible input shrinks to **three** facts:
+
+* `hcl_fibre` — each cluster sheet point is a genuine preimage of `coe z`
+  (`f.toRiemannSphere (clusterSection D Cl i j z) = coe z`; the sphere-level form of the §5
+  `clusterSheet_sect`, that the cluster sheets are preimages);
+* `hcl_distinct` — the cluster sheet points are pairwise distinct
+  (`Function.Injective (fun p ↦ clusterSection D Cl p.1 p.2 z)`; the clusters are disjoint);
+* `hcard` — the conservation of number `∑ᵢ D.mult i = S.n`.
+
+The assignment `cl i j` is then the unique sheet index with `S.sheet (cl i j) (coe z) = clusterSection
+D Cl i j z` (existence by `S.fibre_eq`, uniqueness by `S.sheet_inj`), and `hcl_inj` follows from
+`hcl_distinct` (distinct points ⟹ distinct sheets, the sheet points being injective in the index).
+This is the precise remaining clustering-topology content of the whole Gate-A TARGET 1, stated
+minimally. -/
+
+/-- **`FibreClusterTopology` from the minimal conservation-of-number residual.**  Given the sphere
+sheet system data, the cluster-sheet-points-are-fibre-points fact `hcl_fibre`, their pairwise
+distinctness `hcl_distinct`, the conservation-of-number count `hcard`, and the two geometric residuals
+(`hsrc`, `hcs_sec`) + cluster sheet differentiability, the `FibreClusterTopology` datum holds.
+
+The cluster→sheet assignment `cl i j` is recovered as the unique sheet index over the cluster point
+(`S.fibre_eq` + `S.sheet_inj`); its injectivity reduces to `hcl_distinct`.  This is the cleanest
+statement of the genuine §4/§17.9 conservation-of-number / properness wall: the cluster sheets are
+preimages, are distinct, and number `∑ᵢ mᵢ = deg f`. -/
+noncomputable def FibreClusterTopology.ofClusterFibrePoints {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
+    {D : FibreRamifiedData g f c} {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+    (hderiv : ∀ k, deriv (fun w => f.holoRepr
+        ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+        (S.sheet k (((z : ℂ) : RiemannSphere)))) ≠ 0)
+    (hmero : ∀ k, MeromorphicAt
+      (fun w => g ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+        (S.sheet k (((z : ℂ) : RiemannSphere)))))
+    (hcoh : valueChartTrace ω₀ f Φ z
+      = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv hmero)).traceCoeff z)
+    (hcl_fibre : ∀ (i : D.ι) (j : Fin (D.mult i)),
+      f.toRiemannSphere (clusterSection D Cl i j z) = (((z : ℂ) : RiemannSphere)))
+    (hcl_distinct : Function.Injective
+      (fun p : Σ i : D.ι, Fin (D.mult i) => clusterSection D Cl p.1 p.2 z))
+    (hcard : ∑ i, D.mult i = S.n)
+    (hsrc : ∀ (i : D.ι) (j : Fin (D.mult i)),
+      ∀ᶠ w in 𝓝 z, clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j w ∈ (chartAt ℂ (D.xs i)).target)
+    (hsheet_diff : ∀ (i : D.ι) (j : Fin (D.mult i)),
+      DifferentiableAt ℂ (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z)
+    (hcs_sec : ∀ (i : D.ι) (j : Fin (D.mult i)),
+      ∀ᶠ w in 𝓝 z, f.holoRepr (clusterSection D Cl i j w) = w) :
+    FibreClusterTopology Φ D Cl z := by
+  classical
+  -- `coe z ∈ S.V`, so the fibre `F⁻¹(coe z)` is the range of the sheet map there.
+  have hfib := S.fibre_eq (((z : ℂ) : RiemannSphere)) S.mem_V
+  -- Each cluster point is in the fibre, hence `= S.sheet k (coe z)` for some `k`.
+  have hmem : ∀ (i : D.ι) (j : Fin (D.mult i)),
+      clusterSection D Cl i j z ∈ Set.range (fun k => S.sheet k (((z : ℂ) : RiemannSphere))) := by
+    intro i j
+    rw [← hfib]; exact hcl_fibre i j
+  -- The assignment `cl i j := the chosen sheet index`.
+  set cl : (i : D.ι) → Fin (D.mult i) → Fin S.n :=
+    fun i j => (hmem i j).choose with hcl_def
+  have hcl_point : ∀ (i : D.ι) (j : Fin (D.mult i)),
+      clusterSection D Cl i j z = S.sheet (cl i j) (((z : ℂ) : RiemannSphere)) :=
+    fun i j => (hmem i j).choose_spec.symm
+  -- Injectivity of `cl` from the point distinctness (the sheet points are injective in the index).
+  have hcl_inj : Function.Injective (fun p : Σ i : D.ι, Fin (D.mult i) => cl p.1 p.2) := by
+    intro p q hpq
+    apply hcl_distinct
+    show clusterSection D Cl p.1 p.2 z = clusterSection D Cl q.1 q.2 z
+    rw [hcl_point p.1 p.2, hcl_point q.1 q.2]
+    show S.sheet (cl p.1 p.2) _ = S.sheet (cl q.1 q.2) _
+    rw [show (fun p : Σ i : D.ι, Fin (D.mult i) => cl p.1 p.2) p = cl p.1 p.2 from rfl,
+      show (fun p : Σ i : D.ι, Fin (D.mult i) => cl p.1 p.2) q = cl q.1 q.2 from rfl] at hpq
+    rw [hpq]
+  exact FibreClusterTopology.ofClusterEmbedding S hderiv hmero hcoh cl hcl_point hcl_inj hcard
+    hsrc hsheet_diff hcs_sec
+
 end Jacobians.Dolbeault.SerreResidueTheorem
