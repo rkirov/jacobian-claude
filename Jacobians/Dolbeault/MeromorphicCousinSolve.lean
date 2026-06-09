@@ -560,6 +560,34 @@ theorem lDim_le_h1Dim (S : MeromorphicCousinSolutions 𝔘 ω₀ K)
     lDim (X := X) (K - D) ≤ 𝔘.toFiniteFamily.h1Dim D :=
   (S.toCousinResidueData nondeg).lDim_le_h1Dim D hfin
 
+/-! ### Soundness — non-vacuity / inhabitability (NOT a disguised `False`)
+
+`MeromorphicCousinSolutions` is **inhabitable**: in the degenerate configuration `cechH1 K` trivial
+(so the `lift` is the trivial zero lift and the connecting map is surjective) over the **zero form**
+`ω₀ = 0` (so every lift's residue is `0`, `vanish` holds genuinely), the zero lift gives a genuine
+`MeromorphicCousinSolutions`.  Crucially both fields are honestly satisfied: `lift` exercises the
+surjectivity (the wall, on the trivial target) and `vanish` exercises the residue descent genuinely
+(every lift has residue `0` because the zero form does). -/
+
+/-- The **zero lift** `gᵢ = 0`, empty poles (a `holoOff`-equipped `CoverMLDistribution.zero`). -/
+def zeroLift (𝔘 : FiniteCover X) (ω₀ : HolomorphicOneForms X) (K : Divisor X) :
+    CoverMLLift 𝔘 ω₀ K where
+  toDistribution := CoverMLDistribution.zero 𝔘 ω₀ K
+  holoOff := fun i a _ _ => analyticAt_const
+
+/-- **Non-vacuity / inhabitability.**  When `cechH1 K` is trivial (so the connecting map is trivially
+surjective), the zero lift over the zero form `ω₀ = 0` is a genuine `MeromorphicCousinSolutions`:
+`vanish` holds because the zero form has all residues `0` (`formFnResidue_zero`).  This proves the
+isolated solutions structure is **consistent (inhabitable)** — not a disguised `False` — exercising
+both `lift` (the surjectivity wall) and `vanish` (the residue descent) genuinely. -/
+theorem nonempty_of_trivial (𝔘 : FiniteCover X) (K : Divisor X)
+    (htrivH1 : Subsingleton (𝔘.toFiniteFamily.cechH1 K)) :
+    Nonempty (MeromorphicCousinSolutions 𝔘 (0 : HolomorphicOneForms X) K) :=
+  ⟨{ lift := fun c => ⟨zeroLift 𝔘 0 K, Subsingleton.elim _ _⟩
+     vanish := fun μ _ => by
+       rw [CoverMLLift.res_def]
+       exact Finset.sum_eq_zero fun a _ => formFnResidue_zero _ a }⟩
+
 end MeromorphicCousinSolutions
 
 end Jacobians.Dolbeault
