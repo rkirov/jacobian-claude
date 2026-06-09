@@ -1694,3 +1694,69 @@ nbhds, never evaluate at the singularity — no junk problem); both are the genu
 content (DEEP, not discharged this pass). hreg/hbnd have proven cruxes (traceLocalCoeff_*,
 traceExtendsAt_branchPoint) but need substantial wiring (not quick). Did NOT discharge Cfull/hcoh_full/
 hreg/hbnd (deep, would risk unsound shortcut); the honest win is removing the false field.
+
+---
+
+## 2026-06-09 — Gate A: DISCHARGE the finite full-fibre moving coherence Cfull + hreg (genus 0)
+
+**Agent task:** discharge the genuine analytic heart of Gate A — `hcoh_full`/`Cfull` (the trace
+moving-coherence residuals of the proven capstone `residueTheorem_ofCanonicalSimpleInfty_genus0_germ`).
+Confirmed by prior agent: both are genuinely TRUE+LOCAL germ-equalities (Miranda §VIII.3, never evaluate
+at a singularity).
+
+**KEY FINDING (machinery survey):** the FINITE moving coherence has a NEARLY-COMPLETE engine already in
+the repo — `MovingCoherenceDatum.ofSphereSheetSystemCanon` (`FormTraceRegularValueDatum.lean`), the
+symmetric-invariance lever (no labeling): it builds the per-centre `MovingCoherenceDatum` (incl. the deep
+`hdiag` = value-trace = moving sphere-fibre sum) from a `LocalSheetSystem` at an off-branch value + the
+canonical-fibre re-selection (reconstructed pointwise from "Φ b' IS the fibre as a set"). The `hderiv`
+(`sheet_holoRepr_deriv_ne_zero`), sheet-injectivity/chart-source data are all intrinsic/proven. So `Cfull`
+was DISCHARGEABLE by WIRING. **The ∞-coherence `hcoh_full` has NO such engine** — only the *reduction*
+`hcoh_inf_of_inftyMovingCoherenceNF` (takes `hcoh_full` as hyp); every nonempty `recipCoeff(valueChartTrace)
+=ᶠ ...` in the repo is the EMPTY-selection trivial case. So `hcoh_full` is the genuinely-undischarged deep
+∞-residual (needs greenfield ∞-sheet-system + reciprocal-chart moving coherence + the ∞-off-branch fact
+from simple poles — comparable in size to the whole finite stack; ∞-off-branch itself unproven).
+
+**DELIVERED (NEW FILE `Jacobians/Dolbeault/SerreResidueDirectGenus0GermDischarge.lean`, all 9 decls
+axiom-clean `[propext, Classical.choice, Quot.sound]`, authoritative `lake env lean #print axioms`;
+existing files + 2 orphans untouched; builds STANDALONE (orphans moved aside, targeted build green); full
+glob green 8512 jobs):**
+- `movingCoherenceDatum_canonical` — the per-centre full-fibre `MovingCoherenceDatum` for the canonical
+  selection at an off-branch value, via `ofSphereSheetSystemCanon` (`hdiag` discharged by the lever).
+- `movingCoherenceDatum_canonical_D_inj` / `_D_image` — the `hCfull_inj` / `hCfull_image` fields (both
+  ranges = full fibre `F⁻¹(coe c)`); `image_univ_eq_of_range_eq` helper.
+- `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull` — capstone with **Cfull DISCHARGED**: rests on
+  per-centre genericity (off-branch + good value), near-centre g-meromorphy, `hg_an_offpoles` (g
+  holomorphic off poles), `hreg`/`hbnd`, `hcoh_full`.
+- `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull_geomInfty` — same, with `hcoh_full` replaced by
+  its cleanest UNPATCHED form `hcoh_geom` (via `recipCoeff_valueChartTracePatched_eventuallyEq`).
+- `notMem_poles_of_fibrePoint_offCentres` / `hreg_canonical_of_offBranch` — **hreg DISCHARGED**: at a
+  value off `cs ∪ br` (br ⊇ branchValues), `coe w` off-branch + not a pole-value ⟹ fibre points non-poles
+  ⟹ `analyticAt_valueChartTrace_of_movingDatum` from the same lever.
+- `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg` — the MOST-REDUCED sound genus-0 capstone:
+  **both Cfull AND hreg discharged**; rests on EXACTLY {genericity bookkeeping, `hbnd`, `hcoh_geom`}.
+
+**NET RESIDUAL MAP (genus-0 Gate A, canonical selection):** after this pass the sound capstone
+`…_CfullHreg` rests on:
+1. **`hcoh_geom`** (the ONE deep remaining analytic heart): unpatched ∞-coherence
+   `recipCoeff(valueChartTrace) =ᶠ[𝓝[≠]0] recipCoeff(inftyMovingSumNF)` = Miranda §VIII.3
+   ∞-single-valuedness (trace = moving ∞-fibre sum near ∞, reciprocal chart). CONSTRUCTION MAP: (a) prove
+   ∞ off branchLocus from `hsimpleInf` (unramified-over-∞); (b) `LocalSheetSystem f.toRiemannSphere ∞`
+   via `exists_localSheetSystem`; (c) the ∞-analogue of `traceCoeff_diagonal_eq_fixedSum` + section
+   identification in the RECIPROCAL chart (`recip_i` planar inverses), with the `−ζ⁻²` Jacobian
+   reparametrization (already proven half: `recipCoeff_inftyMovingSumNF_eq_traceCoeff`). Equivalent
+   restated goal: `recipCoeff(valueChartTrace) =ᶠ[𝓝[≠]0] (inftyFibreTraceNF ω₀ f Dinf_full).traceCoeff`.
+2. **`hbnd`** (branch-value boundedness, the "one genuinely-new analytic step" per
+   `FormTraceGlobalTPatched`): discharge via `tendsto_zero_valueChartTrace_of_sections` once the
+   moving-fibre-sum representation `hgerm` at branch values is supplied (NOTE: canonical Φ is EMPTY at
+   branch values, so `hgerm` is about NEARBY good values).
+3. genericity bookkeeping (`hgood`/`hoff_cs`/`hc_good`/`hgmero`/`hgood_reg`/`hgmero_reg`/`hg_an_offpoles`/
+   `hsimpleInf`/`hmeroInf`/`hnonpole_inf_an`/`hcenters_cs`/`hcs_*`/`hbr`) — standard adapted-cover
+   genericity, geometric (not residue-cancellation), satisfiable for a generic separating cover.
+
+**SOUNDNESS:** no custom axiom, no sorry, no false/circular field. `Cfull`'s `hdiag` and `hreg` are
+genuine LOCAL germ-properties from the (campaign-vetted) symmetric lever — NOT disguises of `∑Res=0`.
+The per-centre off-branch genericity is geometric. Did NOT touch the false `hcont_int` (already eliminated
+upstream by germ-Cauchy). Did NOT attempt `hcoh_geom`/`hbnd` discharge (deep greenfield; would risk the
+exact unsound shortcuts the campaign warns about — 7 bad fields caught). Honest win = `Cfull` + `hreg`
+discharged by sound WIRING of the existing lever, ∞-coherence reduced to its smallest residual + a precise
+construction map.
