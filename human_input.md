@@ -1760,3 +1760,42 @@ upstream by germ-Cauchy). Did NOT attempt `hcoh_geom`/`hbnd` discharge (deep gre
 exact unsound shortcuts the campaign warns about — 7 bad fields caught). Honest win = `Cfull` + `hreg`
 discharged by sound WIRING of the existing lever, ∞-coherence reduced to its smallest residual + a precise
 construction map.
+
+---
+
+## 2026-06-09 — Gate (C): the meromorphic-1-form linear system `Ω_D` (Forster §17.4)
+
+**Task:** build Gate C of the Forster §17 Serre-duality tower (`docs/serre_17_build_plan.md`): the
+meromorphic-1-form space `Ω_D` (global meromorphic 1-forms `α` with `div α ≥ −D`), the 1-form analog
+of the function linear system `L(D)`. Definitional/foundational, INDEPENDENT of the in-progress Gate A
+residue/trace work (did NOT touch the FormTrace*/trace files).
+
+**Delivered (NEW file `Jacobians/Dolbeault/MeromorphicOneFormSystem.lean`, sorry-free + axiom-clean
+`[propext, Classical.choice, Quot.sound]`, builds standalone, 3410 jobs green):**
+- **Representation** mirrors `MeromorphicFunction` exactly, on the cotangent bundle: `MeromorphicOneForm X`
+  = a section `toFun : ∀ x, TangentSpace 𝓘(ℂ) x →L[ℂ] ℂ` (SAME fibre as `HolomorphicOneForms`) +
+  `IsMeromorphicOneForm` (its `localRep`-style chart coefficient `formCoeff` is `MeromorphicAt` in each
+  canonical chart). This reuses `Montel.localRep`/`FormCoeff.coeffAt` + their analyticity bridge, so the
+  order theory and `Ω_0 = HOF` work verbatim. ℂ-module via `toFun_injective` transport (incl. nsmul/zsmul).
+- **`formOrderW`** (chart-coeff `meromorphicOrderAt`, the `orderW` analog) + `formOrderW_zero=⊤`,
+  `formOrderW_const_smul`, `min_formOrderW_le_add`.
+- **`omegaD D`** (`Ω_D`, a `Submodule ℂ`), **`formGermZeroSubmodule`** (junk-free fix), **`omegaDModule D`**
+  (quotient), **`omegaDim D := finrank`** — all the `linearSystem`/`germZeroSubmodule`/`lDim` mirrors.
+- **API:** `omegaD_mono` (D≤D' → Ω_D ≤ Ω_D'); the Forster-17.4 multiplication-by-meromorphic-function map
+  `meroFormSMul f α` (= `f·α`) with order-additivity `formOrderW(f·α)=orderW f + formOrderW α` and
+  `meroFormSMul_mem_omegaD : L(D)·Ω_E ⊆ Ω_{D+E}`.
+- **Soundness anchor `Ω_0 = HolomorphicOneForms`:** proved the injection `holToMeroₗ : HOF ↪ MeroOneForm`
+  (injective, lands in `Ω_0`), the germ-zero⇒zero identity theorem (`holToMero_eq_zero_of_germZero`, via
+  `exists_localRep_self_ne_zero`), the quotient injection `holToOmega0Module` injective, the UNCONDITIONAL
+  rank bound `rank HOF ≤ rank (omegaDModule 0)`, and `genus X ≤ omegaDim 0` under
+  `[FiniteDimensional ℂ (omegaDModule 0)]`. Full equality `omegaDim 0 = genus X` wired via
+  `omegaDim_zero_eq_genus_of_le` — the reverse bound (`omegaDim 0 ≤ genus`) is the removable-singularity
+  /analytic-to-smooth-section direction, the ONE isolated analytic input (NOT a sorry; stated as a hyp).
+
+**Soundness note:** caught + avoided a junk-value trap — `genus ≤ omegaDim 0` is FALSE unconditionally
+(finrank=0 junk if the quotient were a-priori infinite-dim), so it is gated on `FiniteDimensional`
+(itself part of §17.4) and the honest unconditional statement is the `Module.rank` bound. No custom axiom,
+no sorry, no false field. Prompt's claim that `SerreOmega0.lean` "already builds div ω₀" was inaccurate
+(that file is the gate-D nonconstant-function existence); no concrete meromorphic-1-form space existed —
+built it from scratch. NOT added to the `Jacobians.lean` challenge-API root (internal §17 infra, like the
+other Dolbeault §17 files); reachable when 17.4/17.5 import it.
