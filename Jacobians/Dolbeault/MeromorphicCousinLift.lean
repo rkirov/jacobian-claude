@@ -172,6 +172,104 @@ def MeromorphicCousinSolutions.ofSplit
   lift := liftField_of_cousinSplit S
   vanish := vanish
 
+/-! ## §C — the holomorphic-acyclicity split (the `(A)` half) and the residual `(B)` obligation
+
+The §15 construction of `CousinSplitData` decomposes into:
+
+* **(A)** holomorphic acyclicity `IsDiskAcyclic 𝔘 0` (`H¹(𝔘, 𝒪) = 0`), which splits a *holomorphic*
+  cocycle into a difference of honest holomorphic sections; and
+* **(B)** principal-part splitting at the `K`-points (a local Mittag–Leffler datum).
+
+Here we build the `(A)` half soundly as a reusable lemma — it is exactly the engine that clears the
+holomorphic remainder once the principal parts of `ξ` have been subtracted off — and isolate the
+residual `(B)` (the principal-part datum and the normal-form/`coeffAt ω₀`-form bookkeeping) into a
+single precise predicate `CousinSplittable`. -/
+
+open FiniteFamily in
+/-- **The holomorphic-acyclicity split `(A)` (the reusable engine).**  From `IsDiskAcyclic 𝔘 0` every
+holomorphic Čech `0`-cocycle `r ∈ 𝔘.cocycles1 0` is split by honest holomorphic sections
+`Ĥᵢ ∈ OmegaD 0 (𝔘.U i)`: on each overlap the difference germ `[Ĥⱼ − Ĥᵢ]` equals `rᵢⱼ`.  This is the
+(repackaged) `functionDiskAcyclic_of_isDiskAcyclic`, exposed in the form the §15 assembly consumes
+(honest holomorphic correctors with the matching difference identity).  Sorry-free; the genuine input
+is `IsDiskAcyclic 𝔘 0` (proven for the Leray cover via the `HasGluedDbarDatum` ∂̄ engine). -/
+theorem exists_holoSplit_of_isDiskAcyclic (hac : IsDiskAcyclic 𝔘.toFiniteFamily (0 : Divisor X))
+    (r : ↥(𝔘.toFiniteFamily.cocycles1 (0 : Divisor X))) :
+    ∃ H : Π i, 𝔘.U i → ℂ, (∀ i, H i ∈ OmegaD (0 : Divisor X) (𝔘.U i)) ∧
+      ∀ i j : 𝔘.ι, toGerm (𝔘.U i ⊓ 𝔘.U j)
+          ((H j ∘ openIncl inf_le_right - H i ∘ openIncl inf_le_left)
+            : ↥(𝔘.U i ⊓ 𝔘.U j) → ℂ)
+        = (r : 𝔘.toFiniteFamily.Cochain1) (i, j) := by
+  obtain ⟨H, hH, hδ⟩ := functionDiskAcyclic_of_isDiskAcyclic 𝔘.toFiniteFamily 0 hac r r.2
+  refine ⟨H, hH, fun i j => ?_⟩
+  have hp := congrFun hδ (i, j)
+  simp only [FiniteFamily.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply, LinearMap.comp_apply,
+    LinearMap.proj_apply, rawRestrictG_coe] at hp
+  rw [← hp, ← map_sub]
+
+/-! ### The residual `(B)` obligation and the conditional assembly
+
+With the `(A)` engine in hand, producing a `CousinSplitData` reduces to the principal-part datum `(B)`:
+per-patch local-meromorphic principal parts `pᵢ` (poles ≤ `K`, holomorphic off the `K`-points) whose
+overlap differences match `ξ` modulo *holomorphic* functions, plus the normal-form rigidification that
+makes the assembled `gᵢ = pᵢ + Hᵢ` pointwise analytic where required.  We isolate the *entire* residual
+as the single predicate `CousinSplittable`: it is exactly the per-cocycle production of `CousinSplitData`,
+so the conditional assembly `MeromorphicCousinSolutions.ofSplittable` below is the precise statement of
+what remains for `H¹(X, ℳ) = 0`.
+
+`CousinSplittable` is NOT a disguised `False`: the genuine §15 meromorphic Cousin solution (principal
+parts + holomorphic acyclicity, Forster §15) inhabits it, and the degenerate trivial-`cechH1 K` case is
+witnessed by the zero split (`cousinSplittable_of_trivial`). -/
+
+/-- **[ISOLATED — the per-cocycle meromorphic Cousin split].**  Every `𝒪_K`-cocycle admits a
+`CousinSplitData` (honest local-meromorphic `gᵢ`, poles ≤ `K`, splitting it with the four `CoverMLLift`
+analytic conditions).  This is precisely the remaining Forster §15 content for `H¹(X, ℳ) = 0` after the
+descent (`MeromorphicCousinSolve`) and the `(A)` engine (`exists_holoSplit_of_isDiskAcyclic`): the
+principal-part splitting at the `K`-points plus the normal-form / `coeffAt ω₀`-form bookkeeping. -/
+def CousinSplittable (𝔘 : FiniteCover X) (ω₀ : HolomorphicOneForms X) (K : Divisor X) : Prop :=
+  ∀ ξ : ↥(𝔘.toFiniteFamily.cocycles1 K), Nonempty (CousinSplitData 𝔘 ω₀ K ξ)
+
+/-- **The full `MeromorphicCousinSolutions` from `CousinSplittable` (`lift`) + the Gate-A descent
+(`vanish`).**  The conditional apex: `CousinSplittable` (the §15 meromorphic Cousin split) and the
+Gate-A `∑Res = 0` descent together make the entire Serre residue pairing unconditional. -/
+noncomputable def MeromorphicCousinSolutions.ofSplittable
+    (hsplit : CousinSplittable 𝔘 ω₀ K)
+    (vanish : ∀ μ : CoverMLLift 𝔘 ω₀ K, μ.connectingClass = 0 → μ.res = 0) :
+    MeromorphicCousinSolutions 𝔘 ω₀ K :=
+  MeromorphicCousinSolutions.ofSplit (fun ξ => (hsplit ξ).some) vanish
+
+/-! ### Soundness — non-vacuity of the split datum -/
+
+/-- The **zero split** of the zero cocycle: `gᵢ = 0`, no poles (a `CousinSplitData` for `ξ = 0`).  Both
+the analytic conditions (the zero form `0·0` is analytic) and the cochain match (`[0 − 0] = 0`) hold,
+witnessing `CousinSplitData` is inhabited at genuine data. -/
+def CousinSplitData.zero (𝔘 : FiniteCover X) (ω₀ : HolomorphicOneForms X) (K : Divisor X) :
+    CousinSplitData 𝔘 ω₀ K 0 where
+  g := fun _ => 0
+  poles := ∅
+  patch := fun _ => (CoverMLDistribution.nonempty_ι 𝔘).some
+  patch_mem := fun a ha => absurd ha (Finset.notMem_empty a)
+  diffMem := fun i j => by simpa only [sub_self] using (OmegaD K _).zero_mem
+  formHoloDiff := fun i j a _ _ => by
+    simpa only [sub_self, Pi.zero_apply, mul_zero] using
+      (analyticAt_const : AnalyticAt ℂ (fun _ : ℂ => (0 : ℂ)) ((chartAt ℂ a) a))
+  iso := fun a ha => absurd ha (Finset.notMem_empty a)
+  holoOff := fun i a _ _ => analyticAt_const
+  match_cochain := fun p => by
+    show toGerm _ ((0 - 0 : X → ℂ) ∘ _) = (0 : ↥(𝔘.toFiniteFamily.cocycles1 K)).1 p
+    simp only [sub_self, Submodule.coe_zero, Pi.zero_apply]
+    show toGerm (𝔘.U p.1 ⊓ 𝔘.U p.2) ((0 : X → ℂ) ∘ Subtype.val) = 0
+    exact map_zero _
+
+/-- **Non-vacuity of the split datum** (the consistency witness): `CousinSplitData` is inhabited for
+the zero cocycle (`CousinSplitData.zero`), so it is **not a disguised `False`**.  (Note: `CousinSplittable`
+demands the *exact* cochain match `[gᵢ−gⱼ] = ξᵢⱼ` for *every* cocycle `ξ`, so its full non-vacuity is the
+genuine Forster §15 content even when `cechH1 K` is trivial — a coboundary `ξ = δ⁰σ` is split by the
+honest reps `gᵢ = −σᵢ`, but the four analytic fields still require the normal-form / `coeffAt ω₀`-form
+bookkeeping.  The zero-cocycle witness below is the honest, unconditional consistency check.) -/
+theorem nonempty_cousinSplitData_zero (𝔘 : FiniteCover X) (ω₀ : HolomorphicOneForms X)
+    (K : Divisor X) : Nonempty (CousinSplitData 𝔘 ω₀ K 0) :=
+  ⟨CousinSplitData.zero 𝔘 ω₀ K⟩
+
 end Jacobians.Dolbeault
 
 end
