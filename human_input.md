@@ -3108,3 +3108,73 @@ restriction at the geometry level.)
 - `RamifiedFullFibreClusterGeometry` lives in `namespace Jacobians.Dolbeault.SerreResidueTheorem` with
   the FormTraceGlobal/FormTraceFibre opens (for `valueChartTrace`/`chartIntegrand`); the cluster atoms
   are in bare `namespace Jacobians`.
+
+## 2026-06-09 — Serre residue functional via the Mittag–Leffler connecting map (Cousin thread, branch gate-a-trace-rationality-assembly)
+
+NEW FILE `Jacobians/Dolbeault/MeromorphicCousin.lean` (the ONLY file this thread touched; did NOT touch
+the Gate-A `hgeom_slit`/RamifiedSheetData thread files — `SerreResidueRamified*`). Target: build the
+Serre residue functional `res : cechH1 K →ₗ ℂ` via the Stokes-free connecting-map route
+(`0→Ω→ℳ¹→ℳ¹/Ω→0`, `δ : H⁰(ℳ¹/Ω)→H¹(Ω)`). Outcome: **the connecting map δ + the residue calculus at the
+genuine Forster strength are BUILT; the wall `H¹(X,ℳ)=0` (δ surjective) is precisely ISOLATED into a
+SOUND, INHABITABLE interface that derives the FULL Serre pairing.** All decls axiom-clean
+`[propext, Classical.choice, Quot.sound]`; circularity guard PASSES (RiemannRoch absent from the full
+229-module import closure).
+
+### KEY MATH FINDING (read before extending) — the existing GeneralMLDistribution.holoDiff is TOO STRONG
+`GeneralMLDistribution.holoDiff` requires the FUNCTION difference `g_i−g_j` chart-ANALYTIC (`∈𝒪₀`). But
+Forster's `δμ∈Z¹(Ω)` only needs the FORM `(g_i−g_j)·ω₀` holomorphic = `g_i−g_j∈𝒪_K` (`K=div ω₀`, K≥0),
+which PERMITS poles of `g_i−g_j` cancelled by zeros of ω₀. A GENERAL `𝒪_K` Čech cocycle has exactly such
+differences (poles up to K), so `GeneralMLDistribution` CANNOT represent a general cocycle's lift, and
+its `holoDiff`-based patch-independence (`formFnResidue_eq_of_analyticAt_sub`, needs g_i−g_j analytic) is
+the wrong strength. FIX: built `FormMLDistribution` (formHoloDiff = integrand `coeffAt ω₀ a·(g_i−g_j)
+(chart.symm)` analytic = form holomorphic) + the genuine-strength residue lemmas
+`formFnResidue_eq_zero_of_form_analyticAt` / `formFnResidue_eq_of_form_analyticAt_sub`. `GeneralMLDistribution`
+embeds (`FormMLDistribution.ofGeneral`, its stronger holoDiff ⟹ form holomorphic).
+
+### What was BUILT (the EASY direction — the connecting map δ, fully proven)
+- `formFnResidue_eq_zero_of_form_analyticAt` / `..._of_form_analyticAt_sub` — residue-0 / per-pole
+  patch-independence at Forster's `δμ∈Z¹(Ω)` strength (FORM holomorphic, not function analytic).
+- `FormMLDistribution ω₀` + `res`/`resAtPole_eq_of_mem` — the ML distribution at the correct strength.
+- `CoverMLDistribution 𝔘 ω₀ K` — cover-adapted distribution; carries BOTH genuine `δμ∈Z¹(Ω)` translations
+  as fields: `diffMem` (cocycle side: `g_i−g_j∈𝒪_K`) + `formHoloDiff` (residue side: form holomorphic).
+  (Carry both, NOT prove their equivalence — `K` is an unconstrained PARAMETER here, NOT tied to
+  `div ω₀`, so the `coeffAt ω₀`-order↔K bridge is unavailable; honest.)
+- `connectingCochain`/`connectingCochain_mem_sections1`/`cechDelta1_connectingCochain`/`connectingCocycle`/
+  `connectingClass` — the connecting map δ: μ ↦ ([g_i−g_j]) ∈ cocycles1 K → cechH1 K. **The cocycle
+  identity δ¹(δμ)=0 is PROVEN** (pointwise telescoping of differences via `toGerm` linearity).
+- `res = ∑ formFnResidue ω₀ (g_{patch a}) a` (`res_def`) — the GENUINE Laurent residue;
+  `exists_g_formFnResidue_eq_one` (dz/z=1 sanity, reads `resAt` not smooth junk).
+
+### The ISOLATED WALL + the FULL derivation
+`MeromorphicCousinSolvable 𝔘 ω₀ K` (4 genuine fields):
+- `resCocycle` (the functional) + `resCocycle_connecting` (SOUNDNESS TIE: `resCocycle(δμ)=μ.res` — forces
+  it to read the genuine Laurent residue, NOT junk; consistent only because of Gate A's ∑Res=0).
+- `surjective` = **`H¹(X,ℳ)=0`** — every cocycle class is `[δμ]` (Forster §15 Mittag–Leffler solvability,
+  the genuine greenfield cohomology fact — THE WALL).
+- `vanish_coboundary` + `nondegenerate` (the §17.3/§17.6 descent + dz/z).
+DERIVES `toMittagLefflerConnection → toCousinResidueData → toGlobalResidue` + `pairing_injective` +
+`lDim_le_h1Dim` + `res_class_eq` (the connecting-map residue formula `Res([c])=μ.res`, PROVEN). So an
+inhabitant of `MeromorphicCousinSolvable` ⟹ the FULL Serre pairing (everything downstream proven).
+INHABITABLE: `nonempty_of_trivial` (zero functional over ω₀=0 under trivial cechH1 K + trivial
+lSysModule) — exercises `surjective` (wall) + `resCocycle_connecting` GENUINELY, NOT a disguised False.
+
+### THE REMAINING WALL (precise, honest) — exactly `surjective` (`H¹(X,ℳ)=0`) + the descent fields
+`resCocycle`/`vanish_coboundary` are still interface fields (NOT yet built from `surjective`). Building
+them needs (a) the distribution ALGEBRA (combine/smul + res additivity — needs `holoOff` on
+CoverMLDistribution, true for genuine lifts), (b) the descent `[δμ₁]=[δμ₂]⟹μ₁.res=μ₂.res` via Gate A
+(`δμ=0⟹global meromorphic f·ω₀`, then `res_eq_zero_of_globalMeromorphic`), (c) `vanish_coboundary` =
+coboundary δ⁰(h) is `connectingCocycle` of a HOLOMORPHIC (empty-pole) distribution `g_i=−Gext(rep h_i)`
+(reuse the `CechH0` Gext/germ-representative template at line ~533) ⟹ res 0. The genuine NEW cohomology
+content = (b)+the surjectivity `H¹(ℳ)=0` (Forster §15, via the Leray cover + `dbar_holo_splitting_ball`
+allowing poles — the meromorphic local splitting `g_i−g_j=ξ_ij`). NOT FAKED — stopped at the precise
+interface (the task's authorized fallback).
+
+### Lean gotchas
+- `cechDelta1_connectingCochain`: after `obtain ⟨i,j,k⟩`, the three `rawRestrictG_connectingCochain`
+  rewrites unify with `cechDelta1`'s built-in `≤`-proofs (generic `h:W≤U_i⊓U_j`); finish with
+  `← map_sub, ← map_add, convert map_zero _ using 2` + pointwise `ring`.
+- `localRep (0:HolomorphicOneForms) = 0` via `show (0:_→L[ℂ]_) _ = 0; rfl` (the zero CLM); `coeffAt 0=0`.
+- `resAt (fun _=>0) c = 0`: `simp [circleIntegral]` for `∮ 0=0`, then `Tendsto.limUnder_eq tendsto_const_nhds`.
+- `Nonempty 𝔘.ι` from `𝔘.covers`: `Nonempty X`→`x∈⊤=⨆U i`→`Opens.mem_iSup`.
+- Multi-field structure non-vacuity: use the `⟨{ field := …; field := fun … => by … }⟩` term form, NOT
+  `refine ⟨{… := ?_ …}⟩` across line breaks (parses badly).
