@@ -2802,3 +2802,73 @@ compact X + linearity of the lift. Genuinely multi-thousand-LoC; isolated rather
 - `(g₁ - g₂) ∘ chart.symm` analyticity: `AnalyticAt.neg` gives the `g₁−g₂` form; bridge to the
   `−(g₁−g₂)` lambda with `.congr (filter_upwards with z; simp only [Pi.neg_apply])` (plain `simpa`
   rewrites the subtraction the wrong way). `Pi.add/neg/sub_apply` for the funext `ring` step.
+
+## 2026-06-09 — #11 FALSE FIELD FIX: `RamifiedSheetData` monodromy contradiction (slit branch)
+
+### THE BUG (the 11th bad field caught — verified jointly contradictory for m>1)
+`SerreResidueRamifiedNormalForm.lean`'s `structure RamifiedSheetData` demanded a SINGLE
+`w₀ : ℂ → ℂ` with BOTH `hw₀_an : ∀ᶠ z in 𝓝[≠] c, AnalyticAt ℂ w₀ z` AND
+`hw₀_pow : ∀ᶠ z in 𝓝[≠] c, w₀ z ^ m = z − c`. **MONODROMY**: for `m>1` there is no single-valued
+holomorphic `m`-th root of `z−c` on a punctured disk (continuing once around `c` multiplies by `ζ≠1`),
+so those two `∀ᶠ` fields are JOINTLY CONTRADICTORY. The only non-vacuity witness (`ramifiedSheetData_zero`)
+instantiated `m:=1` — so `RamifiedSheetData`/`residueTheorem_ofSheetData_genus0` were a disguised `False`
+at every genuine ramification centre (they did NOT actually drop `hoff_cs`). The algebraic ATOM
+(`RamifiedTrace.laurentTraceCoeff_eq_sheetSum`, `Jacobians/RamifiedResidueChangeOfVariables.lean`) was
+FINE and is kept (imported, pointwise).
+
+### THE FIX (slit branch + single-valued meromorphy + identity theorem)
+Reformulated `RamifiedSheetData` so the branch lives on a **SLIT** `S` (a subset of the punctured nbhd
+accumulating at `c` — concretely `{z | z−c ∈ slitPlane}`), NOT on all of `𝓝[≠] c`:
+- `S`, `hS_acc : ∃ᶠ z in 𝓝[≠] c, z ∈ S`; `w₀` with `hw₀_ne/_pow/_deriv` **on `S` only**.
+- The carried trace `T := traceFull := ramifiedTraceTerm (principal part) + Rem` is the SINGLE-VALUED
+  algebraic trace (meromorphic by construction); it does NOT reference the multivalued `w₀`.
+- Principal-part DATA fields (`ppN/ppb/ppR/hppR_an/hpp_split_sheet/hppN_res`) + single-valued analytic
+  remainder trace `Rem` (`hRem_an : AnalyticAt ℂ Rem c`, `hRem_slit`: the symmetric-function descent of
+  the `m`-sheet sum of `ppR`, on the slit).
+- `hgeom_slit` (geometric trace = `m`-sheet sum on the slit) + `hvct_mero : MeromorphicAt
+  (valueChartTrace ω₀ f Φ) c` (the GENUINE new content #2 — Miranda (3.1): the symmetric trace SUM is
+  single-valued meromorphic at `c`, since `valueChartTrace` is a sum over the fibre SET, sheet-label
+  independent).
+- `eqOn_traceFull_slit`: on `S`, `valueChartTrace = T` (PROVEN via `hgeom_slit` + `hpp_split_sheet` +
+  the proven atom `ramifiedSheetSum_laurentPoly` + `hRem_slit`). #1 reuses the atom.
+- `hcoh : valueChartTrace =ᶠ[𝓝[≠] c] T` is **DERIVED** (NOT asserted) via the IDENTITY THEOREM
+  `eventuallyEq_of_meromorphic_eqOn_slit` (= Mathlib `MeromorphicAt.frequently_eq_iff_eventuallyEq`):
+  both meromorphic at `c`, agree on the slit, slit accumulates ⟹ agree on `𝓝[≠] c`. #3.
+- `hmero`/`hres` from the atom (`meromorphicAt_ramifiedTraceTerm`/`resAt_ramifiedTraceTerm` + `Rem`
+  analytic ⟹ residue 0 + `hppN_res`).
+
+### MONODROMY CONTRADICTION GONE — m>1 NON-VACUITY WITNESS (the make-or-break)
+`ramifiedSheetData_slit` (general `m ≥ 1`, any primitive root `ζ`) + `ramifiedSheetData_sqrt`
+(**m=2, ζ=−1, the genuine `√(z−c)` cpow branch on the slit plane**) + `ramifiedSheetData_zero` (m=1).
+The slit branch `w₀ z = (z−c)^(1/m)` (`Complex.cpow`) exists for ANY `m` — proves the structure is
+inhabited at a GENUINELY ramified multiplicity. All `g≡0`/empty-selection (valueChartTrace=0), every
+other field `0=0`. AXIOM-CLEAN `[propext, Classical.choice, Quot.sound]` (authoritative
+`lake env lean #print axioms`), NO sorry, NO custom axiom, NO false/circular field. Build green standalone
+(8516 jobs). Downstream `residueTheorem_ofSheetData_genus0`/`RamifiedCenterFacts.ofSheetData` rewired,
+axiom-clean.
+
+### SOUNDNESS LEDGER (clean — the 11th field is now TRUE)
+- NO field asserts the residue identity or `valueChartTrace =ᶠ[𝓝[≠]c] T` directly (both DERIVED).
+- `hgeom_slit`/`hvct_mero` are the genuine §VIII.3/Forster-§5 content (geometric trace = sheet sum on
+  slit; single-valued meromorphy), supplied as data, none a free lemma.
+- `hppN_res` is about the LOCAL chart integrand at `p` (`resAt_chartIntegrand_eq_formFnResidue`), NOT
+  the downstairs trace residue at `c` → no circularity.
+- Every trace statement is the `m`-sheet SUM (the atom's `∑(ζʲ)⁰=m` cancels the chain-rule `1/m`); no
+  single-sheet `m·Res`.
+
+### LEAN GOTCHAS (for the next agent)
+- Mathlib identity theorem for meromorphic functions: `MeromorphicAt.frequently_eq_iff_eventuallyEq`
+  (in `Mathlib.Analysis.Meromorphic.IsolatedZeros`) — `(∃ᶠ z in 𝓝[≠] x, f z = g z) ↔ f =ᶠ[𝓝[≠] x] g`.
+  Feed it `Frequently.mono` of the accumulation. NO preconnected-set / punctured-ball construction
+  needed (the local 1D meromorphic identity principle does it).
+- Slit accumulation `∃ᶠ z in 𝓝[≠] c, z ∈ S`: `← accPt_iff_frequently_nhdsNE`, then `AccPt` from
+  `c ∈ closure S ∧ c ∉ S` via `closure_eq_self_union_derivedSet` (`derivedSet = {x | AccPt x (𝓟 ·)}`);
+  `c ∈ closure S` via `mem_closure_of_tendsto` along `c + (1/(n+1):ℝ)·I` (`im > 0` ⟹ slitPlane).
+- cpow slit branch `(z−c)^(1/m)` on `{z | z−c ∈ slitPlane}`: `Complex.cpow_ne_zero_iff` (ne),
+  `Complex.cpow_nat_inv_pow` (`(x^(n⁻¹))^n = x`, needs `n≠0`; combine with `zpow_natCast`),
+  `HasDerivAt.cpow_const` (deriv `= c*(z-c)^(c-1)*f'`). For `(z−c)^(a−1) = w₀^(1−m)` (cpow vs zpow):
+  both `= w₀·(z−c)⁻¹` via `Complex.cpow_sub`/`cpow_one` (LHS) and `zpow_sub₀`/`zpow_one`+`hw₀_pow` (RHS).
+- `IsPrimitiveRoot (-1:ℂ) 2 := IsPrimitiveRoot.neg_one (R:=ℂ) 0 (by norm_num)` (CharP ℂ 0, p≠2).
+- Witness fields with beta-reduced lambdas (`ppb := fun _ => 0` ⟹ goal shows literal `0`): avoid
+  `show`/`rw` on the un-reduced lambda (pattern won't match `(-↑k)`); use
+  `simp only [show Finset.Icc 1 0 = ∅ from rfl, Finset.sum_empty, resAt_zero, …]` instead.

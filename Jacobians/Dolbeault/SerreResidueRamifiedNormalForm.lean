@@ -7,7 +7,7 @@ import Jacobians.Dolbeault.SerreResidueRamifiedCenter
 import Jacobians.Dolbeault.FormTracePrincipalPart
 
 /-!
-# The ramified geometric-trace identification `hcoh` (Forster §5 `z = wᵐ` normal form)
+# The ramified geometric-trace identification `hcoh` (Forster §5 `z = wᵐ` normal form, slit branch)
 
 This file builds the genuine geometric content of `RamifiedCenterFacts.hcoh`
 (`Jacobians/Dolbeault/SerreResidueRamifiedCenter.lean`): at a (possibly ramified) finite pole-value
@@ -17,13 +17,31 @@ analogue of `exists_planar_section` (`FormTraceFibre.lean`, the unramified local
 identifies the geometric chart with the value chart), now for a ramification point of multiplicity
 `m`, where the cover is the branched normal form `z = wᵐ` (Forster GTM 81, §5).
 
-## The geometry (Miranda §VIII.3, Forster §5)
+## ⚠ The monodromy obstruction — why the branch lives on a *slit*, not all of `𝓝[≠] c`
 
-Near a ramification point `p` of multiplicity `m` over `c`, choose the centered chart `w = chart_p` at
-`p` and the value coordinate `z` at `c`.  Forster §5: the cover reads `z − c = (w − w_p)ᵐ` after a
-biholomorphic change.  For `z` near `c` (`z ≠ c`) the fibre splits into the `m` distinct unramified
-sheets `w = w_p + ζʲ·w₀(z)` (`ζ` a primitive `m`-th root of unity, `w₀` a holomorphic branch of
-`(z − c)^{1/m}`).  The value-chart trace `Tr_F α` over those `m` sheets is the `m`-sheet sum
+There is **no single-valued holomorphic `m`-th root of `z − c` on a punctured disk** when `m > 1`:
+analytically continuing `(z − c)^{1/m}` once around `c` multiplies it by `ζ ≠ 1` (monodromy).  So the
+two demands "`w₀` analytic on `𝓝[≠] c`" **and** "`w₀(z)ᵐ = z − c` on `𝓝[≠] c`" are *jointly
+contradictory* for `m > 1`.  (An earlier version of `RamifiedSheetData` demanded exactly this — making
+it a disguised `False` at every genuine ramification centre, satisfiable only at `m = 1`.  This file
+fixes that.)
+
+The resolution (the standard one): a holomorphic branch `w₀` of `(z − c)^{1/m}` **does** exist on a
+*slit* `S` — a simply-connected open subset of the punctured neighbourhood, e.g. the punctured disk
+minus a ray (concretely `{z | z − c ∈ slitPlane}`, on which `w₀ z = (z − c)^{1/m}` via `Complex.cpow`).
+On the slit the geometry is exactly the unramified `m`-sheet picture, and the proven atom applies.  But
+both the geometric trace `valueChartTrace` and the algebraic trace are **single-valued analytic on the
+*full* punctured neighbourhood**: `valueChartTrace` because it is the *symmetric* sum over the `m`-point
+fibre (a set — independent of the sheet labelling; Miranda (3.1) makes it meromorphic at `c`), and the
+algebraic trace `ramifiedTraceTerm + Rem` by construction.  Two functions meromorphic at `c` that agree
+on a slit accumulating at `c` agree on all of `𝓝[≠] c` by the **identity theorem**
+(`MeromorphicAt.frequently_eq_iff_eventuallyEq`).  That is how `hcoh` is *derived* (never asserted).
+
+## The geometry on the slit (Miranda §VIII.3, Forster §5)
+
+On the slit, with the centered chart `w = chart_p` at `p`, the cover reads `z − c = (w − w_p)ᵐ` and the
+fibre splits into the `m` sheets `w = w_p + ζʲ·w₀(z)` (`ζ` a primitive `m`-th root of unity).  The
+value-chart trace over those sheets is the `m`-sheet sum
 
 > `∑_{j<m} h(w_p + ζʲ w₀(z)) · (d/dz)[w_p + ζʲ w₀(z)]`,    `h := chartIntegrand ω₀ g p`,
 
@@ -31,51 +49,50 @@ with `(d/dz)[w_p + ζʲ w₀(z)] = ζʲ w₀'(z) = ζʲ·(1/m) w₀(z)^{1−m}` 
 proven roots-of-unity collapse (`Jacobians.RamifiedTrace.laurentTraceCoeff_eq_sheetSum`) this `m`-sheet
 sum, applied to the **Laurent principal part** of `h` at `w_p`, equals the closed-form
 `laurentTraceCoeff (z − c)` — exactly the algebraic `ramifiedTraceTerm` whose residue is the upstairs
-residue (`resAt_laurentTraceCoeff`).  The holomorphic remainder of `h` contributes a holomorphic trace,
-which the residue does not see.
+residue (`resAt_laurentTraceCoeff`).  The holomorphic remainder of `h` contributes a holomorphic trace
+`Rem` (single-valued at `c` by the symmetric-function descent), which the residue does not see.
 
 ## What this file delivers
 
-* **`RamifiedSheetData`** (the genuine geometric input, the ramified analogue of the
-  `exists_planar_section` *output*): at one preimage `p`, the multiplicity `m`, a primitive `m`-th root
-  `ζ`, a holomorphic branch `w₀` of `(z − c)^{1/m}` on `𝓝[≠] c` (the **Forster §5 analytic atom**: the
-  branched-cover `m`-th root), and the **geometric identification** `hgeom` that the geometric trace
-  germ near `c` is the `m`-sheet sum read in `p`'s chart.  This is supplied as *data* — never asserted
-  as a free lemma — exactly as the unramified moving coherence `MovingCoherenceDatum` is supplied as
-  data (its monodromy bijection `hbij` is the unramified counterpart of `hgeom`).
+* **`RamifiedSheetData`** (the genuine geometric input): at one preimage `p`, the multiplicity `m`, a
+  primitive `m`-th root `ζ`, a **slit** `S` accumulating at `c`, a holomorphic branch `w₀` of
+  `(z − c)^{1/m}` **on `S`** (the Forster §5 analytic atom — the slit `m`-th root, which exists for any
+  `m`), the per-preimage Laurent principal-part data + the **single-valued** analytic remainder trace
+  `Rem`, the geometric identification `hgeom_slit` (on the slit), and — the genuine new content — the
+  **single-valued meromorphy of the symmetric trace sum** `hvct_mero` at `c`.  All supplied as *data*,
+  none asserted as a free lemma.
 
-* **`ramifiedSheetSum_eventuallyEq_laurentTraceTerm`** (the genuine new analytic content, FULLY
-  PROVEN): from `RamifiedSheetData` the geometric `m`-sheet trace germ equals
-  `ramifiedTraceTerm (principal part of h) m c + (analytic remainder trace)` on `𝓝[≠] c`.  This is the
-  ramified Lemma 3.2 *at the level of the geometric sheet sum* — the roots-of-unity collapse
-  (`laurentTraceCoeff_eq_sheetSum`) plus the principal-part split (`exists_principalPart_meromorphicAt`).
+* **`eventuallyEq_of_meromorphic_eqOn_slit`** (the identity-theorem bridge, #3): two functions
+  meromorphic at `c` agreeing on a slit accumulating at `c` agree on `𝓝[≠] c`
+  (`MeromorphicAt.frequently_eq_iff_eventuallyEq`).
+
+* **`RamifiedSheetData.traceFull` / `hcoh`** (the genuine new analytic content): the single-valued
+  algebraic trace `T = ramifiedTraceTerm (principal part) + Rem`, equal on the slit to the geometric
+  `m`-sheet sum (the atom, #1), hence equal to `valueChartTrace` on `𝓝[≠] c` by the identity theorem.
 
 * **`RamifiedCenterFacts.ofSheetData`** (the sound capstone): assembles a `RamifiedCenterFacts` whose
-  carried trace `T` is the *full* geometric `m`-sheet trace (NOT just the principal part), with `hcoh`
-  the genuine geometric identification and `hmero`/`hres` discharged via the split + the proven atom.
-  Unlike `RamifiedCenterFacts.ofFibreRamified` (whose `T := ramifiedTraceTerm` forces the FALSE
-  "full trace = principal-part trace" `hcoh`), this constructor's `hcoh` is TRUE — `T` is the honest
-  full trace.  Single-preimage form; the mixed-multiplicity fibre is the obvious sum.
+  carried trace `T` is the single-valued `ramifiedTraceTerm + Rem`, with `hcoh` derived via the slit +
+  identity theorem and `hmero`/`hres` via the proven atom.  Single-preimage form.
 
 ## ⚠ Soundness
 
-* `T` is the **full** geometric `m`-sheet trace, so `hcoh` is the genuine punctured germ-equality
-  `valueChartTrace =ᶠ[𝓝[≠] c] T` (TRUE — no "principal part = full trace" junk).  `hmero`/`hres` are
-  derived by *splitting* `T` into principal part (atom) + analytic remainder (residue `0`), never by
-  asserting the remainder vanishes.
+* **No monodromy contradiction.**  `w₀` is required analytic only on the *slit* `S`; the structure is
+  satisfiable for `m > 1` (`ramifiedSheetData_sqrt`, an explicit `m = 2` witness with the genuine slit
+  branch `√(z − c)`), not just `m = 1`.
+* `T = ramifiedTraceTerm + Rem` is single-valued meromorphic at `c`; `hcoh : valueChartTrace =ᶠ[𝓝[≠] c]
+  T` is **derived** (identity theorem from agreement on the slit), never asserted.  `hmero`/`hres` come
+  from the atom; `Rem` (analytic) contributes residue `0`.
 * Every trace statement is the `m`-sheet **SUM** (the atom's roots-of-unity factor `∑(ζʲ)⁰ = m`
-  cancels the chain-rule `1/m`); there is no single-sheet "`m·Res`" shortcut (the false 9th field —
-  absent).
-* `hgeom` (geometric trace = `m`-sheet sum read in `p`'s chart) and the branch `w₀` are the GENUINE
-  Forster §5 content, supplied as `RamifiedSheetData` *data*, not asserted.  At an unramified preimage
-  (`m = 1`, `ζ = 1`, `w₀(z) = z − c`) the sheet sum reduces to the single planar section term — the
-  `exists_planar_section` germ.
+  cancels the chain-rule `1/m`); there is no single-sheet "`m·Res`" shortcut.
 
 ## References
 
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §5 (local normal form `z = wᵐ`).
-* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, (3.1), Lemma 3.2 ramified case.
+* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, (3.1) (Tr single-valued meromorphic
+  in `z`), Lemma 3.2 ramified case.
 * `Jacobians/RamifiedResidueChangeOfVariables.lean` (`laurentTraceCoeff_eq_sheetSum`, the atom).
+* `Mathlib.Analysis.Meromorphic.IsolatedZeros` (`MeromorphicAt.frequently_eq_iff_eventuallyEq`, the
+  identity theorem).
 * `Jacobians/Dolbeault/FormTraceFibre.lean` (`exists_planar_section`, the unramified template).
 -/
 
@@ -102,29 +119,56 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
 
-/-! ### The Forster §5 normal-form sheet data (the genuine geometric input)
+/-! ### The identity-theorem bridge (slit → punctured neighbourhood)
+
+The mechanism by which a *slit* identity globalises: two functions meromorphic at `c` that agree on a
+set accumulating at `c` agree on the whole punctured neighbourhood (Mathlib's meromorphic identity
+theorem `MeromorphicAt.frequently_eq_iff_eventuallyEq`).  A slit (e.g. punctured-disk-minus-a-ray)
+accumulates at `c`, so a branch-built equality on the slit upgrades to a `𝓝[≠] c` germ-equality. -/
+
+/-- **Identity theorem on a slit.**  If `f` and `g` are meromorphic at `c` and agree on a set `S` that
+accumulates at `c` (`∃ᶠ z in 𝓝[≠] c, z ∈ S` — true for a slit), then `f =ᶠ[𝓝[≠] c] g`.  This is the
+engine that turns the slit-only branch identity into a punctured-neighbourhood germ-equality (so the
+multivalued `m`-th root is needed only on the slit, dodging the monodromy obstruction). -/
+theorem eventuallyEq_of_meromorphic_eqOn_slit {f h : ℂ → ℂ} {c : ℂ} {S : Set ℂ}
+    (hf : MeromorphicAt f c) (hh : MeromorphicAt h c)
+    (hacc : ∃ᶠ z in 𝓝[≠] c, z ∈ S) (hfh : ∀ z ∈ S, f z = h z) :
+    f =ᶠ[𝓝[≠] c] h :=
+  (MeromorphicAt.frequently_eq_iff_eventuallyEq hf hh).mp (hacc.mono hfh)
+
+/-! ### The Forster §5 slit sheet data (the genuine geometric input)
 
 `RamifiedSheetData` packages, at one preimage `p` of multiplicity `m` over a centre `c`, the Forster
-§5 local normal-form geometry as *data* (the ramified analogue of the `exists_planar_section` output):
-a primitive `m`-th root `ζ`, a holomorphic branch `w₀` of `(z − c)^{1/m}` on a punctured neighbourhood
-of `c`, the chain-rule identity for `w₀`, and — the geometric core — that the value-chart trace germ
-near `c` is the `m`-sheet sum of the chart integrand of `α = ω₀·g` at `p`, read along the `m` sheets
-`w = w_p + ζʲ w₀(z)`.  Everything else (the residue/meromorphy/`hcoh`) is *derived*. -/
+§5 local normal-form geometry as *data* (the ramified analogue of the `exists_planar_section` output),
+**with the monodromy obstruction respected**: the `m`-th-root branch `w₀` lives on a *slit* `S`, not on
+all of `𝓝[≠] c`.  The data also carries the single-valued algebraic trace ingredients (the Laurent
+principal part of the chart integrand, and the single-valued analytic remainder trace `Rem`) plus the
+genuine new content — the single-valued meromorphy of the symmetric trace sum `valueChartTrace` at `c`.
+Everything downstream (`T`, `hcoh`, the residue/meromorphy) is *derived*. -/
 
-/-- **Forster §5 ramified sheet data at one preimage.**  At a preimage `p` of multiplicity `m ≥ 1`
-over the centre `c`, with chart coordinate `wp := chart_p p`:
+/-- **Forster §5 slit sheet data at one preimage.**  At a preimage `p` of multiplicity `m ≥ 1` over the
+centre `c`, with chart coordinate `wp := chart_p p`:
 
 * `ζ` a primitive `m`-th root of unity;
-* `w₀ : ℂ → ℂ` a holomorphic branch of `(z − c)^{1/m}` on `𝓝[≠] c` (`hw₀_an`), nonvanishing there
-  (`hw₀_ne`), with `w₀(z)ᵐ = z − c` (`hw₀_pow`) and the chain-rule derivative `w₀'(z) = (1/m) w₀^{1−m}`
-  (`hw₀_deriv`) — the **Forster §5 analytic atom** (the branched-cover `m`-th root);
-* the **geometric identification** `hgeom`: the value-chart trace germ `valueChartTrace ω₀ f Φ` equals,
-  on `𝓝[≠] c`, the `m`-sheet sum `∑_{j<m} h(wp + ζʲ w₀(z))·(d/dz)[wp + ζʲ w₀(z)]` of the chart
-  integrand `h := chartIntegrand ω₀ g p`.
+* a **slit** `S ⊆ ℂ` accumulating at `c` (`hS_acc`), with a holomorphic branch `w₀` of `(z − c)^{1/m}`
+  **on `S`** — nonvanishing (`hw₀_ne`), an `m`-th root (`hw₀_pow`), with the chain-rule derivative
+  (`hw₀_deriv`).  This is the **Forster §5 analytic atom**, restricted to the slit where it exists for
+  *any* `m` (no monodromy contradiction);
+* per-preimage Laurent **principal-part data** of the chart integrand `h := chartIntegrand ω₀ g p`:
+  degree `ppN`, coefficients `ppb`, analytic remainder `ppR` (`hppR_an`), with the split holding at the
+  sheet points along the slit (`hpp_split_sheet`).  `hppN_res` records that the principal part carries
+  the upstairs residue (a true fact about the Laurent expansion at `p`, *not* the downstairs residue);
+* the **single-valued analytic remainder trace** `Rem` (`hRem_an : AnalyticAt ℂ Rem c`), the
+  symmetric-function descent of the `m`-sheet sum of `ppR` (`hRem_slit`, on the slit) — the standard
+  "trace of a holomorphic form is holomorphic", now stated as a single-valued function at `c`;
+* the **geometric identification** `hgeom_slit`: on the slit, `valueChartTrace ω₀ f Φ` equals the
+  `m`-sheet sum `∑_{j<m} h(wp + ζʲ w₀(z))·(d/dz)[wp + ζʲ w₀(z)]`;
+* `hvct_mero` — the genuine new content (Miranda (3.1)): the symmetric trace sum `valueChartTrace ω₀ f Φ`
+  (single-valued by construction — a *set* sum over the fibre) is **meromorphic at `c`**.
 
-This is the genuine §VIII.3 / Forster §5 content, supplied as *data* (as the unramified
-`MovingCoherenceDatum` is), never asserted as a free lemma; the residue identity, meromorphy, and the
-abstract `hcoh` are all *derived* from it (`RamifiedCenterFacts.ofSheetData`). -/
+Supplied as *data* (as the unramified `MovingCoherenceDatum` is), never asserted as a free lemma; the
+single-valued trace `T`, the punctured germ-equality `hcoh`, the residue and meromorphy are all
+*derived* (`RamifiedCenterFacts.ofSheetData`). -/
 structure RamifiedSheetData (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
     (Φ : (b : ℂ) → FibreRegularData g f b) (c : ℂ) where
   /-- The ramification preimage over `c`. -/
@@ -137,37 +181,58 @@ structure RamifiedSheetData (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f :
   ζ : ℂ
   /-- `ζ` is a primitive `m`-th root of unity. -/
   hζ : IsPrimitiveRoot ζ m
-  /-- The holomorphic branch of `(z − c)^{1/m}`. -/
+  /-- The **slit** on which the `m`-th-root branch is defined (e.g. a punctured-disk-minus-a-ray). -/
+  S : Set ℂ
+  /-- The slit accumulates at `c` (so the identity theorem applies). -/
+  hS_acc : ∃ᶠ z in 𝓝[≠] c, z ∈ S
+  /-- The holomorphic branch of `(z − c)^{1/m}` on the slit. -/
   w₀ : ℂ → ℂ
-  /-- The branch is analytic on a punctured neighbourhood of `c`. -/
-  hw₀_an : ∀ᶠ z in 𝓝[≠] c, AnalyticAt ℂ w₀ z
-  /-- The branch is nonzero off `c`. -/
-  hw₀_ne : ∀ᶠ z in 𝓝[≠] c, w₀ z ≠ 0
-  /-- The branch tends to `0` at `c` (`(z − c)^{1/m} → 0`). -/
-  hw₀_tendsto : Tendsto w₀ (𝓝[≠] c) (𝓝 0)
-  /-- The branch is an `m`-th root: `w₀(z)ᵐ = z − c`. -/
-  hw₀_pow : ∀ᶠ z in 𝓝[≠] c, w₀ z ^ (m : ℤ) = z - c
-  /-- The chain-rule derivative `w₀'(z) = (1/m) w₀(z)^{1−m}` (from `m w₀^{m−1} w₀' = 1`). -/
-  hw₀_deriv : ∀ᶠ z in 𝓝[≠] c, deriv w₀ z = (m : ℂ)⁻¹ * w₀ z ^ (1 - (m : ℤ))
+  /-- The branch is nonzero on the slit. -/
+  hw₀_ne : ∀ z ∈ S, w₀ z ≠ 0
+  /-- The branch is an `m`-th root on the slit: `w₀(z)ᵐ = z − c`. -/
+  hw₀_pow : ∀ z ∈ S, w₀ z ^ (m : ℤ) = z - c
+  /-- The chain-rule derivative on the slit: `w₀'(z) = (1/m) w₀(z)^{1−m}` (from `m w₀^{m−1} w₀' = 1`). -/
+  hw₀_deriv : ∀ z ∈ S, deriv w₀ z = (m : ℂ)⁻¹ * w₀ z ^ (1 - (m : ℤ))
   /-- `g`'s chart-pullback is meromorphic at `p`'s chart centre (so the chart integrand of `α = ω₀·g`
   has an isolated singularity — true since `p` is an isolated pole of `α`). -/
   hg_mero : MeromorphicAt (fun z => g ((chartAt ℂ p).symm z)) ((chartAt ℂ p) p)
-  /-- **The geometric trace identification** (Forster §5): the value-chart trace germ near `c` is the
-  `m`-sheet sum of the chart integrand of `α = ω₀·g` at `p`, read along `w = wp + ζʲ w₀(z)`. -/
-  hgeom : valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] c]
-    fun z => ∑ j ∈ Finset.range m,
-      chartIntegrand ω₀ g p ((chartAt ℂ p) p + ζ ^ j * w₀ z)
-        * deriv (fun ζz => (chartAt ℂ p) p + ζ ^ j * w₀ ζz) z
-  /-- **Trace of holomorphic is holomorphic** (Forster §5): the `m`-sheet sum along `w = wp + ζʲ w₀(z)`
-  of any function `R` analytic at `wp = chart_p p` is analytic at `c`.  This is the standard fact that
-  the trace of a *holomorphic* form along the branched cover is holomorphic (the residue does not see
-  the holomorphic part); it is genuinely true and supplied as part of the Forster §5 normal-form
-  package (the symmetric-function descent of `∑_j R(ζʲ w₀)` to a holomorphic function of
-  `w₀ᵐ = z − c`).  It discharges the analytic-remainder trace in the principal-part split. -/
-  hrem_an : ∀ R : ℂ → ℂ, AnalyticAt ℂ R ((chartAt ℂ p) p) →
-    AnalyticAt ℂ (fun z => ∑ j ∈ Finset.range m,
-      R ((chartAt ℂ p) p + ζ ^ j * w₀ z)
-        * deriv (fun ζz => (chartAt ℂ p) p + ζ ^ j * w₀ ζz) z) c
+  /-- Degree of the Laurent principal part of `chartIntegrand ω₀ g p` at `wp`. -/
+  ppN : ℕ
+  /-- Coefficients of the Laurent principal part. -/
+  ppb : ℕ → ℂ
+  /-- Analytic remainder of `chartIntegrand ω₀ g p` (the part holomorphic at `wp`). -/
+  ppR : ℂ → ℂ
+  /-- The remainder is analytic at `wp`. -/
+  hppR_an : AnalyticAt ℂ ppR ((chartAt ℂ p) p)
+  /-- **The principal-part split at the sheet points** (true by `exists_principalPart_meromorphicAt`):
+  on the slit, the chart integrand decomposes as principal part `negTail` plus analytic remainder `ppR`
+  at each of the `m` sheet arguments `wp + ζʲ w₀ z`. -/
+  hpp_split_sheet : ∀ z ∈ S, ∀ j ∈ Finset.range m,
+    chartIntegrand ω₀ g p ((chartAt ℂ p) p + ζ ^ j * w₀ z)
+      = negTail ((chartAt ℂ p) p) ppb ppN ((chartAt ℂ p) p + ζ ^ j * w₀ z)
+        + ppR ((chartAt ℂ p) p + ζ ^ j * w₀ z)
+  /-- The principal part carries the upstairs residue (a true fact about the Laurent expansion of
+  `chartIntegrand ω₀ g p` at `wp`; **not** the downstairs trace residue — no circularity). -/
+  hppN_res : resAt (fun w => ∑ k ∈ Finset.Icc 1 ppN, ppb k * (w - 0) ^ (-(k : ℤ))) 0
+    = formFnResidue ω₀ g p
+  /-- The **single-valued analytic remainder trace** at `c` (the symmetric-function descent of the
+  `m`-sheet sum of the holomorphic remainder `ppR`). -/
+  Rem : ℂ → ℂ
+  /-- The remainder trace is analytic at `c` (trace of a holomorphic form is holomorphic). -/
+  hRem_an : AnalyticAt ℂ Rem c
+  /-- The remainder trace agrees, on the slit, with the `m`-sheet sum of `ppR`. -/
+  hRem_slit : ∀ z ∈ S, Rem z = ∑ j ∈ Finset.range m,
+    ppR ((chartAt ℂ p) p + ζ ^ j * w₀ z)
+      * deriv (fun ζz => (chartAt ℂ p) p + ζ ^ j * w₀ ζz) z
+  /-- **The geometric trace identification on the slit** (Forster §5): on the slit, the value-chart
+  trace is the `m`-sheet sum of the chart integrand of `α = ω₀·g` at `p`, read along `w = wp + ζʲ w₀`. -/
+  hgeom_slit : ∀ z ∈ S, valueChartTrace ω₀ f Φ z = ∑ j ∈ Finset.range m,
+    chartIntegrand ω₀ g p ((chartAt ℂ p) p + ζ ^ j * w₀ z)
+      * deriv (fun ζz => (chartAt ℂ p) p + ζ ^ j * w₀ ζz) z
+  /-- **Single-valued meromorphy of the symmetric trace sum** (the genuine new content, Miranda (3.1)):
+  `valueChartTrace ω₀ f Φ` — single-valued by construction (a sum over the *fibre set*, independent of
+  sheet labels) — is meromorphic at `c`. -/
+  hvct_mero : MeromorphicAt (valueChartTrace ω₀ f Φ) c
 
 /-! ### The sheet-`j` derivative `(d/dz)[wp + ζʲ w₀(z)] = ζʲ w₀'(z)`
 
@@ -218,197 +283,129 @@ theorem ramifiedSheetSum_laurentPoly {ι : Type*} (s : Finset ι) (cf : ι → �
   rw [hpow]
   rfl
 
-/-! ### The principal-part split of the geometric sheet sum (the genuine ramified Lemma 3.2)
+/-! ### The single-valued algebraic trace `T` and the slit identity
 
-From the sheet data `S`, the geometric `m`-sheet trace germ (= `valueChartTrace`) decomposes on a
-punctured neighbourhood of `c` as `ramifiedTraceTerm (principal part of the chart integrand) + (the
-sheet sum of the analytic remainder)`.  The first term is the algebraic `m`-sheet-sum trace (meromorphic,
-residue = upstairs residue, by the proven atom); the second is analytic at `c` (`hrem_an`).  Hence the
-full trace is meromorphic at `c` with residue the upstairs residue — the ramified Lemma 3.2. -/
+From the slit sheet data `S`, the **single-valued** algebraic trace is
+
+> `T := ramifiedTraceTerm (Icc 1 ppN) ppb (k ↦ −k) m c  +  Rem`
+
+(`ramifiedTraceTerm` the `m`-sheet-sum trace of the integrand's Laurent **principal part**, `Rem` the
+single-valued analytic remainder trace).  `T` is single-valued and meromorphic at `c` *by
+construction*.  On the slit `S`, `T` equals the geometric `m`-sheet sum `valueChartTrace` (the proven
+atom `ramifiedSheetSum_laurentPoly` + the data fields).  Since both `T` and `valueChartTrace` are
+meromorphic at `c` and the slit accumulates at `c`, the identity theorem upgrades the slit identity to
+the punctured germ-equality `hcoh` — without ever needing the multivalued branch off the slit. -/
 
 namespace RamifiedSheetData
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
   {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ}
 
-/-- The geometric `m`-sheet trace germ carried as `T` (the RHS of `hgeom`): the honest *full* trace,
-`∑_{j<m} h(wp + ζʲ w₀(z))·(d/dz)[wp + ζʲ w₀(z)]` with `h = chartIntegrand ω₀ g p`. -/
+/-- The **single-valued** algebraic trace carried as `T`: the `m`-sheet-sum trace of the integrand's
+Laurent principal part (`ramifiedTraceTerm`, a single-valued meromorphic function of `z − c`) plus the
+single-valued analytic remainder trace `Rem`.  This is single-valued and meromorphic at `c` by
+construction — it does **not** reference the multivalued branch `w₀`. -/
 noncomputable def traceFull (S : RamifiedSheetData ω₀ g f Φ c) : ℂ → ℂ :=
-  fun z => ∑ j ∈ Finset.range S.m,
-    chartIntegrand ω₀ g S.p ((chartAt ℂ S.p) S.p + S.ζ ^ j * S.w₀ z)
-      * deriv (fun ζz => (chartAt ℂ S.p) S.p + S.ζ ^ j * S.w₀ ζz) z
+  fun z => ramifiedTraceTerm (Finset.Icc 1 S.ppN) S.ppb (fun k => -(k : ℤ)) S.m c z + S.Rem z
 
-/-- `valueChartTrace` germ-equals the full geometric trace `traceFull` near `c` — exactly `hgeom`. -/
-theorem hcoh (S : RamifiedSheetData ω₀ g f Φ c) :
-    valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] c] S.traceFull := S.hgeom
-
-/-- The chart integrand of `α = ω₀·g` at the preimage `p`, the per-sheet integrand `h`. -/
-private noncomputable def hInt (S : RamifiedSheetData ω₀ g f Φ c) : ℂ → ℂ :=
-  chartIntegrand ω₀ g S.p
-
-private theorem hInt_mero (S : RamifiedSheetData ω₀ g f Φ c) :
-    MeromorphicAt S.hInt ((chartAt ℂ S.p) S.p) :=
-  meromorphicAt_chartIntegrand ω₀ g S.p S.hg_mero
-
-/-- The sheet map `z ↦ wp + ζʲ w₀(z)` tends to `wp` *within `{≠ wp}`* along `𝓝[≠] c`: it tends to `wp`
-(since `w₀ → 0`) and stays `≠ wp` (since `ζʲ ≠ 0` and `w₀ ≠ 0` off `c`).  This lets the integrand's
-principal-part split (a `𝓝[≠] wp` germ-equality) pull back to the sheet points near `c`. -/
-private theorem tendsto_sheet (S : RamifiedSheetData ω₀ g f Φ c) (j : ℕ) :
-    Tendsto (fun z => (chartAt ℂ S.p) S.p + S.ζ ^ j * S.w₀ z) (𝓝[≠] c)
-      (𝓝[≠] ((chartAt ℂ S.p) S.p)) := by
-  apply tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within
-  · -- Tendsto to `wp`: `wp + ζʲ·w₀ → wp + ζʲ·0 = wp`.
-    have h0 : Tendsto (fun z => (chartAt ℂ S.p) S.p + S.ζ ^ j * S.w₀ z) (𝓝[≠] c)
-        (𝓝 ((chartAt ℂ S.p) S.p + S.ζ ^ j * 0)) :=
-      tendsto_const_nhds.add (tendsto_const_nhds.mul S.hw₀_tendsto)
-    simpa using h0
-  · -- Eventually `≠ wp`: `ζʲ·w₀ z ≠ 0`.
-    have hζj : S.ζ ^ j ≠ 0 := pow_ne_zero j (S.hζ.ne_zero S.hm.ne')
-    filter_upwards [S.hw₀_ne] with z hz
-    simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
-    intro hcon
-    -- `wp + ζʲ w₀ z = wp ⟹ ζʲ w₀ z = 0 ⟹ w₀ z = 0`, contradiction.
-    have hzero : S.ζ ^ j * S.w₀ z = 0 := by
-      have := add_left_cancel (a := (chartAt ℂ S.p) S.p) (b := S.ζ ^ j * S.w₀ z) (c := 0)
-        (by rw [add_zero]; exact hcon)
-      exact this
-    exact hz (by simpa [hζj] using hzero)
-
-/-! ### The principal-part split and the derived facts (A)/(B) -/
-
-/-- **The principal-part split of the geometric trace** (the genuine ramified Lemma 3.2).  There are a
-degree `N`, principal-part coefficients `b`, and an analytic remainder trace `Rem` (`AnalyticAt ℂ Rem
-c`) such that on `𝓝[≠] c` the full geometric trace splits as
-
-> `traceFull = ramifiedTraceTerm (Icc 1 N) b (k ↦ −k) m c  +  Rem`,
-
-with the residue of the `ramifiedTraceTerm` part equal to the upstairs residue `formFnResidue ω₀ g p`.
-The `ramifiedTraceTerm` part is the `m`-sheet sum of the integrand's Laurent **principal part** (the
-proven atom on the geometry, `ramifiedSheetSum_laurentPoly`); `Rem` is the `m`-sheet sum of the
-integrand's analytic remainder (analytic at `c` by `hrem_an`). -/
-theorem exists_split (S : RamifiedSheetData ω₀ g f Φ c) :
-    ∃ (N : ℕ) (b : ℕ → ℂ) (Rem : ℂ → ℂ), AnalyticAt ℂ Rem c ∧
-      S.traceFull =ᶠ[𝓝[≠] c]
-        (fun z => ramifiedTraceTerm (Finset.Icc 1 N) b (fun k => -(k : ℤ)) S.m c z + Rem z) ∧
-      resAt (ramifiedTraceTerm (Finset.Icc 1 N) b (fun k => -(k : ℤ)) S.m c) c
-        = formFnResidue ω₀ g S.p := by
+/-- **The slit identity** (the genuine ramified Lemma 3.2 on the slit): on the slit, the geometric
+trace `valueChartTrace` equals the single-valued algebraic trace `T = ramifiedTraceTerm + Rem`.  Proof:
+`hgeom_slit` (geometric = `m`-sheet sum of the chart integrand), then the principal-part split at the
+sheet points (`hpp_split_sheet`), the proven atom (`ramifiedSheetSum_laurentPoly`, turning the
+principal-part sheet sum into `ramifiedTraceTerm`), and `hRem_slit` (the remainder sheet sum is `Rem`). -/
+theorem eqOn_traceFull_slit (S : RamifiedSheetData ω₀ g f Φ c) :
+    ∀ z ∈ S.S, valueChartTrace ω₀ f Φ z = S.traceFull z := by
   classical
+  intro z hz
   set wp := (chartAt ℂ S.p) S.p with hwp
-  -- Principal part of the chart integrand `h = hInt` at `wp`.
-  obtain ⟨N, b, R, hR_an, hR_eq⟩ := exists_principalPart_meromorphicAt S.hInt_mero
-  -- The Laurent-poly form of `negTail wp b N` (centred at `wp`), as the atom's integrand.
-  set Rem : ℂ → ℂ := fun z => ∑ j ∈ Finset.range S.m,
-    R (wp + S.ζ ^ j * S.w₀ z) * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z with hRem
-  refine ⟨N, b, Rem, S.hrem_an R hR_an, ?_, ?_⟩
-  · -- The germ split.  Pull the integrand split `hR_eq` back along each of the `m` sheet maps.
-    -- Eventually (on `𝓝[≠] c`): every sheet point satisfies the integrand split AND `w₀ z ≠ 0` etc.
-    have hsheets : ∀ᶠ z in 𝓝[≠] c, ∀ j ∈ Finset.range S.m,
-        S.hInt (wp + S.ζ ^ j * S.w₀ z)
-          = negTail wp b N (wp + S.ζ ^ j * S.w₀ z) + R (wp + S.ζ ^ j * S.w₀ z) := by
-      rw [eventually_all_finset]
-      intro j _
-      exact (hR_eq.comp_tendsto (S.tendsto_sheet j))
-    filter_upwards [hsheets, S.hw₀_ne, S.hw₀_pow, S.hw₀_deriv, self_mem_nhdsWithin]
-      with z hz hne hpow hderiv _
-    -- Goal: `traceFull z = ramifiedTraceTerm … z + Rem z`.  Read `traceFull z` as a sum and split.
-    show (∑ j ∈ Finset.range S.m,
-        S.hInt (wp + S.ζ ^ j * S.w₀ z) * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z)
-      = ramifiedTraceTerm (Finset.Icc 1 N) b (fun k => -(k : ℤ)) S.m c z + Rem z
-    -- Step 1: replace `hInt(sheet)` by `negTail(sheet) + R(sheet)`, distribute, regroup as
-    -- `(negTail-trace) + (R-trace = Rem z)`.
-    have hstep1 : (∑ j ∈ Finset.range S.m,
-          S.hInt (wp + S.ζ ^ j * S.w₀ z) * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z)
-        = (∑ j ∈ Finset.range S.m,
-            negTail wp b N (wp + S.ζ ^ j * S.w₀ z) * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z)
-          + Rem z := by
-      rw [hRem, ← Finset.sum_add_distrib]
-      refine Finset.sum_congr rfl (fun j hj => ?_)
-      rw [hz j hj]; ring
-    -- Step 2: the negTail-trace is `ramifiedTraceTerm` via the proven atom.
-    have hstep2 : (∑ j ∈ Finset.range S.m,
-          negTail wp b N (wp + S.ζ ^ j * S.w₀ z) * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z)
-        = ramifiedTraceTerm (Finset.Icc 1 N) b (fun k => -(k : ℤ)) S.m c z := by
-      rw [show (∑ j ∈ Finset.range S.m,
-            negTail wp b N (wp + S.ζ ^ j * S.w₀ z) * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z)
-          = ∑ j ∈ Finset.range S.m,
-            (∑ k ∈ Finset.Icc 1 N, b k * (wp + S.ζ ^ j * S.w₀ z - wp) ^ (-(k : ℤ)))
-              * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z
-        from Finset.sum_congr rfl (fun j _ => by rw [negTail])]
-      exact ramifiedSheetSum_laurentPoly (Finset.Icc 1 N) b (fun k => -(k : ℤ)) S.hm S.hζ hne hpow
-        hderiv
-    rw [hstep1, hstep2]
-  · -- The residue of the `ramifiedTraceTerm` part = upstairs residue = `formFnResidue ω₀ g p`.
-    rw [resAt_ramifiedTraceTerm (Finset.Icc 1 N) b (fun k => -(k : ℤ)) S.hm c]
-    -- `negTail wp b N` rewritten as `(Laurent poly centred at 0)(· − wp)`.
-    have hnegtail_eq : (negTail wp b N)
-        = fun w => (fun w' => ∑ k ∈ Finset.Icc 1 N, b k * (w' - 0) ^ (-(k : ℤ))) (w - wp) := by
-      funext w; simp only [negTail, sub_zero]
-    -- `resAt (Laurent poly of pp) 0 = resAt (negTail wp b N) wp` (shift-covariance).
-    have hshift : resAt (fun w => ∑ k ∈ Finset.Icc 1 N, b k * (w - 0) ^ (-(k : ℤ))) 0
-        = resAt (negTail wp b N) wp := by
-      rw [hnegtail_eq]
-      exact (resAt_comp_sub_const (fun w' => ∑ k ∈ Finset.Icc 1 N, b k * (w' - 0) ^ (-(k : ℤ)))
-        wp).symm
-    rw [hshift]
-    -- `negTail wp b N` is meromorphic at `wp` (a finite sum of Laurent monomials centred at `wp`).
-    have hnegmero : MeromorphicAt (negTail wp b N) wp := by
-      show MeromorphicAt (fun w => ∑ k ∈ Finset.Icc 1 N, b k * (w - wp) ^ (-(k : ℤ))) wp
-      exact MeromorphicAt.fun_sum (fun k _ => (MeromorphicAt.const (b k) _).mul
-        ((analyticAt_id.sub analyticAt_const).meromorphicAt.zpow _))
-    -- `resAt (negTail wp b N) wp = resAt hInt wp` (differ by the analytic remainder `R`, residue `0`).
-    have hres_hInt : resAt (negTail wp b N) wp = resAt S.hInt wp := by
-      have hsum_eq : S.hInt =ᶠ[𝓝[≠] wp] (negTail wp b N) + R := hR_eq
-      rw [resAt_congr hsum_eq, resAt_add hnegmero.holoPunctured hR_an.meromorphicAt.holoPunctured,
-        resAt_eq_zero_of_analyticAt hR_an, add_zero]
-    rw [hres_hInt]
-    -- `resAt hInt wp = formFnResidue ω₀ g p` (definitional, `resAt_chartIntegrand_eq_formFnResidue`).
-    show resAt (chartIntegrand ω₀ g S.p) ((chartAt ℂ S.p) S.p) = formFnResidue ω₀ g S.p
-    exact resAt_chartIntegrand_eq_formFnResidue ω₀ g S.p
+  -- Geometric: `valueChartTrace z = ∑ⱼ chartIntegrand(wp + ζʲ w₀ z)·deriv(sheet j)`.
+  rw [S.hgeom_slit z hz]
+  -- Split each `chartIntegrand(sheet)` into `negTail(sheet) + ppR(sheet)`, distribute the sum.
+  have hsplit : (∑ j ∈ Finset.range S.m,
+        chartIntegrand ω₀ g S.p (wp + S.ζ ^ j * S.w₀ z)
+          * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z)
+      = (∑ j ∈ Finset.range S.m,
+          negTail wp S.ppb S.ppN (wp + S.ζ ^ j * S.w₀ z)
+            * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z)
+        + (∑ j ∈ Finset.range S.m,
+            S.ppR (wp + S.ζ ^ j * S.w₀ z) * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z) := by
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl (fun j hj => ?_)
+    rw [S.hpp_split_sheet z hz j hj]; ring
+  rw [hsplit]
+  -- The `negTail`-sheet-sum is `ramifiedTraceTerm` (the proven atom).
+  have hatom : (∑ j ∈ Finset.range S.m,
+        negTail wp S.ppb S.ppN (wp + S.ζ ^ j * S.w₀ z)
+          * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z)
+      = ramifiedTraceTerm (Finset.Icc 1 S.ppN) S.ppb (fun k => -(k : ℤ)) S.m c z := by
+    rw [show (∑ j ∈ Finset.range S.m,
+          negTail wp S.ppb S.ppN (wp + S.ζ ^ j * S.w₀ z)
+            * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z)
+        = ∑ j ∈ Finset.range S.m,
+          (∑ k ∈ Finset.Icc 1 S.ppN, S.ppb k * (wp + S.ζ ^ j * S.w₀ z - wp) ^ (-(k : ℤ)))
+            * deriv (fun ζz => wp + S.ζ ^ j * S.w₀ ζz) z
+      from Finset.sum_congr rfl (fun j _ => by rw [negTail])]
+    exact ramifiedSheetSum_laurentPoly (Finset.Icc 1 S.ppN) S.ppb (fun k => -(k : ℤ)) S.hm S.hζ
+      (S.hw₀_ne z hz) (S.hw₀_pow z hz) (S.hw₀_deriv z hz)
+  -- The `ppR`-sheet-sum is `Rem z` (the symmetric-function descent, `hRem_slit`).
+  rw [hatom, ← S.hRem_slit z hz]
+  rfl
 
-/-- **Fact (A): the full geometric trace `traceFull` is meromorphic at `c`.**  From the split
-`traceFull =ᶠ ramifiedTraceTerm + Rem` (`exists_split`), with `ramifiedTraceTerm` meromorphic (the
-atom) and `Rem` analytic at `c` (`hrem_an`). -/
+/-- The single-valued trace `T` is **meromorphic at `c`** by construction: `ramifiedTraceTerm` is the
+atom's shifted Laurent term (`meromorphicAt_ramifiedTraceTerm`) and `Rem` is analytic at `c`. -/
 theorem meromorphicAt_traceFull (S : RamifiedSheetData ω₀ g f Φ c) :
     MeromorphicAt S.traceFull c := by
-  obtain ⟨N, b, Rem, hRem_an, hsplit, _⟩ := S.exists_split
-  have hsplit' : S.traceFull =ᶠ[𝓝[≠] c]
-      (ramifiedTraceTerm (Finset.Icc 1 N) b (fun k => -(k : ℤ)) S.m c) + Rem := hsplit
-  refine MeromorphicAt.congr ?_ hsplit'.symm
-  exact (meromorphicAt_ramifiedTraceTerm (Finset.Icc 1 N) b (fun k => -(k : ℤ)) S.m c).add
-    hRem_an.meromorphicAt
+  show MeromorphicAt
+    (fun z => ramifiedTraceTerm (Finset.Icc 1 S.ppN) S.ppb (fun k => -(k : ℤ)) S.m c z + S.Rem z) c
+  have h : MeromorphicAt
+      ((ramifiedTraceTerm (Finset.Icc 1 S.ppN) S.ppb (fun k => -(k : ℤ)) S.m c) + S.Rem) c :=
+    (meromorphicAt_ramifiedTraceTerm (Finset.Icc 1 S.ppN) S.ppb (fun k => -(k : ℤ)) S.m c).add
+      S.hRem_an.meromorphicAt
+  exact h
 
-/-- **Fact (B): the residue of the full geometric trace `traceFull` at `c` is the upstairs residue.**
-`resAt traceFull c = formFnResidue ω₀ g p`.  From the split: the residue of `ramifiedTraceTerm` is the
-upstairs residue (`exists_split`), and `Rem` (analytic) adds `0`. -/
+/-- **`hcoh` (DERIVED via the identity theorem):** `valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] c] T`.  Both sides
+are meromorphic at `c` (`hvct_mero` / `meromorphicAt_traceFull`) and agree on the slit
+(`eqOn_traceFull_slit`), which accumulates at `c` (`hS_acc`); the identity theorem
+(`eventuallyEq_of_meromorphic_eqOn_slit`) extends the slit agreement to the punctured neighbourhood.
+This is where the monodromy obstruction is dodged — the branch was needed only on the slit. -/
+theorem hcoh (S : RamifiedSheetData ω₀ g f Φ c) :
+    valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] c] S.traceFull :=
+  eventuallyEq_of_meromorphic_eqOn_slit S.hvct_mero S.meromorphicAt_traceFull S.hS_acc
+    S.eqOn_traceFull_slit
+
+/-- **Fact (B): the residue of the single-valued trace `T` at `c` is the upstairs residue.**
+`resAt T c = formFnResidue ω₀ g p`.  The residue of `ramifiedTraceTerm` is the principal part's residue
+(`resAt_ramifiedTraceTerm` + the data field `hppN_res`), and `Rem` (analytic) adds `0`. -/
 theorem resAt_traceFull (S : RamifiedSheetData ω₀ g f Φ c) :
     resAt S.traceFull c = formFnResidue ω₀ g S.p := by
-  obtain ⟨N, b, Rem, hRem_an, hsplit, hpp_res⟩ := S.exists_split
-  -- Reshape the split's RHS `fun z => P z + Rem z` to the `Pi.add` form `P + Rem`.
-  have hsplit' : S.traceFull =ᶠ[𝓝[≠] c]
-      (ramifiedTraceTerm (Finset.Icc 1 N) b (fun k => -(k : ℤ)) S.m c) + Rem := hsplit
-  rw [resAt_congr hsplit',
+  show resAt
+    (fun z => ramifiedTraceTerm (Finset.Icc 1 S.ppN) S.ppb (fun k => -(k : ℤ)) S.m c z + S.Rem z) c
+    = formFnResidue ω₀ g S.p
+  rw [show (fun z => ramifiedTraceTerm (Finset.Icc 1 S.ppN) S.ppb (fun k => -(k : ℤ)) S.m c z
+        + S.Rem z)
+      = (ramifiedTraceTerm (Finset.Icc 1 S.ppN) S.ppb (fun k => -(k : ℤ)) S.m c) + S.Rem from rfl,
     resAt_add
-      (meromorphicAt_ramifiedTraceTerm (Finset.Icc 1 N) b (fun k => -(k : ℤ)) S.m c).holoPunctured
-      hRem_an.meromorphicAt.holoPunctured,
-    resAt_eq_zero_of_analyticAt hRem_an, add_zero, hpp_res]
+      (meromorphicAt_ramifiedTraceTerm (Finset.Icc 1 S.ppN) S.ppb (fun k => -(k : ℤ)) S.m c).holoPunctured
+      S.hRem_an.meromorphicAt.holoPunctured,
+    resAt_eq_zero_of_analyticAt S.hRem_an, add_zero,
+    resAt_ramifiedTraceTerm (Finset.Icc 1 S.ppN) S.ppb (fun k => -(k : ℤ)) S.hm c, S.hppN_res]
 
 end RamifiedSheetData
 
 /-! ### The sound capstone: `RamifiedCenterFacts` from `RamifiedSheetData`
 
-Assembling the full `RamifiedCenterFacts` at a single ramified preimage centre.  Unlike
-`RamifiedCenterFacts.ofFibreRamified` (whose `T := ramifiedTraceTerm` forces the FALSE
-"full trace = principal-part trace" `hcoh`), here `T := traceFull` is the honest *full* geometric
-`m`-sheet trace, so `hcoh` is the genuine punctured germ-equality `valueChartTrace =ᶠ T` (= `hgeom`),
-and `hmero`/`hres` are derived through the principal-part split + the proven atom. -/
+Assembling the full `RamifiedCenterFacts` at a single ramified preimage centre.  The carried trace
+`T := traceFull` is the single-valued `ramifiedTraceTerm (principal part) + Rem` (NOT the multivalued
+sheet sum), so `hcoh : valueChartTrace =ᶠ[𝓝[≠] c] T` is the genuine punctured germ-equality, *derived*
+via the slit identity + the identity theorem; `hmero`/`hres` come from the proven atom. -/
 
 /-- **`RamifiedCenterFacts` from a single-preimage `RamifiedSheetData`** (the SOUND ramified centre
-provider).  Given the Forster §5 sheet data `S` at a ramification preimage `p` of multiplicity `m` over
-`c`, and that `p` is the *unique* pole of `α = ω₀·g` in the fibre `F⁻¹(coe c)` (`hp_pole`,
+provider).  Given the Forster §5 slit sheet data `S` at a ramification preimage `p` of multiplicity `m`
+over `c`, and that `p` is the *unique* pole of `α = ω₀·g` in the fibre `F⁻¹(coe c)` (`hp_pole`,
 `hp_fibre`, `hp_unique`), build the `RamifiedCenterFacts` whose carried trace `T = traceFull` is the
-honest full geometric `m`-sheet trace.  `hcoh` is `S.hgeom` (TRUE — `T` is the full trace, not the
-principal part); `hmero`/`hres` are `meromorphicAt_traceFull`/`resAt_traceFull` (the split + the proven
-atom).  **No `deriv ≠ 0`** (admits ramification); **no false/circular field** — `T` is honest. -/
+single-valued `ramifiedTraceTerm + Rem`.  `hcoh` is `S.hcoh` (derived via the slit + identity theorem —
+TRUE, no monodromy contradiction); `hmero`/`hres` are `meromorphicAt_traceFull`/`resAt_traceFull` (the
+proven atom).  **No `deriv ≠ 0`** (admits ramification); **no false/circular field**. -/
 noncomputable def RamifiedCenterFacts.ofSheetData {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
     {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {poles : Finset X} {c : ℂ}
     (S : RamifiedSheetData ω₀ g f Φ c) (hp_pole : S.p ∈ poles)
@@ -433,90 +430,146 @@ noncomputable def RamifiedCenterFacts.ofSheetData {ω₀ : HolomorphicOneForms X
     show resAt S.traceFull c = ∑ _ : Unit, formFnResidue ω₀ g S.p
     rw [Finset.sum_const, Finset.card_univ, Fintype.card_unit, one_smul, S.resAt_traceFull]
 
-/-! ### Soundness sanity — the `m = 1` (unramified) reduction recovers the planar section term
+/-! ### Soundness sanity — the carried trace is single-valued; the slit identity recovers the geometry
 
-The ramified construction is a genuine *generalisation* of the unramified `exists_planar_section`, not
-a disguised weaker/false statement.  At an *unramified* preimage (`m = 1`, `ζ = 1`, `w₀ = (· − c)`),
-the carried geometric trace `traceFull` reduces to the single planar-section trace term
+The carried trace `T = traceFull` is, by construction, the **single-valued** function
+`ramifiedTraceTerm (principal part) + Rem` (a meromorphic function of `z − c`), *not* the multivalued
+sheet sum.  It coincides with the geometric `m`-sheet sum exactly on the slit `S`
+(`eqOn_traceFull_slit`), and that slit agreement is what the identity theorem promotes to `hcoh`.  At an
+*unramified* preimage (`m = 1`) the slit can be taken to be the full punctured neighbourhood and the
+construction degenerates to the unramified single-section identification (witnessed at `m = 1` by
+`ramifiedSheetData_zero`).  We record the single-valued definitional shape as a sanity check. -/
+theorem traceFull_def {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
+    {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} (S : RamifiedSheetData ω₀ g f Φ c) (z : ℂ) :
+    S.traceFull z
+      = ramifiedTraceTerm (Finset.Icc 1 S.ppN) S.ppb (fun k => -(k : ℤ)) S.m c z + S.Rem z := rfl
 
-> `z ↦ chartIntegrand ω₀ g p (wp + (z − c)) · (d/dz)[wp + (z − c)]`,
+/-! ### Non-vacuity of `RamifiedSheetData` — inhabitable for **any** `m` (the monodromy fix verified)
 
-i.e. the chart integrand pushed along the single planar section `z ↦ wp + (z − c)` — exactly the
-`exists_planar_section` summand of the unramified `fibreTrace`.  This confirms `RamifiedSheetData`'s
-`m`-sheet machinery is consistent (the `m = 1` model is non-vacuous: `w₀ = (· − c)` satisfies every
-branch field) and degenerates correctly. -/
-theorem traceFull_unramified_eq {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
-    {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} (S : RamifiedSheetData ω₀ g f Φ c)
-    (hm1 : S.m = 1) (hζ1 : S.ζ = 1) (z : ℂ) :
-    S.traceFull z = chartIntegrand ω₀ g S.p ((chartAt ℂ S.p) S.p + S.w₀ z)
-      * deriv (fun ζz => (chartAt ℂ S.p) S.p + S.w₀ ζz) z := by
-  show (∑ j ∈ Finset.range S.m,
-      chartIntegrand ω₀ g S.p ((chartAt ℂ S.p) S.p + S.ζ ^ j * S.w₀ z)
-        * deriv (fun ζz => (chartAt ℂ S.p) S.p + S.ζ ^ j * S.w₀ ζz) z) = _
-  rw [hm1, hζ1]
-  simp
+`RamifiedSheetData`'s fields are *jointly satisfiable for every `m ≥ 1`*, so `RamifiedCenterFacts.
+ofSheetData` is **not** vacuous, and — crucially — the structure is **not a disguised `False` at a
+ramified centre** (the bug it replaces).  Witness: the zero numerator `g ≡ 0` (so `α = ω₀·g = 0`), the
+empty fibre selection (`valueChartTrace ≡ 0`), with the genuine **slit `m`-th-root branch**
+`w₀ z = (z − c)^{1/m}` (`Complex.cpow`) on the slit `S = {z | z − c ∈ slitPlane}` — which exists for
+*any* `m` (the whole point of the slit).  At `m = 2` this is the genuine `√(z − c)` branch on the
+slit-plane, demonstrating the structure is inhabited at a *ramified* multiplicity.  Every other field is
+`0 = 0` by direct computation (`g ≡ 0`), and the branch fields are the standard `cpow` identities. -/
 
-/-! ### Non-vacuity of `RamifiedSheetData` (end-to-end soundness — not a disguised `False`)
-
-`RamifiedSheetData`'s fields are *jointly satisfiable*, so `RamifiedCenterFacts.ofSheetData` is **not**
-vacuous (and the construction is sound, not a disguised `False`).  Witness: the zero numerator
-`g ≡ 0` (so `α = ω₀·g = 0`), the empty fibre selection (`valueChartTrace ≡ 0`), at `m = 1`, `ζ = 1`,
-`w₀ = (· − c)` — every field then holds by direct computation (`hgeom`: `0 =ᶠ 0`; `hrem_an`: the
-`m = 1` sheet sum of `R` is `R ∘ (affine)`, analytic; the branch fields hold for `w₀ = (· − c)`).
-This confirms the genuine ramified-data interface is inhabitable. -/
-
-/-- **`RamifiedSheetData` is inhabitable** (non-vacuity / soundness witness).  For the zero numerator
-`g ≡ 0`, the empty fibre selection, any centre `c` and point `p`, the `m = 1`/`ζ = 1`/`w₀ = (· − c)`
-data is a valid `RamifiedSheetData`.  Hence the sheet-data interface is not a disguised `False`. -/
-noncomputable def ramifiedSheetData_zero (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
-    (c : ℂ) (p : X) :
+/-- **`RamifiedSheetData` is inhabitable for every `m ≥ 1`** (non-vacuity / soundness witness — the
+monodromy fix).  For the zero numerator `g ≡ 0`, the empty fibre selection, any centre `c`, point `p`,
+multiplicity `m ≥ 1`, and primitive `m`-th root `ζ`, the slit `S = {z | z − c ∈ slitPlane}` with the
+`cpow` branch `w₀ z = (z − c)^{1/m}` is a valid `RamifiedSheetData`.  The branch exists on the slit for
+**any** `m` (no monodromy contradiction), so the structure is inhabited at genuinely ramified
+multiplicities — e.g. `m = 2`, the `√(z − c)` branch (`ramifiedSheetData_sqrt`). -/
+noncomputable def ramifiedSheetData_slit (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (c : ℂ) (p : X) (m : ℕ) (hm : 0 < m) (ζ : ℂ) (hζ : IsPrimitiveRoot ζ m) :
     RamifiedSheetData ω₀ (fun _ => (0 : ℂ)) f (fun b => emptyFibreRegularData (fun _ => 0) f b) c where
   p := p
-  m := 1
-  hm := one_pos
-  ζ := 1
-  hζ := IsPrimitiveRoot.one
-  w₀ := fun z => z - c
-  hw₀_an := Filter.Eventually.of_forall (fun _ => analyticAt_id.sub analyticAt_const)
+  m := m
+  hm := hm
+  ζ := ζ
+  hζ := hζ
+  S := {z | z - c ∈ slitPlane}
+  hS_acc := by
+    -- The slit accumulates at `c`: approach along the positive imaginary axis `c + (1/(n+1))·I`.
+    rw [show (fun z => z ∈ {z : ℂ | z - c ∈ slitPlane}) = (fun z => z ∈ {z : ℂ | z - c ∈ slitPlane})
+      from rfl, ← accPt_iff_frequently_nhdsNE]
+    have hcS : c ∉ {z : ℂ | z - c ∈ slitPlane} := by simp [mem_slitPlane_iff]
+    have hcl : c ∈ closure {z : ℂ | z - c ∈ slitPlane} := by
+      have htend : Tendsto (fun n : ℕ => c + ((1 / (n + 1 : ℝ) : ℝ) : ℂ) * Complex.I) atTop (𝓝 c) := by
+        have h0 : Tendsto (fun n : ℕ => ((1 / (n + 1 : ℝ) : ℝ) : ℂ) * Complex.I) atTop (𝓝 0) := by
+          have hr : Tendsto (fun n : ℕ => (1 / (n + 1 : ℝ) : ℝ)) atTop (𝓝 0) :=
+            tendsto_one_div_add_atTop_nhds_zero_nat
+          have hc : Tendsto (fun n : ℕ => ((1 / (n + 1 : ℝ) : ℝ) : ℂ)) atTop (𝓝 ((0 : ℝ) : ℂ)) :=
+            (Complex.continuous_ofReal.tendsto 0).comp hr
+          rw [Complex.ofReal_zero] at hc
+          simpa using hc.mul_const Complex.I
+        simpa using (tendsto_const_nhds (x := c)).add h0
+      refine mem_closure_of_tendsto htend (Filter.Eventually.of_forall (fun n => ?_))
+      simp only [Set.mem_setOf_eq, add_sub_cancel_left, mem_slitPlane_iff]
+      right
+      have him : (((1 / (n + 1 : ℝ) : ℝ) : ℂ) * Complex.I).im = (1 / (n + 1 : ℝ) : ℝ) := by
+        rw [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, Complex.I_im, Complex.I_re]; ring
+      rw [him]; positivity
+    rw [closure_eq_self_union_derivedSet] at hcl
+    exact hcl.resolve_left hcS
+  w₀ := fun z => (z - c) ^ ((m : ℂ)⁻¹)
   hw₀_ne := by
-    filter_upwards [self_mem_nhdsWithin] with z hz
-    exact sub_ne_zero.mpr (by simpa using hz)
-  hw₀_tendsto := by
-    have : Tendsto (fun z : ℂ => z - c) (𝓝 c) (𝓝 (c - c)) :=
-      (continuous_id.sub continuous_const).tendsto c
-    rw [sub_self] at this
-    exact this.mono_left nhdsWithin_le_nhds
-  hw₀_pow := Filter.Eventually.of_forall (fun z => by simp)
-  hw₀_deriv := Filter.Eventually.of_forall (fun z => by
-    rw [deriv_sub_const]; simp)
+    intro z hz
+    have hzc : z - c ≠ 0 := Complex.slitPlane_ne_zero hz
+    exact Complex.cpow_ne_zero_iff.mpr (Or.inl hzc)
+  hw₀_pow := by
+    intro z _
+    rw [zpow_natCast]; exact Complex.cpow_nat_inv_pow _ hm.ne'
+  hw₀_deriv := by
+    intro z hz
+    have hmem : (z - c) ∈ slitPlane := hz
+    have hzc : z - c ≠ 0 := Complex.slitPlane_ne_zero hz
+    have hw0ne : (z - c) ^ ((m : ℂ)⁻¹) ≠ 0 := Complex.cpow_ne_zero_iff.mpr (Or.inl hzc)
+    have hpow : ((z - c) ^ ((m : ℂ)⁻¹)) ^ (m : ℤ) = z - c := by
+      rw [zpow_natCast]; exact Complex.cpow_nat_inv_pow _ hm.ne'
+    have hbase : HasDerivAt (fun z : ℂ => z - c) 1 z := by simpa using (hasDerivAt_id z).sub_const c
+    have hD := hbase.cpow_const (c := (m : ℂ)⁻¹) hmem
+    rw [mul_one] at hD
+    have hderiv : deriv (fun z : ℂ => (z - c) ^ ((m : ℂ)⁻¹)) z
+        = (m : ℂ)⁻¹ * (z - c) ^ ((m : ℂ)⁻¹ - 1) := hD.deriv
+    rw [hderiv]; congr 1
+    -- `(z−c)^(a−1) = w₀^(1−m)`: both equal `w₀·(z−c)⁻¹`.
+    have hL : (z - c) ^ ((m : ℂ)⁻¹ - 1) = (z - c) ^ ((m : ℂ)⁻¹) * (z - c)⁻¹ := by
+      rw [Complex.cpow_sub _ _ hzc, Complex.cpow_one, div_eq_mul_inv]
+    have hR : ((z - c) ^ ((m : ℂ)⁻¹)) ^ (1 - (m : ℤ)) = (z - c) ^ ((m : ℂ)⁻¹) * (z - c)⁻¹ := by
+      rw [zpow_sub₀ hw0ne, zpow_one, hpow, div_eq_mul_inv]
+    rw [hL, hR]
   hg_mero := by
     show MeromorphicAt (fun z => (0 : ℂ)) ((chartAt ℂ p) p)
     exact analyticAt_const.meromorphicAt
-  hgeom := by
-    -- Both sides are `0`: LHS is the empty fibre sum; RHS is the `m`-sheet sum of `chartIntegrand of 0`.
-    have hL : valueChartTrace ω₀ f (fun b => emptyFibreRegularData (fun _ => (0 : ℂ)) f b)
-        = fun _ => (0 : ℂ) := valueChartTrace_emptySelection ω₀ f
-    rw [hL]
-    filter_upwards with z
-    show (0 : ℂ) = ∑ j ∈ Finset.range 1,
-      chartIntegrand ω₀ (fun _ => (0 : ℂ)) p ((chartAt ℂ p) p + (1 : ℂ) ^ j * (z - c))
-        * deriv (fun ζz => (chartAt ℂ p) p + (1 : ℂ) ^ j * (ζz - c)) z
-    simp only [chartIntegrand, mul_zero, zero_mul, Finset.sum_const_zero]
-  hrem_an := by
-    intro R hR
-    -- `m = 1`, `ζ = 1`: the sheet sum is `R(wp + (z − c))·1 = R ∘ (affine)`, analytic at `c`.
-    have heq : (fun z => ∑ j ∈ Finset.range 1,
-        R ((chartAt ℂ p) p + (1 : ℂ) ^ j * (z - c))
-          * deriv (fun ζz => (chartAt ℂ p) p + (1 : ℂ) ^ j * (ζz - c)) z)
-        = fun z => R ((chartAt ℂ p) p + (z - c)) := by
-      funext z
-      rw [Finset.sum_range_one]
-      rw [deriv_sheet_eq (fun z => z - c) z ((chartAt ℂ p) p) ((1 : ℂ) ^ (0 : ℕ))]
-      rw [deriv_sub_const]
-      simp
-    rw [heq]
-    exact hR.comp_of_eq' (analyticAt_const.add (analyticAt_id.sub analyticAt_const))
-      (by simp)
+  ppN := 0
+  ppb := fun _ => 0
+  ppR := fun _ => 0
+  hppR_an := analyticAt_const
+  hpp_split_sheet := by
+    intro z _ j _
+    rw [show chartIntegrand ω₀ (fun _ => (0 : ℂ)) p = (fun _ => (0 : ℂ)) by
+      funext w; simp [chartIntegrand]]
+    simp [negTail]
+  hppN_res := by
+    -- `resAt 0 0 = 0 = formFnResidue ω₀ 0 p` (`Icc 1 0 = ∅`, and chartIntegrand of `0` is `0`).
+    have hrhs : formFnResidue ω₀ (fun _ => (0 : ℂ)) p = 0 := by
+      rw [formFnResidue, show (fun z => coeffAt ω₀ p z * (fun _ => (0 : ℂ)) ((chartAt ℂ p).symm z))
+          = (fun _ => (0 : ℂ)) by funext z; simp, resAt_zero]
+    simp only [show (Finset.Icc 1 0 : Finset ℕ) = ∅ from rfl, Finset.sum_empty, resAt_zero, hrhs]
+  Rem := fun _ => 0
+  hRem_an := analyticAt_const
+  hRem_slit := by
+    intro z _
+    simp
+  hgeom_slit := by
+    intro z _
+    -- `valueChartTrace = 0` (empty selection), and the RHS is the `m`-sheet sum of `chartIntegrand 0 = 0`.
+    rw [valueChartTrace_emptySelection ω₀ f,
+      show chartIntegrand ω₀ (fun _ => (0 : ℂ)) p = (fun _ => (0 : ℂ)) by
+        funext w; simp [chartIntegrand]]
+    simp
+  hvct_mero := by
+    rw [valueChartTrace_emptySelection ω₀ f]
+    exact analyticAt_const.meromorphicAt
+
+/-- **`RamifiedSheetData` is inhabited at the ramified multiplicity `m = 2`** — the genuine `√(z − c)`
+slit branch.  This is the decisive soundness witness: the corrected structure is satisfiable for
+`m > 1` (the old `∀ᶠ in 𝓝[≠] c` branch demand was a disguised `False` here by monodromy).  Uses the
+primitive square root `ζ = −1` and the `cpow` branch `√(z − c)` on the slit plane. -/
+noncomputable def ramifiedSheetData_sqrt (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (c : ℂ) (p : X) :
+    RamifiedSheetData ω₀ (fun _ => (0 : ℂ)) f (fun b => emptyFibreRegularData (fun _ => 0) f b) c :=
+  ramifiedSheetData_slit ω₀ f c p 2 (by norm_num) (-1)
+    (IsPrimitiveRoot.neg_one (R := ℂ) 0 (by norm_num))
+
+/-- **`RamifiedSheetData` is inhabited at `m = 1`** (the unramified reduction — `ζ = 1`).  Confirms the
+construction degenerates correctly; here the slit branch is `(z − c)^{1/1} = z − c`. -/
+noncomputable def ramifiedSheetData_zero (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (c : ℂ) (p : X) :
+    RamifiedSheetData ω₀ (fun _ => (0 : ℂ)) f (fun b => emptyFibreRegularData (fun _ => 0) f b) c :=
+  ramifiedSheetData_slit ω₀ f c p 1 one_pos 1 IsPrimitiveRoot.one
 
 /-! ### Wiring to `ExistsRamifiedCenterFacts` (the precise remaining obligation, now Forster §5 data)
 
@@ -524,9 +577,10 @@ noncomputable def ramifiedSheetData_zero (ω₀ : HolomorphicOneForms X) (f : Me
 (`SerreResidueRamifiedCenter.lean`) to the precise Forster §5 normal-form *data* `RamifiedSheetData`
 (at a single ramified preimage that is the unique pole in its fibre).  `residueTheorem_ofRamifiedCenters_genus0_mod`
 then gives `hoff_cs`-free Gate A from per-centre `RamifiedSheetData`.  The genuine remaining analytic
-content is exactly the `RamifiedSheetData` fields: the holomorphic `m`-th-root branch `w₀`, the
-geometric trace identification `hgeom`, and the trace-of-holomorphic-is-holomorphic `hrem_an` — all
-true (Forster §5), supplied as data, none asserted as a free lemma. -/
+content is exactly the `RamifiedSheetData` fields: the slit `m`-th-root branch `w₀`, the geometric trace
+identification `hgeom_slit`, the single-valued analytic remainder trace `Rem`, and the single-valued
+meromorphy `hvct_mero` — all true (Forster §5 / Miranda (3.1)), supplied as data, none asserted as a
+free lemma. -/
 
 /-- **`ExistsRamifiedCenterFacts` from a single-preimage `RamifiedSheetData`.**  Packaging the sound
 constructor `RamifiedCenterFacts.ofSheetData` as the named per-centre obligation: the Forster §5 sheet
