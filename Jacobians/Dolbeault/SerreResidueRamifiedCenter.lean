@@ -424,4 +424,143 @@ noncomputable def RamifiedCenterFacts.ofFibreRamified {ω₀ : HolomorphicOneFor
     refine Finset.sum_congr rfl (fun i _ => ?_)
     rw [resAt_ramifiedTraceTerm (pps i) (ppc i) (ppn i) (D.hmult_pos i) c, hpp_res i]
 
-end Jacobians.Dolbeault.SerreResidueTheorem
+namespace RamifiedCenterFacts
+
+variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
+  {Φ : (b : ℂ) → FibreRegularData g f b} {poles : Finset X} {c : ℂ}
+
+/-- **Fact (B), filtered form.**  The `D.xs`-indexed residue sum of `resAt_patched` equals the
+fibre-restricted pole-set sum (pure `Finset` re-indexing on the *injective* enumeration `D.xs` of the
+pole fibre `F⁻¹(coe c)` — needs only `hD_inj`/`hD_mem`/`hD_surj`, **no** regularity):
+
+> `resAt (valueChartTracePatched ω₀ f Φ br) c
+>    = ∑_{a ∈ poles, F a = coe c} formFnResidue ω₀ g a`. -/
+theorem resAt_patched_filter (R : RamifiedCenterFacts ω₀ g f Φ poles c) (br : Finset ℂ) :
+    resAt (valueChartTracePatched ω₀ f Φ br) c
+      = ∑ a ∈ poles with f.toRiemannSphere a = ((c : ℂ) : RiemannSphere), formFnResidue ω₀ g a := by
+  classical
+  rw [R.resAt_patched br]
+  -- The fibre filter set is the image of the injective enumeration `R.D.xs`.
+  have hImg : (Finset.univ : Finset R.D.ι).image R.D.xs
+      = poles.filter (fun a => f.toRiemannSphere a = ((c : ℂ) : RiemannSphere)) := by
+    ext a
+    simp only [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_filter]
+    constructor
+    · rintro ⟨i, rfl⟩; exact ⟨R.hD_mem i, R.D.hmem i⟩
+    · rintro ⟨ha_pole, ha_fib⟩; exact R.hD_surj a ha_pole ha_fib
+  rw [← hImg, Finset.sum_image (fun i _ j _ h => R.hD_inj h)]
+
+end RamifiedCenterFacts
+
+/-! ## Layer 3 — the `hoff_cs`-free residue theorem from per-centre ramified facts
+
+`GlobalTraceData`/`FormResidueTrace` route the finite-centre Lemma 3.2 through `fibre : ℂ → FibreTrace`
+(the unramified model), so they cannot be fed a ramified centre.  We bypass them: the **general** combine
+`finiteResidueSum_trace_eq_zero` (Miranda §VIII.3 conclusion) takes a *plain* per-centre residue function
+`fibreRes : ℂ → ℂ` with `fibreRes p = resAt L.R p` and gives `∑_p fibreRes p + Res_∞ L.R = 0`.  Feeding it
+the genuine pole-fibre residue sum (= fact (B) at each centre, principal-part-matched to `resAt L.R`) and
+the §VIII.3 `∞`-residue identity (`infty_eq_of_remainderRegular`, the `hcont_int`-free germ-Cauchy) gives
+`∑Res = 0` directly — admitting **ramified** centres, where the per-centre facts come from the ramified
+atom (`RamifiedCenterFacts`). -/
+
+/-- **Gate A `∑Res = 0` from per-centre facts (A)/(B), admitting ramified centres.**  The
+`hoff_cs`-free residue theorem: instead of the unramified `Cfull`/`FibreTrace` route, each finite
+pole-value centre `cs i` supplies the two facts directly:
+
+* `hT_mero_cs i` — **(A)** `MeromorphicAt (valueChartTracePatched ω₀ f Φ br) (cs i)`;
+* `hres_fin_cs i` — **(B, filtered)** `resAt (valueChartTracePatched ω₀ f Φ br) (cs i)
+  = ∑_{a ∈ poles, F a = coe(cs i)} formFnResidue ω₀ g a` (the pole-fibre residue sum).
+
+A **ramified** centre supplies these from the proven ramified atom via `RamifiedCenterFacts`
+(`meromorphicAt_patched` / `resAt_patched_filter`); an unramified centre via `Cfull` (`facts_of_Cfull`).
+The off-centre analyticity `hreg`/`hbnd` and the entire `∞`-group are verbatim.  This routes the finite
+combine through `finiteResidueSum_trace_eq_zero` (no `FibreTrace`), so **no centre regularity is required**
+— `hoff_cs` is gone. -/
+theorem residueSum_eq_zero_of_centerFacts
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    -- (A): meromorphy of the patched trace at each finite pole-value centre.
+    (hT_mero_cs : ∀ i, MeromorphicAt (valueChartTracePatched ω₀ f Φ br) (cs i))
+    -- (B, filtered): the finite Lemma-3.2 residue identity (pole-fibre residue sum) at each centre.
+    (hres_fin_cs : ∀ i, resAt (valueChartTracePatched ω₀ f Φ br) (cs i)
+      = ∑ a ∈ poles with f.toRiemannSphere a = ((cs i : ℂ) : RiemannSphere), formFnResidue ω₀ g a)
+    (Dinf_full : InftyFibreDataNF g f)
+    (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf_full))
+    (hfullInf_inj : Function.Injective Dinf_full.xs)
+    {ιInfP : Type} [Fintype ιInfP] (xsInf_po : ιInfP → X)
+    (hpoInf_inj : Function.Injective xsInf_po)
+    (hpoInf_mem : ∀ j, xsInf_po j ∈ poles ∧ f.toRiemannSphere (xsInf_po j) = OnePoint.infty)
+    (hpoInf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ j, xsInf_po j = a)
+    (hpole_image_inf : (Finset.univ.image Dinf_full.xs).filter (· ∈ poles)
+      = Finset.univ.image xsInf_po)
+    (hnonpole_inf_an : ∀ k, Dinf_full.xs k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (Dinf_full.xs k)).symm z))
+        ((chartAt ℂ (Dinf_full.xs k)) (Dinf_full.xs k))) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 := by
+  classical
+  set T := valueChartTracePatched ω₀ f Φ br with hT
+  -- Principal-part `LaurentForm` from the per-centre meromorphy (A).
+  set hPP := exists_laurentForm_principalPart cs ρ hcs_ball hcs_inj hT_mero_cs with hPP_def
+  set L := hPP.choose with hL_def
+  have hLcenters : Finset.univ.image L.a = Finset.univ.image cs := hPP.choose_spec.1
+  have hLrem : ∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧ (T - L.R) =ᶠ[𝓝[≠] (cs j)] R :=
+    hPP.choose_spec.2
+  -- Germ-regularity of the remainder `T − L.R` (FREE), as in `globalTraceData_of_genus0_germ`.
+  have hT_off : ∀ z ∉ Finset.univ.image L.a, AnalyticAt ℂ T z := by
+    intro z hz; rw [hLcenters] at hz; exact hT_off_patched hreg hbnd hz
+  have hLR_off : ∀ z ∉ Finset.univ.image L.a, AnalyticAt ℂ L.R z := by
+    intro z hz
+    show AnalyticAt ℂ (fun w => ∑ p, L.c p * (w - L.a p) ^ L.n p) z
+    refine Finset.analyticAt_fun_sum _ (fun p _ => ?_)
+    refine analyticAt_const.mul ?_
+    have hbase : AnalyticAt ℂ (fun w : ℂ => w - L.a p) z := analyticAt_id.sub analyticAt_const
+    have hzap : z ≠ L.a p := fun h => hz (h ▸ Finset.mem_image_of_mem L.a (Finset.mem_univ p))
+    exact hbase.zpow (sub_ne_zero.mpr hzap)
+  have hoff_rem : ∀ z ∉ Finset.univ.image L.a, AnalyticAt ℂ (T - L.R) z := fun z hz =>
+    (hT_off z hz).sub (hLR_off z hz)
+  have hrem : ∀ p ∈ Finset.univ.image L.a,
+      ∃ R : ℂ → ℂ, AnalyticAt ℂ R p ∧ (T - L.R) =ᶠ[𝓝[≠] p] R := by
+    intro p hp; rw [hLcenters] at hp
+    simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
+    obtain ⟨i, rfl⟩ := hp; exact hLrem i
+  -- The per-centre pole-fibre residue sum, as a plain function of the centre value.
+  set fibreRes : ℂ → ℂ := fun p =>
+    ∑ a ∈ poles with f.toRiemannSphere a = ((p : ℂ) : RiemannSphere), formFnResidue ω₀ g a
+    with hfibreRes
+  -- `hfibre p : fibreRes p = resAt L.R p` (fact B principal-part-matched to `L.R`).
+  have hfibre : ∀ p ∈ Finset.univ.image L.a, fibreRes p = resAt L.R p := by
+    intro p hp
+    rw [hLcenters] at hp
+    simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
+    obtain ⟨i, rfl⟩ := hp
+    obtain ⟨R, hR_an, hR_eq⟩ := hLrem i
+    show (∑ a ∈ poles with f.toRiemannSphere a = ((cs i : ℂ) : RiemannSphere), formFnResidue ω₀ g a)
+      = resAt L.R (cs i)
+    rw [← hres_fin_cs i, resAt_eq_laurentR_of_principalPart (hT_mero_cs i) hR_an hR_eq]
+  -- The general combine (no `FibreTrace`): `∑_centers fibreRes p + Res_∞ L.R = 0`.
+  have hcombine := finiteResidueSum_trace_eq_zero L fibreRes hfibre
+  -- `∞`-residue identity via germ-Cauchy (verbatim).
+  have hinfty : resAtInfty L.R L.ρ
+      = ∑ a ∈ poles with f.toRiemannSphere a = OnePoint.infty, formFnResidue ω₀ g a :=
+    infty_eq_of_remainderRegular hoff_rem hrem Dinf_full hcoh_full hfullInf_inj xsInf_po
+      hpoInf_inj hpoInf_mem hpoInf_surj hpole_image_inf
+      (fun k hk => formFnResidue_eq_zero_of_analyticAt ω₀ g _ (hnonpole_inf_an k hk))
+  -- Regroup `∑_centers fibreRes p` to `∑_y ∑ formFnResidue` (centre→value re-indexing via hcenters_cs).
+  have hregroup : (∑ p ∈ Finset.univ.image L.a, fibreRes p)
+      = ∑ y ∈ (poles.image f.toRiemannSphere).erase OnePoint.infty,
+          ∑ a ∈ poles with f.toRiemannSphere a = y, formFnResidue ω₀ g a := by
+    rw [hLcenters, ← hcenters_cs,
+      Finset.sum_image (fun p _ q _ h => OnePoint.coe_injective h)]
+  -- Assemble.  `hcombine : (∑_centers fibreRes) + resAtInfty L.R = 0`; rewrite both summands to the
+  -- fibre sums (`hregroup`, `hinfty`), then the total residue (`residueSum_eq_infty_add_finite`) is the
+  -- `add_comm` of that.
+  rw [hregroup, hinfty] at hcombine
+  rw [residueSum_eq_infty_add_finite ω₀ g f poles, add_comm]
+  exact hcombine
