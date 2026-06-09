@@ -124,6 +124,20 @@ theorem lDim_le_h1Dim (R : GlobalResidue 𝔘 K) (D : Divisor X)
     lDim (X := X) (K - D) ≤ 𝔘.toFiniteFamily.h1Dim D :=
   R.toSerreResidueRealization.lDim_le_h1Dim D hfin
 
+/-- **The full chain `GlobalResidue → SerreDualityData`** (the ladder target).  Wiring the §17.5/17.6
+EASY half (the residue pairing `res ∘ cup` + its derived injectivity) all the way into the
+`SerreDualityData 𝔘` that the Riemann–Roch / Serre ladder (`SerreDualityPairing.lean`) consumes:
+the residue realization supplies `K`, the pairing `ι`, and its injectivity (`pairing_injective`); the
+externally-named inputs are `hKgenus` (Forster §17.4, proven via `CanonicalFormIso`), the §17.9
+surjectivity (the HARD half, supplied separately), and finiteness (Forster §14, `finiteDimensional_cechH1`).
+This exhibits the residue pairing's contribution to the ladder, not in isolation. -/
+def toSerreDualityData (R : GlobalResidue 𝔘 K)
+    (hKgenus : lDim (X := X) K = genus X)
+    (ι_surj : ∀ D : Divisor X, Function.Surjective (R.pairing D))
+    (finH1 : ∀ D : Divisor X, FiniteDimensional ℂ (𝔘.toFiniteFamily.cechH1 D)) :
+    SerreDualityData 𝔘 :=
+  R.toSerreResidueRealization.toSerreDualityData hKgenus ι_surj finH1
+
 end GlobalResidue
 
 end Jacobians.Dolbeault
