@@ -673,4 +673,30 @@ theorem exists_open_clusterSection_nonpole {ω₀ : HolomorphicOneForms X} {g : 
   obtain ⟨Vnp, hVo, hcV, hV⟩ := exists_open_of_eventually_nhds c hev
   exact ⟨Vnp, hVo, hcV, fun z hz i j => hV z hz ⟨i, j⟩⟩
 
+/-! ## The shrunk slit accumulates at `c` off the branch locus
+
+The shrunk slit `(open V ∋ c) ∩ {z | z − c ∈ slitPlane} \ (finite bad set)` still accumulates at `c`: the
+standard slit accumulates at `c` (`slitPlane_shift_accumulates`); intersecting with an open `V ∋ c`
+preserves the accumulation (`V ∈ 𝓝 c`); and removing a finite set does not destroy a cluster point. -/
+
+/-- **The shrunk slit accumulates at `c`.**  For an open `V ∋ c` and a finite set `bad`, the shrunk slit
+`V ∩ {z | z − c ∈ slitPlane} \ bad` accumulates at `c` (frequently in `𝓝[≠] c`). -/
+theorem shrunkSlit_accumulates (c : ℂ) {V : Set ℂ} (hVopen : IsOpen V) (hcV : c ∈ V)
+    (bad : Finset ℂ) :
+    ∃ᶠ z in 𝓝[≠] c, z ∈ (V ∩ {z : ℂ | z - c ∈ slitPlane}) \ (bad : Set ℂ) := by
+  -- The standard slit accumulates at `c`.
+  have hslit : ∃ᶠ z in 𝓝[≠] c, z ∈ {z : ℂ | z - c ∈ slitPlane} := slitPlane_shift_accumulates c
+  -- `V ∈ 𝓝 c`, and removing the finite `bad` keeps the cluster point: `(bad \ {c})ᶜ ∈ 𝓝 c`.
+  have hVnhds : ∀ᶠ z in 𝓝[≠] c, z ∈ V :=
+    Filter.eventually_iff.2 (nhdsWithin_le_nhds (hVopen.mem_nhds hcV))
+  have hbad : ∀ᶠ z in 𝓝[≠] c, z ∈ ((bad : Set ℂ) \ {c})ᶜ :=
+    Filter.eventually_iff.2 (nhdsWithin_le_nhds
+      ((bad.finite_toSet.diff).isClosed.compl_mem_nhds (by simp)))
+  -- Combine: frequently on the slit, and in `V`, off `bad`.
+  refine (hslit.and_eventually (hVnhds.and hbad)).mono ?_
+  rintro z ⟨hzslit, hzV, hzbad⟩
+  have hzc : z ≠ c := fun h => Complex.slitPlane_ne_zero hzslit (by rw [h, sub_self])
+  refine ⟨⟨hzV, hzslit⟩, fun hzbad' => hzbad ⟨hzbad', fun h => hzc ?_⟩⟩
+  rw [Set.mem_singleton_iff] at h; exact h
+
 end Jacobians.Dolbeault.SerreResidueTheorem
