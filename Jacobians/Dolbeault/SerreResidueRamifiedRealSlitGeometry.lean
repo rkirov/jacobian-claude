@@ -209,4 +209,218 @@ theorem sComp_cpowSheetArg_tendsto (p : X) {s : ℂ → ℂ} {ζ : ℂ} {j : ℕ
     simpa using (tendsto_const_nhds (x := ζ ^ j)).mul (cpow_slitBranch_tendsto_zero c hm)
   rw [← hs0]; exact hs_cont.tendsto.comp harg
 
+/-! ## The per-preimage §5 datum on a shrunk-slit neighbourhood
+
+We bundle, for one non-pole fibre preimage `p = D.xs i` of multiplicity `m = (localDeg f (coe c) p).toNat`,
+all the *slit-independent* §5 / principal-part / descent data (the §5 atom's straightening `η`/local
+inverse `s`, the Laurent principal part `ppN`/`ppb`/`ppR`, the descent germ `G`) together with one open
+neighbourhood `V ∋ c` on which every per-slit-value fact needed downstream holds at the `cpow` sheet
+arguments.  This is the per-preimage extraction; the centre-level assembly intersects the `V`'s over the
+finite fibre and reads off both the cluster data `Cl i` and the §5 section germs. -/
+
+/-- **The per-preimage §5 datum on a shrunk-slit nbhd `V`** (the slit-independent §5/pp/descent package).
+For a non-pole fibre preimage `p` of multiplicity `m` (`ζ` a primitive `m`-th root), bundles the §5 atom
+(`η`/`s` with inverse `hinv0` near `0` and normal form `hnf0` near `chart_p p`), the Laurent principal
+part (`ppN`/`ppb`/`ppR`/`hppR_an`/`hsplit0`), the descent germ (`G`/`hG`), and an open `V ∋ c` on which —
+for `z ∈ V` off-slit-restricted — the cpow sheet arguments satisfy: `s`-analyticity (`hVs_an`), the
+principal-part split (`hVpp_split`), the descent identity (`hVsmall`), the inverse-property domain
+membership (`hVinv_mem`), the normal-form domain membership (`hVnf_mem`), and the chart-target membership
+(`hVtgt`). -/
+structure Fibre5Datum (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
+    (f : MeromorphicFunction X) (c : ℂ) (p : X) (m : ℕ) where
+  /-- `m ≥ 1`. -/
+  hm : 0 < m
+  /-- A primitive `m`-th root. -/
+  ζ : ℂ
+  /-- `ζ` is primitive. -/
+  hζ : IsPrimitiveRoot ζ m
+  /-- The §5 straightening coordinate. -/
+  η : ℂ → ℂ
+  /-- The §5 local inverse `s = η⁻¹`. -/
+  s : ℂ → ℂ
+  /-- `s` analytic at `0`. -/
+  hs_an : AnalyticAt ℂ s 0
+  /-- `s 0 = chart_p p`. -/
+  hs0 : s 0 = (chartAt ℂ p) p
+  /-- `deriv s 0 ≠ 0`. -/
+  hs_deriv : deriv s 0 ≠ 0
+  /-- The §5 inverse property near `0`. -/
+  hinv0 : ∀ᶠ a in 𝓝 (0 : ℂ), η (s a) = a
+  /-- The §5 normal form near `chart_p p`. -/
+  hnf0 : ∀ᶠ w in 𝓝 ((chartAt ℂ p) p), f.holoRepr ((chartAt ℂ p).symm w) = c + η w ^ m
+  /-- Laurent principal-part degree. -/
+  ppN : ℕ
+  /-- Laurent principal-part coefficients. -/
+  ppb : ℕ → ℂ
+  /-- Analytic remainder. -/
+  ppR : ℂ → ℂ
+  /-- The remainder is analytic at `0`. -/
+  hppR_an : AnalyticAt ℂ ppR 0
+  /-- The principal-part split on `𝓝[≠] 0`. -/
+  hsplit0 : straightenedIntegrand ω₀ g.toFun p s =ᶠ[𝓝[≠] 0]
+    fun u => negTail 0 ppb ppN u + ppR u
+  /-- The descent germ. -/
+  G : ℂ → ℂ
+  /-- The descent germ is analytic at `0`. -/
+  hG : AnalyticAt ℂ G 0
+  /-- The shrunk-slit neighbourhood. -/
+  V : Set ℂ
+  /-- `V` is open. -/
+  hVopen : IsOpen V
+  /-- `c ∈ V`. -/
+  hcV : c ∈ V
+  /-- `s` is analytic at each cpow sheet argument on `V ∩ slit`. -/
+  hVs_an : ∀ z ∈ V, z - c ∈ slitPlane → ∀ j ∈ Finset.range m,
+    AnalyticAt ℂ s (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹))
+  /-- The principal-part split holds at each cpow sheet argument on `V ∩ slit`. -/
+  hVpp_split : ∀ z ∈ V, z - c ∈ slitPlane → ∀ j ∈ Finset.range m,
+    straightenedIntegrand ω₀ g.toFun p s (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹))
+      = negTail 0 ppb ppN (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) + ppR (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹))
+  /-- The descent identity holds at the cpow branch on `V ∩ slit`. -/
+  hVsmall : ∀ z ∈ V, z - c ∈ slitPlane →
+    (∑ j ∈ Finset.range m, ppR (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) * ζ ^ j)
+      = m * ((z - c) ^ ((m : ℂ)⁻¹)) ^ (m - 1) * G (((z - c) ^ ((m : ℂ)⁻¹)) ^ m)
+  /-- The cpow sheet argument lands in the inverse-property domain on `V ∩ slit`. -/
+  hVinv_mem : ∀ z ∈ V, z - c ∈ slitPlane → ∀ j ∈ Finset.range m,
+    ∀ᶠ a in 𝓝 (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)), η (s a) = a
+  /-- The `s`-composed cpow sheet argument lands in the normal-form domain on `V ∩ slit`. -/
+  hVnf_mem : ∀ z ∈ V, z - c ∈ slitPlane → ∀ j ∈ Finset.range m,
+    ∀ᶠ w in 𝓝 (s (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹))),
+      f.holoRepr ((chartAt ℂ p).symm w) = c + η w ^ m
+  /-- The `s`-composed cpow sheet argument lands in the chart target on `V ∩ slit`. -/
+  hVtgt : ∀ z ∈ V, z - c ∈ slitPlane → ∀ j ∈ Finset.range m,
+    s (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) ∈ (chartAt ℂ p).target
+
+/-- **The per-preimage §5 datum exists at a non-pole fibre preimage.**  At a non-pole fibre preimage `p`
+over `coe c` of a non-constant cover `f` (`f.div ≠ 0`), of genuine multiplicity
+`m = (localDeg f (coe c) p).toNat`, with `ζ` a primitive `m`-th root, the `Fibre5Datum` is constructed
+from: the Forster §5 normal form (`exists_clusterSplit_at_fibrePoint`); the Laurent principal part of the
+straightened integrand (`exists_principalPart_meromorphicAt`); the symmetric-function descent germ
+(`analyticAt_weightedSymSum_descent`); and an open `V ∋ c` (the finite intersection of the per-fact
+shrunk-slit neighbourhoods, via `exists_open_cpowBranch_mem` / `exists_open_cpowSheetArg_punctured` /
+`exists_open_of_eventually_nhds`). -/
+theorem exists_fibre5Datum (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
+    {f : MeromorphicFunction X} (hdiv : (f.div : Divisor X) ≠ 0) {c : ℂ} {p : X}
+    (hp_fib : f.toRiemannSphere p = ((c : ℂ) : RiemannSphere)) (hp_np : 0 ≤ f.orderAtPoint p)
+    {ζ : ℂ} (hζ : IsPrimitiveRoot ζ (localDeg f ((c : ℂ) : RiemannSphere) p).toNat) :
+    Nonempty (Fibre5Datum ω₀ g f c p (localDeg f ((c : ℂ) : RiemannSphere) p).toNat) := by
+  classical
+  set m := (localDeg f ((c : ℂ) : RiemannSphere) p).toNat with hm_def
+  have hm : 0 < m := (Jacobians.analyticOrderAt_holoRepr_sub_eq_mult f hdiv hp_fib hp_np).1
+  -- The §5 atom.
+  obtain ⟨η, s, hη_an, hη0, hηderiv, hnf0, hs_an, hs0, hs_deriv, hinv0, _hsect⟩ :=
+    exists_clusterSplit_at_fibrePoint f hdiv hp_fib hp_np hζ
+  -- The principal part of the straightened integrand at `0`.
+  have hg_mero : MeromorphicAt (fun z => g.toFun ((chartAt ℂ p).symm z)) ((chartAt ℂ p) p) := by
+    simpa [Function.comp] using g.meromorphic p
+  have hH_mero : MeromorphicAt (straightenedIntegrand ω₀ g.toFun p s) 0 :=
+    meromorphicAt_straightenedIntegrand ω₀ g.toFun p hs_an hs0 hg_mero
+  obtain ⟨ppN, ppb, ppR, hppR_an, hsplit0⟩ := exists_principalPart_meromorphicAt hH_mero
+  -- The descent germ from the analytic remainder.
+  obtain ⟨G, hG, hGev⟩ := analyticAt_weightedSymSum_descent hppR_an hm hζ
+  -- `a ↦ ζʲ·a` fixes `0` (the scaling that pushes a `𝓝 0` fact onto the cpow sheet argument).
+  have harg0 : ∀ j : ℕ, Tendsto (fun a : ℂ => ζ ^ j * a) (𝓝 0) (𝓝 0) := fun j => by
+    have : Continuous (fun a : ℂ => ζ ^ j * a) := continuous_const.mul continuous_id
+    simpa using this.tendsto' 0 0 (by simp)
+  -- The open neighbourhoods for the six per-slit-value facts.
+  -- (1) `s`-analyticity at sheet args (𝓝 0 fact, per `j`).
+  have hVs_an_j : ∀ j, ∃ Vj : Set ℂ, IsOpen Vj ∧ c ∈ Vj ∧
+      ∀ z ∈ Vj, z - c ∈ slitPlane → AnalyticAt ℂ s (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) := by
+    intro j
+    obtain ⟨V, hVo, hcV, hV⟩ := exists_open_cpowBranch_mem c (m := m) hm
+      (P := fun a => AnalyticAt ℂ s (ζ ^ j * a))
+      ((harg0 j).eventually hs_an.eventually_analyticAt)
+    exact ⟨V, hVo, hcV, fun z hz hslit => hV z hz⟩
+  -- (2) principal-part split at sheet args (𝓝[≠] 0 fact, per `j`).
+  have hVpp_j : ∀ j, ∃ Vj : Set ℂ, IsOpen Vj ∧ c ∈ Vj ∧
+      ∀ z ∈ Vj, z - c ∈ slitPlane →
+        straightenedIntegrand ω₀ g.toFun p s (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹))
+          = negTail 0 ppb ppN (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) + ppR (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) :=
+    fun j => exists_open_cpowSheetArg_punctured c hm hζ j hsplit0
+  -- (3) descent identity at branch (𝓝 0 fact, single).
+  have hVsmall_ex : ∃ V : Set ℂ, IsOpen V ∧ c ∈ V ∧
+      ∀ z ∈ V, z - c ∈ slitPlane →
+        (∑ j ∈ Finset.range m, ppR (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) * ζ ^ j)
+          = m * ((z - c) ^ ((m : ℂ)⁻¹)) ^ (m - 1) * G (((z - c) ^ ((m : ℂ)⁻¹)) ^ m) := by
+    obtain ⟨V, hVo, hcV, hV⟩ := exists_open_cpowBranch_mem c hm hGev
+    exact ⟨V, hVo, hcV, fun z hz _ => hV z hz⟩
+  -- (4) inverse-property domain membership (𝓝 0 fact, per `j`).
+  have hVinv_j : ∀ j, ∃ Vj : Set ℂ, IsOpen Vj ∧ c ∈ Vj ∧
+      ∀ z ∈ Vj, z - c ∈ slitPlane →
+        ∀ᶠ a in 𝓝 (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)), η (s a) = a := by
+    intro j
+    obtain ⟨V, hVo, hcV, hV⟩ := exists_open_cpowBranch_mem c (m := m) hm
+      (P := fun w => ∀ᶠ a in 𝓝 (ζ ^ j * w), η (s a) = a)
+      ((harg0 j).eventually hinv0.eventually_nhds)
+    exact ⟨V, hVo, hcV, fun z hz hslit => hV z hz⟩
+  -- (5) normal-form domain membership (continuity fact, per `j`).
+  have hVnf_j : ∀ j, ∃ Vj : Set ℂ, IsOpen Vj ∧ c ∈ Vj ∧
+      ∀ z ∈ Vj, z - c ∈ slitPlane →
+        ∀ᶠ w in 𝓝 (s (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹))),
+          f.holoRepr ((chartAt ℂ p).symm w) = c + η w ^ m := by
+    intro j
+    have htend := sComp_cpowSheetArg_tendsto p (s := s) (ζ := ζ) (j := j) c hm hs_an.continuousAt hs0
+    obtain ⟨V, hVo, hcV, hV⟩ := exists_open_of_eventually_nhds c (htend.eventually hnf0.eventually_nhds)
+    exact ⟨V, hVo, hcV, fun z hz hslit => hV z hz⟩
+  -- (6) chart-target membership (continuity fact, per `j`).
+  have hVtgt_j : ∀ j, ∃ Vj : Set ℂ, IsOpen Vj ∧ c ∈ Vj ∧
+      ∀ z ∈ Vj, z - c ∈ slitPlane →
+        s (ζ ^ j * (z - c) ^ ((m : ℂ)⁻¹)) ∈ (chartAt ℂ p).target := by
+    intro j
+    have htend := sComp_cpowSheetArg_tendsto p (s := s) (ζ := ζ) (j := j) c hm hs_an.continuousAt hs0
+    have htgt0 : (chartAt ℂ p).target ∈ 𝓝 ((chartAt ℂ p) p) :=
+      (chartAt ℂ p).open_target.mem_nhds ((chartAt ℂ p).map_source (mem_chart_source ℂ p))
+    obtain ⟨V, hVo, hcV, hV⟩ := exists_open_of_eventually_nhds c (htend.eventually htgt0)
+    exact ⟨V, hVo, hcV, fun z hz hslit => hV z hz⟩
+  -- Choose the per-`j` neighbourhoods and intersect everything (finite: `j ∈ range m`).
+  choose Vsa hVsa_o hVsa_c hVsa using hVs_an_j
+  choose Vpp hVpp_o hVpp_c hVpp using hVpp_j
+  obtain ⟨Vsm, hVsm_o, hVsm_c, hVsm⟩ := hVsmall_ex
+  choose Vinv hVinv_o hVinv_c hVinv using hVinv_j
+  choose Vnf hVnf_o hVnf_c hVnf using hVnf_j
+  choose Vtg hVtg_o hVtg_c hVtg using hVtgt_j
+  -- The common open neighbourhood.
+  set V : Set ℂ := Vsm ∩ (⋂ j ∈ Finset.range m, (Vsa j ∩ Vpp j ∩ Vinv j ∩ Vnf j ∩ Vtg j)) with hV_def
+  have hVopen : IsOpen V := by
+    refine hVsm_o.inter ?_
+    refine isOpen_biInter_finset (fun j _ => ?_)
+    exact (((hVsa_o j).inter (hVpp_o j)).inter (hVinv_o j)).inter (hVnf_o j) |>.inter (hVtg_o j)
+  have hcV : c ∈ V := by
+    refine ⟨hVsm_c, ?_⟩
+    rw [Set.mem_iInter₂]
+    exact fun j _ => ⟨⟨⟨⟨hVsa_c j, hVpp_c j⟩, hVinv_c j⟩, hVnf_c j⟩, hVtg_c j⟩
+  -- Extract per-`j` membership from `V`.
+  have hVmem : ∀ z ∈ V, ∀ j ∈ Finset.range m,
+      z ∈ Vsa j ∧ z ∈ Vpp j ∧ z ∈ Vinv j ∧ z ∈ Vnf j ∧ z ∈ Vtg j := by
+    intro z hz j hj
+    have h := (Set.mem_iInter₂.mp hz.2) j hj
+    exact ⟨h.1.1.1.1, h.1.1.1.2, h.1.1.2, h.1.2, h.2⟩
+  exact ⟨{
+    hm := hm
+    ζ := ζ
+    hζ := hζ
+    η := η
+    s := s
+    hs_an := hs_an
+    hs0 := hs0
+    hs_deriv := hs_deriv
+    hinv0 := hinv0
+    hnf0 := hnf0
+    ppN := ppN
+    ppb := ppb
+    ppR := ppR
+    hppR_an := hppR_an
+    hsplit0 := hsplit0
+    G := G
+    hG := hG
+    V := V
+    hVopen := hVopen
+    hcV := hcV
+    hVs_an := fun z hz hslit j hj => hVsa j z (hVmem z hz j hj).1 hslit
+    hVpp_split := fun z hz hslit j hj => hVpp j z (hVmem z hz j hj).2.1 hslit
+    hVsmall := fun z hz hslit => hVsm z hz.1 hslit
+    hVinv_mem := fun z hz hslit j hj => hVinv j z (hVmem z hz j hj).2.2.1 hslit
+    hVnf_mem := fun z hz hslit j hj => hVnf j z (hVmem z hz j hj).2.2.2.1 hslit
+    hVtgt := fun z hz hslit j hj => hVtg j z (hVmem z hz j hj).2.2.2.2 hslit }⟩
+
 end Jacobians.Dolbeault.SerreResidueTheorem
