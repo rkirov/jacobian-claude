@@ -143,4 +143,84 @@ theorem valueChartTrace_eq_clusterSum_of_reindex {ω₀ : HolomorphicOneForms X}
     * deriv (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z]
   exact Finset.sum_congr rfl (fun j _ => hsummand i j)
 
+/-! ## The per-summand chart reconciliation (Miranda §VIII.3 well-definedness)
+
+The pure-reindexing reduction's per-`(i,j)` summand match equates the cluster summand (read in the
+**fixed preimage** `D.xs i`'s chart) with the moving sphere summand (read in the **moving sheet point**'s
+own chart, along the section `holoReprSheet k`).  Both are pushforwards of `α = ω₀·g` along a local
+section of `f` through the *same* fibre point `q = S.sheet k (coe z)`; they agree by the source-chart
+independence of the trace summand (`movingSummand_chartIndep`) once the two sections germ-agree (both are
+holomorphic right-inverses of `f`'s chart-pullback through `q`).  This is the §VIII.3 fact that "the
+trace `Tr_F α` is a well-defined form", applied at the cluster.
+
+We isolate the reconciliation as a standalone lemma taking the genuine geometric residuals as
+hypotheses: the point coincidence (`cs z = q`), the section-derivative agreement (`deriv (chart_q ∘ cs) z
+= deriv (chart_q ∘ holoReprSheet k) z`, the holomorphic-local-inverse uniqueness), and the
+differentiability data feeding `movingSummand_chartIndep`. -/
+
+/-- **Per-summand chart reconciliation at a cluster point.**  Let `q := S.sheet k (coe z)` be a sphere
+sheet point at the regular slit value `z`, and `cs : ℂ → X` a local section of `f` through `q` with
+`cs z = q` and chart coordinate `chart_{a} (cs w) = cw w` near `z` (so `cw z = chart_a q`), where `a` is
+the fixed preimage chart base.  Then the **fixed-preimage cluster summand** equals the **moving sphere
+summand**:
+
+> `chartIntegrand ω₀ g a (cw z)·deriv cw z
+>    = chartIntegrand ω₀ g q (chart_q (holoReprSheet k z))·deriv (fun w => chart_q (holoReprSheet k w)) z`,
+
+given: `q ∈ chart_a.source`; `cs` continuous at `z`; the chart-pullbacks `chart_q ∘ cs`, `chart_a ∘ cs`
+differentiable at `z`; the two chart transitions (`a ↔ q`) differentiable both ways; and the
+section-derivative agreement `deriv (chart_q ∘ cs) z = deriv (chart_q ∘ holoReprSheet k) z` (the
+holomorphic-local-inverse uniqueness, both sections being right-inverses of `f` through `q`).  Pure
+chart algebra: rewrite the cluster summand as the `a`-chart `movingSummand` of `cs`, apply
+`movingSummand_chartIndep` to switch to the `q`-chart, then the section-derivative agreement. -/
+theorem clusterSummand_eq_sphereSummand (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    {f : MeromorphicFunction X} {z : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+    (k : Fin S.n) (a : X) (cs : ℂ → X) (cw : ℂ → ℂ)
+    (hq : cs z = S.sheet k (((z : ℂ) : RiemannSphere)))
+    (hcw : ∀ᶠ w in 𝓝 z, (chartAt ℂ a) (cs w) = cw w)
+    (hmem_a : cs z ∈ (chartAt ℂ a).source)
+    (hcs_cont : ContinuousAt cs z)
+    (hcsP_diff : DifferentiableAt ℂ (fun w => (chartAt ℂ (cs z)) (cs w)) z)
+    (htrans_diff_a : DifferentiableAt ℂ
+      (fun w => (chartAt ℂ a) ((chartAt ℂ (cs z)).symm w)) ((chartAt ℂ (cs z)) (cs z)))
+    (htrans_diff_inv_a : DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (cs z)) ((chartAt ℂ a).symm w)) ((chartAt ℂ a) (cs z)))
+    (hderiv_match : deriv (fun w => (chartAt ℂ (cs z)) (cs w)) z
+      = deriv (fun w => (chartAt ℂ (cs z)) (S.holoReprSheet k w)) z) :
+    chartIntegrand ω₀ g a (cw z) * deriv cw z
+      = chartIntegrand ω₀ g (S.sheet k (((z : ℂ) : RiemannSphere)))
+          ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+            (S.holoReprSheet k z))
+        * deriv (fun w => (chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+            (S.holoReprSheet k w)) z := by
+  classical
+  -- Abbreviate `q := cs z = S.sheet k (coe z) = holoReprSheet k z`.
+  set q : X := cs z with hqdef
+  -- (1) Rewrite the cluster summand into the `a`-chart `movingSummand` of the section `cs`.
+  -- `cw z = chart_a (cs z)` and `deriv cw z = deriv (chart_a ∘ cs) z` (congr via `hcw`).
+  have hcwz : cw z = (chartAt ℂ a) (cs z) := (hcw.self_of_nhds).symm
+  have hderiv_cw : deriv cw z = deriv (fun w => (chartAt ℂ a) (cs w)) z :=
+    Filter.EventuallyEq.deriv_eq (hcw.mono (fun w h => h.symm))
+  rw [hcwz, hderiv_cw]
+  -- (2) Self-chart transition `chart_q ∘ chart_q.symm =ᶠ id` is differentiable (for `chartIndep`).
+  have hself_diff : DifferentiableAt ℂ
+      (fun w => (chartAt ℂ q) ((chartAt ℂ q).symm w)) ((chartAt ℂ q) q) := by
+    have heqid : (fun w => (chartAt ℂ q) ((chartAt ℂ q).symm w))
+        =ᶠ[𝓝 ((chartAt ℂ q) q)] id := by
+      filter_upwards [(chartAt ℂ q).open_target.mem_nhds
+        ((chartAt ℂ q).map_source (mem_chart_source ℂ q))] with w hw
+      simp only [(chartAt ℂ q).right_inv hw, id_eq]
+    exact differentiableAt_id.congr_of_eventuallyEq heqid
+  -- (3) `movingSummand_chartIndep` (section `cs`, charts `a` and `q`): switch to the `q`-chart.
+  have hindep := movingSummand_chartIndep ω₀ g cs a q hcs_cont hcsP_diff hmem_a
+    (mem_chart_source ℂ q) htrans_diff_a hself_diff htrans_diff_inv_a hself_diff
+  -- `hindep : (a-chart summand of cs) = (q-chart summand of cs)`.
+  rw [hindep]
+  -- (4) The `q`-chart summand of `cs` equals the `q = S.sheet k (coe z)`-chart summand of
+  -- `holoReprSheet k`: `cs z = q = S.sheet k (coe z) = holoReprSheet k z`, so the `chartIntegrand`
+  -- arguments and the chart match (rewrite `q` via `hq`); the section derivs match (`hderiv_match`).
+  have hcs_eq : cs z = S.holoReprSheet k z := hq
+  rw [hderiv_match, hcs_eq, hq]
+
 end Jacobians.Dolbeault.SerreResidueTheorem
