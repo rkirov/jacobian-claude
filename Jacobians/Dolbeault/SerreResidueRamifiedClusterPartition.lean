@@ -223,4 +223,79 @@ theorem clusterSummand_eq_sphereSummand (ω₀ : HolomorphicOneForms X) (g : X �
   have hcs_eq : cs z = S.holoReprSheet k z := hq
   rw [hderiv_match, hcs_eq, hq]
 
+/-! ## The sphere-based reduction (moving-sheet form)
+
+Composing the pure reindexing with the moving-sheet form of the sphere-fibre trace
+(`fibreTrace_eventuallyEq_movingSum` at `z`, along `holoReprSheet`), we obtain `hgeom_fibre` at `z`
+directly from a sphere sheet system `S` at `coe z`, a bijection `e : (Σ i, Fin (D.mult i)) ≃ Fin S.n`,
+and the per-`(i,j)` summand match **in the moving (holoReprSheet) form** — exactly what
+`clusterSummand_eq_sphereSummand` produces. -/
+
+/-- **The full-fibre cluster identity from a sphere sheet system + bijection (moving-sheet form).**  At
+a regular slit value `z` with a sphere sheet system `S` of `F = f.toRiemannSphere` at `coe z` (regular
+fibre — `hderiv`, `hmero`), the regular-value coherence
+`valueChartTrace ω₀ f Φ z = (fibreTrace ω₀ f (ofSphereSheetSystem S …)).traceCoeff z`, a bijection
+`e : (Σ i, Fin (D.mult i)) ≃ Fin S.n`, and the per-`(i,j)` summand equality matching the cluster summand
+to the `e ⟨i,j⟩`-th **moving (holoReprSheet) summand**, the full-fibre cluster identity holds at `z`.
+
+*Proof.*  Rewrite the coherence's RHS via `fibreTrace_eventuallyEq_movingSum` (at `z`, sections
+`holoReprSheet`) into the moving fibre sum `∑ₖ chartIntegrand ω₀ g (S.sheet k (coe z)) …·deriv …`, then
+apply `valueChartTrace_eq_clusterSum_of_reindex` with `T` the moving sum (packaged as the trivial
+`FibreTrace` whose `traceCoeff` *is* that sum) — i.e. directly reindex the moving sum. -/
+theorem valueChartTrace_eq_clusterSum_of_sphereReindex {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
+    (D : FibreRamifiedData g f c) (Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset) {z : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+    (hderiv : ∀ k, deriv (fun w => f.holoRepr
+        ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+        (S.sheet k (((z : ℂ) : RiemannSphere)))) ≠ 0)
+    (hmero : ∀ k, MeromorphicAt
+      (fun w => g ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+        (S.sheet k (((z : ℂ) : RiemannSphere)))))
+    (hcoh : valueChartTrace ω₀ f Φ z
+      = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv hmero)).traceCoeff z)
+    (e : (Σ i : D.ι, Fin (D.mult i)) ≃ Fin S.n)
+    (hsummand : ∀ (i : D.ι) (j : Fin (D.mult i)),
+      chartIntegrand ω₀ g (S.sheet (e ⟨i, j⟩) (((z : ℂ) : RiemannSphere)))
+          ((chartAt ℂ (S.sheet (e ⟨i, j⟩) (((z : ℂ) : RiemannSphere))))
+            (S.holoReprSheet (e ⟨i, j⟩) z))
+        * deriv (fun w => (chartAt ℂ (S.sheet (e ⟨i, j⟩) (((z : ℂ) : RiemannSphere))))
+            (S.holoReprSheet (e ⟨i, j⟩) w)) z
+        = chartIntegrand ω₀ g (D.xs i) (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j z)
+          * deriv (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z) :
+    valueChartTrace ω₀ f Φ z
+      = ∑ i, ∑ j ∈ Finset.range (D.mult i),
+        chartIntegrand ω₀ g (D.xs i) (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j z)
+          * deriv (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z := by
+  classical
+  -- The moving-sheet form of the sphere-fibre trace at `z` (sections `holoReprSheet`).
+  set D' := FibreRegularData.ofSphereSheetSystem S hderiv hmero with hD'
+  have hmoving : (fibreTrace ω₀ f D').traceCoeff z
+      = ∑ k, chartIntegrand ω₀ g (D'.xs k) ((chartAt ℂ (D'.xs k)) (S.holoReprSheet k z))
+        * deriv (fun w => (chartAt ℂ (D'.xs k)) (S.holoReprSheet k w)) z :=
+    (fibreTrace_eventuallyEq_movingSum ω₀ f D' (fun k => S.holoReprSheet k)
+      (fun _ => rfl) (fun k => (S.holoReprSheet_contMDiffAt k).continuousAt)
+      (fun k => S.holoReprSheet_section k)).self_of_nhds
+  -- The moving summand as a function `F : Fin S.n → ℂ`.
+  set F : Fin S.n → ℂ := fun k => chartIntegrand ω₀ g (D'.xs k)
+      ((chartAt ℂ (D'.xs k)) (S.holoReprSheet k z))
+    * deriv (fun w => (chartAt ℂ (D'.xs k)) (S.holoReprSheet k w)) z with hF
+  rw [hcoh, hmoving]
+  -- (a) Flatten the cluster double sum to a single `Σ`-sum, matching each term to `F (e ⟨i,j⟩)`.
+  have hRHS : (∑ i, ∑ j ∈ Finset.range (D.mult i),
+        chartIntegrand ω₀ g (D.xs i) (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j z)
+          * deriv (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z)
+      = ∑ p : (Σ i : D.ι, Fin (D.mult i)), F (e p) := by
+    rw [← Finset.univ_sigma_univ, Finset.sum_sigma]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    rw [Finset.sum_range fun j => chartIntegrand ω₀ g (D.xs i)
+        (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j z)
+      * deriv (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z]
+    exact Finset.sum_congr rfl (fun j _ => (hsummand i j).symm)
+  rw [hRHS]
+  -- (b) Reindex the moving sum `∑ k, F k` along `e : (Σ…) ≃ Fin S.n`.
+  exact (Fintype.sum_equiv e (fun p => F (e p)) F (fun _ => rfl)).symm
+
 end Jacobians.Dolbeault.SerreResidueTheorem
