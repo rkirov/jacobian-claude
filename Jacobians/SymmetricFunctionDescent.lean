@@ -242,4 +242,174 @@ theorem hasSum_ofScalarsSum_of_lt_radius (c : ℕ → ℂ) {v : ℂ}
   rw [zero_add] at h
   exact h
 
+/-! ## The descent: the weighted symmetric trace factors through `(·)^m` -/
+
+/-- **The weighted symmetric-sum descent** (the genuinely-new analytic lemma; Forster §5 / Miranda
+§VIII.3, "the trace of a holomorphic form is holomorphic").  For an analytic germ `Q` at `0`, `m > 0`,
+and a primitive `m`-th root of unity `ζ`, there is an analytic germ `G` at `0` (the subsequence series
+`v ↦ ∑'ₖ a_{m·k+(m−1)}·vᵏ`, `aₙ` the Taylor coefficients of `Q`) with
+
+> `∑_{j<m} Q(ζʲ·u)·ζʲ = m·u^{m−1}·G(uᵐ)`   (for `u` near `0`).
+
+The `m`-sheet sum is single-valued (the roots-of-unity collapse `∑_j ζ^{j(n+1)} = m·[m∣n+1]` keeps only
+the indices `n = m·k+(m−1)`).  Then `aₙ uⁿ` becomes `m·u^{m−1}·a_{m·k+(m−1)}·(uᵐ)ᵏ`. -/
+theorem analyticAt_weightedSymSum_descent {Q : ℂ → ℂ} (hQ : AnalyticAt ℂ Q 0) {m : ℕ} (hm : 0 < m)
+    {ζ : ℂ} (hζ : IsPrimitiveRoot ζ m) :
+    ∃ G : ℂ → ℂ, AnalyticAt ℂ G 0 ∧
+      ∀ᶠ u in 𝓝 (0 : ℂ), (∑ j ∈ Finset.range m, Q (ζ ^ j * u) * ζ ^ j) = m * u ^ (m - 1) * G (u ^ m) := by
+  obtain ⟨pf, hpf⟩ := hQ
+  set c : ℕ → ℂ := fun k => pf.coeff (m * k + (m - 1)) with hc
+  refine ⟨ofScalarsSum (E := ℂ) c, ?_, ?_⟩
+  · -- `G` is analytic: the divisible-subsequence series
+    have hrad : 0 < pf.radius := by
+      obtain ⟨r, hr⟩ := hpf; exact lt_of_lt_of_le hr.r_pos hr.r_le
+    exact analyticAt_ofScalars_subseq pf hrad hm (m - 1)
+  · -- the identity, on the nbhd where the aux HasSum holds and `uᵐ` is inside `ofScalars c`'s radius
+    have hradc : 0 < (ofScalars ℂ c).radius := by
+      obtain ⟨ρ, hρ0, hρ⟩ := ENNReal.lt_iff_exists_nnreal_btwn.mp
+        (show (0 : ℝ≥0∞) < pf.radius by obtain ⟨r, hr⟩ := hpf; exact lt_of_lt_of_le hr.r_pos hr.r_le)
+      refine lt_of_lt_of_le ?_ (le_radius_ofScalars_subseq pf hm (m - 1) hρ)
+      have hρ0' : (0 : ℝ≥0) < ρ := by exact_mod_cast hρ0
+      rw [← ENNReal.coe_pow]
+      exact_mod_cast pow_pos hρ0' m
+    -- `uᵐ` enters `ofScalars c`'s ball eventually (it tends to `0`)
+    have hpow : ∀ᶠ u in 𝓝 (0 : ℂ), (‖u ^ m‖₊ : ℝ≥0∞) < (ofScalars ℂ c).radius := by
+      have htend : Tendsto (fun u : ℂ => (‖u ^ m‖₊ : ℝ≥0∞)) (𝓝 0) (𝓝 0) := by
+        have : Continuous (fun u : ℂ => (‖u ^ m‖₊ : ℝ≥0∞)) :=
+          (ENNReal.continuous_coe).comp (continuous_nnnorm.comp (continuous_pow m))
+        have h0 := this.tendsto 0
+        simpa [zero_pow hm.ne'] using h0
+      exact htend.eventually (eventually_lt_nhds hradc)
+    filter_upwards [hasSum_symSheetSum_aux hpf hζ, hpow] with u hu hupow
+    -- rewrite the coefficient sum via the roots-of-unity collapse
+    have hcollapse : ∀ n : ℕ,
+        (∑ j ∈ Finset.range m, (ζ ^ j) ^ ((n : ℤ) + 1)) * u ^ n * pf.coeff n
+          = (if (m : ℤ) ∣ ((n : ℤ) + 1) then (m : ℂ) else 0) * u ^ n * pf.coeff n := by
+      intro n
+      rw [Jacobians.RamifiedTrace.rootsOfUnity_geom_zsum hζ ((n : ℤ) + 1)]
+    rw [show (fun n : ℕ => (∑ j ∈ Finset.range m, (ζ ^ j) ^ ((n : ℤ) + 1)) * u ^ n * pf.coeff n)
+          = (fun n : ℕ => (if (m : ℤ) ∣ ((n : ℤ) + 1) then (m : ℂ) else 0) * u ^ n * pf.coeff n)
+        from funext hcollapse] at hu
+    -- reindex `n = m·k + (m−1)` via the injection `apIdx`
+    set F : ℕ → ℂ := fun n => (if (m : ℤ) ∣ ((n : ℤ) + 1) then (m : ℂ) else 0) * u ^ n * pf.coeff n
+      with hF
+    have hdvd_iff : ∀ n : ℕ, ((m : ℤ) ∣ ((n : ℤ) + 1)) ↔ (m ∣ (n + 1)) := by
+      intro n
+      rw [show ((n : ℤ) + 1) = ((n + 1 : ℕ) : ℤ) by push_cast; ring, Int.natCast_dvd_natCast]
+    have hzero : ∀ n ∉ Set.range (fun k : ℕ => m * k + (m - 1)), F n = 0 := by
+      intro n hn
+      have hnotdvd : ¬ (m : ℤ) ∣ ((n : ℤ) + 1) := by
+        rw [hdvd_iff n, ← mem_range_apIdx_iff hm]
+        exact hn
+      simp [hF, hnotdvd]
+    have hreindex : HasSum (F ∘ (fun k : ℕ => m * k + (m - 1)))
+        (∑ j ∈ Finset.range m, Q (ζ ^ j * u) * ζ ^ j) :=
+      ((apIdx_injective hm).hasSum_iff hzero).mpr hu
+    -- simplify `F ∘ apIdx k = m · u^(m·k+(m−1)) · pf.coeff (m·k+(m−1))`
+    have hFcomp : ∀ k : ℕ, (F ∘ (fun k : ℕ => m * k + (m - 1))) k
+        = (m : ℂ) * u ^ (m - 1) * (c k • (u ^ m) ^ k) := by
+      intro k
+      simp only [Function.comp, hF, hc]
+      have hdvd : (m : ℤ) ∣ ((↑(m * k + (m - 1)) : ℤ) + 1) := by
+        rw [hdvd_iff (m * k + (m - 1)), ← mem_range_apIdx_iff hm]
+        exact ⟨k, rfl⟩
+      rw [if_pos hdvd, smul_eq_mul]
+      rw [show m * k + (m - 1) = (m - 1) + m * k by omega, pow_add, ← pow_mul, mul_comm m k, pow_mul]
+      ring
+    rw [show (F ∘ (fun k : ℕ => m * k + (m - 1)))
+          = (fun k => (m : ℂ) * u ^ (m - 1) * (c k • (u ^ m) ^ k)) from funext hFcomp] at hreindex
+    -- the RHS series is `m·u^(m−1)` times the `ofScalarsSum c (uᵐ)` series
+    have hG : HasSum (fun k => c k • (u ^ m) ^ k) (ofScalarsSum (E := ℂ) c (u ^ m)) :=
+      hasSum_ofScalarsSum_of_lt_radius c hupow
+    have := (hG.mul_left ((m : ℂ) * u ^ (m - 1)))
+    exact (hreindex.unique this)
+
+/-! ## Wiring: the ramified remainder trace `Rem z = G(z − c)`
+
+The downstream ramified-residue subtree (`ClusterTraceData.ofNormalForm`,
+`RamifiedSheetData.hRem_an`/`hRem_slit`) needs the descent in the *slit* form: with `wp` a base chart
+value, `ppR` the analytic remainder of the straightened integrand (analytic at `wp`), and `w₀` a
+holomorphic branch of `(z − c)^{1/m}` on a slit `S`, the trace
+
+> `Rem z = ∑_{j<m} ppR(wp + ζʲ·w₀ z) · (d/dz)[wp + ζʲ·w₀ z]`
+
+is analytic at `c`, with closed form `Rem z = G(z − c)` (`G` from `analyticAt_weightedSymSum_descent`
+applied to `Q t := ppR(wp + t)`).  The chain rule `(d/dz)[wp + ζʲ·w₀ z] = ζʲ·(1/m)·w₀ z^{1−m}`
+(`hw₀_deriv`) contributes the `1/m` that cancels the `m` of the descent and the `w₀ z^{1−m}` that
+cancels `w₀ z^{m−1}`, leaving exactly `G((w₀ z)ᵐ) = G(z − c)`. -/
+
+/-- **The per-`z` slit-identity bridge.**  At a single slit value `z`, given the branch facts
+(`w₀ z ≠ 0`, `(w₀ z)ᵐ = z − c`, `deriv w₀ z = (1/m)·w₀ z^{1−m}`) **and** the descent identity at
+`u = w₀ z`, the `m`-sheet slit sum equals `G(z − c)`:
+
+> `∑_{j<m} ppR(wp + ζʲ·w₀ z)·(d/dz)[wp + ζʲ·w₀ z] = G(z − c)`. -/
+theorem ramifiedTrace_slit_eq (ppR : ℂ → ℂ) (wp c : ℂ) {m : ℕ} (hm : 0 < m) (ζ : ℂ) (w₀ : ℂ → ℂ)
+    (G : ℂ → ℂ) {z : ℂ} (hw₀_ne : w₀ z ≠ 0) (hw₀_pow : w₀ z ^ (m : ℤ) = z - c)
+    (hw₀_deriv : deriv w₀ z = (m : ℂ)⁻¹ * w₀ z ^ (1 - (m : ℤ)))
+    (hdescent : (∑ j ∈ Finset.range m, ppR (wp + ζ ^ j * w₀ z) * ζ ^ j)
+      = m * (w₀ z) ^ (m - 1) * G ((w₀ z) ^ m)) :
+    (∑ j ∈ Finset.range m, ppR (wp + ζ ^ j * w₀ z)
+      * deriv (fun ζz => wp + ζ ^ j * w₀ ζz) z) = G (z - c) := by
+  have hm0 : (m : ℂ) ≠ 0 := by exact_mod_cast hm.ne'
+  -- the per-sheet derivative `(d/dz)[wp + ζʲ·w₀ z] = ζʲ·(1/m)·w₀ z^{1−m}`.
+  have hderiv : ∀ j : ℕ, deriv (fun ζz => wp + ζ ^ j * w₀ ζz) z
+      = ζ ^ j * ((m : ℂ)⁻¹ * w₀ z ^ (1 - (m : ℤ))) := by
+    intro j
+    rw [show (fun ζz => wp + ζ ^ j * w₀ ζz) = (fun ζz => wp + (fun y => ζ ^ j * w₀ y) ζz) from rfl,
+      deriv_const_add, deriv_const_mul_field, hw₀_deriv]
+  -- factor the common `(1/m)·w₀ z^{1−m}` out of the slit sum.
+  have hslit : (∑ j ∈ Finset.range m, ppR (wp + ζ ^ j * w₀ z)
+        * deriv (fun ζz => wp + ζ ^ j * w₀ ζz) z)
+      = ((m : ℂ)⁻¹ * w₀ z ^ (1 - (m : ℤ)))
+        * (∑ j ∈ Finset.range m, ppR (wp + ζ ^ j * w₀ z) * ζ ^ j) := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro j _
+    rw [hderiv j]; ring
+  rw [hslit, hdescent]
+  -- collapse `(1/m)·w₀ z^{1−m} · (m · w₀ z^{m−1}) = (w₀ z)^{1-m} · (w₀ z)^{m-1} = 1`, and `(w₀ z)ᵐ = z−c`.
+  rw [show (w₀ z) ^ (m - 1) = (w₀ z) ^ ((m : ℤ) - 1) by
+    rw [← zpow_natCast (w₀ z) (m - 1)]; congr 1; omega]
+  rw [show (w₀ z) ^ m = (w₀ z) ^ (m : ℤ) by rw [zpow_natCast], hw₀_pow]
+  rw [show (m : ℂ)⁻¹ * w₀ z ^ (1 - (m : ℤ)) * (↑m * w₀ z ^ ((m : ℤ) - 1) * G (z - c))
+        = ((m : ℂ)⁻¹ * ↑m) * (w₀ z ^ (1 - (m : ℤ)) * w₀ z ^ ((m : ℤ) - 1)) * G (z - c) by ring]
+  rw [← zpow_add₀ hw₀_ne, show (1 - (m : ℤ)) + ((m : ℤ) - 1) = 0 by ring, zpow_zero,
+    inv_mul_cancel₀ hm0]
+  ring
+
+/-- **The descent germ `Q t := ppR(wp + t)`** is analytic at `0` (re-centring the analytic remainder).
+The bridge from the chart-centred `ppR` (analytic at `wp`) to the descent's `0`-centred input. -/
+theorem analyticAt_reCentre {ppR : ℂ → ℂ} {wp : ℂ} (hppR_an : AnalyticAt ℂ ppR wp) :
+    AnalyticAt ℂ (fun t => ppR (wp + t)) 0 :=
+  hppR_an.comp_of_eq (by fun_prop) (by ring)
+
+/-- **The ramified remainder trace exists and is analytic at `c`** (the wired descent, the form the
+ramified-residue subtree consumes).  From `ppR` analytic at `wp`, a positive multiplicity `m`, a
+primitive `m`-th root `ζ`, and a slit `S` on which `w₀` is a holomorphic branch of `(z − c)^{1/m}`
+**whose values land in the descent neighbourhood** (the smallness hypothesis `hsmall`, supplied as the
+descent identity holding pointwise at each `w₀ z`), there is `Rem` analytic at `c` agreeing on `S` with
+the `m`-sheet slit sum
+
+> `Rem z = ∑_{j<m} ppR(wp + ζʲ·w₀ z)·(d/dz)[wp + ζʲ·w₀ z]`.
+
+`Rem := G(· − c)` for the descent germ `G`; `hRem_an` is `G`'s analyticity transported to `c`, and
+`hRem_slit` is `ramifiedTrace_slit_eq` applied pointwise.  The caller obtains `hsmall` from the
+shrunk slit (`w₀ z → 0` as `z → c`) and the descent's `∀ᶠ u in 𝓝 0` identity; the descent germ `G` and
+its `∀ᶠ` identity are exposed via the explicit `G`/`hG`/`hGev` arguments so the caller's `hsmall`
+can refer to the same `G`. -/
+theorem exists_ramifiedTrace_descent {ppR : ℂ → ℂ} {wp : ℂ}
+    (c : ℂ) {m : ℕ} (hm : 0 < m) (ζ : ℂ) (w₀ : ℂ → ℂ) (S : Set ℂ) (G : ℂ → ℂ)
+    (hG : AnalyticAt ℂ G 0)
+    (hw₀_ne : ∀ z ∈ S, w₀ z ≠ 0) (hw₀_pow : ∀ z ∈ S, w₀ z ^ (m : ℤ) = z - c)
+    (hw₀_deriv : ∀ z ∈ S, deriv w₀ z = (m : ℂ)⁻¹ * w₀ z ^ (1 - (m : ℤ)))
+    (hsmall : ∀ z ∈ S, (∑ j ∈ Finset.range m, ppR (wp + ζ ^ j * w₀ z) * ζ ^ j)
+        = m * (w₀ z) ^ (m - 1) * G ((w₀ z) ^ m)) :
+    ∃ Rem : ℂ → ℂ, AnalyticAt ℂ Rem c ∧
+      ∀ z ∈ S, Rem z = ∑ j ∈ Finset.range m, ppR (wp + ζ ^ j * w₀ z)
+        * deriv (fun ζz => wp + ζ ^ j * w₀ ζz) z := by
+  refine ⟨fun z => G (z - c), hG.comp_of_eq (by fun_prop) (by ring), ?_⟩
+  intro z hz
+  exact (ramifiedTrace_slit_eq ppR wp c hm ζ w₀ G (hw₀_ne z hz) (hw₀_pow z hz)
+    (hw₀_deriv z hz) (hsmall z hz)).symm
+
 end Jacobians.SymmetricDescent
