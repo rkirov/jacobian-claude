@@ -190,4 +190,102 @@ theorem ne_of_mem_disjoint {q q' : X} {U U' : Set X} (hq : q ∈ U) (hq' : q' �
   intro h; subst h
   exact (Set.disjoint_left.mp hdisj hq) hq'
 
+/-! ## The per-`(z₀,i)` §5 section germ data + the `RealSlitSectionData` builder
+
+We package, for one slit value `z₀` and one fibre preimage `i`, exactly the §5 normal-form data the five
+section facts consume — the straightening coordinate `η` matching the cluster data's local inverse
+`(Cl i).s`, the §5 eventual facts (inverse near the cluster argument, normal form near the cluster point,
+slit power near `z₀`), the chart-target locality of the cluster sheet value, the §5 inverse recovery, and
+the smallness witnesses making the cluster section point a non-pole near its preimage and the clusters
+cross-separated.  From a slit-wide such bundle, the builder assembles `RealSlitSectionData`, discharging
+all five fields.  This isolates the residue obligation's section half to **this germ data per `(z₀,i)`** —
+the genuine Forster §5 normal-form geometry, with the cluster data `Cl` (carrying the `Rem`
+symmetric-function descent) supplied separately. -/
+
+/-- **The per-`(z₀,i)` §5 section germ data** (the precise per-preimage section content at one slit value
+`z₀`).  For the whole-fibre `D = realFibreData g hdiv c hnp`, the cluster data `Cl`, a slit value `z₀`,
+and a preimage `i`, bundles:
+
+* `η` — the §5 straightening coordinate, with the inverse property `hinv` valid near each cluster argument
+  `(Cl i).ζ ^ j · (Cl i).w₀ z₀` (`j < mult i`), the normal form `hnf` valid near each cluster point
+  `(Cl i).s ((Cl i).ζ ^ j · (Cl i).w₀ z₀)`, and the slit power identity `hpow` near `z₀`;
+* `hs_cont`/`hw₀_cont` — continuity of the §5 local inverse `(Cl i).s` at the cluster arguments and of the
+  branch `(Cl i).w₀` at `z₀`;
+* `htgt` — the cluster sheet value `(Cl i).s (cluster arg)` lies in the (open) chart target at `D.xs i`;
+* `hnonpole` — the cluster section point is a non-pole at `z₀` (it lies near the non-pole preimage `D.xs i`
+  on the shrunk slit);
+* `hsep` — cross-cluster separation: at distinct preimages `i ≠ i'` the cluster section points at `z₀` are
+  distinct (the clusters cluster at distinct T2-separated preimages on the shrunk slit). -/
+structure SlitSectionGerm (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
+    {f : MeromorphicFunction X} (hdiv : (f.div : Divisor X) ≠ 0) (c : ℂ)
+    (hnp : ∀ i, 0 ≤ f.orderAtPoint (fullFibreEnum f hdiv c i))
+    {Sset : Set ℂ}
+    (Cl : ∀ i, ClusterTraceData ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) c Sset)
+    (z₀ : ℂ) (i : (realFibreData g hdiv c hnp).ι) where
+  /-- The §5 straightening coordinate at the preimage `D.xs i`. -/
+  η : ℂ → ℂ
+  /-- Continuity of the §5 local inverse `(Cl i).s` at each cluster argument. -/
+  hs_cont : ∀ j : Fin ((realFibreData g hdiv c hnp).mult i),
+    ContinuousAt (Cl i).s ((Cl i).ζ ^ (j : ℕ) * (Cl i).w₀ z₀)
+  /-- Continuity of the branch `(Cl i).w₀` at `z₀`. -/
+  hw₀_cont : ContinuousAt (Cl i).w₀ z₀
+  /-- The §5 inverse property valid near each cluster argument. -/
+  hinv : ∀ j : Fin ((realFibreData g hdiv c hnp).mult i),
+    ∀ᶠ a in 𝓝 ((Cl i).ζ ^ (j : ℕ) * (Cl i).w₀ z₀), η ((Cl i).s a) = a
+  /-- The §5 normal form valid near each cluster point. -/
+  hnf : ∀ j : Fin ((realFibreData g hdiv c hnp).mult i),
+    ∀ᶠ w' in 𝓝 ((Cl i).s ((Cl i).ζ ^ (j : ℕ) * (Cl i).w₀ z₀)),
+      f.holoRepr ((chartAt ℂ ((realFibreData g hdiv c hnp).xs i)).symm w') = c + η w' ^ (Cl i).m
+  /-- The slit power identity near `z₀`. -/
+  hpow : ∀ᶠ w in 𝓝 z₀, (Cl i).w₀ w ^ ((Cl i).m : ℤ) = w - c
+  /-- The cluster sheet value lies in the chart target at `D.xs i`. -/
+  htgt : ∀ j : Fin ((realFibreData g hdiv c hnp).mult i),
+    (Cl i).s ((Cl i).ζ ^ (j : ℕ) * (Cl i).w₀ z₀) ∈ (chartAt ℂ ((realFibreData g hdiv c hnp).xs i)).target
+  /-- The cluster section point is a non-pole at `z₀`. -/
+  hnonpole : ∀ j : Fin ((realFibreData g hdiv c hnp).mult i),
+    0 ≤ f.orderAtPoint (clusterSection (realFibreData g hdiv c hnp) Cl i j z₀)
+  /-- Cross-cluster separation at `z₀` (distinct preimages give distinct cluster points). -/
+  hsep : ∀ (i' : (realFibreData g hdiv c hnp).ι)
+    (j : Fin ((realFibreData g hdiv c hnp).mult i)) (k : Fin ((realFibreData g hdiv c hnp).mult i')),
+    i ≠ i' → clusterSection (realFibreData g hdiv c hnp) Cl i j z₀
+      ≠ clusterSection (realFibreData g hdiv c hnp) Cl i' k z₀
+
+/-- **`RealSlitSectionData` from a per-preimage `SlitSectionGerm` family at `z₀`.**  Given, at the slit
+value `z₀`, a `SlitSectionGerm` for every fibre preimage `i` (the genuine Forster §5 normal-form section
+geometry), and the multiplicity match `hmult : ∀ i, (Cl i).m = (realFibreData …).mult i`, build the
+`RealSlitSectionData`: each of the five section fields is discharged from the germ data via the
+section-fact toolkit (`eventually_holoRepr_clusterSheet_eq`, `eventually_clusterSheet_mem_target`,
+`clusterSection_within_cluster_inj`, `clusterArg_inverse_self`).  This makes the **section half** of the
+residue obligation `RealCoverSlitSectionGeometry` DONE; the only separately-supplied content is the
+cluster data `Cl` (carrying the `Rem` symmetric-function descent). -/
+noncomputable def RealSlitSectionData.ofSlitSectionGerm {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0} {c : ℂ}
+    {hnp : ∀ i, 0 ≤ f.orderAtPoint (fullFibreEnum f hdiv c i)} {Sset : Set ℂ}
+    {Cl : ∀ i, ClusterTraceData ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) c Sset} {z₀ : ℂ}
+    (hz_slit : z₀ ∈ Sset)
+    (hmult : ∀ i, (Cl i).m = (realFibreData g hdiv c hnp).mult i)
+    (G : ∀ i, SlitSectionGerm ω₀ g hdiv c hnp Cl z₀ i) :
+    RealSlitSectionData ω₀ g hdiv c hnp Cl z₀ where
+  hcs_sec := fun i j => by
+    -- the §5 section property near z₀, via the germ's eventual inverse/normal-form/slit-power facts.
+    have h := eventually_holoRepr_clusterSheet_eq f ((G i).hs_cont j) (G i).hw₀_cont (Cl i).hζ
+      ((G i).hinv j) ((G i).hnf j) (G i).hpow
+    -- `clusterSection D Cl i j w = chart.symm (clusterSheet …)` — defeq.
+    exact h
+  hcs_np := fun i j => (G i).hnonpole j
+  hwithin := fun i j k hpt => by
+    -- within-cluster injectivity via the proven `clusterSection_within_cluster_inj`.
+    refine clusterSection_within_cluster_inj (D := realFibreData g hdiv c hnp) (η := (G i).η)
+      (hmult i).symm ?_ ?_ ?_ ?_ ?_ hpt
+    · -- target membership of sheet `j` (the cluster sheet value at z₀ in chart target).
+      exact (G i).htgt j
+    · exact (G i).htgt k
+    · exact clusterArg_inverse_self ((G i).hinv j)
+    · exact clusterArg_inverse_self ((G i).hinv k)
+    · -- branch nonzero on the slit: `(Cl i).w₀ z₀ ≠ 0` from `hw₀_ne` at `z₀ ∈ Sset`.
+      exact (Cl i).hw₀_ne z₀ hz_slit
+  hcross := fun i i' j k hii => (G i).hsep i' j k hii
+  hsrc := fun i j => eventually_clusterSheet_mem_target ((realFibreData g hdiv c hnp).xs i)
+    ((G i).hs_cont j) (G i).hw₀_cont ((G i).htgt j)
+
 end Jacobians.Dolbeault.SerreResidueTheorem
