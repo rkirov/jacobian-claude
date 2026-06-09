@@ -1525,3 +1525,71 @@ non-pole analyticity + pole enumerations) with the 6th false field (germ `agree`
 ELIMINATED — a strict improvement over the prior state where the genericity was a disguised False
 upstream. The hard analytic content (genuine trace, `hentire`, sound ∞, Lemma 3.2) is reused, not
 re-derived.
+
+---
+
+## 2026-06-09 (Gate A genericity — assemble DirectTraceGeometry for an adapted cover)
+
+**Directive:** Discharge the single named obligation `∃ f, Nonempty (DirectTraceGeometry ω₀ g f poles)`
+that the honest residue-level close reduced Gate A to — Miranda §VIII.3 genericity ("choose any
+nonconstant f"). Drive the 38-field assembly; honest fallback = maximal proven prefix
+(`directTraceGeometry_ofAdapted` w/ residual fields as hypotheses) + precise field-by-field map. NO
+false field; do NOT reintroduce germ `agree`/`agree_infty`.
+
+**Outcome (this session):** Realistically NOT fully closeable in one pass — the genus-`0` fields
+(`hcont_int` junk-freeness, `R₀`/`hR₀0`/`hR₀_eq` ∞-vanishing) are documented residual EVERYWHERE in the
+repo (only the empty case discharges them; the `H⁰(ℂℙ¹,Ω)=0` content applied to a NONEMPTY trace is
+genuinely-open analytic content, never built), and `Cfull` (per-centre full-fibre coherence) needs a
+per-centre `LocalSheetSystem` + regular-value `g`-meromorphy wiring. So delivered the HONEST FALLBACK:
+maximal proven prefix + precise residual map. NEW FILE `Jacobians/Dolbeault/SerreResidueDirectAssemble.lean`
+(namespace `…SerreResidueTheorem`; existing files untouched; the 2 untracked orphans untouched). All
+declarations axiom-clean `[propext, Classical.choice, Quot.sound]` (authoritative `#print axioms`), NO
+sorry, NO false field, germ `agree` NEVER introduced.
+
+**PROVEN field-groups (the genuinely-new content):**
+- **Pole sub-fibre combinatorics** (`poleSubfibre` + `poleSubfibre_xs_injective/_mem/_surj/_hpole_image`):
+  the pole-only sub-`FibreRegularData` of a full-fibre datum (subtype `{i // Dfull.xs i ∈ poles}`),
+  giving `D`/`hxs_inj`/`hxs_mem`/`hxs_surj`/`hpole_image`. This is the `D` (pole-only) vs `Cfull`
+  (full-fibre) separation that ELIMINATES the false germ `agree` at the residue level.
+- **∞ pole sub-enumeration** (`poleSubEnum_injective/_mem/_surj/_hpole_image`): the ∞-analogue, giving
+  `ιInfP`/`xsInf_po`/`hpoInf_inj`/`hpoInf_mem`/`hpoInf_surj`/`hpole_image_inf`.
+- **Full ∞-fibre from simple poles** (`inftyFibreEnum*` + `inftyFibreDataNF_full`): enumerates the
+  ENTIRE ∞-fibre `F⁻¹(∞)` = poles-of-`f` (finite, `f.finite_poles`) as a sound `InftyFibreDataNF` when
+  every `f`-pole is simple. CLOSES `Dinf_full`/`hfullInf_inj`/`hinf_mem`/`hinf_surj` (no residual).
+- **Canonical-selection Φ-enumeration** (`canonicalFibreSelection_hΦ_inj/_mem/_surj`): discharges the
+  three Φ-enumeration inputs from ONE genericity hypothesis `hgood` (every pole-VALUE is a `GoodValue`:
+  off-branch + g-meromorphic). At good values range = fibre; non-good ⟹ no α-pole (contrapositive).
+
+**Constructors (proven prefix, residual as hypotheses):**
+- `directTraceGeometry_ofAdapted` — general Φ; proves the pole-only/∞/matching/centre groups; takes
+  `Cfull`+`hCfull_inj`+`hCfull_image` (IMAGE-equality not data-equality — soundness relaxation, weaker
+  & genuinely satisfiable) + `hnonpole_an`/`hnonpole_inf_an` + `Dinf_full`-group + deep analytics.
+- `directTraceGeometry_ofAdaptedSimpleInfty` — + constructs `Dinf_full` from simple ∞-poles.
+- `directTraceGeometry_ofCanonicalSimpleInfty` — + `Φ := canonicalFibreSelection`, discharges Φ-group
+  from `hgood`. Most-wired.
+- `residueTheorem_of_canonicalAdapted` — CAPSTONE: `∑Res=0` directly from the residual hypotheses.
+
+**PRECISE RESIDUAL MAP (what `directTraceGeometry_ofCanonicalSimpleInfty` still takes, = smallest honest
+residual of Gate A):**
+1. `hgood` — pole-value goodness (the adapted-cover genericity: f unramified over α's pole-values +
+   g-meromorphic; textbook generic position, NO RR-with-jets per gate_a_cover_genericity doc). TRUE for
+   adapted f.
+2. `m`/`cs`/`ρ`/`hcs_ball`/`hcs_inj`/`br`/`hcenters_cs` — finite centre (pole-value) + branch-value
+   enumeration. WIREABLE from finiteness of pole-values + criticalValues_finite (not yet wired).
+3. `Cfull`/`hCfull_inj`/`hCfull_image`/`hnonpole_an` — per-centre FULL-fibre moving coherence (DEEP:
+   needs per-centre LocalSheetSystem via `exists_sphereSheetSystem` + `MovingCoherenceDatum.ofSphereSheetSystemSet`
+   + `canon_of_fibre_enumeration`; `hCfull_image` provable since both enumerate the same fibre).
+4. `hsimpleInf`/`hmeroInf`/`hnonpole_inf_an` — ∞ genericity (every f-pole simple + g-mero over ∞).
+5. `hreg`/`hbnd` — regular-value analyticity + branch boundedness (PROVEN cruxes exist:
+   `traceLocalCoeff_*`, `traceExtendsAt_branchPoint`; wiring remains).
+6. `hcont_int`/`R₀`/`hR₀_an`/`hR₀0`/`hR₀_eq` — junk-freeness + genus-0 ∞-vanishing. ⚠ GENUINELY-OPEN
+   genus-0 content for nonempty poles (residual everywhere in repo; only empty case discharges). TRUE
+   (not false) but never built for nonempty.
+7. `hcoh_full` — ∞-single-valuedness (the ∞-moving coherence; genuine ∞ residual).
+
+**`residueTheorem_of_exists_directTraceGeometry` is NOT yet unconditional** (would require closing all 7
+residual groups including the genuinely-open genus-0 content #6). NO candidate 7th false field found —
+every exposed hypothesis is a TRUE statement (satisfiable; the empty-pole witness proves the SHAPE is
+honest), just not-yet-proven-in-general. Strict improvement: the pole-only/∞/matching/centre/Φ/∞-fibre
+field-groups are now PROVEN wiring, reducing Gate A to the deep analytic residuals 3/5/6/7 + genericity
+1/4.
