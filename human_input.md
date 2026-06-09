@@ -2161,3 +2161,92 @@ LEAN NOTE: deduped `lSysModule` — `SerreOmega0` now imports `CanonicalFormIso`
 (was a local duplicate; the new file imports both, which clashed). `SerreOmega0`/`DolbeaultLadder`/Gate A
 assemble all still build (8503 jobs green). Recurring gotcha: `mfderiv%`-display + `OfNat (TangentSpace) 1`
 break `rw` on applied-CLM-at-`1` goals — use `DFunLike.congr_fun`/`refine eq.trans ?_`/`change _ = _ * (1:ℂ)`.
+
+---
+
+## 2026-06-09 — Gate A `hoff_cs` elimination attempt: PRECISE LOCALIZATION + SCOPE VERDICT (no code change; sound fallback)
+
+Thread: branch `gate-a-trace-rationality-assembly`. Goal = eliminate `hoff_cs` (α's finite pole-values
+off `f`'s branch locus) so Gate A `∑Res=0` needs only {f nonconstant, hsimpleInf}. INDEPENDENT of the
+`df`/17.4 thread (`CanonicalFormDifferential.lean`, untouched).
+
+### OUTCOME: full elimination is a genuine multi-thousand-line refactor (NOT done this session).
+Delivered the precise localization + the minimal remaining ramified sub-lemma. NO code committed
+(no sound on-critical-path increment was reachable without the missing analytic atom — see below).
+NO sorry, NO false/circular field, NO custom axiom introduced. Baseline still green + axiom-clean
+(`SerreResidueGateAClosed` builds, 8516 jobs).
+
+### WHERE `hoff_cs` IS GENUINELY CONSUMED (exactly 3 call sites, ONE file)
+All in `Jacobians/Dolbeault/SerreResidueDirectGenus0GermDischarge.lean`, inside
+`residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull` (everything above it just THREADS `hoff_cs`):
+1. **L264** `exists_sphereSheetSystem f … (hoff_cs i)` — builds the sphere-sheet system `S i` at the
+   pole-value centre `cs i` (needs `coe (cs i)` off-branch = distinct unramified sheets).
+2. **L288** `movingCoherenceDatum_canonical hdiv (hoff_cs i) (S i) …` — builds `Cfull i :
+   MovingCoherenceDatum … (cs i)`.
+3. **L291-292** `movingCoherenceDatum_canonical_D_inj/_D_image (hoff_cs i) …` — the combinatorial fields.
+
+`Cfull i` then feeds `residueTheorem_ofCanonicalSimpleInfty_genus0_germ`, where it provides EXACTLY
+two facts at `cs i` (`SerreResidueDirectGenus0Germ.lean` L330-380):
+- **(A) meromorphy** `MeromorphicAt T (cs i)` (L332-334, via `Cfull.coherent_punctured` +
+  `meromorphicAt_traceCoeff_fibreTrace`), feeding the principal-part extraction `exists_laurentForm_principalPart`;
+- **(B) residue identity** `resAt T (cs i) = ∑_{fibre} formFnResidue ω₀ g` (L379,
+  `hres_fin_of_fullFibreCoherence`).
+
+### THE STRUCTURAL WALL (why dropping `hoff_cs` is deep, not a 1-lemma swap)
+Both (A) and (B) are realized through the chain
+`Cfull.D : FibreRegularData g f (cs i)` → `fibreTrace ω₀ f Cfull.D : FibreTrace` →
+`FibreTrace.resAt_traceCoeff'` (the unconditional Lemma 3.2).
+- `FibreRegularData` (`FormTraceFibre.lean:158`) has field `hg_deriv : deriv(f.holoRepr∘chart⁻¹) ≠ 0`
+  at every fibre point — i.e. the fibre points are REGULAR (unramified). At a ramified `cs i` the fibre
+  points ARE the ramification points (`deriv = 0`), so **`FibreRegularData g f (cs i)` cannot exist**.
+  Hence `MovingCoherenceDatum … (cs i)` cannot exist either — the whole `Cfull`/`fibreTrace` route is
+  structurally impossible over a ramified centre.
+- `FibreTrace` (`MeromorphicTrace.lean:312`) ALSO bakes in `sheet_deriv_ne : deriv(sheet i) b ≠ 0` —
+  it models a fibre as `m` DISTINCT unramified sheets, never a single `z=wᵐ` ramified sheet.
+- The residue atom `residueChangeOfVariables` (`ResidueChangeOfVariables.lean`) requires `deriv s b ≠ 0`
+  (local biholomorphism). It does NOT cover the ramified `w↦wᵐ` case. ("unconditional" = no longer needs
+  the atom as a *hypothesis*; it still only covers UNRAMIFIED sheets.)
+
+So `resAt_traceCoeff'` is the UNRAMIFIED Lemma 3.2 — it is NOT the ramified-fibre Lemma 3.2 the doc's
+C-route i needs. The repo has no ramified residue machinery (it deliberately AVOIDED roots-of-unity /
+Puiseux for the branch boundedness — `TraceForm.lean:1769`, `FormTraceBundleBranchBound.lean:33`).
+
+### THE MINIMAL REMAINING SUB-LEMMA (the genuine Miranda (3.1) keystone — NOT yet provable from toolbox)
+At a ramified pole-value `cs i` (single preimage `p`, mult `m`; `α=ω₀·g`, `g` meromorphic), prove
+**both** (A) and (B). The irreducible analytic atom is the **ramified residue change-of-variables /
+contour substitution** `z = wᵐ`:
+
+> `Res_{z=0}( Tr_m(α) ) = Res_{w=0}(α)`,   where `Tr_m(α)(z)dz := Σ_{ζᵐ=1} α(ζ·z^{1/m})` (the m-branch
+> sum), giving Miranda (3.1) `Tr_m(α) = Σₖ c_{km-1} z^{k-1} dz` and residue `c_{-1} = Res_w(α)`.
+
+This is GENUINELY MISSING and needs ONE of:
+(i) **contour reparametrization under `wᵐ`** (`∮_{|z|=rᵐ} Tr dz = ∮_{|w|=r} α dw` via the winding-`m`
+    substitution) — **Mathlib has NO `circleIntegral` change-of-variables / winding-number invariance**
+    (the repo's `ResidueChangeOfVariables.lean:29-31` explicitly states this gap and works AROUND it via
+    primitives, which only works for the UNRAMIFIED `deriv≠0` case); or
+(ii) **roots-of-unity Laurent-coefficient summation** to derive (3.1) directly (`Σ_{ζᵐ=1} ζⁿ⁺¹ = m·[m∣n+1]`),
+    then read off `k=0` — needs the heavy `RootsOfUnity` machinery the repo avoided.
+PLUS the **g-weighting**: at a pole-value `cs i` the numerator `g` has poles in the fibre, so even the
+ramification-robust bundle SUM `traceFun`/`traceFunExt` (which handles BRANCH values where g is BOUNDED —
+that is the proven `hbnd` route) does NOT directly apply; the residue needs g-weighted ramified Lemma 3.2.
+PLUS a `FibreTrace`-level refactor (or a parallel ramified structure) so (A)/(B) route through the
+ramified atom instead of `resAt_traceCoeff'`.
+
+Estimate: the contour-substitution atom alone is a ~several-hundred-LoC analytic build (a new
+`circleIntegral`-under-`wᵐ` lemma, Mathlib-gap); the full (A)+(B)+g-weighting+structure refactor is
+multi-thousand LoC. This matches the prior thread's note ("the FibreTrace ramified-fibre refactor — out
+of this thread's scope") and `docs/gate_a_cover_genericity_textbook_2026-06-08.md` C-route i.
+
+### SOUNDNESS NOTE (no false field introduced)
+Confirmed the residue-of-single-sheet under `wᵐ` is `m·Res_w(g)` NOT `Res_w(g)` (e.g. `g=z⁻¹`, `s=w²`:
+`g(s)·s' = 2w⁻¹`, res 2 = 2·1). So the trace residue = upstairs residue ONLY via the m-branch SUM +
+the winding-`m` contour cancellation — confirming the atom is the genuine winding content, and that any
+"single-sheet pushforward = upstairs residue" shortcut would be a FALSE field. Did not add it.
+
+### NEXT-STEP RECOMMENDATION
+Either (a) build the Mathlib-gap `circleIntegral` substitution atom under `wᵐ` (route i) then the
+g-weighted ramified Lemma 3.2 + a ramified `FibreTrace`; or (b) keep `hoff_cs` and discharge
+`ExistsAdaptedF` via RR-with-jets (force `f` unramified over the finite pole-values) — the prior thread's
+alternative. Route (a) is the textbook-honest elimination; route (b) needs the RR-jets infra. Both are
+large; neither is a quick win. The localization above pinpoints exactly the 3 call sites + 2 consumed
+facts to retarget.
