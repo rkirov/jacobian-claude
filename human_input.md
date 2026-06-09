@@ -3483,3 +3483,93 @@ reduction ARE built; the deep analytic core is the precise, honestly-isolated re
 - `rw [← hp, ← map_sub]` auto-closes a `rfl`-true goal — a trailing `rfl` then errors "No goals"; drop it.
 - `cocycles1 K = ker δ¹ ⊓ sections1 K` so `ξ.2.2 : ξ ∈ sections1 K` gives `ξᵢⱼ ∈ OmegaDGerm K` (the rep).
 - `CoverMLDistribution.nonempty_ι 𝔘` for the empty-poles `patch` default.
+
+## 2026-06-09 (later) — Gate A `∑Res=0` TARGET 1: fibre-cluster PARTITION SKELETON built (agent on `gate-a-trace-rationality-assembly`)
+
+Task: close Gate A `∑Res=0` by proving the two final residuals of
+`residueSum_eq_zero_of_reindex_adaptedFRamified` (PROVEN, axiom-clean). TARGET 1 = per-centre
+`FibreClusterReindex.hgeom_fibre` (the cluster-partition geometric wall). TARGET 2 = `ExistsAdaptedFRamified`
+genericity. INDEPENDENT of the Serre `H¹(ℳ)=0`/`MeromorphicCousin*` thread (other agent — UNTOUCHED).
+
+### DELIVERED — NEW FILE `Jacobians/Dolbeault/SerreResidueRamifiedClusterPartition.lean`
+(8 decls, ALL axiom-clean `[propext, Classical.choice, Quot.sound]`, 0 sorry; HEAD builds STANDALONE,
+full glob green 8575 jobs). The **fibre-cluster partition skeleton**: reduces `FibreClusterReindex.hgeom_fibre`
+(`SerreResidueRamifiedFullFibreBuilder.lean:209`) — the single genuinely-remaining geometric input of the
+`hoff_cs`-free Gate-A route — to EXACTLY the conservation-of-number bijection + point coincidence, with the
+chart-reconciliation AND inverse-uniqueness HALVES PROVEN.
+
+- `valueChartTrace_eq_clusterSum_of_reindex` — the combinatorial spine: given a `FibreTrace T` with
+  `valueChartTrace z = T.traceCoeff z`, a bijection `e : (Σ i, Fin (D.mult i)) ≃ T.ι`, and the per-`(i,j)`
+  summand match, the cluster double-sum identity holds. (`Equiv.sum_comp`/`Fintype.sum_equiv` +
+  `Finset.univ_sigma_univ`+`Finset.sum_sigma` + `Finset.sum_range`.)
+- `clusterSummand_eq_sphereSummand` — the CHART RECONCILIATION (Miranda §VIII.3 well-definedness): the
+  fixed-preimage cluster summand `chartIntegrand ω₀ g (D.xs i)(clusterSheet… j z)·deriv` = the moving
+  sphere summand at the coincident point, via the PROVEN `movingSummand_chartIndep`
+  (`FormTraceMovingFibre.lean:271`) + the section-deriv agreement. Takes the point coincidence (`cs z = q`)
+  + differentiability + deriv-match as hyps.
+- `valueChartTrace_eq_clusterSum_of_sphereReindex` — moving-sheet form: `hgeom_fibre` at `z` from a sphere
+  sheet system `S` at `coe z` + regular-value coherence + bijection + the per-`(i,j)` match in the moving
+  (holoReprSheet) form. Rewrites the sphere trace via `fibreTrace_eventuallyEq_movingSum`
+  (`FormTraceMovingFibre.lean:135`, `sec = holoReprSheet`), then reindexes.
+- `clusterSection D Cl i j := fun w => chart_{D.xs i}.symm (clusterSheet (Cl i).s … j w)` — the genuine
+  `clusterSheet` point lifted to `X`.
+- `ClusterReindexData Φ D Cl z` (structure, Type-valued — carries `S`/`e`) — THE PRECISE REMAINING WALL at
+  one slit value: sphere sheet system `S`+`hderiv`/`hmero`/`hcoh`, the bijection `e`, `hpoint` (point
+  coincidence `clusterSection z = S.sheet (e⟨i,j⟩)(coe z)`), the routine analytic diff fields, and
+  `hderiv_match` (section-deriv agreement). `valueChartTrace_eq_clusterSum_of_clusterReindexData` proves
+  `hgeom_fibre` at `z` from it (discharges the match via `clusterSummand_eq_sphereSummand`).
+- `FibreClusterReindex.ofClusterReindexFamily` — builds the WHOLE `FibreClusterReindex` (the input
+  `residueSum_eq_zero_of_reindex_adaptedFRamified` consumes) from the routine fields + a SLIT-WIDE FAMILY
+  `∀ z ∈ Sset, ClusterReindexData …`. So building the cover's `FibreClusterReindex` reduces to supplying
+  that family.
+- `ClusterReindexData.sum_mult_eq_sheetCount` (#13 SOUNDNESS) — the bijection FORCES `∑ᵢ D.mult i = S.n`
+  (`= deg f`), i.e. genuine conservation of number; NOT a single-preimage/vacuous placeholder.
+  (`Fintype.card_congr e` + `card_sigma`+`card_fin`.)
+- `hderiv_match_of_section` — the `hderiv_match` field is DERIVABLE (not an extra assumption): two
+  holomorphic local sections of `f.holoRepr` through the same fibre point germ-agree (uniqueness of the
+  holomorphic local inverse, `eventuallyEq_of_rightInverse_of_rightInverse` `FormTraceSheetFibreBridge.lean:157`).
+  So the ONLY irreducible `ClusterReindexData` fields are `e`+`hpoint` (conservation of number).
+- `residueSum_eq_zero_of_clusterReindex` — the Gate-A capstone restated: `∑Res=0` from `AdaptedFRamified`
+  (TARGET 2, discharged) + per-centre `FibreClusterReindex` (TARGET 1), anchoring the skeleton to the goal.
+
+### THE PRECISE REMAINING TARGET-1 LEMMA (what the next agent must supply — the genuine wall)
+For the REAL canonical cover, at each finite pole-value centre `c`: a slit `Sset` accumulating at `c`, and
+`∀ z ∈ Sset, ClusterReindexData (canonicalFibreSelection g f hdiv) D Cl z`. The irreducible content per
+slit value `z` (regular, off-branch) is:
+(1) the sphere sheet system `S` at `coe z` (EXISTS off-branch via `exists_localSheetSystem`; the
+    regular-value coherence `hcoh` is the PROVEN `valueChartTrace_eq_sphereSheetFibreTrace`);
+(2) `e : (Σ i, Fin (D.mult i)) ≃ Fin S.n` + `hpoint`: each moving sheet `S.sheet k (coe z)` lies in
+    exactly one ramification preimage `pₗ`'s cluster, and the `mₗ`-sheet cluster at `pₗ` IS
+    `{clusterSection D Cl ℓ j z : j < mₗ}` — the §17.9/Forster §4 conservation-of-number / properness
+    clustering. The `clusterSection`/`clusterSheet` points come from `exists_clusterSplit_at_fibrePoint`
+    (`SerreResidueRamifiedMultiplicityBridge.lean`, the genuine `localDeg` multiplicity); the cluster→sheet
+    coincidence is the genuine multi-hundred-LoC topology. NOT YET BUILT; CANNOT be faked (#13 guard:
+    `hpoint` forces the genuine bijection — a wrong `e` makes the coincidence FALSE).
+The diff/`hderiv_match` fields are all routine/derivable (`hderiv_match_of_section` shows the latter).
+
+### TARGET 2 (`ExistsAdaptedFRamified`) — NOT pushed to a direct construction this session
+Predecessor (commit 226d645) already BUILT `gateAInftyData_of_adaptedFRamified` (the bundle) + reduced
+`ExistsAdaptedFRamified` to `ExistsAdaptedF` (`existsAdaptedFRamified_of_existsAdaptedF`, sound). A DIRECT
+construction of `f` (no `hoff_cs`) needs a SEPARATE generic-position build, NOT yet in repo: (a) `div ≠ 0`
+from `¬IsGermConstant` (`exists_nonconstant_meromorphic` gives only `¬IsGermConstant`); (b) the reciprocal
+`f' := (f₀−a)⁻¹` ∞-fibre = simple zeros of `f₀−a` (`MeromorphicFunction.Inv`/`orderAtPoint_inv_eq_neg_one_of_simpleZero`
+are PROVEN in `SerreResidueRamifiedRealCover.lean`); (c) the generic-position FINITENESS of critical values
+(the "finite bad a" set). This is a ~several-hundred-LoC generic-position effort orthogonal to the cluster
+wall; left as the predecessor's sound reduction.
+
+### LEAN GOTCHAS (for the next agent)
+- `Equiv.sum_comp e (fun k => …)` as a `rw` term often FAILS to fire (instance/eta mismatch). ROBUST:
+  flatten the RHS to `∑ p : (Σ…), F (e p)` via `← Finset.univ_sigma_univ; Finset.sum_sigma; Finset.sum_range`,
+  then close with `(Fintype.sum_equiv e (fun p => F (e p)) F (fun _ => rfl)).symm`.
+- The sphere sheet system in `valueChartTrace_eq_sphereSheetFibreTrace` is at `coe z` (the value ITSELF),
+  NOT a separate base `b₀`; `holoReprSheet k z = S.sheet k (coe z)` is the coincident point — don't conflate
+  `b₀` and `z` (I did first; the coincidence is `cs z = S.sheet k (coe z)`).
+- `clusterSummand_eq_sphereSummand` concludes `cluster = moving`; `valueChartTrace_eq_clusterSum_of_sphereReindex`'s
+  `hsummand` wants `moving = cluster` → use `.symm`.
+- `movingSummand_chartIndep` (`FormTraceMovingFibre.lean:271`) equates two CHARTS for ONE section; to match
+  two DIFFERENT sections at the same point, also need the section-deriv agreement (inverse-uniqueness) —
+  that's why `hderiv_match` is a separate field (derivable via `hderiv_match_of_section`).
+- `ClusterReindexData` MUST be Type-valued (carries `S : LocalSheetSystem …`, `e : … ≃ …`) — a Prop-structure
+  emits no field projections (the #13/Type-valued gotcha from the predecessor's note still applies).
+- `FibreClusterReindex`/`AdaptedFRamified`/`residueSum_eq_zero_of_reindex_adaptedFRamified` need
+  `import …SerreResidueGateAInftyBuilder` (not just `…FullFibreBuilder`).
