@@ -298,4 +298,122 @@ theorem valueChartTrace_eq_clusterSum_of_sphereReindex {ω₀ : HolomorphicOneFo
   -- (b) Reindex the moving sum `∑ k, F k` along `e : (Σ…) ≃ Fin S.n`.
   exact (Fintype.sum_equiv e (fun p => F (e p)) F (fun _ => rfl)).symm
 
+/-! ## The precise remaining clustering datum `ClusterReindexData`
+
+We now isolate the **genuine remaining content** of `FibreClusterReindex.hgeom_fibre` at a single
+regular slit value `z` as a named datum, with the chart-reconciliation half DISCHARGED.  Its fields are
+exactly the conservation-of-number content: a sphere sheet system `S` at `coe z` (with the regular-value
+`hderiv`/`hmero` and the coherence `hcoh`), the **bijection** `e : (Σ i, Fin (D.mult i)) ≃ Fin S.n`
+between the cluster `Σ`-index and the `deg f` sphere sheets, the **point coincidence** that each cluster
+sheet point is the matched moving sheet point, and the routine analytic data feeding the
+chart-reconciliation (the cluster section's differentiability + the section-derivative agreement, the
+holomorphic-local-inverse uniqueness).  From it we prove `hgeom_fibre` at `z`.
+
+The cluster section at preimage `i`, cluster index `j` is `clusterSection D i j Cl :=
+fun w ↦ chart_{D.xs i}.symm (clusterSheet (Cl i).s … j w)` — the genuine `clusterSheet` point, lifted to
+`X` through the chart at the fixed preimage `D.xs i`. -/
+
+/-- The cluster section at preimage `i`, cluster index `j`: `w ↦ chart_{D.xs i}.symm (clusterSheet
+(Cl i).s (Cl i).ζ (Cl i).w₀ j w)`, the genuine `clusterSheet` point lifted to `X`. -/
+noncomputable def clusterSection {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
+    {c : ℂ} {Sset : Set ℂ} (D : FibreRamifiedData g f c)
+    (Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset) (i : D.ι) (j : Fin (D.mult i)) : ℂ → X :=
+  fun w => (chartAt ℂ (D.xs i)).symm (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j w)
+
+/-- **The precise remaining clustering datum at a regular slit value `z`** (the genuine
+conservation-of-number content, chart-reconciliation discharged).  At `z`, a sphere sheet system `S` of
+`F = f.toRiemannSphere` at `coe z` with the regular-value coherence, a bijection `e : (Σ i,
+Fin (D.mult i)) ≃ Fin S.n`, and, for each preimage `i` and cluster index `j` (writing
+`q := S.sheet (e ⟨i,j⟩) (coe z)` and `cs := clusterSection D Cl i j`):
+
+* `hpoint` — the **point coincidence**: `cs z = q` (the `j`-th cluster sheet at `i` *is* the
+  `e ⟨i,j⟩`-th moving sheet point — the conservation-of-number content);
+* `hcw` — `chart_{D.xs i} (cs w) = clusterSheet (Cl i).s … j w` near `z` (the cluster point stays in
+  `D.xs i`'s chart source);
+* the differentiability data `hmem_a`/`hcs_cont`/`hcsP_diff`/`htrans_diff`/`htrans_diff_inv` (routine
+  analyticity of `clusterSheet` + the chart transitions);
+* `hderiv_match` — the **section-derivative agreement** `deriv (chart_q ∘ cs) z = deriv (chart_q ∘
+  holoReprSheet (e ⟨i,j⟩)) z` (the holomorphic-local-inverse uniqueness: both `cs` and `holoReprSheet
+  (e ⟨i,j⟩)` are right-inverses of `f` through `q`).
+
+This is the single residual the `hoff_cs`-free Gate-A route still needs at each slit value; everything
+else (the residue calculus, the per-cluster collapse, the meromorphy reduction, the off-centre/∞
+machinery, the chart reconciliation) is PROVEN. -/
+structure ClusterReindexData {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
+    (Φ : (b : ℂ) → FibreRegularData g f b) {c : ℂ} {Sset : Set ℂ} (D : FibreRamifiedData g f c)
+    (Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset) (z : ℂ) where
+  /-- The sphere sheet system at `coe z`. -/
+  S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))
+  /-- Regular-value: the chart-pullback derivative of `f.holoRepr` is nonzero at each sheet point. -/
+  hderiv : ∀ k, deriv (fun w => f.holoRepr
+      ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+    ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+      (S.sheet k (((z : ℂ) : RiemannSphere)))) ≠ 0
+  /-- `g`'s chart-pullback is meromorphic at each sheet point. -/
+  hmero : ∀ k, MeromorphicAt
+    (fun w => g ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+    ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+      (S.sheet k (((z : ℂ) : RiemannSphere))))
+  /-- The regular-value coherence: the geometric trace at `z` equals the sphere-fibre trace. -/
+  hcoh : valueChartTrace ω₀ f Φ z
+    = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv hmero)).traceCoeff z
+  /-- **The conservation-of-number bijection** of the cluster `Σ`-index with the `deg f` sheets. -/
+  e : (Σ i : D.ι, Fin (D.mult i)) ≃ Fin S.n
+  /-- **Point coincidence**: the `j`-th cluster sheet at `i` is the `e ⟨i,j⟩`-th moving sheet point. -/
+  hpoint : ∀ (i : D.ι) (j : Fin (D.mult i)),
+    clusterSection D Cl i j z = S.sheet (e ⟨i, j⟩) (((z : ℂ) : RiemannSphere))
+  /-- The cluster point stays in the fixed preimage's chart source: `chart_{D.xs i}(cs w) =
+  clusterSheet … j w` near `z`. -/
+  hcw : ∀ (i : D.ι) (j : Fin (D.mult i)),
+    ∀ᶠ w in 𝓝 z, (chartAt ℂ (D.xs i)) (clusterSection D Cl i j w)
+      = clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j w
+  /-- The cluster point lies in `D.xs i`'s chart source. -/
+  hmem_a : ∀ (i : D.ι) (j : Fin (D.mult i)),
+    clusterSection D Cl i j z ∈ (chartAt ℂ (D.xs i)).source
+  /-- The cluster section is continuous at `z`. -/
+  hcs_cont : ∀ (i : D.ι) (j : Fin (D.mult i)), ContinuousAt (clusterSection D Cl i j) z
+  /-- The self-chart pullback of the cluster section is differentiable at `z`. -/
+  hcsP_diff : ∀ (i : D.ι) (j : Fin (D.mult i)),
+    DifferentiableAt ℂ (fun w => (chartAt ℂ (clusterSection D Cl i j z))
+      (clusterSection D Cl i j w)) z
+  /-- The chart transition `chart_{D.xs i} ∘ chart_{cs z}.symm` is differentiable at the cluster point. -/
+  htrans_diff : ∀ (i : D.ι) (j : Fin (D.mult i)),
+    DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (D.xs i)) ((chartAt ℂ (clusterSection D Cl i j z)).symm w))
+      ((chartAt ℂ (clusterSection D Cl i j z)) (clusterSection D Cl i j z))
+  /-- The inverse chart transition `chart_{cs z} ∘ chart_{D.xs i}.symm` is differentiable. -/
+  htrans_diff_inv : ∀ (i : D.ι) (j : Fin (D.mult i)),
+    DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (clusterSection D Cl i j z)) ((chartAt ℂ (D.xs i)).symm w))
+      ((chartAt ℂ (D.xs i)) (clusterSection D Cl i j z))
+  /-- **Section-derivative agreement** (holomorphic-local-inverse uniqueness): the cluster section and
+  the matched moving sheet `holoReprSheet (e ⟨i,j⟩)` have the same self-chart-pullback derivative at `z`
+  (both are right-inverses of `f` through the coincident point). -/
+  hderiv_match : ∀ (i : D.ι) (j : Fin (D.mult i)),
+    deriv (fun w => (chartAt ℂ (clusterSection D Cl i j z)) (clusterSection D Cl i j w)) z
+      = deriv (fun w => (chartAt ℂ (clusterSection D Cl i j z))
+          (S.holoReprSheet (e ⟨i, j⟩) w)) z
+
+/-- **`hgeom_fibre` at `z` from a `ClusterReindexData`.**  The full-fibre cluster identity at the regular
+slit value `z` follows from the clustering datum: the per-`(i,j)` summand match is discharged by the
+chart reconciliation (`clusterSummand_eq_sphereSummand`, using the point coincidence + the
+section-derivative agreement + the differentiability), and the reindexing is
+`valueChartTrace_eq_clusterSum_of_sphereReindex`.  This consumes **only** the conservation-of-number
+bijection + point coincidence (the genuine wall); the chart algebra is PROVEN. -/
+theorem valueChartTrace_eq_clusterSum_of_clusterReindexData {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
+    {D : FibreRamifiedData g f c} {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}
+    (R : ClusterReindexData Φ D Cl z) :
+    valueChartTrace ω₀ f Φ z
+      = ∑ i, ∑ j ∈ Finset.range (D.mult i),
+        chartIntegrand ω₀ g (D.xs i) (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j z)
+          * deriv (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z := by
+  refine valueChartTrace_eq_clusterSum_of_sphereReindex D Cl R.S R.hderiv R.hmero R.hcoh R.e
+    (fun i j => ?_)
+  -- Per-`(i,j)`: the moving summand equals the cluster summand (chart reconciliation).
+  exact (clusterSummand_eq_sphereSummand ω₀ g R.S (R.e ⟨i, j⟩) (D.xs i)
+    (clusterSection D Cl i j) (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j)
+    (R.hpoint i j) (R.hcw i j) (R.hmem_a i j) (R.hcs_cont i j) (R.hcsP_diff i j)
+    (R.htrans_diff i j) (R.htrans_diff_inv i j) (R.hderiv_match i j)).symm
+
 end Jacobians.Dolbeault.SerreResidueTheorem
