@@ -324,4 +324,61 @@ theorem resAt_patched (R : RamifiedCenterFacts ω₀ g f Φ poles c) (br : Finse
 
 end RamifiedCenterFacts
 
+/-! ### The atom-based constructor — `T` and Facts (A)/(B) from the ramified residue atom
+
+We now *build* the trace germ `T` and discharge `hmero`/`hres` from the proven ramified atom
+`Jacobians.RamifiedTrace`, leaving only the genuine geometric identification `hcoh` (the Forster §5
+`f = wᵐ` normal form) as a hypothesis.  `T` is the sum over the preimages `pⱼ` of the `mⱼ`-sheet-sum
+trace of the per-preimage chart integrand's principal part, shifted so its singularity sits at the value
+`c`: `T(z) = ∑ⱼ (laurentTraceCoeff sⱼ cⱼ nⱼ mⱼ)(z − c)`.  Meromorphy is the atom's
+`meromorphicAt_laurentTraceCoeff` (shifted); the residue is the atom's `resAt_laurentTraceCoeff` summed
+over the fibre (each preimage's principal part has the same residue as `α`, the geometric input
+`hpp_res`). -/
+
+/-- **Residue is shift-covariant.**  `resAt (fun z => F (z − c)) c = resAt F 0`: the small contour
+`C(c, r)` of `F(· − c)` is the contour `C(0, r)` of `F` after the translation `z ↦ z − c`
+(`circleMap_sub_center`, `deriv_circleMap` is centre-independent), so the two limiting contour integrals
+coincide.  (A clean reusable fact — *not* the geometric normal-form content.) -/
+theorem resAt_comp_sub_const (F : ℂ → ℂ) (c : ℂ) :
+    resAt (fun z => F (z - c)) c = resAt F 0 := by
+  unfold resAt
+  congr 1
+  funext r
+  congr 1
+  -- `∮ z in C(c, r), F (z − c) = ∮ w in C(0, r), F w`, termwise under the angle integral.
+  show (∮ z in C(c, r), F (z - c)) = ∮ w in C(0, r), F w
+  rw [circleIntegral, circleIntegral]
+  refine intervalIntegral.integral_congr (fun θ _ => ?_)
+  rw [deriv_circleMap c r θ, deriv_circleMap 0 r θ, circleMap_sub_center]
+
+/-- **The shifted Laurent trace coefficient** of a per-preimage principal part, singularity at the value
+`c`: `(laurentTraceCoeff sⱼ cⱼ nⱼ mⱼ)(z − c)`.  Summed over the fibre this is the algebraic value-chart
+trace germ `T` of a ramified centre. -/
+noncomputable def ramifiedTraceTerm {ι : Type*} (s : Finset ι) (cf : ι → ℂ) (n : ι → ℤ) (m : ℕ)
+    (c : ℂ) : ℂ → ℂ :=
+  fun z => Jacobians.RamifiedTrace.laurentTraceCoeff s cf n m (z - c)
+
+/-- The shifted Laurent trace term is meromorphic at the value `c` (the atom's Fact A, shifted): it is
+`laurentTraceCoeff (· − c)`, meromorphic at `c` since `laurentTraceCoeff` is meromorphic at `0`
+(`meromorphicAt_laurentTraceCoeff`) and `z ↦ z − c` is analytic with `c ↦ 0`. -/
+theorem meromorphicAt_ramifiedTraceTerm {ι : Type*} (s : Finset ι) (cf : ι → ℂ) (n : ι → ℤ) (m : ℕ)
+    (c : ℂ) : MeromorphicAt (ramifiedTraceTerm s cf n m c) c := by
+  have hbase : MeromorphicAt (Jacobians.RamifiedTrace.laurentTraceCoeff s cf n m)
+      ((fun z : ℂ => z - c) c) := by
+    simpa using Jacobians.RamifiedTrace.meromorphicAt_laurentTraceCoeff s cf n m
+  have hshift : AnalyticAt ℂ (fun z : ℂ => z - c) c := analyticAt_id.sub analyticAt_const
+  exact MeromorphicAt.comp_analyticAt (f := Jacobians.RamifiedTrace.laurentTraceCoeff s cf n m)
+    (g := fun z : ℂ => z - c) hbase hshift
+
+/-- The residue of the shifted Laurent trace term at the value `c` equals the residue of the
+per-preimage principal part at `0` (the atom's Fact B, shifted): `resAt_comp_sub_const` moves the
+singularity to `c`, then the atom `resAt_laurentTraceCoeff`. -/
+theorem resAt_ramifiedTraceTerm {ι : Type*} (s : Finset ι) (cf : ι → ℂ) (n : ι → ℤ) {m : ℕ}
+    (hm : 0 < m) (c : ℂ) :
+    resAt (ramifiedTraceTerm s cf n m c) c
+      = resAt (fun w => ∑ i ∈ s, cf i * (w - 0) ^ n i) 0 := by
+  rw [show ramifiedTraceTerm s cf n m c
+        = fun z => Jacobians.RamifiedTrace.laurentTraceCoeff s cf n m (z - c) from rfl,
+    resAt_comp_sub_const, Jacobians.RamifiedTrace.resAt_laurentTraceCoeff s cf n hm]
+
 end Jacobians.Dolbeault.SerreResidueTheorem
