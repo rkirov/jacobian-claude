@@ -556,4 +556,106 @@ theorem hbnd_canonical_sound_full (hdiv : (f.div : Divisor X) ≠ 0) {m : ℕ} {
     have hmul := hsub.mul (hcont.tendsto.mono_left nhdsWithin_le_nhds)
     simpa using hmul
 
+/-- **Manifold continuity from chart-pullback analyticity.**  If `g ∘ chart_x.symm` is analytic at
+`chart_x x`, then `g : X → ℂ` is continuous at `x` (`g = (g ∘ chart.symm) ∘ chart` near `x`, both
+factors continuous). -/
+theorem continuousAt_of_chartPullback_analyticAt {x : X}
+    (hg : AnalyticAt ℂ (fun z => g ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x)) :
+    ContinuousAt g x := by
+  have h1 : ContinuousAt (fun z => g ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x) := hg.continuousAt
+  have h2 : ContinuousAt (chartAt ℂ x) x := (chartAt ℂ x).continuousAt (mem_chart_source ℂ x)
+  have h3 : ContinuousAt ((fun z => g ((chartAt ℂ x).symm z)) ∘ (chartAt ℂ x)) x := h1.comp h2
+  have heq : ((fun z => g ((chartAt ℂ x).symm z)) ∘ (chartAt ℂ x)) =ᶠ[𝓝 x] g := by
+    filter_upwards [(chartAt ℂ x).open_source.mem_nhds (mem_chart_source ℂ x)] with y hy
+    show g ((chartAt ℂ x).symm ((chartAt ℂ x) y)) = g y
+    rw [(chartAt ℂ x).left_inv hy]
+  exact h3.congr heq
+
 end Jacobians.Dolbeault.FormTraceGlobal
+
+/-! ## The SOUND genus-`0` capstone — `hbnd` discharged via the `g`-weighted bundle SUM
+
+Wiring the sound `hbnd_canonical_sound_full` into `…_germ_CfullHreg_inftyClosed`, replacing the unsound
+αBr route of `…_inftyClosed_bnd`.  The two αBr-dependent hypotheses (`αBr`/`hαBrAgree`) are **GONE**: the
+boundedness rides on the global holomorphic `ω₀` with `g` as a bounded weight, requiring only that `g` is
+continuous (analytic) at the branch fibres — which follows from `hg_an_offpoles` (branch values are off
+the pole-values).  This is the honest, satisfiable-for-general-`α` capstone. -/
+
+namespace Jacobians.Dolbeault.SerreResidueTheorem
+
+open Complex Metric Filter Topology
+open scoped Manifold ContDiff Real
+
+open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
+  Jacobians.Dolbeault.FormResidueTheorem Jacobians.Dolbeault.FormTraceFibre
+  Jacobians.Dolbeault.FormTraceGlobal Jacobians.Dolbeault.FormTraceInftyFibre
+  Jacobians.Dolbeault.FormTraceInftyRecip RiemannSphere
+
+set_option linter.unusedSectionVars false
+
+attribute [local instance] Classical.propDecidable
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
+
+/-- **Gate A `∑Res = 0` (genus `0`, simple `∞`-poles, canonical selection) — `hbnd` discharged SOUNDLY.**
+Identical to `residueTheorem_ofCanonicalSimpleInfty_germ_CfullHreg_inftyClosed` with the branch-value
+boundedness `hbnd` constructed via the **sound `g`-weighted bundle SUM** `hbnd_canonical_sound_full`
+(form = global holomorphic `ω₀`, `g` the bounded fibre weight) — NOT the unsatisfiable global-holomorphic
+`αBr` of `…_inftyClosed_bnd`.
+
+The genuine branch values use the `g`-weighted boundedness crux; the non-branch `br`-values use the
+good-value analyticity `hgood_brOff`/`hgmero_brOff` (vacuous when `br = branchValues f`).  `hg_fibre` at
+the branch fibres and `hg_an` at the non-branch `br`-fibres are both derived internally from
+`hg_an_offpoles` (a fibre point over a value off `image cs` is off `poles`).  This rests on **only the
+discrete genericity bookkeeping** — no `αBr`, no false field. -/
+theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg_inftyClosed_soundBnd
+    (hdiv : (f.div : Divisor X) ≠ 0)
+    (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
+      GoodValue g f hdiv p)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ) (hbr : branchValues f hdiv ⊆ br)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hoff_cs : ∀ i, (((cs i : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
+    (hc_good : ∀ i, GoodValue g f hdiv (cs i))
+    (hgmero : ∀ i, ∀ᶠ b' in 𝓝 (cs i), ∀ j,
+      MeromorphicAt (fun w => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm w))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j)))
+    (hgood_reg : ∀ w ∉ Finset.univ.image cs ∪ br, GoodValue g f hdiv w)
+    (hgmero_reg : ∀ w (_hw : w ∉ Finset.univ.image cs ∪ br), ∀ᶠ b' in 𝓝 w, ∀ j,
+      MeromorphicAt (fun u => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm u))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j)))
+    (hg_an_offpoles : ∀ x : X, x ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x))
+    (hsimpleInf : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = -1)
+    (hmeroInf : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (inftyFibreEnum f i)).symm z))
+      ((chartAt ℂ (inftyFibreEnum f i)) (inftyFibreEnum f i)))
+    (hnonpole_inf_an : ∀ k, inftyFibreEnum f k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (inftyFibreEnum f k)).symm z))
+        ((chartAt ℂ (inftyFibreEnum f k)) (inftyFibreEnum f k)))
+    -- The good-value `g`-data at the non-branch `br`-values (vacuous when `br = branchValues f`).
+    (hgood_brOff : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs → b₀ ∉ branchValues f hdiv →
+      GoodValue g f hdiv b₀)
+    (hgmero_brOff : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs → b₀ ∉ branchValues f hdiv →
+      ∀ᶠ b' in 𝓝 b₀, ∀ j,
+        MeromorphicAt (fun u => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm u))
+          ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j))) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg_inftyClosed hdiv hgood m cs ρ hcs_ball
+    hcs_inj br hbr hcenters_cs hoff_cs hc_good hgmero hgood_reg hgmero_reg hg_an_offpoles hsimpleInf
+    hmeroInf hnonpole_inf_an
+    (fun b₀ hb₀br hb₀cs =>
+      hbnd_canonical_sound_full hdiv hbr hb₀br hgood_reg hgmero_reg
+        -- `hg_fibre`: `g` analytic (continuous) at each branch fibre point (off the pole-values).
+        (fun x hx => continuousAt_of_chartPullback_analyticAt
+          (hg_an_offpoles x (notMem_poles_of_fibrePoint_offCentres hcenters_cs hb₀cs
+            (by rwa [Set.mem_preimage, Set.mem_singleton_iff] at hx))))
+        (hgood_brOff b₀ hb₀br hb₀cs) (hgmero_brOff b₀ hb₀br hb₀cs)
+        -- `hg_an` at the non-branch `br`-fibres: off `image cs` ⟹ non-pole-value ⟹ non-pole fibre.
+        (fun _hbv y hy => hg_an_offpoles y
+          (notMem_poles_of_fibrePoint_offCentres hcenters_cs hb₀cs hy)))
+
+end Jacobians.Dolbeault.SerreResidueTheorem
