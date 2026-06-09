@@ -3258,3 +3258,75 @@ primitive (`g_weighted_sheetPullback_eq_chartIntegrand_mul_deriv`) all in place.
   `tendsto_const_nhds` (NOT `simpa`, which trips the unused-`simpa` linter here).
 - `hdiv` must be an EXPLICIT parameter of `fibreClusterReindex_zero` (it types the canonical selection;
   cannot be synthesized from `D`).
+
+---
+
+## 2026-06-09 — Gate A `∑Res=0` reindex residuals: TARGET 2 CLOSED, multiplicity bridge BUILT, TARGET 1 = the isolated geometric wall (agent on `gate-a-trace-rationality-assembly`)
+
+Task: close Gate A `∑Res=0` by constructing the two residuals `residueSum_eq_zero_of_reindex`
+(`SerreResidueRamifiedFullFibreBuilder.lean:279`, PROVEN) consumes: TARGET 1 = per-centre
+`FibreClusterReindex` (the geometric cluster-reindexing wall), TARGET 2 = `GateAInftyData` (off-centre/∞
+genericity bundle). INDEPENDENT of the Serre `H¹(ℳ)=0` thread (`MeromorphicCousin*` — untouched).
+
+### DELIVERED (axiom-clean `[propext, Classical.choice, Quot.sound]`, all build STANDALONE)
+
+1. **Multiplicity bridge** (`Jacobians/Dolbeault/SerreResidueRamifiedMultiplicityBridge.lean`, NEW) —
+   the multiplicity HALF of TARGET 1's cluster wall:
+   - `analyticOrderAt_holoRepr_sub_eq_mult`: at a non-pole fibre preimage `p` over `coe c`
+     (`f.div≠0`), `m:=(localDeg f (coe c) p).toNat` satisfies `1≤m`,
+     `analyticOrderAt (holoRepr∘chart_p⁻¹ − c)(chart p)=m`, `localDeg=m`. Mirrors the per-point order
+     computation inside the PROVEN `exists_sheetDatum_coe` (`ProperMapDegreeSheets.lean`). Turns the
+     intrinsic `localDeg` (the genuine §17.9 conservation-of-number multiplicity) into the
+     `analyticOrderAt=m` hypothesis the §5 cluster split consumes — the "unbuilt `analyticOrderAt_holoRepr`
+     lemma" the prior note flagged is now BUILT.
+   - `exists_clusterSplit_at_fibrePoint`: composes the bridge with `exists_clusterSplit` → the genuine §5
+     normal form `F=c+ηᵐ` / local inverse `s=η⁻¹` at the VERIFIED multiplicity (not asserted).
+
+2. **TARGET 2 — `GateAInftyData` CLOSED** (`Jacobians/Dolbeault/SerreResidueGateAInftyBuilder.lean`, NEW):
+   - `AdaptedFRamified` = `AdaptedF` MINUS `hoff_cs` (nonconstant f, simple ∞-poles, pole-value
+     enumeration; admits RAMIFIED finite pole fibres). `AdaptedFRamified.ofAdaptedF` forgetful map.
+   - `gateAInftyData_of_adaptedFRamified`: BUILDS `GateAInftyData` for genuine meromorphic g. EVERY field
+     from PROVEN dischargers (the off-centre/∞ isolate the unramified route already discharges):
+     hreg=`hreg_canonical_at_goodValue_sound` (the `analyticAt_valueChartTrace_of_movingDatum` lever),
+     hbnd=`hbnd_canonical_sound_full` (αBr-free g-weighted), ∞-group=`InftyMovingCoherenceData.ofInfty
+     SheetSystem`+`inftyFibreDataNF_full`, ∞-pole enum = filtered subtype `{j // inftyFibreEnum f j∈poles}`.
+   - `residueSum_eq_zero_of_reindex_adaptedFRamified`: `∑Res=0` from AdaptedFRamified + per-centre
+     `FibreClusterReindex`, via PROVEN `residueSum_eq_zero_of_reindex`. So the UNCONDITIONAL `∑Res=0` now
+     rests on EXACTLY: (a) `ExistsAdaptedFRamified` (the off-centre/∞ genericity SELECTION — strictly
+     weaker than `ExistsAdaptedF`, see `existsAdaptedFRamified_of_existsAdaptedF`), and (b) per-centre
+     `FibreClusterReindex` (TARGET 1's `hgeom_fibre`).
+
+### TARGET 1 = THE IRREDUCIBLE GEOMETRIC WALL (the precise remaining lemma)
+`FibreClusterReindex.hgeom_fibre` (`SerreResidueRamifiedFullFibreBuilder.lean:209`) — on the slit near `c`,
+`valueChartTrace z = ∑ᵢ ∑_{j<mult i} chartIntegrand ω₀ g (D.xs i)(clusterSheet (Cl i).s … j z)·deriv(…)`.
+What's NEEDED to prove it (the genuine multi-hundred-LoC build):
+- (a) MULTIPLICITY BRIDGE: ✅ NOW BUILT (`analyticOrderAt_holoRepr_sub_eq_mult`).
+- (b) CHART RECONCILIATION: ✅ primitive in place — `g_weighted_sheetPullback_eq_chartIntegrand_mul_deriv`
+  (`FormTraceSheetFibreBridge.lean:123`) reads the g-weighted sheet pushforward as `chartIntegrand ω₀ g xs
+  (…)·deriv` for ANY fixed `xs` (combine with `fibreTrace_traceCoeff_eq_gWeighted_finsum`
+  `SerreResidueGateAClosed.lean:262`, the αBr-free g-weighted finsum of the WHOLE-fibre sphere trace).
+- (c) CLUSTER-PARTITION PROPERNESS — STILL THE WALL: the `deg f` distinct moving sheets `S.sheet i (coe z)`
+  of `valueChartTrace_eq_sphereSheetFibreTrace` (which sum over the WHOLE fibre via `LocalSheetSystem.
+  fibre_eq`) must be reindexed/partitioned into the per-preimage clusters `{clusterSheet (Cl i).s … j z :
+  j<mᵢ}`. Near `c` every sheet point lies in some ramification preimage `pₗ`'s chart source, and the `mₗ`
+  sheets clustering at `pₗ` are EXACTLY the `clusterSheet` points (`exists_clusterSplit_at_fibrePoint` +
+  topological properness of the finite cover near a ramification value). This finite-cover clustering
+  topology is the genuine multi-hundred-LoC content; NOT yet built; CANNOT be faked (the #13 guard).
+
+### LEAN GOTCHAS (for the next agent)
+- `localDeg`/`analyticOrderAt`/`meromorphicOrderAt` bridge: `localDeg_coe_eq_chartPullback_order` (localDeg
+  = `(meromorphicOrderAt (toFun∘chart⁻¹ − c)).untop₀`) + `meromorphicOrderAt_holoRepr_sub_eq` (holoRepr↔
+  toFun pullback order, junk-free off centre) + `AnalyticAt.meromorphicOrderAt_eq` (analytic ⟹ mero order
+  = analytic order map). `hne_top` (order ≠⊤) via: order=⊤ ⟹ holoRepr≡c near p ⟹ fibre infinite, contra
+  `fibre_finite_of_div_ne_zero` (use `toRiemannSphere_eventuallyEq_coe_holoRepr`+`infinite_of_isOpen_nonempty`).
+- `branchValues`/`GoodValue`/`fullFibreEnum`/`inftyFibreEnum`/`inftyFibreDataNF_full` all live in namespace
+  `Jacobians.Dolbeault.FormTraceGlobal` (NOT FibreSelection). `GateAInftyData`/`hreg_canonical_*`/`hbnd_*`
+  in `Jacobians`/`Jacobians.TraceResidue`.
+- `GateAInftyData.hcoh_full` uses `valueChartTracePatched` but `hcoh_geom_of_inftyMovingCoherenceData`
+  produces it for `valueChartTrace` → bridge with `recipCoeff_valueChartTracePatched_eventuallyEq` (.trans).
+- `GateAInftyData.xsInf_po` is the ∞-poles OF α (subset of ∞-fibre ∩ poles), NOT all of `inftyFibreEnum`;
+  use the subtype `{j // inftyFibreEnum f j ∈ poles}`. `hpole_image_inf` = filter-image identity.
+- `hbnd_canonical_sound_full`'s `hg_fibre` (continuity at fibre pts over b₀): off `image cs` ⟹ fibre pts
+  non-poles (`notMem_poles_of_fibrePoint_offCentres`) ⟹ `hg_an_offpoles`+`continuousAt_of_chartPullback_
+  analyticAt`. `hgood_b₀`/`hg_an_b₀` take `b₀∉branchValues` (compose `coe_notMem_branchLocus_of_notMem_
+  branchValues` with the off-branch `GoodValue`).
