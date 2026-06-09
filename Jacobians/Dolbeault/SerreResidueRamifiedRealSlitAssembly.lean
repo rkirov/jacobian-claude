@@ -252,4 +252,18 @@ theorem residueTheorem_of_realCoverSlitSectionGeometry (ω₀ : HolomorphicOneFo
   residueTheorem_of_realCoverClusterGeometry ω₀ g poles hpoles
     (RealCoverClusterGeometry.ofSlitSectionGeometry hgeom)
 
+/-- **Non-vacuity (`m = 0` regime).**  When every adapted cover has no finite pole-value centres
+(`A.m = 0`), `RealCoverSlitSectionGeometry` holds vacuously, so `∑Res = 0` follows.  This confirms the
+§5-section obligation is **not** a disguised `False`: in the `m = 0` situation (e.g. all α-poles over `∞`)
+the residue theorem closes with no §5 content needed. -/
+theorem residueTheorem_of_realCoverSlitSection_no_finite_centres (ω₀ : HolomorphicOneForms X)
+    (g : MeromorphicFunction X) (poles : Finset X)
+    (hpoles : ∀ x : X, x ∉ poles →
+      AnalyticAt ℂ (fun z => g.toFun ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x))
+    (hm0 : ∀ A : AdaptedFRamified ω₀ g poles, A.m = 0) :
+    ∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0 := by
+  refine residueTheorem_of_realCoverSlitSectionGeometry ω₀ g poles hpoles (fun A i => ?_)
+  rw [hm0 A] at i
+  exact i.elim0
+
 end Jacobians.Dolbeault.SerreResidueTheorem
