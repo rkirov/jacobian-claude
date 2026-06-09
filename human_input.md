@@ -1868,3 +1868,70 @@ junk-value defect, the value-trace reads `g` only at finite moving fibre points)
 identity, NOT the residue cancellation (non-circular — confirmed against the empty/holomorphic case and
 the `recipCoeff R ζ = −R(ζ⁻¹)·ζ⁻²` shape). NO custom axiom, NO sorry, NO false/circular field, NO germ
 `agree`. Did NOT touch the 2 orphans or `MeromorphicOneFormSystem.lean` (concurrent Gate-C work).
+
+---
+
+## 2026-06-09 — Gate A ∞-coherence FULLY CLOSED (`InftyMovingCoherenceData` CONSTRUCTED from the ∞-sheet system)
+
+**TASK:** close the final ∞-coherence residual of Gate A `∑Res=0` — construct the named datum
+`InftyMovingCoherenceData` in `Jacobians/Dolbeault/SerreResidueInftyCoherence.lean` (which discharges
+`hcoh_geom` via the already-proven `hcoh_geom_of_inftyMovingCoherenceData`), the reciprocal-chart analogue
+of the PROVEN finite `MovingCoherenceDatum.ofSphereSheetSystemCanon`.
+
+**DONE — datum fully constructed, capstone now `hcoh_geom`-FREE (all decls axiom-clean
+`[propext, Classical.choice, Quot.sound]`; STANDALONE targeted build green after moving all untracked incl.
+the 2 orphans + the concurrent `MeromorphicOneFormSystem.lean`/`CanonicalFormIso.lean` aside).** The
+genuine §VIII.3 ∞-monodromy datum is now a THEOREM, not an opaque hypothesis.
+
+**THE MAP (mirror of the finite engine, exactly as predicted):** the only `Φ`-input the ∞-engine needs is
+the **canonical-fibre condition** near ∞ (`(Φ ζ⁻¹).xs` injectively enumerates `F⁻¹(coe ζ⁻¹)`), exactly
+like the finite `ofSphereSheetSystemCanon`. The index bijection `e : (Φ ζ⁻¹).ι ≃ Dinf.ι` is reconstructed
+POINTWISE from set-equality via the symmetric lever `equivOfInjective_image_eq` (REUSED), since both
+`(Φ ζ⁻¹).xs` AND the manifold sections `inftyManifoldSec · (ζ⁻¹)` enumerate the SAME fibre `F⁻¹(coe ζ⁻¹)`.
+All differentiability fields ride on the SAME finite section helpers used in `ofSheetSections`
+(`differentiableAt_chart_pullback_section`, `transition_differentiableAt_overlap`,
+`fibreTrace_sheet_eventuallyEq` via `chartPullback_section_rinv`), read on `inftyManifoldSec`. NO labeling,
+NO monodromy — the symmetric lever at ∞.
+
+**NEW GEOMETRIC CONTENT BUILT (the reciprocal-chart analogues of `sheetValues_range_eq_fibre`):**
+* **Section property of `inftyManifoldSec`** — `f.holoRepr (inftyManifoldSec i w) = w` for large `w`
+  (`eventually_holoRepr_inftyManifoldSec` + the NEIGHBOURHOOD form `…_nhds` needed by
+  `chartPullback_section_rinv`). Chain: `recipSheet i` right-inverts `recip i` (`exists_planar_section`
+  field), `recip i =ᶠ[𝓝[≠] centre]` the literal `1/f`-in-charts (`hrecip_germ`), off-centre AUTOMATIC
+  (`recip i centre = 0 ≠ ζ` ⟹ `recipSheet i ζ ≠ centre`). The nbhd form uses
+  `eventually_nhdsNE_eventually_nhds_iff` (germ-link as a full-nbhd statement at off-centre points) +
+  `eventually_eventually_nhds` (right-inverse spread) + pullbacks along `recipSheet i` / `·⁻¹`.
+* **`inftyManifoldSec · (ζ⁻¹)` is an injective enumeration of the fibre** — injectivity from T2 separation
+  of the distinct pole limits (`tendsto_inftyManifoldSec` → `Dinf.xs k` distinct, pairwise eventual-ne
+  combined over the finite pair set); range = fibre via the **degree count `#Dinf.ι = S.n =
+  #(F⁻¹(coe ζ⁻¹))`** (`card_inftyFibre_eq_sheetCount`: both `Dinf.xs` and `S.sheet · ∞` enumerate
+  `F⁻¹{∞}` ⟹ `Equiv` ⟹ equal card; the finite-value fibre card = `S.n` via `S.fibre_eq`+`S.sheet_inj`),
+  then injective-into-equal-card-finite-set-is-onto (`Set.eq_of_subset_of_ncard_le`). THIS is where
+  `exists_inftySheetSystem` is essential (the only honest use of the ∞-sheet system).
+* **Smoothness** `inftyManifoldSec_contMDiffAt` (chart⁻¹ ∘ recipSheet ∘ (·⁻¹), all C^ω), non-poleness
+  (`eventually_inftyManifoldSec_nonpole`, isolated poles), fibre membership
+  (`eventually_inftyManifoldSec_mem_fibre`), `coe ζ⁻¹ ∈ S.V` near ∞ (`eventually_coe_inv_mem_V`, via
+  `OnePoint.tendsto_coe_infty` ∘ `tendsto_inv₀_nhdsNE_zero` to `cobounded ℂ ≤ coclosedCompact ℂ`).
+
+**KEY DELIVERABLES (`SerreResidueInftyCoherence.lean`):**
+* `InftyMovingCoherenceData.ofInftySheetSystem` — THE datum constructor (reciprocal analogue of
+  `ofSphereSheetSystemCanon`): from `S` (sheet system), `hxs_inj`/`hxs_range` (∞-pole enumeration),
+  `hΦinj`/`hΦrange` (canonical-fibre near ∞). NO sorry, axiom-clean.
+* `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg_inftyClosed` — the **∞-coherence-FREE
+  capstone**: same hypotheses as the `_inftyData` variant but `Cinf` is CONSTRUCTED internally via
+  `ofInftySheetSystem` (S = `(exists_inftySheetSystem f hdiv hsimpleInf).some`; `hΦinj`/`hΦrange` from
+  `canonicalFibreSelection_hΦinj_infty`/`_hΦrange_infty`, which follow from `hgood_reg` since a large
+  value `ζ⁻¹` avoids the finite `image cs ∪ br` — `eventually_inv_notMem_finset`). **Gate A `∑Res=0`
+  (genus 0, simple ∞-poles, canonical selection) now rests on ONLY {`hbnd`, discrete genericity
+  bookkeeping} — no ∞-coherence hypothesis whatsoever.**
+
+**SOUNDNESS / NON-CIRCULARITY:** every new statement is a germ/eventually-equality on `𝓝[≠] 0` (large `z`),
+NEVER evaluating at ∞; the value-trace reads `g` only at finite moving fibre points `inftyManifoldSec ·
+(ζ⁻¹)` (genuine non-poles for large finite `z`). It is the moving-fibre-SUM identity, NOT the residue
+cancellation (non-circular — the prior agent's seven-bad-field warning respected; no value-at-∞, no global
+residue cancellation needed). Sanity-checked against `recipCoeff R ζ = −R(ζ⁻¹)·ζ⁻²` + the empty case. NO
+custom axiom, NO sorry, NO false/circular field, NO germ `agree`. Did NOT touch the 2 orphans,
+`MeromorphicOneFormSystem.lean`/`CanonicalFormIso.lean` (concurrent Gate-C/17.4 agent), or PROVEN decls;
+only EXTENDED `SerreResidueInftyCoherence.lean`. Reused (not re-derived): `equivOfInjective_image_eq`,
+`differentiableAt_chart_pullback_section`, `transition_differentiableAt_overlap`,
+`fibreTrace_sheet_eventuallyEq`, `chartPullback_section_rinv`, the whole `LocalSheetSystem` API.
