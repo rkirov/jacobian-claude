@@ -504,4 +504,67 @@ theorem exists_open_clusterSection_separated {ω₀ : HolomorphicOneForms X} {g 
       rwa [dif_pos hii] at h2
     exact hW i i' hii z hmem j k
 
+/-! ## The cluster data `Cl` from a `Fibre5Datum` on a shrunk slit
+
+From a `Fibre5Datum` (the §5 atom + Laurent principal part + descent germ) and any slit `Sset` inside its
+neighbourhood `V` (and inside the standard slit), build the concrete `ClusterTraceData` with `s := FD.s`,
+`w₀ := (cpow branch)`, `ζ := FD.ζ`, the residue split from `FD.hsplit0`, and `Rem := FD.G(· − c)`
+supplied by the symmetric-function descent (`exists_ramifiedTrace_descent`).  The fields are set
+explicitly (not via `Nonempty`), so `(toClusterTraceData …).s`/`.w₀`/`.ζ`/`.m` are definitionally the
+`Fibre5Datum`'s — the matching the §5 section germs and the separation lemma require. -/
+
+/-- **The concrete `ClusterTraceData` from a `Fibre5Datum` on a shrunk slit.**  For `Sset` inside both
+`FD.V` and the standard slit (`hsub`), the `Fibre5Datum`'s data assembles a `ClusterTraceData ω₀ g.toFun p
+c Sset` via `ClusterTraceData.ofNormalForm`: the slit branch `w₀ = (· − c)^{1/m}` and its calculus from
+`clusterTraceData_slit`, the §5 atom `FD.s`, the principal part `FD.ppN`/`FD.ppb`/`FD.ppR`, the per-slit
+analyticity/split (`FD.hVs_an`/`FD.hVpp_split`), and `Rem := FD.G(· − c)` from the descent
+(`exists_ramifiedTrace_descent`, its slit identity matching `ofNormalForm`'s `wp = 0` shape). -/
+noncomputable def Fibre5Datum.toClusterTraceData {ω₀ : HolomorphicOneForms X} {g : MeromorphicFunction X}
+    {f : MeromorphicFunction X} {c : ℂ} {p : X} {m : ℕ} (FD : Fibre5Datum ω₀ g f c p m)
+    (Sset : Set ℂ) (hsub : ∀ z ∈ Sset, z ∈ FD.V ∧ z - c ∈ slitPlane) :
+    ClusterTraceData ω₀ g.toFun p c Sset :=
+  ClusterTraceData.ofNormalForm ω₀ g.toFun p c Sset m FD.hm FD.ζ FD.hζ
+    FD.s FD.hs_an FD.hs0 FD.hs_deriv
+    (clusterTraceData_slit ω₀ p c m FD.hm FD.ζ FD.hζ).w₀
+    (fun z hz => (clusterTraceData_slit ω₀ p c m FD.hm FD.ζ FD.hζ).hw₀_ne z (hsub z hz).2)
+    (fun z hz => (clusterTraceData_slit ω₀ p c m FD.hm FD.ζ FD.hζ).hw₀_pow z (hsub z hz).2)
+    (fun z hz => (clusterTraceData_slit ω₀ p c m FD.hm FD.ζ FD.hζ).hw₀_deriv z (hsub z hz).2)
+    (fun z hz => (clusterTraceData_slit ω₀ p c m FD.hm FD.ζ FD.hζ).hw₀_diff z (hsub z hz).2)
+    (fun z hz j hj => FD.hVs_an z (hsub z hz).1 (hsub z hz).2 j hj)
+    (by simpa [Function.comp] using g.meromorphic p) FD.ppN FD.ppb FD.ppR FD.hppR_an
+    (fun z hz j hj => FD.hVpp_split z (hsub z hz).1 (hsub z hz).2 j hj)
+    (fun z => FD.G (z - c)) (FD.hG.comp_of_eq (by fun_prop) (by ring))
+    (fun z hz => by
+      have h := (Jacobians.SymmetricDescent.ramifiedTrace_slit_eq FD.ppR 0 c FD.hm FD.ζ
+        (clusterTraceData_slit ω₀ p c m FD.hm FD.ζ FD.hζ).w₀ FD.G
+        ((clusterTraceData_slit ω₀ p c m FD.hm FD.ζ FD.hζ).hw₀_ne z (hsub z hz).2)
+        ((clusterTraceData_slit ω₀ p c m FD.hm FD.ζ FD.hζ).hw₀_pow z (hsub z hz).2)
+        ((clusterTraceData_slit ω₀ p c m FD.hm FD.ζ FD.hζ).hw₀_deriv z (hsub z hz).2)
+        (by simpa using FD.hVsmall z (hsub z hz).1 (hsub z hz).2)).symm
+      simpa only [zero_add] using h)
+
+@[simp] theorem Fibre5Datum.toClusterTraceData_s {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {f : MeromorphicFunction X} {c : ℂ} {p : X} {m : ℕ}
+    (FD : Fibre5Datum ω₀ g f c p m) (Sset : Set ℂ)
+    (hsub : ∀ z ∈ Sset, z ∈ FD.V ∧ z - c ∈ slitPlane) :
+    (FD.toClusterTraceData Sset hsub).s = FD.s := rfl
+
+@[simp] theorem Fibre5Datum.toClusterTraceData_w₀ {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {f : MeromorphicFunction X} {c : ℂ} {p : X} {m : ℕ}
+    (FD : Fibre5Datum ω₀ g f c p m) (Sset : Set ℂ)
+    (hsub : ∀ z ∈ Sset, z ∈ FD.V ∧ z - c ∈ slitPlane) :
+    (FD.toClusterTraceData Sset hsub).w₀ = fun z => (z - c) ^ ((m : ℂ)⁻¹) := rfl
+
+@[simp] theorem Fibre5Datum.toClusterTraceData_ζ {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {f : MeromorphicFunction X} {c : ℂ} {p : X} {m : ℕ}
+    (FD : Fibre5Datum ω₀ g f c p m) (Sset : Set ℂ)
+    (hsub : ∀ z ∈ Sset, z ∈ FD.V ∧ z - c ∈ slitPlane) :
+    (FD.toClusterTraceData Sset hsub).ζ = FD.ζ := rfl
+
+@[simp] theorem Fibre5Datum.toClusterTraceData_m {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {f : MeromorphicFunction X} {c : ℂ} {p : X} {m : ℕ}
+    (FD : Fibre5Datum ω₀ g f c p m) (Sset : Set ℂ)
+    (hsub : ∀ z ∈ Sset, z ∈ FD.V ∧ z - c ∈ slitPlane) :
+    (FD.toClusterTraceData Sset hsub).m = m := rfl
+
 end Jacobians.Dolbeault.SerreResidueTheorem
