@@ -554,4 +554,37 @@ theorem fullFibreRamifiedCenters_empty (ω₀ : HolomorphicOneForms X) (g : X �
     FullFibreRamifiedCenters ω₀ g f hdiv poles (m := 0) Fin.elim0 :=
   ⟨fun i => i.elim0, fun i => i.elim0, fun i => i.elim0⟩
 
+/-! ## The named target `RamifiedFullFibreClusterGeometry` is PROVEN from `FullFibreClusterData`
+
+The morning's precise corrected obligation `RamifiedFullFibreClusterGeometry`
+(`SerreResidueRamifiedClusterSplit.lean`) is exactly the geometric content of a `FullFibreClusterData`,
+read on the slit with a `Fin r` enumeration of the fibre.  We prove it holds (after reindexing the
+preimage type `D.ι` to `Fin (card D.ι)` via `Fintype.equivFin`), discharging the named target. -/
+
+/-- **`RamifiedFullFibreClusterGeometry` is PROVEN from a `FullFibreClusterData`.**  The morning's named
+target — the full-fibre geometric identity at the genuine `clusterSheet` points — holds for the `Fin r`
+enumeration `pre := D.xs ∘ e.symm` of the fibre (`e : Fin r ≃ D.ι`, `r := card D.ι`), with the
+per-preimage cluster data `(mult, ζ, w₀, sec)` read off `F.Cl`.  This is the geometric `hgeom_fibre`
+field reindexed through the equiv.  **Sound:** the full fibre (all preimages) at the genuine
+`clusterSheet` points — the two corrections over the unsound single-cluster `hgeom_slit`. -/
+theorem ramifiedFullFibreClusterGeometry_of_fullFibreData {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ}
+    (F : FullFibreClusterData ω₀ g f Φ c) :
+    RamifiedFullFibreClusterGeometry ω₀ g f Φ c
+      (r := Fintype.card F.D.ι)
+      (F.D.xs ∘ (Fintype.equivFin F.D.ι).symm)
+      (fun ℓ => F.D.mult ((Fintype.equivFin F.D.ι).symm ℓ))
+      (fun ℓ => (F.Cl ((Fintype.equivFin F.D.ι).symm ℓ)).ζ)
+      F.S
+      (fun ℓ => (F.Cl ((Fintype.equivFin F.D.ι).symm ℓ)).w₀)
+      (fun ℓ => (F.Cl ((Fintype.equivFin F.D.ι).symm ℓ)).s) := by
+  intro z hz
+  rw [F.hgeom_fibre z hz]
+  -- Reindex the `D.ι`-sum to the `Fin (card D.ι)`-sum via the equiv.
+  rw [← (Fintype.equivFin F.D.ι).symm.sum_comp
+    (fun i => ∑ j ∈ Finset.range (F.D.mult i),
+      chartIntegrand ω₀ g (F.D.xs i) (clusterSheet (F.Cl i).s (F.Cl i).ζ (F.Cl i).w₀ j z)
+        * deriv (clusterSheet (F.Cl i).s (F.Cl i).ζ (F.Cl i).w₀ j) z)]
+  rfl
+
 end Jacobians.Dolbeault.SerreResidueTheorem
