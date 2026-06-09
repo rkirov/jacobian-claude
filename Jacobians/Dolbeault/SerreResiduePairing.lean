@@ -7,6 +7,7 @@ import Jacobians.Dolbeault.SerreResidueGateAClosed
 import Jacobians.Dolbeault.FormRemovableSingularity
 import Jacobians.Dolbeault.SerreDuality
 import Jacobians.Dolbeault.CechComplex
+import Jacobians.Dolbeault.SerreDualityPairing
 
 /-!
 # Forster §17.5 residue pairing + §17.6 injectivity — the global `Res` descent and `ι_D`
@@ -192,6 +193,25 @@ theorem lDim_le_h1Dim (R : SerreResidueRealization 𝔘 K) (D : Divisor X)
     lDim (X := X) (K - D) ≤ 𝔘.h1Dim D := by
   haveI := hfin
   exact finrank_le_of_residueOne_witness (R.pairing D) (R.witness D)
+
+/-- **The bridge to the ladder target `SerreDualityData`.**  A residue realization (the §17.6
+injectivity half) together with the canonical `K`'s `hKgenus` (Forster §17.4,
+`exists_canonicalForm17Data_hKgenus`), the §17.9 surjectivity (the HARD half, supplied separately),
+and finiteness assembles into the full `SerreDualityData 𝔘` that the Riemann–Roch / Serre ladder
+(`SerreDualityPairing.lean`) consumes.  The injectivity field is **derived** (`pairing_injective`); only
+`hKgenus` (now proven) and surjectivity remain externally.  This wires the residue pairing into the
+downstream target rather than leaving it isolated. -/
+def toSerreDualityData (R : SerreResidueRealization 𝔘 K)
+    (hKgenus : lDim (X := X) K = genus X)
+    (ι_surj : ∀ D : Divisor X, Function.Surjective (R.pairing D))
+    (finH1 : ∀ D : Divisor X, FiniteDimensional ℂ (𝔘.cechH1 D)) :
+    SerreDualityData 𝔘 where
+  K := K
+  hKgenus := hKgenus
+  ι := R.pairing
+  ι_inj := R.pairing_injective
+  ι_surj := ι_surj
+  finH1 := finH1
 
 end SerreResidueRealization
 
