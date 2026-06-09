@@ -76,6 +76,7 @@ namespace Jacobians.Dolbeault.SerreResidueTheorem
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
   Jacobians.Dolbeault.FormResidueTheorem Jacobians.Dolbeault.FormTraceFibre
   Jacobians.Dolbeault.FormTraceGlobal Jacobians.Dolbeault.FormTracePrincipalPart
+  Jacobians.Dolbeault.FormTraceMovingFibre
   Jacobians.ProperMapDegree Jacobians.ProperMapDegreeConstruct
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
@@ -161,6 +162,39 @@ theorem realFibreData_surj (g : MeromorphicFunction X) {f : MeromorphicFunction 
     rw [realFibreData_range g hdiv c hnp]; exact ha
   exact this
 
+/-! ## The slit accumulating at `c` (a reusable atom)
+
+The standard slit `{z | z − c ∈ slitPlane}` (the plane minus the closed negative-real ray through `c`) is
+simply connected, supports the `m`-th-root branches, and accumulates at `c` (it has `c` as a limit point
+from the upper imaginary direction).  This is the slit the §5 cluster data uses; we extract its
+accumulation as a reusable lemma. -/
+
+/-- **The shifted slit accumulates at its centre.**  `c` is a limit point of `{z | z − c ∈ slitPlane}`
+through `𝓝[≠] c` (approach along `c + i/(n+1)`, whose imaginary part is positive so it lies in the
+shifted slit, tending to `c`).  This is the `hS_acc` field for the standard slit. -/
+theorem slitPlane_shift_accumulates (c : ℂ) :
+    ∃ᶠ z in 𝓝[≠] c, z ∈ {z : ℂ | z - c ∈ slitPlane} := by
+  rw [← accPt_iff_frequently_nhdsNE]
+  have hcS : c ∉ {z : ℂ | z - c ∈ slitPlane} := by simp [mem_slitPlane_iff]
+  have hcl : c ∈ closure {z : ℂ | z - c ∈ slitPlane} := by
+    have htend : Tendsto (fun n : ℕ => c + ((1 / (n + 1 : ℝ) : ℝ) : ℂ) * Complex.I) atTop (𝓝 c) := by
+      have h0 : Tendsto (fun n : ℕ => ((1 / (n + 1 : ℝ) : ℝ) : ℂ) * Complex.I) atTop (𝓝 0) := by
+        have hr : Tendsto (fun n : ℕ => (1 / (n + 1 : ℝ) : ℝ)) atTop (𝓝 0) :=
+          tendsto_one_div_add_atTop_nhds_zero_nat
+        have hc : Tendsto (fun n : ℕ => ((1 / (n + 1 : ℝ) : ℝ) : ℂ)) atTop (𝓝 ((0 : ℝ) : ℂ)) :=
+          (Complex.continuous_ofReal.tendsto 0).comp hr
+        rw [Complex.ofReal_zero] at hc
+        simpa using hc.mul_const Complex.I
+      simpa using (tendsto_const_nhds (x := c)).add h0
+    refine mem_closure_of_tendsto htend (Filter.Eventually.of_forall (fun n => ?_))
+    simp only [Set.mem_setOf_eq, add_sub_cancel_left, mem_slitPlane_iff]
+    right
+    have him : (((1 / (n + 1 : ℝ) : ℝ) : ℂ) * Complex.I).im = (1 / (n + 1 : ℝ) : ℝ) := by
+      rw [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, Complex.I_im, Complex.I_re]; ring
+    rw [him]; positivity
+  rw [closure_eq_self_union_derivedSet] at hcl
+  exact hcl.resolve_left hcS
+
 /-! ## The precise per-centre residual `RealCenterClusterFamily` (the genuine remaining geometry)
 
 We isolate, as a named predicate, exactly the per-centre data the SOUND capstone
@@ -243,5 +277,117 @@ theorem residueSum_eq_zero_of_realCenterClusterFamily {ω₀ : HolomorphicOneFor
     ∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0 :=
   residueSum_eq_zero_of_fullFibreReindex_adaptedFRamified A
     (fun i => FullFibreCenterReindex.ofRealCenterClusterFamily A (R i))
+
+/-! ## Reducing the topology family to the §5/§4 per-slit-value primitives (`ofClusterSplitData`)
+
+`FibreClusterTopology.ofClusterSplitData` is the documented *minimal-residual* constructor: it proves the
+three conservation-of-number facts internally from the §5 / §4 geometric primitives.  For the real cover
+the WHOLE-fibre fields it needs (`hD_inj`/`hrange`/`hnp`/`hmult_eq`) are already discharged by
+`realFibreData` — in particular `hmult_eq` is *definitionally* `rfl` (the multiplicity *is*
+`(localDeg …).toNat`).  So `hfam` reduces, per slit value `z`, to exactly the genuine §5 normal-form
+section data + the sphere sheet-system regularity (the per-slit primitives).  We package this as a
+per-slit-value bundle and reduce `RealCenterClusterFamily` to it. -/
+
+/-- **The per-slit-value §5/§4 primitives** for the real cover at one regular slit value `z`, packaging
+exactly the `FibreClusterTopology.ofClusterSplitData` inputs *not* already discharged by `realFibreData`:
+the sphere sheet system regularity (`S`/`hderiv`/`hmero`/`hcoh`), the §5 section + non-pole facts
+(`hcs_sec`/`hcs_np`), the within/cross-cluster distinctness (`hwithin`/`hcross`), the regular-value
+fibre primitives (`hfin_z`/`hreg_z`), and the routine cluster-sheet residuals (`hsrc`/`hsheet_diff`).
+
+`D := realFibreData g hdiv c hnp` discharges `hD_inj` (`realFibreData_inj`), `hrange`
+(`realFibreData_range`), `hnp` (the carried fibre non-pole datum), and `hmult_eq` (`rfl`). -/
+structure RealSlitClusterSplitData (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
+    {f : MeromorphicFunction X} (hdiv : (f.div : Divisor X) ≠ 0) (c : ℂ) {Sset : Set ℂ}
+    (hnp : ∀ i, 0 ≤ f.orderAtPoint (fullFibreEnum f hdiv c i))
+    (Cl : ∀ i, ClusterTraceData ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) c Sset) (z : ℂ) where
+  /-- The sphere sheet system of `F = f.toRiemannSphere` at `coe z`. -/
+  S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))
+  /-- Regular-value: the chart-pullback derivative of `f.holoRepr` is nonzero at each sheet point. -/
+  hderiv : ∀ k, deriv (fun w => f.holoRepr
+      ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+    ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+      (S.sheet k (((z : ℂ) : RiemannSphere)))) ≠ 0
+  /-- `g.toFun`'s chart-pullback is meromorphic at each sheet point. -/
+  hmero : ∀ k, MeromorphicAt
+    (fun w => g.toFun ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+    ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+      (S.sheet k (((z : ℂ) : RiemannSphere))))
+  /-- The regular-value coherence (proven off-branch by `valueChartTrace_eq_sphereSheetFibreTrace`). -/
+  hcoh : valueChartTrace ω₀ f (canonicalFibreSelection g.toFun f hdiv) z
+    = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv hmero)).traceCoeff z
+  /-- The cluster section is a genuine local section of `f.holoRepr` near `z` (§5 normal form). -/
+  hcs_sec : ∀ (i : (realFibreData g hdiv c hnp).ι) (j : Fin ((realFibreData g hdiv c hnp).mult i)),
+    ∀ᶠ w in 𝓝 z, f.holoRepr (clusterSection (realFibreData g hdiv c hnp) Cl i j w) = w
+  /-- The cluster section is a non-pole at `z` (`0 ≤ orderAtPoint`). -/
+  hcs_np : ∀ (i : (realFibreData g hdiv c hnp).ι) (j : Fin ((realFibreData g hdiv c hnp).mult i)),
+    0 ≤ f.orderAtPoint (clusterSection (realFibreData g hdiv c hnp) Cl i j z)
+  /-- Within-cluster injectivity at `z` (§5 straightening uniqueness). -/
+  hwithin : ∀ (i : (realFibreData g hdiv c hnp).ι)
+    (j k : Fin ((realFibreData g hdiv c hnp).mult i)),
+    clusterSection (realFibreData g hdiv c hnp) Cl i j z
+        = clusterSection (realFibreData g hdiv c hnp) Cl i k z → j = k
+  /-- Cross-cluster separation at `z` (distinct preimages give disjoint clusters). -/
+  hcross : ∀ (i i' : (realFibreData g hdiv c hnp).ι)
+    (j : Fin ((realFibreData g hdiv c hnp).mult i)) (k : Fin ((realFibreData g hdiv c hnp).mult i')),
+    i ≠ i' → clusterSection (realFibreData g hdiv c hnp) Cl i j z
+      ≠ clusterSection (realFibreData g hdiv c hnp) Cl i' k z
+  /-- The fibre over `coe z` is finite (regular value, off branch locus). -/
+  hfin_z : (f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))}).Finite
+  /-- Each `coe z` preimage is an unramified (`localDeg = 1`) regular point. -/
+  hreg_z : ∀ x ∈ f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))},
+    localDeg f (((z : ℂ) : RiemannSphere)) x = 1
+  /-- The cluster sheet value stays in the fixed preimage's chart target near `z`. -/
+  hsrc : ∀ (i : (realFibreData g hdiv c hnp).ι) (j : Fin ((realFibreData g hdiv c hnp).mult i)),
+    ∀ᶠ w in 𝓝 z, clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j w
+      ∈ (chartAt ℂ ((realFibreData g hdiv c hnp).xs i)).target
+  /-- The cluster sheet is differentiable at `z`. -/
+  hsheet_diff : ∀ (i : (realFibreData g hdiv c hnp).ι)
+    (j : Fin ((realFibreData g hdiv c hnp).mult i)),
+    DifferentiableAt ℂ (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z
+
+/-- **`FibreClusterTopology` from the per-slit-value primitives** (the real-cover instance of
+`ofClusterSplitData`).  Feeds the `realFibreData`-discharged whole-fibre fields (`hD_inj`/`hrange`/`hnp`/
+`hmult_eq = rfl`) and the carried per-slit primitives into `FibreClusterTopology.ofClusterSplitData`. -/
+noncomputable def RealSlitClusterSplitData.toFibreClusterTopology {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0} {c : ℂ}
+    {Sset : Set ℂ} {hnp : ∀ i, 0 ≤ f.orderAtPoint (fullFibreEnum f hdiv c i)}
+    {Cl : ∀ i, ClusterTraceData ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) c Sset} {z : ℂ}
+    (P : RealSlitClusterSplitData ω₀ g hdiv c hnp Cl z) :
+    FibreClusterTopology (canonicalFibreSelection g.toFun f hdiv) (realFibreData g hdiv c hnp) Cl z :=
+  FibreClusterTopology.ofClusterSplitData hdiv P.S P.hderiv P.hmero P.hcoh P.hcs_sec P.hcs_np
+    P.hwithin P.hcross P.hfin_z P.hreg_z (realFibreData_inj g hdiv c hnp)
+    (realFibreData_range g hdiv c hnp) hnp (fun _ => rfl) P.hsrc P.hsheet_diff
+
+/-- **`RealCenterClusterFamily` from a slit-wide family of `RealSlitClusterSplitData`** (the §5/§4
+per-slit-value reduction).  Replaces the abstract `hfam : FibreClusterTopology` family with the concrete
+per-slit-value §5 normal-form section + sphere sheet-system primitives, each fed through
+`ofClusterSplitData` (so the three conservation-of-number facts are proven internally and the
+`realFibreData` whole-fibre fields are discharged automatically). -/
+noncomputable def RealCenterClusterFamily.ofSlitClusterSplitFamily {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0}
+    {poles : Finset X} {c : ℂ}
+    (hnp : ∀ i, 0 ≤ f.orderAtPoint (fullFibreEnum f hdiv c i))
+    (hanalytic : ∀ᶠ z in 𝓝[≠] c,
+      AnalyticAt ℂ (valueChartTrace ω₀ f (canonicalFibreSelection g.toFun f hdiv)) z)
+    {Sset : Set ℂ} (hS_acc : ∃ᶠ z in 𝓝[≠] c, z ∈ Sset)
+    (Cl : ∀ i, ClusterTraceData ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) c Sset)
+    (hmult : ∀ i, (Cl i).m = (realFibreData g hdiv c hnp).mult i)
+    (hsplit0 : ∀ i, straightenedIntegrand ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) (Cl i).s
+        =ᶠ[𝓝[≠] 0] fun u => negTail 0 (Cl i).ppb (Cl i).ppN u + (Cl i).ppR u)
+    (ppord : ℕ)
+    (hbnd : Tendsto (fun z => (z - c) ^ ppord *
+      valueChartTrace ω₀ f (canonicalFibreSelection g.toFun f hdiv) z) (𝓝[≠] c) (𝓝 0))
+    (hfam : ∀ z ∈ Sset, RealSlitClusterSplitData ω₀ g hdiv c hnp Cl z) :
+    RealCenterClusterFamily ω₀ g hdiv poles c where
+  hnp := hnp
+  hanalytic := hanalytic
+  Sset := Sset
+  hS_acc := hS_acc
+  Cl := Cl
+  hmult := hmult
+  hsplit0 := hsplit0
+  ppord := ppord
+  hbnd := hbnd
+  hfam := fun z hz => (hfam z hz).toFibreClusterTopology
 
 end Jacobians.Dolbeault.SerreResidueTheorem
