@@ -195,6 +195,99 @@ theorem residueSum_eq_zero_of_movingTraceRationalityNF
     (traceRationalityDataNF_ofMovingData Φ m cs ρ hcs_ball hcs_inj D Cfin hCfin_D hxs_inj hxs_mem
       hxs_surj Dinf hxsInf_inj hxsInf_mem hxsInf_surj hcenters_cs hcoh_inf hentire hrecip_cont)
 
+/-! ### The sheet-form constructor (the symmetric lever — no labeling)
+
+Building the per-pole moving data `Cfin i` from continuously-varying smooth **sheet sections** + the
+labeling-independent set-form re-selection `MovingCoherenceDatum.ofSheetSectionsSet`, exactly as in
+`traceCoherenceData_ofSheetSections` — but targeting the *sound* `TraceRationalityDataNF`.  The fibre
+selection `Φ` (enumerating the poles) doubles as the per-centre fibre data `D` (so the pole sub-fibre is
+the full fibre — the full-fibre route, no separation `hsep`). -/
+
+/-- **A `TraceRationalityDataNF` from sheet sections (sound `∞`, symmetric lever).**  The per-pole moving
+data is built from continuously-varying smooth sheet sections `secFin` + the set-form re-selection
+`hsetFin` (`MovingCoherenceDatum.ofSheetSectionsSet`), so the caller supplies only labeling-independent
+geometric facts (the sheets enumerate the per-centre fibre as a set).  The pole-centre coherence is
+discharged labeling-free; the genus-`0` (`hentire`/`hrecip_cont`) and the **sound `∞`-coherence**
+`hcoh_inf` are the precise residual inputs. -/
+noncomputable def traceRationalityDataNF_ofSheetSections
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs)
+    (secFin : ∀ i, (Φ (cs i)).ι → ℂ → X)
+    (hsecFin_base : ∀ i j, secFin i j (cs i) = (Φ (cs i)).xs j)
+    (hsecFin_smooth : ∀ i j, ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (secFin i j) (cs i))
+    (hsecFin_sec : ∀ i j, ∀ᶠ b' in 𝓝 (cs i), f.holoRepr (secFin i j b') = b')
+    (hsetFin : ∀ i, ∀ᶠ b' in 𝓝 (cs i), Function.Injective (Φ b').xs ∧
+      Function.Injective (fun j => secFin i j b') ∧
+      Set.range (Φ b').xs = Set.range (fun j => secFin i j b') ∧
+      (∀ j, secFin i j b' ∈ (chartAt ℂ ((Φ (cs i)).xs j)).source))
+    (hxs_inj : ∀ p, Function.Injective (Φ p).xs)
+    (hxs_mem : ∀ p, ∀ i,
+      (Φ p).xs i ∈ poles ∧ f.toRiemannSphere ((Φ p).xs i) = ((p : ℂ) : RiemannSphere))
+    (hxs_surj : ∀ p, ∀ a ∈ poles, f.toRiemannSphere a = ((p : ℂ) : RiemannSphere) →
+      ∃ i, (Φ p).xs i = a)
+    (Dinf : InftyFibreDataNF g f) (hxsInf_inj : Function.Injective Dinf.xs)
+    (hxsInf_mem : ∀ i, Dinf.xs i ∈ poles ∧ f.toRiemannSphere (Dinf.xs i) = OnePoint.infty)
+    (hxsInf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, Dinf.xs i = a)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hcoh_inf : recipCoeff (valueChartTrace ω₀ f Φ)
+      =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf).traceCoeff)
+    (hentire : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTrace ω₀ f Φ - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      AnalyticOnNhd ℂ (valueChartTrace ω₀ f Φ - L.R) Set.univ)
+    (hrecip_cont : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTrace ω₀ f Φ - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ContinuousAt (recipCoeff (valueChartTrace ω₀ f Φ - L.R)) 0) :
+    TraceRationalityDataNF ω₀ g f poles :=
+  traceRationalityDataNF_ofMovingData Φ m cs ρ hcs_ball hcs_inj Φ
+    (fun i => MovingCoherenceDatum.ofSheetSectionsSet (Φ (cs i)) (secFin i)
+      (hsecFin_base i) (hsecFin_smooth i) (hsecFin_sec i) (hsetFin i))
+    (fun _ => rfl)
+    hxs_inj hxs_mem hxs_surj Dinf hxsInf_inj hxsInf_mem hxsInf_surj hcenters_cs hcoh_inf
+    hentire hrecip_cont
+
+/-- **Gate A `∑Res = 0` from sheet sections (sound `∞`, symmetric lever).** -/
+theorem residueSum_eq_zero_of_sheetTraceRationalityNF
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs)
+    (secFin : ∀ i, (Φ (cs i)).ι → ℂ → X)
+    (hsecFin_base : ∀ i j, secFin i j (cs i) = (Φ (cs i)).xs j)
+    (hsecFin_smooth : ∀ i j, ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (secFin i j) (cs i))
+    (hsecFin_sec : ∀ i j, ∀ᶠ b' in 𝓝 (cs i), f.holoRepr (secFin i j b') = b')
+    (hsetFin : ∀ i, ∀ᶠ b' in 𝓝 (cs i), Function.Injective (Φ b').xs ∧
+      Function.Injective (fun j => secFin i j b') ∧
+      Set.range (Φ b').xs = Set.range (fun j => secFin i j b') ∧
+      (∀ j, secFin i j b' ∈ (chartAt ℂ ((Φ (cs i)).xs j)).source))
+    (hxs_inj : ∀ p, Function.Injective (Φ p).xs)
+    (hxs_mem : ∀ p, ∀ i,
+      (Φ p).xs i ∈ poles ∧ f.toRiemannSphere ((Φ p).xs i) = ((p : ℂ) : RiemannSphere))
+    (hxs_surj : ∀ p, ∀ a ∈ poles, f.toRiemannSphere a = ((p : ℂ) : RiemannSphere) →
+      ∃ i, (Φ p).xs i = a)
+    (Dinf : InftyFibreDataNF g f) (hxsInf_inj : Function.Injective Dinf.xs)
+    (hxsInf_mem : ∀ i, Dinf.xs i ∈ poles ∧ f.toRiemannSphere (Dinf.xs i) = OnePoint.infty)
+    (hxsInf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, Dinf.xs i = a)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hcoh_inf : recipCoeff (valueChartTrace ω₀ f Φ)
+      =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf).traceCoeff)
+    (hentire : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTrace ω₀ f Φ - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      AnalyticOnNhd ℂ (valueChartTrace ω₀ f Φ - L.R) Set.univ)
+    (hrecip_cont : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTrace ω₀ f Φ - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ContinuousAt (recipCoeff (valueChartTrace ω₀ f Φ - L.R)) 0) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueSum_eq_zero_of_traceRationalityDataNF ω₀ g f poles
+    (traceRationalityDataNF_ofSheetSections Φ m cs ρ hcs_ball hcs_inj secFin hsecFin_base
+      hsecFin_smooth hsecFin_sec hsetFin hxs_inj hxs_mem hxs_surj Dinf hxsInf_inj hxsInf_mem
+      hxsInf_surj hcenters_cs hcoh_inf hentire hrecip_cont)
+
 /-! ### Non-vacuity (end-to-end soundness)
 
 For the empty pole set the empty fibre selection assembles into a `TraceRationalityDataNF` through the
