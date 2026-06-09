@@ -374,26 +374,174 @@ theorem symmL_frame_change {x y q : X} (hqx : q ∈ (chartAt ℂ x).source)
   change _ = _ * (1 : ℂ)
   ring
 
-/-- **[ISOLATED ANALYTIC INPUT — finite support of the form divisor].**  A nonzero meromorphic
-1-form of the shape `df` (so `formOrderW (df) ≠ ⊤` everywhere, by `differentialForm_ne_zero` +
-the form identity theorem) has a genuine *canonical divisor*: the order function
-`x ↦ (formOrderW (df) x).untop₀` has finite support, giving a `K : Divisor X` with
-`formOrderW (df) x = (K x : WithTop ℤ)` for all `x`.
+/-- **The chart-coefficient transformation law.**  Near `chart_z y`, the coefficient of `α` read in
+the chart at `z` equals `ψ' · (coeff at `y` ∘ ψ)`, where `ψ = chart_y ∘ chart_z⁻¹` is the chart
+transition: `formCoeff α z (w) = ψ'(w) · formCoeff α y (ψ w)`.  (From `symmL_frame_change` + covector
+linearity; the classical `c_z = ψ' · c_y` law for 1-form coefficients.) -/
+theorem formCoeff_change (α : MeromorphicOneForm X) (z y : X) (hy : y ∈ (chartAt ℂ z).source) :
+    formCoeff α.toFun z =ᶠ[𝓝 ((chartAt ℂ z) y)]
+      (fun w => deriv (chartAt ℂ y ∘ (chartAt ℂ z).symm) w
+          • formCoeff α.toFun y ((chartAt ℂ y ∘ (chartAt ℂ z).symm) w)) := by
+  have hztarget : (chartAt ℂ z).target ∈ 𝓝 ((chartAt ℂ z) y) :=
+    (chartAt ℂ z).open_target.mem_nhds ((chartAt ℂ z).map_source hy)
+  have hyt : (extChartAt 𝓘(ℂ) z) y ∈ (extChartAt 𝓘(ℂ) z).target :=
+    (extChartAt 𝓘(ℂ) z).map_source (by rwa [extChartAt_source])
+  have hpre : (chartAt ℂ z).symm ⁻¹' (chartAt ℂ y).source ∈ 𝓝 ((chartAt ℂ z) y) := by
+    apply (continuousAt_extChartAt_symm'' (I := 𝓘(ℂ)) hyt).preimage_mem_nhds
+    rw [show (extChartAt 𝓘(ℂ) z).symm ((extChartAt 𝓘(ℂ) z) y) = y from
+      (extChartAt 𝓘(ℂ) z).left_inv (by rwa [extChartAt_source])]
+    exact (chartAt ℂ y).open_source.mem_nhds (mem_chart_source ℂ y)
+  filter_upwards [hztarget, hpre] with w hw_target hw_pre
+  set q := (chartAt ℂ z).symm w with hq
+  have hqz : q ∈ (chartAt ℂ z).source := (chartAt ℂ z).map_target hw_target
+  have hqy : q ∈ (chartAt ℂ y).source := hw_pre
+  have hwq : (chartAt ℂ z) q = w := (chartAt ℂ z).right_inv hw_target
+  show α.toFun q ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) z).symmL ℂ q 1) = _
+  rw [symmL_frame_change hqz hqy, hwq, ContinuousLinearMap.map_smul]
+  congr 1
+  show α.toFun q ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ q 1)
+      = formCoeff α.toFun y ((chartAt ℂ y) q)
+  rw [show formCoeff α.toFun y ((chartAt ℂ y) q)
+        = α.toFun ((chartAt ℂ y).symm ((chartAt ℂ y) q))
+            ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) y).symmL ℂ
+              ((chartAt ℂ y).symm ((chartAt ℂ y) q)) 1)
+        from rfl, (chartAt ℂ y).left_inv hqy]
 
-This is the 1-form analog of `MeromorphicFunction.div` (the local finiteness
-`Jacobians.Abel.MeromorphicFunction.orderAtPoint_isolated_at`).  Concretely: near each `z`, in the
-canonical chart `chart_z`, the coefficient `formCoeff (df) z` is `MeromorphicAt`, so its zeros/poles
-are isolated; combined with the **chart-invariance of `formOrderW`** (`formOrderW (df) y` computed in
-`chart_y` equals the order of `formCoeff (df) z` at `chart_z y`, because the two chart coefficients
-differ by the non-vanishing holomorphic transition Jacobian `ψ' = (chart_z ∘ chart_y⁻¹)'` —
-`formCoeff (df) y = ψ' · (formCoeff (df) z ∘ ψ)`, an order-preserving change), the support is
-locally `⊆ {z}`; compactness of `X` then makes it finite (the `locallyFinsuppWithin.finiteSupport`
-route of `orderLocallyFinsupp`).  Since `formOrderW (df) ≠ ⊤` everywhere, `(·).untop₀` loses nothing,
-so `order_eq` holds. -/
+/-- **Chart-invariance of `formOrderW`.**  The order of `α` at `y` (read in the canonical chart at
+`y`) equals the `meromorphicOrderAt` of `α`'s coefficient in the chart at `z`, at `chart_z y`.  The
+two coefficients differ by `ψ'` (non-vanishing holomorphic transition Jacobian) and composition with
+the biholomorphism `ψ`, both order-preserving (`meromorphicOrderAt_smul`,
+`meromorphicOrderAt_comp_of_deriv_ne_zero`).  This makes the form's zeros/poles a chart-independent
+set, the key to the finite support of `K = div ω₀`. -/
+theorem formOrderW_chart_invariant (α : MeromorphicOneForm X) (z y : X)
+    (hy : y ∈ (chartAt ℂ z).source) :
+    α.formOrderW y = meromorphicOrderAt (formCoeff α.toFun z) ((chartAt ℂ z) y) := by
+  set ψ := chartAt ℂ y ∘ (chartAt ℂ z).symm with hψ
+  have hz_max : chartAt ℂ z ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X := IsManifold.chart_mem_maximalAtlas z
+  have hy_max : chartAt ℂ y ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X := IsManifold.chart_mem_maximalAtlas y
+  have hψ_an : AnalyticAt ℂ ψ ((chartAt ℂ z) y) := by
+    have h := ModelWithCorners.contDiffWithinAt_extendCoordChange' hz_max hy_max hy
+      (mem_chart_source ℂ y)
+    rw [ModelWithCorners.range_eq_univ, contDiffWithinAt_univ] at h; exact h.analyticAt
+  have hψ_val : ψ ((chartAt ℂ z) y) = (chartAt ℂ y) y := by
+    show (chartAt ℂ y) ((chartAt ℂ z).symm ((chartAt ℂ z) y)) = _; rw [(chartAt ℂ z).left_inv hy]
+  have hφ_an : AnalyticAt ℂ (chartAt ℂ z ∘ (chartAt ℂ y).symm) ((chartAt ℂ y) y) := by
+    have h := ModelWithCorners.contDiffWithinAt_extendCoordChange' hy_max hz_max
+      (mem_chart_source ℂ y) hy
+    rw [ModelWithCorners.range_eq_univ, contDiffWithinAt_univ] at h; exact h.analyticAt
+  have hcomp_id : (chartAt ℂ z ∘ (chartAt ℂ y).symm) ∘ ψ =ᶠ[𝓝 ((chartAt ℂ z) y)] id := by
+    have hztarget : (chartAt ℂ z).target ∈ 𝓝 ((chartAt ℂ z) y) :=
+      (chartAt ℂ z).open_target.mem_nhds ((chartAt ℂ z).map_source hy)
+    have hyt : (extChartAt 𝓘(ℂ) z) y ∈ (extChartAt 𝓘(ℂ) z).target :=
+      (extChartAt 𝓘(ℂ) z).map_source (by rwa [extChartAt_source])
+    have hpre : (chartAt ℂ z).symm ⁻¹' (chartAt ℂ y).source ∈ 𝓝 ((chartAt ℂ z) y) := by
+      apply (continuousAt_extChartAt_symm'' (I := 𝓘(ℂ)) hyt).preimage_mem_nhds
+      rw [show (extChartAt 𝓘(ℂ) z).symm ((extChartAt 𝓘(ℂ) z) y) = y from
+        (extChartAt 𝓘(ℂ) z).left_inv (by rwa [extChartAt_source])]
+      exact (chartAt ℂ y).open_source.mem_nhds (mem_chart_source ℂ y)
+    filter_upwards [hztarget, hpre] with w hw_target hw_pre
+    show (chartAt ℂ z) ((chartAt ℂ y).symm ((chartAt ℂ y) ((chartAt ℂ z).symm w))) = w
+    rw [(chartAt ℂ y).left_inv hw_pre, (chartAt ℂ z).right_inv hw_target]
+  have hderiv_ne : deriv ψ ((chartAt ℂ z) y) ≠ 0 := by
+    intro h0
+    have hchain := deriv_comp ((chartAt ℂ z) y)
+      (hψ_val ▸ hφ_an.differentiableAt) hψ_an.differentiableAt
+    rw [hcomp_id.deriv_eq, deriv_id, h0, mul_zero] at hchain
+    exact one_ne_zero hchain
+  have hfy_mero : MeromorphicAt (formCoeff α.toFun y) (ψ ((chartAt ℂ z) y)) := by
+    rw [hψ_val]; exact α.meromorphic y
+  have hcomp_mero : MeromorphicAt (formCoeff α.toFun y ∘ ψ) ((chartAt ℂ z) y) :=
+    (meromorphicAt_comp_iff_of_deriv_ne_zero hψ_an hderiv_ne).mpr hfy_mero
+  rw [meromorphicOrderAt_congr ((formCoeff_change α z y hy).filter_mono nhdsWithin_le_nhds),
+    show (fun w => deriv ψ w • formCoeff α.toFun y (ψ w))
+        = (fun w => deriv ψ w) • (formCoeff α.toFun y ∘ ψ) from rfl,
+    meromorphicOrderAt_smul hψ_an.deriv.meromorphicAt hcomp_mero,
+    hψ_an.deriv.meromorphicOrderAt_eq, (hψ_an.deriv.analyticOrderAt_eq_zero).mpr hderiv_ne,
+    meromorphicOrderAt_comp_of_deriv_ne_zero hψ_an hderiv_ne, hψ_val]
+  rw [MeromorphicOneForm.formOrderW]; simp
+
+/-- **Isolated zeros/poles of a meromorphic function (planar).**  A meromorphic `g` of finite order
+at `c` has `meromorphicOrderAt g w = 0` for all `w` on a punctured neighbourhood of `c`: the Laurent
+form `g =ᶠ (·−c)ⁿ • G` (`G` analytic, `G c ≠ 0`) is analytic and nonvanishing at every `w ≠ c` near
+`c`.  The planar core of `MeromorphicFunction.orderAtPoint_isolated_at`. -/
+theorem planar_order_zero (g : ℂ → ℂ) (c : ℂ) (hg : MeromorphicAt g c)
+    (hne : meromorphicOrderAt g c ≠ ⊤) :
+    ∀ᶠ w in 𝓝[≠] c, meromorphicOrderAt g w = 0 := by
+  lift meromorphicOrderAt g c to ℤ using hne with n hn
+  obtain ⟨G, hG_an, hG_ne, hG_eq⟩ := (meromorphicOrderAt_eq_int_iff hg).1 hn.symm
+  have hcombined : ∀ᶠ w in 𝓝[≠] c,
+      g w = (w - c) ^ n • G w ∧ AnalyticAt ℂ G w ∧ G w ≠ 0 := by
+    filter_upwards [hG_eq, eventually_nhdsWithin_of_eventually_nhds hG_an.eventually_analyticAt,
+      eventually_nhdsWithin_of_eventually_nhds (hG_an.continuousAt.eventually_ne hG_ne)]
+      with w h1 h2 h3 using ⟨h1, h2, h3⟩
+  rw [eventually_nhdsWithin_iff, eventually_nhds_iff] at hcombined
+  obtain ⟨U, hU, hUopen, hcU⟩ := hcombined
+  rw [eventually_nhdsWithin_iff, eventually_nhds_iff]
+  refine ⟨U, ?_, hUopen, hcU⟩
+  intro w hwU hwc
+  obtain ⟨_, hGw_an, hGw_ne⟩ := hU w hwU hwc
+  have hwc' : w ≠ c := hwc
+  have hlocal_an : AnalyticAt ℂ (fun u => (u - c) ^ n • G u) w :=
+    (((analyticAt_id).sub analyticAt_const).zpow (sub_ne_zero_of_ne hwc')).smul hGw_an
+  have hlocal_ne : (fun u => (u - c) ^ n • G u) w ≠ 0 :=
+    smul_ne_zero (zpow_ne_zero _ (sub_ne_zero_of_ne hwc')) hGw_ne
+  have heq_w : g =ᶠ[𝓝[≠] w] (fun u => (u - c) ^ n • G u) := by
+    have hUnhd : U ∈ 𝓝 w := hUopen.mem_nhds hwU
+    have hne_w : {c}ᶜ ∈ 𝓝 w := isOpen_compl_singleton.mem_nhds hwc'
+    filter_upwards [nhdsWithin_le_nhds hUnhd, nhdsWithin_le_nhds hne_w] with u huU huc
+    exact (hU u huU (by simpa using huc)).1
+  rw [meromorphicOrderAt_congr heq_w, hlocal_an.meromorphicOrderAt_eq,
+    (hlocal_an.analyticOrderAt_eq_zero).mpr hlocal_ne]; rfl
+
+/-- **Isolated zeros/poles of a nonzero meromorphic 1-form.**  If `α`'s germ is nonzero everywhere
+(`formOrderW α ≠ ⊤`), then around each `z` the only point of nonzero order is `z` itself: in the chart
+at `z` the coefficient `formCoeff α z` is meromorphic of finite order, so its zeros/poles are isolated
+(`planar_order_zero`), and `formOrderW` is chart-invariant. -/
+theorem formOrderW_isolated (α : MeromorphicOneForm X) (hα : ∀ x, α.formOrderW x ≠ ⊤) (z : X) :
+    ∃ t ∈ 𝓝 z, ∀ y ∈ t, y ≠ z → α.formOrderW y = 0 := by
+  have hzero := planar_order_zero (formCoeff α.toFun z) ((chartAt ℂ z) z) (α.meromorphic z) (hα z)
+  rw [eventually_nhdsWithin_iff, eventually_nhds_iff] at hzero
+  obtain ⟨V, hV, hVopen, hzV⟩ := hzero
+  have hcont : ContinuousAt (chartAt ℂ z) z := (chartAt ℂ z).continuousAt (mem_chart_source ℂ z)
+  have hpreV : (chartAt ℂ z) ⁻¹' V ∈ 𝓝 z := hcont.preimage_mem_nhds (hVopen.mem_nhds hzV)
+  have hsrc : (chartAt ℂ z).source ∈ 𝓝 z :=
+    (chartAt ℂ z).open_source.mem_nhds (mem_chart_source ℂ z)
+  refine ⟨(chartAt ℂ z) ⁻¹' V ∩ (chartAt ℂ z).source, Filter.inter_mem hpreV hsrc, ?_⟩
+  intro y ⟨hyV, hysrc⟩ hyne
+  have hchart_ne : (chartAt ℂ z) y ≠ (chartAt ℂ z) z := fun heq =>
+    hyne ((chartAt ℂ z).injOn hysrc (mem_chart_source ℂ z) heq)
+  rw [formOrderW_chart_invariant α z y hysrc]
+  exact hV ((chartAt ℂ z) y) hyV hchart_ne
+
+/-- **The canonical divisor of a nonzero meromorphic 1-form** `div α`.  The order function
+`x ↦ (formOrderW α x).untop₀` has finite support (zeros/poles isolated by `formOrderW_isolated`,
+finite on the compact `X` via `locallyFinsuppWithin.finiteSupport`), and since `formOrderW α ≠ ⊤`
+everywhere the `untop₀` loses nothing, so `formOrderW α x = (div α) x`.  The 1-form analog of
+`MeromorphicFunction.div`. -/
+theorem exists_form_divisor (α : MeromorphicOneForm X) (hα : ∀ x, α.formOrderW x ≠ ⊤) :
+    ∃ K : Divisor X, ∀ x, α.formOrderW x = (K x : WithTop ℤ) := by
+  -- the order function has locally finite support (isolation), hence finite support (compact `X`)
+  have hloc : LocallyFiniteSupport (fun x => (α.formOrderW x).untop₀) := by
+    intro z
+    obtain ⟨t, ht_nhds, ht⟩ := formOrderW_isolated α hα z
+    refine ⟨t, ht_nhds, Set.Finite.subset (Set.finite_singleton z) ?_⟩
+    intro y ⟨hy_t, hy_supp⟩
+    by_contra hne
+    exact hy_supp (show (α.formOrderW y).untop₀ = 0 by rw [ht y hy_t hne]; rfl)
+  have hfin : (Function.support (fun x => (α.formOrderW x).untop₀)).Finite := by
+    have := hloc.finite_inter_support_of_isCompact (isCompact_univ (X := X))
+    rwa [Set.univ_inter] at this
+  refine ⟨Finsupp.ofSupportFinite (fun x => (α.formOrderW x).untop₀) hfin, fun x => ?_⟩
+  rw [Finsupp.ofSupportFinite_coe]
+  exact (WithTop.coe_untop₀_of_ne_top (hα x)).symm
+
+/-- **The canonical divisor `K = div (df)`.**  The form-divisor of `df` (a nonzero form, by `hf` +
+the form identity theorem), via `exists_form_divisor`. -/
 theorem exists_differentialForm_divisor (f : MeromorphicFunction X)
     (hf : ∃ x, (differentialForm f).formOrderW x ≠ ⊤) :
-    ∃ K : Divisor X, ∀ x, (differentialForm f).formOrderW x = (K x : WithTop ℤ) := by
-  sorry
+    ∃ K : Divisor X, ∀ x, (differentialForm f).formOrderW x = (K x : WithTop ℤ) :=
+  exists_form_divisor (differentialForm f)
+    (fun x => MeromorphicOneForm.formOrderW_ne_top_of_exists (differentialForm f) hf x)
 
 /-- **Forster §17.4 — the canonical-form datum `ω₀ = df`, `K = div ω₀` exists.**  Combining the
 nonconstant meromorphic function `f` of `exists_nonconstant_meromorphic` (`SerreOmega0`), its
