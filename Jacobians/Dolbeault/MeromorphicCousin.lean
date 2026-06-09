@@ -54,7 +54,7 @@ infrastructure that the lift needs, in the *other* direction:
 
 ## Soundness
 
-No custom axiom, no sorry on a false statement, no junk/circular field.  `res` reads the genuine
+No custom axiom, no unproved obligations on false statements, no junk/circular field.  `res` reads the genuine
 Laurent residue (`GeneralMLDistribution.res`, the `dz/z = 1` sanity check holds).  The connecting map
 lands in the genuine `𝒪_K`-cocycles (`formHoloDiff ⟹ 𝒪_K` membership, proven).  `H¹(ℳ) = 0` is a
 *true* statement (it holds on `ℂℙ¹` — Mittag–Leffler is classically solvable on any open Riemann
@@ -62,7 +62,7 @@ surface and on the cover's acyclic pieces), supplied as a named datum, never ass
 route through Riemann–Roch (verify `RiemannRoch` absent from imports).
 
 References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §15 (Mittag–Leffler, `H¹(ℳ)=0`),
-§17.2–17.3 (the residue connecting map); `docs/serre_17_build_plan.md`; `GeneralMittagLeffler.lean`.
+§17.2–17.3 (the residue connecting map); `GeneralMittagLeffler.lean`.
 -/
 
 noncomputable section

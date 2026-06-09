@@ -23,7 +23,7 @@
   This is the genuine content of part (a) of the `exists_cechModel` model.  Sorry-free, axiom-clean
   `[propext, Classical.choice, Quot.sound]`.  (The shrinking-side `δ¹`, the cover-side `δ¹cov`, the
   `hδδ`/`hcomm` algebra, the `leray` disk-acyclicity field, and the `cechH1 ≃ supH1` comparison remain
-  — see `CechFinitenessWiring.exists_cechModel` and `docs/cech_finiteness_research.md`.)
+  — see `CechFinitenessWiring.exists_cechModel`.)
 -/
 import Jacobians.Dolbeault.CechModelDelta
 import Jacobians.Dolbeault.CechModelManifold

@@ -1,7 +1,7 @@
 /-
   Dolbeault ladder — the ARTIFICIAL (single-point) chart-disk model of `exists_cechModel`.
 
-  This file gives a fully sorry-free, axiom-clean witness for the *bundled* model existential
+  This file gives a fully complete, axiom-clean witness for the *bundled* model existential
   `exists_cechModel_of_finiteDimensional`: assuming only that the genuine germ-class `H¹`,
   `𝔘.cechH1 D`, is finite-dimensional, it produces a `DiskOverlapData` + `Coboundaries` whose
   sup-norm `H¹` is `ℂ`-linearly isomorphic to `𝔘.cechH1 D`.

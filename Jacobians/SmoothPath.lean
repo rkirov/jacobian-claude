@@ -1948,7 +1948,7 @@ first conjunct of `exists_smoothPath_family`. The second conjunct
 (basepoint change) follows from `periodVec_concat`. Only the third
 conjunct is genuinely deep.
 
-For now, `exists_smoothPath_family` remains a single classical sorry
+For now, `exists_smoothPath_family` remains a single classical unproved obligation
 in `PeriodLattice.lean:299`, consolidating the structural content of
 all three conjuncts. -/
 

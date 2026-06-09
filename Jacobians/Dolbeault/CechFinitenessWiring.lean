@@ -31,7 +31,7 @@ namespace Jacobians.Dolbeault
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-! ### STEP 6a — existence of the chart-disk Leray model (PROVEN, no `sorry`) -/
+/-! ### STEP 6a — existence of the chart-disk Leray model (PROVEN, no gaps) -/
 
 /-- **STEP 6a — the chart-disk Leray model exists and computes `cechH1` (PROVEN).**
 Every finite cover `𝔘` and divisor `D` admits a chart-disk Leray model — a `DiskOverlapData`
@@ -65,7 +65,7 @@ sides have different dimensions.  The equivalence holds only for the model that 
 is the corresponding correctly-scoped *consumer* (it extracts the bundled equivalence), kept as a
 named, inspectable entry point. -/
 
-/-- **STEP 6b — comparison `cechH1 ≃ₗ supH1` (consumer of `exists_cechModel`, sorry-free).** For the
+/-- **STEP 6b — comparison `cechH1 ≃ₗ supH1` (consumer of `exists_cechModel`, complete).** For the
 chart-disk Leray model produced by `exists_cechModel 𝔘 D`, the genuine germ-class `H¹` is
 `ℂ`-linearly isomorphic to the sup-norm `H¹` of that model.  This simply repackages the bundled
 equivalence.  Stated as an existence of *a* model with the comparison, so it cannot be vacuously

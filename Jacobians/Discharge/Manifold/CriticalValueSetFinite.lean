@@ -34,7 +34,7 @@ on which the chart pullback is injective; lifting through the chart
 homeomorphism gives `∃ U ∈ 𝓝 x, Set.InjOn f U`, contradicting
 `x ∈ criticalSetGeneral f`.
 
-No `sorry`, no `axiom`, no signature changes to consumer files. -/
+No gaps, no `axiom`, no signature changes to consumer files. -/
 
 @[expose] public section
 

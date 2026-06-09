@@ -30,7 +30,7 @@ differences `ωᵢ − ωⱼ = cᵢⱼ·ω₀ ∈ Ω` on overlaps — a genuine 
   sum of residues of the `cᵢⱼ·ω₀`; the connecting map genuinely needs the *meromorphic* Cousin lift,
   whose smooth (PoU) splitting must be corrected to a meromorphic one by a global `∂̄`-solve.  This is
   the long-flagged Serre analytic wall (the local engine `DbarDiskCohomology.dbar_solvable_ball`
-  + the global `∂̄`-globalisation; cf. `docs/serre_17_build_plan.md`).
+  + the global `∂̄`-globalisation).
 
 * **Well-definedness on classes (PROVEN, reused).**  Two Cousin lifts of the same class differ by a
   *global* meromorphic form, whose total residue vanishes by the 1-form residue theorem `∑Res = 0`
@@ -48,7 +48,7 @@ differences `ωᵢ − ωⱼ = cᵢⱼ·ω₀ ∈ Ω` on overlaps — a genuine 
   (its vanishing on coboundaries + the §17.6 non-degeneracy on the cup), each field a TRUE Forster
   §17.2–17.6 statement, **not** a junk/circular field.  It is the single named analytic input that
   remains after the cup product (`SerreCupProduct.lean`).
-* `CousinResidueData.toGlobalResidue` — **derives** `GlobalResidue 𝔘 K` from it sorry-free: `res`
+* `CousinResidueData.toGlobalResidue` — **derives** `GlobalResidue 𝔘 K` from it: `res`
   descends through the `Z¹/B¹` quotient (`vanish_coboundary`), and `nondegenerate` is the
   non-degeneracy field.  Composing with `GlobalResidue.toSerreResidueRealization` (PROVEN) gives the
   whole Serre pairing.
@@ -61,8 +61,7 @@ zero, no `lDim ≡ 0` collapse), the source `lSysModule` is junk-free, and nothi
 Riemann–Roch (RR depends on this; `RiemannRoch` is *not* imported).  The genuine Serre residue inhabits
 it (Forster §17), so it is not a disguised `False` — see the non-vacuity sanity note at the end.
 
-References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.2–17.6; `docs/serre_17_build_plan.md`;
-`docs/dolbeault_disk_atom_decomposition.md`.
+References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.2–17.6.
 -/
 
 noncomputable section

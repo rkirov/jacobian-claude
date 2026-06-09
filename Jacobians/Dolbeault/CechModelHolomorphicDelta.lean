@@ -16,7 +16,7 @@
   witnesses (`τ_{ab}` analytic on `Wov`, mapping it into the `b`-side overlap) come from the same
   manifold chart-change atom `transition_analyticAt_of_mem`, now over the `innerChartOpen`-based `Wov`.
 
-  All sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`.  The `leray` field is handled
+  All complete, axiom-clean `[propext, Classical.choice, Quot.sound]`.  The `leray` field is handled
   separately downstream (see `HolomorphicCoboundaries.leray`); this file delivers the structural
   δ-complex data `δ⁰`, `δ¹`, `δ¹cov`, `δ²=0`, and `hcomm`.
 -/

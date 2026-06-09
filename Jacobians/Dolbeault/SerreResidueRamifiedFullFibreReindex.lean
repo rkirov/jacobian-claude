@@ -62,7 +62,7 @@ the per-centre trace coherence coming from the **ramified** full-fibre cluster g
 `D` = the WHOLE fibre (all `deg f` preimages), **never** the poles.  Non-pole clusters genuinely
 contribute residue `0` (`formFnResidue_eq_zero_of_analyticAt`, `α` holomorphic).  The reconciliation is
 the PROVEN `residueSum_full_eq_poleOnly`.  No all-poles assumption; no full Riemann–Roch (no
-circularity); no custom axiom; no sorry on a false statement; no false/junk/circular field.  Sanity: at a
+circularity); no custom axiom; no unproved obligation on a false statement; no false/junk/circular field.  Sanity: at a
 fibre with both poles and non-poles the non-pole contribution is `0` and the formula holds (the explicit
 non-vacuity witnesses `fullFibreCenterReindex_zero` / `…_empty`).
 

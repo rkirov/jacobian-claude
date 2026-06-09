@@ -37,11 +37,11 @@ variable (𝔘 : FiniteCover X)
 /-! ### Sorry-free backbone of the Čech → Dolbeault map: the partition of unity
 
 The Čech → Dolbeault globalization needs a smooth partition of unity `{ρ_i}` subordinate to the
-cover. We provide it **sorry-free** from Mathlib (`SmoothPartitionOfUnity.exists_isSubordinate`,
+cover. We provide it **completely** from Mathlib (`SmoothPartitionOfUnity.exists_isSubordinate`,
 available because a compact `T2` `ℂ`-manifold is a `σ`-compact finite-dimensional real manifold via
 `RealManifold`). This `ρ` is the actual analytic input `h_i := ∑_k ρ_k · f_ik` is built from. -/
 
-/-- **(Čech → Dolbeault backbone, sorry-free.)** The partition-of-unity *telescoping identity* — the
+/-- **(Čech → Dolbeault backbone, complete.)** The partition-of-unity *telescoping identity* — the
 algebraic heart of the Čech → Dolbeault coboundary construction. For any additive Čech `1`-cocycle
 `f` (`f_jk − f_ik + f_ij = 0`, the `cechDelta1 = 0` relation) and any weights `ρ` summing to `1`, the
 globalized functions `h_i := ∑_k ρ_k • f_ki` satisfy `h_j − h_i = f_ij` — i.e. the cocycle becomes a
@@ -56,7 +56,7 @@ theorem cechCoboundary_telescoping {ι : Type*} [Fintype ι] {M : Type*} [AddCom
     rw [← smul_sub]; congr 1; linear_combination (norm := module) -hcoc k i j
   simp_rw [hpt, ← Finset.sum_smul, hρ, one_smul]
 
-/-- **(Čech → Dolbeault backbone, sorry-free.)** A smooth partition of unity subordinate to the
+/-- **(Čech → Dolbeault backbone, complete.)** A smooth partition of unity subordinate to the
 finite cover `𝔘`, over the real-manifold structure `𝓘(ℝ, ℂ)`. The input for the globalization
 `h_i := ∑_k ρ_k · f_ik`. -/
 theorem exists_smoothPartitionOfUnity_subordinate :
@@ -614,7 +614,7 @@ a holomorphic Čech `1`-cocycle `f = {f_ij}` to the global `(0,1)`-form `ω` wit
 lift the germ-class cocycle to holomorphic reps, the PoU smooth globalization
 (`SmoothPartitionOfUnity.IsSubordinate.contMDiff_finsum_smul`), and glue the local `∂̄η_i` (which agree
 on overlaps, `cechCoboundary_telescoping`) into a global section (gluedFun-for-forms). Plan:
-`docs/dolbeault_comparison_inverse_plan.md`. -/
+-/
 noncomputable def cechToDolbeaultForm (𝔇 : ChartDiskCover X) :
     ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) →ₗ[ℝ] ↥(OneFormsZeroOne X) where
   toFun f := ∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι,
@@ -726,7 +726,7 @@ theorem cechToDolbeaultForm_coboundary_le (𝔇 : ChartDiskCover X) :
   exact (telescope_sum (fun j => rhoC 𝔇 j x) (fun k => holoFn (hs k) x)
     (fun k => dbarRho 𝔇 k x) (sum_rhoC_apply 𝔇 x) (sum_dbarRho_apply 𝔇 x)).symm
 
-/-- **Čech → Dolbeault.** The `ℝ`-linear inverse `H¹(X, 𝒪) → H^{0,1}(X)`. Assembled **sorry-free** from
+/-- **Čech → Dolbeault.** The `ℝ`-linear inverse `H¹(X, 𝒪) → H^{0,1}(X)`. Assembled **completely** from
 the analytic glued-form operator `cechToDolbeaultForm` and its well-definedness
 `cechToDolbeaultForm_coboundary_le` via `Submodule.liftQ` through the Čech quotient `Z¹/B¹` (scalar
 `ℂ → ℝ`). The overall **minus sign** is the boundary-map sign convention (`(δc)(i,j) = c_j − c_i` in

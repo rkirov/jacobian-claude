@@ -3,7 +3,7 @@
   disk-acyclicity atom `H¹(disk, 𝒪) = 0`).
 
   `CechDiskAcyclic.lean` reduces the germ-level atom `IsDiskAcyclic 𝔙 D` (every `𝒪_D`-cocycle is a
-  coboundary) sorry-free to the function-level interface predicate `FunctionDiskAcyclic 𝔙 D`, via
+  coboundary) to the function-level interface predicate `FunctionDiskAcyclic 𝔙 D`, via
   `isDiskAcyclic_of_funcLevel` + `cechH1_subsingleton_of_isDiskAcyclic`.  The remaining honest
   analytic obligation is to PRODUCE `FunctionDiskAcyclic 𝔙 0` for a chart-disk cover.  This file does
   the two steps the `CechDiskAcyclic`/`CechRefinementLeray` obstruction map names.
@@ -26,7 +26,7 @@
   `∂̄`-of-finite-sum crank (`dbar_fun_sum`, from `HasFDerivAt.fun_sum`) drive it; `ballSplit_two` is
   the 2-set base.
 
-  NO `sorry`: everything not sorry-free is a hypothesis predicate or written prose, never a `sorry`.
+  No gaps: everything not yet closed is a hypothesis predicate or written prose, never a gap tactic.
 -/
 import Jacobians.Dolbeault.CechDiskAcyclic
 import Jacobians.Dolbeault.HoloRep
@@ -193,14 +193,14 @@ end Jacobians.Dolbeault
 
 /-! ## The exact remaining obstruction (discharging `FunctionDiskAcyclic 𝔙 0` for a chart-disk cover)
 
-WHAT IS DELIVERED HERE (all sorry-free; axiom-clean `[propext, Classical.choice, Quot.sound]`):
+WHAT IS DELIVERED HERE (all complete; axiom-clean `[propext, Classical.choice, Quot.sound]`):
 
   * **STEP B — the chart-transport bridge** (the singular blocker named by the `CechDiskAcyclic` /
     `CechRefinementLeray` obstruction map).  `chartHoloRep` / `chartHoloRep_analyticAt` /
     `chartHoloRep_dbar_eq_zero`: for `g ∈ OmegaDGerm 0 W`, the chart-image analytic representative is
     `AnalyticAt` and has `DbarDisk.dbar = 0` at the chart centre — the holomorphy/∂̄ direction of the
     `↥W ↔ ℂ`-chart dictionary the repo had only for ORDER (`CechH0.ordU_val_eq_orderW`).  The analytic
-    representative `holoFn` + its readback `toGerm_holoFn` are re-derived sorry-free from the
+    representative `holoFn` + its readback `toGerm_holoFn` are re-derived from the
     `MeromorphicNFRepair`/`MeromorphicLiouville` machinery (the `DolbeaultComparisonInverse` original
     is NOT imported: its `Jacobians.Dolbeault.dbar_add` clashes with `CechDiskAcyclic`'s).
   * **STEP C — the function-level finite-cover ball Čech split** (the analytic core, `H¹(ball,𝒪)=0` on
@@ -245,10 +245,10 @@ produce, for a chart-disk cover `𝔙` whose sets pull back through a SINGLE cha
     honest, hence codiscrete).  Yields `FunctionDiskAcyclic 𝔙 0`, and via
     `isDiskAcyclic_of_funcLevel` + `cechH1_subsingleton_of_isDiskAcyclic`, germ-level `H¹(disk,𝒪)=0`.
 
-With STEP B and the `n`-set ball split (`ballSplit_pou` / `ballSplit_glued`) sorry-free here, the ONLY
+With STEP B and the `n`-set ball split (`ballSplit_pou` / `ballSplit_glued`) complete here, the ONLY
 remaining gap is STEP C.2's PoU `C^∞`-globalization of the cocycle (OBSTRUCTION 3) — the standard
 Forster §15 partition-of-unity argument, whose `C^∞` support bookkeeping is exactly the ~400-LoC
 `primFn`/`cechTerm` machinery of `DolbeaultComparisonInverse` (un-importable here only because of the
-`dbar_add` name clash, NOT because the math is unavailable).  It is left as written prose, NOT a
-`sorry`.
+`dbar_add` name clash, NOT because the math is unavailable).  It is left as written prose, not a
+gap tactic.
 -/

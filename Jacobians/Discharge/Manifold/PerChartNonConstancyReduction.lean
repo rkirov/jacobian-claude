@@ -41,7 +41,7 @@ preconnectedness, no analyticity of any kind in the input). Producing such
 a witness from the global `¬ IsConstantMap f` is unchanged content, the
 same parameter-input as in ZZ34.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

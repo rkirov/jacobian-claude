@@ -44,7 +44,7 @@ The multiplicity is the *genuine* intrinsic local degree `localDeg` (the §17.9 
 multiplicity, the one `exists_properMapDegree` is built from), **not** an ad-hoc number.  The geometric
 value `F = holoRepr ∘ chart.symm` is the genuine limit-repair value of the cover (its value fibre is the
 sphere fibre, `holoRepr_pullback_eventuallyEq_toFun`), so the order is the genuine ramification index.
-No false/junk field; no custom axiom; no sorry.
+No false/junk field; no custom axiom; no gaps.
 
 ## References
 

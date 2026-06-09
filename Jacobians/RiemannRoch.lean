@@ -2,14 +2,14 @@
   Riemann–Roch INTERFACE (the meet-in-the-middle).
 
   Goal: reduce the headline consumer `exists_singleSimplePole_of_genus_zero` to ONE genuine
-  classical input — Riemann–Roch — by PROVING every step in between (no typeclass/sorry
+  classical input — Riemann–Roch — by PROVING every step in between (no typeclass
   relocation). When the Dolbeault→Serre climb (G2–G4) discharges that single input, the
   headline theorem falls out.
 
   PROVEN (axiom-clean): the ℂ-module on `MeromorphicFunction X` (so `L(D)` can be a
   `Submodule ℂ`); `linearSystem D` as a `Submodule` + `lDim`.
 
-  ISOLATED INPUTS (the genuine wall — the only `sorry`s here):
+  ISOLATED INPUTS (the genuine wall — the only remaining gaps here):
     • `exists_riemannRoch_divisor` — a canonical divisor `K` with `l(D)−l(K−D)=deg D+1−g`
       (Forster 16.9; ⟸ Dolbeault/Serre, absent from Mathlib).
     • `MeromorphicFunction.deg_div` — every principal divisor has degree 0 (residue theorem).
@@ -42,14 +42,15 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-- **Riemann–Roch** (Forster Thm 16.9, Serre-dual form): a canonical divisor `K` with
 `l(D) − l(K−D) = deg D + 1 − g` for every `D`.
 
-**Now CONNECTED to its proof** (it was previously a standalone `sorry` duplicating, but disconnected
-from, the ladder that proves it — the `CechSection → RiemannRoch` import cycle, broken by extracting
-`LinearSystem`). It is the PROVEN ladder composition `DolbeaultLadder.riemannRoch_equality_of_ladder`
+**Now CONNECTED to its proof** (it was previously a standalone unproved obligation duplicating, but
+disconnected from, the ladder that proves it — the `CechSection → RiemannRoch` import cycle, broken
+by extracting `LinearSystem`). It is the PROVEN ladder composition
+`DolbeaultLadder.riemannRoch_equality_of_ladder`
 (cohomological RR + the `h⁰=l` bridge + Serre at `0`/general), instantiated at a Leray cover supplied
 by `LerayCoverExists.exists_lerayCover`. So discharging this is now exactly: the ladder leaves
 (`arithmeticGenus_eq_genus`, `serre_h1_eq`, `cohomological_riemannRoch`/`exists_skyscraperLES`,
 `h0Dim_eq_lDim`/`cechRestrictL_surjective`, finiteness) **plus** the one good-cover geometric input
-`hOverlaps` below — no separate opaque RR `sorry`.
+`hOverlaps` below — no separate opaque RR obligation.
 
 The Leray cover is supplied **UNCONDITIONALLY** by `exists_lerayCover` (STEP 2a, done): `IsLeray` was
 weakened to its first conjunct alone (acyclic SETS), which for `H¹` is all Cartan's comparison
@@ -71,7 +72,7 @@ via the **degree route**: `deg (div f) = zerosCount f − polesCount f` (`deg_di
 and both counts equal a common proper-map degree `d` (`ProperMapDegreeSheets.exists_properMapDegree_proven`,
 the §17.9 conservation-of-number construction — now axiom-clean), so the difference is `0`. The RR
 derivations below consume this `deg_div`. (The old standalone `DegDivResidue.exists_properMapDegree`
-sorry is now superseded by this proven route and no longer on any critical path.) -/
+that approach is now superseded by this proven route and no longer on any critical path.) -/
 theorem MeromorphicFunction.deg_div (f : MeromorphicFunction X) :
     Divisor.deg X f.div = 0 := by
   obtain ⟨d, hz, hp⟩ := Jacobians.ProperMapDegreeSheets.exists_properMapDegree_proven f

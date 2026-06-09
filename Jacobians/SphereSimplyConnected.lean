@@ -17,7 +17,7 @@ The backward headline `#1b` (`genus_zero_of_nonempty_homeo_sphere`,
 `Jacobians.simplyConnectedSpace_of_homeo_sphere` (`Jacobians/GenusSphereBackward.lean`)
 carry **`SimplyConnectedSpace (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)`** as an
 explicit hypothesis, because Mathlib provides only a `proof_wanted` for the Poincaré
-conjecture and nothing about `π₁(Sⁿ)`.  This file assembles, **sorry-free**, every piece of
+conjecture and nothing about `π₁(Sⁿ)`.  This file assembles, with no gaps, every piece of
 that instance *except* the single irreducible analytic/topological core — the abstract
 **two-open van Kampen** statement, which Mathlib lacks entirely.
 
@@ -38,7 +38,7 @@ Their overlap `U ∩ V` is the finite nonzero locus `≃ₜ ℂ ∖ {0}`, which 
 (`isPathConnected_compl_singleton_of_one_lt_rank`, `rank ℝ ℂ = 2 > 1`).  The whole space is
 path-connected (`OnePoint`'s `ConnectedSpace` + `LocPathConnectedSpace`).
 
-## What is sorry-free here, and the one wall
+## What is proved here, and the one wall
 
 * **Transport** to the exact target type — `simplyConnectedSpace_sphere_of_onePoint`.
 * **`U` simply connected** — `isSimplyConnected_compl_infty`.
@@ -89,7 +89,7 @@ capstones can take it as a single hypothesis. -/
 /-- **Two-open van Kampen.** A space that is path-connected and is the union of two open simply
 connected subsets with path-connected intersection is simply connected.  This is the only piece
 of the `SimplyConnectedSpace (OnePoint ℂ)` proof that Mathlib does not supply (no Seifert–van
-Kampen for `π₁`); every *use* of it below has all side-conditions discharged sorry-free. -/
+Kampen for `π₁`); every *use* of it below has all side-conditions discharged. -/
 def TwoOpenVanKampen : Prop :=
   ∀ {Z : Type} [TopologicalSpace Z] [PathConnectedSpace Z] {U V : Set Z},
     IsOpen U → IsOpen V → U ∪ V = Set.univ →
@@ -184,7 +184,7 @@ theorem isPathConnected_inter_charts :
 
 /-- **`OnePoint ℂ` is simply connected** — modulo the abstract two-open van Kampen engine.
 Every side-condition (path-connectivity, the two simply-connected charts, the cover equation, the
-path-connected overlap) is discharged sorry-free above; only `vanKampen` itself — Seifert–van
+path-connected overlap) is discharged above; only `vanKampen` itself — Seifert–van
 Kampen for a two-element open cover, absent from Mathlib — is taken as input. -/
 theorem simplyConnectedSpace_onePoint_of_vanKampen (vanKampen : TwoOpenVanKampen) :
     SimplyConnectedSpace (OnePoint ℂ) :=

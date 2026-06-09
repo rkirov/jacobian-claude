@@ -72,7 +72,7 @@ former carries the open-neighborhood data that has to be turned into
 constancy. Once the residual closedness is supplied, the connected-
 clopen step is plain topology with no chart-coordinate manipulation.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

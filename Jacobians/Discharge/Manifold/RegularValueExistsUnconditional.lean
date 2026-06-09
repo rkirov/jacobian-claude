@@ -26,7 +26,7 @@ The composition is the entire content of this file. There is no further
 analytic obligation: the regular-value form follows from the fibre-finiteness
 form by a one-line "pick any `y : Y`" argument.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

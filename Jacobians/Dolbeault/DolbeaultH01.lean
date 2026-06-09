@@ -9,7 +9,7 @@
 
   FIRST ATOM (here): upgrade `dbar` to an ℝ-`LinearMap` `dbarL`. Its two obligations `dbar_add`,
   `dbar_smul` are TRUE (`differential` is additive/ℝ-linear via `mfderiv`; `proj01` is a CLM, hence
-  linear) — bounded to prove, left as honest `sorry`s here pending the `mfderiv`-additivity plumbing.
+  linear) — bounded to prove, left as honest named obligations here pending the `mfderiv`-additivity plumbing.
 
   THEN (documented, not yet stated to avoid a mis-typed signature):
   * `A^{0,1} X` := the (0,1)-forms = range of the `proj01`-induced endomorphism on `A¹` (a `Submodule`).

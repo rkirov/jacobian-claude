@@ -49,7 +49,7 @@ genuine intrinsic `localDeg` (the §17.9 conservation-of-number multiplicity, th
 `exists_properMapDegree` is built from), never ad-hoc.  No `hD_mem` (no all-poles assumption — the #17
 fix).  The cluster data / topology family is the SAME genuine §5/§4 content the capstone consumes; this
 file constructs the real-cover `D`/slit and isolates the per-slit topology as `RealCenterClusterFamily`.
-No custom axiom; no sorry on a false statement; no false/junk/circular field.
+No custom axiom; no unproved obligation on a false statement; no false/junk/circular field.
 
 ## References
 

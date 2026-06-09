@@ -41,7 +41,7 @@ The §5 sections are genuine (`exists_clusterSplit_at_fibrePoint`).  The shrunk 
 Slit values regular (off-branch).  `D` = the whole fibre (#17).  The `Rem` descent is the genuine
 symmetric sum.  `hanalytic`/`hbnd` are the proven canonical-selection machinery
 (`hreg_canonical_at_goodValue_sound` / `hbnd_canonical_sound_full`), `pp` from
-`exists_principalPart_meromorphicAt`, `hmult = rfl`.  No custom axiom, no sorry on a false statement, no
+`exists_principalPart_meromorphicAt`, `hmult = rfl`.  No custom axiom, no unproved obligation on a false statement, no
 false/junk/circular field.
 
 ## References

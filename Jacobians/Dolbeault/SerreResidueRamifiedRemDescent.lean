@@ -40,7 +40,7 @@ per-preimage cluster data to those mechanical residuals.
 
 `Rem := G(· − c)` is the genuine symmetric-function descent (single-valued via the roots of unity).  The
 `hRem_slit` identity holds on `S` precisely because each `w₀ z` (`z ∈ S`) lands in the descent
-neighbourhood (the shrunk-slit smallness `hsmall`).  No custom axiom, no `sorry`, no false/junk/circular
+neighbourhood (the shrunk-slit smallness `hsmall`).  No custom axiom, no gaps, no false/junk/circular
 field.  `S` is an arbitrary slit (the shrunk one downstream); `D` is the whole fibre (#17).
 
 ## References

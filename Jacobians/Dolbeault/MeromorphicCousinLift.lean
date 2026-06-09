@@ -35,7 +35,7 @@ Leray cover):
   (`holoOff`/`iso`/`formHoloDiff`/`diffMem`) and the *exact* cochain match
   `[gᵢ − gⱼ] = ξᵢⱼ`.  This is the meromorphic-Cousin analogue of `CechDiskAcyclic.FunctionDiskAcyclic`
   (the honest analytic interface, in the "split the cocycle" shape).
-* `CousinSplitData.toCoverMLLift` / `connectingCocycle_eq` / `connectingClass_eq` — the **sorry-free
+* `CousinSplitData.toCoverMLLift` / `connectingCocycle_eq` / `connectingClass_eq` — the **complete
   germ ↔ function assembly**: the split data assembles to a `CoverMLLift` whose connecting cocycle is
   *exactly* `ξ`.
 * `liftField_of_cousinSplit` / `MeromorphicCousinSolutions.ofSplit` — the **reduction**: a
@@ -53,14 +53,14 @@ Leray cover):
 The remaining genuinely-greenfield input is the per-cocycle `CousinSplitData` (`CousinSplittable`): the
 principal-part splitting at the `K`-points + the normal-form / `coeffAt ω₀`-form bookkeeping for the
 form-side fields, on top of the `(A)` engine.  Isolated as a clean predicate, NEVER faked with a
-`sorry` on a false statement (the honest authorized fallback).
+an explicit hypothesis, not a gap (the honest authorized fallback).
 
 ## Soundness
 
 `H¹(X, ℳ) = 0` is a TRUE standard theorem (Forster §15).  The assembled lift `gᵢ` is genuinely
 *meromorphic* with poles ≤ `K` (the `iso`/`holoOff`/`formHoloDiff` fields are carried honestly and read
-the genuine Laurent residue via `μ.res`), NOT smooth-PoU junk.  No custom axiom, no sorry on a false
-statement, no junk/circular field.  No route through Riemann–Roch (verify `RiemannRoch` absent from the
+the genuine Laurent residue via `μ.res`), NOT smooth-PoU junk.  No custom axiom, no unproved obligations on false
+statements, no junk/circular field.  No route through Riemann–Roch (verify `RiemannRoch` absent from the
 import closure).
 
 References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §15 (`H¹(X, ℳ) = 0`);
@@ -91,7 +91,7 @@ fixed cocycle `ξ`: per-patch meromorphic principal parts `g i : X → ℂ` carr
 
 It is the meromorphic-Cousin analogue of `CechDiskAcyclic.FunctionDiskAcyclic` — a clean predicate in
 the "split the cocycle into a 0-cochain difference" shape, so the assembly below (`toCoverMLLift`,
-`connectingCocycle_eq`) is sorry-free.  Producing it is the genuine §15 analytic obligation
+`connectingCocycle_eq`) is complete.  Producing it is the genuine §15 analytic obligation
 (principal-part splitting + holomorphic acyclicity `IsDiskAcyclic 𝔘 0`), isolated here. -/
 structure CousinSplitData (𝔘 : FiniteCover X) (ω₀ : HolomorphicOneForms X) (K : Divisor X)
     (ξ : ↥(𝔘.toFiniteFamily.cocycles1 K)) where

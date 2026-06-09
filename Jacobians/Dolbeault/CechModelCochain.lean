@@ -1,7 +1,7 @@
 /-
   Čech finiteness — the germ → `BddHol` cochain map (forward direction of `cechH1 ≃ supH1`).
 
-  Part of discharging `exists_cechModel` (Forster 14.9); see `docs/cech_finiteness_research.md`.
+  Part of discharging `exists_cechModel` (Forster 14.9).
   The comparison `cechH1 𝔘 D ≃ supH1` translates germ-class `𝒪_D` cochains (the `cechH1`
   representation) into `BddHol` cochains on chart-images (the `supH1`/Montel representation). This file
   builds its **forward direction at the section/cochain level**: from a germ-class holomorphic section

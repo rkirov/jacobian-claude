@@ -59,7 +59,7 @@ downstream.
   records the chart pullback, its analyticity at the chart image, and
   its order data.
 
-No `sorry`, no `axiom`. No signature changes outside this new file.
+No gaps, no `axiom`. No signature changes outside this new file.
 -/
 
 @[expose] public section

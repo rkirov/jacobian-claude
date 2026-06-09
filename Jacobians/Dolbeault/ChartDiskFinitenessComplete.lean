@@ -1,18 +1,18 @@
 /-
-  Čech `H¹` finiteness on a CHART-DISK cover — the COMPLETE (sorry-free target) version.
+  Čech `H¹` finiteness on a CHART-DISK cover — the COMPLETE version.
 
   `ChartDiskFiniteness.lean` proves the analytic heart — the Forster 14.6 cover-level ∂̄-lift
   (`ChartDiskCover.forster146_lift`) — and the relatively-compact covering shrinking + the
   `HolomorphicDiskOverlapData` (`𝔇.overlapData`, with compact `ρ` for free, Montel).  It leaves ONE
-  honest `sorry` (`ChartDiskCover.finiteDimensional_cechH1_chartDisk`): the structural δ-complex
+  honest remaining gap (`ChartDiskCover.finiteDimensional_cechH1_chartDisk`): the structural δ-complex
   `HolomorphicCoboundaries 𝔇.overlapData` together with a comparison `cechH1 𝔇 0 ≃ₗ supH1`.
 
-  This file builds the δ-complex + comparison for that `sorry`, supplying the two pieces for the proven
+  This file builds the δ-complex + comparison for that gap, supplying the two pieces for the proven
   reduction `ChartDiskCover.finiteDimensional_cechH1_of_holomorphicModel`:
 
     * **(A) the δ-complex** `HolomorphicCoboundaries 𝔇.overlapData` (`holomorphicCoboundaries`) —
       mirroring `CechModelHolomorphicDelta.lean` (the MONTEL cover) but for `𝔇.overlapData`, the
-      chart-disk ball-overlaps `𝔇.Uov`/`𝔇.Wov`.  ALL STRUCTURAL FIELDS are proven sorry-free
+      chart-disk ball-overlaps `𝔇.Uov`/`𝔇.Wov`.  ALL STRUCTURAL FIELDS are proven complete
       (`δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm`).
 
     * **(B) the comparison** `comparisonMap : cechH1 𝔇 0 →ₗ[ℂ] supH1` — PROVEN SORRY-FREE, AND
@@ -29,7 +29,7 @@
   PoU) is built directly; the PROVEN per-disk solve `dolbeaultToCechCocycle ω̂` gives a holomorphic
   cover cocycle on the FULL overlaps (`coverCochain`); the corrector `η_a := diskVal a ω̂ − G_a` is
   holomorphic (`etaCochain`); and `s = δ⁰η + ρx` holds (`leray_identity`).  The whole file — including
-  `holomorphicCoboundaries` and `finiteDimensional_cechH1_chartDisk_complete` — is now SORRY-FREE
+  `holomorphicCoboundaries` and `finiteDimensional_cechH1_chartDisk_complete` — is now COMPLETE
   (axioms: `propext, Classical.choice, Quot.sound`).
 
   Conventions follow `ChartDiskFiniteness.lean` / `CechModelHolomorphicDelta.lean`.  The lift reuses the
@@ -1833,7 +1833,7 @@ theorem finiteDimensional_cechH1_of_holomorphicModel_inj
 /-- **`H¹` finiteness on a chart-disk cover (Forster 14.9) — the COMPLETE statement.**
 `FiniteDimensional ℂ (cechH1 𝔇 0)` for a `ChartDiskCover 𝔇`.
 
-This restates `ChartDiskCover.finiteDimensional_cechH1_chartDisk` (which has an honest `sorry` at
+This restates `ChartDiskCover.finiteDimensional_cechH1_chartDisk` (which has an honest remaining gap at
 `ChartDiskFiniteness.lean` for the δ-complex + comparison) with the δ-complex + comparison BUILT
 here: the model `𝔇.holomorphicCoboundaries` (δ-data of §A; the `leray` field discharged in §A2-*) and
 the injection `𝔇.comparisonMap` (forward germ→`BddHol` cochain map of §B).

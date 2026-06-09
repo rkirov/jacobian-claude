@@ -19,7 +19,7 @@ where `Res_a(α) = formFnResidue ω₀ g a` is the local Laurent residue read in
 `a` (`Jacobians.Dolbeault.formFnResidue`) and `residueSum` (`Jacobians.Dolbeault.MittagLeffler`) is
 the finite sum over the (finitely many) poles.
 
-This is **Gate A** of the Serre §17 plan (`docs/serre_dualitydata_plan_2026-06-08.md`): the
+This is **Gate A** of the Serre §17 plan: the
 well-definedness of the residue functional `Res : H¹(X, Ω) → ℂ` on cohomology classes (Forster 17.3)
 rests on exactly this — a globally-defined (coboundary) meromorphic 1-form has total residue `0`. It
 is the **general higher-order-pole** statement, strictly more than `deg_div` (which is the simple-pole
@@ -48,7 +48,7 @@ both in `Jacobians.ResidueChangeOfVariables` (the `'`-forms, no `ResidueChangeOf
 hypothesis), built on the `ℂℙ¹` residue theorem `LaurentForm.finiteResidueSum_add_resAtInfty_eq_zero`
 (`Jacobians.TraceResidue`).
 
-## What this file builds (all sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file builds (all complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
 
 This file is the **manifold trace assembly** — the generalization of `Jacobians.ResidueTheoremX` (the
 `df/f`/`deg_div` simple-pole assembly) to a general meromorphic 1-form, reusing the now-general
@@ -65,7 +65,7 @@ feeders.  It mirrors that file field-for-field:
   `infty_eq` / `finite_eq`);
 * **the residue theorem** (`residueSum_eq_zero_of_formResidueTrace`,
   `formFnResidue_total_eq_zero_of_formResidueTrace`): given a `FormResidueTrace ω₀ g`, the total
-  residue vanishes — *sorry-free* from the general trace combine + the regrouping;
+  residue vanishes — *completely* from the general trace combine + the regrouping;
 * **non-vacuity** (`formResidueTrace_of_holomorphic`): a `FormResidueTrace ω₀ g` exists when `α = ω₀·g`
   is globally holomorphic (the empty `LaurentForm`, no poles), confirming the structure's obligations
   are *true and satisfiable*, not a disguised `False`.
@@ -79,7 +79,7 @@ bookkeeping `hL32`, and the two aggregate fibre-residue ↔ residue identificati
 `infty_eq` / `finite_eq`.  This is the §17-level trace assembly; it is the same fibre/sheet/branched-
 cover apparatus as the (still-open) `exists_properMapDegree` (`Jacobians.DegDivResidue`), and is
 isolated into the `FormResidueTrace` structure (each field a *true, non-vacuous* statement), with
-everything downstream proved sorry-free.  See the report accompanying this commit and §4.2 (A-ii) of
+everything downstream proved completely.  See the report accompanying this commit and §4.2 (A-ii) of
 the plan.
 
 ## References
@@ -158,7 +158,7 @@ bridge — each fibre's residue with the fibre's residue sum `∑_{a ∈ F⁻¹y
 
 We package this output as the structure `FormResidueTrace ω₀ g` below; each field is a *true*
 statement (it is exactly what the §VIII.3 trace assembly produces) and **not** vacuous.  Given a
-`FormResidueTrace ω₀ g`, the residue theorem `∑_{a ∈ poles} Res_a(α) = 0` follows *sorry-free* from
+`FormResidueTrace ω₀ g`, the residue theorem `∑_{a ∈ poles} Res_a(α) = 0` follows *completely* from
 the general trace combine (`finiteResidueSum_trace_eq_zero_of_fibres'`) and the fibrewise regrouping
 (`residueSum_eq_infty_add_finite`), as proved in `residueSum_eq_zero_of_formResidueTrace`.
 
@@ -214,7 +214,7 @@ structure FormResidueTrace (ω₀ : HolomorphicOneForms X) (g : X → ℂ) where
 
 > `∑_{a ∈ poles} Res_a(α) = 0`.
 
-*Proof (sorry-free).*  The **general** trace combine `finiteResidueSum_trace_eq_zero_of_fibres'`
+*Proof (complete).*  The **general** trace combine `finiteResidueSum_trace_eq_zero_of_fibres'`
 (now unconditional, the `ResidueChangeOfVariables` atom being discharged) gives
 `(∑_{centers} Res_b(Tr_F α)) + Res_∞(Tr_F α) = 0`.  By `finite_eq` and `infty_eq` the two summands
 are the finite-fibre and `∞`-fibre residue sums; by `residueSum_eq_infty_add_finite` their sum is the

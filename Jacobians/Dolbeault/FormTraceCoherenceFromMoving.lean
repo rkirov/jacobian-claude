@@ -67,7 +67,6 @@ plus the cover's `∞`-adaptedness.
 * Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3 (the trace `Tr` is single-valued
   **by symmetry**, Lemma 3.2; partial fractions / Liouville on `ℂℙ¹`).
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §4.22 (local sheet systems), §17.
-* `docs/gate_a_cover_genericity_textbook_2026-06-08.md` (the full-fibre route).
 -/
 
 noncomputable section

@@ -54,7 +54,7 @@ evaluation occurs.
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §4.22 (local sheet systems), §17.
 * `Jacobians/Dolbeault/FormTraceRegularValueDatum.lean` (the symmetric lever
   `MovingCoherenceDatum.ofSphereSheetSystemCanon`).
-* `docs/gate_a_genus0_infty_vanishing_2026-06-09.md`.
+* Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.
 -/
 
 noncomputable section

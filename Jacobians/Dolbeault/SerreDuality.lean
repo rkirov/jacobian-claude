@@ -1,7 +1,7 @@
 /-
   Serre duality (Forster §17) — the PDE-free finite-dim core of the surjectivity step (§17.9).
 
-  This file de-risks the **formalizability litmus test** flagged in `docs/hodge_bridge_research.md`:
+  This file de-risks the **formalizability litmus test** for Forster's PDE-free §17 route:
   Forster's proof that `ι_D : H⁰(X, Ω_{-D}) → H¹(X, 𝒪_D)*` is surjective (the hard half of Serre
   duality) bottoms out in *pure finite-dimensional linear algebra* — no harmonic forms, no Weyl's
   lemma, no elliptic regularity.  Concretely (Forster 17.9, p. 138):
@@ -19,12 +19,11 @@
     * `serre_surjectivity_dim_core`           — the "for `n` sufficiently large" dimension count
       assembled on top of it, parametrized by the Riemann–Roch bounds as hypotheses.
 
-  **Status.** Both lemmas are sorry-free and depend only on Mathlib linear algebra.  This confirms the
+  **Status.** Both lemmas are complete and depend only on Mathlib linear algebra.  This confirms the
   PDE-free route's litmus test: §17.9 formalizes cleanly *given* the geometric inputs (17.4 the RR
   inequality, 17.6 injectivity, 17.7 the unwinding, 17.8 the `ψ`-action) and the cohomology objects
   `H¹(𝒪_{D_n})`, `H⁰(𝒪_{nP})`.  Building those objects and the maps `ι_D`, then *instantiating*
-  `serre_surjectivity_dim_core` with them, is the remaining (non-trivial but PDE-free) work — see
-  `docs/hodge_bridge_research.md` PHASE 0.
+  `serre_surjectivity_dim_core` with them, is the remaining (non-trivial but PDE-free) work.
 -/
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 import Mathlib.LinearAlgebra.Dual.Lemmas

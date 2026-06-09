@@ -27,7 +27,7 @@ This is the supplier feeding the `h_sheets` hypothesis of
 
 ## Anti-cheat
 
-* No `axiom`, no `sorry`.
+* No `axiom`, no gaps.
 * No signature changes to any pre-existing definition.
 * No new mathlib imports (transitively available via the two local imports).
 -/

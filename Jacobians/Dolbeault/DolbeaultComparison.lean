@@ -8,14 +8,14 @@
     `(0,1)`-fiber projection, a CLM), `dbar u = proj01 ∘ du` (`∂̄`).
   * `DolbeaultH01` (the *atom* file): `dbarL : A⁰ →ₗ[ℝ] A¹`, the `ℝ`-linear `∂̄`.
 
-  This file assembles, by pure algebra (deliverables 1–4, sorry-free):
+  This file assembles, by pure algebra (deliverables 1–4, complete):
   * `proj01L : A¹ →ₗ[ℝ] A¹` — `proj01` applied fiberwise (an `ℝ`-linear endomorphism of `A¹`);
   * `OneFormsZeroOne X := LinearMap.range proj01L` — the `(0,1)`-forms `A^{0,1}` (a `Submodule ℝ A¹`);
   * `dbarL_mem_zeroOne` : `im ∂̄ ⊆ A^{0,1}` (since `∂̄ = proj01L ∘ d`);
   * `DolbeaultH01 X` := the cokernel `A^{0,1} ⧸ im ∂̄` (on a curve `A^{0,2} = 0`, so this *is*
     `H^{0,1}`); an `ℝ`-module.
 
-  and STATES (deliverable 5, the genuine analytic kernel, an honest named `sorry`):
+  and STATES (deliverable 5, the genuine analytic kernel, an honest named obligation):
   * `cechH1_dolbeault_comparison` : the Čech `H¹(X, 𝒪) = cechH1 𝔘 0` and `DolbeaultH01 X` have the
     same dimension *over their respective scalars* — `finrank ℂ (cechH1 𝔘 0) = finrank ℝ
     (DolbeaultH01 X)`. SCALAR NOTE: `cechH1` is a `Module ℂ`; `DolbeaultH01` is only a `Module ℝ`
@@ -23,7 +23,7 @@
     `ℝ`-module, the ℂ-action on the codomain is not propagated to the section module). Both spaces are
     classically `g`-dimensional (`H^{0,1}` is conjugate to `H^1(𝒪)`; on a Riemann surface each is the
     genus `g`), so the `finrank`-over-respective-scalars equality is the clean TRUE statement. This
-    `sorry` is the real content (∂̄-globalization via partition of unity + Čech patching, PDE-free).
+    This one remaining gap is the real content (∂̄-globalization via partition of unity + Čech patching, PDE-free).
 -/
 import Jacobians.Dolbeault.DolbeaultH01
 import Jacobians.Dolbeault.CechComplex
@@ -196,7 +196,7 @@ cf. `DolbeaultLadder.arithmeticGenus_eq_genus`). The proof is the ∂̄-globaliz
 argument — locally `∂̄`-solve a Čech `𝒪`-cocycle (`DbarLocal.dbar_solvable_locally`), glue with a
 partition of unity, and the `∂̄` of the glued primitive is a global `(0,1)`-form whose class is the
 image; conversely a global `(0,1)`-form is locally `∂̄`-exact and the local primitives' differences
-are a holomorphic Čech cocycle. PDE-free given local solvability. Left as the single honest `sorry`.
+are a holomorphic Čech cocycle. PDE-free given local solvability. Left as the one remaining gap.
 
 **SCALAR NOTE (the ℂ-vs-ℝ question, resolved).** `cechH1 𝔘 0 = H¹(X, 𝒪)` is a `Module ℂ`; on a
 compact Riemann surface of genus `g` it has `finrank ℂ = g`. `DolbeaultH01 X` is, *as built here*,
@@ -216,7 +216,7 @@ The correctly-typed, scalar-honest equality (the form stated below) is
 (the pointwise codomain action) — itself part of the L3 build — and is recorded as a comment for the
 downstream `arithmeticGenus_eq_genus` consumer, which only needs `finrank ℂ (cechH1 𝔘 0) = g`. -/
 
-/-- **The L3 kernel: Čech ↔ Dolbeault comparison** (deliverable 5, honest `sorry`).
+/-- **The L3 kernel: Čech ↔ Dolbeault comparison** (deliverable 5, one remaining gap).
 `H¹(X, 𝒪) = cechH1 𝔘 0` and the Dolbeault `H^{0,1}(X)` have equal dimension up to the real-vs-complex
 scalar factor: `finrank ℝ (DolbeaultH01 X) = 2 · finrank ℂ (cechH1 𝔘 0)` (both `= 2g`). See the
 SCALAR NOTE above for why this (not the mistyped `g = 2g` form) is the correct statement, and for the

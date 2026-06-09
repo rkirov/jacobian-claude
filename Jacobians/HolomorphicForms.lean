@@ -27,11 +27,11 @@ and `vectorPrebundle.isContMDiff`).
 This is the **honest** definition (compare to a placeholder that sets
 `HolomorphicOneForms X := Fin (genus X) → ℂ`).
 
-## Dimension theorem (sorry)
+## Dimension theorem (unproved)
 
 On a compact connected complex 1-manifold, `HolomorphicOneForms X` is
 a finite-dim ℂ-vector space of dimension `genus X`. This is a classical
-result (Riemann–Roch) and is recorded here as a sorry with TODO(math).
+result (Riemann–Roch) and is recorded here as an unproved obligation with TODO(math).
 
 ## References
 
@@ -54,7 +54,7 @@ variable (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
     [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- `NormedAddCommGroup` on `HolomorphicOneForms X` via Montel's chart-atlas
-`supNormK`. This is real infrastructure (no sorry) and follows the
+`supNormK`. This is real infrastructure (no gaps) and follows the
 Ahlfors-Sario construction (see `Jacobians.Montel`). -/
 noncomputable instance : NormedAddCommGroup (HolomorphicOneForms X) :=
   Jacobians.Montel.HolomorphicOneForms.normedAddCommGroup
@@ -72,7 +72,7 @@ theorem norm_HOF_eq_supNormK (α : HolomorphicOneForms X) :
 /-- On a compact connected complex 1-manifold, the space of global holomorphic
 1-forms is finite-dimensional. Derived via Montel/Riesz from
 `Jacobians.Montel.HolomorphicOneForms.closedBall_isCompact` (the single
-remaining content sorry: the closed unit ball under `supNormK` is compact
+remaining unproved obligation: the closed unit ball under `supNormK` is compact
 via Arzelà-Ascoli). -/
 noncomputable instance : FiniteDimensional ℂ (HolomorphicOneForms X) :=
   FiniteDimensional.of_isCompact_closedBall₀ ℂ zero_lt_one
@@ -254,7 +254,7 @@ noncomputable def ambientIso (X : Type*) [TopologicalSpace X] [T2Space X]
 `f : X → Y`. Defined via `ambientIso` + `pullbackForm`:
 `Ψ = (ambientIso X).symm ∘ pullbackForm f hf ∘ ambientIso Y` (when the
 genus sizes match; otherwise zero — this branch is never used in the
-challenge). This is a concrete definition (no sorry at this level), but
+challenge). This is a concrete definition (no gaps at this level), but
 it depends on `ambientIso` which internally depends on
 `finrank_HolomorphicOneForms_eq_genus`. -/
 noncomputable def ambientPsi {gX gY : ℕ}

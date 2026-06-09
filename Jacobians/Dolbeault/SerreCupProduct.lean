@@ -25,7 +25,7 @@ mechanical, sound part of the §17.5 descent (`MGerm` is a `Filter.Germ` `CommRi
 multiplication and its ℂ-linearity are available, and germ restriction is a ring hom, so multiplying
 by `f` commutes with the Čech differential and preserves cocycles/coboundaries).
 
-## What is built here (sorry-free, axiom-clean)
+## What is built here (complete, axiom-clean)
 
 * `mulLeftG a` — left-multiplication of `MGerm U` by a fixed germ `a`, as an ℂ-linear map; and
   `globalGerm f U` — the germ on `↥U` of a *global* meromorphic function `f` (the function-side avatar
@@ -41,7 +41,7 @@ by `f` commutes with the Čech differential and preserves cocycles/coboundaries)
 
 The remaining §17.5 piece — the global residue `Res : 𝔘.cechH1 K → ℂ` (Forster 17.3, via the
 Mittag–Leffler connecting map, the genuinely-greenfield analytic descent) — is built separately; this
-file supplies its cup-product argument. See `docs/serre_17_build_plan.md`, `SerreResiduePairing.lean`.
+file supplies its cup-product argument. See `SerreResiduePairing.lean`.
 
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.4 (`ω₀· : 𝒪_K ≅ Ω`), §17.5 (pairing).
 -/

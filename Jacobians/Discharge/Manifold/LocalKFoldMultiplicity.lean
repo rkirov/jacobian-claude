@@ -58,13 +58,13 @@ roots-of-unity enumeration; both are unrouted at this pin.
 
 ## Status
 
-* `KthRootSubstitution` — definition. No `sorry`, no `axiom`.
+* `KthRootSubstitution` — definition. No `axiom`, no gaps.
 * `kthRootSubstitution_of_localMultiplicityOne` — `k = 1` bundle is
-  unconditional. No `sorry`.
+  unconditional. No gaps.
 * `localKFoldMultiplicity_preimage_card_of_substitution_one` — full
   ε–δ count for `k = 1` from the bundle, by deriving `g`-side analyticity
   + nonvanishing-derivative directly from the bundle and re-invoking
-  ZZ74 on `g` itself. No `sorry`.
+  ZZ74 on `g` itself. No gaps.
 * `analytic_kth_root_branch_exists_statement` — `Prop`-valued name for
   the missing-mathlib content, the only block on the general `k ≥ 2`
   step. No `axiom`; this is *only* a statement.

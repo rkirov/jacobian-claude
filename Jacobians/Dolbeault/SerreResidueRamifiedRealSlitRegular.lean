@@ -44,7 +44,7 @@ This file discharges the regular-value primitives:
 `localDeg = 1` is TRUE (not asserted).  The sheet system is the genuine `exists_sphereSheetSystem`
 off-branch datum; `hcoh` is the PROVEN `valueChartTrace_eq_sphereSheetFibreTrace` wired for the canonical
 selection (the eventual canonical-fibre conditions are the proven `canonicalFibreSelection_hΦinjReg`/
-`hΦrangeReg` + the sheet-system continuity).  No custom axiom; no sorry on a false statement; no
+`hΦrangeReg` + the sheet-system continuity).  No custom axiom; no unproved obligation on a false statement; no
 false/junk/circular field.
 
 ## References

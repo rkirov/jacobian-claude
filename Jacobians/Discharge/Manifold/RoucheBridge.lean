@@ -32,7 +32,7 @@ The disk argument-principle integral identity itself is proven, axiom-clean, in
 *count* `localMultiplicity_eq_order_punctured_statement` is the downstream
 consequence. Rather than re-derive the open-mapping "exactly `k` simple zeros"
 passage from the integral, we observe that the very same count is **already
-proven, sorry-free and axiom-clean**, by the k-th-root substitution route in
+proven, complete and axiom-clean**, by the k-th-root substitution route in
 `LocalKFoldMultiplicityFullyUnconditional.lean`
 (`localKFoldMultiplicity_preimage_card_fully_unconditional`): the substitution
 `z ↦ (z - x₀)·u(z)^{1/k}` puts a bijection between the `k`-fold preimage and the
@@ -47,7 +47,7 @@ defs are thereby turned from inert placeholders into proven facts.
 ## The manifold-level statement is misformalized
 
 The manifold-level `localMultiplicity_eq_localOrder_statement X` (target 2) is
-**false as stated** and cannot be discharged sorry-free. Its only hypotheses are
+**false as stated** and cannot be completely discharged. Its only hypotheses are
 `MMeromorphicOn 𝓘 f univ` and `∀ x, order ≠ ⊤`; the chart-pullback meromorphy
 constrains only the germ of `f` on the *punctured* neighborhood of `x`, leaving
 the value `f x` completely free (junk-value gap). But the statement centers its
@@ -67,15 +67,15 @@ land the **honest theorem**: the count under the value-normalization `f x = 0`.
 
 ## Status
 
-* `localMultiplicity_eq_order_punctured_statement_holds` — proven, no `sorry`
+* `localMultiplicity_eq_order_punctured_statement_holds` — proven, no gaps
   (target 1, planar Rouché count).
-* `argumentPrinciple_implies_rouche_statement_holds` — proven, no `sorry`
+* `argumentPrinciple_implies_rouche_statement_holds` — proven, no gaps
   (target 1, the named planar bridge).
-* `chartRepr_analytic_order_of_apply_eq_zero` — proven, no `sorry`
+* `chartRepr_analytic_order_of_apply_eq_zero` — proven, no gaps
   (target 2, ℂ-analytic core of the manifold count).
-* `kFold_count_radiusBounded` — proven, no `sorry`
+* `kFold_count_radiusBounded` — proven, no gaps
   (radius-bounded planar count, needed for the chart transport).
-* `localMultiplicity_eq_localOrder_count_of_apply_eq_zero` — proven, no `sorry`
+* `localMultiplicity_eq_localOrder_count_of_apply_eq_zero` — proven, no gaps
   (target 2, the honest manifold count under `f x = 0`; the chart-transport of the
   planar count).
 * `localMultiplicity_eq_localOrder_statement X` itself — NOT discharged: false as
@@ -180,7 +180,7 @@ at an order-`≥ 1` zero). For a pathological `f` with `f x ≠ 0` the count dro
 `0` for `w` near `f x`, so the statement is false. The honest theorem therefore
 carries `f x = 0` as a hypothesis (the continuity-compatible normalization).
 
-This section lands the **ℂ-analytic core** of that honest theorem, sorry-free:
+This section lands the **ℂ-analytic core** of that honest theorem, completely:
 under `f x = 0`, the chart representative `g := f ∘ chart⁻¹` is genuinely analytic
 at `c := chart x`, vanishes there, and has analytic order exactly
 `(localOrder I f x).natAbs`. From this, the planar Rouché count

@@ -31,7 +31,7 @@ So the descent's well-definedness `[δμ₁] = [δμ₂] ⟹ μ₁.res = μ₂.r
 descent on it, and reduce the wall to a single precise Cousin atom on `CoverMLLift`.  A genuine Cousin
 solution (the local-meromorphic lift of a cocycle) always has `holoOff`, so this is no loss.
 
-## What this file delivers (sorry-free, axiom-clean unless noted)
+## What this file delivers (complete, axiom-clean unless noted)
 
 * `CoverMLLift 𝔘 ω₀ K` — the `holoOff`-equipped lift; `toDistribution` forgets `holoOff`, `res`/
   `connectingCocycle`/`connectingClass` inherited.
@@ -405,7 +405,7 @@ end CoverMLLift
 
 We isolate the two genuinely-greenfield inputs the Serre residue functional needs into a single sound
 datum `MeromorphicCousinSolutions`, and build the **descent** — the full `CousinResidueData` (hence the
-entire Serre pairing, `pairing_injective`, `lDim_le_h1Dim`) — from it, sorry-free.
+entire Serre pairing, `pairing_injective`, `lDim_le_h1Dim`) — from it.
 
 The two inputs are exactly Forster §15 + §17.3:
 

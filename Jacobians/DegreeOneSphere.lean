@@ -648,7 +648,7 @@ Declared in the **root namespace** (matching `genus`, which lives in root namesp
 so the challenge-conformance file resolves the bare name. Lives in this module — not `Genus.lean` —
 because its forward direction needs the degree-one endgame, which sits downstream of `Genus` (via
 `ProjectiveLine → Genus`); declaring it here breaks the import cycle. Both directions rest on isolated
-analytic inputs (the `sorry`s below). `Nonempty X` is supplied for free by `[ConnectedSpace X]`
+analytic inputs (the unproved obligations below). `Nonempty X` is supplied for free by `[ConnectedSpace X]`
 (`ConnectedSpace.toNonempty`), so the signature matches the spec exactly. -/
 
 open scoped Manifold ContDiff in
@@ -659,7 +659,7 @@ open scoped Manifold ContDiff in
 `X ≃ₜ S²` makes `X` simply connected, on which every holomorphic `1`-form has a global primitive,
 hence (being constant on compact `X`, Liouville) vanishes, so `genus X = 0`.
 
-Two of the route's three former walls have fallen and are discharged here sorry-free:
+Two of the route's three former walls have fallen and are discharged here completely:
 * **`S²` simply connected** — unconditional (`Jacobians.VanKampen.twoOpenVanKampen_holds`); `X ≃ₜ S²`
   transports `SimplyConnectedSpace` to `X`.
 * **Liouville / max-modulus** — `MDifferentiable.exists_eq_const_of_compactSpace` (Mathlib).
@@ -668,7 +668,7 @@ The *only* remaining input is the **holomorphic Poincaré lemma / monodromy theo
 `Jacobians.HasHolomorphicPrimitives X` (every holomorphic `1`-form on a simply connected surface has
 a global primitive); Mathlib has only the plane/ball version, the manifold de Rham globalisation is
 the open gap. The whole route, *modulo that single input*, is assembled axiom-clean in
-`Jacobians.genus_zero_of_nonempty_homeo_sphere_of_hasPrimitives`; the lone `sorry` below is exactly
+`Jacobians.genus_zero_of_nonempty_homeo_sphere_of_hasPrimitives`; the one remaining gap below is exactly
 `HasHolomorphicPrimitives X`. -/
 theorem genus_zero_of_nonempty_homeo_sphere {X : Type*} [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]

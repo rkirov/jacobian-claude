@@ -59,7 +59,7 @@ and discharges finiteness for them via the general
 * `criticalSet_finite_general` — finiteness of the critical set.
 * `criticalValues_finite_general` — finiteness of the critical values.
 
-No `sorry`, no `axiom`, no signature changes outside this file. -/
+No gaps, no `axiom`, no signature changes outside this file. -/
 
 @[expose] public section
 

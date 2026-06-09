@@ -35,7 +35,7 @@ off-centre/∞ machinery, the regular-value primitives, the genericity) is PROVE
 `Sset` is a slit accumulating at `c`, off the branch locus (so the regular-value primitives apply at every
 `z ∈ Sset`).  The §5 section facts are the genuine normal-form geometry — the cluster sections are
 genuine local sections of `f.holoRepr` (the §5 atom `exists_clusterSplit_at_fibrePoint`), distinct at
-distinct sheets/preimages (the primitive root + T2 separation).  No custom axiom; no sorry on a false
+distinct sheets/preimages (the primitive root + T2 separation).  No custom axiom; no unproved obligation on a false
 statement; no false/junk/circular field.  The genuine non-vacuity is the standard slit-near-`c` regime,
 where the §5 normal form holds for the cluster arguments `ζʲ·w₀ z → 0`.
 

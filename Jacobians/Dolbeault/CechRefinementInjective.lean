@@ -17,14 +17,14 @@
   gluing reuses `CechH0`'s per-point meromorphic-normal-form construction verbatim — that construction
   is entirely chart-local, so it transports from `X` to the open region `W` with no compactness input.
 
-  ## What is proven (sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`)
+  ## What is proven (complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
 
     * `IsRefinement.refinementDescend_unconditional` — Forster 12.4: `RefinementDescend hr D` for ANY
       refinement `hr : IsRefinement 𝔙 𝔘 r`.
     * `IsRefinement.refineH1_injective_unconditional` — hence `refineH1 hr` is injective (immediate from
       the existing `refineH1_injective_iff_descend`).
 
-  NO `sorry` in this file.
+  No gaps in this file.
 -/
 import Jacobians.Dolbeault.CechRefinementLeray
 import Jacobians.Dolbeault.CechH0

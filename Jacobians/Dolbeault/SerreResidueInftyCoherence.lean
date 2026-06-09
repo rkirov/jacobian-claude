@@ -53,7 +53,7 @@ pole set; if *every* pole is simple, *no* pole is critical, so `∞ ∉ branchLo
   `chartInfty ∘ F ∘ chart⁻¹ =ᶠ N⁻¹`, order `−orderAtPoint`).
 * `Jacobians/Discharge/Manifold/CriticalSetDerivBridge.lean` (`injOn_nhds_of_deriv_ne_zero`,
   `deriv_ne_zero_of_analyticOrderAt_eq_one`).
-* `docs/gate_a_genus0_infty_vanishing_2026-06-09.md`, `human_input.md` (the construction map).
+* Forster, *Lectures on Riemann Surfaces* (GTM 81), §4.22, §17.
 -/
 
 noncomputable section

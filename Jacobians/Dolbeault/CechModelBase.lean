@@ -36,7 +36,7 @@
   abstract `(δ, ρ)` — a *compact* `ρ` (which `rhoRaw_compact` proves ours is) cannot surject onto an
   infinite-dimensional cocycle space. Surjectivity holds only for a genuine *acyclic* Leray model.
   We therefore record the acyclicity as the `Coboundaries.leray` field (the disk-`H¹=0` witness):
-  `leray_surjective` then unpacks it (sorry-free), and the honest analytic obligation is concentrated
+  `leray_surjective` then unpacks it, and the honest analytic obligation is concentrated
   where the model is CONSTRUCTED — discharged in `CechFinitenessDtwist.exists_cechModel_general`.
 -/
 import Jacobians.Dolbeault.CechFinitenessAbstract
@@ -316,7 +316,7 @@ instance : Subsingleton (DiskOverlapData.empty.trivialCoboundaries).supH1 :=
 
 end DiskOverlapData
 
-/-- **`exists_cechModel` for a subsingleton germ-class `H¹` (the assembled acyclic case, sorry-free).**
+/-- **`exists_cechModel` for a subsingleton germ-class `H¹` (the assembled acyclic case, complete).**
 If the genuine germ-class `𝔘.cechH1 D` is a SUBSINGLETON, then `exists_cechModel 𝔘 D` holds: take the
 trivial acyclic model (`DiskOverlapData.empty` with its `trivialCoboundaries`, whose `leray`
 disk-acyclicity field is discharged and whose `supH1` is `0`); the comparison `𝔘.cechH1 D ≃ₗ supH1` is

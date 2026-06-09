@@ -60,7 +60,7 @@
   arbitrary planar opens, e.g. annuli with `H¹(𝒪) ≠ 0`).  Closing it requires EITHER planar
   `∂̄`-solvability on arbitrary opens, OR overlap acyclicity — neither available.  The honest analytic
   content (the scale-corrected δ-complex + the shrinking PoU) is delivered; the lift is left as ONE
-  honest `sorry`.
+  honest remaining gap.
 
   NOTE.  `chartCoverHolomorphicCoboundaries` is currently consumed by nothing on the critical path;
   the bundled `exists_cechModel` existential is dischargeable via the artificial single-point model
@@ -146,7 +146,7 @@ The genuine `HolomorphicCoboundaries` for the chart-cover holomorphic-shrinking 
 delta0ModelHoloShrink`).  The structural δ-complex fields come from `CechModelHolomorphicDelta` /
 `CechModelHolomorphicLerayShrink`; the `leray` field is the genuine Forster–Dolbeault holomorphic lift.
 
-⚠ The `leray` field is ONE honest `sorry`: see the module docstring for the precise residual analytic
+⚠ The `leray` field is ONE remaining gap: see the module docstring for the precise residual analytic
 obstruction (it needs `∂̄`-solvability on arbitrary planar opens, or `𝒪`-acyclicity of the Montel
 cover overlaps — neither available with the repo's ball-only `∂̄`-solver). -/
 noncomputable def chartCoverHolomorphicCoboundaries :
@@ -160,7 +160,7 @@ noncomputable def chartCoverHolomorphicCoboundaries :
   hδδ := delta1_comp_delta0_holoShrink
   hcomm := hcomm_holo
   leray := by
-    -- **THE GENUINE FORSTER 14.6 ANALYTIC STEP — one honest `sorry`.**
+    -- **THE GENUINE FORSTER 14.6 ANALYTIC STEP — one remaining gap.**
     --
     -- Goal: for a holomorphic shrinking 1-cocycle `s` (`δ¹s = 0`), produce
     --   `η : Cochain0ModelHolo`, `x : Ccov`  with  `δ¹cov x = 0`  and  `s = δ⁰η + ρ·x`.

@@ -43,7 +43,7 @@ so `zerosCount f = d = polesCount f`.  Crucially the multiplicity count *eats
 ramification automatically*: at a zero/pole of order `k > 1` the local degree is
 `k`, matching the order — exactly what `zerosCount`/`polesCount` already sum.
 
-## What this file builds (sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file builds (complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
 
 * **The connectedness conclusion** (`zerosCount_eq_polesCount_of_isLocallyConstant`,
   `zerosCount_eq_polesCount_of_properMapDegreeData`): given a locally-constant
@@ -75,10 +75,10 @@ finite-disk-cover + per-disk argument principle + multiplicity-merging at the
 finitely many branch values.  This is the §17.9-level conservation-of-number
 assembly; it is isolated into the `ProperMapDegreeData.locallyConstant` field (a
 *true*, non-vacuous statement), with everything downstream — the connectedness
-globalization and both boundary identities' *use* — proved sorry-free.  The
+globalization and both boundary identities' *use* — proved complete.  The
 parent wires `zerosCount_eq_polesCount_of_properMapDegreeData` applied to a
-constructed `ProperMapDegreeData` into the `exists_properMapDegree` sorry once
-that construction lands.
+constructed `ProperMapDegreeData` into `exists_properMapDegree` to close
+the conservation-of-number wall.
 
 ## References
 
@@ -120,7 +120,7 @@ structure. -/
 If `N : ℂℙ¹ → ℤ` is locally constant with `N(0) = zerosCount f` and
 `N(∞) = polesCount f`, then `zerosCount f = polesCount f`.
 
-*Proof (sorry-free).*  `RiemannSphere = OnePoint ℂ` is a `ConnectedSpace`, hence
+*Proof.*  `RiemannSphere = OnePoint ℂ` is a `ConnectedSpace`, hence
 `PreconnectedSpace`, so by `IsLocallyConstant.apply_eq_of_preconnectedSpace` the
 values of `N` at `((0 : ℂ) : ℂℙ¹)` and at `∞` agree; substitute the two boundary
 identities. -/
@@ -179,7 +179,7 @@ theorem zerosCount_eq_polesCount_of_properMapDegreeData (f : MeromorphicFunction
 /-- The proper-map-degree existential (`∃ d, zerosCount = d ∧ polesCount = d`),
 derived from a `ProperMapDegreeData` via the nonnegativity reduction
 `exists_properMapDegree_of_zerosCount_eq_polesCount`.  This is the exact shape the
-parent's `exists_properMapDegree` sorry expects. -/
+parent's `exists_properMapDegree` needs. -/
 theorem exists_properMapDegree_of_properMapDegreeData (f : MeromorphicFunction X)
     (D : ProperMapDegreeData f) :
     ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) :=

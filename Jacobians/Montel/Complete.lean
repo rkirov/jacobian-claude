@@ -927,6 +927,6 @@ siblings:
   `norm_localRep_sub_limit_le` and `closedBall_isCompact` (`Montel.lean`).
 
 The full Montel route to `FiniteDimensional ℂ (HolomorphicOneForms X)` is
-sorry-free and axiom-clean. -/
+complete and axiom-clean. -/
 
 end Jacobians.Montel

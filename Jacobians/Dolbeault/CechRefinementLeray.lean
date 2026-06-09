@@ -6,19 +6,19 @@
   refinement map) and the refinement chain-map machinery (`CechRefinement`).  See the `## PLAN` block
   of `CechRefinement.lean` for the full route.
 
-  ## What is proven here (sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`)
+  ## What is proven here (complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
 
     * **Round-trip / functoriality on `H¹`** (pure restriction algebra + STEP A):
         - `refineC1_id`  — the identity refinement is the identity on 1-cochains;
         - `refineH1_id`  — `(IsRefinement.id 𝔘).refineH1 D = LinearMap.id`;
         - `refineH1_comp` — `(hs.comp hr).refineH1 D = hs.refineH1 D ∘ₗ hr.refineH1 D` (functoriality,
           using `refineC1_comp` + descent through the quotient).
-    * **Injectivity from a back-refinement** (STEP A + functoriality, sorry-free):
+    * **Injectivity from a back-refinement** (STEP A + functoriality, complete):
         - `refineH1_leftInverse` — a back-refinement `𝔘 ⪯ 𝔙` gives `refineH1 hs` as an explicit LEFT
           INVERSE of `refineH1 hr` (`(hs.comp hr).refineH1 = id` by STEP A, since `r∘s : 𝔘 → 𝔘` is a
           self-refinement, equal on `H¹` to the identity refinement);
         - `refineH1_injective` — hence `refineH1 hr` is injective.
-    * **The mutual-refinement isomorphism** (sorry-free, NO analytic input):
+    * **The mutual-refinement isomorphism** (complete, NO analytic input):
         - `refineH1_equiv` — for covers `𝔙, 𝔘` with MUTUAL refinements `𝔙 ⪯ 𝔘` and `𝔘 ⪯ 𝔙`, both
           round-trips are self-refinements (= identity on `H¹` by STEP A), so `refineH1 hr` is a
           `ℂ`-linear bijection `cechH1 𝔘 D ≃ₗ[ℂ] cechH1 𝔙 D`.  This is the cover-independence
@@ -35,9 +35,9 @@
   `RefinementSurjective` and proves the conditional upgrade `refineH1_equiv_of_surjective` (injectivity
   is unconditional via STEP A's `refineH1_leftInverse` only when a back-refinement exists — for the
   strictly-finer case injectivity ALSO needs the acyclicity, see the `## SURJECTIVITY` note).  The
-  unconditional sorry-free deliverable is the mutual-refinement equiv `refineH1_equiv`.
+  unconditional gap-free deliverable is the mutual-refinement equiv `refineH1_equiv`.
 
-  NO `sorry` in this file; everything not sorry-free is written prose, never a `sorry`.
+  No gaps in this file; everything not yet mechanized is written prose, not a tactic gap.
 -/
 import Jacobians.Dolbeault.CechRefinementHomotopy
 import Jacobians.Dolbeault.CechDiskAcyclic
@@ -115,7 +115,7 @@ theorem refineH1_comp {s : 𝔚.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
 
 /-! ### Injectivity of `refineH1` from a back-refinement (STEP A + functoriality)
 
-The standard Leray injectivity, in the sorry-free *mutual-refinement* form: if `𝔙 ⪯ 𝔘` (via `r`) AND
+The standard Leray injectivity, in the complete *mutual-refinement* form: if `𝔙 ⪯ 𝔘` (via `r`) AND
 `𝔘 ⪯ 𝔙` (via `s`), then the round-trip `r ∘ s : 𝔘.ι → 𝔘.ι` is a self-refinement of `𝔘`, so by STEP A
 (homotopy/index-independence, `refineH1_eq`) it induces the SAME `H¹` map as the identity refinement,
 namely `LinearMap.id`.  Functoriality (`refineH1_comp`) then exhibits `refineH1 hs` as an explicit
@@ -140,13 +140,13 @@ theorem refineH1_injective {s : 𝔘.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
     simpa using this
   exact hLI.injective
 
-/-! ### The mutual-refinement isomorphism (sorry-free, no analytic input) -/
+/-! ### The mutual-refinement isomorphism (complete, no analytic input) -/
 
 /-- **Cover-independence isomorphism for mutually-refining covers.**  If `𝔙, 𝔘` admit MUTUAL
 refinements `𝔙 ⪯ 𝔘` (`hr`) and `𝔘 ⪯ 𝔙` (`hs`), then `refineH1 hr` is a `ℂ`-linear ISOMORPHISM
 `cechH1 𝔘 D ≃ₗ[ℂ] cechH1 𝔙 D`, with inverse `refineH1 hs`.  Both round-trips `r∘s : 𝔘 → 𝔘` and
 `s∘r : 𝔙 → 𝔙` are self-refinements, hence equal on `H¹` to the identity by STEP A
-(`refineH1_comp_eq_id`); so the two maps are mutually inverse.  Entirely sorry-free — it does NOT need
+(`refineH1_comp_eq_id`); so the two maps are mutually inverse.  Entirely complete — it does NOT need
 disk-acyclicity (the analytic input is only required when one cover STRICTLY refines the other with no
 back-refinement; see the `## SURJECTIVITY` note at the bottom). -/
 noncomputable def refineH1_equiv {s : 𝔘.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
@@ -168,7 +168,7 @@ refinement), where there is NO back-refinement `𝔘 ⪯ 𝔙`.  For that case `
 the genuine Leray theorem, and the analytic content is isolated into the two cocycle-level predicates
 below — both stated in the SAME "lift mod coboundary" shape as `CechFinitenessWiring.Coboundaries.leray`.
 The conditional upgrades (`refineH1_surjective_of_lift`, `refineH1_injective_of_descend`,
-`refineH1_equiv_of_leray`) are then sorry-free; the honest analytic obligation is to PRODUCE these
+`refineH1_equiv_of_leray`) are then complete; the honest analytic obligation is to PRODUCE these
 predicates from disk/overlap-acyclicity (the `## SURJECTIVITY` plan at the bottom). -/
 
 variable {r : 𝔙.ι → 𝔘.ι}
@@ -552,7 +552,7 @@ absent from Mathlib in the `CechRefinement.lean` PLAN recon):
     genuinely a second instance of the same theorem and is the bulk of the "~several hundred LoC on
     top of the disk atom" estimate; it is NOT a quick reduction.
 
-CONCLUSION.  The reduction to `RefinementLift` / `RefinementDescend` is complete and sorry-free; the
+CONCLUSION.  The reduction to `RefinementLift` / `RefinementDescend` is complete and gap-free; the
 remaining work is to PRODUCE those two predicates for a chart-disk Leray refinement.  The single most
 load-bearing missing lemma is a germ-level *disk-acyclicity atom*
 
@@ -562,8 +562,8 @@ load-bearing missing lemma is a germ-level *disk-acyclicity atom*
 obtained by transporting `dbar_holo_splitting_ball` through the `CechH0` germ↔function bridge
 (OBSTRUCTION 2) on a literal chart disk (sidestepping OBSTRUCTION 1), then run once per coarse overlap
 (OBSTRUCTION 3).  Building that atom requires editing `CechSection`/`CechH0` (out of scope for this
-file) or importing a new bridge; hence it is left as written prose, NOT a `sorry`.  The mutual-
-refinement iso `refineH1_equiv` is the unconditional sorry-free fallback already delivered.
+file) or importing a new bridge; hence it is left as written prose, not a tactic gap.  The mutual-
+refinement iso `refineH1_equiv` is the unconditional gap-free fallback already delivered.
 -/
 
 end Jacobians.Dolbeault

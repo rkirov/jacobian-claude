@@ -1,7 +1,7 @@
 /-
   Dolbeault ladder — the concrete Čech complex and `H¹`, on a fixed finite cover.
 
-  Following `docs/dolbeault_ladder_derisk.md`. Design note (a module-instance diamond, found while
+  Design note (a module-instance diamond, found while
   building this): if the cochain spaces are `Π p, ↥(OmegaD D …)` (products of submodule-coes of
   function spaces), the quotient `↥(ker δ¹) ⧸ …` fails `HasQuotient` synthesis — two defeq-but-not-
   syntactic `Module ℂ (↥U → ℂ)` paths (`Pi.module` vs the algebra-induced one) clash through the
@@ -11,7 +11,7 @@
   submodule-coe of the raw function-Pi, which is diamond-free.
 
   Light scaffolding: definitions + `δ² = 0` and the dimensions, with the analytic content isolated
-  downstream. The only `sorry`s reachable from here are the two mechanical restriction leaves in
+  downstream. The only remaining gaps reachable from here are the two mechanical restriction leaves in
   `CechSection` plus `δ² = 0` (also mechanical).
 -/
 import Jacobians.Dolbeault.CechSection

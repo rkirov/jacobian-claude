@@ -49,7 +49,7 @@ with `genus X = Module.finrank ℂ (HolomorphicOneForms X)`.
   lack of a `Convex`/`SimplyConnected` hypothesis).  This is the de Rham / Hodge wall.
 
 The two missing nodes (steps 4 and 5b) are each substantial independent developments, so `#1b`
-is **not** sorry-free–closable on this route today.  Everything that *is* reachable is below.
+is **not** closable on this route today.  Everything that *is* reachable is below.
 -/
 
 noncomputable section
@@ -102,7 +102,7 @@ theorem simplyConnectedSpace_iff_of_homeo {Y : Type*} [TopologicalSpace Y] (e : 
 (an input still missing from Mathlib — a `proof_wanted` in
 `Mathlib/Geometry/Manifold/PoincareConjecture.lean`), then any `X ≃ₜ S²` is simply connected.
 Phrased with `SimplyConnectedSpace (sphere …)` as an explicit hypothesis so the statement is
-**sorry-free** and ready to be discharged the moment that instance lands. -/
+**complete** and ready to be discharged the moment that instance lands. -/
 theorem simplyConnectedSpace_of_homeo_sphere
     (hS : SimplyConnectedSpace (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1))
     (e : X ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1) :

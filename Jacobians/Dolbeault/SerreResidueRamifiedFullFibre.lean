@@ -63,7 +63,7 @@ single-valued meromorphic trace germ `T = ∑_ℓ ramifiedTraceTerm_ℓ + ∑_�
 Uses the **full fibre** (all preimages — the #13 lesson) and the **genuine** sheet points `clusterSheet`
 (via the proven `exists_clusterSplit`/`exists_wpow_normalForm`).  The `m`-sheet SUM (the roots-of-unity
 atom cancels the chain-rule `1/m`; no single-sheet `m·Res`).  Residue invariance is the proven
-`residueChangeOfVariables`.  No false/junk/circular field; no custom axiom; no sorry on a false statement.
+`residueChangeOfVariables`.  No false/junk/circular field; no custom axiom; no unproved obligation on a false statement.
 
 ## References
 

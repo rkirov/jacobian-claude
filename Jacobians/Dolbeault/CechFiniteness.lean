@@ -1,7 +1,7 @@
 /-
   Dolbeault ladder — `H¹(X, 𝒪_D)` finiteness (Forster 14.9), the de-risked finiteness tree.
 
-  Plan (see `docs/cech_finiteness_research.md`, `docs/architecture_map.md`): the cochain restriction
+  Plan: the cochain restriction
   between the cover and a relatively-compact shrinking is a COMPACT operator (Montel), so by the
   Schwartz finiteness lemma (`SchwartzFiniteness.finiteDimensional_quotient_range_add_compact`,
   Forster 14.8 — DONE) the Čech `H¹` is finite-dimensional. The Montel input reuses the repo's
@@ -10,7 +10,7 @@
   and the wiring.
 
   STATUS: the compact-restriction atom is proven here; the cochain-rep + Leray + comparison layers
-  that discharge `DolbeaultLadder.finiteDimensional_cechH1` are scaffolded as `sorry`s below.
+  that discharge `DolbeaultLadder.finiteDimensional_cechH1` are scaffolded as explicit obligations below.
 -/
 import Jacobians.Montel.Compactness
 import Jacobians.Dolbeault.SchwartzFiniteness

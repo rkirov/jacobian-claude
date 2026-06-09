@@ -28,7 +28,7 @@
   is an `𝒪_D` 1-cocycle, so this is a genuine `coboundaries1 𝔙 D`.  Descending through the
   `H¹ = Z¹/B¹` quotient (`Submodule.Quotient.eq`) gives `refineH1 hr = refineH1 hr'`.
 
-  NO `sorry` in this file.  See the `## STEP B` note at the bottom for what the *analytic* Leray gap
+  No gaps in this file.  See the `## STEP B` note at the bottom for what the *analytic* Leray gap
   still needs.
 -/
 import Jacobians.Dolbeault.CechRefinement

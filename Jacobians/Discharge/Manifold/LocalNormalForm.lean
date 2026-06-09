@@ -50,7 +50,7 @@ What is **proven** in this file:
    order `k`, the chart representative `f ∘ chart⁻¹` admits the form
    `(z - chart x) ^ k • g(z)` for some analytic `g` with `g(chart x) ≠ 0`,
    on a punctured neighborhood. **Proof: direct application of the mathlib
-   lemma `meromorphicOrderAt_eq_int_iff`.** Zero `sorry`.
+   lemma `meromorphicOrderAt_eq_int_iff`.** Zero gaps.
 5. **`MMeromorphicAt.exists_local_normal_form_of_nonneg`** — the analytic
    case (`k ≥ 0`) strengthens the punctured neighborhood to a full
    neighborhood (no zero-divisor singularity to remove).

@@ -10,10 +10,10 @@
   `DbarDisk.dbar_solvable_of_compactSupport` solves `∂̄u = χ·g` globally, and `χ·g = g` on the ball.
   No Mittag-Leffler exhaustion is needed — boundedness of the ball does the work.
 
-  `dbar_solvable_ball` is therefore proven **sorry-free** and **axiom-clean**.
+  `dbar_solvable_ball` is therefore proven **complete** and **axiom-clean**.
 
   `dbar_holo_splitting_ball` is the genuine Čech↔Dolbeault dictionary on a ball, ALSO proven
-  **sorry-free**: a *holomorphic* difference `f = h₂ - h₁` of smooth functions whose `∂̄`s agree can
+  **complete**: a *holomorphic* difference `f = h₂ - h₁` of smooth functions whose `∂̄`s agree can
   be re-split as a *holomorphic* difference of *holomorphic* functions, by solving `∂̄u = ∂̄h₁` on the
   ball (the proven `dbar_solvable_ball`) and subtracting `u`.  This is the local engine behind
   `H¹(disk, 𝒪) = 0`.  The `∂̄ = 0 ⇒ holomorphic` direction is supplied by the Wirtinger
@@ -82,7 +82,7 @@ smooth), and set `gᵢ = hᵢ - u`; then `gᵢ` is holomorphic (`∂̄gᵢ = ∂
 `differentiableAt_of_dbar_eq_zero`) and `g₂ - g₁ = h₂ - h₁ = f`.
 
 This is the local engine of `H¹(disk, 𝒪) = 0`: a smooth Čech splitting of a holomorphic cocycle can
-be corrected to a *holomorphic* splitting.  Proven sorry-free. -/
+be corrected to a *holomorphic* splitting.  Proven complete. -/
 theorem dbar_holo_splitting_ball (c : ℂ) {r : ℝ} (hr : 0 < r)
     {h₁ h₂ : ℂ → ℂ} (hh₁ : ContDiff ℝ (⊤ : ℕ∞) h₁) (hh₂ : ContDiff ℝ (⊤ : ℕ∞) h₂)
     (hdbar : ∀ z ∈ Metric.ball c r, DbarDisk.dbar h₁ z = DbarDisk.dbar h₂ z) :

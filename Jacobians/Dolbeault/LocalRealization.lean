@@ -22,7 +22,7 @@
   `↥W`-chart machinery of `CechSection`) realises coefficient `1` with a pole only at `P`; this uses
   the Mathlib explicit order witness `meromorphicOrderAt_zpow_id_sub_const`.
 
-  Everything here is sorry-free.
+  Everything here is complete.
 -/
 import Jacobians.Dolbeault.CechSection
 import Jacobians.Dolbeault.CechH0

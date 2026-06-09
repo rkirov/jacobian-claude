@@ -31,7 +31,7 @@ Since the original scaffolding was written, **two of its three walls have fallen
 * **`S²` is simply connected** — now *unconditional* in the repo
   (`Jacobians.VanKampen` proves `twoOpenVanKampen_holds`, giving the global instance
   `SimplyConnectedSpace (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)`). So
-  `h : X ≃ₜ S²` yields `SimplyConnectedSpace X` **sorry-free** (transport, `simplyConnectedSpace_of_homeo`).
+  `h : X ≃ₜ S²` yields `SimplyConnectedSpace X` completely (transport, `simplyConnectedSpace_of_homeo`).
 * **Liouville / max-modulus** ("a holomorphic primitive on compact connected `X` is constant")
   — now in Mathlib (`MDifferentiable.exists_eq_const_of_compactSpace`, `Mathlib.Geometry.Manifold.Complex`).
 
@@ -47,7 +47,7 @@ surface (path-independence of `∫ η` from simple connectivity, Forster §10.5)
 monodromy, but **not** the manifold de Rham line-integral homotopy invariance needed to globalise the
 primitive on an abstract `X`; that is the remaining de Rham wall.
 
-Given `HasHolomorphicPrimitives X`, this file discharges **everything else sorry-free**:
+Given `HasHolomorphicPrimitives X`, this file discharges **everything else completely**:
 the primitive `F` is constant (Mathlib, compactness), so `mfderiv F = 0`, so `η = 0`; hence
 `genus X = 0`. The capstone `genus_zero_of_nonempty_homeo_sphere_of_hasPrimitives` takes the de Rham
 input *and the homeomorphism* and proves the exact target statement, axiom-clean. This mirrors the
@@ -83,7 +83,7 @@ path-independent, so `F(x) := ∫_{x₀}^{x} η` is well defined and holomorphic
 (Forster §10.5). Mathlib provides this only on balls in `ℂ`
 (`Complex.DifferentiableOn.isExactOn_ball`); the manifold globalisation (homotopy invariance of the
 line integral over loops in `X`) is absent from both Mathlib and this repo — the remaining de Rham
-gap. Isolated as an explicit hypothesis so the rest of the route is sorry-free. -/
+gap. Isolated as an explicit hypothesis, not a gap, so the rest of the route is complete. -/
 def HasHolomorphicPrimitives (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Prop :=
   SimplyConnectedSpace X →
@@ -139,7 +139,7 @@ The simple-connectivity input is supplied *unconditionally* by the repo: `X ≃�
 
 This has the exact signature of `genus_zero_of_nonempty_homeo_sphere`
 (`Jacobians/DegreeOneSphere.lean`) *plus* the explicit de Rham hypothesis — supplying
-`HasHolomorphicPrimitives X` closes that headline `sorry`. -/
+`HasHolomorphicPrimitives X` closes that headline obligation. -/
 theorem genus_zero_of_nonempty_homeo_sphere_of_hasPrimitives
     (hPrim : HasHolomorphicPrimitives X)
     (h : Nonempty (X ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) :

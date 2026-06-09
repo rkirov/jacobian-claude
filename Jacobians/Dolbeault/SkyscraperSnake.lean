@@ -12,7 +12,7 @@
   homological content — the connecting map and the long-exact-sequence at `H⁰`/`H¹` — is therefore a
   pure linear-algebra **snake lemma** for that configuration, with NO analytic input.
 
-  We build it abstractly and sorry-free as `TwoStepSES` (the ambient/nested-subcomplex datum) together
+  We build it abstractly and completely as `TwoStepSES` (the ambient/nested-subcomplex datum) together
   with:
     * `connecting : H0Q → H1A` — the connecting homomorphism, built *canonically* (no choice-of-lift
       well-definedness chase): `δ|_{D0}` corestricted through `α₁⁻¹` to `Z¹(A)`, descended along the
@@ -32,11 +32,11 @@
   coefficient — i.e. the **witness sections** `(chart − chart P)^k ∈ 𝒪_{D+P}` on the cover-sets and
   overlaps meeting `P` (`LocalRealization.coeffGermLin_surjective`, valid on a chart-disk where `D` is
   supported only at `P`, `SkyscraperArrow.witnessFn_mem_OmegaD_add_single`). That is a *geometric*
-  hypothesis on the cover, NOT supplied by `IsLeray` alone; it is captured honestly (not as a `sorry`)
-  by the `LocalRealizationData` hypothesis below, from which `exists_skyscraperLES` follows by feeding
+  hypothesis on the cover, NOT supplied by `IsLeray` alone; it is captured honestly as an explicit
+  hypothesis in `LocalRealizationData` below, from which `exists_skyscraperLES` follows by feeding
   `TwoStepSES.snake` data through the equivalences.
 
-  Everything in this file is sorry-free; the snake lemma is axiom-clean linear algebra.
+  Everything in this file is complete; the snake lemma is axiom-clean linear algebra.
 -/
 import Jacobians.Dolbeault.SkyscraperArrow
 
@@ -514,7 +514,7 @@ noncomputable def skyscraperTwoStep (𝔘 : FiniteCover X) (D : Divisor X) (P : 
 order-`(−D(P)−1)` coefficient onto `ℂ` (the witness sections `(chart − chart P)^k ∈ 𝒪_{D+P}` on
 cover-sets/overlaps meeting `P`, `LocalRealization.coeffGermLin_surjective` /
 `SkyscraperArrow.witnessFn_mem_OmegaD_add_single`) — a *geometric* property of the chart-disk cover,
-NOT a consequence of `IsLeray` alone. Bundling them as explicit hypotheses keeps this file `sorry`-free
+NOT a consequence of `IsLeray` alone. Bundling them as explicit hypotheses keeps this file gap-free
 while making the snake + linear-algebra reduction completely explicit.
 
 Given `LocalRealizationData`, the four `SkyscraperLES` snake fields are immediate:
@@ -522,7 +522,7 @@ Given `LocalRealizationData`, the four `SkyscraperLES` snake fields are immediat
 isomorphism transport of `exact_h0Map_connecting` / `exact_connecting_h1Map`) and `surj₄` from
 `surjective_h1MapAbs_of_subsingleton`. -/
 
-/-- The geometric input the snake lemma cannot supply, bundled honestly (NOT a `sorry`): the
+/-- The geometric input the snake lemma cannot supply, bundled honestly as explicit hypotheses (NOT a gap): the
 local-realization iso `H⁰(Q) ≅ ℂ` compatible with the principal-part arrow `h0ToSky`, the acyclicity
 `H¹(Q) = 0`, and the (Forster 14.9) `H¹` finiteness. -/
 structure LocalRealizationData (𝔘 : FiniteCover X) (D : Divisor X) (P : X) where

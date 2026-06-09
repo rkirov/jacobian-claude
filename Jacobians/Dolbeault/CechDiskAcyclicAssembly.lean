@@ -15,7 +15,7 @@
   re-derives that toolkit precisely so it need NOT import `DolbeaultComparisonInverse`; the cost is
   that the PoU primitives (`cechPoU` / `primFn` / `cechTerm`) of `DolbeaultComparisonInverse` are not
   importable here.  Per the task FALLBACK we therefore REUSE the `CechDiskAcyclicProof` machinery by
-  import, and isolate the remaining ball-solve obligation as an honest hypothesis (never a `sorry`).
+  import, and isolate the remaining ball-solve obligation as an honest hypothesis (never a gap tactic).
 -/
 import Jacobians.Dolbeault.CechDiskAcyclicProof
 
@@ -96,10 +96,10 @@ theorem omegaD_zero_of_chart_analyticAt {U : Opens X} {H : X → ℂ}
 Given honest holomorphic correctors `η_i ∈ OmegaD 0 (U_i)` whose differences split the cocycle's
 analytic representatives `holoFn (s_{ij})` off a discrete set on each overlap (the output of the
 function-level ball solve, transported back through the cover's chart), the germ-class `0`-cochain
-`i ↦ [η_i]` has Čech coboundary exactly `s`.  This is the sorry-free germ-bookkeeping half of STEP D:
+`i ↦ [η_i]` has Čech coboundary exactly `s`.  This is the complete germ-bookkeeping half of STEP D:
 it turns the pointwise/`𝓝[≠]` splitting into the germ-class identity `δ⁰[η] = s`. -/
 
-/-- **STEP D descent (sorry-free).**  Honest holomorphic correctors `η_i ∈ OmegaD 0 (U_i)` whose
+/-- **STEP D descent.**  Honest holomorphic correctors `η_i ∈ OmegaD 0 (U_i)` whose
 extension-by-zero differences `Gext η_j − Gext η_i` agree off a discrete set with the cocycle's
 analytic representative `holoFn (s_{ij})` near every overlap point yield `FunctionDiskAcyclic 𝔙 0`.
 
@@ -141,7 +141,7 @@ theorem functionDiskAcyclic_of_holoCorrectors (𝔙 : FiniteFamily X)
 `FunctionDiskAcyclic 𝔙 0` is exactly: every `𝒪`-cocycle admits holomorphic correctors splitting it.
 We package the remaining analytic obligation — producing those correctors via the function-level ball
 solve over the cover's shared chart (OBSTRUCTION 3 / STEP C) — as a single honest predicate
-`HasHoloCorrectors`, and discharge `FunctionDiskAcyclic` from it sorry-free via the STEP-D descent.
+`HasHoloCorrectors`, and discharge `FunctionDiskAcyclic` from it via the STEP-D descent.
 Supplying `HasHoloCorrectors` (the ball-solve output) is the precise remaining gap; the germ-level
 collapse `H¹(disk, 𝒪) = 0` then follows from `cechH1_subsingleton_of_isDiskAcyclic`. -/
 
@@ -150,7 +150,7 @@ collapse `H¹(disk, 𝒪) = 0` then follows from `cechH1_subsingleton_of_isDiskA
 the analytic representatives `holoFn (s_{ij})` off a discrete set on each overlap.  This is the
 output of the function-level finite-cover ball Čech split (`CechDiskAcyclicProof.ballSplit_glued` +
 `DbarDiskCohomology.dbar_solvable_ball`) transported back through the cover's shared chart — STEP C of
-the obstruction map.  Isolated as a predicate so the discharge below is sorry-free. -/
+the obstruction map.  Isolated as a predicate so the discharge below is complete. -/
 def HasHoloCorrectors (𝔙 : FiniteFamily X) : Prop :=
   ∀ s : ↥(𝔙.cocycles1 (0 : Divisor X)),
     ∃ η : Π i, 𝔙.U i → ℂ, (∀ i, η i ∈ OmegaD (0 : Divisor X) (𝔙.U i)) ∧
@@ -174,7 +174,7 @@ def HasChartAnalyticCorrectors (𝔙 : FiniteFamily X) : Prop :=
       ∀ i j, ∀ x : X, x ∈ (𝔙.U i ⊓ 𝔙.U j : Opens X) →
         (fun z => H j z - H i z) =ᶠ[𝓝[≠] x] holoFn (cocycleComp_mem 𝔙 s i j)
 
-/-- **`HasChartAnalyticCorrectors ⟹ HasHoloCorrectors` (sorry-free).**  Restrict each ambient
+/-- **`HasChartAnalyticCorrectors ⟹ HasHoloCorrectors`.**  Restrict each ambient
 chart-analytic corrector `H_i` to `η_i := H_i ∘ val ∈ OmegaD 0 (U_i)` (STEP-B reverse,
 `omegaD_zero_of_chart_analyticAt`); near an overlap point `Gext (η_i) = H_i` (both equal `H_i` on the
 open `U_i`), so the ambient splitting of the `H_i` transfers verbatim to the `Gext (η_i)`. -/
@@ -197,7 +197,7 @@ theorem hasHoloCorrectors_of_chartAnalytic (𝔙 : FiniteFamily X)
   -- Transfer the ambient splitting of `H` to the `Gext (η)` splitting.
   refine (Filter.EventuallyEq.sub hj hi).trans (hsplit i j x hx)
 
-/-- **`FunctionDiskAcyclic 𝔙 0` from the corrector input (sorry-free).**  The STEP-D descent
+/-- **`FunctionDiskAcyclic 𝔙 0` from the corrector input.**  The STEP-D descent
 (`functionDiskAcyclic_of_holoCorrectors`) turns each cocycle's correctors into the matching germ-class
 `0`-cochain primitive, witnessing `FunctionDiskAcyclic`. -/
 theorem functionDiskAcyclic_of_hasHoloCorrectors (𝔙 : FiniteFamily X)
@@ -219,9 +219,9 @@ theorem cechH1_subsingleton_of_hasHoloCorrectors (𝔙 : FiniteFamily X)
     (h : HasHoloCorrectors 𝔙) (q : 𝔙.cechH1 (0 : Divisor X)) : q = 0 :=
   cechH1_subsingleton_of_isDiskAcyclic 𝔙 0 (isDiskAcyclic_of_hasHoloCorrectors 𝔙 h) q
 
-/-- **`H¹(disk, 𝒪) = 0` from ambient chart-analytic correctors (sorry-free).**  The end-to-end
+/-- **`H¹(disk, 𝒪) = 0` from ambient chart-analytic correctors.**  The end-to-end
 collapse modulo the natural ball-solve output `HasChartAnalyticCorrectors`: STEP-B reverse +
-STEP D + the `IsDiskAcyclic`-collapse, all sorry-free here. -/
+STEP D + the `IsDiskAcyclic`-collapse, all complete here. -/
 theorem cechH1_subsingleton_of_chartAnalyticCorrectors (𝔙 : FiniteFamily X)
     (h : HasChartAnalyticCorrectors 𝔙) (q : 𝔙.cechH1 (0 : Divisor X)) : q = 0 :=
   cechH1_subsingleton_of_hasHoloCorrectors 𝔙 (hasHoloCorrectors_of_chartAnalytic 𝔙 h) q
@@ -230,18 +230,18 @@ end Jacobians.Dolbeault
 
 /-! ## Status and the EXACT remaining goal
 
-WHAT IS DELIVERED HERE (all sorry-free; axiom-clean `[propext, Classical.choice, Quot.sound]`):
+WHAT IS DELIVERED HERE (all complete; axiom-clean `[propext, Classical.choice, Quot.sound]`):
 
   * `cocycleComp_mem` — the `(i,j)` component of an `𝒪`-cocycle is an `OmegaDGerm 0`-germ on the
     overlap (port of `DolbeaultComparisonInverse.cocycle_mem`; the un-importable file is avoided —
     `cocycles1`/`sections1` live in `CechComplex`).
-  * `omegaD_zero_of_chart_analyticAt` — **STEP B reverse** (sorry-free, genuinely new): an ambient
+  * `omegaD_zero_of_chart_analyticAt` — **STEP B reverse** (genuinely new): an ambient
     `H : X → ℂ` whose chart-read is `ℂ`-analytic at every point of `U` restricts to a holomorphic
     section `H ∘ val ∈ OmegaD 0 U`.  The reverse of the imported forward bridge
     `chartHoloRep_analyticAt`, which the obstruction prose flagged as the missing dictionary entry;
     proven from the imported `CechH0` bridge (`Gext_chart_bridge`, `ordU_eq_orderAt_Gext`,
     `AnalyticAt.meromorphicOrderAt_nonneg`).
-  * `functionDiskAcyclic_of_holoCorrectors` — **STEP D, the function → germ descent** (sorry-free):
+  * `functionDiskAcyclic_of_holoCorrectors` — **STEP D, the function → germ descent**:
     honest holomorphic correctors `η_i ∈ OmegaD 0 (U_i)` whose `Gext`-differences split the cocycle's
     analytic representatives `holoFn (s_{ij})` off a discrete set on each overlap give the matching
     germ-class `0`-cochain primitive with `δ⁰[η] = s`.  REUSES `holoFn` + `toGerm_holoFn` from the
@@ -249,16 +249,16 @@ WHAT IS DELIVERED HERE (all sorry-free; axiom-clean `[propext, Classical.choice,
     `eventually_subtype_of_nhdsNE` + `Gext_apply_mem`.
   * `HasChartAnalyticCorrectors` / `hasHoloCorrectors_of_chartAnalytic` — the remaining analytic
     obligation packaged at its NATURAL level (ambient chart-analytic correctors + ambient splitting,
-    i.e. the raw ball-solve output), reduced sorry-free to `HasHoloCorrectors` via STEP-B reverse.
+    i.e. the raw ball-solve output), reduced to `HasHoloCorrectors` via STEP-B reverse.
   * `HasHoloCorrectors` and the chain `functionDiskAcyclic_of_hasHoloCorrectors` /
     `isDiskAcyclic_of_hasHoloCorrectors` / `cechH1_subsingleton_of_hasHoloCorrectors` /
-    `cechH1_subsingleton_of_chartAnalyticCorrectors` — the sorry-free chain
+    `cechH1_subsingleton_of_chartAnalyticCorrectors` — the complete chain
     `HasChartAnalyticCorrectors ⟹ HasHoloCorrectors ⟹ FunctionDiskAcyclic ⟹ IsDiskAcyclic ⟹
     (H¹(disk, 𝒪) = 0)`, so the headline germ-level collapse follows the instant the ball-solve output
     is supplied.
 
 IMPORT FINDING (corrects the task premise).  Importing BOTH `CechDiskAcyclicProof` AND
-`DolbeaultComparisonInverse` is impossible: it is NOT a `NormedAddCommGroup (ℂ →L[ℝ] ℂ)` diamond but
+`DolbeaultComparisonInverse` is impossible: it is not a `NormedAddCommGroup (ℂ →L[ℝ] ℂ)` diamond but
 EIGHT duplicate declaration names in the shared `Jacobians.Dolbeault` namespace (`holoRep`,
 `holoRep_mem`, `toGerm_holoRep`, `gextLimRep_chart_analyticAt`, `holoFn`, `holoFn_eq_of_tendsto`,
 `holoFn_eq_holoRep_of_chart_analyticAt`, `toGerm_holoFn` — `CechDiskAcyclicProof` re-derives that whole
@@ -270,7 +270,7 @@ unavailable here and would need porting for the steps below.
 
 THE EXACT REMAINING GOAL: discharge `HasChartAnalyticCorrectors 𝔙` for a chart-disk cover (every `U_i`
 pulls back through a SINGLE shared chart `φ = chartAt c₀` to an open `Ω_i ⊆ B = ball c r ⊆ ℂ` covering
-`B`).  STEP-B reverse (`omegaD_zero_of_chart_analyticAt`) and STEP D are already sorry-free here, so
+`B`).  STEP-B reverse (`omegaD_zero_of_chart_analyticAt`) and STEP D are already complete here, so
 the obligation is now precisely STEPs C.1–C.4 — the PoU globalization of the cocycle + the ball solve.
 The concrete route, on top of what is imported here:
 
@@ -296,9 +296,9 @@ The concrete route, on top of what is imported here:
     `transition_analyticAt` / `analyticAt_chart_change`) and `H_j − H_i =ᶠ holoFn (s_{ij})` near
     overlaps (from STEP C.1) — exactly the data of `HasChartAnalyticCorrectors`.
 
-With STEP-B reverse, STEP D, and the chain above already sorry-free, the moment
+With STEP-B reverse, STEP D, and the chain above already complete, the moment
 `HasChartAnalyticCorrectors` is produced (STEPs C.1–C.4), `FunctionDiskAcyclic 𝔙 0` — and the
 germ-level `H¹(disk, 𝒪) = 0` (`cechH1_subsingleton_of_chartAnalyticCorrectors`) — follow immediately.
-NO `sorry` anywhere in this file: the remaining gap is the predicate `HasChartAnalyticCorrectors`,
-never a `sorry`.
+No gaps anywhere in this file: the remaining open obligation is the predicate `HasChartAnalyticCorrectors`,
+written as an explicit hypothesis, not a gap tactic.
 -/

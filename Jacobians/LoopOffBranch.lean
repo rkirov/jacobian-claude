@@ -8,7 +8,7 @@ import Mathlib.Topology.Algebra.Module.Cardinality
 
 This module builds the **chart-local Fundamental Theorem of Calculus** for the
 manifold `lineIntegral`, the genuine analytic nugget needed to discharge
-`exists_loop_off_branchLocus` (sorry #6) via the *local-detour* route (Forster
+`exists_loop_off_branchLocus` (obligation #6) via the *local-detour* route (Forster
 §10.5, but with NO global manifold Stokes):
 
 * `chartFrame_cancel_general` — for **any** path `γ` staying in a single chart

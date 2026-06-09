@@ -17,14 +17,14 @@ into a `SerreResidueRealization 𝔘 K` (the structure `SerreResiduePairing.lean
 The pairing factors through the Forster §17.4 isomorphism `ω₀· : 𝒪_K ≅ Ω`
 (`Jacobians.Dolbeault.CanonicalFormIso`), under which `H¹(X,Ω) ≅ 𝔘.cechH1 K` and the product
 `(f·ω₀)·ξ ↦ f·ξ` becomes the **cup product** `cup 𝔘 D K : lSysModule (K−D) →ₗ (cechH1 D →ₗ cechH1 K)`
-already built sorry-free (`SerreCupProduct.lean`).  What remains is the global residue functional
+already built complete (`SerreCupProduct.lean`).  What remains is the global residue functional
 `Res : H¹(X,Ω) ≅ cechH1 K → ℂ` (Forster 17.2–17.3, the Mittag–Leffler **connecting map** of a Čech
 class to a distribution of 1-forms, whose total residue is well-defined by the 1-form residue theorem
 `∑Res = 0` — the genuinely-greenfield analytic descent).  We isolate exactly that residue functional
 plus its §17.6 non-degeneracy into one named structure `GlobalResidue 𝔘 K`, and **derive** the full
 `SerreResidueRealization` from it together with the proven cup product.
 
-## What is proved here (sorry-free, axiom-clean) — the reduction
+## What is proved here (complete, axiom-clean) — the reduction
 
 * `GlobalResidue.toSerreResidueRealization` — from a `GlobalResidue 𝔘 K` (the residue functional +
   non-degeneracy), the §17.5 pairing `pairing D := res ∘ cup` and the §17.6 witness are **derived**,
@@ -44,7 +44,7 @@ through Riemann–Roch (RR depends on this).  The well-definedness of `res` on c
 the 1-form residue theorem `∑Res = 0` (Part 1 of `SerreResiduePairing.lean`,
 `res_eq_of_globalMeromorphic_diff`), which is what the connecting-map realization must supply.
 
-References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.2–17.6; `docs/serre_17_build_plan.md`.
+References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.2–17.6.
 -/
 
 noncomputable section

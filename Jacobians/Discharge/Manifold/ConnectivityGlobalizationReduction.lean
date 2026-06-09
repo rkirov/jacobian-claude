@@ -56,7 +56,7 @@ statement. Whoever discharges this hypothesis only needs to produce a
 concrete chart-relative pair `(U, z₁)`; they no longer need to talk about
 eventually-equal filters or the identity theorem at all.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

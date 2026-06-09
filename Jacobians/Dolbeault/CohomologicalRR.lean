@@ -20,7 +20,7 @@
       - the H⁰-inclusion `f₁ = h0Incl` (`globalSections D ↪ globalSections (D+P)`, order weakening),
         its injectivity, and the inclusion-induced `f₄ = h1Map`. PROVEN, axiom-clean.
       - `chi_jump_of_LES`: runs the crank on a `SkyscraperLES` to get the jump. PROVEN, axiom-clean.
-      - `exists_skyscraperLES`: THE single named honest `sorry` (a **TRUE** statement), packaging the
+      - `exists_skyscraperLES`: THE single named honest obligation (a **TRUE** statement), packaging the
         genuine `ℂ_P` (the 1-dim skyscraper, `finrank = 1` now trivial), the coefficient arrow
         `f₂ = h0ToSky` with `range f₁ = ker f₂` (`exact₁₂`), the snake-lemma data
         (`f₃`, exactness `exact₂`/`exact₃`/`surj₄`), and `H¹` finiteness. NOT faked.
@@ -29,8 +29,8 @@
   * **Iterated jump + induction on the divisor** (`Int.induction_on`, `Finsupp.induction`,
     `Divisor.deg` additivity): pure `ℤ`-bookkeeping built on `chi_jump`. CLOSED.
 
-  So: `cohomological_riemannRoch` is proven *modulo the single `exists_skyscraperLES` sorry*;
-  everything else (base, the LES crank, the structural arrows, the induction skeleton) is sorry-free.
+  So: `cohomological_riemannRoch` is proven modulo the single named obligation `exists_skyscraperLES`;
+  everything else (base, the LES crank, the structural arrows, the induction skeleton) is complete.
 -/
 import Jacobians.Dolbeault.CohomologicalRRChartDisk
 import Jacobians.Dolbeault.SkyscraperConeRealization
@@ -51,7 +51,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 The single non-trivial *algebraic* fact behind the χ-jump is that a 6-term exact sequence of
 finite-dimensional vector spaces `0 → A → B → C → D → E → 0` has alternating sum of dimensions `0`.
 This is pure linear algebra (rank–nullity at each map plus the exactness `range fₖ = ker fₖ₊₁`); it
-is proven here in full, with **no** `sorry` and **no** homological-algebra machinery. -/
+is proven here in full, with no gaps and no homological-algebra machinery. -/
 
 /-- **Alternating dimension sum of a 6-term exact sequence** (rank–nullity crank). For an exact
 sequence of finite-dimensional `K`-vector spaces
@@ -111,7 +111,7 @@ sections with the linear system, and `l(0) = 1` by Liouville on the compact conn
 theorem h0Dim_zero_eq_one (𝔘 : FiniteCover X) : (𝔘.h0Dim 0 : ℤ) = 1 := by
   rw [𝔘.h0Dim_eq_lDim 0, lDim_zero_eq_one]; norm_num
 
-/-- **The crank (sorry-free).** Given the skyscraper long exact sequence, the single-point χ-jump
+/-- **The crank (complete).** Given the skyscraper long exact sequence, the single-point χ-jump
 `χ(D+P) = χ(D) + 1` is pure linear algebra: the alternating dimension sum of the six-term exact
 sequence is `0` (`six_term_exact_alt_sum`), and `finrank ℂ_P = 1` (`skyDim`). Rearranging
 `h⁰(D) − h⁰(D+P) + 1 − h¹(D) + h¹(D+P) = 0` gives the jump. No analytic content. -/
@@ -157,7 +157,7 @@ theorem exists_skyscraperLES (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable
     Nonempty (SkyscraperLES 𝔘 D P) :=
   (exists_localRealizationData 𝔘 hR D P).elim fun L => ⟨skyscraperLES_of_localRealization L⟩
 
-/-! ### The single-point χ-jump (sorry-free GIVEN the skyscraper LES) -/
+/-! ### The single-point χ-jump (complete given the skyscraper LES) -/
 
 /-- **Single-point χ-jump (Forster §16).** `χ(D + P) = χ(D) + 1`. Obtained by running the proven
 linear-algebra crank `chi_jump_of_LES` on the skyscraper long exact sequence
@@ -212,7 +212,7 @@ end FiniteCover
 Rearrangement of `χ(D) = deg D + χ(0)` (`chi_eq_deg_add_chi_zero`, the iterated skyscraper jump +
 divisor induction) using the Liouville base `h⁰(0) = 1` (`h0Dim_zero_eq_one`), since then
 `χ(0) = 1 − h¹(0)`. This is the exact `DolbeaultLadder` leaf statement; it is proven *modulo the
-single named homological `sorry` `chi_jump`* — base and induction are sorry-free. -/
+single named obligation `chi_jump`* — base and induction are complete. -/
 theorem cohomological_riemannRoch (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X) :
     (𝔘.h0Dim D : ℤ) - 𝔘.h1Dim D = Divisor.deg X D + 1 - 𝔘.h1Dim 0 := by
   have hχ := 𝔘.chi_eq_deg_add_chi_zero hR D

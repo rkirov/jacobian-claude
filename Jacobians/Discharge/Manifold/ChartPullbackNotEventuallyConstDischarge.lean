@@ -75,7 +75,7 @@ the latter mentions only "constant on an open neighborhood ⇒ constant on
 `X`" — a purely topological/analytic-continuation statement with no
 filters or chart-coordinate manipulation.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

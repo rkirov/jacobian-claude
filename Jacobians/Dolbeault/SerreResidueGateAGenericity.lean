@@ -54,7 +54,7 @@ Set the cover to the reciprocal of the shift:
 ## ⚠ Soundness
 
 Every genericity field is GENUINELY satisfied by the constructed `f := (f₀ − a·1)⁻¹`: no custom axiom, no
-sorry on a false statement, no false/junk/circular field, no Riemann–Roch (the construction is
+unproved obligations on false statements, no false/junk/circular field, no Riemann–Roch (the construction is
 generic-position only — Miranda's "choose any nonconstant `f`" + a regular-value shift).  `hsimpleInf` is
 achieved for the *general* `f₀` by the reciprocal-at-a-regular-value trick, verified end-to-end here.
 

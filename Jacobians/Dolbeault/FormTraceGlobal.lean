@@ -43,7 +43,7 @@ last §VIII.3-level analytic content (see the diagnosis at the bottom).
 
 ## The minimal remaining obligation (precise diagnosis)
 
-Gate A is now reduced — **fully sorry-free and axiom-clean below `GlobalTraceData`** — to the single
+Gate A is now reduced — **fully complete and axiom-clean below `GlobalTraceData`** — to the single
 construction `∃ T, GlobalTraceData ω₀ g f poles` for a general nonconstant `f` (where `poles` is the
 pole set of `α = ω₀·g`).  Concretely the remaining content is:
 
@@ -88,7 +88,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 /-- **The global trace data bundle** for `α = ω₀·g` through `F = f.toRiemannSphere`, over the pole set
 `poles`.  The honest geometric+rational input from which the full `FormResidueTrace` is assembled
-(everything downstream proved sorry-free).  Its fields are exactly the §VIII.3 trace output:
+(everything downstream proved).  Its fields are exactly the §VIII.3 trace output:
 
 * `L` — the rational trace `Tr_F α` as a `LaurentForm` on `ℂℙ¹`;
 * `D` — per-center unramified-fibre regularity data, `(D p).xs` enumerating `poles ∩ F⁻¹(coe p)`;

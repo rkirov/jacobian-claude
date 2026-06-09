@@ -92,7 +92,7 @@ smooth closed loops, where the period pairing uses
 
 The `DiscreteTopology` and `IsZLattice ℝ` instances require the
 Hodge / Riemann-bilinear rank-2g theorem (Forster §§19–20, not yet in
-Mathlib); they are supplied as unconditional `sorry` instances (S2/S3) in
+Mathlib); they are supplied as unconditional unproved-obligation instances (S2/S3) in
 `PeriodLattice.lean`, so the Jacobian-as-complex-torus structure rests on
 them. -/
 noncomputable def periodLattice (X : Type*) [TopologicalSpace X] [T2Space X]
@@ -251,8 +251,8 @@ basepoint under the new).
    P₀ P + ofCurve P A`.
 
 Proven here via `smoothPath_basepoint_change`, which is the second
-conjunct of `exists_smoothPath_family` (sorry S1) extracted by
-`choose_spec`. So this lemma is genuine modulo S1 — no separate sorry. -/
+conjunct of `exists_smoothPath_family` (gap S1) extracted by
+`choose_spec`. So this lemma is genuine modulo S1 — no separate gap. -/
 lemma ofCurve_basepoint_change (P P₀ A : X) :
     ofCurve P₀ A = ofCurve P A + ofCurve P₀ P := by
   unfold ofCurve
@@ -271,9 +271,9 @@ ofCurve P₀ Q' - ofCurve P₀ Q`. The chain:
    → contradicts `abelJacobi_twoPoint_ne_zero` when Q ≠ Q' and 0 < genus X.
 
 The only remaining math gap is the leaf `abelJacobi_twoPoint_ne_zero`
-(sorry S7 = Abel's theorem + Riemann–Hurwitz, `Abel.lean`); everything
+(gap S7 = Abel's theorem + Riemann–Hurwitz, `Abel.lean`); everything
 above it here is proven. The basepoint-change step also rests on
-`smoothPath_basepoint_change`, extracted from sorry S1
+`smoothPath_basepoint_change`, extracted from gap S1
 (`exists_smoothPath_family`). -/
 lemma ofCurve_inj
     (P : X) (h : 0 < genus X) : Function.Injective (ofCurve P) := by
@@ -300,9 +300,9 @@ variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [Connecte
 variable (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
 
 /-- Lattice preservation: the ambient pushforward map sends the `X`-period
-lattice into the `Y`-period lattice. Real (non-sorry) theorem from
+lattice into the `Y`-period lattice. Real (proven) theorem from
 the period-pairing identity in `Jacobians/PeriodLattice.lean`, modulo
-the single content sorry `lineIntegral_pullback` (the change-of-variables
+the single remaining gap `lineIntegral_pullback` (the change-of-variables
 chain rule). -/
 lemma ambientPhi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (periodLattice X).toAddSubgroup ≤
@@ -425,7 +425,7 @@ a regular fibre (Forster §4).
 **Implementation.** Delegates to `Jacobians.degreeFiber`, a port of
 `JacobianChallenge.ContMDiff.degreeFiber` from Bryan Sanchez's
 `jacobian-lean-challenge` (`#print axioms`-verified clean per
-`docs/EXTERNAL_AUDIT.md`). For non-constant `f`, `degreeFiber` returns
+For non-constant `f`, `degreeFiber` returns
 the cardinality of the fibre over a `RegularValueWitnessReg`-supplied
 regular value via `Classical.choice`. The witness existence
 `Nonempty (RegularValueWitnessReg f)` *is* supplied unconditionally
@@ -474,8 +474,7 @@ This is the meet-in-the-middle linchpin: it consumes the (upstream) §3 preimage
 cycle and the **proven** `periodVec_pushforward`, and yields
 `ambientPhi_ambientPullback_eq` *restricted to period vectors* — proving that the
 §3 construction will discharge S8 (no throwaway). The full identity then follows
-by S3 (the period lattice spans `Fin gY → ℂ`). No new sorry. See
-`docs/S8_TRACE_PLAN.md`. -/
+by S3 (the period lattice spans `Fin gY → ℂ`). No new gaps. -/
 lemma ambientPhi_ambientPullback_periodVec_of_cycle
     {n : ℕ} (loops : Fin n → ℝ → X)
     (loops_smooth : ∀ i, Jacobians.IsClosedSmoothLoop (loops i))

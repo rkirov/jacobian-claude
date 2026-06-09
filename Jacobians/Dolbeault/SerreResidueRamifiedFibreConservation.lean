@@ -61,7 +61,7 @@ Facts 1 and 2 are **genuine geometry**, never asserted: fact 1 is the §5-normal
 Fact 3 (`hcard`) is the genuine §4 conservation of number — `∑ᵢ D.mult i = S.n` with `D.mult i` the
 genuine local degree and `S.n` the genuine sheet count — routed through the PROVEN
 `exists_properMapDegree` engine (which is *upstream* of Riemann–Roch — it IS the `deg_div` engine — so
-no circularity).  No custom axiom, no sorry on a false statement, no false/junk/circular field.
+no circularity).  No custom axiom, no unproved obligation on a false statement, no false/junk/circular field.
 
 ## References
 

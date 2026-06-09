@@ -22,7 +22,7 @@ full-rank ℝ-lattice — the Riemann bilinear relations). It decomposes the goa
 * **Analysis (the build).** `periodVec_linearIndependent`: the `2g` periods of a dissection are
   ℝ-linearly independent. This is the Riemann bilinear relations + positivity
   `(i/2)∑(A_k B̄_k − B_k Ā_k) = (i/2)∬_X ω∧ω̄ > 0`, provable via Riemann's cut-surface + Green's-theorem
-  argument (Mathlib has rectangle Green; *no* Hodge/de Rham). See `docs/period_realbasis_plan.md`.
+  argument (Mathlib has rectangle Green; *no* Hodge/de Rham).
 
 The **assembly** `realBasis_of_canonicalDissection` (PROVEN here) combines the two: `2g`
 ℝ-independent vectors in `ℂ^g ≅ ℝ^{2g}` form an ℝ-basis, and generation gives the `ℤ`-span equality.
@@ -79,7 +79,7 @@ proven from the same cut-surface via Green's theorem (the box-level analytic cor
 `Jacobians.GreenPositivity`/`Jacobians.BoundaryPositivity`; the cut-chart/boundary-word that turns
 `∮_{∂box}` into the period sum, and the `4g`-gon Stokes for `g ≥ 2`, remain part of the isolated
 input `exists_canonicalDissection`). Bundling them here keeps the public API of
-`exists_periodLattice_realBasis` hypothesis-free. See `docs/period_realbasis_plan.md`. -/
+`exists_periodLattice_realBasis` hypothesis-free. -/
 structure CanonicalDissection (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] where
   /-- The `2g` symplectic homology-basis loops `a₁,…,a_g,b₁,…,b_g`. -/

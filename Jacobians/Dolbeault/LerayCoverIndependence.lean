@@ -4,9 +4,9 @@
   This file extends the *acyclic* discharge of `CechFinitenessWiring.exists_cechModel`
   (`exists_cechModel_of_subsingleton`, `CechModelConstruction.exists_cechModel_of_sharedChart_zero`)
   from a literal `SharedChartCover` to **any cover that mutually refines one** — the first genuine use
-  of the (sorry-free) Leray cover-independence isomorphism `refineH1_equiv` inside the finiteness node.
+  of the (complete) Leray cover-independence isomorphism `refineH1_equiv` inside the finiteness node.
 
-  ## What this banks (sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`)
+  ## What this banks (complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
 
     * `subsingleton_cechH1_of_mutualRefinement` — `Subsingleton` transports along a mutual refinement:
       if `𝔙 ⪯ 𝔘` and `𝔘 ⪯ 𝔙` (mutual refinements) and `cechH1 𝔙 D` is a subsingleton, then so is
@@ -25,13 +25,13 @@
   This does NOT close the GENERAL `exists_cechModel` (arbitrary Leray `𝔘`, arbitrary `D`).  Two limits:
     * `D = 0` only — the disk-acyclicity engine (`HasGluedDbarDatum`) is proven only at `D = 0`; a
       general-`D` acyclic model is a separate analytic extension (skyscraper/order bounds), not here.
-    * MUTUAL refinement only — `refineH1_equiv` is the sorry-free *mutual*-refinement iso (pure STEP A
+    * MUTUAL refinement only — `refineH1_equiv` is the complete *mutual*-refinement iso (pure STEP A
       homotopy, no analysis).  The general cover-independence `exists_cechModel` needs the iso for a
       STRICTLY-finer Leray refinement through a COMMON refinement (no back-refinement), which is the
       genuine Leray theorem still blocked on the germ-level disk-acyclicity atom + nested Čech collapse
       (`CechRefinementLeray.RefinementLift`/`RefinementDescend`; see that file's `## SURJECTIVITY`).
 
-  So this is a sound, sorry-free *enlargement* of the acyclic-case discharge — every `𝔘` mutually
+  So this is a sound, complete *enlargement* of the acyclic-case discharge — every `𝔘` mutually
   refining an acyclic shared-chart cover is now covered — banked toward the eventual general node.
 -/
 import Jacobians.Dolbeault.CechModelConstruction
@@ -50,7 +50,7 @@ open FiniteFamily
 
 /-- **Subsingleton `H¹` transports along a mutual refinement.**  If `𝔙 ⪯ 𝔘` (`hr`) and `𝔘 ⪯ 𝔙` (`hs`)
 mutually refine and `cechH1 𝔙 D` is a subsingleton, then `cechH1 𝔘 D` is a subsingleton too: the
-cover-independence isomorphism `refineH1_equiv D hr hs : cechH1 𝔘 D ≃ₗ[ℂ] cechH1 𝔙 D` (sorry-free, pure
+cover-independence isomorphism `refineH1_equiv D hr hs : cechH1 𝔘 D ≃ₗ[ℂ] cechH1 𝔙 D` (complete, pure
 STEP A homotopy) carries the subsingleton back along its underlying equivalence (`Equiv.subsingleton`).
 -/
 theorem subsingleton_cechH1_of_mutualRefinement {𝔙 𝔘 : FiniteCover X} {s : 𝔘.ι → 𝔙.ι}
@@ -60,7 +60,7 @@ theorem subsingleton_cechH1_of_mutualRefinement {𝔙 𝔘 : FiniteCover X} {s :
 
 end FiniteCover
 
-/-- **`exists_cechModel` from a back-refinement to an acyclic cover (sorry-free).**  If `𝔘` mutually
+/-- **`exists_cechModel` from a back-refinement to an acyclic cover.**  If `𝔘` mutually
 refines a cover `𝔙` whose germ-class `H¹` is a subsingleton (`𝔙 ⪯ 𝔘` via `hr`, `𝔘 ⪯ 𝔙` via `hs`), then
 `exists_cechModel 𝔘 D` holds.  The subsingleton transports to `cechH1 𝔘 D`
 (`subsingleton_cechH1_of_mutualRefinement`), and `exists_cechModel_of_subsingleton` then supplies the

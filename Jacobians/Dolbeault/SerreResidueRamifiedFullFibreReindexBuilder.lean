@@ -40,7 +40,7 @@ the whole fibre and the non-pole preimages drop out at the residue level (`resid
 `D` = the WHOLE fibre.  **No `hD_mem` (no all-poles assumption).**  The per-slit geometry
 (`ClusterReindexData` / `FibreClusterTopology`) is the *same* genuine §4/§5 content as the unsound chain,
 now consistent with the whole fibre (`hcard = deg f`).  The residue reconciliation is the PROVEN
-`residueSum_full_eq_poleOnly` (non-poles → `0`).  No custom axiom; no sorry on a false statement; no
+`residueSum_full_eq_poleOnly` (non-poles → `0`).  No custom axiom; no unproved obligation on a false statement; no
 false/junk/circular field.
 
 ## References

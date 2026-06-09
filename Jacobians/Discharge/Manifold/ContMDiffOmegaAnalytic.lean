@@ -32,7 +32,7 @@ The proof is a routine chain through mathlib lemmas:
 * `extChartAt 𝓘(𝕜, E) x` coincides with `chartAt _ x` as a function (since
   `𝓘(ℂ)` has identity coordinate map).
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

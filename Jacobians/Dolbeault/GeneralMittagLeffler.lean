@@ -36,7 +36,7 @@ Laurent `c₋₁` contour residue, well-defined because `g_{patch a}`'s chart-pu
 `a`), and is **patch-independent** by `formFnResidue_eq_of_analyticAt_sub` (the holomorphic-difference
 property).
 
-## What this file delivers (all sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file delivers (all complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
 
 * `GeneralMLDistribution ω₀` — the general distribution structure (a TRUE, non-vacuous bundle; the
   holomorphic single-`α·g` `MittagLefflerForm` embeds, `ofMittagLefflerForm`).

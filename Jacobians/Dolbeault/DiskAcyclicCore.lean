@@ -16,7 +16,7 @@
   These are the genuinely-reusable NEW lemmas the re-proof extracts: the closed-core subordinate-PoU
   existence and its `∑ ρ = 1`-on-`C` value form, stated abstractly over a finite family `U : ι → Opens X`
   and a closed `C ⊆ ⋃ Uᵢ` (so they are independent of the `SharedChartCover` packaging and reusable for
-  any closed-core globalization).  NO `sorry`.
+  any closed-core globalization).  No gaps.
 -/
 import Jacobians.Dolbeault.CechComplex
 import Jacobians.Dolbeault.RealManifold

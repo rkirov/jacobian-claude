@@ -4,7 +4,7 @@
   appear here as abstract Banach spaces — NO manifold/Čech dependency — so this is the clean logical
   core of the finiteness node, built directly on the Schwartz lemma (Forster 14.8).
 
-  STEP 3 of `docs/cech_finiteness_research.md`. The two remaining manifold-side inputs it consumes —
+  The two remaining manifold-side inputs it consumes —
   `ρ` compact (Montel; from `CechFiniteness.isCompact_closure_restrict_bddHolo` + `BddHol`) and the
   Leray surjectivity (`H¹(disk,𝒪)=0`, from the proven G1 `DbarDisk`) — are all that stands between
   this and `DolbeaultLadder.finiteDimensional_cechH1`.

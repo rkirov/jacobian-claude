@@ -1,14 +1,13 @@
 /-
   Čech finiteness — the germ ↔ sup-norm comparison ("K-bridge"), upstream atoms.
 
-  Part of discharging the single remaining finiteness sorry `exists_cechModel` (Forster 14.9); see the
-  decomposition in `docs/cech_finiteness_research.md`. The comparison `cechH1 𝔘 D ≃ supH1` translates
+  Part of discharging `exists_cechModel` (Forster 14.9). The comparison `cechH1 𝔘 D ≃ supH1` translates
   germ-class `𝒪_D` cochains (the `cechH1` representation) into `BddHol` cochains on chart-images (the
   `supH1`/Montel representation). Its most upstream atom is the **codomain constructor**: every analytic
   bounded function on an open `U ⊆ ℂ` is a `BddHol U` element.
 
-  This file is pure one-variable complex analysis on the `BddHol` side — sorry-free, depends on no
-  sorry-backed lemma. The manifold side (chart-pullback of an `𝒪_D` section is analytic) reuses the
+  This file is pure one-variable complex analysis on the `BddHol` side — complete, depends on no
+  unproved obligation. The manifold side (chart-pullback of an `𝒪_D` section is analytic) reuses the
   axiom-clean `CechH0.analyticAt_chart_change`.
 -/
 import Jacobians.Dolbeault.BddHol

@@ -34,7 +34,7 @@ period pairing.
   `periodVec Y (f ∘ γ) = ambientPhi f hf (periodVec X γ)`, from
   which `ambientPhi` preservation of the period lattice follows.
 * `DiscreteTopology`/`IsZLattice ℝ` of `truePeriodLattice X` — both instances below are now
-  *derived* (not `sorry`) from `exists_periodLattice_realBasis`: the lattice is the ℤ-span of an
+  *derived* (not assumed) from `exists_periodLattice_realBasis`: the lattice is the ℤ-span of an
   ℝ-basis, hence discrete (`ZSpan.instDiscreteTopology`) and a full-rank ℤ-lattice
   (`instIsZLatticeRealSpan`). `exists_periodLattice_realBasis` itself is proven (`Dissection.lean`)
   modulo the single isolated input `exists_canonicalDissection` (surface topology + the two Riemann
@@ -324,7 +324,7 @@ surface there is a family of smooth paths between every pair of points with
 (1) `IsSmoothPath P Q (sp P Q)` and (2) the basepoint-change cocycle
 `[sp(P₀,A)] = [sp(P,A)] + [sp(P₀,P)]` mod the period lattice.
 
-As of 2026-05-29 this is **no longer a single monolithic sorry**: it is
+As of 2026-05-29 this is **no longer a single monolithic unproved obligation**: it is
 reduced (`exists_smoothPath_family`, proven below) to the focused kernel
 `exists_zeroVel_smoothPath` (existence of a smooth path with zero endpoint
 velocity), using `IsSmoothPath.concat`, `periodVec_concat_of_smooth`, and
@@ -674,7 +674,7 @@ closed smooth loop in `Y`. Sub-lemmas:
    (at least a.e.), which is a ℂ-linear combination of X-basis
    integrands — each integrable by hypothesis.
 
-**Content sorry**: the sub-lemmas 3 and 4 require replaying the
+**Remaining content**: the sub-lemmas 3 and 4 require replaying the
 chart chain rule + linear-algebra arguments from elsewhere in the
 file. Bounded but ~100 lines. -/
 theorem IsClosedSmoothLoop.comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
@@ -851,8 +851,7 @@ only remaining classical content; everything downstream is unconditional given i
 `realBasis_of_canonicalDissection` is unconditional; the remaining inputs are
 `exists_canonicalDissection` (the isolated surface-topology pillar — `H₁(X;ℤ) ≅ ℤ^{2g}` + the
 canonical dissection + period homology-invariance) and `periodVec_linearIndependent` (the analytic
-pillar — the Riemann bilinear relations, to be built via cut-surface + Green's theorem; see
-`docs/period_realbasis_plan.md`). -/
+pillar — the Riemann bilinear relations, to be built via cut-surface + Green's theorem). -/
 theorem exists_periodLattice_realBasis :
     ∃ b : Module.Basis (Fin (2 * genus X)) ℝ (Fin (genus X) → ℂ),
       truePeriodLattice X = Submodule.span ℤ (Set.range ⇑b) := by

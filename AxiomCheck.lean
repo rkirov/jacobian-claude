@@ -30,4 +30,4 @@ import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 -- into `Jacobian X` (`ofCurve_contMDiff`, `pushforward_pullback`, `ofCurve_inj`,
 -- …) deliberately are NOT listed here: they carry `sorryAx` via the open
 -- classical theorems (esp. the period-lattice instances #7/#8, which make
--- `Jacobian X` a manifold). See `docs/STATUS.md` for the per-theorem status.
+-- `Jacobian X` a manifold).

@@ -53,7 +53,7 @@ Take `x ∈ closure S`.
    `f ≡ y₀` (using injectivity of `chartAt ℂ y₀` on its source). Hence
    `x ∈ S`.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

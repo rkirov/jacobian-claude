@@ -22,7 +22,7 @@ This file discharges the named `Prop`
 
 This is the one isolated one-variable complex-analysis atom that the **general** (any-order pole)
 fibre Lemma 3.2 `FibreTrace.resAt_traceCoeff` is gated on, and through it Gate A's 1-form residue
-theorem `∑ₐ Resₐ(α) = 0` (see `docs/serre_dualitydata_plan_2026-06-08.md`, §4.2 (A-i)).  Mathlib
+theorem `∑ₐ Resₐ(α) = 0`.  Mathlib
 has **no** residue API, so this is built from the repo's `resAt` (the `(2πi)⁻¹∮` contour residue,
 `Jacobians.Dolbeault.Residue`) and Mathlib's circle-integral toolbox.
 

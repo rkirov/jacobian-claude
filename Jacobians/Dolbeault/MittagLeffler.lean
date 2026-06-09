@@ -1,15 +1,15 @@
 /-
   Mittag–Leffler distributions of 1-forms and the global residue `Res` (Forster §17.1–17.2).
 
-  The PDE-free Serre route (`docs/hodge_bridge_research.md` PHASE 0) defines the residue functional
+  The PDE-free Serre route defines the residue functional
   `Res : H¹(X,Ω) → ℂ` via **Mittag–Leffler distributions**: a cochain `(ωᵢ)` of *local* meromorphic
   1-forms over a finite cover, with *holomorphic differences* `ωᵢ − ωⱼ` on overlaps, has only finitely
   many poles, and `Res(μ) = ∑_a Res_a(μ)` is the sum of the local Laurent residues over those poles.
 
-  This file builds the **sorry-free local pieces** of that construction — everything *except* the
+  This file builds the **complete local pieces** of that construction — everything *except* the
   global well-definedness on cohomology classes, which needs the **1-form** residue theorem `∑Res = 0`
   (a separate node — the trace-to-ℙ¹ route, NOT `deg_div`; see the ⚠ correction below) and so is stated
-  here only as a precise plan in the module docstring, never as a `sorry`.
+  here only as a precise plan in the module docstring, never as a tactic gap.
 
   Concretely it provides:
     * `formFnHoloPunctured` — the "isolated singularity" predicate at a pole for `α·g` (the integrand
@@ -54,7 +54,7 @@
   `cechH1`'s quotient (the cocycle→cochain representative gives a finite pole set; two representatives
   differ by a coboundary whose `residueSum` is `0` by the residue theorem), yielding the well-defined
   functional. Everything
-  in *this* file is sorry-free and axiom-clean and depends on no sorry-backed lemma.
+  in *this* file is complete and axiom-clean and depends on no open lemma.
 -/
 import Jacobians.Dolbeault.FormCoeff
 

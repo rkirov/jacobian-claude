@@ -34,7 +34,7 @@ a local biholomorphism, `φ'(a) ≠ 0`) gives `g(φ z)·φ'(z)·dz`, whose resid
 equals the residue of `g·dw` at the image point.  The trace over a fibre is the sum over the sheets,
 so its residue is the fibre sum of the per-point residues — Lemma 3.2.
 
-## What is proved here (all sorry-free)
+## What is proved here (all complete)
 
 * **`resAt_inv_sub_mul`** — Cauchy's integral formula as a residue: `Res_a (h(z)/(z − a)) = h(a)`
   for `h` analytic at `a` (the workhorse simple-pole residue with analytic numerator).

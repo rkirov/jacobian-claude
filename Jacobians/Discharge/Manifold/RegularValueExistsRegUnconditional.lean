@@ -46,7 +46,7 @@ critical values are finite and `Y` is infinite). At every preimage
 an analytic point forces the derivative to be nonzero. Combined with
 fibre finiteness, this delivers a `RegularValueWitnessReg f`.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

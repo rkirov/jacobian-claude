@@ -36,7 +36,7 @@ witnesses, halved.
 
 ## Anti-cheat
 
-* No `axiom`, no `sorry`. Only mathlib lemmas plus algebra.
+* No `axiom`, no gaps. Only mathlib lemmas plus algebra.
 * No signature of any pre-existing definition or theorem is changed.
 * The output exactly matches the hypothesis shape consumed by ZZ89:
   `AnalyticOnNhd ℂ u (closedBall x₀ R)`, `u x₀ ≠ 0`, and the pointwise

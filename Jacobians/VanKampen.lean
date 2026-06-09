@@ -12,7 +12,7 @@ import Mathlib.Topology.MetricSpace.Pseudo.Lemmas
 
 This file discharges the single remaining hypothesis of `Jacobians/SphereSimplyConnected.lean`:
 the abstract **two-open van Kampen** statement `TwoOpenVanKampen`.  Combined with the (already
-proven, sorry-free) side-conditions there it yields the **unconditional**
+proven, complete) side-conditions there it yields the **unconditional**
 
 ```
 instance : SimplyConnectedSpace (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)

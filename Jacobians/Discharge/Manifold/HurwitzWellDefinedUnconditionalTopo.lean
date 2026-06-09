@@ -30,7 +30,7 @@ theorem), and locally-constant fibre cardinality on its complement
 (local-triviality of the regular-value covering — Hurwitz local normal
 form, ZZ151/152, lifted by ZZ169).
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

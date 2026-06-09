@@ -32,7 +32,7 @@ the period lattice.
 ## Architecture note
 
 Previously `ambientPullbackJac` was driven by an **opaque stub**
-`pushforwardForm := if const then 0 else sorry` in `HolomorphicForms.lean`. That
+`pushforwardForm := if const then 0 else (a placeholder)` in `HolomorphicForms.lean`. That
 stub is gone: the single source of truth is now the geometric trace `traceForm`,
 and `traceFormTotal` is only its constant-map bookkeeping wrapper (`0` on constant
 maps). So the Jacobian pullback is now genuinely the transpose of the geometric
@@ -2436,8 +2436,7 @@ The reduction `exists_preimageCycle_of_off_branchLocus` below turns this into a
 `ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal` — so this lemma
 isolates exactly the remaining *geometry*.
 
-What it still needs (all infrastructure is identified; see
-`docs/preimage_cycle_lift_plan.md`):
+What it still needs (all infrastructure is identified):
 * the seam-flattened smooth lifts `exists_smoothLift_flatEnd_off_branchLocus` (DONE),
   one per fibre point (`fiber_finite_off_branchLocus` ⇒ `Fintype`), assembled into a
   monodromy permutation via lift uniqueness (`IsCoveringMap.eq_liftPath_iff`) and

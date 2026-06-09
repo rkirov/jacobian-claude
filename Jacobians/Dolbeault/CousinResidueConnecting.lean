@@ -40,7 +40,7 @@ local-`∂̄`-corrected Mittag–Leffler lift over the cover, the multi-thousand
 naive *smooth* PoU lift's contour residue is **not** the Laurent residue, so the local `∂̄` correction
 `DbarDiskCohomology.dbar_solvable_ball` is genuinely needed) plus its descent and non-degeneracy.
 
-## What this file delivers (sorry-free, axiom-clean)
+## What this file delivers (complete, axiom-clean)
 
 * `MittagLefflerConnection ω₀ 𝔘 K` — the interface (each field a TRUE Forster §17.2–17.6 statement).
 * `coboundary_lift_holomorphic_res_zero` — the proven §17.3 fact: a *holomorphic* (empty-pole) general
@@ -58,8 +58,7 @@ distribution `GeneralMLDistribution.holomorphicZero` + the zero functional inhab
 No field asserts a false "single global function" coboundary lift (an earlier draft's bug: a
 coboundary's lift is an `𝒪_K`-section *cochain* `h'`, NOT a single global meromorphic `f` — corrected).
 
-References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.2–17.6; `docs/serre_17_build_plan.md`;
-`docs/dolbeault_disk_atom_decomposition.md`.
+References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.2–17.6.
 -/
 
 noncomputable section

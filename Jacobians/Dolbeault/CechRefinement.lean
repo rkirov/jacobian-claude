@@ -14,7 +14,7 @@
 
   Mathlib has **no** Čech-cohomology refinement / nerve / Leray theorem (greenfield; see the recon
   verdict in the steering report).  This file builds the part of that bridge that is *pure restriction
-  algebra* and therefore fully `sorry`-free:
+  algebra* and therefore fully complete:
 
     * `IsRefinement 𝔙 𝔘 r` — `r : 𝔙.ι → 𝔘.ι` is a refinement-index map (`𝔙.U j ≤ 𝔘.U (r j)`).
     * the induced **reindex+restrict** cochain maps `refineC0/refineC1/refineC2 : Cochain^k 𝔘 → 𝔙`
@@ -29,8 +29,8 @@
   bijection, proved by the standard chain-homotopy-between-two-refinement-maps argument.  See the
   `## PLAN` block at the bottom for the precise route and the greenfield gaps.
 
-  NO `sorry` in this file.  Everything that is NOT sorry-free is written prose in the PLAN block,
-  never a `sorry`.
+  No gaps in this file.  Everything not yet closed is written prose in the PLAN block,
+  never a gap tactic.
 -/
 import Jacobians.Dolbeault.CechComplex
 
@@ -217,7 +217,7 @@ end IsRefinement
 The eventual cover-independence isomorphism is the statement that, for two Leray covers with mutual
 refinement maps, the two composites are the identity on `H¹`.  Proving "is the identity" needs the
 identity-refinement and composition laws.  These are pure restriction algebra (`rawRestrictG_comp`)
-and `sorry`-free. -/
+and complete. -/
 
 namespace IsRefinement
 
@@ -261,13 +261,13 @@ end FiniteCover
 
 /-! ## PLAN — `cechH1` Leray cover-independence (the greenfield route)
 
-What is BUILT here (sorry-free, axiom-clean): for any refinement `r : 𝔙.ι → 𝔘.ι`
+What is BUILT here (complete, axiom-clean): for any refinement `r : 𝔙.ι → 𝔘.ι`
 (`IsRefinement 𝔙 𝔘 r`), the reindex+restrict chain map `refineC0/refineC1/refineC2`, its commutation
 with `cechDelta0/cechDelta1` (`refineC1_comp_cechDelta0`, `refineC2_comp_cechDelta1`), preservation of
 `sections/cocycles/coboundaries`, the induced `refineH1 : cechH1 𝔘 D →ₗ[ℂ] cechH1 𝔙 D`, and
 functoriality (`comp`, `refineC0_comp`, `refineC1_comp`).
 
-What remains (the greenfield gaps — written here, NOT as `sorry`s):
+What remains (the greenfield gaps — written here, NOT as gap tactics):
 
 GOAL.  For two Leray covers `𝔘, 𝔙` of the compact Riemann surface `X`, `refineH1` is a `ℂ`-linear
 ISOMORPHISM, so `cechH1 𝔘 D ≃ₗ[ℂ] cechH1 𝔙 D`.  (Then `exists_cechModel` for an arbitrary Leray `𝔘`
@@ -281,7 +281,7 @@ STEP A — homotopy-independence of the refinement map.  Two different index map
 (both refinements) induce the SAME map on `H¹`.  Proof: build an explicit cochain homotopy
 `k : Cochain1 𝔘 → Cochain0 𝔙` with `refineC1 r − refineC1 r' = cechDelta0_𝔙 ∘ k + k' ∘ cechDelta1_𝔘`
 (the usual prism/alternating-sum operator, e.g. `(k g)_j = g_{(r j)(r' j)} |_{𝔙.U j}`).  This is PURE
-restriction algebra and is the natural next sorry-free increment in THIS file (it needs only
+restriction algebra and is the natural next complete increment in THIS file (it needs only
 `rawRestrictG_comp` and `δ`-bookkeeping; the only subtlety is that `g_{(r j)(r' j)}` is defined on
 `𝔘.U (r j) ⊓ 𝔘.U (r' j)`, which contains `𝔙.U j` since both `r,r'` are refinements — so the
 restriction is well-typed).  ⇒ `refineH1` depends only on the PAIR `(𝔙, 𝔘)`, not on `r`.
@@ -299,14 +299,14 @@ genuinely-analytic gap.  Two equivalent formulations:
 
 REPO-AVAILABLE PIECES for STEP B:
   * the overlap-acyclicity input.  On a Leray cover the relevant `H¹(overlap, 𝒪) = 0` is exactly the
-    disk-`H¹=0` engine already proven sorry-free: `DbarDiskCohomology.dbar_solvable_ball` /
+    disk-`H¹=0` engine already proven: `DbarDiskCohomology.dbar_solvable_ball` /
     `dbar_holo_splitting_ball` (full-disk ∂̄-solvability) — the SAME atom `exists_cechModel`'s `leray`
     field consumes.  The `IsLeray` predicate (`CechComplex.FiniteFamily.IsLeray`) bundles
     simple-connectedness of the cover sets + connectedness of pairwise overlaps, the Forster §12
     hypothesis.
   * the chain-map + descent machinery: this file (`refineH1` + the chain-map lemmas) and the
     `Submodule.mapQ`/quotient API.
-  * STEP A's homotopy: constructible here sorry-free (see above).
+  * STEP A's homotopy: constructible here (see above).
 
 GREENFIELD GAPS (absent from Mathlib — confirmed by recon; the real work for STEP B):
   * No Čech double complex / Leray spectral sequence, and no "acyclic cover ⟹ Čech = derived"

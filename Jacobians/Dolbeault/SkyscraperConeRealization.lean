@@ -28,7 +28,7 @@
   For `e0` surjectivity `c ≡ a` (constant); for `Subsingleton H¹(Q)` `c j = coeffGermLin (g_{i₀ j})`,
   whose apex cocycle identity is exactly the `(i₀,j,k)` component of `δ¹g ∈ sections2(D)`.
 
-  Everything here is axiom-clean modulo the `LocallyRealizable` hypothesis (no finiteness, no `sorry`).
+  Everything here is axiom-clean modulo the `LocallyRealizable` hypothesis (no finiteness, no gaps).
 -/
 import Jacobians.Dolbeault.SkyscraperAssembly
 import Jacobians.Dolbeault.CechFinitenessDtwist

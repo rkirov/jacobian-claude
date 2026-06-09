@@ -27,7 +27,7 @@
   The product witness is the genuine local-analytic core (a finite-product order computation plus the
   chart-change relating the center chart `φ` to the open-submanifold chart at `P` that `ordU`/`coeffGermLin`
   use).  It is isolated here as the single named obligation `locallyRealizable_chartDiskCover`; closing
-  it makes the entire χ-side (`cohomological_riemannRoch`) fully sorry-free on the canonical cover.
+  it makes the entire χ-side (`cohomological_riemannRoch`) fully complete on the canonical cover.
 -/
 import Jacobians.Dolbeault.SkyscraperConeRealization
 import Jacobians.Dolbeault.LerayCoverExists

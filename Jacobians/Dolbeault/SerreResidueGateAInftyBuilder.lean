@@ -47,7 +47,7 @@ genuinely-remaining content of the ramified Gate-A route is then TARGET 1 (`Fibr
 
 `AdaptedFRamified` is the honest off-centre/∞ genericity residual (a strict weakening of `AdaptedF`,
 dropping `hoff_cs`), supplied as data.  The builder uses only proven dischargers; no false/junk/circular
-field, no custom axiom, no sorry.  Non-vacuity: the `AdaptedF → AdaptedFRamified` forgetful map shows it
+field, no custom axiom, no gaps.  Non-vacuity: the `AdaptedF → AdaptedFRamified` forgetful map shows it
 is inhabited whenever the unramified `AdaptedF` is.
 
 ## References

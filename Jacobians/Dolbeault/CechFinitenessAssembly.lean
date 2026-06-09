@@ -14,7 +14,7 @@
   isomorphism (hence NO Riemann mapping) is needed.  This is the key to the 14.7 route.
 
   The Montel finiteness is taken here as an explicit HYPOTHESIS `hMontel` so this assembly file is
-  sorry-free and builds independently of the (in-progress) `ChartDiskFiniteness`; the final wiring
+  complete and builds independently of the (in-progress) `ChartDiskFiniteness`; the final wiring
   discharges `hMontel` with that theorem.
 -/
 import Jacobians.Dolbeault.CechRefinementInjective
@@ -77,7 +77,7 @@ theorem exists_cechModel_zero_of_chartDiskMontel
   exists_cechModel_of_chartDiskMontel (0 : Divisor X) hMontel 𝔘
 
 /-- **The chart-disk Montel finiteness, discharged unconditionally** (Forster 14.9, D = 0).  This is
-exactly `ChartDiskCover.finiteDimensional_cechH1_chartDisk_complete` — now sorry-free and axiom-clean
+exactly `ChartDiskCover.finiteDimensional_cechH1_chartDisk_complete` — now complete and axiom-clean
 (the `leray` field / global Bott–Tu (0,1)-form is proven) — packaged as the `hMontel` hypothesis the
 assembly above consumes.  `[Nonempty X]` is supplied by `[ConnectedSpace X]`. -/
 theorem chartDiskMontel_zero :
@@ -93,7 +93,7 @@ theorem finiteDimensional_cechH1_zero (𝔘 : FiniteCover X) :
 
 /-- **`exists_cechModel 𝔘 0` — UNCONDITIONAL (the 14.7 route, D = 0, fully discharged).**  Combines the
 arbitrary-cover finiteness `finiteDimensional_cechH1_zero` with the artificial single-point model.  This
-is the sorry-free, axiom-clean D = 0 instance of `CechFinitenessWiring.exists_cechModel`. -/
+is the complete, axiom-clean D = 0 instance of `CechFinitenessWiring.exists_cechModel`. -/
 theorem exists_cechModel_zero (𝔘 : FiniteCover X) :
     ∃ (d : DiskOverlapData) (c : Coboundaries d),
       Nonempty (𝔘.cechH1 (0 : Divisor X) ≃ₗ[ℂ] c.supH1) :=

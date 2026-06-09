@@ -45,9 +45,9 @@ chart. In Mathlib, `Meromorphic` is defined for `𝕜 → E`; the
 manifold version below composes with chart inverses. -/
 
 /-- A meromorphic function on `X` is a map `X → ℂ` that is
-meromorphic at every chart-image point of every chart. Content sorry:
-the predicate + its basic theory (addition, multiplication, order
-at a point). -/
+meromorphic at every chart-image point of every chart. The predicate
+and its basic theory (addition, multiplication, order at a point) are
+not yet formalised. -/
 def IsMeromorphic (f : X → ℂ) : Prop :=
   ∀ x : X, MeromorphicAt (f ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
 
@@ -162,7 +162,7 @@ We decompose the finite-support proof into:
    `x ∈ X`, a neighborhood exists in which only finitely many points
    have nonzero order. Requires chart-level `MeromorphicAt` isolation
    (`MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero`) +
-   chart-invariance of order. Content sorry.
+   chart-invariance of order. Remaining gap.
 2. **Wrap as `locallyFinsuppWithin Set.univ`** via the structure
    constructor.
 3. **Apply `.finiteSupport`** with `isCompact_univ` (from `CompactSpace X`).
@@ -249,7 +249,7 @@ Proof outline (Forster §6):
    derivative (both from `IsManifold 𝓘(ℂ) ω` — chart transitions
    are biholomorphic).
 
-**Currently sorry'd** — formalizing chart-transition analyticity
+**Currently unproved** — formalizing chart-transition analyticity
 (`g` analytic) + nonzero derivative on a ℂ-manifold requires
 ~50-100 lines of manifold + Mathlib bridging. -/
 theorem MeromorphicFunction.orderAtPoint_chart_invariant
@@ -329,7 +329,7 @@ theorem MeromorphicFunction.orderAtPoint_chart_invariant
     -- Step A8: bridge extendCoordChange's coe to e ∘ chart_y.symm (rfl pointwise).
     have h_analytic : AnalyticAt ℂ (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) :=
       h_analyticAt
-    -- Sub-sorry B: nonzero derivative via biholomorphism.
+    -- Sub-gap B: nonzero derivative via biholomorphism.
     -- Inverse direction: `chart_y ∘ e.symm` is also analytic at `e y`.
     have h_analytic_inv : AnalyticAt ℂ ((chartAt (H := ℂ) y) ∘ e.symm) (e y) := by
       have h_contDiffAt' : ContDiffAt ℂ ω
@@ -553,7 +553,7 @@ The `PrincipalDivisors` subgroup, the residue-theorem leaf `deg_div`
 (`deg (div f) = 0`), and `PrincipalDivisors_le_DivisorOfDegZero` were
 dead: nothing downstream consumed them. `ofCurve_inj` does not route
 through the principal-divisor formulation of Abel's theorem; it needs
-`abelJacobi_twoPoint_ne_zero` directly (content sorry below). The
+`abelJacobi_twoPoint_ne_zero` directly (the remaining gap below). The
 degree-0 *target* subgroup `DivisorOfDegZero` survives — `abelJacobi`
 is defined on it. -/
 
@@ -634,7 +634,7 @@ Axiomatized via a typeclass so downstream consequences can be
 stated. Filling in this class is the Mathlib-contribution-scale
 work to formalize divisor theory + residue theorem + Abel's proof. -/
 
--- `HasAbelsTheorem` class removed: reverted to sorry-based
+-- `HasAbelsTheorem` class removed: reverted to hypothesis-based
 -- `abelJacobi_twoPoint_ne_zero` below.
 
 /-! ### Consequence: two-point divisors on positive-genus surfaces

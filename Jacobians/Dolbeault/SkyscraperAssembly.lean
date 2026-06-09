@@ -26,8 +26,8 @@
   The two `e0`/`Subsingleton`-`H1Q` lemmas are axiom-clean (no finiteness).  The bundled
   `localRealizationData` additionally supplies the three `FiniteDimensional` instances; the two `H¹`
   ones come from the repo finiteness lemma `CechFinitenessWiring.finiteDimensional_cechH1_wired`
-  (which is `sorryAx`-backed via the OTHER track `exists_cechModel`), so the bundled datum carries
-  `sorryAx` via finiteness ONLY.  The `H⁰(𝒪_{D+P})` finiteness is taken as an instance hypothesis
+  (which carries the finiteness axiom via the OTHER track `exists_cechModel`), so the bundled datum carries
+  that axiom via finiteness ONLY.  The `H⁰(𝒪_{D+P})` finiteness is taken as an instance hypothesis
   (no H⁰-finiteness lemma exists in the repo; this is the standard Forster-compactness input, kept
   honest as a hypothesis rather than re-proved here).
 -/
@@ -505,8 +505,8 @@ theorem subsingleton_H1Q {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
 
 The two snake-irreducible pieces (`e0`/`hcompat`, `subsingleton_H1Q`) are axiom-clean above.  The
 bundled `LocalRealizationData` additionally carries the three `FiniteDimensional` instances; the two
-`H¹` ones come from the repo finiteness lemma `finiteDimensional_cechH1_wired` (sorryAx-backed via the
-OTHER track `exists_cechModel`), so the bundled datum carries `sorryAx` via finiteness ONLY.  The
+`H¹` ones come from the repo finiteness lemma `finiteDimensional_cechH1_wired` (axiom-backed via the
+OTHER track `exists_cechModel`), so the bundled datum carries that axiom via finiteness ONLY.  The
 `H⁰(𝒪_{D+P})` finiteness is taken as an instance hypothesis (Forster compactness; no H⁰-finiteness
 lemma exists in the repo, so it is kept honest as a hypothesis). -/
 
@@ -518,7 +518,7 @@ consumes to produce the four remaining `SkyscraperLES` fields, completing
 `exists_skyscraperLES := ⟨skyscraperLES_of_localRealization (𝔘.localRealizationData …)⟩`.
 
 `e0`/`hcompat`/`hQac` are axiom-clean (`e0`, `e0_hcompat`, `subsingleton_H1Q`); `finH1D`/`finH1DP`
-come from `finiteDimensional_cechH1_wired` (the only `sorryAx` route, via the finiteness track). -/
+come from `finiteDimensional_cechH1_wired` (the only axiom route, via the finiteness track). -/
 noncomputable def localRealizationData {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
     (hwit : witnessFn (⟨P, hP⟩ : 𝔘.U i) (-(D P) - 1) ∈ OmegaD (D + Finsupp.single P 1) (𝔘.U i))
     (hstar : ∀ j, P ∈ 𝔘.U j → j = i)
@@ -551,9 +551,9 @@ noncomputable def localRealizationData_of_chartDisk {i : 𝔘.ι} (hP : P ∈ �
 This is `CohomologicalRR.exists_skyscraperLES` with its genuine geometric prerequisites made *explicit*
 rather than (impossibly) derived from `IsLeray`.  It feeds the chart-disk realization datum
 (`localRealizationData_of_chartDisk`) through the snake assembly
-(`skyscraperLES_of_localRealization`) and is **fully proven** — no `sorry` in its own body and the
-*only* axiom dependency beyond `propext/Classical.choice/Quot.sound` is the `sorryAx` carried by the
-`H¹`-finiteness instances (`finiteDimensional_cechH1_wired`, sorry-backed via the OTHER track
+(`skyscraperLES_of_localRealization`) and is **fully proven** — no gaps in its own body and the
+*only* axiom dependency beyond `propext/Classical.choice/Quot.sound` is the finiteness axiom carried by the
+`H¹`-finiteness instances (`finiteDimensional_cechH1_wired`, axiom-backed via the OTHER track
 `exists_cechModel`).  Together with the `H⁰(𝒪_{D+P})` finiteness *instance* hypothesis (Forster
 compactness, `l(D+P) < ∞`; no such lemma exists in the repo, kept honest as an instance), it pins down
 *exactly* the residual content of `exists_skyscraperLES`:

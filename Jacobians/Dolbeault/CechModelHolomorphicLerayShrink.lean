@@ -18,7 +18,7 @@
   `coverSetImage a`.  The geometric witnesses (transition analytic on `Wov`, mapping it into the
   `b`-side image) are re-proven over the shrinking images, reusing the same chart-change atoms.
 
-  All sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`.
+  All complete, axiom-clean `[propext, Classical.choice, Quot.sound]`.
 -/
 import Jacobians.Dolbeault.CechModelHolomorphicDelta
 

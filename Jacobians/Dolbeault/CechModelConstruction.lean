@@ -1,7 +1,7 @@
 /-
   Čech finiteness — instantiating the acyclic `exists_cechModel` via the completed disk-acyclicity.
 
-  `CechFinitenessWiring.exists_cechModel` is the single remaining finiteness sorry (Forster 14.9):
+  `CechFinitenessWiring.exists_cechModel` (Forster 14.9):
   every finite cover `𝔘` admits a chart-disk Leray model (`DiskOverlapData` + `Coboundaries`, including
   the `leray` disk-acyclicity field) whose sup-norm `H¹` is `ℂ`-linearly isomorphic to the genuine
   germ-class `𝔘.cechH1 D`.  As scoped in `CechRefinement.lean`'s `## PLAN`, the FULL statement
@@ -9,7 +9,7 @@
   iso for a strictly-finer Leray refinement), a greenfield ~several-hundred-LoC piece on top of the
   proven disk ∂̄-atoms.  That is NOT what the newly-completed disk-acyclicity unblocked.
 
-  `CechFinitenessWiring` already banks (sorry-free) the END-TO-END model assembly for the ACYCLIC case:
+  `CechFinitenessWiring` already provides the END-TO-END model assembly for the ACYCLIC case:
   `exists_cechModel_of_subsingleton` discharges `exists_cechModel 𝔘 D` whenever `𝔘.cechH1 D` is a
   SUBSINGLETON, via the trivial model `DiskOverlapData.empty.trivialCoboundaries` (whose `leray` field
   is discharged and whose `supH1 = 0`) and `LinearEquiv.ofSubsingleton`.
@@ -32,7 +32,7 @@
   `## SURJECTIVITY`).  The forward `germ → BddHol` cochain map is built for `D = 0`
   (`CechModelCochain`/`CechModelDatum`); the inverse, the δ-square, and STEP B are not.
 
-  All declarations here are sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`.
+  All declarations here are complete, axiom-clean `[propext, Classical.choice, Quot.sound]`.
 -/
 -- Only the model TYPES / abstract spine (`DiskOverlapData`, `Coboundaries`, `supH1`,
 -- `exists_cechModel_of_subsingleton`, `trivialCoboundaries`, `DiskOverlapData.empty`) are needed

@@ -76,7 +76,7 @@ The construction is in two honest levels.
 
 ## Soundness
 
-No `axiom`, no `sorry`, **no false field**.  Every field of `GlobalTraceData`/`FormResidueTrace` is a
+No `axiom`, no gaps, **no false field**.  Every field of `GlobalTraceData`/`FormResidueTrace` is a
 *true, satisfiable* residue statement (Miranda's honest content), witnessed non-vacuously by the
 empty-pole case.  The germ-equality `agree`/`agree_infty` of `TraceRationalityDataNF` is **never used**.
 The `∞`-fibre is the **sound** `InftyFibreDataNF` (never the unsatisfiable `InftyFibreData`).  All public
@@ -87,7 +87,7 @@ declarations are authoritatively `[propext, Classical.choice, Quot.sound]` (`#pr
 * Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, pp. 251–256 (the trace `Tr`, Lemma
   3.2 as a **residue** identity, the residue theorem on `ℂℙ¹`).
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.
-* `docs/gate_a_sound_patched_close_2026-06-09.md`, `docs/gate_a_cover_genericity_textbook_2026-06-08.md`.
+* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, pp. 251–256.
 -/
 
 noncomputable section

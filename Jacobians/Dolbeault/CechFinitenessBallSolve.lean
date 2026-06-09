@@ -2,7 +2,7 @@
   Dolbeault ladder — discharging `HasChartAnalyticCorrectors 𝔙` for a **shared-chart disk cover**:
   the ball-solve that the `CechDiskAcyclicAssembly` chain reduced germ `H¹(disk, 𝒪) = 0` to.
 
-  `CechDiskAcyclicAssembly` reduced germ-level `H¹(disk, 𝒪) = 0` sorry-free to the single honest
+  `CechDiskAcyclicAssembly` reduced germ-level `H¹(disk, 𝒪) = 0` to the single honest
   predicate `HasChartAnalyticCorrectors 𝔙` (ambient chart-analytic correctors `H_i : X → ℂ` whose
   differences split the cocycle's analytic representatives `holoFn (s_{ij})` off a discrete set on
   each overlap), via `cechH1_subsingleton_of_chartAnalyticCorrectors`.  This file PRODUCES
@@ -21,7 +21,7 @@
   `CechDiskAcyclicProof` (`holoFn` / `toGerm_holoFn` / `chartHoloRep*` / `ballSplit_glued` /
   `dbar_fun_sum`), `DbarDiskCohomology` (`dbar_solvable_ball`), and `ChartDiskCover`.
 
-  NO `sorry` anywhere: everything not sorry-free is a hypothesis predicate or written prose.
+  No gaps anywhere: everything not yet closed is a hypothesis predicate or written prose.
 -/
 import Jacobians.Dolbeault.CechDiskAcyclicAssembly
 import Jacobians.Dolbeault.CechDiskAcyclicProof
@@ -862,7 +862,7 @@ theorem isOpen_Ω (𝔇 : SharedChartCover X) (i : 𝔇.toFiniteFamily.ι) : IsO
 
 Given holomorphic correctors `η̂_i` on the chart-image discs `ball ∩ Ω_i` (the output of the ball
 solve `ballSplit_glued`), the ambient functions `H_i := η̂_i ∘ φ` are chart-analytic on `U_i` and their
-differences split `holoFn(s_{ij})`.  These two discharges are sorry-free; what remains (isolated as the
+differences split `holoFn(s_{ij})`.  These two discharges are complete; what remains (isolated as the
 predicate `HasBallSplitData`) is producing the ball-wide smooth primitives + glued `∂̄`-datum to feed
 `ballSplit_glued`. -/
 
@@ -907,8 +907,8 @@ So the SINGLE remaining analytic obligation is the **global glued `∂̄`-datum*
 Bott–Tu double sum `∑_{q,k}(ρ_q·holoFn(s_{qk}))·∂̄ρ_k` — globally `C^∞` because each term carries the
 confining factor `∂̄ρ_k` (the 3-case `tsupport` argument of `DolbeaultComparisonInverse.cechTerm`).
 This is the documented OBSTRUCTION-3 globalization; it is isolated below as the predicate
-`HasGluedDbarDatum` — never a `sorry`.  Everything downstream (the ball solve, holomorphy of `η̂_i`,
-chart-analyticity of `H_i := η̂_i ∘ φ`, and the difference identity) is discharged sorry-free here. -/
+`HasGluedDbarDatum` — an explicit hypothesis, not a gap tactic.  Everything downstream (the ball solve, holomorphy of `η̂_i`,
+chart-analyticity of `H_i := η̂_i ∘ φ`, and the difference identity) is discharged here. -/
 
 /-- **`∂̄ = 0 ⇒ holomorphic`, local form (Wirtinger).**  A function `ℝ`-differentiable at `x` with
 vanishing Wirtinger `∂̄` is `ℂ`-differentiable at `x`.  Local variant of
@@ -966,19 +966,19 @@ a globally-`C^∞` function `ω̂ : ℂ → ℂ` agreeing with `∂̄(ĥ_i) = �
 `Ω_i ∩ ball`.  This is the chart-pushforward of the Bott–Tu double-sum datum
 `∑_{q,k}(ρ_q·holoFn(s_{qk}))·∂̄ρ_k` (the documented OBSTRUCTION-3 PoU globalization, globally `C^∞` via
 `cechTerm`'s 3-case `tsupport` argument).  Isolated as a predicate so the discharge below is
-sorry-free; the precise remaining gap. -/
+the precise remaining gap. -/
 def HasGluedDbarDatum (𝔇 : SharedChartCover X) : Prop :=
   ∀ s : ↥(𝔇.toFiniteFamily.cocycles1 (0 : Divisor X)),
     ∃ dbarDatum : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) dbarDatum ∧
       ∀ i, ∀ z ∈ Metric.ball 𝔇.ballCenter 𝔇.radius ∩ 𝔇.Ω i,
         DbarDisk.dbar (chartPrim 𝔇 s i) z = dbarDatum z
 
-/-- **`HasChartAnalyticCorrectors` from the glued `∂̄`-datum (sorry-free).**  Given the global glued
+/-- **`HasChartAnalyticCorrectors` from the glued `∂̄`-datum.**  Given the global glued
 datum `ω̂`, solve `∂̄u = ω̂` on the ball (`dbar_solvable_ball`) and set `η̂_i := ĥ_i − u` on `Ω_i ∩ ball`:
 `η̂_i` is holomorphic there (`∂̄η̂_i = ∂̄ĥ_i − ω̂ = 0`, `differentiableAt_of_dbar_eq_zero`), so
 `H_i := η̂_i ∘ φ` is chart-analytic on `U_i` (`analyticAt_compChart_of_differentiableOn`), and the
 differences split `holoFn(s_{ij})` on each overlap (`η̂_j − η̂_i = ĥ_j − ĥ_i`, then `coverPrim_diff`).
-This is STEP C.4 + the §4 discharges, all sorry-free here. -/
+This is STEP C.4 + the §4 discharges, all complete here. -/
 theorem hasChartAnalyticCorrectors_of_hasGluedDbarDatum (𝔇 : SharedChartCover X)
     (H : HasGluedDbarDatum 𝔇) : HasChartAnalyticCorrectors 𝔇.toFiniteFamily := by
   intro s
@@ -1049,7 +1049,7 @@ theorem isDiskAcyclic_of_hasGluedDbarDatum (𝔇 : SharedChartCover X)
   isDiskAcyclic_of_funcLevel 𝔇.toFiniteFamily (0 : Divisor X)
     (functionDiskAcyclic_of_hasGluedDbarDatum 𝔇 H)
 
-/-- **`H¹(disk, 𝒪) = 0` for a shared-chart disk cover, from the glued `∂̄`-datum (sorry-free).**  The
+/-- **`H¹(disk, 𝒪) = 0` for a shared-chart disk cover, from the glued `∂̄`-datum.**  The
 end-to-end germ-level collapse modulo the single remaining globalization obligation
 `HasGluedDbarDatum`: the §0–§5 discharge produces `HasChartAnalyticCorrectors`, and the imported
 `cechH1_subsingleton_of_chartAnalyticCorrectors` collapses every class of `cechH1 0`. -/
@@ -1062,7 +1062,7 @@ end Jacobians.Dolbeault
 
 /-! ## Status and the EXACT remaining goal
 
-WHAT IS DELIVERED HERE (all sorry-free; axiom-clean `[propext, Classical.choice, Quot.sound]`):
+WHAT IS DELIVERED HERE (all complete; axiom-clean `[propext, Classical.choice, Quot.sound]`):
 
   * **§0 — Ported PoU machinery (fallback rung (a)):** `ofRealCM`, `coverPoU` / `coverPoU_subordinate`
     (the subordinate smooth partition of unity over a generic `FiniteCover`), `rhoC` / `sum_rhoC` /
@@ -1124,7 +1124,7 @@ This is the chart-pushforward of the Bott–Tu **double-sum** glued `∂̄`-datu
 `DolbeaultComparisonInverse.cechTerm` makes the whole double sum globally smooth and `i`-independent.
 (`chartPrim_diff` shows the per-`i` data are consistent: the `∂̄ĥ_i` are forced to agree on overlaps.)
 This is the single OBSTRUCTION-3 PoU globalization that "reduced-but-didn't-close" twice; it is the only
-remaining gap, written as the predicate `HasGluedDbarDatum`, NEVER a `sorry`.  Producing `ω̂` requires
+remaining gap, written as the predicate `HasGluedDbarDatum`, an explicit obligation not a gap tactic.  Producing `ω̂` requires
 PORTING the double-sum `cechTerm` analytic content into the chart-function setting (the documented
 ~400-LoC step), and — combined with the §0–§5 chain above — discharges `HasGluedDbarDatum`, hence
 `HasChartAnalyticCorrectors`, hence germ-level `H¹(disk, 𝒪) = 0`, for a shared-chart disk cover.

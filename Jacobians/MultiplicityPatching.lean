@@ -59,11 +59,11 @@ escapes the finitely many sheets) closes the global count.
 ## Status
 
 The structure and the structure ⇒ local-constancy bridge are delivered
-sorry-free and axiom-clean.  The per-`w₀` *construction* of a
+complete and axiom-clean.  The per-`w₀` *construction* of a
 `MultiplicityPatchingData` (the genuine §17.9 analytic content: finite fibre via
 properness, per-sheet normal form, the `m`-fold simple-root multiplicity split,
 no-escape) is the residual obligation; the structure isolates it into *true,
-non-vacuous* fields, never `sorry`/`False`.
+non-vacuous* fields, never `False`.
 
 ## References
 
@@ -499,7 +499,7 @@ connectedness/nonnegativity reductions give the proper-map-degree existential
 that `Jacobians.exists_properMapDegree` expects.  This is the exact wiring the
 parent invokes; the only remaining input is the construction of the patching
 supply (the genuine §17.9 analytic content, whose per-chart core is delivered
-sorry-free above as `Planar.orderSum_eq_of_analyticOrder`). -/
+complete above as `Planar.orderSum_eq_of_analyticOrder`). -/
 
 /-- **`ProperMapDegreeData f` from the multiplicity-patching supply.** -/
 def properMapDegreeData_of_pointwiseMultiplicityPatching

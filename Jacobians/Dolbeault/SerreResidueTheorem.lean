@@ -86,18 +86,18 @@ assumes but does not prove from scratch. **(b) Step-1 rationality is no longer a
 * **(a) Genericity** — the *single* remaining obligation: a nonconstant meromorphic `f` adapted to
   `α`'s poles (Miranda p. 254: *"simply choose any nonconstant meromorphic function `f`"*; existence is
   Forster 16.11/RR `exists_riemannRoch_divisor` / `exists_nonconstant_meromorphicFunction`, already in
-  this repo). See `docs/gate_a_cover_genericity_textbook_2026-06-08.md`: **no** Riemann–Roch-with-jets
+  this repo). **No** Riemann–Roch-with-jets
   is needed. It is named `TraceRationalityExists` below: `∃ f, Nonempty (TraceRationalityDataNF …)`,
   with `serreTraceExists_of_traceRationalityExists` / `residueTheorem_of_traceRationalityExists`
   reducing `SerreTraceExists` / `∑ Res = 0` to it, and `traceRationalityExists_of_holomorphic` the
   non-vacuity witness.
 
 Everything *downstream* of the genericity `TraceRationalityExists` — Step-1 rationality, Steps 2–4, the
-bridge — is proved sorry-free in this file and its imports.
+bridge — is proved complete in this file and its imports.
 
 ## Soundness
 
-No `axiom`, no `sorry` on a false statement, no false structure field. The reused `SerreTraceData`
+No `axiom`, no gap on a false statement, no false structure field. The reused `SerreTraceData`
 (= `FormResidueTrace`) fields are each a *true, satisfiable* statement (Miranda's honest geometric
 content), witnessed non-vacuously by `serreTraceExists_of_holomorphic` / `traceRationalityExists_of_holomorphic`
 (empty poles). The bridge rides on the **sound** trace-rationality assembly
@@ -111,7 +111,7 @@ declarations are authoritatively `[propext, Classical.choice, Quot.sound]` (`#pr
   Lemma 3.2, formula (3.1), the algebraic proof of the residue theorem).
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §16–17 (existence of meromorphic functions;
   residue functional).
-* `docs/gate_a_cover_genericity_textbook_2026-06-08.md`, `docs/gate_a_sound_patched_close_2026-06-09.md`.
+* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, p. 254 (adapted cover genericity).
 -/
 
 noncomputable section
@@ -447,8 +447,7 @@ that the trace's rationality (Step 1) is proven content (`traceRationalityDataNF
 `serreTraceExists_of_patchedGeometry`).  Existence of a nonconstant `f` is already in the repo
 (`Jacobians.Dolbeault.exists_nonconstant_meromorphicFunction` / RR `exists_riemannRoch_divisor`); the
 residual is producing the §VIII.3 trace data (the geometric inputs of `serreTraceExists_of_patchedGeometry`)
-for an *adapted* such `f` (a generic-`f`-avoids-finite-bad-set argument, see
-`docs/gate_a_cover_genericity_textbook_2026-06-08.md`: NO Riemann–Roch-with-jets is needed). -/
+for an *adapted* such `f` (a generic-`f`-avoids-finite-bad-set argument; NO Riemann–Roch-with-jets is needed). -/
 
 /-- **The genericity obligation.**  A nonconstant cover `f` carrying the value-correct §VIII.3
 rational-trace bundle for `α = ω₀·g` over `poles` exists.  This is the *single* remaining substrate gap:

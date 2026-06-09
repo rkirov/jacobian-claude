@@ -29,7 +29,7 @@ exactly one preimage in the chosen neighborhood.
 
 ## Status
 
-* **`k = 1` proof**: complete, no `sorry`, no `axiom`. Routes through the
+* **`k = 1` proof**: complete, no gaps, no `axiom`. Routes through the
   **inverse function theorem** (`HasStrictFDerivAt.toOpenPartialHomeomorph`).
 * **`k ≥ 2`**: not in this file. The general case requires the argument
   principle / Rouché theorem, which is not packaged at the mathlib pin

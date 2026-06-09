@@ -35,7 +35,7 @@ codomain `Y` back to the manifold side `X`.
 These two lemmas together close the chart-local detour step in the broader
 "connectivity globalization minus finitely many critical points" pipeline.
 
-No `axiom`, no `sorry`. The mathematical content reduces to
+No `axiom`, no gaps. The mathematical content reduces to
 `OpenPartialHomeomorph.image_eq_target_inter_inv_preimage` plus
 `JoinedIn.map_continuousOn`.
 -/

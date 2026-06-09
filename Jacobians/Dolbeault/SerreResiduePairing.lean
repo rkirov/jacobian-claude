@@ -12,12 +12,12 @@ import Jacobians.Dolbeault.SerreDualityPairing
 /-!
 # Forster §17.5 residue pairing + §17.6 injectivity — the global `Res` descent and `ι_D`
 
-This file builds the next genuinely-Serre piece of `docs/serre_17_build_plan.md` (step 4): the global
+This file builds the next genuinely-Serre piece (Forster §17.5, step 4): the global
 residue functional `Res` on the Mittag–Leffler distribution picture (Forster §17.2–17.3), the residue
 **pairing** `ι_D : L(K−D) → (H¹(X,𝒪_D))*` (Forster §17.5), and the §17.6 **injectivity** of `ι_D`
 (the EASY half), giving `lDim (K−D) ≤ h1Dim D` — at `D = 0`, `genus ≤ h1Dim 0`.
 
-## What is PROVEN here (sorry-free, axiom-clean)
+## What is PROVEN here (complete, axiom-clean)
 
 * **The global-`Res` well-definedness `res_eq_zero_of_globalMeromorphic`** (Forster §17.3): a
   Mittag–Leffler distribution `μ = ω₀·g` whose principal part `g = f.toFun` comes from a *global*
@@ -47,7 +47,7 @@ We isolate exactly that descent into one named structure `SerreResidueRealizatio
 the *precise* mathematical statements the descent produces (the bilinear residue pairing on
 `L(K−D) × cechH1 D` valued in `ℂ`, ℂ-linear in each argument, with the residue-1 non-degeneracy
 witness). The pairing `ι`, its linearity, §17.6 injectivity, and `lDim (K−D) ≤ h1Dim D` are all
-**derived** from it sorry-free. See the field docstrings and `docs/serre_17_build_plan.md`.
+**derived** from it. See the field docstrings.
 
 ## Soundness
 
@@ -58,7 +58,7 @@ forces `⟨f,ξ⟩ = 1 ≠ 0`), it does **not** route through Riemann–Roch (RR
 `lSysModule`, so there is no `toFun`-junk `lDim ≡ 0` collapse. Authoritative axiom check below.
 
 References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.2–17.6 (pp. 132–140);
-`docs/serre_17_build_plan.md` (steps 3–4); Miranda, *Algebraic Curves and Riemann Surfaces*, §VIII.3.
+Miranda, *Algebraic Curves and Riemann Surfaces*, §VIII.3.
 -/
 
 noncomputable section
@@ -187,7 +187,7 @@ map into the dual) and equipped with the **§17.6 residue-1 non-degeneracy witne
 
 This is the precise interface the global `Res` descent (Part 1) + the Mittag–Leffler / cup-product
 realization (greenfield: no Ω-sheaf Čech complex, no cup product, no `cechH1 ↔ Mittag–Leffler`
-connecting map are built — a multi-thousand-LoC piece, see `docs/serre_17_build_plan.md`) must supply.
+connecting map are built — a multi-thousand-LoC piece) must supply.
 It is **sound**: `witness` is the genuine residue-1 datum (the pairing is non-degenerate, not a junk/zero
 map), `L(K−D)` is the junk-free `lSysModule` (no `toFun`-junk collapse), and it does **not** route
 through Riemann–Roch (no circularity — RR depends on this).

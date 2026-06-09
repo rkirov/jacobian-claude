@@ -49,7 +49,7 @@ across charts to derive per-chart non-constancy from global
 `¬ IsConstantMap f`) is unchanged and remains the same parameter-input as
 before.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

@@ -38,7 +38,7 @@
   `Int.induction_on` on the coefficient (a single point, `±1` at a time) and `Finsupp.induction` on the
   divisor (one point at a time), with base `D = 0`.
 
-  Everything is `sorry`-free and axiom-clean (`[propext, Classical.choice, Quot.sound]`).
+  Everything is complete and axiom-clean (`[propext, Classical.choice, Quot.sound]`).
 -/
 import Jacobians.Dolbeault.CechFinitenessAssembly
 import Jacobians.Dolbeault.SkyscraperArrow
@@ -419,7 +419,7 @@ theorem finiteDimensional_cechH1_general (𝔘 : FiniteCover X) (D : Divisor X) 
     FiniteDimensional ℂ (𝔘.cechH1 D) :=
   𝔘.finiteDimensional_cechH1_of_zero (finiteDimensional_cechH1_zero 𝔘) D
 
-/-- **`exists_cechModel 𝔘 D` — the full, general-divisor statement, PROVEN sorry-free.**  Combines the
+/-- **`exists_cechModel 𝔘 D` — the full, general-divisor statement, PROVEN complete.**  Combines the
 general-divisor finiteness `finiteDimensional_cechH1_general` (this file) with the artificial
 single-point Montel model `exists_cechModel_of_finiteDimensional` (`CechModelArtificial`).  This is
 exactly the statement of `CechFinitenessWiring.exists_cechModel` for an ARBITRARY divisor `D` — the

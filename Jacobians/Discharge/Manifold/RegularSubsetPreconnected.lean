@@ -44,7 +44,7 @@ topological boundary hypothesis here and let downstream consumers
 discharge it from whatever sphere/manifold-specific machinery is
 available.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

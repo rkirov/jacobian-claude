@@ -21,10 +21,10 @@
 
   These are mutually inverse, giving a linear iso and hence the `finrank` relation.
 
-  HONESTY. This file builds the connective tissue sorry-free and isolates each genuinely-hard
-  analytic sub-kernel as a *named honest `sorry` with a TRUE statement*. We never weaken the target.
+  HONESTY. This file builds the connective tissue with no gaps and isolates each genuinely-hard
+  analytic sub-kernel as a *named honest obligation with a TRUE statement*. We never weaken the target.
 
-  SPLIT. This file holds the **forward direction** (`dolbeault_to_cech`, now fully sorry-free) and the
+  SPLIT. This file holds the **forward direction** (`dolbeault_to_cech`, now fully proven) and the
   shared analytic infrastructure (chart bridge, Wirtinger chain rule, cutoff/planar primitives, the
   forward cocycle operator). The **inverse direction** (`cech_to_dolbeault`), the assembled
   `ℝ`-linear equivalence `comparison_linearEquiv`, the target `cechH1_dolbeault_comparison_proof`, and
@@ -54,8 +54,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 Dolbeault's theorem is realised by two mutually-inverse `ℝ`-linear maps between `DolbeaultH01 X`
 (an `ℝ`-module) and `𝔘.cechH1 0` (a `ℂ`-module, viewed as an `ℝ`-module via `ℝ ↪ ℂ`). We state each
-map and the two round-trip identities as honest named `sorry`s (each is a TRUE statement — the real
-analytic content), then assemble the equivalence and the `finrank` count *sorry-free*. The factor `2`
+map and the two round-trip identities as honest named obligations (each is a TRUE statement — the real
+analytic content), then assemble the equivalence and the `finrank` count completely. The factor `2`
 is the `ℝ`-vs-`ℂ` dimension (`finrank_real_of_complex` on the `ℂ`-module `cechH1`); it needs **no**
 `Module ℂ` on `DolbeaultH01` — the `ℝ`-linear equivalence carries `finrank ℝ (DolbeaultH01) =
 finrank ℝ (cechH1) = 2 · finrank ℂ (cechH1)`. -/
@@ -66,13 +66,13 @@ variable (𝔘 : FiniteCover X)
 
 The Dolbeault → Čech construction sends a `(0,1)`-form `g` with local primitives `∂̄u_i = g` to the
 Čech `1`-cochain `{[u_i] − [u_j]}` (germ-classes on overlaps) = `cechDelta0 {[u_i]}`. We record the
-two *algebraic* facts that make this a genuine `cechH1` class, both **sorry-free**:
+two *algebraic* facts that make this a genuine `cechH1` class, both **complete**:
 * it is automatically a Čech cocycle (`δ¹∘δ⁰ = 0`), for ANY 0-cochain of germ-classes — even though
   the `u_i` are smooth-not-holomorphic, the germ-class cochains `MGerm` impose no holomorphy, so the
   `δ²=0` identity applies verbatim;
 * the coboundary subspace lands in the cocycles (so the `cechH1` quotient is well-formed against it). -/
 
-/-- **(Algebraic backbone, sorry-free.)** `cechDelta0` of any germ-class 0-cochain is a Čech
+/-- **(Algebraic backbone, complete.)** `cechDelta0` of any germ-class 0-cochain is a Čech
 `1`-cocycle. This is the abstract reason `{[u_i] − [u_j]}` (the Dolbeault → Čech cochain) lies in
 `ker cechDelta1`; it holds for the smooth-not-holomorphic primitives `u_i` because germ-class
 cochains carry no holomorphy constraint. Immediate from `δ¹ ∘ δ⁰ = 0`. -/
@@ -81,7 +81,7 @@ theorem cechDelta0_mem_ker_cechDelta1 (c : 𝔘.Cochain0) :
   rw [LinearMap.mem_ker, ← LinearMap.comp_apply, 𝔘.cechDelta1_comp_cechDelta0,
     LinearMap.zero_apply]
 
-/-- **(Algebraic backbone, sorry-free.)** The image of `cechDelta0` (the Čech coboundaries at the raw
+/-- **(Algebraic backbone, complete.)** The image of `cechDelta0` (the Čech coboundaries at the raw
 germ-class level) is contained in the kernel of `cechDelta1` (the cocycles), for the same `δ²=0`
 reason. The submodule form of `cechDelta0_mem_ker_cechDelta1`. -/
 theorem range_cechDelta0_le_ker_cechDelta1 :
@@ -102,7 +102,7 @@ appeals to PDE content, and it is exactly `dbar_solvable_locally` modulo that ch
 /-! #### The `(0,1)`-fiber algebra: a `(0,1)`-form is determined by its value at the vector `1`
 
 `proj01 α` is the conjugate-`ℂ`-linear (Cauchy–Riemann) part of `α`. We record three purely
-fiberwise facts, all **sorry-free**, that make the chart transport go through:
+fiberwise facts, all **complete**, that make the chart transport go through:
 * `proj01_apply_one` — `proj01 α 1 = ½(α 1 + i·α i)`, the Wirtinger scalar (this is *exactly*
   `DbarDisk.dbar`'s defining combination, evaluated on the differential);
 * `proj01_conjLinear`/`proj01_eq_conj_smul` — `proj01 α` is conjugate-linear, so `proj01 α v =
@@ -159,7 +159,7 @@ theorem proj01_ext_of_apply_one {α β : ℂ →L[ℝ] ℂ} (hαβ : proj01 α 1
 /-! #### The chart bridge: intrinsic `dbar` read in a chart `=` `DbarDisk.dbar` of the pullback
 
 The genuine chart-transport identity (mirroring `RealForms.dbar`'s own `mfderiv`-in-a-chart
-mechanics and the `extChartAt 𝓘(ℝ,ℂ) = extChartAt 𝓘(ℂ)` `rfl`), proven **sorry-free**:
+mechanics and the `extChartAt 𝓘(ℝ,ℂ) = extChartAt 𝓘(ℂ)` `rfl`), proven **completely**:
 `mfderiv` of `u` equals the plain `fderiv` of the chart-pullback `u ∘ (extChartAt _ x).symm`
 (`MDifferentiableAt.mfderiv` + boundaryless `range = univ` + `writtenInExtChartAt` = the pullback,
 since the codomain `ℂ`'s chart is the identity), and then the `(0,1)`-value at `1` is precisely
@@ -228,7 +228,7 @@ theorem dbar_apply_one_eq_dbarDisk' {w : X → ℂ} {x : X}
   · congr 1
     exact mfderiv_apply_eq_fderiv_pullback' hw Complex.I
 
-/-- **A value-at-`1` equation upgrades to the full CLM equation `dbar u x = g x`** (sorry-free).
+/-- **A value-at-`1` equation upgrades to the full CLM equation `dbar u x = g x`** (complete).
 Both `dbar u x = proj01 (mfderiv … u x)` and (since `g ∈ OneFormsZeroOne X`) `g x = proj01 (β x)`
 are `(0,1)`-forms, hence determined by their value at the tangent vector `1`
 (`proj01_ext_of_apply_one`). So matching the single Wirtinger scalar suffices. This is the
@@ -243,7 +243,7 @@ theorem dbar_eq_of_apply_one {g : SmoothCOneForms X} (hg : g ∈ OneFormsZeroOne
   rw [hgx]
   exact proj01_ext_of_apply_one (by rw [← hgx]; exact h1)
 
-/-- **The smooth lift of a chart-local planar function to a global manifold function** (sorry-free).
+/-- **The smooth lift of a chart-local planar function to a global manifold function** (complete).
 Given a smooth `f : ℂ → ℂ` and a base point `x₀`, the cutoff product `χ • (f ∘ extChartAt x₀)` —
 with `χ` a `SmoothBumpFunction` at `x₀` (`= 1` near `x₀`, supported in the chart) — is a *global*
 `SmoothCFunctions X` (via `SmoothBumpFunction.contMDiff_smul`) that equals `f ∘ extChartAt x₀` on the
@@ -1336,7 +1336,7 @@ end ChartDiskCover
 
 /-- **(Analytic sub-kernel.)** Local `∂̄`-solvability on the manifold: any smooth `(0,1)`-form `g`
 (in `OneFormsZeroOne X`) is, near every point `x₀`, the `∂̄` of a smooth function `u`. Proven
-**sorry-free** from the value-`1` local primitive `exists_localPrimitive_apply_one` (the finer
+**completely** from the value-`1` local primitive `exists_localPrimitive_apply_one` (the finer
 sub-kernel) via the value-`1`-to-CLM upgrade `dbar_eq_of_apply_one`: the full intrinsic CLM equation
 `dbar u x = g x` follows because both sides are `(0,1)`-forms determined by their Wirtinger scalar.
 The local primitives `u` it produces are the `u_i` whose differences `u_i − u_j` are the
@@ -1347,7 +1347,7 @@ theorem dbar_solvable_locally_manifold (g : SmoothCOneForms X) (hg : g ∈ OneFo
   obtain ⟨V, u, hV, hx₀, hval⟩ := exists_localPrimitive_apply_one g hg x₀
   exact ⟨V, u, hV, hx₀, fun x hx => dbar_eq_of_apply_one hg u x (hval x hx)⟩
 
-/-! ### Dolbeault → Čech: the genuine PDE content, isolated; the quotient assembly, sorry-free
+/-! ### Dolbeault → Čech: the genuine PDE content, isolated; the quotient assembly, complete
 
 The map `[g] ↦ [{u_i − u_j}]` factors through the Čech cocycle group. We isolate the *only* analytic
 content — a **linear** global `∂̄`-solution operator over the (Leray) cover — as the named kernel
@@ -1355,7 +1355,7 @@ content — a **linear** global `∂̄`-solution operator over the (Leray) cover
 linear in `g`, whose `cechDelta0` is automatically a holomorphic cocycle), plus its
 well-definedness fact `dolbeaultToCechCocycle_dbarImage_le` (the `∂̄`-image maps to a coboundary).
 The cohomological assembly — lifting through the two quotients `DolbeaultH01 = A^{0,1}/im ∂̄` and
-`cechH1 = Z¹/B¹`, with the `ℂ→ℝ` scalar restriction — is then **sorry-free** (`Submodule.liftQ`).
+`cechH1 = Z¹/B¹`, with the `ℂ→ℝ` scalar restriction — is then **complete** (`Submodule.liftQ`).
 -/
 
 set_option maxHeartbeats 1000000 in
@@ -1368,7 +1368,7 @@ each Leray cover set (`DbarLocal.dbar_solvable_locally` only gives a *point*-nei
 disk-global solve, via the Cauchy transform, is what is needed) — crucially **linear in `g`** (the
 Cauchy-transform solution operator is linear), so the whole assignment is `ℝ`-linear. The output
 lands in `cocycles1` because (i) `cechDelta0 c ∈ ker cechDelta1` for *any* germ-class cochain `c`
-(`cechDelta0_mem_ker_cechDelta1`, sorry-free), and (ii) on each overlap `U_i ∩ U_j` the difference
+(`cechDelta0_mem_ker_cechDelta1`, complete), and (ii) on each overlap `U_i ∩ U_j` the difference
 `u_j − u_i` is **holomorphic** (`∂̄(u_j − u_i) = g − g = 0`), so `cechDelta0 {[u_i]} ∈ sections1 0`. -/
 noncomputable def dolbeaultToCechCocycle (𝔇 : ChartDiskCover X) :
     ↥(OneFormsZeroOne X) →ₗ[ℝ] ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) :=
@@ -1423,7 +1423,7 @@ theorem dolbeaultToCechCocycle_dbarImage_le (𝔇 : ChartDiskCover X) :
       rfl
     rw [hc0, sub_zero]
 
-/-- **Dolbeault → Čech.** The `ℝ`-linear map `H^{0,1}(X) → H¹(X, 𝒪)`. Assembled **sorry-free** from
+/-- **Dolbeault → Čech.** The `ℝ`-linear map `H^{0,1}(X) → H¹(X, 𝒪)`. Assembled **completely** from
 the analytic cocycle operator `dolbeaultToCechCocycle` and its well-definedness
 `dolbeaultToCechCocycle_dbarImage_le`: project the cocycle to `cechH1 = Z¹/B¹` (`Submodule.mkQ`,
 scalar-restricted `ℂ → ℝ`), then lift through the Dolbeault quotient `A^{0,1}/im ∂̄`

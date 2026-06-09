@@ -1,7 +1,7 @@
 /-
   Čech finiteness — the germ ↔ sup-norm comparison ("K-bridge"), manifold side.
 
-  Part of discharging `exists_cechModel` (Forster 14.9); see `docs/cech_finiteness_research.md`.
+  Part of discharging `exists_cechModel` (Forster 14.9).
   Companion to `CechModelBridge.lean` (the `BddHol` codomain side). Here: the chart-pullback of a
   holomorphic `𝒪`-section is `AnalyticOn` the chart-image — the analyticity hypothesis that
   `BddHol.ofAnalyticOn` consumes.

@@ -34,7 +34,7 @@
   `H⁰(0)` is finite because `finrank ℂ H⁰(0) = h0Dim 0 = l(0) = 1 > 0`
   (`h0Dim_eq_lDim` + `lDim_zero_eq_one`, Liouville), via `FiniteDimensional.of_finrank_pos`.
 
-  Everything is `sorry`-free; `#print axioms finiteDimensional_globalSections` is
+  Everything is complete; `#print axioms finiteDimensional_globalSections` is
   `[propext, Classical.choice, Quot.sound]`.
 -/
 import Jacobians.Dolbeault.CechFinitenessDtwist

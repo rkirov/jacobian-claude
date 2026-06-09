@@ -21,7 +21,7 @@
   disks are an open cover of compact `X`; extract a finite subcover indexed by a `Finset`, assemble the
   `ChartDiskCover`, and read off `IsRefinement` from the per-point disk-inside-cover-set containment.
 
-  All declarations are `sorry`-free; `#print axioms exists_chartDiskCover_refinement` is
+  All declarations are complete; `#print axioms exists_chartDiskCover_refinement` is
   `[propext, Classical.choice, Quot.sound]`.
 -/
 import Jacobians.Dolbeault.ChartDiskCover

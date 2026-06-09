@@ -88,7 +88,7 @@ After this file, Gate-A TARGET 1 (`hgeom_fibre` for the real cover) reduces, at 
 `clusterSheet`/`clusterSection` points, a genuine bijection, the genuine section property), never
 asserted.  The bijection `e` still forces `∑ᵢ D.mult i = S.n` (`ClusterReindexData.sum_mult_eq_sheetCount`
 applies to the assembled datum), so it is genuinely multi-preimage, not a disguised triviality.  No
-custom axiom, no sorry on a false statement, no false/junk/circular field — the routine fields are
+custom axiom, no unproved obligation on a false statement, no false/junk/circular field — the routine fields are
 DERIVED, the irreducible bijection + coincidence remain the only conservation-of-number content.
 
 ## References

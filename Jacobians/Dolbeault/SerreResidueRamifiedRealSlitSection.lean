@@ -27,7 +27,7 @@ is close to `c` (`w₀ z = (z − c)^{1/m} → 0` as `z → c`).  The resolution
 stays in the §5 inverse-property domain.  Then, for `z` interior to the shrunk slit, a *full* ℂ-neighbourhood
 of `z` keeps the cluster arguments in that domain, so the eventual section facts (`hcs_sec`, `hsrc`) hold.
 
-## What is delivered (the SECTION half — axiom-clean, sorry-free)
+## What is delivered (the SECTION half — axiom-clean, complete)
 
 * the per-`(z₀,i)` §5 section primitives (`cpow_slitBranch_tendsto_zero`,
   `eventually_nonpole_of_nonpole`, `eventually_holoRepr_clusterSheet_eq`,
@@ -63,7 +63,7 @@ So the **section half** of `RealCoverSlitSectionGeometry` is DONE.
 The §5 sections are genuine (`exists_clusterSplit_at_fibrePoint`).  The shrunk slit is a genuine slit
 (still accumulating at `c`, off the branch locus, simply connected).  The cluster sheets are the genuine
 `s(ζʲ·w₀ z)` (NOT the first-order `wp + ζʲ·w₀ z`).  Slit values are regular (off-branch).  `D` is the
-whole fibre (#17).  No custom axiom, no sorry on a false statement, no false/junk/circular field.
+whole fibre (#17).  No custom axiom, no unproved obligation on a false statement, no false/junk/circular field.
 
 ## References
 

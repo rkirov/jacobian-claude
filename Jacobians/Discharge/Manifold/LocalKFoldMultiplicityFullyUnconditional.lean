@@ -25,7 +25,7 @@ equation `g z = w` has exactly `k` solutions in `ball x₀ ε`.
 
 ## Anti-cheat
 
-* No `axiom`, no `sorry`.
+* No `axiom`, no gaps.
 * No signature changes outside this new file.
 * No bundle hypotheses: only `AnalyticAt`, the value condition, and the
   `analyticOrderAt = k` order condition.

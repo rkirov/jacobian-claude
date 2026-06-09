@@ -81,7 +81,7 @@ germ-regularity already supplied by the principal-part extraction.
 
 * Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3.
 * `Jacobians/Dolbeault/SerreResidueDirectGenus0.lean` (the literal-entire route this file generalises).
-* `docs/gate_a_genus0_infty_vanishing_2026-06-09.md` (the `R₀`-circularity / `hcont_int` standing).
+* Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.
 -/
 
 noncomputable section

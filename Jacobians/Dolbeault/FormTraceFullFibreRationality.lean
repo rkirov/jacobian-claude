@@ -54,7 +54,7 @@ content (3.1)**, isolated here as the single field `agree`/`agree_infty` of `Tra
 
 ## The single minimal remaining obligation (precise diagnosis)
 
-Below `TraceRationalityData` everything is **sorry-free and axiom-clean**.  Gate A is reduced to the
+Below `TraceRationalityData` everything is **complete and axiom-clean**.  Gate A is reduced to the
 single construction `∃ T, TraceRationalityData ω₀ g f poles` for a nonconstant `f` — concretely the
 two agreements `agree`/`agree_infty`, i.e. **the meromorphic trace `Tr_F α` on the compact `ℂℙ¹` is
 rational** (Miranda §VIII.3: a meromorphic function on `ℂℙ¹` is a rational function; the principal
@@ -75,7 +75,6 @@ irreducibility note).
 * Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3: the trace `Tr` and Lemma 3.2
   (pp. 252–253); normal-form (3.1), p. 253; partial fractions / residue theorem on `ℂℙ¹`, p. 254.
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §17 (the residue functional `Res`; 17.1–17.3).
-* `docs/gate_a_cover_genericity_textbook_2026-06-08.md` (the full-fibre route; no `AdaptedCover`).
 -/
 
 noncomputable section
@@ -262,7 +261,7 @@ noncomputable def toGlobalTraceData : GlobalTraceData ω₀ g f poles where
 
 > `∑_{a ∈ poles} formFnResidue ω₀ g a = 0`.
 
-*Proof (sorry-free).*  `toGlobalTraceData` + the proven descent `GlobalTraceData.residueSum_eq_zero`
+*Proof (complete).*  `toGlobalTraceData` + the proven descent `GlobalTraceData.residueSum_eq_zero`
 (which routes through the proven `FormResidueTrace`/`finiteResidueSum_trace_eq_zero_of_fibres'`). -/
 theorem residueSum_eq_zero (T : TraceRationalityData ω₀ g f poles) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=

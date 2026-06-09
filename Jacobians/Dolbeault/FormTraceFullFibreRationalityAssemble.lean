@@ -43,7 +43,7 @@ is `agree_infty`.  So a `TraceRationalityData` — and hence Gate A `∑Res = 0`
 **honest reduced inputs** carried by `TraceCoherenceData`: the per-centre coherence (`hcoh_fin`), the
 `∞`-coherence (`hcoh_inf`), the entire-remainder + holomorphy-across-`∞` (`hentire`/`hrecip_cont`,
 the genus-`0` content), and the discrete fibre bookkeeping.  Everything *below* those inputs is
-sorry-free and axiom-clean.
+complete and axiom-clean.
 
 ## The single minimal remaining obligation (precise diagnosis)
 
@@ -79,7 +79,6 @@ These are exactly the two §VIII.3 walls (the trace's *single-valuedness* and th
 * Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3 (the trace `Tr`, Lemma 3.2; the
   trace is single-valued and meromorphic on `ℂℙ¹`; partial fractions / Liouville on `ℂℙ¹`).
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.
-* `docs/gate_a_cover_genericity_textbook_2026-06-08.md` (the full-fibre route).
 -/
 
 noncomputable section

@@ -4,7 +4,7 @@
   EXTRACTED VERBATIM from `RiemannRoch.lean` (2026-06-04, no logic change) so the Čech/Dolbeault
   ladder (`CechSection` → … → `DolbeaultLadder`) can depend on `lDim`/`linearSystem`/`orderW`
   WITHOUT importing `RiemannRoch`.  This breaks the dependency cycle that put `RiemannRoch` — which
-  *states* the interface `sorry` `exists_riemannRoch_divisor` — UPSTREAM of the ladder that *proves*
+  *states* the interface obligation `exists_riemannRoch_divisor` — UPSTREAM of the ladder that *proves*
   its content (`DolbeaultLadder.riemannRoch_equality_of_ladder`), so the ladder's proof could never
   feed back to discharge the interface.  With this split the ladder is free of `RiemannRoch`, and
   `RiemannRoch` (downstream) can import the ladder to connect the two (the upstream→downstream

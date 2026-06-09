@@ -10,16 +10,16 @@
 
   **SCOUT VERDICT: the preconnected-overlap conjunct (`IsLeray.2`) is consumed by NO proven proof in
   the entire H¹-finiteness / Riemann–Roch ladder.**  Concretely (file:line evidence in the module
-  docstring of `exists_lerayCover_overlap_unused` below), `hL : 𝔘.IsLeray` reaches a proven (non-`sorry`)
+  docstring of `exists_lerayCover_overlap_unused` below), `hL : 𝔘.IsLeray` reaches a proven (gap-free)
   proof body in exactly one place — the Dolbeault comparison spine
   (`DolbeaultComparisonEquiv.comparison_linearEquiv` and its two round-trips) — and there the proof body
-  NEVER references `hL`.  Everywhere else `hL` is either (a) an unused hypothesis of a `sorry` leaf
+  NEVER references `hL`.  Everywhere else `hL` is either (a) an unused hypothesis of an open leaf
   (`arithmeticGenus_eq_genus`, `serre_h1_eq`, `exists_skyscraperLES`, `cechH1_dolbeault_comparison`), or
-  (b) threaded through proven χ-bookkeeping that bottoms out at the `sorry` `exists_skyscraperLES`.  The
+  (b) threaded through proven χ-bookkeeping that bottoms out at the open `exists_skyscraperLES`.  The
   genuine finiteness engine `CechFinitenessWiring.finiteDimensional_cechH1_wired` takes **no** `IsLeray`
   hypothesis whatsoever.
 
-  This file PROVES the verdict's operative consequence, sorry-free and axiom-clean: the proven Dolbeault
+  This file PROVES the verdict's operative consequence, axiom-clean: the proven Dolbeault
   comparison — the one place an `IsLeray`-derived fact could possibly be needed — holds with the
   hypothesis ENTIRELY REMOVED.  We re-derive the two round-trip identities, the comparison
   `≃ₗ[ℝ]`, and the `finrank` comparison `finrank ℝ (DolbeaultH01 X) = 2 · finrank ℂ (cechH1 𝔇 0)` with

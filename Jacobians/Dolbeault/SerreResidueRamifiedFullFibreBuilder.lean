@@ -43,7 +43,7 @@ The cluster data uses the **full fibre** and the **genuine** `clusterSheet` poin
 `ClusterTraceData.ofNormalForm`'s only non-derived inputs are the genuine analytic content (the slit
 split + the analytic remainder trace), supplied as data exactly as `RamifiedSheetData` supplies its
 geometric fields — never asserted.  `FibreClusterReindex` is the honest residual (the geometric
-identity + pole-order bound), supplied as a predicate, never asserted.  No custom axiom, no sorry on a
+identity + pole-order bound), supplied as a predicate, never asserted.  No custom axiom, no unproved obligation on a
 false statement, no false/junk/circular field.  Every declaration is axiom-clean
 `[propext, Classical.choice, Quot.sound]`.
 

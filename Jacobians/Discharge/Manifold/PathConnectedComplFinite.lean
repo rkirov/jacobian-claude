@@ -27,7 +27,7 @@ Strategy:
 6. Concatenate all these `JoinedIn Cᶜ` segments to obtain a path from `p`
    to `q` in `Cᶜ`.
 
-No `axiom`, no `sorry`.
+No `axiom`, no gaps.
 -/
 import Jacobians.Discharge.Manifold.ChartedSpaceLocPathConnected
 import Jacobians.Discharge.Manifold.ConnectedManifoldPathConnected

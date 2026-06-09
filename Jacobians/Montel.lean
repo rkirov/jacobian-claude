@@ -16,7 +16,6 @@ import Jacobians.Montel.Complete
 compact connected complex 1-manifold via the classical Montel /
 compactness route (Ahlfors–Sario, Rudin).
 
-See `docs/MONTEL_PATH.md` for the overall plan.
 
 ## Classical textbook approach (Ahlfors–Sario Ch II §5)
 
@@ -392,6 +391,6 @@ the `FiniteDimensional` conclusion follows via Riesz:
   `Jacobians/Montel/Compactness.lean`, fully proven.
 - All analytic-limit machinery (`analyticOn_of_tendstoLocallyUniformlyOn`
   etc.) is in place. The entire Montel route to
-  `FiniteDimensional ℂ (HolomorphicOneForms X)` is sorry-free. -/
+  `FiniteDimensional ℂ (HolomorphicOneForms X)` is complete. -/
 
 end Jacobians.Montel

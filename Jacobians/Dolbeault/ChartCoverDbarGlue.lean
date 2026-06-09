@@ -25,7 +25,7 @@
   — the current continuous `Cshr` makes the literal `ChartCoverContinuousLeray` unprovable, so the telescoping is
   intentionally NOT plugged into that unsound field here).
 
-  ## What is delivered (all sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`)
+  ## What is delivered (all complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
 
   * `exists_genuineCoverPoU` — a smooth PoU over `𝓘(ℝ,ℂ)`, subordinate to `(chartOpen (coverCenter a))`,
     summing to `1` on ALL of `X` (the genuine-cover globalization foundation).
@@ -33,7 +33,7 @@
     its sum-to-one-everywhere value form (no closed-core restriction needed — the cover covers).
   * `genuineCoverPoU_tsupport_subset` — the subordination `tsupport ρ_a ⊆ chartOpen (coverCenter a)`.
 
-  ## What remains (the genuine analytic gap, documented — NOT a sorry here)
+  ## What remains (the genuine analytic gap, documented — NOT a tactic gap here)
 
   The cross-chart telescoping of the Bott–Tu glued datum `ω̂ = ∑_{a,b}(ρ_b·h_{ab})·∂̄ρ_a` read across
   DIFFERENT charts (the `h_{ab}` live in chart-`a`, `chart-`b transitions enter), plus the holomorphic

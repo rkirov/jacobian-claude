@@ -56,7 +56,7 @@ What this file does **not** do (still open):
   at x is `AnalyticAt`. This is the mathlib bridge from real-analytic
   manifold smoothness to ℂ-analytic chart pullbacks under the model with
   corners `𝓘(ℂ)`. It is left as a hypothesis-parameter on the final
-  reduction lemma (no `axiom`, no `sorry`).
+  reduction lemma (no `axiom`, no gaps).
 
 * The bridge `¬ IsConstantMap f → for each y, there is some x ∈ f⁻¹' {y}
   with chart pullback not identically equal to chart-of-y near x`. This

@@ -70,7 +70,7 @@ centre is `0` because it germ-equals an analytic function there — `exists_laur
 ## References
 
 * Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3.
-* `docs/gate_a_sound_patched_close_2026-06-09.md`, `FormTraceGlobalConstruct.lean` (the `infty_eq`
+* `FormTraceGlobalConstruct.lean` (the `infty_eq`
   circularity note).
 -/
 

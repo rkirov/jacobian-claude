@@ -37,7 +37,7 @@ when packaged across all preimages of `y₀` and the local sheets are intersecte
 
 ## Status
 
-Purely topological / structural. No `axiom`, no `sorry`. Single new file. -/
+Purely topological / structural. No `axiom`, no gaps. Single new file. -/
 
 @[expose] public section
 

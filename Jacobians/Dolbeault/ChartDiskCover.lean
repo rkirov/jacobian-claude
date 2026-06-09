@@ -9,7 +9,7 @@
 
   `ChartDiskCover` bundles a `FiniteCover` with, for each index, a chart center and radius witnessing
   that `U_i` is exactly the chart-preimage of a Euclidean ball. All existing `𝔘.cechH1 / cocycles1`
-  machinery applies verbatim through `toFiniteCover`. Design doc: `docs/dolbeault_comparison_forward_plan.md`.
+  machinery applies verbatim through `toFiniteCover`.
 -/
 import Jacobians.Dolbeault.CechComplex
 

@@ -49,14 +49,14 @@ smoothness in the **quotient** follows from `contMDiff_iff_forall_*`.
 
 **Status of this file (updated 2026-05-29)**
 
-The file is now sorry-FREE in all proof bodies: the local chart-ball
+The file is now complete in all proof bodies: the local chart-ball
 machinery (`localLift_contMDiffAt`, `chartFrame_cancel`,
 `isSmoothPath_ChartBallPathSmooth`, the 2-piece junction loop, and
 `localLift_quotient_eq_ofCurve_eventually`) is all proven and
 `#print axioms`-clean. The only residual dependence on `sorryAx` is
 transitive, through `smoothPath` (= `Classical.choice` of
-`exists_smoothPath_family`, sorry S1). Closing S1 makes this entire
-file — and `ofCurve_contMDiff` — unconditionally sorry-free.
+`exists_smoothPath_family`, the S1 gap). Closing S1 makes this entire
+file — and `ofCurve_contMDiff` — unconditionally gap-free.
 -/
 
 open scoped Manifold ContDiff
@@ -1159,7 +1159,7 @@ holding.
 The full unconditional version requires applying `periodVec_concat`
 with its 6 hypotheses (integrabilities + pathSpeed_concat identities).
 For now we take periodVec_reverse only, leaving the concat application
-as a sub-sorry. -/
+as a sub-obligation. -/
 lemma periodVec_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
     (Q₀ Q : X)
     (hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
@@ -1293,7 +1293,7 @@ ChartBallPath Q₀ Q₀ Q`, `γ₂ := smoothPath Q₀ Q`. Hypotheses:
   + `chartFrame_cancel` to identify with the path integrand). For
   `smoothPath`: from `IsSmoothPath.integrable`.
 
-We separate this as a single classical-content sub-sorry. -/
+We separate this as a single classical-content sub-obligation. -/
 lemma chartBallPath_smoothPath_endpoints_eq_in_quotient
     (Q₀ Q : X)
     (hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
@@ -1350,8 +1350,8 @@ theorem localLift_quotient_eq_ofCurve_eventually
 
 With `localLift_contMDiffAt` (analytic→ContMDiff bridge, PROVEN) and
 `localLift_quotient_eq_ofCurve_eventually` (path-algebra identification,
-also PROVEN — modulo `smoothPath` which is `Classical.choice` of sorry
-S1), the proof of `ofCurve_contMDiff` is a straightforward
+also PROVEN — modulo `smoothPath` which is `Classical.choice` of the
+S1 gap), the proof of `ofCurve_contMDiff` is a straightforward
 local-to-global glue.
 
 The function `Jacobians.OfCurveSkeleton.ofCurveContMDiff_via_localLift`

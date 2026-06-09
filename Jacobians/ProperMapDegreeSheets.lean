@@ -14,7 +14,7 @@ the *pointwise* local-conservation data `∀ w₀, LocalMultiplicitySheets f w�
 delivers the proper-map-degree existential `∃ d, zerosCount f = d = polesCount f`, hence the
 residue theorem `deg (div f) = 0`.
 
-Everything *downstream* of `∀ w₀, LocalMultiplicitySheets f w₀` is already proven sorry-free
+Everything *downstream* of `∀ w₀, LocalMultiplicitySheets f w₀` is already proved complete
 (the connectedness globalization of `N f`, the special-fibre identities, the `ofDisjointSheets`
 assembly). The content here is the per-value local construction:
 

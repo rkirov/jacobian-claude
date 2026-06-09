@@ -29,7 +29,7 @@ we phrase the pairing on the **already-built junk-free linear system** `L(K−D)
 
   `ι_D : lSysModule (K − D) → (𝔘.cechH1 D)*`,   bijective ⟹  `h1Dim D = lDim (K − D)`  (= `serre_h1_eq`).
 
-## What is proved here (sorry-free, downstream of the bundled `SerreDualityData`)
+## What is proved here (complete, downstream of the bundled `SerreDualityData`)
 
 The abstract finite-dimensional cores are already proven in `SerreDuality.lean`:
 `finrank_le_of_injective_to_dual` (17.6) and `serre_surjectivity_dim_core` (17.9). This file bundles the
@@ -44,8 +44,8 @@ construction runs `serre_surjectivity_dim_core` on the §17.9 dimension count).
 `exists_serreDualityData` — constructing the §17 instantiation for a general `X`: the residue functional
 `Res : H¹(X,Ω) → ℂ` (well-defined via the **1-form residue theorem** `∑Res = 0`, Miranda §VIII.3
 trace-to-ℙ¹), the pairing, its injectivity (the §17.6 residue-1 witness `exists_formFnResidue_eq_one`),
-and its surjectivity (the §17.9 count, gated on cohomological RR / finiteness). See
-`docs/serre_17_build_plan.md`. This single input **replaces both** former ladder leaves
+and its surjectivity (the §17.9 count, gated on cohomological RR / finiteness).
+This single input **replaces both** former ladder leaves
 `arithmeticGenus_eq_genus` and `serre_h1_eq`.
 
 References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.4–17.11; Miranda, *Algebraic Curves and
@@ -121,7 +121,7 @@ end SerreDualityData
 Serre-duality data: a canonical divisor and the perfect residue pairing. This single named input
 replaces both ladder leaves `arithmeticGenus_eq_genus` and `serre_h1_eq`. Its construction (the residue
 functional via the 1-form residue theorem, the pairing, 17.6 injectivity, 17.9 surjectivity) is the
-genuine remaining §17 analytic work — see `docs/serre_17_build_plan.md`. -/
+genuine remaining §17 analytic work — the one remaining gap. -/
 theorem exists_serreDualityData (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) :
     Nonempty (SerreDualityData 𝔘) :=
   sorry

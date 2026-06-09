@@ -16,7 +16,7 @@ The combinatorics is the same as ZZ165b: the open cover
 is that for each `y` we use the ball-restricted chart `φ_y` from
 `chart_restrict_to_ball` instead of the raw `chartAt ℂ (γ y)`.
 
-No `axiom`, no `sorry`.
+No `axiom`, no gaps.
 -/
 import Jacobians.Discharge.Manifold.ChartRestrictionToBall
 import Mathlib.Geometry.Manifold.ChartedSpace

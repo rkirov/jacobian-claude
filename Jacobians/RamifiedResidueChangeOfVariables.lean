@@ -14,8 +14,7 @@ This file builds the **ramified** trace / residue change-of-variables for the lo
 `z = wᵐ` (`m ≥ 1`).  It is the keystone atom that lets Gate A handle pole fibres lying over a
 *ramification* value of the cover `F` — the case the repo's **unramified** Lemma 3.2
 `Jacobians.MeromorphicTrace.FibreTrace.resAt_traceCoeff'` (which models a fibre as `m` distinct
-biholomorphic sheets, `deriv (sheet i) b ≠ 0`) cannot express.  The localization
-`docs/gate_a_hoff_cs_localization_2026-06-09.md` pins this need precisely.
+biholomorphic sheets, `deriv (sheet i) b ≠ 0`) cannot express.
 
 ## The geometric picture (Miranda §VIII.3, pp. 252–253)
 
@@ -53,7 +52,7 @@ is recovered ONLY by the `m`-branch SUM, whose roots-of-unity factor `∑_{j<m}(
 `m = 2, h = w⁻¹ (n=-1)` gives `monomialTraceCoeff = z⁻¹`, residue `1 = Res_w`;
 `m = 2, h = w⁻³ (n=-3)` gives `monomialTraceCoeff = z⁻²`, residue `0 = Res_w(w⁻³)`.
 
-## What is proved here (all sorry-free, axiom-clean)
+## What is proved here (complete, axiom-clean)
 
 * **`rootsOfUnity_geom_zsum`** — `∑_{j<m}(ζ^j)^N = m·[m ∣ N]` for `ζ` a primitive `m`-th root, `N : ℤ`
   (the cross-term collapse; `geom_sum_eq` + `IsPrimitiveRoot.zpow_eq_one_iff_dvd`).
@@ -73,7 +72,6 @@ is recovered ONLY by the `m`-branch SUM, whose roots-of-unity factor `∑_{j<m}(
 * Miranda, *Algebraic Curves and Riemann Surfaces*, §VIII.3, pp. 252–253 (the trace `Tr`, formula
   **(3.1)**, Lemma 3.2 ramified case).
 * `Jacobians/ResidueChangeOfVariables.lean` — the **unramified** (`m = 1`) template.
-* `docs/gate_a_hoff_cs_localization_2026-06-09.md`, `docs/gate_a_cover_genericity_textbook_2026-06-08.md`.
 -/
 
 open Complex Metric Filter Topology Finset

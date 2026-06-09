@@ -475,7 +475,7 @@ annulus-divergence theorem entirely):
    PROVEN: `c(π)=c(−π)=−1`).  Net `½·(−2π·g(z)) = −π·g(z)`.
 
 BOTH genuine analytic pieces — the radial FTC (`radial_integral`) and the angular vanishing
-(`angular_integral`) — are PROVEN axiom-clean.  Steps 1–4 below are DONE sorry-free (translation,
+(`angular_integral`) — are PROVEN axiom-clean.  Steps 1–4 below are DONE (translation,
 polar CoV, the `e^{−iθ}` simplification, and the `dbar_polar_identity` rewrite), reducing the goal
 to `∫_{target} ½·(R(p) + I·A(p)) = −π·g(z)` with `R = (fderiv g w) c` (radial), `A = (fderiv g w)(I·c)`
 (angular), `w = radialMap z (c θ) r`.  REMAINING GAP: only the final split + Fubini interchange:

@@ -1,7 +1,7 @@
 /-
   Dolbeault ladder -- common refinements of finite covers.
 
-  This is the sorry-free part of the cover-independence scaffold: given two finite covers
+  This is the complete part of the cover-independence scaffold: given two finite covers
   `𝔘` and `𝔙`, form their pairwise-intersection refinement and record the two projection
   refinement maps.  The analytic Leray assertions for strict refinements stay in
   `CechRefinementLeray`.

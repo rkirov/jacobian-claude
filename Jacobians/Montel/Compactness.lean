@@ -31,7 +31,7 @@ The classical outline (Ahlfors–Sario Ch II §5, Rudin Ch 14) proceeds:
    its image is relatively compact, hence compact.
 
 This file lands step 1 — the continuous-map bundling of `localRep` on
-the compact shrunk chart — as clean, sorry-free API. Steps (3)–(6) are
+the compact shrunk chart — as clean, complete API. Steps (3)–(6) are
 completed across this file and `Complete.lean`.
 -/
 

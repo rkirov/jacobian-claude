@@ -45,7 +45,7 @@ The deliverable of this file:
   `fibres_finite_statement X Y` from `ConnectivityGlobalizationHypothesis X Y`,
   unconditionally and by composition of the landed pieces above.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

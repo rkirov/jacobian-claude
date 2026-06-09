@@ -12,7 +12,7 @@ import Jacobians.RamifiedResidueChangeOfVariables
 The genus-`0` close `residueTheorem_ofCanonicalSimpleInfty_genus0_germ`
 (`SerreResidueDirectGenus0Germ.lean`) consumes the per-centre full-fibre moving coherence `Cfull i`
 *only* to obtain, at each finite pole-value centre `cs i`, the **two facts** the principal-part close
-needs (see `docs/gate_a_hoff_cs_localization_2026-06-09.md`):
+needs:
 
 * **(A) meromorphy** `MeromorphicAt (valueChartTracePatched ω₀ f Φ br) (cs i)`;
 * **(B) residue identity** `resAt (valueChartTracePatched ω₀ f Φ br) (cs i)
@@ -34,7 +34,7 @@ This file performs the *structural integration* the localization called for, in 
 field-group (`Cfull`, `hfull_inj`, `hpole_image`, `hnonpole_an`) **replaced** by the two facts (A)/(B)
 taken *directly as hypotheses* per centre — exactly the abstraction boundary at which a ramified centre
 plugs in.  This is a pure refactor of the existing proof (the `Cfull` route is one way to supply (A)/(B);
-the ramified atom is another), so it is sorry-free and axiom-clean.  The unramified `…_germ` capstone is
+the ramified atom is another), so it is complete and axiom-clean.  The unramified `…_germ` capstone is
 recovered as the special case where (A)/(B) come from `Cfull` (sanity: `…_facts_of_Cfull`).
 
 ## Layer 2 — the ramified centre provider (the genuine §VIII.3 content)
@@ -71,7 +71,7 @@ coherence.  No `hoff_cs` reappears under another name; no full RR is used (no ci
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §5 (local normal form `z = wᵐ` at a ramification
   point of multiplicity `m`).
 * `Jacobians/RamifiedResidueChangeOfVariables.lean` (the proven ramified residue atom).
-* `docs/gate_a_hoff_cs_localization_2026-06-09.md` (the 3 consumption sites + the 2 consumed facts).
+* `Jacobians/RamifiedResidueChangeOfVariables.lean` — the 3 consumption sites + the 2 consumed facts.
 -/
 
 noncomputable section

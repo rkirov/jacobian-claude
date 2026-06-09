@@ -32,7 +32,7 @@ This file delivers the first bullet on the chart-pullback-data side, in a
 form mirroring `ChartPullbackData` from the companion file. The
 manifold-level bridges `ContMDiff … ω → AnalyticAt` and "non-constant ⇒
 some chart-pullback derivative is not eventually zero" are again left as
-hypothesis-parameters (no `axiom`, no `sorry`).
+hypothesis-parameters (no `axiom`, no gaps).
 
 What this file does discharge:
 

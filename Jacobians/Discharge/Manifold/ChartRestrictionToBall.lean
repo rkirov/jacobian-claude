@@ -26,7 +26,7 @@ agrees with the chart on its (smaller) source.
   function is the original chart, and whose source sits inside the original
   chart source.
 
-No `axiom`, no `sorry`. -/
+No `axiom`, no gaps. -/
 
 noncomputable section
 

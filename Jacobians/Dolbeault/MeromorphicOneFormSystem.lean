@@ -2,7 +2,7 @@
   The meromorphic-1-form linear system `Ω_D` (Forster §17.4), the 1-form analog of the
   function linear system `L(D) = H⁰(𝒪_D)`.
 
-  This is **Gate (C)** of the Forster §17 Serre-duality tower (`docs/serre_17_build_plan.md`):
+  This is **Gate (C)** of the Forster §17 Serre-duality tower:
   the space of global meromorphic 1-forms `α` with `div α ≥ −D` (poles bounded by `D`), built as
   a `Submodule ℂ` of a meromorphic-1-form type, with its junk-free module
   (`Ω_D ⧸ germ-zero`), `omegaDim D := finrank ℂ` of it, and the soundness anchor

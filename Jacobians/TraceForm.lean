@@ -2177,7 +2177,7 @@ The constant-map bookkeeping is handled once, downstream, by the total wrapper
 `traceFormTotal` and its laws. -/
 
 /-- **`f₊(id) = id`** — the identity map is a one-sheeted unbranched cover, so its
-trace is the identity. Honest sorry: classically true (Forster §10), but in this
+trace is the identity. Honest gap: classically true (Forster §10), but in this
 formalization `traceForm` is the removable-singularity extension of the off-branch
 fibre sum, and proving the extension of the (single-sheet) fibre sum for `id` equals
 `id` on *all* of `X` is the identity-theorem upgrade of the off-branch agreement —

@@ -22,7 +22,7 @@ non-degeneracy hypothesis "the chart-pulled-back representation of `f` near
 `x` is not eventually equal to its value at `(chartAt ℂ x) x`", we
 construct an inhabitant of `ChartPullbackData f x (f x)`.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

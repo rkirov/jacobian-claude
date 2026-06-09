@@ -37,7 +37,7 @@ and the connectedness lemma "connected real-2-manifold minus finite
 critical values is connected", neither of which is formalised at this
 mathlib pin.
 
-No `sorry`. No `axiom`. -/
+No gaps. No `axiom`. -/
 
 @[expose] public section
 

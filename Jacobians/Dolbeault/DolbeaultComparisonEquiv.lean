@@ -505,7 +505,7 @@ theorem cech_to_dolbeault_comp_dolbeault_to_cech (𝔇 : ChartDiskCover X)
   exact neg_eq_of_add_eq_zero_right hz
 
 -- `toGerm_holoFn` (the decomposition sub-lemma: the analytic representative `holoFn hg` reads back
--- the germ `g`) is now proven, sorry-free, in `DolbeaultComparisonInverse` and used below via import.
+-- the germ `g`) is now proven, complete, in `DolbeaultComparisonInverse` and used below via import.
 
 /-- **The eta-difference germ identity (`η_i − η_l = f_il` on the overlap).** As `MGerm (U_i ⊓ U_l)`:
 the germ of `(holoFn ∘ η_i) − (holoFn ∘ η_l)` restricted to the overlap equals `f_il`. On the overlap,
@@ -642,7 +642,7 @@ theorem dolbeault_to_cech_comp_cech_to_dolbeault (𝔇 : ChartDiskCover X)
     exact hcob
   exact neg_eq_of_add_eq_zero_right hzero
 
-/-- **The Dolbeault isomorphism** `H^{0,1}(X) ≃ₗ[ℝ] H¹(X, 𝒪)` — assembled *sorry-free* from the two
+/-- **The Dolbeault isomorphism** `H^{0,1}(X) ≃ₗ[ℝ] H¹(X, 𝒪)` — assembled *completely* from the two
 maps and the two round-trip identities above (`LinearEquiv.ofLinear`). All remaining content is in
 the four named sub-kernels. -/
 noncomputable def comparison_linearEquiv (𝔇 : ChartDiskCover X) (hL : 𝔇.toFiniteCover.IsLeray) :
@@ -653,7 +653,7 @@ noncomputable def comparison_linearEquiv (𝔇 : ChartDiskCover X) (hL : 𝔇.to
 
 /-- **The L3 kernel: Čech ↔ Dolbeault comparison** — the standalone proof of the statement at
 `DolbeaultComparison.lean:227` (`cechH1_dolbeault_comparison`; the caller wires it to this).
-Proven *sorry-free* from `comparison_linearEquiv`: the `ℝ`-linear iso transports `finrank ℝ`, and the
+Proven completely from `comparison_linearEquiv`: the `ℝ`-linear iso transports `finrank ℝ`, and the
 `ℝ`-vs-`ℂ` factor on the `ℂ`-module `cechH1` is `finrank_real_of_complex`. The entire remaining
 content sits in the four named sub-kernels (`dolbeault_to_cech`, `cech_to_dolbeault`, and the two
 round-trip identities). -/
@@ -663,7 +663,7 @@ theorem cechH1_dolbeault_comparison_proof (𝔇 : ChartDiskCover X) (hL : 𝔇.t
 
 /-! ## Honest status of the mechanization
 
-**Sorry-free (axiom-clean: `propext`/`Classical.choice`/`Quot.sound` only):**
+**Complete (axiom-clean: `propext`/`Classical.choice`/`Quot.sound` only):**
 * the entire *bookkeeping spine* — `comparison_linearEquiv` (assembled from the two maps via
   `LinearEquiv.ofLinear`) and the target `cechH1_dolbeault_comparison_proof` (the `2·` `ℝ`-vs-`ℂ`
   count via `finrank_real_of_complex`); this is the part that would have been most error-prone
@@ -687,33 +687,33 @@ theorem cechH1_dolbeault_comparison_proof (𝔇 : ChartDiskCover X) (hL : 𝔇.t
   transports the planar `x₀`-chart solve to the intrinsic value read in the chart at `x`;
 * **`exists_chartPullback_zeroOne_datum`** — the chart-pullback `(0,1)`-datum (a smooth `(0,1)`-form
   read in the `x₀`-chart is a *smooth planar function* `G` reproducing `g x 1` after the holomorphic
-  frame change `conj(τ′)`) — is now **PROVEN sorry-free** (helpers `contMDiffAt_chartRead_datum`,
+  frame change `conj(τ′)`) — is now **PROVEN complete** (helpers `contMDiffAt_chartRead_datum`,
   `frameVector_eq_inv_deriv_transition`, `oneForm_apply_conjLinear`; `ContDiffBump` cutoff
   `G = χ·(Φ ∘ e₀.symm)`);
 * **`exists_localPrimitive_apply_one`** — the value-`1` local primitive — is therefore **fully proven
-  sorry-free**: solve the planar `∂̄f = G` in the `x₀`-chart (`DbarLocal.dbar_solvable_locally`),
+  complete**: solve the planar `∂̄f = G` in the `x₀`-chart (`DbarLocal.dbar_solvable_locally`),
   globalize to `u` (`exists_smoothLift_of_chartFun`), read `∂̄u` at `x` in its own chart
   (`dbar_apply_one_eq_dbarDisk`), and the Wirtinger chain rule `dbarDisk_comp_holo` produces the
   `conj(τ′)` factor that cancels exactly against the datum's transformation law;
 * `dbar_solvable_locally_manifold` — *point*-local `∂̄`-solvability on the MANIFOLD — is **proven
-  sorry-free** from `exists_localPrimitive_apply_one` via the value-`1`-to-CLM upgrade;
+  complete** from `exists_localPrimitive_apply_one` via the value-`1`-to-CLM upgrade;
 * **`dolbeaultToCechCocycle`** — the forward **cocycle operator** `g ↦ cechDelta0 {[u_i]}`, where
   `u_i` solves `∂̄u_i = g` on each chart-disk cover set (the disk-global PDE
   `DbarDiskCohomology.dbar_solvable_ball` + the chart transport above), `ℝ`-linear in `g` — and its
   **well-definedness** `dolbeaultToCechCocycle_dbarImage_le` (`g = ∂̄h` ↦ a Čech coboundary), both
-  **proven sorry-free**;
+  **proven complete**;
 * **`dolbeault_to_cech`** — the forward map on cohomology `H^{0,1}(X) → H¹(X, 𝒪)` — is therefore
-  **proven sorry-free** (a `Submodule.liftQ` of the scalar-restricted `cechH1` projection composed
-  with the cocycle operator); **the entire forward direction is sorry-free**;
+  **proven complete** (a `Submodule.liftQ` of the scalar-restricted `cechH1` projection composed
+  with the cocycle operator); **the entire forward direction is complete**;
 * **`sum_dbarRho_eq_zero`** (this file) — the gluing relation `∑_k ∂̄ρ_k = 0` (`∂̄` of `∑_k ρ_k = 1`),
-  a building block of the inverse map — is **proven sorry-free** (`dbarL`-linearity + `sum_rhoC`).
+  a building block of the inverse map — is **proven complete** (`dbarL`-linearity + `sum_rhoC`).
 
 **The named honest sub-kernels of the INVERSE direction (each a TRUE statement; the irreducible
-remainder — the forward direction is fully sorry-free):**
+remainder — the forward direction is fully proven):**
 1. `cechToDolbeaultForm` — the inverse **glued-form operator**: the `ℝ`-linear map sending a
    holomorphic Čech `1`-cocycle `f` to the global `(0,1)`-form `ω = ∂̄η_i` on `U_i`,
    `η_i := ∑_k ρ_k·f_ik` (PoU globalization). Builds on `cechCoboundary_telescoping`, the PoU, and
-   `sum_dbarRho_eq_zero` (all sorry-free); the gap is **smooth-section gluing** of the local `∂̄η_i`.
+   `sum_dbarRho_eq_zero` (all complete); the remaining gap is **smooth-section gluing** of the local `∂̄η_i`.
 2. `cechToDolbeaultForm_coboundary_le` — inverse **well-definedness**: a coboundary cocycle maps to a
    `∂̄`-image, hence to `0` in `H^{0,1}`. Algebra, given kernel 1.
 3–4. `cech_to_dolbeault_comp_dolbeault_to_cech` / `dolbeault_to_cech_comp_cech_to_dolbeault` —
@@ -724,10 +724,10 @@ remainder — the forward direction is fully sorry-free):**
 plus its transport to the manifold operator (chart bridge `dbar_apply_one_eq_dbarDisk` + Wirtinger
 chain rule `dbarDisk_comp_holo` + global lift `exists_smoothLift_of_chartFun`, all proven), so
 `exists_chartPullback_zeroOne_datum`, `exists_localPrimitive_apply_one`, and
-`dbar_solvable_locally_manifold` are all sorry-free; (ii) the Čech/coboundary *algebra* (sorry-free);
-(iii) a partition-of-unity *globalization* (PoU + telescoping sorry-free; smooth-section gluing
+`dbar_solvable_locally_manifold` are all complete; (ii) the Čech/coboundary *algebra* (complete);
+(iii) a partition-of-unity *globalization* (PoU + telescoping complete; smooth-section gluing
 remains); and (iv) the *well-definedness + mutual-inverse* of the maps (`dolbeault_to_cech` itself now
-sorry-free via `liftQ`). The irreducible analytic remainder is concentrated in the **forward cocycle
+complete via `liftQ`). The irreducible analytic remainder is concentrated in the **forward cocycle
 operator** (kernel 1 — chart-disk transport + linearity, PDE already done), the **inverse map**
 (kernel 3 — smooth-section gluing), and their **mutual inverseness** (4,5). -/
 

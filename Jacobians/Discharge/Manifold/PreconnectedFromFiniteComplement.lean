@@ -33,7 +33,7 @@ either via the missing manifold-lift content (when present) or — for
 the strict-closure path of items 8/9/22/24 — re-package as an explicit
 named hypothesis on the closure theorem.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

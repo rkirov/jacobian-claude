@@ -45,7 +45,7 @@ because the only Laurent term with a nonzero residue is the `n = −1` term `c·
 * `LaurentForm.finiteResidueSum_add_resAtInfty_eq_zero` — **the `ℂℙ¹` residue theorem**:
   `(∑_{centres} Res) + Res_∞ R = 0`.
 
-Everything here is sorry-free and depends on no sorry-backed lemma; it reuses only the
+Everything here is complete and depends on no unproved lemma; it reuses only the
 one-variable residue calculus of `Residue.lean` and Mathlib's `circleIntegral` toolbox.
 
 ## What is deliberately NOT here (the trace combine — Miranda Lemma 3.2)

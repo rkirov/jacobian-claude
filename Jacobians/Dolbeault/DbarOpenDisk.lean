@@ -1,8 +1,7 @@
 /-
   Dolbeault ladder — **Forster 13.2**: `∂̄`-solvability on an *open* disk.
 
-  This is the single missing analytic engine for the Čech finiteness node (see
-  `docs/cech_refinement_attack_plan.md`).  The repo already has:
+  This is the single missing analytic engine for the Čech finiteness node.  The repo already has:
 
     * `DbarDisk.dbar_solvable_of_compactSupport` (Forster 13.1, Cauchy transform), and
     * `DbarDiskCohomology.dbar_solvable_ball` — solving `∂̄u = g` on a ball, but only for a

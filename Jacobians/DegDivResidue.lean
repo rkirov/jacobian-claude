@@ -19,7 +19,7 @@ proper-map degree `d`, so the difference is `0`.  That common-degree fact is the
 conservation-of-number theorem `ProperMapDegreeSheets.exists_properMapDegree_proven`
 (proven axiom-clean), which consumes the reductions
 `exists_properMapDegree_of_zerosCount_eq_polesCount` and
-`exists_properMapDegree_of_div_eq_zero` defined here.  This file carries no `sorry`.
+`exists_properMapDegree_of_div_eq_zero` defined here.  This file is complete.
 
 ## References
 

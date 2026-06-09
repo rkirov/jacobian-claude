@@ -4,17 +4,16 @@
 
   A holomorphic 1-form `α`, in the canonical chart `chartAt ℂ a`, reads `α = coeffAt α a (z) · dz`
   with `coeffAt α a` **analytic** — this is exactly `Montel.localRep` + its analyticity bridge
-  `localRep_analyticOn_chartTarget` (already proven sorry-free in the Montel development, so we reuse
+  `localRep_analyticOn_chartTarget` (already proven complete in the Montel development, so we reuse
   it rather than re-deriving the ω-smoothness ⟹ ℂ-analyticity manifold argument).
 
   On top of it we define the **local residue** `formFnResidue α g a` = the residue at `a` of the
   meromorphic 1-form `α·g` (holomorphic form times a function `g`), computed in the canonical chart,
   and prove it vanishes when `g`'s chart-pullback is holomorphic at `a` (so `α·g` has no pole there).
-  Computing in the canonical chart is the trick (see `docs/hodge_bridge_research.md` build log) that
-  makes Forster's cover-independence of `Res_a` follow from `Res(holo)=0` alone, sidestepping the
-  chart-independence change-of-variables lemma.
+  Computing in the canonical chart is the trick that makes Forster's cover-independence of `Res_a`
+  follow from `Res(holo)=0` alone, sidestepping the chart-independence change-of-variables lemma.
 
-  Everything here is sorry-free and depends on no sorry-backed lemma.
+  Everything here is complete and depends on no unproved lemma.
 -/
 import Jacobians.Montel.Compactness
 import Jacobians.Genus

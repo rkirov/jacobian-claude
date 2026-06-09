@@ -4,7 +4,7 @@
 
   ## What this file banks (the chart-disk case, axiom-clean)
 
-  `CohomologicalRR.exists_skyscraperLES 𝔘 hL D P` is left as a single honest `sorry` upstream because
+  `CohomologicalRR.exists_skyscraperLES 𝔘 hL D P` is left as a single honest named obligation upstream because
   it is stated for an arbitrary *Leray* cover, and the genuine skyscraper assembly
   (`SkyscraperAssembly.skyscraperLES_of_chartDisk`) needs *geometric* hypotheses that a generic Leray
   cover does not satisfy (a chart-disk cover-set `∋ P` whose chart source is the whole set, `D`
@@ -53,7 +53,7 @@
         `P`-adapted cover per jump.
 
   Both are genuine, currently-unbanked, substantial work, so the general `exists_skyscraperLES` stays
-  the single honest `sorry`.  This file's chart-disk LES removes the *snake / exactness / finiteness*
+  the single honest named obligation.  This file's chart-disk LES removes the *snake / exactness / finiteness*
   content from that obligation but, because of the unsatisfiable `hstar`, does not itself wire to the
   headline.
 -/

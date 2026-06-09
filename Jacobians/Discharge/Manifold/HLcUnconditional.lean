@@ -44,7 +44,7 @@ chip leaves that supplier as a hypothesis and discharges the
 
 ## Anti-cheat
 
-* No `axiom`, no `sorry`.
+* No `axiom`, no gaps.
 * No signature change to any pre-existing definition or theorem.
 * Adds one new file, imported into the manifest.
 -/

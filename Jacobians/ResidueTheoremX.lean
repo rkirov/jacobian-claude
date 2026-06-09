@@ -33,7 +33,7 @@ Because `df/f` has only **simple** poles (residue = the order), the residue chan
 across each unramified sheet is unconditional (`resAt_simplePole_pushforward`), so no general
 contour-substitution atom is needed.
 
-## What this file builds (all sorry-free, axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file builds (complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
 
 * **Step 1 — the chart bridge** (`resLogDeriv`, `resLogDeriv_eq_order`): the intrinsic residue of
   `df/f` at `x`, read in any chart, equals `ord_x(f)`.  The per-point input of the route; a corollary
@@ -60,9 +60,9 @@ What is **not** discharged is the *construction* of a `LogDerivTrace f` for a ge
 holomorphic sections, the trace's finiteness/rationality, partial fractions), Lemma 3.2's manifold
 bookkeeping `hL32`, and the two aggregate fibre-residue↔order identifications `infty_eq`/`finite_eq`.
 This is the §17.9-level trace assembly; it is isolated into the `LogDerivTrace` structure (whose
-fields are each *true, non-vacuous* statements), with everything downstream proved sorry-free.  The
+fields are each *true, non-vacuous* statements), with everything downstream fully proved.  The
 parent wires `zerosCount_eq_polesCount_of_logDerivTrace` applied to a constructed `LogDerivTrace`
-into the `exists_properMapDegree` sorry once that construction lands.
+into `exists_properMapDegree` to close the conservation-of-number wall.
 
 ## References
 
@@ -182,7 +182,7 @@ theorem orderSum_eq_infty_add_finite (f : MeromorphicFunction X) :
 
 /-! ### The per-fibre Lemma 3.2 → orders bridge (step 1 ∘ Lemma 3.2)
 
-The single sorry-free lemma that wires the chart bridge (step 1) into Miranda's Lemma 3.2 for the
+The lemma that wires the chart bridge (step 1) into Miranda's Lemma 3.2 for the
 `df/f` route: if a fibre `T : FibreTrace` carries the simple poles of `df/f` — each sheet `i`'s
 coefficient being `cs i·(w − pre i)⁻¹` (`hsp`) with the simple-pole coefficient `cs i` equal to the
 **order** of the corresponding preimage point `xs i` (`hcs`, which is `Res_{pre i}(df/f) = ord_{xs i}`
@@ -212,7 +212,7 @@ identifying — via Lemma 3.2 (`FibreTrace.resAt_traceCoeff_of_simplePole`) and 
 We package this output as the structure `LogDerivTrace f` below; each field is a *true* statement
 (it is exactly what the §VIII.3 trace assembly produces) and **not** vacuous.  Given a
 `LogDerivTrace f`, the residue theorem `∑_{x∈X} ord_x f = 0` (hence `zerosCount = polesCount`)
-follows *sorry-free* from the simple-pole trace combine
+follows from the simple-pole trace combine
 (`finiteResidueSum_trace_eq_zero_of_simplePole_fibres`) and the fibrewise regrouping
 (`orderSum_eq_infty_add_finite`), as proved in `degDiv_eq_zero_of_logDerivTrace` /
 `zerosCount_eq_polesCount_of_logDerivTrace`.
@@ -266,7 +266,7 @@ the §VIII.3 trace assembly), the total order of `f` over `X` vanishes:
 
 > `∑_{x ∈ supp} ord_x f = 0`.
 
-*Proof (sorry-free).*  The simple-pole trace combine
+*Proof.*  The simple-pole trace combine
 (`finiteResidueSum_trace_eq_zero_of_simplePole_fibres`) gives
 `(∑_{centers} Res_b (Tr_F)) + Res_∞ (Tr_F) = 0`.  By `finite_eq` and `infty_eq` (cast to `ℂ`) the
 two summands are the finite-fibre and `∞`-fibre order sums; by `orderSum_eq_infty_add_finite` their

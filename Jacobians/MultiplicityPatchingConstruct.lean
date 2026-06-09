@@ -9,7 +9,7 @@ import Jacobians.MultiplicityPatching
 # Constructing the multiplicity-patching supply: the `deg_div` endgame
 
 This file performs the manifold-assembly endgame for `deg_div`.  It banks — fully
-sorry-free and axiom-clean — every layer of the conservation-of-number assembly
+complete and axiom-clean — every layer of the conservation-of-number assembly
 *except* the irreducible per-sheet analytic content, which it isolates into the
 structure `LocalMultiplicitySheets f w₀`.  A pointwise supply
 `∀ w₀, LocalMultiplicitySheets f w₀` is fed through the proven wire
@@ -18,7 +18,7 @@ keystone
 
 > `∃ d : ℕ, zerosCount f = d ∧ polesCount f = d`   (`exists_properMapDegree_of_localSheets`).
 
-## The banked pieces (sorry-free, axiom-clean)
+## The banked pieces (complete, axiom-clean)
 
 * **Special-fibre identities** (`fibreMult_zero_eq_zerosCount`,
   `fibreMult_infty_eq_polesCount`): the genuine local-degree sums over the two
@@ -535,7 +535,7 @@ invokes; the only remaining input is the *local* conservation supply (the
 irreducible §17.9 content isolated in `LocalMultiplicitySheets`, banked here down
 to its genuine per-sheet core, with the no-escape/disjointness skeleton, the
 special-fibre identities, and the finiteness-shrinking all discharged
-sorry-free). -/
+complete). -/
 
 /-- **Local constancy of `N f` from a pointwise local-conservation supply.** -/
 theorem isLocallyConstant_N_of_localSheets (f : MeromorphicFunction X)

@@ -27,7 +27,7 @@ the non-degeneracy of the pullbacks are the **`CutSurface` fields**; the existen
 surface (`exists_cutSurface`) is the single isolated input — the Radó triangulation + surface
 classification + `4g`-gon Green that Mathlib lacks for surfaces.
 
-`exists_canonicalDissection` is then *derived* (no longer a raw `sorry`): a `CutSurface` yields a
+`exists_canonicalDissection` is then *derived* (no longer a raw obligation): a `CutSurface` yields a
 `CanonicalDissection` whose two relation fields are the theorems above.
 
 References: Riemann (1857); Griffiths–Harris pp. 231–232; Springer pp. 139–141; Chai §1.4;
@@ -162,7 +162,7 @@ theorem exists_cutSurface (X : Type*) [TopologicalSpace X] [T2Space X] [CompactS
 
 /-- **Every compact connected Riemann surface admits a canonical dissection** — *derived* from
 `exists_cutSurface` with the two Riemann bilinear relations as the proven theorems
-`CutSurface.cutSurface_R1` / `CutSurface.cutSurface_R2`. (This replaces the former raw `sorry`: the
+`CutSurface.cutSurface_R1` / `CutSurface.cutSurface_R2`. (This replaces the former raw obligation: the
 relations are no longer bundled; only the chart existence is isolated.) -/
 theorem exists_canonicalDissection (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :

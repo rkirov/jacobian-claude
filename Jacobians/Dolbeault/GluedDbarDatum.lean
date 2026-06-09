@@ -2,7 +2,7 @@
   Dolbeault ladder — discharging `HasGluedDbarDatum 𝔇` for a `SharedChartCover`.
 
   `CechFinitenessBallSolve` reduced germ-level `H¹(disk, 𝒪) = 0` (for a shared-chart disk cover)
-  sorry-free to the single honest predicate `HasGluedDbarDatum 𝔇`: for every `𝒪`-cocycle `s` there is
+  to the single honest predicate `HasGluedDbarDatum 𝔇`: for every `𝒪`-cocycle `s` there is
   ONE globally-`C^∞` function `ω̂ : ℂ → ℂ` agreeing with the planar Wirtinger `∂̄(chartPrim s i)` on
   every `Ω_i ∩ ball`, where `chartPrim s i = coverPrim s i ∘ φ.symm` and
   `coverPrim s i = ∑_q ρ_q · holoFn(s_{q,i})` is the partition-of-unity primitive on the cover set `U_i`.
@@ -34,7 +34,7 @@
   `holoFn_cocycle_sub`) to `∑_q holoHat q i · dRhoHat q = ∂̄(chartPrim s i)` on each `Ω_i ∩ ball`,
   proving the agreement.
 
-  NO `sorry` anywhere.  Reuses by import the planar Wirtinger algebra (`dbarFun_add` / `dbarFun_sub`)
+  No gaps.  Reuses by import the planar Wirtinger algebra (`dbarFun_add` / `dbarFun_sub`)
   and all the §0–§5 machinery of `CechFinitenessBallSolve` (`coverPrim` / `chartPrim` / `holoFn` /
   `rhoC` / `holoFn_cocycle_sub` / `SharedChartCover` / `HasGluedDbarDatum`).
 -/

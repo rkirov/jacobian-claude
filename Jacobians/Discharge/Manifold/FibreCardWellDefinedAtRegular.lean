@@ -23,7 +23,7 @@ hypothesis (which asserted that *every* set in `Y` is finite) is removed.
 The corrected witness type `RegularValueWitnessReg f` no longer carries a
 `C : Set Y` parameter — its regularity certificate is intrinsic to `f`.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

@@ -1,7 +1,7 @@
 /-
   Čech finiteness — the `OverlapChartDatum` for the (4-level) nested chart-cover overlap model.
 
-  Part of discharging `exists_cechModel` (Forster 14.9); see `docs/cech_finiteness_research.md`.
+  Part of discharging `exists_cechModel` (Forster 14.9).
   `CechModelCochain.lean` builds the forward cochain map `OverlapChartDatum.cochainToCcov :
   SectionTuple →ₗ[ℂ] d.Ccov` (germ-class sections ↦ `BddHol` cochains) for ANY `DiskOverlapData d`
   equipped with an `OverlapChartDatum` (per-overlap cover-chart center `chartCenter q`, holomorphy

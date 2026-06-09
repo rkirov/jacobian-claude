@@ -19,7 +19,7 @@
   flags exactly this ("take the existence of a single Leray chart-disk cover as a hypothesis") as the
   lighter obligation that removes the arbitrary-`𝔘` cover-independence requirement.
 
-  ## What is PROVEN here, sorry-free and axiom-clean
+  ## What is PROVEN here, axiom-clean
 
     * `simplyConnectedSpace_chartBallPreimage` — the genuine geometric content: the chart-preimage of a
       coordinate ball, `e.source ∩ e ⁻¹' ball cc r` (with `ball cc r ⊆ e.target`), is a
@@ -38,7 +38,7 @@
     * `chartBallCover_simplyConnected` — every set of `chartBallCover` is a `SimplyConnectedSpace`.
       This discharges the FIRST conjunct of `IsLeray` for a concrete cover, UNCONDITIONALLY.
 
-  ## The honest remaining gap (named hypothesis, NOT a `sorry`) — the good-cover input
+  ## The honest remaining gap (named hypothesis, not a tactic gap) — the good-cover input
 
   The SECOND conjunct of `IsLeray` — preconnected pairwise overlaps `IsPreconnected (U i ∩ U j)` — is
   the genuine "good cover" / Leray condition.  For an arbitrary pair of chart-balls in DIFFERENT charts
@@ -56,7 +56,7 @@
   except the one fact Mathlib lacks).  See `exists_lerayCover_of_goodCover` for the variant taking the
   whole good cover, and the docstrings for the exact obstruction.
 
-  All declarations are `sorry`-free; `#print axioms` is `[propext, Classical.choice, Quot.sound]`.
+  All declarations are gap-free; `#print axioms` is `[propext, Classical.choice, Quot.sound]`.
 -/
 import Jacobians.Dolbeault.CechComplex
 import Jacobians.Dolbeault.ChartDiskCover
@@ -139,7 +139,7 @@ theorem ball_chartBallRadius_subset_target (x : X) :
 /-- **`exists_lerayCover` from any cover with simply-connected sets.**  Trivial repackaging — kept as
 an alternative entry point.  Subsumed by the unconditional `exists_lerayCover` (the canonical
 chart-disk cover already has simply-connected sets); offered for an owner who would rather supply a
-different good cover.  No `sorry`. -/
+different good cover. -/
 theorem exists_lerayCover_of_goodCover
     (hGood : ∃ 𝔘 : FiniteCover X, ∀ i, SimplyConnectedSpace ↥(𝔘.U i)) :
     ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray :=
@@ -252,7 +252,7 @@ This is the statement that unlocks the ladder→headline wiring
 (`RiemannRoch.exists_riemannRoch_divisor` via `DolbeaultLadder.riemannRoch_equality_of_ladder 𝔘 hL`
 with this `𝔘 = chartDiskCover` and `hL` the produced `IsLeray`).  Previously gated on the good-cover
 overlap-preconnectedness `hOverlaps` (a Mathlib-absent Whitney geodesic-convexity fact); that
-hypothesis is now eliminated, so the wiring is unconditional. No `sorry`. -/
+hypothesis is now eliminated, so the wiring is unconditional. -/
 theorem exists_lerayCover : ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray :=
   ⟨(chartDiskCover (X := X)).toFiniteCover, by
     intro i

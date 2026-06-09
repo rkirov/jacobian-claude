@@ -52,7 +52,7 @@ Transport: `U := eX.symm '' Uc'`, `V := eY.symm '' Vc'`,
 
 ## Anti-cheat
 
-* No `axiom`, no `sorry`.
+* No `axiom`, no gaps.
 * No signature change to any pre-existing definition or theorem.
 * Adds one new file imported into the manifest.
 -/

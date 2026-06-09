@@ -59,7 +59,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-- The **junk-free linear-system module** `L(D)` (= `H⁰(X, 𝒪_D)`): the linear system with the
 `toFun`-germ junk quotiented out, `lDim D = finrank ℂ (lSysModule D)`. (A local copy of the
 abbreviation in `SerreDualityPairing`, so this §17.4 layer stays independent of the downstream
-`exists_serreDualityData` `sorry`.) -/
+`exists_serreDualityData`.) -/
 abbrev lSysModule (D : Divisor X) : Type _ :=
   ↥(linearSystem (X := X) D) ⧸ (germZeroSubmodule (X := X)).submoduleOf (linearSystem (X := X) D)
 

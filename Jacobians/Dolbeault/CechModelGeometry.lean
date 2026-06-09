@@ -1,7 +1,7 @@
 /-
   Čech finiteness — the geometric `DiskOverlapData` from the chart-disk / chart cover.
 
-  Part of discharging `exists_cechModel` (Forster 14.9); see `docs/cech_finiteness_research.md`.
+  Part of discharging `exists_cechModel` (Forster 14.9).
   `DiskOverlapData` (in `CechFinitenessWiring.lean`) packages, for each overlap index `p`, an OPEN
   `Uov p ⊆ ℂ` (the chart-image of the overlap, where the cover 1-cochains `BddHol (Uov p)` live) and a
   COMPACT `Kov p ⊆ Uov p` (the relatively-compact shrinking, where the Montel restriction lands). After

@@ -12,12 +12,12 @@
 
   Putting `SkyscraperLES` (+ `h0Incl`, `Skyscraper`, `h1Map`, and the degreewise order-weakening
   inclusions) here breaks the import cycle that previously forced `exists_skyscraperLES` to be a bare
-  `sorry` in `CohomologicalRR` disconnected from the proven assembly: now `CohomologicalRR` can sit
+  an unproved obligation in `CohomologicalRR` disconnected from the proven assembly: now `CohomologicalRR` can sit
   *downstream* of the assembly and discharge `exists_skyscraperLES` from a `LocalRealizationData`
   (the single genuine local-realization + acyclicity obligation). Same cycle-break pattern as the
   `exists_cechModel` refactor.
 
-  Everything here is pure order/quotient bookkeeping (no analytic content), sorry-free and axiom-clean.
+  Everything here is pure order/quotient bookkeeping (no analytic content), complete and axiom-clean.
 -/
 import Jacobians.Dolbeault.CechH0
 
@@ -125,7 +125,7 @@ noncomputable def h1Map (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
   rintro ⟨c, _⟩ hcob
   exact 𝔘.coboundaries1_le_add_single D P hcob
 
-/-! ### Subcomplex backbone facts (sorry-free; the algebraic skeleton of the skyscraper snake lemma) -/
+/-! ### Subcomplex backbone facts (complete; the algebraic skeleton of the skyscraper snake lemma) -/
 
 /-- **`δ⁰` preserves the sections subcomplex.** The Čech coboundary of `𝒪_D`-0-sections is an
 `𝒪_D`-1-section: each component `(δ⁰f)_{ij} = f_j|_{ij} − f_i|_{ij}` is a difference of restrictions of

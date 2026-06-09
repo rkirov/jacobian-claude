@@ -11,7 +11,7 @@
   trips a `ℂ →L[ℝ] ℂ`-norm diamond), so it does not pull the ~900s Dolbeault-comparison chain — keeping
   the model/finiteness branch that uses it cheap to build.
 
-  Contents (all sorry-free, axiom-clean): `nhdsNE_neBot`; `holoRep`/`holoRep_mem`/`toGerm_holoRep`
+  Contents (all complete, axiom-clean): `nhdsNE_neBot`; `holoRep`/`holoRep_mem`/`toGerm_holoRep`
   (a chosen holomorphic representative of a germ class); `holoFn` (the limit-repaired analytic
   representative `x ↦ limUnder (𝓝[≠] x) (Gext (holoRep hg))`); its chart-analyticity
   (`gextLimRep_chart_analyticAt`, `holoFn_chart_analyticAt`); the value-reading lemmas

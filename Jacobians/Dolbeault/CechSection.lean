@@ -1,8 +1,7 @@
 /-
   Dolbeault ladder — the concrete Čech layer (G3 scaffold).
 
-  This is the first rung of the sorry-free Riemann–Roch build, following the representation
-  decided in `docs/dolbeault_ladder_derisk.md`:
+  This is the first rung of the complete Riemann–Roch build. The representation:
 
     * sections of the sheaf `𝒪_D` over an open `U ⊆ X` are modelled **intrinsically on the open
       submanifold `↥U`** (Mathlib gives `↥U` a `ChartedSpace ℂ` + `IsManifold 𝓘(ℂ) ω` structure

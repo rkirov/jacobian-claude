@@ -41,12 +41,12 @@ machinery is in.
 
 ## Why a separate name and not `_root_.ContMDiff.degree` directly?
 
-`Basic.lean` already declares `def _root_.ContMDiff.degree ... := sorry`, and
-this single-file edit is forbidden from touching `Basic.lean`. If we declared
-`_root_.ContMDiff.degree` here as well, the build would fail with a duplicate
-definition. So we expose the candidate body under
+`Basic.lean` already declared `def _root_.ContMDiff.degree ... ` as an unproved
+stub, and this single-file edit is forbidden from touching `Basic.lean`. If we
+declared `_root_.ContMDiff.degree` here as well, the build would fail with a
+duplicate definition. So we expose the candidate body under
 `Jacobians.Discharge.Manifold.degreeStub`. The sister edit that wires this in
-will replace the `:= sorry` in `Basic.lean` with `:= degreeStub f hf`.
+will replace the stub body in `Basic.lean` with `:= degreeStub f hf`.
 
 ## Main definitions
 

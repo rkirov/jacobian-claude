@@ -59,7 +59,7 @@ field-groups, not a false field.  Each field the constructor *proves* is genuine
 
 ## Soundness
 
-No `axiom`, no `sorry`, **no false field**.  Every proven field is a true, satisfiable statement; the
+No `axiom`, no gaps, **no false field**.  Every proven field is a true, satisfiable statement; the
 deep residuals are exposed as hypotheses (not papered over).  The germ `agree`/`agree_infty` is **never**
 introduced.  All public declarations are authoritatively `[propext, Classical.choice, Quot.sound]`.
 
@@ -67,7 +67,7 @@ introduced.  All public declarations are authoritatively `[propext, Classical.ch
 
 * Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, pp. 251–256 (the genericity:
   "choose any nonconstant `f`").
-* `docs/gate_a_cover_genericity_textbook_2026-06-08.md`, `docs/gate_a_sound_patched_close_2026-06-09.md`.
+* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, pp. 251–256.
 -/
 
 noncomputable section

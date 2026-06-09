@@ -44,7 +44,7 @@ Compared with the pre-ZZ172 version, the universally-false `h_C_fin`
 hypothesis (which asserted that *every* set in `Y` is finite) is removed.
 The `C` finiteness is instead supplied by the per-`f` packaging.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

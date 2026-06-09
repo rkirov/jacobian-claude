@@ -48,7 +48,7 @@ The remaining obstruction is the bridge from `¬ IsConstantMap f` to "chart
 pullback at every fibre point is not eventually `chartAt _ y₀ y₀`" — the
 manifold-level analytic-continuation step, unchanged by this file.
 
-No `sorry`, no `axiom`. -/
+No gaps, no `axiom`. -/
 
 @[expose] public section
 

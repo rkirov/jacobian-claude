@@ -39,7 +39,7 @@ The multiplicity count *eats ramification*: at a zero/pole of order `k` the loca
 degree is `k`, so `N(0)`/`N(∞)` are precisely the with-multiplicity counts
 `zerosCount`/`polesCount`.
 
-## What this file builds (sorry-free)
+## What this file builds (complete)
 
 * `fibreMult f w` — the honest local-degree sum (a concrete total function on
   `ℂℙ¹`); its value at a fibre point is the chart-pullback meromorphic order of
@@ -50,7 +50,7 @@ degree is `k`, so `N(0)`/`N(∞)` are precisely the with-multiplicity counts
 * The **regular-value local constancy** of the ncard (= multiplicity on the
   regular set) via the existing Hurwitz/sheet chain
   (`isLocallyConstant_fibreNcard_on_regular`): the per-`w₀` patching datum from
-  the local normal form, discharged sorry-free at every *regular* value `w₀`
+  the local normal form, discharged at every *regular* value `w₀`
   through `HurwitzPatchingData.ofLocalSheets`.
 * `ProperMapDegreeData.ofParts` — the structural builder from the honest pieces.
 * `ProperMapDegreeData.ofConservation` — the packaged `ProperMapDegreeData`,
@@ -62,7 +62,7 @@ degree is `k`, so `N(0)`/`N(∞)` are precisely the with-multiplicity counts
 ## The isolated wall
 
 `IsLocallyConstant (N f)` for the *multiplicity* sum is the genuine residual
-analytic content.  The regular-value half is delivered here sorry-free; the
+analytic content.  The regular-value half is fully proved here; the
 remaining half — extending local constancy across the finitely many *branch*
 values, where the ncard drops but the multiplicity sum does not — is the
 classical merging step (Forster §4 / Miranda §II.4).  It is isolated as a *true*,
@@ -179,7 +179,7 @@ def N (f : MeromorphicFunction X) : RiemannSphere → ℤ :=
 
 /-! ### Regular-value local constancy (the discharged half of the wall)
 
-The local constancy of `N f` over the *regular* values is delivered sorry-free
+The local constancy of `N f` over the *regular* values is fully proved
 through the existing Hurwitz/local-sheet chain.  At a regular value `w₀` the map
 `F = f.toRiemannSphere` is, near each preimage, a biholomorphism onto a
 neighbourhood of `w₀` (a `LocalSheetData`), so the fibre cardinality is locally

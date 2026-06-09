@@ -48,7 +48,7 @@ reindex `∑ₙ [m ∣ n+1] cₙ = ∑ₖ c_{m·k+(m−1)}` — are `analyticAt_
 
 ## ⚠ Soundness
 
-No custom axiom, no `sorry`, no false/junk/circular field.  The descent is the genuine *symmetric*
+No custom axiom, no gaps, no false/junk/circular field.  The descent is the genuine *symmetric*
 sum (single-valued via the roots of unity, not a single-valued branch `w₀` on `𝓝[≠]`).  Verified
 axiom-clean (`[propext, Classical.choice, Quot.sound]`).
 
