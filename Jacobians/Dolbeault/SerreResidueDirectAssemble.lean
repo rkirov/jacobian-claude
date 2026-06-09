@@ -264,6 +264,72 @@ noncomputable def inftyFibreDataNF_full (g : X → ℂ) (f : MeromorphicFunction
       ((chartAt ℂ (inftyFibreEnum f i)) (inftyFibreEnum f i))) :
     (inftyFibreDataNF_full g f hsimple hmero).xs = inftyFibreEnum f := rfl
 
+/-! ## The finite centre (pole-value) enumeration
+
+The centres `cs` are the finite pole-VALUES of `α`: the distinct finite sphere-values `coe (cs i)` of
+the poles (the `∞`-value handled separately by the `∞`-fibre).  These form a finite subset of `ℂ` — the
+`holoRepr`-image of the non-`∞` poles — enumerated injectively by `Finset.equivFin`.  The bookkeeping
+field `hcenters_cs` (`(univ.image cs).image coe = (poles.image F).erase ∞`) is **proven** from the
+relation `coe (holoRepr a) = F a` for non-`∞` poles. -/
+
+/-- The finite **pole-value** set in `ℂ`: the `holoRepr`-image of the non-`∞` poles of `α`. -/
+noncomputable def poleValues (f : MeromorphicFunction X) (poles : Finset X) : Finset ℂ :=
+  (poles.filter (fun a => f.toRiemannSphere a ≠ OnePoint.infty)).image f.holoRepr
+
+/-- The injective `Fin`-enumeration of the pole-values. -/
+noncomputable def poleValueEnum (f : MeromorphicFunction X) (poles : Finset X) :
+    Fin (poleValues f poles).card → ℂ :=
+  fun i => (poleValues f poles).equivFin.symm i
+
+theorem poleValueEnum_injective (f : MeromorphicFunction X) (poles : Finset X) :
+    Function.Injective (poleValueEnum f poles) :=
+  fun i j h => (poleValues f poles).equivFin.symm.injective (Subtype.ext h)
+
+/-- `univ.image (poleValueEnum) = poleValues` (the enumeration is a bijection onto the pole-value set). -/
+theorem image_poleValueEnum (f : MeromorphicFunction X) (poles : Finset X) :
+    Finset.univ.image (poleValueEnum f poles) = poleValues f poles := by
+  classical
+  ext c
+  simp only [Finset.mem_image, Finset.mem_univ, true_and, poleValueEnum]
+  constructor
+  · rintro ⟨i, rfl⟩; exact ((poleValues f poles).equivFin.symm i).2
+  · intro hc; exact ⟨(poleValues f poles).equivFin ⟨c, hc⟩, by rw [Equiv.symm_apply_apply]⟩
+
+/-- **The centre bookkeeping `hcenters_cs`.**  Mapping the pole-value enumeration to the sphere recovers
+exactly the finite pole-values: `(univ.image (poleValueEnum)).image coe = (poles.image F).erase ∞`.
+Proven from `coe (holoRepr a) = F a` for non-`∞` poles. -/
+theorem hcenters_cs_poleValueEnum (f : MeromorphicFunction X) (poles : Finset X) :
+    (Finset.univ.image (poleValueEnum f poles)).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty := by
+  classical
+  rw [image_poleValueEnum, poleValues, Finset.image_image]
+  ext y
+  simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_erase, Function.comp_apply]
+  constructor
+  · rintro ⟨a, ⟨ha_pole, ha_ne⟩, rfl⟩
+    -- `coe (holoRepr a) = F a` (a is an `f`-non-pole, finite value), and `F a ≠ ∞`.
+    have hnp : 0 ≤ f.orderAtPoint a := by
+      by_contra h; exact ha_ne (f.toRiemannSphere_of_pole (not_le.mp h))
+    rw [← f.toRiemannSphere_of_nonneg hnp]
+    exact ⟨ha_ne, a, ha_pole, rfl⟩
+  · rintro ⟨hy_ne, a, ha_pole, rfl⟩
+    -- `F a ≠ ∞ ⟹ a` is an `f`-non-pole, so `F a = coe (holoRepr a)`.
+    have hnp : 0 ≤ f.orderAtPoint a := by
+      by_contra h; exact hy_ne (f.toRiemannSphere_of_pole (not_le.mp h))
+    exact ⟨a, ⟨ha_pole, hy_ne⟩, (f.toRiemannSphere_of_nonneg hnp).symm⟩
+
+/-- **A radius bounding all centres** (`hcs_ball` data).  Any finite set of complex numbers lies in some
+ball about `0`; specialized to the pole-value enumeration. -/
+theorem exists_poleValueEnum_ball (f : MeromorphicFunction X) (poles : Finset X) :
+    ∃ ρ : ℝ, ∀ i, poleValueEnum f poles i ∈ ball (0 : ℂ) ρ := by
+  obtain ⟨M, hM⟩ := ((poleValues f poles).image (fun c => ‖c‖)).exists_le
+  refine ⟨M + 1, fun i => ?_⟩
+  rw [mem_ball, dist_zero_right]
+  have hmem : poleValueEnum f poles i ∈ poleValues f poles := by
+    rw [← image_poleValueEnum]; exact Finset.mem_image_of_mem _ (Finset.mem_univ i)
+  have := hM (‖poleValueEnum f poles i‖) (Finset.mem_image_of_mem _ hmem)
+  linarith
+
 /-! ## The maximal proven-prefix constructor `directTraceGeometry_ofAdapted`
 
 The honest reduction of Miranda's genericity for a *general* adapted cover `f`.  Given:
