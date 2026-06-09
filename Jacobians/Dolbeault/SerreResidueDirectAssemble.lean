@@ -160,4 +160,156 @@ theorem poleSubfibre_hpole_image (poles : Finset X) {b : ℂ} (Dfull : FibreRegu
   · rintro ⟨⟨i, hi⟩, rfl⟩
     exact ⟨⟨i, rfl⟩, hi⟩
 
+/-! ## The pole sub-enumeration of a raw `∞`-fibre enumeration
+
+The `∞`-analogue of `poleSubfibre`: for a raw enumeration `xs : ι → X` of the full `∞`-fibre, the
+pole-only sub-enumeration over the subtype `{k // xs k ∈ poles}`.  Used for the `xsInf_po` field
+(the `α`-poles among the full `∞`-fibre) and its `hpole_image_inf` matching. -/
+
+/-- The pole sub-enumeration `xs ∘ Subtype.val` over `{k // xs k ∈ poles}` is **injective** when `xs`
+is. -/
+theorem poleSubEnum_injective {ι : Type} (poles : Finset X) (xs : ι → X)
+    (hxs_inj : Function.Injective xs) :
+    Function.Injective (fun k : {k // xs k ∈ poles} => xs k.1) := by
+  intro i j h; exact Subtype.ext (hxs_inj h)
+
+/-- The pole sub-enumeration points **are `α`-poles over `∞`** when the full enumeration's points are
+over `∞` (`hxs_mem`). -/
+theorem poleSubEnum_mem {ι : Type} (poles : Finset X) (xs : ι → X)
+    (hxs_mem : ∀ k, f.toRiemannSphere (xs k) = OnePoint.infty)
+    (k : {k // xs k ∈ poles}) :
+    (fun k : {k // xs k ∈ poles} => xs k.1) k ∈ poles ∧
+      f.toRiemannSphere ((fun k : {k // xs k ∈ poles} => xs k.1) k) = OnePoint.infty :=
+  ⟨k.2, hxs_mem k.1⟩
+
+/-- The pole sub-enumeration covers **all** `α`-poles over `∞` when the full enumeration is
+surjective onto the `∞`-fibre poles (`hxs_surj`). -/
+theorem poleSubEnum_surj {ι : Type} (poles : Finset X) (xs : ι → X)
+    (hxs_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ k, xs k = a)
+    (a : X) (ha : a ∈ poles) (hfa : f.toRiemannSphere a = OnePoint.infty) :
+    ∃ k, (fun k : {k // xs k ∈ poles} => xs k.1) k = a := by
+  obtain ⟨k, rfl⟩ := hxs_surj a ha hfa
+  exact ⟨⟨k, ha⟩, rfl⟩
+
+/-- **The `∞`-pole↔full matching `hpole_image_inf`.**  The pole points of the full `∞`-enumeration are
+exactly the image of the pole sub-enumeration.  Pure `Finset` combinatorics. -/
+theorem poleSubEnum_hpole_image {ι : Type} [Fintype ι] (poles : Finset X) (xs : ι → X) :
+    (Finset.univ.image xs).filter (· ∈ poles)
+      = (Finset.univ : Finset {k // xs k ∈ poles}).image (fun k => xs k.1) := by
+  classical
+  ext a
+  simp only [Finset.mem_filter, Finset.mem_image, Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨⟨i, rfl⟩, hpole⟩
+    exact ⟨⟨i, hpole⟩, rfl⟩
+  · rintro ⟨⟨i, hi⟩, rfl⟩
+    exact ⟨⟨i, rfl⟩, hi⟩
+
+/-! ## The maximal proven-prefix constructor `directTraceGeometry_ofAdapted`
+
+The honest reduction of Miranda's genericity for a *general* adapted cover `f`.  Given:
+
+* the global full-fibre selection `Φ` with the three pole-value enumeration properties `hΦ_inj` /
+  `hΦ_mem` / `hΦ_surj` (`Φ p` enumerates exactly the fibre `F⁻¹(coe p)`, injectively, catching all
+  poles — the genuine selection content);
+* the finite centre data `m`/`cs`/`ρ`/`hcs_ball`/`hcs_inj`/`br` and `hcenters_cs`;
+* the per-centre **full-fibre** moving coherence `Cfull` with `hCfull_D : (Cfull i).D = Φ (cs i)` (the
+  moving datum's fixed fibre *is* the canonical selection fibre — sound, full fibre);
+* the **non-pole residue-`0` analyticity** `hnonpole_an` (the full fibre's non-pole points have analytic
+  `g`-pullback);
+* the **full `∞`-fibre** sound datum `Dinf_full` with `hfullInf_inj` / `hinf_mem` / `hinf_surj` (it
+  enumerates exactly the `∞`-fibre, catching all `∞`-poles) and `hnonpole_inf_an`;
+
+and the **deep analytic residuals** — `hreg` (regular-value analyticity), `hbnd` (branch boundedness),
+`hcont_int` (junk-freeness), `R₀`/`hR₀_an`/`hR₀0`/`hR₀_eq` (genus-`0` `∞`-vanishing), `hcoh_full`
+(`∞`-single-valuedness) — as explicit hypotheses,
+
+this constructs a `DirectTraceGeometry ω₀ g f poles`.  The pole-only fibre `D := poleSubfibre ∘ Φ` and
+the `∞`-pole sub-enumeration are **proven** (via the `poleSubfibre`/`poleSubEnum` combinatorics); the
+matching fields `hpole_image`/`hpole_image_inf` follow.  This reduces Gate A to *precisely* the deep
+analytic residuals (the genus-`0` content + the per-centre/`∞` coherence), with **no false field**. -/
+
+/-- **`DirectTraceGeometry` from an adapted cover (maximal proven prefix).**  Builds the pole-only
+finite/`∞` fibre groups, the pole↔full matching, and the centre bookkeeping from `Φ` + the concrete
+enumeration data; the deep analytic content (regular-value analyticity, branch boundedness,
+junk-freeness, genus-`0` `∞`-vanishing, the full-fibre/`∞` coherence) is taken as named hypotheses.
+Reduces Gate A's genericity to the smallest honest residual. -/
+noncomputable def directTraceGeometry_ofAdapted
+    (Φ : (b : ℂ) → FibreRegularData g f b)
+    (hΦ_inj : ∀ p, Function.Injective (Φ p).xs)
+    (hΦ_mem : ∀ p, ∀ i, f.toRiemannSphere ((Φ p).xs i) = (((p : ℂ) : RiemannSphere)))
+    (hΦ_surj : ∀ p, ∀ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere)) →
+      ∃ i, (Φ p).xs i = a)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (Cfull : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
+    (hCfull_D : ∀ i, (Cfull i).D = Φ (cs i))
+    (hnonpole_an : ∀ i, ∀ k, (Cfull i).D.xs k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ ((Cfull i).D.xs k)).symm z))
+        ((chartAt ℂ ((Cfull i).D.xs k)) ((Cfull i).D.xs k)))
+    (Dinf_full : InftyFibreDataNF g f) (hfullInf_inj : Function.Injective Dinf_full.xs)
+    (hinf_mem : ∀ k, f.toRiemannSphere (Dinf_full.xs k) = OnePoint.infty)
+    (hinf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ k, Dinf_full.xs k = a)
+    (hnonpole_inf_an : ∀ k, Dinf_full.xs k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (Dinf_full.xs k)).symm z))
+        ((chartAt ℂ (Dinf_full.xs k)) (Dinf_full.xs k)))
+    -- The deep analytic residuals (genus-`0` content + coherence), exposed as hypotheses.
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a, ContinuousAt (valueChartTracePatched ω₀ f Φ br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] 0] R₀)
+    (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf_full)) :
+    DirectTraceGeometry ω₀ g f poles where
+  Φ := Φ
+  m := m
+  cs := cs
+  ρ := ρ
+  hcs_ball := hcs_ball
+  hcs_inj := hcs_inj
+  br := br
+  hreg := hreg
+  hbnd := hbnd
+  Cfull := Cfull
+  -- The pole-only fibre is the pole sub-fibre of the canonical selection.
+  D := fun p => poleSubfibre poles (Φ p)
+  hxs_inj := fun p => poleSubfibre_xs_injective poles (Φ p) (hΦ_inj p)
+  hxs_mem := fun p i => poleSubfibre_xs_mem poles (Φ p) (hΦ_mem p) i
+  hxs_surj := fun p a ha hfa => by
+    -- `a` (a pole over `coe p`) is in the range of `Φ p` (`hΦ_surj`); its index lies in the pole
+    -- subtype since `a ∈ poles`.
+    obtain ⟨i, rfl⟩ := hΦ_surj p a ha hfa
+    exact ⟨⟨i, ha⟩, rfl⟩
+  hcenters_cs := hcenters_cs
+  hfull_inj := fun i => by rw [hCfull_D i]; exact hΦ_inj (cs i)
+  hpole_image := fun i => by
+    rw [hCfull_D i]
+    -- `D (cs i) = poleSubfibre poles (Φ (cs i))` and `(Cfull i).D = Φ (cs i)`.
+    exact poleSubfibre_hpole_image poles (Φ (cs i))
+  hnonpole_an := hnonpole_an
+  hcont_int := hcont_int
+  R₀ := R₀
+  hR₀_an := hR₀_an
+  hR₀0 := hR₀0
+  hR₀_eq := hR₀_eq
+  Dinf_full := Dinf_full
+  hcoh_full := hcoh_full
+  hfullInf_inj := hfullInf_inj
+  ιInfP := {k // Dinf_full.xs k ∈ poles}
+  fintypeInfP := Subtype.fintype _
+  xsInf_po := fun k => Dinf_full.xs k.1
+  hpoInf_inj := poleSubEnum_injective poles Dinf_full.xs hfullInf_inj
+  hpoInf_mem := fun k => poleSubEnum_mem poles Dinf_full.xs hinf_mem k
+  hpoInf_surj := fun a ha hfa => poleSubEnum_surj poles Dinf_full.xs hinf_surj a ha hfa
+  hpole_image_inf := poleSubEnum_hpole_image poles Dinf_full.xs
+  hnonpole_inf_an := hnonpole_inf_an
+
 end Jacobians.Dolbeault.SerreResidueTheorem
