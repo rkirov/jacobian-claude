@@ -278,4 +278,56 @@ theorem canonicalSelection_hcoh (ω₀ : HolomorphicOneForms X) (g : Meromorphic
     (canonicalFibreSelection_hΦrangeReg g.toFun f hdiv hz hgmero)
     (sphereSheet_hsheetInj S) (sphereSheet_hsheetMem S)
 
+/-! ## Assembling `RealSlitClusterSplitData` from the sheet system + the §5 section facts
+
+We package the per-slit-value builder: at a regular slit value `z` (off the branch locus), the
+regular-value primitives (`hderiv`/`hmero`/`hcoh`/`hfin_z`/`hreg_z`) are discharged from the proven
+atoms above, so `RealSlitClusterSplitData` reduces to **exactly** the sphere sheet system `S` and the §5
+normal-form section facts (`hcs_sec`/`hcs_np`/`hwithin`/`hcross`/`hsrc`/`hsheet_diff`). -/
+
+/-- **`RealSlitClusterSplitData` from the sheet system + the §5 section facts.**  At a regular slit value
+`z` off the branch locus, given a sphere sheet system `S` of `F = f.toRiemannSphere` at `coe z` and the
+§5 normal-form section facts for the cluster data `Cl`, build the `RealSlitClusterSplitData`.  The
+regular-value primitives are discharged: `hderiv` (`sphereSheet_hderiv`), `hmero` (`sphereSheet_hmero`),
+`hcoh` (`canonicalSelection_hcoh`), and `hfin_z`/`hreg_z` (`regularFibre_primitives_of_notMem_branchLocus`).
+Only the genuine §5 normal-form geometry (the section property, distinctness, disjointness) remains as
+input — the precise isolated content. -/
+noncomputable def RealSlitClusterSplitData.ofRegularValue {ω₀ : HolomorphicOneForms X}
+    {g : MeromorphicFunction X} {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0} {c : ℂ}
+    {Sset : Set ℂ} {hnp : ∀ i, 0 ≤ f.orderAtPoint (fullFibreEnum f hdiv c i)}
+    {Cl : ∀ i, ClusterTraceData ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) c Sset} {z : ℂ}
+    (hz : (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+    (hcs_sec : ∀ (i : (realFibreData g hdiv c hnp).ι) (j : Fin ((realFibreData g hdiv c hnp).mult i)),
+      ∀ᶠ w in 𝓝 z, f.holoRepr (clusterSection (realFibreData g hdiv c hnp) Cl i j w) = w)
+    (hcs_np : ∀ (i : (realFibreData g hdiv c hnp).ι) (j : Fin ((realFibreData g hdiv c hnp).mult i)),
+      0 ≤ f.orderAtPoint (clusterSection (realFibreData g hdiv c hnp) Cl i j z))
+    (hwithin : ∀ (i : (realFibreData g hdiv c hnp).ι)
+      (j k : Fin ((realFibreData g hdiv c hnp).mult i)),
+      clusterSection (realFibreData g hdiv c hnp) Cl i j z
+          = clusterSection (realFibreData g hdiv c hnp) Cl i k z → j = k)
+    (hcross : ∀ (i i' : (realFibreData g hdiv c hnp).ι)
+      (j : Fin ((realFibreData g hdiv c hnp).mult i)) (k : Fin ((realFibreData g hdiv c hnp).mult i')),
+      i ≠ i' → clusterSection (realFibreData g hdiv c hnp) Cl i j z
+        ≠ clusterSection (realFibreData g hdiv c hnp) Cl i' k z)
+    (hsrc : ∀ (i : (realFibreData g hdiv c hnp).ι) (j : Fin ((realFibreData g hdiv c hnp).mult i)),
+      ∀ᶠ w in 𝓝 z, clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j w
+        ∈ (chartAt ℂ ((realFibreData g hdiv c hnp).xs i)).target)
+    (hsheet_diff : ∀ (i : (realFibreData g hdiv c hnp).ι)
+      (j : Fin ((realFibreData g hdiv c hnp).mult i)),
+      DifferentiableAt ℂ (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z) :
+    RealSlitClusterSplitData ω₀ g hdiv c hnp Cl z where
+  S := S
+  hderiv := sphereSheet_hderiv f hdiv hz S
+  hmero := sphereSheet_hmero g S
+  hcoh := canonicalSelection_hcoh ω₀ g hdiv hz S
+  hcs_sec := hcs_sec
+  hcs_np := hcs_np
+  hwithin := hwithin
+  hcross := hcross
+  hfin_z := (regularFibre_primitives_of_notMem_branchLocus f hdiv hz).1
+  hreg_z := (regularFibre_primitives_of_notMem_branchLocus f hdiv hz).2
+  hsrc := hsrc
+  hsheet_diff := hsheet_diff
+
 end Jacobians.Dolbeault.SerreResidueTheorem
