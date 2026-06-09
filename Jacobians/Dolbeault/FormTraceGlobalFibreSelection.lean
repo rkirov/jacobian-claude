@@ -59,6 +59,7 @@ namespace Jacobians.Dolbeault.FormTraceGlobal
 
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
   Jacobians.Dolbeault.FormTraceFibre Jacobians.RiemannSphere Jacobians.ProperMapDegreeSheets
+  Jacobians.Dolbeault.FormTraceMovingFibre
 
 set_option linter.unusedSectionVars false
 
@@ -275,5 +276,77 @@ theorem canonicalFibreSelection_hΦinjReg (g : X → ℂ) (f : MeromorphicFuncti
     ∀ᶠ b' in 𝓝 z, Function.Injective (canonicalFibreSelection g f hdiv b').xs := by
   filter_upwards [eventually_notMem_branchLocus f hdiv hz, hgmero] with b' hb'off hb'mero
   exact canonicalFibreSelection_xs_injective g f hdiv ⟨hb'off, hb'mero⟩
+
+/-! ### The per-pole moving sections from the sphere sheet system
+
+At a finite pole-value `cs i` (a regular value of `f` by the adapted cover), the sphere sheet system
+`S_i` at `coe(cs i)` (`exists_sphereSheetSystem`) supplies the moving sections that enumerate the full
+fibre.  For the per-pole field `secFin`/`hselFin` of `residueSum_eq_zero_of_globalCoverData` the moving
+sections are indexed by the **pole sub-fibre** `(fibreReg hac (cs i)).ι`: `secFin i j` is the sphere
+sheet passing through the `j`-th pole `(fibreReg hac (cs i)).xs j` at the base.
+
+Since each pole over `cs i` is a fibre point and the sheets sweep the full fibre, there is a (unique)
+sheet through each pole — we extract its index by `sheetIndexOf`.  The re-selection bijection `hselFin`
+then follows from the **symmetric lever** once the moving fibre `Φ b' = full fibre` and the section
+range agree as sets — which is the *separation condition* (full fibre over `cs i` = pole sub-fibre). -/
+
+/-- **The sheet index through a fibre point.**  For a `LocalSheetSystem S` of `F = f.toRiemannSphere`
+at `coe b₀`, and a point `x` in the fibre `F⁻¹(coe b₀)`, the sheet index `i` with `S.sheet i (coe b₀) =
+x` (the sheets sweep the fibre, `fibre_eq`). -/
+noncomputable def sheetIndexOf {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere))) {x : X}
+    (hx : f.toRiemannSphere x = (((b₀ : ℂ) : RiemannSphere))) : Fin S.n := by
+  have hmem : x ∈ f.toRiemannSphere ⁻¹' {(((b₀ : ℂ) : RiemannSphere))} := by
+    rw [Set.mem_preimage, Set.mem_singleton_iff]; exact hx
+  rw [S.fibre_eq _ S.mem_V] at hmem
+  exact hmem.choose
+
+/-- The sheet at `sheetIndexOf S hx` passes through `x` at the base. -/
+theorem sheet_sheetIndexOf {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere))) {x : X}
+    (hx : f.toRiemannSphere x = (((b₀ : ℂ) : RiemannSphere))) :
+    S.sheet (sheetIndexOf S hx) (((b₀ : ℂ) : RiemannSphere)) = x := by
+  have hmem : x ∈ f.toRiemannSphere ⁻¹' {(((b₀ : ℂ) : RiemannSphere))} := by
+    rw [Set.mem_preimage, Set.mem_singleton_iff]; exact hx
+  rw [S.fibre_eq _ S.mem_V] at hmem
+  exact hmem.choose_spec
+
+/-- **The per-pole moving section through the `j`-th pole.**  Given a sphere sheet system `S` at `coe
+b₀` and a pole `x` in the fibre `F⁻¹(coe b₀)`, the moving section `b' ↦ S.sheet (sheetIndexOf S hx)
+(coe b')` of `f.holoRepr` through `x` at the base.  This is `holoReprSheet S (sheetIndexOf S hx)`,
+smooth and a section of `f.holoRepr` near `b₀` (the translation lemmas of `FormTraceSphereSheetTranslate`). -/
+noncomputable def poleMovingSection {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere))) {x : X}
+    (hx : f.toRiemannSphere x = (((b₀ : ℂ) : RiemannSphere))) : ℂ → X :=
+  S.holoReprSheet (sheetIndexOf S hx)
+
+/-- `poleMovingSection` passes through the pole `x` at the base. -/
+theorem poleMovingSection_base {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere))) {x : X}
+    (hx : f.toRiemannSphere x = (((b₀ : ℂ) : RiemannSphere))) :
+    poleMovingSection S hx b₀ = x := by
+  rw [poleMovingSection, S.holoReprSheet_base]; exact sheet_sheetIndexOf S hx
+
+/-- `poleMovingSection` is `C^ω` at the base. -/
+theorem poleMovingSection_contMDiffAt {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere))) {x : X}
+    (hx : f.toRiemannSphere x = (((b₀ : ℂ) : RiemannSphere))) :
+    ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (poleMovingSection S hx) b₀ :=
+  S.holoReprSheet_contMDiffAt (sheetIndexOf S hx)
+
+/-- `poleMovingSection` is a section of `f.holoRepr` near the base. -/
+theorem poleMovingSection_section {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere))) {x : X}
+    (hx : f.toRiemannSphere x = (((b₀ : ℂ) : RiemannSphere))) :
+    ∀ᶠ b' in 𝓝 b₀, f.holoRepr (poleMovingSection S hx b') = b' :=
+  S.holoReprSheet_section (sheetIndexOf S hx)
+
+/-- `poleMovingSection S hx b'` has sphere value `coe b'` near `b₀` (its `holoRepr` is `b'`, a
+non-pole), i.e. it lies in the fibre `F⁻¹(coe b')`. -/
+theorem poleMovingSection_mem_fibre {b₀ : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((b₀ : ℂ) : RiemannSphere))) {x : X}
+    (hx : f.toRiemannSphere x = (((b₀ : ℂ) : RiemannSphere))) :
+    poleMovingSection S hx = (fun b' => S.sheet (sheetIndexOf S hx) (((b' : ℂ) : RiemannSphere))) :=
+  rfl
 
 end Jacobians.Dolbeault.FormTraceGlobal
