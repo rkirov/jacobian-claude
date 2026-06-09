@@ -3013,3 +3013,98 @@ function" coboundary-lift field is a soundness trap.
 - `MittagLefflerForm`/`GeneralMLDistribution` get `Nonempty X` free from `ConnectedSpace`.
 - `formFnHoloPunctured_of_mem`: g_i iso at a pole from `iso`+`holoDiff` via the `formFnResidue_add`
   punctured-ball split pattern (min of the two radii).
+
+## 2026-06-09 — Gate A `hgeom_slit` wall: Forster §5 wᵐ normal-form + cluster-split atoms DELIVERED; single-cluster `hgeom_slit` is the unique-preimage special case (SOUNDNESS REFINEMENT)
+
+**Branch:** `gate-a-trace-rationality-assembly`. **Target:** build `RealCoverSlitGeometry`/`hgeom_slit`
+for the REAL cover (the LAST geometric piece of Gate A `∑Res(α)=0`). NEW FILE
+`Jacobians/Dolbeault/SerreResidueRamifiedClusterSplit.lean` (builds STANDALONE green = 8517 jobs, every
+decl axiom-clean `[propext, Classical.choice, Quot.sound]`, ZERO sorry). Did NOT touch the Cousin/∂̄
+thread (`GeneralMittagLeffler`/`CousinResidueConstruct`/`GlobalResidue*`/`FormMLDistribution`), the 2
+untracked orphans, or any PROVEN decl outside the new file.
+
+### OUTCOME: the hard atoms are DONE; `hgeom_slit` is NOT proven because it is UNSOUND for a general cover
+`RealCoverSlitGeometry`/`RamifiedSheetData.hgeom_slit` (the named target at
+`SerreResidueRamifiedRealCover.lean:429` / the `RamifiedSheetData` field) state, on a slit accumulating
+at the value-centre `c`:
+> `valueChartTrace ω₀ f Φ z = ∑_{j<m} chartIntegrand ω₀ g p (wp + ζʲ·w₀ z) · (d/dz)[wp + ζʲ·w₀ z]`,
+i.e. the **full-fibre** geometric trace = ONLY the single `p`-cluster sum, with **first-order** sheet
+points `wp + ζʲ·w₀ z`. This is mathematically TRUE only in the **fully-ramified single-preimage** case
+(two independent failures, BOTH genuine):
+1. **OUTER-SUM failure.** `valueChartTrace z = (fibreTrace (Φ z)).traceCoeff z = ∑ over the WHOLE fibre
+   F⁻¹(z)` (the unramified template `valueChartTrace_eq_sphereSheetFibreTrace` sums over a
+   `LocalSheetSystem` whose `fibre_eq` covers the ENTIRE fibre — `TraceForm.lean:286`). For a degree-`d`
+   cover with `m < d`, `c` has OTHER preimages (pole or non-pole); their cluster sheets contribute extra
+   terms to the LHS that are ABSENT on the single-`p` RHS. Non-pole preimages contribute *holomorphic*
+   (≠ 0) terms — so they don't vanish; they belong in the trace.
+2. **SHEET-POINT failure.** The genuine `j`-th sheet point near `p` is `η⁻¹(ζʲ·w₀ z) = s(ζʲ·w₀ z)`
+   (the local inverse of the straightening coord `η`, `F = c + ηᵐ`), NOT the first-order `wp + ζʲ·w₀ z`.
+   They agree only if the straightening unit is trivial (`F w = c + (w−wp)ᵐ`).
+So `hgeom_slit` for the real cover is a **stronger-than-the-book** statement (misformalization smell);
+asserting it = false field. **It is NOT currently asserted anywhere** (only `realCoverRamifiedCenters_empty`,
+the vacuous `m=0`, instantiates `RealCoverRamifiedCenters`), so the codebase stays SOUND — this is
+preventive, not a fix to existing breakage. (Consistent with the morning entry's `ofFibreRamified`
+principal-part trap fix: the `Rem` field absorbs the holomorphic remainder, but `hgeom_slit`'s RHS
+`hRem_slit` constrains `Rem` to the single-`p`-cluster `ppR` sum, re-introducing the single-preimage
+restriction at the geometry level.)
+
+### WHAT WAS BUILT (genuine, sound, reusable — the real Forster §5 content)
+1. **`exists_holomorphic_root`**: holomorphic `m`-th root of a nonvanishing analytic germ. NO `slitPlane`
+   hypothesis on `u`: rotate by `λ = conj(u x₀)` so `λ·u x₀ = normSq > 0 ∈ slitPlane`, principal
+   `cpow (1/m)`, divide back the constant root `λ^{1/m}`. Reusable complex-analysis atom.
+2. **`exists_wpow_normalForm`** (THE HARD PIECE, Forster §5 `z=wᵐ`): `F` analytic at `wp`, `F wp = c`,
+   `analyticOrderAt (F−c) wp = m` ⟹ ∃ local biholo `η` (`η wp = 0`, `η' wp ≠ 0`) with `F w = c + η wᵐ`
+   near `wp`. From the order factorization `F−c = (w−wp)ᵐ·u` (`AnalyticAt.analyticOrderAt_eq_natCast`) +
+   the `m`-th root `v` of `u`; `η w := (w−wp)·v w`, `deriv η wp = v wp ≠ 0`. The genuine "cover IS wᵐ".
+3. **`exists_localInverse_at_zero`/`clusterSheet`/`clusterSheet_sect`/`exists_clusterSplit`**: the
+   fibre-cluster split. Local inverse `s = η⁻¹` (`s 0 = wp`); the `m` cluster sheets
+   `clusterSheet s ζ w₀ j z := s(ζʲ·w₀ z)` are GENUINE preimages: `F(s(ζʲ·w₀ z)) = z` (via
+   `F = c+ηᵐ`, `η(s a)=a`, `(ζʲw₀z)ᵐ = ζ^{jm}·w₀ᵐ = 1·(z−c) = z−c`), clustering at `wp` as `w₀ z→0`.
+   **m=2 constructibility VERIFIED** end-to-end on `F = c + (w−wp)²` (`analyticOrderAt = 2`, atoms fire,
+   two sheets `s(±w₀ z)`).
+4. **`RamifiedFullFibreClusterGeometry`** (the PRECISE corrected remaining lemma, the SOUND target): the
+   genuine ramified analogue of `valueChartTrace_eq_sphereSheetFibreTrace` —
+   > `valueChartTrace ω₀ f Φ z = ∑_{ℓ<r (ALL preimages)} ∑_{j<mult ℓ}`
+   >   `chartIntegrand ω₀ g (pre ℓ) (clusterSheet (sec ℓ)(ζ ℓ)(w₀ ℓ) j z) · deriv(clusterSheet …) z`.
+   Fixes EXACTLY the two failures: outer sum over the WHOLE fibre + genuine `clusterSheet` sheet points.
+   `ramifiedFullFibreClusterGeometry_unramified_shape`: m=1 sanity (inner sum collapses to the unramified
+   full-fibre shape). The per-preimage atoms (`exists_clusterSplit`) are exactly what it consumes.
+
+### THE PRECISE REMAINING `f=wᵐ` NORMAL-FORM WORK (what the next agent must build)
+`hgeom_slit` as stated is dead (unsound). Route the residue assembly through
+`RamifiedFullFibreClusterGeometry` instead. To discharge IT:
+(a) **fibre-cluster reindexing**: the full-fibre `LocalSheetSystem` trace `∑_{F⁻¹(z)}` reindexes as
+   `∑_ℓ ∑_{j<mℓ}` over the per-preimage clusters — the `mℓ` regular sheets near `pℓ` over a nearby `z`
+   ARE `clusterSheet (sec ℓ) … j z` (by `exists_clusterSplit` + PROPERNESS: near `c` the fibre lies in
+   ⋃ small charts around the preimages). This is the genuine multi-hundred-LoC build (the chart-coord
+   reconciliation between `f.holoRepr∘chart⁻¹` (where the cluster atoms live) and `f.toRiemannSphere`/
+   `LocalSheetSystem` (where `valueChartTrace` lives) is the fiddly part).
+(b) **per-cluster symmetric collapse** (mostly DONE): each cluster's `∑_{j<mℓ} h(clusterSheet…)·deriv`
+   descends to a single-valued meromorphic `ramifiedTraceTerm + analytic-rem` — the morning's
+   `ramifiedSheetSum_laurentPoly`/`eqOn_traceFull_slit` do this for `wp+ζʲw₀` sheet points; needs
+   re-proving for the TRUE `clusterSheet` points (general symmetric-function-of-the-roots pushforward;
+   the `m`-sheet sum over the `m` roots of `F(w)=z` is single-valued meromorphic — standard but unbuilt).
+(c) **pole-order bound** (the first `RealCoverSlitGeometry` conjunct, feeds `hvct_mero`): `(z−c)^N·trace
+   → 0`. ⚠ NOT the "quick `traceLocalCoeff_mul_sub_tendsto_zero`" the brief expected — that lemma is for
+   HOLOMORPHIC `α` (`TraceForm.lean:1778`); at a POLE-value centre `g` is NOT continuous, so it needs a
+   MEROMORPHIC-`α` extension of the `bigPhi` triangle-inequality estimate (genuine work, couples to the
+   same cluster structure). `hbnd_canonical_sound` (`SerreResidueGateAClosed.lean:433`) gives only `N=1`
+   AND only where `g` is continuous on the fibre (`hg_fibre`) = regular values, NOT pole centres.
+
+### LEAN GOTCHAS (for the next agent)
+- m-th root: `AnalyticAt.cpow h analyticAt_const hbase` needs the BASE `∈ slitPlane`; get it by rotating
+  with `λ=conj(u x₀)`: `lam*u x₀ = mul_conj = normSq` (real), `.re>0` via `Complex.normSq_pos`. `vᵐ=u`
+  via `Complex.cpow_nat_inv_pow _ hm.ne'`; divide the constant root `λ^{1/m}` (`field_simp` for the last
+  `lam*(u/lam)=u`).
+- normal form: extract `F−c=(w−wp)ᵐ•u` from `(hF_an.sub analyticAt_const).analyticOrderAt_eq_natCast`
+  applied to `analyticOrderAt (F−c) wp = ((m:ℕ):ℕ∞)` (the `((m:ℕ):ℕ∞)` cast — bare `(m:ℕ∞)` won't `rw`).
+  `deriv η wp = v wp`: build `HasDerivAt ((·−wp)*v) (v wp) wp` via `h1.mul h2` + `simp only [sub_self,
+  zero_mul, add_zero, one_mul]` then `convert … using 1`.
+- local inverse: reuse `exists_planar_section`'s pattern (`hsd.localInverse`/`analyticAt_localInverse`/
+  `to_localInverse`/`eventually_right_inverse`); `rw [hη0]` to move `η wp=0` to `0`.
+- the sheet point in `hgeom_slit`/the corrected predicate is a CHART COORDINATE (`ℂ`), so `sec ℓ:ℂ→ℂ`
+  is the local inverse READ IN the `pre ℓ`-chart; `clusterSheet (sec ℓ) … z` is already a chart coord —
+  do NOT re-apply `chartAt` (it's `chartIntegrand ω₀ g (pre ℓ) (clusterSheet …)`, not `… (chartAt _ (…))`).
+- `RamifiedFullFibreClusterGeometry` lives in `namespace Jacobians.Dolbeault.SerreResidueTheorem` with
+  the FormTraceGlobal/FormTraceFibre opens (for `valueChartTrace`/`chartIntegrand`); the cluster atoms
+  are in bare `namespace Jacobians`.
