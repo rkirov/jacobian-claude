@@ -1984,3 +1984,64 @@ essential, bundled), the iso is GENUINE (`LinearEquiv.ofBijective` of the proven
 non-vacuous: `genus ≤ lDim K = omegaDim 0`). Authoritative `lake env lean #print axioms` confirmed
 clean on all deliverables. Did NOT touch the 2 orphans, Gate A trace files, Gate C's file (imported),
 or PROVEN decls; only the NEW `CanonicalFormIso.lean`. Did NOT attempt 17.5/17.6/17.9.
+
+---
+
+## 2026-06-09 — Gate A `∑Res=0`: branch-value boundedness `hbnd` DISCHARGED (the last analytic residual)
+
+**Branch:** `gate-a-trace-rationality-assembly`. **New file:** `Jacobians/Dolbeault/SerreResidueInftyClosedBnd.lean`
+(sibling of `SerreResidueInftyCoherence.lean`; imports it + `FormTraceBundleBridge`). Independent of the
+running 17.4/Gate C thread (`CanonicalFormIso.lean` — NOT touched). Did NOT touch the untracked orphans
+(`ChartDisk*`, `MeromorphicOneFormSystem.lean`) or any PROVEN decl.
+
+**WHAT WAS THE TARGET.** After the ∞-coherence wall closed
+(`…_CfullHreg_inftyClosed`, axiom-clean), Gate A genus-0 simple-∞ canonical-selection rested on only
+`{hbnd, genericity}`. `hbnd` = at a branch value `b₀` (off pole-centres),
+`(z−b₀)·valueChartTrace ω₀ f Φ z → 0` on `𝓝[≠] b₀` — Miranda §VIII.3 "the symmetric fibre-SUM extends
+across branch points" as boundedness. `Φ = canonicalFibreSelection g f hdiv`.
+
+**DELIVERED (all axiom-clean `[propext, Classical.choice, Quot.sound]`, authoritative `lake env lean
+#print axioms`):**
+* `hev_canonical_of_offBranch` — the eventual sphere-sheet coherence near `b₀` for the canonical
+  selection, assembled from the regular-value `g`-data (`hgood_reg`/`hgmero_reg`, sphere systems off
+  `image cs ∪ br`) + the local-form agreement `αBr =ᶠ ω₀·g at every fibre point near b₀`. Built on the
+  PROVEN `FormTraceGlobal.hevBr_of_regularData` (inline `Sreg` from `exists_sphereSheetSystem`; `hmeroReg`
+  transferred from full-fibre via `canonicalFibreSelection_xs_range`, exactly as `hreg_canonical_of_offBranch`).
+* `hreg_canonical_at_goodValue` — trace analytic at an individual good value (the moving-datum coherence
+  `analyticAt_valueChartTrace_of_movingDatum ∘ movingCoherenceDatum_canonical`), for the non-branch case.
+* `hbnd_canonical_of_offBranch` — `hbnd` itself. Case split on `b₀ ∈ branchValues f`:
+  - genuine branch (`coe b₀ ∈ branchLocus`): **bundle SUM route** `hbnd_of_eventual_sphereCoherence`
+    (rests on PROVEN axiom-clean `TraceForm.traceLocalCoeff_mul_sub_tendsto_zero` — properness +
+    finite-subcover over `F⁻¹{coe b₀}` + per-preimage `(F−b₀)/F'→0`; **no colliding Puiseux sheets**,
+    the symmetric SUM extends, Miranda's fix);
+  - regular `br`-value (`coe b₀ ∉ branchLocus`, only when `br ⊋ branchValues`): trace analytic ⟹
+    continuous ⟹ `(z−b₀)·trace → 0·trace(b₀) = 0`.
+* **CAPSTONE `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg_inftyClosed_bnd`** — Gate A
+  `∑Res=0` with `hbnd` AND ∞-coherence both DISCHARGED. **Rests on the discrete genericity bookkeeping
+  ALONE** (off-branch pole-values, good values, near-value `g`-mero, `g`-holo-off-poles, simple ∞-poles,
+  + the per-branch `αBr`/`hαBrAgree` and non-branch-`br` good-value data). No `hbnd`, no `hcoh_geom`.
+
+**The new genericity inputs over `…_inftyClosed`:** (1) per-branch global holomorphic form `αBr b₀`
+agreeing with `ω₀·g` at the fibre `F⁻¹(coe z)` near each branch value (`hαBrAgree`) — the standard
+Mittag–Leffler/cutoff residual (`b₀` off pole-values ⟹ `g` holo near the whole fibre); this is the SAME
+field the proven-satisfiable `AdaptedTraceGeometry.αBr`/`hevBr` and `globalCoverData`'s `hαBrAgreeBr`
+already accept, here in the cleaner "agree at every fibre point" form. (2) good-value `g`-data at the
+non-branch `br`-values (vacuous when `br = branchValues f`). `hg_an` at those fibres derived internally
+from `hg_an_offpoles` (non-pole-value ⟹ non-pole fibre, `notMem_poles_of_fibrePoint_offCentres`).
+
+**SOUNDNESS (seven-bad-field warning respected).**
+* **NON-CIRCULAR — machine-verified.** A `run_cmd` transitive-constant-closure scan of
+  `hbnd_canonical_of_offBranch` found ZERO references to `formFnResidue`/`residueSum`/`residueTheorem`/
+  `TraceRationality`. `hbnd` is a genuine LOCAL boundedness limit, NOT a disguise of `∑Res=0`. The
+  bundle crux home `TraceForm.lean` has no residue-sum dependency at all.
+* **No junk-value defect.** `(z−b₀)·trace → 0` is a limit on the PUNCTURED `𝓝[≠] b₀`, never evaluating
+  the literal value at `b₀` (kept that way end-to-end).
+* **Witness sanity-check.** `f(z)=z²` at branch value `0`: fibre = single double point `0`, trace has at
+  most a simple pole, `(z−0)·trace → 0` — consistent.
+* **No `αBr` False-field.** `hαBrAgree` is satisfiable (finite fibre, `g` holo near it off poles, cutoff);
+  strictly the intended genericity, matching the proven-non-vacuous existing fields.
+
+**RESULT: Gate A `∑Res=0` (genus 0, simple ∞, canonical selection) now rests on GENERICITY BOOKKEEPING
+ALONE.** No remaining analytic residual. Next downstream = the genericity layer (`SerreResidueGenericity`
+/ `AdaptedTraceGeometry`) — note its standing soundness finding (pole-only-`D` vs full-fibre-`agree`
+contract in `TraceRationalityDataNF`), unaffected by this work.
