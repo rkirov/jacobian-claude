@@ -32,12 +32,20 @@ poles over `coe b`, is surjective onto them, and its image is exactly the pole-f
 enumeration (`hpole_image`).  This is the pole↔full matching the honest residue-level route needs — the
 `D` (pole-only) vs `Cfull` (full-fibre) separation that *eliminates* the false germ `agree`.
 
-* `poleSubfibre` — the pole-only sub-`FibreRegularData` (reuses `Dfull`'s `hg_an`/`hg_deriv`/`hval`/
-  `hg_mero` on the subtype, so it is a genuine `FibreRegularData`, `f`-regular).
-* `poleSubfibre_xs_*` — injectivity / pole-membership / surjectivity / `hpole_image` (pure `Finset`).
-* `directTraceGeometry_ofAdapted` — the maximal proven-prefix constructor: builds `DirectTraceGeometry`
-  with the pole-only field-groups and centre bookkeeping **proven**, the deep analytic fields as named
-  hypotheses.  Reduces Gate A to the smallest honest residual.
+* `poleSubfibre` / `poleSubfibre_xs_*` — the pole-only sub-`FibreRegularData` (reuses `Dfull`'s fields on
+  the subtype, a genuine `f`-regular `FibreRegularData`) + injectivity / pole-membership / surjectivity /
+  `hpole_image` (the finite-fibre group `D`/`hxs_*`/`hpole_image`).
+* `poleSubEnum_*` — the `∞`-analogue (the `∞`-fibre group `xsInf_po`/`hpoInf_*`/`hpole_image_inf`).
+* `inftyFibreEnum_*` / `inftyFibreDataNF_full` — the **full `∞`-fibre** datum from simple poles
+  (enumerating *all* `f`-poles); closes `Dinf_full`/`hfullInf_inj`/`hinf_mem`/`hinf_surj`.
+* `poleValueEnum_*` / `hcenters_cs_poleValueEnum` / `exists_poleValueEnum_ball` — the **finite centre**
+  (pole-value) enumeration; closes `m`/`cs`/`ρ`/`hcs_ball`/`hcs_inj`/`hcenters_cs`.
+* `canonicalFibreSelection_hΦ_*` — the canonical-selection `Φ`-enumeration discharge (from a single
+  pole-value-goodness genericity `hgood`).
+* `directTraceGeometry_ofAdapted` / `…ofAdaptedSimpleInfty` / `…ofCanonicalSimpleInfty` — the
+  maximal-proven-prefix constructors (general `Φ` → canonical `Φ` + simple `∞`), each building the proven
+  field-groups and taking the deep analytic content as named hypotheses.
+* `residueTheorem_of_canonicalAdapted` — the capstone: Gate A `∑Res = 0` directly from the residuals.
 
 ## Honest scope (this is a 38-field assembly)
 
