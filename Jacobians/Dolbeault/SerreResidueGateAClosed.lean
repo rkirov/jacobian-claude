@@ -201,3 +201,96 @@ theorem traceLocalCoeff_mul_sub_gWeighted_tendsto_zero_Y (f : X → Y) (hf : Con
           _ = ε := one_mul ε
 
 end Jacobians.TraceResidue
+
+namespace Jacobians.Dolbeault.FormTraceGlobal
+
+open Complex Metric Filter Topology
+open scoped Manifold ContDiff Real
+open OnePoint
+
+open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
+  Jacobians.Dolbeault.FormTraceFibre Jacobians.RiemannSphere
+  Jacobians.Dolbeault.FormTraceMovingFibre Jacobians.Dolbeault.FormTraceInftyFibre
+  Jacobians.Dolbeault.FormTraceInftyRecip
+
+attribute [local instance] Classical.propDecidable
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
+
+/-! ### The geometric trace as the `g`-weighted bundle finsum (αBr-FREE)
+
+The sound bridge: at a regular value `coe z` with a sphere sheet system `S`, the geometric fibre trace
+equals the `g`-weighted bundle finsum of the **global holomorphic** `ω₀` over the fibre — with **no**
+auxiliary global form `αBr`.  This is the αBr-free analogue of `fibreTrace_traceCoeff_eq_traceLocalCoeff`
+(whose αBr-naming step we drop), feeding the `g`-weighted boundedness crux directly. -/
+
+/-- **Per-sheet frame identity.**  On `RiemannSphere`, the `coe b₀`-frame local coefficient of the
+`ω₀`-trace summand at the sheet point `s (coe z)` equals the raw bundle summand `sheetPullback ω₀ s
+(coe z) 1`.  Frame swap (`localCoeffLin_coe_base_swap`) to the self `coe z`-frame, then
+`inCoordinates_center_self`, then `traceSummandAt_sheet_eq` (summand = `sheetPullback`). -/
+theorem localCoeffLin_traceSummand_eq_sheetPullback (ω₀ : HolomorphicOneForms X) {b₀ z : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))) (i : Fin S.n) :
+    localCoeffLin (((b₀ : ℂ) : RiemannSphere)) (((z : ℂ) : RiemannSphere))
+        (traceSummand f.toRiemannSphere ω₀ (S.sheet i (((z : ℂ) : RiemannSphere))))
+      = sheetPullback ω₀ (S.sheet i) (((z : ℂ) : RiemannSphere)) (1 : ℂ) := by
+  -- `traceSummand F ω₀ (S.sheet i (coe z)) = sheetPullback ω₀ (S.sheet i)(coe z)`.
+  have hsummand : traceSummand f.toRiemannSphere ω₀ (S.sheet i (((z : ℂ) : RiemannSphere)))
+      = sheetPullback ω₀ (S.sheet i) (((z : ℂ) : RiemannSphere)) := by
+    have h := S.traceSummandAt_sheet_eq f.contMDiff_toRiemannSphere ω₀ i S.mem_V
+    rw [traceSummandAt] at h; exact h
+  rw [hsummand, localCoeffLin_coe_base_swap]
+  -- Self-frame: `localCoeffLin (coe z)(coe z) φ = φ 1`.
+  unfold localCoeffLin
+  simp only [LinearMap.coe_mk, AddHom.coe_mk, inCoordinates_center_self]
+  rfl
+
+/-- **Geometric trace = `g`-weighted bundle finsum (αBr-FREE).**  At a regular value `coe z` with a
+sphere sheet system `S` (regular fibre — `hderiv`, `hmero`), the geometric fibre trace coefficient
+equals the `g`-weighted bundle finsum of `ω₀` over the fibre `F⁻¹(coe z)`, read in the `coe b₀`-frame:
+
+> `(fibreTrace ω₀ f (ofSphereSheetSystem S hderiv hmero)).traceCoeff z
+>    = ∑ᶠ x ∈ F⁻¹(coe z), g x · localCoeffLin (coe b₀) (coe z) (traceSummand F ω₀ x)`.
+
+No global `αBr` — the boundedness rides on the global holomorphic `ω₀` summand weighted by `g`. -/
+theorem fibreTrace_traceCoeff_eq_gWeighted_finsum (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) {b₀ z : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
+    (hderiv : ∀ i, deriv (fun w => f.holoRepr
+        ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+        (S.sheet i (((z : ℂ) : RiemannSphere)))) ≠ 0)
+    (hmero : ∀ i, MeromorphicAt
+      (fun w => g ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).symm w))
+      ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
+        (S.sheet i (((z : ℂ) : RiemannSphere))))) :
+    (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv hmero)).traceCoeff z
+      = ∑ᶠ x ∈ f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))},
+          g x * localCoeffLin (((b₀ : ℂ) : RiemannSphere)) (((z : ℂ) : RiemannSphere))
+            (traceSummand f.toRiemannSphere ω₀ x) := by
+  -- The geometric side = `g`-weighted sheet sum (the proven αBr-free body via the moving sum).
+  have hmoving := (fibreTrace_eventuallyEq_movingSum ω₀ f
+    (FibreRegularData.ofSphereSheetSystem S hderiv hmero) (fun i => S.holoReprSheet i)
+    (fun _ => rfl)
+    (fun i => (S.holoReprSheet_contMDiffAt i).continuousAt)
+    (fun i => S.holoReprSheet_section i)).self_of_nhds
+  rw [hmoving]
+  simp only []
+  have hgeo : ∑ i, chartIntegrand ω₀ g ((FibreRegularData.ofSphereSheetSystem S hderiv hmero).xs i)
+        ((chartAt ℂ ((FibreRegularData.ofSphereSheetSystem S hderiv hmero).xs i))
+          (S.holoReprSheet i z))
+        * deriv (fun w => (chartAt ℂ ((FibreRegularData.ofSphereSheetSystem S hderiv hmero).xs i))
+            (S.holoReprSheet i w)) z
+      = ∑ i, g (S.sheet i (((z : ℂ) : RiemannSphere)))
+          * sheetPullback ω₀ (S.sheet i) (((z : ℂ) : RiemannSphere)) (1 : ℂ) :=
+    Finset.sum_congr rfl (fun i _ =>
+      movingSummand_eq_g_sheetPullback ω₀ g (S.sheet i) (S.sheet_mdifferentiableAt i S.mem_V))
+  rw [hgeo]
+  -- The `g`-weighted finsum side = `g`-weighted sheet sum (fibre = range of sheets + frame identity).
+  rw [S.fibre_eq _ S.mem_V, finsum_mem_range (S.sheet_inj _ S.mem_V), finsum_eq_sum_of_fintype]
+  exact (Finset.sum_congr rfl (fun i _ => by
+    rw [localCoeffLin_traceSummand_eq_sheetPullback ω₀ S i])).symm
+
+end Jacobians.Dolbeault.FormTraceGlobal
