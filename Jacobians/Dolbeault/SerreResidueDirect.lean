@@ -402,4 +402,171 @@ theorem serreTraceExists_of_residueGeometry_holomorphic (ω₀ : HolomorphicOneF
     rw [hLR0, resAtInfty_eq_zero_of_zero]
     simp
 
+/-! ## Level 2: the residue-level discharge of the finite Lemma 3.2 (the sound bridge)
+
+The directive's centrepiece: prove the finite residue identity `hres_fin i` **soundly**, from the
+**full-fibre** moving coherence (a genuine full fibre — the germ equality `MovingCoherenceDatum.coherent`
+is sound there, full fibre ≠ pole-only) + patch inertness + the **non-pole-residue-`0`** vanishing.
+The pole-only germ `agree` is **never** used.
+
+The argument (Miranda Lemma 3.2 at a finite centre, residue form):
+```
+resAt T (cs i)  =  resAt (valueChartTrace ω₀ f Φ) (cs i)              [patch inert off branches]
+                =  resAt (fibreTrace ω₀ f Cfull.D).traceCoeff (cs i)   [FULL-fibre coherence, sound]
+                =  ∑_{k} formFnResidue ω₀ g (Cfull.D.xs k)             [Lemma 3.2, resAt_traceCoeff]
+                =  ∑_{j} formFnResidue ω₀ g ((D (cs i)).xs j).          [non-poles residue 0; poles = D]
+```
+The last step is the **non-pole-residue-`0`** content: the full-fibre points that are not poles
+contribute `0` (`α` holomorphic there), so the full-fibre residue sum equals the pole-only sum. -/
+
+/-- **Full-fibre residue sum = pole-only residue sum** (the non-pole-residue-`0` bridge, raw
+enumerations).  For finite-indexed enumerations `xsFull : ιF → X` (full fibre) and `xsPo : ιP → X`
+(pole-only), both injective, with the **pole** points of the full enumeration exactly the image of the
+pole-only enumeration (`hpole_image`) and the full enumeration's non-pole points having residue `0`
+(`hnonpole`):
+
+> `∑ₖ formFnResidue ω₀ g (xsFull k) = ∑ⱼ formFnResidue ω₀ g (xsPo j)`.
+
+Pure `Finset` partition (`Finset.sum_filter_add_sum_filter_not` by pole-membership), no analysis.  The
+shared engine for the finite and `∞` full→pole-only residue reductions. -/
+theorem residueSum_full_eq_poleOnly {ιF ιP : Type*} [Fintype ιF] [Fintype ιP]
+    (xsFull : ιF → X) (xsPo : ιP → X)
+    (hfull_inj : Function.Injective xsFull) (hpo_inj : Function.Injective xsPo)
+    (hpole_image : (Finset.univ.image xsFull).filter (· ∈ poles) = Finset.univ.image xsPo)
+    (hnonpole : ∀ k, xsFull k ∉ poles → formFnResidue ω₀ g (xsFull k) = 0) :
+    (∑ k, formFnResidue ω₀ g (xsFull k)) = ∑ j, formFnResidue ω₀ g (xsPo j) := by
+  classical
+  -- Re-index both sums over their (injective) images.
+  have hfull_re : (∑ k, formFnResidue ω₀ g (xsFull k))
+      = ∑ a ∈ Finset.univ.image xsFull, formFnResidue ω₀ g a :=
+    (Finset.sum_image (fun i _ j _ h => hfull_inj h)).symm
+  have hpo_re : (∑ j, formFnResidue ω₀ g (xsPo j))
+      = ∑ a ∈ Finset.univ.image xsPo, formFnResidue ω₀ g a :=
+    (Finset.sum_image (fun i _ j _ h => hpo_inj h)).symm
+  rw [hfull_re, hpo_re, ← hpole_image]
+  -- Split the full-fibre image sum by pole-membership; the non-pole part vanishes.
+  rw [← Finset.sum_filter_add_sum_filter_not (Finset.univ.image xsFull) (· ∈ poles)
+      (fun a => formFnResidue ω₀ g a)]
+  have hnp : (∑ a ∈ (Finset.univ.image xsFull).filter (fun a => ¬ a ∈ poles),
+      formFnResidue ω₀ g a) = 0 := by
+    refine Finset.sum_eq_zero (fun a ha => ?_)
+    rw [Finset.mem_filter, Finset.mem_image] at ha
+    obtain ⟨⟨k, _, rfl⟩, hnotpole⟩ := ha
+    exact hnonpole k hnotpole
+  rw [hnp, add_zero]
+
+/-- **Pole-only `∞`-enumeration residue sum = `∞`-fibre-restricted pole-set sum** (raw enumeration,
+pure `Finset` combinatorics).  If `xsInf : ι → X` injectively enumerates exactly the poles in the fibre
+`F⁻¹(∞)`, then `∑ⱼ formFnResidue ω₀ g (xsInf j) = ∑_{a ∈ poles, F a = ∞} formFnResidue ω₀ g a`.  The
+raw-enumeration analogue of `inftyResidueSumNF_eq_filter` (independent of any `InftyFibreDataNF`). -/
+theorem residueSum_xs_eq_inftyFilter {ι : Type*} [Fintype ι] (xsInf : ι → X)
+    (hxs_inj : Function.Injective xsInf)
+    (hxs_mem : ∀ j, xsInf j ∈ poles ∧ f.toRiemannSphere (xsInf j) = OnePoint.infty)
+    (hxs_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ j, xsInf j = a) :
+    (∑ j, formFnResidue ω₀ g (xsInf j))
+      = ∑ a ∈ poles with f.toRiemannSphere a = OnePoint.infty, formFnResidue ω₀ g a := by
+  classical
+  have hImg : (Finset.univ : Finset ι).image xsInf
+      = poles.filter (fun a => f.toRiemannSphere a = OnePoint.infty) := by
+    ext a
+    simp only [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_filter]
+    constructor
+    · rintro ⟨j, rfl⟩; exact ⟨(hxs_mem j).1, (hxs_mem j).2⟩
+    · rintro ⟨ha_pole, ha_fib⟩; exact hxs_surj a ha_pole ha_fib
+  rw [← hImg, Finset.sum_image (fun i _ j _ h => hxs_inj h)]
+
+/-- **The finite Lemma-3.2 residue identity, from the full-fibre coherence (sound).**  At a finite
+centre `cs i`, given:
+
+* `Cfull : MovingCoherenceDatum ω₀ g f Φ (cs i)` — the **full-fibre** moving coherence (a genuine full
+  fibre; the germ equality `Cfull.coherent` is **sound** here, full fibre ≠ pole-only);
+* `hfull_inj` / `hpole_image` / `hnonpole` — the full-fibre enumeration is injective, its pole points are
+  exactly the pole-only enumeration `(D (cs i)).xs`, and its non-pole points have residue `0`;
+* `hpo_inj` — the pole-only enumeration is injective,
+
+the **finite Lemma-3.2 residue identity** holds:
+
+> `resAt (valueChartTracePatched ω₀ f Φ br) (cs i) = ∑ⱼ formFnResidue ω₀ g ((D (cs i)).xs j)`.
+
+This is the residue-level discharge the directive centres on — **no** pole-only germ `agree`. -/
+theorem hres_fin_of_fullFibreCoherence
+    {Φ : (b : ℂ) → FibreRegularData g f b} {br : Finset ℂ} {m : ℕ} {cs : Fin m → ℂ}
+    (D : (p : ℂ) → FibreRegularData g f p) (i : Fin m)
+    (Cfull : MovingCoherenceDatum ω₀ g f Φ (cs i))
+    (hfull_inj : Function.Injective Cfull.D.xs)
+    (hpo_inj : Function.Injective (D (cs i)).xs)
+    (hpole_image : (Finset.univ.image Cfull.D.xs).filter (· ∈ poles)
+      = Finset.univ.image (D (cs i)).xs)
+    (hnonpole : ∀ k, Cfull.D.xs k ∉ poles → formFnResidue ω₀ g (Cfull.D.xs k) = 0) :
+    resAt (valueChartTracePatched ω₀ f Φ br) (cs i)
+      = ∑ j, formFnResidue ω₀ g ((D (cs i)).xs j) := by
+  -- `T =ᶠ[𝓝[≠] cs i] valueChartTrace =ᶠ[𝓝[≠] cs i] (fibreTrace ω₀ f Cfull.D).traceCoeff`.
+  have hgerm : valueChartTracePatched ω₀ f Φ br
+      =ᶠ[𝓝[≠] (cs i)] (fibreTrace ω₀ f Cfull.D).traceCoeff :=
+    (valueChartTracePatched_eventuallyEq ω₀ f Φ br (cs i)).trans Cfull.coherent_punctured
+  -- Take residues: `resAt T (cs i) = resAt (fibreTrace …).traceCoeff (cs i)`.
+  rw [resAt_congr hgerm]
+  -- Lemma 3.2 at the full fibre: `resAt (fibreTrace Cfull.D).traceCoeff (cs i) = ∑ₖ formFnResidue …`.
+  -- `(fibreTrace ω₀ f Cfull.D).b = cs i` by `rfl` (avoids the dependent-motive rewrite).
+  rw [show resAt (fibreTrace ω₀ f Cfull.D).traceCoeff (cs i)
+        = resAt (fibreTrace ω₀ f Cfull.D).traceCoeff (fibreTrace ω₀ f Cfull.D).b from rfl,
+    resAt_traceCoeff_fibreTrace ω₀ f Cfull.D]
+  -- Full-fibre residue sum = pole-only residue sum (non-poles contribute `0`).
+  exact residueSum_full_eq_poleOnly Cfull.D.xs (D (cs i)).xs hfull_inj hpo_inj hpole_image hnonpole
+
+/-! ### The residue-level discharge of Lemma 3.2 at `∞`
+
+The `∞`-analogue of `hres_fin_of_fullFibreCoherence`: prove the `∞`-residue identity `hinfty` soundly,
+from the **full `∞`-fibre** coherence (the sound `InftyFibreDataNF` against the full `∞`-fibre) + patch
+inertness + the non-`α`-pole-residue-`0` vanishing.  The germ `agree_infty` is **never** used.
+
+The argument (Miranda Lemma 3.2 at `∞`, residue form):
+```
+resAtInfty L.R L.ρ  =  resAt (recipCoeff L.R) 0                          [resAtInfty_eq_resAt_recipCoeff]
+                    =  resAt (recipCoeff (valueChartTracePatched …)) 0    [L.R = T]
+                    =  resAt (inftyFibreTraceNF ω₀ f Dinf_full).traceCoeff 0   [full ∞-coherence, sound]
+                    =  ∑_k formFnResidue ω₀ g (Dinf_full.xs k)            [Lemma 3.2 at ∞]
+                    =  ∑_{a ∈ poles, F a = ∞} formFnResidue ω₀ g a.        [non-α-poles residue 0]
+```
+-/
+
+/-- **The `∞`-residue identity, from the full `∞`-fibre coherence (sound).**  With `L.R = T :=
+valueChartTracePatched ω₀ f Φ br` (`hTL`), the full `∞`-fibre data `Dinf_full` (a sound
+`InftyFibreDataNF` whose `xs` enumerates the full `∞`-fibre), the **full `∞`-coherence** `hcoh_full`
+(the `∞`-single-valuedness against `Dinf_full` — sound, full fibre), and a pole-only `∞`-enumeration
+`xsInf_po` whose image is exactly the `α`-poles among the full `∞`-fibre (`hpole_image`) with the
+non-`α`-pole points contributing residue `0` (`hnonpole`) and the pole-only enumeration landing in the
+`∞`-fibre poles (`hpo_mem`/`hpo_inj`/`hpo_surj`):
+
+> `resAtInfty L.R L.ρ = ∑_{a ∈ poles, F a = ∞} formFnResidue ω₀ g a`.
+
+This is the residue-level discharge of Lemma 3.2 at `∞` — **no** germ `agree_infty`. -/
+theorem hinfty_of_fullInftyCoherence
+    {Φ : (b : ℂ) → FibreRegularData g f b} {br : Finset ℂ} {L : LaurentForm}
+    (hTL : valueChartTracePatched ω₀ f Φ br = L.R)
+    (Dinf_full : InftyFibreDataNF g f)
+    (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf_full))
+    (hfull_inj : Function.Injective Dinf_full.xs)
+    {ιP : Type} [Fintype ιP] (xsInf_po : ιP → X)
+    (hpo_inj : Function.Injective xsInf_po)
+    (hpo_mem : ∀ j, xsInf_po j ∈ poles ∧ f.toRiemannSphere (xsInf_po j) = OnePoint.infty)
+    (hpo_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ j, xsInf_po j = a)
+    (hpole_image : (Finset.univ.image Dinf_full.xs).filter (· ∈ poles)
+      = Finset.univ.image xsInf_po)
+    (hnonpole : ∀ k, Dinf_full.xs k ∉ poles → formFnResidue ω₀ g (Dinf_full.xs k) = 0) :
+    resAtInfty L.R L.ρ
+      = ∑ a ∈ poles with f.toRiemannSphere a = OnePoint.infty, formFnResidue ω₀ g a := by
+  -- `resAtInfty L.R = resAt (recipCoeff L.R) 0`, and `recipCoeff L.R = recipCoeff T`.
+  rw [resAtInfty_eq_resAt_recipCoeff, ← hTL]
+  -- Full `∞`-coherence: `recipCoeff T =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF Dinf_full).traceCoeff`.
+  have hcoh : recipCoeff (valueChartTracePatched ω₀ f Φ br)
+      =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf_full).traceCoeff :=
+    hcoh_inf_of_inftyMovingCoherenceNF ω₀ g f Φ br Dinf_full hcoh_full
+  rw [resAt_congr hcoh, resAt_traceCoeff_inftyFibreTraceNF ω₀ f Dinf_full]
+  -- Full `∞`-fibre residue sum = the pole-only `∞`-enumeration residue sum (non-`α`-poles → `0`).
+  rw [residueSum_full_eq_poleOnly Dinf_full.xs xsInf_po hfull_inj hpo_inj hpole_image hnonpole]
+  -- The pole-only `∞`-enumeration residue sum = the `∞`-fibre-restricted pole-set sum (pure `Finset`).
+  exact residueSum_xs_eq_inftyFilter xsInf_po hpo_inj hpo_mem hpo_surj
+
 end Jacobians.Dolbeault.SerreResidueTheorem
