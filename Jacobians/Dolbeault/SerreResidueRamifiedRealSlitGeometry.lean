@@ -423,4 +423,85 @@ theorem exists_fibre5Datum (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunct
     hVnf_mem := fun z hz hslit j hj => hVnf j z (hVmem z hz j hj).2.2.2.1 hslit
     hVtgt := fun z hz hslit j hj => hVtg j z (hVmem z hz j hj).2.2.2.2 hslit }⟩
 
+/-! ## Cross-cluster separation on a centre neighbourhood (the `hsep`/`hcross` content)
+
+At distinct fibre preimages `p ≠ p'` (T2-separated since `realFibreData.xs` is injective), the cluster
+section points converge to `p`, `p'` respectively as `z → c`
+(`clusterSectionPoint_tendsto_preimage`), so they lie in disjoint neighbourhoods of `p`, `p'` — hence are
+distinct — for `z` in a centre neighbourhood.  We produce one open `Vsep ∋ c` serving every pair
+(finitely many, over the finite fibre). -/
+
+/-- **Cross-cluster separation on a centre neighbourhood.**  For the whole-fibre data
+`D = realFibreData g hdiv c hnp`, a per-preimage cluster family `Cl` whose local inverse `(Cl i).s` is
+continuous at `0` with `(Cl i).s 0 = chart_{D.xs i} (D.xs i)` and whose branch `(Cl i).w₀` is the `cpow`
+branch near `c`, there is an open `Vsep ∋ c` such that for every `z ∈ Vsep` and distinct preimages
+`i ≠ i'`, the cluster section points are distinct:
+
+> `clusterSection D Cl i j z ≠ clusterSection D Cl i' k z`.
+
+Mechanism: the cluster section points tend to the distinct T2-separated preimages `D.xs i`, `D.xs i'`,
+so they eventually lie in disjoint neighbourhoods. -/
+theorem exists_open_clusterSection_separated {ω₀ : HolomorphicOneForms X} {g : MeromorphicFunction X}
+    {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0} {c : ℂ}
+    {hnp : ∀ i, 0 ≤ f.orderAtPoint (fullFibreEnum f hdiv c i)} {Sset : Set ℂ}
+    (Cl : ∀ i, ClusterTraceData ω₀ g.toFun ((realFibreData g hdiv c hnp).xs i) c Sset)
+    (hs_cont : ∀ i, ContinuousAt (Cl i).s 0)
+    (hs0 : ∀ i, (Cl i).s 0 = (chartAt ℂ ((realFibreData g hdiv c hnp).xs i))
+      ((realFibreData g hdiv c hnp).xs i))
+    (hw₀_eq : ∀ i, (Cl i).w₀ =ᶠ[𝓝 c] fun z => (z - c) ^ (((Cl i).m : ℂ)⁻¹)) :
+    ∃ Vsep : Set ℂ, IsOpen Vsep ∧ c ∈ Vsep ∧
+      ∀ z ∈ Vsep, ∀ (i i' : (realFibreData g hdiv c hnp).ι)
+        (j : Fin ((realFibreData g hdiv c hnp).mult i)) (k : Fin ((realFibreData g hdiv c hnp).mult i')),
+        i ≠ i' → clusterSection (realFibreData g hdiv c hnp) Cl i j z
+          ≠ clusterSection (realFibreData g hdiv c hnp) Cl i' k z := by
+  classical
+  -- The cluster section point tends to its preimage `D.xs i`, for every `i`, `j`.
+  have htend : ∀ (i : (realFibreData g hdiv c hnp).ι) (j : Fin ((realFibreData g hdiv c hnp).mult i)),
+      Tendsto (fun z => clusterSection (realFibreData g hdiv c hnp) Cl i j z) (𝓝 c)
+        (𝓝 ((realFibreData g hdiv c hnp).xs i)) := by
+    intro i j
+    exact clusterSectionPoint_tendsto_preimage (c := c) (m := (Cl i).m)
+      ((realFibreData g hdiv c hnp).xs i) (Cl i).hm (hs_cont i) (hs0 i) (hw₀_eq i)
+      (ζ := (Cl i).ζ) (j := (j : ℕ))
+  -- For each ordered pair `(i, i')` with `i ≠ i'`, an open nbhd of `c` separating their clusters.
+  have hpair : ∀ (i i' : (realFibreData g hdiv c hnp).ι), i ≠ i' → ∃ W : Set ℂ, IsOpen W ∧ c ∈ W ∧
+      ∀ z ∈ W, ∀ (j : Fin ((realFibreData g hdiv c hnp).mult i))
+        (k : Fin ((realFibreData g hdiv c hnp).mult i')),
+        clusterSection (realFibreData g hdiv c hnp) Cl i j z
+          ≠ clusterSection (realFibreData g hdiv c hnp) Cl i' k z := by
+    intro i i' hii
+    have hne : (realFibreData g hdiv c hnp).xs i ≠ (realFibreData g hdiv c hnp).xs i' :=
+      fun h => hii (realFibreData_inj g hdiv c hnp h)
+    obtain ⟨U, U', hUo, hU'o, hxU, hxU', hdisj⟩ := t2_separation hne
+    -- Each cluster section point at `i` eventually lands in `U`; at `i'` in `U'`.
+    have hev : ∀ᶠ z in 𝓝 c,
+        (∀ j : Fin ((realFibreData g hdiv c hnp).mult i),
+          clusterSection (realFibreData g hdiv c hnp) Cl i j z ∈ U) ∧
+        (∀ k : Fin ((realFibreData g hdiv c hnp).mult i'),
+          clusterSection (realFibreData g hdiv c hnp) Cl i' k z ∈ U') := by
+      rw [eventually_and]
+      exact ⟨eventually_all.2 (fun j => (htend i j).eventually (hUo.mem_nhds hxU)),
+        eventually_all.2 (fun k => (htend i' k).eventually (hU'o.mem_nhds hxU'))⟩
+    obtain ⟨W, hWo, hcW, hW⟩ := exists_open_of_eventually_nhds c hev
+    exact ⟨W, hWo, hcW, fun z hz j k =>
+      ne_of_mem_disjoint ((hW z hz).1 j) ((hW z hz).2 k) hdisj⟩
+  -- Choose a separating nbhd for each ordered pair and intersect over the finite index square.
+  choose! W hWo hcW hW using hpair
+  refine ⟨⋂ i : (realFibreData g hdiv c hnp).ι, ⋂ i' : (realFibreData g hdiv c hnp).ι,
+      (if h : i ≠ i' then W i i' else Set.univ), ?_, ?_, ?_⟩
+  · refine isOpen_iInter_of_finite (fun i => isOpen_iInter_of_finite (fun i' => ?_))
+    by_cases h : i ≠ i'
+    · rw [dif_pos h]; exact hWo i i' h
+    · rw [dif_neg h]; exact isOpen_univ
+  · rw [Set.mem_iInter]
+    intro i; rw [Set.mem_iInter]; intro i'
+    by_cases h : i ≠ i'
+    · rw [dif_pos h]; exact hcW i i' h
+    · rw [dif_neg h]; exact Set.mem_univ _
+  · intro z hz i i' j k hii
+    have hmem : z ∈ W i i' := by
+      have h2 := (Set.mem_iInter.mp ((Set.mem_iInter.mp hz) i)) i'
+      rwa [dif_pos hii] at h2
+    exact hW i i' hii z hmem j k
+
 end Jacobians.Dolbeault.SerreResidueTheorem
