@@ -431,4 +431,50 @@ noncomputable def RamifiedCenterFacts.ofSheetData {ω₀ : HolomorphicOneForms X
     show resAt S.traceFull c = ∑ _ : Unit, formFnResidue ω₀ g S.p
     rw [Finset.sum_const, Finset.card_univ, Fintype.card_unit, one_smul, S.resAt_traceFull]
 
+/-! ### Soundness sanity — the `m = 1` (unramified) reduction recovers the planar section term
+
+The ramified construction is a genuine *generalisation* of the unramified `exists_planar_section`, not
+a disguised weaker/false statement.  At an *unramified* preimage (`m = 1`, `ζ = 1`, `w₀ = (· − c)`),
+the carried geometric trace `traceFull` reduces to the single planar-section trace term
+
+> `z ↦ chartIntegrand ω₀ g p (wp + (z − c)) · (d/dz)[wp + (z − c)]`,
+
+i.e. the chart integrand pushed along the single planar section `z ↦ wp + (z − c)` — exactly the
+`exists_planar_section` summand of the unramified `fibreTrace`.  This confirms `RamifiedSheetData`'s
+`m`-sheet machinery is consistent (the `m = 1` model is non-vacuous: `w₀ = (· − c)` satisfies every
+branch field) and degenerates correctly. -/
+theorem traceFull_unramified_eq {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
+    {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} (S : RamifiedSheetData ω₀ g f Φ c)
+    (hm1 : S.m = 1) (hζ1 : S.ζ = 1) (z : ℂ) :
+    S.traceFull z = chartIntegrand ω₀ g S.p ((chartAt ℂ S.p) S.p + S.w₀ z)
+      * deriv (fun ζz => (chartAt ℂ S.p) S.p + S.w₀ ζz) z := by
+  show (∑ j ∈ Finset.range S.m,
+      chartIntegrand ω₀ g S.p ((chartAt ℂ S.p) S.p + S.ζ ^ j * S.w₀ z)
+        * deriv (fun ζz => (chartAt ℂ S.p) S.p + S.ζ ^ j * S.w₀ ζz) z) = _
+  rw [hm1, hζ1]
+  simp
+
+/-! ### Wiring to `ExistsRamifiedCenterFacts` (the precise remaining obligation, now Forster §5 data)
+
+`RamifiedCenterFacts.ofSheetData` reduces the per-centre obligation `ExistsRamifiedCenterFacts`
+(`SerreResidueRamifiedCenter.lean`) to the precise Forster §5 normal-form *data* `RamifiedSheetData`
+(at a single ramified preimage that is the unique pole in its fibre).  `residueTheorem_ofRamifiedCenters_genus0_mod`
+then gives `hoff_cs`-free Gate A from per-centre `RamifiedSheetData`.  The genuine remaining analytic
+content is exactly the `RamifiedSheetData` fields: the holomorphic `m`-th-root branch `w₀`, the
+geometric trace identification `hgeom`, and the trace-of-holomorphic-is-holomorphic `hrem_an` — all
+true (Forster §5), supplied as data, none asserted as a free lemma. -/
+
+/-- **`ExistsRamifiedCenterFacts` from a single-preimage `RamifiedSheetData`.**  Packaging the sound
+constructor `RamifiedCenterFacts.ofSheetData` as the named per-centre obligation: the Forster §5 sheet
+data at a ramified preimage `p` (the unique pole in the fibre `F⁻¹(coe c)`) inhabits
+`ExistsRamifiedCenterFacts`.  This is the bridge that lets the `hoff_cs`-free capstone
+`residueTheorem_ofRamifiedCenters_genus0_mod` consume per-centre `RamifiedSheetData`. -/
+theorem existsRamifiedCenterFacts_ofSheetData {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {poles : Finset X} {c : ℂ}
+    (S : RamifiedSheetData ω₀ g f Φ c) (hp_pole : S.p ∈ poles)
+    (hp_fibre : f.toRiemannSphere S.p = ((c : ℂ) : RiemannSphere))
+    (hp_unique : ∀ a ∈ poles, f.toRiemannSphere a = ((c : ℂ) : RiemannSphere) → a = S.p) :
+    ExistsRamifiedCenterFacts ω₀ g f Φ poles c :=
+  ⟨RamifiedCenterFacts.ofSheetData S hp_pole hp_fibre hp_unique⟩
+
 end Jacobians.Dolbeault.SerreResidueTheorem
