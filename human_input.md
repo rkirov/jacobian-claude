@@ -2045,3 +2045,51 @@ from `hg_an_offpoles` (non-pole-value ⟹ non-pole fibre, `notMem_poles_of_fibre
 ALONE.** No remaining analytic residual. Next downstream = the genericity layer (`SerreResidueGenericity`
 / `AdaptedTraceGeometry`) — note its standing soundness finding (pole-only-`D` vs full-fibre-`agree`
 contract in `TraceRationalityDataNF`), unaffected by this work.
+
+---
+
+## 2026-06-09 — Gate A genericity: SOUNDNESS FINDING on `hαBrAgree` + the sound `hbnd` route
+
+**Branch:** `gate-a-trace-rationality-assembly`. **Task:** discharge Gate A genericity → unconditional
+1-form residue theorem `∑Res=0` for general `α = ω₀·g`, via the residue-level
+`…_inftyClosed_bnd` capstone. **New file:** `Jacobians/Dolbeault/SerreResidueGateAClosed.lean`.
+Did NOT touch the 17.4/Gate C thread (`CanonicalFormIso.lean`), the 2 orphans, `SerreResidueGenericity.lean`,
+or any PROVEN decl.
+
+### ⚠ 8th BAD FIELD FOUND — `hαBrAgree` (global-holomorphic `αBr`) is UNSATISFIABLE for general `α`.
+
+The `…_inftyClosed_bnd` capstone discharges `hbnd` (branch-value boundedness) via
+`hbnd_canonical_of_offBranch`, whose input `hαBrAgree` demands a **global** holomorphic 1-form
+`αBr : HolomorphicOneForms X` with `αBr.toFun y = g y • ω₀.toFun y` at **every** fibre point `y ∈
+F⁻¹(coe z)` for `z` in a punctured nbhd of each branch value `b₀`. The union of those fibres is an
+**OPEN** set `U ⊆ X` (= `F⁻¹` of a punctured disk), so `αBr = ω₀·g` on `U`. Then `αBr/ω₀ = g` on `U`,
+and by the identity theorem (X connected) `g = αBr/ω₀` GLOBALLY — forcing every pole of `g` to sit at a
+zero of `ω₀`. For a general meromorphic `g` (the actual Serre-pairing consumer: `g = α/ω₀` ranges over
+ALL meromorphic functions, with poles wherever `α` has poles, off `ω₀`'s zeros) this is FALSE whenever
+`α` has any pole not at a zero of `ω₀`. The repo's non-vacuity witness
+(`adaptedTraceGeometry_holomorphic`) only ever satisfies `hαBrAgree` VACUOUSLY (`br = ∅`,
+`αBr := fun _ => 0`), so the field was never exercised non-trivially. **The bundle route's
+`traceLocalCoeff_mul_sub_tendsto_zero` (TraceForm.lean) takes a GLOBAL `HolomorphicOneForms X` — its
+proof is LOCAL (per-preimage), but the signature forces the global form.** So `_inftyClosed_bnd` cannot
+be applied to general `α` as-is: NOT a fakeable field.
+
+### THE SOUND `hbnd` ROUTE (does NOT need global `αBr`).
+
+`hbnd` is genuinely TRUE (Miranda §VIII.3: the symmetric SUM extends across branch points). The
+geometric trace satisfies `valueChartTrace ω₀ f Φ z = ∑_{p∈fibre(coe z)} g(p)·sheetPullback ω₀ p`
+(`FormTraceBundleBridge.traceLocalCoeff_traceFun_eq_sheetSum` RHS — uses `ω₀` (GLOBAL HOLOMORPHIC), the
+`αBr` enters only the far LHS there). So the SOUND boundedness is `(z−b₀)·∑ g(p)·(ω₀-summand_p) → 0`,
+proved by the per-preimage ω₀-summand boundedness `TraceForm.traceSummand_localCoeff_mul_sub_tendsto`
+(applied to the GLOBAL HOLOMORPHIC `ω₀`, NOT ω₀·g) times the BOUNDED g-weight (g continuous at the
+fibre, since b₀ is off the pole-values). This needs a g-weighted analogue of
+`traceLocalCoeff_mul_sub_tendsto_zero_Y` (mirror its proper-map/finite-subcover assembly with a
+`g`-factor; ~200-300 LoC). The unramified-fibre sub-case is already PROVEN+SOUND
+(`FormTraceGlobalTPatched.tendsto_zero_valueChartTrace_of_sheetSections`, which uses `chartIntegrand ω₀
+g` = local g·coeffAt ω₀, only g-continuity); the residual is ONLY the RAMIFIED preimages (colliding
+sheets) in branch fibres.
+
+### PLAN / DELIVERABLE
+1. Take `g : MeromorphicFunction X`, `poles` = its actual pole set ⇒ `hgmero`/`hgmero_reg`/`hmeroInf`/
+   `hg_an_offpoles`/`hnonpole_inf_an` + the g-half of `GoodValue` ALL automatic (g globally meromorphic).
+2. Bundle the genuine perturbation needs (pole-values off branch locus; simple ∞-poles) in `AdaptedF`.
+3. Sound g-weighted `hbnd` (the new analytic content) ⇒ wire `…_inftyClosed` (NOT `_bnd`).
