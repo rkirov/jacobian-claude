@@ -106,6 +106,35 @@ theorem MittagLefflerForm.res_eq_zero_of_globalMeromorphic (μ : MittagLefflerFo
   rw [MittagLefflerForm.res, residueSum, hgf]
   exact hsum
 
+/-- **`Res` is well-defined on cohomology classes (Forster §17.3, two-representative form).**  Two
+Mittag–Leffler distributions `μ₁, μ₂` sharing the global form factor `α` and differing (in their
+principal parts) by a *global* meromorphic function — `μ₁.g − μ₂.g = f.toFun`, so `δμ₁ = δμ₂` represent
+the same `H¹(X,Ω)` class — have **equal** total residue:
+
+> `μ₁.res = μ₂.res`.
+
+The difference distribution `μ₁ − μ₂` (formed as `μ₁ + (−1)·μ₂` via `combine`/`smul`) is a coboundary
+(`g = f.toFun`), so its residue vanishes by `res_eq_zero_of_globalMeromorphic` (the 1-form residue
+theorem `∑Res = 0`); `res_combine`/`res_smul` then give `μ₁.res − μ₂.res = 0`.  This is precisely the
+representative-independence that defines the global `Res : H¹(X,Ω) → ℂ`. -/
+theorem MittagLefflerForm.res_eq_of_globalMeromorphic_diff (μ₁ μ₂ : MittagLefflerForm X)
+    (hα : μ₁.α = μ₂.α) (f : MeromorphicFunction X) (hgf : μ₁.g + (-1 : ℂ) • μ₂.g = f.toFun)
+    (hAdapt : SerreResidueTheorem.ExistsAdaptedF μ₁.α f (μ₁.combine (μ₂.smul (-1)) (by
+      rw [MittagLefflerForm.smul_α]; exact hα)).poles) :
+    μ₁.res = μ₂.res := by
+  -- The difference distribution `δ = μ₁ + (−1)·μ₂`, with `δ.α = μ₁.α` and `δ.g = μ₁.g + (−1)•μ₂.g`.
+  set δ := μ₁.combine (μ₂.smul (-1)) (by rw [MittagLefflerForm.smul_α]; exact hα) with hδ
+  have hδα : δ.α = μ₁.α := by rw [hδ, MittagLefflerForm.combine_α]
+  have hδg : δ.g = f.toFun := by
+    rw [hδ, MittagLefflerForm.combine_g, MittagLefflerForm.smul_g]; exact hgf
+  -- `δ` is a coboundary, so `δ.res = 0` (the 1-form residue theorem).
+  have hAdapt' : SerreResidueTheorem.ExistsAdaptedF δ.α f δ.poles := by rw [hδα]; exact hAdapt
+  have hδres : δ.res = 0 := δ.res_eq_zero_of_globalMeromorphic f hδg hAdapt'
+  -- `δ.res = μ₁.res + (−1)·μ₂.res = μ₁.res − μ₂.res`, so `μ₁.res = μ₂.res`.
+  rw [hδ, MittagLefflerForm.res_combine, MittagLefflerForm.res_smul] at hδres
+  simp only [neg_one_smul] at hδres
+  linear_combination hδres
+
 /-! ## Part 2 — The abstract §17.6 injectivity reduction (residue-1 witness ⟹ injective)
 
 Forster §17.6 proves `ι_D` injective by exhibiting, for each nonzero class, a `H¹(𝒪_D)`-class on which
