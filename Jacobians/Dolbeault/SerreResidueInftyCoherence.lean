@@ -462,4 +462,154 @@ theorem diagonalInfty_pointwise (ω₀ : HolomorphicOneForms X) (f : Meromorphic
       (fun i => inftyManifoldSec_mem_source ω₀ f Dinf i (hmem i)) htrans_diff htrans_diff_inv,
     inftyMovingSumNF_eq_fixedSum ω₀ f Dinf hζ hmem hmemEv]
 
+/-! ## Step (4): the `∞`-moving-coherence datum and the `hcoh_geom` assembly
+
+We package the residual §VIII.3 `∞`-monodromy content — the *eventually-quantified index bijection +
+section identification at `∞`* — into one structure `InftyMovingCoherenceData`, exactly mirroring the
+finite `MovingCoherenceDatum.ofBijection`'s `hbij`.  Its single content field is, for `ζ` in a punctured
+neighbourhood of `0` (large `z = ζ⁻¹`), an index bijection `e : (Φ ζ⁻¹).ι ≃ Dinf.ι` matching the
+re-selected fibre `Φ ζ⁻¹` over `ζ⁻¹` to the `∞`-fibre poles along the manifold sections
+`inftyManifoldSec`, plus the section identification (`hxs`/`hsheet_deriv`) and the chart-pullback
+differentiability.  The chart-target memberships are discharged *internally* (from the analyticity of the
+reciprocal sections near `0`, `eventually_recipSheet_analyticAt`, and `eventually_recipSheet_mem_target`),
+so the caller supplies only the genuine monodromy.
+
+From such a datum, `hcoh_geom` follows: the per-`ζ` diagonal (`diagonalInfty_pointwise`) gives
+`valueChartTrace (ζ⁻¹) = inftyMovingSumNF (ζ⁻¹)` for `ζ` near `0`, and `hcoh_geom_of_diagonalInfty`
+upgrades that large-`z` agreement to the reciprocal-chart germ-equality `hcoh_geom`. -/
+
+/-- **A single-`i` `hmemEv` from continuity at `ζ`.**  Given the reciprocal section continuous at `ζ`
+(`hcont`) with `recipSheet i ζ ∈ chart (Dinf.xs i).target` (`hmemζ`), the chart-target membership of
+`recipSheet i (w⁻¹)` holds for `w` near `ζ⁻¹` (`w ↦ w⁻¹` continuous at `ζ⁻¹`, value `ζ`; openness of the
+target). -/
+theorem hmemEv_of_cont (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (Dinf : InftyFibreDataNF g f) (i : Dinf.ι) {ζ : ℂ} (hζ : ζ ≠ 0)
+    (hcont : ContinuousAt ((inftyFibreTraceNF ω₀ f Dinf).sheet i) ζ)
+    (hmemζ : (inftyFibreTraceNF ω₀ f Dinf).sheet i ζ ∈ (chartAt ℂ (Dinf.xs i)).target) :
+    ∀ᶠ w in 𝓝 (ζ⁻¹), (inftyFibreTraceNF ω₀ f Dinf).sheet i (w⁻¹) ∈ (chartAt ℂ (Dinf.xs i)).target := by
+  have hinvcont : ContinuousAt (fun w : ℂ => w⁻¹) (ζ⁻¹) := continuousAt_inv₀ (inv_ne_zero hζ)
+  have hcompcont : ContinuousAt (fun w => (inftyFibreTraceNF ω₀ f Dinf).sheet i (w⁻¹)) (ζ⁻¹) := by
+    have : (fun w : ℂ => (inftyFibreTraceNF ω₀ f Dinf).sheet i (w⁻¹))
+        = ((inftyFibreTraceNF ω₀ f Dinf).sheet i) ∘ (fun w : ℂ => w⁻¹) := rfl
+    rw [this]; refine ContinuousAt.comp ?_ hinvcont; rwa [inv_inv]
+  refine hcompcont.eventually_mem ?_
+  show (chartAt ℂ (Dinf.xs i)).target ∈ 𝓝 ((inftyFibreTraceNF ω₀ f Dinf).sheet i (ζ⁻¹)⁻¹)
+  rw [inv_inv]
+  exact (chartAt ℂ (Dinf.xs i)).open_target.mem_nhds hmemζ
+
+/-- **The `∞`-moving-coherence datum** (the §VIII.3 `∞`-monodromy obligation, packaged).  For a global
+fibre selection `Φ` and the `∞`-fibre data `Dinf`, the data exhibiting the value trace as the moving
+`∞`-fibre sum near `∞`: an *eventually-quantified* (in `ζ` near `0`, i.e. large `z = ζ⁻¹`) index bijection
+`e : (Φ ζ⁻¹).ι ≃ Dinf.ι` matching the re-selected fibre to the `∞`-fibre poles along the manifold sections
+`inftyManifoldSec`, with the section identification and chart-pullback differentiability.  This is the
+reciprocal-chart analogue of the finite `MovingCoherenceDatum.ofBijection` `hbij` field — the genuine
+remaining `∞`-content (the continuously-varying index bijection at `∞`).  The chart-target memberships are
+*not* fields (discharged internally from analyticity of the reciprocal sections near `0`). -/
+structure InftyMovingCoherenceData (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (Dinf : InftyFibreDataNF g f)
+    where
+  /-- **The eventually-quantified index bijection + section identification at `∞`.** -/
+  hbij : ∀ᶠ ζ in 𝓝[≠] (0 : ℂ), ∃ e : (Φ (ζ⁻¹)).ι ≃ Dinf.ι,
+    (∀ i', (Φ (ζ⁻¹)).xs i' = inftyManifoldSec ω₀ f Dinf (e i') (ζ⁻¹)) ∧
+    (∀ i', deriv ((fibreTrace ω₀ f (Φ (ζ⁻¹))).sheet i') (ζ⁻¹)
+      = deriv (fun z => (chartAt ℂ (inftyManifoldSec ω₀ f Dinf (e i') (ζ⁻¹)))
+          (inftyManifoldSec ω₀ f Dinf (e i') z)) (ζ⁻¹)) ∧
+    (∀ i, ContinuousAt (inftyManifoldSec ω₀ f Dinf i) (ζ⁻¹)) ∧
+    (∀ i, DifferentiableAt ℂ (fun z => (chartAt ℂ (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹)))
+        (inftyManifoldSec ω₀ f Dinf i z)) (ζ⁻¹)) ∧
+    (∀ i, DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (Dinf.xs i)) ((chartAt ℂ (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹))).symm w))
+        ((chartAt ℂ (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹))) (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹)))) ∧
+    (∀ i, DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹))) ((chartAt ℂ (Dinf.xs i)).symm w))
+        ((chartAt ℂ (Dinf.xs i)) (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹))))
+
+/-- **`hcoh_geom` from an `∞`-moving-coherence datum.**  The per-`ζ` diagonal
+(`diagonalInfty_pointwise`) holds for `ζ` near `0` (the datum's `hbij` + the internally-discharged chart
+memberships), giving `valueChartTrace (ζ⁻¹) = inftyMovingSumNF (ζ⁻¹)` eventually; `hcoh_geom_of_diagonalInfty`
+upgrades it to the reciprocal-chart germ-equality `hcoh_geom`.  This is the assembled §VIII.3
+`∞`-single-valuedness — the reciprocal-chart analogue of `MovingCoherenceDatum.coherent`. -/
+theorem hcoh_geom_of_inftyMovingCoherenceData (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (Φ : (b : ℂ) → FibreRegularData g f b) (Dinf : InftyFibreDataNF g f)
+    (C : InftyMovingCoherenceData ω₀ g f Φ Dinf) :
+    recipCoeff (valueChartTrace ω₀ f Φ) =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf) := by
+  classical
+  refine hcoh_geom_of_diagonalInfty ω₀ f Φ Dinf ?_
+  -- The chart-target memberships (eventually near `0`): analyticity + target membership of the
+  -- reciprocal sections, both eventual near `0`.
+  have hmemAll : ∀ᶠ ζ in 𝓝[≠] (0 : ℂ),
+      ∀ i, AnalyticAt ℂ ((inftyFibreTraceNF ω₀ f Dinf).sheet i) ζ
+        ∧ (inftyFibreTraceNF ω₀ f Dinf).sheet i ζ ∈ (chartAt ℂ (Dinf.xs i)).target := by
+    rw [Filter.eventually_all]
+    intro i
+    exact nhdsWithin_le_nhds
+      ((eventually_recipSheet_analyticAt ω₀ f Dinf i).and (eventually_recipSheet_mem_target ω₀ f Dinf i))
+  filter_upwards [C.hbij, hmemAll, self_mem_nhdsWithin] with ζ hbij hmemAll hζ0
+  have hζ : ζ ≠ 0 := by simpa using hζ0
+  obtain ⟨e, hxs, hsheet_deriv, hcont, hsP_diff, htrans_diff, htrans_diff_inv⟩ := hbij
+  -- Discharge the per-`i` memberships from `hmemAll`.
+  have hmem : ∀ i, (inftyFibreTraceNF ω₀ f Dinf).sheet i ζ ∈ (chartAt ℂ (Dinf.xs i)).target :=
+    fun i => (hmemAll i).2
+  have hmemEv : ∀ i, ∀ᶠ w in 𝓝 (ζ⁻¹),
+      (inftyFibreTraceNF ω₀ f Dinf).sheet i (w⁻¹) ∈ (chartAt ℂ (Dinf.xs i)).target :=
+    fun i => hmemEv_of_cont ω₀ f Dinf i hζ (hmemAll i).1.continuousAt (hmemAll i).2
+  exact diagonalInfty_pointwise ω₀ f Φ Dinf hζ hmem hmemEv e hxs hsheet_deriv hcont hsP_diff
+    htrans_diff htrans_diff_inv
+
+/-! ## Step (5): wiring the `∞`-coherence datum into the genus-`0` capstone
+
+Replacing the bare `∞`-coherence hypothesis `hcoh_geom` of
+`residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg` by an
+`InftyMovingCoherenceData` (at `Φ := canonicalFibreSelection`, `Dinf := inftyFibreDataNF_full`), the deep
+`∞`-coherence is now reduced — *soundly* — to the genuine §VIII.3 `∞`-monodromy datum (the
+continuously-varying index bijection at `∞`), the reciprocal-chart analogue of the finite `Cfull` datum.
+This is the most-reduced genus-`0` Gate A capstone: every analytic heart is now a *geometric datum* (the
+finite `Cfull`/`hreg` discharged by the symmetric lever; the `∞`-coherence reduced to its monodromy
+datum), with only `hbnd` and the discrete genericity bookkeeping remaining as named obligations. -/
+
+/-- **Gate A `∑Res = 0` (genus `0`, simple `∞`-poles, canonical selection) with the `∞`-coherence reduced
+to its moving-coherence datum.**  Identical to `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg`
+except the bare `∞`-coherence `hcoh_geom` is replaced by an `InftyMovingCoherenceData` `Cinf` (at the
+canonical selection and the full `∞`-fibre data) — the §VIII.3 `∞`-monodromy obligation (the
+continuously-varying index bijection at `∞`).  `hcoh_geom` is recovered internally by
+`hcoh_geom_of_inftyMovingCoherenceData`.  This is the reciprocal-chart analogue of discharging the finite
+`Cfull` from `movingCoherenceDatum_canonical`: the deep `∞`-coherence is now a geometric datum, not an
+opaque germ-hypothesis. -/
+theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg_inftyData
+    (hdiv : (f.div : Divisor X) ≠ 0)
+    (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
+      GoodValue g f hdiv p)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ) (hbr : branchValues f hdiv ⊆ br)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (hoff_cs : ∀ i, (((cs i : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
+    (hc_good : ∀ i, GoodValue g f hdiv (cs i))
+    (hgmero : ∀ i, ∀ᶠ b' in 𝓝 (cs i), ∀ j,
+      MeromorphicAt (fun w => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm w))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j)))
+    (hgood_reg : ∀ w ∉ Finset.univ.image cs ∪ br, GoodValue g f hdiv w)
+    (hgmero_reg : ∀ w (_hw : w ∉ Finset.univ.image cs ∪ br), ∀ᶠ b' in 𝓝 w, ∀ j,
+      MeromorphicAt (fun u => g ((chartAt ℂ (fullFibreEnum f hdiv b' j)).symm u))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' j)) (fullFibreEnum f hdiv b' j)))
+    (hg_an_offpoles : ∀ x : X, x ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x))
+    (hsimpleInf : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = -1)
+    (hmeroInf : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (inftyFibreEnum f i)).symm z))
+      ((chartAt ℂ (inftyFibreEnum f i)) (inftyFibreEnum f i)))
+    (hnonpole_inf_an : ∀ k, inftyFibreEnum f k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (inftyFibreEnum f k)).symm z))
+        ((chartAt ℂ (inftyFibreEnum f k)) (inftyFibreEnum f k)))
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z)
+        (𝓝[≠] b₀) (𝓝 0))
+    (Cinf : InftyMovingCoherenceData ω₀ g f (canonicalFibreSelection g f hdiv)
+      (inftyFibreDataNF_full g f hsimpleInf hmeroInf)) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg hdiv hgood m cs ρ hcs_ball hcs_inj
+    br hbr hcenters_cs hoff_cs hc_good hgmero hgood_reg hgmero_reg hg_an_offpoles hsimpleInf hmeroInf
+    hnonpole_inf_an hbnd
+    (hcoh_geom_of_inftyMovingCoherenceData ω₀ f (canonicalFibreSelection g f hdiv)
+      (inftyFibreDataNF_full g f hsimpleInf hmeroInf) Cinf)
+
 end Jacobians.Dolbeault.SerreResidueTheorem
