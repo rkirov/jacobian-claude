@@ -521,4 +521,69 @@ theorem poleSecFin_injective (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
   simp only [poleSecFin_eq] at h
   exact poleSheetIndex_injective hac S (S.sheet_inj _ hb' h)
 
+/-- **Each per-pole section stays in the matching chart source near the base.**  `poleSecFin hac S j`
+is continuous at `p` (`poleSecFin_contMDiffAt`) with value `(fibreReg hac p).xs j` (the base, by
+`poleSecFin_base`), so it eventually lies in the open chart source of that fibre point. -/
+theorem poleSecFin_eventually_mem_source (hac : AdaptedCover ω₀ g f poles) {p : ℂ}
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((p : ℂ) : RiemannSphere))) :
+    ∀ᶠ b' in 𝓝 p, ∀ j, poleSecFin hac S j b' ∈ (chartAt ℂ ((fibreReg hac p).xs j)).source := by
+  rw [eventually_all]
+  intro j
+  have hcont : ContinuousAt (poleSecFin hac S j) p := (poleSecFin_contMDiffAt hac S j).continuousAt
+  have hbase : poleSecFin hac S j p = (fibreReg hac p).xs j := poleSecFin_base hac S j
+  have hsrc : (chartAt ℂ ((fibreReg hac p).xs j)).source ∈ 𝓝 ((fibreReg hac p).xs j) :=
+    (chartAt ℂ ((fibreReg hac p).xs j)).open_source.mem_nhds (mem_chart_source ℂ _)
+  have := hcont.preimage_mem_nhds (by rw [hbase]; exact hsrc)
+  filter_upwards [this] with b' hb' using hb'
+
+/-! ### The per-pole set-form re-selection `hselFin`
+
+The capstone of the per-pole field: at a separated off-branch pole-value `cs i`, the canonical
+full-fibre selection `Φ` satisfies the §VIII.3 re-selection `hselFin` of
+`residueSum_eq_zero_of_globalCoverData`.  The per-`b'` bijection `e : (Φ b').ι ≃ (fibreReg hac (cs
+i)).ι` is reconstructed *pointwise* by the **symmetric lever** (`equivOfInjective_image_eq`) from the
+set-equality `range (Φ b').xs = range (poleSecFin · b')` — both equal the full fibre `F⁻¹(coe b')`
+(`canonicalFibreSelection_xs_range` and `poleSecFin_range_eq_fibre`, the latter using separation).  No
+labeling. -/
+
+/-- **`hselFin` for the canonical selection at a pole-value.**  At a finite pole-value `cs_i` that is
+off the branch locus and **separated** (every fibre point a pole), with a sphere sheet system `S` at
+`coe cs_i` and the regular-value `g`-meromorphy `hgmero` near `cs_i`, the canonical full-fibre
+selection satisfies the per-pole re-selection: near `cs_i`, there is a value-matching bijection between
+the full fibre `Φ b'` and the pole sub-fibre's moving sections `poleSecFin hac S · b'`, each section in
+the matching chart source.  The bijection is the symmetric lever's pointwise reconstruction from
+range-equality (both ranges are the full fibre). -/
+theorem canonicalFibreSelection_hselFin (hac : AdaptedCover ω₀ g f poles)
+    (hdiv : (f.div : Divisor X) ≠ 0) {cs_i : ℂ}
+    (hoff : (((cs_i : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
+    (hsep : PoleValueSeparated f poles cs_i)
+    (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((cs_i : ℂ) : RiemannSphere)))
+    (hgmero : ∀ᶠ b' in 𝓝 cs_i, ∀ i,
+      MeromorphicAt (fun w => g ((chartAt ℂ (fullFibreEnum f hdiv b' i)).symm w))
+        ((chartAt ℂ (fullFibreEnum f hdiv b' i)) (fullFibreEnum f hdiv b' i))) :
+    ∀ᶠ b' in 𝓝 cs_i, ∃ e : (canonicalFibreSelection g f hdiv b').ι ≃ (fibreReg hac cs_i).ι,
+      (∀ i', (canonicalFibreSelection g f hdiv b').xs i' = poleSecFin hac S (e i') b') ∧
+      (∀ j, poleSecFin hac S j b' ∈ (chartAt ℂ ((fibreReg hac cs_i).xs j)).source) := by
+  -- The finite-value preimage of `S.V` is a neighbourhood of `cs_i` (continuity of `coe`).
+  have hVnhds : ((fun w : ℂ => ((w : ℂ) : RiemannSphere)) ⁻¹' S.V) ∈ 𝓝 cs_i :=
+    (OnePoint.continuous_coe.continuousAt).preimage_mem_nhds (S.isOpen_V.mem_nhds S.mem_V)
+  filter_upwards [eventually_notMem_branchLocus f hdiv hoff, hgmero, hVnhds,
+    poleSecFin_eventually_mem_source hac S] with b' hb'off hb'mero hb'V hb'mem
+  -- `b'` is a good value, so `Φ b'` injectively enumerates the full fibre.
+  have hgood : GoodValue g f hdiv b' := ⟨hb'off, hb'mero⟩
+  have hΦinj : Function.Injective (canonicalFibreSelection g f hdiv b').xs :=
+    canonicalFibreSelection_xs_injective g f hdiv hgood
+  have hΦrange : Set.range (canonicalFibreSelection g f hdiv b').xs
+      = f.toRiemannSphere ⁻¹' {(((b' : ℂ) : RiemannSphere))} :=
+    canonicalFibreSelection_xs_range g f hdiv hgood
+  -- The section values are injective and enumerate the same fibre.
+  have hsecinj : Function.Injective (fun j => poleSecFin hac S j b') :=
+    poleSecFin_injective hac S hb'V
+  have hsecrange : Set.range (fun j => poleSecFin hac S j b')
+      = f.toRiemannSphere ⁻¹' {(((b' : ℂ) : RiemannSphere))} :=
+    poleSecFin_range_eq_fibre hac S hsep hb'V
+  -- The symmetric lever: a value-matching bijection from equal ranges.
+  obtain ⟨e, he⟩ := equivOfInjective_image_eq hΦinj hsecinj (by rw [hΦrange, hsecrange])
+  exact ⟨e, fun i' => he i', hb'mem⟩
+
 end Jacobians.Dolbeault.FormTraceGlobal
