@@ -3917,3 +3917,86 @@ whole chain type-checks end-to-end (verified by an `example` composing
 - Avoid `Classical.choose`-in-hypothesis designs: pass the principal part `ppN`/`ppb`/`ppR` EXPLICITLY
   (as `ofNormalForm` does); referencing `(exists_principalPart_meromorphicAt …).choose` in a hypothesis
   type won't match the `obtain`-introduced witnesses inside the proof.
+
+---
+
+## 2026-06-09 — Gate-A `∑Res = 0`: discharging the regular-value primitives + isolating the §5 section facts
+
+**Files (new, both axiom-clean `[propext, Classical.choice, Quot.sound]`, HEAD builds standalone, full
+glob 8583):**
+- `Jacobians/Dolbeault/SerreResidueRamifiedRealSlitRegular.lean` — the regular-value primitives of the
+  per-slit-value data + `RealSlitClusterSplitData.ofRegularValue`.
+- `Jacobians/Dolbeault/SerreResidueRamifiedRealSlitAssembly.lean` — isolates the §5 section facts as
+  `RealSlitSectionData`, wires `∑Res = 0` from the per-centre §5-section obligation.
+
+**Status: `∑Res = 0` is NOT yet unconditional** (it never was in-repo). The genuine remaining content is
+the **per-slit-value §5 normal-form section facts** (a multi-hundred-line analytic build). This session
+discharged ALL the mechanical regular-value primitives — including the `hcoh` wiring the predecessor
+explicitly flagged "moderate, NOT attempted" — and reduced the residue theorem to EXACTLY the §5 section
+geometry, all axiom-clean.
+
+**What was discharged (the regular-value primitives — were §5-data inputs, now PROVEN):**
+- `localDeg_eq_one_of_regular_fibrePoint` / `localDeg_eq_one_of_notMem_branchLocus` /
+  `regularFibre_primitives_of_notMem_branchLocus` — `hreg_z` (localDeg=1) + `hfin_z` (finite fibre) at an
+  off-branch slit value. Mirrors `orderAtPoint_sub_eq_one_of_regular_fibrePoint`, reading off `localDeg`
+  via `localDeg_coe_eq_chartPullback_order` ∘ `meromorphicOrderAt_holoRepr_sub_eq`; the regular-value
+  witness `exists_regularValueWitnessReg_value_eq` supplies the deriv-≠0 certificate.
+- `sphereSheet_hderiv` (via `sheet_holoRepr_deriv_ne_zero`), `sphereSheet_hmero` (via `g.meromorphic`),
+  `sphereSheet_hsheetInj`/`sphereSheet_hsheetMem` (sheets inj on `S.V` near `coe z`; `holoReprSheet`
+  continuity for the chart-source locality) — the sheet-system regularity + eventual conditions.
+- **`canonicalSelection_hcoh`** — the `hcoh` field for the canonical full-fibre selection, wiring the
+  PROVEN `valueChartTrace_eq_sphereSheetFibreTrace` (its `hΦinj`/`hΦrange` from
+  `canonicalFibreSelection_hΦinjReg`/`hΦrangeReg` with `g`-meromorphy free from `g.meromorphic`; its
+  `hsheetInj`/`hsheetMem` from the two atoms above). **This was the predecessor's flagged not-attempted
+  piece — now DONE.**
+- `RealSlitClusterSplitData.ofRegularValue` — at an off-branch slit value `z ∈ Sset`, builds
+  `RealSlitClusterSplitData` from a sheet system `S` + the §5 section facts, discharging
+  `hderiv`/`hmero`/`hcoh`/`hfin_z`/`hreg_z` AND `hsheet_diff` (the last from the `Cl` slit fields
+  `hw₀_diff`/`hs_an_sheet` via `clusterSheet_differentiableAt`).
+
+**The PRECISE remaining residual (`RealSlitSectionData`, 5 fields — the genuine §5 normal-form geometry):**
+at each finite pole-value centre `c`, a small slit `Sset` accumulating at `c` off the branch locus +
+sphere sheet system per value + the §5 cluster data `Cl` (e.g. `ofFibrePointNormalForm`, needing the
+principal part + `Rem` symmetric-function descent) + per slit value `z ∈ Sset`:
+- `hcs_sec` — `f.holoRepr (clusterSection D Cl i j w) = w` near `z` (the §5 section property; IS the
+  section clause of `exists_clusterSplit_at_fibrePoint`, holds EVENTUALLY near `c` on the slit — the
+  "adaptive slit-shrinking": `ζʲ·w₀ z → 0` requires `z` near `c`);
+- `hcs_np` — non-pole at `z` (subtle: `holoRepr q = z` finite does NOT directly give non-pole; needs the
+  isolated-poles structure of `holoRepr`);
+- `hwithin`/`hcross` — within-/cross-cluster distinctness (needs `η` back + T2 separation);
+- `hsrc` — cluster sheet in the preimage's chart target near `z` (§5 locality).
+
+**Top reductions wired to `∑Res = 0` (axiom-clean):**
+`RealSlitSectionData.toClusterSplitData` → `RealCenterClusterFamily.ofRegularSlitData` →
+`RealCenterSlitSectionData` (bundled per-centre datum) + `ofCenterSlitSectionData` →
+`RealCoverSlitSectionGeometry` (the single obligation) → `RealCoverClusterGeometry.ofSlitSectionGeometry`
+→ **`residueTheorem_of_realCoverSlitSectionGeometry`** (= `∑Res = 0` from the §5-section obligation +
+PROVEN `existsAdaptedFRamified`, routed through the ORIGINAL `residueTheorem_of_realCoverClusterGeometry`,
+authoritative axioms unchanged). Non-vacuity: `residueTheorem_of_realCoverSlitSection_no_finite_centres`
+(`m=0` ⇒ vacuous; the obligation is NOT a disguised `False`).
+
+**Soundness (no false/circular field).** Slit values are REGULAR (off-branch) — the sheet system is
+unramified there, so `localDeg=1` is TRUE (`hreg_z` proven, not asserted). `D` = WHOLE fibre (the #17
+fix). `hcoh` is the genuine PROVEN coherence wired for the canonical selection. No full RR (only
+`existsAdaptedFRamified` = Riemann-inequality genericity, UPSTREAM of RR). No `hD_mem`. All 15 new decls
+verified axiom-clean via `#print axioms`; no `sorryAx`, no custom axiom, no sorry. The §5 section facts
+left as the precise residual are the genuine Forster §4/§5 geometry, NOT faked.
+
+### LEAN GOTCHAS (this session)
+- `-/` inside a docstring (e.g. `within-/cross-cluster`) PREMATURELY CLOSES the comment → "unexpected
+  identifier; expected command" cascade. Reword to avoid `-/` in prose.
+- `chartCoe`/`chartAt_coe`/`chartCoe_apply_coe` live in `Jacobians.RiemannSphere`;
+  `localDeg_coe_eq_chartPullback_order` in `Jacobians.MultiplicityPatchingConstruct`;
+  `meromorphicOrderAt_holoRepr_sub_eq`/`fibre_finite_of_div_ne_zero` in `Jacobians.ProperMapDegreeSheets`
+  — all need `open` (unqualified-name resolution failure shows as `sorry` in the `set` hypothesis value,
+  not an error, until the USE site fails).
+- `notMem_criticalValuesGeneral_of_notMem_branchLocus` (TracePullback) is NOT transitively imported by the
+  reindex builder; but `branchLocus = f '' criticalSet`, `criticalSet = criticalSetGeneral`,
+  `criticalValuesGeneral = f '' criticalSetGeneral` are DEFEQ, so `coe z ∉ branchLocus` discharges
+  `∉ criticalValuesGeneral` by a bare `show … from hz`.
+- `clusterSheet_differentiableAt` (in `…SerreResidueTheorem` namespace) needs `hs_an : AnalyticAt s
+  (ζʲ·w₀ z)` (from `(Cl i).hs_an_sheet z hz_slit j (Finset.mem_range.mpr (hmult i ▸ j.isLt))`) +
+  `hw₀_diff` (from `(Cl i).hw₀_diff z hz_slit`) — both `Cl` slit fields, so `hsheet_diff` is FREE given
+  `z ∈ Sset` + the multiplicity match.
+- `fun x hx => lemma … hx` where `x` is used only in `hx`'s type (lemma takes `{x}` implicit) → rename to
+  `fun _ hx` to avoid the `unusedVariables` lint.
