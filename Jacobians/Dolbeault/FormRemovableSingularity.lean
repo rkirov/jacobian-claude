@@ -170,7 +170,7 @@ noncomputable def holOfLocalRepAnalyticAt
       (chartAt ℂ y).continuousOn.isOpen_inter_preimage (chartAt ℂ y).open_source hUopen
     have hSsub : S ⊆ (chartAt ℂ y).source := Set.inter_subset_left
     have hyS : y ∈ S := ⟨mem_chart_source ℂ y, by
-      simp only [hS_def, Set.mem_preimage]; exact hUmem⟩
+      simp only [Set.mem_preimage]; exact hUmem⟩
     -- pullback analytic on `chart y '' S ⊆ U`.
     have himg : (chartAt ℂ y) '' S ⊆ U := by
       rintro z ⟨w, hw, rfl⟩; exact hw.2
@@ -313,5 +313,86 @@ theorem section_eq_rawLocalRep_smul_frame (σ : ∀ x, FormFiber X x) (y : X) :
     _ = (φ v) • (σ y (e.symmL ℂ y 1)) := by rw [h_symmL]
     _ = (φ v) • (rawLocalRep σ y y) := rfl
     _ = (rawLocalRep σ y y) • (φ v) := by rw [smul_eq_mul, smul_eq_mul]; ring
+
+/-! ### The junk is isolated: off-centre points are repaired automatically
+
+The crux structural fact.  For `w` in a *punctured* neighbourhood of `x₀`, the chart coefficient
+`formCoeff α.toFun w` is `ContinuousAt` its own centre, hence (being meromorphic) analytic there, so
+its normal-form value `repVal α w` equals the actual value `rawLocalRep α.toFun w w`.  The
+continuity comes from the chart-transition law: `rawLocalRep α.toFun w = chartTransitionFactor x₀ w ·
+rawLocalRep α.toFun x₀`, where the transition factor is continuous and `rawLocalRep α.toFun x₀` is
+continuous at `w` (its chart pullback `formCoeff α.toFun x₀` is analytic off the `x₀`-centre). -/
+
+/-- `formCoeff α.toFun x₀` is analytic at `chart x₀ w`, for `w` in a punctured neighbourhood of `x₀`
+(pull `MeromorphicAt.eventually_analyticAt` back through the chart). -/
+theorem eventually_analyticAt_formCoeff (α : MeromorphicOneForm X) (x₀ : X) :
+    ∀ᶠ w in 𝓝[≠] x₀, AnalyticAt ℂ (formCoeff α.toFun x₀) ((chartAt ℂ x₀) w) := by
+  have hmero : MeromorphicAt (formCoeff α.toFun x₀) ((chartAt ℂ x₀) x₀) := α.meromorphic x₀
+  have hev : ∀ᶠ z in 𝓝[≠] ((chartAt ℂ x₀) x₀), AnalyticAt ℂ (formCoeff α.toFun x₀) z :=
+    hmero.eventually_analyticAt
+  have htfwd : Tendsto (chartAt ℂ x₀) (𝓝[≠] x₀) (𝓝[≠] ((chartAt ℂ x₀) x₀)) :=
+    (chartAt ℂ x₀).tendsto_nhdsNE (mem_chart_source ℂ x₀)
+  exact htfwd.eventually hev
+
+/-- **The junk-free crux.**  For `w` in a punctured neighbourhood of `x₀`, the repaired value at `w`
+equals the actual chart-centre value: `repVal α w = rawLocalRep α.toFun w w`.  Hence `α.toFun` carries
+no removable-singularity junk away from chart centres. -/
+theorem eventually_repVal_eq (α : MeromorphicOneForm X) (x₀ : X) :
+    ∀ᶠ w in 𝓝[≠] x₀, repVal α w = rawLocalRep α.toFun w w := by
+  set e₀ := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀ with he₀
+  -- The overlap of base sets is an open neighbourhood of `x₀` minus nothing; work eventually in it.
+  have hx₀_base : x₀ ∈ e₀.baseSet := by
+    rw [he₀, TangentBundle.trivializationAt_baseSet]; exact mem_chart_source ℂ x₀
+  have hsrc : ∀ᶠ w in 𝓝[≠] x₀, w ∈ (chartAt ℂ x₀).source :=
+    eventually_nhdsWithin_of_eventually_nhds
+      ((chartAt ℂ x₀).open_source.mem_nhds (mem_chart_source ℂ x₀))
+  filter_upwards [eventually_analyticAt_formCoeff α x₀, hsrc] with w hw_ana hw_src
+  -- `w` is in `x₀`'s and `w`'s base sets.
+  set e_w := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) w with hew
+  have hw_base₀ : w ∈ e₀.baseSet := by rw [he₀, TangentBundle.trivializationAt_baseSet]; exact hw_src
+  have hw_base_w : w ∈ e_w.baseSet := by
+    rw [hew, TangentBundle.trivializationAt_baseSet]; exact mem_chart_source ℂ w
+  -- (1) `rawLocalRep α.toFun x₀` is continuous at `w`.
+  have hcont_x₀ : ContinuousAt (rawLocalRep α.toFun x₀) w := by
+    -- `rawLocalRep α.toFun x₀ = formCoeff α.toFun x₀ ∘ (chartAt ℂ x₀)` near `w`.
+    have heq : rawLocalRep α.toFun x₀ =ᶠ[𝓝 w]
+        (fun u => formCoeff α.toFun x₀ ((chartAt ℂ x₀) u)) := by
+      filter_upwards [(chartAt ℂ x₀).open_source.mem_nhds hw_src] with u hu
+      rw [formCoeff_eq_rawLocalRep, (chartAt ℂ x₀).left_inv hu]
+    rw [continuousAt_congr heq]
+    exact hw_ana.continuousAt.comp ((chartAt ℂ x₀).continuousAt hw_src)
+  -- (2) the transition factor is continuous at `w` (overlap is open, `w` interior).
+  have hcont_c : ContinuousAt (chartTransitionFactor (X := X) x₀ w) w := by
+    have hopen : IsOpen (e_w.baseSet ∩ e₀.baseSet) := e_w.open_baseSet.inter e₀.open_baseSet
+    exact ((continuousOn_chartTransitionFactor x₀ w).continuousAt
+      (hopen.mem_nhds ⟨hw_base_w, hw_base₀⟩))
+  -- (3) `rawLocalRep α.toFun w` is continuous at `w`, via the transition law.
+  have hcont_w : ContinuousAt (rawLocalRep α.toFun w) w := by
+    have heq : rawLocalRep α.toFun w =ᶠ[𝓝 w]
+        (fun u => chartTransitionFactor (X := X) x₀ w u * rawLocalRep α.toFun x₀ u) := by
+      have hopen : IsOpen (e_w.baseSet ∩ e₀.baseSet) := e_w.open_baseSet.inter e₀.open_baseSet
+      filter_upwards [hopen.mem_nhds ⟨hw_base_w, hw_base₀⟩] with u hu
+      exact rawLocalRep_chart_transition α.toFun x₀ w u hu.1 hu.2
+    rw [continuousAt_congr heq]
+    exact hcont_c.mul hcont_x₀
+  -- (4) `formCoeff α.toFun w` continuous at `chart w w`, hence analytic, hence junk-free.
+  have hcont_fc : ContinuousAt (formCoeff α.toFun w) ((chartAt ℂ w) w) := by
+    have heq : formCoeff α.toFun w =ᶠ[𝓝 ((chartAt ℂ w) w)]
+        (fun z => rawLocalRep α.toFun w ((chartAt ℂ w).symm z)) := by
+      filter_upwards with z; rw [formCoeff_eq_rawLocalRep]
+    rw [continuousAt_congr heq]
+    have hsymm_cont : ContinuousAt (chartAt ℂ w).symm ((chartAt ℂ w) w) := by
+      have := (chartAt ℂ w).continuousAt_symm ((chartAt ℂ w).map_source (mem_chart_source ℂ w))
+      simpa [(chartAt ℂ w).left_inv (mem_chart_source ℂ w)] using this
+    have hcont_w' : ContinuousAt (rawLocalRep α.toFun w)
+        ((chartAt ℂ w).symm ((chartAt ℂ w) w)) := by
+      rwa [(chartAt ℂ w).left_inv (mem_chart_source ℂ w)]
+    exact hcont_w'.comp hsymm_cont
+  have hana_w : AnalyticAt ℂ (formCoeff α.toFun w) ((chartAt ℂ w) w) :=
+    (α.meromorphic w).analyticAt hcont_fc
+  -- analytic ⟹ NF = self ⟹ repVal = value.
+  have hNFself : toMeromorphicNFAt (formCoeff α.toFun w) ((chartAt ℂ w) w) = formCoeff α.toFun w :=
+    toMeromorphicNFAt_eq_self.mpr hana_w.meromorphicNFAt
+  rw [repVal, hNFself, rawLocalRep_self_eq_formCoeff]
 
 end Jacobians.Dolbeault
