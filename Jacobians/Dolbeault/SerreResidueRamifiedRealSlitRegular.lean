@@ -143,4 +143,48 @@ theorem localDeg_eq_one_of_regular_fibrePoint (f : MeromorphicFunction X) {z : �
     hgz_an.meromorphicOrderAt_eq, hord1]
   rfl
 
+/-- **Every fibre point over an off-branch value has local degree `1`** (the `hreg_z` content, packaged
+from `branchLocus`).  For a nonconstant cover `f` (`f.div ≠ 0`) and a value `z` off the branch locus
+(`coe z ∉ branchLocus f.toRiemannSphere`), every preimage `x ∈ F⁻¹(coe z)` is unramified:
+
+> `localDeg f (coe z) x = 1`.
+
+The regular-value witness at `coe z` (`exists_regularValueWitnessReg_value_eq`, available off the
+critical-value set = branch locus) supplies the chart-pullback-deriv-nonzero certificate at each fibre
+point, and `localDeg_eq_one_of_regular_fibrePoint` reads off the local degree. -/
+theorem localDeg_eq_one_of_notMem_branchLocus (f : MeromorphicFunction X)
+    (hdiv : (f.div : Divisor X) ≠ 0) {z : ℂ}
+    (hz : (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
+    {x : X} (hx : x ∈ f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))}) :
+    localDeg f (((z : ℂ) : RiemannSphere)) x = 1 := by
+  -- The regularity-certified witness at `coe z` (off the critical-value set = branch locus).
+  obtain ⟨w, hw⟩ := Jacobians.Discharge.ContMDiff.Degree.exists_regularValueWitnessReg_value_eq
+    f.toRiemannSphere f.contMDiff_toRiemannSphere
+    (Jacobians.ProperMapDegreeSheets.toRiemannSphere_not_isConstant_of_div_ne_zero f hdiv)
+    -- `coe z ∉ branchLocus = coe z ∉ criticalValuesGeneral` (defeq: `branchLocus = f '' criticalSet`,
+    -- `criticalSet = criticalSetGeneral`, `criticalValuesGeneral = f '' criticalSetGeneral`).
+    (show (((z : ℂ) : RiemannSphere)) ∉
+      Jacobians.Discharge.Manifold.criticalValuesGeneral f.toRiemannSphere from hz)
+  -- The chart-pullback deriv ≠ 0 at the fibre point `x` (the witness's `is_regular`).
+  have hxw : x ∈ f.toRiemannSphere ⁻¹' {w.toWitness.value} := by
+    rw [hw]; exact hx
+  have hderiv := w.is_regular x hxw
+  rw [hw] at hderiv
+  have hxval : f.toRiemannSphere x = (((z : ℂ) : RiemannSphere)) := by
+    simpa using hx
+  exact localDeg_eq_one_of_regular_fibrePoint f hxval hderiv
+
+/-- **The regular-fibre primitives `hfin_z`/`hreg_z` at an off-branch value.**  For a nonconstant cover
+`f` and a value `z` off the branch locus, the fibre over `coe z` is finite and every local degree there
+is `1` — exactly the two regular-fibre inputs (`hfin_z`, `hreg_z`) of `RealSlitClusterSplitData` /
+`FibreClusterTopology.ofClusterSplitData`. -/
+theorem regularFibre_primitives_of_notMem_branchLocus (f : MeromorphicFunction X)
+    (hdiv : (f.div : Divisor X) ≠ 0) {z : ℂ}
+    (hz : (((z : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere) :
+    (f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))}).Finite ∧
+      ∀ x ∈ f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))},
+        localDeg f (((z : ℂ) : RiemannSphere)) x = 1 :=
+  ⟨Jacobians.ProperMapDegreeSheets.fibre_finite_of_div_ne_zero f hdiv _,
+    fun _ hx => localDeg_eq_one_of_notMem_branchLocus f hdiv hz hx⟩
+
 end Jacobians.Dolbeault.SerreResidueTheorem
