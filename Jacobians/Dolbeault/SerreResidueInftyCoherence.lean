@@ -246,4 +246,220 @@ theorem hcoh_geom_of_diagonalInfty (ω₀ : HolomorphicOneForms X) (f : Meromorp
     recipCoeff (valueChartTrace ω₀ f Φ) =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf) :=
   recipCoeff_eventuallyEq_of_eventuallyEq_inv hdiag_inf
 
+/-! ## Step (3a): the `∞`-moving sum as a fixed-chart moving fibre sum (reciprocal-chart bookkeeping)
+
+The `∞`-moving sum `inftyMovingSumNF ω₀ f Dinf z = ∑ i, chartIntegrand ω₀ g (Dinf.xs i) (recipSheet i
+(z⁻¹))·deriv (w ↦ recipSheet i (w⁻¹)) z` reads the *reciprocal-chart* planar sections `recipSheet i :=
+(inftyFibreTraceNF ω₀ f Dinf).sheet i` (the planar inverses of the repaired reciprocals `recip i`, with
+`recipSheet i 0 = chart (Dinf.xs i)(Dinf.xs i)`).  Define the **manifold sections** through the
+`∞`-fibre poles, `inftyManifoldSec i z := (chart (Dinf.xs i)).symm (recipSheet i (z⁻¹))`.  For `z⁻¹` near
+`0` (i.e. `z` large), `recipSheet i (z⁻¹)` lies in `chart (Dinf.xs i).target` (continuity, since
+`recipSheet i 0 = chart (Dinf.xs i)(Dinf.xs i) ∈ target`), so the chart and its inverse cancel:
+
+* `chart (Dinf.xs i)(inftyManifoldSec i z) = recipSheet i (z⁻¹)`;
+* `deriv (w ↦ chart (Dinf.xs i)(inftyManifoldSec i w)) z = deriv (w ↦ recipSheet i (w⁻¹)) z`.
+
+Hence `inftyMovingSumNF ω₀ f Dinf z = ∑ i, chartIntegrand ω₀ g (Dinf.xs i) (chart (Dinf.xs i)
+(inftyManifoldSec i z))·deriv (w ↦ chart (Dinf.xs i)(inftyManifoldSec i w)) z` — the **fixed-chart moving
+fibre sum** along `inftyManifoldSec`, the exact RHS shape that `traceCoeff_diagonal_eq_fixedSum`
+produces.  This is pure reciprocal-chart bookkeeping (no monodromy), discharged in full. -/
+
+/-- **The manifold sections through the `∞`-fibre poles.**  `inftyManifoldSec ω₀ f Dinf i z` is the
+manifold point on the `i`-th `∞`-fibre sheet over the value `z`: the chart inverse (at the pole `Dinf.xs
+i`) of the reciprocal-chart planar section `recipSheet i` evaluated at the reciprocal coordinate `z⁻¹`.
+For `z` large (`z⁻¹` near `0`), `recipSheet i (z⁻¹)` is near the chart-target point `pre i`, so this is a
+genuine manifold point near the pole `Dinf.xs i`. -/
+noncomputable def inftyManifoldSec (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (Dinf : InftyFibreDataNF g f) (i : Dinf.ι) : ℂ → X :=
+  fun z => (chartAt ℂ (Dinf.xs i)).symm ((inftyFibreTraceNF ω₀ f Dinf).sheet i (z⁻¹))
+
+/-- **The reciprocal section value at `0` is the pole's chart image** (`recipSheet i 0 = pre i =
+chart (Dinf.xs i)(Dinf.xs i)`). -/
+theorem recipSheet_zero (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (Dinf : InftyFibreDataNF g f) (i : Dinf.ι) :
+    (inftyFibreTraceNF ω₀ f Dinf).sheet i 0 = (chartAt ℂ (Dinf.xs i)) (Dinf.xs i) := by
+  have := (inftyFibreTraceNF ω₀ f Dinf).sheet_base i
+  rwa [inftyFibreTraceNF_b, inftyFibreTraceNF_pre] at this
+
+/-- **Eventually (`ζ` near `0`), the reciprocal section lands in the pole's chart target.**  At `ζ = 0`
+it is `recipSheet i 0 = pre i = chart (Dinf.xs i)(Dinf.xs i) ∈ target` (`recipSheet_zero`); continuity of
+`recipSheet i` (analytic at `0`) and openness of the target extend this to a neighbourhood of `0`. -/
+theorem eventually_recipSheet_mem_target (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (Dinf : InftyFibreDataNF g f) (i : Dinf.ι) :
+    ∀ᶠ ζ in 𝓝 (0 : ℂ),
+      (inftyFibreTraceNF ω₀ f Dinf).sheet i ζ ∈ (chartAt ℂ (Dinf.xs i)).target := by
+  have hmem : (inftyFibreTraceNF ω₀ f Dinf).sheet i 0 ∈ (chartAt ℂ (Dinf.xs i)).target := by
+    rw [recipSheet_zero]; exact (chartAt ℂ (Dinf.xs i)).map_source (mem_chart_source ℂ (Dinf.xs i))
+  have hcont : ContinuousAt ((inftyFibreTraceNF ω₀ f Dinf).sheet i) 0 := by
+    have han := (inftyFibreTraceNF ω₀ f Dinf).sheet_analytic i
+    rw [inftyFibreTraceNF_b] at han
+    exact han.continuousAt
+  exact hcont.eventually_mem ((chartAt ℂ (Dinf.xs i)).open_target.mem_nhds hmem)
+
+/-- **The reciprocal section is analytic (hence continuous) on a punctured neighbourhood of `0`.**  The
+`inftyFibreTraceNF` sheets are `AnalyticAt 0`; analyticity propagates to a full neighbourhood
+(`AnalyticAt.eventually_analyticAt`). -/
+theorem eventually_recipSheet_analyticAt (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (Dinf : InftyFibreDataNF g f) (i : Dinf.ι) :
+    ∀ᶠ ζ in 𝓝 (0 : ℂ), AnalyticAt ℂ ((inftyFibreTraceNF ω₀ f Dinf).sheet i) ζ := by
+  have han := (inftyFibreTraceNF ω₀ f Dinf).sheet_analytic i
+  rw [inftyFibreTraceNF_b] at han
+  exact han.eventually_analyticAt
+
+/-! ## Step (3a): the `∞`-moving sum as a fixed-chart moving fibre sum (reciprocal-chart bookkeeping)
+
+The `∞`-moving sum `inftyMovingSumNF ω₀ f Dinf z = ∑ i, chartIntegrand ω₀ g (Dinf.xs i) (recipSheet i
+(z⁻¹))·deriv (w ↦ recipSheet i (w⁻¹)) z` reads the reciprocal-chart planar sections `recipSheet i :=
+(inftyFibreTraceNF ω₀ f Dinf).sheet i`.  Via the manifold sections `inftyManifoldSec i z =
+(chart (Dinf.xs i)).symm (recipSheet i (z⁻¹))`, for `z` large (`z⁻¹` near `0`, so `recipSheet i (z⁻¹) ∈
+chart (Dinf.xs i).target`) the chart cancels and `inftyMovingSumNF ω₀ f Dinf z` *equals the fixed-chart
+moving fibre sum* along `inftyManifoldSec` — the RHS shape `traceCoeff_diagonal_eq_fixedSum` produces.
+Pure reciprocal-chart bookkeeping (no monodromy). -/
+
+/-- **The `∞`-moving sum equals the fixed-chart moving fibre sum** along `inftyManifoldSec`, at `z = ζ⁻¹`
+(`ζ ≠ 0`), given the chart-target memberships: the per-`i` value membership `hmem`
+(`recipSheet i ζ ∈ target`) for the value factor, and the eventual membership `hmemEv`
+(`recipSheet i (w⁻¹) ∈ target` for `w` near `ζ⁻¹`) for the derivative factor.  Both come from
+`eventually_recipSheet_mem_target` for `ζ` small enough.  *Proof.*  Termwise: the value factor's argument
+`recipSheet i ζ = chart (Dinf.xs i)(inftyManifoldSec i (ζ⁻¹))` (chart∘symm cancellation at the target
+point); the derivative factor's functions agree near `ζ⁻¹` (same cancellation), so equal derivatives. -/
+theorem inftyMovingSumNF_eq_fixedSum (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (Dinf : InftyFibreDataNF g f) {ζ : ℂ} (hζ : ζ ≠ 0)
+    (hmem : ∀ i, (inftyFibreTraceNF ω₀ f Dinf).sheet i ζ ∈ (chartAt ℂ (Dinf.xs i)).target)
+    (hmemEv : ∀ i, ∀ᶠ w in 𝓝 (ζ⁻¹),
+      (inftyFibreTraceNF ω₀ f Dinf).sheet i (w⁻¹) ∈ (chartAt ℂ (Dinf.xs i)).target) :
+    inftyMovingSumNF ω₀ f Dinf (ζ⁻¹)
+      = ∑ i, chartIntegrand ω₀ g (Dinf.xs i)
+            ((chartAt ℂ (Dinf.xs i)) (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹)))
+          * deriv (fun w => (chartAt ℂ (Dinf.xs i)) (inftyManifoldSec ω₀ f Dinf i w)) (ζ⁻¹) := by
+  show (∑ i, chartIntegrand ω₀ g (Dinf.xs i) ((inftyFibreTraceNF ω₀ f Dinf).sheet i ((ζ⁻¹)⁻¹))
+        * deriv (fun w => (inftyFibreTraceNF ω₀ f Dinf).sheet i (w⁻¹)) (ζ⁻¹)) = _
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  rw [inv_inv]
+  congr 1
+  · -- value factor: `recipSheet i ζ = chart (Dinf.xs i)(inftyManifoldSec i (ζ⁻¹))`.
+    rw [show (chartAt ℂ (Dinf.xs i)) (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹))
+          = (inftyFibreTraceNF ω₀ f Dinf).sheet i ζ from by
+        unfold inftyManifoldSec; rw [inv_inv, (chartAt ℂ (Dinf.xs i)).right_inv (hmem i)]]
+  · -- derivative factor: the two functions agree near `ζ⁻¹`.
+    apply Filter.EventuallyEq.deriv_eq
+    filter_upwards [hmemEv i] with w hw
+    show (inftyFibreTraceNF ω₀ f Dinf).sheet i (w⁻¹)
+      = (chartAt ℂ (Dinf.xs i)) (inftyManifoldSec ω₀ f Dinf i w)
+    unfold inftyManifoldSec
+    rw [(chartAt ℂ (Dinf.xs i)).right_inv hw]
+
+/-! ## Step (3b): the `∞`-analogue of `traceCoeff_diagonal_eq_fixedSum` (bare fixed frame)
+
+`traceCoeff_diagonal_eq_fixedSum` (`FormTraceMovingFibre`) proves the *finite* diagonal identity — the
+re-selected fibre trace equals the fixed-chart moving fibre sum — but ties the fixed chart frame to a
+`FibreRegularData` over a *finite* base value.  At `∞` the natural fixed frame is the **pole set**
+`Dinf.xs` (mapping to `∞`, *not* a finite-value fibre), so we transcribe `traceCoeff_diagonal_eq_fixedSum`
+with the chart frame supplied as a *bare* indexed family `xsD : ιD → X` (the proof never uses the analytic
+fields of the reference `FibreRegularData` — only its `ι`/`xs` as the chart frame and the explicit
+index-bijection + chart-membership hypotheses).  This is the §VIII.3 well-definedness lever
+(`movingSummand_chartIndep`) read with the pole charts as the fixed frame. -/
+
+/-- **Diagonal trace = fixed-(bare-)frame moving fibre sum.**  Generalization of
+`traceCoeff_diagonal_eq_fixedSum` with the fixed chart frame a bare `xsD : ιD → X` (instead of a
+`FibreRegularData`'s fibre points).  Verbatim transcription of the finite proof (which uses only the
+frame's `ι`/`xs` and the explicit hypotheses — never the reference fibre's analytic fields).  The
+re-selected fibre `D'` over `b'`, the index bijection `e : D'.ι ≃ ιD`, the section identification
+(`hxs`/`hsheet_deriv`), and the chart membership/transitions (`hmem`/`htrans_diff`/`htrans_diff_inv`)
+discharge the diagonal via `movingSummand_chartIndep`. -/
+theorem traceCoeff_diagonal_eq_fixedFrame {ιD : Type} [Fintype ιD] (xsD : ιD → X)
+    (sec : ιD → ℂ → X) {b' : ℂ}
+    (D' : FibreRegularData g f b') (e : D'.ι ≃ ιD)
+    (hxs : ∀ i', D'.xs i' = sec (e i') b')
+    (hsheet_deriv : ∀ i', deriv ((fibreTrace ω₀ f D').sheet i') b'
+      = deriv (fun z => (chartAt ℂ (sec (e i') b')) (sec (e i') z)) b')
+    (hcont : ∀ i, ContinuousAt (sec i) b')
+    (hsP_diff : ∀ i, DifferentiableAt ℂ (fun z => (chartAt ℂ (sec i b')) (sec i z)) b')
+    (hmem : ∀ i, sec i b' ∈ (chartAt ℂ (xsD i)).source)
+    (htrans_diff : ∀ i, DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (xsD i)) ((chartAt ℂ (sec i b')).symm w)) ((chartAt ℂ (sec i b')) (sec i b')))
+    (htrans_diff_inv : ∀ i, DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (sec i b')) ((chartAt ℂ (xsD i)).symm w)) ((chartAt ℂ (xsD i)) (sec i b'))) :
+    (fibreTrace ω₀ f D').traceCoeff b'
+      = ∑ i, chartIntegrand ω₀ g (xsD i) ((chartAt ℂ (xsD i)) (sec i b'))
+        * deriv (fun z => (chartAt ℂ (xsD i)) (sec i z)) b' := by
+  have hdiagsum : (fibreTrace ω₀ f D').traceCoeff b'
+      = ∑ i', chartIntegrand ω₀ g (D'.xs i') ((chartAt ℂ (D'.xs i')) (D'.xs i'))
+        * deriv ((fibreTrace ω₀ f D').sheet i') b' := by
+    show (∑ i', (fibreTrace ω₀ f D').coeff i' ((fibreTrace ω₀ f D').sheet i' b')
+        * deriv ((fibreTrace ω₀ f D').sheet i') b') = _
+    refine Finset.sum_congr rfl (fun i' _ => ?_)
+    rw [fibreTrace_coeff,
+      show (fibreTrace ω₀ f D').sheet i' b' = (chartAt ℂ (D'.xs i')) (D'.xs i') from
+        (fibreTrace ω₀ f D').sheet_base i']
+  rw [hdiagsum]
+  rw [← Equiv.sum_comp e (fun i => chartIntegrand ω₀ g (xsD i) ((chartAt ℂ (xsD i)) (sec i b'))
+    * deriv (fun z => (chartAt ℂ (xsD i)) (sec i z)) b')]
+  refine Finset.sum_congr rfl (fun i' _ => ?_)
+  rw [hxs i', hsheet_deriv i']
+  have hself_diff : DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (sec (e i') b')) ((chartAt ℂ (sec (e i') b')).symm w))
+      ((chartAt ℂ (sec (e i') b')) (sec (e i') b')) := by
+    have heqid : (fun w => (chartAt ℂ (sec (e i') b')) ((chartAt ℂ (sec (e i') b')).symm w))
+        =ᶠ[𝓝 ((chartAt ℂ (sec (e i') b')) (sec (e i') b'))] id := by
+      filter_upwards [(chartAt ℂ (sec (e i') b')).open_target.mem_nhds
+        ((chartAt ℂ (sec (e i') b')).map_source (mem_chart_source ℂ (sec (e i') b')))] with w hw
+      simp only [(chartAt ℂ (sec (e i') b')).right_inv hw, id_eq]
+    exact (differentiableAt_id).congr_of_eventuallyEq heqid
+  exact movingSummand_chartIndep ω₀ g (sec (e i')) (sec (e i') b') (xsD (e i')) (hcont (e i'))
+    (hsP_diff (e i')) (mem_chart_source ℂ (sec (e i') b')) (hmem (e i')) hself_diff
+    (htrans_diff (e i')) hself_diff (htrans_diff_inv (e i'))
+
+/-- **`inftyManifoldSec i (ζ⁻¹)` lies in the pole's chart source.**  It is `(chart (Dinf.xs i)).symm
+(recipSheet i ζ)` and `recipSheet i ζ ∈ chart (Dinf.xs i).target`, so its chart inverse lands in the
+source (`PartialEquiv.map_target`). -/
+theorem inftyManifoldSec_mem_source (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (Dinf : InftyFibreDataNF g f) (i : Dinf.ι) {ζ : ℂ}
+    (hmem : (inftyFibreTraceNF ω₀ f Dinf).sheet i ζ ∈ (chartAt ℂ (Dinf.xs i)).target) :
+    inftyManifoldSec ω₀ f Dinf i (ζ⁻¹) ∈ (chartAt ℂ (Dinf.xs i)).source := by
+  unfold inftyManifoldSec
+  rw [inv_inv]
+  exact (chartAt ℂ (Dinf.xs i)).map_target hmem
+
+/-! ## Step (3c): the per-`ζ` diagonal `valueChartTrace (ζ⁻¹) = inftyMovingSumNF (ζ⁻¹)`
+
+Combining the bare-frame diagonal (`traceCoeff_diagonal_eq_fixedFrame`, with the pole charts `Dinf.xs` as
+the fixed frame and the manifold sections `inftyManifoldSec`) and the reciprocal-chart bookkeeping
+(`inftyMovingSumNF_eq_fixedSum`), the per-`ζ` diagonal identity holds *given the index bijection + section
+identification at `ζ`* (the genuine §VIII.3 `∞`-monodromy content — the reciprocal-chart analogue of the
+finite `diagonal_of_pointwiseBijection`). -/
+
+/-- **The per-`ζ` `∞`-diagonal.**  For `ζ ≠ 0` with the chart memberships (`hmem`/`hmemEv`), and the index
+bijection `e : (Φ ζ⁻¹).ι ≃ Dinf.ι` matching the re-selected fibre `Φ ζ⁻¹` over the value `ζ⁻¹` to the
+`∞`-fibre poles along the manifold sections `inftyManifoldSec` (`hxs`/`hsheet_deriv` + the chart
+differentiability), the value trace equals the `∞`-moving sum at `ζ⁻¹`:
+
+> `valueChartTrace ω₀ f Φ (ζ⁻¹) = inftyMovingSumNF ω₀ f Dinf (ζ⁻¹)`. -/
+theorem diagonalInfty_pointwise (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (Φ : (b : ℂ) → FibreRegularData g f b) (Dinf : InftyFibreDataNF g f)
+    {ζ : ℂ} (hζ : ζ ≠ 0)
+    (hmem : ∀ i, (inftyFibreTraceNF ω₀ f Dinf).sheet i ζ ∈ (chartAt ℂ (Dinf.xs i)).target)
+    (hmemEv : ∀ i, ∀ᶠ w in 𝓝 (ζ⁻¹),
+      (inftyFibreTraceNF ω₀ f Dinf).sheet i (w⁻¹) ∈ (chartAt ℂ (Dinf.xs i)).target)
+    (e : (Φ (ζ⁻¹)).ι ≃ Dinf.ι)
+    (hxs : ∀ i', (Φ (ζ⁻¹)).xs i' = inftyManifoldSec ω₀ f Dinf (e i') (ζ⁻¹))
+    (hsheet_deriv : ∀ i', deriv ((fibreTrace ω₀ f (Φ (ζ⁻¹))).sheet i') (ζ⁻¹)
+      = deriv (fun z => (chartAt ℂ (inftyManifoldSec ω₀ f Dinf (e i') (ζ⁻¹)))
+          (inftyManifoldSec ω₀ f Dinf (e i') z)) (ζ⁻¹))
+    (hcont : ∀ i, ContinuousAt (inftyManifoldSec ω₀ f Dinf i) (ζ⁻¹))
+    (hsP_diff : ∀ i, DifferentiableAt ℂ (fun z => (chartAt ℂ (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹)))
+        (inftyManifoldSec ω₀ f Dinf i z)) (ζ⁻¹))
+    (htrans_diff : ∀ i, DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (Dinf.xs i)) ((chartAt ℂ (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹))).symm w))
+        ((chartAt ℂ (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹))) (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹))))
+    (htrans_diff_inv : ∀ i, DifferentiableAt ℂ
+      (fun w => (chartAt ℂ (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹))) ((chartAt ℂ (Dinf.xs i)).symm w))
+        ((chartAt ℂ (Dinf.xs i)) (inftyManifoldSec ω₀ f Dinf i (ζ⁻¹)))) :
+    valueChartTrace ω₀ f Φ (ζ⁻¹) = inftyMovingSumNF ω₀ f Dinf (ζ⁻¹) := by
+  rw [valueChartTrace_apply,
+    traceCoeff_diagonal_eq_fixedFrame (xsD := Dinf.xs) (sec := inftyManifoldSec ω₀ f Dinf)
+      (D' := Φ (ζ⁻¹)) e hxs hsheet_deriv hcont hsP_diff
+      (fun i => inftyManifoldSec_mem_source ω₀ f Dinf i (hmem i)) htrans_diff htrans_diff_inv,
+    inftyMovingSumNF_eq_fixedSum ω₀ f Dinf hζ hmem hmemEv]
+
 end Jacobians.Dolbeault.SerreResidueTheorem
