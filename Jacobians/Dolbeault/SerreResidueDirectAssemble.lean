@@ -523,4 +523,60 @@ noncomputable def directTraceGeometry_ofCanonicalSimpleInfty (hdiv : (f.div : Di
     m cs ρ hcs_ball hcs_inj br hcenters_cs Cfull hCfull_inj hCfull_image hnonpole_an
     hsimpleInf hmeroInf hnonpole_inf_an hreg hbnd hcont_int R₀ hR₀_an hR₀0 hR₀_eq hcoh_full
 
+/-! ## The capstone reduction of Gate A to the residual hypotheses
+
+Chaining `directTraceGeometry_ofCanonicalSimpleInfty` into the proven `residueTheorem_of_directTraceGeometry`
+gives Gate A `∑Res = 0` directly from the residual hypotheses — making the standing of Gate A crisp:
+all the combinatorial / pole-only / `∞`-fibre / centre-bookkeeping content is *proven*, and the residue
+theorem holds for `α = ω₀·g` modulo *exactly* the per-centre full-fibre coherence + the deep analytic
+genus-`0` content. -/
+
+/-- **Gate A `∑Res = 0` from the canonical-selection residuals.**  With the canonical full-fibre
+selection, simple `∞`-poles, and pole-value goodness, the residue theorem `∑_{a ∈ poles} formFnResidue
+ω₀ g a = 0` holds modulo *only* the per-centre full-fibre coherence `Cfull` and the deep analytic
+residuals (`hreg`/`hbnd`/`hcont_int`/`R₀`/`hcoh_full`).  The pole-only fibre data, the pole↔full
+matching, the full `∞`-fibre, and the centre bookkeeping are all discharged. -/
+theorem residueTheorem_of_canonicalAdapted (hdiv : (f.div : Divisor X) ≠ 0)
+    (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
+      GoodValue g f hdiv p)
+    (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
+    (hcs_inj : Function.Injective cs) (br : Finset ℂ)
+    (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
+      = (poles.image f.toRiemannSphere).erase OnePoint.infty)
+    (Cfull : ∀ i, MovingCoherenceDatum ω₀ g f (canonicalFibreSelection g f hdiv) (cs i))
+    (hCfull_inj : ∀ i, Function.Injective (Cfull i).D.xs)
+    (hCfull_image : ∀ i,
+      Finset.univ.image (Cfull i).D.xs = Finset.univ.image (canonicalFibreSelection g f hdiv (cs i)).xs)
+    (hnonpole_an : ∀ i, ∀ k, (Cfull i).D.xs k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ ((Cfull i).D.xs k)).symm z))
+        ((chartAt ℂ ((Cfull i).D.xs k)) ((Cfull i).D.xs k)))
+    (hsimpleInf : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = -1)
+    (hmeroInf : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (inftyFibreEnum f i)).symm z))
+      ((chartAt ℂ (inftyFibreEnum f i)) (inftyFibreEnum f i)))
+    (hnonpole_inf_an : ∀ k, inftyFibreEnum f k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ (inftyFibreEnum f k)).symm z))
+        ((chartAt ℂ (inftyFibreEnum f k)) (inftyFibreEnum f k)))
+    (hreg : ∀ w ∉ Finset.univ.image cs ∪ br,
+      AnalyticAt ℂ (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv)) w)
+    (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
+      Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z)
+        (𝓝[≠] b₀) (𝓝 0))
+    (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      (∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧
+        (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv) br - L.R)
+          =ᶠ[𝓝[≠] (cs j)] R) →
+      ∀ p ∈ Finset.univ.image L.a,
+        ContinuousAt (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv) br - L.R) p)
+    (R₀ : ℂ → ℂ) (hR₀_an : AnalyticAt ℂ R₀ 0) (hR₀0 : R₀ 0 = 0)
+    (hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
+      recipCoeff (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv) br - L.R)
+        =ᶠ[𝓝[≠] 0] R₀)
+    (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv) br)
+      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
+    ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
+  residueTheorem_of_directTraceGeometry
+    (directTraceGeometry_ofCanonicalSimpleInfty hdiv hgood m cs ρ hcs_ball hcs_inj br hcenters_cs
+      Cfull hCfull_inj hCfull_image hnonpole_an hsimpleInf hmeroInf hnonpole_inf_an hreg hbnd
+      hcont_int R₀ hR₀_an hR₀0 hR₀_eq hcoh_full)
+
 end Jacobians.Dolbeault.SerreResidueTheorem
