@@ -66,7 +66,8 @@ namespace Jacobians.Dolbeault.SerreResidueTheorem
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
   Jacobians.Dolbeault.FormResidueTheorem Jacobians.Dolbeault.FormTraceFibre
   Jacobians.Dolbeault.FormTraceGlobal Jacobians.Dolbeault.FormTraceInftyFibre
-  Jacobians.Dolbeault.FormTraceInftyRecip RiemannSphere
+  Jacobians.Dolbeault.FormTraceInftyRecip Jacobians.Dolbeault.FormTraceFullFibre
+  Jacobians.Dolbeault.FormTraceMovingFibre RiemannSphere
 
 set_option linter.unusedSectionVars false
 
@@ -208,5 +209,41 @@ theorem infty_notMem_branchLocus_of_simpleInfty (f : MeromorphicFunction X)
   obtain ⟨i, hi⟩ := inftyFibreEnum_surj f ha_inf
   have ha_simple : f.orderAtPoint a = -1 := by rw [← hi]; exact hsimpleInf i
   exact notMem_criticalSet_of_orderAtPoint_eq_neg_one f ha_simple ha_crit
+
+/-! ## The reduction of `hcoh_geom` to the large-`z` diagonal
+
+The target `∞`-coherence is `recipCoeff (valueChartTrace ω₀ f Φ) =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF
+ω₀ f Dinf)`.  Since `recipCoeff R ζ = −R(ζ⁻¹)·ζ⁻²` depends on `R` *only* through `R(ζ⁻¹)`, this is
+*equivalent* to the underlying functions agreeing for large `z` (i.e. at `ζ⁻¹`, `ζ → 0`):
+
+> `∀ᶠ ζ in 𝓝[≠] 0, valueChartTrace ω₀ f Φ (ζ⁻¹) = inftyMovingSumNF ω₀ f Dinf (ζ⁻¹)`.
+
+This is the honest, non-circular residual: the §VIII.3 statement "the trace = the moving `∞`-fibre sum near
+`∞`" read in the value coordinate (large `z`).  It is a germ-equality on a *punctured* neighbourhood of
+`0` (equivalently: for `|z|` large), **never evaluating at `∞` itself** — so no junk-value defect (the
+value-trace reads `g` at the moving fibre points `Φ z`, all genuine non-`∞` points for large finite `z`).
+And it is the moving-fibre-sum identity, *not* the residue cancellation — non-circular. -/
+
+/-- **`hcoh_geom` from the large-`z` diagonal.**  `recipCoeff R₁ =ᶠ[𝓝[≠] 0] recipCoeff R₂` whenever the
+functions agree at `ζ⁻¹` for `ζ` near `0` (`hdiag_inf`): both `recipCoeff`s are `−·(ζ⁻¹)·ζ⁻²`, so the
+shared `R(ζ⁻¹)` value makes them equal.  This is the clean reduction of the `∞`-coherence `hcoh_geom` to
+the large-`z` value-trace / `∞`-moving-sum agreement (the genuine §VIII.3 `∞`-single-valuedness). -/
+theorem recipCoeff_eventuallyEq_of_eventuallyEq_inv {R₁ R₂ : ℂ → ℂ}
+    (hdiag_inf : ∀ᶠ ζ in 𝓝[≠] (0 : ℂ), R₁ (ζ⁻¹) = R₂ (ζ⁻¹)) :
+    recipCoeff R₁ =ᶠ[𝓝[≠] 0] recipCoeff R₂ := by
+  filter_upwards [hdiag_inf] with ζ hζ
+  show -(R₁ (ζ⁻¹)) * ζ ^ (-2 : ℤ) = -(R₂ (ζ⁻¹)) * ζ ^ (-2 : ℤ)
+  rw [hζ]
+
+/-- **`hcoh_geom` from the large-`z` diagonal (the `inftyFibreDataNF_full` instance).**  Specialization of
+`recipCoeff_eventuallyEq_of_eventuallyEq_inv` to the value trace `R₁ := valueChartTrace ω₀ f Φ` and the
+`∞`-moving sum `R₂ := inftyMovingSumNF ω₀ f Dinf`, giving the exact `hcoh_geom` shape consumed by
+`residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg`. -/
+theorem hcoh_geom_of_diagonalInfty (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+    (Φ : (b : ℂ) → FibreRegularData g f b) (Dinf : InftyFibreDataNF g f)
+    (hdiag_inf : ∀ᶠ ζ in 𝓝[≠] (0 : ℂ),
+      valueChartTrace ω₀ f Φ (ζ⁻¹) = inftyMovingSumNF ω₀ f Dinf (ζ⁻¹)) :
+    recipCoeff (valueChartTrace ω₀ f Φ) =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf) :=
+  recipCoeff_eventuallyEq_of_eventuallyEq_inv hdiag_inf
 
 end Jacobians.Dolbeault.SerreResidueTheorem
