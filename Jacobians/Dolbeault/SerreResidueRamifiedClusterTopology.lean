@@ -214,4 +214,197 @@ theorem clusterSection_chartPullback_differentiableAt {g : X → ℂ} {f : Merom
   rw [heq]
   exact htrans_an.differentiableAt.comp z hsheet_diff
 
+/-! ## The conservation-of-number datum `FibreClusterTopology`
+
+We now isolate the genuine conservation-of-number content of `ClusterReindexData` as a structure whose
+fields are *exactly* the irreducible geometry: the sphere sheet system, the bijection, the point
+coincidence, and the two genuine geometric residuals (the cluster sheet stays in the fixed-preimage
+chart source near `z`, and the cluster section is a genuine local section of `f.holoRepr`).  Every
+routine analytic field of `ClusterReindexData` is DERIVED in `ofFibreClusterTopology` below. -/
+
+/-- **The fibre-cluster topology datum at a regular slit value `z`** (the precise conservation-of-number
+content of `ClusterReindexData`, routine analytic fields removed).  At `z`:
+
+* `S`/`hderiv`/`hmero`/`hcoh` — the sphere sheet system at `coe z` with the regular-value coherence
+  (supplied by the moving-fibre machinery, as in `ClusterReindexData`);
+* `e` — the **conservation-of-number bijection** `(Σ i, Fin (D.mult i)) ≃ Fin S.n` of the cluster index
+  with the `deg f` sphere sheets;
+* `hpoint` — the **point coincidence**: the `j`-th cluster sheet at `i` IS the `e ⟨i,j⟩`-th moving sheet
+  point (the conservation-of-number content; forces `∑ᵢ mᵢ = deg f`);
+* `hsrc` — the cluster sheet value `clusterSheet (Cl i).s … j w` stays in `D.xs i`'s chart target near
+  `z` (the cluster clusters at `D.xs i` — a genuine §5 normal-form fact);
+* `hsheet_diff` — the cluster sheet is differentiable at `z` (from `s` analytic + `w₀` differentiable;
+  a normal-form analyticity fact, kept as a field for the caller's convenience but supplied by
+  `clusterSheet_differentiableAt`);
+* `hcs_sec` — the cluster section is a genuine local section of `f.holoRepr` near `z`
+  (`f.holoRepr (clusterSection D Cl i j w) = w`; the §5 normal-form section property — the cluster
+  sheets are genuine preimages of `z`).
+
+These are the genuine §4/§17.9 conservation-of-number / properness inputs; `ofFibreClusterTopology`
+derives the differentiability, the chart transitions, the chart-source membership, and the
+section-derivative agreement from them. -/
+structure FibreClusterTopology {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
+    (Φ : (b : ℂ) → FibreRegularData g f b) {c : ℂ} {Sset : Set ℂ} (D : FibreRamifiedData g f c)
+    (Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset) (z : ℂ) where
+  /-- The sphere sheet system at `coe z`. -/
+  S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))
+  /-- Regular-value: the chart-pullback derivative of `f.holoRepr` is nonzero at each sheet point. -/
+  hderiv : ∀ k, deriv (fun w => f.holoRepr
+      ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+    ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+      (S.sheet k (((z : ℂ) : RiemannSphere)))) ≠ 0
+  /-- `g`'s chart-pullback is meromorphic at each sheet point. -/
+  hmero : ∀ k, MeromorphicAt
+    (fun w => g ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
+    ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
+      (S.sheet k (((z : ℂ) : RiemannSphere))))
+  /-- The regular-value coherence: the geometric trace at `z` equals the sphere-fibre trace. -/
+  hcoh : valueChartTrace ω₀ f Φ z
+    = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv hmero)).traceCoeff z
+  /-- **The conservation-of-number bijection** of the cluster `Σ`-index with the `deg f` sheets. -/
+  e : (Σ i : D.ι, Fin (D.mult i)) ≃ Fin S.n
+  /-- **Point coincidence**: the `j`-th cluster sheet at `i` is the `e ⟨i,j⟩`-th moving sheet point. -/
+  hpoint : ∀ (i : D.ι) (j : Fin (D.mult i)),
+    clusterSection D Cl i j z = S.sheet (e ⟨i, j⟩) (((z : ℂ) : RiemannSphere))
+  /-- The cluster sheet value stays in the fixed preimage's chart target near `z`. -/
+  hsrc : ∀ (i : D.ι) (j : Fin (D.mult i)),
+    ∀ᶠ w in 𝓝 z, clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j w ∈ (chartAt ℂ (D.xs i)).target
+  /-- The cluster sheet is differentiable at `z`. -/
+  hsheet_diff : ∀ (i : D.ι) (j : Fin (D.mult i)),
+    DifferentiableAt ℂ (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z
+  /-- **The cluster section is a genuine local section of `f.holoRepr`** near `z`. -/
+  hcs_sec : ∀ (i : D.ι) (j : Fin (D.mult i)),
+    ∀ᶠ w in 𝓝 z, f.holoRepr (clusterSection D Cl i j w) = w
+
+namespace FibreClusterTopology
+
+variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
+  {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ} {D : FibreRamifiedData g f c}
+  {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}
+
+/-- `clusterSheet … z ∈ chart_{D.xs i}.target` (the `z`-instance of `hsrc`). -/
+theorem clusterSheet_mem_target (R : FibreClusterTopology Φ D Cl z) (i : D.ι) (j : Fin (D.mult i)) :
+    clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j z ∈ (chartAt ℂ (D.xs i)).target :=
+  (R.hsrc i j).self_of_nhds
+
+/-- The cluster section lies in `D.xs i`'s chart source at `z`. -/
+theorem clusterSection_mem_source (R : FibreClusterTopology Φ D Cl z) (i : D.ι)
+    (j : Fin (D.mult i)) : clusterSection D Cl i j z ∈ (chartAt ℂ (D.xs i)).source := by
+  rw [clusterSection]; exact (chartAt ℂ (D.xs i)).map_target (R.clusterSheet_mem_target i j)
+
+/-- The matched sphere sheet point `q := S.sheet (e ⟨i,j⟩) (coe z)` has finite value `coe z` on the
+sphere (it is a sheet point at the base of `S`). -/
+theorem sheet_toRiemannSphere (R : FibreClusterTopology Φ D Cl z) (k : Fin R.S.n) :
+    f.toRiemannSphere (R.S.sheet k (((z : ℂ) : RiemannSphere))) = (((z : ℂ) : RiemannSphere)) :=
+  R.S.sheet_section k _ R.S.mem_V
+
+/-- The matched sphere sheet point is a non-pole (`0 ≤ orderAtPoint`): its sphere value `coe z` is
+finite. -/
+theorem sheet_nonpole (R : FibreClusterTopology Φ D Cl z) (k : Fin R.S.n) :
+    0 ≤ f.orderAtPoint (R.S.sheet k (((z : ℂ) : RiemannSphere))) :=
+  (f.nonpole_of_toRiemannSphere_eq_coe (R.sheet_toRiemannSphere k)).1
+
+/-- The `holoRepr` value of the matched sphere sheet point is `z`. -/
+theorem sheet_holoRepr (R : FibreClusterTopology Φ D Cl z) (k : Fin R.S.n) :
+    f.holoRepr (R.S.sheet k (((z : ℂ) : RiemannSphere))) = z :=
+  (f.nonpole_of_toRiemannSphere_eq_coe (R.sheet_toRiemannSphere k)).2
+
+/-- The cluster section is continuous at `z` (cluster sheet differentiable + chart.symm continuous at
+the interior target point). -/
+theorem clusterSection_continuousAt (R : FibreClusterTopology Φ D Cl z) (i : D.ι)
+    (j : Fin (D.mult i)) : ContinuousAt (clusterSection D Cl i j) z := by
+  have hsymm_cont : ContinuousAt (chartAt ℂ (D.xs i)).symm
+      (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j z) :=
+    (chartAt ℂ (D.xs i)).continuousAt_symm (R.clusterSheet_mem_target i j)
+  exact hsymm_cont.comp (R.hsheet_diff i j).continuousAt
+
+end FibreClusterTopology
+
+/-- **`ClusterReindexData` from a `FibreClusterTopology`** (the reduction).  Assembles a
+`ClusterReindexData` from the conservation-of-number datum, DERIVING every routine analytic field:
+
+* `hcw` — from `hsrc` (`chart_a (chart_a.symm x) = x` on the chart target);
+* `hmem_a` — `clusterSection_mem_source` (the `z`-instance of `hsrc`);
+* `hcs_cont` — `clusterSection_continuousAt` (cluster sheet diff + chart.symm continuity);
+* `hcsP_diff` — `clusterSection_chartPullback_differentiableAt`;
+* `htrans_diff`/`htrans_diff_inv` — `transition_analyticAt_target` (the chart transitions between `D.xs
+  i` and the cluster point `q`, both in each other's chart source);
+* `hderiv_match` — `hderiv_match_of_section` (both `clusterSection` and `holoReprSheet (e ⟨i,j⟩)` are
+  sections of `f.holoRepr` through the coincident point `q`, with the regular-value `hderiv`).
+
+So the full-fibre cluster identity at `z` rests on *only* the bijection `e` + the point coincidence
+`hpoint` + the two genuine geometric residuals `hsrc`/`hcs_sec` — the conservation-of-number content. -/
+noncomputable def ClusterReindexData.ofFibreClusterTopology {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
+    {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
+    {D : FibreRamifiedData g f c} {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}
+    (R : FibreClusterTopology Φ D Cl z) :
+    ClusterReindexData Φ D Cl z where
+  S := R.S
+  hderiv := R.hderiv
+  hmero := R.hmero
+  hcoh := R.hcoh
+  e := R.e
+  hpoint := R.hpoint
+  hcw := by
+    intro i j
+    filter_upwards [R.hsrc i j] with w hw
+    rw [clusterSection]
+    exact (chartAt ℂ (D.xs i)).right_inv hw
+  hmem_a := R.clusterSection_mem_source
+  hcs_cont := R.clusterSection_continuousAt
+  hcsP_diff := fun i j =>
+    clusterSection_chartPullback_differentiableAt D Cl i j (R.clusterSheet_mem_target i j)
+      (R.hsheet_diff i j)
+  htrans_diff := by
+    intro i j
+    -- `chart_{D.xs i} ∘ chart_q.symm` analytic at `chart_q q` (transition target at the chart centre).
+    set q : X := clusterSection D Cl i j z with hq
+    have hq_src_a : q ∈ (chartAt ℂ (D.xs i)).source := R.clusterSection_mem_source i j
+    exact (transition_analyticAt_target (a := q) (b := D.xs i)
+      ((chartAt ℂ q).map_source (mem_chart_source ℂ q))
+      (by rw [(chartAt ℂ q).left_inv (mem_chart_source ℂ q)]; exact hq_src_a)).differentiableAt
+  htrans_diff_inv := by
+    intro i j
+    set q : X := clusterSection D Cl i j z with hq
+    have hq_src_a : q ∈ (chartAt ℂ (D.xs i)).source := R.clusterSection_mem_source i j
+    exact (transition_analyticAt_target (a := D.xs i) (b := q)
+      ((chartAt ℂ (D.xs i)).map_source hq_src_a)
+      (by rw [(chartAt ℂ (D.xs i)).left_inv hq_src_a]; exact mem_chart_source ℂ q)).differentiableAt
+  hderiv_match := by
+    intro i j
+    set q : X := clusterSection D Cl i j z with hq
+    -- `q = S.sheet (e ⟨i,j⟩) (coe z)` (the point coincidence).
+    have hqpt : q = R.S.sheet (R.e ⟨i, j⟩) (((z : ℂ) : RiemannSphere)) := R.hpoint i j
+    -- The regular-value data at `q` (transported from the sphere sheet via the coincidence).
+    have hq_np : 0 ≤ f.orderAtPoint q := by rw [hqpt]; exact R.sheet_nonpole _
+    have hq_val : f.holoRepr q = z := by rw [hqpt]; exact R.sheet_holoRepr _
+    have hreg : deriv (fun u => f.holoRepr ((chartAt ℂ q).symm u)) ((chartAt ℂ q) q) ≠ 0 := by
+      rw [hqpt]; exact R.hderiv _
+    -- Both sections of `f.holoRepr` through `q`; the matched sheet at `z` is `q` (coincidence).
+    have hs₂z : R.S.holoReprSheet (R.e ⟨i, j⟩) z = q := by
+      rw [hqpt]; rfl
+    -- The cluster section continuous + a section near `z`.
+    have hs₁_cont : ContinuousAt (clusterSection D Cl i j) z := R.clusterSection_continuousAt i j
+    have hs₁_src : ∀ᶠ w in 𝓝 z, clusterSection D Cl i j w ∈ (chartAt ℂ q).source := by
+      have := (R.clusterSection_continuousAt i j).preimage_mem_nhds
+        ((chartAt ℂ q).open_source.mem_nhds (by rw [← hq]; exact mem_chart_source ℂ q))
+      simpa using this
+    have hs₁_sec : ∀ᶠ w in 𝓝 z, f.holoRepr (clusterSection D Cl i j w) = w := R.hcs_sec i j
+    -- The sphere sheet section data (continuity + chart source + section, near `z`).
+    have hs₂_cont : ContinuousAt (R.S.holoReprSheet (R.e ⟨i, j⟩)) z :=
+      (R.S.holoReprSheet_contMDiffAt (R.e ⟨i, j⟩)).continuousAt
+    have hs₂_src : ∀ᶠ w in 𝓝 z, R.S.holoReprSheet (R.e ⟨i, j⟩) w ∈ (chartAt ℂ q).source := by
+      have := hs₂_cont.preimage_mem_nhds
+        ((chartAt ℂ q).open_source.mem_nhds (by rw [← hs₂z]; exact mem_chart_source ℂ _))
+      simpa using this
+    have hs₂_sec : ∀ᶠ w in 𝓝 z, f.holoRepr (R.S.holoReprSheet (R.e ⟨i, j⟩) w) = w :=
+      R.S.holoReprSheet_section (R.e ⟨i, j⟩)
+    -- Apply the holomorphic-local-inverse uniqueness discharger.
+    have hderiv := hderiv_match_of_section (s₁ := clusterSection D Cl i j)
+      (s₂ := R.S.holoReprSheet (R.e ⟨i, j⟩)) (z := z)
+      (by rw [← hq]; exact hq_np) (by rw [← hq]; exact hq_val) (by rw [← hq]; exact hreg)
+      hs₂z hs₁_cont hs₂_cont (by rw [← hq]; exact hs₁_src) (by rw [← hq]; exact hs₂_src)
+      hs₁_sec hs₂_sec
+    exact hderiv
+
 end Jacobians.Dolbeault.SerreResidueTheorem
