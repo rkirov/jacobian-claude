@@ -202,4 +202,126 @@ noncomputable def globalTraceData_of_genus0_germ_facts
       hpoInf_inj hpoInf_mem hpoInf_surj hpole_image_inf
       (fun k hk => formFnResidue_eq_zero_of_analyticAt ω₀ g _ (hnonpole_inf_an k hk))
 
+/-! ### Layer 1, sanity — the unramified `Cfull` route is one way to supply (A)/(B)
+
+The unramified capstone supplies the two facts from the per-centre full-fibre moving coherence `Cfull i`:
+fact (A) is `(meromorphicAt_traceCoeff_fibreTrace (Cfull i).D).congr (Cfull.coherent_punctured …)`, fact
+(B) is `hres_fin_of_fullFibreCoherence`.  We expose this as a sanity lemma confirming `…_facts` is a
+*generalisation* of `…_germ` (the ramified atom supplies the same two facts at a ramified centre). -/
+
+/-- **The (A)/(B) facts from a per-centre full-fibre moving coherence `Cfull i`** (the unramified
+route).  Confirms `globalTraceData_of_genus0_germ_facts` subsumes the unramified `Cfull`-based discharge:
+`Cfull i` supplies fact (A) (`hT_mero_cs`, via `coherent_punctured` + `meromorphicAt_traceCoeff_fibreTrace`)
+and fact (B) (`hres_fin_cs`, via `hres_fin_of_fullFibreCoherence`). -/
+theorem facts_of_Cfull {Φ : (b : ℂ) → FibreRegularData g f b} {br : Finset ℂ} {m : ℕ} {cs : Fin m → ℂ}
+    (D : (p : ℂ) → FibreRegularData g f p)
+    (Cfull : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i))
+    (hfull_inj : ∀ i, Function.Injective (Cfull i).D.xs)
+    (hxs_inj : ∀ p, Function.Injective (D p).xs)
+    (hpole_image : ∀ i, (Finset.univ.image (Cfull i).D.xs).filter (· ∈ poles)
+      = Finset.univ.image (D (cs i)).xs)
+    (hnonpole_an : ∀ i, ∀ k, (Cfull i).D.xs k ∉ poles →
+      AnalyticAt ℂ (fun z => g ((chartAt ℂ ((Cfull i).D.xs k)).symm z))
+        ((chartAt ℂ ((Cfull i).D.xs k)) ((Cfull i).D.xs k))) :
+    (∀ i, MeromorphicAt (valueChartTracePatched ω₀ f Φ br) (cs i)) ∧
+      (∀ i, resAt (valueChartTracePatched ω₀ f Φ br) (cs i)
+        = ∑ j, formFnResidue ω₀ g ((D (cs i)).xs j)) := by
+  refine ⟨fun i => ?_, fun i => ?_⟩
+  · -- (A): the patched trace germ-equals the full-fibre trace (meromorphic) off `cs i`.
+    have hgerm : valueChartTracePatched ω₀ f Φ br
+        =ᶠ[𝓝[≠] (cs i)] (fibreTrace ω₀ f (Cfull i).D).traceCoeff :=
+      (valueChartTracePatched_eventuallyEq ω₀ f Φ br (cs i)).trans (Cfull i).coherent_punctured
+    exact (meromorphicAt_traceCoeff_fibreTrace ω₀ f (Cfull i).D).congr hgerm.symm
+  · -- (B): the full-fibre coherence residue identity.
+    exact hres_fin_of_fullFibreCoherence (poles := poles) D i (Cfull i) (hfull_inj i) (hxs_inj (cs i))
+      (hpole_image i)
+      (fun k hk => formFnResidue_eq_zero_of_analyticAt ω₀ g _ (hnonpole_an i k hk))
+
+/-! ## Layer 2 — the ramified centre provider (Miranda §VIII.3 (3.1), via the proven atom)
+
+At a *ramified* finite pole-value centre `c` the fibre `F⁻¹(coe c)` is a finite family of preimages
+`pⱼ` of multiplicities `mⱼ` (`∑ mⱼ = deg`), and the regular-fibre route (`FibreRegularData`/`fibreTrace`,
+which bake `deriv ≠ 0`) is structurally impossible.  But facts (A)/(B) still hold — they are exactly the
+**ramified Lemma 3.2** (Miranda §VIII.3, formula (3.1)), proven as the algebraic `m`-sheet-sum atom
+`Jacobians.RamifiedTrace`.  We build the parallel ramified structure here. -/
+
+/-- **Per-fibre ramified data** for the cover `f` over a *ramified* base value `c : ℂ` (the ramified
+analogue of `FibreRegularData`).  A finite family of preimages `xs : ι → X` over `coe c`, each carrying
+a **ramification multiplicity** `mult i ≥ 1` (`= 1` at an unramified point), with the chart-pullback of
+`g` meromorphic at each (so the chart integrand of `α = ω₀·g` has an isolated singularity there).  Unlike
+`FibreRegularData` there is **no `deriv ≠ 0` field** — the preimages may be ramification points
+(`deriv = 0`), exactly the case `FibreRegularData` cannot express.  The total multiplicity equals the
+fibre degree; the per-preimage normal form `f = w^{mult i}` (Forster §5) is the geometric content the
+trace identification rests on. -/
+structure FibreRamifiedData (g : X → ℂ) (f : MeromorphicFunction X) (c : ℂ) where
+  /-- The preimage index. -/
+  ι : Type
+  /-- Finiteness of the index. -/
+  fintype_ι : Fintype ι
+  /-- The preimages over `coe c`. -/
+  xs : ι → X
+  /-- Each preimage maps to `coe c` on the sphere. -/
+  hmem : ∀ i, f.toRiemannSphere (xs i) = ((c : ℂ) : RiemannSphere)
+  /-- The ramification multiplicity of each preimage (`≥ 1`; `= 1` unramified). -/
+  mult : ι → ℕ
+  /-- Multiplicities are positive. -/
+  hmult_pos : ∀ i, 0 < mult i
+  /-- `g`'s chart-pullback is meromorphic at each preimage (so the chart integrand of `α = ω₀·g` has an
+  isolated singularity there). -/
+  hg_mero : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i))
+
+attribute [instance] FibreRamifiedData.fintype_ι
+
+/-- **The bundled facts (A)/(B) at one finite pole-value centre `c`.**  Exactly the two facts
+`globalTraceData_of_genus0_germ_facts` consumes per centre, abstracted as a single structure so a
+ramified centre can supply them through the ramified atom (and an unramified centre through `Cfull` —
+`facts_of_Cfull`).  The carried trace germ `T` is the §VIII.3 trace of `α` read in the value chart at
+`c` (algebraically: the `m`-sheet-sum trace of the per-preimage chart integrands); `hcoh` is the
+geometric identification of `valueChartTrace` with it (the genuine §VIII.3 content), and `hmero`/`hres`
+are the atom's outputs. -/
+structure RamifiedCenterFacts (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
+    (Φ : (b : ℂ) → FibreRegularData g f b) (poles : Finset X) (c : ℂ) where
+  /-- The ramified fibre over `c` (the preimages with multiplicities). -/
+  D : FibreRamifiedData g f c
+  /-- `D.xs` is injective (each preimage once). -/
+  hD_inj : Function.Injective D.xs
+  /-- `D.xs` enumerates exactly the poles of `α` in the fibre `F⁻¹(coe c)`. -/
+  hD_mem : ∀ i, D.xs i ∈ poles
+  hD_surj : ∀ a ∈ poles, f.toRiemannSphere a = ((c : ℂ) : RiemannSphere) → ∃ i, D.xs i = a
+  /-- The value-chart trace germ at `c` (the algebraic `m`-sheet-sum trace). -/
+  T : ℂ → ℂ
+  /-- **The geometric-trace ramified identification** (the genuine §VIII.3 content, Forster §5 normal
+  form `f = wᵐ`): the geometric trace germ equals `T` on a punctured neighbourhood of `c`. -/
+  hcoh : valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] c] T
+  /-- **(A)** `T` is meromorphic at `c` (the ramified Fact A — atom `meromorphicAt_laurentTraceCoeff`). -/
+  hmero : MeromorphicAt T c
+  /-- **(B)** the residue of `T` at `c` is the pole-fibre residue sum (the ramified Lemma 3.2 — atom
+  `resAt_laurentTraceCoeff`, summed over the mixed-multiplicity preimages). -/
+  hres : resAt T c = ∑ i, formFnResidue ω₀ g (D.xs i)
+
+namespace RamifiedCenterFacts
+
+variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
+  {Φ : (b : ℂ) → FibreRegularData g f b} {poles : Finset X} {c : ℂ}
+
+/-- **Fact (A) from a `RamifiedCenterFacts`.**  The patched trace is meromorphic at `c`: it germ-equals
+`valueChartTrace` (patch inert off `c`), which germ-equals `T` (the geometric identification `hcoh`),
+which is meromorphic (the atom's Fact A). -/
+theorem meromorphicAt_patched (R : RamifiedCenterFacts ω₀ g f Φ poles c) (br : Finset ℂ) :
+    MeromorphicAt (valueChartTracePatched ω₀ f Φ br) c := by
+  have hgerm : valueChartTracePatched ω₀ f Φ br =ᶠ[𝓝[≠] c] R.T :=
+    (valueChartTracePatched_eventuallyEq ω₀ f Φ br c).trans R.hcoh
+  exact R.hmero.congr hgerm.symm
+
+/-- **Fact (B) from a `RamifiedCenterFacts`.**  The residue of the patched trace at `c` equals the
+pole-fibre residue sum: take residues across the same germ-equality (`resAt_congr`), then `R.hres`
+(the ramified Lemma 3.2). -/
+theorem resAt_patched (R : RamifiedCenterFacts ω₀ g f Φ poles c) (br : Finset ℂ) :
+    resAt (valueChartTracePatched ω₀ f Φ br) c = ∑ i, formFnResidue ω₀ g (R.D.xs i) := by
+  have hgerm : valueChartTracePatched ω₀ f Φ br =ᶠ[𝓝[≠] c] R.T :=
+    (valueChartTracePatched_eventuallyEq ω₀ f Φ br c).trans R.hcoh
+  rw [resAt_congr hgerm, R.hres]
+
+end RamifiedCenterFacts
+
 end Jacobians.Dolbeault.SerreResidueTheorem
