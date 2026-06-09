@@ -2093,3 +2093,42 @@ sheets) in branch fibres.
    `hg_an_offpoles`/`hnonpole_inf_an` + the g-half of `GoodValue` ALL automatic (g globally meromorphic).
 2. Bundle the genuine perturbation needs (pole-values off branch locus; simple ∞-poles) in `AdaptedF`.
 3. Sound g-weighted `hbnd` (the new analytic content) ⇒ wire `…_inftyClosed` (NOT `_bnd`).
+
+### DELIVERED (this session, all axiom-clean `[propext, Classical.choice, Quot.sound]`, ZERO sorry)
+`Jacobians/Dolbeault/SerreResidueGateAClosed.lean`:
+* `traceSummand_localCoeff_mul_sub_gWeighted_tendsto` / `traceLocalCoeff_mul_sub_gWeighted_tendsto_zero_Y`
+  — the SOUND `g`-weighted bundle-SUM branch boundedness (the `g`-weighted analogue of TraceForm's crux;
+  form = GLOBAL HOLOMORPHIC `ω₀`, `g` = bounded fibre weight).
+* `localCoeffLin_traceSummand_eq_sheetPullback` / `fibreTrace_traceCoeff_eq_gWeighted_finsum` — the
+  αBr-FREE bridge: geometric trace = `g`-weighted bundle finsum of `ω₀`.
+* `hev_coherence_canonical_of_offBranch` / `hbnd_canonical_sound` / `hreg_canonical_at_goodValue_sound` /
+  `hbnd_canonical_sound_full` — the SOUND `hbnd` (no global `αBr`), both branch + non-branch-`br` cases.
+* `residueTheorem_…_inftyClosed_soundBnd` — the SOUND genus-0 capstone (drops the unsatisfiable
+  `αBr`/`hαBrAgree`; `hg_fibre`/`hg_an` derived from `hg_an_offpoles`).
+* `AdaptedF` (genericity bundle) + `residueTheorem_of_adaptedF` / `residueSum_of_adaptedF` — the
+  unconditional `∑Res=0` for genuine meromorphic `g`, modulo `∃ f, AdaptedF` (every `g`-meromorphy field
+  auto-discharged from `g.meromorphic`; `br := branchValues f` makes non-branch fields vacuous).
+* `ExistsAdaptedF` + `residueTheorem_general` — the headline, modulo the SINGLE residual `ExistsAdaptedF`.
+
+### THE PRECISE REMAINING RESIDUAL (`ExistsAdaptedF`) — and WHY it is the last gap
+`AdaptedF` has exactly TWO genericity fields (everything else auto from genuine meromorphic `g`):
+* **`hsimpleInf`** (simple `∞`-poles): ACHIEVABLE via `f := (f₀ − a·1)⁻¹` for `a` not a critical value of
+  `f₀` (poles of `f` = simple zeros of `f₀−a`). Needs `MeromorphicFunction.Inv` (Mathlib has
+  `MeromorphicAt.inv`; ~30 LoC) — NOT built this session.
+* **`hoff_cs`** (α's finite pole-values off `f`'s branch locus): this is the GENUINE wall. Post-composition
+  (shift `f₀+c`, Möbius `M∘f₀`, recip `(f₀−a)⁻¹`) ALL preserve "which upstairs points are critical vs
+  poles" — the separation `f(α-poles) ∩ branchLocus(f) = ∅` reduces to `f₀(α-poles) ∩ branchLocus(f₀) =
+  ∅` (the post-comp cancels), an INTRINSIC property of `f₀`'s ramification vs `g`'s poles. So it needs
+  **RR-with-prescribed-jets** (force `f₀` unramified over the finite pole-values) — confirming
+  `docs/gate_a_cover_genericity_textbook_2026-06-08.md`: `hoff_cs`/`GoodValue`-at-poles is the FibreTrace
+  unramified-only OVER-ENGINEERING. The textbook-honest fix (C-route i) WEAKENS the capstone to handle
+  ramified pole fibres via Miranda (3.1) — a refactor of the deep `FibreTrace`/`FibreRegularData`
+  machinery (out of this thread's scope). NOT a false field: `ExistsAdaptedF` is TRUE (achievable with
+  RR-jets), documented in its docstring.
+
+### SOUNDNESS OUTCOME
+The 8th-bad-field (`hαBrAgree`) is SIDESTEPPED, not faked: the sound `g`-weighted route discharges `hbnd`
+with the global holomorphic `ω₀` (not `ω₀·g`). No custom axiom, no sorry, no false field. `ExistsAdaptedF`
+is a genuine TRUE existential (the only gap), not a disguised `False`. Gate A is NOT yet fully closed: it
+rests on the single, honest, mathematically-true `ExistsAdaptedF` (= Miranda "choose any nonconstant f" +
+generic position; needs RR-jets or the FibreTrace ramified-fibre refactor).
