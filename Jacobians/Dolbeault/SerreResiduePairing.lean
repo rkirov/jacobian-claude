@@ -105,6 +105,96 @@ theorem MittagLefflerForm.res_eq_zero_of_globalMeromorphic (μ : MittagLefflerFo
   rw [MittagLefflerForm.res, residueSum, hgf]
   exact hsum
 
+/-! ## Part 2 — The abstract §17.6 injectivity reduction (residue-1 witness ⟹ injective)
+
+Forster §17.6 proves `ι_D` injective by exhibiting, for each nonzero class, a `H¹(𝒪_D)`-class on which
+the pairing is `1` (the local `dz/z` residue-1 witness). The linear-algebra mechanics of that — a
+pairing into a dual with a "value-1 witness" at every nonzero point is injective, hence (the abstract
+core `SerreDuality.finrank_le_of_injective_to_dual`) dimension-bounds the source — is recorded here,
+parametric in the pairing and the finite-dimensional target. It is the EASY-half engine: feed it the
+geometric pairing + witness (the isolated `SerreResidueRealization` input below) to get
+`lDim (K−D) ≤ h1Dim D`. -/
+
+/-- **§17.6 — a residue-1 witness forces injectivity.**  An `ℂ`-linear map `ι : V → W*` (into the dual
+of any `W`) for which every nonzero `v` has a `ξ : W` with `(ι v) ξ = 1` is injective: if `ι v = 0`
+then `(ι v) ξ = 0 ≠ 1`.  This is the linear-algebra content of Forster's `ι_D` injectivity step. -/
+theorem injective_of_residueOne_witness {V W : Type*} [AddCommGroup V] [Module ℂ V]
+    [AddCommGroup W] [Module ℂ W] (ι : V →ₗ[ℂ] Module.Dual ℂ W)
+    (hwit : ∀ v : V, v ≠ 0 → ∃ ξ : W, (ι v) ξ = 1) :
+    Function.Injective ι := by
+  rw [← LinearMap.ker_eq_bot, Submodule.eq_bot_iff]
+  intro v hv
+  by_contra hne
+  obtain ⟨ξ, hξ⟩ := hwit v hne
+  rw [LinearMap.mem_ker] at hv
+  rw [hv, LinearMap.zero_apply] at hξ
+  exact one_ne_zero hξ.symm
+
+/-- **§17.6 — the dimension bound from a residue-1 witness** (the EASY half of Serre duality).  Given
+a pairing `ι : V → (W)*` into the dual of a *finite-dimensional* `W`, with a residue-1 witness at every
+nonzero `v`, we get `finrank V ≤ finrank W`.  Chains `injective_of_residueOne_witness` with the abstract
+core `SerreDuality.finrank_le_of_injective_to_dual`.  Instantiated at `V = L(K−D)`, `W = H¹(𝒪_D)` this is
+`lDim (K−D) ≤ h1Dim D`. -/
+theorem finrank_le_of_residueOne_witness {V W : Type*} [AddCommGroup V] [Module ℂ V]
+    [AddCommGroup W] [Module ℂ W] [FiniteDimensional ℂ W] (ι : V →ₗ[ℂ] Module.Dual ℂ W)
+    (hwit : ∀ v : V, v ≠ 0 → ∃ ξ : W, (ι v) ξ = 1) :
+    finrank ℂ V ≤ finrank ℂ W :=
+  SerreDuality.finrank_le_of_injective_to_dual ι (injective_of_residueOne_witness ι hwit)
+
+/-! ## Part 3 — The `H¹(X,Ω)` realization interface and the §17.5 pairing + §17.6 injectivity
+
+The geometric residue pairing `ι_D : L(K−D) → (H¹(𝒪_D))*`, `⟨f,ξ⟩ = Res((f·ω₀)·ξ)`, consumes a
+realization of `H¹(X,𝒪_D)` cohomology classes that the repo does not yet have: the Mittag–Leffler
+representation of classes (Forster's connecting map) and the cup product into `H¹(X,Ω)` carrying the
+global `Res`. We isolate exactly that descent into the structure below — the single named input — and
+**derive** the §17.5 pairing, §17.6 injectivity, and the EASY-half dimension bound from it. -/
+
+/-- **[ISOLATED INPUT — the `H¹(X,Ω)` realization for the §17.5 residue pairing].**  The geometric
+output of the Forster §17.2–17.5 descent that the repo's Čech `H¹` (`FiniteFamily.cechH1`, the `𝒪_D`
+germ-cocycle quotient) does not yet realize: a cup-product-then-residue **bilinear pairing**
+`pairing D : L(K−D) → (H¹(𝒪_D))* `, `⟨f, ξ⟩ = Res((f·ω₀)·ξ)`, ℂ-linear in `f` (bundled as the linear
+map into the dual) and equipped with the **§17.6 residue-1 non-degeneracy witness** (`witness`).
+
+This is the precise interface the global `Res` descent (Part 1) + the Mittag–Leffler / cup-product
+realization (greenfield: no Ω-sheaf Čech complex, no cup product, no `cechH1 ↔ Mittag–Leffler`
+connecting map are built — a multi-thousand-LoC piece, see `docs/serre_17_build_plan.md`) must supply.
+It is **sound**: `witness` is the genuine residue-1 datum (the pairing is non-degenerate, not a junk/zero
+map), `L(K−D)` is the junk-free `lSysModule` (no `toFun`-junk collapse), and it does **not** route
+through Riemann–Roch (no circularity — RR depends on this).
+
+The surjectivity side (§17.9, the HARD half) is **not** part of this interface; it is built later from
+the cohomological Riemann–Roch dimension count (`SerreDuality.serre_surjectivity_dim_core`). -/
+structure SerreResidueRealization (𝔘 : FiniteCover X) (K : Divisor X) where
+  /-- The §17.5 residue pairing `ι_D : L(K−D) → (H¹(𝒪_D))*`, `⟨f, ξ⟩ = Res((f·ω₀)·ξ)`, as an ℂ-linear
+  map into the dual (ℂ-linearity in `f` from `res_add`/`res_smul`). -/
+  pairing : ∀ D : Divisor X, lSysModule (K - D) →ₗ[ℂ] Module.Dual ℂ (𝔘.cechH1 D)
+  /-- **§17.6 residue-1 non-degeneracy witness.**  For every nonzero class `0 ≠ [f] ∈ L(K−D)` there is
+  a cohomology class `ξ ∈ H¹(𝒪_D)` with `⟨f, ξ⟩ = Res((f·ω₀)·ξ) = 1` — the `dz/z` witness
+  (`exists_formFnResidue_eq_one_of_localRep_ne_zero`) transported through the realization.  This makes
+  `pairing` genuinely non-degenerate (not the zero map). -/
+  witness : ∀ (D : Divisor X) (v : lSysModule (K - D)), v ≠ 0 →
+    ∃ ξ : 𝔘.cechH1 D, (pairing D v) ξ = 1
+
+namespace SerreResidueRealization
+
+variable {𝔘 : FiniteCover X} {K : Divisor X}
+
+/-- **§17.6 — injectivity of the residue pairing `ι_D`** (the EASY half).  From the residue-1 witness:
+`ι_D` is injective for every divisor `D`.  (`injective_of_residueOne_witness`.) -/
+theorem pairing_injective (R : SerreResidueRealization 𝔘 K) (D : Divisor X) :
+    Function.Injective (R.pairing D) :=
+  injective_of_residueOne_witness (R.pairing D) (R.witness D)
+
+/-- **§17.6 — the EASY-half dimension bound `lDim (K−D) ≤ h1Dim D`.**  From injectivity of the residue
+pairing into the (finite-dimensional, via `finH1`) dual of `H¹(𝒪_D)`.  At `D = 0`: `genus ≤ h1Dim 0`. -/
+theorem lDim_le_h1Dim (R : SerreResidueRealization 𝔘 K) (D : Divisor X)
+    (hfin : FiniteDimensional ℂ (𝔘.cechH1 D)) :
+    lDim (X := X) (K - D) ≤ 𝔘.h1Dim D := by
+  haveI := hfin
+  exact finrank_le_of_residueOne_witness (R.pairing D) (R.witness D)
+
+end SerreResidueRealization
+
 end Jacobians.Dolbeault
 
 end
