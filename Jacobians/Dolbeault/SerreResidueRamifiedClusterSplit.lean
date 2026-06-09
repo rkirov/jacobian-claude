@@ -213,3 +213,88 @@ theorem exists_clusterSplit {F : ℂ → ℂ} {wp c : ℂ} {m : ℕ} (hm : 0 < m
     fun w₀ z j hi hF hp => clusterSheet_sect hζ hp hi hF⟩
 
 end Jacobians
+
+/-! ## The precise corrected remaining geometric obligation (the genuine full-fibre identity)
+
+The existing `RamifiedSheetData.hgeom_slit` / `RealCoverSlitGeometry` are unsound for a general real
+cover (see the soundness note at the top of this file): they equate the **full-fibre** geometric trace
+with the *single* `p`-cluster sum, using the *first-order* sheet points `wp + ζʲ·w₀ z`.  Below is the
+honest, sound minimal residual — the genuine ramified analogue of
+`valueChartTrace_eq_sphereSheetFibreTrace` — stated as a named predicate, **not** asserted.
+
+The cluster atoms of this file (`exists_wpow_normalForm`, `exists_clusterSplit`) are exactly the
+per-preimage data this predicate consumes: at *each* preimage `pₗ` of `c` (pole **and** non-pole), the
+normal-form coordinate `ηₗ` and its local inverse `sₗ` give the `mₗ`-cluster sheets `clusterSheet sₗ ζₗ
+w₀ₗ j`, and the full-fibre trace is the sum over **all** preimages of these `mₗ`-sheet cluster sums. -/
+
+namespace Jacobians.Dolbeault.SerreResidueTheorem
+
+open Complex Metric Filter Topology
+open scoped Manifold ContDiff Real
+
+open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
+  Jacobians.Dolbeault.FormResidueTheorem Jacobians.Dolbeault.FormTraceFibre
+  Jacobians.Dolbeault.FormTraceGlobal
+
+attribute [local instance] Classical.propDecidable
+
+set_option linter.unusedSectionVars false
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+/-- **The genuine full-fibre cluster geometry at a ramified centre** (the *sound* corrected residual,
+replacing the unsound single-cluster `hgeom_slit`).  At a finite value-centre `c` of the cover `F =
+f.toRiemannSphere`, given a finite enumeration `pre : Fin r → X` of the *entire* fibre `F⁻¹(coe c)` with
+ramification multiplicities `mult : Fin r → ℕ`, per-preimage primitive roots `ζ : Fin r → ℂ`, a slit
+`S` accumulating at `c`, per-preimage `m`-th-root branches `w₀ : Fin r → ℂ → ℂ`, and per-preimage
+normal-form local inverses `sec : Fin r → ℂ → ℂ` (the `sₗ = ηₗ⁻¹` of `exists_clusterSplit`), the
+geometric trace equals the **full-fibre** sum of all per-preimage `mₗ`-sheet clusters, read at the
+*genuine* cluster sheet points `clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j`:
+
+> `valueChartTrace ω₀ f Φ z`
+>   `= ∑_{ℓ < r} ∑_{j < mult ℓ}`
+>       `chartIntegrand ω₀ g (pre ℓ) (clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j z)`
+>       `· deriv (clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j) z`,  for `z ∈ S`,
+
+where `sec ℓ : ℂ → ℂ` is the local inverse read in the `pre ℓ`-chart coordinate (so the cluster sheet
+point `clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j z = (sec ℓ) (ζ ℓ ^ j · w₀ ℓ z)` is already a chart
+coordinate, matching `hgeom_slit`'s `wp + ζʲ·w₀ z`).
+
+This is the true Forster §5 (3.1) identification.  Its two corrections over `hgeom_slit` are exactly the
+two soundness failures documented above: (1) the OUTER sum over the **whole** fibre (all `r` preimages,
+not the single `p`); and (2) the **genuine** sheet points `clusterSheet (sec ℓ) …` (the local inverse
+`sₗ` of `exists_clusterSplit`), not the first-order `wp + ζʲ·w₀ z`.
+
+It is the single genuinely-remaining analytic input to the `hoff_cs`-free Gate-A route; everything else
+is done.  Discharging it requires the **fibre-cluster reindexing** of the `LocalSheetSystem` full-fibre
+trace by preimage clusters (the `m` regular sheets near each ramification preimage `pₗ` over a nearby `z`
+are exactly `clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j z`, `j < mₗ`, by `exists_clusterSplit` + properness) —
+the genuine multi-hundred-line build, with the per-preimage atoms supplied here. -/
+def RamifiedFullFibreClusterGeometry (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (c : ℂ)
+    {r : ℕ} (pre : Fin r → X) (mult : Fin r → ℕ) (ζ : Fin r → ℂ) (S : Set ℂ)
+    (w₀ : Fin r → ℂ → ℂ) (sec : Fin r → ℂ → ℂ) : Prop :=
+  ∀ z ∈ S, valueChartTrace ω₀ f Φ z = ∑ ℓ : Fin r, ∑ j ∈ Finset.range (mult ℓ),
+    chartIntegrand ω₀ g (pre ℓ) (clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j z)
+      * deriv (clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j) z
+
+/-- **`m = 1` (unramified) sanity reduction of the full-fibre cluster geometry.**  When every preimage
+is unramified (`mult ℓ = 1`, `ζ ℓ = 1`) and the branches are trivial (`w₀ ℓ z = z − c`, `sec ℓ` the
+genuine local section), the inner `j`-sum collapses to a single term and the identity becomes the
+*unramified full-fibre* trace identity — the shape of `valueChartTrace_eq_sphereSheetFibreTrace`.  This
+confirms the corrected predicate degenerates correctly (in contrast to the single-cluster `hgeom_slit`,
+which omits the other preimages even at `m = 1`). -/
+theorem ramifiedFullFibreClusterGeometry_unramified_shape (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
+    (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (c : ℂ)
+    {r : ℕ} (pre : Fin r → X) (ζ : Fin r → ℂ) (S : Set ℂ) (w₀ sec : Fin r → ℂ → ℂ)
+    (h : ∀ z ∈ S, valueChartTrace ω₀ f Φ z = ∑ ℓ : Fin r,
+      chartIntegrand ω₀ g (pre ℓ) (clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) 0 z)
+        * deriv (clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) 0) z) :
+    RamifiedFullFibreClusterGeometry ω₀ g f Φ c pre (fun _ => 1) ζ S w₀ sec := by
+  intro z hz
+  rw [h z hz]
+  refine Finset.sum_congr rfl (fun ℓ _ => ?_)
+  rw [Finset.sum_range_one]
+
+end Jacobians.Dolbeault.SerreResidueTheorem
