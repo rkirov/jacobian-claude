@@ -381,4 +381,114 @@ theorem resAt_clusterTrace (D : ClusterTraceData ω₀ g p c S)
 
 end ClusterTraceData
 
+/-! ## The full-fibre cluster data and the SOUND `RamifiedCenterFacts`
+
+A `FullFibreClusterData` bundles, at a value-centre `c`, the *whole* pole fibre `D : FibreRamifiedData`
+with a per-preimage `ClusterTraceData` (on a common slit), the single-valued meromorphy `hvct_mero` of
+the geometric trace, and the **full-fibre cluster geometric identity** on the slit (the geometric trace
+is the full-fibre sum of all per-cluster sheet sums — `RamifiedFullFibreClusterGeometry` on the slit).
+
+From it we build the SOUND full-fibre `RamifiedCenterFacts` whose germ `T = ∑ₗ clusterTraceₗ` is
+single-valued meromorphic, equals `valueChartTrace` on a punctured neighbourhood (identity theorem), and
+has residue `∑ₗ formFnResidue ω₀ g pₗ` (the full pole-fibre sum).  This is the corrected analogue of
+`RamifiedCenterFacts.ofSheetData` (which used the false single-cluster `hgeom_slit`). -/
+
+/-- **The full-fibre cluster data at a value-centre `c`** (the SOUND geometric input — full fibre,
+genuine cluster sheets).  Bundles the whole pole fibre `D`, a per-preimage `ClusterTraceData` `Cl i` on
+a common slit `S`, the geometric trace's single-valued meromorphy `hvct_mero`, and the full-fibre
+cluster geometric identity `hgeom_fibre` on the slit (the geometric trace is the sum over *all*
+preimages of the per-cluster `mᵢ`-sheet sums at the genuine `clusterSheet` points). -/
+structure FullFibreClusterData (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
+    (Φ : (b : ℂ) → FibreRegularData g f b) (c : ℂ) where
+  /-- The whole pole fibre over `coe c` (preimages with multiplicities). -/
+  D : FibreRamifiedData g f c
+  /-- The preimage enumeration is injective. -/
+  hD_inj : Function.Injective D.xs
+  /-- The slit on which the per-cluster branches are defined. -/
+  S : Set ℂ
+  /-- The slit accumulates at `c`. -/
+  hS_acc : ∃ᶠ z in 𝓝[≠] c, z ∈ S
+  /-- The per-preimage genuine cluster data, with matching multiplicity. -/
+  Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c S
+  /-- The cluster multiplicity matches the fibre multiplicity. -/
+  hmult : ∀ i, (Cl i).m = D.mult i
+  /-- The principal-part split of each straightened integrand holds on `𝓝[≠] 0` (for the residue). -/
+  hsplit0 : ∀ i, straightenedIntegrand ω₀ g (D.xs i) (Cl i).s =ᶠ[𝓝[≠] 0]
+    fun u => negTail 0 (Cl i).ppb (Cl i).ppN u + (Cl i).ppR u
+  /-- **Single-valued meromorphy of the geometric trace** (Miranda (3.1); piece (c)). -/
+  hvct_mero : MeromorphicAt (valueChartTrace ω₀ f Φ) c
+  /-- **The full-fibre cluster geometric identity on the slit** (the SOUND `hgeom`, full fibre + genuine
+  cluster sheets): the geometric trace equals the sum over *all* preimages of the per-cluster sheet
+  sums at the genuine `clusterSheet` points. -/
+  hgeom_fibre : ∀ z ∈ S, valueChartTrace ω₀ f Φ z = ∑ i, ∑ j ∈ Finset.range (D.mult i),
+    chartIntegrand ω₀ g (D.xs i) (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j z)
+      * deriv (clusterSheet (Cl i).s (Cl i).ζ (Cl i).w₀ j) z
+
+namespace FullFibreClusterData
+
+variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
+  {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ}
+
+/-- **The full-fibre single-valued trace germ** `T := ∑ₗ clusterTraceₗ` (a finite sum of single-valued
+meromorphic per-cluster traces). -/
+noncomputable def fibreTrace (F : FullFibreClusterData ω₀ g f Φ c) : ℂ → ℂ :=
+  fun z => ∑ i, (F.Cl i).clusterTrace z
+
+/-- **The full-fibre slit identity.**  On the slit, the geometric trace equals `T = ∑ₗ clusterTraceₗ`.
+Proof: the full-fibre cluster geometric identity `hgeom_fibre` writes `valueChartTrace` as the sum over
+all preimages of the per-cluster sheet sums; each per-cluster sheet sum collapses (the per-cluster slit
+identity `clusterSum_eq_clusterTrace_slit`, the genuine sheet points + the roots-of-unity atom) to
+`clusterTraceₗ`. -/
+theorem eqOn_fibreTrace_slit (F : FullFibreClusterData ω₀ g f Φ c) {z : ℂ} (hz : z ∈ F.S) :
+    valueChartTrace ω₀ f Φ z = F.fibreTrace z := by
+  rw [F.hgeom_fibre z hz]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  rw [← F.hmult i]
+  exact (F.Cl i).clusterSum_eq_clusterTrace_slit hz
+
+/-- The full-fibre trace `T` is **meromorphic at `c`** (a finite sum of the meromorphic per-cluster
+traces). -/
+theorem meromorphicAt_fibreTrace (F : FullFibreClusterData ω₀ g f Φ c) :
+    MeromorphicAt F.fibreTrace c :=
+  MeromorphicAt.fun_sum (fun i _ => (F.Cl i).meromorphicAt_clusterTrace)
+
+/-- **`hcoh` (DERIVED via the identity theorem):** `valueChartTrace =ᶠ[𝓝[≠] c] T`.  Both meromorphic at
+`c` (`hvct_mero` / `meromorphicAt_fibreTrace`) and agree on the slit (`eqOn_fibreTrace_slit`), which
+accumulates at `c` (`hS_acc`). -/
+theorem hcoh (F : FullFibreClusterData ω₀ g f Φ c) :
+    valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] c] F.fibreTrace :=
+  eventuallyEq_of_meromorphic_eqOn_slit F.hvct_mero F.meromorphicAt_fibreTrace F.hS_acc
+    (fun z hz => F.eqOn_fibreTrace_slit hz)
+
+/-- **The full-fibre residue.**  `resAt T c = ∑ᵢ formFnResidue ω₀ g (D.xs i)` (the full pole-fibre
+residue sum).  Residue of the finite sum splits termwise (`resAt_finsum`); each term is the per-cluster
+residue `formFnResidue ω₀ g (D.xs i)` (`resAt_clusterTrace` via change-of-variables). -/
+theorem resAt_fibreTrace (F : FullFibreClusterData ω₀ g f Φ c) :
+    resAt F.fibreTrace c = ∑ i, formFnResidue ω₀ g (F.D.xs i) := by
+  show resAt (fun z => ∑ i, (F.Cl i).clusterTrace z) c = _
+  rw [LaurentForm.resAt_finsum Finset.univ (fun i z => (F.Cl i).clusterTrace z)
+    (fun i _ => (F.Cl i).meromorphicAt_clusterTrace)]
+  exact Finset.sum_congr rfl (fun i _ => (F.Cl i).resAt_clusterTrace (F.hsplit0 i))
+
+/-- **The SOUND full-fibre `RamifiedCenterFacts`** (the corrected analogue of `ofSheetData`).  From the
+full-fibre cluster data `F` and the pole-fibre enumeration conditions (`hD_mem`/`hD_surj`), build the
+`RamifiedCenterFacts` whose germ `T = ∑ₗ clusterTraceₗ` is single-valued meromorphic, equals
+`valueChartTrace` on a punctured neighbourhood (`hcoh`, derived via the slit + identity theorem), and has
+residue `∑ᵢ formFnResidue ω₀ g (D.xs i)` (`resAt_fibreTrace`, via change-of-variables).  **Full fibre**
+(all preimages — the #13 fix) at the **genuine** `clusterSheet` points; no false/circular field. -/
+noncomputable def toRamifiedCenterFacts (F : FullFibreClusterData ω₀ g f Φ c) {poles : Finset X}
+    (hD_mem : ∀ i, F.D.xs i ∈ poles)
+    (hD_surj : ∀ a ∈ poles, f.toRiemannSphere a = ((c : ℂ) : RiemannSphere) → ∃ i, F.D.xs i = a) :
+    RamifiedCenterFacts ω₀ g f Φ poles c where
+  D := F.D
+  hD_inj := F.hD_inj
+  hD_mem := hD_mem
+  hD_surj := hD_surj
+  T := F.fibreTrace
+  hcoh := F.hcoh
+  hmero := F.meromorphicAt_fibreTrace
+  hres := F.resAt_fibreTrace
+
+end FullFibreClusterData
+
 end Jacobians.Dolbeault.SerreResidueTheorem
