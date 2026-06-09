@@ -3772,3 +3772,70 @@ hard analysis remains in the conservation leg.
   `Set.ncard_eq_toFinset_card _ hfin`.
 - Unused `{ω₀}`/`{Sset}` section vars pulled into a lemma whose statement only mentions `g`/`f`/`c`/`D`
   cause "don't know how to synthesize implicit argument" at call sites — drop them from the lemma sig.
+
+---
+
+## 2026-06-09 — Gate-A `∑Res = 0`: the full-fibre-vs-pole inconsistency FIXED (residue-split reconciliation)
+
+**The bug (17th finding, confirmed).** `FibreClusterReindex`
+(`SerreResidueRamifiedFullFibreBuilder.lean`) was internally INCONSISTENT for the generic case:
+- `hcard`/`hgeom_fibre` (via `sum_mult_eq_sheetCount_of_primitives`: `∑ᵢ D.mult i = S.n = deg f`) force
+  `D` to enumerate the **WHOLE fibre** `F⁻¹(coe c)` (all `deg f` preimages — the geometric trace is a sum
+  over ALL sheets);
+- `hD_mem : ∀ i, D.xs i ∈ poles` forces `D` to be the **α-poles only**.
+For a fibre over a pole-value with non-pole points (the GENERIC case) these conflict → `FibreClusterReindex`
+uninstantiable (vacuous) → the `FibreClusterReindex`-based `∑Res = 0` route was a dead end (instantiable
+ONLY when the whole fibre is poles, non-generic).
+
+**The fix (correct full-fibre design).** New files
+`Jacobians/Dolbeault/SerreResidueRamifiedFullFibreReindex.lean` (+ `…ReindexBuilder.lean`).  `D` = the
+WHOLE fibre; the residue sum is reconciled at the RESIDUE LEVEL:
+- non-pole preimage `D.xs i ∉ poles` → residue `0` (`formFnResidue_eq_zero_of_analyticAt`, `α` holo);
+- pole preimages enumerate exactly the α-poles of the fibre.
+So `∑_{whole fibre} formFnResidue = ∑_{poles∩fibre} formFnResidue` via the PROVEN
+`residueSum_full_eq_poleOnly` (the SAME full→pole-only engine the unramified `Cfull` route uses in
+`hres_fin_of_fullFibreCoherence` — this is the "earlier `hnonpole_an` design" the directive pointed to).
+Key reconciliation lemma `FullFibreClusterData.resAt_patched_filter_of_nonpole`: from whole-fibre
+`FullFibreClusterData` + `hnonpole` + `hD_surj`, the patched-trace residue at `c` = the fibre-restricted
+pole-set sum (= fact (B, filtered) the PROVEN `residueSum_eq_zero_of_centerFacts` consumes).  Note it does
+NOT even require `D` = exactly the whole fibre — only `poles∩fibre ⊆ range D.xs` (`hD_surj`) + extras→0
+(`hnonpole`); the whole fibre is what makes `hgeom_fibre` geometrically TRUE.
+
+**Sound replacement structure** `FullFibreCenterReindex` (drops `hD_mem`, adds `hnonpole` + `hD_surj`).
+Top theorems: `residueSum_eq_zero_of_fullFibreReindex` (+ `_adaptedFRamified`),
+`residueSum_eq_zero_of_fullFibreTopology`.  Builders `FullFibreCenterReindex.ofClusterReindexFamily` /
+`ofFibreClusterTopologyFamily` / `…_adaptedFRamified` reduce the per-centre residual to the SAME per-slit
+geometry the old chain used (`ClusterReindexData` / `FibreClusterTopology`), now with the inconsistency
+removed.  `hnonpole` is AUTOMATIC from `AdaptedFRamified.hg_an_offpoles` (`hnonpole_of_adaptedFRamified`)
+— NOT a hidden wall.
+
+**Soundness verified.** ALL new decls axiom-clean `[propext, Classical.choice, Quot.sound]`.  NO custom
+axiom / sorry / false field.  Decisive MIXED-fibre witness `fullFibreCenterReindex_zero_mixed` /
+`resAt_patched_filter_mixed_zero`: the structure is inhabitable for ANY `poles ⊆ range D.xs` (a PROPER
+nonempty subset of the fibre as poles — the exact case `hD_mem` could not express), and the residue
+formula holds.  Full glob build green (8580 jobs); HEAD builds standalone.
+
+**Status: `∑Res = 0` is NOT unconditional** (it never was in-repo — always rested on per-centre cluster
+geometry + `ExistsAdaptedFRamified`).  The bug fix makes the reduction SOUND + genuinely instantiable.
+The PRECISE remaining per-slit lemma = the per-slit `FibreClusterTopology` for the real cover (Forster §4
+conservation-of-number — `hcard` reduced to the PROVEN argument-principle engine — + §5 normal-form
+`Cl`/`S`/3 minimal facts), fed to `FullFibreCenterReindex.ofFibreClusterTopologyFamily_adaptedFRamified`.
+The §5-data construction for the real cover (slit-by-slit) is the genuine remaining build (large).
+
+**Discipline:** did NOT touch the buggy `FibreClusterReindex` (downstream `ClusterPartition`/`ClusterTopology`
+reference its fields) — added the sound PARALLEL `FullFibreCenterReindex` instead.  The old vacuous
+`FibreClusterReindex` route still type-checks but is superseded; the SOUND route is `FullFibreCenterReindex`.
+
+### LEAN GOTCHAS (this session)
+- Build is `globs := .andSubmodules` (lakefile.lean): every module under `Jacobians/` is built, so new
+  files are auto-in-graph (no root edit needed); but ALWAYS verify HEAD builds STANDALONE (full glob).
+- `ClusterReindexData`/`FibreClusterTopology` live DOWNSTREAM of `SerreResidueRamifiedFullFibreBuilder`
+  (they import it for `FibreClusterReindex`) → the builder that references them must be a SEPARATE file
+  downstream of both (split: reconciliation in `…Reindex.lean`, builders in `…ReindexBuilder.lean`).
+- `FullFibreClusterData` (the structure) has NO `hD_mem` field — it is the sound whole-fibre object; only
+  `FibreClusterReindex.toFullFibreClusterData`'s CALLER forced `hD_mem`.  Reuse `FullFibreClusterData`
+  directly + `meromorphicAt_fibreTrace`/`resAt_fibreTrace`/`hcoh` for the patched facts.
+- Subtype pole sub-fibre `{i // D.xs i ∈ poles}` + `residueSum_full_eq_poleOnly` is the clean reuse for
+  the full→pole-only residue collapse (mirrors `hres_fin_of_fullFibreCoherence`).
+- `fun a ha _ => hpoles_sub ha` with `a` used only via `ha`'s type triggers `unusedVariables` lint →
+  rename to `fun _ ha _ => …` (membership coercion `a ∈ ↑poles → a ∈ range D.xs` is defeq to `∃ i, …`).
