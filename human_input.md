@@ -3695,3 +3695,80 @@ preimage of the regular value `coe a`, hence SIMPLE (deriv≠0 ⟹ `analyticOrde
 - Scratch-file artifact: `open Jacobians.Dolbeault` then `namespace Jacobians.Dolbeault.SerreResidueTheorem`
   can make `end Jacobians.Dolbeault.SerreResidueTheorem` report "too many components" (irrelevant in the
   real target file, which sets up the namespace correctly).
+
+---
+
+## 2026-06-09 — Gate-A TARGET 1 (`∑Res=0`, conservation-of-number leg) CLOSED
+
+**File:** `Jacobians/Dolbeault/SerreResidueRamifiedFibreConservation.lean` (new sibling; imports
+`SerreResidueRamifiedClusterTopology` + `MultiplicityPatchingConstruct` + `ProperMapDegreeSheets`).
+All decls axiom-clean `[propext, Classical.choice, Quot.sound]`. HEAD builds standalone (8528 jobs).
+
+**What was done.** Discharged the THREE residual facts of `FibreClusterTopology.ofClusterFibrePoints`
+(the minimal residual of TARGET 1) and assembled the capstone constructor:
+
+- **Fact 1 `hcl_fibre`** (cluster sheets ARE preimages of `coe z`):
+  `clusterSection_toRiemannSphere_of_section_nonpole` — from the §5 section value `holoRepr q = z`
+  (read off the carried `hcs_sec` field at `w=z`) + the non-pole datum `0 ≤ orderAtPoint q`, via
+  `toRiemannSphere_of_nonneg`.
+- **Fact 2 `hcl_distinct`** (pairwise distinct): `clusterSection_within_cluster_inj` (within a cluster:
+  equal points ⟹ equal `s`-args (chart inj) ⟹ apply `η` ⟹ `ζʲw₀z = ζᵏw₀z` ⟹ `ζʲ=ζᵏ` (w₀≠0) ⟹ `j=k`
+  via `IsPrimitiveRoot.pow_inj`) + `clusterSection_injective_of_within_cross` (cross-cluster: pure
+  logic from within-cluster inj + cross-cluster separation hyp).
+- **Fact 3 `hcard`** (`∑ᵢ D.mult i = S.n`) — FULLY CLOSED, not just isolated. Chain:
+  `sum_mult_eq_sheetCount_of_primitives` → `sum_mult_eq_sheetCount_of_readings` (combines the two
+  cover-degree readings via the constancy engine) where the middle
+  `fibreMult_const_of_nonconstant` proves `fibreMult f (coe z) = fibreMult f (coe c)` from
+  **`IsLocallyConstant (N f)`** (the PROVEN, axiom-clean `exists_properMapDegree` engine, via
+  `isLocallyConstant_N_of_localSheets ∘ localMultiplicitySheets_of_nonconstant`) on the **connected**
+  sphere `ℂℙ¹` (`IsLocallyConstant.eq_const`, `PreconnectedSpace RiemannSphere`) + `N_eq_fibreMult_everywhere`.
+  The two readings are themselves PROVEN: regular-fibre `sheetSystem_n_eq_fibreMult` (`S.n = #F⁻¹(coe z)`
+  via `S.fibre_eq`/`sheet_inj`; `fibreMult = #fibre` since every `localDeg=1` at the regular value);
+  pole-fibre `sum_mult_eq_fibreMult_of_enumeration` (`fibreMult f (coe c) = ∑ᵢ localDeg` via
+  `finsum_mem_range` over the injective `D.xs` exhausting the fibre) + `mult_eq_localDeg_of_nonpole`
+  (the multiplicity bridge `analyticOrderAt_holoRepr_sub_eq_mult`, 3rd conjunct).
+- **Capstone** `FibreClusterTopology.ofClusterSplitData` — builds the full `FibreClusterTopology Φ D Cl z`
+  proving all 3 facts internally from genuine §5/§4 primitives. Output type matches
+  `ofFibreClusterTopologyFamily`'s `hfam` element (for `Φ = canonicalFibreSelection`), so the chain
+  `ofClusterSplitData` (slit-wide family) → `FibreClusterReindex` →
+  `residueSum_eq_zero_of_fibreClusterTopology` → `∑Res=0` is fully connected (verified by `#check`).
+
+**Soundness (no false/junk/circular field).** `exists_properMapDegree` engine confirmed axiom-clean and
+is UPSTREAM of RR (it IS the `deg_div` engine) — no circularity. `hcard` is the genuine conservation of
+number (`sum_mult_eq_sheetCount` of the topology file confirms the bijection forces it). The cluster
+sheets are genuine preimages (fact 1 from the §5 normal form). No custom axiom, no sorry.
+
+**ARCHITECTURAL NOTE for the assembler (a genuine requirement, not a gap I created).** The capstone
+needs `hrange : Set.range D.xs = F⁻¹(coe c)` — `D` enumerates the **whole** cover-fibre over `coe c`.
+But `FibreClusterReindex.hD_mem` requires `D.xs i ∈ poles`. Together: **at the centre `c`, every
+cover-preimage of `coe c` must be an α-pole.** This is the honest conservation-of-number content (the
+full-fibre trace identity `hgeom_fibre` sums over the whole fibre = `S.n` sheets; the PROVEN
+`sum_mult_eq_sheetCount` already forces `∑ᵢ D.mult i = S.n`). The assembler must pick centres `c` so the
+fibre is all-poles (true in the Serre setup: `g=α/ω₀`, centres are α-pole-values). NOT a soundness issue
+in my file — it's the precise honest hypothesis the genuine geometry requires.
+
+**Remaining for the assembler (the genuine geometric inputs `ofClusterSplitData` consumes, all TRUE).**
+Per slit value `z` near `c`: the sheet-system regularity (`S`/`hderiv`/`hmero`/`hcoh`, from the
+moving-fibre machinery), `hcs_sec`/`hcs_np` (§5 section + non-pole, locality near `c`), `hwithin`
+(§5 straightening uniqueness — the `η`-inverse at the specific cluster args, locality near `c`),
+`hcross` (cluster disjointness at distinct preimages, T2 + locality), `hfin_z`/`hreg_z` (regular-value:
+finite fibre + `localDeg=1`, off branch locus), `hD_inj`/`hrange`/`hnp`/`hmult_eq` (pole-fibre
+enumeration with genuine localDeg multiplicities), `hsrc`/`hsheet_diff` (routine). These are exactly the
+per-`ClusterTraceData` §5 outputs (`exists_clusterSplit_at_fibrePoint`) + the sphere sheet system; no
+hard analysis remains in the conservation leg.
+
+### LEAN GOTCHAS (this session)
+- **Name collision**: `FibreClusterTopology.sum_mult_eq_sheetCount` (existing, takes a
+  `FibreClusterTopology`) shadows a plain `sum_mult_eq_sheetCount` in the same namespace via dot
+  resolution → "Function expected at sum_mult_eq_sheetCount". Renamed mine to
+  `sum_mult_eq_sheetCount_of_primitives`.
+- `IsLocallyConstant.eq_const (hf) (x) : f = Function.const X (f x)` needs `[PreconnectedSpace X]`;
+  `PreconnectedSpace RiemannSphere` is an instance. Use `rw [hlc.eq_const w₁]; rfl` for `N f w₁ = N f w₂`.
+- `N_eq_fibreMult_everywhere f w : N f w = fibreMult f w` (ALL w, no special-value case split) — work
+  entirely in `fibreMult`.
+- `finsum_mem_range (hg : Injective g) : ∑ᶠ i ∈ range g, f i = ∑ᶠ j, f (g j)`; then
+  `finsum_eq_sum_of_fintype` to a `Finset.sum`. For `fibreMult = ncard` at a regular value:
+  `finsum_mem_eq_finite_toFinset_sum _ hfin` + `Finset.sum_congr` (localDeg=1) + `Finset.sum_const` +
+  `Set.ncard_eq_toFinset_card _ hfin`.
+- Unused `{ω₀}`/`{Sset}` section vars pulled into a lemma whose statement only mentions `g`/`f`/`c`/`D`
+  cause "don't know how to synthesize implicit argument" at call sites — drop them from the lemma sig.
