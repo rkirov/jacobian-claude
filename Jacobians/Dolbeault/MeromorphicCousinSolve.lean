@@ -113,6 +113,112 @@ theorem formFnHoloPunctured_everywhere (i : 𝔘.ι) {a : X} (ha : a ∈ 𝔘.U 
   · exact μ.toDistribution.toFormMLDistribution.formFnHoloPunctured_of_mem hb ha
   · exact μ.formFnHoloPunctured_off i ha hb
 
+/-- **The residue of `ω₀·gᵢ` vanishes at a non-pole** of `𝔘.U i` (from `holoOff`): off the recorded
+poles the form is holomorphic, residue `0`.  The key fact that makes `res` the genuine *total* residue
+(extra points in any pole superset contribute nothing) and the distribution algebra close. -/
+theorem formFnResidue_eq_zero_off (i : 𝔘.ι) {a : X} (ha : a ∈ 𝔘.U i) (hb : a ∉ μ.poles) :
+    formFnResidue ω₀ (μ.g i) a = 0 :=
+  formFnResidue_eq_zero_of_analyticAt ω₀ (μ.g i) a (μ.holoOff i a ha hb)
+
+/-- **Cross-patch residue agreement** (the genuine Forster §17.2 patch-independence at full strength):
+at any point `a` lying in both `𝔘.U i` and `𝔘.U j`, the residues of `ω₀·gᵢ` and `ω₀·gⱼ` agree, because
+their form difference `(gᵢ − gⱼ)·ω₀` is holomorphic (`formHoloDiff`) and both are isolated. -/
+theorem formFnResidue_patch_indep {i j : 𝔘.ι} {a : X} (hi : a ∈ 𝔘.U i) (hj : a ∈ 𝔘.U j) :
+    formFnResidue ω₀ (μ.g i) a = formFnResidue ω₀ (μ.g j) a :=
+  formFnResidue_eq_of_form_analyticAt_sub ω₀ (μ.g i) (μ.g j) a
+    (μ.formFnHoloPunctured_everywhere i hi) (μ.toDistribution.formHoloDiff i j a hi hj)
+
+/-! ### `res` as a residue-sum over any superset of the poles
+
+The genuine total residue: for any finite `S ⊇ poles` such that every extra point lies in some patch
+(automatic on a cover, where every point is in some `𝔘.U i`), the residue read at a point via *any*
+patch containing it sums over `S` to `res` (the extra points are holomorphic, residue `0`).  This is
+the bridge that makes `res` additive under `combine`. -/
+
+/-- Every point of `X` lies in some patch of the cover `𝔘` (the cover is `⊤`). -/
+theorem exists_patch (𝔘 : FiniteCover X) (a : X) : ∃ i, a ∈ 𝔘.U i := by
+  have : a ∈ (⊤ : Opens X) := trivial
+  rw [← 𝔘.covers] at this
+  exact TopologicalSpace.Opens.mem_iSup.mp this
+
+/-- A choice of patch containing `a` (well-defined on a genuine cover, where every point is covered). -/
+noncomputable def patchOf (𝔘 : FiniteCover X) (a : X) : 𝔘.ι := (exists_patch 𝔘 a).choose
+
+theorem patchOf_mem (𝔘 : FiniteCover X) (a : X) : a ∈ 𝔘.U (patchOf 𝔘 a) :=
+  (exists_patch 𝔘 a).choose_spec
+
+/-- **`res` as a residue-sum read via `patchOf` over the pole set.**  At each pole `a`, the residue
+read via *any* patch containing `a` equals `resAtPole a` (patch-independence), so the `patchOf`-read
+sum over `poles` is `res`. -/
+theorem res_eq_sum_patchOf :
+    μ.res = ∑ a ∈ μ.poles, formFnResidue ω₀ (μ.g (patchOf 𝔘 a)) a := by
+  rw [CoverMLLift.res, CoverMLDistribution.res_def]
+  refine Finset.sum_congr rfl fun a ha => ?_
+  exact (μ.formFnResidue_patch_indep (patchOf_mem 𝔘 a) (μ.toDistribution.patch_mem a ha)).symm
+
+/-- **`res` equals the `patchOf`-read residue-sum over any finite superset `S` of the poles** (the
+genuine total residue): extra points of `S` are holomorphic (`formFnResidue_eq_zero_off`), residue `0`. -/
+theorem res_eq_sum_patchOf_superset {S : Finset X} (hS : μ.poles ⊆ S) :
+    μ.res = ∑ a ∈ S, formFnResidue ω₀ (μ.g (patchOf 𝔘 a)) a := by
+  rw [μ.res_eq_sum_patchOf, ← Finset.sum_subset hS]
+  intro a _ ha
+  exact μ.formFnResidue_eq_zero_off (patchOf 𝔘 a) (patchOf_mem 𝔘 a) ha
+
+/-! ### ℂ-scaling -/
+
+/-- **ℂ-scaling** `c • μ`: scale each principal part by `c`; poles/patch/overlap structure unchanged
+(`c • gᵢ` is analytic / isolated wherever `gᵢ` is, and `c • gᵢ − c • gⱼ = c • (gᵢ − gⱼ) ∈ 𝒪_K`). -/
+noncomputable def smul (c : ℂ) (μ : CoverMLLift 𝔘 ω₀ K) : CoverMLLift 𝔘 ω₀ K where
+  toDistribution :=
+    { g := fun i => c • μ.g i
+      poles := μ.poles
+      patch := μ.toDistribution.patch
+      patch_mem := μ.toDistribution.patch_mem
+      diffMem := fun i j => by
+        have h := μ.toDistribution.diffMem i j
+        have heq : ((c • μ.g i - c • μ.g j) ∘ (Subtype.val : ↥(𝔘.U i ⊓ 𝔘.U j) → X))
+            = c • ((μ.g i - μ.g j) ∘ (Subtype.val : ↥(𝔘.U i ⊓ 𝔘.U j) → X)) := by
+          funext x
+          simp only [Function.comp_apply, Pi.smul_apply, Pi.sub_apply, smul_eq_mul]; ring
+        rw [heq]; exact Submodule.smul_mem _ c h
+      formHoloDiff := fun i j a hi hj => by
+        have h := μ.toDistribution.formHoloDiff i j a hi hj
+        have heq : (fun z => coeffAt ω₀ a z * (c • μ.g i - c • μ.g j) ((chartAt ℂ a).symm z))
+            = (fun z => c * (coeffAt ω₀ a z * (μ.g i - μ.g j) ((chartAt ℂ a).symm z))) := by
+          funext z; simp only [Pi.smul_apply, Pi.sub_apply, smul_eq_mul]; ring
+        rw [heq]; exact analyticAt_const.mul h
+      iso := fun a ha => by
+        have h := μ.formFnHoloPunctured_everywhere (μ.toDistribution.patch a)
+          (μ.toDistribution.patch_mem a ha)
+        obtain ⟨ρ, hρ, hball⟩ := h
+        refine ⟨ρ, hρ, fun z hz => ?_⟩
+        have hd := hball z hz
+        have heq : (fun z => coeffAt ω₀ a z * (c • μ.g (μ.toDistribution.patch a))
+              ((chartAt ℂ a).symm z))
+            = (fun z => c * (coeffAt ω₀ a z * μ.g (μ.toDistribution.patch a)
+              ((chartAt ℂ a).symm z))) := by
+          funext w; simp only [Pi.smul_apply, smul_eq_mul]; ring
+        rw [heq]; exact hd.const_mul c }
+  holoOff := fun i a ha hb => by
+    have h := μ.holoOff i a ha hb
+    have heq : (fun z => (c • μ.g i) ((chartAt ℂ a).symm z))
+        = (fun z => c * μ.g i ((chartAt ℂ a).symm z)) := by
+      funext z; simp only [Pi.smul_apply, smul_eq_mul]
+    rw [heq]; exact analyticAt_const.mul h
+
+@[simp] theorem smul_g (c : ℂ) (μ : CoverMLLift 𝔘 ω₀ K) (i : 𝔘.ι) : (smul c μ).g i = c • μ.g i := rfl
+@[simp] theorem smul_poles (c : ℂ) (μ : CoverMLLift 𝔘 ω₀ K) : (smul c μ).poles = μ.poles := rfl
+@[simp] theorem smul_patch (c : ℂ) (μ : CoverMLLift 𝔘 ω₀ K) :
+    (smul c μ).toDistribution.patch = μ.toDistribution.patch := rfl
+
+/-- **`res (c • μ) = c · res μ`** (Forster §17.2 ℂ-homogeneity). -/
+theorem res_smul (c : ℂ) (μ : CoverMLLift 𝔘 ω₀ K) : (smul c μ).res = c • μ.res := by
+  rw [μ.res_eq_sum_patchOf, (smul c μ).res_eq_sum_patchOf, Finset.smul_sum]
+  refine Finset.sum_congr rfl fun a _ => ?_
+  simp only [smul_g, smul_patch]
+  exact formFnResidue_smul ω₀ c (μ.g (patchOf 𝔘 a)) a
+    (μ.formFnHoloPunctured_everywhere (patchOf 𝔘 a) (patchOf_mem 𝔘 a))
+
 end CoverMLLift
 
 end Jacobians.Dolbeault
