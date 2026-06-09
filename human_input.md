@@ -2959,3 +2959,57 @@ exactly `RealCoverSlitGeometry`.
   ∞-group fields (`DecidableEq RiemannSphere`/`X`/`DecidablePred (·∈poles)`).
 - m=0 non-vacuity: `Sf` is dependent (`∀ i:Fin 0, RamifiedSheetData … (cs i)`) ⟹ `fun i => i.elim0`
   (NOT bare `Fin.elim0`, type mismatch).
+
+## 2026-06-09 — Cousin/∂̄ residue functional: general ML distribution + connecting-map isolation (separate thread, branch gate-a-trace-rationality-assembly)
+
+Target was instantiating `CousinResidueData 𝔘 K` (`GlobalResidueConstruct.lean`), the Serre analytic
+wall. Outcome: **NOT instantiated** (the genuine `resCocycle` is a multi-thousand-LoC manifold-∂̄ build,
+correctly diagnosed as irreducible — see below); instead **built the foundation + a sound, precisely-
+isolated interface**, all axiom-clean `[propext, Classical.choice, Quot.sound]`, no sorry/custom-axiom.
+
+### What was built (2 new files, do not collide with the RamifiedSheetData/Gate-A thread)
+- `Jacobians/Dolbeault/GeneralMittagLeffler.lean` — **Layer 1, the missing generalization** the two
+  prior agents flagged: `GeneralMLDistribution ω₀` = a finite cover with a LOCAL principal part `g_i`
+  per patch (vs. the single-global-`g` `MittagLefflerForm`), holomorphic differences on overlaps,
+  per-pole residue `res := ∑_a Res_a(ω₀·g_{patch a})`.
+  - `resAtPole_eq_of_mem` = Forster 17.2 patch-independence (via `formFnResidue_eq_of_analyticAt_sub`).
+  - `res_eq_zero_of_globalMeromorphic` = the coboundary `∑Res=0` content, DERIVED from
+    `FormResidueTheorem` (Gate A).
+  - `ofMittagLefflerForm`/`res_ofMittagLefflerForm` (the α·g shape embeds; non-vacuity at any pole #).
+  - `exists_g_resAtPole_eq_one` = the dz/z residue-1 SANITY CHECK: confirms `resAtPole` reads the
+    GENUINE Laurent contour residue, not smooth junk.
+- `Jacobians/Dolbeault/CousinResidueConnecting.lean` — `MittagLefflerConnection ω₀ 𝔘 K`, the precise
+  isolated connecting-map interface, `toCousinResidueData` deriving the whole Serre pairing +
+  `lDim_le_h1Dim`. Proven `coboundary_lift_holomorphic_res_zero` (a holomorphic/empty-pole distribution
+  has res 0, NO Gate A) + concrete `holomorphicZero` inhabitant (genuine non-vacuity).
+
+### KEY MATH FINDING (the soundness crux — read before touching this)
+The naive **smooth PoU lift** `g̃_i = ∑_k ρ_k·c_{ki}` has its contour residue `formFnResidue ω₀ g̃_i a`
+= a SMOOTH-JUNK value, NOT the Laurent residue (∮ of a smooth-but-not-holomorphic integrand ≠ c₋₁). The
+genuine residue needs the lift MEROMORPHIC near each pole. Two routes, both large:
+(1) global ∂̄-solve `∂̄u=η` to make `g̃_i` holomorphic off poles — OBSTRUCTED (the obstruction IS
+`H¹(X,𝒪)≠0`, i.e. genus); (2) local ∂̄-correction near each pole (`dbar_solvable_ball`, always
+solvable) — BUT `∂̄g̃_i` is itself singular at the poles (`∂̄ρ_k · c_{ki}`), so the naive local
+correction also fails; the principal part must be subtracted first. Forster's actual 17.3 uses
+**Stokes (∬τ)**, which the repo avoids. ⟹ `resCocycle` is genuinely the irreducible analytic atom; it
+canNOT be built locally (the per-pole residue depends on the GLOBAL lift), and even its
+well-definedness/linearity funnel through `∑Res=0` (Gate A, the other thread). This is why
+`CousinResidueData` is already the minimal honest interface for the functional itself.
+
+### SOUNDNESS BUG I caught + fixed in my own draft (the 12th bad-field pattern)
+First draft's `GlobalMeromorphicLift` claimed a coboundary's lift comes from a SINGLE global meromorphic
+`f`. FALSE: a coboundary `δh'` lifts to the `𝒪_K`-section COCHAIN `(h'_i)`, not one global function.
+Corrected: a coboundary's lift is HOLOMORPHIC (`h'_i·ω₀ ∈ Ω`, poles cancel since `ord ω₀ = K`), res 0
+by the empty/holomorphic sum (`coboundary_lift_holomorphic_res_zero`, no Gate A). `vanish_coboundary`
+reverted to a direct field (the chosen-lift wiring is the only Gate-A step). Lesson: a "single global
+function" coboundary-lift field is a soundness trap.
+
+### Lean gotchas
+- `GeneralMLDistribution` keeps `holoOff` (g_i holomorphic off poles) for faithfulness, but it's
+  UNUSED by the residue lemmas (only `holoDiff`+`iso`+`patch_mem` are) AND it's the field that FAILS for
+  a general cocycle's lift (needs the global ∂̄-solve) and for a clean single-simple-pole dz/z
+  distribution (needs RR — circular). So the residue API (resAtPole/res) deliberately does not depend
+  on it.
+- `MittagLefflerForm`/`GeneralMLDistribution` get `Nonempty X` free from `ConnectedSpace`.
+- `formFnHoloPunctured_of_mem`: g_i iso at a pole from `iso`+`holoDiff` via the `formFnResidue_add`
+  punctured-ball split pattern (min of the two radii).
