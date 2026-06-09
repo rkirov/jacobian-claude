@@ -231,6 +231,16 @@ theorem meromorphicAt_monomialTraceCoeff (c : ℂ) (n : ℤ) (m : ℕ) :
       ((analyticAt_id.sub analyticAt_const).meromorphicAt.zpow _)
   · simp only [hdvd, if_false]; exact analyticAt_const.meromorphicAt
 
+/-- **The closed-form Laurent trace coefficient is meromorphic at `0`** (fact (A), closed-form level):
+a finite sum of single Laurent monomials in `z`.  This is the meromorphy half of the ramified Lemma
+3.2 — the downstairs trace `Tr_m h` of a Laurent polynomial `h` is meromorphic at the branch value
+`z = 0`, the ramified analogue of `meromorphicAt_traceCoeff_fibreTrace`. -/
+theorem meromorphicAt_laurentTraceCoeff {ι : Type*} (s : Finset ι) (c : ι → ℂ) (n : ι → ℤ) (m : ℕ) :
+    MeromorphicAt (laurentTraceCoeff s c n m) 0 := by
+  classical
+  rw [show laurentTraceCoeff s c n m = fun z => ∑ i ∈ s, monomialTraceCoeff (c i) (n i) m z from rfl]
+  exact MeromorphicAt.fun_sum (fun i _ => meromorphicAt_monomialTraceCoeff (c i) (n i) m)
+
 /-- **Ramified Lemma 3.2 over a Laurent polynomial — the residue identity.**  For `h = ∑_i c_i wⁿⁱ`,
 the residue at `z = 0` of the ramified trace equals the upstairs residue of `h`:
 
