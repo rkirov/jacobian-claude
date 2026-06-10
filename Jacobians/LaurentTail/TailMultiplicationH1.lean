@@ -214,4 +214,51 @@ theorem tailMul_tailMul_inv (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW
       * tailFnAt (tailMul ψ⁻¹ A (W : TailSpace X)) p z) = Ψ * S from rfl]
   rw [hkey, hone, hT, laurentCoeff_tailFnAt]
 
+/-! ### §4 Surjectivity of the `H¹` action (Forster 17.8) -/
+
+/-- **Surjectivity of the `H¹` multiplication action** (Forster 17.8): for `ψ` with surviving
+germ, every class of `H¹(B)` is hit — the preimage is the `ψ⁻¹`-image at the exact shift
+`B + div ψ`, which lies in the (coarser) `𝒯[A]` since `A ≤ B + div ψ`. -/
+theorem tailMulH1_surjective (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
+    {A B : Divisor X} (h : MulLevelLE ψ A B) :
+    Function.Surjective (tailMulH1 ψ h) := by
+  intro ξ
+  obtain ⟨W, rfl⟩ := Submodule.Quotient.mk_surjective _ ξ
+  have hAC : ∀ p : X, A p ≤ (B + (ψ.div : Divisor X)) p := by
+    intro p
+    have h1 := h p
+    obtain ⟨m, hm⟩ := WithTop.ne_top_iff_exists.mp
+      (MeromorphicFunction.orderW_ne_top_of_exists ψ hψ p)
+    rw [Finsupp.add_apply, div_apply, ← hm, WithTop.untop₀_coe]
+    rw [← hm] at h1
+    have h2 : A p - B p ≤ m := by exact_mod_cast h1
+    omega
+  refine ⟨Submodule.Quotient.mk
+    ⟨(tailMulCo ψ⁻¹ B (B + (ψ.div : Divisor X)) W : TailSpace X), ?_⟩, ?_⟩
+  · -- membership in the coarser `𝒯[A]`
+    have hmem := (tailMulCo ψ⁻¹ B (B + (ψ.div : Divisor X)) W).2
+    rw [mem_tailSubspace_iff] at hmem ⊢
+    intro q hq
+    refine hmem q fun hlt => hq ?_
+    have := hAC q.1
+    omega
+  · rw [tailMulH1_mk]
+    congr 1
+    refine Subtype.ext ?_
+    rw [tailMulCo_coe]
+    exact tailMul_tailMul_inv ψ hψ B W
+
+/-- For `λ ≠ 0` and `ψ` with surviving germ, `λ ∘ T̄_ψ ≠ 0` — the dimension input for the
+Λ-side of the Serre-duality pigeonhole (Forster 17.9). -/
+theorem comp_tailMulH1_ne_zero {B : Divisor X}
+    (φ : Module.Dual ℂ (mittagLefflerH1 (X := X) B)) (hφ : φ ≠ 0)
+    (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
+    {A : Divisor X} (h : MulLevelLE ψ A B) :
+    φ.comp (tailMulH1 ψ h) ≠ 0 := by
+  intro h0
+  apply hφ
+  refine LinearMap.ext fun ξ => ?_
+  obtain ⟨η, rfl⟩ := tailMulH1_surjective ψ hψ h ξ
+  simpa using LinearMap.ext_iff.mp h0 η
+
 end Jacobians.LaurentTail
