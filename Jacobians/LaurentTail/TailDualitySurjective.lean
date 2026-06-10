@@ -328,4 +328,54 @@ theorem omegaTailResidue_tailMul (ω₀ : HolomorphicOneForms X)
       * (ψ.toFun ((chartAt (H := ℂ) p).symm z) * h.toFun ((chartAt (H := ℂ) p).symm z)))
   ring
 
+/-! ### §4 Miranda Lemma 3.6: the order downgrade -/
+
+/-- **Miranda Lemma 3.6.**  If the residue functional of `h·ω₀` (honestly defined at a fine
+level `D'`) vanishes on every `D'`-tail killed by the `D`-truncation, then `h·ω₀` satisfies the
+coarser bound `D` — else the single-monomial witness `z^{−1−o}·p` at a violating point is killed
+by the truncation yet pairs to the nonzero leading coefficient. -/
+theorem omegaOrderBounded_of_vanishing (ω₀ : HolomorphicOneForms X)
+    (h : MeromorphicFunction X) {D' D : Divisor X}
+    (hord : OmegaOrderBounded ω₀ h D')
+    (hvan : ∀ Z : TailSpace X, Z ∈ tailSubspace (X := X) D' →
+      truncateRaw (X := X) D Z = 0 → omegaTailResidue ω₀ h Z = 0) :
+    OmegaOrderBounded ω₀ h D := by
+  intro p
+  by_contra hcon
+  rw [not_le] at hcon
+  have hne : meromorphicOrderAt (omegaCoeffFun ω₀ h p) ((chartAt (H := ℂ) p) p) ≠ ⊤ :=
+    ne_top_of_lt hcon
+  obtain ⟨o, ho⟩ := WithTop.ne_top_iff_exists.mp hne
+  have hoD : o < D p := by
+    rw [← ho] at hcon
+    exact_mod_cast hcon
+  have hoD' : D' p ≤ o := by
+    have := hord p
+    rw [← ho] at this
+    exact_mod_cast this
+  -- the witness tail
+  have hmem : Finsupp.single ((p, -1 - o) : X × ℤ) (1 : ℂ) ∈ tailSubspace (X := X) D' := by
+    rw [mem_tailSubspace_iff]
+    intro q hq
+    rcases eq_or_ne q (p, -1 - o) with rfl | hne'
+    · exact absurd (by omega : (-1 - o : ℤ) < -(D' p)) (by simpa using hq)
+    · exact Finsupp.single_eq_of_ne hne'
+  have hkill : truncateRaw (X := X) D (Finsupp.single ((p, -1 - o) : X × ℤ) (1 : ℂ)) = 0 := by
+    ext q
+    rw [truncateRaw_apply, Finsupp.coe_zero, Pi.zero_apply]
+    split_ifs with hq
+    · rcases eq_or_ne q (p, -1 - o) with rfl | hne'
+      · exact absurd hq (by simp only [not_lt]; omega)
+      · exact Finsupp.single_eq_of_ne hne'
+    · rfl
+  have hval : omegaTailResidue ω₀ h (Finsupp.single ((p, -1 - o) : X × ℤ) (1 : ℂ))
+      = laurentCoeff (omegaCoeffFun ω₀ h p) ((chartAt (H := ℂ) p) p) o := by
+    rw [omegaTailResidue_apply, Finsupp.support_single_ne_zero _ one_ne_zero,
+      Finset.sum_singleton, Finsupp.single_eq_same, one_mul, omegaTailWeight]
+    congr 1
+    omega
+  have hne0 : laurentCoeff (omegaCoeffFun ω₀ h p) ((chartAt (H := ℂ) p) p) o ≠ 0 :=
+    laurentCoeff_order_ne_zero (meromorphicAt_omegaCoeffFun ω₀ h p) ho.symm
+  exact hne0 (hval ▸ hvan _ hmem hkill)
+
 end Jacobians.LaurentTail
