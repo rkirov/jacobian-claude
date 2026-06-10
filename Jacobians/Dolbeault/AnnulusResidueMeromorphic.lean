@@ -48,24 +48,24 @@ open FormTracePrincipalPart
 
 /-! ### §A1 — the radial cutoff is globally `C¹`, and basic annulus geometry -/
 
-/-- The shifted squared modulus `w ↦ normSq (w − c)` is `C¹` (a real polynomial in `re`/`im`). -/
+/-- The shifted squared modulus `w ↦ normSq (w − c)` is `C^∞` (a real polynomial in `re`/`im`). -/
 theorem contDiff_normSq_sub (c : ℂ) :
-    ContDiff ℝ 1 (fun w : ℂ => Complex.normSq (w - c)) := by
+    ContDiff ℝ (⊤ : ℕ∞) (fun w : ℂ => Complex.normSq (w - c)) := by
   have heq : (fun w : ℂ => Complex.normSq (w - c))
       = fun w : ℂ => (w - c).re * (w - c).re + (w - c).im * (w - c).im := by
     funext w
     simp [Complex.normSq_apply]
   rw [heq]
-  have hre : ContDiff ℝ 1 (fun w : ℂ => (w - c).re) :=
+  have hre : ContDiff ℝ (⊤ : ℕ∞) (fun w : ℂ => (w - c).re) :=
     (Complex.reCLM.contDiff).comp (contDiff_id.sub contDiff_const)
-  have him : ContDiff ℝ 1 (fun w : ℂ => (w - c).im) :=
+  have him : ContDiff ℝ (⊤ : ℕ∞) (fun w : ℂ => (w - c).im) :=
     (Complex.imCLM.contDiff).comp (contDiff_id.sub contDiff_const)
   exact (hre.mul hre).add (him.mul him)
 
 /-- The complexified radial cutoff `χ = η(normSq(·−c))` is globally `C¹`. -/
 theorem contDiff_radialCutoff {η : ℝ → ℝ} (hη : ContDiff ℝ 1 η) (c : ℂ) :
     ContDiff ℝ 1 (fun w : ℂ => (η (Complex.normSq (w - c)) : ℂ)) :=
-  Complex.ofRealCLM.contDiff.comp (hη.comp (contDiff_normSq_sub c))
+  Complex.ofRealCLM.contDiff.comp (hη.comp ((contDiff_normSq_sub c).of_le (by simp)))
 
 /-- `normSq (z − c) ≤ s₁ < r²` puts `z` in the metric ball `ball c r`. -/
 theorem mem_ball_of_normSq_le {c z : ℂ} {s₁ r : ℝ} (hr : 0 < r) (hs₁r : s₁ < r ^ 2)
