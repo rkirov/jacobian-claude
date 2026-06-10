@@ -27,6 +27,7 @@ import Jacobians.ProperMapDegreeSheets
 import Jacobians.Dolbeault.DolbeaultLadder
 import Jacobians.Dolbeault.LerayCoverExists
 import Jacobians.Dolbeault.SkyscraperProductWitness
+import Jacobians.LaurentTail.RiemannRochUnconditional
 
 -- Many declarations here are purely algebraic (the ℂ-module on `MeromorphicFunction`) and use
 -- only `[ChartedSpace ℂ X]`, not the full compact-manifold hypotheses carried by the consumers.
@@ -43,30 +44,24 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-- **Riemann–Roch** (Forster Thm 16.9, Serre-dual form): a canonical divisor `K` with
 `l(D) − l(K−D) = deg D + 1 − g` for every `D`.
 
-**Now CONNECTED to its proof** (it was previously a standalone unproved obligation duplicating, but
-disconnected from, the ladder that proves it — the `CechSection → RiemannRoch` import cycle, broken
-by extracting `LinearSystem`). It is the PROVEN ladder composition
-`DolbeaultLadder.riemannRoch_equality_of_ladder`
-(cohomological RR + the `h⁰=l` bridge + Serre at `0`/general), instantiated at a Leray cover supplied
-by `LerayCoverExists.exists_lerayCover`. So discharging this is now exactly: the ladder leaves
-(`arithmeticGenus_eq_genus`, `serre_h1_eq`, `cohomological_riemannRoch`/`exists_skyscraperLES`,
-`h0Dim_eq_lDim`/`cechRestrictL_surjective`, finiteness) **plus** the one good-cover geometric input
-`hOverlaps` below — no separate opaque RR obligation.
+**PROVEN, unconditionally and axiom-clean**, via the **Miranda Ch. VI Laurent-tail route**
+(`LaurentTail.exists_riemannRoch_divisor_unconditional`): RR-I on the Mittag-Leffler tail spaces
+(`riemannRoch_tailForm`), Serre duality for the tail `H¹` in the meromorphic pair frame
+`ω = h·dg₀` (`h1TailDim_eq_lDim_pairCanonical_sub`, every genus — the descent input is the
+genus-free planar-Stokes residue theorem `residueSum_pairForm_mul_eq_zero_unconditional`), and
+`l(K) = genus` from the §17.4 canonical-form isomorphism (`hKgenus_unconditional`), with
+`K = div (dg₀)` for the nonconstant meromorphic `g₀` of `exists_nonconstant_meromorphic`.
 
-The Leray cover is supplied **UNCONDITIONALLY** by `exists_lerayCover` (STEP 2a, done): `IsLeray` was
-weakened to its first conjunct alone (acyclic SETS), which for `H¹` is all Cartan's comparison
-`0 → Ȟ¹(𝔘,𝒪) → H¹(X,𝒪) → Ȟ⁰(𝔘,ℋ¹)` needs (overlap acyclicity is `H²`+ only; `GoodCover` proved the
-conjunct unused). So there is NO good-cover `hOverlaps` gap; the only sorries beneath this are now the
-genuine analytic ladder leaves. -/
+(The old Čech-ladder route through `riemannRoch_equality_of_ladder` — cohomological RR +
+`h⁰=l` + Serre at `0`/general on a realizable Leray cover — is SUPERSEDED: its remaining leaf
+`exists_serreDualityData` was never discharged, while the Čech tower below it — finiteness,
+skyscraper LES, the Riemann inequality feeding `exists_nonconstant_meromorphic` — remains
+load-bearing for the tail route's pole-budget bound.) -/
 theorem exists_riemannRoch_divisor :
     ∃ K : Divisor X, ∀ D : Divisor X,
       (lDim (X := X) D : ℤ) - (lDim (X := X) (K - D) : ℤ)
-        = Divisor.deg X D + 1 - (genus X : ℤ) := by
-  -- A *realizable* Leray cover exists: the canonical chart-disk cover is both Leray (acyclic sets)
-  -- and locally realizable (the product witness, `locallyRealizable_chartDiskCover`).
-  obtain ⟨𝔘, hL, hR⟩ := Dolbeault.exists_realizableLerayCover (X := X)
-  -- The RR equality on that cover is the PROVEN ladder composition (mod the ladder's named leaves).
-  exact Dolbeault.riemannRoch_equality_of_ladder 𝔘 hL hR
+        = Divisor.deg X D + 1 - (genus X : ℤ) :=
+  LaurentTail.exists_riemannRoch_divisor_unconditional
 
 /-! `MeromorphicFunction.deg_div` and `lDim_eq_zero_of_deg_neg` (Parts 2–3 of this interface)
 now live in `Jacobians/LinearSystemDegree.lean` (imported above, same `Jacobians` namespace), so
