@@ -26,6 +26,7 @@ import Jacobians.ManifoldIFT
 import Jacobians.PeriodLattice
 import Jacobians.TracePullback
 import Jacobians.Abel
+import Jacobians.AbelChains
 import Jacobians.Degree
 import Jacobians.OfCurveAnalyticitySkeleton
 import Jacobians.ULiftManifold
