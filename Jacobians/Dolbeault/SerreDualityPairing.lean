@@ -39,14 +39,13 @@ canonical `K`, the residue pairing, its injectivity and surjectivity, and the fi
 `finrank_le_of_injective_to_dual` directly; the `≥` half uses the bundled surjectivity (whose eventual
 construction runs `serre_surjectivity_dim_core` on the §17.9 dimension count).
 
-## The remaining work (isolated to one named input)
+## Status: SUPERSEDED as a route to Riemann–Roch
 
-`exists_serreDualityData` — constructing the §17 instantiation for a general `X`: the residue functional
-`Res : H¹(X,Ω) → ℂ` (well-defined via the **1-form residue theorem** `∑Res = 0`, Miranda §VIII.3
-trace-to-ℙ¹), the pairing, its injectivity (the §17.6 residue-1 witness `exists_formFnResidue_eq_one`),
-and its surjectivity (the §17.9 count, gated on cohomological RR / finiteness).
-This single input **replaces both** former ladder leaves
-`arithmeticGenus_eq_genus` and `serre_h1_eq`.
+The former isolated input `exists_serreDualityData` (the §17 instantiation for a general `X`) was
+PRUNED: `Jacobians.exists_riemannRoch_divisor` is now proven unconditionally via the Miranda
+Laurent-tail route (`LaurentTail.exists_riemannRoch_divisor_unconditional`), which never needs the
+Čech-level pairing.  Everything in this file is sorry-free and kept (the `SerreDualityData` bundle
+is still the target of the realization constructors).
 
 References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.4–17.11; Miranda, *Algebraic Curves and
 Riemann Surfaces*, §VIII.3.
@@ -117,26 +116,15 @@ theorem serreH1 (data : SerreDualityData 𝔘) :
 
 end SerreDualityData
 
-/-- **[ISOLATED INPUT — the §17 instantiation].** A compact Riemann surface admits the Forster-§17
-Serre-duality data: a canonical divisor and the perfect residue pairing. This single named input
-replaces both ladder leaves `arithmeticGenus_eq_genus` and `serre_h1_eq`. Its construction (the residue
-functional via the 1-form residue theorem, the pairing, 17.6 injectivity, 17.9 surjectivity) is the
-genuine remaining §17 analytic work — the one remaining gap. -/
-theorem exists_serreDualityData (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) :
-    Nonempty (SerreDualityData 𝔘) :=
-  sorry
-
-/-- **`arithmeticGenus_eq_genus` via the direct §17 route** (the plan of record). -/
-theorem arithmeticGenus_eq_genus_serre (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) :
-    𝔘.h1Dim 0 = genus X := by
-  obtain ⟨data⟩ := exists_serreDualityData 𝔘 hL
-  exact data.arithmeticGenus
-
-/-- **`serre_h1_eq` via the direct §17 route** (the plan of record). -/
-theorem serre_h1_eq_serre (𝔘 : FiniteCover X) (hL : 𝔘.IsLeray) :
-    ∃ K : Divisor X, ∀ D : Divisor X, 𝔘.h1Dim D = lDim (X := X) (K - D) := by
-  obtain ⟨data⟩ := exists_serreDualityData 𝔘 hL
-  exact data.serreH1
+/-! The former isolated input `exists_serreDualityData (𝔘) (hL) : Nonempty (SerreDualityData 𝔘)`
+(the Čech-level §17 instantiation, the last `sorry` on the old ladder route) and its two wrappers
+`arithmeticGenus_eq_genus_serre` / `serre_h1_eq_serre` were **PRUNED**: Riemann–Roch
+(`Jacobians.exists_riemannRoch_divisor`) is now proven unconditionally via the Miranda
+Laurent-tail route (`LaurentTail.exists_riemannRoch_divisor_unconditional`), which runs Serre
+duality on the Mittag-Leffler tail `H¹` instead of the Čech `H¹` — no `SerreDualityData`
+instantiation needed.  The `SerreDualityData` structure and its derived theorems above are kept:
+they are sorry-free and the realization constructors (`toSerreDualityData` in
+`SerreResiduePairing` / `GlobalResidueConstruct` / `MeromorphicCousinSolve`) still target them. -/
 
 end Jacobians.Dolbeault
 
