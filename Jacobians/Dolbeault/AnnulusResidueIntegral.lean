@@ -37,6 +37,11 @@ import Jacobians.Dolbeault.PlanarCompactSupportStokes
 import Jacobians.Dolbeault.Residue
 import Jacobians.Dolbeault.FormTracePrincipalPart
 
+-- The ℂ-as-ℝ-module diamond fix used across the Dolbeault tree (e.g. `DbarOpenDisk`): without it
+-- `DifferentiableAt.restrictScalars ℝ` fails to synthesize `IsScalarTower ℝ ℂ ℂ` here.
+set_option backward.isDefEq.respectTransparency false
+set_option linter.unusedSectionVars false
+
 open Complex Metric MeasureTheory Filter Set Topology
 open scoped Real
 
@@ -303,5 +308,205 @@ theorem resAt_const_mul_zpow_neg (b c : ℂ) (k : ℕ) :
     rw [resAt_zpow_neg_one, if_pos rfl, smul_eq_mul]
   · rw [resAt_zpow_neg_of_ne hk, if_neg hk]
     simp
+
+/-! ### §5 — the single-term integral `∫ ∂̄(χ·(·−c)^{−k}) = −π·δ_{k,1}` (Forster (10.21))
+
+With the radial cutoff `χ = η(normSq(·−c))`, off the centre the integrand is the closed form
+`η'(normSq(z−c))·(z−c)^{1−k}` (Leibniz + holomorphy of the power).  In polar coordinates it
+separates: the angular factor `∮ e^{i(1−k)θ}dθ` vanishes unless `k = 1` (where it is `2π`),
+and the radial factor is the FTC integral `∫_0^∞ r·η'(r²) dr = −½`.  No integrability of the
+2-dimensional integrand is ever needed: the polar change of variables and the product-measure
+splitting in Mathlib are unconditional. -/
+
+/-- Pointwise closed form off the centre:
+`∂̄(η(normSq(·−c))·(·−c)^n)(z) = η'(normSq(z−c))·(z−c)^{n+1}` for `z ≠ c`. -/
+theorem dbar_radialProfile_mul_zpow {η : ℝ → ℝ} (hη : ContDiff ℝ 1 η) (c : ℂ) (n : ℤ)
+    {z : ℂ} (hz : z ≠ c) :
+    DbarDisk.dbar (fun w => (η (Complex.normSq (w - c)) : ℂ) * (w - c) ^ n) z
+      = Complex.ofReal (deriv η (Complex.normSq (z - c))) * (z - c) ^ (n + 1) := by
+  have hzc : z - c ≠ 0 := sub_ne_zero_of_ne hz
+  have hu : DifferentiableAt ℂ (fun w => (w - c) ^ n) z := differentiableAt_zpow_sub c n hz
+  rw [DbarDisk.dbar_fun_mul (differentiableAt_comp_normSq hη c z) (hu.restrictScalars ℝ),
+    DbarDisk.dbar_eq_zero_of_differentiableAt hu, mul_zero, zero_add,
+    dbar_comp_normSq hη c z, zpow_add₀ hzc n 1, zpow_one]
+  ring
+
+-- restore default transparency here: under `respectTransparency false` the `HasDerivAt.comp`
+-- unifier solves `?h x =?= x ^ 2` through `npowRec` junk instead of `fun r => r ^ 2`
+set_option backward.isDefEq.respectTransparency true in
+/-- The radial FTC integral: `∫_0^∞ r·η'(r²) dr = ½(η(∞) − η(0)) = −½` for a profile going
+`1 → 0`.  (`η'` has compact support, so the improper integral is honest.) -/
+theorem integral_rmul_deriv_profile {η : ℝ → ℝ} {s₀ s₁ : ℝ} (hη : ContDiff ℝ 1 η)
+    (hs₀ : 0 < s₀) (hs : s₀ < s₁) (h1 : ∀ s ≤ s₀, η s = 1) (h0 : ∀ s, s₁ ≤ s → η s = 0) :
+    ∫ r in Ioi (0 : ℝ), r * deriv η (r ^ 2) = -(1 / 2) := by
+  have hderiv : ∀ x ∈ Ioi (0 : ℝ),
+      HasDerivAt (fun r => η (r ^ 2) / 2) (x * deriv η (x ^ 2)) x := by
+    intro x _
+    have hsq : HasDerivAt (fun r : ℝ => r ^ 2) (2 * x) x := by
+      simpa using hasDerivAt_pow 2 x
+    have hd : HasDerivAt η (deriv η (x ^ 2)) (x ^ 2) :=
+      ((hη.differentiable one_ne_zero) _).hasDerivAt
+    -- pin the inner function by name: positional elaboration commits a garbage `?h x =?= x ^ 2`
+    -- higher-order solution before the expected type is consulted
+    have hcomp : HasDerivAt (η ∘ fun r : ℝ => r ^ 2) (deriv η (x ^ 2) * (2 * x)) x :=
+      HasDerivAt.comp (h := fun r : ℝ => r ^ 2) x hd hsq
+    have h3 := hcomp.div_const 2
+    convert h3 using 1
+    ring
+  have hcont : ContinuousWithinAt (fun r : ℝ => η (r ^ 2) / 2) (Ici 0) 0 :=
+    ((hη.continuous.comp (continuous_pow 2)).div_const 2).continuousWithinAt
+  have hcont' : Continuous fun r : ℝ => r * deriv η (r ^ 2) :=
+    continuous_id.mul ((hη.continuous_deriv le_rfl).comp (continuous_pow 2))
+  have hsupp : HasCompactSupport fun r : ℝ => r * deriv η (r ^ 2) := by
+    refine HasCompactSupport.intro (isCompact_Icc (a := -(max 1 s₁)) (b := max 1 s₁)) ?_
+    intro r hr
+    have habs : max 1 s₁ < |r| := by
+      by_contra h
+      push_neg at h
+      exact hr (by simpa [Set.mem_Icc] using abs_le.mp h)
+    have hsq : s₁ < r ^ 2 := by
+      nlinarith [sq_abs r, le_max_left (1 : ℝ) s₁, le_max_right (1 : ℝ) s₁, abs_nonneg r]
+    rw [deriv_profile_eq_zero_right h0 hsq, mul_zero]
+  have hint : IntegrableOn (fun r : ℝ => r * deriv η (r ^ 2)) (Ioi 0) :=
+    (hcont'.integrable_of_hasCompactSupport hsupp).integrableOn
+  have htends : Tendsto (fun r : ℝ => η (r ^ 2) / 2) atTop (𝓝 0) := by
+    have hev : (fun _ : ℝ => (0 : ℝ)) =ᶠ[atTop] fun r => η (r ^ 2) / 2 := by
+      filter_upwards [eventually_ge_atTop (max 1 s₁)] with r hr
+      have ha : (1 : ℝ) ≤ r := (le_max_left _ _).trans hr
+      have hb : s₁ ≤ r := (le_max_right _ _).trans hr
+      rw [h0 _ (by nlinarith), zero_div]
+    exact Tendsto.congr' hev tendsto_const_nhds
+  rw [MeasureTheory.integral_Ioi_of_hasDerivAt_of_tendsto hcont hderiv hint htends]
+  rw [show η (0 ^ 2) = 1 from h1 _ (by simpa using hs₀.le)]
+  norm_num
+
+/-- The angular integral `∫_{−π}^{π} (e^{iθ})^m dθ` vanishes for `m ≠ 0`: FTC with
+antiderivative `e^{imθ}/(im)`, and `e^{±imπ} = (−1)^m` agree. -/
+theorem integral_Ioo_exp_mul_I_zpow {m : ℤ} (hm : m ≠ 0) :
+    ∫ θ in Ioo (-π) π, Complex.exp (θ * Complex.I) ^ m = 0 := by
+  have hC : ((m : ℂ) * Complex.I) ≠ 0 :=
+    mul_ne_zero (Int.cast_ne_zero.mpr hm) Complex.I_ne_zero
+  rw [← MeasureTheory.integral_Ioc_eq_integral_Ioo,
+    ← intervalIntegral.integral_of_le (by linarith [Real.pi_pos] : -π ≤ π)]
+  have hcongr : EqOn (fun θ : ℝ => Complex.exp (θ * Complex.I) ^ m)
+      (fun θ : ℝ => Complex.exp (((m : ℂ) * Complex.I) * θ)) (Set.uIcc (-π) π) := by
+    intro θ _
+    simp only
+    rw [← Complex.exp_int_mul]
+    congr 1
+    push_cast
+    ring
+  rw [intervalIntegral.integral_congr hcongr, integral_exp_mul_complex hC]
+  have h1 : Complex.exp (((m : ℂ) * Complex.I) * (π : ℝ)) = (-1 : ℂ) ^ m := by
+    rw [show ((m : ℂ) * Complex.I) * (π : ℝ) = (m : ℂ) * ((π : ℝ) * Complex.I) by ring,
+      Complex.exp_int_mul, Complex.exp_pi_mul_I]
+  have h2 : Complex.exp (((m : ℂ) * Complex.I) * ((-π : ℝ) : ℂ)) = ((-1 : ℂ) ^ m)⁻¹ := by
+    rw [show ((m : ℂ) * Complex.I) * ((-π : ℝ) : ℂ) = ((-m : ℤ) : ℂ) * ((π : ℝ) * Complex.I) by
+      push_cast; ring, Complex.exp_int_mul, Complex.exp_pi_mul_I, zpow_neg]
+  have h3 : ((-1 : ℂ) ^ m)⁻¹ = (-1 : ℂ) ^ m := by
+    refine inv_eq_of_mul_eq_one_right ?_
+    rw [← zpow_add₀ (by norm_num : (-1 : ℂ) ≠ 0)]
+    exact Even.neg_one_zpow ⟨m, rfl⟩
+  rw [h1, h2, h3, sub_self, zero_div]
+
+/-- The angular integral for `m = 0`: `∫_{−π}^{π} 1 dθ = 2π`. -/
+theorem integral_Ioo_one_complex :
+    ∫ _ in Ioo (-π) π, (1 : ℂ) = ((2 * π : ℝ) : ℂ) := by
+  rw [MeasureTheory.setIntegral_const, Complex.real_smul, mul_one]
+  norm_cast
+  rw [measureReal_def, Real.volume_Ioo,
+    ENNReal.toReal_ofReal (by linarith [Real.pi_pos] : (0 : ℝ) ≤ π - -π)]
+  ring
+
+set_option maxHeartbeats 800000 in
+/-- **The Forster (10.21) single-term computation.**  For the radial cutoff
+`χ = η(normSq(·−c))` (profile `1 → 0` between `s₀` and `s₁`),
+
+  `∫_ℂ ∂̄(χ·(·−c)^{−k}) = −π·δ_{k,1}`.
+
+Off `c` the integrand is `η'(normSq(z−c))·(z−c)^{1−k}` (supported in the closed annulus
+`s₀ ≤ normSq(z−c) ≤ s₁`); in polar coordinates it separates into the radial FTC factor and
+the angular character integral. -/
+theorem integral_dbar_radialCutoff_zpow (c : ℂ) {η : ℝ → ℝ} {s₀ s₁ : ℝ} (hη : ContDiff ℝ 1 η)
+    (hs₀ : 0 < s₀) (hs : s₀ < s₁) (h1 : ∀ s ≤ s₀, η s = 1) (h0 : ∀ s, s₁ ≤ s → η s = 0)
+    (k : ℕ) :
+    ∫ z : ℂ, DbarDisk.dbar
+        (fun w => (η (Complex.normSq (w - c)) : ℂ) * (w - c) ^ (-(k : ℤ))) z
+      = if k = 1 then -(π : ℂ) else 0 := by
+  -- (1) replace by the closed form (they agree off the null set `{c}`)
+  have h_ae : (fun z => DbarDisk.dbar
+        (fun w => (η (Complex.normSq (w - c)) : ℂ) * (w - c) ^ (-(k : ℤ))) z)
+      =ᵐ[volume] fun z =>
+        Complex.ofReal (deriv η (Complex.normSq (z - c))) * (z - c) ^ (-(k : ℤ) + 1) := by
+    filter_upwards [compl_mem_ae_iff.mpr (measure_singleton c)] with z hz
+    exact dbar_radialProfile_mul_zpow hη c (-(k : ℤ)) hz
+  rw [integral_congr_ae h_ae]
+  -- (2) recentre at the origin (translation invariance of planar Lebesgue measure)
+  have htrans : (∫ z : ℂ,
+        Complex.ofReal (deriv η (Complex.normSq (z - c))) * (z - c) ^ (-(k : ℤ) + 1))
+      = ∫ z : ℂ, Complex.ofReal (deriv η (Complex.normSq z)) * z ^ (-(k : ℤ) + 1) := by
+    rw [← MeasureTheory.integral_add_left_eq_self
+      (fun z : ℂ => Complex.ofReal (deriv η (Complex.normSq z)) * z ^ (-(k : ℤ) + 1)) (-c)]
+    congr 1
+    funext z
+    rw [show -c + z = z - c from by ring]
+  rw [htrans]
+  -- (3) polar coordinates (unconditional change of variables)
+  rw [← Complex.integral_comp_polarCoord_symm]
+  rw [polarCoord_target]
+  -- (4) on the target the integrand separates into radial × angular
+  have hprod := MeasureTheory.setIntegral_prod_mul (μ := (volume : Measure ℝ))
+    (ν := (volume : Measure ℝ))
+    (fun r : ℝ => (r : ℂ) * Complex.ofReal (deriv η (r ^ 2)) * (r : ℂ) ^ (-(k : ℤ) + 1))
+    (fun θ : ℝ => Complex.exp (θ * Complex.I) ^ (-(k : ℤ) + 1))
+    (Ioi 0) (Ioo (-π) π)
+  rw [← Measure.volume_eq_prod] at hprod
+  have hsep : EqOn
+      (fun p : ℝ × ℝ => p.1 • (Complex.ofReal
+          (deriv η (Complex.normSq (Complex.polarCoord.symm p)))
+        * (Complex.polarCoord.symm p) ^ (-(k : ℤ) + 1)))
+      (fun p : ℝ × ℝ =>
+        (fun r : ℝ => (r : ℂ) * Complex.ofReal (deriv η (r ^ 2)) * (r : ℂ) ^ (-(k : ℤ) + 1)) p.1
+        * (fun θ : ℝ => Complex.exp (θ * Complex.I) ^ (-(k : ℤ) + 1)) p.2)
+      (Ioi (0 : ℝ) ×ˢ Ioo (-π) π) := by
+    rintro ⟨r, θ⟩ ⟨hr, hθ⟩
+    simp only [Set.mem_Ioi] at hr
+    have hsymm : Complex.polarCoord.symm (r, θ) = (r : ℂ) * Complex.exp (θ * Complex.I) := by
+      rw [Complex.polarCoord_symm_apply, Complex.exp_mul_I, Complex.ofReal_cos,
+        Complex.ofReal_sin]
+    have hnsq1 : Complex.normSq (Complex.exp ((θ : ℂ) * Complex.I)) = 1 := by
+      rw [Complex.exp_mul_I, ← Complex.ofReal_cos, ← Complex.ofReal_sin]
+      simp only [Complex.normSq_apply, Complex.add_re, Complex.ofReal_re, Complex.mul_re,
+        Complex.I_re, Complex.I_im, Complex.ofReal_im, Complex.add_im, Complex.mul_im]
+      ring_nf
+      linear_combination Real.sin_sq_add_cos_sq θ
+    -- state the `normSq` value in the post-`hsymm` product form (rewrite order matters)
+    have hnormSq : Complex.normSq ((r : ℂ) * Complex.exp ((θ : ℂ) * Complex.I)) = r ^ 2 := by
+      rw [Complex.normSq_mul, Complex.normSq_ofReal, hnsq1]
+      ring
+    simp only
+    rw [hsymm, hnormSq, mul_zpow, Complex.real_smul]
+    ring
+  rw [setIntegral_congr_fun (measurableSet_Ioi.prod measurableSet_Ioo) hsep, hprod]
+  -- (5) evaluate
+  by_cases hk : k = 1
+  · subst hk
+    have hexp : (-(1 : ℕ) : ℤ) + 1 = 0 := by norm_num
+    simp only [hexp, zpow_zero, mul_one, if_pos]
+    have hrad : (∫ r in Ioi (0 : ℝ), (r : ℂ) * Complex.ofReal (deriv η (r ^ 2)))
+        = ((-(1 / 2) : ℝ) : ℂ) := by
+      have heq : ∀ r : ℝ, (r : ℂ) * Complex.ofReal (deriv η (r ^ 2))
+          = ((r * deriv η (r ^ 2) : ℝ) : ℂ) := fun r => by push_cast; ring
+      simp_rw [heq]
+      -- `exact` tolerates the `RCLike.ofReal`-vs-`Complex.ofReal` coercion heads where `rw` fails
+      calc ∫ r in Ioi (0 : ℝ), ((r * deriv η (r ^ 2) : ℝ) : ℂ)
+          = ((∫ r in Ioi (0 : ℝ), r * deriv η (r ^ 2) : ℝ) : ℂ) := integral_ofReal
+        _ = ((-(1 / 2) : ℝ) : ℂ) := by
+            rw [integral_rmul_deriv_profile hη hs₀ hs h1 h0]
+    rw [hrad, integral_Ioo_one_complex]
+    push_cast
+    ring
+  · have hm : (-(k : ℤ) + 1) ≠ 0 := by omega
+    rw [integral_Ioo_exp_mul_I_zpow hm, mul_zero, if_neg hk]
 
 end Jacobians.Dolbeault
