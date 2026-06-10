@@ -247,4 +247,123 @@ theorem exists_primitiveChain (η : HolomorphicOneForms X) {γ : ℝ → X}
   rw [hc] at this
   exact this
 
+/-! ### Chain-independence of the value -/
+
+/-- **The chain value is chain-independent** (uniqueness of the discrete continuation,
+Forster §10.4): the difference of the two capped partial values is locally constant on `[0,1]`
+(one-sided block arguments + the step-0 rigidity near each path point), hence constant on the
+preconnected interval; it vanishes at `0` and reads `value − value` at `1`. -/
+theorem PrimitiveChain.value_eq_of_chains {η : HolomorphicOneForms X} {γ : ℝ → X}
+    (hγ : ContinuousOn γ (Icc 0 1)) (C C' : PrimitiveChain η γ) : C.value = C'.value := by
+  classical
+  set d : ℝ → ℂ := fun s => C.partialValue s - C'.partialValue s with hd
+  -- the common one-sided step: fixed blocks `k`, `k'` containing `s` and (eventually) `s'`
+  have hstep : ∀ {s : ℝ}, s ∈ Icc (0:ℝ) 1 →
+      ∀ {k k' : ℕ}, k < C.n → k' < C'.n →
+      s ∈ Icc (C.t k) (C.t (k + 1)) → s ∈ Icc (C'.t k') (C'.t (k' + 1)) →
+      ∀ s' : ℝ, s' ∈ Icc (C.t k) (C.t (k + 1)) → s' ∈ Icc (C'.t k') (C'.t (k' + 1)) →
+      (C.F k (γ s') - C'.F k' (γ s')) = (C.F k (γ s) - C'.F k' (γ s)) → d s' = d s := by
+    intro s _ k k' hkn hk'n hsb hsb' s' hs'b hs'b' hWconst
+    have e1 := C.partialValue_sub k hkn hsb hs'b
+    have e2 := C'.partialValue_sub k' hk'n hsb' hs'b'
+    have : d s' - d s = (C.F k (γ s') - C'.F k' (γ s')) - (C.F k (γ s) - C'.F k' (γ s)) := by
+      rw [hd]
+      simp only
+      rw [show C.partialValue s' - C'.partialValue s' - (C.partialValue s - C'.partialValue s)
+          = (C.partialValue s' - C.partialValue s) - (C'.partialValue s' - C'.partialValue s)
+        from by ring, e1, e2]
+      ring
+    rw [hWconst, sub_self] at this
+    exact sub_eq_zero.mp this
+  -- local constancy of `d` within the interval
+  have hloc : ∀ s ∈ Icc (0:ℝ) 1, ∀ᶠ s' in 𝓝[Icc (0:ℝ) 1] s, d s' = d s := by
+    intro s hs
+    have hsplit : Icc (0:ℝ) 1 = Icc 0 s ∪ Icc s 1 := (Icc_union_Icc_eq_Icc hs.1 hs.2).symm
+    rw [hsplit, nhdsWithin_union, eventually_sup]
+    constructor
+    · -- LEFT: `s' ≤ s`
+      rcases eq_or_lt_of_le hs.1 with h0 | h0
+      · -- `s = 0`: the left piece is `{0}`
+        filter_upwards [self_mem_nhdsWithin] with s' hs'
+        have hs'0 : s' = s := le_antisymm hs'.2 (h0 ▸ hs'.1)
+        rw [hs'0]
+      · obtain ⟨k, hkn, hk1, hk2⟩ := C.exists_block_left h0 hs.2
+        obtain ⟨k', hk'n, hk'1, hk'2⟩ := C'.exists_block_left h0 hs.2
+        have hsb : s ∈ Icc (C.t k) (C.t (k + 1)) := ⟨hk1.le, hk2⟩
+        have hsb' : s ∈ Icc (C'.t k') (C'.t (k' + 1)) := ⟨hk'1.le, hk'2⟩
+        have hγs : γ s ∈ C.U k ∩ C'.U k' :=
+          ⟨C.covers k s hsb, C'.covers k' s hsb'⟩
+        obtain ⟨W, hWo, hWpc, hγsW, hWsub⟩ := exists_isPathConnected_open_mem_nhds
+          (((C.isOpen k).inter (C'.isOpen k')).mem_nhds hγs)
+        have hconst : ∀ a ∈ W, C.F k a - C'.F k' a = C.F k (γ s) - C'.F k' (γ s) := by
+          intro a ha
+          exact isLocalPrimitiveOn_sub_const hWo (IsPathConnected.isConnected hWpc).isPreconnected
+            ((C.prim k).mono fun w hw => (hWsub hw).1)
+            ((C'.prim k').mono fun w hw => (hWsub hw).2) ha hγsW
+        have hW' : γ ⁻¹' W ∈ 𝓝[Icc (0:ℝ) 1] s :=
+          (hγ s hs).preimage_mem_nhdsWithin (hWo.mem_nhds hγsW)
+        have hsubl : Icc (0:ℝ) s ⊆ Icc (0:ℝ) 1 := fun u hu => ⟨hu.1, hu.2.trans hs.2⟩
+        have hWl : γ ⁻¹' W ∈ 𝓝[Icc (0:ℝ) s] s := nhdsWithin_mono s hsubl hW'
+        have hgt1 : ∀ᶠ s' in 𝓝[Icc (0:ℝ) s] s, C.t k < s' :=
+          eventually_nhdsWithin_of_eventually_nhds (eventually_gt_nhds hk1)
+        have hgt2 : ∀ᶠ s' in 𝓝[Icc (0:ℝ) s] s, C'.t k' < s' :=
+          eventually_nhdsWithin_of_eventually_nhds (eventually_gt_nhds hk'1)
+        filter_upwards [hWl, hgt1, hgt2, self_mem_nhdsWithin] with s' hWs' h1' h2' hs'mem
+        have hs'b : s' ∈ Icc (C.t k) (C.t (k + 1)) := ⟨h1'.le, hs'mem.2.trans hk2⟩
+        have hs'b' : s' ∈ Icc (C'.t k') (C'.t (k' + 1)) := ⟨h2'.le, hs'mem.2.trans hk'2⟩
+        exact hstep hs hkn hk'n hsb hsb' s' hs'b hs'b' (hconst _ hWs')
+    · -- RIGHT: `s ≤ s'`
+      rcases eq_or_lt_of_le hs.2 with h1 | h1
+      · -- `s = 1`: the right piece is `{1}`
+        filter_upwards [self_mem_nhdsWithin] with s' hs'
+        have hs'1 : s' = s := le_antisymm (h1 ▸ hs'.2) hs'.1
+        rw [hs'1]
+      · obtain ⟨k, hkn, hk1, hk2⟩ := C.exists_block_right hs.1 h1
+        obtain ⟨k', hk'n, hk'1, hk'2⟩ := C'.exists_block_right hs.1 h1
+        have hsb : s ∈ Icc (C.t k) (C.t (k + 1)) := ⟨hk1, hk2.le⟩
+        have hsb' : s ∈ Icc (C'.t k') (C'.t (k' + 1)) := ⟨hk'1, hk'2.le⟩
+        have hγs : γ s ∈ C.U k ∩ C'.U k' :=
+          ⟨C.covers k s hsb, C'.covers k' s hsb'⟩
+        obtain ⟨W, hWo, hWpc, hγsW, hWsub⟩ := exists_isPathConnected_open_mem_nhds
+          (((C.isOpen k).inter (C'.isOpen k')).mem_nhds hγs)
+        have hconst : ∀ a ∈ W, C.F k a - C'.F k' a = C.F k (γ s) - C'.F k' (γ s) := by
+          intro a ha
+          exact isLocalPrimitiveOn_sub_const hWo (IsPathConnected.isConnected hWpc).isPreconnected
+            ((C.prim k).mono fun w hw => (hWsub hw).1)
+            ((C'.prim k').mono fun w hw => (hWsub hw).2) ha hγsW
+        have hW' : γ ⁻¹' W ∈ 𝓝[Icc (0:ℝ) 1] s :=
+          (hγ s hs).preimage_mem_nhdsWithin (hWo.mem_nhds hγsW)
+        have hsubr : Icc s 1 ⊆ Icc (0:ℝ) 1 := fun u hu => ⟨hs.1.trans hu.1, hu.2⟩
+        have hWr : γ ⁻¹' W ∈ 𝓝[Icc s 1] s := nhdsWithin_mono s hsubr hW'
+        have hlt1 : ∀ᶠ s' in 𝓝[Icc s 1] s, s' < C.t (k + 1) :=
+          eventually_nhdsWithin_of_eventually_nhds (eventually_lt_nhds hk2)
+        have hlt2 : ∀ᶠ s' in 𝓝[Icc s 1] s, s' < C'.t (k' + 1) :=
+          eventually_nhdsWithin_of_eventually_nhds (eventually_lt_nhds hk'2)
+        filter_upwards [hWr, hlt1, hlt2, self_mem_nhdsWithin] with s' hWs' h1' h2' hs'mem
+        have hs'b : s' ∈ Icc (C.t k) (C.t (k + 1)) := ⟨hk1.trans hs'mem.1, h1'.le⟩
+        have hs'b' : s' ∈ Icc (C'.t k') (C'.t (k' + 1)) := ⟨hk'1.trans hs'mem.1, h2'.le⟩
+        exact hstep hs hkn hk'n hsb hsb' s' hs'b hs'b' (hconst _ hWs')
+  -- transfer to the subtype interval and conclude by preconnectedness
+  haveI : PreconnectedSpace (Icc (0:ℝ) 1) := Subtype.preconnectedSpace isPreconnected_Icc
+  have hlc : IsLocallyConstant (fun p : Icc (0:ℝ) 1 => d p) := by
+    rw [IsLocallyConstant.iff_eventually_eq]
+    intro p
+    have h := hloc p p.2
+    rw [← map_nhds_subtype_val] at h
+    exact h
+  have h01 : d 0 = d 1 := by
+    have h := hlc.apply_eq_of_preconnectedSpace
+      (⟨0, by norm_num⟩ : Icc (0:ℝ) 1) (⟨1, by norm_num⟩ : Icc (0:ℝ) 1)
+    simpa using h
+  have hz : d 0 = 0 := by
+    rw [hd]
+    simp only
+    rw [C.partialValue_zero, C'.partialValue_zero, sub_self]
+  have ho : d 1 = C.value - C'.value := by
+    rw [hd]
+    simp only
+    rw [C.partialValue_one, C'.partialValue_one]
+  have hfin : C.value - C'.value = 0 := by rw [← ho, ← h01, hz]
+  exact sub_eq_zero.mp hfin
+
 end Jacobians
