@@ -26,7 +26,7 @@ Headlines: `omegaDualMap_surjective` and the dimension identity
 `h1TailDim_eq_lDim_canonical_sub : h¹(D) = l(K − D)`.
 -/
 import Jacobians.LaurentTail.TailDualitySurjective
-import Jacobians.RiemannRoch
+import Jacobians.LinearSystemDegree
 
 open scoped Manifold ContDiff Topology
 open Filter Set Module
