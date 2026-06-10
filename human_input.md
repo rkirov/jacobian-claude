@@ -60,6 +60,7 @@ standing policy (each is now also a persistent memory):
 | 06-04 | **Scope correction (verbatim): "done is everything, can't depend on anything landing in mathlib, we have to build it all."** Plus: connect upstream→downstream, don't isolate downstream kernels |
 | 06-08 | Continue the finiteness node; critique the attack plan; (took the offered textbook PDFs) |
 | 06-09 | "If full RR is needed, prove it — a partial solution is of no interest"; **read the books to find the right path** → narrowed the goal to *just the residue theorem on curves* (closed, axiom-clean); then **clean up for external view** (prune internal docs, delete unused orphans, compact this log) |
+| 06-10 | "Finish RR" → closed unconditionally (Miranda tail route + genus-free residue theorem); agents died on spend limits twice → salvage-and-finish-inline pattern; "focus on finishing A" → monodromy theorem built inline, headline #1 (`genus_eq_zero_iff_homeo`) closed; 4 → 2 sorries |
 
 ---
 *Autonomous sessions — the large majority — are not listed individually; their
