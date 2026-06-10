@@ -15,16 +15,18 @@ is a finite sum of Laurent-coefficient pairings — pure coefficient algebra.  I
 
   `Res_ω(α_D f) = ∑_p Res_p(f·ω) = 0`
 
-by the 1-form residue theorem (`residueSum_pairForm_eq_zero`, genus ≥ 1) — the residue of `f·ω`
-at `p` depends only on `f`'s Laurent tail below `−D(p)`, because the rest of `f` against `ω`
-has order ≥ `−D(p) + D(p) = 0`.  Hence `Res_ω` descends to the Mittag-Leffler obstruction space
-`H¹(D) = 𝒯[D]/im(α_D)` — the functional `tailResidueH1` that feeds the Serre duality pairing.
+by the genus-free 1-form residue theorem (`residueSum_pairForm_mul_eq_zero_unconditional`,
+the planar-Stokes ledger) — the residue of `f·ω` at `p` depends only on `f`'s Laurent tail
+below `−D(p)`, because the rest of `f` against `ω` has order ≥ `−D(p) + D(p) = 0`.  Hence
+`Res_ω` descends to the Mittag-Leffler obstruction space `H¹(D) = 𝒯[D]/im(α_D)` — the
+functional `tailResidueH1` that feeds the Serre duality pairing — in EVERY genus.
 
 The planar core is `resAt_mul_eq_sum_tailPairing`: a *uniform window* form of "the residue of a
 product reads only the tail" (the window may be empty, subsuming the no-pole case).
 -/
 import Jacobians.LaurentTail.TailMap
 import Jacobians.Dolbeault.PairFormResidueTheorem
+import Jacobians.Dolbeault.ResidueTheoremStokes
 import Jacobians.Dolbeault.AnnulusResidueIntegral
 
 open scoped Manifold ContDiff Topology
@@ -266,10 +268,10 @@ theorem resAt_pullback_mul_pairCoeff (D : Divisor X) (g₀ h f : MeromorphicFunc
   rw [tailMap_apply, if_pos (hWlt n hn)]
   rfl
 
-/-- **The vanishing of `Res_ω` on realized tails** (Miranda Ch. VI p. 187, genus ≥ 1): for any
-global meromorphic `f`, `Res_ω(α_D f) = ∑_p Res_p(f·ω) = 0` by the pair-form residue theorem.
-This is exactly what lets the residue map descend to the Mittag-Leffler `H¹(D)`. -/
-theorem tailResidue_tailMap_eq_zero (hgenus : 0 < genus X) {D : Divisor X}
+/-- **The vanishing of `Res_ω` on realized tails** (Miranda Ch. VI p. 187, every genus): for any
+global meromorphic `f`, `Res_ω(α_D f) = ∑_p Res_p(f·ω) = 0` by the genus-free pair-form residue
+theorem.  This is exactly what lets the residue map descend to the Mittag-Leffler `H¹(D)`. -/
+theorem tailResidue_tailMap_eq_zero {D : Divisor X}
     (g₀ h : MeromorphicFunction X) (hord : PairOrderBounded g₀ h D)
     (f : MeromorphicFunction X) :
     tailResidue g₀ h (tailMap D f) = 0 := by
@@ -322,7 +324,7 @@ theorem tailResidue_tailMap_eq_zero (hgenus : 0 < genus X) {D : Divisor X}
     rw [MeromorphicFunction.mul_toFun, Pi.mul_apply, pairCoeffFun]
     ring
   rw [hregroup, Finset.sum_congr rfl hpoint]
-  refine residueSum_pairForm_mul_eq_zero hgenus g₀ f h S fun x hx => ?_
+  refine residueSum_pairForm_mul_eq_zero_unconditional g₀ f h S fun x hx => ?_
   -- off `S` both factors are honestly analytic
   have hfh : AnalyticAt ℂ (fun z => (f * h).toFun ((chartAt (H := ℂ) x).symm z))
       ((chartAt (H := ℂ) x) x) := by
@@ -339,18 +341,18 @@ theorem tailResidue_tailMap_eq_zero (hgenus : 0 < genus X) {D : Divisor X}
 /-- **The descended residue functional `Res_ω : H¹(D) → ℂ`** (Miranda Ch. VI pp. 187–188): the
 residue map on `𝒯[D]` kills `im(α_D)` (the residue theorem), hence factors through the
 Mittag-Leffler quotient.  This is the linear functional that feeds the Serre duality pairing. -/
-noncomputable def tailResidueH1 (hgenus : 0 < genus X) {D : Divisor X}
+noncomputable def tailResidueH1 {D : Divisor X}
     (g₀ h : MeromorphicFunction X) (hord : PairOrderBounded g₀ h D) :
     mittagLefflerH1 (X := X) D →ₗ[ℂ] ℂ :=
   Submodule.liftQ _ ((tailResidue g₀ h).comp (Submodule.subtype _)) (by
     rintro Z ⟨f, rfl⟩
     rw [LinearMap.mem_ker, LinearMap.comp_apply, Submodule.subtype_apply, tailMapCo_coe]
-    exact tailResidue_tailMap_eq_zero hgenus g₀ h hord f)
+    exact tailResidue_tailMap_eq_zero g₀ h hord f)
 
-@[simp] theorem tailResidueH1_mk (hgenus : 0 < genus X) {D : Divisor X}
+@[simp] theorem tailResidueH1_mk {D : Divisor X}
     (g₀ h : MeromorphicFunction X) (hord : PairOrderBounded g₀ h D)
     (Z : ↥(tailSubspace (X := X) D)) :
-    tailResidueH1 hgenus g₀ h hord (Submodule.Quotient.mk Z)
+    tailResidueH1 g₀ h hord (Submodule.Quotient.mk Z)
       = tailResidue g₀ h (Z : TailSpace X) :=
   rfl
 
