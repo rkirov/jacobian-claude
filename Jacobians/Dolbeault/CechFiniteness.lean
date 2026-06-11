@@ -1,16 +1,11 @@
 /-
-  Dolbeault ladder — `H¹(X, 𝒪_D)` finiteness (Forster 14.9), the de-risked finiteness tree.
+  `H¹(X, 𝒪_D)` finiteness (Forster 14.9) — the Montel compactness input.
 
-  Plan: the cochain restriction
-  between the cover and a relatively-compact shrinking is a COMPACT operator (Montel), so by the
-  Schwartz finiteness lemma (`SchwartzFiniteness.finiteDimensional_quotient_range_add_compact`,
-  Forster 14.8 — DONE) the Čech `H¹` is finite-dimensional. The Montel input reuses the repo's
-  *plain-function* disk lemmas (`Montel/Compactness.lean`); this file starts from the de-bundled
-  compact-restriction ATOM (validated by a spike), then builds the cochain sup-norm representation
-  and the wiring.
-
-  STATUS: the compact-restriction atom is proven here; the cochain-rep + Leray + comparison layers
-  that discharge `DolbeaultLadder.finiteDimensional_cechH1` are scaffolded as explicit obligations below.
+  The cochain restriction between a cover and a relatively-compact shrinking is a compact
+  operator (Montel), so by the Schwartz finiteness lemma
+  (`SchwartzFiniteness.finiteDimensional_quotient_range_add_compact`, Forster 14.8) the Čech `H¹`
+  is finite-dimensional.  This file proves the de-bundled compact-restriction lemma that the
+  cochain layer is built on, reusing the plain-function disk lemmas of `Montel/Compactness.lean`.
 -/
 import Jacobians.Montel.Compactness
 import Jacobians.Dolbeault.SchwartzFiniteness
@@ -20,12 +15,12 @@ open Jacobians.Montel
 
 namespace Jacobians.Dolbeault.CechFiniteness
 
-/-! ### The de-bundled compact-restriction atom (Montel core for cochains)
+/-! ### The de-bundled compact-restriction lemma (Montel core for cochains)
 
-A sup-`M`-bounded family of functions holomorphic on an open `U ⊆ ℂ`, restricted to a compact convex
-`K ⋐ U`, is relatively compact in `K →ᵇ ℂ`. This is the plain-function analogue of the repo's
-bundle-level `isCompact_closure_image_inner_bcf`, and it is *simpler* (no `localRep`/cotangent
-bookkeeping). It is the engine that makes the cochain restriction a compact operator. -/
+A sup-`M`-bounded family of functions holomorphic on an open `U ⊆ ℂ`, restricted to a compact
+convex `K ⋐ U`, is relatively compact in `K →ᵇ ℂ`. This is the plain-function analogue of the
+bundle-level `isCompact_closure_image_inner_bcf`, without the `localRep`/cotangent bookkeeping.
+It is the engine that makes the cochain restriction a compact operator. -/
 
 theorem isCompact_closure_restrict_bddHolo
     {U K : Set ℂ} (hU : IsOpen U) (hKcpt : IsCompact K) (hKU : K ⊆ U)
@@ -60,32 +55,20 @@ theorem isCompact_closure_restrict_bddHolo
       rw [hcomp]; exact hFbcf_fn.comp u
     exact hrange
 
-/-! ### Roadmap — from the atom to `DolbeaultLadder.finiteDimensional_cechH1`
+/-! ### From this lemma to `DolbeaultLadder.finiteDimensional_cechH1`
 
-The two hardest, most-uncertain pieces are now DONE and axiom-clean: the abstract Schwartz finiteness
-lemma (`SchwartzFiniteness.finiteDimensional_quotient_range_add_compact`, Forster 14.8) and the
-de-bundled compact-restriction atom above (the Montel core). The remaining layers are templated
-assembly:
+The assembly built on this Montel core:
 
-* **STEP 1 (rep).** The sup-norm Banach space `BddHol U` of bounded holomorphic functions on an open
-  `U ⊆ ℂ` (a closed `ℂ`-subspace of `bcf`, complete; closedness via the repo's
-  `analyticOn_of_tendstoLocallyUniformlyOn`), and the restriction CLM `BddHol U → (K →ᵇ ℂ)` for
-  `K ⋐ U` compact. It is an `IsCompactOperator` via the atom
-  (`isCompactOperator_iff_isCompact_closure_image_closedBall` + `isCompact_closure_restrict_bddHolo`).
-
-* **STEP 2 (cochain).** Assemble the cochain Banach spaces `C^q` over the repo's chart-disk cover +
-  its shrinking (`Montel/Cover.lean`: `coverOpen ⊇ chartOpen ⊇ innerChartOpen`); the cochain
-  restriction `C^q(𝔘) → C^q(𝔙)` is compact (finite product of the disk restrictions of STEP 1).
-
-* **STEP 3 (Schwartz + Leray).** Feed the Leray two-cover map into
-  `finiteDimensional_quotient_range_add_compact`: the restriction `Z¹(𝔘) → Z¹(𝔙)` is compact and the
-  induced map on `H¹` is a surjection (chart-disks are Leray, `H¹(disk,𝒪)=0` from the proven G1
-  `DbarDisk`), giving `H¹(𝔙, 𝒪)` finite-dimensional.
-
-* **STEP 4 (comparison).** The germ-class `cechH1` (CechComplex) equals the sup-norm-rep `H¹` in
-  dimension (they differ only by codiscrete junk, which does not change `H¹` — the same
-  codiscrete↔𝓝[≠] bridge proven in `CechH0`), discharging `finiteDimensional_cechH1` for `D = 0`,
-  then general `D` by the `D`-twist.
+* `BddHol` — the sup-norm Banach space `BddHol U` of bounded holomorphic functions on an open
+  `U ⊆ ℂ` (a closed subspace of the bounded continuous functions, complete), and the restriction
+  CLM `BddHol U → (K →ᵇ ℂ)` for compact `K ⋐ U`, a compact operator via the lemma above
+  (`isCompactOperator_iff_isCompact_closure_image_closedBall`).
+* `ChartDiskFiniteness` / `ChartDiskLeray` — the cochain Banach spaces over the chart-disk cover
+  and its shrinking; the cochain restriction `C^q(𝔘) → C^q(𝔙)` is a finite product of disk
+  restrictions, hence compact, and the Leray two-cover map is surjective on `H¹`
+  (`H¹(disk, 𝒪) = 0`); Schwartz then gives `H¹(𝔙, 𝒪)` finite-dimensional.
+* `CechFinitenessAssembly` / `CechFinitenessDtwist` — the comparison with the germ-class `cechH1`
+  of `CechComplex` (codiscrete junk does not change `H¹`) and the twist to general `D`.
 -/
 
 end Jacobians.Dolbeault.CechFiniteness

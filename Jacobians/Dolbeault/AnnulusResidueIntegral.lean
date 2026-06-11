@@ -1,5 +1,5 @@
 /-
-  The annulus residue integral (Forster (10.21), planar form; Route-H atom 2).
+  The annulus residue integral (Forster (10.21), planar form).
 
   For a cutoff `χ` that is `≡ 1` near `c` and compactly supported inside a punctured-holomorphy
   ball of a meromorphic `m`, the Forster (10.21) identity computes the area integral of
@@ -13,7 +13,7 @@
   Forster's `2πi·Res` shape differs by his use of the 2-form `dz̄∧dz = 2i·dA`:
   `(−π)·dA`-normalisation `= (2πi)/(2i)·(−1)`… i.e. this is the same identity.
 
-  Proof layout (all complete, no sorries):
+  Proof layout:
   * §1 extends `DbarDisk` with the Wirtinger calculus (`dbar_fun_mul` Leibniz, congruence,
     sums) — pointwise statements at points of real differentiability.
   * §2 computes `∂̄` of a *radial* cutoff `η(|w−c|²)`: `∂̄χ = η'(|z−c|²)·(z−c)` (the ½ in `∂̄`
@@ -22,7 +22,7 @@
   * §4 the single-term computation `∫ ∂̄(χ·(·−c)^{−k}) = −π·δ_{k,1}` in polar coordinates:
     angular integral `∮ e^{i(1−k)θ}dθ = 2π·δ_{k,1}` (FTC), radial integral `∫ rη'(r²)dr = −½`.
   * §5 cutoff independence: for two admissible cutoffs the difference `(χ₁−χ₂)·m` is `C¹` with
-    compact support, so its `∂̄`-integral vanishes by the proven Forster (10.20) atom
+    compact support, so its `∂̄`-integral vanishes by the Forster (10.20) lemma
     (`integral_dbar_eq_zero`, `PlanarCompactSupportStokes`).
   * §6 the principal-part split `m = negTail + G` (`exists_principalPart_meromorphicAt`) with a
     junk-repaired holomorphic complement `G`; the `G`-term again dies by (10.20).
@@ -40,7 +40,6 @@ import Jacobians.Dolbeault.FormTracePrincipalPart
 -- The ℂ-as-ℝ-module diamond fix used across the Dolbeault tree (e.g. `DbarOpenDisk`): without it
 -- `DifferentiableAt.restrictScalars ℝ` fails to synthesize `IsScalarTower ℝ ℂ ℂ` here.
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open Complex Metric MeasureTheory Filter Set Topology
 open scoped Real
@@ -362,7 +361,7 @@ theorem integral_rmul_deriv_profile {η : ℝ → ℝ} {s₀ s₁ : ℝ} (hη : 
     intro r hr
     have habs : max 1 s₁ < |r| := by
       by_contra h
-      push_neg at h
+      push Not at h
       exact hr (by simpa [Set.mem_Icc] using abs_le.mp h)
     have hsq : s₁ < r ^ 2 := by
       nlinarith [sq_abs r, le_max_left (1 : ℝ) s₁, le_max_right (1 : ℝ) s₁, abs_nonneg r]
@@ -394,7 +393,6 @@ theorem integral_Ioo_exp_mul_I_zpow {m : ℤ} (hm : m ≠ 0) :
     simp only
     rw [← Complex.exp_int_mul]
     congr 1
-    push_cast
     ring
   rw [intervalIntegral.integral_congr hcongr, integral_exp_mul_complex hC]
   have h1 : Complex.exp (((m : ℂ) * Complex.I) * (π : ℝ)) = (-1 : ℂ) ^ m := by

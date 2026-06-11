@@ -1,50 +1,42 @@
 /-
-  Dolbeault ladder — the concrete Čech layer (G3 scaffold).
+  The concrete Čech layer of the Riemann–Roch build: sections of the sheaf `𝒪_D`.
 
-  This is the first rung of the complete Riemann–Roch build. The representation:
-
-    * sections of the sheaf `𝒪_D` over an open `U ⊆ X` are modelled **intrinsically on the open
+    * Sections of `𝒪_D` over an open `U ⊆ X` are modelled **intrinsically on the open
       submanifold `↥U`** (Mathlib gives `↥U` a `ChartedSpace ℂ` + `IsManifold 𝓘(ℂ) ω` structure
-      automatically), as a `Submodule ℂ` of the bare function space `↥U → ℂ`;
-    * the membership predicate bundles meromorphy-on-`↥U` with the order bound `-D x ≤ ord_x f`;
-    * because sections are genuine functions on `↥U`, the Čech differential is plain **restriction**
+      automatically), as a `Submodule ℂ` of the bare function space `↥U → ℂ`.
+    * The membership predicate bundles meromorphy-on-`↥U` with the order bound `-D x ≤ ord_x f`.
+    * Because sections are genuine functions on `↥U`, the Čech differential is plain **restriction**
       (precomposition with `Set.inclusion`), with no chart-transition cocycle data.
 
-  NOTE: the meromorphy infrastructure's typeclass footprint was generalised (commit doing the
-  "IsMeromorphic cleanup"): `IsMeromorphic.zero` (Abel) and the `MeromorphicFunction` ℂ-module
-  instances (RiemannRoch) now require only `[ChartedSpace ℂ]`, so they apply to the non-compact
-  open submanifold `↥U`. We keep the bare-function encoding `Submodule ℂ (↥U → ℂ)` here because it
-  makes the Čech differential plain restriction; the `Submodule ℂ (MeromorphicFunction ↥U)` encoding
-  is now also available should it prove cleaner downstream.
+  The meromorphy infrastructure (`IsMeromorphic.zero` in `Jacobians.Abel`, the
+  `MeromorphicFunction` ℂ-module instances in `Jacobians.RiemannRoch`) requires only
+  `[ChartedSpace ℂ]`, so it applies to the non-compact open submanifold `↥U`. The bare-function
+  encoding `Submodule ℂ (↥U → ℂ)` is used (rather than `Submodule ℂ (MeromorphicFunction ↥U)`)
+  because it makes the Čech differential plain restriction.
 -/
 import Jacobians.LinearSystem
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 
--- The meromorphy algebra here uses only `[ChartedSpace ℂ]`; the ambient compactness/connectedness
--- carried by the consumers is genuinely unused (see the generalisation note in the header).
-set_option linter.unusedSectionVars false
-
 namespace Jacobians.Dolbeault
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X]
 
 /-- Order of a bare function on the open submanifold `↥U`, read in `U`'s own chart at `x`.
 (Chart-invariant; intrinsic to `↥U`.) -/
-noncomputable def ordU {U : Opens X} (f : U → ℂ) (x : U) : WithTop ℤ :=
+noncomputable def ordU [ChartedSpace ℂ X] {U : Opens X} (f : U → ℂ) (x : U) : WithTop ℤ :=
   meromorphicOrderAt (f ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
 
 /-- The order of the zero function on `↥U` is `⊤`. -/
-theorem ordU_zero {U : Opens X} (x : U) : ordU (0 : U → ℂ) x = ⊤ := by
+theorem ordU_zero [ChartedSpace ℂ X] {U : Opens X} (x : U) : ordU (0 : U → ℂ) x = ⊤ := by
   rw [ordU, show ((0 : U → ℂ) ∘ (chartAt (H := ℂ) x).symm) = (fun _ => (0 : ℂ)) from rfl,
     meromorphicOrderAt_eq_top_iff]
   exact Filter.Eventually.of_forall (fun _ => rfl)
 
 /-- `ordU f x = ⊤` forces `f` to be meromorphic at `x` (the order is the junk value `0` for
 non-meromorphic functions, and `0 ≠ ⊤`). -/
-private theorem meromorphicAt_of_ordU_eq_top {U : Opens X} {f : U → ℂ} {x : U}
+private theorem meromorphicAt_of_ordU_eq_top [ChartedSpace ℂ X] {U : Opens X} {f : U → ℂ} {x : U}
     (h : ordU f x = ⊤) :
     MeromorphicAt (f ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x) := by
   by_contra hc
@@ -54,9 +46,10 @@ private theorem meromorphicAt_of_ordU_eq_top {U : Opens X} {f : U → ℂ} {x : 
 /-- **Germ-zero "junk".** Functions on `↥U` that vanish as a germ at every point (`ordU ≡ ⊤`) — the
 removable-singularity junk (point-indicators etc.); `= ker toGerm` characterised by the order.
 `ordU ≡ ⊤ ⟹` meromorphic, so this is the codiscrete-zero class of `Analysis.Meromorphic.NormalForm`
-(`=ᶠ[codiscreteWithin] 0`). KEPT (unused now) because the `h0Dim_eq_lDim` bridge needs exactly this
-order-characterisation to connect the `Filter.Germ` kernel to RR's `orderW ≡ ⊤` `germZeroSubmodule`. -/
-def germZeroFn (U : Opens X) : Submodule ℂ (U → ℂ) where
+(`=ᶠ[codiscreteWithin] 0`). The `h0Dim_eq_lDim` bridge needs exactly this order-characterisation
+to connect the `Filter.Germ` kernel to the `orderW ≡ ⊤` submodule `germZeroSubmodule` of
+`Jacobians.RiemannRoch`. -/
+def germZeroFn [ChartedSpace ℂ X] (U : Opens X) : Submodule ℂ (U → ℂ) where
   carrier := {f | ∀ x, ordU f x = ⊤}
   add_mem' {f g} hf hg x := by
     have h : min (ordU f x) (ordU g x) ≤ ordU (f + g) x :=
@@ -75,7 +68,8 @@ def germZeroFn (U : Opens X) : Submodule ℂ (U → ℂ) where
 
 /-- **Sections of `𝒪_D` over an open `U`** (Forster's `𝒪_D(U)`): functions meromorphic on the open
 submanifold `↥U` whose order is `≥ −D` at every point of `U`. A `Submodule ℂ` of `↥U → ℂ`. -/
-noncomputable def OmegaD (D : Divisor X) (U : Opens X) : Submodule ℂ (U → ℂ) where
+noncomputable def OmegaD [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (D : Divisor X) (U : Opens X) : Submodule ℂ (U → ℂ) where
   carrier := {f | IsMeromorphic (U : Type _) f ∧ ∀ x : U, (-(D x.1) : WithTop ℤ) ≤ ordU f x}
   add_mem' {f g} hf hg :=
     ⟨hf.1.add hg.1, fun x => le_trans (le_min (hf.2 x) (hg.2 x))
@@ -89,18 +83,20 @@ noncomputable def OmegaD (D : Divisor X) (U : Opens X) : Submodule ℂ (U → �
       rw [ordU, ordU]
       exact (meromorphicOrderAt_smul_of_ne_zero analyticAt_const (by simpa using hc)).symm⟩
 
-@[simp] theorem mem_OmegaD {D : Divisor X} {U : Opens X} {f : U → ℂ} :
+@[simp] theorem mem_OmegaD [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} {U : Opens X} {f : U → ℂ} :
     f ∈ OmegaD D U ↔ IsMeromorphic (U : Type _) f ∧ ∀ x : U, (-(D x.1) : WithTop ℤ) ≤ ordU f x :=
   Iff.rfl
 
 /-! ### Sheaf restriction — the building block of the Čech differential
 
-For `V ≤ U` (opens), restriction `𝒪_D(U) → 𝒪_D(V)` is plain precomposition with the open inclusion
-`↥V → ↥U`. Both `↥V`- and `↥U`-charts are `OpenPartialHomeomorph.subtypeRestr`s of the *same* ambient
-chart `chartAt ℂ v.1` (`TopologicalSpace.Opens.chartAt_eq`), so meromorphy and order are preserved. -/
+For `V ≤ U` (opens), restriction `𝒪_D(U) → 𝒪_D(V)` is plain precomposition with the open
+inclusion `↥V → ↥U`. Both `↥V`- and `↥U`-charts are `OpenPartialHomeomorph.subtypeRestr`s of the
+*same* ambient chart `chartAt ℂ v.1` (`TopologicalSpace.Opens.chartAt_eq`), so meromorphy and
+order are preserved. -/
 
 section Restriction
-variable {D : Divisor X} {U V : Opens X}
+variable {U V : Opens X}
 
 /-- The open inclusion `↥V → ↥U` for `V ≤ U`. -/
 def openIncl (h : V ≤ U) : V → U := fun v => ⟨v.1, h v.2⟩
@@ -109,9 +105,9 @@ def openIncl (h : V ≤ U) : V → U := fun v => ⟨v.1, h v.2⟩
 
 /-- The base point and the chart-pullback agree between `↥V`'s chart at `v` and `↥U`'s chart at
 `openIncl h v`: both charts are `subtypeRestr`s of the *same* ambient chart `chartAt ℂ v.1`
-(`Opens.chartAt_eq`), so they read `f` at the same ambient point near `v`. The shared core of the two
-restriction lemmas. -/
-theorem restrict_chart_aux (h : V ≤ U) (f : U → ℂ) (v : V) :
+(`Opens.chartAt_eq`), so they read `f` at the same ambient point near `v`. The shared core of the
+two restriction lemmas. -/
+theorem restrict_chart_aux [ChartedSpace ℂ X] (h : V ≤ U) (f : U → ℂ) (v : V) :
     (chartAt (H := ℂ) v) v = (chartAt (H := ℂ) (openIncl h v)) (openIncl h v) ∧
     ((f ∘ openIncl h) ∘ (chartAt (H := ℂ) v).symm) =ᶠ[𝓝 ((chartAt (H := ℂ) v) v)]
       (f ∘ (chartAt (H := ℂ) (openIncl h v)).symm) := by
@@ -144,15 +140,16 @@ theorem restrict_chart_aux (h : V ≤ U) (f : U → ℂ) (v : V) :
 
 /-- Restriction preserves the order at corresponding points (chart bookkeeping via
 `Opens.chartAt_eq` + `subtypeRestr`). -/
-theorem ordU_comp_openIncl (h : V ≤ U) (f : U → ℂ) (v : V) :
+theorem ordU_comp_openIncl [ChartedSpace ℂ X] (h : V ≤ U) (f : U → ℂ) (v : V) :
     ordU (f ∘ openIncl h) v = ordU f (openIncl h v) := by
   obtain ⟨hbase, hev⟩ := restrict_chart_aux h f v
   unfold ordU
-  rw [show (chartAt (H := ℂ) (openIncl h v)) (openIncl h v) = (chartAt (H := ℂ) v) v from hbase.symm]
+  rw [show (chartAt (H := ℂ) (openIncl h v)) (openIncl h v) = (chartAt (H := ℂ) v) v
+    from hbase.symm]
   exact meromorphicOrderAt_congr (hev.filter_mono nhdsWithin_le_nhds)
 
 /-- Meromorphy on `↥U` restricts to the open sub-submanifold `↥V`. -/
-theorem isMeromorphic_comp_openIncl (h : V ≤ U) {f : U → ℂ}
+theorem isMeromorphic_comp_openIncl [ChartedSpace ℂ X] (h : V ≤ U) {f : U → ℂ}
     (hf : IsMeromorphic (U : Type _) f) : IsMeromorphic (V : Type _) (f ∘ openIncl h) := by
   intro v
   obtain ⟨hbase, hev⟩ := restrict_chart_aux h f v
@@ -161,18 +158,21 @@ theorem isMeromorphic_comp_openIncl (h : V ≤ U) {f : U → ℂ}
   exact hmer.congr (hev.filter_mono nhdsWithin_le_nhds).symm
 
 /-- Restriction preserves germ-zero junk (`ordU` is preserved at corresponding points). -/
-theorem germZeroFn_restrict (h : V ≤ U) {f : U → ℂ} (hf : f ∈ germZeroFn U) :
+theorem germZeroFn_restrict [ChartedSpace ℂ X] (h : V ≤ U) {f : U → ℂ} (hf : f ∈ germZeroFn U) :
     (f ∘ openIncl h) ∈ germZeroFn V :=
   fun v => by rw [ordU_comp_openIncl h]; exact hf (openIncl h v)
 
 /-- Restriction of sections `𝒪_D(U) → 𝒪_D(V)` for `V ≤ U`. -/
-noncomputable def OmegaD.restrict (h : V ≤ U) : OmegaD D U →ₗ[ℂ] OmegaD D V :=
+noncomputable def OmegaD.restrict [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (h : V ≤ U) :
+    OmegaD D U →ₗ[ℂ] OmegaD D V :=
   ((LinearMap.funLeft ℂ ℂ (openIncl h)).domRestrict (OmegaD D U)).codRestrict (OmegaD D V)
     fun f => ⟨isMeromorphic_comp_openIncl h f.2.1, fun v => by
       show (-(D v.1) : WithTop ℤ) ≤ ordU ((f : U → ℂ) ∘ openIncl h) v
       rw [ordU_comp_openIncl h]; exact f.2.2 (openIncl h v)⟩
 
-@[simp] theorem OmegaD.restrict_coe (h : V ≤ U) (f : OmegaD D U) :
+@[simp] theorem OmegaD.restrict_coe [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (h : V ≤ U) (f : OmegaD D U) :
     ((OmegaD.restrict h f : V → ℂ)) = (f : U → ℂ) ∘ openIncl h := rfl
 
 end Restriction
@@ -180,9 +180,9 @@ end Restriction
 /-! ### Germ-class sections — the junk-free representation (`Filter.Germ` over `codiscreteWithin`)
 
 Meromorphic functions are taken modulo `=ᶠ[codiscreteWithin]` (equality off a discrete set — the
-removable-singularity junk), the standard equivalence of `Analysis.Meromorphic.NormalForm`. Mathlib's
-`Filter.Germ` realises this quotient as a clean `ℂ`-algebra with *no* manual quotient bookkeeping, so
-`𝒪_D`-sections and `h⁰` are junk-free automatically. -/
+removable-singularity junk), the standard equivalence of `Analysis.Meromorphic.NormalForm`.
+Mathlib's `Filter.Germ` realises this quotient as a clean `ℂ`-algebra with *no* manual quotient
+bookkeeping, so `𝒪_D`-sections and `h⁰` are junk-free automatically. -/
 
 /-- **Germ-class functions on `↥U`**: `(↥U → ℂ)` modulo codiscrete equality — the junk-free section
 space. A `ℂ`-module via `Filter.Germ`. -/
@@ -237,11 +237,13 @@ taken explicitly so this canonical form covers every call site (`le_rfl`, `le_re
 
 /-- **`𝒪_D`-sections as germ-classes**: the image of `OmegaD` under the germ projection — junk-free,
 no quotient. -/
-noncomputable def OmegaDGerm (D : Divisor X) (U : Opens X) : Submodule ℂ (MGerm U) :=
+noncomputable def OmegaDGerm [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (D : Divisor X) (U : Opens X) : Submodule ℂ (MGerm U) :=
   Submodule.map (toGerm U) (OmegaD D U)
 
 /-- Germ restriction preserves `𝒪_D`-sections. -/
-theorem rawRestrictG_omegaDGerm {D : Divisor X} {U V : Opens X} (h : V ≤ U) {f : MGerm U}
+theorem rawRestrictG_omegaDGerm [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} {U V : Opens X} (h : V ≤ U) {f : MGerm U}
     (hf : f ∈ OmegaDGerm D U) : rawRestrictG h f ∈ OmegaDGerm D V := by
   obtain ⟨g, hg, rfl⟩ := hf
   exact ⟨g ∘ openIncl h, (OmegaD.restrict h ⟨g, hg⟩).2, rfl⟩

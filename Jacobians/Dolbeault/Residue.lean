@@ -2,20 +2,22 @@
   The residue atom (Forster §17.1–17.2 building block).
 
   `resAt f c` is the residue of `f : ℂ → ℂ` at `c`, defined by the contour integral
-  `(2πi)⁻¹ ∮_{|z-c|=r} f` in the limit `r → 0⁺`.  This is the upstream-most genuinely-new object the
-  Čech-residue route to Serre duality rests on: every local
-  residue `Res_a(ω)` of a meromorphic 1-form is, in a chart, `resAt (coeff of ω) (chart a)`.
+  `(2πi)⁻¹ ∮_{|z-c|=r} f` in the limit `r → 0⁺`.  This is the basic object the Čech-residue route
+  to Serre duality rests on: every local residue `Res_a(ω)` of a meromorphic 1-form is, in a
+  chart, `resAt (coeff of ω) (chart a)`.
 
-  Mathlib has **no** residue / general Laurent-coefficient API (only `meromorphicTrailingCoeffAt`, the
-  *leading* coefficient), so we build it on Mathlib's circle-integral + Cauchy–Goursat toolkit.
+  Mathlib has **no** residue / general Laurent-coefficient API (only `meromorphicTrailingCoeffAt`,
+  the *leading* coefficient), so we build it on Mathlib's circle-integral + Cauchy–Goursat
+  toolkit.
 
   This module is pure one-variable complex analysis — no manifold — and so is reusable verbatim in
   every chart.  The `limUnder (𝓝[>] 0)` shape mirrors the repo's `MeromorphicFunction.holoRepr`.
 
-  Lemmas proved here (all complete):
-    * `resAt_eq_of_eventuallyEq_circleIntegral` — the workhorse: if the contour integral is eventually
-      constant `= K` as `r → 0⁺`, then `resAt f c = (2πi)⁻¹ • K`.
-    * `resAt_const_mul_sub_inv` / `resAt_sub_inv` — `Res_c (a/(z-c)) = a` (Forster 17.6's `dz/z` witness).
+  Main results:
+    * `resAt_eq_of_eventuallyEq_circleIntegral` — the workhorse: if the contour integral is
+      eventually constant `= K` as `r → 0⁺`, then `resAt f c = (2πi)⁻¹ • K`.
+    * `resAt_const_mul_sub_inv` / `resAt_sub_inv` — `Res_c (a/(z-c)) = a` (Forster 17.6's `dz/z`
+      witness).
     * `resAt_eq_zero_of_differentiableOn_ball` — `Res_c(f) = 0` for `f` holomorphic near `c` (the
       holomorphic-difference property that makes `Res` well-defined on Mittag–Leffler cochains).
 -/
@@ -112,14 +114,15 @@ theorem circleIntegral_annulus_eq {f : ℂ → ℂ} {c : ℂ} {ρ : ℝ}
   · intro z hz
     have hzc : z ≠ c := fun h => hz.2 (mem_ball.mpr (by rw [h, dist_self]; exact hr))
     exact (hf z (Set.mem_diff_singleton.mpr
-      ⟨mem_ball.mpr (lt_of_le_of_lt (mem_closedBall.mp hz.1) hRρ), hzc⟩)).continuousAt.continuousWithinAt
+      ⟨mem_ball.mpr (lt_of_le_of_lt (mem_closedBall.mp hz.1) hRρ),
+        hzc⟩)).continuousAt.continuousWithinAt
   · intro z hz
     have hz' : z ∈ ball c R \ closedBall c r := hz.1
     have hzc : z ≠ c := fun h => hz'.2 (mem_closedBall.mpr (by rw [h, dist_self]; exact hr.le))
     exact hf z (Set.mem_diff_singleton.mpr ⟨mem_ball.mpr (lt_trans (mem_ball.mp hz'.1) hRρ), hzc⟩)
 
-/-- **Compute `resAt` by any small contour.**  For `f` holomorphic on `ball c ρ \ {c}` and `0 < r < ρ`,
-`resAt f c = (2πi)⁻¹ • ∮_{|z-c|=r} f`. -/
+/-- **Compute `resAt` by any small contour.**  For `f` holomorphic on `ball c ρ \ {c}` and
+`0 < r < ρ`, `resAt f c = (2πi)⁻¹ • ∮_{|z-c|=r} f`. -/
 theorem resAt_eq_smul_circleIntegral {f : ℂ → ℂ} {c : ℂ} {ρ : ℝ}
     (hf : ∀ z ∈ ball c ρ \ {c}, DifferentiableAt ℂ f z) {r : ℝ} (hr : 0 < r) (hrρ : r < ρ) :
     resAt f c = (2 * π * I : ℂ)⁻¹ • ∮ z in C(c, r), f z := by
@@ -179,8 +182,9 @@ theorem resAt_smul {f : ℂ → ℂ} {c : ℂ} (a : ℂ) (hf : HoloPunctured f c
 
 /-! ### Residue is a local invariant -/
 
-/-- **`resAt` depends only on the germ of `f` at `c`** (a punctured-neighbourhood invariant).  Two
-functions agreeing near `c` (off `c`) have the same residue — the small contour integrals coincide. -/
+/-- **`resAt` depends only on the germ of `f` at `c`** (a punctured-neighbourhood invariant).
+Two functions agreeing near `c` (off `c`) have the same residue — the small contour integrals
+coincide. -/
 theorem resAt_congr {f g : ℂ → ℂ} {c : ℂ} (h : f =ᶠ[𝓝[≠] c] g) : resAt f c = resAt g c := by
   have h' : ∀ᶠ z in 𝓝[≠] c, f z = g z := h
   rw [eventually_nhdsWithin_iff, Metric.eventually_nhds_iff] at h'

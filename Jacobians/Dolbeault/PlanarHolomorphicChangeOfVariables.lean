@@ -25,7 +25,6 @@ import Jacobians.DbarDisk
 
 -- The ℂ-as-ℝ-module diamond fix used across the Dolbeault tree.
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open Complex MeasureTheory Set Filter Topology
 
@@ -44,8 +43,7 @@ theorem det_restrictScalars_smulRight (d : ℂ) :
     ContinuousLinearMap.coe_coe, ContinuousLinearMap.coe_restrictScalars',
     ContinuousLinearMap.smulRight_apply, ContinuousLinearMap.one_apply, smul_eq_mul,
     Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one, one_mul,
-    Complex.normSq_apply, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im,
-    Complex.one_re, Complex.one_im]
+    Complex.normSq_apply, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]
   ring
 
 /-- **The real Jacobian of a holomorphic map**: at a point of ℂ-differentiability,
