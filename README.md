@@ -109,6 +109,40 @@ believed without kernel verification. Route decisions were made by books-first r
 cheaper faithful route existed (most notably the 4g-gon cut surface, replaced by Forster's
 dissection-free §19–21 analysis).
 
+## Development timeline
+
+Per-day Lean LoC deltas from git history (`git log --numstat`, `*.lean` only); model from the
+commit `Co-Authored-By` trailers. 20 working days total, 2026-04-19 → 2026-06-11.
+
+| Day | LoC + | LoC − | Model | Notes |
+|---|---:|---:|---|---|
+| 2026-04-19 | 1,773 | 675 | Opus 4.7 (1M) | project start |
+| 2026-04-20 | 3,581 | 1,395 | Opus 4.7 (1M) | |
+| 2026-04-21 | 1,720 | 153 | Opus 4.7 (1M) | |
+| 2026-04-22 | 3,970 | 768 | Opus 4.7 (1M) | |
+| 2026-04-23 | 153 | 428 | Opus 4.7 (1M) | |
+| 2026-05-28 | 17,643 | 817 | Opus 4.7 / 4.7 (1M) | smoothPath build |
+| 2026-05-29 | 2,650 | 1,295 | Opus 4.8 (1M) | |
+| 2026-05-30 | 4,454 | 5,610 | Opus 4.8 / 4.8 (1M) | |
+| 2026-05-31 | 9,704 | 545 | Opus 4.8 / 4.8 (1M) | port: Brsanch degree/fibre (MIT) |
+| 2026-06-01 | 4,327 | 835 | Opus 4.8 | |
+| 2026-06-02 | 5,192 | 691 | Opus 4.8 / 4.8 (1M) | |
+| 2026-06-03 | 4,945 | 480 | Opus 4.8 (1M) | |
+| 2026-06-04 | 13,218 | 1,255 | Opus 4.8 (1M) | |
+| 2026-06-05 | 1,310 | 52 | Opus 4.8 (1M) | |
+| 2026-06-06 | 937 | 141 | *(no trailer; Opus 4.8 era)* | |
+| 2026-06-07 | 681 | 175 | *(no trailer; Opus 4.8 era)* | |
+| 2026-06-08 | 21,545 | 2,628 | Opus 4.8 (1M) | port: mrdouglasny ContourDeformation (Apache-2.0; later superseded) |
+| 2026-06-09 | 26,360 | 4,847 | Opus 4.8 (1M) → Fable 5 | port: tangentstorm Green rectangle (MIT, Stokes seed); RR route plan |
+| 2026-06-10 | 9,914 | 190 | Fable 5 | Riemann–Roch closed; headline #1 closed |
+| 2026-06-11 | ~7,000\* | ~6,400\* | Fable 5 | Abel + period lattice closed; dead-module sweep |
+
+\* Raw 06-11 numbers (+118,335/−117,687) include the generated submission workspace being
+committed to main and moved to its own branch the same day (±111,303 of churn both ways);
+shown is the approximate honest library delta. Days with ports include the ported external
+code in the "+" column. "Model" reflects commit trailers; sub-agent-driven days inherit the
+trailer of whatever wrote the commit.
+
 ## References & acknowledgments
 
 - Forster, *Lectures on Riemann Surfaces* (GTM 81) — primary.
