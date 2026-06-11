@@ -334,3 +334,149 @@ out.append('''1. **File moves**: relocate each member module into its unit direc
 ''')
 open('docs/UNITS_PROPOSAL.md', 'w').write('\n'.join(out))
 print('\nwrote docs/UNITS_PROPOSAL.md')
+
+# ---- emit docs/units.html: self-contained layered DAG viewer (no external deps) ----
+import json
+loc = collections.Counter()
+for m, p in mods.items():
+    loc[assign[m]] += sum(1 for _ in open(p))
+
+NODE_H, ROW_GAP, XGAP, PAD = 36, 64, 16, 28
+maxL = max(layer.values())
+rows = collections.defaultdict(list)
+for u in units: rows[layer[u]].append(u)
+
+def width(u): return 24 + 7.6 * len(u)
+
+pos = {}
+for L in range(maxL + 1):  # bottom-up: order each row by barycenter of placed deps
+    def bary(u):
+        ds = [v for v in uedges.get(u, ()) if v in pos]
+        return sum(pos[v][0] + width(v) / 2 for v in ds) / len(ds) if ds else 1e9
+    rows[L].sort(key=lambda u: (bary(u), u))
+    x = 0
+    for u in rows[L]:
+        pos[u] = [x, 0]
+        x += width(u) + XGAP
+totalW = max(pos[u][0] + width(u) for u in pos) + 2 * PAD
+for L in range(maxL + 1):  # center each row
+    roww = sum(width(u) for u in rows[L]) + XGAP * (len(rows[L]) - 1)
+    off = (totalW - 2 * PAD - roww) / 2 + PAD
+    for u in rows[L]: pos[u][0] += off
+for u in pos:
+    pos[u][1] = PAD + (maxL - layer[u]) * (NODE_H + ROW_GAP)
+totalH = 2 * PAD + (maxL + 1) * NODE_H + maxL * ROW_GAP
+
+data = {u: dict(layer=layer[u], loc=loc[u], n=len(units[u]), dir=META[u][0],
+                desc=META[u][1], keys=META[u][2], deps=redges[u],
+                members=sorted(units[u]), x=round(pos[u][0], 1),
+                y=round(pos[u][1], 1), w=round(width(u), 1)) for u in units}
+
+html = '''<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Jacobians — unit dependency graph</title>
+<style>
+  body { margin:0; font:14px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif;
+         color:#1a1a2e; background:#fafafa; display:flex; height:100vh; }
+  #graph { flex:1; overflow:auto; }
+  #panel { width:380px; border-left:1px solid #ddd; padding:18px 20px; overflow-y:auto;
+           background:#fff; }
+  #panel h2 { margin:0 0 2px; font-size:18px; }
+  #panel .meta { color:#666; font-size:12.5px; margin-bottom:10px; }
+  #panel h3 { font-size:12px; text-transform:uppercase; letter-spacing:.06em;
+              color:#888; margin:16px 0 4px; }
+  #panel code { background:#f0f0f4; padding:1px 4px; border-radius:3px; font-size:12.5px; }
+  #panel ul { margin:4px 0; padding-left:18px; }
+  #panel li { margin:2px 0; }
+  #panel .members { font-size:12px; columns:1; }
+  .hint { color:#999; font-size:13px; }
+  svg text { font:12.5px ui-monospace, "SF Mono", Menlo, monospace; cursor:pointer;
+             user-select:none; }
+  .node rect { fill:#fff; stroke:#9aa0b4; stroke-width:1.2; rx:7; cursor:pointer; }
+  .node.sel rect  { fill:#1a1a2e; stroke:#1a1a2e; }
+  .node.sel text  { fill:#fff; }
+  .node.dep rect  { fill:#fde8e8; stroke:#c0392b; }
+  .node.use rect  { fill:#e8f0fd; stroke:#2b5fc0; }
+  .node.dim rect  { opacity:.25; } .node.dim text { opacity:.25; }
+  .edge { fill:none; stroke:#c5c9d6; stroke-width:1.1; }
+  .edge.dep { stroke:#c0392b; stroke-width:2; }
+  .edge.use { stroke:#2b5fc0; stroke-width:2; }
+  .edge.dim { opacity:.12; }
+  .laylab { fill:#bbb; font:11px sans-serif; }
+  .deplink { cursor:pointer; color:#2b5fc0; }
+</style></head><body>
+<div id="graph"><svg id="svg" width="__W__" height="__H__"></svg></div>
+<div id="panel">
+  <h2>Unit dependency graph</h2>
+  <div class="meta">__NU__ units / __NM__ modules / __NL__ LoC, layered by
+  longest path over the (transitively reduced) import-induced DAG.
+  Foundations at the bottom, headline results on top.</div>
+  <p class="hint">Click a unit: <span style="color:#c0392b">red = builds on</span>,
+  <span style="color:#2b5fc0">blue = used by</span> (direct, reduced edges).
+  Click the background to reset.</p>
+  <div id="info"></div>
+</div>
+<script>
+const DATA = __DATA__;
+const NODE_H = __NODE_H__;
+const svg = document.getElementById('svg'), NS = 'http://www.w3.org/2000/svg';
+function el(t, a) { const e = document.createElementNS(NS, t);
+  for (const k in a) e.setAttribute(k, a[k]); return e; }
+// layer labels
+const seen = new Set();
+for (const u in DATA) { const d = DATA[u];
+  if (!seen.has(d.layer)) { seen.add(d.layer);
+    svg.appendChild(el('text', {x: 6, y: d.y + NODE_H / 2 + 4, 'class': 'laylab'}))
+       .textContent = d.layer; } }
+// edges under nodes
+const edges = [];
+for (const u in DATA) for (const v of DATA[u].deps) {
+  const a = DATA[u], b = DATA[v];
+  const x1 = a.x + a.w / 2, y1 = a.y + NODE_H, x2 = b.x + b.w / 2, y2 = b.y;
+  const p = el('path', {d: `M${x1},${y1} C${x1},${y1 + 45} ${x2},${y2 - 45} ${x2},${y2}`,
+                        'class': 'edge'});
+  p.dataset.from = u; p.dataset.to = v; svg.appendChild(p); edges.push(p);
+}
+// nodes
+const nodes = {};
+for (const u in DATA) { const d = DATA[u];
+  const g = el('g', {'class': 'node'}); g.dataset.u = u;
+  g.appendChild(el('rect', {x: d.x, y: d.y, width: d.w, height: NODE_H, rx: 7}));
+  const t = el('text', {x: d.x + d.w / 2, y: d.y + NODE_H / 2 + 4,
+                        'text-anchor': 'middle'});
+  t.textContent = u; g.appendChild(t);
+  g.addEventListener('click', ev => { ev.stopPropagation(); select(u); });
+  svg.appendChild(g); nodes[u] = g;
+}
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function select(u) {
+  const d = DATA[u];
+  const users = Object.keys(DATA).filter(v => DATA[v].deps.includes(u));
+  for (const v in nodes) nodes[v].setAttribute('class', 'node ' +
+    (v === u ? 'sel' : d.deps.includes(v) ? 'dep' : users.includes(v) ? 'use' : 'dim'));
+  for (const e of edges) e.setAttribute('class', 'edge ' +
+    (e.dataset.from === u ? 'dep' : e.dataset.to === u ? 'use' : 'dim'));
+  const link = v => `<code class="deplink" onclick="select('${v}')">${v}</code>`;
+  document.getElementById('info').innerHTML =
+    `<h2>${u}</h2>
+     <div class="meta">layer ${d.layer} · ${d.n} modules · ${d.loc.toLocaleString()} LoC
+       · proposed <code>Jacobians/${d.dir}/</code></div>
+     <p>${esc(d.desc)}</p>
+     <h3>Keystones</h3><ul>${d.keys.map(k => `<li><code>${esc(k)}</code></li>`).join('')}</ul>
+     <h3>Builds on</h3><p>${d.deps.map(link).join(', ') || '<span class="hint">nothing (foundation)</span>'}</p>
+     <h3>Used by</h3><p>${users.map(link).join(', ') || '<span class="hint">nothing (headline)</span>'}</p>
+     <h3>Members (${d.n})</h3><div class="members">${d.members.map(m => `<code>${m}</code>`).join('<br>')}</div>`;
+}
+document.getElementById('graph').addEventListener('click', () => {
+  for (const v in nodes) nodes[v].setAttribute('class', 'node');
+  for (const e of edges) e.setAttribute('class', 'edge');
+  document.getElementById('info').innerHTML = '';
+});
+</script></body></html>'''
+
+html = (html.replace('__DATA__', json.dumps(data))
+            .replace('__W__', str(int(totalW))).replace('__H__', str(int(totalH)))
+            .replace('__NODE_H__', str(NODE_H)).replace('__NU__', str(len(units)))
+            .replace('__NM__', str(len(mods))).replace('__NL__', f'{sum(loc.values()):,}'))
+open('docs/units.html', 'w').write(html)
+print('wrote docs/units.html')
