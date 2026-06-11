@@ -15,7 +15,14 @@ sources:
     type: "specification / API blueprint"
     license: ""
     author_contacted: "no"
-    prior_work: "https://github.com/Brsanch/jacobian-lean-challenge (B. Sanchez, MIT) — degree/fibre/Hurwitz well-definedness ported into Discharge/Manifold; audited axiom-clean (docs/archive/EXTERNAL_AUDIT.md)"
+    prior_work: >
+      https://github.com/Brsanch/jacobian-lean-challenge (B. Sanchez, MIT) — degree/fibre/Hurwitz
+      well-definedness ported into Discharge/Manifold, audited axiom-clean.
+      https://github.com/tangentstorm/JacobianChallenge (MIT) — rectangle Green's theorem ported as
+      the seed of the planar Stokes atom; independent design validation.
+      https://github.com/mrdouglasny/jacobian-challenge (Apache-2.0) — contour-deformation
+      development integrated at an intermediate stage (later superseded by the in-repo monodromy
+      toolkit); their axiom inventory mapped the genuine analytic obstacles.
   - title: "Lectures on Riemann Surfaces"
     authors: ["Otto Forster"]
     id: "GTM 81, Springer 1981; DOI 10.1007/978-1-4612-5961-9"
@@ -40,24 +47,61 @@ sources:
 
 status:
   scope: >
-    Implement Kevin Buzzard's v0.4 Jacobians API for compact Riemann surfaces — `genus`, the
-    `Jacobian` variety with its 7 manifold/Lie-group instances, the Abel–Jacobi map `ofCurve` (+
-    `_inj`/`_contMDiff`/`_self`), `pushforward`/`pullback` functoriality, `ContMDiff.degree`,
+    COMPLETE (2026-06-11). Kevin Buzzard's v0.4 Jacobians API for compact Riemann surfaces — `genus`,
+    the `Jacobian` variety with its 7 manifold/Lie-group instances, the Abel–Jacobi map `ofCurve`
+    (+ `_inj`/`_contMDiff`/`_self`), `pushforward`/`pullback` functoriality, `ContMDiff.degree`,
     `pushforward_pullback`, and the anti-hack headline `genus_eq_zero_iff_homeo` (genus 0 ⟺ X ≃ₜ S²) —
-    building ALL the required Riemann-surface theory (Riemann–Roch, Serre duality, the residue theorem,
-    period lattices, the Dolbeault/Čech machinery) from scratch, with ZERO reliance on future Mathlib.
-    Conformance to the exact v0.4 signatures is machine-checked by `ChallengeConformance.lean` (exit 0).
-  sorry_count: 10                       # declarations using `sorry`; 2 are DEAD/superseded (deg_div route, hodge_symmetry)
-  sorry_in_definitions: 0               # all live sorries are in Prop-valued theorems / `Nonempty`/`∃` existence statements
-  axioms:                               # 0 custom axioms; the full unproved surface is the `sorry`s
+    with ALL the required Riemann-surface theory (Riemann–Roch, Serre duality, the residue theorem,
+    Abel's theorem, period lattices, the Dolbeault/Čech machinery, the monodromy theorem) built from
+    scratch, with ZERO reliance on future Mathlib. Conformance to the exact v0.4 signatures is
+    machine-checked by `ChallengeConformance.lean` (exit 0), and to the lean-eval leaderboard form by
+    `ChallengeLeaderboard.lean` (exit 0).
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms:                               # the complete axiom surface of every declaration in the repo
     - "propext"
     - "Classical.choice"
     - "Quot.sound"
-    - "sorryAx"                         # present on the still-gated deliverables only
   main_results:
-    - declaration: "MeromorphicFunction.deg_div"
+    - declaration: "genus_eq_zero_iff_homeo"
+      file: "Jacobians/GenusSphereHeadline.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: ""
+      literature_dependencies: []
+    - declaration: "ofCurve_inj"
+      file: "Jacobians.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: ""
+      literature_dependencies: []
+    - declaration: "pushforward_pullback"
+      file: "Jacobians.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: ""
+      literature_dependencies: []
+    - declaration: "Jacobians.exists_riemannRoch_divisor"
       file: "Jacobians/RiemannRoch.lean"
-      sorry_count: 0                    # PROVEN this session — the residue theorem (Forster Cor. 4.25)
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: ""
+      literature_dependencies: []
+    - declaration: "Jacobians.abelJacobi_twoPoint_ne_zero"
+      file: "Jacobians/Abel.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: ""
+      literature_dependencies: []
+    - declaration: "Jacobians.exists_periodLattice_realBasis"
+      file: "Jacobians/PeriodLattice.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: ""
+      literature_dependencies: []
+    - declaration: "MeromorphicFunction.deg_div"
+      file: "Jacobians/LinearSystemDegree.lean"
+      sorry_count: 0
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: ""
       literature_dependencies: []
@@ -67,130 +111,110 @@ status:
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: ""
       literature_dependencies: []
-    - declaration: "genus_eq_zero_iff_homeo"
-      file: "Jacobians/GenusSphereHeadline.lean"
-      sorry_count: 5                    # GATED — distinct open classical inputs below (forward: RR/Serre tower; backward: de Rham)
-      axioms: ["propext", "Classical.choice", "Quot.sound", "sorryAx"]
-      comparator_config: ""
-      literature_dependencies:          # currently `sorry` — the project's remaining goals (intended to be PROVEN, not assumed)
-        - statement: "Finiteness of H¹(X, 𝒪_D) (Cartan–Serre); the RR/Serre keystone"
-          source: "Forster, Lectures on Riemann Surfaces, §14"
-        - statement: "Riemann–Roch / χ-additivity (cohomological form)"
-          source: "Forster, §16"
-        - statement: "Serre duality at D=0 (residue pairing perfectness): dim H¹(X,𝒪) = dim H⁰(X,Ω) = genus"
-          source: "Forster, §17"
-        - statement: "Holomorphic Poincaré lemma / monodromy (manifold de Rham) for the backward direction"
-          source: "Forster, §10; de Rham"
-    - declaration: "ofCurve_inj"
-      file: "Jacobians.lean"
-      sorry_count: 2
-      axioms: ["propext", "Classical.choice", "Quot.sound", "sorryAx"]
-      comparator_config: ""
-      literature_dependencies:
-        - statement: "Abel's theorem (two-point Abel–Jacobi image ≠ 0)"
-          source: "Forster, §20 / Miranda, Ch. VIII"
-        - statement: "Period lattice full-rank via a canonical 4g-gon dissection (surface classification / Radó)"
-          source: "Forster, §§20–21; Springer pp. 139–141"
 
 automation:
   methods:
     - method: "autonomous"              # agentic formalization: high-level human prompts; Claude Code drives end-to-end
-      models: ["claude-opus-4-8", "claude-sonnet-4-x (earlier sessions)"]
+      models: ["claude-fable-5 (endgame)", "claude-opus-4-8", "claude-sonnet-4-x (earlier sessions)"]
       framework: "Claude Code"
       tool_setup: >
         Claude Code with the lean-lsp MCP server (goal/hover/loogle/local-search/multi-attempt) and
-        background sub-agent orchestration (lean4:sorry-filler-deep for stubborn sorries, Explore for
-        read-only fan-out). Soundness gate: every claimed close is independently kernel-verified via
-        `#print axioms` (sorryAx must be absent) before being trusted — labels are never trusted; orphan
-        modules are swept; each commit is `lake build`-green.
+        background sub-agent orchestration in parallel git worktrees, with books-first research passes
+        (committed under docs/) deciding routes before builds. Soundness gate: every claimed close is
+        independently kernel-verified via `#print axioms` (sorryAx must be absent) before being
+        trusted — labels are never trusted; orphan modules are swept (scripts/dead_modules.py); each
+        commit is `lake build`-green.
       cost:
-        wall_time: "multi-session over several weeks (incl. long overnight autonomous runs)"
-        spend_usd: "subscription-based usage, $100/month subscription."
-        hardware: "single 4-core / ~8 GB laptop (+ swap); API-only model access"
+        wall_time: "multi-session over ~8 weeks (2026-04 to 2026-06-11), incl. long overnight autonomous runs"
+        spend_usd: "subscription-based usage, $100/month subscription"
+        hardware: "single 4-core / ~8 GB laptop; API-only model access"
       prompting_notes: >
-        Steered with terse high-level directives ("finish the project, work upstream→downstream", "read
-        the docs/book", "rethink the plan"). Discipline encoded in project memory: connect already-proven
-        pieces bottom-up; prefer standard textbook proofs + standard Mathlib lemmas; verify every agent
-        commit; flag (don't fake) false-as-stated statements.
+        Steered with terse high-level directives ("finish RR", "read the books to find the right
+        path", "continue"). Discipline encoded in project memory: connect already-proven pieces
+        bottom-up; prefer standard textbook proofs + standard Mathlib lemmas; verify every agent
+        commit; flag (don't fake) false-as-stated statements; salvage-and-relaunch when agents die
+        mid-run (incremental sorry-free commits as the handoff unit).
   spend_usd: "subscription-based usage"
   notes: >
-    34k lines of Lean (cloc; +19k of docstrings) across 171 files. The repo isolates each remaining classical theorem into a single named,
-    non-vacuous `sorry` (a true statement, not open design). Two false-as-stated statements were caught and
-    flagged (not faked) this session via the kernel-axiom discipline (`ChartCoverContinuousLeray` continuous-vs-
-    holomorphic cochain mismatch; `exists_skyscraperLES` fixed-cover obstruction).
+    ~111k lines of Lean across 309 files, sorry-free, zero custom axioms. Multiple
+    false-as-stated intermediate statements were caught and reformulated (not faked) via the
+    kernel-axiom discipline over the project's lifetime. Several planned constructions were retired
+    when research passes found cheaper book-faithful routes (most notably the 4g-gon cut surface,
+    replaced by Forster's dissection-free §§19-21 analysis).
 
 fidelity:
   divergences: >
-    Deliberately PDE-FREE where Mathlib lacks foundations: the residue theorem uses the degree route
-    (conservation of number) and Miranda §VIII.3's trace-to-ℙ¹ instead of Forster §17.1's manifold-Stokes
-    ∬_X definition; Serre duality is re-pointed onto Forster §17's residue pairing instead of a Hodge-
-    symmetry/Dolbeault-comparison route (no harmonic forms / elliptic regularity). Junk-free encodings
-    replace naive ones: Filter.Germ (codiscreteWithin) for Čech 𝒪_D cochains, and a "limit-repair"
-    `holoRepr` for meromorphic point-values (the raw `toFun` is only a germ representative). `Jacobian X`
-    is genuinely universe-polymorphic (ULift of the concrete torus). NB: the above are PROOF-INTERNAL
-    choices (vs. the textbook sources) — the v0.4 API *signatures* are matched VERBATIM
-    (`ChallengeConformance.lean` restates each and discharges it by ours; compiles, exit 0; no documented
-    discrepancies). Caveat: matching a signature ≠ a sorry-free proof — many such decls still carry `sorryAx`.
+    Deliberately PDE-free and integration-light where Mathlib lacks foundations: Riemann-Roch and
+    Serre duality follow Miranda Ch. VI's Laurent-tail (adelic) route rather than Forster §17's
+    manifold-Stokes residue functional; the residue theorem ∑Res = 0 is assembled from planar atoms
+    (compact-support Stokes, annulus residue, holomorphic change of variables, a finite partition of
+    unity) with no manifold 2-form integration; the monodromy theorem (holomorphic Poincaré lemma)
+    uses discrete analytic continuation along chains with no integration at all; Abel's theorem and
+    the period-lattice full rank follow Forster 19.10/20.7/21.4, dissection-free — no triangulation,
+    no surface classification, no 4g-gon. Junk-free encodings replace naive ones: Filter.Germ
+    (codiscreteWithin) for Čech 𝒪_D cochains, germ-quotient linear systems, and the value-wise
+    `dF = η` formulation for primitives. `Jacobian X` is genuinely universe-polymorphic (ULift of
+    the concrete torus). NB: these are PROOF-INTERNAL choices (vs. the textbook sources) — the v0.4
+    API signatures are matched VERBATIM (ChallengeConformance.lean; compiles, exit 0; no documented
+    discrepancies), as is the lean-eval leaderboard form (ChallengeLeaderboard.lean).
 
 review:
   status: "self-assessed"
   reviewers: []
   notes: >
-    Verification is by Lean's kernel: `#print axioms <decl>` on every claimed result (a `sorryAx`
-    dependency marks a decl as still gated), plus the full-glob `lake build` (green, 8467 jobs) and the
-    `ChallengeConformance.lean` machine-check that every v0.4 signature is inhabited verbatim. No external
-    peer review. The remaining surface is the genuine mathematics (see `status.main_results`), not bookkeeping.
+    Verification is by Lean's kernel: `#print axioms <decl>` on every result (all report
+    [propext, Classical.choice, Quot.sound]), the full-glob `lake build` (green, ~8.6k jobs), the
+    repo-wide zero-sorry sweep, and the two conformance files restating every challenge signature
+    verbatim. No external peer review yet; the human director is not a subject expert (see the
+    README disclaimer) — expert review is welcome.
 
 alignment:
   namespace: "Jacobians (challenge API names genus / genus_eq_zero_iff_homeo / Jacobian.* live in root namespace)"
   statements:
-    - source: "Buzzard v0.4: genus, Jacobian + 7 instances, ofCurve_self, pushforward/pullback functoriality, ContMDiff.degree"
-      lean: "genus / Jacobian / ofCurve_self / pushforward_comp_apply / pullback_comp_apply / ContMDiff.degree"
+    - source: "Buzzard v0.4: genus, Jacobian + 7 instances, ofCurve (+ _self/_contMDiff/_inj), pushforward/pullback (+ functoriality), ContMDiff.degree, pushforward_pullback"
+      lean: "genus / Jacobian / ofCurve_inj / pushforward_pullback / ContMDiff.degree (and the rest)"
       module: "Jacobians/Genus.lean, Jacobians.lean, Jacobians/Discharge/Manifold/Degree.lean"
       status: "proved"
-      note: "axiom-clean [propext, Classical.choice, Quot.sound]"
-    - source: "Forster Cor. 4.25 — the residue theorem (every principal divisor has degree 0)"
-      lean: "MeromorphicFunction.deg_div  (⟸ exists_properMapDegree_proven)"
-      module: "Jacobians/RiemannRoch.lean, Jacobians/ProperMapDegreeSheets.lean"
-      status: "proved"
-      note: "CLOSED this session; the §17.9 conservation-of-number construction, axiom-clean"
+      note: "all axiom-clean [propext, Classical.choice, Quot.sound]; ChallengeConformance.lean restates each verbatim"
     - source: "Buzzard v0.4: genus_eq_zero_iff_homeo (the anti-hack headline)"
       lean: "genus_eq_zero_iff_homeo"
       module: "Jacobians/GenusSphereHeadline.lean"
-      status: "in-progress"
-      note: "gated on the RR/Serre tower (forward) and manifold de Rham (backward)"
-    - source: "Forster §14 — finiteness of H¹(X,𝒪_D) (THE keystone; RR/Serre/residue all reduce here)"
-      lean: "exists_cechModel  (structural δ-complex + finiteness-given-Leray PROVEN; reduces to ∂̄-globalization + cover-independence)"
-      module: "Jacobians/Dolbeault/CechFinitenessWiring.lean, CechModelDifferential.lean, ChartCoverDbarGlue.lean"
-      status: "in-progress"
-      note: "~45%; needs a holomorphic-shrinking re-statement then the cross-chart ∂̄-telescoping"
-    - source: "Forster §17 — Serre duality at D=0 (arithmeticGenus_eq_genus) and general (serre_h1_eq)"
-      lean: "exists_serreDualityData  (abstract 17.6/17.9 cores proved; pairing/1-form-residue-theorem open)"
-      module: "Jacobians/Dolbeault/SerreDualityPairing.lean, SerreDuality.lean"
-      status: "in-progress"
-      note: "re-pointed onto the §17 residue pairing; hodge_symmetry superseded"
-    - source: "Forster §16 — cohomological Riemann–Roch (χ-additivity)"
-      lean: "exists_skyscraperLES → cohomological_riemannRoch"
-      module: "Jacobians/Dolbeault/CohomologicalRR.lean, SkyscraperAssembly.lean"
-      status: "in-progress"
-      note: "snake/assembly proved; needs full-LES cover-independence + H⁰(𝒪)-finiteness (⊂ finiteness)"
-    - source: "Abel's theorem (Forster §20) — abelJacobi_twoPoint_ne_zero ⇒ ofCurve_inj"
-      lean: "abelJacobi_twoPoint_ne_zero"
-      module: "Jacobians/Abel.lean"
-      status: "in-progress"
-      note: "reduction axiom-clean; core open (⟸ RR + reciprocity)"
-    - source: "Surface classification / period relations (Forster §§20–21) — exists_cutSurface ⇒ Jacobian manifold structure"
-      lean: "exists_cutSurface"
-      module: "Jacobians/CutSurfaceRelations.lean"
-      status: "in-progress"
-      note: "Riemann bilinear relations PROVEN from the cut-surface; the surface-topology cut chart open"
-    - source: "Holomorphic Poincaré lemma / manifold de Rham — backward genus_eq_zero_iff_homeo"
-      lean: "HasHolomorphicPrimitives  (genus_zero_of_nonempty_homeo_sphere)"
-      module: "Jacobians/DegreeOneSphere.lean"
-      status: "in-progress"
-      note: "S²-simply-connected + Liouville proved; manifold loop-integration/homotopy-invariance open"
+      status: "proved"
+      note: "forward via Riemann-Roch (single simple pole ⟹ degree-1 map ⟹ sphere); backward via the monodromy theorem (discrete analytic continuation)"
+    - source: "Riemann-Roch (Forster 16.9 / Miranda VI.3.11), every genus"
+      lean: "Jacobians.exists_riemannRoch_divisor"
+      module: "Jacobians/RiemannRoch.lean, Jacobians/LaurentTail/"
+      status: "proved"
+      note: "Miranda Ch. VI Laurent-tail route: tail H¹ + RR-I + Serre duality h¹(D) = l(K−D) in the meromorphic pair frame"
+    - source: "The residue theorem ∑Res = 0 (Forster 10.20/10.21), genus-free"
+      lean: "Jacobians.Dolbeault.residueSum_pairForm_eq_zero_unconditional"
+      module: "Jacobians/Dolbeault/ResidueTheoremStokes.lean"
+      status: "proved"
+      note: "planar Stokes + annulus atoms + PoU ledger; no manifold 2-form integration; deg_div also via the degree route"
+    - source: "Finiteness of H¹(X, 𝒪_D) (Forster §14) + cohomological RR (§16) + Čech↔Dolbeault comparison (§15.14)"
+      lean: "finiteDimensional_cechH1 / cohomological_riemannRoch / comparison_linearEquiv"
+      module: "Jacobians/Dolbeault/"
+      status: "proved"
+      note: "the supporting tower; h¹_Čech(0) = genus closed for the Abel engine (CechH1Genus.lean)"
+    - source: "Abel's theorem, sufficiency (Forster 19.10 / 20.7(a)) — abelJacobi_twoPoint_ne_zero ⇒ ofCurve_inj"
+      lean: "Jacobians.abelJacobi_twoPoint_ne_zero"
+      module: "Jacobians/Abel.lean, Jacobians/AbelFinal.lean (engine: AbelChains/WeakSolutions/PieceSolution/DbarKill/EngineSigma/EngineMeromorphic)"
+      status: "proved"
+      note: "dissection-free: weak solutions + the ∂̄-solvability criterion; no polygon, no triangulation"
+    - source: "Period lattice full rank (Forster 21.4) — the Jacobian torus structure"
+      lean: "Jacobians.exists_periodLattice_realBasis"
+      module: "Jacobians/PeriodLattice.lean, PeriodLatticeBasis/Discrete/Nondegenerate.lean, JacobiLocalMap.lean"
+      status: "proved"
+      note: "dissection-free; the formerly-planned exists_cutSurface obligation was retired (CutSurfaceRelations archived hypothesis-conditional)"
+    - source: "Holomorphic Poincaré lemma / monodromy — backward genus_eq_zero_iff_homeo"
+      lean: "Jacobians.hasHolomorphicPrimitives"
+      module: "Jacobians/HolomorphicPrimitives.lean (+ Local/Chain/Monodromy)"
+      status: "proved"
+      note: "discrete analytic continuation along primitive chains; chain-independence + homotopy invariance; no integration"
 
 acknowledgements: >
   Built on Mathlib (Lean 4, pin 8e3c989). Degree/fibre well-definedness ported from B. Sanchez's
-  jacobian work (https://github.com/Brsanch/jacobian-lean-challenge, MIT) and audited axiom-clean. Primary mathematical sources: Forster GTM 81, Miranda
-  GSM 5, Griffiths–Harris. Challenge by Kevin Buzzard.
+  jacobian work (https://github.com/Brsanch/jacobian-lean-challenge, MIT), the rectangle Green's
+  theorem seed from tangentstorm/JacobianChallenge (MIT), and route-mapping insight from
+  mrdouglasny/jacobian-challenge (Apache-2.0); all ports audited axiom-clean. Primary mathematical
+  sources: Forster GTM 81, Miranda GSM 5, Griffiths-Harris. Challenge by Kevin Buzzard.
