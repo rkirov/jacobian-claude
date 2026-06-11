@@ -8,23 +8,23 @@ Authors: Rado Kirov
 
 Miranda runs the duality with a **meromorphic** 1-form `ω = h·dg₀` (`g₀` the nonconstant
 meromorphic function of `exists_nonconstant_meromorphic`).  This file is the pair-frame port of
-`TailDualityInjective` (the genus ≥ 1 holomorphic-ω₀ specialization, which stays as the banked
-first proof): the local coefficient of `h·dg₀` in the canonical chart at `p` is
+`TailDualityInjective` (the genus ≥ 1 holomorphic-ω₀ specialization): the local coefficient
+of `h·dg₀` in the canonical chart at `p` is
 `pairCoeffFun g₀ h p = (h ∘ chart⁻¹) · (g₀ ∘ chart⁻¹)'` — the integrand of the genus-free
-pair-form residue theorem, so the whole chain runs in EVERY genus.
+pair-form residue theorem, so the whole chain runs in every genus.
 
 Contents:
 * `pairOrderAt g₀ p` — the local order of `dg₀` (= `formOrderW (differentialForm g₀)`, the
   order bridge `pairOrderAt_eq_formOrderW`); finite everywhere for nonconstant `g₀`.
 * `pairCanonicalDivisor g₀ hg₀` — the canonical divisor `K = div (dg₀)`
-  (from the proven `exists_differentialForm_divisor`).
+  (from `exists_differentialForm_divisor`).
 * the order bridge `pairOrderBounded_iff_mem`: `h·dg₀ ∈ L^(1)(−D) ⟺ h ∈ L(K−D)`.
 * the residue-weight linearity lemmas and the descended **duality pairing**
   `pairDualMap : lSysModule (K−D) →ₗ (H¹(D))*` (descent input = the genus-free
   `tailResidue_tailMap_eq_zero`).
 * **Injectivity** (Miranda p. 188): a nonzero class `[h]` pairs against the single-monomial tail
   `z^{−1−o}·p` to the *leading Laurent coefficient*, nonzero by `laurentCoeff_order_ne_zero`.
-  Hence the EASY half of duality: `lDim (K − D) ≤ h1TailDim D` — no genus hypothesis.
+  Hence the easy half of duality: `lDim (K − D) ≤ h1TailDim D` — no genus hypothesis.
 
 The surjective half (Miranda pp. 189–191) is built separately in `PairDualitySurjective`.
 -/
@@ -37,12 +37,9 @@ open scoped Manifold ContDiff Topology
 open Filter Set
 open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
 
-set_option linter.unusedSectionVars false
-
 namespace Jacobians.LaurentTail
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ### §1 The order of `dg₀` and the canonical divisor `K = div (dg₀)` -/
 
@@ -50,41 +47,6 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 derivative `(g₀ ∘ chart⁻¹)'` at the chart centre (the pair-frame analog of `omegaOrderAt`). -/
 noncomputable def pairOrderAt (g₀ : MeromorphicFunction X) (p : X) : WithTop ℤ :=
   meromorphicOrderAt (deriv (g₀.toFun ∘ (chartAt (H := ℂ) p).symm)) ((chartAt (H := ℂ) p) p)
-
-/-- `pairOrderAt` is the form order of the genuine meromorphic 1-form `dg₀`
-(`CanonicalFormDifferential.formOrderW_differentialForm`). -/
-theorem pairOrderAt_eq_formOrderW (g₀ : MeromorphicFunction X) (p : X) :
-    pairOrderAt g₀ p = (differentialForm g₀).formOrderW p :=
-  (formOrderW_differentialForm g₀ p).symm
-
-/-- For nonconstant `g₀`, the order of `dg₀` is finite at every point: `dg₀ ≠ 0` somewhere
-(`differentialForm_ne_zero`) and the form identity theorem spreads it everywhere. -/
-theorem pairOrderAt_ne_top (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀) (p : X) :
-    pairOrderAt g₀ p ≠ ⊤ := by
-  rw [pairOrderAt_eq_formOrderW]
-  exact MeromorphicOneForm.formOrderW_ne_top_of_exists (differentialForm g₀)
-    (differentialForm_ne_zero hg₀) p
-
-/-- **The canonical divisor `K = div (dg₀)`** (Miranda p. 186; Forster 17.4): the divisor of the
-nonzero meromorphic 1-form `dg₀`, via the proven `exists_differentialForm_divisor`. -/
-noncomputable def pairCanonicalDivisor (g₀ : MeromorphicFunction X)
-    (hg₀ : ¬ IsGermConstant g₀) : Divisor X :=
-  (exists_differentialForm_divisor g₀ (differentialForm_ne_zero hg₀)).choose
-
-/-- `K = div (dg₀)` reads the form order of `dg₀` (the defining property, for the §17.4 datum). -/
-theorem formOrderW_pairCanonicalDivisor (g₀ : MeromorphicFunction X)
-    (hg₀ : ¬ IsGermConstant g₀) (p : X) :
-    (differentialForm g₀).formOrderW p = ((pairCanonicalDivisor g₀ hg₀ p : ℤ) : WithTop ℤ) :=
-  (exists_differentialForm_divisor g₀ (differentialForm_ne_zero hg₀)).choose_spec p
-
-/-- The canonical divisor reads the order: `(K p : WithTop ℤ) = pairOrderAt g₀ p`. -/
-theorem coe_pairCanonicalDivisor (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
-    (p : X) :
-    ((pairCanonicalDivisor g₀ hg₀ p : ℤ) : WithTop ℤ) = pairOrderAt g₀ p := by
-  rw [pairOrderAt_eq_formOrderW]
-  exact (formOrderW_pairCanonicalDivisor g₀ hg₀ p).symm
-
-/-! ### §2 The order bridge: `h·dg₀ ∈ L^(1)(−D) ⟺ h ∈ L(K−D)` -/
 
 /-- The order of the pair integrand is the order of `dg₀` plus the order of `h`. -/
 theorem meromorphicOrderAt_pairCoeffFun (g₀ h : MeromorphicFunction X) (p : X) :
@@ -95,17 +57,77 @@ theorem meromorphicOrderAt_pairCoeffFun (g₀ h : MeromorphicFunction X) (p : X)
       meromorphicOrderAt_mul (h.meromorphic p) ((g₀.meromorphic p).deriv),
     add_comm]
 
+/-- The weight vanishes for germ-zero `h`. -/
+theorem tailResidueWeight_eq_zero_of_germZero (g₀ : MeromorphicFunction X)
+    {h : MeromorphicFunction X} (hh : ∀ x, h.orderW x = ⊤) (q : X × ℤ) :
+    tailResidueWeight g₀ h q = 0 := by
+  have hev : (fun _ : ℂ => (0 : ℂ)) =ᶠ[𝓝[≠] ((chartAt (H := ℂ) q.1) q.1)]
+      pairCoeffFun g₀ h q.1 := by
+    have h0 := meromorphicOrderAt_eq_top_iff.mp (hh q.1)
+    filter_upwards [h0] with z hz
+    show (0 : ℂ) = h.toFun ((chartAt (H := ℂ) q.1).symm z)
+      * deriv (fun w => g₀.toFun ((chartAt (H := ℂ) q.1).symm w)) z
+    rw [show h.toFun ((chartAt (H := ℂ) q.1).symm z)
+      = (h.toFun ∘ (chartAt (H := ℂ) q.1).symm) z from rfl, hz, zero_mul]
+  rw [tailResidueWeight, ← laurentCoeff_congr hev, laurentCoeff_def]
+  have h0 : (fun z => (fun _ : ℂ => (0 : ℂ)) z
+      * (z - ((chartAt (H := ℂ) q.1) q.1)) ^ (-(-1 - q.2) - 1)) = fun _ : ℂ => (0 : ℂ) := by
+    funext z
+    ring
+  rw [h0]
+  exact Jacobians.Dolbeault.resAt_eq_zero_of_analyticAt analyticAt_const
+
+/-- `pairOrderAt` is the form order of the genuine meromorphic 1-form `dg₀`
+(`CanonicalFormDifferential.formOrderW_differentialForm`). -/
+theorem pairOrderAt_eq_formOrderW [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (p : X) :
+    pairOrderAt g₀ p = (differentialForm g₀).formOrderW p :=
+  (formOrderW_differentialForm g₀ p).symm
+
+/-- For nonconstant `g₀`, the order of `dg₀` is finite at every point: `dg₀ ≠ 0` somewhere
+(`differentialForm_ne_zero`) and the form identity theorem spreads it everywhere. -/
+theorem pairOrderAt_ne_top [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀) (p : X) :
+    pairOrderAt g₀ p ≠ ⊤ := by
+  rw [pairOrderAt_eq_formOrderW]
+  exact MeromorphicOneForm.formOrderW_ne_top_of_exists (differentialForm g₀)
+    (differentialForm_ne_zero hg₀) p
+
+/-- **The canonical divisor `K = div (dg₀)`** (Miranda p. 186; Forster 17.4): the divisor of the
+nonzero meromorphic 1-form `dg₀`, via `exists_differentialForm_divisor`. -/
+noncomputable def pairCanonicalDivisor [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X)
+    (hg₀ : ¬ IsGermConstant g₀) : Divisor X :=
+  (exists_differentialForm_divisor g₀ (differentialForm_ne_zero hg₀)).choose
+
+/-- `K = div (dg₀)` reads the form order of `dg₀` (the defining property, for the §17.4 datum). -/
+theorem formOrderW_pairCanonicalDivisor [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X)
+    (hg₀ : ¬ IsGermConstant g₀) (p : X) :
+    (differentialForm g₀).formOrderW p = ((pairCanonicalDivisor g₀ hg₀ p : ℤ) : WithTop ℤ) :=
+  (exists_differentialForm_divisor g₀ (differentialForm_ne_zero hg₀)).choose_spec p
+
+/-- The canonical divisor reads the order: `(K p : WithTop ℤ) = pairOrderAt g₀ p`. -/
+theorem coe_pairCanonicalDivisor [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+    (p : X) :
+    ((pairCanonicalDivisor g₀ hg₀ p : ℤ) : WithTop ℤ) = pairOrderAt g₀ p := by
+  rw [pairOrderAt_eq_formOrderW]
+  exact (formOrderW_pairCanonicalDivisor g₀ hg₀ p).symm
+
+/-! ### §2 The order bridge: `h·dg₀ ∈ L^(1)(−D) ⟺ h ∈ L(K−D)` -/
+
 /-- **The order bridge** (Miranda p. 187): `h·dg₀` has order ≥ `D` everywhere iff
 `h ∈ L(K − D)` for the canonical divisor `K = div (dg₀)`. -/
-theorem pairOrderBounded_iff_mem (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+theorem pairOrderBounded_iff_mem [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (h : MeromorphicFunction X) (D : Divisor X) :
     PairOrderBounded g₀ h D
       ↔ h ∈ linearSystem (X := X) (pairCanonicalDivisor g₀ hg₀ - D) := by
   have hmem : ∀ p : X, ((pairCanonicalDivisor g₀ hg₀ - D) p : ℤ) =
       pairCanonicalDivisor g₀ hg₀ p - D p := fun p => Finsupp.sub_apply _ _ _
   constructor
-  · intro hbd
-    intro p
+  · intro hbd p
     have h1 := hbd p
     rw [meromorphicOrderAt_pairCoeffFun] at h1
     obtain ⟨k, hk⟩ := WithTop.ne_top_iff_exists.mp (pairOrderAt_ne_top g₀ hg₀ p)
@@ -142,7 +164,8 @@ theorem pairOrderBounded_iff_mem (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGe
 /-! ### §3 Linearity of the residue weight in `h` -/
 
 /-- The weight is additive in `h`. -/
-theorem tailResidueWeight_add (g₀ h₁ h₂ : MeromorphicFunction X) (q : X × ℤ) :
+theorem tailResidueWeight_add [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ h₁ h₂ : MeromorphicFunction X) (q : X × ℤ) :
     tailResidueWeight g₀ (h₁ + h₂) q
       = tailResidueWeight g₀ h₁ q + tailResidueWeight g₀ h₂ q := by
   rw [tailResidueWeight, tailResidueWeight, tailResidueWeight,
@@ -155,7 +178,8 @@ theorem tailResidueWeight_add (g₀ h₁ h₂ : MeromorphicFunction X) (q : X ×
   ring
 
 /-- The weight is homogeneous in `h`. -/
-theorem tailResidueWeight_smul (g₀ : MeromorphicFunction X) (a : ℂ)
+theorem tailResidueWeight_smul [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (a : ℂ)
     (h : MeromorphicFunction X) (q : X × ℤ) :
     tailResidueWeight g₀ (a • h) q = a * tailResidueWeight g₀ h q := by
   rw [tailResidueWeight, tailResidueWeight,
@@ -165,31 +189,12 @@ theorem tailResidueWeight_smul (g₀ : MeromorphicFunction X) (a : ℂ)
   simp only [pairCoeffFun, MeromorphicFunction.smul_toFun, Pi.smul_apply, smul_eq_mul]
   ring
 
-/-- The weight vanishes for germ-zero `h`. -/
-theorem tailResidueWeight_eq_zero_of_germZero (g₀ : MeromorphicFunction X)
-    {h : MeromorphicFunction X} (hh : ∀ x, h.orderW x = ⊤) (q : X × ℤ) :
-    tailResidueWeight g₀ h q = 0 := by
-  have hev : (fun _ : ℂ => (0 : ℂ)) =ᶠ[𝓝[≠] ((chartAt (H := ℂ) q.1) q.1)]
-      pairCoeffFun g₀ h q.1 := by
-    have h0 := meromorphicOrderAt_eq_top_iff.mp (hh q.1)
-    filter_upwards [h0] with z hz
-    show (0 : ℂ) = h.toFun ((chartAt (H := ℂ) q.1).symm z)
-      * deriv (fun w => g₀.toFun ((chartAt (H := ℂ) q.1).symm w)) z
-    rw [show h.toFun ((chartAt (H := ℂ) q.1).symm z)
-      = (h.toFun ∘ (chartAt (H := ℂ) q.1).symm) z from rfl, hz, zero_mul]
-  rw [tailResidueWeight, ← laurentCoeff_congr hev, laurentCoeff_def]
-  have h0 : (fun z => (fun _ : ℂ => (0 : ℂ)) z
-      * (z - ((chartAt (H := ℂ) q.1) q.1)) ^ (-(-1 - q.2) - 1)) = fun _ : ℂ => (0 : ℂ) := by
-    funext z
-    ring
-  rw [h0]
-  exact Jacobians.Dolbeault.resAt_eq_zero_of_analyticAt analyticAt_const
-
 /-! ### §4 The duality pairing and injectivity (Miranda p. 188) -/
 
 /-- **The Serre duality pairing, on representatives**: for `h ∈ L(K−D)` the descended residue
 functional on `H¹(D)` (descent = the genus-free `tailResidue_tailMap_eq_zero`). -/
-noncomputable def pairDualFun (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+noncomputable def pairDualFun [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (D : Divisor X)
     (h : ↥(linearSystem (X := X) (pairCanonicalDivisor g₀ hg₀ - D))) :
     Module.Dual ℂ (mittagLefflerH1 (X := X) D) :=
@@ -199,7 +204,8 @@ noncomputable def pairDualFun (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermC
     exact tailResidue_tailMap_eq_zero g₀ h.1
       ((pairOrderBounded_iff_mem g₀ hg₀ h.1 D).mpr h.2) f)
 
-@[simp] theorem pairDualFun_mk (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+@[simp] theorem pairDualFun_mk [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (D : Divisor X)
     (h : ↥(linearSystem (X := X) (pairCanonicalDivisor g₀ hg₀ - D)))
     (Z : ↥(tailSubspace (X := X) D)) :
@@ -209,7 +215,8 @@ noncomputable def pairDualFun (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermC
 
 /-- The pairing bundled as a linear map `L(K−D) →ₗ (H¹(D))*` (linearity in `h` from the weight
 linearity). -/
-noncomputable def pairDualMapAux (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+noncomputable def pairDualMapAux [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (D : Divisor X) :
     ↥(linearSystem (X := X) (pairCanonicalDivisor g₀ hg₀ - D))
       →ₗ[ℂ] Module.Dual ℂ (mittagLefflerH1 (X := X) D) where
@@ -237,7 +244,8 @@ noncomputable def pairDualMapAux (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGe
 
 /-- **The Serre duality pairing** `ι : L(K−D)/germ0 →ₗ (H¹(D))*` (Miranda Thm 3.3's map, on the
 junk-free quotient that defines `lDim`). -/
-noncomputable def pairDualMap (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+noncomputable def pairDualMap [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (D : Divisor X) :
     (↥(linearSystem (X := X) (pairCanonicalDivisor g₀ hg₀ - D))
         ⧸ (germZeroSubmodule (X := X)).submoduleOf
@@ -258,7 +266,8 @@ noncomputable def pairDualMap (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermC
 against the single-monomial tail `z^{−1−o}·p` (at a point `p` where `h`'s germ survives, `o` the
 local order of `h·dg₀`) to the leading Laurent coefficient — nonzero by
 `laurentCoeff_order_ne_zero`. -/
-theorem pairDualMap_injective (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+theorem pairDualMap_injective [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (D : Divisor X) :
     Function.Injective (pairDualMap g₀ hg₀ D) := by
   rw [injective_iff_map_eq_zero]
@@ -269,7 +278,7 @@ theorem pairDualMap_injective (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermC
   -- a point where the germ of `h` survives
   have hex : ∃ p : X, (h : MeromorphicFunction X).orderW p ≠ ⊤ := by
     by_contra hall
-    push_neg at hall
+    push Not at hall
     exact hcon fun x => hall x
   obtain ⟨p, hp⟩ := hex
   -- the (finite) order of the integrand `h·dg₀` at `p`
@@ -316,12 +325,13 @@ theorem pairDualMap_injective (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermC
       = pairDualFun g₀ hg₀ D h from rfl, pairDualFun_mk] at happ
   exact hne0 (hval ▸ happ)
 
-/-- **The EASY half of Serre duality for the tail `H¹`** (Miranda Thm 3.3, injectivity):
+/-- **The easy half of Serre duality for the tail `H¹`** (Miranda Thm 3.3, injectivity):
 
   `l(K − D) ≤ h¹(D)`
 
 for the canonical divisor `K = div (dg₀)` of any nonconstant meromorphic `g₀` — every genus. -/
-theorem lDim_pairCanonical_sub_le_h1TailDim (g₀ : MeromorphicFunction X)
+theorem lDim_pairCanonical_sub_le_h1TailDim [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X)
     (hg₀ : ¬ IsGermConstant g₀) (D : Divisor X) :
     lDim (X := X) (pairCanonicalDivisor g₀ hg₀ - D) ≤ h1TailDim (X := X) D :=
   SerreDuality.finrank_le_of_injective_to_dual (pairDualMap g₀ hg₀ D)

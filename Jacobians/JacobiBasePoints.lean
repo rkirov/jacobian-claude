@@ -24,12 +24,11 @@ import Jacobians.Dolbeault.FormCoeff
 open scoped Manifold ContDiff
 open Module
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The chart-centre evaluation functional -/
 

@@ -5,7 +5,8 @@ import Jacobians.SurfacePositivity
 # Box-level Riemann positivity
 
 Combining the two analytic leaves
-* `Jacobians.integral_normSq_eq_boundary` (Green bridge: `∬_box ‖h‖² = −(i/2)·∮_{∂box} F̄·h dz`), and
+* `Jacobians.integral_normSq_eq_boundary` (Green bridge: `∬_box ‖h‖² = −(i/2)·∮_{∂box} F̄·h dz`),
+and
 * `Jacobians.integral_normSq_pos` (surface positivity: `∬_box ‖h‖² > 0` for `h ≢ 0`),
 
 this file packages the boundary integral `∮_{∂box} F̄·h dz` as `boundaryForm h F` and proves it
@@ -67,7 +68,8 @@ theorem boundaryForm_eq_area (hbox : wCLM '' (Icc 0 1 ×ˢ Icc 0 1) ⊆ U)
   exact intervalIntegral.integral_ofReal
 
 /-- **Box-level Riemann positivity.** For `h` holomorphic on `U ⊇ [0,1]²` with primitive `F`, if `h`
-is nonzero somewhere in the open box then `−(i/2)·∮_{∂box} F̄·h dz` is a *strictly positive real*. -/
+is nonzero somewhere in the open box then `−(i/2)·∮_{∂box} F̄·h dz` is a *strictly positive real*.
+-/
 theorem boundaryForm_pos (hbox : wCLM '' (Icc 0 1 ×ˢ Icc 0 1) ⊆ U)
     (hh : ∀ z ∈ U, HasDerivAt h (deriv h z) z)
     (hF : ∀ z ∈ U, HasDerivAt F (h z) z)

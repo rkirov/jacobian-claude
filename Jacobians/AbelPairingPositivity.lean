@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-3 (positivity layer): `⟨η, ω̄⟩`-nondegeneracy (Forster 19.9)
+# Positivity for the Abel pairing: `⟨η, ω̄⟩`-nondegeneracy (Forster 19.9)
 
 The pairing of a nonzero holomorphic 1-form against its own conjugate is nonzero:
 
@@ -14,15 +14,13 @@ positivity) and at a point where `η ≠ 0` some PoU weight is positive.  Togeth
 ℂ-scaling rules (`pairForm_cSmul_const`, `conjForm_smul/add/sum`), this gives the
 invertibility of the period Gram matrix `pairMatrix` in `AbelDbarKill`.
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 19.6/19.9 (pp. 155–156);
-plan `docs/walls_bc_plan_2026-06-10.md`, phase C-3 (E3c).
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 19.6/19.9 (pp. 155–156).
 -/
 import Jacobians.AbelPairingStokes
 
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open Set Filter Complex MeasureTheory

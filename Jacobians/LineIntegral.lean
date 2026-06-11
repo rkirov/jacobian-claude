@@ -33,32 +33,33 @@ intrinsic tangent vector modulo the chart identification
 `TangentSpace 𝓘(ℂ) (γ t) = ℂ` that Mathlib uses.
 
 Chart-independence of the line integral (the full "intrinsic"
-well-definedness) is a TODO(math).
+well-definedness) is not formalized; every development downstream uses
+this one fixed chart-based definition, so no compatibility lemma is
+needed.
 
 ## References
 
 Forster §§10–12; Miranda Ch. 4 §§3–4.
 -/
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 
 open scoped Manifold ContDiff Bundle Topology
 open MeasureTheory Filter
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- Complex speed of `γ` at `t`, expressed in the chart around `γ t`. -/
-noncomputable def pathSpeed (γ : ℝ → X) (t : ℝ) : ℂ :=
+noncomputable def pathSpeed {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (γ : ℝ → X) (t : ℝ)
+    : ℂ :=
   fderiv ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t 1
 
 /-- Line integral of a holomorphic 1-form `α` along a smooth path `γ`.
 
 `∫_γ α := ∫ t in 0..1, α(γ t)(γ'(t))`, where `γ'(t)` is computed via
 `pathSpeed`. -/
-noncomputable def lineIntegral (α : HolomorphicOneForms X) (γ : ℝ → X) : ℂ :=
+noncomputable def lineIntegral {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X)
+    (γ : ℝ → X) : ℂ :=
   ∫ t in (0 : ℝ)..1, α.toFun (γ t) (pathSpeed γ t)
 
 /-! ### Phase 1a of the Abel–Jacobi plan: vector line integral -/
@@ -66,12 +67,16 @@ noncomputable def lineIntegral (α : HolomorphicOneForms X) (γ : ℝ → X) : �
 /-- Vector line integral of a tuple of holomorphic 1-forms along `γ`.
 The building block for the "period map" `Fin (genus X) → ℂ` whose
 image (over closed loops at a basepoint) is the period lattice. -/
-noncomputable def lineIntegralVec {n : ℕ} (forms : Fin n → HolomorphicOneForms X)
+noncomputable def lineIntegralVec {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {n : ℕ}
+    (forms : Fin n → HolomorphicOneForms X)
     (γ : ℝ → X) : Fin n → ℂ :=
   fun i => lineIntegral (forms i) γ
 
 @[simp]
-theorem lineIntegralVec_apply {n : ℕ} (forms : Fin n → HolomorphicOneForms X)
+theorem lineIntegralVec_apply {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {n : ℕ}
+    (forms : Fin n → HolomorphicOneForms X)
     (γ : ℝ → X) (i : Fin n) :
     lineIntegralVec forms γ i = lineIntegral (forms i) γ := rfl
 
@@ -85,7 +90,8 @@ integrable on [0,1]", will add a hypothesis-free variant once the
 path-regularity infrastructure is built out). -/
 
 /-- `lineIntegral (0 : HOF X) γ = 0`. -/
-theorem lineIntegral_zero (γ : ℝ → X) :
+theorem lineIntegral_zero {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (γ : ℝ → X) :
     lineIntegral (0 : HolomorphicOneForms X) γ = 0 := by
   unfold lineIntegral
   have h_zero : ∀ t : ℝ,
@@ -94,7 +100,9 @@ theorem lineIntegral_zero (γ : ℝ → X) :
   exact intervalIntegral.integral_zero
 
 /-- Additivity of `lineIntegral` in the form, under integrability. -/
-theorem lineIntegral_add (α β : HolomorphicOneForms X) (γ : ℝ → X)
+theorem lineIntegral_add {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α β : HolomorphicOneForms X)
+    (γ : ℝ → X)
     (hα : IntervalIntegrable (fun t : ℝ => α.toFun (γ t) (pathSpeed γ t))
       MeasureTheory.volume 0 1)
     (hβ : IntervalIntegrable (fun t : ℝ => β.toFun (γ t) (pathSpeed γ t))
@@ -108,7 +116,9 @@ theorem lineIntegral_add (α β : HolomorphicOneForms X) (γ : ℝ → X)
   exact intervalIntegral.integral_add hα hβ
 
 /-- Scalar-homogeneity of `lineIntegral` in the form. -/
-theorem lineIntegral_smul (c : ℂ) (α : HolomorphicOneForms X) (γ : ℝ → X) :
+theorem lineIntegral_smul {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (c : ℂ) (α : HolomorphicOneForms X)
+    (γ : ℝ → X) :
     lineIntegral (c • α) γ = c * lineIntegral α γ := by
   unfold lineIntegral
   have h_pw : ∀ t : ℝ,
@@ -120,7 +130,9 @@ theorem lineIntegral_smul (c : ℂ) (α : HolomorphicOneForms X) (γ : ℝ → X
   exact intervalIntegral.integral_const_mul c _
 
 /-- Negation: `lineIntegral (-α) γ = -lineIntegral α γ`. -/
-theorem lineIntegral_neg (α : HolomorphicOneForms X) (γ : ℝ → X) :
+theorem lineIntegral_neg {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X)
+    (γ : ℝ → X) :
     lineIntegral (-α) γ = -lineIntegral α γ := by
   have h : -α = (-1 : ℂ) • α := by rw [neg_smul, one_smul]
   rw [h, lineIntegral_smul]; ring
@@ -135,7 +147,8 @@ identically zero; its integral is zero. -/
 /-- `pathSpeed (fun _ => P) t = 0`: the tangent of a constant curve
 is zero. Chart pullback of a constant map is constant in ℂ, whose
 fderiv is zero. -/
-theorem pathSpeed_const (P : X) (t : ℝ) :
+theorem pathSpeed_const {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (P : X) (t : ℝ) :
     pathSpeed (fun _ : ℝ => P) t = 0 := by
   unfold pathSpeed
   have h_const : (chartAt (H := ℂ) P).toFun ∘ (fun _ : ℝ => P) =
@@ -145,7 +158,9 @@ theorem pathSpeed_const (P : X) (t : ℝ) :
   rfl
 
 /-- **Line integral of any form along a constant path is zero.** -/
-theorem lineIntegral_const (α : HolomorphicOneForms X) (P : X) :
+theorem lineIntegral_const {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X) (P : X)
+    :
     lineIntegral α (fun _ : ℝ => P) = 0 := by
   unfold lineIntegral
   -- integrand: α.toFun P (pathSpeed (fun _ => P) t) = α.toFun P 0 = 0.
@@ -165,19 +180,15 @@ reversal. The pathSpeed identity `pathSpeed (reverse γ) t =
 pullback at `1 - t`. -/
 
 /-- Time-reversal of a path: `reverse γ t := γ (1 - t)`. -/
-def reverse (γ : ℝ → X) : ℝ → X := fun t => γ (1 - t)
+def reverse {X : Type*} (γ : ℝ → X) : ℝ → X := fun t => γ (1 - t)
 
-omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
-@[simp] theorem reverse_apply (γ : ℝ → X) (t : ℝ) :
+@[simp] theorem reverse_apply {X : Type*} (γ : ℝ → X) (t : ℝ) :
     reverse γ t = γ (1 - t) := rfl
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [IsManifold 𝓘(ℂ) ω X] in
 /-- pathSpeed under reversal: sign flip + reparametrization. Requires
 chart-pullback `(chartAt ℂ (γ(1-t))).toFun ∘ γ` to be differentiable
 at `1 - t` (which holds for smooth γ at points in the chart source). -/
-theorem pathSpeed_reverse (γ : ℝ → X) (t : ℝ)
+theorem pathSpeed_reverse {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (γ : ℝ → X) (t : ℝ)
     (hdiff : DifferentiableAt ℝ
       ((chartAt (H := ℂ) (γ (1 - t))).toFun ∘ γ) (1 - t)) :
     pathSpeed (reverse γ) t = -pathSpeed γ (1 - t) := by
@@ -205,7 +216,9 @@ theorem pathSpeed_reverse (γ : ℝ → X) (t : ℝ)
 
 /-- Line integral reverses sign under path reversal, under
 differentiability of the chart pullback on [0, 1]. -/
-theorem lineIntegral_reverse (α : HolomorphicOneForms X) (γ : ℝ → X)
+theorem lineIntegral_reverse {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X)
+    (γ : ℝ → X)
     (hdiff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
       DifferentiableAt ℝ ((chartAt (H := ℂ) (γ (1 - t))).toFun ∘ γ) (1 - t)) :
     lineIntegral α (reverse γ) = -lineIntegral α γ := by
@@ -236,24 +249,19 @@ each at double speed. The line integral adds. -/
 `γ 1 = γ' 0` is not enforced in the definition itself (it's needed
 for the concatenation to be continuous at `t = 1/2`, which is
 assumed when invoking `lineIntegral_concat`). -/
-noncomputable def concat (γ γ' : ℝ → X) : ℝ → X :=
+noncomputable def concat {X : Type*} (γ γ' : ℝ → X) : ℝ → X :=
   fun t => if t ≤ 1/2 then γ (2 * t) else γ' (2 * t - 1)
 
-omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
-theorem concat_apply_left (γ γ' : ℝ → X) {t : ℝ} (ht : t ≤ 1/2) :
+theorem concat_apply_left {X : Type*} (γ γ' : ℝ → X) {t : ℝ} (ht : t ≤ 1/2) :
     concat γ γ' t = γ (2 * t) := if_pos ht
 
-omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
-theorem concat_apply_right (γ γ' : ℝ → X) {t : ℝ} (ht : ¬ t ≤ 1/2) :
+theorem concat_apply_right {X : Type*} (γ γ' : ℝ → X) {t : ℝ} (ht : ¬ t ≤ 1/2) :
     concat γ γ' t = γ' (2 * t - 1) := if_neg ht
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [IsManifold 𝓘(ℂ) ω X] in
 /-- pathSpeed of `concat γ γ'` on the strict left half: equals
 `2 * pathSpeed γ (2t)` via chain rule on `γ ∘ (2·)`. -/
-theorem pathSpeed_concat_left (γ γ' : ℝ → X) (t : ℝ) (ht : t < 1/2)
+theorem pathSpeed_concat_left {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (γ γ' : ℝ → X)
+    (t : ℝ) (ht : t < 1/2)
     (hdiff : DifferentiableAt ℝ
       ((chartAt (H := ℂ) (γ (2 * t))).toFun ∘ γ) (2 * t)) :
     pathSpeed (concat γ γ') t = 2 * pathSpeed γ (2 * t) := by
@@ -294,11 +302,10 @@ theorem pathSpeed_concat_left (γ γ' : ℝ → X) (t : ℝ) (ht : t < 1/2)
         (fderiv ℝ ψ (2 * t)).map_smul (2 : ℝ) (1 : ℝ)
     _ = 2 * (fderiv ℝ ψ (2 * t)) 1 := by rw [Complex.real_smul]; push_cast; ring
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [IsManifold 𝓘(ℂ) ω X] in
 /-- pathSpeed of `concat γ γ'` on the strict right half: equals
 `2 * pathSpeed γ' (2t - 1)` via chain rule on `γ' ∘ (2·-1)`. -/
-theorem pathSpeed_concat_right (γ γ' : ℝ → X) (t : ℝ) (ht : 1/2 < t)
+theorem pathSpeed_concat_right {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (γ γ' : ℝ → X)
+    (t : ℝ) (ht : 1/2 < t)
     (hdiff : DifferentiableAt ℝ
       ((chartAt (H := ℂ) (γ' (2 * t - 1))).toFun ∘ γ') (2 * t - 1)) :
     pathSpeed (concat γ γ') t = 2 * pathSpeed γ' (2 * t - 1) := by
@@ -334,7 +341,9 @@ theorem pathSpeed_concat_right (γ γ' : ℝ → X) (t : ℝ) (ht : 1/2 < t)
     _ = 2 * (fderiv ℝ ψ' (2 * t - 1)) 1 := by rw [Complex.real_smul]; push_cast; ring
 
 /-- Left half of the concat integral, reparametrized to `lineIntegral α γ`. -/
-private lemma lineIntegral_concat_left (α : HolomorphicOneForms X) (γ γ' : ℝ → X)
+private lemma lineIntegral_concat_left {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X)
+    (γ γ' : ℝ → X)
     (_hint_γ : IntervalIntegrable
       (fun u : ℝ => α.toFun (γ u) (pathSpeed γ u)) volume 0 1)
     (h_ae : ∀ᵐ t ∂(volume.restrict (Set.uIoc (0 : ℝ) (1/2))),
@@ -374,7 +383,9 @@ private lemma lineIntegral_concat_left (α : HolomorphicOneForms X) (γ γ' : �
     _ = ∫ t in (0 : ℝ)..1, α.toFun (γ t) (pathSpeed γ t) := h_sub_mul
 
 /-- Right half of the concat integral, reparametrized to `lineIntegral α γ'`. -/
-private lemma lineIntegral_concat_right (α : HolomorphicOneForms X) (γ γ' : ℝ → X)
+private lemma lineIntegral_concat_right {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (α : HolomorphicOneForms X) (γ γ' : ℝ → X)
     (_hint_γ' : IntervalIntegrable
       (fun u : ℝ => α.toFun (γ' u) (pathSpeed γ' u)) volume 0 1)
     (h_ae : ∀ᵐ t ∂(volume.restrict (Set.uIoc ((1 : ℝ)/2) 1)),
@@ -404,7 +415,9 @@ private lemma lineIntegral_concat_right (α : HolomorphicOneForms X) (γ γ' : �
 assuming smoothness of each half in the chart pullback, the matching
 condition at `t = 1/2`, and integrability / pointwise identities
 expressing `pathSpeed (concat)` via the chain rule on each half. -/
-theorem lineIntegral_concat (α : HolomorphicOneForms X) (γ γ' : ℝ → X)
+theorem lineIntegral_concat {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X)
+    (γ γ' : ℝ → X)
     (hint_γ : IntervalIntegrable
       (fun u : ℝ => α.toFun (γ u) (pathSpeed γ u)) volume 0 1)
     (hint_γ' : IntervalIntegrable
@@ -489,8 +502,9 @@ The proof (complete below) is a three-step chart computation:
 3. `fderiv ℂ f_loc (chart_X (γ t)) = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t)` via
    `MDifferentiableAt.mfderiv` + `writtenInExtChartAt` unfolding. -/
 theorem pathSpeed_comp_eq_mfderiv
+    {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
     {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
-    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    [ConnectedSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X) (t : ℝ)
     (hγ_cont : ContinuousAt γ t)
     (hγ_diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
@@ -552,7 +566,8 @@ theorem pathSpeed_comp_eq_mfderiv
     rw [ModelWithCorners.range_eq_univ, fderivWithin_univ]
     -- Need: fderiv ℂ (writtenInExtChartAt 𝓘(ℂ) 𝓘(ℂ) (γ t) f) ((extChartAt 𝓘(ℂ) (γ t)) (γ t))
     --     = fderiv ℂ f_loc (g_X t)
-    -- These are equal up to definitional unfolding (writtenInExtChartAt = f_loc, extChartAt x x = g_X t).
+    -- These are equal up to definitional unfolding (writtenInExtChartAt = f_loc, extChartAt x x =
+    -- g_X t).
     congr 1
   -- Step 8: Assemble.
   -- pathSpeed (f ∘ γ) t
@@ -582,9 +597,10 @@ The `hγ_diff` hypothesis — `γ` is C¹-smooth in chart pullbacks for
 `t ∈ [0, 1]` — is the usual path-regularity required for line
 integrals to behave sensibly. For smooth closed loops (the use case
 in the period lattice), this holds automatically. -/
-theorem lineIntegral_pullback
+theorem lineIntegral_pullback {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
-    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    [ConnectedSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (α : HolomorphicOneForms Y) (γ : ℝ → X)
     (hγ_cont : Continuous γ)
@@ -597,5 +613,6 @@ theorem lineIntegral_pullback
     (α.toFun (f (γ t))).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t)) (pathSpeed γ t)
   rw [ContinuousLinearMap.comp_apply,
     pathSpeed_comp_eq_mfderiv f hf γ t hγ_cont.continuousAt (hγ_diff t ht)]
+
 
 end Jacobians

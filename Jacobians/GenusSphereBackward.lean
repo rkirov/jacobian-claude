@@ -58,7 +58,6 @@ open scoped Manifold ContDiff Topology
 
 namespace Jacobians
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -74,7 +73,7 @@ theorem exists_ne_zero_holomorphicOneForm_of_genus_pos (h : 1 ≤ genus X) :
   have : Nontrivial (HolomorphicOneForms X) := Module.nontrivial_of_finrank_pos hpos
   exact exists_ne 0
 
-/-- **Step 1, contrapositive form** — the exact logical shape the endgame consumes.
+/-- **Step 1, contrapositive form** — the exact logical shape the headline proof consumes.
 If *every* global holomorphic `1`-form vanishes, the genus is `0`.  (This is the conclusion
 the route delivers: route steps 2–5 show, under `X ≃ₜ S²`, that no nonzero form can exist.) -/
 theorem genus_eq_zero_of_forall_holomorphicOneForm_eq_zero
@@ -89,21 +88,20 @@ theorem genus_eq_zero_of_forall_holomorphicOneForm_eq_zero
 /-- **Step 5 (transport).** A homeomorphism transports simple connectivity:
 if `Y` is simply connected and `X ≃ₜ Y`, then `X` is simply connected.
 Via `Homeomorph.toHomotopyEquiv` and `ContinuousMap.HomotopyEquiv.simplyConnectedSpace`. -/
-theorem simplyConnectedSpace_of_homeo {Y : Type*} [TopologicalSpace Y]
-    [SimplyConnectedSpace Y] (e : X ≃ₜ Y) : SimplyConnectedSpace X :=
+theorem simplyConnectedSpace_of_homeo {X : Type*} [TopologicalSpace X] {Y : Type*}
+    [TopologicalSpace Y] [SimplyConnectedSpace Y] (e : X ≃ₜ Y) : SimplyConnectedSpace X :=
   e.toHomotopyEquiv.simplyConnectedSpace
 
 /-- **Step 5 (transport), `iff` form.** Simple connectivity is a homeomorphism invariant. -/
-theorem simplyConnectedSpace_iff_of_homeo {Y : Type*} [TopologicalSpace Y] (e : X ≃ₜ Y) :
+theorem simplyConnectedSpace_iff_of_homeo {X : Type*} [TopologicalSpace X] {Y : Type*}
+    [TopologicalSpace Y] (e : X ≃ₜ Y) :
     SimplyConnectedSpace X ↔ SimplyConnectedSpace Y :=
   e.toHomotopyEquiv.simplyConnectedSpace_iff
 
-/-- **Step 5, specialised to the `2`-sphere.** *If* `S² ⊆ ℝ³` is simply connected
-(an input still missing from Mathlib — a `proof_wanted` in
-`Mathlib/Geometry/Manifold/PoincareConjecture.lean`), then any `X ≃ₜ S²` is simply connected.
-Phrased with `SimplyConnectedSpace (sphere …)` as an explicit hypothesis so the statement is
-**complete** and ready to be discharged the moment that instance lands. -/
-theorem simplyConnectedSpace_of_homeo_sphere
+/-- **Step 5, specialised to the `2`-sphere.** If `S² ⊆ ℝ³` is simply connected, then any
+`X ≃ₜ S²` is simply connected.  Phrased with `SimplyConnectedSpace (sphere …)` as an explicit
+hypothesis; it is discharged by `Jacobians/SphereSimplyConnected.lean`. -/
+theorem simplyConnectedSpace_of_homeo_sphere {X : Type*} [TopologicalSpace X]
     (hS : SimplyConnectedSpace (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1))
     (e : X ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1) :
     SimplyConnectedSpace X :=

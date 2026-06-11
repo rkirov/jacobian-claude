@@ -20,7 +20,6 @@ import Jacobians.LinearSystem
 import Jacobians.DegDivResidue
 import Jacobians.ProperMapDegreeSheets
 
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 
@@ -29,11 +28,14 @@ namespace Jacobians
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- Every principal divisor has degree `0` (Forster Cor. 4.25 / the argument principle). **PROVEN**
-via the **degree route**: `deg (div f) = zerosCount f − polesCount f` (`deg_div_eq_zeros_sub_poles`),
-and both counts equal a common proper-map degree `d` (`ProperMapDegreeSheets.exists_properMapDegree_proven`,
+/-- Every principal divisor has degree `0` (Forster Cor. 4.25 / the argument principle),
+via the **degree route**: `deg (div f) = zerosCount f − polesCount f`
+(`deg_div_eq_zeros_sub_poles`),
+and both counts equal a common proper-map degree `d`
+(`ProperMapDegreeSheets.exists_properMapDegree_proven`,
 the §17.9 conservation-of-number construction — now axiom-clean), so the difference is `0`. The RR
-derivations downstream consume this `deg_div`. (The old standalone `DegDivResidue.exists_properMapDegree`
+derivations downstream consume this `deg_div`. (The old standalone
+`DegDivResidue.exists_properMapDegree`
 that approach is now superseded by this proven route and no longer on any critical path.) -/
 theorem MeromorphicFunction.deg_div (f : MeromorphicFunction X) :
     Divisor.deg X f.div = 0 := by
@@ -49,7 +51,7 @@ theorem lDim_eq_zero_of_deg_neg (D : Divisor X) (hD : Divisor.deg X D < 0) :
     intro f hf
     by_contra hng
     have hex : ∃ x₀, f.orderW x₀ ≠ ⊤ := by
-      by_contra h; push_neg at h; exact hng h
+      by_contra h; push Not at h; exact hng h
     have hfaith : ∀ z : X, f.orderW z ≠ ⊤ := fun z =>
       MeromorphicFunction.orderW_ne_top_of_exists f hex z
     have hdiv : ∀ x, -(D x) ≤ (f.div : Divisor X) x := by

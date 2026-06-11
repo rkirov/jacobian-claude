@@ -19,7 +19,7 @@ by the genus-free 1-form residue theorem (`residueSum_pairForm_mul_eq_zero_uncon
 the planar-Stokes ledger) — the residue of `f·ω` at `p` depends only on `f`'s Laurent tail
 below `−D(p)`, because the rest of `f` against `ω` has order ≥ `−D(p) + D(p) = 0`.  Hence
 `Res_ω` descends to the Mittag-Leffler obstruction space `H¹(D) = 𝒯[D]/im(α_D)` — the
-functional `tailResidueH1` that feeds the Serre duality pairing — in EVERY genus.
+functional `tailResidueH1` that feeds the Serre duality pairing — in every genus.
 
 The planar core is `resAt_mul_eq_sum_tailPairing`: a *uniform window* form of "the residue of a
 product reads only the tail" (the window may be empty, subsuming the no-pole case).
@@ -32,8 +32,6 @@ import Jacobians.Dolbeault.AnnulusResidueIntegral
 open scoped Manifold ContDiff Topology
 open Filter Set
 open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
-
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.LaurentTail
 
@@ -85,7 +83,7 @@ theorem meromorphicAt_finset_sum {ι : Type*} (s : Finset ι) (g : ι → ℂ �
     MeromorphicAt (fun z => ∑ i ∈ s, g i z) c := by
   classical
   induction s using Finset.induction_on with
-  | empty => simpa using (analyticAt_const (v := (0 : ℂ))).meromorphicAt
+  | empty => simp [(analyticAt_const (v := (0 : ℂ))).meromorphicAt]
   | insert a s ha ih =>
     have hfun : (fun z => ∑ i ∈ insert a s, g i z)
         = fun z => g a z + ∑ i ∈ s, g i z := by
@@ -128,7 +126,7 @@ only `F`'s tail below `−e` pairs nontrivially against `W` (the rest has order 
 theorem resAt_mul_eq_sum_tailPairing {F W : ℂ → ℂ} {c : ℂ} {e : ℤ}
     (hF : MeromorphicAt F c) (hW : MeromorphicAt W c)
     (hWord : (e : WithTop ℤ) ≤ meromorphicOrderAt W c)
-    (S : Finset ℤ) (hSlt : ∀ n ∈ S, n < -e)
+    (S : Finset ℤ) (_hSlt : ∀ n ∈ S, n < -e)
     (hScap : ∀ n : ℤ, n < -e → laurentCoeff F c n ≠ 0 → n ∈ S) :
     resAt (fun z => F z * W z) c
       = ∑ n ∈ S, laurentCoeff F c n * laurentCoeff W c (-1 - n) := by
@@ -209,8 +207,7 @@ theorem resAt_mul_eq_sum_tailPairing {F W : ℂ → ℂ} {c : ℂ} {e : ℤ}
 
 /-! ### §2 The pair-form local coefficient on the surface -/
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- The local coefficient function of the meromorphic pair-form `ω = h·dg₀` in the canonical
 chart at `p` — the integrand of `Jacobians.Dolbeault.pairFormResidue`. -/
@@ -248,7 +245,8 @@ theorem tailResidue_apply (g₀ h : MeromorphicFunction X) (Z : TailSpace X) :
 
 /-- **The residue of `f·ω` at `p` reads only `f`'s tail below `−D(p)`** (Miranda p. 187): the
 per-point pairing identity, with the window taken from the support of the truncated tail. -/
-theorem resAt_pullback_mul_pairCoeff (D : Divisor X) (g₀ h f : MeromorphicFunction X)
+theorem resAt_pullback_mul_pairCoeff [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] (D : Divisor X) (g₀ h f : MeromorphicFunction X)
     (hord : PairOrderBounded g₀ h D) (p : X) (W : Finset ℤ)
     (hWlt : ∀ n ∈ W, n < -(D p))
     (hWcap : ∀ n : ℤ, n < -(D p) → laurentCoeffAt f.toFun p n ≠ 0 → n ∈ W) :
@@ -271,7 +269,8 @@ theorem resAt_pullback_mul_pairCoeff (D : Divisor X) (g₀ h f : MeromorphicFunc
 /-- **The vanishing of `Res_ω` on realized tails** (Miranda Ch. VI p. 187, every genus): for any
 global meromorphic `f`, `Res_ω(α_D f) = ∑_p Res_p(f·ω) = 0` by the genus-free pair-form residue
 theorem.  This is exactly what lets the residue map descend to the Mittag-Leffler `H¹(D)`. -/
-theorem tailResidue_tailMap_eq_zero {D : Divisor X}
+theorem tailResidue_tailMap_eq_zero [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] [Nonempty X] {D : Divisor X}
     (g₀ h : MeromorphicFunction X) (hord : PairOrderBounded g₀ h D)
     (f : MeromorphicFunction X) :
     tailResidue g₀ h (tailMap D f) = 0 := by
@@ -341,7 +340,8 @@ theorem tailResidue_tailMap_eq_zero {D : Divisor X}
 /-- **The descended residue functional `Res_ω : H¹(D) → ℂ`** (Miranda Ch. VI pp. 187–188): the
 residue map on `𝒯[D]` kills `im(α_D)` (the residue theorem), hence factors through the
 Mittag-Leffler quotient.  This is the linear functional that feeds the Serre duality pairing. -/
-noncomputable def tailResidueH1 {D : Divisor X}
+noncomputable def tailResidueH1 [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] [Nonempty X] {D : Divisor X}
     (g₀ h : MeromorphicFunction X) (hord : PairOrderBounded g₀ h D) :
     mittagLefflerH1 (X := X) D →ₗ[ℂ] ℂ :=
   Submodule.liftQ _ ((tailResidue g₀ h).comp (Submodule.subtype _)) (by
@@ -349,7 +349,8 @@ noncomputable def tailResidueH1 {D : Divisor X}
     rw [LinearMap.mem_ker, LinearMap.comp_apply, Submodule.subtype_apply, tailMapCo_coe]
     exact tailResidue_tailMap_eq_zero g₀ h hord f)
 
-@[simp] theorem tailResidueH1_mk {D : Divisor X}
+@[simp] theorem tailResidueH1_mk [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] [Nonempty X] {D : Divisor X}
     (g₀ h : MeromorphicFunction X) (hord : PairOrderBounded g₀ h D)
     (Z : ↥(tailSubspace (X := X) D)) :
     tailResidueH1 g₀ h hord (Submodule.Quotient.mk Z)

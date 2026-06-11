@@ -210,7 +210,8 @@ theorem integral_normSq_eq_boundary {U : Set ℂ} (hbox : wCLM '' (Icc 0 1 ×ˢ 
       = (fun x : ℝ => 2 * Complex.I * ∫ y in (0:ℝ)..1, (‖h (wCLM (x, y))‖ ^ 2 : ℂ)) := by
     funext x
     rw [intervalIntegral.integral_congr
-          (g := fun y => 2 * Complex.I * (‖h (wCLM (x, y))‖ ^ 2 : ℂ)) (fun y _ => integrand_eq (x, y))]
+          (g := fun y => 2 * Complex.I * (‖h (wCLM (x, y))‖ ^ 2 : ℂ))
+          (fun y _ => integrand_eq (x, y))]
     exact intervalIntegral.integral_const_mul _ _
   have hRHS : (∫ x in (0:ℝ)..1, ∫ y in (0:ℝ)..1, (Qder h F (x, y) (1, 0) - Pder h F (x, y) (0, 1)))
       = 2 * Complex.I * ∫ x in (0:ℝ)..1, ∫ y in (0:ℝ)..1, (‖h (wCLM (x, y))‖ ^ 2 : ℂ) := by

@@ -37,15 +37,11 @@ namespace block) or `OfCurveAnalyticitySkeleton.lean` (the
 Forster §§1–2, 20–21; Miranda Ch. V §§1–3.
 -/
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 
 open scoped Manifold ContDiff Bundle Topology
 open Filter
-
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- Arbitrary basepoint in `X` (via `Nonempty`). The period lattice
 is independent of basepoint choice, because any two basepoints can
@@ -85,7 +81,8 @@ theorem for readability and for consumption by downstream Abel-Jacobi
 definitions. Upgrading to a *smooth* path requires additional
 content (smooth-approximation theorem — a known Mathlib gap for
 general manifolds). -/
-noncomputable def continuousPath (P Q : X) : Path P Q :=
+noncomputable def continuousPath {X : Type*} [TopologicalSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] (P Q : X) : Path P Q :=
   (PathConnectedSpace.somePath P Q)
 
 /-- The i-th basis element of `HolomorphicOneForms X`, defined via
@@ -98,7 +95,9 @@ noncomputable def periodBasisForm (X : Type*) [TopologicalSpace X] [T2Space X]
   ambientIso X (Pi.basisFun ℂ (Fin (genus X)) i)
 
 /-- Period vector of a path `γ`: line integrals of each basis form. -/
-noncomputable def periodVec (γ : ℝ → X) : Fin (genus X) → ℂ :=
+noncomputable def periodVec {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (γ : ℝ → X) :
+    Fin (genus X) → ℂ :=
   fun i => lineIntegral (periodBasisForm X i) γ
 
 /-- Regularity predicate for a closed loop in `X`: closed endpoints
@@ -106,7 +105,8 @@ noncomputable def periodVec (γ : ℝ → X) : Fin (genus X) → ℂ :=
 each basis-form integrand. Packages what's needed for the
 `lineIntegral` machinery (Phase 1 identities, chain rule, basis
 expansion) to apply sensibly. -/
-structure IsClosedSmoothLoop (γ : ℝ → X) : Prop where
+structure IsClosedSmoothLoop {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (γ : ℝ → X) : Prop where
   closed : γ 0 = γ 1
   cont : Continuous γ
   diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
@@ -119,7 +119,9 @@ structure IsClosedSmoothLoop (γ : ℝ → X) : Prop where
 field): derived from the geometric `velCont` field via
 `intervalIntegrable_form_pathSpeed_of_velContinuous`. Same signature as the old field, so all
 consumers are unchanged. -/
-theorem IsClosedSmoothLoop.integrable {γ : ℝ → X} (h : IsClosedSmoothLoop γ) :
+theorem IsClosedSmoothLoop.integrable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {γ : ℝ → X}
+    (h : IsClosedSmoothLoop γ) :
     ∀ i : Fin (genus X), IntervalIntegrable
       (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
         MeasureTheory.volume 0 1 :=
@@ -137,7 +139,8 @@ def closedLoopPeriods (X : Type*) [TopologicalSpace X] [T2Space X]
 Contains exactly the data needed to apply `periodVec` / `lineIntegral`
 machinery to the path; the endpoint hypotheses ensure the path goes
 from `P` to `Q`. -/
-structure IsSmoothPath (P Q : X) (γ : ℝ → X) : Prop where
+structure IsSmoothPath {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (P Q : X) (γ : ℝ → X) : Prop where
   /-- Path starts at `P`. -/
   start : γ 0 = P
   /-- Path ends at `Q`. -/
@@ -156,14 +159,17 @@ structure IsSmoothPath (P Q : X) (γ : ℝ → X) : Prop where
 field): derived from the geometric `velCont` field via
 `intervalIntegrable_form_pathSpeed_of_velContinuous`. Same signature as the old field, so all
 consumers are unchanged. -/
-theorem IsSmoothPath.integrable {P Q : X} {γ : ℝ → X} (h : IsSmoothPath P Q γ) :
+theorem IsSmoothPath.integrable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {P Q : X} {γ : ℝ → X}
+    (h : IsSmoothPath P Q γ) :
     ∀ i : Fin (genus X), IntervalIntegrable
       (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
         MeasureTheory.volume 0 1 :=
   fun i => intervalIntegrable_form_pathSpeed_of_velContinuous (periodBasisForm X i) γ h.velCont
 
 /-- A smooth path from `P` to itself is a closed smooth loop. -/
-theorem IsSmoothPath.toClosedSmoothLoop {P : X} {γ : ℝ → X}
+theorem IsSmoothPath.toClosedSmoothLoop {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {P : X} {γ : ℝ → X}
     (h : IsSmoothPath P P γ) : IsClosedSmoothLoop γ where
   closed := h.start.trans h.finish.symm
   cont := h.cont
@@ -175,7 +181,8 @@ foundational case: `γ = fun _ => P` satisfies all `IsSmoothPath`
 conditions because chart-pullbacks of constants are constant
 (differentiable), and the form-integrand vanishes since `pathSpeed` of
 a constant curve is zero (`pathSpeed_const`). -/
-theorem isSmoothPath_const (P : X) :
+theorem isSmoothPath_const {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (P : X) :
     IsSmoothPath P P (fun _ : ℝ => P) where
   start := rfl
   finish := rfl
@@ -198,7 +205,8 @@ theorem isSmoothPath_const (P : X) :
 
 /-- **Reverse of a closed smooth loop is a closed smooth loop** (REAL).
 The reverse loop `t ↦ γ(1 - t)` is still closed and smooth. -/
-theorem IsClosedSmoothLoop.reverse {γ : ℝ → X}
+theorem IsClosedSmoothLoop.reverse {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {γ : ℝ → X}
     (h : IsClosedSmoothLoop γ) : IsClosedSmoothLoop (Jacobians.reverse γ) where
   closed := by show γ (1 - 0) = γ (1 - 1); simp [h.closed]
   cont := h.cont.comp (continuous_const.sub continuous_id)
@@ -221,7 +229,8 @@ theorem IsClosedSmoothLoop.reverse {γ : ℝ → X}
 /-- **Reverse of a smooth path is a smooth path** (REAL). The reverse
 path `t ↦ γ(1 - t)` goes from `Q` to `P` when `γ` goes `P` to `Q`,
 with smoothness preserved via the chain rule on `(1 - ·)`. -/
-theorem IsSmoothPath.reverse {P Q : X} {γ : ℝ → X}
+theorem IsSmoothPath.reverse {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {P Q : X} {γ : ℝ → X}
     (h : IsSmoothPath P Q γ) : IsSmoothPath Q P (Jacobians.reverse γ) where
   start := by show γ (1 - 0) = Q; simp [h.finish]
   finish := by show γ (1 - 1) = P; simp [h.start]
@@ -261,7 +270,8 @@ proven 2-piece junction lemma
 and the keystone for the n-piece glued path used to discharge
 `exists_smoothPath_family`: every hop there is smoothstep-reparametrized, so
 its endpoint velocities are `0` and the hypotheses hold. -/
-theorem IsSmoothPath.concat {P Q R : X} {γ₁ γ₂ : ℝ → X}
+theorem IsSmoothPath.concat {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {P Q R : X} {γ₁ γ₂ : ℝ → X}
     (h₁ : IsSmoothPath P Q γ₁) (h₂ : IsSmoothPath Q R γ₂)
     (hv₁ : pathSpeed γ₁ 1 = 0) (hv₂ : pathSpeed γ₂ 0 = 0) :
     IsSmoothPath P R (Jacobians.concat γ₁ γ₂) where
@@ -401,6 +411,7 @@ theorem IsSmoothPath.concat {P Q R : X} {γ₁ γ₂ : ℝ → X}
     velCont_concat γ₁ γ₂ h₁.diff h₂.diff hv₁ hv₂ (h₁.finish.trans h₂.start.symm)
       h₁.velCont h₂.velCont
 
+
 end Jacobians
 
 /-! ## Chart-ball-hop machinery (`Jacobians.OfCurveSkeleton`)
@@ -416,9 +427,6 @@ open MeasureTheory
 
 namespace Jacobians.OfCurveSkeleton
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **Chart-pulled-back periodBasisForm at a chart-coord point.**
 
 Given `Q₀ : X` with chart `e := chartAt ℂ Q₀`, and a chart-coordinate
@@ -430,16 +438,20 @@ The local representative `localRep α x₀ y` evaluates `α.toFun y` at
 the canonical tangent vector at `y` induced by the trivialization of
 the tangent bundle at `x₀` (applied to the unit `1 : ℂ`). It is the
 coefficient of `dz` in the chart-coord expression of `α`. -/
-noncomputable def chartFormCoeff (Q₀ : X) (i : Fin (genus X)) (z : ℂ) : ℂ :=
+noncomputable def chartFormCoeff {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (Q₀ : X)
+    (i : Fin (genus X)) (z : ℂ) : ℂ :=
   Jacobians.Montel.localRep (periodBasisForm X i) Q₀
     ((chartAt (H := ℂ) Q₀).symm z)
 
 /-- **The chart-form coefficient is holomorphic on the chart target.**
 
-PROVEN: direct corollary of `Jacobians.Montel.localRep_analyticOn_chartTarget`
+Direct corollary of `Jacobians.Montel.localRep_analyticOn_chartTarget`
 (the existing chart-coord analyticity of `localRep`, proven via
 `localRep_contMDiffOn` + `contDiffOn_omega_iff_analyticOn`). -/
-theorem chartFormCoeff_differentiableOn (Q₀ : X) (i : Fin (genus X)) :
+theorem chartFormCoeff_differentiableOn {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (Q₀ : X) (i : Fin (genus X)) :
     DifferentiableOn ℂ (chartFormCoeff (X := X) Q₀ i)
       ((chartAt (H := ℂ) Q₀).target) :=
   (Jacobians.Montel.localRep_analyticOn_chartTarget
@@ -457,7 +469,9 @@ lift of `ofCurve P` at `Q₀` is
 where `z₀ = e Q₀` and `constant_i := periodVec(some-fixed-path P → Q₀) i`.
 
 For now, we only need that `Φ̃_{Q₀, i}` is `AnalyticAt ℂ` at `z₀`. -/
-noncomputable def localLiftChart (Q₀ : X) (constants : Fin (genus X) → ℂ)
+noncomputable def localLiftChart {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (Q₀ : X)
+    (constants : Fin (genus X) → ℂ)
     (i : Fin (genus X)) (z : ℂ) : ℂ :=
   constants i +
     ∫ t in (0 : ℝ)..1,
@@ -466,7 +480,9 @@ noncomputable def localLiftChart (Q₀ : X) (constants : Fin (genus X) → ℂ)
        * (z - (chartAt (H := ℂ) Q₀) Q₀))
 
 /-- **Vector-valued local lift** at `Q₀`. -/
-noncomputable def localLift (Q₀ : X) (constants : Fin (genus X) → ℂ)
+noncomputable def localLift {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (Q₀ : X)
+    (constants : Fin (genus X) → ℂ)
     (Q : X) : Fin (genus X) → ℂ :=
   fun i => localLiftChart (X := X) Q₀ constants i ((chartAt (H := ℂ) Q₀) Q)
 
@@ -478,7 +494,8 @@ of Mathlib's `TangentBundle.symmL_trivializationAt_eq_core`.
 Note: with `I = 𝓘(ℂ)`, `range I = univ`, so `fderivWithin _ _ univ = fderiv`.
 We state the lemma in the `fderivWithin` form to match what `tangentBundleCore`
 gives directly; downstream we rewrite to `fderiv ℂ`. -/
-lemma trivAt_symmL_one_eq_fderiv (Q₀ y : X)
+lemma trivAt_symmL_one_eq_fderiv {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (Q₀ y : X)
     (hy : y ∈ (chartAt (H := ℂ) Q₀).source) :
     (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) Q₀).symmL ℂ y (1 : ℂ) =
       fderivWithin ℂ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) Q₀).symm)
@@ -523,7 +540,8 @@ lemma trivAt_symmL_one_eq_fderiv (Q₀ y : X)
 /-- **ℂ-version of the chart-Q₀-frame tangent identity**. Since
 `fderivWithin ℂ _ univ = fderiv ℂ _`, we can express `(trivAt Q₀).symmL ℂ y 1`
 as the plain `fderiv ℂ` of the chart transition. -/
-lemma trivAt_symmL_one_eq_fderiv_C (Q₀ y : X)
+lemma trivAt_symmL_one_eq_fderiv_C {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (Q₀ y : X)
     (hy : y ∈ (chartAt (H := ℂ) Q₀).source) :
     (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) Q₀).symmL ℂ y (1 : ℂ) =
       fderiv ℂ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) Q₀).symm)
@@ -532,7 +550,8 @@ lemma trivAt_symmL_one_eq_fderiv_C (Q₀ y : X)
 
 /-- **Chart-source membership: ChartBallPath Q₀ Q₀ Q t is in `(chartAt Q₀).source`
 when the affine point is in `target`.** Trivial consequence of `ChartBallPath_mem_source`. -/
-lemma chartBallPath_mem_source_of_affine (Q₀ Q : X) (t : ℝ)
+lemma chartBallPath_mem_source_of_affine {X : Type*} [TopologicalSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] (Q₀ Q : X) (t : ℝ)
     (h_target : ((1 - (t : ℂ)) * (chartAt ℂ Q₀) Q₀ + (t : ℂ) * (chartAt ℂ Q₀) Q)
         ∈ (chartAt ℂ Q₀).target) :
     Jacobians.ChartBallPath Q₀ Q₀ Q t ∈ (chartAt (H := ℂ) Q₀).source := by
@@ -551,7 +570,9 @@ where `z = (chartAt Q₀) Q`, `z₀ = (chartAt Q₀) Q₀`.
 This is the heart of sub-lemma (a) in the docstring above. The proof
 uses the chain rule for `pathSpeed`, `trivAt_symmL_one_eq_fderiv_C`,
 and ℂ-linearity of `α.toFun`. -/
-lemma chartFrame_cancel (Q₀ Q : X) (i : Fin (genus X)) (t : ℝ)
+lemma chartFrame_cancel {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (Q₀ Q : X) (i : Fin (genus X))
+    (t : ℝ)
     (h_target_nbhd : ∀ᶠ s : ℝ in nhds t,
       ((1 - (s : ℂ)) * (chartAt ℂ Q₀) Q₀ + (s : ℂ) * (chartAt ℂ Q₀) Q)
         ∈ (chartAt (H := ℂ) Q₀).target) :
@@ -690,7 +711,8 @@ lemma chartFrame_cancel (Q₀ Q : X) (i : Fin (genus X)) (t : ℝ)
   have h_fderiv_apply : (fderiv ℂ h_trans (affine t)) (z - z₀) =
       (z - z₀) * (fderiv ℂ h_trans (affine t)) 1 := by
     have := (fderiv ℂ h_trans (affine t)).map_smul (z - z₀) (1 : ℂ)
-    -- this : (fderiv ℂ h_trans (affine t)) ((z - z₀) • 1) = (z - z₀) • (fderiv ℂ h_trans (affine t)) 1
+    -- this : (fderiv ℂ h_trans (affine t)) ((z - z₀) • 1) = (z - z₀) • (fderiv ℂ h_trans (affine
+    -- t)) 1
     rw [smul_eq_mul, mul_one] at this
     rw [this, smul_eq_mul]
   -- pathSpeed γ t = (z - z₀) * (fderiv ℂ h_trans (affine t) 1).
@@ -737,7 +759,7 @@ lemma chartFrame_cancel (Q₀ Q : X) (i : Fin (genus X)) (t : ℝ)
 /-- **`Q ∈ (chartAt Q₀).source` eventually in `nhds Q₀`.**
 
 Chart source is open and contains `Q₀`. -/
-lemma Q_in_chart_source_eventually (Q₀ : X) :
+lemma Q_in_chart_source_eventually {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (Q₀ : X) :
     ∀ᶠ Q in nhds Q₀, Q ∈ (chartAt (H := ℂ) Q₀).source := by
   exact (chartAt (H := ℂ) Q₀).open_source.mem_nhds (mem_chart_source ℂ Q₀)
 
@@ -745,7 +767,7 @@ lemma Q_in_chart_source_eventually (Q₀ : X) :
 (where `Q = Q₀`), `affine s = z₀` is in the chart target. We need the
 target-membership uniform in `s ∈ Icc 0 1`, for a chart-ball
 neighborhood of Q₀. -/
-lemma affine_in_target_eventually (Q₀ : X) :
+lemma affine_in_target_eventually {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (Q₀ : X) :
     ∀ᶠ Q in nhds Q₀, ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
         (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target := by
@@ -783,7 +805,8 @@ we identify `localLift Q₀ c Q` with `c + periodVec(ChartBallPath Q₀ Q₀ Q)`
 componentwise, provided the affine path stays in chart target on `[0,1]`.
 
 This is sub-lemma (a) in the docstring above. -/
-lemma localLift_eq_const_add_periodVec_ChartBallPath
+lemma localLift_eq_const_add_periodVec_ChartBallPath {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (Q₀ Q : X) (c : Fin (genus X) → ℂ)
     (h_target_Icc : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
@@ -856,7 +879,8 @@ Requires:
 * `γ` chart-pullback differentiable at `σ t` (i.e., the existing
   `pathSpeed γ (σ t)` is computed from a `HasDerivAt`).
 -/
-lemma pathSpeed_smoothStep01_comp_eq (γ : ℝ → X) (t : ℝ)
+lemma pathSpeed_smoothStep01_comp_eq {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (γ : ℝ → X)
+    (t : ℝ)
     (hγ_diff : DifferentiableAt ℝ
       ((chartAt (H := ℂ) (γ (Jacobians.smoothStep01 t))).toFun ∘ γ)
       (Jacobians.smoothStep01 t)) :
@@ -898,10 +922,11 @@ lemma pathSpeed_smoothStep01_comp_eq (γ : ℝ → X) (t : ℝ)
 This variant uses `smoothStep01` reparameterization so that derivatives
 at boundary points are zero — which is what's needed for the eventual
 concat-smoothness argument. The `start`, `finish`, `cont`, `diff`
-fields are PROVEN via the building blocks in `Jacobians/SmoothPath.lean`;
+fields are proved via the building blocks in `Jacobians/SmoothPath.lean`;
 the `integrable` field is closed via `pathSpeed_smoothStep01_comp_eq` +
 chartFrame_cancel + ContinuousOn argument. -/
-lemma isSmoothPath_ChartBallPathSmooth (Q₀ Q : X)
+lemma isSmoothPath_ChartBallPathSmooth {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (Q₀ Q : X)
     (hQ_src : Q ∈ (chartAt (H := ℂ) Q₀).source)
     (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
@@ -925,7 +950,8 @@ lemma isSmoothPath_ChartBallPathSmooth (Q₀ Q : X)
       refine Continuous.add ?_ ?_
       · exact (continuous_const.sub
           (Complex.continuous_ofReal.comp Jacobians.smoothStep01_continuous)).mul continuous_const
-      · exact (Complex.continuous_ofReal.comp Jacobians.smoothStep01_continuous).mul continuous_const
+      · exact (Complex.continuous_ofReal.comp
+          Jacobians.smoothStep01_continuous).mul continuous_const
     have hβderiv_eq : deriv β = fun t : ℝ => (Jacobians.smoothStep01_deriv t : ℂ) * (z - z₀) := by
       funext t
       have hσ : HasDerivAt (fun s : ℝ => (Jacobians.smoothStep01 s : ℂ))

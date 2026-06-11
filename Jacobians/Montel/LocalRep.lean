@@ -23,24 +23,21 @@ namespace Jacobians.Montel
 open scoped Manifold ContDiff
 open Bundle
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### Local representative definition -/
 
 /-- The local representative of a holomorphic 1-form α at y, using the
 trivialization of the tangent bundle at x₀. In the chart around x₀,
 α = `localRep α x₀ y · dz` where z is the chart coordinate. -/
-noncomputable def localRep
+noncomputable def localRep {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (x₀ : X) (y : X) : ℂ :=
   α.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- Outside the trivialization's base set, `localRep α x₀` is zero (junk value
 from `Trivialization.symm_apply_of_notMem`). -/
-theorem localRep_eq_zero_of_notMem_baseSet
+theorem localRep_eq_zero_of_notMem_baseSet {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (x₀ y : X)
@@ -55,14 +52,14 @@ theorem localRep_eq_zero_of_notMem_baseSet
 
 /-! ### Continuity on the trivialization base set -/
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- A constant section of a vector bundle (via inverse trivialization) is
 continuous on the trivialization's base set.
 
 Proof: the section's total-space form equals `e.toOpenPartialHomeomorph.symm`
 composed with `fun y => (y, v)`, which is continuous on `e.baseSet`
 since `e.symm` is continuous on its source (= `baseSet × univ`). -/
-theorem continuousOn_symmL_const
+theorem continuousOn_symmL_const {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
     (e : Trivialization ℂ (Bundle.TotalSpace.proj (E := fun x : X =>
       TangentSpace 𝓘(ℂ, ℂ) x)))
     [MemTrivializationAtlas e] (v : ℂ) :
@@ -84,9 +81,9 @@ theorem continuousOn_symmL_const
   intro y hy
   simpa using Trivialization.mk_symm e hy v
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- `localRep α x₀` is continuous on the trivialization's base set. -/
-theorem localRep_continuousOn
+theorem localRep_continuousOn {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (x₀ : X) :
@@ -108,9 +105,8 @@ theorem localRep_continuousOn
 
 /-! ### Behavior under vector-space operations -/
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- `localRep` is additive: `localRep (α + β) = localRep α + localRep β`. -/
-theorem localRep_add
+theorem localRep_add {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (x₀ y : X) :
@@ -123,9 +119,9 @@ theorem localRep_add
   rw [this]
   rfl
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- `localRep` is homogeneous: `localRep (c • α) = c • localRep α`. -/
-theorem localRep_smul (c : ℂ)
+theorem localRep_smul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (c : ℂ)
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (x₀ y : X) :
@@ -138,9 +134,8 @@ theorem localRep_smul (c : ℂ)
   rw [this]
   rfl
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- `localRep` on a negation: `localRep (-α) = -localRep α`. -/
-theorem localRep_neg
+theorem localRep_neg {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (x₀ y : X) :
@@ -152,5 +147,6 @@ theorem localRep_neg
     rfl
   rw [this]
   rfl
+
 
 end Jacobians.Montel

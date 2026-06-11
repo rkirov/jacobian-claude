@@ -47,15 +47,11 @@ The local lifts agree with `ofCurve P` modulo the period lattice
 (path-difference-is-closed-loop ⇒ lattice element). Local-to-global
 smoothness in the **quotient** follows from `contMDiff_iff_forall_*`.
 
-**Status of this file (updated 2026-06-09)**
-
-The file is complete in all proof bodies: the local chart-ball
-machinery (`localLift_contMDiffAt`, `chartFrame_cancel`,
-`isSmoothPath_ChartBallPathSmooth`, the 2-piece junction loop, and
-`localLift_quotient_eq_ofCurve_eventually`) is all proven and
-`#print axioms`-clean. The former residual dependence through
-`smoothPath` is closed: `exists_smoothPath_family` is proven
-axiom-clean, so this entire file is unconditionally gap-free.
+The local chart-ball machinery (`localLift_contMDiffAt`,
+`chartFrame_cancel`, `isSmoothPath_ChartBallPathSmooth`, the 2-piece
+junction loop, and `localLift_quotient_eq_ofCurve_eventually`) feeds
+`ofCurve_contMDiff`, with `smoothPath` supplied by
+`exists_smoothPath_family`.
 -/
 
 open scoped Manifold ContDiff
@@ -394,7 +390,7 @@ This closed loop's periodVec is in `truePeriodLattice X` by
     use of `pathSpeed_comp_eq_mfderiv` doesn't apply — we'd need a
     chart-restricted variant.
 
-(b) `periodVec_concat` (PROVEN) + integrability bookkeeping on the
+(b) `periodVec_concat` + integrability bookkeeping on the
     concatenation of `smoothPath P Q₀` and `ChartBallPath Q₀ Q₀ Q`.
     The integrability of basis-form integrands on each piece needs
     `IsSmoothPath.integrable` for `smoothPath`, plus a separate
@@ -432,10 +428,10 @@ constant equal to zero in the quotient.
 
 Specifically, the strategy uses:
 
-* `localLift_contMDiffAt` (PROVEN) — the LHS is `ContMDiffAt` at Q₀.
+* `localLift_contMDiffAt` — the LHS is `ContMDiffAt` at Q₀.
 * `ofCurve_contMDiff` would tell us the RHS is `ContMDiffAt` at Q₀,
   except we're proving that exact thing! So we use:
-* `smoothPath_basepoint_change` (PROVEN) — algebraic reduction of RHS.
+* `smoothPath_basepoint_change` — algebraic reduction of RHS.
 * Concrete closed-loop argument via `periodVec_concat`,
   `periodVec_reverse`, `periodVec_mem_truePeriodLattice_of_closed`.
 -/
@@ -479,8 +475,8 @@ The proof:
    periodVec γ i`.
 
 The substitution lemma's hypotheses:
-* `HasDerivAt smoothStep01 (smoothStep01_deriv x) x` for each `x ∈ uIcc 0 1` (PROVEN).
-* `ContinuousOn smoothStep01_deriv (uIcc 0 1)` (PROVEN).
+* `HasDerivAt smoothStep01 (smoothStep01_deriv x) x` for each `x ∈ uIcc 0 1`.
+* `ContinuousOn smoothStep01_deriv (uIcc 0 1)`.
 * `ContinuousOn g (smoothStep01 '' [[0, 1]] = [0, 1])` (parameter — caller supplies). -/
 lemma periodVec_smoothStep01_comp_eq_generic (γ : ℝ → X)
     (hγ_diff : ∀ s ∈ Set.Icc (0 : ℝ) 1,
@@ -742,7 +738,7 @@ lemma periodVec_smoothPathSmooth_eq (P Q : X) :
 
 /-- `smoothPathSmooth` is an `IsSmoothPath`, with zero derivative at
 endpoints (via `smoothStep01`'s zero boundary derivatives). Closes
-`start` (PROVEN), `finish` (PROVEN), `cont` (PROVEN, composition of
+`start`, `finish`, `cont` (composition of
 continuous smoothPath with continuous smoothStep01). `diff` and
 `integrable` remain sub-sorries pending chain-rule + reparam
 integrability work. -/
@@ -769,7 +765,8 @@ lemma isSmoothPath_smoothPathSmooth (P Q : X) :
     have h_inner_diff := h_smoothPath.diff (Jacobians.smoothStep01 t) hs_uIcc
     have h_sigma_diff : DifferentiableAt ℝ Jacobians.smoothStep01 t :=
       Jacobians.smoothStep01_differentiable t
-    -- smoothPathSmooth t = smoothPath (σ t), so chartAt (smoothPathSmooth t) = chartAt (smoothPath (σ t)).
+    -- smoothPathSmooth t = smoothPath (σ t), so chartAt (smoothPathSmooth t) = chartAt (smoothPath
+    -- (σ t)).
     have h_eq : ((chartAt (H := ℂ) (smoothPathSmooth P Q t)).toFun ∘ smoothPathSmooth P Q) =
         ((chartAt (H := ℂ) (Jacobians.smoothPath P Q (Jacobians.smoothStep01 t))).toFun ∘
           Jacobians.smoothPath P Q) ∘ Jacobians.smoothStep01 := by
@@ -1125,7 +1122,8 @@ lemma isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
       show Jacobians.pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q ∘ Jacobians.smoothStep01) 1 = 0
       rw [pathSpeed_smoothStep01_comp_eq (Jacobians.ChartBallPath Q₀ Q₀ Q) 1 h_inner_diff_at_σ1,
         Jacobians.smoothStep01_deriv_one, Complex.ofReal_zero, zero_mul]
-    -- hv₂: pathSpeed (reverse (smoothPathSmooth Q₀ Q)) 0 = -pathSpeed (smoothPathSmooth Q₀ Q) 1 = 0.
+    -- hv₂: pathSpeed (reverse (smoothPathSmooth Q₀ Q)) 0 = -pathSpeed (smoothPathSmooth Q₀ Q) 1 =
+    -- 0.
     have h_smoothPath := Jacobians.isSmoothPath_smoothPath Q₀ Q
     have h_inner_diff_at_σ1_sp : DifferentiableAt ℝ
         ((chartAt (H := ℂ) (Jacobians.smoothPath Q₀ Q (Jacobians.smoothStep01 1))).toFun ∘
@@ -1136,7 +1134,8 @@ lemma isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
       rw [pathSpeed_smoothStep01_comp_eq (Jacobians.smoothPath Q₀ Q) 1 h_inner_diff_at_σ1_sp,
         Jacobians.smoothStep01_deriv_one, Complex.ofReal_zero, zero_mul]
     have h_smoothPathSmooth_one_diff : DifferentiableAt ℝ
-        ((chartAt (H := ℂ) (smoothPathSmooth Q₀ Q (1 - 0))).toFun ∘ smoothPathSmooth Q₀ Q) (1 - 0) := by
+        ((chartAt (H := ℂ) (smoothPathSmooth Q₀ Q (1 - 0))).toFun ∘ smoothPathSmooth Q₀ Q)
+        (1 - 0) := by
       rw [show (1 : ℝ) - 0 = 1 from by norm_num]; exact h_γ₂.diff 1 h_one_uIcc
     have hv₂ : Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q)) 0 = 0 := by
       rw [Jacobians.pathSpeed_reverse (smoothPathSmooth Q₀ Q) 0 h_smoothPathSmooth_one_diff,
@@ -1306,7 +1305,8 @@ lemma chartBallPath_smoothPath_endpoints_eq_in_quotient
   rw [← periodVec_ChartBallPathSmooth_eq Q₀ Q h_chart_ball]
   -- Step 2: replace smoothPath by smoothPathSmooth (same trick).
   rw [← periodVec_smoothPathSmooth_eq Q₀ Q]
-  -- Step 3: Apply mk_periodVec_eq_of_endpoints with γ₁ = ChartBallPathSmooth, γ₂ = smoothPathSmooth.
+  -- Step 3: Apply mk_periodVec_eq_of_endpoints with γ₁ = ChartBallPathSmooth, γ₂ =
+  -- smoothPathSmooth.
   refine Jacobians.mk_periodVec_eq_of_endpoints
     (Jacobians.ChartBallPathSmooth Q₀ Q) (smoothPathSmooth Q₀ Q) ?_ ?_ ?_
   · -- h0: γ₁ 0 = γ₂ 0
@@ -1347,11 +1347,11 @@ theorem localLift_quotient_eq_ofCurve_eventually
 
 /-! ## Top-level wiring for `ofCurve_contMDiff`
 
-With `localLift_contMDiffAt` (analytic→ContMDiff bridge, PROVEN) and
-`localLift_quotient_eq_ofCurve_eventually` (path-algebra identification,
-also PROVEN — modulo `smoothPath` which is `Classical.choice` of the
-S1 gap), the proof of `ofCurve_contMDiff` is a straightforward
-local-to-global glue.
+With `localLift_contMDiffAt` (the analytic→ContMDiff bridge) and
+`localLift_quotient_eq_ofCurve_eventually` (the path-algebra
+identification, with `smoothPath` the `Classical.choice` of
+`exists_smoothPath_family`), the proof of `ofCurve_contMDiff` is a
+straightforward local-to-global glue.
 
 The function `Jacobians.OfCurveSkeleton.ofCurveContMDiff_via_localLift`
 below packages the complete proof skeleton at the level of `Jacobians.

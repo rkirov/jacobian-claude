@@ -28,7 +28,6 @@ open Set Metric Filter Function
 
 namespace Jacobians
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -45,7 +44,7 @@ theorem sum_telescope_abel {n : ℕ} (hn : 0 < n) (G : ℕ → ℕ → ℂ) :
   | succ m ih =>
     rcases Nat.eq_zero_or_pos m with hm | hm
     · subst hm
-      simp [Finset.sum_range_one]
+      simp
     · rw [Finset.sum_range_succ, ih hm,
         Finset.sum_Ico_succ_top (by omega : 1 ≤ m) (fun k => G k k - G (k - 1) k)]
       have h1 : m + 1 - 1 = m := by omega

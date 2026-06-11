@@ -80,7 +80,6 @@ namespace Jacobians.MultiplicityPatching
 
 open Jacobians Jacobians.ProperMapDegree Jacobians.ProperMapDegreeConstruct
 
-set_option linter.unusedSectionVars false
 
 /-! ### The planar `m`-fold multiplicity split (step 3, the analytic core)
 

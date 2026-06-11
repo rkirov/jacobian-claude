@@ -2,7 +2,7 @@
   Laurent coefficients of a meromorphic germ, via the residue calculus (Miranda Ch. VI §2).
 
   `laurentCoeff g c n` is the coefficient of `(z − c)^n` in the Laurent expansion of `g` at `c`,
-  defined through the repo's residue atom: `coeff_n(g) = Res_c (g(z)·(z − c)^{−n−1})`.  This is the
+  defined through the residue: `coeff_n(g) = Res_c (g(z)·(z − c)^{−n−1})`.  This is the
   technically cheapest definition — `resAt` already carries germ-invariance, ℂ-linearity (on
   isolated singularities), and the two Cauchy evaluations needed for the anchor lemmas:
 

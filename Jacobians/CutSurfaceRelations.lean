@@ -10,11 +10,13 @@ import Jacobians.BoundaryWordR2
 /-!
 # The cut surface and the Riemann bilinear relations as THEOREMS
 
-This file discharges the directive *"prove the Riemann relations; isolate only the chart existence."*
+This file discharges the directive *"prove the Riemann relations; isolate only the chart
+existence."*
 It introduces a `CutSurface X` — the analytic boundary data of a canonical dissection realized as a
 cut chart `cut : box → X` — and **proves**, from that data alone, both Riemann bilinear relations:
 
-* `cutSurface_R1 : (aPeriodBlock loop)ᵀ * bPeriodBlock loop = (bPeriodBlock loop)ᵀ * aPeriodBlock loop`
+* `cutSurface_R1 : (aPeriodBlock loop)ᵀ * bPeriodBlock loop = (bPeriodBlock loop)ᵀ * aPeriodBlock
+loop`
   — via Cauchy's theorem on the box (`riemann_R1_of_boundaryWord`);
 * `cutSurface_R2 : (periodHermitian loop).PosDef`
   — via the Green-positivity bridge (`riemann_R2_posDef_of_boundaryWord`).
@@ -22,20 +24,21 @@ cut chart `cut : box → X` — and **proves**, from that data alone, both Riema
 The two relations are therefore **no longer bundled assertions**: they are consequences of the
 *boundary word* — the concrete integral identities `(AᵀB − BᵀA)_{ij} = ∮_{∂box}(F_i h_j dz)` and
 `(AᵀB̄ − BᵀĀ)_{ij} = −∮_{∂box}(F̄_i h_j dz)` that record how the cut chart's boundary traverses the
-symplectic loops. Those boundary words, the holomorphy of the pulled-back forms `h_j = cut^*ω_j`, and
+symplectic loops. Those boundary words, the holomorphy of the pulled-back forms `h_j = cut^*ω_j`,
+and
 the non-degeneracy of the pullbacks are the **`CutSurface` fields**.
 
-**ARCHIVAL (2026-06-11).** The former isolated existence input (`exists_cutSurface` — the Radó
-triangulation + surface classification + `4g`-gon Green that Mathlib lacks) is RETIRED, not proven:
-the period real basis is now obtained dissection-free via Forster 21.4
-(`Jacobians/PeriodLatticeDiscrete.lean` + `Jacobians/PeriodLatticeBasis.lean`).  Everything in this
-file is hypothesis-conditional on a given `CutSurface` and remains sorry-free.
+Everything in this file is hypothesis-conditional on a given `CutSurface`: no existence
+statement is asserted (cut-surface existence would need Radó triangulation + surface
+classification, which Mathlib lacks).  The period real basis used by the main development is
+instead obtained dissection-free via Forster 21.4 (`Jacobians/PeriodLatticeDiscrete.lean` +
+`Jacobians/PeriodLatticeBasis.lean`); this file records the classical cut-surface route to the
+Riemann bilinear relations as self-contained conditional theorems.
 
 References: Riemann (1857); Griffiths–Harris pp. 231–232; Springer pp. 139–141; Chai §1.4;
 Forster §§20–21.
 -/
 
-set_option linter.unusedSectionVars false
 
 open MeasureTheory Set intervalIntegral Complex Matrix
 open scoped Manifold ContDiff Bundle Topology ComplexOrder
@@ -48,7 +51,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-- **Cut surface of a compact Riemann surface.** A symplectic homology basis of `2g` closed loops
 together with the *analytic boundary data* of the cut chart that realizes the canonical dissection:
 
-* the pulled-back holomorphic forms `h_j = cut^*ω_j`, holomorphic on a convex open `U ⊇ [0,1]²`, with
+* the pulled-back holomorphic forms `h_j = cut^*ω_j`, holomorphic on a convex open `U ⊇ [0,1]²`,
+with
   primitives `F_i` (`F_i' = h_i`);
 * the two **boundary words** — concrete `∮_{∂box}` integral identities that record how the cut
   chart's boundary traverses the loops (this is the surface-topology / polygon-Green content);
@@ -79,19 +83,24 @@ structure CutSurface (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace 
   hh : ∀ i, ∀ z ∈ U, HasDerivAt (h i) (deriv (h i) z) z
   /-- Each `F_i` is a primitive of `h_i` on `U`. -/
   hF : ∀ i, ∀ z ∈ U, HasDerivAt (F i) (h i z) z
-  /-- **Riemann's first boundary word.** The `(i,j)` entry of `AᵀB − BᵀA` is the box contour integral
-  of the *holomorphic* `F_i·h_j`. (The cut chart's boundary traverses `a₁b₁a₁⁻¹b₁⁻¹⋯`; the primitive's
+  /-- **Riemann's first boundary word.** The `(i,j)` entry of `AᵀB − BᵀA` is the box contour
+  integral
+  of the *holomorphic* `F_i·h_j`. (The cut chart's boundary traverses `a₁b₁a₁⁻¹b₁⁻¹⋯`; the
+  primitive's
   jumps across the cuts are the conjugate periods, collapsing `∮_{∂box}` to this period sum.) -/
   boundaryWord_R1 : ∀ i j,
     ((aPeriodBlock loop)ᵀ * bPeriodBlock loop - (bPeriodBlock loop)ᵀ * aPeriodBlock loop) i j
       = rectBoundaryIntegral (fun z => F i z * h j z)
-  /-- **Riemann's second boundary word.** The `(i,j)` entry of `AᵀB̄ − BᵀĀ` is `−∮_{∂box}(F̄_i·h_j)`. -/
+  /-- **Riemann's second boundary word.** The `(i,j)` entry of `AᵀB̄ − BᵀĀ` is
+  `−∮_{∂box}(F̄_i·h_j)`. -/
   boundaryWord_R2 : ∀ i j,
     ((aPeriodBlock loop)ᵀ * (bPeriodBlock loop).map (starRingEnd ℂ)
       - (bPeriodBlock loop)ᵀ * (aPeriodBlock loop).map (starRingEnd ℂ)) i j
       = - boundaryForm (h j) (F i)
-  /-- **Non-degeneracy.** A nonzero coefficient vector `v` pulls back to a function `∑ⱼ vⱼ hⱼ` that is
-  nonzero somewhere in the *open* box. (`∑ⱼ vⱼ ωⱼ ≠ 0` is a nonzero holomorphic form, so its pullback
+  /-- **Non-degeneracy.** A nonzero coefficient vector `v` pulls back to a function `∑ⱼ vⱼ hⱼ` that
+  is
+  nonzero somewhere in the *open* box. (`∑ⱼ vⱼ ωⱼ ≠ 0` is a nonzero holomorphic form, so its
+  pullback
   is nonzero on the dense interior of the cut surface.) -/
   nondeg : ∀ v : Fin (genus X) → ℂ, v ≠ 0 →
     ∃ p ∈ Set.Ioo (0:ℝ) 1 ×ˢ Set.Ioo (0:ℝ) 1, (∑ j, v j * h j (wCLM p)) ≠ 0
@@ -122,7 +131,7 @@ lemma differentiableOn_Fh (i j : Fin (genus X)) :
     DifferentiableOn ℂ (fun z => S.F i z * S.h j z) (Set.uIcc (0:ℝ) 1 ×ℂ Set.uIcc (0:ℝ) 1) :=
   ((S.differentiableOn_F i).mul (S.differentiableOn_h j)).mono S.box_reProdIm_subset_U
 
-/-- **Riemann's first bilinear relation `AᵀB = BᵀA`, PROVEN** from the cut surface, via Cauchy's
+/-- **Riemann's first bilinear relation** `AᵀB = BᵀA`, from the cut surface, via Cauchy's
 theorem on the box (`riemann_R1_of_boundaryWord`). -/
 theorem cutSurface_R1 :
     (aPeriodBlock S.loop)ᵀ * bPeriodBlock S.loop
@@ -130,8 +139,8 @@ theorem cutSurface_R1 :
   riemann_R1_of_boundaryWord (aPeriodBlock S.loop) (bPeriodBlock S.loop) S.h S.F
     S.differentiableOn_Fh S.boundaryWord_R1
 
-/-- **Riemann's second bilinear relation (positive-definiteness of the period Hermitian form),
-PROVEN** from the cut surface, via the Green-positivity bridge
+/-- **Riemann's second bilinear relation** (positive-definiteness of the period Hermitian
+form), from the cut surface, via the Green-positivity bridge
 (`riemann_R2_posDef_of_boundaryWord`). -/
 theorem cutSurface_R2 : (periodHermitian S.loop).PosDef :=
   riemann_R2_posDef_of_boundaryWord (aPeriodBlock S.loop) (bPeriodBlock S.loop) S.h S.F S.U
@@ -148,13 +157,10 @@ def toCanonicalDissection : CanonicalDissection X where
 
 end CutSurface
 
-/- **RETIRED (2026-06-11, Wall B closed dissection-free).** The former isolated input
-`exists_cutSurface` (the cut-chart/4g-gon existence, the repo's last `sorry` on this wall)
-and its derived `exists_canonicalDissection` are GONE: `exists_periodLattice_realBasis` is
-now proven via Forster 21.4 (`Jacobians/PeriodLatticeDiscrete.lean` +
-`Jacobians/PeriodLatticeBasis.lean`), which never needs a dissection.  Everything above —
-the `CutSurface` structure and the two proven Riemann bilinear relations `cutSurface_R1` /
-`cutSurface_R2`, plus `toCanonicalDissection` — remains banked as hypothesis-conditional
-archival theorems (no axioms, no sorries). -/
+/- No existence statement for `CutSurface` is made: `exists_periodLattice_realBasis` is
+proved via Forster 21.4 (`Jacobians/PeriodLatticeDiscrete.lean` +
+`Jacobians/PeriodLatticeBasis.lean`), which never needs a dissection.  The `CutSurface`
+structure, the two Riemann bilinear relations `cutSurface_R1` / `cutSurface_R2`, and
+`toCanonicalDissection` above are hypothesis-conditional theorems. -/
 
 end Jacobians

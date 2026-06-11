@@ -11,14 +11,13 @@ The headline of the Abel-converse route, with its statement EXACTLY as frozen in
 if `0 < genus X` and `P ≠ Q`, the Abel–Jacobi class of `P − Q` is nonzero.
 
 Proof: if the class were zero, the Abel hypothesis unfolds to a 1-chain with boundary
-`P − Q` and vanishing basis periods (`exists_oneChain_of_abelJacobi_eq_zero`, C-0); the
-Abel engine (`exists_meromorphic_of_oneChain`, C-5) produces a meromorphic `f` with
+`P − Q` and vanishing basis periods (`exists_oneChain_of_abelJacobi_eq_zero`); the
+Abel machinery (`exists_meromorphic_of_oneChain`) produces a meromorphic `f` with
 `div f = P − Q`, i.e. a single simple pole at `Q`; then `X ≃ₜ S²`
 (`nonempty_homeo_sphere_of_singleSimplePole`) forces `genus X = 0`
 (`genus_zero_of_nonempty_homeo_sphere`) — contradiction.
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 20.7 + 21.5 (pp. 164, 170);
-plan `docs/walls_bc_plan_2026-06-10.md`, phase C-5 (headline).
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 20.7 + 21.5 (pp. 164, 170).
 -/
 import Jacobians.AbelEngineMeromorphic
 import Jacobians.AbelChains
@@ -27,7 +26,6 @@ import Jacobians.DegreeOneSphere
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 
@@ -71,7 +69,7 @@ theorem abelJacobi_twoPoint_ne_zero
         omega
       · rw [Finsupp.single_eq_of_ne (Ne.symm hxP)]
         omega
-  -- the degree-one endgame: `X ≃ₜ S²`, so `genus X = 0` — contradiction.
+  -- the degree-one theory: `X ≃ₜ S²`, so `genus X = 0` — contradiction.
   have hsphere := nonempty_homeo_sphere_of_singleSimplePole f hQ
   have hg0 := genus_zero_of_nonempty_homeo_sphere hsphere
   omega

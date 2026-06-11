@@ -6,7 +6,8 @@ Lean leaderboard problem page
 
   https://lean-lang.org/eval/problems/jacobian_challenge_diffgeo/
 
-**exactly as spelled there**: `modelWithCornersSelf ℂ ℂ` (the leaderboard page's spelling of `𝓘(ℂ)`),
+**exactly as spelled there**: `modelWithCornersSelf ℂ ℂ` (the leaderboard page's spelling
+of `𝓘(ℂ)`),
 the `[Nonempty X]` hypothesis present in the page's binder lists, the bundled `→ₜ+` homomorphisms,
 and the bare `degree` name. Each `example` below restates a leaderboard signature verbatim and
 discharges it by our declaration, so this file compiling is a machine check that the implementation

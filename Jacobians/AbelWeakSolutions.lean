@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-1: weak solutions of divisors (Forster §20.1–20.2)
+# Weak solutions of divisors (Forster §20.1–20.2)
 
 A **weak solution** of a divisor `D` is a function that locally looks like `ψ · z^{D a}` with
 `ψ` smooth and nonvanishing — the smooth precursor of a meromorphic function with divisor `D`
@@ -27,8 +27,7 @@ Main contents:
   ACROSS the divisor because locally `d″f/f = d″ψ/ψ`; with `logDbar_mem_zeroOne`,
   `logDbar_mul`, `logDbar_zpow`.
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.1, §20.2;
-plan `docs/walls_bc_plan_2026-06-10.md`, phase C-1 (E1).
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.1, §20.2.
 -/
 import Jacobians.Abel
 import Jacobians.Dolbeault.DolbeaultComparisonInverse
@@ -43,10 +42,8 @@ open Set Filter
 
 namespace Jacobians
 
-set_option linter.unusedSectionVars false
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ### The centred chart coordinate -/
 
@@ -83,7 +80,8 @@ theorem chartCoord_chart_analyticAt_center {a x : X}
 /-- **Integer powers of the centred coordinate are chart-analytic** at every `x` in the chart
 source with `x ≠ a` (any exponent) or `0 ≤ k` (any point): in the chart at `a`,
 `z_a^k` is `(w − chart a a)^k`. -/
-theorem chartCoord_zpow_chart_analyticAt {a x : X} (k : ℤ)
+theorem chartCoord_zpow_chart_analyticAt [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] {a x : X} (k : ℤ)
     (hx : x ∈ (chartAt (H := ℂ) a).source) (h : x ≠ a ∨ 0 ≤ k) :
     AnalyticAt ℂ ((fun y => chartCoord a y ^ k) ∘ (chartAt (H := ℂ) x).symm)
       ((chartAt (H := ℂ) x) x) := by
@@ -109,7 +107,8 @@ theorem chartCoord_zpow_chart_analyticAt {a x : X} (k : ℤ)
 
 /-- Real-smoothness of `z_a^k` (under the same hypotheses), via the chart-analytic →
 real-`C^∞` bridge. -/
-theorem chartCoord_zpow_contMDiffAt {a x : X} (k : ℤ)
+theorem chartCoord_zpow_contMDiffAt [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] {a x : X} (k : ℤ)
     (hx : x ∈ (chartAt (H := ℂ) a).source) (h : x ≠ a ∨ 0 ≤ k) :
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun y => chartCoord a y ^ k) x :=
   Dolbeault.contMDiffAt_real_of_chart_analyticAt (chartCoord_zpow_chart_analyticAt k hx h)
@@ -119,7 +118,8 @@ theorem chartCoord_zpow_contMDiffAt {a x : X} (k : ℤ)
 /-- **`∂̄` kills chart-analytic functions** (the general form of `holoFn_dbar_eq_zero`): if `h`
 read in the chart at `x` is complex-analytic at the chart image, then
 `proj01 (mfderiv 𝓘(ℝ,ℂ) h x) = 0`. -/
-theorem proj01_mfderiv_eq_zero_of_chart_analyticAt {h : X → ℂ} {x : X}
+theorem proj01_mfderiv_eq_zero_of_chart_analyticAt [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] {h : X → ℂ} {x : X}
     (ha : AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)) :
     Dolbeault.proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) h x) = 0 := by
   have hmdiff : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) h x :=
@@ -134,7 +134,8 @@ theorem proj01_mfderiv_eq_zero_of_chart_analyticAt {h : X → ℂ} {x : X}
   exact Dolbeault.proj01_restrictScalars_eq_zero _
 
 /-- `∂̄(z_a^k) = 0` at points where `z_a^k` is chart-analytic. -/
-theorem proj01_mfderiv_chartCoord_zpow_eq_zero {a x : X} (k : ℤ)
+theorem proj01_mfderiv_chartCoord_zpow_eq_zero [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] {a x : X} (k : ℤ)
     (hx : x ∈ (chartAt (H := ℂ) a).source) (h : x ≠ a ∨ 0 ≤ k) :
     Dolbeault.proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (fun y => chartCoord a y ^ k) x) = 0 :=
   proj01_mfderiv_eq_zero_of_chart_analyticAt (chartCoord_zpow_chart_analyticAt k hx h)
@@ -215,7 +216,9 @@ theorem toFun_eventuallyEq_unit (F : WeakSolution D) {x : X} (hD : D x = 0) :
 
 /-- **`f ∈ 𝓔(X_D)`** (Forster 20.1): the weak solution is real-smooth at every point of
 `X_D = {x | 0 ≤ D x}`. -/
-theorem contMDiffAt_toFun (F : WeakSolution D) {a : X} (ha : 0 ≤ D a) :
+theorem contMDiffAt_toFun [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (F : WeakSolution D) {a : X} (ha : 0 ≤ D a) :
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) F.toFun a := by
   have hzk : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun y => chartCoord a y ^ (D a)) a :=
     chartCoord_zpow_contMDiffAt (D a) (F.nbhd_subset a (F.mem_nbhd a)) (Or.inr ha)
@@ -223,24 +226,14 @@ theorem contMDiffAt_toFun (F : WeakSolution D) {a : X} (ha : 0 ≤ D a) :
   filter_upwards [(F.isOpen_nbhd a).mem_nhds (F.mem_nbhd a)] with y hy
   exact F.normalForm a y hy
 
-/-! ### The constant weak solution of `D = 0` -/
+/-- Transport a weak solution along an equality of divisors. -/
+def recast (h : D₁ = D₂) (F : WeakSolution D₁) : WeakSolution D₂ := h ▸ F
 
-/-- The constant function `1` is a weak solution of the zero divisor. -/
-def one (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
-    WeakSolution (0 : Divisor X) where
-  toFun := fun _ => 1
-  nbhd a := (chartAt (H := ℂ) a).source
-  unit _ := fun _ => 1
-  isOpen_nbhd a := (chartAt (H := ℂ) a).open_source
-  mem_nbhd a := mem_chart_source ℂ a
-  nbhd_subset _ := le_refl _
-  unit_contMDiffOn _ := contMDiffOn_const
-  unit_ne_zero _ _ _ := one_ne_zero
-  normalForm a x _ := by
-    rw [show ((0 : Divisor X) a) = 0 from rfl, zpow_zero, mul_one]
+@[simp] theorem recast_toFun (h : D₁ = D₂) (F : WeakSolution D₁) :
+    (F.recast h).toFun = F.toFun := by cases h; rfl
 
-@[simp] theorem one_toFun (x : X) : (one X).toFun x = 1 := rfl
+@[simp] theorem recast_unit (h : D₁ = D₂) (F : WeakSolution D₁) :
+    (F.recast h).unit = F.unit := by cases h; rfl
 
 /-! ### Inversion of ℂ over `𝓘(ℝ,ℂ)` (no `ContMDiffInv₀` instance for the real model) -/
 
@@ -259,7 +252,8 @@ product `f₁·f₂` away from the cancellation points (everywhere except where
 
 /-- **Product of weak solutions** (Forster 20.1): solves `D₁ + D₂`. The local-unit
 neighbourhood is shrunk to meet the supports only at the centre. -/
-def mul (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) : WeakSolution (D₁ + D₂) where
+def mul [T2Space X] [CompactSpace X] (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) :
+    WeakSolution (D₁ + D₂) where
   toFun := fun x => F₁.unit x x * F₂.unit x x * (0 : ℂ) ^ (D₁ x + D₂ x)
   nbhd a := (F₁.nbhd a ∩ F₂.nbhd a) ∩
     ((((D₁.support : Set X) ∪ (D₂.support : Set X))) \ {a})ᶜ
@@ -298,11 +292,13 @@ def mul (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) : WeakSolution (D�
         zpow_add₀ hz]
       ring
 
-@[simp] theorem mul_unit (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) (a x : X) :
+@[simp] theorem mul_unit [T2Space X] [CompactSpace X] (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂)
+    (a x : X) :
     (F₁.mul F₂).unit a x = F₁.unit a x * F₂.unit a x := rfl
 
 /-- Off both supports, the product weak solution is the pointwise product. -/
-theorem mul_toFun_of_coeff_zero (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) {x : X}
+theorem mul_toFun_of_coeff_zero [T2Space X] [CompactSpace X] (F₁ : WeakSolution D₁)
+    (F₂ : WeakSolution D₂) {x : X}
     (h₁ : D₁ x = 0) (h₂ : D₂ x = 0) :
     (F₁.mul F₂).toFun x = F₁.toFun x * F₂.toFun x := by
   show F₁.unit x x * F₂.unit x x * (0 : ℂ) ^ (D₁ x + D₂ x) = _
@@ -336,26 +332,39 @@ def inv (F : WeakSolution D) : WeakSolution (-D) where
 @[simp] theorem inv_unit (F : WeakSolution D) (a x : X) :
     F.inv.unit a x = (F.unit a x)⁻¹ := rfl
 
+/-! ### The constant weak solution of `D = 0` -/
+
+/-- The constant function `1` is a weak solution of the zero divisor. -/
+def one (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
+    WeakSolution (0 : Divisor X) where
+  toFun := fun _ => 1
+  nbhd a := (chartAt (H := ℂ) a).source
+  unit _ := fun _ => 1
+  isOpen_nbhd a := (chartAt (H := ℂ) a).open_source
+  mem_nbhd a := mem_chart_source ℂ a
+  nbhd_subset _ := le_refl _
+  unit_contMDiffOn _ := contMDiffOn_const
+  unit_ne_zero _ _ _ := one_ne_zero
+  normalForm a x _ := by
+    rw [show ((0 : Divisor X) a) = 0 from rfl, zpow_zero, mul_one]
+
+@[simp] theorem one_toFun [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    (x : X) : (one X).toFun x = 1 := rfl
+
 /-! ### Integer powers -/
 
-/-- Transport a weak solution along an equality of divisors. -/
-def recast (h : D₁ = D₂) (F : WeakSolution D₁) : WeakSolution D₂ := h ▸ F
-
-@[simp] theorem recast_toFun (h : D₁ = D₂) (F : WeakSolution D₁) :
-    (F.recast h).toFun = F.toFun := by cases h; rfl
-
-@[simp] theorem recast_unit (h : D₁ = D₂) (F : WeakSolution D₁) :
-    (F.recast h).unit = F.unit := by cases h; rfl
-
 /-- **Natural powers of a weak solution**: `f^n` solves `n • D`. -/
-def pow (F : WeakSolution D) : (n : ℕ) → WeakSolution ((n : ℤ) • D)
+def pow [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] (F : WeakSolution D) :
+    (n : ℕ) → WeakSolution ((n : ℤ) • D)
   | 0 => (one X).recast (by rw [Nat.cast_zero, zero_smul])
   | n + 1 => ((F.pow n).mul F).recast
       (by rw [Nat.cast_add, Nat.cast_one, add_smul, one_smul])
 
 /-- **Integer powers of a weak solution**: `f^n` solves `n • D` (negative powers via the
 inverse). -/
-def zpow (F : WeakSolution D) : (n : ℤ) → WeakSolution (n • D)
+def zpow [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] (F : WeakSolution D)
+    : (n : ℤ) → WeakSolution (n • D)
   | (n : ℕ) => F.pow n
   | Int.negSucc n => ((F.pow (n + 1)).inv).recast
       (by rw [Int.negSucc_eq, neg_smul, Nat.cast_add, Nat.cast_one])

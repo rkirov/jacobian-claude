@@ -16,7 +16,7 @@ Given `Λ : Submodule ℤ E` with `[DiscreteTopology Λ]` and `[IsZLattice ℝ �
 * `AddCommGroup (E ⧸ Λ.toAddSubgroup)` — automatic.
 * `TopologicalSpace`, `T2Space`, `T3Space`, `IsTopologicalAddGroup` — automatic
   (via `AddSubgroup.isClosed_of_discrete` and `QuotientAddGroup.instT3Space`).
-* `CompactSpace (E ⧸ Λ.toAddSubgroup)` — proven via
+* `CompactSpace (E ⧸ Λ.toAddSubgroup)` — via
   `IsZLattice.isCompact_range_of_periodic`.
 * `QuotientAddGroup.mk : E → E ⧸ Λ` is a covering map / local homeomorphism,
   which will be the foundation for the (still-to-come) `ChartedSpace E (E ⧸ Λ)`
@@ -27,7 +27,6 @@ Given `Λ : Submodule ℤ E` with `[DiscreteTopology Λ]` and `[IsZLattice ℝ �
 Lee, *Introduction to Smooth Manifolds*, Ch. 21 (quotient Lie groups).
 -/
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.ZLatticeQuotient
 
@@ -93,14 +92,13 @@ noncomputable example : ChartedSpace E (E ⧸ Λ.toAddSubgroup) := inferInstance
 
 end ZLatticeInstances
 
-/-! ### Manifold and Lie-group instances (sorried, proof-sketch documented)
+/-! ### Manifold and Lie-group instances
 
-The `IsManifold` and `LieAddGroup` instances on `E ⧸ Λ` are not yet closed;
-they reduce to "transition maps between quotient charts are analytic",
-which requires a locally-constant-lattice-translation argument that is a
-substantial formalization step. Sketched below and left as TODO.
+The `IsManifold` and `LieAddGroup` instances on `E ⧸ Λ` reduce to "transition
+maps between quotient charts are analytic", via a locally-constant
+lattice-translation argument.
 
-## Proof sketch for `IsManifold 𝓘(𝕜, E) n (E ⧸ Λ)`
+## Proof of `IsManifold 𝓘(𝕜, E) n (E ⧸ Λ)`
 
 Apply `isManifold_of_contDiffOn`. Charts `e, e'` in the atlas come from
 `IsLocalHomeomorph.chartedSpace`, so each is `P.symm` for some
@@ -114,7 +112,7 @@ is locally constant — on each connected component of the overlap, the
 transition is literally `x ↦ x + λ₀` for a fixed `λ₀ ∈ Λ`. Translations
 are analytic, so the transition is `ContDiffOn 𝕜 ω`.
 
-## Proof sketch for `LieAddGroup`
+## Proof of `LieAddGroup`
 
 `LieAddGroup` extends `ContMDiffAdd` and requires `ContMDiff_neg`. Both
 reduce to the analyticity of addition / negation on `E ⧸ Λ`. These lift
@@ -126,9 +124,7 @@ section Manifold
 open scoped Manifold Topology
 
 variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCommGroup E]
-  [NormedSpace 𝕜 E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-  (Λ : Submodule ℤ E) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
-  {n : WithTop ℕ∞}
+  [NormedSpace 𝕜 E] (Λ : Submodule ℤ E) {n : WithTop ℕ∞}
 
 /-! ### Transitions between `mk`-matching partial homs are locally translations
 
@@ -171,7 +167,7 @@ theorem transition_displacement_continuousOn
 Proof: displacement `d` is continuous on `T.source` (open) into `E`,
 with values in `Λ`. `Λ` is discrete in `E`, so near `y₀` the value
 `d y` must equal `d y₀`. -/
-theorem transition_displacement_eventuallyEq
+theorem transition_displacement_eventuallyEq [DiscreteTopology Λ]
     (P P' : OpenPartialHomeomorph E (E ⧸ Λ.toAddSubgroup))
     (hP : (P : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk)
     (hP' : (P' : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk)
@@ -211,7 +207,7 @@ theorem transition_displacement_eventuallyEq
 `ContDiffOn 𝕜 n` on its source. Near any point of the source, the
 transition equals a translation by a fixed lattice element (step 4),
 and translations are `ContDiff`. -/
-theorem transition_contDiffOn_of_agrees_with_mk
+theorem transition_contDiffOn_of_agrees_with_mk [DiscreteTopology Λ]
     (P P' : OpenPartialHomeomorph E (E ⧸ Λ.toAddSubgroup))
     (hP : (P : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk)
     (hP' : (P' : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk) :
@@ -231,7 +227,7 @@ theorem transition_contDiffOn_of_agrees_with_mk
   exact (htrans.contDiffAt.congr_of_eventuallyEq heq).contDiffWithinAt
 
 /-- The analytic manifold structure on `E ⧸ Λ`. -/
-noncomputable instance instIsManifoldQuotient :
+noncomputable instance instIsManifoldQuotient [DiscreteTopology Λ] :
     IsManifold 𝓘(𝕜, E) n (E ⧸ Λ.toAddSubgroup) := by
   refine isManifold_of_contDiffOn _ _ _ ?_
   intro e e' he he'
@@ -259,7 +255,7 @@ composition `y ↦ P.symm (mk y)` is `ContDiffOn 𝕜 n` on the preimage of
 of the group operations on `E ⧸ Λ` factor through this map composed with
 operations on `E`. -/
 
-theorem contDiffOn_symm_mk
+theorem contDiffOn_symm_mk [DiscreteTopology Λ]
     (P : OpenPartialHomeomorph E (E ⧸ Λ.toAddSubgroup))
     (hP : (P : E → E ⧸ Λ.toAddSubgroup) = QuotientAddGroup.mk) :
     ContDiffOn 𝕜 n
@@ -321,7 +317,7 @@ The chart on `E ⧸ Λ` at `mk x` is essentially `mk⁻¹` on a neighborhood
 along the trivial chart on `E` and this inverse chart is locally the
 identity, hence `ContDiff`. The proof mirrors the structure of
 `contMDiff_neg` but with `id` in place of the `neg` ambient map. -/
-theorem contMDiff_mk : ContMDiff 𝓘(𝕜, E) 𝓘(𝕜, E) n
+theorem contMDiff_mk [DiscreteTopology Λ] : ContMDiff 𝓘(𝕜, E) 𝓘(𝕜, E) n
     (QuotientAddGroup.mk : E → E ⧸ Λ.toAddSubgroup) := by
   intro x₀
   -- Set up the local chart structure at mk x₀.
@@ -368,7 +364,7 @@ theorem contMDiff_mk : ContMDiff 𝓘(𝕜, E) 𝓘(𝕜, E) n
   rfl
 
 /-- The negation map `q ↦ -q` on `E ⧸ Λ` is `ContMDiff`. -/
-theorem contMDiff_neg :
+theorem contMDiff_neg [DiscreteTopology Λ] :
     ContMDiff 𝓘(𝕜, E) 𝓘(𝕜, E) n
       (fun q : E ⧸ Λ.toAddSubgroup => -q) := by
   intro q₀
@@ -468,7 +464,7 @@ theorem contMDiff_neg :
 
 
 /-- Addition on `E ⧸ Λ` is `ContMDiff`. -/
-theorem contMDiff_add :
+theorem contMDiff_add [DiscreteTopology Λ] :
     ContMDiff (𝓘(𝕜, E).prod 𝓘(𝕜, E)) 𝓘(𝕜, E) n
       (fun p : (E ⧸ Λ.toAddSubgroup) × (E ⧸ Λ.toAddSubgroup) => p.1 + p.2) := by
   intro ⟨q₁, q₂⟩
@@ -576,7 +572,7 @@ theorem contMDiff_add :
   congr 1
 
 /-- The analytic Lie-group structure on `E ⧸ Λ`. -/
-noncomputable instance instLieAddGroupQuotient :
+noncomputable instance instLieAddGroupQuotient [DiscreteTopology Λ] :
     LieAddGroup 𝓘(𝕜, E) n (E ⧸ Λ.toAddSubgroup) where
   contMDiff_add := contMDiff_add Λ
   contMDiff_neg := contMDiff_neg Λ

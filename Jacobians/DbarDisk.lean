@@ -63,7 +63,8 @@ theorem integrableOn_inv_closedBall (R : ℝ) :
     -- `r > 0` and `θ ∈ Ioo (-π) π`; `‖symm (r,θ)‖ = r`.
     simp only [Set.mem_Ioi] at hr
     by_cases hrR : r ≤ R
-    · -- inside the ball: the indicator is `‖(symm p)⁻¹‖ₑ = ofReal r⁻¹`, so `ofReal r * ofReal r⁻¹ = 1`.
+    · -- inside the ball: the indicator is `‖(symm p)⁻¹‖ₑ = ofReal r⁻¹`,
+      -- so `ofReal r * ofReal r⁻¹ = 1`.
       have hmem : Complex.polarCoord.symm (r, θ) ∈ Metric.closedBall (0 : ℂ) R := by
         rw [Metric.mem_closedBall, dist_zero_right, Complex.norm_polarCoord_symm, abs_of_pos hr]
         exact hrR
@@ -147,7 +148,8 @@ theorem cauchyTransform_smul (c : ℝ) (g : ℂ → ℂ) :
 
 open scoped Convolution in
 /-- **Additivity of the Cauchy transform** on compactly-supported continuous functions: both
-convolution integrands are integrable (`HasCompactSupport.convolutionExists_left` against the locally
+convolution integrands are integrable (`HasCompactSupport.convolutionExists_left` against the
+locally
 integrable kernel), so the integral of the sum splits (`ConvolutionExists.add_distrib`). -/
 theorem cauchyTransform_add {f g : ℂ → ℂ} (hf : Continuous f) (hfs : HasCompactSupport f)
     (hg : Continuous g) (hgs : HasCompactSupport g) :
@@ -172,7 +174,8 @@ open scoped Convolution in
 evaluation maps `T ↦ T 1`, `T ↦ T I` (and hence `dbar`) commute with the Bochner integral. -/
 theorem dbar_cauchyTransform {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g)
     (hgsupp : HasCompactSupport g) (z : ℂ) :
-    dbar (cauchyTransform g) z = (dbar g ⋆[ContinuousLinearMap.mul ℝ ℂ, volume] cauchyKernel) z := by
+    dbar (cauchyTransform g) z
+      = (dbar g ⋆[ContinuousLinearMap.mul ℝ ℂ, volume] cauchyKernel) z := by
   set L := ContinuousLinearMap.mul ℝ ℂ
   -- The CLM-valued convolution integrand (D1's derivative) is integrable: `fderiv g` is
   -- continuous with compact support, `K` is locally integrable.
@@ -283,7 +286,8 @@ theorem dbar_polar_identity (g : ℂ → ℂ) (w : ℂ) (θ : ℝ) :
   have hbasis : (fderiv ℝ g w) (Real.cos θ + Real.sin θ * I)
       = (Real.cos θ : ℂ) * A + (Real.sin θ : ℂ) * B := fderiv_apply_basis g w _ _
   -- The angular direction `I·c = -sin θ + cos θ·I`.
-  have hIc : I * (Real.cos θ + Real.sin θ * I) = ((-Real.sin θ : ℝ) : ℂ) + (Real.cos θ : ℝ) * I := by
+  have hIc : I * (Real.cos θ + Real.sin θ * I)
+      = ((-Real.sin θ : ℝ) : ℂ) + (Real.cos θ : ℝ) * I := by
     push_cast; ring_nf; rw [Complex.I_sq]; ring
   have hbasisI : (fderiv ℝ g w) (I * (Real.cos θ + Real.sin θ * I))
       = (-Real.sin θ : ℂ) * A + (Real.cos θ : ℂ) * B := by
@@ -467,17 +471,18 @@ annulus-divergence theorem entirely):
 2. Polar change of variables (`Complex.integral_comp_polarCoord_symm`): the Jacobian factor `r`
    cancels `1/w` (`r/(r e^{iθ}) = e^{−iθ}`), giving
    `∫_{(r,θ)∈(0,∞)×(−π,π)} e^{−iθ}·(∂̄g)(z + r e^{iθ}) dr dθ`.
-3. The polar-Wirtinger identity `dbar_polar_identity` (PROVEN): rewrites the integrand as a
+3. The polar-Wirtinger identity `dbar_polar_identity`: rewrites the integrand as a
    ½-combination of the radial directional derivative `(fderiv g w) c` and the angular one
    `(fderiv g w)(I·c)`, where `c = e^{iθ}`, `w = z + r·c`.
-4. The radial part integrates over `r∈(0,∞)` to `−g(z)` (`radial_integral`, PROVEN), then over
+4. The radial part integrates over `r∈(0,∞)` to `−g(z)` (`radial_integral`), then over
    `θ` to `−2π·g(z)`.  The angular part integrates over `θ∈(−π,π)` to `0` (`angular_integral`,
-   PROVEN: `c(π)=c(−π)=−1`).  Net `½·(−2π·g(z)) = −π·g(z)`.
+   with `c(π)=c(−π)=−1`).  Net `½·(−2π·g(z)) = −π·g(z)`.
 
 BOTH genuine analytic pieces — the radial FTC (`radial_integral`) and the angular vanishing
-(`angular_integral`) — are PROVEN axiom-clean.  Steps 1–4 below are DONE (translation,
+(`angular_integral`).  Steps 1–4 below handle translation,
 polar CoV, the `e^{−iθ}` simplification, and the `dbar_polar_identity` rewrite), reducing the goal
-to `∫_{target} ½·(R(p) + I·A(p)) = −π·g(z)` with `R = (fderiv g w) c` (radial), `A = (fderiv g w)(I·c)`
+to `∫_{target} ½·(R(p) + I·A(p)) = −π·g(z)` with `R = (fderiv g w) c` (radial), `A = (fderiv g
+w)(I·c)`
 (angular), `w = radialMap z (c θ) r`.  REMAINING GAP: only the final split + Fubini interchange:
 `½[∫_target R + I·∫_target A]`, with `∫_target R = ∫_θ (∫_r R) = ∫_θ (−g z) = −2π·g(z)` (Fubini,
 `radial_integral`) and `∫_target A = ∫_r (∫_θ A) = ∫_r 0 = 0` (Fubini-swapped, `angular_integral`).

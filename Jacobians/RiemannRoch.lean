@@ -6,7 +6,7 @@
   relocation). When the Dolbeault→Serre climb (G2–G4) discharges that single input, the
   headline theorem falls out.
 
-  PROVEN (axiom-clean): the ℂ-module on `MeromorphicFunction X` (so `L(D)` can be a
+  proved: the ℂ-module on `MeromorphicFunction X` (so `L(D)` can be a
   `Submodule ℂ`); `linearSystem D` as a `Submodule` + `lDim`.
 
   ISOLATED INPUTS (the genuine wall — the only remaining gaps here):
@@ -31,7 +31,6 @@ import Jacobians.LaurentTail.RiemannRochUnconditional
 
 -- Many declarations here are purely algebraic (the ℂ-module on `MeromorphicFunction`) and use
 -- only `[ChartedSpace ℂ X]`, not the full compact-manifold hypotheses carried by the consumers.
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 
@@ -44,7 +43,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-- **Riemann–Roch** (Forster Thm 16.9, Serre-dual form): a canonical divisor `K` with
 `l(D) − l(K−D) = deg D + 1 − g` for every `D`.
 
-**PROVEN, unconditionally and axiom-clean**, via the **Miranda Ch. VI Laurent-tail route**
+proved unconditionally via the **Miranda Ch. VI Laurent-tail route**
 (`LaurentTail.exists_riemannRoch_divisor_unconditional`): RR-I on the Mittag-Leffler tail spaces
 (`riemannRoch_tailForm`), Serre duality for the tail `H¹` in the meromorphic pair frame
 `ω = h·dg₀` (`h1TailDim_eq_lDim_pairCanonical_sub`, every genus — the descent input is the
@@ -139,7 +138,7 @@ theorem exists_singleSimplePole_of_genus_zero_of_rr (hg : genus X = 0) :
     rw [htop, finrank_top, hfr] at h1
     exact absurd h1 (by norm_num)
   obtain ⟨v, hv⟩ : ∃ v, v ∉ Submodule.span ℂ {c1} := by
-    by_contra hall; push_neg at hall; exact hspan_ne (Submodule.eq_top_iff'.mpr hall)
+    by_contra hall; push Not at hall; exact hspan_ne (Submodule.eq_top_iff'.mpr hall)
   obtain ⟨f, rfl⟩ := Submodule.Quotient.mk_surjective _ v
   -- `f` is not germ-constant (else its class would lie in `span {[1]}`).
   have hnc : ¬ ∃ c, ∀ x, ∀ᶠ z in 𝓝[≠] x, (f : MeromorphicFunction X).toFun z = c := by
@@ -156,7 +155,7 @@ theorem exists_singleSimplePole_of_genus_zero_of_rr (hg : genus X = 0) :
     rw [hfc]; exact Submodule.smul_mem _ c (Submodule.mem_span_singleton_self _)
   -- hence `f` has a pole, located at `P` with order exactly `-1`.
   have hpole : ∃ x₀, (f : MeromorphicFunction X).orderW x₀ < 0 := by
-    by_contra hno; push_neg at hno
+    by_contra hno; push Not at hno
     exact hnc (germ_eq_const_of_mem_linearSystem_zero (f : MeromorphicFunction X) (fun x => hno x))
   obtain ⟨x₀, hx₀⟩ := hpole
   have hx₀P : x₀ = P := by

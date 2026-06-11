@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-3 (pairing layer): the `∬_X σ∧ω` pairing atom (Forster 19.10)
+# The `∬_X σ∧ω` pairing atom (Forster 19.10)
 
 The global pairing of a smooth `(0,1)`-form `g` against a holomorphic 1-form `η`, realised
 as a PoU-weighted finite sum of planar chart integrals over the fixed Montel chart cover —
@@ -22,8 +22,7 @@ Contents:
   inside one chart window, the PoU sum collapses to a single un-weighted chart integral
   (transport + `∑ρⱼ = 1`).
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §19 (pp. 153–157);
-plan `docs/walls_bc_plan_2026-06-10.md`, phase C-3 (E3b).
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §19 (pp. 153–157).
 -/
 import Jacobians.AbelFormRead
 import Jacobians.Dolbeault.ResidueStokesCoverPoU
@@ -32,7 +31,6 @@ import Jacobians.Dolbeault.PlanarHolomorphicChangeOfVariables
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open Set Filter Complex MeasureTheory
@@ -42,16 +40,15 @@ namespace Jacobians.Dolbeault.AbelPairing
 
 open Jacobians.Dolbeault Jacobians
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### The pairing integrand -/
 
 open scoped Classical in
 /-- **The pairing integrand** in the chart at `y`, over the window `V ⊆ X`:
 `𝟙_{chart''V} · (P∘chart⁻¹) · (read01 g y ∘ chart⁻¹) · (localRep η y ∘ chart⁻¹)`.
 The indicator makes the formula globally defined (junk chart-inverse values are cut off). -/
-def pairingIntegrand (g : SmoothCOneForms X) (η : HolomorphicOneForms X)
+def pairingIntegrand {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (g : SmoothCOneForms X)
+    (η : HolomorphicOneForms X)
     (P : X → ℂ) (y : X) (V : Set X) : ℂ → ℂ :=
   fun z =>
     if z ∈ (chartAt (H := ℂ) y) '' V then
@@ -61,12 +58,15 @@ def pairingIntegrand (g : SmoothCOneForms X) (η : HolomorphicOneForms X)
     else 0
 
 /-- The vanishing kill condition: at `x` either the scalar field or the `(0,1)`-fiber dies. -/
-def KillsAt (P : X → ℂ) (g : SmoothCOneForms X) (x : X) : Prop :=
+def KillsAt {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (P : X → ℂ) (g : SmoothCOneForms X) (x : X) : Prop :=
   P x = 0 ∨ (g x) = (0 : ℂ →L[ℝ] ℂ)
 
-theorem pairingIntegrand_eq_zero_of_killsAt {g : SmoothCOneForms X}
+theorem pairingIntegrand_eq_zero_of_killsAt {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {g : SmoothCOneForms X}
     {η : HolomorphicOneForms X} {P : X → ℂ} {y : X} {V : Set X}
-    (hV : V ⊆ (chartAt (H := ℂ) y).source) {z : ℂ}
+    (_hV : V ⊆ (chartAt (H := ℂ) y).source) {z : ℂ}
     (hz : z ∈ (chartAt (H := ℂ) y) '' V → KillsAt P g ((chartAt (H := ℂ) y).symm z)) :
     pairingIntegrand g η P y V z = 0 := by
   rw [pairingIntegrand]
@@ -79,7 +79,9 @@ theorem pairingIntegrand_eq_zero_of_killsAt {g : SmoothCOneForms X}
 
 /-- **Window change**: the indicator window may be enlarged as long as the kill condition
 holds on the difference. -/
-theorem pairingIntegrand_congr_window (g : SmoothCOneForms X) (η : HolomorphicOneForms X)
+theorem pairingIntegrand_congr_window {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (g : SmoothCOneForms X)
+    (η : HolomorphicOneForms X)
     (P : X → ℂ) (y : X) {V W : Set X} (hVW : V ⊆ W)
     (hW : W ⊆ (chartAt (H := ℂ) y).source)
     (hkill : ∀ x ∈ W, x ∉ V → KillsAt P g x) :
@@ -104,7 +106,9 @@ theorem pairingIntegrand_congr_window (g : SmoothCOneForms X) (η : HolomorphicO
 /-- **Continuity of the pairing integrand**: honest continuity at window points (all three
 factors are smooth/analytic reads on the chart source), local vanishing outside the compact
 core image (the kill condition). -/
-theorem continuous_pairingIntegrand (g : SmoothCOneForms X) (η : HolomorphicOneForms X)
+theorem continuous_pairingIntegrand {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (g : SmoothCOneForms X)
+    (η : HolomorphicOneForms X)
     {P : X → ℂ} (hP : Continuous P)
     {y : X} {V : Set X} (hVopen : IsOpen V) (hVsub : V ⊆ (chartAt (H := ℂ) y).source)
     {K : Set X} (hK : IsCompact K) (hKV : K ⊆ V)
@@ -144,7 +148,9 @@ theorem continuous_pairingIntegrand (g : SmoothCOneForms X) (η : HolomorphicOne
     exact continuousAt_const.congr hev.symm
 
 /-- Compact support of the pairing integrand (inside the chart image of the core). -/
-theorem hasCompactSupport_pairingIntegrand (g : SmoothCOneForms X)
+theorem hasCompactSupport_pairingIntegrand {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (g : SmoothCOneForms X)
     (η : HolomorphicOneForms X) (P : X → ℂ)
     {y : X} {V : Set X} (hVsub : V ⊆ (chartAt (H := ℂ) y).source)
     {K : Set X} (hK : IsCompact K) (hKV : K ⊆ V)
@@ -160,7 +166,9 @@ theorem hasCompactSupport_pairingIntegrand (g : SmoothCOneForms X)
   exact hsupp _ hz_mem hzK
 
 /-- Integrability of the pairing integrand (continuity + compact support). -/
-theorem integrable_pairingIntegrand (g : SmoothCOneForms X) (η : HolomorphicOneForms X)
+theorem integrable_pairingIntegrand {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (g : SmoothCOneForms X)
+    (η : HolomorphicOneForms X)
     {P : X → ℂ} (hP : Continuous P)
     {y : X} {V : Set X} (hVopen : IsOpen V) (hVsub : V ⊆ (chartAt (H := ℂ) y).source)
     {K : Set X} (hK : IsCompact K) (hKV : K ⊆ V)
@@ -178,7 +186,9 @@ window inside both chart sources, the plane integral of the pairing integrand do
 depend on the chart it is read in.  Holomorphic change of variables along the transition:
 the `(0,1)`-factor transforms by `conj T′` (`read01_transform`), the `(1,0)`-factor by `T′`
 (`localRep_transform`), and `conj T′ · T′ = |T′|²` is the real Jacobian. -/
-theorem integral_pairingIntegrand_transport {g : SmoothCOneForms X}
+theorem integral_pairingIntegrand_transport {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {g : SmoothCOneForms X}
     (hg : g ∈ OneFormsZeroOne X) (η : HolomorphicOneForms X) (P : X → ℂ)
     {y y' : X} {V : Set X} (hVopen : IsOpen V)
     (hVy : V ⊆ (chartAt (H := ℂ) y).source) (hVy' : V ⊆ (chartAt (H := ℂ) y').source) :
@@ -250,28 +260,38 @@ theorem integral_pairingIntegrand_transport {g : SmoothCOneForms X}
 /-! ### The pairing `pairForm` over the fixed Montel chart cover -/
 
 /-- The `j`-th cover window: the outer open shrinkage at the `j`-th cover centre. -/
-def coverWindow (j : Fin ((chartCover : Finset X).card)) : Set X :=
+def coverWindow {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    (j : Fin ((chartCover : Finset X).card)) : Set X :=
   chartOpen (X := X) (coverCenter j)
 
-theorem coverWindow_isOpen (j : Fin ((chartCover : Finset X).card)) :
+theorem coverWindow_isOpen {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ChartedSpace ℂ X] (j : Fin ((chartCover : Finset X).card)) :
     IsOpen (coverWindow (X := X) j) := chartOpen_isOpen _
 
-theorem coverWindow_subset_source (j : Fin ((chartCover : Finset X).card)) :
+theorem coverWindow_subset_source {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (j : Fin ((chartCover : Finset X).card)) :
     coverWindow (X := X) j ⊆ (chartAt (H := ℂ) (coverCenter j)).source :=
   chartOpen_subset_chartAt_source (coverCenter j) (coverCenter_mem j)
 
-theorem tsupport_coverPoU_subset_window (j : Fin ((chartCover : Finset X).card)) :
+theorem tsupport_coverPoU_subset_window {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (j : Fin ((chartCover : Finset X).card)) :
     tsupport (coverPoU (X := X) j) ⊆ coverWindow (X := X) j :=
   coverPoU_tsupport_subset j
 
 /-- The kill condition for the PoU scalar field: `ρ̂ⱼ` vanishes off its compact support. -/
-theorem killsAt_coverRhoC (g : SmoothCOneForms X) (j : Fin ((chartCover : Finset X).card)) :
+theorem killsAt_coverRhoC {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (g : SmoothCOneForms X)
+    (j : Fin ((chartCover : Finset X).card)) :
     ∀ x ∈ coverWindow (X := X) j, x ∉ tsupport (coverPoU (X := X) j) →
       KillsAt (coverRhoC j) g x :=
   fun _ _ hx => Or.inl (coverRhoC_eq_zero_of_notMem j hx)
 
 /-- The `j`-th piece of the pairing is integrable. -/
-theorem integrable_pairForm_piece (g : SmoothCOneForms X) (η : HolomorphicOneForms X)
+theorem integrable_pairForm_piece {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (g : SmoothCOneForms X)
+    (η : HolomorphicOneForms X)
     (j : Fin ((chartCover : Finset X).card)) :
     Integrable (pairingIntegrand g η (coverRhoC j) (coverCenter j)
       (coverWindow (X := X) j)) volume :=
@@ -281,13 +301,17 @@ theorem integrable_pairForm_piece (g : SmoothCOneForms X) (η : HolomorphicOneFo
 
 /-- **The pairing `⟨η, g⟩ = ∬_X g∧η`** (up to the fixed constant `2i`), as the PoU-weighted
 sum of planar chart integrals over the fixed Montel chart cover. -/
-def pairForm (η : HolomorphicOneForms X) (g : SmoothCOneForms X) : ℂ :=
+def pairForm {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (η : HolomorphicOneForms X) (g : SmoothCOneForms X) :
+    ℂ :=
   ∑ j : Fin ((chartCover : Finset X).card),
     ∫ z, pairingIntegrand g η (coverRhoC j) (coverCenter j) (coverWindow (X := X) j) z
 
 /-! ### Linearity in the `(0,1)`-slot -/
 
-theorem pairingIntegrand_add (g₁ g₂ : SmoothCOneForms X) (η : HolomorphicOneForms X)
+theorem pairingIntegrand_add {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (g₁ g₂ : SmoothCOneForms X)
+    (η : HolomorphicOneForms X)
     (P : X → ℂ) (y : X) (V : Set X) (z : ℂ) :
     pairingIntegrand (g₁ + g₂) η P y V z
       = pairingIntegrand g₁ η P y V z + pairingIntegrand g₂ η P y V z := by
@@ -297,7 +321,9 @@ theorem pairingIntegrand_add (g₁ g₂ : SmoothCOneForms X) (η : HolomorphicOn
     ring
   · rw [if_neg hz, if_neg hz, if_neg hz, add_zero]
 
-theorem pairingIntegrand_zsmul (n : ℤ) (g : SmoothCOneForms X) (η : HolomorphicOneForms X)
+theorem pairingIntegrand_zsmul {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (n : ℤ) (g : SmoothCOneForms X)
+    (η : HolomorphicOneForms X)
     (P : X → ℂ) (y : X) (V : Set X) (z : ℂ) :
     pairingIntegrand (n • g) η P y V z = n • pairingIntegrand g η P y V z := by
   rw [pairingIntegrand, pairingIntegrand]
@@ -307,7 +333,9 @@ theorem pairingIntegrand_zsmul (n : ℤ) (g : SmoothCOneForms X) (η : Holomorph
     ring
   · rw [if_neg hz, if_neg hz, smul_zero]
 
-theorem pairingIntegrand_smul (r : ℝ) (g : SmoothCOneForms X) (η : HolomorphicOneForms X)
+theorem pairingIntegrand_smul {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (r : ℝ) (g : SmoothCOneForms X)
+    (η : HolomorphicOneForms X)
     (P : X → ℂ) (y : X) (V : Set X) (z : ℂ) :
     pairingIntegrand (r • g) η P y V z = r • pairingIntegrand g η P y V z := by
   rw [pairingIntegrand, pairingIntegrand]
@@ -317,7 +345,8 @@ theorem pairingIntegrand_smul (r : ℝ) (g : SmoothCOneForms X) (η : Holomorphi
     ring
   · rw [if_neg hz, if_neg hz, smul_zero]
 
-theorem pairingIntegrand_zero (η : HolomorphicOneForms X)
+theorem pairingIntegrand_zero {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (η : HolomorphicOneForms X)
     (P : X → ℂ) (y : X) (V : Set X) (z : ℂ) :
     pairingIntegrand (0 : SmoothCOneForms X) η P y V z = 0 := by
   rw [pairingIntegrand]
@@ -326,7 +355,9 @@ theorem pairingIntegrand_zero (η : HolomorphicOneForms X)
     ring
   · rw [if_neg hz]
 
-theorem pairForm_add (η : HolomorphicOneForms X) (g₁ g₂ : SmoothCOneForms X) :
+theorem pairForm_add {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (η : HolomorphicOneForms X)
+    (g₁ g₂ : SmoothCOneForms X) :
     pairForm η (g₁ + g₂) = pairForm η g₁ + pairForm η g₂ := by
   rw [pairForm, pairForm, pairForm, ← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun j _ => ?_
@@ -334,7 +365,8 @@ theorem pairForm_add (η : HolomorphicOneForms X) (g₁ g₂ : SmoothCOneForms X
   exact integral_congr_ae (Eventually.of_forall fun z =>
     pairingIntegrand_add g₁ g₂ η _ _ _ z)
 
-theorem pairForm_zero (η : HolomorphicOneForms X) :
+theorem pairForm_zero {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (η : HolomorphicOneForms X) :
     pairForm η (0 : SmoothCOneForms X) = 0 := by
   rw [pairForm]
   refine Finset.sum_eq_zero fun j _ => ?_
@@ -343,7 +375,9 @@ theorem pairForm_zero (η : HolomorphicOneForms X) :
     funext fun z => pairingIntegrand_zero η _ _ _ z]
   exact integral_zero _ _
 
-theorem pairForm_zsmul (η : HolomorphicOneForms X) (n : ℤ) (g : SmoothCOneForms X) :
+theorem pairForm_zsmul {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (η : HolomorphicOneForms X) (n : ℤ)
+    (g : SmoothCOneForms X) :
     pairForm η (n • g) = n • pairForm η g := by
   rw [pairForm, pairForm, Finset.smul_sum]
   refine Finset.sum_congr rfl fun j _ => ?_
@@ -355,7 +389,9 @@ theorem pairForm_zsmul (η : HolomorphicOneForms X) (n : ℤ) (g : SmoothCOneFor
       rw [pairingIntegrand_zsmul n g η _ _ _ z, zsmul_eq_mul])]
   rw [integral_const_mul, zsmul_eq_mul]
 
-theorem pairForm_sum {ι : Type*} (η : HolomorphicOneForms X) (s : Finset ι)
+theorem pairForm_sum {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {ι : Type*}
+    (η : HolomorphicOneForms X) (s : Finset ι)
     (g : ι → SmoothCOneForms X) :
     pairForm η (∑ k ∈ s, g k) = ∑ k ∈ s, pairForm η (g k) := by
   classical
@@ -366,7 +402,9 @@ theorem pairForm_sum {ι : Type*} (η : HolomorphicOneForms X) (s : Finset ι)
 
 /-! ### Linearity in the holomorphic slot -/
 
-theorem pairForm_eta_add (η₁ η₂ : HolomorphicOneForms X) (g : SmoothCOneForms X) :
+theorem pairForm_eta_add {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (η₁ η₂ : HolomorphicOneForms X)
+    (g : SmoothCOneForms X) :
     pairForm (η₁ + η₂) g = pairForm η₁ g + pairForm η₂ g := by
   rw [pairForm, pairForm, pairForm, ← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun j _ => ?_
@@ -381,7 +419,9 @@ theorem pairForm_eta_add (η₁ η₂ : HolomorphicOneForms X) (g : SmoothCOneFo
     ring
   · rw [if_neg hz, if_neg hz, if_neg hz, add_zero]
 
-theorem pairForm_eta_smul (c : ℂ) (η : HolomorphicOneForms X) (g : SmoothCOneForms X) :
+theorem pairForm_eta_smul {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (c : ℂ) (η : HolomorphicOneForms X)
+    (g : SmoothCOneForms X) :
     pairForm (c • η) g = c * pairForm η g := by
   rw [pairForm, pairForm, Finset.mul_sum]
   refine Finset.sum_congr rfl fun j _ => ?_
@@ -408,7 +448,9 @@ single un-weighted chart-`c` integral:
 Per cover chart `j`: shrink the window to `Vⱼ ∩ W` (the kill condition holds on the
 difference since `g` dies off `K ⊆ W`), transport to the chart at `c`, and sum the PoU
 weights to `1`. -/
-theorem pairForm_eq_singleChart {g : SmoothCOneForms X} (hg : g ∈ OneFormsZeroOne X)
+theorem pairForm_eq_singleChart {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {g : SmoothCOneForms X}
+    (hg : g ∈ OneFormsZeroOne X)
     (η : HolomorphicOneForms X) {c : X} {W K : Set X} (hWopen : IsOpen W)
     (hWsub : W ⊆ (chartAt (H := ℂ) c).source) (hK : IsCompact K) (hKW : K ⊆ W)
     (hgsupp : ∀ x, x ∉ K → (g x) = (0 : ℂ →L[ℝ] ℂ)) :

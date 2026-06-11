@@ -5,7 +5,8 @@ import Jacobians.BoundaryPositivity
 # Cut-surface bridge: proving the Riemann bilinear relations
 
 This file formalizes the *analytic heart* of the period-lattice goal (#7): the two Riemann bilinear
-relations R1 (vanishing) and R2 (positivity) are **proven** from a single, more primitive topological
+relations R1 (vanishing) and R2 (positivity) are **proven** from a single, more primitive
+topological
 input — the **boundary word** of a canonical dissection realized as a cut surface (a chart
 `cut : box → X`, holomorphic on the interior, a diffeo onto `X` minus the cuts, whose boundary
 traverses the loops `a₁b₁a₁⁻¹b₁⁻¹⋯`).
@@ -62,7 +63,7 @@ theorem riemann_R1_of_boundaryWord {g : ℕ} (A B : Matrix (Fin g) (Fin g) ℂ) 
   rw [Matrix.zero_apply, boundaryWord i j]
   exact rectBoundaryIntegral_eq_zero_of_differentiableOn (hFh i j)
 
-/-- **Per-handle cancellation = the boundary word, PROVEN from the gluing.** This is the geometric
+/-- **Per-handle cancellation = the boundary word, from the gluing.** This is the geometric
 heart of the boundary word for a *single handle* (one `a`-loop, one `b`-loop): the box contour
 integral `∮_{∂box}(F·h dz)` equals the antisymmetric period product `A·B' − B·A'`, derived purely
 from the cut chart's **gluing** and the primitive's **jumps** across the cuts.
@@ -73,11 +74,13 @@ Hypotheses (all supplied by a cut chart that identifies the box's opposite edges
 * **jumps** `hjump_a`/`hjump_b` — the primitive `F` of `h` increases by a fixed period across each
   cut: by `B` (the `b`-period of the `F`-form) crossing the `a`-cut, and by `A` (the `a`-period)
   crossing the `b`-cut. This is the monodromy fact "primitive jump = period";
-* **periods** `hAper`/`hBper` — the `a`-period `A' = ∫₀¹ h(x) dx` and `b`-period `B' = i∫₀¹ h(yi) dy`
+* **periods** `hAper`/`hBper` — the `a`-period `A' = ∫₀¹ h(x) dx` and `b`-period `B' = i∫₀¹ h(yi)
+dy`
   of the `h`-form, read off the bottom/left edges.
 
 Then `∮_{∂box}(F·h) = A·B' − B·A'`. (Bottom−top collapses to `−B·A'` via the `a`-cut jump;
-right−left to `A·B'` via the `b`-cut jump. Pure interval-integral algebra; no surface topology — that
+right−left to `A·B'` via the `b`-cut jump. Pure interval-integral algebra; no surface topology —
+that
 lives in *realizing* the gluing/jump data, i.e. the isolated `exists_cutSurface`.) Combined with box
 Cauchy (`rectBoundaryIntegral_eq_zero_of_differentiableOn`) this gives `A·B' = B·A'` — Riemann's R1
 for one handle. The general-`g` boundary word sums `g` such handles over the `4g`-gon. -/

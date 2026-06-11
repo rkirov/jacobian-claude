@@ -96,10 +96,6 @@ namespace Jacobians.ProperMapDegree
 
 open Jacobians
 
-set_option linter.unusedSectionVars false
-
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The globalization: locally constant on a connected sphere ⇒ the equality
 
@@ -124,7 +120,9 @@ If `N : ℂℙ¹ → ℤ` is locally constant with `N(0) = zerosCount f` and
 `PreconnectedSpace`, so by `IsLocallyConstant.apply_eq_of_preconnectedSpace` the
 values of `N` at `((0 : ℂ) : ℂℙ¹)` and at `∞` agree; substitute the two boundary
 identities. -/
-theorem zerosCount_eq_polesCount_of_isLocallyConstant (f : MeromorphicFunction X)
+theorem zerosCount_eq_polesCount_of_isLocallyConstant {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (N : RiemannSphere → ℤ) (hN : IsLocallyConstant N)
     (hzero : N ((0 : ℂ) : RiemannSphere) = zerosCount f)
     (hinfty : N OnePoint.infty = polesCount f) :
@@ -157,7 +155,9 @@ Bundles the output of the global argument-principle assembly:
 
 Each field is the honest geometric content of Miranda §II.4 / Forster §4; none is
 vacuous (`ofDivEqZero`). -/
-structure ProperMapDegreeData (f : MeromorphicFunction X) where
+structure ProperMapDegreeData {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) where
   /-- The fibre-multiplicity function on `ℂℙ¹`. -/
   N : RiemannSphere → ℤ
   /-- The argument principle: `N` is locally constant. -/
@@ -171,7 +171,9 @@ structure ProperMapDegreeData (f : MeromorphicFunction X) where
 `ProperMapDegreeData f` (the output of the argument-principle assembly), the
 number of zeros equals the number of poles — the equality that discharges
 `exists_properMapDegree`, hence Riemann–Roch's `deg_div`. -/
-theorem zerosCount_eq_polesCount_of_properMapDegreeData (f : MeromorphicFunction X)
+theorem zerosCount_eq_polesCount_of_properMapDegreeData {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (D : ProperMapDegreeData f) :
     zerosCount f = polesCount f :=
   zerosCount_eq_polesCount_of_isLocallyConstant f D.N D.locallyConstant D.zero_eq D.infty_eq
@@ -180,7 +182,9 @@ theorem zerosCount_eq_polesCount_of_properMapDegreeData (f : MeromorphicFunction
 derived from a `ProperMapDegreeData` via the nonnegativity reduction
 `exists_properMapDegree_of_zerosCount_eq_polesCount`.  This is the exact shape the
 parent's `exists_properMapDegree` needs. -/
-theorem exists_properMapDegree_of_properMapDegreeData (f : MeromorphicFunction X)
+theorem exists_properMapDegree_of_properMapDegreeData {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (D : ProperMapDegreeData f) :
     ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) :=
   exists_properMapDegree_of_zerosCount_eq_polesCount f
@@ -200,7 +204,9 @@ data). -/
 the constant function `N ≡ 0` (no zeros, no poles), locally constant, with both
 boundary readings `0`.  Hence the `ProperMapDegreeData` obligations are
 *satisfiable* — the structure is not a disguised `False`. -/
-def ProperMapDegreeData.ofDivEqZero (f : MeromorphicFunction X)
+def ProperMapDegreeData.ofDivEqZero {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (h0 : (f.div : Divisor X) = 0) : ProperMapDegreeData f where
   N := fun _ => 0
   locallyConstant := IsLocallyConstant.const 0
@@ -254,7 +260,8 @@ counts as `w → 0`).  It is the chart-transport of the planar Rouché count,
 discharged in `RoucheBridge.localMultiplicity_eq_localOrder_count_of_apply_eq_zero`,
 restated at the `MeromorphicFunction` level via the definitional
 `orderAtPoint = localOrder` and `meromorphic = MMeromorphicAt` identifications. -/
-theorem localFibreNcard_eq_order_at_zero (f : MeromorphicFunction X) (x : X)
+theorem localFibreNcard_eq_order_at_zero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (x : X)
     (hpos : 0 < f.orderAtPoint x) (hfx : f.toFun x = 0) :
     ∃ (U : Set X) (V : Set ℂ),
       IsOpen U ∧ x ∈ U ∧ IsOpen V ∧ (0 : ℂ) ∈ V ∧
@@ -276,5 +283,6 @@ theorem localFibreNcard_eq_order_at_zero (f : MeromorphicFunction X) (x : X)
   have := hcount w hwV hwne'
   rwa [show (Jacobians.Discharge.localOrder 𝓘(ℂ) f.toFun x).natAbs
     = (f.orderAtPoint x).natAbs from rfl] at this
+
 
 end Jacobians.ProperMapDegree

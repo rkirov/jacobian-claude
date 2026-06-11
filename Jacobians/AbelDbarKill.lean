@@ -3,21 +3,20 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-5 (∂̄-kill): Forster 19.10 — `⟨ω,σ⟩ = 0 ∀ω ⟹ σ = ∂̄u`
+# The Abel ∂̄-kill step: Forster 19.10 — `⟨ω,σ⟩ = 0 ∀ω ⟹ σ = ∂̄u`
 
 The solvability criterion for `∂̄`: a smooth `(0,1)`-form whose pairing against every
 holomorphic basis form vanishes is a `∂̄`-coboundary.
 
-Mechanism (E3d of the plan): the pairing functional
+Mechanism: the pairing functional
 `Λ : A^{0,1} → ℂ^g`, `Λ(σ)ᵢ = ⟨ωᵢ, σ⟩` kills `im ∂̄` (`pairForm_dbarL`), hence descends to
 `Λ̄ : H^{0,1} → ℂ^g`; `Λ̄` is surjective because the **period Gram matrix**
 `pairMatrix i j = ⟨ωᵢ, ω̄ⱼ⟩` is invertible (`pairForm_conjForm_ne_zero` positivity) and the
 range is an `ℝ`-submodule containing all `c·colⱼ`; and `dim_ℝ H^{0,1} = 2·h¹(𝒪) = 2g
-= dim_ℝ ℂ^g` (the Dolbeault comparison + the C-4 dimension count), so surjective ⟹
+= dim_ℝ ℂ^g` (the Dolbeault comparison + the `h¹ = g` dimension count), so surjective ⟹
 injective ⟹ `[σ] = 0`.
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 19.9–19.10 (pp. 155–157);
-plan `docs/walls_bc_plan_2026-06-10.md`, phases E3a/E3d.
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 19.9–19.10 (pp. 155–157).
 -/
 import Jacobians.AbelPairingPositivity
 import Jacobians.Dolbeault.DolbeaultComparisonEquiv
@@ -28,7 +27,6 @@ import Jacobians.Dolbeault.SkyscraperProductWitness
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open Set Filter Complex MeasureTheory Module
@@ -39,7 +37,7 @@ namespace Jacobians.Dolbeault.AbelPairing
 open Jacobians.Dolbeault Jacobians
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### ℝ-homogeneity of the pairing (completing the linearity kit) -/
 
@@ -223,7 +221,7 @@ instance : FiniteDimensional ℝ (DolbeaultH01 X) := by
   exact (comparison_linearEquiv (chartDiskCover (X := X))
     chartDiskCover_isLeray).symm.finiteDimensional
 
-/-- **`dim_ℝ H^{0,1}(X) = 2g`** (Dolbeault comparison + the C-4 dimension count). -/
+/-- **`dim_ℝ H^{0,1}(X) = 2g`** (Dolbeault comparison + the `h¹ = g` dimension count). -/
 theorem finrank_dolbeaultH01 : finrank ℝ (DolbeaultH01 X) = 2 * genus X := by
   rw [cechH1_dolbeault_comparison_proof (chartDiskCover (X := X)) chartDiskCover_isLeray]
   congr 1

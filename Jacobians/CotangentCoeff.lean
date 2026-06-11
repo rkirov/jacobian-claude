@@ -32,22 +32,18 @@ Derived via `contMDiffAt_hom_bundle` (Mathlib): the section's smoothness gives t
 `ℂ →L[ℂ] ℂ`. (Found 2026-05-30; corrects the earlier false "global coefficient" target.)
 -/
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 
 open scoped Manifold ContDiff Bundle Topology
 open Filter Set MeasureTheory
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-  [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-  [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- **The continuous local object.** Near `x₀`, the coordinate of the section `α` in the FIXED
 hom-bundle trivialization at `x₀` is continuous (indeed it is `ContMDiffAt`) as a map into the
 fixed normed space `ℂ →L[ℂ] ℂ`. This is `inCoordinates (α x)`. -/
-theorem continuousAt_inCoordinates (α : HolomorphicOneForms X) (x₀ : X) :
+theorem continuousAt_inCoordinates {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X) (x₀ : X)
+    :
     ContinuousAt (fun x : X => ContinuousLinearMap.inCoordinates ℂ
       (TangentSpace 𝓘(ℂ) (M := X)) ℂ (Bundle.Trivial X ℂ) x₀ x x₀ x (α.toFun x)) x₀ := by
   have hα := α.contMDiff_toFun x₀
@@ -58,7 +54,9 @@ theorem continuousAt_inCoordinates (α : HolomorphicOneForms X) (x₀ : X) :
 `α` read in the FIXED chart at `x₀`, i.e. `α` paired with the *coordinate vector field of the
 chart at `x₀`*) is continuous at `x₀`. NOTE this is `inCoordinates (α x) 1`, **not** the
 discontinuous `α x 1`. -/
-theorem continuousAt_localCoeff (α : HolomorphicOneForms X) (x₀ : X) :
+theorem continuousAt_localCoeff {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X) (x₀ : X)
+    :
     ContinuousAt (fun x : X => ContinuousLinearMap.inCoordinates ℂ
       (TangentSpace 𝓘(ℂ) (M := X)) ℂ (Bundle.Trivial X ℂ) x₀ x x₀ x (α.toFun x) (1 : ℂ)) x₀ :=
   (continuousAt_inCoordinates α x₀).clm_apply continuousAt_const
@@ -69,7 +67,8 @@ being invariant under EVERY chart-transition derivative, `coordChange i j x 1 = 
 hypothesis is false for a complex 1-manifold with non-trivial tangent bundle (genus ≥ 2):
 chart transitions are general biholomorphisms whose derivatives do not fix `1`. Hence the
 constant-`1` section is discontinuous, and `x ↦ α x (1 : TangentSpace x)` is discontinuous. -/
-theorem const_one_section_continuous_of_coordChange_fixes_one
+theorem const_one_section_continuous_of_coordChange_fixes_one {X : Type*}
+    [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (h : ∀ (i j : atlas ℂ X) (x : X),
         x ∈ (tangentBundleCore 𝓘(ℂ) X).toFiberBundleCore.baseSet i ∩
             (tangentBundleCore 𝓘(ℂ) X).toFiberBundleCore.baseSet j →
@@ -84,12 +83,15 @@ theorem const_one_section_continuous_of_coordChange_fixes_one
 (`continuousAt_inCoordinates`), but the INPUT is the constant-`1` tangent-section coordinate,
 which is discontinuous (see the obstruction). So the global target is a continuous operator
 times a discontinuous input — discontinuous. -/
-theorem target_eq_inCoordinates_of_w (α : HolomorphicOneForms X) (x₀ x : X)
+theorem target_eq_inCoordinates_of_w {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X)
+    (x₀ x : X)
     (hx : x ∈ (chartAt ℂ x₀).source) :
     α.toFun x ((1 : ℂ) : TangentSpace 𝓘(ℂ) x) =
       ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := X)) ℂ (Bundle.Trivial X ℂ)
         x₀ x x₀ x (α.toFun x)
-        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).continuousLinearMapAt ℂ x (1 : ℂ)) := by
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).continuousLinearMapAt ℂ x
+          (1 : ℂ)) := by
   have hxbase : x ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).baseSet := by
     rw [TangentBundle.trivializationAt_baseSet]; exact hx
   simp only [ContinuousLinearMap.inCoordinates, ContinuousLinearMap.comp_apply,
@@ -103,7 +105,9 @@ theorem target_eq_inCoordinates_of_w (α : HolomorphicOneForms X) (x₀ x : X)
 obstruction lemma `target_eq_inCoordinates_of_w`; this general version is what lets a
 chart-patchwork rewrite the line-integral integrand `α.toFun (γ s) (pathSpeed γ s)` into a
 product of the continuous local coefficient and the trivialized velocity.) -/
-theorem apply_eq_inCoordinates (α : HolomorphicOneForms X) (x₀ x : X)
+theorem apply_eq_inCoordinates {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X)
+    (x₀ x : X)
     (hx : x ∈ (chartAt ℂ x₀).source) (v : TangentSpace 𝓘(ℂ) x) :
     α.toFun x v =
       ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := X)) ℂ (Bundle.Trivial X ℂ)
@@ -128,7 +132,9 @@ hypothesis is the *geometric* velocity-section continuity, NOT continuity of the
 `pathSpeed γ` (which would still leave the discontinuous coefficient `α.toFun · 1`). -/
 
 /-- Continuous velocity tangent-section ⇒ the form integrand is `ContinuousOn [0,1]`. -/
-theorem continuousOn_form_pathSpeed (α : HolomorphicOneForms X) (γ : ℝ → X)
+theorem continuousOn_form_pathSpeed {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X)
+    (γ : ℝ → X)
     (hvel : ContinuousOn (fun s : ℝ =>
         (Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s)))
       (Set.Icc 0 1)) :
@@ -176,7 +182,9 @@ theorem continuousOn_form_pathSpeed (α : HolomorphicOneForms X) (γ : ℝ → X
 /-- Continuous velocity tangent-section ⇒ the form integrand is interval-integrable on `[0,1]`.
 **The justification for the genuinely-`C¹` loop predicate**: the `integrable` field follows from
 the velocity-continuity (`velCont`) field. -/
-theorem intervalIntegrable_form_pathSpeed_of_velContinuous (α : HolomorphicOneForms X) (γ : ℝ → X)
+theorem intervalIntegrable_form_pathSpeed_of_velContinuous {X : Type*} [TopologicalSpace X]
+    [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (α : HolomorphicOneForms X) (γ : ℝ → X)
     (hvel : ContinuousOn (fun s : ℝ =>
         (Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s)))
       (Set.Icc 0 1)) :
@@ -195,11 +203,13 @@ continuity `hγ`, the pointwise `hγdiff` and `hγcont` fields** — these are N
 continuous velocity section), which is exactly why the refactor *keeps* the `cont`/`diff` fields and
 only replaces `integrable` with `velCont`. -/
 
-omit [CompactSpace X] in
-/-- Local analogue of `pathSpeed_comp_eq_mfderiv`: only `MDifferentiableAt f (γ t)` is needed (the
-global `ContMDiff f` in the original is used solely to produce this), so it applies to local sections.
-The source `X` need NOT be compact (used with `X = ℂ` in the `ChartBall` base case). -/
-theorem pathSpeed_comp_eq_mfderiv_of_mdiff (f : X → Y) (γ : ℝ → X) (t : ℝ)
+/-- Local analogue of `pathSpeed_comp_eq_mfderiv`: only `MDifferentiableAt f (γ t)` is needed
+(the global `ContMDiff f` in the original is used solely to produce this), so it applies to
+local sections. The source `X` need *not* be compact (used with `X = ℂ` in the `ChartBall`
+base case). -/
+theorem pathSpeed_comp_eq_mfderiv_of_mdiff {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    (f : X → Y) (γ : ℝ → X) (t : ℝ)
     (hf_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f (γ t))
     (hγ_cont : ContinuousAt γ t)
     (hγ_diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
@@ -254,7 +264,10 @@ theorem pathSpeed_comp_eq_mfderiv_of_mdiff (f : X → Y) (γ : ℝ → X) (t : �
 `IsClosedSmoothLoop.comp` constructor. Identifies velocity-section(`f∘γ`) with `tangentMap f`
 applied to velocity-section(`γ`) (pointwise via `pathSpeed_comp_eq_mfderiv`), then composes with the
 continuous `tangentMap f`. -/
-theorem velCont_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X)
+theorem velCont_comp {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {Y : Type*} [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X)
     (hγcont : Continuous γ)
     (hγdiff : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       DifferentiableAt ℝ ((chartAt (H := ℂ) (γ s)).toFun ∘ γ) s)
@@ -274,13 +287,15 @@ theorem velCont_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ
   congr 1
   exact pathSpeed_comp_eq_mfderiv f hf γ s hγcont.continuousAt (hγdiff s hs)
 
-omit [CompactSpace Y] in
-/-- **LOCAL: velocity-section continuity is preserved by a map `C^ω` on an open set.** For the §3
+/-- **Local: velocity-section continuity is preserved by a map `C^ω` on an open set.** For the §3
 lift `g∘γ` (`g` a local section) and the `ChartBall` base case. Open `V` upgrades `ContMDiffOn` to
 `ContMDiffAt`/`MDifferentiableAt`, so `pathSpeed_comp_eq_mfderiv_of_mdiff` applies, and
 `tangentMapWithin g V = tangentMap g` on `V`. The source `Y` need NOT be compact (the `ChartBall`
 base case takes `Y = ℂ`, the non-compact model space). -/
-theorem velCont_compOn (g : Y → X) {V : Set Y} (hg : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g V)
+theorem velCont_compOn {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y]
+    (g : Y → X) {V : Set Y} (hg : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g V)
     (hVo : IsOpen V) (γ : ℝ → Y) (hγV : ∀ s ∈ Set.Icc (0 : ℝ) 1, γ s ∈ V)
     (hγcont : Continuous γ)
     (hγdiff : ∀ s ∈ Set.Icc (0 : ℝ) 1,
@@ -302,13 +317,13 @@ theorem velCont_compOn (g : Y → X) {V : Set Y} (hg : ContMDiffOn 𝓘(ℂ) �
   intro s hs
   have hgmdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (γ s) :=
     (hg.contMDiffAt (hVo.mem_nhds (hγV s hs))).mdifferentiableAt (by decide : ω ≠ 0)
-  rw [Function.comp_apply, tangentMapWithin_eq_tangentMap (hVo.uniqueMDiffWithinAt (hγV s hs)) hgmdiff]
+  rw [Function.comp_apply,
+    tangentMapWithin_eq_tangentMap (hVo.uniqueMDiffWithinAt (hγV s hs)) hgmdiff]
   simp only [tangentMap, Bundle.TotalSpace.mk']
   congr 1
   exact pathSpeed_comp_eq_mfderiv_of_mdiff g γ s hgmdiff hγcont.continuousAt (hγdiff s hs)
 
 /-! ## Velocity-section continuity under PRE-composition (reverse) and piecewise gluing (concat)
-
 These are the constructor-side tools for the `IsClosedSmoothLoop.reverse`/`IsSmoothPath.reverse`
 and `IsSmoothPath.concat` constructors. Unlike `velCont_comp`/`velCont_compOn` (post-composition
 by a manifold map, handled by `tangentMap`), these are reparametrizations / piecewise glues, so
@@ -321,7 +336,8 @@ reduces total-space continuity to: base proj continuous + the trivialized fibre 
 `s ↦ ⟨γ(1-s), -pathSpeed γ(1-s)⟩` (via `pathSpeed_reverse`, needs `hγdiff` at `1-s`); base
 continuity comes from reparametrizing the original base by `s ↦ 1-s`, and the trivialized fibre is
 the negation of the original's (negation is ℂ-linear, passes through `continuousLinearMapAt`). -/
-theorem velCont_reverse (γ : ℝ → X)
+theorem velCont_reverse {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (γ : ℝ → X)
     (hγdiff : ∀ t ∈ Set.uIcc (0:ℝ) 1,
       DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t)
     (hγ : ContinuousOn (fun s : ℝ =>
@@ -368,7 +384,8 @@ theorem velCont_reverse (γ : ℝ → X)
       have hsub_cwa : ContinuousWithinAt (fun s : ℝ => 1 - s) (Set.Icc (0:ℝ) 1) s₀ :=
         hsub_cont.continuousWithinAt
       exact hfib_orig.comp hsub_cwa hsub_maps
-    -- Now: target fibre = - (original reparametrized fibre), via continuousLinearMapAt + pathSpeed_reverse.
+    -- Now: target fibre = - (original reparametrized fibre), via continuousLinearMapAt +
+    -- pathSpeed_reverse.
     -- The map `· ↦ -·` on ℂ is continuous, so `(- original)` is continuous.
     have hneg : ContinuousWithinAt
         (fun s : ℝ => -(triv (Bundle.TotalSpace.mk' ℂ
@@ -412,7 +429,8 @@ theorem velCont_reverse (γ : ℝ → X)
 differentiability and vanishing endpoint velocities (`pathSpeed γ₁ 1 = 0`, `pathSpeed γ₂ 0 = 0`)
 and matched basepoints `γ₁ 1 = γ₂ 0`. This is the velocity restatement of the junction step of the
 `IsSmoothPath.concat` `diff` field (`HasDerivWithinAt … 0` glued on `Iic ∪ Ici`). -/
-theorem pathSpeed_concat_junction (γ₁ γ₂ : ℝ → X)
+theorem pathSpeed_concat_junction {X : Type*} [TopologicalSpace X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (γ₁ γ₂ : ℝ → X)
     (h₁diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₁ 1)).toFun ∘ γ₁) 1)
     (h₂diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₂ 0)).toFun ∘ γ₂) 0)
     (hv₁ : pathSpeed γ₁ 1 = 0) (hv₂ : pathSpeed γ₂ 0 = 0) (hjoin : γ₁ 1 = γ₂ 0) :
@@ -480,11 +498,13 @@ theorem pathSpeed_concat_junction (γ₁ γ₂ : ℝ → X)
 
 /-- **Velocity-section continuity under an affine reparametrization `s ↦ a*s + b` with the fibre
 rescaled by `a`.** This is the shape of each half of `concat` (left: `a = 2, b = 0`; right:
-`a = 2, b = -1`), where `pathSpeed (concat) s = 2 * pathSpeed γᵢ (2s + …)`. Mirrors `velCont_reverse`
+`a = 2, b = -1`), where `pathSpeed (concat) s = 2 * pathSpeed γᵢ (2s + …)`. Mirrors
+`velCont_reverse`
 (itself the `a = -1, b = 1` case): base continuity from reparametrizing the projection, fibre
 continuity from the original trivialized fibre scaled by `a` (scaling is ℂ-linear, passes through
 `continuousLinearMapAt`). -/
-theorem velCont_affineReparam (γ : ℝ → X) (a b : ℝ) {D : Set ℝ}
+theorem velCont_affineReparam {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (γ : ℝ → X) (a b : ℝ) {D : Set ℝ}
     (hmaps : Set.MapsTo (fun s : ℝ => a * s + b) D (Set.Icc 0 1))
     (hγ : ContinuousOn (fun s : ℝ =>
         Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s))
@@ -549,7 +569,8 @@ theorem velCont_affineReparam (γ : ℝ → X) (a b : ℝ) {D : Set ℝ}
 `pathSpeed_smoothStep01_comp_eq`), a continuous reparam `σ` mapping `D` into `[0,1]`, and a
 continuous scaling `σ'`, the reparametrized velocity section is continuous on `D`. Generalizes
 `velCont_affineReparam` (constant scale `a`) to a varying scale `σ'`. -/
-theorem velCont_reparam (γ : ℝ → X) (σ σ' : ℝ → ℝ) {D : Set ℝ}
+theorem velCont_reparam {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (γ : ℝ → X) (σ σ' : ℝ → ℝ) {D : Set ℝ}
     (hmaps : Set.MapsTo σ D (Set.Icc 0 1)) (hσcont : ContinuousOn σ D)
     (hσ'cont : ContinuousOn (fun s : ℝ => (σ' s : ℂ)) D)
     (hspeed : ∀ s ∈ D, pathSpeed (γ ∘ σ) s = (σ' s : ℂ) • pathSpeed γ (σ s))
@@ -618,7 +639,8 @@ the actual junction velocity (`pathSpeed_concat_junction`, `= 0`) and each scale
 (`2 • pathSpeed γ₁ 1 = 0` by `hv₁`, resp. `hv₂`) vanish and the bases match (`hjoin`), so the
 concat-section coincides with each clean reparam section up to and INCLUDING `½`, and the two
 one-sided `ContinuousWithinAt`s glue (`ContinuousWithinAt.union` on `Iic ½ ∪ Ici ½ = univ`). -/
-theorem velCont_concat (γ₁ γ₂ : ℝ → X)
+theorem velCont_concat {X : Type*} [TopologicalSpace X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (γ₁ γ₂ : ℝ → X)
     (h₁diff : ∀ t ∈ Set.uIcc (0:ℝ) 1,
       DifferentiableAt ℝ ((chartAt (H := ℂ) (γ₁ t)).toFun ∘ γ₁) t)
     (h₂diff : ∀ t ∈ Set.uIcc (0:ℝ) 1,

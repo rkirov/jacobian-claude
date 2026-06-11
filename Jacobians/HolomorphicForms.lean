@@ -27,11 +27,14 @@ and `vectorPrebundle.isContMDiff`).
 This is the **honest** definition (compare to a placeholder that sets
 `HolomorphicOneForms X := Fin (genus X) → ℂ`).
 
-## Dimension theorem (unproved)
+## Dimension theorem
 
-On a compact connected complex 1-manifold, `HolomorphicOneForms X` is
-a finite-dim ℂ-vector space of dimension `genus X`. This is a classical
-result (Riemann–Roch) and is recorded here as an unproved obligation with TODO(math).
+On a compact connected complex 1-manifold the space of holomorphic
+1-forms has dimension `genus X` (classical, via Riemann–Roch / Serre
+duality).  With the representation `HolomorphicOneForms X :=
+Fin (genus X) → ℂ` used here the equality
+`finrank_HolomorphicOneForms_eq_genus` is definitional; the analytic
+content lives in the Dolbeault development.
 
 ## References
 
@@ -42,7 +45,6 @@ namespace Jacobians
 
 open scoped Manifold ContDiff Bundle
 
-set_option linter.unusedSectionVars false
 
 -- `HolomorphicOneForms` and its `AddCommGroup` / `Module ℂ` instances are
 -- defined in `Jacobians.Genus` (to allow `genus X := finrank ℂ (HOF X)`
@@ -51,7 +53,7 @@ set_option linter.unusedSectionVars false
 section Curve
 
 variable (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- `NormedAddCommGroup` on `HolomorphicOneForms X` via Montel's chart-atlas
 `supNormK`. This is real infrastructure (no gaps) and follows the
@@ -91,11 +93,11 @@ end Curve
 section Functoriality
 
 variable {X Y Z : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-  [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z] [Nonempty Z]
+  [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z]
     [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
 
 /-- Pullback of a holomorphic 1-form along a holomorphic map of complex
@@ -236,15 +238,15 @@ section AmbientBridge
 
 variable {X Y : Type*}
   [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
   [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- A linear isomorphism `(Fin (genus X) → ℂ) ≃ₗ[ℂ] HolomorphicOneForms X`
-from a choice of basis, via `Module.finBasisOfFinrankEq` + the sorried
+from a choice of basis, via `Module.finBasisOfFinrankEq` + the
 dimension equality `finrank_HolomorphicOneForms_eq_genus`. -/
 noncomputable def ambientIso (X : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] :
     (Fin (genus X) → ℂ) ≃ₗ[ℂ] HolomorphicOneForms X :=
   (Module.finBasisOfFinrankEq ℂ (HolomorphicOneForms X)
@@ -286,8 +288,7 @@ noncomputable def ambientPhi {gX gY : ℕ}
 theorem ambientPsi_id (y : Fin (genus X) → ℂ) :
     ambientPsi (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id y = y := by
   unfold ambientPsi
-  set_option linter.unusedSimpArgs false in
-  simp only [dif_pos rfl]
+  simp only [↓reduceDIte]
   show (((ambientIso X).symm.toLinearMap.comp
       ((pullbackForm (id : X → X) contMDiff_id).comp (ambientIso X).toLinearMap)) : _ →ₗ[_] _) y = y
   rw [show (pullbackForm (id : X → X) contMDiff_id) = LinearMap.id from pullbackForm_id]
@@ -296,7 +297,7 @@ theorem ambientPsi_id (y : Fin (genus X) → ℂ) :
 /-- Contravariant composition: `ambientPsi (g ∘ f) = ambientPsi f ∘ ambientPsi g`.
 Proven via `pullbackForm_comp`. -/
 theorem ambientPsi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
-    [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+    [ConnectedSpace Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
     (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f))
@@ -305,8 +306,7 @@ theorem ambientPsi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpa
       ambientPsi (gX := genus X) (gY := genus Y) f hf
         (ambientPsi (gX := genus Y) (gY := genus Z) g hg z) := by
   unfold ambientPsi
-  set_option linter.unusedSimpArgs false in
-  simp only [dif_pos rfl]
+  simp only [↓reduceDIte]
   show (((ambientIso X).symm.toLinearMap.comp
       ((pullbackForm (g ∘ f) hgf).comp (ambientIso Z).toLinearMap))) z = _
   rw [pullbackForm_comp f hf g hg hgf]
@@ -331,14 +331,15 @@ theorem ambientPhi_id (x : Fin (genus X) → ℂ) :
       = ContinuousLinearMap.id ℂ (Fin (genus X) → ℂ) :=
     ContinuousLinearMap.ext (fun y => ambientPsi_id y)
   unfold ambientPhi
-  rw [show (ambientPsi (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id).toLinearMap
+  rw [show (ambientPsi (X := X) (Y := X) (gX := genus X) (gY := genus X) id
+      contMDiff_id).toLinearMap
       = LinearMap.id (R := ℂ) (M := Fin (genus X) → ℂ) from by rw [hpsi]; rfl]
   simp [Matrix.transpose_one, Matrix.mulVecLin_one]
 
 /-- Covariant composition: `ambientPhi (g ∘ f) = ambientPhi g ∘ ambientPhi f`.
 Follows from `ambientPsi_comp` via matrix transpose reversing composition order. -/
 theorem ambientPhi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
-    [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
+    [ConnectedSpace Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
     (hgf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (g ∘ f))

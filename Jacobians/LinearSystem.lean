@@ -1,39 +1,30 @@
 /-
   Linear system `L(D)`, its dimension `l(D)`, and the `MeromorphicFunction` ℂ-algebra + `orderW`.
 
-  EXTRACTED VERBATIM from `RiemannRoch.lean` (2026-06-04, no logic change) so the Čech/Dolbeault
-  ladder (`CechSection` → … → `DolbeaultLadder`) can depend on `lDim`/`linearSystem`/`orderW`
-  WITHOUT importing `RiemannRoch`.  This breaks the dependency cycle that put `RiemannRoch` — which
-  *states* the interface obligation `exists_riemannRoch_divisor` — UPSTREAM of the ladder that *proves*
-  its content (`DolbeaultLadder.riemannRoch_equality_of_ladder`), so the ladder's proof could never
-  feed back to discharge the interface.  With this split the ladder is free of `RiemannRoch`, and
-  `RiemannRoch` (downstream) can import the ladder to connect the two (the upstream→downstream
-  assembly of the Riemann–Roch spine).
+  Extracted from `RiemannRoch.lean` so the Čech/Dolbeault layer can depend on
+  `lDim`/`linearSystem`/`orderW` without importing `RiemannRoch`: `RiemannRoch` *states* the
+  interface `exists_riemannRoch_divisor`, while the theory that *proves* its content sits
+  downstream, so this split lets `RiemannRoch` import that theory and connect the two.
 
-  Contents (all axiom-clean, charted-space-only footprint via `omit`, so they apply to open
-  submanifolds `↥U`): `MeromorphicFunction.ext`/`toFun_injective`; the pointwise meromorphy lemmas
-  `IsMeromorphic.{add,neg,sub,const_smul,nsmul,zsmul}`; the ℂ-vector-space instances on
+  Contents (charted-space-only footprint where possible, so the definitions apply to open
+  submanifolds `↥U`): `MeromorphicFunction.ext`/`toFun_injective`; the pointwise meromorphy
+  lemmas `IsMeromorphic.{add,neg,sub,const_smul,nsmul,zsmul}`; the ℂ-vector-space instances on
   `MeromorphicFunction X` (`Module ℂ`); `orderW` and its faithfulness/identity theorems; and the
   linear system `linearSystem D`, the germ-zero junk submodule `germZeroSubmodule`, and `lDim`.
 -/
 import Jacobians.Abel
 import Jacobians.MeromorphicLiouville
 
-set_option linter.unusedSectionVars false
-
 open scoped Manifold ContDiff Topology
 
 namespace Jacobians
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+-- Most of this file uses only the charted-space structure (no compactness/connectedness), so
+-- it applies to open submanifolds `↥U` too; the stronger hypotheses are introduced only where
+-- needed.
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 namespace MeromorphicFunction
-
--- The structural facts and the ℂ-module algebra below use only the charted-space structure (no
--- compactness/connectedness), so they apply to open submanifolds `↥U` too. Omit the unused
--- hypotheses so the derived instances have a minimal typeclass footprint.
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- Two meromorphic functions are equal iff their underlying maps agree (the meromorphy
 field is a `Prop`, hence proof-irrelevant). -/
@@ -52,9 +43,6 @@ end MeromorphicFunction
 /-! ### Meromorphy is preserved by the pointwise vector-space operations
 
 These need only the charted-space structure, not the full compact-manifold hypotheses. -/
-
-section
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
 
 theorem IsMeromorphic.add {f g : X → ℂ} (hf : IsMeromorphic X f) (hg : IsMeromorphic X g) :
     IsMeromorphic X (f + g) := fun x => (hf x).add (hg x)
@@ -78,8 +66,6 @@ theorem IsMeromorphic.zsmul (n : ℤ) {f : X → ℂ} (hf : IsMeromorphic X f) :
   have h : (n • f : X → ℂ) = (n : ℂ) • f := by funext x; simp [zsmul_eq_mul]
   rw [h]; exact hf.const_smul _
 
-end
-
 /-! ### The ℂ-vector-space structure on `MeromorphicFunction X`
 
 Built by transporting the structure on `X → ℂ` along the injective map `toFun`. -/
@@ -87,9 +73,6 @@ Built by transporting the structure on `X → ℂ` along the injective map `toFu
 namespace MeromorphicFunction
 
 section Algebra
--- The ℂ-vector-space algebra uses only the charted-space structure; omit the rest so the module
--- instances apply to open submanifolds `↥U` (which are not compact) — used by the Dolbeault Čech layer.
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
 
 noncomputable instance : Zero (MeromorphicFunction X) := ⟨⟨fun _ => 0, IsMeromorphic.zero X⟩⟩
 noncomputable instance : Add (MeromorphicFunction X) :=
@@ -193,7 +176,7 @@ theorem orderW_ne_top_iff (f : MeromorphicFunction X) (y : X) :
 /-- **Faithfulness / identity theorem.** If the germ of `f` is nonzero at even one point, it is
 nonzero (`orderW ≠ ⊤`) at *every* point. The set `{y | orderW f y = ⊤}` and its complement are
 both open (via the two intrinsic characterizations above), so on the connected `X` it is empty. -/
-theorem orderW_ne_top_of_exists (f : MeromorphicFunction X)
+theorem orderW_ne_top_of_exists [T2Space X] [ConnectedSpace X] (f : MeromorphicFunction X)
     (h₀ : ∃ x₀, f.orderW x₀ ≠ ⊤) (x : X) : f.orderW x ≠ ⊤ := by
   obtain ⟨x₀, hx₀⟩ := h₀
   have hUopen : IsOpen {y : X | f.orderW y = ⊤} := by
@@ -245,7 +228,7 @@ noncomputable def linearSystem (D : Divisor X) : Submodule ℂ (MeromorphicFunct
 
 /-- **Germ-zero "junk" functions.** `MeromorphicFunction.toFun` carries removable-singularity
 junk (cf. the `toSphere` note): e.g. the indicator of a single point is a *nonzero* meromorphic
-function whose germ is `0` everywhere (`orderW ≡ ⊤`). Such functions lie in EVERY `L(D)`, and
+function whose germ is `0` everywhere (`orderW ≡ ⊤`). Such functions lie in *every* `L(D)`, and
 point-indicators are linearly independent, so the naive `finrank ℂ (L(D))` is wrong (the space is
 infinite-dimensional, forcing `finrank = 0` for all `D`, which makes RR false). We quotient them
 out so `l(D)` is the genuine, finite dimension. -/
@@ -268,20 +251,22 @@ noncomputable def germZeroSubmodule : Submodule ℂ (MeromorphicFunction X) wher
 the linear system, with the `toFun`-junk quotiented out. -/
 noncomputable def lDim (D : Divisor X) : ℕ :=
   Module.finrank ℂ
-    (↥(linearSystem (X := X) D) ⧸ (germZeroSubmodule (X := X)).submoduleOf (linearSystem (X := X) D))
+    (↥(linearSystem (X := X) D)
+      ⧸ (germZeroSubmodule (X := X)).submoduleOf (linearSystem (X := X) D))
 
 
 /-- **A function in `L(0)` is germ-constant** (Liouville). With no pole (`orderW ≥ 0`), the
-limit-repair `holoRepr` is holomorphic (`mdifferentiable_holoRepr`), hence constant on the compact
-connected `X` (`exists_eq_const_of_compactSpace`); off-center the chart pullback equals that
-constant, so `f.toFun` agrees with it on every punctured neighbourhood. This is the repo's
-Liouville-for-meromorphic content (`MeromorphicLiouville`), reused — no new analysis. -/
-theorem germ_eq_const_of_mem_linearSystem_zero (f : MeromorphicFunction X)
+limit-repair `holoRepr` is holomorphic (`mdifferentiable_holoRepr`), hence constant on the
+compact connected `X` (`exists_eq_const_of_compactSpace`); off-center the chart pullback equals
+that constant, so `f.toFun` agrees with it on every punctured neighbourhood
+(`MeromorphicLiouville`). -/
+theorem germ_eq_const_of_mem_linearSystem_zero [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X)
     (hf : f ∈ linearSystem (X := X) 0) : ∃ c : ℂ, ∀ x, ∀ᶠ z in 𝓝[≠] x, f.toFun z = c := by
   have hpos : ∀ x, 0 ≤ f.orderAtPoint x := by
     intro x
     have hx := hf x
-    simp only [Finsupp.coe_zero, Pi.zero_apply, neg_zero] at hx
+    simp only [Finsupp.coe_zero, Pi.zero_apply] at hx
     exact untop₀_nonneg_iff.mpr hx
   obtain ⟨c, hc_const⟩ := (f.mdifferentiable_holoRepr hpos).exists_eq_const_of_compactSpace
   have hc : ∀ y, f.holoRepr y = c := fun y => congrFun hc_const y
@@ -298,10 +283,12 @@ theorem germ_eq_const_of_mem_linearSystem_zero (f : MeromorphicFunction X)
 
 /-- `l(0) = 1`: `L(0)/germZero ≅ ℂ` (the constants). Spanned by the class of the constant `1`
 (nonzero, since its order is `0 ≠ ⊤`), and every member is germ-constant by Liouville, hence a
-scalar multiple of it. Elementary finiteness — uses Liouville, not the wall. -/
-theorem lDim_zero_eq_one : lDim (X := X) 0 = 1 := by
+scalar multiple of it. -/
+theorem lDim_zero_eq_one [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] :
+    lDim (X := X) 0 = 1 := by
   have h1m : IsMeromorphic X (fun _ : X => (1 : ℂ)) := fun x => MeromorphicAt.const 1 _
-  have horder1 : ∀ x, MeromorphicFunction.orderW (⟨fun _ => 1, h1m⟩ : MeromorphicFunction X) x = 0 := by
+  have horder1 : ∀ x,
+      MeromorphicFunction.orderW (⟨fun _ => 1, h1m⟩ : MeromorphicFunction X) x = 0 := by
     intro x
     show meromorphicOrderAt ((fun _ : X => (1 : ℂ)) ∘ (chartAt (H := ℂ) x).symm) _ = 0
     rw [show ((fun _ : X => (1 : ℂ)) ∘ (chartAt (H := ℂ) x).symm) = (fun _ => (1 : ℂ)) from rfl,

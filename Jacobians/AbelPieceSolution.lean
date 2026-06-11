@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-2 (manifold layer): the per-piece weak solution (Forster 20.5(a))
+# The per-piece weak solution (Forster 20.5(a))
 
 Lifts the planar piece solution (`PlanarPieceSolution`, `AbelPlanarPiece`) to a genuine
 `WeakSolution` of the two-point divisor `(γ(t_{k+1})) − (γ(t_k))` on the surface:
@@ -20,7 +20,7 @@ Lifts the planar piece solution (`PlanarPieceSolution`, `AbelPlanarPiece`) to a 
   chart-comparison units.
 
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.5 proof part (a),
-pp. 162–163; plan `docs/walls_bc_plan_2026-06-10.md`, phase C-2 (E2).
+pp. 162–163.
 -/
 import Jacobians.AbelPlanarPiece
 import Jacobians.AbelWeakSolutions
@@ -36,10 +36,6 @@ open Set Metric Filter Jacobians.AbelPlanar
 
 namespace Jacobians
 
-set_option linter.unusedSectionVars false
-
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The chart-comparison unit -/
 
@@ -51,7 +47,9 @@ centred coordinate `chartCoord p`:
 
 `u` is `dslope` of the chart transition read through the chart at `p`; its value at `p` is
 the transition derivative, nonzero on a complex manifold. -/
-theorem exists_chartCompare_unit {x₀ p : X} (hp : p ∈ (chartAt (H := ℂ) x₀).source) :
+theorem exists_chartCompare_unit {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {x₀ p : X}
+    (hp : p ∈ (chartAt (H := ℂ) x₀).source) :
     ∃ (V : Set X) (u : X → ℂ), IsOpen V ∧ p ∈ V ∧
       V ⊆ (chartAt (H := ℂ) x₀).source ∩ (chartAt (H := ℂ) p).source ∧
       (∀ x ∈ V, ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) u x) ∧ (∀ x ∈ V, u x ≠ 0) ∧
@@ -115,13 +113,15 @@ theorem exists_chartCompare_unit {x₀ p : X} (hp : p ∈ (chartAt (H := ℂ) x�
 /-! ### Smoothness helpers: planar functions read through a chart -/
 
 /-- The chart map is real-smooth at every source point. -/
-theorem contMDiffAt_chart_real {x₀ x : X} (hx : x ∈ (chartAt (H := ℂ) x₀).source) :
+theorem contMDiffAt_chart_real {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {x₀ x : X} (hx : x ∈ (chartAt (H := ℂ) x₀).source) :
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (chartAt (H := ℂ) x₀ : X → ℂ) x :=
   (contMDiffOn_chart (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := x₀)).contMDiffAt
     ((chartAt (H := ℂ) x₀).open_source.mem_nhds hx)
 
 /-- A planar `C^∞` function read through a chart is real-smooth at every source point. -/
-theorem contMDiffAt_planar_comp_chart {φ : ℂ → ℂ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+theorem contMDiffAt_planar_comp_chart {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {φ : ℂ → ℂ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     {x₀ x : X} (hx : x ∈ (chartAt (H := ℂ) x₀).source) :
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun y => φ ((chartAt (H := ℂ) x₀) y)) x := by
   have hφm : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) φ ((chartAt (H := ℂ) x₀) x) :=
@@ -130,7 +130,8 @@ theorem contMDiffAt_planar_comp_chart {φ : ℂ → ℂ} (hφ : ContDiff ℝ (�
 
 /-- The piece solution `F = W·(z−β)/(z−α)` read through a chart is real-smooth at every
 source point whose chart image avoids the pole `α`. -/
-theorem AbelPlanar.PlanarPieceSolution.contMDiffAt_F_comp_chart {c₀ α β : ℂ} {ρ : ℝ}
+theorem AbelPlanar.PlanarPieceSolution.contMDiffAt_F_comp_chart {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {c₀ α β : ℂ} {ρ : ℝ}
     (S : PlanarPieceSolution c₀ ρ α β) {x₀ x : X}
     (hx : x ∈ (chartAt (H := ℂ) x₀).source) (hne : (chartAt (H := ℂ) x₀) x ≠ α) :
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
@@ -157,7 +158,8 @@ endpoints `α = chart Pa`, `β = chart Pb` (with trivial cofactor in the degener
 `closedBall c₀ (5ρ)`-preimage, is a weak solution of the divisor `(Pb) − (Pa)`.  It is
 `≡ 1` as soon as the chart image leaves `ball c₀ (5ρ)` (or off the chart source), and it
 reads as the planar `S.F` throughout the chart source away from the pole point. -/
-theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
+theorem exists_pieceWeakSolution {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {x₀ Pa Pb : X} {ρ : ℝ}
     (hPa : Pa ∈ (chartAt (H := ℂ) x₀).source) (hPb : Pb ∈ (chartAt (H := ℂ) x₀).source)
     (hball : Metric.ball ((chartAt (H := ℂ) x₀) x₀) (8 * ρ) ⊆ (chartAt (H := ℂ) x₀).target)
     (S : PlanarPieceSolution ((chartAt (H := ℂ) x₀) x₀) ρ
@@ -185,23 +187,28 @@ theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
         div_self (sub_ne_zero.mpr hne)]
   -- the genuine two-point piece
   have hρ := S.ρ_pos
-  have hαβ : ((chartAt (H := ℂ) x₀) Pa) ≠ ((chartAt (H := ℂ) x₀) Pb) := fun h => hPab ((chartAt (H := ℂ) x₀).injOn hPa hPb h)
+  have hαβ : ((chartAt (H := ℂ) x₀) Pa) ≠ ((chartAt (H := ℂ) x₀) Pb) :=
+    fun h => hPab ((chartAt (H := ℂ) x₀).injOn hPa hPb h)
   -- chart-comparison units at the two endpoints
   obtain ⟨Vu, u, hVuo, hPaVu, hVusub, husm, hu0, huid⟩ := exists_chartCompare_unit hPa
   obtain ⟨Vv, v, hVvo, hPbVv, hVvsub, hvsm, hv0, hvid⟩ := exists_chartCompare_unit hPb
   -- the inner open region and the gluing compact
-  set A : Set X := (chartAt (H := ℂ) x₀).source ∩ (chartAt (H := ℂ) x₀) ⁻¹' Metric.ball ((chartAt (H := ℂ) x₀) x₀) (6 * ρ) with hA
+  set A : Set X := (chartAt (H := ℂ) x₀).source ∩
+      (chartAt (H := ℂ) x₀) ⁻¹' Metric.ball ((chartAt (H := ℂ) x₀) x₀) (6 * ρ) with hA
   have hAopen : IsOpen A := (chartAt (H := ℂ) x₀).isOpen_inter_preimage Metric.isOpen_ball
   have hAsub : A ⊆ (chartAt (H := ℂ) x₀).source := fun x hx => hx.1
-  have hsub5t : Metric.closedBall ((chartAt (H := ℂ) x₀) x₀) (5 * ρ) ⊆ (chartAt (H := ℂ) x₀).target := fun w hw =>
+  have hsub5t : Metric.closedBall ((chartAt (H := ℂ) x₀) x₀) (5 * ρ) ⊆
+      (chartAt (H := ℂ) x₀).target := fun w hw =>
     hball (Metric.mem_ball.mpr (lt_of_le_of_lt (Metric.mem_closedBall.mp hw) (by linarith)))
-  set K : Set X := (chartAt (H := ℂ) x₀).symm '' Metric.closedBall ((chartAt (H := ℂ) x₀) x₀) (5 * ρ) with hK
+  set K : Set X := (chartAt (H := ℂ) x₀).symm '' Metric.closedBall ((chartAt (H := ℂ) x₀) x₀) (5 *
+      ρ) with hK
   have hKcomp : IsCompact K := (isCompact_closedBall _ _).image_of_continuousOn
     ((chartAt (H := ℂ) x₀).continuousOn_symm.mono hsub5t)
   have hKA : K ⊆ A := by
     rintro x ⟨w, hw, rfl⟩
     refine ⟨(chartAt (H := ℂ) x₀).map_target (hsub5t hw), ?_⟩
-    show (chartAt (H := ℂ) x₀) ((chartAt (H := ℂ) x₀).symm w) ∈ Metric.ball ((chartAt (H := ℂ) x₀) x₀) (6 * ρ)
+    show (chartAt (H := ℂ) x₀) ((chartAt (H := ℂ) x₀).symm w) ∈
+        Metric.ball ((chartAt (H := ℂ) x₀) x₀) (6 * ρ)
     rw [(chartAt (H := ℂ) x₀).right_inv (hsub5t hw)]
     exact Metric.mem_ball.mpr (lt_of_le_of_lt (Metric.mem_closedBall.mp hw) (by linarith))
   have hPaA : Pa ∈ A := ⟨hPa, Metric.mem_ball.mpr (by linarith [S.dist_alpha])⟩
@@ -214,17 +221,20 @@ theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
     by_cases hxA : x ∈ A
     · have h5 : 5 * ρ < dist ((chartAt (H := ℂ) x₀) x) ((chartAt (H := ℂ) x₀) x₀) := by
         by_contra h
-        exact hxK ⟨(chartAt (H := ℂ) x₀) x, Metric.mem_closedBall.mpr (le_of_not_gt h), (chartAt (H := ℂ) x₀).left_inv (hAsub hxA)⟩
+        exact hxK ⟨(chartAt (H := ℂ) x₀) x, Metric.mem_closedBall.mpr (le_of_not_gt h),
+            (chartAt (H := ℂ) x₀).left_inv (hAsub hxA)⟩
       rw [hf_A x hxA, S.F_eq_one_outer h5]
     · show (if x ∈ A then S.F ((chartAt (H := ℂ) x₀) x) else 1) = 1
       rw [if_neg hxA]
-  have hf_conj1 : ∀ x, (x ∈ (chartAt (H := ℂ) x₀).source → 5 * ρ < dist ((chartAt (H := ℂ) x₀) x) ((chartAt (H := ℂ) x₀) x₀)) → f x = 1 := by
+  have hf_conj1 : ∀ x, (x ∈ (chartAt (H := ℂ) x₀).source →
+      5 * ρ < dist ((chartAt (H := ℂ) x₀) x) ((chartAt (H := ℂ) x₀) x₀)) → f x = 1 := by
     intro x hx5
     by_cases hxA : x ∈ A
     · rw [hf_A x hxA, S.F_eq_one_outer (hx5 (hAsub hxA))]
     · show (if x ∈ A then S.F ((chartAt (H := ℂ) x₀) x) else 1) = 1
       rw [if_neg hxA]
-  have hf_read : ∀ x, x ∈ (chartAt (H := ℂ) x₀).source → (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pa) → f x = S.F ((chartAt (H := ℂ) x₀) x) := by
+  have hf_read : ∀ x, x ∈ (chartAt (H := ℂ) x₀).source → (chartAt (H := ℂ) x₀) x ≠
+      ((chartAt (H := ℂ) x₀) Pa) → f x = S.F ((chartAt (H := ℂ) x₀) x) := by
     intro x hx _
     by_cases hxA : x ∈ A
     · exact hf_A x hxA
@@ -256,8 +266,10 @@ theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
       else if a ∈ K then (A ∩ (chartAt (H := ℂ) a).source) \ {Pa, Pb}
       else Kᶜ ∩ (chartAt (H := ℂ) a).source
     unit := fun a =>
-      if a = Pa then fun x => S.W ((chartAt (H := ℂ) x₀) x) * ((chartAt (H := ℂ) x₀) x - ((chartAt (H := ℂ) x₀) Pb)) * (u x)⁻¹
-      else if a = Pb then fun x => S.W ((chartAt (H := ℂ) x₀) x) * v x * ((chartAt (H := ℂ) x₀) x - ((chartAt (H := ℂ) x₀) Pa))⁻¹
+      if a = Pa then fun x => S.W ((chartAt (H := ℂ) x₀) x) *
+          ((chartAt (H := ℂ) x₀) x - ((chartAt (H := ℂ) x₀) Pb)) * (u x)⁻¹
+      else if a = Pb then fun x => S.W ((chartAt (H := ℂ) x₀) x) * v x *
+          ((chartAt (H := ℂ) x₀) x - ((chartAt (H := ℂ) x₀) Pa))⁻¹
       else f
     isOpen_nbhd := ?_
     mem_nbhd := ?_
@@ -324,7 +336,8 @@ theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
       refine ContMDiffAt.contMDiffWithinAt ?_
       have hxsrc : x ∈ (chartAt (H := ℂ) x₀).source := hAsub hx.1.1
       have hW := contMDiffAt_planar_comp_chart S.smooth hxsrc
-      have hsubβ : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun y => (chartAt (H := ℂ) x₀) y - ((chartAt (H := ℂ) x₀) Pb)) x :=
+      have hsubβ : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ,
+          ℂ) (⊤ : ℕ∞) (fun y => (chartAt (H := ℂ) x₀) y - ((chartAt (H := ℂ) x₀) Pb)) x :=
         (contMDiffAt_chart_real hxsrc).sub contMDiffAt_const
       have huinv := (WeakSolution.contMDiffAt_inv_complex (hu0 x hx.1.2)).comp x
         (husm x hx.1.2)
@@ -338,7 +351,8 @@ theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
       have hxsrc : x ∈ (chartAt (H := ℂ) x₀).source := hAsub hx.1.1
       have hW := contMDiffAt_planar_comp_chart S.smooth hxsrc
       have hxPa : x ≠ Pa := by simpa using hx.2
-      have hne : (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pa) := fun h => hxPa ((chartAt (H := ℂ) x₀).injOn hxsrc hPa h)
+      have hne : (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pa) :=
+        fun h => hxPa ((chartAt (H := ℂ) x₀).injOn hxsrc hPa h)
       have hinv := (WeakSolution.contMDiffAt_inv_complex (sub_ne_zero.mpr hne)).comp x
         ((contMDiffAt_chart_real hxsrc).sub contMDiffAt_const)
       exact (hW.mul (hvsm x hx.1.2)).mul hinv
@@ -349,7 +363,8 @@ theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
       have hxA := hx.1.1
       have hxsrc : x ∈ (chartAt (H := ℂ) x₀).source := hAsub hxA
       have hxPa : x ≠ Pa := fun h => hx.2 (by simp [h])
-      have hne : (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pa) := fun h => hxPa ((chartAt (H := ℂ) x₀).injOn hxsrc hPa h)
+      have hne : (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pa) :=
+        fun h => hxPa ((chartAt (H := ℂ) x₀).injOn hxsrc hPa h)
       have hcongr : f =ᶠ[𝓝 x] fun y => S.F ((chartAt (H := ℂ) x₀) y) := by
         filter_upwards [hAopen.mem_nhds hxA] with y hy
         exact hf_A y hy
@@ -369,7 +384,8 @@ theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
       intro x hx
       have hxsrc : x ∈ (chartAt (H := ℂ) x₀).source := hAsub hx.1.1
       have hxPb : x ≠ Pb := by simpa using hx.2
-      have hneβ : (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pb) := fun h => hxPb ((chartAt (H := ℂ) x₀).injOn hxsrc hPb h)
+      have hneβ : (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pb) :=
+        fun h => hxPb ((chartAt (H := ℂ) x₀).injOn hxsrc hPb h)
       exact mul_ne_zero (mul_ne_zero (S.ne_zero _) (sub_ne_zero.mpr hneβ))
         (inv_ne_zero (hu0 x hx.1.2))
     rw [if_neg h1, if_neg h1]
@@ -379,7 +395,8 @@ theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
       intro x hx
       have hxsrc : x ∈ (chartAt (H := ℂ) x₀).source := hAsub hx.1.1
       have hxPa : x ≠ Pa := by simpa using hx.2
-      have hneα : (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pa) := fun h => hxPa ((chartAt (H := ℂ) x₀).injOn hxsrc hPa h)
+      have hneα : (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pa) :=
+        fun h => hxPa ((chartAt (H := ℂ) x₀).injOn hxsrc hPa h)
       exact mul_ne_zero (mul_ne_zero (S.ne_zero _) (hv0 x hx.1.2))
         (inv_ne_zero (sub_ne_zero.mpr hneα))
     rw [if_neg h2, if_neg h2]
@@ -390,8 +407,10 @@ theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
       have hxsrc : x ∈ (chartAt (H := ℂ) x₀).source := hAsub hxA
       have hxPa : x ≠ Pa := fun h => hx.2 (by simp [h])
       have hxPb : x ≠ Pb := fun h => hx.2 (by simp [h])
-      have hneα : (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pa) := fun h => hxPa ((chartAt (H := ℂ) x₀).injOn hxsrc hPa h)
-      have hneβ : (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pb) := fun h => hxPb ((chartAt (H := ℂ) x₀).injOn hxsrc hPb h)
+      have hneα : (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pa) :=
+        fun h => hxPa ((chartAt (H := ℂ) x₀).injOn hxsrc hPa h)
+      have hneβ : (chartAt (H := ℂ) x₀) x ≠ ((chartAt (H := ℂ) x₀) Pb) :=
+        fun h => hxPb ((chartAt (H := ℂ) x₀).injOn hxsrc hPb h)
       rw [hf_A x hxA]
       exact S.F_ne_zero hneα hneβ
     · rw [if_neg h3]

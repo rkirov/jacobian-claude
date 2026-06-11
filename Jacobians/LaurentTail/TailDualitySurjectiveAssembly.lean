@@ -18,7 +18,8 @@ subspaces
 For `n > deg D` RR-I pins `dim V_n = n − deg D − 1 + h¹(0)` (negative degree kills `l`), so for
 `n` large the two subspaces meet in a nonzero functional `φ ∘ T̄_ψ = Res_{h·ω₀}`.  The recovery
 step (Miranda pp. 190–191) then pulls `φ` back along `μ_{ψ⁻¹}`: the composite identity turns
-`T̄_ψ ∘ μ̄_{ψ⁻¹}` into the truncation, W1 turns `Res_{h·ω₀} ∘ μ_{ψ⁻¹}` into `Res_{(ψ⁻¹h)·ω₀}`,
+`T̄_ψ ∘ μ̄_{ψ⁻¹}` into the truncation, μ-compatibility turns `Res_{h·ω₀} ∘ μ_{ψ⁻¹}` into
+`Res_{(ψ⁻¹h)·ω₀}`,
 and Miranda Lemma 3.6 (`omegaOrderBounded_of_vanishing`) downgrades the order bound of
 `ψ⁻¹h` from the fine level to `D` — exhibiting `φ = Res_{(ψ⁻¹h)·ω₀}` with `ψ⁻¹h ∈ L(K − D)`.
 
@@ -31,8 +32,6 @@ import Jacobians.LinearSystemDegree
 open scoped Manifold ContDiff Topology
 open Filter Set Module
 open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
-
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.LaurentTail
 
@@ -178,7 +177,7 @@ theorem tailMulDualQ_injective (hφ : φ ≠ 0) :
   by_contra hcon
   have hex : ∃ p : X, (ψ : MeromorphicFunction X).orderW p ≠ ⊤ := by
     by_contra hall
-    push_neg at hall
+    push Not at hall
     exact hcon fun x => hall x
   rw [tailMulDualQ_mk, tailMulDual_apply] at hx
   exact comp_tailMulH1_ne_zero φ hφ (ψ : MeromorphicFunction X) hex
@@ -206,7 +205,8 @@ residue functional of `h·ω₀` at the finer level `D − C` (with `ψ ∈ L(C)
 then `φ` itself is the residue functional of `(ψ⁻¹h)·ω₀` at level `D`:
 
 * the composite identity turns `T̄_ψ ∘ μ_{ψ⁻¹}` into the truncation `𝒯[D−C−div ψ] → 𝒯[D]`,
-* W1 turns `Res_{h·ω₀} ∘ μ_{ψ⁻¹}` into `Res_{(ψ⁻¹h)·ω₀}`,
+* μ-compatibility (`omegaTailResidue_tailMul`) turns `Res_{h·ω₀} ∘ μ_{ψ⁻¹}` into
+  `Res_{(ψ⁻¹h)·ω₀}`,
 * Miranda Lemma 3.6 downgrades the order bound of `(ψ⁻¹h)·ω₀` from the fine level to `D`. -/
 theorem omegaDualMap_recovery (ω₀ : HolomorphicOneForms X) (hω₀ : ω₀ ≠ 0) {D C : Divisor X}
     (φ : Module.Dual ℂ (mittagLefflerH1 (X := X) D))
@@ -278,7 +278,7 @@ theorem omegaDualMap_recovery (ω₀ : HolomorphicOneForms X) (hω₀ : ω₀ �
       exact tailMul_tailMul_inv_trunc (ψ : MeromorphicFunction X) hψ
         (mulLevelLE_of_mem ψ.2 D) V
     rw [hcls] at h1
-    -- right side: W1 turns the `μ_{ψ⁻¹}`-image residue into the `ψ⁻¹h`-residue
+    -- right side: μ-compatibility turns the `μ_{ψ⁻¹}`-image residue into the `ψ⁻¹h`-residue
     rw [show ((⟨tailMul ((ψ : MeromorphicFunction X)⁻¹) (D - C) V, hZmem⟩ :
         ↥(tailSubspace (X := X) (D - C))) : TailSpace X)
         = tailMul ((ψ : MeromorphicFunction X)⁻¹) (D - C) V from rfl,
@@ -394,7 +394,7 @@ theorem omegaDualMap_surjective (ω₀ : HolomorphicOneForms X) (hω₀ : ω₀ 
   -- the germ of `ψ` survives (else the matched functional were `0`)
   have hψex : ∃ p : X, (ψ : MeromorphicFunction X).orderW p ≠ ⊤ := by
     by_contra hall
-    push_neg at hall
+    push Not at hall
     apply hχne
     rw [← hc, tailMulDualQ_mk]
     exact tailMulDual_eq_zero_of_germZero φ _ ψ hall

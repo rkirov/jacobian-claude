@@ -5,13 +5,13 @@ Authors: Rado Kirov
 
 # Riemann–Roch for positive genus (Miranda Ch. VI Thm 3.11 / Forster 16.9)
 
-The Miranda-route assembly, M5: combining
+The Miranda-route assembly for positive genus, combining
 
 * **RR-I** `riemannRoch_tailForm` (`l(D) − h¹(D) = deg D + 1 − h¹(0)`),
 * **Serre duality for the tail `H¹`** `h1TailDim_eq_lDim_canonical_sub` (`h¹(D) = l(K − D)`,
   `K = div ω₀`), and
-* **`l(K) = genus`** — the proven §17.4 canonical-form iso (`hKgenus_unconditional`), applied to
-  the datum built from a nonzero *holomorphic* `ω₀` (which positive genus supplies),
+* **`l(K) = genus`** — the Forster §17.4 canonical-form isomorphism (`hKgenus_unconditional`),
+  applied to the datum built from a nonzero *holomorphic* `ω₀` (which positive genus supplies),
 
 into the headline equality `l(D) − l(K − D) = deg D + 1 − g` for every divisor `D`.
 
@@ -25,8 +25,6 @@ import Jacobians.Dolbeault.OmegaFactorization
 
 open scoped Manifold ContDiff Topology
 open Module
-
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.LaurentTail
 
@@ -58,7 +56,7 @@ noncomputable def canonicalForm17DataOfHolomorphic (ω₀ : HolomorphicOneForms 
     exact (coe_canonicalDivisorOf ω₀ hω₀ x).symm
 
 /-- **`l(K) = genus`** for the tail-duality canonical divisor `K = div ω₀` of a nonzero
-holomorphic 1-form (Forster §17.4 at `D = 0`, via the proven unconditional `hKgenus`). -/
+holomorphic 1-form (Forster §17.4 at `D = 0`, via `hKgenus_unconditional`). -/
 theorem lDim_canonicalDivisorOf_eq_genus (ω₀ : HolomorphicOneForms X) (hω₀ : ω₀ ≠ 0) :
     lDim (X := X) (canonicalDivisorOf ω₀ hω₀) = genus X :=
   (canonicalForm17DataOfHolomorphic ω₀ hω₀).hKgenus_unconditional

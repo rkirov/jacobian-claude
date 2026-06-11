@@ -5,16 +5,16 @@ Authors: Rado Kirov
 
 # Serre duality for the tail `H¹`, the surjective half (Miranda Thm 3.3, pp. 189–191)
 
-The pigeonhole half (Forster 17.9's shape, on the proven abstract core
+The pigeonhole half (Forster 17.9's shape, on the abstract core
 `SerreDuality.serre_surjectivity_dim_core`): every functional `φ : H¹(D) → ℂ` is a residue
 functional `Res_{h'·ω₀}`.  This file builds the compatibility toolkit and the order-downgrade:
 
-* **W2 (truncation invariance)** `omegaTailResidue_truncateRaw`: dropped entries have *zero
+* **truncation invariance** `omegaTailResidue_truncateRaw`: dropped entries have *zero
   weights* (their pairing degree exceeds the form's order — pure anchor (a)).
 * **the generalized composite** `tailMul_tailMul_inv_trunc`:
   `μ_ψ(μ_{ψ⁻¹}(Z)) = truncate_B(Z)` under the level condition — subsumes the exact-shift
   identity and gives `T̄_ψ ∘ μ̄_{ψ⁻¹} = truncation` on `H¹`.
-* **W1 (μ-compatibility)** `omegaTailResidue_tailMul`: `Res_{h}(μ_ψ Z) = Res_{ψ·h}(Z)` under
+* **μ-compatibility** `omegaTailResidue_tailMul`: `Res_{h}(μ_ψ Z) = Res_{ψ·h}(Z)` under
   order conditions — the per-point difference pairs with nonnegative total order.
 * **Miranda Lemma 3.6** `omegaOrderBounded_of_vanishing`: a residue functional vanishing on
   `ker(truncation)` has the coarser order bound — the single-monomial witness contrapositive.
@@ -25,16 +25,15 @@ open scoped Manifold ContDiff Topology
 open Filter Set
 open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
 
-set_option linter.unusedSectionVars false
-
 namespace Jacobians.LaurentTail
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-! ### §1 W2: truncation invariance of the residue functional -/
+/-! ### §1 Truncation invariance of the residue functional -/
 
-/-- **W2.** Truncating a tail at a level `D` below the form's order bound does not change its
+/-- **Truncation invariance.**  Truncating a tail at a level `D` below the form's order bound
+does not change its
 residue pairing: the dropped entries `(p, n)` have `n ≥ −D p`, so their weights
 `(h·ω₀)_{−1−n}` sit at degrees `−1−n < D p ≤ ord` and vanish (anchor (a)). -/
 theorem omegaTailResidue_truncateRaw (ω₀ : HolomorphicOneForms X)
@@ -68,7 +67,8 @@ theorem omegaTailResidue_truncateRaw (ω₀ : HolomorphicOneForms X)
 
 /-- **The generalized composite identity**: for `ψ` with surviving germ and the level condition
 `A − B ≤ ord ψ`, the round trip `μ_ψ(μ_{ψ⁻¹}(Z))` at levels `𝒯 → 𝒯[A] → 𝒯[B]` is the plain
-truncation of `Z` at `B`.  (The committed exact-shift identity is the case `A = B + div ψ`,
+truncation of `Z` at `B`.  (The exact-shift identity `tailMul_tailMul_inv` is the case
+`A = B + div ψ`,
 `Z ∈ 𝒯[B]`.) -/
 theorem tailMul_tailMul_inv_trunc (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
     {A B : Divisor X} (h : MulLevelLE ψ A B) (Z : TailSpace X) :
@@ -147,13 +147,13 @@ theorem tailMul_tailMul_inv_trunc (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.
       * tailFnAt (tailMul ψ⁻¹ A Z) p z) = Ψ * S from rfl]
   rw [hkey, hone, hT, laurentCoeff_tailFnAt]
 
-/-! ### §3 The master bridge and W1: μ-compatibility of the residue functional -/
+/-! ### §3 The master bridge and μ-compatibility of the residue functional -/
 
 open Classical in
 /-- **The master bridge**: on tails of level `B` paired against a form of order ≥ `B`, the
 residue functional is the sum over base points of the `resAt`-pairings of the tail polynomial
 against the form's local coefficient (`resAt_mul_eq_sum_tailPairing`, read in reverse, with the
-tail polynomial as the meromorphic factor — its coefficients ARE the entries). -/
+tail polynomial as the meromorphic factor — its coefficients *are* the entries). -/
 theorem omegaTailResidue_eq_sum_resAt (ω₀ : HolomorphicOneForms X)
     (g : MeromorphicFunction X) {B : Divisor X} (hord : OmegaOrderBounded ω₀ g B)
     {Z : TailSpace X} (hZ : Z ∈ tailSubspace (X := X) B) (P : Finset X)
@@ -231,7 +231,7 @@ theorem omegaOrderBounded_mul (ω₀ : HolomorphicOneForms X)
   have h2' : E p ≤ k := by exact_mod_cast h2
   exact_mod_cast (by omega : (A p : ℤ) ≤ m + k)
 
-/-- **W1: the residue functional intertwines the multiplication action.**
+/-- **μ-compatibility: the residue functional intertwines the multiplication action.**
 `Res_{h·ω₀}(μ_ψ Z) = Res_{(ψ·h)·ω₀}(Z)` for `Z` of level `A`, the form of order ≥ `E`, and
 `A − E ≤ ord ψ`: per point, the defect `tailFn(μ_ψ Z) − ψ·tailFn(Z)` has order ≥ `−E` and
 pairs against order ≥ `E` to residue `0`. -/

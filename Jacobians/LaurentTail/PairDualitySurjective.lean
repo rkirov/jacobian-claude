@@ -7,21 +7,21 @@ Authors: Rado Kirov
 (Miranda Thm 3.3, pp. 189–191)
 
 The pair-frame port of `TailDualitySurjective` + §3–§5 of `TailDualitySurjectiveAssembly`
-(the genus ≥ 1 holomorphic-ω₀ specialization stays as the banked first proof).  The Λ-side
-(§1–§2 of the assembly: `tailMulDual(Q)`, injectivity, `finrank_range_tailMulDualQ`) is
-frame-FREE and reused by import — zero duplication.
+(the genus ≥ 1 holomorphic-ω₀ specialization).  The Λ-side (§1–§2 of the assembly:
+`tailMulDual(Q)`, injectivity, `finrank_range_tailMulDualQ`) is frame-independent and reused
+by import.
 
-* **W2 (truncation invariance)** `tailResidue_truncateRaw`: dropped entries have *zero weights*.
+* **truncation invariance** `tailResidue_truncateRaw`: dropped entries have *zero weights*.
 * **the master bridge** `tailResidue_eq_sum_resAt`: the residue functional as a base-point sum
   of `resAt`-pairings of the tail polynomial against `pairCoeffFun`.
-* **W1 (μ-compatibility)** `tailResidue_tailMul`: `Res_{h·dg₀}(μ_ψ Z) = Res_{(ψh)·dg₀}(Z)`.
+* **μ-compatibility** `tailResidue_tailMul`: `Res_{h·dg₀}(μ_ψ Z) = Res_{(ψh)·dg₀}(Z)`.
 * **Miranda Lemma 3.6** `pairOrderBounded_of_vanishing`: the order downgrade.
 * **the recovery step** `pairDualMap_recovery` and **surjectivity** `pairDualMap_surjective`
   (pigeonhole on `H¹(D − nP)*` with the RR-I counts), giving the dimension identity
 
     `h1TailDim_eq_lDim_pairCanonical_sub : h¹(D) = l(K − D)`, `K = div (dg₀)`
 
-  for any nonconstant meromorphic `g₀` — NO genus hypothesis anywhere.
+  for any nonconstant meromorphic `g₀` — no genus hypothesis anywhere.
 -/
 import Jacobians.LaurentTail.PairDualityInjective
 import Jacobians.LaurentTail.TailDualitySurjectiveAssembly
@@ -30,16 +30,15 @@ open scoped Manifold ContDiff Topology
 open Filter Set Module
 open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
 
-set_option linter.unusedSectionVars false
-
 namespace Jacobians.LaurentTail
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-! ### §1 W2: truncation invariance of the residue functional -/
+/-! ### §1 Truncation invariance of the residue functional -/
 
-/-- **W2.** Truncating a tail at a level `D` below the form's order bound does not change its
+/-- **Truncation invariance.**  Truncating a tail at a level `D` below the form's order bound
+does not change its
 residue pairing: the dropped entries `(p, n)` have `n ≥ −D p`, so their weights
 `(h·dg₀)_{−1−n}` sit at degrees `−1−n < D p ≤ ord` and vanish. -/
 theorem tailResidue_truncateRaw (g₀ h : MeromorphicFunction X) {D : Divisor X}
@@ -68,13 +67,13 @@ theorem tailResidue_truncateRaw (g₀ h : MeromorphicFunction X) {D : Divisor X}
   · rfl
   · rw [zero_mul, hzero q hq, mul_zero]
 
-/-! ### §2 The master bridge and W1: μ-compatibility of the residue functional -/
+/-! ### §2 The master bridge and μ-compatibility of the residue functional -/
 
 open Classical in
 /-- **The master bridge**: on tails of level `B` paired against a form of order ≥ `B`, the
 residue functional is the sum over base points of the `resAt`-pairings of the tail polynomial
 against the form's local coefficient (`resAt_mul_eq_sum_tailPairing`, read in reverse, with the
-tail polynomial as the meromorphic factor — its coefficients ARE the entries). -/
+tail polynomial as the meromorphic factor — its coefficients *are* the entries). -/
 theorem tailResidue_eq_sum_resAt (g₀ g : MeromorphicFunction X) {B : Divisor X}
     (hord : PairOrderBounded g₀ g B)
     {Z : TailSpace X} (hZ : Z ∈ tailSubspace (X := X) B) (P : Finset X)
@@ -154,7 +153,7 @@ theorem pairOrderBounded_mul (g₀ h ψ : MeromorphicFunction X) {A E : Divisor 
   have h2' : E p ≤ k := by exact_mod_cast h2
   exact_mod_cast (by omega : (A p : ℤ) ≤ m + k)
 
-/-- **W1: the residue functional intertwines the multiplication action.**
+/-- **μ-compatibility: the residue functional intertwines the multiplication action.**
 `Res_{h·dg₀}(μ_ψ Z) = Res_{(ψ·h)·dg₀}(Z)` for `Z` of level `A`, the form of order ≥ `E`, and
 `A − E ≤ ord ψ`: per point, the defect `tailFn(μ_ψ Z) − ψ·tailFn(Z)` has order ≥ `−E` and
 pairs against order ≥ `E` to residue `0`. -/
@@ -316,7 +315,8 @@ residue functional of `h·dg₀` at the finer level `D − C` (with `ψ ∈ L(C)
 then `φ` itself is the residue functional of `(ψ⁻¹h)·dg₀` at level `D`:
 
 * the composite identity turns `T̄_ψ ∘ μ_{ψ⁻¹}` into the truncation `𝒯[D−C−div ψ] → 𝒯[D]`,
-* W1 turns `Res_{h·dg₀} ∘ μ_{ψ⁻¹}` into `Res_{(ψ⁻¹h)·dg₀}`,
+* μ-compatibility (`tailResidue_tailMul`) turns `Res_{h·dg₀} ∘ μ_{ψ⁻¹}` into
+  `Res_{(ψ⁻¹h)·dg₀}`,
 * Miranda Lemma 3.6 downgrades the order bound of `(ψ⁻¹h)·dg₀` from the fine level to `D`. -/
 theorem pairDualMap_recovery (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     {D C : Divisor X}
@@ -389,7 +389,7 @@ theorem pairDualMap_recovery (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermCo
       exact tailMul_tailMul_inv_trunc (ψ : MeromorphicFunction X) hψ
         (mulLevelLE_of_mem ψ.2 D) V
     rw [hcls] at h1
-    -- right side: W1 turns the `μ_{ψ⁻¹}`-image residue into the `ψ⁻¹h`-residue
+    -- right side: μ-compatibility turns the `μ_{ψ⁻¹}`-image residue into the `ψ⁻¹h`-residue
     rw [show ((⟨tailMul ((ψ : MeromorphicFunction X)⁻¹) (D - C) V, hZmem⟩ :
         ↥(tailSubspace (X := X) (D - C))) : TailSpace X)
         = tailMul ((ψ : MeromorphicFunction X)⁻¹) (D - C) V from rfl,
@@ -506,7 +506,7 @@ theorem pairDualMap_surjective (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGerm
   -- the germ of `ψ` survives (else the matched functional were `0`)
   have hψex : ∃ p : X, (ψ : MeromorphicFunction X).orderW p ≠ ⊤ := by
     by_contra hall
-    push_neg at hall
+    push Not at hall
     apply hχne
     rw [← hc, tailMulDualQ_mk]
     exact tailMulDual_eq_zero_of_germZero φ _ ψ hall
@@ -525,7 +525,7 @@ theorem pairDualMap_surjective (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGerm
 
 /-- **Serre duality for the tail `H¹` as a dimension identity** (Miranda Thm 3.3):
 `h¹(D) = l(K − D)` for the canonical divisor `K = div (dg₀)` of any nonconstant meromorphic
-`g₀` — NO genus hypothesis. -/
+`g₀` — no genus hypothesis. -/
 theorem h1TailDim_eq_lDim_pairCanonical_sub (g₀ : MeromorphicFunction X)
     (hg₀ : ¬ IsGermConstant g₀) (D : Divisor X) :
     h1TailDim (X := X) D = lDim (X := X) (pairCanonicalDivisor g₀ hg₀ - D) := by

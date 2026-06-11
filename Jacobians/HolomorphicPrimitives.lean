@@ -32,10 +32,9 @@ open Set Metric Filter Function
 
 namespace Jacobians
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Transport of the path value along function equality -/
 
@@ -89,7 +88,8 @@ theorem pathPrimValue_eq_of_homotopic (η : HolomorphicOneForms X) {x y : X}
 /-! ### The concatenation identity for a single in-disk block -/
 
 /-- Evaluating the extension of a concatenation, left half. -/
-theorem trans_extend_left {x₀ x y : X} (p : Path x₀ x) (q : Path x y) {s : ℝ}
+theorem trans_extend_left {X : Type*} [TopologicalSpace X] {x₀ x y : X}
+    (p : Path x₀ x) (q : Path x y) {s : ℝ}
     (h0 : 0 ≤ s) (h2 : s ≤ 1 / 2) :
     (p.trans q).extend s = p.extend (2 * s) := by
   have hs1 : s ∈ Icc (0 : ℝ) 1 := ⟨h0, h2.trans (by norm_num)⟩
@@ -98,7 +98,8 @@ theorem trans_extend_left {x₀ x y : X} (p : Path x₀ x) (q : Path x y) {s : �
     dif_pos (show ((⟨s, hs1⟩ : I) : ℝ) ≤ 1 / 2 from h2)]
 
 /-- Evaluating the extension of a concatenation, right half. -/
-theorem trans_extend_right {x₀ x y : X} (p : Path x₀ x) (q : Path x y) {s : ℝ}
+theorem trans_extend_right {X : Type*} [TopologicalSpace X] {x₀ x y : X}
+    (p : Path x₀ x) (q : Path x y) {s : ℝ}
     (h2 : 1 / 2 < s) (h1 : s ≤ 1) :
     (p.trans q).extend s = q.extend (2 * s - 1) := by
   have hs1 : s ∈ Icc (0 : ℝ) 1 := ⟨by linarith, h1⟩
@@ -178,7 +179,7 @@ theorem pathPrimValue_trans_primitive_block (η : HolomorphicOneForms X) {x₀ x
           rw [trans_extend_left p q h0s h2s]
           exact C.covers k (2 * s) ⟨by linarith [hs'.1], by linarith [hs'.2]⟩
         · rw [if_neg hk]
-          push_neg at hk
+          push Not at hk
           rcases Nat.lt_or_ge k (C.n + 1) with hk1 | hk1
           · -- the single `(B, G)` block `[1/2, 1]`
             have hkeq : k = C.n := by omega

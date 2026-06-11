@@ -43,7 +43,7 @@ Without these, `Submodule` types over the Finsupp bake in the synthesized
 `NonUnitalNonAssocSemiring` chain), while `Submodule.addCommGroup` on a *nested* submodule
 (e.g. `ker (tailTruncate …)`) derives it by projection from `AddCommGroup` (through
 `Complex.addCommGroup`) — defeq but not syntactically equal, so instance resolution fails
-(the repo's known ℂ instance-diamond, here in Finsupp form).  Pinning the monoid to the
+(the recurring ℂ instance-diamond, here in Finsupp form).  Pinning the monoid to the
 projection of the pinned group makes every later search resolve to the same constants. -/
 
 noncomputable instance (priority := 1100) instTailSpaceAddCommGroup :

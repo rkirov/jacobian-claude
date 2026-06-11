@@ -10,14 +10,15 @@ The Miranda-route final assembly in the meromorphic pair frame, combining
 * **RR-I** `riemannRoch_tailForm` (`l(D) − h¹(D) = deg D + 1 − h¹(0)`),
 * **Serre duality for the tail `H¹`** `h1TailDim_eq_lDim_pairCanonical_sub`
   (`h¹(D) = l(K − D)`, `K = div (dg₀)` — every genus, by the genus-free residue theorem), and
-* **`l(K) = genus`** — the proven §17.4 canonical-form iso (`hKgenus_unconditional`), applied
-  to the datum `ω₀ = dg₀`, `K = pairCanonicalDivisor g₀ hg₀` (a friction-free instantiation:
-  the divisor IS the form divisor of `dg₀` by construction),
+* **`l(K) = genus`** — the Forster §17.4 canonical-form isomorphism
+  (`hKgenus_unconditional`), applied to the datum `ω₀ = dg₀`,
+  `K = pairCanonicalDivisor g₀ hg₀` (the divisor is the form divisor of `dg₀` by
+  construction),
 
 into the headline `l(D) − l(K − D) = deg D + 1 − g` for every divisor `D`, with `g₀` the
 nonconstant meromorphic function of `exists_nonconstant_meromorphic`.  Unlike the genus ≥ 1
-assembly (`RiemannRochGenusPos`, the banked ω₀-frame proof), nothing here needs a nonzero
-*holomorphic* 1-form, so there is NO genus hypothesis — this is the exact statement shape of
+assembly (`RiemannRochGenusPos`), nothing here needs a nonzero *holomorphic* 1-form, so there
+is no genus hypothesis — this is the exact statement shape of
 `Jacobians.exists_riemannRoch_divisor`, which it discharges.
 -/
 import Jacobians.LaurentTail.PairDualitySurjective
@@ -25,8 +26,6 @@ import Jacobians.Dolbeault.FormRemovableSingularity
 
 open scoped Manifold ContDiff Topology
 open Module
-
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.LaurentTail
 
@@ -38,8 +37,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-! ### §1 `l(K) = genus` for the pair-frame canonical divisor -/
 
 /-- **`l(K) = genus`** for the pair-frame canonical divisor `K = div (dg₀)` (Forster §17.4 at
-`D = 0`, via the proven unconditional `hKgenus`): `pairCanonicalDivisor` is by construction the
-form divisor of the §17.4 datum `ω₀ = dg₀`. -/
+`D = 0`): `pairCanonicalDivisor` is by construction the form divisor of the §17.4 datum
+`ω₀ = dg₀`. -/
 theorem lDim_pairCanonicalDivisor_eq_genus (g₀ : MeromorphicFunction X)
     (hg₀ : ¬ IsGermConstant g₀) :
     lDim (X := X) (pairCanonicalDivisor g₀ hg₀) = genus X :=

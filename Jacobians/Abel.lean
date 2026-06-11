@@ -5,23 +5,21 @@ import Mathlib.Data.Finsupp.Weight
 import Mathlib.Topology.LocallyFinsupp
 
 /-!
-# Abel's theorem on a compact Riemann surface
+# Meromorphic functions, divisors, and the Abel–Jacobi map
 
-Abel's theorem (Abel 1826, Forster §20): a divisor `D` of degree 0 on a
-compact Riemann surface is principal (i.e., `D = div f` for some
-meromorphic function `f`) if and only if its Abel–Jacobi image is
-zero in the Jacobian.
+Foundations for Abel's theorem (Abel 1826, Forster §20) on a compact Riemann
+surface `X`.  Mathlib has meromorphic functions only on a normed field, so the
+manifold-level theory is built here by reading everything through charts:
 
-**Scope of this file.** Mathlib does not yet have:
-* meromorphic functions on a manifold (only on a normed field),
-* divisors on a manifold,
-* the Picard group of a compact Riemann surface.
-
-We lay out the types and signatures at the manifold level, state
-Abel's theorem as an axiomatic class `HasAbelsTheorem`, and derive
-`ofCurve_inj` from it. Filling in the class is ~thousands of lines
-of Mathlib-contribution-sized work (divisor theory + residue theorem
-+ Riemann–Roch).
+* `IsMeromorphic` / `MeromorphicFunction` — functions meromorphic in every chart;
+* `Divisor X = X →₀ ℤ` with its degree homomorphism `Divisor.deg`, and the
+  subgroup `DivisorOfDegZero` of degree-zero divisors;
+* `MeromorphicFunction.div` — the divisor of zeros and poles of a meromorphic
+  function, built from the chart-invariance of the meromorphic order
+  (`orderAtPoint_chart_invariant`, Forster §6) and the isolation of zeros and
+  poles (`orderAtPoint_isolated_at`), with compactness giving finite support;
+* `abelJacobi` — the Abel–Jacobi map on degree-zero divisors, with values in
+  the Jacobian `(Fin g → ℂ) ⧸ Λ`.
 
 ## References
 
@@ -29,32 +27,11 @@ of Mathlib-contribution-sized work (divisor theory + residue theorem
 * Miranda, *Algebraic Curves and Riemann Surfaces*, Ch. V §§1–4.
 -/
 
-set_option linter.unusedSectionVars false
-
 namespace Jacobians
 
 open scoped Manifold ContDiff Topology
 
-variable (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-/-! ### Meromorphic functions on a compact Riemann surface
-
-A function `f : X → ℂ` is meromorphic if it is meromorphic in every
-chart. In Mathlib, `Meromorphic` is defined for `𝕜 → E`; the
-manifold version below composes with chart inverses. -/
-
-/-- A meromorphic function on `X` is a map `X → ℂ` that is
-meromorphic at every chart-image point of every chart. The predicate
-and its basic theory (addition, multiplication, order at a point) are
-not yet formalised. -/
-def IsMeromorphic (f : X → ℂ) : Prop :=
-  ∀ x : X, MeromorphicAt (f ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
-
-/-- The type of meromorphic functions on `X`. -/
-structure MeromorphicFunction : Type _ where
-  toFun : X → ℂ
-  meromorphic : IsMeromorphic X toFun
+variable (X : Type*)
 
 /-! ### Divisors on a compact Riemann surface
 
@@ -130,6 +107,33 @@ theorem twoPointDivisor_mem_degZero (P Q : X) :
 theorem twoPointDivisor_self (P : X) : twoPointDivisor X P P = 0 := by
   simp [twoPointDivisor]
 
+/-! ### Meromorphic functions on a compact Riemann surface
+
+A function `f : X → ℂ` is meromorphic if it is meromorphic in every
+chart. In Mathlib, `Meromorphic` is defined for `𝕜 → E`; the
+manifold version below composes with chart inverses. -/
+
+/-- A meromorphic function on `X` is a map `X → ℂ` that is
+meromorphic at every chart-image point of every chart. The basic
+theory (addition, multiplication, order at a point) is developed in
+`Jacobians.LinearSystem`. -/
+def IsMeromorphic [TopologicalSpace X] [ChartedSpace ℂ X] (f : X → ℂ) : Prop :=
+  ∀ x : X, MeromorphicAt (f ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
+
+/-- The type of meromorphic functions on `X`. -/
+structure MeromorphicFunction [TopologicalSpace X] [ChartedSpace ℂ X] : Type _ where
+  toFun : X → ℂ
+  meromorphic : IsMeromorphic X toFun
+
+/-- The zero function is trivially meromorphic: chart pullbacks of constant functions are
+constant, hence meromorphic. Needs only the charted-space structure (no compactness /
+connectedness), so it applies to open submanifolds `↥U` too. -/
+theorem IsMeromorphic.zero [TopologicalSpace X] [ChartedSpace ℂ X] :
+    IsMeromorphic X (fun _ => 0) := by
+  intro x
+  show MeromorphicAt (fun _ => (0 : ℂ)) ((chartAt (H := ℂ) x) x)
+  exact MeromorphicAt.const 0 _
+
 /-! ### Real divisor construction via `meromorphicOrderAt`
 
 The order of a meromorphic function at a point `x ∈ X` is read off
@@ -139,73 +143,48 @@ the chart pullback: pick any chart `φ` around `x`, and compute
 is identically zero near `x`, and the finite order otherwise. Cast
 to `ℤ` via `.untop₀` (sending `⊤ ↦ 0`).
 
-**Chart-independence** (content): orders of meromorphic functions
-are invariant under biholomorphic coordinate change. Not proved
-here; left as an assumed property of the real construction.
+**Chart-independence**: orders of meromorphic functions are
+invariant under biholomorphic coordinate change
+(`orderAtPoint_chart_invariant` below).
 
-**Finite support** (content): on a compact `X`, a meromorphic
-function has finitely many zeros and poles. Classical: zeros/poles
-of a non-identically-zero meromorphic function are isolated, and
+**Finite support**: on a compact `X`, a meromorphic function has
+finitely many zeros and poles. Classical: zeros/poles of a
+non-identically-zero meromorphic function are isolated, and
 compactness + isolation ⇒ finite. -/
 
 variable {X} in
 /-- The integer order of `f` at `x`, via the chart pullback. -/
-noncomputable def MeromorphicFunction.orderAtPoint (f : MeromorphicFunction X) (x : X) : ℤ :=
+noncomputable def MeromorphicFunction.orderAtPoint [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (x : X) : ℤ :=
   (meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) x).symm)
     ((chartAt (H := ℂ) x) x)).untop₀
 
-/-! #### Subtasks for finite-support
-
-We decompose the finite-support proof into:
-
-1. **Local finiteness** (`orderAtPoint_locallyFinite`): around each
-   `x ∈ X`, a neighborhood exists in which only finitely many points
-   have nonzero order. Requires chart-level `MeromorphicAt` isolation
-   (`MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero`) +
-   chart-invariance of order. Remaining gap.
-2. **Wrap as `locallyFinsuppWithin Set.univ`** via the structure
-   constructor.
-3. **Apply `.finiteSupport`** with `isCompact_univ` (from `CompactSpace X`).
-4. **Convert** to `Finsupp` via `Finsupp.ofSupportFinite`. -/
-
-/-! #### Two classical lemmas, following Forster §6
+/-! #### The route to `div f`, following Forster §6
 
 Forster's `div f` is built from two classical facts:
 
-1. **Order is chart-invariant** (`orderAtPoint_invariant`): for `y` in
-   any chart source, `meromorphicOrderAt (f ∘ chart.symm) (chart y)`
-   has the same `.untop₀` as via `chart_y`. Follows from
-   `meromorphicOrderAt_comp_of_deriv_ne_zero` applied to chart
-   transitions; the latter are biholomorphic by `IsManifold 𝓘(ℂ) ω`.
+1. **Order is chart-invariant** (`orderAtPoint_chart_invariant`,
+   "Lemma B"): for `y` in any chart source, `meromorphicOrderAt
+   (f ∘ chart.symm) (chart y)` has the same `.untop₀` as via
+   `chart_y`. Follows from `meromorphicOrderAt_comp_of_deriv_ne_zero`
+   applied to chart transitions; the latter are biholomorphic by
+   `IsManifold 𝓘(ℂ) ω`.
 
 2. **Zeros/poles are isolated** (`orderAtPoint_isolated_at`): around
-   any point, meromorphicity + dichotomy + isolation gives a
-   neighborhood in chart_z.source where the order is 0 except
-   possibly at the center point.
+   any point, meromorphicity + the dichotomy
+   `MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero` + Lemma A
+   (`orderAtPoint_eq_zero_of_eventually_zero`) give a neighborhood in
+   which the order is 0 except possibly at the center point.
 
-Together, these close `supportLocallyFiniteWithinDomain'`. Both are
-textbook lemmas (Forster §6.4, Miranda II.4). -/
-
-/-! #### The Mathlib-missing pieces for `orderAtPoint_isolated_at`
-
-Two textbook lemmas that Mathlib does not currently have for
-manifold-level meromorphic functions:
-
-**Lemma A** (`orderAtPoint_eq_zero_of_eventually_zero`): if `f` is
-identically zero in a neighborhood of `y` (as a function on `X`),
-then `orderAtPoint f y = 0`. Follows from `.untop₀ ⊤ = 0`: f ≡ 0
-near y ⇒ (f ∘ chart_y.symm) = 0 eventually ⇒ meromorphicOrderAt = ⊤.
-
-**Lemma B** (`orderAtPoint_chart_invariant`): the order is
-chart-invariant. Specifically, `orderAtPoint f y = (meromorphicOrderAt
-(f ∘ chart_z.symm) (chart_z y)).untop₀` for `y ∈ chart_z.source`.
-Follows from `meromorphicOrderAt_comp_of_deriv_ne_zero` applied to
-the chart transition `chart_z ∘ chart_y.symm`, which is analytic
-with nonzero derivative (from `IsManifold 𝓘(ℂ) ω`). -/
+Local finiteness of the order's support then wraps as a
+`locallyFinsuppWithin Set.univ`, `.finiteSupport isCompact_univ`
+gives finite support, and `Finsupp.ofSupportFinite` produces the
+divisor. Both facts are textbook lemmas (Forster §6.4, Miranda II.4). -/
 
 variable {X} in
 /-- **Lemma A**: f identically zero near y ⇒ orderAtPoint f y = 0. -/
-theorem MeromorphicFunction.orderAtPoint_eq_zero_of_eventually_zero
+theorem MeromorphicFunction.orderAtPoint_eq_zero_of_eventually_zero [TopologicalSpace X]
+    [ChartedSpace ℂ X]
     (f : MeromorphicFunction X) (y : X)
     (h : ∀ᶠ x in 𝓝 y, f.toFun x = 0) : f.orderAtPoint y = 0 := by
   -- chart.symm (chart y) = y.
@@ -234,7 +213,7 @@ theorem MeromorphicFunction.orderAtPoint_eq_zero_of_eventually_zero
   exact WithTop.untop₀_top
 
 variable {X} in
-/-- **Lemma B** (Mathlib-missing): chart-invariance of the order.
+/-- **Lemma B**: chart-invariance of the order.
 The order computed via an arbitrary chart `e` matches `orderAtPoint`
 (computed via `chart_y`).
 
@@ -247,12 +226,9 @@ Proof outline (Forster §6):
 3. Apply `meromorphicOrderAt_comp_of_deriv_ne_zero` with
    `g := e ∘ chart_y.symm` analytic at `chart_y y` with nonzero
    derivative (both from `IsManifold 𝓘(ℂ) ω` — chart transitions
-   are biholomorphic).
-
-**Currently unproved** — formalizing chart-transition analyticity
-(`g` analytic) + nonzero derivative on a ℂ-manifold requires
-~50-100 lines of manifold + Mathlib bridging. -/
-theorem MeromorphicFunction.orderAtPoint_chart_invariant
+   are biholomorphic). -/
+theorem MeromorphicFunction.orderAtPoint_chart_invariant [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
     (f : MeromorphicFunction X) {y : X}
     (e : OpenPartialHomeomorph X ℂ) (_he : e ∈ atlas ℂ X) (hy : y ∈ e.source) :
     (meromorphicOrderAt (f.toFun ∘ e.symm) (e y)).untop₀ =
@@ -302,17 +278,15 @@ theorem MeromorphicFunction.orderAtPoint_chart_invariant
     rw [show meromorphicOrderAt (f.toFun ∘ e.symm) (e y) =
       meromorphicOrderAt (f.toFun ∘ e.symm) ((e ∘ (chartAt (H := ℂ) y).symm)
         ((chartAt (H := ℂ) y) y)) by rw [h_ey]]
-    -- Remaining two atomic sub-sorries: chart-transition is analytic +
-    -- has nonzero derivative. Both follow from
-    -- `OpenPartialHomeomorph.contDiffOn_extend_coord_change` + compositions,
-    -- but the bridging (extChartAt → chartAt, ω ↔ analytic, biholomorphism
-    -- inverse function theorem) is ~100+ lines each.
-    -- Step A1-A2: e and chart_y are both in maximalAtlas 𝓘(ℂ) ω.
+    -- The two ingredients: the chart transition is analytic and has nonzero
+    -- derivative (`ModelWithCorners.contDiffWithinAt_extendCoordChange'` +
+    -- the chain rule against the inverse transition).
+    -- e and chart_y are both in maximalAtlas 𝓘(ℂ) ω.
     have he_max : e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X :=
       IsManifold.subset_maximalAtlas _he
     have hchart_max : chartAt (H := ℂ) y ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X :=
       IsManifold.chart_mem_maximalAtlas y
-    -- Step A3-A6: chart-transition is ContDiffWithinAt ℂ ω at the point, using
+    -- The chart transition is ContDiffWithinAt ℂ ω at the point, using
     -- Mathlib's point-based lemma. For I boundaryless, range I = univ, so
     -- ContDiffWithinAt univ = ContDiffAt.
     have hy_chart_src : y ∈ (chartAt (H := ℂ) y).source := mem_chart_source ℂ y
@@ -322,14 +296,14 @@ theorem MeromorphicFunction.orderAtPoint_chart_invariant
       have h := ModelWithCorners.contDiffWithinAt_extendCoordChange'
         hchart_max he_max hy_chart_src hy
       rwa [ModelWithCorners.range_eq_univ, contDiffWithinAt_univ] at h
-    -- Step A7: AnalyticAt at the point (ω = ⊤ definitionally).
+    -- AnalyticAt at the point (ω = ⊤ definitionally).
     have h_analyticAt : AnalyticAt ℂ (↑(𝓘(ℂ).extendCoordChange (chartAt (H := ℂ) y) e))
         ((chartAt (H := ℂ) y).extend 𝓘(ℂ) y) :=
       h_contDiffAt.analyticAt
-    -- Step A8: bridge extendCoordChange's coe to e ∘ chart_y.symm (rfl pointwise).
+    -- Bridge extendCoordChange's coe to e ∘ chart_y.symm (rfl pointwise).
     have h_analytic : AnalyticAt ℂ (e ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) :=
       h_analyticAt
-    -- Sub-gap B: nonzero derivative via biholomorphism.
+    -- Nonzero derivative via the biholomorphism.
     -- Inverse direction: `chart_y ∘ e.symm` is also analytic at `e y`.
     have h_analytic_inv : AnalyticAt ℂ ((chartAt (H := ℂ) y) ∘ e.symm) (e y) := by
       have h_contDiffAt' : ContDiffAt ℂ ω
@@ -374,9 +348,10 @@ theorem MeromorphicFunction.orderAtPoint_chart_invariant
 variable {X} in
 /-- **Isolation of zeros/poles** around a point (Forster §6 /
 Miranda II.4). Combines Lemma A (identically zero case) and
-Lemma B (chart invariance, Mathlib-missing) with the dichotomy
+Lemma B (chart invariance) with the dichotomy
 `MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero`. -/
-theorem MeromorphicFunction.orderAtPoint_isolated_at
+theorem MeromorphicFunction.orderAtPoint_isolated_at [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [T2Space X]
     (f : MeromorphicFunction X) (z : X) :
     ∃ t ∈ 𝓝 z, ∀ y ∈ t, y ≠ z → f.orderAtPoint y = 0 := by
   -- Apply the dichotomy at chart_z z.
@@ -479,7 +454,8 @@ theorem MeromorphicFunction.orderAtPoint_isolated_at
     have h_chart_ne : (chartAt (H := ℂ) z) y ≠ (chartAt (H := ℂ) z) z := by
       intro heq
       exact hy_ne ((chartAt (H := ℂ) z).injOn hy_src (mem_chart_source ℂ z) heq)
-    -- Apply Lemma B to transfer: orderAtPoint f y = (meromorphicOrderAt (f ∘ chart_z.symm) (chart_z y)).untop₀.
+    -- Apply Lemma B to transfer: orderAtPoint f y = (meromorphicOrderAt (f ∘ chart_z.symm)
+    -- (chart_z y)).untop₀.
     rw [← f.orderAtPoint_chart_invariant (chartAt (H := ℂ) z) (chart_mem_atlas ℂ z) hy_src]
     -- Set g' := fun w => (w - chart_z z)^n • g w.
     set g' : ℂ → ℂ := fun w => (w - (chartAt (H := ℂ) z) z)^n • g w with hg'_def
@@ -511,7 +487,8 @@ variable {X} in
 /-- The order function as a `locallyFinsuppWithin` on `Set.univ`.
 Wraps `orderAtPoint` together with the local-finiteness proof
 derived from `orderAtPoint_isolated_at`. -/
-noncomputable def MeromorphicFunction.orderLocallyFinsupp (f : MeromorphicFunction X) :
+noncomputable def MeromorphicFunction.orderLocallyFinsupp [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [T2Space X] (f : MeromorphicFunction X) :
     Function.locallyFinsuppWithin (Set.univ : Set X) ℤ where
   toFun := MeromorphicFunction.orderAtPoint f
   supportWithinDomain' := Set.subset_univ _
@@ -525,60 +502,37 @@ noncomputable def MeromorphicFunction.orderLocallyFinsupp (f : MeromorphicFuncti
     by_contra hne
     exact hy_supp (ht y hy_t hne)
 
-/-- **Real divisor of a meromorphic function**. Uses the
-`locallyFinsuppWithin` wrapper + `finiteSupport` + `ofSupportFinite`.
-The content gap is `supportLocallyFiniteWithinDomain'` above. -/
-noncomputable def MeromorphicFunction.divViaOrder (f : MeromorphicFunction X) : Divisor X :=
+/-- The divisor of a meromorphic function via the order function: the
+`locallyFinsuppWithin` wrapper + `finiteSupport` + `ofSupportFinite`. -/
+noncomputable def MeromorphicFunction.divViaOrder [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [T2Space X] [CompactSpace X] (f : MeromorphicFunction X) : Divisor X :=
   Finsupp.ofSupportFinite (MeromorphicFunction.orderAtPoint f)
     ((MeromorphicFunction.orderLocallyFinsupp f).finiteSupport isCompact_univ)
 
 /-- **The divisor of a meromorphic function** (classical construction
-`div f = (zeros of f) - (poles of f)` with multiplicities). Now real
-via `divViaOrder`, now that `orderAtPoint_isolated_at` is closed. -/
-noncomputable def MeromorphicFunction.div (f : MeromorphicFunction X) : Divisor X :=
+`div f = (zeros of f) - (poles of f)` with multiplicities). -/
+noncomputable def MeromorphicFunction.div [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [T2Space X] [CompactSpace X] (f : MeromorphicFunction X) : Divisor X :=
   MeromorphicFunction.divViaOrder X f
-
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
-/-- The zero function is trivially meromorphic: chart pullbacks of constant functions are constant,
-hence meromorphic. Needs only the charted-space structure (no compactness / connectedness), so it
-applies to open submanifolds `↥U` too. -/
-theorem IsMeromorphic.zero : IsMeromorphic X (fun _ => 0) := by
-  intro x
-  show MeromorphicAt (fun _ => (0 : ℂ)) ((chartAt (H := ℂ) x) x)
-  exact MeromorphicAt.const 0 _
-
-/-! ### Principal-divisor scaffolding removed
-
-The `PrincipalDivisors` subgroup, the residue-theorem leaf `deg_div`
-(`deg (div f) = 0`), and `PrincipalDivisors_le_DivisorOfDegZero` were
-dead: nothing downstream consumed them. `ofCurve_inj` does not route
-through the principal-divisor formulation of Abel's theorem; it needs
-`abelJacobi_twoPoint_ne_zero` directly (the remaining gap below). The
-degree-0 *target* subgroup `DivisorOfDegZero` survives — `abelJacobi`
-is defined on it. -/
 
 /-! ### Abel–Jacobi map (on divisors of degree 0)
 
 For a divisor `D = ∑ n_i · P_i` with `∑ n_i = 0`, the Abel–Jacobi
 image is `∑ n_i · ofCurve P₀ P_i` for a chosen basepoint `P₀`
-(the result is independent of `P₀` because `∑ n_i = 0`).
-
-Note this depends on `ofCurve` being a real path-integrated map, not
-the current placeholder. -/
+(the result is independent of `P₀` because `∑ n_i = 0`). -/
 
 variable {X} in
 /-- Abel–Jacobi map: sends a degree-0 divisor `D = ∑ n_i · P_i` to
-`∑ n_i · [ofCurve basepoint P_i]` in the Jacobian `(Fin gX → ℂ) ⧸ lattice`.
+`∑ n_i · [ofCurve basepoint P_i]` in the Jacobian `(Fin gX → ℂ) ⧸ lattice`:
+sum the `periodVec` of `smoothPath`s from a fixed basepoint `P₀` to each
+point in the support of `D`, weighted by multiplicities, projected to the
+Jacobian quotient.
 
 **Well-definedness** (independence of basepoint): uses `∑ n_i = 0`
 to absorb the basepoint choice. For any two basepoints P₀, P₀':
-`AJ_{P₀} D - AJ_{P₀'} D = (∑ n_i) · [smoothPath P₀' P₀] = 0` (since ∑ n_i = 0).
-
-Now real: uses `smoothPath` from `HasSmoothPaths` typeclass
-and sums `periodVec` of paths from a fixed basepoint `P₀` to each
-point in the support of `D`, weighted by multiplicities, projected
-to the Jacobian quotient. -/
-noncomputable def abelJacobi (D : DivisorOfDegZero X) :
+`AJ_{P₀} D - AJ_{P₀'} D = (∑ n_i) · [smoothPath P₀' P₀] = 0` (since ∑ n_i = 0). -/
+noncomputable def abelJacobi [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] (D : DivisorOfDegZero X) :
     (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup := by
   classical
   exact ∑ P ∈ (D : Divisor X).support,
@@ -592,7 +546,8 @@ Classical.arbitrary X`. Direct computation from the definition:
 `twoPointDivisor A B = single A 1 - single B 1` has support `{A, B}`
 for `A ≠ B`, and the weighted `periodVec` sum unfolds to the
 difference. -/
-theorem abelJacobi_twoPointDivisor (A B : X) (hne : A ≠ B) :
+theorem abelJacobi_twoPointDivisor [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] (A B : X) (hne : A ≠ B) :
     abelJacobi ⟨twoPointDivisor X A B, twoPointDivisor_mem_degZero X A B⟩ =
       QuotientAddGroup.mk (periodVec (smoothPath (Classical.arbitrary X) A)) -
       QuotientAddGroup.mk (periodVec (smoothPath (Classical.arbitrary X) B)) := by
@@ -624,67 +579,20 @@ theorem abelJacobi_twoPointDivisor (A B : X) (hne : A ≠ B) :
   show (1 : ℤ) • _ + (-1 : ℤ) • _ = _ - _
   simp [sub_eq_add_neg]
 
-/-! ### Abel's theorem itself
+/-! ### Towards Abel's theorem
 
-**Statement** (Forster 21.4): A degree-0 divisor `D` is principal iff
+**Statement** (Forster 21.4): a degree-0 divisor `D` is principal iff
 its Abel–Jacobi image is zero. Equivalently: the Abel–Jacobi map
 induces an isomorphism `Pic⁰(X) ≃ Jacobian X`.
 
-Axiomatized via a typeclass so downstream consequences can be
-stated. Filling in this class is the Mathlib-contribution-scale
-work to formalize divisor theory + residue theorem + Abel's proof. -/
-
--- `HasAbelsTheorem` class removed: reverted to hypothesis-based
--- `abelJacobi_twoPoint_ne_zero` below.
-
-/-! ### Consequence: two-point divisors on positive-genus surfaces
-
-For `X` of genus ≥ 1, the divisor `P - Q` with `P ≠ Q` is NOT
-principal (Forster §21.5 / Miranda Ch. V §2.8). The classical
-argument:
-
-A principal divisor `P - Q` with `P ≠ Q` means some meromorphic
-function `f` has a simple zero at `P` and a simple pole at `Q` and
-no other zeros/poles. Such an `f` is a degree-1 map `X → ℙ¹`, which
-must be a biholomorphism (by Riemann-Hurwitz: deg-1 covers are
-isomorphisms). But then `X ≃ ℙ¹`, which has genus 0 — contradiction.
-
-Axiomatized as a typeclass field `twoPointDivisor_not_principal_of_pos_genus`,
-alongside Abel's theorem itself. This is the piece that, combined
-with Abel, implies `abelJacobi (P - Q) ≠ 0`, the lemma needed for
-`ofCurve_inj`. -/
-
--- `abelJacobi_twoPoint_ne_zero` — the (formerly sorried) headline — now lives in
--- `Jacobians/AbelFinal.lean` with its statement UNCHANGED: its proof consumes the whole
--- downstream Abel engine (chains C-0 → weak solutions C-1/C-2 → the `∬ σ∧ω` pairing C-3 →
--- `h¹(𝒪) = g` C-4 → Forster 19.10/20.7 C-5), which imports this file.
-
-/-! ### `no_distinct_points_placeholder` removed
-
-The previous `HasAbelsTheorem.no_distinct_points_placeholder`
-theorem used the placeholder `div ≡ 0` to conclude "every two
-points are equal". With `div` now real (`divViaOrder`), this
-placeholder chain no longer exists. Real `ofCurve_inj` requires
-the genuine Abel theorem chain via `abelJacobi_twoPoint_ne_zero`,
-which needs real `abelJacobi` connected to `ofCurve`. -/
-
-/-! ### Derivation of `ofCurve_inj` from Abel's theorem
-
-**Sketch** (Forster §21.5): if `ofCurve P Q = ofCurve P Q'` for
-`Q ≠ Q'` on a surface with genus ≥ 1, then `Q - Q'` is a degree-0
-divisor whose Abel–Jacobi image is zero. By Abel, `Q - Q'` is
-principal: there exists a meromorphic `f` with a simple zero at `Q`
-and a simple pole at `Q'`. Such an `f` defines a degree-1 map
-`X → ℙ¹`, which is a biholomorphism (by Riemann-Hurwitz / the
-hyperelliptic argument), making `X` of genus 0 — contradicting
-`0 < genus X`.
-
-Formalizing this fully requires:
-* `ofCurve` to be the real path-integrated map.
-* The Picard-group interpretation.
-* Riemann-Hurwitz / degree-1 maps to ℙ¹.
-
-These are still sorries downstream; `ofCurve_inj` in `Jacobians.lean`
-remains axiomatic pending this chain. -/
+The consequence needed for `ofCurve_inj` is that on a surface of
+genus ≥ 1 the two-point divisor `P − Q` with `P ≠ Q` is *not*
+principal (Forster §21.5 / Miranda Ch. V §2.8): a principal `P − Q`
+would give a meromorphic function with a single simple pole, i.e. a
+degree-1 map `X → ℙ¹`, forcing `X ≃ ℙ¹` of genus 0.  Combined with
+Abel's theorem this yields `abelJacobi (P − Q) ≠ 0`, which is proved
+as `abelJacobi_twoPoint_ne_zero` in `Jacobians/AbelFinal.lean` on top
+of the downstream Abel machinery (weak solutions, the `∬ σ∧ω`
+pairing, `h¹(𝒪) = g`, and Forster 19.10/20.7). -/
 
 end Jacobians

@@ -21,7 +21,6 @@ repo's `MeromorphicFunction` bundle or any manifold structure, so they are share
 glued-form operator's holomorphic representatives). Extracted from `MeromorphicLiouville`.
 -/
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 
@@ -65,7 +64,8 @@ theorem toMeromorphicNFAt_self_eq_limUnder {F : ℂ → ℂ} {w c : ℂ}
   exact tendsto_nhds_unique h1 h2
 
 /-- From meromorphy of `F` *at* a point `z`, extract an **open neighborhood** `V ∋ z` on which `F`
-is meromorphic, and moreover **analytic away from `z`**. (Mathlib `MeromorphicAt.eventually_analyticAt`:
+is meromorphic, and moreover **analytic away from `z`**. (Mathlib
+`MeromorphicAt.eventually_analyticAt`:
 `F` is analytic on a punctured neighborhood; together with meromorphy at `z` itself this is
 meromorphy on a full open `V`.) -/
 theorem MeromorphicAt.exists_isOpen_meromorphicOn {F : ℂ → ℂ} {z : ℂ} (hF : MeromorphicAt F z) :
@@ -87,7 +87,8 @@ theorem limUnder_eq_toMeromorphicNFOn {F : ℂ → ℂ} {V : Set ℂ} (hF : Mero
   rw [toMeromorphicNFOn_eq_toMeromorphicNFAt hF hw,
     toMeromorphicNFAt_self_eq_limUnder (hF w hw) (hord w hw) hc, hc.limUnder_eq]
 
-/-- The normal-form representative `toMeromorphicNFOn F V` is analytic at each point of `V` where the
+/-- The normal-form representative `toMeromorphicNFOn F V` is analytic at each point of `V` where
+the
 order of `F` is `≥ 0` (normal form + nonneg order ⟹ analytic). -/
 theorem analyticAt_toMeromorphicNFOn {F : ℂ → ℂ} {V : Set ℂ} (hF : MeromorphicOn F V)
     (hord : ∀ w ∈ V, 0 ≤ meromorphicOrderAt F w) {w₀ : ℂ} (hw₀ : w₀ ∈ V) :

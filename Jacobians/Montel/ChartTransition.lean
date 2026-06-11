@@ -37,22 +37,20 @@ namespace Jacobians.Montel
 open scoped Manifold ContDiff Topology
 open Bundle Filter
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### The transition factor -/
 
 /-- The chart-transition factor between two tangent-bundle trivializations,
 evaluated at a point `y`. Equals `1` by convention if `y` is not in both
 base sets. -/
-noncomputable def chartTransitionFactor (x₀ x₀' y : X) : ℂ :=
+noncomputable def chartTransitionFactor {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (x₀ x₀' y : X) : ℂ :=
   Trivialization.coordChangeL ℂ
     (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀')
     (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀) y 1
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- The chart-transition factor is nonzero (a CLE sends nonzero to nonzero). -/
-theorem chartTransitionFactor_ne_zero (x₀ x₀' y : X) :
+theorem chartTransitionFactor_ne_zero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (x₀ x₀' y : X) :
     chartTransitionFactor (X := X) x₀ x₀' y ≠ 0 := by
   unfold chartTransitionFactor
   intro hzero
@@ -66,10 +64,10 @@ theorem chartTransitionFactor_ne_zero (x₀ x₀' y : X) :
 
 /-! ### Chart-transition relation for localRep -/
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- Key identity: `e.symmL y (c(y)) = e'.symmL y 1`, where
 `c(y) = chartTransitionFactor x₀ x₀' y`, for y in both base sets. -/
-theorem symmL_apply_chartTransitionFactor (x₀ x₀' y : X)
+theorem symmL_apply_chartTransitionFactor {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (x₀ x₀' y : X)
     (hy₀' : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀').baseSet)
     (hy₀ : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet) :
     (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y
@@ -95,10 +93,10 @@ theorem symmL_apply_chartTransitionFactor (x₀ x₀' y : X)
   -- (linEq).symm ∘ (linEq) = id on E y.
   exact (e.linearEquivAt ℂ y hy₀).left_inv (e'.symm y 1)
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- Chart-transition relation for `localRep`:
 `localRep α x₀' y = c(y) · localRep α x₀ y` with `c = chartTransitionFactor`. -/
-theorem localRep_chart_transition
+theorem localRep_chart_transition {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (x₀ x₀' y : X)
@@ -119,9 +117,9 @@ theorem localRep_chart_transition
 
 /-! ### Continuity of the chart-transition factor -/
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- Continuity of `chartTransitionFactor` on the overlap of two base sets. -/
-theorem continuousOn_chartTransitionFactor (x₀ x₀' : X) :
+theorem continuousOn_chartTransitionFactor {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (x₀ x₀' : X) :
     ContinuousOn (chartTransitionFactor (X := X) x₀ x₀')
       ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀').baseSet ∩
         (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet) := by
@@ -135,7 +133,6 @@ theorem continuousOn_chartTransitionFactor (x₀ x₀' : X) :
 
 /-! ### Pairwise chart-transition bound -/
 
-omit [ConnectedSpace X] [Nonempty X] in
 /-- **Pairwise bound**: for each chart pair `(x₀, x₀') ∈ chartCover²`, there's
 a universal constant `M ≥ 0` such that for any α and any point y in the
 overlap `shrunkChart x₀ ∩ innerShrunkChart x₀'`,
@@ -143,7 +140,8 @@ overlap `shrunkChart x₀ ∩ innerShrunkChart x₀'`,
 
 Proof: `1/‖chartTransitionFactor x₀ x₀' y‖` is continuous and bounded on
 the compact overlap (since `c ≠ 0` there); take the sup as M. -/
-theorem exists_pairwise_chart_transition_bound
+theorem exists_pairwise_chart_transition_bound {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (x₀ x₀' : X) (hx₀ : x₀ ∈ (chartCover : Finset X))
     (hx₀' : x₀' ∈ (chartCover : Finset X)) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
@@ -204,24 +202,22 @@ theorem exists_pairwise_chart_transition_bound
         apply mul_le_mul_of_nonneg_right hg_y' (norm_nonneg _)
 
 /-! ### Global chart-transition bound (aggregated over chartCover × chartCover)
-
 For each pair `(x₀, x₀') ∈ chartCover²`, the pairwise bound yields an
 `M_{x₀,x₀'} ≥ 0`. Taking max over the finite product gives a universal
 `M` such that, for any α, for any y ∈ shrunkChart x₀ (x₀ ∈ chartCover),
 there's x₀' ∈ chartCover with `y ∈ innerShrunkChart x₀'` (inner cover)
 and `‖localRep α x₀ y‖ ≤ M · ‖localRep α x₀' y‖`.
-
 Since `‖localRep α x₀' y‖ ≤ chartNormK (via inner shrinkage)` bounds the
 right-hand side by the max inner chart-norm, we obtain
 `supNormK α ≤ M · (max over chartCover of inner-chart-norm)`. -/
 
-omit [ConnectedSpace X] in
 /-- **Global chart-transition bound** (pointwise form).
 There is a universal constant `M ≥ 0` such that for any α, for any
 `x₀ ∈ chartCover` and any `y ∈ shrunkChart x₀`, there exists
 `x₀' ∈ chartCover` with `y ∈ innerShrunkChart x₀'` and
 `‖localRep α x₀ y‖ ≤ M · ‖localRep α x₀' y‖`. -/
-theorem exists_global_chart_transition_bound :
+theorem exists_global_chart_transition_bound {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
       (x₀ : X), x₀ ∈ (chartCover : Finset X) →
@@ -278,7 +274,6 @@ theorem exists_global_chart_transition_bound :
 
 /-! ### `supNormK` form of the chart-transition bound -/
 
-omit [ConnectedSpace X] in
 /-- **Chart-transition supNormK bound.** There exists a universal
 constant `M ≥ 0` such that for any α,
 `supNormK α ≤ M · (max over chartCover of sSup of ‖localRep α x₀'·‖
@@ -286,7 +281,8 @@ constant `M ≥ 0` such that for any α,
 
 This is the supNormK form of `exists_global_chart_transition_bound`,
 obtained by taking sup over y of the pointwise bound. -/
-theorem exists_supNormK_le_const_sup_inner :
+theorem exists_supNormK_le_const_sup_inner {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)),
       HolomorphicOneForms.supNormK α ≤
@@ -362,5 +358,6 @@ theorem exists_supNormK_le_const_sup_inner :
           mul_le_mul_of_nonneg_left h_inner_y hMnn
       _ ≤ M * (chartCover : Finset X).sup' chartCover_nonempty _ :=
           mul_le_mul_of_nonneg_left h_finsup hMnn
+
 
 end Jacobians.Montel

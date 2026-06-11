@@ -12,9 +12,9 @@ For a meromorphic `ψ` and a target level `E`, the operator
 multiplies each per-point tail polynomial by `ψ` and re-truncates.  The Lean representation goes
 through the **tail polynomial as an actual function** `tailFnAt Z p : ℂ → ℂ`, whose Laurent
 coefficients are literally the tail entries (`laurentCoeff_tailFnAt`) — so the operator algebra
-reduces to the proven `laurentCoeff` toolkit and no explicit convolution ever appears.
+reduces to the `laurentCoeff` toolkit and no explicit convolution ever appears.
 
-Deliverables:
+Contents:
 * `tailFnAt`, `laurentCoeff_tailFnAt`, meromorphy, additivity/homogeneity;
 * `tailMul ψ E : TailSpace X →ₗ[ℂ] TailSpace X`, range in `tailSubspace E`;
 * **Miranda (2.2)** `tailMul_tailMap`: `μ_ψ(α_D f) = α_E(ψ·f)` whenever
@@ -27,8 +27,6 @@ import Jacobians.Dolbeault.SerreResidueRamifiedRealCover
 open scoped Manifold ContDiff Topology
 open Filter Set
 open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
-
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.LaurentTail
 
@@ -52,8 +50,7 @@ theorem finite_setOf_laurentCoeff_ne_zero_lt {g : ℂ → ℂ} {c : ℂ} (hg : M
     exact hne0 (laurentCoeff_eq_zero_of_lt_order hg
       (by rw [← hm]; exact_mod_cast (by omega : n < m)))
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ### §1 The per-point tail polynomial as a function -/
 
@@ -259,7 +256,8 @@ theorem tailMul_apply (ψ : MeromorphicFunction X) (E : Divisor X) (Z : TailSpac
 /-- **Miranda (2.2)**: `μ_ψ(α_D f) = α_E(ψ·f)` whenever `−E ≤ ord ψ + (−D)` pointwise — the
 re-truncated coefficients of `ψ·(D-tail of f)` and of `ψ·f` agree below `−E`, because `ψ` times
 the complementary part of `f` has order ≥ `ord ψ − D ≥ −E`. -/
-theorem tailMul_tailMap (ψ f : MeromorphicFunction X) (D E : Divisor X)
+theorem tailMul_tailMap [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    (ψ f : MeromorphicFunction X) (D E : Divisor X)
     (hE : ∀ p : X, ((-(E p) : ℤ) : WithTop ℤ) ≤ ψ.orderW p + ((-(D p) : ℤ) : WithTop ℤ)) :
     tailMul ψ E (tailMap (X := X) D f) = tailMap (X := X) E (ψ * f) := by
   classical

@@ -20,7 +20,7 @@ non-constancy.
 
 ## The removable-singularity repair
 
-The repo's `MeromorphicFunction.toFun : X → ℂ` is only pinned up to its germ off each point: at an
+`MeromorphicFunction.toFun : X → ℂ` is only pinned up to its germ off each point: at an
 isolated removable singularity it may carry an arbitrary "junk" value. Mathlib's order-based limit
 theory (`tendsto_nhds_of_meromorphicOrderAt_nonneg`) shows that wherever the order is `≥ 0` the
 function has a genuine limit along the punctured neighborhood. We therefore work with the
@@ -39,19 +39,16 @@ which discards the junk: it agrees with the normal-form representative
 * Mathlib `Mathlib/Analysis/Meromorphic/Order.lean`, `Mathlib/Analysis/Meromorphic/NormalForm.lean`.
 -/
 
-set_option linter.unusedSectionVars false
-
 namespace Jacobians
 
 open scoped Manifold ContDiff Topology
 open Filter
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- `f` has a **single simple pole** at `P`: order `-1` at `P` and order `≥ 0`
 elsewhere. (Defined here, rather than in `DegreeOneSphere`, so that both the
-sphere endgame and the Riemann–Roch reduction can refer to it without a cyclic
+sphere theorems and the Riemann–Roch reduction can refer to it without a cyclic
 import.) -/
 def MeromorphicFunction.HasSingleSimplePole
     (f : MeromorphicFunction X) (P : X) : Prop :=
@@ -114,7 +111,8 @@ theorem MeromorphicFunction.orderAtPoint_nonneg_iff_tendsto
 
 /-! ### The repair is the normal-form representative, chart by chart
 
-(`toMeromorphicNFAt_self_eq_limUnder` and `MeromorphicAt.exists_isOpen_meromorphicOn` now live in the
+(`toMeromorphicNFAt_self_eq_limUnder` and `MeromorphicAt.exists_isOpen_meromorphicOn` now live in
+the
 shared `Jacobians.MeromorphicNFRepair`.) -/
 
 /-- **The local repair lemma.** On a small open neighborhood `V` of `φ x₀` (with `φ = chartAt x₀`),
@@ -162,7 +160,8 @@ theorem MeromorphicFunction.exists_holoRepr_eq_NFOn (f : MeromorphicFunction X) 
   -- holoRepr value at φ.symm w = c : f.toFun has limit c at φ.symm w (transfer of hc).
   show limUnder (𝓝[≠] (φ.symm w)) f.toFun = c
   have hys : φ.symm w ∈ φ.source := φ.map_target (hVtarget hw)
-  -- The punctured neighborhood of `φ.symm w` is NeBot: it receives `𝓝[≠] w` (NeBot in ℂ) under φ.symm.
+  -- The punctured neighborhood of `φ.symm w` is NeBot: it receives `𝓝[≠] w` (NeBot in ℂ) under
+  -- φ.symm.
   have htsymm : Tendsto φ.symm (𝓝[≠] w) (𝓝[≠] (φ.symm w)) := by
     have := φ.symm.tendsto_nhdsNE (x := w) (by simpa using hVtarget hw)
     simpa using this
@@ -260,7 +259,8 @@ theorem MeromorphicFunction.analyticAt_holoRepr_chartPullback_of_orderNonneg
 then `f.holoRepr : X → ℂ` is `MDifferentiable`. In each chart, `holoRepr` read back equals the
 analytic normal-form representative of the pullback (`exists_holoRepr_eq_NFOn`), hence is analytic;
 the chart bridge `mdifferentiableWithinAt_of_comp_extChartAt_symm` lifts this to the manifold. -/
-theorem MeromorphicFunction.mdifferentiable_holoRepr (f : MeromorphicFunction X)
+theorem MeromorphicFunction.mdifferentiable_holoRepr [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X)
     (hpos : ∀ x, 0 ≤ f.orderAtPoint x) :
     MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f.holoRepr := by
   intro x₀
@@ -281,7 +281,7 @@ theorem MeromorphicFunction.mdifferentiable_holoRepr (f : MeromorphicFunction X)
   apply hdiff.mono
   simp [Set.preimage_univ, mfld_simps]
 
-/-! ### Liouville endgame: constant repair forces order `≡ 0` -/
+/-! ### Liouville conclusion: constant repair forces order `≡ 0` -/
 
 /-- If the limit-repair `holoRepr` is **constant** (the conclusion of Liouville on a compact
 connected manifold), then the order of `f` is `0` at every point. In each chart the pullback
@@ -303,18 +303,20 @@ theorem MeromorphicFunction.orderAtPoint_eq_zero_of_holoRepr_const (f : Meromorp
       filter_upwards [eventually_nhdsWithin_of_eventually_nhds (hVopen.mem_nhds hzV)] with w hw
       exact hNFconst w hw
     exact h1.symm.trans h2
-  -- The order of `f` at `x` is the order of the pullback, which equals the order of the constant `c`.
+  -- The order of `f` at `x` is the order of the pullback, which equals the order of the constant
+  -- `c`.
   show (meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x)).untop₀ = 0
   rw [meromorphicOrderAt_congr hF_eq, meromorphicOrderAt_const]
   split <;> simp
 
-/-- **[INPUT — compact Liouville (no Dolbeault)] PROVEN.** A non-constant meromorphic function on a
-compact connected Riemann surface has a pole. Contrapositive: with no pole every order is `≥ 0`, so
-the limit-repair `holoRepr` is globally holomorphic (`mdifferentiable_holoRepr`); by holomorphic
-Liouville on the compact connected `X` (`MDifferentiable.exists_eq_const_of_compactSpace`) it is
-constant, forcing every order to be `0` (`orderAtPoint_eq_zero_of_holoRepr_const`) — contradicting
-non-constancy. -/
-theorem MeromorphicFunction.exists_pole_of_nonconstant (f : MeromorphicFunction X)
+/-- **Compact Liouville for meromorphic functions.** A non-constant meromorphic function on a
+compact connected Riemann surface has a pole. Contrapositive: with no pole every order is `≥ 0`,
+so the limit-repair `holoRepr` is globally holomorphic (`mdifferentiable_holoRepr`); by
+holomorphic Liouville on the compact connected `X`
+(`MDifferentiable.exists_eq_const_of_compactSpace`) it is constant, forcing every order to be `0`
+(`orderAtPoint_eq_zero_of_holoRepr_const`) — contradicting non-constancy. -/
+theorem MeromorphicFunction.exists_pole_of_nonconstant [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X)
     (hf : ∃ x, f.orderAtPoint x ≠ 0) : ∃ x, f.orderAtPoint x < 0 := by
   by_contra hno
   simp only [not_exists, not_lt] at hno

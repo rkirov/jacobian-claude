@@ -28,19 +28,24 @@ Laurent monomials `c·(z − a)^n dz`, and
 
   `(∑ of the finite residues of η) + Res_∞ η = 0`,
 
-because the only Laurent term with a nonzero residue is the `n = −1` term `c·(z − a)⁻¹`, whose residue
+because the only Laurent term with a nonzero residue is the `n = −1` term `c·(z − a)⁻¹`, whose
+residue
 `c` at `a` is exactly cancelled by its residue `−c` at `∞`.  We make this precise via:
 
 * `LaurentForm` — a finite family `(c i)·(z − a i) ^ (n i)` of Laurent monomials, with `R` its
-  pointwise sum (the rational coefficient of `dz`), all centres lying inside a fixed disk `ball 0 ρ`.
+  pointwise sum (the rational coefficient of `dz`), all centres lying inside a fixed disk `ball 0
+  ρ`.
 * `LaurentForm.largeCircleIntegral_eq` — the **multi-pole Cauchy residue theorem** for this explicit
-  partial-fraction form: `∮_{|z|=ρ} R = 2πi · ∑_{i : n i = −1} c i` (all centres inside the contour).
+  partial-fraction form: `∮_{|z|=ρ} R = 2πi · ∑_{i : n i = −1} c i` (all centres inside the
+  contour).
   Each `n ≠ −1` monomial integrates to `0` (`circleIntegral.integral_sub_zpow_of_ne`); each `n = −1`
   monomial integrates to `2πi` (`circleIntegral.integral_sub_inv_of_mem_ball`).
-* `LaurentForm.resAt_center_eq` — the local residue at a centre `a j`, read by the repo's `resAt`, is
+* `LaurentForm.resAt_center_eq` — the local residue at a centre `a j`, read by the repo's `resAt`,
+is
   the sum `∑_{i : a i = a j, n i = −1} c i` of the simple-pole coefficients sitting at that centre.
 * `resAtInfty` — the **residue at infinity** of a 1-form coefficient `R`, `Res_∞ := −(2πi)⁻¹ ∮ R`,
-  read on a contour enclosing all the (finite) poles.  By construction `Res_∞` is exactly the negative
+  read on a contour enclosing all the (finite) poles.  By construction `Res_∞` is exactly the
+  negative
   of the total finite residue mass, so:
 * `LaurentForm.finiteResidueSum_add_resAtInfty_eq_zero` — **the `ℂℙ¹` residue theorem**:
   `(∑_{centres} Res) + Res_∞ R = 0`.
@@ -58,7 +63,8 @@ interaction**.  The missing pieces are therefore:
 
   1. the **meromorphic trace** `Tr_F (ω₀·f)` of a meromorphic 1-form through the branched cover `F`
      (tracking the pole structure), and
-  2. **Miranda Lemma 3.2** — `Res_y (Tr_F α) = ∑_{x ∈ F⁻¹(y)} Res_x α` (the residue of the pushforward
+  2. **Miranda Lemma 3.2** — `Res_y (Tr_F α) = ∑_{x ∈ F⁻¹(y)} Res_x α` (the residue of the
+  pushforward
      at `y` is the fibre sum of the residues of `α`).
 
 Both are genuinely new builds (the holomorphic trace gives no foothold for poles), so they are left
@@ -117,7 +123,8 @@ theorem resAt_laurentMonomial (c a : ℂ) (n : ℤ) :
     rw [circleIntegral.integral_const_mul, circleIntegral.integral_sub_zpow_of_ne hn a a r,
       mul_zero]
 
-/-- **`Res = 0` for an analytic integrand.** If `f : ℂ → ℂ` is `AnalyticAt` `c`, its residue there is
+/-- **`Res = 0` for an analytic integrand.** If `f : ℂ → ℂ` is `AnalyticAt` `c`, its residue there
+is
 `0` (it is differentiable on a small ball, so every small circle integral vanishes). -/
 theorem resAt_eq_zero_of_analyticAt {f : ℂ → ℂ} {c : ℂ} (hf : AnalyticAt ℂ f c) :
     resAt f c = 0 := by
@@ -148,11 +155,13 @@ noncomputable def resAtInfty (R : ℂ → ℂ) (ρ : ℝ) : ℂ :=
 /-! ### A partial-fraction (Laurent) `1`-form on `ℂℙ¹`
 
 A `LaurentForm` packages a rational `1`-form `R dz` as an explicit finite sum of Laurent monomials
-`c i · (z − a i) ^ (n i)`, all of whose centres `a i` lie inside a fixed disk `ball 0 ρ` (so a single
+`c i · (z − a i) ^ (n i)`, all of whose centres `a i` lie inside a fixed disk `ball 0 ρ` (so a
+single
 contour `C(0, ρ)` encloses every finite pole).  Its coefficient `R` is the pointwise sum. -/
 
 /-- A rational `1`-form on `ℂℙ¹` in partial-fraction (Laurent) form: a finite family of monomials
-`c i·(z − a i) ^ (n i)` with all centres inside `ball 0 ρ`.  `R` is the pointwise coefficient sum. -/
+`c i·(z − a i) ^ (n i)` with all centres inside `ball 0 ρ`.  `R` is the pointwise coefficient sum.
+-/
 structure LaurentForm where
   /-- Index type of the monomials. -/
   ι : Type
@@ -237,7 +246,8 @@ theorem largeCircleIntegral_eq :
 /-! #### The finite residues, read by `resAt`
 
 The finite residue of the form at a centre `a j` is `resAt R (a j)`.  Since the residue is local
-(`resAt_congr` / additivity) and each monomial centred elsewhere is holomorphic at `a j`, this equals
+(`resAt_congr` / additivity) and each monomial centred elsewhere is holomorphic at `a j`, this
+equals
 the sum of the simple-pole coefficients `c i` whose centre is `a j` and exponent is `−1`. -/
 
 /-- The **finite residue sum**: the sum, over the distinct centres, of the local residues of `R`.
@@ -262,7 +272,8 @@ theorem analyticAt_monomial_of_ne (c : ℂ) {b : ℂ} (m : ℤ) {p : ℂ} (hbp :
   analyticAt_const.mul ((analyticAt_id.sub analyticAt_const).zpow (z := p) (n := m)
     (by simpa using sub_ne_zero.mpr (Ne.symm hbp)))
 
-/-- `resAt` of a finite sum of functions, each with an isolated singularity at `p`, is the sum of the
+/-- `resAt` of a finite sum of functions, each with an isolated singularity at `p`, is the sum of
+the
 residues — finite additivity, by induction from the binary `resAt_add` (with `HoloPunctured.add`
 supplied through `MeromorphicAt.holoPunctured`). -/
 theorem resAt_finsum {ι : Type*} (s : Finset ι) (f : ι → ℂ → ℂ) {p : ℂ}
@@ -285,7 +296,8 @@ theorem resAt_finsum {ι : Type*} (s : Finset ι) (f : ι → ℂ → ℂ) {p : 
       Finset.sum_insert hj]
 
 /-- **The local residue of `R` at a centre `p`.** It equals the sum of the simple-pole coefficients
-sitting exactly at `p`: `resAt R p = ∑_{i : a i = p, n i = −1} c i`.  (Monomials centred elsewhere are
+sitting exactly at `p`: `resAt R p = ∑_{i : a i = p, n i = −1} c i`.  (Monomials centred elsewhere
+are
 holomorphic at `p` and contribute no residue; monomials centred at `p` contribute by
 `resAt_laurentMonomial`.) -/
 theorem resAt_center_eq (p : ℂ) :
@@ -296,7 +308,8 @@ theorem resAt_center_eq (p : ℂ) :
   rw [show L.R = (fun z => ∑ i, L.c i * (z - L.a i) ^ L.n i) from rfl,
     resAt_finsum Finset.univ (fun i z => L.c i * (z - L.a i) ^ L.n i)
       (fun i _ => meromorphicAt_monomial (L.c i) (L.a i) (L.n i) p)]
-  -- Each monomial's residue at `p`: `0` if its centre `a i ≠ p`; else `if n i = -1 then c i else 0`.
+  -- Each monomial's residue at `p`: `0` if its centre `a i ≠ p`; else `if n i = -1 then c i else
+  -- 0`.
   have hterm : ∀ i, resAt (fun z => L.c i * (z - L.a i) ^ L.n i) p
       = if L.a i = p ∧ L.n i = -1 then L.c i else 0 := by
     intro i
@@ -313,10 +326,12 @@ theorem resAt_center_eq (p : ℂ) :
 
 /-! #### The residue theorem on `ℂℙ¹`
 
-`resAtInfty R = −(2πi)⁻¹ ∮ R = −∑_{i : n i = −1} c i` by `largeCircleIntegral_eq`; the finite residue
+`resAtInfty R = −(2πi)⁻¹ ∮ R = −∑_{i : n i = −1} c i` by `largeCircleIntegral_eq`; the finite
+residue
 sum is `+∑_{i : n i = −1} c i` by `resAt_center_eq` summed over the centres; hence they cancel. -/
 
-/-- `resAtInfty L.R L.ρ = −∑_{i : n i = −1} c i`: the residue at infinity is the negative of the total
+/-- `resAtInfty L.R L.ρ = −∑_{i : n i = −1} c i`: the residue at infinity is the negative of the
+total
 simple-pole mass, by the multi-pole Cauchy formula `largeCircleIntegral_eq`. -/
 theorem resAtInfty_eq :
     resAtInfty L.R L.ρ = -∑ i ∈ Finset.univ.filter (fun i => L.n i = -1), L.c i := by

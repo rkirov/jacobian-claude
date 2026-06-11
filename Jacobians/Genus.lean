@@ -69,6 +69,6 @@ noncomputable def genus (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpa
 
 -- The challenge theorem `genus_eq_zero_iff_homeo` (genus 0 ⟺ `X ≃ₜ S²`) is declared in
 -- `Jacobians/DegreeOneSphere.lean` (root namespace, like `genus`), NOT here: its forward direction
--- needs the degree-one endgame, which lives downstream of `Genus` (via `ProjectiveLine → Genus`).
+-- needs the degree-one theory, which lives downstream of `Genus` (via `ProjectiveLine → Genus`).
 -- Declaring it there breaks the import cycle an in-`Genus` proof would create. `Nonempty X` comes
 -- free from `[ConnectedSpace X]`, so the spec signature is unchanged.

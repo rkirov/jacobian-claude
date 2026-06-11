@@ -118,7 +118,8 @@ lemma tendsto_coe_cobounded_infty :
 
 open Filter Bornology Topology in
 lemma tendsto_invMap_infty :
-    Tendsto (fun z : ℂ => invMap (z : RiemannSphere)) (coclosedCompact ℂ) (𝓝 (invMap OnePoint.infty)) := by
+    Tendsto (fun z : ℂ => invMap (z : RiemannSphere)) (coclosedCompact ℂ)
+      (𝓝 (invMap OnePoint.infty)) := by
   rw [Filter.coclosedCompact_eq_cocompact, ← Metric.cobounded_eq_cocompact, invMap_infty]
   have hcoe : Tendsto (fun z : ℂ => ((z⁻¹ : ℂ) : RiemannSphere)) (cobounded ℂ)
       (𝓝 ((0 : ℂ) : RiemannSphere)) :=
@@ -163,7 +164,8 @@ def inversionHomeomorph : RiemannSphere ≃ₜ RiemannSphere where
   continuous_toFun := continuous_invMap
   continuous_invFun := continuous_invMap
 
-@[simp] lemma inversionHomeomorph_apply (p : RiemannSphere) : inversionHomeomorph p = invMap p := rfl
+@[simp] lemma inversionHomeomorph_apply (p : RiemannSphere) :
+    inversionHomeomorph p = invMap p := rfl
 
 @[simp] lemma inversionHomeomorph_symm_apply (p : RiemannSphere) :
     inversionHomeomorph.symm p = invMap p := rfl
@@ -338,7 +340,7 @@ genus = finrank ℂ (HolomorphicOneForms ℂℙ¹)
   ⇐  ∀ ω x, ω x = 0                                 -- ContMDiffSection.ext
 ```
 
-The remaining content is the **Liouville vanishing** `holomorphicOneForm_eq_zero` (**PROVEN
+The remaining content is the **Liouville vanishing** `holomorphicOneForm_eq_zero` (proved
 below, axiom-clean**): a global holomorphic 1-form `s` reads, in the affine chart `chartCoe`,
 as the entire coefficient `affineCoeff s : ℂ → ℂ` of `dz` (`localRep` based at `0`; entire via
 `Montel.localRep_analyticOn_chartTarget` since `chartCoe.target = univ`). Compatibility with
@@ -347,7 +349,8 @@ as the entire coefficient `affineCoeff s : ℂ → ℂ` of `dz` (`localRep` base
 `-z²` is the tangent-frame derivative `(trivAt ∞).symmL/(trivAt 0).symmL` computed from
 `fderiv(w ↦ w⁻¹) = -w⁻²`. Since `g = inftyCoeff s` is analytic at `w = 0`,
 `f(z) = O(z⁻²) → 0` as `z → ∞` (`affineCoeff_tendsto_cobounded`); a complex-differentiable
-function with a finite limit at infinity is constant (`Differentiable.eq_const_of_tendsto_cocompact`),
+function with a finite limit at infinity is constant
+(`Differentiable.eq_const_of_tendsto_cocompact`),
 and the limit `0` forces `f ≡ 0` (`affineCoeff_eq_zero`). Then `f(z) = s.toFun (z:ℂℙ¹) 1 = 0`
 pins `s.toFun (z:ℂℙ¹) = 0` at every finite point (`ext_ring`; the affine-unit `1` spans the
 `1`-dimensional fibre), and `g ≡ 0` near `0` with continuity gives `s.toFun ∞ = 0` too; by
@@ -360,7 +363,6 @@ Dolbeault/Riemann–Roch infrastructure that gates the genus goals elsewhere. -/
 
 section LiouvilleVanishing
 
-set_option linter.unusedSectionVars false
 
 variable (s : HolomorphicOneForms RiemannSphere)
 
@@ -414,10 +416,12 @@ lemma trivAt_zero_symmL_one (z : ℂ) :
         ℂ (z : RiemannSphere) (1 : ℂ) = (1 : ℂ) := by
   have hmem : (z : RiemannSphere) ∈ (chartAt ℂ ((0 : ℂ) : RiemannSphere)).source := by
     rw [chartAt_coe, chartCoe_source]; simp [OnePoint.coe_ne_infty]
-  rw [Jacobians.OfCurveSkeleton.trivAt_symmL_one_eq_fderiv_C ((0 : ℂ) : RiemannSphere) (z : RiemannSphere) hmem]
+  rw [Jacobians.OfCurveSkeleton.trivAt_symmL_one_eq_fderiv_C ((0 : ℂ) : RiemannSphere)
+    (z : RiemannSphere) hmem]
   -- The composition `chartAt (z:RS) ∘ (chartAt 0).symm` is the identity near `chartCoe (z:RS) = z`.
   have hcong : ((chartAt (H := ℂ) (z : RiemannSphere)) ∘
-      (chartAt (H := ℂ) ((0 : ℂ) : RiemannSphere)).symm) =ᶠ[nhds ((chartAt ℂ ((0:ℂ):RiemannSphere)) (z : RiemannSphere))]
+      (chartAt (H := ℂ) ((0 : ℂ) : RiemannSphere)).symm)
+        =ᶠ[nhds ((chartAt ℂ ((0:ℂ):RiemannSphere)) (z : RiemannSphere))]
       (id : ℂ → ℂ) := by
     filter_upwards [Filter.univ_mem] with w _
     simp only [chartAt_coe, Function.comp_apply, chartCoe_symm_apply, chartCoe_apply_coe, id_eq]
@@ -434,7 +438,8 @@ lemma trivAt_infty_symmL_one {z : ℂ} (hz : z ≠ 0) :
     rw [chartAt_infty, chartInfty_source]
     simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
     exact fun h => hz (by exact_mod_cast (OnePoint.coe_eq_coe.mp h))
-  rw [Jacobians.OfCurveSkeleton.trivAt_symmL_one_eq_fderiv_C (OnePoint.infty : RiemannSphere) (z : RiemannSphere) hmem]
+  rw [Jacobians.OfCurveSkeleton.trivAt_symmL_one_eq_fderiv_C (OnePoint.infty : RiemannSphere)
+    (z : RiemannSphere) hmem]
   have hpt : (chartAt ℂ (OnePoint.infty : RiemannSphere)) (z : RiemannSphere) = z⁻¹ := by
     rw [chartAt_infty]; exact chartInfty_apply_coe hz
   rw [hpt]
@@ -466,7 +471,8 @@ lemma inftyCoeff_eq_transition {z : ℂ} (hz : z ≠ 0) :
     rw [inftyCoeff, hsymm]; rfl
   have hf : affineCoeff s z =
       s.toFun (z : RiemannSphere)
-        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := RiemannSphere)) ((0 : ℂ) : RiemannSphere)).symmL
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := RiemannSphere))
+          ((0 : ℂ) : RiemannSphere)).symmL
           ℂ (z : RiemannSphere) (1 : ℂ)) := rfl
   rw [hg, hf, trivAt_infty_symmL_one hz, trivAt_zero_symmL_one]
   -- View `s.toFun (z:RS) : ℂ →L[ℂ] ℂ` (defeq) and pull the scalar `-z²` out by ℂ-linearity.
@@ -515,7 +521,8 @@ lemma affineCoeff_eq_toFun_one (z : ℂ) :
     affineCoeff s z = s.toFun (z : RiemannSphere) (1 : ℂ) := by
   rw [affineCoeff]
   show s.toFun (z : RiemannSphere)
-    ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := RiemannSphere)) ((0 : ℂ) : RiemannSphere)).symmL
+    ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := RiemannSphere))
+      ((0 : ℂ) : RiemannSphere)).symmL
       ℂ (z : RiemannSphere) (1 : ℂ)) = _
   rw [trivAt_zero_symmL_one]
 
@@ -535,12 +542,15 @@ lemma section_apply_eq_zero_coe (z : ℂ) : s.toFun (z : RiemannSphere) = 0 := b
 lemma trivAt_infty_symmL_one_at_infty :
     (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := RiemannSphere)) (OnePoint.infty)).symmL
         ℂ (OnePoint.infty : RiemannSphere) (1 : ℂ) = (1 : ℂ) := by
-  have hmem : (OnePoint.infty : RiemannSphere) ∈ (chartAt ℂ (OnePoint.infty : RiemannSphere)).source :=
+  have hmem : (OnePoint.infty : RiemannSphere)
+      ∈ (chartAt ℂ (OnePoint.infty : RiemannSphere)).source :=
     mem_chartAtRS_source OnePoint.infty
   rw [Jacobians.OfCurveSkeleton.trivAt_symmL_one_eq_fderiv_C (OnePoint.infty : RiemannSphere)
     (OnePoint.infty : RiemannSphere) hmem]
   have hcong : ((chartAt (H := ℂ) (OnePoint.infty : RiemannSphere)) ∘
-      (chartAt (H := ℂ) (OnePoint.infty : RiemannSphere)).symm) =ᶠ[nhds ((chartAt ℂ (OnePoint.infty : RiemannSphere)) (OnePoint.infty : RiemannSphere))]
+      (chartAt (H := ℂ) (OnePoint.infty : RiemannSphere)).symm)
+        =ᶠ[nhds ((chartAt ℂ (OnePoint.infty : RiemannSphere))
+          (OnePoint.infty : RiemannSphere))]
       (id : ℂ → ℂ) := by
     have htgt : (chartAt ℂ (OnePoint.infty : RiemannSphere)).target ∈
         nhds ((chartAt ℂ (OnePoint.infty : RiemannSphere)) (OnePoint.infty : RiemannSphere)) :=

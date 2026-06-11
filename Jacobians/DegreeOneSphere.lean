@@ -11,7 +11,7 @@ import Jacobians.GenusZeroOfSphere
 import Jacobians.HolomorphicPrimitives
 
 /-!
-# Degree-one ⟹ sphere endgame
+# Degree one implies the sphere
 
 Let `X` be a compact connected Riemann surface and `f : X → ℂ` a meromorphic
 function with a **single simple pole** at `P` (`orderAtPoint P = -1` and
@@ -47,15 +47,14 @@ open OnePoint Complex
 
 namespace Jacobians
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The simple-pole predicate
 
 `MeromorphicFunction.HasSingleSimplePole` is defined in `Jacobians.MeromorphicLiouville`
-(it depends only on `orderAtPoint`), so that both this sphere endgame and the
+(it depends only on `orderAtPoint`), so that both this sphere development and the
 Riemann–Roch reduction in `Jacobians.RiemannRoch` can refer to it without a cyclic
 import. -/
 
@@ -77,18 +76,21 @@ def MeromorphicFunction.toSphere (f : MeromorphicFunction X) (P : X) :
     X → RiemannSphere :=
   fun x => if x = P then OnePoint.infty else ((f.holoRepr x : ℂ) : RiemannSphere)
 
-@[simp] lemma MeromorphicFunction.toSphere_pole (f : MeromorphicFunction X) (P : X) :
+@[simp] lemma MeromorphicFunction.toSphere_pole {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (f : MeromorphicFunction X) (P : X) :
     f.toSphere P P = OnePoint.infty := by
   simp [MeromorphicFunction.toSphere]
 
-lemma MeromorphicFunction.toSphere_of_ne (f : MeromorphicFunction X) {P x : X}
+lemma MeromorphicFunction.toSphere_of_ne {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (f : MeromorphicFunction X) {P x : X}
     (hx : x ≠ P) :
     f.toSphere P x = ((f.holoRepr x : ℂ) : RiemannSphere) := by
   simp [MeromorphicFunction.toSphere, hx]
 
 /-- Preimage of `∞` under `toSphere` is exactly `{P}` (since `coe` never hits `∞`
 and we send only `P` to `∞`). -/
-lemma MeromorphicFunction.toSphere_preimage_infty (f : MeromorphicFunction X) (P : X) :
+lemma MeromorphicFunction.toSphere_preimage_infty {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (f : MeromorphicFunction X) (P : X) :
     f.toSphere P ⁻¹' {OnePoint.infty} = {P} := by
   ext x
   simp only [Set.mem_preimage, Set.mem_singleton_iff]
@@ -100,12 +102,13 @@ lemma MeromorphicFunction.toSphere_preimage_infty (f : MeromorphicFunction X) (P
   · rintro rfl
     simp
 
-set_option linter.unusedSectionVars false in
 /-- **Converse chart bridge `AnalyticAt → ContMDiffAt … ω`.** For a map `F : X → Y`
 between complex-analytic manifolds modelled on `ℂ`, if `F` is continuous at `x` and its
-chart pullback `(chartAt ℂ (F x)) ∘ F ∘ (chartAt ℂ x).symm` is `AnalyticAt ℂ` at `(chartAt ℂ x) x`,
-then `F` is `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω` at `x`. (Reverse of `contMDiffAt_omega_analyticAt_chart_pullback`.) -/
-theorem contMDiffAt_omega_of_analyticAt_chartPullback
+chart pullback `(chartAt ℂ (F x)) ∘ F ∘ (chartAt ℂ x).symm` is `AnalyticAt ℂ` at
+`(chartAt ℂ x) x`, then `F` is `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω` at `x`.
+(Reverse of `contMDiffAt_omega_analyticAt_chart_pullback`.) -/
+theorem contMDiffAt_omega_of_analyticAt_chartPullback {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
     {F : X → Y} {x : X} (hcont : ContinuousAt F x)
     (hana : AnalyticAt ℂ ((chartAt ℂ (F x)) ∘ F ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)) :
@@ -274,7 +277,8 @@ theorem MeromorphicFunction.contMDiffAt_toSphere_at_pole (f : MeromorphicFunctio
     have hcomp : ContinuousAt (chartInfty.symm ∘ (G ∘ φ)) P :=
       ContinuousAt.comp (g := chartInfty.symm) (f := G ∘ φ) hsymm_cont hGφ
     refine hcomp.congr ?_
-    -- near P, `φ.symm (φ y) = y`, and `toSphere P y ∈ chartInfty.source` (so `chartInfty` round-trips).
+    -- near P, `φ.symm (φ y) = y`, and `toSphere P y ∈ chartInfty.source` (so `chartInfty`
+    -- round-trips).
     have hev : ∀ᶠ y in 𝓝 P, y ∈ φ.source := φ.open_source.mem_nhds hxsrc
     -- source-membership of `toSphere P y` near P (center: `∞`; punctured: `holoRepr = N ≠ 0`).
     have hev3 : ∀ᶠ y in 𝓝 P, f.toSphere P y ∈ chartInfty.source := by
@@ -330,13 +334,13 @@ theorem MeromorphicFunction.contMDiff_toSphere (f : MeromorphicFunction X) {P : 
   · subst hx; exact f.contMDiffAt_toSphere_at_pole hP
   · exact f.contMDiffAt_toSphere_of_ne hP hx
 
-set_option linter.unusedSectionVars false in
 /-- Every charted space over `ℂ` is nontrivial at each point: there is always a
 second point.  Proof: the chart `e` at `P` is an open embedding into `ℂ`; its
 target is a nonempty open set, which cannot be the singleton `{e P}` (singletons
 are not open in `ℂ`), so it contains some `w ≠ e P`, whose preimage `e.symm w`
 differs from `P`. -/
-theorem exists_ne_of_chartedSpace_complex (P : X) : ∃ x : X, x ≠ P := by
+theorem exists_ne_of_chartedSpace_complex {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (P : X) : ∃ x : X, x ≠ P := by
   set e := chartAt ℂ P with he
   have hPsrc : P ∈ e.source := mem_chart_source ℂ P
   have hPtgt : e P ∈ e.target := e.map_source hPsrc
@@ -356,7 +360,8 @@ theorem exists_ne_of_chartedSpace_complex (P : X) : ∃ x : X, x ≠ P := by
 `exists_ne_of_chartedSpace_complex`), and `coe _ ≠ ∞`.  This uses the genuine
 `IsConstantMap` predicate (`∃ c, ∀ x, f x = c`), which is non-vacuous since `X` is
 nonempty. -/
-theorem MeromorphicFunction.toSphere_not_isConstant (f : MeromorphicFunction X)
+theorem MeromorphicFunction.toSphere_not_isConstant {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (f : MeromorphicFunction X)
     {P : X} (_hP : f.HasSingleSimplePole P) :
     ¬ IsConstantMap (f.toSphere P) := by
   rintro ⟨c, hc⟩
@@ -439,7 +444,9 @@ theorem MeromorphicFunction.toSphere_regular_at_pole (f : MeromorphicFunction X)
     · simp only [Filter.eventually_pure]
       show (N (φ P))⁻¹ = chartInfty (f.toSphere P (φ.symm (φ P)))
       have hNinvZero : (N (φ P))⁻¹ = 0 := by
-        by_contra hne; rw [hNFinv.meromorphicOrderAt_eq_zero_iff.2 hne] at hordNinv; simp at hordNinv
+        by_contra hne
+        rw [hNFinv.meromorphicOrderAt_eq_zero_iff.2 hne] at hordNinv
+        simp at hordNinv
       rw [hNinvZero, φ.left_inv hxsrc, f.toSphere_pole P, RiemannSphere.chartInfty_apply_infty]
   -- `deriv G (φP) = deriv N⁻¹ (φP)`, and order = 1 forces it nonzero.
   have hderiv_eq : deriv G (φ P) = deriv (fun w => (N w)⁻¹) (φ P) :=
@@ -547,7 +554,7 @@ theorem exists_mem_open_notMem_finite {Y : Type*} [TopologicalSpace Y] [ChartedS
   have hWsub : W ⊆ C := fun y hy => h y hy
   exact (infinite_of_isOpen_nonempty hW hne) (hC.subset hWsub)
 
-/-- **Degree-one ⟹ homeomorphism** (Step 3, the crux).  A non-constant degree-one
+/-- **Degree-one ⟹ homeomorphism** (Step 3).  A non-constant degree-one
 holomorphic map `F : X → Y` between compact connected Riemann surfaces is
 bijective and a local biholomorphism, hence a homeomorphism.
 
@@ -617,7 +624,7 @@ theorem degreeOne_homeo {Y : Type*} [TopologicalSpace Y] [T2Space Y]
   refine ⟨Equiv.toHomeomorphOfContinuousOpen (Equiv.ofBijective F ⟨hinj, hsurj⟩)
     hF.continuous hopen⟩
 
-/-! ### The endgame theorem -/
+/-! ### The headline theorem -/
 
 /-- **Degree-one ⟹ sphere.**  If a meromorphic function `f` on a compact
 connected Riemann surface `X` has a single simple pole at some `P`, then `X` is
@@ -645,15 +652,16 @@ end Jacobians
 
 /-! ### The challenge theorem `genus_eq_zero_iff_homeo`
 
-Declared in the **root namespace** (matching `genus`, which lives in root namespace in `Genus.lean`),
+Declared in the **root namespace** (matching `genus`, which lives in root namespace in
+`Genus.lean`),
 so the challenge-conformance file resolves the bare name. Lives in this module — not `Genus.lean` —
-because its forward direction needs the degree-one endgame, which sits downstream of `Genus` (via
+because its forward direction needs the degree-one theory, which sits downstream of `Genus` (via
 `ProjectiveLine → Genus`); declaring it here breaks the import cycle. Both directions are now
-FULLY PROVEN. `Nonempty X` is supplied for free by `[ConnectedSpace X]`
+`Nonempty X` is supplied for free by `[ConnectedSpace X]`
 (`ConnectedSpace.toNonempty`), so the signature matches the spec exactly. -/
 
 open scoped Manifold ContDiff in
-/-- **PROVEN — the backward half.** A surface homeomorphic to `S²` has genus `0`.
+/-- **The backward half.** A surface homeomorphic to `S²` has genus `0`.
 
 `genus X = Module.finrank ℂ (HolomorphicOneForms X)` is **analytic**, while `X ≃ₜ S²` is purely
 **topological**; the bridge is the contrapositive route (`Jacobians.GenusSphereBackward`):
@@ -661,7 +669,8 @@ open scoped Manifold ContDiff in
 hence (being constant on compact `X`, Liouville) vanishes, so `genus X = 0`.
 
 The route's three walls are all discharged:
-* **`S²` simply connected** — unconditional (`Jacobians.VanKampen.twoOpenVanKampen_holds`); `X ≃ₜ S²`
+* **`S²` simply connected** — unconditional (`Jacobians.VanKampen.twoOpenVanKampen_holds`); `X ≃ₜ
+S²`
   transports `SimplyConnectedSpace` to `X`.
 * **Liouville / max-modulus** — `MDifferentiable.exists_eq_const_of_compactSpace` (Mathlib).
 * **The holomorphic Poincaré lemma / monodromy theorem** — `Jacobians.hasHolomorphicPrimitives`

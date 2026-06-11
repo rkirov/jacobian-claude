@@ -85,8 +85,10 @@ theorem telescope {o : Z} :
     ∀ {n : ℕ} (q : Fin (n + 1) → Z) (c : (k : Fin (n + 1)) → Q o (q k))
       (F : (k : Fin n) → Path (q k.castSucc) (q k.succ)),
       (∀ k : Fin n,
-        trans (c k.castSucc) (trans (mk (F k)) (symm (c k.succ))) = Path.Homotopic.Quotient.refl o) →
-      trans (c 0) (trans (mk (Path.concat q F)) (symm (c (last n)))) = Path.Homotopic.Quotient.refl o := by
+        trans (c k.castSucc) (trans (mk (F k)) (symm (c k.succ)))
+          = Path.Homotopic.Quotient.refl o) →
+      trans (c 0) (trans (mk (Path.concat q F)) (symm (c (last n))))
+        = Path.Homotopic.Quotient.refl o := by
   intro n
   induction n with
   | zero =>

@@ -381,10 +381,10 @@ elements (when the order is positive; the pole case is symmetric via
 `f⁻¹`).
 
 **Status.** Stated, not proven (the Rouché count). ⚠ The `f x = 0` hypothesis is
-REQUIRED (added 2026-06-04): without it the statement is FALSE — `f x` is a junk value
+required: without it the statement is *false* — `f x` is a junk value
 on the punctured germ (e.g. `f z = z` for `z ≠ 0`, `f 0 = 5`: `localOrder = 1` yet
 `f 0 ≠ 0`), while the count is centered at `f x`. Under `f x = 0` the honest content is
-PROVEN in `RoucheBridge.lean` (`localMultiplicity_eq_localOrder_count_of_apply_eq_zero`). -/
+proved in `RoucheBridge.lean` (`localMultiplicity_eq_localOrder_count_of_apply_eq_zero`). -/
 def localMultiplicity_eq_localOrder_statement : Prop :=
   ∀ (f : X → ℂ) (_ : MMeromorphicOn (modelWithCornersSelf ℂ ℂ) f Set.univ)
     (_ : ∀ x, mmeromorphicOrderAt (modelWithCornersSelf ℂ ℂ) f x ≠ ⊤)
@@ -441,7 +441,8 @@ At the mathlib pin (`8e3c989`, 15 April 2026) the precise gating input is
   — analytic ⟹ strict derivative at the point.
 * `Mathlib.Analysis.Calculus.Deriv.Inverse.HasStrictDerivAt.hasStrictFDerivAt_equiv`
   — strict derivative + nonzero ⟹ strict Fréchet derivative as an equiv.
-* `Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv.HasStrictFDerivAt.toOpenPartialHomeomorph`
+* `HasStrictFDerivAt.toOpenPartialHomeomorph`
+  (`Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv`)
   — the inverse function theorem packaged as an `OpenPartialHomeomorph`.
 
 What is **deferred** for the general `k ≥ 2` case:
@@ -486,7 +487,7 @@ def localMultiplicity_eq_order_punctured_statement
       ∀ w ∈ Metric.ball (0 : ℂ) ε \ {0},
         ({z ∈ V \ {0} | g z = w} : Set ℂ).ncard = k
 
-/-! ## The argument-principle chip (P3, 2026-05-05)
+/-! ## The argument-principle disk lemma
 
 The discharge of `localMultiplicity_eq_order_punctured_statement` for `k ≥ 2`
 classically routes through the **argument principle**: for `g` analytic at `0`

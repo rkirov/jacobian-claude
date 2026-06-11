@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-2 (curve layer): the per-curve weak solution (Forster 20.5)
+# The per-curve weak solution: the per-curve weak solution (Forster 20.5)
 
 The full Lemma 20.5: every continuous curve `γ : [0,1] → X` has a weak solution of its
 boundary divisor `(γ 1) − (γ 0)` together with the **integral identity** tying the planar
@@ -21,8 +21,7 @@ Contents:
   chain made of the per-chart-ball primitives (`exists_primitive_of_convex`) and applying
   the planar identity `PlanarPieceSolution.integral_U_mul` piecewise.
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.5 (pp. 162–163);
-plan `docs/walls_bc_plan_2026-06-10.md`, phase C-2 (E2).
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.5 (pp. 162–163).
 -/
 import Jacobians.AbelPieceSolution
 import Jacobians.AbelChains
@@ -37,7 +36,6 @@ open Set Metric Filter Jacobians.AbelPlanar
 
 namespace Jacobians
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
