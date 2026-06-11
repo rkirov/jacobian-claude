@@ -29,6 +29,7 @@ import Jacobians.Abel
 import Jacobians.AbelChains
 import Jacobians.AbelWeakSolutions
 import Jacobians.AbelCurveSolution
+import Jacobians.AbelFinal
 import Jacobians.Degree
 import Jacobians.OfCurveAnalyticitySkeleton
 import Jacobians.ULiftManifold
