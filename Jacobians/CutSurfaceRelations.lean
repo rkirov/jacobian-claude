@@ -28,11 +28,12 @@ symplectic loops. Those boundary words, the holomorphy of the pulled-back forms 
 and
 the non-degeneracy of the pullbacks are the **`CutSurface` fields**.
 
-**ARCHIVAL (2026-06-11).** The former isolated existence input (`exists_cutSurface` — the Radó
-triangulation + surface classification + `4g`-gon Green that Mathlib lacks) is RETIRED, not proven:
-the period real basis is now obtained dissection-free via Forster 21.4
-(`Jacobians/PeriodLatticeDiscrete.lean` + `Jacobians/PeriodLatticeBasis.lean`).  Everything in this
-file is hypothesis-conditional on a given `CutSurface` and remains sorry-free.
+Everything in this file is hypothesis-conditional on a given `CutSurface`: no existence
+statement is asserted (cut-surface existence would need Radó triangulation + surface
+classification, which Mathlib lacks).  The period real basis used by the main development is
+instead obtained dissection-free via Forster 21.4 (`Jacobians/PeriodLatticeDiscrete.lean` +
+`Jacobians/PeriodLatticeBasis.lean`); this file records the classical cut-surface route to the
+Riemann bilinear relations as self-contained conditional theorems.
 
 References: Riemann (1857); Griffiths–Harris pp. 231–232; Springer pp. 139–141; Chai §1.4;
 Forster §§20–21.
@@ -130,7 +131,7 @@ lemma differentiableOn_Fh (i j : Fin (genus X)) :
     DifferentiableOn ℂ (fun z => S.F i z * S.h j z) (Set.uIcc (0:ℝ) 1 ×ℂ Set.uIcc (0:ℝ) 1) :=
   ((S.differentiableOn_F i).mul (S.differentiableOn_h j)).mono S.box_reProdIm_subset_U
 
-/-- **Riemann's first bilinear relation `AᵀB = BᵀA`, PROVEN** from the cut surface, via Cauchy's
+/-- **Riemann's first bilinear relation** `AᵀB = BᵀA`, from the cut surface, via Cauchy's
 theorem on the box (`riemann_R1_of_boundaryWord`). -/
 theorem cutSurface_R1 :
     (aPeriodBlock S.loop)ᵀ * bPeriodBlock S.loop
@@ -138,8 +139,8 @@ theorem cutSurface_R1 :
   riemann_R1_of_boundaryWord (aPeriodBlock S.loop) (bPeriodBlock S.loop) S.h S.F
     S.differentiableOn_Fh S.boundaryWord_R1
 
-/-- **Riemann's second bilinear relation (positive-definiteness of the period Hermitian form),
-PROVEN** from the cut surface, via the Green-positivity bridge
+/-- **Riemann's second bilinear relation** (positive-definiteness of the period Hermitian
+form), from the cut surface, via the Green-positivity bridge
 (`riemann_R2_posDef_of_boundaryWord`). -/
 theorem cutSurface_R2 : (periodHermitian S.loop).PosDef :=
   riemann_R2_posDef_of_boundaryWord (aPeriodBlock S.loop) (bPeriodBlock S.loop) S.h S.F S.U
@@ -156,13 +157,10 @@ def toCanonicalDissection : CanonicalDissection X where
 
 end CutSurface
 
-/- **RETIRED (2026-06-11, Wall B closed dissection-free).** The former isolated input
-`exists_cutSurface` (the cut-chart/4g-gon existence, the repo's last `sorry` on this wall)
-and its derived `exists_canonicalDissection` are GONE: `exists_periodLattice_realBasis` is
-now proven via Forster 21.4 (`Jacobians/PeriodLatticeDiscrete.lean` +
-`Jacobians/PeriodLatticeBasis.lean`), which never needs a dissection.  Everything above —
-the `CutSurface` structure and the two proven Riemann bilinear relations `cutSurface_R1` /
-`cutSurface_R2`, plus `toCanonicalDissection` — remains banked as hypothesis-conditional
-archival theorems (no axioms, no sorries). -/
+/- No existence statement for `CutSurface` is made: `exists_periodLattice_realBasis` is
+proved via Forster 21.4 (`Jacobians/PeriodLatticeDiscrete.lean` +
+`Jacobians/PeriodLatticeBasis.lean`), which never needs a dissection.  The `CutSurface`
+structure, the two Riemann bilinear relations `cutSurface_R1` / `cutSurface_R2`, and
+`toCanonicalDissection` above are hypothesis-conditional theorems. -/
 
 end Jacobians

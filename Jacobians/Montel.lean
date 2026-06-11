@@ -383,9 +383,9 @@ the `FiniteDimensional` conclusion follows via Riesz:
 
 /-! ### Status
 
-- **`closedBall_isCompact`**: PROVEN (axiom-clean) via sequential
+- **`closedBall_isCompact`**: proved via sequential
   compactness using `exists_convergent_subseq_of_bounded`.
-- **`exists_convergent_subseq_of_bounded`**: PROVEN — bundle-level
+- **`exists_convergent_subseq_of_bounded`**: bundle-level
   Montel: bounded sequence has a supNormK-convergent subsequence.
 - All Arzelà-Ascoli infrastructure (B.1-B.9) is in
   `Jacobians/Montel/Compactness.lean`, fully proven.

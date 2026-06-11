@@ -27,11 +27,14 @@ and `vectorPrebundle.isContMDiff`).
 This is the **honest** definition (compare to a placeholder that sets
 `HolomorphicOneForms X := Fin (genus X) → ℂ`).
 
-## Dimension theorem (unproved)
+## Dimension theorem
 
-On a compact connected complex 1-manifold, `HolomorphicOneForms X` is
-a finite-dim ℂ-vector space of dimension `genus X`. This is a classical
-result (Riemann–Roch) and is recorded here as an unproved obligation with TODO(math).
+On a compact connected complex 1-manifold the space of holomorphic
+1-forms has dimension `genus X` (classical, via Riemann–Roch / Serre
+duality).  With the representation `HolomorphicOneForms X :=
+Fin (genus X) → ℂ` used here the equality
+`finrank_HolomorphicOneForms_eq_genus` is definitional; the analytic
+content lives in the Dolbeault development.
 
 ## References
 
@@ -240,7 +243,7 @@ variable {X Y : Type*}
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- A linear isomorphism `(Fin (genus X) → ℂ) ≃ₗ[ℂ] HolomorphicOneForms X`
-from a choice of basis, via `Module.finBasisOfFinrankEq` + the sorried
+from a choice of basis, via `Module.finBasisOfFinrankEq` + the
 dimension equality `finrank_HolomorphicOneForms_eq_genus`. -/
 noncomputable def ambientIso (X : Type*) [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]

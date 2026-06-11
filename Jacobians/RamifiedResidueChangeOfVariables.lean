@@ -12,7 +12,8 @@ import Mathlib.Algebra.Field.GeomSum
 case)
 
 This file builds the **ramified** trace / residue change-of-variables for the local branched cover
-`z = wᵐ` (`m ≥ 1`).  It is the keystone atom that lets Gate A handle pole fibres lying over a
+`z = wᵐ` (`m ≥ 1`).  It is the keystone atom that lets the residue theorem handle pole fibres
+lying over a
 *ramification* value of the cover `F` — the case the repo's **unramified** Lemma 3.2
 `Jacobians.MeromorphicTrace.FibreTrace.resAt_traceCoeff'` (which models a fibre as `m` distinct
 biholomorphic sheets, `deriv (sheet i) b ≠ 0`) cannot express.

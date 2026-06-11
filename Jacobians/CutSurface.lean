@@ -63,7 +63,7 @@ theorem riemann_R1_of_boundaryWord {g : ℕ} (A B : Matrix (Fin g) (Fin g) ℂ) 
   rw [Matrix.zero_apply, boundaryWord i j]
   exact rectBoundaryIntegral_eq_zero_of_differentiableOn (hFh i j)
 
-/-- **Per-handle cancellation = the boundary word, PROVEN from the gluing.** This is the geometric
+/-- **Per-handle cancellation = the boundary word, from the gluing.** This is the geometric
 heart of the boundary word for a *single handle* (one `a`-loop, one `b`-loop): the box contour
 integral `∮_{∂box}(F·h dz)` equals the antisymmetric period product `A·B' − B·A'`, derived purely
 from the cut chart's **gluing** and the primitive's **jumps** across the cuts.

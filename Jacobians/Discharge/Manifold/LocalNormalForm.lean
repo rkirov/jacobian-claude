@@ -384,7 +384,7 @@ elements (when the order is positive; the pole case is symmetric via
 REQUIRED (added 2026-06-04): without it the statement is FALSE — `f x` is a junk value
 on the punctured germ (e.g. `f z = z` for `z ≠ 0`, `f 0 = 5`: `localOrder = 1` yet
 `f 0 ≠ 0`), while the count is centered at `f x`. Under `f x = 0` the honest content is
-PROVEN in `RoucheBridge.lean` (`localMultiplicity_eq_localOrder_count_of_apply_eq_zero`). -/
+proved in `RoucheBridge.lean` (`localMultiplicity_eq_localOrder_count_of_apply_eq_zero`). -/
 def localMultiplicity_eq_localOrder_statement : Prop :=
   ∀ (f : X → ℂ) (_ : MMeromorphicOn (modelWithCornersSelf ℂ ℂ) f Set.univ)
     (_ : ∀ x, mmeromorphicOrderAt (modelWithCornersSelf ℂ ℂ) f x ≠ ⊤)

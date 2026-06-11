@@ -47,15 +47,11 @@ The local lifts agree with `ofCurve P` modulo the period lattice
 (path-difference-is-closed-loop ⇒ lattice element). Local-to-global
 smoothness in the **quotient** follows from `contMDiff_iff_forall_*`.
 
-**Status of this file (updated 2026-06-09)**
-
-The file is complete in all proof bodies: the local chart-ball
-machinery (`localLift_contMDiffAt`, `chartFrame_cancel`,
-`isSmoothPath_ChartBallPathSmooth`, the 2-piece junction loop, and
-`localLift_quotient_eq_ofCurve_eventually`) is all proven and
-`#print axioms`-clean. The former residual dependence through
-`smoothPath` is closed: `exists_smoothPath_family` is proven
-axiom-clean, so this entire file is unconditionally gap-free.
+The local chart-ball machinery (`localLift_contMDiffAt`,
+`chartFrame_cancel`, `isSmoothPath_ChartBallPathSmooth`, the 2-piece
+junction loop, and `localLift_quotient_eq_ofCurve_eventually`) feeds
+`ofCurve_contMDiff`, with `smoothPath` supplied by
+`exists_smoothPath_family`.
 -/
 
 open scoped Manifold ContDiff
@@ -394,7 +390,7 @@ This closed loop's periodVec is in `truePeriodLattice X` by
     use of `pathSpeed_comp_eq_mfderiv` doesn't apply — we'd need a
     chart-restricted variant.
 
-(b) `periodVec_concat` (PROVEN) + integrability bookkeeping on the
+(b) `periodVec_concat` + integrability bookkeeping on the
     concatenation of `smoothPath P Q₀` and `ChartBallPath Q₀ Q₀ Q`.
     The integrability of basis-form integrands on each piece needs
     `IsSmoothPath.integrable` for `smoothPath`, plus a separate
@@ -432,10 +428,10 @@ constant equal to zero in the quotient.
 
 Specifically, the strategy uses:
 
-* `localLift_contMDiffAt` (PROVEN) — the LHS is `ContMDiffAt` at Q₀.
+* `localLift_contMDiffAt` — the LHS is `ContMDiffAt` at Q₀.
 * `ofCurve_contMDiff` would tell us the RHS is `ContMDiffAt` at Q₀,
   except we're proving that exact thing! So we use:
-* `smoothPath_basepoint_change` (PROVEN) — algebraic reduction of RHS.
+* `smoothPath_basepoint_change` — algebraic reduction of RHS.
 * Concrete closed-loop argument via `periodVec_concat`,
   `periodVec_reverse`, `periodVec_mem_truePeriodLattice_of_closed`.
 -/
@@ -479,8 +475,8 @@ The proof:
    periodVec γ i`.
 
 The substitution lemma's hypotheses:
-* `HasDerivAt smoothStep01 (smoothStep01_deriv x) x` for each `x ∈ uIcc 0 1` (PROVEN).
-* `ContinuousOn smoothStep01_deriv (uIcc 0 1)` (PROVEN).
+* `HasDerivAt smoothStep01 (smoothStep01_deriv x) x` for each `x ∈ uIcc 0 1`.
+* `ContinuousOn smoothStep01_deriv (uIcc 0 1)`.
 * `ContinuousOn g (smoothStep01 '' [[0, 1]] = [0, 1])` (parameter — caller supplies). -/
 lemma periodVec_smoothStep01_comp_eq_generic (γ : ℝ → X)
     (hγ_diff : ∀ s ∈ Set.Icc (0 : ℝ) 1,
@@ -742,7 +738,7 @@ lemma periodVec_smoothPathSmooth_eq (P Q : X) :
 
 /-- `smoothPathSmooth` is an `IsSmoothPath`, with zero derivative at
 endpoints (via `smoothStep01`'s zero boundary derivatives). Closes
-`start` (PROVEN), `finish` (PROVEN), `cont` (PROVEN, composition of
+`start`, `finish`, `cont` (composition of
 continuous smoothPath with continuous smoothStep01). `diff` and
 `integrable` remain sub-sorries pending chain-rule + reparam
 integrability work. -/
@@ -1351,11 +1347,11 @@ theorem localLift_quotient_eq_ofCurve_eventually
 
 /-! ## Top-level wiring for `ofCurve_contMDiff`
 
-With `localLift_contMDiffAt` (analytic→ContMDiff bridge, PROVEN) and
-`localLift_quotient_eq_ofCurve_eventually` (path-algebra identification,
-also PROVEN — modulo `smoothPath` which is `Classical.choice` of the
-S1 gap), the proof of `ofCurve_contMDiff` is a straightforward
-local-to-global glue.
+With `localLift_contMDiffAt` (the analytic→ContMDiff bridge) and
+`localLift_quotient_eq_ofCurve_eventually` (the path-algebra
+identification, with `smoothPath` the `Classical.choice` of
+`exists_smoothPath_family`), the proof of `ofCurve_contMDiff` is a
+straightforward local-to-global glue.
 
 The function `Jacobians.OfCurveSkeleton.ofCurveContMDiff_via_localLift`
 below packages the complete proof skeleton at the level of `Jacobians.

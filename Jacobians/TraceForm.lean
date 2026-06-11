@@ -555,7 +555,7 @@ theorem traceFun_smul_of_notMem_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(�
 
 /-! ### Existence of the local sheet system (covering unpacking) -/
 
-/-- **[PROVEN]** Off the branch locus a local sheet system exists (Forster §4.22).
+/-- Off the branch locus a local sheet system exists (Forster §4.22).
 
 Construction (no covering trivialization needed — assembled directly from the proven
 local pieces): the fibre `f⁻¹{y₀}` is finite (`fiber_finite_off_branchLocus`),
@@ -1288,7 +1288,7 @@ The global section's `toFun` is therefore the *extension*, characterized only by
 agreeing with `traceFun` off the branch locus — we must not assert global smoothness
 of `traceFun` itself, which is false at branch points.
 
-### State of the assembly: framework PROVEN, one analytic fact ISOLATED
+### Structure of the assembly
 
 The regluing **and** the full ℂ-linearity are now proven outright in
 `exists_traceForm_of_branchExtension` (above), which reduces `exists_traceForm` to a
@@ -1970,44 +1970,38 @@ theorem fibre_ncard_bddAbove_near_branch (f : X → Y) (hf : ContMDiff 𝓘(ℂ)
   filter_upwards [hT_ev] with y hyT _
   exact (hN y hyT).le
 
-/-- **[REMAINING ANALYTIC FRONTIER — the manifold-side of the boundedness crux]**
+/-- **The manifold side of the branch-point boundedness argument.**
 
 The `Y`-side of `traceLocalCoeff_mul_sub_tendsto_zero`: in the chart `c := chartAt ℂ y₀`, the
 scaled local coefficient `(c y − c y₀) · traceLocalCoeff (traceFun f α) y₀ y → 0` as `y → y₀`
-through `y ≠ y₀`. The crux itself follows by composing this with `c.symm` (which carries
-`𝓝[≠] (c y₀)` to `𝓝[≠] y₀`); that reduction is fully proven below, so this lemma is the *single*
-remaining input.
+through `y ≠ y₀`. The headline then follows by composing with `c.symm` (which carries
+`𝓝[≠] (c y₀)` to `𝓝[≠] y₀`).
 
-**Internal decomposition (the actual remaining work).**
-
-⚠ **A naive `‖traceLocalCoeff coeff y₀ y‖ ≤ B·‖coeff y‖` with a uniform `B` is UNSOUND** (verified
-2026-05-31). For arbitrary operators it is *equivalent* to local boundedness of the bare-fibre
-coordinate `symmL(tangentTriv y₀) y 1`, which is exactly the **genus ≥ 2 obstruction**
+Note a naive bound `‖traceLocalCoeff coeff y₀ y‖ ≤ B·‖coeff y‖` with a uniform `B` would be
+*unsound*: for arbitrary operators it is equivalent to local boundedness of the bare-fibre
+coordinate `symmL(tangentTriv y₀) y 1`, which fails for genus ≥ 2
 (`CotangentCoeff.lean` `const_one_section_continuous_of_coordChange_fixes_one`): the constant
-native-frame section is discontinuous and not locally bounded (no Riemannian metric is placed on
-`TY`, so no compactness rescue). Hence one must NOT peel the `inCoordinates`/`symmL` factor off
-the operator norm; the obstruction factors **cancel** only when the application
-`inCoordinates(…)(traceSummand f α x) 1` is kept *together* and evaluated *exactly* in one chart.
+native-frame section is discontinuous and not locally bounded (no Riemannian metric is placed
+on `TY`, so no compactness rescue). One must therefore *not* peel the `inCoordinates`/`symmL`
+factor off the operator norm; the obstruction factors cancel only when the application
+`inCoordinates(…)(traceSummand f α x) 1` is kept together and evaluated in one chart:
 
-1. *Exact per-preimage local coefficient (the real content).* Off-branch
+1. *Exact per-preimage local coefficient.* Off-branch
    `traceLocalCoeff (traceFun f α) y₀ y = ∑_{x ∈ f⁻¹ y} inCoordinates(…)(traceSummand f α x) 1`
    (finite; `inCoordinates`-apply-`1` is additive over the fibre sum). Each term is the local
-   coefficient of a section-pullback and computes **exactly** to `a(w) · S'(z)`, where
+   coefficient of a section-pullback and computes exactly to `a(w) · S'(z)`, where
    `S := chart_X ∘ s ∘ c.symm` is the local section read in charts, `z = c y`, `w = S(z)`, and
-   `a` is `α`'s coefficient in `chart_X`. Since `S = F⁻¹` for `F := c ∘ f ∘ chart_X.symm`, we get
-   `S'(z) = 1/F'(w)`, so the term is `a(w)/F'(w)` — *no* `symmL` factor (the `(mfderiv f x)⁻¹`
-   and `e.symmL` chart factors cancel in the common `chart_X` frame). Leverage the operator
-   identity inside `contMDiffAt_pullback_section`
-   (`inCoordinates(sheetPullback) = inCoordinates_X(α) ∘ inCoordinates(mfderiv s)`), evaluated at
-   `1`. Then `(z − c y₀)·a(w)/F'(w) = a(w)·(F(w) − c y₀)/F'(w) → 0` by
-   `sub_div_deriv_tendsto_zero` (PROVEN), `a` bounded.
-   Helper lemmas already proven (kept in `scratch_E.lean` for integration): `norm_inverse_clm`
-   (`‖T.inverse‖ = ‖T 1‖⁻¹` on `ℂ →L ℂ`) and `mfderiv_apply_one_eq_deriv_chartPullback`
-   (`mfderiv h x 1 = deriv (h ∘ chart.symm) (chart x)` for `h : X → ℂ`).
+   `a` is `α`'s coefficient in `chart_X`. Since `S = F⁻¹` for `F := c ∘ f ∘ chart_X.symm`, we
+   get `S'(z) = 1/F'(w)`, so the term is `a(w)/F'(w)` — *no* `symmL` factor (the
+   `(mfderiv f x)⁻¹` and `e.symmL` chart factors cancel in the common `chart_X` frame), via the
+   operator identity inside `contMDiffAt_pullback_section`
+   (`inCoordinates(sheetPullback) = inCoordinates_X(α) ∘ inCoordinates(mfderiv s)`), evaluated
+   at `1`. Then `(z − c y₀)·a(w)/F'(w) = a(w)·(F(w) − c y₀)/F'(w) → 0` by
+   `sub_div_deriv_tendsto_zero`, `a` bounded.
 2. *Assembly.* Properness (`X` compact ⟹ `f⁻¹ W ⊆ ⋃_j U_j` for small `W ∋ y₀`) + the uniform
    off-branch fibre cardinality reduce the finite fibre sum to a finite sum of terms each `→ 0`.
 
-Sound (Forster §10; Griffiths–Harris Ch. 2 §2.7). -/
+(Forster §10; Griffiths–Harris Ch. 2 §2.7.) -/
 theorem traceLocalCoeff_mul_sub_tendsto_zero_Y (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X)
     {y₀ : Y} (hy₀ : y₀ ∈ branchLocus f) :
@@ -2163,7 +2157,7 @@ variable {X Y : Type*}
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
   [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
-/-- **Branch-value local-coefficient matching (now PROVEN, no analytic input).** With the
+/-- **Branch-value local-coefficient matching.** With the
 refactored `traceFunExt`, the branch value `traceFunExt f α y₀ = traceBranchValue f α y₀` is the
 operator `L • id`, where `L` is the chart-pullback removable-singularity limit of the *local
 coefficient* of the raw trace. The local coefficient of the extended trace at the center `y₀`
@@ -2194,7 +2188,7 @@ variable {X Y : Type*}
   [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
-/-- **[PROVEN MODULO the single analytic crux `traceLocalCoeff_mul_sub_tendsto_zero`]**
+/-- **Via the analytic kernel `traceLocalCoeff_mul_sub_tendsto_zero`:**
 
 For every form `α` and every branch point `y₀ ∈ branchLocus f`, the canonical branch
 extension `traceFunExt f α` is, at `y₀`:
@@ -2240,7 +2234,7 @@ theorem traceExtendsAt_branchPoint (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(
   set Hext : Y → ℂ := fun y => traceLocalCoeff (traceFunExt f α) y₀ y with hHext
   set G : ℂ → ℂ := fun z => Hraw (c.symm z) with hG
   set z₀ : ℂ := c y₀ with hz₀
-  -- The branch-value local-coefficient match (PROVEN, no analytic input).
+  -- The branch-value local-coefficient match (no analytic input needed).
   have hmatch : Hext y₀ = limUnder (𝓝[≠] z₀) G :=
     traceFunExt_branchValue_correct f α hy₀
   -- **Main claim**: the extended local coefficient `Hext` is `ContMDiffAt y₀`. Both conjuncts

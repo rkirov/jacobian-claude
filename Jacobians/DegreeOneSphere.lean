@@ -657,11 +657,11 @@ Declared in the **root namespace** (matching `genus`, which lives in root namesp
 so the challenge-conformance file resolves the bare name. Lives in this module — not `Genus.lean` —
 because its forward direction needs the degree-one endgame, which sits downstream of `Genus` (via
 `ProjectiveLine → Genus`); declaring it here breaks the import cycle. Both directions are now
-FULLY PROVEN. `Nonempty X` is supplied for free by `[ConnectedSpace X]`
+`Nonempty X` is supplied for free by `[ConnectedSpace X]`
 (`ConnectedSpace.toNonempty`), so the signature matches the spec exactly. -/
 
 open scoped Manifold ContDiff in
-/-- **PROVEN — the backward half.** A surface homeomorphic to `S²` has genus `0`.
+/-- **The backward half.** A surface homeomorphic to `S²` has genus `0`.
 
 `genus X = Module.finrank ℂ (HolomorphicOneForms X)` is **analytic**, while `X ≃ₜ S²` is purely
 **topological**; the bridge is the contrapositive route (`Jacobians.GenusSphereBackward`):

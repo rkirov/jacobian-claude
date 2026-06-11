@@ -33,7 +33,9 @@ intrinsic tangent vector modulo the chart identification
 `TangentSpace 𝓘(ℂ) (γ t) = ℂ` that Mathlib uses.
 
 Chart-independence of the line integral (the full "intrinsic"
-well-definedness) is a TODO(math).
+well-definedness) is not formalized; every development downstream uses
+this one fixed chart-based definition, so no compatibility lemma is
+needed.
 
 ## References
 

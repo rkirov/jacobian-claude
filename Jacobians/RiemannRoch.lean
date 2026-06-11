@@ -6,7 +6,7 @@
   relocation). When the Dolbeault→Serre climb (G2–G4) discharges that single input, the
   headline theorem falls out.
 
-  PROVEN (axiom-clean): the ℂ-module on `MeromorphicFunction X` (so `L(D)` can be a
+  proved: the ℂ-module on `MeromorphicFunction X` (so `L(D)` can be a
   `Submodule ℂ`); `linearSystem D` as a `Submodule` + `lDim`.
 
   ISOLATED INPUTS (the genuine wall — the only remaining gaps here):
@@ -43,7 +43,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-- **Riemann–Roch** (Forster Thm 16.9, Serre-dual form): a canonical divisor `K` with
 `l(D) − l(K−D) = deg D + 1 − g` for every `D`.
 
-**PROVEN, unconditionally and axiom-clean**, via the **Miranda Ch. VI Laurent-tail route**
+proved unconditionally via the **Miranda Ch. VI Laurent-tail route**
 (`LaurentTail.exists_riemannRoch_divisor_unconditional`): RR-I on the Mittag-Leffler tail spaces
 (`riemannRoch_tailForm`), Serre duality for the tail `H¹` in the meromorphic pair frame
 `ω = h·dg₀` (`h1TailDim_eq_lDim_pairCanonical_sub`, every genus — the descent input is the

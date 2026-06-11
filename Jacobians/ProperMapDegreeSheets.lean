@@ -999,7 +999,7 @@ def localMultiplicitySheets_of_nonconstant (f : MeromorphicFunction X)
   · exact localMultiplicitySheets_of_mem_range f hnc hmem
   · exact LocalMultiplicitySheets.ofNotMemRange f hmem
 
-/-- **`exists_properMapDegree`, PROVEN.** The proper-map-degree existential — `∃ d : ℕ` with
+/-- **`exists_properMapDegree`.** The proper-map-degree existential — `∃ d : ℕ` with
 `zerosCount f = d = polesCount f`. For the trivial divisor (`f.div = 0`, the constant/germ-zero
 case) both counts vanish (`exists_properMapDegree_of_div_eq_zero`); otherwise it is discharged from
 the pointwise local-conservation supply via the proven connectedness globalization. This is the

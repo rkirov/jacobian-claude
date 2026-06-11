@@ -7,7 +7,7 @@ import Jacobians.MeromorphicTrace
 import Mathlib.Analysis.Meromorphic.NormalForm
 
 /-!
-# The residue change-of-variables atom (Gate A, input A-i)
+# The residue change-of-variables atom
 
 This file discharges the named `Prop`
 `Jacobians.MeromorphicTrace.ResidueChangeOfVariables` as a genuine theorem
@@ -21,7 +21,7 @@ This file discharges the named `Prop`
 >   `resAt (fun w => g (s w) * deriv s w) b = resAt g (s b)`.
 
 This is the one isolated one-variable complex-analysis atom that the **general** (any-order pole)
-fibre Lemma 3.2 `FibreTrace.resAt_traceCoeff` is gated on, and through it Gate A's 1-form residue
+fibre Lemma 3.2 `FibreTrace.resAt_traceCoeff` depends on, and through it the 1-form residue
 theorem `∑ₐ Resₐ(α) = 0`.  Mathlib
 has **no** residue API, so this is built from the repo's `resAt` (the `(2πi)⁻¹∮` contour residue,
 `Jacobians.Dolbeault.Residue`) and Mathlib's circle-integral toolbox.
@@ -456,7 +456,7 @@ theorem residueChangeOfVariables : ResidueChangeOfVariables := by
 With the atom `residueChangeOfVariables` proved, the general fibre Lemma 3.2 and the general trace
 combine no longer need `ResidueChangeOfVariables` as a hypothesis — these are the unconditional
 forms of `FibreTrace.resAt_traceCoeff` and `finiteResidueSum_trace_eq_zero_of_fibres` that feed the
-1-form residue theorem `∑ₐ Resₐ(α) = 0` (Gate A) without any analytic side condition. -/
+1-form residue theorem `∑ₐ Resₐ(α) = 0` without any analytic side condition. -/
 
 /-- **Lemma 3.2 (residue-trace compatibility), unconditional.**  The residue of the trace
 coefficient

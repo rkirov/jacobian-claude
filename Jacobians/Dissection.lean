@@ -25,7 +25,7 @@ full-rank ℝ-lattice — the Riemann bilinear relations). It decomposes the goa
   Green's-theorem
   argument (Mathlib has rectangle Green; *no* Hodge/de Rham).
 
-The **assembly** `realBasis_of_canonicalDissection` (PROVEN here) combines the two: `2g`
+The **assembly** `realBasis_of_canonicalDissection` combines the two: `2g`
 ℝ-independent vectors in `ℂ^g ≅ ℝ^{2g}` form an ℝ-basis, and generation gives the `ℤ`-span equality.
 `exists_periodLattice_realBasis` (in `PeriodLattice.lean`) is then a two-line consequence.
 
@@ -131,7 +131,7 @@ theorem finrank_real_pi_complex :
     smul_eq_mul]
   ring
 
-/-- **Assembly (PROVEN).** From a canonical dissection, the period lattice
+/-- **Assembly.** From a canonical dissection, the period lattice
 `span ℤ (closedLoopPeriods X)` is the `ℤ`-span of an ℝ-basis of `ℂ^g`. The `2g` periods are
 ℝ-independent (`periodVec_linearIndependent`) and number `2g = finrank ℝ (ℂ^g)`, hence form a basis
 `b`; generation (`D.generates`) plus membership of each basis period in `closedLoopPeriods` give

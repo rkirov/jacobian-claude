@@ -28,7 +28,7 @@ namespace Jacobians
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- Every principal divisor has degree `0` (Forster Cor. 4.25 / the argument principle). **PROVEN**
+/-- Every principal divisor has degree `0` (Forster Cor. 4.25 / the argument principle),
 via the **degree route**: `deg (div f) = zerosCount f − polesCount f`
 (`deg_div_eq_zeros_sub_poles`),
 and both counts equal a common proper-map degree `d`

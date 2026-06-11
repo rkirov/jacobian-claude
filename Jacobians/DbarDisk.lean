@@ -471,15 +471,15 @@ annulus-divergence theorem entirely):
 2. Polar change of variables (`Complex.integral_comp_polarCoord_symm`): the Jacobian factor `r`
    cancels `1/w` (`r/(r e^{iθ}) = e^{−iθ}`), giving
    `∫_{(r,θ)∈(0,∞)×(−π,π)} e^{−iθ}·(∂̄g)(z + r e^{iθ}) dr dθ`.
-3. The polar-Wirtinger identity `dbar_polar_identity` (PROVEN): rewrites the integrand as a
+3. The polar-Wirtinger identity `dbar_polar_identity`: rewrites the integrand as a
    ½-combination of the radial directional derivative `(fderiv g w) c` and the angular one
    `(fderiv g w)(I·c)`, where `c = e^{iθ}`, `w = z + r·c`.
-4. The radial part integrates over `r∈(0,∞)` to `−g(z)` (`radial_integral`, PROVEN), then over
+4. The radial part integrates over `r∈(0,∞)` to `−g(z)` (`radial_integral`), then over
    `θ` to `−2π·g(z)`.  The angular part integrates over `θ∈(−π,π)` to `0` (`angular_integral`,
-   PROVEN: `c(π)=c(−π)=−1`).  Net `½·(−2π·g(z)) = −π·g(z)`.
+   with `c(π)=c(−π)=−1`).  Net `½·(−2π·g(z)) = −π·g(z)`.
 
 BOTH genuine analytic pieces — the radial FTC (`radial_integral`) and the angular vanishing
-(`angular_integral`) — are PROVEN axiom-clean.  Steps 1–4 below are DONE (translation,
+(`angular_integral`).  Steps 1–4 below handle translation,
 polar CoV, the `e^{−iθ}` simplification, and the `dbar_polar_identity` rewrite), reducing the goal
 to `∫_{target} ½·(R(p) + I·A(p)) = −π·g(z)` with `R = (fderiv g w) c` (radial), `A = (fderiv g
 w)(I·c)`

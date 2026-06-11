@@ -340,7 +340,7 @@ genus = finrank ℂ (HolomorphicOneForms ℂℙ¹)
   ⇐  ∀ ω x, ω x = 0                                 -- ContMDiffSection.ext
 ```
 
-The remaining content is the **Liouville vanishing** `holomorphicOneForm_eq_zero` (**PROVEN
+The remaining content is the **Liouville vanishing** `holomorphicOneForm_eq_zero` (proved
 below, axiom-clean**): a global holomorphic 1-form `s` reads, in the affine chart `chartCoe`,
 as the entire coefficient `affineCoeff s : ℂ → ℂ` of `dz` (`localRep` based at `0`; entire via
 `Montel.localRep_analyticOn_chartTarget` since `chartCoe.target = univ`). Compatibility with

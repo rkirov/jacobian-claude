@@ -451,7 +451,7 @@ noncomputable def chartFormCoeff (Q₀ : X) (i : Fin (genus X)) (z : ℂ) : ℂ 
 
 /-- **The chart-form coefficient is holomorphic on the chart target.**
 
-PROVEN: direct corollary of `Jacobians.Montel.localRep_analyticOn_chartTarget`
+Direct corollary of `Jacobians.Montel.localRep_analyticOn_chartTarget`
 (the existing chart-coord analyticity of `localRep`, proven via
 `localRep_contMDiffOn` + `contDiffOn_omega_iff_analyticOn`). -/
 theorem chartFormCoeff_differentiableOn (Q₀ : X) (i : Fin (genus X)) :
@@ -967,7 +967,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 This variant uses `smoothStep01` reparameterization so that derivatives
 at boundary points are zero — which is what's needed for the eventual
 concat-smoothness argument. The `start`, `finish`, `cont`, `diff`
-fields are PROVEN via the building blocks in `Jacobians/SmoothPath.lean`;
+fields are proved via the building blocks in `Jacobians/SmoothPath.lean`;
 the `integrable` field is closed via `pathSpeed_smoothStep01_comp_eq` +
 chartFrame_cancel + ContinuousOn argument. -/
 lemma isSmoothPath_ChartBallPathSmooth (Q₀ Q : X)
