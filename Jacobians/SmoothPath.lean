@@ -59,7 +59,8 @@ open scoped Manifold ContDiff Topology
 
 universe u
 
-variable {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ## Chart-ball-local linear path
 
@@ -255,6 +256,7 @@ session; see `Jacobians.lean:162` / `PeriodLattice.lean:262` for the
 `IsSmoothPath` obligations still open.)
 -/
 
+section
 variable [PathConnectedSpace X]
 
 /-- **The smoothPath foundation.** Given P, Q in a path-connected charted
@@ -309,6 +311,8 @@ noncomputable def smoothPathRaw (P Q : X) : ℝ → X :=
 @[simp] lemma smoothPathRaw_one (P Q : X) :
     smoothPathRaw P Q 1 = Q :=
   smoothPathRaw_of_ge_one (le_refl 1)
+
+end
 
 /-! ## smoothStep01 properties
 
@@ -652,15 +656,13 @@ For Mathlib's `Path P Q`, the `extend` function gives a continuous map
 identities are pure Mathlib but stated here for convenient reference
 in the smoothPath-gluing arguments. -/
 
-variable [PathConnectedSpace X]
-
 /-- `(somePath P Q).extend 0 = P`. -/
-lemma somePath_extend_zero (P Q : X) :
+lemma somePath_extend_zero {X : Type u} [TopologicalSpace X] [PathConnectedSpace X] (P Q : X) :
     (PathConnectedSpace.somePath P Q).extend 0 = P :=
   Path.extend_zero _
 
 /-- `(somePath P Q).extend 1 = Q`. -/
-lemma somePath_extend_one (P Q : X) :
+lemma somePath_extend_one {X : Type u} [TopologicalSpace X] [PathConnectedSpace X] (P Q : X) :
     (PathConnectedSpace.somePath P Q).extend 1 = Q :=
   Path.extend_one _
 
@@ -976,11 +978,21 @@ lemma continuous_image_Icc_isCompact {α : Type*} [TopologicalSpace α]
 
 /-! ## Lemmas to help with chart-cover gluing -/
 
+end
+
+section
+variable {X : Type*}
+
 /-- For a chart cover of `n` pieces, the boundary points of each piece
 agree with the path at `k/n`. -/
 lemma boundary_values_at_k_over_n {γ : ℝ → X} (n : ℕ) (k : ℕ)
     (_h : (k : ℝ) / n ≤ ((k : ℝ) + 1) / n) :
     γ ((k : ℝ) / n) = γ ((k : ℝ) / n) := rfl
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- The half-open interval `[k/n, (k+1)/n)` has measure `1/n`. -/
 lemma piece_interval_length (k n : ℕ) (hn : 0 < n) :
@@ -991,14 +1003,44 @@ lemma piece_interval_length (k n : ℕ) (hn : 0 < n) :
 
 /-! ## Constant-path lemmas (for completeness alongside isSmoothPath_const) -/
 
+end
+
+section
+variable {X : Type*}
+
 /-- `(fun _ : ℝ => P) 0 = P`. -/
 lemma const_path_zero (P : X) : (fun _ : ℝ => P) 0 = P := rfl
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
+end
+
+section
+variable {X : Type*}
 
 /-- `(fun _ : ℝ => P) 1 = P`. -/
 lemma const_path_one (P : X) : (fun _ : ℝ => P) 1 = P := rfl
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X]
+
 /-- The constant path is continuous. -/
 lemma const_path_continuous (P : X) : Continuous (fun _ : ℝ => P) := continuous_const
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- The composition `chartAt P ∘ (fun _ => P)` is the constant `chartAt P P`. -/
 lemma chartAt_comp_const_path (P : X) :
@@ -1583,7 +1625,7 @@ lemma piece_rescale_at_right_eq (k n : ℕ) (hn : 0 < n) :
 /-! ## More smoothPathRaw / smoothPath identities -/
 
 /-- `smoothPathRaw P Q` at any `t` outside `(0, 1)` is one of the endpoints. -/
-lemma smoothPathRaw_eq_endpoint_of_outside (P Q : X) {t : ℝ}
+lemma smoothPathRaw_eq_endpoint_of_outside [PathConnectedSpace X] (P Q : X) {t : ℝ}
     (h_outside : t ≤ 0 ∨ 1 ≤ t) :
     smoothPathRaw P Q t = P ∨ smoothPathRaw P Q t = Q := by
   rcases h_outside with h | h
@@ -1592,7 +1634,7 @@ lemma smoothPathRaw_eq_endpoint_of_outside (P Q : X) {t : ℝ}
 
 /-- `smoothPathRaw` at `t = 1/2` is some point in `X`. (Trivial, but
 useful for casing.) -/
-lemma smoothPathRaw_half_well_defined (P Q : X) :
+lemma smoothPathRaw_half_well_defined [PathConnectedSpace X] (P Q : X) :
     ∃ x : X, smoothPathRaw P Q (1 / 2) = x :=
   ⟨smoothPathRaw P Q (1 / 2), rfl⟩
 
@@ -1701,11 +1743,26 @@ lemma chart_transition_contDiffOn_simplified (x y : X) :
   -- 𝓘(ℂ) = id, range 𝓘(ℂ) = univ, 𝓘(ℂ).symm = id, so simp simplifies.
   simpa using h
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- The trans as a function applied to a point. -/
 lemma chart_trans_apply (x y : X) (u : ℂ)
     (_hu : u ∈ ((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)).source) :
     (((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)) : ℂ → ℂ) u = (chartAt ℂ y) ((chartAt ℂ x).symm u) := by
   rfl
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- Chart transition source membership: `u` is in the trans source iff
 `u ∈ (chartAt ℂ x).target` and `(chartAt ℂ x).symm u ∈ (chartAt ℂ y).source`. -/
@@ -1715,6 +1772,11 @@ lemma chart_trans_source_iff (x y : X) (u : ℂ) :
   show u ∈ (chartAt ℂ x).symm.source ∩ (chartAt ℂ x).symm ⁻¹' (chartAt ℂ y).source ↔ _
   rw [OpenPartialHomeomorph.symm_source]
   exact Iff.rfl
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- Chart transition is `ContDiffAt ℂ ω` at every point in its source. -/
 lemma chart_transition_contDiffAt (x y : X) (u : ℂ)
@@ -1864,6 +1926,11 @@ Under the chart-ball hypothesis (`z(t) ∈ chart.target` for all `t ∈ ℝ`),
 hold globally (not just on `[0,1]`). For local use (chart-cover gluing),
 we'll use this with `s ∈ Icc 0 1` plus extension by constants outside. -/
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- Continuity of ChartBallPath on the set where the affine `z` stays in
 the chart target. Composition of `Continuous` affine + `ContinuousOn`
 chart inverse. -/
@@ -1880,76 +1947,46 @@ lemma ChartBallPath_continuousOn_target_set (anchor P Q : X) (S : Set ℝ)
   unfold ChartBallPath
   exact h_inv_cont.comp hz_cont.continuousOn h_target
 
-/-! ## Joint smoothness in `Q`: building blocks (chart smoothness)
+end
 
-These are kernel-clean Mathlib re-exports of `chartAt`'s smoothness, used
-as building blocks for the eventual joint-smoothness proofs. The full
-`ChartBallPath_contMDiffOn_in_Q` requires `ContMDiffOn.add`,
-`ContMDiffOn.const_smul`, etc., applied to maps from a manifold to a
-normed space — the precise Mathlib lemma names vary and need careful
-matching. -/
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
+/-! ## Chart-smoothness building blocks
+
+Mathlib re-exports of `chartAt`'s smoothness. -/
 
 /-- The chart-coordinate value `Q ↦ (chartAt ℂ P) Q` is `ContMDiffOn` on
 the chart source — Mathlib's `contMDiffOn_chart`. -/
-lemma chartAt_contMDiffOn (P : X) :
+lemma chartAt_contMDiffOn [IsManifold 𝓘(ℂ) ω X] (P : X) :
     ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω
       (fun Q : X => (chartAt ℂ P) Q) (chartAt ℂ P).source :=
   contMDiffOn_chart
 
 /-- The chart-coordinate inverse `(chartAt ℂ P).symm` is `ContMDiffOn` on
 the chart target — Mathlib's `contMDiffOn_chart_symm`. -/
-lemma chartAt_symm_contMDiffOn (P : X) :
+lemma chartAt_symm_contMDiffOn [IsManifold 𝓘(ℂ) ω X] (P : X) :
     ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω
       (fun z : ℂ => (chartAt ℂ P).symm z) (chartAt ℂ P).target :=
   contMDiffOn_chart_symm
 
-/-! ## Joint smoothness obstacle (documentation continues)
+/-! ## Joint smoothness in `Q`
 
-For full closure of `exists_smoothPath_family`'s third conjunct
-(`∀ P, ContMDiff 𝓘(ℂ) 𝓘(ℂ, Fin (genus X) → ℂ) ω (fun Q => periodVec (sp P Q))`),
-the witness `sp` must vary smoothly with Q. Two analyses:
+A jointly-smooth path family `P, Q ↦ sp(P, Q)` is not needed: the consolidated
+existence theorem `exists_smoothPath_family` (in `PeriodLattice.lean`) only asks
+for per-pair smoothness plus the basepoint-change cocycle on the Jacobian
+quotient, and an unquotiented joint-smoothness condition would in fact be
+provably false (the `Classical.choice` chart covers vary discontinuously).
+The chart-transition infrastructure above closes the `IsSmoothPath.diff`
+field for `ChartBallPath`; locally, `Q ↦ ChartBallPath P P Q` is smooth on the
+chart ball of `P`, since
+`(chartAt P).symm ((1−s)·(chartAt P) P + s·(chartAt P) Q)` depends smoothly
+on `Q`. -/
 
-**Why Classical.choice fails.** The natural witness `smoothPathRaw` uses
-`Classical.choice` on chart-cover existence (`exists_chartCover`). The
-chart cover for the path P → Q depends on the path's image, which
-varies with Q. Different Q's get different chart covers, with
-discontinuous chart-index transitions across Q. Joint smoothness fails.
+end
 
-**Why a construction is hard.** A jointly-smooth path family P,Q ↦ sp(P,Q)
-on a generic compact connected Riemann surface is the classical
-"smooth exponential map" / "geodesic path family" content. It exists
-(Forster §§1-2) but requires either:
-
-* Smooth-partition-of-unity construction over a fixed atlas (~300-600 LOC
-  in Lean, requires `Mathlib.Geometry.Manifold.PartitionOfUnity` API).
-* Riemannian structure (which our X doesn't have natively — would need
-  to construct one).
-* `Whitney.smoothApprox`-style globalisation (Mathlib's `SmoothApprox`
-  handles M → F maps but not parameter-dependent path families).
-
-**Chart-ball case (where progress is feasible).** For Q in the chart
-ball of P (i.e., `(chartAt P) Q` close enough to `(chartAt P) P` that
-the linear interpolation stays in the chart target), `ChartBallPath P P Q`
-is jointly smooth in (P, Q) — the formula
-`(chartAt P).symm ((1-s) * (chartAt P) P + s * (chartAt P) Q)` depends
-smoothly on Q via `chartAt P` (which is smooth as `OpenPartialHomeomorph.MDifferentiable`).
-This gives `Q ↦ periodVec(ChartBallPath P P Q)` smooth in Q on the
-chart ball — a local result.
-
-The globalization (from chart-ball joint smoothness to global) is the
-classical content deferred.
-
-**Status.** Joint smoothness remains the open structural piece. The
-chart-transition diff infrastructure (proven above) closes the
-`IsSmoothPath.diff` field for `ChartBallPath`; combined with the
-chart-cover-glue for `IsSmoothPath.cont` (still open), we get the
-first conjunct of `exists_smoothPath_family`. The second conjunct
-(basepoint change) follows from `periodVec_concat`. Only the third
-conjunct is genuinely deep.
-
-For now, `exists_smoothPath_family` remains a single classical unproved obligation
-in `PeriodLattice.lean:299`, consolidating the structural content of
-all three conjuncts. -/
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- The composition `(chartAt ℂ (γ t)) ∘ γ` is `Continuous` at each `t` in
 the open set where `z(s) ∈ chart.target` near `t`. (Useful for the
@@ -1990,4 +2027,11 @@ lemma chart_at_self_comp_continuousAt_of_target_nbhd (anchor P Q : X) (t : ℝ)
   -- Compose: chart ∘ γ continuous at t.
   exact h_chart_cont.comp h_γ_cont
 
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
+end
 end Jacobians

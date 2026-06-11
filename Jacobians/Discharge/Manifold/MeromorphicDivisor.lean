@@ -87,7 +87,7 @@ def orderFun (I : ModelWithCorners ℂ ℂ ℂ) (f : X → ℂ) (x : X) : ℤ :=
 
 /-- Under `hf0`, `orderFun I f x = 0` is equivalent to
 `mmeromorphicOrderAt I f x = 0`, i.e. there is no spurious `⊤ ↦ 0` collapse. -/
-lemma orderFun_eq_zero_iff
+lemma orderFun_eq_zero_iff {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
     {I : ModelWithCorners ℂ ℂ ℂ} {f : X → ℂ} {x : X}
     (hf0 : mmeromorphicOrderAt I f x ≠ ⊤) :
     orderFun I f x = 0 ↔ mmeromorphicOrderAt I f x = 0 := by

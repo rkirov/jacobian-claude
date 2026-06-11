@@ -48,6 +48,7 @@ open OnePoint Complex
 namespace Jacobians
 
 
+section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -66,15 +67,42 @@ def MeromorphicFunction.toRiemannSphere (f : MeromorphicFunction X) :
   fun x => if f.orderAtPoint x < 0 then OnePoint.infty
     else ((f.holoRepr x : ℂ) : RiemannSphere)
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 lemma MeromorphicFunction.toRiemannSphere_of_pole (f : MeromorphicFunction X) {x : X}
     (hx : f.orderAtPoint x < 0) : f.toRiemannSphere x = OnePoint.infty := by
   simp [MeromorphicFunction.toRiemannSphere, hx]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 lemma MeromorphicFunction.toRiemannSphere_of_nonneg (f : MeromorphicFunction X) {x : X}
     (hx : 0 ≤ f.orderAtPoint x) :
     f.toRiemannSphere x = ((f.holoRepr x : ℂ) : RiemannSphere) := by
   simp only [MeromorphicFunction.toRiemannSphere]
   rw [if_neg (not_lt.mpr hx)]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- Preimage of `∞` is exactly the set of poles `{x | orderAtPoint x < 0}` (the
 finite value `coe _` never equals `∞`, and we send a point to `∞` iff it is a pole). -/
@@ -89,6 +117,12 @@ lemma MeromorphicFunction.toRiemannSphere_preimage_infty (f : MeromorphicFunctio
     exact (OnePoint.coe_ne_infty _) hx
   · intro hx
     exact f.toRiemannSphere_of_pole hx
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- **Punctured chart pullback of `toRiemannSphere` is `coe ∘ holoRepr`.** For ANY
 point `P` (in particular a pole), every point in a punctured neighborhood of `P` is
@@ -192,6 +226,11 @@ theorem MeromorphicFunction.contMDiffAt_toRiemannSphere_of_nonneg (f : Meromorph
 
 /-! ### Holomorphy at the poles -/
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- The chart-level order is the negative integer `n` recorded by `orderAtPoint`.
 At a pole (`orderAtPoint P < 0`) the order of the pullback `F = f.toFun ∘ φ.symm`
 at `φ P` equals `(orderAtPoint P : ℤ)`, which is `< 0` (so in particular `F` has a
@@ -209,6 +248,12 @@ lemma MeromorphicFunction.meromorphicOrderAt_chartPullback_of_pole
     rw [hv] at h1; simp only [WithTop.untop₀_top] at h1
     rw [h1] at hP; exact absurd hP (by norm_num)
   | coe n => rw [hv] at h1; simp only [WithTop.untop₀_coe] at h1; rw [h1]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 open RiemannSphere in
 /-- **At a pole `P`, `toRiemannSphere` is `ContMDiffAt … ω`.** Reading in the
@@ -374,6 +419,11 @@ theorem MeromorphicFunction.isProperMap_toRiemannSphere (f : MeromorphicFunction
 
 /-! ### The zero fibre -/
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- The chart-level order at a zero is the positive integer `orderAtPoint x`. At a genuine
 zero (`0 < orderAtPoint x`), the order of the pullback `F = f.toFun ∘ φ.symm` at `φ x`
 equals `(orderAtPoint x : ℤ) > 0` (it is not `⊤`, since `untop₀ ⊤ = 0`). -/
@@ -389,6 +439,17 @@ lemma MeromorphicFunction.meromorphicOrderAt_chartPullback_of_zero
     rw [hv] at h1; simp only [WithTop.untop₀_top] at h1
     rw [h1] at hx; exact absurd hx (by norm_num)
   | coe n => rw [hv] at h1; simp only [WithTop.untop₀_coe] at h1; rw [h1]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- **At a genuine zero (`0 < orderAtPoint x`), the limit-repair value is `0`.** The pullback
 `F` tends to `0` along the punctured chart neighborhood (`tendsto_zero_of_meromorphicOrderAt_pos`,
@@ -423,6 +484,17 @@ lemma MeromorphicFunction.holoRepr_eq_zero_of_orderPos
   filter_upwards [mem_nhdsWithin_of_mem_nhds hev] with y hy
   simp [hFdef, Function.comp, φ.left_inv hy]
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- **The zeros of `f` lie in the `0`-fibre.** A genuine zero (`0 < orderAtPoint x`) is a
 non-pole, where `toRiemannSphere x = coe (holoRepr x) = coe 0 = 0`. (Inclusion, not equality:
 the affine value `coe 0` could also be attained where the order is `0` but the value happens
@@ -433,6 +505,12 @@ lemma MeromorphicFunction.zeros_subset_toRiemannSphere_preimage_zero (f : Meromo
   simp only [Set.mem_setOf_eq] at hx
   simp only [Set.mem_preimage, Set.mem_singleton_iff]
   rw [f.toRiemannSphere_of_nonneg (le_of_lt hx), f.holoRepr_eq_zero_of_orderPos hx]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Non-constancy -/
 
@@ -479,4 +557,6 @@ theorem MeromorphicFunction.toRiemannSphere_not_isConstant (f : MeromorphicFunct
     ¬ IsConstantMap (f.toRiemannSphere) :=
   f.toRiemannSphere_not_isConstant_of_exists_pole (f.exists_pole_of_nonconstant hf)
 
+
+end
 end Jacobians
