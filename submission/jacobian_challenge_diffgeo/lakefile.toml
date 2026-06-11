@@ -1,5 +1,0 @@
-name = "jacobian_challenge_diffgeo"
-defaultTargets = ["Submission"]
-
-[[lean_lib]]
-name = "Submission"
