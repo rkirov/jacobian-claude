@@ -1,11 +1,11 @@
 /-
   Finite-dimensionality of the Mittag-Leffler obstruction spaces `H¹(D)` (Miranda Ch. VI §2,
-  Lemmas 2.5–2.7, pp. 182–184), with Miranda's algebraicity input replaced by the repo's
-  PROVEN Riemann–Roch inequality.
+  Lemmas 2.5–2.7, pp. 182–184), with Miranda's algebraicity input replaced by the
+  Riemann–Roch inequality.
 
   * **M-bound** (`exists_deg_sub_lDim_bound`): `deg A − l(A) ≤ M` uniformly in `A` — Miranda
     gets this from Lemmas 1.18/2.4–2.5 (the only use of algebraicity in his Ch. VI); here it
-    falls out of `riemannRoch_inequality` over the proven realizable Leray cover, with
+    falls out of `riemannRoch_inequality` over a realizable Leray cover, with
     `M = h¹_Čech(0) − 1`.
   * **Maximizer** (`exists_maximizer`): the integers `deg A − l(A)` are bounded above and
     nonempty, so some `A₀` attains the maximum (`Int.exists_greatest_of_bdd`).
@@ -13,13 +13,11 @@
     tail `Z` dies under a deep enough truncation (`tailCutoff`), so its class lies in a relative
     kernel of dimension `(deg B − l(B)) − (deg A₀ − l(A₀)) ≤ 0` by maximality.
   * **Miranda Prop. 2.7** (`instFiniteDimensionalMittagLefflerH1`): `H¹(D)` is finite-
-    dimensional for EVERY `D`: with `E := A₀ ⊓ D`, `H¹(E)` equals the (finite-dimensional)
+    dimensional for *every* `D`: with `E := A₀ ⊓ D`, `H¹(E)` equals the (finite-dimensional)
     relative kernel of `H¹(E) → H¹(A₀) = 0`, and `H¹(E) ↠ H¹(D)` by surjectivity of the
     induced truncation.
 -/
 import Jacobians.LaurentTail.DimensionBookkeeping
-
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open Module
@@ -33,9 +31,9 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 /-! ### The uniform bound and its maximizer -/
 
-/-- **The M-bound**: `deg A − l(A)` is bounded above, uniformly in the divisor `A`.  This is the
-repo's proven Riemann–Roch inequality (`deg A + 1 − h¹(0) ≤ l(A)` over a locally-realizable
-cover), substituting for Miranda's algebraicity Lemmas 1.18/2.4–2.5. -/
+/-- **The M-bound**: `deg A − l(A)` is bounded above, uniformly in the divisor `A`.  This is
+the Riemann–Roch inequality (`deg A + 1 − h¹(0) ≤ l(A)` over a locally-realizable cover),
+substituting for Miranda's algebraicity Lemmas 1.18/2.4–2.5. -/
 theorem exists_deg_sub_lDim_bound :
     ∃ M : ℤ, ∀ A : Divisor X, Divisor.deg X A - (lDim (X := X) A : ℤ) ≤ M := by
   obtain ⟨𝔘, _, hR⟩ := exists_realizableLerayCover (X := X)

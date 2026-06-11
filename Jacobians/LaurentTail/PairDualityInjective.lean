@@ -8,23 +8,23 @@ Authors: Rado Kirov
 
 Miranda runs the duality with a **meromorphic** 1-form `ω = h·dg₀` (`g₀` the nonconstant
 meromorphic function of `exists_nonconstant_meromorphic`).  This file is the pair-frame port of
-`TailDualityInjective` (the genus ≥ 1 holomorphic-ω₀ specialization, which stays as the banked
-first proof): the local coefficient of `h·dg₀` in the canonical chart at `p` is
+`TailDualityInjective` (the genus ≥ 1 holomorphic-ω₀ specialization): the local coefficient
+of `h·dg₀` in the canonical chart at `p` is
 `pairCoeffFun g₀ h p = (h ∘ chart⁻¹) · (g₀ ∘ chart⁻¹)'` — the integrand of the genus-free
-pair-form residue theorem, so the whole chain runs in EVERY genus.
+pair-form residue theorem, so the whole chain runs in every genus.
 
 Contents:
 * `pairOrderAt g₀ p` — the local order of `dg₀` (= `formOrderW (differentialForm g₀)`, the
   order bridge `pairOrderAt_eq_formOrderW`); finite everywhere for nonconstant `g₀`.
 * `pairCanonicalDivisor g₀ hg₀` — the canonical divisor `K = div (dg₀)`
-  (from the proven `exists_differentialForm_divisor`).
+  (from `exists_differentialForm_divisor`).
 * the order bridge `pairOrderBounded_iff_mem`: `h·dg₀ ∈ L^(1)(−D) ⟺ h ∈ L(K−D)`.
 * the residue-weight linearity lemmas and the descended **duality pairing**
   `pairDualMap : lSysModule (K−D) →ₗ (H¹(D))*` (descent input = the genus-free
   `tailResidue_tailMap_eq_zero`).
 * **Injectivity** (Miranda p. 188): a nonzero class `[h]` pairs against the single-monomial tail
   `z^{−1−o}·p` to the *leading Laurent coefficient*, nonzero by `laurentCoeff_order_ne_zero`.
-  Hence the EASY half of duality: `lDim (K − D) ≤ h1TailDim D` — no genus hypothesis.
+  Hence the easy half of duality: `lDim (K − D) ≤ h1TailDim D` — no genus hypothesis.
 
 The surjective half (Miranda pp. 189–191) is built separately in `PairDualitySurjective`.
 -/
@@ -37,12 +37,9 @@ open scoped Manifold ContDiff Topology
 open Filter Set
 open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
 
-set_option linter.unusedSectionVars false
-
 namespace Jacobians.LaurentTail
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ### §1 The order of `dg₀` and the canonical divisor `K = div (dg₀)` -/
 
@@ -50,6 +47,38 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 derivative `(g₀ ∘ chart⁻¹)'` at the chart centre (the pair-frame analog of `omegaOrderAt`). -/
 noncomputable def pairOrderAt (g₀ : MeromorphicFunction X) (p : X) : WithTop ℤ :=
   meromorphicOrderAt (deriv (g₀.toFun ∘ (chartAt (H := ℂ) p).symm)) ((chartAt (H := ℂ) p) p)
+
+/-- The order of the pair integrand is the order of `dg₀` plus the order of `h`. -/
+theorem meromorphicOrderAt_pairCoeffFun (g₀ h : MeromorphicFunction X) (p : X) :
+    meromorphicOrderAt (pairCoeffFun g₀ h p) ((chartAt (H := ℂ) p) p)
+      = pairOrderAt g₀ p + h.orderW p := by
+  rw [show meromorphicOrderAt (pairCoeffFun g₀ h p) ((chartAt (H := ℂ) p) p)
+        = h.orderW p + pairOrderAt g₀ p from
+      meromorphicOrderAt_mul (h.meromorphic p) ((g₀.meromorphic p).deriv),
+    add_comm]
+
+/-- The weight vanishes for germ-zero `h`. -/
+theorem tailResidueWeight_eq_zero_of_germZero (g₀ : MeromorphicFunction X)
+    {h : MeromorphicFunction X} (hh : ∀ x, h.orderW x = ⊤) (q : X × ℤ) :
+    tailResidueWeight g₀ h q = 0 := by
+  have hev : (fun _ : ℂ => (0 : ℂ)) =ᶠ[𝓝[≠] ((chartAt (H := ℂ) q.1) q.1)]
+      pairCoeffFun g₀ h q.1 := by
+    have h0 := meromorphicOrderAt_eq_top_iff.mp (hh q.1)
+    filter_upwards [h0] with z hz
+    show (0 : ℂ) = h.toFun ((chartAt (H := ℂ) q.1).symm z)
+      * deriv (fun w => g₀.toFun ((chartAt (H := ℂ) q.1).symm w)) z
+    rw [show h.toFun ((chartAt (H := ℂ) q.1).symm z)
+      = (h.toFun ∘ (chartAt (H := ℂ) q.1).symm) z from rfl, hz, zero_mul]
+  rw [tailResidueWeight, ← laurentCoeff_congr hev, laurentCoeff_def]
+  have h0 : (fun z => (fun _ : ℂ => (0 : ℂ)) z
+      * (z - ((chartAt (H := ℂ) q.1) q.1)) ^ (-(-1 - q.2) - 1)) = fun _ : ℂ => (0 : ℂ) := by
+    funext z
+    ring
+  rw [h0]
+  exact Jacobians.Dolbeault.resAt_eq_zero_of_analyticAt analyticAt_const
+
+variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X]
 
 /-- `pairOrderAt` is the form order of the genuine meromorphic 1-form `dg₀`
 (`CanonicalFormDifferential.formOrderW_differentialForm`). -/
@@ -66,7 +95,7 @@ theorem pairOrderAt_ne_top (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermCons
     (differentialForm_ne_zero hg₀) p
 
 /-- **The canonical divisor `K = div (dg₀)`** (Miranda p. 186; Forster 17.4): the divisor of the
-nonzero meromorphic 1-form `dg₀`, via the proven `exists_differentialForm_divisor`. -/
+nonzero meromorphic 1-form `dg₀`, via `exists_differentialForm_divisor`. -/
 noncomputable def pairCanonicalDivisor (g₀ : MeromorphicFunction X)
     (hg₀ : ¬ IsGermConstant g₀) : Divisor X :=
   (exists_differentialForm_divisor g₀ (differentialForm_ne_zero hg₀)).choose
@@ -86,15 +115,6 @@ theorem coe_pairCanonicalDivisor (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGe
 
 /-! ### §2 The order bridge: `h·dg₀ ∈ L^(1)(−D) ⟺ h ∈ L(K−D)` -/
 
-/-- The order of the pair integrand is the order of `dg₀` plus the order of `h`. -/
-theorem meromorphicOrderAt_pairCoeffFun (g₀ h : MeromorphicFunction X) (p : X) :
-    meromorphicOrderAt (pairCoeffFun g₀ h p) ((chartAt (H := ℂ) p) p)
-      = pairOrderAt g₀ p + h.orderW p := by
-  rw [show meromorphicOrderAt (pairCoeffFun g₀ h p) ((chartAt (H := ℂ) p) p)
-        = h.orderW p + pairOrderAt g₀ p from
-      meromorphicOrderAt_mul (h.meromorphic p) ((g₀.meromorphic p).deriv),
-    add_comm]
-
 /-- **The order bridge** (Miranda p. 187): `h·dg₀` has order ≥ `D` everywhere iff
 `h ∈ L(K − D)` for the canonical divisor `K = div (dg₀)`. -/
 theorem pairOrderBounded_iff_mem (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
@@ -104,8 +124,7 @@ theorem pairOrderBounded_iff_mem (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGe
   have hmem : ∀ p : X, ((pairCanonicalDivisor g₀ hg₀ - D) p : ℤ) =
       pairCanonicalDivisor g₀ hg₀ p - D p := fun p => Finsupp.sub_apply _ _ _
   constructor
-  · intro hbd
-    intro p
+  · intro hbd p
     have h1 := hbd p
     rw [meromorphicOrderAt_pairCoeffFun] at h1
     obtain ⟨k, hk⟩ := WithTop.ne_top_iff_exists.mp (pairOrderAt_ne_top g₀ hg₀ p)
@@ -164,26 +183,6 @@ theorem tailResidueWeight_smul (g₀ : MeromorphicFunction X) (a : ℂ)
   show pairCoeffFun g₀ (a • h) q.1 z = (a • pairCoeffFun g₀ h q.1) z
   simp only [pairCoeffFun, MeromorphicFunction.smul_toFun, Pi.smul_apply, smul_eq_mul]
   ring
-
-/-- The weight vanishes for germ-zero `h`. -/
-theorem tailResidueWeight_eq_zero_of_germZero (g₀ : MeromorphicFunction X)
-    {h : MeromorphicFunction X} (hh : ∀ x, h.orderW x = ⊤) (q : X × ℤ) :
-    tailResidueWeight g₀ h q = 0 := by
-  have hev : (fun _ : ℂ => (0 : ℂ)) =ᶠ[𝓝[≠] ((chartAt (H := ℂ) q.1) q.1)]
-      pairCoeffFun g₀ h q.1 := by
-    have h0 := meromorphicOrderAt_eq_top_iff.mp (hh q.1)
-    filter_upwards [h0] with z hz
-    show (0 : ℂ) = h.toFun ((chartAt (H := ℂ) q.1).symm z)
-      * deriv (fun w => g₀.toFun ((chartAt (H := ℂ) q.1).symm w)) z
-    rw [show h.toFun ((chartAt (H := ℂ) q.1).symm z)
-      = (h.toFun ∘ (chartAt (H := ℂ) q.1).symm) z from rfl, hz, zero_mul]
-  rw [tailResidueWeight, ← laurentCoeff_congr hev, laurentCoeff_def]
-  have h0 : (fun z => (fun _ : ℂ => (0 : ℂ)) z
-      * (z - ((chartAt (H := ℂ) q.1) q.1)) ^ (-(-1 - q.2) - 1)) = fun _ : ℂ => (0 : ℂ) := by
-    funext z
-    ring
-  rw [h0]
-  exact Jacobians.Dolbeault.resAt_eq_zero_of_analyticAt analyticAt_const
 
 /-! ### §4 The duality pairing and injectivity (Miranda p. 188) -/
 
@@ -269,7 +268,7 @@ theorem pairDualMap_injective (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermC
   -- a point where the germ of `h` survives
   have hex : ∃ p : X, (h : MeromorphicFunction X).orderW p ≠ ⊤ := by
     by_contra hall
-    push_neg at hall
+    push Not at hall
     exact hcon fun x => hall x
   obtain ⟨p, hp⟩ := hex
   -- the (finite) order of the integrand `h·dg₀` at `p`
@@ -316,7 +315,7 @@ theorem pairDualMap_injective (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermC
       = pairDualFun g₀ hg₀ D h from rfl, pairDualFun_mk] at happ
   exact hne0 (hval ▸ happ)
 
-/-- **The EASY half of Serre duality for the tail `H¹`** (Miranda Thm 3.3, injectivity):
+/-- **The easy half of Serre duality for the tail `H¹`** (Miranda Thm 3.3, injectivity):
 
   `l(K − D) ≤ h¹(D)`
 

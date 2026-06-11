@@ -14,14 +14,12 @@
   dimensional *because* it is the image of the window (`finiteDimensional_ker_mittagLeffler-
   Truncate`), which is what later makes Miranda 2.6/2.7 (h¹ < ∞) and RR-I run.
 
-  The maps (on the repo's junk-free `lSysModule D = L(D)/germZero`, where `lDim` lives):
+  The maps (on the junk-free `lSysModule D = L(D)/germZero`, where `lDim` lives):
   inclusion; `α_{D₁}` (lands in `ker t` because `t ∘ α_{D₁} = α_{D₂}` kills `L(D₂)`); class-of;
   the induced truncation.
 -/
 import Jacobians.LaurentTail.TailMap
 import Jacobians.LaurentTail.LinearSystemFiniteDimensional
-
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open Module
@@ -182,7 +180,7 @@ theorem ker_mittagLefflerTruncate_eq {D₁ D₂ : Divisor X} (h : D₁ ≤ D₂)
     rw [tailKernelToH1_apply, mittagLefflerTruncate_mk, LinearMap.mem_ker.mp W.2]
     exact Submodule.Quotient.mk_zero _
 
--- (Exactness at `H¹(D₂)` is `mittagLefflerTruncate_surjective`, proven in `TailMap`.)
+-- (Exactness at `H¹(D₂)` is `mittagLefflerTruncate_surjective`, proved in `TailMap`.)
 
 /-! ### The dimension identity -/
 

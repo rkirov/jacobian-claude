@@ -7,12 +7,12 @@ Authors: Rado Kirov
 
 For genus ≥ 1 we run Miranda's duality in the **ω₀-frame**: fix `0 ≠ ω₀ ∈ Ω(X)` and represent
 meromorphic 1-forms as `h·ω₀` with `h` meromorphic.  The local coefficient of `h·ω₀` in the
-canonical chart at `p` is `coeffAt ω₀ p · (h ∘ chart⁻¹)` — exactly the integrand of the proven
-Gate-A residue theorem `residueTheorem_unconditional`, so the residue map's vanishing on realized
+canonical chart at `p` is `coeffAt ω₀ p · (h ∘ chart⁻¹)` — exactly the integrand of the
+residue theorem `residueTheorem_unconditional`, so the residue map's vanishing on realized
 tails needs no factorization detour.
 
 Contents:
-* `canonicalDivisorOf ω₀ hω₀` — the divisor of zeros of `ω₀` (finite support by the proven
+* `canonicalDivisorOf ω₀ hω₀` — the divisor of zeros of `ω₀` (finite support by
   `finite_localRep_self_eq_zero`); this is the canonical divisor `K = div ω₀`.
 * the order bridge `omegaOrderBounded_iff_mem`: `h·ω₀ ∈ L^(1)(−D) ⟺ h ∈ L(K−D)`.
 * the residue functional `omegaTailResidue ω₀ h` on tails; its vanishing on realized tails
@@ -21,8 +21,8 @@ Contents:
   `omegaDualMap : lSysModule (K−D) →ₗ (H¹(D))*`.
 * **Injectivity** (Miranda p. 188): a nonzero class `[h]` pairs against the single-monomial tail
   `z^{−1−o}·p` (`o` the local order of `h·ω₀` at a point where `h`'s germ survives) to the
-  *leading Laurent coefficient*, nonzero by the proven anchor `laurentCoeff_order_ne_zero`.
-  Hence the EASY half of duality: `lDim (K − D) ≤ h1TailDim D`.
+  *leading Laurent coefficient*, nonzero by the anchor lemma `laurentCoeff_order_ne_zero`.
+  Hence the easy half of duality: `lDim (K − D) ≤ h1TailDim D`.
 
 The surjective half (Miranda pp. 189–191) is built separately.
 -/
@@ -33,8 +33,6 @@ import Jacobians.Dolbeault.SerreDuality
 open scoped Manifold ContDiff Topology
 open Filter Set
 open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
-
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.LaurentTail
 
@@ -55,12 +53,12 @@ theorem laurentCoeff_eq_zero_of_analyticAt_of_neg {g : ℂ → ℂ} {c : ℂ} (h
     (hg.mul ((analyticAt_id.sub analyticAt_const).pow k))
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### §1 The ω₀-frame integrand, the order of `ω₀`, and the canonical divisor -/
 
 /-- The local coefficient of the 1-form `h·ω₀` in the canonical chart at `p` — the integrand of
-`formFnResidue ω₀ h.toFun p` (Gate-A conventions: `coeffAt` first). -/
+`formFnResidue ω₀ h.toFun p` (with `coeffAt` as the first factor). -/
 noncomputable def omegaCoeffFun (ω₀ : HolomorphicOneForms X) (h : MeromorphicFunction X)
     (p : X) : ℂ → ℂ :=
   fun z => coeffAt ω₀ p z * h.toFun ((chartAt (H := ℂ) p).symm z)
@@ -161,8 +159,7 @@ theorem omegaOrderBounded_iff_mem (ω₀ : HolomorphicOneForms X) (hω₀ : ω�
   have hmem : ∀ p : X, ((canonicalDivisorOf ω₀ hω₀ - D) p : ℤ) =
       canonicalDivisorOf ω₀ hω₀ p - D p := fun p => Finsupp.sub_apply _ _ _
   constructor
-  · intro hbd
-    intro p
+  · intro hbd p
     have h1 := hbd p
     rw [meromorphicOrderAt_omegaCoeffFun] at h1
     obtain ⟨k, hk⟩ := WithTop.ne_top_iff_exists.mp (omegaOrderAt_ne_top ω₀ hω₀ p)
@@ -233,8 +230,8 @@ theorem resAt_pullback_mul_omegaCoeff (D : Divisor X) (ω₀ : HolomorphicOneFor
   rw [tailMap_apply, if_pos (hWlt n hn)]
   rfl
 
-/-- **The vanishing of `Res_ω` on realized tails, ω₀-frame** (Miranda p. 187): direct from the
-Gate-A `residueTheorem_unconditional` at the numerator `f·h`, with the analytic-bad-set
+/-- **The vanishing of `Res_ω` on realized tails, ω₀-frame** (Miranda p. 187): direct from
+`residueTheorem_unconditional` at the numerator `f·h`, with the analytic-bad-set
 enlargement. -/
 theorem omegaTailResidue_tailMap_eq_zero {D : Divisor X} (ω₀ : HolomorphicOneForms X)
     (h : MeromorphicFunction X) (hord : OmegaOrderBounded ω₀ h D)
@@ -276,7 +273,7 @@ theorem omegaTailResidue_tailMap_eq_zero {D : Divisor X} (ω₀ : HolomorphicOne
     refine Finset.sum_congr rfl fun q hq => ?_
     have hfst := (Finset.mem_filter.mp hq).2
     rw [show ((p, q.2) : X × ℤ) = q from Prod.ext hfst.symm rfl]
-  -- identify with the Gate-A residue terms and sum to zero
+  -- identify with the residue-theorem terms and sum to zero
   have hpoint : ∀ p ∈ S, resAt (fun z => f.toFun ((chartAt (H := ℂ) p).symm z)
       * omegaCoeffFun ω₀ h p z) ((chartAt (H := ℂ) p) p)
       = formFnResidue ω₀ (f * h).toFun p := by
@@ -413,7 +410,7 @@ theorem omegaDualMap_injective (ω₀ : HolomorphicOneForms X) (hω₀ : ω₀ �
   -- a point where the germ of `h` survives
   have hex : ∃ p : X, (h : MeromorphicFunction X).orderW p ≠ ⊤ := by
     by_contra hall
-    push_neg at hall
+    push Not at hall
     exact hcon fun x => hall x
   obtain ⟨p, hp⟩ := hex
   -- the (finite) order of the integrand `h·ω₀` at `p`
@@ -460,7 +457,7 @@ theorem omegaDualMap_injective (ω₀ : HolomorphicOneForms X) (hω₀ : ω₀ �
       = omegaDualFun ω₀ hω₀ D h from rfl, omegaDualFun_mk] at happ
   exact hne0 (hval ▸ happ)
 
-/-- **The EASY half of Serre duality for the tail `H¹`** (Miranda Thm 3.3, injectivity):
+/-- **The easy half of Serre duality for the tail `H¹`** (Miranda Thm 3.3, injectivity):
 
   `l(K − D) ≤ h¹(D)`
 

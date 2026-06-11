@@ -12,8 +12,8 @@ For a meromorphic `ψ` with `A − B ≤ ord ψ` pointwise, the operator `μ_ψ`
 
 The two key facts for the Serre-duality surjectivity (Forster 17.8):
 * the **composite identity** `μ_ψ ∘ μ_{ψ⁻¹} = id` on `𝒯[B]` at the exact shift `A = B + div ψ`
-  (for `ψ` with globally surviving germ — the proven identity theorem
-  `orderW_ne_top_of_exists`), giving `tailMulH1 ψ (B + div ψ) B` SURJECTIVE;
+  (for `ψ` with globally surviving germ — the identity theorem `orderW_ne_top_of_exists`),
+  making `tailMulH1 ψ (B + div ψ) B` surjective;
 * the **factoring** `tailMulH1 ψ A B = tailMulH1 ψ (B + div ψ) B ∘ mittagLefflerTruncate`
   (coefficients below `−B` cannot see the dropped window), so with the truncation epimorphism
   the general `tailMulH1 ψ A B` is surjective as well.
@@ -27,12 +27,9 @@ open scoped Manifold ContDiff Topology
 open Filter Set
 open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
 
-set_option linter.unusedSectionVars false
-
 namespace Jacobians.LaurentTail
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ### §1 The order bookkeeping interface -/
 
@@ -54,6 +51,8 @@ theorem MulLevelLE.hE {ψ : MeromorphicFunction X} {A B : Divisor X} (h : MulLev
   have : A p - B p ≤ m := by exact_mod_cast h1
   exact_mod_cast (by omega : -(B p) ≤ m + -(A p))
 
+variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- Membership `ψ ∈ L(C)` gives the level condition for `A := B − C`-type shifts:
 `MulLevelLE ψ (B - C) B`. -/
 theorem mulLevelLE_of_mem {ψ : MeromorphicFunction X} {C : Divisor X}
@@ -68,7 +67,7 @@ theorem mulLevelLE_of_mem {ψ : MeromorphicFunction X} {C : Divisor X}
   exact h1
 
 /-- The exact shift `A := B + div ψ` satisfies the level condition. -/
-theorem mulLevelLE_add_div (ψ : MeromorphicFunction X) (B : Divisor X) :
+theorem mulLevelLE_add_div [Nonempty X] (ψ : MeromorphicFunction X) (B : Divisor X) :
     MulLevelLE ψ (B + (ψ.div : Divisor X)) B := by
   intro p
   have : ((B + (ψ.div : Divisor X)) p : ℤ) - B p = (ψ.div : Divisor X) p := by
@@ -121,7 +120,8 @@ theorem psi_mul_inv_eventually_one (ψ : MeromorphicFunction X)
     ∀ᶠ z in 𝓝[≠] ((chartAt (H := ℂ) p) p),
       ψ.toFun ((chartAt (H := ℂ) p).symm z)
         * (ψ⁻¹).toFun ((chartAt (H := ℂ) p).symm z) = 1 := by
-  have hne := (MeromorphicFunction.orderW_ne_top_iff ψ p).mp (MeromorphicFunction.orderW_ne_top_of_exists ψ hψ p)
+  have hne := (MeromorphicFunction.orderW_ne_top_iff ψ p).mp
+    (MeromorphicFunction.orderW_ne_top_of_exists ψ hψ p)
   have htrans := (MeromorphicFunction.eventually_comp_chart_iff ψ.toFun p (· ≠ 0)).mpr hne
   filter_upwards [htrans] with z hz
   exact mul_inv_cancel₀ hz
@@ -129,7 +129,7 @@ theorem psi_mul_inv_eventually_one (ψ : MeromorphicFunction X)
 /-- **The composite identity** `μ_ψ(μ_{ψ⁻¹}(W)) = W` on `𝒯[B]` at the exact shift
 `A = B + div ψ`: the coefficients of `ψ·(A-tail of ψ⁻¹·(tail of W))` below `−B` are those of
 `ψ·ψ⁻¹·(tail of W) = tail of W`, because the dropped part has order ≥ `ord ψ − A ≥ −B`. -/
-theorem tailMul_tailMul_inv (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
+theorem tailMul_tailMul_inv [Nonempty X] (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
     (B : Divisor X) (W : ↥(tailSubspace (X := X) B)) :
     tailMul ψ B (tailMul ψ⁻¹ (B + (ψ.div : Divisor X)) (W : TailSpace X))
       = (W : TailSpace X) := by
@@ -219,7 +219,7 @@ theorem tailMul_tailMul_inv (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW
 /-- **Surjectivity of the `H¹` multiplication action** (Forster 17.8): for `ψ` with surviving
 germ, every class of `H¹(B)` is hit — the preimage is the `ψ⁻¹`-image at the exact shift
 `B + div ψ`, which lies in the (coarser) `𝒯[A]` since `A ≤ B + div ψ`. -/
-theorem tailMulH1_surjective (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
+theorem tailMulH1_surjective [Nonempty X] (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
     {A B : Divisor X} (h : MulLevelLE ψ A B) :
     Function.Surjective (tailMulH1 ψ h) := by
   intro ξ
@@ -250,7 +250,7 @@ theorem tailMulH1_surjective (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.order
 
 /-- For `λ ≠ 0` and `ψ` with surviving germ, `λ ∘ T̄_ψ ≠ 0` — the dimension input for the
 Λ-side of the Serre-duality pigeonhole (Forster 17.9). -/
-theorem comp_tailMulH1_ne_zero {B : Divisor X}
+theorem comp_tailMulH1_ne_zero [Nonempty X] {B : Divisor X}
     (φ : Module.Dual ℂ (mittagLefflerH1 (X := X) B)) (hφ : φ ≠ 0)
     (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
     {A : Divisor X} (h : MulLevelLE ψ A B) :

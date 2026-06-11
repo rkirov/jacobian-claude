@@ -4,25 +4,23 @@
 
   For a meromorphic function `f` on the compact Riemann surface `X`, `tailMap D f` records the
   Laurent coefficients of `f` (in the canonical chart at each point) in all degrees `< −D(p)` —
-  Miranda's truncation `α_D(f)` of the full Laurent series.  The two pillars proven here:
+  Miranda's truncation `α_D(f)` of the full Laurent series.  The two pillars proved here:
 
   * **`L(D) = ker α_D`** (`ker_tailMap`, Miranda p. 181): `f` has `orderW f p ≥ −D(p)` everywhere
     iff all its tail coefficients below the cutoff vanish — by the order↔coefficients anchor
-    lemmas of `LaurentCoeff`.  In particular the repo's germ-zero junk submodule is contained in
+    lemmas of `LaurentCoeff`.  In particular the germ-zero junk submodule is contained in
     every kernel, so `α_D` descends to the junk-free quotients.
   * **`H¹(D) := 𝒯[D] ⧸ range α_D`** (`mittagLefflerH1`, Miranda Def. 2.4): the Mittag-Leffler
     obstruction space, with its induced truncations `H¹(D₁) → H¹(D₂)` (`D₁ ≤ D₂`), surjective
     because tail truncation is.
 
   Finite support of `tailMap D f` is where compactness enters: a nonzero coefficient at `(p, n)`
-  forces `orderW f p ≤ n < −D(p)`, which confines `p` to `supp (div f) ∪ supp D` (finite — the
-  repo's divisor `MeromorphicFunction.div`) and `n` to the finite window `[div f p, −D(p))`.
+  forces `orderW f p ≤ n < −D(p)`, which confines `p` to `supp (div f) ∪ supp D` (finite, by
+  `MeromorphicFunction.div`) and `n` to the finite window `[div f p, −D(p))`.
 -/
 import Jacobians.LaurentTail.LaurentCoeff
 import Jacobians.LaurentTail.TailSpace
 import Jacobians.LinearSystem
-
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open Module
@@ -31,8 +29,7 @@ namespace Jacobians.LaurentTail
 
 open Jacobians
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ### Laurent coefficients at a point of `X` -/
 
@@ -62,6 +59,8 @@ theorem laurentCoeffAt_smul (a : ℂ) (f : MeromorphicFunction X) (p : X) (n : �
     laurentCoeffAt (a • f).toFun p n = a * laurentCoeffAt f.toFun p n :=
   laurentCoeff_smul a (f.meromorphic p) n
 
+variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- Germ-zero functions have vanishing Laurent coefficients in every degree. -/
 theorem laurentCoeffAt_eq_zero_of_germZero {f : MeromorphicFunction X}
     (hf : f ∈ germZeroSubmodule (X := X)) (p : X) (n : ℤ) :
@@ -70,8 +69,8 @@ theorem laurentCoeffAt_eq_zero_of_germZero {f : MeromorphicFunction X}
 
 /-! ### The truncation map `α_D` -/
 
-/-- The repo divisor of `f` evaluates to the (`untop₀`-read) order: `div f p = (orderW f p)⁰`.
-(NB the repo's `div` takes `X` explicitly *first*, so `f.div` must be type-ascribed before
+/-- The divisor of `f` evaluates to the (`untop₀`-read) order: `div f p = (orderW f p)⁰`.
+(NB `div` takes `X` explicitly *first*, so `f.div` must be type-ascribed before
 application — `f.div p` would feed `p` into the `X` slot.) -/
 theorem div_apply (f : MeromorphicFunction X) (p : X) :
     (f.div : Divisor X) p = (f.orderW p).untop₀ := by
@@ -160,7 +159,7 @@ noncomputable def tailMapCo (D : Divisor X) :
 
 /-- **`L(D) = ker α_D`** (Miranda Ch. VI, p. 181): a meromorphic function lies in the complete
 linear system `L(D)` iff its `D`-truncated Laurent tail vanishes.  This is the central bridge
-between the repo's order-theoretic `linearSystem` and the Laurent-tail calculus. -/
+between the order-theoretic `linearSystem` and the Laurent-tail calculus. -/
 theorem ker_tailMap (D : Divisor X) :
     LinearMap.ker (tailMap (X := X) D) = linearSystem (X := X) D := by
   ext f
@@ -214,7 +213,7 @@ meromorphic functions. -/
 abbrev mittagLefflerH1 (D : Divisor X) : Type _ :=
   ↥(tailSubspace (X := X) D) ⧸ LinearMap.range (tailMapCo (X := X) D)
 
-/-- `h¹(D) := dim_ℂ H¹(D)` (finite for every `D` — Miranda Prop. 2.7, proven downstream). -/
+/-- `h¹(D) := dim_ℂ H¹(D)` (finite for every `D` — Miranda Prop. 2.7, proved in `Finiteness`). -/
 noncomputable def h1TailDim (D : Divisor X) : ℕ := finrank ℂ (mittagLefflerH1 (X := X) D)
 
 /-- The truncation `t^{D₁}_{D₂}` descends to the Mittag-Leffler quotients
