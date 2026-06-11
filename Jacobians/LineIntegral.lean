@@ -40,7 +40,6 @@ well-definedness) is a TODO(math).
 Forster §§10–12; Miranda Ch. 4 §§3–4.
 -/
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 
@@ -48,7 +47,7 @@ open scoped Manifold ContDiff Bundle Topology
 open MeasureTheory Filter
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- Complex speed of `γ` at `t`, expressed in the chart around `γ t`. -/
 noncomputable def pathSpeed (γ : ℝ → X) (t : ℝ) : ℂ :=
@@ -135,7 +134,8 @@ identically zero; its integral is zero. -/
 /-- `pathSpeed (fun _ => P) t = 0`: the tangent of a constant curve
 is zero. Chart pullback of a constant map is constant in ℂ, whose
 fderiv is zero. -/
-theorem pathSpeed_const (P : X) (t : ℝ) :
+theorem pathSpeed_const {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (P : X) (t : ℝ) :
     pathSpeed (fun _ : ℝ => P) t = 0 := by
   unfold pathSpeed
   have h_const : (chartAt (H := ℂ) P).toFun ∘ (fun _ : ℝ => P) =
@@ -168,11 +168,11 @@ pullback at `1 - t`. -/
 def reverse (γ : ℝ → X) : ℝ → X := fun t => γ (1 - t)
 
 omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
 @[simp] theorem reverse_apply (γ : ℝ → X) (t : ℝ) :
     reverse γ t = γ (1 - t) := rfl
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [IsManifold 𝓘(ℂ) ω X] in
 /-- pathSpeed under reversal: sign flip + reparametrization. Requires
 chart-pullback `(chartAt ℂ (γ(1-t))).toFun ∘ γ` to be differentiable
@@ -240,16 +240,16 @@ noncomputable def concat (γ γ' : ℝ → X) : ℝ → X :=
   fun t => if t ≤ 1/2 then γ (2 * t) else γ' (2 * t - 1)
 
 omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
 theorem concat_apply_left (γ γ' : ℝ → X) {t : ℝ} (ht : t ≤ 1/2) :
     concat γ γ' t = γ (2 * t) := if_pos ht
 
 omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
 theorem concat_apply_right (γ γ' : ℝ → X) {t : ℝ} (ht : ¬ t ≤ 1/2) :
     concat γ γ' t = γ' (2 * t - 1) := if_neg ht
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [IsManifold 𝓘(ℂ) ω X] in
 /-- pathSpeed of `concat γ γ'` on the strict left half: equals
 `2 * pathSpeed γ (2t)` via chain rule on `γ ∘ (2·)`. -/
@@ -294,7 +294,7 @@ theorem pathSpeed_concat_left (γ γ' : ℝ → X) (t : ℝ) (ht : t < 1/2)
         (fderiv ℝ ψ (2 * t)).map_smul (2 : ℝ) (1 : ℝ)
     _ = 2 * (fderiv ℝ ψ (2 * t)) 1 := by rw [Complex.real_smul]; push_cast; ring
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [IsManifold 𝓘(ℂ) ω X] in
 /-- pathSpeed of `concat γ γ'` on the strict right half: equals
 `2 * pathSpeed γ' (2t - 1)` via chain rule on `γ' ∘ (2·-1)`. -/
@@ -489,8 +489,9 @@ The proof (complete below) is a three-step chart computation:
 3. `fderiv ℂ f_loc (chart_X (γ t)) = mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t)` via
    `MDifferentiableAt.mfderiv` + `writtenInExtChartAt` unfolding. -/
 theorem pathSpeed_comp_eq_mfderiv
+    {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
     {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
-    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    [ConnectedSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X) (t : ℝ)
     (hγ_cont : ContinuousAt γ t)
     (hγ_diff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
@@ -584,7 +585,7 @@ integrals to behave sensibly. For smooth closed loops (the use case
 in the period lattice), this holds automatically. -/
 theorem lineIntegral_pullback
     {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
-    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    [ConnectedSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (α : HolomorphicOneForms Y) (γ : ℝ → X)
     (hγ_cont : Continuous γ)

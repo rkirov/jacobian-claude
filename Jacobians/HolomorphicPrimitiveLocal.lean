@@ -33,10 +33,9 @@ open Set Metric
 
 namespace Jacobians
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- `F` is a **holomorphic primitive of `η` on `U`**: at every point of `U` the function `F`
 is manifold-differentiable and its intrinsic differential reads `η` on every tangent vector
@@ -153,7 +152,8 @@ theorem exists_isLocalPrimitiveOn (η : HolomorphicOneForms X) (x₀ : X) :
 /-- **Chart-pullback differentiability from manifold differentiability** (the converse of
 `mdifferentiableAt_of_differentiableAt_comp`): if `f` is `MDifferentiableAt y` for `y` in the
 chart source at `x`, then `f ∘ chart⁻¹` is `DifferentiableAt (chart y)`. -/
-theorem differentiableAt_comp_chart_symm {f : X → ℂ} {x y : X}
+theorem differentiableAt_comp_chart_symm {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {f : X → ℂ} {x y : X}
     (hy : y ∈ (chartAt ℂ x).source) (hf : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f y) :
     DifferentiableAt ℂ (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) y) := by
   have hyt : (chartAt ℂ x) y ∈ (chartAt ℂ x).target := (chartAt ℂ x).map_source hy
@@ -214,7 +214,7 @@ theorem isLocalPrimitiveOn_sub_locally_const {η : HolomorphicOneForms X} {F F' 
     have hHF : HasFDerivAt g (0 : ℂ →L[ℂ] ℂ) z := by
       have h := hHD.hasFDerivAt
       convert h using 1
-      ext v
+      ext
       simp
     exact hHF.fderiv
   -- constancy on the convex ball

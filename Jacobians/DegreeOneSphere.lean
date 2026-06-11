@@ -47,10 +47,9 @@ open OnePoint Complex
 
 namespace Jacobians
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The simple-pole predicate
 
@@ -77,18 +76,21 @@ def MeromorphicFunction.toSphere (f : MeromorphicFunction X) (P : X) :
     X → RiemannSphere :=
   fun x => if x = P then OnePoint.infty else ((f.holoRepr x : ℂ) : RiemannSphere)
 
-@[simp] lemma MeromorphicFunction.toSphere_pole (f : MeromorphicFunction X) (P : X) :
+@[simp] lemma MeromorphicFunction.toSphere_pole {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (f : MeromorphicFunction X) (P : X) :
     f.toSphere P P = OnePoint.infty := by
   simp [MeromorphicFunction.toSphere]
 
-lemma MeromorphicFunction.toSphere_of_ne (f : MeromorphicFunction X) {P x : X}
+lemma MeromorphicFunction.toSphere_of_ne {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (f : MeromorphicFunction X) {P x : X}
     (hx : x ≠ P) :
     f.toSphere P x = ((f.holoRepr x : ℂ) : RiemannSphere) := by
   simp [MeromorphicFunction.toSphere, hx]
 
 /-- Preimage of `∞` under `toSphere` is exactly `{P}` (since `coe` never hits `∞`
 and we send only `P` to `∞`). -/
-lemma MeromorphicFunction.toSphere_preimage_infty (f : MeromorphicFunction X) (P : X) :
+lemma MeromorphicFunction.toSphere_preimage_infty {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (f : MeromorphicFunction X) (P : X) :
     f.toSphere P ⁻¹' {OnePoint.infty} = {P} := by
   ext x
   simp only [Set.mem_preimage, Set.mem_singleton_iff]

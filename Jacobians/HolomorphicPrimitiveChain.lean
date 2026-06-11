@@ -30,10 +30,9 @@ open Set Metric Filter
 
 namespace Jacobians
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Helpers -/
 
@@ -44,7 +43,8 @@ theorem IsLocalPrimitiveOn.mono {η : HolomorphicOneForms X} {F : X → ℂ} {U 
 
 /-- Every neighbourhood contains a path-connected open neighbourhood (the chart-ball preimage —
 the manifold is locally path-connected in the strong chart sense used throughout). -/
-theorem exists_isPathConnected_open_mem_nhds {x : X} {V : Set X} (hV : V ∈ 𝓝 x) :
+theorem exists_isPathConnected_open_mem_nhds {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] {x : X} {V : Set X} (hV : V ∈ 𝓝 x) :
     ∃ B : Set X, IsOpen B ∧ IsPathConnected B ∧ x ∈ B ∧ B ⊆ V := by
   set e := chartAt ℂ x with he
   have hT : IsOpen (e.target ∩ e.symm ⁻¹' interior V) :=
@@ -172,7 +172,7 @@ theorem exists_block_right {s : ℝ} (h0 : 0 ≤ s) (h1 : s < 1) :
     exact Nat.find_min hex (by rw [hk]; exact Nat.lt_succ_self k) (not_le.mp hlt)
   refine ⟨k, ?_, hks, hms⟩
   by_contra hkn
-  push_neg at hkn
+  push Not at hkn
   rw [C.t_stab k hkn] at hks
   exact absurd (lt_of_le_of_lt hks h1) (lt_irrefl _)
 
@@ -193,7 +193,7 @@ theorem exists_block_left {s : ℝ} (h0 : 0 < s) (h1 : s ≤ 1) :
     exact Nat.find_min hex (by rw [hk]; exact Nat.lt_succ_self k) (not_lt.mp hle)
   refine ⟨k, ?_, hks, hms⟩
   by_contra hkn
-  push_neg at hkn
+  push Not at hkn
   rw [C.t_stab k hkn] at hks
   linarith
 

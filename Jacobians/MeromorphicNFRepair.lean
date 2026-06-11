@@ -21,7 +21,6 @@ repo's `MeromorphicFunction` bundle or any manifold structure, so they are share
 glued-form operator's holomorphic representatives). Extracted from `MeromorphicLiouville`.
 -/
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 

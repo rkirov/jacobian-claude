@@ -31,7 +31,6 @@ import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
 open scoped Manifold ContDiff
 open Jacobians.OfCurveSkeleton
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 

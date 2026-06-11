@@ -20,7 +20,6 @@ import Jacobians.LinearSystem
 import Jacobians.DegDivResidue
 import Jacobians.ProperMapDegreeSheets
 
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 
@@ -49,7 +48,7 @@ theorem lDim_eq_zero_of_deg_neg (D : Divisor X) (hD : Divisor.deg X D < 0) :
     intro f hf
     by_contra hng
     have hex : ∃ x₀, f.orderW x₀ ≠ ⊤ := by
-      by_contra h; push_neg at h; exact hng h
+      by_contra h; push Not at h; exact hng h
     have hfaith : ∀ z : X, f.orderW z ≠ ⊤ := fun z =>
       MeromorphicFunction.orderW_ne_top_of_exists f hex z
     have hdiv : ∀ x, -(D x) ≤ (f.div : Divisor X) x := by

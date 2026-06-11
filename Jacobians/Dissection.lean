@@ -31,7 +31,6 @@ The **assembly** `realBasis_of_canonicalDissection` (PROVEN here) combines the t
 References: Forster §§20–21; Miranda Ch. V §§1–3; Griffiths–Harris Ch. 2 pp. 231–232; Chai §1.4.
 -/
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 
@@ -39,7 +38,7 @@ open scoped Manifold ContDiff Bundle Topology ComplexOrder
 open Matrix
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- The `ℝ`-linear splitting `Fin g ⊕ Fin g ≃ Fin (2g)` separating the `a`-loops from the `b`-loops
 (`a₁,…,a_g` then `b₁,…,b_g`). -/
@@ -81,7 +80,7 @@ proven from the same cut-surface via Green's theorem (the box-level analytic cor
 input `exists_canonicalDissection`). Bundling them here keeps the public API of
 `exists_periodLattice_realBasis` hypothesis-free. -/
 structure CanonicalDissection (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] where
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] where
   /-- The `2g` symplectic homology-basis loops `a₁,…,a_g,b₁,…,b_g`. -/
   loop : Fin (2 * genus X) → (ℝ → X)
   /-- Each is a closed smooth loop. -/

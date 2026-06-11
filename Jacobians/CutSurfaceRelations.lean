@@ -35,7 +35,6 @@ References: Riemann (1857); Griffiths–Harris pp. 231–232; Springer pp. 139�
 Forster §§20–21.
 -/
 
-set_option linter.unusedSectionVars false
 
 open MeasureTheory Set intervalIntegral Complex Matrix
 open scoped Manifold ContDiff Bundle Topology ComplexOrder
