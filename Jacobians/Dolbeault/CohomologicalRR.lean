@@ -10,27 +10,28 @@
 
   Structure (Forster §16):
   * **Base** `h⁰(0) = 1`: the `h⁰ = l` bridge (`CechH0.h0Dim_eq_lDim`) plus `l(0) = 1`
-    (`RiemannRoch.lDim_zero_eq_one`, Liouville on the compact `X`). CLOSED.
+    (`RiemannRoch.lDim_zero_eq_one`, Liouville on the compact `X`).
   * **Single-point jump** `χ(D + P) = χ(D) + 1`: from the skyscraper short exact sequence
     `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` and its six-term long exact sequence in Čech cohomology
     `0 → H⁰(𝒪_D) → H⁰(𝒪_{D+P}) → ℂ_P → H¹(𝒪_D) → H¹(𝒪_{D+P}) → 0` (the skyscraper has `H^{≥1}=0`).
-    This is **decomposed** into a proven crank and an isolated kernel:
+    This is decomposed into a counting crank and an isolated kernel:
       - `six_term_exact_alt_sum`: alternating dim sum of a 6-term exact sequence of fin-dim spaces
-        is `0` (pure rank–nullity). PROVEN, axiom-clean.
+        is `0` (pure rank–nullity).
       - the H⁰-inclusion `f₁ = h0Incl` (`globalSections D ↪ globalSections (D+P)`, order weakening),
-        its injectivity, and the inclusion-induced `f₄ = h1Map`. PROVEN, axiom-clean.
-      - `chi_jump_of_LES`: runs the crank on a `SkyscraperLES` to get the jump. PROVEN, axiom-clean.
-      - `exists_skyscraperLES`: THE single named honest obligation (a **TRUE** statement), packaging the
-        genuine `ℂ_P` (the 1-dim skyscraper, `finrank = 1` now trivial), the coefficient arrow
-        `f₂ = h0ToSky` with `range f₁ = ker f₂` (`exact₁₂`), the snake-lemma data
-        (`f₃`, exactness `exact₂`/`exact₃`/`surj₄`), and `H¹` finiteness. NOT faked.
-        SOUNDNESS FIX (2026-06-02): the middle term was the H⁰-cokernel with a `skyDim:finrank=1`
-        field that is FALSE at base points; re-pointed to the genuine `ℂ_P` (see `Skyscraper`).
+        its injectivity, and the inclusion-induced `f₄ = h1Map`.
+      - `chi_jump_of_LES`: runs the crank on a `SkyscraperLES` to get the jump.
+      - `exists_skyscraperLES`: THE single named honest obligation (a **TRUE** statement), packaging
+        the genuine `ℂ_P` (the 1-dim skyscraper, `finrank = 1` now trivial), the coefficient arrow
+        `f₂ = h0ToSky` with `range f₁ = ker f₂` (`exact₁₂`), the snake-lemma data (`f₃`, exactness
+        `exact₂`/`exact₃`/`surj₄`), and `H¹` finiteness. (Soundness note: the H⁰-cokernel with a
+        `skyDim : finrank = 1` field would be false at base points; the middle term is the genuine
+        `ℂ_P` — see `Skyscraper`.)
   * **Iterated jump + induction on the divisor** (`Int.induction_on`, `Finsupp.induction`,
-    `Divisor.deg` additivity): pure `ℤ`-bookkeeping built on `chi_jump`. CLOSED.
+    `Divisor.deg` additivity): pure `ℤ`-bookkeeping built on `chi_jump`.
 
-  So: `cohomological_riemannRoch` is proven modulo the single named obligation `exists_skyscraperLES`;
-  everything else (base, the LES crank, the structural arrows, the induction skeleton) is complete.
+  `cohomological_riemannRoch` thus reduces to `exists_skyscraperLES` (discharged in
+  `CohomologicalRRChartDisk`); the base, the LES crank, the structural arrows, and the induction
+  skeleton are all here.
 -/
 import Jacobians.Dolbeault.CohomologicalRRChartDisk
 import Jacobians.Dolbeault.SkyscraperConeRealization
@@ -39,7 +40,6 @@ open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Classical
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
@@ -135,11 +135,12 @@ lemma cannot supply (plus finiteness, discharged unconditionally):
     with the skyscraper stalk `ℂ` (the order-`(−D(P)−1)` principal-part coefficient at `P`);
   * `Subsingleton H¹(Q)` — **acyclicity** of the skyscraper quotient complex.
 
-Both are built by the **star-of-`P` cone construction** (`SkyscraperConeRealization`), which drops the
-impossible singleton-star hypothesis `hstar` (`P ∈ U j → j = i` cannot hold at every overlap point on a
-compact connected `X`).  The construction consumes a single analytic input, `LocallyRealizable 𝔘`:
-the principal-part coefficient `coeffGermLin` is surjective at every cover-set `U j ∋ P` (local
-Mittag–Leffler).  The apex vertex is any `U i ∋ P` (exists since `𝔘` covers `X`). -/
+Both are built by the **star-of-`P` cone construction** (`SkyscraperConeRealization`), which drops
+the impossible singleton-star hypothesis `hstar` (`P ∈ U j → j = i` cannot hold at every overlap
+point on a compact connected `X`). The construction consumes a single analytic input,
+`LocallyRealizable 𝔘`: the principal-part coefficient `coeffGermLin` is surjective at every
+cover-set `U j ∋ P` (local Mittag–Leffler). The apex vertex is any `U i ∋ P` (exists since `𝔘`
+covers `X`). -/
 theorem exists_localRealizationData (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable)
     (D : Divisor X) (P : X) :
     Nonempty (𝔘.LocalRealizationData D P) := by
@@ -153,7 +154,8 @@ theorem exists_localRealizationData (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRea
 local-realization datum `exists_localRealizationData` via the proven snake assembly
 `skyscraperLES_of_localRealization` (which builds the connecting map, all exactness, the LES
 termination, and carries the finiteness instances). -/
-theorem exists_skyscraperLES (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X) (P : X) :
+theorem exists_skyscraperLES (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X)
+    (P : X) :
     Nonempty (SkyscraperLES 𝔘 D P) :=
   (exists_localRealizationData 𝔘 hR D P).elim fun L => ⟨skyscraperLES_of_localRealization L⟩
 
@@ -170,7 +172,8 @@ theorem chi_jump (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divis
 
 /-- **Iterated χ-jump.** `χ(D + n·P) = χ(D) + n` for every integer `n`, by induction on `n` built on
 the unit jump `chi_jump` (both directions). Pure `ℤ`-arithmetic; no analytic content. -/
-theorem chi_add_single (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X) (P : X) (n : ℤ) :
+theorem chi_add_single (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X) (P : X)
+    (n : ℤ) :
     𝔘.chi (D + Finsupp.single P n) = 𝔘.chi D + n := by
   induction n using Int.induction_on with
   | zero => simp [Finsupp.single_zero]

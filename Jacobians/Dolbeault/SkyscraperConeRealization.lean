@@ -5,30 +5,32 @@
   ## What this file is for
 
   `SkyscraperAssembly` builds `LocalRealizationData 𝔘 D P` only under a singleton-star hypothesis
-  `hstar : ∀ j, P ∈ 𝔘.U j → j = i`, which (as recorded on `CohomologicalRR.exists_localRealizationData`)
-  **cannot hold** on a fixed finite cover of a compact connected `X` — overlap points always exist.
+  `hstar : ∀ j, P ∈ 𝔘.U j → j = i`, which (as recorded on
+  `CohomologicalRR.exists_localRealizationData`) **cannot hold** on a fixed finite cover of a
+  compact connected `X` — overlap points always exist.
 
-  This file replaces `hstar` by the *cone / star-of-`P`* argument.  The two skyscraper-irreducible
-  pieces (`e0 : H⁰(Q) ≅ ℂ` and acyclicity `Subsingleton (H¹(Q))`) are built from a single hypothesis,
-  **local Mittag–Leffler on each cover-set** (`LocallyRealizable`): the order-`(−D(P)−1)` principal-part
-  coefficient `coeffGermLin` is surjective at *every* cover-set `U j ∋ P` (for every `D`, `P`).  This is
-  the genuine analytic input; for the canonical chart-disk cover it is the explicit product witness
-  (`SkyscraperProductWitness`).
+  This file replaces `hstar` by the *cone / star-of-`P`* argument. The two skyscraper-irreducible
+  pieces (`e0 : H⁰(Q) ≅ ℂ` and acyclicity `Subsingleton (H¹(Q))`) are built from a single
+  hypothesis, **local Mittag–Leffler on each cover-set** (`LocallyRealizable`): the
+  order-`(−D(P)−1)` principal-part coefficient `coeffGermLin` is surjective at *every* cover-set
+  `U j ∋ P` (for every `D`, `P`). This is the genuine analytic input; for the canonical chart-disk
+  cover it is the explicit product witness (`SkyscraperProductWitness`).
 
   ## The cone construction (no simplicial machinery — just the apex and a triple)
 
-  Fix the apex `i₀ := L.i ∋ P`.  Both pieces reduce to one builder: given a ℂ-valued cochain `c : ι → ℂ`
-  on the star of `P` (the indices `j` with `P ∈ U j`) satisfying the apex ℂ-cocycle condition, build a
-  `B0 = sections0(D+P)` cochain `b` with `coeffGermLin (b j) = c j` on the star (`0` off it) and
-  `δ⁰b ∈ sections1(D)`.  The lift uses `LocallyRealizable` at each star vertex; the cocycle check uses:
-    * **off the star** the `D` and `D+P` bounds coincide on the overlap (`OmegaDGerm_add_single_eq_…`);
+  Fix the apex `i₀ := L.i ∋ P`. Both pieces reduce to one builder: given a ℂ-valued cochain
+  `c : ι → ℂ` on the star of `P` (the indices `j` with `P ∈ U j`) satisfying the apex ℂ-cocycle
+  condition, build a `B0 = sections0(D+P)` cochain `b` with `coeffGermLin (b j) = c j` on the star
+  (`0` off it) and `δ⁰b ∈ sections1(D)`. The lift uses `LocallyRealizable` at each star vertex; the
+  cocycle check uses:
+    * **off the star** the `D` and `D+P` bounds coincide on the overlap
+      (`OmegaDGerm_add_single_eq_…`);
     * **on the star** injectivity of `coeffGermLin` (`ker_coeffGermLin`) plus its
       **restriction-invariance at `P`** (`coeffGermLin_rawRestrictG`, the coefficient analogue of
-      `ordU_comp_openIncl`).
-  For `e0` surjectivity `c ≡ a` (constant); for `Subsingleton H¹(Q)` `c j = coeffGermLin (g_{i₀ j})`,
-  whose apex cocycle identity is exactly the `(i₀,j,k)` component of `δ¹g ∈ sections2(D)`.
+      `ordU_comp_openIncl`). For `e0` surjectivity `c ≡ a` (constant); for `Subsingleton H¹(Q)`
+      `c j = coeffGermLin (g_{i₀ j})`, whose apex cocycle identity is exactly the `(i₀,j,k)`
+      component of `δ¹g ∈ sections2(D)`.
 
-  Everything here is axiom-clean modulo the `LocallyRealizable` hypothesis (no finiteness, no gaps).
 -/
 import Jacobians.Dolbeault.SkyscraperAssembly
 import Jacobians.Dolbeault.CechFinitenessDtwist
@@ -37,7 +39,6 @@ import Jacobians.Dolbeault.CohomologicalH0Finiteness
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 
-set_option linter.unusedSectionVars false
 set_option maxHeartbeats 1000000
 
 namespace Jacobians.Dolbeault
@@ -53,13 +54,15 @@ The order-`k` coefficient at `P` is read in the open submanifold's own chart at 
 unchanged.  This is the coefficient analogue of `CechSection.ordU_comp_openIncl`. -/
 
 /-- **Restriction-invariance of `coeffWFn` at `P`.**  For `W ≤ V` and `P ∈ W`, the order-`k`
-coefficient of `f ∘ openIncl` at `P` (read in `↥W`'s chart) equals that of `f` at `P` (read in `↥V`'s
-chart). -/
-theorem coeffWFn_comp_openIncl {V W : Opens X} (h : W ≤ V) (k : ℤ) (f : V → ℂ) (w : W) :
+coefficient of `f ∘ openIncl` at `P` (read in `↥W`'s chart) equals that of `f` at `P` (read in
+`↥V`'s chart). -/
+theorem coeffWFn_comp_openIncl {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {V W : Opens X} (h : W ≤ V) (k : ℤ) (f : V → ℂ) (w : W) :
     coeffWFn k w (f ∘ openIncl h) = coeffWFn k (openIncl h w) f := by
   obtain ⟨hbase, hev⟩ := restrict_chart_aux h f w
   unfold coeffWFn
-  rw [show (chartAt (H := ℂ) (openIncl h w)) (openIncl h w) = (chartAt (H := ℂ) w) w from hbase.symm]
+  rw [show (chartAt (H := ℂ) (openIncl h w)) (openIncl h w) = (chartAt (H := ℂ) w) w
+    from hbase.symm]
   exact laurentCoeff_congr (hev.filter_mono nhdsWithin_le_nhds)
 
 namespace FiniteCover
@@ -68,9 +71,10 @@ open FiniteFamily
 
 variable (𝔘 : FiniteCover X) (D : Divisor X) (P : X)
 
-/-- **Restriction-invariance of `coeffGermLin` at `P`** (germ-class form).  For `W ≤ V`, `P ∈ W`, and
-a `𝒪_{D+P}`-germ `γ` on `V`, the coefficient of its restriction to `W` equals the coefficient of `γ`:
-the value at `P` is read at the same ambient point in either chart (`coeffWFn_comp_openIncl`). -/
+/-- **Restriction-invariance of `coeffGermLin` at `P`** (germ-class form). For `W ≤ V`, `P ∈ W`, and
+a `𝒪_{D+P}`-germ `γ` on `V`, the coefficient of its restriction to `W` equals the coefficient of
+`γ`: the value at `P` is read at the same ambient point in either chart (`coeffWFn_comp_openIncl`).
+-/
 theorem coeffGermLin_rawRestrictG {V W : Opens X} (h : W ≤ V) (hPV : P ∈ V) (hPW : P ∈ W)
     (γ : OmegaDGerm (D + Finsupp.single P 1) V) :
     coeffGermLin hPW (D := D)
@@ -134,7 +138,8 @@ theorem coeffGermLin_coneLift (hR : 𝔘.LocallyRealizable) (cw : 𝔘.ι → �
     coeffGermLin hj (D := D) ⟨𝔘.coneLift D P hR cw j, 𝔘.coneLift_mem D P hR cw j⟩ = cw j := by
   have hspec := Classical.choose_spec (hR D P j hj (cw j))
   -- `coneLift = choose …` on the star; the membership proofs are irrelevant to `coeffGermLin`.
-  have hval : 𝔘.coneLift D P hR cw j = ((Classical.choose (hR D P j hj (cw j))).1 : MGerm (𝔘.U j)) := by
+  have hval : 𝔘.coneLift D P hR cw j =
+      ((Classical.choose (hR D P j hj (cw j))).1 : MGerm (𝔘.U j)) := by
     classical
     unfold coneLift
     rw [dif_pos hj]
@@ -270,8 +275,8 @@ theorem e0Lin_surjective_of_realizable (hR : 𝔘.LocallyRealizable) {i : 𝔘.�
 /-! ### `Subsingleton H¹(Q)` from local realizability (the cone, apex cochain `coeff g_{i₀ j}`) -/
 
 open Classical in
-/-- The apex ℂ-cochain for acyclicity: `cwOf gB j = coeffGermLin (gB_{i j})` on the star (`P ∈ U j`),
-`0` off it.  Here `i ∋ P` is the apex; `P ∈ U i ⊓ U j` whenever `P ∈ U j`. -/
+/-- The apex ℂ-cochain for acyclicity: `cwOf gB j = coeffGermLin (gB_{i j})` on the star
+(`P ∈ U j`), `0` off it. Here `i ∋ P` is the apex; `P ∈ U i ⊓ U j` whenever `P ∈ U j`. -/
 noncomputable def cwOf {i : 𝔘.ι} (hPi : P ∈ 𝔘.U i)
     {gB : 𝔘.Cochain1} (hgB : gB ∈ 𝔘.sections1 (D + Finsupp.single P 1)) (j : 𝔘.ι) : ℂ :=
   if hj : P ∈ 𝔘.U j then
@@ -288,9 +293,9 @@ theorem cwOf_star {i : 𝔘.ι} (hPi : P ∈ 𝔘.U i)
   classical
   rw [cwOf, dif_pos hj]
 
-/-- **Apex compatibility** (the `δ¹gB` triple identity).  For a `Q`-cocycle `gB` (`δ¹gB ∈ sections2 D`)
-and star indices `j, k` (`P ∈ U j ⊓ U k`), the apex cochain satisfies
-`cwOf k − cwOf j = coeffGermLin gB_{jk}`.  Read at `P` on the triple overlap `U i ⊓ U j ⊓ U k` (which
+/-- **Apex compatibility** (the `δ¹gB` triple identity). For a `Q`-cocycle `gB`
+(`δ¹gB ∈ sections2 D`) and star indices `j, k` (`P ∈ U j ⊓ U k`), the apex cochain satisfies
+`cwOf k − cwOf j = coeffGermLin gB_{jk}`. Read at `P` on the triple overlap `U i ⊓ U j ⊓ U k` (which
 contains `P`), the `(i,j,k)` component of `δ¹gB ∈ 𝒪_D` has coefficient `0`
 (`coeffGermFn_eq_zero_of_mem_OmegaDGerm`), giving (via restriction-invariance)
 `coeff gB_{jk} − coeff gB_{ik} + coeff gB_{ij} = 0`. -/
@@ -362,7 +367,8 @@ theorem cwOf_compat {i : 𝔘.ι} (hPi : P ∈ 𝔘.U i)
   linear_combination -hcoeff0
 
 /-- A `Q`-1-cocycle `mk gB` (`δ¹gB ∈ sections2 D`) lies in `range dQ0`: the cone builder with apex
-`i ∋ P` and cochain `cwOf gB` produces `b` with `δ⁰b − gB ∈ sections1 D`, so `dQ0 (mk b) = mk gB`. -/
+`i ∋ P` and cochain `cwOf gB` produces `b` with `δ⁰b − gB ∈ sections1 D`, so `dQ0 (mk b) = mk gB`.
+-/
 theorem mk_mem_range_dQ0_of_cocycle (hR : 𝔘.LocallyRealizable) {i : 𝔘.ι} (hPi : P ∈ 𝔘.U i)
     (gB : (𝔘.skyscraperTwoStep D P).B1)
     (hcoc : 𝔘.cechDelta1 (gB.1 : 𝔘.Cochain1) ∈ 𝔘.sections2 D) :
@@ -372,16 +378,17 @@ theorem mk_mem_range_dQ0_of_cocycle (hR : 𝔘.LocallyRealizable) {i : 𝔘.ι} 
   set cw := 𝔘.cwOf D P hPi gB.2 with hcw
   refine ⟨Submodule.Quotient.mk (𝔘.coneB0 D P hR cw), ?_⟩
   rw [TwoStepSES.dQ0_mk]
-  -- `dQ0 (mk b) = mk (dB0 b) = mk (δ⁰b)`; need `mk (δ⁰b) = mk gB` in Q1, i.e. `δ⁰b − gB ∈ sections1 D`.
+  -- `dQ0 (mk b) = mk (dB0 b) = mk (δ⁰b)`; need `mk (δ⁰b) = mk gB` in Q1, i.e.
+  -- `δ⁰b − gB ∈ sections1 D`.
   rw [Submodule.Quotient.eq, mem_submoduleOf, Submodule.coe_sub, TwoStepSES.dB0_coe]
   -- the underlying cochain difference is `δ⁰(coneB0) − gB`; apply the cone cocycle lemma.
   exact 𝔘.cechDelta0_coneB0_sub_mem_sections1 D P hR cw gB.2
     (fun j k hjk => 𝔘.cwOf_compat D P hPi gB.2 hcoc j k hjk)
 
-/-- **`Subsingleton (H¹(Q))` from local realizability** (the cone, apex `i ∋ P`).  Every `Q`-1-cocycle
-class is a coboundary (`mk_mem_range_dQ0_of_cocycle`), so `(range dQ0).submoduleOf (ker dQ1) = ⊤` and
-`H¹(Q) = ker dQ1 ⧸ range dQ0` is trivial.  Replaces `SkyscraperAssembly.subsingleton_H1Q` (singleton
-star). -/
+/-- **`Subsingleton (H¹(Q))` from local realizability** (the cone, apex `i ∋ P`). Every
+`Q`-1-cocycle class is a coboundary (`mk_mem_range_dQ0_of_cocycle`), so
+`(range dQ0).submoduleOf (ker dQ1) = ⊤` and `H¹(Q) = ker dQ1 ⧸ range dQ0` is trivial. Replaces
+`SkyscraperAssembly.subsingleton_H1Q` (singleton star). -/
 theorem subsingleton_H1Q_of_realizable (hR : 𝔘.LocallyRealizable) {i : 𝔘.ι} (hPi : P ∈ 𝔘.U i) :
     Subsingleton (𝔘.skyscraperTwoStep D P).H1Q := by
   rw [TwoStepSES.H1Q]
@@ -409,9 +416,10 @@ noncomputable def e0Cone (hR : 𝔘.LocallyRealizable) {i : 𝔘.ι} (hP : P ∈
     (x : (𝔘.skyscraperTwoStep D P).H0Q) :
     𝔘.e0Cone D P hR hP x = 𝔘.e0Lin D P hP x := rfl
 
-/-- **Compatibility of `e0Cone` with the principal-part arrow `h0ToSky`**: `h0ToSky = e0Cone ∘ h0Map`
-(same proof as `SkyscraperAssembly.e0_hcompat`: both sides read the order-`(−D(P)−1)` coefficient of the
-component on `U i`; `h0Map` is `mkQ`, `e0Cone` the descended coefficient). -/
+/-- **Compatibility of `e0Cone` with the principal-part arrow `h0ToSky`**:
+`h0ToSky = e0Cone ∘ h0Map` (same proof as `SkyscraperAssembly.e0_hcompat`: both sides read the
+order-`(−D(P)−1)` coefficient of the component on `U i`; `h0Map` is `mkQ`, `e0Cone` the descended
+coefficient). -/
 theorem e0Cone_hcompat (hR : 𝔘.LocallyRealizable) {i : 𝔘.ι} (hP : P ∈ 𝔘.U i) :
     𝔘.h0ToSky D P hP
       = (𝔘.e0Cone D P hR hP : (𝔘.skyscraperTwoStep D P).H0Q →ₗ[ℂ] ℂ).comp
@@ -430,9 +438,9 @@ theorem e0Cone_hcompat (hR : 𝔘.LocallyRealizable) {i : 𝔘.ι} (hP : P ∈ �
 
 /-- **`LocalRealizationData` from local realizability** — the cone/`hstar`-free assembly, fully
 self-contained.  Given an apex `U i ∋ P` and `LocallyRealizable 𝔘`, the realization datum exists.
-`e0`/`hcompat`/`hQac` are the cone pieces (axiom-clean); `finH1D`/`finH1DP` come from
-`finiteDimensional_cechH1_general` (axiom-clean) and `finH0DP` from the
-`finiteDimensional_globalSections` instance (axiom-clean), so NO finiteness hypothesis is needed. -/
+`e0`/`hcompat`/`hQac` are the cone pieces; `finH1D`/`finH1DP` come from
+`finiteDimensional_cechH1_general` and `finH0DP` from the
+`finiteDimensional_globalSections` instance, so no finiteness hypothesis is needed. -/
 noncomputable def localRealizationData_of_realizable (hR : 𝔘.LocallyRealizable) {i : 𝔘.ι}
     (hP : P ∈ 𝔘.U i) :
     𝔘.LocalRealizationData D P :=
