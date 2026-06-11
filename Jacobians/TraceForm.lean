@@ -2162,7 +2162,8 @@ refactored `traceFunExt`, the branch value `traceFunExt f α y₀ = traceBranchV
 operator `L • id`, where `L` is the chart-pullback removable-singularity limit of the *local
 coefficient* of the raw trace. The local coefficient of the extended trace at the center `y₀`
 recovers exactly `L`:
-`traceLocalCoeff (traceFunExt f α) y₀ y₀ = L = limUnder (𝓝[≠] (c y₀)) (z ↦ traceLocalCoeff (traceFun f α) y₀ (c⁻¹ z))`.
+`traceLocalCoeff (traceFunExt f α) y₀ y₀ = L = limUnder (𝓝[≠] (c y₀)) (z ↦ traceLocalCoeff
+(traceFun f α) y₀ (c⁻¹ z))`.
 
 This is precisely the "local-coefficient matching" the section-smoothness bridge needs at the
 puncture, and it is now a **definitional consequence of the center-frame identity**
@@ -2276,7 +2277,8 @@ theorem traceExtendsAt_branchPoint (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(
   have hG_diff : DifferentiableOn ℂ G (s \ {z₀}) := by
     intro z hz
     obtain ⟨hz_off, hz_src⟩ := hpunct_off z hz
-    -- `Hraw` is `ContMDiffAt (c.symm z)`; its `y₀`-chart pullback is differentiable at `c (c.symm z) = z`.
+    -- `Hraw` is `ContMDiffAt (c.symm z)`; its `y₀`-chart pullback is differentiable at `c (c.symm
+    -- z) = z`.
     have hHraw_smooth : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ, ℂ) ω Hraw (c.symm z) :=
       contMDiffAt_traceLocalCoeff_of_notMem_branchLocus f hf hnonconst α y₀ hz_off hz_src
     have hdiff := differentiableAt_chartPullback_of_contMDiffAt (y₀ := y₀) hHraw_smooth hz_src

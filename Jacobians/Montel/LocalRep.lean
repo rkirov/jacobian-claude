@@ -23,6 +23,7 @@ namespace Jacobians.Montel
 open scoped Manifold ContDiff
 open Bundle
 
+section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -37,7 +38,11 @@ noncomputable def localRep
     (x₀ : X) (y : X) : ℂ :=
   α.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- Outside the trivialization's base set, `localRep α x₀` is zero (junk value
 from `Trivialization.symm_apply_of_notMem`). -/
 theorem localRep_eq_zero_of_notMem_baseSet
@@ -53,9 +58,19 @@ theorem localRep_eq_zero_of_notMem_baseSet
   rw [this]
   exact map_zero (α.toFun y)
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Continuity on the trivialization base set -/
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- A constant section of a vector bundle (via inverse trivialization) is
 continuous on the trivialization's base set.
 
@@ -84,7 +99,17 @@ theorem continuousOn_symmL_const
   intro y hy
   simpa using Trivialization.mk_symm e hy v
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- `localRep α x₀` is continuous on the trivialization's base set. -/
 theorem localRep_continuousOn
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
@@ -106,9 +131,19 @@ theorem localRep_continuousOn
     continuous_snd.comp (Bundle.Trivial.homeomorphProd X ℂ).continuous
   exact hproj.comp_continuousOn hap
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Behavior under vector-space operations -/
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- `localRep` is additive: `localRep (α + β) = localRep α + localRep β`. -/
 theorem localRep_add
     (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
@@ -123,7 +158,17 @@ theorem localRep_add
   rw [this]
   rfl
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- `localRep` is homogeneous: `localRep (c • α) = c • localRep α`. -/
 theorem localRep_smul (c : ℂ)
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
@@ -138,7 +183,17 @@ theorem localRep_smul (c : ℂ)
   rw [this]
   rfl
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- `localRep` on a negation: `localRep (-α) = -localRep α`. -/
 theorem localRep_neg
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
@@ -153,4 +208,12 @@ theorem localRep_neg
   rw [this]
   rfl
 
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
 end Jacobians.Montel

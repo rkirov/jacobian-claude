@@ -118,7 +118,8 @@ section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- **The chart pullback `holoRepr ∘ (chartAt x).symm` is analytic at a target point of a non-pole.**
+/-- **The chart pullback `holoRepr ∘ (chartAt x).symm` is analytic at a target point of a
+non-pole.**
 The analytic analogue of `meromorphicAt_toFun_chartPullback`: at `y₀ := (chartAt x).symm z`, where
 `f` has nonnegative order, `holoRepr ∘ (chartAt y₀).symm` is analytic at its own chart centre
 (`analyticAt_holoRepr_chartPullback_of_orderNonneg`); the chart transition
@@ -249,7 +250,8 @@ theorem toRiemannSphere_not_isConstant_of_div_ne_zero (f : MeromorphicFunction X
 
 /-- **All fibres of `F = toRiemannSphere` are finite** for a non-constant `f` (`f.div ≠ 0`).
 Direct from the unconditional finite-fibres theorem (`fibres_finite_statement_unconditional`)
-applied to the ContMDiff sphere map (`contMDiff_toRiemannSphere`), using the non-constancy bridge. -/
+applied to the ContMDiff sphere map (`contMDiff_toRiemannSphere`), using the non-constancy bridge.
+-/
 theorem fibre_finite_of_div_ne_zero (f : MeromorphicFunction X)
     (hnc : (f.div : Divisor X) ≠ 0) (w : RiemannSphere) :
     (f.toRiemannSphere ⁻¹' {w}).Finite :=
@@ -394,7 +396,8 @@ theorem exists_sheetDatum_coe (f : MeromorphicFunction X) (hnc : (f.div : Diviso
   have hg_val : g (e x) = c := by
     show f.holoRepr (e.symm (e x)) = c; rw [e.left_inv (mem_chart_source ℂ x), hrepr]
   have hgc_an : AnalyticAt ℂ (fun z => g z - c) (e x) := hg_an.sub analyticAt_const
-  -- The analytic order of `g − c` at `e x` is a natural `m ≥ 1` (value `0`, finite by finite fibre).
+  -- The analytic order of `g − c` at `e x` is a natural `m ≥ 1` (value `0`, finite by finite
+  -- fibre).
   have hval0 : (fun z => g z - c) (e x) = 0 := by show g (e x) - c = 0; rw [hg_val]; ring
   have hne_zero : analyticOrderAt (fun z => g z - c) (e x) ≠ 0 :=
     (hgc_an.analyticOrderAt_ne_zero).mpr hval0
@@ -458,7 +461,8 @@ theorem exists_sheetDatum_coe (f : MeromorphicFunction X) (hnc : (f.div : Diviso
   have hε_tgt : ball (e x) ε ⊆ e.target := (ball_subset_ball hε_le_R).trans hcond_a
   have hε_V : e.symm '' (ball (e x) ε ∩ e.target) ⊆ V := by
     rintro y ⟨z, ⟨hz_ball, _⟩, rfl⟩
-    exact hcond_b ⟨z, ⟨ball_subset_ball hε_le_R hz_ball, hcond_a (ball_subset_ball hε_le_R hz_ball)⟩,
+    exact hcond_b ⟨z, ⟨ball_subset_ball hε_le_R hz_ball,
+      hcond_a (ball_subset_ball hε_le_R hz_ball)⟩,
       rfl⟩
   have hε_c : ∀ z ∈ ball (e x) ε, z ≠ e x → g z ≠ c :=
     fun z hz => hcond_c z (ball_subset_ball hε_le_R hz)
@@ -607,7 +611,8 @@ the analytic input the planar engine consumes at `w₀ = 0`. -/
 theorem exists_reciprocal_NF (f : MeromorphicFunction X) {x : X} (hx_pole : f.orderAtPoint x < 0) :
     ∃ (h : ℂ → ℂ) (m : ℕ), 1 ≤ m ∧ (m : ℤ) = -f.orderAtPoint x ∧
       AnalyticAt ℂ h ((chartAt (H := ℂ) x) x) ∧
-      ((fun z => (f.holoRepr ((chartAt (H := ℂ) x).symm z))⁻¹) =ᶠ[𝓝[≠] ((chartAt (H := ℂ) x) x)] h) ∧
+      ((fun z => (f.holoRepr ((chartAt (H := ℂ) x).symm z))⁻¹)
+        =ᶠ[𝓝[≠] ((chartAt (H := ℂ) x) x)] h) ∧
       h ((chartAt (H := ℂ) x) x) = 0 ∧
       analyticOrderAt h ((chartAt (H := ℂ) x) x) = (m : ℕ∞) := by
   set e := chartAt (H := ℂ) x with he
@@ -719,7 +724,8 @@ theorem exists_sheetDatum_infty (f : MeromorphicFunction X) (_hnc : (f.div : Div
         _ = e x := by rw [hcontra]
     filter_upwards [hsymm_t, hsymm_ne] with z hzt hzne hne
     exact ht (e.symm z) hzt (hzne hne)
-  -- Choose the outer radius `R`: ball inside `e.target`, `e.symm '' ball ⊆ V`, `h = (G ·)⁻¹` off the
+  -- Choose the outer radius `R`: ball inside `e.target`, `e.symm '' ball ⊆ V`, `h = (G ·)⁻¹` off
+  -- the
   -- centre, and no other pole of `f` (order `0` off the centre) throughout it.
   have hsymmV : e.symm ⁻¹' V ∈ 𝓝 (e x) := by
     apply (e.continuousAt_symm (e.map_source (mem_chart_source ℂ x))).preimage_mem_nhds
@@ -743,7 +749,8 @@ theorem exists_sheetDatum_infty (f : MeromorphicFunction X) (_hnc : (f.div : Div
   have hε_tgt : ball (e x) ε ⊆ e.target := (ball_subset_ball hε_le_R).trans hcond_a
   have hε_V : e.symm '' (ball (e x) ε ∩ e.target) ⊆ V := by
     rintro y ⟨z, ⟨hz_ball, _⟩, rfl⟩
-    exact hcond_b ⟨z, ⟨ball_subset_ball hε_le_R hz_ball, hcond_a (ball_subset_ball hε_le_R hz_ball)⟩,
+    exact hcond_b ⟨z, ⟨ball_subset_ball hε_le_R hz_ball,
+      hcond_a (ball_subset_ball hε_le_R hz_ball)⟩,
       rfl⟩
   have hε_recip : ∀ z ∈ ball (e x) ε, z ≠ e x → h z = (G z)⁻¹ :=
     fun z hz => hcond_recip z (ball_subset_ball hε_le_R hz)
@@ -799,7 +806,8 @@ theorem exists_sheetDatum_infty (f : MeromorphicFunction X) (_hnc : (f.div : Div
       simp only [Set.mem_preimage, RiemannSphere.invMap_coe_of_ne hc'_ne, Set.mem_image] at hwW
       obtain ⟨d, hd_ball, hd⟩ := hwW
       rwa [show c'⁻¹ = d from (OnePoint.coe_injective hd).symm]
-    -- For `z` off the centre in the ball: `G z = c' ↔ h z = c'⁻¹` (via `h = (G ·)⁻¹` and `inv_inv`).
+    -- For `z` off the centre in the ball: `G z = c' ↔ h z = c'⁻¹` (via `h = (G ·)⁻¹` and
+    -- `inv_inv`).
     have hGc_iff : ∀ z ∈ ball (e x) ε, z ≠ e x → (h z = c'⁻¹ ↔ G z = c') := by
       intro z hz_ball hzne
       rw [hε_recip z hz_ball hzne]
@@ -846,7 +854,8 @@ theorem exists_sheetDatum_infty (f : MeromorphicFunction X) (_hnc : (f.div : Div
     apply finsum_mem_congr rfl
     intro y hy
     obtain ⟨za, hza, rfl⟩ := hy.1
-    -- Match the summand `localDeg f (coe c') (e.symm za) = (meromorphicOrderAt (h − c'⁻¹) za).untop₀`.
+    -- Match the summand `localDeg f (coe c') (e.symm za) = (meromorphicOrderAt (h − c'⁻¹)
+    -- za).untop₀`.
     have hy_src : e.symm za ∈ e.source := e.map_target hza.2
     have hza_tgt : za ∈ e.target := hza.2
     have hza_ball : za ∈ ball (e x) ε := hza.1
@@ -857,7 +866,8 @@ theorem exists_sheetDatum_infty (f : MeromorphicFunction X) (_hnc : (f.div : Div
       rw [e.left_inv (mem_chart_source ℂ x)] at hFy
       rw [hFx] at hFy; exact (OnePoint.coe_ne_infty c') hFy.symm
     have hGza : G za = c' := (hFib_iff za hza_ball hzne).mp hFy
-    -- `h = (G ·)⁻¹` on a full neighbourhood of `za` (interior, off the centre); `G` analytic at `za`.
+    -- `h = (G ·)⁻¹` on a full neighbourhood of `za` (interior, off the centre); `G` analytic at
+    -- `za`.
     have heq_nhds : (fun ζ => (G ζ)⁻¹) =ᶠ[𝓝 za] h := by
       have hopen : IsOpen (ball (e x) ε \ {e x}) := isOpen_ball.sdiff isClosed_singleton
       have hza_mem : za ∈ ball (e x) ε \ {e x} := ⟨hza_ball, by simp [hzne]⟩
@@ -865,7 +875,8 @@ theorem exists_sheetDatum_infty (f : MeromorphicFunction X) (_hnc : (f.div : Div
       exact (hε_recip ζ hζ.1 (by simpa using hζ.2)).symm
     have hnp_za : 0 ≤ f.orderAtPoint (e.symm za) := le_of_eq (hε_np za hza_ball hzne).symm
     have hGana : AnalyticAt ℂ G za := analyticAt_holoRepr_chartPullback_target f x hza_tgt hnp_za
-    -- The order computation: `localDeg = order(toFun − c') = order(holoRepr − c') = order(h − c'⁻¹)`.
+    -- The order computation: `localDeg = order(toFun − c') = order(holoRepr − c') = order(h −
+    -- c'⁻¹)`.
     rw [localDeg_coe_eq_chartPullback_order f c' e (chart_mem_atlas ℂ x) hy_src,
       e.right_inv hza.2, ← meromorphicOrderAt_holoRepr_sub_eq f x c' hza_tgt]
     congr 1

@@ -26,38 +26,9 @@ namespace Jacobians.ULiftManifold
 
 universe u
 
-variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
-variable {M : Type*} [TopologicalSpace M] [ChartedSpace E M]
+variable {E : Type*} [NormedAddCommGroup E]
+variable {M : Type*} [TopologicalSpace M]
 
-/-- The chart of `ULift M` at `z`: relabel `M`'s chart through `ULift M ≃ₜ M`.
-As a function it is `(chartAt E z.down) ∘ ULift.down`. -/
-noncomputable def chart (z : ULift.{u} M) : OpenPartialHomeomorph (ULift.{u} M) E :=
-  Homeomorph.ulift.transOpenPartialHomeomorph (chartAt E z.down)
-
-/-- `ULift M` is a charted space over `E`, with charts the relabelled charts of `M`. -/
-noncomputable instance instChartedSpace : ChartedSpace E (ULift.{u} M) where
-  atlas := (fun c => Homeomorph.ulift.transOpenPartialHomeomorph c) '' atlas E M
-  chartAt z := chart z
-  mem_chart_source z := by
-    simp only [chart, Homeomorph.transOpenPartialHomeomorph_source, mem_preimage]
-    exact mem_chart_source E z.down
-  chart_mem_atlas z := ⟨chartAt E z.down, chart_mem_atlas E z.down, rfl⟩
-
-omit [NormedSpace ℂ E] in
-@[simp]
-theorem chartAt_eq (z : ULift.{u} M) :
-    (chartAt E z : OpenPartialHomeomorph (ULift.{u} M) E) = chart z := rfl
-
-omit [NormedSpace ℂ E] in
-theorem chart_apply (z w : ULift.{u} M) :
-    chart (E := E) z w = chartAt E z.down w.down := rfl
-
-omit [NormedSpace ℂ E] in
-theorem chart_source (z : ULift.{u} M) :
-    (chart (E := E) z).source = ULift.down ⁻¹' (chartAt E z.down).source := by
-  rw [chart, Homeomorph.transOpenPartialHomeomorph_source]; rfl
-
-omit [NormedSpace ℂ E] [ChartedSpace E M] in
 /-- The transition map between two relabelled charts equals the transition map of `M` between the
 underlying charts: the `ULift` relabel and its inverse cancel. This is the key step that lands
 the
@@ -75,6 +46,35 @@ theorem trans_relabel (c c' : OpenPartialHomeomorph M E) :
     ← Homeomorph.symm_toOpenPartialHomeomorph,
     ← Homeomorph.trans_toOpenPartialHomeomorph, Homeomorph.symm_trans_self,
     Homeomorph.refl_toOpenPartialHomeomorph, OpenPartialHomeomorph.refl_trans]
+
+variable [ChartedSpace E M]
+
+/-- The chart of `ULift M` at `z`: relabel `M`'s chart through `ULift M ≃ₜ M`.
+As a function it is `(chartAt E z.down) ∘ ULift.down`. -/
+noncomputable def chart (z : ULift.{u} M) : OpenPartialHomeomorph (ULift.{u} M) E :=
+  Homeomorph.ulift.transOpenPartialHomeomorph (chartAt E z.down)
+
+/-- `ULift M` is a charted space over `E`, with charts the relabelled charts of `M`. -/
+noncomputable instance instChartedSpace : ChartedSpace E (ULift.{u} M) where
+  atlas := (fun c => Homeomorph.ulift.transOpenPartialHomeomorph c) '' atlas E M
+  chartAt z := chart z
+  mem_chart_source z := by
+    simp only [chart, Homeomorph.transOpenPartialHomeomorph_source, mem_preimage]
+    exact mem_chart_source E z.down
+  chart_mem_atlas z := ⟨chartAt E z.down, chart_mem_atlas E z.down, rfl⟩
+
+@[simp]
+theorem chartAt_eq (z : ULift.{u} M) :
+    (chartAt E z : OpenPartialHomeomorph (ULift.{u} M) E) = chart z := rfl
+
+theorem chart_apply (z w : ULift.{u} M) :
+    chart (E := E) z w = chartAt E z.down w.down := rfl
+
+theorem chart_source (z : ULift.{u} M) :
+    (chart (E := E) z).source = ULift.down ⁻¹' (chartAt E z.down).source := by
+  rw [chart, Homeomorph.transOpenPartialHomeomorph_source]; rfl
+
+variable [NormedSpace ℂ E]
 
 /-- `ULift M` is a `C^ω` manifold modelled on `E`: its transition maps are those of `M`,
 hence lie in `contDiffGroupoid ω 𝓘(ℂ, E)`. -/

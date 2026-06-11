@@ -40,6 +40,7 @@ namespace Jacobians.Montel
 open scoped Manifold ContDiff Topology
 open Bundle Filter
 
+section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -51,7 +52,12 @@ For `x₀ ∈ chartCover`, `shrunkChart x₀` is a compact subset of
 We bundle this as `C(shrunkChart x₀, ℂ)` for downstream Arzelà–Ascoli.
 -/
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- `shrunkChart x₀` is contained in the trivialization base set at `x₀`,
 provided `x₀ ∈ chartCover`. -/
 theorem shrunkChart_subset_baseSet (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
@@ -60,7 +66,18 @@ theorem shrunkChart_subset_baseSet (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Fi
   rw [TangentBundle.trivializationAt_baseSet]
   exact shrunkChart_subset_source x₀ hx₀
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- `localRep α x₀` is continuous on the compact `shrunkChart x₀` for
 `x₀ ∈ chartCover`. -/
 theorem localRep_continuousOn_shrunkChart
@@ -70,12 +87,28 @@ theorem localRep_continuousOn_shrunkChart
     ContinuousOn (localRep α x₀) (shrunkChart (X := X) x₀) :=
   (localRep_continuousOn α x₀).mono (shrunkChart_subset_baseSet x₀ hx₀)
 
-omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+
 /-- The compact subtype `shrunkChart x₀` is a compact topological space
 (automatic from `shrunkChart_isCompact`). -/
 theorem shrunkChart_compactSpace (x₀ : X) :
     CompactSpace (shrunkChart (X := X) x₀) :=
   isCompact_iff_compactSpace.mp (shrunkChart_isCompact x₀)
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- `localRep α x₀` bundled as a continuous map on the compact
 `shrunkChart x₀`. Requires `x₀ ∈ chartCover` so that the shrunk chart
@@ -101,7 +134,12 @@ noncomputable def localRepOnShrunk
       { toFun := fun _ => 0
         continuous_toFun := continuous_const }
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- On the shrunk chart (for `x₀ ∈ chartCover`), `localRepOnShrunk` agrees
 pointwise with `localRep`. -/
 theorem localRepOnShrunk_apply
@@ -112,6 +150,12 @@ theorem localRepOnShrunk_apply
     localRepOnShrunk α x₀ y = localRep α x₀ (y : X) := by
   unfold localRepOnShrunk
   simp [hx₀]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Step B.2 — pointwise norm bound on `localRepOnShrunk`
 
@@ -125,7 +169,12 @@ because the component-wise bound is what downstream Arzelà–Ascoli
 actually consumes; product-norm bookkeeping adds complexity without
 unlocking new content. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- Component-wise bound: for `x₀ ∈ chartCover`, the bundled continuous
 map `localRepOnShrunk α x₀` on the compact shrunk chart has norm ≤ the
 global Montel sup-norm `supNormK α`. -/
@@ -155,6 +204,12 @@ theorem norm_localRepOnShrunk_le_supNormK
     rw [h0, norm_zero]
     exact HolomorphicOneForms.supNormK_nonneg α
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Inner analog: `localRepOnInnerShrunk` on `innerShrunkChart`
 
 Inner closed shrinkage `innerShrunkChart x₀ ⊆ chartOpen x₀ ⊆ shrunkChart x₀`
@@ -163,13 +218,29 @@ gives the Arzelà–Ascoli domain: compact, covers X (in union over
 `supNormK α` bounds `|localRep α x₀|`. This unlocks Cauchy-estimate
 equicontinuity. -/
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 theorem innerShrunkChart_subset_baseSet (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
     innerShrunkChart (X := X) x₀ ⊆
       (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet :=
   (innerShrunkChart_subset_shrunkChart x₀).trans (shrunkChart_subset_baseSet x₀ hx₀)
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 theorem localRep_continuousOn_innerShrunkChart
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
@@ -177,10 +248,26 @@ theorem localRep_continuousOn_innerShrunkChart
     ContinuousOn (localRep α x₀) (innerShrunkChart (X := X) x₀) :=
   (localRep_continuousOn α x₀).mono (innerShrunkChart_subset_baseSet x₀ hx₀)
 
-omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+
 theorem innerShrunkChart_compactSpace (x₀ : X) :
     CompactSpace (innerShrunkChart (X := X) x₀) :=
   isCompact_iff_compactSpace.mp (innerShrunkChart_isCompact x₀)
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- `localRep α x₀` bundled as a continuous map on the compact inner
 `innerShrunkChart x₀`. Fallback to constant zero for `x₀ ∉ chartCover`
@@ -200,7 +287,12 @@ noncomputable def localRepOnInnerShrunk
       { toFun := fun _ => 0
         continuous_toFun := continuous_const }
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 theorem localRepOnInnerShrunk_apply
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
@@ -210,7 +302,18 @@ theorem localRepOnInnerShrunk_apply
   unfold localRepOnInnerShrunk
   simp [hx₀]
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- Component-wise bound for the inner version: same `supNormK` bound
 as outer, since `innerShrunkChart ⊆ shrunkChart` and the norm bound on
 outer lifts to inner. -/
@@ -239,6 +342,12 @@ theorem norm_localRepOnInnerShrunk_le_supNormK
     rw [h0, norm_zero]
     exact HolomorphicOneForms.supNormK_nonneg α
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Bridge: open-neighborhood bound on `localRep`
 
 The `Cover.lean` refactor exposes an open layer `chartOpen x₀` sitting
@@ -247,7 +356,12 @@ inside the outer closed `shrunkChart x₀`. Since `supNormK α` bounds
 `chartOpen x₀` — giving Arzelà–Ascoli the wiggle room it needs to apply
 Cauchy estimates on a neighborhood of the inner compact. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- `|localRep α x₀| ≤ supNormK α` on the OPEN layer `chartOpen x₀`
 (for `x₀ ∈ chartCover`). Since `chartOpen x₀ ⊆ shrunkChart x₀`, this is
 immediate from `norm_localRep_le_supNormK`. -/
@@ -260,11 +374,27 @@ theorem norm_localRep_le_supNormK_on_chartOpen
   HolomorphicOneForms.norm_localRep_le_supNormK α hx₀
     (chartOpen_subset_shrunkChart x₀ hy)
 
-omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+
 /-- `chartOpen x₀` is contained in the chart source for `x₀ ∈ chartCover`. -/
 theorem chartOpen_subset_source (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
     chartOpen (X := X) x₀ ⊆ (chartAt ℂ x₀).source :=
   (chartOpen_subset_shrunkChart x₀).trans (shrunkChart_subset_source x₀ hx₀)
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Step B.3 — `localRep` is analytic in chart coordinates
 
@@ -292,7 +422,11 @@ target (an open subset of `ℂ`).
 6. `contDiffOn_omega_iff_analyticOn` on the open chart target
    concludes `AnalyticOn`. -/
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- The trivialization base set at `x₀` equals `(chartAt ℂ x₀).source`
 (specialization of `TangentBundle.trivializationAt_baseSet`). -/
 theorem baseSet_eq_chartAt_source (x₀ : X) :
@@ -300,7 +434,17 @@ theorem baseSet_eq_chartAt_source (x₀ : X) :
       (chartAt ℂ x₀).source :=
   TangentBundle.trivializationAt_baseSet x₀
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- The constant-1 tangent-frame section
 `y ↦ (trivializationAt …).symmL ℂ y 1` is smooth as a bundle section
 on the trivialization's base set. Proof: via
@@ -337,7 +481,17 @@ theorem contMDiffOn_frame
     simp [(trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).apply_symm_apply' hy]
   exact contMDiffOn_const.congr hconst
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- Scalar smoothness of `localRep α x₀` as a function `X → ℂ` on the
 chart source (= trivialization base set). Combines `α.contMDiff_toFun`,
 `contMDiffOn_frame`, and `ContMDiffOn.clm_bundle_apply` via scalar
@@ -367,7 +521,17 @@ theorem localRep_contMDiffOn
     simp [Bundle.Trivial.trivialization]
   exact h.congr (fun x _ => heqPt x) (heqPt y)
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Step B.3 — the holomorphicity bridge.**
 In chart coordinates at `x₀`, the local representative of a holomorphic
 1-form α is analytic on the chart target.
@@ -416,6 +580,12 @@ theorem localRep_analyticOn_chartTarget
   -- Step 3: ContDiffOn ω ↔ AnalyticOn via UniqueDiffOn on open set.
   exact (contDiffOn_omega_iff_analyticOn (chartAt ℂ x₀).open_target.uniqueDiffOn).mp hCD
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Chart-image bridge to complex analysis
 
 The chart image `(chartAt ℂ x₀) '' chartOpen x₀` is open in `ℂ`, and on
@@ -423,14 +593,28 @@ it the pullback `localRep α x₀ ∘ chart.symm` is both analytic (from B.3
 + monotonicity) and bounded by `supNormK α` (from the open-neighborhood
 bound). This is the direct input to Arzelà–Ascoli on the chart side. -/
 
-omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+
 /-- The chart image of `chartOpen x₀` is open in `ℂ`. -/
 theorem isOpen_chart_image_chartOpen (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
     IsOpen ((chartAt ℂ x₀) '' chartOpen (X := X) x₀) := by
   apply (chartAt ℂ x₀).isOpen_image_iff_of_subset_source (chartOpen_subset_source x₀ hx₀) |>.mpr
   exact chartOpen_isOpen x₀
 
-omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+
 /-- The chart image of `chartOpen x₀` sits inside the chart target. -/
 theorem chart_image_chartOpen_subset_target (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
     (chartAt ℂ x₀) '' chartOpen (X := X) x₀ ⊆ (chartAt ℂ x₀).target := by
@@ -438,7 +622,17 @@ theorem chart_image_chartOpen_subset_target (x₀ : X) (hx₀ : x₀ ∈ (chartC
   obtain ⟨y, hy, rfl⟩ := hz
   exact (chartAt ℂ x₀).map_source (chartOpen_subset_source x₀ hx₀ hy)
 
-omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+
 /-- `innerChartOpen x₀ ⊆ (chartAt ℂ x₀).source` for `x₀ ∈ chartCover`.
 `innerChartOpen ⊆ closure(innerChartOpen) ⊆ chartOpen ⊆ chartAt source`. -/
 theorem innerChartOpen_subset_source
@@ -447,7 +641,17 @@ theorem innerChartOpen_subset_source
   (subset_closure.trans (closure_innerChartOpen_subset_chartOpen x₀)).trans
     (chartOpen_subset_source x₀ hx₀)
 
-omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+
 /-- The chart image of `innerChartOpen x₀` is open in `ℂ`. -/
 theorem isOpen_chart_image_innerChartOpen
     (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
@@ -456,7 +660,17 @@ theorem isOpen_chart_image_innerChartOpen
     (innerChartOpen_subset_source x₀ hx₀) |>.mpr
   exact innerChartOpen_isOpen x₀
 
-omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+
 /-- The chart image of `innerChartOpen x₀` sits inside the chart target. -/
 theorem chart_image_innerChartOpen_subset_target
     (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
@@ -465,7 +679,18 @@ theorem chart_image_innerChartOpen_subset_target
   obtain ⟨y, hy, rfl⟩ := hz
   exact (chartAt ℂ x₀).map_source (innerChartOpen_subset_source x₀ hx₀ hy)
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- Pullback analyticity on the chart image of `innerChartOpen x₀`. -/
 theorem localRep_analyticOn_chart_image_innerChartOpen
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
@@ -476,7 +701,18 @@ theorem localRep_analyticOn_chart_image_innerChartOpen
   (localRep_analyticOn_chartTarget α x₀).mono
     (chart_image_innerChartOpen_subset_target x₀ hx₀)
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- Pullback analyticity on the chart image of `chartOpen x₀`. Direct
 specialization of `localRep_analyticOn_chartTarget` via
 `AnalyticOn.mono`. -/
@@ -488,7 +724,18 @@ theorem localRep_analyticOn_chart_image_chartOpen
       ((chartAt ℂ x₀) '' chartOpen (X := X) x₀) :=
   (localRep_analyticOn_chartTarget α x₀).mono (chart_image_chartOpen_subset_target x₀ hx₀)
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- The pullback `localRep α x₀ ∘ chart.symm` is bounded by `supNormK α`
 on the chart image of `chartOpen x₀`. -/
 theorem norm_localRep_pullback_le_supNormK_on_chart_image_chartOpen
@@ -503,6 +750,12 @@ theorem norm_localRep_pullback_le_supNormK_on_chart_image_chartOpen
     rw [← hzy]; exact (chartAt ℂ x₀).left_inv hy_src
   rw [hsymm]
   exact norm_localRep_le_supNormK_on_chartOpen α hx₀ hy
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Step B.4 — Cauchy estimate: uniform derivative bound on compacta
 
@@ -562,7 +815,12 @@ theorem analyticOn_of_tendstoLocallyUniformlyOn
       (by filter_upwards [hF] with n hn using hn.differentiableOn) hU
   exact h_diff.analyticOn hU
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Chart-pullback analytic limit.** Given a sequence of holomorphic
 1-forms whose chart-pullbacks converge locally uniformly on
 `chart '' chartOpen x₀`, the limit function is analytic there.
@@ -585,7 +843,18 @@ theorem analyticOn_of_pullback_tendsto_locally_uniformly
   filter_upwards with n
   exact localRep_analyticOn_chart_image_chartOpen (αf n) x₀ hx₀
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Chart-pullback analytic limit on `innerChartOpen`.** Inner-open
 variant of `analyticOn_of_pullback_tendsto_locally_uniformly`. Needed
 when we can only establish locally uniform convergence on the smaller
@@ -605,6 +874,12 @@ theorem analyticOn_of_pullback_tendsto_locally_uniformly_inner
     (isOpen_chart_image_innerChartOpen x₀ hx₀) hconv
   filter_upwards with n
   exact localRep_analyticOn_chart_image_innerChartOpen (αf n) x₀ hx₀
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Step B.5 — Uniform Lipschitz bound on convex compacta
 
@@ -694,7 +969,12 @@ The proof goes through the chart `φ = chartAt ℂ x₀`:
    `|localRep α x₀ y - localRep α x₀ y₀|`. Chart continuity at `y₀`
    ensures such `y` form a neighborhood of `y₀` in the subtype. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- For a holomorphic 1-form bounded by `M` under `supNormK`, the
 pullback through the chart at `x₀` is bounded by `M` on
 `chart '' chartOpen x₀`. Packaging of earlier bridge lemmas. -/
@@ -710,13 +990,24 @@ theorem norm_localRep_pullback_le_of_supNormK_le
         norm_localRep_pullback_le_supNormK_on_chart_image_chartOpen α hx₀ hz
     _ ≤ M := hαM
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step B.7b — Equicontinuity of the inner family
 
 Assembles local equicontinuity via B.6 on a closed ball inside
 `chart '' chartOpen`, then transfers back to `innerShrunkChart x₀` via
 chart continuity. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Equicontinuity of the inner family.**
 For each `y₀ : innerShrunkChart x₀` and ε > 0, there's an X-nbhd V of
 `y₀.val` with: `‖localRep α x₀ y - localRep α x₀ y₀.val‖ < ε` for all
@@ -821,7 +1112,18 @@ theorem equicontinuousAt_localRep_on_innerShrunkChart
   rw [hsymm_y, hsymm_y₀, dist_eq_norm] at hFbound
   exact hFbound.le
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Equicontinuous family on `innerShrunkChart x₀`.**
 The family indexed by `α` with `supNormK α ≤ M` of functions
 `(y : innerShrunkChart x₀) ↦ localRep α x₀ y.val` is `Equicontinuous`,
@@ -858,13 +1160,24 @@ theorem equicontinuous_localRep_inner_family
     _ ≤ ε/2 := this
     _ < ε := by linarith
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step B.8 — Arzelà–Ascoli on each chart
 
 Applies `BoundedContinuousFunction.arzela_ascoli` per chart: bounded +
 equicontinuous (both now in place) gives relative compactness of the
 inner-shrunk-chart image in `α →ᵇ ℂ`. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Per-chart relative compactness.**
 The image of the supNormK-`M`-ball under `α ↦ mkOfCompact ∘
 localRepOnInnerShrunk α x₀` has compact closure in
@@ -918,6 +1231,12 @@ theorem isCompact_closure_image_inner_bcf
     rw [hcomp]
     exact hFbcf_fn.comp u
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step B.9 step 1 — Product compactness over `X` (all-index form)
 
 The univ-indexed product of closures is compact: for `x₀ ∉ chartCover`,
@@ -926,7 +1245,12 @@ for `x₀ ∈ chartCover`, B.8 gives compact closure. Either way each
 factor is compact; by `isCompact_univ_pi`, the infinite product is
 compact. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Product compactness.**
 Product over all `x₀ : X` of per-chart closures. Each factor is either
 compact by B.8 (for `x₀ ∈ chartCover`) or a single-point singleton (for
@@ -965,7 +1289,18 @@ theorem isCompact_univ_pi_closure_image_inner_bcf
       isClosed_closure ?_
     exact (isClosed_singleton.closure_subset_iff).mpr hrange_sub
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Step B.9 step 2 — Embedding lands in the compact product.**
 For each α with `supNormK α ≤ M`, the associated function
 `x₀ ↦ mkOfCompact (localRepOnInnerShrunk α x₀)` lies in the compact
@@ -988,6 +1323,12 @@ theorem embedding_in_univ_pi_closure
   intro x₀ _
   exact subset_closure ⟨α, rfl⟩
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Linearity of the bcf-embedding components
 
 Pure algebraic facts about the embedding maps used in B.9/B.10:
@@ -995,7 +1336,12 @@ Pure algebraic facts about the embedding maps used in B.9/B.10:
 in α. No topology involved — just the vector-space structure of
 `ContMDiffSection` + pointwise linearity of `localRep`. -/
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- `localRepOnInnerShrunk` is additive in α. -/
 theorem localRepOnInnerShrunk_add
     (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
@@ -1014,7 +1360,18 @@ theorem localRepOnInnerShrunk_add
     ext y
     exact h_iso.false y |>.elim
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- `localRepOnInnerShrunk` is ℂ-homogeneous in α. -/
 theorem localRepOnInnerShrunk_smul
     (c : ℂ)
@@ -1032,6 +1389,12 @@ theorem localRepOnInnerShrunk_smul
     ext y
     exact h_iso.false y |>.elim
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step B.9 step 3a — Injectivity of the embedding
 
 If `localRep α x₀ y = localRep β x₀ y` for every `y ∈ innerShrunkChart x₀`
@@ -1041,7 +1404,12 @@ with `y ∈ innerShrunkChart x₀` (which ⊆ baseSet), so
 `localRep (α - β) x₀ y = 0` forces `(α - β).toFun y = 0` by the
 1-dim tangent argument (`alpha_toFun_eq_zero_of_localRep_eq_zero`). -/
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Injectivity of the bcf-embedding.** Equality of
 `mkOfCompact (localRepOnInnerShrunk · x₀)` at every `x₀` (including
 outside chartCover) pins down the holomorphic 1-form. -/
@@ -1095,6 +1463,12 @@ theorem eq_of_mkOfCompact_localRepOnInnerShrunk_eq
     rw [← heq]; exact h_toFun
   exact sub_eq_zero.mp hsub_zero
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Next steps (scheduled, not implemented here)
 
 **B.9** Inject HOF X into the finite product
@@ -1108,4 +1482,6 @@ functions being holomorphic (`TendstoLocallyUniformlyOn.analyticOn`).
 **Assembly** — discharge `HolomorphicOneForms.closedBall_isCompact` in
 `Jacobians/Montel.lean`. -/
 
+
+end
 end Jacobians.Montel

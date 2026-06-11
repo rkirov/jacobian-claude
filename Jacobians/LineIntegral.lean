@@ -48,6 +48,7 @@ namespace Jacobians
 open scoped Manifold ContDiff Bundle Topology
 open MeasureTheory Filter
 
+section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -169,13 +170,25 @@ pullback at `1 - t`. -/
 /-- Time-reversal of a path: `reverse γ t := γ (1 - t)`. -/
 def reverse (γ : ℝ → X) : ℝ → X := fun t => γ (1 - t)
 
-omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*}
+
 @[simp] theorem reverse_apply (γ : ℝ → X) (t : ℝ) :
     reverse γ t = γ (1 - t) := rfl
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- pathSpeed under reversal: sign flip + reparametrization. Requires
 chart-pullback `(chartAt ℂ (γ(1-t))).toFun ∘ γ` to be differentiable
 at `1 - t` (which holds for smooth γ at points in the chart source). -/
@@ -204,6 +217,12 @@ theorem pathSpeed_reverse (γ : ℝ → X) (t : ℝ)
   rw [h_fderiv_sub]
   rw [show ((fderiv ℝ ψ (1 - t)) (-1 : ℝ) : ℂ) = -fderiv ℝ ψ (1 - t) (1 : ℝ) from by
     rw [show (-1 : ℝ) = -(1 : ℝ) from rfl, (fderiv ℝ ψ (1 - t)).map_neg]]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- Line integral reverses sign under path reversal, under
 differentiability of the chart pullback on [0, 1]. -/
@@ -241,18 +260,39 @@ assumed when invoking `lineIntegral_concat`). -/
 noncomputable def concat (γ γ' : ℝ → X) : ℝ → X :=
   fun t => if t ≤ 1/2 then γ (2 * t) else γ' (2 * t - 1)
 
-omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*}
+
 theorem concat_apply_left (γ γ' : ℝ → X) {t : ℝ} (ht : t ≤ 1/2) :
     concat γ γ' t = γ (2 * t) := if_pos ht
 
-omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*}
+
 theorem concat_apply_right (γ γ' : ℝ → X) {t : ℝ} (ht : ¬ t ≤ 1/2) :
     concat γ γ' t = γ' (2 * t - 1) := if_neg ht
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- pathSpeed of `concat γ γ'` on the strict left half: equals
 `2 * pathSpeed γ (2t)` via chain rule on `γ ∘ (2·)`. -/
 theorem pathSpeed_concat_left (γ γ' : ℝ → X) (t : ℝ) (ht : t < 1/2)
@@ -296,8 +336,17 @@ theorem pathSpeed_concat_left (γ γ' : ℝ → X) (t : ℝ) (ht : t < 1/2)
         (fderiv ℝ ψ (2 * t)).map_smul (2 : ℝ) (1 : ℝ)
     _ = 2 * (fderiv ℝ ψ (2 * t)) 1 := by rw [Complex.real_smul]; push_cast; ring
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- pathSpeed of `concat γ γ'` on the strict right half: equals
 `2 * pathSpeed γ' (2t - 1)` via chain rule on `γ' ∘ (2·-1)`. -/
 theorem pathSpeed_concat_right (γ γ' : ℝ → X) (t : ℝ) (ht : 1/2 < t)
@@ -334,6 +383,12 @@ theorem pathSpeed_concat_right (γ γ' : ℝ → X) (t : ℝ) (ht : 1/2 < t)
     _ = (2 : ℝ) • (fderiv ℝ ψ' (2 * t - 1)) 1 :=
         (fderiv ℝ ψ' (2 * t - 1)).map_smul (2 : ℝ) (1 : ℝ)
     _ = 2 * (fderiv ℝ ψ' (2 * t - 1)) 1 := by rw [Complex.real_smul]; push_cast; ring
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- Left half of the concat integral, reparametrized to `lineIntegral α γ`. -/
 private lemma lineIntegral_concat_left (α : HolomorphicOneForms X) (γ γ' : ℝ → X)
@@ -602,4 +657,6 @@ theorem lineIntegral_pullback
   rw [ContinuousLinearMap.comp_apply,
     pathSpeed_comp_eq_mfderiv f hf γ t hγ_cont.continuousAt (hγ_diff t ht)]
 
+
+end
 end Jacobians

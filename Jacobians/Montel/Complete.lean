@@ -32,6 +32,7 @@ namespace Jacobians.Montel
 open scoped Manifold ContDiff Topology
 open Bundle Filter
 
+section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -42,7 +43,12 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 sequence yields uniformly-Cauchy chart-representatives on each
 `shrunkChart x₀`. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- Per-chart-chart uniform bound from chartNormK: for y ∈ shrunkChart x₀,
 |localRep (α - β) x₀ y| is bounded by `chartNormK (α - β) x₀ ≤ supNormK (α - β)`. -/
 theorem norm_localRep_sub_le_supNormK
@@ -57,15 +63,31 @@ theorem norm_localRep_sub_le_supNormK
   rw [h_ap]
   exact HolomorphicOneForms.norm_localRep_le_supNormK (α - β) hx₀ hy
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step 1b — `localRep α` on shrunkChart as a continuous map
 
 Bundles `localRep α x₀` restricted to `shrunkChart x₀` as a `C(_, ℂ)`,
 parallel to `localRepOnInnerShrunk` but on the outer shrinkage. -/
 
-omit [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+
 theorem shrunkChart_compactSpace' (x₀ : X) :
     CompactSpace (shrunkChart (X := X) x₀) :=
   isCompact_iff_compactSpace.mp (shrunkChart_isCompact x₀)
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- Bundled version of `localRep α x₀` on shrunkChart x₀. -/
 noncomputable def localRepOnShrunkBcf
@@ -80,7 +102,12 @@ noncomputable def localRepOnShrunkBcf
 The per-chart bcf distance is bounded by supNormK of the difference,
 so a supNormK-Cauchy sequence has bcf-Cauchy chart restrictions. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- Per-chart bcf-distance ≤ supNormK-distance for `α, β ∈ HOF X`. -/
 theorem dist_localRepOnShrunkBcf_le_supNormK_sub
     (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
@@ -98,13 +125,24 @@ theorem dist_localRepOnShrunkBcf_le_supNormK_sub
     localRepOnShrunk_apply _ hx₀, dist_eq_norm]
   exact norm_localRep_sub_le_supNormK α β hx₀ hy
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step 3 — Pointwise CLM limit from supNormK Cauchy
 
 For a supNormK-Cauchy sequence of sections, `α_n.toFun y` is Cauchy in
 the complete space `T_y X →L[ℂ] ℂ` (CLM space, complete since ℂ is).
 This gives a pointwise CLM limit `αLim.toFun y`. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- For a supNormK-Cauchy sequence, the CLM value at each point is Cauchy.
 This uses the identity `α.toFun y (e.symmL y 1) = localRep α x₀ y` and
 the supNormK bound on localRep. -/
@@ -126,6 +164,12 @@ theorem cauchySeq_alpha_toFun_apply_symmL
         norm_localRep_sub_le_supNormK (αs n) (αs m) hx₀ hy
     _ < ε := hN n m hn hm
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step 3b — Finite diagonal: common bcf-convergent subsequence on chartCover
 
 Given a bounded sequence of sections (supNormK ≤ 1), iterate per-chart
@@ -134,7 +178,12 @@ Arzelà (`isCompact_closure_image_inner_bcf` for `M = 1`) over the finite
 every `x₀ ∈ chartCover` the bcf-image on `innerShrunkChart x₀`
 converges to some limit. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- List-indexed finite-diagonal extractor. By induction on `xs`, at
 each cons step we sub-sample inside the compact closure of the range
 of `mkOfCompact ∘ localRepOnInnerShrunk · y`. The outer strict-mono
@@ -192,7 +241,18 @@ private lemma exists_common_subseq_bcf_tendsto
       refine ⟨g, ?_⟩
       exact hg.comp hψ.tendsto_atTop
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Common bcf-convergent subsequence on `chartCover`.**
 For any bounded sequence of sections (`supNormK (αs n) ≤ 1`), there is
 a strict-mono subsequence `φ` such that on each chart `x₀ ∈ chartCover`
@@ -216,6 +276,12 @@ theorem exists_subseq_bcf_tendsto_on_chartCover
   intro x₀ hx₀
   exact hconv x₀ (Finset.mem_toList.mpr hx₀)
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step 3c — Chart-transition: bcf-Cauchy ⇒ supNormK-Cauchy
 
 Combining the chart-transition supNormK bound
@@ -224,7 +290,12 @@ Combining the chart-transition supNormK bound
 a subsequence whose bcf-images converge on every chart is
 supNormK-Cauchy. -/
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Inner sSup is bounded by bcf-distance.** For any two sections and
 any chart x₀ ∈ chartCover, `sSup ‖localRep (α-β) x₀ ·‖` on
 `innerShrunkChart x₀` is bounded above by the bcf-distance of their
@@ -270,7 +341,18 @@ private lemma sSup_innerShrunk_norm_sub_le_dist_bcf
   · rw [Set.not_nonempty_iff_eq_empty] at hne
     simp [hne, Real.sSup_empty, hD_nn]
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- **bcf-convergent on every chart ⇒ supNormK-Cauchy.**
 Given a strict-mono subsequence `φ` such that the bcf-images on each
 `innerShrunkChart x₀` converge, the subsequence is supNormK-Cauchy. -/
@@ -353,6 +435,12 @@ theorem cauchy_supNormK_of_bcf_tendsto
     linarith
   exact lt_of_le_of_lt h_step1 h_step2
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step 3d — Coordinate identity and pointwise CLM Cauchy
 
 On the base set of the trivialization at `x₀`, the section's CLM value
@@ -361,7 +449,11 @@ On the base set of the trivialization at `x₀`, the section's CLM value
 norm to CauchySeq in ℂ, which is already supplied by
 `cauchySeq_alpha_toFun_apply_symmL`. -/
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Coordinate identity.** For `y ∈ (trivializationAt … x₀).baseSet`,
 `α.toFun y` equals `(localRep α x₀ y) • φ` where `φ` is the CLE
 `T_y X ≃L[ℂ] ℂ` from the trivialization. -/
@@ -408,7 +500,18 @@ theorem toFun_eq_localRep_smul
     _ = (φ v) • (localRep α x₀ y) := rfl
     _ = (localRep α x₀ y) • (φ v) := by rw [smul_eq_mul, smul_eq_mul]; ring
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Pointwise CLM Cauchy.** For a supNormK-Cauchy sequence and
 `y ∈ shrunkChart x₀` (some `x₀ ∈ chartCover`), the CLM value
 `(αs n).toFun y` is Cauchy in `T_y X →L[ℂ] ℂ`.
@@ -453,6 +556,12 @@ theorem cauchySeq_toFun_of_supNormK_cauchy
   rw [h_fun_eq]
   exact h_cauchy_L
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step 4 — Pointwise CLM limit
 
 Packages Step 5c's CauchySeq-per-point fact with completeness of the
@@ -462,7 +571,12 @@ non-reducible in Mathlib — `IsManifold/Basic.lean:1037`) via
 `inferInstanceAs (NormedAddCommGroup ℂ)` / etc., relying on the defeq
 `TangentSpace 𝓘(ℂ, ℂ) y = ℂ`. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- Pointwise CLM limit of a supNormK-Cauchy sequence of sections. -/
 theorem exists_toFun_limit
     (αs : ℕ → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
@@ -517,6 +631,12 @@ theorem exists_toFun_limit
   exact ⟨L, hL⟩
 
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step 6 helper — pointwise `localRep` Tendsto
 
 From pointwise CLM Tendsto of `(αs n).toFun y`, evaluation at
@@ -524,7 +644,11 @@ From pointwise CLM Tendsto of `(αs n).toFun y`, evaluation at
 pointwise CLM convergence (Step 5c/5d-limit) to the scalar chart-rep
 used by `supNormK`/`chartNormK`. -/
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- Pointwise Tendsto of `localReps` from pointwise CLM Tendsto by
 continuity of evaluation at `e.symmL ℂ y 1`. -/
 theorem localRep_tendsto_of_toFun_tendsto
@@ -544,6 +668,12 @@ theorem localRep_tendsto_of_toFun_tendsto
     continuous_eval_const _
   exact (h_eval.tendsto _).comp (hL y)
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step 6a — norm bound on the pointwise limit
 
 Pointwise in each chart, if the (αs n) are bounded by 1 in supNormK
@@ -552,7 +682,12 @@ L is bounded by 1. This packages the norm-lsc argument at the level
 of `localRep`-style scalar evaluation, without yet needing L to be a
 `ContMDiffSection`. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Step 6a bound**: for a bounded supNormK sequence with pointwise
 CLM limit `L y`, each scalar `‖L y (e.symmL ℂ y 1)‖ ≤ 1` at
 `y ∈ shrunkChart x₀`. -/
@@ -574,6 +709,12 @@ theorem norm_limit_localRep_le_one
     le_trans (HolomorphicOneForms.norm_localRep_le_supNormK (αs n) hx₀ hy) (h n)
   exact le_of_tendsto h_tendsto.norm (Filter.Eventually.of_forall h_bounded)
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step 6b — bound on `‖αs n - limit‖` at scalar level
 
 Given a supNormK-Cauchy sequence `αs` with pointwise CLM limit `L`,
@@ -582,7 +723,12 @@ chart / point, the scalar diff `‖localRep (αs n) x₀ y - L y (e.symmL y 1)�
 This is the scalar analog of `supNormK (αs n - αLim) ≤ ε`, proven
 without yet packaging L as a ContMDiffSection. -/
 
-omit [ConnectedSpace X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- Scalar-level convergence of `localRep (αs n) x₀ y` to
 `L y (e.symmL ℂ y 1)`, uniformly over `(x₀ ∈ chartCover, y ∈ shrunkChart x₀)`. -/
 theorem norm_localRep_sub_limit_le
@@ -624,13 +770,24 @@ theorem norm_localRep_sub_limit_le
       (hN n m hn hm))
   exact le_of_tendsto h_sub_tendsto.norm h_eventually
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Step 5d substep 1 — chart-pullback locally uniform convergence
 
 The bridge from bcf-convergence on `innerShrunkChart x₀` (compact) to
 `TendstoLocallyUniformlyOn` of the chart pullbacks on
 `chart '' innerChartOpen x₀` (open ⊆ chart target). Path 2's step 1. -/
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Limit identification.** The bcf-limit `g` on `innerShrunkChart x₀`
 agrees with `y ↦ L y (e.symmL ℂ y 1)` via pointwise uniqueness of limits. -/
 private lemma bcf_limit_eq_L_eval
@@ -673,7 +830,18 @@ private lemma bcf_limit_eq_L_eval
   -- Uniqueness of limit in ℂ.
   exact tendsto_nhds_unique hg_pw h_L_tendsto
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Substep 1 of Path 2.** Chart pullbacks of `localRep` converge
 locally uniformly on `chart '' innerChartOpen x₀` to the pullback of
 `y ↦ L y (e.symmL ℂ y 1)`, assuming bcf-convergence on
@@ -752,7 +920,18 @@ theorem tendstoLocallyUniformlyOn_pullback_on_innerChartOpen
   -- Step 7: Uniform on open ⇒ locally uniform.
   exact hUnifOn_img.tendstoLocallyUniformlyOn
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Substep 2 of Path 2.** The chart-pullback of `y ↦ L y (e.symmL y 1)`
 is analytic on `chart '' innerChartOpen x₀` — feeds substep 3. -/
 theorem analyticOn_limit_pullback_inner
@@ -774,7 +953,18 @@ theorem analyticOn_limit_pullback_inner
   analyticOn_of_pullback_tendsto_locally_uniformly_inner αs hx₀ _
     (tendstoLocallyUniformlyOn_pullback_on_innerChartOpen αs L hL hx₀ g hg)
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Substep 3 of Path 2.** Reverse of `localRep_analyticOn_chartTarget`:
 analytic pullback on `chart '' innerChartOpen x₀` ⇒ `ContMDiffOn ω`
 of `fun y => L y (e.symmL ℂ y 1)` on `innerChartOpen x₀`. -/
@@ -825,7 +1015,18 @@ theorem contMDiffOn_limit_inner
   exact (contDiffOn_omega_iff_analyticOn
     (isOpen_chart_image_innerChartOpen x₀ hx₀).uniqueDiffOn).mpr h_analytic
 
-omit [ConnectedSpace X] [Nonempty X] in
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+
 /-- **Substep 4 of Path 2.** The pointwise CLM limit, packaged as a
 bundle-section, is `ContMDiff ω` on each `innerChartOpen x₀` for
 `x₀ ∈ chartCover`.
@@ -911,6 +1112,12 @@ theorem contMDiffOn_totalSpaceMk_L_inner
     (h_scalar y₀ hy₀).smul contMDiffWithinAt_const
   exact h_smul_smooth.congr (fun y hy => h_simpl y hy) (h_simpl y₀ hy₀)
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
 /-! ### Status
 
 The substeps of the completeness argument are proven in this file and its
@@ -929,4 +1136,6 @@ siblings:
 The full Montel route to `FiniteDimensional ℂ (HolomorphicOneForms X)` is
 complete and axiom-clean. -/
 
+
+end
 end Jacobians.Montel

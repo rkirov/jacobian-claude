@@ -59,7 +59,6 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 `Jacobians/Genus.lean`). We wrap `supNormK` in an `AddGroupNorm` and use
 `AddGroupNorm.toNormedAddCommGroup` to produce a `NormedAddCommGroup`. -/
 
-omit [ConnectedSpace X] in
 /-- The `AddGroupNorm` structure on `HolomorphicOneForms X`. -/
 noncomputable def HolomorphicOneForms.supNormKAsAddGroupNorm :
     AddGroupNorm (Jacobians.HolomorphicOneForms X) where
@@ -69,7 +68,6 @@ noncomputable def HolomorphicOneForms.supNormKAsAddGroupNorm :
   neg' := fun α => HolomorphicOneForms.supNormK_neg α
   eq_zero_of_map_eq_zero' := fun α h => HolomorphicOneForms.eq_zero_of_supNormK_eq_zero α h
 
-omit [ConnectedSpace X] in
 /-- `HolomorphicOneForms X` as a `NormedAddCommGroup`.
 
 Non-instance: consumers opt in via `letI` or by promoting at a
@@ -78,7 +76,6 @@ higher level (as done in `Jacobians.HolomorphicForms`). -/
     NormedAddCommGroup (Jacobians.HolomorphicOneForms X) :=
   AddGroupNorm.toNormedAddCommGroup HolomorphicOneForms.supNormKAsAddGroupNorm
 
-omit [ConnectedSpace X] in
 /-- `HolomorphicOneForms X` as a `NormedSpace ℂ`. -/
 @[reducible] noncomputable def HolomorphicOneForms.normedSpace :
     letI := HolomorphicOneForms.normedAddCommGroup (X := X)

@@ -146,7 +146,8 @@ lemma MeromorphicFunction.toRiemannSphere_chartPullback_eventuallyEq_coe
     have hcont : ContinuousAt φ.symm (φ P) :=
       φ.symm.continuousAt (by simpa using φ.map_source hxsrc)
     have hmem : φ.symm (φ P) ∈ t := by rw [φ.left_inv hxsrc]; exact mem_of_mem_nhds ht_nhds
-    exact mem_nhdsWithin_of_mem_nhds (hcont.preimage_mem_nhds (by rw [φ.left_inv hxsrc]; exact ht_nhds))
+    exact mem_nhdsWithin_of_mem_nhds
+      (hcont.preimage_mem_nhds (by rw [φ.left_inv hxsrc]; exact ht_nhds))
   have hsymm_ne : ∀ᶠ w in 𝓝[≠] (φ P), φ.symm w ≠ P := by
     filter_upwards [self_mem_nhdsWithin, htgt] with w hw hwt
     simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hw
@@ -208,7 +209,8 @@ theorem MeromorphicFunction.contMDiffAt_toRiemannSphere_of_nonneg (f : Meromorph
   refine contMDiffAt_omega_of_analyticAt_chartPullback hFcont ?_
   -- chart pullback equals `holoRepr ∘ φ.symm` near `φ x` (using `chartCoe ∘ coe = id`).
   refine hana.congr ?_
-  -- near `φ x`, `φ.symm w` is a non-pole, so `toRiemannSphere (φ.symm w) = coe (holoRepr (φ.symm w))`.
+  -- near `φ x`, `φ.symm w` is a non-pole, so `toRiemannSphere (φ.symm w) = coe (holoRepr (φ.symm
+  -- w))`.
   have hev_symm : ∀ᶠ w in 𝓝 (φ x), f.toRiemannSphere (φ.symm w) =
       ((f.holoRepr (φ.symm w) : ℂ) : RiemannSphere) := by
     have hcont : ContinuousAt φ.symm (φ x) :=
@@ -312,7 +314,8 @@ theorem MeromorphicFunction.contMDiffAt_toRiemannSphere_at_pole (f : Meromorphic
         rw [hordN]; exact WithTop.coe_ne_top
       have hrepr : f.holoRepr ∘ φ.symm =ᶠ[𝓝[≠] (φ P)] N :=
         f.holoRepr_chartPullback_eventuallyEq_NFAt P
-      -- punctured points near P are non-poles: `toRiemannSphere (φ.symm w) = coe (holoRepr (φ.symm w))`.
+      -- punctured points near P are non-poles: `toRiemannSphere (φ.symm w) = coe (holoRepr (φ.symm
+      -- w))`.
       have hcoe : (fun w => f.toRiemannSphere (φ.symm w)) =ᶠ[𝓝[≠] (φ P)]
           (fun w => ((f.holoRepr (φ.symm w) : ℂ) : RiemannSphere)) :=
         f.toRiemannSphere_chartPullback_eventuallyEq_coe P
@@ -348,11 +351,13 @@ theorem MeromorphicFunction.contMDiffAt_toRiemannSphere_at_pole (f : Meromorphic
       ContinuousAt.comp (g := chartInfty.symm) (f := G ∘ φ) hsymm_cont hGφ
     refine hcomp.congr ?_
     have hev : ∀ᶠ y in 𝓝 P, y ∈ φ.source := φ.open_source.mem_nhds hxsrc
-    -- source-membership of `toRiemannSphere P y` near P (center: `∞`; punctured: non-pole, `holoRepr = N ≠ 0`).
+    -- source-membership of `toRiemannSphere P y` near P (center: `∞`; punctured: non-pole,
+    -- `holoRepr = N ≠ 0`).
     have hev3 : ∀ᶠ y in 𝓝 P, f.toRiemannSphere y ∈ chartInfty.source := by
       rw [← nhdsNE_sup_pure P, Filter.eventually_sup]
       refine ⟨?_, ?_⟩
-      · -- punctured: y a non-pole near P, `holoRepr y = N (φ y) ≠ 0`, so `coe (holoRepr y) ≠ coe 0`.
+      · -- punctured: y a non-pole near P, `holoRepr y = N (φ y) ≠ 0`,
+        -- so `coe (holoRepr y) ≠ coe 0`.
         have hN_ne : ∀ᶠ w in 𝓝[≠] (φ P), N w ≠ 0 := by
           rw [← meromorphicOrderAt_ne_top_iff_eventually_ne_zero hNF.meromorphicAt, hordN]
           exact WithTop.coe_ne_top
