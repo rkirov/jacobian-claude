@@ -59,7 +59,8 @@ theorem chart_source (z : ULift.{u} M) :
 
 omit [NormedSpace ℂ E] [ChartedSpace E M] in
 /-- The transition map between two relabelled charts equals the transition map of `M` between the
-underlying charts: the `ULift` relabel and its inverse cancel. This is the crux that lands the
+underlying charts: the `ULift` relabel and its inverse cancel. This is the key step that lands
+the
 transition maps of `ULift M` in `contDiffGroupoid`. -/
 theorem trans_relabel (c c' : OpenPartialHomeomorph M E) :
     (Homeomorph.ulift.transOpenPartialHomeomorph c).symm ≫ₕ

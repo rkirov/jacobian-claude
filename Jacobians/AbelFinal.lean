@@ -69,7 +69,7 @@ theorem abelJacobi_twoPoint_ne_zero
         omega
       · rw [Finsupp.single_eq_of_ne (Ne.symm hxP)]
         omega
-  -- the degree-one endgame: `X ≃ₜ S²`, so `genus X = 0` — contradiction.
+  -- the degree-one theory: `X ≃ₜ S²`, so `genus X = 0` — contradiction.
   have hsphere := nonempty_homeo_sphere_of_singleSimplePole f hQ
   have hg0 := genus_zero_of_nonempty_homeo_sphere hsphere
   omega

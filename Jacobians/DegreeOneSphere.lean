@@ -11,7 +11,7 @@ import Jacobians.GenusZeroOfSphere
 import Jacobians.HolomorphicPrimitives
 
 /-!
-# Degree-one ⟹ sphere endgame
+# Degree one implies the sphere
 
 Let `X` be a compact connected Riemann surface and `f : X → ℂ` a meromorphic
 function with a **single simple pole** at `P` (`orderAtPoint P = -1` and
@@ -54,7 +54,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-! ### The simple-pole predicate
 
 `MeromorphicFunction.HasSingleSimplePole` is defined in `Jacobians.MeromorphicLiouville`
-(it depends only on `orderAtPoint`), so that both this sphere endgame and the
+(it depends only on `orderAtPoint`), so that both this sphere development and the
 Riemann–Roch reduction in `Jacobians.RiemannRoch` can refer to it without a cyclic
 import. -/
 
@@ -554,7 +554,7 @@ theorem exists_mem_open_notMem_finite {Y : Type*} [TopologicalSpace Y] [ChartedS
   have hWsub : W ⊆ C := fun y hy => h y hy
   exact (infinite_of_isOpen_nonempty hW hne) (hC.subset hWsub)
 
-/-- **Degree-one ⟹ homeomorphism** (Step 3, the crux).  A non-constant degree-one
+/-- **Degree-one ⟹ homeomorphism** (Step 3).  A non-constant degree-one
 holomorphic map `F : X → Y` between compact connected Riemann surfaces is
 bijective and a local biholomorphism, hence a homeomorphism.
 
@@ -624,7 +624,7 @@ theorem degreeOne_homeo {Y : Type*} [TopologicalSpace Y] [T2Space Y]
   refine ⟨Equiv.toHomeomorphOfContinuousOpen (Equiv.ofBijective F ⟨hinj, hsurj⟩)
     hF.continuous hopen⟩
 
-/-! ### The endgame theorem -/
+/-! ### The headline theorem -/
 
 /-- **Degree-one ⟹ sphere.**  If a meromorphic function `f` on a compact
 connected Riemann surface `X` has a single simple pole at some `P`, then `X` is
@@ -655,7 +655,7 @@ end Jacobians
 Declared in the **root namespace** (matching `genus`, which lives in root namespace in
 `Genus.lean`),
 so the challenge-conformance file resolves the bare name. Lives in this module — not `Genus.lean` —
-because its forward direction needs the degree-one endgame, which sits downstream of `Genus` (via
+because its forward direction needs the degree-one theory, which sits downstream of `Genus` (via
 `ProjectiveLine → Genus`); declaring it here breaks the import cycle. Both directions are now
 `Nonempty X` is supplied for free by `[ConnectedSpace X]`
 (`ConnectedSpace.toNonempty`), so the signature matches the spec exactly. -/

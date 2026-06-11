@@ -381,7 +381,7 @@ elements (when the order is positive; the pole case is symmetric via
 `f⁻¹`).
 
 **Status.** Stated, not proven (the Rouché count). ⚠ The `f x = 0` hypothesis is
-REQUIRED (added 2026-06-04): without it the statement is FALSE — `f x` is a junk value
+required: without it the statement is *false* — `f x` is a junk value
 on the punctured germ (e.g. `f z = z` for `z ≠ 0`, `f 0 = 5`: `localOrder = 1` yet
 `f 0 ≠ 0`), while the count is centered at `f x`. Under `f x = 0` the honest content is
 proved in `RoucheBridge.lean` (`localMultiplicity_eq_localOrder_count_of_apply_eq_zero`). -/
@@ -487,7 +487,7 @@ def localMultiplicity_eq_order_punctured_statement
       ∀ w ∈ Metric.ball (0 : ℂ) ε \ {0},
         ({z ∈ V \ {0} | g z = w} : Set ℂ).ncard = k
 
-/-! ## The argument-principle chip (P3, 2026-05-05)
+/-! ## The argument-principle disk lemma
 
 The discharge of `localMultiplicity_eq_order_punctured_statement` for `k ≥ 2`
 classically routes through the **argument principle**: for `g` analytic at `0`

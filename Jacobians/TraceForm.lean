@@ -1150,7 +1150,7 @@ operator equals `(local coefficient) • id` (`traceFunExt_branchPoint_eq_smul_i
 local coefficients are additive/homogeneous by a unique-limit argument using `hcont`. This is
 both true and sufficient.
 
-Both `hsmooth` and `hcont` are consequences of the single analytic crux (local boundedness of
+Both `hsmooth` and `hcont` are consequences of the single analytic kernel (local boundedness of
 the trace near a branch point, §1 of the assembly docstring); we keep them as the hypothesis so
 the regluing **and** the full ℂ-linearity of `T` are proven here, unconditionally. -/
 
@@ -1299,7 +1299,7 @@ done and reusable; what remains is exactly that input, isolated below as
 `HolomorphicOneForms Y = ContMDiffSection 𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω _`, so the extended
 section `traceFunExt f α` must carry a *global* `ContMDiff` proof — including at branch
 points. The per-branch-point input has two halves, **both consequences of the single
-analytic crux** (local boundedness of the trace near a branch point):
+analytic kernel** (local boundedness of the trace near a branch point):
 
 1. **[GENUINE ANALYTIC CRUX — not in Mathlib, not in `Discharge/`]** *Local
    boundedness of the trace near each branch point.* In a chart at a branch point
@@ -1328,7 +1328,7 @@ Forster §4.22–4.25 (local normal form `wᵉ`), §10 (the trace). -/
 
 The trace's branch-point extension `traceExtendsAt_branchPoint` is the *only* genuinely
 analytic step of the whole trace construction. We discharge it here **modulo a single
-clean local-boundedness input** (`traceLocalCoeff_mul_sub_tendsto_zero`, the analytic crux): the
+clean local-boundedness input** (`traceLocalCoeff_mul_sub_tendsto_zero`): the
 *local coefficient* of the trace, read in the fixed chart at `y₀`, is bounded on a
 punctured disk. From boundedness everything else is Mathlib's removable singularity
 theorem plus the bundle-coordinate plumbing developed below.
@@ -1505,7 +1505,7 @@ variable {X Y : Type*}
   [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
-/-! ### The one-variable analytic heart of the local-boundedness crux
+/-! ### The one-variable analytic heart of the local-boundedness argument
 
 The whole branch-point boundedness reduces, sheet by sheet in coordinates, to the following
 elementary one-variable fact: for an analytic `F` with `F w₀ = z₀` that is *not* locally
@@ -2211,7 +2211,7 @@ coordinates.)
 **Bridge structure.** The whole proof is the single fact: the *local coefficient* read in the
 `y₀`-chart is `ContMDiffAt y₀`. It is holomorphic off `y₀` (off-branch section smoothness
 `contMDiffAt_traceLocalCoeff_of_notMem_branchLocus` + the scalar chart bridges) and **bounded**
-there, and has at worst a removable singularity (the crux `traceLocalCoeff_mul_sub_tendsto_zero`:
+there, and has at worst a removable singularity (`traceLocalCoeff_mul_sub_tendsto_zero`:
 `(z - z₀)·G z → 0`), so by Mathlib's little-o removable singularity theorem
 (`Complex.differentiableOn_update_limUnder_insert_of_isLittleO`, `DifferentiableOn.analyticAt`) it
 extends analytically across `y₀`; its value at `y₀` matches `traceLocalCoeff (traceFunExt f α)
@@ -2283,7 +2283,7 @@ theorem traceExtendsAt_branchPoint (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(
     -- `c (c.symm z) = z`, so this is `DifferentiableAt G z`.
     rw [c.right_inv hz.1.1] at hdiff
     exact hdiff.differentiableWithinAt
-  -- **`(z - z₀)·G z → 0`** (the analytic crux): `G` has at worst a removable singularity at `z₀`.
+  -- **`(z - z₀)·G z → 0`**: `G` has at worst a removable singularity at `z₀`.
   have hG_tendsto : Tendsto (fun z => (z - z₀) * G z) (𝓝[≠] z₀) (𝓝 0) :=
     traceLocalCoeff_mul_sub_tendsto_zero f hf hnonconst α hy₀
   -- Convert to the little-o `(G - G z₀) =o[𝓝[≠] z₀] (· - z₀)⁻¹` consumed by removability.
@@ -2291,7 +2291,8 @@ theorem traceExtendsAt_branchPoint (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(
     refine Asymptotics.isLittleO_of_tendsto' ?_ ?_
     · filter_upwards [self_mem_nhdsWithin] with z hz hcontra
       exact absurd (inv_eq_zero.mp hcontra) (sub_ne_zero.mpr hz)
-    · -- `(G z - G z₀) / (z - z₀)⁻¹ = (z - z₀)·(G z - G z₀) → 0` (crux minus a `→0` constant tail).
+    · -- `(G z - G z₀) / (z - z₀)⁻¹ = (z - z₀)·(G z - G z₀) → 0`
+      -- (the kernel minus a `→0` constant tail).
       have hconst : Tendsto (fun z => (z - z₀) * G z₀) (𝓝[≠] z₀) (𝓝 0) := by
         have : Tendsto (fun z : ℂ => z - z₀) (𝓝[≠] z₀) (𝓝 0) := by
           simpa using ((continuous_sub_right z₀).tendsto z₀).mono_left nhdsWithin_le_nhds

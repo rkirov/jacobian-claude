@@ -7,13 +7,13 @@ import Jacobians.DegreeOneSphere
 import Jacobians.RiemannRoch
 
 /-!
-# The genus-0 ⟺ sphere headline (the Riemann–Roch-gated endgame)
+# The genus-0 ⟺ sphere headline
 
 The **forward** direction `genus X = 0 ⟹ X ≃ₜ S²` consumes Riemann–Roch
 (`exists_singleSimplePole_of_genus_zero_of_rr`), so it — and the challenge theorem
 `genus_eq_zero_iff_homeo` — live here, **downstream** of `Jacobians.RiemannRoch`.
 
-The RR-*free* `toSphere` / degree-route machinery and the degree-one endgame
+The Riemann–Roch-free `toSphere` / degree-route machinery and the degree-one theory
 (`nonempty_homeo_sphere_of_singleSimplePole`) stay in `Jacobians.DegreeOneSphere`, which is now
 RR-free and therefore sits **upstream** of `RiemannRoch`. This lets `DegDivResidue` reuse `toSphere`
 to prove the residue-theorem degree route (`exists_properMapDegree`), which `RiemannRoch.deg_div`
@@ -39,7 +39,7 @@ theorem (the "anti-hack" constraint preventing `∀ X, genus X = 0`).
 
 The **forward** direction is the genuine content: genus `0` ⟹ a single-simple-pole meromorphic
 function (`exists_singleSimplePole_of_genus_zero`, Riemann–Roch) ⟹ a degree-1 map `X → ℂℙ¹` ⟹
-`X ≃ₜ S²` (`Jacobians.nonempty_homeo_sphere_of_singleSimplePole`, the degree-one endgame). The
+`X ≃ₜ S²` (`Jacobians.nonempty_homeo_sphere_of_singleSimplePole`). The
 **backward** direction is `Ω(ℂℙ¹) = 0` (`genus_zero_of_nonempty_homeo_sphere`). -/
 theorem genus_eq_zero_iff_homeo {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :

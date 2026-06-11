@@ -6,9 +6,9 @@ Authors: Rado Kirov
 import Jacobians.MultiplicityPatching
 
 /-!
-# Constructing the multiplicity-patching supply: the `deg_div` endgame
+# Constructing the multiplicity-patching supply: the `deg_div` assembly
 
-This file performs the manifold-assembly endgame for `deg_div`.  It banks — fully
+This file performs the manifold assembly for `deg_div`.  It provides — fully
 complete and axiom-clean — every layer of the conservation-of-number assembly
 *except* the irreducible per-sheet analytic content, which it isolates into the
 structure `LocalMultiplicitySheets f w₀`.  A pointwise supply
@@ -18,7 +18,7 @@ keystone
 
 > `∃ d : ℕ, zerosCount f = d ∧ polesCount f = d`   (`exists_properMapDegree_of_localSheets`).
 
-## The banked pieces (complete, axiom-clean)
+## The supporting pieces
 
 * **Special-fibre identities** (`fibreMult_zero_eq_zerosCount`,
   `fibreMult_infty_eq_polesCount`): the genuine local-degree sums over the two
@@ -44,7 +44,7 @@ keystone
   no-escape and persistent conservation/finiteness.  This reduces the per-`w₀`
   obligation to the *purely local* `LocalMultiplicitySheets`.
 
-## The isolated wall (`LocalMultiplicitySheets`)
+## The isolated analytic input (`LocalMultiplicitySheets`)
 
 The single remaining input is `∀ w₀, LocalMultiplicitySheets f w₀`: per fibre
 point, a chart-ball sheet with the per-sheet multiplicity conservation
@@ -162,7 +162,7 @@ lemma localDeg_coe_eq_chartPullback_order (f : MeromorphicFunction X) (c : ℂ) 
 
 The fibre-multiplicity sums over the two special values `coe 0` and `∞` equal the
 with-multiplicity counts `zerosCount f` and `polesCount f`.  These are the
-highest-value banked pieces; they require *no* analytic content — only the
+highest-value supporting pieces; they require *no* analytic content — only the
 re-indexing of the order-sum from the (finite) fibre to the divisor support. -/
 
 /-- The fibre over `∞` is finite (it is exactly the poles `{x | order x < 0}`,
@@ -293,7 +293,7 @@ the per-`w₀` obligation: it is now `N_eq_fibreMult_everywhere`, true for *all*
 `w` with no hypothesis.  So a `MultiplicityPatchingData f w₀` is assembled from
 *purely geometric* data — the sheets, weights, per-sheet multiplicity
 conservation, fibre finiteness over `W`, and no-escape — with the special-value
-bookkeeping already banked.  This is the reusable reduction of the §17.9 wall to
+bookkeeping above.  This is the reusable reduction of the Forster §17.9 input to
 its genuine geometric core. -/
 
 /-- **Streamlined builder for `MultiplicityPatchingData`.**  Identical to the raw
@@ -333,7 +333,7 @@ def MultiplicityPatchingData.ofGeometricData (f : MeromorphicFunction X)
   preimage_W_subset := preimage_W_subset
   N_eq_fibreMult := fun w _ => N_eq_fibreMult_everywhere f w
 
-/-! ### The no-escape skeleton (the properness/compactness assembly, banked)
+/-! ### The no-escape skeleton (the properness/compactness assembly)
 
 The genuine §17.9 geometric content is the *local* per-sheet conservation; the
 *global* "no preimage escapes the finitely many sheets" is a soft
@@ -445,7 +445,7 @@ value-neighbourhood on which the per-sheet multiplicity sum is constant, and
 fibre-finiteness over the common value-neighbourhood.  We bundle exactly this
 into a structure `LocalMultiplicitySheets f w₀`, the irreducible §17.9 content.
 
-This is the genuine analytic wall — built per fibre point from the chart normal
+This is the genuine analytic content — built per fibre point from the chart normal
 form (`Planar.orderSum_eq_of_analyticOrder`), the chart-invariance of the order
 (`MeromorphicFunction.orderAtPoint_chart_invariant`), and T2 separation of the
 finite fibre.  It is a *true, non-vacuous* obligation: at a value off the range
@@ -554,7 +554,7 @@ globalization, the proper-map-degree existential `exists_properMapDegree`.
 
 This is the exact wiring the parent (`DegDivResidue.exists_properMapDegree`)
 invokes; the only remaining input is the *local* conservation supply (the
-irreducible §17.9 content isolated in `LocalMultiplicitySheets`, banked here down
+irreducible §17.9 content isolated in `LocalMultiplicitySheets`, reduced here down
 to its genuine per-sheet core, with the no-escape/disjointness skeleton, the
 special-fibre identities, and the finiteness-shrinking all discharged
 complete). -/

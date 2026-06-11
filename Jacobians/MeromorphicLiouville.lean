@@ -281,7 +281,7 @@ theorem MeromorphicFunction.mdifferentiable_holoRepr [T2Space X] [CompactSpace X
   apply hdiff.mono
   simp [Set.preimage_univ, mfld_simps]
 
-/-! ### Liouville endgame: constant repair forces order `≡ 0` -/
+/-! ### Liouville conclusion: constant repair forces order `≡ 0` -/
 
 /-- If the limit-repair `holoRepr` is **constant** (the conclusion of Liouville on a compact
 connected manifold), then the order of `f` is `0` at every point. In each chart the pullback

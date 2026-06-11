@@ -73,7 +73,7 @@ theorem exists_ne_zero_holomorphicOneForm_of_genus_pos (h : 1 ≤ genus X) :
   have : Nontrivial (HolomorphicOneForms X) := Module.nontrivial_of_finrank_pos hpos
   exact exists_ne 0
 
-/-- **Step 1, contrapositive form** — the exact logical shape the endgame consumes.
+/-- **Step 1, contrapositive form** — the exact logical shape the headline proof consumes.
 If *every* global holomorphic `1`-form vanishes, the genus is `0`.  (This is the conclusion
 the route delivers: route steps 2–5 show, under `X ≃ₜ S²`, that no nonzero form can exist.) -/
 theorem genus_eq_zero_of_forall_holomorphicOneForm_eq_zero
