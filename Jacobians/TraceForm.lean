@@ -33,17 +33,17 @@ finite sum of holomorphic 1-forms.
 Forster §§4, 10; Griffiths–Harris Ch. 2 §2.7 (the trace map for forms).
 -/
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 
 open scoped Manifold ContDiff Bundle Topology
 open Filter Set
 
+section
 variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- The covector at `y = f x` obtained by pulling back `α x` through the inverse of
@@ -74,6 +74,14 @@ hypothesis on the map to a *pointwise* `ContMDiffAt`. This is what lets us pull 
 form back along a local holomorphic section (`exists_holo_localInverse_…`), which
 is only `ContMDiffOn` its domain. Apart from the hypothesis it is a verbatim copy
 of the `pullbackForm.contMDiff_toFun` argument. -/
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- The hom-bundle section `y ↦ (α (s y)) ∘ mfderiv s y` is `ContMDiffAt` at `y₀`
 (as a section into the cotangent bundle of `Y`) whenever `s` is `ContMDiffAt` at
@@ -128,6 +136,23 @@ theorem contMDiffAt_pullback_section (α : HolomorphicOneForms X) {s : Y → X} 
     ContinuousLinearMap.id_apply]
   rw [Bundle.Trivialization.symmL_continuousLinearMapAt _ hy_TS_X]
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
 /-- `sheetPullback α g` is `ContMDiffAt` at `y₀` whenever `g` is `ContMDiffAt`
 there. Restatement of `contMDiffAt_pullback_section` in terms of `sheetPullback`
 (as a section into the cotangent bundle of `Y`). -/
@@ -139,7 +164,22 @@ theorem contMDiffAt_sheetPullback (α : HolomorphicOneForms X) {g : Y → X} {y�
         (sheetPullback α g y)) y₀ :=
   contMDiffAt_pullback_section α hg
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
 /-! ### The section's derivative is the inverse of `mfderiv f` -/
+
+end
+
+section
+variable {X Y : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y]
 
 /-- For a two-sided local inverse pair `(f, s)` around `(x₀, y₀)` (i.e. `f ∘ s = id`
 near `y₀` and `s ∘ f = id` near `x₀`, with `s y₀ = x₀` and `f x₀ = y₀`), the
@@ -167,6 +207,15 @@ theorem mfderiv_section_eq_inverse {f : X → Y} {s : Y → X} {x₀ : X} {y₀ 
     rw [mfderiv_id] at h1
     rw [← h1, mfderiv_comp x₀ (hfx ▸ hs_diff) hf_diff, hfx]
   exact (ContinuousLinearMap.inverse_eq hcomp_fs hcomp_sf).symm
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-! ### Two-sided local section at a non-critical point
 
@@ -206,6 +255,14 @@ theorem exists_twoSided_localInverse (f : X → Y) (hf : ContMDiff 𝓘(ℂ) �
 
 /-! ### Value identity: the fibre summand is a section pullback -/
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y]
+
 /-- **Key value identity.** At `y₀ = f x₀`, the trace summand `traceSummand f α x₀`
 equals `sheetPullback α g y₀` for any two-sided local section `g` through `x₀`.
 Combines `g (f x₀) = x₀` with `mfderiv g (f x₀) = (mfderiv f x₀).inverse`
@@ -223,6 +280,23 @@ theorem traceSummand_eq_sheetPullback {f : X → Y} {g : Y → X} {x₀ : X}
     (α.toFun (g (f x₀))).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) g (f x₀))
   rw [hinv, hgfx]
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y]
+
 /-- `traceSummand` is additive in the form. -/
 theorem traceSummand_add (f : X → Y) (α β : HolomorphicOneForms X) (x : X) :
     traceSummand f (α + β) x = traceSummand f α x + traceSummand f β x := by
@@ -234,6 +308,15 @@ theorem traceSummand_smul (f : X → Y) (c : ℂ) (α : HolomorphicOneForms X) (
     traceSummand f (c • α) x = c • traceSummand f α x := by
   show ((c • α).toFun x).comp _ = c • (α.toFun x).comp _
   rw [show (c • α).toFun x = c • α.toFun x from rfl, ContinuousLinearMap.smul_comp]
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-! ## The off-branch fibre-sum, holomorphic
 
@@ -285,14 +368,39 @@ structure LocalSheetSystem (f : X → Y) (y₀ : Y) where
   /-- The sheets sweep out the **entire** fibre over each `y ∈ V`. -/
   fibre_eq : ∀ y ∈ V, f ⁻¹' {y} = Set.range (fun i => sheet i y)
 
+end
+
 namespace LocalSheetSystem
 
+
+section
+variable {X Y : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y]
 variable {f : X → Y} {y₀ : Y} (S : LocalSheetSystem f y₀)
 
 /-- Each sheet is `MDifferentiableAt` at every point of `V`. -/
 theorem sheet_mdifferentiableAt (i : Fin S.n) {y : Y} (hy : y ∈ S.V) :
     MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (S.sheet i) y :=
   ((S.sheet_smooth i).contMDiffAt (S.isOpen_V.mem_nhds hy)).mdifferentiableAt (by decide)
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+variable {f : X → Y} {y₀ : Y} (S : LocalSheetSystem f y₀)
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y]
+variable {f : X → Y} {y₀ : Y} (S : LocalSheetSystem f y₀)
 
 /-- **Per-sheet value identity.** On `V`, the retyped fibre summand at the sheet
 point `sheet i y` equals `sheetPullback α (sheet i) y`. -/
@@ -317,6 +425,25 @@ theorem traceSummandAt_sheet_eq {f : X → Y} {y₀ : Y} (S : LocalSheetSystem f
   -- transport now that summands live in the model fibre `ℂ →L ℂ`).
   rw [traceSummandAt, hval, hfsy]
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+variable {f : X → Y} {y₀ : Y} (S : LocalSheetSystem f y₀)
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y]
+variable {f : X → Y} {y₀ : Y} (S : LocalSheetSystem f y₀)
+
 /-- **Local representation of the trace (off-branch core).** Over the base
 neighborhood `V`, the fibre-sum trace is the finite sum of the per-sheet pullbacks:
 `traceFun f α y = ∑ᵢ sheetPullback α (sheet i) y`. The fibre `f⁻¹{y}` is the range
@@ -330,6 +457,25 @@ theorem traceFun_eq_sum_sheetPullback {f : X → Y} {y₀ : Y} (S : LocalSheetSy
   rw [traceFun, S.fibre_eq y hy,
     finsum_mem_range (S.sheet_inj y hy), finsum_eq_sum_of_fintype]
   exact Finset.sum_congr rfl fun i _ => S.traceSummandAt_sheet_eq hf α i hy
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+variable {f : X → Y} {y₀ : Y} (S : LocalSheetSystem f y₀)
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+variable {f : X → Y} {y₀ : Y} (S : LocalSheetSystem f y₀)
 
 /-- **Off-branch holomorphicity.** Given a local sheet system at `y₀`,
 the trace section `y ↦ traceFun f α y` is `ContMDiffAt` (analytic) at `y₀` — i.e.
@@ -358,7 +504,26 @@ theorem contMDiffAt_traceFun {f : X → Y} {y₀ : Y} (S : LocalSheetSystem f y�
   exact contMDiffAt_sheetPullback α
     ((S.sheet_smooth i).contMDiffAt (S.isOpen_V.mem_nhds S.mem_V))
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+variable {f : X → Y} {y₀ : Y} (S : LocalSheetSystem f y₀)
+
+end
+
 end LocalSheetSystem
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-! ### Linearity of the fibre-sum trace (off the branch locus)
 
@@ -622,6 +787,14 @@ theorem clm_eq_apply_one_smul_id (φ : ℂ →L[ℂ] ℂ) :
   apply ContinuousLinearMap.ext_ring
   simp
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
 /-- **Tangent trivialization is the identity at its own center.** The fixed `y₀`-tangent
 trivialization's fiber coordinate map `continuousLinearMapAt … y₀` is `id` (the chart-transition
 derivative `D(chart ∘ chart.symm)` at the center is `D id = id`). This is the precise sense in
@@ -644,6 +817,23 @@ theorem tangent_continuousLinearMapAt_center (y₀ : Y) :
     simp only [Function.comp_apply, id_eq]; exact (extChartAt 𝓘(ℂ) y₀).right_inv hz
   rw [fderivWithin_univ, hev.fderiv_eq, fderiv_id, ContinuousLinearMap.id_apply]
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
 /-- The inverse tangent trivialization `symmL … y₀` is also `id` at the center (inverse of
 `tangent_continuousLinearMapAt_center`). -/
 theorem tangent_symmL_center (y₀ : Y) :
@@ -655,6 +845,23 @@ theorem tangent_symmL_center (y₀ : Y) :
   -- `h : ∀ y, symmL(…) (id y) = y`, i.e. `symmL(…) v = v`; conclude the operator equals `id`.
   refine ContinuousLinearMap.ext (fun v => ?_)
   simpa using h v
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- **The fixed-frame coordinate change is the identity AT the center `y₀`.** For the cotangent
 hom-bundle, `inCoordinates … y₀ y₀ y₀ y₀ φ = φ`: at the center both the source (tangent) and
@@ -670,11 +877,45 @@ theorem inCoordinates_center_self (φ : ℂ →L[ℂ] ℂ) (y₀ : Y) :
     tangent_symmL_center]
   exact ContinuousLinearMap.comp_id φ
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
 /-- **Local coefficient at the center recovers the raw value-at-`1`.** Immediate from
 `inCoordinates_center_self`. -/
 theorem traceLocalCoeff_center (coeff : Y → (ℂ →L[ℂ] ℂ)) (y₀ : Y) :
     traceLocalCoeff coeff y₀ y₀ = (coeff y₀) (1 : ℂ) := by
   rw [traceLocalCoeff, inCoordinates_center_self]
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- **`inCoordinates` of the cotangent hom-bundle, value-at-`1`, is additive in the operator.**
 The target trivial-bundle coordinate `continuousLinearMapAt` is `id`, so `inCoordinates … φ 1`
@@ -703,6 +944,23 @@ theorem inCoordinates_apply_one_smul (a : ℂ) (φ : ℂ →L[ℂ] ℂ) (y₀ y 
     ContinuousLinearMap.comp_apply]
   exact ContinuousLinearMap.smul_apply a φ _
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
 /-- **The local coefficient is additive in the operator value.** The local coefficient of a
 pointwise sum of coefficient functions splits (from `inCoordinates_apply_one_add`). Used for
 ℂ-linearity of the trace at branch points, read in the fixed frame. -/
@@ -716,6 +974,15 @@ theorem traceLocalCoeff_add (g h : Y → (ℂ →L[ℂ] ℂ)) (y₀ y : Y) :
 theorem traceLocalCoeff_smul (a : ℂ) (g : Y → (ℂ →L[ℂ] ℂ)) (y₀ y : Y) :
     traceLocalCoeff (fun y => a • g y) y₀ y = a • traceLocalCoeff g y₀ y :=
   inCoordinates_apply_one_smul a (g y) y₀ y
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- **Branch value of the trace, in the fixed `y₀`-frame.** At a branch point `y₀` the operator
 `traceFun f α y` (read in the *varying* chart at `y`) is genuinely discontinuous as `y → y₀` for a
@@ -743,6 +1010,14 @@ noncomputable def traceFunExt (f : X → Y) (α : HolomorphicOneForms X) (y : Y)
   classical
   exact if y ∈ branchLocus f then traceBranchValue f α y else traceFun f α y
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
 /-- Off the branch locus, the extension is the raw fibre sum. -/
 theorem traceFunExt_of_notMem_branchLocus (f : X → Y) (α : HolomorphicOneForms X)
     {y : Y} (hy : y ∉ branchLocus f) :
@@ -757,6 +1032,23 @@ theorem traceFunExt_of_mem_branchLocus (f : X → Y) (α : HolomorphicOneForms X
   classical
   rw [traceFunExt, if_pos hy]
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
 /-- **At a branch point the extension operator is `(local coefficient) • id`.** Since the branch
 value is `L • id` and `traceLocalCoeff (L • id) y y = L` (`traceLocalCoeff_center`), the operator
 `traceFunExt f α y` is recovered from its own (scalar, linear-in-`α`) local coefficient. This is
@@ -768,6 +1060,15 @@ theorem traceFunExt_branchPoint_eq_smul_id (f : X → Y) (α : HolomorphicOneFor
   rw [traceLocalCoeff_center, traceFunExt_of_mem_branchLocus f α hy, traceBranchValue]
   -- `(L • id) 1 = L`, so the RHS is `((L • id) 1) • id = L • id = traceBranchValue`.
   simp
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- A punctured neighborhood of any point `y₀` **eventually avoids the branch locus**:
 the branch locus is finite (hence `branchLocus f \ {y₀}` is closed), so its complement
@@ -1044,6 +1345,14 @@ object whose continuity/smoothness `Mathlib.contMDiffAt_hom_bundle` (`contMDiffA
 governs, and which `continuousAt_inCoordinates` (in `CotangentCoeff.lean`) already shows is
 continuous wherever the section is smooth. -/
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
 /-- **Section lift from the local coefficient (the converse of `continuousAt_inCoordinates`).**
 If the scalar local coefficient `y ↦ traceLocalCoeff coeff y₀ y` is `ContMDiffAt` at `y₀`,
 then the section `traceTotalSpaceMk coeff` is `ContMDiffAt` at `y₀`. This is the bundle-
@@ -1064,6 +1373,15 @@ theorem contMDiffAt_traceTotalSpaceMk_of_localCoeff (coeff : Y → (ℂ →L[ℂ
   show ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := Y)) ℂ (Bundle.Trivial Y ℂ)
       y₀ y y₀ y (coeff y) = traceLocalCoeff coeff y₀ y • ContinuousLinearMap.id ℂ ℂ
   exact clm_eq_apply_one_smul_id _
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- **Off-branch smoothness of the local coefficient.** Wherever `y₁` is off the branch
 locus *and* lies in the fixed chart source at `y₀`, the scalar local coefficient
@@ -1105,6 +1423,14 @@ pullback `g ∘ (chartAt ℂ y₀).symm` is `AnalyticAt` at `(chartAt ℂ y₀) 
 the model space `ℂ` is the identity). We package the two directions needed for the
 removable-singularity bridge. -/
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
 /-- **Manifold smoothness ⟹ chart-pullback differentiability (scalar codomain).** If
 `g : Y → ℂ` is `ContMDiffAt … ω` at `y₁`, its chart pullback `g ∘ (chartAt ℂ y₀).symm` is
 `DifferentiableAt ℂ` at `(chartAt ℂ y₀) y₁`, provided `y₁` lies in the chart source. The
@@ -1129,6 +1455,23 @@ theorem differentiableAt_chartPullback_of_contMDiffAt {g : Y → ℂ} {y₀ y₁
     hg'.comp ((chartAt ℂ y₀) y₁) hsymm
   exact (contMDiffAt_iff_contDiffAt.mp hcomp).differentiableAt (by simp)
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y]
+
 /-- **Chart-pullback analyticity ⟹ manifold smoothness (scalar codomain).** Converse of
 `differentiableAt_chartPullback_of_contMDiffAt` at the basepoint: if `g : Y → ℂ` is
 `ContinuousAt` at `y₀` and its chart pullback `g ∘ (chartAt ℂ y₀).symm` is `AnalyticAt ℂ` at
@@ -1152,6 +1495,15 @@ theorem contMDiffAt_of_analyticAt_chartPullback {g : Y → ℂ} {y₀ : Y}
   have hbase : extChartAt 𝓘(ℂ) y₀ y₀ = (chartAt ℂ y₀) y₀ := by simp
   rw [hfun, hbase]
   exact han.contDiffAt
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-! ### The one-variable analytic heart of the local-boundedness crux
 
@@ -1803,6 +2155,14 @@ theorem traceLocalCoeff_mul_sub_tendsto_zero (f : X → Y) (hf : ContMDiff 𝓘(
   filter_upwards [nhdsWithin_le_nhds (c.open_target.mem_nhds hz₀tgt)] with z hz_tgt
   simp only [Function.comp_apply, ← hc, c.right_inv hz_tgt, ← hz₀]
 
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
 /-- **Branch-value local-coefficient matching (now PROVEN, no analytic input).** With the
 refactored `traceFunExt`, the branch value `traceFunExt f α y₀ = traceBranchValue f α y₀` is the
 operator `L • id`, where `L` is the chart-pullback removable-singularity limit of the *local
@@ -1824,6 +2184,15 @@ theorem traceFunExt_branchValue_correct (f : X → Y)
           (fun z => traceLocalCoeff (traceFun f α) y₀ ((chartAt ℂ y₀).symm z)) := by
   rw [traceLocalCoeff_center, traceFunExt_of_mem_branchLocus f α hy₀, traceBranchValue]
   simp
+
+end
+
+section
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- **[PROVEN MODULO the single analytic crux `traceLocalCoeff_mul_sub_tendsto_zero`]**
 
@@ -2495,4 +2864,6 @@ theorem traceFormTotal_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [Compac
         traceFormTotal_of_nonconstant f hf hfc, traceFormTotal_of_nonconstant g hg hgc,
         traceForm_comp f hf hfc g hg hgc hgf hgfnc]
 
+
+end
 end Jacobians

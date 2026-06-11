@@ -31,7 +31,6 @@ import Jacobians.LaurentTail.RiemannRochUnconditional
 
 -- Many declarations here are purely algebraic (the ℂ-module on `MeromorphicFunction`) and use
 -- only `[ChartedSpace ℂ X]`, not the full compact-manifold hypotheses carried by the consumers.
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 

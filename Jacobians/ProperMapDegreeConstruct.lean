@@ -85,8 +85,8 @@ namespace Jacobians.ProperMapDegreeConstruct
 
 open Jacobians Jacobians.ProperMapDegree
 
-set_option linter.unusedSectionVars false
 
+section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -118,6 +118,11 @@ def localDeg (f : MeromorphicFunction X) (w : RiemannSphere) (x : X) : ℤ :=
       (meromorphicOrderAt (fun z => f.toFun ((chartAt (H := ℂ) x).symm z) - c)
         ((chartAt (H := ℂ) x) x)).untop₀
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- At a non-pole `x` with `F x = coe 0` (a genuine zero or a value-`0` point),
 the local degree over `0` is `orderAtPoint f x`: `meromorphicOrderAt (f.toFun ∘
 chart.symm − 0) = meromorphicOrderAt (f.toFun ∘ chart.symm) = orderAtPoint f x`
@@ -129,9 +134,26 @@ lemma localDeg_zero_eq_order (f : MeromorphicFunction X) (x : X) :
   simp only [sub_zero]
   rfl
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- At `∞`, the local degree over `∞` is `−orderAtPoint f x`. -/
 @[simp] lemma localDeg_infty (f : MeromorphicFunction X) (x : X) :
     localDeg f OnePoint.infty x = -f.orderAtPoint x := rfl
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The fibre-multiplicity function `N`
 
@@ -324,4 +346,6 @@ theorem exists_properMapDegree_of_isLocallyConstant_N (f : MeromorphicFunction X
   Jacobians.ProperMapDegree.exists_properMapDegree_of_properMapDegreeData f
     (ProperMapDegreeData.ofConservation f hlc)
 
+
+end
 end Jacobians.ProperMapDegreeConstruct

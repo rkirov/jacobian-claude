@@ -73,8 +73,8 @@ namespace Jacobians.MultiplicityPatchingConstruct
 open Jacobians Jacobians.ProperMapDegree Jacobians.ProperMapDegreeConstruct
   Jacobians.MultiplicityPatching
 
-set_option linter.unusedSectionVars false
 
+section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -88,6 +88,11 @@ via the *proven* chart-invariance `orderAtPoint_chart_invariant`, read off
 half of the per-sheet conservation `sheetMult_eq`: the chart-at-`x` order sum of
 `Planar.orderSum_eq_of_analyticOrder` matches the per-preimage `localDeg`
 (computed in the chart at the preimage). -/
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- The shift `f − c` as a meromorphic function (built directly, independent of
 the `Sub (MeromorphicFunction X)` instance). -/
@@ -105,6 +110,17 @@ noncomputable def shiftMero (f : MeromorphicFunction X) (c : ℂ) : MeromorphicF
 @[simp] lemma shiftMero_toFun (f : MeromorphicFunction X) (c : ℂ) :
     (shiftMero f c).toFun = fun x => f.toFun x - c := rfl
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- **`localDeg` at a finite value as an `orderAtPoint` of the shift `f − c`.**
 
 `localDeg f (coe c) y = orderAtPoint (shiftMero f c) y`.  Both are
@@ -120,6 +136,12 @@ lemma localDeg_coe_eq_orderAtPoint_sub (f : MeromorphicFunction X) (c : ℂ) (y 
     = (meromorphicOrderAt ((shiftMero f c).toFun ∘ (chartAt (H := ℂ) y).symm)
       ((chartAt (H := ℂ) y) y)).untop₀
   rfl
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- **Chart-invariant reading of `localDeg` at a finite value.**
 
@@ -564,6 +586,8 @@ theorem exists_properMapDegree_of_localSheets (f : MeromorphicFunction X)
   exists_properMapDegree_of_pointwiseMultiplicityPatching f
     (fun w₀ => (h w₀).toPatchingData)
 
+
+end
 end Jacobians.MultiplicityPatchingConstruct
 
 end

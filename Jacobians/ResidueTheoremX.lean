@@ -80,10 +80,10 @@ namespace Jacobians.ResidueTheoremX
 
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
+section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -100,6 +100,11 @@ pullback has finite order `n` at `φ x` (i.e. `f` is not identically `0` near `x
 def resLogDeriv (f : MeromorphicFunction X) (x : X) : ℂ :=
   resAt (logDeriv (f.toFun ∘ (chartAt (H := ℂ) x).symm)) ((chartAt (H := ℂ) x) x)
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- **The chart bridge (step 1), order form.**  If the chart pullback `f.toFun ∘ φ.symm`
 (`φ = chartAt x`) has finite order `n` at `φ x` — i.e. `meromorphicOrderAt … = (n : ℤ)`, which
 holds precisely when `f` is not identically `0` near `x` — then the residue of `df/f` at `x` is
@@ -113,6 +118,17 @@ theorem resLogDeriv_eq_of_order (f : MeromorphicFunction X) (x : X) {n : ℤ}
       = (n : ℤ)) :
     resLogDeriv f x = (n : ℂ) :=
   resAt_logDeriv_eq_order (f.meromorphic x) hord
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- **The chart bridge (step 1).**  When the chart pullback of `f` is not identically `0` near
 `φ x` (equivalently `meromorphicOrderAt … ≠ ⊤`), the intrinsic residue of `df/f` at `x` equals the
@@ -135,6 +151,12 @@ theorem resLogDeriv_eq_order (f : MeromorphicFunction X) (x : X)
       = n
     rw [hord]; rfl
   rw [resLogDeriv_eq_of_order f x hord, hoap]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Step 4 — the fibrewise regrouping `∑_{x∈X} = ∑_y ∑_{F⁻¹y}`
 
@@ -192,6 +214,11 @@ by step 1) — then the residue of the trace `Tr_F(df/f)` at the base equals the
 
 This is Lemma 3.2 (`resAt_traceCoeff_of_simplePole`, residue = `∑ cs i`) composed with the chart
 bridge (`cs i = ord_{xs i}`).  Any constructor of `LogDerivTrace` produces exactly this per fibre. -/
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 theorem resAt_traceCoeff_eq_fibre_orderSum (f : MeromorphicFunction X) (T : FibreTrace)
     (cs : T.ι → ℂ) (hsp : ∀ i, T.coeff i = fun w => cs i * (w - T.pre i)⁻¹)
     (xs : T.ι → X) (hcs : ∀ i, cs i = (f.orderAtPoint (xs i) : ℂ)) :
@@ -200,6 +227,12 @@ theorem resAt_traceCoeff_eq_fibre_orderSum (f : MeromorphicFunction X) (T : Fibr
   push_cast
   refine Finset.sum_congr rfl (fun i _ => ?_)
   rw [hsp i, resAt_const_mul_sub_inv, hcs i]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Steps 2-3-5 — the trace representation and the reduction to the residue theorem
 
@@ -366,4 +399,6 @@ def logDerivTrace_of_div_eq_zero (f : MeromorphicFunction X)
     simp
   finite_eq := by rw [emptyLaurentForm_image_a, Finset.sum_empty, h0]; simp
 
+
+end
 end Jacobians.ResidueTheoremX

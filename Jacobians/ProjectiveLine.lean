@@ -360,7 +360,6 @@ Dolbeault/Riemann–Roch infrastructure that gates the genus goals elsewhere. -/
 
 section LiouvilleVanishing
 
-set_option linter.unusedSectionVars false
 
 variable (s : HolomorphicOneForms RiemannSphere)
 

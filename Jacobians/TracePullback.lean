@@ -44,7 +44,6 @@ Forster §§4, 10 (the trace / branched cover); Griffiths–Harris Ch. 2 §2.7
 (the trace map for forms, and `f₊ ∘ f* = deg • id`).
 -/
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 

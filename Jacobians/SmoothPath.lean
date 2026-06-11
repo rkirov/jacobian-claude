@@ -56,7 +56,6 @@ namespace Jacobians
 
 open scoped Manifold ContDiff Topology
 
-set_option linter.unusedSectionVars false
 
 universe u
 

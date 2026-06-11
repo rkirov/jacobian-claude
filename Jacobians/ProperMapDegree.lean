@@ -96,8 +96,8 @@ namespace Jacobians.ProperMapDegree
 
 open Jacobians
 
-set_option linter.unusedSectionVars false
 
+section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -239,6 +239,11 @@ so the value at `x` must be supplied; for a genuine zero it is `0` — the limit
 repair value `holoRepr x`).  This is the local multiplicity that the global
 conservation-of-number assembly aggregates over the fibre. -/
 
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+
 /-- **The Rouché per-point count at a zero (local degree = order).**
 
 For `f : MeromorphicFunction X` and `x : X` a zero of *positive order* with the
@@ -277,4 +282,12 @@ theorem localFibreNcard_eq_order_at_zero (f : MeromorphicFunction X) (x : X)
   rwa [show (Jacobians.Discharge.localOrder 𝓘(ℂ) f.toFun x).natAbs
     = (f.orderAtPoint x).natAbs from rfl] at this
 
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+end
 end Jacobians.ProperMapDegree
