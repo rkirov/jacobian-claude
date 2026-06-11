@@ -10,7 +10,7 @@ import Jacobians.TraceForm
 /-!
 # The moving fibre selection `Φ` and its self-coherence (Miranda §VIII.3 monodromy)
 
-`Jacobians.Dolbeault.FormTraceCoherentSelection` reduced the residue-theorem build (`∑ₐ Resₐ(α) = 0`
+`Jacobians.Dolbeault.FormTraceCoherentSelection` reduced the residue theorem (`∑ₐ Resₐ(α) = 0`
 for `α = ω₀·g`) to one **`CoherentTraceSelection`** structure: a global fibre selection
 `Φ : (b : ℂ) → FibreRegularData g f b` whose geometric trace `valueChartTrace ω₀ f Φ` *self-coheres*
 — near each base value it germ-equals a single fixed local fibre trace. That self-coherence is

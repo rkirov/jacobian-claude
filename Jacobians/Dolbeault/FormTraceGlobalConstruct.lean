@@ -9,7 +9,7 @@ import Jacobians.Discharge.Manifold.CriticalValuesFiniteGeneral
 /-!
 # Constructing `GlobalTraceData` — discharging the routine fields
 
-`Jacobians.Dolbeault.FormTraceGlobal` reduced the residue-theorem build (the 1-form residue theorem
+`Jacobians.Dolbeault.FormTraceGlobal` reduced the residue-theorem assembly (the 1-form residue theorem
 `∑ₐ Resₐ(α) = 0` for `α = ω₀·g`) to the single construction of a `GlobalTraceData ω₀ g f poles`. Its
 five fields are
 
@@ -42,7 +42,7 @@ is deferred (it is *not* the deep core; the deep core is trace rationality).
 
 ## The minimal remaining obligation
 
-After this file, the residue-theorem build is reduced to:
+After this file, the residue-theorem assembly is reduced to:
 
 > `∃ (f) (adapted : AdaptedCover ω₀ g f poles), TraceRationalityWitness ω₀ g f poles adapted`
 
@@ -58,7 +58,7 @@ as a sum of simple poles `r_p·(z − p)⁻¹` at the finite centers `p`, with `
 theorem itself**. So `infty_eq` for the *genuine* trace (whose `resAtInfty` is an honest
 large-circle contour integral of the actual pushforward, *not* fabricated) is the real content: it
 is Lemma 3.2 at `∞` for `Tr_F α`, and combined with the proved finite-center Lemma 3.2 and the `ℂℙ¹`
-residue theorem it *is* the residue-theorem build. Hence `L` must be the actual rational trace;
+residue theorem it *is* the residue-theorem assembly. Hence `L` must be the actual rational trace;
 there is no shortcut.
 
 This makes (ii) the genuine §VIII.3 wall: build `Tr_F α` as a global meromorphic function on the
@@ -283,11 +283,11 @@ noncomputable def globalTraceData_of_adapted (hac : AdaptedCover ω₀ g f poles
   hL32 := W.hL32
   infty_eq := W.infty_eq
 
-/-- **the residue-theorem build from an adapted cover + trace rationality (existential).** If an
+/-- **the residue-theorem assembly from an adapted cover + trace rationality (existential).** If an
 adapted cover and a trace-rationality witness exist, then `α = ω₀·g` has a `GlobalTraceData`, hence
 (by `exists_formResidueTrace_of_globalTraceData` + the proved descent) a `FormResidueTrace`, hence
 the 1-form residue theorem `∑ₐ Resₐ(α) = 0` holds *unconditionally* for `α`. This is the reduction
-of the residue-theorem build to the two §VIII.3 ingredients (the adapted cover and the trace's
+of the residue-theorem assembly to the two §VIII.3 ingredients (the adapted cover and the trace's
 rationality). -/
 theorem residueSum_eq_zero_of_adapted (hac : AdaptedCover ω₀ g f poles)
     (W : TraceRationalityWitness ω₀ g f poles hac) :

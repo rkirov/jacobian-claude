@@ -16,7 +16,7 @@ continuously-varying index bijection, `MovingCoherenceDatum.ofBijection`).
 
 This file **assembles** those local self-coherences into the global `CoherentTraceSelection`
 obligation of `Jacobians.Dolbeault.FormTraceCoherentSelection`, which (by the proved
-`residueSum_eq_zero_of_coherentSelection`) turns the key on the residue-theorem build `∑Res = 0`.
+`residueSum_eq_zero_of_coherentSelection`) turns the key on the residue theorem `∑Res = 0`.
 The packaging makes the remaining geometry explicit and *minimal*:
 
 * the **finite glue** `hglue_fin i` is exactly the local self-coherence at the pole-value `cs i`
@@ -29,7 +29,7 @@ The packaging makes the remaining geometry explicit and *minimal*:
 * the **genus-`0` `∞`-vanishing** `R₀ 0 = 0` is `coeffAt_eq_zero_of_sphereForm` (`H⁰(ℂℙ¹, Ω) = 0`).
 
 We bundle these as a `MovingCoherenceFamily` and prove it produces a `CoherentTraceSelection`, hence
-Gate A `∑Res = 0` *unconditionally* (modulo the family's existence). This isolates the remaining
+the residue theorem `∑Res = 0` *unconditionally* (modulo the family's existence). This isolates the remaining
 work to a single structure whose fields are, individually, either proved (the per-value local
 self-coherence from `MovingCoherenceDatum`, the genus-`0` vanishing) or the precise residual (the
 `∞`-glue + junk-freeness + the family-existence = the continuously-varying index bijections + the
@@ -96,7 +96,7 @@ theorem hreg_of_movingDatum {Φ : (b : ℂ) → FibreRegularData g f b} {z : ℂ
       valueChartTrace ω₀ f Φ =ᶠ[𝓝 z] (fibreTrace ω₀ f Dreg).traceCoeff :=
   ⟨C.D, hg, C.coherent⟩
 
-/-! ### The moving-fibre coherence family — the assembled Gate-A input
+/-! ### The moving-fibre coherence family — the assembled residue-theorem input
 
 We bundle: the global selection `Φ`, the adapted-cover finite/∞ bookkeeping (verbatim from
 `CoherentTraceSelection`), the **per-pole-value moving data** (whose fixed fibre is the pole
@@ -106,10 +106,10 @@ then *derived* from the moving data (`glue_fin_of_movingDatum`/`hreg_of_movingDa
 carried verbatim. -/
 
 /-- **A moving-fibre coherence family** for `α = ω₀·g` over `poles`, relative to an adapted cover
-`hac`. The Gate-A input assembled from the §VIII.3 monodromy data: the global selection `Φ`, the
+`hac`. The residue-theorem input assembled from the §VIII.3 monodromy data: the global selection `Φ`, the
 finite/∞ enumeration bookkeeping, the per-value moving-fibre self-coherence data (finite pole-values
 against the pole sub-fibre, regular values against a regular fibre), the `∞`-glue, junk-freeness,
-and the genus-`0` continuation. Produces a `CoherentTraceSelection` (hence the residue-theorem build
+and the genus-`0` continuation. Produces a `CoherentTraceSelection` (hence the residue-theorem assembly
 `∑Res = 0`). -/
 structure MovingCoherenceFamily (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
     (poles : Finset X) (hac : AdaptedCover ω₀ g f poles) where
@@ -192,11 +192,11 @@ noncomputable def MovingCoherenceFamily.toCoherentTraceSelection {hac : AdaptedC
   hR₀0 := F.hR₀0
   hR₀_eq := F.hR₀_eq
 
-/-- **the residue-theorem build `∑Res = 0` from a moving-fibre coherence family.**  Via
+/-- **The residue theorem `∑Res = 0` from a moving-fibre coherence family.**  Via
 `MovingCoherenceFamily.toCoherentTraceSelection` and the proved
 `residueSum_eq_zero_of_coherentSelection`, a moving-fibre coherence family closes the
-residue-theorem build's 1-form residue theorem for `α = ω₀·g`. This is the §VIII.3-monodromy
-reduction of the residue-theorem build: every field is either proved (the per-value self-coherence,
+residue-theorem assembly's 1-form residue theorem for `α = ω₀·g`. This is the §VIII.3-monodromy
+reduction of the residue-theorem assembly: every field is either proved (the per-value self-coherence,
 the genus-`0` vanishing) or the precise residual (the `∞`-glue, junk-freeness, and the
 family-existence = the continuously-varying index bijections + the pole/regular separation
 genericity). -/
@@ -260,7 +260,7 @@ noncomputable def movingCoherenceFamily_empty (ω₀ : HolomorphicOneForms X) (g
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **Non-vacuity of the moving-fibre Gate-A reduction.**  For the empty pole set the reduction
+/-- **Non-vacuity of the moving-fibre residue-theorem reduction.**  For the empty pole set the reduction
 `residueSum_eq_zero_of_movingCoherenceFamily` is satisfiable via the empty family
 (`movingCoherenceFamily_empty`), yielding `∑Res = 0`. Confirms the family reduction is honest (not a
 disguised `False`). -/

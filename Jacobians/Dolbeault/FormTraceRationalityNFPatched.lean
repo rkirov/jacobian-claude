@@ -10,7 +10,7 @@ import Jacobians.Dolbeault.FormTraceBundleBranchBound
 import Jacobians.Dolbeault.FormTraceBundleBridge
 
 /-!
-# the residue-theorem build `∑Res = 0` from the **branch-patched** geometric trace, *sound* `∞`
+# The residue theorem `∑Res = 0` from the **branch-patched** geometric trace, *sound* `∞`
 fibre (Miranda §VIII.3)
 
 `Jacobians.Dolbeault.FormTraceFullFibre.traceRationalityDataNF_ofMovingData`
@@ -56,7 +56,7 @@ replacing them by the genuinely-satisfiable boundedness-crux/junk-free inputs, a
   the branch set `br`, the off-centre analyticity inputs (`hreg` regular-value analyticity + `hbnd`
   branch-value boundedness), per-pole moving data, junk-freeness `hcont_int`, the genus-`0`
   `∞`-vanishing `R₀`, and the **sound** `∞`-fibre data + coherence;
-* `residueSum_eq_zero_of_patchedTraceRationalityNF` — the residue-theorem build `∑Res = 0` from it;
+* `residueSum_eq_zero_of_patchedTraceRationalityNF` — the residue theorem `∑Res = 0` from it;
 * `traceRationalityDataNF_ofPatched_holomorphic` — end-to-end non-vacuity (empty-pole), confirming
   the reduction is honest (not a disguised `False`).
 
@@ -159,7 +159,7 @@ proven from the *internally-discharged* `hentire` (`analyticOnNhd_remainder_of_j
 * `Dinf` (sound `InftyFibreDataNF`) + `hcoh_inf` — the sound `∞`-fibre data and coherence against
   `inftyFibreTraceNF`.
 
-Producing one ⇒ the residue-theorem build `∑Res = 0` (sound `∞`-fibre, value-correct trace). -/
+Producing one ⇒ the residue theorem `∑Res = 0` (sound `∞`-fibre, value-correct trace). -/
 noncomputable def traceRationalityDataNF_ofPatched
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
@@ -252,7 +252,7 @@ noncomputable def traceRationalityDataNF_ofPatched
     rw [← hTL]
     exact hcoh_inf
 
-/-- **the residue-theorem build `∑Res = 0` from the branch-patched geometric trace (sound `∞`).**
+/-- **The residue theorem `∑Res = 0` from the branch-patched geometric trace (sound `∞`).**
 The sound `TraceRationalityDataNF` route closed via `residueSum_eq_zero_of_traceRationalityDataNF`.
 -/
 theorem residueSum_eq_zero_of_patchedTraceRationalityNF
@@ -446,14 +446,14 @@ theorem hcoh_inf_of_inftyMovingCoherenceNF (ω₀ : HolomorphicOneForms X) (g : 
       =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf).traceCoeff :=
   hcoh.trans (recipCoeff_inftyMovingSumNF_eq_traceCoeff ω₀ f Dinf)
 
-/-! ### The top-level sound geometric assembly (the residue-theorem build on the precise residuals)
+/-! ### The top-level sound geometric assembly (the residue-theorem assembly on the precise residuals)
 
-Wiring all the discharge helpers, this reduces the residue-theorem build `∑Res = 0` — *soundly*
+Wiring all the discharge helpers, this reduces the residue theorem `∑Res = 0` — *soundly*
 (sound `∞`-fibre, value-correct branch-patched trace) and axiom-clean — to a precise list of
 **genuine §VIII.3 geometric residuals**, with `f` a nonconstant cover (`hncF`):
 
 * `Φ`, `cs`/`ρ`, `D`/`hxs_*`, `hcenters_cs`, the enumeration bookkeeping — the global selection +
-  discrete fibre data (wall 2 bookkeeping);
+  discrete fibre data (fibre-selection bookkeeping);
 * `Creg z` (off `cs ∪ br`) + `hCreg_g` — the per-regular-value moving coherence (symmetric lever,
   giving `hreg`);
 * `br`, `hbr`, `αBr`, `hevBr` — the finite branch values, their branch-locus membership, a local

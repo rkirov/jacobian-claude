@@ -9,7 +9,7 @@ import Jacobians.ToSphereGeneral
 /-!
 # Translating sphere-sheets to `holoRepr`-sections (Miranda §VIII.3 — part (A))
 
-`Jacobians.Dolbeault.FormTraceMovingFibreSheet` reduced the residue-theorem build's `∑Res = 0` to a
+`Jacobians.Dolbeault.FormTraceMovingFibreSheet` reduced the residue-theorem assembly's `∑Res = 0` to a
 single `MovingSheetSelection`, whose per-value moving data is itself reduced (via
 `MovingCoherenceDatum.ofSheetSections`) to **continuously-varying manifold sections of
 `f.holoRepr`** plus the §VIII.3 re-selection bijection. *All* germ / `dz`-Jacobian /

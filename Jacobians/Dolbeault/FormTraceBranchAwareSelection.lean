@@ -10,7 +10,7 @@ import Jacobians.Dolbeault.FormTraceBranchExtension
 # The branch-aware trace selection (Miranda §VIII.3 — symmetric lever + removable singularity)
 
 This file assembles the two new structural ingredients into the **cleanest honest reduction** of the
-residue-theorem build `∑Res = 0` to the genuine §VIII.3 geometry, *with no false global-labeling
+residue theorem `∑Res = 0` to the genuine §VIII.3 geometry, *with no false global-labeling
 constraint and with branch values handled by Riemann's removable singularity*:
 
 1. **The symmetric-invariance lever** (`FormTraceMovingFibreSymm` / `…SphereSet`): the moving-fibre
@@ -21,7 +21,7 @@ the same fibre set as the local sheets; the per-`b'` index bijection is reconstr
 at the finitely-many branch values by Riemann's removable singularity (analytic on a punctured
 neighbourhood + continuous at the branch point), *without* a sheet system there.
 
-The result is `BranchAwareTraceSelection` — a Gate-A input whose fields are exactly the genuine
+The result is `BranchAwareTraceSelection` — a residue-theorem input whose fields are exactly the genuine
 geometry:
 * the per-pole-value and per-regular-value moving-sheet *coherence data* `Cfin`/`Creg` (built
   upstream from the set-form sphere-sheet constructor, *no labeling*);
@@ -30,16 +30,16 @@ geometry:
   branch-specific input — Riemann extension);
 * the `∞`-glue, junk-freeness, and the genus-`0` `∞`-vanishing.
 
-It produces the residue-theorem build `∑Res = 0` via the proved `residueSum_eq_zero_of_glue` (the
+It produces the residue theorem `∑Res = 0` via the proved `residueSum_eq_zero_of_glue` (the
 low-level descent whose off-centre requirement is *analyticity*, exactly what the branch extension
 supplies — `CoherentTraceSelection` would instead demand germ-coherence at branch values, which is
 false there).
 
 ## What this file proves
 
-* `BranchAwareTraceSelection` — the Gate-A input bundling the moving-sheet coherence (no labeling),
+* `BranchAwareTraceSelection` — the residue-theorem input bundling the moving-sheet coherence (no labeling),
   the regular-value `g`-analyticity, the branch-value continuity, and the `∞`/junk/genus-`0` data.
-* `residueSum_eq_zero_of_branchAwareSelection` — the residue-theorem build `∑Res = 0` from it.
+* `residueSum_eq_zero_of_branchAwareSelection` — the residue theorem `∑Res = 0` from it.
 * `branchAwareTraceSelection_empty` / `residueSum_eq_zero_of_branchAwareSelection_holomorphic` —
   end-to-end non-vacuity (empty-pole case), confirming the reduction is honest.
 
@@ -90,7 +90,7 @@ theorem analyticAt_valueChartTrace_of_movingDatum {Φ : (b : ℂ) → FibreRegul
 
 /-! ### The branch-aware trace selection
 
-The Gate-A input bundling the genuine §VIII.3 geometry, *no labeling, branch values via removable
+The residue-theorem input bundling the genuine §VIII.3 geometry, *no labeling, branch values via removable
 singularity*.  Mirrors `MovingCoherenceFamily` for the finite/∞ bookkeeping and the pole-value
 coherence, but:
 * the off-exceptional content is split: a moving-sheet coherence datum `Creg z` (with
@@ -100,7 +100,7 @@ coherence, but:
   branch values via the extension. -/
 
 /-- **A branch-aware trace selection** for `α = ω₀·g` over `poles`, relative to an adapted cover
-`hac`. The honest §VIII.3 Gate-A input *without the false global-labeling constraint and with branch
+`hac`. The honest §VIII.3 residue-theorem input *without the false global-labeling constraint and with branch
 values handled by Riemann's removable singularity*:
 
 * `Φ`, `cs`/`ρ`/`hcenters_cs`, `Dinf`/`hxs_*` — the global selection + finite/∞ enumeration
@@ -114,7 +114,7 @@ values handled by Riemann's removable singularity*:
   input; the only branch-specific content);
 * `hglue_inf` / `hcont_int` / `R₀`+`hR₀_*` — the `∞`-glue, junk-freeness, genus-`0` `∞`-vanishing.
 
-Produces the residue-theorem build `∑Res = 0` via `residueSum_eq_zero_of_glue`. -/
+Produces the residue theorem `∑Res = 0` via `residueSum_eq_zero_of_glue`. -/
 structure BranchAwareTraceSelection (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (poles : Finset X) (hac : AdaptedCover ω₀ g f poles) where
   /-- The global fibre selection. -/
@@ -196,11 +196,11 @@ theorem BranchAwareTraceSelection.hT_off {hac : AdaptedCover ω₀ g f poles}
     (fun w hw => analyticAt_valueChartTrace_of_movingDatum (S.Creg w hw) (S.hCreg_g w hw))
     S.hbranch hz
 
-/-- **the residue-theorem build `∑Res = 0` from a branch-aware trace selection.** Via
+/-- **The residue theorem `∑Res = 0` from a branch-aware trace selection.** Via
 `residueSum_eq_zero_of_glue` (the low-level descent whose off-centre requirement is *analyticity*,
 supplied by the branch extension), with the finite glue from the per-pole moving datum, the
 off-centre analyticity from the regular-value coherence ⊕ branch extension, and the
-`∞`/junk/genus-`0` data. This is the §VIII.3 reduction of the residue-theorem build **with the
+`∞`/junk/genus-`0` data. This is the §VIII.3 reduction of the residue theorem **with the
 symmetric lever (no labeling) and branch values via removable singularity**. -/
 theorem residueSum_eq_zero_of_branchAwareSelection (hac : AdaptedCover ω₀ g f poles)
     (S : BranchAwareTraceSelection ω₀ g f poles hac) :
@@ -265,7 +265,7 @@ noncomputable def branchAwareTraceSelection_empty (ω₀ : HolomorphicOneForms X
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **Non-vacuity of the branch-aware Gate-A reduction.**  For the empty pole set the reduction
+/-- **Non-vacuity of the branch-aware residue-theorem reduction.**  For the empty pole set the reduction
 `residueSum_eq_zero_of_branchAwareSelection` is satisfiable via the empty selection
 (`branchAwareTraceSelection_empty`), yielding `∑Res = 0`.  Confirms the reduction is honest (not a
 disguised `False`). -/

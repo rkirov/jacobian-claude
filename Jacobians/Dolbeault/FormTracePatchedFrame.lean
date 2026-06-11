@@ -10,7 +10,7 @@ import Jacobians.Dolbeault.FormTraceRegularValueDatum
 # Assembling the `PatchedTraceSelection` from the global full-fibre sheet frame (Miranda §VIII.3 —
 close)
 
-`Jacobians.Dolbeault.FormTraceGlobalTPatched` reduced the residue-theorem build (`∑ₐ Resₐ(α) = 0`,
+`Jacobians.Dolbeault.FormTraceGlobalTPatched` reduced the residue theorem (`∑ₐ Resₐ(α) = 0`,
 `α = ω₀·g`) to the construction of a **non-empty `PatchedTraceSelection`** — the value-correct
 branch-patched trace input to `residueSum_eq_zero_of_glue`. Every conceptual wall is down; the
 proven engines are:
@@ -35,7 +35,7 @@ proven engines:
 * the finite/`∞` enumeration, `hglue_inf`, `hcont_int`, `R₀ 0 = 0` ← supplied (the cover's
   `∞`-adaptedness + rationality bookkeeping + the genus-`0` `H⁰(ℂℙ¹, Ω) = 0`).
 
-`residueSum_eq_zero_of_patchedTraceSelection` then yields the residue-theorem build `∑Res = 0`. We
+`residueSum_eq_zero_of_patchedTraceSelection` then yields the residue theorem `∑Res = 0`. We
 do **not** introduce a new reduction structure: the constructor's hypotheses are the genuine
 residual geometric inputs (the standard "reduced interface" pattern of this repo, as in
 `MovingCoherenceDatum.ofSheetSections`), and the analytic content (the branched boundedness, the
@@ -43,7 +43,7 @@ symmetric-lever coherence) is *proven* here from the engines, not re-stated.
 
 ## The single irreducible obligation (precise diagnosis)
 
-After this wiring, the residue-theorem build `∑Res = 0` rests on exactly the construction of the
+After this wiring, the residue theorem `∑Res = 0` rests on exactly the construction of the
 global full-fibre sheet frame supplying the constructor's hypotheses — concretely, the
 per-branch-value **branched moving-sum germ equality** `hgerm` (the full-fibre trace near a branch
 value `b₀` written along the smooth sheets through `b₀`'s preimages, *including the `m` colliding
@@ -58,7 +58,7 @@ branched analytic heart is closed.
 * `patchedTraceSelection_ofFrame` — the assembled `PatchedTraceSelection` from the global full-fibre
   frame data, every field discharged from the proven engines or carried as the genuine residual
   input.
-* `residueSum_eq_zero_ofFrame` — the residue-theorem build `∑Res = 0` from the frame data.
+* `residueSum_eq_zero_ofFrame` — the residue theorem `∑Res = 0` from the frame data.
 * re-export of the non-vacuity (`patchedTraceSelection_empty`) so the close-path is honest
   end-to-end.
 
@@ -143,13 +143,13 @@ The finite/`∞` enumeration, `hglue_inf`, `hcont_int`, and the genus-`0` `R₀ 
 the genuine residual inputs (the cover's `∞`-adaptedness and the rationality bookkeeping). -/
 
 /-- **The `PatchedTraceSelection` from the global full-fibre sheet frame.** The single wiring
-closing the residue-theorem build: every field of `PatchedTraceSelection` is discharged from the
+closing the residue-theorem assembly: every field of `PatchedTraceSelection` is discharged from the
 proven engines or supplied as the genuine §VIII.3 residual. The per-pole moving data come from the
 pole-sub-fibre sheets (`secFin`, `hselFin`) via `ofSheetSections`; the per-regular data from the
 sphere sheet systems (`Sreg`) + the canonical-fibre condition (`hΦinjReg`, `hΦrangeReg`) via
 `ofSphereSheetSystemCanon`; the branch-value boundedness from the branched full-fibre frames
 (`secBr`, …, `hgermBr`) via `hbnd_of_sheetFrame`. The `∞`/junk/genus-`0` fields are carried
-verbatim. `residueSum_eq_zero_of_patchedTraceSelection` then gives the residue-theorem build
+verbatim. `residueSum_eq_zero_of_patchedTraceSelection` then gives the residue-theorem assembly
 `∑Res = 0`. -/
 noncomputable def patchedTraceSelection_ofFrame (hac : AdaptedCover ω₀ g f poles)
     -- The global fibre selection and the finite/`∞` enumeration bookkeeping.
@@ -263,7 +263,7 @@ noncomputable def patchedTraceSelection_ofFrame (hac : AdaptedCover ω₀ g f po
   hR₀0 := hR₀0
   hR₀_eq := hR₀_eq
 
-/-- **the residue-theorem build `∑Res = 0` from the global full-fibre sheet frame.**  Composing
+/-- **The residue theorem `∑Res = 0` from the global full-fibre sheet frame.**  Composing
 `patchedTraceSelection_ofFrame` with the proven `residueSum_eq_zero_of_patchedTraceSelection`: once
 the global full-fibre frame data is supplied (the per-pole/per-regular sheet systems with the
 canonical-fibre condition, the per-branch-value branched Puiseux frames, and the `∞`/junk/genus-`0`
@@ -355,7 +355,7 @@ The frame constructor is *satisfiable*, not a disguised `False`: the empty-pole 
 and `residueSum_eq_zero_of_patchedTraceSelection_holomorphic` yields `∑Res = 0` for it. We re-export
 it here so the close-path is honest end-to-end. -/
 
-/-- **Non-vacuity of the frame Gate-A reduction** (re-export). For the empty pole set the reduction
+/-- **Non-vacuity of the frame residue-theorem reduction** (re-export). For the empty pole set the reduction
 is satisfiable via the empty selection, yielding `∑Res = 0`; the frame constructor does not encode a
 disguised `False`. -/
 theorem residueSum_eq_zero_ofFrame_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ)

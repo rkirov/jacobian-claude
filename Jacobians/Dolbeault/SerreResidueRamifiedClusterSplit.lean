@@ -10,31 +10,32 @@ import Jacobians.Dolbeault.SerreResidueRamifiedNormalForm
 
 This file builds the **genuine, sound, reusable** analytic core that the ramified geometric-trace
 identification needs: the Forster §5 local normal form `f = wᵐ` (up to a unit) at a ramification
-preimage, and the fibre-cluster split (the `m` regular sheets clustering near the ramification preimage
-over a nearby value).  These are the ramified analogue of the unramified planar-section machinery
-(`exists_planar_section`, `valueChartTrace_eq_sphereSheetFibreTrace`).
+preimage, and the fibre-cluster split (the `m` regular sheets clustering near the ramification
+preimage over a nearby value). These are the ramified analogue of the unramified planar-section
+machinery (`exists_planar_section`, `valueChartTrace_eq_sphereSheetFibreTrace`).
 
-## What is built here (all axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What is built here (all )
 
 * **`exists_holomorphic_root`** — a holomorphic `m`-th root of a nonvanishing analytic germ: for `u`
-  analytic at `x₀` with `u x₀ ≠ 0`, there is `v` analytic at `x₀`, `v x₀ ≠ 0`, with `vᵐ = u` near `x₀`.
-  (Standard: rotate by `λ = conj(u x₀)` so `λ·u x₀ > 0 ∈ slitPlane`, take the principal `cpow (1/m)`,
-  divide back the constant root.  No `slitPlane` hypothesis on `u` itself.)
-* **`exists_wpow_normalForm`** — the **Forster §5 `z = wᵐ` normal form**: for `F` analytic at `wp` with
-  `F wp = c` and the value-`c` germ `F − c` of analytic order `m`, there is a *local biholomorphism*
-  `η` (`η wp = 0`, `η' wp ≠ 0`) with `F w = c + η wᵐ` near `wp`.  This is the genuine hard piece — the
-  manifold cover *is* `w ↦ wᵐ` at a multiplicity-`m` ramification point, with `η` the straightening
-  coordinate.  Built from the analytic-order factorization `F − c = (w − wp)ᵐ · u` plus the holomorphic
-  `m`-th root of the unit `u`.
+  analytic at `x₀` with `u x₀ ≠ 0`, there is `v` analytic at `x₀`, `v x₀ ≠ 0`, with `vᵐ = u` near
+  `x₀`. (Standard: rotate by `λ = conj(u x₀)` so `λ·u x₀ > 0 ∈ slitPlane`, take the principal
+  `cpow (1/m)`, divide back the constant root. No `slitPlane` hypothesis on `u` itself.)
+* **`exists_wpow_normalForm`** — the **Forster §5 `z = wᵐ` normal form**: for `F` analytic at `wp`
+  with `F wp = c` and the value-`c` germ `F − c` of analytic order `m`, there is a *local
+  biholomorphism* `η` (`η wp = 0`, `η' wp ≠ 0`) with `F w = c + η wᵐ` near `wp`. This is the genuine
+  hard piece — the manifold cover *is* `w ↦ wᵐ` at a multiplicity-`m` ramification point, with `η`
+  the straightening coordinate. Built from the analytic-order factorization `F − c = (w − wp)ᵐ · u`
+  plus the holomorphic `m`-th root of the unit `u`.
 * **`exists_clusterSection`** — the **fibre-cluster split**: from the normal form `F = c + ηᵐ` and a
   primitive `m`-th root `ζ`, the local inverse `s := η⁻¹` (`s 0 = wp`) gives, on a slit carrying the
-  branch `w₀` of `(z − c)^{1/m}`, the `m` cluster sheet points `wⱼ(z) := s(ζʲ · w₀ z)` that are genuine
-  preimages of `z` under `F` (`F(wⱼ z) = z`), distinct, and clustering at `wp` as `z → c`.
+  branch `w₀` of `(z − c)^{1/m}`, the `m` cluster sheet points `wⱼ(z) := s(ζʲ · w₀ z)` that are
+  genuine preimages of `z` under `F` (`F(wⱼ z) = z`), distinct, and clustering at `wp` as `z → c`.
 
-## ⚠ Soundness note — the existing single-cluster `hgeom_slit` is the *fully-ramified single-preimage*
-   special case, **not** the general-cover identity
+## ⚠ Soundness note — the existing single-cluster `hgeom_slit` is the *fully-ramified
+single-preimage* special case, **not** the general-cover identity
 
-The field `RamifiedSheetData.hgeom_slit` (and the predicate `RealCoverSlitGeometry`) state, on the slit,
+The field `RamifiedSheetData.hgeom_slit` (and the predicate `RealCoverSlitGeometry`) state, on the
+slit,
 
 > `valueChartTrace ω₀ f Φ z = ∑_{j<m} chartIntegrand ω₀ g p (wp + ζʲ·w₀ z) · (d/dz)[wp + ζʲ·w₀ z]`,
 
@@ -47,15 +48,15 @@ with sheet arguments `wp + ζʲ·w₀ z`.  This is mathematically correct only w
    over the **entire** fibre, confirming the ramified version must too; and
 
 2. the straightening unit is trivial (`F w = c + (w − wp)ᵐ`), so the genuine sheet point
-   `s(ζʲ·w₀ z) = η⁻¹(ζʲ·w₀ z)` coincides with the first-order `wp + ζʲ·w₀ z`.  For a general cover the
-   true sheet point is `s(ζʲ·w₀ z)` (see `clusterSection_sect`), *not* `wp + ζʲ·w₀ z`.
+`s(ζʲ·w₀ z) = η⁻¹(ζʲ·w₀ z)` coincides with the first-order `wp + ζʲ·w₀ z`. For a general cover the
+true sheet point is `s(ζʲ·w₀ z)` (see `clusterSection_sect`), *not* `wp + ζʲ·w₀ z`.
 
-So `hgeom_slit`/`RealCoverSlitGeometry` are **not provable for a general real cover**; asserting them
-would be a false field (a *stronger-than-the-book* statement).  The **genuine** geometric identity is
-recorded below as `RamifiedFullFibreClusterGeometry` (full fibre = sum of all per-preimage `mₗ`-sheet
-clusters, with the *true* cluster sheet points `s_ℓ(ζₗʲ·w₀ₗ z)`).  It is the honest ramified analogue
-of `valueChartTrace_eq_sphereSheetFibreTrace`; the atoms here (`exists_wpow_normalForm`,
-`exists_clusterSection`) are exactly the per-preimage data it consumes.
+So `hgeom_slit`/`RealCoverSlitGeometry` are **not provable for a general real cover**; asserting
+them would be a false field (a *stronger-than-the-book* statement). The **genuine** geometric
+identity is recorded below as `RamifiedFullFibreClusterGeometry` (full fibre = sum of all
+per-preimage `mₗ`-sheet clusters, with the *true* cluster sheet points `s_ℓ(ζₗʲ·w₀ₗ z)`). It is the
+honest ramified analogue of `valueChartTrace_eq_sphereSheetFibreTrace`; the atoms here
+(`exists_wpow_normalForm`, `exists_clusterSection`) are exactly the per-preimage data it consumes.
 
 ## References
 
@@ -78,9 +79,9 @@ holomorphic `m`-th root `v` near `x₀`: `v` analytic at `x₀`, `v x₀ ≠ 0`,
 neighbourhood of `x₀`.
 
 Construction (no `slitPlane` hypothesis on `u`): rotate by the constant `λ = conj(u x₀)`, so that
-`λ · u x₀ = |u x₀|² > 0 ∈ slitPlane`; the principal branch `r z := (λ·u z)^{1/m}` is then analytic at
-`x₀` (`AnalyticAt.cpow`, base in `slitPlane`) with `rᵐ = λ·u` near `x₀` (`cpow_nat_inv_pow`); dividing
-by the constant root `lroot := λ^{1/m}` gives `v := r / lroot` with `vᵐ = (λ·u)/λ = u`. -/
+`λ · u x₀ = |u x₀|² > 0 ∈ slitPlane`; the principal branch `r z := (λ·u z)^{1/m}` is then analytic
+at `x₀` (`AnalyticAt.cpow`, base in `slitPlane`) with `rᵐ = λ·u` near `x₀` (`cpow_nat_inv_pow`);
+dividing by the constant root `lroot := λ^{1/m}` gives `v := r / lroot` with `vᵐ = (λ·u)/λ = u`. -/
 theorem exists_holomorphic_root {u : ℂ → ℂ} {x₀ : ℂ} (hu_an : AnalyticAt ℂ u x₀) (hu_ne : u x₀ ≠ 0)
     {m : ℕ} (hm : 0 < m) :
     ∃ v : ℂ → ℂ, AnalyticAt ℂ v x₀ ∧ v x₀ ≠ 0 ∧ ∀ᶠ z in 𝓝 x₀, v z ^ m = u z := by
@@ -111,13 +112,14 @@ theorem exists_holomorphic_root {u : ℂ → ℂ} {x₀ : ℂ} (hu_an : Analytic
 value-`c` germ `F − c` of analytic order `m` (`analyticOrderAt (F − c) wp = m`, `m ≥ 1`), there is a
 *local biholomorphism* `η` straightening `F` to the pure power:
 
-> `η` analytic at `wp`, `η wp = 0`, `deriv η wp ≠ 0`, and `F w = c + η wᵐ` on a neighbourhood of `wp`.
+> `η` analytic at `wp`, `η wp = 0`, `deriv η wp ≠ 0`, and `F w = c + η wᵐ` on a neighbourhood of
+  `wp`.
 
-This is the genuine hard geometric content: at a multiplicity-`m` ramification preimage, the cover *is*
-`w ↦ wᵐ` in the straightening coordinate `η`.  Built from the analytic-order factorization
-`F − c = (w − wp)ᵐ · u` (`AnalyticAt.analyticOrderAt_eq_natCast`) and the holomorphic `m`-th root `v`
-of the unit `u` (`exists_holomorphic_root`): set `η w := (w − wp) · v w`, so `η wᵐ = (w − wp)ᵐ · u =
-F − c`, and `deriv η wp = v wp ≠ 0`. -/
+This is the genuine hard geometric content: at a multiplicity-`m` ramification preimage, the cover
+*is* `w ↦ wᵐ` in the straightening coordinate `η`. Built from the analytic-order factorization
+`F − c = (w − wp)ᵐ · u` (`AnalyticAt.analyticOrderAt_eq_natCast`) and the holomorphic `m`-th root
+`v` of the unit `u` (`exists_holomorphic_root`): set `η w := (w − wp) · v w`, so
+`η wᵐ = (w − wp)ᵐ · u = F − c`, and `deriv η wp = v wp ≠ 0`. -/
 theorem exists_wpow_normalForm {F : ℂ → ℂ} {wp c : ℂ} {m : ℕ} (hm : 0 < m)
     (hF_an : AnalyticAt ℂ F wp) (_hFc : F wp = c)
     (hord : analyticOrderAt (fun w => F w - c) wp = (m : ℕ∞)) :
@@ -147,7 +149,8 @@ theorem exists_wpow_normalForm {F : ℂ → ℂ} {wp c : ℂ} {m : ℕ} (hm : 0 
 /-- **Local inverse of the straightening coordinate `η`.**  A local biholomorphism `η` at `wp` with
 `η wp = 0`, `η' wp ≠ 0` has a holomorphic local inverse `s` at `0`: `s 0 = wp`, `deriv s 0 ≠ 0`, and
 `η (s a) = a` near `0` (the complex inverse function theorem; `deriv s 0 = (deriv η wp)⁻¹`). -/
-theorem exists_localInverse_at_zero {η : ℂ → ℂ} {wp : ℂ} (hη_an : AnalyticAt ℂ η wp) (hη0 : η wp = 0)
+theorem exists_localInverse_at_zero {η : ℂ → ℂ}
+    {wp : ℂ} (hη_an : AnalyticAt ℂ η wp) (hη0 : η wp = 0)
     (hηderiv : deriv η wp ≠ 0) :
     ∃ s : ℂ → ℂ, AnalyticAt ℂ s 0 ∧ s 0 = wp ∧ deriv s 0 ≠ 0 ∧ (∀ᶠ a in 𝓝 0, η (s a) = a) := by
   have hsd : HasStrictDerivAt η (deriv η wp) wp := hη_an.hasStrictDerivAt
@@ -162,13 +165,13 @@ theorem exists_localInverse_at_zero {η : ℂ → ℂ} {wp : ℂ} (hη_an : Anal
 
 /-- **The cluster sheet point** of the `j`-th sheet over the value `z`, in the straightening
 coordinate: `clusterSheet s ζ w₀ j z := s (ζʲ · w₀ z)`, where `s = η⁻¹` is the local inverse of the
-normal-form coordinate, `ζ` a primitive `m`-th root, and `w₀` a branch of `(z − c)^{1/m}`.  This is the
-*genuine* preimage of `z` near the ramification point — not the first-order approximation
+normal-form coordinate, `ζ` a primitive `m`-th root, and `w₀` a branch of `(z − c)^{1/m}`. This is
+the *genuine* preimage of `z` near the ramification point — not the first-order approximation
 `wp + ζʲ·w₀ z`. -/
 def clusterSheet (s : ℂ → ℂ) (ζ : ℂ) (w₀ : ℂ → ℂ) (j : ℕ) : ℂ → ℂ :=
   fun z => s (ζ ^ j * w₀ z)
 
-/-- **The cluster sheet point is a genuine preimage of `z`.**  With the normal form `F = c + ηᵐ`, the
+/-- **The cluster sheet point is a genuine preimage of `z`.** With the normal form `F = c + ηᵐ`, the
 local inverse `s` of `η` (`η (s a) = a`), a primitive `m`-th root `ζ`, and a branch `w₀` with
 `w₀ zᵐ = z − c`, the cluster sheet point `s(ζʲ·w₀ z)` satisfies `F (s(ζʲ·w₀ z)) = z`:
 
@@ -188,11 +191,12 @@ theorem clusterSheet_sect {F η s w₀ : ℂ → ℂ} {c ζ : ℂ} {m : ℕ} (h�
       show w₀ z ^ m = w₀ z ^ (m : ℤ) by rw [zpow_natCast], hw₀pow]
   rw [hpow]; ring
 
-/-- **The `m` cluster sheets, assembled** (the fibre-cluster split at a ramification preimage).  Given
-the Forster §5 normal form at `wp` (`exists_wpow_normalForm`: `F = c + ηᵐ`, `η` a local biholo) and a
-primitive `m`-th root `ζ`, there is a local inverse `s` (`s 0 = wp`) such that, for *every* branch `w₀`
-of `(z − c)^{1/m}` with `ζʲ·w₀ z` in the inverse's domain, the `m` cluster sheet points
-`s(ζʲ·w₀ z)` (`j < m`) are genuine preimages of `z` under `F`, all tending to `wp` as `w₀ z → 0`.
+/-- **The `m` cluster sheets, assembled** (the fibre-cluster split at a ramification preimage).
+Given the Forster §5 normal form at `wp` (`exists_wpow_normalForm`: `F = c + ηᵐ`, `η` a local
+biholo) and a primitive `m`-th root `ζ`, there is a local inverse `s` (`s 0 = wp`) such that, for
+*every* branch `w₀` of `(z − c)^{1/m}` with `ζʲ·w₀ z` in the inverse's domain, the `m` cluster sheet
+points `s(ζʲ·w₀ z)` (`j < m`) are genuine preimages of `z` under `F`, all tending to `wp` as
+`w₀ z → 0`.
 
 This packages the per-preimage geometric data the genuine ramified trace identity consumes: the
 `j`-th cluster sheet is the genuine local section of `F` through the cluster near `wp`. -/
@@ -217,15 +221,16 @@ end Jacobians
 /-! ## The precise corrected remaining geometric obligation (the genuine full-fibre identity)
 
 The existing `RamifiedSheetData.hgeom_slit` / `RealCoverSlitGeometry` are unsound for a general real
-cover (see the soundness note at the top of this file): they equate the **full-fibre** geometric trace
-with the *single* `p`-cluster sum, using the *first-order* sheet points `wp + ζʲ·w₀ z`.  Below is the
-honest, sound minimal residual — the genuine ramified analogue of
+cover (see the soundness note at the top of this file): they equate the **full-fibre** geometric
+trace with the *single* `p`-cluster sum, using the *first-order* sheet points `wp + ζʲ·w₀ z`. Below
+is the honest, sound minimal residual — the genuine ramified analogue of
 `valueChartTrace_eq_sphereSheetFibreTrace` — stated as a named predicate, **not** asserted.
 
 The cluster atoms of this file (`exists_wpow_normalForm`, `exists_clusterSplit`) are exactly the
-per-preimage data this predicate consumes: at *each* preimage `pₗ` of `c` (pole **and** non-pole), the
-normal-form coordinate `ηₗ` and its local inverse `sₗ` give the `mₗ`-cluster sheets `clusterSheet sₗ ζₗ
-w₀ₗ j`, and the full-fibre trace is the sum over **all** preimages of these `mₗ`-sheet cluster sums. -/
+per-preimage data this predicate consumes: at *each* preimage `pₗ` of `c` (pole **and** non-pole),
+the normal-form coordinate `ηₗ` and its local inverse `sₗ` give the `mₗ`-cluster sheets
+`clusterSheet sₗ ζₗ w₀ₗ j`, and the full-fibre trace is the sum over **all** preimages of these
+`mₗ`-sheet cluster sums. -/
 
 namespace Jacobians.Dolbeault.SerreResidueTheorem
 
@@ -238,53 +243,55 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
 
 attribute [local instance] Classical.propDecidable
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- **The genuine full-fibre cluster geometry at a ramified centre** (the *sound* corrected residual,
-replacing the unsound single-cluster `hgeom_slit`).  At a finite value-centre `c` of the cover `F =
-f.toRiemannSphere`, given a finite enumeration `pre : Fin r → X` of the *entire* fibre `F⁻¹(coe c)` with
-ramification multiplicities `mult : Fin r → ℕ`, per-preimage primitive roots `ζ : Fin r → ℂ`, a slit
-`S` accumulating at `c`, per-preimage `m`-th-root branches `w₀ : Fin r → ℂ → ℂ`, and per-preimage
-normal-form local inverses `sec : Fin r → ℂ → ℂ` (the `sₗ = ηₗ⁻¹` of `exists_clusterSplit`), the
-geometric trace equals the **full-fibre** sum of all per-preimage `mₗ`-sheet clusters, read at the
-*genuine* cluster sheet points `clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j`:
+/-- **The genuine full-fibre cluster geometry at a ramified centre** (the *sound* corrected
+residual, replacing the unsound single-cluster `hgeom_slit`). At a finite value-centre `c` of the
+cover `F = f.toRiemannSphere`, given a finite enumeration `pre : Fin r → X` of the *entire* fibre
+`F⁻¹(coe c)` with ramification multiplicities `mult : Fin r → ℕ`, per-preimage primitive roots
+`ζ : Fin r → ℂ`, a slit `S` accumulating at `c`, per-preimage `m`-th-root branches
+`w₀ : Fin r → ℂ → ℂ`, and per-preimage normal-form local inverses `sec : Fin r → ℂ → ℂ` (the
+`sₗ = ηₗ⁻¹` of `exists_clusterSplit`), the geometric trace equals the **full-fibre** sum of all
+per-preimage `mₗ`-sheet clusters, read at the *genuine* cluster sheet points
+`clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j`:
 
 > `valueChartTrace ω₀ f Φ z`
 >   `= ∑_{ℓ < r} ∑_{j < mult ℓ}`
 >       `chartIntegrand ω₀ g (pre ℓ) (clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j z)`
 >       `· deriv (clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j) z`,  for `z ∈ S`,
 
-where `sec ℓ : ℂ → ℂ` is the local inverse read in the `pre ℓ`-chart coordinate (so the cluster sheet
-point `clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j z = (sec ℓ) (ζ ℓ ^ j · w₀ ℓ z)` is already a chart
+where `sec ℓ : ℂ → ℂ` is the local inverse read in the `pre ℓ`-chart coordinate (so the cluster
+sheet point `clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j z = (sec ℓ) (ζ ℓ ^ j · w₀ ℓ z)` is already a chart
 coordinate, matching `hgeom_slit`'s `wp + ζʲ·w₀ z`).
 
-This is the true Forster §5 (3.1) identification.  Its two corrections over `hgeom_slit` are exactly the
-two soundness failures documented above: (1) the OUTER sum over the **whole** fibre (all `r` preimages,
-not the single `p`); and (2) the **genuine** sheet points `clusterSheet (sec ℓ) …` (the local inverse
-`sₗ` of `exists_clusterSplit`), not the first-order `wp + ζʲ·w₀ z`.
+This is the true Forster §5 (3.1) identification. Its two corrections over `hgeom_slit` are exactly
+the two soundness failures documented above: (1) the OUTER sum over the **whole** fibre (all `r`
+preimages, not the single `p`); and (2) the **genuine** sheet points `clusterSheet (sec ℓ) …` (the
+local inverse `sₗ` of `exists_clusterSplit`), not the first-order `wp + ζʲ·w₀ z`.
 
-It is the single genuinely-remaining analytic input to the `hoff_cs`-free Gate-A route; everything else
-is done.  Discharging it requires the **fibre-cluster reindexing** of the `LocalSheetSystem` full-fibre
-trace by preimage clusters (the `m` regular sheets near each ramification preimage `pₗ` over a nearby `z`
-are exactly `clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j z`, `j < mₗ`, by `exists_clusterSplit` + properness) —
-the genuine multi-hundred-line build, with the per-preimage atoms supplied here. -/
+It is the single genuinely-remaining analytic input to the `hoff_cs`-free residue-theorem route; everything
+else is done. Discharging it requires the **fibre-cluster reindexing** of the `LocalSheetSystem`
+full-fibre trace by preimage clusters (the `m` regular sheets near each ramification preimage `pₗ`
+over a nearby `z` are exactly `clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j z`, `j < mₗ`, by
+`exists_clusterSplit` + properness) — the genuine multi-hundred-line build, with the per-preimage
+atoms supplied here. -/
 def RamifiedFullFibreClusterGeometry (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
-    (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (c : ℂ)
+    (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (_c : ℂ)
     {r : ℕ} (pre : Fin r → X) (mult : Fin r → ℕ) (ζ : Fin r → ℂ) (S : Set ℂ)
     (w₀ : Fin r → ℂ → ℂ) (sec : Fin r → ℂ → ℂ) : Prop :=
   ∀ z ∈ S, valueChartTrace ω₀ f Φ z = ∑ ℓ : Fin r, ∑ j ∈ Finset.range (mult ℓ),
     chartIntegrand ω₀ g (pre ℓ) (clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j z)
       * deriv (clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j) z
 
-/-- **`m = 1` (unramified) sanity reduction of the full-fibre cluster geometry.**  When every preimage
-is unramified (`mult ℓ = 1`, `ζ ℓ = 1`) and the branches are trivial (`w₀ ℓ z = z − c`, `sec ℓ` the
-genuine local section), the inner `j`-sum collapses to a single term and the identity becomes the
-*unramified full-fibre* trace identity — the shape of `valueChartTrace_eq_sphereSheetFibreTrace`.  This
-confirms the corrected predicate degenerates correctly (in contrast to the single-cluster `hgeom_slit`,
-which omits the other preimages even at `m = 1`). -/
+/-- **`m = 1` (unramified) sanity reduction of the full-fibre cluster geometry.** When every
+preimage is unramified (`mult ℓ = 1`, `ζ ℓ = 1`) and the branches are trivial (`w₀ ℓ z = z − c`,
+`sec ℓ` the genuine local section), the inner `j`-sum collapses to a single term and the identity
+becomes the *unramified full-fibre* trace identity — the shape of
+`valueChartTrace_eq_sphereSheetFibreTrace`. This confirms the corrected predicate degenerates
+correctly (in contrast to the single-cluster `hgeom_slit`, which omits the other preimages even at
+`m = 1`). -/
 theorem ramifiedFullFibreClusterGeometry_unramified_shape (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (c : ℂ)
     {r : ℕ} (pre : Fin r → X) (ζ : Fin r → ℂ) (S : Set ℂ) (w₀ sec : Fin r → ℂ → ℂ)

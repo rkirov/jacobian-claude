@@ -11,7 +11,7 @@ import Jacobians.Dolbeault.FormTraceFibre
 /-!
 # Planar removable extension of the geometric trace across a branch value (Miranda §VIII.3)
 
-The re-pointed the residue-theorem build path feeds the constructor `globalTrace_of_glue` an
+The residue-theorem path feeds the constructor `globalTrace_of_glue` an
 **arbitrary** value-chart trace function `T : ℂ → ℂ` (it need not be `valueChartTrace`). Its only
 genuinely-hard input is `hT_off` — `T` is `AnalyticAt` at every value off the finite pole-values,
 *including across the branch values* of the cover, where the per-sheet section derivatives of the

@@ -10,7 +10,7 @@ import Jacobians.Dolbeault.FormTraceInftyFibreNF
 # The residue theorem `∑Res = 0` from full-fibre trace rationality, *sound* `∞` fibre
 (Miranda §VIII.3)
 
-`Jacobians.Dolbeault.FormTraceFullFibre.TraceRationalityData` reduced the residue-theorem build to
+`Jacobians.Dolbeault.FormTraceFullFibre.TraceRationalityData` reduced the residue-theorem assembly to
 the agreements that a `LaurentForm L` represents `Tr_F α` at the finite centres (`agree`) and across
 `∞` (`agree_infty`). Its `agree_infty` is phrased against the buggy `inftyFibreTrace` (whose
 `∞`-fibre datum `InftyFibreData` is unsatisfiable for genuine `∞`-poles — see
@@ -22,15 +22,15 @@ The reduction is otherwise identical: the finite `hL32` is the proved
 `hL32_of_agree_fibreRegularData` (unchanged), the `∞` `infty_eq` (the `GlobalTraceData` conclusion
 `resAtInfty L.R = ∑_{F a = ∞} Res_a α`) is `infty_eq_of_agreeNF` (the sound `∞`-fibre Lemma 3.2),
 and the discrete enumeration is carried through. `toGlobalTraceData` + the proved descent
-`GlobalTraceData.residueSum_eq_zero` then close the residue-theorem build.
+`GlobalTraceData.residueSum_eq_zero` then close the residue-theorem assembly.
 
 ## What this file proves
 
 * `TraceRationalityDataNF` — the full-fibre trace-rationality bundle with the **sound** `∞`-fibre
   datum (`Dinf : InftyFibreDataNF`) and `agree_infty` against `inftyFibreTraceNF`;
-* `TraceRationalityDataNF.toGlobalTraceData` / `residueSum_eq_zero` — the residue-theorem build
+* `TraceRationalityDataNF.toGlobalTraceData` / `residueSum_eq_zero` — the residue-theorem assembly
   `∑Res = 0` from one;
-* `residueSum_eq_zero_of_traceRationalityDataNF` — the existential Gate-A reduction;
+* `residueSum_eq_zero_of_traceRationalityDataNF` — the existential residue-theorem reduction;
 * `traceRationalityDataNF_holomorphic` — end-to-end non-vacuity (empty-pole), confirming the
   reduction is honest (not a disguised `False`).
 
@@ -124,7 +124,7 @@ noncomputable def toGlobalTraceData : GlobalTraceData ω₀ g f poles where
   infty_eq := infty_eq_of_agreeNF ω₀ f T.L T.Dinf poles T.hxsInf_inj T.hxsInf_mem T.hxsInf_surj
     T.agree_infty
 
-/-- **the residue-theorem build for the represented form, from a `TraceRationalityDataNF`.** The
+/-- **the residue-theorem assembly for the represented form, from a `TraceRationalityDataNF`.** The
 total residue of `α = ω₀·g` over its poles vanishes: `toGlobalTraceData` + the proved descent
 `GlobalTraceData.residueSum_eq_zero`. -/
 theorem residueSum_eq_zero (T : TraceRationalityDataNF ω₀ g f poles) :
@@ -133,7 +133,7 @@ theorem residueSum_eq_zero (T : TraceRationalityDataNF ω₀ g f poles) :
 
 end TraceRationalityDataNF
 
-/-- **The Gate-A reduction, existential form (full-fibre, sound `∞`).** If a
+/-- **The residue-theorem reduction, existential form (full-fibre, sound `∞`).** If a
 `TraceRationalityDataNF ω₀ g f poles` exists — the meromorphic trace `Tr_F α` is rational (the
 agreements) with the pole-fibres enumerated and the honest `∞`-fibre — then `α = ω₀·g` satisfies
 `∑ₐ Resₐ(α) = 0` unconditionally. -/

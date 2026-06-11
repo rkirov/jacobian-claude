@@ -9,7 +9,7 @@ import Jacobians.Dolbeault.FormTraceLiouville
 /-!
 # `TraceAgreementData` from a global trace datum (Miranda §VIII.3 — steps 1–3 assembled)
 
-`Jacobians.Dolbeault.FormTraceRationalAssemble` reduced the residue-theorem build (`∑ₐ Resₐ(α) = 0`)
+`Jacobians.Dolbeault.FormTraceRationalAssemble` reduced the residue theorem (`∑ₐ Resₐ(α) = 0`)
 to a single `TraceAgreementData`: a rational `LaurentForm L` that **germ-agrees with the meromorphic
 trace `Tr_F α`** in every chart (finite charts at the finite pole-values, the reciprocal chart at
 `∞`). The `hagree_*` fields demand `L.R =ᶠ Tr_F α`, i.e. you must *already know* `L` equals the
@@ -48,7 +48,7 @@ trace).  Everything else — the principal-part subtraction's vanishing and the 
 
 ## The minimal remaining obligation
 
-the residue-theorem build is now *unconditional modulo* the construction of a `GlobalTrace` for a
+the residue-theorem assembly is now *unconditional modulo* the construction of a `GlobalTrace` for a
 suitable adapted cover — i.e. the trace as a single meromorphic function whose principal-part
 remainder is a global holomorphic form. The irreducible analytic content is `hentire` / `hrecip`.
 
@@ -169,7 +169,7 @@ def traceAgreementData_of_globalTrace (hac : AdaptedCover ω₀ g f poles)
     TraceAgreementData ω₀ g f poles hac :=
   G.toTraceAgreementData
 
-/-- **the residue-theorem build from a `GlobalTrace`.** If an adapted cover and a `GlobalTrace` (the
+/-- **the residue-theorem assembly from a `GlobalTrace`.** If an adapted cover and a `GlobalTrace` (the
 meromorphic trace as a single function whose principal-part remainder is a global holomorphic form)
 exist, then the 1-form residue theorem `∑ₐ Resₐ(α) = 0` holds *unconditionally* for `α = ω₀·g`.
 Composes `traceAgreementData_of_globalTrace` with the proved `residueSum_eq_zero_of_agreementData`.
@@ -227,7 +227,7 @@ noncomputable def globalTrace_holomorphic (ω₀ : HolomorphicOneForms X) (g : X
     rw [hfun, recipCoeff_zero]
     exact continuousAt_const
 
-/-- **the residue-theorem build, holomorphic case, via the global trace datum (non-vacuity
+/-- **the residue-theorem assembly, holomorphic case, via the global trace datum (non-vacuity
 end-to-end).** In the empty-pole case, `residueSum_eq_zero_of_globalTrace` applied to
 `globalTrace_holomorphic` yields `∑_{a ∈ ∅} Res_a(α) = 0` — confirming the entire global-trace
 assembly produces a real `∑Res = 0`. -/

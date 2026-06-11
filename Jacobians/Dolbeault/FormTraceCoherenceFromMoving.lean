@@ -11,7 +11,7 @@ import Jacobians.Dolbeault.FormTraceMovingFibreSphereSet
 §VIII.3)
 
 `Jacobians.Dolbeault.FormTraceFullFibreRationalityAssemble.TraceCoherenceData` is the cleanest
-Gate-A target: a single global geometric trace `T : ℂ → ℂ` (the value-chart `dz`-coefficient of
+residue-theorem target: a single global geometric trace `T : ℂ → ℂ` (the value-chart `dz`-coefficient of
 `Tr_F α`) with the honest §VIII.3 inputs. Constructing one closes the 1-form residue theorem
 `∑ₐ Resₐ(α) = 0` *unconditionally* (the principal-part extraction and the genus-`0` Liouville
 vanishing are *proved* inside `TraceCoherenceData`). Its fields split into
@@ -52,13 +52,13 @@ genus-`0` remainder vanishing (`hentire`/`hrecip_cont`) and the `∞`-bookkeepin
   labeling-independent geometric facts (the sheets enumerate the per-centre fibre as a set), never a
   sheet ordering.
 * `residueSum_eq_zero_of_movingTraceCoherence` / `residueSum_eq_zero_of_sheetTraceCoherence` — the
-  residue-theorem build `∑Res = 0` from either form.
+  residue theorem `∑Res = 0` from either form.
 * `traceCoherenceData_ofMovingData_empty` / `…_holomorphic` — end-to-end non-vacuity (empty-pole
   case), confirming the reduction is honest (not a disguised `False`).
 
 ## The single minimal remaining obligation (precise diagnosis)
 
-After this file, the `TraceCoherenceData` route to the residue-theorem build `∑Res = 0` rests —
+After this file, the `TraceCoherenceData` route to the residue theorem `∑Res = 0` rests —
 axiom-clean — on exactly the **genus-`0` remainder vanishing** (`hentire`: `T − L.R` entire after
 subtracting the finite principal parts; `hrecip_cont`: holomorphic across `∞`) together with the
 `∞`-coherence `hcoh_inf` and the `∞`-fibre enumeration `Dinf`. The pole-centre coherence (the
@@ -160,7 +160,7 @@ residual inputs, this assembles a `TraceCoherenceData ω₀ g f poles`.
 
 **The pole-centre coherence `hcoh_fin` and the off-centre meromorphy `hT_mero` are *proved*** from
 `Cfin` via `MovingCoherenceDatum.coherent` + `meromorphicAt_traceCoeff_fibreTrace` (the §VIII.3
-single-valuedness by symmetry).  Constructing one ⇒ the residue-theorem build `∑Res = 0`. -/
+single-valuedness by symmetry).  Constructing one ⇒ the residue theorem `∑Res = 0`. -/
 noncomputable def traceCoherenceData_ofMovingData
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
@@ -214,7 +214,7 @@ noncomputable def traceCoherenceData_ofMovingData
   hentire := hentire
   hrecip_cont := hrecip_cont
 
-/-- **the residue-theorem build `∑Res = 0` from a global selection + per-pole moving data.** The
+/-- **The residue theorem `∑Res = 0` from a global selection + per-pole moving data.** The
 pole-centre coherence is discharged from the moving-fibre engine;
 `residueSum_eq_zero_of_traceCoherenceData` then closes the 1-form residue theorem for `α = ω₀·g`. -/
 theorem residueSum_eq_zero_of_movingTraceCoherence
@@ -310,7 +310,7 @@ noncomputable def traceCoherenceData_ofSheetSections
     hxs_inj hxs_mem hxs_surj Dinf hxsInf_inj hxsInf_mem hxsInf_surj hcenters_cs hcoh_inf
     hentire hrecip_cont
 
-/-- **the residue-theorem build `∑Res = 0` from sheet sections (the symmetric lever).** The
+/-- **The residue theorem `∑Res = 0` from sheet sections (the symmetric lever).** The
 sheet-form analogue of `residueSum_eq_zero_of_movingTraceCoherence`: the pole-centre coherence is
 discharged labeling-free from the smooth sheet sections + the set-form re-selection, and the
 genus-`0`/`∞` residual closes the rest. -/
@@ -404,7 +404,7 @@ noncomputable def traceCoherenceData_ofMovingData_empty (ω₀ : HolomorphicOneF
       rw [h0, recipCoeff_zero]
       exact continuousAt_const)
 
-/-- **Non-vacuity of the moving `TraceCoherenceData` Gate-A reduction.**  For the empty pole set the
+/-- **Non-vacuity of the moving `TraceCoherenceData` residue-theorem reduction.**  For the empty pole set the
 reduction is satisfiable via the empty selection, yielding `∑Res = 0`.  Confirms the moving/sheet
 `TraceCoherenceData` reduction is honest (not a disguised `False`). -/
 theorem residueSum_eq_zero_of_movingTraceCoherence_holomorphic (ω₀ : HolomorphicOneForms X)

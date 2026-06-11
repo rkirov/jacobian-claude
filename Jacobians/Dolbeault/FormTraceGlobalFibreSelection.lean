@@ -6,14 +6,14 @@ Authors: Rado Kirov
 import Jacobians.Dolbeault.FormTraceGateAAssemble
 
 /-!
-# The canonical full-fibre selection `Φ` (the residue-theorem build wall 2, Miranda §VIII.3)
+# The canonical full-fibre selection `Φ` (Miranda §VIII.3)
 
 `Jacobians.Dolbeault.FormTraceGateAAssemble.residueSum_eq_zero_of_globalCoverData` reduced the
-residue-theorem build's `∑ₐ Resₐ(α) = 0` to (wall 1) the adapted-cover genericity, (wall 2) the
+residue-theorem assembly's `∑ₐ Resₐ(α) = 0` to (i) the adapted-cover genericity, (ii) the
 **global coherent selection** `Φ` with its regular-value canonical-fibre conditions + the per-pole
-moving sections, and (wall 3) the `∞`-rationality.
+moving sections, and (iii) the `∞`-rationality.
 
-This file discharges the **regular-value part of wall 2** by constructing the *canonical full-fibre
+This file discharges the **regular-value part of (ii)** by constructing the *canonical full-fibre
 selection* — at each base value `b`, `Φ b` enumerates the **entire** fibre `F⁻¹(coe b)` of the
 compact sphere map `F = f.toRiemannSphere` (whose cardinality is the proper-map degree at regular
 values), via the proved finiteness of the fibres (`fibre_finite_of_div_ne_zero`). The construction
@@ -609,7 +609,7 @@ theorem canonicalFibreSelection_hselFin (hac : AdaptedCover ω₀ g f poles)
 The capstone. Wiring the canonical full-fibre selection `Φ := canonicalFibreSelection` and its
 discharged fields (`hΦrangeReg`/`hΦinjReg` from `canonicalFibreSelection_hΦrangeReg`/`_hΦinjReg`;
 the per-pole `secFin := poleSecFin hac (S i)` with `hselFin` from `canonicalFibreSelection_hselFin`)
-into `residueSum_eq_zero_of_globalCoverData`, **wall 2 is eliminated**: the global coherent
+into `residueSum_eq_zero_of_globalCoverData`, input (ii) is eliminated: the global coherent
 selection and its moving coherence are *constructed*, monodromy-free (the symmetric lever).
 
 What remains are exactly:
@@ -625,13 +625,14 @@ The separation `hsep` is the Gate-D pole/regular separation the repo's own sound
 a full-fibre selection germ-coheres to the pole sub-fibre trace at a pole-value iff that value's
 fibre is entirely poles. -/
 
-/-- **the residue-theorem build `∑Res = 0`, wall 2 eliminated by the canonical full-fibre
+/-- **The residue theorem `∑Res = 0`, with the fibre selection supplied by the canonical
+full-fibre
 selection.** With `Φ` the canonical full-fibre selection, all of
 `residueSum_eq_zero_of_globalCoverData`'s Φ-fields — the selection, the regular-value
 canonical-fibre conditions `hΦrangeReg`/`hΦinjReg`, and the per-pole moving sections
 `secFin`/`hselFin` — are discharged from the construction (the symmetric lever, no labeling). The
-hypotheses are the wall-1 genericity (finite pole-value data, off-branch + separated pole-values,
-regular-value `g`-data) and the wall-3 `∞`-bookkeeping. -/
+hypotheses are the genericity (finite pole-value data, off-branch + separated pole-values,
+regular-value `g`-data) and the `∞`-bookkeeping. -/
 theorem residueSum_eq_zero_of_canonicalSelection (hdiv : (f.div : Divisor X) ≠ 0)
     (hac : AdaptedCover ω₀ g f poles)
     (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)

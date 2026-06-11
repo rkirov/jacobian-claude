@@ -9,7 +9,7 @@ import Jacobians.Dolbeault.FormTraceGlobalGeometric
 /-!
 # `hT_off` at a branch value for the geometric trace (Miranda §VIII.3 — re-pointed)
 
-The re-pointed the residue-theorem build path (`globalTrace_of_glue` / `residueSum_eq_zero_of_glue`)
+The residue-theorem path (`globalTrace_of_glue` / `residueSum_eq_zero_of_glue`)
 needs the global trace `T` to be `AnalyticAt` at every value off the finite **pole-values** —
 *including at the branch values of the cover*, which are NOT pole-values (a generic separating cover
 puts the branch locus off the poles of `α = ω₀·g`). At a branch value `b₀` the per-sheet section

@@ -580,7 +580,7 @@ theorem omegaDim_zero_eq_genus {X : Type*} [TopologicalSpace X] [T2Space X] [Com
   rw [omegaDim_eq_finrank, ← holOmega0Equiv.finrank_eq]
   rfl
 
-/-- **The reverse bound `omegaDim 0 ≤ genus X`** (Gate C's removable-singularity direction). -/
+/-- **The reverse bound `omegaDim 0 ≤ genus X`** (the removable-singularity direction). -/
 theorem omegaDim_zero_le_genus {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     : omegaDim (X := X) 0 ≤ genus X :=

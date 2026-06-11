@@ -8,9 +8,9 @@ import Jacobians.Dolbeault.FormTraceSheetFibreBridge
 import Jacobians.ProjectiveLine
 
 /-!
-# The coherent fibre selection bundling the Gate-A germ-coherence (Miranda §VIII.3)
+# The coherent fibre selection bundling the residue-theorem germ-coherence (Miranda §VIII.3)
 
-`Jacobians.Dolbeault.FormTraceGlobalGeometric` reduced the residue-theorem build (`∑ₐ Resₐ(α) = 0`
+`Jacobians.Dolbeault.FormTraceGlobalGeometric` reduced the residue theorem (`∑ₐ Resₐ(α) = 0`
 for `α = ω₀·g`) to the **germ-coherence** hypotheses of the geometric trace `valueChartTrace ω₀ f Φ`
 from a global fibre selection `Φ : (b : ℂ) → FibreRegularData g f b`:
 
@@ -22,7 +22,7 @@ from a global fibre selection `Φ : (b : ℂ) → FibreRegularData g f b`:
 * junk-freeness + the genus-`0` `∞`-vanishing.
 
 This file packages those into one **`CoherentTraceSelection`** structure — the minimal honest
-§VIII.3 input — and proves it turns the key on the residue-theorem build `∑Res = 0` via the proved
+§VIII.3 input — and proves it turns the key on the residue theorem `∑Res = 0` via the proved
 `residueSum_eq_zero_of_geometricSelection_coh`. The point of the packaging is twofold:
 
 1. **It separates the genuinely-irreducible monodromy content from the discharged scaffolding.** The
@@ -50,8 +50,8 @@ there), and the **genus-`0` `∞`-vanishing as a sphere-form corollary**
 * `traceCoeff_eventuallyEq_of_sheets_eventuallyEq` — trace coefficients germ-agree from per-sheet
   germ agreement (the reindexing core: two fibre selections sharing the same index type, fibre
   points, and planar section germs near `b` have germ-equal trace coefficients);
-* `CoherentTraceSelection` — the structure bundling the minimal Gate-A germ-coherence obligation;
-* `CoherentTraceSelection.residueSum_eq_zero` — the residue-theorem build `∑Res = 0` from a coherent
+* `CoherentTraceSelection` — the structure bundling the minimal residue-theorem germ-coherence obligation;
+* `CoherentTraceSelection.residueSum_eq_zero` — the residue theorem `∑Res = 0` from a coherent
   selection;
 * `residueSum_eq_zero_of_coherentSelection` — the same as a standalone theorem;
 * `coherentTraceSelection_empty` / `residueSum_eq_zero_of_coherentSelection_holomorphic` —
@@ -187,7 +187,7 @@ theorem coeffAt_eq_zero_of_sphereForm (s : HolomorphicOneForms RiemannSphere) (a
   show Jacobians.Montel.localRep (0 : HolomorphicOneForms RiemannSphere) a _ = 0
   rfl
 
-/-! ### The coherent fibre selection — the minimal Gate-A germ-coherence obligation
+/-! ### The coherent fibre selection — the minimal residue-theorem germ-coherence obligation
 
 We package the inputs of `residueSum_eq_zero_of_geometricSelection_coh` (beyond the adapted-cover
 scaffolding `cs`/`ρ`/`Dinf`/enumeration) into a single structure. The genuinely-irreducible content
@@ -211,7 +211,7 @@ geometric trace `valueChartTrace ω₀ f Φ` with the local fibre traces:
 * `R₀` + `hR₀_*` — the genus-`0` `∞`-vanishing (the analytic continuation of the reciprocal
   remainder vanishes at `0`).
 
-These are *exactly* the irreducible §VIII.3 inputs; the rest of the residue-theorem build is
+These are *exactly* the irreducible §VIII.3 inputs; the rest of the residue-theorem assembly is
 discharged. A coherent selection exists for a suitable adapted cover (the branched-cover
 sheet-gluing + the pole/regular separation genericity); that existence is the remaining geometric
 obligation. -/
@@ -268,10 +268,10 @@ structure CoherentTraceSelection (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
   hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
     recipCoeff (valueChartTrace ω₀ f Φ - L.R) =ᶠ[𝓝[≠] 0] R₀
 
-/-- **the residue-theorem build `∑Res = 0` from a coherent fibre selection.** A
+/-- **The residue theorem `∑Res = 0` from a coherent fibre selection.** A
 `CoherentTraceSelection` supplies *exactly* the germ-coherence + genus-`0` inputs of
 `residueSum_eq_zero_of_geometricSelection_coh`, so the 1-form residue theorem `∑ₐ Resₐ(α) = 0` holds
-for `α = ω₀·g`. This is the honest reduction of the residue-theorem build to the single
+for `α = ω₀·g`. This is the honest reduction of the residue-theorem assembly to the single
 coherent-selection obligation. -/
 theorem CoherentTraceSelection.residueSum_eq_zero {hac : AdaptedCover ω₀ g f poles}
     (C : CoherentTraceSelection ω₀ g f poles hac) :
@@ -280,7 +280,7 @@ theorem CoherentTraceSelection.residueSum_eq_zero {hac : AdaptedCover ω₀ g f 
     C.Dinf C.hxs_inj C.hxs_mem C.hxs_surj C.hglue_fin C.hglue_inf C.hreg C.hcont_int
     C.R₀ C.hR₀_an C.hR₀0 C.hR₀_eq
 
-/-- **the residue-theorem build `∑Res = 0` from a coherent fibre selection (standalone).** If an
+/-- **The residue theorem `∑Res = 0` from a coherent fibre selection (standalone).** If an
 adapted cover and a coherent fibre selection exist, then `∑ₐ Resₐ(α) = 0` holds *unconditionally*
 for `α = ω₀·g`. -/
 theorem residueSum_eq_zero_of_coherentSelection (hac : AdaptedCover ω₀ g f poles)
@@ -352,7 +352,7 @@ noncomputable def coherentTraceSelection_empty (ω₀ : HolomorphicOneForms X) (
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **Non-vacuity of the coherent-selection Gate-A reduction.** For the empty pole set the reduction
+/-- **Non-vacuity of the coherent-selection residue-theorem reduction.** For the empty pole set the reduction
 `residueSum_eq_zero_of_coherentSelection` is satisfiable via the empty fibre selection
 (`coherentTraceSelection_empty`), yielding `∑Res = 0`. Confirms the coherent-selection reduction is
 honest (not a disguised `False`), mirroring `residueSum_eq_zero_of_geometricSelection_holomorphic`.

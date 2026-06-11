@@ -9,7 +9,7 @@ import Jacobians.Dolbeault.FormTraceSphereSheetTranslate
 /-!
 # The set-form re-selection from a sphere sheet system + canonical fibre (Miranda §VIII.3)
 
-`Jacobians.Dolbeault.FormTraceMovingFibreSetSelection` reduced the residue-theorem build's
+`Jacobians.Dolbeault.FormTraceMovingFibreSetSelection` reduced the residue-theorem assembly's
 `∑Res = 0` to a `MovingSheetSelectionSet`, whose per-value re-selection is the
 **labeling-independent set form** `hsetFin`/`hsetReg`: near each base value `b₀`, the moving fibre
 `Φ b'` and the section values `fun i => sec i b'` are both injective with the *same image* (no sheet

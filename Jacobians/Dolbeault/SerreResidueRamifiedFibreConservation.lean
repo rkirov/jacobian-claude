@@ -8,10 +8,10 @@ import Jacobians.MultiplicityPatchingConstruct
 import Jacobians.ProperMapDegreeSheets
 
 /-!
-# Closing Gate-A TARGET 1: the three conservation-of-number facts of `ofClusterFibrePoints`
+# Closing residue-theorem TARGET 1: the three conservation-of-number facts of `ofClusterFibrePoints`
 
-`SerreResidueRamifiedClusterTopology.lean` reduced Gate-A TARGET 1 (`hgeom_fibre` for the real cover),
-at each regular slit value `z`, to the **three minimal facts** of
+`SerreResidueRamifiedClusterTopology.lean` reduced residue-theorem TARGET 1 (`hgeom_fibre` for the real
+cover), at each regular slit value `z`, to the **three minimal facts** of
 `FibreClusterTopology.ofClusterFibrePoints`:
 
 1. `hcl_fibre` — the cluster sheet points are preimages of `coe z`;
@@ -19,35 +19,35 @@ at each regular slit value `z`, to the **three minimal facts** of
 3. `hcard` — the conservation of number `∑ᵢ D.mult i = S.n`.
 
 This file **discharges facts 1 and 2** from the genuine §5 normal-form geometry (carried as the
-`clusterSection` section property `hcs_sec` plus the non-pole datum at the cluster point), and isolates
-fact 3 — the §4 conservation-of-number degree count — to a single precise lemma stated against the
-PROVEN argument-principle engine (`Jacobians.ProperMapDegreeSheets.exists_properMapDegree_proven` /
-`IsLocallyConstant (N f)`).
+`clusterSection` section property `hcs_sec` plus the non-pole datum at the cluster point), and
+isolates fact 3 — the §4 conservation-of-number degree count — to a single precise lemma stated
+against the proven argument-principle engine
+(`Jacobians.ProperMapDegreeSheets.exists_properMapDegree_proven` / `IsLocallyConstant (N f)`).
 
-## What is delivered (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What is delivered
 
 * `clusterSection_toRiemannSphere_of_section_nonpole` — fact 1 (`hcl_fibre`) at one `(i,j)`: the
   cluster section point is a preimage of `coe z`, from its `holoRepr`-section value `z` plus the
-  non-pole datum at the point (`nonpole`: `0 ≤ orderAtPoint`).  The §5 normal form (via the field
-  `hcs_sec`) supplies the section value; the non-pole datum is the genuine geometric input (a preimage
-  of the *finite* value `z` is a non-pole).
-* `clusterSection_injective_of_distinctPreimages_distinctRoots` — fact 2 (`hcl_distinct`): the cluster
-  sheet points across the whole `Σ`-index are pairwise distinct, from (a) the distinctness of the
-  fixed preimages `D.xs` (T2-separated, so their clusters are disjoint) and (b) the within-cluster
-  distinctness of the `mᵢ` sheets at one preimage (the primitive root `ζ` separates `ζʲ·w₀` and `s` is
-  locally injective).
+  non-pole datum at the point (`nonpole`: `0 ≤ orderAtPoint`). The §5 normal form (via the field
+  `hcs_sec`) supplies the section value; the non-pole datum is the genuine geometric input (a
+  preimage of the *finite* value `z` is a non-pole).
+* `clusterSection_injective_of_distinctPreimages_distinctRoots` — fact 2 (`hcl_distinct`): the
+  cluster sheet points across the whole `Σ`-index are pairwise distinct, from (a) the distinctness
+  of the fixed preimages `D.xs` (T2-separated, so their clusters are disjoint) and (b) the
+  within-cluster distinctness of the `mᵢ` sheets at one preimage (the primitive root `ζ` separates
+  `ζʲ·w₀` and `s` is locally injective).
 * `FibreClusterTopology.ofClusterSplitData` — the minimal-residual constructor: assembles a
-  `FibreClusterTopology` from the per-preimage §5 cluster data tied to `f` (the section property + the
-  non-pole datum + the within-cluster injectivity) and the single conservation-of-number count `hcard`,
-  proving facts 1 and 2 internally.  The only non-routine, non-derived input is `hcard`.
+  `FibreClusterTopology` from the per-preimage §5 cluster data tied to `f` (the section property +
+  the non-pole datum + the within-cluster injectivity) and the single conservation-of-number count
+  `hcard`, proving facts 1 and 2 internally. The only non-routine, non-derived input is `hcard`.
 
 ## The precise remaining `hcard` lemma (fact 3, the §4 conservation-of-number wall)
 
-`hcard : ∑ᵢ D.mult i = S.n` is the genuine conservation-of-number degree count.  It is **not** local in
-the slit value `z`: it equates the cover's sheet count `S.n = #F⁻¹(coe z)` (regular fibre) with the
-total cluster multiplicity `∑ᵢ D.mult i` at the *pole-value centre* `c`, an equality that holds across
-the branch value `c` precisely by the local constancy of the multiplicity sum `N f` (Forster §4).  We
-state it as `sum_mult_eq_sheetCount_of_conservation`, reducing it to:
+`hcard : ∑ᵢ D.mult i = S.n` is the genuine conservation-of-number degree count. It is **not** local
+in the slit value `z`: it equates the cover's sheet count `S.n = #F⁻¹(coe z)` (regular fibre) with
+the total cluster multiplicity `∑ᵢ D.mult i` at the *pole-value centre* `c`, an equality that holds
+across the branch value `c` precisely by the local constancy of the multiplicity sum `N f` (Forster
+§4). We state it as `sum_mult_eq_sheetCount_of_conservation`, reducing it to:
 
 * the cover-degree readings `S.n = #F⁻¹(coe z)` and `∑ᵢ D.mult i = fibreMult f (coe c)`;
 * the local constancy `N f (coe z) = N f (coe c)` (the argument-principle engine).
@@ -56,12 +56,13 @@ This is the single irreducible naturals equality of TARGET 1.
 
 ## ⚠ Soundness
 
-Facts 1 and 2 are **genuine geometry**, never asserted: fact 1 is the §5-normal-form preimage property
-(the cluster sheets ARE preimages) plus the true non-pole datum; fact 2 is genuine point distinctness.
-Fact 3 (`hcard`) is the genuine §4 conservation of number — `∑ᵢ D.mult i = S.n` with `D.mult i` the
-genuine local degree and `S.n` the genuine sheet count — routed through the PROVEN
-`exists_properMapDegree` engine (which is *upstream* of Riemann–Roch — it IS the `deg_div` engine — so
-no circularity).  No custom axiom, no unproved obligation on a false statement, no false/junk/circular field.
+Facts 1 and 2 are **genuine geometry**, never asserted: fact 1 is the §5-normal-form preimage
+property (the cluster sheets ARE preimages) plus the true non-pole datum; fact 2 is genuine point
+distinctness. Fact 3 (`hcard`) is the genuine §4 conservation of number — `∑ᵢ D.mult i = S.n` with
+`D.mult i` the genuine local degree and `S.n` the genuine sheet count — routed through the proven
+`exists_properMapDegree` engine (which is *upstream* of Riemann–Roch — it IS the `deg_div` engine —
+so no circularity). No custom axiom, no unproved obligation on a false statement, no
+false/junk/circular field.
 
 ## References
 
@@ -81,7 +82,6 @@ open scoped Manifold ContDiff Real
 
 attribute [local instance] Classical.propDecidable
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault.SerreResidueTheorem
 
@@ -93,20 +93,22 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.ProperMapDegreeSheets
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ## Fact 1 (`hcl_fibre`): the cluster sheet points are genuine preimages of `coe z`
 
 The cluster section point `q = clusterSection D Cl i j z` is a genuine local section of `f.holoRepr`
 through the slit value `z` (the §5 normal-form section property, carried as the field `hcs_sec`): so
-`f.holoRepr q = z`.  Combined with the genuine geometric datum that `q` is a **non-pole** (it is a
-preimage of the *finite* value `z`, so `0 ≤ f.orderAtPoint q`), the sphere map reads `f.toRiemannSphere
-q = coe (f.holoRepr q) = coe z` (`toRiemannSphere_of_nonneg`).  This is fact 1 at one `(i,j)`. -/
+`f.holoRepr q = z`. Combined with the genuine geometric datum that `q` is a **non-pole** (it is a
+preimage of the *finite* value `z`, so `0 ≤ f.orderAtPoint q`), the sphere map reads
+`f.toRiemannSphere q = coe (f.holoRepr q) = coe z` (`toRiemannSphere_of_nonneg`). This is fact 1 at
+one `(i,j)`. -/
 
-/-- **Fact 1 (`hcl_fibre`) at one `(i,j)`.**  If the cluster section point `q = clusterSection D Cl i j
-z` is a section of `f.holoRepr` at `z` (`f.holoRepr q = z`, the §5 normal-form section property) and a
-non-pole (`0 ≤ f.orderAtPoint q`, the genuine geometric datum that a preimage of the finite value `z`
-is a non-pole), then it is a genuine preimage of `coe z`: `f.toRiemannSphere q = coe z`. -/
+/-- **Fact 1 (`hcl_fibre`) at one `(i,j)`.** If the cluster section point
+`q = clusterSection D Cl i j z` is a section of `f.holoRepr` at `z` (`f.holoRepr q = z`, the §5
+normal-form section property) and a non-pole (`0 ≤ f.orderAtPoint q`, the genuine geometric datum
+that a preimage of the finite value `z` is a non-pole), then it is a genuine preimage of `coe z`:
+`f.toRiemannSphere q = coe z`. -/
 theorem clusterSection_toRiemannSphere_of_section_nonpole {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
     {f : MeromorphicFunction X} {c : ℂ} {Sset : Set ℂ} {D : FibreRamifiedData g f c}
     {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ} {i : D.ι} {j : Fin (D.mult i)}
@@ -118,25 +120,25 @@ theorem clusterSection_toRiemannSphere_of_section_nonpole {ω₀ : HolomorphicOn
 /-! ## Fact 2 (`hcl_distinct`): the cluster sheet points are pairwise distinct
 
 Across the whole `Σ`-index `Σ i, Fin (D.mult i)`, two cluster section points coincide only if their
-indices coincide.  We split into the within-cluster case (same preimage `i`, different sheet `j ≠ k`)
+indices coincide. We split into the within-cluster case (same preimage `i`, different sheet `j ≠ k`)
 and the cross-cluster case (different preimages `i ≠ i'`).
 
 * **Within a cluster** the `mᵢ` sheet points are distinct because the §5 local inverse straightens
   them: `clusterSheet (Cl i).s … j z = (Cl i).s (ζʲ·w₀ z)` and the normal-form coordinate `η`
-  recovers `η ((Cl i).s (ζʲ·w₀ z)) = ζʲ·w₀ z` (the inverse property); if two sheets coincide as points
-  of `X`, then (chart injectivity) their `s`-arguments coincide, then (applying `η`) `ζʲ·w₀ z = ζᵏ·w₀
-  z`, forcing `ζʲ = ζᵏ` (`w₀ z ≠ 0`), hence `j = k` (`ζ` primitive, `j,k < mᵢ`).
-* **Across clusters** the points lie in disjoint chart sources near the *distinct* preimages `D.xs i ≠
-  D.xs i'`, so they are separated.
+  recovers `η ((Cl i).s (ζʲ·w₀ z)) = ζʲ·w₀ z` (the inverse property); if two sheets coincide as
+  points of `X`, then (chart injectivity) their `s`-arguments coincide, then (applying `η`)
+  `ζʲ·w₀ z = ζᵏ·w₀ z`, forcing `ζʲ = ζᵏ` (`w₀ z ≠ 0`), hence `j = k` (`ζ` primitive, `j,k < mᵢ`).
+* **Across clusters** the points lie in disjoint chart sources near the *distinct* preimages
+  `D.xs i ≠ D.xs i'`, so they are separated.
 
-Both legs are isolated as hypotheses (the genuine §5 / T2 geometry); the constructor below derives the
-full `Σ`-index injectivity from them. -/
+Both legs are isolated as hypotheses (the genuine §5 / T2 geometry); the constructor below derives
+the full `Σ`-index injectivity from them. -/
 
-/-- **Within-cluster distinctness.**  If two cluster section points at the *same* preimage `i` coincide
-(`clusterSection D Cl i j z = clusterSection D Cl i k z`), then `j = k`, provided:
+/-- **Within-cluster distinctness.** If two cluster section points at the *same* preimage `i`
+coincide (`clusterSection D Cl i j z = clusterSection D Cl i k z`), then `j = k`, provided:
 
-* the cluster sheet arguments lie in `D.xs i`'s chart target (`htgt_j`, `htgt_k`) — so chart injectivity
-  applies;
+* the cluster sheet arguments lie in `D.xs i`'s chart target (`htgt_j`, `htgt_k`) — so chart
+  injectivity applies;
 * the §5 normal-form coordinate `η` recovers the argument at each sheet (`hinv_j`, `hinv_k`:
   `η ((Cl i).s (ζʲ·w₀ z)) = ζʲ·w₀ z`);
 * the slit branch is nonzero (`hw₀ : (Cl i).w₀ z ≠ 0`);
@@ -180,10 +182,11 @@ pairwise distinct over the whole `Σ`-index `Σ i, Fin (D.mult i)`, given:
   (`clusterSection D Cl i j z = clusterSection D Cl i k z → j = k`), supplied per preimage (e.g. by
   `clusterSection_within_cluster_inj`);
 * `hcross` — cross-cluster separation: at *distinct* preimages `i ≠ i'`, the cluster points are
-  distinct (`clusterSection D Cl i j z ≠ clusterSection D Cl i' k z`) — the genuine §5 / T2 fact that
-  the clusters at distinct preimages are disjoint.
+  distinct (`clusterSection D Cl i j z ≠ clusterSection D Cl i' k z`) — the genuine §5 / T2 fact
+  that the clusters at distinct preimages are disjoint.
 
-These are exactly the two legs of "the clusters are disjoint, within-cluster distinct" (Forster §4–5).
+These are exactly the two legs of "the clusters are disjoint, within-cluster distinct" (Forster
+§4–5).
 -/
 theorem clusterSection_injective_of_within_cross {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
     {f : MeromorphicFunction X} {c : ℂ} {Sset : Set ℂ} {D : FibreRamifiedData g f c}
@@ -208,25 +211,25 @@ theorem clusterSection_injective_of_within_cross {ω₀ : HolomorphicOneForms X}
 This is the genuine §4 conservation of number, the irreducible wall of TARGET 1.  Its content is the
 equality of two cover-degree readings across the branch value `c`:
 
-* the **regular-fibre reading** `S.n = fibreMult f (coe z)` — the number of sheets at the regular slit
-  value `z` equals the fibre-multiplicity sum (every local degree is `1` at a regular value);
+* the **regular-fibre reading** `S.n = fibreMult f (coe z)` — the number of sheets at the regular
+  slit value `z` equals the fibre-multiplicity sum (every local degree is `1` at a regular value);
 * the **pole-fibre reading** `∑ᵢ D.mult i = fibreMult f (coe c)` — the total cluster multiplicity at
-  the centre `c` equals the fibre-multiplicity sum there (each `D.mult i` is the genuine local degree,
-  the multiplicity bridge).
+  the centre `c` equals the fibre-multiplicity sum there (each `D.mult i` is the genuine local
+  degree, the multiplicity bridge).
 
 These two `fibreMult` values are **equal** because the fibre-multiplicity function `N f` is *locally
 constant* (the global argument principle, the proven `exists_properMapDegree` engine) on the
 *connected* sphere `ℂℙ¹` — so it is globally constant, and `N f = fibreMult f` everywhere
-(`N_eq_fibreMult_everywhere`).  We supply the local constancy from the PROVEN per-fibre conservation
-supply (`localMultiplicitySheets_of_nonconstant` for a nonconstant cover) — *upstream* of Riemann–Roch
-(it IS the `deg_div` engine), so no circularity.
+(`N_eq_fibreMult_everywhere`). We supply the local constancy from the proven per-fibre conservation
+supply (`localMultiplicitySheets_of_nonconstant` for a nonconstant cover) — *upstream* of
+Riemann–Roch (it IS the `deg_div` engine), so no circularity.
 
 We isolate fact 3 to the lemma `sum_mult_eq_sheetCount_of_readings`, taking the two readings as
 hypotheses (the genuine residual) and discharging the constancy middle from the engine. -/
 
 /-- **The fibre-multiplicity function is globally constant.**  For a nonconstant cover `f` (`f.div ≠
 0`), the genuine multiplicity sum `fibreMult f` agrees at any two sphere values: `fibreMult f w₁ =
-fibreMult f w₂`.  This is the §4 conservation of number — `IsLocallyConstant (N f)` (the PROVEN
+fibreMult f w₂`.  This is the §4 conservation of number — `IsLocallyConstant (N f)` (the proven
 argument-principle engine, via `localMultiplicitySheets_of_nonconstant`) on the *connected* sphere
 `ℂℙ¹`, combined with `N f = fibreMult f` everywhere. -/
 theorem fibreMult_const_of_nonconstant {f : MeromorphicFunction X} (hdiv : (f.div : Divisor X) ≠ 0)
@@ -244,14 +247,15 @@ theorem fibreMult_const_of_nonconstant {f : MeromorphicFunction X} (hdiv : (f.di
 /-- **Fact 3 (`hcard`) from the two cover-degree readings.**  The conservation-of-number count `∑ᵢ
 D.mult i = S.n` follows, for a nonconstant cover `f` (`f.div ≠ 0`), from:
 
-* `hSn` — the **regular-fibre reading** `(S.n : ℤ) = fibreMult f (coe z)` (the sheet count equals the
-  fibre-multiplicity sum at the regular slit value `z`);
+* `hSn` — the **regular-fibre reading** `(S.n : ℤ) = fibreMult f (coe z)` (the sheet count equals
+  the fibre-multiplicity sum at the regular slit value `z`);
 * `hDc` — the **pole-fibre reading** `(∑ᵢ D.mult i : ℤ) = fibreMult f (coe c)` (the total cluster
   multiplicity equals the fibre-multiplicity sum at the centre `c`).
 
-The two `fibreMult` values are equal by the conservation of number (`fibreMult_const_of_nonconstant`),
-so `(S.n : ℤ) = (∑ᵢ D.mult i : ℤ)`, hence `∑ᵢ D.mult i = S.n` by `Nat.cast` injectivity.  This is the
-genuine §4 wall, isolated to the two cover-degree readings + the proven constancy engine. -/
+The two `fibreMult` values are equal by the conservation of number
+(`fibreMult_const_of_nonconstant`), so `(S.n : ℤ) = (∑ᵢ D.mult i : ℤ)`, hence `∑ᵢ D.mult i = S.n` by
+`Nat.cast` injectivity. This is the genuine §4 wall, isolated to the two cover-degree readings + the
+proven constancy engine. -/
 theorem sum_mult_eq_sheetCount_of_readings {g : X → ℂ}
     {f : MeromorphicFunction X} {c : ℂ} {D : FibreRamifiedData g f c}
     {z : ℂ} {n : ℕ} (hdiv : (f.div : Divisor X) ≠ 0)
@@ -268,12 +272,12 @@ preimage enumeration `D.xs` is injective and exhausts the *whole* fibre `F⁻¹(
 (`hrange : Set.range D.xs = F⁻¹(coe c)`), and each stored multiplicity is the genuine local degree
 (`hmatch : (D.mult i : ℤ) = localDeg f (coe c) (D.xs i)`).
 
-`fibreMult f (coe c)` is by definition the local-degree finsum over the fibre; the fibre is the range
-of the injective `D.xs` (`finsum_mem_range`), so the finsum reindexes to the finite sum `∑ᵢ localDeg f
-(coe c) (D.xs i)`, which is `∑ᵢ D.mult i` by `hmatch`.  The `hmatch` half is the multiplicity bridge
-(`analyticOrderAt_holoRepr_sub_eq_mult`, the genuine local degree); `hrange` is the genuine
-conservation-of-number input that `D` enumerates the whole fibre. -/
-theorem sum_mult_eq_fibreMult_of_enumeration {g : X → ℂ}
+`fibreMult f (coe c)` is by definition the local-degree finsum over the fibre; the fibre is the
+range of the injective `D.xs` (`finsum_mem_range`), so the finsum reindexes to the finite sum
+`∑ᵢ localDeg f (coe c) (D.xs i)`, which is `∑ᵢ D.mult i` by `hmatch`. The `hmatch` half is the
+multiplicity bridge (`analyticOrderAt_holoRepr_sub_eq_mult`, the genuine local degree); `hrange` is
+the genuine conservation-of-number input that `D` enumerates the whole fibre. -/
+theorem sum_mult_eq_fibreMult_of_enumeration {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {g : X → ℂ}
     {f : MeromorphicFunction X} {c : ℂ} (D : FibreRamifiedData g f c)
     (hD_inj : Function.Injective D.xs)
     (hrange : Set.range D.xs = f.toRiemannSphere ⁻¹' {(((c : ℂ) : RiemannSphere))})
@@ -286,12 +290,13 @@ theorem sum_mult_eq_fibreMult_of_enumeration {g : X → ℂ}
   push_cast
   exact Finset.sum_congr rfl (fun i _ => hmatch i)
 
-/-- **The multiplicity-match `hmatch` from the bridge.**  At a preimage `D.xs i` over `coe c` that is a
-non-pole (`hnp : 0 ≤ f.orderAtPoint (D.xs i)`) of a nonconstant cover (`f.div ≠ 0`), with the stored
-multiplicity the genuine local degree's `toNat` (`hmult : D.mult i = (localDeg f (coe c) (D.xs i)).toNat`),
-the integer reading holds: `(D.mult i : ℤ) = localDeg f (coe c) (D.xs i)`.  This is the multiplicity
-bridge `analyticOrderAt_holoRepr_sub_eq_mult` (its third conjunct `localDeg = (localDeg).toNat`),
-rewritten through `hmult`. -/
+/-- **The multiplicity-match `hmatch` from the bridge.** At a preimage `D.xs i` over `coe c` that is
+a non-pole (`hnp : 0 ≤ f.orderAtPoint (D.xs i)`) of a nonconstant cover (`f.div ≠ 0`), with the
+stored multiplicity the genuine local degree's `toNat`
+(`hmult : D.mult i = (localDeg f (coe c) (D.xs i)).toNat`), the integer reading holds:
+`(D.mult i : ℤ) = localDeg f (coe c) (D.xs i)`. This is the multiplicity bridge
+`analyticOrderAt_holoRepr_sub_eq_mult` (its third conjunct `localDeg = (localDeg).toNat`), rewritten
+through `hmult`. -/
 theorem mult_eq_localDeg_of_nonpole {g : X → ℂ}
     {f : MeromorphicFunction X} (hdiv : (f.div : Divisor X) ≠ 0) {c : ℂ}
     {D : FibreRamifiedData g f c} (i : D.ι)
@@ -304,27 +309,31 @@ theorem mult_eq_localDeg_of_nonpole {g : X → ℂ}
 /-! ### The regular-fibre reading `hSn`
 
 At the regular slit value `z` the sphere sheet system `S` reads the whole fibre: `S.n = #F⁻¹(coe z)`
-(the `n` injective sheets sweep out the fibre, `S.fibre_eq` + `S.sheet_inj`).  And `fibreMult f (coe
-z)` is the local-degree finsum over that fibre; at a *regular* value every local degree is `1`, so the
-finsum is just the cardinality `#F⁻¹(coe z) = S.n`.  This is the regular-fibre half of conservation. -/
+(the `n` injective sheets sweep out the fibre, `S.fibre_eq` + `S.sheet_inj`). And
+`fibreMult f (coe z)` is the local-degree finsum over that fibre; at a *regular* value every local
+degree is `1`, so the finsum is just the cardinality `#F⁻¹(coe z) = S.n`. This is the regular-fibre
+half of conservation. -/
 
 /-- **The sheet count is the fibre cardinality.**  For a sphere sheet system `S` of `F =
-f.toRiemannSphere` at `coe z`, the number of sheets `S.n` equals the cardinality of the fibre over `coe
-z`: `S.n = (F⁻¹{coe z}).ncard`.  The `n` injective holomorphic sheets sweep out the fibre
-(`S.fibre_eq` at `coe z ∈ S.V`), and they are pairwise distinct (`S.sheet_inj`), so the fibre is the
-image of `Fin S.n` under an injection. -/
-theorem sheetSystem_n_eq_ncard {f : MeromorphicFunction X} {z : ℂ}
+f.toRiemannSphere` at `coe
+z`, the number of sheets `S.n` equals the cardinality of the fibre over `coe z`: `S.n = (F⁻¹{coe
+z}).ncard`. The `n` injective holomorphic sheets sweep out the fibre (`S.fibre_eq` at `coe z ∈
+S.V`), and they are pairwise distinct (`S.sheet_inj`), so the fibre is the image of `Fin
+S.n` under an injection. -/
+theorem sheetSystem_n_eq_ncard {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {f : MeromorphicFunction X} {z : ℂ}
     (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))) :
     S.n = (f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))}).ncard := by
   rw [S.fibre_eq _ S.mem_V, ← Set.image_univ,
     Set.ncard_image_of_injective _ (S.sheet_inj _ S.mem_V), Set.ncard_univ,
     Nat.card_eq_fintype_card, Fintype.card_fin]
 
-/-- **The fibre-multiplicity sum at a regular value is the fibre cardinality.**  If the fibre `F⁻¹(coe
-z)` is finite (`hfin`) and every local degree over `coe z` is `1` (`hreg : ∀ x ∈ F⁻¹(coe z), localDeg f
-(coe z) x = 1` — the regular-value content), then `fibreMult f (coe z) = (F⁻¹(coe z)).ncard`: the
-local-degree finsum over the fibre is a sum of `1`s, hence the cardinality. -/
-theorem fibreMult_eq_ncard_of_localDeg_one {f : MeromorphicFunction X} {z : ℂ}
+/-- **The fibre-multiplicity sum at a regular value is the fibre cardinality.** If the fibre
+`F⁻¹(coe z)` is finite (`hfin`) and every local degree over `coe z` is `1`
+(`hreg : ∀ x ∈ F⁻¹(coe z), localDeg f (coe z) x = 1` — the regular-value content), then
+`fibreMult f (coe z) = (F⁻¹(coe z)).ncard`: the local-degree finsum over the fibre is a sum of `1`s,
+hence the cardinality. -/
+theorem fibreMult_eq_ncard_of_localDeg_one {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] 
+    {f : MeromorphicFunction X} {z : ℂ}
     (hfin : (f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))}).Finite)
     (hreg : ∀ x ∈ f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))},
       localDeg f (((z : ℂ) : RiemannSphere)) x = 1) :
@@ -336,11 +345,12 @@ theorem fibreMult_eq_ncard_of_localDeg_one {f : MeromorphicFunction X} {z : ℂ}
   rw [Finset.sum_const, Set.ncard_eq_toFinset_card _ hfin]
   simp
 
-/-- **The regular-fibre reading `hSn`.**  `(S.n : ℤ) = fibreMult f (coe z)`, given that the fibre over
-`coe z` is finite (`hfin`) and every local degree there is `1` (`hreg`, the regular-value content).
-Combines `sheetSystem_n_eq_ncard` (`S.n = #F⁻¹(coe z)`) with `fibreMult_eq_ncard_of_localDeg_one`
-(`fibreMult f (coe z) = #F⁻¹(coe z)`). -/
-theorem sheetSystem_n_eq_fibreMult {f : MeromorphicFunction X} {z : ℂ}
+/-- **The regular-fibre reading `hSn`.** `(S.n : ℤ) = fibreMult f (coe z)`, given that the fibre
+over `coe z` is finite (`hfin`) and every local degree there is `1` (`hreg`, the regular-value
+content). Combines `sheetSystem_n_eq_ncard` (`S.n = #F⁻¹(coe z)`) with
+`fibreMult_eq_ncard_of_localDeg_one` (`fibreMult f (coe z) = #F⁻¹(coe z)`). -/
+theorem sheetSystem_n_eq_fibreMult {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] 
+    {f : MeromorphicFunction X} {z : ℂ}
     (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
     (hfin : (f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))}).Finite)
     (hreg : ∀ x ∈ f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))},
@@ -351,12 +361,12 @@ theorem sheetSystem_n_eq_fibreMult {f : MeromorphicFunction X} {z : ℂ}
 /-! ### Fact 3 (`hcard`), fully assembled from the genuine geometric primitives
 
 Combining the regular-fibre reading (`sheetSystem_n_eq_fibreMult`), the pole-fibre reading
-(`sum_mult_eq_fibreMult_of_enumeration` + `mult_eq_localDeg_of_nonpole`), and the conservation-of-number
-engine (`sum_mult_eq_sheetCount_of_readings`), we obtain `∑ᵢ D.mult i = S.n` from the *genuine*
-geometric primitives at the two ends of the slit, and nothing else.  These primitives are exactly the
-honest §4 conservation-of-number content: the cover behaves like a covering off the branch locus
-(regular-value: finite fibre + every local degree `1`) and the pole-value fibre is enumerated with the
-genuine local-degree multiplicities. -/
+(`sum_mult_eq_fibreMult_of_enumeration` + `mult_eq_localDeg_of_nonpole`), and the
+conservation-of-number engine (`sum_mult_eq_sheetCount_of_readings`), we obtain `∑ᵢ D.mult i = S.n`
+from the *genuine* geometric primitives at the two ends of the slit, and nothing else. These
+primitives are exactly the honest §4 conservation-of-number content: the cover behaves like a
+covering off the branch locus (regular-value: finite fibre + every local degree `1`) and the
+pole-value fibre is enumerated with the genuine local-degree multiplicities. -/
 
 /-- **Fact 3 (`hcard`), fully assembled.**  For a nonconstant cover `f` (`f.div ≠ 0`), the
 conservation-of-number count `∑ᵢ D.mult i = S.n` holds, given the genuine §4 geometric primitives:
@@ -364,15 +374,15 @@ conservation-of-number count `∑ᵢ D.mult i = S.n` holds, given the genuine §
 * **regular fibre** (at the slit value `z`): the fibre `F⁻¹(coe z)` is finite (`hfin_z`) and every
   local degree there is `1` (`hreg_z` — `z` is a regular value, off the branch locus);
 * **pole fibre** (at the centre `c`): the preimage enumeration `D.xs` is injective (`hD_inj`) and
-  exhausts the whole fibre `F⁻¹(coe c)` (`hrange`), each preimage is a non-pole (`hnp`) with the stored
-  multiplicity the genuine local-degree `toNat` (`hmult_eq`).
+  exhausts the whole fibre `F⁻¹(coe c)` (`hrange`), each preimage is a non-pole (`hnp`) with the
+  stored multiplicity the genuine local-degree `toNat` (`hmult_eq`).
 
 The two cover-degree readings (`S.n = fibreMult f (coe z)`, `∑ᵢ D.mult i = fibreMult f (coe c)`) are
 equal by the local constancy of the multiplicity sum on the connected sphere (the proven
 `exists_properMapDegree` engine), giving the natural-number equality. -/
 theorem sum_mult_eq_sheetCount_of_primitives {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
     {f : MeromorphicFunction X} {c : ℂ} {Sset : Set ℂ} (hdiv : (f.div : Divisor X) ≠ 0)
-    (D : FibreRamifiedData g f c) (Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset)
+    (D : FibreRamifiedData g f c) (_Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset)
     {z : ℂ} (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere)))
     (hfin_z : (f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))}).Finite)
     (hreg_z : ∀ x ∈ f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))},
@@ -389,26 +399,28 @@ theorem sum_mult_eq_sheetCount_of_primitives {ω₀ : HolomorphicOneForms X} {g 
 
 /-! ## The minimal-residual constructor `FibreClusterTopology.ofClusterSplitData`
 
-We assemble a `FibreClusterTopology` from the genuine §5 / §4 geometric primitives, proving the three
-facts (`hcl_fibre`, `hcl_distinct`, `hcard`) of `ofClusterFibrePoints` internally:
+We assemble a `FibreClusterTopology` from the genuine §5 / §4 geometric primitives, proving the
+three facts (`hcl_fibre`, `hcl_distinct`, `hcard`) of `ofClusterFibrePoints` internally:
 
-* `hcl_fibre` (fact 1) ← `clusterSection_toRiemannSphere_of_section_nonpole`: the cluster section is a
-  `holoRepr`-section at `z` (read off the carried `hcs_sec` at `w = z`) and a non-pole (`hcs_np`);
+* `hcl_fibre` (fact 1) ← `clusterSection_toRiemannSphere_of_section_nonpole`: the cluster section is
+  a `holoRepr`-section at `z` (read off the carried `hcs_sec` at `w = z`) and a non-pole (`hcs_np`);
 * `hcl_distinct` (fact 2) ← `clusterSection_injective_of_within_cross`: within-cluster injectivity
   `hwithin` (the §5 straightening uniqueness) + cross-cluster separation `hcross` (the clusters at
   distinct preimages are disjoint);
-* `hcard` (fact 3) ← `sum_mult_eq_sheetCount_of_primitives`: the regular-fibre + pole-fibre cover-degree readings,
-  equated by the proven conservation-of-number engine.
+* `hcard` (fact 3) ← `sum_mult_eq_sheetCount_of_primitives`: the regular-fibre + pole-fibre
+  cover-degree readings, equated by the proven conservation-of-number engine.
 
 The routine analytic residuals `hsrc`/`hsheet_diff`/`hcs_sec` and the sheet-system regularity
 `S`/`hderiv`/`hmero`/`hcoh` are passed straight through to `ofClusterFibrePoints`. -/
 
 /-- **`FibreClusterTopology` from the §5 / §4 geometric primitives.**  At a regular slit value `z`,
-assemble a `FibreClusterTopology Φ D Cl z`, proving the three conservation-of-number facts internally:
+assemble a `FibreClusterTopology Φ D Cl z`, proving the three conservation-of-number facts
+internally:
 
 * sheet-system regularity `S`/`hderiv`/`hmero`/`hcoh` (passed through);
-* the cluster-section section property `hcs_sec` (`holoRepr (clusterSection … w) = w` near `z`) and its
-  non-pole datum `hcs_np` (`0 ≤ orderAtPoint (clusterSection … z)`) — together fact 1 (`hcl_fibre`);
+* the cluster-section section property `hcs_sec` (`holoRepr (clusterSection … w) = w` near `z`) and
+  its non-pole datum `hcs_np` (`0 ≤ orderAtPoint (clusterSection … z)`) — together fact 1
+  (`hcl_fibre`);
 * within-cluster injectivity `hwithin` and cross-cluster separation `hcross` — together fact 2
   (`hcl_distinct`);
 * the regular-fibre primitives `hfin_z`/`hreg_z` and the pole-fibre primitives
@@ -416,7 +428,7 @@ assemble a `FibreClusterTopology Φ D Cl z`, proving the three conservation-of-n
   `exists_properMapDegree` engine;
 * the routine cluster-sheet residuals `hsrc`/`hsheet_diff`.
 
-This is the cleanest geometric input for Gate-A TARGET 1 at one slit value: the §5 normal-form data
+This is the cleanest geometric input for residue-theorem TARGET 1 at one slit value: the §5 normal-form data
 tied to `f`, plus the §4 conservation-of-number cover-degree readings. -/
 noncomputable def FibreClusterTopology.ofClusterSplitData {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
     {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}

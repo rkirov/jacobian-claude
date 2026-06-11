@@ -38,7 +38,6 @@ import Jacobians.LaurentTail.RiemannRochUnconditional
 open scoped Manifold ContDiff Topology
 open Module
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 

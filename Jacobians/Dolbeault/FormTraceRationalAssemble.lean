@@ -122,7 +122,7 @@ structure TraceAgreementData (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f 
   `∞`-fibre trace coefficient (the honest Lemma-3.2-at-`∞` form). -/
   hagree_inf : recipCoeff L.R =ᶠ[𝓝[≠] 0] (inftyFibreTrace ω₀ f Dinf).traceCoeff
 
-/-! ### The full witness and the residue-theorem build from the agreement datum -/
+/-! ### The full witness and the residue-theorem assembly from the agreement datum -/
 
 /-- **`TraceRationalityWitness` from the uniform trace agreement.**  Given a `TraceAgreementData`
 (the rational `L` + the centre bookkeeping + the `∞`-fibre enumeration + finite and reciprocal-chart
@@ -140,7 +140,7 @@ def traceRationalityWitness_of_agreementData (hac : AdaptedCover ω₀ g f poles
     (resAt_recipCoeff_eq_inftyResidueSum_of_agree ω₀ f A.Dinf A.L poles
       A.hxs_inj A.hxs_mem A.hxs_surj A.hagree_inf)
 
-/-- **the residue-theorem build from the uniform trace agreement.** If an adapted cover and a
+/-- **the residue-theorem assembly from the uniform trace agreement.** If an adapted cover and a
 `TraceAgreementData` (the rational trace `L` germ-agreeing with `Tr_F α` in every chart) exist, then
 the 1-form residue theorem `∑ₐ Resₐ(α) = 0` holds *unconditionally* for `α = ω₀·g`. This composes
 `traceRationalityWitness_of_agreementData` with the proved `residueSum_eq_zero_of_adapted`. -/
@@ -203,7 +203,7 @@ noncomputable def traceAgreementData_holomorphic (ω₀ : HolomorphicOneForms X)
     show recipCoeff (fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **the residue-theorem build, holomorphic case, via the agreement datum (non-vacuity
+/-- **the residue-theorem assembly, holomorphic case, via the agreement datum (non-vacuity
 end-to-end).** In the empty-pole case, `residueSum_eq_zero_of_agreementData` applied to
 `traceAgreementData_holomorphic` yields `∑_{a ∈ ∅} Res_a(α) = 0` — confirming the entire
 uniform-agreement assembly produces a real `∑Res=0` (here trivially `0 = 0`). -/

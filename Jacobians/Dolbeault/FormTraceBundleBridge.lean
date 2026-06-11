@@ -8,7 +8,7 @@ import Jacobians.Dolbeault.FormTraceSheetFibreBridge
 import Jacobians.Dolbeault.FormTraceCoherentSelection
 
 /-!
-# The bundle-trace germ bridge `hbridgeBr` (the residue-theorem build close, Miranda §VIII.3)
+# The bundle-trace germ bridge `hbridgeBr` (Miranda §VIII.3)
 
 This file discharges the **single core analytic input** of `patchedTraceSelection_ofBundleBranch`
 (`Jacobians.Dolbeault.FormTraceBundleBranchBound`): the **bundle-trace germ bridge**
@@ -294,17 +294,17 @@ theorem hbridgeBr_of_eventual_sphereCoherence (ω₀ αBr : HolomorphicOneForms 
   rw [hvct]
   exact fibreTrace_traceCoeff_eq_traceLocalCoeff ω₀ αBr g f S hderiv hmero hαBr
 
-/-! ### the residue-theorem build `∑Res = 0` with the branch input as the standard sphere coherence
+/-! ### The residue theorem `∑Res = 0` with the branch input as the standard sphere coherence
 
 Wiring `hbridgeBr_of_eventual_sphereCoherence` into `residueSum_eq_zero_ofBundleBranch`: the
 per-branch `hbridgeBr` argument is *discharged* from the per-branch eventual sphere-sheet coherence
-`hevBr`, so the branch-value input to the residue-theorem build is now the **standard regular-value
+`hevBr`, so the branch-value input to the residue theorem is now the **standard regular-value
 sphere coherence** — the monodromy / colliding-Puiseux frame is fully gone, replaced by the
 value-correct symmetric-SUM germ identification (proven above). Every other input (the cover
 scaffolding `cs`/`ρ`/`Dinf`/`Sreg`, the pole sub-fibre sections, the `∞`/junk/genus-`0` bookkeeping)
 is unchanged from `residueSum_eq_zero_ofBundleBranch`. -/
 
-/-- **the residue-theorem build `∑Res = 0` from the bundle-branch boundedness with the standard
+/-- **The residue theorem `∑Res = 0` from the bundle-branch boundedness with the standard
 sphere coherence.** Identical to `residueSum_eq_zero_ofBundleBranch` except the per-branch
 bundle-trace germ bridge `hbridgeBr` is replaced by the per-branch **eventual sphere-sheet
 coherence** `hevBr` (the value-correct symmetric-SUM identification, discharged via
@@ -526,7 +526,7 @@ obligation is discharged from the regular-value data the constructor already req
 §VIII.3 branch crux closed along the monodromy-free symmetric-SUM path: at branch values, only the
 local-holomorphic form `αBr = ω₀·g` remains, exactly the plan's step 1. -/
 
-/-- **the residue-theorem build `∑Res = 0`, branch input = the `αBr`-agreement only.** Identical
+/-- **The residue theorem `∑Res = 0`, branch input = the `αBr`-agreement only.** Identical
 scaffolding to `residueSum_eq_zero_ofBundleBranch`, but the entire per-branch bundle data
 (`hbridgeBr`) is discharged from the **regular-value data** (already required) + the per-branch
 local form-agreement `hαBrAgreeBr` (`αBr b₀ = ω₀·g` at the fibre points near `b₀`). No monodromy, no

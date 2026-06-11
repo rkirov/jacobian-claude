@@ -9,7 +9,7 @@ import Jacobians.Dolbeault.SerreOmega0
 import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 
 /-!
-# the residue-theorem build `∑Res = 0`: global-cover selection assembly (Miranda §VIII.3)
+# The residue theorem `∑Res = 0`: global-cover selection assembly (Miranda §VIII.3)
 
 `Jacobians.Dolbeault.FormTraceBundleBridge.residueSum_eq_zero_ofBundleBranchAgree` reduced the
 1-form residue theorem `∑ₐ Resₐ(α) = 0` (for `α = ω₀·g`) to a *fixed* list of global-cover /

@@ -56,7 +56,7 @@ partial-fraction content (3.1)**, isolated here as the single field `agree`/`agr
 
 ## The single minimal remaining obligation (precise diagnosis)
 
-Below `TraceRationalityData` everything is **complete and axiom-clean**. the residue-theorem build
+Below `TraceRationalityData` everything is **complete and axiom-clean**. the residue-theorem assembly
 is reduced to the single construction `∃ T, TraceRationalityData ω₀ g f poles` for a nonconstant `f`
 — concretely the two agreements `agree`/`agree_infty`, i.e. **the meromorphic trace `Tr_F α` on the
 compact `ℂℙ¹` is rational** (Miranda §VIII.3: a meromorphic function on `ℂℙ¹` is a rational
@@ -261,7 +261,7 @@ noncomputable def toGlobalTraceData : GlobalTraceData ω₀ g f poles where
   infty_eq := infty_eq_of_agree ω₀ f T.L T.Dinf poles T.hxsInf_inj T.hxsInf_mem T.hxsInf_surj
     T.agree_infty
 
-/-- **the residue-theorem build for the represented form, from a `TraceRationalityData`.** The total
+/-- **the residue-theorem assembly for the represented form, from a `TraceRationalityData`.** The total
 residue of `α = ω₀·g` over its poles vanishes:
 
 > `∑_{a ∈ poles} formFnResidue ω₀ g a = 0`.
@@ -272,7 +272,7 @@ theorem residueSum_eq_zero (T : TraceRationalityData ω₀ g f poles) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
   GlobalTraceData.residueSum_eq_zero T.toGlobalTraceData
 
-/-- **the residue-theorem build (`residueSum` form), from a `TraceRationalityData`.** The
+/-- **the residue-theorem assembly (`residueSum` form), from a `TraceRationalityData`.** The
 Mittag–Leffler residue-sum `residueSum ω₀ g poles` of `α = ω₀·g` vanishes — the precise input the
 residue functional `Res : H¹(X, Ω) → ℂ` descent consumes. -/
 theorem residueSum_eq_zero' (T : TraceRationalityData ω₀ g f poles) :
@@ -281,11 +281,11 @@ theorem residueSum_eq_zero' (T : TraceRationalityData ω₀ g f poles) :
 
 end TraceRationalityData
 
-/-- **The Gate-A reduction, existential form (full-fibre route).** If a
+/-- **The residue-theorem reduction, existential form (full-fibre route).** If a
 `TraceRationalityData ω₀ g f poles` exists — i.e. the meromorphic trace `Tr_F α` on `ℂℙ¹` is
 **rational** (the agreements) and the pole-fibres are enumerated — then the represented `α = ω₀·g`
 satisfies the 1-form residue theorem `∑ₐ Resₐ(α) = 0` *unconditionally* (the entire downstream is
-proven). This packages "the residue-theorem build is reduced to the trace rationality, on the
+proven). This packages "the residue-theorem assembly is reduced to the trace rationality, on the
 full-fibre route" as a single statement, with **no** `AdaptedCover`, **no** moving selection `Φ`,
 **no** `hglue_fin`/`hsep`. -/
 theorem residueSum_eq_zero_of_traceRationalityData (ω₀ : HolomorphicOneForms X) (g : X → ℂ)

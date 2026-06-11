@@ -10,7 +10,7 @@ import Jacobians.Dolbeault.FormTraceGlobalTAssemble
 /-!
 # The geometric global trace function `T` from a global fibre selection (Miranda §VIII.3 — geometry)
 
-`Jacobians.Dolbeault.FormTraceGlobalTAssemble` assembles the residue-theorem build
+`Jacobians.Dolbeault.FormTraceGlobalTAssemble` assembles the residue-theorem assembly
 (`∑ₐ Resₐ(α) = 0`) from a *single* value-chart trace function `T : ℂ → ℂ` together with the glue
 hypotheses `hglue_fin`/`hglue_inf`/`hT_off`/`R₀ 0 = 0` (the constructor `globalTrace_of_glue`). This
 file builds the **geometric `T`** — Miranda's trace `Tr_F α` of `α = ω₀·g` along the branched cover
@@ -42,11 +42,11 @@ the coherence as the minimal named input.
   chart-pullback analytic at each fibre point of `D`). Routes through
   `analyticAt_of_eventuallyEq_regularFibreTrace`; this is the off-exceptional analyticity once the
   germ-coherence is in hand.
-* `residueSum_eq_zero_of_geometricSelection` — **the residue-theorem build `∑Res = 0` from the
+* `residueSum_eq_zero_of_geometricSelection` — **the residue theorem `∑Res = 0` from the
   geometric selection** plus the germ-coherence hypotheses, wired into `residueSum_eq_zero_of_glue`.
   This is the honest reduction: with `T := valueChartTrace ω₀ f Φ`, every glue field of
   `globalTrace_of_glue` is supplied from the geometric selection and the precisely-named coherence,
-  so the residue-theorem build holds unconditionally modulo the branched-cover germ-coherence +
+  so the residue-theorem assembly holds unconditionally modulo the branched-cover germ-coherence +
   genus-`0` `∞`-vanishing.
 
 ## The honest soundness note (pole sub-fibre vs full fibre)
@@ -133,7 +133,7 @@ theorem analyticAt_valueChartTrace_of_eventuallyEq (ω₀ : HolomorphicOneForms 
     AnalyticAt ℂ (valueChartTrace ω₀ f Φ) b :=
   analyticAt_of_eventuallyEq_regularFibreTrace ω₀ f D hg hcoh
 
-/-! ### the residue-theorem build from the geometric selection (the honest reduction)
+/-! ### the residue-theorem assembly from the geometric selection (the honest reduction)
 
 With `T := valueChartTrace ω₀ f Φ`, every glue field of `globalTrace_of_glue` is supplied from the
 geometric selection and the germ-coherence:
@@ -149,13 +149,13 @@ geometric selection and the germ-coherence:
 * `hcont_int` / `hR₀_eq` — junk-freeness and the genus-`0` `∞`-vanishing, as in
   `globalTrace_of_glue`.
 
-This theorem packages those into `residueSum_eq_zero_of_glue`, so the residue-theorem build holds
+This theorem packages those into `residueSum_eq_zero_of_glue`, so the residue-theorem assembly holds
 unconditionally modulo the branched-cover germ-coherence + the genus-`0` `∞`-vanishing — the precise
 minimal obligation. -/
 
-/-- **the residue-theorem build `∑Res = 0` from the geometric global trace `valueChartTrace`.**
+/-- **The residue theorem `∑Res = 0` from the geometric global trace `valueChartTrace`.**
 Taking `T := valueChartTrace ω₀ f Φ` (the geometric trace from a global fibre selection `Φ`), the
-residue-theorem build's 1-form residue theorem holds *unconditionally* for `α = ω₀·g` given the
+residue-theorem assembly's 1-form residue theorem holds *unconditionally* for `α = ω₀·g` given the
 germ-coherence of the geometric trace with the local fibre traces (`hglue_fin`/`hglue_inf`), its
 analyticity off the finite centres (`hT_off`), junk-freeness (`hcont_int`), and the genus-`0`
 `∞`-vanishing (`hR₀_*`). This is `residueSum_eq_zero_of_glue` specialised to the geometric `T`.
@@ -200,7 +200,7 @@ Packaging that per-value coherence as `hreg` discharges `hT_off` via
 per-value off-exceptional coherence, junk-freeness, and the genus-`0` `∞`-vanishing — the minimal
 §VIII.3 obligation. -/
 
-/-- **the residue-theorem build from the geometric selection with `hT_off` discharged from
+/-- **the residue-theorem assembly from the geometric selection with `hT_off` discharged from
 coherence.** Identical to `residueSum_eq_zero_of_geometricSelection` except the off-centre
 analyticity `hT_off` is *replaced* by the per-regular-value coherence `hreg`: for every `z` off the
 finite centres, a regular fibre `Dreg z` over `z` with `g`'s chart-pullback analytic at each fibre
@@ -258,7 +258,7 @@ theorem valueChartTrace_emptySelection (ω₀ : HolomorphicOneForms X) (f : Mero
   show (∑ _i : Empty, _) = (0 : ℂ)
   rw [Finset.univ_eq_empty, Finset.sum_empty]
 
-/-- **Non-vacuity of the geometric Gate-A reduction.** For the empty pole set the geometric
+/-- **Non-vacuity of the geometric residue-theorem reduction.** For the empty pole set the geometric
 reduction `residueSum_eq_zero_of_geometricSelection` is satisfiable via the empty fibre selection:
 the geometric trace is `≡ 0` (`valueChartTrace_emptySelection`), all deep inputs are vacuous over
 the empty centre set, the `∞`-glue is `recipCoeff 0 ≡ 0`, and `R₀ ≡ 0` vanishes — yielding

@@ -11,7 +11,7 @@ import Jacobians.Dolbeault.FormTracePrincipalPartInfty
 /-!
 # The global trace function `T : ℂ → ℂ` over a fibre family (Miranda §VIII.3 step 1)
 
-`Jacobians.Dolbeault.FormTraceGlobalAssemble` reduced the residue-theorem build (`∑ₐ Resₐ(α) = 0`)
+`Jacobians.Dolbeault.FormTraceGlobalAssemble` reduced the residue theorem (`∑ₐ Resₐ(α) = 0`)
 to constructing a `GlobalTrace ω₀ g f poles hac` — a single value-chart `dz`-coefficient function
 `T : ℂ → ℂ` that germ-agrees with each *local* fibre trace, together with the holomorphic-remainder
 data. This file builds the **definition of `T`** as Miranda's trace `Tr_F α` read in the value

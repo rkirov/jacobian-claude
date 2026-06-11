@@ -17,7 +17,7 @@ import Jacobians.Dolbeault.FormTraceCoherentSelection
 * `agree`      — `L.R =ᶠ[𝓝[≠] p] (fibreTrace ω₀ f (D p)).traceCoeff` near each finite centre `p`;
 * `agree_infty`— `recipCoeff L.R =ᶠ[𝓝[≠] 0] (inftyFibreTrace ω₀ f Dinf).traceCoeff` near `0`.
 
-Constructing one `TraceRationalityData` closes the residue-theorem build `∑Res = 0`
+Constructing one `TraceRationalityData` closes the residue theorem `∑Res = 0`
 *unconditionally* (the entire downstream is the proven
 `residueSum_eq_zero_of_traceRationalityData`).
 
@@ -40,7 +40,7 @@ agreements from a single global geometric trace `T : ℂ → ℂ` (the value-cha
   (`hcoh_inf`).
 
 Chaining: `L.R =ᶠ T =ᶠ (fibreTrace …).traceCoeff` (step 3 + step 1) is `agree`; the reciprocal
-analogue is `agree_infty`. So a `TraceRationalityData` — and hence the residue-theorem build
+analogue is `agree_infty`. So a `TraceRationalityData` — and hence the residue-theorem assembly
 `∑Res = 0` — follows from the **honest reduced inputs** carried by `TraceCoherenceData`: the
 per-centre coherence (`hcoh_fin`), the `∞`-coherence (`hcoh_inf`), the entire-remainder +
 holomorphy-across-`∞` (`hentire`/`hrecip_cont`, the genus-`0` content), and the discrete fibre
@@ -48,7 +48,7 @@ bookkeeping. Everything *below* those inputs is complete and axiom-clean.
 
 ## The single minimal remaining obligation (precise diagnosis)
 
-`TraceCoherenceData` reduces the residue-theorem build to producing, for a nonconstant `f`:
+`TraceCoherenceData` reduces the residue-theorem assembly to producing, for a nonconstant `f`:
 
 1. the **per-centre coherence** `hcoh_fin` — `T =ᶠ[𝓝 p] (fibreTrace ω₀ f (D p)).traceCoeff`, the
 geometric trace germ-equals the fixed full-fibre trace at each finite pole-value, with `D p`
@@ -70,7 +70,7 @@ These are exactly the two §VIII.3 walls (the trace's *single-valuedness* and th
   genus-`0` remainder vanishing + fibre bookkeeping);
 * `TraceCoherenceData.toTraceRationalityData` — assembles the full `TraceRationalityData` (the two
   agreements *proved* from the Liouville engine + the coherence);
-* `TraceCoherenceData.residueSum_eq_zero` — the residue-theorem build `∑Res = 0` from a
+* `TraceCoherenceData.residueSum_eq_zero` — the residue theorem `∑Res = 0` from a
   `TraceCoherenceData`;
 * `traceCoherenceData_holomorphic` / `residueSum_eq_zero_holomorphic_via_coherence` — **non-vacuity
   end-to-end** (the empty-pole / globally-holomorphic case), confirming the reduction is honest (not
@@ -125,7 +125,7 @@ single global geometric trace `T : ℂ → ℂ` (the value-chart `dz`-coefficien
 /-- **The trace-coherence datum** for `α = ω₀·g` along the cover `F = f.toRiemannSphere`, over the
 pole set `poles`. Bundles the geometric trace `T` (the value-chart `dz`-coefficient of `Tr_F α`)
 with the honest §VIII.3 inputs (per-centre/∞ coherence + genus-`0` remainder vanishing) and the
-discrete fibre bookkeeping. Constructing one ⇒ a `TraceRationalityData` ⇒ the residue-theorem build
+discrete fibre bookkeeping. Constructing one ⇒ a `TraceRationalityData` ⇒ the residue-theorem assembly
 `∑Res = 0`. -/
 structure TraceCoherenceData (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
     (poles : Finset X) where
@@ -262,7 +262,7 @@ noncomputable def toTraceRationalityData : TraceRationalityData ω₀ g f poles 
   agree := C.agree_proved
   agree_infty := C.agree_infty_proved
 
-/-- **the residue-theorem build `∑Res = 0` from a `TraceCoherenceData`.** The total residue of
+/-- **The residue theorem `∑Res = 0` from a `TraceCoherenceData`.** The total residue of
 `α = ω₀·g` over its poles vanishes: assemble the `TraceRationalityData` and invoke the proven
 descent `residueSum_eq_zero_of_traceRationalityData`. -/
 theorem residueSum_eq_zero (C : TraceCoherenceData ω₀ g f poles) :
@@ -271,7 +271,7 @@ theorem residueSum_eq_zero (C : TraceCoherenceData ω₀ g f poles) :
 
 end TraceCoherenceData
 
-/-- **The Gate-A reduction, existential form (trace-coherence route).** If a
+/-- **The residue-theorem reduction, existential form (trace-coherence route).** If a
 `TraceCoherenceData ω₀ g f poles` exists — i.e. the geometric trace `Tr_F α` coheres to the
 per-fibre traces (single-valuedness) and the holomorphic remainder vanishes (genus `0`) — then the
 represented `α = ω₀·g` satisfies the 1-form residue theorem `∑ₐ Resₐ(α) = 0` *unconditionally* (the

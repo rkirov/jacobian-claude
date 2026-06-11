@@ -146,7 +146,7 @@ def traceRationalityWitness_of_agree (hac : AdaptedCover ω₀ g f poles) (L : L
   hL32 := fun p hp => hL32_of_agree hac L p (hagree p hp)
   infty_eq := hinfty
 
-/-- **the residue-theorem build from the trace agreement.** If an adapted cover and a `LaurentForm`
+/-- **the residue-theorem assembly from the trace agreement.** If an adapted cover and a `LaurentForm`
 representing `Tr_F α` (with the centre bookkeeping, the per-centre agreement, and the `∞`-residue
 identity) exist, then the 1-form residue theorem `∑ₐ Resₐ(α) = 0` holds *unconditionally* for
 `α = ω₀·g`. This composes `traceRationalityWitness_of_agree` with the proved
@@ -195,7 +195,7 @@ def traceRationalityWitness_of_agree_recip (hac : AdaptedCover ω₀ g f poles) 
 The reduction's hypotheses are *genuine* (true, satisfiable), not a disguised `False`: in the
 globally-holomorphic (empty-pole) case, the empty `LaurentForm` satisfies `hcenters`, the (vacuous)
 agreement, and `hinfty`, so `traceRationalityWitness_of_agree` produces a witness and the
-residue-theorem build holds. This confirms the entire reduction chain — `hL32_of_agree` and the
+residue-theorem assembly holds. This confirms the entire reduction chain — `hL32_of_agree` and the
 agreement framing — is sound. -/
 
 /-- **The agreement is vacuously satisfiable** for the empty `LaurentForm` (no centres). -/

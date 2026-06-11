@@ -239,7 +239,7 @@ noncomputable def MovingCoherenceDatum.ofLocalSheetSystem
 
 `MovingCoherenceDatum.ofSheetSections` discharges *all* the germ / differentiability content of the
 per-value moving data, reducing it to the §VIII.3 **re-selection bijection** `hsel` plus the moving
-sections. We bundle the *whole* Gate-A input — the global selection `Φ`, the per-pole-value and
+sections. We bundle the *whole* residue-theorem input — the global selection `Φ`, the per-pole-value and
 per-regular-value sheet sections with their re-selection bijections, the finite/∞ enumeration
 bookkeeping, the `∞`-glue, junk-freeness, and the genus-`0` continuation — into one structure
 `MovingSheetSelection`, and show it produces a `MovingCoherenceFamily` (hence the residue-theorem
@@ -251,7 +251,7 @@ residual (the continuously-varying sheet sections + re-selection bijections at e
 *derived* from the sheet sections via `ofSheetSections`. -/
 
 /-- **A moving-fibre sheet selection** for `α = ω₀·g` over `poles`, relative to an adapted cover
-`hac`. The Gate-A input with the per-value moving data presented in *sheet form*: at each pole-value
+`hac`. The residue-theorem input with the per-value moving data presented in *sheet form*: at each pole-value
 `cs i` and each regular value `z`, continuously-varying manifold sections `sec` of `f.holoRepr` (the
 branched-cover sheets) through the fixed fibre, with the §VIII.3 re-selection bijection `hsel` (near
 the base value, `Φ b'` is enumerated by the moving sections). The remaining fields (finite/∞
@@ -335,7 +335,7 @@ structure MovingSheetSelection (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (
 /-- **A moving-fibre sheet selection yields a moving-fibre coherence family.** The per-pole-value
 and per-regular-value moving data are *derived* from the sheet sections via
 `MovingCoherenceDatum.ofSheetSections` (the proved §VIII.3 self-coherence from the re-selection
-bijection); the remaining fields carry over verbatim. This wires the sheet-form Gate-A input to the
+bijection); the remaining fields carry over verbatim. This wires the sheet-form residue-theorem input to the
 proved `MovingCoherenceFamily ⇒ ∑Res = 0` chain. -/
 noncomputable def MovingSheetSelection.toMovingCoherenceFamily {hac : AdaptedCover ω₀ g f poles}
     (S : MovingSheetSelection ω₀ g f poles hac) :
@@ -364,11 +364,11 @@ noncomputable def MovingSheetSelection.toMovingCoherenceFamily {hac : AdaptedCov
   hR₀0 := S.hR₀0
   hR₀_eq := S.hR₀_eq
 
-/-- **the residue-theorem build `∑Res = 0` from a moving-fibre sheet selection.**  Via
+/-- **The residue theorem `∑Res = 0` from a moving-fibre sheet selection.**  Via
 `MovingSheetSelection.toMovingCoherenceFamily` and the proved
 `residueSum_eq_zero_of_movingCoherenceFamily`, a moving-fibre sheet selection closes the
-residue-theorem build's 1-form residue theorem for `α = ω₀·g`. This is the sheet-form §VIII.3
-reduction of the residue-theorem build: every field is either proved (the per-value self-coherence
+residue-theorem assembly's 1-form residue theorem for `α = ω₀·g`. This is the sheet-form §VIII.3
+reduction of the residue-theorem assembly: every field is either proved (the per-value self-coherence
 from the re-selection bijection, the genus-`0` vanishing) or the precise residual (the
 continuously-varying sheets + re-selection bijections, the `∞`-glue, junk-freeness). -/
 theorem residueSum_eq_zero_of_movingSheetSelection (hac : AdaptedCover ω₀ g f poles)
@@ -444,7 +444,7 @@ noncomputable def movingSheetSelection_empty (ω₀ : HolomorphicOneForms X) (g 
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **Non-vacuity of the moving-fibre sheet Gate-A reduction.** For the empty pole set the reduction
+/-- **Non-vacuity of the moving-fibre sheet residue-theorem reduction.** For the empty pole set the reduction
 `residueSum_eq_zero_of_movingSheetSelection` is satisfiable via the empty sheet selection
 (`movingSheetSelection_empty`), yielding `∑Res = 0`. Confirms the sheet-form reduction is honest
 (not a disguised `False`). -/

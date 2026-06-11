@@ -60,7 +60,7 @@ SUM analogue of "`valueChartTrace = Tr_F(ω₀·g)` in the value chart", **no in
   is discharged via the bundle SUM (the branch-frame block `secBr`/`hgermBr` of
   `patchedTraceSelection_ofFrame` *replaced* by the per-branch-value bundle-germ bridge + the
   local-holomorphic form `αBr`), every other field as in the established assembly.
-* `residueSum_eq_zero_ofBundleBranch` — the residue-theorem build `∑Res = 0` from it.
+* `residueSum_eq_zero_ofBundleBranch` — the residue theorem `∑Res = 0` from it.
 * re-export of the non-vacuity (`patchedTraceSelection_empty`).
 
 ## References
@@ -161,7 +161,7 @@ come from the pole-sub-fibre sheets (`secFin`, `hselFin`) via
 branch-value boundedness `hbnd` from the **bundle trace SUM**
 (`tendsto_zero_valueChartTrace_of_bundleGerm`) — *not* from a colliding-sheet Puiseux frame. The
 `∞`/junk/genus-`0` fields are carried verbatim. `residueSum_eq_zero_of_patchedTraceSelection` then
-gives the residue-theorem build `∑Res = 0`. -/
+gives the residue theorem `∑Res = 0`. -/
 noncomputable def patchedTraceSelection_ofBundleBranch (hac : AdaptedCover ω₀ g f poles)
     -- The global fibre selection and the finite/`∞` enumeration bookkeeping.
     (Φ : (b : ℂ) → FibreRegularData g f b)
@@ -259,7 +259,7 @@ noncomputable def patchedTraceSelection_ofBundleBranch (hac : AdaptedCover ω₀
   hR₀0 := hR₀0
   hR₀_eq := hR₀_eq
 
-/-- **the residue-theorem build `∑Res = 0` from the bundle-branch boundedness.**  Composing
+/-- **The residue theorem `∑Res = 0` from the bundle-branch boundedness.**  Composing
 `patchedTraceSelection_ofBundleBranch` with the proven
 `residueSum_eq_zero_of_patchedTraceSelection`: once the global selection, the per-pole/per-regular
 sphere data, the per-branch-value bundle-trace germ bridges, and the `∞`/junk/genus-`0` bookkeeping
@@ -340,7 +340,7 @@ The bundle-branch constructor is *satisfiable*, not a disguised `False`: the emp
 and `residueSum_eq_zero_of_patchedTraceSelection_holomorphic` yields `∑Res = 0` for it. We re-export
 it here so the close-path is honest end-to-end. -/
 
-/-- **Non-vacuity of the bundle-branch Gate-A reduction** (re-export).  For the empty pole set the
+/-- **Non-vacuity of the bundle-branch residue-theorem reduction** (re-export).  For the empty pole set the
 reduction is satisfiable via the empty selection, yielding `∑Res = 0`; the bundle-branch constructor
 does not encode a disguised `False`. -/
 theorem residueSum_eq_zero_ofBundleBranch_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ)

@@ -40,7 +40,6 @@ import Jacobians.Dolbeault.ResidueStokesCoverPoU
 import Jacobians.Dolbeault.PairFormResidueTheorem
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open Complex Metric MeasureTheory Filter Set Topology
 open scoped Manifold ContDiff Real
@@ -49,8 +48,7 @@ namespace Jacobians.Dolbeault.StokesResidue
 
 open Jacobians.Dolbeault Jacobians Jacobians.Montel
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ### Two more pointwise ledger lemmas (scalar-field sums; constant cutoffs) -/
 
@@ -108,7 +106,6 @@ variable (g₀ h : MeromorphicFunction X) {S : Finset X} (D : PoleBumpData S)
 /-- The complexified total bump. -/
 noncomputable def uC (D : PoleBumpData S) : X → ℂ := fun x => ((D.totalBump x : ℝ) : ℂ)
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X] in
 theorem continuous_uC [CompactSpace X] [T2Space X] [ConnectedSpace X] [Nonempty X]
     [IsManifold 𝓘(ℂ) ω X] : Continuous (uC D) :=
   Complex.continuous_ofReal.comp D.contMDiff_totalBump.continuous
@@ -124,7 +121,8 @@ theorem readsAnalyticAt_of_notMem (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h 
 
 /-- **(L1)** `∫_ℂ η′_a(normSq(z−c_a))·(z−c_a)·f_a(z) = −π·pairFormResidue g₀ h a` — the Stage-A
 closed-form single-pole atom, applied to the pair coefficient in the chart at `a`. -/
-theorem integral_psi_eq (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
+theorem integral_psi_eq [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
     {a : X} (ha : a ∈ S) :
     ∫ z : ℂ, (Complex.ofReal (deriv (D.η a)
         (Complex.normSq (z - (chartAt (H := ℂ) a) a)))
@@ -164,17 +162,21 @@ theorem integral_psi_eq (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x �
 /-! #### Step 2 — bridging the per-pole integrand to the ledger shape -/
 
 /-- The window of the `(a,j)` ledger piece: the pole chart's source meets the PoU chart. -/
-def poleWindow (a : X) (j : Fin ((chartCover : Finset X).card)) : Set X :=
+def poleWindow [T2Space X] [CompactSpace X] (a : X)
+    (j : Fin ((chartCover : Finset X).card)) : Set X :=
   (chartAt (H := ℂ) a).source ∩ chartOpen (X := X) (coverCenter j)
 
-theorem poleWindow_isOpen (a : X) (j : Fin ((chartCover : Finset X).card)) :
+theorem poleWindow_isOpen [T2Space X] [CompactSpace X] (a : X)
+    (j : Fin ((chartCover : Finset X).card)) :
     IsOpen (poleWindow (X := X) a j) :=
   (chartAt (H := ℂ) a).open_source.inter (chartOpen_isOpen (coverCenter j))
 
-theorem poleWindow_subset_pole (a : X) (j : Fin ((chartCover : Finset X).card)) :
+theorem poleWindow_subset_pole [T2Space X] [CompactSpace X] (a : X)
+    (j : Fin ((chartCover : Finset X).card)) :
     poleWindow (X := X) a j ⊆ (chartAt (H := ℂ) a).source := Set.inter_subset_left
 
-theorem poleWindow_subset_cover (a : X) (j : Fin ((chartCover : Finset X).card)) :
+theorem poleWindow_subset_cover [T2Space X] [CompactSpace X] (a : X)
+    (j : Fin ((chartCover : Finset X).card)) :
     poleWindow (X := X) a j ⊆ (chartAt (H := ℂ) (coverCenter j)).source :=
   Set.inter_subset_right.trans
     (chartOpen_subset_chartAt_source (coverCenter j) (coverCenter_mem j))
@@ -185,7 +187,8 @@ theorem poleWindow_subset_cover (a : X) (j : Fin ((chartCover : Finset X).card))
 
 Off the window everything vanishes pointwise (the profile derivative below `ε²/4`/above
 `ε²/2`; the PoU factor off `tsupport ρ_j` on the annulus). -/
-theorem rho_psi_eq_ledger {a : X} (ha : a ∈ S) (j : Fin ((chartCover : Finset X).card)) :
+theorem rho_psi_eq_ledger [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] {a : X} (ha : a ∈ S) (j : Fin ((chartCover : Finset X).card)) :
     (fun z : ℂ => coverRhoC (X := X) j ((chartAt (H := ℂ) a).symm z)
         * (Complex.ofReal (deriv (D.η a) (Complex.normSq (z - (chartAt (H := ℂ) a) a)))
           * (z - (chartAt (H := ℂ) a) a) * pairRead g₀ h a z))
@@ -231,19 +234,20 @@ theorem rho_psi_eq_ledger {a : X} (ha : a ∈ S) (j : Fin ((chartCover : Finset 
 
 /-- Every pole bump is locally constant near every point of `S` (`1` near its own pole, `0`
 near the others). -/
-theorem bump_locally_const_on_S {a : X} (ha : a ∈ S) {p : X} (hp : p ∈ S) :
+theorem bump_locally_const_on_S [T2Space X] {a : X} (ha : a ∈ S) {p : X} (hp : p ∈ S) :
     ∃ cst : ℝ, ∀ᶠ x' in 𝓝 p, D.bump a x' = cst := by
   rcases eq_or_ne p a with rfl | hne
   · exact ⟨1, D.bump_eventually_one ha⟩
   · exact ⟨0, D.bump_eventually_zero_of_ne ha hp hne⟩
 
 /-- The total bump is locally `≡ 1` near every point of `S`. -/
-theorem totalBump_locally_const_on_S {p : X} (hp : p ∈ S) :
+theorem totalBump_locally_const_on_S [T2Space X] {p : X} (hp : p ∈ S) :
     ∃ cst : ℝ, ∀ᶠ x' in 𝓝 p, D.totalBump x' = cst :=
   ⟨1, D.totalBump_eventually_one hp⟩
 
 /-- `uC − 1` vanishes locally near every point of `S`. -/
-theorem uC_sub_one_eventually_zero (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
+theorem uC_sub_one_eventually_zero [T2Space X]
+    (_hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
     {p : X} (hp : p ∈ S) : ∀ᶠ x' in 𝓝 p, uC D x' - 1 = 0 := by
   filter_upwards [D.totalBump_eventually_one hp] with x' hx'
   rw [uC]
@@ -253,7 +257,8 @@ theorem uC_sub_one_eventually_zero (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h
 
 /-- Integrability of the `(a,j)` pole pieces (in either chart, over any window containing the
 compact core `poleBall a ∩ tsupport ρ_j`). -/
-theorem integrable_polePiece (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
+theorem integrable_polePiece [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
     {a : X} (ha : a ∈ S) (j : Fin ((chartCover : Finset X).card))
     {y : X} {V : Set X} (hVopen : IsOpen V) (hVsub : V ⊆ (chartAt (H := ℂ) y).source)
     (hKV : D.poleBall a ∩ tsupport (coverPoU (X := X) j) ⊆ V) :
@@ -270,7 +275,8 @@ theorem integrable_polePiece (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x →
 
 /-- Integrability of `∂̄ρ_j`-pieces: scalar field `P` vanishing near every point of `S`,
 cutoff `ρ_j`, any window with a compact core outside which `P` vanishes or `ρ_j` does. -/
-theorem integrable_dRhoPiece (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
+theorem integrable_dRhoPiece [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ) ω X]
+    (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
     {P : X → ℂ} (hP : Continuous P) (hPkill : ∀ p ∈ S, ∀ᶠ x' in 𝓝 p, P x' = 0)
     (j : Fin ((chartCover : Finset X).card))
     {y : X} {V : Set X} (hVopen : IsOpen V) (hVsub : V ⊆ (chartAt (H := ℂ) y).source)
@@ -287,7 +293,8 @@ theorem integrable_dRhoPiece (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x →
     exact Or.inl (hPkill x (hSbad x hbad))
 
 /-- Integrability of the `B_j` aggregate (PoU scalar, total-bump cutoff). -/
-theorem integrable_B (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
+theorem integrable_B [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
     (j : Fin ((chartCover : Finset X).card)) :
     Integrable (ledgerIntegrand g₀ h (coverRhoC (X := X) j) D.totalBump
       (coverCenter j) (chartOpen (X := X) (coverCenter j))) volume := by
@@ -307,7 +314,8 @@ set_option maxHeartbeats 1600000 in
 compact support: `û ≡ 1` near the poles kills the singularities of `f̂`) gives, via Leibniz,
 
   `∫_ℂ (û−1)·∂̄ρ̂_j·f̂_j + ∫_ℂ ρ̂_j·∂̄û·f̂_j = 0`. -/
-theorem integral_A_add_integral_B (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
+theorem integral_A_add_integral_B [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
     (j : Fin ((chartCover : Finset X).card)) :
     (∫ w, ledgerIntegrand g₀ h (fun x => uC D x - 1) (fun x => coverPoU (X := X) j x)
         (coverCenter j) (chartOpen (X := X) (coverCenter j)) w)
@@ -484,7 +492,8 @@ theorem integral_A_add_integral_B (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h 
 
 /-- The `(j,i)` transported piece: shrink to the chart overlap (the `ρ_i` factor vanishes off
 `chartOpen c_i`), transport `c_j → c_i`, enlarge (the `ρ_j` cutoff dies off `chartOpen c_j`). -/
-theorem integral_Xi_transport (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
+theorem integral_Xi_transport [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)
     (j i : Fin ((chartCover : Finset X).card)) :
     (∫ w, ledgerIntegrand g₀ h (fun x => coverRhoC (X := X) i x * (uC D x - 1))
         (fun x => coverPoU (X := X) j x)
@@ -533,7 +542,8 @@ theorem integral_Xi_transport (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x �
 
 /-- **(L6)** `∑_j ∫ A_j = 0`: insert `1 = ∑_i ρ_i`, transport each `(j,i)` piece to chart `i`,
 and let `∑_j ∂̄ρ̂_j = ∂̄(1) = 0` kill each chart-`i` aggregate. -/
-theorem sum_integral_A_eq_zero (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S) :
+theorem sum_integral_A_eq_zero [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S) :
     ∑ j, (∫ w, ledgerIntegrand g₀ h (fun x => uC D x - 1)
         (fun x => coverPoU (X := X) j x)
         (coverCenter j) (chartOpen (X := X) (coverCenter j)) w) = 0 := by
@@ -628,7 +638,9 @@ include D in
 set_option maxHeartbeats 1600000 in
 /-- **The residue ledger assembled**: over the enlarged pole set `S` (containing the analytic
 bad locus), `∑_{a ∈ S} pairFormResidue g₀ h a = 0`. -/
-theorem residueSum_pairForm_eq_zero_S (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S) :
+theorem residueSum_pairForm_eq_zero_S [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [IsManifold 𝓘(ℂ) ω X]
+    (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S) :
     ∑ a ∈ S, pairFormResidue g₀ h a = 0 := by
   classical
   have hπ : (-(π : ℂ)) ≠ 0 := by

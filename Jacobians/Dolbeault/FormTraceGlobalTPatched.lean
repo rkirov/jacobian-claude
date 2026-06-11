@@ -7,10 +7,10 @@ import Jacobians.Dolbeault.FormTraceBranchValueOff
 import Jacobians.Dolbeault.FormTraceBranchAwareSelection
 
 /-!
-# The branch-value-patched global trace `Tᵉˣᵗ` and the residue-theorem build `∑Res = 0` (Miranda
+# The branch-value-patched global trace `Tᵉˣᵗ` and the residue theorem `∑Res = 0` (Miranda
 §VIII.3 — the close)
 
-This file is the **unification step** for the residue-theorem build (`∑ₐ Resₐ(α) = 0`, `α = ω₀·g`).
+This file is the **unification step** for the residue-theorem assembly (`∑ₐ Resₐ(α) = 0`, `α = ω₀·g`).
 All conceptual walls are down; the proven engines are wired into one instantiation of
 `globalTrace_of_glue` (`FormTraceGlobalTAssemble`), using the **value-correct branch-patched trace**
 — *not* the false `hbranch`/`BranchAwareTraceSelection` continuity route (the raw `valueChartTrace`
@@ -44,11 +44,11 @@ each branch value (the partial-sum junk is repaired to the limit).
   (germ-transport), branch values via the **patched** removable engine
   (`analyticAt_branchExtension_valueChartTrace`, needing punctured analyticity + the boundedness
   crux — *no* false continuity demand).
-* `PatchedTraceSelection` — the assembled Gate-A input using `Tᵉˣᵗ`: the per-value moving-sheet
+* `PatchedTraceSelection` — the assembled residue-theorem input using `Tᵉˣᵗ`: the per-value moving-sheet
   coherence (no labeling, via the symmetric lever), the **branch-value boundedness crux** (the
   genuine §VIII.3 analytic content, reduced sheet-by-sheet to the proven ratio atom), the `∞`-glue,
   junk-freeness, and the genus-`0` `∞`-vanishing.
-* `residueSum_eq_zero_of_patchedTraceSelection` — **the residue-theorem build `∑Res = 0`** from it,
+* `residueSum_eq_zero_of_patchedTraceSelection` — **the residue theorem `∑Res = 0`** from it,
   via the proven `residueSum_eq_zero_of_glue`.
 * `patchedTraceSelection_empty` / `…_holomorphic` — end-to-end non-vacuity (empty-pole case).
 
@@ -443,7 +443,7 @@ theorem eventually_analyticAt_valueChartTrace_of_reg (ω₀ : HolomorphicOneForm
   intro hw_mem
   exact hw_compl ⟨by simpa using hw_mem, fun hwz => hw_ne (by simpa using hwz)⟩
 
-/-! ### The patched trace selection — the assembled Gate-A input
+/-! ### The patched trace selection — the assembled residue-theorem input
 
 We bundle the genuine §VIII.3 geometry into one structure, feeding the value-correct **patched**
 trace `Tᵉˣᵗ = valueChartTracePatched ω₀ f Φ br` to `residueSum_eq_zero_of_glue`. Mirrors
@@ -463,7 +463,7 @@ The finite glue / `∞`-glue / junk-freeness / genus-`0` for `Tᵉˣᵗ` are tra
 values, so it shares every germ at the centres and at `∞`. -/
 
 /-- **A patched-trace selection** for `α = ω₀·g` over `poles`, relative to an adapted cover `hac`.
-The honest §VIII.3 Gate-A input feeding the value-correct **patched** trace to
+The honest §VIII.3 residue-theorem input feeding the value-correct **patched** trace to
 `residueSum_eq_zero_of_glue`:
 
 * `Φ`, `cs`/`ρ`/`hcenters_cs`, `Dinf`/`hxs_*` — the global selection + finite/`∞` enumeration;
@@ -478,7 +478,7 @@ The honest §VIII.3 Gate-A input feeding the value-correct **patched** trace to
 * `hglue_inf` / `hcont_int` / `R₀`+`hR₀_*` — the `∞`-glue, junk-freeness, genus-`0` `∞`-vanishing,
   all phrased for the **patched** trace `Tᵉˣᵗ` (= `valueChartTracePatched ω₀ f Φ br`).
 
-Produces the residue-theorem build `∑Res = 0` via `residueSum_eq_zero_of_glue`. -/
+Produces the residue theorem `∑Res = 0` via `residueSum_eq_zero_of_glue`. -/
 structure PatchedTraceSelection (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (poles : Finset X) (hac : AdaptedCover ω₀ g f poles) where
   /-- The global fibre selection. -/
@@ -572,12 +572,12 @@ theorem PatchedTraceSelection.hT_off {hac : AdaptedCover ω₀ g f poles}
     hreg (fun b₀ hb₀br hb₀cs => ⟨?_, S.hbnd b₀ hb₀br hb₀cs⟩) hz
   exact eventually_analyticAt_valueChartTrace_of_reg ω₀ f S.Φ (Finset.univ.image S.cs) S.br hreg b₀
 
-/-- **the residue-theorem build `∑Res = 0` from a patched-trace selection.** Via
+/-- **The residue theorem `∑Res = 0` from a patched-trace selection.** Via
 `residueSum_eq_zero_of_glue` with `T := valueChartTracePatched ω₀ f Φ br` (the value-correct patched
 trace): the finite glue from the per-pole moving datum (transported to `Tᵉˣᵗ`), the off-centre
 analyticity from the regular-value coherence ⊕ the value-correct branch extension (resting on the
 boundedness crux), and the `∞`/junk/genus-`0` data. This is the §VIII.3 reduction of the
-residue-theorem build **with the symmetric lever (no labeling) and branch values via the
+residue-theorem assembly **with the symmetric lever (no labeling) and branch values via the
 value-correct removable patch** — no revived `hbranch`. -/
 theorem residueSum_eq_zero_of_patchedTraceSelection (hac : AdaptedCover ω₀ g f poles)
     (S : PatchedTraceSelection ω₀ g f poles hac) :
@@ -654,7 +654,7 @@ noncomputable def patchedTraceSelection_empty (ω₀ : HolomorphicOneForms X) (g
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **Non-vacuity of the patched-trace Gate-A reduction.**  For the empty pole set the reduction
+/-- **Non-vacuity of the patched-trace residue-theorem reduction.**  For the empty pole set the reduction
 `residueSum_eq_zero_of_patchedTraceSelection` is satisfiable via the empty selection
 (`patchedTraceSelection_empty`), yielding `∑Res = 0`. Confirms the reduction is honest (not a
 disguised `False`). -/

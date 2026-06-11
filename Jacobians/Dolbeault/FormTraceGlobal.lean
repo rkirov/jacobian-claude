@@ -10,7 +10,7 @@ import Jacobians.Dolbeault.FormTraceFibre
 
 This file assembles the per-fibre trace data (`Jacobians.Dolbeault.FormTraceFibre`) over **all** the
 finite fibres into a `Jacobians.Dolbeault.FormResidueTheorem.FormResidueTrace`, which closes the
-residue-theorem build (the 1-form residue theorem `∑ₐ Resₐ(α) = 0`) for the represented `α = ω₀·g`.
+residue-theorem assembly (the 1-form residue theorem `∑ₐ Resₐ(α) = 0`) for the represented `α = ω₀·g`.
 
 It packages the irreducible remaining content — the **rationality of the trace** `Tr_F α` on `ℂℙ¹`
 and the **unramifiedness of `f` over the finite pole values** — into a single honest bundle
@@ -45,7 +45,7 @@ the last §VIII.3-level analytic content (see the diagnosis at the bottom).
 
 ## The minimal remaining obligation (precise diagnosis)
 
-the residue-theorem build is now reduced — **fully complete and axiom-clean below
+the residue-theorem assembly is now reduced — **fully complete and axiom-clean below
 `GlobalTraceData`** — to the single construction `∃ T, GlobalTraceData ω₀ g f poles` for a general
 nonconstant `f` (where `poles` is the pole set of `α = ω₀·g`). Concretely the remaining content is:
 
@@ -172,7 +172,7 @@ noncomputable def toFormResidueTrace (T : GlobalTraceData ω₀ g f poles) :
 @[simp] theorem toFormResidueTrace_poles (T : GlobalTraceData ω₀ g f poles) :
     (T.toFormResidueTrace).poles = poles := rfl
 
-/-- **the residue-theorem build for the represented form, from a `GlobalTraceData`.** The total
+/-- **the residue-theorem assembly for the represented form, from a `GlobalTraceData`.** The total
 residue of `α = ω₀·g` over its poles vanishes:
 
 > `∑_{a ∈ poles} Res_a(α) = 0`. -/
@@ -183,12 +183,12 @@ theorem residueSum_eq_zero (T : GlobalTraceData ω₀ g f poles) :
 
 end GlobalTraceData
 
-/-- **The Gate-A reduction, existential form.** If a `GlobalTraceData ω₀ g f poles` exists (the
+/-- **The residue-theorem reduction, existential form.** If a `GlobalTraceData ω₀ g f poles` exists (the
 trace of `α = ω₀·g` is rational and `f` is unramified over the finite pole values), then a
 `FormResidueTrace ω₀ g` exists — hence the represented `α` satisfies the 1-form residue theorem
 `∑ₐ Resₐ(α) = 0` *unconditionally* (the downstream consumers
 `residueSum_eq_zero_of_formResidueTrace` and `MittagLefflerForm_res_eq_zero` are *proved*). This
-packages "the residue-theorem build is reduced to constructing a `GlobalTraceData`" as a single
+packages "the residue-theorem assembly is reduced to constructing a `GlobalTraceData`" as a single
 statement. -/
 theorem exists_formResidueTrace_of_globalTraceData (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (poles : Finset X)

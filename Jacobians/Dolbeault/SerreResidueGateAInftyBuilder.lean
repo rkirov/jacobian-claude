@@ -8,55 +8,60 @@ import Jacobians.Dolbeault.SerreResidueGateAClosed
 import Jacobians.Dolbeault.SerreResidueInftyCoherence
 
 /-!
-# The Gate-A off-centre/∞ bundle `GateAInftyData` from an adapted cover (TARGET 2)
+# The residue-theorem off-centre/∞ bundle `GateAInftyData` from an adapted cover (TARGET 2)
 
-The `hoff_cs`-free ramified Gate-A capstone `residueSum_eq_zero_of_reindex`
+The `hoff_cs`-free ramified residue-theorem capstone `residueSum_eq_zero_of_reindex`
 (`SerreResidueRamifiedFullFibreBuilder.lean`) consumes two residuals: the per-centre fibre-cluster
-reindexing `FibreClusterReindex` (the geometric wall, TARGET 1) **and** the off-centre/∞ genericity bundle
-`GateAInftyData` (`SerreResidueRamifiedRealCover.lean`).  This file **builds `GateAInftyData`** for the
-canonical full-fibre selection from a genericity datum that is exactly the unramified `AdaptedF`
-(`SerreResidueGateAClosed.lean`) *minus* the unramified-pole-fibre demand `hoff_cs` — i.e. the same
-"choose any nonconstant `f` with simple `∞`-poles" selection, but **admitting ramified finite pole
-fibres** (which the cluster route handles).
+reindexing `FibreClusterReindex` (the geometric wall, TARGET 1) **and** the off-centre/∞ genericity
+bundle `GateAInftyData` (`SerreResidueRamifiedRealCover.lean`). This file **builds
+`GateAInftyData`** for the canonical full-fibre selection from a genericity datum that is exactly
+the unramified `AdaptedF` (`SerreResidueGateAClosed.lean`) *minus* the unramified-pole-fibre demand
+`hoff_cs` — i.e. the same "choose any nonconstant `f` with simple `∞`-poles" selection, but
+**admitting ramified finite pole fibres** (which the cluster route handles).
 
-Every field of `GateAInftyData` is discharged from the **already-proven** unramified machinery for the
-canonical selection:
+Every field of `GateAInftyData` is discharged from the **already-proven** unramified machinery for
+the canonical selection:
 
-* `hreg` (off-centre analyticity) — `hreg_canonical_at_goodValue_sound` (the moving-datum coherence lever
-  `analyticAt_valueChartTrace_of_movingDatum`), valid at every value off the finite bad set, since `g`
-  meromorphic ⟹ every off-pole fibre is `g`-analytic and every off-branch value is `GoodValue`;
-* `hbnd` (branch-value boundedness) — the αBr-free SOUND `g`-weighted route `hbnd_canonical_sound_full`;
-* the entire **∞-group** (`Dinf_full`/`hcoh_full`/`hfullInf_inj` + the ∞-pole enumeration) — the simple-∞
-  reciprocal-chart coherence `InftyMovingCoherenceData.ofInftySheetSystem` (gated by `hsimpleInf`) and the
-  full ∞-fibre datum `inftyFibreDataNF_full`, exactly as in the proven `…_inftyClosed` route.
+* `hreg` (off-centre analyticity) — `hreg_canonical_at_goodValue_sound` (the moving-datum coherence
+  lever `analyticAt_valueChartTrace_of_movingDatum`), valid at every value off the finite bad set,
+  since `g` meromorphic ⟹ every off-pole fibre is `g`-analytic and every off-branch value is
+  `GoodValue`;
+* `hbnd` (branch-value boundedness) — the αBr-free SOUND `g`-weighted route
+  `hbnd_canonical_sound_full`;
+* the entire **∞-group** (`Dinf_full`/`hcoh_full`/`hfullInf_inj` + the ∞-pole enumeration) — the
+  simple-∞ reciprocal-chart coherence `InftyMovingCoherenceData.ofInftySheetSystem` (gated by
+  `hsimpleInf`) and the full ∞-fibre datum `inftyFibreDataNF_full`, exactly as in the proven
+  `…_inftyClosed` route.
 
-So `GateAInftyData` is NOT new analytic content: it is the off-centre/∞ genericity isolate, identical to
-what the unramified route discharges, packaged into the bundle the ramified route consumes.  The *only*
-genuinely-remaining content of the ramified Gate-A route is then TARGET 1 (`FibreClusterReindex`).
+So `GateAInftyData` is NOT new analytic content: it is the off-centre/∞ genericity isolate,
+identical to what the unramified route discharges, packaged into the bundle the ramified route
+consumes. The *only* genuinely-remaining content of the ramified residue-theorem route is then TARGET 1
+(`FibreClusterReindex`).
 
-## What is delivered (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What is delivered
 
-* `AdaptedFRamified` — the genericity datum (`AdaptedF` minus `hoff_cs`): a nonconstant `f` with simple
-  `∞`-poles and the pole-value enumeration, NOT demanding unramified finite pole fibres.
-* `gateAInftyData_of_adaptedFRamified` — **the `GateAInftyData` builder** from an `AdaptedFRamified` for a
-  genuine meromorphic numerator `g`.
+* `AdaptedFRamified` — the genericity datum (`AdaptedF` minus `hoff_cs`): a nonconstant `f` with
+  simple `∞`-poles and the pole-value enumeration, NOT demanding unramified finite pole fibres.
+* `gateAInftyData_of_adaptedFRamified` — **the `GateAInftyData` builder** from an `AdaptedFRamified`
+  for a genuine meromorphic numerator `g`.
 * `residueSum_eq_zero_of_reindex_adaptedFRamified` — `∑Res = 0` from an `AdaptedFRamified` *and* the
   per-centre `FibreClusterReindex` (TARGET 1), routing through `residueSum_eq_zero_of_reindex`.
 
 ## ⚠ Soundness
 
 `AdaptedFRamified` is the honest off-centre/∞ genericity residual (a strict weakening of `AdaptedF`,
-dropping `hoff_cs`), supplied as data.  The builder uses only proven dischargers; no false/junk/circular
-field, no custom axiom, no gaps.  Non-vacuity: the `AdaptedF → AdaptedFRamified` forgetful map shows it
-is inhabited whenever the unramified `AdaptedF` is.
+dropping `hoff_cs`), supplied as data. The builder uses only proven dischargers; no
+false/junk/circular field, no custom axiom, no gaps. Non-vacuity: the `AdaptedF → AdaptedFRamified`
+forgetful map shows it is inhabited whenever the unramified `AdaptedF` is.
 
 ## References
 
-* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, p. 254 ("choose any nonconstant `f`").
-* `Jacobians/Dolbeault/SerreResidueGateAClosed.lean` (`AdaptedF`, `hreg_canonical_at_goodValue_sound`,
-  `hbnd_canonical_sound_full`), `SerreResidueInftyCoherence.lean`
-  (`InftyMovingCoherenceData.ofInftySheetSystem`, `hcoh_geom_of_inftyMovingCoherenceData`),
-  `SerreResidueRamifiedRealCover.lean` (`GateAInftyData`),
+* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, p. 254 ("choose any nonconstant
+  `f`").
+* `Jacobians/Dolbeault/SerreResidueGateAClosed.lean` (`AdaptedF`,
+  `hreg_canonical_at_goodValue_sound`, `hbnd_canonical_sound_full`),
+  `SerreResidueInftyCoherence.lean` (`InftyMovingCoherenceData.ofInftySheetSystem`,
+  `hcoh_geom_of_inftyMovingCoherenceData`), `SerreResidueRamifiedRealCover.lean` (`GateAInftyData`),
   `SerreResidueRamifiedFullFibreBuilder.lean` (`residueSum_eq_zero_of_reindex`).
 -/
 
@@ -67,7 +72,6 @@ open scoped Manifold ContDiff Real
 
 attribute [local instance] Classical.propDecidable
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault.SerreResidueTheorem
 
@@ -81,12 +85,13 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 /-! ## The `hoff_cs`-free genericity datum -/
 
-/-- **The `hoff_cs`-free adapted-cover genericity datum** for `α = ω₀·g` (genuine meromorphic `g`) over
-`poles`.  Identical to `AdaptedF` (`SerreResidueGateAClosed.lean`) **except** it drops the
+/-- **The `hoff_cs`-free adapted-cover genericity datum** for `α = ω₀·g` (genuine meromorphic `g`)
+over `poles`. Identical to `AdaptedF` (`SerreResidueGateAClosed.lean`) **except** it drops the
 unramified-pole-fibre genericity `hoff_cs` — the finite pole fibres may be **ramified** (the cluster
-route, TARGET 1, handles them).  Every `g`-meromorphy/holomorphy field is still automatic from `g`'s
+route, TARGET 1, handles them). Every `g`-meromorphy/holomorphy field is still automatic from `g`'s
 global meromorphy, so the only fields are the generic-position facts about `f`: nonconstancy, the
-pole-value enumeration `cs`, simple `∞`-poles, and the definition of `poles` (off it `g` is analytic). -/
+pole-value enumeration `cs`, simple `∞`-poles, and the definition of `poles` (off it `g` is
+analytic). -/
 structure AdaptedFRamified (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
     (poles : Finset X) where
   /-- The cover `f` is nonconstant. -/
@@ -105,14 +110,15 @@ structure AdaptedFRamified (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunct
     = (poles.image f.toRiemannSphere).erase OnePoint.infty
   /-- **Genericity (the *only* one kept):** `f` has simple poles over `∞`. -/
   hsimpleInf : ∀ i, f.orderAtPoint (inftyFibreEnum f i) = -1
-  /-- `poles` is exactly the pole set of `α = ω₀·g`: off `poles`, `g`'s chart-pullback is analytic. -/
+  /-- `poles` is exactly the pole set of `α = ω₀·g`: off `poles`, `g`'s chart-pullback is analytic.
+  -/
   hg_an_offpoles : ∀ x : X, x ∉ poles →
     AnalyticAt ℂ (fun z => g.toFun ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x)
 
 /-- **The forgetful map `AdaptedF → AdaptedFRamified`** (non-vacuity / soundness).  An unramified
-adapted cover `AdaptedF` (which additionally demands `hoff_cs`) is in particular an `AdaptedFRamified`;
-so `AdaptedFRamified` is inhabited whenever `AdaptedF` is.  This certifies `AdaptedFRamified` is a strict
-*weakening*, not a disguised `False`. -/
+adapted cover `AdaptedF` (which additionally demands `hoff_cs`) is in particular an
+`AdaptedFRamified`; so `AdaptedFRamified` is inhabited whenever `AdaptedF` is. This certifies
+`AdaptedFRamified` is a strict *weakening*, not a disguised `False`. -/
 def AdaptedFRamified.ofAdaptedF {ω₀ : HolomorphicOneForms X} {g : MeromorphicFunction X}
     {poles : Finset X} (A : AdaptedF ω₀ g poles) : AdaptedFRamified ω₀ g poles where
   f := A.f
@@ -128,14 +134,15 @@ def AdaptedFRamified.ofAdaptedF {ω₀ : HolomorphicOneForms X} {g : Meromorphic
 
 /-! ## The `GateAInftyData` builder -/
 
-/-- **The Gate-A off-centre/∞ bundle from an adapted cover (TARGET 2).**  For a genuine meromorphic
+/-- **The residue-theorem off-centre/∞ bundle from an adapted cover (TARGET 2).**  For a genuine meromorphic
 numerator `g`, an `AdaptedFRamified` datum produces a `GateAInftyData` for the canonical full-fibre
-selection, with `br := branchValues f`.  Every field is discharged from the proven canonical-selection
-machinery:
+selection, with `br := branchValues f`. Every field is discharged from the proven
+canonical-selection machinery:
 
 * the discrete bookkeeping (`ρ`/`hcs_ball`/`hcs_inj`/`hcenters_cs`) — from the datum;
-* `hreg` (off-centre analyticity at every `w ∉ image cs ∪ br`) — `hreg_canonical_at_goodValue_sound`,
-  with the `GoodValue`/meromorphy automatic from `g`'s global meromorphy and analyticity off `poles`;
+* `hreg` (off-centre analyticity at every `w ∉ image cs ∪ br`) —
+  `hreg_canonical_at_goodValue_sound`, with the `GoodValue`/meromorphy automatic from `g`'s global
+  meromorphy and analyticity off `poles`;
 * `hbnd` (branch-value boundedness) — the αBr-free `hbnd_canonical_sound_full`;
 * the ∞-group (`Dinf_full := inftyFibreDataNF_full`, `hcoh_full` via the reciprocal-chart coherence
   `InftyMovingCoherenceData.ofInftySheetSystem` gated by `hsimpleInf`, the ∞-pole enumeration via
@@ -148,7 +155,8 @@ noncomputable def gateAInftyData_of_adaptedFRamified {ω₀ : HolomorphicOneForm
     Jacobians.GateAInftyData ω₀ g.toFun A.f A.hdiv poles A.cs (branchValues A.f A.hdiv) := by
   classical
   -- `g` is meromorphic at every point; `GoodValue` off the branch locus is then automatic.
-  have hmero_pt : ∀ y : X, MeromorphicAt (fun w => g.toFun ((chartAt ℂ y).symm w)) ((chartAt ℂ y) y) :=
+  have hmero_pt : ∀ y : X,
+      MeromorphicAt (fun w => g.toFun ((chartAt ℂ y).symm w)) ((chartAt ℂ y) y) :=
     fun y => g.meromorphic y
   -- `GoodValue` from off-branch (the `g`-meromorphy of the full-fibre points is free).
   have hgood_of_off : ∀ w, (((w : ℂ) : RiemannSphere)) ∉ branchLocus A.f.toRiemannSphere →
@@ -165,15 +173,15 @@ noncomputable def gateAInftyData_of_adaptedFRamified {ω₀ : HolomorphicOneForm
     hgood_of_off w (coe_notMem_branchLocus_of_notMem_branchValues A.f A.hdiv
       (fun h => hw (Finset.mem_union_right _ h)))
   -- `g`'s chart-pullback is analytic at non-poles; over a value `w` whose fibre point is a non-pole
-  -- (off `poles`), this is `hg_an_offpoles`.  A finite pole-value off `image cs` is impossible, so the
-  -- fibre over any off-`cs` value contains no pole (its sheet points are non-poles).
+  -- (off `poles`), this is `hg_an_offpoles`. A finite pole-value off `image cs` is impossible, so
+  -- the fibre over any off-`cs` value contains no pole (its sheet points are non-poles).
   have hg_an_at : ∀ {w : ℂ}, w ∉ Finset.univ.image A.cs → ∀ y : X,
       A.f.toRiemannSphere y = (((w : ℂ) : RiemannSphere)) →
       AnalyticAt ℂ (fun z => g.toFun ((chartAt ℂ y).symm z)) ((chartAt ℂ y) y) := by
     intro w hwcs y hy
     refine A.hg_an_offpoles y ?_
-    -- If `y` were a pole, `F y = ∞ ≠ coe w`; so `y` is a non-pole, hence off `poles` (poles ⊆ {coe-val
-    -- centres} ∪ {∞-poles}); a non-`∞` value off `image cs` cannot be a pole-value.
+    -- If `y` were a pole, `F y = ∞ ≠ coe w`; so `y` is a non-pole, hence off `poles` (poles ⊆
+    -- {coe-val centres} ∪ {∞-poles}); a non-`∞` value off `image cs` cannot be a pole-value.
     intro hy_pole
     -- `y ∈ poles` and `F y = coe w` (finite), so `coe w` is a finite pole-value, i.e. `coe w ∈
     -- (poles.image F).erase ∞ = (image cs).image coe`; thus `w = cs i` for some `i`, contradiction.
@@ -225,13 +233,16 @@ noncomputable def gateAInftyData_of_adaptedFRamified {ω₀ : HolomorphicOneForm
       hpoInf_surj := ?_
       hpole_image_inf := ?_
       hnonpole_inf_an := fun k hk => A.hg_an_offpoles (inftyFibreEnum A.f k) hk }
-  · -- `hcoh_full`: the reciprocal-chart ∞-coherence (`valueChartTracePatched` bridge ∘ the geometric
-    -- coherence `hcoh_geom_of_inftyMovingCoherenceData` from `InftyMovingCoherenceData.ofInftySheetSystem`).
+  · -- `hcoh_full`: the reciprocal-chart ∞-coherence (`valueChartTracePatched` bridge ∘ the
+    -- geometric
+    -- coherence `hcoh_geom_of_inftyMovingCoherenceData` from
+    -- `InftyMovingCoherenceData.ofInftySheetSystem`).
     refine (recipCoeff_valueChartTracePatched_eventuallyEq ω₀ A.f
       (canonicalFibreSelection g.toFun A.f A.hdiv) (branchValues A.f A.hdiv)).trans ?_
     exact hcoh_geom_of_inftyMovingCoherenceData ω₀ A.f (canonicalFibreSelection g.toFun A.f A.hdiv)
       (inftyFibreDataNF_full g.toFun A.f A.hsimpleInf (fun i => hmero_pt (inftyFibreEnum A.f i)))
-      (InftyMovingCoherenceData.ofInftySheetSystem ω₀ A.f (canonicalFibreSelection g.toFun A.f A.hdiv)
+      (InftyMovingCoherenceData.ofInftySheetSystem ω₀ A.f
+        (canonicalFibreSelection g.toFun A.f A.hdiv)
         (inftyFibreDataNF_full g.toFun A.f A.hsimpleInf (fun i => hmero_pt (inftyFibreEnum A.f i)))
         (by rw [inftyFibreDataNF_full_xs]; exact inftyFibreEnum_injective A.f)
         (by rw [inftyFibreDataNF_full_xs]; exact inftyFibreEnum_range A.f)
@@ -256,28 +267,28 @@ noncomputable def gateAInftyData_of_adaptedFRamified {ω₀ : HolomorphicOneForm
 
 /-! ## The capstone: `∑Res = 0` from an adapted cover + the per-centre fibre-cluster reindexing
 
-With TARGET 2 (`GateAInftyData`) built from the off-centre/∞ genericity datum `AdaptedFRamified`, the
-*entire* remaining content of the `hoff_cs`-free ramified Gate-A route is TARGET 1 — the per-centre
-fibre-cluster reindexing `FibreClusterReindex` (the geometric wall).  This capstone composes the two: an
-`AdaptedFRamified` plus a per-centre `FibreClusterReindex` discharges `∑Res = 0` unconditionally (for the
-genuine meromorphic numerator). -/
+With TARGET 2 (`GateAInftyData`) built from the off-centre/∞ genericity datum `AdaptedFRamified`,
+the *entire* remaining content of the `hoff_cs`-free ramified residue-theorem route is TARGET 1 — the
+per-centre fibre-cluster reindexing `FibreClusterReindex` (the geometric wall). This capstone
+composes the two: an `AdaptedFRamified` plus a per-centre `FibreClusterReindex` discharges
+`∑Res = 0` unconditionally (for the genuine meromorphic numerator). -/
 
-/-- **Gate A `∑Res = 0` from an adapted cover + the per-centre fibre-cluster reindexing.**  For a genuine
-meromorphic numerator `g`, given:
+/-- **The residue theorem `∑Res = 0` from an adapted cover + the per-centre fibre-cluster
+reindexing.** For a genuine meromorphic numerator `g`, given:
 
-* an `AdaptedFRamified` datum `A` (the off-centre/∞ genericity — a nonconstant `f` with simple `∞`-poles
-  and the finite pole-value enumeration, **admitting ramified finite pole fibres**), and
-* at each finite pole-value centre `A.cs i`, a `FibreClusterReindex` (TARGET 1 — the genuine full-fibre
-  cluster geometric reindexing of the moving trace),
+* an `AdaptedFRamified` datum `A` (the off-centre/∞ genericity — a nonconstant `f` with simple
+  `∞`-poles and the finite pole-value enumeration, **admitting ramified finite pole fibres**), and
+* at each finite pole-value centre `A.cs i`, a `FibreClusterReindex` (TARGET 1 — the genuine
+  full-fibre cluster geometric reindexing of the moving trace),
 
 the total residue of `α = ω₀·g` vanishes:
 
 > `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`.
 
-This routes the TARGET-2 bundle `gateAInftyData_of_adaptedFRamified` and the TARGET-1 per-centre residuals
-into the PROVEN capstone `residueSum_eq_zero_of_reindex`.  The *only* genuinely-remaining analytic content
-is `FibreClusterReindex` (the per-centre `hgeom_fibre` — the fibre-cluster reindexing of the moving
-full-fibre trace); the off-centre/∞ bundle is fully discharged here. -/
+This routes the TARGET-2 bundle `gateAInftyData_of_adaptedFRamified` and the TARGET-1 per-centre
+residuals into the proven capstone `residueSum_eq_zero_of_reindex`. The *only* genuinely-remaining
+analytic content is `FibreClusterReindex` (the per-centre `hgeom_fibre` — the fibre-cluster
+reindexing of the moving full-fibre trace); the off-centre/∞ bundle is fully discharged here. -/
 theorem residueSum_eq_zero_of_reindex_adaptedFRamified {ω₀ : HolomorphicOneForms X}
     {g : MeromorphicFunction X} {poles : Finset X} (A : AdaptedFRamified ω₀ g poles)
     (R : ∀ i, FibreClusterReindex ω₀ g.toFun A.f A.hdiv poles (A.cs i)) :
@@ -287,26 +298,26 @@ theorem residueSum_eq_zero_of_reindex_adaptedFRamified {ω₀ : HolomorphicOneFo
 /-! ## The precise remaining obligation, isolated
 
 `ExistsAdaptedFRamified` packages the off-centre/∞ genericity selection (always achievable — Miranda
-p. 254 "choose any nonconstant `f`"), so that the unconditional residue theorem rests on **exactly two**
-named residuals: this genericity selection (TARGET 2's *input*, the same isolate as `ExistsAdaptedF`) and
-the per-centre fibre-cluster reindexing `FibreClusterReindex` (TARGET 1). -/
+p. 254 "choose any nonconstant `f`"), so that the unconditional residue theorem rests on **exactly
+two** named residuals: this genericity selection (TARGET 2's *input*, the same isolate as
+`ExistsAdaptedF`) and the per-centre fibre-cluster reindexing `FibreClusterReindex` (TARGET 1). -/
 
 /-- **The off-centre/∞ genericity selection obligation.**  An adapted (ramification-tolerant) cover
-exists for `α = ω₀·g` over any finite `poles` off which `g` is analytic.  This is the `hoff_cs`-FREE
-analogue of `ExistsAdaptedF` (`SerreResidueGateAClosed.lean`) — it drops the unramified-pole-fibre demand,
-since the ramified cluster route (TARGET 1) handles ramified finite pole fibres.  It is genuinely
-achievable (Miranda p. 254 + the simple-`∞` reciprocal `f' = (f₀ − a)⁻¹`); strictly weaker than
-`ExistsAdaptedF`, hence *no harder* to discharge. -/
+exists for `α = ω₀·g` over any finite `poles` off which `g` is analytic. This is the `hoff_cs`-FREE
+analogue of `ExistsAdaptedF` (`SerreResidueGateAClosed.lean`) — it drops the unramified-pole-fibre
+demand, since the ramified cluster route (TARGET 1) handles ramified finite pole fibres. It is
+genuinely achievable (Miranda p. 254 + the simple-`∞` reciprocal `f' = (f₀ − a)⁻¹`); strictly weaker
+than `ExistsAdaptedF`, hence *no harder* to discharge. -/
 def ExistsAdaptedFRamified (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
     (poles : Finset X) : Prop :=
   (∀ x : X, x ∉ poles →
     AnalyticAt ℂ (fun z => g.toFun ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x)) →
   Nonempty (AdaptedFRamified ω₀ g poles)
 
-/-- **`ExistsAdaptedFRamified` from `ExistsAdaptedF`** (non-vacuity).  The unramified genericity obligation
-`ExistsAdaptedF` (`SerreResidueGateAClosed.lean`) implies the `hoff_cs`-free `ExistsAdaptedFRamified` via
-the forgetful map — confirming the latter is **not** a disguised `False` and is *no harder* than the
-unramified one. -/
+/-- **`ExistsAdaptedFRamified` from `ExistsAdaptedF`** (non-vacuity). The unramified genericity
+obligation `ExistsAdaptedF` (`SerreResidueGateAClosed.lean`) implies the `hoff_cs`-free
+`ExistsAdaptedFRamified` via the forgetful map — confirming the latter is **not** a disguised
+`False` and is *no harder* than the unramified one. -/
 theorem existsAdaptedFRamified_of_existsAdaptedF {ω₀ : HolomorphicOneForms X}
     {g : MeromorphicFunction X} {poles : Finset X} (h : ExistsAdaptedF ω₀ g poles) :
     ExistsAdaptedFRamified ω₀ g poles :=
