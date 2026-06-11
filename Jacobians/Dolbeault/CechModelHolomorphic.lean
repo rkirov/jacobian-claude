@@ -1,13 +1,13 @@
 /-
-  Čech finiteness — corrected holomorphic-shrinking model scaffold.
+  Čech finiteness — the holomorphic-shrinking model.
 
-  This file introduces the shape the soundness note points at: the shrinking side is modeled by
-  bounded-holomorphic functions on relatively-compact open shrinkings `Wov p`, not by bounded-
-  continuous functions on compact sets.  It is a parallel scaffold, leaving the current continuous
-  branch intact while giving future proof work the right target.
+  The shrinking side of the Montel/Schwartz finiteness argument is modeled here by
+  bounded-holomorphic functions on relatively-compact open shrinkings `Wov p`, not by
+  bounded-continuous functions on compact sets.
 
-  The file is intentionally small: it only defines the corrected data bundle and the raw restriction
-  operator.  The compactness theorem and the Leray discharge will be built on top of this branch.
+  This file defines the data bundle and the raw restriction operator and proves the restriction
+  compact (Montel, componentwise `BddHol.restrictOpenCLM`); the Leray discharge and the geometric
+  instantiation are built on top in the other `CechModel*` modules.
 -/
 import Jacobians.Dolbeault.CechFinitenessAbstract
 import Jacobians.Dolbeault.CechModelBridge
@@ -79,11 +79,12 @@ theorem rhoRaw_apply (f : d.Ccov) (p : d.J) :
     d.rhoRaw f p = BddHol.restrictOpenCLM (subset_closure.trans (d.hWU p)) (f p) := by
   simp [rhoRaw, BddHol.restrictOpenCLM]
 
-/-- **STEP 3 on the corrected branch.**  The cochain restriction `ρ` (cover → holomorphic shrinking)
+/-- The cochain restriction `ρ` (cover → holomorphic shrinking)
 is a compact operator: componentwise it is `BddHol.restrictOpenCLM`, compact for a relatively
 compact open shrinking `Wov p ⋐ Uov p`, and a finite product of compacts is compact. -/
 theorem rhoRaw_compact : IsCompactOperator d.rhoRaw := by
-  apply CechFiniteness.isCompactOperator_pi (fun p => BddHol.restrictOpenCLM (subset_closure.trans (d.hWU p)))
+  apply CechFiniteness.isCompactOperator_pi
+    (fun p => BddHol.restrictOpenCLM (subset_closure.trans (d.hWU p)))
   intro p
   exact BddHol.isCompactOperator_restrictOpenCLM_of_compact (d.hUov p) (d.hWov p) (d.hKcpt p)
     (d.hWU p)
@@ -96,23 +97,27 @@ end HolomorphicDiskOverlapData
 noncomputable def montel_coverCenter (a : Fin ((chartCover : Finset X).card)) : X :=
   ((chartCover : Finset X).equivFin.symm a : X)
 
-theorem montel_coverCenter_mem (a : Fin ((chartCover : Finset X).card)) :
+theorem montel_coverCenter_mem {X : Type*} [TopologicalSpace X] [CompactSpace X]
+    [ChartedSpace ℂ X] (a : Fin ((chartCover : Finset X).card)) :
     montel_coverCenter (X := X) a ∈ (chartCover : Finset X) :=
   ((chartCover : Finset X).equivFin.symm a).2
 
-theorem montel_chartOpen_subset_chartAt_source (x : X) (hx : x ∈ (chartCover : Finset X)) :
+theorem montel_chartOpen_subset_chartAt_source {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ChartedSpace ℂ X] (x : X)
+    (hx : x ∈ (chartCover : Finset X)) :
     chartOpen (X := X) x ⊆ (chartAt (H := ℂ) x).source :=
   (chartOpen_subset_shrunkChart x).trans (shrunkChart_subset_source x hx)
 
-theorem montel_innerChartOpen_subset_chartOpen (x : X) :
+theorem montel_innerChartOpen_subset_chartOpen {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ChartedSpace ℂ X] (x : X) :
     innerChartOpen (X := X) x ⊆ chartOpen (X := X) x := by
   intro y hy
   exact closure_innerChartOpen_subset_chartOpen x (subset_closure hy)
 
 /-- The outer holomorphic shrinking geometry from `Montel.Cover`: `Uov` is the open chart image of
-the `chartOpen` overlap, while `Wov` is the open chart image of the smaller `innerChartOpen` overlap.
-The latter has compact closure inside `Uov`, giving the corrected branch a genuine relatively-compact
-open shrinking. -/
+the `chartOpen` overlap, while `Wov` is the open chart image of the smaller `innerChartOpen`
+overlap. The latter has compact closure inside `Uov`, giving the corrected branch a genuine
+relatively-compact open shrinking. -/
 noncomputable def chartCoverHolomorphicDiskOverlapData : HolomorphicDiskOverlapData where
   J := Fin ((chartCover : Finset X).card) × Fin ((chartCover : Finset X).card)
   Uov p :=
@@ -151,16 +156,17 @@ noncomputable def chartCoverHolomorphicDiskOverlapData : HolomorphicDiskOverlapD
         (montel_chartOpen_subset_chartAt_source (X := X) (montel_coverCenter (X := X) p.1)
           (montel_coverCenter_mem (X := X) p.1))
     have hclosedK : IsClosed ((chartAt (H := ℂ) (montel_coverCenter (X := X) p.1)) '' K) :=
-      (hK.image_of_continuousOn ((chartAt (H := ℂ) (montel_coverCenter (X := X) p.1)).continuousOn.mono
-        hsubK)).isClosed
+      (hK.image_of_continuousOn
+        ((chartAt (H := ℂ) (montel_coverCenter (X := X) p.1)).continuousOn.mono hsubK)).isClosed
     have hsubW : (chartAt (H := ℂ) (montel_coverCenter (X := X) p.1)) ''
         (innerChartOpen (X := X) (montel_coverCenter (X := X) p.1) ∩
           innerChartOpen (X := X) (montel_coverCenter (X := X) p.2)) ⊆
         (chartAt (H := ℂ) (montel_coverCenter (X := X) p.1)) '' K := by
       apply Set.image_mono
       exact Set.inter_subset_inter subset_closure subset_closure
-    exact (hK.image_of_continuousOn ((chartAt (H := ℂ) (montel_coverCenter (X := X) p.1)).continuousOn.mono
-      hsubK)).of_isClosed_subset isClosed_closure (closure_minimal hsubW hclosedK)
+    exact (hK.image_of_continuousOn
+      ((chartAt (H := ℂ) (montel_coverCenter (X := X) p.1)).continuousOn.mono
+        hsubK)).of_isClosed_subset isClosed_closure (closure_minimal hsubW hclosedK)
   hWU p := by
     let K : Set X :=
       innerShrunkChart (X := X) (montel_coverCenter (X := X) p.1) ∩
@@ -174,8 +180,8 @@ noncomputable def chartCoverHolomorphicDiskOverlapData : HolomorphicDiskOverlapD
         (montel_chartOpen_subset_chartAt_source (X := X) (montel_coverCenter (X := X) p.1)
           (montel_coverCenter_mem (X := X) p.1))
     have hclosedK : IsClosed ((chartAt (H := ℂ) (montel_coverCenter (X := X) p.1)) '' K) :=
-      (hK.image_of_continuousOn ((chartAt (H := ℂ) (montel_coverCenter (X := X) p.1)).continuousOn.mono
-        hsubK)).isClosed
+      (hK.image_of_continuousOn
+        ((chartAt (H := ℂ) (montel_coverCenter (X := X) p.1)).continuousOn.mono hsubK)).isClosed
     have hsub : (chartAt (H := ℂ) (montel_coverCenter (X := X) p.1)) ''
         (innerChartOpen (X := X) (montel_coverCenter (X := X) p.1) ∩
           innerChartOpen (X := X) (montel_coverCenter (X := X) p.2)) ⊆
@@ -220,8 +226,9 @@ structure HolomorphicCoboundaries (d : HolomorphicDiskOverlapData) where
   leray : ∀ s : d.Cshr, δ1 s = 0 →
     ∃ (η : C0) (x : d.Ccov), δ1cov x = 0 ∧ s = δ0 η + d.rhoRaw x
 
-attribute [instance] HolomorphicCoboundaries.ng0 HolomorphicCoboundaries.ns0 HolomorphicCoboundaries.cs0
-  HolomorphicCoboundaries.ng2 HolomorphicCoboundaries.ns2 HolomorphicCoboundaries.ng2c
+attribute [instance] HolomorphicCoboundaries.ng0 HolomorphicCoboundaries.ns0
+  HolomorphicCoboundaries.cs0 HolomorphicCoboundaries.ng2 HolomorphicCoboundaries.ns2
+  HolomorphicCoboundaries.ng2c
   HolomorphicCoboundaries.ns2c
 
 namespace HolomorphicCoboundaries

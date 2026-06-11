@@ -2,7 +2,7 @@
   Forster §17.4 — the canonical-form multiplication isomorphism `ω₀·: 𝒪_{D+K} ≅ Ω_D`, the
   canonical divisor `K = div ω₀`, and `lDim K = genus X` (17.4 at `D = 0`).
 
-  Built directly on **Gate (C)** (`Jacobians.Dolbeault.MeromorphicOneFormSystem`): the
+  Built directly on `Jacobians.Dolbeault.MeromorphicOneFormSystem`: the
   meromorphic-1-form linear system `Ω_D = omegaD D`, its junk-free module `omegaDModule D`,
   `omegaDim`, the §17.4 multiplication map `meroFormSMul f α` (= `f·α`) with its order additivity
   `formOrderW (f·α) = orderW f + formOrderW α`, and the `Ω_0 ≅ HolomorphicOneForms` wiring
@@ -23,7 +23,7 @@
   (both `α x` and `ω₀ x` lie in the 1-dim cotangent fibre at `x`), so it is chart-independent and
   meromorphic, with `div f₀ = div α − K`, placing `f₀ ∈ L(D + K)`.
 
-  At `D = 0` this is `𝒪_K ≅ Ω_0`, and composing with `Ω_0 ≅ HolomorphicOneForms` (Gate C's
+  At `D = 0` this is `𝒪_K ≅ Ω_0`, and composing with `Ω_0 ≅ HolomorphicOneForms` (the `Ω_D` system's
   `omegaDim_zero_eq_genus_of_le`) gives `lDim K = genus X` — the `hKgenus` field of
   `SerreDualityData`.
 
@@ -34,14 +34,14 @@
   compact `X`), so it is a genuine `Divisor X` with `formOrderW ω₀ x = (K x : WithTop ℤ)` for all
   `x` (the form identity theorem gives `formOrderW ω₀ x ≠ ⊤` everywhere, so the `untop₀` loses no
   information). This existence-of-the-form-divisor is the 1-form analog of `MeromorphicFunction.div`
-  (the local-finiteness `orderAtPoint_isolated_at` of `Jacobians.Abel`), and the construction of `ω₀`
-  itself (`ω₀ = df`) is the analytic differential. Both are bundled, with `ω₀ ≠ 0`, into the isolated
-  hypothesis structure `CanonicalForm17Data` below; **every theorem built on it is genuine** (the
-  structure is non-vacuous — `df` of a nonconstant `f` witnesses it — and at `D = 0` both sides of
-  the iso have dimension `genus X`, so the iso is non-vacuous, not a junk identity).
+  (the local-finiteness `orderAtPoint_isolated_at` of `Jacobians.Abel`), and the construction of
+  `ω₀` itself (`ω₀ = df`) is the analytic differential. Both are bundled, with `ω₀ ≠ 0`, into the
+  isolated hypothesis structure `CanonicalForm17Data` below; **every theorem built on it is
+  genuine** (the structure is non-vacuous — `df` of a nonconstant `f` witnesses it — and at `D = 0`
+  both sides of the iso have dimension `genus X`, so the iso is non-vacuous, not a junk identity).
 
   Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.4 (`ω·: 𝒪_{D+K} ≅ Ω_D`); the
-  `linearSystem`/`lSysModule`/`lDim` pattern in `Jacobians.LinearSystem`; the `Ω_D` Gate-C build in
+  `linearSystem`/`lSysModule`/`lDim` pattern in `Jacobians.LinearSystem`; the `Ω_D` build in
   `Jacobians.Dolbeault.MeromorphicOneFormSystem`.
 -/
 import Jacobians.Dolbeault.MeromorphicOneFormSystem
@@ -51,7 +51,6 @@ open Module
 
 namespace Jacobians.Dolbeault
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -105,7 +104,8 @@ theorem formOrderW_eq_top_iff (α : MeromorphicOneForm X) (x : X) :
   have hbase : e.baseSet ∈ 𝓝 x := e.open_baseSet.mem_nhds (mem_baseSet_trivializationAt ℂ _ x)
   -- The chart coefficient is the intrinsic "covector against the spanning tangent vector",
   -- read in the chart at `x`: `formCoeff = (fun y => α y (symmL y 1)) ∘ chart.symm`.
-  have hcoeff : formCoeff α.toFun x = (fun y => α.toFun y (e.symmL ℂ y 1)) ∘ (chartAt ℂ x).symm := rfl
+  have hcoeff : formCoeff α.toFun x =
+      (fun y => α.toFun y (e.symmL ℂ y 1)) ∘ (chartAt ℂ x).symm := rfl
   rw [hcoeff, MeromorphicFunction.eventually_comp_chart_iff
     (fun y => α.toFun y (e.symmL ℂ y 1)) x (· = 0)]
   constructor
@@ -125,7 +125,8 @@ theorem formOrderW_ne_top_iff (α : MeromorphicOneForm X) (x : X) :
   rw [formOrderW, meromorphicOrderAt_ne_top_iff_eventually_ne_zero (α.meromorphic x)]
   set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x with he
   have hbase : e.baseSet ∈ 𝓝 x := e.open_baseSet.mem_nhds (mem_baseSet_trivializationAt ℂ _ x)
-  have hcoeff : formCoeff α.toFun x = (fun y => α.toFun y (e.symmL ℂ y 1)) ∘ (chartAt ℂ x).symm := rfl
+  have hcoeff : formCoeff α.toFun x =
+      (fun y => α.toFun y (e.symmL ℂ y 1)) ∘ (chartAt ℂ x).symm := rfl
   rw [hcoeff, MeromorphicFunction.eventually_comp_chart_iff
     (fun y => α.toFun y (e.symmL ℂ y 1)) x (· ≠ 0)]
   constructor
@@ -146,7 +147,8 @@ theorem formOrderW_ne_top_of_exists (α : MeromorphicOneForm X)
   have hUopen : IsOpen {y : X | α.formOrderW y = ⊤} := by
     rw [isOpen_iff_mem_nhds]
     intro y hy
-    rw [Set.mem_setOf_eq, formOrderW_eq_top_iff, eventually_nhdsWithin_iff, eventually_nhds_iff] at hy
+    rw [Set.mem_setOf_eq, formOrderW_eq_top_iff, eventually_nhdsWithin_iff,
+      eventually_nhds_iff] at hy
     obtain ⟨V, hV, hVopen, hyV⟩ := hy
     refine Filter.mem_of_superset (hVopen.mem_nhds hyV) fun y' hy'V => ?_
     rw [Set.mem_setOf_eq, formOrderW_eq_top_iff, eventually_nhdsWithin_iff, eventually_nhds_iff]
@@ -195,7 +197,7 @@ coefficients are the form's orders).  Both are TRUE for `ω₀ = df` of a noncon
 function `f` (which exists by Riemann–Roch — `exists_nonconstant_meromorphic`); the finite support
 of `K` is the 1-form analog of `MeromorphicFunction.div`'s local finiteness
 (`Jacobians.Abel.orderAtPoint_isolated_at`).  The remaining §17.4 content built on this datum is
-purely algebraic and fully proven below. -/
+purely algebraic. -/
 structure CanonicalForm17Data (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] where
   /-- The canonical meromorphic 1-form `ω₀` (Forster's `ω₀ = df`). -/
@@ -211,7 +213,8 @@ namespace CanonicalForm17Data
 
 variable (data : CanonicalForm17Data X)
 
-/-- `ω₀`'s germ is nonzero at **every** point (the form identity theorem applied to `nontrivial`). -/
+/-- `ω₀`'s germ is nonzero at **every** point (the form identity theorem applied to `nontrivial`).
+-/
 theorem formOrderW_ω₀_ne_top (x : X) : data.ω₀.formOrderW x ≠ ⊤ :=
   MeromorphicOneForm.formOrderW_ne_top_of_exists data.ω₀ data.nontrivial x
 
@@ -230,11 +233,13 @@ function-level division `α/ω₀` intrinsic: `(α/ω₀)(y) := α y v / ω₀ y
 its chart coefficient is `formCoeff α / formCoeff ω₀`, hence meromorphic.  This is the surjectivity
 content of Forster §17.4 (`α = (α/ω₀)·ω₀`). -/
 
-/-- **Covector ratio is test-vector-independent.**  For covectors `a b : TangentSpace 𝓘(ℂ) y →L[ℂ] ℂ`,
-the trivialization `e = trivializationAt _ _ x` with `y ∈ e.baseSet`, and any `v`, the ratio
-`a v / b v` equals the ratio on the frame vector `a (e.symmL 1) / b (e.symmL 1)` (the cotangent fibre
-being 1-dim, every `v` is a scalar multiple of `e.symmL 1`, and the scalar cancels). -/
-theorem covector_ratio_eq {x y : X} (a b : TangentSpace 𝓘(ℂ) (M := X) y →L[ℂ] ℂ)
+/-- **Covector ratio is test-vector-independent.** For covectors
+`a b : TangentSpace 𝓘(ℂ) y →L[ℂ] ℂ`, the trivialization `e = trivializationAt _ _ x` with
+`y ∈ e.baseSet`, and any `v`, the ratio `a v / b v` equals the ratio on the frame vector
+`a (e.symmL 1) / b (e.symmL 1)` (the cotangent fibre being 1-dim, every `v` is a scalar multiple of
+`e.symmL 1`, and the scalar cancels). -/
+theorem covector_ratio_eq {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {x y : X} (a b : TangentSpace 𝓘(ℂ) (M := X) y →L[ℂ] ℂ)
     (hy : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).baseSet)
     (v : TangentSpace 𝓘(ℂ) (M := X) y) (hbv0 : b v ≠ 0) :
     a v / b v = a ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ y 1)
@@ -254,7 +259,8 @@ theorem covector_ratio_eq {x y : X} (a b : TangentSpace 𝓘(ℂ) (M := X) y →
 
 /-- A nonzero covector on the (1-dim) cotangent fibre is nonzero on the frame vector `symmL 1`
 (contrapositive of `MeromorphicOneForm.toFun_eq_zero_of_formCoeff_zero`). -/
-theorem apply_symmL_ne_zero_of_ne_zero {x y : X}
+theorem apply_symmL_ne_zero_of_ne_zero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {x y : X}
     (a : TangentSpace 𝓘(ℂ) (M := X) y →L[ℂ] ℂ) (ha : a ≠ 0)
     (hy : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).baseSet) :
     a ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ y 1) ≠ 0 := by
@@ -288,7 +294,8 @@ noncomputable def meroFormDiv (α : MeromorphicOneForm X) : MeromorphicFunction 
     intro x
     -- The chart pullback agrees, on a punctured neighbourhood of `chart x x`, with
     -- `formCoeff α x / formCoeff ω₀ x` (covector-ratio independence), which is meromorphic.
-    have hquot : MeromorphicAt (formCoeff α.toFun x / formCoeff data.ω₀.toFun x) ((chartAt ℂ x) x) :=
+    have hquot : MeromorphicAt (formCoeff α.toFun x / formCoeff data.ω₀.toFun x)
+        ((chartAt ℂ x) x) :=
       (α.meromorphic x).div (data.ω₀.meromorphic x)
     refine hquot.congr ?_
     -- Goal: `(formCoeff α x / formCoeff ω₀ x) =ᶠ[𝓝[≠] (chart x x)] (div ∘ chart.symm)`.
@@ -301,7 +308,8 @@ noncomputable def meroFormDiv (α : MeromorphicOneForm X) : MeromorphicFunction 
       -- transfer `ω₀.toFun ≠ 0 near x (punctured)` via continuity of `chart.symm`.
       have hyt : (chartAt ℂ x) x ∈ (chartAt ℂ x).target :=
         (chartAt ℂ x).map_source (mem_chart_source ℂ x)
-      have hey : (chartAt ℂ x).symm ((chartAt ℂ x) x) = x := (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
+      have hey : (chartAt ℂ x).symm ((chartAt ℂ x) x) = x :=
+        (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
       have hsymm : ContinuousAt (chartAt ℂ x).symm ((chartAt ℂ x) x) :=
         (chartAt ℂ x).continuousAt_symm hyt
       have hev0 : ∀ᶠ w in 𝓝 x, w ∈ ({x} : Set X)ᶜ → data.ω₀.toFun w ≠ 0 := by
@@ -345,7 +353,8 @@ theorem meroFormDiv_comp_chart_eq (α : MeromorphicOneForm X) (x : X) :
       data.ω₀.toFun ((chartAt ℂ x).symm z) ≠ 0 := by
     have hyt : (chartAt ℂ x) x ∈ (chartAt ℂ x).target :=
       (chartAt ℂ x).map_source (mem_chart_source ℂ x)
-    have hey : (chartAt ℂ x).symm ((chartAt ℂ x) x) = x := (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
+    have hey : (chartAt ℂ x).symm ((chartAt ℂ x) x) = x :=
+      (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
     have hsymm : ContinuousAt (chartAt ℂ x).symm ((chartAt ℂ x) x) :=
       (chartAt ℂ x).continuousAt_symm hyt
     have hev0 : ∀ᶠ w in 𝓝 x, w ∈ ({x} : Set X)ᶜ → data.ω₀.toFun w ≠ 0 := by
@@ -376,8 +385,8 @@ theorem meroFormDiv_comp_chart_eq (α : MeromorphicOneForm X) (x : X) :
       (mem_baseSet_trivializationAt ℂ _ y))
 
 /-- **Order subtractivity of `α/ω₀`** (Forster §17.4 bookkeeping): `orderW (α/ω₀) x = formOrderW α x
-− formOrderW ω₀ x = formOrderW α x − (K x)`.  From `meroFormDiv_comp_chart_eq` + `meromorphicOrderAt_div`
-+ `order_eq`. -/
+− formOrderW ω₀ x = formOrderW α x − (K
+x)`. From `meroFormDiv_comp_chart_eq` + `meromorphicOrderAt_div` + `order_eq`. -/
 theorem meroFormDiv_orderW (α : MeromorphicOneForm X) (x : X) :
     (data.meroFormDiv α).orderW x = α.formOrderW x - (data.K x : WithTop ℤ) := by
   rw [MeromorphicFunction.orderW, meromorphicOrderAt_congr (data.meroFormDiv_comp_chart_eq α x)]
@@ -385,14 +394,16 @@ theorem meroFormDiv_orderW (α : MeromorphicOneForm X) (x : X) :
       = (formCoeff α.toFun x) / (formCoeff data.ω₀.toFun x) from rfl,
     meromorphicOrderAt_div (α.meromorphic x) (data.ω₀.meromorphic x)]
   rw [show meromorphicOrderAt (formCoeff α.toFun x) ((chartAt ℂ x) x) = α.formOrderW x from rfl,
-    show meromorphicOrderAt (formCoeff data.ω₀.toFun x) ((chartAt ℂ x) x) = data.ω₀.formOrderW x from rfl,
+    show meromorphicOrderAt (formCoeff data.ω₀.toFun x) ((chartAt ℂ x) x) =
+      data.ω₀.formOrderW x from rfl,
     data.order_eq x]
 
 /-! ### `(α/ω₀)·ω₀ = α` modulo germ-junk, and the `meroFormSMul ω₀` order law -/
 
 /-- **Covector extensionality on the frame vector.**  Two covectors on the (1-dim) cotangent fibre
 at `y` are equal iff they agree on the spanning frame vector `symmL 1` of any trivialization. -/
-theorem covector_ext_symmL {x y : X} (a b : TangentSpace 𝓘(ℂ) (M := X) y →L[ℂ] ℂ)
+theorem covector_ext_symmL {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {x y : X} (a b : TangentSpace 𝓘(ℂ) (M := X) y →L[ℂ] ℂ)
     (hy : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).baseSet)
     (h : a ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ y 1)
        = b ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ y 1)) :
@@ -423,7 +434,8 @@ theorem meroFormSMul_meroFormDiv_apply (α : MeromorphicOneForm X) {y : X}
   refine covector_ext_symmL (x := y) _ _ hbase ?_
   rw [ContinuousLinearMap.smul_apply, smul_eq_mul]
   show (data.meroFormDiv α).toFun y * data.ω₀.toFun y (e.symmL ℂ y 1) = α.toFun y (e.symmL ℂ y 1)
-  show (α.toFun y (e.symmL ℂ y 1) / data.ω₀.toFun y (e.symmL ℂ y 1)) * data.ω₀.toFun y (e.symmL ℂ y 1)
+  show (α.toFun y (e.symmL ℂ y 1) / data.ω₀.toFun y (e.symmL ℂ y 1))
+        * data.ω₀.toFun y (e.symmL ℂ y 1)
       = α.toFun y (e.symmL ℂ y 1)
   field_simp
 
@@ -436,16 +448,18 @@ theorem formOrderW_meroFormSMul_meroFormDiv_sub_top (α : MeromorphicOneForm X) 
   show (meroFormSMul (data.meroFormDiv α) data.ω₀).toFun y - α.toFun y = 0
   rw [data.meroFormSMul_meroFormDiv_apply α hy, sub_self]
 
-/-- **Order law for `meroFormSMul · ω₀`** (Forster §17.4): `formOrderW (f·ω₀) x = orderW f x + (K x)`
-(order additivity `formOrderW_meroFormSMul` + `K = div ω₀`). -/
+/-- **Order law for `meroFormSMul · ω₀`** (Forster §17.4):
+`formOrderW (f·ω₀) x = orderW f x + (K x)` (order additivity `formOrderW_meroFormSMul` +
+`K = div ω₀`). -/
 theorem formOrderW_meroFormSMul_ω₀ (f : MeromorphicFunction X) (x : X) :
     (meroFormSMul f data.ω₀).formOrderW x = f.orderW x + (data.K x : WithTop ℤ) := by
   rw [formOrderW_meroFormSMul, data.order_eq x]
 
 /-! ## Part 4: Forster §17.4 — `ω₀· : 𝒪_{D+K} ≅ Ω_D`
 
-The multiplication map `f ↦ f·ω₀` is, for each `D`, an isomorphism `lSysModule (D + K) ≃ omegaDModule D`.
-Well-defined (`L(D+K)·ω₀ ⊆ Ω_D`, order law), injective (kernel = germ-junk), surjective (division). -/
+The multiplication map `f ↦ f·ω₀` is, for each `D`, an isomorphism
+`lSysModule (D + K) ≃ omegaDModule D`. Well-defined (`L(D+K)·ω₀ ⊆ Ω_D`, order law), injective
+(kernel = germ-junk), surjective (division). -/
 
 /-- **`L(D+K)·ω₀ ⊆ Ω_D`** (Forster §17.4 well-definedness): if `f ∈ L(D+K)` then `f·ω₀ ∈ Ω_D`.
 Orders add: `formOrderW (f·ω₀) = orderW f + K ≥ −(D+K) + K = −D`. -/
@@ -455,7 +469,8 @@ theorem meroFormSMul_ω₀_mem_omegaD {D : Divisor X} {f : MeromorphicFunction X
   intro x
   rw [data.formOrderW_meroFormSMul_ω₀ f x]
   have h1 : (-((D + data.K) x) : WithTop ℤ) ≤ f.orderW x := hf x
-  have heq : (-((D + data.K) x) : WithTop ℤ) = (-(D x) : WithTop ℤ) + (-(data.K x) : WithTop ℤ) := by
+  have heq : (-((D + data.K) x) : WithTop ℤ) =
+      (-(D x) : WithTop ℤ) + (-(data.K x) : WithTop ℤ) := by
     rw [Finsupp.add_apply]; norm_cast; ring
   rw [heq] at h1
   -- `−D + (−K) ≤ orderW f` ⟹ `−D ≤ orderW f + K` (add `K` to both sides, cancel).
@@ -513,7 +528,8 @@ noncomputable def omega17Map (D : Divisor X) :
       Submodule.Quotient.mk ⟨meroFormSMul f.1 data.ω₀, data.meroFormSMul_ω₀_mem_omegaD f.2⟩ := rfl
 
 /-- **`f·ω₀` is germ-zero iff `f` is germ-zero** (multiplication by `ω₀ ≠ 0` preserves and reflects
-the germ-junk): `formOrderW (f·ω₀) x = orderW f x + K x`, and `K x ≠ ⊤`, so `= ⊤ ↔ orderW f x = ⊤`. -/
+the germ-junk): `formOrderW (f·ω₀) x = orderW f x + K x`, and `K x ≠ ⊤`, so `= ⊤ ↔ orderW f x = ⊤`.
+-/
 theorem meroFormSMul_ω₀_formGermZero_iff (f : MeromorphicFunction X) :
     meroFormSMul f data.ω₀ ∈ formGermZeroSubmodule (X := X) ↔ f ∈ germZeroSubmodule (X := X) := by
   constructor
@@ -530,16 +546,17 @@ theorem meroFormSMul_ω₀_formGermZero_iff (f : MeromorphicFunction X) :
     have hx : f.orderW x = ⊤ := h x
     rw [data.formOrderW_meroFormSMul_ω₀ f x, hx, top_add]
 
-/-- **The §17.4 map has kernel exactly the germ-junk.**  `ker (omega17Map D) = germZeroSubmodule.submoduleOf`.
-(`[f·ω₀] = 0 ↔ f·ω₀` germ-zero `↔ f` germ-zero, by `meroFormSMul_ω₀_formGermZero_iff`.) -/
+/-- **The §17.4 map has kernel exactly the germ-junk.**
+`ker (omega17Map D) = germZeroSubmodule.submoduleOf`. (`[f·ω₀] = 0 ↔ f·ω₀` germ-zero `↔ f`
+germ-zero, by `meroFormSMul_ω₀_formGermZero_iff`.) -/
 theorem ker_omega17Map (D : Divisor X) :
     LinearMap.ker (data.omega17Map D)
       = (germZeroSubmodule (X := X)).submoduleOf (linearSystem (X := X) (D + data.K)) := by
   ext f
   rw [LinearMap.mem_ker, omega17Map_mk, Submodule.Quotient.mk_eq_zero,
     Submodule.submoduleOf, Submodule.mem_comap, Submodule.submoduleOf, Submodule.mem_comap]
-  -- LHS: `⟨f·ω₀, _⟩ ∈ formGermZeroSubmodule.submoduleOf (omegaD D)` i.e. `f·ω₀ ∈ formGermZeroSubmodule`.
-  -- RHS: `f.1 ∈ germZeroSubmodule`.
+  -- LHS: `⟨f·ω₀, _⟩ ∈ formGermZeroSubmodule.submoduleOf (omegaD D)` i.e.
+  -- `f·ω₀ ∈ formGermZeroSubmodule`. RHS: `f.1 ∈ germZeroSubmodule`.
   exact data.meroFormSMul_ω₀_formGermZero_iff f.1
 
 /-- **`α/ω₀ ∈ L(D+K)`** for `α ∈ Ω_D` (the surjectivity preimage of §17.4): orders subtract,
@@ -551,13 +568,14 @@ theorem meroFormDiv_mem_linearSystem {D : Divisor X} {α : MeromorphicOneForm X}
   rw [data.meroFormDiv_orderW α x, sub_eq_add_neg]
   have h1 : (-(D x) : WithTop ℤ) ≤ α.formOrderW x := hα x
   -- `−(D+K) = −D + (−K) ≤ formOrderW α + (−K)`.
-  have heq : (-((D + data.K) x) : WithTop ℤ) = (-(D x) : WithTop ℤ) + (-(data.K x) : WithTop ℤ) := by
+  have heq : (-((D + data.K) x) : WithTop ℤ) =
+      (-(D x) : WithTop ℤ) + (-(data.K x) : WithTop ℤ) := by
     rw [Finsupp.add_apply]; norm_cast; ring
   rw [heq]
   -- add `−K x` to both sides of `−D ≤ formOrderW α`.
   gcongr
 
-/-- **Forster §17.4 surjectivity.**  `omega17Map D` is surjective: every class `[α] ∈ omegaDModule D`
+/-- **Forster §17.4 surjectivity.** `omega17Map D` is surjective: every class `[α] ∈ omegaDModule D`
 is the image of `[α/ω₀]` (with `α/ω₀ ∈ L(D+K)`), since `(α/ω₀)·ω₀` and `α` have the same class. -/
 theorem omega17Map_surjective (D : Divisor X) : Function.Surjective (data.omega17Map D) := by
   intro q
@@ -587,7 +605,8 @@ theorem omega17_injective (D : Divisor X) : Function.Injective (data.omega17 D) 
   rw [← LinearMap.ker_eq_bot]
   exact Submodule.ker_liftQ_eq_bot' _ _ (data.ker_omega17Map D).symm
 
-/-- **`omega17 D` is surjective** (Forster §17.4 surjectivity), lifted from `omega17Map_surjective`. -/
+/-- **`omega17 D` is surjective** (Forster §17.4 surjectivity), lifted from `omega17Map_surjective`.
+-/
 theorem omega17_surjective (D : Divisor X) : Function.Surjective (data.omega17 D) := by
   intro q
   obtain ⟨f, hf⟩ := data.omega17Map_surjective D q
@@ -605,28 +624,29 @@ preserves finrank). -/
 theorem lDim_add_K_eq_omegaDim (D : Divisor X) :
     lDim (X := X) (D + data.K) = omegaDim (X := X) D := by
   have h := (data.omega17Equiv D).finrank_eq
-  rwa [show lDim (X := X) (D + data.K) = finrank ℂ (lSysModule (X := X) (D + data.K)) from rfl,
+  rwa [show lDim (X := X) (D + data.K) = finrank ℂ (lSysModule (X := X) (D + data.K))
+      from rfl,
     show omegaDim (X := X) D = finrank ℂ (omegaDModule (X := X) D) from rfl]
 
 /-! ## Part 5: `lDim K = genus X` (Forster §17.4 at `D = 0`)
 
-At `D = 0` the §17.4 iso is `𝒪_K ≅ Ω_0`, giving `lDim K = omegaDim 0` **unconditionally** (no gaps).
-Composing with Gate C's `Ω_0 ≅ HolomorphicOneForms` (`omegaDim_zero_eq_genus_of_le`) gives
-`lDim K = genus X` — the `hKgenus` field of `SerreDualityData`.  The remaining input is exactly Gate
-C's isolated removable-singularity reverse bound `omegaDim 0 ≤ genus X` (an order-`≥ 0` meromorphic
-1-form is, modulo germ-junk, holomorphic). -/
+At `D = 0` the §17.4 iso is `𝒪_K ≅ Ω_0`, giving `lDim K = omegaDim 0` unconditionally.
+Composing with `Ω_0 ≅ HolomorphicOneForms` (`omegaDim_zero_eq_genus_of_le`) gives
+`lDim K = genus X` — the `hKgenus` field of `SerreDualityData`.  The remaining input is exactly
+the isolated removable-singularity reverse bound `omegaDim 0 ≤ genus X` (an order-`≥ 0`
+meromorphic 1-form is, modulo germ-junk, holomorphic). -/
 
-/-- **`lDim K = omegaDim 0`** (Forster §17.4 at `D = 0`, the iso `𝒪_K ≅ Ω_0`) — UNCONDITIONAL.
+/-- **`lDim K = omegaDim 0`** (Forster §17.4 at `D = 0`, the iso `𝒪_K ≅ Ω_0`).
 A direct corollary of `lDim_add_K_eq_omegaDim` at `D = 0` (`0 + K = K`). -/
 theorem lDim_K_eq_omegaDim_zero : lDim (X := X) data.K = omegaDim (X := X) 0 := by
   have h := data.lDim_add_K_eq_omegaDim 0
   rwa [zero_add] at h
 
 /-- **`hKgenus` — `lDim K = genus X`** (Forster §17.4 at `D = 0`).  Chains the unconditional
-`lDim K = omegaDim 0` with `omegaDim 0 = genus X` (Gate C's `omegaDim_zero_eq_genus_of_le`).  The two
-hypotheses are exactly Gate C's isolated removable-singularity inputs: finiteness of `Ω_0` and the
-reverse bound `omegaDim 0 ≤ genus X` (an order-`≥ 0` meromorphic 1-form is holomorphic modulo
-germ-junk).  This is the `SerreDualityData.hKgenus` field. -/
+`lDim K = omegaDim 0` with `omegaDim 0 = genus X` (the `Ω_D` system's
+`omegaDim_zero_eq_genus_of_le`). The two hypotheses are exactly the isolated removable-singularity
+inputs: finiteness of `Ω_0` and the reverse bound `omegaDim 0 ≤ genus X` (an order-`≥ 0` meromorphic
+1-form is holomorphic modulo germ-junk). This is the `SerreDualityData.hKgenus` field. -/
 theorem hKgenus [FiniteDimensional ℂ (omegaDModule (X := X) 0)]
     (hle : omegaDim (X := X) 0 ≤ genus X) :
     lDim (X := X) data.K = genus X := by

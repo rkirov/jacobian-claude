@@ -1,14 +1,14 @@
 /-
   Čech finiteness — the germ ↔ sup-norm comparison ("K-bridge"), upstream atoms.
 
-  Part of discharging `exists_cechModel` (Forster 14.9). The comparison `cechH1 𝔘 D ≃ supH1` translates
-  germ-class `𝒪_D` cochains (the `cechH1` representation) into `BddHol` cochains on chart-images (the
-  `supH1`/Montel representation). Its most upstream atom is the **codomain constructor**: every analytic
-  bounded function on an open `U ⊆ ℂ` is a `BddHol U` element.
+  Part of discharging `exists_cechModel` (Forster 14.9). The comparison `cechH1 𝔘 D ≃ supH1`
+  translates germ-class `𝒪_D` cochains (the `cechH1` representation) into `BddHol` cochains on
+  chart-images (the `supH1`/Montel representation). Its most upstream atom is the **codomain
+  constructor**: every analytic bounded function on an open `U ⊆ ℂ` is a `BddHol U` element.
 
   This file is pure one-variable complex analysis on the `BddHol` side — complete, depends on no
   unproved obligation. The manifold side (chart-pullback of an `𝒪_D` section is analytic) reuses the
-  axiom-clean `CechH0.analyticAt_chart_change`.
+  `CechH0.analyticAt_chart_change`.
 -/
 import Jacobians.Dolbeault.BddHol
 
@@ -18,12 +18,12 @@ namespace Jacobians.Dolbeault
 
 /-! ### Bounded-continuous precomposition as a continuous-linear map (the shrinking-side transport)
 
-The shrinking-side Čech differentials `δ⁰`/`δ¹` transport a 1-cochain component living in
-`(K →ᵇ ℂ)` (bounded-continuous on a compact overlap shrinking) to a SMALLER compact (a finer overlap
-shrinking) through a continuous reindexing — either a holomorphic chart transition `τ` or an inclusion.
-At the bounded-continuous level this is precomposition with a `C(K', K)`, which Mathlib provides as
+The shrinking-side Čech differentials `δ⁰`/`δ¹` transport a 1-cochain component living in `(K →ᵇ ℂ)`
+(bounded-continuous on a compact overlap shrinking) to a SMALLER compact (a finer overlap shrinking)
+through a continuous reindexing — either a holomorphic chart transition `τ` or an inclusion. At the
+bounded-continuous level this is precomposition with a `C(K', K)`, which Mathlib provides as
 `BoundedContinuousFunction.compContinuous`; it is `ℂ`-linear (`add_compContinuous`, `smul`) and
-norm-nonincreasing (`norm_compContinuous_le`).  We bundle it as a `(K →ᵇ ℂ) →L[ℂ] (K' →ᵇ ℂ)`. -/
+norm-nonincreasing (`norm_compContinuous_le`). We bundle it as a `(K →ᵇ ℂ) →L[ℂ] (K' →ᵇ ℂ)`. -/
 
 /-- Bounded-continuous precomposition `f ↦ f ∘ g` as a `ℂ`-linear map `(α →ᵇ ℂ) →ₗ[ℂ] (β →ᵇ ℂ)` for
 `g : C(β, α)`. -/
@@ -54,9 +54,9 @@ variable {U : Set ℂ}
 @[simp] theorem toFun_neg (f : BddHol U) : (-f).toFun = -f.toFun := rfl
 @[simp] theorem toFun_sub (f g : BddHol U) : (f - g).toFun = f.toFun - g.toFun := rfl
 
-/-- **The `BddHol` codomain constructor (most-upstream K-bridge atom).**  An analytic, bounded function
-on an open `U ⊆ ℂ` gives a `BddHol U` element, via the canonical extend-by-zero normal form off `U`
-(which `BddHolCarrier` requires and which changes nothing on `U`). -/
+/-- **The `BddHol` codomain constructor (most-upstream K-bridge atom).** An analytic, bounded
+function on an open `U ⊆ ℂ` gives a `BddHol U` element, via the canonical extend-by-zero normal form
+off `U` (which `BddHolCarrier` requires and which changes nothing on `U`). -/
 noncomputable def ofAnalyticOn (g : ℂ → ℂ) (ha : AnalyticOn ℂ g U)
     (hb : ∃ C, ∀ z ∈ U, ‖g z‖ ≤ C) : BddHol U :=
   ⟨Set.indicator U g, by
@@ -90,9 +90,9 @@ theorem bddOn_of_analyticOn_subset_compact {g : ℂ → ℂ} {U K : Set ℂ}
 
 /-- **The practical K-bridge constructor.**  A function analytic on an open `U`, restricted to an
 open `U'` whose closure is a compact subset of `U` (`U' ⋐ U`), is a `BddHol U'` element — the
-boundedness is automatic on the relatively-compact piece.  This is the shape the germ→`BddHol` cochain
-map uses: cover-cochains are holomorphic on the cover-open `U`, the model lives on the shrinking
-`U' ⋐ U`. -/
+boundedness is automatic on the relatively-compact piece. This is the shape the germ→`BddHol`
+cochain map uses: cover-cochains are holomorphic on the cover-open `U`, the model lives on the
+shrinking `U' ⋐ U`. -/
 noncomputable def ofAnalyticOnOfRelCompact {g : ℂ → ℂ} {U U' : Set ℂ} (hg : AnalyticOn ℂ g U)
     (hsub : closure U' ⊆ U) (hcpt : IsCompact (closure U')) : BddHol U' :=
   ofAnalyticOn g (hg.mono (subset_closure.trans hsub))
@@ -109,18 +109,19 @@ noncomputable def ofAnalyticOnOfRelCompact {g : ℂ → ℂ} {U U' : Set ℂ} (h
 /-! ### Cross-chart transport `BddHol U → BddHol U'` (the open-set, analytic counterpart of
 `precompCLM`)
 
-The cross-chart Čech differentials on the COVER side (`δ¹cov`) and the δ-square of the `cechH1 ≃
-supH1` comparison transport a cochain component holomorphic on one chart-image to a neighbouring
-chart-image and must land back in `BddHol` (analytic on an OPEN set), not merely `→ᵇ` on a compact.
-This is precomposition with an **analytic** reindexing `τ : U' → U` (the holomorphic chart transition):
-`g ∘ τ` is analytic on `U'` (`AnalyticOn.comp`), bounded there by `‖g‖`, hence a `BddHol U'`. The map
-`g ↦ g ∘ τ` is `ℂ`-linear with operator norm `≤ 1` (precomposition cannot increase the sup-norm). The
-manifold side supplies `τ` analytic on `U'` mapping into `U` (from `transition_analyticAt_of_mem`).
-Cf. `precompCLM`, which lands in `→ᵇ` on a compact and needs only `ContinuousOn`. -/
+The cross-chart Čech differentials on the COVER side (`δ¹cov`) and the δ-square of the
+`cechH1 ≃ supH1` comparison transport a cochain component holomorphic on one chart-image to a
+neighbouring chart-image and must land back in `BddHol` (analytic on an OPEN set), not merely `→ᵇ`
+on a compact. This is precomposition with an **analytic** reindexing `τ : U' → U` (the holomorphic
+chart transition): `g ∘ τ` is analytic on `U'` (`AnalyticOn.comp`), bounded there by `‖g‖`, hence a
+`BddHol U'`. The map `g ↦ g ∘ τ` is `ℂ`-linear with operator norm `≤ 1` (precomposition cannot
+increase the sup-norm). The manifold side supplies `τ` analytic on `U'` mapping into `U` (from
+`transition_analyticAt_of_mem`). Cf. `precompCLM`, which lands in `→ᵇ` on a compact and needs only
+`ContinuousOn`. -/
 
 /-- Transport `g : BddHol U` across an **analytic** reindexing `τ : U' → U`, landing in `BddHol U'`
-(value `g ∘ τ`, extended by zero off `U'`). The cross-chart cover-side transport of a sup-norm cochain
-component. -/
+(value `g ∘ τ`, extended by zero off `U'`). The cross-chart cover-side transport of a sup-norm
+cochain component. -/
 noncomputable def precompHol {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
     (hτmaps : Set.MapsTo τ U' U) (g : BddHol U) : BddHol U' :=
   ofAnalyticOn (g.toFun ∘ τ) (g.analyticOn.comp hτ hτmaps)
@@ -159,12 +160,13 @@ noncomputable def precompHolₗ {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : Analy
   map_smul' c g := precompHol_smul hτ hτmaps c g
 
 @[simp] theorem precompHolₗ_apply {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
-    (hτmaps : Set.MapsTo τ U' U) (g : BddHol U) : precompHolₗ hτ hτmaps g = precompHol hτ hτmaps g :=
+    (hτmaps : Set.MapsTo τ U' U) (g : BddHol U) :
+    precompHolₗ hτ hτmaps g = precompHol hτ hτmaps g :=
   rfl
 
 /-- **Cross-chart transport continuous-linear map** `BddHol U →L[ℂ] BddHol U'` for `τ` analytic
-`U' → U`, operator norm `≤ 1`. The open-set (analytic) counterpart of `precompCLM`, used to transport
-cover-side sup-norm cochain components across the holomorphic chart transitions. -/
+`U' → U`, operator norm `≤ 1`. The open-set (analytic) counterpart of `precompCLM`, used to
+transport cover-side sup-norm cochain components across the holomorphic chart transitions. -/
 noncomputable def precompHolCLM {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
     (hτmaps : Set.MapsTo τ U' U) : BddHol U →L[ℂ] BddHol U' :=
   (precompHolₗ hτ hτmaps).mkContinuous 1 fun g => by
@@ -184,14 +186,15 @@ theorem norm_precompHolCLM_le {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : Analyti
 
 /-! ### Open-subset restriction `BddHol U → BddHol U'` (the diagonal cover-side transport)
 
-The cross-chart Čech differentials on the COVER side also need the *same-chart* (diagonal) component:
-restricting a cochain holomorphic on `U` to a smaller OPEN subset `U' ⊆ U`, landing back in `BddHol U'`
-(analytic on the OPEN `U'`).  This is `precompHol` with the identity reindexing `τ = id` (`g ∘ id = g`,
-analytic on `U'`, mapping `U' → U` by `U' ⊆ U`), but we expose it as a dedicated atom because the
-diagonal δ¹/δ⁰ pieces read more clearly as "restrict to the smaller open". -/
+The cross-chart Čech differentials on the COVER side also need the *same-chart* (diagonal)
+component: restricting a cochain holomorphic on `U` to a smaller OPEN subset `U' ⊆ U`, landing back
+in `BddHol U'` (analytic on the OPEN `U'`). This is `precompHol` with the identity reindexing
+`τ = id` (`g ∘ id = g`, analytic on `U'`, mapping `U' → U` by `U' ⊆ U`), but we expose it as a
+dedicated atom because the diagonal δ¹/δ⁰ pieces read more clearly as "restrict to the smaller
+open". -/
 
 /-- Open-subset restriction `g ↦ g|_{U'}` as a `BddHol U →L[ℂ] BddHol U'` (`U' ⊆ U` open),
-operator norm `≤ 1`.  The same-chart (diagonal) cover-side transport of a sup-norm cochain component:
+operator norm `≤ 1`. The same-chart (diagonal) cover-side transport of a sup-norm cochain component:
 `precompHol` with the identity reindexing. -/
 noncomputable def restrictOpenCLM {U U' : Set ℂ} (hsub : U' ⊆ U) : BddHol U →L[ℂ] BddHol U' :=
   precompHolCLM (τ := id) analyticOnNhd_id.analyticOn (fun _ hz => hsub hz)
@@ -208,12 +211,12 @@ end BddHol
 /-! ### Non-convex restriction compactness — Step 1: finite convex-disk cover
 
 Toward generalizing `BddHol.isCompactOperator_restrictCLM` to a non-convex compact `K` (needed so a
-`DiskOverlapData` can use chart-images of overlaps, which are not convex across charts).  Step 1: any
+`DiskOverlapData` can use chart-images of overlaps, which are not convex across charts). Step 1: any
 compact `K ⊆ U` (open) is covered by finitely many *closed balls* (convex compact) each `⊆ U`. -/
 
-/-- **Finite convex-disk cover.**  For `K` compact inside an open `U ⊆ ℂ`, there is a finite family of
-closed balls — centred on `K`, each contained in `U` (hence convex compact `⊆ U`) — whose open cores
-cover `K`. -/
+/-- **Finite convex-disk cover.** For `K` compact inside an open `U ⊆ ℂ`, there is a finite family
+of closed balls — centred on `K`, each contained in `U` (hence convex compact `⊆ U`) — whose open
+cores cover `K`. -/
 theorem exists_finite_closedBall_cover {K U : Set ℂ} (hK : IsCompact K) (hU : IsOpen U)
     (hKU : K ⊆ U) :
     ∃ (t : Finset K) (r : K → ℝ), (∀ z : K, 0 < r z) ∧
@@ -232,19 +235,20 @@ theorem exists_finite_closedBall_cover {K U : Set ℂ} (hK : IsCompact K) (hU : 
 
 /-! ### Non-convex restriction compactness — Step 2: equicontinuity on a non-convex compact
 
-The convex equicontinuity lemma `Montel.uniformEquicontinuousOn_of_bounded_analyticOn` needs a global
-mean-value inequality, which fails on a non-convex `K` (segments may leave `U`). We recover uniform
-equicontinuity by a *local* mean-value argument with a **uniform Cauchy derivative bound**: thicken `K`
-to a compact `K' = cthickening (δ/2) K ⋐ U`, where `δ` satisfies `cthickening δ K ⊆ U`. The repo's
-`Montel.exists_cauchy_deriv_bound` (which needs no convexity) gives `‖(f i)' z‖ ≤ L·C` on all of `K'`.
-For `x, y ∈ K` with `dist x y < δ/2`, the convex ball `closedBall x (δ/2) ⊆ K'` contains both, so the
-1-dim mean-value inequality on that ball yields `‖f i x − f i y‖ ≤ L·C·dist x y` — a single equicontinuity
-modulus valid across the whole (non-convex) `K`. This is exactly the Arzelà–Ascoli input. -/
+The convex equicontinuity lemma `Montel.uniformEquicontinuousOn_of_bounded_analyticOn` needs a
+global mean-value inequality, which fails on a non-convex `K` (segments may leave `U`). We recover
+uniform equicontinuity by a *local* mean-value argument with a **uniform Cauchy derivative bound**:
+thicken `K` to a compact `K' = cthickening (δ/2) K ⋐ U`, where `δ` satisfies `cthickening δ K ⊆ U`.
+The repo's `Montel.exists_cauchy_deriv_bound` (which needs no convexity) gives `‖(f i)' z‖ ≤ L·C` on
+all of `K'`. For `x, y ∈ K` with `dist x y < δ/2`, the convex ball `closedBall x (δ/2) ⊆ K'`
+contains both, so the 1-dim mean-value inequality on that ball yields
+`‖f i x − f i y‖ ≤ L·C·dist x y` — a single equicontinuity modulus valid across the whole
+(non-convex) `K`. This is exactly the Arzelà–Ascoli input. -/
 
 /-- **Uniform equicontinuity of a bounded analytic family on a non-convex compact.** A family of
-functions analytic on an open `U ⊆ ℂ` and uniformly bounded by `C` on `U` is uniformly equicontinuous
-on *any* compact `K ⊆ U`, with no convexity assumption (cf. `Montel.uniformEquicontinuousOn_of_bounded_analyticOn`
-which requires `Convex ℝ K`). -/
+functions analytic on an open `U ⊆ ℂ` and uniformly bounded by `C` on `U` is uniformly
+equicontinuous on *any* compact `K ⊆ U`, with no convexity assumption (cf.
+`Montel.uniformEquicontinuousOn_of_bounded_analyticOn` which requires `Convex ℝ K`). -/
 theorem uniformEquicontinuousOn_of_bounded_analyticOn_of_compact
     {ι : Type*} {U K : Set ℂ} {f : ι → ℂ → ℂ} {C : ℝ}
     (hU : IsOpen U) (hKcpt : IsCompact K) (hKU : K ⊆ U) (hCnn : 0 ≤ C)
@@ -297,10 +301,10 @@ theorem uniformEquicontinuousOn_of_bounded_analyticOn_of_compact
     _ < (L * C + 1) * (ε / (L * C + 1)) := mul_lt_mul_of_pos_left hxyε hpos1
     _ = ε := by field_simp
 
-/-- **Non-convex Montel atom.** A sup-`M`-bounded family of functions holomorphic on an open `U ⊆ ℂ`,
-restricted to *any* compact `K ⋐ U`, is relatively compact in `K →ᵇ ℂ` — the convexity-free analogue of
-`CechFiniteness.isCompact_closure_restrict_bddHolo`. Convexity is no longer needed thanks to
-`uniformEquicontinuousOn_of_bounded_analyticOn_of_compact`. -/
+/-- **Non-convex Montel atom.** A sup-`M`-bounded family of functions holomorphic on an open
+`U ⊆ ℂ`, restricted to *any* compact `K ⋐ U`, is relatively compact in `K →ᵇ ℂ` — the convexity-free
+analogue of `CechFiniteness.isCompact_closure_restrict_bddHolo`. Convexity is no longer needed
+thanks to `uniformEquicontinuousOn_of_bounded_analyticOn_of_compact`. -/
 theorem isCompact_closure_restrict_bddHolo_of_compact
     {U K : Set ℂ} (hU : IsOpen U) (hKcpt : IsCompact K) (hKU : K ⊆ U)
     {M : ℝ} (hMnn : 0 ≤ M)
@@ -338,10 +342,10 @@ namespace BddHol
 
 /-- **Restriction is a compact operator for a general (non-convex) compact `K ⋐ U`.** The
 convexity-free generalization of `BddHol.isCompactOperator_restrictCLM`: for `U` open and `K ⊆ U`
-compact (no `Convex ℝ K`), `restrictCLM : BddHol U →L[ℂ] (K →ᵇ ℂ)` is a compact operator. Same Montel
-reduction (`isCompactOperator_iff_isCompact_closure_image_closedBall`), now feeding the non-convex
-atom `isCompact_closure_restrict_bddHolo_of_compact`. This unblocks `DiskOverlapData` for cross-chart
-overlaps, whose chart-images are not convex. -/
+compact (no `Convex ℝ K`), `restrictCLM : BddHol U →L[ℂ] (K →ᵇ ℂ)` is a compact operator. Same
+Montel reduction (`isCompactOperator_iff_isCompact_closure_image_closedBall`), now feeding the
+non-convex atom `isCompact_closure_restrict_bddHolo_of_compact`. This unblocks `DiskOverlapData` for
+cross-chart overlaps, whose chart-images are not convex. -/
 theorem isCompactOperator_restrictCLM_of_compact {U K : Set ℂ} [CompactSpace K]
     (hU : IsOpen U) (hKcpt : IsCompact K) (hKU : K ⊆ U) :
     IsCompactOperator (restrictCLM (U := U) hKU) := by
@@ -388,7 +392,8 @@ theorem isCompactOperator_restrictCLM_toBcf_of_compact {U U' : Set ℂ} [Compact
 
 /-- The `U'`-level bounded-continuous restriction obtained by restricting to `closure U'` and then
 including `U' ↪ closure U'` is the same as the direct open restriction `BddHol U → BddHol U'`
-followed by `toBcf`. This is the exact bridge a corrected holomorphic-shrinking model will consume. -/
+followed by `toBcf`. This is the exact bridge a corrected holomorphic-shrinking model will consume.
+-/
 @[simp] theorem restrictCLM_toBcf_eq_restrictOpenCLM_toBcf {U U' : Set ℂ}
     [CompactSpace (closure U')] (hsub : closure U' ⊆ U) (f : BddHol U) :
     (bcfCompContinuousCLM (ContinuousMap.inclusion (subset_closure : U' ⊆ closure U')))

@@ -1,46 +1,37 @@
 /-
-  Dolbeault ladder — the **germ-level disk-acyclicity atom** (`H¹(disk, 𝒪_D) = 0`).
-
-  This file builds the single most load-bearing missing lemma identified in the `## SURJECTIVITY`
-  plan of `CechRefinementLeray.lean`:
+  The **germ-level disk-acyclicity lemma** (`H¹(disk, 𝒪_D) = 0`):
 
       every `MGerm`-cocycle on a finite cover of a *chart disk* `W` is an `MGerm`-coboundary.
 
-  It is the atom that feeds BOTH the Leray strictly-finer surjectivity (`RefinementLift`) AND the
-  finiteness `leray` field (`CechFinitenessWiring.Coboundaries.leray`).
+  This feeds both the Leray strictly-finer surjectivity (`RefinementLift`) and the finiteness
+  `leray` field (`CechFinitenessWiring.Coboundaries.leray`).
 
-  ## Route (per the obstruction analysis in `CechRefinementLeray.lean`)
+  ## Route
 
-  We sidestep OBSTRUCTION 1 (no Riemann mapping) by working only on a *literal* chart disk, where the
-  cover sets pull back through a single chart to opens in a Euclidean ball `B ⊆ ℂ`, so the committed
-  full-disk ∂̄ engine applies directly.
+  There is no Riemann mapping theorem in Mathlib, so we work only on a *literal* chart disk,
+  where the cover sets pull back through a single chart to opens in a Euclidean ball `B ⊆ ℂ` and
+  the full-disk ∂̄ engine applies directly.
 
-  The genuine analytic engine is the complete, axiom-clean
-  `DbarDiskCohomology.dbar_holo_splitting_ball` / `dbar_solvable_ball` (`H¹(ball, 𝒪) = 0` on
-  *functions* `ℂ → ℂ`).  The work here is:
+  The analytic engine is `DbarDiskCohomology.dbar_holo_splitting_ball` / `dbar_solvable_ball`
+  (`H¹(ball, 𝒪) = 0` on *functions* `ℂ → ℂ`).  The work here is:
 
     * **§1 `dbar` algebra** — `DbarDisk.dbar` is `ℝ`-linear in `f` (`add`/`sub`/`smul`), the
-      bookkeeping the Čech split needs.  (The `sub` case is already inline in
-      `dbar_holo_splitting_ball`; we lift it to a reusable layer.)
+      bookkeeping the Čech split needs.
     * **§2 function-level ball Čech split** — the function-level acyclicity engine, packaged as a
       clean statement on holomorphic functions over a ball: a Čech 1-cocycle of holomorphic
-      functions that splits *smoothly* into a 0-cochain difference splits *holomorphically*.  For a
-      2-set cover this is exactly `dbar_holo_splitting_ball`; we record it (complete) and provide
-      the `dbar`-additivity layer the n-set partition-of-unity assembly needs.
+      functions that splits *smoothly* into a 0-cochain difference splits *holomorphically*.  For
+      a 2-set cover this is exactly `dbar_holo_splitting_ball`.
     * **§3 the germ ↔ function bridge** — a germ-class `𝒪_D`-section on an open `↥W ⊆ X` has an
-      honest meromorphic representative function on `↥W` (choice on `OmegaDGerm = map toGerm`); the
-      normal-form machinery of `CechH0` (`nfX_Gext_codiscrete`, `toGerm_eq_iff`) bridges germ-class
-      equality to honest `𝓝[≠]`-eventual equality and back.
-    * **§4 the germ-level reduction** — the target `cocycle ⟹ coboundary` reduced to a
-      clean *function-level chart-disk acyclicity* predicate `FunctionDiskAcyclic`, in EXACTLY the
+      honest meromorphic representative function on `↥W` (choice on `OmegaDGerm = map toGerm`);
+      the normal-form machinery of `CechH0` (`nfX_Gext_codiscrete`, `toGerm_eq_iff`) bridges
+      germ-class equality to honest `𝓝[≠]`-eventual equality and back.
+    * **§4 the germ-level reduction** — the target `cocycle ⟹ coboundary` reduced to a clean
+      *function-level chart-disk acyclicity* predicate `FunctionDiskAcyclic`, in exactly the
       "lift mod coboundary" shape of `CechFinitenessWiring.Coboundaries.leray` /
-      `CechRefinementLeray.RefinementLift`.  The predicate is discharged for the
-      degenerate 1-cover and 2-cover cases from §2; the general n-cover discharge (the PoU-assembled
-      multi-set Čech split — OBSTRUCTION 3) is the remaining honest analytic gap, written as prose,
-      NOT a gap tactic.
-
-  No gaps anywhere in this file: everything not yet closed is a hypothesis predicate or written
-  prose, never a gap tactic.
+      `CechRefinementLeray.RefinementLift`.  The predicate is discharged for the degenerate
+      1-cover and 2-cover cases from §2; the general n-cover discharge (the partition-of-unity
+      multi-set Čech split) is carried out in `CechDiskAcyclicProof` and assembled in
+      `CechDiskAcyclicAssembly`.
 -/
 import Jacobians.Dolbeault.CechH0
 import Jacobians.Dolbeault.DbarDiskCohomology
@@ -49,8 +40,6 @@ import Jacobians.Dolbeault.ChartDiskCover
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Complex Metric
-
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
@@ -62,7 +51,8 @@ the Čech split needs (the `sub` case is inline in `DbarDiskCohomology.dbar_holo
 make it reusable). -/
 
 /-- `∂̄` is additive at a point where both summands are real-differentiable. -/
-theorem dbarFun_add {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
+theorem dbarFun_add {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z)
+    (hg : DifferentiableAt ℝ g z) :
     DbarDisk.dbar (fun x => f x + g x) z = DbarDisk.dbar f z + DbarDisk.dbar g z := by
   unfold DbarDisk.dbar
   rw [fderiv_fun_add hf hg]
@@ -70,7 +60,8 @@ theorem dbarFun_add {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z
   ring
 
 /-- `∂̄` is subtractive at a point where both functions are real-differentiable. -/
-theorem dbarFun_sub {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
+theorem dbarFun_sub {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z)
+    (hg : DifferentiableAt ℝ g z) :
     DbarDisk.dbar (fun x => f x - g x) z = DbarDisk.dbar f z - DbarDisk.dbar g z := by
   unfold DbarDisk.dbar
   rw [fderiv_fun_sub hf hg]
@@ -103,8 +94,8 @@ single ∂̄-solve) is the OBSTRUCTION-3 gap and lives in §4 as prose. -/
 /-- **Function-level ball Čech split (2-set case).**  Given holomorphic `f₁₂ : ℂ → ℂ` on a ball
 `ball c r` that arises as a *smooth* Čech splitting `f₁₂ = h₂ − h₁` (smooth `h₁, h₂` with matching
 ∂̄, the Čech 1-cocycle condition for a 2-set cover), there are *holomorphic* `g₁, g₂` on the ball
-with `f₁₂ = g₂ − g₁`.  This is exactly `DbarDiskCohomology.dbar_holo_splitting_ball`, recorded as the
-base case of the multi-set ball split.  Sorry-free. -/
+with `f₁₂ = g₂ − g₁`. This is exactly `DbarDiskCohomology.dbar_holo_splitting_ball`, recorded as the
+base case of the multi-set ball split. Sorry-free. -/
 theorem ballSplit_two (c : ℂ) {r : ℝ} (hr : 0 < r)
     {h₁ h₂ : ℂ → ℂ} (hh₁ : ContDiff ℝ (⊤ : ℕ∞) h₁) (hh₂ : ContDiff ℝ (⊤ : ℕ∞) h₂)
     (hdbar : ∀ z ∈ ball c r, DbarDisk.dbar h₁ z = DbarDisk.dbar h₂ z) :
@@ -131,9 +122,9 @@ theorem exists_omegaD_rep {D : Divisor X} {W : Opens X} {f : MGerm W} (hf : f �
   exact ⟨g, hg, hgeq⟩
 
 /-- **`𝒪₀` germ → representative with analytic normal forms.**  A germ-class holomorphic section on
-`W` can be represented by an honest `OmegaD 0 W` function whose ambient-chart normal form is analytic
-at every point of `W`.  This is the single-section bridge consumed by the chart-disk acyclicity
-construction before pushing representatives through coordinate disks. -/
+`W` can be represented by an honest `OmegaD 0 W` function whose ambient-chart normal form is
+analytic at every point of `W`. This is the single-section bridge consumed by the chart-disk
+acyclicity construction before pushing representatives through coordinate disks. -/
 theorem exists_omegaD_zero_rep_analyticNF {W : Opens X} {f : MGerm W}
     (hf : f ∈ OmegaDGerm (0 : Divisor X) W) :
     ∃ g : W → ℂ, g ∈ OmegaD (0 : Divisor X) W ∧ toGerm W g = f ∧
@@ -155,9 +146,9 @@ theorem toGerm_mem_sections0 (𝔙 : FiniteFamily X) (D : Divisor X) (η : Π i,
 /-! ### §4 — the germ-level disk-acyclicity target and its function-level reduction
 
 `IsDiskAcyclic 𝔙 D` is the deliverable in the SHAPE of `CechFinitenessWiring.Coboundaries.leray` and
-`CechRefinementLeray.RefinementLift`: every `𝒪_D` 1-cocycle is a coboundary.  We prove it
-unconditionally for a **subsingleton-indexed** cover (the cocycle is forced to be `0`), and reduce the
-general case to a clean function-level chart-disk acyclicity predicate. -/
+`CechRefinementLeray.RefinementLift`: every `𝒪_D` 1-cocycle is a coboundary. We prove it
+unconditionally for a **subsingleton-indexed** cover (the cocycle is forced to be `0`), and reduce
+the general case to a clean function-level chart-disk acyclicity predicate. -/
 
 /-- **The germ-level disk-acyclicity target.**  Every `𝒪_D` 1-cocycle on the cover `𝔙` is an `𝒪_D`
 1-coboundary — i.e. `H¹(𝔙, 𝒪_D) = 0` at the junk-free germ-class level.  This is exactly the atom
@@ -180,18 +171,18 @@ theorem isDiskAcyclic_of_isEmpty (𝔙 : FiniteFamily X) (D : Divisor X)
 
 /-! ### The function-level chart-disk acyclicity predicate (the honest analytic interface)
 
-For the general (≥ 2 patches) case, the germ-level acyclicity reduces to a *function-level* statement
-on the chart-image balls, which is what the committed ∂̄ engine proves.  We isolate that statement as
-a predicate, in the same "lift the cocycle to a coboundary" shape, and discharge the analytic part
-where the engine applies. -/
+For the general (≥ 2 patches) case, the germ-level acyclicity reduces to a *function-level*
+statement on the chart-image balls, which is what the committed ∂̄ engine proves. We isolate that
+statement as a predicate, in the same "lift the cocycle to a coboundary" shape, and discharge the
+analytic part where the engine applies. -/
 
 /-- **Function-level chart-disk acyclicity (the honest analytic interface).**  Mirrors
 `CechRefinementLeray.RefinementLift` / `Coboundaries.leray`: a hypothesis packaging the
-function-level disk-acyclicity input that the chart-disk model supplies via the ∂̄ engine.  Given a
+function-level disk-acyclicity input that the chart-disk model supplies via the ∂̄ engine. Given a
 germ-class `𝒪_D` 1-cocycle `s`, it produces the `0`-cochain primitive `η` of honest `𝒪_D`
-representatives whose Čech coboundary `δ⁰` matches `s`.  This is exactly the per-overlap output of
-running `DbarDiskCohomology.dbar_holo_splitting_ball` (transported through the cover's charts and the
-§3 germ ↔ function bridge) once the principal parts of `D` have been split off.
+representatives whose Čech coboundary `δ⁰` matches `s`. This is exactly the per-overlap output of
+running `DbarDiskCohomology.dbar_holo_splitting_ball` (transported through the cover's charts and
+the §3 germ ↔ function bridge) once the principal parts of `D` have been split off.
 
 It is stated as a predicate so the reduction `isDiskAcyclic_of_funcLevel` is complete; producing it
 is the remaining honest analytic obligation (OBSTRUCTION 3 of `CechRefinementLeray`). -/
@@ -213,10 +204,10 @@ theorem functionDiskAcyclic_of_isEmpty (𝔙 : FiniteFamily X) (D : Divisor X)
     cases p with
     | mk i j => exact False.elim (IsEmpty.false i)
 
-/-- **The reduction.**  If the function-level chart-disk acyclicity input is available, then the cover
-is germ-level disk-acyclic.  Sorry-free: the produced `0`-cochain primitive `η` assembles to a
+/-- **The reduction.** If the function-level chart-disk acyclicity input is available, then the
+cover is germ-level disk-acyclic. Sorry-free: the produced `0`-cochain primitive `η` assembles to a
 `sections0`-element (§3 `toGerm_mem_sections0`) whose `δ⁰`-image is `s`, witnessing
-`s ∈ coboundaries1 = map δ⁰ sections0`.  This is the clean interface to the disk engine. -/
+`s ∈ coboundaries1 = map δ⁰ sections0`. This is the clean interface to the disk engine. -/
 theorem isDiskAcyclic_of_funcLevel (𝔙 : FiniteFamily X) (D : Divisor X)
     (h : FunctionDiskAcyclic 𝔙 D) : IsDiskAcyclic 𝔙 D := by
   intro s hs
@@ -237,71 +228,24 @@ theorem functionDiskAcyclic_of_isDiskAcyclic (𝔙 : FiniteFamily X) (D : Diviso
   have hcochain : (fun i => toGerm (𝔙.U i) (η i)) = c := funext hη_germ
   rw [hcochain, hδ]
 
-/-- **Disk-acyclicity collapses `H¹`.**  If the cover is germ-level disk-acyclic, then every class of
-`𝔙.cechH1 D` is `0` — i.e. `H¹(𝔙, 𝒪_D)` is the trivial module.  This is the form the Serre-D=0 and
+/-- **Disk-acyclicity collapses `H¹`.** If the cover is germ-level disk-acyclic, then every class of
+`𝔙.cechH1 D` is `0` — i.e. `H¹(𝔙, 𝒪_D)` is the trivial module. This is the form the Serre-D=0 and
 finiteness consumers actually want (`H¹(disk, 𝒪) = 0`): a cocycle `g` maps to `0` in the quotient
-exactly when `↑g ∈ coboundaries1` (`Submodule.Quotient.mk_eq_zero`, with `submoduleOf` membership defeq
-to `↑g ∈ coboundaries1`), which is precisely `IsDiskAcyclic` applied to the cocycle `↑g`. -/
+exactly when `↑g ∈ coboundaries1` (`Submodule.Quotient.mk_eq_zero`, with `submoduleOf` membership
+defeq to `↑g ∈ coboundaries1`), which is precisely `IsDiskAcyclic` applied to the cocycle `↑g`. -/
 theorem cechH1_subsingleton_of_isDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X)
     (h : IsDiskAcyclic 𝔙 D) (q : 𝔙.cechH1 D) : q = 0 := by
   induction q using Submodule.Quotient.induction_on with
   | _ g =>
     rw [Submodule.Quotient.mk_eq_zero]
-    -- `g ∈ submoduleOf coboundaries1 cocycles1` is defeq to `↑g ∈ coboundaries1`; supply it from `h`.
+    -- `g ∈ submoduleOf coboundaries1 cocycles1` is defeq to `↑g ∈ coboundaries1`; supply it from
+    -- `h`.
     exact h (g : 𝔙.Cochain1) g.2
 
 end Jacobians.Dolbeault
 
-/-! ## The exact remaining obstruction (discharging `FunctionDiskAcyclic` for a chart-disk cover)
-
-WHAT IS DELIVERED HERE (all complete, axiom-clean `[propext, Classical.choice, Quot.sound]`):
-
-  * §1 `dbarFun_add` / `dbarFun_sub` / `dbarFun_const_smul` / `dbarFun_eq_zero_iff` — the reusable `ℝ`-linearity
-    layer for `DbarDisk.dbar` (the Čech-split bookkeeping; the `sub` case was previously inline only).
-  * §2 `ballSplit_two` — the function-level `H¹(ball, 𝒪) = 0` engine for a 2-set cover (the committed
-    `DbarDiskCohomology.dbar_holo_splitting_ball`, recorded as the base case).
-  * §3 `exists_omegaD_rep` / `toGerm_mem_sections0` — the germ ↔ honest-function bridge for sections.
-  * §4 the target `IsDiskAcyclic` (in the `Coboundaries.leray` / `RefinementLift` shape), its
-    function-level reduction `isDiskAcyclic_of_funcLevel` (via the honest predicate
-    `FunctionDiskAcyclic`), the unconditional empty-cover base case `isDiskAcyclic_of_isEmpty`, and the
-    consumer-facing collapse `cechH1_subsingleton_of_isDiskAcyclic` (`IsDiskAcyclic ⟹ H¹ = 0`).
-
-THE EXACT REMAINING GOAL: produce `FunctionDiskAcyclic 𝔙 D` for a chart-disk cover `𝔙` (i.e. one
-where every overlap pulls back through a single chart to an open subset of a Euclidean ball, e.g. the
-`ChartDiskCover` of `ChartDiskCover.lean`).  This is OBSTRUCTION 3 of `CechRefinementLeray.lean` — the
-multi-set Čech computation on the ball.  The route, on top of the atoms above:
-
-  STEP A (germ → honest functions).  For each overlap `W = U i ⊓ U j`, lift the cocycle component
-    `s_{ij} ∈ OmegaDGerm D W` to an honest `g_{ij} ∈ OmegaD D W` (§3 `exists_omegaD_rep`).  By
-    `CechH0.nfX_Gext_codiscrete` + `toGerm_eq_iff` the cocycle relation `δ¹s = 0` becomes an honest
-    `𝓝[≠]`-eventual cocycle relation among the `g_{ij}` on triple overlaps.
-
-  STEP B (chart transport).  Push each `g_{ij}` through the cover's chart to a function on the
-    chart-image `Wov ⊆ ball ⊆ ℂ`.  The MISSING bridge lemma is the `↥W`-holomorphy ↔ `ℂ`-ball-
-    holomorphy + `dbar`-in-chart dictionary: the `OpenPartialHomeomorph.subtypeRestr` / `Opens.chartAt_eq`
-    bookkeeping that `CechSection.restrict_chart_aux` and `CechH0.incl_chart_aux` do for *order*, now
-    extended to relate `IsMeromorphic`/`DifferentiableOn` on `↥W` to `DifferentiableOn` on `Wov` and to
-    `DbarDisk.dbar` of the chart-pushed function.  (For `D = 0` this is plain holomorphy, no poles; for
-    `D ≠ 0` one first splits off the finitely-many principal parts of `D` inside the disk so the
-    remainder is honest-holomorphic, the case the §2 engine handles.)
-
-  STEP C (multi-set Čech split on the ball — the bulk).  With a smooth partition of unity `{ρ_p}`
-    subordinate to `{Wov_p}` on the ball (`SmoothPartitionOfUnity.exists_isSubordinate` for
-    `𝓘(ℝ, ℂ)`), set `h_p := ∑ᶠ q, ρ_q · (Gext of g_{qp})`; the cocycle relation gives
-    `h_q − h_p = g_{pq}` (smooth splitting).  The §1 `dbar` algebra + `dbar_solvable_ball` then correct
-    `h_p` to a holomorphic `η_p` with `η_q − η_p = g_{pq}`, exactly the 2-set `ballSplit_two` argument
-    generalised to n sets (the `dbar`-of-`finsum` step needs `dbar` over `∑ᶠ`, reachable from §1 +
-    `fderiv` of `finsum`, but is the load-bearing ~200–400 LoC).
-
-  STEP D (functions → germ).  Pull `η_p` back through the chart to `↥(U p)`, check `η_p ∈ OmegaD D (U p)`
-    (order bound preserved by STEP B's order dictionary), and `δ⁰(toGerm η) = s` via `toGerm_eq_iff`
-    (the chart-pushed `η_q − η_p = g_{pq}` is honest, hence codiscrete).
-
-The single most load-bearing missing lemma is STEP B's chart-transport dictionary for holomorphy +
-`dbar`; with it, STEP C is the standard PoU Čech argument (engine = §1 + `dbar_solvable_ball`) and
-STEPs A/D are §3 + `CechH0` bookkeeping.  Building STEP B requires the `↥U ↔ ℂ` chart machinery of
-`CechSection`/`CechH0` (READ-ONLY here), so it is left as written prose, not a gap tactic.  The reduction
-`isDiskAcyclic_of_funcLevel` and the consumer collapse `cechH1_subsingleton_of_isDiskAcyclic` are
-complete, so the moment `FunctionDiskAcyclic` is produced the germ-level atom — and `H¹(disk)=0` —
-follow immediately.
--/
+/-! The discharge of `FunctionDiskAcyclic` for a chart-disk cover — the germ → honest-function
+lift, the chart-transport dictionary for holomorphy + `dbar`, and the partition-of-unity
+multi-set Čech split on the ball — is carried out in `CechDiskAcyclicProof` and assembled in
+`CechDiskAcyclicAssembly`; with it, `isDiskAcyclic_of_funcLevel` and
+`cechH1_subsingleton_of_isDiskAcyclic` here give the germ-level `H¹(disk) = 0`. -/

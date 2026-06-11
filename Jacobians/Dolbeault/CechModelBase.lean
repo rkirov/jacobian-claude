@@ -1,21 +1,21 @@
 /-
-  Dolbeault ladder — the sup-norm Čech model TYPES and abstract finiteness spine (Forster 14.9).
+  The sup-norm Čech model types and the abstract finiteness spine (Forster 14.9).
 
-  This is the *type / abstract-spine* base of the manifold instantiation of the Čech finiteness node.
-  It was split out of `CechFinitenessWiring.lean` to BREAK an import cycle: the model types
-  (`DiskOverlapData`, `Coboundaries`, `supH1`) are consumed by `CechModelArtificial` /
+  This is the *type / abstract-spine* base of the manifold instantiation of the Čech finiteness
+  argument. It is separate from `CechFinitenessWiring.lean` to break an import cycle: the model
+  types (`DiskOverlapData`, `Coboundaries`, `supH1`) are consumed by `CechModelArtificial` /
   `CechModelGeometry`, which in turn feed (transitively) the general-divisor finiteness term
   `CechFinitenessDtwist.exists_cechModel_general`; that term is what discharges
-  `CechFinitenessWiring.exists_cechModel`.  Keeping the types here (importing only the abstract spine)
-  lets `CechFinitenessWiring` import `CechFinitenessDtwist` without a cycle.
+  `CechFinitenessWiring.exists_cechModel`. Keeping the types here (importing only the abstract
+  spine) lets `CechFinitenessWiring` import `CechFinitenessDtwist` without a cycle.
 
-  This file ASSEMBLES the proven abstract finiteness spine
+  This file assembles the abstract finiteness spine
   (`CechFinitenessAbstract.finiteDimensional_h1_of_leray_compact`, `isCompactOperator_pi`,
-  `isCompactOperator_of_subtypeL_comp`) against the proven disk-Montel atom
-  (`BddHol.isCompactOperator_restrictCLM`) to provide the finiteness machinery used to discharge
+  `isCompactOperator_of_subtypeL_comp`) against the disk-Montel lemma
+  (`BddHol.isCompactOperator_restrictCLM`) to provide the finiteness machinery behind
   `DolbeaultLadder.finiteDimensional_cechH1`.
 
-  CHOSEN SUP-NORM COCHAIN ENCODING (the Leray chart-disk cover, read in charts):
+  The sup-norm cochain encoding (the Leray chart-disk cover, read in charts):
   the 1-cochains on the COVER live in `Π_p BddHol (Uov p)` (bounded-holomorphic on the chart-image
   of each overlap, an open set in `ℂ`); the 1-cochains on the relatively-compact SHRINKING live in
   `Π_p (Kov p →ᵇ ℂ)` (the Montel atom restricts `BddHol U →L[ℂ] (K →ᵇ ℂ)` for `K` compact, so the
@@ -24,20 +24,20 @@
   (the geometric overlap data) + `Coboundaries` (the sup-norm `δ⁰/δ¹` and the commuting square for
   restriction).
 
-  WHAT IS PROVEN HERE (axiom-clean, `[propext, Classical.choice, Quot.sound]`):
-    * `DiskOverlapData` Banach instances; `rhoRaw` + `rhoRaw_compact` (STEP 3 — the Montel payoff).
-    * `finiteDimensional_supH1` — STEP 5: builds the cocycle `δ`/`ρ`, transports compactness to the
-      closed cocycle subspace, and applies the abstract reduction. Fully proven *given* the Leray
-      surjectivity (an explicit argument).
-    * `leray_surjective` — STEP 4: the Leray surjectivity, derived from the model's `leray` field.
+  Main results:
+    * `DiskOverlapData` Banach instances; `rhoRaw` + `rhoRaw_compact` (the Montel payoff).
+    * `finiteDimensional_supH1` — builds the cocycle `δ`/`ρ`, transports compactness to the
+      closed cocycle subspace, and applies the abstract reduction, *given* the Leray surjectivity.
+    * `leray_surjective` — the Leray surjectivity, derived from the model's `leray` field.
     * `exists_cechModel_of_subsingleton` — the assembled acyclic case (`H¹ = 0`).
 
-  KEY DESIGN POINT (soundness): the Leray surjectivity `(η,ξ) ↦ δη + ρξ` is FALSE for an arbitrary
-  abstract `(δ, ρ)` — a *compact* `ρ` (which `rhoRaw_compact` proves ours is) cannot surject onto an
-  infinite-dimensional cocycle space. Surjectivity holds only for a genuine *acyclic* Leray model.
-  We therefore record the acyclicity as the `Coboundaries.leray` field (the disk-`H¹=0` witness):
-  `leray_surjective` then unpacks it, and the honest analytic obligation is concentrated
-  where the model is CONSTRUCTED — discharged in `CechFinitenessDtwist.exists_cechModel_general`.
+  A soundness-critical design point: the Leray surjectivity `(η,ξ) ↦ δη + ρξ` is *false* for an
+  arbitrary abstract `(δ, ρ)` — a *compact* `ρ` (which `rhoRaw_compact` proves ours is) cannot
+  surject onto an infinite-dimensional cocycle space. Surjectivity holds only for a genuine
+  *acyclic* Leray model. The acyclicity is therefore recorded as the `Coboundaries.leray` field
+  (the disk-`H¹=0` witness): `leray_surjective` unpacks it, and the honest analytic obligation is
+  concentrated where the model is *constructed* — discharged in
+  `CechFinitenessDtwist.exists_cechModel_general`.
 -/
 import Jacobians.Dolbeault.CechFinitenessAbstract
 import Jacobians.Dolbeault.BddHol
@@ -51,7 +51,7 @@ open scoped Manifold ContDiff Topology
 
 namespace Jacobians.Dolbeault
 
-/-! ### STEP 1 — the geometric overlap data (chart-disk cover + relatively-compact shrinking) -/
+/-! ### The geometric overlap data (chart-disk cover + relatively-compact shrinking) -/
 
 /-- **Sup-norm cochain geometry.** The finite pair-index `J` of a Leray chart-disk cover, with, for
 each overlap `p`, the chart-image cover-open `Uov p ⊆ ℂ` and a relatively-compact convex shrinking
@@ -104,7 +104,7 @@ noncomputable instance : CompleteSpace d.Ccov := by
 /-- `Π_p (Kov p →ᵇ ℂ)` is a Banach space. -/
 noncomputable instance : CompleteSpace d.Cshr := inferInstance
 
-/-! ### STEP 2/3 — the restriction operator `ρ` cover → shrinking, and its compactness -/
+/-! ### The restriction operator `ρ` cover → shrinking, and its compactness -/
 
 /-- The raw cochain restriction `Π_p BddHol (Uov p) →L[ℂ] Π_p (Kov p →ᵇ ℂ)`, componentwise
 `BddHol.restrictCLM`. -/
@@ -116,7 +116,7 @@ noncomputable def rhoRaw : d.Ccov →L[ℂ] d.Cshr :=
   simp only [rhoRaw, ContinuousLinearMap.pi_apply, ContinuousLinearMap.comp_apply,
     ContinuousLinearMap.proj_apply]
 
-/-- **STEP 3 (the Montel payoff).** The cochain restriction `ρ` (cover → shrinking) is a COMPACT
+/-- **The Montel payoff.** The cochain restriction `ρ` (cover → shrinking) is a compact
 operator: componentwise it is `BddHol.restrictCLM`, compact by the disk-Montel atom
 (`BddHol.isCompactOperator_restrictCLM_of_compact`, valid for any compact shrunk overlap — no
 convexity), and a finite product of compacts is compact (`isCompactOperator_pi`). -/
@@ -161,11 +161,11 @@ structure Coboundaries (d : DiskOverlapData) where
   /-- **The Leray / disk-acyclicity witness.** Every shrinking 1-cocycle `s` (i.e. `δ¹s = 0`) is,
   modulo a shrinking-coboundary `δ⁰η`, the restriction `ρ x` of a COVER 1-cocycle `x`
   (`δ¹_cov x = 0`). This is the genuine analytic content of the Leray model — it is precisely
-  `H¹(disk, 𝒪) = 0` on each chart-disk (the disk-acyclicity supplied by the proven full-disk
-  ∂̄-solvability `DbarDiskCohomology.dbar_solvable_ball` / `dbar_holo_splitting_ball`) together with
-  the Čech-refinement comparison. Without this field the abstract data is NOT a Leray model and
-  surjectivity is FALSE (a compact `ρ` cannot surject an infinite-dimensional `Z¹`); bundling it here
-  is what makes `Coboundaries d` mean "an acyclic chart-disk Leray model". The honest analytic
+  `H¹(disk, 𝒪) = 0` on each chart-disk (the disk-acyclicity supplied by the full-disk ∂̄-solvability
+  `DbarDiskCohomology.dbar_solvable_ball` / `dbar_holo_splitting_ball`) together with the
+  Čech-refinement comparison. Without this field the abstract data is NOT a Leray model and
+  surjectivity is FALSE (a compact `ρ` cannot surject an infinite-dimensional `Z¹`); bundling it
+  here is what makes `Coboundaries d` mean "an acyclic chart-disk Leray model". The honest analytic
   obligation therefore lives entirely in the model construction. -/
   leray : ∀ s : d.Cshr, δ1 s = 0 →
     ∃ (η : C0) (x : d.Ccov), δ1cov x = 0 ∧ s = δ0 η + d.rhoRaw x
@@ -208,7 +208,8 @@ theorem subtypeL_comp_ρ :
     c.Z1shr.subtypeL.comp c.ρ = d.rhoRaw.comp c.Z1cov.subtypeL := by
   ext x; rfl
 
-/-- **STEP 3 on the cocycle subspace.** `ρ : Z¹(cover) →L Z¹(shrinking)` is a COMPACT operator:
+/-- **Compactness on the cocycle subspace.** `ρ : Z¹(cover) →L Z¹(shrinking)` is a compact
+operator:
 `rhoRaw` is compact (`DiskOverlapData.rhoRaw_compact`), `ρ` includes into it via the closed cocycle
 subspace, and `isCompactOperator_of_subtypeL_comp` transports compactness back. -/
 theorem ρ_compact : IsCompactOperator c.ρ := by
@@ -221,7 +222,7 @@ This is the object the abstract reduction makes finite-dimensional; it is compar
 germ-class `cechH1` by `cechH1_model`. -/
 abbrev supH1 : Type := c.Z1shr ⧸ LinearMap.range c.δ.toLinearMap
 
-/-- **STEP 5 — finiteness of the sup-norm `H¹`.** Given the Leray surjectivity of `(η,ξ) ↦ δη + ρξ`,
+/-- **Finiteness of the sup-norm `H¹`.** Given the Leray surjectivity of `(η,ξ) ↦ δη + ρξ`,
 the abstract reduction `finiteDimensional_h1_of_leray_compact` (with `ρ` compact by `ρ_compact`)
 gives `supH1` finite-dimensional. Fully proven modulo the surjectivity argument. -/
 theorem finiteDimensional_supH1
@@ -231,12 +232,12 @@ theorem finiteDimensional_supH1
 
 end Coboundaries
 
-/-! ### STEP 4 — the Leray surjectivity (PROVEN from the model's `leray` field) -/
+/-! ### The Leray surjectivity (from the model's `leray` field) -/
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- **STEP 4 — Leray surjectivity (PROVEN).** For any chart-disk Leray model `c`, the combined map
+/-- **Leray surjectivity.** For any chart-disk Leray model `c`, the combined map
 `(η, ξ) ↦ δη + ρξ` (shrinking-coboundary ⊕ cover-restriction) is surjective onto `Z¹(shrinking)`.
 
 This unpacks the model's `leray` field (the disk-acyclicity witness): given a shrinking cocycle
@@ -273,10 +274,10 @@ namespace DiskOverlapData
 variable (d : DiskOverlapData)
 
 /-- **The trivial acyclic `Coboundaries`.**  For any `DiskOverlapData d`, the `Coboundaries d` with
-`C⁰ = Cshr`, `δ⁰ = id`, `δ¹ = 0`, `δ¹_cov = 0`.  Structural fields hold trivially; the genuine
-analytic `leray` field is DISCHARGED (every shrinking cocycle `s` is `δ⁰ s + ρ 0 = s`).  Its sup-norm
-`H¹` is `0` (`supH1_trivialCoboundaries_subsingleton`) — the `leray` disk-acyclicity field wired at the
-acyclic extreme, the shape the completed `hasGluedDbarDatum` lands in. -/
+`C⁰ = Cshr`, `δ⁰ = id`, `δ¹ = 0`, `δ¹_cov = 0`. Structural fields hold trivially; the genuine
+analytic `leray` field is DISCHARGED (every shrinking cocycle `s` is `δ⁰ s + ρ 0 = s`). Its sup-norm
+`H¹` is `0` (`supH1_trivialCoboundaries_subsingleton`) — the `leray` disk-acyclicity field wired at
+the acyclic extreme, the shape the completed `hasGluedDbarDatum` lands in. -/
 noncomputable def trivialCoboundaries : Coboundaries d where
   C0 := d.Cshr
   C2 := PUnit
@@ -299,8 +300,8 @@ theorem supH1_trivialCoboundaries_subsingleton :
   rw [ContinuousLinearMap.coe_coe, Coboundaries.δ, ContinuousLinearMap.coe_codRestrict_apply]
   rfl
 
-/-- A `DiskOverlapData` with empty overlap index (so `Ccov`/`Cshr` are subsingletons) — the carrier of
-the trivial model that witnesses the acyclic `exists_cechModel`. -/
+/-- A `DiskOverlapData` with empty overlap index (so `Ccov`/`Cshr` are subsingletons) — the carrier
+of the trivial model that witnesses the acyclic `exists_cechModel`. -/
 def empty : DiskOverlapData where
   J := Fin 0
   Uov := fun p => p.elim0
@@ -316,15 +317,15 @@ instance : Subsingleton (DiskOverlapData.empty.trivialCoboundaries).supH1 :=
 
 end DiskOverlapData
 
-/-- **`exists_cechModel` for a subsingleton germ-class `H¹` (the assembled acyclic case, complete).**
-If the genuine germ-class `𝔘.cechH1 D` is a SUBSINGLETON, then `exists_cechModel 𝔘 D` holds: take the
-trivial acyclic model (`DiskOverlapData.empty` with its `trivialCoboundaries`, whose `leray`
-disk-acyclicity field is discharged and whose `supH1` is `0`); the comparison `𝔘.cechH1 D ≃ₗ supH1` is
-then `LinearEquiv.ofSubsingleton` (both sides subsingleton `ℂ`-modules).  This is the end-to-end model
-assembly for exactly the case the completed disk-acyclicity produces (`H¹ = 0`); it is correctly tied
-to `(𝔘, D)` via the existential (not a free `c`).  The geometric instantiation — a `SharedChartCover`
-at `D = 0` discharging the subsingleton hypothesis via `hasGluedDbarDatum` — is
-`CechModelConstruction.exists_cechModel_of_sharedChart_zero`. -/
+/-- **`exists_cechModel` for a subsingleton germ-class `H¹` (the assembled acyclic case,
+complete).** If the genuine germ-class `𝔘.cechH1 D` is a SUBSINGLETON, then `exists_cechModel 𝔘 D`
+holds: take the trivial acyclic model (`DiskOverlapData.empty` with its `trivialCoboundaries`, whose
+`leray` disk-acyclicity field is discharged and whose `supH1` is `0`); the comparison
+`𝔘.cechH1 D ≃ₗ supH1` is then `LinearEquiv.ofSubsingleton` (both sides subsingleton `ℂ`-modules).
+This is the end-to-end model assembly for exactly the case the completed disk-acyclicity produces
+(`H¹ = 0`); it is correctly tied to `(𝔘, D)` via the existential (not a free `c`). The geometric
+instantiation — a `SharedChartCover` at `D = 0` discharging the subsingleton hypothesis via
+`hasGluedDbarDatum` — is `CechModelConstruction.exists_cechModel_of_sharedChart_zero`. -/
 theorem exists_cechModel_of_subsingleton (𝔘 : FiniteFamily X) (D : Divisor X)
     [Subsingleton (𝔘.cechH1 D)] :
     ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=

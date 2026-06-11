@@ -4,28 +4,24 @@
   This small file holds exactly the order-bookkeeping arrows and the `SkyscraperLES` structure that
   BOTH directions of the skyscraper construction need:
 
-  * the consumer side — `CohomologicalRR`'s χ-induction (`chi_jump_of_LES`, `cohomological_riemannRoch`)
-    runs the six-term alternating-sum crank on a `SkyscraperLES`;
+  * the consumer side — `CohomologicalRR`'s χ-induction (`chi_jump_of_LES`,
+    `cohomological_riemannRoch`) runs the six-term alternating-sum crank on a `SkyscraperLES`;
   * the producer side — the downstream snake/realization assembly (`SkyscraperArrow` →
     `SkyscraperSnake` → `SkyscraperAssembly` → `CohomologicalRRChartDisk`) BUILDS a `SkyscraperLES`,
     and references `Skyscraper`/`h0Incl`/`h1Map`.
 
   Putting `SkyscraperLES` (+ `h0Incl`, `Skyscraper`, `h1Map`, and the degreewise order-weakening
-  inclusions) here breaks the import cycle that previously forced `exists_skyscraperLES` to be a bare
-  an unproved obligation in `CohomologicalRR` disconnected from the proven assembly: now `CohomologicalRR` can sit
-  *downstream* of the assembly and discharge `exists_skyscraperLES` from a `LocalRealizationData`
-  (the single genuine local-realization + acyclicity obligation). Same cycle-break pattern as the
-  `exists_cechModel` refactor.
+  inclusions) here breaks an import cycle: `CohomologicalRR` can sit *downstream* of the assembly
+  and discharge `exists_skyscraperLES` from a `LocalRealizationData` (the single genuine
+  local-realization + acyclicity input).
 
-  Everything here is pure order/quotient bookkeeping (no analytic content), complete and axiom-clean.
+  Everything here is pure order/quotient bookkeeping (no analytic content).
 -/
 import Jacobians.Dolbeault.CechH0
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Classical
-
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
@@ -45,7 +41,7 @@ bookkeeping — the genuinely-hard analytic/homological data (skyscraper quotien
 isolated separately in `SkyscraperLES`. -/
 
 /-- Pointwise monotonicity of the divisor under adding an effective point: `D x ≤ (D + P) x`. -/
-theorem divisor_le_add_single (D : Divisor X) (P x : X) :
+theorem divisor_le_add_single {X : Type*} (D : Divisor X) (P x : X) :
     (D : Divisor X) x ≤ (D + Finsupp.single P 1 : Divisor X) x := by
   rw [Finsupp.add_apply, Finsupp.single_apply]; split <;> omega
 
@@ -74,7 +70,8 @@ theorem globalSections_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P :
 
 /-! ### The skyscraper space and the `H⁰`-inclusion arrow (provable, no analytic content) -/
 
-/-- The canonical H⁰-inclusion `H⁰(𝒪_D) ↪ H⁰(𝒪_{D+P})` (the order bound weakens, `f₁` of the LES). -/
+/-- The canonical H⁰-inclusion `H⁰(𝒪_D) ↪ H⁰(𝒪_{D+P})` (the order bound weakens, `f₁` of the LES).
+-/
 noncomputable def h0Incl (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
     ↥(𝔘.globalSections D) →ₗ[ℂ] ↥(𝔘.globalSections (D + Finsupp.single P 1)) :=
   Submodule.inclusion (𝔘.globalSections_le_add_single D P)
@@ -86,11 +83,11 @@ theorem h0Incl_injective (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
 /-- The **skyscraper space** `ℂ_P` at `P`: the genuine **1-dimensional** stalk of the skyscraper
 sheaf `𝒪_{D+P}/𝒪_D` (the order-`(−D(P)−1)` principal-part coefficient at `P`), realised as `ℂ`.
 
-NOTE (soundness fix, 2026-06-02): the *previous* definition `H⁰(𝒪_{D+P}) ⧸ range f₁` (the H⁰-cokernel)
-was WRONG — at a base point of `|D+P|` the cokernel is `0`-dimensional, so the `skyDim : finrank = 1`
-field made `exists_skyscraperLES` **provably false**. The genuine middle term of the cohomology LES of
+Note (a soundness subtlety): the H⁰-cokernel `H⁰(𝒪_{D+P}) ⧸ range f₁` would be the *wrong*
+middle term — at a base point of `|D+P|` that cokernel is `0`-dimensional, so demanding
+`finrank = 1` of it would be provably false. The genuine middle term of the cohomology LES of
 `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` is `H⁰(X, ℂ_P) = ℂ` (always 1-dim); the coefficient arrow
-`f₂ : H⁰(𝒪_{D+P}) → ℂ_P` is **not** surjective in general (its image *is* the cokernel), so it now
+`f₂ : H⁰(𝒪_{D+P}) → ℂ_P` is **not** surjective in general (its image *is* the cokernel), so it
 lives — together with the exactness `range f₁ = ker f₂` — as honest data in `SkyscraperLES`. -/
 abbrev Skyscraper (_𝔘 : FiniteCover X) (_D : Divisor X) (_P : X) : Type := ℂ
 
@@ -106,7 +103,8 @@ theorem cocycles1_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
     𝔘.cocycles1 D ≤ 𝔘.cocycles1 (D + Finsupp.single P 1) :=
   inf_le_inf_left _ (𝔘.sections1_le_add_single D P)
 
-/-- The `𝒪_D` 1-coboundaries are contained in the `𝒪_{D+P}` 1-coboundaries (`δ⁰` of more sections). -/
+/-- The `𝒪_D` 1-coboundaries are contained in the `𝒪_{D+P}` 1-coboundaries (`δ⁰` of more sections).
+-/
 theorem coboundaries1_le_add_single (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
     𝔘.coboundaries1 D ≤ 𝔘.coboundaries1 (D + Finsupp.single P 1) :=
   Submodule.map_mono (𝔘.sections0_le_add_single D P)
@@ -116,7 +114,7 @@ noncomputable def cocyclesIncl (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
     ↥(𝔘.cocycles1 D) →ₗ[ℂ] ↥(𝔘.cocycles1 (D + Finsupp.single P 1)) :=
   Submodule.inclusion (𝔘.cocycles1_le_add_single D P)
 
-/-- **The inclusion-induced arrow `f₄ : H¹(𝒪_D) → H¹(𝒪_{D+P})`** (PROVEN). The cocycle inclusion
+/-- **The inclusion-induced arrow `f₄ : H¹(𝒪_D) → H¹(𝒪_{D+P})`**. The cocycle inclusion
 sends `𝒪_D`-coboundaries to `𝒪_{D+P}`-coboundaries, so it descends to the `H¹` quotients
 (`Submodule.mapQ`). -/
 noncomputable def h1Map (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
@@ -125,11 +123,11 @@ noncomputable def h1Map (𝔘 : FiniteCover X) (D : Divisor X) (P : X) :
   rintro ⟨c, _⟩ hcob
   exact 𝔘.coboundaries1_le_add_single D P hcob
 
-/-! ### Subcomplex backbone facts (complete; the algebraic skeleton of the skyscraper snake lemma) -/
+/-! ### Subcomplex backbone facts (the algebraic skeleton of the skyscraper snake lemma) -/
 
 /-- **`δ⁰` preserves the sections subcomplex.** The Čech coboundary of `𝒪_D`-0-sections is an
-`𝒪_D`-1-section: each component `(δ⁰f)_{ij} = f_j|_{ij} − f_i|_{ij}` is a difference of restrictions of
-`𝒪_D`-germs, hence an `𝒪_D`-germ on the overlap (`rawRestrictG_omegaDGerm`). Equivalently
+`𝒪_D`-1-section: each component `(δ⁰f)_{ij} = f_j|_{ij} − f_i|_{ij}` is a difference of restrictions
+of `𝒪_D`-germs, hence an `𝒪_D`-germ on the overlap (`rawRestrictG_omegaDGerm`). Equivalently
 `B¹(𝒪_D) ⊆ C¹(𝒪_D)`. -/
 theorem cechDelta0_sections (𝔘 : FiniteCover X) (D : Divisor X) :
     Submodule.map 𝔘.cechDelta0 (𝔘.sections0 D) ≤ 𝔘.sections1 D := by
@@ -140,8 +138,8 @@ theorem cechDelta0_sections (𝔘 : FiniteCover X) (D : Divisor X) :
     (rawRestrictG_omegaDGerm inf_le_left (hf p.1))
 
 /-- **`B¹ ⊆ Z¹`** (coboundaries are cocycles). A `1`-coboundary `δ⁰f` lies in `ker δ¹` (since
-`δ¹ ∘ δ⁰ = 0`, `cechDelta1_comp_cechDelta0`) and is an `𝒪_D`-`1`-section (`cechDelta0_sections`), so it
-is an `𝒪_D` `1`-cocycle. This is the containment that makes `H¹ = Z¹/B¹` (`cechH1`) the genuine
+`δ¹ ∘ δ⁰ = 0`, `cechDelta1_comp_cechDelta0`) and is an `𝒪_D`-`1`-section (`cechDelta0_sections`), so
+it is an `𝒪_D` `1`-cocycle. This is the containment that makes `H¹ = Z¹/B¹` (`cechH1`) the genuine
 cohomology, and that lets the snake-lemma connecting map land a lifted coboundary in `Z¹(𝒪_D)`. -/
 theorem coboundaries1_le_cocycles1 (𝔘 : FiniteCover X) (D : Divisor X) :
     𝔘.coboundaries1 D ≤ 𝔘.cocycles1 D := by
@@ -160,11 +158,11 @@ sequence** in Čech cohomology is
 `0 → H⁰(𝒪_D) →[f₁] H⁰(𝒪_{D+P}) →[f₂] ℂ_P →[f₃] H¹(𝒪_D) →[f₄] H¹(𝒪_{D+P}) → 0`,
 the skyscraper having `H^{≥1} = 0`.
 
-`SkyscraperLES` bundles the data NOT already proven above. The first arrow `f₁` (`h0Incl`) and the last
-arrow `f₄` (`h1Map`, the inclusion-induced map) are PROVEN; the inclusion `f₁` is injective
-(`h0Incl_injective`). The genuinely-hard content isolated here is the coefficient arrow `f₂ = h0ToSky`
-with `exact₁₂`, the snake-lemma connecting map `f₃` with exactness (`exact₂`, `exact₃`, `surj₄`), and
-finiteness of the cohomology groups (Forster 14.9). -/
+`SkyscraperLES` bundles the data not already provided above. The first arrow `f₁` (`h0Incl`) and the
+last arrow `f₄` (`h1Map`, the inclusion-induced map) are constructed above; the inclusion `f₁` is
+injective (`h0Incl_injective`). The content isolated here is the coefficient arrow `f₂ = h0ToSky`
+with `exact₁₂`, the snake-lemma connecting map `f₃` with exactness (`exact₂`, `exact₃`, `surj₄`),
+and finiteness of the cohomology groups (Forster 14.9). -/
 structure SkyscraperLES (𝔘 : FiniteCover X) (D : Divisor X) (P : X) where
   /-- **The skyscraper coefficient arrow** `f₂ : H⁰(𝒪_{D+P}) → ℂ_P` — the order-`(−D(P)−1)`
   principal-part coefficient at `P`. **Not** surjective in general (its image is the H⁰-cokernel,
@@ -186,9 +184,9 @@ structure SkyscraperLES (𝔘 : FiniteCover X) (D : Divisor X) (P : X) where
   [finH1D : FiniteDimensional ℂ (𝔘.cechH1 D)]
   /-- `H¹(𝒪_{D+P})` is finite-dimensional (Forster 14.9; `finiteDimensional_cechH1`). -/
   [finH1DP : FiniteDimensional ℂ (𝔘.cechH1 (D + Finsupp.single P 1))]
-  /-- `H⁰(𝒪_{D+P})` is finite-dimensional (Forster compactness `l(D+P) < ∞`). Now an *instance*
-  globally (`CohomologicalH0Finiteness.finiteDimensional_globalSections`, Gap 1), so a `SkyscraperLES`
-  carries no genuine finiteness obligation here; kept as a field so the structure is self-contained.
+  /-- `H⁰(𝒪_{D+P})` is finite-dimensional (Forster compactness `l(D+P) < ∞`). A global *instance*
+  (`CohomologicalH0Finiteness.finiteDimensional_globalSections`), so a `SkyscraperLES` carries no
+  genuine finiteness obligation here; kept as a field so the structure is self-contained.
   `H⁰(𝒪_D)` finiteness is *derived* (it injects into this one, `h0Incl_injective`). -/
   [finH0DP : FiniteDimensional ℂ ↥(𝔘.globalSections (D + Finsupp.single P 1))]
 

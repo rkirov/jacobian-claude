@@ -1,8 +1,8 @@
 /-
-  The **L3 kernel** — Dolbeault's comparison theorem `H^{0,1}(X) ≅ H¹(X, 𝒪)`, the single hardest
-  analytic input of the `D = 0` Serre route (`arithmeticGenus_eq_genus`).
+  Dolbeault's comparison theorem `H^{0,1}(X) ≅ H¹(X, 𝒪)` — the central analytic input of the
+  `D = 0` Serre route (`arithmeticGenus_eq_genus`).
 
-  Target (proven standalone as `cechH1_dolbeault_comparison_proof`; the `IsLeray`-free form is
+  Target (`cechH1_dolbeault_comparison_proof`; the `IsLeray`-free form is
   `GoodCover.cechH1_dolbeault_comparison'`):
 
     `cechH1_dolbeault_comparison_proof (𝔘 : FiniteCover X) :`
@@ -11,9 +11,9 @@
   the `ℝ`-vs-`ℂ` dimension count of Dolbeault's iso (`H^{0,1}` is `Module ℝ` of real-dim `2g`;
   `cechH1` is `Module ℂ` of complex-dim `g`).
 
-  MATH (Dolbeault's theorem). Two mutually-inverse maps:
+  The math (Dolbeault's theorem). Two mutually-inverse maps:
   * **Dolbeault → Čech.** A smooth `(0,1)`-form `g`: on each chart-disk `U_i` solve `∂̄u_i = g`
-    *locally* (`DbarLocal.dbar_solvable_locally`, DONE). Then `∂̄(u_i − u_j) = g − g = 0` on
+    *locally* (`DbarLocal.dbar_solvable_locally`). Then `∂̄(u_i − u_j) = g − g = 0` on
     `U_i ∩ U_j`, so `{u_i − u_j}` is a holomorphic Čech `1`-cocycle; its class lands in `cechH1`.
   * **Čech → Dolbeault.** A holomorphic cocycle `{f_ij}`: with a partition of unity `{ρ_k}`
     subordinate to the cover, set `h_i := ∑_k ρ_k f_ik`; then `f_ij = h_j − h_i` (smooth) and
@@ -21,14 +21,11 @@
 
   These are mutually inverse, giving a linear iso and hence the `finrank` relation.
 
-  HONESTY. This file builds the connective tissue with no gaps and isolates each genuinely-hard
-  analytic sub-kernel as a *named honest obligation with a TRUE statement*. We never weaken the target.
-
-  SPLIT. This file holds the **forward direction** (`dolbeault_to_cech`, now fully proven) and the
-  shared analytic infrastructure (chart bridge, Wirtinger chain rule, cutoff/planar primitives, the
-  forward cocycle operator). The **inverse direction** (`cech_to_dolbeault`), the assembled
-  `ℝ`-linear equivalence `comparison_linearEquiv`, the target `cechH1_dolbeault_comparison_proof`, and
-  the closing honest-status summary live in `Jacobians.Dolbeault.DolbeaultComparisonInverse`.
+  This file holds the **forward direction** (`dolbeault_to_cech`) and the shared analytic
+  infrastructure (chart bridge, Wirtinger chain rule, cutoff/planar primitives, the forward
+  cocycle operator). The **inverse direction** (`cech_to_dolbeault`), the assembled `ℝ`-linear
+  equivalence `comparison_linearEquiv`, and the target `cechH1_dolbeault_comparison_proof` live in
+  `Jacobians.Dolbeault.DolbeaultComparisonInverse`.
 -/
 import Jacobians.Dolbeault.DolbeaultComparison
 import Jacobians.Dolbeault.DbarLocal
@@ -43,19 +40,18 @@ open TopologicalSpace (Opens)
 -- Same permissive transparency as `RealForms`/`DolbeaultH01`/`DolbeaultComparison` (the section
 -- hom-bundle instances need it).
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ## The two comparison maps and their assembly into an `ℝ`-linear equivalence
 
 Dolbeault's theorem is realised by two mutually-inverse `ℝ`-linear maps between `DolbeaultH01 X`
 (an `ℝ`-module) and `𝔘.cechH1 0` (a `ℂ`-module, viewed as an `ℝ`-module via `ℝ ↪ ℂ`). We state each
-map and the two round-trip identities as honest named obligations (each is a TRUE statement — the real
-analytic content), then assemble the equivalence and the `finrank` count completely. The factor `2`
+map and the two round-trip identities as named lemmas (the real analytic content), then assemble
+the equivalence and the `finrank` count. The factor `2`
 is the `ℝ`-vs-`ℂ` dimension (`finrank_real_of_complex` on the `ℂ`-module `cechH1`); it needs **no**
 `Module ℂ` on `DolbeaultH01` — the `ℝ`-linear equivalence carries `finrank ℝ (DolbeaultH01) =
 finrank ℝ (cechH1) = 2 · finrank ℂ (cechH1)`. -/
@@ -70,13 +66,15 @@ two *algebraic* facts that make this a genuine `cechH1` class, both **complete**
 * it is automatically a Čech cocycle (`δ¹∘δ⁰ = 0`), for ANY 0-cochain of germ-classes — even though
   the `u_i` are smooth-not-holomorphic, the germ-class cochains `MGerm` impose no holomorphy, so the
   `δ²=0` identity applies verbatim;
-* the coboundary subspace lands in the cocycles (so the `cechH1` quotient is well-formed against it). -/
+* the coboundary subspace lands in the cocycles (so the `cechH1` quotient is well-formed against
+  it). -/
 
 /-- **(Algebraic backbone, complete.)** `cechDelta0` of any germ-class 0-cochain is a Čech
 `1`-cocycle. This is the abstract reason `{[u_i] − [u_j]}` (the Dolbeault → Čech cochain) lies in
 `ker cechDelta1`; it holds for the smooth-not-holomorphic primitives `u_i` because germ-class
 cochains carry no holomorphy constraint. Immediate from `δ¹ ∘ δ⁰ = 0`. -/
-theorem cechDelta0_mem_ker_cechDelta1 (c : 𝔘.Cochain0) :
+theorem cechDelta0_mem_ker_cechDelta1 {X : Type*} [TopologicalSpace X] (𝔘 : FiniteCover X)
+    (c : 𝔘.Cochain0) :
     𝔘.cechDelta0 c ∈ LinearMap.ker 𝔘.cechDelta1 := by
   rw [LinearMap.mem_ker, ← LinearMap.comp_apply, 𝔘.cechDelta1_comp_cechDelta0,
     LinearMap.zero_apply]
@@ -84,20 +82,22 @@ theorem cechDelta0_mem_ker_cechDelta1 (c : 𝔘.Cochain0) :
 /-- **(Algebraic backbone, complete.)** The image of `cechDelta0` (the Čech coboundaries at the raw
 germ-class level) is contained in the kernel of `cechDelta1` (the cocycles), for the same `δ²=0`
 reason. The submodule form of `cechDelta0_mem_ker_cechDelta1`. -/
-theorem range_cechDelta0_le_ker_cechDelta1 :
+theorem range_cechDelta0_le_ker_cechDelta1 {X : Type*} [TopologicalSpace X]
+    (𝔘 : FiniteCover X) :
     LinearMap.range 𝔘.cechDelta0 ≤ LinearMap.ker 𝔘.cechDelta1 := by
   rintro _ ⟨c, rfl⟩
   exact cechDelta0_mem_ker_cechDelta1 𝔘 c
 
-/-! ### The analytic heart: local `∂̄`-solvability on the manifold (honest named sub-kernel)
+/-! ### The analytic heart: local `∂̄`-solvability on the manifold
 
-The Dolbeault → Čech map solves `∂̄u_i = g` on each chart-disk. The DONE input
-`DbarLocal.dbar_solvable_locally` solves `∂̄u = g` for the *chart-coordinate* operator `DbarDisk.dbar`
-on `ℂ → ℂ`. Transporting it to the *manifold* operator `RealForms.dbar` on smooth sections requires
-the (currently absent) bridge `dbar u` (manifold) read in a holomorphic chart `=` `DbarDisk.dbar`
-(chart-coordinate) of `u ∘ chart⁻¹` — a genuine, chart-transport lemma with no Mathlib path. We
-isolate the consequence as the named analytic sub-kernel below; it is the *only* place the file
-appeals to PDE content, and it is exactly `dbar_solvable_locally` modulo that chart bridge. -/
+The Dolbeault → Čech map solves `∂̄u_i = g` on each chart-disk. The input
+`DbarLocal.dbar_solvable_locally` solves `∂̄u = g` for the *chart-coordinate* operator
+`DbarDisk.dbar` on `ℂ → ℂ`. Transporting it to the *manifold* operator `RealForms.dbar` on smooth
+sections requires the (currently absent) bridge `dbar u` (manifold) read in a holomorphic chart `=`
+`DbarDisk.dbar` (chart-coordinate) of `u ∘ chart⁻¹` — a genuine, chart-transport lemma with no
+Mathlib path. We isolate the consequence as the named analytic sub-kernel below; it is the *only*
+place the file appeals to PDE content, and it is exactly `dbar_solvable_locally` modulo that chart
+bridge. -/
 
 /-! #### The `(0,1)`-fiber algebra: a `(0,1)`-form is determined by its value at the vector `1`
 
@@ -182,10 +182,10 @@ theorem mfderiv_apply_eq_fderiv_pullback (u : SmoothCFunctions X) (x : X) (v : �
   rw [hpull] at hmf
   exact congrArg (fun L : ℂ →L[ℝ] ℂ => L v) hmf
 
-/-- **The chart bridge.** The intrinsic `dbar u` at `x` (i.e. `proj01 (mfderiv … u x)`), evaluated at
-the tangent vector `1`, equals the planar Wirtinger `DbarDisk.dbar` of the chart-pullback of `u`,
+/-- **The chart bridge.** The intrinsic `dbar u` at `x` (i.e. `proj01 (mfderiv … u x)`), evaluated
+at the tangent vector `1`, equals the planar Wirtinger `DbarDisk.dbar` of the chart-pullback of `u`,
 read at the chart coordinate of `x`. This is the `dbar`(intrinsic)`= DbarDisk.dbar`(chart) identity
-that transports the DONE planar solvability to the manifold. -/
+that transports the planar solvability to the manifold. -/
 theorem dbar_apply_one_eq_dbarDisk (u : SmoothCFunctions X) (x : X) :
     proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x) (1 : ℂ) =
       DbarDisk.dbar (fun z => u ((extChartAt 𝓘(ℝ, ℂ) x).symm z)) (extChartAt 𝓘(ℝ, ℂ) x x) := by
@@ -198,10 +198,11 @@ theorem dbar_apply_one_eq_dbarDisk (u : SmoothCFunctions X) (x : X) :
 
 /-- **Generalized chart bridge** for a *bare* `MDifferentiableAt` function `w : X → ℂ` (not just a
 `SmoothCFunctions`): `mfderiv w x v` is the plain `fderiv` of the chart-pullback. Same proof as
-`mfderiv_apply_eq_fderiv_pullback` but with the smoothness replaced by the weaker `MDifferentiableAt`
-hypothesis — used to read the intrinsic `∂̄` of a *locally*-smooth value function like
-`planarPrimitive ∘ extChartAt`. -/
-theorem mfderiv_apply_eq_fderiv_pullback' {w : X → ℂ} {x : X}
+`mfderiv_apply_eq_fderiv_pullback` but with the smoothness replaced by the weaker
+`MDifferentiableAt` hypothesis — used to read the intrinsic `∂̄` of a *locally*-smooth value
+function like `planarPrimitive ∘ extChartAt`. -/
+theorem mfderiv_apply_eq_fderiv_pullback' {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {w : X → ℂ} {x : X}
     (hw : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x) (v : ℂ) :
     (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x) v =
       fderiv ℝ (fun z => w ((extChartAt 𝓘(ℝ, ℂ) x).symm z)) (extChartAt 𝓘(ℝ, ℂ) x x) v := by
@@ -217,7 +218,8 @@ theorem mfderiv_apply_eq_fderiv_pullback' {w : X → ℂ} {x : X}
 /-- **Generalized chart bridge at `1`** for a bare `MDifferentiableAt` function: the intrinsic
 Wirtinger scalar `proj01 (mfderiv w x) 1` equals the planar `DbarDisk.dbar` of the chart-pullback.
 The `MDifferentiableAt` form of `dbar_apply_one_eq_dbarDisk`. -/
-theorem dbar_apply_one_eq_dbarDisk' {w : X → ℂ} {x : X}
+theorem dbar_apply_one_eq_dbarDisk' {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {w : X → ℂ} {x : X}
     (hw : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x) :
     proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x) (1 : ℂ) =
       DbarDisk.dbar (fun z => w ((extChartAt 𝓘(ℝ, ℂ) x).symm z)) (extChartAt 𝓘(ℝ, ℂ) x x) := by
@@ -231,8 +233,8 @@ theorem dbar_apply_one_eq_dbarDisk' {w : X → ℂ} {x : X}
 /-- **A value-at-`1` equation upgrades to the full CLM equation `dbar u x = g x`** (complete).
 Both `dbar u x = proj01 (mfderiv … u x)` and (since `g ∈ OneFormsZeroOne X`) `g x = proj01 (β x)`
 are `(0,1)`-forms, hence determined by their value at the tangent vector `1`
-(`proj01_ext_of_apply_one`). So matching the single Wirtinger scalar suffices. This is the
-mechanism by which the planar (scalar) `∂̄`-solvability recovers the intrinsic CLM-valued equation. -/
+(`proj01_ext_of_apply_one`). So matching the single Wirtinger scalar suffices. This is the mechanism
+by which the planar (scalar) `∂̄`-solvability recovers the intrinsic CLM-valued equation. -/
 theorem dbar_eq_of_apply_one {g : SmoothCOneForms X} (hg : g ∈ OneFormsZeroOne X)
     (u : SmoothCFunctions X) (x : X)
     (h1 : proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑u) x) (1 : ℂ) = (g x) (1 : ℂ)) :
@@ -246,8 +248,8 @@ theorem dbar_eq_of_apply_one {g : SmoothCOneForms X} (hg : g ∈ OneFormsZeroOne
 /-- **The smooth lift of a chart-local planar function to a global manifold function** (complete).
 Given a smooth `f : ℂ → ℂ` and a base point `x₀`, the cutoff product `χ • (f ∘ extChartAt x₀)` —
 with `χ` a `SmoothBumpFunction` at `x₀` (`= 1` near `x₀`, supported in the chart) — is a *global*
-`SmoothCFunctions X` (via `SmoothBumpFunction.contMDiff_smul`) that equals `f ∘ extChartAt x₀` on the
-open neighborhood where `χ = 1`. This is the "extend a chart-local smooth function to the whole
+`SmoothCFunctions X` (via `SmoothBumpFunction.contMDiff_smul`) that equals `f ∘ extChartAt x₀` on
+the open neighborhood where `χ = 1`. This is the "extend a chart-local smooth function to the whole
 manifold" half of the smooth-section ↔ chart-function dictionary; it is exactly how the planar local
 primitive `ũ` becomes a global `u`. -/
 theorem exists_smoothLift_of_chartFun (f : ℂ → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (x₀ : X) :
@@ -269,10 +271,11 @@ theorem exists_smoothLift_of_chartFun (f : ℂ → ℂ) (hf : ContDiff ℝ (⊤ 
 
 The single piece of genuine analytic content needed to transport the planar `∂̄`-solve (which lives
 in the `x₀`-chart) to the intrinsic value (read in the chart at the evaluation point `x`): under a
-*holomorphic* change of coordinates `τ`, the planar Wirtinger operator transforms by `conj(τ′)`. This
-is the chart-transition equivariance of `∂̄`; it is a Mathlib-gap-filling lemma (no `analyticGroupoid`
-Wirtinger calculus exists), proven here from `fderiv_comp` + `HasDerivAt.complexToReal_fderiv` (the
-holomorphic `fderiv ℝ τ ζ = (deriv τ ζ) • 1`). Reusable; could later move to `DbarDisk.lean`. -/
+*holomorphic* change of coordinates `τ`, the planar Wirtinger operator transforms by `conj(τ′)`.
+This is the chart-transition equivariance of `∂̄`; it is a Mathlib-gap-filling lemma (no
+`analyticGroupoid` Wirtinger calculus exists), proven here from `fderiv_comp` +
+`HasDerivAt.complexToReal_fderiv` (the holomorphic `fderiv ℝ τ ζ = (deriv τ ζ) • 1`). Reusable;
+could later move to `DbarDisk.lean`. -/
 
 /-- **Wirtinger chain rule for a holomorphic inner map.** For `f` real-differentiable and `τ`
 holomorphic at `ζ`, the planar `∂̄` of the composite transforms by the conjugate of the complex
@@ -318,11 +321,12 @@ theorem dbarDisk_congr {f₁ f₂ : ℂ → ℂ} {z : ℂ} (h : f₁ =ᶠ[nhds z
   rw [DbarDisk.dbar, DbarDisk.dbar, h.fderiv_eq]
 
 /-- **The chart-transition `e₀ ∘ eₓ.symm` is holomorphic (`ℂ`-differentiable).** On the analytic
-(`ω`) manifold `X`, chart transition maps are holomorphic; here at the chart coordinate `eₓ x` of any
-point `x` in the `x₀`-chart's source. (`ContMDiffAt` of the two charts composed, transferred to
+(`ω`) manifold `X`, chart transition maps are holomorphic; here at the chart coordinate `eₓ x` of
+any point `x` in the `x₀`-chart's source. (`ContMDiffAt` of the two charts composed, transferred to
 `ContDiffAt ℂ ω` and hence `DifferentiableAt ℂ`; `chartAt ℂ = extChartAt 𝓘(ℝ,ℂ)` for the identity
 model.) -/
-theorem differentiableAt_chartTransition (x₀ x : X)
+theorem differentiableAt_chartTransition {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (x₀ x : X)
     (hxsrc : x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
     DifferentiableAt ℂ ((extChartAt 𝓘(ℝ, ℂ) x₀) ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm)
       ((extChartAt 𝓘(ℝ, ℂ) x) x) := by
@@ -350,10 +354,12 @@ theorem differentiableAt_chartTransition (x₀ x : X)
   exact hda
 
 /-- **The inverse chart-transition `eₓ ∘ e₀.symm` is holomorphic at `e₀ x`.** Companion to
-`differentiableAt_chartTransition` with the two charts swapped and read at the point `e₀ x = τ_x(eₓ x)`
-(rather than `eₓ x`); the local inverse of the transition `e₀ ∘ eₓ.symm`. Same mechanism: the two
-charts of the analytic (`ω`) manifold composed, transferred to `DifferentiableAt ℂ`. -/
-theorem differentiableAt_chartTransition_symm (x₀ x : X)
+`differentiableAt_chartTransition` with the two charts swapped and read at the point
+`e₀ x = τ_x(eₓ x)` (rather than `eₓ x`); the local inverse of the transition `e₀ ∘ eₓ.symm`. Same
+mechanism: the two charts of the analytic (`ω`) manifold composed, transferred to
+`DifferentiableAt ℂ`. -/
+theorem differentiableAt_chartTransition_symm {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (x₀ x : X)
     (hxsrc : x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
     DifferentiableAt ℂ ((extChartAt 𝓘(ℝ, ℂ) x) ∘ (extChartAt 𝓘(ℝ, ℂ) x₀).symm)
       ((extChartAt 𝓘(ℝ, ℂ) x₀) x) := by
@@ -382,11 +388,14 @@ theorem differentiableAt_chartTransition_symm (x₀ x : X)
 
 /-- **Nonvanishing of the holomorphic transition derivative.** On the analytic (`ω`) manifold, for
 `x` in the `x₀`-chart, the complex derivative of the chart transition `τ_x = e₀ ∘ eₓ.symm` at `eₓ x`
-is nonzero: `τ_x` has the holomorphic local inverse `eₓ ∘ e₀.symm`, so `deriv τ_x · deriv (inverse) = 1`
-by the chain rule on `(eₓ ∘ e₀.symm) ∘ τ_x = id` near `eₓ x`, forcing the factor `≠ 0`. -/
-theorem deriv_chartTransition_ne_zero (x₀ x : X)
+is nonzero: `τ_x` has the holomorphic local inverse `eₓ ∘ e₀.symm`, so
+`deriv τ_x · deriv (inverse) = 1` by the chain rule on `(eₓ ∘ e₀.symm) ∘ τ_x = id` near `eₓ x`,
+forcing the factor `≠ 0`. -/
+theorem deriv_chartTransition_ne_zero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (x₀ x : X)
     (hxsrc : x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
-    deriv ((extChartAt 𝓘(ℝ, ℂ) x₀) ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm) ((extChartAt 𝓘(ℝ, ℂ) x) x) ≠ 0 := by
+    deriv ((extChartAt 𝓘(ℝ, ℂ) x₀) ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm)
+      ((extChartAt 𝓘(ℝ, ℂ) x) x) ≠ 0 := by
   set eₓ := extChartAt 𝓘(ℝ, ℂ) x with hex
   set e₀ := extChartAt 𝓘(ℝ, ℂ) x₀ with he₀
   set τ := e₀ ∘ eₓ.symm with hτ
@@ -420,10 +429,11 @@ theorem deriv_chartTransition_ne_zero (x₀ x : X)
   exact one_ne_zero hcomp
 
 /-- **Transition holomorphy at a general overlap point.** The chart transition `e_a ∘ e_b.symm` is
-`ℂ`-differentiable at any `w` in `e_b`'s target whose `e_b`-preimage lies in `e_a`'s source (not only
-at the chart centre, as in `differentiableAt_chartTransition`). Same mechanism: the two analytic
-(`ω`) charts composed, `ContMDiffAt → ContDiffAt ℂ → DifferentiableAt ℂ`. -/
-theorem differentiableAt_transition_of_mem (a b : X) {w : ℂ}
+`ℂ`-differentiable at any `w` in `e_b`'s target whose `e_b`-preimage lies in `e_a`'s source (not
+only at the chart centre, as in `differentiableAt_chartTransition`). Same mechanism: the two
+analytic (`ω`) charts composed, `ContMDiffAt → ContDiffAt ℂ → DifferentiableAt ℂ`. -/
+theorem differentiableAt_transition_of_mem {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (a b : X) {w : ℂ}
     (hwt : w ∈ (chartAt ℂ b).target) (hws : (chartAt ℂ b).symm w ∈ (chartAt ℂ a).source) :
     DifferentiableAt ℂ ((extChartAt 𝓘(ℝ, ℂ) a) ∘ (extChartAt 𝓘(ℝ, ℂ) b).symm) w := by
   have h1 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (chartAt ℂ b).symm w :=
@@ -441,15 +451,17 @@ theorem differentiableAt_transition_of_mem (a b : X) {w : ℂ}
     funext z; simp [mfld_simps]
   rwa [he] at hda
 
-/-- **The frame vector as the (forward) inverse-transition derivative** (direct form). For `x` in the
-`x₀`-chart, `Sₓ 1 = symmL ℝ (trivAt x₀) x 1` equals `deriv σ_x (e₀ x)` with `σ_x = eₓ ∘ e₀.symm` the
-*inverse* chart transition. (Same `symmL = tangentCoordChange = fderivWithin σ_x` chain as
-`frameVector_eq_inv_deriv_transition`, stopping at `fderiv σ_x = deriv σ_x • 1` before inverting; the
-reciprocal of the `deriv τ_x` form.) Used to read `∂̄h` in another chart without the inverse. -/
-theorem frameVector_eq_deriv_transition_symm (x₀ x : X)
+/-- **The frame vector as the (forward) inverse-transition derivative** (direct form). For `x` in
+the `x₀`-chart, `Sₓ 1 = symmL ℝ (trivAt x₀) x 1` equals `deriv σ_x (e₀ x)` with `σ_x = eₓ ∘ e₀.symm`
+the *inverse* chart transition. (Same `symmL = tangentCoordChange = fderivWithin σ_x` chain as
+`frameVector_eq_inv_deriv_transition`, stopping at `fderiv σ_x = deriv σ_x • 1` before inverting;
+the reciprocal of the `deriv τ_x` form.) Used to read `∂̄h` in another chart without the inverse. -/
+theorem frameVector_eq_deriv_transition_symm {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (x₀ x : X)
     (hxsrc : x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
     (Bundle.Trivialization.symmL ℝ (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x) (1 : ℂ)
-      = deriv ((extChartAt 𝓘(ℝ, ℂ) x) ∘ (extChartAt 𝓘(ℝ, ℂ) x₀).symm) ((extChartAt 𝓘(ℝ, ℂ) x₀) x) := by
+      = deriv ((extChartAt 𝓘(ℝ, ℂ) x) ∘ (extChartAt 𝓘(ℝ, ℂ) x₀).symm)
+        ((extChartAt 𝓘(ℝ, ℂ) x₀) x) := by
   set eₓ := extChartAt 𝓘(ℝ, ℂ) x with hex
   set e₀ := extChartAt 𝓘(ℝ, ℂ) x₀ with he₀
   set σ := eₓ ∘ e₀.symm with hσ
@@ -468,14 +480,14 @@ theorem frameVector_eq_deriv_transition_symm (x₀ x : X)
 /-! #### The local primitive at the value-`1` level
 
 `exists_localPrimitive_apply_one` produces, near every `x₀`, a smooth `u` whose intrinsic `∂̄`
-Wirtinger scalar `proj01 (mfderiv … u x) 1` matches `g x 1`. It is now PROVEN by reduction to a single
-finer sub-kernel, the chart-pullback `(0,1)`-datum `exists_chartPullback_zeroOne_datum` (below): the
-planar PDE `DbarLocal.dbar_solvable_locally` (DONE) solves `∂̄f = G` in the `x₀`-chart for that datum
-`G`, the global smooth lift `exists_smoothLift_of_chartFun` (DONE) globalizes it to `u`, the chart
-bridge `dbar_apply_one_eq_dbarDisk` (DONE) reads `∂̄u` at `x` in its own chart, and the Wirtinger
-chain rule `dbarDisk_comp_holo` (DONE) produces the `conj(τ′)` frame factor that cancels exactly
-against the one in the datum's transformation law. The *only* remaining analytic content — the
-smoothness of the chart-read datum `G` and the `(0,1)`-transformation law — is isolated in
+Wirtinger scalar `proj01 (mfderiv … u x) 1` matches `g x 1`. It is proven by reduction to the
+chart-pullback `(0,1)`-datum `exists_chartPullback_zeroOne_datum` (below): the
+planar PDE `DbarLocal.dbar_solvable_locally` solves `∂̄f = G` in the `x₀`-chart for that datum
+`G`, the global smooth lift `exists_smoothLift_of_chartFun` globalizes it to `u`, the chart
+bridge `dbar_apply_one_eq_dbarDisk` reads `∂̄u` at `x` in its own chart, and the Wirtinger
+chain rule `dbarDisk_comp_holo` produces the `conj(τ′)` frame factor that cancels exactly
+against the one in the datum's transformation law. The analytic content — the smoothness of the
+chart-read datum `G` and the `(0,1)`-transformation law — is isolated in
 `exists_chartPullback_zeroOne_datum`. -/
 
 /-- The chart-read datum of `g` at the fixed `x₀`-trivialization is a smooth map `X → ℂ` at every
@@ -487,9 +499,9 @@ trivialisation), `x ↦ (g x).comp (symmL(trivAt y)(x))` is smooth into `ℂ →
 and at `x₀` differ by the bundle `coordChangeL` (`x ↦ coordChangeL (trivAt x₀) (trivAt y) x`, smooth
 by `contMDiffAt_coordChangeL`), so the value `(g x)(Sₓ 1)` rewrites as
 `((g x).comp (symmL(trivAt y)(x))) (coordChangeL (trivAt x₀) (trivAt y) x 1)` near `y`
-(`coordChangeL_apply` + `symmL_continuousLinearMapAt`); both factors are smooth, so `ContMDiffAt.clm_apply`
-closes it. (No varying chart-at-`x`: `Sₓ` uses only the fixed `x₀`-trivialization; the `y`-frame is an
-internal device.) -/
+(`coordChangeL_apply` + `symmL_continuousLinearMapAt`); both factors are smooth, so
+`ContMDiffAt.clm_apply` closes it. (No varying chart-at-`x`: `Sₓ` uses only the fixed
+`x₀`-trivialization; the `y`-frame is an internal device.) -/
 theorem contMDiffAt_chartRead_datum (g : SmoothCOneForms X) (x₀ y : X)
     (hy : y ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
@@ -527,12 +539,15 @@ theorem contMDiffAt_chartRead_datum (g : SmoothCOneForms X) (x₀ y : X)
 
 /-- **The frame vector is the inverse transition derivative.** For `x` in the `x₀`-chart source, the
 constant `x₀`-frame tangent vector `Sₓ 1 = symmL ℝ (trivAt x₀) x 1` equals `(τ_x′(eₓ x))⁻¹`, the
-reciprocal of the holomorphic chart-transition derivative `τ_x = e₀ ∘ eₓ.symm`. (`symmL (trivAt x₀) x`
-is the tangent `coordChange (achart x₀) (achart x) x = tangentCoordChange x₀ x x = fderivWithin ℝ
-(eₓ ∘ e₀.symm) (range) (e₀ x)`; on the boundaryless model this is `fderiv ℝ σ_x (e₀ x)`, and `σ_x =
-eₓ ∘ e₀.symm` is holomorphic so `fderiv ℝ σ_x (e₀ x) = (deriv σ_x (e₀ x)) • 1`; finally `deriv σ_x
-(e₀ x) = (deriv τ_x (eₓ x))⁻¹` since `σ_x` is the local inverse of `τ_x`.) -/
-theorem frameVector_eq_inv_deriv_transition (x₀ x : X)
+reciprocal of the holomorphic chart-transition derivative `τ_x = e₀ ∘ eₓ.symm`.
+(`symmL (trivAt x₀) x` is the tangent
+`coordChange (achart x₀) (achart x) x = tangentCoordChange x₀ x x
+= fderivWithin ℝ (eₓ ∘ e₀.symm) (range) (e₀ x)`;
+on the boundaryless model this is `fderiv ℝ σ_x (e₀ x)`, and `σ_x = eₓ ∘ e₀.symm` is holomorphic so
+`fderiv ℝ σ_x (e₀ x) = (deriv σ_x (e₀ x)) • 1`; finally `deriv σ_x (e₀ x) = (deriv τ_x (eₓ x))⁻¹`
+since `σ_x` is the local inverse of `τ_x`.) -/
+theorem frameVector_eq_inv_deriv_transition {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (x₀ x : X)
     (hxsrc : x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
     (Bundle.Trivialization.symmL ℝ (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x) (1 : ℂ)
       = (deriv ((extChartAt 𝓘(ℝ, ℂ) x₀) ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm)
@@ -591,17 +606,17 @@ that reproduces the intrinsic value `g x 1` after the holomorphic frame change: 
 `V` of `x₀`, with `τ_x = e₀ ∘ eₓ.symm` the holomorphic transition,
 `conj(τ_x′(eₓ x)) · G(e₀ x) = g x 1`.
 
-LOCALITY (why a neighborhood `V`, not the whole chart source): the datum `G` is the chart-pullback of
-`g`; on a non-compact chart-disk it is genuinely *unbounded at the chart boundary*, so the global
-"for all `x ∈ e₀.source`" form is FALSE. The honest statement gives the law only near `x₀` (where the
-local primitive is built); this is all `exists_localPrimitive_apply_one` consumes.
+LOCALITY (why a neighborhood `V`, not the whole chart source): the datum `G` is the chart-pullback
+of `g`; on a non-compact chart-disk it is genuinely *unbounded at the chart boundary*, so the global
+"for all `x ∈ e₀.source`" form is FALSE. The honest statement gives the law only near `x₀` (where
+the local primitive is built); this is all `exists_localPrimitive_apply_one` consumes.
 
 This is the genuine smooth-section ↔ planar-form dictionary entry that Mathlib lacks: it packages
-(i) the smoothness of the chart-read datum `G` and (ii) the `(0,1)`-transformation law (the `conj(τ′)`
-frame factor) into the exact form consumed by `exists_localPrimitive_apply_one`. The `conj(τ′)` here
-is the *same* factor produced on the `∂̄u` side by the Wirtinger chain rule `dbarDisk_comp_holo`
-(PROVEN), so the two cancel and the planar PDE `DbarLocal.dbar_solvable_locally` (DONE) closes the
-local primitive. TRUE: it is the standard statement that a `(0,1)`-form pulls back along a chart to a
+(i) the smoothness of the chart-read datum `G` and (ii) the `(0,1)`-transformation law (the
+`conj(τ′)` frame factor) into the exact form consumed by `exists_localPrimitive_apply_one`. The
+`conj(τ′)` here is the *same* factor produced on the `∂̄u` side by the Wirtinger chain rule
+`dbarDisk_comp_holo` , so the two cancel and the planar PDE `DbarLocal.dbar_solvable_locally` closes
+the local primitive. It is the standard statement that a `(0,1)`-form pulls back along a chart to a
 smooth `(0,1)`-form, whose anti-holomorphic component transforms by `conj` of the transition
 derivative (`proj01_eq_conj_smul` gives the conjugate-homogeneity fiberwise; the content is the
 *smoothness* of `G` and the chart-derivative bookkeeping `mfderiv` of charts ↔ planar `deriv τ`). -/
@@ -612,15 +627,18 @@ theorem exists_chartPullback_zeroOne_datum (g : SmoothCOneForms X)
             (extChartAt 𝓘(ℝ, ℂ) x x)) * G (extChartAt 𝓘(ℝ, ℂ) x₀ x) = (g x) (1 : ℂ) := by
   classical
   set e₀ := extChartAt 𝓘(ℝ, ℂ) x₀ with he₀
-  -- The chart-read datum `Φ x = (g x) (Sₓ 1)` (smooth at each point of `e₀.source`, `contMDiffAt_chartRead_datum`).
+  -- The chart-read datum `Φ x = (g x) (Sₓ 1)` (smooth at each point of `e₀.source`,
+  -- `contMDiffAt_chartRead_datum`).
   set Φ : X → ℂ := fun x => (g x) ((Bundle.Trivialization.symmL ℝ
     (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x) (1 : ℂ)) with hΦ
-  -- `e₀.target` is an open neighborhood of `e₀ x₀`; pick a bump `χ` with `closedBall r ⊆ e₀.target`.
+  -- `e₀.target` is an open neighborhood of `e₀ x₀`; pick a bump `χ` with
+  -- `closedBall r ⊆ e₀.target`.
   have htgt_open : IsOpen e₀.target := by rw [he₀]; exact isOpen_extChartAt_target x₀
   have hx₀tgt : e₀ x₀ ∈ e₀.target := by rw [he₀]; exact mem_extChartAt_target x₀
   obtain ⟨r, hr_pos, hr_sub⟩ := Metric.isOpen_iff.mp htgt_open (e₀ x₀) hx₀tgt
   set χ : ContDiffBump (e₀ x₀) := ⟨r / 4, r / 2, by positivity, by linarith⟩ with hχ
-  -- `closedBall (r/2) ⊆ ball r ⊆ e₀.target` (the bump's outer support lies safely inside the chart).
+  -- `closedBall (r/2) ⊆ ball r ⊆ e₀.target` (the bump's outer support lies safely inside the
+  -- chart).
   have hcball_sub : Metric.closedBall (e₀ x₀) (r / 2) ⊆ e₀.target := fun z hz =>
     hr_sub (Metric.closedBall_subset_ball (by linarith) hz)
   -- `Ψ := Φ ∘ e₀.symm` is `ContDiffAt` at every `w ∈ e₀.target` (helper + smooth chart inverse).
@@ -740,9 +758,9 @@ target). It is smooth, compactly supported, and `ℝ`-linear in `g` — exactly 
 (the same argument as `exists_chartPullback_zeroOne_datum`'s global-smoothness step). -/
 
 /-- **Chart-holomorphy ⟹ `𝒪`-section (`OmegaD 0`).** A function `F` on an open `V` whose
-extension-by-zero `Gext F`, read in each point's own `ℂ`-chart, is *analytic* there, is a holomorphic
-section: `F ∈ OmegaD 0 V`. Both halves go through the `Gext` bridge — `IsMeromorphic` via
-`Gext_chart_bridge` (analytic ⟹ meromorphic), and `0 ≤ ordU` via `ordU_eq_orderAt_Gext` plus
+extension-by-zero `Gext F`, read in each point's own `ℂ`-chart, is *analytic* there, is a
+holomorphic section: `F ∈ OmegaD 0 V`. Both halves go through the `Gext` bridge — `IsMeromorphic`
+via `Gext_chart_bridge` (analytic ⟹ meromorphic), and `0 ≤ ordU` via `ordU_eq_orderAt_Gext` plus
 `AnalyticAt.meromorphicOrderAt_nonneg`. The bridge that turns the planar cocycle holomorphy into a
 genuine `cechH1` cocycle. -/
 theorem mem_OmegaD_zero_of_gext_analytic {V : TopologicalSpace.Opens X} {F : V → ℂ}
@@ -758,8 +776,8 @@ theorem mem_OmegaD_zero_of_gext_analytic {V : TopologicalSpace.Opens X} {F : V �
     rw [ordU_eq_orderAt_Gext F hvx]
     simpa using (hF ⟨vx, hvx⟩).meromorphicOrderAt_nonneg
 
-/-- **Local Cauchy–Riemann.** A function `ℝ`-differentiable at `x` whose planar `∂̄` vanishes there is
-`ℂ`-differentiable at `x`. The `DifferentiableAt`-hypothesis (local) form of
+/-- **Local Cauchy–Riemann.** A function `ℝ`-differentiable at `x` whose planar `∂̄` vanishes there
+is `ℂ`-differentiable at `x`. The `DifferentiableAt`-hypothesis (local) form of
 `DbarDiskCohomology.differentiableAt_of_dbar_eq_zero`. -/
 private theorem differentiableAt_complex_of_dbar_eq_zero {f : ℂ → ℂ} {x : ℂ}
     (hf : DifferentiableAt ℝ f x) (hdb : DbarDisk.dbar f x = 0) : DifferentiableAt ℂ f x := by
@@ -841,8 +859,8 @@ theorem contDiff_cutoffPullback (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g : Smo
       exact fun h => hz (Metric.ball_subset_closedBall h)
     rw [hz0, zero_smul]
 
-/-- The cutoff chart-pullback is compactly supported (in `closedBall (eᵢ) χᵢ.rOut`, outside which the
-bump vanishes). -/
+/-- The cutoff chart-pullback is compactly supported (in `closedBall (eᵢ) χᵢ.rOut`, outside which
+the bump vanishes). -/
 theorem hasCompactSupport_cutoffPullback (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (g : SmoothCOneForms X) :
     HasCompactSupport (𝔇.cutoffPullback i g) := by
   apply HasCompactSupport.intro
@@ -909,9 +927,9 @@ theorem diskSection_smul (𝔇 : ChartDiskCover X) (i : 𝔇.ι) (c : ℝ) (g : 
 /-! ### Step 4c — cross-chart cancellation: the cocycle is holomorphic on overlaps -/
 
 /-- **Cross-chart cancellation (planar form).** On the overlap `U_i ⊓ U_j`, the difference of disk
-primitives read in chart `i` — `z ↦ u_j(e_j(e_i⁻¹ z)) − u_i(z)` — has vanishing planar `∂̄` at `e_i x`
-for every `x ∈ U_i ∩ U_j`. Mechanism: `∂̄(u_j∘τ) = conj(τ′)·(∂̄u_j ∘ τ)` (Wirtinger chain rule),
-`∂̄u_i = cutoffPullback_i`, `∂̄u_j = cutoffPullback_j`; on the disks `χ = 1`, so these are
+primitives read in chart `i` — `z ↦ u_j(e_j(e_i⁻¹ z)) − u_i(z)` — has vanishing planar `∂̄` at
+`e_i x` for every `x ∈ U_i ∩ U_j`. Mechanism: `∂̄(u_j∘τ) = conj(τ′)·(∂̄u_j ∘ τ)` (Wirtinger chain
+rule), `∂̄u_i = cutoffPullback_i`, `∂̄u_j = cutoffPullback_j`; on the disks `χ = 1`, so these are
 `g x (frameᵢ 1)` and `g x (frameⱼ 1)`; the `(0,1)` law turns them into `conj(frame)·(g x 1)`, the
 frame is the inverse transition derivative, and the transition cocycle `A_j = τ′·A_i` cancels. -/
 theorem dbar_planarDiff_eq_zero (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
@@ -974,7 +992,8 @@ theorem dbar_planarDiff_eq_zero (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X
     (𝔇.diskBump j).one_of_mem_closedBall (by rw [hτz₀]; exact Metric.ball_subset_closedBall hballj)
   rw [show 𝔇.cutoffPullback j g (τ z₀) = ((𝔇.diskBump j) (τ z₀) : ℝ) •
       (g (ej.symm (τ z₀))) ((Bundle.Trivialization.symmL ℝ
-        (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) (𝔇.center j)) (ej.symm (τ z₀))) (1 : ℂ)) from rfl,
+        (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) (𝔇.center j)) (ej.symm (τ z₀)))
+          (1 : ℂ)) from rfl,
     show 𝔇.cutoffPullback i g z₀ = ((𝔇.diskBump i) z₀ : ℝ) •
       (g (ei.symm z₀)) ((Bundle.Trivialization.symmL ℝ
         (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) (𝔇.center i)) (ei.symm z₀)) (1 : ℂ)) from rfl,
@@ -1016,13 +1035,13 @@ theorem dbar_planarDiff_eq_zero (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X
 
 /-- **The disk primitive solves `∂̄ = g` intrinsically on `U_k`.** For `x ∈ U_k`, the intrinsic
 Wirtinger scalar of the disk-primitive *value function* `wₖ = planarPrimitive k g ∘ e_k` equals
-`g x 1` — i.e. `∂̄wₖ = g` at `x`. Mechanism (single-chart, mirroring `dbar_planarDiffH_eq_zero`): the
-generalized bridge `dbar_apply_one_eq_dbarDisk'` reads `∂̄wₖ` in `x`'s own chart as
+`g x 1` — i.e. `∂̄wₖ = g` at `x`. Mechanism (single-chart, mirroring `dbar_planarDiffH_eq_zero`):
+the generalized bridge `dbar_apply_one_eq_dbarDisk'` reads `∂̄wₖ` in `x`'s own chart as
 `DbarDisk.dbar (planarPrimitive k g ∘ τ')` (`τ' = e_k ∘ eₓ.symm`); the Wirtinger chain rule
-`dbarDisk_comp_holo` peels a `conj(deriv τ')` factor; `dbar_planarPrimitive` gives the cutoff pullback
-(`χ = 1` on the disk), and `frameVector_eq_deriv_transition_symm` + `oneForm_apply_conjLinear`
-introduce a second `conj(deriv σ)` factor (`σ = eₓ ∘ e_k.symm`). The two cancel because `σ ∘ τ' = id`
-(`deriv σ · deriv τ' = 1`), leaving exactly `g x 1`. -/
+`dbarDisk_comp_holo` peels a `conj(deriv τ')` factor; `dbar_planarPrimitive` gives the cutoff
+pullback (`χ = 1` on the disk), and `frameVector_eq_deriv_transition_symm` +
+`oneForm_apply_conjLinear` introduce a second `conj(deriv σ)` factor (`σ = eₓ ∘ e_k.symm`). The two
+cancel because `σ ∘ τ' = id` (`deriv σ · deriv τ' = 1`), leaving exactly `g x 1`. -/
 theorem dbar_diskValue_eq_g (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
     (hg : g ∈ OneFormsZeroOne X) (k : 𝔇.ι) {x : X} (hxk : x ∈ (𝔇.U k : Set X)) :
     proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ)
@@ -1035,10 +1054,12 @@ theorem dbar_diskValue_eq_g (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
   set τ' := ek ∘ ex.symm with hτ'
   set σ := ex ∘ ek.symm with hσ
   have hxsk : x ∈ ek.source := 𝔇.subset_chart_source k hxk
-  have hx_src_k : x ∈ (chartAt ℂ (𝔇.center k)).source := by rw [hek, extChartAt_source] at hxsk; exact hxsk
+  have hx_src_k : x ∈ (chartAt ℂ (𝔇.center k)).source := by
+    rw [hek, extChartAt_source] at hxsk; exact hxsk
   -- `wₖ` is `MDifferentiableAt x` (`e_k` smooth at `x ∈ source`, `planarPrimitive` is `C^∞`).
   have hekmd : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ek x :=
-    ((contMDiffOn_extChartAt (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := 𝔇.center k) x hx_src_k).contMDiffAt
+    ((contMDiffOn_extChartAt (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := 𝔇.center k) x
+        hx_src_k).contMDiffAt
       ((chartAt ℂ (𝔇.center k)).open_source.mem_nhds hx_src_k)).mdifferentiableAt (by simp)
   have hppmd : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.planarPrimitive k g) (ek x) :=
     ((𝔇.contDiff_planarPrimitive k g).contMDiff.contMDiffAt).mdifferentiableAt (by simp)
@@ -1056,10 +1077,12 @@ theorem dbar_diskValue_eq_g (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
   rw [dbarDisk_comp_holo (𝔇.planarPrimitive k g) τ' (ex x)
         ((𝔇.contDiff_planarPrimitive k g).differentiable (by norm_num) _) hτ'diff, hτ'pt,
       𝔇.dbar_planarPrimitive k g z₀]
-  -- The cutoff is `1` on the disk; the frame law + `(0,1)`-conjugate-linearity give the second factor.
+  -- The cutoff is `1` on the disk; the frame law + `(0,1)`-conjugate-linearity give the second
+  -- factor.
   have hχk : (𝔇.diskBump k) z₀ = 1 := by
     have h' := hxk; rw [𝔇.isDisk k] at h'
-    exact (𝔇.diskBump k).one_of_mem_closedBall (by rw [hz0]; exact Metric.ball_subset_closedBall h'.1)
+    exact (𝔇.diskBump k).one_of_mem_closedBall
+      (by rw [hz0]; exact Metric.ball_subset_closedBall h'.1)
   have hsymm_k : ek.symm z₀ = x := ek.left_inv hxsk
   rw [show 𝔇.cutoffPullback k g z₀ = ((𝔇.diskBump k) z₀ : ℝ) •
       (g (ek.symm z₀)) ((Bundle.Trivialization.symmL ℝ
@@ -1102,8 +1125,10 @@ theorem differentiableAt_planarDiff (𝔇 : ChartDiskCover X) {g : SmoothCOneFor
   set τ := ej ∘ ei.symm with hτ
   have hxsi : x ∈ ei.source := 𝔇.subset_chart_source i hxi
   have hxsj : x ∈ ej.source := 𝔇.subset_chart_source j hxj
-  have hx_src_i : x ∈ (chartAt ℂ (𝔇.center i)).source := by rw [hei, extChartAt_source] at hxsi; exact hxsi
-  have hx_src_j : x ∈ (chartAt ℂ (𝔇.center j)).source := by rw [hej, extChartAt_source] at hxsj; exact hxsj
+  have hx_src_i : x ∈ (chartAt ℂ (𝔇.center i)).source := by
+    rw [hei, extChartAt_source] at hxsi; exact hxsi
+  have hx_src_j : x ∈ (chartAt ℂ (𝔇.center j)).source := by
+    rw [hej, extChartAt_source] at hxsj; exact hxsj
   have hz0_eq : z₀ = (chartAt ℂ (𝔇.center i)) x := by rw [hz0, hei]; simp [mfld_simps]
   have hz0t : z₀ ∈ (chartAt ℂ (𝔇.center i)).target := by
     rw [hz0_eq]; exact (chartAt ℂ (𝔇.center i)).map_source hx_src_i
@@ -1120,12 +1145,12 @@ theorem differentiableAt_planarDiff (𝔇 : ChartDiskCover X) {g : SmoothCOneFor
     (hppj.comp z₀ (hτdiff.restrictScalars ℝ)).sub hppi
   exact differentiableAt_complex_of_dbar_eq_zero hHr (𝔇.dbar_planarDiff_eq_zero hg i j hxi hxj)
 
-/-- **Second cancellation (the `∂̄`-image is a coboundary).** For a global potential `h`, the chart-`i`
-read of `u_i − h` (with `u_i = planarPrimitive i (∂̄h)`) has vanishing planar `∂̄` at `e_i x`: both are
-`∂̄`-primitives of `∂̄h`. Mechanism mirrors Lemma A — `∂̄u_i = cutoffPullback i (∂̄h)`, while
-`∂̄(h∘e_i.symm) = conj(deriv σ)·(∂̄h x 1)` via the Wirtinger chain rule + the own-chart bridge
-`dbar_apply_one_eq_dbarDisk`; the *direct* frame form `frameVector_eq_deriv_transition_symm` makes the
-two equal (no inverse-derivative needed). -/
+/-- **Second cancellation (the `∂̄`-image is a coboundary).** For a global potential `h`, the
+chart-`i` read of `u_i − h` (with `u_i = planarPrimitive i (∂̄h)`) has vanishing planar `∂̄` at
+`e_i x`: both are `∂̄`-primitives of `∂̄h`. Mechanism mirrors Lemma A —
+`∂̄u_i = cutoffPullback i (∂̄h)`, while `∂̄(h∘e_i.symm) = conj(deriv σ)·(∂̄h x 1)` via the Wirtinger
+chain rule + the own-chart bridge `dbar_apply_one_eq_dbarDisk`; the *direct* frame form
+`frameVector_eq_deriv_transition_symm` makes the two equal (no inverse-derivative needed). -/
 theorem dbar_planarDiffH_eq_zero (𝔇 : ChartDiskCover X) (h : SmoothCFunctions X) (i : 𝔇.ι) {x : X}
     (hxi : x ∈ (𝔇.U i : Set X)) :
     DbarDisk.dbar (fun z => 𝔇.planarPrimitive i (dbarL h) z
@@ -1147,14 +1172,16 @@ theorem dbar_planarDiffH_eq_zero (𝔇 : ChartDiskCover X) (h : SmoothCFunctions
     have hcomp : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun z => h (ei.symm z)) ei.target z₀ :=
       (h.contMDiff (ei.symm z₀)).contMDiffWithinAt.comp z₀ hsymm (fun _ _ => Set.mem_univ _)
     exact (contMDiffAt_iff_contDiffAt.mp
-      (hcomp.contMDiffAt ((isOpen_extChartAt_target (𝔇.center i)).mem_nhds hz0tgt))).differentiableAt
+      (hcomp.contMDiffAt
+        ((isOpen_extChartAt_target (𝔇.center i)).mem_nhds hz0tgt))).differentiableAt
       (by norm_num)
   have hsub : DbarDisk.dbar (fun z => 𝔇.planarPrimitive i (dbarL h) z - h (ei.symm z)) z₀
       = DbarDisk.dbar (𝔇.planarPrimitive i (dbarL h)) z₀
         - DbarDisk.dbar (fun z => h (ei.symm z)) z₀ := by
     show DbarDisk.dbar (𝔇.planarPrimitive i (dbarL h) - fun z => h (ei.symm z)) z₀ = _
     unfold DbarDisk.dbar
-    rw [fderiv_sub ((𝔇.contDiff_planarPrimitive i (dbarL h)).differentiable (by norm_num) z₀) hBdiff]
+    rw [fderiv_sub
+      ((𝔇.contDiff_planarPrimitive i (dbarL h)).differentiable (by norm_num) z₀) hBdiff]
     simp only [ContinuousLinearMap.sub_apply]; ring
   -- `∂̄(h∘e_i.symm) = conj(deriv σ)·∂̄h(x)(1)` via chart change + own-chart bridge.
   have hσpt : σ z₀ = ex x := by rw [hσ, Function.comp_apply, hsymm_i]
@@ -1163,10 +1190,12 @@ theorem dbar_planarDiffH_eq_zero (𝔇 : ChartDiskCover X) (h : SmoothCFunctions
     have hxtgt : ex x ∈ ex.target := by rw [hexx]; exact mem_extChartAt_target x
     have hsymm : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) ex.symm ex.target (ex x) :=
       (contMDiffOn_extChartAt_symm x) _ hxtgt
-    have hcomp : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun z => h (ex.symm z)) ex.target (ex x) :=
+    have hcomp : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun z => h (ex.symm z)) ex.target
+        (ex x) :=
       (h.contMDiff (ex.symm (ex x))).contMDiffWithinAt.comp (ex x) hsymm (fun _ _ => Set.mem_univ _)
     exact (contMDiffAt_iff_contDiffAt.mp
-      (hcomp.contMDiffAt ((isOpen_extChartAt_target x).mem_nhds hxtgt))).differentiableAt (by norm_num)
+      (hcomp.contMDiffAt
+        ((isOpen_extChartAt_target x).mem_nhds hxtgt))).differentiableAt (by norm_num)
   have hBval : DbarDisk.dbar (fun z => h (ei.symm z)) z₀
       = (starRingEnd ℂ) (deriv σ z₀) * proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑h) x) 1 := by
     have hev : (fun z => h (ei.symm z)) =ᶠ[nhds z₀] ((fun z => h (ex.symm z)) ∘ σ) := by
@@ -1188,7 +1217,8 @@ theorem dbar_planarDiffH_eq_zero (𝔇 : ChartDiskCover X) (h : SmoothCFunctions
         (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) (𝔇.center i)) (ei.symm z₀)) (1 : ℂ)) from rfl]
   have hχi : (𝔇.diskBump i) z₀ = 1 := by
     have h' := hxi; rw [𝔇.isDisk i] at h'
-    exact (𝔇.diskBump i).one_of_mem_closedBall (by rw [hz0]; exact Metric.ball_subset_closedBall h'.1)
+    exact (𝔇.diskBump i).one_of_mem_closedBall
+      (by rw [hz0]; exact Metric.ball_subset_closedBall h'.1)
   have hdbarL : (dbarL h) x (1 : ℂ) = proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑h) x) (1 : ℂ) := rfl
   rw [hχi, hsymm_i, one_smul, frameVector_eq_deriv_transition_symm (𝔇.center i) x hxsi,
     oneForm_apply_conjLinear (dbarL_mem_zeroOne h) x (deriv σ z₀), hdbarL]
@@ -1211,7 +1241,8 @@ theorem differentiableAt_planarDiffH (𝔇 : ChartDiskCover X) (h : SmoothCFunct
     have hcomp : ContMDiffWithinAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun z => h (ei.symm z)) ei.target z₀ :=
       (h.contMDiff (ei.symm z₀)).contMDiffWithinAt.comp z₀ hsymm (fun _ _ => Set.mem_univ _)
     exact (contMDiffAt_iff_contDiffAt.mp
-      (hcomp.contMDiffAt ((isOpen_extChartAt_target (𝔇.center i)).mem_nhds hz0tgt))).differentiableAt
+      (hcomp.contMDiffAt
+        ((isOpen_extChartAt_target (𝔇.center i)).mem_nhds hz0tgt))).differentiableAt
       (by norm_num)
   exact differentiableAt_complex_of_dbar_eq_zero
     (((𝔇.contDiff_planarPrimitive i (dbarL h)).differentiable (by norm_num) z₀).sub hBdiff)
@@ -1224,7 +1255,8 @@ theorem gextH_diff_analyticAt (𝔇 : ChartDiskCover X) (h : SmoothCFunctions X)
     (hFeq : ∀ v : ↥(𝔇.U i), F v
       = 𝔇.planarPrimitive i (dbarL h) (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) v.1) - h v.1)
     (w : ↥(𝔇.U i)) :
-    AnalyticAt ℂ (Gext F ∘ (chartAt (H := ℂ) (w : X)).symm) ((chartAt (H := ℂ) (w : X)) (w : X)) := by
+    AnalyticAt ℂ (Gext F ∘ (chartAt (H := ℂ) (w : X)).symm)
+      ((chartAt (H := ℂ) (w : X)) (w : X)) := by
   obtain ⟨wx, hwx⟩ := w
   refine analyticAt_chart_change (y := 𝔇.center i) ?_ ?_
   · have := 𝔇.subset_chart_source i hwx; rwa [extChartAt_source] at this
@@ -1237,7 +1269,8 @@ theorem gextH_diff_analyticAt (𝔇 : ChartDiskCover X) (h : SmoothCFunctions X)
     have hWopen : IsOpen W := ci.isOpen_inter_preimage_symm (𝔇.U i).isOpen
     have hmemW : ci wx ∈ W :=
       ⟨ci.map_source hwsrc, by simp only [Set.mem_preimage, ci.left_inv hwsrc]; exact hwx⟩
-    have hcoe : ∀ p : X, (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)) p = ci p := fun p => by simp [hci, mfld_simps]
+    have hcoe : ∀ p : X, (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)) p = ci p := fun p => by
+      simp [hci, mfld_simps]
     have hcoesymm : ∀ q : ℂ, (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).symm q = ci.symm q := fun q => by
       simp [hci, mfld_simps]
     have hHiOn : DifferentiableOn ℂ Hi W := by
@@ -1270,16 +1303,18 @@ noncomputable def rawCochain (𝔇 : ChartDiskCover X) :
 
 /-! ### Step 4d — the cocycle lands in `cocycles1 0`, and the operator `dolbeaultToCechCocycle` -/
 
-/-- The cochain difference `F = u_j − u_i` on the overlap `V = U_i ⊓ U_j`, read in *each point's own*
-chart via the extension-by-zero `Gext`, is analytic there. Chart-`i` holomorphy
-(`differentiableAt_planarDiff`, an open `DifferentiableOn` ⟹ `AnalyticAt`) transported to the point's
-own chart by `analyticAt_chart_change`. The hypothesis on `F` is its overlap value. -/
+/-- The cochain difference `F = u_j − u_i` on the overlap `V = U_i ⊓ U_j`, read in *each point's
+own* chart via the extension-by-zero `Gext`, is analytic there. Chart-`i` holomorphy
+(`differentiableAt_planarDiff`, an open `DifferentiableOn` ⟹ `AnalyticAt`) transported to the
+point's own chart by `analyticAt_chart_change`. The hypothesis on `F` is its overlap value. -/
 theorem gext_diff_analyticAt (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
     (hg : g ∈ OneFormsZeroOne X) (i j : 𝔇.ι) (F : ↥(𝔇.U i ⊓ 𝔇.U j) → ℂ)
-    (hFeq : ∀ w : ↥(𝔇.U i ⊓ 𝔇.U j), F w = 𝔇.planarPrimitive j g (extChartAt 𝓘(ℝ, ℂ) (𝔇.center j) w.1)
+    (hFeq : ∀ w : ↥(𝔇.U i ⊓ 𝔇.U j),
+      F w = 𝔇.planarPrimitive j g (extChartAt 𝓘(ℝ, ℂ) (𝔇.center j) w.1)
         - 𝔇.planarPrimitive i g (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) w.1))
     (w : ↥(𝔇.U i ⊓ 𝔇.U j)) :
-    AnalyticAt ℂ (Gext F ∘ (chartAt (H := ℂ) (w : X)).symm) ((chartAt (H := ℂ) (w : X)) (w : X)) := by
+    AnalyticAt ℂ (Gext F ∘ (chartAt (H := ℂ) (w : X)).symm)
+      ((chartAt (H := ℂ) (w : X)) (w : X)) := by
   obtain ⟨wx, hwx⟩ := w
   refine analyticAt_chart_change (y := 𝔇.center i) ?_ ?_
   · have := 𝔇.subset_chart_source i hwx.1; rwa [extChartAt_source] at this
@@ -1311,8 +1346,8 @@ theorem gext_diff_analyticAt (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
         hcoe (ci.symm z), ci.right_inv hz.1]
     exact (hHiOn.congr hEq).analyticAt (hWopen.mem_nhds hmemW)
 
-/-- **The cocycle lands in `Z¹(𝒪)`.** `cechDelta0 (rawCochain g)` is a Čech `1`-cocycle of `𝒪`: it is
-in `ker cechDelta1` (any germ cochain) and its overlap germs are holomorphic
+/-- **The cocycle lands in `Z¹(𝒪)`.** `cechDelta0 (rawCochain g)` is a Čech `1`-cocycle of `𝒪`: it
+is in `ker cechDelta1` (any germ cochain) and its overlap germs are holomorphic
 (`gext_diff_analyticAt` + the `mem_OmegaD_zero_of_gext_analytic` bridge). Needs `g` a `(0,1)`-form
 (the conjugate-linearity used by Lemma A). -/
 theorem cechDelta0_rawCochain_mem_cocycles1 (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
@@ -1329,7 +1364,9 @@ theorem cechDelta0_rawCochain_mem_cocycles1 (𝔇 : ChartDiskCover X) {g : Smoot
       show 𝔇.rawCochain g i = toGerm (𝔇.U i) (𝔇.diskSection i g) from rfl,
       rawRestrictG_coe, rawRestrictG_coe, ← map_sub]
   rw [hcomp]
-  refine ⟨F, mem_OmegaD_zero_of_gext_analytic (fun w => 𝔇.gext_diff_analyticAt hg i j F (fun w => ?_) w), rfl⟩
+  refine ⟨F,
+    mem_OmegaD_zero_of_gext_analytic (fun w => 𝔇.gext_diff_analyticAt hg i j F (fun w => ?_) w),
+    rfl⟩
   simp only [hFdef, Pi.sub_apply, Function.comp_apply, openIncl, diskSection]
 
 end ChartDiskCover
@@ -1360,16 +1397,18 @@ The cohomological assembly — lifting through the two quotients `DolbeaultH01 =
 
 set_option maxHeartbeats 1000000 in
 /-- **(Analytic sub-kernel — the Dolbeault → Čech cocycle operator.)** The `ℝ`-linear map sending a
-`(0,1)`-form `g ∈ A^{0,1}` to the Čech `1`-cocycle `{[u_j] − [u_i]} = cechDelta0 {[u_i]} ∈ Z¹(𝔘, 𝒪)`,
-where `u_i` solves `∂̄u_i = g` on the (simply-connected / disk) cover set `U_i`.
+`(0,1)`-form `g ∈ A^{0,1}` to the Čech `1`-cocycle
+`{[u_j] − [u_i]} = cechDelta0 {[u_i]} ∈ Z¹(𝔘, 𝒪)`, where `u_i` solves `∂̄u_i = g` on the
+(simply-connected / disk) cover set `U_i`.
 
-This packages the *only* PDE content of the Dolbeault → Čech direction: **global** `∂̄`-solvability on
-each Leray cover set (`DbarLocal.dbar_solvable_locally` only gives a *point*-neighborhood; the
+This packages the *only* PDE content of the Dolbeault → Čech direction: **global** `∂̄`-solvability
+on each Leray cover set (`DbarLocal.dbar_solvable_locally` only gives a *point*-neighborhood; the
 disk-global solve, via the Cauchy transform, is what is needed) — crucially **linear in `g`** (the
 Cauchy-transform solution operator is linear), so the whole assignment is `ℝ`-linear. The output
 lands in `cocycles1` because (i) `cechDelta0 c ∈ ker cechDelta1` for *any* germ-class cochain `c`
 (`cechDelta0_mem_ker_cechDelta1`, complete), and (ii) on each overlap `U_i ∩ U_j` the difference
-`u_j − u_i` is **holomorphic** (`∂̄(u_j − u_i) = g − g = 0`), so `cechDelta0 {[u_i]} ∈ sections1 0`. -/
+`u_j − u_i` is **holomorphic** (`∂̄(u_j − u_i) = g − g = 0`), so `cechDelta0 {[u_i]} ∈ sections1 0`.
+-/
 noncomputable def dolbeaultToCechCocycle (𝔇 : ChartDiskCover X) :
     ↥(OneFormsZeroOne X) →ₗ[ℝ] ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) :=
   LinearMap.codRestrict ((𝔇.toFiniteCover.cocycles1 0).restrictScalars ℝ)
@@ -1384,7 +1423,8 @@ noncomputable def dolbeaultToCechCocycle (𝔇 : ChartDiskCover X) :
 `u_i − h` is holomorphic on `U_i` (`∂̄(u_i − h) = g − g = 0`), so `{[u_i − h]} ∈ sections0 0` and
 `cechDelta0 {[u_i]} = cechDelta0 {[u_i − h]} ∈ coboundaries1 0` (the global `h` contributes `0` to
 `cechDelta0`). This is exactly the statement that `dbarImageInZeroOne X` lies in the kernel of the
-composite `A^{0,1} → Z¹ → H¹`, which makes the lift to `DolbeaultH01 = A^{0,1}/im ∂̄` well-defined. -/
+composite `A^{0,1} → Z¹ → H¹`, which makes the lift to `DolbeaultH01 = A^{0,1}/im ∂̄` well-defined.
+-/
 theorem dolbeaultToCechCocycle_dbarImage_le (𝔇 : ChartDiskCover X) :
     dbarImageInZeroOne X ≤ LinearMap.ker
       ((Submodule.mkQ ((𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
@@ -1405,11 +1445,13 @@ theorem dolbeaultToCechCocycle_dbarImage_le (𝔇 : ChartDiskCover X) :
     Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
   simp only [Submodule.submoduleOf, Submodule.mem_comap, Submodule.subtype_apply]
   rw [hval]
-  -- Coboundary witness: `{[u_i]} − {[h|U_i]} ∈ sections0`, and `cechDelta0` of the global `h` is `0`.
+  -- Coboundary witness: `{[u_i]} − {[h|U_i]} ∈ sections0`, and `cechDelta0` of the global `h` is
+  -- `0`.
   refine ⟨𝔇.rawCochain (dbarL h) - fun k => toGerm (𝔇.U k) (⇑h ∘ Subtype.val), ?_, ?_⟩
   · intro k
     rw [Pi.sub_apply,
-      show 𝔇.rawCochain (dbarL h) k = toGerm (𝔇.U k) (𝔇.diskSection k (dbarL h)) from rfl, ← map_sub]
+      show 𝔇.rawCochain (dbarL h) k = toGerm (𝔇.U k) (𝔇.diskSection k (dbarL h)) from rfl,
+      ← map_sub]
     exact ⟨𝔇.diskSection k (dbarL h) - ⇑h ∘ Subtype.val,
       mem_OmegaD_zero_of_gext_analytic (fun v => 𝔇.gextH_diff_analyticAt h k _
         (fun u => by simp only [Pi.sub_apply, Function.comp_apply, ChartDiskCover.diskSection]) v),

@@ -8,7 +8,7 @@ import Jacobians.ResidueChangeOfVariables
 import Jacobians.Dolbeault.MittagLeffler
 
 /-!
-# The general 1-form residue theorem `∑ₐ Resₐ(α) = 0` (Gate A, node A-ii)
+# The general 1-form residue theorem `∑ₐ Resₐ(α) = 0`
 
 For a compact connected Riemann surface `X`, a holomorphic 1-form `ω₀ : HolomorphicOneForms X`, and
 a function `g : X → ℂ`, the **meromorphic 1-form** `α = ω₀·g` satisfies the residue theorem
@@ -19,16 +19,16 @@ where `Res_a(α) = formFnResidue ω₀ g a` is the local Laurent residue read in
 `a` (`Jacobians.Dolbeault.formFnResidue`) and `residueSum` (`Jacobians.Dolbeault.MittagLeffler`) is
 the finite sum over the (finitely many) poles.
 
-This is **Gate A** of the Serre §17 plan: the
-well-definedness of the residue functional `Res : H¹(X, Ω) → ℂ` on cohomology classes (Forster 17.3)
-rests on exactly this — a globally-defined (coboundary) meromorphic 1-form has total residue `0`. It
+The well-definedness of the residue functional `Res : H¹(X, Ω) → ℂ` on cohomology classes
+(Forster 17.3) rests on exactly this — a globally-defined (coboundary) meromorphic 1-form has total residue `0`. It
 is the **general higher-order-pole** statement, strictly more than `deg_div` (which is the simple-pole
 `α = df/f` special case, `Jacobians.ResidueTheoremX`).
 
 ## The route (Miranda §VIII.3, the trace to ℙ¹)
 
 The proof is the algebraic residue theorem via the **trace to `ℂℙ¹`**: pick a nonconstant meromorphic
-`f : X → ℂℙ¹` (a branched cover `F = f.toRiemannSphere`, RR-supplied by gate D), form the trace
+`f : X → ℂℙ¹` (a branched cover `F = f.toRiemannSphere`, supplied by Riemann–Roch), form the
+trace
 `Tr_F α` (a rational 1-form on `ℂℙ¹`), and compute
 
 ```
@@ -37,8 +37,7 @@ The proof is the algebraic residue theorem via the **trace to `ℂℙ¹`**: pick
                   =  0                                     (ℂℙ¹ residue theorem).
 ```
 
-The two one-variable engines are **already proven, unconditional** (the residue change-of-variables
-atom `ResidueChangeOfVariables` was discharged in `Jacobians.ResidueChangeOfVariables`):
+The two one-variable engines are unconditional, in `Jacobians.ResidueChangeOfVariables`:
 
 * the fibre Lemma 3.2 `FibreTrace.resAt_traceCoeff'` — `Res_b(Tr_F α) = ∑_{sheets i} Res_{pre i}` — and
 * the trace combine `finiteResidueSum_trace_eq_zero_of_fibres'` —
@@ -48,7 +47,7 @@ both in `Jacobians.ResidueChangeOfVariables` (the `'`-forms, no `ResidueChangeOf
 hypothesis), built on the `ℂℙ¹` residue theorem `LaurentForm.finiteResidueSum_add_resAtInfty_eq_zero`
 (`Jacobians.TraceResidue`).
 
-## What this file builds (all complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file builds
 
 This file is the **manifold trace assembly** — the generalization of `Jacobians.ResidueTheoremX` (the
 `df/f`/`deg_div` simple-pole assembly) to a general meromorphic 1-form, reusing the now-general
@@ -70,17 +69,15 @@ feeders.  It mirrors that file field-for-field:
   is globally holomorphic (the empty `LaurentForm`, no poles), confirming the structure's obligations
   are *true and satisfiable*, not a disguised `False`.
 
-## The remaining obligation (the isolated geometric construction)
+## The trace data (constructed downstream)
 
-What is **not** discharged here is the *construction* of a `FormResidueTrace ω₀ g` for a general
+What is *not* built here is the construction of a `FormResidueTrace ω₀ g` for a general
 nonconstant `f`: the rational `LaurentForm L` representing `Tr_F α` (the cover's local holomorphic
 sections, the trace's finiteness/rationality, partial fractions on `ℂℙ¹`), Lemma 3.2's manifold
 bookkeeping `hL32`, and the two aggregate fibre-residue ↔ residue identifications
-`infty_eq` / `finite_eq`.  This is the §17-level trace assembly; it is the same fibre/sheet/branched-
-cover apparatus as the (still-open) `exists_properMapDegree` (`Jacobians.DegDivResidue`), and is
-isolated into the `FormResidueTrace` structure (each field a *true, non-vacuous* statement), with
-everything downstream proved completely.  See the report accompanying this commit and §4.2 (A-ii) of
-the plan.
+`infty_eq` / `finite_eq`.  That §VIII.3 trace assembly is isolated into the `FormResidueTrace`
+structure (each field a *true, non-vacuous* statement) and carried out in the `FormTrace*` and
+`SerreResidue*` modules, with everything downstream of the structure proved here.
 
 ## References
 
@@ -97,8 +94,6 @@ open scoped Manifold ContDiff Real
 namespace Jacobians.Dolbeault.FormResidueTheorem
 
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
-
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
@@ -162,8 +157,8 @@ statement (it is exactly what the §VIII.3 trace assembly produces) and **not** 
 the general trace combine (`finiteResidueSum_trace_eq_zero_of_fibres'`) and the fibrewise regrouping
 (`residueSum_eq_infty_add_finite`), as proved in `residueSum_eq_zero_of_formResidueTrace`.
 
-This isolates the *entire* remaining geometric wall (the trace's finiteness/rationality + Lemma 3.2's
-manifold bookkeeping `hL32` + the per-fibre residue ↔ `formFnResidue` identifications) into the two
+This isolates the geometric content (the trace's finiteness/rationality + Lemma 3.2's manifold
+bookkeeping `hL32` + the per-fibre residue ↔ `formFnResidue` identifications) into the two
 aggregate identifications `infty_eq` and `finite_eq`, with everything downstream proved.
 
 The crucial difference from `Jacobians.ResidueTheoremX.LogDerivTrace`: there are no simple-pole
