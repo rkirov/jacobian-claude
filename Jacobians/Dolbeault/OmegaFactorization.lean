@@ -2,7 +2,7 @@
   The ω₀-factorization of meromorphic pair-forms (Route M input 2; Miranda Ch. VI pp. 186–188).
 
   A meromorphic 1-form on the compact Riemann surface `X` is represented as a PAIR `(g₀, h)` of
-  meromorphic functions meaning `h·dg₀`.  To feed it into the proven 1-form residue theorem
+  meromorphic functions meaning `h·dg₀`.  To feed it into the 1-form residue theorem
   `residueTheorem_unconditional` (which is typed at `ω₀·g` with `ω₀ : HolomorphicOneForms X`
   HOLOMORPHIC), we factor `dg₀ = q·ω₀` through any nonzero holomorphic 1-form `ω₀` (existence =
   `0 < genus X`), where the quotient
@@ -10,18 +10,18 @@
     `derivQuotient ω₀ g₀ : X → ℂ`,  `y ↦ (dg₀-coefficient at y)/(ω₀-coefficient at y)`
 
   (both read in `y`'s OWN canonical chart) is a GLOBAL meromorphic function.  Then
-  `h·dg₀ = (h·q)·ω₀` and the pair-form residue theorem reduces to the proven one.
+  `h·dg₀ = (h·q)·ω₀` and the pair-form residue theorem reduces to the 1-form one.
 
   Contents:
   * **Identity-theorem atoms** for a nonzero holomorphic 1-form (analytic continuation on the
     connected `X`, clopen argument): `eq_zero_of_coeffAt_eventually_zero` (global propagation),
     `coeffAt_eventually_ne_zero` (zeros are isolated), `finite_localRep_self_eq_zero` (the zero
     set is FINITE — the `div(ω₀) ≥ 0` finiteness atom).
-  * **`chartTransitionFactor` = transition derivative** (`chartTransitionFactor_eq_deriv_transition`):
-    the Montel chart-transition factor of the tangent bundle is the honest `deriv` of the
-    chart-transition map — the bridge that makes the dg₀-coefficient (chain rule) and the
-    ω₀-coefficient (`localRep_chart_transition`) transform with the SAME factor, so their ratio is
-    chart-coherent.
+  * **`chartTransitionFactor` = transition derivative**
+    (`chartTransitionFactor_eq_deriv_transition`): the Montel chart-transition factor of the tangent
+    bundle is the honest `deriv` of the chart-transition map — the bridge that makes the
+    dg₀-coefficient (chain rule) and the ω₀-coefficient (`localRep_chart_transition`) transform with
+    the SAME factor, so their ratio is chart-coherent.
   * **The quotient** `derivQuotient`/`derivQuotientFn`: its chart-coherence
     (`derivQuotient_eventuallyEq_chart`) and global meromorphy (`isMeromorphic_derivQuotient`,
     via Mathlib's `MeromorphicAt.deriv` + `MeromorphicAt.div` + germ invariance).
@@ -36,12 +36,11 @@ import Jacobians.Dolbeault.FormCoeff
 open scoped Manifold ContDiff Topology
 open Bundle Filter Metric
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Generic helpers: residue of an analytic germ, punctured chart transfers, finite avoidance -/
 
@@ -58,7 +57,8 @@ theorem resAt_eq_zero_of_analyticAt {f : ℂ → ℂ} {c : ℂ} (hf : AnalyticAt
 
 /-- The canonical chart maps the punctured neighbourhood filter of its centre to the punctured
 neighbourhood filter of the centre's image (continuity + injectivity on the source). -/
-theorem tendsto_chart_nhdsNE (x : X) :
+theorem tendsto_chart_nhdsNE {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (x : X) :
     Tendsto (chartAt (H := ℂ) x) (𝓝[≠] x) (𝓝[≠] ((chartAt (H := ℂ) x) x)) := by
   have hx : x ∈ (chartAt (H := ℂ) x).source := mem_chart_source ℂ x
   rw [tendsto_nhdsWithin_iff]
@@ -69,7 +69,8 @@ theorem tendsto_chart_nhdsNE (x : X) :
 
 /-- The inverse canonical chart maps the punctured neighbourhood filter of the centre's image to
 the punctured neighbourhood filter of the centre. -/
-theorem tendsto_chart_symm_nhdsNE (x : X) :
+theorem tendsto_chart_symm_nhdsNE {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (x : X) :
     Tendsto (chartAt (H := ℂ) x).symm (𝓝[≠] ((chartAt (H := ℂ) x) x)) (𝓝[≠] x) := by
   have hx : x ∈ (chartAt (H := ℂ) x).source := mem_chart_source ℂ x
   have hxt : (chartAt (H := ℂ) x) x ∈ (chartAt (H := ℂ) x).target :=
@@ -248,7 +249,9 @@ honest one-variable derivative of the chart-transition map `chartAt x₀ ∘ (ch
 `chartAt x₀' y`.  Unwinds `tangentBundleCore_coordChange_achart`; this is the bridge that makes
 the `dg₀`-coefficient (chain rule) and the `ω₀`-coefficient (`localRep_chart_transition`)
 transform with the SAME factor. -/
-theorem chartTransitionFactor_eq_deriv_transition {x₀ x₀' y : X}
+theorem chartTransitionFactor_eq_deriv_transition {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {x₀ x₀' y : X}
     (h' : y ∈ (chartAt (H := ℂ) x₀').source) (h : y ∈ (chartAt (H := ℂ) x₀).source) :
     Jacobians.Montel.chartTransitionFactor x₀ x₀' y
       = deriv ((chartAt (H := ℂ) x₀) ∘ (chartAt (H := ℂ) x₀').symm)
