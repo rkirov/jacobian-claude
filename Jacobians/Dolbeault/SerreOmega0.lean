@@ -8,8 +8,9 @@
 
   ## The argument (Serre-INDEPENDENT — no circularity)
 
-  Everything rests on the now-PROVEN cohomological Riemann–Roch (χ-additivity, Forster §16),
-  `Jacobians.Dolbeault.cohomological_riemannRoch`, which gives — for a locally-realizable cover `𝔘` —
+  Everything rests on the cohomological Riemann–Roch (χ-additivity, Forster §16),
+  `Jacobians.Dolbeault.cohomological_riemannRoch`, which gives — for a locally-realizable cover `𝔘`
+  —
 
       `(h⁰(D) : ℤ) − h¹(D) = deg D + 1 − h¹(0)`.
 
@@ -113,9 +114,9 @@ every point, with one fixed scalar `c`. Negation of this is the working notion o
 def IsGermConstant (f : MeromorphicFunction X) : Prop :=
   ∃ c : ℂ, ∀ x, ∀ᶠ z in 𝓝[≠] x, f.toFun z = c
 
-/-- **Gate D — existence of a nonconstant meromorphic function.**
+/-- **Existence of a nonconstant meromorphic function.**
 
-On a compact connected Riemann surface `X` there is a NONCONSTANT meromorphic function: a
+On a compact connected Riemann surface `X` there is a nonconstant meromorphic function: a
 `f : MeromorphicFunction X` lying in some complete linear system `L(D)` whose germ is not constant
 (`¬ IsGermConstant f`).
 
@@ -174,10 +175,10 @@ theorem exists_nonconstant_meromorphic :
     rw [hgclass]; module
   exact one_ne_zero (neg_eq_zero.mp ((LinearIndependent.pair_iff.mp hy c (-1) hrel).2))
 
-/-- **Gate D, headline form.** A compact connected Riemann surface carries a NONCONSTANT meromorphic
+/-- **Headline form.** A compact connected Riemann surface carries a nonconstant meromorphic
 function (its germ is not constant). This is the existence underlying `ω₀ = df` — the nonzero
-meromorphic 1-form whose canonical divisor `K = div ω₀` is the gate-D input to
-`exists_serreDualityData`. A direct corollary of `exists_nonconstant_meromorphic`. -/
+meromorphic 1-form whose canonical divisor is `K = div ω₀`. A direct corollary of
+`exists_nonconstant_meromorphic`. -/
 theorem exists_nonconstant_meromorphicFunction :
     ∃ f : MeromorphicFunction X, ¬ IsGermConstant f := by
   obtain ⟨_, f, _, hf⟩ := exists_nonconstant_meromorphic (X := X)
