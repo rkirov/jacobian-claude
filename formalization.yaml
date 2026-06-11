@@ -125,7 +125,7 @@ automation:
         trusted — labels are never trusted; orphan modules are swept (scripts/dead_modules.py); each
         commit is `lake build`-green.
       cost:
-        wall_time: "multi-session over ~8 weeks (2026-04 to 2026-06-11), incl. long overnight autonomous runs"
+        wall_time: "20 working days (distinct commit days, git history) spread over 2026-04-19 to 2026-06-11, incl. long overnight autonomous runs"
         spend_usd: "subscription-based usage, $100/month subscription"
         hardware: "single 4-core / ~8 GB laptop; API-only model access"
       prompting_notes: >
