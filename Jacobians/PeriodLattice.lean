@@ -16,9 +16,8 @@ import Mathlib.Analysis.Complex.OpenMapping
 /-!
 # Period lattice of a compact Riemann surface
 
-Real (non-placeholder) period lattice of `HolomorphicOneForms X`.
-Defined as the ℤ-span of the image of smooth closed loops under the
-period pairing.
+The period lattice of `HolomorphicOneForms X`: the ℤ-span of the
+image of smooth closed loops under the period pairing.
 
 ## Structure
 
@@ -34,42 +33,537 @@ period pairing.
   `periodVec Y (f ∘ γ) = ambientPhi f hf (periodVec X γ)`, from
   which `ambientPhi` preservation of the period lattice follows.
 * `DiscreteTopology`/`IsZLattice ℝ` of `truePeriodLattice X` and
-  `exists_periodLattice_realBasis` — now live DOWNSTREAM in
-  `Jacobians/PeriodLatticeBasis.lean`, proven dissection-free (Forster 21.4: B-3
-  non-degeneracy + B-4 discreteness via the Abel engine and the residue theorem).
+  `exists_periodLattice_realBasis` live downstream in
+  `Jacobians/PeriodLatticeBasis.lean` (Forster 21.4: non-degeneracy via the
+  maximum principle, discreteness via the Abel machinery and the residue
+  theorem).
 
 ## References
 
 Forster §§20–21; Miranda Ch. V §§1–3.
 -/
 
-set_option linter.unusedSectionVars false
-
 namespace Jacobians
 
 open scoped Manifold ContDiff Bundle Topology
 open Filter
 
+/-! ### Generic topological and charted-space helpers
+
+Lemmas needing only the topological / charted-space structure (no compactness,
+connectedness, or manifold smoothness beyond what each states); collected here
+so the stronger standing hypotheses below do not enlarge their statements. -/
+
+section GenericHelpers
+
+open Set
+
+variable {X : Type*} {Y : Type*} [TopologicalSpace X]
+
+/-- Generic neighborhood cover of a path: given an open-neighborhood assignment
+`W y ∋ y`, a continuous `γ` is covered segment-by-segment, each segment landing
+in some `W (x k)`. (Generalizes `exists_chartCover` from chart sources to `W`.) -/
+theorem exists_nbhd_cover (γ : ℝ → X) (hγ : Continuous γ)
+    (W : X → Set X) (hW_open : ∀ y, IsOpen (W y)) (hW_mem : ∀ y, y ∈ W y) :
+    ∃ (n : ℕ) (_hn : 0 < n) (x : Fin n → X),
+      ∀ (k : Fin n) (s : ℝ),
+        (k : ℝ) / n ≤ s → s ≤ ((k : ℝ) + 1) / n → γ s ∈ W (x k) := by
+  set scc : Set ℝ := Set.Icc (0 : ℝ) 1 with hs_def
+  set U : scc → Set ℝ := fun t => γ ⁻¹' W (γ t.1) with hU_def
+  have hU_open : ∀ t : scc, IsOpen (U t) := fun t => (hW_open (γ t.1)).preimage hγ
+  have hU_cover : scc ⊆ ⋃ t : scc, U t := by
+    intro t ht
+    exact Set.mem_iUnion.mpr ⟨⟨t, ht⟩, hW_mem (γ t)⟩
+  obtain ⟨δ, hδ_pos, hδ⟩ :=
+    lebesgue_number_lemma_of_metric isCompact_Icc hU_open hU_cover
+  obtain ⟨n, hn_gt⟩ : ∃ n : ℕ, 1 / δ < (n : ℝ) := exists_nat_gt _
+  have hn_pos : 0 < n := by
+    have h1 : (0 : ℝ) < 1 / δ := by positivity
+    exact_mod_cast lt_trans h1 hn_gt
+  have key : ∀ k : Fin n, ∃ x : X, ∀ y : ℝ,
+      (k : ℝ) / n ≤ y → y ≤ ((k : ℝ) + 1) / n → γ y ∈ W x := by
+    intro k
+    set m : ℝ := ((k : ℝ) + 1/2) / n with hm_def
+    have hm_mem : m ∈ scc := by
+      refine ⟨?_, ?_⟩
+      · apply div_nonneg
+        · have : (0 : ℝ) ≤ k := Nat.cast_nonneg _
+          linarith
+        · exact Nat.cast_nonneg _
+      · rw [hm_def, div_le_one (by exact_mod_cast hn_pos)]
+        have hk : (k : ℝ) + 1 ≤ n := by
+          have : (k.val + 1 : ℕ) ≤ n := k.isLt
+          exact_mod_cast this
+        linarith
+    obtain ⟨t₀, ht₀⟩ := hδ m hm_mem
+    refine ⟨γ t₀.1, fun y hy_low hy_high => ?_⟩
+    apply ht₀
+    show y ∈ Metric.ball m δ
+    rw [Metric.mem_ball, Real.dist_eq]
+    have hn : (1 : ℝ) / n < δ := by
+      have hn_R : (0 : ℝ) < n := by exact_mod_cast hn_pos
+      rw [div_lt_iff₀ hn_R]
+      have h := mul_lt_mul_of_pos_left hn_gt hδ_pos
+      have h_simp : δ * (1 / δ) = 1 := by field_simp
+      linarith
+    have h_dist : |y - m| ≤ 1 / (2 * n) := by
+      rw [abs_sub_le_iff]
+      refine ⟨?_, ?_⟩
+      · have : y - m ≤ ((k : ℝ) + 1) / n - ((k : ℝ) + 1/2) / n := by linarith
+        have heq : ((k : ℝ) + 1) / n - ((k : ℝ) + 1/2) / n = 1 / (2 * n) := by
+          field_simp; ring
+        linarith
+      · have : m - y ≤ ((k : ℝ) + 1/2) / n - (k : ℝ) / n := by linarith
+        have heq : ((k : ℝ) + 1/2) / n - (k : ℝ) / n = 1 / (2 * n) := by
+          field_simp; ring
+        linarith
+    have h1 : (1 : ℝ) / (2 * n) ≤ 1 / n := by
+      apply div_le_div_of_nonneg_left (by norm_num) (by exact_mod_cast hn_pos)
+      have hnn : (0 : ℝ) < n := by exact_mod_cast hn_pos
+      nlinarith
+    linarith
+  classical
+  exact ⟨n, hn_pos, fun k => (key k).choose,
+    fun k y h1 h2 => (key k).choose_spec y h1 h2⟩
+
+/-- `f` is locally constant at `x`: eventually equal to `f x`. -/
+def locConst (f : X → Y) (x : X) : Prop := ∀ᶠ x' in 𝓝 x, f x' = f x
+
+/-- The set of points where `f` is locally constant is **open**. -/
+theorem isOpen_locConst (f : X → Y) : IsOpen {x | locConst f x} := by
+  rw [isOpen_iff_eventually]
+  intro x₀ hx₀
+  -- hx₀ : locConst f x₀, i.e. ∀ᶠ x' in 𝓝 x₀, f x' = f x₀
+  simp only [mem_setOf_eq, locConst] at hx₀
+  rw [eventually_iff_exists_mem] at hx₀
+  obtain ⟨W, hW, hWeq⟩ := hx₀
+  -- W ∈ 𝓝 x₀ with f = f x₀ on W
+  rw [eventually_iff_exists_mem]
+  refine ⟨interior W, interior_mem_nhds.mpr hW, ?_⟩
+  intro x hxW
+  -- f locally const at x: on interior W (a nbhd of x), f = f x₀ = f x
+  have hfx : f x = f x₀ := hWeq x (interior_subset hxW)
+  have : ∀ᶠ x' in 𝓝 x, f x' = f x := by
+    filter_upwards [isOpen_interior.mem_nhds hxW] with x' hx'
+    rw [hWeq x' (interior_subset hx'), hfx]
+  exact this
+
+variable [TopologicalSpace Y]
+
+/-- Proper preimage-neighborhood lemma (Forster 4.21b): for a proper
+`f`, an open `V` containing the fibre `f⁻¹{x}` has an open neighborhood `U ∋ x`
+with `f⁻¹U ⊆ V`. (From `f` being a closed map.) Used to shrink the disjoint
+local-homeo sheets over a fibre to a common base neighborhood — the key step in
+the covering structure off the branch locus (Forster 4.22). -/
+theorem properNbhd {f : X → Y} (hf : IsProperMap f) (x : Y) {V : Set X}
+    (hV : IsOpen V) (hsub : f ⁻¹' {x} ⊆ V) :
+    ∃ U : Set Y, IsOpen U ∧ x ∈ U ∧ f ⁻¹' U ⊆ V := by
+  have hcompl : IsClosed (f '' Vᶜ) := hf.isClosedMap _ hV.isClosed_compl
+  refine ⟨(f '' Vᶜ)ᶜ, hcompl.isOpen_compl, ?_, ?_⟩
+  · rintro ⟨z, hzV, hzx⟩
+    exact hzV (hsub hzx)
+  · intro z hz
+    by_contra hzV
+    exact hz ⟨z, hzV, rfl⟩
+
+
+variable [ChartedSpace ℂ X] [ChartedSpace ℂ Y]
+
+/-- A valid chart-ball hop `Q₀ → Q`: `Q` is in `Q₀`'s chart source and the
+affine segment between their chart images stays in the chart target. Exactly
+the hypotheses `ChartBallPathSmooth` needs. -/
+def HopValid (Q₀ Q : X) : Prop :=
+  Q ∈ (chartAt (H := ℂ) Q₀).source ∧
+  ∀ s ∈ Set.Icc (0 : ℝ) 1,
+    ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
+      (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target
+
+/-- The `HopValid`-validity neighborhood of `y` (open, contains `y`). -/
+def hopNbhd (y : X) : Set X := interior {Q | HopValid y Q}
+
+theorem isOpen_hopNbhd (y : X) : IsOpen (hopNbhd y) := isOpen_interior
+
+theorem hopValid_of_mem_hopNbhd {y Q : X} (h : Q ∈ hopNbhd y) : HopValid y Q :=
+  interior_subset (s := {Q' : X | HopValid y Q'}) h
+
+/-- Chart pullback of `f` at `x`. -/
+noncomputable def chartPullback (f : X → Y) (x : X) : ℂ → ℂ :=
+  (chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm
+
+theorem analyticAt_chartPullback (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X) :
+    AnalyticAt ℂ (chartPullback f x) ((chartAt ℂ x) x) :=
+  Jacobians.Discharge.ContMDiff.Degree.contMDiffAt_omega_analyticAt_chart_pullback (hf x)
+
+-- Lemma A: chart-pullback eventually const at chart image ↔ f locally const at x.
+theorem chartPullback_eventuallyConst_iff_locConst
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X) :
+    (∀ᶠ z in 𝓝 ((chartAt ℂ x) x),
+      chartPullback f x z = chartPullback f x ((chartAt ℂ x) x))
+    ↔ locConst f x := by
+  set φ := chartAt ℂ x with hφ
+  set ψ := chartAt ℂ (f x) with hψ
+  have hxφ : x ∈ φ.source := mem_chart_source ℂ x
+  have hfxψ : f x ∈ ψ.source := mem_chart_source ℂ (f x)
+  -- 𝓝 x = map φ.symm (𝓝 (φ x)), and 𝓝 (φ x) = map φ (𝓝 x)
+  have hmap : Filter.map φ.symm (𝓝 (φ x)) = 𝓝 x := φ.symm_map_nhds_eq hxφ
+  have hmap' : Filter.map φ (𝓝 x) = 𝓝 (φ x) := φ.map_nhds_eq hxφ
+  -- f continuous near x stays in ψ.source
+  have hcontf : ContinuousAt f x := hf.continuous.continuousAt
+  have hf_src : ∀ᶠ x' in 𝓝 x, f x' ∈ ψ.source :=
+    hcontf.preimage_mem_nhds (ψ.open_source.mem_nhds hfxψ)
+  -- φ.symm (φ x) = x
+  have hsymm : φ.symm (φ x) = x := φ.left_inv hxφ
+  -- chartPullback f x (φ x') = ψ (f x') when x' ∈ φ.source
+  have hpb_eq : ∀ x', x' ∈ φ.source →
+      chartPullback f x (φ x') = ψ (f x') := by
+    intro x' hx'
+    simp only [chartPullback, Function.comp_apply, ← hφ, ← hψ]
+    rw [φ.left_inv hx']
+  have hpbx : chartPullback f x (φ x) = ψ (f x) := hpb_eq x hxφ
+  -- x' ∈ φ.source for x' near x
+  have hx_src : ∀ᶠ x' in 𝓝 x, x' ∈ φ.source :=
+    φ.open_source.mem_nhds hxφ
+  constructor
+  · -- pullback const ⇒ locConst
+    intro hev
+    rw [← hmap', Filter.eventually_map] at hev
+    -- hev : ∀ᶠ x' in 𝓝 x, chartPullback f x (φ x') = chartPullback f x (φ x)
+    filter_upwards [hev, hf_src, hx_src] with x' hpb hx'src hx'φ
+    -- ψ (f x') = ψ (f x) ⇒ f x' = f x
+    rw [hpb_eq x' hx'φ, hpbx] at hpb
+    exact ψ.injOn hx'src hfxψ hpb
+  · -- locConst ⇒ pullback const
+    intro hlc
+    rw [← hmap', Filter.eventually_map]
+    filter_upwards [hlc, hx_src] with x' hfx' hx'φ
+    rw [hpb_eq x' hx'φ, hpbx, hfx']
+
+/-- **Bridge with a fixed target chart.** For `x` in the source chart of `x₀`
+whose image `f x` lies in the *fixed* target chart of `x₀`, local constancy of
+`f` at `x` is equivalent to the (single, `x₀`-based) chart pullback being
+eventually constant at `φ₀ x`. -/
+theorem locConst_iff_pullback_const_fixedChart
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x₀ x : X)
+    (hxφ : x ∈ (chartAt ℂ x₀).source)
+    (hfxψ : f x ∈ (chartAt ℂ (f x₀)).source) :
+    locConst f x ↔
+      ∀ᶠ z in 𝓝 ((chartAt ℂ x₀) x),
+        chartPullback f x₀ z = chartPullback f x₀ ((chartAt ℂ x₀) x) := by
+  set φ := chartAt ℂ x₀ with hφ
+  set ψ := chartAt ℂ (f x₀) with hψ
+  -- 𝓝 (φ x) = map φ (𝓝 x)
+  have hmap' : Filter.map φ (𝓝 x) = 𝓝 (φ x) := φ.map_nhds_eq hxφ
+  -- f continuous near x stays in ψ.source
+  have hcontf : ContinuousAt f x := hf.continuous.continuousAt
+  have hf_src : ∀ᶠ x' in 𝓝 x, f x' ∈ ψ.source :=
+    hcontf.preimage_mem_nhds (ψ.open_source.mem_nhds hfxψ)
+  -- chartPullback f x₀ (φ x') = ψ (f x') when x' ∈ φ.source
+  have hpb_eq : ∀ x', x' ∈ φ.source →
+      chartPullback f x₀ (φ x') = ψ (f x') := by
+    intro x' hx'
+    simp only [chartPullback, Function.comp_apply, ← hφ, ← hψ]
+    rw [φ.left_inv hx']
+  have hpbx : chartPullback f x₀ (φ x) = ψ (f x) := hpb_eq x hxφ
+  have hx_src : ∀ᶠ x' in 𝓝 x, x' ∈ φ.source := φ.open_source.mem_nhds hxφ
+  constructor
+  · -- locConst ⇒ pullback const
+    intro hlc
+    rw [← hmap', Filter.eventually_map]
+    filter_upwards [hlc, hx_src] with x' hfx' hx'φ
+    rw [hpb_eq x' hx'φ, hpbx, hfx']
+  · -- pullback const ⇒ locConst
+    intro hev
+    rw [← hmap', Filter.eventually_map] at hev
+    filter_upwards [hev, hf_src, hx_src] with x' hpb hx'src hx'φ
+    rw [hpb_eq x' hx'φ, hpbx] at hpb
+    exact ψ.injOn hx'src hfxψ hpb
+
+/-- **Critical set of a holomorphic map** between complex 1-manifolds.
+
+Defined as `Jacobians.Discharge.Manifold.criticalSetGeneral f` — the set of
+points at which `f` is not locally injective. Classically equivalent to
+`{x | mfderiv f x = 0}` for analytic maps between complex 1-manifolds
+(`criticalSet_iff_chart_pullback_deriv_zero` / Forster §I.7); the
+local-injectivity definition is the one supported by the imported
+infrastructure, which gives closedness, ne-univ, and finiteness directly. -/
+def criticalSet (f : X → Y) : Set X :=
+  Jacobians.Discharge.Manifold.criticalSetGeneral f
+
+/-- **Branch locus**: the image of the critical set. -/
+def branchLocus (f : X → Y) : Set Y :=
+  f '' criticalSet f
+
+/-- **Critical set is closed.** The not-locally-injective set is closed via
+`isClosed_criticalSetGeneral`. -/
+theorem isClosed_criticalSet (f : X → Y) (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    IsClosed (criticalSet f) :=
+  Jacobians.Discharge.Manifold.isClosed_criticalSetGeneral f
+
+/-- A holomorphic map from a compact Riemann surface is proper
+(Forster §4.20): a continuous map from a compact space to a T2 space is proper.
+This is what makes the branched-cover theory (§4.22–4.25) available: a proper
+local homeomorphism is a covering map. -/
+theorem isProperMap_of_contMDiff [CompactSpace X] [T2Space Y] (f : X → Y)
+    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    IsProperMap f :=
+  hf.continuous.isProperMap
+
+/-- **Local open mapping at `x`** (provided the chart pullback is not locally
+constant there): `f` sends neighborhoods of `x` to neighborhoods of `f x`. This
+is the heart of the open mapping theorem, transferred through the charts. -/
+theorem nhds_le_map_of_chartPullback_not_eventuallyConst
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X)
+    (hnc : ¬ ∀ᶠ z in 𝓝 ((chartAt ℂ x) x),
+      chartPullback f x z = chartPullback f x ((chartAt ℂ x) x)) :
+    𝓝 (f x) ≤ Filter.map f (𝓝 x) := by
+  set φ := chartAt ℂ x with hφ
+  set ψ := chartAt ℂ (f x) with hψ
+  set g := chartPullback f x with hg
+  have hxφ : x ∈ φ.source := mem_chart_source ℂ x
+  have hfxψ : f x ∈ ψ.source := mem_chart_source ℂ (f x)
+  -- g is open at φ x: from analyticity + not-locally-constant, `nhds_le_map_nhds`.
+  have hgA : AnalyticAt ℂ g (φ x) := analyticAt_chartPullback f hf x
+  have hg_open : 𝓝 (g (φ x)) ≤ Filter.map g (𝓝 (φ x)) :=
+    hgA.eventually_constant_or_nhds_le_map_nhds.resolve_left hnc
+  -- g (φ x) = ψ (f x).
+  have hgφx : g (φ x) = ψ (f x) := by
+    simp only [hg, chartPullback, Function.comp_apply]
+    rw [φ.left_inv hxφ]
+  -- 𝓝 x = map φ.symm (𝓝 (φ x)).
+  have hnx : Filter.map φ.symm (𝓝 (φ x)) = 𝓝 x := φ.symm_map_nhds_eq hxφ
+  -- 𝓝 (f x) = map ψ.symm (𝓝 (ψ (f x))).
+  have hnfx : Filter.map ψ.symm (𝓝 (ψ (f x))) = 𝓝 (f x) := ψ.symm_map_nhds_eq hfxψ
+  -- f ∘ φ.symm =ᶠ[𝓝 (φ x)] ψ.symm ∘ g  near φ x.
+  have hev : (f ∘ φ.symm) =ᶠ[𝓝 (φ x)] (ψ.symm ∘ g) := by
+    have hφxtarget : φ x ∈ φ.target := φ.map_source hxφ
+    have hcont : ContinuousAt (fun z => f (φ.symm z)) (φ x) :=
+      hf.continuous.continuousAt.comp
+        (φ.continuousOn_symm.continuousAt (φ.open_target.mem_nhds hφxtarget))
+    have hval : f (φ.symm (φ x)) = f x := by rw [φ.left_inv hxφ]
+    have hsrc_nhds : ψ.source ∈ 𝓝 (f (φ.symm (φ x))) := by
+      rw [hval]; exact ψ.open_source.mem_nhds hfxψ
+    have hpre : ∀ᶠ z in 𝓝 (φ x), f (φ.symm z) ∈ ψ.source :=
+      hcont.preimage_mem_nhds hsrc_nhds
+    filter_upwards [hpre] with z hz
+    show f (φ.symm z) = ψ.symm (g z)
+    simp only [hg, chartPullback, Function.comp_apply]
+    rw [ψ.left_inv hz]
+  -- assemble: 𝓝 (f x) ≤ map f (𝓝 x)
+  calc 𝓝 (f x) = Filter.map ψ.symm (𝓝 (ψ (f x))) := hnfx.symm
+    _ ≤ Filter.map ψ.symm (Filter.map g (𝓝 (φ x))) := by
+          rw [← hgφx]; exact Filter.map_mono hg_open
+    _ = Filter.map (ψ.symm ∘ g) (𝓝 (φ x)) := by rw [Filter.map_map]
+    _ = Filter.map (f ∘ φ.symm) (𝓝 (φ x)) := by rw [Filter.map_congr hev.symm]
+    _ = Filter.map f (Filter.map φ.symm (𝓝 (φ x))) := by rw [Filter.map_map]
+    _ = Filter.map f (𝓝 x) := by rw [hnx]
+
+/-- The set of points where `f` is locally constant is **closed**
+(equivalently, its complement is open), via the identity theorem. -/
+theorem isClosed_locConst (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    IsClosed {x | locConst f x} := by
+  rw [← isOpen_compl_iff, isOpen_iff_eventually]
+  intro x₀ hx₀
+  simp only [mem_compl_iff, mem_setOf_eq] at hx₀ ⊢
+  set φ := chartAt ℂ x₀ with hφ
+  set ψ := chartAt ℂ (f x₀) with hψ
+  set G := chartPullback f x₀ with hG
+  set z₀ := φ x₀ with hz₀
+  have hxφ₀ : x₀ ∈ φ.source := mem_chart_source ℂ x₀
+  have hfxψ₀ : f x₀ ∈ ψ.source := mem_chart_source ℂ (f x₀)
+  -- G not eventually const at z₀, via Lemma A
+  have hGnc : ¬ ∀ᶠ z in 𝓝 z₀, G z = G z₀ :=
+    fun h => hx₀ ((chartPullback_eventuallyConst_iff_locConst f hf x₀).mp h)
+  -- G analytic on a ball around z₀
+  have hGA : AnalyticAt ℂ G z₀ := analyticAt_chartPullback f hf x₀
+  obtain ⟨r, hr, hball⟩ := hGA.exists_ball_analyticOnNhd
+  have hballpc : IsPreconnected (Metric.ball z₀ r) := (convex_ball z₀ r).isPreconnected
+  -- For every z₁ in the ball, G not eventually const at z₁.
+  have hnc_ball : ∀ z₁ ∈ Metric.ball z₀ r, ¬ ∀ᶠ z in 𝓝 z₁, G z = G z₁ := by
+    intro z₁ hz₁ hev
+    -- G = G z₁ on the ball
+    have heqOn : EqOn G (fun _ => G z₁) (Metric.ball z₀ r) :=
+      Jacobians.Discharge.ContMDiff.Degree.eqOn_const_of_preconnected_of_eventuallyEq
+        hball hballpc hz₁ hev
+    -- so G eventually const at z₀
+    apply hGnc
+    have hz₀ball : z₀ ∈ Metric.ball z₀ r := Metric.mem_ball_self hr
+    filter_upwards [Metric.ball_mem_nhds z₀ hr] with z hz
+    rw [heqOn hz, heqOn hz₀ball]
+  -- Now: the open set around x₀ where the bridge applies.
+  -- V := φ.source ∩ φ ⁻¹' (ball) ∩ f ⁻¹' ψ.source
+  have hVopen : IsOpen (φ.source ∩ φ ⁻¹' (Metric.ball z₀ r)) :=
+    φ.continuousOn.isOpen_inter_preimage φ.open_source Metric.isOpen_ball
+  have hfopen : IsOpen (f ⁻¹' ψ.source) :=
+    ψ.open_source.preimage hf.continuous
+  refine Filter.eventually_iff_exists_mem.mpr
+    ⟨(φ.source ∩ φ ⁻¹' (Metric.ball z₀ r)) ∩ (f ⁻¹' ψ.source), ?_, ?_⟩
+  · refine (hVopen.inter hfopen).mem_nhds ⟨⟨hxφ₀, ?_⟩, hfxψ₀⟩
+    show φ x₀ ∈ Metric.ball z₀ r
+    rw [← hz₀]; exact Metric.mem_ball_self hr
+  · rintro x ⟨⟨hxsrc, hxball⟩, hxfsrc⟩
+    -- ¬ locConst f x via bridge + hnc_ball
+    rw [locConst_iff_pullback_const_fixedChart f hf x₀ x hxsrc hxfsrc]
+    -- goal: ¬ ∀ᶠ z in 𝓝 (φ x), G z = G (φ x)
+    exact hnc_ball (φ x) hxball
+
+variable [ConnectedSpace X]
+
+/-- **Globalized identity theorem.** The chart pullback of a non-constant
+holomorphic map is not locally constant at any chart image. -/
+theorem chartPullback_not_eventuallyConst [Nonempty Y]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (x : X) :
+    ¬ ∀ᶠ z in 𝓝 ((chartAt ℂ x) x),
+      chartPullback f x z = chartPullback f x ((chartAt ℂ x) x) := by
+  rw [chartPullback_eventuallyConst_iff_locConst f hf x]
+  -- Suppose f is locally constant at x. Show f is globally constant.
+  intro hlc
+  apply hnonconst
+  -- S = {x | locConst f x} is clopen and nonempty, hence all of X.
+  have hclopen : IsClopen {x : X | locConst f x} :=
+    ⟨isClosed_locConst f hf, isOpen_locConst f⟩
+  have hne : {x : X | locConst f x}.Nonempty := ⟨x, hlc⟩
+  have huniv : {x : X | locConst f x} = Set.univ :=
+    (isClopen_iff.mp hclopen).resolve_left
+      (Set.nonempty_iff_ne_empty.mp hne)
+  -- So f is locally constant everywhere ⇒ IsLocallyConstant ⇒ constant.
+  have hLC : IsLocallyConstant f := by
+    rw [IsLocallyConstant.iff_eventually_eq]
+    intro y
+    have hy : y ∈ {x : X | locConst f x} := by rw [huniv]; trivial
+    exact hy
+  obtain ⟨y₀, hy₀⟩ := hLC.exists_eq_const
+  exact ⟨y₀, fun x' => congrFun hy₀ x'⟩
+
+/-- A non-constant holomorphic map between Riemann surfaces is an open map.
+Assembled from the open-mapping transfer
+`nhds_le_map_of_chartPullback_not_eventuallyConst` and the non-constancy
+lemma `chartPullback_not_eventuallyConst`. -/
+theorem isOpenMap_of_nonconstant [Nonempty Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    IsOpenMap f := by
+  rw [isOpenMap_iff_nhds_le]
+  intro x
+  exact nhds_le_map_of_chartPullback_not_eventuallyConst f hf x
+    (chartPullback_not_eventuallyConst f hf hnonconst x)
+
+/-- A non-constant holomorphic map between compact connected
+Riemann surfaces is surjective: its range is open (open mapping), closed
+(continuous image of compact in a T2 space), and nonempty, hence clopen, hence
+all of the connected target `Y`. -/
+theorem surjective_of_nonconstant [CompactSpace X] [T2Space Y] [ConnectedSpace Y]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    Function.Surjective f := by
+  have hopen : IsOpen (Set.range f) := (isOpenMap_of_nonconstant f hf hnonconst).isOpen_range
+  have hclosed : IsClosed (Set.range f) := (isCompact_range hf.continuous).isClosed
+  have hclopen : IsClopen (Set.range f) := ⟨hclosed, hopen⟩
+  rcases isClopen_iff.mp hclopen with h | h
+  · exact absurd h (Set.range_nonempty f).ne_empty
+  · exact Set.range_eq_univ.mp h
+
+/-- Local homeomorphism off the
+critical set (Forster §4.4): where `f` is locally injective (`x ∉ criticalSet f`,
+i.e. by definition `∃ U ∈ 𝓝 x, InjOn f U`), it restricts to an open injection on
+a neighborhood — open via the open-mapping theorem, injective by hypothesis.
+Together with `isProperMap_of_contMDiff` this is the input to the covering
+structure off the branch locus. -/
+theorem isLocalHomeoOffCritical [Nonempty Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {x : X} (hx : x ∉ criticalSet f) :
+    ∃ U : Set X, IsOpen U ∧ x ∈ U ∧ Set.InjOn f U ∧ IsOpen (f '' U) := by
+  have hex : ∃ U ∈ nhds x, Set.InjOn f U := not_not.mp hx
+  obtain ⟨U₀, hU₀nhds, hinj₀⟩ := hex
+  obtain ⟨U, hUsub, hUopen, hxU⟩ := mem_nhds_iff.mp hU₀nhds
+  exact ⟨U, hUopen, hxU, hinj₀.mono hUsub,
+    isOpenMap_of_nonconstant f hf hnonconst U hUopen⟩
+
+/-- Covering off the branch locus
+(Forster 4.22): a non-constant holomorphic map restricts to a covering map on
+the complement of its (finite) branch locus. Via Mathlib's
+`IsCoveringMapOn.of_openPartialHomeomorph` (the proper-local-homeo ⇒ covering
+theorem — Mathlib already has it, so no hand-built `f⁻¹U ≃ₜ U × fibre`): off the
+branch locus every fibre point is off `criticalSet`, so `isLocalHomeoOffCritical`
+gives an open injective neighborhood, packaged as an `OpenPartialHomeomorph`
+whose `toFun` is `f`. -/
+theorem isCoveringMapOn_compl_branchLocus [T2Space X] [CompactSpace X]
+    [T2Space Y] [ConnectedSpace Y]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    IsCoveringMapOn f (Set.univ \ branchLocus f) := by
+  have hopen : IsOpenMap f := isOpenMap_of_nonconstant f hf hnonconst
+  refine IsCoveringMapOn.of_openPartialHomeomorph hf.continuous ?_
+  intro e he
+  have hfe : f e ∉ branchLocus f := he.2
+  have hecrit : e ∉ criticalSet f := fun hmem => hfe ⟨e, hmem, rfl⟩
+  obtain ⟨U, hUopen, heU, hinj, _himg⟩ := isLocalHomeoOffCritical f hf hnonconst hecrit
+  let pe : PartialEquiv X Y := Set.InjOn.toPartialEquiv f U hinj
+  have hpe_coe : ⇑pe = f := rfl
+  have hpe_source : pe.source = U := rfl
+  refine ⟨OpenPartialHomeomorph.ofContinuousOpen pe ?_ ?_ ?_, ?_, ?_⟩
+  · rw [hpe_coe, hpe_source]; exact hf.continuous.continuousOn
+  · rw [hpe_coe]; exact hopen
+  · rw [hpe_source]; exact hUopen
+  · show e ∈ (OpenPartialHomeomorph.ofContinuousOpen pe _ _ _).source
+    rw [OpenPartialHomeomorph.ofContinuousOpen]
+    show e ∈ pe.source
+    rw [hpe_source]; exact heU
+  · rw [OpenPartialHomeomorph.coe_ofContinuousOpen]; exact hpe_coe
+
+/-- Subtype corestriction of the off-branch covering. Bridges
+`isCoveringMapOn_compl_branchLocus` (an `IsCoveringMapOn` on the *set*
+`univ ∖ branchLocus f`) to a genuine `IsCoveringMap` of the corestricted map
+`↥(f ⁻¹' (univ ∖ branchLocus f)) → ↥(univ ∖ branchLocus f)`, via Mathlib's
+`IsCoveringMapOn.isCoveringMap_restrictPreimage`.
+
+This is the form `Mathlib.Topology.Homotopy.Lifting` consumes: it unlocks
+`IsCoveringMap.liftPath` (path lifting, Forster §4.14) and
+`IsCoveringMap.liftPath_apply_one_eq_of_homotopicRel` (monodromy / homotopy
+invariance of lift endpoints) — the toolkit for assembling the lifted loops in
+`exists_preimageCycle_of_off_branchLocus` (relocated to
+`Jacobians/TracePullback.lean`, where the genuine `ambientPullbackJac` lives). -/
+theorem isCoveringMap_restrictPreimage_compl_branchLocus [T2Space X] [CompactSpace X]
+    [T2Space Y] [ConnectedSpace Y]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
+    IsCoveringMap ((Set.univ \ branchLocus f).restrictPreimage f) :=
+  (isCoveringMapOn_compl_branchLocus f hf hnonconst).isCoveringMap_restrictPreimage
+
+/-- Fibres off the branch locus are **finite**. For `y ∉ branchLocus f`
+every preimage `x` is a non-critical point, where `f` is locally injective
+(`isLocalHomeoOffCritical`), so `x` is isolated in the fibre ⟹ the fibre is
+`IsDiscrete`; it is also closed in compact `X` ⟹ compact, hence finite. This is
+the sheet count of the cover over `y` (classically `= deg f`) — the foundation of
+the §3 preimage-cycle lift. Note: unlike
+`fibres_finite_of_connectivity_hypothesis` (which assumes the global identity
+theorem), this is unconditional off the branch locus, since
+`isLocalHomeoOffCritical` holds there. -/
+theorem fiber_finite_off_branchLocus [T2Space X] [CompactSpace X]
+    [T2Space Y] [ConnectedSpace Y]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {y : Y} (hy : y ∉ branchLocus f) :
+    (f ⁻¹' {y}).Finite := by
+  apply Jacobians.Discharge.ContMDiff.Degree.fiber_finite_of_isDiscrete hf.continuous y
+  rw [isDiscrete_iff_forall_exists_isOpen]
+  intro x hx
+  rw [Set.mem_preimage, Set.mem_singleton_iff] at hx
+  have hxcrit : x ∉ criticalSet f := fun hmem => hy ⟨x, hmem, hx⟩
+  obtain ⟨U, hUopen, hxU, hinj, _⟩ := isLocalHomeoOffCritical f hf hnonconst hxcrit
+  refine ⟨U, hUopen, Set.eq_singleton_iff_unique_mem.mpr ⟨⟨hxU, ?_⟩, ?_⟩⟩
+  · rw [Set.mem_preimage, Set.mem_singleton_iff]; exact hx
+  · rintro x' ⟨hx'U, hx'fib⟩
+    rw [Set.mem_preimage, Set.mem_singleton_iff] at hx'fib
+    exact hinj hx'U hxU (hx'fib.trans hx.symm)
+
+end GenericHelpers
+
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
--- The foundational smoothPath-independent declarations (`basepoint`,
--- path-connectedness instances, `continuousPath`, `periodBasisForm`,
--- `periodVec`, `IsClosedSmoothLoop`, `closedLoopPeriods`, `IsSmoothPath`
--- + `toClosedSmoothLoop`/`reverse`/`isSmoothPath_const`, and
--- `IsClosedSmoothLoop.reverse`) have moved UPSTREAM to
--- `Jacobians/SmoothPathCore.lean`, so the chart-ball-hop machinery there
--- can be constructed without depending on this file. They remain in the
--- `Jacobians` namespace and are available here via `import
--- Jacobians.SmoothPathCore`.
-
--- The smoothPath definition and its properties have moved below
--- `periodVec_mem_truePeriodLattice_of_closed`, where they can all
--- be derived from a single consolidated existence theorem
--- (`exists_smoothPath_family`). The previous chart-cover-piecewise
--- scaffolding (`Jacobians.smoothPathRaw`) remains in
--- `Jacobians/SmoothPath.lean` for future explicit-construction work
--- to discharge the consolidated existence.
+-- The foundational declarations (`basepoint`, path-connectedness instances,
+-- `continuousPath`, `periodBasisForm`, `periodVec`, `IsClosedSmoothLoop`,
+-- `closedLoopPeriods`, `IsSmoothPath` and friends) live upstream in
+-- `Jacobians/SmoothPathCore.lean`; `smoothPath` itself is defined below from
+-- the consolidated existence theorem `exists_smoothPath_family`.
 
 /-- **True period lattice**: ℤ-span of period vectors of closed
 loops. -/
@@ -252,7 +746,8 @@ theorem periodVec_concat_of_smooth {P Q R : X} {g₁ g₂ : ℝ → X}
       rw [show (0:ℝ) + 1/2 = 1/2 from by norm_num, show (1/2:ℝ) + 1/2 = 1 from by norm_num] at h_sub
       have h_fn_eq : (fun t : ℝ => (periodBasisForm X i).toFun (g₂ (2 * (t - 1/2)))
             (pathSpeed g₂ (2 * (t - 1/2)))) =
-          (fun t : ℝ => (periodBasisForm X i).toFun (g₂ (2 * t - 1)) (pathSpeed g₂ (2 * t - 1))) := by
+          (fun t : ℝ =>
+            (periodBasisForm X i).toFun (g₂ (2 * t - 1)) (pathSpeed g₂ (2 * t - 1))) := by
         funext t; rw [show (2:ℝ) * (t - 1/2) = 2 * t - 1 from by ring]
       rw [h_fn_eq] at h_sub; exact h_sub
     refine (h_Ψ₂_shift_2.const_mul (2:ℂ)).congr_ae ?_
@@ -283,7 +778,8 @@ theorem periodVec_concat_of_smooth {P Q R : X} {g₁ g₂ : ℝ → X}
       Jacobians.concat_apply_left _ _ (le_of_lt h_lt)
     have h_ps : pathSpeed (Jacobians.concat g₁ g₂) t = 2 * pathSpeed g₁ (2 * t) :=
       Jacobians.pathSpeed_concat_left _ _ t h_lt (h₁.diff (2 * t) h_2t_uIcc)
-    show (periodBasisForm X i).toFun (Jacobians.concat g₁ g₂ t) (pathSpeed (Jacobians.concat g₁ g₂) t) =
+    show (periodBasisForm X i).toFun (Jacobians.concat g₁ g₂ t)
+        (pathSpeed (Jacobians.concat g₁ g₂) t) =
       (2:ℂ) * (periodBasisForm X i).toFun (g₁ (2*t)) (pathSpeed g₁ (2*t))
     rw [h_ca, h_ps]
     have h_lin := ((periodBasisForm X i).toFun (g₁ (2*t))).map_smul (2:ℂ) (pathSpeed g₁ (2*t))
@@ -300,7 +796,8 @@ theorem periodVec_concat_of_smooth {P Q R : X} {g₁ g₂ : ℝ → X}
       Jacobians.concat_apply_right _ _ (not_le.mpr h_gt)
     have h_ps : pathSpeed (Jacobians.concat g₁ g₂) t = 2 * pathSpeed g₂ (2 * t - 1) :=
       Jacobians.pathSpeed_concat_right _ _ t h_gt (h₂.diff (2 * t - 1) h_2tm1_uIcc)
-    show (periodBasisForm X i).toFun (Jacobians.concat g₁ g₂ t) (pathSpeed (Jacobians.concat g₁ g₂) t) =
+    show (periodBasisForm X i).toFun (Jacobians.concat g₁ g₂ t)
+        (pathSpeed (Jacobians.concat g₁ g₂) t) =
       (2:ℂ) * (periodBasisForm X i).toFun (g₂ (2*t-1)) (pathSpeed g₂ (2*t-1))
     rw [h_ca, h_ps]
     have h_lin := ((periodBasisForm X i).toFun (g₂ (2*t-1))).map_smul (2:ℂ) (pathSpeed g₂ (2*t-1))
@@ -320,25 +817,14 @@ surface there is a family of smooth paths between every pair of points with
 (1) `IsSmoothPath P Q (sp P Q)` and (2) the basepoint-change cocycle
 `[sp(P₀,A)] = [sp(P,A)] + [sp(P₀,P)]` mod the period lattice.
 
-As of 2026-05-29 this is **no longer a single monolithic unproved obligation**: it is
-reduced (`exists_smoothPath_family`, proven below) to the focused kernel
+The proof (`exists_smoothPath_family` below) reduces to the kernel
 `exists_zeroVel_smoothPath` (existence of a smooth path with zero endpoint
 velocity), using `IsSmoothPath.concat`, `periodVec_concat_of_smooth`, and
 `mk_periodVec_eq_of_endpoints`. The cocycle holds because the Jacobian class
 depends only on endpoints and is additive under concatenation.
 
-The provably-false third conjunct (unquotiented smoothness of
-`Q ↦ periodVec (sp P Q)`) was removed 2026-05-28; see the project memory
-`project_smoothpath_math_error`. -/
-/-- A valid chart-ball hop `Q₀ → Q`: `Q` is in `Q₀`'s chart source and the
-affine segment between their chart images stays in the chart target. Exactly
-the hypotheses `ChartBallPathSmooth` needs. -/
-def HopValid (Q₀ Q : X) : Prop :=
-  Q ∈ (chartAt (H := ℂ) Q₀).source ∧
-  ∀ s ∈ Set.Icc (0 : ℝ) 1,
-    ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
-      (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target
-
+(NB an unquotiented-smoothness condition on `Q ↦ periodVec (sp P Q)` would be
+provably false; only the quotient class behaves well.) -/
 /-- A valid hop yields a smooth path with zero velocity at both endpoints
 (`ChartBallPathSmooth` is smoothstep-reparametrized). -/
 theorem zeroVelHop {Q₀ Q : X} (h : HopValid Q₀ Q) :
@@ -357,72 +843,6 @@ theorem zeroVelHop {Q₀ Q : X} (h : HopValid Q₀ Q) :
         (Jacobians.ChartBallPath_chart_at_self_differentiableAt Q₀ Q₀ Q (smoothStep01 1)
           (haff (smoothStep01 1) (Jacobians.smoothStep01_mem_unit 1))),
       smoothStep01_deriv_one, Complex.ofReal_zero, zero_mul]
-
-/-- Generic neighborhood cover of a path: given an open-neighborhood assignment
-`W y ∋ y`, a continuous `γ` is covered segment-by-segment, each segment landing
-in some `W (x k)`. (Generalizes `exists_chartCover` from chart sources to `W`.) -/
-theorem exists_nbhd_cover (γ : ℝ → X) (hγ : Continuous γ)
-    (W : X → Set X) (hW_open : ∀ y, IsOpen (W y)) (hW_mem : ∀ y, y ∈ W y) :
-    ∃ (n : ℕ) (_hn : 0 < n) (x : Fin n → X),
-      ∀ (k : Fin n) (s : ℝ),
-        (k : ℝ) / n ≤ s → s ≤ ((k : ℝ) + 1) / n → γ s ∈ W (x k) := by
-  set scc : Set ℝ := Set.Icc (0 : ℝ) 1 with hs_def
-  set U : scc → Set ℝ := fun t => γ ⁻¹' W (γ t.1) with hU_def
-  have hU_open : ∀ t : scc, IsOpen (U t) := fun t => (hW_open (γ t.1)).preimage hγ
-  have hU_cover : scc ⊆ ⋃ t : scc, U t := by
-    intro t ht
-    exact Set.mem_iUnion.mpr ⟨⟨t, ht⟩, hW_mem (γ t)⟩
-  obtain ⟨δ, hδ_pos, hδ⟩ :=
-    lebesgue_number_lemma_of_metric isCompact_Icc hU_open hU_cover
-  obtain ⟨n, hn_gt⟩ : ∃ n : ℕ, 1 / δ < (n : ℝ) := exists_nat_gt _
-  have hn_pos : 0 < n := by
-    have h1 : (0 : ℝ) < 1 / δ := by positivity
-    exact_mod_cast lt_trans h1 hn_gt
-  have key : ∀ k : Fin n, ∃ x : X, ∀ y : ℝ,
-      (k : ℝ) / n ≤ y → y ≤ ((k : ℝ) + 1) / n → γ y ∈ W x := by
-    intro k
-    set m : ℝ := ((k : ℝ) + 1/2) / n with hm_def
-    have hm_mem : m ∈ scc := by
-      refine ⟨?_, ?_⟩
-      · apply div_nonneg
-        · have : (0 : ℝ) ≤ k := Nat.cast_nonneg _
-          linarith
-        · exact Nat.cast_nonneg _
-      · rw [hm_def, div_le_one (by exact_mod_cast hn_pos)]
-        have hk : (k : ℝ) + 1 ≤ n := by
-          have : (k.val + 1 : ℕ) ≤ n := k.isLt
-          exact_mod_cast this
-        linarith
-    obtain ⟨t₀, ht₀⟩ := hδ m hm_mem
-    refine ⟨γ t₀.1, fun y hy_low hy_high => ?_⟩
-    apply ht₀
-    show y ∈ Metric.ball m δ
-    rw [Metric.mem_ball, Real.dist_eq]
-    have hn : (1 : ℝ) / n < δ := by
-      have hn_R : (0 : ℝ) < n := by exact_mod_cast hn_pos
-      rw [div_lt_iff₀ hn_R]
-      have h := mul_lt_mul_of_pos_left hn_gt hδ_pos
-      have h_simp : δ * (1 / δ) = 1 := by field_simp
-      linarith
-    have h_dist : |y - m| ≤ 1 / (2 * n) := by
-      rw [abs_sub_le_iff]
-      refine ⟨?_, ?_⟩
-      · have : y - m ≤ ((k : ℝ) + 1) / n - ((k : ℝ) + 1/2) / n := by linarith
-        have heq : ((k : ℝ) + 1) / n - ((k : ℝ) + 1/2) / n = 1 / (2 * n) := by
-          field_simp; ring
-        linarith
-      · have : m - y ≤ ((k : ℝ) + 1/2) / n - (k : ℝ) / n := by linarith
-        have heq : ((k : ℝ) + 1/2) / n - (k : ℝ) / n = 1 / (2 * n) := by
-          field_simp; ring
-        linarith
-    have h1 : (1 : ℝ) / (2 * n) ≤ 1 / n := by
-      apply div_le_div_of_nonneg_left (by norm_num) (by exact_mod_cast hn_pos)
-      have hnn : (0 : ℝ) < n := by exact_mod_cast hn_pos
-      nlinarith
-    linarith
-  classical
-  exact ⟨n, hn_pos, fun k => (key k).choose,
-    fun k y h1 h2 => (key k).choose_spec y h1 h2⟩
 
 /-- Common-anchor segment: if a point `w` validly hops to both `u` and `v`,
 then there is a zero-endpoint-velocity smooth path `u → v` (go `u → w` via the
@@ -461,20 +881,12 @@ theorem exists_zeroVelPath_of_common_anchor {w u v : X}
     rw [Jacobians.pathSpeed_concat_right _ (ChartBallPathSmooth w v) 1 (by norm_num) hd,
       show (2:ℝ)*1-1 = 1 from by norm_num, hv_v1, mul_zero]
 
-/-- The `HopValid`-validity neighborhood of `y` (open, contains `y`). -/
-def hopNbhd (y : X) : Set X := interior {Q | HopValid y Q}
-
-theorem isOpen_hopNbhd (y : X) : IsOpen (hopNbhd y) := isOpen_interior
-
 theorem self_mem_hopNbhd (y : X) : y ∈ hopNbhd y := by
   rw [hopNbhd, mem_interior_iff_mem_nhds]
   exact (OfCurveSkeleton.Q_in_chart_source_eventually y).and
     (OfCurveSkeleton.affine_in_target_eventually y)
 
-theorem hopValid_of_mem_hopNbhd {y Q : X} (h : Q ∈ hopNbhd y) : HopValid y Q :=
-  interior_subset (s := {Q' : X | HopValid y Q'}) h
-
-/-- **Chart-ball cover (S1-B)**: a chain of zero-velocity smooth-path hops from
+/-- **Chart-ball cover**: a chain of zero-velocity smooth-path hops from
 `P` to `Q`. Lebesgue-number cover of `continuousPath P Q`; each segment's
 endpoints are reached from a common Lebesgue anchor via `exists_zeroVelPath_of_common_anchor`. -/
 theorem exists_smoothChain (P Q : X) :
@@ -539,8 +951,8 @@ theorem exists_zeroVel_smoothPath_aux (a : ℕ → X) :
       rw [Jacobians.pathSpeed_concat_right γ g 1 (by norm_num) hd,
         show (2:ℝ)*1-1 = 1 from by norm_num, hgv1, mul_zero]
 
-/-- **S1 kernel, fully proven**: a zero-endpoint-velocity smooth path exists
-between any two points (chart-ball cover glued by the n-piece induction). -/
+/-- A zero-endpoint-velocity smooth path exists between any two points
+(chart-ball cover glued by the n-piece induction). -/
 theorem exists_zeroVel_smoothPath (P Q : X) :
     ∃ γ, IsSmoothPath P Q γ ∧ pathSpeed γ 0 = 0 ∧ pathSpeed γ 1 = 0 := by
   obtain ⟨n, a, ha0, han, hstep⟩ := exists_smoothChain P Q
@@ -627,7 +1039,7 @@ theorem smoothPath_basepoint_change (P P₀ A : X) :
     QuotientAddGroup.mk (periodVec (smoothPath P₀ P)) :=
   (exists_smoothPath_family X).choose_spec.2 P P₀ A
 
-/-! ### Phase 4 support: change of variables under smooth maps
+/-! ### Change of variables under smooth maps
 
 For `f : X → Y` smooth and `γ : ℝ → X` a path, the period vector of
 the image loop `f ∘ γ` in `Y` is the `ambientPhi`-image of the period
@@ -636,7 +1048,7 @@ loop has period given by the pullback matrix" — the analytic content
 that forces `ambientPhi` to preserve the lattice. -/
 
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
-    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    [ConnectedSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- **Pullback of a `Y`-basis form via `f`, expressed in the `X`
 basis coordinates.** Classical linear-algebra identity tying
@@ -648,8 +1060,7 @@ theorem pullbackForm_periodBasisForm_eq (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 
       ambientIso X (ambientPsi (gX := genus X) (gY := genus Y) f hf
         (Pi.basisFun ℂ (Fin (genus Y)) j)) := by
   unfold ambientPsi
-  set_option linter.unusedSimpArgs false in
-  simp only [dif_pos rfl]
+  simp only [↓reduceDIte]
   show pullbackForm f hf (periodBasisForm Y j) =
     ambientIso X (((ambientIso X).symm.toLinearMap.comp
       ((pullbackForm f hf).comp (ambientIso Y).toLinearMap) : _ →ₗ[_] _)
@@ -833,17 +1244,14 @@ theorem periodVec_pushforward
   rfl
 
 /- **Existence of a period ℝ-basis** (`exists_periodLattice_realBasis`), together with the
-`DiscreteTopology`/`IsZLattice` instances it yields, now lives DOWNSTREAM in
-`Jacobians/PeriodLatticeBasis.lean`, with its statement UNCHANGED.  It is proven
-**dissection-free** (Forster 21.4): discreteness via the local Jacobi map + the Abel
-engine + the residue theorem (`Jacobians/PeriodLatticeDiscrete.lean`, B-4), and
-non-degeneracy via the maximum principle (`Jacobians/PeriodLatticeNondegenerate.lean`,
-B-3).  The former cut-surface/dissection route (`exists_canonicalDissection`) is retired;
-the proven `CutSurface → CanonicalDissection → realBasis` assembly remains banked in
-`Jacobians/Dissection.lean` + `Jacobians/CutSurfaceRelations.lean` as
-hypothesis-conditional theorems. -/
+`DiscreteTopology`/`IsZLattice` instances it yields, lives downstream in
+`Jacobians/PeriodLatticeBasis.lean` (Forster 21.4): discreteness via the local Jacobi map +
+the Abel machinery + the residue theorem (`Jacobians/PeriodLatticeDiscrete.lean`), and
+non-degeneracy via the maximum principle (`Jacobians/PeriodLatticeNondegenerate.lean`).
+An alternative cut-surface/dissection route survives as hypothesis-conditional theorems in
+`Jacobians/Dissection.lean` + `Jacobians/CutSurfaceRelations.lean`. -/
 
-/-! ### Phase 4a: `ambientPhi` preserves the period lattice
+/-! ### `ambientPhi` preserves the period lattice
 
 From `periodVec_pushforward`: for a closed loop `γ` in `X`, `f ∘ γ`
 is a closed loop in `Y`, so `periodVec (f ∘ γ)` lies in the period
@@ -880,7 +1288,7 @@ theorem ambientPhi_preserves_truePeriodLattice
     simp only [map_zsmul]
     exact Submodule.smul_mem _ r hx
 
-/-! ### Phase 4b: `ambientPsi` preserves the period lattice
+/-! ### `ambientPsi` preserves the period lattice
 
 This is the **trace / pullback-of-cycle direction**. Split by whether
 `f` is constant:
@@ -890,11 +1298,10 @@ This is the **trace / pullback-of-cycle direction**. Split by whether
 (pointwise composition with zero), so `ambientPsi f hf = 0`. Hence
 the image is `0 ∈ truePeriodLattice X` for free.
 
-**Non-constant case (content-gated)**: `f` is a branched cover of
-some degree `d ≥ 1`; the preimage `f⁻¹(δ)` is a ℤ-cycle in `X` and
-the trace identity places `ambientPsi (periodVec δ)` in the period
-lattice (Forster §10.11). Real infrastructure required: branched-cover
-lift existence + trace adjunction (~200–500 lines not yet in place). -/
+**Non-constant case**: `f` is a branched cover of some degree `d ≥ 1`;
+the preimage `f⁻¹(δ)` is a ℤ-cycle in `X` and the trace identity places
+`ambientPsi (periodVec δ)` in the period lattice (Forster §10.11), via the
+branched-cover lifts and the trace adjunction of `Jacobians/TracePullback.lean`. -/
 
 /-- **pullbackForm of a constant map is zero.** If `f` is constant,
 then `mfderiv f x = 0` everywhere, making the pointwise composition
@@ -927,7 +1334,7 @@ theorem ambientPsi_eq_zero_of_const
   ext v i
   simp
 
-/-! #### Branched-cover infrastructure (incremental)
+/-! #### Branched-cover infrastructure
 
 For non-constant holomorphic `f : X → Y` between compact connected
 Riemann surfaces:
@@ -935,7 +1342,7 @@ Riemann surfaces:
 * `criticalSet f` := `{x | mfderiv f x = 0}` — the ramification locus.
 * `branchLocus f` := `f '' criticalSet f` — image of critical points.
 
-Classical facts (partially in place, partially axiomatized):
+Classical facts proved below:
 * `criticalSet` is closed (preimage of `{0}` under the continuous
   `mfderiv` section).
 * For non-constant `f`, `criticalSet f ≠ Set.univ` (open mapping
@@ -949,34 +1356,10 @@ Classical facts (partially in place, partially axiomatized):
 * Closed loops in `Y ∖ branchLocus` admit lifts to closed loops in
   `X ∖ criticalSet` (covering-space path lifting).
 * Loops meeting `branchLocus` can be homotoped off it (removing
-  finitely many points from a connected manifold preserves π₁ access).
+  finitely many points from a connected manifold preserves π₁ access). -/
 
-Each step below is stated as a theorem; real proofs fill in in
-subsequent commits. -/
-
-/-- **Critical set of a holomorphic map** between complex 1-manifolds.
-
-Defined as `Jacobians.Discharge.Manifold.criticalSetGeneral f` — the set of
-points at which `f` is not locally injective. Classically equivalent to
-`{x | mfderiv f x = 0}` for analytic maps between complex 1-manifolds
-(the planar bridge ZZ99 / Forster §I.7); the local-injectivity definition is
-the one supported by the imported discharge infrastructure, which gives us
-closedness, ne-univ, and finiteness directly. -/
-def criticalSet (f : X → Y) : Set X :=
-  Jacobians.Discharge.Manifold.criticalSetGeneral f
-
-/-- **Branch locus**: the image of the critical set. -/
-def branchLocus (f : X → Y) : Set Y :=
-  f '' criticalSet f
-
-/-- **Critical set is closed.** The not-locally-injective set is closed via
-the discharge's `isClosed_criticalSetGeneral` (CriticalSetClosed). -/
-theorem isClosed_criticalSet (f : X → Y) (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    IsClosed (criticalSet f) :=
-  Jacobians.Discharge.Manifold.isClosed_criticalSetGeneral f
-
-/-- **Critical set of a non-constant map is not everything.** Discharge
-proves `(criticalSet f).Finite`; `X` is infinite (a compact connected
+/-- **Critical set of a non-constant map is not everything.**
+`(criticalSet f).Finite` holds; `X` is infinite (a compact connected
 complex 1-manifold has an open chart into ℂ which contains an open ball,
 hence infinitely many points); so `criticalSet f ≠ univ`. -/
 theorem criticalSet_ne_univ_of_nonconstant
@@ -993,7 +1376,7 @@ theorem criticalSet_ne_univ_of_nonconstant
 
 /-- **Critical set is finite** (Forster §4 / isolated-zeros). For
 non-constant holomorphic `f`, `criticalSet f` is finite. Direct forward
-to discharge's `criticalSet_finite_general`. -/
+to `criticalSet_finite_general`. -/
 theorem finite_criticalSet_of_nonconstant
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
@@ -1012,306 +1395,16 @@ theorem finite_branchLocus_of_nonconstant
 Non-constant holomorphic maps between Riemann surfaces are open and discrete
 (Forster §4.2); off the branch locus they are local homeomorphisms (§4.4), and
 since a compact source makes them proper, they restrict to finite-sheeted
-coverings off the branch locus (§4.22–4.23). The open-mapping half is proven
-below (`isOpenMap_of_nonconstant`). -/
-
-/-- Chart pullback of `f` at `x`. -/
-noncomputable def chartPullback (f : X → Y) (x : X) : ℂ → ℂ :=
-  (chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm
-
-theorem analyticAt_chartPullback (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X) :
-    AnalyticAt ℂ (chartPullback f x) ((chartAt ℂ x) x) :=
-  Jacobians.Discharge.ContMDiff.Degree.contMDiffAt_omega_analyticAt_chart_pullback (hf x)
-
-/-- **Local open mapping at `x`** (provided the chart pullback is not locally
-constant there): `f` sends neighborhoods of `x` to neighborhoods of `f x`. This
-is the heart of the open mapping theorem, transferred through the charts. -/
-theorem nhds_le_map_of_chartPullback_not_eventuallyConst
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X)
-    (hnc : ¬ ∀ᶠ z in 𝓝 ((chartAt ℂ x) x), chartPullback f x z = chartPullback f x ((chartAt ℂ x) x)) :
-    𝓝 (f x) ≤ Filter.map f (𝓝 x) := by
-  set φ := chartAt ℂ x with hφ
-  set ψ := chartAt ℂ (f x) with hψ
-  set g := chartPullback f x with hg
-  have hxφ : x ∈ φ.source := mem_chart_source ℂ x
-  have hfxψ : f x ∈ ψ.source := mem_chart_source ℂ (f x)
-  -- g is open at φ x: from analyticity + not-locally-constant, `nhds_le_map_nhds`.
-  have hgA : AnalyticAt ℂ g (φ x) := analyticAt_chartPullback f hf x
-  have hg_open : 𝓝 (g (φ x)) ≤ Filter.map g (𝓝 (φ x)) :=
-    hgA.eventually_constant_or_nhds_le_map_nhds.resolve_left hnc
-  -- g (φ x) = ψ (f x).
-  have hgφx : g (φ x) = ψ (f x) := by
-    simp only [hg, chartPullback, Function.comp_apply]
-    rw [φ.left_inv hxφ]
-  -- 𝓝 x = map φ.symm (𝓝 (φ x)).
-  have hnx : Filter.map φ.symm (𝓝 (φ x)) = 𝓝 x := φ.symm_map_nhds_eq hxφ
-  -- 𝓝 (f x) = map ψ.symm (𝓝 (ψ (f x))).
-  have hnfx : Filter.map ψ.symm (𝓝 (ψ (f x))) = 𝓝 (f x) := ψ.symm_map_nhds_eq hfxψ
-  -- f ∘ φ.symm =ᶠ[𝓝 (φ x)] ψ.symm ∘ g  near φ x.
-  have hev : (f ∘ φ.symm) =ᶠ[𝓝 (φ x)] (ψ.symm ∘ g) := by
-    have hφxtarget : φ x ∈ φ.target := φ.map_source hxφ
-    have hcont : ContinuousAt (fun z => f (φ.symm z)) (φ x) :=
-      hf.continuous.continuousAt.comp
-        (φ.continuousOn_symm.continuousAt (φ.open_target.mem_nhds hφxtarget))
-    have hval : f (φ.symm (φ x)) = f x := by rw [φ.left_inv hxφ]
-    have hsrc_nhds : ψ.source ∈ 𝓝 (f (φ.symm (φ x))) := by
-      rw [hval]; exact ψ.open_source.mem_nhds hfxψ
-    have hpre : ∀ᶠ z in 𝓝 (φ x), f (φ.symm z) ∈ ψ.source :=
-      hcont.preimage_mem_nhds hsrc_nhds
-    filter_upwards [hpre] with z hz
-    show f (φ.symm z) = ψ.symm (g z)
-    simp only [hg, chartPullback, Function.comp_apply]
-    rw [ψ.left_inv hz]
-  -- assemble: 𝓝 (f x) ≤ map f (𝓝 x)
-  calc 𝓝 (f x) = Filter.map ψ.symm (𝓝 (ψ (f x))) := hnfx.symm
-    _ ≤ Filter.map ψ.symm (Filter.map g (𝓝 (φ x))) := by
-          rw [← hgφx]; exact Filter.map_mono hg_open
-    _ = Filter.map (ψ.symm ∘ g) (𝓝 (φ x)) := by rw [Filter.map_map]
-    _ = Filter.map (f ∘ φ.symm) (𝓝 (φ x)) := by rw [Filter.map_congr hev.symm]
-    _ = Filter.map f (Filter.map φ.symm (𝓝 (φ x))) := by rw [Filter.map_map]
-    _ = Filter.map f (𝓝 x) := by rw [hnx]
-
-section GlobalizedIdentity
-open Set
-
-/-- `f` is locally constant at `x`: eventually equal to `f x`. -/
-def locConst (f : X → Y) (x : X) : Prop := ∀ᶠ x' in 𝓝 x, f x' = f x
-
--- Lemma A: chart-pullback eventually const at chart image ↔ f locally const at x.
-theorem chartPullback_eventuallyConst_iff_locConst
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X) :
-    (∀ᶠ z in 𝓝 ((chartAt ℂ x) x),
-      chartPullback f x z = chartPullback f x ((chartAt ℂ x) x))
-    ↔ locConst f x := by
-  set φ := chartAt ℂ x with hφ
-  set ψ := chartAt ℂ (f x) with hψ
-  have hxφ : x ∈ φ.source := mem_chart_source ℂ x
-  have hfxψ : f x ∈ ψ.source := mem_chart_source ℂ (f x)
-  -- 𝓝 x = map φ.symm (𝓝 (φ x)), and 𝓝 (φ x) = map φ (𝓝 x)
-  have hmap : Filter.map φ.symm (𝓝 (φ x)) = 𝓝 x := φ.symm_map_nhds_eq hxφ
-  have hmap' : Filter.map φ (𝓝 x) = 𝓝 (φ x) := φ.map_nhds_eq hxφ
-  -- f continuous near x stays in ψ.source
-  have hcontf : ContinuousAt f x := hf.continuous.continuousAt
-  have hf_src : ∀ᶠ x' in 𝓝 x, f x' ∈ ψ.source :=
-    hcontf.preimage_mem_nhds (ψ.open_source.mem_nhds hfxψ)
-  -- φ.symm (φ x) = x
-  have hsymm : φ.symm (φ x) = x := φ.left_inv hxφ
-  -- chartPullback f x (φ x') = ψ (f x') when x' ∈ φ.source
-  have hpb_eq : ∀ x', x' ∈ φ.source →
-      chartPullback f x (φ x') = ψ (f x') := by
-    intro x' hx'
-    simp only [chartPullback, Function.comp_apply, ← hφ, ← hψ]
-    rw [φ.left_inv hx']
-  have hpbx : chartPullback f x (φ x) = ψ (f x) := hpb_eq x hxφ
-  -- x' ∈ φ.source for x' near x
-  have hx_src : ∀ᶠ x' in 𝓝 x, x' ∈ φ.source :=
-    φ.open_source.mem_nhds hxφ
-  constructor
-  · -- pullback const ⇒ locConst
-    intro hev
-    rw [← hmap', Filter.eventually_map] at hev
-    -- hev : ∀ᶠ x' in 𝓝 x, chartPullback f x (φ x') = chartPullback f x (φ x)
-    filter_upwards [hev, hf_src, hx_src] with x' hpb hx'src hx'φ
-    -- ψ (f x') = ψ (f x) ⇒ f x' = f x
-    rw [hpb_eq x' hx'φ, hpbx] at hpb
-    exact ψ.injOn hx'src hfxψ hpb
-  · -- locConst ⇒ pullback const
-    intro hlc
-    rw [← hmap', Filter.eventually_map]
-    filter_upwards [hlc, hx_src] with x' hfx' hx'φ
-    rw [hpb_eq x' hx'φ, hpbx, hfx']
-
-/-- **Bridge with a fixed target chart.** For `x` in the source chart of `x₀`
-whose image `f x` lies in the *fixed* target chart of `x₀`, local constancy of
-`f` at `x` is equivalent to the (single, `x₀`-based) chart pullback being
-eventually constant at `φ₀ x`. -/
-theorem locConst_iff_pullback_const_fixedChart
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x₀ x : X)
-    (hxφ : x ∈ (chartAt ℂ x₀).source)
-    (hfxψ : f x ∈ (chartAt ℂ (f x₀)).source) :
-    locConst f x ↔
-      ∀ᶠ z in 𝓝 ((chartAt ℂ x₀) x), chartPullback f x₀ z = chartPullback f x₀ ((chartAt ℂ x₀) x) := by
-  set φ := chartAt ℂ x₀ with hφ
-  set ψ := chartAt ℂ (f x₀) with hψ
-  -- 𝓝 (φ x) = map φ (𝓝 x)
-  have hmap' : Filter.map φ (𝓝 x) = 𝓝 (φ x) := φ.map_nhds_eq hxφ
-  -- f continuous near x stays in ψ.source
-  have hcontf : ContinuousAt f x := hf.continuous.continuousAt
-  have hf_src : ∀ᶠ x' in 𝓝 x, f x' ∈ ψ.source :=
-    hcontf.preimage_mem_nhds (ψ.open_source.mem_nhds hfxψ)
-  -- chartPullback f x₀ (φ x') = ψ (f x') when x' ∈ φ.source
-  have hpb_eq : ∀ x', x' ∈ φ.source →
-      chartPullback f x₀ (φ x') = ψ (f x') := by
-    intro x' hx'
-    simp only [chartPullback, Function.comp_apply, ← hφ, ← hψ]
-    rw [φ.left_inv hx']
-  have hpbx : chartPullback f x₀ (φ x) = ψ (f x) := hpb_eq x hxφ
-  have hx_src : ∀ᶠ x' in 𝓝 x, x' ∈ φ.source := φ.open_source.mem_nhds hxφ
-  constructor
-  · -- locConst ⇒ pullback const
-    intro hlc
-    rw [← hmap', Filter.eventually_map]
-    filter_upwards [hlc, hx_src] with x' hfx' hx'φ
-    rw [hpb_eq x' hx'φ, hpbx, hfx']
-  · -- pullback const ⇒ locConst
-    intro hev
-    rw [← hmap', Filter.eventually_map] at hev
-    filter_upwards [hev, hf_src, hx_src] with x' hpb hx'src hx'φ
-    rw [hpb_eq x' hx'φ, hpbx] at hpb
-    exact ψ.injOn hx'src hfxψ hpb
-
-/-- The set of points where `f` is locally constant is **open**. -/
-theorem isOpen_locConst (f : X → Y) : IsOpen {x | locConst f x} := by
-  rw [isOpen_iff_eventually]
-  intro x₀ hx₀
-  -- hx₀ : locConst f x₀, i.e. ∀ᶠ x' in 𝓝 x₀, f x' = f x₀
-  simp only [mem_setOf_eq, locConst] at hx₀
-  rw [eventually_iff_exists_mem] at hx₀
-  obtain ⟨W, hW, hWeq⟩ := hx₀
-  -- W ∈ 𝓝 x₀ with f = f x₀ on W
-  rw [eventually_iff_exists_mem]
-  refine ⟨interior W, interior_mem_nhds.mpr hW, ?_⟩
-  intro x hxW
-  -- f locally const at x: on interior W (a nbhd of x), f = f x₀ = f x
-  have hfx : f x = f x₀ := hWeq x (interior_subset hxW)
-  have : ∀ᶠ x' in 𝓝 x, f x' = f x := by
-    filter_upwards [isOpen_interior.mem_nhds hxW] with x' hx'
-    rw [hWeq x' (interior_subset hx'), hfx]
-  exact this
-
-/-- The set of points where `f` is locally constant is **closed**
-(equivalently, its complement is open), via the identity theorem. -/
-theorem isClosed_locConst (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    IsClosed {x | locConst f x} := by
-  rw [← isOpen_compl_iff, isOpen_iff_eventually]
-  intro x₀ hx₀
-  simp only [mem_compl_iff, mem_setOf_eq] at hx₀ ⊢
-  set φ := chartAt ℂ x₀ with hφ
-  set ψ := chartAt ℂ (f x₀) with hψ
-  set G := chartPullback f x₀ with hG
-  set z₀ := φ x₀ with hz₀
-  have hxφ₀ : x₀ ∈ φ.source := mem_chart_source ℂ x₀
-  have hfxψ₀ : f x₀ ∈ ψ.source := mem_chart_source ℂ (f x₀)
-  -- G not eventually const at z₀, via Lemma A
-  have hGnc : ¬ ∀ᶠ z in 𝓝 z₀, G z = G z₀ :=
-    fun h => hx₀ ((chartPullback_eventuallyConst_iff_locConst f hf x₀).mp h)
-  -- G analytic on a ball around z₀
-  have hGA : AnalyticAt ℂ G z₀ := analyticAt_chartPullback f hf x₀
-  obtain ⟨r, hr, hball⟩ := hGA.exists_ball_analyticOnNhd
-  have hballpc : IsPreconnected (Metric.ball z₀ r) := (convex_ball z₀ r).isPreconnected
-  -- For every z₁ in the ball, G not eventually const at z₁.
-  have hnc_ball : ∀ z₁ ∈ Metric.ball z₀ r, ¬ ∀ᶠ z in 𝓝 z₁, G z = G z₁ := by
-    intro z₁ hz₁ hev
-    -- G = G z₁ on the ball
-    have heqOn : EqOn G (fun _ => G z₁) (Metric.ball z₀ r) :=
-      Jacobians.Discharge.ContMDiff.Degree.eqOn_const_of_preconnected_of_eventuallyEq
-        hball hballpc hz₁ hev
-    -- so G eventually const at z₀
-    apply hGnc
-    have hz₀ball : z₀ ∈ Metric.ball z₀ r := Metric.mem_ball_self hr
-    filter_upwards [Metric.ball_mem_nhds z₀ hr] with z hz
-    rw [heqOn hz, heqOn hz₀ball]
-  -- Now: the open set around x₀ where the bridge applies.
-  -- V := φ.source ∩ φ ⁻¹' (ball) ∩ f ⁻¹' ψ.source
-  have hVopen : IsOpen (φ.source ∩ φ ⁻¹' (Metric.ball z₀ r)) :=
-    φ.continuousOn.isOpen_inter_preimage φ.open_source Metric.isOpen_ball
-  have hfopen : IsOpen (f ⁻¹' ψ.source) :=
-    ψ.open_source.preimage hf.continuous
-  refine Filter.eventually_iff_exists_mem.mpr
-    ⟨(φ.source ∩ φ ⁻¹' (Metric.ball z₀ r)) ∩ (f ⁻¹' ψ.source), ?_, ?_⟩
-  · refine (hVopen.inter hfopen).mem_nhds ⟨⟨hxφ₀, ?_⟩, hfxψ₀⟩
-    show φ x₀ ∈ Metric.ball z₀ r
-    rw [← hz₀]; exact Metric.mem_ball_self hr
-  · rintro x ⟨⟨hxsrc, hxball⟩, hxfsrc⟩
-    -- ¬ locConst f x via bridge + hnc_ball
-    rw [locConst_iff_pullback_const_fixedChart f hf x₀ x hxsrc hxfsrc]
-    -- goal: ¬ ∀ᶠ z in 𝓝 (φ x), G z = G (φ x)
-    exact hnc_ball (φ x) hxball
-
-/-- **Globalized identity theorem.** The chart pullback of a non-constant
-holomorphic map is not locally constant at any chart image. -/
-theorem chartPullback_not_eventuallyConst
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (x : X) :
-    ¬ ∀ᶠ z in 𝓝 ((chartAt ℂ x) x),
-      chartPullback f x z = chartPullback f x ((chartAt ℂ x) x) := by
-  rw [chartPullback_eventuallyConst_iff_locConst f hf x]
-  -- Suppose f is locally constant at x. Show f is globally constant.
-  intro hlc
-  apply hnonconst
-  -- S = {x | locConst f x} is clopen and nonempty, hence all of X.
-  have hclopen : IsClopen {x : X | locConst f x} :=
-    ⟨isClosed_locConst f hf, isOpen_locConst f⟩
-  have hne : {x : X | locConst f x}.Nonempty := ⟨x, hlc⟩
-  have huniv : {x : X | locConst f x} = Set.univ :=
-    (isClopen_iff.mp hclopen).resolve_left
-      (Set.nonempty_iff_ne_empty.mp hne)
-  -- So f is locally constant everywhere ⇒ IsLocallyConstant ⇒ constant.
-  have hLC : IsLocallyConstant f := by
-    rw [IsLocallyConstant.iff_eventually_eq]
-    intro y
-    have hy : y ∈ {x : X | locConst f x} := by rw [huniv]; trivial
-    exact hy
-  obtain ⟨y₀, hy₀⟩ := hLC.exists_eq_const
-  exact ⟨y₀, fun x' => congrFun hy₀ x'⟩
-
-end GlobalizedIdentity
+coverings off the branch locus (§4.22–4.23). The open-mapping half is
+`isOpenMap_of_nonconstant` below. -/
 
 
-/-- **[PROVEN modulo `chartPullback_not_eventuallyConst`]** A non-constant
-holomorphic map between Riemann surfaces is an open map. Assembled from the
-proven open-mapping transfer `nhds_le_map_of_chartPullback_not_eventuallyConst`
-and the (refined) non-constancy lemma. -/
-theorem isOpenMap_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
-    IsOpenMap f := by
-  rw [isOpenMap_iff_nhds_le]
-  intro x
-  exact nhds_le_map_of_chartPullback_not_eventuallyConst f hf x
-    (chartPullback_not_eventuallyConst f hf hnonconst x)
-
-/-- **[PROVEN]** A non-constant holomorphic map between compact connected
-Riemann surfaces is surjective: its range is open (open mapping), closed
-(continuous image of compact in a T2 space), and nonempty, hence clopen, hence
-all of the connected target `Y`. -/
-theorem surjective_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
-    Function.Surjective f := by
-  have hopen : IsOpen (Set.range f) := (isOpenMap_of_nonconstant f hf hnonconst).isOpen_range
-  have hclosed : IsClosed (Set.range f) := (isCompact_range hf.continuous).isClosed
-  have hclopen : IsClopen (Set.range f) := ⟨hclosed, hopen⟩
-  rcases isClopen_iff.mp hclopen with h | h
-  · exact absurd h (Set.range_nonempty f).ne_empty
-  · exact Set.range_eq_univ.mp h
-
-/-- **[PROVEN]** A holomorphic map from a compact Riemann surface is proper
-(Forster §4.20): a continuous map from a compact space to a T2 space is proper.
-This is what makes the branched-cover theory (§4.22–4.25) available: a proper
-local homeomorphism is a covering map. -/
-theorem isProperMap_of_contMDiff (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    IsProperMap f :=
-  hf.continuous.isProperMap
-
-/-- **[PROVEN modulo `isOpenMap_of_nonconstant`]** Local homeomorphism off the
-critical set (Forster §4.4): where `f` is locally injective (`x ∉ criticalSet f`,
-i.e. by definition `∃ U ∈ 𝓝 x, InjOn f U`), it restricts to an open injection on
-a neighborhood — open via the open-mapping theorem, injective by hypothesis.
-Together with `isProperMap_of_contMDiff` this is the input to the covering
-structure off the branch locus. -/
-theorem isLocalHomeoOffCritical (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {x : X} (hx : x ∉ criticalSet f) :
-    ∃ U : Set X, IsOpen U ∧ x ∈ U ∧ Set.InjOn f U ∧ IsOpen (f '' U) := by
-  have hex : ∃ U ∈ nhds x, Set.InjOn f U := not_not.mp hx
-  obtain ⟨U₀, hU₀nhds, hinj₀⟩ := hex
-  obtain ⟨U, hUsub, hUopen, hxU⟩ := mem_nhds_iff.mp hU₀nhds
-  exact ⟨U, hUopen, hxU, hinj₀.mono hUsub,
-    isOpenMap_of_nonconstant f hf hnonconst U hUopen⟩
 
 /-- **Chart-bridge package at a single point.** For non-constant analytic
 `f : X → Y` and any `x : X`, assembles the `ChartBridgePackage f x` consumed by
-the ZZ99 bridge `criticalSet_iff_chart_pullback_deriv_zero`. The chart pullback
+the bridge `criticalSet_iff_chart_pullback_deriv_zero`. The chart pullback
 `F := (chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm` is analytic at `z₀ := chartAt ℂ x x`
-(ZZ24), has finite local order `k ≥ 1` of `F - F z₀` (finiteness = `F` not
+has finite local order `k ≥ 1` of `F - F z₀` (finiteness = `F` not
 eventually constant, via the clopenness/chart-overlap discharge applied to the
 non-constant `f`; positivity because `(F - F z₀)(z₀) = 0`), and the manifold ↔
 chart-pullback non-injectivity transfer holds through the chart homeomorphism.
@@ -1328,7 +1421,7 @@ noncomputable def chartBridgePackage_of_nonconstant
   set F : ℂ → ℂ := d ∘ f ∘ c.symm with hF_def
   have hxc : x ∈ c.source := mem_chart_source ℂ x
   have hfxd : f x ∈ d.source := mem_chart_source ℂ (f x)
-  -- `F` is `AnalyticAt ℂ` at `c x` (ZZ24).
+  -- `F` is `AnalyticAt ℂ` at `c x`.
   have hFA : AnalyticAt ℂ F (c x) :=
     Jacobians.Discharge.ContMDiff.Degree.contMDiff_omega_analyticAt_chart_pullback hf x
   -- `F (c x) = d (f x)` via chart left-inverse.
@@ -1445,17 +1538,18 @@ noncomputable def chartBridgePackage_of_nonconstant
         · intro h hex; exact h (h_inj_iff.mpr hex)
         · intro h hex; exact h (h_inj_iff.mp hex) }
 
-/-- **[PROVEN]** Local holomorphic section at a non-critical point. For non-constant
+/-- Local holomorphic section at a non-critical point. For non-constant
 holomorphic `f` and `x ∉ criticalSet f`, `f` admits a `C^ω` local section `g` near
 `f x` with `g (f x) = x` and `f ∘ g = id` on an open neighborhood. Composes the
-manifold IFT (`exists_holo_localInverse`) with the ZZ99 critical-set ↔ chart-deriv
-bridge. The input for the branched-cover trace's fiber sum. -/
+manifold inverse function theorem (`exists_holo_localInverse`) with the
+critical-set ↔ chart-derivative bridge. The input for the branched-cover trace's
+fiber sum. -/
 theorem exists_holo_localInverse_of_notMem_criticalSet
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {x : X} (hxcrit : x ∉ criticalSet f) :
     ∃ (g : Y → X) (V : Set Y), IsOpen V ∧ f x ∈ V ∧ g (f x) = x ∧
       (∀ y ∈ V, f (g y) = y) ∧ ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g V := by
-  -- Step 1: build the chart-bridge package and apply ZZ99 to get `deriv F z₀ ≠ 0`.
+  -- Step 1: build the chart-bridge package to get `deriv F z₀ ≠ 0`.
   set P : Jacobians.Discharge.Manifold.ChartBridgePackage f x :=
     chartBridgePackage_of_nonconstant f hf hnonconst x with hP_def
   -- `x ∉ criticalSet f` unfolds to `¬ ¬ (∃ U ∈ 𝓝 x, InjOn f U)`.
@@ -1468,70 +1562,6 @@ theorem exists_holo_localInverse_of_notMem_criticalSet
     hderiv0
   -- Step 2: apply the manifold IFT.
   exact exists_holo_localInverse f hf x hderiv
-
-/-- **[PROVEN]** Proper preimage-neighborhood lemma (Forster 4.21b): for a proper
-`f`, an open `V` containing the fibre `f⁻¹{x}` has an open neighborhood `U ∋ x`
-with `f⁻¹U ⊆ V`. (From `f` being a closed map.) Used to shrink the disjoint
-local-homeo sheets over a fibre to a common base neighborhood — the key step in
-the covering structure off the branch locus (Forster 4.22). -/
-theorem properNbhd {f : X → Y} (hf : IsProperMap f) (x : Y) {V : Set X}
-    (hV : IsOpen V) (hsub : f ⁻¹' {x} ⊆ V) :
-    ∃ U : Set Y, IsOpen U ∧ x ∈ U ∧ f ⁻¹' U ⊆ V := by
-  have hcompl : IsClosed (f '' Vᶜ) := hf.isClosedMap _ hV.isClosed_compl
-  refine ⟨(f '' Vᶜ)ᶜ, hcompl.isOpen_compl, ?_, ?_⟩
-  · rintro ⟨z, hzV, hzx⟩
-    exact hzV (hsub hzx)
-  · intro z hz
-    by_contra hzV
-    exact hz ⟨z, hzV, rfl⟩
-
-/-- **[PROVEN modulo `isOpenMap_of_nonconstant`]** Covering off the branch locus
-(Forster 4.22): a non-constant holomorphic map restricts to a covering map on
-the complement of its (finite) branch locus. Proven via Mathlib's
-`IsCoveringMapOn.of_openPartialHomeomorph` (the proper-local-homeo ⇒ covering
-theorem — Mathlib already has it, so no hand-built `f⁻¹U ≃ₜ U × fibre`): off the
-branch locus every fibre point is off `criticalSet`, so `isLocalHomeoOffCritical`
-gives an open injective neighborhood, packaged as an `OpenPartialHomeomorph`
-whose `toFun` is `f`. -/
-theorem isCoveringMapOn_compl_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
-    IsCoveringMapOn f (Set.univ \ branchLocus f) := by
-  have hopen : IsOpenMap f := isOpenMap_of_nonconstant f hf hnonconst
-  refine IsCoveringMapOn.of_openPartialHomeomorph hf.continuous ?_
-  intro e he
-  have hfe : f e ∉ branchLocus f := he.2
-  have hecrit : e ∉ criticalSet f := fun hmem => hfe ⟨e, hmem, rfl⟩
-  obtain ⟨U, hUopen, heU, hinj, _himg⟩ := isLocalHomeoOffCritical f hf hnonconst hecrit
-  let pe : PartialEquiv X Y := Set.InjOn.toPartialEquiv f U hinj
-  have hpe_coe : ⇑pe = f := rfl
-  have hpe_source : pe.source = U := rfl
-  refine ⟨OpenPartialHomeomorph.ofContinuousOpen pe ?_ ?_ ?_, ?_, ?_⟩
-  · rw [hpe_coe, hpe_source]; exact hf.continuous.continuousOn
-  · rw [hpe_coe]; exact hopen
-  · rw [hpe_source]; exact hUopen
-  · show e ∈ (OpenPartialHomeomorph.ofContinuousOpen pe _ _ _).source
-    rw [OpenPartialHomeomorph.ofContinuousOpen]
-    show e ∈ pe.source
-    rw [hpe_source]; exact heU
-  · rw [OpenPartialHomeomorph.coe_ofContinuousOpen]; exact hpe_coe
-
-/-- **[PROVEN]** Subtype corestriction of the off-branch covering. Bridges
-`isCoveringMapOn_compl_branchLocus` (an `IsCoveringMapOn` on the *set*
-`univ ∖ branchLocus f`) to a genuine `IsCoveringMap` of the corestricted map
-`↥(f ⁻¹' (univ ∖ branchLocus f)) → ↥(univ ∖ branchLocus f)`, via Mathlib's
-`IsCoveringMapOn.isCoveringMap_restrictPreimage`.
-
-This is the form `Mathlib.Topology.Homotopy.Lifting` consumes: it unlocks
-`IsCoveringMap.liftPath` (path lifting, Forster §4.14) and
-`IsCoveringMap.liftPath_apply_one_eq_of_homotopicRel` (monodromy / homotopy
-invariance of lift endpoints) — the toolkit for assembling the lifted loops in
-`exists_preimageCycle_of_off_branchLocus` (relocated to
-`Jacobians/TracePullback.lean`, where the genuine `ambientPullbackJac` lives). -/
-theorem isCoveringMap_restrictPreimage_compl_branchLocus
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
-    IsCoveringMap ((Set.univ \ branchLocus f).restrictPreimage f) :=
-  (isCoveringMapOn_compl_branchLocus f hf hnonconst).isCoveringMap_restrictPreimage
 
 /-! ## §2 Homotopy invariance and genericity
 
@@ -1549,29 +1579,5 @@ homotopy of loops), which is folded directly into `exists_loop_off_branchLocus`
 The remaining §3 ingredient that lives here (the preimage-cycle lift itself was
 relocated to `Jacobians/TracePullback.lean`, downstream of the genuine
 `ambientPullbackJac`). -/
-
-/-- **[PROVEN]** Fibres off the branch locus are **finite**. For `y ∉ branchLocus f`
-every preimage `x` is a non-critical point, where `f` is locally injective
-(`isLocalHomeoOffCritical`), so `x` is isolated in the fibre ⟹ the fibre is
-`IsDiscrete`; it is also closed in compact `X` ⟹ compact, hence finite. This is
-the sheet count of the cover over `y` (classically `= deg f`) — the foundation of
-the §3 preimage-cycle lift. Note: unlike the discharge's
-`fibres_finite_of_connectivity_hypothesis` (gated on the global identity theorem),
-this is unconditional off the branch locus, since `isLocalHomeoOffCritical` is
-already proven there. -/
-theorem fiber_finite_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {y : Y} (hy : y ∉ branchLocus f) :
-    (f ⁻¹' {y}).Finite := by
-  apply Jacobians.Discharge.ContMDiff.Degree.fiber_finite_of_isDiscrete hf.continuous y
-  rw [isDiscrete_iff_forall_exists_isOpen]
-  intro x hx
-  rw [Set.mem_preimage, Set.mem_singleton_iff] at hx
-  have hxcrit : x ∉ criticalSet f := fun hmem => hy ⟨x, hmem, hx⟩
-  obtain ⟨U, hUopen, hxU, hinj, _⟩ := isLocalHomeoOffCritical f hf hnonconst hxcrit
-  refine ⟨U, hUopen, Set.eq_singleton_iff_unique_mem.mpr ⟨⟨hxU, ?_⟩, ?_⟩⟩
-  · rw [Set.mem_preimage, Set.mem_singleton_iff]; exact hx
-  · rintro x' ⟨hx'U, hx'fib⟩
-    rw [Set.mem_preimage, Set.mem_singleton_iff] at hx'fib
-    exact hinj hx'U hxU (hx'fib.trans hx.symm)
 
 end Jacobians
