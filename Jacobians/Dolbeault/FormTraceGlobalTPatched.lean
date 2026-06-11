@@ -43,7 +43,7 @@ each branch value (the partial-sum junk is repaired to the limit).
   the pole-centres, `Tᵉˣᵗ` is analytic — regular values via the moving-sheet coherence
   (germ-transport), branch values via the **patched** removable engine
   (`analyticAt_branchExtension_valueChartTrace`, needing punctured analyticity + the boundedness
-  crux — *no* false continuity demand).
+  condition — *no* false continuity demand).
 * `PatchedTraceSelection` — the assembled residue-theorem input using `Tᵉˣᵗ`: the per-value moving-sheet
   coherence (no labeling, via the symmetric lever), the **branch-value boundedness condition** (the
   genuine §VIII.3 analytic content, reduced sheet-by-sheet to the proven ratio atom), the `∞`-glue,
@@ -371,7 +371,7 @@ theorem tendsto_zero_valueChartTrace_of_sheetSections (ω₀ : HolomorphicOneFor
 * a **branch value** `b₀ ∈ br`: there `Tᵉˣᵗ` germ-equals the single-point removable extension
   `valueChartTrace_branchExtension ω₀ f Φ b₀`, which is `AnalyticAt b₀` by the proven planar engine
   `analyticAt_branchExtension_valueChartTrace` (needing punctured analyticity + the boundedness
-  crux). -/
+  condition). -/
 
 /-- **Analyticity of the patched trace at a regular value** (off `br`): the patch is inert on a full
 neighbourhood of `z` (a small ball avoids the finite `br`), so analyticity transfers from
@@ -394,7 +394,7 @@ br : Finset ℂ` (pole-values, branch values).  Suppose:
   moving-sheet coherence); and
 * at every branch value `b₀ ∈ br` off the centres, the two inputs of the planar removable engine
   hold: `hpunct` (punctured analyticity of `valueChartTrace` at `b₀`) and `hbnd` (the boundedness
-  crux).
+  condition).
 
 Then `Tᵉˣᵗ` is analytic at **every** value off the centres. Regular values transfer from `hreg`
 (patch inert); branch values use the value-correct removable extension (no false continuity demand).

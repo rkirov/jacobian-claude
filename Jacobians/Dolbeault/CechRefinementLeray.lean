@@ -1,6 +1,6 @@
 /-
   Dolbeault ladder — **STEP B of the Čech Leray cover-independence**: `refineH1` is a `ℂ`-linear
-  isomorphism for two Leray covers (the crux of `CechFinitenessWiring.exists_cechModel`).
+  isomorphism for two Leray covers (the key step of `CechFinitenessWiring.exists_cechModel`).
 
   Builds on STEP A (`CechRefinementHomotopy.refineH1_eq`, homotopy/index-independence of the
   refinement map) and the refinement chain-map machinery (`CechRefinement`). See the `## PLAN` block

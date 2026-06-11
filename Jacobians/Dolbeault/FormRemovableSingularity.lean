@@ -445,7 +445,7 @@ theorem formCoeff_repairedSection_eventuallyEq (α : MeromorphicOneForm X) (x₀
     formCoeff (repairedSection α) x₀ =ᶠ[𝓝[≠] ((chartAt ℂ x₀) x₀)] formCoeff α.toFun x₀ := by
   set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀ with he
   set c₀ := (chartAt ℂ x₀) x₀ with hc₀
-  -- Transport the junk-free crux from `𝓝[≠] x₀` to `𝓝[≠] c₀` via `(chart x₀).symm`.
+  -- Transport the junk-free hypothesis from `𝓝[≠] x₀` to `𝓝[≠] c₀` via `(chart x₀).symm`.
   have htsymm : Tendsto (chartAt ℂ x₀).symm (𝓝[≠] c₀) (𝓝[≠] x₀) := by
     have := (chartAt ℂ x₀).symm.tendsto_nhdsNE (x := c₀)
       ((chartAt ℂ x₀).map_source (mem_chart_source ℂ x₀))
@@ -472,7 +472,7 @@ theorem formCoeff_repairedSection_eventuallyEq (α : MeromorphicOneForm X) (x₀
   rw [h1, h2, hz_crux]
 
 /-- **The repaired section's chart pullback is analytic at every centre.**  In chart `x₀`, the
-pullback agrees off the centre with `formCoeff α.toFun x₀` (the junk-free crux + self-frame), and at
+pullback agrees off the centre with `formCoeff α.toFun x₀` (the junk-free hypothesis + self-frame), and at
 the centre takes the normal-form value, so it equals the analytic normal-form repair of
 `formCoeff α.toFun x₀` near the centre. -/
 theorem analyticAt_pullback_repairedSection {α : MeromorphicOneForm X}

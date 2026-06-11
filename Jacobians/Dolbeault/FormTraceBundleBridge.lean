@@ -523,7 +523,7 @@ The cleanest close: wiring `hevBr_of_regularData` into `residueSum_eq_zero_ofBun
 so the per-branch input is reduced from the (false/hard) Puiseux frame all the way to the **single
 standard residual** `αBr b₀ = ω₀·g near the fibre` (`hαBrAgreeBr`) — every other branch-value
 obligation is discharged from the regular-value data the constructor already requires. This is the
-§VIII.3 branch crux closed along the monodromy-free symmetric-SUM path: at branch values, only the
+§VIII.3 branch-value step closed along the monodromy-free symmetric-SUM path: at branch values, only the
 local-holomorphic form `αBr = ω₀·g` remains, exactly the plan's step 1. -/
 
 /-- **The residue theorem `∑Res = 0`, branch input = the `αBr`-agreement only.** Identical

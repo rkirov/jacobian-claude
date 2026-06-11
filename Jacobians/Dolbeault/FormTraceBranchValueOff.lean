@@ -116,7 +116,7 @@ the finite sum of per-sheet bounds (`tendsto_zero_fibreSum`), each discharged by
 `tendsto_zero_section_deriv` from the proven ratio atom. We package the reduction so the assembly
 only supplies the per-sheet section/chain-rule data. -/
 
-/-- **Boundedness crux from a regular-fibre germ + per-sheet bounds.**  If `valueChartTrace ω₀ f Φ`
+/-- **The boundedness condition from a regular-fibre germ + per-sheet bounds.**  If `valueChartTrace ω₀ f Φ`
 germ-equals (on the punctured neighbourhood of `b₀`) the fibre-sum `(fibreTrace ω₀ f D).traceCoeff`
 of a fibre `D`, and each per-sheet term `(z − b₀)·coeff_i(sheet_i z)·deriv(sheet_i) z → 0`, then the
 boundedness condition `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds. *Proof.* `tendsto_zero_fibreSum`
