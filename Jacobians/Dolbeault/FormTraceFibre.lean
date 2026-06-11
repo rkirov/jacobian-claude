@@ -8,7 +8,8 @@ import Jacobians.ManifoldIFT
 import Jacobians.ProperMapDegreeSheets
 
 /-!
-# The per-fibre trace data of `α = ω₀·g` (Gate A, node A-ii — bridges (a)/(b)/(c))
+# The per-fibre trace data of `α = ω₀·g` (bridges
+(a)/(b)/(c))
 
 This file builds the **per-fibre** geometric content of the general 1-form residue theorem: the
 construction of a `Jacobians.MeromorphicTrace.FibreTrace` over an *unramified* fibre `f⁻¹(b)` of the
@@ -28,22 +29,22 @@ a single `LaurentForm`) — is the last obligation, diagnosed precisely at the b
 
 ## The design — `coeff i`/`pre i` chosen to make bridge (c) definitional
 
-The crucial design decision (mirroring the close-path's A-ii analysis): a `FibreTrace` over `b` with
+The crucial design decision: a `FibreTrace` over `b` with
 sheets indexed by the fibre points `xs : ι → X` uses
 * `pre i := (chartAt ℂ (xs i)) (xs i)` — the source-chart coordinate of `xs i`;
 * `coeff i := fun w => coeffAt ω₀ (xs i) w * g ((chartAt ℂ (xs i)).symm w)` — the **chart integrand
   of `α = ω₀·g`** at `xs i`, exactly the function whose `resAt` at `pre i` is `formFnResidue ω₀ g
   (xs i)` *by definition* (`Jacobians.Dolbeault.formFnResidue`).
 
-With this choice the per-fibre residue bridge (c) is **definitional** (`resAt_coeff_eq_formFnResidue`),
-and the only genuinely-analytic inputs are
+With this choice the per-fibre residue bridge (c) is **definitional**
+(`resAt_coeff_eq_formFnResidue`), and the only genuinely-analytic inputs are
 * (a) the **section germ** `sheet i`: a local holomorphic biholomorphism `ℂ → ℂ` sending the base
-  coordinate `b'` (the value-chart coordinate at `F (xs i) = coe b`) to the source coordinate `pre i`
-  — supplied by the manifold inverse function theorem `Jacobians.exists_holo_localInverse` applied to
-  `F = f.toRiemannSphere` at `xs i` (a regular point), read in charts;
-* (b) the **trivialization↔chart compatibility** of `coeffAt` (already discharged: `coeffAt ω₀ (xs i)`
-  is analytic on the chart target, `Jacobians.Dolbeault.coeffAt_analyticAt`, so each `coeff i` is
-  meromorphic at `pre i`).
+  coordinate `b'` (the value-chart coordinate at `F (xs i) = coe b`) to the source coordinate
+  `pre i` — supplied by the manifold inverse function theorem `Jacobians.exists_holo_localInverse`
+  applied to `F = f.toRiemannSphere` at `xs i` (a regular point), read in charts;
+* (b) the **trivialization↔chart compatibility** of `coeffAt` (already discharged:
+  `coeffAt ω₀ (xs i)` is analytic on the chart target, `Jacobians.Dolbeault.coeffAt_analyticAt`, so
+  each `coeff i` is meromorphic at `pre i`).
 
 `FibreTrace.coeff_mero` then holds because `coeffAt ω₀ (xs i)` is analytic at `pre i` and `g`'s
 chart-pullback is meromorphic there.
@@ -64,12 +65,11 @@ namespace Jacobians.Dolbeault.FormTraceFibre
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
   Jacobians.ProperMapDegreeSheets
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Bridge (c) — the per-fibre residue bridge (definitional)
 
@@ -89,9 +89,9 @@ the chart image `chart_a a`, *is* `formFnResidue ω₀ g a` — by the definitio
     (a : X) :
     resAt (chartIntegrand ω₀ g a) ((chartAt ℂ a) a) = formFnResidue ω₀ g a := rfl
 
-/-- The chart integrand `chartIntegrand ω₀ g a` is **meromorphic at the chart image of `a`** whenever
-`g`'s chart-pullback is meromorphic there: it is the product of the analytic coefficient
-`coeffAt ω₀ a` (`coeffAt_analyticAt`) with the meromorphic `g ∘ chart_a⁻¹`.  (Bridge (b): the
+/-- The chart integrand `chartIntegrand ω₀ g a` is **meromorphic at the chart image of `a`**
+whenever `g`'s chart-pullback is meromorphic there: it is the product of the analytic coefficient
+`coeffAt ω₀ a` (`coeffAt_analyticAt`) with the meromorphic `g ∘ chart_a⁻¹`. (Bridge (b): the
 trivialization-defined `coeffAt` is analytic in the chart, so it does not spoil meromorphy.) -/
 theorem meromorphicAt_chartIntegrand (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (a : X)
     (hg : MeromorphicAt (fun z => g ((chartAt ℂ a).symm z)) ((chartAt ℂ a) a)) :
@@ -138,11 +138,11 @@ theorem exists_planar_section {φ : ℂ → ℂ} {x₀ b : ℂ} (hφ : AnalyticA
 /-! ### The `FibreTrace` over an unramified fibre
 
 Assembling (a)+(b)+(c): given a base value `b : ℂ` and a finite family of fibre points `xs : ι → X`,
-each a **regular non-pole point** of `f` mapping to `b` (the chart pullback `g_{xs i} = f.holoRepr ∘
-chart⁻¹` is analytic with nonzero derivative at `pre i = chart (xs i)`, and `f.holoRepr (xs i) = b`),
-we build a `FibreTrace` over `b` whose per-sheet coefficient is the chart integrand of `α = ω₀·g` at
-`xs i`.  Lemma 3.2 (`resAt_traceCoeff'`) then identifies its trace residue with the fibre residue sum
-`∑ i, formFnResidue ω₀ g (xs i)`.
+each a **regular non-pole point** of `f` mapping to `b` (the chart pullback
+`g_{xs i} = f.holoRepr ∘ chart⁻¹` is analytic with nonzero derivative at `pre i = chart (xs i)`, and
+`f.holoRepr (xs i) = b`), we build a `FibreTrace` over `b` whose per-sheet coefficient is the chart
+integrand of `α = ω₀·g` at `xs i`. Lemma 3.2 (`resAt_traceCoeff'`) then identifies its trace residue
+with the fibre residue sum `∑ i, formFnResidue ω₀ g (xs i)`.
 
 The per-sheet section `sheet i` is the planar inverse `s_i` of `g_{xs i}` (bridge (a)); `coeff_mero`
 holds via bridge (b).  We bundle the *regularity inputs* (per-point analytic + deriv-nonzero) as
@@ -163,9 +163,11 @@ structure FibreRegularData (g : X → ℂ) (f : MeromorphicFunction X) (b : ℂ)
   /-- The fibre points. -/
   xs : ι → X
   /-- The chart pullback `f.holoRepr ∘ chart⁻¹` is analytic at `pre i = chart (xs i)`. -/
-  hg_an : ∀ i, AnalyticAt ℂ (fun z => f.holoRepr ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i))
+  hg_an : ∀ i,
+    AnalyticAt ℂ (fun z => f.holoRepr ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i))
   /-- `xs i` is a regular point: the chart-pullback derivative is nonzero. -/
-  hg_deriv : ∀ i, deriv (fun z => f.holoRepr ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i)) ≠ 0
+  hg_deriv : ∀ i,
+    deriv (fun z => f.holoRepr ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i)) ≠ 0
   /-- `xs i` maps to the base value `b`: `f.holoRepr (xs i) = b`. -/
   hval : ∀ i, f.holoRepr (xs i) = b
   /-- `g`'s chart-pullback is meromorphic at each `pre i` (so `α·g` has an isolated singularity). -/
@@ -181,7 +183,8 @@ pullback analytic at `pre i`) is *automatic* from non-poleness via the proven
 supplied); the caller provides only:
 
 * `xs : ι → X` — the fibre points;
-* `hnp` — each `xs i` is a **non-pole** (`0 ≤ orderAtPoint (xs i)`), so `f.holoRepr` is analytic there;
+* `hnp` — each `xs i` is a **non-pole** (`0 ≤ orderAtPoint (xs i)`), so `f.holoRepr` is analytic
+  there;
 * `hderiv` — each `xs i` is a **regular point** (chart-pullback derivative of `f.holoRepr` nonzero);
 * `hval` — `f.holoRepr (xs i) = b`;
 * `hmero` — `g`'s chart-pullback is meromorphic at each `pre i`.
@@ -190,9 +193,11 @@ This is the honest reduced interface the regular-value machinery feeds — `hg_a
 noncomputable def FibreRegularData.ofRegular (g : X → ℂ) (f : MeromorphicFunction X) (b : ℂ)
     {ι : Type} [Fintype ι] (xs : ι → X)
     (hnp : ∀ i, 0 ≤ f.orderAtPoint (xs i))
-    (hderiv : ∀ i, deriv (fun z => f.holoRepr ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i)) ≠ 0)
+    (hderiv : ∀ i,
+      deriv (fun z => f.holoRepr ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i)) ≠ 0)
     (hval : ∀ i, f.holoRepr (xs i) = b)
-    (hmero : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i))) :
+    (hmero : ∀ i,
+      MeromorphicAt (fun z => g ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i))) :
     FibreRegularData g f b where
   ι := ι
   fintype_ι := inferInstance
@@ -208,7 +213,7 @@ noncomputable def FibreRegularData.ofRegular (g : X → ℂ) (f : MeromorphicFun
   hg_mero := hmero
 
 /-- The chart pullback `f.holoRepr ∘ chart⁻¹` evaluated at `pre i = chart (xs i)` is `b`. -/
-theorem FibreRegularData.gval (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X) {b : ℂ}
+theorem FibreRegularData.gval (_ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X) {b : ℂ}
     (D : FibreRegularData g f b) (i : D.ι) :
     (fun z => f.holoRepr ((chartAt ℂ (D.xs i)).symm z)) ((chartAt ℂ (D.xs i)) (D.xs i)) = b := by
   show f.holoRepr ((chartAt ℂ (D.xs i)).symm ((chartAt ℂ (D.xs i)) (D.xs i))) = b
@@ -270,13 +275,14 @@ theorem resAt_traceCoeff_fibreTrace (ω₀ : HolomorphicOneForms X) (f : Meromor
   rw [(fibreTrace ω₀ f D).resAt_traceCoeff']
   exact Finset.sum_congr rfl (fun i _ => resAt_fibreTrace_coeff ω₀ f D i)
 
-/-! ### The per-fibre residue sum as a fibre-restricted sum over the pole set (bridge (d), part 1)
+/-! ### The per-fibre residue sum as a fibre-restricted sum over the pole set (part 1)
 
-For the global assembly we need the per-center fibre residue sum `∑ i, formFnResidue ω₀ g ((D p).xs i)`
-(over a `FibreRegularData` whose `xs` *enumerates* the poles in the fibre `F⁻¹(coe p)`) to equal the
-fibre-restricted sum `∑_{a ∈ poles, F a = coe p} formFnResidue ω₀ g a` that appears in
-`FormResidueTrace.finite_eq`.  When `xs` is an injective enumeration of exactly that pole fibre, this
-is `Finset.sum_image` / a bijection re-indexing — pure `Finset` combinatorics, no analysis. -/
+For the global assembly we need the per-center fibre residue sum
+`∑ i, formFnResidue ω₀ g ((D p).xs i)` (over a `FibreRegularData` whose `xs` *enumerates* the poles
+in the fibre `F⁻¹(coe p)`) to equal the fibre-restricted sum
+`∑_{a ∈ poles, F a = coe p} formFnResidue ω₀ g a` that appears in `FormResidueTrace.finite_eq`. When
+`xs` is an injective enumeration of exactly that pole fibre, this is `Finset.sum_image` / a
+bijection re-indexing — pure `Finset` combinatorics, no analysis. -/
 
 /-- **Per-fibre residue sum = fibre-restricted pole-set sum.**  If the regularity data `D` over the
 finite center `p` has `xs` injectively enumerating exactly the poles in the fibre `F⁻¹(coe p)`

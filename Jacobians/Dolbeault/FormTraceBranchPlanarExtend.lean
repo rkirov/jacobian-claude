@@ -9,12 +9,13 @@ import Jacobians.TraceForm
 import Jacobians.Dolbeault.FormTraceFibre
 
 /-!
-# Planar removable extension of the geometric trace across a branch value (Gate A, §VIII.3)
+# Planar removable extension of the geometric trace across a branch value (Miranda §VIII.3)
 
-The re-pointed Gate A path feeds the constructor `globalTrace_of_glue` an **arbitrary** value-chart
-trace function `T : ℂ → ℂ` (it need not be `valueChartTrace`).  Its only genuinely-hard input is
-`hT_off` — `T` is `AnalyticAt` at every value off the finite pole-values, *including across the
-branch values* of the cover, where the per-sheet section derivatives of the regular fibre blow up.
+The re-pointed the residue-theorem build path feeds the constructor `globalTrace_of_glue` an
+**arbitrary** value-chart trace function `T : ℂ → ℂ` (it need not be `valueChartTrace`). Its only
+genuinely-hard input is `hT_off` — `T` is `AnalyticAt` at every value off the finite pole-values,
+*including across the branch values* of the cover, where the per-sheet section derivatives of the
+regular fibre blow up.
 
 This file supplies the **planar analytic engine** for that step: a function `T₀` that is
 
@@ -32,15 +33,15 @@ to the proven one-variable atom `TraceForm.sub_div_deriv_tendsto_zero` (the rati
 `(F w − z₀)/F'(w) → 0` at a ramification point) — see `tendsto_zero_of_section_deriv` below, which
 packages exactly that reduction for a single regular sheet's section derivative.
 
-## What this file proves (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file proves
 
-* `analyticAt_update_of_punctured_diff_of_tendsto_zero` — the planar removable-singularity extension:
-  punctured-differentiable + `(z − b₀)·T₀ z → 0` ⟹ `Function.update T₀ b₀ (limUnder …)` is
-  `AnalyticAt b₀`.
-* `analyticAt_of_eventuallyEq_of_tendsto_zero` — the *germ* form: if `T` germ-equals such an extended
-  function on a full neighbourhood of `b₀` (i.e. `T` already carries the correct limit value at `b₀`),
-  then `T` is `AnalyticAt b₀`.  This is the exact shape `globalTrace_of_glue.hT_off` consumes at a
-  branch value.
+* `analyticAt_update_of_punctured_diff_of_tendsto_zero` — the planar removable-singularity
+  extension: punctured-differentiable + `(z − b₀)·T₀ z → 0` ⟹ `Function.update T₀ b₀ (limUnder …)`
+  is `AnalyticAt b₀`.
+* `analyticAt_of_eventuallyEq_of_tendsto_zero` — the *germ* form: if `T` germ-equals such an
+  extended function on a full neighbourhood of `b₀` (i.e. `T` already carries the correct limit
+  value at `b₀`), then `T` is `AnalyticAt b₀`. This is the exact shape `globalTrace_of_glue.hT_off`
+  consumes at a branch value.
 * `tendsto_zero_of_section_deriv` — the per-sheet boundedness reduction: for the planar section germ
   `s` of a regular sheet (a local biholomorphism inverse with `s b₀ = pre`, `deriv s b₀ ≠ 0`)… see
   its statement; this is the building block of the fibre-sum boundedness crux.
@@ -57,15 +58,15 @@ open Complex Metric Filter Topology
 
 namespace Jacobians.Dolbeault.FormTraceBranchPlanar
 
-set_option linter.unusedSectionVars false
 
 /-! ### The planar removable-singularity extension
 
 Mathlib's little-o removable singularity theorem
 (`Complex.differentiableOn_update_limUnder_insert_of_isLittleO`) takes a punctured-differentiable
 function with `(f z − f c) =o[𝓝[≠] c] (· − c)⁻¹` and produces a differentiable (hence analytic)
-extension.  We package the hypotheses in the form the geometric trace actually delivers: differentiable
-on a punctured neighbourhood, plus the *little-o-of-`(·−c)⁻¹` shadow* `(z − c)·T z → 0`. -/
+extension. We package the hypotheses in the form the geometric trace actually delivers:
+differentiable on a punctured neighbourhood, plus the *little-o-of-`(·−c)⁻¹` shadow*
+`(z − c)·T z → 0`. -/
 
 /-- **The boundedness crux is the little-o condition.**  If `(z − c)·T₀ z → 0` as `z → c` through
 `z ≠ c`, then `(T₀ z − T₀ c) =o[𝓝[≠] c] (z − c)⁻¹` — exactly the little-o hypothesis of Mathlib's
@@ -94,8 +95,9 @@ neighbourhood of `b₀` (`hpunct`) and satisfies the boundedness crux `(z − b�
 then `Function.update T₀ b₀ (limUnder (𝓝[≠] b₀) T₀)` — `T₀` redefined to its punctured limit at
 `b₀` — is `AnalyticAt ℂ` at `b₀`.
 
-This is the planar shadow of the bundle-side `traceExtendsAt_branchPoint`: the geometric trace has at
-worst a removable singularity at a branch value, so patching its value there makes it analytic. -/
+This is the planar shadow of the bundle-side `traceExtendsAt_branchPoint`: the geometric trace has
+at worst a removable singularity at a branch value, so patching its value there makes it analytic.
+-/
 theorem analyticAt_update_of_punctured_diff_of_tendsto_zero {T₀ : ℂ → ℂ} {b₀ : ℂ}
     (hpunct : ∀ᶠ z in 𝓝[≠] b₀, DifferentiableAt ℂ T₀ z)
     (hbnd : Tendsto (fun z => (z - b₀) * T₀ z) (𝓝[≠] b₀) (𝓝 0)) :
@@ -127,13 +129,13 @@ theorem analyticAt_update_of_punctured_diff_of_tendsto_zero {T₀ : ℂ → ℂ}
 
 /-- **Germ form of the planar removable extension (the `hT_off`-at-a-branch-value shape).**  Suppose
 a function `T : ℂ → ℂ` germ-equals, on a *full* neighbourhood of `b₀`, the removable extension
-`Function.update T₀ b₀ (limUnder (𝓝[≠] b₀) T₀)` of some `T₀` that is punctured-differentiable with the
-boundedness crux.  Then `T` is `AnalyticAt b₀`.
+`Function.update T₀ b₀ (limUnder (𝓝[≠] b₀) T₀)` of some `T₀` that is punctured-differentiable with
+the boundedness crux. Then `T` is `AnalyticAt b₀`.
 
-In the application `T` is the genuine geometric trace (already carrying the correct extension value at
-the branch value), `T₀` is its punctured (regular-fibre) form, and the germ-equality holds because the
-two agree off `b₀` (regular fibre) and at `b₀` (`T` carries the limit).  This is the exact input
-`globalTrace_of_glue.hT_off` needs at each branch value off the poles. -/
+In the application `T` is the genuine geometric trace (already carrying the correct extension value
+at the branch value), `T₀` is its punctured (regular-fibre) form, and the germ-equality holds
+because the two agree off `b₀` (regular fibre) and at `b₀` (`T` carries the limit). This is the
+exact input `globalTrace_of_glue.hT_off` needs at each branch value off the poles. -/
 theorem analyticAt_of_eventuallyEq_of_tendsto_zero {T T₀ : ℂ → ℂ} {b₀ : ℂ}
     (hpunct : ∀ᶠ z in 𝓝[≠] b₀, DifferentiableAt ℂ T₀ z)
     (hbnd : Tendsto (fun z => (z - b₀) * T₀ z) (𝓝[≠] b₀) (𝓝 0))
@@ -179,7 +181,7 @@ off poles), then the per-sheet term `(z − b₀)·coeff(s z)·deriv s z → 0`.
 /-- **Per-sheet term boundedness.**  If `(z − b₀)·deriv s z → 0` as `z → b₀` (the ramified-section
 derivative blow-up is killed by the `z − b₀` factor — the planar §VIII.3 atom), `s` is continuous at
 `b₀`, and `coeff` is continuous at `s b₀` (e.g. analytic there, `α = ω₀·g` holomorphic off poles),
-then the per-sheet trace term `(z − b₀)·coeff(s z)·deriv s z → 0`.  Summed over the finite fibre this
+then the per-sheet trace term `(z − b₀)·coeff(s z)·deriv s z → 0`. Summed over the finite fibre this
 gives the fibre-sum boundedness crux `(z − b₀)·T₀ z → 0`. -/
 theorem tendsto_zero_perSheet {s coeff : ℂ → ℂ} {b₀ : ℂ}
     (hsderiv : Tendsto (fun z => (z - b₀) * deriv s z) (𝓝[≠] b₀) (𝓝 0))
@@ -234,10 +236,10 @@ theorem tendsto_section_nhdsNE {s F : ℂ → ℂ} {b₀ w₀ : ℂ}
     -- `s z = w₀ ⟹ z = F (s z) = F w₀ = b₀`, contradicting `z ≠ b₀`.
     exact hz_ne (by rw [Set.mem_singleton_iff, ← hz_sec, hcontra, hFw₀])
 
-/-- **Planar section-derivative boundedness atom.**  Let `s` be a regular-fibre section near a branch
+/-- **Planar section-derivative boundedness atom.** Let `s` be a regular-fibre section near a branch
 value `b₀`: continuous at `b₀` with limit `w₀ = s b₀`, differentiable on a punctured neighbourhood,
 with left inverse `F` analytic at `w₀` (`F w₀ = b₀`, `F ∘ s = id` near `b₀`), `F` not eventually
-constant `≡ b₀`, and `F` differentiable along the section (the chain-rule input).  Then
+constant `≡ b₀`, and `F` differentiable along the section (the chain-rule input). Then
 `(z − b₀)·deriv s z → 0` as `z → b₀`.
 
 This is the planar §VIII.3 boundedness for one sheet, discharged from the proven ratio atom

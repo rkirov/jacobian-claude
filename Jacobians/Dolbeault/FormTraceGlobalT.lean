@@ -9,22 +9,22 @@ import Jacobians.Dolbeault.FormTracePrincipalPart
 import Jacobians.Dolbeault.FormTracePrincipalPartInfty
 
 /-!
-# The global trace function `T : ℂ → ℂ` over a fibre family (Gate A, §VIII.3 step 1)
+# The global trace function `T : ℂ → ℂ` over a fibre family (Miranda §VIII.3 step 1)
 
-`Jacobians.Dolbeault.FormTraceGlobalAssemble` reduced Gate A (`∑ₐ Resₐ(α) = 0`) to constructing a
-`GlobalTrace ω₀ g f poles hac` — a single value-chart `dz`-coefficient function `T : ℂ → ℂ` that
-germ-agrees with each *local* fibre trace, together with the holomorphic-remainder data.  This file
-builds the **definition of `T`** as Miranda's trace `Tr_F α` read in the value chart, together with
-its **meromorphy off the finite exceptional set** — the genuinely-analytic foundational layer the
-`GlobalTrace` construction sits on.
+`Jacobians.Dolbeault.FormTraceGlobalAssemble` reduced the residue-theorem build (`∑ₐ Resₐ(α) = 0`)
+to constructing a `GlobalTrace ω₀ g f poles hac` — a single value-chart `dz`-coefficient function
+`T : ℂ → ℂ` that germ-agrees with each *local* fibre trace, together with the holomorphic-remainder
+data. This file builds the **definition of `T`** as Miranda's trace `Tr_F α` read in the value
+chart, together with its **meromorphy off the finite exceptional set** — the genuinely-analytic
+foundational layer the `GlobalTrace` construction sits on.
 
 ## The definition — `T` as a fibre sum of regular-sheet pushforwards
 
 Miranda's trace of the 1-form `α = ω₀·g` along the cover `F = f.toRiemannSphere` is, over a value
-`b`, the sum over the fibre `F⁻¹(coe b)` of the pushforward of `α` along the local inverse sheets.  We
-package this *intrinsically* as a single function `traceCoeffFun ω₀ g f b`, defined for a chosen
+`b`, the sum over the fibre `F⁻¹(coe b)` of the pushforward of `α` along the local inverse sheets.
+We package this *intrinsically* as a single function `traceCoeffFun ω₀ g f b`, defined for a chosen
 finite family of fibre points `D : FibreRegularData g f b` as the local trace coefficient
-`(fibreTrace ω₀ f D).traceCoeff b`.  The genuine global trace `T` is obtained by choosing, at each
+`(fibreTrace ω₀ f D).traceCoeff b`. The genuine global trace `T` is obtained by choosing, at each
 regular value, the *full* fibre `F⁻¹(coe b)` (all `deg f` sheets); at a finite pole-value the chosen
 fibre is the *pole* sub-fibre (`fibreReg hac`), so `T` carries exactly the principal part of the
 trace there (the regular sheets are holomorphic).
@@ -33,8 +33,8 @@ The deep §VIII.3 content (the glue across fibres into a single rational functio
 remainder vanishing) is *not* in this file; here we prove only the local-singularity inputs the
 `GlobalTrace` assembly consumes:
 
-* **`analyticAt_traceCoeff`** (reused from `FormTraceGlobalFunction`) — the local trace coefficient is
-  analytic at a regular value off the poles of `α`;
+* **`analyticAt_traceCoeff`** (reused from `FormTraceGlobalFunction`) — the local trace coefficient
+  is analytic at a regular value off the poles of `α`;
 * **`meromorphicAt_traceCoeff_fibreTrace`** (reused from `FormTraceMeromorphic`) — it is meromorphic
   at any base value;
 * the principal-part / `negTail` extraction (`FormTracePrincipalPart`) — the finite principal parts
@@ -58,7 +58,6 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.Dolbeault.FormTraceFibre Jacobians.Dolbeault.FormTraceInftyFibre
   Jacobians.Dolbeault.FormTracePrincipalPart Jacobians.Dolbeault.FormTraceInftyRecip
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
@@ -69,9 +68,9 @@ variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunctio
 
 /-! ### The local trace coefficient as a function of the base value
 
-For a chosen fibre `D : FibreRegularData g f b`, the trace coefficient `(fibreTrace ω₀ f D).traceCoeff`
-is a function `ℂ → ℂ` (the value-chart pushforward of `α` over the fibre).  We record the two
-local-singularity facts the global assembly needs at each base value. -/
+For a chosen fibre `D : FibreRegularData g f b`, the trace coefficient
+`(fibreTrace ω₀ f D).traceCoeff` is a function `ℂ → ℂ` (the value-chart pushforward of `α` over the
+fibre). We record the two local-singularity facts the global assembly needs at each base value. -/
 
 /-- **The local fibre trace coefficient is analytic at a regular value off the poles of `α`.**  This
 re-exports `FormTraceGlobalFunction.analyticAt_traceCoeff` with the base `b` substituted (so the
@@ -87,12 +86,12 @@ theorem analyticAt_traceCoeff_base (ω₀ : HolomorphicOneForms X) (f : Meromorp
   rwa [fibreTrace_b] at h
 
 /-- **Off-centre analyticity from a regular-fibre germ.**  If the global trace `T` agrees, on a full
-neighbourhood of a regular value `b`, with the local trace coefficient `(fibreTrace ω₀ f D).traceCoeff`
-of a regular fibre `D` over `b` (with `g`'s chart-pullback analytic at each fibre point, so `b` is off
-the poles of `α`), then `T` is **analytic at `b`**.  This is the off-exceptional-set half of the
-`GlobalTrace` `hT_off` obligation: at every value off the finite exceptional set the geometric trace
-agrees with a regular fibre trace, which is analytic by `analyticAt_traceCoeff_base`.  *Proof.*
-`AnalyticAt.congr` with `analyticAt_traceCoeff_base`. -/
+neighbourhood of a regular value `b`, with the local trace coefficient
+`(fibreTrace ω₀ f D).traceCoeff` of a regular fibre `D` over `b` (with `g`'s chart-pullback analytic
+at each fibre point, so `b` is off the poles of `α`), then `T` is **analytic at `b`**. This is the
+off-exceptional-set half of the `GlobalTrace` `hT_off` obligation: at every value off the finite
+exceptional set the geometric trace agrees with a regular fibre trace, which is analytic by
+`analyticAt_traceCoeff_base`. *Proof.* `AnalyticAt.congr` with `analyticAt_traceCoeff_base`. -/
 theorem analyticAt_of_eventuallyEq_regularFibreTrace (ω₀ : HolomorphicOneForms X)
     (f : MeromorphicFunction X) {T : ℂ → ℂ} {b : ℂ} (D : FibreRegularData g f b)
     (hg : ∀ i, AnalyticAt ℂ (fun z => g ((chartAt ℂ (D.xs i)).symm z))
@@ -109,11 +108,12 @@ principal part — a `negTail` (`FormTracePrincipalPart.exists_principalPart_mer
 the pole, with an analytic remainder.  This is the per-centre building block of the `LaurentForm L`
 the `GlobalTrace` assembly subtracts. -/
 
-/-- **The local trace coefficient has a finite principal part at its base value.**  At the base value
+/-- **The local trace coefficient has a finite principal part at its base value.** At the base value
 `b` of the chosen fibre, the local trace coefficient `(fibreTrace ω₀ f D).traceCoeff` is meromorphic
-(`meromorphicAt_traceCoeff_fibreTrace`), so there are a degree `N`, principal-part coefficients `b'`,
-and an analytic remainder `R` with `(fibreTrace ω₀ f D).traceCoeff =ᶠ[𝓝[≠] b] negTail b b' N + R`.
-This is the per-centre `negTail` the `LaurentForm L` is assembled from. -/
+(`meromorphicAt_traceCoeff_fibreTrace`), so there are a degree `N`, principal-part coefficients
+`b'`, and an analytic remainder `R` with
+`(fibreTrace ω₀ f D).traceCoeff =ᶠ[𝓝[≠] b] negTail b b' N + R`. This is the per-centre `negTail` the
+`LaurentForm L` is assembled from. -/
 theorem exists_principalPart_traceCoeff_fibreTrace (ω₀ : HolomorphicOneForms X)
     (f : MeromorphicFunction X) {b : ℂ} (D : FibreRegularData g f b) :
     ∃ (N : ℕ) (b' : ℕ → ℂ) (R : ℂ → ℂ), AnalyticAt ℂ R b ∧
@@ -144,9 +144,10 @@ Index: `(i : Fin m) × Fin (N i)`; the `(i, k)`-th monomial is the `(k + 1)`-th 
 
 /-- **`LaurentForm` from a finite family of principal parts.**  Given `m` centres `cs : Fin m → ℂ`
 all inside `ball 0 ρ` (`hcs`), per-centre degrees `N : Fin m → ℕ` and coefficients
-`b : Fin m → ℕ → ℂ`, the `LaurentForm` whose `(i, k)`-th monomial is `b i (k + 1)·(z − cs i)^{−(k+1)}`
-(the `negTail` of centre `i`, reindexed).  Its coefficient `R` is `∑ i, negTail (cs i) (b i) (N i)`
-(`laurentOfNegTails_R`), and its centre-image is `{cs i}` (modulo the `Fin (N i)` collapse). -/
+`b : Fin m → ℕ → ℂ`, the `LaurentForm` whose `(i, k)`-th monomial is
+`b i (k + 1)·(z − cs i)^{−(k+1)}` (the `negTail` of centre `i`, reindexed). Its coefficient `R` is
+`∑ i, negTail (cs i) (b i) (N i)` (`laurentOfNegTails_R`), and its centre-image is `{cs i}` (modulo
+the `Fin (N i)` collapse). -/
 noncomputable def laurentOfNegTails {m : ℕ} (cs : Fin m → ℂ) (N : Fin m → ℕ) (b : Fin m → ℕ → ℂ)
     (ρ : ℝ) (hcs : ∀ i, cs i ∈ ball (0 : ℂ) ρ) : LaurentForm where
   ι := (i : Fin m) × Fin (N i)
@@ -162,10 +163,10 @@ noncomputable def laurentOfNegTails {m : ℕ} (cs : Fin m → ℂ) (N : Fin m �
     (ρ : ℝ) (hcs : ∀ i, cs i ∈ ball (0 : ℂ) ρ) (p : (i : Fin m) × Fin (N i)) :
     (laurentOfNegTails cs N b ρ hcs).a p = cs p.1 := rfl
 
-/-- **The coefficient of `laurentOfNegTails` is the sum of the `negTail`s.**  `R = ∑ i, negTail (cs i)
-(b i) (N i)` — pointwise, the family of principal parts.  *Proof.*  Expand `LaurentForm.R` (a sum
-over the sigma index), regroup as `∑ i, ∑ k`, and reindex each inner sum `Fin (N i) → Icc 1 (N i)` by
-`k ↦ k + 1` to recover `negTail`. -/
+/-- **The coefficient of `laurentOfNegTails` is the sum of the `negTail`s.**
+`R = ∑ i, negTail (cs i) (b i) (N i)` — pointwise, the family of principal parts. *Proof.* Expand
+`LaurentForm.R` (a sum over the sigma index), regroup as `∑ i, ∑ k`, and reindex each inner sum
+`Fin (N i) → Icc 1 (N i)` by `k ↦ k + 1` to recover `negTail`. -/
 theorem laurentOfNegTails_R {m : ℕ} (cs : Fin m → ℂ) (N : Fin m → ℕ) (b : Fin m → ℕ → ℂ)
     (ρ : ℝ) (hcs : ∀ i, cs i ∈ ball (0 : ℂ) ρ) :
     (laurentOfNegTails cs N b ρ hcs).R = fun z => ∑ i, negTail (cs i) (b i) (N i) z := by
@@ -199,10 +200,11 @@ is removed) — the form the `GlobalTrace.hentire` step consumes. -/
 all inside `ball 0 ρ` and a coefficient `T` that is `MeromorphicAt` at each centre, there is a
 `LaurentForm L` with centre-family `cs` (`L.a = cs ∘ ·.1`, `laurentOfNegTails_a`) such that, at each
 centre `cs i`, `T − L.R` germ-agrees off `cs i` with an analytic function (the pole at `cs i` is
-removed).  *Construction.*  Per centre, `exists_principalPart_meromorphicAt` gives a `negTail` and an
+removed). *Construction.* Per centre, `exists_principalPart_meromorphicAt` gives a `negTail` and an
 analytic remainder; `laurentOfNegTails` assembles the `negTail`s; `laurentOfNegTails_R` identifies
-`L.R = ∑ negTail (cs i)`.  At `cs j`, the `j`-tail removes the pole and the other tails are analytic
-at `cs j` (`analyticAt_negTail_of_ne`) — *provided* the centres are distinct, carried as `hcs_inj`. -/
+`L.R = ∑ negTail (cs i)`. At `cs j`, the `j`-tail removes the pole and the other tails are analytic
+at `cs j` (`analyticAt_negTail_of_ne`) — *provided* the centres are distinct, carried as `hcs_inj`.
+-/
 theorem exists_laurentForm_principalPart {T : ℂ → ℂ} {m : ℕ} (cs : Fin m → ℂ) (ρ : ℝ)
     (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ) (hcs_inj : Function.Injective cs)
     (hT : ∀ i, MeromorphicAt T (cs i)) :
@@ -256,7 +258,7 @@ theorem exists_laurentForm_principalPart {T : ℂ → ℂ} {m : ℕ} (cs : Fin m
     simp only [Pi.sub_apply, hLR, hsplit z]
     -- `T z − (negTail_j + ∑_{i≠j}) = (T z − negTail_j) − ∑_{i≠j}`, and `T z − negTail_j = R j z`.
     have hTj : T z - negTail (cs j) (b j) (N j) z = R j z := by
-      have := hz; simp only [Pi.add_apply] at this; rw [this]; ring
+      have := hz; rw [this]; ring
     rw [show T z - (negTail (cs j) (b j) (N j) z
         + ∑ i ∈ Finset.univ.erase j, negTail (cs i) (b i) (N i) z)
         = (T z - negTail (cs j) (b j) (N j) z)
@@ -272,11 +274,11 @@ subtraction), then `T − L.R` is **entire** (`AnalyticOnNhd ℂ (T − L.R) uni
 
 /-- **The remainder is entire, from junk-freeness.**  Let `L` be a `LaurentForm` whose centres are
 exactly `cs` (so `L.R` is analytic off `{cs i}`), with `T − L.R` germ-analytic at each `cs j` (the
-pole removed — the conclusion of `exists_laurentForm_principalPart`).  If `T` is analytic off the
-centres (`hT_off`) and `T − L.R` is **continuous at each centre** (`hcont` — the junk-free condition),
-then `T − L.R` is entire.  *Proof.*  Off the centres, `T − L.R` is `T` analytic minus `L.R` analytic;
-at a centre, `T − L.R` is meromorphic (germ-equal to an analytic function) and continuous, hence
-analytic (`MeromorphicAt.analyticAt`). -/
+pole removed — the conclusion of `exists_laurentForm_principalPart`). If `T` is analytic off the
+centres (`hT_off`) and `T − L.R` is **continuous at each centre** (`hcont` — the junk-free
+condition), then `T − L.R` is entire. *Proof.* Off the centres, `T − L.R` is `T` analytic minus
+`L.R` analytic; at a centre, `T − L.R` is meromorphic (germ-equal to an analytic function) and
+continuous, hence analytic (`MeromorphicAt.analyticAt`). -/
 theorem analyticOnNhd_remainder_of_junkFree {T : ℂ → ℂ} {m : ℕ} {cs : Fin m → ℂ} {L : LaurentForm}
     (hLa : Finset.univ.image L.a = Finset.univ.image cs)
     (hLrem : ∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧ (T - L.R) =ᶠ[𝓝[≠] (cs j)] R)
@@ -305,24 +307,26 @@ theorem analyticOnNhd_remainder_of_junkFree {T : ℂ → ℂ} {m : ℕ} {cs : Fi
     have hmero : MeromorphicAt (T - L.R) (cs j) := hR_an.meromorphicAt.congr hR_eq.symm
     exact hmero.analyticAt (hcont j)
   · -- off the centres: `T` analytic minus `L.R` analytic.
-    push_neg at hzc
+    push Not at hzc
     exact (hT_off z hzc).sub (hLR_off z hzc)
 
 /-! ### The `hrecip` field: the remainder is holomorphic across `∞`
 
-The reciprocal-chart analogue of `hentire`.  `recipCoeff h 0 = 0` always (the junk `0^{-2}` Jacobian,
-`recipCoeff_zero_eval`), so `ContinuousAt (recipCoeff h) 0` is exactly "`recipCoeff h` *tends to* `0`
-at `0`".  When the analytic continuation of `recipCoeff h` off `0` is an analytic function `R₀`
+The reciprocal-chart analogue of `hentire`. `recipCoeff h 0 = 0` always (the junk `0^{-2}` Jacobian,
+`recipCoeff_zero_eval`), so `ContinuousAt (recipCoeff h) 0` is exactly "`recipCoeff h` *tends to*
+`0` at `0`". When the analytic continuation of `recipCoeff h` off `0` is an analytic function `R₀`
 **vanishing at `0`** (`R₀ 0 = 0` — the holomorphic remainder has no `dζ`-term at `∞`, the genus-`0`
-content), the continuity to `0` holds.  This is the `GlobalTrace.hrecip` field; it isolates `R₀ 0 = 0`
-as the single irreducible `∞` obligation.  (Specialisation of
-`continuousAt_recipRemainder_of_vanishing` to a trivial recip-chart principal part `negTail 0 0 0`.) -/
+content), the continuity to `0` holds. This is the `GlobalTrace.hrecip` field; it isolates
+`R₀ 0 = 0` as the single irreducible `∞` obligation. (Specialisation of
+`continuousAt_recipRemainder_of_vanishing` to a trivial recip-chart principal part `negTail 0 0 0`.)
+-/
 
 /-- **The remainder is holomorphic across `∞`, from a vanishing analytic continuation.**  If
 `recipCoeff h` germ-agrees off `0` with an analytic function `R₀` (`hR_eq`) that vanishes at `0`
 (`hR0 : R₀ 0 = 0`), then `recipCoeff h` is **continuous at `0`** (continuity to the junk value `0`).
 This is the honest `GlobalTrace.hrecip` shape — `R₀ 0 = 0` is the genus-`0` "no `dζ`-term at `∞`"
-input.  *Proof.*  Along `𝓝[≠] 0` agreement with the continuous `R₀`; at `0` the value is `0 = R₀ 0`. -/
+input. *Proof.* Along `𝓝[≠] 0` agreement with the continuous `R₀`; at `0` the value is `0 = R₀ 0`.
+-/
 theorem continuousAt_recipCoeff_of_vanishing {h : ℂ → ℂ} {R₀ : ℂ → ℂ}
     (hR_an : AnalyticAt ℂ R₀ 0) (hR0 : R₀ 0 = 0) (hR_eq : recipCoeff h =ᶠ[𝓝[≠] 0] R₀) :
     ContinuousAt (recipCoeff h) 0 := by
@@ -345,10 +349,11 @@ A variant of `analyticOnNhd_remainder_of_junkFree` phrased directly over the cen
 `S = Finset.univ.image L.a` (rather than an indexed family) — the form the `GlobalTrace` constructor
 uses, since the `GlobalTrace.hglue_fin`/`hcenters` fields range over `Finset.univ.image L.a`. -/
 
-/-- **The remainder is entire (centre-set form).**  `L.R` is analytic off `S = Finset.univ.image L.a`;
-if `T` is analytic off `S` (`hT_off`), `T − L.R` is germ-analytic at every `p ∈ S` (`hrem`, the pole
-removed), and `T − L.R` is continuous at every `p ∈ S` (`hcont`, junk-free), then `T − L.R` is entire.
-This is the `GlobalTrace.hentire` field, ranging over `Finset.univ.image L.a`. -/
+/-- **The remainder is entire (centre-set form).** `L.R` is analytic off
+`S = Finset.univ.image L.a`; if `T` is analytic off `S` (`hT_off`), `T − L.R` is germ-analytic at
+every `p ∈ S` (`hrem`, the pole removed), and `T − L.R` is continuous at every `p ∈ S` (`hcont`,
+junk-free), then `T − L.R` is entire. This is the `GlobalTrace.hentire` field, ranging over
+`Finset.univ.image L.a`. -/
 theorem analyticOnNhd_remainder_of_junkFree' {T : ℂ → ℂ} {L : LaurentForm}
     (hT_off : ∀ z ∉ Finset.univ.image L.a, AnalyticAt ℂ T z)
     (hrem : ∀ p ∈ Finset.univ.image L.a, ∃ R : ℂ → ℂ, AnalyticAt ℂ R p ∧ (T - L.R) =ᶠ[𝓝[≠] p] R)

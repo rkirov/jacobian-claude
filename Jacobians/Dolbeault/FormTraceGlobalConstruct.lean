@@ -7,14 +7,15 @@ import Jacobians.Dolbeault.FormTraceGlobal
 import Jacobians.Discharge.Manifold.CriticalValuesFiniteGeneral
 
 /-!
-# Constructing `GlobalTraceData` — discharging the routine fields (Gate A, node A-ii bridge (e))
+# Constructing `GlobalTraceData` — discharging the routine fields
 
-`Jacobians.Dolbeault.FormTraceGlobal` reduced Gate A (the 1-form residue theorem `∑ₐ Resₐ(α) = 0`
-for `α = ω₀·g`) to the single construction of a `GlobalTraceData ω₀ g f poles`.  Its five fields are
+`Jacobians.Dolbeault.FormTraceGlobal` reduced the residue-theorem build (the 1-form residue theorem
+`∑ₐ Resₐ(α) = 0` for `α = ω₀·g`) to the single construction of a `GlobalTraceData ω₀ g f poles`. Its
+five fields are
 
 * `L`, `hL32`, `infty_eq` — the **rational trace** `Tr_F α` on `ℂℙ¹` (the deep §VIII.3 content), and
-* `D`, `hxs_inj`/`hxs_mem`/`hxs_surj`, `hcenters` — the **per-center fibre data** (regular fibres over
-  the finite pole-values, enumerating the poles in each fibre).
+* `D`, `hxs_inj`/`hxs_mem`/`hxs_surj`, `hcenters` — the **per-center fibre data** (regular fibres
+  over the finite pole-values, enumerating the poles in each fibre).
 
 This file discharges the *routine* fields — the fibre enumeration `D` + `hxs_*` and the center
 matching `hcenters` — from a clean **adapted-cover** hypothesis, isolating the single genuinely-deep
@@ -23,13 +24,13 @@ obligation `TraceRationalityWitness` (the rational `L` + Lemma 3.2 bookkeeping `
 ## The adapted cover
 
 The cover `F = f.toRiemannSphere` must be **unramified over the finite pole-values** of `α`: each
-pole `a` of `α` (mapping to a finite value `coe p`) must be a *regular non-pole point of `f`* — so its
-fibre `F⁻¹(coe p)` is a finite set of such points and `FibreRegularData.ofRegular` applies.  We bundle
-this geometric prerequisite (plus `g`'s chart-pullback meromorphy at the fibre points) as
-`AdaptedCover ω₀ g f poles`.  A generic nonconstant meromorphic `f` (gate D) is adapted, because the
+pole `a` of `α` (mapping to a finite value `coe p`) must be a *regular non-pole point of `f`* — so
+its fibre `F⁻¹(coe p)` is a finite set of such points and `FibreRegularData.ofRegular` applies. We
+bundle this geometric prerequisite (plus `g`'s chart-pullback meromorphy at the fibre points) as
+`AdaptedCover ω₀ g f poles`. A generic nonconstant meromorphic `f` (gate D) is adapted, because the
 critical values are finite (`criticalValues_finite_general`) and the pole-values are finite, so the
-two finite sets can be made disjoint — but that genericity perturbation is itself §VIII.3-level and is
-deferred (it is *not* the deep core; the deep core is trace rationality).
+two finite sets can be made disjoint — but that genericity perturbation is itself §VIII.3-level and
+is deferred (it is *not* the deep core; the deep core is trace rationality).
 
 ## What is discharged here (axiom-clean)
 
@@ -41,29 +42,30 @@ deferred (it is *not* the deep core; the deep core is trace rationality).
 
 ## The minimal remaining obligation
 
-After this file, Gate A is reduced to:
+After this file, the residue-theorem build is reduced to:
 
 > `∃ (f) (adapted : AdaptedCover ω₀ g f poles), TraceRationalityWitness ω₀ g f poles adapted`
 
 i.e. **(i)** an adapted cover, and **(ii)** the trace `Tr_F α` is a rational `LaurentForm` matching
 the per-fibre residues at the finite centers (`hL32`) and at `∞` (`infty_eq`).
 
-**Why the deep core is irreducible (the `infty_eq` circularity).**  One might hope to *fabricate* `L`
-as a sum of simple poles `r_p·(z − p)⁻¹` at the finite centers `p`, with `r_p` the (already-computed)
-fibre residue sums — then `hcenters` and `hL32` hold *by construction* (`resAt_center_eq`,
-`resAt_fibreTrace_coeff`).  But the `ℂℙ¹` residue theorem baked into `LaurentForm`
-(`resAtInfty_eq`) forces `resAtInfty L.R = −∑_p r_p`, so `infty_eq` would then *demand*
-`−∑_p r_p = ∑_{a : F a = ∞} Res_a(α)`, i.e. `∑_{a ∈ poles} Res_a(α) = 0` — **the residue theorem
-itself**.  So `infty_eq` for the *genuine* trace (whose `resAtInfty` is an honest large-circle contour
-integral of the actual pushforward, *not* fabricated) is the real content: it is Lemma 3.2 at `∞` for
-`Tr_F α`, and combined with the proved finite-center Lemma 3.2 and the `ℂℙ¹` residue theorem it
-*is* Gate A.  Hence `L` must be the actual rational trace; there is no shortcut.
+**Why the deep core is irreducible (the `infty_eq` circularity).** One might hope to *fabricate* `L`
+as a sum of simple poles `r_p·(z − p)⁻¹` at the finite centers `p`, with `r_p` the
+(already-computed) fibre residue sums — then `hcenters` and `hL32` hold *by construction*
+(`resAt_center_eq`, `resAt_fibreTrace_coeff`). But the `ℂℙ¹` residue theorem baked into
+`LaurentForm` (`resAtInfty_eq`) forces `resAtInfty L.R = −∑_p r_p`, so `infty_eq` would then
+*demand* `−∑_p r_p = ∑_{a : F a = ∞} Res_a(α)`, i.e. `∑_{a ∈ poles} Res_a(α) = 0` — **the residue
+theorem itself**. So `infty_eq` for the *genuine* trace (whose `resAtInfty` is an honest
+large-circle contour integral of the actual pushforward, *not* fabricated) is the real content: it
+is Lemma 3.2 at `∞` for `Tr_F α`, and combined with the proved finite-center Lemma 3.2 and the `ℂℙ¹`
+residue theorem it *is* the residue-theorem build. Hence `L` must be the actual rational trace;
+there is no shortcut.
 
 This makes (ii) the genuine §VIII.3 wall: build `Tr_F α` as a global meromorphic function on the
 compact `ℂℙ¹` (holomorphic off the finite exceptional set — critical values + pole-images + `∞` — by
-the per-sheet pushforwards, meromorphic at the exceptional points), extract its principal parts into a
-`LaurentForm`, and read off the `∞`-residue.  (i) is a finite genericity choice (the bad source set
-`criticalSet f ∪ poles f` is finite; perturb `f` off the finitely many poles of `α`).  Everything
+the per-sheet pushforwards, meromorphic at the exceptional points), extract its principal parts into
+a `LaurentForm`, and read off the `∞`-residue. (i) is a finite genericity choice (the bad source set
+`criticalSet f ∪ poles f` is finite; perturb `f` off the finitely many poles of `α`). Everything
 else — the per-fibre Lemma 3.2 (`FormTraceFibre`), the fibre enumeration (here), and the descent to
 `∑Res = 0` (`FormTraceGlobal`) — is *proved*, axiom-clean.
 
@@ -84,7 +86,6 @@ namespace Jacobians.Dolbeault.FormTraceGlobal
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
   Jacobians.Dolbeault.FormTraceFibre Jacobians.Dolbeault.FormResidueTheorem
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
@@ -95,22 +96,24 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 The geometric prerequisite for the fibre data: the cover `F = f.toRiemannSphere` is unramified over
 the finite pole-values, i.e. every pole `a` of `α = ω₀·g` mapping to a *finite* value is a regular
-non-pole point of `f` (chart-pullback of `f.holoRepr` analytic with nonzero derivative at `chart a`),
-and `g`'s chart-pullback is meromorphic there. -/
+non-pole point of `f` (chart-pullback of `f.holoRepr` analytic with nonzero derivative at
+`chart a`), and `g`'s chart-pullback is meromorphic there. -/
 
-/-- **An adapted cover** for `α = ω₀·g` over the pole set `poles`.  The cover `F = f.toRiemannSphere`
-is unramified over the finite pole-values: every pole `a ∈ poles` whose image `F a` is a finite value
-(`≠ ∞`) is a **regular non-pole point of `f`** — `f.holoRepr`'s chart-pullback is analytic at
+/-- **An adapted cover** for `α = ω₀·g` over the pole set `poles`. The cover `F = f.toRiemannSphere`
+is unramified over the finite pole-values: every pole `a ∈ poles` whose image `F a` is a finite
+value (`≠ ∞`) is a **regular non-pole point of `f`** — `f.holoRepr`'s chart-pullback is analytic at
 `chart a` with nonzero derivative — and `g`'s chart-pullback is meromorphic at `chart a` (so `α·g`
-has an isolated singularity).  This is the honest geometric input the unramified-fibre `FibreTrace`
+has an isolated singularity). This is the honest geometric input the unramified-fibre `FibreTrace`
 machinery (`FormTraceFibre`) consumes; a generic nonconstant `f` (gate D) satisfies it. -/
 structure AdaptedCover (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
     (poles : Finset X) : Prop where
   /-- `f` is genuinely nonconstant (nontrivial divisor), so all fibres are finite. -/
   hdiv : (f.div : Divisor X) ≠ 0
-  /-- Every pole mapping to a finite value is a **non-pole of `f`** (`f.holoRepr` analytic there). -/
+  /-- Every pole mapping to a finite value is a **non-pole of `f`** (`f.holoRepr` analytic there).
+  -/
   hnp : ∀ a ∈ poles, f.toRiemannSphere a ≠ OnePoint.infty → 0 ≤ f.orderAtPoint a
-  /-- Every pole mapping to a finite value is a **regular point of `f`** (chart-pullback deriv ≠ 0). -/
+  /-- Every pole mapping to a finite value is a **regular point of `f`** (chart-pullback deriv ≠ 0).
+  -/
   hderiv : ∀ a ∈ poles, f.toRiemannSphere a ≠ OnePoint.infty →
     deriv (fun z => f.holoRepr ((chartAt ℂ a).symm z)) ((chartAt ℂ a) a) ≠ 0
   /-- `g`'s chart-pullback is meromorphic at every pole (so `α·g` has an isolated singularity). -/
@@ -120,12 +123,12 @@ structure AdaptedCover (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : Mero
 /-! ### The per-center fibre enumeration
 
 For each finite center `p : ℂ`, the poles in the fibre `F⁻¹(coe p)` form a finite set
-`poleFibre f poles p := poles.filter (· ↦ F · = coe p)`.  We index the sheets by
+`poleFibre f poles p := poles.filter (· ↦ F · = coe p)`. We index the sheets by
 `Fin #(poleFibre f poles p)` (a `Type 0`, as `FibreRegularData.ι` requires), with the enumeration
-`xs := Subtype.val ∘ (poleFibre …).equivFin.symm`.  At a finite value, a non-pole `a` with
+`xs := Subtype.val ∘ (poleFibre …).equivFin.symm`. At a finite value, a non-pole `a` with
 `F a = coe p` has `f.holoRepr a = p` (`toRiemannSphere_of_nonneg` + `OnePoint.coe` injective), which
-is the `hval` field.  Combined with the adapted-cover regularity (`hnp`/`hderiv`/`hg_mero`) this feeds
-`FibreRegularData.ofRegular`. -/
+is the `hval` field. Combined with the adapted-cover regularity (`hnp`/`hderiv`/`hg_mero`) this
+feeds `FibreRegularData.ofRegular`. -/
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
 
@@ -133,7 +136,8 @@ variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunctio
 def poleFibre (f : MeromorphicFunction X) (poles : Finset X) (p : ℂ) : Finset X :=
   poles.filter (fun a => f.toRiemannSphere a = ((p : ℂ) : RiemannSphere))
 
-@[simp] theorem mem_poleFibre {f : MeromorphicFunction X} {poles : Finset X} {p : ℂ} {a : X} :
+@[simp] theorem mem_poleFibre {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {f : MeromorphicFunction X} {poles : Finset X} {p : ℂ} {a : X} :
     a ∈ poleFibre f poles p ↔ a ∈ poles ∧ f.toRiemannSphere a = ((p : ℂ) : RiemannSphere) := by
   rw [poleFibre, Finset.mem_filter]
 
@@ -145,19 +149,22 @@ noncomputable def fibreEnum (f : MeromorphicFunction X) (poles : Finset X) (p : 
   fun i => ((poleFibre f poles p).equivFin.symm i : X)
 
 /-- Each enumerated point lies in the fibre `poleFibre f poles p`. -/
-theorem fibreEnum_mem (f : MeromorphicFunction X) (poles : Finset X) (p : ℂ)
+theorem fibreEnum_mem {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (poles : Finset X) (p : ℂ)
     (i : Fin (poleFibre f poles p).card) : fibreEnum f poles p i ∈ poleFibre f poles p :=
   ((poleFibre f poles p).equivFin.symm i).2
 
 /-- The fibre enumeration is **injective**. -/
-theorem fibreEnum_injective (f : MeromorphicFunction X) (poles : Finset X) (p : ℂ) :
+theorem fibreEnum_injective {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (poles : Finset X) (p : ℂ) :
     Function.Injective (fibreEnum f poles p) := by
   intro i j h
   exact (poleFibre f poles p).equivFin.symm.injective (Subtype.ext h)
 
-/-- The fibre enumeration is **surjective** onto the fibre: for `a ∈ poleFibre f poles p` there is an
-index hitting it. -/
-theorem fibreEnum_surjective (f : MeromorphicFunction X) (poles : Finset X) (p : ℂ)
+/-- The fibre enumeration is **surjective** onto the fibre: for `a ∈ poleFibre f poles p` there is
+an index hitting it. -/
+theorem fibreEnum_surjective {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (poles : Finset X) (p : ℂ)
     {a : X} (ha : a ∈ poleFibre f poles p) : ∃ i, fibreEnum f poles p i = a := by
   refine ⟨(poleFibre f poles p).equivFin ⟨a, ha⟩, ?_⟩
   show ((poleFibre f poles p).equivFin.symm ((poleFibre f poles p).equivFin ⟨a, ha⟩) : X) = a
@@ -260,9 +267,9 @@ structure TraceRationalityWitness (ω₀ : HolomorphicOneForms X) (g : X → ℂ
 
 /-- **`GlobalTraceData` from an adapted cover + trace rationality.**  Given an `AdaptedCover` (the
 unramified-over-finite-pole-values geometric input) and a `TraceRationalityWitness` (the rational
-trace `L` + Lemma 3.2 bookkeeping), assemble a `GlobalTraceData ω₀ g f poles`.  The fibre data
+trace `L` + Lemma 3.2 bookkeeping), assemble a `GlobalTraceData ω₀ g f poles`. The fibre data
 `D`/`hxs_*` are the *proved* `fibreReg`/`fibreReg_hxs_*`; the deep fields `L`/`hcenters`/`hL32`/
-`infty_eq` come from the witness.  This discharges every routine field of `GlobalTraceData`, reducing
+`infty_eq` come from the witness. This discharges every routine field of `GlobalTraceData`, reducing
 its construction to the witness. -/
 noncomputable def globalTraceData_of_adapted (hac : AdaptedCover ω₀ g f poles)
     (W : TraceRationalityWitness ω₀ g f poles hac) :
@@ -276,11 +283,12 @@ noncomputable def globalTraceData_of_adapted (hac : AdaptedCover ω₀ g f poles
   hL32 := W.hL32
   infty_eq := W.infty_eq
 
-/-- **Gate A from an adapted cover + trace rationality (existential).**  If an adapted cover and a
-trace-rationality witness exist, then `α = ω₀·g` has a `GlobalTraceData`, hence (by
-`exists_formResidueTrace_of_globalTraceData` + the proved descent) a `FormResidueTrace`, hence the
-1-form residue theorem `∑ₐ Resₐ(α) = 0` holds *unconditionally* for `α`.  This is the reduction of
-Gate A to the two §VIII.3 ingredients (the adapted cover and the trace's rationality). -/
+/-- **the residue-theorem build from an adapted cover + trace rationality (existential).** If an
+adapted cover and a trace-rationality witness exist, then `α = ω₀·g` has a `GlobalTraceData`, hence
+(by `exists_formResidueTrace_of_globalTraceData` + the proved descent) a `FormResidueTrace`, hence
+the 1-form residue theorem `∑ₐ Resₐ(α) = 0` holds *unconditionally* for `α`. This is the reduction
+of the residue-theorem build to the two §VIII.3 ingredients (the adapted cover and the trace's
+rationality). -/
 theorem residueSum_eq_zero_of_adapted (hac : AdaptedCover ω₀ g f poles)
     (W : TraceRationalityWitness ω₀ g f poles hac) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
@@ -290,9 +298,9 @@ theorem residueSum_eq_zero_of_adapted (hac : AdaptedCover ω₀ g f poles)
 
 The `AdaptedCover` and `TraceRationalityWitness` obligations are genuine (true, satisfiable), not a
 disguised `False`: for the **empty pole set** (`α = ω₀·g` globally holomorphic) any nonconstant `f`
-(`f.div ≠ 0`) gives an `AdaptedCover` (the `hnp`/`hderiv`/`hg_mero` fields are vacuous), and the empty
-`LaurentForm` gives a `TraceRationalityWitness` (no centers, trace `≡ 0`, vacuous `hL32`, `∞`-fibre
-sum `0`).  This confirms the structures are honest, mirroring `globalTraceData_empty`. -/
+(`f.div ≠ 0`) gives an `AdaptedCover` (the `hnp`/`hderiv`/`hg_mero` fields are vacuous), and the
+empty `LaurentForm` gives a `TraceRationalityWitness` (no centers, trace `≡ 0`, vacuous `hL32`,
+`∞`-fibre sum `0`). This confirms the structures are honest, mirroring `globalTraceData_empty`. -/
 
 /-- **`AdaptedCover` non-vacuity.**  For the empty pole set, any nonconstant `f` (`f.div ≠ 0`) is an
 adapted cover (the regularity fields are vacuous). -/

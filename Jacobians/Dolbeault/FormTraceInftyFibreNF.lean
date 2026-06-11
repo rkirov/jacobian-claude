@@ -8,49 +8,53 @@ import Jacobians.Dolbeault.FormTraceInftyRecip
 import Jacobians.ProperMapDegreeSheets
 
 /-!
-# The `∞`-fibre trace via the *repaired* reciprocal (Gate A, §VIII.3 — sound `∞` fibre)
+# The `∞`-fibre trace via the *repaired* reciprocal (Miranda §VIII.3 — sound `∞` fibre)
 
 `Jacobians.Dolbeault.FormTraceInftyFibre.InftyFibreData` models the `∞`-fibre trace through the
 **literal** reciprocal `z ↦ (f.holoRepr (chart⁻¹ z))⁻¹`, demanding it be `AnalyticAt` at the pole
-chart-centre (`hrecip_an`) and vanish there (`hrecip_val`).  Both are **false for a genuine `∞`-pole**:
-at a pole `x` the limit-repair `f.holoRepr x = limUnder (𝓝[≠] x) f.toFun` (`MeromorphicLiouville`) does
-*not* exist, so `f.holoRepr x` is a junk value — the literal reciprocal is not continuous (let alone
-analytic) at the centre, and `(f.holoRepr x)⁻¹` is junk, not `0`.  Consequently the original
-`InftyFibreData` is only ever satisfiable *empty* (the repo never builds a non-empty one).
+chart-centre (`hrecip_an`) and vanish there (`hrecip_val`). Both are **false for a genuine
+`∞`-pole**: at a pole `x` the limit-repair `f.holoRepr x = limUnder (𝓝[≠] x) f.toFun`
+(`MeromorphicLiouville`) does *not* exist, so `f.holoRepr x` is a junk value — the literal
+reciprocal is not continuous (let alone analytic) at the centre, and `(f.holoRepr x)⁻¹` is junk, not
+`0`. Consequently the original `InftyFibreData` is only ever satisfiable *empty* (the repo never
+builds a non-empty one).
 
 This file fixes that with the **repaired reciprocal**: the meromorphic normal form
 `h := toMeromorphicNFAt (f.holoRepr ∘ chart⁻¹)⁻¹` of the reciprocal at the pole centre, supplied by
-`Jacobians.ProperMapDegreeSheets.exists_reciprocal_NF`.  It is genuinely `AnalyticAt` at the centre,
-vanishes there (`h (centre) = 0`), has analytic order `= the pole order`, and agrees with the literal
-reciprocal on the *punctured* neighbourhood `𝓝[≠]`.  Carrying `h` (rather than the junk literal) as the
-reciprocal section makes the `∞`-fibre `FibreTrace` honest.
+`Jacobians.ProperMapDegreeSheets.exists_reciprocal_NF`. It is genuinely `AnalyticAt` at the centre,
+vanishes there (`h (centre) = 0`), has analytic order `= the pole order`, and agrees with the
+literal reciprocal on the *punctured* neighbourhood `𝓝[≠]`. Carrying `h` (rather than the junk
+literal) as the reciprocal section makes the `∞`-fibre `FibreTrace` honest.
 
 ## The honest `∞`-fibre datum
 
 `InftyFibreDataNF` mirrors `FibreRegularData`/`InftyFibreData` but carries the reciprocal section
 `recip : ι → ℂ → ℂ` as **data**, with its analyticity / nonzero-derivative / vanishing-at-centre as
-fields, plus the germ-link `hrecip_germ` to the literal reciprocal off the centre (the geometric meaning:
-`recip i` *is* `1/f` read in charts, away from the pole).  The `∞`-fibre `FibreTrace` (`inftyFibreTraceNF`)
-uses `recip i` as the cover map whose planar inverse is the sheet; the chart integrand of `α = ω₀·g` is
-the coefficient, exactly as in the finite case (so the per-sheet residue bridge is unchanged).
+fields, plus the germ-link `hrecip_germ` to the literal reciprocal off the centre (the geometric
+meaning: `recip i` *is* `1/f` read in charts, away from the pole). The `∞`-fibre `FibreTrace`
+(`inftyFibreTraceNF`) uses `recip i` as the cover map whose planar inverse is the sheet; the chart
+integrand of `α = ω₀·g` is the coefficient, exactly as in the finite case (so the per-sheet residue
+bridge is unchanged).
 
-## What this file proves (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file proves
 
-* `InftyFibreDataNF` / `InftyFibreDataNF.ofRegular` — the honest `∞`-fibre datum and its constructor from
-  a **simple pole** (`f.orderAtPoint = −1`, the unramified-over-`∞` case): `exists_reciprocal_NF` supplies
-  the repaired analytic reciprocal `h`, whose order-`1` factorization gives `deriv h ≠ 0`.
-* `inftyFibreTraceNF` — the generic `FibreTrace` over the `∞` fibre (base `0`), from `InftyFibreDataNF`;
+* `InftyFibreDataNF` / `InftyFibreDataNF.ofRegular` — the honest `∞`-fibre datum and its constructor
+  from a **simple pole** (`f.orderAtPoint = −1`, the unramified-over-`∞` case):
+  `exists_reciprocal_NF` supplies the repaired analytic reciprocal `h`, whose order-`1`
+  factorization gives `deriv h ≠ 0`.
+* `inftyFibreTraceNF` — the generic `FibreTrace` over the `∞` fibre (base `0`), from
+  `InftyFibreDataNF`;
 * `resAt_traceCoeff_inftyFibreTraceNF` — the `∞`-fibre Lemma 3.2:
   `resAt (∞-trace coeff) 0 = ∑ i, formFnResidue ω₀ g (xs i)`;
 * `inftyResidueSumNF_eq_filter` — the `∞`-fibre residue sum = the `∞`-fibre-restricted pole-set sum;
-* `infty_eq_of_agreeNF` — `resAtInfty L.R L.ρ = ∑_{F a = ∞} Res_a α` from the reciprocal-chart agreement
-  `recipCoeff L.R =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f D).traceCoeff` (the precise `GlobalTraceData.infty_eq`
-  conclusion, with the sound `∞`-fibre trace replacing the buggy one).
+* `infty_eq_of_agreeNF` — `resAtInfty L.R L.ρ = ∑_{F a = ∞} Res_a α` from the reciprocal-chart
+  agreement `recipCoeff L.R =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f D).traceCoeff` (the precise
+  `GlobalTraceData.infty_eq` conclusion, with the sound `∞`-fibre trace replacing the buggy one).
 
 ## References
 
-* Miranda, *Algebraic Curves and Riemann Surfaces*, §VIII.3 (the trace `Tr`, Lemma 3.2; the residue at
-  infinity; normal form (3.1)).
+* Miranda, *Algebraic Curves and Riemann Surfaces*, §VIII.3 (the trace `Tr`, Lemma 3.2; the residue
+  at infinity; normal form (3.1)).
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.
 -/
 
@@ -65,12 +69,11 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.Dolbeault.FormTraceFibre Jacobians.Dolbeault.FormTraceInftyRecip
   Jacobians.ProperMapDegreeSheets
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 variable {g : X → ℂ}
 
@@ -95,13 +98,13 @@ theorem deriv_ne_zero_of_analyticOrderAt_eq_one {h : ℂ → ℂ} {z₀ : ℂ}
 /-! ### The honest `∞`-fibre regularity data (carrying the repaired reciprocal) -/
 
 /-- **Per-`∞`-fibre regularity data (repaired reciprocal).**  For the cover `f` over `∞`: a finite
-family of poles `xs : ι → X` of `α` mapping to `∞`, together with the **repaired reciprocal section**
-`recip i : ℂ → ℂ` — the analytic normal form of `z ↦ (f.holoRepr (chart⁻¹ z))⁻¹` at the pole centre
-`pre i = chart (xs i)`.  Fields:
+family of poles `xs : ι → X` of `α` mapping to `∞`, together with the **repaired reciprocal
+section** `recip i : ℂ → ℂ` — the analytic normal form of `z ↦ (f.holoRepr (chart⁻¹ z))⁻¹` at the
+pole centre `pre i = chart (xs i)`. Fields:
 
 * `hrecip_an` — `recip i` analytic at `pre i`;
-* `hrecip_deriv` — `recip i` has nonzero derivative at `pre i` (`f` *unramified over `∞`* at `xs i`, i.e.
-  a simple pole);
+* `hrecip_deriv` — `recip i` has nonzero derivative at `pre i` (`f` *unramified over `∞`* at `xs i`,
+  i.e. a simple pole);
 * `hrecip_val` — `recip i (pre i) = 0` (the reciprocal coordinate of `∞`);
 * `hrecip_germ` — `recip i` agrees with the literal reciprocal `(f.holoRepr (chart⁻¹ ·))⁻¹` on the
   *punctured* neighbourhood of `pre i` (its geometric meaning: `1/f` in charts, away from the pole);
@@ -116,11 +119,13 @@ structure InftyFibreDataNF (g : X → ℂ) (f : MeromorphicFunction X) where
   fintype_ι : Fintype ι
   /-- The fibre points (poles of `α` over `∞`). -/
   xs : ι → X
-  /-- The repaired reciprocal section (analytic normal form of `1/f` in charts at the pole centre). -/
+  /-- The repaired reciprocal section (analytic normal form of `1/f` in charts at the pole centre).
+  -/
   recip : ι → ℂ → ℂ
   /-- `recip i` is analytic at the pole centre `pre i = chart (xs i)`. -/
   hrecip_an : ∀ i, AnalyticAt ℂ (recip i) ((chartAt ℂ (xs i)) (xs i))
-  /-- `recip i` has nonzero derivative at the centre (`f` unramified over `∞` at `xs i`: simple pole). -/
+  /-- `recip i` has nonzero derivative at the centre (`f` unramified over `∞` at `xs i`: simple
+  pole). -/
   hrecip_deriv : ∀ i, deriv (recip i) ((chartAt ℂ (xs i)) (xs i)) ≠ 0
   /-- `recip i (pre i) = 0` (the reciprocal coordinate of `∞`). -/
   hrecip_val : ∀ i, recip i ((chartAt ℂ (xs i)) (xs i)) = 0
@@ -133,10 +138,10 @@ structure InftyFibreDataNF (g : X → ℂ) (f : MeromorphicFunction X) where
 attribute [instance] InftyFibreDataNF.fintype_ι
 
 /-- **Repaired reciprocal at a *simple* pole, packaged.**  At a simple pole `x` of `f`
-(`f.orderAtPoint x = −1`), `exists_reciprocal_NF` gives the repaired analytic reciprocal `h`: analytic
-at the chart centre, `deriv h (centre) ≠ 0` (order-`1` factorization), `h (centre) = 0`, and
-`h =ᶠ[𝓝[≠]] (f.holoRepr (chart⁻¹ ·))⁻¹` off the centre.  A flat packaging (the analytic order `m = 1`
-is discharged here) so the `∞`-fibre datum constructor reads the fields directly. -/
+(`f.orderAtPoint x = −1`), `exists_reciprocal_NF` gives the repaired analytic reciprocal `h`:
+analytic at the chart centre, `deriv h (centre) ≠ 0` (order-`1` factorization), `h (centre) = 0`,
+and `h =ᶠ[𝓝[≠]] (f.holoRepr (chart⁻¹ ·))⁻¹` off the centre. A flat packaging (the analytic order
+`m = 1` is discharged here) so the `∞`-fibre datum constructor reads the fields directly. -/
 theorem exists_reciprocal_simple (f : MeromorphicFunction X) {x : X}
     (hsimple : f.orderAtPoint x = -1) :
     ∃ h : ℂ → ℂ, AnalyticAt ℂ h ((chartAt ℂ x) x) ∧
@@ -150,14 +155,15 @@ theorem exists_reciprocal_simple (f : MeromorphicFunction X) {x : X}
   exact ⟨h, hana, deriv_ne_zero_of_analyticOrderAt_eq_one hana hAO1, hval0, hgerm⟩
 
 /-- **`InftyFibreDataNF` from a simple pole over `∞`.**  At each `xs i` a **simple pole** of `f`
-(`f.orderAtPoint (xs i) = −1`, i.e. unramified over `∞`), with `g`'s chart-pullback meromorphic there,
-`exists_reciprocal_simple` supplies the repaired analytic reciprocal `h` (analytic, `deriv ≠ 0`,
-`h (centre) = 0`, `=ᶠ[𝓝[≠]]` the literal reciprocal).  The honest `∞`-analogue of
+(`f.orderAtPoint (xs i) = −1`, i.e. unramified over `∞`), with `g`'s chart-pullback meromorphic
+there, `exists_reciprocal_simple` supplies the repaired analytic reciprocal `h` (analytic,
+`deriv ≠ 0`, `h (centre) = 0`, `=ᶠ[𝓝[≠]]` the literal reciprocal). The honest `∞`-analogue of
 `FibreRegularData.ofRegular`. -/
 noncomputable def InftyFibreDataNF.ofRegular (g : X → ℂ) (f : MeromorphicFunction X)
     {ι : Type} [Fintype ι] (xs : ι → X)
     (hsimple : ∀ i, f.orderAtPoint (xs i) = -1)
-    (hmero : ∀ i, MeromorphicAt (fun z => g ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i))) :
+    (hmero : ∀ i,
+      MeromorphicAt (fun z => g ((chartAt ℂ (xs i)).symm z)) ((chartAt ℂ (xs i)) (xs i))) :
     InftyFibreDataNF g f where
   ι := ι
   fintype_ι := inferInstance
@@ -166,7 +172,8 @@ noncomputable def InftyFibreDataNF.ofRegular (g : X → ℂ) (f : MeromorphicFun
   hrecip_an := fun i => (Classical.choose_spec (exists_reciprocal_simple f (hsimple i))).1
   hrecip_deriv := fun i => (Classical.choose_spec (exists_reciprocal_simple f (hsimple i))).2.1
   hrecip_val := fun i => (Classical.choose_spec (exists_reciprocal_simple f (hsimple i))).2.2.1
-  hrecip_germ := fun i => ((Classical.choose_spec (exists_reciprocal_simple f (hsimple i))).2.2.2).symm
+  hrecip_germ := fun i =>
+    ((Classical.choose_spec (exists_reciprocal_simple f (hsimple i))).2.2.2).symm
   hg_mero := hmero
 
 /-! ### The `∞`-fibre `FibreTrace` (generic, repaired reciprocal-chart sheets)
@@ -175,9 +182,9 @@ Identical to `inftyFibreTrace`, but the cover map is the carried repaired recipr
 (genuinely analytic at the centre, value `0`, nonzero derivative), so the planar section exists. -/
 
 /-- **The `FibreTrace` over the `∞` fibre, via the repaired reciprocal.**  From `InftyFibreDataNF`,
-the sheets are the planar inverses of `recip i` (a genuine local biholomorphism at `pre i ↦ 0`), and the
-coefficients are the chart integrands of `α = ω₀·g` — *identical* to the finite case, so the per-sheet
-residue bridge `resAt (coeff i) (pre i) = formFnResidue ω₀ g (xs i)` is unchanged. -/
+the sheets are the planar inverses of `recip i` (a genuine local biholomorphism at `pre i ↦ 0`), and
+the coefficients are the chart integrands of `α = ω₀·g` — *identical* to the finite case, so the
+per-sheet residue bridge `resAt (coeff i) (pre i) = formFnResidue ω₀ g (xs i)` is unchanged. -/
 noncomputable def inftyFibreTraceNF (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
     (D : InftyFibreDataNF g f) : FibreTrace where
   ι := D.ι
@@ -210,8 +217,8 @@ noncomputable def inftyFibreTraceNF (ω₀ : HolomorphicOneForms X) (f : Meromor
     (inftyFibreTraceNF ω₀ f D).coeff i = chartIntegrand ω₀ g (D.xs i) := rfl
 
 /-- **Bridge (c) at `∞`, assembled.**  `resAt ((inftyFibreTraceNF ω₀ f D).coeff i)
-((inftyFibreTraceNF ω₀ f D).pre i) = formFnResidue ω₀ g (xs i)` — the source-chart residue, identical
-to the finite case. -/
+((inftyFibreTraceNF ω₀ f D).pre i) = formFnResidue ω₀ g (xs
+i)` — the source-chart residue, identical to the finite case. -/
 @[simp] theorem resAt_inftyFibreTraceNF_coeff (ω₀ : HolomorphicOneForms X)
     (f : MeromorphicFunction X) (D : InftyFibreDataNF g f) (i : D.ι) :
     resAt ((inftyFibreTraceNF ω₀ f D).coeff i) ((inftyFibreTraceNF ω₀ f D).pre i)
@@ -219,8 +226,8 @@ to the finite case. -/
   rw [inftyFibreTraceNF_coeff, inftyFibreTraceNF_pre]
   exact resAt_chartIntegrand_eq_formFnResidue ω₀ g (D.xs i)
 
-/-- **Lemma 3.2 over the `∞` fibre (reciprocal chart, repaired).**  The trace residue at the reciprocal
-base `0` equals the `∞`-fibre residue sum of `α = ω₀·g`:
+/-- **Lemma 3.2 over the `∞` fibre (reciprocal chart, repaired).** The trace residue at the
+reciprocal base `0` equals the `∞`-fibre residue sum of `α = ω₀·g`:
 
 > `Res_0 (Tr_F α over the ∞-fibre) = ∑ i, formFnResidue ω₀ g (xs i)`.
 
@@ -233,7 +240,7 @@ theorem resAt_traceCoeff_inftyFibreTraceNF (ω₀ : HolomorphicOneForms X) (f : 
   rw [h]
   exact Finset.sum_congr rfl (fun i _ => resAt_inftyFibreTraceNF_coeff ω₀ f D i)
 
-/-! ### The `∞`-fibre residue sum as the fibre-restricted pole-set sum (pure `Finset` combinatorics) -/
+/-! ### The `∞`-fibre residue sum as the fibre-restricted pole-set sum (`Finset` combinatorics) -/
 
 /-- **`∞`-fibre residue sum = `∞`-fibre-restricted pole-set sum.**  If `D.xs` injectively enumerates
 exactly the poles in the fibre `F⁻¹(∞)`, then

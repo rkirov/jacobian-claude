@@ -7,7 +7,7 @@ import Jacobians.Dolbeault.FormTraceGlobalFunction
 import Jacobians.Dolbeault.FormTraceInftyFibre
 
 /-!
-# Meromorphy of the local fibre trace at its base (Gate A, §VIII.3 step 1 — foundation)
+# Meromorphy of the local fibre trace at its base (Miranda §VIII.3 step 1 — foundation)
 
 `Jacobians.Dolbeault.FormTraceGlobalFunction` proved the local fibre trace coefficient is *analytic*
 at a **regular** value off the poles of `α` (`analyticAt_traceCoeff`).  This file proves the
@@ -26,11 +26,12 @@ These are clean standalone building blocks (no new geometric input) feeding the
 meromorphy at each pole that, summed/subtracted into the principal parts, leaves the global
 holomorphic remainder.
 
-## What is proved (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## Main results
 
-* `meromorphicAt_traceCoeff_base` — a generic `FibreTrace.traceCoeff` is `MeromorphicAt` at its base.
-* `meromorphicAt_traceCoeff_fibreTrace` — the finite-fibre local trace `(fibreTrace ω₀ f D).traceCoeff`
-  is `MeromorphicAt` at the base value `b`.
+* `meromorphicAt_traceCoeff_base` — a generic `FibreTrace.traceCoeff` is `MeromorphicAt` at its
+  base.
+* `meromorphicAt_traceCoeff_fibreTrace` — the finite-fibre local trace
+  `(fibreTrace ω₀ f D).traceCoeff` is `MeromorphicAt` at the base value `b`.
 * `meromorphicAt_traceCoeff_inftyFibreTrace` — the `∞`-fibre local trace
   `(inftyFibreTrace ω₀ f D).traceCoeff` is `MeromorphicAt` at the reciprocal base `0`.
 
@@ -50,12 +51,11 @@ namespace Jacobians.Dolbeault.FormTraceGlobal
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
   Jacobians.Dolbeault.FormTraceFibre Jacobians.Dolbeault.FormTraceInftyFibre
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- **The local fibre trace coefficient is meromorphic at its base.**  For any `FibreTrace T`, the
 trace coefficient `T.traceCoeff` (the finite sum `∑ i, coeff i (sheet i w)·(sheet i)'(w)`) is
@@ -71,8 +71,8 @@ variable {g : X → ℂ}
 
 /-- **The finite-fibre local trace is meromorphic at the base value `b`.**  Specialises
 `meromorphicAt_traceCoeff_base` to the unramified-fibre trace `fibreTrace ω₀ f D` over a base value
-`b` (the local singularity model of `Tr_F α` at `b`, including the finite pole-values where the trace
-has a genuine pole). -/
+`b` (the local singularity model of `Tr_F α` at `b`, including the finite pole-values where the
+trace has a genuine pole). -/
 theorem meromorphicAt_traceCoeff_fibreTrace (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
     {b : ℂ} (D : FibreRegularData g f b) :
     MeromorphicAt (fibreTrace ω₀ f D).traceCoeff b := by

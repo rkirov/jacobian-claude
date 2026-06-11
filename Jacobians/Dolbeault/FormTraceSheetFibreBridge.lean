@@ -7,19 +7,20 @@ import Jacobians.Dolbeault.FormTraceSheetCovector
 import Jacobians.Dolbeault.FormTraceFibre
 
 /-!
-# The fibre-sum bridge: bundle trace ↔ planar fibre trace (Gate A step 2/3)
+# The fibre-sum bridge: bundle trace ↔ planar fibre trace (steps 2–3 of the residue-theorem assembly)
 
 Building on the per-sheet covector linchpin (`FormTraceSheetCovector`) and the `localRep`
 frame-transition law, this file proves the **single-sheet bridge**: the bundle pushforward summand
 `sheetPullback ω₀ s y (1)` (read in the value chart) equals the *planar* `FormTraceFibre.fibreTrace`
-summand `coeffAt ω₀ (xs) (sh w)·deriv(sh) w` for the `g ≡ 1` frame, where `sh` is the section read in
-the **fixed** source chart at a base fibre point `xs`.
+summand `coeffAt ω₀ (xs) (sh w)·deriv(sh) w` for the `g ≡ 1` frame, where `sh` is the section read
+in the **fixed** source chart at a base fibre point `xs`.
 
 The reconciliation is the `dz`-Jacobian cancellation: the bundle summand is read in the *moving*
-fibre point's own chart, the planar summand in the *fixed* `xs`-chart; the `localRep` frame-transition
-law (`localRep_eq_transition_mul_self`) supplies the ratio, which the chain rule for `deriv` cancels
-against the section-derivative ratio.  This is the source-chart-independence of the value-chart
-`dz`-coefficient — the heart of Miranda §VIII.3's "the trace is a well-defined form".
+fibre point's own chart, the planar summand in the *fixed* `xs`-chart; the `localRep`
+frame-transition law (`localRep_eq_transition_mul_self`) supplies the ratio, which the chain rule
+for `deriv` cancels against the section-derivative ratio. This is the source-chart-independence of
+the value-chart `dz`-coefficient — the heart of Miranda §VIII.3's "the trace is a well-defined
+form".
 
 ## References
 
@@ -35,25 +36,23 @@ namespace Jacobians.Dolbeault.FormTraceSheet
 
 open Jacobians Jacobians.Dolbeault Jacobians.Montel
 
-set_option linter.unusedSectionVars false
 
 variable {X Y : Type*}
     [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
-    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [ChartedSpace ℂ Y]
 
 /-- **Single-sheet bridge (source-chart independence of the `dz`-coefficient).**  For a bundle
-section `s : Y → X` `MDifferentiable` at `y`, with the fibre point `s y` lying in the chart source of
-a *fixed* base point `xs`, the bundle per-sheet covector (value chart, affine unit tangent) equals the
-planar `coeffAt·deriv` summand read in the fixed `xs`-chart:
+section `s : Y → X` `MDifferentiable` at `y`, with the fibre point `s y` lying in the chart source
+of a *fixed* base point `xs`, the bundle per-sheet covector (value chart, affine unit tangent)
+equals the planar `coeffAt·deriv` summand read in the fixed `xs`-chart:
 
 > `sheetPullback ω₀ s y 1 = coeffAt ω₀ xs (sh (chart_y y)) · deriv sh (chart_y y)`,
 
-where `sh := chart_xs ∘ s ∘ chart_y.symm` is the section in the fixed source chart.  The proof reads
-the LHS via the linchpin (`sheetPullback_one_eq_coeffAt_mul_deriv`, in the *moving* `s y`-chart), then
-applies the `localRep` frame-transition law + the chain rule for `deriv` to convert to the fixed
-`xs`-chart. -/
+where `sh := chart_xs ∘ s ∘ chart_y.symm` is the section in the fixed source chart. The proof reads
+the LHS via the linchpin (`sheetPullback_one_eq_coeffAt_mul_deriv`, in the *moving* `s y`-chart),
+then applies the `localRep` frame-transition law + the chain rule for `deriv` to convert to the
+fixed `xs`-chart. -/
 theorem sheetPullback_one_eq_fixedChart_coeffAt_mul_deriv (ω₀ : HolomorphicOneForms X) (s : Y → X)
     {y : Y} (xs : X) (hs : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) s y)
     (hmem : s y ∈ (chartAt ℂ xs).source)
@@ -115,11 +114,11 @@ equals the planar `FormTraceFibre.chartIntegrand·deriv` summand. -/
 
 /-- **`g`-weighted single-sheet bridge.**  The holomorphic per-sheet bundle covector
 `sheetPullback ω₀ s y 1` weighted by `g (s y)` (the value of `g` at the fibre point) equals the
-planar `FormTraceFibre.fibreTrace` summand `chartIntegrand ω₀ g xs (sh w)·deriv(sh) w` for the section
-`sh := chart_xs ∘ s ∘ chart_y.symm` read in the fixed `xs`-chart.  This is
+planar `FormTraceFibre.fibreTrace` summand `chartIntegrand ω₀ g xs (sh w)·deriv(sh) w` for the
+section `sh := chart_xs ∘ s ∘ chart_y.symm` read in the fixed `xs`-chart. This is
 `sheetPullback_one_eq_fixedChart_coeffAt_mul_deriv` multiplied by the per-sheet `g`-scalar, with
-`chartIntegrand ω₀ g xs (sh b') = coeffAt ω₀ xs (sh b')·g (s y)` (the `g`-pullback at `chart_xs.symm
-(sh b') = s y`). -/
+`chartIntegrand ω₀ g xs (sh b') = coeffAt ω₀ xs (sh b')·g (s y)` (the `g`-pullback at
+`chart_xs.symm (sh b') = s y`). -/
 theorem g_weighted_sheetPullback_eq_chartIntegrand_mul_deriv (ω₀ : HolomorphicOneForms X)
     (g : X → ℂ) (s : Y → X) {y : Y} (xs : X) (hs : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) s y)
     (hmem : s y ∈ (chartAt ℂ xs).source)
@@ -144,15 +143,15 @@ theorem g_weighted_sheetPullback_eq_chartIntegrand_mul_deriv (ω₀ : Holomorphi
 
 /-! ### Uniqueness of the holomorphic local inverse (section identification core, step 2 (A))
 
-The planar section `exists_planar_section` (the `fibreTrace` sheet) and the chart-representation of a
-bundle sheet are *both* right-inverses of the same chart map `φ` (analytic, `deriv ≠ 0`) through the
-same point.  By uniqueness of the holomorphic local inverse they germ-agree — the section
-identification half of step 2.  We prove the clean planar uniqueness here. -/
+The planar section `exists_planar_section` (the `fibreTrace` sheet) and the chart-representation of
+a bundle sheet are *both* right-inverses of the same chart map `φ` (analytic, `deriv ≠ 0`) through
+the same point. By uniqueness of the holomorphic local inverse they germ-agree — the section
+identification half of step 2. We prove the clean planar uniqueness here. -/
 
 /-- **Uniqueness of the holomorphic local inverse (germ form).**  If `φ` is analytic at `x₀` with
-`deriv φ x₀ ≠ 0` and `φ x₀ = b`, then any two continuous right-inverses `s₁`, `s₂` of `φ` through `x₀`
-(`sₖ b = x₀`, `φ (sₖ w) = w` near `b`, `sₖ` continuous at `b`) germ-agree near `b`:
-`s₁ =ᶠ[𝓝 b] s₂`.  Both equal the canonical `localInverse` near `b` (via
+`deriv φ x₀ ≠ 0` and `φ x₀ = b`, then any two continuous right-inverses `s₁`, `s₂` of `φ` through
+`x₀` (`sₖ b = x₀`, `φ (sₖ w) = w` near `b`, `sₖ` continuous at `b`) germ-agree near `b`:
+`s₁ =ᶠ[𝓝 b] s₂`. Both equal the canonical `localInverse` near `b` (via
 `HasStrictDerivAt.eventually_left_inverse` composed with the right-inverse property). -/
 theorem eventuallyEq_of_rightInverse_of_rightInverse {φ s₁ s₂ : ℂ → ℂ} {x₀ b : ℂ}
     (hφ : AnalyticAt ℂ φ x₀) (hφ' : deriv φ x₀ ≠ 0) (_hb : φ x₀ = b)
@@ -175,16 +174,17 @@ theorem eventuallyEq_of_rightInverse_of_rightInverse {φ s₁ s₂ : ℂ → ℂ
     rw [← hw, hrw]
   exact (hkey hs₁b hs₁c hrinv₁).trans (hkey hs₂b hs₂c hrinv₂).symm
 
-/-- **The `fibreTrace` planar sheet is *the* local inverse (germ).**  The `FormTraceFibre.fibreTrace`
-sheet `i` (the `exists_planar_section` inverse of the chart pullback `φ = f.holoRepr ∘ chart_{xs i}.symm`)
-germ-equals any continuous right-inverse `s` of `φ` through `chart_{xs i}(xs i)`:
+/-- **The `fibreTrace` planar sheet is *the* local inverse (germ).** The `FormTraceFibre.fibreTrace`
+sheet `i` (the `exists_planar_section` inverse of the chart pullback
+`φ = f.holoRepr ∘ chart_{xs i}.symm`) germ-equals any continuous right-inverse `s` of `φ` through
+`chart_{xs i}(xs i)`:
 
 > `(fibreTrace ω₀ f D).sheet i =ᶠ[𝓝 b] s`,
 
 provided `s (b) = chart_{xs i}(xs i)`, `s` continuous at `b`, and `φ (s w) = w` near `b` (where
-`b = f.holoRepr (xs i)`).  Direct from `eventuallyEq_of_rightInverse_of_rightInverse`: the planar sheet
-*is* such a right-inverse (its `exists_planar_section` spec), so any other one agrees.  This is the
-**section identification** — the bridge from the abstract `Classical.choose` planar sheet to the
+`b = f.holoRepr (xs i)`). Direct from `eventuallyEq_of_rightInverse_of_rightInverse`: the planar
+sheet *is* such a right-inverse (its `exists_planar_section` spec), so any other one agrees. This is
+the **section identification** — the bridge from the abstract `Classical.choose` planar sheet to the
 chart-representation of a bundle sheet (which, being a section of `F`, is such a right-inverse). -/
 theorem fibreTrace_sheet_eventuallyEq (ω₀ : HolomorphicOneForms X) {g : X → ℂ}
     (f : MeromorphicFunction X)
@@ -198,7 +198,8 @@ theorem fibreTrace_sheet_eventuallyEq (ω₀ : HolomorphicOneForms X) {g : X →
     (Jacobians.Dolbeault.FormTraceFibre.exists_planar_section (D.hg_an i) (D.hg_deriv i)
       (D.gval ω₀ f i)) with hspec
   -- Apply uniqueness: both the planar sheet and `s` are right-inverses of `φ` through `x₀`.
-  refine eventuallyEq_of_rightInverse_of_rightInverse (φ := fun z => f.holoRepr ((chartAt ℂ (D.xs i)).symm z))
+  refine eventuallyEq_of_rightInverse_of_rightInverse
+    (φ := fun z => f.holoRepr ((chartAt ℂ (D.xs i)).symm z))
     (x₀ := (chartAt ℂ (D.xs i)) (D.xs i)) (b := b) (D.hg_an i) (D.hg_deriv i) (D.gval ω₀ f i)
     spec.2.1 hsb spec.1.continuousAt hsc spec.2.2.2 hrinv
 
