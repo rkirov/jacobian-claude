@@ -86,10 +86,6 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
 
 attribute [local instance] Classical.propDecidable
 
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### Step 1 — the chart bridge `Res_x(df/f) = ord_x(f)`
 
 A meromorphic `1`-form on `X` is, in a chart `φ = chartAt x`, `(coeff)·dz` with the coefficient
@@ -100,13 +96,9 @@ pullback has finite order `n` at `φ x` (i.e. `f` is not identically `0` near `x
 
 /-- The **intrinsic residue of the logarithmic differential** `df/f` at `x`, read in the chart
 `φ = chartAt x`: `Res_x(df/f) := resAt (logDeriv (f.toFun ∘ φ.symm)) (φ x)`. -/
-def resLogDeriv (f : MeromorphicFunction X) (x : X) : ℂ :=
+def resLogDeriv {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (f : MeromorphicFunction X)
+    (x : X) : ℂ :=
   resAt (logDeriv (f.toFun ∘ (chartAt (H := ℂ) x).symm)) ((chartAt (H := ℂ) x) x)
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- **The chart bridge (step 1), order form.**  If the chart pullback `f.toFun ∘ φ.symm`
 (`φ = chartAt x`) has finite order `n` at `φ x` — i.e. `meromorphicOrderAt … = (n : ℤ)`, which
@@ -116,22 +108,12 @@ holds precisely when `f` is not identically `0` near `x` — then the residue of
 > `Res_x(df/f) = n`.
 
 A direct corollary of `resAt_logDeriv_eq_order` (the one-variable local argument principle). -/
-theorem resLogDeriv_eq_of_order (f : MeromorphicFunction X) (x : X) {n : ℤ}
+theorem resLogDeriv_eq_of_order {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (x : X) {n : ℤ}
     (hord : meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
       = (n : ℤ)) :
     resLogDeriv f x = (n : ℂ) :=
   resAt_logDeriv_eq_order (f.meromorphic x) hord
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- **The chart bridge (step 1).**  When the chart pullback of `f` is not identically `0` near
 `φ x` (equivalently `meromorphicOrderAt … ≠ ⊤`), the intrinsic residue of `df/f` at `x` equals the
@@ -142,7 +124,8 @@ order of `f` there:
 This is the per-point input of the residue-theorem route.  The hypothesis `hne` rules out the
 degenerate `f ≡ 0` germ (where `orderAtPoint` is the junk value `0` and `df/f` is undefined); it
 holds at every point for a non-constant `f`. -/
-theorem resLogDeriv_eq_order (f : MeromorphicFunction X) (x : X)
+theorem resLogDeriv_eq_order {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (x : X)
     (hne : meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x) ≠ ⊤) :
     resLogDeriv f x = (f.orderAtPoint x : ℂ) := by
   -- The order is some finite `n`; `orderAtPoint = n.untop₀ = n`.
@@ -154,12 +137,6 @@ theorem resLogDeriv_eq_order (f : MeromorphicFunction X) (x : X)
       = n
     rw [hord]; rfl
   rw [resLogDeriv_eq_of_order f x hord, hoap]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Step 4 — the fibrewise regrouping `∑_{x∈X} = ∑_y ∑_{F⁻¹y}`
 
@@ -176,7 +153,9 @@ support, of the per-fibre order sums.
 > `∑_{x ∈ supp} ord_x f  =  ∑_{y ∈ F''supp} ∑_{x ∈ supp, F x = y} ord_x f`.
 
 Pure combinatorics (`Finset.sum_fiberwise_of_maps_to`). -/
-theorem orderSum_eq_fiberwise (f : MeromorphicFunction X) :
+theorem orderSum_eq_fiberwise {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) :
     ∑ x ∈ (f.div : Divisor X).support, f.orderAtPoint x
       = ∑ y ∈ (f.div : Divisor X).support.image f.toRiemannSphere,
           ∑ x ∈ (f.div : Divisor X).support with f.toRiemannSphere x = y, f.orderAtPoint x :=
@@ -186,7 +165,9 @@ theorem orderSum_eq_fiberwise (f : MeromorphicFunction X) :
 support image under `F` decomposes into `∞` (the poles, all in the support) and the finite values;
 within the support, the `∞`-fibre is exactly the poles and the `coe`-fibres are the zeros.  We keep
 the decomposition at the level of the sphere image to feed it the trace combine. -/
-theorem orderSum_eq_infty_add_finite (f : MeromorphicFunction X) :
+theorem orderSum_eq_infty_add_finite {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) :
     ∑ x ∈ (f.div : Divisor X).support, f.orderAtPoint x
       = (∑ x ∈ (f.div : Divisor X).support with f.toRiemannSphere x = OnePoint.infty,
             f.orderAtPoint x)
@@ -219,12 +200,9 @@ by step 1) — then the residue of the trace `Tr_F(df/f)` at the base equals the
 This is Lemma 3.2 (`resAt_traceCoeff_of_simplePole`, residue = `∑ cs i`) composed with the chart
 bridge (`cs i = ord_{xs i}`).  Any constructor of `LogDerivTrace` produces exactly this per fibre.
 -/
-end
 
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-
-theorem resAt_traceCoeff_eq_fibre_orderSum (f : MeromorphicFunction X) (T : FibreTrace)
+theorem resAt_traceCoeff_eq_fibre_orderSum {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (T : FibreTrace)
     (cs : T.ι → ℂ) (hsp : ∀ i, T.coeff i = fun w => cs i * (w - T.pre i)⁻¹)
     (xs : T.ι → X) (hcs : ∀ i, cs i = (f.orderAtPoint (xs i) : ℂ)) :
     resAt T.traceCoeff T.b = ((∑ i, f.orderAtPoint (xs i) : ℤ) : ℂ) := by
@@ -232,12 +210,6 @@ theorem resAt_traceCoeff_eq_fibre_orderSum (f : MeromorphicFunction X) (T : Fibr
   push_cast
   refine Finset.sum_congr rfl (fun i _ => ?_)
   rw [hsp i, resAt_const_mul_sub_inv, hcs i]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Steps 2-3-5 — the trace representation and the reduction to the residue theorem
 
@@ -277,7 +249,9 @@ This bundles the output of the global manifold assembly of the meromorphic trace
 
 Each `*_eq` field is the honest geometric content of Miranda §VIII.3 (the trace residue = fibre sum
 of residues = fibre sum of orders); none is vacuous. -/
-structure LogDerivTrace (f : MeromorphicFunction X) where
+structure LogDerivTrace {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) where
   /-- The partial-fraction `1`-form on `ℂℙ¹` representing `Tr_F(df/f)`. -/
   L : LaurentForm
   /-- The fibre datum over each finite center. -/
@@ -311,7 +285,9 @@ the §VIII.3 trace assembly), the total order of `f` over `X` vanishes:
 two summands are the finite-fibre and `∞`-fibre order sums; by `orderSum_eq_infty_add_finite` their
 integer sum is the total order, so its cast is `0`, whence (injectivity of `ℤ ↪ ℂ`) the integer sum
 is `0`. -/
-theorem orderSum_eq_zero_of_logDerivTrace (f : MeromorphicFunction X) (T : LogDerivTrace f) :
+theorem orderSum_eq_zero_of_logDerivTrace {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) (T : LogDerivTrace f) :
     ∑ x ∈ (f.div : Divisor X).support, f.orderAtPoint x = 0 := by
   -- The combine: the center-residue total plus the residue at infinity vanish.
   have hcombine := finiteResidueSum_trace_eq_zero_of_simplePole_fibres T.L T.fibre T.cs T.hsp T.hL32
@@ -331,7 +307,9 @@ theorem orderSum_eq_zero_of_logDerivTrace (f : MeromorphicFunction X) (T : LogDe
 
 /-- **The residue theorem (`deg_div`) via the trace representation.**  Given a `LogDerivTrace f`,
 the principal divisor `div f` has degree `0`. -/
-theorem degDiv_eq_zero_of_logDerivTrace (f : MeromorphicFunction X) (T : LogDerivTrace f) :
+theorem degDiv_eq_zero_of_logDerivTrace {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) (T : LogDerivTrace f) :
     Divisor.deg X f.div = 0 := by
   rw [deg_div_eq_support_sum]
   exact orderSum_eq_zero_of_logDerivTrace f T
@@ -339,7 +317,9 @@ theorem degDiv_eq_zero_of_logDerivTrace (f : MeromorphicFunction X) (T : LogDeri
 /-- **`zerosCount = polesCount` via the trace representation.**  Given a `LogDerivTrace f`, the
 number of zeros equals the number of poles (each with multiplicity) — the argument-principle
 equality that discharges `exists_properMapDegree`, hence Riemann–Roch's `deg_div`. -/
-theorem zerosCount_eq_polesCount_of_logDerivTrace (f : MeromorphicFunction X)
+theorem zerosCount_eq_polesCount_of_logDerivTrace {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (T : LogDerivTrace f) :
     zerosCount f = polesCount f := by
   have h := degDiv_eq_zero_of_logDerivTrace f T
@@ -391,7 +371,9 @@ def emptyFibreTrace : FibreTrace where
 (no monomials, so `R ≡ 0` and `Res_∞ = 0`), with vacuous fibre data and both fibre order sums `0`
 (the support is empty).  Hence the `LogDerivTrace` obligations are *satisfiable* — the structure is
 not a disguised `False`. -/
-def logDerivTrace_of_div_eq_zero (f : MeromorphicFunction X)
+def logDerivTrace_of_div_eq_zero {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (h0 : (f.div : Divisor X) = 0) : LogDerivTrace f where
   L := emptyLaurentForm
   fibre := fun _ => emptyFibreTrace
@@ -407,5 +389,4 @@ def logDerivTrace_of_div_eq_zero (f : MeromorphicFunction X)
   finite_eq := by rw [emptyLaurentForm_image_a, Finset.sum_empty, h0]; simp
 
 
-end
 end Jacobians.ResidueTheoremX

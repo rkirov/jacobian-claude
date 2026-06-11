@@ -86,10 +86,6 @@ namespace Jacobians.ProperMapDegreeConstruct
 open Jacobians Jacobians.ProperMapDegree
 
 
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### The local degree of `F = toRiemannSphere` at a fibre point
 
 The local degree `d_x` of the holomorphic map `F` at `x`, read in charts:
@@ -111,49 +107,30 @@ We give it as a concrete total `ℤ`-valued function; only its summation propert
 
 A concrete total function; the genuine analytic content (`= local degree of F`)
 is needed only through the local-constancy of its fibre sum, isolated below. -/
-def localDeg (f : MeromorphicFunction X) (w : RiemannSphere) (x : X) : ℤ :=
+def localDeg {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (f : MeromorphicFunction X)
+    (w : RiemannSphere) (x : X) : ℤ :=
   match w with
   | OnePoint.infty => -f.orderAtPoint x
   | (c : ℂ) =>
       (meromorphicOrderAt (fun z => f.toFun ((chartAt (H := ℂ) x).symm z) - c)
         ((chartAt (H := ℂ) x) x)).untop₀
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-
 /-- At a non-pole `x` with `F x = coe 0` (a genuine zero or a value-`0` point),
 the local degree over `0` is `orderAtPoint f x`: `meromorphicOrderAt (f.toFun ∘
 chart.symm − 0) = meromorphicOrderAt (f.toFun ∘ chart.symm) = orderAtPoint f x`
 by definition (`orderAtPoint = (meromorphicOrderAt (f.toFun ∘ chart.symm) _).untop₀`). -/
-lemma localDeg_zero_eq_order (f : MeromorphicFunction X) (x : X) :
+lemma localDeg_zero_eq_order {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (x : X) :
     localDeg f ((0 : ℂ) : RiemannSphere) x = f.orderAtPoint x := by
   show (meromorphicOrderAt (fun z => f.toFun ((chartAt (H := ℂ) x).symm z) - (0 : ℂ))
     ((chartAt (H := ℂ) x) x)).untop₀ = f.orderAtPoint x
   simp only [sub_zero]
   rfl
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-
 /-- At `∞`, the local degree over `∞` is `−orderAtPoint f x`. -/
-@[simp] lemma localDeg_infty (f : MeromorphicFunction X) (x : X) :
+@[simp] lemma localDeg_infty {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (x : X) :
     localDeg f OnePoint.infty x = -f.orderAtPoint x := rfl
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The fibre-multiplicity function `N`
 
@@ -167,7 +144,8 @@ values (and in particular the special fibres `F⁻¹(0)`, `F⁻¹(∞)` are fini
 /-- **The fibre-multiplicity sum** of `F = f.toRiemannSphere` over `w`:
 `∑_{x ∈ F⁻¹(w)} (local degree of F at x)`.  The genuine "number of preimages of
 `w`, counted with multiplicity". -/
-def fibreMult (f : MeromorphicFunction X) (w : RiemannSphere) : ℤ :=
+def fibreMult {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (f : MeromorphicFunction X)
+    (w : RiemannSphere) : ℤ :=
   ∑ᶠ x ∈ f.toRiemannSphere ⁻¹' {w}, localDeg f w x
 
 open Classical in
@@ -180,21 +158,26 @@ elsewhere.  The special-value plugs *equal* the genuine multiplicity sums there
 special-fibre identities, Forster §4), so `N` coincides with the genuine
 multiplicity sum at every point — it is the fibre-multiplicity function, with the
 two boundary readings made definitionally available. -/
-def N (f : MeromorphicFunction X) : RiemannSphere → ℤ :=
+def N {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X) : RiemannSphere → ℤ :=
   fun w =>
     if w = OnePoint.infty then polesCount f
     else if w = ((0 : ℂ) : RiemannSphere) then zerosCount f
     else fibreMult f w
 
 /-- **Boundary reading at `∞`:** `N f ∞ = polesCount f`. -/
-@[simp] lemma N_infty_eq (f : MeromorphicFunction X) :
+@[simp] lemma N_infty_eq {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) :
     N f OnePoint.infty = polesCount f := by
   simp [N]
 
 /-- **Boundary reading at `0`:** `N f (coe 0) = zerosCount f`.
 
 `coe 0 ≠ ∞`, so the first branch fails and the second fires. -/
-@[simp] lemma N_zero_eq (f : MeromorphicFunction X) :
+@[simp] lemma N_zero_eq {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) :
     N f ((0 : ℂ) : RiemannSphere) = zerosCount f := by
   have hne : (((0 : ℂ) : RiemannSphere)) ≠ OnePoint.infty := OnePoint.coe_ne_infty _
   simp [N, hne]
@@ -227,7 +210,9 @@ obtained from `fibreCard_isLocallyConstant_on_subset_of_localSheets` with the
 proper holomorphic `F` (`continuous_toRiemannSphere`).  On `R` the local degree
 at each preimage is `1`, so this ncard coincides with the multiplicity sum
 `fibreMult f` — i.e. `N f` is locally constant on the regular set. -/
-theorem isLocallyConstant_fibreNcard_on_regular (f : MeromorphicFunction X)
+theorem isLocallyConstant_fibreNcard_on_regular {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (R : Set RiemannSphere)
     (h_fib : ∀ w ∈ R, (f.toRiemannSphere ⁻¹' {w}).Finite)
     (h_sheets : ∀ w ∈ R, ∀ x ∈ f.toRiemannSphere ⁻¹' {w},
@@ -245,7 +230,9 @@ For each value `w₀ ∈ R` carrying a regular-value witness `wit w₀ : `
 `LocalSheetData` (from the holomorphy `contMDiff_toRiemannSphere` and the
 chart-pullback-derivative-nonzero certificate in the witness).  This is the
 analytic supplier feeding `isLocallyConstant_fibreNcard_on_regular`. -/
-noncomputable def localSheets_of_regularWitnesses (f : MeromorphicFunction X)
+noncomputable def localSheets_of_regularWitnesses {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (R : Set RiemannSphere)
     (wit : ∀ w ∈ R, Jacobians.Discharge.ContMDiff.RegularValueWitnessReg f.toRiemannSphere)
     (hwit : ∀ w (hw : w ∈ R), (wit w hw).toWitness.value = w) :
@@ -274,7 +261,9 @@ constancy. -/
 fibre-multiplicity function `N f` together with a proof of its local constancy.
 The two boundary readings are discharged here (`N_zero_eq`, `N_infty_eq`); the
 caller supplies only the local-constancy witness. -/
-def ProperMapDegreeData.ofParts (f : MeromorphicFunction X)
+def ProperMapDegreeData.ofParts {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (hlc : IsLocallyConstant (N f)) :
     Jacobians.ProperMapDegree.ProperMapDegreeData f where
   N := N f
@@ -303,7 +292,8 @@ readings exists — namely the constant function `polesCount f`.  This confirms 
 local-constancy obligation of `ofParts` is consistent (satisfiable), not a
 disguised `False`; the genuine multiplicity function `N f` is one such witness
 once its global constancy is established. -/
-lemma exists_isLocallyConstant_boundaryReadings
+lemma exists_isLocallyConstant_boundaryReadings {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (f : MeromorphicFunction X) (heq : zerosCount f = polesCount f) :
     ∃ M : RiemannSphere → ℤ, IsLocallyConstant M ∧
       M ((0 : ℂ) : RiemannSphere) = zerosCount f ∧ M OnePoint.infty = polesCount f := by
@@ -321,7 +311,9 @@ expects. -/
 /-- **The conservation-of-number data, packaged.**  Given the honest local
 constancy of the fibre-multiplicity function `N f` (the global argument
 principle), `ProperMapDegreeData f` exists. -/
-def ProperMapDegreeData.ofConservation (f : MeromorphicFunction X)
+def ProperMapDegreeData.ofConservation {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (hlc : IsLocallyConstant (N f)) :
     Jacobians.ProperMapDegree.ProperMapDegreeData f :=
   ProperMapDegreeData.ofParts f hlc
@@ -329,7 +321,9 @@ def ProperMapDegreeData.ofConservation (f : MeromorphicFunction X)
 /-- **`zerosCount = polesCount` from the local constancy of `N f`.**  The argument-
 principle equality, obtained by feeding the constructed `ProperMapDegreeData`
 through the proven connectedness globalization. -/
-theorem zerosCount_eq_polesCount_of_isLocallyConstant_N (f : MeromorphicFunction X)
+theorem zerosCount_eq_polesCount_of_isLocallyConstant_N {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (hlc : IsLocallyConstant (N f)) :
     zerosCount f = polesCount f :=
   Jacobians.ProperMapDegree.zerosCount_eq_polesCount_of_properMapDegreeData f
@@ -340,12 +334,13 @@ the exact shape of `Jacobians.exists_properMapDegree`: a common natural-number
 degree `d` with `zerosCount f = d = polesCount f`.  It is derived from the local
 constancy of the fibre-multiplicity function via the nonnegativity reduction
 `exists_properMapDegree_of_zerosCount_eq_polesCount`. -/
-theorem exists_properMapDegree_of_isLocallyConstant_N (f : MeromorphicFunction X)
+theorem exists_properMapDegree_of_isLocallyConstant_N {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (hlc : IsLocallyConstant (N f)) :
     ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) :=
   Jacobians.ProperMapDegree.exists_properMapDegree_of_properMapDegreeData f
     (ProperMapDegreeData.ofConservation f hlc)
 
 
-end
 end Jacobians.ProperMapDegreeConstruct

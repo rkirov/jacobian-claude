@@ -43,18 +43,12 @@ open Jacobians Jacobians.ProperMapDegree Jacobians.ProperMapDegreeConstruct
   Jacobians.MultiplicityPatchingConstruct Jacobians.MultiplicityPatching
 
 
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### The `holoRepr`/`toFun` reconciliation toolkit
-
 `localDeg f (coe c) y` is the order of `f.toFun ∘ chart.symm − c`, while the *value* fibre
 `F⁻¹(coe c)` (= `f.toRiemannSphere ⁻¹' {coe c}`) is cut out by the limit-repair `holoRepr` (the
 geometric value of `F`).  The planar normal form is most cleanly applied to the analytic
 `g = holoRepr ∘ chart.symm` (whose value matches `F` and whose order matches `localDeg`).  The
 three lemmas below bridge the two representatives:
-
 * `meromorphicAt_toFun_chartPullback`: the raw pullback is meromorphic at *any* chart-target point.
 * `holoRepr_pullback_eventuallyEq_toFun`: off-center, `holoRepr ∘ chart.symm` agrees with
   `f.toFun ∘ chart.symm` (the junk-repair only changes the value *at* removable singularities,
@@ -62,17 +56,13 @@ three lemmas below bridge the two representatives:
 * `meromorphicOrderAt_holoRepr_sub_eq`: hence the chart-pullback order of `f.toFun − c` is the
   order of `holoRepr − c` — the order is `𝓝[≠]`-determined. -/
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **The chart pullback `f.toFun ∘ (chartAt x).symm` is meromorphic at any target point `z`.**
 At `y₀ := (chartAt x).symm z` the function is meromorphic at the centre of its own chart
 (`f.meromorphic y₀`); the chart transition `(chartAt y₀) ∘ (chartAt x).symm` is analytic at `z`
 (maximal-atlas coordinate change, `ω`), and `MeromorphicAt.comp_analyticAt` transports the order
 across the (locally invertible) transition. -/
-theorem meromorphicAt_toFun_chartPullback (f : MeromorphicFunction X) (x : X)
+theorem meromorphicAt_toFun_chartPullback {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X) (x : X)
     {z : ℂ} (hz : z ∈ (chartAt (H := ℂ) x).target) :
     MeromorphicAt (f.toFun ∘ (chartAt (H := ℂ) x).symm) z := by
   set e := chartAt (H := ℂ) x with he
@@ -112,12 +102,6 @@ theorem meromorphicAt_toFun_chartPullback (f : MeromorphicFunction X) (x : X)
   simp only [Function.comp_apply]
   rw [(chartAt (H := ℂ) y₀).left_inv hw]
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **The chart pullback `holoRepr ∘ (chartAt x).symm` is analytic at a target point of a
 non-pole.**
 The analytic analogue of `meromorphicAt_toFun_chartPullback`: at `y₀ := (chartAt x).symm z`, where
@@ -126,7 +110,9 @@ The analytic analogue of `meromorphicAt_toFun_chartPullback`: at `y₀ := (chart
 `(chartAt y₀) ∘ (chartAt x).symm` is analytic at `z` (maximal-atlas coordinate change, `ω`), so
 `AnalyticAt.comp` transports the analyticity across.  This supplies the `AnalyticAt ℂ G z`
 hypothesis the reciprocal keystone `meromorphicOrderAt_inv_sub_eq` consumes at each fibre point. -/
-theorem analyticAt_holoRepr_chartPullback_target (f : MeromorphicFunction X) (x : X)
+theorem analyticAt_holoRepr_chartPullback_target {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) (x : X)
     {z : ℂ} (hz : z ∈ (chartAt (H := ℂ) x).target)
     (hnp : 0 ≤ f.orderAtPoint ((chartAt (H := ℂ) x).symm z)) :
     AnalyticAt ℂ (fun w => f.holoRepr ((chartAt (H := ℂ) x).symm w)) z := by
@@ -165,17 +151,13 @@ theorem analyticAt_holoRepr_chartPullback_target (f : MeromorphicFunction X) (x 
   simp only [Function.comp_apply]
   rw [(chartAt (H := ℂ) y₀).left_inv hw]
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **Off-center, `holoRepr ∘ (chartAt x).symm` agrees with `f.toFun ∘ (chartAt x).symm`.**
 At any target point `z`, the raw pullback is analytic on the *punctured* neighbourhood (it is
 meromorphic there, `meromorphicAt_toFun_chartPullback`), so `f.toFun` carries no junk and its
 punctured limit `holoRepr` equals the analytic value.  This generalises
 `holoRepr_chartPullback_eventuallyEq_NFAt` from the chart centre to any target point. -/
-theorem holoRepr_pullback_eventuallyEq_toFun (f : MeromorphicFunction X) (x : X)
+theorem holoRepr_pullback_eventuallyEq_toFun {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X) (x : X)
     {z : ℂ} (hz : z ∈ (chartAt (H := ℂ) x).target) :
     f.holoRepr ∘ (chartAt (H := ℂ) x).symm =ᶠ[𝓝[≠] z]
       f.toFun ∘ (chartAt (H := ℂ) x).symm := by
@@ -205,21 +187,11 @@ theorem holoRepr_pullback_eventuallyEq_toFun (f : MeromorphicFunction X) (x : X)
   filter_upwards [mem_nhdsWithin_of_mem_nhds hev] with y hy
   simp [hFdef, Function.comp, φ.left_inv hy]
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **The chart-pullback order of `localDeg` can be read with `holoRepr` instead of `f.toFun`.**
 Since `holoRepr ∘ chart.symm` and `f.toFun ∘ chart.symm` agree on `𝓝[≠] z`
 (`holoRepr_pullback_eventuallyEq_toFun`) and `meromorphicOrderAt` is `𝓝[≠]`-determined. -/
-theorem meromorphicOrderAt_holoRepr_sub_eq (f : MeromorphicFunction X) (x : X) (c : ℂ)
+theorem meromorphicOrderAt_holoRepr_sub_eq {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X) (x : X) (c : ℂ)
     {z : ℂ} (hz : z ∈ (chartAt (H := ℂ) x).target) :
     meromorphicOrderAt (fun w => f.holoRepr ((chartAt (H := ℂ) x).symm w) - c) z =
       meromorphicOrderAt (fun w => f.toFun ((chartAt (H := ℂ) x).symm w) - c) z := by
@@ -228,17 +200,13 @@ theorem meromorphicOrderAt_holoRepr_sub_eq (f : MeromorphicFunction X) (x : X) (
   show f.holoRepr ((chartAt (H := ℂ) x).symm w) - c = f.toFun ((chartAt (H := ℂ) x).symm w) - c
   rw [show f.holoRepr ((chartAt (H := ℂ) x).symm w) = f.toFun ((chartAt (H := ℂ) x).symm w) from hw]
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **Non-constancy bridge.** A meromorphic `f` with nontrivial divisor (`f.div ≠ 0`) has
 `toRiemannSphere` non-constant: `f.div ≠ 0` means some point has nonzero order, and a function
 with a nonzero order somewhere is non-constant on the sphere (`toRiemannSphere_not_isConstant`,
 the compact-Liouville corollary). -/
-theorem toRiemannSphere_not_isConstant_of_div_ne_zero (f : MeromorphicFunction X)
+theorem toRiemannSphere_not_isConstant_of_div_ne_zero {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (hnc : (f.div : Divisor X) ≠ 0) :
     ¬ Jacobians.Discharge.IsConstantMap f.toRiemannSphere := by
   apply f.toRiemannSphere_not_isConstant
@@ -252,7 +220,9 @@ theorem toRiemannSphere_not_isConstant_of_div_ne_zero (f : MeromorphicFunction X
 Direct from the unconditional finite-fibres theorem (`fibres_finite_statement_unconditional`)
 applied to the ContMDiff sphere map (`contMDiff_toRiemannSphere`), using the non-constancy bridge.
 -/
-theorem fibre_finite_of_div_ne_zero (f : MeromorphicFunction X)
+theorem fibre_finite_of_div_ne_zero {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (hnc : (f.div : Divisor X) ≠ 0) (w : RiemannSphere) :
     (f.toRiemannSphere ⁻¹' {w}).Finite :=
   Jacobians.Discharge.ContMDiff.Degree.fibres_finite_statement_unconditional
@@ -350,7 +320,8 @@ per-sheet multiplicity conservation on `W`.  `SheetDatum` bundles exactly the pe
 `w₀` and a containing open set `V` (a disjoint-separating neighbourhood).  Bundles the open sheet
 `U ⊆ V` containing `x`, an open value-neighbourhood `W ∋ w₀`, the integer weight `m`, and the
 per-sheet multiplicity conservation `∑_{y ∈ U ∩ F⁻¹(w)} localDeg = m` for `w ∈ W`. -/
-structure SheetDatum (f : MeromorphicFunction X) (w₀ : RiemannSphere) (x : X) (V : Set X) where
+structure SheetDatum {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (f : MeromorphicFunction X)
+    (w₀ : RiemannSphere) (x : X) (V : Set X) where
   /-- The sheet. -/
   U : Set X
   /-- The sheet is open. -/
@@ -378,7 +349,9 @@ to `g = holoRepr ∘ chart.symm` produces a sheet `U ⊆ V` and a value-disc `W 
 which the per-sheet multiplicity sum is the local order `m = localDeg f (coe c) x`.  The generic
 rows (`w = coe c'`, `c' ≠ c`) come from the engine; the central row (`w = coe c`) holds because the
 `c`-fibre in `U` is the single isolated point `x`. -/
-theorem exists_sheetDatum_coe (f : MeromorphicFunction X) (hnc : (f.div : Divisor X) ≠ 0)
+theorem exists_sheetDatum_coe {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) (hnc : (f.div : Divisor X) ≠ 0)
     (c : ℂ) {x : X} (hx_fib : f.toRiemannSphere x = ((c : ℂ) : RiemannSphere))
     {V : Set X} (hV_open : IsOpen V) (hxV : x ∈ V)
     (hV_np : V ⊆ {y | 0 ≤ f.orderAtPoint y}) :
@@ -567,17 +540,13 @@ theorem meromorphicOrderAt_inv_sub_eq (G : ℂ → ℂ) {z c' : ℂ} (hc' : c' �
     simp only [Pi.mul_apply]; field_simp; ring
   rw [meromorphicOrderAt_congr heq, meromorphicOrderAt_mul_of_ne_zero hfac_anal hfac_ne]
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-
 /-- **The chart-pullback order of `f.toFun` at the chart centre equals `orderAtPoint`** (as a
 `WithTop ℤ`, *finite*).  At a pole (`orderAtPoint x < 0`) the order is not `⊤` (else `orderAtPoint`
 would be the junk `0`), so `meromorphicOrderAt (f.toFun ∘ e.symm) (e x) = (orderAtPoint x : ℤ)`.
 This pins the negative order `−m` of the pullback `G`, whose reciprocal `1/G` then has the positive
 order `m` that drives the reciprocal normal form. -/
-theorem meromorphicOrderAt_chartPullback_eq_orderAtPoint (f : MeromorphicFunction X) {x : X}
+theorem meromorphicOrderAt_chartPullback_eq_orderAtPoint {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (f : MeromorphicFunction X) {x : X}
     (hx_pole : f.orderAtPoint x < 0) :
     meromorphicOrderAt (fun z => f.toFun ((chartAt (H := ℂ) x).symm z)) ((chartAt (H := ℂ) x) x)
       = (f.orderAtPoint x : WithTop ℤ) := by
@@ -588,17 +557,6 @@ theorem meromorphicOrderAt_chartPullback_eq_orderAtPoint (f : MeromorphicFunctio
   rw [show (fun z => f.toFun (e.symm z)) = (f.toFun ∘ e.symm) from rfl, hord]
   exact (WithTop.coe_untop₀_of_ne_top hne_top).symm
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **The repaired reciprocal at a pole.**  At a pole `x` (`orderAtPoint x < 0`), with
 `g = f.holoRepr ∘ (chartAt x).symm` the *junk-free* chart pullback (meromorphic, order `−m`; equal
 to `f.toFun ∘ (chartAt x).symm` off the centre, so it cuts the geometric value fibre `F⁻¹(coe ·)`),
@@ -608,7 +566,8 @@ at `e x` (`h (e x) = 0`), and has analytic order exactly `m = (orderAtPoint x).n
 (`meromorphicOrderAt g⁻¹ = −meromorphicOrderAt g = m`, transported through the normal form, with
 `AnalyticAt.meromorphicOrderAt_eq` converting the meromorphic order to the analytic order).  This is
 the analytic input the planar engine consumes at `w₀ = 0`. -/
-theorem exists_reciprocal_NF (f : MeromorphicFunction X) {x : X} (hx_pole : f.orderAtPoint x < 0) :
+theorem exists_reciprocal_NF {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X) {x : X} (hx_pole : f.orderAtPoint x < 0) :
     ∃ (h : ℂ → ℂ) (m : ℕ), 1 ≤ m ∧ (m : ℤ) = -f.orderAtPoint x ∧
       AnalyticAt ℂ h ((chartAt (H := ℂ) x) x) ∧
       ((fun z => (f.holoRepr ((chartAt (H := ℂ) x).symm z))⁻¹)
@@ -662,12 +621,6 @@ theorem exists_reciprocal_NF (f : MeromorphicFunction X) {x : X} (hx_pole : f.or
   have hpi : (fun z => (f.holoRepr (e.symm z))⁻¹) = G⁻¹ := rfl
   rw [hpi]; exact hheq
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 open Metric in
 /-- **The per-point construction at `∞` (the pole fibre).**  At a pole `x` (`orderAtPoint x < 0`,
 so `F x = ∞`), with a clean separating neighbourhood `V`, the same conservation-of-number content
@@ -689,7 +642,9 @@ reciprocal extraction `exists_reciprocal_NF` are proven, and the radius-bounded 
   `meromorphicOrderAt_inv_sub_eq` plus the `holoRepr`/`toFun` reconciliation toolkit.
 * Central row (`w = ∞`): the pole fibre in `U` is the isolated point `x`, with
   `localDeg f ∞ x = −orderAtPoint x = m`. -/
-theorem exists_sheetDatum_infty (f : MeromorphicFunction X) (_hnc : (f.div : Divisor X) ≠ 0)
+theorem exists_sheetDatum_infty {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) (_hnc : (f.div : Divisor X) ≠ 0)
     {x : X} (hx_pole : f.orderAtPoint x < 0)
     {V : Set X} (hV_open : IsOpen V) (hxV : x ∈ V)
     (_hV_src : V ⊆ (chartAt (H := ℂ) x).source) :
@@ -892,7 +847,8 @@ pairwise-disjoint separating neighbourhoods `V0 ⊇ V`, and a per-point `SheetDa
 point (in its sheet `V x`), this packages the full local conservation structure.  The total
 per-point fields are read off as `⋃ (h : x ∈ xs), (D x h).U` (= the datum on the fibre, `∅` off it),
 and disjointness descends from `U ⊆ V ⊆ V0` with `V0` pairwise disjoint. -/
-def ofSheetData (f : MeromorphicFunction X) (w₀ : RiemannSphere) (xs : Finset X)
+def ofSheetData {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (f : MeromorphicFunction X)
+    (w₀ : RiemannSphere) (xs : Finset X)
     (hxs_coe : (xs : Set X) = f.toRiemannSphere ⁻¹' {w₀})
     (V0 : X → Set X) (hV0disj : (f.toRiemannSphere ⁻¹' {w₀}).PairwiseDisjoint V0)
     (V : X → Set X) (hV_sub : ∀ x, V x ⊆ V0 x)
@@ -938,7 +894,9 @@ planar normal form.  The finite fibre is enumerated by `xs`; pairwise-disjoint c
 chosen by T2 separation (`Set.Finite.t2_separation`) intersected with the chart source and the
 non-pole locus, then the per-point datum (`exists_sheetDatum_coe` at a finite value,
 `exists_sheetDatum_infty` at `∞`) supplies each sheet's conservation. -/
-def localMultiplicitySheets_of_mem_range (f : MeromorphicFunction X) (hnc : (f.div : Divisor X) ≠ 0)
+def localMultiplicitySheets_of_mem_range {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) (hnc : (f.div : Divisor X) ≠ 0)
     {w₀ : RiemannSphere} (hmem : w₀ ∈ Set.range f.toRiemannSphere) :
     LocalMultiplicitySheets f w₀ := by
   classical
@@ -1003,7 +961,9 @@ is a `LocalMultiplicitySheets f w₀`: the empty-fibre witness off the range, an
 construction on it. (Needs `f.div ≠ 0`: for a constant `f` the fibre over the constant value is all
 of `X`, which is infinite, so no finite `xs` enumerates it — that case is handled separately by
 `exists_properMapDegree_of_div_eq_zero`.) -/
-def localMultiplicitySheets_of_nonconstant (f : MeromorphicFunction X)
+def localMultiplicitySheets_of_nonconstant {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (hnc : (f.div : Divisor X) ≠ 0) (w₀ : RiemannSphere) :
     LocalMultiplicitySheets f w₀ := by
   by_cases hmem : w₀ ∈ Set.range f.toRiemannSphere
@@ -1016,14 +976,15 @@ case) both counts vanish (`exists_properMapDegree_of_div_eq_zero`); otherwise it
 the pointwise local-conservation supply via the proven connectedness globalization. This is the
 exact shape of the upstream named input `Jacobians.exists_properMapDegree`; closing the residue
 theorem `deg (div f) = 0`. -/
-theorem exists_properMapDegree_proven (f : MeromorphicFunction X) :
+theorem exists_properMapDegree_proven {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) :
     ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) := by
   by_cases h : (f.div : Divisor X) = 0
   · exact exists_properMapDegree_of_div_eq_zero f h
   · exact exists_properMapDegree_of_localSheets f (localMultiplicitySheets_of_nonconstant f h)
 
 
-end
 end Jacobians.ProperMapDegreeSheets
 
 end

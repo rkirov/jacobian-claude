@@ -74,12 +74,7 @@ open Jacobians Jacobians.ProperMapDegree Jacobians.ProperMapDegreeConstruct
   Jacobians.MultiplicityPatching
 
 
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### The constant meromorphic function and the `localDeg` ↔ `orderAtPoint` bridge
-
 `localDeg f (coe c) y` is the chart-pullback order of `z ↦ f(z) − c` at `y`.
 Realising the shift `f − c` as the meromorphic function `f − constMero c` lets us
 identify `localDeg f (coe c) y = orderAtPoint (f − constMero c) y` — and hence,
@@ -89,14 +84,10 @@ half of the per-sheet conservation `sheetMult_eq`: the chart-at-`x` order sum of
 `Planar.orderSum_eq_of_analyticOrder` matches the per-preimage `localDeg`
 (computed in the chart at the preimage). -/
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-
 /-- The shift `f − c` as a meromorphic function (built directly, independent of
 the `Sub (MeromorphicFunction X)` instance). -/
-noncomputable def shiftMero (f : MeromorphicFunction X) (c : ℂ) : MeromorphicFunction X :=
+noncomputable def shiftMero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (c : ℂ) : MeromorphicFunction X :=
   ⟨fun x => f.toFun x - c, fun x => by
     have h := f.meromorphic x
     have hc : MeromorphicAt (fun _ : ℂ => c) ((chartAt (H := ℂ) x) x) := MeromorphicAt.const c _
@@ -107,19 +98,9 @@ noncomputable def shiftMero (f : MeromorphicFunction X) (c : ℂ) : MeromorphicF
     rw [this]
     exact h.sub hc⟩
 
-@[simp] lemma shiftMero_toFun (f : MeromorphicFunction X) (c : ℂ) :
+@[simp] lemma shiftMero_toFun {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (c : ℂ) :
     (shiftMero f c).toFun = fun x => f.toFun x - c := rfl
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- **`localDeg` at a finite value as an `orderAtPoint` of the shift `f − c`.**
 
@@ -127,7 +108,8 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 `(meromorphicOrderAt (z ↦ f(chart_y.symm z) − c) (chart_y y)).untop₀` — the order
 of vanishing of `f − c` at `y`, read in the chart at `y`.  This is *definitional*
 (`shiftMero` plugs the constant `c` into the subtraction). -/
-lemma localDeg_coe_eq_orderAtPoint_sub (f : MeromorphicFunction X) (c : ℂ) (y : X) :
+lemma localDeg_coe_eq_orderAtPoint_sub {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (c : ℂ) (y : X) :
     localDeg f ((c : ℂ) : RiemannSphere) y
       = MeromorphicFunction.orderAtPoint (shiftMero f c) y := by
   rw [MeromorphicFunction.orderAtPoint]
@@ -137,12 +119,6 @@ lemma localDeg_coe_eq_orderAtPoint_sub (f : MeromorphicFunction X) (c : ℂ) (y 
       ((chartAt (H := ℂ) y) y)).untop₀
   rfl
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **Chart-invariant reading of `localDeg` at a finite value.**
 
 For `y` in the source of *any* atlas chart `e`, the local degree of `F` over
@@ -150,7 +126,9 @@ For `y` in the source of *any* atlas chart `e`, the local degree of `F` over
 proven chart-invariance `orderAtPoint_chart_invariant` applied to the shift
 `shiftMero f c`; it is what lets the chart-at-`x` order sum of the planar
 normal form be matched, preimage by preimage, against the intrinsic `localDeg`. -/
-lemma localDeg_coe_eq_chartPullback_order (f : MeromorphicFunction X) (c : ℂ) {y : X}
+lemma localDeg_coe_eq_chartPullback_order {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) (c : ℂ) {y : X}
     (e : OpenPartialHomeomorph X ℂ) (he : e ∈ atlas ℂ X) (hy : y ∈ e.source) :
     localDeg f ((c : ℂ) : RiemannSphere) y
       = (meromorphicOrderAt (fun z => f.toFun (e.symm z) - c) (e y)).untop₀ := by
@@ -167,7 +145,9 @@ re-indexing of the order-sum from the (finite) fibre to the divisor support. -/
 
 /-- The fibre over `∞` is finite (it is exactly the poles `{x | order x < 0}`,
 finite on a compact `X`). -/
-lemma fibre_infty_finite (f : MeromorphicFunction X) :
+lemma fibre_infty_finite {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) :
     (f.toRiemannSphere ⁻¹' {OnePoint.infty}).Finite := by
   rw [f.toRiemannSphere_preimage_infty]
   exact f.finite_poles
@@ -179,7 +159,9 @@ pole fibre `F⁻¹(∞)` equals `polesCount f`.
 sum is `∑_{x : order x < 0} (−order x)`.  Reindexing this finite-set sum onto the
 divisor support (where the extra points all have `order = 0`, hence are excluded
 by the `order < 0` filter) gives `polesCount f` verbatim. -/
-lemma fibreMult_infty_eq_polesCount (f : MeromorphicFunction X) :
+lemma fibreMult_infty_eq_polesCount {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) :
     fibreMult f OnePoint.infty = polesCount f := by
   classical
   -- Unfold `fibreMult` and rewrite the fibre as the pole set.
@@ -217,7 +199,9 @@ onto the zeros, reindexing to `zerosCount f`.
 
 Note this needs *no* fibre-finiteness hypothesis: the summand's support is
 finite (`⊆ {order ≠ 0}`, finite on compact `X`), which is all `finsum` needs. -/
-lemma fibreMult_zero_eq_zerosCount (f : MeromorphicFunction X) :
+lemma fibreMult_zero_eq_zerosCount {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) :
     fibreMult f ((0 : ℂ) : RiemannSphere) = zerosCount f := by
   classical
   rw [fibreMult]
@@ -278,7 +262,9 @@ fibreMult f w` for every `w`.
 Consequence: any `MultiplicityPatchingData f w₀` whose `N_eq_fibreMult` field is
 required only on its neighbourhood `W` is freed of *all* its special-value
 content by this global identity. -/
-lemma N_eq_fibreMult_everywhere (f : MeromorphicFunction X) (w : RiemannSphere) :
+lemma N_eq_fibreMult_everywhere {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) (w : RiemannSphere) :
     N f w = fibreMult f w := by
   unfold N
   split_ifs with h_infty h_zero
@@ -301,7 +287,9 @@ structure *except* the `N_eq_fibreMult` field is supplied automatically by the
 proven global identity `N f = fibreMult f`.  The caller provides only the
 geometric conservation-of-number data (sheets, weights, per-sheet conservation,
 finite fibres, no-escape). -/
-def MultiplicityPatchingData.ofGeometricData (f : MeromorphicFunction X)
+def MultiplicityPatchingData.ofGeometricData {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (w₀ : RiemannSphere)
     (xs : Finset X)
     (xs_coe : (xs : Set X) = f.toRiemannSphere ⁻¹' {w₀})
@@ -370,7 +358,9 @@ identity `N = fibreMult`.  Conservation persists from `Wsheet x` to the smaller
 fibre finiteness persists from `Wfin`.  Supplying `Wfin` *separately* (rather than
 deriving it as `⋂ Wsheet x`) keeps the empty-fibre case sound (`xs = ∅` makes
 `⋂ Wsheet x = univ`, but `Wfin` can be a genuine finiteness neighbourhood). -/
-def MultiplicityPatchingData.ofDisjointSheets (f : MeromorphicFunction X)
+def MultiplicityPatchingData.ofDisjointSheets {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (w₀ : RiemannSphere)
     (xs : Finset X)
     (xs_coe : (xs : Set X) = f.toRiemannSphere ⁻¹' {w₀})
@@ -458,7 +448,8 @@ geometric inputs to `MultiplicityPatchingData.ofDisjointSheets`.  Bundles the
 finite fibre enumeration, the pairwise-disjoint sheets, the per-sheet weights and
 value-neighbourhoods, the per-sheet multiplicity conservation, and fibre
 finiteness over the common value-neighbourhood. -/
-structure LocalMultiplicitySheets (f : MeromorphicFunction X) (w₀ : RiemannSphere) where
+structure LocalMultiplicitySheets {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (w₀ : RiemannSphere) where
   /-- Finite enumeration of the fibre `F⁻¹(w₀)`. -/
   xs : Finset X
   /-- `↑xs` is the fibre. -/
@@ -492,7 +483,9 @@ structure LocalMultiplicitySheets (f : MeromorphicFunction X) (w₀ : RiemannSph
   fibre_finite_Wfin : ∀ w ∈ Wfin, (f.toRiemannSphere ⁻¹' {w}).Finite
 
 /-- **From the local data to the patching datum.** -/
-def LocalMultiplicitySheets.toPatchingData {f : MeromorphicFunction X}
+def LocalMultiplicitySheets.toPatchingData {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {f : MeromorphicFunction X}
     {w₀ : RiemannSphere} (s : LocalMultiplicitySheets f w₀) :
     MultiplicityPatchingData f w₀ :=
   MultiplicityPatchingData.ofDisjointSheets f w₀ s.xs s.xs_coe s.U s.U_open
@@ -512,7 +505,9 @@ open neighbourhood `Wfin := (range F)ᶜ` every fibre is empty (hence finite).
 Since `F` is proper its range is closed, so `(range F)ᶜ` is open and contains
 `w₀`.  Hence the structure's obligations are satisfiable, not a disguised
 `False`. -/
-def LocalMultiplicitySheets.ofNotMemRange (f : MeromorphicFunction X)
+def LocalMultiplicitySheets.ofNotMemRange {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     {w₀ : RiemannSphere} (h_notmem : w₀ ∉ Set.range f.toRiemannSphere) :
     LocalMultiplicitySheets f w₀ where
   xs := ∅
@@ -560,7 +555,9 @@ special-fibre identities, and the finiteness-shrinking all discharged
 complete). -/
 
 /-- **Local constancy of `N f` from a pointwise local-conservation supply.** -/
-theorem isLocallyConstant_N_of_localSheets (f : MeromorphicFunction X)
+theorem isLocallyConstant_N_of_localSheets {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (h : ∀ w₀ : RiemannSphere, LocalMultiplicitySheets f w₀) :
     IsLocallyConstant (N f) :=
   isLocallyConstant_N_of_pointwiseMultiplicityPatching f
@@ -568,7 +565,9 @@ theorem isLocallyConstant_N_of_localSheets (f : MeromorphicFunction X)
 
 /-- **`zerosCount = polesCount`** (the argument-principle equality) from a
 pointwise local-conservation supply. -/
-theorem zerosCount_eq_polesCount_of_localSheets (f : MeromorphicFunction X)
+theorem zerosCount_eq_polesCount_of_localSheets {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (h : ∀ w₀ : RiemannSphere, LocalMultiplicitySheets f w₀) :
     zerosCount f = polesCount f :=
   zerosCount_eq_polesCount_of_pointwiseMultiplicityPatching f
@@ -580,14 +579,15 @@ theorem zerosCount_eq_polesCount_of_localSheets (f : MeromorphicFunction X)
 
 Feeding this theorem `∀ w₀, LocalMultiplicitySheets f w₀` closes
 `exists_properMapDegree`, hence `deg_div`, hence the Riemann–Roch keystone. -/
-theorem exists_properMapDegree_of_localSheets (f : MeromorphicFunction X)
+theorem exists_properMapDegree_of_localSheets {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X)
     (h : ∀ w₀ : RiemannSphere, LocalMultiplicitySheets f w₀) :
     ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) :=
   exists_properMapDegree_of_pointwiseMultiplicityPatching f
     (fun w₀ => (h w₀).toPatchingData)
 
 
-end
 end Jacobians.MultiplicityPatchingConstruct
 
 end

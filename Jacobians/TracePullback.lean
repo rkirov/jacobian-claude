@@ -47,13 +47,6 @@ namespace Jacobians
 open scoped Manifold ContDiff Bundle Topology
 open Filter Set
 
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-! ## Trace-coordinates layer
 
 `ambientTrace` is the geometric trace `traceFormTotal` expressed in the chosen
@@ -67,7 +60,10 @@ opaque stub. -/
 `T`, direction `gX → gY`; zero on the unused off-genus branch). Built from the
 genuine geometric trace `traceFormTotal` (which is `traceForm` off the constant
 locus and `0` on constant maps). -/
-noncomputable def ambientTrace {gX gY : ℕ}
+noncomputable def ambientTrace {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] {gX gY : ℕ}
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (Fin gX → ℂ) →L[ℂ] (Fin gY → ℂ) := by
   classical
@@ -86,7 +82,10 @@ projection formula this realises `periodVec δ ↦ periodVec(preimage cycle)`; i
 replaces the misformalized `ambientPsi`-as-pullback. As with `ambientPhi`, the
 transpose makes contravariant `ambientPullbackJac_comp` automatic from covariant
 `ambientTrace_comp`. -/
-noncomputable def ambientPullbackJac {gX gY : ℕ}
+noncomputable def ambientPullbackJac {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] {gX gY : ℕ}
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (Fin gY → ℂ) →L[ℂ] (Fin gX → ℂ) :=
   LinearMap.toContinuousLinearMap
@@ -94,7 +93,9 @@ noncomputable def ambientPullbackJac {gX gY : ℕ}
         (ambientTrace f hf).toLinearMap).transpose.mulVecLin
 
 /-- `ambientTrace id = id`. Via `traceFormTotal_id`. -/
-theorem ambientTrace_id (x : Fin (genus X) → ℂ) :
+theorem ambientTrace_id {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (x : Fin (genus X) → ℂ)
+    :
     ambientTrace (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id x = x := by
   unfold ambientTrace
   simp only [↓reduceDIte]
@@ -106,7 +107,10 @@ theorem ambientTrace_id (x : Fin (genus X) → ℂ) :
 
 /-- Covariant composition: `ambientTrace (g ∘ f) = ambientTrace g ∘ ambientTrace f`.
 Via `traceFormTotal_comp`. -/
-theorem ambientTrace_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+theorem ambientTrace_comp {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
     [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
@@ -124,7 +128,9 @@ theorem ambientTrace_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactS
 
 /-- `ambientPullbackJac id = id` — transpose of the identity matrix is the
 identity, via `ambientTrace_id`. -/
-theorem ambientPullbackJac_id (y : Fin (genus X) → ℂ) :
+theorem ambientPullbackJac_id {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (y : Fin (genus X) → ℂ)
+    :
     ambientPullbackJac (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id y = y := by
   have htr : ambientTrace (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id
       = ContinuousLinearMap.id ℂ (Fin (genus X) → ℂ) :=
@@ -138,7 +144,10 @@ theorem ambientPullbackJac_id (y : Fin (genus X) → ℂ) :
 /-- Contravariant composition:
 `ambientPullbackJac (g ∘ f) = ambientPullbackJac f ∘ ambientPullbackJac g`.
 Follows from covariant `ambientTrace_comp` via matrix transpose reversing order. -/
-theorem ambientPullbackJac_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+theorem ambientPullbackJac_comp {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
     [ConnectedSpace Z] [Nonempty Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
@@ -162,7 +171,10 @@ theorem ambientPullbackJac_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [Co
 
 /-- **ambientTrace of a constant map is zero**, from `traceFormTotal_eq_zero_of_const`
 (mirrors `ambientPsi_eq_zero_of_const`). -/
-theorem ambientTrace_eq_zero_of_const (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+theorem ambientTrace_eq_zero_of_const {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hconst : ∃ y₀ : Y, ∀ x, f x = y₀) :
     ambientTrace (gX := genus X) (gY := genus Y) f hf = 0 := by
   unfold ambientTrace
@@ -173,7 +185,10 @@ theorem ambientTrace_eq_zero_of_const (f : X → Y) (hf : ContMDiff 𝓘(ℂ) �
 
 /-- **ambientPullbackJac of a constant map is zero** (`Tᵀ = 0` when `T = 0`).
 The constant-case input to `ambientPullbackJac_preserves_truePeriodLattice`. -/
-theorem ambientPullbackJac_eq_zero_of_const (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+theorem ambientPullbackJac_eq_zero_of_const {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hconst : ∃ y₀ : Y, ∀ x, f x = y₀) :
     ambientPullbackJac (gX := genus X) (gY := genus Y) f hf = 0 := by
   unfold ambientPullbackJac
@@ -195,7 +210,10 @@ the matrix entry `Tᵀ i j = (ambientTrace f hf eᵢ^X) j = w j` (`ambientTrace`
 and `traceFormTotal f hf ωᵢ^X = ambientIso Y w = ∑ⱼ wⱼ • ωⱼ^Y`, so the RHS line
 integral is `∑ⱼ wⱼ ∫_δ ωⱼ^Y = ∑ⱼ wⱼ (periodVec δ)ⱼ` by linearity. The integrability
 hypothesis is the per-basis-form regularity of a closed smooth loop. -/
-theorem ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal
+theorem ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal {X Y : Type*}
+    [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (δ : ℝ → Y) (i : Fin (genus X))
     (hint_Y : ∀ j : Fin (genus Y), IntervalIntegrable
       (fun t => (periodBasisForm Y j).toFun (δ t) (pathSpeed δ t)) MeasureTheory.volume 0 1) :
@@ -298,7 +316,10 @@ pullback/pushforward equations) lets us isolate the classical content: the theor
 `ambientPullbackJac_periodVec_mem_truePeriodLattice_of_preimageCycle` is
 real and purely algebraic; only *producing* a `PreimageCycle` for
 each non-constant `f, δ` is content-gated. -/
-structure PreimageCycle (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+structure PreimageCycle {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (δ : ℝ → Y) where
   /-- Number of lifts. -/
   n : ℕ
@@ -325,7 +346,10 @@ witness for `(f, δ)`, the pulled-back period vector
 `ambientPullbackJac (periodVec δ)` lies in `truePeriodLattice X`: each
 `periodVec` of a closed smooth loop is in the lattice, and the
 lattice is closed under ℤ-linear combinations. -/
-theorem ambientPullbackJac_periodVec_mem_truePeriodLattice_of_preimageCycle
+theorem ambientPullbackJac_periodVec_mem_truePeriodLattice_of_preimageCycle {X Y : Type*}
+    [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (δ : ℝ → Y) (c : PreimageCycle f hf δ) :
     ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
@@ -347,21 +371,18 @@ smooth path between the two (off-branch) piece endpoints, whose chart image stay
 sub-ball. This is the per-piece replacement arc used to build `δ'`. -/
 
 /-- The chart-coordinate image of the branch locus inside the chart at `w` is finite. -/
-lemma finite_chartImage_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+lemma finite_chartImage_branchLocus {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ y, f y = y₀) (w : Y) :
     ((chartAt (H := ℂ) w) '' (branchLocus f ∩ (chartAt (H := ℂ) w).source)).Finite :=
   ((finite_branchLocus_of_nonconstant f hf hnonconst).inter_of_left _).image _
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X]
-  [TopologicalSpace Y] [ChartedSpace ℂ Y]
-
 /-- Off-branch transfer: a chart-target point off the chart-image of the branch locus pulls back to
 a point off the branch locus. -/
-lemma chartSymm_notMem_branchLocus {f : X → Y} {w : Y} {v : ℂ}
+lemma chartSymm_notMem_branchLocus {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+    [ChartedSpace ℂ Y] {f : X → Y} {w : Y} {v : ℂ}
     (hv_target : v ∈ (chartAt (H := ℂ) w).target)
     (hvB : v ∉ (chartAt (H := ℂ) w) '' (branchLocus f ∩ (chartAt (H := ℂ) w).source)) :
     (chartAt (H := ℂ) w).symm v ∉ branchLocus f := by
@@ -369,15 +390,6 @@ lemma chartSymm_notMem_branchLocus {f : X → Y} {w : Y} {v : ℂ}
   apply hvB
   refine ⟨(chartAt (H := ℂ) w).symm v, ⟨hmem, (chartAt (H := ℂ) w).map_target hv_target⟩, ?_⟩
   exact (chartAt (H := ℂ) w).right_inv hv_target
-
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- **Per-piece off-branch detour (geometric kernel).** Given a chart anchor `w`, a sub-ball
 `Metric.ball c r ⊆ (chartAt w).target`, and two points `P, Q` off `branchLocus f` whose chart
@@ -391,7 +403,10 @@ images lie in the sub-ball, there is a flat-ended smooth path `γ : P → Q` tha
 The relay is `OfCurveSkeleton.exists_relay_dodge_finite` (planar dodge of the finite
 chart-image of the branch locus); the arc is the concatenation of two
 `OfCurveSkeleton.ChartBallPathSmooth3` hops `P → relay`, `relay → Q`. -/
-lemma exists_offBranch_detour_piece (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+lemma exists_offBranch_detour_piece {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ y, f y = y₀)
     (w P Q : Y) (c : ℂ) (r : ℝ)
     (hball : Metric.ball c r ⊆ (chartAt (H := ℂ) w).target)
@@ -529,19 +544,12 @@ lemma exists_offBranch_detour_piece (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘
     rw [hγ, Jacobians.pathSpeed_concat_right γ₁ γ₂ 1 (by norm_num) hd,
       show (2:ℝ)*1-1 = 1 from by norm_num, hv2_1, mul_zero]
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [ChartedSpace ℂ Y]
-
 /-- A nonempty open subset of `Y` (a complex `1`-manifold) is infinite: locally homeomorphic to a
 nonempty open subset of `ℂ`, which is infinite. (Local copy of
 `Jacobians.infinite_of_isOpen_nonempty`
 from `DegreeOneSphere.lean`, which is downstream of this file and so cannot be imported here.) -/
-private theorem infinite_of_isOpen_nonempty_local {W : Set Y} (hW : IsOpen W) (hne : W.Nonempty) :
+private theorem infinite_of_isOpen_nonempty_local {Y : Type*} [TopologicalSpace Y]
+    [ChartedSpace ℂ Y] {W : Set Y} (hW : IsOpen W) (hne : W.Nonempty) :
     W.Infinite := by
   obtain ⟨y₀, hy₀⟩ := hne
   set c : OpenPartialHomeomorph Y ℂ := chartAt ℂ y₀ with hc
@@ -558,39 +566,14 @@ private theorem infinite_of_isOpen_nonempty_local {W : Set Y} (hW : IsOpen W) (h
   rintro _ ⟨_, ⟨x, hx, rfl⟩, rfl⟩
   rw [c.left_inv hx.1]; exact hx.2
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [ChartedSpace ℂ Y]
-
 /-- Removing a finite set from a nonempty open subset of `Y` leaves a point. (Local copy of
 `Jacobians.exists_mem_open_notMem_finite`.) -/
-private theorem exists_mem_open_notMem_finite_local {W C : Set Y}
+private theorem exists_mem_open_notMem_finite_local {Y : Type*} [TopologicalSpace Y]
+    [ChartedSpace ℂ Y] {W C : Set Y}
     (hW : IsOpen W) (hne : W.Nonempty) (hC : C.Finite) : ∃ y ∈ W, y ∉ C := by
   by_contra h
   simp only [not_exists, not_and, not_not] at h
   exact (infinite_of_isOpen_nonempty_local hW hne) (hC.subset (fun y hy => h y hy))
-
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- **[OVERLAP CONNECTOR — the off-branch breakpoint perturbation].** Let `P` be a point lying in
 the sources of two chart anchors `w₁, w₂` (the anchors of two adjacent cover pieces sharing the
@@ -617,7 +600,10 @@ then lies in both balls; pick `p ∈ chart₂.symm '' D` off the finite `branchL
 The connector is the chart-`2` straight segment `ChartBallPathSmooth3 w₂ P p`, confined to the
 convex
 `D` (so to ball `2`), hence to ball `1` via the transition. -/
-lemma exists_offBranch_overlap_connector (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+lemma exists_offBranch_overlap_connector {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ y, f y = y₀)
     (w₁ w₂ P : Y) (c₁ c₂ : ℂ) (r₁ r₂ : ℝ)
     (_hball₁ : Metric.ball c₁ r₁ ⊆ (chartAt (H := ℂ) w₁).target)
@@ -744,7 +730,10 @@ adjacent detours can be built between the `p`'s — and the connector lies in th
 integral of any period form along `cc k` is the same primitive-difference in either ball (the
 intrinsic correction term `corr` of the telescope). Single application of
 `exists_offBranch_overlap_connector` per breakpoint. -/
-lemma exists_overlap_connectors (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+lemma exists_overlap_connectors {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ y, f y = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ)
     (n : ℕ) [NeZero n] (hn : 0 < n) (x : Fin n → Y) (c : Fin n → ℂ) (r : Fin n → ℝ)
@@ -852,7 +841,10 @@ ball-confined path-independence, and a telescoping sum. Consumers
 (`exists_preimageCycle_of_nonconstant`, `…sheets_eq_fibreCard_…`) require the period vector
 *literally*
 equal (threaded through `PreimageCycle.congr_periodVec`), which this provides. -/
-theorem exists_loop_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+theorem exists_loop_off_branchLocus {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
     ∃ δ', IsClosedSmoothLoop δ' ∧ periodVec δ' = periodVec δ ∧
@@ -1168,7 +1160,10 @@ interval to `ℝ → X` via `Set.projIcc`. Foundation for the smooth-loop assemb
 The lift is `Set.projIcc`-clamped, so it is **constant outside `[0,1]`** (`= e` on
 `(-∞,0]`, `= Γ 1` on `[1,∞)`); these two facts are exposed in the conclusion — they
 give the two-sided endpoint control the seam-flattening construction needs. -/
-theorem exists_continuous_lift_off_branchLocus
+theorem exists_continuous_lift_off_branchLocus {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ_cont : Continuous δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f)
@@ -1282,18 +1277,11 @@ theorem flatEndReparam_image_Icc : flatEndReparam '' Set.Icc (0:ℝ) 1 = Set.Icc
       differentiable_flatEndReparam.continuous.continuousOn
     rwa [flatEndReparam_zero, flatEndReparam_one] at h
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [ChartedSpace ℂ X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- Reparametrized pathSpeed (chain rule): `pathSpeed (γ ∘ flatEndReparam) t =
 flatEndReparam'(t) · pathSpeed γ (flatEndReparam t)`. Mirrors
 `pathSpeed_smoothStep01_comp_eq`. -/
-theorem pathSpeed_flatEndReparam_comp_eq (γ : ℝ → X) (t : ℝ)
+theorem pathSpeed_flatEndReparam_comp_eq {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (γ : ℝ → X) (t : ℝ)
     (hγ_diff : DifferentiableAt ℝ
       ((chartAt (H := ℂ) (γ (flatEndReparam t))).toFun ∘ γ) (flatEndReparam t)) :
     pathSpeed (γ ∘ flatEndReparam) t =
@@ -1315,24 +1303,6 @@ theorem pathSpeed_flatEndReparam_comp_eq (γ : ℝ → X) (t : ℝ)
       deriv flatEndReparam t • pathSpeed γ (flatEndReparam t) := by rw [← h_deriv]; rfl
   rw [h_lhs_eq]; exact Complex.real_smul
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- **Reparametrization-invariance of the line integral** (the textbook monotone
 change of variables). Reparametrizing a (regular, integrable) path by the monotone
 `flatEndReparam` leaves the line integral unchanged. Uses Mathlib's measure-theoretic
@@ -1340,7 +1310,9 @@ monotone CoV `integral_image_eq_integral_deriv_smul_of_monotoneOn` (valid for me
 *integrable* integrands — no `C¹` needed), exactly the value-level companion of the
 `smoothStep01` integrability argument in `isSmoothPath_smoothPathSmooth`. The key to
 transporting the preimage-cycle construction from `δ∘flatEndReparam` back to `δ`. -/
-theorem lineIntegral_comp_flatEndReparam (α : HolomorphicOneForms X) (γ : ℝ → X)
+theorem lineIntegral_comp_flatEndReparam {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (α : HolomorphicOneForms X) (γ : ℝ → X)
     (hγ_diff : ∀ t ∈ Set.uIcc (0:ℝ) 1,
       DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
     lineIntegral α (γ ∘ flatEndReparam) = lineIntegral α γ := by
@@ -1381,33 +1353,17 @@ theorem lineIntegral_comp_flatEndReparam (α : HolomorphicOneForms X) (γ : ℝ 
     rw [h_lin, Complex.real_smul]
   rw [hLHS, hRHS]; exact hcov.symm
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- **Period vector is `flatEndReparam`-invariant.** A closed smooth loop and its
 seam-flattened reparametrization `γ ∘ flatEndReparam` have the same period vector
 (componentwise `lineIntegral_comp_flatEndReparam`). This is what lets the
 preimage-cycle construction, carried out for `δ ∘ flatEndReparam`, transport back to
 `δ` (via `PreimageCycle.congr_periodVec`). -/
-theorem periodVec_comp_flatEndReparam (γ : ℝ → X) (hγ : IsClosedSmoothLoop γ) :
+theorem periodVec_comp_flatEndReparam {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (γ : ℝ → X)
+    (hγ : IsClosedSmoothLoop γ) :
     periodVec (γ ∘ flatEndReparam) = periodVec γ := by
   funext i
   exact lineIntegral_comp_flatEndReparam (periodBasisForm X i) γ hγ.diff
-
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- **Line integral depends only on the path's values on `[0,1]`.** Two paths
 agreeing on `[0,1]` have equal line integrals: the integrand (value + `pathSpeed`,
@@ -1415,7 +1371,9 @@ a germ at `t`) agrees on the open interior `(0,1)` — where `[0,1]` is a neighb
 hence a.e. on `(0,1]`. The endpoints, where the germ leaks outside `[0,1]`, are a
 null set. Gives the single-lift pushforward `lineIntegral α (f∘Γ) = lineIntegral α δr`
 since a lift satisfies `f∘Γ = δr` on `[0,1]`. -/
-theorem lineIntegral_congr_of_eqOn (α : HolomorphicOneForms X) {g₁ g₂ : ℝ → X}
+theorem lineIntegral_congr_of_eqOn {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X)
+    {g₁ g₂ : ℝ → X}
     (h : Set.EqOn g₁ g₂ (Set.Icc (0:ℝ) 1)) :
     lineIntegral α g₁ = lineIntegral α g₂ := by
   unfold lineIntegral
@@ -1441,29 +1399,12 @@ theorem lineIntegral_congr_of_eqOn (α : HolomorphicOneForms X) {g₁ g₂ : ℝ
     fderiv ℝ ((chartAt (H := ℂ) (g₂ t)).toFun ∘ g₂) t 1
   rw [hval, (heq_nbhd.fun_comp (chartAt (H := ℂ) (g₂ t)).toFun).fderiv_eq]
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- **Period vector depends only on the loop's values on `[0,1]`.** Componentwise
 `lineIntegral_congr_of_eqOn`. -/
-theorem periodVec_congr_of_eqOn {g₁ g₂ : ℝ → X}
+theorem periodVec_congr_of_eqOn {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {g₁ g₂ : ℝ → X}
     (h : Set.EqOn g₁ g₂ (Set.Icc (0:ℝ) 1)) : periodVec g₁ = periodVec g₂ := by
   funext i; exact lineIntegral_congr_of_eqOn (periodBasisForm X i) h
-
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- **Integrability is preserved by the `flatEndReparam` reparametrization.** If the
 form-integrand of `γ` is interval-integrable, so is that of `γ ∘ flatEndReparam`. Same
@@ -1471,7 +1412,9 @@ monotone-CoV *integrability* lemma the codebase uses for `smoothStep01`
 (`integrableOn_image_iff_integrableOn_deriv_smul_of_monotoneOn`); the integrand of the
 reparametrized path equals `flatEndReparam' • (integrand ∘ flatEndReparam)` a.e. (chain
 rule `pathSpeed_flatEndReparam_comp_eq`). Feeds the lift-integrability upgrade. -/
-theorem intervalIntegrable_comp_flatEndReparam (α : HolomorphicOneForms X) (γ : ℝ → X)
+theorem intervalIntegrable_comp_flatEndReparam {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (α : HolomorphicOneForms X) (γ : ℝ → X)
     (hγ_diff : ∀ t ∈ Set.uIcc (0:ℝ) 1,
       DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t)
     (hγ_int : IntervalIntegrable (fun t => α.toFun (γ t) (pathSpeed γ t))
@@ -1516,15 +1459,6 @@ theorem intervalIntegrable_comp_flatEndReparam (α : HolomorphicOneForms X) (γ 
   exact Complex.real_smul
 
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- **§3 sub-piece B — smoothness of the lift.** A continuous lift `Γ` of `δ`
 through a non-critical point inherits `δ`'s chart-pullback differentiability.
 Given `Γ` continuous at `t₀`, `f ∘ Γ = δ` near `t₀`, `Γ t₀` off the critical set,
@@ -1539,7 +1473,10 @@ representation of the holomorphic `g` and `d = (chart_δt₀)∘δ`. `G` is `ℂ
 `ℝ`-differentiable (via `writtenInExtChartAt` + `restrictScalars`), so the chain
 rule and `congr_of_eventuallyEq` conclude. Mirrors `IsClosedSmoothLoop.comp` /
 `pathSpeed_comp_eq_mfderiv`. Foundation for assembling the lift into a smooth loop. -/
-theorem differentiableAt_chart_lift_of_notMem_criticalSet
+theorem differentiableAt_chart_lift_of_notMem_criticalSet {X Y : Type*} [TopologicalSpace X]
+    [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (Γ : ℝ → X) {t₀ : ℝ}
@@ -1605,7 +1542,9 @@ smooth loop `δ` in `Y`, the velocity tangent-section of `δ ∘ flatEndReparam`
 satisfies the `velCont` regularity. Via `velCont_reparam` with `σ = flatEndReparam`
 (monotone, `C²`, mapping `[0,1]` into `[0,1]`), the chain-rule input being
 `pathSpeed_flatEndReparam_comp_eq`. Feeds the interior case of each lift's `velCont`. -/
-private theorem velCont_flatEndReparam (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
+private theorem velCont_flatEndReparam {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (δ : ℝ → Y)
+    (hδ : IsClosedSmoothLoop δ) :
     ContinuousOn (fun s : ℝ => Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := Y))
         ((δ ∘ flatEndReparam) s) (pathSpeed (δ ∘ flatEndReparam) s))
       (Set.Icc 0 1) := by
@@ -1618,20 +1557,13 @@ private theorem velCont_flatEndReparam (δ : ℝ → Y) (hδ : IsClosedSmoothLoo
     rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact flatEndReparam_mem_unit s
   rw [pathSpeed_flatEndReparam_comp_eq δ s (hδ.diff (flatEndReparam s) hrt), smul_eq_mul]
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [ChartedSpace ℂ X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- **Velocity-section germ invariance.** If two paths agree near `t₀`, their velocity
 tangent-sections agree near `t₀`: the section value at `s`, `⟨γ s, pathSpeed γ s⟩`, depends
 on `γ` only through its germ at `s` (base point `γ s`, chart-pullback derivative `pathSpeed γ s`).
 Lets a lift's `velCont` be read off a locally-coinciding model path — `const` near the
 seam-flat ends, `g ∘ δr` (a local two-sided inverse `g`) in the interior. -/
-private theorem velsection_eventuallyEq_of_eventuallyEq {γ h : ℝ → X} {t₀ : ℝ}
+private theorem velsection_eventuallyEq_of_eventuallyEq {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] {γ h : ℝ → X} {t₀ : ℝ}
     (hγh : γ =ᶠ[𝓝 t₀] h) :
     (fun s : ℝ => Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s))
       =ᶠ[𝓝 t₀]
@@ -1644,31 +1576,16 @@ private theorem velsection_eventuallyEq_of_eventuallyEq {γ h : ℝ → X} {t₀
     rw [hs, (hs_nhds.fun_comp (chartAt (H := ℂ) (h s)).toFun).fderiv_eq]
   rw [hps, hs]
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- **Pointwise local velocity-section continuity under post-composition** — the
 `ContinuousWithinAt` companion of `velCont_compOn`. At a single `t₀ ∈ [0,1]`, if the base
 velocity section of `γ` is `ContinuousWithinAt` and `γ` lands in the open `C^ω`-domain `V`
 of `g` near `t₀`, then the velocity section of `g ∘ γ` is `ContinuousWithinAt`. This is what
 patches the §3 lift's `velCont` chart-by-chart: each interior point lies in some local
 two-sided inverse's domain, where the lift coincides with `g ∘ δr`. -/
-private theorem velContWithinAt_compOn (g : Y → X) {V : Set Y}
+private theorem velContWithinAt_compOn {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] (g : Y → X) {V : Set Y}
     (hg : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g V) (hVo : IsOpen V) (γ : ℝ → Y) (hγc : Continuous γ)
     {t₀ : ℝ} (ht₀ : t₀ ∈ Set.Icc (0:ℝ) 1)
     (hγV : ∀ᶠ s in 𝓝[Set.Icc (0:ℝ) 1] t₀, γ s ∈ V)
@@ -1711,15 +1628,6 @@ private theorem velContWithinAt_compOn (g : Y → X) {V : Set Y}
     exact pathSpeed_comp_eq_mfderiv_of_mdiff g γ t₀ hgmdiff hγc.continuousAt
       (hγdiff.self_of_nhdsWithin ht₀)
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- **§3 sub-piece C — the seam-flattened smooth lift.** Lifting the *reparametrized*
 loop `δ ∘ flatEndReparam` (constant near `0,1`) off the branch locus from a fibre
 point `e` yields a genuine smooth path with **zero endpoint velocity**:
@@ -1738,7 +1646,10 @@ This is the per-segment building block of the orbit construction: concatenating 
 over a monodromy orbit (zero junction velocities ⇒ `IsSmoothPath.concat`) closes the
 lift into a smooth loop. The base loop is `δ ∘ flatEndReparam`, a reparametrization of
 `δ` (its period vector is unchanged — recorded separately). -/
-theorem exists_smoothLift_flatEnd_off_branchLocus
+theorem exists_smoothLift_flatEnd_off_branchLocus {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f)
@@ -1924,7 +1835,8 @@ evaluations `i ↦ Γ i t` sweep the fibre `f⁻¹(δr t)` injectively and surje
 for every `t ∈ [0,1]`. Carrying the whole family at once (rather than local sheets)
 is what turns the projection formula into a pointwise fibre-sum identity, and the
 `t = 1` bijection is the monodromy permutation driving the orbit loops. -/
-structure MonodromyLiftFamily (f : X → Y) (δ : ℝ → Y) where
+structure MonodromyLiftFamily {X Y : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (f : X → Y) (δ : ℝ → Y) where
   /-- Number of lifts `= #fibre = #sheets`. -/
   n : ℕ
   /-- The lifts, `Γ i : ℝ → X`. -/
@@ -1943,17 +1855,12 @@ structure MonodromyLiftFamily (f : X → Y) (δ : ℝ → Y) where
   fibre_surj : ∀ t ∈ Set.Icc (0 : ℝ) 1, ∀ x : X,
     f x = δ (flatEndReparam t) → ∃ i, Γ i t = x
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **The lift count is the regular-fibre cardinality.** At `t = 0` the map
 `i ↦ Γ i 0` is a bijection from `Fin M.n` onto the fibre `f⁻¹{δ(flatEndReparam 0)}`
 (injective by `fibre_inj`, onto by `fibre_surj`), so `M.n` equals that fibre's
 `ncard`. This is what pins the cycle's sheet count to a *regular* fibre. -/
-lemma MonodromyLiftFamily.n_eq_fibre_ncard {f : X → Y} {δ : ℝ → Y}
+lemma MonodromyLiftFamily.n_eq_fibre_ncard {X Y : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {f : X → Y} {δ : ℝ → Y}
     (M : MonodromyLiftFamily f δ) :
     M.n = (f ⁻¹' {δ (flatEndReparam 0)}).ncard := by
   have h0 : (0 : ℝ) ∈ Set.Icc (0 : ℝ) 1 := Set.left_mem_Icc.mpr zero_le_one
@@ -1969,22 +1876,16 @@ lemma MonodromyLiftFamily.n_eq_fibre_ncard {f : X → Y} {δ : ℝ → Y}
     Nat.card_eq_fintype_card, Fintype.card_fin]
 
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- **Lift uniqueness on `[0,1]`.** Two continuous lifts `Γ₁, Γ₂` of the same base path `β`
 (off the branch locus) that agree at one time `t₀ ∈ [0,1]` agree on all of `[0,1]`. The
 agreement set is clopen in the connected `[0,1]`: closed as the equalizer of continuous maps
 into the `T₂` space `X`, and open because at any agreement point `Γ₁ s = Γ₂ s` the value is
 off-critical, where `f` is locally injective (`isLocalHomeoOffCritical`) — and both lifts
 project to `β`, so local injectivity forces them to coincide nearby. Drives `fibre_inj`. -/
-private theorem lift_eqOn_Icc_of_eq {f : X → Y} (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+private theorem lift_eqOn_Icc_of_eq {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] {f : X → Y} (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {β : ℝ → Y}
     (hβ : ∀ t ∈ Set.Icc (0:ℝ) 1, β t ∉ branchLocus f)
     {Γ₁ Γ₂ : ℝ → X} (hc₁ : Continuous Γ₁) (hc₂ : Continuous Γ₂)
@@ -2020,7 +1921,10 @@ seam-flattened lifts of `δ` (one per fibre point, `exists_smoothLift_flatEnd_of
 upgraded with `velCont`) assemble into a `MonodromyLiftFamily`: injectivity is lift
 uniqueness, surjectivity is constancy of the off-branch fibre cardinality along the
 connected `[0,1]` (via the local sheet system). -/
-theorem exists_monodromyLiftFamily (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+theorem exists_monodromyLiftFamily {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :
     Nonempty (MonodromyLiftFamily f δ) := by
@@ -2118,7 +2022,10 @@ the (non-critical) point `M.Γ i t` realizes `traceSummand = sheetPullback`, and
 germ identity `M.Γ i =ᶠ g ∘ δr` (same `g∘f=id`-near-the-point factorization as
 `differentiableAt_chart_lift_of_notMem_criticalSet`) turns `mfderiv g (δr t)` applied
 to the base velocity into `pathSpeed (M.Γ i) t`. -/
-private theorem traceSummand_lift_velocity_interior (f : X → Y)
+private theorem traceSummand_lift_velocity_interior {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f)
     (M : MonodromyLiftFamily f δ) (α : HolomorphicOneForms X) (i : Fin M.n) {t : ℝ}
@@ -2201,7 +2108,10 @@ private theorem traceSummand_lift_velocity_interior (f : X → Y)
 trace summands) evaluated at the base velocity reindexes, via the time-`t` bijection
 `i ↦ M.Γ i t` of `Fin M.n` onto the (finite, off-branch) fibre `f⁻¹{δr t}`, to the sum
 over the lift family of the per-sheet velocity terms. -/
-private theorem traceForm_apply_eq_sum_lift_interior (f : X → Y)
+private theorem traceForm_apply_eq_sum_lift_interior {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (_hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f)
     (M : MonodromyLiftFamily f δ) (α : HolomorphicOneForms X) {t : ℝ}
@@ -2251,7 +2161,10 @@ trace form along `δ` equals the sum, over the lift family, of the lift periods:
 the pointwise identity `traceFun f ωⱼ (δr t)(δr' t) = ∑ᵢ ωⱼ(Γ i t)(Γ i' t)` (the trace
 fibre-sum reindexed by the time-`t` bijection `i ↦ Γ i t`, each summand the pullback
 covector with `(mfderiv f)⁻¹ (δr' t) = pathSpeed (Γ i) t`). -/
-theorem lineIntegral_traceFormTotal_eq_sum_periodVec (f : X → Y)
+theorem lineIntegral_traceFormTotal_eq_sum_periodVec {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f)
     (M : MonodromyLiftFamily f δ) (j : Fin (genus X)) :
@@ -2304,7 +2217,10 @@ chart-local representation `f_loc = chartY ∘ f ∘ chartX.symm` (holomorphic �
 `restrictScalars`, as in `differentiableAt_chart_lift_of_notMem_criticalSet`); `velCont` by
 `velCont_comp`. The orbit loops push to multiples of `δ`, so `f ∘ (orbit loop)` must be a
 smooth path for the period accounting. -/
-theorem IsSmoothPath.comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+theorem IsSmoothPath.comp {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     {P Q : X} {γ : ℝ → X} (hγ : IsSmoothPath P Q γ) :
     IsSmoothPath (f P) (f Q) (f ∘ γ) where
   start := by simp [Function.comp_apply, hγ.start]
@@ -2345,49 +2261,31 @@ theorem IsSmoothPath.comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f
       (fun s hs => hγ.diff s (by rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact hs))
       hγ.velCont
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- **Each lift pushes to `δ`'s period.** Since `f ∘ Γ i = δ ∘ flatEndReparam` on `[0,1]`
 and the period is `flatEndReparam`-invariant. -/
-private theorem periodVec_comp_lift (f : X → Y) (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ)
+private theorem periodVec_comp_lift {X Y : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (δ : ℝ → Y)
+    (hδ : IsClosedSmoothLoop δ)
     (M : MonodromyLiftFamily f δ) (i : Fin M.n) :
     periodVec (f ∘ M.Γ i) = periodVec δ := by
   rw [periodVec_congr_of_eqOn (M.lifts i)]
   exact periodVec_comp_flatEndReparam δ hδ
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- **Orbit chain.** `concatPow σ k i` concatenates the lifts `Γ i, Γ (σ i), …, Γ (σ^k i)`
 — a path from `Γ i 0` to `Γ (σ^k i) 1 = Γ (σ^{k+1} i) 0`. The orbit loop is `concatPow`
 to the orbit length minus one (then start `= finish`). -/
-private noncomputable def concatPow (f : X → Y) (δ : ℝ → Y) (M : MonodromyLiftFamily f δ)
+private noncomputable def concatPow {X Y : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (f : X → Y) (δ : ℝ → Y) (M : MonodromyLiftFamily f δ)
     (σ : Equiv.Perm (Fin M.n)) : ℕ → Fin M.n → (ℝ → X)
   | 0, i => M.Γ i
   | (k+1), i => Jacobians.concat (M.Γ i) (concatPow f δ M σ k (σ i))
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- `concatPow σ k i` is a smooth path `Γ i 0 → Γ (σ^k i) 1` with zero endpoint velocities
 (so consecutive chains and the final closure glue with `IsSmoothPath.concat`). -/
-private theorem concatPow_isSmoothPath (f : X → Y) (δ : ℝ → Y) (M : MonodromyLiftFamily f δ)
+private theorem concatPow_isSmoothPath {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : X → Y) (δ : ℝ → Y) (M : MonodromyLiftFamily f δ)
     (σ : Equiv.Perm (Fin M.n)) (hσ : ∀ i, M.Γ (σ i) 0 = M.Γ i 1) :
     ∀ (k : ℕ) (i : Fin M.n),
       IsSmoothPath (M.Γ i 0) (M.Γ ((σ^k) i) 1) (concatPow f δ M σ k i)
@@ -2428,24 +2326,10 @@ private theorem concatPow_isSmoothPath (f : X → Y) (δ : ℝ → Y) (M : Monod
           (by rw [show (2:ℝ) * 1 - 1 = 1 from by norm_num]; exact ih_sp'.diff 1 hmem1),
         show (2:ℝ) * 1 - 1 = 1 from by norm_num, _ih_v1, mul_zero]
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- `periodVec` of the orbit chain is the sum of the lift periods over `Γ i, …, Γ (σ^k i)`. -/
-private theorem concatPow_periodVec (f : X → Y) (δ : ℝ → Y) (M : MonodromyLiftFamily f δ)
+private theorem concatPow_periodVec {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (f : X → Y) (δ : ℝ → Y)
+    (M : MonodromyLiftFamily f δ)
     (σ : Equiv.Perm (Fin M.n)) (hσ : ∀ i, M.Γ (σ i) 0 = M.Γ i 1) :
     ∀ (k : ℕ) (i : Fin M.n),
       periodVec (concatPow f δ M σ k i) = ∑ j ∈ Finset.range (k+1), periodVec (M.Γ ((σ^j) i)) := by
@@ -2461,17 +2345,11 @@ private theorem concatPow_periodVec (f : X → Y) (δ : ℝ → Y) (M : Monodrom
         Finset.sum_range_succ' (fun j => periodVec (M.Γ ((σ ^ j) i))) (k+1)]
     exact add_comm _ _
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- `f ∘ (orbit chain)` pushes to `(k+1) • periodVec δ` (it traverses `δ` `k+1` times). -/
-private theorem comp_concatPow_periodVec (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+private theorem comp_concatPow_periodVec {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (M : MonodromyLiftFamily f δ)
     (σ : Equiv.Perm (Fin M.n)) (hσ : ∀ i, M.Γ (σ i) 0 = M.Γ i 1) :
     ∀ (k : ℕ) (i : Fin M.n),
@@ -2497,17 +2375,12 @@ private theorem comp_concatPow_periodVec (f : X → Y) (hf : ContMDiff 𝓘(ℂ)
       show (k+1+1) • periodVec δ = periodVec δ + (k+1) • periodVec δ by
         rw [add_comm, add_smul, one_smul]]
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-
 /-- **The monodromy permutation.** `σ i` is the unique index with `Γ (σ i) 0 = Γ i 1`
 (both endpoints lie in the fibre over `δ 0`): existence by `fibre_surj` at `t = 1`,
 injectivity by `fibre_inj` at `t = 1`, bijective since `Fin M.n` is finite. -/
-private theorem exists_monodromyPerm (f : X → Y) (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ)
+private theorem exists_monodromyPerm {X Y : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (f : X → Y)
+    (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ)
     (M : MonodromyLiftFamily f δ) :
     ∃ σ : Equiv.Perm (Fin M.n), ∀ i, M.Γ (σ i) 0 = M.Γ i 1 := by
   classical
@@ -2527,15 +2400,6 @@ private theorem exists_monodromyPerm (f : X → Y) (δ : ℝ → Y) (hδ : IsClo
     exact M.fibre_inj 1 h1 this
   have hg_bij : Function.Bijective g := (Finite.injective_iff_bijective).mp hg_inj
   exact ⟨Equiv.ofBijective g hg_bij, fun i => by simp only [Equiv.ofBijective_apply]; exact hg i⟩
-
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- After `orderOf (σ.cycleOf e)` steps, `σ` returns `e` to itself (orbit closes). -/
 private theorem perm_pow_orderOf_cycleOf_apply_self {N : ℕ} (σ : Equiv.Perm (Fin N)) (e : Fin N) :
@@ -2657,7 +2521,10 @@ the orbits of the monodromy permutation `σ i := the index with Γ (σ i) 0 = Γ
 the two identities: `∑ orbit-periods = ∑ᵢ periodVec(Γ i)` (orbit partition +
 `periodVec_concat_of_smooth`), and `∑ periodVec(f ∘ loop) = M.n • periodVec δ`
 (each `f ∘ Γ i = δr` so each orbit pushes to `(orbit length) • periodVec δ`). -/
-theorem exists_orbitLoops_of_monodromyLiftFamily (f : X → Y)
+theorem exists_orbitLoops_of_monodromyLiftFamily {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ)
     (M : MonodromyLiftFamily f δ) :
     ∃ (m : ℕ) (loops : Fin m → ℝ → X) (coeffs : Fin m → ℤ),
@@ -2718,7 +2585,10 @@ Ingredients:
   change-of-variables for *integrable* integrands), with the lifts' integrability from the
   C¹ loop predicate (`IsClosedSmoothLoop` carries `velCont`; a local-section lift `g∘δr`
   gets its `velCont` from `velCont_compOn`, whence `integrable`). -/
-theorem exists_preimageLoopFamily (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+theorem exists_preimageLoopFamily {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :
     ∃ (m : ℕ) (loops : Fin m → ℝ → X) (coeffs : Fin m → ℤ) (sheets : ℕ),
@@ -2748,7 +2618,10 @@ line-integral form `∫_δ trace(ωⱼ)` to the ambient pullback
 `(ambientPullbackJac f hf (periodVec δ))ⱼ` via the bridge
 `ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal`
 (integrability supplied by `hδ.integrable`). -/
-theorem exists_preimageCycle_of_off_branchLocus (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+theorem exists_preimageCycle_of_off_branchLocus {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :
     Nonempty (PreimageCycle f hf δ) := by
@@ -2766,7 +2639,10 @@ theorem exists_preimageCycle_of_off_branchLocus (f : X → Y) (hf : ContMDiff �
 (the only places `δ` enters the data are the pullback/pushforward identities,
 whose `δ`-dependence is exactly through `periodVec δ`). Transporting along a
 period-vector equality reuses the same loops/coeffs. -/
-def PreimageCycle.congr_periodVec {f : X → Y} {hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f}
+def PreimageCycle.congr_periodVec {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y]
+    [IsManifold 𝓘(ℂ) ω Y] {f : X → Y} {hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f}
     {δ δ' : ℝ → Y} (h : periodVec δ = periodVec δ') (c : PreimageCycle f hf δ') :
     PreimageCycle f hf δ where
   n := c.n
@@ -2780,7 +2656,10 @@ def PreimageCycle.congr_periodVec {f : X → Y} {hf : ContMDiff 𝓘(ℂ) 𝓘(�
 /-- `exists_preimageCycle_of_nonconstant`, assembled: homotope `δ`
 off the branch locus, lift it to a preimage cycle, and transport back
 along the period-vector equality (`congr_periodVec`). -/
-theorem exists_preimageCycle_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+theorem exists_preimageCycle_of_nonconstant {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
     Nonempty (PreimageCycle f hf δ) := by
@@ -2788,30 +2667,16 @@ theorem exists_preimageCycle_of_nonconstant (f : X → Y) (hf : ContMDiff 𝓘(�
   obtain ⟨c⟩ := exists_preimageCycle_of_off_branchLocus f hf hnonconst δ' hδ' havoid
   exact ⟨PreimageCycle.congr_periodVec hpv.symm c⟩
 
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X]
-
 /-- A value off the branch locus is off the (defeq) general critical-value set
 `criticalValuesGeneral`. (`branchLocus f = f '' criticalSet f =
 f '' criticalSetGeneral f = criticalValuesGeneral f` by definition.) -/
-theorem notMem_criticalValuesGeneral_of_notMem_branchLocus {f : X → Y} {y : Y}
+theorem notMem_criticalValuesGeneral_of_notMem_branchLocus {X Y : Type*} [TopologicalSpace X]
+    {f : X → Y} {y : Y}
     (h : y ∉ branchLocus f) :
     y ∉ Jacobians.Discharge.Manifold.criticalValuesGeneral f := by
   unfold branchLocus criticalSet at h
   unfold Jacobians.Discharge.Manifold.criticalValuesGeneral
   exact h
-
-end
-
-section
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [Nonempty Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
 /-- **Strengthened off-branch cycle.** Beyond the `PreimageCycle`, returns a
 *regular value* `y₀` (off the branch locus) whose fibre has cardinality equal
@@ -2819,7 +2684,10 @@ to the cycle's `sheets`. This exposes `sheets = #(regular fibre)`, the bridge
 identifying `sheets` with the analytic degree `degreeFiber`. Built exactly like
 `exists_preimageCycle_of_off_branchLocus`, but keeping the monodromy family `M`
 in scope so its `n = #fibre` (`M.n_eq_fibre_ncard`) can be read off. -/
-theorem exists_preimageCycle_sheets_eq_fibreCard_of_off_branchLocus
+theorem exists_preimageCycle_sheets_eq_fibreCard_of_off_branchLocus {X Y : Type*}
+    [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+    [ConnectedSpace Y] [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) (havoid : ∀ t : ℝ, δ t ∉ branchLocus f) :
@@ -2845,7 +2713,10 @@ theorem exists_preimageCycle_sheets_eq_fibreCard_of_off_branchLocus
 `exists_preimageCycle_sheets_eq_fibreCard_of_off_branchLocus` with the
 off-branch homotopy; `congr_periodVec` carries `sheets` (and hence the
 fibre-cardinality identity) across. -/
-theorem exists_preimageCycle_sheets_eq_fibreCard_of_nonconstant
+theorem exists_preimageCycle_sheets_eq_fibreCard_of_nonconstant {X Y : Type*} [TopologicalSpace X]
+    [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
@@ -2865,7 +2736,10 @@ in `truePeriodLattice X`. Case-splits on constancy of `f`:
 * If `f` is non-constant, extract a preimage cycle witness via
   `exists_preimageCycle_of_nonconstant`, then apply the algebraic reduction
   `ambientPullbackJac_periodVec_mem_truePeriodLattice_of_preimageCycle`. -/
-theorem ambientPullbackJac_periodVec_mem_truePeriodLattice
+theorem ambientPullbackJac_periodVec_mem_truePeriodLattice {X Y : Type*} [TopologicalSpace X]
+    [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (δ : ℝ → Y) (hδ : IsClosedSmoothLoop δ) :
     ambientPullbackJac (gX := genus X) (gY := genus Y) f hf (periodVec δ) ∈
@@ -2883,7 +2757,10 @@ theorem ambientPullbackJac_periodVec_mem_truePeriodLattice
 lattice. Reduces to `ambientPullbackJac_periodVec_mem_truePeriodLattice` on
 closed-loop generators, extended to the ℤ-span by `Submodule.span_induction` and
 ℤ-linearity. Discharges `Jacobian.ambientPullbackJac_preserves_lattice`. -/
-theorem ambientPullbackJac_preserves_truePeriodLattice
+theorem ambientPullbackJac_preserves_truePeriodLattice {X Y : Type*} [TopologicalSpace X]
+    [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [Nonempty Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     (truePeriodLattice Y).toAddSubgroup ≤
       (truePeriodLattice X).toAddSubgroup.comap
@@ -2909,5 +2786,4 @@ theorem ambientPullbackJac_preserves_truePeriodLattice
     exact Submodule.smul_mem _ r hx
 
 
-end
 end Jacobians

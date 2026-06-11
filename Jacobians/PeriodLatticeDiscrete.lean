@@ -33,12 +33,10 @@ open Jacobians.OfCurveSkeleton Jacobians.Dolbeault
 
 namespace Jacobians
 
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X]
-
 /-- Pairwise-disjoint open neighbourhoods of an injective finite family (T2 separation,
 intersected over the off-diagonal pairs). -/
-theorem exists_pairwise_disjoint_opens {n : ℕ} {a : Fin n → X} (ha : Function.Injective a) :
+theorem exists_pairwise_disjoint_opens {X : Type*} [TopologicalSpace X] [T2Space X] {n : ℕ}
+    {a : Fin n → X} (ha : Function.Injective a) :
     ∃ O : Fin n → Set X, (∀ j, IsOpen (O j)) ∧ (∀ j, a j ∈ O j) ∧
       ∀ j k, j ≠ k → Disjoint (O j) (O k) := by
   classical
@@ -67,10 +65,6 @@ theorem exists_pairwise_disjoint_opens {n : ℕ} {a : Fin n → X} (ha : Functio
       have := Set.mem_iInter₂.mp hx j (Finset.mem_erase.mpr ⟨hjk, Finset.mem_univ j⟩)
       exact this.2
     exact Set.disjoint_of_subset hsub1 hsub2 (hdisj j k hjk)
-
-set_option maxHeartbeats 2000000 in
-
-end
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -119,6 +113,7 @@ theorem pathPrimValue_congr_curve {η : HolomorphicOneForms X} {γ₁ γ₂ : �
 
 /-! ### Forster 21.4(b): isolation of the lattice at the origin -/
 
+set_option maxHeartbeats 2000000 in
 /-- **Forster 21.4(b): the period lattice is isolated at `0`.**  There is a neighbourhood
 of `0 ∈ ℂ^g` meeting the period lattice only in `0`. -/
 theorem truePeriodLattice_isolated_zero :
