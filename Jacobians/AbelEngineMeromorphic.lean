@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-5 (E4): the meromorphic solution `F = e⁻ᵘ·f` (Forster 20.7 (a))
+# The Abel meromorphic solution `F = e⁻ᵘ·f` (Forster 20.7 (a))
 
 The exp-correction of the chain weak solution: with `σ_G = ∂̄u` (the σ layer), the function
 `F := e⁻ᵘ·G` is genuinely meromorphic with divisor `∂c`:
@@ -18,14 +18,13 @@ The exp-correction of the chain weak solution: with `σ_G = ∂̄u` (the σ laye
   periods bounds a principal divisor: `∃ f, f.div = ∂c`.
 
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 20.7 proof part (a)
-(p. 164); plan `docs/walls_bc_plan_2026-06-10.md`, phase C-5 (E4).
+(p. 164).
 -/
 import Jacobians.AbelEngineSigma
 
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology Real
 open Set Filter Complex MeasureTheory Metric
@@ -67,7 +66,7 @@ set_option maxHeartbeats 2000000 in
 /-- **The Abel engine** (Forster 20.7, sufficiency): a 1-chain whose basis periods all
 vanish bounds a principal divisor — there is a meromorphic function with `div f = ∂c`,
 together with its centred local normal form `f̂ = H·(w − w₀)^{∂c(a)}` (analytic
-nonvanishing `H`) at every point — the Laurent data the discreteness argument (B-4)
+nonvanishing `H`) at every point — the Laurent data the discreteness argument
 reads residues from. -/
 theorem exists_meromorphic_of_oneChain (c : OneChain X)
     (hper : ∀ i : Fin (genus X), c.period (periodBasisForm X i) = 0) :

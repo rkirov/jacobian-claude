@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-3 (pairing layer): the `∬_X σ∧ω` pairing atom (Forster 19.10)
+# The `∬_X σ∧ω` pairing atom (Forster 19.10)
 
 The global pairing of a smooth `(0,1)`-form `g` against a holomorphic 1-form `η`, realised
 as a PoU-weighted finite sum of planar chart integrals over the fixed Montel chart cover —
@@ -22,8 +22,7 @@ Contents:
   inside one chart window, the PoU sum collapses to a single un-weighted chart integral
   (transport + `∑ρⱼ = 1`).
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §19 (pp. 153–157);
-plan `docs/walls_bc_plan_2026-06-10.md`, phase C-3 (E3b).
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §19 (pp. 153–157).
 -/
 import Jacobians.AbelFormRead
 import Jacobians.Dolbeault.ResidueStokesCoverPoU
@@ -32,7 +31,6 @@ import Jacobians.Dolbeault.PlanarHolomorphicChangeOfVariables
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open Set Filter Complex MeasureTheory
@@ -42,8 +40,9 @@ namespace Jacobians.Dolbeault.AbelPairing
 
 open Jacobians.Dolbeault Jacobians
 
+section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The pairing integrand -/
 
@@ -66,7 +65,7 @@ def KillsAt (P : X → ℂ) (g : SmoothCOneForms X) (x : X) : Prop :=
 
 theorem pairingIntegrand_eq_zero_of_killsAt {g : SmoothCOneForms X}
     {η : HolomorphicOneForms X} {P : X → ℂ} {y : X} {V : Set X}
-    (hV : V ⊆ (chartAt (H := ℂ) y).source) {z : ℂ}
+    (_hV : V ⊆ (chartAt (H := ℂ) y).source) {z : ℂ}
     (hz : z ∈ (chartAt (H := ℂ) y) '' V → KillsAt P g ((chartAt (H := ℂ) y).symm z)) :
     pairingIntegrand g η P y V z = 0 := by
   rw [pairingIntegrand]
@@ -253,8 +252,15 @@ theorem integral_pairingIntegrand_transport {g : SmoothCOneForms X}
 def coverWindow (j : Fin ((chartCover : Finset X).card)) : Set X :=
   chartOpen (X := X) (coverCenter j)
 
-theorem coverWindow_isOpen (j : Fin ((chartCover : Finset X).card)) :
+end
+
+theorem coverWindow_isOpen {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ChartedSpace ℂ X] (j : Fin ((chartCover : Finset X).card)) :
     IsOpen (coverWindow (X := X) j) := chartOpen_isOpen _
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 theorem coverWindow_subset_source (j : Fin ((chartCover : Finset X).card)) :
     coverWindow (X := X) j ⊆ (chartAt (H := ℂ) (coverCenter j)).source :=
@@ -499,4 +505,7 @@ theorem pairForm_eq_singleChart {g : SmoothCOneForms X} (hg : g ∈ OneFormsZero
     rw [Finset.sum_congr rfl fun j _ => hzero j, Finset.sum_const_zero,
       pairingIntegrand, if_neg hzW]
 
+end
+
 end Jacobians.Dolbeault.AbelPairing
+

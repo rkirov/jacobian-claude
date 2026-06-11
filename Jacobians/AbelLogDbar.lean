@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-3 (logDbar layer): the global `(0,1)`-datum `σ_f = d″f/f` (Forster 20.2)
+# The Abel logarithmic ∂̄-datum: the global `(0,1)`-datum `σ_f = d″f/f` (Forster 20.2)
 
 For a weak solution `F` of a divisor `D`, the logarithmic `∂̄`-datum is, at each point `x`,
 `(ψ_x x)⁻¹ • ∂̄ψ_x|_x` with `ψ_x = F.unit x` the centred local unit — smooth ACROSS the
@@ -22,8 +22,7 @@ Also provides `exists_smoothCFunction_eventuallyEq`, the bump-glued global exten
 locally-smooth function (the device that turns local units into global `SmoothCFunctions`
 for the section-smoothness argument).
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.1–20.2 (pp. 159–160);
-plan `docs/walls_bc_plan_2026-06-10.md`, phase C-3.
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.1–20.2 (pp. 159–160).
 -/
 import Jacobians.AbelFormRead
 import Jacobians.AbelWeakSolutions
@@ -31,15 +30,15 @@ import Jacobians.AbelWeakSolutions
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open Set Filter Complex Jacobians.Dolbeault
 
 namespace Jacobians
 
+section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The global smooth extension of a locally-smooth function -/
 
@@ -111,8 +110,13 @@ theorem exists_smoothCFunction_eventuallyEq {w : X → ℂ} {V : Set X} (hV : Is
 
 /-! ### The logarithmic `∂̄`-fiber of a weak solution -/
 
+end
+
 namespace WeakSolution
 
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 variable {D D₁ D₂ : Divisor X}
 
 /-- **The logarithmic `∂̄`-fiber** of a weak solution at `x`: `(ψ_x x)⁻¹ • ∂̄ψ_x|_x` with
@@ -170,10 +174,18 @@ theorem logDbarFiber_eventuallyEq (F : WeakSolution D) (a : X) :
         module
     _ = (F.unit a x)⁻¹ • proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (F.unit a) x) := by rw [hcoeff]
 
+end
+
 /-- The logarithmic fiber is `(0,1)` (fixed by `proj01`). -/
-theorem proj01_logDbarFiber (F : WeakSolution D) (x : X) :
+theorem proj01_logDbarFiber {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {D : Divisor X} (F : WeakSolution D) (x : X) :
     proj01 (F.logDbarFiber x) = F.logDbarFiber x := by
   rw [logDbarFiber, proj01_smul, proj01_idempotent]
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {D D₁ D₂ : Divisor X}
 
 /-- **Smoothness of the logarithmic fiber section**: near each `a`, replace `ψ_a` by a
 bump-glued global smooth function and use the smoothness of `(u⁻¹) • ∂̄u`. -/
@@ -310,10 +322,18 @@ theorem logDbarFiber_inv (F : WeakSolution D) (x : X) :
   rw [inv_inv, logDbarFiber]
   exact eq_neg_of_add_eq_zero_left hrel
 
+end
+
 /-- Recasting along a divisor equality does not change the fiber. -/
-theorem logDbarFiber_recast (h : D₁ = D₂) (F : WeakSolution D₁) (x : X) :
+theorem logDbarFiber_recast {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {D₁ D₂ : Divisor X} (h : D₁ = D₂) (F : WeakSolution D₁) (x : X) :
     (F.recast h).logDbarFiber x = F.logDbarFiber x := by
   cases h; rfl
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {D D₁ D₂ : Divisor X}
 
 /-- `σ_{f^n} = n·σ_f` for natural powers (pointwise). -/
 theorem logDbarFiber_pow (F : WeakSolution D) (n : ℕ) (x : X) :
@@ -377,6 +397,8 @@ theorem read01_logDbar_of_coeff_zero (F : WeakSolution D) {y x : X}
         (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) y) x) (1 : ℂ)) = _
   congr 1
   exact Dolbeault.AbelPairing.read01_proj01_mfderiv hx (hsm.mdifferentiableAt (by simp))
+
+end
 
 end WeakSolution
 

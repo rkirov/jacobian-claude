@@ -26,7 +26,6 @@ import Mathlib.Analysis.Complex.OpenMapping
 open scoped Manifold ContDiff Topology
 open Jacobians.OfCurveSkeleton
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 
@@ -81,7 +80,7 @@ theorem exists_re_dotProduct_repr {n : ℕ} (l : (Fin n → ℂ) →ₗ[ℝ] ℝ
     · show (Pi.single j z : Fin n → ℂ) k
         = (z.re • (Pi.single j (1 : ℂ) : Fin n → ℂ) + z.im • (Pi.single j Complex.I : Fin n → ℂ)) k
       simp only [Pi.single_eq_of_ne hk, Pi.add_apply, Pi.smul_apply, Complex.real_smul,
-        mul_zero, smul_zero, add_zero]
+        mul_zero, add_zero]
   have hv : v = ∑ j, (Pi.single j (v j) : Fin n → ℂ) :=
     (Finset.univ_sum_single v).symm
   calc (∑ j, ((l (e j) : ℂ) - (l (f j) : ℂ) * Complex.I) * v j).re

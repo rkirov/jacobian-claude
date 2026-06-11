@@ -8,16 +8,15 @@ Authors: Rado Kirov
 The period lattice is isolated at `0`: there is a neighbourhood `W ∈ 𝓝 0` of `ℂ^g`
 meeting `truePeriodLattice X` only in `0`.
 
-Forster's argument: `W` is the image of the local Jacobi map `G` (B-2, the IFT); a nonzero
-lattice point `t = G(z) ∈ W` yields a 1-chain — chart segments `aⱼ → xⱼ` minus the loop
-combination realizing `t` — with ALL basis periods zero, so the **Abel engine** (C-5)
-produces a meromorphic `f` with `div f = ∑ⱼ(xⱼ − aⱼ)`: simple poles at the `aⱼ` (those with
-`xⱼ ≠ aⱼ`) with nonvanishing leading Laurent coefficients.  The **residue theorem** applied
-to each `f·ωᵢ` gives `A·c = 0` for the evaluation matrix `A = (ωᵢ(aⱼ))` and the residue
-vector `c ≠ 0` — contradicting `det A ≠ 0` (B-1).
+Forster's argument: `W` is the image of the local Jacobi map `G` (the inverse function
+theorem); a nonzero lattice point `t = G(z) ∈ W` yields a 1-chain — chart segments
+`aⱼ → xⱼ` minus the loop combination realizing `t` — with *all* basis periods zero, so the
+Abel machinery produces a meromorphic `f` with `div f = ∑ⱼ(xⱼ − aⱼ)`: simple poles at the
+`aⱼ` (those with `xⱼ ≠ aⱼ`) with nonvanishing leading Laurent coefficients.  The residue
+theorem applied to each `f·ωᵢ` gives `A·c = 0` for the evaluation matrix `A = (ωᵢ(aⱼ))` and
+the residue vector `c ≠ 0` — contradicting `det A ≠ 0`.
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.4(b) (p. 169);
-plan `docs/walls_bc_plan_2026-06-10.md`, phase B-4.
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.4(b) (p. 169).
 -/
 import Jacobians.AbelEngineMeromorphic
 import Jacobians.AbelChains
@@ -27,13 +26,51 @@ import Jacobians.Dolbeault.SerreResidueRamifiedRealSlitGeometry
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open Set Filter Complex Metric
 open Jacobians.OfCurveSkeleton Jacobians.Dolbeault
 
 namespace Jacobians
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X]
+
+/-- Pairwise-disjoint open neighbourhoods of an injective finite family (T2 separation,
+intersected over the off-diagonal pairs). -/
+theorem exists_pairwise_disjoint_opens {n : ℕ} {a : Fin n → X} (ha : Function.Injective a) :
+    ∃ O : Fin n → Set X, (∀ j, IsOpen (O j)) ∧ (∀ j, a j ∈ O j) ∧
+      ∀ j k, j ≠ k → Disjoint (O j) (O k) := by
+  classical
+  have hpair : ∀ j k : Fin n, j ≠ k → ∃ uv : Set X × Set X,
+      IsOpen uv.1 ∧ IsOpen uv.2 ∧ a j ∈ uv.1 ∧ a k ∈ uv.2 ∧ Disjoint uv.1 uv.2 := by
+    intro j k hjk
+    obtain ⟨u, v, hu, hv, hau, hav, huv⟩ := t2_separation (fun h => hjk (ha h))
+    exact ⟨(u, v), hu, hv, hau, hav, huv⟩
+  choose! uv huv1 huv2 hauv havuv hdisj using hpair
+  refine ⟨fun j => ⋂ k ∈ (Finset.univ.erase j), ((uv j k).1 ∩ (uv k j).2), ?_, ?_, ?_⟩
+  · intro j
+    refine isOpen_biInter_finset fun k hk => ?_
+    have hkj : k ≠ j := (Finset.mem_erase.mp hk).1
+    exact (huv1 j k (Ne.symm hkj)).inter (huv2 k j hkj)
+  · intro j
+    refine Set.mem_biInter fun k hk => ?_
+    have hkj : k ≠ j := (Finset.mem_erase.mp hk).1
+    exact ⟨hauv j k (Ne.symm hkj), havuv k j hkj⟩
+  · intro j k hjk
+    have hsub1 : (⋂ l ∈ (Finset.univ.erase j), ((uv j l).1 ∩ (uv l j).2)) ⊆ (uv j k).1 := by
+      intro x hx
+      have := Set.mem_iInter₂.mp hx k (Finset.mem_erase.mpr ⟨Ne.symm hjk, Finset.mem_univ k⟩)
+      exact this.1
+    have hsub2 : (⋂ l ∈ (Finset.univ.erase k), ((uv k l).1 ∩ (uv l k).2)) ⊆ (uv j k).2 := by
+      intro x hx
+      have := Set.mem_iInter₂.mp hx j (Finset.mem_erase.mpr ⟨hjk, Finset.mem_univ j⟩)
+      exact this.2
+    exact Set.disjoint_of_subset hsub1 hsub2 (hdisj j k hjk)
+
+set_option maxHeartbeats 2000000 in
+
+end
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -80,41 +117,8 @@ theorem pathPrimValue_congr_curve {η : HolomorphicOneForms X} {γ₁ γ₂ : �
   subst h
   rfl
 
-/-! ### Pairwise-disjoint chart-ball data at the base points -/
+/-! ### Forster 21.4(b): isolation of the lattice at the origin -/
 
-/-- Pairwise-disjoint open neighbourhoods of an injective finite family (T2 separation,
-intersected over the off-diagonal pairs). -/
-theorem exists_pairwise_disjoint_opens {n : ℕ} {a : Fin n → X} (ha : Function.Injective a) :
-    ∃ O : Fin n → Set X, (∀ j, IsOpen (O j)) ∧ (∀ j, a j ∈ O j) ∧
-      ∀ j k, j ≠ k → Disjoint (O j) (O k) := by
-  classical
-  have hpair : ∀ j k : Fin n, j ≠ k → ∃ uv : Set X × Set X,
-      IsOpen uv.1 ∧ IsOpen uv.2 ∧ a j ∈ uv.1 ∧ a k ∈ uv.2 ∧ Disjoint uv.1 uv.2 := by
-    intro j k hjk
-    obtain ⟨u, v, hu, hv, hau, hav, huv⟩ := t2_separation (fun h => hjk (ha h))
-    exact ⟨(u, v), hu, hv, hau, hav, huv⟩
-  choose! uv huv1 huv2 hauv havuv hdisj using hpair
-  refine ⟨fun j => ⋂ k ∈ (Finset.univ.erase j), ((uv j k).1 ∩ (uv k j).2), ?_, ?_, ?_⟩
-  · intro j
-    refine isOpen_biInter_finset fun k hk => ?_
-    have hkj : k ≠ j := (Finset.mem_erase.mp hk).1
-    exact (huv1 j k (Ne.symm hkj)).inter (huv2 k j hkj)
-  · intro j
-    refine Set.mem_biInter fun k hk => ?_
-    have hkj : k ≠ j := (Finset.mem_erase.mp hk).1
-    exact ⟨hauv j k (Ne.symm hkj), havuv k j hkj⟩
-  · intro j k hjk
-    have hsub1 : (⋂ l ∈ (Finset.univ.erase j), ((uv j l).1 ∩ (uv l j).2)) ⊆ (uv j k).1 := by
-      intro x hx
-      have := Set.mem_iInter₂.mp hx k (Finset.mem_erase.mpr ⟨Ne.symm hjk, Finset.mem_univ k⟩)
-      exact this.1
-    have hsub2 : (⋂ l ∈ (Finset.univ.erase k), ((uv k l).1 ∩ (uv l k).2)) ⊆ (uv j k).2 := by
-      intro x hx
-      have := Set.mem_iInter₂.mp hx j (Finset.mem_erase.mpr ⟨hjk, Finset.mem_univ j⟩)
-      exact this.2
-    exact Set.disjoint_of_subset hsub1 hsub2 (hdisj j k hjk)
-
-set_option maxHeartbeats 2000000 in
 /-- **Forster 21.4(b): the period lattice is isolated at `0`.**  There is a neighbourhood
 of `0 ∈ ℂ^g` meeting the period lattice only in `0`. -/
 theorem truePeriodLattice_isolated_zero :

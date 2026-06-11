@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-5 (σ layer): the chain `∂̄`-datum and its `∂̄`-potential
+# The Abel chain `∂̄`-datum and its `∂̄`-potential
 
 Given a 1-chain `c` with all basis periods zero, the total weak solution `G` of `∂c`
 (the `zpow`-fold of the per-curve solutions) has `∂̄`-datum `σ_G = d″G/G` pairing to zero
@@ -17,8 +17,7 @@ against every basis form — so by the kill theorem (Forster 19.10) `σ_G = ∂�
   (Forster 20.5's identity through the subdivision product);
 * `exists_dbar_potential_of_oneChain` — the assembled `σ_G = ∂̄u`.
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.5–20.7 (pp. 162–165);
-plan `docs/walls_bc_plan_2026-06-10.md`, phase C-5.
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.5–20.7 (pp. 162–165).
 -/
 import Jacobians.AbelDbarKill
 import Jacobians.AbelLogDbar
@@ -27,7 +26,6 @@ import Jacobians.AbelCurveSolution
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology Real
 open Set Filter Complex MeasureTheory Metric
@@ -37,42 +35,7 @@ namespace Jacobians
 
 open Jacobians.Dolbeault Jacobians.Dolbeault.AbelPairing
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-/-! ### The planar `U = F⁻¹·∂̄F` identity -/
-
-/-- Away from the two endpoints, the planar `∂̄`-datum is the logarithmic `∂̄` of the piece
-solution: `U = F⁻¹·∂̄F`. -/
-theorem AbelPlanar.PlanarPieceSolution.inv_mul_dbar_F {c₀ α β : ℂ} {ρ : ℝ}
-    (S : PlanarPieceSolution c₀ ρ α β) {z : ℂ} (hzα : z ≠ α) (hzβ : z ≠ β) :
-    (S.F z)⁻¹ * DbarDisk.dbar S.F z = S.U z := by
-  set r : ℂ → ℂ := fun w => (w - β) / (w - α) with hr
-  have hF : S.F = fun w => S.W w * r w := by
-    funext w
-    rw [PlanarPieceSolution.F, hr, mul_div_assoc]
-  have hrd : DifferentiableAt ℂ r z :=
-    (differentiableAt_id.sub_const β).div (differentiableAt_id.sub_const α)
-      (sub_ne_zero.mpr hzα)
-  have hdbar : DbarDisk.dbar S.F z = r z * DbarDisk.dbar S.W z := by
-    rw [hF, DbarDisk.dbar_fun_mul ((S.smooth.differentiable (by simp)) z)
-      (hrd.restrictScalars ℝ), DbarDisk.dbar_eq_zero_of_differentiableAt hrd]
-    ring
-  have hFz : S.F z = S.W z * r z := by rw [hF]
-  have hWz : S.W z ≠ 0 := S.ne_zero z
-  have hrz : r z ≠ 0 := div_ne_zero (sub_ne_zero.mpr hzβ) (sub_ne_zero.mpr hzα)
-  rw [hdbar, hFz, PlanarPieceSolution.U]
-  field_simp
-
-/-! ### The coefficient-free fiber and the product rule -/
-
-/-- Off the divisor the logarithmic fiber is `f⁻¹·∂̄f` directly. -/
-theorem WeakSolution.logDbarFiber_eq_of_coeff_zero {D : Divisor X} (F : WeakSolution D)
-    {x : X} (hD : D x = 0) :
-    F.logDbarFiber x
-      = (F.toFun x)⁻¹ • Dolbeault.proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) F.toFun x) := by
-  have hgerm : F.unit x =ᶠ[𝓝 x] F.toFun := (F.toFun_eventuallyEq_unit hD).symm
-  rw [WeakSolution.logDbarFiber, hgerm.mfderiv_eq, hgerm.eq_of_nhds]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- The two-factor logarithmic-`∂̄` product rule (function form of `logDbarFiber_mul`). -/
 theorem proj01_logDeriv_mul {f g : X → ℂ} {x : X}
@@ -139,6 +102,42 @@ theorem proj01_logDeriv_prod {x : X} (n : ℕ) (f : ℕ → X → ℂ)
       proj01_logDeriv_mul hsm (hf m (by omega)) hs0 (hf0 m (by omega)),
       ih (fun k hk => hf k (by omega)) (fun k hk => hf0 k (by omega)),
       Finset.sum_range_succ]
+
+variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+
+/-! ### The planar `U = F⁻¹·∂̄F` identity -/
+
+/-- Away from the two endpoints, the planar `∂̄`-datum is the logarithmic `∂̄` of the piece
+solution: `U = F⁻¹·∂̄F`. -/
+theorem AbelPlanar.PlanarPieceSolution.inv_mul_dbar_F {c₀ α β : ℂ} {ρ : ℝ}
+    (S : PlanarPieceSolution c₀ ρ α β) {z : ℂ} (hzα : z ≠ α) (hzβ : z ≠ β) :
+    (S.F z)⁻¹ * DbarDisk.dbar S.F z = S.U z := by
+  set r : ℂ → ℂ := fun w => (w - β) / (w - α) with hr
+  have hF : S.F = fun w => S.W w * r w := by
+    funext w
+    rw [PlanarPieceSolution.F, hr, mul_div_assoc]
+  have hrd : DifferentiableAt ℂ r z :=
+    (differentiableAt_id.sub_const β).div (differentiableAt_id.sub_const α)
+      (sub_ne_zero.mpr hzα)
+  have hdbar : DbarDisk.dbar S.F z = r z * DbarDisk.dbar S.W z := by
+    rw [hF, DbarDisk.dbar_fun_mul ((S.smooth.differentiable (by simp)) z)
+      (hrd.restrictScalars ℝ), DbarDisk.dbar_eq_zero_of_differentiableAt hrd]
+    ring
+  have hFz : S.F z = S.W z * r z := by rw [hF]
+  have hWz : S.W z ≠ 0 := S.ne_zero z
+  have hrz : r z ≠ 0 := div_ne_zero (sub_ne_zero.mpr hzβ) (sub_ne_zero.mpr hzα)
+  rw [hdbar, hFz, PlanarPieceSolution.U]
+  field_simp
+
+/-! ### The coefficient-free fiber and the product rule -/
+
+/-- Off the divisor the logarithmic fiber is `f⁻¹·∂̄f` directly. -/
+theorem WeakSolution.logDbarFiber_eq_of_coeff_zero {D : Divisor X} (F : WeakSolution D)
+    {x : X} (hD : D x = 0) :
+    F.logDbarFiber x
+      = (F.toFun x)⁻¹ • Dolbeault.proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) F.toFun x) := by
+  have hgerm : F.unit x =ᶠ[𝓝 x] F.toFun := (F.toFun_eventuallyEq_unit hD).symm
+  rw [WeakSolution.logDbarFiber, hgerm.mfderiv_eq, hgerm.eq_of_nhds]
 
 /-! ### The pairing ignores finitely many fibers -/
 

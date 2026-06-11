@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-2 (manifold layer): the per-piece weak solution (Forster 20.5(a))
+# The per-piece weak solution (Forster 20.5(a))
 
 Lifts the planar piece solution (`PlanarPieceSolution`, `AbelPlanarPiece`) to a genuine
 `WeakSolution` of the two-point divisor `(γ(t_{k+1})) − (γ(t_k))` on the surface:
@@ -20,7 +20,7 @@ Lifts the planar piece solution (`PlanarPieceSolution`, `AbelPlanarPiece`) to a 
   chart-comparison units.
 
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.5 proof part (a),
-pp. 162–163; plan `docs/walls_bc_plan_2026-06-10.md`, phase C-2 (E2).
+pp. 162–163.
 -/
 import Jacobians.AbelPlanarPiece
 import Jacobians.AbelWeakSolutions
@@ -36,10 +36,10 @@ open Set Metric Filter Jacobians.AbelPlanar
 
 namespace Jacobians
 
-set_option linter.unusedSectionVars false
 
+section
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The chart-comparison unit -/
 
@@ -112,7 +112,12 @@ theorem exists_chartCompare_unit {x₀ p : X} (hp : p ∈ (chartAt (H := ℂ) x�
     rw [hcc, ← hTx, ← hTw₀, ← hfact]
     ring
 
+end
+
 /-! ### Smoothness helpers: planar functions read through a chart -/
+
+section
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- The chart map is real-smooth at every source point. -/
 theorem contMDiffAt_chart_real {x₀ x : X} (hx : x ∈ (chartAt (H := ℂ) x₀).source) :
@@ -148,6 +153,12 @@ theorem AbelPlanar.PlanarPieceSolution.contMDiffAt_F_comp_chart {c₀ α β : �
   filter_upwards with y
   show S.F (e y) = S.W (e y) * (e y - β) * (e y - α)⁻¹
   rw [AbelPlanar.PlanarPieceSolution.F, div_eq_mul_inv]
+
+end
+
+section
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The per-piece weak solution (Forster 20.5(a) on the surface) -/
 
@@ -430,5 +441,7 @@ theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
     · rw [if_neg h3]
       intro x _
       rw [hD0 a h1 h2, zpow_zero, mul_one]
+
+end
 
 end Jacobians

@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-0: 1-chains and the `pathPrimValue = lineIntegral` bridge
+# 1-chains and the `pathPrimValue = lineIntegral` bridge
 
 Connects the path-integral layer (`lineIntegral`, `periodVec`, `abelJacobi`) to the
 discrete-monodromy layer (`pathPrimValue`, `PrimitiveChain`):
@@ -23,8 +23,7 @@ This is the entry plumbing for Forster's proof of Abel's theorem (20.7, sufficie
 direction): the chain produced here is the one fed to the weak-solution machinery of
 §§20.1–20.5.
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.4 (chains), §20.7;
-plan `docs/walls_bc_plan_2026-06-10.md`, phase C-0.
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.4 (chains), §20.7.
 -/
 import Jacobians.Abel
 import Jacobians.HolomorphicPrimitiveMonodromy
@@ -42,7 +41,6 @@ open Set MeasureTheory
 
 namespace Jacobians
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]

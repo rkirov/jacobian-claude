@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-3 (Stokes layer): `⟨η, ∂̄u⟩ = 0` (Forster 19.10, necessity half)
+# Stokes vanishing for the Abel pairing: `⟨η, ∂̄u⟩ = 0` (Forster 19.10, necessity half)
 
 The pairing of a holomorphic form against any `∂̄`-coboundary vanishes:
 
@@ -18,15 +18,13 @@ holomorphic — into
 i.e. (by the `∂̄`-bridge reads) `⟨η, ∂̄u⟩ⱼ = −⟨η, u·∂̄ρⱼ⟩` (the collapse lemma).  Summing
 over the cover, `∑ⱼ u·∂̄ρⱼ = u·∂̄(∑ρⱼ) = u·∂̄1 = 0` kills the right side.
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §19 (19.9/19.10, pp. 155–157);
-plan `docs/walls_bc_plan_2026-06-10.md`, phase C-3 (E3b, Stokes-vanishing).
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §19 (19.9/19.10, pp. 155–157).
 -/
 import Jacobians.AbelPairing
 
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open Set Filter Complex MeasureTheory
@@ -306,7 +304,7 @@ theorem integrable_glueForm_piece (u : SmoothCFunctions X) (η : HolomorphicOneF
   integrable_pairingIntegrand (glueForm u j) η continuous_const (coverWindow_isOpen j)
     (coverWindow_subset_source j) (isCompact_tsupport_coverPoU j)
     (tsupport_coverPoU_subset_window j)
-    (fun x _ hx => Or.inr (glueForm_eq_zero_of_notMem u j hx))
+    (fun _ _ hx => Or.inr (glueForm_eq_zero_of_notMem u j hx))
 
 /-- **The per-chart Stokes identity**: the `∂̄u`-piece integral is minus the
 `glueForm`-piece integral. -/

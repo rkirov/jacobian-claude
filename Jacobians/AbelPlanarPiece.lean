@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-2 (planar layer): the Forster 20.3 integration atoms on `ℂ`
+# Planar integration atoms: the Forster 20.3 integration atoms on `ℂ`
 
 The planar heart of Forster's Lemma 20.5 identity `∫_c ω = (1/2πi)∬(df/f)∧ω`.  This file
 provides the Wirtinger `∂`-calculus (`del`, conjugate partner of the repo's `DbarDisk.dbar`)
@@ -20,8 +20,7 @@ and the two integration atoms the identity rests on:
 These are exactly the "planar Stokes + residue" ingredients of Forster's proof of 20.3
 (p. 160): the first kills the `dW/W` part of `df/f`, the second evaluates the two poles.
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.3 (p. 160);
-plan `docs/walls_bc_plan_2026-06-10.md`, phase C-2 (E2).
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.3 (p. 160).
 -/
 import Jacobians.Dolbeault.AnnulusResidueIntegral
 
@@ -29,7 +28,6 @@ noncomputable section
 
 -- ℂ-as-ℝ-module diamond discipline (as in `DbarOpenDisk`/`AnnulusResidueIntegral`).
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open Complex Metric MeasureTheory Filter Set DbarDisk
 open scoped Real Topology ContDiff

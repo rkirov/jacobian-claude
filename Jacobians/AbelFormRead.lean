@@ -3,14 +3,14 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 
-# Abel engine C-3 (read layer): chart reads of `(0,1)`-forms and conjugate forms
+# Chart reads for the Abel pairing: chart reads of `(0,1)`-forms and conjugate forms
 
 The scalar dictionary between intrinsic `(0,1)`-data and planar functions, feeding the
 `∬ σ∧ω` pairing atom (Forster 19.10):
 
 * `read01 g y` — the chart-`y` read of a smooth `(0,1)`-form `g`: the value of `g` on the
   `y`-frame tangent vector `symmL (trivAt y) x 1`.  Smooth on the chart source
-  (`contMDiffAt_read01` = the proven `contMDiffAt_chartRead_datum`), with the explicit
+  (`contMDiffAt_read01`, via `contMDiffAt_chartRead_datum`), with the explicit
   conjugate-frame formula `read01_eq_conj_mul` and the `(0,1)`-transformation law
   `read01_transform` (`read_y = conj(T′)·read_{y′}`, `T` the chart transition).
 * `read01_proj01_mfderiv` — **the `∂̄`-bridge**: the read of `proj01 (mfderiv w x)` in ANY
@@ -24,8 +24,7 @@ The scalar dictionary between intrinsic `(0,1)`-data and planar functions, feedi
   `(0,1)`-form (`conjForm_mem_zeroOne`), with read `conj (localRep η y ·)`
   (`read01_conjForm`).
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §19 (pp. 153–157);
-plan `docs/walls_bc_plan_2026-06-10.md`, phase C-3 (E3b/E3c).
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §19 (pp. 153–157).
 -/
 import Jacobians.Dolbeault.DolbeaultComparisonProof
 import Jacobians.Dolbeault.DolbeaultComparisonInverse
@@ -36,7 +35,6 @@ noncomputable section
 
 -- ℝ/ℂ-module diamond discipline (as in `RealForms`/`DolbeaultComparisonProof`).
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open Set Filter Complex
@@ -45,8 +43,7 @@ namespace Jacobians.Dolbeault.AbelPairing
 
 open Jacobians.Dolbeault Jacobians
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ### Chart bookkeeping: `extChartAt 𝓘(ℝ,ℂ)` is `chartAt` -/
 
@@ -78,6 +75,29 @@ theorem deriv_transition_ext_eq_chart (y x : X) :
     funext w; simp [extChartAt]
   have h2 : (extChartAt 𝓘(ℝ, ℂ) y) x = (chartAt (H := ℂ) y) x := by simp [extChartAt]
   rw [h1, h2]
+
+/-- The self-chart transition has derivative `1` at the centre image. -/
+theorem deriv_transition_self (x : X) {z : ℂ} (hz : z ∈ (chartAt (H := ℂ) x).target) :
+    deriv (fun w => (chartAt (H := ℂ) x) ((chartAt (H := ℂ) x).symm w)) z = 1 := by
+  have hev : (fun w => (chartAt (H := ℂ) x) ((chartAt (H := ℂ) x).symm w)) =ᶠ[𝓝 z] id := by
+    filter_upwards [(chartAt (H := ℂ) x).open_target.mem_nhds hz] with w hw
+    exact (chartAt (H := ℂ) x).right_inv hw
+  rw [hev.deriv_eq, deriv_id]
+
+/-- `MDifferentiableAt` over the real model gives plain real differentiability of the
+own-chart pullback at the chart coordinate. -/
+theorem differentiableAt_pullback_of_mdifferentiableAt {w : X → ℂ} {x : X}
+    (hw : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x) :
+    DifferentiableAt ℝ (fun z => w ((extChartAt 𝓘(ℝ, ℂ) x).symm z))
+      (extChartAt 𝓘(ℝ, ℂ) x x) := by
+  have h := hw.differentiableWithinAt_writtenInExtChartAt
+  rw [ModelWithCorners.Boundaryless.range_eq_univ, differentiableWithinAt_univ] at h
+  have hpull : writtenInExtChartAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) x w =
+      fun z => w ((extChartAt 𝓘(ℝ, ℂ) x).symm z) := by
+    ext z; simp only [writtenInExtChartAt, Function.comp_apply]; rfl
+  rwa [hpull] at h
+
+variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- **The frame vector in chart spelling**: `symmL (trivAt y) x 1` is the transition
 derivative `(chart_x ∘ chart_y⁻¹)′(chart_y x)`. -/
@@ -132,7 +152,7 @@ def read01 (g : SmoothCOneForms X) (y : X) : X → ℂ :=
   fun x => (g x) ((Bundle.Trivialization.symmL ℝ
     (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) y) x) (1 : ℂ))
 
-/-- The read is smooth at every point of the chart source (the proven chart-read datum). -/
+/-- The read is smooth at every point of the chart source (`contMDiffAt_chartRead_datum`). -/
 theorem contMDiffAt_read01 (g : SmoothCOneForms X) {y x : X}
     (hx : x ∈ (chartAt (H := ℂ) y).source) :
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (read01 g y) x :=
@@ -147,14 +167,6 @@ theorem read01_eq_conj_mul {g : SmoothCOneForms X} (hg : g ∈ OneFormsZeroOne X
         ((chartAt (H := ℂ) y) x))
         * (g x) (1 : ℂ) := by
   rw [read01, frameVector_eq_deriv_chart hx, oneForm_apply_conjLinear hg]
-
-/-- The self-chart transition has derivative `1` at the centre image. -/
-theorem deriv_transition_self (x : X) {z : ℂ} (hz : z ∈ (chartAt (H := ℂ) x).target) :
-    deriv (fun w => (chartAt (H := ℂ) x) ((chartAt (H := ℂ) x).symm w)) z = 1 := by
-  have hev : (fun w => (chartAt (H := ℂ) x) ((chartAt (H := ℂ) x).symm w)) =ᶠ[𝓝 z] id := by
-    filter_upwards [(chartAt (H := ℂ) x).open_target.mem_nhds hz] with w hw
-    exact (chartAt (H := ℂ) x).right_inv hw
-  rw [hev.deriv_eq, deriv_id]
 
 /-- The own-chart read at the base point is the bare value at `1`. -/
 theorem read01_self {g : SmoothCOneForms X} (hg : g ∈ OneFormsZeroOne X) (x : X) :
@@ -189,19 +201,6 @@ theorem localRep_transform (η : HolomorphicOneForms X) {x y y' : X}
   ring
 
 /-! ### The `∂̄`-bridge: reads of `proj01 (mfderiv w x)` are planar Wirtinger derivatives -/
-
-/-- `MDifferentiableAt` over the real model gives plain real differentiability of the
-own-chart pullback at the chart coordinate. -/
-theorem differentiableAt_pullback_of_mdifferentiableAt {w : X → ℂ} {x : X}
-    (hw : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w x) :
-    DifferentiableAt ℝ (fun z => w ((extChartAt 𝓘(ℝ, ℂ) x).symm z))
-      (extChartAt 𝓘(ℝ, ℂ) x x) := by
-  have h := hw.differentiableWithinAt_writtenInExtChartAt
-  rw [ModelWithCorners.Boundaryless.range_eq_univ, differentiableWithinAt_univ] at h
-  have hpull : writtenInExtChartAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) x w =
-      fun z => w ((extChartAt 𝓘(ℝ, ℂ) x).symm z) := by
-    ext z; simp only [writtenInExtChartAt, Function.comp_apply]; rfl
-  rwa [hpull] at h
 
 /-- **The `∂̄`-bridge in any chart.** For `w` real-differentiable at `x ∈ source_y`, the
 `y`-frame read of the `(0,1)`-part of `mfderiv w x` is the planar Wirtinger derivative of
@@ -425,7 +424,7 @@ theorem contMDiff_conjFiber (η : HolomorphicOneForms X) :
     rw [conjFiber_apply, conjFiber_apply,
       Jacobians.Dolbeault.FormTraceSheet.toFun_apply_eq_mul_localRep η x,
       Jacobians.Dolbeault.FormTraceSheet.toFun_apply_eq_mul_localRep η x]
-    simp only [map_mul, map_one, mul_one]
+    simp only [map_mul, mul_one]
     ring
   show conjFiber η x ((Bundle.Trivialization.symmL ℝ
       (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) y) x) v)

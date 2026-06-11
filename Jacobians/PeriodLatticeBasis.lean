@@ -8,22 +8,18 @@ Authors: Rado Kirov
 The dissection-free proof of the period-lattice real basis, with the statement EXACTLY as
 frozen in the original `Jacobians/PeriodLattice.lean`:
 
-* discreteness (B-4, `truePeriodLattice_isolated_zero`) ⟹ `DiscreteTopology`;
-* non-degeneracy (B-3, `span_real_truePeriodLattice_eq_top`) ⟹ `IsZLattice ℝ`;
+* discreteness (`truePeriodLattice_isolated_zero`) ⟹ `DiscreteTopology`;
+* non-degeneracy (`span_real_truePeriodLattice_eq_top`) ⟹ `IsZLattice ℝ`;
 * Mathlib's ZLattice theory then yields a free `ℤ`-module of rank
   `finrank ℝ ℂ^g = 2g`, whose `ℤ`-basis is an `ℝ`-basis of the ambient space spanning the
   lattice over `ℤ` (`Basis.ofZLatticeBasis` + `ofZLatticeBasis_span`).
 
-This retires the cut-surface/dissection route entirely (Wall B closed).
-
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.1 + 21.4 (pp. 166–170);
-plan `docs/walls_bc_plan_2026-06-10.md`, phase B-5.
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.1 + 21.4 (pp. 166–170).
 -/
 import Jacobians.PeriodLatticeDiscrete
 
 noncomputable section
 
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open Module
@@ -61,7 +57,7 @@ instance : IsZLattice ℝ (truePeriodLattice X) :=
 Jacobian-as-complex-torus structure.  The period lattice is generated, as a `ℤ`-module, by
 a **real basis** of `ℂ^(genus X) ≅ ℝ^(2·genus X)`.
 
-PROVEN dissection-free (Forster 21.4): discreteness (B-4) + non-degeneracy (B-3) make the
+Dissection-free proof (Forster 21.4): discreteness + non-degeneracy make the
 lattice a `ZLattice`, and Mathlib's ZLattice theory produces the basis. -/
 theorem exists_periodLattice_realBasis :
     ∃ b : Module.Basis (Fin (2 * genus X)) ℝ (Fin (genus X) → ℂ),
