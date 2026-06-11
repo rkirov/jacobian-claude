@@ -490,7 +490,7 @@ by `contMDiffAt_coordChangeL`), so the value `(g x)(Sₓ 1)` rewrites as
 (`coordChangeL_apply` + `symmL_continuousLinearMapAt`); both factors are smooth, so `ContMDiffAt.clm_apply`
 closes it. (No varying chart-at-`x`: `Sₓ` uses only the fixed `x₀`-trivialization; the `y`-frame is an
 internal device.) -/
-private theorem contMDiffAt_chartRead_datum (g : SmoothCOneForms X) (x₀ y : X)
+theorem contMDiffAt_chartRead_datum (g : SmoothCOneForms X) (x₀ y : X)
     (hy : y ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
       (fun x => (g x) ((Bundle.Trivialization.symmL ℝ
@@ -532,7 +532,7 @@ is the tangent `coordChange (achart x₀) (achart x) x = tangentCoordChange x₀
 (eₓ ∘ e₀.symm) (range) (e₀ x)`; on the boundaryless model this is `fderiv ℝ σ_x (e₀ x)`, and `σ_x =
 eₓ ∘ e₀.symm` is holomorphic so `fderiv ℝ σ_x (e₀ x) = (deriv σ_x (e₀ x)) • 1`; finally `deriv σ_x
 (e₀ x) = (deriv τ_x (eₓ x))⁻¹` since `σ_x` is the local inverse of `τ_x`.) -/
-private theorem frameVector_eq_inv_deriv_transition (x₀ x : X)
+theorem frameVector_eq_inv_deriv_transition (x₀ x : X)
     (hxsrc : x ∈ (extChartAt 𝓘(ℝ, ℂ) x₀).source) :
     (Bundle.Trivialization.symmL ℝ (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) x₀) x) (1 : ℂ)
       = (deriv ((extChartAt 𝓘(ℝ, ℂ) x₀) ∘ (extChartAt 𝓘(ℝ, ℂ) x).symm)
@@ -579,7 +579,7 @@ private theorem frameVector_eq_inv_deriv_transition (x₀ x : X)
 /-- **The `(0,1)`-form `g x` is conjugate-`ℂ`-linear** (since `g ∈ OneFormsZeroOne X`): `(g x) v =
 conj v · (g x) 1`. Reduces to `proj01_eq_conj_smul` via `g x = proj01 (β x)` for the representative
 `β` with `proj01L β = g`. -/
-private theorem oneForm_apply_conjLinear {g : SmoothCOneForms X} (hg : g ∈ OneFormsZeroOne X)
+theorem oneForm_apply_conjLinear {g : SmoothCOneForms X} (hg : g ∈ OneFormsZeroOne X)
     (x : X) (v : ℂ) : (g x) v = (starRingEnd ℂ) v * (g x) (1 : ℂ) := by
   obtain ⟨β, hβ⟩ := hg
   have hgx : g x = proj01 (β x) := by rw [← hβ]; rfl

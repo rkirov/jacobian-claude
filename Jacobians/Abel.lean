@@ -654,21 +654,10 @@ alongside Abel's theorem itself. This is the piece that, combined
 with Abel, implies `abelJacobi (P - Q) ≠ 0`, the lemma needed for
 `ofCurve_inj`. -/
 
-variable {X} in
-/-- **Consequence of Abel's theorem + non-existence of degree-1 maps
-to ℙ¹ on positive-genus surfaces**: the Abel–Jacobi image of a
-two-point divisor `P - Q` is nonzero when `P ≠ Q` on a surface of
-positive genus.
-
-Classical argument: if `abelJacobi (P - Q) = 0`, then by Abel's theorem
-`P - Q` is principal — some meromorphic function `f` has a simple zero
-at `P` and a simple pole at `Q` and no other zeros/poles. Such an `f`
-is a degree-1 map `X → ℙ¹`, hence a biholomorphism (Riemann-Hurwitz).
-But then `X ≃ ℙ¹`, which has genus 0 — contradiction. -/
-theorem abelJacobi_twoPoint_ne_zero
-    (h : 0 < genus X) {P Q : X} (hPQ : P ≠ Q) :
-    abelJacobi ⟨twoPointDivisor X P Q, twoPointDivisor_mem_degZero X P Q⟩ ≠ 0 :=
-  sorry
+-- `abelJacobi_twoPoint_ne_zero` — the (formerly sorried) headline — now lives in
+-- `Jacobians/AbelFinal.lean` with its statement UNCHANGED: its proof consumes the whole
+-- downstream Abel engine (chains C-0 → weak solutions C-1/C-2 → the `∬ σ∧ω` pairing C-3 →
+-- `h¹(𝒪) = g` C-4 → Forster 19.10/20.7 C-5), which imports this file.
 
 /-! ### `no_distinct_points_placeholder` removed
 
