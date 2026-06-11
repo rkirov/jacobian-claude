@@ -251,14 +251,13 @@ theorem tailMul_apply (ψ : MeromorphicFunction X) (E : Divisor X) (Z : TailSpac
         ((chartAt (H := ℂ) q.1) q.1) q.2
       else 0 := rfl
 
-variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### §3 Compatibility with the truncated-Laurent-series map (Miranda (2.2)) -/
 
 /-- **Miranda (2.2)**: `μ_ψ(α_D f) = α_E(ψ·f)` whenever `−E ≤ ord ψ + (−D)` pointwise — the
 re-truncated coefficients of `ψ·(D-tail of f)` and of `ψ·f` agree below `−E`, because `ψ` times
 the complementary part of `f` has order ≥ `ord ψ − D ≥ −E`. -/
-theorem tailMul_tailMap (ψ f : MeromorphicFunction X) (D E : Divisor X)
+theorem tailMul_tailMap [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    (ψ f : MeromorphicFunction X) (D E : Divisor X)
     (hE : ∀ p : X, ((-(E p) : ℤ) : WithTop ℤ) ≤ ψ.orderW p + ((-(D p) : ℤ) : WithTop ℤ)) :
     tailMul ψ E (tailMap (X := X) D f) = tailMap (X := X) E (ψ * f) := by
   classical

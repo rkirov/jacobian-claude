@@ -243,11 +243,10 @@ theorem tailResidue_apply (g₀ h : MeromorphicFunction X) (Z : TailSpace X) :
   simp [tailResidue, Finsupp.lsum_apply, LinearMap.toSpanSingleton_apply, smul_eq_mul,
     Finsupp.sum]
 
-variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **The residue of `f·ω` at `p` reads only `f`'s tail below `−D(p)`** (Miranda p. 187): the
 per-point pairing identity, with the window taken from the support of the truncated tail. -/
-theorem resAt_pullback_mul_pairCoeff (D : Divisor X) (g₀ h f : MeromorphicFunction X)
+theorem resAt_pullback_mul_pairCoeff [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] (D : Divisor X) (g₀ h f : MeromorphicFunction X)
     (hord : PairOrderBounded g₀ h D) (p : X) (W : Finset ℤ)
     (hWlt : ∀ n ∈ W, n < -(D p))
     (hWcap : ∀ n : ℤ, n < -(D p) → laurentCoeffAt f.toFun p n ≠ 0 → n ∈ W) :
@@ -270,7 +269,8 @@ theorem resAt_pullback_mul_pairCoeff (D : Divisor X) (g₀ h f : MeromorphicFunc
 /-- **The vanishing of `Res_ω` on realized tails** (Miranda Ch. VI p. 187, every genus): for any
 global meromorphic `f`, `Res_ω(α_D f) = ∑_p Res_p(f·ω) = 0` by the genus-free pair-form residue
 theorem.  This is exactly what lets the residue map descend to the Mittag-Leffler `H¹(D)`. -/
-theorem tailResidue_tailMap_eq_zero [Nonempty X] {D : Divisor X}
+theorem tailResidue_tailMap_eq_zero [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] [Nonempty X] {D : Divisor X}
     (g₀ h : MeromorphicFunction X) (hord : PairOrderBounded g₀ h D)
     (f : MeromorphicFunction X) :
     tailResidue g₀ h (tailMap D f) = 0 := by
@@ -340,7 +340,8 @@ theorem tailResidue_tailMap_eq_zero [Nonempty X] {D : Divisor X}
 /-- **The descended residue functional `Res_ω : H¹(D) → ℂ`** (Miranda Ch. VI pp. 187–188): the
 residue map on `𝒯[D]` kills `im(α_D)` (the residue theorem), hence factors through the
 Mittag-Leffler quotient.  This is the linear functional that feeds the Serre duality pairing. -/
-noncomputable def tailResidueH1 [Nonempty X] {D : Divisor X}
+noncomputable def tailResidueH1 [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] [Nonempty X] {D : Divisor X}
     (g₀ h : MeromorphicFunction X) (hord : PairOrderBounded g₀ h D) :
     mittagLefflerH1 (X := X) D →ₗ[ℂ] ℂ :=
   Submodule.liftQ _ ((tailResidue g₀ h).comp (Submodule.subtype _)) (by
@@ -348,7 +349,8 @@ noncomputable def tailResidueH1 [Nonempty X] {D : Divisor X}
     rw [LinearMap.mem_ker, LinearMap.comp_apply, Submodule.subtype_apply, tailMapCo_coe]
     exact tailResidue_tailMap_eq_zero g₀ h hord f)
 
-@[simp] theorem tailResidueH1_mk [Nonempty X] {D : Divisor X}
+@[simp] theorem tailResidueH1_mk [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] [Nonempty X] {D : Divisor X}
     (g₀ h : MeromorphicFunction X) (hord : PairOrderBounded g₀ h D)
     (Z : ↥(tailSubspace (X := X) D)) :
     tailResidueH1 g₀ h hord (Submodule.Quotient.mk Z)

@@ -148,14 +148,12 @@ theorem isOpen_locConst (f : X → Y) : IsOpen {x | locConst f x} := by
     rw [hWeq x' (interior_subset hx'), hfx]
   exact this
 
-variable [TopologicalSpace Y]
-
 /-- Proper preimage-neighborhood lemma (Forster 4.21b): for a proper
 `f`, an open `V` containing the fibre `f⁻¹{x}` has an open neighborhood `U ∋ x`
 with `f⁻¹U ⊆ V`. (From `f` being a closed map.) Used to shrink the disjoint
 local-homeo sheets over a fibre to a common base neighborhood — the key step in
 the covering structure off the branch locus (Forster 4.22). -/
-theorem properNbhd {f : X → Y} (hf : IsProperMap f) (x : Y) {V : Set X}
+theorem properNbhd [TopologicalSpace Y] {f : X → Y} (hf : IsProperMap f) (x : Y) {V : Set X}
     (hV : IsOpen V) (hsub : f ⁻¹' {x} ⊆ V) :
     ∃ U : Set Y, IsOpen U ∧ x ∈ U ∧ f ⁻¹' U ⊆ V := by
   have hcompl : IsClosed (f '' Vᶜ) := hf.isClosedMap _ hV.isClosed_compl
@@ -167,35 +165,36 @@ theorem properNbhd {f : X → Y} (hf : IsProperMap f) (x : Y) {V : Set X}
     exact hz ⟨z, hzV, rfl⟩
 
 
-variable [ChartedSpace ℂ X] [ChartedSpace ℂ Y]
-
 /-- A valid chart-ball hop `Q₀ → Q`: `Q` is in `Q₀`'s chart source and the
 affine segment between their chart images stays in the chart target. Exactly
 the hypotheses `ChartBallPathSmooth` needs. -/
-def HopValid (Q₀ Q : X) : Prop :=
+def HopValid [ChartedSpace ℂ X] (Q₀ Q : X) : Prop :=
   Q ∈ (chartAt (H := ℂ) Q₀).source ∧
   ∀ s ∈ Set.Icc (0 : ℝ) 1,
     ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
       (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target
 
 /-- The `HopValid`-validity neighborhood of `y` (open, contains `y`). -/
-def hopNbhd (y : X) : Set X := interior {Q | HopValid y Q}
+def hopNbhd [ChartedSpace ℂ X] (y : X) : Set X := interior {Q | HopValid y Q}
 
-theorem isOpen_hopNbhd (y : X) : IsOpen (hopNbhd y) := isOpen_interior
+theorem isOpen_hopNbhd [ChartedSpace ℂ X] (y : X) : IsOpen (hopNbhd y) := isOpen_interior
 
-theorem hopValid_of_mem_hopNbhd {y Q : X} (h : Q ∈ hopNbhd y) : HopValid y Q :=
+theorem hopValid_of_mem_hopNbhd [ChartedSpace ℂ X] {y Q : X} (h : Q ∈ hopNbhd y) : HopValid y Q :=
   interior_subset (s := {Q' : X | HopValid y Q'}) h
 
 /-- Chart pullback of `f` at `x`. -/
-noncomputable def chartPullback (f : X → Y) (x : X) : ℂ → ℂ :=
+noncomputable def chartPullback [TopologicalSpace Y] [ChartedSpace ℂ X] [ChartedSpace ℂ Y]
+    (f : X → Y) (x : X) : ℂ → ℂ :=
   (chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm
 
-theorem analyticAt_chartPullback (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X) :
+theorem analyticAt_chartPullback [TopologicalSpace Y] [ChartedSpace ℂ X] [ChartedSpace ℂ Y]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X) :
     AnalyticAt ℂ (chartPullback f x) ((chartAt ℂ x) x) :=
   Jacobians.Discharge.ContMDiff.Degree.contMDiffAt_omega_analyticAt_chart_pullback (hf x)
 
 -- Lemma A: chart-pullback eventually const at chart image ↔ f locally const at x.
-theorem chartPullback_eventuallyConst_iff_locConst
+theorem chartPullback_eventuallyConst_iff_locConst [TopologicalSpace Y] [ChartedSpace ℂ X]
+    [ChartedSpace ℂ Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X) :
     (∀ᶠ z in 𝓝 ((chartAt ℂ x) x),
       chartPullback f x z = chartPullback f x ((chartAt ℂ x) x))
@@ -242,7 +241,8 @@ theorem chartPullback_eventuallyConst_iff_locConst
 whose image `f x` lies in the *fixed* target chart of `x₀`, local constancy of
 `f` at `x` is equivalent to the (single, `x₀`-based) chart pullback being
 eventually constant at `φ₀ x`. -/
-theorem locConst_iff_pullback_const_fixedChart
+theorem locConst_iff_pullback_const_fixedChart [TopologicalSpace Y] [ChartedSpace ℂ X]
+    [ChartedSpace ℂ Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x₀ x : X)
     (hxφ : x ∈ (chartAt ℂ x₀).source)
     (hfxψ : f x ∈ (chartAt ℂ (f x₀)).source) :
@@ -295,7 +295,8 @@ def branchLocus (f : X → Y) : Set Y :=
 
 /-- **Critical set is closed.** The not-locally-injective set is closed via
 `isClosed_criticalSetGeneral`. -/
-theorem isClosed_criticalSet (f : X → Y) (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+theorem isClosed_criticalSet [TopologicalSpace Y] [ChartedSpace ℂ X] [ChartedSpace ℂ Y] (f : X → Y)
+    (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     IsClosed (criticalSet f) :=
   Jacobians.Discharge.Manifold.isClosed_criticalSetGeneral f
 
@@ -303,7 +304,8 @@ theorem isClosed_criticalSet (f : X → Y) (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) 
 (Forster §4.20): a continuous map from a compact space to a T2 space is proper.
 This is what makes the branched-cover theory (§4.22–4.25) available: a proper
 local homeomorphism is a covering map. -/
-theorem isProperMap_of_contMDiff [CompactSpace X] [T2Space Y] (f : X → Y)
+theorem isProperMap_of_contMDiff [TopologicalSpace Y] [ChartedSpace ℂ X] [ChartedSpace ℂ Y]
+    [CompactSpace X] [T2Space Y] (f : X → Y)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     IsProperMap f :=
   hf.continuous.isProperMap
@@ -311,7 +313,8 @@ theorem isProperMap_of_contMDiff [CompactSpace X] [T2Space Y] (f : X → Y)
 /-- **Local open mapping at `x`** (provided the chart pullback is not locally
 constant there): `f` sends neighborhoods of `x` to neighborhoods of `f x`. This
 is the heart of the open mapping theorem, transferred through the charts. -/
-theorem nhds_le_map_of_chartPullback_not_eventuallyConst
+theorem nhds_le_map_of_chartPullback_not_eventuallyConst [TopologicalSpace Y] [ChartedSpace ℂ X]
+    [ChartedSpace ℂ Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (x : X)
     (hnc : ¬ ∀ᶠ z in 𝓝 ((chartAt ℂ x) x),
       chartPullback f x z = chartPullback f x ((chartAt ℂ x) x)) :
@@ -359,7 +362,8 @@ theorem nhds_le_map_of_chartPullback_not_eventuallyConst
 
 /-- The set of points where `f` is locally constant is **closed**
 (equivalently, its complement is open), via the identity theorem. -/
-theorem isClosed_locConst (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+theorem isClosed_locConst [TopologicalSpace Y] [ChartedSpace ℂ X] [ChartedSpace ℂ Y] (f : X → Y)
+    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     IsClosed {x | locConst f x} := by
   rw [← isOpen_compl_iff, isOpen_iff_eventually]
   intro x₀ hx₀
@@ -406,11 +410,10 @@ theorem isClosed_locConst (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f
     -- goal: ¬ ∀ᶠ z in 𝓝 (φ x), G z = G (φ x)
     exact hnc_ball (φ x) hxball
 
-variable [ConnectedSpace X]
-
 /-- **Globalized identity theorem.** The chart pullback of a non-constant
 holomorphic map is not locally constant at any chart image. -/
-theorem chartPullback_not_eventuallyConst [Nonempty Y]
+theorem chartPullback_not_eventuallyConst [TopologicalSpace Y] [ChartedSpace ℂ X] [ChartedSpace ℂ Y]
+    [ConnectedSpace X] [Nonempty Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (x : X) :
     ¬ ∀ᶠ z in 𝓝 ((chartAt ℂ x) x),
@@ -439,7 +442,8 @@ theorem chartPullback_not_eventuallyConst [Nonempty Y]
 Assembled from the open-mapping transfer
 `nhds_le_map_of_chartPullback_not_eventuallyConst` and the non-constancy
 lemma `chartPullback_not_eventuallyConst`. -/
-theorem isOpenMap_of_nonconstant [Nonempty Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+theorem isOpenMap_of_nonconstant [TopologicalSpace Y] [ChartedSpace ℂ X] [ChartedSpace ℂ Y]
+    [ConnectedSpace X] [Nonempty Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
     IsOpenMap f := by
   rw [isOpenMap_iff_nhds_le]
@@ -451,7 +455,8 @@ theorem isOpenMap_of_nonconstant [Nonempty Y] (f : X → Y) (hf : ContMDiff 𝓘
 Riemann surfaces is surjective: its range is open (open mapping), closed
 (continuous image of compact in a T2 space), and nonempty, hence clopen, hence
 all of the connected target `Y`. -/
-theorem surjective_of_nonconstant [CompactSpace X] [T2Space Y] [ConnectedSpace Y]
+theorem surjective_of_nonconstant [TopologicalSpace Y] [ChartedSpace ℂ X] [ChartedSpace ℂ Y]
+    [ConnectedSpace X] [CompactSpace X] [T2Space Y] [ConnectedSpace Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
     Function.Surjective f := by
@@ -468,7 +473,8 @@ i.e. by definition `∃ U ∈ 𝓝 x, InjOn f U`), it restricts to an open injec
 a neighborhood — open via the open-mapping theorem, injective by hypothesis.
 Together with `isProperMap_of_contMDiff` this is the input to the covering
 structure off the branch locus. -/
-theorem isLocalHomeoOffCritical [Nonempty Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
+theorem isLocalHomeoOffCritical [TopologicalSpace Y] [ChartedSpace ℂ X] [ChartedSpace ℂ Y]
+    [ConnectedSpace X] [Nonempty Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {x : X} (hx : x ∉ criticalSet f) :
     ∃ U : Set X, IsOpen U ∧ x ∈ U ∧ Set.InjOn f U ∧ IsOpen (f '' U) := by
   have hex : ∃ U ∈ nhds x, Set.InjOn f U := not_not.mp hx
@@ -485,7 +491,8 @@ theorem — Mathlib already has it, so no hand-built `f⁻¹U ≃ₜ U × fibre`
 branch locus every fibre point is off `criticalSet`, so `isLocalHomeoOffCritical`
 gives an open injective neighborhood, packaged as an `OpenPartialHomeomorph`
 whose `toFun` is `f`. -/
-theorem isCoveringMapOn_compl_branchLocus [T2Space X] [CompactSpace X]
+theorem isCoveringMapOn_compl_branchLocus [TopologicalSpace Y] [ChartedSpace ℂ X] [ChartedSpace ℂ Y]
+    [ConnectedSpace X] [T2Space X] [CompactSpace X]
     [T2Space Y] [ConnectedSpace Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
@@ -521,7 +528,8 @@ This is the form `Mathlib.Topology.Homotopy.Lifting` consumes: it unlocks
 invariance of lift endpoints) — the toolkit for assembling the lifted loops in
 `exists_preimageCycle_of_off_branchLocus` (relocated to
 `Jacobians/TracePullback.lean`, where the genuine `ambientPullbackJac` lives). -/
-theorem isCoveringMap_restrictPreimage_compl_branchLocus [T2Space X] [CompactSpace X]
+theorem isCoveringMap_restrictPreimage_compl_branchLocus [TopologicalSpace Y] [ChartedSpace ℂ X]
+    [ChartedSpace ℂ Y] [ConnectedSpace X] [T2Space X] [CompactSpace X]
     [T2Space Y] [ConnectedSpace Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) :
@@ -537,7 +545,8 @@ the §3 preimage-cycle lift. Note: unlike
 `fibres_finite_of_connectivity_hypothesis` (which assumes the global identity
 theorem), this is unconditional off the branch locus, since
 `isLocalHomeoOffCritical` holds there. -/
-theorem fiber_finite_off_branchLocus [T2Space X] [CompactSpace X]
+theorem fiber_finite_off_branchLocus [TopologicalSpace Y] [ChartedSpace ℂ X] [ChartedSpace ℂ Y]
+    [ConnectedSpace X] [T2Space X] [CompactSpace X]
     [T2Space Y] [ConnectedSpace Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) {y : Y} (hy : y ∉ branchLocus f) :

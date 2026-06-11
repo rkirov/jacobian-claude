@@ -47,15 +47,14 @@ theorem trans_relabel (c c' : OpenPartialHomeomorph M E) :
     ← Homeomorph.trans_toOpenPartialHomeomorph, Homeomorph.symm_trans_self,
     Homeomorph.refl_toOpenPartialHomeomorph, OpenPartialHomeomorph.refl_trans]
 
-variable [ChartedSpace E M]
-
 /-- The chart of `ULift M` at `z`: relabel `M`'s chart through `ULift M ≃ₜ M`.
 As a function it is `(chartAt E z.down) ∘ ULift.down`. -/
-noncomputable def chart (z : ULift.{u} M) : OpenPartialHomeomorph (ULift.{u} M) E :=
+noncomputable def chart [ChartedSpace E M] (z : ULift.{u} M) :
+    OpenPartialHomeomorph (ULift.{u} M) E :=
   Homeomorph.ulift.transOpenPartialHomeomorph (chartAt E z.down)
 
 /-- `ULift M` is a charted space over `E`, with charts the relabelled charts of `M`. -/
-noncomputable instance instChartedSpace : ChartedSpace E (ULift.{u} M) where
+noncomputable instance instChartedSpace [ChartedSpace E M] : ChartedSpace E (ULift.{u} M) where
   atlas := (fun c => Homeomorph.ulift.transOpenPartialHomeomorph c) '' atlas E M
   chartAt z := chart z
   mem_chart_source z := by
@@ -64,21 +63,19 @@ noncomputable instance instChartedSpace : ChartedSpace E (ULift.{u} M) where
   chart_mem_atlas z := ⟨chartAt E z.down, chart_mem_atlas E z.down, rfl⟩
 
 @[simp]
-theorem chartAt_eq (z : ULift.{u} M) :
+theorem chartAt_eq [ChartedSpace E M] (z : ULift.{u} M) :
     (chartAt E z : OpenPartialHomeomorph (ULift.{u} M) E) = chart z := rfl
 
-theorem chart_apply (z w : ULift.{u} M) :
+theorem chart_apply [ChartedSpace E M] (z w : ULift.{u} M) :
     chart (E := E) z w = chartAt E z.down w.down := rfl
 
-theorem chart_source (z : ULift.{u} M) :
+theorem chart_source [ChartedSpace E M] (z : ULift.{u} M) :
     (chart (E := E) z).source = ULift.down ⁻¹' (chartAt E z.down).source := by
   rw [chart, Homeomorph.transOpenPartialHomeomorph_source]; rfl
 
-variable [NormedSpace ℂ E]
-
 /-- `ULift M` is a `C^ω` manifold modelled on `E`: its transition maps are those of `M`,
 hence lie in `contDiffGroupoid ω 𝓘(ℂ, E)`. -/
-instance instIsManifold [IsManifold 𝓘(ℂ, E) ω M] :
+instance instIsManifold [ChartedSpace E M] [NormedSpace ℂ E] [IsManifold 𝓘(ℂ, E) ω M] :
     IsManifold 𝓘(ℂ, E) ω (ULift.{u} M) := by
   refine IsManifold.mk' (gr := ⟨?_⟩)
   rintro _ _ ⟨c, hc, rfl⟩ ⟨c', hc', rfl⟩
@@ -87,13 +84,11 @@ instance instIsManifold [IsManifold 𝓘(ℂ, E) ω M] :
 
 section Smooth
 
-variable [IsManifold 𝓘(ℂ, E) ω M]
-
 /-- `ULift.down : ULift M → M` is `C^ω`.
 
 Near `x`, on the chart source, it factors as `(M-chart at x.down).symm ∘ (ULift-chart at x)`,
 both of which are `C^ω`: the relabelled charts make `down` the identity in coordinates. -/
-theorem contMDiff_uliftDown :
+theorem contMDiff_uliftDown [ChartedSpace E M] [NormedSpace ℂ E] [IsManifold 𝓘(ℂ, E) ω M] :
     ContMDiff 𝓘(ℂ, E) 𝓘(ℂ, E) ω (ULift.down : ULift.{u} M → M) := by
   intro x
   -- The two `C^ω` factors at `x`.
@@ -113,7 +108,7 @@ theorem contMDiff_uliftDown :
 /-- `ULift.up : M → ULift M` is `C^ω`.
 
 Near `m`, on the chart source, it factors as `(ULift-chart at up m).symm ∘ (M-chart at m)`. -/
-theorem contMDiff_uliftUp :
+theorem contMDiff_uliftUp [ChartedSpace E M] [NormedSpace ℂ E] [IsManifold 𝓘(ℂ, E) ω M] :
     ContMDiff 𝓘(ℂ, E) 𝓘(ℂ, E) ω (ULift.up : M → ULift.{u} M) := by
   intro m
   have hchart : ContMDiffAt 𝓘(ℂ, E) 𝓘(ℂ, E) ω (chartAt E m) m :=
@@ -135,20 +130,20 @@ section Transported
 
 /-- `ULift M` is Hausdorff if `M` is. (Mathlib already provides `ULift.instT2Space`; we restate
 it here so that the manifold-level facts of this file form a self-contained package.) -/
-example [T2Space M] : T2Space (ULift.{u} M) := inferInstance
+example [ChartedSpace E M] [NormedSpace ℂ E] [T2Space M] : T2Space (ULift.{u} M) := inferInstance
 
 /-- `ULift M` is compact if `M` is. (Mathlib already provides `ULift.compactSpace`.) -/
-example [CompactSpace M] : CompactSpace (ULift.{u} M) := inferInstance
+example [ChartedSpace E M] [NormedSpace ℂ E] [CompactSpace M] :
+    CompactSpace (ULift.{u} M) := inferInstance
 
 section LieGroup
-
-variable [AddCommGroup M] [IsTopologicalAddGroup M] [LieAddGroup 𝓘(ℂ, E) ω M]
 
 /-- If `M` is an additive Lie group, so is `ULift M`: addition and negation are conjugates, via
 `ULift.up`/`ULift.down`, of the smooth operations on `M`, hence smooth.
 
 `ULift M` already carries `AddCommGroup` and `IsTopologicalAddGroup` instances from Mathlib. -/
-instance instLieAddGroup : LieAddGroup 𝓘(ℂ, E) ω (ULift.{u} M) where
+instance instLieAddGroup [ChartedSpace E M] [NormedSpace ℂ E] [AddCommGroup M]
+    [LieAddGroup 𝓘(ℂ, E) ω M] : LieAddGroup 𝓘(ℂ, E) ω (ULift.{u} M) where
   contMDiff_add := by
     -- `(p.1 + p.2) = up ((down p.1) + (down p.2))`: conjugate `M`'s smooth addition.
     have h : (fun p : ULift.{u} M × ULift.{u} M => p.1 + p.2)

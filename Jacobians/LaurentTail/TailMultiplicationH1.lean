@@ -51,11 +51,10 @@ theorem MulLevelLE.hE {ψ : MeromorphicFunction X} {A B : Divisor X} (h : MulLev
   have : A p - B p ≤ m := by exact_mod_cast h1
   exact_mod_cast (by omega : -(B p) ≤ m + -(A p))
 
-variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- Membership `ψ ∈ L(C)` gives the level condition for `A := B − C`-type shifts:
 `MulLevelLE ψ (B - C) B`. -/
-theorem mulLevelLE_of_mem {ψ : MeromorphicFunction X} {C : Divisor X}
+theorem mulLevelLE_of_mem [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    {ψ : MeromorphicFunction X} {C : Divisor X}
     (hψ : ψ ∈ linearSystem (X := X) C) (B : Divisor X) :
     MulLevelLE ψ (B - C) B := by
   intro p
@@ -67,7 +66,8 @@ theorem mulLevelLE_of_mem {ψ : MeromorphicFunction X} {C : Divisor X}
   exact h1
 
 /-- The exact shift `A := B + div ψ` satisfies the level condition. -/
-theorem mulLevelLE_add_div [Nonempty X] (ψ : MeromorphicFunction X) (B : Divisor X) :
+theorem mulLevelLE_add_div [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    [Nonempty X] (ψ : MeromorphicFunction X) (B : Divisor X) :
     MulLevelLE ψ (B + (ψ.div : Divisor X)) B := by
   intro p
   have : ((B + (ψ.div : Divisor X)) p : ℤ) - B p = (ψ.div : Divisor X) p := by
@@ -84,19 +84,22 @@ theorem mulLevelLE_add_div [Nonempty X] (ψ : MeromorphicFunction X) (B : Diviso
 
 /-- `μ_ψ` co-restricted between tail levels (the target membership is unconditional — the
 operator truncates at `B` by construction). -/
-noncomputable def tailMulCo (ψ : MeromorphicFunction X) (A B : Divisor X) :
+noncomputable def tailMulCo [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    (ψ : MeromorphicFunction X) (A B : Divisor X) :
     ↥(tailSubspace (X := X) A) →ₗ[ℂ] ↥(tailSubspace (X := X) B) :=
   ((tailMul ψ B).comp (Submodule.subtype _)).codRestrict _
     fun Z => tailMulRaw_mem ψ B (Z : TailSpace X)
 
-@[simp] theorem tailMulCo_coe (ψ : MeromorphicFunction X) (A B : Divisor X)
+@[simp] theorem tailMulCo_coe [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    (ψ : MeromorphicFunction X) (A B : Divisor X)
     (Z : ↥(tailSubspace (X := X) A)) :
     (tailMulCo ψ A B Z : TailSpace X) = tailMul ψ B (Z : TailSpace X) := rfl
 
 /-- **The `H¹`-level multiplication action** (Miranda Problem VI.2.J): `μ_ψ` descends to the
 Mittag-Leffler quotients under the level condition (realized tails map to realized tails by
 Miranda (2.2)). -/
-noncomputable def tailMulH1 (ψ : MeromorphicFunction X) {A B : Divisor X}
+noncomputable def tailMulH1 [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    (ψ : MeromorphicFunction X) {A B : Divisor X}
     (h : MulLevelLE ψ A B) :
     mittagLefflerH1 (X := X) A →ₗ[ℂ] mittagLefflerH1 (X := X) B :=
   Submodule.mapQ _ _ (tailMulCo ψ A B) (by
@@ -106,7 +109,8 @@ noncomputable def tailMulH1 (ψ : MeromorphicFunction X) {A B : Divisor X}
     rw [tailMapCo_coe, tailMulCo_coe, tailMapCo_coe]
     exact (tailMul_tailMap ψ f A B h.hE).symm)
 
-@[simp] theorem tailMulH1_mk (ψ : MeromorphicFunction X) {A B : Divisor X}
+@[simp] theorem tailMulH1_mk [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    (ψ : MeromorphicFunction X) {A B : Divisor X}
     (h : MulLevelLE ψ A B) (Z : ↥(tailSubspace (X := X) A)) :
     tailMulH1 ψ h (Submodule.Quotient.mk Z) = Submodule.Quotient.mk (tailMulCo ψ A B Z) :=
   rfl
@@ -115,7 +119,8 @@ noncomputable def tailMulH1 (ψ : MeromorphicFunction X) {A B : Divisor X}
 
 /-- For `ψ` whose germ survives somewhere (hence everywhere — `orderW_ne_top_of_exists`),
 `ψ·ψ⁻¹` has germ `1` at every point. -/
-theorem psi_mul_inv_eventually_one (ψ : MeromorphicFunction X)
+theorem psi_mul_inv_eventually_one [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] (ψ : MeromorphicFunction X)
     (hψ : ∃ x, ψ.orderW x ≠ ⊤) (p : X) :
     ∀ᶠ z in 𝓝[≠] ((chartAt (H := ℂ) p) p),
       ψ.toFun ((chartAt (H := ℂ) p).symm z)
@@ -129,7 +134,8 @@ theorem psi_mul_inv_eventually_one (ψ : MeromorphicFunction X)
 /-- **The composite identity** `μ_ψ(μ_{ψ⁻¹}(W)) = W` on `𝒯[B]` at the exact shift
 `A = B + div ψ`: the coefficients of `ψ·(A-tail of ψ⁻¹·(tail of W))` below `−B` are those of
 `ψ·ψ⁻¹·(tail of W) = tail of W`, because the dropped part has order ≥ `ord ψ − A ≥ −B`. -/
-theorem tailMul_tailMul_inv [Nonempty X] (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
+theorem tailMul_tailMul_inv [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    [Nonempty X] (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
     (B : Divisor X) (W : ↥(tailSubspace (X := X) B)) :
     tailMul ψ B (tailMul ψ⁻¹ (B + (ψ.div : Divisor X)) (W : TailSpace X))
       = (W : TailSpace X) := by
@@ -219,7 +225,8 @@ theorem tailMul_tailMul_inv [Nonempty X] (ψ : MeromorphicFunction X) (hψ : ∃
 /-- **Surjectivity of the `H¹` multiplication action** (Forster 17.8): for `ψ` with surviving
 germ, every class of `H¹(B)` is hit — the preimage is the `ψ⁻¹`-image at the exact shift
 `B + div ψ`, which lies in the (coarser) `𝒯[A]` since `A ≤ B + div ψ`. -/
-theorem tailMulH1_surjective [Nonempty X] (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
+theorem tailMulH1_surjective [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    [Nonempty X] (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
     {A B : Divisor X} (h : MulLevelLE ψ A B) :
     Function.Surjective (tailMulH1 ψ h) := by
   intro ξ
@@ -250,7 +257,8 @@ theorem tailMulH1_surjective [Nonempty X] (ψ : MeromorphicFunction X) (hψ : �
 
 /-- For `λ ≠ 0` and `ψ` with surviving germ, `λ ∘ T̄_ψ ≠ 0` — the dimension input for the
 Λ-side of the Serre-duality pigeonhole (Forster 17.9). -/
-theorem comp_tailMulH1_ne_zero [Nonempty X] {B : Divisor X}
+theorem comp_tailMulH1_ne_zero [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    [Nonempty X] {B : Divisor X}
     (φ : Module.Dual ℂ (mittagLefflerH1 (X := X) B)) (hφ : φ ≠ 0)
     (ψ : MeromorphicFunction X) (hψ : ∃ x, ψ.orderW x ≠ ⊤)
     {A : Divisor X} (h : MulLevelLE ψ A B) :

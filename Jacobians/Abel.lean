@@ -107,8 +107,6 @@ theorem twoPointDivisor_mem_degZero (P Q : X) :
 theorem twoPointDivisor_self (P : X) : twoPointDivisor X P P = 0 := by
   simp [twoPointDivisor]
 
-variable [TopologicalSpace X] [ChartedSpace ℂ X]
-
 /-! ### Meromorphic functions on a compact Riemann surface
 
 A function `f : X → ℂ` is meromorphic if it is meromorphic in every
@@ -119,18 +117,19 @@ manifold version below composes with chart inverses. -/
 meromorphic at every chart-image point of every chart. The basic
 theory (addition, multiplication, order at a point) is developed in
 `Jacobians.LinearSystem`. -/
-def IsMeromorphic (f : X → ℂ) : Prop :=
+def IsMeromorphic [TopologicalSpace X] [ChartedSpace ℂ X] (f : X → ℂ) : Prop :=
   ∀ x : X, MeromorphicAt (f ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
 
 /-- The type of meromorphic functions on `X`. -/
-structure MeromorphicFunction : Type _ where
+structure MeromorphicFunction [TopologicalSpace X] [ChartedSpace ℂ X] : Type _ where
   toFun : X → ℂ
   meromorphic : IsMeromorphic X toFun
 
 /-- The zero function is trivially meromorphic: chart pullbacks of constant functions are
 constant, hence meromorphic. Needs only the charted-space structure (no compactness /
 connectedness), so it applies to open submanifolds `↥U` too. -/
-theorem IsMeromorphic.zero : IsMeromorphic X (fun _ => 0) := by
+theorem IsMeromorphic.zero [TopologicalSpace X] [ChartedSpace ℂ X] :
+    IsMeromorphic X (fun _ => 0) := by
   intro x
   show MeromorphicAt (fun _ => (0 : ℂ)) ((chartAt (H := ℂ) x) x)
   exact MeromorphicAt.const 0 _
@@ -155,7 +154,8 @@ compactness + isolation ⇒ finite. -/
 
 variable {X} in
 /-- The integer order of `f` at `x`, via the chart pullback. -/
-noncomputable def MeromorphicFunction.orderAtPoint (f : MeromorphicFunction X) (x : X) : ℤ :=
+noncomputable def MeromorphicFunction.orderAtPoint [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (x : X) : ℤ :=
   (meromorphicOrderAt (f.toFun ∘ (chartAt (H := ℂ) x).symm)
     ((chartAt (H := ℂ) x) x)).untop₀
 
@@ -183,7 +183,8 @@ divisor. Both facts are textbook lemmas (Forster §6.4, Miranda II.4). -/
 
 variable {X} in
 /-- **Lemma A**: f identically zero near y ⇒ orderAtPoint f y = 0. -/
-theorem MeromorphicFunction.orderAtPoint_eq_zero_of_eventually_zero
+theorem MeromorphicFunction.orderAtPoint_eq_zero_of_eventually_zero [TopologicalSpace X]
+    [ChartedSpace ℂ X]
     (f : MeromorphicFunction X) (y : X)
     (h : ∀ᶠ x in 𝓝 y, f.toFun x = 0) : f.orderAtPoint y = 0 := by
   -- chart.symm (chart y) = y.
@@ -211,8 +212,6 @@ theorem MeromorphicFunction.orderAtPoint_eq_zero_of_eventually_zero
   rw [h_order]
   exact WithTop.untop₀_top
 
-variable [IsManifold 𝓘(ℂ) ω X]
-
 variable {X} in
 /-- **Lemma B**: chart-invariance of the order.
 The order computed via an arbitrary chart `e` matches `orderAtPoint`
@@ -228,7 +227,8 @@ Proof outline (Forster §6):
    `g := e ∘ chart_y.symm` analytic at `chart_y y` with nonzero
    derivative (both from `IsManifold 𝓘(ℂ) ω` — chart transitions
    are biholomorphic). -/
-theorem MeromorphicFunction.orderAtPoint_chart_invariant
+theorem MeromorphicFunction.orderAtPoint_chart_invariant [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
     (f : MeromorphicFunction X) {y : X}
     (e : OpenPartialHomeomorph X ℂ) (_he : e ∈ atlas ℂ X) (hy : y ∈ e.source) :
     (meromorphicOrderAt (f.toFun ∘ e.symm) (e y)).untop₀ =
@@ -345,14 +345,13 @@ theorem MeromorphicFunction.orderAtPoint_chart_invariant
   rw [h_comp_ord.symm]
   exact h_ord_congr.symm
 
-variable [T2Space X]
-
 variable {X} in
 /-- **Isolation of zeros/poles** around a point (Forster §6 /
 Miranda II.4). Combines Lemma A (identically zero case) and
 Lemma B (chart invariance) with the dichotomy
 `MeromorphicAt.eventually_eq_zero_or_eventually_ne_zero`. -/
-theorem MeromorphicFunction.orderAtPoint_isolated_at
+theorem MeromorphicFunction.orderAtPoint_isolated_at [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [T2Space X]
     (f : MeromorphicFunction X) (z : X) :
     ∃ t ∈ 𝓝 z, ∀ y ∈ t, y ≠ z → f.orderAtPoint y = 0 := by
   -- Apply the dichotomy at chart_z z.
@@ -488,7 +487,8 @@ variable {X} in
 /-- The order function as a `locallyFinsuppWithin` on `Set.univ`.
 Wraps `orderAtPoint` together with the local-finiteness proof
 derived from `orderAtPoint_isolated_at`. -/
-noncomputable def MeromorphicFunction.orderLocallyFinsupp (f : MeromorphicFunction X) :
+noncomputable def MeromorphicFunction.orderLocallyFinsupp [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [T2Space X] (f : MeromorphicFunction X) :
     Function.locallyFinsuppWithin (Set.univ : Set X) ℤ where
   toFun := MeromorphicFunction.orderAtPoint f
   supportWithinDomain' := Set.subset_univ _
@@ -502,20 +502,18 @@ noncomputable def MeromorphicFunction.orderLocallyFinsupp (f : MeromorphicFuncti
     by_contra hne
     exact hy_supp (ht y hy_t hne)
 
-variable [CompactSpace X]
-
 /-- The divisor of a meromorphic function via the order function: the
 `locallyFinsuppWithin` wrapper + `finiteSupport` + `ofSupportFinite`. -/
-noncomputable def MeromorphicFunction.divViaOrder (f : MeromorphicFunction X) : Divisor X :=
+noncomputable def MeromorphicFunction.divViaOrder [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [T2Space X] [CompactSpace X] (f : MeromorphicFunction X) : Divisor X :=
   Finsupp.ofSupportFinite (MeromorphicFunction.orderAtPoint f)
     ((MeromorphicFunction.orderLocallyFinsupp f).finiteSupport isCompact_univ)
 
 /-- **The divisor of a meromorphic function** (classical construction
 `div f = (zeros of f) - (poles of f)` with multiplicities). -/
-noncomputable def MeromorphicFunction.div (f : MeromorphicFunction X) : Divisor X :=
+noncomputable def MeromorphicFunction.div [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] [T2Space X] [CompactSpace X] (f : MeromorphicFunction X) : Divisor X :=
   MeromorphicFunction.divViaOrder X f
-
-variable [ConnectedSpace X] [Nonempty X]
 
 /-! ### Abel–Jacobi map (on divisors of degree 0)
 
@@ -533,7 +531,8 @@ Jacobian quotient.
 **Well-definedness** (independence of basepoint): uses `∑ n_i = 0`
 to absorb the basepoint choice. For any two basepoints P₀, P₀':
 `AJ_{P₀} D - AJ_{P₀'} D = (∑ n_i) · [smoothPath P₀' P₀] = 0` (since ∑ n_i = 0). -/
-noncomputable def abelJacobi (D : DivisorOfDegZero X) :
+noncomputable def abelJacobi [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] (D : DivisorOfDegZero X) :
     (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup := by
   classical
   exact ∑ P ∈ (D : Divisor X).support,
@@ -547,7 +546,8 @@ Classical.arbitrary X`. Direct computation from the definition:
 `twoPointDivisor A B = single A 1 - single B 1` has support `{A, B}`
 for `A ≠ B`, and the weighted `periodVec` sum unfolds to the
 difference. -/
-theorem abelJacobi_twoPointDivisor (A B : X) (hne : A ≠ B) :
+theorem abelJacobi_twoPointDivisor [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] (A B : X) (hne : A ≠ B) :
     abelJacobi ⟨twoPointDivisor X A B, twoPointDivisor_mem_degZero X A B⟩ =
       QuotientAddGroup.mk (periodVec (smoothPath (Classical.arbitrary X) A)) -
       QuotientAddGroup.mk (periodVec (smoothPath (Classical.arbitrary X) B)) := by

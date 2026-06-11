@@ -77,18 +77,17 @@ theorem tailResidueWeight_eq_zero_of_germZero (g₀ : MeromorphicFunction X)
   rw [h0]
   exact Jacobians.Dolbeault.resAt_eq_zero_of_analyticAt analyticAt_const
 
-variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
-    [IsManifold 𝓘(ℂ) ω X]
-
 /-- `pairOrderAt` is the form order of the genuine meromorphic 1-form `dg₀`
 (`CanonicalFormDifferential.formOrderW_differentialForm`). -/
-theorem pairOrderAt_eq_formOrderW (g₀ : MeromorphicFunction X) (p : X) :
+theorem pairOrderAt_eq_formOrderW [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (p : X) :
     pairOrderAt g₀ p = (differentialForm g₀).formOrderW p :=
   (formOrderW_differentialForm g₀ p).symm
 
 /-- For nonconstant `g₀`, the order of `dg₀` is finite at every point: `dg₀ ≠ 0` somewhere
 (`differentialForm_ne_zero`) and the form identity theorem spreads it everywhere. -/
-theorem pairOrderAt_ne_top (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀) (p : X) :
+theorem pairOrderAt_ne_top [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀) (p : X) :
     pairOrderAt g₀ p ≠ ⊤ := by
   rw [pairOrderAt_eq_formOrderW]
   exact MeromorphicOneForm.formOrderW_ne_top_of_exists (differentialForm g₀)
@@ -96,18 +95,21 @@ theorem pairOrderAt_ne_top (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermCons
 
 /-- **The canonical divisor `K = div (dg₀)`** (Miranda p. 186; Forster 17.4): the divisor of the
 nonzero meromorphic 1-form `dg₀`, via `exists_differentialForm_divisor`. -/
-noncomputable def pairCanonicalDivisor (g₀ : MeromorphicFunction X)
+noncomputable def pairCanonicalDivisor [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X)
     (hg₀ : ¬ IsGermConstant g₀) : Divisor X :=
   (exists_differentialForm_divisor g₀ (differentialForm_ne_zero hg₀)).choose
 
 /-- `K = div (dg₀)` reads the form order of `dg₀` (the defining property, for the §17.4 datum). -/
-theorem formOrderW_pairCanonicalDivisor (g₀ : MeromorphicFunction X)
+theorem formOrderW_pairCanonicalDivisor [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X)
     (hg₀ : ¬ IsGermConstant g₀) (p : X) :
     (differentialForm g₀).formOrderW p = ((pairCanonicalDivisor g₀ hg₀ p : ℤ) : WithTop ℤ) :=
   (exists_differentialForm_divisor g₀ (differentialForm_ne_zero hg₀)).choose_spec p
 
 /-- The canonical divisor reads the order: `(K p : WithTop ℤ) = pairOrderAt g₀ p`. -/
-theorem coe_pairCanonicalDivisor (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+theorem coe_pairCanonicalDivisor [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (p : X) :
     ((pairCanonicalDivisor g₀ hg₀ p : ℤ) : WithTop ℤ) = pairOrderAt g₀ p := by
   rw [pairOrderAt_eq_formOrderW]
@@ -117,7 +119,8 @@ theorem coe_pairCanonicalDivisor (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGe
 
 /-- **The order bridge** (Miranda p. 187): `h·dg₀` has order ≥ `D` everywhere iff
 `h ∈ L(K − D)` for the canonical divisor `K = div (dg₀)`. -/
-theorem pairOrderBounded_iff_mem (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+theorem pairOrderBounded_iff_mem [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (h : MeromorphicFunction X) (D : Divisor X) :
     PairOrderBounded g₀ h D
       ↔ h ∈ linearSystem (X := X) (pairCanonicalDivisor g₀ hg₀ - D) := by
@@ -161,7 +164,8 @@ theorem pairOrderBounded_iff_mem (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGe
 /-! ### §3 Linearity of the residue weight in `h` -/
 
 /-- The weight is additive in `h`. -/
-theorem tailResidueWeight_add (g₀ h₁ h₂ : MeromorphicFunction X) (q : X × ℤ) :
+theorem tailResidueWeight_add [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ h₁ h₂ : MeromorphicFunction X) (q : X × ℤ) :
     tailResidueWeight g₀ (h₁ + h₂) q
       = tailResidueWeight g₀ h₁ q + tailResidueWeight g₀ h₂ q := by
   rw [tailResidueWeight, tailResidueWeight, tailResidueWeight,
@@ -174,7 +178,8 @@ theorem tailResidueWeight_add (g₀ h₁ h₂ : MeromorphicFunction X) (q : X ×
   ring
 
 /-- The weight is homogeneous in `h`. -/
-theorem tailResidueWeight_smul (g₀ : MeromorphicFunction X) (a : ℂ)
+theorem tailResidueWeight_smul [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (a : ℂ)
     (h : MeromorphicFunction X) (q : X × ℤ) :
     tailResidueWeight g₀ (a • h) q = a * tailResidueWeight g₀ h q := by
   rw [tailResidueWeight, tailResidueWeight,
@@ -188,7 +193,8 @@ theorem tailResidueWeight_smul (g₀ : MeromorphicFunction X) (a : ℂ)
 
 /-- **The Serre duality pairing, on representatives**: for `h ∈ L(K−D)` the descended residue
 functional on `H¹(D)` (descent = the genus-free `tailResidue_tailMap_eq_zero`). -/
-noncomputable def pairDualFun (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+noncomputable def pairDualFun [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (D : Divisor X)
     (h : ↥(linearSystem (X := X) (pairCanonicalDivisor g₀ hg₀ - D))) :
     Module.Dual ℂ (mittagLefflerH1 (X := X) D) :=
@@ -198,7 +204,8 @@ noncomputable def pairDualFun (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermC
     exact tailResidue_tailMap_eq_zero g₀ h.1
       ((pairOrderBounded_iff_mem g₀ hg₀ h.1 D).mpr h.2) f)
 
-@[simp] theorem pairDualFun_mk (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+@[simp] theorem pairDualFun_mk [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (D : Divisor X)
     (h : ↥(linearSystem (X := X) (pairCanonicalDivisor g₀ hg₀ - D)))
     (Z : ↥(tailSubspace (X := X) D)) :
@@ -208,7 +215,8 @@ noncomputable def pairDualFun (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermC
 
 /-- The pairing bundled as a linear map `L(K−D) →ₗ (H¹(D))*` (linearity in `h` from the weight
 linearity). -/
-noncomputable def pairDualMapAux (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+noncomputable def pairDualMapAux [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (D : Divisor X) :
     ↥(linearSystem (X := X) (pairCanonicalDivisor g₀ hg₀ - D))
       →ₗ[ℂ] Module.Dual ℂ (mittagLefflerH1 (X := X) D) where
@@ -236,7 +244,8 @@ noncomputable def pairDualMapAux (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGe
 
 /-- **The Serre duality pairing** `ι : L(K−D)/germ0 →ₗ (H¹(D))*` (Miranda Thm 3.3's map, on the
 junk-free quotient that defines `lDim`). -/
-noncomputable def pairDualMap (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+noncomputable def pairDualMap [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (D : Divisor X) :
     (↥(linearSystem (X := X) (pairCanonicalDivisor g₀ hg₀ - D))
         ⧸ (germZeroSubmodule (X := X)).submoduleOf
@@ -257,7 +266,8 @@ noncomputable def pairDualMap (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermC
 against the single-monomial tail `z^{−1−o}·p` (at a point `p` where `h`'s germ survives, `o` the
 local order of `h·dg₀`) to the leading Laurent coefficient — nonzero by
 `laurentCoeff_order_ne_zero`. -/
-theorem pairDualMap_injective (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
+theorem pairDualMap_injective [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermConstant g₀)
     (D : Divisor X) :
     Function.Injective (pairDualMap g₀ hg₀ D) := by
   rw [injective_iff_map_eq_zero]
@@ -320,7 +330,8 @@ theorem pairDualMap_injective (g₀ : MeromorphicFunction X) (hg₀ : ¬ IsGermC
   `l(K − D) ≤ h¹(D)`
 
 for the canonical divisor `K = div (dg₀)` of any nonconstant meromorphic `g₀` — every genus. -/
-theorem lDim_pairCanonical_sub_le_h1TailDim (g₀ : MeromorphicFunction X)
+theorem lDim_pairCanonical_sub_le_h1TailDim [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X)
     (hg₀ : ¬ IsGermConstant g₀) (D : Divisor X) :
     lDim (X := X) (pairCanonicalDivisor g₀ hg₀ - D) ≤ h1TailDim (X := X) D :=
   SerreDuality.finrank_le_of_injective_to_dual (pairDualMap g₀ hg₀ D)

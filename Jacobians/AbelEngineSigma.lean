@@ -103,8 +103,6 @@ theorem proj01_logDeriv_prod {x : X} (n : ℕ) (f : ℕ → X → ℂ)
       ih (fun k hk => hf k (by omega)) (fun k hk => hf0 k (by omega)),
       Finset.sum_range_succ]
 
-variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### The planar `U = F⁻¹·∂̄F` identity -/
 
 /-- Away from the two endpoints, the planar `∂̄`-datum is the logarithmic `∂̄` of the piece
@@ -132,7 +130,8 @@ theorem AbelPlanar.PlanarPieceSolution.inv_mul_dbar_F {c₀ α β : ℂ} {ρ : �
 /-! ### The coefficient-free fiber and the product rule -/
 
 /-- Off the divisor the logarithmic fiber is `f⁻¹·∂̄f` directly. -/
-theorem WeakSolution.logDbarFiber_eq_of_coeff_zero {D : Divisor X} (F : WeakSolution D)
+theorem WeakSolution.logDbarFiber_eq_of_coeff_zero [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (F : WeakSolution D)
     {x : X} (hD : D x = 0) :
     F.logDbarFiber x
       = (F.toFun x)⁻¹ • Dolbeault.proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) F.toFun x) := by
@@ -141,14 +140,16 @@ theorem WeakSolution.logDbarFiber_eq_of_coeff_zero {D : Divisor X} (F : WeakSolu
 
 /-! ### The pairing ignores finitely many fibers -/
 
-theorem Dolbeault.AbelPairing.read01_congr_of_apply_eq {g₁ g₂ : SmoothCOneForms X} {x : X}
+theorem Dolbeault.AbelPairing.read01_congr_of_apply_eq [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] {g₁ g₂ : SmoothCOneForms X} {x : X}
     (h : (g₁ x) = (g₂ x)) (y : X) : read01 g₁ y x = read01 g₂ y x := by
   unfold Dolbeault.AbelPairing.read01
   rw [h]
 
 /-- **The pairing ignores finitely many fiber values** (a finite set of chart points is
 volume-null). -/
-theorem Dolbeault.AbelPairing.pairForm_congr_off_finite (η : HolomorphicOneForms X)
+theorem Dolbeault.AbelPairing.pairForm_congr_off_finite [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] (η : HolomorphicOneForms X)
     {g₁ g₂ : SmoothCOneForms X} {E : Set X} (hE : E.Finite)
     (h : ∀ x ∉ E, (g₁ x) = (g₂ x)) :
     pairForm η g₁ = pairForm η g₂ := by
@@ -174,7 +175,8 @@ theorem Dolbeault.AbelPairing.pairForm_congr_off_finite (η : HolomorphicOneForm
 set_option maxHeartbeats 1600000 in
 /-- **The per-piece pairing value**: the pairing of `η` against the piece `∂̄`-datum is the
 planar integral `∫ Uₖ·η̂ₖ` of Forster 20.5. -/
-theorem pairForm_logDbar_piece (η : HolomorphicOneForms X) {γ : ℝ → X}
+theorem pairForm_logDbar_piece [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    (η : HolomorphicOneForms X) {γ : ℝ → X}
     {hγ : ContinuousOn γ (Icc 0 1)} (S : CurveWeakSolution γ hγ) (k : ℕ) :
     pairForm η (S.pieceSol k).logDbar
       = ∫ z, (S.planar k).U z
@@ -301,7 +303,8 @@ theorem pairForm_logDbar_piece (η : HolomorphicOneForms X) {γ : ℝ → X}
 
 set_option maxHeartbeats 1600000 in
 /-- **The per-curve pairing value** (Forster 20.5): `⟨η, σ_{f_γ}⟩ = π·∫_γ η`. -/
-theorem pairForm_logDbar_curve (η : HolomorphicOneForms X) {γ : ℝ → X}
+theorem pairForm_logDbar_curve [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    (η : HolomorphicOneForms X) {γ : ℝ → X}
     {hγ : ContinuousOn γ (Icc 0 1)} (S : CurveWeakSolution γ hγ) :
     pairForm η S.sol.logDbar = (π : ℂ) * pathPrimValue η γ hγ := by
   classical
@@ -369,7 +372,8 @@ theorem pairForm_logDbar_curve (η : HolomorphicOneForms X) {γ : ℝ → X}
 /-! ### The chain `∂̄`-potential -/
 
 /-- The `zpow`-fold of a finite family of weak solutions, with the `logDbar` sum rule. -/
-theorem exists_weakSolution_finsum {n : ℕ} (D : Fin n → Divisor X)
+theorem exists_weakSolution_finsum [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] {n : ℕ} (D : Fin n → Divisor X)
     (F : (m : Fin n) → WeakSolution (D m)) :
     ∃ G : WeakSolution (∑ m, D m),
       ∀ x, G.logDbarFiber x = ∑ m, (F m).logDbarFiber x := by
@@ -388,7 +392,8 @@ set_option maxHeartbeats 1600000 in
 /-- **The chain `∂̄`-potential** (Forster 20.7 (a), the analytic heart): a 1-chain with all
 basis periods zero has a weak solution `G` of its boundary whose `∂̄`-datum is exact:
 `σ_G = ∂̄u`. -/
-theorem exists_dbar_potential_of_oneChain (c : OneChain X)
+theorem exists_dbar_potential_of_oneChain [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] (c : OneChain X)
     (hper : ∀ i : Fin (genus X), c.period (periodBasisForm X i) = 0) :
     ∃ (G : WeakSolution c.boundary) (u : SmoothCFunctions X), dbarL u = G.logDbar := by
   classical

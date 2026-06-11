@@ -173,12 +173,10 @@ theorem orderW_ne_top_iff (f : MeromorphicFunction X) (y : X) :
   rw [orderW, meromorphicOrderAt_ne_top_iff_eventually_ne_zero (f.meromorphic y)]
   exact eventually_comp_chart_iff f.toFun y (· ≠ 0)
 
-variable [T2Space X] [ConnectedSpace X]
-
 /-- **Faithfulness / identity theorem.** If the germ of `f` is nonzero at even one point, it is
 nonzero (`orderW ≠ ⊤`) at *every* point. The set `{y | orderW f y = ⊤}` and its complement are
 both open (via the two intrinsic characterizations above), so on the connected `X` it is empty. -/
-theorem orderW_ne_top_of_exists (f : MeromorphicFunction X)
+theorem orderW_ne_top_of_exists [T2Space X] [ConnectedSpace X] (f : MeromorphicFunction X)
     (h₀ : ∃ x₀, f.orderW x₀ ≠ ⊤) (x : X) : f.orderW x ≠ ⊤ := by
   obtain ⟨x₀, hx₀⟩ := h₀
   have hUopen : IsOpen {y : X | f.orderW y = ⊤} := by
@@ -257,14 +255,13 @@ noncomputable def lDim (D : Divisor X) : ℕ :=
       ⧸ (germZeroSubmodule (X := X)).submoduleOf (linearSystem (X := X) D))
 
 
-variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **A function in `L(0)` is germ-constant** (Liouville). With no pole (`orderW ≥ 0`), the
 limit-repair `holoRepr` is holomorphic (`mdifferentiable_holoRepr`), hence constant on the
 compact connected `X` (`exists_eq_const_of_compactSpace`); off-center the chart pullback equals
 that constant, so `f.toFun` agrees with it on every punctured neighbourhood
 (`MeromorphicLiouville`). -/
-theorem germ_eq_const_of_mem_linearSystem_zero (f : MeromorphicFunction X)
+theorem germ_eq_const_of_mem_linearSystem_zero [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X)
     (hf : f ∈ linearSystem (X := X) 0) : ∃ c : ℂ, ∀ x, ∀ᶠ z in 𝓝[≠] x, f.toFun z = c := by
   have hpos : ∀ x, 0 ≤ f.orderAtPoint x := by
     intro x
@@ -287,7 +284,8 @@ theorem germ_eq_const_of_mem_linearSystem_zero (f : MeromorphicFunction X)
 /-- `l(0) = 1`: `L(0)/germZero ≅ ℂ` (the constants). Spanned by the class of the constant `1`
 (nonzero, since its order is `0 ≠ ⊤`), and every member is germ-constant by Liouville, hence a
 scalar multiple of it. -/
-theorem lDim_zero_eq_one : lDim (X := X) 0 = 1 := by
+theorem lDim_zero_eq_one [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] :
+    lDim (X := X) 0 = 1 := by
   have h1m : IsMeromorphic X (fun _ : X => (1 : ℂ)) := fun x => MeromorphicAt.const 1 _
   have horder1 : ∀ x,
       MeromorphicFunction.orderW (⟨fun _ => 1, h1m⟩ : MeromorphicFunction X) x = 0 := by
