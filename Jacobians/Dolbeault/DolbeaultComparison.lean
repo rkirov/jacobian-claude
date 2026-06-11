@@ -32,9 +32,6 @@ set_option backward.isDefEq.respectTransparency false
 
 namespace Jacobians.Dolbeault
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### Deliverable 1: `proj01` applied fiberwise as an `ℝ`-linear endomorphism of `A¹`.
 
 The smoothness of `x ↦ proj01 (α x)` is the same mechanism `RealForms.dbar` uses: `proj01` is a
@@ -51,9 +48,9 @@ private theorem restrictScalars_comp_mulI (L : ℂ →L[ℂ] ℂ) :
     ContinuousLinearMap.mul_apply', ContinuousLinearMap.coe_restrictScalars']
   rw [← smul_eq_mul Complex.I v, map_smul, smul_eq_mul]
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] in
 /-- The tangent `coordChange` of the complex manifold is `ℂ`-linear, hence commutes with `mulI`. -/
-private theorem tangentCoordChange_comp_mulI {a b z : X}
+private theorem tangentCoordChange_comp_mulI {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {a b z : X}
     (hz : z ∈ (extChartAt 𝓘(ℝ, ℂ) a).source ∩ (extChartAt 𝓘(ℝ, ℂ) b).source) :
     (tangentCoordChange 𝓘(ℝ, ℂ) a b z).comp mulI =
       mulI.comp (tangentCoordChange 𝓘(ℝ, ℂ) a b z) := by
@@ -73,6 +70,9 @@ private theorem tangentCoordChange_comp_mulI {a b z : X}
         (Set.range 𝓘(ℝ, ℂ)) (extChartAt 𝓘(ℝ, ℂ) a z)).restrictScalars ℝ :=
     huniq.eq hℝ (hℂ.hasFDerivWithinAt.restrictScalars ℝ)
   rw [heq, restrictScalars_comp_mulI]
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- `x ↦ proj01 (α x)` is a smooth section whenever `α` is. This is exactly the smoothness mechanism
 of `RealForms.dbar` (`proj01` is a fixed CLM and slides through the tangent `symmL` because `mulI`

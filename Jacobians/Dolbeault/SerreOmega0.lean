@@ -40,9 +40,6 @@ open Module
 
 namespace Jacobians.Dolbeault
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 -- `lSysModule` (= `L(D)/germZero`, with `lDim D = finrank ℂ (lSysModule D)`) is shared from
 -- `Jacobians.Dolbeault.CanonicalFormIso` (a single definition, used by both the §17.4 isomorphism
 -- layer and this gate-D node).
@@ -50,15 +47,19 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-! ### The constant function `1` as a member of every effective linear system -/
 
 /-- The constant meromorphic function `1` (order `0` everywhere). -/
-noncomputable def constOneMero : MeromorphicFunction X :=
+noncomputable def constOneMero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] :
+    MeromorphicFunction X :=
   ⟨fun _ => 1, fun _ => MeromorphicAt.const 1 _⟩
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] in
-theorem constOneMero_orderW (x : X) : (constOneMero (X := X)).orderW x = 0 := by
+theorem constOneMero_orderW {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (x : X) :
+    (constOneMero (X := X)).orderW x = 0 := by
   show meromorphicOrderAt ((fun _ : X => (1 : ℂ)) ∘ (chartAt (H := ℂ) x).symm) _ = 0
   rw [show ((fun _ : X => (1 : ℂ)) ∘ (chartAt (H := ℂ) x).symm) = (fun _ => (1 : ℂ)) from rfl,
     meromorphicOrderAt_const]
   simp
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- The constant `1` lies in `L(D)` for any divisor `D` with all coefficients `≥ 0` (`0 ≤ D x`):
 its order is `0 ≥ -(D x)`. -/

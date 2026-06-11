@@ -102,8 +102,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Jacobians
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ## The reciprocal `f⁻¹` of a meromorphic function (the simple-`∞` engine, item #2)
 
@@ -118,7 +117,6 @@ namespace MeromorphicFunction
 -- The reciprocal uses only the charted-space structure (no compactness/connectedness), matching the
 -- footprint of the other `MeromorphicFunction` algebra (so it applies to open submanifolds `↥U`
 -- too).
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- The pointwise reciprocal of a meromorphic function is meromorphic (Mathlib `MeromorphicAt.inv`,
 applied in each chart — composition with the chart inverse commutes with pointwise `⁻¹`). -/
@@ -161,6 +159,8 @@ theorem orderAtPoint_inv (f : MeromorphicFunction X) (x : X) :
     simp
 
 end MeromorphicFunction
+
+variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ## Removable-singularity meromorphy atoms (the engine for `hvct_mero`)
 
