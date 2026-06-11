@@ -64,13 +64,21 @@ open(f'{DST}/lakefile.toml', 'w').write(
     '[[lean_lib]]\nname = "Submission"\n')
 
 if CHECK:
+    # the committed copy lives on the derived `submission` branch, not main
+    if not os.path.isdir(REAL):
+        import subprocess, tempfile
+        tmp = tempfile.mkdtemp(prefix='subm_branch_')
+        tar = subprocess.run(['git', 'archive', 'submission', REAL],
+                             capture_output=True, check=True).stdout
+        subprocess.run(['tar', '-x', '-C', tmp], input=tar, check=True)
+        REAL = os.path.join(tmp, REAL)
     cmp = filecmp.dircmp(REAL, DST)
     def stale(c):
         return c.left_only or c.right_only or c.diff_files or any(
             stale(sub) for sub in c.subdirs.values())
     if stale(cmp):
-        print("STALE: committed submission/ differs from a fresh generation — rerun "
-              "scripts/make_submission.py and commit")
+        print("STALE: the submission branch's workspace differs from a fresh generation — "
+              "rerun scripts/update_submission_branch.sh")
         sys.exit(1)
     print("submission/ is up to date with Jacobians/**")
 else:
