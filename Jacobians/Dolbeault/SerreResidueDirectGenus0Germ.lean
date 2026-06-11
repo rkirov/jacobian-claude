@@ -6,34 +6,35 @@ Authors: Rado Kirov
 import Jacobians.Dolbeault.SerreResidueDirectGenus0Assemble
 
 /-!
-# Gate A `∑Res = 0` — eliminating the false junk-freeness `hcont_int` (germ-Cauchy at `∞`)
+# The residue theorem `∑Res = 0` — eliminating the false junk-freeness `hcont_int`
+(germ-Cauchy at `∞`)
 
 `Jacobians.Dolbeault.SerreResidueTheorem.residueTheorem_ofCanonicalSimpleInfty_genus0`
-(`SerreResidueDirectGenus0Assemble.lean`) closes Gate A `∑Res = 0` modulo, among the residuals, the
-**finite junk-freeness** `hcont_int`: the literal continuity of `valueChartTracePatched ω₀ f Φ br − L.R`
-at each finite pole-centre `cs j`.
+(`SerreResidueDirectGenus0Assemble.lean`) closes the residue theorem `∑Res = 0` modulo, among
+the residuals, the **finite junk-freeness** `hcont_int`: the literal continuity of
+`valueChartTracePatched ω₀ f Φ br − L.R` at each finite pole-centre `cs j`.
 
 ## The soundness finding (`hcont_int` is FALSE for the canonical full-fibre selection)
 
 `hcont_int` is `ContinuousAt (T − L.R) (cs j)`, which (since `T − L.R` germ-equals an analytic
-representative `R` off `cs j`) is **equivalent to the literal-value match** `(T − L.R)(cs j) = R(cs j)`,
-where `R(cs j)` is the removable (regular-part) limit.  But the *literal value*
-`T(cs j) = valueChartTrace ω₀ f Φ (cs j)` (when `cs j ∉ br`) is, by definition,
+representative `R` off `cs j`) is **equivalent to the literal-value match**
+`(T − L.R)(cs j) = R(cs j)`, where `R(cs j)` is the removable (regular-part) limit. But the *literal
+value* `T(cs j) = valueChartTrace ω₀ f Φ (cs j)` (when `cs j ∉ br`) is, by definition,
 
 > `valueChartTrace ω₀ f Φ b = ∑ i, (coeffAt ω₀ ((Φ b).xs i) (chart (Φ b).xs i) * g ((Φ b).xs i))
 >   · deriv (sheetᵢ) b`
 
-(verified directly: `FormTraceFibre.chartIntegrand` reads `g` *at* the fibre point).  At a pole-value
+(verified directly: `FormTraceFibre.chartIntegrand` reads `g` *at* the fibre point). At a pole-value
 `cs j` the canonical full-fibre selection enumerates the **entire** fibre `F⁻¹(coe cs j)`, which —
 because `cs j` is a pole-*value* (`hcenters_cs`) — contains a genuine `α`-pole `a` (an element of
-`poles`).  So the summand for `a` carries the factor `g a` — the value of `g` *at its own pole*, a
-junk value.  Changing `g` only at the isolated point `a` changes `T(cs j)` (coefficient
-`coeffAt ω₀ a · deriv(sheet_a)(cs j)`, generically nonzero) **without** changing the germ of `T` on the
-punctured `𝓝[≠] cs j` (hence without changing `R(cs j)` or `L.R(cs j)`).  Therefore the equation
+`poles`). So the summand for `a` carries the factor `g a` — the value of `g` *at its own pole*, a
+junk value. Changing `g` only at the isolated point `a` changes `T(cs j)` (coefficient
+`coeffAt ω₀ a · deriv(sheet_a)(cs j)`, generically nonzero) **without** changing the germ of `T` on
+the punctured `𝓝[≠] cs j` (hence without changing `R(cs j)` or `L.R(cs j)`). Therefore the equation
 `(T − L.R)(cs j) = R(cs j)` cannot hold for all `g`: **`hcont_int` is junk-value-dependent, not a
-theorem.**  (The branch-patch fixes the analogous falsity at *branch* values, where the trace is
-*bounded*; it provides no fix at pole-centres, where the trace genuinely *diverges* — `limUnder` of a
-divergent function is again junk.)
+theorem.** (The branch-patch fixes the analogous falsity at *branch* values, where the trace is
+*bounded*; it provides no fix at pole-centres, where the trace genuinely *diverges* — `limUnder` of
+a divergent function is again junk.)
 
 This is the same class of defect the repo already records for the *raw* trace at branch values
 (`FormTraceGlobalTPatched.lean:432–433`), surfacing at the pole-centres where the `valueChartTrace`
@@ -41,46 +42,49 @@ route cannot repair it.
 
 ## The non-circular fix (germ-Cauchy: literal-entire is not needed)
 
-The genus-`0` close (`SerreResidueDirectGenus0.lean`) used `hcont_int` *only* to obtain `hentire :
-AnalyticOnNhd ℂ (T − L.R) Set.univ` (the **literal**-entire remainder), feeding the Cauchy-at-`∞`
-residue `resAt (recipCoeff (T − L.R)) 0 = 0` (`resAt_recipCoeff_eq_zero_of_entire`, global primitive).
-But the `∞`-residue depends only on the *germ* of `T − L.R` for large `z` — the junk values at the
-finitely-many pole-centres are irrelevant.  So **literal-entire is unnecessarily strong**: it suffices
-that `T − L.R` is *germ-regular* (has an analytic representative at every finite point — `T − L.R`
-analytic off the centres + the pole removed at the centres), which is **free** from
-`exists_laurentForm_principalPart` (`hT_off` + `hrem`), with *no* junk-freeness.
+The genus-`0` close (`SerreResidueDirectGenus0.lean`) used `hcont_int` *only* to obtain
+`hentire : AnalyticOnNhd ℂ (T − L.R) Set.univ` (the **literal**-entire remainder), feeding the
+Cauchy-at-`∞` residue `resAt (recipCoeff (T − L.R)) 0 = 0` (`resAt_recipCoeff_eq_zero_of_entire`,
+global primitive). But the `∞`-residue depends only on the *germ* of `T − L.R` for large `z` — the
+junk values at the finitely-many pole-centres are irrelevant. So **literal-entire is unnecessarily
+strong**: it suffices that `T − L.R` is *germ-regular* (has an analytic representative at every
+finite point — `T − L.R` analytic off the centres + the pole removed at the centres), which is
+**free** from `exists_laurentForm_principalPart` (`hT_off` + `hrem`), with *no* junk-freeness.
 
 The germ-Cauchy lemma (`resAt_recipCoeff_eq_zero_of_regular`): from germ-regularity off a finite set
-`S`, construct (`exists_entire_agree_of_regular`) a genuinely-**entire** `h'` agreeing with `h` off `S`
-(patch the junk values to the regular-part values; analytic continuation makes `h'` entire); then
-`recipCoeff h =ᶠ[𝓝[≠] 0] recipCoeff h'` (they agree for large `z`, `S` bounded) and `resAt (recipCoeff
-h') 0 = 0` by the *existing* Cauchy-at-`∞` for the entire `h'`.  This is sound and non-circular — it
-uses only analytic continuation + Cauchy for a genuinely-entire function, never `∑Res = 0`.
+`S`, construct (`exists_entire_agree_of_regular`) a genuinely-**entire** `h'` agreeing with `h` off
+`S` (patch the junk values to the regular-part values; analytic continuation makes `h'` entire);
+then `recipCoeff h =ᶠ[𝓝[≠] 0] recipCoeff h'` (they agree for large `z`, `S` bounded) and
+`resAt (recipCoeff h') 0 = 0` by the *existing* Cauchy-at-`∞` for the entire `h'`. This is sound and
+non-circular — it uses only analytic continuation + Cauchy for a genuinely-entire function, never
+`∑Res = 0`.
 
-So this file **eliminates `hcont_int`** from the genus-`0` Gate-A capstones, replacing it with the free
-germ-regularity already supplied by the principal-part extraction.
+So this file **eliminates `hcont_int`** from the genus-`0` residue-theorem capstones, replacing it
+with the free germ-regularity already supplied by the principal-part extraction.
 
-## What this file proves (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file proves
 
 * `exists_entire_agree_of_regular` — from germ-regular data off a finite `S`, a genuinely-entire
   function agreeing with `h` off `S` (the analytic-continuation patch).
-* `recipCoeff_eventuallyEq_of_agree_off_finset` — `recipCoeff h =ᶠ[𝓝[≠] 0] recipCoeff h'` from cofinite
-  agreement (`S` bounded ⟹ for large `z = ζ⁻¹` they agree).
+* `recipCoeff_eventuallyEq_of_agree_off_finset` — `recipCoeff h =ᶠ[𝓝[≠] 0] recipCoeff h'` from
+  cofinite agreement (`S` bounded ⟹ for large `z = ζ⁻¹` they agree).
 * `HoloPunctured.congr_nhdsNE` — `HoloPunctured` transfers along a punctured germ-equality.
-* `resAt_recipCoeff_eq_zero_of_regular` / `holoPunctured_recipCoeff_of_regular` — **germ-Cauchy at `∞`**:
-  the `∞`-residue / isolated-singularity of `recipCoeff h` from germ-regularity (no literal continuity).
+* `resAt_recipCoeff_eq_zero_of_regular` / `holoPunctured_recipCoeff_of_regular` — **germ-Cauchy at
+  `∞`**: the `∞`-residue / isolated-singularity of `recipCoeff h` from germ-regularity (no literal
+  continuity).
 * `infty_eq_of_remainderRegular` — the `∞`-residue identity from germ-regularity + `hcoh_full` (the
   `hcont_int`-free replacement of `infty_eq_of_remainderResZero`).
-* `globalTraceData_of_genus0_germ` / `residueTheorem_of_directGeometry_genus0_germ` — the residue-level
-  close **without** `hcont_int`.
-* `residueTheorem_ofAdapted_genus0_germ` / `…SimpleInfty_germ` / `…ofCanonicalSimpleInfty_germ` — the
-  adapted-cover / canonical-selection capstones, `hcont_int` **dropped**.
+* `globalTraceData_of_genus0_germ` / `residueTheorem_of_directGeometry_genus0_germ` — the
+  residue-level close **without** `hcont_int`.
+* `residueTheorem_ofAdapted_genus0_germ` / `…SimpleInfty_germ` / `…ofCanonicalSimpleInfty_germ` —
+  the adapted-cover / canonical-selection capstones, `hcont_int` **dropped**.
 * `…_holomorphic` — end-to-end non-vacuity (empty pole set).
 
 ## References
 
 * Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3.
-* `Jacobians/Dolbeault/SerreResidueDirectGenus0.lean` (the literal-entire route this file generalises).
+* `Jacobians/Dolbeault/SerreResidueDirectGenus0.lean` (the literal-entire route this file
+  generalises).
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.
 -/
 
@@ -98,12 +102,11 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.Dolbeault.FormTraceMovingFibre Jacobians.Dolbeault.FormTraceFullFibre
   Jacobians.Dolbeault.FormTracePrincipalPart
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
 
@@ -114,12 +117,12 @@ finitely-many finite points are irrelevant.  We therefore weaken the *literal*-e
 `resAt_recipCoeff_eq_zero_of_entire` to **germ-regularity** off a finite set, which is free from the
 principal-part extraction. -/
 
-/-- **An entire function agreeing with `h` off a finite set, from germ-regularity.**  If `h` is analytic
-off a finite set `S` (`hoff`) and, at each `p ∈ S`, germ-equals an analytic representative off `p`
-(`hrem` — the pole removed), then there is a genuinely-**entire** `h'` with `h' = h` off `S`.  At
-`p ∈ S`, `h'` takes the regular-part value `R p` (so it is continuous there, unlike the junk literal
-`h p`); analytic continuation (`AnalyticAt.congr` from the germ rep, the other `S`-points avoided on a
-punctured ball) makes `h'` analytic everywhere. -/
+/-- **An entire function agreeing with `h` off a finite set, from germ-regularity.** If `h` is
+analytic off a finite set `S` (`hoff`) and, at each `p ∈ S`, germ-equals an analytic representative
+off `p` (`hrem` — the pole removed), then there is a genuinely-**entire** `h'` with `h' = h` off
+`S`. At `p ∈ S`, `h'` takes the regular-part value `R p` (so it is continuous there, unlike the junk
+literal `h p`); analytic continuation (`AnalyticAt.congr` from the germ rep, the other `S`-points
+avoided on a punctured ball) makes `h'` analytic everywhere. -/
 theorem exists_entire_agree_of_regular {h : ℂ → ℂ} {S : Finset ℂ}
     (hoff : ∀ z ∉ S, AnalyticAt ℂ h z)
     (hrem : ∀ p ∈ S, ∃ R : ℂ → ℂ, AnalyticAt ℂ R p ∧ h =ᶠ[𝓝[≠] p] R) :
@@ -157,8 +160,8 @@ theorem exists_entire_agree_of_regular {h : ℂ → ℂ} {S : Finset ℂ}
     simp only [hh', if_neg hz'notS]
 
 /-- **`recipCoeff` germ-equality from cofinite agreement.**  If `h' = h` off a finite set `S`, then
-`recipCoeff h =ᶠ[𝓝[≠] 0] recipCoeff h'`: as `ζ → 0` (`ζ ≠ 0`), `‖ζ⁻¹‖ → ∞` escapes the bounded `S`, so
-`h (ζ⁻¹) = h' (ζ⁻¹)`, hence the reciprocal coefficients `−·(ζ⁻¹)·ζ⁻²` agree. -/
+`recipCoeff h =ᶠ[𝓝[≠] 0] recipCoeff h'`: as `ζ → 0` (`ζ ≠ 0`), `‖ζ⁻¹‖ → ∞` escapes the bounded `S`,
+so `h (ζ⁻¹) = h' (ζ⁻¹)`, hence the reciprocal coefficients `−·(ζ⁻¹)·ζ⁻²` agree. -/
 theorem recipCoeff_eventuallyEq_of_agree_off_finset {h h' : ℂ → ℂ} {S : Finset ℂ}
     (hag : ∀ z ∉ S, h' z = h z) :
     recipCoeff h =ᶠ[𝓝[≠] 0] recipCoeff h' := by
@@ -175,9 +178,10 @@ theorem recipCoeff_eventuallyEq_of_agree_off_finset {h h' : ℂ → ℂ} {S : Fi
   show -(h (ζ⁻¹)) * ζ ^ (-2 : ℤ) = -(h' (ζ⁻¹)) * ζ ^ (-2 : ℤ)
   rw [hag (ζ⁻¹) hζnotS]
 
-/-- **`HoloPunctured` transfers along a punctured germ-equality.**  If `f` has an isolated singularity
-at `c` (`HoloPunctured f c`) and `f =ᶠ[𝓝[≠] c] g`, then so does `g`: on a small punctured ball where
-they agree, `g` is differentiable since `f` is (`DifferentiableAt.congr_of_eventuallyEq`). -/
+/-- **`HoloPunctured` transfers along a punctured germ-equality.** If `f` has an isolated
+singularity at `c` (`HoloPunctured f c`) and `f =ᶠ[𝓝[≠] c] g`, then so does `g`: on a small
+punctured ball where they agree, `g` is differentiable since `f` is
+(`DifferentiableAt.congr_of_eventuallyEq`). -/
 theorem HoloPunctured.congr_nhdsNE {f g : ℂ → ℂ} {c : ℂ} (hf : HoloPunctured f c)
     (hfg : f =ᶠ[𝓝[≠] c] g) : HoloPunctured g c := by
   obtain ⟨ρ, hρ, hdiff⟩ := hf
@@ -198,8 +202,8 @@ theorem HoloPunctured.congr_nhdsNE {f g : ℂ → ℂ} {c : ℂ} (hf : HoloPunct
   exact (hdiff z hzρ).congr_of_eventuallyEq hgf_nhds
 
 /-- **Germ-Cauchy at infinity (the `∞`-residue of a germ-regular `1`-form coefficient is `0`).**  If
-`h : ℂ → ℂ` is analytic off a finite set `S` and germ-regular (the pole removed) at each `p ∈ S`, then
-`resAt (recipCoeff h) 0 = 0`.  The genuine `hcont_int`-free replacement of
+`h : ℂ → ℂ` is analytic off a finite set `S` and germ-regular (the pole removed) at each `p ∈ S`,
+then `resAt (recipCoeff h) 0 = 0`. The genuine `hcont_int`-free replacement of
 `resAt_recipCoeff_eq_zero_of_entire`: build the entire `h'` agreeing off `S`
 (`exists_entire_agree_of_regular`), transfer the residue along the `∞`-germ-equality
 (`recipCoeff_eventuallyEq_of_agree_off_finset`), and apply Cauchy at `∞` to the entire `h'`. -/
@@ -212,8 +216,8 @@ theorem resAt_recipCoeff_eq_zero_of_regular {h : ℂ → ℂ} {S : Finset ℂ}
   exact resAt_recipCoeff_eq_zero_of_entire hh'_an
 
 /-- **`recipCoeff` of a germ-regular coefficient has an isolated singularity at `0`.**  The
-`HoloPunctured` input of `resAt` additivity at `0`, from germ-regularity (the entire-`h'` proxy + the
-`∞`-germ-equality transferred by `HoloPunctured.congr_nhdsNE`). -/
+`HoloPunctured` input of `resAt` additivity at `0`, from germ-regularity (the entire-`h'` proxy +
+the `∞`-germ-equality transferred by `HoloPunctured.congr_nhdsNE`). -/
 theorem holoPunctured_recipCoeff_of_regular {h : ℂ → ℂ} {S : Finset ℂ}
     (hoff : ∀ z ∉ S, AnalyticAt ℂ h z)
     (hrem : ∀ p ∈ S, ∃ R : ℂ → ℂ, AnalyticAt ℂ R p ∧ h =ᶠ[𝓝[≠] p] R) :
@@ -224,14 +228,16 @@ theorem holoPunctured_recipCoeff_of_regular {h : ℂ → ℂ} {S : Finset ℂ}
 
 /-! ## The `∞`-residue identity from germ-regularity (the `hcont_int`-free `infty_eq`)
 
-`infty_eq_of_remainderResZero` took the *literal*-entire remainder `hentire` (= the false junk-freeness).
-This germ form takes instead the **germ-regular** data `hoff`/`hrem` of `T − L.R` — free from the
-principal-part extraction — and routes the `∞`-residue vanishing through germ-Cauchy. -/
+`infty_eq_of_remainderResZero` took the *literal*-entire remainder `hentire` (= the false
+junk-freeness). This germ form takes instead the **germ-regular** data `hoff`/`hrem` of `T − L.R` —
+free from the principal-part extraction — and routes the `∞`-residue vanishing through germ-Cauchy.
+-/
 
 /-- **The `∞`-residue identity from the germ-regular remainder + the `∞`-coherence (non-circular,
-`hcont_int`-free).**  Given that `T − L.R` (`T = valueChartTracePatched ω₀ f Φ br`) is analytic off the
-centre set `image L.a` (`hoff`) and germ-regular at each centre (`hrem`) — both free from the
-principal-part extraction — together with the `∞`-coherence `hcoh_full` and the `∞`-fibre enumeration,
+`hcont_int`-free).** Given that `T − L.R` (`T = valueChartTracePatched ω₀ f Φ br`) is analytic off
+the centre set `image L.a` (`hoff`) and germ-regular at each centre (`hrem`) — both free from the
+principal-part extraction — together with the `∞`-coherence `hcoh_full` and the `∞`-fibre
+enumeration,
 
 > `resAtInfty L.R L.ρ = ∑_{a ∈ poles, F a = ∞} formFnResidue ω₀ g a`.
 
@@ -263,7 +269,8 @@ theorem infty_eq_of_remainderRegular
     rw [recipCoeff_sub]; funext ζ; simp
   have hhp_rem : HoloPunctured (recipCoeff (T - L.R)) 0 :=
     holoPunctured_recipCoeff_of_regular hoff hrem
-  have hLRhp : HoloPunctured (recipCoeff L.R) 0 := (meromorphicAt_recipCoeff_laurent L).holoPunctured
+  have hLRhp : HoloPunctured (recipCoeff L.R) 0 :=
+    (meromorphicAt_recipCoeff_laurent L).holoPunctured
   have hadd := resAt_add hLRhp hhp_rem
   rw [← hsplit] at hadd
   have hrem_res0 : resAt (recipCoeff (T - L.R)) 0 = 0 :=
@@ -277,17 +284,19 @@ theorem infty_eq_of_remainderRegular
     residueSum_full_eq_poleOnly Dinf_full.xs xsInf_po hfull_inj hpo_inj hpole_image hnonpole]
   exact residueSum_xs_eq_inftyFilter xsInf_po hpo_inj hpo_mem hpo_surj
 
-/-! ## The residue-level close of Gate A, `hcont_int`-free
+/-! ## The residue-level close of the residue-theorem assembly, `hcont_int`-free
 
 Mirrors `globalTraceData_of_genus0` but with `hcont_int` **dropped**: the finite junk-freeness is
-replaced by the *free* germ-regularity (`hT_off` off the centres + the principal-part remainder `hLrem`
-at the centres), and the `∞`-residue identity routes through `infty_eq_of_remainderRegular`. -/
+replaced by the *free* germ-regularity (`hT_off` off the centres + the principal-part remainder
+`hLrem` at the centres), and the `∞`-residue identity routes through `infty_eq_of_remainderRegular`.
+-/
 
 /-- **`GlobalTraceData` from the residue-level geometry, `hcont_int`-free.**  Identical to
-`globalTraceData_of_genus0` except the **finite junk-freeness `hcont_int` is removed**: the `∞`-residue
-identity is re-derived from the *free* germ-regularity of `T − L.R` (analytic off the centres via
-`hT_off_patched`, germ-regular at the centres via `exists_laurentForm_principalPart`) through germ-Cauchy
-(`infty_eq_of_remainderRegular`).  Producing one ⇒ Gate A `∑Res = 0`. -/
+`globalTraceData_of_genus0` except the **finite junk-freeness `hcont_int` is removed**: the
+`∞`-residue identity is re-derived from the *free* germ-regularity of `T − L.R` (analytic off the
+centres via `hT_off_patched`, germ-regular at the centres via `exists_laurentForm_principalPart`)
+through germ-Cauchy (`infty_eq_of_remainderRegular`). Producing one ⇒ the residue-theorem assembly
+`∑Res = 0`. -/
 noncomputable def globalTraceData_of_genus0_germ
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
@@ -338,7 +347,8 @@ noncomputable def globalTraceData_of_genus0_germ
   have hLcenters : Finset.univ.image L.a = Finset.univ.image cs := hPP.choose_spec.1
   have hLrem : ∀ j, ∃ R : ℂ → ℂ, AnalyticAt ℂ R (cs j) ∧ (T - L.R) =ᶠ[𝓝[≠] (cs j)] R :=
     hPP.choose_spec.2
-  -- The remainder `T − L.R` is germ-regular (FREE): analytic off the centres + the pole removed at them.
+  -- The remainder `T − L.R` is germ-regular (FREE): analytic off the centres + the pole removed at
+  -- them.
   have hT_off : ∀ z ∉ Finset.univ.image L.a, AnalyticAt ℂ T z := by
     intro z hz; rw [hLcenters] at hz; exact hT_off_patched hreg hbnd hz
   -- `L.R` is analytic off its centre set (its monomial centres lie in `image L.a`).
@@ -385,10 +395,10 @@ noncomputable def globalTraceData_of_genus0_germ
       hpoInf_inj hpoInf_mem hpoInf_surj hpole_image_inf
       (fun k hk => formFnResidue_eq_zero_of_analyticAt ω₀ g _ (hnonpole_inf_an k hk))
 
-/-- **Gate A `∑Res = 0` from the residue-level geometry, `hcont_int`-free.**  Routes through
-`globalTraceData_of_genus0_germ`: the finite junk-freeness `hcont_int` is **eliminated** (replaced by
-the free germ-regularity + germ-Cauchy at `∞`); only the `∞`-coherence `hcoh_full` remains of the
-residual-#5/#6 group. -/
+/-- **The residue theorem `∑Res = 0` from the residue-level geometry, `hcont_int`-free.**
+Routes through `globalTraceData_of_genus0_germ`: the finite junk-freeness `hcont_int` is
+**eliminated** (replaced by the free germ-regularity + germ-Cauchy at `∞`); only the `∞`-coherence
+`hcoh_full` remains of the residual-#5/#6 group. -/
 theorem residueTheorem_of_directGeometry_genus0_germ
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
@@ -434,16 +444,16 @@ theorem residueTheorem_of_directGeometry_genus0_germ
 /-! ## The adapted-cover / canonical-selection capstones, `hcont_int`-free
 
 Mirror the proven combinatorial field-groups of `residueTheorem_ofAdapted_genus0` /
-`…SimpleInfty_genus0` / `…ofCanonicalSimpleInfty_genus0` (pole sub-fibre `poleSubfibre`, the `∞`-pole
-sub-enumeration `poleSubEnum`, the simple-`∞` full fibre `inftyFibreDataNF_full`, the canonical-`Φ`
-enumeration), but route through the `hcont_int`-**free** `residueTheorem_of_directGeometry_genus0_germ`.
-The finite junk-freeness `hcont_int` is **gone**; the remaining analytic inputs are `hreg`/`hbnd` and the
-`∞`-coherence `hcoh_full` (the per-centre `Cfull` and the `∞` enumeration are the genuine §VIII.3
-geometry). -/
+`…SimpleInfty_genus0` / `…ofCanonicalSimpleInfty_genus0` (pole sub-fibre `poleSubfibre`, the
+`∞`-pole sub-enumeration `poleSubEnum`, the simple-`∞` full fibre `inftyFibreDataNF_full`, the
+canonical-`Φ` enumeration), but route through the `hcont_int`-**free**
+`residueTheorem_of_directGeometry_genus0_germ`. The finite junk-freeness `hcont_int` is **gone**;
+the remaining analytic inputs are `hreg`/`hbnd` and the `∞`-coherence `hcoh_full` (the per-centre
+`Cfull` and the `∞` enumeration are the genuine §VIII.3 geometry). -/
 
-/-- **Gate A `∑Res = 0` from an adapted cover, `hcont_int`-free.**  The germ analogue of
-`residueTheorem_ofAdapted_genus0` with the finite junk-freeness `hcont_int` **dropped** (eliminated via
-germ-Cauchy at `∞`). -/
+/-- **The residue theorem `∑Res = 0` from an adapted cover, `hcont_int`-free.** The germ
+analogue of `residueTheorem_ofAdapted_genus0` with the finite junk-freeness `hcont_int` **dropped**
+(eliminated via germ-Cauchy at `∞`). -/
 theorem residueTheorem_ofAdapted_genus0_germ
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (hΦ_inj : ∀ p, Function.Injective (Φ p).xs)
@@ -489,8 +499,9 @@ theorem residueTheorem_ofAdapted_genus0_germ
     (poleSubEnum_hpole_image poles Dinf_full.xs)
     hnonpole_inf_an
 
-/-- **Gate A `∑Res = 0` from an adapted cover with simple `∞`-poles, `hcont_int`-free.**  The germ
-analogue of `residueTheorem_ofAdaptedSimpleInfty_genus0`, `hcont_int` **dropped**. -/
+/-- **The residue theorem `∑Res = 0` from an adapted cover with simple `∞`-poles,
+`hcont_int`-free.** The germ analogue of `residueTheorem_ofAdaptedSimpleInfty_genus0`, `hcont_int`
+**dropped**. -/
 theorem residueTheorem_ofAdaptedSimpleInfty_genus0_germ
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (hΦ_inj : ∀ p, Function.Injective (Φ p).xs)
@@ -517,23 +528,26 @@ theorem residueTheorem_ofAdaptedSimpleInfty_genus0_germ
     (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
       Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
     (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f Φ br)
-      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
+      =ᶠ[𝓝[≠] 0]
+        recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
-  residueTheorem_ofAdapted_genus0_germ Φ hΦ_inj hΦ_mem hΦ_surj m cs ρ hcs_ball hcs_inj br hcenters_cs
+  residueTheorem_ofAdapted_genus0_germ Φ hΦ_inj hΦ_mem hΦ_surj m cs ρ hcs_ball hcs_inj br
+    hcenters_cs
     Cfull hCfull_inj hCfull_image hnonpole_an
     (inftyFibreDataNF_full g f hsimpleInf hmeroInf)
     (inftyFibreEnum_injective f)
     (fun k => inftyFibreEnum_mem f k)
-    (fun a _ha hfa => inftyFibreEnum_surj f hfa)
+    (fun _ _ha hfa => inftyFibreEnum_surj f hfa)
     hnonpole_inf_an hreg hbnd hcoh_full
 
-/-- **Gate A `∑Res = 0` from the canonical selection with simple `∞`-poles, `hcont_int`-free.**  The
-sound, `hcont_int`-eliminated form of the most-wired capstone
-`residueTheorem_ofCanonicalSimpleInfty_genus0`: the canonical full-fibre selection + simple `∞`-poles,
-with the genus-`0` `∞`-vanishing discharged internally (germ-Cauchy) **and** the finite junk-freeness
-`hcont_int` removed (replaced by the free germ-regularity of the trace remainder).  Gate A rests on
-*exactly* the per-centre full-fibre coherence `Cfull`, the off-centre analyticity `hreg`/`hbnd`, and the
-`∞`-coherence `hcoh_full` — the false `hcont_int` is **gone**. -/
+/-- **The residue theorem `∑Res = 0` from the canonical selection with simple `∞`-poles,
+`hcont_int`-free.** The sound, `hcont_int`-eliminated form of the most-wired capstone
+`residueTheorem_ofCanonicalSimpleInfty_genus0`: the canonical full-fibre selection + simple
+`∞`-poles, with the genus-`0` `∞`-vanishing discharged internally (germ-Cauchy) **and** the finite
+junk-freeness `hcont_int` removed (replaced by the free germ-regularity of the trace remainder). the
+residue-theorem assembly rests on *exactly* the per-centre full-fibre coherence `Cfull`, the
+off-centre analyticity `hreg`/`hbnd`, and the `∞`-coherence `hcoh_full` — the false `hcont_int` is
+**gone**. -/
 theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ (hdiv : (f.div : Divisor X) ≠ 0)
     (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
       GoodValue g f hdiv p)
@@ -544,7 +558,8 @@ theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ (hdiv : (f.div : Divis
     (Cfull : ∀ i, MovingCoherenceDatum ω₀ g f (canonicalFibreSelection g f hdiv) (cs i))
     (hCfull_inj : ∀ i, Function.Injective (Cfull i).D.xs)
     (hCfull_image : ∀ i,
-      Finset.univ.image (Cfull i).D.xs = Finset.univ.image (canonicalFibreSelection g f hdiv (cs i)).xs)
+      Finset.univ.image (Cfull i).D.xs =
+        Finset.univ.image (canonicalFibreSelection g f hdiv (cs i)).xs)
     (hnonpole_an : ∀ i, ∀ k, (Cfull i).D.xs k ∉ poles →
       AnalyticAt ℂ (fun z => g ((chartAt ℂ ((Cfull i).D.xs k)).symm z))
         ((chartAt ℂ ((Cfull i).D.xs k)) ((Cfull i).D.xs k)))
@@ -560,7 +575,8 @@ theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ (hdiv : (f.div : Divis
       Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z)
         (𝓝[≠] b₀) (𝓝 0))
     (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv) br)
-      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
+      =ᶠ[𝓝[≠] 0]
+        recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
   residueTheorem_ofAdaptedSimpleInfty_genus0_germ (canonicalFibreSelection g f hdiv)
     (canonicalFibreSelection_hΦ_inj f hdiv)
@@ -571,9 +587,9 @@ theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ (hdiv : (f.div : Divis
 
 /-! ## Non-vacuity (end-to-end soundness)
 
-The `hcont_int`-free capstones are satisfiable, not a disguised `False`: for the empty pole set the empty
-fibre selection (`Φ` empty, `m = 0`, `br = ∅`, the zero trace) satisfies every input — and there is no
-`hcont_int` to discharge.  Confirms the `hcont_int`-eliminated inputs are honest. -/
+The `hcont_int`-free capstones are satisfiable, not a disguised `False`: for the empty pole set the
+empty fibre selection (`Φ` empty, `m = 0`, `br = ∅`, the zero trace) satisfies every input — and
+there is no `hcont_int` to discharge. Confirms the `hcont_int`-eliminated inputs are honest. -/
 
 /-- **Non-vacuity of the `hcont_int`-free residue-level close.**  For the empty pole set,
 `residueTheorem_of_directGeometry_genus0_germ` is satisfiable via the empty selection and `br = ∅`,

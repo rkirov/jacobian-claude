@@ -7,15 +7,15 @@ import Jacobians.Dolbeault.FormTraceFibre
 import Jacobians.Dolbeault.FormTraceInftyRecip
 
 /-!
-# The `∞`-fibre reciprocal-chart trace (Gate A, §VIII.3 step 5 — `infty_eq` reduced to agreement)
+# The `∞`-fibre reciprocal-chart trace (Miranda §VIII.3 step 5 — `infty_eq` reduced to agreement)
 
-This file builds the **`∞`-fibre** analogue of `Jacobians.Dolbeault.FormTraceFibre`: Miranda's
-Lemma 3.2 read at the pole fibre `F⁻¹(∞)` in the reciprocal chart `ζ = 1/w` of `ℂℙ¹` (base coordinate
-`0`).  It reduces the `infty_eq` field of `TraceRationalityWitness` — in its reciprocal-chart form
+This file builds the **`∞`-fibre** analogue of `Jacobians.Dolbeault.FormTraceFibre`: Miranda's Lemma
+3.2 read at the pole fibre `F⁻¹(∞)` in the reciprocal chart `ζ = 1/w` of `ℂℙ¹` (base coordinate
+`0`). It reduces the `infty_eq` field of `TraceRationalityWitness` — in its reciprocal-chart form
 `resAt (recipCoeff L.R) 0 = ∑_{a : F a = ∞} Res_a α` (the proved bridge
 `FormTraceInftyRecip.resAtInfty_eq_resAt_recipCoeff`) — to a single honest geometric input,
-*structurally identical to the finite case*: **`recipCoeff L.R` agrees with the reciprocal-chart trace
-coefficient off `0`**.
+*structurally identical to the finite case*: **`recipCoeff L.R` agrees with the reciprocal-chart
+trace coefficient off `0`**.
 
 ## The reciprocal-chart `∞`-fibre, via the generic `FibreTrace`
 
@@ -26,14 +26,14 @@ relevant value coordinate is the **reciprocal** `ζ = 1/f.holoRepr`, so we canno
 `Jacobians.MeromorphicTrace.FibreTrace` (sheets + coefficients), with
 
 * `b := 0` — the reciprocal coordinate of `∞`;
-* `pre i := chart_{xs i} (xs i)` and `coeff i := chartIntegrand ω₀ g (xs i)` — **the same source-chart
-  data as the finite case** (the `1`-form `α = ω₀·g`'s chart integrand at the fibre point `xs i`), so
-  bridge (c) `resAt (coeff i) (pre i) = formFnResidue ω₀ g (xs i)` (`resAt_chartIntegrand_eq_formFnResidue`)
-  is *unchanged* — the residue of `α` at a point is read in the source chart, independent of the value
-  chart;
+* `pre i := chart_{xs i} (xs i)` and `coeff i := chartIntegrand ω₀ g (xs i)` — **the same
+  source-chart data as the finite case** (the `1`-form `α = ω₀·g`'s chart integrand at the fibre
+  point `xs i`), so bridge (c) `resAt (coeff i) (pre i) = formFnResidue ω₀ g (xs i)`
+  (`resAt_chartIntegrand_eq_formFnResidue`) is *unchanged* — the residue of `α` at a point is read
+  in the source chart, independent of the value chart;
 * `sheet i` — the planar inverse of the **reciprocal-chart cover map** `z ↦ 1/f.holoRepr(chart⁻¹ z)`
-  (a local biholomorphism at `pre i` sending `pre i ↦ 0`, when the pole `xs i` is *unramified for `f`
-  over `∞`* — `f` simple there), supplied by `exists_planar_section`.
+  (a local biholomorphism at `pre i` sending `pre i ↦ 0`, when the pole `xs i` is *unramified for
+  `f` over `∞`* — `f` simple there), supplied by `exists_planar_section`.
 
 With this, Lemma 3.2 (`FibreTrace.resAt_traceCoeff'`, unconditional) gives
 `resAt (∞-trace coeff) 0 = ∑ i, formFnResidue ω₀ g (xs i)` — the `∞`-fibre residue sum.  Then if
@@ -43,11 +43,11 @@ reciprocal `infty_eq` into the `∞`-fibre residue sum.
 ## The `∞`-regularity input
 
 A pole `a` of `α` mapping to `∞` is *unramified for `f` over `∞`* iff the reciprocal `1/f.holoRepr`
-read in charts is a local biholomorphism at `chart a` (analytic, nonzero derivative, value `0`).  We
-carry this as the structure `InftyFibreData` (the honest geometric input — `f` unramified over `∞` at
-the pole fibre, e.g. the generic-cover choice), mirroring `FibreRegularData` field-for-field.
+read in charts is a local biholomorphism at `chart a` (analytic, nonzero derivative, value `0`). We
+carry this as the structure `InftyFibreData` (the honest geometric input — `f` unramified over `∞`
+at the pole fibre, e.g. the generic-cover choice), mirroring `FibreRegularData` field-for-field.
 
-## What is proved (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## Main results
 
 * `inftyFibreTrace` — the generic `FibreTrace` over the `∞` fibre (base `0`), from `InftyFibreData`;
 * `resAt_traceCoeff_inftyFibreTrace` — the `∞`-fibre Lemma 3.2:
@@ -57,9 +57,9 @@ the pole fibre, e.g. the generic-cover choice), mirroring `FibreRegularData` fie
 * `resAt_recipCoeff_eq_inftyResidueSum_of_agree` — the reciprocal `infty_eq`, from the agreement
   `recipCoeff L.R =ᶠ[𝓝[≠] 0] (∞-trace coeff)`.
 
-This is the honest reduction of `infty_eq` to the same "`L` represents `Tr_F α`" agreement the finite
-case rests on — the residual content is now uniformly *agreement of `L` with the trace germ* (finite
-charts + reciprocal chart), i.e. the trace's global rationality.
+This is the honest reduction of `infty_eq` to the same "`L` represents `Tr_F α`" agreement the
+finite case rests on — the residual content is now uniformly *agreement of `L` with the trace germ*
+(finite charts + reciprocal chart), i.e. the trace's global rationality.
 
 ## References
 
@@ -78,12 +78,11 @@ namespace Jacobians.Dolbeault.FormTraceInftyFibre
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
   Jacobians.Dolbeault.FormTraceFibre Jacobians.Dolbeault.FormTraceInftyRecip
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 variable {g : X → ℂ}
 
@@ -92,10 +91,10 @@ variable {g : X → ℂ}
 /-- **Per-`∞`-fibre regularity data** for the cover `f` over `∞`: a finite family of fibre points
 `xs : ι → X` (the poles of `α` mapping to `∞`), each *unramified for `f` over `∞`* — the
 **reciprocal-chart cover map** `z ↦ (f.holoRepr (chart⁻¹ z))⁻¹` is a local biholomorphism at
-`pre i = chart (xs i)`, sending it to the reciprocal coordinate `0` of `∞`.  This is the honest
+`pre i = chart (xs i)`, sending it to the reciprocal coordinate `0` of `∞`. This is the honest
 geometric input the `∞`-fibre `FibreTrace` is built from (the generic-cover choice makes `f`
-unramified over `∞`).  Mirrors `FibreRegularData`, with `1/f.holoRepr` (the reciprocal value) in place
-of `f.holoRepr`. -/
+unramified over `∞`). Mirrors `FibreRegularData`, with `1/f.holoRepr` (the reciprocal value) in
+place of `f.holoRepr`. -/
 structure InftyFibreData (g : X → ℂ) (f : MeromorphicFunction X) where
   /-- The sheet index. -/
   ι : Type
@@ -118,21 +117,22 @@ attribute [instance] InftyFibreData.fintype_ι
 
 /-- The reciprocal-chart cover `z ↦ (f.holoRepr (chart⁻¹ z))⁻¹` evaluated at `pre i = chart (xs i)`
 is `0` (the reciprocal coordinate of `∞`). -/
-theorem InftyFibreData.recipval (f : MeromorphicFunction X)
-    (D : InftyFibreData g f) (i : D.ι) :
-    (fun z => (f.holoRepr ((chartAt ℂ (D.xs i)).symm z))⁻¹) ((chartAt ℂ (D.xs i)) (D.xs i)) = 0 := by
+theorem InftyFibreData.recipval {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {g : X → ℂ} (f : MeromorphicFunction X) (D : InftyFibreData g f) (i : D.ι) :
+    (fun z => (f.holoRepr ((chartAt ℂ (D.xs i)).symm z))⁻¹)
+      ((chartAt ℂ (D.xs i)) (D.xs i)) = 0 := by
   show (f.holoRepr ((chartAt ℂ (D.xs i)).symm ((chartAt ℂ (D.xs i)) (D.xs i))))⁻¹ = 0
   rw [(chartAt ℂ (D.xs i)).left_inv (mem_chart_source ℂ (D.xs i))]
   exact D.hrecip_val i
 
 /-! ### The `∞`-fibre `FibreTrace` (generic, reciprocal-chart sheets) -/
 
-/-- **The `FibreTrace` over the `∞` fibre.**  From the `∞`-regularity data `D`, build the fibre trace
+/-- **The `FibreTrace` over the `∞` fibre.** From the `∞`-regularity data `D`, build the fibre trace
 over the reciprocal base `0` whose sheets are the planar section germs of the reciprocal-chart cover
 (bridge (a) at `∞`) and whose coefficients are the chart integrands of `α = ω₀·g` (bridges (b)/(c),
-*identical to the finite case* — the residue of `α` is read in the source chart).  The `pre i` are the
-source-chart coordinates of the fibre points, so `resAt (coeff i) (pre i) = formFnResidue ω₀ g (xs i)`
-definitionally. -/
+*identical to the finite case* — the residue of `α` is read in the source chart). The `pre i` are
+the source-chart coordinates of the fibre points, so
+`resAt (coeff i) (pre i) = formFnResidue ω₀ g (xs i)` definitionally. -/
 noncomputable def inftyFibreTrace (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
     (D : InftyFibreData g f) : FibreTrace where
   ι := D.ι
@@ -220,8 +220,8 @@ theorem inftyResidueSum_eq_filter (ω₀ : HolomorphicOneForms X) (f : Meromorph
 /-! ### `infty_eq` reduced to the reciprocal-chart agreement
 
 The honest analogue of `FormTraceRationalReduce.resAt_eq_fibreResidueSum_of_agree` at `∞`: if the
-reciprocal coefficient `recipCoeff L.R` agrees with the `∞`-fibre trace coefficient off `0`, then the
-reciprocal `infty_eq` holds. -/
+reciprocal coefficient `recipCoeff L.R` agrees with the `∞`-fibre trace coefficient off `0`, then
+the reciprocal `infty_eq` holds. -/
 
 /-- **The reciprocal `infty_eq`, from the reciprocal-chart agreement.**  If `recipCoeff L.R` agrees
 with the `∞`-fibre trace coefficient `(inftyFibreTrace ω₀ f D).traceCoeff` on a punctured
@@ -232,9 +232,9 @@ neighbourhood of `0`, and `D`'s `xs` enumerates exactly the `∞` fibre, then
 i.e. the reciprocal-chart form `hinftyRecip` of the `infty_eq` field
 (`traceRationalityWitness_of_agree_recip`).
 
-*Proof.*  `resAt (recipCoeff L.R) 0 = resAt (∞-trace coeff) 0` (agreement, `resAt_congr`), which is the
-`∞`-fibre residue sum (`resAt_traceCoeff_inftyFibreTrace`), which is the `∞`-fibre-restricted pole-set
-sum (`inftyResidueSum_eq_filter`). -/
+*Proof.* `resAt (recipCoeff L.R) 0 = resAt (∞-trace coeff) 0` (agreement, `resAt_congr`), which is
+the `∞`-fibre residue sum (`resAt_traceCoeff_inftyFibreTrace`), which is the `∞`-fibre-restricted
+pole-set sum (`inftyResidueSum_eq_filter`). -/
 theorem resAt_recipCoeff_eq_inftyResidueSum_of_agree (ω₀ : HolomorphicOneForms X)
     (f : MeromorphicFunction X) (D : InftyFibreData g f) (L : LaurentForm) (poles : Finset X)
     (hxs_inj : Function.Injective D.xs)

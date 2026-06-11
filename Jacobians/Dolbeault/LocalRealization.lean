@@ -1,5 +1,5 @@
 /-
-  Dolbeault ladder — the LOCAL REALIZATION analytic kernel (Mittag–Leffler / Cousin-I).
+  The local-realization analytic kernel of the skyscraper sequence (Mittag–Leffler / Cousin-I).
 
   This is the genuine analytic content that the χ-additivity skyscraper LES
   (`CohomologicalRR.exists_skyscraperLES`) bottoms out in.
@@ -22,7 +22,6 @@
   `↥W`-chart machinery of `CechSection`) realises coefficient `1` with a pole only at `P`; this uses
   the Mathlib explicit order witness `meromorphicOrderAt_zpow_id_sub_const`.
 
-  Everything here is complete.
 -/
 import Jacobians.Dolbeault.CechSection
 import Jacobians.Dolbeault.CechH0
@@ -30,8 +29,6 @@ import Jacobians.Dolbeault.CechH0
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Filter
-
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
@@ -81,8 +78,9 @@ theorem meromorphicOrderAt_dePole {k : ℤ} {F : ℂ → ℂ} {c : ℂ} (hF : Me
   rw [show (fun z => (z - c) ^ (-k) * F z) = (fun z => (z - c) ^ (-k)) * F from rfl,
     meromorphicOrderAt_mul (meromorphicAt_zpow_sub k c) hF, meromorphicOrderAt_zpow_sub]
 
-/-- **Existence of the coefficient limit.**  If `ord_c F ≥ k` then the de-pole has nonnegative order,
-so it tends to the (well-defined) coefficient `laurentCoeff k F c` on the punctured neighbourhood. -/
+/-- **Existence of the coefficient limit.** If `ord_c F ≥ k` then the de-pole has nonnegative order,
+so it tends to the (well-defined) coefficient `laurentCoeff k F c` on the punctured neighbourhood.
+-/
 theorem tendsto_dePole {k : ℤ} {F : ℂ → ℂ} {c : ℂ} (hF : MeromorphicAt F c)
     (hord : (k : WithTop ℤ) ≤ meromorphicOrderAt F c) :
     Tendsto (dePole k F c) (𝓝[≠] c) (𝓝 (laurentCoeff k F c)) := by
@@ -216,17 +214,22 @@ noncomputable def coeffWFn {W : Opens X} (k : ℤ) (Pw : W) (f : W → ℂ) : �
 
 /-- The chart pullback `f ∘ (chartAt Pw).symm` is meromorphic at the chart centre, for `f`
 meromorphic on `↥W`. -/
-theorem meromorphicAt_pullback {W : Opens X} {f : W → ℂ} (hf : IsMeromorphic (W : Type _) f)
+theorem meromorphicAt_pullback {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {W : Opens X}
+    {f : W → ℂ} (hf : IsMeromorphic (W : Type _) f)
     (Pw : W) : MeromorphicAt (f ∘ (chartAt (H := ℂ) Pw).symm) ((chartAt (H := ℂ) Pw) Pw) :=
   hf Pw
 
 /-- The chart-pullback order is exactly `ordU f Pw` (definitional). -/
-theorem meromorphicOrderAt_pullback {W : Opens X} (f : W → ℂ) (Pw : W) :
+theorem meromorphicOrderAt_pullback {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {W : Opens X}
+    (f : W → ℂ) (Pw : W) :
     meromorphicOrderAt (f ∘ (chartAt (H := ℂ) Pw).symm) ((chartAt (H := ℂ) Pw) Pw) = ordU f Pw :=
   rfl
 
 /-- **`coeffWFn` is additive** on `↥W`-functions of order `≥ k` at `Pw`. -/
-theorem coeffWFn_add {W : Opens X} {k : ℤ} {Pw : W} {f g : W → ℂ}
+theorem coeffWFn_add {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {W : Opens X} {k : ℤ}
+    {Pw : W} {f g : W → ℂ}
     (hf : IsMeromorphic (W : Type _) f) (hg : IsMeromorphic (W : Type _) g)
     (hfo : (k : WithTop ℤ) ≤ ordU f Pw) (hgo : (k : WithTop ℤ) ≤ ordU g Pw) :
     coeffWFn k Pw (f + g) = coeffWFn k Pw f + coeffWFn k Pw g := by
@@ -237,7 +240,8 @@ theorem coeffWFn_add {W : Opens X} {k : ℤ} {Pw : W} {f g : W → ℂ}
   exact laurentCoeff_add (meromorphicAt_pullback hf Pw) (meromorphicAt_pullback hg Pw) hfo hgo
 
 /-- **`coeffWFn` is ℂ-homogeneous** on `↥W`-functions of order `≥ k` at `Pw`. -/
-theorem coeffWFn_smul {W : Opens X} {k : ℤ} {Pw : W} (s : ℂ) {f : W → ℂ}
+theorem coeffWFn_smul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {W : Opens X} {k : ℤ}
+    {Pw : W} (s : ℂ) {f : W → ℂ}
     (hf : IsMeromorphic (W : Type _) f) (hfo : (k : WithTop ℤ) ≤ ordU f Pw) :
     coeffWFn k Pw (s • f) = s • coeffWFn k Pw f := by
   have hcomp : ((s • f) ∘ (chartAt (H := ℂ) Pw).symm)
@@ -249,7 +253,8 @@ theorem coeffWFn_smul {W : Opens X} {k : ℤ} {Pw : W} (s : ℂ) {f : W → ℂ}
 /-- **`coeffWFn` depends only on the germ class** (`MGerm`): if two representatives agree off a
 discrete set near every point, their coefficients at `Pw` agree (the relevant agreement is on
 `𝓝[≠] Pw`, transported to the chart via the repo's `eventually_comp_chart_iff'`). -/
-theorem coeffWFn_congr {W : Opens X} {k : ℤ} {Pw : W} {f g : W → ℂ}
+theorem coeffWFn_congr {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {W : Opens X} {k : ℤ}
+    {Pw : W} {f g : W → ℂ}
     (h : f =ᶠ[𝓝[≠] Pw] g) : coeffWFn k Pw f = coeffWFn k Pw g := by
   refine laurentCoeff_congr ?_
   have hkey := eventually_comp_chart_iff' (f - g) Pw (· = 0)
@@ -261,7 +266,8 @@ theorem coeffWFn_congr {W : Opens X} {k : ℤ} {Pw : W} {f g : W → ℂ}
 
 /-- **The kernel characterization on `↥W`.**  For `f` meromorphic on `↥W` with `ordU f Pw ≥ k`, the
 order-`k` coefficient at `Pw` vanishes iff `ordU f Pw > k` (one order lower pole). -/
-theorem coeffWFn_eq_zero_iff {W : Opens X} {k : ℤ} {Pw : W} {f : W → ℂ}
+theorem coeffWFn_eq_zero_iff {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {W : Opens X} {k : ℤ} {Pw : W} {f : W → ℂ}
     (hf : IsMeromorphic (W : Type _) f) (hord : (k : WithTop ℤ) ≤ ordU f Pw) :
     coeffWFn k Pw f = 0 ↔ (k : WithTop ℤ) < ordU f Pw :=
   laurentCoeff_eq_zero_iff (meromorphicAt_pullback hf Pw) hord
@@ -276,14 +282,18 @@ noncomputable def witnessFn {W : Opens X} (Pw : W) (k : ℤ) : W → ℂ :=
   fun w => ((chartAt (H := ℂ) Pw) w - (chartAt (H := ℂ) Pw) Pw) ^ k
 
 /-- The chart pullback of the witness is exactly `(z − c)^k` on the chart target. -/
-theorem witnessFn_pullback_eqOn {W : Opens X} (Pw : W) (k : ℤ) :
+theorem witnessFn_pullback_eqOn {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {W : Opens X}
+    (Pw : W) (k : ℤ) :
     Set.EqOn (witnessFn Pw k ∘ (chartAt (H := ℂ) Pw).symm)
       (fun z => (z - (chartAt (H := ℂ) Pw) Pw) ^ k) (chartAt (H := ℂ) Pw).target := by
   intro z hz
   simp only [witnessFn, Function.comp_apply, (chartAt (H := ℂ) Pw).right_inv hz]
 
 /-- The chart pullback of the witness agrees with `(z − c)^k` near the chart centre `c`. -/
-theorem witnessFn_pullback_eventuallyEq {W : Opens X} (Pw : W) (k : ℤ) :
+theorem witnessFn_pullback_eventuallyEq {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {W : Opens X}
+    (Pw : W) (k : ℤ) :
     (witnessFn Pw k ∘ (chartAt (H := ℂ) Pw).symm)
       =ᶠ[𝓝 ((chartAt (H := ℂ) Pw) Pw)] (fun z => (z - (chartAt (H := ℂ) Pw) Pw) ^ k) := by
   have htgt : (chartAt (H := ℂ) Pw).target ∈ 𝓝 ((chartAt (H := ℂ) Pw) Pw) :=
@@ -293,7 +303,9 @@ theorem witnessFn_pullback_eventuallyEq {W : Opens X} (Pw : W) (k : ℤ) :
 
 /-- The chart pullback of the witness is meromorphic at the chart centre (it agrees near `c` with
 `(z−c)^k`). This is the only meromorphy fact needed for the order/coefficient at `Pw`. -/
-theorem witnessFn_meromorphicAt_center {W : Opens X} (Pw : W) (k : ℤ) :
+theorem witnessFn_meromorphicAt_center {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {W : Opens X}
+    (Pw : W) (k : ℤ) :
     MeromorphicAt (witnessFn Pw k ∘ (chartAt (H := ℂ) Pw).symm) ((chartAt (H := ℂ) Pw) Pw) := by
   have hev := witnessFn_pullback_eventuallyEq Pw k
   have hmer : MeromorphicAt (fun z => (z - (chartAt (H := ℂ) Pw) Pw) ^ k)
@@ -306,7 +318,9 @@ theorem witnessFn_meromorphicAt_center {W : Opens X} (Pw : W) (k : ℤ) :
   exact hmer.congr (hev.filter_mono nhdsWithin_le_nhds).symm
 
 /-- The order of the witness at `Pw` is exactly `k`. -/
-theorem ordU_witnessFn {W : Opens X} (Pw : W) (k : ℤ) :
+theorem ordU_witnessFn {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {W : Opens X}
+    (Pw : W) (k : ℤ) :
     ordU (witnessFn Pw k) Pw = (k : ℤ) := by
   rw [ordU, meromorphicOrderAt_congr
     ((witnessFn_pullback_eventuallyEq Pw k).filter_mono nhdsWithin_le_nhds),
@@ -314,7 +328,9 @@ theorem ordU_witnessFn {W : Opens X} (Pw : W) (k : ℤ) :
 
 /-- **The witness coefficient is `1`.**  The order-`k` Laurent coefficient of the witness at `Pw`
 equals `1` (its pullback is `(z−c)^k`, whose order-`k` coefficient is `1`). -/
-theorem coeffWFn_witnessFn {W : Opens X} (Pw : W) (k : ℤ) :
+theorem coeffWFn_witnessFn {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {W : Opens X}
+    (Pw : W) (k : ℤ) :
     coeffWFn k Pw (witnessFn Pw k) = 1 := by
   rw [coeffWFn, laurentCoeff_congr
     ((witnessFn_pullback_eventuallyEq Pw k).filter_mono nhdsWithin_le_nhds),
@@ -331,7 +347,7 @@ section Bridges
 variable {W : Opens X} {D : Divisor X} {P : X}
 
 /-- The skyscraper exponent `k = -(D P) - 1 = -(D + single P 1)(P)`. -/
-private theorem neg_add_single_self (D : Divisor X) (P : X) :
+private theorem neg_add_single_self {X : Type*} (D : Divisor X) (P : X) :
     (-((D + Finsupp.single P 1 : Divisor X) P) : ℤ) = -(D P) - 1 := by
   rw [Finsupp.add_apply, Finsupp.single_eq_same]; ring
 
@@ -378,7 +394,8 @@ section Functional
 variable {W : Opens X} {D : Divisor X} {P : X} (hP : P ∈ W)
 
 /-- The order-`k` coefficient functional `𝒪_{D+P}(W) →ₗ[ℂ] ℂ` at `P` (`k = -(D P) - 1`). Linear
-because every section of `𝒪_{D+P}` has order `≥ k` at `P` (so `coeffWFn` is additive/homogeneous). -/
+because every section of `𝒪_{D+P}` has order `≥ k` at `P` (so `coeffWFn` is additive/homogeneous).
+-/
 noncomputable def coeffLin :
     OmegaD (D + Finsupp.single P 1) W →ₗ[ℂ] ℂ where
   toFun f := coeffWFn (-(D P) - 1) ⟨P, hP⟩ (f : W → ℂ)
@@ -423,9 +440,9 @@ end Functional
 /-! ### The local realization isomorphism `𝒪_{D+P}(W) ⧸ 𝒪_D(W) ≅ₗ[ℂ] ℂ`
 
 Putting the three pieces together (linearity, `ker = 𝒪_D`, surjectivity via the witness) gives the
-clean local Mittag–Leffler iso at the function level — the genuine analytic content of the skyscraper
-SES `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0`.  The single geometric input is the membership of the witness
-section. -/
+clean local Mittag–Leffler iso at the function level — the genuine analytic content of the
+skyscraper SES `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0`. The single geometric input is the membership of the
+witness section. -/
 
 section Iso
 
@@ -444,16 +461,17 @@ theorem OmegaD_le_add_single : OmegaD D W ≤ OmegaD (D + Finsupp.single P 1) W 
 
 /-- The kernel of `coeffLin` as a submodule equals `𝒪_D(W)` viewed inside `𝒪_{D+P}(W)`. -/
 theorem ker_coeffLin :
-    LinearMap.ker (coeffLin hP (D := D)) = (OmegaD D W).submoduleOf (OmegaD (D + Finsupp.single P 1) W) := by
+    LinearMap.ker (coeffLin hP (D := D)) =
+      (OmegaD D W).submoduleOf (OmegaD (D + Finsupp.single P 1) W) := by
   ext f
   rw [LinearMap.mem_ker, coeffLin_eq_zero_iff hP f, Submodule.submoduleOf, Submodule.mem_comap,
     Submodule.coe_subtype]
 
 /-- **The local realization isomorphism** (function level):
-`𝒪_{D+P}(W) ⧸ 𝒪_D(W) ≅ₗ[ℂ] ℂ`, the order-`k` coefficient at `P`.  Given the witness membership
-(`hwit`), this is the genuine 1-dimensional skyscraper stalk: the quotient of meromorphic sections by
-the pole-order condition is realised by the single Laurent coefficient.  This is the isolated analytic
-content that `exists_skyscraperLES` bottoms out in. -/
+`𝒪_{D+P}(W) ⧸ 𝒪_D(W) ≅ₗ[ℂ] ℂ`, the order-`k` coefficient at `P`. Given the witness membership
+(`hwit`), this is the genuine 1-dimensional skyscraper stalk: the quotient of meromorphic sections
+by the pole-order condition is realised by the single Laurent coefficient. This is the isolated
+analytic content that `exists_skyscraperLES` bottoms out in. -/
 noncomputable def localRealizationEquiv
     (hwit : witnessFn ⟨P, hP⟩ (-(D P) - 1) ∈ OmegaD (D + Finsupp.single P 1) W) :
     (OmegaD (D + Finsupp.single P 1) W ⧸
@@ -465,16 +483,16 @@ end Iso
 
 /-! ### The germ-class coefficient (`OmegaDGerm`) — the form the skyscraper LES `h0ToSky` uses
 
-The order-`k` coefficient at `P` descends to the junk-free germ-class space `MGerm W`: it depends only
-on the germ (`coeffWFn_congr`, lifted along `codiscreteWithin`-agreement via `toGerm_eq_iff`).  On the
-submodule `OmegaDGerm (D+P) W` it is ℂ-linear, with kernel `OmegaDGerm D W` and (witness) surjective —
-the germ-class restatement of `localRealizationEquiv`. -/
+The order-`k` coefficient at `P` descends to the junk-free germ-class space `MGerm W`: it depends
+only on the germ (`coeffWFn_congr`, lifted along `codiscreteWithin`-agreement via `toGerm_eq_iff`).
+On the submodule `OmegaDGerm (D+P) W` it is ℂ-linear, with kernel `OmegaDGerm D W` and (witness)
+surjective — the germ-class restatement of `localRealizationEquiv`. -/
 
 section Germ
 
 variable {W : Opens X} {D : Divisor X} {P : X} (hP : P ∈ W)
 
-/-- The order-`k` coefficient at `P`, lifted to the germ-class space `MGerm W`.  Well-defined because
+/-- The order-`k` coefficient at `P`, lifted to the germ-class space `MGerm W`. Well-defined because
 `coeffWFn` depends only on the germ at `P` (and `codiscreteWithin`-agreement implies `𝓝[≠] Pw`-
 agreement). -/
 noncomputable def coeffGermFn (k : ℤ) (Pw : W) : MGerm W → ℂ :=
@@ -482,7 +500,9 @@ noncomputable def coeffGermFn (k : ℤ) (Pw : W) : MGerm W → ℂ :=
     refine coeffWFn_congr ?_
     exact (toGerm_eq_iff f g).mp (Filter.Germ.coe_eq.mpr h) Pw)
 
-@[simp] theorem coeffGermFn_coe (k : ℤ) (Pw : W) (f : W → ℂ) :
+@[simp] theorem coeffGermFn_coe {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {W : Opens X}
+    (k : ℤ) (Pw : W) (f : W → ℂ) :
     coeffGermFn k Pw (toGerm W f) = coeffWFn k Pw f := rfl
 
 /-- The germ-class coefficient functional on `𝒪_{D+P}(W)`-germs, `OmegaDGerm (D+P) W →ₗ[ℂ] ℂ`.  The
@@ -572,9 +592,9 @@ theorem ker_coeffGermLin :
     exact coeffGermFn_eq_zero_of_mem_OmegaDGerm hP hγD
 
 /-- **The local realization isomorphism (germ-class form)**:
-`OmegaDGerm (D+P) W ⧸ OmegaDGerm D W ≅ₗ[ℂ] ℂ`, the order-`k` Laurent coefficient at `P`.  This is
-the genuine 1-dimensional skyscraper stalk `ℂ_P` in junk-free germ-class form — exactly the local
-analytic content the χ-additivity skyscraper LES (`exists_skyscraperLES`) bottoms out in.  The single
+`OmegaDGerm (D+P) W ⧸ OmegaDGerm D W ≅ₗ[ℂ] ℂ`, the order-`k` Laurent coefficient at `P`. This is the
+genuine 1-dimensional skyscraper stalk `ℂ_P` in junk-free germ-class form — exactly the local
+analytic content the χ-additivity skyscraper LES (`exists_skyscraperLES`) bottoms out in. The single
 geometric input is the witness membership `hwit` (true on a coordinate disk where `D` is supported
 only at `P`). -/
 noncomputable def localRealizationGermEquiv

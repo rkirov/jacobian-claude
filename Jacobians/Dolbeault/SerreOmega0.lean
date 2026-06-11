@@ -8,8 +8,9 @@
 
   ## The argument (Serre-INDEPENDENT — no circularity)
 
-  Everything rests on the now-PROVEN cohomological Riemann–Roch (χ-additivity, Forster §16),
-  `Jacobians.Dolbeault.cohomological_riemannRoch`, which gives — for a locally-realizable cover `𝔘` —
+  Everything rests on the cohomological Riemann–Roch (χ-additivity, Forster §16),
+  `Jacobians.Dolbeault.cohomological_riemannRoch`, which gives — for a locally-realizable cover `𝔘`
+  —
 
       `(h⁰(D) : ℤ) − h¹(D) = deg D + 1 − h¹(0)`.
 
@@ -39,9 +40,6 @@ open Module
 
 namespace Jacobians.Dolbeault
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 -- `lSysModule` (= `L(D)/germZero`, with `lDim D = finrank ℂ (lSysModule D)`) is shared from
 -- `Jacobians.Dolbeault.CanonicalFormIso` (a single definition, used by both the §17.4 isomorphism
 -- layer and this gate-D node).
@@ -49,15 +47,19 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-! ### The constant function `1` as a member of every effective linear system -/
 
 /-- The constant meromorphic function `1` (order `0` everywhere). -/
-noncomputable def constOneMero : MeromorphicFunction X :=
+noncomputable def constOneMero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] :
+    MeromorphicFunction X :=
   ⟨fun _ => 1, fun _ => MeromorphicAt.const 1 _⟩
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] in
-theorem constOneMero_orderW (x : X) : (constOneMero (X := X)).orderW x = 0 := by
+theorem constOneMero_orderW {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (x : X) :
+    (constOneMero (X := X)).orderW x = 0 := by
   show meromorphicOrderAt ((fun _ : X => (1 : ℂ)) ∘ (chartAt (H := ℂ) x).symm) _ = 0
   rw [show ((fun _ : X => (1 : ℂ)) ∘ (chartAt (H := ℂ) x).symm) = (fun _ => (1 : ℂ)) from rfl,
     meromorphicOrderAt_const]
   simp
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- The constant `1` lies in `L(D)` for any divisor `D` with all coefficients `≥ 0` (`0 ≤ D x`):
 its order is `0 ≥ -(D x)`. -/
@@ -113,9 +115,9 @@ every point, with one fixed scalar `c`. Negation of this is the working notion o
 def IsGermConstant (f : MeromorphicFunction X) : Prop :=
   ∃ c : ℂ, ∀ x, ∀ᶠ z in 𝓝[≠] x, f.toFun z = c
 
-/-- **Gate D — existence of a nonconstant meromorphic function.**
+/-- **Existence of a nonconstant meromorphic function.**
 
-On a compact connected Riemann surface `X` there is a NONCONSTANT meromorphic function: a
+On a compact connected Riemann surface `X` there is a nonconstant meromorphic function: a
 `f : MeromorphicFunction X` lying in some complete linear system `L(D)` whose germ is not constant
 (`¬ IsGermConstant f`).
 
@@ -174,10 +176,10 @@ theorem exists_nonconstant_meromorphic :
     rw [hgclass]; module
   exact one_ne_zero (neg_eq_zero.mp ((LinearIndependent.pair_iff.mp hy c (-1) hrel).2))
 
-/-- **Gate D, headline form.** A compact connected Riemann surface carries a NONCONSTANT meromorphic
+/-- **Headline form.** A compact connected Riemann surface carries a nonconstant meromorphic
 function (its germ is not constant). This is the existence underlying `ω₀ = df` — the nonzero
-meromorphic 1-form whose canonical divisor `K = div ω₀` is the gate-D input to
-`exists_serreDualityData`. A direct corollary of `exists_nonconstant_meromorphic`. -/
+meromorphic 1-form whose canonical divisor is `K = div ω₀`. A direct corollary of
+`exists_nonconstant_meromorphic`. -/
 theorem exists_nonconstant_meromorphicFunction :
     ∃ f : MeromorphicFunction X, ¬ IsGermConstant f := by
   obtain ⟨_, f, _, hf⟩ := exists_nonconstant_meromorphic (X := X)

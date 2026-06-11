@@ -8,23 +8,23 @@ import Jacobians.MeromorphicTrace
 import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 
 /-!
-# The reciprocal-chart residue at `∞` (Gate A, §VIII.3 step 5 — the `infty_eq` close-path)
+# The reciprocal-chart residue at `∞` (Miranda §VIII.3)
 
-The `infty_eq` field of `TraceRationalityWitness` (the genuinely-irreducible §VIII.3 atom — see
+The `infty_eq` field of `TraceRationalityWitness` (see
 `Jacobians.Dolbeault.FormTraceRationalReduce`) needs the residue at infinity of the rational trace
-`L.R` read as a residue at `0` in the **reciprocal chart** `ζ = 1/z` of `ℂℙ¹`.  Under `z = 1/ζ` the
-`1`-form `R(z) dz` becomes `R(1/ζ)·(−1/ζ²) dζ`, so its residue at `∞` is the residue at `0` of the
-**reciprocal coefficient** `recipCoeff R ζ := −R(ζ⁻¹)·ζ⁻²`.
+`L.R` read as a residue at `0` in the **reciprocal chart** `ζ = 1/z` of `ℂℙ¹`.  Under `z = 1/ζ`
+the `1`-form `R(z) dz` becomes `R(1/ζ)·(−1/ζ²) dζ`, so its residue at `∞` is the residue at `0` of
+the **reciprocal coefficient** `recipCoeff R ζ := −R(ζ⁻¹)·ζ⁻²`.
 
 This file proves the **one-variable bridge** that turns `resAtInfty L.R L.ρ` into a residue at `0`:
 
 > `resAtInfty L.R L.ρ = resAt (recipCoeff L.R) 0`,
 
 reducing the `infty_eq` field to a Lemma-3.2-at-`0` statement (the residue of the reciprocal-chart
-trace coefficient at `0` = the `∞`-fibre residue sum), structurally identical to the *proved*
-finite-centre Lemma 3.2 (`FormTraceFibre.resAt_traceCoeff_fibreTrace`).
+trace coefficient at `0` = the `∞`-fibre residue sum), structurally identical to the finite-centre
+Lemma 3.2 (`FormTraceFibre.resAt_traceCoeff_fibreTrace`).
 
-## What is proved (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## Main results
 
 The per-monomial reciprocal residue, in all three exponent ranges:
 
@@ -38,13 +38,11 @@ The per-monomial reciprocal residue, in all three exponent ranges:
   `resAtInfty L.R L.ρ = resAt (recipCoeff L.R) 0`, by termwise additivity (`resAt_finsum`) matched
   against `LaurentForm.resAtInfty_eq` (`= −∑_{n i = −1} c i`).
 
-## What remains for `infty_eq` (the residual obligation)
-
 With this bridge, `infty_eq` reduces to: **the residue at `0` of the reciprocal-chart trace
 coefficient is the `∞`-fibre residue sum** — Lemma 3.2 in the reciprocal chart at the pole fibre.
-This is the genuine §VIII.3 content at `∞`, and it parallels the finite-centre case exactly (the same
-`resAt_traceCoeff'` machinery, applied to the reciprocal-chart fibre data over `0`), modulo the global
-trace construction.  See `Jacobians.Dolbeault.FormTraceRationalReduce` for the diagnosis.
+This parallels the finite-centre case exactly (the same `resAt_traceCoeff'` machinery, applied to
+the reciprocal-chart fibre data over `0`), modulo the global trace construction; see
+`Jacobians.Dolbeault.FormTraceRationalReduce`.
 
 ## References
 
@@ -67,15 +65,15 @@ open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
 For a `dz`-coefficient `R : ℂ → ℂ`, the reciprocal-chart coefficient (the `dζ`-coefficient of the
 same `1`-form read in `ζ = 1/z`, up to the `−ζ⁻²` Jacobian of `z = 1/ζ`). -/
 
-/-- The **reciprocal-chart coefficient** of `R`: `recipCoeff R ζ := −R(ζ⁻¹)·ζ⁻²`.  Its residue at `0`
-is the residue at infinity of `R dz` (the `z = 1/ζ` change of chart). -/
+/-- The **reciprocal-chart coefficient** of `R`: `recipCoeff R ζ := −R(ζ⁻¹)·ζ⁻²`.  Its residue
+at `0` is the residue at infinity of `R dz` (the `z = 1/ζ` change of chart). -/
 def recipCoeff (R : ℂ → ℂ) : ℂ → ℂ := fun ζ => -(R (ζ⁻¹)) * ζ ^ (-2 : ℤ)
 
 /-! ### The per-monomial reciprocal residue (all three exponent ranges) -/
 
 /-- **Simple-pole reciprocal residue (`n = −1`).**  `resAt (recip of c·(z−a)⁻¹) 0 = −c`.
-Off `0`, the reciprocal `−c·(ζ⁻¹ − a)⁻¹·ζ⁻²` simplifies to `(ζ − 0)⁻¹·(−c·(1 − aζ)⁻¹)`, a simple pole
-with analytic numerator `−c·(1 − aζ)⁻¹` of value `−c` at `0` (Cauchy, `resAt_inv_sub_mul`). -/
+Off `0`, the reciprocal `−c·(ζ⁻¹ − a)⁻¹·ζ⁻²` simplifies to `(ζ − 0)⁻¹·(−c·(1 − aζ)⁻¹)`, a simple
+pole with analytic numerator `−c·(1 − aζ)⁻¹` of value `−c` at `0` (Cauchy, `resAt_inv_sub_mul`). -/
 theorem resAt_recip_simplePole (c a : ℂ) :
     resAt (fun ζ => -(c * (ζ⁻¹ - a) ^ (-1 : ℤ)) * ζ ^ (-2 : ℤ)) 0 = -c := by
   have hH : AnalyticAt ℂ (fun ζ => -c * (1 - a * ζ)⁻¹) 0 := by
@@ -203,7 +201,8 @@ and `resAt` is additive (`resAt_finsum`).  Each monomial contributes `−c i` if
 
 /-- **The reciprocal coefficient of a `LaurentForm` splits over its monomials.** -/
 theorem recipCoeff_R (L : LaurentForm) :
-    recipCoeff L.R = fun ζ => ∑ i, (fun ζ => -(L.c i * (ζ⁻¹ - L.a i) ^ L.n i) * ζ ^ (-2 : ℤ)) ζ := by
+    recipCoeff L.R =
+      fun ζ => ∑ i, (fun ζ => -(L.c i * (ζ⁻¹ - L.a i) ^ L.n i) * ζ ^ (-2 : ℤ)) ζ := by
   funext ζ
   simp only [recipCoeff, LaurentForm.R, Finset.sum_mul, neg_mul, ← Finset.sum_neg_distrib]
 

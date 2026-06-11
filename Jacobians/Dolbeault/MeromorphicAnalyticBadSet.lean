@@ -2,9 +2,9 @@
   The product of meromorphic functions, and FINITENESS of the analytic-bad set of a global
   meromorphic function (the points where the chart pullback fails honest `AnalyticAt`).
 
-  ## Why this exists (the Route-M reduction, Miranda Ch. VI pp. 186–188)
+  ## Why this exists (Miranda Ch. VI pp. 186–188)
 
-  The unconditional 1-form residue theorem `residueTheorem_unconditional` (the Gate-A chain)
+  The unconditional 1-form residue theorem `residueTheorem_unconditional`
   consumes a meromorphic numerator `g` through the hypothesis "`g`'s chart pullback is honestly
   `AnalyticAt` at every point off the chosen finite `poles`".  A `MeromorphicFunction` carries
   removable-singularity `toFun`-junk, so this hypothesis is *not* automatic off the genuine poles —
@@ -18,42 +18,40 @@
   * `MeromorphicFunction.finite_nonAnalyticAt` — hence the bad set is isolated, and on the compact
     `X` it is finite (`finite_of_forall_eventually_nhdsNE_notMem`).
 
-  This is what lets the pair-form residue theorem (`PairFormResidueTheorem`) enlarge its pole set
-  by a *finite* bad set before invoking the Gate-A engine.
+  This is what lets the pair-form residue theorem (`PairFormResidueTheorem`) enlarge its pole
+  set by a *finite* bad set before invoking the residue-theorem engine.
 
   Also here: the pointwise product `f * g` of meromorphic functions (`Mul (MeromorphicFunction X)`),
-  which Mathlib's `MeromorphicAt.mul` makes immediate; the repo previously had only the ℂ-module
-  structure (`Jacobians.LinearSystem`).
-
-  Everything is complete and depends on no unproved lemma.
+  which Mathlib's `MeromorphicAt.mul` makes immediate (`Jacobians.LinearSystem` provides only
+  the ℂ-module structure).
 -/
 import Jacobians.Dolbeault.CechH0
 
 open scoped Manifold ContDiff Topology
 open Filter
 
-set_option linter.unusedSectionVars false
-
 namespace Jacobians
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The pointwise product of meromorphic functions -/
 
 section Mul
 -- The product needs only the charted-space structure (mirror of `IsMeromorphic.add`).
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- Meromorphy is preserved by pointwise products (`MeromorphicAt.mul` in every chart). -/
-theorem IsMeromorphic.mul {f g : X → ℂ} (hf : IsMeromorphic X f) (hg : IsMeromorphic X g) :
+theorem IsMeromorphic.mul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {f g : X → ℂ}
+    (hf : IsMeromorphic X f) (hg : IsMeromorphic X g) :
     IsMeromorphic X (f * g) := fun x => (hf x).mul (hg x)
 
 /-- The pointwise product of meromorphic functions. -/
-noncomputable instance : Mul (MeromorphicFunction X) :=
+noncomputable instance {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] :
+    Mul (MeromorphicFunction X) :=
   ⟨fun f g => ⟨f.toFun * g.toFun, f.meromorphic.mul g.meromorphic⟩⟩
 
-@[simp] theorem MeromorphicFunction.mul_toFun (f g : MeromorphicFunction X) :
+@[simp] theorem MeromorphicFunction.mul_toFun {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f g : MeromorphicFunction X) :
     (f * g).toFun = f.toFun * g.toFun := rfl
 
 end Mul

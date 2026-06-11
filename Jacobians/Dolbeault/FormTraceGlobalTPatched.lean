@@ -7,18 +7,20 @@ import Jacobians.Dolbeault.FormTraceBranchValueOff
 import Jacobians.Dolbeault.FormTraceBranchAwareSelection
 
 /-!
-# The branch-value-patched global trace `Tᵉˣᵗ` and Gate A `∑Res = 0` (Miranda §VIII.3 — the close)
+# The branch-value-patched global trace `Tᵉˣᵗ` and the residue theorem `∑Res = 0` (Miranda
+§VIII.3 — the close)
 
-This file is the **unification step** for Gate A (`∑ₐ Resₐ(α) = 0`, `α = ω₀·g`).  All conceptual walls
-are down; the proven engines are wired into one instantiation of `globalTrace_of_glue`
-(`FormTraceGlobalTAssemble`), using the **value-correct branch-patched trace** — *not* the false
-`hbranch`/`BranchAwareTraceSelection` continuity route (the raw `valueChartTrace` value at a branch
-value is a *partial* sheet sum, not the analytic-continuation limit, so it is discontinuous there).
+This file is the **unification step** for the residue-theorem assembly (`∑ₐ Resₐ(α) = 0`,
+`α = ω₀·g`). All conceptual walls are down; the proven engines are wired into one instantiation of
+`globalTrace_of_glue` (`FormTraceGlobalTAssemble`), using the **value-correct branch-patched trace**
+— *not* the false `hbranch`/`BranchAwareTraceSelection` continuity route (the raw `valueChartTrace`
+value at a branch value is a *partial* sheet sum, not the analytic-continuation limit, so it is
+discontinuous there).
 
 The fix — exactly Miranda's "the trace is a single (mero)morphic function on `ℂℙ¹`, extending across
 branch points" — is to **patch** the geometric trace to its removable limit at each branch value, so
-that the patched trace `Tᵉˣᵗ` is genuinely `AnalyticAt` everywhere off the pole-values, via the proven
-planar removable engine `FormTraceBranchPlanarExtend`/`FormTraceBranchValueOff`.
+that the patched trace `Tᵉˣᵗ` is genuinely `AnalyticAt` everywhere off the pole-values, via the
+proven planar removable engine `FormTraceBranchPlanarExtend`/`FormTraceBranchValueOff`.
 
 ## The patched trace
 
@@ -27,42 +29,43 @@ For a finite branch-value set `br : Finset ℂ`,
 > `valueChartTracePatched ω₀ f Φ br z := if z ∈ br then limUnder (𝓝[≠] z) (valueChartTrace ω₀ f Φ)
 >                                       else valueChartTrace ω₀ f Φ z`,
 
-i.e. `valueChartTrace` everywhere except at the (finitely many) branch values, where it is replaced by
-its punctured-limit value (the multi-point `Function.update` form of `valueChartTrace_branchExtension`).
-The patch only changes the value at the finitely-many branch values, so it shares **all** the
-finite/`∞` glue with `valueChartTrace`, while being analytic *at* each branch value (the partial-sum
-junk is repaired to the limit).
+i.e. `valueChartTrace` everywhere except at the (finitely many) branch values, where it is replaced
+by its punctured-limit value (the multi-point `Function.update` form of
+`valueChartTrace_branchExtension`). The patch only changes the value at the finitely-many branch
+values, so it shares **all** the finite/`∞` glue with `valueChartTrace`, while being analytic *at*
+each branch value (the partial-sum junk is repaired to the limit).
 
-## What this file proves (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file proves
 
-* `valueChartTracePatched` — the multi-point branch-patched trace, with `…_eventuallyEq` (germ-equal to
-  `valueChartTrace` off `br`) and `…_of_not_mem` (equal off `br`).
-* `analyticAt_valueChartTracePatched_off_centres` — the full `hT_off` for `Tᵉˣᵗ`: at every value off the
-  pole-centres, `Tᵉˣᵗ` is analytic — regular values via the moving-sheet coherence (germ-transport),
-  branch values via the **patched** removable engine (`analyticAt_branchExtension_valueChartTrace`,
-  needing punctured analyticity + the boundedness crux — *no* false continuity demand).
-* `PatchedTraceSelection` — the assembled Gate-A input using `Tᵉˣᵗ`: the per-value moving-sheet
-  coherence (no labeling, via the symmetric lever), the **branch-value boundedness crux** (the genuine
-  §VIII.3 analytic content, reduced sheet-by-sheet to the proven ratio atom), the `∞`-glue,
-  junk-freeness, and the genus-`0` `∞`-vanishing.
-* `residueSum_eq_zero_of_patchedTraceSelection` — **Gate A `∑Res = 0`** from it, via the proven
-  `residueSum_eq_zero_of_glue`.
+* `valueChartTracePatched` — the multi-point branch-patched trace, with `…_eventuallyEq` (germ-equal
+  to `valueChartTrace` off `br`) and `…_of_not_mem` (equal off `br`).
+* `analyticAt_valueChartTracePatched_off_centres` — the full `hT_off` for `Tᵉˣᵗ`: at every value off
+  the pole-centres, `Tᵉˣᵗ` is analytic — regular values via the moving-sheet coherence
+  (germ-transport), branch values via the **patched** removable engine
+  (`analyticAt_branchExtension_valueChartTrace`, needing punctured analyticity + the boundedness
+  condition — *no* false continuity demand).
+* `PatchedTraceSelection` — the assembled residue-theorem input using `Tᵉˣᵗ`: the per-value
+  moving-sheet coherence (no labeling, via the symmetric lever), the **branch-value boundedness
+  condition** (the genuine §VIII.3 analytic content, reduced sheet-by-sheet to the proven ratio
+  atom), the `∞`-glue, junk-freeness, and the genus-`0` `∞`-vanishing.
+* `residueSum_eq_zero_of_patchedTraceSelection` — **the residue theorem `∑Res = 0`** from it,
+  via the proven `residueSum_eq_zero_of_glue`.
 * `patchedTraceSelection_empty` / `…_holomorphic` — end-to-end non-vacuity (empty-pole case).
 
 ## The genuine remaining obligation
 
-After this unification the *only* non-bookkeeping content carried by `PatchedTraceSelection` is exactly
-Miranda's §VIII.3 geometry:
+After this unification the *only* non-bookkeeping content carried by `PatchedTraceSelection` is
+exactly Miranda's §VIII.3 geometry:
 
-1. the **branch-value boundedness crux** `(z − b₀)·valueChartTrace z → 0` (the §VIII.3 analytic heart;
-   reduced sheet-by-sheet to the proven `FormTraceBranchPlanarExtend.tendsto_zero_section_deriv`);
-2. the **germ-coherence** (the per-value moving-sheet data + the `∞`-glue) — the branched-cover
-   monodromy, handled labeling-free by the symmetric lever; and
-3. the genus-`0` `∞`-vanishing + junk-freeness.
+1. the **branch-value boundedness condition** `(z − b₀)·valueChartTrace z → 0` (the §VIII.3 analytic
+heart; reduced sheet-by-sheet to the proven
+`FormTraceBranchPlanarExtend.tendsto_zero_section_deriv`); 2. the **germ-coherence** (the per-value
+moving-sheet data + the `∞`-glue) — the branched-cover monodromy, handled labeling-free by the
+symmetric lever; and 3. the genus-`0` `∞`-vanishing + junk-freeness.
 
-The false `hbranch` continuity route is *not* revived: branch values are handled by the value-correct
-patch, whose analyticity rests on the boundedness crux (genuine, partially proven) — never on
-continuity of the raw partial-sum trace.
+The false `hbranch` continuity route is *not* revived: branch values are handled by the
+value-correct patch, whose analyticity rests on the boundedness condition (genuine, partially
+proven) — never on continuity of the raw partial-sum trace.
 
 ## References
 
@@ -83,12 +86,11 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.Dolbeault.FormTraceInftyRecip Jacobians.Dolbeault.FormTraceBranchPlanar
   Jacobians.Dolbeault.FormTraceMovingFibre
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
 
@@ -96,7 +98,7 @@ variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunctio
 
 /-- **The branch-value-patched global trace.**  `valueChartTrace ω₀ f Φ` everywhere except at the
 finitely-many branch values `br`, where it is replaced by its punctured-limit value (the
-removable-singularity limit).  This is the multi-point form of `valueChartTrace_branchExtension`: the
+removable-singularity limit). This is the multi-point form of `valueChartTrace_branchExtension`: the
 value-correct trace, analytic across branch points (the partial-sum junk repaired to the limit). -/
 noncomputable def valueChartTracePatched (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
     (Φ : (b : ℂ) → FibreRegularData g f b) (br : Finset ℂ) : ℂ → ℂ :=
@@ -108,8 +110,8 @@ theorem valueChartTracePatched_of_not_mem (ω₀ : HolomorphicOneForms X) (f : M
     valueChartTracePatched ω₀ f Φ br z = valueChartTrace ω₀ f Φ z := by
   rw [valueChartTracePatched, if_neg hz]
 
-/-- At a branch value `b₀ ∈ br`, the patched trace coincides with the single-point removable extension
-`valueChartTrace_branchExtension` (both replace the value by the punctured limit). -/
+/-- At a branch value `b₀ ∈ br`, the patched trace coincides with the single-point removable
+extension `valueChartTrace_branchExtension` (both replace the value by the punctured limit). -/
 theorem valueChartTracePatched_eq_branchExtension (ω₀ : HolomorphicOneForms X)
     (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (br : Finset ℂ) {b₀ : ℂ}
     (hb₀ : b₀ ∈ br) :
@@ -124,19 +126,21 @@ theorem valueChartTracePatched_eq_branchExtension (ω₀ : HolomorphicOneForms X
   · -- At `b₀`: both equal the punctured limit.
     subst hzb
     rw [valueChartTracePatched, if_pos hb₀, valueChartTrace_branchExtension, Function.update_self]
-  · -- Off `b₀`: `z ∉ br` (else `z ∈ br \ {b₀}`, contradicting `hz_compl`), so both `= valueChartTrace`.
+  · -- Off `b₀`: `z ∉ br` (else `z ∈ br \ {b₀}`, contradicting `hz_compl`), so both
+    -- `= valueChartTrace`.
     have hznotbr : z ∉ br := by
       intro hzbr; exact hz_compl ⟨hzbr, fun h => hzb (by simpa using h)⟩
     rw [valueChartTracePatched_of_not_mem ω₀ f Φ br hznotbr,
       valueChartTrace_branchExtension, Function.update_of_ne hzb]
 
-/-- The patched trace germ-equals `valueChartTrace` on the punctured neighbourhood of *any* point: off
-`br` they agree on a full neighbourhood (branch values are isolated), and at a branch value they agree
-off the point (the patch only changes the value there). -/
+/-- The patched trace germ-equals `valueChartTrace` on the punctured neighbourhood of *any* point:
+off `br` they agree on a full neighbourhood (branch values are isolated), and at a branch value they
+agree off the point (the patch only changes the value there). -/
 theorem valueChartTracePatched_eventuallyEq (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
     (Φ : (b : ℂ) → FibreRegularData g f b) (br : Finset ℂ) (z : ℂ) :
     valueChartTracePatched ω₀ f Φ br =ᶠ[𝓝[≠] z] valueChartTrace ω₀ f Φ := by
-  -- A punctured neighbourhood of `z` avoids `br \ {z}` (finite); there `z' ∉ br` so the patch is inert.
+  -- A punctured neighbourhood of `z` avoids `br \ {z}` (finite); there `z' ∉ br` so the patch is
+  -- inert.
   have hfin : ((br : Set ℂ) \ {z}).Finite := (br.finite_toSet).diff
   have hcompl : (((br : Set ℂ) \ {z}))ᶜ ∈ 𝓝 z := hfin.isClosed.compl_mem_nhds (by simp)
   filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds hcompl] with z' hz'_ne hz'_compl
@@ -145,12 +149,13 @@ theorem valueChartTracePatched_eventuallyEq (ω₀ : HolomorphicOneForms X) (f :
   rw [valueChartTracePatched_of_not_mem ω₀ f Φ br hz'notbr]
 
 /-- The reciprocal coefficient of the patched trace germ-equals that of `valueChartTrace` near `0`:
-for `ζ ≠ 0` small, `ζ⁻¹` is large (escapes the finite `br`), so `Tᵉˣᵗ (ζ⁻¹) = valueChartTrace (ζ⁻¹)`,
-hence the `recipCoeff`s (`−·(ζ⁻¹)·ζ⁻²`) agree.  This carries the `∞`-glue from `valueChartTrace` to
-`Tᵉˣᵗ` unchanged. -/
+for `ζ ≠ 0` small, `ζ⁻¹` is large (escapes the finite `br`), so
+`Tᵉˣᵗ (ζ⁻¹) = valueChartTrace (ζ⁻¹)`, hence the `recipCoeff`s (`−·(ζ⁻¹)·ζ⁻²`) agree. This carries
+the `∞`-glue from `valueChartTrace` to `Tᵉˣᵗ` unchanged. -/
 theorem recipCoeff_valueChartTracePatched_eventuallyEq (ω₀ : HolomorphicOneForms X)
     (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (br : Finset ℂ) :
-    recipCoeff (valueChartTracePatched ω₀ f Φ br) =ᶠ[𝓝[≠] 0] recipCoeff (valueChartTrace ω₀ f Φ) := by
+    recipCoeff (valueChartTracePatched ω₀ f Φ br) =ᶠ[𝓝[≠] 0]
+      recipCoeff (valueChartTrace ω₀ f Φ) := by
   -- `‖ζ⁻¹‖ → ∞` as `ζ → 0` within `≠`, so eventually `ζ⁻¹` is outside the bounded finite set `br`.
   obtain ⟨R, hR⟩ := (br.finite_toSet).isBounded.subset_ball (0 : ℂ)
   have htend : Tendsto (fun ζ : ℂ => ‖ζ⁻¹‖) (𝓝[≠] 0) atTop := by
@@ -166,46 +171,53 @@ theorem recipCoeff_valueChartTracePatched_eventuallyEq (ω₀ : HolomorphicOneFo
     = -(valueChartTrace ω₀ f Φ (ζ⁻¹)) * ζ ^ (-2 : ℤ)
   rw [valueChartTracePatched_of_not_mem ω₀ f Φ br hζnotbr]
 
-/-! ### The branch-value boundedness crux from sheet sections (the §VIII.3 analytic port)
+/-! ### The branch-value boundedness condition from sheet sections (the §VIII.3 analytic port)
 
-This is **the one genuinely-new analytic step** of the close: discharge the boundedness crux `hbnd`
-`(z − b₀)·valueChartTrace z → 0` at a branch value `b₀` from the proven planar per-sheet ratio atom
-`FormTraceBranchPlanarExtend.tendsto_zero_section_deriv`.
+This is **the one genuinely-new analytic step** of the close: discharge the boundedness condition
+`hbnd` `(z − b₀)·valueChartTrace z → 0` at a branch value `b₀` from the proven planar per-sheet
+ratio atom `FormTraceBranchPlanarExtend.tendsto_zero_section_deriv`.
 
-Near a branch value `b₀`, the geometric trace is, on a punctured neighbourhood, the **moving fibre sum**
-`∑ j, chartIntegrand ω₀ g x_j (rinv_j z)·deriv (rinv_j) z` read along the chart pullbacks `rinv_j =
-chart_{x_j} ∘ sec_j` of the cover sheets `sec_j : ℂ → X` through *all* the preimages `x_j` of `b₀`
-(ramified **and** unramified — `sec_j` is a continuous section of `f.holoRepr`, its chart pullback a
-right-inverse of `φ_j := f.holoRepr ∘ chart_{x_j}.symm`).  Each per-sheet term satisfies the bound:
+Near a branch value `b₀`, the geometric trace is, on a punctured neighbourhood, the **moving fibre
+sum** `∑ j, chartIntegrand ω₀ g x_j (rinv_j z)·deriv (rinv_j) z` read along the chart pullbacks
+`rinv_j = chart_{x_j} ∘ sec_j` of the cover sheets `sec_j : ℂ → X` through *all* the preimages `x_j`
+of `b₀` (ramified **and** unramified — `sec_j` is a continuous section of `f.holoRepr`, its chart
+pullback a right-inverse of `φ_j := f.holoRepr ∘ chart_{x_j}.symm`). Each per-sheet term satisfies
+the bound:
 
-* `(z − b₀)·deriv (rinv_j) z → 0` — the proven ratio atom `tendsto_zero_section_deriv`, with the section
-  `s := rinv_j` and its analytic left-inverse `F := φ_j` (`φ_j (rinv_j z) = z` near `b₀`, `φ_j w₀ = b₀`,
-  `φ_j` not eventually constant since `f` is nonconstant; the ramified-sheet derivative blow-up is killed
-  by the `z − b₀` factor — *no* Puiseux/symmetric-function machinery, just `φ_j − b₀ = (w − w₀)^e·g`);
-* `chartIntegrand ω₀ g x_j` is continuous at `rinv_j b₀ = w₀` (`α = ω₀·g` holomorphic at the non-pole
-  `x_j` — the adapted cover separates poles from the branch locus).
+* `(z − b₀)·deriv (rinv_j) z → 0` — the proven ratio atom `tendsto_zero_section_deriv`, with the
+  section `s := rinv_j` and its analytic left-inverse `F := φ_j` (`φ_j (rinv_j z) = z` near `b₀`,
+  `φ_j w₀ = b₀`, `φ_j` not eventually constant since `f` is nonconstant; the ramified-sheet
+  derivative blow-up is killed by the `z − b₀` factor — *no* Puiseux/symmetric-function machinery,
+  just `φ_j − b₀ = (w − w₀)^e·g`);
+* `chartIntegrand ω₀ g x_j` is continuous at `rinv_j b₀ = w₀` (`α = ω₀·g` holomorphic at the
+  non-pole `x_j` — the adapted cover separates poles from the branch locus).
 
-Summed over the finite fibre (`tendsto_zero_fibreSum`/`tendsto_zero_perSheet`) and transported along the
-moving-sum germ-equality, this gives `hbnd`.  This is the planar shadow of the proven bundle-side
+Summed over the finite fibre (`tendsto_zero_fibreSum`/`tendsto_zero_perSheet`) and transported along
+the moving-sum germ-equality, this gives `hbnd`. This is the planar shadow of the proven bundle-side
 `TraceForm.traceLocalCoeff_mul_sub_tendsto_zero_Y` — but the uniform-cardinality/finite-subcover
-machinery is *replaced* by the explicit sheet enumeration `sec_j` supplied per branch value (the moving
-selection's fibre data), and the per-sheet content is the same proven ratio atom. -/
+machinery is *replaced* by the explicit sheet enumeration `sec_j` supplied per branch value (the
+moving selection's fibre data), and the per-sheet content is the same proven ratio atom. -/
 
-/-- **The branch-value boundedness crux from sheet sections.**  Let `b₀ : ℂ` and `ι : Type*` finite.
-Suppose the geometric trace germ-equals, on the *punctured* neighbourhood of `b₀`, the moving fibre sum
-along chart pullbacks `rinv : ι → ℂ → ℂ` of sheet sections through preimages `x : ι → X` of `b₀`:
+/-- **The branch-value boundedness condition from sheet sections.** Let `b₀ : ℂ` and `ι : Type*`
+finite. Suppose the geometric trace germ-equals, on the *punctured* neighbourhood of `b₀`, the
+moving fibre sum along chart pullbacks `rinv : ι → ℂ → ℂ` of sheet sections through preimages
+`x : ι → X` of `b₀`:
 
-* `hgerm` — `valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] b₀] fun z => ∑ j, chartIntegrand ω₀ g (x j) (rinv j z)·deriv
-  (rinv j) z`;
-* per sheet `j`: `rinv j b₀ = w₀ j := (chartAt ℂ (x j)) (x j)` (`hbase`); `rinv j` continuous at `b₀`
-  (`hcont`); `φ_j := f.holoRepr ∘ chart_{x j}.symm` analytic at `w₀ j` (`hF_an`), with `φ_j (w₀ j) = b₀`
-  (`hFw₀`) and `φ_j` not eventually constant near `w₀ j` (`hFnc`); `φ_j (rinv j z) = z` near `b₀`
-  (`hsec`); the chain-rule identity `deriv (rinv j) z · deriv φ_j (rinv j z) = 1` near `b₀` (`hchain`);
-  and `chartIntegrand ω₀ g (x j)` continuous at `w₀ j` (`hcoeff` — `α` holomorphic at the non-pole `x j`).
+* `hgerm` —
+  `valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] b₀]
+  fun z => ∑ j, chartIntegrand ω₀ g (x j) (rinv j z)·deriv (rinv j) z`;
+* per sheet `j`: `rinv j b₀ = w₀ j := (chartAt ℂ (x j)) (x j)` (`hbase`); `rinv j` continuous at
+  `b₀` (`hcont`); `φ_j := f.holoRepr ∘ chart_{x j}.symm` analytic at `w₀ j` (`hF_an`), with
+  `φ_j (w₀ j) = b₀` (`hFw₀`) and `φ_j` not eventually constant near `w₀ j` (`hFnc`);
+  `φ_j (rinv j z) = z` near `b₀` (`hsec`); the chain-rule identity
+  `deriv (rinv j) z · deriv φ_j (rinv j z) = 1` near `b₀` (`hchain`); and
+  `chartIntegrand ω₀ g (x j)` continuous at `w₀ j` (`hcoeff` — `α` holomorphic at the non-pole
+  `x j`).
 
-Then the boundedness crux `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds.  *Proof.*  Each per-sheet term
-`→ 0` by `tendsto_zero_perSheet` (the coeff continuous × the ratio atom `tendsto_zero_section_deriv`);
-sum over the finite fibre (`tendsto_zero_fibreSum`); transport along `hgerm`. -/
+Then the boundedness condition `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds. *Proof.* Each
+per-sheet term `→ 0` by `tendsto_zero_perSheet` (the coeff continuous × the ratio atom
+`tendsto_zero_section_deriv`); sum over the finite fibre (`tendsto_zero_fibreSum`); transport along
+`hgerm`. -/
 theorem tendsto_zero_valueChartTrace_of_sections (ω₀ : HolomorphicOneForms X)
     (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) {b₀ : ℂ}
     {ι : Type*} [Fintype ι] (x : ι → X) (rinv : ι → ℂ → ℂ)
@@ -241,24 +253,25 @@ theorem tendsto_zero_valueChartTrace_of_sections (ω₀ : HolomorphicOneForms X)
     = (z - b₀) * valueChartTrace ω₀ f Φ z
   rw [hz]
 
-/-- **The branch-value boundedness crux from smooth sheet sections.**  The reduced interface for
+/-- **The branch-value boundedness condition from smooth sheet sections.** The reduced interface for
 `tendsto_zero_valueChartTrace_of_sections`: the per-sheet differentiability/right-inverse data is
-*derived* from a family of smooth cover sheets `sec : ι → ℂ → X` through the preimages `x j := sec j b₀`
-of `b₀`.  The caller supplies only the genuine geometric content:
+*derived* from a family of smooth cover sheets `sec : ι → ℂ → X` through the preimages
+`x j := sec j b₀` of `b₀`. The caller supplies only the genuine geometric content:
 
 * `hsmooth` — each `sec j` is `C^ω` at `b₀`;
 * `hsec_sec` — each `sec j` is a section of `f.holoRepr` near `b₀` (`f.holoRepr (sec j b') = b'`);
-* `hnp` — each `x j = sec j b₀` is a **non-pole** of `f` (`0 ≤ orderAtPoint`), so `φ_j := f.holoRepr ∘
-  chart_{x j}.symm` is analytic at `chart_{x j}(x j)`;
-* `hFnc` — `φ_j` is not eventually constant `≡ b₀` near `chart_{x j}(x j)` (the cover is nonconstant);
+* `hnp` — each `x j = sec j b₀` is a **non-pole** of `f` (`0 ≤ orderAtPoint`), so
+  `φ_j := f.holoRepr ∘ chart_{x j}.symm` is analytic at `chart_{x j}(x j)`;
+* `hFnc` — `φ_j` is not eventually constant `≡ b₀` near `chart_{x j}(x j)` (the cover is
+  nonconstant);
 * `hcoeff` — `chartIntegrand ω₀ g (x j)` is continuous at `chart_{x j}(x j)` (`α` holomorphic at the
   non-pole `x j`);
-* `hgerm` — the moving-sum germ-equality of `valueChartTrace` with the fibre sum along the chart pullbacks
-  `chart_{x j} ∘ sec j` (the per-value monodromy content).
+* `hgerm` — the moving-sum germ-equality of `valueChartTrace` with the fibre sum along the chart
+  pullbacks `chart_{x j} ∘ sec j` (the per-value monodromy content).
 
-The right-inverse identity `hsec`, the base/continuity, the analytic left-inverse `hF_an`/`hFw₀`, and the
-chain-rule identity `hchain` are all discharged from the section smoothness + non-poleness via
-`chartPullback_section_rinv`, `analyticAt_holoRepr_chartPullback_of_orderNonneg`, and
+The right-inverse identity `hsec`, the base/continuity, the analytic left-inverse `hF_an`/`hFw₀`,
+and the chain-rule identity `hchain` are all discharged from the section smoothness + non-poleness
+via `chartPullback_section_rinv`, `analyticAt_holoRepr_chartPullback_of_orderNonneg`, and
 `differentiableAt_chart_pullback_section`. -/
 theorem tendsto_zero_valueChartTrace_of_sheetSections (ω₀ : HolomorphicOneForms X)
     (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) {b₀ : ℂ}
@@ -268,7 +281,8 @@ theorem tendsto_zero_valueChartTrace_of_sheetSections (ω₀ : HolomorphicOneFor
     (hnp : ∀ j, 0 ≤ f.orderAtPoint (sec j b₀))
     (hFnc : ∀ j, ¬ ∀ᶠ w in 𝓝 ((chartAt ℂ (sec j b₀)) (sec j b₀)),
       f.holoRepr ((chartAt ℂ (sec j b₀)).symm w) = b₀)
-    (hcoeff : ∀ j, ContinuousAt (chartIntegrand ω₀ g (sec j b₀)) ((chartAt ℂ (sec j b₀)) (sec j b₀)))
+    (hcoeff : ∀ j,
+      ContinuousAt (chartIntegrand ω₀ g (sec j b₀)) ((chartAt ℂ (sec j b₀)) (sec j b₀)))
     (hgerm : valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] b₀]
       fun z => ∑ j, chartIntegrand ω₀ g (sec j b₀)
         ((chartAt ℂ (sec j b₀)) (sec j z)) * deriv (fun w => (chartAt ℂ (sec j b₀)) (sec j w)) z) :
@@ -290,7 +304,8 @@ theorem tendsto_zero_valueChartTrace_of_sheetSections (ω₀ : HolomorphicOneFor
   -- `φ_j (chart_{x j}(x j)) = f.holoRepr (x j) = b₀` (from the section identity at `b₀`).
   have hFw₀ : ∀ j, f.holoRepr ((chartAt ℂ (x j)).symm ((chartAt ℂ (x j)) (x j))) = b₀ := by
     intro j
-    -- The section identity at `b₀`: `f.holoRepr (chart⁻¹ (rinv j b₀)) = b₀`, with `rinv j b₀ = chart (x j)`.
+    -- The section identity at `b₀`: `f.holoRepr (chart⁻¹ (rinv j b₀)) = b₀`, with
+    -- `rinv j b₀ = chart (x j)`.
     have h := ((hrinv_props j).2.2).self_of_nhds
     rwa [(hrinv_props j).1] at h
   -- `rinv j` differentiable on a neighbourhood of `b₀` (the chart pullback of a `C^ω` section).
@@ -298,9 +313,9 @@ theorem tendsto_zero_valueChartTrace_of_sheetSections (ω₀ : HolomorphicOneFor
     intro j
     have hsmooth_nhds : ∀ᶠ z in 𝓝 b₀, ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (sec j) z :=
       (contMDiffAt_iff_contMDiffAt_nhds (by decide : (ω : WithTop ℕ∞) ≠ ∞)).mp (hsmooth j)
-    -- At each `z` near `b₀`, `rinv j = chart_{x j} ∘ sec j` is differentiable — but the chart base is
-    -- `x j = sec j b₀`, fixed.  Use that `chart_{x j}` is `C^ω` on its source, which contains `sec j z`
-    -- for `z` near `b₀` (continuity), so `chart_{x j} ∘ sec j` is `C^ω` at `z`.
+    -- At each `z` near `b₀`, `rinv j = chart_{x j} ∘ sec j` is differentiable — but the chart base
+    -- is `x j = sec j b₀`, fixed. Use that `chart_{x j}` is `C^ω` on its source, which contains
+    -- `sec j z` for `z` near `b₀` (continuity), so `chart_{x j} ∘ sec j` is `C^ω` at `z`.
     have hmem : ∀ᶠ z in 𝓝 b₀, sec j z ∈ (chartAt ℂ (x j)).source :=
       (hsmooth j).continuousAt.eventually_mem
         ((chartAt ℂ (x j)).open_source.mem_nhds (mem_chart_source ℂ (x j)))
@@ -319,7 +334,8 @@ theorem tendsto_zero_valueChartTrace_of_sheetSections (ω₀ : HolomorphicOneFor
       (hF_an j).eventually_analyticAt.mono (fun _ h => h.differentiableAt)
     have hval : rinv j b₀ = (chartAt ℂ (x j)) (x j) := (hrinv_props j).1
     exact hcontinv.eventually_mem (hval ▸ hF_diff_nhds)
-  -- The chain-rule identity (on `𝓝[≠] b₀`) from `φ_j ∘ rinv_j = id` (on `𝓝 b₀`) + differentiability.
+  -- The chain-rule identity (on `𝓝[≠] b₀`) from `φ_j ∘ rinv_j = id` (on `𝓝 b₀`) +
+  -- differentiability.
   have hchain : ∀ j, ∀ᶠ z in 𝓝[≠] b₀,
       deriv (rinv j) z * deriv (fun w => f.holoRepr ((chartAt ℂ (x j)).symm w)) (rinv j z) = 1 := by
     intro j
@@ -328,7 +344,8 @@ theorem tendsto_zero_valueChartTrace_of_sheetSections (ω₀ : HolomorphicOneFor
       filter_upwards [eventually_eventually_nhds.mpr (hrinv_props j).2.2] with z hz
       filter_upwards [hz] with w hw using hw
     have key : ∀ᶠ z in 𝓝 b₀,
-        deriv (rinv j) z * deriv (fun w => f.holoRepr ((chartAt ℂ (x j)).symm w)) (rinv j z) = 1 := by
+        deriv (rinv j) z * deriv (fun w => f.holoRepr ((chartAt ℂ (x j)).symm w)) (rinv j z)
+          = 1 := by
       filter_upwards [hrinv_diff j, hF_diff_at j, hsec_nhds] with z hrz hFz hsecz
       have hcomp : deriv (fun w => f.holoRepr ((chartAt ℂ (x j)).symm (rinv j w))) z
           = deriv (fun w => f.holoRepr ((chartAt ℂ (x j)).symm w)) (rinv j z) * deriv (rinv j) z :=
@@ -348,11 +365,13 @@ theorem tendsto_zero_valueChartTrace_of_sheetSections (ω₀ : HolomorphicOneFor
 /-! ### Off-centre analyticity of the patched trace (`hT_off`)
 
 `hT_off` for the patched trace dispatches each value off the pole-centres to either:
-* a **regular value** (off `centres ∪ br`): there the patch is inert on a *full* neighbourhood (branch
-  values isolated), so analyticity transfers from `valueChartTrace` (the moving-sheet coherence); or
+* a **regular value** (off `centres ∪ br`): there the patch is inert on a *full* neighbourhood
+  (branch values isolated), so analyticity transfers from `valueChartTrace` (the moving-sheet
+  coherence); or
 * a **branch value** `b₀ ∈ br`: there `Tᵉˣᵗ` germ-equals the single-point removable extension
   `valueChartTrace_branchExtension ω₀ f Φ b₀`, which is `AnalyticAt b₀` by the proven planar engine
-  `analyticAt_branchExtension_valueChartTrace` (needing punctured analyticity + the boundedness crux). -/
+  `analyticAt_branchExtension_valueChartTrace` (needing punctured analyticity + the boundedness
+  condition). -/
 
 /-- **Analyticity of the patched trace at a regular value** (off `br`): the patch is inert on a full
 neighbourhood of `z` (a small ball avoids the finite `br`), so analyticity transfers from
@@ -371,13 +390,15 @@ theorem analyticAt_valueChartTracePatched_of_not_mem (ω₀ : HolomorphicOneForm
 /-- **Off-centre analyticity of the patched trace `Tᵉˣᵗ` (the `hT_off` ingredient).**  Let `centres
 br : Finset ℂ` (pole-values, branch values).  Suppose:
 
-* `hreg` — at every value `w` off `centres ∪ br`, `valueChartTrace ω₀ f Φ` is analytic (the moving-sheet
-  coherence); and
-* at every branch value `b₀ ∈ br` off the centres, the two inputs of the planar removable engine hold:
-  `hpunct` (punctured analyticity of `valueChartTrace` at `b₀`) and `hbnd` (the boundedness crux).
+* `hreg` — at every value `w` off `centres ∪ br`, `valueChartTrace ω₀ f Φ` is analytic (the
+  moving-sheet coherence); and
+* at every branch value `b₀ ∈ br` off the centres, the two inputs of the planar removable engine
+  hold: `hpunct` (punctured analyticity of `valueChartTrace` at `b₀`) and `hbnd` (the boundedness
+  condition).
 
-Then `Tᵉˣᵗ` is analytic at **every** value off the centres.  Regular values transfer from `hreg`
-(patch inert); branch values use the value-correct removable extension (no false continuity demand). -/
+Then `Tᵉˣᵗ` is analytic at **every** value off the centres. Regular values transfer from `hreg`
+(patch inert); branch values use the value-correct removable extension (no false continuity demand).
+-/
 theorem analyticAt_valueChartTracePatched_off_centres (ω₀ : HolomorphicOneForms X)
     (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (centres br : Finset ℂ)
     (hreg : ∀ w ∉ centres ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
@@ -399,9 +420,9 @@ theorem analyticAt_valueChartTracePatched_off_centres (ω₀ : HolomorphicOneFor
 /-! ### Punctured analyticity at a branch value from the regular-value coherence
 
 The branch-value removable engine needs `valueChartTrace` analytic on a *punctured* neighbourhood of
-each branch value `b₀`.  Branch (and pole) values are isolated, so a small punctured ball around `b₀`
+each branch value `b₀`. Branch (and pole) values are isolated, so a small punctured ball around `b₀`
 avoids the finite set `(centres ∪ br) \ {b₀}` and lands in the regular-value regime, where `hreg`
-gives analyticity.  This is the same isolation argument as `analyticAt_valueChartTrace_off_centres`,
+gives analyticity. This is the same isolation argument as `analyticAt_valueChartTrace_off_centres`,
 extracted so the patched assembly can feed `hbranch`'s punctured-analyticity input from `hreg`. -/
 
 /-- **Punctured analyticity at a branch value from the regular-value coherence.**  If
@@ -413,7 +434,8 @@ theorem eventually_analyticAt_valueChartTrace_of_reg (ω₀ : HolomorphicOneForm
     (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (centres br : Finset ℂ)
     (hreg : ∀ w ∉ centres ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w) (b₀ : ℂ) :
     ∀ᶠ z in 𝓝[≠] b₀, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) z := by
-  have hfin : (((centres ∪ br : Finset ℂ) : Set ℂ) \ {b₀}).Finite := ((centres ∪ br).finite_toSet).diff
+  have hfin : (((centres ∪ br : Finset ℂ) : Set ℂ) \
+      {b₀}).Finite := ((centres ∪ br).finite_toSet).diff
   have hcompl : ((((centres ∪ br : Finset ℂ) : Set ℂ) \ {b₀}))ᶜ ∈ 𝓝 b₀ :=
     hfin.isClosed.compl_mem_nhds (by simp)
   filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds hcompl] with w hw_ne hw_compl
@@ -421,41 +443,43 @@ theorem eventually_analyticAt_valueChartTrace_of_reg (ω₀ : HolomorphicOneForm
   intro hw_mem
   exact hw_compl ⟨by simpa using hw_mem, fun hwz => hw_ne (by simpa using hwz)⟩
 
-/-! ### The patched trace selection — the assembled Gate-A input
+/-! ### The patched trace selection — the assembled residue-theorem input
 
-We bundle the genuine §VIII.3 geometry into one structure, feeding the value-correct **patched** trace
-`Tᵉˣᵗ = valueChartTracePatched ω₀ f Φ br` to `residueSum_eq_zero_of_glue`.  Mirrors
+We bundle the genuine §VIII.3 geometry into one structure, feeding the value-correct **patched**
+trace `Tᵉˣᵗ = valueChartTracePatched ω₀ f Φ br` to `residueSum_eq_zero_of_glue`. Mirrors
 `BranchAwareTraceSelection` for the finite/`∞` bookkeeping and the pole-value coherence, but:
 
 * the off-exceptional content is split into a per-regular-value moving-sheet coherence datum `Creg`
   (no labeling, via the symmetric lever) **and**, at the finitely-many branch values, the genuine
-  §VIII.3 **boundedness crux** `hbnd` (replacing the *false* `BranchAwareTraceSelection.hbranch`
-  continuity — the raw trace value at a branch value is a partial sum, hence discontinuous);
-* `hT_off` for `Tᵉˣᵗ` is then `analyticAt_valueChartTracePatched_off_centres`: regular values via the
-  coherence (patch inert), branch values via the value-correct removable extension (whose analyticity
-  rests on `hbnd`, never on continuity).
+  §VIII.3 **boundedness condition** `hbnd` (replacing the *false*
+  `BranchAwareTraceSelection.hbranch` continuity — the raw trace value at a branch value is a
+  partial sum, hence discontinuous);
+* `hT_off` for `Tᵉˣᵗ` is then `analyticAt_valueChartTracePatched_off_centres`: regular values via
+  the coherence (patch inert), branch values via the value-correct removable extension (whose
+  analyticity rests on `hbnd`, never on continuity).
 
-The finite glue / `∞`-glue / junk-freeness / genus-`0` for `Tᵉˣᵗ` are transported from `valueChartTrace`
-along the germ-equalities (`valueChartTracePatched_eventuallyEq`,
+The finite glue / `∞`-glue / junk-freeness / genus-`0` for `Tᵉˣᵗ` are transported from
+`valueChartTrace` along the germ-equalities (`valueChartTracePatched_eventuallyEq`,
 `recipCoeff_valueChartTracePatched_eventuallyEq`) — `Tᵉˣᵗ` differs only at the finitely-many branch
 values, so it shares every germ at the centres and at `∞`. -/
 
 /-- **A patched-trace selection** for `α = ω₀·g` over `poles`, relative to an adapted cover `hac`.
-The honest §VIII.3 Gate-A input feeding the value-correct **patched** trace to
+The honest §VIII.3 residue-theorem input feeding the value-correct **patched** trace to
 `residueSum_eq_zero_of_glue`:
 
 * `Φ`, `cs`/`ρ`/`hcenters_cs`, `Dinf`/`hxs_*` — the global selection + finite/`∞` enumeration;
-* `Cfin i` (with `hCfin_D`) — the per-pole-value moving-sheet coherence datum (fixed fibre = the pole
-  sub-fibre; *no labeling*);
+* `Cfin i` (with `hCfin_D`) — the per-pole-value moving-sheet coherence datum (fixed fibre = the
+  pole sub-fibre; *no labeling*);
 * `br : Finset ℂ` — the finite branch values;
 * `Creg z` (for `z ∉ cs ∪ br`) + `hCreg_g` — the per-regular-value moving-sheet coherence datum with
   `g`'s chart-pullback analytic at its fibre points (regular-value analyticity);
-* `hbnd` — at each branch value off the centres, the §VIII.3 **boundedness crux** `(z − b₀)·valueChartTrace
-  z → 0` (the genuine analytic content; reduced sheet-by-sheet to the proven ratio atom);
+* `hbnd` — at each branch value off the centres, the §VIII.3 **boundedness condition**
+  `(z − b₀)·valueChartTrace z → 0` (the genuine analytic content; reduced sheet-by-sheet to the
+  proven ratio atom);
 * `hglue_inf` / `hcont_int` / `R₀`+`hR₀_*` — the `∞`-glue, junk-freeness, genus-`0` `∞`-vanishing,
   all phrased for the **patched** trace `Tᵉˣᵗ` (= `valueChartTracePatched ω₀ f Φ br`).
 
-Produces Gate A `∑Res = 0` via `residueSum_eq_zero_of_glue`. -/
+Produces the residue theorem `∑Res = 0` via `residueSum_eq_zero_of_glue`. -/
 structure PatchedTraceSelection (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (poles : Finset X) (hac : AdaptedCover ω₀ g f poles) where
   /-- The global fibre selection. -/
@@ -483,7 +507,8 @@ structure PatchedTraceSelection (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
   hxs_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, Dinf.xs i = a
   /-- **Per-pole-value moving-sheet coherence datum** (fixed fibre = the pole sub-fibre). -/
   Cfin : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i)
-  /-- The per-pole datum's fixed fibre is the pole sub-fibre (the honest pole/regular separation). -/
+  /-- The per-pole datum's fixed fibre is the pole sub-fibre (the honest pole/regular separation).
+  -/
   hCfin_D : ∀ i, (Cfin i).D = fibreReg hac (cs i)
   /-- **The finite branch values** of the cover (off the centres). -/
   br : Finset ℂ
@@ -493,12 +518,13 @@ structure PatchedTraceSelection (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
   hCreg_g : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
     AnalyticAt ℂ (fun w => g ((chartAt ℂ ((Creg z hz).D.xs i)).symm w))
       ((chartAt ℂ ((Creg z hz).D.xs i)) ((Creg z hz).D.xs i))
-  /-- **Branch-value boundedness crux** (the genuine §VIII.3 analytic content; *replaces* the false
-  `BranchAwareTraceSelection.hbranch` continuity): at each branch value off the centres,
+  /-- **Branch-value boundedness condition** (the genuine §VIII.3 analytic content; *replaces* the
+  false `BranchAwareTraceSelection.hbranch` continuity): at each branch value off the centres,
   `(z − b₀)·valueChartTrace z → 0`. -/
   hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
     Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0)
-  /-- **`∞` glue** for the patched trace.  Its reciprocal coefficient germ-equals the `∞`-fibre trace. -/
+  /-- **`∞` glue** for the patched trace. Its reciprocal coefficient germ-equals the `∞`-fibre
+  trace. -/
   hglue_inf : recipCoeff (valueChartTracePatched ω₀ f Φ br)
     =ᶠ[𝓝[≠] 0] (inftyFibreTrace ω₀ f Dinf).traceCoeff
   /-- **Junk-freeness** for the patched trace.  The remainder is continuous at each centre. -/
@@ -516,9 +542,10 @@ structure PatchedTraceSelection (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
   hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
     recipCoeff (valueChartTracePatched ω₀ f Φ br - L.R) =ᶠ[𝓝[≠] 0] R₀
 
-/-- **The finite glue of a patched-trace selection** (from the per-pole moving datum + pole sub-fibre,
-transported to the patched trace).  `Tᵉˣᵗ =ᶠ[𝓝[≠] cs i] (fibreTrace ω₀ f (fibreReg hac (cs i))).traceCoeff`:
-the per-pole datum gives the glue for `valueChartTrace`, and `Tᵉˣᵗ` germ-equals `valueChartTrace` off `cs i`. -/
+/-- **The finite glue of a patched-trace selection** (from the per-pole moving datum + pole
+sub-fibre, transported to the patched trace).
+`Tᵉˣᵗ =ᶠ[𝓝[≠] cs i] (fibreTrace ω₀ f (fibreReg hac (cs i))).traceCoeff`: the per-pole datum gives
+the glue for `valueChartTrace`, and `Tᵉˣᵗ` germ-equals `valueChartTrace` off `cs i`. -/
 theorem PatchedTraceSelection.glue_fin {hac : AdaptedCover ω₀ g f poles}
     (S : PatchedTraceSelection ω₀ g f poles hac) (i : Fin S.m) :
     valueChartTracePatched ω₀ f S.Φ S.br
@@ -532,8 +559,8 @@ theorem PatchedTraceSelection.glue_fin {hac : AdaptedCover ω₀ g f poles}
 
 /-- **The off-centre analyticity of a patched-trace selection** (the `hT_off` for `Tᵉˣᵗ`).  At every
 value off the centres, the **patched** trace is analytic: regular values (off `cs ∪ br`) via the
-moving-sheet coherence datum (`analyticAt_valueChartTrace_of_movingDatum`, patch inert there), branch
-values `b₀ ∈ br` via the value-correct removable extension — punctured analyticity from the
+moving-sheet coherence datum (`analyticAt_valueChartTrace_of_movingDatum`, patch inert there),
+branch values `b₀ ∈ br` via the value-correct removable extension — punctured analyticity from the
 regular-value coherence (`eventually_analyticAt_valueChartTrace_of_reg`), boundedness from `S.hbnd`.
 *No* false continuity demand on the raw partial-sum trace. -/
 theorem PatchedTraceSelection.hT_off {hac : AdaptedCover ω₀ g f poles}
@@ -546,39 +573,43 @@ theorem PatchedTraceSelection.hT_off {hac : AdaptedCover ω₀ g f poles}
     hreg (fun b₀ hb₀br hb₀cs => ⟨?_, S.hbnd b₀ hb₀br hb₀cs⟩) hz
   exact eventually_analyticAt_valueChartTrace_of_reg ω₀ f S.Φ (Finset.univ.image S.cs) S.br hreg b₀
 
-/-- **Gate A `∑Res = 0` from a patched-trace selection.**  Via `residueSum_eq_zero_of_glue` with
-`T := valueChartTracePatched ω₀ f Φ br` (the value-correct patched trace): the finite glue from the
-per-pole moving datum (transported to `Tᵉˣᵗ`), the off-centre analyticity from the regular-value
-coherence ⊕ the value-correct branch extension (resting on the boundedness crux), and the
-`∞`/junk/genus-`0` data.  This is the §VIII.3 reduction of Gate A **with the symmetric lever (no
-labeling) and branch values via the value-correct removable patch** — no revived `hbranch`. -/
+/-- **The residue theorem `∑Res = 0` from a patched-trace selection.** Via
+`residueSum_eq_zero_of_glue` with `T := valueChartTracePatched ω₀ f Φ br` (the value-correct patched
+trace): the finite glue from the per-pole moving datum (transported to `Tᵉˣᵗ`), the off-centre
+analyticity from the regular-value coherence ⊕ the value-correct branch extension (resting on the
+boundedness condition), and the `∞`/junk/genus-`0` data. This is the §VIII.3 reduction of the
+residue-theorem assembly **with the symmetric lever (no labeling) and branch values via the
+value-correct removable patch** — no revived `hbranch`. -/
 theorem residueSum_eq_zero_of_patchedTraceSelection (hac : AdaptedCover ω₀ g f poles)
     (S : PatchedTraceSelection ω₀ g f poles hac) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
-  residueSum_eq_zero_of_glue hac (valueChartTracePatched ω₀ f S.Φ S.br) S.cs S.ρ S.hcs_ball S.hcs_inj
+  residueSum_eq_zero_of_glue hac (valueChartTracePatched ω₀ f S.Φ S.br) S.cs S.ρ S.hcs_ball
+    S.hcs_inj
     S.hcenters_cs S.Dinf S.hxs_inj S.hxs_mem S.hxs_surj S.glue_fin S.hglue_inf
     (fun _ hz => S.hT_off hz) S.hcont_int S.R₀ S.hR₀_an S.hR₀0 S.hR₀_eq
 
 /-! ### Non-vacuity of the patched-trace selection (end-to-end soundness)
 
-The `PatchedTraceSelection` obligation is *satisfiable*, not a disguised `False`: for the **empty pole
-set** (`α = ω₀·g` globally holomorphic) the empty fibre selection assembles into one, with `br = ∅` (no
-branch values, so `hbnd` is vacuous and the patch is inert: `valueChartTracePatched … ∅ = valueChartTrace
-… ≡ 0`), the per-regular-value empty moving datum, the empty `∞`-trace, vacuous junk-freeness, and the
-vanishing genus-`0` continuation.  Its `residueSum_eq_zero_of_patchedTraceSelection` yields `∑Res = 0`,
-confirming the reduction is honest. -/
+The `PatchedTraceSelection` obligation is *satisfiable*, not a disguised `False`: for the **empty
+pole set** (`α = ω₀·g` globally holomorphic) the empty fibre selection assembles into one, with
+`br = ∅` (no branch values, so `hbnd` is vacuous and the patch is inert:
+`valueChartTracePatched … ∅ = valueChartTrace … ≡ 0`), the per-regular-value empty moving datum, the
+empty `∞`-trace, vacuous junk-freeness, and the vanishing genus-`0` continuation. Its
+`residueSum_eq_zero_of_patchedTraceSelection` yields `∑Res = 0`, confirming the reduction is honest.
+-/
 
 /-- With `br = ∅` the patch is inert: `valueChartTracePatched ω₀ f Φ ∅ = valueChartTrace ω₀ f Φ`
 (no branch value to patch). -/
-@[simp] theorem valueChartTracePatched_empty (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
+@[simp] theorem valueChartTracePatched_empty (ω₀ : HolomorphicOneForms X)
+    (f : MeromorphicFunction X)
     (Φ : (b : ℂ) → FibreRegularData g f b) :
     valueChartTracePatched ω₀ f Φ ∅ = valueChartTrace ω₀ f Φ := by
   funext z; rw [valueChartTracePatched, if_neg (Finset.notMem_empty z)]
 
-/-- **The empty patched-trace selection.**  For the empty pole set, the empty fibre selection assembles
-into a `PatchedTraceSelection`: `br = ∅` (the patch inert, `valueChartTrace ≡ 0`), per-regular-value
-empty moving datum (`movingCoherenceDatum_empty`), vacuous finite/branch fields, and the vanishing
-genus-`0` continuation.  The honest non-vacuity witness. -/
+/-- **The empty patched-trace selection.** For the empty pole set, the empty fibre selection
+assembles into a `PatchedTraceSelection`: `br = ∅` (the patch inert, `valueChartTrace ≡ 0`),
+per-regular-value empty moving datum (`movingCoherenceDatum_empty`), vacuous finite/branch fields,
+and the vanishing genus-`0` continuation. The honest non-vacuity witness. -/
 noncomputable def patchedTraceSelection_empty (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
     PatchedTraceSelection ω₀ g f ∅ (adaptedCover_empty ω₀ g f hdiv) where
@@ -624,10 +655,10 @@ noncomputable def patchedTraceSelection_empty (ω₀ : HolomorphicOneForms X) (g
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **Non-vacuity of the patched-trace Gate-A reduction.**  For the empty pole set the reduction
-`residueSum_eq_zero_of_patchedTraceSelection` is satisfiable via the empty selection
-(`patchedTraceSelection_empty`), yielding `∑Res = 0`.  Confirms the reduction is honest (not a disguised
-`False`). -/
+/-- **Non-vacuity of the patched-trace residue-theorem reduction.** For the empty pole set the
+reduction `residueSum_eq_zero_of_patchedTraceSelection` is satisfiable via the empty selection
+(`patchedTraceSelection_empty`), yielding `∑Res = 0`. Confirms the reduction is honest (not a
+disguised `False`). -/
 theorem residueSum_eq_zero_of_patchedTraceSelection_holomorphic (ω₀ : HolomorphicOneForms X)
     (g : X → ℂ) (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
     ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 :=

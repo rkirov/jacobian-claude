@@ -1,7 +1,7 @@
 /-
-  Serre duality (Forster §17) — the PDE-free finite-dim core of the surjectivity step (§17.9).
+  Serre duality (Forster §17) — the finite-dimensional linear-algebra core of the surjectivity
+  step (§17.9).
 
-  This file de-risks the **formalizability litmus test** for Forster's PDE-free §17 route:
   Forster's proof that `ι_D : H⁰(X, Ω_{-D}) → H¹(X, 𝒪_D)*` is surjective (the hard half of Serre
   duality) bottoms out in *pure finite-dimensional linear algebra* — no harmonic forms, no Weyl's
   lemma, no elliptic regularity.  Concretely (Forster 17.9, p. 138):
@@ -13,17 +13,16 @@
     * hence for `n` large `dim Λ_n + dim Im ι_{D_n} > dim H¹(𝒪_{D_n})*`, forcing
       `Λ_n ∩ Im ι_{D_n} ≠ 0` — the surjectivity witness `0 ≠ ψλ = ι(ω)`.
 
-  The two genuinely content-free abstractions of that argument are formalized here, axiom-clean:
-    * `subspaces_inf_ne_bot_of_finrank_add_gt` — the pigeonhole (two subspaces of a fin-dim space
-      whose dimensions sum past the ambient must meet);
-    * `serre_surjectivity_dim_core`           — the "for `n` sufficiently large" dimension count
-      assembled on top of it, parametrized by the Riemann–Roch bounds as hypotheses.
+  The two abstractions of that argument are formalized here:
+    * `subspaces_inf_ne_bot_of_finrank_add_gt` — the pigeonhole (two subspaces of a
+      finite-dimensional space whose dimensions sum past the ambient must meet);
+    * `serre_surjectivity_dim_core` — the "for `n` sufficiently large" dimension count assembled
+      on top of it, parametrized by the Riemann–Roch bounds as hypotheses.
 
-  **Status.** Both lemmas are complete and depend only on Mathlib linear algebra.  This confirms the
-  PDE-free route's litmus test: §17.9 formalizes cleanly *given* the geometric inputs (17.4 the RR
-  inequality, 17.6 injectivity, 17.7 the unwinding, 17.8 the `ψ`-action) and the cohomology objects
-  `H¹(𝒪_{D_n})`, `H⁰(𝒪_{nP})`.  Building those objects and the maps `ι_D`, then *instantiating*
-  `serre_surjectivity_dim_core` with them, is the remaining (non-trivial but PDE-free) work.
+  Both lemmas depend only on Mathlib linear algebra: §17.9 goes through *given* the geometric
+  inputs (17.4 the RR inequality, 17.6 injectivity, 17.7 the unwinding, 17.8 the `ψ`-action) and
+  the cohomology objects `H¹(𝒪_{D_n})`, `H⁰(𝒪_{nP})`.  Those objects and the maps `ι_D` are built,
+  and `serre_surjectivity_dim_core` instantiated, in the `SerreResidue*` modules.
 -/
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 import Mathlib.LinearAlgebra.Dual.Lemmas
@@ -32,8 +31,8 @@ open Submodule Module
 
 namespace Jacobians.Dolbeault.SerreDuality
 
-/-- **Pigeonhole for subspaces.**  Two subspaces of a finite-dimensional space whose dimensions sum
-to strictly more than the ambient dimension meet nontrivially.  The irreducible "pure linear algebra"
+/-- **Pigeonhole for subspaces.**  Two subspaces of a finite-dimensional space whose dimensions
+sum to strictly more than the ambient dimension meet nontrivially.  The "pure linear algebra"
 heart of Forster's §17.9 surjectivity step (`dim Λ + dim Im ι > dim H¹ ⟹ Λ ∩ Im ≠ 0`). -/
 theorem subspaces_inf_ne_bot_of_finrank_add_gt
     {K V : Type*} [Field K] [AddCommGroup V] [Module K V] [FiniteDimensional K V]
@@ -46,7 +45,7 @@ theorem subspaces_inf_ne_bot_of_finrank_add_gt
   have hle : finrank K ↥(Λ ⊔ W) ≤ finrank K V := Submodule.finrank_le _
   omega
 
-/-- **§17.9 surjectivity — abstract finite-dimensional core (the PDE-free litmus).**
+/-- **§17.9 surjectivity — abstract finite-dimensional core.**
 Mirrors Forster's pigeonhole count.  For each `n`, `V n = H¹(𝒪_{D_n})*` is finite-dimensional with
 two subspaces: `Λ n ≅ H⁰(𝒪_{nP})` with `dim ≥ 1 - g + n` (Lemma 17.8 + Riemann–Roch) and
 `I n = Im ι_{D_n}` with `dim ≥ n + k₀ - deg D` (Lemmas 17.4/17.6).  Riemann–Roch gives
@@ -64,7 +63,8 @@ theorem serre_surjectivity_dim_core
     (hI : ∀ n : ℕ, (n : ℤ) + k₀ - d ≤ (finrank K (I n) : ℤ))
     (hV : ∀ n : ℕ, d < n → ((finrank K (V n) : ℤ)) = n + g - 1 - d) :
     ∃ N : ℕ, ∀ n ≥ N, Λ n ⊓ I n ≠ ⊥ := by
-  -- `n` must clear both `deg D` (for the RR formula `hV`) and `2g - 2 - k₀` (for the count to flip).
+  -- `n` must clear both `deg D` (for the RR formula `hV`) and `2g - 2 - k₀` (for the count
+  -- to flip).
   set M : ℤ := max d (2 * g - 2 - k₀) with hM
   refine ⟨M.toNat + 1, fun n hn => ?_⟩
   have hself : M ≤ (M.toNat : ℤ) := Int.self_le_toNat M
@@ -79,11 +79,12 @@ theorem serre_surjectivity_dim_core
   have : ((finrank K (V n) : ℤ)) < (finrank K (Λ n) : ℤ) + (finrank K (I n) : ℤ) := by omega
   exact_mod_cast this
 
-/-- **§17.6 injectivity — abstract finite-dim core (the EASY half).**  An injective linear map from
-`V` into the dual of a finite-dimensional `W` forces `dim V ≤ dim W`.  This is the linear-algebra
-content of Forster's `ι_D` *injectivity* step: at `D = 0`, `ι₀ : H⁰(X,Ω) → H¹(X,𝒪)*` injective gives
-`genus = dim H⁰(X,Ω) ≤ dim H¹(X,𝒪) = h1Dim 0` — the PDE-free, one-directional inequality.  Counterpart
-to `serre_surjectivity_dim_core` (which supplies the reverse inequality from surjectivity). -/
+/-- **§17.6 injectivity — abstract finite-dimensional core.**  An injective linear map from `V`
+into the dual of a finite-dimensional `W` forces `dim V ≤ dim W`.  This is the linear-algebra
+content of Forster's `ι_D` *injectivity* step: at `D = 0`, `ι₀ : H⁰(X,Ω) → H¹(X,𝒪)*` injective
+gives `genus = dim H⁰(X,Ω) ≤ dim H¹(X,𝒪) = h1Dim 0` — the one-directional inequality.
+Counterpart to `serre_surjectivity_dim_core` (which supplies the reverse inequality from
+surjectivity). -/
 theorem finrank_le_of_injective_to_dual
     {K V W : Type*} [Field K] [AddCommGroup V] [Module K V] [AddCommGroup W] [Module K W]
     [FiniteDimensional K W] (ι : V →ₗ[K] Module.Dual K W) (hι : Function.Injective ι) :

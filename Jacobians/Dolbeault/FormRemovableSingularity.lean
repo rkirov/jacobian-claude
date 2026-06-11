@@ -22,11 +22,11 @@
 
   This `repairedSection α : HolomorphicOneForms X` has `holToMero (repairedSection α)` germ-equal to
   `α` (they agree off the singular points), so `holToOmega0Module` is **surjective**.  With its
-  proven injectivity (`holToOmega0Module_injective`) this is a `LinearEquiv`
+  injectivity (`holToOmega0Module_injective`) this is a `LinearEquiv`
   `HolomorphicOneForms X ≃ₗ omegaDModule 0`, whence:
 
   * `FiniteDimensional ℂ (omegaDModule 0)` (transported from `HolomorphicOneForms`, finite-dim);
-  * `omegaDim 0 = genus X` (the §17.4 equality, both directions now proven).
+  * `omegaDim 0 = genus X` (the §17.4 equality, both directions).
 
   Chaining with `CanonicalForm17Data.hKgenus` (`CanonicalFormIso.lean`) makes the Serre-duality
   input `lDim K = genus X` UNCONDITIONAL.
@@ -43,7 +43,6 @@ open Jacobians.Montel
 
 namespace Jacobians.Dolbeault
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -62,8 +61,9 @@ the full chart source, so smoothness at any `y` is read in `y`'s own chart. -/
 If the chart pullback is analytic on `chart x₀ '' S`, then the scalar `y ↦ L y (e.symmL ℂ y 1)` is
 `ContMDiffOn ω` on `S`.  The inverse of `localRep_analyticOn_chartTarget`; the argument is
 `Montel.contMDiffOn_limit_inner` with `S` in place of `innerChartOpen`. -/
-theorem contMDiffOn_scalar_of_pullback_analyticOn
-    (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y) (x₀ : X)
+theorem contMDiffOn_scalar_of_pullback_analyticOn {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+        (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y) (x₀ : X)
     {S : Set X} (hSopen : IsOpen S) (hSsub : S ⊆ (chartAt ℂ x₀).source)
     (hAn : letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
       AnalyticOn ℂ
@@ -91,11 +91,13 @@ theorem contMDiffOn_scalar_of_pullback_analyticOn
     (chartAt ℂ x₀).isOpen_image_iff_of_subset_source hSsub |>.mpr hSopen
   exact (contDiffOn_omega_iff_analyticOn hSimg_open.uniqueDiffOn).mpr hAn
 
-/-- **Section smoothness from chart-pullback analyticity** on an open subset `S` of the chart source.
-The bundle-section `y ↦ (y, L y)` is `ContMDiffOn ω` on `S`.  This is
-`Montel.contMDiffOn_totalSpaceMk_L_inner` re-derived on an arbitrary open `S ⊆ (chart x₀).source`. -/
-theorem contMDiffOn_totalSpaceMk_of_pullback_analyticOn
-    (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y) (x₀ : X)
+/-- **Section smoothness from chart-pullback analyticity** on an open subset `S` of the chart
+source. The bundle-section `y ↦ (y, L y)` is `ContMDiffOn ω` on `S`. This is
+`Montel.contMDiffOn_totalSpaceMk_L_inner` re-derived on an arbitrary open `S ⊆ (chart x₀).source`.
+-/
+theorem contMDiffOn_totalSpaceMk_of_pullback_analyticOn {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+        (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y) (x₀ : X)
     {S : Set X} (hSopen : IsOpen S) (hSsub : S ⊆ (chartAt ℂ x₀).source)
     (hAn : letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
       AnalyticOn ℂ
@@ -145,8 +147,8 @@ theorem contMDiffOn_totalSpaceMk_of_pullback_analyticOn
 
 /-- **The section-assembly lemma, local form.**  A bundle section `L` whose chart pullback in *each
 point's own chart* is `AnalyticAt` the chart centre is `ContMDiff`, hence a `HolomorphicOneForms X`.
-Smoothness at `y` is read in `y`'s own chart: `AnalyticAt` gives analyticity on an open neighbourhood
-of `chart y y`, whose chart-preimage is an open neighbourhood of `y`. -/
+Smoothness at `y` is read in `y`'s own chart: `AnalyticAt` gives analyticity on an open
+neighbourhood of `chart y y`, whose chart-preimage is an open neighbourhood of `y`. -/
 noncomputable def holOfLocalRepAnalyticAt
     (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
     (hAn : ∀ x₀ : X,
@@ -180,8 +182,9 @@ noncomputable def holOfLocalRepAnalyticAt
     have h_on := contMDiffOn_totalSpaceMk_of_pullback_analyticOn L y hSopen hSsub hAnS
     exact (h_on y hyS).contMDiffAt (hSopen.mem_nhds hyS)
 
-@[simp] theorem holOfLocalRepAnalyticAt_toFun
-    (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
+@[simp] theorem holOfLocalRepAnalyticAt_toFun {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+        (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
     (hAn : ∀ x₀ : X,
       letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
       AnalyticAt ℂ
@@ -195,13 +198,14 @@ For `α ∈ omegaD 0`, the chart coefficient `formCoeff α.toFun x` is `Meromorp
 at every chart centre.  We repair the section to its analytic value.
 
 The single key structural fact is that the removable-singularity *junk* of `α.toFun` is isolated to
-chart centres: for `w` in a *punctured* neighbourhood of any `x₀`, the covector `α.toFun w` is pinned
-by `α`'s meromorphy at `x₀` (`toFun_eq_localRep_smul`), so reading it in `w`'s own chart it equals the
-analytic normal-form value (`repVal`).  Hence the per-point repair `repairedSection` is a genuine
-holomorphic section whose germ matches `α` everywhere off the centres. -/
+chart centres: for `w` in a *punctured* neighbourhood of any `x₀`, the covector `α.toFun w` is
+pinned by `α`'s meromorphy at `x₀` (`toFun_eq_localRep_smul`), so reading it in `w`'s own chart it
+equals the analytic normal-form value (`repVal`). Hence the per-point repair `repairedSection` is a
+genuine holomorphic section whose germ matches `α` everywhere off the centres. -/
 
 /-- `formCoeff` subtracts (combining `formCoeff_add` and `formCoeff_neg`). -/
-theorem formCoeff_sub (σ τ : ∀ x, FormFiber X x) (x : X) :
+theorem formCoeff_sub {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (σ τ : ∀ x, FormFiber X x) (x : X) :
     formCoeff (σ - τ) x = formCoeff σ x - formCoeff τ x := by
   rw [sub_eq_add_neg, formCoeff_add, formCoeff_neg, sub_eq_add_neg]
 
@@ -213,7 +217,9 @@ noncomputable def frameCovector (y : X) : TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ
     TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] ℂ)
 
 /-- `φ_y (e_y.symmL ℂ y 1) = 1`: the frame covector evaluated on the canonical frame vector. -/
-theorem frameCovector_symmL_self (y : X) :
+theorem frameCovector_symmL_self {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (y : X) :
     letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) y
     frameCovector y (e.symmL ℂ y 1) = 1 := by
   set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) y
@@ -226,8 +232,8 @@ theorem frameCovector_symmL_self (y : X) :
   rw [show e.symmL ℂ y 1 = (φ.symm : ℂ →L[ℂ] TangentSpace 𝓘(ℂ, ℂ) y) 1 from by rw [h_symmL]]
   exact φ.apply_symm_apply 1
 
-/-- The **repaired chart value** of `α` at `y`: the normal-form value of the chart coefficient at the
-chart centre — the removable-singularity limit `lim_{z → chart y y} formCoeff α.toFun y (z)`. -/
+/-- The **repaired chart value** of `α` at `y`: the normal-form value of the chart coefficient at
+the chart centre — the removable-singularity limit `lim_{z → chart y y} formCoeff α.toFun y (z)`. -/
 noncomputable def repVal (α : MeromorphicOneForm X) (y : X) : ℂ :=
   toMeromorphicNFAt (formCoeff α.toFun y) ((chartAt ℂ y) y) ((chartAt ℂ y) y)
 
@@ -255,9 +261,9 @@ theorem formCoeff_eventuallyEq_repairedCoeff (α : MeromorphicOneForm X) (y : X)
 
 /-! ### Raw chart representative of a bare cotangent section, and its chart-transition law
 
-`rawLocalRep σ x₀ y := σ y (e_{x₀}.symmL ℂ y 1)` reads a *bare* section `σ : ∀ x, FormFiber x` in the
-`x₀`-trivialisation (the analogue of `Montel.localRep` without the smoothness bundling).  It satisfies
-`formCoeff σ x = rawLocalRep σ x ∘ (chart x).symm` and the chart-transition law
+`rawLocalRep σ x₀ y := σ y (e_{x₀}.symmL ℂ y 1)` reads a *bare* section `σ : ∀ x, FormFiber x` in
+the `x₀`-trivialisation (the analogue of `Montel.localRep` without the smoothness bundling). It
+satisfies `formCoeff σ x = rawLocalRep σ x ∘ (chart x).symm` and the chart-transition law
 `rawLocalRep σ x₀' y = chartTransitionFactor x₀ x₀' y · rawLocalRep σ x₀ y`, re-derived from the
 trivialisation identity `symmL_apply_chartTransitionFactor`. -/
 
@@ -265,18 +271,24 @@ trivialisation identity `symmL_apply_chartTransitionFactor`. -/
 noncomputable def rawLocalRep (σ : ∀ x, FormFiber X x) (x₀ y : X) : ℂ :=
   σ y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)
 
-theorem formCoeff_eq_rawLocalRep (σ : ∀ x, FormFiber X x) (x : X) (z : ℂ) :
+theorem formCoeff_eq_rawLocalRep {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (σ : ∀ x, FormFiber X x) (x : X) (z : ℂ) :
     formCoeff σ x z = rawLocalRep σ x ((chartAt ℂ x).symm z) := rfl
 
 /-- `rawLocalRep σ y y = formCoeff σ y (chart y y)`: the chart-centre value. -/
-theorem rawLocalRep_self_eq_formCoeff (σ : ∀ x, FormFiber X x) (y : X) :
+theorem rawLocalRep_self_eq_formCoeff {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (σ : ∀ x, FormFiber X x) (y : X) :
     rawLocalRep σ y y = formCoeff σ y ((chartAt ℂ y) y) := by
   rw [formCoeff_eq_rawLocalRep, (chartAt ℂ y).left_inv (mem_chart_source ℂ y)]
 
 /-- **Chart-transition for `rawLocalRep`** (raw analogue of `Montel.localRep_chart_transition`):
 `rawLocalRep σ x₀' y = chartTransitionFactor x₀ x₀' y · rawLocalRep σ x₀ y` for `y` in both base
 sets.  The proof reuses the trivialisation identity `symmL_apply_chartTransitionFactor`. -/
-theorem rawLocalRep_chart_transition (σ : ∀ x, FormFiber X x) (x₀ x₀' y : X)
+theorem rawLocalRep_chart_transition {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (σ : ∀ x, FormFiber X x) (x₀ x₀' y : X)
     (hy₀' : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀').baseSet)
     (hy₀ : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet) :
     rawLocalRep σ x₀' y = chartTransitionFactor (X := X) x₀ x₀' y * rawLocalRep σ x₀ y := by
@@ -293,7 +305,9 @@ theorem rawLocalRep_chart_transition (σ : ∀ x, FormFiber X x) (x₀ x₀' y :
 /-- **Self-frame reconstruction** (raw analogue of `Montel.toFun_eq_localRep_smul` at `x₀ = y`):
 `σ y = rawLocalRep σ y y • φ_y` where `φ_y = frameCovector y`.  In particular
 `σ y (e_{x₀}.symmL ℂ y 1) = rawLocalRep σ y y · φ_y (e_{x₀}.symmL ℂ y 1)`. -/
-theorem section_eq_rawLocalRep_smul_frame (σ : ∀ x, FormFiber X x) (y : X) :
+theorem section_eq_rawLocalRep_smul_frame {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (σ : ∀ x, FormFiber X x) (y : X) :
     σ y = (rawLocalRep σ y y) • frameCovector y := by
   set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) y with he
   have hy : y ∈ e.baseSet := by
@@ -321,12 +335,13 @@ theorem section_eq_rawLocalRep_smul_frame (σ : ∀ x, FormFiber X x) (y : X) :
 
 /-! ### The junk is isolated: off-centre points are repaired automatically
 
-The crux structural fact.  For `w` in a *punctured* neighbourhood of `x₀`, the chart coefficient
+The key structural fact. For `w` in a *punctured* neighbourhood of `x₀`, the chart coefficient
 `formCoeff α.toFun w` is `ContinuousAt` its own centre, hence (being meromorphic) analytic there, so
-its normal-form value `repVal α w` equals the actual value `rawLocalRep α.toFun w w`.  The
-continuity comes from the chart-transition law: `rawLocalRep α.toFun w = chartTransitionFactor x₀ w ·
-rawLocalRep α.toFun x₀`, where the transition factor is continuous and `rawLocalRep α.toFun x₀` is
-continuous at `w` (its chart pullback `formCoeff α.toFun x₀` is analytic off the `x₀`-centre). -/
+its normal-form value `repVal α w` equals the actual value `rawLocalRep α.toFun w w`. The continuity
+comes from the chart-transition law:
+`rawLocalRep α.toFun w = chartTransitionFactor x₀ w · rawLocalRep α.toFun x₀`, where the transition
+factor is continuous and `rawLocalRep α.toFun x₀` is continuous at `w` (its chart pullback
+`formCoeff α.toFun x₀` is analytic off the `x₀`-centre). -/
 
 /-- `formCoeff α.toFun x₀` is analytic at `chart x₀ w`, for `w` in a punctured neighbourhood of `x₀`
 (pull `MeromorphicAt.eventually_analyticAt` back through the chart). -/
@@ -339,9 +354,9 @@ theorem eventually_analyticAt_formCoeff (α : MeromorphicOneForm X) (x₀ : X) :
     (chartAt ℂ x₀).tendsto_nhdsNE (mem_chart_source ℂ x₀)
   exact htfwd.eventually hev
 
-/-- **The junk-free crux.**  For `w` in a punctured neighbourhood of `x₀`, the repaired value at `w`
-equals the actual chart-centre value: `repVal α w = rawLocalRep α.toFun w w`.  Hence `α.toFun` carries
-no removable-singularity junk away from chart centres. -/
+/-- **The junk-free key step.**  For `w` in a punctured neighbourhood of `x₀`, the repaired value
+at `w` equals the actual chart-centre value: `repVal α w = rawLocalRep α.toFun w w`. Hence `α.toFun`
+carries no removable-singularity junk away from chart centres. -/
 theorem eventually_repVal_eq (α : MeromorphicOneForm X) (x₀ : X) :
     ∀ᶠ w in 𝓝[≠] x₀, repVal α w = rawLocalRep α.toFun w w := by
   set e₀ := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀ with he₀
@@ -354,7 +369,8 @@ theorem eventually_repVal_eq (α : MeromorphicOneForm X) (x₀ : X) :
   filter_upwards [eventually_analyticAt_formCoeff α x₀, hsrc] with w hw_ana hw_src
   -- `w` is in `x₀`'s and `w`'s base sets.
   set e_w := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) w with hew
-  have hw_base₀ : w ∈ e₀.baseSet := by rw [he₀, TangentBundle.trivializationAt_baseSet]; exact hw_src
+  have hw_base₀ : w ∈ e₀.baseSet := by rw
+      [he₀, TangentBundle.trivializationAt_baseSet]; exact hw_src
   have hw_base_w : w ∈ e_w.baseSet := by
     rw [hew, TangentBundle.trivializationAt_baseSet]; exact mem_chart_source ℂ w
   -- (1) `rawLocalRep α.toFun x₀` is continuous at `w`.
@@ -404,7 +420,8 @@ theorem eventually_repVal_eq (α : MeromorphicOneForm X) (x₀ : X) :
 
 `repairedSection α y := repVal α y • frameCovector y` is the per-point removable-singularity repair.
 Its chart pullback in *any* chart `x₀` agrees off the centre with `formCoeff α.toFun x₀` (junk-free
-crux) and at the centre with the normal-form value, hence equals the analytic normal-form repair near
+key step) and at the centre with the normal-form value, hence equals the analytic normal-form
+repair near
 the centre — so it is a genuine `HolomorphicOneForms X` (`holOfLocalRepAnalyticAt`). -/
 
 /-- The **repaired section** of an order-`≥ 0` meromorphic 1-form: the per-point normal-form value
@@ -414,22 +431,24 @@ noncomputable def repairedSection (α : MeromorphicOneForm X) : ∀ y, FormFiber
 
 theorem rawLocalRep_repairedSection_self (α : MeromorphicOneForm X) (y : X) :
     rawLocalRep (repairedSection α) y y = repVal α y := by
-  show (repairedSection α y) ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) y).symmL ℂ y 1) = _
+  show (repairedSection α y)
+    ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) y).symmL ℂ y 1) = _
   rw [repairedSection, ContinuousLinearMap.smul_apply, frameCovector_symmL_self, smul_eq_mul,
     mul_one]
 
 /-- **The repaired section germ-matches `α` off every centre.**  In chart `x₀`, the chart
 coefficient of `repairedSection α` agrees on a punctured neighbourhood of the centre with
-`formCoeff α.toFun x₀` (the junk-free crux + self-frame reconstruction).  This drives both the
+`formCoeff α.toFun x₀` (the junk-free key step + self-frame reconstruction).  This drives both
+the
 analyticity of the repaired section and the germ-equality `holToMero (repaired) ≡ α`. -/
 theorem formCoeff_repairedSection_eventuallyEq (α : MeromorphicOneForm X) (x₀ : X) :
     formCoeff (repairedSection α) x₀ =ᶠ[𝓝[≠] ((chartAt ℂ x₀) x₀)] formCoeff α.toFun x₀ := by
   set e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀ with he
   set c₀ := (chartAt ℂ x₀) x₀ with hc₀
-  -- Transport the junk-free crux from `𝓝[≠] x₀` to `𝓝[≠] c₀` via `(chart x₀).symm`.
+  -- Transport the junk-free hypothesis from `𝓝[≠] x₀` to `𝓝[≠] c₀` via `(chart x₀).symm`.
   have htsymm : Tendsto (chartAt ℂ x₀).symm (𝓝[≠] c₀) (𝓝[≠] x₀) := by
     have := (chartAt ℂ x₀).symm.tendsto_nhdsNE (x := c₀)
-      (by simpa [hc₀] using (chartAt ℂ x₀).map_source (mem_chart_source ℂ x₀))
+      ((chartAt ℂ x₀).map_source (mem_chart_source ℂ x₀))
     simpa [hc₀, (chartAt ℂ x₀).left_inv (mem_chart_source ℂ x₀)] using this
   have hcrux : ∀ᶠ z in 𝓝[≠] c₀,
       repVal α ((chartAt ℂ x₀).symm z) = rawLocalRep α.toFun ((chartAt ℂ x₀).symm z)
@@ -445,15 +464,16 @@ theorem formCoeff_repairedSection_eventuallyEq (α : MeromorphicOneForm X) (x₀
     rw [repairedSection, ContinuousLinearMap.smul_apply, smul_eq_mul]
   -- `α.toFun w = rawLocalRep α.toFun w w • φ_w` (self-frame), so its `x₀`-rawLocalRep at `w` is
   -- `rawLocalRep α.toFun w w · φ_w(e.symmL w 1)`.
-  have h2 : rawLocalRep α.toFun x₀ w = rawLocalRep α.toFun w w * frameCovector w (e.symmL ℂ w 1) := by
+  have h2 : rawLocalRep α.toFun x₀ w =
+      rawLocalRep α.toFun w w * frameCovector w (e.symmL ℂ w 1) := by
     show α.toFun w (e.symmL ℂ w 1) = _
     conv_lhs => rw [section_eq_rawLocalRep_smul_frame α.toFun w]
     rw [ContinuousLinearMap.smul_apply, smul_eq_mul]
   rw [h1, h2, hz_crux]
 
 /-- **The repaired section's chart pullback is analytic at every centre.**  In chart `x₀`, the
-pullback agrees off the centre with `formCoeff α.toFun x₀` (the junk-free crux + self-frame), and at
-the centre takes the normal-form value, so it equals the analytic normal-form repair of
+pullback agrees off the centre with `formCoeff α.toFun x₀` (the junk-free hypothesis + self-frame),
+and at the centre takes the normal-form value, so it equals the analytic normal-form repair of
 `formCoeff α.toFun x₀` near the centre. -/
 theorem analyticAt_pullback_repairedSection {α : MeromorphicOneForm X}
     (hα : α ∈ omegaD (X := X) 0) (x₀ : X) :
@@ -493,16 +513,16 @@ attribute [local irreducible] repVal frameCovector repairedSection repairedHOF
 /-! ## Part 3: `Ω_0 ≅ HolomorphicOneForms`, finiteness, and the unconditional `hKgenus`
 
 `holToMero (repairedHOF hα)` germ-matches `α` everywhere (the repaired section agrees with `α` off
-every centre), so `holToMero (repairedHOF hα) − α ∈ formGermZeroSubmodule`.  Hence the injection
-`holToOmega0Module : HolomorphicOneForms X → omegaDModule 0` is **surjective**, giving a `LinearEquiv`,
-finite-dimensionality of `omegaDModule 0` (transported from `HolomorphicOneForms`), and the §17.4
-equality `omegaDim 0 = genus X`.  Chaining with `CanonicalForm17Data.hKgenus` makes `lDim K = genus X`
-unconditional. -/
+every centre), so `holToMero (repairedHOF hα) − α ∈ formGermZeroSubmodule`. Hence the injection
+`holToOmega0Module : HolomorphicOneForms X → omegaDModule 0` is **surjective**, giving a
+`LinearEquiv`, finite-dimensionality of `omegaDModule 0` (transported from `HolomorphicOneForms`),
+and the §17.4 equality `omegaDim 0 = genus X`. Chaining with `CanonicalForm17Data.hKgenus` makes
+`lDim K = genus X` unconditional. -/
 
 set_option maxHeartbeats 1000000 in
-/-- **Every order-`≥ 0` meromorphic 1-form is holomorphic modulo germ-junk.**  There is a holomorphic
+/-- **Every order-`≥ 0` meromorphic 1-form is holomorphic modulo germ-junk.** There is a holomorphic
 1-form `β` (the repaired section) with `holToMero β − α` germ-zero everywhere (order `⊤` at every
-centre): their chart coefficients agree on a punctured neighbourhood of each centre.  Packaging it as
+centre): their chart coefficients agree on a punctured neighbourhood of each centre. Packaging it as
 an existence keeps the large `repairedHOF` proof term out of downstream goals. -/
 theorem exists_holomorphic_germEq_of_mem_omegaD_zero {α : MeromorphicOneForm X}
     (hα : α ∈ omegaD (X := X) 0) :
@@ -523,21 +543,25 @@ theorem exists_holomorphic_germEq_of_mem_omegaD_zero {α : MeromorphicOneForm X}
 
 /-- **`holToOmega0Module` is surjective**: every class `[α] ∈ omegaDModule 0` is the image of a
 holomorphic form (the removable-singularity repair, which differs from `α` by germ-zero junk). -/
-theorem holToOmega0Module_surjective :
+theorem holToOmega0Module_surjective {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    :
     Function.Surjective (holToOmega0Module (X := X)) := by
   intro q
   obtain ⟨⟨α, hα⟩, rfl⟩ := Submodule.Quotient.mk_surjective _ q
   obtain ⟨β, hβ⟩ := exists_holomorphic_germEq_of_mem_omegaD_zero hα
   refine ⟨β, ?_⟩
-  -- `[holInOmega0 β] = [⟨α, hα⟩]` since their difference `holToMero β − α` lies in the germ-zero sub.
+  -- `[holInOmega0 β] = [⟨α, hα⟩]` since their difference `holToMero β − α` lies in the germ-zero
+  -- sub.
   rw [holToOmega0Module, LinearMap.coe_mk, AddHom.coe_mk, Submodule.Quotient.eq]
   rw [Submodule.submoduleOf, Submodule.mem_comap, map_sub]
   show holToMero β - α ∈ formGermZeroSubmodule (X := X)
   exact hβ
 
-/-- **`Ω_0 ≅ HolomorphicOneForms`** (Forster §17.4 at `D = 0`): the holomorphic-to-meromorphic-1-form
-map is a linear isomorphism `HolomorphicOneForms X ≃ₗ[ℂ] omegaDModule 0` (injective from
-`holToOmega0Module_injective`, surjective from the removable-singularity repair). -/
+/-- **`Ω_0 ≅ HolomorphicOneForms`** (Forster §17.4 at `D = 0`): the
+holomorphic-to-meromorphic-1-form map is a linear isomorphism
+`HolomorphicOneForms X ≃ₗ[ℂ] omegaDModule 0` (injective from `holToOmega0Module_injective`,
+surjective from the removable-singularity repair). -/
 noncomputable def holOmega0Equiv : HolomorphicOneForms X ≃ₗ[ℂ] omegaDModule (X := X) 0 :=
   LinearEquiv.ofBijective holToOmega0Module
     ⟨holToOmega0Module_injective, holToOmega0Module_surjective⟩
@@ -550,12 +574,16 @@ instance : FiniteDimensional ℂ (omegaDModule (X := X) 0) :=
 /-- **`omegaDim 0 = genus X`** (Forster §17.4 at `D = 0`), UNCONDITIONAL: the isomorphism
 `Ω_0 ≅ HolomorphicOneForms X` preserves finrank, and `genus X = finrank ℂ (HolomorphicOneForms X)`
 by definition. -/
-theorem omegaDim_zero_eq_genus : omegaDim (X := X) 0 = genus X := by
+theorem omegaDim_zero_eq_genus {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    : omegaDim (X := X) 0 = genus X := by
   rw [omegaDim_eq_finrank, ← holOmega0Equiv.finrank_eq]
   rfl
 
-/-- **The reverse bound `omegaDim 0 ≤ genus X`** (Gate C's removable-singularity direction). -/
-theorem omegaDim_zero_le_genus : omegaDim (X := X) 0 ≤ genus X :=
+/-- **The reverse bound `omegaDim 0 ≤ genus X`** (the removable-singularity direction). -/
+theorem omegaDim_zero_le_genus {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    : omegaDim (X := X) 0 ≤ genus X :=
   le_of_eq omegaDim_zero_eq_genus
 
 end Jacobians.Dolbeault
@@ -572,14 +600,16 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- **Unconditional `hKgenus`** for a given §17.4 datum: `lDim data.K = genus X`, with the two
-removable-singularity inputs (`Ω_0` finite-dimensional and `omegaDim 0 ≤ genus X`) now discharged. -/
+removable-singularity inputs (`Ω_0` finite-dimensional and `omegaDim 0 ≤ genus X`) now discharged.
+-/
 theorem CanonicalForm17Data.hKgenus_unconditional (data : CanonicalForm17Data X) :
     lDim (X := X) data.K = genus X :=
   data.hKgenus omegaDim_zero_le_genus
 
-/-- **The unconditional Serre-duality input** `∃ data, lDim data.K = genus X` (Forster §17.4).  Chains
-the proven existence of a §17.4 datum (`nonempty_canonicalForm17Data`) with the now-unconditional
-`hKgenus`.  This discharges the `SerreDualityData.hKgenus` field with no hypotheses. -/
+/-- **The unconditional Serre-duality input** `∃ data, lDim data.K = genus X` (Forster §17.4).
+Chains the proven existence of a §17.4 datum (`nonempty_canonicalForm17Data`) with the
+now-unconditional `hKgenus`. This discharges the `SerreDualityData.hKgenus` field with no
+hypotheses. -/
 theorem exists_canonicalForm17Data_hKgenus :
     ∃ data : CanonicalForm17Data X, lDim (X := X) data.K = genus X := by
   obtain ⟨data⟩ := nonempty_canonicalForm17Data (X := X)

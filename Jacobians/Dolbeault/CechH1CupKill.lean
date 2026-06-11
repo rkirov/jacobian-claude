@@ -33,17 +33,17 @@ import Jacobians.Dolbeault.CanonicalFormIso
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Order and linear-system bookkeeping for products, the constant `1`, and reciprocals -/
 
 /-- Constant functions are meromorphic (chart pullbacks of constants are constant). -/
-theorem IsMeromorphic.const (c : ℂ) : IsMeromorphic X fun _ => c := by
+theorem IsMeromorphic.const {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (c : ℂ) :
+    IsMeromorphic X fun _ => c := by
   intro x
   show MeromorphicAt (fun _ => c) ((chartAt (H := ℂ) x) x)
   exact MeromorphicAt.const c _
@@ -52,11 +52,11 @@ theorem IsMeromorphic.const (c : ℂ) : IsMeromorphic X fun _ => c := by
 noncomputable instance : One (MeromorphicFunction X) :=
   ⟨⟨fun _ => 1, IsMeromorphic.const (X := X) 1⟩⟩
 
-@[simp] theorem MeromorphicFunction.one_toFun :
+@[simp] theorem MeromorphicFunction.one_toFun {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] :
     (1 : MeromorphicFunction X).toFun = fun _ => (1 : ℂ) := rfl
 
 /-- The constant `1` has germ-order `0` at every point. -/
-theorem MeromorphicFunction.orderW_one (x : X) :
+theorem MeromorphicFunction.orderW_one {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (x : X) :
     (1 : MeromorphicFunction X).orderW x = 0 := by
   classical
   show meromorphicOrderAt ((fun _ : X => (1 : ℂ)) ∘ (chartAt (H := ℂ) x).symm) _ = 0
@@ -66,7 +66,8 @@ theorem MeromorphicFunction.orderW_one (x : X) :
 
 /-- **Order is additive in products**: `orderW (f·g) = orderW f + orderW g`
 (Mathlib `meromorphicOrderAt_mul`, read in the chart at each point). -/
-theorem MeromorphicFunction.orderW_mul (f g : MeromorphicFunction X) (x : X) :
+theorem MeromorphicFunction.orderW_mul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f g : MeromorphicFunction X) (x : X) :
     (f * g).orderW x = f.orderW x + g.orderW x := by
   show meromorphicOrderAt ((f.toFun * g.toFun) ∘ (chartAt (H := ℂ) x).symm) _ = _
   rw [show (f.toFun * g.toFun) ∘ (chartAt (H := ℂ) x).symm
@@ -157,15 +158,17 @@ namespace Dolbeault
 variable {𝔘 : FiniteFamily X}
 
 /-- `globalGerm` is **multiplicative** in the meromorphic function. -/
-theorem globalGerm_mul (f g : MeromorphicFunction X) (U : Opens X) :
+theorem globalGerm_mul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f g : MeromorphicFunction X) (U : Opens X) :
     globalGerm (f * g) U = globalGerm f U * globalGerm g U := rfl
 
 /-- `globalGerm` of the constant `1` is the unit germ. -/
-theorem globalGerm_one (U : Opens X) :
+theorem globalGerm_one {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (U : Opens X) :
     globalGerm (1 : MeromorphicFunction X) U = 1 := rfl
 
 /-- `globalGerm` is **subtractive** in the meromorphic function. -/
-theorem globalGerm_sub (f g : MeromorphicFunction X) (U : Opens X) :
+theorem globalGerm_sub {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f g : MeromorphicFunction X) (U : Opens X) :
     globalGerm (f - g) U = globalGerm f U - globalGerm g U := by
   have h1 : f - g = f + (-1 : ℂ) • g := by
     rw [neg_one_smul, sub_eq_add_neg]

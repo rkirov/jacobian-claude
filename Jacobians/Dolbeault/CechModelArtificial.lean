@@ -1,7 +1,7 @@
 /-
   Dolbeault ladder — the ARTIFICIAL (single-point) chart-disk model of `exists_cechModel`.
 
-  This file gives a fully complete, axiom-clean witness for the *bundled* model existential
+  This file gives a witness for the *bundled* model existential
   `exists_cechModel_of_finiteDimensional`: assuming only that the genuine germ-class `H¹`,
   `𝔘.cechH1 D`, is finite-dimensional, it produces a `DiskOverlapData` + `Coboundaries` whose
   sup-norm `H¹` is `ℂ`-linearly isomorphic to `𝔘.cechH1 D`.
@@ -56,8 +56,9 @@ noncomputable def onePointBcfEquiv : (↥({(0:ℂ)} : Set ℂ) →ᵇ ℂ) ≃�
 
 /-! ### A constant bounded-holomorphic function on the unit disk realizing any value -/
 
-/-- The constant-`c` element of `BddHol (Metric.ball 0 1)`: the function equal to `c` on the ball and
-`0` outside, which is analytic on the ball (it agrees with the constant `c` there) and bounded. -/
+/-- The constant-`c` element of `BddHol (Metric.ball 0 1)`: the function equal to `c` on the ball
+and `0` outside, which is analytic on the ball (it agrees with the constant `c` there) and bounded.
+-/
 noncomputable def bddHolConst (c : ℂ) : BddHol (Metric.ball (0 : ℂ) 1) :=
   (⟨(Metric.ball (0 : ℂ) 1).indicator (fun _ => c),
     ⟨(analyticOn_const (v := c)).congr (fun z hz => by simp [Set.indicator_of_mem hz]),
@@ -70,7 +71,7 @@ noncomputable def bddHolConst (c : ℂ) : BddHol (Metric.ball (0 : ℂ) 1) :=
   simp only [bddHolConst, BddHol.toFun, BddHol.toCarrier]
   simp [Set.indicator_of_mem hz]
 
-/-! ### The artificial `DiskOverlapData`: `Fin k` copies of the unit disk with a one-point shrinking -/
+/-! ### The artificial `DiskOverlapData`: `Fin k` copies of the unit disk, one-point shrinking -/
 
 /-- The single-point chart-disk overlap data on `Fin k`: every overlap is the unit disk
 `Metric.ball 0 1`, every shrinking is the single point `{0}`. -/

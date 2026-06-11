@@ -1,5 +1,5 @@
 /-
-  The residue-ledger chart transport (Route-H Stage C, part 1: the transport engine).
+  The residue-ledger chart transport engine.
 
   The genus-uniform pair-form residue theorem (`ResidueTheoremStokes.lean`) is a ledger of
   planar integrals of ONE canonical integrand shape, read in varying charts of the compact
@@ -18,8 +18,8 @@
     honestly analytic — `ReadsAnalyticAt`, whose failure set is FINITE);
   * `analyticAt_pairRead` — off the bad set the pair coefficient is holomorphic in EVERY chart;
   * `integral_ledgerIntegrand_transport` — **the chart-change invariance**
-    `∫_ℂ ledgerIntegrand … y V = ∫_ℂ ledgerIntegrand … y' V`: holomorphic change of variables
-    (Stage B), with `conj T′` (from the `∂̄` chain rule) × `T′` (from `pairRead_transform`)
+    `∫_ℂ ledgerIntegrand … y V = ∫_ℂ ledgerIntegrand … y' V`: holomorphic change of variables,
+    with `conj T′` (from the `∂̄` chain rule) × `T′` (from `pairRead_transform`)
     combining EXACTLY into the real Jacobian `|T′|²`;
   * `ledgerIntegrand_congr_superset` — the indicator set may be enlarged/shrunk freely as long
     as `P` vanishes or `v` is locally constant on the difference;
@@ -39,7 +39,6 @@ import Jacobians.Dolbeault.MeromorphicAnalyticBadSet
 import Jacobians.Dolbeault.CechModelManifold
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open Complex MeasureTheory Filter Set Topology
 open scoped Manifold ContDiff
@@ -49,7 +48,7 @@ namespace Jacobians.Dolbeault.StokesResidue
 open Jacobians.Dolbeault Jacobians
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The pair-form coefficient and its chart calculus -/
 
@@ -76,7 +75,9 @@ theorem finite_not_readsAnalyticAt (g₀ h : MeromorphicFunction X) :
   · exact Set.mem_union_right _ h2
 
 /-- Chart-read analyticity transports from the own chart to ANY chart containing the point. -/
-theorem analyticAt_read_of_ownChart {f : X → ℂ} {x y : X}
+theorem analyticAt_read_of_ownChart {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {f : X → ℂ} {x y : X}
     (hxy : x ∈ (chartAt (H := ℂ) y).source)
     (hx : AnalyticAt ℂ (fun z => f ((chartAt (H := ℂ) x).symm z)) ((chartAt (H := ℂ) x) x)) :
     AnalyticAt ℂ (fun z => f ((chartAt (H := ℂ) y).symm z)) ((chartAt (H := ℂ) y) x) := by
@@ -85,7 +86,9 @@ theorem analyticAt_read_of_ownChart {f : X → ℂ} {x y : X}
 
 /-- **Off the bad set the pair coefficient is holomorphic in every chart** (the chart-uniform
 Claim A): `pairRead g₀ h y` is `AnalyticAt` at `chart_y x` for every good `x ∈ source_y`. -/
-theorem analyticAt_pairRead {g₀ h : MeromorphicFunction X} {x y : X}
+theorem analyticAt_pairRead {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {g₀ h : MeromorphicFunction X} {x y : X}
     (hx : ReadsAnalyticAt g₀ h x) (hxy : x ∈ (chartAt (H := ℂ) y).source) :
     AnalyticAt ℂ (pairRead g₀ h y) ((chartAt (H := ℂ) y) x) := by
   have hh := analyticAt_read_of_ownChart hxy hx.1
@@ -94,7 +97,8 @@ theorem analyticAt_pairRead {g₀ h : MeromorphicFunction X} {x y : X}
 
 /-- Eventually near `chart_y x`, points stay in the chart target and their preimages stay in any
 chart source containing `x` — the germ window for all the transition computations below. -/
-theorem eventually_chart_window {x y y' : X}
+theorem eventually_chart_window {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {x y y' : X}
     (hxy : x ∈ (chartAt (H := ℂ) y).source) (hxy' : x ∈ (chartAt (H := ℂ) y').source) :
     ∀ᶠ w in 𝓝 ((chartAt (H := ℂ) y) x),
       w ∈ (chartAt (H := ℂ) y).target
@@ -112,7 +116,8 @@ theorem eventually_chart_window {x y y' : X}
 
 /-- On the germ window, a read through chart `y` is the read through chart `y'` composed with
 the transition `T = chart_{y'} ∘ chart_y⁻¹`. -/
-theorem read_eventuallyEq_read_comp_transition (f : X → ℂ) {x y y' : X}
+theorem read_eventuallyEq_read_comp_transition {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : X → ℂ) {x y y' : X}
     (hxy : x ∈ (chartAt (H := ℂ) y).source) (hxy' : x ∈ (chartAt (H := ℂ) y').source) :
     (fun w => f ((chartAt (H := ℂ) y).symm w)) =ᶠ[𝓝 ((chartAt (H := ℂ) y) x)]
       (fun w => f ((chartAt (H := ℂ) y').symm w))
@@ -123,7 +128,8 @@ theorem read_eventuallyEq_read_comp_transition (f : X → ℂ) {x y y' : X}
 /-- **The `(1,0)`-coefficient transformation rule (Claim B)**: at a good point `x` in the overlap
 of two chart sources, `pairRead` through `y` is `pairRead` through `y'` at the transported point,
 times the transition derivative. -/
-theorem pairRead_transform {g₀ h : MeromorphicFunction X} {x y y' : X}
+theorem pairRead_transform {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {g₀ h : MeromorphicFunction X} {x y y' : X}
     (hx : ReadsAnalyticAt g₀ h x)
     (hxy : x ∈ (chartAt (H := ℂ) y).source) (hxy' : x ∈ (chartAt (H := ℂ) y').source) :
     pairRead g₀ h y ((chartAt (H := ℂ) y) x)
@@ -154,7 +160,9 @@ theorem pairRead_transform {g₀ h : MeromorphicFunction X} {x y y' : X}
 /-! ### Smooth chart reads and their `∂̄` -/
 
 /-- The complexified chart read of a smooth real function is `C^∞` at chart-target points. -/
-theorem contDiffAt_complexRead {v : X → ℝ}
+theorem contDiffAt_complexRead {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {v : X → ℝ}
     (hv : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) v) (y : X) {z : ℂ}
     (hz : z ∈ (chartAt (H := ℂ) y).target) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun w => ((v ((chartAt (H := ℂ) y).symm w) : ℝ) : ℂ)) z := by
@@ -170,14 +178,18 @@ theorem contDiffAt_complexRead {v : X → ℝ}
   exact contMDiffAt_iff_contDiffAt.1 hcomplex
 
 /-- Real differentiability of the complexified chart read at target points. -/
-theorem differentiableAt_complexRead {v : X → ℝ}
+theorem differentiableAt_complexRead {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {v : X → ℝ}
     (hv : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) v) (y : X) {z : ℂ}
     (hz : z ∈ (chartAt (H := ℂ) y).target) :
     DifferentiableAt ℝ (fun w => ((v ((chartAt (H := ℂ) y).symm w) : ℝ) : ℂ)) z :=
   (contDiffAt_complexRead hv y hz).differentiableAt (by simp)
 
 /-- Continuity of the `∂̄` of a smooth chart read at target points. -/
-theorem continuousAt_dbar_complexRead {v : X → ℝ}
+theorem continuousAt_dbar_complexRead {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {v : X → ℝ}
     (hv : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) v) (y : X) {z : ℂ}
     (hz : z ∈ (chartAt (H := ℂ) y).target) :
     ContinuousAt (DbarDisk.dbar
@@ -186,7 +198,9 @@ theorem continuousAt_dbar_complexRead {v : X → ℝ}
 
 /-- If `v` is locally constant at the underlying point, the `∂̄` of its chart read vanishes AT the
 chart point (and indeed near it). -/
-theorem dbar_complexRead_eq_zero_of_eventually_const {v : X → ℝ} {y : X} {z : ℂ}
+theorem dbar_complexRead_eq_zero_of_eventually_const {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X]
+    {v : X → ℝ} {y : X} {z : ℂ}
     (hz : z ∈ (chartAt (H := ℂ) y).target)
     (hconst : ∃ cst : ℝ, ∀ᶠ x' in 𝓝 ((chartAt (H := ℂ) y).symm z), v x' = cst) :
     DbarDisk.dbar (fun w => ((v ((chartAt (H := ℂ) y).symm w) : ℝ) : ℂ)) z = 0 := by
@@ -218,7 +232,8 @@ noncomputable def ledgerIntegrand (g₀ h : MeromorphicFunction X) (P : X → �
     else 0
 
 /-- Membership unpacking for chart images of subsets of the source. -/
-theorem symm_mem_of_mem_image {y : X} {V : Set X} (hV : V ⊆ (chartAt (H := ℂ) y).source)
+theorem symm_mem_of_mem_image {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {y : X} {V : Set X} (hV : V ⊆ (chartAt (H := ℂ) y).source)
     {z : ℂ} (hz : z ∈ (chartAt (H := ℂ) y) '' V) :
     z ∈ (chartAt (H := ℂ) y).target ∧ (chartAt (H := ℂ) y).symm z ∈ V := by
   obtain ⟨x, hxV, rfl⟩ := hz
@@ -227,7 +242,8 @@ theorem symm_mem_of_mem_image {y : X} {V : Set X} (hV : V ⊆ (chartAt (H := ℂ
 
 /-- **Window change**: the indicator window may be replaced by a larger one as long as on the
 difference either the scalar field vanishes (pointwise) or the cutoff is locally constant. -/
-theorem ledgerIntegrand_congr_superset (g₀ h : MeromorphicFunction X) (P : X → ℂ) (v : X → ℝ)
+theorem ledgerIntegrand_congr_superset {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (g₀ h : MeromorphicFunction X) (P : X → ℂ) (v : X → ℝ)
     (y : X) {V W : Set X} (hVW : V ⊆ W) (hW : W ⊆ (chartAt (H := ℂ) y).source)
     (hkill : ∀ x ∈ W, x ∉ V → P x = 0 ∨ ∃ cst : ℝ, ∀ᶠ x' in 𝓝 x, v x' = cst) :
     ledgerIntegrand g₀ h P v y V = ledgerIntegrand g₀ h P v y W := by
@@ -249,7 +265,9 @@ theorem ledgerIntegrand_congr_superset (g₀ h : MeromorphicFunction X) (P : X �
 
 /-- **Cutoff aggregation**: a finite sum of ledger integrands over a family of cutoffs is the
 ledger integrand of the summed cutoff (pointwise; the `∂̄` is additive on smooth reads). -/
-theorem sum_ledgerIntegrand {ι : Type*} (s : Finset ι) (vF : ι → X → ℝ)
+theorem sum_ledgerIntegrand {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {ι : Type*} (s : Finset ι) (vF : ι → X → ℝ)
     (hvF : ∀ i ∈ s, ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) (vF i))
     (g₀ h : MeromorphicFunction X) (P : X → ℂ) (y : X) {V : Set X}
     (hV : V ⊆ (chartAt (H := ℂ) y).source) (z : ℂ) :
@@ -282,10 +300,12 @@ not depend on the chart it is read in: for an open window `V` inside both chart 
 
   `∫_ℂ ledgerIntegrand g₀ h P v y V = ∫_ℂ ledgerIntegrand g₀ h P v y' V`.
 
-Holomorphic change of variables along the transition `T = chart_{y'} ∘ chart_y⁻¹` (Stage B):
+Holomorphic change of variables along the transition `T = chart_{y'} ∘ chart_y⁻¹`:
 the `∂̄`-chain-rule factor `conj T′` and the `pairRead` factor `T′` combine exactly into the real
 Jacobian `|T′|²`; the finitely many bad points are a null set. -/
-theorem integral_ledgerIntegrand_transport (g₀ h : MeromorphicFunction X)
+theorem integral_ledgerIntegrand_transport {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (g₀ h : MeromorphicFunction X)
     (P : X → ℂ) (v : X → ℝ) (hv : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) v)
     {y y' : X} {V : Set X} (hVopen : IsOpen V)
     (hVy : V ⊆ (chartAt (H := ℂ) y).source) (hVy' : V ⊆ (chartAt (H := ℂ) y').source)
@@ -324,7 +344,7 @@ theorem integral_ledgerIntegrand_transport (g₀ h : MeromorphicFunction X)
     refine Set.image_congr (fun x hx => ?_)
     show ψ (φ.symm (φ x)) = ψ x
     rw [φ.left_inv (hVy hx)]
-  -- holomorphic change of variables (Stage B)
+  -- holomorphic change of variables
   have hcov := integral_image_holomorphic hUopen.measurableSet hTdiff hTinj
     (ledgerIntegrand g₀ h P v y' V)
   rw [hTimage] at hcov
@@ -379,7 +399,9 @@ theorem integral_ledgerIntegrand_transport (g₀ h : MeromorphicFunction X)
 points; local vanishing at bad points and outside a compact core `K` (the scalar field vanishes
 or the cutoff is locally constant there); eventual vanishing outside the window (neighbourhoods
 avoid the compact core image). -/
-theorem continuous_ledgerIntegrand (g₀ h : MeromorphicFunction X)
+theorem continuous_ledgerIntegrand {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (g₀ h : MeromorphicFunction X)
     {P : X → ℂ} (hP : Continuous P)
     {v : X → ℝ} (hv : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) v)
     {y : X} {V : Set X} (hVopen : IsOpen V) (hVsub : V ⊆ (chartAt (H := ℂ) y).source)
@@ -459,7 +481,8 @@ theorem continuous_ledgerIntegrand (g₀ h : MeromorphicFunction X)
     exact continuousAt_const.congr hev.symm
 
 /-- **Compact support of the ledger integrand** (support inside the chart image of the core). -/
-theorem hasCompactSupport_ledgerIntegrand (g₀ h : MeromorphicFunction X)
+theorem hasCompactSupport_ledgerIntegrand {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (g₀ h : MeromorphicFunction X)
     (P : X → ℂ) {v : X → ℝ}
     {y : X} {V : Set X} (hVsub : V ⊆ (chartAt (H := ℂ) y).source)
     {K : Set X} (hK : IsCompact K) (hKV : K ⊆ V)
@@ -481,7 +504,9 @@ theorem hasCompactSupport_ledgerIntegrand (g₀ h : MeromorphicFunction X)
   · rw [if_neg hzV]
 
 /-- **Integrability of the ledger integrand** (continuity + compact support). -/
-theorem integrable_ledgerIntegrand (g₀ h : MeromorphicFunction X)
+theorem integrable_ledgerIntegrand {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (g₀ h : MeromorphicFunction X)
     {P : X → ℂ} (hP : Continuous P)
     {v : X → ℝ} (hv : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) v)
     {y : X} {V : Set X} (hVopen : IsOpen V) (hVsub : V ⊆ (chartAt (H := ℂ) y).source)

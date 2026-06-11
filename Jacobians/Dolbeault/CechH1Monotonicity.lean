@@ -19,7 +19,6 @@ import Jacobians.Dolbeault.CohomologicalRR
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
@@ -122,7 +121,8 @@ theorem h1Incl_surjective_single (hR : 𝔘.LocallyRealizable) {D D' : Divisor X
   exact (𝔘.exists_skyscraperLES hR D P).elim fun S => S.surj₄
 
 /-- A nonzero effective divisor has a point with a positive coefficient. -/
-theorem exists_pos_of_effective_ne_zero {E : Divisor X} (hE : 0 ≤ E) (hne : E ≠ 0) :
+theorem exists_pos_of_effective_ne_zero {X : Type*} {E : Divisor X} (hE : 0 ≤ E)
+    (hne : E ≠ 0) :
     ∃ P : X, 1 ≤ E P := by
   by_contra hcon
   push Not at hcon
@@ -133,12 +133,13 @@ theorem exists_pos_of_effective_ne_zero {E : Divisor X} (hE : 0 ≤ E) (hne : E 
   omega
 
 /-- The degree of an effective divisor is nonnegative. -/
-theorem deg_nonneg_of_effective {E : Divisor X} (hE : 0 ≤ E) : 0 ≤ Divisor.deg X E := by
+theorem deg_nonneg_of_effective {X : Type*} {E : Divisor X} (hE : 0 ≤ E) :
+    0 ≤ Divisor.deg X E := by
   rw [show Divisor.deg X E = Finsupp.degree E from rfl, Finsupp.degree_apply]
   exact Finset.sum_nonneg fun x _ => hE x
 
 /-- An effective divisor of degree `0` is `0`. -/
-theorem eq_zero_of_effective_deg_zero {E : Divisor X} (hE : 0 ≤ E)
+theorem eq_zero_of_effective_deg_zero {X : Type*} {E : Divisor X} (hE : 0 ≤ E)
     (hdeg : Divisor.deg X E = 0) : E = 0 := by
   rw [show Divisor.deg X E = Finsupp.degree E from rfl, Finsupp.degree_apply] at hdeg
   have hall := (Finset.sum_eq_zero_iff_of_nonneg fun x _ => hE x).mp hdeg

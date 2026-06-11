@@ -6,21 +6,21 @@ Authors: Rado Kirov
 import Jacobians.Dolbeault.FormTraceCoherentFromMoving
 
 /-!
-# The moving-fibre coherence datum from a sheet system (Gate A, §VIII.3 — global index bijection)
+# The moving-fibre coherence datum from a sheet system (Miranda §VIII.3 — global index bijection)
 
-`Jacobians.Dolbeault.FormTraceMovingFibre` proved the §VIII.3 monodromy heart: a `MovingCoherenceDatum`
-yields the local self-coherence of the geometric trace, and is constructible from a
-*continuously-varying index bijection* alone (`MovingCoherenceDatum.ofBijection`).  All germ /
+`Jacobians.Dolbeault.FormTraceMovingFibre` proved the §VIII.3 monodromy heart: a
+`MovingCoherenceDatum` yields the local self-coherence of the geometric trace, and is constructible
+from a *continuously-varying index bijection* alone (`MovingCoherenceDatum.ofBijection`). All germ /
 `dz`-Jacobian content is discharged there; the residual is the **index bijection + section
 identification + chart-pullback differentiability**.
 
-This file discharges the *mechanical* half of that residual — the differentiability side-conditions —
-by feeding the proved branched-cover sheet machinery (`Jacobians.LocalSheetSystem`, Forster §4.22) into
-`MovingCoherenceDatum.ofBijection`.  The continuously-varying sections are the sheets `S.sheet i` of a
-`LocalSheetSystem` for `f.holoRepr` off the critical set, which are `C^ω` two-sided local inverses; the
-chart-transition differentiability is the analytic chart change of the `C^ω` atlas (proved inline,
-`transition_analyticAt_overlap`); and the section identification (planar sheet ≈ manifold-section
-chart-pullback) is the proved `FormTraceSheet.fibreTrace_sheet_eventuallyEq`.
+This file discharges the *mechanical* half of that residual — the differentiability side-conditions
+— by feeding the proved branched-cover sheet machinery (`Jacobians.LocalSheetSystem`, Forster §4.22)
+into `MovingCoherenceDatum.ofBijection`. The continuously-varying sections are the sheets
+`S.sheet i` of a `LocalSheetSystem` for `f.holoRepr` off the critical set, which are `C^ω` two-sided
+local inverses; the chart-transition differentiability is the analytic chart change of the `C^ω`
+atlas (proved inline, `transition_analyticAt_overlap`); and the section identification (planar sheet
+≈ manifold-section chart-pullback) is the proved `FormTraceSheet.fibreTrace_sheet_eventuallyEq`.
 
 What remains, after this file, is the *geometric* half: that the global selection `Φ` actually
 **re-selects the moving fibre** — near each base value, `(Φ b').xs` enumerates the sheet values
@@ -28,13 +28,13 @@ What remains, after this file, is the *geometric* half: that the global selectio
 bijection (the branched cover's sheets permute continuously) and is carried as the single hypothesis
 `hsel` of the constructor.
 
-## What this file proves (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file proves
 
-* `transition_analyticAt_overlap` — the chart transition `chartAt z ∘ (chartAt y).symm` is analytic at
-  any overlap point (inline, no heavy Čech import).
+* `transition_analyticAt_overlap` — the chart transition `chartAt z ∘ (chartAt y).symm` is analytic
+  at any overlap point (inline, no heavy Čech import).
 * `MovingCoherenceDatum.ofSheetSystem` — build a `MovingCoherenceDatum` at a base value `b₀` from a
-  `LocalSheetSystem` for `f.holoRepr`, a reference fibre `D` enumerated by the sheets, and the diagonal
-  re-selection agreement `hsel`.  Discharges every differentiability side-condition of
+  `LocalSheetSystem` for `f.holoRepr`, a reference fibre `D` enumerated by the sheets, and the
+  diagonal re-selection agreement `hsel`. Discharges every differentiability side-condition of
   `MovingCoherenceDatum.ofBijection` from the sheet smoothness + the analytic chart change.
 
 ## References
@@ -55,27 +55,27 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.Dolbeault.FormTraceSheet Jacobians.Dolbeault.FormTraceInftyFibre
   Jacobians.Dolbeault.FormTraceInftyRecip
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
 
 /-! ### The analytic chart change at an overlap point (inline)
 
 The chart transition `chartAt z ∘ (chartAt y).symm` is analytic at `chartAt y x` for any `x` in the
-overlap of the two chart sources — the `C^ω`-atlas chart change.  This is the same statement as
-`Jacobians.Dolbeault.transition_analyticAt_of_mem`, reproved inline to avoid importing the heavy Čech
-machinery.  It supplies the chart-transition differentiability fields of `hbij`. -/
+overlap of the two chart sources — the `C^ω`-atlas chart change. This is the same statement as
+`Jacobians.Dolbeault.transition_analyticAt_of_mem`, reproved inline to avoid importing the heavy
+Čech machinery. It supplies the chart-transition differentiability fields of `hbij`. -/
 
-/-- **Chart transition analytic at an overlap point.**  For `x` in both chart sources `chartAt y` and
-`chartAt z`, the transition `chartAt z ∘ (chartAt y).symm` is `AnalyticAt ℂ` at `chartAt y x`.  Chart
-and inverse-chart are `C^ω` (`contMDiffOn_chart`/`contMDiffOn_chart_symm`); the composition is `C^ω`,
-and `C^ω` ⇒ analytic. -/
-theorem transition_analyticAt_overlap {y z x : X}
+/-- **Chart transition analytic at an overlap point.** For `x` in both chart sources `chartAt y` and
+`chartAt z`, the transition `chartAt z ∘ (chartAt y).symm` is `AnalyticAt ℂ` at `chartAt y x`. Chart
+and inverse-chart are `C^ω` (`contMDiffOn_chart`/`contMDiffOn_chart_symm`); the composition is
+`C^ω`, and `C^ω` ⇒ analytic. -/
+theorem transition_analyticAt_overlap {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {y z x : X}
     (hxy : x ∈ (chartAt (H := ℂ) y).source) (hxz : x ∈ (chartAt (H := ℂ) z).source) :
     AnalyticAt ℂ ((chartAt (H := ℂ) z) ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) x) := by
   have hw_tgt : (chartAt (H := ℂ) y) x ∈ (chartAt (H := ℂ) y).target :=
@@ -95,7 +95,8 @@ theorem transition_analyticAt_overlap {y z x : X}
 
 /-- **Chart transition differentiable at an overlap point.**  The `DifferentiableAt ℂ` corollary of
 `transition_analyticAt_overlap`. -/
-theorem transition_differentiableAt_overlap {y z x : X}
+theorem transition_differentiableAt_overlap {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {y z x : X}
     (hxy : x ∈ (chartAt (H := ℂ) y).source) (hxz : x ∈ (chartAt (H := ℂ) z).source) :
     DifferentiableAt ℂ (fun w => (chartAt (H := ℂ) z) ((chartAt (H := ℂ) y).symm w))
       ((chartAt (H := ℂ) y) x) :=
@@ -104,16 +105,19 @@ theorem transition_differentiableAt_overlap {y z x : X}
 /-! ### The own-chart pullback of a smooth section is differentiable
 
 A section `s : ℂ → X` that is `MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) ω` at `b'`, read in its *own* canonical
-chart at `s b'`, gives a `DifferentiableAt ℂ` planar function `z ↦ chartAt (s b') (s z)`.  This is the
-`writtenInExtChartAt`-unfolding for the trivial complex model (`extChartAt 𝓘(ℂ) p = chartAt ℂ p`, source
-chart `= id`).  It supplies the `hsP_diff` field of `hbij` from sheet smoothness. -/
+chart at `s b'`, gives a `DifferentiableAt ℂ` planar function `z ↦ chartAt (s b') (s z)`. This is
+the `writtenInExtChartAt`-unfolding for the trivial complex model
+(`extChartAt 𝓘(ℂ) p = chartAt ℂ p`, source chart `= id`). It supplies the `hsP_diff` field of `hbij`
+from sheet smoothness. -/
 
-/-- **The own-chart pullback of a `ContMDiffAt` section is `DifferentiableAt ℂ`.**  If `s : ℂ → X` is
-`ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω` at `b'`, then `z ↦ (chartAt ℂ (s b')) (s z)` is `DifferentiableAt ℂ` at `b'`.
-The canonical chart `chartAt ℂ (s b')` is `C^ω` at `s b'` (`contMDiffOn_chart`), so the composite
-`chartAt (s b') ∘ s` is `C^ω` at `b'`; for `ℂ → ℂ` maps `C^ω = ContDiffAt ℂ ω` (`contMDiffAt_iff_contDiffAt`),
-which is `DifferentiableAt`.  Supplies the `hsP_diff` field of `hbij` from sheet smoothness. -/
-theorem differentiableAt_chart_pullback_section {s : ℂ → X} {b' : ℂ}
+/-- **The own-chart pullback of a `ContMDiffAt` section is `DifferentiableAt ℂ`.** If `s : ℂ → X` is
+`ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω` at `b'`, then `z ↦ (chartAt ℂ (s b')) (s z)` is `DifferentiableAt ℂ` at
+`b'`. The canonical chart `chartAt ℂ (s b')` is `C^ω` at `s b'` (`contMDiffOn_chart`), so the
+composite `chartAt (s b') ∘ s` is `C^ω` at `b'`; for `ℂ → ℂ` maps `C^ω = ContDiffAt ℂ ω`
+(`contMDiffAt_iff_contDiffAt`), which is `DifferentiableAt`. Supplies the `hsP_diff` field of `hbij`
+from sheet smoothness. -/
+theorem differentiableAt_chart_pullback_section {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {s : ℂ → X} {b' : ℂ}
     (hs : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω s b') :
     DifferentiableAt ℂ (fun z => (chartAt ℂ (s b')) (s z)) b' := by
   -- The chart at `s b'` is `C^ω` at `s b'` (its own source).
@@ -127,29 +131,34 @@ theorem differentiableAt_chart_pullback_section {s : ℂ → X} {b' : ℂ}
 
 /-! ### The moving-fibre coherence datum from continuously-varying smooth sections
 
-We now assemble `MovingCoherenceDatum.ofBijection` from continuously-varying *manifold* sections `sec :
-D.ι → ℂ → X` of `f.holoRepr` (the sheets of a branched cover), discharging every differentiability
-side-condition of `hbij` from section smoothness + the analytic chart change.  The single remaining
-hypothesis is the genuine §VIII.3 index bijection: near `b₀`, the re-selected fibre `Φ b'` is enumerated
-by the moving sections via a bijection `e : (Φ b').ι ≃ D.ι` with `(Φ b').xs i' = sec (e i') b'`.
+We now assemble `MovingCoherenceDatum.ofBijection` from continuously-varying *manifold* sections
+`sec : D.ι → ℂ → X` of `f.holoRepr` (the sheets of a branched cover), discharging every
+differentiability side-condition of `hbij` from section smoothness + the analytic chart change. The
+single remaining hypothesis is the genuine §VIII.3 index bijection: near `b₀`, the re-selected fibre
+`Φ b'` is enumerated by the moving sections via a bijection `e : (Φ b').ι ≃ D.ι` with
+`(Φ b').xs i' = sec (e i') b'`.
 
 The section-derivative match (the `hsheet_deriv` field) is *derived* here: by
-`FormTraceSheet.fibreTrace_sheet_eventuallyEq`, the planar sheet of `fibreTrace ω₀ f (Φ b')` germ-equals
-the chart-pullback `chart_{sec (e i') b'} ∘ sec (e i')` (both are right-inverses of the chart-pullback of
-`f.holoRepr` through `(Φ b').xs i' = sec (e i') b'`), so their derivatives agree. -/
+`FormTraceSheet.fibreTrace_sheet_eventuallyEq`, the planar sheet of `fibreTrace ω₀ f (Φ b')`
+germ-equals the chart-pullback `chart_{sec (e i') b'} ∘ sec (e i')` (both are right-inverses of the
+chart-pullback of `f.holoRepr` through `(Φ b').xs i' = sec (e i') b'`), so their derivatives agree.
+-/
 
 /-- **A moving-fibre coherence datum from continuously-varying smooth sections.**  Let `D :
-FibreRegularData g f b₀`, and `sec : D.ι → ℂ → X` a family of manifold sections of `f.holoRepr` through
-`D`'s fibre points: `sec i b₀ = D.xs i`, each `sec i` is `C^ω` at `b₀`, and `f.holoRepr (sec i b') = b'`
-on a neighbourhood of `b₀`.  Assume the **§VIII.3 index bijection**: for `b'` near `b₀`, the re-selected
-fibre `Φ b'` is enumerated by the moving sections — there is `e : (Φ b').ι ≃ D.ι` with `(Φ b').xs i' =
-sec (e i') b'` for all `i'`, and each `sec i b'` lies in `chart_{D.xs i}.source` (the moving sections
-stay near the fibre points).  Then `Φ` has a `MovingCoherenceDatum` at `b₀` with fixed fibre `D`.
+FibreRegularData g f b₀`, and `sec : D.ι → ℂ →
+X` a family of manifold sections of `f.holoRepr` through `D`'s fibre points: `sec i b₀ = D.xs
+i`, each `sec i` is `C^ω` at `b₀`, and `f.holoRepr (sec i b') =
+b'` on a neighbourhood of `b₀`. Assume the **§VIII.3 index bijection**: for `b'` near `b₀`, the
+re-selected fibre `Φ
+b'` is enumerated by the moving sections — there is `e : (Φ b').ι ≃ D.ι` with `(Φ b').xs i' = sec (e
+i') b'` for all `i'`, and each `sec i b'` lies in `chart_{D.xs
+i}.source` (the moving sections stay near the fibre points). Then `Φ` has a
+`MovingCoherenceDatum` at `b₀` with fixed fibre `D`.
 
-*All* the germ / `dz`-Jacobian / differentiability content is discharged: the section-derivative match
-via `fibreTrace_sheet_eventuallyEq`, the chart-pullback differentiability via
-`differentiableAt_chart_pullback_section`, and the chart transitions via `transition_analyticAt_overlap`.
-The caller supplies only the geometric re-selection bijection. -/
+*All* the germ / `dz`-Jacobian / differentiability content is discharged: the section-derivative
+match via `fibreTrace_sheet_eventuallyEq`, the chart-pullback differentiability via
+`differentiableAt_chart_pullback_section`, and the chart transitions via
+`transition_analyticAt_overlap`. The caller supplies only the geometric re-selection bijection. -/
 noncomputable def MovingCoherenceDatum.ofSheetSections
     {Φ : (b : ℂ) → FibreRegularData g f b} {b₀ : ℂ}
     (D : FibreRegularData g f b₀) (sec : D.ι → ℂ → X)
@@ -162,8 +171,9 @@ noncomputable def MovingCoherenceDatum.ofSheetSections
     MovingCoherenceDatum ω₀ g f Φ b₀ := by
   refine MovingCoherenceDatum.ofBijection D sec hbase
     (fun i => (hsmooth i).continuousAt) hsec ?_
-  -- The moving sections are `C^ω` (`ContMDiffAt` is an open condition) and are sections of `f.holoRepr`
-  -- on a neighbourhood of `b₀`.  Bundle these per-`i` eventual facts with the re-selection `hsel`.
+  -- The moving sections are `C^ω` (`ContMDiffAt` is an open condition) and are sections of
+  -- `f.holoRepr` on a neighbourhood of `b₀`. Bundle these per-`i` eventual facts with the
+  -- re-selection `hsel`.
   have hsmooth_nhds : ∀ᶠ b' in 𝓝 b₀, ∀ i, ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (sec i) b' :=
     eventually_all.mpr (fun i =>
       (contMDiffAt_iff_contMDiffAt_nhds (by decide : (ω : WithTop ℕ∞) ≠ ∞)).mp (hsmooth i))
@@ -174,7 +184,8 @@ noncomputable def MovingCoherenceDatum.ofSheetSections
   filter_upwards [hsel, hsmooth_nhds, hsec_evev] with b' hb'sel hb'smooth hb'sec
   obtain ⟨e, hxs, hmem⟩ := hb'sel
   -- For each fixed-frame index `i`, the chart-pullback `chart_{sec i b'} ∘ sec i` is the planar
-  -- right-inverse of `φ_i = f.holoRepr ∘ chart_{D.xs i}.symm`... but we work in the chart at `sec i b'`.
+  -- right-inverse of `φ_i = f.holoRepr ∘ chart_{D.xs i}.symm`... but we work in the chart at
+  -- `sec i b'`.
   refine ⟨e, hxs, ?_, fun i => (hb'smooth i).continuousAt,
     fun i => differentiableAt_chart_pullback_section (hb'smooth i), hmem, ?_, ?_⟩
   · -- **The section-derivative match** (the `hsheet_deriv` field).  The planar sheet of `fibreTrace
@@ -193,18 +204,21 @@ noncomputable def MovingCoherenceDatum.ofSheetSections
       (by rw [hxs i']) hrinv_cont
       (by rw [hxs i']; exact hrinv_rinv)
     exact hsheet.deriv_eq
-  · -- chart transition `chart_{D.xs i} ∘ chart_{sec i b'}.symm` differentiable at `chart_{sec i b'} (sec i b')`.
+  · -- chart transition `chart_{D.xs i} ∘ chart_{sec i b'}.symm` differentiable at
+    -- `chart_{sec i b'} (sec i b')`.
     intro i
     exact transition_differentiableAt_overlap (mem_chart_source ℂ (sec i b')) (hmem i)
-  · -- chart transition `chart_{sec i b'} ∘ chart_{D.xs i}.symm` differentiable at `chart_{D.xs i} (sec i b')`.
+  · -- chart transition `chart_{sec i b'} ∘ chart_{D.xs i}.symm` differentiable at
+    -- `chart_{D.xs i} (sec i b')`.
     intro i
     exact transition_differentiableAt_overlap (hmem i) (mem_chart_source ℂ (sec i b'))
 
-/-- **A moving-fibre coherence datum from a local sheet system.**  The `LocalSheetSystem`-packaged form
-of `MovingCoherenceDatum.ofSheetSections`: a `LocalSheetSystem S` for `f.holoRepr` at `b₀` supplies the
-moving sections `sec i := S.sheet (eD i)` (smooth + sections of `f.holoRepr` on `S.V ∋ b₀`) through the
-reference fibre `D` (re-indexed by `eD : D.ι ≃ Fin S.n` with `D.xs i = S.sheet (eD i) b₀`), and the
-caller supplies the §VIII.3 re-selection bijection `hsel`.  Produces the `MovingCoherenceDatum`. -/
+/-- **A moving-fibre coherence datum from a local sheet system.** The `LocalSheetSystem`-packaged
+form of `MovingCoherenceDatum.ofSheetSections`: a `LocalSheetSystem S` for `f.holoRepr` at `b₀`
+supplies the moving sections `sec i := S.sheet (eD i)` (smooth + sections of `f.holoRepr` on
+`S.V ∋ b₀`) through the reference fibre `D` (re-indexed by `eD : D.ι ≃ Fin S.n` with
+`D.xs i = S.sheet (eD i) b₀`), and the caller supplies the §VIII.3 re-selection bijection `hsel`.
+Produces the `MovingCoherenceDatum`. -/
 noncomputable def MovingCoherenceDatum.ofLocalSheetSystem
     {Φ : (b : ℂ) → FibreRegularData g f b} {b₀ : ℂ}
     (S : Jacobians.LocalSheetSystem f.holoRepr b₀)
@@ -225,23 +239,25 @@ noncomputable def MovingCoherenceDatum.ofLocalSheetSystem
 
 `MovingCoherenceDatum.ofSheetSections` discharges *all* the germ / differentiability content of the
 per-value moving data, reducing it to the §VIII.3 **re-selection bijection** `hsel` plus the moving
-sections.  We bundle the *whole* Gate-A input — the global selection `Φ`, the per-pole-value and
-per-regular-value sheet sections with their re-selection bijections, the finite/∞ enumeration
+sections. We bundle the *whole* residue-theorem input — the global selection `Φ`, the per-pole-value
+and per-regular-value sheet sections with their re-selection bijections, the finite/∞ enumeration
 bookkeeping, the `∞`-glue, junk-freeness, and the genus-`0` continuation — into one structure
-`MovingSheetSelection`, and show it produces a `MovingCoherenceFamily` (hence Gate A `∑Res = 0`).
+`MovingSheetSelection`, and show it produces a `MovingCoherenceFamily` (hence the residue-theorem
+build `∑Res = 0`).
 
 This is the honest minimal obligation: every field is either *proved* infrastructure or the genuine
-residual (the continuously-varying sheet sections + re-selection bijections at each value, the `∞`-glue,
-junk-freeness, and the genus-`0` vanishing).  The per-value moving data `Cfin`/`Creg` are *derived* from
-the sheet sections via `ofSheetSections`. -/
+residual (the continuously-varying sheet sections + re-selection bijections at each value, the
+`∞`-glue, junk-freeness, and the genus-`0` vanishing). The per-value moving data `Cfin`/`Creg` are
+*derived* from the sheet sections via `ofSheetSections`. -/
 
-/-- **A moving-fibre sheet selection** for `α = ω₀·g` over `poles`, relative to an adapted cover `hac`.
-The Gate-A input with the per-value moving data presented in *sheet form*: at each pole-value `cs i` and
-each regular value `z`, continuously-varying manifold sections `sec` of `f.holoRepr` (the branched-cover
-sheets) through the fixed fibre, with the §VIII.3 re-selection bijection `hsel` (near the base value,
-`Φ b'` is enumerated by the moving sections).  The remaining fields (finite/∞ enumeration, `∞`-glue,
-junk-freeness, genus-`0`) carry over verbatim from `MovingCoherenceFamily`.  Produces a
-`MovingCoherenceFamily` via `MovingCoherenceDatum.ofSheetSections`. -/
+/-- **A moving-fibre sheet selection** for `α = ω₀·g` over `poles`, relative to an adapted cover
+`hac`. The residue-theorem input with the per-value moving data presented in *sheet form*: at each
+pole-value `cs i` and each regular value `z`, continuously-varying manifold sections `sec` of
+`f.holoRepr` (the branched-cover sheets) through the fixed fibre, with the §VIII.3 re-selection
+bijection `hsel` (near the base value, `Φ b'` is enumerated by the moving sections). The remaining
+fields (finite/∞ enumeration, `∞`-glue, junk-freeness, genus-`0`) carry over verbatim from
+`MovingCoherenceFamily`. Produces a `MovingCoherenceFamily` via
+`MovingCoherenceDatum.ofSheetSections`. -/
 structure MovingSheetSelection (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
     (poles : Finset X) (hac : AdaptedCover ω₀ g f poles) where
   /-- The global fibre selection. -/
@@ -267,8 +283,8 @@ structure MovingSheetSelection (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (
   hxs_mem : ∀ i, Dinf.xs i ∈ poles ∧ f.toRiemannSphere (Dinf.xs i) = OnePoint.infty
   /-- The `∞`-fibre enumeration is surjective onto the `∞` fibre. -/
   hxs_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, Dinf.xs i = a
-  /-- **Per-pole-value moving sections**: manifold sections of `f.holoRepr` through the pole sub-fibre
-  `fibreReg hac (cs i)`. -/
+  /-- **Per-pole-value moving sections**: manifold sections of `f.holoRepr` through the pole
+  sub-fibre `fibreReg hac (cs i)`. -/
   secFin : ∀ i, (fibreReg hac (cs i)).ι → ℂ → X
   /-- Each pole-value section passes through the pole sub-fibre point at the base. -/
   hsecFin_base : ∀ i j, secFin i j (cs i) = (fibreReg hac (cs i)).xs j
@@ -317,11 +333,11 @@ structure MovingSheetSelection (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (
   hR₀_eq : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
     recipCoeff (valueChartTrace ω₀ f Φ - L.R) =ᶠ[𝓝[≠] 0] R₀
 
-/-- **A moving-fibre sheet selection yields a moving-fibre coherence family.**  The per-pole-value and
-per-regular-value moving data are *derived* from the sheet sections via
+/-- **A moving-fibre sheet selection yields a moving-fibre coherence family.** The per-pole-value
+and per-regular-value moving data are *derived* from the sheet sections via
 `MovingCoherenceDatum.ofSheetSections` (the proved §VIII.3 self-coherence from the re-selection
-bijection); the remaining fields carry over verbatim.  This wires the sheet-form Gate-A input to the
-proved `MovingCoherenceFamily ⇒ ∑Res = 0` chain. -/
+bijection); the remaining fields carry over verbatim. This wires the sheet-form residue-theorem
+input to the proved `MovingCoherenceFamily ⇒ ∑Res = 0` chain. -/
 noncomputable def MovingSheetSelection.toMovingCoherenceFamily {hac : AdaptedCover ω₀ g f poles}
     (S : MovingSheetSelection ω₀ g f poles hac) :
     MovingCoherenceFamily ω₀ g f poles hac where
@@ -349,13 +365,13 @@ noncomputable def MovingSheetSelection.toMovingCoherenceFamily {hac : AdaptedCov
   hR₀0 := S.hR₀0
   hR₀_eq := S.hR₀_eq
 
-/-- **Gate A `∑Res = 0` from a moving-fibre sheet selection.**  Via
+/-- **The residue theorem `∑Res = 0` from a moving-fibre sheet selection.**  Via
 `MovingSheetSelection.toMovingCoherenceFamily` and the proved
-`residueSum_eq_zero_of_movingCoherenceFamily`, a moving-fibre sheet selection closes Gate A's 1-form
-residue theorem for `α = ω₀·g`.  This is the sheet-form §VIII.3 reduction of Gate A: every field is
-either proved (the per-value self-coherence from the re-selection bijection, the genus-`0` vanishing) or
-the precise residual (the continuously-varying sheets + re-selection bijections, the `∞`-glue,
-junk-freeness). -/
+`residueSum_eq_zero_of_movingCoherenceFamily`, a moving-fibre sheet selection closes the
+residue-theorem assembly's 1-form residue theorem for `α = ω₀·g`. This is the sheet-form §VIII.3
+reduction of the residue-theorem assembly: every field is either proved (the per-value
+self-coherence from the re-selection bijection, the genus-`0` vanishing) or the precise residual
+(the continuously-varying sheets + re-selection bijections, the `∞`-glue, junk-freeness). -/
 theorem residueSum_eq_zero_of_movingSheetSelection (hac : AdaptedCover ω₀ g f poles)
     (S : MovingSheetSelection ω₀ g f poles hac) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
@@ -363,18 +379,18 @@ theorem residueSum_eq_zero_of_movingSheetSelection (hac : AdaptedCover ω₀ g f
 
 /-! ### Non-vacuity of the moving-fibre sheet selection (end-to-end soundness)
 
-The `MovingSheetSelection` obligation is *satisfiable*, not a disguised `False`: for the **empty pole
-set** (`α = ω₀·g` globally holomorphic) the empty fibre selection assembles into a
-`MovingSheetSelection` — no finite pole-values (the per-pole sheet fields vacuous), the per-regular-value
-reference fibre is the empty fibre (`secReg` vacuous, the re-selection bijection the empty equiv), the
-empty `∞`-trace, vacuous junk-freeness, and the vanishing genus-`0` continuation.  Its
-`residueSum_eq_zero_of_movingSheetSelection` yields `∑Res = 0`, confirming the sheet-form reduction is
-honest. -/
+The `MovingSheetSelection` obligation is *satisfiable*, not a disguised `False`: for the **empty
+pole set** (`α = ω₀·g` globally holomorphic) the empty fibre selection assembles into a
+`MovingSheetSelection` — no finite pole-values (the per-pole sheet fields vacuous), the
+per-regular-value reference fibre is the empty fibre (`secReg` vacuous, the re-selection bijection
+the empty equiv), the empty `∞`-trace, vacuous junk-freeness, and the vanishing genus-`0`
+continuation. Its `residueSum_eq_zero_of_movingSheetSelection` yields `∑Res = 0`, confirming the
+sheet-form reduction is honest. -/
 
-/-- **The empty moving sheet selection.**  For the empty pole set, the empty fibre selection assembles
-into a `MovingSheetSelection`: per-regular-value empty fibre + empty sections + the empty re-selection
-equiv, vacuous finite/∞-pole fields, and the vanishing genus-`0` continuation.  The honest non-vacuity
-witness. -/
+/-- **The empty moving sheet selection.** For the empty pole set, the empty fibre selection
+assembles into a `MovingSheetSelection`: per-regular-value empty fibre + empty sections + the empty
+re-selection equiv, vacuous finite/∞-pole fields, and the vanishing genus-`0` continuation. The
+honest non-vacuity witness. -/
 noncomputable def movingSheetSelection_empty (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
     MovingSheetSelection ω₀ g f ∅ (adaptedCover_empty ω₀ g f hdiv) where
@@ -429,10 +445,10 @@ noncomputable def movingSheetSelection_empty (ω₀ : HolomorphicOneForms X) (g 
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **Non-vacuity of the moving-fibre sheet Gate-A reduction.**  For the empty pole set the reduction
-`residueSum_eq_zero_of_movingSheetSelection` is satisfiable via the empty sheet selection
-(`movingSheetSelection_empty`), yielding `∑Res = 0`.  Confirms the sheet-form reduction is honest (not a
-disguised `False`). -/
+/-- **Non-vacuity of the moving-fibre sheet residue-theorem reduction.** For the empty pole set the
+reduction `residueSum_eq_zero_of_movingSheetSelection` is satisfiable via the empty sheet selection
+(`movingSheetSelection_empty`), yielding `∑Res = 0`. Confirms the sheet-form reduction is honest
+(not a disguised `False`). -/
 theorem residueSum_eq_zero_of_movingSheetSelection_holomorphic (ω₀ : HolomorphicOneForms X)
     (g : X → ℂ) (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
     ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 :=

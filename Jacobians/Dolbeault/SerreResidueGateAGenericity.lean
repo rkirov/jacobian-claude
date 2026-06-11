@@ -8,15 +8,17 @@ import Jacobians.Dolbeault.SerreResidueRamifiedRealCover
 import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 
 /-!
-# Gate-A TARGET 2: the off-centre/∞ genericity selection `ExistsAdaptedFRamified` (Miranda §VIII.3)
+# The off-centre/∞ genericity selection for the residue theorem: `ExistsAdaptedFRamified`
+(Miranda §VIII.3)
 
 `Jacobians.Dolbeault.SerreResidueTheorem.ExistsAdaptedFRamified ω₀ g poles`
-(`SerreResidueGateAInftyBuilder.lean`) is the `hoff_cs`-free off-centre/∞ genericity *input* of the
-ramified Gate-A residue route: it asks for a single nonconstant cover `f` with **simple `∞`-poles** and
-the finite pole-value enumeration, *admitting ramified finite pole fibres* (which the cluster route,
-TARGET 1, handles).  Miranda §VIII.3, p. 254 ("simply choose *any* nonconstant `f`") + the standard
-generic-position adjustment makes it genuinely achievable; this file **proves it directly** via the
-reciprocal-cover construction, with NO Riemann–Roch-with-prescribed-jets (which the book never needs).
+(`SerreResidueGateAInftyBuilder.lean`) is the `hoff_cs`-free off-centre/∞ genericity *input* of
+the ramified residue route: it asks for a single nonconstant cover `f` with **simple `∞`-poles**
+and the finite pole-value enumeration, *admitting ramified finite pole fibres* (which the cluster
+route handles). Miranda §VIII.3, p. 254 ("simply choose *any* nonconstant `f`") + the
+standard generic-position adjustment makes it genuinely achievable; this file **proves it directly**
+via the reciprocal-cover construction, with NO Riemann–Roch-with-prescribed-jets (which the book
+never needs).
 
 ## The construction (generic position; reciprocal of a shift at a regular value)
 
@@ -28,39 +30,44 @@ Set the cover to the reciprocal of the shift:
 
 > `f := (f₀ − a·1)⁻¹`.
 
-* **Nonconstant (`hdiv : f.div ≠ 0`).** `f₀ − a·1` is nonconstant (else `f₀` would be germ-constant),
-  hence its reciprocal is nonconstant (`orderAtPoint_inv`).
+* **Nonconstant (`hdiv : f.div ≠ 0`).** `f₀ − a·1` is nonconstant (else `f₀` would be
+  germ-constant), hence its reciprocal is nonconstant (`orderAtPoint_inv`).
 * **Simple `∞`-poles (`hsimpleInf`).** The poles of `f` are the zeros of `f₀ − a·1`
-  (`orderAtPoint_inv`).  A zero `y` of `f₀ − a·1` is a preimage of `coe a` under `f₀.toRiemannSphere`
-  (where `f₀` is a non-pole with `holoRepr = a`); since `coe a` is a regular value, the chart pullback of
-  `f₀.toRiemannSphere` has nonzero derivative at `y`, so the zero is **simple**
+  (`orderAtPoint_inv`). A zero `y` of `f₀ − a·1` is a preimage of `coe a` under `f₀.toRiemannSphere`
+  (where `f₀` is a non-pole with `holoRepr = a`); since `coe a` is a regular value, the chart
+  pullback of `f₀.toRiemannSphere` has nonzero derivative at `y`, so the zero is **simple**
   (`analyticOrderAt … = 1`), i.e. `(f₀ − a·1).orderAtPoint y = 1`, whence `f.orderAtPoint y = −1`.
 * **Pole-value enumeration (`cs`/`hcenters_cs`).** The finite set
-  `(poles.image f.toRiemannSphere).erase ∞` of finite pole-values of `α = ω₀·g` is enumerated by pulling
-  back along the affine chart `chartCoe : RiemannSphere → ℂ` (a section of `coe` off `∞`).
-* **`hg_an_offpoles`.** Supplied as the defining hypothesis of `poles` (off `poles`, `g` is analytic).
+  `(poles.image f.toRiemannSphere).erase ∞` of finite pole-values of `α = ω₀·g` is enumerated by
+  pulling back along the affine chart `chartCoe : RiemannSphere → ℂ` (a section of `coe` off `∞`).
+* **`hg_an_offpoles`.** Supplied as the defining hypothesis of `poles` (off `poles`, `g` is
+  analytic).
 
-## What is delivered (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What is delivered
 
-* `MeromorphicFunction.div_ne_zero_of_not_isGermConstant` — nonconstant ⟹ `div ≠ 0` (compact Liouville).
+* `MeromorphicFunction.div_ne_zero_of_not_isGermConstant` — nonconstant ⟹ `div ≠ 0` (compact
+  Liouville).
 * `exists_finite_regularValue` — a finite regular value of `f₀.toRiemannSphere` exists.
-* `orderAtPoint_sub_eq_one_of_regular_fibrePoint` — the genericity heart: a regular sphere-fibre point is
-  a simple zero of `f₀ − a·1`.
+* `orderAtPoint_sub_eq_one_of_regular_fibrePoint` — the genericity heart: a regular sphere-fibre
+  point is a simple zero of `f₀ − a·1`.
 * `toRiemannSphere_eq_coe_of_sub_orderPos` — a zero of `f₀ − a·1` is a preimage of `coe a`.
-* `adaptedFRamified_of_regularValue` — **the `AdaptedFRamified` builder** from a finite regular value.
-* `existsAdaptedFRamified` — **TARGET 2**, fully proven: `ExistsAdaptedFRamified ω₀ g poles` holds for
-  every `ω₀`, genuine meromorphic `g`, and finite `poles`.
+* `adaptedFRamified_of_regularValue` — **the `AdaptedFRamified` builder** from a finite regular
+  value.
+* `existsAdaptedFRamified` — `ExistsAdaptedFRamified ω₀ g poles` holds
+  for every `ω₀`, genuine meromorphic `g`, and finite `poles`.
 
 ## ⚠ Soundness
 
-Every genericity field is GENUINELY satisfied by the constructed `f := (f₀ − a·1)⁻¹`: no custom axiom, no
-unproved obligations on false statements, no false/junk/circular field, no Riemann–Roch (the construction is
-generic-position only — Miranda's "choose any nonconstant `f`" + a regular-value shift).  `hsimpleInf` is
-achieved for the *general* `f₀` by the reciprocal-at-a-regular-value trick, verified end-to-end here.
+Every genericity field is GENUINELY satisfied by the constructed `f := (f₀ − a·1)⁻¹`: no custom
+axiom, no unproved obligations on false statements, no false/junk/circular field, no Riemann–Roch
+(the construction is generic-position only — Miranda's "choose any nonconstant `f`" + a
+regular-value shift). `hsimpleInf` is achieved for the *general* `f₀` by the
+reciprocal-at-a-regular-value trick, verified end-to-end here.
 
 ## References
 
-* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, p. 254 ("choose any nonconstant `f`").
+* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, p. 254 ("choose any nonconstant
+  `f`").
 * `Jacobians/Dolbeault/SerreOmega0.lean` (`exists_nonconstant_meromorphic`),
   `SerreResidueRamifiedRealCover.lean` (`MeromorphicFunction.Inv`, `orderAtPoint_inv`),
   `Discharge/Manifold/RegularValueExistsRegUnconditional.lean`
@@ -75,7 +82,6 @@ open scoped Manifold ContDiff Real
 
 attribute [local instance] Classical.propDecidable
 
-set_option linter.unusedSectionVars false
 
 open Jacobians Jacobians.Dolbeault Jacobians.RiemannSphere
 
@@ -105,8 +111,8 @@ theorem div_ne_zero_of_not_isGermConstant (f : MeromorphicFunction X)
     rw [hord]
   exact germ_eq_const_of_mem_linearSystem_zero f hmem
 
-/-- **The shift `f₀ − a·1` is nonconstant when `f₀` is.**  If `f₀ − a·1` were germ-constant `= c`, then
-`f₀` would be germ-constant `= c + a`.  Hence `(f₀ − a·1).div ≠ 0`. -/
+/-- **The shift `f₀ − a·1` is nonconstant when `f₀` is.** If `f₀ − a·1` were germ-constant `= c`,
+then `f₀` would be germ-constant `= c + a`. Hence `(f₀ − a·1).div ≠ 0`. -/
 theorem div_sub_smul_ne_zero_of_not_isGermConstant (f₀ : MeromorphicFunction X)
     (hf₀ : ¬ IsGermConstant f₀) (a : ℂ) :
     ((f₀ - a • (constOneMero (X := X))).div : Divisor X) ≠ 0 := by
@@ -122,9 +128,9 @@ theorem div_sub_smul_ne_zero_of_not_isGermConstant (f₀ : MeromorphicFunction X
 
 /-! ## Existence of a finite regular value -/
 
-/-- **A finite regular value of `f₀.toRiemannSphere` exists.**  Its critical values are finite (for a
-nonconstant `f₀`); pulling back along the injection `coe : ℂ → RiemannSphere` keeps them finite, and `ℂ`
-is infinite — so a finite `a` with `coe a ∉ criticalValuesGeneral f₀.toRiemannSphere` exists. -/
+/-- **A finite regular value of `f₀.toRiemannSphere` exists.** Its critical values are finite (for a
+nonconstant `f₀`); pulling back along the injection `coe : ℂ → RiemannSphere` keeps them finite, and
+`ℂ` is infinite — so a finite `a` with `coe a ∉ criticalValuesGeneral f₀.toRiemannSphere` exists. -/
 theorem exists_finite_regularValue (f₀ : MeromorphicFunction X)
     (hdiv : (f₀.div : Divisor X) ≠ 0) :
     ∃ a : ℂ, ((a : ℂ) : RiemannSphere) ∉
@@ -141,9 +147,9 @@ theorem exists_finite_regularValue (f₀ : MeromorphicFunction X)
 
 /-! ## The genericity heart: a regular sphere-fibre point is a simple zero of `f₀ − a·1` -/
 
-/-- **A zero of `f₀ − a·1` is a preimage of `coe a`.**  If `f₀ − a·1` has *positive* order at `y`, then
-`f₀.toFun → a` on the punctured neighbourhood, so `f₀` is a *non-pole* at `y` with `holoRepr y = a`,
-hence `f₀.toRiemannSphere y = coe a`. -/
+/-- **A zero of `f₀ − a·1` is a preimage of `coe a`.** If `f₀ − a·1` has *positive* order at `y`,
+then `f₀.toFun → a` on the punctured neighbourhood, so `f₀` is a *non-pole* at `y` with
+`holoRepr y = a`, hence `f₀.toRiemannSphere y = coe a`. -/
 theorem toRiemannSphere_eq_coe_of_sub_orderPos (f₀ : MeromorphicFunction X) (a : ℂ) {y : X}
     (hy : 0 < (f₀ - a • (constOneMero (X := X))).orderAtPoint y) :
     f₀.toRiemannSphere y = ((a : ℂ) : RiemannSphere) := by
@@ -203,8 +209,9 @@ theorem toRiemannSphere_eq_coe_of_sub_orderPos (f₀ : MeromorphicFunction X) (a
 /-- **A regular sphere-fibre point is a simple zero of `f₀ − a·1`** (the genericity heart).  At a
 non-pole `y` with `f₀.toRiemannSphere y = coe a`, if the chart pullback of `f₀.toRiemannSphere` has
 nonzero derivative at `chart y` (the regularity certificate), then `(f₀ − a·1).orderAtPoint y = 1`.
-Routes through: the sphere-chart pullback `chartCoe ∘ F ∘ chart⁻¹ =ᶠ holoRepr ∘ chart⁻¹`, so the deriv
-transfers; `analyticOrderAt_eq_one_of_zero_deriv_ne_zero`; and `meromorphicOrderAt_holoRepr_sub_eq`. -/
+Routes through: the sphere-chart pullback `chartCoe ∘ F ∘ chart⁻¹ =ᶠ holoRepr ∘ chart⁻¹`, so the
+deriv transfers; `analyticOrderAt_eq_one_of_zero_deriv_ne_zero`; and
+`meromorphicOrderAt_holoRepr_sub_eq`. -/
 theorem orderAtPoint_sub_eq_one_of_regular_fibrePoint (f₀ : MeromorphicFunction X) (a : ℂ) {y : X}
     (hyval : f₀.toRiemannSphere y = ((a : ℂ) : RiemannSphere))
     (hderiv : deriv ((chartAt ℂ (((a : ℂ) : RiemannSphere))) ∘ f₀.toRiemannSphere ∘
@@ -264,10 +271,10 @@ theorem orderAtPoint_sub_eq_one_of_regular_fibrePoint (f₀ : MeromorphicFunctio
 
 /-! ## The `AdaptedFRamified` builder from a finite regular value -/
 
-/-- **The cover `f := (f₀ − a·1)⁻¹` has all poles simple, given a finite regular value `a`.**  A pole
+/-- **The cover `f := (f₀ − a·1)⁻¹` has all poles simple, given a finite regular value `a`.** A pole
 `y` of `f` (`f.orderAtPoint y < 0`) corresponds (via `orderAtPoint_inv`) to a zero of `f₀ − a·1`
-(`(f₀ − a·1).orderAtPoint y > 0`), which is a preimage of `coe a` (`toRiemannSphere_eq_coe_of_sub_orderPos`);
-since `coe a` is a regular value, that zero is simple
+(`(f₀ − a·1).orderAtPoint y > 0`), which is a preimage of `coe a`
+(`toRiemannSphere_eq_coe_of_sub_orderPos`); since `coe a` is a regular value, that zero is simple
 (`orderAtPoint_sub_eq_one_of_regular_fibrePoint`), so `f.orderAtPoint y = −1`. -/
 theorem orderAtPoint_inv_eq_neg_one_of_regularValue (f₀ : MeromorphicFunction X)
     (hdiv : (f₀.div : Divisor X) ≠ 0) (a : ℂ)
@@ -300,10 +307,11 @@ theorem orderAtPoint_inv_eq_neg_one_of_regularValue (f₀ : MeromorphicFunction 
 /-! ## The `cs` enumeration of the finite pole-values -/
 
 /-- **The pole-value enumeration of `α = ω₀·g` for a cover `f`.**  Enumerates the finite set
-`(poles.image f.toRiemannSphere).erase ∞` (the finite pole-values) into `Fin m → ℂ` injectively, with
-the image bookkeeping `hcenters_cs`.  The enumeration pulls each (non-`∞`) sphere value back along the
-affine chart `chartCoe` (a section of `coe`). -/
-theorem exists_cs_enumeration (f : MeromorphicFunction X) (poles : Finset X) :
+`(poles.image f.toRiemannSphere).erase ∞` (the finite pole-values) into `Fin m → ℂ` injectively,
+with the image bookkeeping `hcenters_cs`. The enumeration pulls each (non-`∞`) sphere value back
+along the affine chart `chartCoe` (a section of `coe`). -/
+theorem exists_cs_enumeration {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (poles : Finset X) :
     ∃ (m : ℕ) (cs : Fin m → ℂ), Function.Injective cs ∧
       (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
         = (poles.image f.toRiemannSphere).erase OnePoint.infty := by
@@ -336,17 +344,18 @@ theorem exists_cs_enumeration (f : MeromorphicFunction X) (poles : Finset X) :
       rw [hsec _ (S.equivFin.symm i).2]; exact (S.equivFin.symm i).2
     · intro hy
       refine ⟨S.equivFin ⟨y, hy⟩, Finset.mem_univ _, ?_⟩
-      show ((chartCoe ((S.equivFin.symm (S.equivFin ⟨y, hy⟩)) : RiemannSphere) : ℂ) : RiemannSphere) = y
+      show ((chartCoe ((S.equivFin.symm (S.equivFin ⟨y, hy⟩)) : RiemannSphere) : ℂ)
+          : RiemannSphere) = y
       rw [Equiv.symm_apply_apply]; exact hsec y hy
 
-/-! ## The `AdaptedFRamified` builder and TARGET 2 -/
+/-! ## The `AdaptedFRamified` builder -/
 
-/-- **The `AdaptedFRamified` cover from a finite regular value** (the genericity construction).  For a
-nonconstant `f₀` (`hdiv₀`) and a finite regular value `a` of `f₀.toRiemannSphere` (`ha`), the reciprocal
-`f := (f₀ − a·1)⁻¹` is an `AdaptedFRamified` datum for `α = ω₀·g` over `poles` (given `g` analytic off
-`poles`).  All fields are discharged: `hdiv` (`div_sub_smul_ne_zero` + `orderAtPoint_inv`), `hsimpleInf`
-(`orderAtPoint_inv_eq_neg_one_of_regularValue`), and the pole-value enumeration
-(`exists_cs_enumeration`). -/
+/-- **The `AdaptedFRamified` cover from a finite regular value** (the genericity construction). For
+a nonconstant `f₀` (`hdiv₀`) and a finite regular value `a` of `f₀.toRiemannSphere` (`ha`), the
+reciprocal `f := (f₀ − a·1)⁻¹` is an `AdaptedFRamified` datum for `α = ω₀·g` over `poles` (given `g`
+analytic off `poles`). All fields are discharged: `hdiv` (`div_sub_smul_ne_zero` +
+`orderAtPoint_inv`), `hsimpleInf` (`orderAtPoint_inv_eq_neg_one_of_regularValue`), and the
+pole-value enumeration (`exists_cs_enumeration`). -/
 noncomputable def adaptedFRamified_of_regularValue {ω₀ : HolomorphicOneForms X}
     {g : MeromorphicFunction X} {poles : Finset X}
     (f₀ : MeromorphicFunction X) (hf₀ : ¬ IsGermConstant f₀) (a : ℂ)
@@ -399,16 +408,16 @@ noncomputable def adaptedFRamified_of_regularValue {ω₀ : HolomorphicOneForms 
     rw [hρ]; linarith
   · -- `hsimpleInf`: every `∞`-pole of `fc` is simple.
     intro i
-    -- `inftyFibreEnum fc i` is a pole of `fc`, so `orderAtPoint fc · = -1` by the regular-value lemma
-    -- (`fc = (f₀ - a•1)⁻¹` definitionally).
+    -- `inftyFibreEnum fc i` is a pole of `fc`, so `orderAtPoint fc · = -1` by the regular-value
+    -- lemma (`fc = (f₀ - a•1)⁻¹` definitionally).
     have hpole : fc.orderAtPoint (inftyFibreEnum fc i) < 0 := inftyFibreEnum_lt fc i
     exact orderAtPoint_inv_eq_neg_one_of_regularValue f₀ hdiv₀ a ha hpole
 
-/-- **TARGET 2 (Gate-A off-centre/∞ genericity selection), fully proven.**  The `hoff_cs`-free adapted
-cover exists for `α = ω₀·g` over any finite `poles` off which `g` is analytic.  Construction: the
-nonconstant `f₀` of `exists_nonconstant_meromorphic` (Riemann inequality, Serre-independent) and the
-reciprocal `f := (f₀ − a·1)⁻¹` at a finite regular value `a` (`exists_finite_regularValue`); all
-genericity fields are discharged by `adaptedFRamified_of_regularValue`.  Miranda §VIII.3, p. 254. -/
+/-- **The residue-theorem off-centre/∞ genericity selection.** The `hoff_cs`-free
+adapted cover exists for `α = ω₀·g` over any finite `poles` off which `g` is analytic. Construction:
+the nonconstant `f₀` of `exists_nonconstant_meromorphic` (Riemann inequality, Serre-independent) and
+the reciprocal `f := (f₀ − a·1)⁻¹` at a finite regular value `a` (`exists_finite_regularValue`); all
+genericity fields are discharged by `adaptedFRamified_of_regularValue`. Miranda §VIII.3, p. 254. -/
 theorem existsAdaptedFRamified (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)
     (poles : Finset X) : ExistsAdaptedFRamified ω₀ g poles := by
   intro hg_an

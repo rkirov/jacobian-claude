@@ -1,6 +1,6 @@
 /-
   Forster §17.4 — the canonical meromorphic 1-form `ω₀ = df` and its canonical divisor `K = div ω₀`,
-  instantiating `CanonicalForm17Data X` (which makes the already-proven §17.4 isomorphism
+  instantiating `CanonicalForm17Data X` (which makes the §17.4 isomorphism
   `omega17Equiv : L(D+K) ≃ₗ[ℂ] Ω_D` of `CanonicalFormIso` unconditional).
 
   ## The construction (Forster GTM 81, §17.4: `ω = df`)
@@ -11,9 +11,9 @@
       `df.toFun x := mfderiv 𝓘(ℂ) 𝓘(ℂ) f x`
 
   is a section of the cotangent bundle (`TangentSpace 𝓘(ℂ) x →L[ℂ] ℂ`); it is the genuine intrinsic
-  differential (the *junk-value* defect — `mfderiv` is `0` where `f` is not `MDifferentiableAt`, i.e.
-  at poles — is invisible to the germ object `MeromorphicOneForm`, which only cares that `formCoeff`
-  is `MeromorphicAt`).
+  differential (the *junk-value* defect — `mfderiv` is `0` where `f` is not `MDifferentiableAt`,
+  i.e. at poles — is invisible to the germ object `MeromorphicOneForm`, which only cares that
+  `formCoeff` is `MeromorphicAt`).
 
   The keystone identity (`mfderiv_apply_symmL_eq_deriv`) is, in the chart at `x`,
 
@@ -26,7 +26,8 @@
   Sanity check (Forster): `f(z) = z` ⟹ `df = dz`, `K = 0`.
 
   Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.4; Mathlib `mfderiv`,
-  `MeromorphicAt.deriv`, `TangentBundle.symmL_trivializationAt`, `mdifferentiableAt_iff_of_mem_source`.
+  `MeromorphicAt.deriv`, `TangentBundle.symmL_trivializationAt`,
+  `mdifferentiableAt_iff_of_mem_source`.
 -/
 import Jacobians.Dolbeault.CanonicalFormIso
 import Jacobians.Dolbeault.SerreOmega0
@@ -36,7 +37,6 @@ open Module
 
 namespace Jacobians.Dolbeault
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -55,7 +55,9 @@ where `f` is `MDifferentiableAt`, the covector `mfderiv f y` paired with the spa
 This is the chain rule `mfderiv f ∘ mfderiv chart⁻¹ = mfderiv (f ∘ chart⁻¹)`, with
 `symmL ℂ y = mfderiv chart⁻¹ (chart y)` (`TangentBundle.symmL_trivializationAt`) and
 `mfderiv (f ∘ chart⁻¹) = fderiv` on the model space (`mfderiv_eq_fderiv`). -/
-theorem mfderiv_apply_symmL_eq_deriv (f : X → ℂ) {x y : X} (hy : y ∈ (chartAt ℂ x).source)
+theorem mfderiv_apply_symmL_eq_deriv {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (f : X → ℂ)
+    {x y : X} (hy : y ∈ (chartAt ℂ x).source)
     (hf : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f y) :
     mfderiv 𝓘(ℂ) 𝓘(ℂ) f y
         ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ y 1)
@@ -84,7 +86,10 @@ theorem mfderiv_apply_symmL_eq_deriv (f : X → ℂ) {x y : X} (hy : y ∈ (char
 `DifferentiableAt` at a chart-target point `z`, then `f` is `MDifferentiableAt` at `chart⁻¹ z`.
 (For the codomain `ℂ` the extended chart is the identity, so the manifold-differentiability
 criterion `mdifferentiableAt_iff_of_mem_source` is just chart-pullback differentiability.) -/
-theorem mdifferentiableAt_of_differentiableAt_comp (f : X → ℂ) {x : X} {z : ℂ}
+theorem mdifferentiableAt_of_differentiableAt_comp {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (f : X → ℂ)
+    {x : X} {z : ℂ}
     (hz : z ∈ (chartAt ℂ x).target)
     (hdiff : DifferentiableAt ℂ (f ∘ (chartAt ℂ x).symm) z) :
     MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) f ((chartAt ℂ x).symm z) := by
@@ -124,7 +129,8 @@ noncomputable def differentialSection (f : MeromorphicFunction X) : ∀ x, FormF
 /-- `formCoeff (df) x` agrees with the chart-pullback derivative `(f ∘ chart⁻¹)'` on a punctured
 neighbourhood of `chart x x` (precisely where `f ∘ chart⁻¹` is analytic, hence `f` is
 `MDifferentiableAt`). -/
-theorem formCoeff_differentialSection_eventuallyEq (f : MeromorphicFunction X) (x : X) :
+theorem formCoeff_differentialSection_eventuallyEq {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X) (x : X) :
     (fun z => deriv (f.toFun ∘ (chartAt ℂ x).symm) z) =ᶠ[𝓝[≠] ((chartAt ℂ x) x)]
       formCoeff (differentialSection f) x := by
   have hmero : MeromorphicAt (f.toFun ∘ (chartAt (H := ℂ) x).symm) ((chartAt ℂ x) x) :=
@@ -147,9 +153,11 @@ theorem formCoeff_differentialSection_eventuallyEq (f : MeromorphicFunction X) (
         from rfl]
   rw [mfderiv_apply_symmL_eq_deriv f.toFun hysrc hmdiff, hzeq]
 
-/-- `df` is a **meromorphic 1-form**: its chart coefficient is `MeromorphicAt` because it germ-agrees
-with `(f ∘ chart⁻¹)'`, the derivative of a meromorphic function (`MeromorphicAt.deriv`). -/
-theorem isMeromorphicOneForm_differentialSection (f : MeromorphicFunction X) :
+/-- `df` is a **meromorphic 1-form**: its chart coefficient is `MeromorphicAt` because it
+germ-agrees with `(f ∘ chart⁻¹)'`, the derivative of a meromorphic function (`MeromorphicAt.deriv`).
+-/
+theorem isMeromorphicOneForm_differentialSection {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X) :
     IsMeromorphicOneForm (differentialSection f) := by
   intro x
   have hderiv : MeromorphicAt (deriv (f.toFun ∘ (chartAt ℂ x).symm)) ((chartAt ℂ x) x) :=
@@ -182,10 +190,10 @@ pole of order `n − 1 < 0 ≠ ⊤`), so `f ∈ L(0)`, and then the repo's Liouv
 
 /-- **No pole from a vanishing-derivative germ.**  If `g` is meromorphic at `z₀` and its derivative
 vanishes on a punctured neighbourhood of `z₀`, then `g` has *no pole* at `z₀`
-(`meromorphicOrderAt g z₀ ≥ 0`).  Proof: were `meromorphicOrderAt g z₀ = n < 0`, the Laurent form
+(`meromorphicOrderAt g z₀ ≥ 0`). Proof: were `meromorphicOrderAt g z₀ = n < 0`, the Laurent form
 `g =ᶠ (·−z₀)ⁿ • G` (`G` analytic, `G z₀ ≠ 0`) makes `deriv g =ᶠ (n·(·−z₀)ⁿ⁻¹)·G + (·−z₀)ⁿ·G'`, whose
-order is exactly `n − 1` (the first term dominates, as `n ≠ 0`, `G z₀ ≠ 0`); but `deriv g =ᶠ 0` forces
-order `⊤ ≠ n − 1`.  Pure planar complex analysis (mirrors Mathlib's `MeromorphicAt.deriv`). -/
+order is exactly `n − 1` (the first term dominates, as `n ≠ 0`, `G z₀ ≠ 0`); but `deriv g =ᶠ 0`
+forces order `⊤ ≠ n − 1`. Pure planar complex analysis (mirrors Mathlib's `MeromorphicAt.deriv`). -/
 theorem deriv_eventually_zero_meromorphicOrderAt_nonneg {g : ℂ → ℂ} {z₀ : ℂ}
     (hg : MeromorphicAt g z₀) (hdz : ∀ᶠ z in 𝓝[≠] z₀, deriv g z = 0) :
     0 ≤ meromorphicOrderAt g z₀ := by
@@ -252,7 +260,8 @@ theorem deriv_eventually_zero_meromorphicOrderAt_nonneg {g : ℂ → ℂ} {z₀ 
       (fun z => (n * (z - z₀) ^ (n - 1)) • G z + (z - z₀) ^ n • deriv G z) z₀
       = ((n - 1 : ℤ) : WithTop ℤ) := by
     rw [show (fun z => (↑n * (z - z₀) ^ (n - 1)) • G z + (z - z₀) ^ n • deriv G z)
-          = (fun z => (↑n * (z - z₀) ^ (n - 1)) • G z) + (fun z => (z - z₀) ^ n • deriv G z) from rfl,
+          = (fun z => (↑n * (z - z₀) ^ (n - 1)) • G z) + (fun z => (z - z₀) ^ n • deriv G z)
+        from rfl,
         meromorphicOrderAt_add_eq_left_of_lt hterm2_mero hlt12, hord1]
   rw [hsum_ord] at hord_sum_top
   exact WithTop.coe_ne_top hord_sum_top
@@ -279,16 +288,16 @@ theorem differentialForm_ne_zero {f : MeromorphicFunction X} (hf : ¬ IsGermCons
 
 /-! ## Part 4: the canonical divisor `K = div ω₀` and the `CanonicalForm17Data` instance
 
-`K = div (df)` is the order function `x ↦ (formOrderW (df) x).untop₀`; it has **finite support** because
-`df`'s zeros/poles are isolated (the chart coefficient `formCoeff (df)` is meromorphic, plus
-chart-invariance of `formOrderW`).  Given `K`, the §17.4 datum assembles immediately (`ω₀ = df`,
-`nontrivial = differentialForm_ne_zero`, `order_eq`).  The final `canonicalForm17Data` wires this
+`K = div (df)` is the order function `x ↦ (formOrderW (df) x).untop₀`; it has **finite support**
+because `df`'s zeros/poles are isolated (the chart coefficient `formCoeff (df)` is meromorphic, plus
+chart-invariance of `formOrderW`). Given `K`, the §17.4 datum assembles immediately (`ω₀ = df`,
+`nontrivial = differentialForm_ne_zero`, `order_eq`). The final `canonicalForm17Data` wires this
 through the nonconstant `f` of `exists_nonconstant_meromorphic`. -/
 
-/-- **Assembly of `CanonicalForm17Data` from `f`, `df ≠ 0`, and the canonical divisor `K`.**  Given a
+/-- **Assembly of `CanonicalForm17Data` from `f`, `df ≠ 0`, and the canonical divisor `K`.** Given a
 meromorphic function `f` (whose `df ≠ 0` is supplied by `hf : ¬ IsGermConstant f`) together with its
-form-divisor `K` (a `Divisor X` with `formOrderW (df) x = K x` for all `x`), this is the Forster §17.4
-canonical-form datum `ω₀ = df`, `K = div ω₀`.  Fully proven (modulo the divisor input). -/
+form-divisor `K` (a `Divisor X` with `formOrderW (df) x = K x` for all `x`), this is the Forster
+§17.4 canonical-form datum `ω₀ = df`, `K = div ω₀` (modulo the divisor input). -/
 noncomputable def canonicalForm17DataOfDivisor (f : MeromorphicFunction X)
     (hf : ¬ IsGermConstant f) (K : Divisor X)
     (hK : ∀ x, (differentialForm f).formOrderW x = (K x : WithTop ℤ)) :
@@ -298,12 +307,15 @@ noncomputable def canonicalForm17DataOfDivisor (f : MeromorphicFunction X)
   K := K
   order_eq := hK
 
-/-- **Frame-change law for the canonical trivialization.**  The spanning tangent vector `symmL_x q 1`
+/-- **Frame-change law for the canonical trivialization.** The spanning tangent vector `symmL_x q 1`
 (of the canonical trivialization at `x`, read at `q`) and `symmL_y q 1` (at `y`) are related by the
-holomorphic chart-transition derivative: `symmL_x q 1 = (chart_y ∘ chart_x⁻¹)' (chart_x q) • symmL_y q 1`.
-This is the chain rule `mfderiv (chart_x⁻¹) = mfderiv (chart_y⁻¹) ∘ mfderiv (chart_y ∘ chart_x⁻¹)`
+holomorphic chart-transition derivative:
+`symmL_x q 1 = (chart_y ∘ chart_x⁻¹)' (chart_x q) • symmL_y q 1`. This is the chain rule
+`mfderiv (chart_x⁻¹) = mfderiv (chart_y⁻¹) ∘ mfderiv (chart_y ∘ chart_x⁻¹)`
 (`symmL_· = mfderiv (chart_·⁻¹)`). -/
-theorem symmL_frame_change {x y q : X} (hqx : q ∈ (chartAt ℂ x).source)
+theorem symmL_frame_change {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {x y q : X}
+    (hqx : q ∈ (chartAt ℂ x).source)
     (hqy : q ∈ (chartAt ℂ y).source) :
     (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x).symmL ℂ q (1 : ℂ)
       = deriv (chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q)
@@ -319,7 +331,8 @@ theorem symmL_frame_change {x y q : X} (hqx : q ∈ (chartAt ℂ x).source)
     have h := mdifferentiableAt_extChartAt (I := 𝓘(ℂ)) (x := y) hqy
     have heq : (extChartAt 𝓘(ℂ) y : X → ℂ) = (chartAt ℂ y : X → ℂ) := rfl
     rwa [heq] at h
-  have hψ_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) q) := by
+  have hψ_diff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y ∘ (chartAt ℂ x).symm)
+      ((chartAt ℂ x) q) := by
     have h2 : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y) ((chartAt ℂ x).symm ((chartAt ℂ x) q)) := by
       rw [(chartAt ℂ x).left_inv hqx]; exact hchartY_diff
     exact h2.comp _ hchartx_symm_diff
@@ -376,7 +389,7 @@ theorem symmL_frame_change {x y q : X} (hqx : q ∈ (chartAt ℂ x).source)
 
 /-- **The chart-coefficient transformation law.**  Near `chart_z y`, the coefficient of `α` read in
 the chart at `z` equals `ψ' · (coeff at `y` ∘ ψ)`, where `ψ = chart_y ∘ chart_z⁻¹` is the chart
-transition: `formCoeff α z (w) = ψ'(w) · formCoeff α y (ψ w)`.  (From `symmL_frame_change` + covector
+transition: `formCoeff α z (w) = ψ'(w) · formCoeff α y (ψ w)`. (From `symmL_frame_change` + covector
 linearity; the classical `c_z = ψ' · c_y` law for 1-form coefficients.) -/
 theorem formCoeff_change (α : MeromorphicOneForm X) (z y : X) (hy : y ∈ (chartAt ℂ z).source) :
     formCoeff α.toFun z =ᶠ[𝓝 ((chartAt ℂ z) y)]
@@ -417,8 +430,10 @@ theorem formOrderW_chart_invariant (α : MeromorphicOneForm X) (z y : X)
     (hy : y ∈ (chartAt ℂ z).source) :
     α.formOrderW y = meromorphicOrderAt (formCoeff α.toFun z) ((chartAt ℂ z) y) := by
   set ψ := chartAt ℂ y ∘ (chartAt ℂ z).symm with hψ
-  have hz_max : chartAt ℂ z ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X := IsManifold.chart_mem_maximalAtlas z
-  have hy_max : chartAt ℂ y ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X := IsManifold.chart_mem_maximalAtlas y
+  have hz_max : chartAt ℂ z ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X :=
+    IsManifold.chart_mem_maximalAtlas z
+  have hy_max : chartAt ℂ y ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X :=
+    IsManifold.chart_mem_maximalAtlas y
   have hψ_an : AnalyticAt ℂ ψ ((chartAt ℂ z) y) := by
     have h := ModelWithCorners.contDiffWithinAt_extendCoordChange' hz_max hy_max hy
       (mem_chart_source ℂ y)
@@ -494,9 +509,9 @@ theorem planar_order_zero (g : ℂ → ℂ) (c : ℂ) (hg : MeromorphicAt g c)
     (hlocal_an.analyticOrderAt_eq_zero).mpr hlocal_ne]; rfl
 
 /-- **Isolated zeros/poles of a nonzero meromorphic 1-form.**  If `α`'s germ is nonzero everywhere
-(`formOrderW α ≠ ⊤`), then around each `z` the only point of nonzero order is `z` itself: in the chart
-at `z` the coefficient `formCoeff α z` is meromorphic of finite order, so its zeros/poles are isolated
-(`planar_order_zero`), and `formOrderW` is chart-invariant. -/
+(`formOrderW α ≠ ⊤`), then around each `z` the only point of nonzero order is `z` itself: in the
+chart at `z` the coefficient `formCoeff α z` is meromorphic of finite order, so its zeros/poles are
+isolated (`planar_order_zero`), and `formOrderW` is chart-invariant. -/
 theorem formOrderW_isolated (α : MeromorphicOneForm X) (hα : ∀ x, α.formOrderW x ≠ ⊤) (z : X) :
     ∃ t ∈ 𝓝 z, ∀ y ∈ t, y ≠ z → α.formOrderW y = 0 := by
   have hzero := planar_order_zero (formCoeff α.toFun z) ((chartAt ℂ z) z) (α.meromorphic z) (hα z)
@@ -547,7 +562,7 @@ theorem exists_differentialForm_divisor (f : MeromorphicFunction X)
 nonconstant meromorphic function `f` of `exists_nonconstant_meromorphic` (`SerreOmega0`), its
 differential `df` (a genuine `MeromorphicOneForm`, nonzero by `differentialForm_ne_zero`), and its
 canonical divisor `K` (`exists_differentialForm_divisor`), this instantiates `CanonicalForm17Data X`
-— making the already-proven §17.4 isomorphism `omega17Equiv : L(D+K) ≃ₗ[ℂ] Ω_D` of `CanonicalFormIso`
+— making the §17.4 isomorphism `omega17Equiv : L(D+K) ≃ₗ[ℂ] Ω_D` of `CanonicalFormIso`
 unconditional. -/
 theorem nonempty_canonicalForm17Data : Nonempty (CanonicalForm17Data X) := by
   obtain ⟨_D, f, _hmem, hf⟩ := exists_nonconstant_meromorphic (X := X)

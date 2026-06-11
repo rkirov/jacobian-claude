@@ -7,85 +7,89 @@ import Jacobians.Dolbeault.SerreResidueTheorem
 import Jacobians.Dolbeault.FormTraceCoherenceFromMoving
 
 /-!
-# The residue-level direct close of Gate A `∑ₐ Resₐ(α) = 0` (Miranda §VIII.3, no germ `agree`)
+# The residue-level direct close of the residue-theorem assembly `∑ₐ Resₐ(α) = 0` (Miranda §VIII.3,
+no germ `agree`)
 
-For a compact connected Riemann surface `X`, a holomorphic 1-form `ω₀ : HolomorphicOneForms X`, and a
-function `g : X → ℂ`, the **meromorphic 1-form** `α = ω₀·g` satisfies the residue theorem
+For a compact connected Riemann surface `X`, a holomorphic 1-form `ω₀ : HolomorphicOneForms X`, and
+a function `g : X → ℂ`, the **meromorphic 1-form** `α = ω₀·g` satisfies the residue theorem
 `∑ₐ Resₐ(α) = 0`.
 
-This file builds the §VIII.3 trace object `FormResidueTheorem.FormResidueTrace ω₀ g`
-(= `SerreResidueTheorem.SerreTraceData`) **directly at the RESIDUE level**, bypassing the
-germ-equality bridge `FormTraceFullFibre.TraceRationalityDataNF` whose finite/`∞` agreement fields
+This file builds the §VIII.3 trace object `FormResidueTheorem.FormResidueTrace ω₀ g` (=
+`SerreResidueTheorem.SerreTraceData`) **directly at the RESIDUE level**, bypassing the germ-equality
+bridge `FormTraceFullFibre.TraceRationalityDataNF` whose finite/`∞` agreement fields
 `agree`/`agree_infty` are the campaign's just-found **6th false field** — a *germ* equality
 `L.R =ᶠ[𝓝[≠] p] (fibreTrace ω₀ f (D p)).traceCoeff` with **pole-only** fibre data `D`, which is
-**unsatisfiable at a mixed fibre** (a non-pole sheet contributes a generally-nonzero *holomorphic* germ
-to the full-fibre trace coefficient, so the full-fibre and pole-only trace coefficients differ by a
-nonzero holomorphic germ; see `SerreResidueGenericity` §"Soundness finding").
+**unsatisfiable at a mixed fibre** (a non-pole sheet contributes a generally-nonzero *holomorphic*
+germ to the full-fibre trace coefficient, so the full-fibre and pole-only trace coefficients differ
+by a nonzero holomorphic germ; see `SerreResidueGenericity` §"Soundness finding").
 
 ## Why the residue level works where the germ bridge failed
 
 `FormTraceGlobal.GlobalTraceData` is **already** the residue-level structure: its `hL32` is the
 *residue* identity `∑ᵢ resAt ((fibreTrace ω₀ f (D p)).coeff i) (pre i) = resAt L.R p`, its `D` is
 **pole-only** (`hxs_mem` demands `(D p).xs i ∈ poles`), its `finite_eq` is **proven** from the
-pole-only `D`, and its `toFormResidueTrace` is **proven**.  The false `agree` lives only in the layer
+pole-only `D`, and its `toFormResidueTrace` is **proven**. The false `agree` lives only in the layer
 *above* (`TraceRationalityData(NF)`, which *derives* `hL32` from the germ `agree` via
-`hL32_of_agree_fibreRegularData`).  At the **residue** level the non-pole sheets contribute `0`
-(`α` holomorphic there ⟹ `formFnResidue = 0`, `formFnResidue_eq_zero_of_analyticAt`), so the residue
-identity `hL32` holds with the pole-only `D` — it is **true and satisfiable**, not the over-strong germ.
+`hL32_of_agree_fibreRegularData`). At the **residue** level the non-pole sheets contribute `0` (`α`
+holomorphic there ⟹ `formFnResidue = 0`, `formFnResidue_eq_zero_of_analyticAt`), so the residue
+identity `hL32` holds with the pole-only `D` — it is **true and satisfiable**, not the over-strong
+germ.
 
-## What this file builds (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file builds
 
 The construction is in two honest levels.
 
 * **The genuine rational trace** `genuineTrace_ofPatched` — from the *sound prefix* of
-  `traceRationalityDataNF_ofPatched` (the principal-part `LaurentForm L`, the genus-`0` entire remainder
-  `hentire`, the `∞`-vanishing `hrecip`, and the Liouville agreement `T = L.R`), but **without** its
-  poisoned `agree` field.  The output is just the genuine `L` and `hTL : valueChartTracePatched ω₀ f Φ
-  br = L.R` (Liouville: `Tr_F α` *is* the rational `L.R`).  This reuses the proven analytic engines
-  (`exists_laurentForm_principalPart`, `analyticOnNhd_remainder_of_junkFree'`,
-  `continuousAt_recipCoeff_of_vanishing`, `coeff_eq_of_entire_diff_of_recipCoeff_continuousAt`,
-  `hT_off_patched`); the hard analytic content is unchanged.
+  `traceRationalityDataNF_ofPatched` (the principal-part `LaurentForm L`, the genus-`0` entire
+  remainder `hentire`, the `∞`-vanishing `hrecip`, and the Liouville agreement `T = L.R`), but
+  **without** its poisoned `agree` field. The output is just the genuine `L` and
+  `hTL : valueChartTracePatched ω₀ f Φ br = L.R` (Liouville: `Tr_F α` *is* the rational `L.R`). This
+  reuses the proven analytic engines (`exists_laurentForm_principalPart`,
+  `analyticOnNhd_remainder_of_junkFree'`, `continuousAt_recipCoeff_of_vanishing`,
+  `coeff_eq_of_entire_diff_of_recipCoeff_continuousAt`, `hT_off_patched`); the hard analytic content
+  is unchanged.
 
-* **The residue-level structural bridge** `globalTraceData_of_residueTrace` — `GlobalTraceData` from the
-  genuine `L`/`hTL`, the pole-only fibre data `D`/`Dinf`, the centre bookkeeping, and the two
+* **The residue-level structural bridge** `globalTraceData_of_residueTrace` — `GlobalTraceData` from
+  the genuine `L`/`hTL`, the pole-only fibre data `D`/`Dinf`, the centre bookkeeping, and the two
   **RESIDUE** identities (Lemma 3.2 at the finite centres and at `∞`):
     - `hres_fin i : resAt (valueChartTracePatched ω₀ f Φ br) (cs i)
         = ∑ⱼ formFnResidue ω₀ g ((D (cs i)).xs j)` and
     - `infty_eq : resAtInfty L.R L.ρ = ∑_{F a = ∞} formFnResidue ω₀ g a`.
-  Both are the *honest* §VIII.3 residue identities at the pole-only fibre.  `hL32` is then immediate
-  (`resAt_fibreTrace_coeff` + `hTL`), and `infty_eq` is carried through; the proven `toFormResidueTrace`
-  gives the §VIII.3 trace object.
+  Both are the *honest* §VIII.3 residue identities at the pole-only fibre. `hL32` is then immediate
+  (`resAt_fibreTrace_coeff` + `hTL`), and `infty_eq` is carried through; the proven
+  `toFormResidueTrace` gives the §VIII.3 trace object.
 
 * **The residue-level discharge of the finite identity** `hres_fin_of_fullFibreCoherence` — the
   honest §VIII.3 Lemma 3.2 at a finite centre, proved from the **full-fibre** moving coherence (a
-  genuine full fibre — the germ equality `MovingCoherenceDatum.coherent` is **sound** there, full fibre
-  ≠ pole-only), patch inertness (`valueChartTracePatched_eventuallyEq`), and the **non-pole-residue-`0`**
-  vanishing (the full fibre's non-pole sheets have residue `0`, so the full-fibre residue sum equals the
-  pole-only residue sum).  This is the residue-level bridge the directive centres on: it never uses the
-  pole-only germ `agree`.
+  genuine full fibre — the germ equality `MovingCoherenceDatum.coherent` is **sound** there, full
+  fibre ≠ pole-only), patch inertness (`valueChartTracePatched_eventuallyEq`), and the
+  **non-pole-residue-`0`** vanishing (the full fibre's non-pole sheets have residue `0`, so the
+  full-fibre residue sum equals the pole-only residue sum). This is the residue-level bridge the
+  directive centres on: it never uses the pole-only germ `agree`.
 
-* **The top-level residue theorem** `residueTheorem_of_directGeometry` / `serreTraceExists_of_*` — `∑Res
-  = 0` from the residue-level inputs, **unconditional** downstream of the genuine trace + the residue
-  identities.
+* **The top-level residue theorem** `residueTheorem_of_directGeometry` / `serreTraceExists_of_*` —
+  `∑Res = 0` from the residue-level inputs, **unconditional** downstream of the genuine trace + the
+  residue identities.
 
 * **The single named genericity obligation** `DirectTraceGeometry ω₀ g f poles` — bundles all the
-  residue-level geometric inputs; `residueTheorem_of_exists_directTraceGeometry` proves `∑Res = 0` from
-  `∃ f, Nonempty (DirectTraceGeometry …)` (Miranda's "choose any nonconstant `f`"), and
-  `directTraceGeometry_holomorphic` / `residueTheorem_of_directGeometry_holomorphic` are the empty-pole
-  **non-vacuity** witnesses (the obligation is honest, **not** a disguised `False`).
+  residue-level geometric inputs; `residueTheorem_of_exists_directTraceGeometry` proves `∑Res = 0`
+  from `∃ f, Nonempty (DirectTraceGeometry …)` (Miranda's "choose any nonconstant `f`"), and
+  `directTraceGeometry_holomorphic` / `residueTheorem_of_directGeometry_holomorphic` are the
+  empty-pole **non-vacuity** witnesses (the obligation is honest, **not** a disguised `False`).
 
 ## Soundness
 
-No `axiom`, no gaps, **no false field**.  Every field of `GlobalTraceData`/`FormResidueTrace` is a
+No `axiom`, no gaps, **no false field**. Every field of `GlobalTraceData`/`FormResidueTrace` is a
 *true, satisfiable* residue statement (Miranda's honest content), witnessed non-vacuously by the
-empty-pole case.  The germ-equality `agree`/`agree_infty` of `TraceRationalityDataNF` is **never used**.
-The `∞`-fibre is the **sound** `InftyFibreDataNF` (never the unsatisfiable `InftyFibreData`).  All public
-declarations are authoritatively `[propext, Classical.choice, Quot.sound]` (`#print axioms`).
+empty-pole case. The germ-equality `agree`/`agree_infty` of `TraceRationalityDataNF` is **never
+used**. The `∞`-fibre is the **sound** `InftyFibreDataNF` (never the unsatisfiable
+`InftyFibreData`). All public declarations are authoritatively
+`[propext, Classical.choice, Quot.sound]` (`#print axioms`).
 
 ## References
 
-* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, pp. 251–256 (the trace `Tr`, Lemma
-  3.2 as a **residue** identity, the residue theorem on `ℂℙ¹`).
+* Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, pp. 251–256 (the trace `Tr`,
+  Lemma 3.2 as a **residue** identity, the residue theorem on `ℂℙ¹`).
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.
 * Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, pp. 251–256.
 -/
@@ -103,35 +107,34 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.Dolbeault.FormTraceInftyRecip Jacobians.Dolbeault.FormTraceLiouville
   Jacobians.Dolbeault.FormTraceMovingFibre Jacobians.Dolbeault.FormTraceFullFibre
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
 
 /-! ## The genuine rational trace `T = L.R` (sound prefix, no germ `agree`)
 
-The genus-`0` content of Miranda Step 1 — that the branch-patched trace `T := valueChartTracePatched
-ω₀ f Φ br` *is* a rational form `L.R` — is the **sound prefix** of
+The genus-`0` content of Miranda Step 1 — that the branch-patched trace
+`T := valueChartTracePatched ω₀ f Φ br` *is* a rational form `L.R` — is the **sound prefix** of
 `FormTraceFullFibre.traceRationalityDataNF_ofPatched`: the principal-part `LaurentForm L`, the
-internally-discharged genus-`0` entire remainder `hentire` (`analyticOnNhd_remainder_of_junkFree'` from
-the off-centre analyticity `hreg`/`hbnd` + junk-freeness `hcont_int`), the `∞`-vanishing `hrecip`
-(`continuousAt_recipCoeff_of_vanishing` from the genus-`0` `R₀`), and the Liouville agreement `T = L.R`
-(`coeff_eq_of_entire_diff_of_recipCoeff_continuousAt`).
+internally-discharged genus-`0` entire remainder `hentire` (`analyticOnNhd_remainder_of_junkFree'`
+from the off-centre analyticity `hreg`/`hbnd` + junk-freeness `hcont_int`), the `∞`-vanishing
+`hrecip` (`continuousAt_recipCoeff_of_vanishing` from the genus-`0` `R₀`), and the Liouville
+agreement `T = L.R` (`coeff_eq_of_entire_diff_of_recipCoeff_continuousAt`).
 
 We extract *exactly* that — the genuine `L` and `hTL : T = L.R` — **without** the poisoned `agree`
-field (the germ equality at the pole-only fibre, the 6th false field).  The meromorphy at the centres
+field (the germ equality at the pole-only fibre, the 6th false field). The meromorphy at the centres
 needed for the principal-part extraction is supplied by the per-pole moving data `Cfin` (the moving
 datum's fixed fibre is irrelevant here — only `MeromorphicAt T (cs i)` is used). -/
 
-/-- **The genuine rational trace from the patched geometry.**  With `T := valueChartTracePatched ω₀ f Φ
-br`, the off-centre analyticity inputs `hreg`/`hbnd` (giving the value-correct `hT_off`), the meromorphy
-of `T` at the centres `hT_mero`, junk-freeness `hcont_int`, and the genus-`0` `∞`-vanishing `R₀`, there
-is a `LaurentForm L` whose centres are the `cs` (`hLcenters`) with `T = L.R` (the Liouville agreement —
-`Tr_F α` *is* the rational form `L.R`).
+/-- **The genuine rational trace from the patched geometry.** With
+`T := valueChartTracePatched ω₀ f Φ br`, the off-centre analyticity inputs `hreg`/`hbnd` (giving the
+value-correct `hT_off`), the meromorphy of `T` at the centres `hT_mero`, junk-freeness `hcont_int`,
+and the genus-`0` `∞`-vanishing `R₀`, there is a `LaurentForm L` whose centres are the `cs`
+(`hLcenters`) with `T = L.R` (the Liouville agreement — `Tr_F α` *is* the rational form `L.R`).
 
 This is the sound prefix of `traceRationalityDataNF_ofPatched`, reusing its analytic engines, but
 exposing only the genuine `L`/`hTL` — **not** the germ-equality `agree` (the 6th false field).  The
@@ -168,7 +171,8 @@ theorem genuineTrace_ofPatched
     intro z hz
     rw [hLcenters] at hz
     exact hT_off_patched hreg hbnd hz
-  have hrem : ∀ p ∈ Finset.univ.image L.a, ∃ R : ℂ → ℂ, AnalyticAt ℂ R p ∧ (T - L.R) =ᶠ[𝓝[≠] p] R := by
+  have hrem : ∀ p ∈ Finset.univ.image L.a,
+      ∃ R : ℂ → ℂ, AnalyticAt ℂ R p ∧ (T - L.R) =ᶠ[𝓝[≠] p] R := by
     intro p hp
     rw [hLcenters] at hp
     simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
@@ -189,21 +193,23 @@ theorem genuineTrace_ofPatched
 /-! ## The residue-level structural bridge to `GlobalTraceData`
 
 Given the genuine rational trace `L`/`hTL : T = L.R`, the pole-only fibre data, the centre
-bookkeeping, and the two **RESIDUE** identities (Lemma 3.2 at the finite centres and at `∞`), assemble
-a `FormTraceGlobal.GlobalTraceData`.  Its `hL32` (a residue identity) is immediate from the finite
-residue identity `hres_fin` via `resAt_fibreTrace_coeff` + `hTL`; `infty_eq` is carried through.  The
-germ-equality `agree` is **never used**. -/
+bookkeeping, and the two **RESIDUE** identities (Lemma 3.2 at the finite centres and at `∞`),
+assemble a `FormTraceGlobal.GlobalTraceData`. Its `hL32` (a residue identity) is immediate from the
+finite residue identity `hres_fin` via `resAt_fibreTrace_coeff` + `hTL`; `infty_eq` is carried
+through. The germ-equality `agree` is **never used**. -/
 
 /-- **`GlobalTraceData` from the genuine trace + the residue identities.**  With `T :=
-valueChartTracePatched ω₀ f Φ br` the genuine rational trace (`hTL : T = L.R`, `hLcenters`), pole-only
-fibre data `D` (`hxs_*`), centre bookkeeping `hcenters_cs`, the **finite Lemma-3.2 residue identity**
-`hres_fin` (`resAt T (cs i) = ∑ⱼ formFnResidue ω₀ g ((D (cs i)).xs j)`, the honest pole-only-fibre
-residue reading), and the **`∞`-residue identity** `infty_eq` (`resAtInfty L.R L.ρ = ∑_{F a = ∞}
-formFnResidue ω₀ g a`), this builds a `GlobalTraceData ω₀ g f poles`.
+valueChartTracePatched ω₀ f Φ br` the genuine rational trace (`hTL : T =
+L.R`, `hLcenters`), pole-only fibre data `D` (`hxs_*`), centre bookkeeping `hcenters_cs`, the
+**finite Lemma-3.2 residue identity** `hres_fin` (`resAt
+T (cs i) = ∑ⱼ formFnResidue ω₀ g ((D (cs i)).xs
+j)`, the honest pole-only-fibre residue reading), and the **`∞`-residue identity** `infty_eq`
+(`resAtInfty
+L.R L.ρ = ∑_{F a = ∞} formFnResidue ω₀ g a`), this builds a `GlobalTraceData ω₀ g f poles`.
 
 `hL32` is proved at the **residue level** — `∑ᵢ resAt (fibreTrace coeff)(pre) = ∑ᵢ formFnResidue` by
-`resAt_fibreTrace_coeff`, which is `resAt T (cs i)` by `hres_fin`, hence `resAt L.R (cs i)` by `hTL`.
-No germ `agree`. -/
+`resAt_fibreTrace_coeff`, which is `resAt T (cs i)` by `hres_fin`, hence `resAt L.R (cs i)` by
+`hTL`. No germ `agree`. -/
 noncomputable def globalTraceData_of_residueTrace
     {Φ : (b : ℂ) → FibreRegularData g f b} {br : Finset ℂ} {m : ℕ} {cs : Fin m → ℂ}
     {L : LaurentForm} (hLcenters : Finset.univ.image L.a = Finset.univ.image cs)
@@ -234,7 +240,8 @@ noncomputable def globalTraceData_of_residueTrace
     simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
     obtain ⟨i, rfl⟩ := hp
     -- LHS `= ∑ⱼ formFnResidue ω₀ g ((D (cs i)).xs j)` (per-sheet residue bridge).
-    have hLHS : (∑ j, resAt ((fibreTrace ω₀ f (D (cs i))).coeff j) ((fibreTrace ω₀ f (D (cs i))).pre j))
+    have hLHS :
+        (∑ j, resAt ((fibreTrace ω₀ f (D (cs i))).coeff j) ((fibreTrace ω₀ f (D (cs i))).pre j))
         = ∑ j, formFnResidue ω₀ g ((D (cs i)).xs j) :=
       Finset.sum_congr rfl (fun j _ => resAt_fibreTrace_coeff ω₀ f (D (cs i)) j)
     -- `= resAt T (cs i)` (the finite residue identity), `= resAt L.R (cs i)` (the genuine trace).
@@ -244,12 +251,12 @@ noncomputable def globalTraceData_of_residueTrace
 /-! ## The top-level residue-level close: `SerreTraceExists` and `∑Res = 0`
 
 Combining the genuine trace (`genuineTrace_ofPatched`) with the residue-level bridge
-(`globalTraceData_of_residueTrace`), Gate A `∑Res = 0` follows from the §VIII.3 geometric inputs of
-the patched trace **plus** the two RESIDUE identities (Lemma 3.2 at the finite centres and at `∞`) —
-**never** the germ-equality `agree`/`agree_infty`. -/
+(`globalTraceData_of_residueTrace`), the residue theorem `∑Res = 0` follows from the §VIII.3
+geometric inputs of the patched trace **plus** the two RESIDUE identities (Lemma 3.2 at the finite
+centres and at `∞`) — **never** the germ-equality `agree`/`agree_infty`. -/
 
-/-- **`SerreTraceExists` from the patched geometry + the residue identities (no germ `agree`).**  With
-`T := valueChartTracePatched ω₀ f Φ br`:
+/-- **`SerreTraceExists` from the patched geometry + the residue identities (no germ `agree`).**
+With `T := valueChartTracePatched ω₀ f Φ br`:
 
 * `Φ`, `cs`/`ρ`, `br`, the off-centre analyticity `hreg`/`hbnd`, `Cfin`/`hCfin_D`, junk-freeness
   `hcont_int`, the genus-`0` `∞`-vanishing `R₀` — the inputs of the *genuine rational trace*
@@ -260,8 +267,9 @@ the patched trace **plus** the two RESIDUE identities (Lemma 3.2 at the finite c
 * `infty_eq` (here as a function of `L` through `hinfty`) — the **`∞`-residue identity**.
 
 Because `infty_eq` mentions `L.R`/`L.ρ` (the as-yet-unconstructed trace), it is supplied as
-`hinfty : ∀ L, valueChartTracePatched ω₀ f Φ br = L.R → Finset.univ.image L.a = Finset.univ.image cs →
-resAtInfty L.R L.ρ = ∑_{F a = ∞} formFnResidue ω₀ g a` — a statement about *the* genuine trace `L`.
+`hinfty : ∀ L, valueChartTracePatched ω₀ f Φ br = L.R → Finset.univ.image L.a = Finset.univ.image
+cs → resAtInfty L.R L.ρ = ∑_{F a = ∞} formFnResidue ω₀ g a`
+— a statement about *the* genuine trace `L`.
 
 Yields `SerreTraceExists ω₀ g poles`, hence `∑Res = 0`. -/
 theorem serreTraceExists_of_residueGeometry
@@ -304,10 +312,11 @@ theorem serreTraceExists_of_residueGeometry
     (globalTraceData_of_residueTrace hLcenters hTL D hxs_inj hxs_mem hxs_surj hcenters_cs
       hres_fin (hinfty L hTL hLcenters))
 
-/-- **Gate A `∑Res = 0` from the patched geometry + the residue identities (no germ `agree`).**  The
-total residue of `α = ω₀·g` over its poles vanishes — Steps 1–4 (genuine rational trace, Lemma 3.2 at
-the residue level, the `ℂℙ¹` residue theorem, the descent) all proven; the inputs are the §VIII.3
-geometric data + the two RESIDUE identities, **never** the germ-equality `agree`/`agree_infty`. -/
+/-- **The residue theorem `∑Res = 0` from the patched geometry + the residue identities (no
+germ `agree`).** The total residue of `α = ω₀·g` over its poles vanishes — Steps 1–4 (genuine
+rational trace, Lemma 3.2 at the residue level, the `ℂℙ¹` residue theorem, the descent) all proven;
+the inputs are the §VIII.3 geometric data + the two RESIDUE identities, **never** the germ-equality
+`agree`/`agree_infty`. -/
 theorem residueTheorem_of_residueGeometry
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
@@ -345,11 +354,11 @@ theorem residueTheorem_of_residueGeometry
 /-! ## Non-vacuity (soundness witness): the residue identities are satisfiable
 
 The residue-level inputs `hres_fin`/`hinfty` of `serreTraceExists_of_residueGeometry` are **genuine
-(true, satisfiable)**, not a disguised `False`: for the empty pole set (the globally-holomorphic case)
-the empty selection (no centres, `br = ∅`, the zero trace `T ≡ 0`) satisfies every field — `hres_fin`
-vacuously (`m = 0`), and `hinfty` because `L.R = T = 0` (empty image) has `resAtInfty = 0 = ∑_∅`.  This
-confirms the residue-level bridge is honest — it uses no false field (in particular **not** the germ
-`agree`/`agree_infty`). -/
+(true, satisfiable)**, not a disguised `False`: for the empty pole set (the globally-holomorphic
+case) the empty selection (no centres, `br = ∅`, the zero trace `T ≡ 0`) satisfies every field —
+`hres_fin` vacuously (`m = 0`), and `hinfty` because `L.R = T = 0` (empty image) has
+`resAtInfty = 0 = ∑_∅`. This confirms the residue-level bridge is honest — it uses no false field
+(in particular **not** the germ `agree`/`agree_infty`). -/
 
 /-- **The residue at infinity of the zero coefficient vanishes.**  `resAtInfty 0 ρ = 0` (the contour
 integral of `0`). -/
@@ -358,9 +367,10 @@ theorem resAtInfty_eq_zero_of_zero (ρ : ℝ) : resAtInfty (fun _ => (0 : ℂ)) 
   simp only [circleIntegral, smul_zero, intervalIntegral.integral_zero]
 
 /-- **Non-vacuity of the residue-level bridge.**  For the empty pole set,
-`serreTraceExists_of_residueGeometry` is satisfiable via the empty fibre selection and `br = ∅` — every
-field, including the residue identities `hres_fin`/`hinfty`, holds — so `SerreTraceExists ω₀ g ∅`.
-Confirms the bridge inputs are not a disguised `False` (no germ `agree` is used). -/
+`serreTraceExists_of_residueGeometry` is satisfiable via the empty fibre selection and `br = ∅` —
+every field, including the residue identities `hres_fin`/`hinfty`, holds — so
+`SerreTraceExists ω₀ g ∅`. Confirms the bridge inputs are not a disguised `False` (no germ `agree`
+is used). -/
 theorem serreTraceExists_of_residueGeometry_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) :
     SerreTraceExists ω₀ g (∅ : Finset X) := by
@@ -407,30 +417,30 @@ theorem serreTraceExists_of_residueGeometry_holomorphic (ω₀ : HolomorphicOneF
 /-! ## Level 2: the residue-level discharge of the finite Lemma 3.2 (the sound bridge)
 
 The directive's centrepiece: prove the finite residue identity `hres_fin i` **soundly**, from the
-**full-fibre** moving coherence (a genuine full fibre — the germ equality `MovingCoherenceDatum.coherent`
-is sound there, full fibre ≠ pole-only) + patch inertness + the **non-pole-residue-`0`** vanishing.
-The pole-only germ `agree` is **never** used.
+**full-fibre** moving coherence (a genuine full fibre — the germ equality
+`MovingCoherenceDatum.coherent` is sound there, full fibre ≠ pole-only) + patch inertness + the
+**non-pole-residue-`0`** vanishing. The pole-only germ `agree` is **never** used.
 
 The argument (Miranda Lemma 3.2 at a finite centre, residue form):
 ```
-resAt T (cs i)  =  resAt (valueChartTrace ω₀ f Φ) (cs i)              [patch inert off branches]
-                =  resAt (fibreTrace ω₀ f Cfull.D).traceCoeff (cs i)   [FULL-fibre coherence, sound]
-                =  ∑_{k} formFnResidue ω₀ g (Cfull.D.xs k)             [Lemma 3.2, resAt_traceCoeff]
-                =  ∑_{j} formFnResidue ω₀ g ((D (cs i)).xs j).          [non-poles residue 0; poles = D]
+resAt T (cs i) = resAt (valueChartTrace ω₀ f Φ) (cs i) [patch inert off branches] = resAt
+(fibreTrace ω₀ f Cfull.D).traceCoeff (cs i) [FULL-fibre coherence, sound] = ∑_{k} formFnResidue ω₀ g
+(Cfull.D.xs k) [Lemma 3.2, resAt_traceCoeff] = ∑_{j} formFnResidue ω₀ g ((D (cs i)).xs j).
+[non-poles residue 0; poles = D]
 ```
 The last step is the **non-pole-residue-`0`** content: the full-fibre points that are not poles
 contribute `0` (`α` holomorphic there), so the full-fibre residue sum equals the pole-only sum. -/
 
 /-- **Full-fibre residue sum = pole-only residue sum** (the non-pole-residue-`0` bridge, raw
-enumerations).  For finite-indexed enumerations `xsFull : ιF → X` (full fibre) and `xsPo : ιP → X`
-(pole-only), both injective, with the **pole** points of the full enumeration exactly the image of the
-pole-only enumeration (`hpole_image`) and the full enumeration's non-pole points having residue `0`
-(`hnonpole`):
+enumerations). For finite-indexed enumerations `xsFull : ιF → X` (full fibre) and `xsPo : ιP → X`
+(pole-only), both injective, with the **pole** points of the full enumeration exactly the image of
+the pole-only enumeration (`hpole_image`) and the full enumeration's non-pole points having residue
+`0` (`hnonpole`):
 
 > `∑ₖ formFnResidue ω₀ g (xsFull k) = ∑ⱼ formFnResidue ω₀ g (xsPo j)`.
 
-Pure `Finset` partition (`Finset.sum_filter_add_sum_filter_not` by pole-membership), no analysis.  The
-shared engine for the finite and `∞` full→pole-only residue reductions. -/
+Pure `Finset` partition (`Finset.sum_filter_add_sum_filter_not` by pole-membership), no analysis.
+The shared engine for the finite and `∞` full→pole-only residue reductions. -/
 theorem residueSum_full_eq_poleOnly {ιF ιP : Type*} [Fintype ιF] [Fintype ιP]
     (xsFull : ιF → X) (xsPo : ιP → X)
     (hfull_inj : Function.Injective xsFull) (hpo_inj : Function.Injective xsPo)
@@ -458,9 +468,10 @@ theorem residueSum_full_eq_poleOnly {ιF ιP : Type*} [Fintype ιF] [Fintype ιP
   rw [hnp, add_zero]
 
 /-- **Pole-only `∞`-enumeration residue sum = `∞`-fibre-restricted pole-set sum** (raw enumeration,
-pure `Finset` combinatorics).  If `xsInf : ι → X` injectively enumerates exactly the poles in the fibre
-`F⁻¹(∞)`, then `∑ⱼ formFnResidue ω₀ g (xsInf j) = ∑_{a ∈ poles, F a = ∞} formFnResidue ω₀ g a`.  The
-raw-enumeration analogue of `inftyResidueSumNF_eq_filter` (independent of any `InftyFibreDataNF`). -/
+pure `Finset` combinatorics). If `xsInf : ι → X` injectively enumerates exactly the poles in the
+fibre `F⁻¹(∞)`, then
+`∑ⱼ formFnResidue ω₀ g (xsInf j) = ∑_{a ∈ poles, F a = ∞} formFnResidue ω₀ g a`. The raw-enumeration
+analogue of `inftyResidueSumNF_eq_filter` (independent of any `InftyFibreDataNF`). -/
 theorem residueSum_xs_eq_inftyFilter {ι : Type*} [Fintype ι] (xsInf : ι → X)
     (hxs_inj : Function.Injective xsInf)
     (hxs_mem : ∀ j, xsInf j ∈ poles ∧ f.toRiemannSphere (xsInf j) = OnePoint.infty)
@@ -480,10 +491,11 @@ theorem residueSum_xs_eq_inftyFilter {ι : Type*} [Fintype ι] (xsInf : ι → X
 /-- **The finite Lemma-3.2 residue identity, from the full-fibre coherence (sound).**  At a finite
 centre `cs i`, given:
 
-* `Cfull : MovingCoherenceDatum ω₀ g f Φ (cs i)` — the **full-fibre** moving coherence (a genuine full
-  fibre; the germ equality `Cfull.coherent` is **sound** here, full fibre ≠ pole-only);
-* `hfull_inj` / `hpole_image` / `hnonpole` — the full-fibre enumeration is injective, its pole points are
-  exactly the pole-only enumeration `(D (cs i)).xs`, and its non-pole points have residue `0`;
+* `Cfull : MovingCoherenceDatum ω₀ g f Φ (cs i)` — the **full-fibre** moving coherence (a genuine
+  full fibre; the germ equality `Cfull.coherent` is **sound** here, full fibre ≠ pole-only);
+* `hfull_inj` / `hpole_image` / `hnonpole` — the full-fibre enumeration is injective, its pole
+  points are exactly the pole-only enumeration `(D (cs i)).xs`, and its non-pole points have residue
+  `0`;
 * `hpo_inj` — the pole-only enumeration is injective,
 
 the **finite Lemma-3.2 residue identity** holds:
@@ -508,7 +520,8 @@ theorem hres_fin_of_fullFibreCoherence
     (valueChartTracePatched_eventuallyEq ω₀ f Φ br (cs i)).trans Cfull.coherent_punctured
   -- Take residues: `resAt T (cs i) = resAt (fibreTrace …).traceCoeff (cs i)`.
   rw [resAt_congr hgerm]
-  -- Lemma 3.2 at the full fibre: `resAt (fibreTrace Cfull.D).traceCoeff (cs i) = ∑ₖ formFnResidue …`.
+  -- Lemma 3.2 at the full fibre:
+  -- `resAt (fibreTrace Cfull.D).traceCoeff (cs i) = ∑ₖ formFnResidue …`.
   -- `(fibreTrace ω₀ f Cfull.D).b = cs i` by `rfl` (avoids the dependent-motive rewrite).
   rw [show resAt (fibreTrace ω₀ f Cfull.D).traceCoeff (cs i)
         = resAt (fibreTrace ω₀ f Cfull.D).traceCoeff (fibreTrace ω₀ f Cfull.D).b from rfl,
@@ -518,27 +531,28 @@ theorem hres_fin_of_fullFibreCoherence
 
 /-! ### The residue-level discharge of Lemma 3.2 at `∞`
 
-The `∞`-analogue of `hres_fin_of_fullFibreCoherence`: prove the `∞`-residue identity `hinfty` soundly,
-from the **full `∞`-fibre** coherence (the sound `InftyFibreDataNF` against the full `∞`-fibre) + patch
-inertness + the non-`α`-pole-residue-`0` vanishing.  The germ `agree_infty` is **never** used.
+The `∞`-analogue of `hres_fin_of_fullFibreCoherence`: prove the `∞`-residue identity `hinfty`
+soundly, from the **full `∞`-fibre** coherence (the sound `InftyFibreDataNF` against the full
+`∞`-fibre) + patch inertness + the non-`α`-pole-residue-`0` vanishing. The germ `agree_infty` is
+**never** used.
 
 The argument (Miranda Lemma 3.2 at `∞`, residue form):
 ```
-resAtInfty L.R L.ρ  =  resAt (recipCoeff L.R) 0                          [resAtInfty_eq_resAt_recipCoeff]
-                    =  resAt (recipCoeff (valueChartTracePatched …)) 0    [L.R = T]
-                    =  resAt (inftyFibreTraceNF ω₀ f Dinf_full).traceCoeff 0   [full ∞-coherence, sound]
-                    =  ∑_k formFnResidue ω₀ g (Dinf_full.xs k)            [Lemma 3.2 at ∞]
-                    =  ∑_{a ∈ poles, F a = ∞} formFnResidue ω₀ g a.        [non-α-poles residue 0]
+resAtInfty L.R L.ρ = resAt (recipCoeff L.R) 0 [resAtInfty_eq_resAt_recipCoeff] = resAt (recipCoeff
+(valueChartTracePatched …)) 0 [L.R = T] = resAt (inftyFibreTraceNF ω₀ f Dinf_full).traceCoeff 0
+[full ∞-coherence, sound] = ∑_k formFnResidue ω₀ g (Dinf_full.xs k) [Lemma 3.2 at ∞] = ∑_{a ∈ poles,
+F a = ∞} formFnResidue ω₀ g a. [non-α-poles residue 0]
 ```
 -/
 
 /-- **The `∞`-residue identity, from the full `∞`-fibre coherence (sound).**  With `L.R = T :=
-valueChartTracePatched ω₀ f Φ br` (`hTL`), the full `∞`-fibre data `Dinf_full` (a sound
-`InftyFibreDataNF` whose `xs` enumerates the full `∞`-fibre), the **full `∞`-coherence** `hcoh_full`
-(the `∞`-single-valuedness against `Dinf_full` — sound, full fibre), and a pole-only `∞`-enumeration
-`xsInf_po` whose image is exactly the `α`-poles among the full `∞`-fibre (`hpole_image`) with the
-non-`α`-pole points contributing residue `0` (`hnonpole`) and the pole-only enumeration landing in the
-`∞`-fibre poles (`hpo_mem`/`hpo_inj`/`hpo_surj`):
+valueChartTracePatched ω₀ f Φ
+br` (`hTL`), the full `∞`-fibre data `Dinf_full` (a sound `InftyFibreDataNF` whose `xs` enumerates
+the full `∞`-fibre), the **full `∞`-coherence** `hcoh_full` (the `∞`-single-valuedness against
+`Dinf_full` — sound, full fibre), and a pole-only `∞`-enumeration `xsInf_po` whose image is exactly
+the `α`-poles among the full `∞`-fibre (`hpole_image`) with the non-`α`-pole points contributing
+residue `0` (`hnonpole`) and the pole-only enumeration landing in the `∞`-fibre poles
+(`hpo_mem`/`hpo_inj`/`hpo_surj`):
 
 > `resAtInfty L.R L.ρ = ∑_{a ∈ poles, F a = ∞} formFnResidue ω₀ g a`.
 
@@ -568,39 +582,40 @@ theorem hinfty_of_fullInftyCoherence
   rw [resAt_congr hcoh, resAt_traceCoeff_inftyFibreTraceNF ω₀ f Dinf_full]
   -- Full `∞`-fibre residue sum = the pole-only `∞`-enumeration residue sum (non-`α`-poles → `0`).
   rw [residueSum_full_eq_poleOnly Dinf_full.xs xsInf_po hfull_inj hpo_inj hpole_image hnonpole]
-  -- The pole-only `∞`-enumeration residue sum = the `∞`-fibre-restricted pole-set sum (pure `Finset`).
+  -- The pole-only `∞`-enumeration residue sum = the `∞`-fibre-restricted pole-set sum (pure
+  -- `Finset`).
   exact residueSum_xs_eq_inftyFilter xsInf_po hpo_inj hpo_mem hpo_surj
 
-/-! ## The fully-assembled residue-level close of Gate A (no germ `agree`)
+/-! ## The fully-assembled residue-level close of the residue-theorem assembly (no germ `agree`)
 
 Combining `genuineTrace_ofPatched` (the genuine rational trace), the Level-2 discharges
 (`hres_fin_of_fullFibreCoherence` / `hinfty_of_fullInftyCoherence`), and the structural bridge
-(`serreTraceExists_of_residueGeometry`), Gate A `∑Res = 0` follows from the §VIII.3 geometry with the
-**full-fibre** coherence and the **non-pole analyticity** — the genuine genericity content — and
-**never** the germ-equality `agree`/`agree_infty`.
+(`serreTraceExists_of_residueGeometry`), the residue theorem `∑Res = 0` follows from the
+§VIII.3 geometry with the **full-fibre** coherence and the **non-pole analyticity** — the genuine
+genericity content — and **never** the germ-equality `agree`/`agree_infty`.
 
-The full-fibre moving coherence `Cfull i` at each finite centre serves double duty: it gives both the
-meromorphy of `T` at `cs i` (for the principal-part extraction) and the finite Lemma-3.2 residue
-identity (the genuine, sound germ equality at the full fibre).  The non-pole points (full fibre `\` poles)
-contribute residue `0` (`α` holomorphic there), so the full-fibre residue sum collapses to the pole-only
-sum — the honest §VIII.3 reading at the residue level. -/
+The full-fibre moving coherence `Cfull i` at each finite centre serves double duty: it gives both
+the meromorphy of `T` at `cs i` (for the principal-part extraction) and the finite Lemma-3.2 residue
+identity (the genuine, sound germ equality at the full fibre). The non-pole points (full fibre `\`
+poles) contribute residue `0` (`α` holomorphic there), so the full-fibre residue sum collapses to
+the pole-only sum — the honest §VIII.3 reading at the residue level. -/
 
-/-- **Gate A `∑Res = 0` from the residue-level §VIII.3 geometry (full-fibre coherence, no germ
-`agree`).**  This is the definitive residue-level close: every input is a *genuine, satisfiable*
-geometric/analytic datum (the full-fibre coherence is the **sound** germ equality, full fibre ≠
-pole-only; the non-pole analyticity gives residue `0`), and the germ-equality `agree`/`agree_infty` (the
-6th false field) is **never** used.
+/-- **The residue theorem `∑Res = 0` from the residue-level §VIII.3 geometry (full-fibre
+coherence, no germ `agree`).** This is the definitive residue-level close: every input is a
+*genuine, satisfiable* geometric/analytic datum (the full-fibre coherence is the **sound** germ
+equality, full fibre ≠ pole-only; the non-pole analyticity gives residue `0`), and the germ-equality
+`agree`/`agree_infty` (the 6th false field) is **never** used.
 
 Inputs (the genuine genericity for a nonconstant cover `f`):
 
 * `Φ`, `cs`/`ρ`, `br`, `hreg`/`hbnd` — the global selection, centres, branch set, and off-centre
   analyticity inputs of the genuine rational trace;
-* `Cfull i` — the **full-fibre** moving coherence at each finite centre (sound; gives meromorphy + the
-  finite residue identity);
+* `Cfull i` — the **full-fibre** moving coherence at each finite centre (sound; gives meromorphy +
+  the finite residue identity);
 * `D`/`hxs_*`, `hcenters_cs` — the pole-only finite fibre data + centre bookkeeping;
-* `hfull_inj i` / `hpole_image i` / `hnonpole_an i` — the full-fibre enumeration is injective, its pole
-  points are exactly the pole-only enumeration `(D (cs i)).xs`, and its non-pole points have analytic
-  `g`-pullback (⟹ residue `0`);
+* `hfull_inj i` / `hpole_image i` / `hnonpole_an i` — the full-fibre enumeration is injective, its
+  pole points are exactly the pole-only enumeration `(D (cs i)).xs`, and its non-pole points have
+  analytic `g`-pullback (⟹ residue `0`);
 * `hcont_int`, `R₀`/`hR₀_*` — junk-freeness + the genus-`0` `∞`-vanishing;
 * the `∞`-fibre data: `Dinf_full` (full `∞`-fibre, sound) + `hcoh_full` (the `∞`-single-valuedness),
   `hfullInf_inj`, the pole-only `xsInf_po`/`hpoInf_*`, `hpole_image_inf`, `hnonpole_inf_an`.
@@ -677,17 +692,17 @@ theorem residueTheorem_of_directGeometry
 
 /-! ### Non-vacuity of the headline (end-to-end soundness)
 
-`residueTheorem_of_directGeometry` is satisfiable, not a disguised `False`: for the empty pole set the
-empty fibre selection (`Φ` empty, `m = 0`, `br = ∅`, the zero trace) satisfies **every** input —
+`residueTheorem_of_directGeometry` is satisfiable, not a disguised `False`: for the empty pole set
+the empty fibre selection (`Φ` empty, `m = 0`, `br = ∅`, the zero trace) satisfies **every** input —
 including the full-fibre coherence `Cfull` (vacuous), the non-pole analyticity (vacuous), the full
-`∞`-fibre `Dinf_full` (empty, sound), and `hcoh_full` (both sides `0`).  Hence `∑_{a ∈ ∅} formFnResidue
-ω₀ g a = 0` through the residue-level headline — confirming the genericity inputs are honest (no false
-field, in particular **not** the germ `agree`/`agree_infty`). -/
+`∞`-fibre `Dinf_full` (empty, sound), and `hcoh_full` (both sides `0`). Hence
+`∑_{a ∈ ∅} formFnResidue ω₀ g a = 0` through the residue-level headline — confirming the genericity
+inputs are honest (no false field, in particular **not** the germ `agree`/`agree_infty`). -/
 
-/-- **Non-vacuity of the residue-level headline.**  For the empty pole set, `residueTheorem_of_directGeometry`
-is satisfiable via the empty selection and `br = ∅` — every input, including the full-fibre coherence and
-the non-pole analyticity, holds — yielding `∑_{a ∈ ∅} formFnResidue ω₀ g a = 0`.  Confirms the headline
-inputs are not a disguised `False`. -/
+/-- **Non-vacuity of the residue-level headline.** For the empty pole set,
+`residueTheorem_of_directGeometry` is satisfiable via the empty selection and `br = ∅` — every
+input, including the full-fibre coherence and the non-pole analyticity, holds — yielding
+`∑_{a ∈ ∅} formFnResidue ω₀ g a = 0`. Confirms the headline inputs are not a disguised `False`. -/
 theorem residueTheorem_of_directGeometry_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) :
     ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 := by
@@ -735,22 +750,25 @@ theorem residueTheorem_of_directGeometry_holomorphic (ω₀ : HolomorphicOneForm
       exact @Finset.sum_of_isEmpty _ _ _ _ (inferInstanceAs (IsEmpty Empty)) _
     rw [hpatch0, hmoving0]
 
-/-! ## Gate A on the single named genericity obligation (`∃ adapted f`, residue-level)
+/-! ## the residue-theorem assembly on the single named genericity obligation (`∃ adapted f`,
+residue-level)
 
 We bundle the residue-level §VIII.3 geometric inputs of `residueTheorem_of_directGeometry` into the
-**one named structure** `DirectTraceGeometry ω₀ g f poles`, so the standing of Gate A is crisp: the
-residue theorem `∑Res = 0` holds *unconditionally downstream* of `∃ f, Nonempty (DirectTraceGeometry ω₀
-g f poles)` — Miranda's genericity ("simply choose any nonconstant `f`", p. 254), now with the trace's
-rationality + Lemma 3.2 (residue level) + the descent all proven, and the **6th false field (germ
-`agree`/`agree_infty`) eliminated**.  Unlike `AdaptedTraceGeometry` (whose germ-`agree` route is a
-disguised `False` at mixed fibres), `DirectTraceGeometry` is **honest** — its non-vacuity witness
-(`directTraceGeometry_holomorphic`) is genuine. -/
+**one named structure** `DirectTraceGeometry ω₀ g f poles`, so the standing of the residue-theorem
+build is crisp: the residue theorem `∑Res = 0` holds *unconditionally downstream* of
+`∃ f, Nonempty (DirectTraceGeometry ω₀ g f poles)` — Miranda's genericity ("simply choose any
+nonconstant `f`", p. 254), now with the trace's rationality + Lemma 3.2 (residue level) + the
+descent all proven, and the **6th false field (germ `agree`/`agree_infty`) eliminated**. Unlike
+`AdaptedTraceGeometry` (whose germ-`agree` route is a disguised `False` at mixed fibres),
+`DirectTraceGeometry` is **honest** — its non-vacuity witness (`directTraceGeometry_holomorphic`) is
+genuine. -/
 
-/-- **The residue-level §VIII.3 trace geometry** for a nonconstant cover `f` and `α = ω₀·g`.  Bundles
+/-- **The residue-level §VIII.3 trace geometry** for a nonconstant cover `f` and `α = ω₀·g`. Bundles
 exactly the inputs of `residueTheorem_of_directGeometry`: the global selection, the **full-fibre**
-moving coherence (sound), the pole-only finite/`∞` fibre data, the per-centre pole-image matching + the
-**non-pole analyticity** (giving residue `0`), junk-freeness, and the genus-`0` `∞`-vanishing.  The germ
-`agree`/`agree_infty` is **absent** — this is the honest residue-level genericity obligation. -/
+moving coherence (sound), the pole-only finite/`∞` fibre data, the per-centre pole-image matching +
+the **non-pole analyticity** (giving residue `0`), junk-freeness, and the genus-`0` `∞`-vanishing.
+The germ `agree`/`agree_infty` is **absent** — this is the honest residue-level genericity
+obligation. -/
 structure DirectTraceGeometry (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (poles : Finset X) where
   /-- The global full-fibre selection. -/
@@ -769,10 +787,11 @@ structure DirectTraceGeometry (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
   br : Finset ℂ
   /-- Regular-value analyticity of the raw trace off the centres and branch values. -/
   hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w
-  /-- The branch-value boundedness crux off the centres. -/
+  /-- The branch-value boundedness condition off the centres. -/
   hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
     Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0)
-  /-- The **full-fibre** moving coherence at each finite centre (sound germ equality, full fibre). -/
+  /-- The **full-fibre** moving coherence at each finite centre (sound germ equality, full fibre).
+  -/
   Cfull : ∀ i, MovingCoherenceDatum ω₀ g f Φ (cs i)
   /-- The pole-only per-centre fibre data. -/
   D : (p : ℂ) → FibreRegularData g f p
@@ -838,8 +857,8 @@ structure DirectTraceGeometry (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
 
 attribute [instance] DirectTraceGeometry.fintypeInfP
 
-/-- **Gate A `∑Res = 0` from a residue-level trace geometry (single `f`).**  Unpacks
-`DirectTraceGeometry` into `residueTheorem_of_directGeometry`.  No germ `agree`. -/
+/-- **The residue theorem `∑Res = 0` from a residue-level trace geometry (single `f`).**
+Unpacks `DirectTraceGeometry` into `residueTheorem_of_directGeometry`. No germ `agree`. -/
 theorem residueTheorem_of_directTraceGeometry (A : DirectTraceGeometry ω₀ g f poles) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
   residueTheorem_of_directGeometry A.Φ A.m A.cs A.ρ A.hcs_ball A.hcs_inj A.br A.hreg A.hbnd A.Cfull
@@ -847,21 +866,23 @@ theorem residueTheorem_of_directTraceGeometry (A : DirectTraceGeometry ω₀ g f
     A.hcont_int A.R₀ A.hR₀_an A.hR₀0 A.hR₀_eq A.Dinf_full A.hcoh_full A.hfullInf_inj A.xsInf_po
     A.hpoInf_inj A.hpoInf_mem A.hpoInf_surj A.hpole_image_inf A.hnonpole_inf_an
 
-/-- **Gate A `∑Res = 0` from the single named genericity obligation.**  If *some* nonconstant cover `f`
-carries a residue-level §VIII.3 trace geometry, the total residue of `α = ω₀·g` over its poles vanishes.
-This is the precise, honest standing of Gate A: Steps 1–4 (the genuine rational trace, Lemma 3.2 at the
-residue level, the `ℂℙ¹` residue theorem, the descent) are *all proven*; the **only** remaining input is
-Miranda's genericity `∃ f, Nonempty (DirectTraceGeometry ω₀ g f poles)`, with **no false field**. -/
+/-- **The residue theorem `∑Res = 0` from the single named genericity obligation.** If *some*
+nonconstant cover `f` carries a residue-level §VIII.3 trace geometry, the total residue of
+`α = ω₀·g` over its poles vanishes. This is the precise, honest standing of the residue-theorem
+build: Steps 1–4 (the genuine rational trace, Lemma 3.2 at the residue level, the `ℂℙ¹` residue
+theorem, the descent) are *all proven*; the **only** remaining input is Miranda's genericity
+`∃ f, Nonempty (DirectTraceGeometry ω₀ g f poles)`, with **no false field**. -/
 theorem residueTheorem_of_exists_directTraceGeometry
     (h : ∃ f : MeromorphicFunction X, Nonempty (DirectTraceGeometry ω₀ g f poles)) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 := by
   obtain ⟨f, ⟨A⟩⟩ := h
   exact residueTheorem_of_directTraceGeometry A
 
-/-- **Non-vacuity of the named genericity obligation.**  For the empty pole set a `DirectTraceGeometry`
-exists (empty selection, `br = ∅`, the empty sound `∞`-fibre, the zero trace) — every field, including
-the full-fibre coherence and the non-pole analyticity, is satisfiable.  Confirms `DirectTraceGeometry` is
-honest (not a disguised `False`), unlike the germ-`agree` `AdaptedTraceGeometry`. -/
+/-- **Non-vacuity of the named genericity obligation.** For the empty pole set a
+`DirectTraceGeometry` exists (empty selection, `br = ∅`, the empty sound `∞`-fibre, the zero trace)
+— every field, including the full-fibre coherence and the non-pole analyticity, is satisfiable.
+Confirms `DirectTraceGeometry` is honest (not a disguised `False`), unlike the germ-`agree`
+`AdaptedTraceGeometry`. -/
 noncomputable def directTraceGeometry_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) :
     DirectTraceGeometry ω₀ g f (∅ : Finset X) where

@@ -7,11 +7,12 @@ import Jacobians.Dolbeault.SerreResidueDirectGenus0Germ
 import Jacobians.Dolbeault.FormTraceRegularValueDatum
 
 /-!
-# Gate A `∑Res = 0` — discharging the finite full-fibre moving coherence `Cfull` (§VIII.3)
+# The residue theorem `∑Res = 0` — discharging the finite full-fibre moving coherence `Cfull`
+(§VIII.3)
 
 `Jacobians.Dolbeault.SerreResidueTheorem.residueTheorem_ofCanonicalSimpleInfty_genus0_germ`
-(`SerreResidueDirectGenus0Germ.lean`) reduced Gate A `∑Res = 0` (genus `0`, simple `∞`-poles, canonical
-full-fibre selection) to *exactly*:
+(`SerreResidueDirectGenus0Germ.lean`) reduced the residue theorem `∑Res = 0` (genus `0`,
+simple `∞`-poles, canonical full-fibre selection) to *exactly*:
 
 * the per-finite-centre full-fibre moving coherence `Cfull i : MovingCoherenceDatum ω₀ g f Φ (cs i)`
   (with `hCfull_inj`/`hCfull_image`/`hnonpole_an`), and
@@ -19,33 +20,34 @@ full-fibre selection) to *exactly*:
 
 plus the discrete genericity bookkeeping (`hgood`/`hsimpleInf`/`hmeroInf`/`hcenters_cs`).
 
-This file **discharges the `Cfull` field-group** (the genuine §VIII.3 *moving sphere-fibre sum* content
-at each finite pole-centre) from the symmetric-invariance lever, given a per-centre **genericity**
-hypothesis (`coe (cs i)` off the branch locus, the standard adapted-cover condition) and the
-regular-value `g`-meromorphy near each centre.  Concretely: at a pole-value `coe (cs i)` off the branch
-locus, the sphere sheet system `exists_sphereSheetSystem` supplies the moving sheets sweeping the full
-fibre, and `MovingCoherenceDatum.ofSphereSheetSystemCanon` (the symmetric lever,
+This file **discharges the `Cfull` field-group** (the genuine §VIII.3 *moving sphere-fibre sum*
+content at each finite pole-centre) from the symmetric-invariance lever, given a per-centre
+**genericity** hypothesis (`coe (cs i)` off the branch locus, the standard adapted-cover condition)
+and the regular-value `g`-meromorphy near each centre. Concretely: at a pole-value `coe (cs i)` off
+the branch locus, the sphere sheet system `exists_sphereSheetSystem` supplies the moving sheets
+sweeping the full fibre, and `MovingCoherenceDatum.ofSphereSheetSystemCanon` (the symmetric lever,
 `FormTraceRegularValueDatum`) reconstructs the per-`b'` index bijection *pointwise* from the
 labeling-independent fact that the canonical selection `Φ b'` enumerates the *same fibre set* as the
 sheets — its `hdiag` (value-trace = moving sphere-fibre sum) is a germ-equality on `𝓝 (cs i)`, never
 evaluating at the singularity.
 
-**Soundness:** this is NOT a disguise of `∑Res = 0`.  The `hdiag` field is a *local* germ-equality
-derived from the local sheet-system definition (the trace is the symmetric sum over the sheets of the
-fibre — Miranda §VIII.3); it never references the residue cancellation.  The per-centre off-branch
-genericity is a geometric input (a generic separating cover), not a residue identity.  The literal
-junk-value defect (`hcont_int`) was already eliminated upstream by germ-Cauchy; `Cfull`'s germ-equality
-holds on a *full* neighbourhood but is consumed only punctured/germ-wise downstream, so no junk-value
-evaluation occurs.
+**Soundness:** this is NOT a disguise of `∑Res = 0`. The `hdiag` field is a *local* germ-equality
+derived from the local sheet-system definition (the trace is the symmetric sum over the sheets of
+the fibre — Miranda §VIII.3); it never references the residue cancellation. The per-centre
+off-branch genericity is a geometric input (a generic separating cover), not a residue identity. The
+literal junk-value defect (`hcont_int`) was already eliminated upstream by germ-Cauchy; `Cfull`'s
+germ-equality holds on a *full* neighbourhood but is consumed only punctured/germ-wise downstream,
+so no junk-value evaluation occurs.
 
-## What this file proves (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file proves
 
-* `movingCoherenceDatum_canonical` — the full-fibre `MovingCoherenceDatum` for the canonical selection at
-  an off-branch pole-value, with the reference fibre the sphere-sheet fibre (`.D.xs k = S.sheet k
-  (coe (cs i))`), built via `MovingCoherenceDatum.ofSphereSheetSystemCanon`.
-* `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull` — the capstone with the `Cfull` field-group
-  **discharged**: Gate A `∑Res = 0` from the per-centre off-branch genericity + regular `g`-data +
-  `hreg`/`hbnd` + `hcoh_full` (no `Cfull`, no `hCfull_inj`/`hCfull_image`/`hnonpole_an` supplied).
+* `movingCoherenceDatum_canonical` — the full-fibre `MovingCoherenceDatum` for the canonical
+  selection at an off-branch pole-value, with the reference fibre the sphere-sheet fibre
+  (`.D.xs k = S.sheet k (coe (cs i))`), built via `MovingCoherenceDatum.ofSphereSheetSystemCanon`.
+* `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull` — the capstone with the `Cfull`
+  field-group **discharged**: the residue theorem `∑Res = 0` from the per-centre off-branch
+  genericity + regular `g`-data + `hreg`/`hbnd` + `hcoh_full` (no `Cfull`, no
+  `hCfull_inj`/`hCfull_image`/`hnonpole_an` supplied).
 
 ## References
 
@@ -71,33 +73,34 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.Dolbeault.FormTraceMovingFibre Jacobians.Dolbeault.FormTraceFullFibre
   Jacobians.Dolbeault.FormTracePrincipalPart
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
 
 /-! ## The full-fibre moving coherence datum for the canonical selection
 
-At a finite value `coe c` off the branch locus, `exists_sphereSheetSystem` supplies a `LocalSheetSystem
-S` of the compact sphere map `F = f.toRiemannSphere`, whose sheets sweep the full fibre.  The canonical
-full-fibre selection `Φ = canonicalFibreSelection g f hdiv` enumerates that same fibre as a set near `c`
-(`canonicalFibreSelection_hΦrangeReg`/`hΦinjReg`, given the regular-value `g`-meromorphy), so the
-symmetric-invariance lever `MovingCoherenceDatum.ofSphereSheetSystemCanon` produces the moving coherence
-datum — its `hdiag` (value-trace = moving sphere-fibre sum) reconstructed pointwise with no labeling. -/
+At a finite value `coe c` off the branch locus, `exists_sphereSheetSystem` supplies a
+`LocalSheetSystem S` of the compact sphere map `F = f.toRiemannSphere`, whose sheets sweep the full
+fibre. The canonical full-fibre selection `Φ = canonicalFibreSelection g f hdiv` enumerates that
+same fibre as a set near `c` (`canonicalFibreSelection_hΦrangeReg`/`hΦinjReg`, given the
+regular-value `g`-meromorphy), so the symmetric-invariance lever
+`MovingCoherenceDatum.ofSphereSheetSystemCanon` produces the moving coherence datum — its `hdiag`
+(value-trace = moving sphere-fibre sum) reconstructed pointwise with no labeling. -/
 
-/-- **The full-fibre moving coherence datum for the canonical selection at an off-branch value.**  At a
-finite value `c` with `coe c` off the branch locus of `F = f.toRiemannSphere`, given the regular-value
-`g`-meromorphy `hgmero` (`g`'s chart-pullback meromorphic at every full-fibre point, eventually near
-`c`) and the at-`c` `g`-meromorphy `hmero_c` (for the reference sheet-fibre `hmero`), the canonical
-full-fibre selection has a `MovingCoherenceDatum` at `c` whose reference fibre is the sphere-sheet fibre
-(`.D.xs k = S.sheet k (coe c)`).  The deep §VIII.3 content — the diagonal identity value-trace = moving
-sphere-fibre sum — is discharged by the symmetric lever (`ofSphereSheetSystemCanon`); the off-branch
-regularity `hderiv` is intrinsic (`sheet_holoRepr_deriv_ne_zero`), and the sheet injectivity/chart-source
-data is intrinsic to any `LocalSheetSystem`. -/
+/-- **The full-fibre moving coherence datum for the canonical selection at an off-branch value.** At
+a finite value `c` with `coe c` off the branch locus of `F = f.toRiemannSphere`, given the
+regular-value `g`-meromorphy `hgmero` (`g`'s chart-pullback meromorphic at every full-fibre point,
+eventually near `c`) and the at-`c` `g`-meromorphy `hmero_c` (for the reference sheet-fibre
+`hmero`), the canonical full-fibre selection has a `MovingCoherenceDatum` at `c` whose reference
+fibre is the sphere-sheet fibre (`.D.xs k = S.sheet k (coe c)`). The deep §VIII.3 content — the
+diagonal identity value-trace = moving sphere-fibre sum — is discharged by the symmetric lever
+(`ofSphereSheetSystemCanon`); the off-branch regularity `hderiv` is intrinsic
+(`sheet_holoRepr_deriv_ne_zero`), and the sheet injectivity/chart-source data is intrinsic to any
+`LocalSheetSystem`. -/
 noncomputable def movingCoherenceDatum_canonical (hdiv : (f.div : Divisor X) ≠ 0) {c : ℂ}
     (hoff : (((c : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
     (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((c : ℂ) : RiemannSphere)))
@@ -131,7 +134,8 @@ noncomputable def movingCoherenceDatum_canonical (hdiv : (f.div : Divisor X) ≠
           (chartAt ℂ (S.sheet i (((c : ℂ) : RiemannSphere)))).open_source.mem_nhds
             (mem_chart_source ℂ _)
         have := hcont.preimage_mem_nhds (show
-          (chartAt ℂ (S.sheet i (((c : ℂ) : RiemannSphere)))).source ∈ 𝓝 (S.holoReprSheet i c) from hsrc)
+          (chartAt ℂ (S.sheet i (((c : ℂ) : RiemannSphere)))).source ∈ 𝓝 (S.holoReprSheet i c)
+        from hsrc)
         filter_upwards [this] with b' hb' using hb'
       rw [eventually_all]; exact hev)
 
@@ -152,10 +156,11 @@ noncomputable def movingCoherenceDatum_canonical (hdiv : (f.div : Divisor X) ≠
 
 /-! ### The combinatorial fields `hCfull_inj` / `hCfull_image` for `movingCoherenceDatum_canonical`
 
-The reference fibre `.D.xs k = S.sheet k (coe c)` enumerates the **full** fibre `F⁻¹(coe c)` (the sheets
-sweep the fibre, `sheetValues_range_eq_fibre`); it is injective (`S.sheet_inj` at the base).  At a good
-value `c`, the canonical selection *also* enumerates that fibre (`canonicalFibreSelection_xs_range`), so
-the two `Finset.univ.image`s agree — both equal `(F⁻¹(coe c))` as a finite set. -/
+The reference fibre `.D.xs k = S.sheet k (coe c)` enumerates the **full** fibre `F⁻¹(coe c)` (the
+sheets sweep the fibre, `sheetValues_range_eq_fibre`); it is injective (`S.sheet_inj` at the base).
+At a good value `c`, the canonical selection *also* enumerates that fibre
+(`canonicalFibreSelection_xs_range`), so the two `Finset.univ.image`s agree — both equal
+`(F⁻¹(coe c))` as a finite set. -/
 
 /-- **Set-range equality lifts to `Finset.univ.image` equality** for maps from a `Fintype`. -/
 theorem image_univ_eq_of_range_eq {ι κ Y : Type*} [Fintype ι] [Fintype κ] [DecidableEq Y]
@@ -166,8 +171,9 @@ theorem image_univ_eq_of_range_eq {ι κ Y : Type*} [Fintype ι] [Fintype κ] [D
     Set.image_univ, Set.image_univ, h]
 
 /-- **`hCfull_inj` for `movingCoherenceDatum_canonical`.**  The reference sheet fibre `.D.xs k =
-S.sheet k (coe c)` is injective: the sheets are injective in the index at the base (`S.sheet_inj` over
-`S.V ∋ coe c`). -/
+S.sheet k (coe
+c)` is injective: the sheets are injective in the index at the base (`S.sheet_inj` over `S.V ∋ coe
+c`). -/
 theorem movingCoherenceDatum_canonical_D_inj (hdiv : (f.div : Divisor X) ≠ 0) {c : ℂ}
     (hoff : (((c : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
     (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((c : ℂ) : RiemannSphere)))
@@ -182,9 +188,10 @@ theorem movingCoherenceDatum_canonical_D_inj (hdiv : (f.div : Divisor X) ≠ 0) 
   intro k k' hkk'
   exact S.sheet_inj (((c : ℂ) : RiemannSphere)) S.mem_V hkk'
 
-/-- **`hCfull_image` for `movingCoherenceDatum_canonical`.**  The reference sheet fibre and the canonical
-full-fibre selection at `c` have the same `Finset.univ.image`: both enumerate the full fibre `F⁻¹(coe c)`
-(the sheets sweep it; the canonical selection is the full fibre at the good value `c`). -/
+/-- **`hCfull_image` for `movingCoherenceDatum_canonical`.** The reference sheet fibre and the
+canonical full-fibre selection at `c` have the same `Finset.univ.image`: both enumerate the full
+fibre `F⁻¹(coe c)` (the sheets sweep it; the canonical selection is the full fibre at the good value
+`c`). -/
 theorem movingCoherenceDatum_canonical_D_image (hdiv : (f.div : Divisor X) ≠ 0) {c : ℂ}
     (hoff : (((c : ℂ) : RiemannSphere)) ∉ branchLocus f.toRiemannSphere)
     (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((c : ℂ) : RiemannSphere)))
@@ -201,7 +208,8 @@ theorem movingCoherenceDatum_canonical_D_image (hdiv : (f.div : Divisor X) ≠ 0
   apply image_univ_eq_of_range_eq
   -- Both ranges equal the full fibre `F⁻¹(coe c)`.
   rw [canonicalFibreSelection_xs_range g f hdiv hc_good]
-  -- The sheet-fibre range: `.D.xs k = S.sheet k (coe c)`, range = fibre by `sheetValues_range_eq_fibre`.
+  -- The sheet-fibre range: `.D.xs k = S.sheet k (coe c)`, range = fibre by
+  -- `sheetValues_range_eq_fibre`.
   have hrange : Set.range
       (movingCoherenceDatum_canonical (g := g) (ω₀ := ω₀) hdiv hoff S hmero hgmero).D.xs
       = Set.range (fun k => S.sheet k (((c : ℂ) : RiemannSphere))) := rfl
@@ -210,26 +218,28 @@ theorem movingCoherenceDatum_canonical_D_image (hdiv : (f.div : Divisor X) ≠ 0
 /-! ## The `Cfull`-discharged genus-`0` capstone
 
 Wiring `movingCoherenceDatum_canonical` (+ its combinatorial fields) into
-`residueTheorem_ofCanonicalSimpleInfty_genus0_germ`, the per-centre full-fibre moving coherence `Cfull`
-is **discharged** from the per-centre genericity (off-branch pole-values + good values), the regular-value
-`g`-meromorphy near/at each centre, and the global "`g` is holomorphic off the poles of `α`"
-(`hg_an_offpoles`).  Gate A `∑Res = 0` then rests on the off-centre analyticity `hreg`/`hbnd`, the
-`∞`-coherence `hcoh_full`, and the discrete genericity bookkeeping — *no* `Cfull`/`hCfull_*`/`hnonpole_an`
-supplied. -/
+`residueTheorem_ofCanonicalSimpleInfty_genus0_germ`, the per-centre full-fibre moving coherence
+`Cfull` is **discharged** from the per-centre genericity (off-branch pole-values + good values), the
+regular-value `g`-meromorphy near/at each centre, and the global "`g` is holomorphic off the poles
+of `α`" (`hg_an_offpoles`). The residue theorem `∑Res = 0` then rests on the off-centre
+analyticity `hreg`/`hbnd`, the `∞`-coherence `hcoh_full`, and the discrete genericity bookkeeping —
+*no* `Cfull`/`hCfull_*`/`hnonpole_an` supplied. -/
 
-/-- **Gate A `∑Res = 0` (genus `0`, simple `∞`-poles, canonical selection) with the finite full-fibre
-moving coherence `Cfull` DISCHARGED.**  The per-centre `Cfull i` is built internally by
-`movingCoherenceDatum_canonical` from:
+/-- **The residue theorem `∑Res = 0` (genus `0`, simple `∞`-poles, canonical selection) with
+the finite full-fibre moving coherence `Cfull` DISCHARGED.** The per-centre `Cfull i` is built
+internally by `movingCoherenceDatum_canonical` from:
 
-* `hoff_cs i` — the pole-value `cs i` is off the branch locus (the standard adapted-cover genericity);
+* `hoff_cs i` — the pole-value `cs i` is off the branch locus (the standard adapted-cover
+  genericity);
 * `hc_good i` — `cs i` is a good value (off-branch + `g`-meromorphic at the full fibre over `cs i`);
 * `hgmero i` — the regular-value `g`-meromorphy near `cs i` (eventually at the full fibre points);
 * `hg_an_offpoles` — `g`'s chart-pullback is analytic at every non-pole (the meaning of `α = ω₀·g`
   having poles exactly `poles`).
 
-The deep §VIII.3 diagonal identity (value-trace = moving sphere-fibre sum) is discharged by the symmetric
-lever inside `movingCoherenceDatum_canonical`.  Gate A then rests on `hreg`/`hbnd` (off-centre analyticity)
-and `hcoh_full` (the `∞`-coherence), plus the discrete genericity. -/
+The deep §VIII.3 diagonal identity (value-trace = moving sphere-fibre sum) is discharged by the
+symmetric lever inside `movingCoherenceDatum_canonical`. the residue-theorem assembly then rests on
+`hreg`/`hbnd` (off-centre analyticity) and `hcoh_full` (the `∞`-coherence), plus the discrete
+genericity. -/
 theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull (hdiv : (f.div : Divisor X) ≠ 0)
     (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
       GoodValue g f hdiv p)
@@ -256,7 +266,8 @@ theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull (hdiv : (f.div :
       Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z)
         (𝓝[≠] b₀) (𝓝 0))
     (hcoh_full : recipCoeff (valueChartTracePatched ω₀ f (canonicalFibreSelection g f hdiv) br)
-      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
+      =ᶠ[𝓝[≠] 0]
+        recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 := by
   classical
   -- Per-centre sphere sheet system at the off-branch pole-value `coe (cs i)`.
@@ -270,8 +281,9 @@ theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull (hdiv : (f.div :
       ((chartAt ℂ ((S i).sheet k (((cs i : ℂ) : RiemannSphere))))
         ((S i).sheet k (((cs i : ℂ) : RiemannSphere)))) := by
     intro i k
-    -- The sheet point lies in the fibre `F⁻¹(coe cs_i)` = range of the canonical selection (good value);
-    -- the canonical selection's fibre points are `fullFibreEnum`, where `g`'s pullback is meromorphic.
+    -- The sheet point lies in the fibre `F⁻¹(coe cs_i)` = range of the canonical selection (good
+    -- value); the canonical selection's fibre points are `fullFibreEnum`, where `g`'s pullback is
+    -- meromorphic.
     have hfib : (S i).sheet k (((cs i : ℂ) : RiemannSphere)) ∈
         f.toRiemannSphere ⁻¹' {(((cs i : ℂ) : RiemannSphere))} := by
       rw [Set.mem_preimage, Set.mem_singleton_iff]
@@ -280,7 +292,8 @@ theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull (hdiv : (f.div :
       canonicalFibreSelection_eq_ofFullFibre g f hdiv (hc_good i)] at hfib
     obtain ⟨j, hj⟩ := hfib
     -- `hj : (ofFullFibre …).xs j = S.sheet k (coe cs_i)`, i.e. `fullFibreEnum f hdiv (cs i) j = …`.
-    have hpt : (S i).sheet k (((cs i : ℂ) : RiemannSphere)) = fullFibreEnum f hdiv (cs i) j := hj.symm
+    have hpt : (S i).sheet k (((cs i : ℂ) : RiemannSphere)) = fullFibreEnum f hdiv (cs i) j :=
+      hj.symm
     rw [hpt]
     exact (hc_good i).2 j
   -- Assemble the per-centre full-fibre moving coherence datum.
@@ -297,25 +310,25 @@ theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull (hdiv : (f.div :
 /-! ## The `∞`-coherence in its cleanest (unpatched) form
 
 The patched `∞`-coherence `hcoh_full` differs from the unpatched geometric `∞`-coherence
-`recipCoeff (valueChartTrace …) =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF …)` only at the finitely-many
-branch values, which escape to `∞` under `ζ ↦ ζ⁻¹` (`recipCoeff_valueChartTracePatched_eventuallyEq`).
-So the genuine `∞`-residual is the **unpatched** geometric `∞`-coherence — the §VIII.3
-`∞`-single-valuedness "the trace = the moving `∞`-fibre sum near `∞`, read in the reciprocal chart" —
-which we expose as the cleaner input below.  This is *not* a disguise of `∑Res = 0`: it is the moving
-fibre-sum identity at `∞` (the reciprocal-chart analogue of `MovingCoherenceDatum.coherent`), never
-referencing the residue cancellation. -/
+`recipCoeff (valueChartTrace …) =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF …)` only at the
+finitely-many branch values, which escape to `∞` under `ζ ↦ ζ⁻¹`
+(`recipCoeff_valueChartTracePatched_eventuallyEq`). So the genuine `∞`-residual is the **unpatched**
+geometric `∞`-coherence — the §VIII.3 `∞`-single-valuedness "the trace = the moving `∞`-fibre sum
+near `∞`, read in the reciprocal chart" — which we expose as the cleaner input below. This is *not*
+a disguise of `∑Res = 0`: it is the moving fibre-sum identity at `∞` (the reciprocal-chart analogue
+of `MovingCoherenceDatum.coherent`), never referencing the residue cancellation. -/
 
-/-- **Gate A `∑Res = 0` (genus `0`, simple `∞`-poles, canonical selection) with `Cfull` discharged and
-the `∞`-coherence taken in its cleanest *unpatched* geometric form.**  Identical to
-`residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull` except the patched `∞`-coherence `hcoh_full` is
-replaced by the **unpatched geometric `∞`-coherence** `hcoh_geom`:
+/-- **The residue theorem `∑Res = 0` (genus `0`, simple `∞`-poles, canonical selection) with
+`Cfull` discharged and the `∞`-coherence taken in its cleanest *unpatched* geometric form.**
+Identical to `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull` except the patched
+`∞`-coherence `hcoh_full` is replaced by the **unpatched geometric `∞`-coherence** `hcoh_geom`:
 
 > `recipCoeff (valueChartTrace ω₀ f Φ) =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f Dinf_full)`,
 
-the genuine §VIII.3 `∞`-single-valuedness (the trace germ-equals the fixed `∞`-fibre moving sum along the
-shared reciprocal-chart sheets near `∞`).  The patched form is recovered via
-`recipCoeff_valueChartTracePatched_eventuallyEq` (the patch escapes to `∞`).  This is the smallest honest
-`∞`-residual remaining after `Cfull` is discharged. -/
+the genuine §VIII.3 `∞`-single-valuedness (the trace germ-equals the fixed `∞`-fibre moving sum
+along the shared reciprocal-chart sheets near `∞`). The patched form is recovered via
+`recipCoeff_valueChartTracePatched_eventuallyEq` (the patch escapes to `∞`). This is the smallest
+honest `∞`-residual remaining after `Cfull` is discharged. -/
 theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull_geomInfty
     (hdiv : (f.div : Divisor X) ≠ 0)
     (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
@@ -343,29 +356,33 @@ theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull_geomInfty
       Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z)
         (𝓝[≠] b₀) (𝓝 0))
     (hcoh_geom : recipCoeff (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv))
-      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
+      =ᶠ[𝓝[≠] 0]
+        recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
   residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull hdiv hgood m cs ρ hcs_ball hcs_inj br
     hcenters_cs hoff_cs hc_good hgmero hg_an_offpoles hsimpleInf hmeroInf hnonpole_inf_an hreg hbnd
-    -- Patch the `∞`-coherence: `recipCoeff (patched) =ᶠ recipCoeff (raw) =ᶠ recipCoeff (inftyMovingSumNF)`.
+    -- Patch the `∞`-coherence:
+    -- `recipCoeff (patched) =ᶠ recipCoeff (raw) =ᶠ recipCoeff (inftyMovingSumNF)`.
     ((recipCoeff_valueChartTracePatched_eventuallyEq ω₀ f
       (canonicalFibreSelection g f hdiv) br).trans hcoh_geom)
 
 /-! ## Discharging the off-centre analyticity `hreg`
 
 At a value `w` off the centres `cs` and off the branch values, `coe w` is off the branch locus *and*
-not a pole-value (`hcenters_cs` + `w ∉ image cs` + `coe` injectivity), so every full-fibre point over
-`coe w` is a regular **non-pole** of `α`.  The canonical selection then has a `MovingCoherenceDatum` at
-`w` (`movingCoherenceDatum_canonical`) whose fixed-fibre points are non-poles, so
-`analyticAt_valueChartTrace_of_movingDatum` (the self-coherence ⟹ analyticity bridge) gives `hreg` at
-`w` from the global "`g` holomorphic off the poles" `hg_an_offpoles`.  This eliminates `hreg` for
-`br ⊇ branchValues f`. -/
+not a pole-value (`hcenters_cs` + `w ∉ image cs` + `coe` injectivity), so every full-fibre point
+over `coe w` is a regular **non-pole** of `α`. The canonical selection then has a
+`MovingCoherenceDatum` at `w` (`movingCoherenceDatum_canonical`) whose fixed-fibre points are
+non-poles, so `analyticAt_valueChartTrace_of_movingDatum` (the self-coherence ⟹ analyticity bridge)
+gives `hreg` at `w` from the global "`g` holomorphic off the poles" `hg_an_offpoles`. This
+eliminates `hreg` for `br ⊇ branchValues f`. -/
 
-/-- **A fibre point at a non-pole-value is not a pole of `α`.**  If `coe w` is finite, `w ∉ image cs`,
-and `hcenters_cs` identifies the finite pole-values with `image cs`, then any `p` with `F p = coe w` is
-**not** in `poles`: otherwise `coe w = F p ∈ (poles.image F).erase ∞ = (image cs).image coe`, forcing
-`w = cs i` (`coe` injective) — contradicting `w ∉ image cs`. -/
-theorem notMem_poles_of_fibrePoint_offCentres {m : ℕ} {cs : Fin m → ℂ}
+/-- **A fibre point at a non-pole-value is not a pole of `α`.** If `coe w` is finite,
+`w ∉ image cs`, and `hcenters_cs` identifies the finite pole-values with `image cs`, then any `p`
+with `F p = coe w` is **not** in `poles`: otherwise
+`coe w = F p ∈ (poles.image F).erase ∞ = (image cs).image coe`, forcing `w = cs i` (`coe` injective)
+— contradicting `w ∉ image cs`. -/
+theorem notMem_poles_of_fibrePoint_offCentres {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] {f : MeromorphicFunction X} {poles : Finset X} {m : ℕ} {cs : Fin m → ℂ}
     (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
       = (poles.image f.toRiemannSphere).erase OnePoint.infty)
     {w : ℂ} (hw : w ∉ Finset.univ.image cs) {p : X}
@@ -373,7 +390,8 @@ theorem notMem_poles_of_fibrePoint_offCentres {m : ℕ} {cs : Fin m → ℂ}
   classical
   intro hpole
   -- `coe w = F p ∈ poles.image F`, and `coe w ≠ ∞`, so `coe w ∈ (poles.image F).erase ∞`.
-  have hmem : (((w : ℂ) : RiemannSphere)) ∈ (poles.image f.toRiemannSphere).erase OnePoint.infty := by
+  have hmem :
+      (((w : ℂ) : RiemannSphere)) ∈ (poles.image f.toRiemannSphere).erase OnePoint.infty := by
     rw [Finset.mem_erase]
     exact ⟨OnePoint.coe_ne_infty w, by
       rw [Finset.mem_image]; exact ⟨p, hpole, hp⟩⟩
@@ -385,11 +403,11 @@ theorem notMem_poles_of_fibrePoint_offCentres {m : ℕ} {cs : Fin m → ℂ}
   exact hw hc_mem
 
 /-- **`hreg` discharged for the canonical selection.**  At every value `w` off `image cs ∪ br` with
-`br ⊇ branchValues f`, `valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv)` is `AnalyticAt`.  `coe w`
-is off the branch locus (`br ⊇ branchValues`) so `w` is a good value (with the regular-value `g`-data
-`hgood_reg`); the canonical selection has a `MovingCoherenceDatum` at `w` whose fixed fibre points are
-non-poles (`notMem_poles_of_fibrePoint_offCentres`), so `analyticAt_valueChartTrace_of_movingDatum`
-applies with `hg_an_offpoles`. -/
+`br ⊇ branchValues f`, `valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv)` is `AnalyticAt`.
+`coe w` is off the branch locus (`br ⊇ branchValues`) so `w` is a good value (with the regular-value
+`g`-data `hgood_reg`); the canonical selection has a `MovingCoherenceDatum` at `w` whose fixed fibre
+points are non-poles (`notMem_poles_of_fibrePoint_offCentres`), so
+`analyticAt_valueChartTrace_of_movingDatum` applies with `hg_an_offpoles`. -/
 theorem hreg_canonical_of_offBranch (hdiv : (f.div : Divisor X) ≠ 0) {m : ℕ} {cs : Fin m → ℂ}
     {br : Finset ℂ} (hbr : branchValues f hdiv ⊆ br)
     (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
@@ -414,7 +432,8 @@ theorem hreg_canonical_of_offBranch (hdiv : (f.div : Divisor X) ≠ 0) {m : ℕ}
   -- The reference sheet-fibre `g`-meromorphy at `coe w` (good value ⟹ full fibre = sphere fibre).
   have hmeroS : ∀ k, MeromorphicAt
       (fun z => g ((chartAt ℂ (S.sheet k (((w : ℂ) : RiemannSphere)))).symm z))
-      ((chartAt ℂ (S.sheet k (((w : ℂ) : RiemannSphere)))) (S.sheet k (((w : ℂ) : RiemannSphere)))) := by
+      ((chartAt ℂ (S.sheet k (((w : ℂ) : RiemannSphere))))
+        (S.sheet k (((w : ℂ) : RiemannSphere)))) := by
     intro k
     have hfib : S.sheet k (((w : ℂ) : RiemannSphere)) ∈
         f.toRiemannSphere ⁻¹' {(((w : ℂ) : RiemannSphere))} := by
@@ -426,11 +445,12 @@ theorem hreg_canonical_of_offBranch (hdiv : (f.div : Divisor X) ≠ 0) {m : ℕ}
     rw [hpt]; exact (hgood_reg w hw).2 j
   set C : MovingCoherenceDatum ω₀ g f (canonicalFibreSelection g f hdiv) w :=
     movingCoherenceDatum_canonical hdiv hoff S hmeroS (hgmero_reg w hw) with hC
-  -- The fixed fibre points `C.D.xs k` lie in the full fibre `F⁻¹(coe w)` (its range equals the canonical
-  -- range, which is the fibre at the good value `w`), hence are non-poles (non-pole-value `w`); so `g` is
-  -- analytic there by `hg_an_offpoles`.
+  -- The fixed fibre points `C.D.xs k` lie in the full fibre `F⁻¹(coe w)` (its range equals the
+  -- canonical range, which is the fibre at the good value `w`), hence are non-poles (non-pole-value
+  -- `w`); so `g` is analytic there by `hg_an_offpoles`.
   refine analyticAt_valueChartTrace_of_movingDatum C (fun k => ?_)
-  -- `C.D.xs k` lies in the canonical range = full fibre `F⁻¹(coe w)` (via the proven image-equality).
+  -- `C.D.xs k` lies in the canonical range = full fibre `F⁻¹(coe w)` (via the proven
+  -- image-equality).
   have himg : Finset.univ.image C.D.xs
       = Finset.univ.image (canonicalFibreSelection g f hdiv w).xs := by
     rw [hC]
@@ -450,25 +470,28 @@ theorem hreg_canonical_of_offBranch (hdiv : (f.div : Divisor X) ≠ 0) {m : ℕ}
 
 /-! ## The genus-`0` capstone with both `Cfull` and `hreg` discharged
 
-Combining `movingCoherenceDatum_canonical` (the per-centre `Cfull`) with `hreg_canonical_of_offBranch`
-(the off-centre analyticity `hreg`), Gate A `∑Res = 0` rests on:
+Combining `movingCoherenceDatum_canonical` (the per-centre `Cfull`) with
+`hreg_canonical_of_offBranch` (the off-centre analyticity `hreg`), the residue-theorem assembly
+`∑Res = 0` rests on:
 
 * the per-centre genericity (off-branch pole-values `hoff_cs`, good values `hc_good`, near-centre
   `g`-meromorphy `hgmero`);
-* the regular-value genericity (every value off `cs ∪ br` is a good value `hgood_reg` with near-value
-  `g`-meromorphy `hgmero_reg`), with `br ⊇ branchValues f` (the branch-patch covers the branch values);
+* the regular-value genericity (every value off `cs ∪ br` is a good value `hgood_reg` with
+  near-value `g`-meromorphy `hgmero_reg`), with `br ⊇ branchValues f` (the branch-patch covers the
+  branch values);
 * `hg_an_offpoles` (`g` holomorphic off the poles);
 * the branch-value boundedness `hbnd` (the one remaining analytic input besides `∞`); and
 * the `∞`-coherence `hcoh_geom` (the unpatched §VIII.3 `∞`-single-valuedness).
 
-The finite full-fibre moving coherence `Cfull` and the off-centre analyticity `hreg` are **discharged**. -/
+The finite full-fibre moving coherence `Cfull` and the off-centre analyticity `hreg` are
+**discharged**. -/
 
-/-- **Gate A `∑Res = 0` (genus `0`, simple `∞`-poles, canonical selection) with `Cfull` AND `hreg`
-discharged.**  The most-reduced sound form: only the genericity bookkeeping, the branch-value boundedness
-`hbnd`, and the `∞`-coherence `hcoh_geom` remain.  The per-centre full-fibre moving coherence `Cfull` is
-built by `movingCoherenceDatum_canonical`; the off-centre analyticity `hreg` is discharged by
-`hreg_canonical_of_offBranch`.  Both rest on the symmetric-invariance lever (Miranda §VIII.3, no
-labeling). -/
+/-- **The residue theorem `∑Res = 0` (genus `0`, simple `∞`-poles, canonical selection) with
+`Cfull` AND `hreg` discharged.** The most-reduced sound form: only the genericity bookkeeping, the
+branch-value boundedness `hbnd`, and the `∞`-coherence `hcoh_geom` remain. The per-centre full-fibre
+moving coherence `Cfull` is built by `movingCoherenceDatum_canonical`; the off-centre analyticity
+`hreg` is discharged by `hreg_canonical_of_offBranch`. Both rest on the symmetric-invariance lever
+(Miranda §VIII.3, no labeling). -/
 theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg
     (hdiv : (f.div : Divisor X) ≠ 0)
     (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
@@ -498,9 +521,11 @@ theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg
       Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv) z)
         (𝓝[≠] b₀) (𝓝 0))
     (hcoh_geom : recipCoeff (valueChartTrace ω₀ f (canonicalFibreSelection g f hdiv))
-      =ᶠ[𝓝[≠] 0] recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
+      =ᶠ[𝓝[≠] 0]
+        recipCoeff (inftyMovingSumNF ω₀ f (inftyFibreDataNF_full g f hsimpleInf hmeroInf))) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
-  residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull_geomInfty hdiv hgood m cs ρ hcs_ball hcs_inj
+  residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull_geomInfty hdiv hgood m cs ρ hcs_ball
+    hcs_inj
     br hcenters_cs hoff_cs hc_good hgmero hg_an_offpoles hsimpleInf hmeroInf hnonpole_inf_an
     (hreg_canonical_of_offBranch hdiv hbr hcenters_cs hgood_reg hgmero_reg hg_an_offpoles) hbnd
     hcoh_geom

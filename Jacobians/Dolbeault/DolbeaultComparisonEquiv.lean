@@ -4,8 +4,8 @@
 
   This is the only part of the inverse direction that needs the heavy forward file: it pairs the
   forward map `dolbeault_to_cech` (`DolbeaultComparisonProof`) with the inverse map
-  `cech_to_dolbeault` (`DolbeaultComparisonInverse`) via the two round-trip identities. Keeping it in
-  its own (small) file means edits to the inverse construction don't pay the forward file's
+  `cech_to_dolbeault` (`DolbeaultComparisonInverse`) via the two round-trip identities. Keeping it
+  in its own (small) file means edits to the inverse construction don't pay the forward file's
   elaboration cost.
 -/
 import Jacobians.Dolbeault.DolbeaultComparisonProof
@@ -15,12 +15,10 @@ open scoped Manifold ContDiff Bundle Topology
 open TopologicalSpace (Opens)
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
-
 namespace Jacobians.Dolbeault
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The global primitive `h = ∑_k ρ_k·u_k` of the round-trip
 
@@ -68,15 +66,17 @@ noncomputable def gdTerm (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) (
     · refine (contMDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq ?_
       filter_upwards [(isClosed_tsupport (cechPoU 𝔇 k)).isOpen_compl.mem_nhds hb] with x hx
       have hr : rhoC 𝔇 k x = 0 := by
-        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hx]; rfl
+        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM,
+          image_eq_zero_of_notMem_tsupport hx]
+        rfl
       simp only [hr, zero_mul]⟩
 
 @[simp] theorem gdTerm_apply (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) (g : SmoothCOneForms X)
     (x : X) : gdTerm 𝔇 k g x = rhoC 𝔇 k x * diskVal 𝔇 k g x := rfl
 
 /-- **`∂̄(ρ_k·wₖ) = wₖ·∂̄ρ_k + ρ_k·g`** (the Leibniz identity; unlike `dbarL_primFn_apply` the
-`ρ_k·∂̄wₖ` term does **not** vanish — `∂̄wₖ = g` on `U_k` by `dbar_diskValue_eq_g`). Pointwise, 2-case
-(on `tsupport ρ_k ⊆ U_k` the product rule; off it `ρ_k = ∂̄ρ_k = 0`). -/
+`ρ_k·∂̄wₖ` term does **not** vanish — `∂̄wₖ = g` on `U_k` by `dbar_diskValue_eq_g`). Pointwise,
+2-case (on `tsupport ρ_k ⊆ U_k` the product rule; off it `ρ_k = ∂̄ρ_k = 0`). -/
 theorem dbarL_gdTerm_apply (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
     (hg : g ∈ OneFormsZeroOne X) (k : 𝔇.toFiniteCover.ι) (x : X) :
     (dbarL (gdTerm 𝔇 k g)) x = diskVal 𝔇 k g x • (dbarRho 𝔇 k x) + rhoC 𝔇 k x • (g x) := by
@@ -103,7 +103,9 @@ theorem dbarL_gdTerm_apply (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
       simp only [Function.mem_support, ne_eq]
       exact fun h0 => hy.1 (by simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, h0]; rfl)
     have hrc : rhoC 𝔇 k x = 0 := by
-      simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hb]; rfl
+      simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM,
+        image_eq_zero_of_notMem_tsupport hb]
+      rfl
     rw [hr0, dbarRho_eq_zero_of_notMem 𝔇 k hb, hrc]
     module
 
@@ -119,7 +121,8 @@ theorem holoFn_cocycle_eq_diskValDiff (𝔇 : ChartDiskCover X) {g : SmoothCOneF
   set V : Opens X := 𝔇.U j ⊓ 𝔇.U k with hV
   set F : V → ℂ :=
     𝔇.diskSection k g ∘ openIncl inf_le_right - 𝔇.diskSection j g ∘ openIncl inf_le_left with hF
-  have hcomp : (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩ : 𝔇.toFiniteCover.Cochain1) (j, k) = toGerm V F := by
+  have hcomp : (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩ : 𝔇.toFiniteCover.Cochain1) (j, k) =
+      toGerm V F := by
     show 𝔇.toFiniteCover.cechDelta0 (𝔇.rawCochain g) (j, k) = toGerm V F
     simp only [FiniteFamily.cechDelta0, LinearMap.pi_apply, LinearMap.sub_apply,
       LinearMap.comp_apply, LinearMap.proj_apply]
@@ -133,27 +136,30 @@ theorem holoFn_cocycle_eq_diskValDiff (𝔇 : ChartDiskCover X) {g : SmoothCOneF
     rw [Gext_apply_mem F hz]
     simp only [hF, Pi.sub_apply, Function.comp_apply, ChartDiskCover.diskSection, openIncl, diskVal]
   have hcont : ContinuousAt (fun z => diskVal 𝔇 k g z - diskVal 𝔇 j g z) y :=
-    ((contMDiffAt_diskVal 𝔇 k g hyk).continuousAt).sub ((contMDiffAt_diskVal 𝔇 j g hyj).continuousAt)
+    ((contMDiffAt_diskVal 𝔇 k g hyk).continuousAt).sub
+      ((contMDiffAt_diskVal 𝔇 j g hyj).continuousAt)
   have htend : Filter.Tendsto (Gext F) (𝓝[≠] y) (𝓝 (diskVal 𝔇 k g y - diskVal 𝔇 j g y)) :=
     Filter.Tendsto.congr' (hev.filter_mono nhdsWithin_le_nhds).symm
       ((hcont.tendsto).mono_left nhdsWithin_le_nhds)
-  exact holoFn_eq_of_tendsto (cocycle_mem 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) j k) F hcomp.symm hy htend
+  exact holoFn_eq_of_tendsto (cocycle_mem 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) j k) F hcomp.symm
+    hy htend
 
 /-! ### Round-trip 2 — the local primitives `η_i` and the holomorphic difference cochain
 
 For round-trip 2 we start with a cocycle `f`, form `ω = cechToDolbeaultForm 𝔇 f`, and must show
-`dolbeault_to_cech [ω] = [f]` (up to the boundary sign baked into `cech_to_dolbeault`). The key local
-objects are `η_i := ∑_k ρ_k·holoFn(f_ik)`, smooth on `U_i` (each term is smooth there: where `ρ_k ≠ 0`
-we are on `U_i ⊓ U_k` where `holoFn(f_ik)` is smooth, off `tsupport ρ_k` the term vanishes). They are
-*local* objects (only smooth on `U_i`), unlike round-trip 1's global primitive. -/
+`dolbeault_to_cech [ω] = [f]` (up to the boundary sign baked into `cech_to_dolbeault`). The key
+local objects are `η_i := ∑_k ρ_k·holoFn(f_ik)`, smooth on `U_i` (each term is smooth there: where
+`ρ_k ≠ 0` we are on `U_i ⊓ U_k` where `holoFn(f_ik)` is smooth, off `tsupport ρ_k` the term
+vanishes). They are *local* objects (only smooth on `U_i`), unlike round-trip 1's global primitive.
+-/
 
 /-- The `k`-th **local-primitive term** `ρ_k·holoFn(f_ik) : X → ℂ`, smooth on `U_i`. -/
 noncomputable def etaTermFn (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i k : 𝔇.toFiniteCover.ι) : X → ℂ :=
   fun x => rhoC 𝔇 k x * holoFn (cocycle_mem 𝔇 f i k) x
 
-/-- Each term is `ContMDiffAt` at points of `U_i`: on `tsupport ρ_k` (⊆ `U_k`, and `x ∈ U_i`) it is a
-product of smooth functions on `U_i ⊓ U_k`; off `tsupport ρ_k` it vanishes (`ρ_k = 0`). -/
+/-- Each term is `ContMDiffAt` at points of `U_i`: on `tsupport ρ_k` (⊆ `U_k`, and `x ∈ U_i`) it is
+a product of smooth functions on `U_i ⊓ U_k`; off `tsupport ρ_k` it vanishes (`ρ_k = 0`). -/
 theorem contMDiffAt_etaTermFn (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i k : 𝔇.toFiniteCover.ι) {x : X}
     (hxi : x ∈ (𝔇.U i : Set X)) :
@@ -165,7 +171,9 @@ theorem contMDiffAt_etaTermFn (𝔇 : ChartDiskCover X)
   · refine (contMDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq ?_
     filter_upwards [(isClosed_tsupport (cechPoU 𝔇 k)).isOpen_compl.mem_nhds hbk] with y hy
     have hr : rhoC 𝔇 k y = 0 := by
-      simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hy]; rfl
+      simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM,
+        image_eq_zero_of_notMem_tsupport hy]
+      rfl
     simp only [etaTermFn, hr, zero_mul]
 
 /-- The **local primitive** `η_i := ∑_k ρ_k·holoFn(f_ik) : X → ℂ`, smooth on `U_i`. -/
@@ -180,8 +188,8 @@ theorem contMDiffAt_etaFn (𝔇 : ChartDiskCover X)
   ContMDiffAt.sum (fun k _ => contMDiffAt_etaTermFn 𝔇 f i k hxi)
 
 /-- **The global primitive's `∂̄` equals `ω + g`.** With `h = ∑_k ρ_k·wₖ`, the partition-of-unity
-telescoping (`∑ρ = 1`, `∑∂̄ρ = 0`) gives `∂̄h = ω + g`, where `ω = cechToDolbeaultForm` of the forward
-cocycle of `g`. This is the heart of the round-trip: it exhibits `ω + g` as a `∂̄`-image, so
+telescoping (`∑ρ = 1`, `∑∂̄ρ = 0`) gives `∂̄h = ω + g`, where `ω = cechToDolbeaultForm` of the
+forward cocycle of `g`. This is the heart of the round-trip: it exhibits `ω + g` as a `∂̄`-image, so
 `[ω] = −[g]` in `H^{0,1}`. -/
 theorem dbarL_globalPrim_eq (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
     (hg : g ∈ OneFormsZeroOne X) :
@@ -231,10 +239,10 @@ theorem dbarL_globalPrim_eq (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
         (fun k => dbarRho 𝔇 k x) (sum_rhoC_apply 𝔇 x) (sum_dbarRho_apply 𝔇 x)]
   rw [hLHS, hRHS]
 
-/-- **`∂̄(ρ_k·holoFn(f_ik)) = holoFn(f_ik)·∂̄ρ_k`** on `U_i` (the Leibniz identity, with the holomorphic
-factor `holoFn(f_ik)` killed by `holoFn_dbar_eq_zero`). Pointwise at `x ∈ U_i`; the proof is the
-`dbarL_primFn_apply` pattern but with `holoFn` on the overlap `U_i ⊓ U_k`. Two-case: on `tsupport ρ_k`
-the product rule; off it `ρ_k = ∂̄ρ_k = 0`. -/
+/-- **`∂̄(ρ_k·holoFn(f_ik)) = holoFn(f_ik)·∂̄ρ_k`** on `U_i` (the Leibniz identity, with the
+holomorphic factor `holoFn(f_ik)` killed by `holoFn_dbar_eq_zero`). Pointwise at `x ∈ U_i`; the
+proof is the `dbarL_primFn_apply` pattern but with `holoFn` on the overlap `U_i ⊓ U_k`. Two-case: on
+`tsupport ρ_k` the product rule; off it `ρ_k = ∂̄ρ_k = 0`. -/
 theorem dbar_etaTermFn_apply (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i k : 𝔇.toFiniteCover.ι) {x : X}
     (hxi : x ∈ (𝔇.U i : Set X)) :
@@ -259,7 +267,9 @@ theorem dbar_etaTermFn_apply (𝔇 : ChartDiskCover X)
       have hev : etaTermFn 𝔇 f i k =ᶠ[nhds x] (fun _ => (0 : ℂ)) := by
         filter_upwards [(isClosed_tsupport (cechPoU 𝔇 k)).isOpen_compl.mem_nhds hbk] with y hy
         have hr : rhoC 𝔇 k y = 0 := by
-          simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hy]; rfl
+          simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM,
+            image_eq_zero_of_notMem_tsupport hy]
+          rfl
         simp only [etaTermFn, hr, zero_mul]
       rw [hev.mfderiv_eq, mfderiv_const, map_zero]
     rw [hz, hd]; module
@@ -280,10 +290,11 @@ theorem dbar_etaFn_apply (𝔇 : ChartDiskCover X)
   exact Finset.sum_congr rfl fun k _ => dbar_etaTermFn_apply 𝔇 f i k hxi
 
 set_option maxHeartbeats 1000000 in
-/-- **`ω = ∑_k holoFn(f_ik)·∂̄ρ_k` on `U_i`** (= `∂̄η_i`). The double-sum `ω = ∑_{j,k} (ρ_j·holoFn(f_jk))·∂̄ρ_k`
-telescopes once the cocycle relation `holoFn(f_jk) = holoFn(f_ik) − holoFn(f_ij)` (`holoFn_cocycle_add`,
-valid on the triple overlap, the only place both `ρ_j` and `∂̄ρ_k` survive) replaces `holoFn(f_jk)` by
-`holoFn(f_ik) − holoFn(f_ij)`; then `telescope_sum` (`∑ρ=1`, `∑∂̄ρ=0`) collapses to `∑_k holoFn(f_ik)·∂̄ρ_k`. -/
+/-- **`ω = ∑_k holoFn(f_ik)·∂̄ρ_k` on `U_i`** (= `∂̄η_i`). The double-sum
+`ω = ∑_{j,k} (ρ_j·holoFn(f_jk))·∂̄ρ_k` telescopes once the cocycle relation
+`holoFn(f_jk) = holoFn(f_ik) − holoFn(f_ij)` (`holoFn_cocycle_add`, valid on the triple overlap, the
+only place both `ρ_j` and `∂̄ρ_k` survive) replaces `holoFn(f_jk)` by `holoFn(f_ik) − holoFn(f_ij)`;
+then `telescope_sum` (`∑ρ=1`, `∑∂̄ρ=0`) collapses to `∑_k holoFn(f_ik)·∂̄ρ_k`. -/
 theorem cechToDolbeaultForm_eq_on_Ui (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i : 𝔇.toFiniteCover.ι) {x : X}
     (hxi : x ∈ (𝔇.U i : Set X)) :
@@ -309,7 +320,9 @@ theorem cechToDolbeaultForm_eq_on_Ui (𝔇 : ChartDiskCover X)
       · have hd : dbarRho 𝔇 k x = 0 := dbarRho_eq_zero_of_notMem 𝔇 k hbk
         rw [hd]; module
     · have hr : rhoC 𝔇 j x = 0 := by
-        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hbj]; rfl
+        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM,
+          image_eq_zero_of_notMem_tsupport hbj]
+        rfl
       rw [hr, zero_mul, zero_mul]
   rw [cechToDolbeaultForm_val, section_finset_sum_apply,
     show (∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι, cechTerm 𝔇 f p.1 p.2 x)
@@ -331,16 +344,17 @@ private theorem differentiableAt_cplx_of_dbarDisk_eq_zero {p : ℂ → ℂ} {z :
   have hD1 : (fderiv ℝ p z) 1 = -(Complex.I * (fderiv ℝ p z) Complex.I) := by linear_combination h2
   rw [hD1, smul_eq_mul, mul_neg, ← mul_assoc, Complex.I_mul_I]; ring
 
-/-- **The local primitive `diskVal_i ω − η_i` has vanishing intrinsic `∂̄` on `U_i`.** Both have `∂̄ = ω`
-there: `diskVal_i ω` via `dbar_diskValue_eq_g` (upgraded to the full CLM by `dbar_eq_of_apply_one'`),
-`η_i` via `dbar_etaFn_apply = cechToDolbeaultForm_eq_on_Ui = ω`. -/
+/-- **The local primitive `diskVal_i ω − η_i` has vanishing intrinsic `∂̄` on `U_i`.** Both have
+`∂̄ = ω` there: `diskVal_i ω` via `dbar_diskValue_eq_g` (upgraded to the full CLM by
+`dbar_eq_of_apply_one'`), `η_i` via `dbar_etaFn_apply = cechToDolbeaultForm_eq_on_Ui = ω`. -/
 theorem dbar_holDiff_eq_zero (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i : 𝔇.toFiniteCover.ι) {x : X}
     (hxi : x ∈ (𝔇.U i : Set X)) :
     proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ)
       (fun y => diskVal 𝔇 i ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) :
           SmoothCOneForms X) y - etaFn 𝔇 f i y) x) = 0 := by
-  set omg : SmoothCOneForms X := ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
+  set omg : SmoothCOneForms X :=
+    ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
     with hωdef
   have hωmem : omg ∈ OneFormsZeroOne X := (cechToDolbeaultForm 𝔇 f).2
   -- `∂̄(diskVal_i ω) = ω` on `U_i` (full CLM, from the value-1 fact).
@@ -360,8 +374,8 @@ theorem dbar_holDiff_eq_zero (𝔇 : ChartDiskCover X)
   rw [show (fun y => diskVal 𝔇 i omg y - etaFn 𝔇 f i y)
       = (diskVal 𝔇 i omg) - (etaFn 𝔇 f i) from rfl, hmf, map_sub, hdv, heta, sub_self]
 
-/-- The local primitive difference `diskVal_i ω − η_i`, as a function `X → ℂ`. Smooth and holomorphic
-on `U_i` (`∂̄ = 0` there, `dbar_holDiff_eq_zero`). -/
+/-- The local primitive difference `diskVal_i ω − η_i`, as a function `X → ℂ`. Smooth and
+holomorphic on `U_i` (`∂̄ = 0` there, `dbar_holDiff_eq_zero`). -/
 noncomputable def holDiffFn (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i : 𝔇.toFiniteCover.ι) : X → ℂ :=
   fun x => diskVal 𝔇 i ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X) x
@@ -374,9 +388,10 @@ theorem contMDiffAt_holDiffFn (𝔇 : ChartDiskCover X)
   (contMDiffAt_diskVal 𝔇 i _ hxi).sub (contMDiffAt_etaFn 𝔇 f i hxi)
 
 /-- **`holDiffFn` is holomorphic (`ℂ`-differentiable) in each point's own chart on `U_i`.** From the
-intrinsic `∂̄ = 0` (`dbar_holDiff_eq_zero`): the own-chart bridge `dbar_apply_one_eq_dbarDisk'` turns
-`proj01 (mfderiv …) 1 = 0` into a planar `DbarDisk.dbar = 0`, and local Cauchy–Riemann
-(`differentiableAt_cplx_of_dbarDisk_eq_zero`) upgrades the (real) chart-smoothness to `ℂ`-differentiability. -/
+intrinsic `∂̄ = 0` (`dbar_holDiff_eq_zero`): the own-chart bridge `dbar_apply_one_eq_dbarDisk'`
+turns `proj01 (mfderiv …) 1 = 0` into a planar `DbarDisk.dbar = 0`, and local Cauchy–Riemann
+(`differentiableAt_cplx_of_dbarDisk_eq_zero`) upgrades the (real) chart-smoothness to
+`ℂ`-differentiability. -/
 theorem differentiableAt_holDiffFn_ownChart (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i : 𝔇.toFiniteCover.ι) {x : X}
     (hxi : x ∈ (𝔇.U i : Set X)) :
@@ -398,7 +413,8 @@ theorem differentiableAt_holDiffFn_ownChart (𝔇 : ChartDiskCover X)
       exact (hpt ▸ (contMDiffAt_holDiffFn 𝔇 f i hxi).contMDiffWithinAt).comp
         ((extChartAt 𝓘(ℝ, ℂ) x) x) hsymm (fun _ _ => Set.mem_univ _)
     exact (contMDiffAt_iff_contDiffAt.mp
-      (hcomp.contMDiffAt ((isOpen_extChartAt_target x).mem_nhds (mem_extChartAt_target x)))).differentiableAt
+      (hcomp.contMDiffAt
+        ((isOpen_extChartAt_target x).mem_nhds (mem_extChartAt_target x)))).differentiableAt
       (by norm_num)
   -- Planar `∂̄ = 0` from the intrinsic `∂̄ = 0`.
   have hdb : DbarDisk.dbar (fun z => holDiffFn 𝔇 f i ((extChartAt 𝓘(ℝ, ℂ) x).symm z))
@@ -413,15 +429,17 @@ theorem differentiableAt_holDiffFn_ownChart (𝔇 : ChartDiskCover X)
 
 set_option maxHeartbeats 1000000 in
 /-- **`holDiffFn` read in each point's own chart is analytic** (the `OmegaD`-membership input). For
-`v ∈ U_i`, the analytic representative of the germ `[holDiffFn]` on `↥U_i` is analytic at `(chartAt v) v`.
-Proof: `holDiffFn ∘ (chartAt v).symm` is `ℂ`-differentiable on the open `W = chartAt v.target ∩ preimage
-U_i` — at each `z ∈ W` with `p = chartAt v.symm z ∈ U_i`, write it as `(holDiffFn ∘ chartAt p.symm) ∘
-(chartAt p ∘ chartAt v.symm)`, the own-chart holomorphy (`differentiableAt_holDiffFn_ownChart`) composed
-with the analytic transition — so `DifferentiableOn.analyticAt`. -/
+`v ∈ U_i`, the analytic representative of the germ `[holDiffFn]` on `↥U_i` is analytic at
+`(chartAt v) v`. Proof: `holDiffFn ∘ (chartAt v).symm` is `ℂ`-differentiable on the open
+`W = chartAt v.target ∩ preimage U_i` — at each `z ∈ W` with `p = chartAt v.symm z ∈ U_i`, write it
+as `(holDiffFn ∘ chartAt p.symm) ∘ (chartAt p ∘ chartAt v.symm)`, the own-chart holomorphy
+(`differentiableAt_holDiffFn_ownChart`) composed with the analytic transition — so
+`DifferentiableOn.analyticAt`. -/
 theorem holDiffFn_chart_analyticAt (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i : 𝔇.toFiniteCover.ι)
     (F : ↥(𝔇.U i) → ℂ) (hFeq : ∀ v : ↥(𝔇.U i), F v = holDiffFn 𝔇 f i v.1) (v : ↥(𝔇.U i)) :
-    AnalyticAt ℂ (Gext F ∘ (chartAt (H := ℂ) (v : X)).symm) ((chartAt (H := ℂ) (v : X)) (v : X)) := by
+    AnalyticAt ℂ (Gext F ∘ (chartAt (H := ℂ) (v : X)).symm)
+      ((chartAt (H := ℂ) (v : X)) (v : X)) := by
   obtain ⟨vx, hvx⟩ := v
   set cv := chartAt (H := ℂ) vx with hcv
   set W : Set ℂ := cv.target ∩ cv.symm ⁻¹' ((𝔇.U i : Opens X) : Set X) with hWdef
@@ -479,11 +497,12 @@ theorem holDiffFn_chart_analyticAt (𝔇 : ChartDiskCover X)
   exact (hOn.congr hEq).analyticAt (hWopen.mem_nhds hmemW)
 
 set_option maxHeartbeats 1000000 in
-/-- **`comparison_bijective`, part 1**: Dolbeault → Čech → Dolbeault is the identity. Globalizing the
-forward cocycle of `g` via the partition of unity returns `[g]` (the global primitive `h = ∑ρ_k·wₖ`
-has `∂̄h = ω + g`, so `cech_to_dolbeault` — carrying the boundary sign — sends `[ω]` to `[g]`). -/
+/-- **`comparison_bijective`, part 1**: Dolbeault → Čech → Dolbeault is the identity. Globalizing
+the forward cocycle of `g` via the partition of unity returns `[g]` (the global primitive
+`h = ∑ρ_k·wₖ` has `∂̄h = ω + g`, so `cech_to_dolbeault` — carrying the boundary sign — sends `[ω]`
+to `[g]`). -/
 theorem cech_to_dolbeault_comp_dolbeault_to_cech (𝔇 : ChartDiskCover X)
-    (hL : 𝔇.toFiniteCover.IsLeray) :
+    (_hL : 𝔇.toFiniteCover.IsLeray) :
     (cech_to_dolbeault 𝔇) ∘ₗ (dolbeault_to_cech 𝔇) = LinearMap.id := by
   refine LinearMap.ext fun cls => ?_
   obtain ⟨⟨g, hg⟩, rfl⟩ := Submodule.Quotient.mk_surjective (dbarImageInZeroOne X) cls
@@ -505,10 +524,11 @@ theorem cech_to_dolbeault_comp_dolbeault_to_cech (𝔇 : ChartDiskCover X)
   exact neg_eq_of_add_eq_zero_right hz
 
 -- `toGerm_holoFn` (the decomposition sub-lemma: the analytic representative `holoFn hg` reads back
--- the germ `g`) is now proven, complete, in `DolbeaultComparisonInverse` and used below via import.
+-- the germ `g`) is proven in `DolbeaultComparisonInverse` and used below via import.
 
-/-- **The eta-difference germ identity (`η_i − η_l = f_il` on the overlap).** As `MGerm (U_i ⊓ U_l)`:
-the germ of `(holoFn ∘ η_i) − (holoFn ∘ η_l)` restricted to the overlap equals `f_il`. On the overlap,
+/-- **The eta-difference germ identity (`η_i − η_l = f_il` on the overlap).** As
+`MGerm (U_i ⊓ U_l)`: the germ of `(holoFn ∘ η_i) − (holoFn ∘ η_l)` restricted to the overlap equals
+`f_il`. On the overlap,
 `η_i − η_l = ∑_k ρ_k·(holoFn(f_ik) − holoFn(f_lk)) = ∑_k ρ_k·holoFn(f_il) = holoFn(f_il)` (cocycle
 relation `holoFn_cocycle_add` + `∑ρ = 1`); then `toGerm(holoFn(f_il)) = f_il` (`toGerm_holoFn`). -/
 theorem etaFn_germ_diff_eq (𝔇 : ChartDiskCover X)
@@ -538,10 +558,13 @@ theorem etaFn_germ_diff_eq (𝔇 : ChartDiskCover X)
               = holoFn (cocycle_mem 𝔇 f i l) x + holoFn (cocycle_mem 𝔇 f l k) x from hcoc]
         ring
       · have hr : rhoC 𝔇 k x = 0 := by
-          simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hbk]; rfl
+          simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM,
+            image_eq_zero_of_notMem_tsupport hbk]
+          rfl
         simp only [etaTermFn, hr, zero_mul, sub_zero]
     rw [show (∑ k, (etaTermFn 𝔇 f i k x - etaTermFn 𝔇 f l k x))
-        = ∑ k, rhoC 𝔇 k x * holoFn (cocycle_mem 𝔇 f i l) x from Finset.sum_congr rfl fun k _ => hterm k,
+        = ∑ k, rhoC 𝔇 k x * holoFn (cocycle_mem 𝔇 f i l) x from
+          Finset.sum_congr rfl fun k _ => hterm k,
       ← Finset.sum_mul, sum_rhoC_apply, one_mul]
   -- `toGerm(η_i − η_l) = toGerm(holoFn(f_il) ∘ val) = f_il` (representative).
   have hfun : (fun v : ↥(𝔇.U i ⊓ 𝔇.U l) => etaFn 𝔇 f i v.1 - etaFn 𝔇 f l v.1)
@@ -550,11 +573,11 @@ theorem etaFn_germ_diff_eq (𝔇 : ChartDiskCover X)
 
 /- **Round-trip 2** (`dolbeault_to_cech_comp_cech_to_dolbeault`), the harder direction, is assembled
 below from the named sub-lemmas. Start with a cocycle `f`, `ω = cechToDolbeaultForm f`. Then
-`dolbeault_to_cech (cech_to_dolbeault [f]) = −[cechDelta0 (rawCochain ω)]`; the claim is this `= [f]`.
-The local primitives `η_i = ∑_k ρ_k·holoFn(f_ik)` (`etaFn`) satisfy `∂̄η_i = ω` on `U_i`
-(`dbar_etaFn_apply = cechToDolbeaultForm_eq_on_Ui`); so `hol_i := diskVal_i ω − η_i` (`holDiffFn`) is
-holomorphic (`dbar_holDiff_eq_zero` + `holDiffFn_chart_analyticAt`), giving a holomorphic `0`-cochain
-`{hol_i}` (`holCochain ∈ sections0`). Its `cechDelta0` is `cechDelta0(rawCochain ω) + f`
+`dolbeault_to_cech (cech_to_dolbeault [f]) = −[cechDelta0 (rawCochain ω)]`; the claim is this
+`= [f]`. The local primitives `η_i = ∑_k ρ_k·holoFn(f_ik)` (`etaFn`) satisfy `∂̄η_i = ω` on `U_i`
+(`dbar_etaFn_apply = cechToDolbeaultForm_eq_on_Ui`); so `hol_i := diskVal_i ω − η_i` (`holDiffFn`)
+is holomorphic (`dbar_holDiff_eq_zero` + `holDiffFn_chart_analyticAt`), giving a holomorphic
+`0`-cochain `{hol_i}` (`holCochain ∈ sections0`). Its `cechDelta0` is `cechDelta0(rawCochain ω) + f`
 (`cechDelta0_holCochain_eq`, using `etaFn_germ_diff_eq : η_i − η_l = f_il`), so
 `cechDelta0(rawCochain ω) + f` is a coboundary and `−[cechDelta0(rawCochain ω)] = [f]`. -/
 
@@ -576,14 +599,16 @@ set_option maxHeartbeats 1000000 in
 /-- **The Čech identity `cechDelta0 {hol_i} = cechDelta0 (rawCochain ω) + f`.** Componentwise on
 `U_i ⊓ U_l`: `hol_l − hol_i = (diskVal_l ω − diskVal_i ω) − (η_l − η_i)`; the first bracket is
 `cechDelta0 (rawCochain ω)(i,l)` (the disk-primitive difference germ), the second is `−f_il`
-(`etaFn_germ_diff_eq`). So the coboundary of the holomorphic `{hol_i}` is `cechDelta0(rawCochain ω) + f`. -/
+(`etaFn_germ_diff_eq`). So the coboundary of the holomorphic `{hol_i}` is
+`cechDelta0(rawCochain ω) + f`. -/
 theorem cechDelta0_holCochain_eq (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) :
     𝔇.toFiniteCover.cechDelta0 (holCochain 𝔇 f)
       = 𝔇.toFiniteCover.cechDelta0 (𝔇.rawCochain
           ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X))
         + (f : 𝔇.toFiniteCover.Cochain1) := by
-  set omg : SmoothCOneForms X := ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
+  set omg : SmoothCOneForms X :=
+    ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
     with hωdef
   funext p
   obtain ⟨i, l⟩ := p
@@ -601,7 +626,8 @@ theorem cechDelta0_holCochain_eq (𝔇 : ChartDiskCover X)
     show 𝔇.rawCochain omg l = toGerm (𝔇.U l) (𝔇.diskSection l omg) from rfl,
     show 𝔇.rawCochain omg i = toGerm (𝔇.U i) (𝔇.diskSection i omg) from rfl,
     rawRestrictG_coe, rawRestrictG_coe, rawRestrictG_coe, rawRestrictG_coe, ← map_sub, ← map_sub]
-  -- Pointwise on the overlap, `(holDiff_l − holDiff_i) = (diskSec_l ω − diskSec_i ω) + (η_i − η_l)`.
+  -- Pointwise on the overlap,
+  -- `(holDiff_l − holDiff_i) = (diskSec_l ω − diskSec_i ω) + (η_i − η_l)`.
   rw [show ((fun v : ↥(𝔇.U l) => holDiffFn 𝔇 f l v.1) ∘ openIncl inf_le_right
           - (fun v : ↥(𝔇.U i) => holDiffFn 𝔇 f i v.1) ∘ openIncl inf_le_left)
         = ((𝔇.diskSection l omg ∘ openIncl inf_le_right
@@ -615,12 +641,13 @@ theorem cechDelta0_holCochain_eq (𝔇 : ChartDiskCover X)
 
 set_option maxHeartbeats 1000000 in
 theorem dolbeault_to_cech_comp_cech_to_dolbeault (𝔇 : ChartDiskCover X)
-    (hL : 𝔇.toFiniteCover.IsLeray) :
+    (_hL : 𝔇.toFiniteCover.IsLeray) :
     (dolbeault_to_cech 𝔇) ∘ₗ (cech_to_dolbeault 𝔇) = LinearMap.id := by
   refine LinearMap.ext fun cls => ?_
   obtain ⟨f, rfl⟩ := Submodule.Quotient.mk_surjective _ cls
   rw [LinearMap.comp_apply, LinearMap.id_apply, cech_to_dolbeault_mk, map_neg]
-  set omg : SmoothCOneForms X := ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
+  set omg : SmoothCOneForms X :=
+    ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
     with hωdef
   -- `dolbeault_to_cech [ω] = [cechDelta0 (rawCochain ω)]`.
   have hdol : dolbeault_to_cech 𝔇 (Submodule.Quotient.mk (cechToDolbeaultForm 𝔇 f))
@@ -637,8 +664,7 @@ theorem dolbeault_to_cech_comp_cech_to_dolbeault (𝔇 : ChartDiskCover X)
         (dolbeaultToCechCocycle 𝔇 (cechToDolbeaultForm 𝔇 f))
       + Submodule.Quotient.mk f = (0 : 𝔇.toFiniteCover.cechH1 0) := by
     rw [← Submodule.Quotient.mk_add, Submodule.Quotient.mk_eq_zero]
-    simp only [Submodule.submoduleOf, Submodule.mem_comap, Submodule.subtype_apply,
-      AddSubmonoid.coe_add, Submodule.coe_toAddSubmonoid, Submodule.coe_add]
+    simp only [Submodule.submoduleOf, Submodule.mem_comap, Submodule.subtype_apply]
     exact hcob
   exact neg_eq_of_add_eq_zero_right hzero
 
@@ -661,74 +687,26 @@ theorem cechH1_dolbeault_comparison_proof (𝔇 : ChartDiskCover X) (hL : 𝔇.t
     Module.finrank ℝ (DolbeaultH01 X) = 2 * Module.finrank ℂ (𝔇.toFiniteCover.cechH1 0) := by
   rw [(comparison_linearEquiv 𝔇 hL).finrank_eq, finrank_real_of_complex]
 
-/-! ## Honest status of the mechanization
+/-! ## Map of the proof
 
-**Complete (axiom-clean: `propext`/`Classical.choice`/`Quot.sound` only):**
-* the entire *bookkeeping spine* — `comparison_linearEquiv` (assembled from the two maps via
-  `LinearEquiv.ofLinear`) and the target `cechH1_dolbeault_comparison_proof` (the `2·` `ℝ`-vs-`ℂ`
-  count via `finrank_real_of_complex`); this is the part that would have been most error-prone
-  (the scalar-factor bookkeeping the `DolbeaultComparison` header flags);
-* `cechDelta0_mem_ker_cechDelta1` / `range_cechDelta0_le_ker_cechDelta1` — the Dolbeault → Čech
-  cochain is automatically a Čech cocycle (`δ²=0`), the algebraic backbone of that map;
-* `cechCoboundary_telescoping` — the partition-of-unity telescoping `h_j − h_i = f_ij`, the
-  algebraic heart of the Čech → Dolbeault coboundary construction;
-* `exists_smoothPartitionOfUnity_subordinate` — the smooth PoU subordinate to the cover (the actual
-  analytic input of the inverse map), from Mathlib + the `RealManifold` `σ`-compactness;
-* **the chart-transport bridge and its consequences** (the genuine analytic crux of kernel 1, now
-  fully proven): `dbar_apply_one_eq_dbarDisk` (intrinsic `∂̄` read in a chart `= DbarDisk.dbar` of
-  the chart-pullback), `mfderiv_apply_eq_fderiv_pullback`, the `(0,1)`-fiber algebra
-  (`proj01_apply_one` / `proj01_conjLinear` / `proj01_eq_conj_smul` / `proj01_ext_of_apply_one`),
-  the value-`1`-to-CLM upgrade `dbar_eq_of_apply_one`, and the global smooth lift
-  `exists_smoothLift_of_chartFun` (via `SmoothBumpFunction.contMDiff_smul`);
-* **the Wirtinger chain rule `dbarDisk_comp_holo`** (the chart-transition equivariance of `∂̄`):
-  under a holomorphic coordinate change `τ`, `DbarDisk.dbar (f ∘ τ) = conj(τ′) · DbarDisk.dbar f ∘ τ`
-  — the `conj(τ′)` frame factor of a `(0,1)`-quantity. With the germ-locality `dbarDisk_congr` and
-  the holomorphy of chart transitions `differentiableAt_chartTransition`, this is the lever that
-  transports the planar `x₀`-chart solve to the intrinsic value read in the chart at `x`;
-* **`exists_chartPullback_zeroOne_datum`** — the chart-pullback `(0,1)`-datum (a smooth `(0,1)`-form
-  read in the `x₀`-chart is a *smooth planar function* `G` reproducing `g x 1` after the holomorphic
-  frame change `conj(τ′)`) — is now **PROVEN complete** (helpers `contMDiffAt_chartRead_datum`,
-  `frameVector_eq_inv_deriv_transition`, `oneForm_apply_conjLinear`; `ContDiffBump` cutoff
-  `G = χ·(Φ ∘ e₀.symm)`);
-* **`exists_localPrimitive_apply_one`** — the value-`1` local primitive — is therefore **fully proven
-  complete**: solve the planar `∂̄f = G` in the `x₀`-chart (`DbarLocal.dbar_solvable_locally`),
-  globalize to `u` (`exists_smoothLift_of_chartFun`), read `∂̄u` at `x` in its own chart
-  (`dbar_apply_one_eq_dbarDisk`), and the Wirtinger chain rule `dbarDisk_comp_holo` produces the
-  `conj(τ′)` factor that cancels exactly against the datum's transformation law;
-* `dbar_solvable_locally_manifold` — *point*-local `∂̄`-solvability on the MANIFOLD — is **proven
-  complete** from `exists_localPrimitive_apply_one` via the value-`1`-to-CLM upgrade;
-* **`dolbeaultToCechCocycle`** — the forward **cocycle operator** `g ↦ cechDelta0 {[u_i]}`, where
-  `u_i` solves `∂̄u_i = g` on each chart-disk cover set (the disk-global PDE
-  `DbarDiskCohomology.dbar_solvable_ball` + the chart transport above), `ℝ`-linear in `g` — and its
-  **well-definedness** `dolbeaultToCechCocycle_dbarImage_le` (`g = ∂̄h` ↦ a Čech coboundary), both
-  **proven complete**;
-* **`dolbeault_to_cech`** — the forward map on cohomology `H^{0,1}(X) → H¹(X, 𝒪)` — is therefore
-  **proven complete** (a `Submodule.liftQ` of the scalar-restricted `cechH1` projection composed
-  with the cocycle operator); **the entire forward direction is complete**;
-* **`sum_dbarRho_eq_zero`** (this file) — the gluing relation `∑_k ∂̄ρ_k = 0` (`∂̄` of `∑_k ρ_k = 1`),
-  a building block of the inverse map — is **proven complete** (`dbarL`-linearity + `sum_rhoC`).
+The comparison is the composite of:
 
-**The named honest sub-kernels of the INVERSE direction (each a TRUE statement; the irreducible
-remainder — the forward direction is fully proven):**
-1. `cechToDolbeaultForm` — the inverse **glued-form operator**: the `ℝ`-linear map sending a
-   holomorphic Čech `1`-cocycle `f` to the global `(0,1)`-form `ω = ∂̄η_i` on `U_i`,
-   `η_i := ∑_k ρ_k·f_ik` (PoU globalization). Builds on `cechCoboundary_telescoping`, the PoU, and
-   `sum_dbarRho_eq_zero` (all complete); the remaining gap is **smooth-section gluing** of the local `∂̄η_i`.
-2. `cechToDolbeaultForm_coboundary_le` — inverse **well-definedness**: a coboundary cocycle maps to a
-   `∂̄`-image, hence to `0` in `H^{0,1}`. Algebra, given kernel 1.
-3–4. `cech_to_dolbeault_comp_dolbeault_to_cech` / `dolbeault_to_cech_comp_cech_to_dolbeault` —
-   `comparison_bijective`: the two maps are mutually inverse (needs 1 explicit, then chase).
-
-**Assessment.** Dolbeault's theorem is the composite of (i) the local PDE (`DbarLocal` /
-`DbarDiskCohomology`, DONE — incl. the disk-global `dbar_solvable_ball` and `H¹(disk,𝒪)=0` engine)
-plus its transport to the manifold operator (chart bridge `dbar_apply_one_eq_dbarDisk` + Wirtinger
-chain rule `dbarDisk_comp_holo` + global lift `exists_smoothLift_of_chartFun`, all proven), so
-`exists_chartPullback_zeroOne_datum`, `exists_localPrimitive_apply_one`, and
-`dbar_solvable_locally_manifold` are all complete; (ii) the Čech/coboundary *algebra* (complete);
-(iii) a partition-of-unity *globalization* (PoU + telescoping complete; smooth-section gluing
-remains); and (iv) the *well-definedness + mutual-inverse* of the maps (`dolbeault_to_cech` itself now
-complete via `liftQ`). The irreducible analytic remainder is concentrated in the **forward cocycle
-operator** (kernel 1 — chart-disk transport + linearity, PDE already done), the **inverse map**
-(kernel 3 — smooth-section gluing), and their **mutual inverseness** (4,5). -/
+* the local PDE (`DbarLocal` / `DbarDiskCohomology`, incl. the disk-global `dbar_solvable_ball`
+  and the `H¹(disk,𝒪)=0` engine) and its transport to the manifold operator — the chart bridge
+  `dbar_apply_one_eq_dbarDisk`, the Wirtinger chain rule `dbarDisk_comp_holo` (under a holomorphic
+  coordinate change `τ`, `DbarDisk.dbar (f ∘ τ) = conj(τ′) · DbarDisk.dbar f ∘ τ` — the `conj(τ′)`
+  frame factor of a `(0,1)`-quantity), the chart-pullback `(0,1)`-datum
+  `exists_chartPullback_zeroOne_datum`, the global smooth lift `exists_smoothLift_of_chartFun`,
+  and the local primitive `exists_localPrimitive_apply_one` /
+  `dbar_solvable_locally_manifold`;
+* the Čech/coboundary algebra (`cechDelta0_mem_ker_cechDelta1`, `cechCoboundary_telescoping`);
+* the partition-of-unity globalization (`exists_smoothPartitionOfUnity_subordinate`,
+  `sum_dbarRho_eq_zero`, and the inverse glued-form operator `cechToDolbeaultForm` of
+  `DolbeaultComparisonInverse`);
+* the forward cocycle operator `dolbeaultToCechCocycle` with its well-definedness
+  `dolbeaultToCechCocycle_dbarImage_le`, the descended maps `dolbeault_to_cech` /
+  `cech_to_dolbeault`, and their mutual inverseness, assembled into `comparison_linearEquiv`
+  (`LinearEquiv.ofLinear`) and the headline `cechH1_dolbeault_comparison_proof` (the `2·`
+  `ℝ`-vs-`ℂ` count via `finrank_real_of_complex`). -/
 
 end Jacobians.Dolbeault

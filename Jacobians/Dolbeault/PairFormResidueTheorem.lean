@@ -1,5 +1,5 @@
 /-
-  THE PAIR-FORM RESIDUE THEOREM, genus ≥ 1 (Miranda Ch. VI pp. 186–188; Route M input 2).
+  THE PAIR-FORM RESIDUE THEOREM, genus ≥ 1 (Miranda Ch. VI pp. 186–188).
 
   A meromorphic 1-form on the compact Riemann surface `X` is represented as a PAIR `(g₀, h)` of
   meromorphic functions meaning `h·dg₀` (no new form type).  Its residue at `a` is computed in the
@@ -11,7 +11,7 @@
 
   whenever the pair integrand is honestly analytic at every chart centre off the finite `poles`.
 
-  Proof = the ω₀-factorization reduction to the PROVEN Gate-A engine
+  Proof = the ω₀-factorization reduction to the proven residue-theorem engine
   `SerreResidueTheorem.residueTheorem_unconditional` (`∑Res(ω₀·g) = 0`, ω₀ holomorphic):
   1. `0 < genus` picks `ω₀ ≠ 0` (`exists_holomorphicOneForm_ne_zero`).
   2. `q := dg₀/ω₀` is a global meromorphic function (`derivQuotientFn`,
@@ -25,7 +25,7 @@
      must be enlarged into the pole set, NOT just the genuine poles); the extra terms vanish
      because off `poles` the PAIR integrand is analytic (`pairFormResidue_eq_zero_of_analyticAt`).
 
-  The Gate-A chain is consumed read-only.  Everything here is complete and depends on no
+  The residue-theorem chain is consumed read-only.  Everything here is complete and depends on no
   unproved lemma.
 -/
 import Jacobians.Dolbeault.OmegaFactorization
@@ -34,12 +34,10 @@ import Jacobians.Dolbeault.SerreResidueRamifiedRealSlitGeometry
 open scoped Manifold ContDiff Topology
 open Filter
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- **The residue of the meromorphic pair-form `h·dg₀` at `a`**, computed in the canonical chart:
 the `resAt` of `(h ∘ chart⁻¹)·(g₀ ∘ chart⁻¹)′` at the chart image of `a` (Miranda Ch. VI p. 186:
@@ -60,7 +58,8 @@ theorem pairFormResidue_eq_zero_of_analyticAt (g₀ h : MeromorphicFunction X) (
 (no exceptional set!): near the chart centre (off it), `q`'s pullback is the single-chart quotient
 (`derivQuotient_eventuallyEq_chart`) and `coeffAt ω₀ a ≠ 0` (isolated zeros, `ω₀ ≠ 0`), so the
 `coeffAt` factor cancels and the two `resAt` integrands agree as germs (`resAt_congr`). -/
-theorem pairFormResidue_eq_formFnResidue (ω₀ : HolomorphicOneForms X) (hω₀ : ω₀ ≠ 0)
+theorem pairFormResidue_eq_formFnResidue [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ) ω X] (ω₀ : HolomorphicOneForms X) (hω₀ : ω₀ ≠ 0)
     (g₀ h : MeromorphicFunction X) (a : X) :
     pairFormResidue g₀ h a = formFnResidue ω₀ ((h * derivQuotientFn ω₀ g₀).toFun) a := by
   refine resAt_congr ?_
@@ -81,10 +80,11 @@ of a meromorphic pair-form `h·dg₀` over any finite set containing its poles v
   `∑ a ∈ poles, pairFormResidue g₀ h a = 0`,
 
 provided the pair integrand is honestly `AnalyticAt` at every chart centre off `poles`.
-Reduction to the PROVEN `residueTheorem_unconditional` via the ω₀-factorization
+Reduction to the proven `residueTheorem_unconditional` via the ω₀-factorization
 `h·dg₀ = (h·q)·ω₀`, `q = dg₀/ω₀` (`0 < genus X` supplies `ω₀ ≠ 0`); the pole set is enlarged by
 the finite analytic-bad set of `h·q`, whose extra terms vanish by the off-`poles` analyticity. -/
-theorem residueSum_pairForm_eq_zero (hgenus : 0 < genus X)
+theorem residueSum_pairForm_eq_zero [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
+    [IsManifold 𝓘(ℂ) ω X] (hgenus : 0 < genus X)
     (g₀ h : MeromorphicFunction X) (poles : Finset X)
     (hpoles : ∀ x, x ∉ poles → AnalyticAt ℂ
       (fun z => h.toFun ((chartAt (H := ℂ) x).symm z)
@@ -97,7 +97,7 @@ theorem residueSum_pairForm_eq_zero (hgenus : 0 < genus X)
   -- enlarge the pole set by `h·q`'s finite analytic-bad set
   set poles' : Finset X := poles ∪ hq.finite_nonAnalyticAt.toFinset with hpolesdef
   have hsub : poles ⊆ poles' := Finset.subset_union_left
-  -- the Gate-A engine at `(ω₀, h·q, poles')`
+  -- the residue-theorem engine at `(ω₀, h·q, poles')`
   have hzero : ∑ a ∈ poles', formFnResidue ω₀ hq.toFun a = 0 := by
     refine SerreResidueTheorem.residueTheorem_unconditional ω₀ hq poles' (fun x hx => ?_)
     have hxbad : x ∉ hq.finite_nonAnalyticAt.toFinset := fun hmem =>
@@ -118,7 +118,8 @@ theorem residueSum_pairForm_eq_zero (hgenus : 0 < genus X)
 /-- **Convenience wrapper for product numerators** (the downstream Mittag–Leffler/Serre-pairing
 shape `∑Res(f·h·dg₀) = 0`): the main theorem at the pair `(g₀, f·h)`, with the analyticity
 hypothesis stated on the unfolded product integrand. -/
-theorem residueSum_pairForm_mul_eq_zero (hgenus : 0 < genus X)
+theorem residueSum_pairForm_mul_eq_zero [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [Nonempty X] [IsManifold 𝓘(ℂ) ω X] (hgenus : 0 < genus X)
     (g₀ f h : MeromorphicFunction X) (poles : Finset X)
     (hpoles : ∀ x, x ∉ poles → AnalyticAt ℂ
       (fun z => f.toFun ((chartAt (H := ℂ) x).symm z) * h.toFun ((chartAt (H := ℂ) x).symm z)

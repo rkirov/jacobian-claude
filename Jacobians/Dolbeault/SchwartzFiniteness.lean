@@ -20,16 +20,16 @@ namespace Jacobians.SchwartzFiniteness
 
 open Metric Filter Topology Finset
 
-variable {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
-    [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
+variable {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+    [NormedAddCommGroup F] [NormedSpace ℂ F]
 
 /-- **Successive-approximation surjectivity.** If a continuous linear map `g : E →L[ℂ] G` between
 Banach spaces admits, for every target `y`, an *approximate* preimage `x` within distance
 `(1/2)‖y‖` and with norm `≤ C‖y‖`, then `g` is (exactly) surjective. This is the iterative second
 half of the Banach open mapping theorem (`ContinuousLinearMap.exists_preimage_norm_le`), abstracted
 so it can be applied to a small perturbation of a surjection. -/
-theorem surjective_of_approx {G : Type*} [NormedAddCommGroup G] [NormedSpace ℂ G]
-    (g : E →L[ℂ] G) {C : ℝ}
+theorem surjective_of_approx [CompleteSpace E] {G : Type*} [NormedAddCommGroup G]
+    [NormedSpace ℂ G] (g : E →L[ℂ] G) {C : ℝ}
     (h : ∀ y : G, ∃ x : E, dist (g x) y ≤ 1 / 2 * ‖y‖ ∧ ‖x‖ ≤ C * ‖y‖) :
     Function.Surjective g := by
   choose f hdist hnorm using h
@@ -85,7 +85,6 @@ theorem surjective_of_approx {G : Type*} [NormedAddCommGroup G] [NormedSpace ℂ
   apply tendsto_nhds_unique hlim1
   simpa only [hpartial] using hlim2
 
-omit [CompleteSpace E] [CompleteSpace F] in
 /-- **Finite-dimensional `δ`-net for a compact operator.** A compact operator `K` admits a
 finite-dimensional subspace `S ≤ F` that `δ`-approximates the image of the unit ball: every `K x`
 with `‖x‖ ≤ 1` lies within distance `δ` of `S`. The subspace is the span of a finite `δ`-net of the
@@ -110,13 +109,14 @@ theorem exists_finiteDim_approx
 spaces has finite-codimensional image: if `A : E →L[ℂ] F` is surjective and `K : E →L[ℂ] F` is a
 compact operator, then `F ⧸ range (A + K)` is finite-dimensional. (`K = 0` ⟹ codim 0; `A = id` ⟹
 Riesz–Schauder for `1 + K`.) This is the functional-analysis core of Forster 14.9. -/
-theorem finiteDimensional_quotient_range_add_compact
+theorem finiteDimensional_quotient_range_add_compact [CompleteSpace E] [CompleteSpace F]
     (A : E →L[ℂ] F) (hA : Function.Surjective A)
     (K : E →L[ℂ] F) (hK : IsCompactOperator K) :
     FiniteDimensional ℂ (F ⧸ LinearMap.range (A + K).toLinearMap) := by
   -- `A` is quantitatively surjective (Banach open mapping theorem): preimages with `‖x‖ ≤ C‖y‖`.
   obtain ⟨C, hCpos, hAC⟩ := ContinuousLinearMap.exists_preimage_norm_le A hA
-  -- Choose `δ` so that, after the `2×` lift through the quotient, `q ∘ K` shrinks by a factor `1/2`.
+  -- Choose `δ` so that, after the `2×` lift through the quotient, `q ∘ K` shrinks by a
+  -- factor `1/2`.
   set δ : ℝ := 1 / (4 * C) with hδdef
   have hδpos : 0 < δ := by positivity
   -- A finite-dimensional `S` whose `δ`-neighbourhood absorbs `K` of the unit ball.

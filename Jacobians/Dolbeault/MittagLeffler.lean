@@ -1,91 +1,87 @@
 /-
   Mittag–Leffler distributions of 1-forms and the global residue `Res` (Forster §17.1–17.2).
 
-  The PDE-free Serre route defines the residue functional
-  `Res : H¹(X,Ω) → ℂ` via **Mittag–Leffler distributions**: a cochain `(ωᵢ)` of *local* meromorphic
-  1-forms over a finite cover, with *holomorphic differences* `ωᵢ − ωⱼ` on overlaps, has only finitely
-  many poles, and `Res(μ) = ∑_a Res_a(μ)` is the sum of the local Laurent residues over those poles.
+  The PDE-free Serre route defines the residue functional `Res : H¹(X,Ω) → ℂ` via **Mittag–Leffler
+  distributions**: a cochain `(ωᵢ)` of *local* meromorphic 1-forms over a finite cover, with
+  *holomorphic differences* `ωᵢ − ωⱼ` on overlaps, has only finitely many poles, and
+  `Res(μ) = ∑_a Res_a(μ)` is the sum of the local Laurent residues over those poles.
 
-  This file builds the **complete local pieces** of that construction — everything *except* the
-  global well-definedness on cohomology classes, which needs the **1-form** residue theorem `∑Res = 0`
-  (a separate node — the trace-to-ℙ¹ route, NOT `deg_div`; see the ⚠ correction below) and so is stated
-  here only as a precise plan in the module docstring, never as a tactic gap.
+  This file builds the local pieces of that construction — everything *except* the global
+  well-definedness on cohomology classes, which needs the **1-form** residue theorem `∑Res = 0`
+  (proven downstream via the trace to ℙ¹; see below).
 
   Concretely it provides:
-    * `formFnHoloPunctured` — the "isolated singularity" predicate at a pole for `α·g` (the integrand
-      `coeffAt α a · (g ∘ chart.symm)` is holomorphic on a punctured chart-ball), under which the local
-      residue `formFnResidue α g a` is additive / ℂ-homogeneous / contour-independent.
+    * `formFnHoloPunctured` — the "isolated singularity" predicate at a pole for `α·g` (the
+      integrand `coeffAt α a · (g ∘ chart.symm)` is holomorphic on a punctured chart-ball), under
+      which the local residue `formFnResidue α g a` is additive / ℂ-homogeneous /
+      contour-independent.
     * `formFnResidue_add` / `formFnResidue_smul` — local ℂ-linearity of `Res_a(α·g)` in `g`.
     * `residueSum α g S` = `∑_{a ∈ S} formFnResidue α g a` — the finite residue-sum over a pole set
       `S : Finset X`, with:
         - `residueSum_add` / `residueSum_smul` — ℂ-linearity in `g` (over a common pole set);
         - `residueSum_eq_zero_of_analyticAt` — the **`Res(holomorphic) = 0`** vanishing (Forster's
           holomorphic-difference property: a holomorphic distribution has zero residue);
-        - `residueSum_subset` / `residueSum_insert_analyticAt` — enlarging the pole set by points where
-          `α·g` is holomorphic does not change the sum (so `S` need only contain the *actual* poles).
+        - `residueSum_subset` / `residueSum_insert_analyticAt` — enlarging the pole set by points
+          where `α·g` is holomorphic does not change the sum (so `S` need only contain the *actual*
+          poles).
     * `MittagLefflerForm` — the Mittag–Leffler distribution-of-1-forms structure (a finite pole set
       `poles`, local principal-part functions `g a`, the running global form `α`), and its
-      `MittagLefflerForm.res` = `residueSum α g poles`, with `res_add`, `res_smul`, `res_holomorphic`.
+      `MittagLefflerForm.res` = `residueSum α g poles`, with `res_add`, `res_smul`,
+      `res_holomorphic`.
 
   For the `D = 0` Serre pairing the relevant 1-forms are `ω·f` (a global holomorphic `ω :
   HolomorphicOneForms X` times a meromorphic function `f`); the residue contributions are exactly
   `formFnResidue ω f a`, so this finite residue-sum is the `Res` side of the pairing, modulo the
-  `∑Res = 0` well-definedness (see the plan at the bottom of this docstring).
+  `∑Res = 0` well-definedness (see the note at the bottom of this docstring).
 
-  ## What is deliberately NOT here (the `∑Res = 0` wall — precise plan)
+  ## The `∑Res = 0` input (not in this file)
 
   `Res` as a map on **cohomology classes** `H¹(X,Ω)` (not on cochain representatives) needs that
-  `residueSum` is **independent of the Mittag–Leffler representative**, i.e. that a *coboundary* (a
-  globally-holomorphic distribution `ωᵢ = α|_{Uᵢ}` for a single global meromorphic `α`) has total
-  residue `0`. That is the **residue theorem** `∑_a Res_a(α) = 0` for a global meromorphic 1-form `α`
-  on the compact `X`.
+  `residueSum` is **independent of the Mittag–Leffler representative**, i.e. that a *coboundary*
+  (a globally-holomorphic distribution `ωᵢ = α|_{Uᵢ}` for a single global meromorphic `α`) has
+  total residue `0`. That is the **residue theorem** `∑_a Res_a(α) = 0` for a global meromorphic
+  1-form `α` on the compact `X`.
 
-  ⚠ CORRECTION (2026-06-04, verified vs Forster §17 + Miranda §VIII.3): this is the **general 1-form**
-  residue theorem, and it is **NOT `deg_div`**. `deg_div` (`∑ₓ ord_x f = 0` for a meromorphic *function*
-  `f`) is only the special case `α = df/f`; the residues of a general `α = ω₀·f` are Laurent
-  coefficients, not orders, so discharging `deg_div`/`exists_properMapDegree` does NOT give this. The
-  correct PDE-free route is the **algebraic residue theorem via the trace to ℙ¹** (Miranda, *Algebraic
-  Curves and Riemann Surfaces*, §VIII.3): `∑_{p∈X} Res_p α = ∑_{q∈ℙ¹} Res_q(Tr α) = 0` (partial fractions
-  on ℙ¹), reusing the repo's `TraceForm`/`pushforwardForm` + the RR-gated branched cover `X → ℙ¹` + one
-  new "residue-of-a-trace" lemma (Miranda Lemma 3.2). Forster §17.1/§17.3 instead defines `Res` by
-  `(2πi)⁻¹∬_X` (manifold Stokes), which this repo avoids. So the class-level `Res : cechH1 𝔘 Ω → ℂ` is
-  gated on **this trace residue theorem (a separate node), NOT on `deg_div`**, and is NOT built here.
-  The plan: once `∑Res = 0` (the 1-form residue theorem) is available, descend `residueSum` through
-  `cechH1`'s quotient (the cocycle→cochain representative gives a finite pole set; two representatives
-  differ by a coboundary whose `residueSum` is `0` by the residue theorem), yielding the well-defined
-  functional. Everything
-  in *this* file is complete and axiom-clean and depends on no open lemma.
+  Note this is the **general 1-form** residue theorem, and it is *not* `deg_div`:
+  `deg_div` (`∑ₓ ord_x f = 0` for a meromorphic *function* `f`) is only the special case
+  `α = df/f`; the residues of a general `α = ω₀·f` are Laurent coefficients, not orders. The
+  PDE-free route is the **algebraic residue theorem via the trace to ℙ¹** (Miranda, *Algebraic
+  Curves and Riemann Surfaces*, §VIII.3): `∑_{p∈X} Res_p α = ∑_{q∈ℙ¹} Res_q(Tr α) = 0` (partial
+  fractions on ℙ¹), reusing `TraceForm`/`pushforwardForm`, a branched cover `X → ℙ¹`, and the
+  residue-of-a-trace lemma (Miranda Lemma 3.2); it is carried out in `FormResidueTheorem` and the
+  `SerreResidue*` modules. (Forster §17.1/§17.3 instead defines `Res` by `(2πi)⁻¹∬_X` — manifold
+  Stokes — which this development avoids.) Given `∑Res = 0`, `residueSum` descends through
+  `cechH1`'s quotient: a cocycle representative gives a finite pole set, and two representatives
+  differ by a coboundary whose `residueSum` is `0`.
 -/
 import Jacobians.Dolbeault.FormCoeff
 
 open scoped Manifold ContDiff Topology
 open Complex Metric Filter
 
-set_option linter.unusedSectionVars false
-
 namespace Jacobians.Dolbeault
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The local "isolated singularity" predicate for `α·g`
 
-`formFnResidue α g a` is the residue at `a` of the meromorphic 1-form `α·g`, computed in the canonical
-chart as `resAt (coeffAt α a · (g ∘ chart.symm)) (chart a)`.  The residue calculus (`resAt_add`,
-`resAt_smul`, `resAt_eq_smul_circleIntegral`) is ℂ-linear / contour-independent precisely when the
-integrand has an *isolated* singularity at the contour centre — `HoloPunctured` in `Residue.lean`.  We
-package the corresponding condition on `α·g` here. -/
+`formFnResidue α g a` is the residue at `a` of the meromorphic 1-form `α·g`, computed in the
+canonical chart as `resAt (coeffAt α a · (g ∘ chart.symm)) (chart a)`. The residue calculus
+(`resAt_add`, `resAt_smul`, `resAt_eq_smul_circleIntegral`) is ℂ-linear / contour-independent
+precisely when the integrand has an *isolated* singularity at the contour centre — `HoloPunctured`
+in `Residue.lean`. We package the corresponding condition on `α·g` here. -/
 
 /-- `α·g` has an isolated singularity (or none) at `a`: its chart integrand
 `z ↦ coeffAt α a z · g (chart.symm z)` is holomorphic on a punctured chart-ball around `chart a`.
-This is exactly `HoloPunctured (integrand) (chart a)`, the hypothesis under which `formFnResidue α g a`
-is additive / ℂ-homogeneous / contour-computable. -/
+This is exactly `HoloPunctured (integrand) (chart a)`, the hypothesis under which
+`formFnResidue α g a` is additive / ℂ-homogeneous / contour-computable. -/
 def formFnHoloPunctured (α : HolomorphicOneForms X) (g : X → ℂ) (a : X) : Prop :=
   HoloPunctured (fun z => coeffAt α a z * g ((chartAt ℂ a).symm z)) ((chartAt ℂ a) a)
 
-/-- If `g`'s chart-pullback is holomorphic *at* `a` then `α·g` is holomorphic there, in particular it
-has an isolated singularity (`formFnHoloPunctured`). The bridge from "no pole" to the residue-calculus
-hypothesis. -/
+/-- If `g`'s chart-pullback is holomorphic *at* `a` then `α·g` is holomorphic there, in particular
+it has an isolated singularity (`formFnHoloPunctured`). The bridge from "no pole" to the
+residue-calculus hypothesis. -/
 theorem formFnHoloPunctured_of_analyticAt (α : HolomorphicOneForms X) (g : X → ℂ) (a : X)
     (hg : AnalyticAt ℂ (fun z => g ((chartAt ℂ a).symm z)) ((chartAt ℂ a) a)) :
     formFnHoloPunctured α g a := by
@@ -126,13 +122,13 @@ theorem formFnResidue_smul (α : HolomorphicOneForms X) (c : ℂ) (g : X → ℂ
 
 /-! ### The finite residue-sum over a pole set
 
-`residueSum α g S = ∑_{a ∈ S} Res_a(α·g)`.  Forster's `Res(μ)` for a Mittag–Leffler distribution is
-this sum over the finite pole set; for the `D = 0` Serre pairing `α·g = ω·f`.  Its ℂ-linearity in `g`
+`residueSum α g S = ∑_{a ∈ S} Res_a(α·g)`. Forster's `Res(μ)` for a Mittag–Leffler distribution is
+this sum over the finite pole set; for the `D = 0` Serre pairing `α·g = ω·f`. Its ℂ-linearity in `g`
 and vanishing on holomorphic data come termwise from `formFnResidue_add`/`_smul`/`_eq_zero`. -/
 
-/-- The **residue-sum** `∑_{a ∈ S} Res_a(α·g)` of the 1-form `α·g` over a finite set `S : Finset X` of
-candidate poles.  This is the `Res` of a Mittag–Leffler distribution (Forster §17.2); enlarging `S`
-beyond the actual poles is harmless (`residueSum_subset`). -/
+/-- The **residue-sum** `∑_{a ∈ S} Res_a(α·g)` of the 1-form `α·g` over a finite set `S : Finset X`
+of candidate poles. This is the `Res` of a Mittag–Leffler distribution (Forster §17.2); enlarging
+`S` beyond the actual poles is harmless (`residueSum_subset`). -/
 noncomputable def residueSum (α : HolomorphicOneForms X) (g : X → ℂ) (S : Finset X) : ℂ :=
   ∑ a ∈ S, formFnResidue α g a
 
@@ -206,9 +202,9 @@ cochain is equivalent to a single global `α·g` up to a globally-holomorphic �
 summand, so this `α·g` form captures the residue data, which is all `Res` depends on.)
 
 `res μ := residueSum α g poles` is the total residue, and is the value of Forster's `Res` on the
-distribution.  Its well-definedness on **cohomology classes** (independence of the representative) is
-the **1-form** residue theorem `∑Res = 0` (the trace-to-ℙ¹ route, NOT `deg_div` — see the ⚠ correction
-in the module docstring), NOT proved here. -/
+distribution. Its well-definedness on **cohomology classes** (independence of the representative) is
+the **1-form** residue theorem `∑Res = 0` (the trace-to-ℙ¹ route, *not* `deg_div` — see the
+module docstring), proven downstream of this file. -/
 
 /-- A Mittag–Leffler distribution of 1-forms of the shape `α·g` (Forster §17.2): the global
 holomorphic form `α`, the principal-part function `g`, a finite pole set `poles`, the off-poles
@@ -288,8 +284,8 @@ theorem res_smul (c : ℂ) : (μ.smul c).res = c • μ.res := by
 section Combine
 
 open scoped Classical in
-/-- On the union of the two pole sets, `α·g₁` has an isolated singularity at every point (it is one at
-poles of `μ₁` by `μ₁.iso`, and holomorphic — hence isolated — at points outside `μ₁.poles` by
+/-- On the union of the two pole sets, `α·g₁` has an isolated singularity at every point (it is one
+at poles of `μ₁` by `μ₁.iso`, and holomorphic — hence isolated — at points outside `μ₁.poles` by
 `μ₁.holo`). -/
 theorem formFnHoloPunctured_left_on_union (μ₁ μ₂ : MittagLefflerForm X) (a : X)
     (_ha : a ∈ μ₁.poles ∪ μ₂.poles) :
@@ -310,8 +306,9 @@ theorem formFnHoloPunctured_right_on_union (μ₁ μ₂ : MittagLefflerForm X) (
 
 open scoped Classical in
 /-- The **sum** of two Mittag–Leffler distributions sharing the same global holomorphic form `α`:
-`g := g₁ + g₂`, with pole set the union.  (Outside the union both pullbacks are holomorphic, so the
-sum is too; at each point of the union both factors have isolated singularities, so the sum does.) -/
+`g := g₁ + g₂`, with pole set the union. (Outside the union both pullbacks are holomorphic, so the
+sum is too; at each point of the union both factors have isolated singularities, so the sum does.)
+-/
 noncomputable def combine (μ₁ μ₂ : MittagLefflerForm X) (hα : μ₁.α = μ₂.α) :
     MittagLefflerForm X where
   α := μ₁.α
@@ -354,7 +351,7 @@ open scoped Classical in
     (combine μ₁ μ₂ hα).poles = μ₁.poles ∪ μ₂.poles := rfl
 
 open scoped Classical in
-/-- **`Res(μ₁ + μ₂) = Res(μ₁) + Res(μ₂)`** for distributions sharing the global form `α`.  The sum is
+/-- **`Res(μ₁ + μ₂) = Res(μ₁) + Res(μ₂)`** for distributions sharing the global form `α`. The sum is
 taken over the union pole set; each summand's residue-sum over the union agrees with its own via
 `residueSum_subset` (the extra points are holomorphic for that summand). -/
 theorem res_combine (μ₁ μ₂ : MittagLefflerForm X) (hα : μ₁.α = μ₂.α) :

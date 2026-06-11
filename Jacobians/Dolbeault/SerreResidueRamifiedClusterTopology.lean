@@ -10,24 +10,24 @@ import Jacobians.Dolbeault.SerreResidueRamifiedMultiplicityBridge
 # The fibre-cluster topology: reducing `ClusterReindexData` to the conservation-of-number datum
 
 `SerreResidueRamifiedClusterPartition.lean` reduces `FibreClusterReindex.hgeom_fibre` to a slit-wide
-family of `ClusterReindexData` — the precise remaining clustering datum at each regular slit value `z`.
-That datum has, besides the **bijection** `e` and the **point coincidence** `hpoint` (the genuine
-§4/§17.9 conservation-of-number content), a battery of *routine* analytic fields (`hcw`/`hmem_a`/
-`hcs_cont`/`hcsP_diff`/`htrans_diff`/`htrans_diff_inv`/`hderiv_match`) describing the differentiability
-of the cluster section and the section-derivative agreement.
+family of `ClusterReindexData` — the precise remaining clustering datum at each regular slit value
+`z`. That datum has, besides the **bijection** `e` and the **point coincidence** `hpoint` (the
+genuine §4/§17.9 conservation-of-number content), a battery of *routine* analytic fields
+(`hcw`/`hmem_a`/ `hcs_cont`/`hcsP_diff`/`htrans_diff`/`htrans_diff_inv`/`hderiv_match`) describing
+the differentiability of the cluster section and the section-derivative agreement.
 
-This file **discharges those routine fields** from the genuine geometric data, so `ClusterReindexData`
-reduces to *exactly* the conservation-of-number content.  Concretely it isolates a single structure
-`FibreClusterTopology` whose fields are precisely:
+This file **discharges those routine fields** from the genuine geometric data, so
+`ClusterReindexData` reduces to *exactly* the conservation-of-number content. Concretely it isolates
+a single structure `FibreClusterTopology` whose fields are precisely:
 
 * the sphere sheet system `S` at `coe z` (regular fibre — `hderiv`/`hmero`/`hcoh`, the regular-value
   coherence supplied by the moving-fibre machinery);
 * the **conservation-of-number bijection** `e : (Σ i, Fin (D.mult i)) ≃ Fin S.n`;
 * the **point coincidence** `hpoint` (each cluster sheet point IS the matched moving sheet point);
 * the genuine *geometric* residuals that are NOT pure chart algebra: the cluster sheet stays in the
-  fixed-preimage chart source near `z` (`hsrc`), and the cluster section is a genuine local section of
-  `f.holoRepr` through the coincident point (`hcs_sec`), together with the regular-value `hreg`/`hq_np`
-  feeding the holomorphic-local-inverse uniqueness.
+  fixed-preimage chart source near `z` (`hsrc`), and the cluster section is a genuine local section
+  of `f.holoRepr` through the coincident point (`hcs_sec`), together with the regular-value
+  `hreg`/`hq_np` feeding the holomorphic-local-inverse uniqueness.
 
 Everything else — the self-chart-pullback differentiability of the cluster section, the chart
 transitions, and the section-derivative agreement `hderiv_match` — is **DERIVED** here from the
@@ -35,61 +35,63 @@ analyticity of the normal-form local inverse `s` (`(Cl i).hs_an_sheet`), the sli
 differentiability (`(Cl i).hw₀_diff`), the chart-transition analyticity (a local copy of the
 maximal-atlas coordinate change), and the proven `hderiv_match_of_section`.
 
-## What is delivered (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What is delivered
 
-* **`clusterSheet_differentiableAt`** — `clusterSheet (Cl i).s … j` is differentiable at a slit value
-  `z` (from `s` analytic at `ζʲ·w₀ z` + `w₀` differentiable at `z`).
+* **`clusterSheet_differentiableAt`** — `clusterSheet (Cl i).s … j` is differentiable at a slit
+  value `z` (from `s` analytic at `ζʲ·w₀ z` + `w₀` differentiable at `z`).
 * **`transition_analyticAt'` / `analyticAt_chart_change'`** — local copies of the maximal-atlas
   chart-transition analyticity (so this file does not depend on the Čech subtree).
 * **`clusterSection_chartPullback_differentiableAt`** — the self-chart pullback `chart_q ∘
   clusterSection` is differentiable at `z` (chart transition ∘ chart.symm ∘ clusterSheet).
-* **`FibreClusterTopology`** — the precise conservation-of-number datum (bijection + coincidence + the
-  genuine geometric residuals), with the routine analytic fields removed.
+* **`FibreClusterTopology`** — the precise conservation-of-number datum (bijection + coincidence +
+  the genuine geometric residuals), with the routine analytic fields removed.
 * **`ClusterReindexData.ofFibreClusterTopology`** — assembles a `ClusterReindexData` from a
-  `FibreClusterTopology`, discharging every routine analytic field.  This is the reduction: the
-  full-fibre cluster identity `hgeom_fibre` at `z` now rests on *only* the bijection + coincidence (+
-  the two genuine geometric residuals).
+  `FibreClusterTopology`, discharging every routine analytic field. This is the reduction: the
+  full-fibre cluster identity `hgeom_fibre` at `z` now rests on *only* the bijection + coincidence
+  (+ the two genuine geometric residuals).
 * **`FibreClusterTopology.ofClusterEmbedding`** — builds the datum from a cluster→sheet *assignment*
-  `cl` + its injectivity + the conservation-of-number count `∑ᵢ D.mult i = S.n` (the bijection `e` is
-  the bijectivization: an injection between equicardinal finite types).
+  `cl` + its injectivity + the conservation-of-number count `∑ᵢ D.mult i = S.n` (the bijection `e`
+  is the bijectivization: an injection between equicardinal finite types).
 * **`FibreClusterTopology.ofClusterFibrePoints`** — the **minimal residual**: the assignment is
-  recovered from `S.fibre_eq`, so the irreducible input shrinks to *three* facts — the cluster sheets
-  are genuine preimages of `coe z` (`hcl_fibre`), are pairwise distinct (`hcl_distinct`), and number
-  `∑ᵢ D.mult i = S.n` (`hcard`, the §4 conservation-of-number degree count).
-* **`FibreClusterReindex.ofFibreClusterTopologyFamily`** / **`residueSum_eq_zero_of_fibreClusterTopology`**
-  — the full chain: a slit-wide family of `FibreClusterTopology` discharges the per-centre
-  `FibreClusterReindex`, hence (with the concurrent genericity `AdaptedFRamified`) Gate-A `∑Res = 0`.
+  recovered from `S.fibre_eq`, so the irreducible input shrinks to *three* facts — the cluster
+  sheets are genuine preimages of `coe z` (`hcl_fibre`), are pairwise distinct (`hcl_distinct`), and
+  number `∑ᵢ D.mult i = S.n` (`hcard`, the §4 conservation-of-number degree count).
+* **`FibreClusterReindex.ofFibreClusterTopologyFamily`** /
+  **`residueSum_eq_zero_of_fibreClusterTopology`** — the full chain: a slit-wide family of
+  `FibreClusterTopology` discharges the per-centre `FibreClusterReindex`, hence (with the concurrent
+  genericity `AdaptedFRamified`) residue-theorem `∑Res = 0`.
 * **`FibreClusterTopology.sum_mult_eq_sheetCount`** — the soundness fact: the datum forces
   `∑ᵢ D.mult i = S.n`, genuinely multi-preimage.
 
 ## The precise remaining clustering-topology content
 
-After this file, Gate-A TARGET 1 (`hgeom_fibre` for the real cover) reduces, at each regular slit value
-`z`, to supplying the three minimal facts of `ofClusterFibrePoints`:
+After this file, `hgeom_fibre` for the real cover reduces, at each regular slit
+value `z`, to supplying the three minimal facts of `ofClusterFibrePoints`:
 
 1. **`hcl_fibre`** — the cluster sheet points are preimages of `coe z` (the sphere-level §5
-   `clusterSheet_sect`: `f.toRiemannSphere (clusterSection D Cl i j z) = coe z`).  Derivable from the
-   normal-form section property (`exists_clusterSplit_at_fibrePoint` gives `f.holoRepr (clusterSheet …)
-   = z`, hence the finite sphere value `coe z` at the non-pole cluster point).
-2. **`hcl_distinct`** — the cluster sheet points are pairwise distinct (the clusters are disjoint:
-   different preimages `D.xs i` are separated, and the `mᵢ` cluster sheets at one preimage are distinct
-   via the primitive root `ζ`).
-3. **`hcard`** — the conservation of number `∑ᵢ D.mult i = S.n` (`= deg f`).  The genuine §4 degree
-   identity: at the regular `z` every `localDeg = 1` so `S.n = fibreMult f (coe z)`; `N f` is locally
-   constant (`ProperMapDegreeConstruct`/`MultiplicityPatchingConstruct`, the proven
-   `exists_properMapDegree` engine), so `fibreMult f (coe z) = fibreMult f (coe c) = ∑ᵢ localDeg f (coe
-   c) (D.xs i) = ∑ᵢ D.mult i` (with `D.mult i = localDeg`, the `analyticOrderAt_holoRepr_sub_eq_mult`
-   bridge).  This is the irreducible conservation-of-number wall, isolated to a single equality of
-   naturals.
+`clusterSheet_sect`: `f.toRiemannSphere (clusterSection D Cl i j z) = coe z`). Derivable from the
+normal-form section property (`exists_clusterSplit_at_fibrePoint` gives
+`f.holoRepr (clusterSheet …) = z`, hence the finite sphere value `coe z` at the non-pole cluster
+point). 2. **`hcl_distinct`** — the cluster sheet points are pairwise distinct (the clusters are
+disjoint: different preimages `D.xs i` are separated, and the `mᵢ` cluster sheets at one preimage
+are distinct via the primitive root `ζ`). 3. **`hcard`** — the conservation of number
+`∑ᵢ D.mult i = S.n` (`= deg f`). The genuine §4 degree identity: at the regular `z` every
+`localDeg = 1` so `S.n = fibreMult f (coe z)`; `N f` is locally constant
+(`ProperMapDegreeConstruct`/`MultiplicityPatchingConstruct`, the proven `exists_properMapDegree`
+engine), so
+`fibreMult f (coe z) = fibreMult f (coe c) = ∑ᵢ localDeg f (coe c) (D.xs i) = ∑ᵢ D.mult i` (with
+`D.mult i = localDeg`, the `analyticOrderAt_holoRepr_sub_eq_mult` bridge). This is the irreducible
+conservation-of-number geometry, isolated to a single equality of naturals.
 
 ## ⚠ Soundness
 
-`FibreClusterTopology` carries the **genuine** geometric data (the real sphere sheet system, the genuine
-`clusterSheet`/`clusterSection` points, a genuine bijection, the genuine section property), never
-asserted.  The bijection `e` still forces `∑ᵢ D.mult i = S.n` (`ClusterReindexData.sum_mult_eq_sheetCount`
-applies to the assembled datum), so it is genuinely multi-preimage, not a disguised triviality.  No
-custom axiom, no unproved obligation on a false statement, no false/junk/circular field — the routine fields are
-DERIVED, the irreducible bijection + coincidence remain the only conservation-of-number content.
+`FibreClusterTopology` carries the **genuine** geometric data (the real sphere sheet system, the
+genuine `clusterSheet`/`clusterSection` points, a genuine bijection, the genuine section property),
+never asserted. The bijection `e` still forces `∑ᵢ D.mult i = S.n`
+(`ClusterReindexData.sum_mult_eq_sheetCount` applies to the assembled datum), so it is genuinely
+multi-preimage, not a disguised triviality. No custom axiom, no unproved obligation on a false
+statement, no false/junk/circular field — the routine fields are DERIVED, the irreducible bijection
++ coincidence remain the only conservation-of-number content.
 
 ## References
 
@@ -108,7 +110,6 @@ open scoped Manifold ContDiff Real
 
 attribute [local instance] Classical.propDecidable
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault.SerreResidueTheorem
 
@@ -118,18 +119,18 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.Dolbeault.FormTraceMovingFibre Jacobians.Dolbeault.FormTraceFullFibre
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ## Differentiability of the cluster sheet and section
 
-The cluster sheet `clusterSheet s ζ w₀ j w = s (ζʲ · w₀ w)` is differentiable at a slit value `z` from
-the analyticity of `s` at `ζʲ · w₀ z` (`(Cl i).hs_an_sheet`) and the differentiability of the branch
-`w₀` (`(Cl i).hw₀_diff`).  The cluster section `clusterSection D Cl i j = chart_{D.xs i}.symm ∘
-clusterSheet …` lifts this to `X`; its self-chart pullback `chart_q ∘ clusterSection` is differentiable
-by composing with the chart transition `chart_q ∘ chart_{D.xs i}.symm` (analytic, maximal-atlas
-coordinate change). -/
+The cluster sheet `clusterSheet s ζ w₀ j w = s (ζʲ · w₀ w)` is differentiable at a slit value `z`
+from the analyticity of `s` at `ζʲ · w₀ z` (`(Cl i).hs_an_sheet`) and the differentiability of the
+branch `w₀` (`(Cl i).hw₀_diff`). The cluster section
+`clusterSection D Cl i j = chart_{D.xs i}.symm ∘ clusterSheet …` lifts this to `X`; its self-chart
+pullback `chart_q ∘ clusterSection` is differentiable by composing with the chart transition
+`chart_q ∘ chart_{D.xs i}.symm` (analytic, maximal-atlas coordinate change). -/
 
-/-- **The cluster sheet is differentiable at a slit value.**  `clusterSheet s ζ w₀ j w = s (ζʲ·w₀ w)`
+/-- **The cluster sheet is differentiable at a slit value.** `clusterSheet s ζ w₀ j w = s (ζʲ·w₀ w)`
 is differentiable at `z` when `s` is analytic at `ζʲ·w₀ z` and `w₀` is differentiable at `z`. -/
 theorem clusterSheet_differentiableAt {s w₀ : ℂ → ℂ} {ζ : ℂ} {j : ℕ} {z : ℂ}
     (hs_an : AnalyticAt ℂ s (ζ ^ j * w₀ z)) (hw₀_diff : DifferentiableAt ℂ w₀ z) :
@@ -141,7 +142,8 @@ theorem clusterSheet_differentiableAt {s w₀ : ℂ → ℂ} {ζ : ℂ} {j : ℕ
 /-- **The chart transition `chart_y ∘ chart_z.symm` is analytic at `chart_z z`** (maximal-atlas
 coordinate change at `ω`), when `z ∈ chart_y.source`.  Local copy of the Čech-side
 `transition_analyticAt`, to keep this file off that subtree. -/
-theorem transition_analyticAt' {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).source) :
+theorem transition_analyticAt' {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).source) :
     AnalyticAt ℂ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) z).symm) ((chartAt (H := ℂ) z) z) := by
   have hsrc_z : z ∈ (chartAt (H := ℂ) z).source := mem_chart_source ℂ z
   have hcz_tgt : (chartAt (H := ℂ) z) z ∈ (chartAt (H := ℂ) z).target :=
@@ -160,11 +162,13 @@ theorem transition_analyticAt' {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).sour
     (ContMDiffAt.comp (I' := 𝓘(ℂ)) ((chartAt (H := ℂ) z) z) h2 h1)).analyticAt
 
 /-- **The chart transition `chart_b ∘ chart_a.symm` is analytic at an interior target point** `w₀`
-(maximal-atlas coordinate change at `ω`): if `w₀ ∈ chart_a.target` and `chart_a.symm w₀ ∈
-chart_b.source`, then `chart_b ∘ chart_a.symm` is analytic at `w₀`.  Unlike `transition_analyticAt'`
-(evaluated at the chart centre `chart_a a`), this is at an arbitrary overlap point — exactly what the
-cluster section's self-chart pullback needs (`w₀ = clusterSheet … z = chart_{D.xs i} q`). -/
-theorem transition_analyticAt_target {a b : X} {w₀ : ℂ}
+(maximal-atlas coordinate change at `ω`): if `w₀ ∈ chart_a.target` and
+`chart_a.symm w₀ ∈ chart_b.source`, then `chart_b ∘ chart_a.symm` is analytic at `w₀`. Unlike
+`transition_analyticAt'` (evaluated at the chart centre `chart_a a`), this is at an arbitrary
+overlap point — exactly what the cluster section's self-chart pullback needs
+(`w₀ = clusterSheet … z = chart_{D.xs i} q`). -/
+theorem transition_analyticAt_target {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {a b : X} {w₀ : ℂ}
     (hw₀ : w₀ ∈ (chartAt (H := ℂ) a).target)
     (hb : (chartAt (H := ℂ) a).symm w₀ ∈ (chartAt (H := ℂ) b).source) :
     AnalyticAt ℂ ((chartAt (H := ℂ) b) ∘ (chartAt (H := ℂ) a).symm) w₀ := by
@@ -182,10 +186,11 @@ theorem transition_analyticAt_target {a b : X} {w₀ : ℂ}
   rw [hpt] at h
   exact h.analyticAt
 
-/-- **Chart-change of an analytic chart pullback.**  If `h ∘ chart_y.symm` is analytic at `chart_y z`
-(for `z ∈ chart_y.source`), then `h ∘ chart_z.symm` is analytic at `chart_z z`.  Local copy of the
+/-- **Chart-change of an analytic chart pullback.** If `h ∘ chart_y.symm` is analytic at `chart_y z`
+(for `z ∈ chart_y.source`), then `h ∘ chart_z.symm` is analytic at `chart_z z`. Local copy of the
 Čech-side `analyticAt_chart_change`. -/
-theorem analyticAt_chart_change' {h : X → ℂ} {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).source)
+theorem analyticAt_chart_change' {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {h : X → ℂ} {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).source)
     (ha : AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) z)) :
     AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) z).symm) ((chartAt (H := ℂ) z) z) := by
   have hcz_tgt : (chartAt (H := ℂ) z) z ∈ (chartAt (H := ℂ) z).target :=
@@ -211,12 +216,13 @@ theorem analyticAt_chart_change' {h : X → ℂ} {y z : X} (hz : z ∈ (chartAt 
     simp only [Function.comp_apply, (chartAt (H := ℂ) y).left_inv hw]
   rw [analyticAt_congr heq]; exact hcomp
 
-/-- **The self-chart pullback of the cluster section is differentiable at `z`.**  Writing `a := D.xs i`
-and `q := clusterSection D Cl i j z`, the map `w ↦ chart_q (clusterSection D Cl i j w)` is differentiable
-at `z`, given: the cluster sheet value `clusterSheet (Cl i).s … j z ∈ chart_a.target` (`htgt`), the
-cluster sheet differentiable at `z` (`hsheet_diff`).  Proof: `chart_q ∘ clusterSection = (chart_q ∘
-chart_a.symm) ∘ clusterSheet`; the transition is analytic at `clusterSheet … z = chart_a q`
-(`transition_analyticAt_target`), and `clusterSheet` is differentiable. -/
+/-- **The self-chart pullback of the cluster section is differentiable at `z`.** Writing
+`a := D.xs i` and `q := clusterSection D Cl i j z`, the map
+`w ↦ chart_q (clusterSection D Cl i j w)` is differentiable at `z`, given: the cluster sheet value
+`clusterSheet (Cl i).s … j z ∈ chart_a.target` (`htgt`), the cluster sheet differentiable at `z`
+(`hsheet_diff`). Proof: `chart_q ∘ clusterSection = (chart_q ∘ chart_a.symm) ∘ clusterSheet`; the
+transition is analytic at `clusterSheet … z = chart_a q` (`transition_analyticAt_target`), and
+`clusterSheet` is differentiable. -/
 theorem clusterSection_chartPullback_differentiableAt {g : X → ℂ} {f : MeromorphicFunction X}
     {c : ℂ} {Sset : Set ℂ} {ω₀ : HolomorphicOneForms X} (D : FibreRamifiedData g f c)
     (Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset) (i : D.ι) (j : Fin (D.mult i)) {z : ℂ}
@@ -248,26 +254,27 @@ theorem clusterSection_chartPullback_differentiableAt {g : X → ℂ} {f : Merom
 
 /-! ## The conservation-of-number datum `FibreClusterTopology`
 
-We now isolate the genuine conservation-of-number content of `ClusterReindexData` as a structure whose
-fields are *exactly* the irreducible geometry: the sphere sheet system, the bijection, the point
-coincidence, and the two genuine geometric residuals (the cluster sheet stays in the fixed-preimage
-chart source near `z`, and the cluster section is a genuine local section of `f.holoRepr`).  Every
-routine analytic field of `ClusterReindexData` is DERIVED in `ofFibreClusterTopology` below. -/
+We now isolate the genuine conservation-of-number content of `ClusterReindexData` as a structure
+whose fields are *exactly* the irreducible geometry: the sphere sheet system, the bijection, the
+point coincidence, and the two genuine geometric residuals (the cluster sheet stays in the
+fixed-preimage chart source near `z`, and the cluster section is a genuine local section of
+`f.holoRepr`). Every routine analytic field of `ClusterReindexData` is DERIVED in
+`ofFibreClusterTopology` below. -/
 
-/-- **The fibre-cluster topology datum at a regular slit value `z`** (the precise conservation-of-number
-content of `ClusterReindexData`, routine analytic fields removed).  At `z`:
+/-- **The fibre-cluster topology datum at a regular slit value `z`** (the precise
+conservation-of-number content of `ClusterReindexData`, routine analytic fields removed). At `z`:
 
 * `S`/`hderiv`/`hmero`/`hcoh` — the sphere sheet system at `coe z` with the regular-value coherence
   (supplied by the moving-fibre machinery, as in `ClusterReindexData`);
-* `e` — the **conservation-of-number bijection** `(Σ i, Fin (D.mult i)) ≃ Fin S.n` of the cluster index
-  with the `deg f` sphere sheets;
-* `hpoint` — the **point coincidence**: the `j`-th cluster sheet at `i` IS the `e ⟨i,j⟩`-th moving sheet
-  point (the conservation-of-number content; forces `∑ᵢ mᵢ = deg f`);
-* `hsrc` — the cluster sheet value `clusterSheet (Cl i).s … j w` stays in `D.xs i`'s chart target near
-  `z` (the cluster clusters at `D.xs i` — a genuine §5 normal-form fact);
-* `hsheet_diff` — the cluster sheet is differentiable at `z` (from `s` analytic + `w₀` differentiable;
-  a normal-form analyticity fact, kept as a field for the caller's convenience but supplied by
-  `clusterSheet_differentiableAt`);
+* `e` — the **conservation-of-number bijection** `(Σ i, Fin (D.mult i)) ≃ Fin S.n` of the cluster
+  index with the `deg f` sphere sheets;
+* `hpoint` — the **point coincidence**: the `j`-th cluster sheet at `i` IS the `e ⟨i,j⟩`-th moving
+  sheet point (the conservation-of-number content; forces `∑ᵢ mᵢ = deg f`);
+* `hsrc` — the cluster sheet value `clusterSheet (Cl i).s … j w` stays in `D.xs i`'s chart target
+  near `z` (the cluster clusters at `D.xs i` — a genuine §5 normal-form fact);
+* `hsheet_diff` — the cluster sheet is differentiable at `z` (from `s` analytic + `w₀`
+  differentiable; a normal-form analyticity fact, kept as a field for the caller's convenience but
+  supplied by `clusterSheet_differentiableAt`);
 * `hcs_sec` — the cluster section is a genuine local section of `f.holoRepr` near `z`
   (`f.holoRepr (clusterSection D Cl i j w) = w`; the §5 normal-form section property — the cluster
   sheets are genuine preimages of `z`).
@@ -280,7 +287,8 @@ structure FibreClusterTopology {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {
     (Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset) (z : ℂ) where
   /-- The sphere sheet system at `coe z`. -/
   S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))
-  /-- Regular-value: the chart-pullback derivative of `f.holoRepr` is nonzero at each sheet point. -/
+  /-- Regular-value: the chart-pullback derivative of `f.holoRepr` is nonzero at each sheet point.
+  -/
   hderiv : ∀ k, deriv (fun w => f.holoRepr
       ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
     ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere))))
@@ -295,7 +303,8 @@ structure FibreClusterTopology {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {
     = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv hmero)).traceCoeff z
   /-- **The conservation-of-number bijection** of the cluster `Σ`-index with the `deg f` sheets. -/
   e : (Σ i : D.ι, Fin (D.mult i)) ≃ Fin S.n
-  /-- **Point coincidence**: the `j`-th cluster sheet at `i` is the `e ⟨i,j⟩`-th moving sheet point. -/
+  /-- **Point coincidence**: the `j`-th cluster sheet at `i` is the `e ⟨i,j⟩`-th moving sheet point.
+  -/
   hpoint : ∀ (i : D.ι) (j : Fin (D.mult i)),
     clusterSection D Cl i j z = S.sheet (e ⟨i, j⟩) (((z : ℂ) : RiemannSphere))
   /-- The cluster sheet value stays in the fixed preimage's chart target near `z`. -/
@@ -341,8 +350,8 @@ theorem sheet_holoRepr (R : FibreClusterTopology Φ D Cl z) (k : Fin R.S.n) :
     f.holoRepr (R.S.sheet k (((z : ℂ) : RiemannSphere))) = z :=
   (f.nonpole_of_toRiemannSphere_eq_coe (R.sheet_toRiemannSphere k)).2
 
-/-- The cluster section is continuous at `z` (cluster sheet differentiable + chart.symm continuous at
-the interior target point). -/
+/-- The cluster section is continuous at `z` (cluster sheet differentiable + chart.symm continuous
+at the interior target point). -/
 theorem clusterSection_continuousAt (R : FibreClusterTopology Φ D Cl z) (i : D.ι)
     (j : Fin (D.mult i)) : ContinuousAt (clusterSection D Cl i j) z := by
   have hsymm_cont : ContinuousAt (chartAt ℂ (D.xs i)).symm
@@ -359,13 +368,14 @@ end FibreClusterTopology
 * `hmem_a` — `clusterSection_mem_source` (the `z`-instance of `hsrc`);
 * `hcs_cont` — `clusterSection_continuousAt` (cluster sheet diff + chart.symm continuity);
 * `hcsP_diff` — `clusterSection_chartPullback_differentiableAt`;
-* `htrans_diff`/`htrans_diff_inv` — `transition_analyticAt_target` (the chart transitions between `D.xs
-  i` and the cluster point `q`, both in each other's chart source);
-* `hderiv_match` — `hderiv_match_of_section` (both `clusterSection` and `holoReprSheet (e ⟨i,j⟩)` are
-  sections of `f.holoRepr` through the coincident point `q`, with the regular-value `hderiv`).
+* `htrans_diff`/`htrans_diff_inv` — `transition_analyticAt_target` (the chart transitions between
+  `D.xs i` and the cluster point `q`, both in each other's chart source);
+* `hderiv_match` — `hderiv_match_of_section` (both `clusterSection` and `holoReprSheet (e ⟨i,j⟩)`
+  are sections of `f.holoRepr` through the coincident point `q`, with the regular-value `hderiv`).
 
 So the full-fibre cluster identity at `z` rests on *only* the bijection `e` + the point coincidence
-`hpoint` + the two genuine geometric residuals `hsrc`/`hcs_sec` — the conservation-of-number content. -/
+`hpoint` + the two genuine geometric residuals `hsrc`/`hcs_sec` — the conservation-of-number
+content. -/
 noncomputable def ClusterReindexData.ofFibreClusterTopology {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
     {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
     {D : FibreRamifiedData g f c} {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}
@@ -389,7 +399,8 @@ noncomputable def ClusterReindexData.ofFibreClusterTopology {ω₀ : Holomorphic
       (R.hsheet_diff i j)
   htrans_diff := by
     intro i j
-    -- `chart_{D.xs i} ∘ chart_q.symm` analytic at `chart_q q` (transition target at the chart centre).
+    -- `chart_{D.xs i} ∘ chart_q.symm` analytic at `chart_q q` (transition target at the chart
+    -- centre).
     set q : X := clusterSection D Cl i j z with hq
     have hq_src_a : q ∈ (chartAt ℂ (D.xs i)).source := R.clusterSection_mem_source i j
     exact (transition_analyticAt_target (a := q) (b := D.xs i)
@@ -445,20 +456,21 @@ The bijection `e` and the point coincidence `hpoint` are the genuine conservatio
 We package the cleanest form of that content as a **cluster→sheet assignment** `cl : (i) → Fin
 (D.mult i) → Fin S.n` together with:
 
-* `hcl_point` — each cluster sheet point IS the assigned moving sheet point (`clusterSection D Cl i j z
-  = S.sheet (cl i j) (coe z)`);
+* `hcl_point` — each cluster sheet point IS the assigned moving sheet point
+  (`clusterSection D Cl i j z = S.sheet (cl i j) (coe z)`);
 * `hcl_inj` — distinct cluster `(i,j)` go to distinct sheets (the clusters are disjoint — different
   preimages are far apart, cluster sheets at one preimage are distinct by the primitive root);
 * `hcard` — the **conservation of number** `∑ᵢ D.mult i = S.n` (the §4 degree identity: the `deg f`
   regular sheets partition into the per-preimage clusters of total size `∑ᵢ mᵢ`).
 
-From these, `e := Equiv.ofBijective` of the injective+equicardinal assignment, and `hpoint` is exactly
-`hcl_point` (`e ⟨i,j⟩ = cl i j` by construction).  This is the precise remaining clustering-topology
-input: the assignment + its injectivity + the degree count.  Everything else is DERIVED. -/
+From these, `e := Equiv.ofBijective` of the injective+equicardinal assignment, and `hpoint` is
+exactly `hcl_point` (`e ⟨i,j⟩ = cl i j` by construction). This is the precise remaining
+clustering-topology input: the assignment + its injectivity + the degree count. Everything else is
+DERIVED. -/
 
 /-- **`FibreClusterTopology` from a cluster→sheet embedding** (the bijection skeleton).  Given the
-sphere sheet system data, the cluster→sheet assignment `cl` with the point coincidence `hcl_point`, its
-injectivity `hcl_inj`, the conservation-of-number count `hcard : ∑ᵢ D.mult i = S.n`, and the two
+sphere sheet system data, the cluster→sheet assignment `cl` with the point coincidence `hcl_point`,
+its injectivity `hcl_inj`, the conservation-of-number count `hcard : ∑ᵢ D.mult i = S.n`, and the two
 genuine geometric residuals (`hsrc`, `hcs_sec`) plus the cluster sheet differentiability, the
 `FibreClusterTopology` datum holds — with `e` the bijectivization of `cl` (an injection between
 equicardinal finite types is a bijection) and `hpoint` exactly `hcl_point`. -/
@@ -506,8 +518,8 @@ noncomputable def FibreClusterTopology.ofClusterEmbedding {ω₀ : HolomorphicOn
 
 /-! ## The minimal conservation-of-number residual: fibre points + distinctness + degree count
 
-We refine the embedding once more, deriving the assignment `cl` and its injectivity `hcl_inj` from the
-genuine geometry, so the irreducible input shrinks to **three** facts:
+We refine the embedding once more, deriving the assignment `cl` and its injectivity `hcl_inj` from
+the genuine geometry, so the irreducible input shrinks to **three** facts:
 
 * `hcl_fibre` — each cluster sheet point is a genuine preimage of `coe z`
   (`f.toRiemannSphere (clusterSection D Cl i j z) = coe z`; the sphere-level form of the §5
@@ -516,21 +528,22 @@ genuine geometry, so the irreducible input shrinks to **three** facts:
   (`Function.Injective (fun p ↦ clusterSection D Cl p.1 p.2 z)`; the clusters are disjoint);
 * `hcard` — the conservation of number `∑ᵢ D.mult i = S.n`.
 
-The assignment `cl i j` is then the unique sheet index with `S.sheet (cl i j) (coe z) = clusterSection
-D Cl i j z` (existence by `S.fibre_eq`, uniqueness by `S.sheet_inj`), and `hcl_inj` follows from
-`hcl_distinct` (distinct points ⟹ distinct sheets, the sheet points being injective in the index).
-This is the precise remaining clustering-topology content of the whole Gate-A TARGET 1, stated
-minimally. -/
+The assignment `cl i j` is then the unique sheet index with
+`S.sheet (cl i j) (coe z) = clusterSection D Cl i j z` (existence by `S.fibre_eq`, uniqueness by
+`S.sheet_inj`), and `hcl_inj` follows from `hcl_distinct` (distinct points ⟹ distinct sheets, the
+sheet points being injective in the index). This is the precise remaining clustering-topology
+content of the whole fibre-cluster reindexing, stated minimally. -/
 
 /-- **`FibreClusterTopology` from the minimal conservation-of-number residual.**  Given the sphere
 sheet system data, the cluster-sheet-points-are-fibre-points fact `hcl_fibre`, their pairwise
-distinctness `hcl_distinct`, the conservation-of-number count `hcard`, and the two geometric residuals
-(`hsrc`, `hcs_sec`) + cluster sheet differentiability, the `FibreClusterTopology` datum holds.
+distinctness `hcl_distinct`, the conservation-of-number count `hcard`, and the two geometric
+residuals (`hsrc`, `hcs_sec`) + cluster sheet differentiability, the `FibreClusterTopology` datum
+holds.
 
 The cluster→sheet assignment `cl i j` is recovered as the unique sheet index over the cluster point
-(`S.fibre_eq` + `S.sheet_inj`); its injectivity reduces to `hcl_distinct`.  This is the cleanest
-statement of the genuine §4/§17.9 conservation-of-number / properness wall: the cluster sheets are
-preimages, are distinct, and number `∑ᵢ mᵢ = deg f`. -/
+(`S.fibre_eq` + `S.sheet_inj`); its injectivity reduces to `hcl_distinct`. This is the cleanest
+statement of the genuine §4/§17.9 conservation-of-number / properness content: the cluster sheets
+are preimages, are distinct, and number `∑ᵢ mᵢ = deg f`. -/
 noncomputable def FibreClusterTopology.ofClusterFibrePoints {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
     {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
     {D : FibreRamifiedData g f c} {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}
@@ -586,16 +599,16 @@ noncomputable def FibreClusterTopology.ofClusterFibrePoints {ω₀ : Holomorphic
 
 /-! ## Soundness: the datum genuinely encodes conservation of number (multi-preimage, not vacuous)
 
-The decisive #13-style check.  A `FibreClusterTopology`'s bijection field `e` forces the
+The decisive #13-style check. A `FibreClusterTopology`'s bijection field `e` forces the
 conservation-of-number identity `∑ᵢ D.mult i = S.n` (`= deg f`), so the datum is genuinely
-multi-preimage — not a disguised single-preimage placeholder or a vacuous triviality.  The minimal
+multi-preimage — not a disguised single-preimage placeholder or a vacuous triviality. The minimal
 constructor `ofClusterFibrePoints` accepts *any* `hcard : ∑ᵢ D.mult i = S.n` with ramified
-multiplicities (several preimages with `mᵢ > 1`), confirming the wall is the genuine multi-cluster
-content. -/
+multiplicities (several preimages with `mᵢ > 1`), confirming the content is the genuine
+multi-cluster content. -/
 
 /-- **Conservation of number, encoded by the topology datum.**  A `FibreClusterTopology` forces
-`∑ᵢ D.mult i = R.S.n` (`= deg f`): the bijection `e` of the cluster `Σ`-index with the `deg f` sheets
-has matching `Fintype.card`.  Confirms the datum is genuinely multi-preimage, not vacuous. -/
+`∑ᵢ D.mult i = R.S.n` (`= deg f`): the bijection `e` of the cluster `Σ`-index with the `deg f`
+sheets has matching `Fintype.card`. Confirms the datum is genuinely multi-preimage, not vacuous. -/
 theorem FibreClusterTopology.sum_mult_eq_sheetCount {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
     {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
     {D : FibreRamifiedData g f c} {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}
@@ -605,17 +618,19 @@ theorem FibreClusterTopology.sum_mult_eq_sheetCount {ω₀ : HolomorphicOneForms
 
 /-! ## Wiring the full chain: `FibreClusterTopology` family ⟹ `FibreClusterReindex` ⟹ `∑Res = 0`
 
-Composing `ClusterReindexData.ofFibreClusterTopology` with the PROVEN
-`FibreClusterReindex.ofClusterReindexFamily` (`SerreResidueRamifiedClusterPartition.lean`), a slit-wide
-family of `FibreClusterTopology` discharges the whole per-centre `FibreClusterReindex` — i.e. building
-the cover's `FibreClusterReindex` reduces to supplying, at each slit value, the conservation-of-number
-datum (bijection + coincidence + the geometric residuals), or — via `ofClusterFibrePoints` — the three
-minimal facts (cluster sheets are distinct fibre points numbering `deg f`). -/
+Composing `ClusterReindexData.ofFibreClusterTopology` with the proven
+`FibreClusterReindex.ofClusterReindexFamily` (`SerreResidueRamifiedClusterPartition.lean`), a
+slit-wide family of `FibreClusterTopology` discharges the whole per-centre `FibreClusterReindex` —
+i.e. building the cover's `FibreClusterReindex` reduces to supplying, at each slit value, the
+conservation-of-number datum (bijection + coincidence + the geometric residuals), or — via
+`ofClusterFibrePoints` — the three minimal facts (cluster sheets are distinct fibre points numbering
+`deg f`). -/
 
-/-- **`FibreClusterReindex` from a slit-wide family of `FibreClusterTopology`.**  The full reduction:
-the per-centre fibre-cluster reindexing follows from the routine bookkeeping plus a `FibreClusterTopology`
-at every slit value `z` (the conservation-of-number datum).  Discharges `hgeom_fibre` pointwise by
-`ClusterReindexData.ofFibreClusterTopology` ∘ `valueChartTrace_eq_clusterSum_of_clusterReindexData`. -/
+/-- **`FibreClusterReindex` from a slit-wide family of `FibreClusterTopology`.** The full reduction:
+the per-centre fibre-cluster reindexing follows from the routine bookkeeping plus a
+`FibreClusterTopology` at every slit value `z` (the conservation-of-number datum). Discharges
+`hgeom_fibre` pointwise by `ClusterReindexData.ofFibreClusterTopology` ∘
+`valueChartTrace_eq_clusterSum_of_clusterReindexData`. -/
 noncomputable def FibreClusterReindex.ofFibreClusterTopologyFamily {ω₀ : HolomorphicOneForms X}
     {g : X → ℂ} {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0} {poles : Finset X}
     {c : ℂ} {Sset : Set ℂ}
@@ -637,17 +652,18 @@ noncomputable def FibreClusterReindex.ofFibreClusterTopologyFamily {ω₀ : Holo
   FibreClusterReindex.ofClusterReindexFamily hanalytic D hD_inj hD_mem hD_surj hS_acc Cl hmult
     hsplit0 ppord hbnd (fun z hz => ClusterReindexData.ofFibreClusterTopology (hfam z hz))
 
-/-- **Gate A `∑Res = 0` from per-centre `FibreClusterTopology` families** (the precise residual
-exhibited).  For a genuine meromorphic numerator `g`, an `AdaptedFRamified` datum `A`, and at each finite
-pole-value centre a per-centre `FibreClusterReindex` (e.g. built via
-`FibreClusterReindex.ofFibreClusterTopologyFamily` from a slit-wide family of `FibreClusterTopology`),
-the total residue of `α = ω₀·g` vanishes:
+/-- **The residue theorem `∑Res = 0` from per-centre `FibreClusterTopology` families** (the
+precise residual exhibited). For a genuine meromorphic numerator `g`, an `AdaptedFRamified` datum
+`A`, and at each finite pole-value centre a per-centre `FibreClusterReindex` (e.g. built via
+`FibreClusterReindex.ofFibreClusterTopologyFamily` from a slit-wide family of
+`FibreClusterTopology`), the total residue of `α = ω₀·g` vanishes:
 
 > `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`.
 
-This anchors the conservation-of-number datum to the Gate-A goal: the *only* genuinely-remaining content
-is the per-centre `FibreClusterTopology` — and, via `ofClusterFibrePoints`, exactly the three minimal
-clustering facts (cluster sheets are distinct fibre points numbering `deg f`). -/
+This anchors the conservation-of-number datum to the residue-theorem goal: the *only*
+genuinely-remaining content is the per-centre `FibreClusterTopology` — and, via
+`ofClusterFibrePoints`, exactly the three minimal clustering facts (cluster sheets are distinct
+fibre points numbering `deg f`). -/
 theorem residueSum_eq_zero_of_fibreClusterTopology {ω₀ : HolomorphicOneForms X}
     {g : MeromorphicFunction X} {poles : Finset X} (A : AdaptedFRamified ω₀ g poles)
     (R : ∀ i, FibreClusterReindex ω₀ g.toFun A.f A.hdiv poles (A.cs i)) :

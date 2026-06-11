@@ -8,8 +8,8 @@
   chart transitions (`contDiffGroupoid ω 𝓘(ℂ)`) are real-smooth (`contDiffGroupoid ⊤ 𝓘(ℝ,ℂ)`), via
   `ContDiffOn ℂ ω ⟹ ContDiffOn ℝ ⊤` (`of_le` + `restrict_scalars`).
 
-  The ℂ-as-ℝ-module instance diamond in `restrict_scalars` (cf. `reference_module_real_diamond`) is a
-  defeq-transparency issue, handled exactly as Mathlib's own `Analysis/Complex/RealDeriv.lean` does:
+  The ℂ-as-ℝ-module instance diamond surfacing in `restrict_scalars` is a defeq-transparency
+  issue, handled exactly as Mathlib's own `Analysis/Complex/RealDeriv.lean` does:
   `set_option backward.isDefEq.respectTransparency false`.
 -/
 import Jacobians.Genus

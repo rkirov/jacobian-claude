@@ -13,9 +13,9 @@ This is the cochain-level **cup product** that the Forster §17.5 residue pairin
 `⟨f, ξ⟩ = Res((f·ω₀)·ξ)` rests on, phrased after the Forster §17.4 isomorphism `ω₀· : 𝒪_K ≅ Ω`
 (`Jacobians.Dolbeault.CanonicalFormIso`): under `α ↦ α/ω₀`, a *holomorphic* 1-form is exactly a
 function with poles bounded by the canonical divisor `K = div ω₀`, so the holomorphic-1-form sheaf
-`Ω` is identified with the structure sheaf `𝒪_K`, and **`H¹(X,Ω) ≅ 𝔘.cechH1 K`** — the *already-built*
-structure-sheaf Čech `H¹`. The cup product `(f·ω₀)·ξ ↦ ((f·ω₀)·ξ)/ω₀ = f·ξ` then reduces to plain
-multiplication of the function cocycle `ξ` by the global meromorphic function `f`:
+`Ω` is identified with the structure sheaf `𝒪_K`, and **`H¹(X,Ω) ≅ 𝔘.cechH1 K`** — the
+*already-built* structure-sheaf Čech `H¹`. The cup product `(f·ω₀)·ξ ↦ ((f·ω₀)·ξ)/ω₀ = f·ξ` then
+reduces to plain multiplication of the function cocycle `ξ` by the global meromorphic function `f`:
 
   `cup f : 𝔘.cechH1 D → 𝔘.cechH1 K`,  `[ξ] ↦ [f·ξ]`,  for `f ∈ L(K−D)`.
 
@@ -25,31 +25,32 @@ mechanical, sound part of the §17.5 descent (`MGerm` is a `Filter.Germ` `CommRi
 multiplication and its ℂ-linearity are available, and germ restriction is a ring hom, so multiplying
 by `f` commutes with the Čech differential and preserves cocycles/coboundaries).
 
-## What is built here (complete, axiom-clean)
+## Main definitions
 
 * `mulLeftG a` — left-multiplication of `MGerm U` by a fixed germ `a`, as an ℂ-linear map; and
-  `globalGerm f U` — the germ on `↥U` of a *global* meromorphic function `f` (the function-side avatar
-  of `f·ω₀` after dividing by `ω₀`).
-* `mulConstG_omegaDGerm` — multiplying a `𝒪_D` germ by `f ∈ L(K−D)` lands in `𝒪_K` (order additivity).
-* `cupCochain0/1/2 f` — the induced maps on cochains, commuting with `rawRestrictG` and `cechDelta0/1`.
-* `cupCochain1_cocycles1`, `cupCochain1_coboundaries1` — they map `𝒪_D`-cocycles to `𝒪_K`-cocycles and
-  `𝒪_D`-coboundaries to `𝒪_K`-coboundaries (so the cup descends to cohomology).
+  `globalGerm f U` — the germ on `↥U` of a *global* meromorphic function `f` (the function-side
+  avatar of `f·ω₀` after dividing by `ω₀`).
+* `mulConstG_omegaDGerm` — multiplying a `𝒪_D` germ by `f ∈ L(K−D)` lands in `𝒪_K` (order
+  additivity).
+* `cupCochain0/1/2 f` — the induced maps on cochains, commuting with `rawRestrictG` and
+  `cechDelta0/1`.
+* `cupCochain1_cocycles1`, `cupCochain1_coboundaries1` — they map `𝒪_D`-cocycles to `𝒪_K`-cocycles
+  and `𝒪_D`-coboundaries to `𝒪_K`-coboundaries (so the cup descends to cohomology).
 * `cupH1 hf : 𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 K` — the descended cup product on cohomology classes.
 * `cup D K : lSysModule (K − D) →ₗ[ℂ] (𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 K)` — ℂ-linear in `f` too (the
   junk-free `lSysModule` source, via `cupH1_add`/`cupH1_smul` + germ-zero descent), bundled as a
   bilinear map; the algebraic input to the §17.5 residue pairing.
 
 The remaining §17.5 piece — the global residue `Res : 𝔘.cechH1 K → ℂ` (Forster 17.3, via the
-Mittag–Leffler connecting map, the genuinely-greenfield analytic descent) — is built separately; this
-file supplies its cup-product argument. See `SerreResiduePairing.lean`.
+Mittag–Leffler connecting map) — is built separately (`SerreDualityPairing`); this file supplies
+its cup-product argument.
 
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.4 (`ω₀· : 𝒪_K ≅ Ω`), §17.5 (pairing).
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.4 (`ω₀· : 𝒪_K ≅ Ω`),
+§17.5 (pairing).
 -/
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
-
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
@@ -71,13 +72,16 @@ noncomputable def mulLeftG {U : Opens X} (a : MGerm U) : MGerm U →ₗ[ℂ] MGe
     rw [show c • (↑(a * g) : MGerm U) = (↑(c • (a * g)) : MGerm U) from rfl]
     congr 1; funext x; simp only [Pi.mul_apply, Pi.smul_apply, smul_eq_mul]; ring
 
-@[simp] theorem mulLeftG_apply {U : Opens X} (a g : MGerm U) : mulLeftG a g = a * g := rfl
+@[simp] theorem mulLeftG_apply {X : Type*} [TopologicalSpace X] {U : Opens X} (a g : MGerm U) :
+    mulLeftG a g = a * g := rfl
 
-/-- Scalar-multiplication / ring-multiplication associativity on `MGerm` (`(a • x) * y = a • (x*y)`):
-the `Module ℂ` action is the pointwise `(a • ·)` (definitionally `↑(a • ·)`).  Proven directly to
-avoid an `IsScalarTower ℂ (MGerm U) (MGerm U)` synthesis gap (the `Germ` `Module ℂ` comes from the
-C*-algebra path, not registered as a scalar tower with the ring multiplication). -/
-theorem smul_mul_MGerm {U : Opens X} (a : ℂ) (x y : MGerm U) : (a • x) * y = a • (x * y) := by
+/-- Scalar-multiplication / ring-multiplication associativity on `MGerm`
+(`(a • x) * y = a • (x*y)`): the `Module ℂ` action is the pointwise `(a • ·)` (definitionally
+`↑(a • ·)`). Proven directly to avoid an `IsScalarTower ℂ (MGerm U) (MGerm U)` synthesis gap (the
+`Germ` `Module ℂ` comes from the C*-algebra path, not registered as a scalar tower with the ring
+multiplication). -/
+theorem smul_mul_MGerm {X : Type*} [TopologicalSpace X] {U : Opens X} (a : ℂ) (x y : MGerm U) :
+    (a • x) * y = a • (x * y) := by
   induction x using Filter.Germ.inductionOn with | _ x =>
   induction y using Filter.Germ.inductionOn with | _ y =>
   show (↑(a • x) : MGerm U) * ↑y = a • (↑(x * y) : MGerm U)
@@ -86,7 +90,8 @@ theorem smul_mul_MGerm {U : Opens X} (a : ℂ) (x y : MGerm U) : (a • x) * y =
 
 /-- Germ restriction is a ring hom (`rawRestrictG (a*b) = rawRestrictG a * rawRestrictG b`): both
 sides are the germ of the pointwise product precomposed with the open inclusion. -/
-theorem rawRestrictG_mul {U V : Opens X} (h : V ≤ U) (a b : MGerm U) :
+theorem rawRestrictG_mul {X : Type*} [TopologicalSpace X] {U V : Opens X} (h : V ≤ U)
+    (a b : MGerm U) :
     rawRestrictG h (a * b) = rawRestrictG h a * rawRestrictG h b := by
   induction a using Filter.Germ.inductionOn with | _ a =>
   induction b using Filter.Germ.inductionOn with | _ b =>
@@ -100,9 +105,12 @@ this germ. -/
 noncomputable def globalGerm (F : MeromorphicFunction X) (U : Opens X) : MGerm U :=
   toGerm U (F.toFun ∘ Subtype.val)
 
-/-- Restriction of the global germ to a smaller open is the global germ there (`F` is the same global
-function; restriction is precomposition with the open inclusion, and `(F∘val) ∘ openIncl = F∘val`). -/
-theorem rawRestrictG_globalGerm (F : MeromorphicFunction X) {U V : Opens X} (h : V ≤ U) :
+/-- Restriction of the global germ to a smaller open is the global germ there (`F` is the same
+global function; restriction is precomposition with the open inclusion, and
+`(F∘val) ∘ openIncl = F∘val`). -/
+theorem rawRestrictG_globalGerm {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (F : MeromorphicFunction X)
+    {U V : Opens X} (h : V ≤ U) :
     rawRestrictG h (globalGerm F U) = globalGerm F V := by
   rw [globalGerm, rawRestrictG_coe]; rfl
 
@@ -154,8 +162,8 @@ theorem mulConstG_omegaDGerm {D K : Divisor X} {f : MeromorphicFunction X}
 /-! ## Part 3 — the cochain-level cup product and its commutation with the Čech differentials
 
 `cupCochain0 f` / `cupCochain1 f` multiply each component of a cochain by the global germ of `f` on
-that open.  Because germ restriction is a ring hom (`rawRestrictG_mul`) and `globalGerm f` restricts to
-`globalGerm f` (`rawRestrictG_globalGerm`), these commute with `cechDelta0` and `cechDelta1`. -/
+that open. Because germ restriction is a ring hom (`rawRestrictG_mul`) and `globalGerm f` restricts
+to `globalGerm f` (`rawRestrictG_globalGerm`), these commute with `cechDelta0` and `cechDelta1`. -/
 
 variable (𝔘 : FiniteFamily X)
 
@@ -169,22 +177,29 @@ noncomputable def cupCochain1 (f : MeromorphicFunction X) : 𝔘.Cochain1 →ₗ
 
 /-- Multiply each component of a 2-cochain by the global germ of `f` on the triple intersection. -/
 noncomputable def cupCochain2 (f : MeromorphicFunction X) : 𝔘.Cochain2 →ₗ[ℂ] 𝔘.Cochain2 :=
-  LinearMap.pi fun t => mulLeftG (globalGerm f (𝔘.U t.1 ⊓ 𝔘.U t.2.1 ⊓ 𝔘.U t.2.2)) ∘ₗ LinearMap.proj t
+  LinearMap.pi fun t =>
+    mulLeftG (globalGerm f (𝔘.U t.1 ⊓ 𝔘.U t.2.1 ⊓ 𝔘.U t.2.2)) ∘ₗ LinearMap.proj t
 
-@[simp] theorem cupCochain0_apply (f : MeromorphicFunction X) (c : 𝔘.Cochain0) (i : 𝔘.ι) :
+@[simp] theorem cupCochain0_apply {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (𝔘 : FiniteFamily X)
+    (f : MeromorphicFunction X) (c : 𝔘.Cochain0) (i : 𝔘.ι) :
     cupCochain0 𝔘 f c i = globalGerm f (𝔘.U i) * c i := rfl
 
-@[simp] theorem cupCochain1_apply (f : MeromorphicFunction X) (c : 𝔘.Cochain1) (p : 𝔘.ι × 𝔘.ι) :
+@[simp] theorem cupCochain1_apply {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (𝔘 : FiniteFamily X)
+    (f : MeromorphicFunction X) (c : 𝔘.Cochain1) (p : 𝔘.ι × 𝔘.ι) :
     cupCochain1 𝔘 f c p = globalGerm f (𝔘.U p.1 ⊓ 𝔘.U p.2) * c p := rfl
 
-@[simp] theorem cupCochain2_apply (f : MeromorphicFunction X) (c : 𝔘.Cochain2)
-    (t : 𝔘.ι × 𝔘.ι × 𝔘.ι) :
+@[simp] theorem cupCochain2_apply {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (𝔘 : FiniteFamily X)
+    (f : MeromorphicFunction X) (c : 𝔘.Cochain2) (t : 𝔘.ι × 𝔘.ι × 𝔘.ι) :
     cupCochain2 𝔘 f c t = globalGerm f (𝔘.U t.1 ⊓ 𝔘.U t.2.1 ⊓ 𝔘.U t.2.2) * c t := rfl
 
 /-- **Multiplying by `f` commutes with `δ⁰`** (`cup ∘ δ⁰ = δ⁰ ∘ cup`).  On each pair `(i,j)`, both
 sides equal `globalGerm f (U_i∩U_j) · (g_j|_{ij} − g_i|_{ij})` — germ restriction is a ring hom and
 `globalGerm f` restricts to `globalGerm f`. -/
-theorem cupCochain1_comp_cechDelta0 (f : MeromorphicFunction X) :
+theorem cupCochain1_comp_cechDelta0 {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (𝔘 : FiniteFamily X) (f : MeromorphicFunction X) :
     (cupCochain1 𝔘 f) ∘ₗ 𝔘.cechDelta0 = 𝔘.cechDelta0 ∘ₗ (cupCochain0 𝔘 f) := by
   refine LinearMap.ext fun c => ?_
   funext p
@@ -193,10 +208,11 @@ theorem cupCochain1_comp_cechDelta0 (f : MeromorphicFunction X) :
     LinearMap.sub_apply, LinearMap.proj_apply, cupCochain0_apply, mul_sub,
     rawRestrictG_mul, rawRestrictG_globalGerm]
 
-/-- **Multiplying by `f` commutes with `δ¹`** (`cup ∘ δ¹ = δ¹ ∘ cup`).  Termwise: germ restriction is
-a ring hom, and `globalGerm f` restricts to `globalGerm f`, so the three alternating terms each carry
-the `f`-factor through. -/
-theorem cupCochain2_comp_cechDelta1 (f : MeromorphicFunction X) :
+/-- **Multiplying by `f` commutes with `δ¹`** (`cup ∘ δ¹ = δ¹ ∘ cup`). Termwise: germ restriction is
+a ring hom, and `globalGerm f` restricts to `globalGerm f`, so the three alternating terms each
+carry the `f`-factor through. -/
+theorem cupCochain2_comp_cechDelta1 {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (𝔘 : FiniteFamily X) (f : MeromorphicFunction X) :
     (cupCochain2 𝔘 f) ∘ₗ 𝔘.cechDelta1 = 𝔘.cechDelta1 ∘ₗ (cupCochain1 𝔘 f) := by
   refine LinearMap.ext fun c => ?_
   funext t
@@ -209,13 +225,15 @@ theorem cupCochain2_comp_cechDelta1 (f : MeromorphicFunction X) :
 
 variable {𝔘}
 
-/-- Multiplying a 0-cochain of `𝒪_D`-sections by `f ∈ L(K−D)` gives a 0-cochain of `𝒪_K`-sections. -/
+/-- Multiplying a 0-cochain of `𝒪_D`-sections by `f ∈ L(K−D)` gives a 0-cochain of `𝒪_K`-sections.
+-/
 theorem cupCochain0_sections0 {D K : Divisor X} {f : MeromorphicFunction X}
     (hf : f ∈ linearSystem (X := X) (K - D)) {c : 𝔘.Cochain0} (hc : c ∈ 𝔘.sections0 D) :
     cupCochain0 𝔘 f c ∈ 𝔘.sections0 K :=
   fun i => mulConstG_omegaDGerm hf (hc i)
 
-/-- Multiplying a 1-cochain of `𝒪_D`-sections by `f ∈ L(K−D)` gives a 1-cochain of `𝒪_K`-sections. -/
+/-- Multiplying a 1-cochain of `𝒪_D`-sections by `f ∈ L(K−D)` gives a 1-cochain of `𝒪_K`-sections.
+-/
 theorem cupCochain1_sections1 {D K : Divisor X} {f : MeromorphicFunction X}
     (hf : f ∈ linearSystem (X := X) (K - D)) {c : 𝔘.Cochain1} (hc : c ∈ 𝔘.sections1 D) :
     cupCochain1 𝔘 f c ∈ 𝔘.sections1 K :=
@@ -246,8 +264,8 @@ theorem cupCochain1_coboundaries1 {D K : Divisor X} {f : MeromorphicFunction X}
 
 /-! ## Part 5 — the descended cup product on cohomology `cupH1 f : cechH1 D →ₗ cechH1 K` -/
 
-/-- The cup product as a linear map of cocycle submodules `cocycles1 D → cocycles1 K` (the restriction
-of `cupCochain1 f`). -/
+/-- The cup product as a linear map of cocycle submodules `cocycles1 D → cocycles1 K` (the
+restriction of `cupCochain1 f`). -/
 noncomputable def cupCocyclesMap {D K : Divisor X} {f : MeromorphicFunction X}
     (hf : f ∈ linearSystem (X := X) (K - D)) :
     ↥(𝔘.cocycles1 D) →ₗ[ℂ] ↥(𝔘.cocycles1 K) :=
@@ -257,15 +275,16 @@ noncomputable def cupCocyclesMap {D K : Divisor X} {f : MeromorphicFunction X}
     (hf : f ∈ linearSystem (X := X) (K - D)) (c : ↥(𝔘.cocycles1 D)) :
     (cupCocyclesMap hf c : 𝔘.Cochain1) = cupCochain1 𝔘 f c := rfl
 
-/-- **The descended cup product on cohomology** `[ξ] ↦ [f·ξ]`, `cechH1 D →ₗ[ℂ] cechH1 K`.  Well-defined
-because the cup product maps `cocycles1 D → cocycles1 K` (`cupCochain1_cocycles1`) and
+/-- **The descended cup product on cohomology** `[ξ] ↦ [f·ξ]`, `cechH1 D →ₗ[ℂ] cechH1 K`.
+Well-defined because the cup product maps `cocycles1 D → cocycles1 K` (`cupCochain1_cocycles1`) and
 `coboundaries1 D → coboundaries1 K` (`cupCochain1_coboundaries1`), so it descends through the
 `Z¹/B¹` quotient (`Submodule.mapQ`). -/
 noncomputable def cupH1 {D K : Divisor X} {f : MeromorphicFunction X}
     (hf : f ∈ linearSystem (X := X) (K - D)) :
     𝔘.cechH1 D →ₗ[ℂ] 𝔘.cechH1 K :=
   Submodule.mapQ _ _ (cupCocyclesMap hf) (by
-    -- the cocycle map sends `B¹(D)` (as a submodule of `Z¹(D)`) into `B¹(K)` (as a submodule of `Z¹(K)`).
+    -- the cocycle map sends `B¹(D)` (as a submodule of `Z¹(D)`) into `B¹(K)` (as a submodule of
+    -- `Z¹(K)`).
     intro c hc
     rw [Submodule.mem_comap]
     -- `c ∈ (coboundaries1 D).submoduleOf (cocycles1 D)` means `c.1 ∈ coboundaries1 D`.
@@ -282,24 +301,28 @@ noncomputable def cupH1 {D K : Divisor X} {f : MeromorphicFunction X}
 /-! ## Part 6 — ℂ-linearity in `f` and the bilinear cup `lSysModule (K−D) → (cechH1 D →ₗ cechH1 K)`
 
 `globalGerm` is ℂ-linear in `f` (it is `toGerm ∘ (· ∘ val)`, a composition of linear maps), so the
-cup product is ℂ-linear in `f`; and a germ-zero `f` (`orderW f ≡ ⊤`) gives `globalGerm f U = 0`, hence
-`cupH1 = 0`, so the cup descends through the junk-free quotient `lSysModule (K−D)`.  This is the bundled
-bilinear input the §17.5 residue pairing consumes (ℂ-linear in `f` from `globalGerm` linearity;
-ℂ-linear in `ξ` is `cupH1` being a `LinearMap`). -/
+cup product is ℂ-linear in `f`; and a germ-zero `f` (`orderW f ≡ ⊤`) gives `globalGerm f U = 0`,
+hence `cupH1 = 0`, so the cup descends through the junk-free quotient `lSysModule (K−D)`. This is
+the bundled bilinear input the §17.5 residue pairing consumes (ℂ-linear in `f` from `globalGerm`
+linearity; ℂ-linear in `ξ` is `cupH1` being a `LinearMap`). -/
 
 /-- `globalGerm` is **additive** in the meromorphic function. -/
-theorem globalGerm_add (f g : MeromorphicFunction X) (U : Opens X) :
+theorem globalGerm_add {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f g : MeromorphicFunction X)
+    (U : Opens X) :
     globalGerm (f + g) U = globalGerm f U + globalGerm g U := by
   rw [globalGerm, globalGerm, globalGerm, ← map_add]; rfl
 
 /-- `globalGerm` is **ℂ-homogeneous** in the meromorphic function. -/
-theorem globalGerm_smul (c : ℂ) (f : MeromorphicFunction X) (U : Opens X) :
+theorem globalGerm_smul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (c : ℂ) (f : MeromorphicFunction X)
+    (U : Opens X) :
     globalGerm (c • f) U = c • globalGerm f U := by
   rw [globalGerm, globalGerm, ← map_smul]; rfl
 
-/-- **A germ-zero global function has zero germ on every open** (`orderW f ≡ ⊤ ⟹ globalGerm f U = 0`):
-`f.toFun` vanishes on a punctured neighbourhood of every point, which transfers to `↥U` along the open
-inclusion. -/
+/-- **A germ-zero global function has zero germ on every open**
+(`orderW f ≡ ⊤ ⟹ globalGerm f U = 0`): `f.toFun` vanishes on a punctured neighbourhood of every
+point, which transfers to `↥U` along the open inclusion. -/
 theorem globalGerm_eq_zero_of_germZero {f : MeromorphicFunction X}
     (hf : ∀ x, f.orderW x = ⊤) (U : Opens X) : globalGerm f U = 0 := by
   rw [globalGerm, toGerm_eq_zero_iff]
@@ -339,8 +362,8 @@ theorem cupH1_smul {D K : Divisor X} (a : ℂ) {f : MeromorphicFunction X}
   funext p
   rw [cupCochain1_apply, Pi.smul_apply, cupCochain1_apply, globalGerm_smul, smul_mul_MGerm]
 
-/-- **A germ-zero `f` gives the zero cup map** (`cupH1 = 0`): `globalGerm f U = 0` so every cochain is
-multiplied to `0`.  This is the descent condition for the junk-free `lSysModule (K−D)` — the cup
+/-- **A germ-zero `f` gives the zero cup map** (`cupH1 = 0`): `globalGerm f U = 0` so every cochain
+is multiplied to `0`. This is the descent condition for the junk-free `lSysModule (K−D)` — the cup
 product depends only on the germ class of `f`. -/
 theorem cupH1_eq_zero_of_germZero {D K : Divisor X} {f : MeromorphicFunction X}
     (hf : f ∈ linearSystem (X := X) (K - D)) (hf0 : ∀ x, f.orderW x = ⊤) (ξ : 𝔘.cechH1 D) :
@@ -358,10 +381,11 @@ theorem cupH1_eq_zero_of_germZero {D K : Divisor X} {f : MeromorphicFunction X}
 /-! ## Part 7 — the bundled bilinear cup `cup : lSysModule (K−D) →ₗ (cechH1 D →ₗ cechH1 K)`
 
 Bundling Parts 5–6: the cup product as an ℂ-linear map *in `f`* into the space of linear maps
-`cechH1 D →ₗ[ℂ] cechH1 K` (each `cupH1 hf` is already linear *in `ξ`*).  It is first defined on
-`↥(linearSystem (K−D))` (`cupSubtype`, ℂ-linear by `cupH1_add`/`cupH1_smul`) and then descends through
-the germ-zero junk (`cupH1_eq_zero_of_germZero`) to the junk-free `lSysModule (K−D)` — exactly the
-junk-free source the §17.5 residue pairing `ι_D : L(K−D) → (cechH1 D)*` uses (no `lDim ≡ 0` collapse). -/
+`cechH1 D →ₗ[ℂ] cechH1 K` (each `cupH1 hf` is already linear *in `ξ`*). It is first defined on
+`↥(linearSystem (K−D))` (`cupSubtype`, ℂ-linear by `cupH1_add`/`cupH1_smul`) and then descends
+through the germ-zero junk (`cupH1_eq_zero_of_germZero`) to the junk-free `lSysModule (K−D)` —
+exactly the junk-free source the §17.5 residue pairing `ι_D : L(K−D) → (cechH1 D)*` uses (no
+`lDim ≡ 0` collapse). -/
 
 /-- The cup product as an ℂ-linear map *in `f`* on the linear system `↥(linearSystem (K−D))`, valued
 in `cechH1 D →ₗ[ℂ] cechH1 K`. -/

@@ -7,13 +7,13 @@ import Jacobians.Dolbeault.FormTraceRationalAssemble
 import Jacobians.Dolbeault.FormTraceLiouville
 
 /-!
-# `TraceAgreementData` from a global trace datum (Gate A, §VIII.3 — steps 1–3 assembled)
+# `TraceAgreementData` from a global trace datum (Miranda §VIII.3 — steps 1–3 assembled)
 
-`Jacobians.Dolbeault.FormTraceRationalAssemble` reduced Gate A (`∑ₐ Resₐ(α) = 0`) to a single
-`TraceAgreementData`: a rational `LaurentForm L` that **germ-agrees with the meromorphic trace
-`Tr_F α`** in every chart (finite charts at the finite pole-values, the reciprocal chart at `∞`).
-The `hagree_*` fields demand `L.R =ᶠ Tr_F α`, i.e. you must *already know* `L` equals the trace —
-which is the whole §VIII.3 argument.
+`Jacobians.Dolbeault.FormTraceRationalAssemble` reduced the residue theorem (`∑ₐ Resₐ(α) = 0`)
+to a single `TraceAgreementData`: a rational `LaurentForm L` that **germ-agrees with the meromorphic
+trace `Tr_F α`** in every chart (finite charts at the finite pole-values, the reciprocal chart at
+`∞`). The `hagree_*` fields demand `L.R =ᶠ Tr_F α`, i.e. you must *already know* `L` equals the
+trace — which is the whole §VIII.3 argument.
 
 This file splits that into the honest three-step Miranda programme by packaging the **global trace
 datum** `GlobalTrace`:
@@ -36,20 +36,21 @@ fields (the global trace agrees with the local fibre traces — essentially the 
 trace).  Everything else — the principal-part subtraction's vanishing and the descent to `∑Res = 0`
 — is proved here, axiom-clean.
 
-## What this file proves (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file proves
 
 * `traceAgreementData_of_globalTrace` — the full `TraceAgreementData` from a `GlobalTrace` (the
   Liouville vanishing + the glue fields);
-* `residueSum_eq_zero_of_globalTrace` — Gate A `∑Res = 0` from a `GlobalTrace`;
+* `residueSum_eq_zero_of_globalTrace` — the residue theorem `∑Res = 0` from a `GlobalTrace`;
 * `globalTrace_holomorphic` / `residueSum_eq_zero_holomorphic_via_globalTrace` — **non-vacuity
-  end-to-end**: in the empty-pole (globally-holomorphic) case the global trace datum exists (`T ≡ 0`,
-  empty `LaurentForm`, empty `∞` fibre), so the assembly is sound (not a disguised `False`).
+  end-to-end**: in the empty-pole (globally-holomorphic) case the global trace datum exists
+  (`T ≡ 0`, empty `LaurentForm`, empty `∞` fibre), so the assembly is sound (not a disguised
+  `False`).
 
 ## The minimal remaining obligation
 
-Gate A is now *unconditional modulo* the construction of a `GlobalTrace` for a suitable adapted
-cover — i.e. the trace as a single meromorphic function whose principal-part remainder is a global
-holomorphic form.  The irreducible analytic content is `hentire` / `hrecip`.
+the residue-theorem assembly is now *unconditional modulo* the construction of a `GlobalTrace` for a
+suitable adapted cover — i.e. the trace as a single meromorphic function whose principal-part
+remainder is a global holomorphic form. The irreducible analytic content is `hentire` / `hrecip`.
 
 ## References
 
@@ -69,7 +70,6 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.Dolbeault.FormTraceFibre Jacobians.Dolbeault.FormTraceInftyFibre
   Jacobians.Dolbeault.FormTraceInftyRecip Jacobians.Dolbeault.FormTraceLiouville
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
@@ -104,7 +104,7 @@ structure GlobalTrace (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : Merom
   hxs_mem : ∀ i, Dinf.xs i ∈ poles ∧ f.toRiemannSphere (Dinf.xs i) = OnePoint.infty
   /-- `Dinf.xs` enumerates **all** the poles of `α` over `∞`. -/
   hxs_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, Dinf.xs i = a
-  /-- **Finite glue.**  Near each finite centre `p`, the global trace `T` agrees with the local fibre
+  /-- **Finite glue.** Near each finite centre `p`, the global trace `T` agrees with the local fibre
   trace coefficient (the definition of `T` as the trace over the regular fibre). -/
   hglue_fin : ∀ p ∈ (Finset.univ.image L.a),
     T =ᶠ[𝓝[≠] p] (fibreTrace ω₀ f (fibreReg hac p)).traceCoeff
@@ -122,9 +122,10 @@ namespace GlobalTrace
 
 variable {hac : AdaptedCover ω₀ g f poles}
 
-/-- **The trace equals its rational part** (the remainder vanishes by genus-`0` Liouville).  From the
-holomorphic-remainder fields `hentire`/`hrecip`, `T − L.R` is a global holomorphic `1`-form on `ℂℙ¹`,
-hence `0` (`FormTraceLiouville.coeff_eq_zero_of_entire_of_recipCoeff_continuousAt`), so `T = L.R`. -/
+/-- **The trace equals its rational part** (the remainder vanishes by genus-`0` Liouville). From the
+holomorphic-remainder fields `hentire`/`hrecip`, `T − L.R` is a global holomorphic `1`-form on
+`ℂℙ¹`, hence `0` (`FormTraceLiouville.coeff_eq_zero_of_entire_of_recipCoeff_continuousAt`), so
+`T = L.R`. -/
 theorem T_eq_R (G : GlobalTrace ω₀ g f poles hac) : G.T = G.L.R :=
   coeff_eq_of_entire_diff_of_recipCoeff_continuousAt G.hentire G.hrecip
 
@@ -138,7 +139,8 @@ theorem hagree_fin (G : GlobalTrace ω₀ g f poles hac) :
   exact G.hglue_fin p hp
 
 /-- **Reciprocal-chart agreement of `recipCoeff L.R` with the `∞`-fibre trace.**  Rewriting
-`L.R = T` (`T_eq_R`) turns the reciprocal glue field into the `TraceAgreementData.hagree_inf` form. -/
+`L.R = T` (`T_eq_R`) turns the reciprocal glue field into the `TraceAgreementData.hagree_inf` form.
+-/
 theorem hagree_inf (G : GlobalTrace ω₀ g f poles hac) :
     recipCoeff G.L.R =ᶠ[𝓝[≠] 0] (inftyFibreTrace ω₀ f G.Dinf).traceCoeff := by
   rw [← G.T_eq_R]
@@ -167,10 +169,12 @@ def traceAgreementData_of_globalTrace (hac : AdaptedCover ω₀ g f poles)
     TraceAgreementData ω₀ g f poles hac :=
   G.toTraceAgreementData
 
-/-- **Gate A from a `GlobalTrace`.**  If an adapted cover and a `GlobalTrace` (the meromorphic trace
-as a single function whose principal-part remainder is a global holomorphic form) exist, then the
-1-form residue theorem `∑ₐ Resₐ(α) = 0` holds *unconditionally* for `α = ω₀·g`.  Composes
-`traceAgreementData_of_globalTrace` with the proved `residueSum_eq_zero_of_agreementData`. -/
+/-- **the residue-theorem assembly from a `GlobalTrace`.** If an adapted cover and a `GlobalTrace`
+(the meromorphic trace as a single function whose principal-part remainder is a global holomorphic
+form) exist, then the 1-form residue theorem `∑ₐ Resₐ(α) = 0` holds *unconditionally* for
+`α = ω₀·g`. Composes `traceAgreementData_of_globalTrace` with the proved
+`residueSum_eq_zero_of_agreementData`.
+-/
 theorem residueSum_eq_zero_of_globalTrace (hac : AdaptedCover ω₀ g f poles)
     (G : GlobalTrace ω₀ g f poles hac) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
@@ -224,9 +228,10 @@ noncomputable def globalTrace_holomorphic (ω₀ : HolomorphicOneForms X) (g : X
     rw [hfun, recipCoeff_zero]
     exact continuousAt_const
 
-/-- **Gate A, holomorphic case, via the global trace datum (non-vacuity end-to-end).**  In the
-empty-pole case, `residueSum_eq_zero_of_globalTrace` applied to `globalTrace_holomorphic` yields
-`∑_{a ∈ ∅} Res_a(α) = 0` — confirming the entire global-trace assembly produces a real `∑Res = 0`. -/
+/-- **the residue-theorem assembly, holomorphic case, via the global trace datum (non-vacuity
+end-to-end).** In the empty-pole case, `residueSum_eq_zero_of_globalTrace` applied to
+`globalTrace_holomorphic` yields `∑_{a ∈ ∅} Res_a(α) = 0` — confirming the entire global-trace
+assembly produces a real `∑Res = 0`. -/
 theorem residueSum_eq_zero_holomorphic_via_globalTrace (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
     ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 :=

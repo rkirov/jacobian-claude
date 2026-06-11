@@ -8,7 +8,7 @@ import Mathlib.Analysis.Analytic.Order
 import Mathlib.Analysis.Complex.Basic
 
 /-!
-# Principal-part extraction for a meromorphic coefficient (Gate A, §VIII.3 step 2)
+# Principal-part extraction for a meromorphic coefficient (Miranda §VIII.3 step 2)
 
 The global trace `Tr_F α` is, in the value chart, a single coefficient function `T : ℂ → ℂ` that is
 `MeromorphicAt` at each of the finitely-many exceptional values (the finite pole-values).  Miranda
@@ -20,9 +20,9 @@ level of a single coefficient function `ℂ → ℂ`:
 
 * the **negative-power tail** `negTail c b N z := ∑_{k=1}^{N} b k · (z − c) ^ (−k)` (a polynomial in
   `(z − c)⁻¹` — the shape of a `LaurentForm`'s principal part at one centre);
-* the **single-point extraction** `exists_principalPart_meromorphicAt`: for `MeromorphicAt h c` there
-  is `N : ℕ` and coefficients `b` such that `h − negTail c b N` is `AnalyticAt c` — i.e. the pole is
-  removed.
+* the **single-point extraction** `exists_principalPart_meromorphicAt`: for `MeromorphicAt h c`
+  there is `N : ℕ` and coefficients `b` such that `h − negTail c b N` is `AnalyticAt c` — i.e. the
+  pole is removed.
 
 The construction follows the standard Laurent-coefficient peeling, driven by Mathlib's
 `meromorphicOrderAt`: `(z − c)^N • h` has nonnegative order when `−N ≤ order h`, hence is analytic;
@@ -59,7 +59,8 @@ scaled function has nonnegative order, hence converges at `c`, hence (junk-repai
 = N + meromorphicOrderAt h c`.  Specialises `meromorphicOrderAt_smul` with
 `meromorphicOrderAt_pow_id_sub_const`. -/
 theorem meromorphicOrderAt_pow_sub_smul {h : ℂ → ℂ} {c : ℂ} (hh : MeromorphicAt h c) (N : ℕ) :
-    meromorphicOrderAt (fun z => (z - c) ^ N • h z) c = (N : WithTop ℤ) + meromorphicOrderAt h c := by
+    meromorphicOrderAt (fun z => (z - c) ^ N • h z) c =
+      (N : WithTop ℤ) + meromorphicOrderAt h c := by
   have hpow : MeromorphicAt (fun z => (z - c) ^ N) c := by fun_prop
   rw [show (fun z => (z - c) ^ N • h z) = (fun z => (z - c) ^ N) • h from rfl,
     meromorphicOrderAt_smul hpow hh]
@@ -70,8 +71,9 @@ theorem meromorphicOrderAt_pow_sub_smul {h : ℂ → ℂ} {c : ℂ} (hh : Meromo
 
 The cornerstone of principal-part extraction: an analytic `G` at `c` can be written `G(z) = G(c) +
 (z − c)·G₁(z)` with `G₁` analytic at `c`.  (The difference `G − G(c)` vanishes at `c`, so it has
-analytic order `≥ 1`; the `(z − c)¹ • analytic` factorisation is `AnalyticAt.analyticOrderAt_ne_top`,
-with the degenerate "`G` locally constant" case handled directly.) -/
+analytic order `≥ 1`; the `(z − c)¹ • analytic` factorisation is
+`AnalyticAt.analyticOrderAt_ne_top`, with the degenerate "`G` locally constant" case handled
+directly.) -/
 
 /-- **Single-step Taylor division.**  For `G` analytic at `c`, there is an analytic `G₁` at `c` with
 `G z = G c + (z − c) • G₁ z` for all `z` near `c`. -/
@@ -115,10 +117,10 @@ theorem exists_analyticAt_taylor_step {G : ℂ → ℂ} {c : ℂ} (hG : Analytic
       simp only [smul_eq_mul]
       ring
 
-/-- **Iterated Taylor division (finite Taylor expansion with analytic remainder).**  For `G` analytic
-at `c` and any `N : ℕ`, there are coefficients `a : ℕ → ℂ` and an analytic remainder `R` with
-`G z = (∑_{j<N} a j · (z − c)^j) + (z − c)^N • R z` for all `z` near `c`.  Proved by induction on `N`
-via `exists_analyticAt_taylor_step` (each step peels off one Taylor coefficient). -/
+/-- **Iterated Taylor division (finite Taylor expansion with analytic remainder).**  For `G`
+analytic at `c` and any `N : ℕ`, there are coefficients `a : ℕ → ℂ` and an analytic remainder `R`
+with `G z = (∑_{j<N} a j · (z − c)^j) + (z − c)^N • R z` for all `z` near `c`.  Proved by induction
+on `N` via `exists_analyticAt_taylor_step` (each step peels off one Taylor coefficient). -/
 theorem exists_analyticAt_taylorPoly {G : ℂ → ℂ} {c : ℂ} (hG : AnalyticAt ℂ G c) (N : ℕ) :
     ∃ (a : ℕ → ℂ) (R : ℂ → ℂ), AnalyticAt ℂ R c ∧
       ∀ᶠ z in 𝓝 c, G z = (∑ j ∈ Finset.range N, a j * (z - c) ^ j) + (z - c) ^ N • R z := by
@@ -171,19 +173,19 @@ theorem sum_taylorHead_eq_negTail (c : ℂ) (a : ℕ → ℂ) (N : ℕ) (z : ℂ
   push_cast
   ring_nf
 
-/-! ### The single-point principal-part extraction (the §VIII.3 step-2 atom)
+/-! ### The single-point principal-part extraction (Miranda §VIII.3 step 2)
 
-Assembling everything: a meromorphic coefficient `h` at `c` decomposes, on a punctured neighbourhood,
-as `negTail c b N + R` with `R` analytic at `c` — the principal part `negTail` carries the pole, the
-remainder `R` is holomorphic. -/
+Assembling everything: a meromorphic coefficient `h` at `c` decomposes, on a punctured
+neighbourhood, as `negTail c b N + R` with `R` analytic at `c` — the principal part `negTail`
+carries the pole, the remainder `R` is holomorphic. -/
 
 /-- **Single-point principal-part extraction.**  For a coefficient `h` that is `MeromorphicAt c`,
 there are a degree `N : ℕ`, principal-part coefficients `b : ℕ → ℂ`, and an analytic remainder `R`
 (`AnalyticAt ℂ R c`) such that on a punctured neighbourhood of `c`,
-`h z = negTail c b N z + R z`.  (When `h` has no pole at `c`, `N = 0` and `negTail ≡ 0`, so `h` simply
-agrees with the analytic `R` off `c`.)  This is Miranda §VIII.3 step 2 at one centre — Mathlib has no
-principal-part API, so it is built from `meromorphicOrderAt_eq_int_iff` (the `(z−c)^n • g`
-factorisation) + the iterated Taylor division `exists_analyticAt_taylorPoly`. -/
+`h z = negTail c b N z + R z`.  (When `h` has no pole at `c`, `N = 0` and `negTail ≡ 0`, so `h`
+simply agrees with the analytic `R` off `c`.)  This is Miranda §VIII.3 step 2 at one centre —
+Mathlib has no principal-part API, so it is built from `meromorphicOrderAt_eq_int_iff` (the
+`(z−c)^n • g` factorisation) + the iterated Taylor division `exists_analyticAt_taylorPoly`. -/
 theorem exists_principalPart_meromorphicAt {h : ℂ → ℂ} {c : ℂ} (hh : MeromorphicAt h c) :
     ∃ (N : ℕ) (b : ℕ → ℂ) (R : ℂ → ℂ), AnalyticAt ℂ R c ∧
       h =ᶠ[𝓝[≠] c] fun z => negTail c b N z + R z := by
@@ -243,8 +245,8 @@ theorem exists_principalPart_meromorphicAt {h : ℂ → ℂ} {c : ℂ} (hh : Mer
 
 A `negTail` centred at `c'` is analytic at any other point `c ≠ c'` (its only pole is at `c'`). -/
 
-/-- **A `negTail` is analytic away from its centre.**  `negTail c' b N` is `AnalyticAt c` for `c ≠ c'`
-(its only singularity is the pole at `c'`). -/
+/-- **A `negTail` is analytic away from its centre.**  `negTail c' b N` is `AnalyticAt c` for
+`c ≠ c'` (its only singularity is the pole at `c'`). -/
 theorem analyticAt_negTail_of_ne {c c' : ℂ} (b : ℕ → ℂ) (N : ℕ) (hne : c ≠ c') :
     AnalyticAt ℂ (negTail c' b N) c := by
   show AnalyticAt ℂ (fun z => ∑ k ∈ Finset.Icc 1 N, b k * (z - c') ^ (-(k : ℤ))) c
@@ -256,24 +258,25 @@ theorem analyticAt_negTail_of_ne {c c' : ℂ} (b : ℕ → ℂ) (N : ℕ) (hne :
 /-! ### Multi-point finite principal-part subtraction (assembly-ready)
 
 For finitely many centres `S : Finset ℂ`, with `h` meromorphic at every `c ∈ S`, there is a single
-function `P` — a finite sum of `negTail`s, one per centre — such that `h − P` is **analytic at every
-`c ∈ S`** (the principal part at each centre is subtracted, removing the pole; the tails at the other
-centres are analytic at `c`).  This is the finite-pole half of Miranda §VIII.3 step 2/3 (subtract all
-finite principal parts to leave a remainder holomorphic at every finite pole). -/
+function `P` — a finite sum of `negTail`s, one per centre — such that `h − P` is **analytic at
+every `c ∈ S`** (the principal part at each centre is subtracted, removing the pole; the tails at
+the other centres are analytic at `c`).  This is the finite-pole half of Miranda §VIII.3 step 2/3
+(subtract all finite principal parts to leave a remainder holomorphic at every finite pole). -/
 
-/-- **Multi-point finite principal-part subtraction.**  Given a finite centre set `S` and a coefficient
-`h` that is `MeromorphicAt` at every `c ∈ S`, there is a function `P` (a finite sum of `negTail`s, one
-per centre — so `P` is itself analytic away from `S`) such that `h − P` is `AnalyticAt c` for every
-`c ∈ S` (germ-equal off `c` to an analytic function, with the pole removed).  More precisely we return,
-per centre, the degree/coefficients and the global subtrahend `P`, with `h − P` analytic at each
-centre. -/
+/-- **Multi-point finite principal-part subtraction.**  Given a finite centre set `S` and a
+coefficient `h` that is `MeromorphicAt` at every `c ∈ S`, there is a function `P` (a finite sum of
+`negTail`s, one per centre — so `P` is itself analytic away from `S`) such that `h − P` is
+`AnalyticAt c` for every `c ∈ S` (germ-equal off `c` to an analytic function, with the pole
+removed).  More precisely we return, per centre, the degree/coefficients and the global subtrahend
+`P`, with `h − P` analytic at each centre. -/
 theorem exists_finitePrincipalPart {h : ℂ → ℂ} {S : Finset ℂ}
     (hh : ∀ c ∈ S, MeromorphicAt h c) :
     ∃ P : ℂ → ℂ, (∀ c ∉ S, AnalyticAt ℂ P c) ∧
       ∀ c ∈ S, ∃ R : ℂ → ℂ, AnalyticAt ℂ R c ∧ (h - P) =ᶠ[𝓝[≠] c] R := by
   classical
   induction S using Finset.induction with
-  | empty => exact ⟨fun _ => 0, fun c _ => analyticAt_const, fun c hc => absurd hc (Finset.notMem_empty c)⟩
+  | empty =>
+    exact ⟨fun _ => 0, fun c _ => analyticAt_const, fun c hc => absurd hc (Finset.notMem_empty c)⟩
   | insert c₀ S hc₀ ih =>
     -- Extract the principal part of `h` at the new centre `c₀`.
     obtain ⟨N, b, R₀, hR₀_an, hR₀_eq⟩ :=
@@ -310,12 +313,12 @@ theorem exists_finitePrincipalPart {h : ℂ → ℂ} {S : Finset ℂ}
 /-! ### The global finite `hentire` bridge
 
 Assembling the multi-point subtraction into a **global analyticity** statement.  If `h` is analytic
-off a finite set `C` and meromorphic at each `c ∈ C`, then after subtracting the finite principal part
-`P` the remainder `h − P` is analytic off `C` and *germ-analytic* (`=ᶠ[𝓝[≠] c] (analytic)`) at each
-`c ∈ C`.  The promotion to a **full** `AnalyticAt c` (the shape of `GlobalTrace.hentire`) holds exactly
-when `h − P` is additionally continuous at each `c ∈ C` (the junk-value is the analytic-continuation
-value); we record that as the explicit hypothesis `hcont`, isolating the junk-freeness condition that
-the global trace construction must supply. -/
+off a finite set `C` and meromorphic at each `c ∈ C`, then after subtracting the finite principal
+part `P` the remainder `h − P` is analytic off `C` and *germ-analytic* (`=ᶠ[𝓝[≠] c] (analytic)`)
+at each `c ∈ C`.  The promotion to a **full** `AnalyticAt c` (the shape of `GlobalTrace.hentire`)
+holds exactly when `h − P` is additionally continuous at each `c ∈ C` (the junk-value is the
+analytic-continuation value); we record that as the explicit hypothesis `hcont`, isolating the
+junk-freeness condition that the global trace construction must supply. -/
 
 /-- **The global finite `hentire` bridge.**  Let `h` be analytic at every point off a finite set `C`
 (`hoff`), meromorphic at every `c ∈ C` (`hmero`), and such that, after the finite principal-part
@@ -323,10 +326,11 @@ subtraction `P` (from `exists_finitePrincipalPart`), `h − P` is **continuous a
 (`hcont` — the junk-free condition).  Then there is a finite principal part `P` with `h − P`
 `AnalyticOnNhd ℂ … Set.univ` (entire) — the finite half of `GlobalTrace.hentire`.
 
-The continuity hypothesis is the precise, irreducible junk-value requirement: a meromorphic `h` whose
-*pole is removed* by `P` has a removable singularity at each `c ∈ C`, and `MeromorphicAt.analyticAt`
-upgrades "meromorphic + continuous" to "analytic".  The global trace `T` built from the geometric
-pushforward is junk-free by construction, so `hcont` is automatic there. -/
+The continuity hypothesis is the precise, irreducible junk-value requirement: a meromorphic `h`
+whose *pole is removed* by `P` has a removable singularity at each `c ∈ C`, and
+`MeromorphicAt.analyticAt` upgrades "meromorphic + continuous" to "analytic".  The global trace
+`T` built from the geometric pushforward is junk-free by construction, so `hcont` is automatic
+there. -/
 theorem exists_entire_of_finitePoles {h : ℂ → ℂ} {C : Finset ℂ}
     (hoff : ∀ c ∉ C, AnalyticAt ℂ h c) (hmero : ∀ c ∈ C, MeromorphicAt h c) :
     ∃ P : ℂ → ℂ, (∀ c ∉ C, AnalyticAt ℂ P c) ∧
@@ -338,8 +342,8 @@ theorem exists_entire_of_finitePoles {h : ℂ → ℂ} {C : Finset ℂ}
   by_cases hzC : z ∈ C
   · -- At a centre: meromorphic (pole removed) + continuous ⟹ analytic.
     obtain ⟨R, hR_an, hR_eq⟩ := hP_centres z hzC
-    -- `h − P` is meromorphic at `z` (`h` meromorphic, `P` analytic since... P meromorphic at z too).
-    -- `h − P =ᶠ[𝓝[≠]z] R` (analytic ⟹ meromorphic), so `h − P` is meromorphic at `z`.
+    -- `h − P =ᶠ[𝓝[≠] z] R` with `R` analytic (hence meromorphic), so `h − P` is
+    -- meromorphic at `z`.
     have hmeroHP : MeromorphicAt (h - P) z := hR_an.meromorphicAt.congr hR_eq.symm
     exact hmeroHP.analyticAt (hcont z hzC)
   · -- Off `C`: `h` analytic and `P` analytic.

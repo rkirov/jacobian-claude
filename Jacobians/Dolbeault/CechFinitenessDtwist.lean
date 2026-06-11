@@ -1,6 +1,6 @@
 /-
   Dolbeault ladder — **general-divisor Čech `H¹` finiteness** (Forster GTM 81 §16, the skyscraper
-  reduction), reducing the arbitrary-divisor case to the already-proven `D = 0` case.
+  reduction), reducing the arbitrary-divisor case to the `D = 0` case.
 
   ## What this file proves
 
@@ -8,37 +8,37 @@
          FiniteDimensional ℂ (𝔘.cechH1 D)`
 
   for an ARBITRARY finite cover `𝔘` and an ARBITRARY divisor `D`.  The `D = 0` case
-  (`CechFinitenessAssembly.finiteDimensional_cechH1_zero`) is the proven base; we climb the divisor
+  (`CechFinitenessAssembly.finiteDimensional_cechH1_zero`) is the base; we climb the divisor
   one point at a time.
 
   ## The argument (a LIGHT skyscraper reduction — no snake lemma, no acyclicity, no witness)
 
-  The sheaves `𝒪_D ⊆ 𝒪_{D+P}` differ only in the allowed pole order at the single point `P`.  At every
-  open `W`, the **stalk quotient** `OmegaDGerm (D+P) W ⧸ OmegaDGerm D W` is at most `1`-dimensional: the
-  order-`(−D(P)−1)` principal-part coefficient `coeffGermLin` has kernel exactly `OmegaDGerm D W`
-  (`ker_coeffGermLin`), so the quotient injects into `ℂ`.  Consequently, for the *finite* index types of
-  the Čech complex:
+  The sheaves `𝒪_D ⊆ 𝒪_{D+P}` differ only in the allowed pole order at the single point `P`. At
+  every open `W`, the **stalk quotient** `OmegaDGerm (D+P) W ⧸ OmegaDGerm D W` is at most
+  `1`-dimensional: the order-`(−D(P)−1)` principal-part coefficient `coeffGermLin` has kernel
+  exactly `OmegaDGerm D W` (`ker_coeffGermLin`), so the quotient injects into `ℂ`. Consequently, for
+  the *finite* index types of the Čech complex:
 
     * `sections0 (D+P) ⧸ sections0 D` is finite-dimensional (a finite product of stalk quotients);
     * `sections1 (D+P) ⧸ sections1 D` is finite-dimensional likewise;
     * hence `cocycles1 (D+P) ⧸ cocycles1 D` is finite-dimensional (it injects into the `sections1`
-      quotient), and `coboundaries1 (D+P) ⧸ coboundaries1 D` is too (a quotient of the `sections0` one).
+      quotient), and `coboundaries1 (D+P) ⧸ coboundaries1 D` is too (a quotient of the `sections0`
+      one).
 
   From these finite "correction" spaces, finiteness of `H¹` propagates BOTH ways along the inclusion
   `h1Map : H¹(𝒪_D) → H¹(𝒪_{D+P})`:
 
-    * **forward** (`H¹(D)` finite ⟹ `H¹(D+P)` finite): `range h1Map` is finite (image of a finite-dim
-      space) and `coker h1Map` is a quotient of `cocycles1(D+P)/cocycles1(D)` (finite), so
-      `H¹(D+P)` is an extension of two finite-dim spaces (`Module.Finite.of_submodule_quotient`);
+    * **forward** (`H¹(D)` finite ⟹ `H¹(D+P)` finite): `range h1Map` is finite (image of a
+      finite-dim space) and `coker h1Map` is a quotient of `cocycles1(D+P)/cocycles1(D)` (finite),
+      so `H¹(D+P)` is an extension of two finite-dim spaces (`Module.Finite.of_submodule_quotient`);
     * **backward** (`H¹(D+P)` finite ⟹ `H¹(D)` finite): `ker h1Map` is a quotient of
-      `coboundaries1(D+P)/coboundaries1(D)` (finite) and `H¹(D)/ker h1Map ≅ range h1Map` (finite), so
-      `H¹(D)` is again an extension of two finite-dim spaces.
+      `coboundaries1(D+P)/coboundaries1(D)` (finite) and `H¹(D)/ker h1Map ≅ range h1Map` (finite),
+      so `H¹(D)` is again an extension of two finite-dim spaces.
 
-  The bidirectional per-point step (`finiteDimensional_cechH1_add_single_iff`) then drives an induction:
-  `Int.induction_on` on the coefficient (a single point, `±1` at a time) and `Finsupp.induction` on the
-  divisor (one point at a time), with base `D = 0`.
+  The bidirectional per-point step (`finiteDimensional_cechH1_add_single_iff`) then drives an
+  induction: `Int.induction_on` on the coefficient (a single point, `±1` at a time) and
+  `Finsupp.induction` on the divisor (one point at a time), with base `D = 0`.
 
-  Everything is complete and axiom-clean (`[propext, Classical.choice, Quot.sound]`).
 -/
 import Jacobians.Dolbeault.CechFinitenessAssembly
 import Jacobians.Dolbeault.SkyscraperArrow
@@ -46,7 +46,6 @@ import Jacobians.Dolbeault.SkyscraperArrow
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 
-set_option linter.unusedSectionVars false
 set_option maxHeartbeats 1000000
 
 namespace Jacobians.Dolbeault
@@ -86,11 +85,12 @@ theorem finiteDimensional_stalkQuotient_of_not_mem {W : Opens X} {D : Divisor X}
       Submodule.comap_subtype_self]
   infer_instance
 
-/-! ### The Pi-section quotient is finite-dimensional (the common shape of `sections0`/`sections1`) -/
+/-! ### The Pi-section quotient is finite-dimensional (the shape of `sections0`/`sections1`) -/
 
 /-- The `𝒪_D` Pi-section submodule over a finite family of opens `W : ι → Opens X`: tuples of germs
-with each component a `𝒪_D`-germ.  Both `sections0 D` and `sections1 D` are instances of this (with
-`W` the cover-sets resp. the pairwise overlaps).  Definitionally a `Submodule` of `∀ i, MGerm (W i)`. -/
+with each component a `𝒪_D`-germ. Both `sections0 D` and `sections1 D` are instances of this (with
+`W` the cover-sets resp. the pairwise overlaps). Definitionally a `Submodule` of `∀ i, MGerm (W i)`.
+-/
 def piSec {ι : Type*} (W : ι → Opens X) (D : Divisor X) : Submodule ℂ (∀ i, MGerm (W i)) where
   carrier := {f | ∀ i, f i ∈ OmegaDGerm D (W i)}
   add_mem' hf hg i := add_mem (hf i) (hg i)
@@ -109,9 +109,9 @@ noncomputable def piSec_coeff {ι : Type*} (W : ι → Opens X) (D : Divisor X) 
         (OmegaDGerm (D + Finsupp.single P 1) (W i)) (fun f => f.2 i))
   else 0
 
-/-- The component coefficient vanishes iff the `i`-component is a `𝒪_D`-germ.  When `P ∈ W i` this is
-`ker_coeffGermLin`; when `P ∉ W i` the coefficient is `0` and the `D` / `D+P` section spaces coincide
-(`OmegaDGerm_add_single_eq_of_not_mem`), so membership is automatic. -/
+/-- The component coefficient vanishes iff the `i`-component is a `𝒪_D`-germ. When `P ∈ W i` this is
+`ker_coeffGermLin`; when `P ∉ W i` the coefficient is `0` and the `D` / `D+P` section spaces
+coincide (`OmegaDGerm_add_single_eq_of_not_mem`), so membership is automatic. -/
 theorem piSec_coeff_eq_zero_iff {ι : Type*} (W : ι → Opens X) (D : Divisor X) (P : X) (i : ι)
     (f : piSec W (D + Finsupp.single P 1)) :
     piSec_coeff W D P i f = 0 ↔ (f : ∀ i, MGerm (W i)) i ∈ OmegaDGerm D (W i) := by
@@ -134,7 +134,8 @@ heavy `Module`-instance synthesis on the dependent product of `OmegaDGerm`-quoti
 theorem finiteDimensional_piSec_quotient {ι : Type*} [Fintype ι] (W : ι → Opens X)
     (D : Divisor X) (P : X) :
     FiniteDimensional ℂ
-      (piSec W (D + Finsupp.single P 1) ⧸ (piSec W D).submoduleOf (piSec W (D + Finsupp.single P 1))) := by
+      (piSec W (D + Finsupp.single P 1) ⧸
+        (piSec W D).submoduleOf (piSec W (D + Finsupp.single P 1))) := by
   classical
   -- The tuple-of-coefficients map `G : piSec W (D+P) →ₗ (ι → ℂ)`.
   set G : piSec W (D + Finsupp.single P 1) →ₗ[ℂ] (ι → ℂ) :=
@@ -158,8 +159,8 @@ theorem finiteDimensional_piSec_quotient {ι : Type*} [Fintype ι] (W : ι → O
 
 /-! ### Abstract finiteness propagation through `⊓` and `map` (for cocycles / coboundaries) -/
 
-/-- **Finiteness through `⊓`.**  For `A ≤ B` and any `K`, the quotient `(K ⊓ B) ⧸ (K ⊓ A)` injects into
-`B ⧸ A` (the inclusion `K ⊓ B ↪ B`), so it is finite-dimensional whenever `B ⧸ A` is.  (Used for
+/-- **Finiteness through `⊓`.** For `A ≤ B` and any `K`, the quotient `(K ⊓ B) ⧸ (K ⊓ A)` injects
+into `B ⧸ A` (the inclusion `K ⊓ B ↪ B`), so it is finite-dimensional whenever `B ⧸ A` is. (Used for
 `cocycles1 = ker δ¹ ⊓ sections1`: `K = ker δ¹`, `A/B = sections1 D / sections1 (D+P)`.) -/
 theorem finiteDimensional_inf_quotient {M : Type*} [AddCommGroup M] [Module ℂ M]
     (K A B : Submodule ℂ M) (_hAB : A ≤ B)
@@ -178,14 +179,15 @@ theorem finiteDimensional_inf_quotient {M : Type*} [AddCommGroup M] [Module ℂ 
     rw [← LinearMap.ker_eq_bot, Submodule.ker_mapQ, ← le_bot_iff,
       Submodule.map_le_iff_le_comap]
     intro y hy
-    rw [Submodule.mem_comap, Submodule.submoduleOf, Submodule.mem_comap, Submodule.coe_subtype] at hy
+    rw [Submodule.mem_comap, Submodule.submoduleOf, Submodule.mem_comap,
+      Submodule.coe_subtype] at hy
     rw [Submodule.mem_comap, Submodule.mem_bot, Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero,
       Submodule.submoduleOf, Submodule.mem_comap, Submodule.coe_subtype, Submodule.mem_inf]
     exact ⟨(Submodule.mem_inf.mp y.2).1, hy⟩
 
 /-- **Finiteness through `map`.**  For `A0 ≤ B0` and a linear map `f`, the quotient
-`(map f B0) ⧸ (map f A0)` is a quotient (surjective image) of `B0 ⧸ A0` (via `f` descended), so it is
-finite-dimensional whenever `B0 ⧸ A0` is.  (Used for `coboundaries1 = map δ⁰ sections0`.) -/
+`(map f B0) ⧸ (map f A0)` is a quotient (surjective image) of `B0 ⧸ A0` (via `f` descended), so it
+is finite-dimensional whenever `B0 ⧸ A0` is. (Used for `coboundaries1 = map δ⁰ sections0`.) -/
 theorem finiteDimensional_map_quotient {M N : Type*} [AddCommGroup M] [Module ℂ M]
     [AddCommGroup N] [Module ℂ N] (f : M →ₗ[ℂ] N) (A0 B0 : Submodule ℂ M) (_hAB : A0 ≤ B0)
     (hfin : FiniteDimensional ℂ (B0 ⧸ A0.submoduleOf B0)) :
@@ -267,8 +269,8 @@ theorem h1Map_mk (c : 𝔘.cocycles1 D) :
 
 /-- **Forward per-point step.**  `H¹(𝒪_D)` finite ⟹ `H¹(𝒪_{D+P})` finite.  `range h1Map` is finite
 (image of finite-dim `H¹(𝒪_D)`); `coker h1Map` is a quotient of `cocycles1(D+P)/cocycles1(D)`
-(finite, `finiteDimensional_cocycles1_quotient`); so `H¹(𝒪_{D+P})` is the extension of two finite-dim
-spaces (`Module.Finite.of_submodule_quotient`). -/
+(finite, `finiteDimensional_cocycles1_quotient`); so `H¹(𝒪_{D+P})` is the extension of two
+finite-dim spaces (`Module.Finite.of_submodule_quotient`). -/
 theorem finiteDimensional_cechH1_add_single_of
     (h : FiniteDimensional ℂ (𝔘.cechH1 D)) :
     FiniteDimensional ℂ (𝔘.cechH1 (D + Finsupp.single P 1)) := by
@@ -289,7 +291,8 @@ theorem finiteDimensional_cechH1_add_single_of
           (𝔘.cocycles1 (D + Finsupp.single P 1))).mkQ with hΦ
     have hΦsurj : Function.Surjective Φ :=
       (Submodule.mkQ_surjective _).comp (Submodule.mkQ_surjective _)
-    -- `Φ` kills `cocycles1(D)`: a `D`-cocycle's `(D+P)`-class is `h1Map` of its `D`-class, hence in range.
+    -- `Φ` kills `cocycles1(D)`: a `D`-cocycle's `(D+P)`-class is `h1Map` of its `D`-class, hence in
+    -- range.
     have hker : (𝔘.cocycles1 D).submoduleOf (𝔘.cocycles1 (D + Finsupp.single P 1))
         ≤ LinearMap.ker Φ := by
       intro c hc
@@ -317,7 +320,8 @@ theorem finiteDimensional_ker_h1Map :
     (𝔘.coboundaries1_le_add_single D P) (𝔘.finiteDimensional_coboundaries1_quotient D P)
   set S : Submodule ℂ 𝔘.Cochain1 := 𝔘.cocycles1 D ⊓ 𝔘.coboundaries1 (D + Finsupp.single P 1) with hS
   have hSc : S ≤ 𝔘.cocycles1 D := inf_le_left
-  -- `Θ : ↥S → ker(h1Map)`, `x ↦ [x]_D` (a coboundary of `D+P`, so its `(D+P)`-class — `h1Map` — is 0).
+  -- `Θ : ↥S → ker(h1Map)`, `x ↦ [x]_D` (a coboundary of `D+P`, so its `(D+P)`-class — `h1Map` — is
+  -- 0).
   set Θ : S →ₗ[ℂ] LinearMap.ker (𝔘.h1Map D P) :=
     (((𝔘.coboundaries1 D).submoduleOf (𝔘.cocycles1 D)).mkQ.comp
       (Submodule.inclusion hSc)).codRestrict (LinearMap.ker (𝔘.h1Map D P)) (fun x => by
@@ -411,21 +415,21 @@ end FiniteCover
 
 /-! ### The general theorem (any cover, any divisor) -/
 
-/-- **General-divisor Čech `H¹` finiteness (Forster 14.9 + §16 skyscraper).**  For an arbitrary finite
-cover `𝔘` and an arbitrary divisor `D`, `H¹(𝔘, 𝒪_D)` is finite-dimensional.  The proven `D = 0` case
-(`finiteDimensional_cechH1_zero`) is climbed to general `D` one point at a time via the skyscraper stalk
-quotient (`finiteDimensional_cechH1_of_zero`). -/
+/-- **General-divisor Čech `H¹` finiteness (Forster 14.9 + §16 skyscraper).** For an arbitrary
+finite cover `𝔘` and an arbitrary divisor `D`, `H¹(𝔘, 𝒪_D)` is finite-dimensional. The `D = 0` case
+(`finiteDimensional_cechH1_zero`) is climbed to general `D` one point at a time via the skyscraper
+stalk quotient (`finiteDimensional_cechH1_of_zero`). -/
 theorem finiteDimensional_cechH1_general (𝔘 : FiniteCover X) (D : Divisor X) :
     FiniteDimensional ℂ (𝔘.cechH1 D) :=
   𝔘.finiteDimensional_cechH1_of_zero (finiteDimensional_cechH1_zero 𝔘) D
 
-/-- **`exists_cechModel 𝔘 D` — the full, general-divisor statement, PROVEN complete.**  Combines the
+/-- **`exists_cechModel 𝔘 D` — the full, general-divisor statement.**  Combines the
 general-divisor finiteness `finiteDimensional_cechH1_general` (this file) with the artificial
-single-point Montel model `exists_cechModel_of_finiteDimensional` (`CechModelArtificial`).  This is
+single-point Montel model `exists_cechModel_of_finiteDimensional` (`CechModelArtificial`). This is
 exactly the statement of `CechFinitenessWiring.exists_cechModel` for an ARBITRARY divisor `D` — the
-finiteness node's keystone — with no remaining hypotheses.  (The `CechFinitenessWiring.exists_cechModel`
-declaration itself is discharged by this term once the model-types import cycle is broken; see the
-project notes.) -/
+finiteness node's keystone — with no remaining hypotheses. (The
+`CechFinitenessWiring.exists_cechModel` declaration itself is discharged by this term once the
+model-types import cycle is broken; see the project notes.) -/
 theorem exists_cechModel_general (𝔘 : FiniteCover X) (D : Divisor X) :
     ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
   haveI : FiniteDimensional ℂ (𝔘.cechH1 D) := finiteDimensional_cechH1_general 𝔘 D

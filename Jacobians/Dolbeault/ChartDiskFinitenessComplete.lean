@@ -7,34 +7,36 @@
   it does not build are the structural δ-complex `HolomorphicCoboundaries 𝔇.overlapData` and a
   comparison `cechH1 𝔇 0 ≃ₗ supH1`.
 
-  This file builds that δ-complex + comparison, supplying the two pieces for the proven
+  This file builds that δ-complex + comparison, supplying the two pieces for the
   reduction `ChartDiskCover.finiteDimensional_cechH1_of_holomorphicModel`:
 
     * **(A) the δ-complex** `HolomorphicCoboundaries 𝔇.overlapData` (`holomorphicCoboundaries`) —
       mirroring `CechModelHolomorphicDelta.lean` (the MONTEL cover) but for `𝔇.overlapData`, the
-      chart-disk ball-overlaps `𝔇.Uov`/`𝔇.Wov`.  ALL STRUCTURAL FIELDS are proven complete
+      chart-disk ball-overlaps `𝔇.Uov`/`𝔇.Wov`.  all structural fields are built here
       (`δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm`).
 
-    * **(B) the comparison** `comparisonMap : cechH1 𝔇 0 →ₗ[ℂ] supH1` — PROVEN SORRY-FREE, AND
-      INJECTIVE (`comparisonMap_injective`).  The forward germ→`BddHol` cochain map lands in the
+    * **(B) the comparison** `comparisonMap : cechH1 𝔇 0 →ₗ[ℂ] supH1` — proven, and
+      INJECTIVE (`comparisonMap_injective`). The forward germ→`BddHol` cochain map lands in the
       SHRINKING side `Cshr` (boundedness automatic on the relatively-compact `Wov`), is a cocycle
-      (`cechToCshr_mem_Z1shr`), descends (well-definedness `coboundaries_le_ker_cechToSupH1`), and is
-      injective by reduction to Forster 12.4 refinement-injectivity
+      (`cechToCshr_mem_Z1shr`), descends (well-definedness `coboundaries_le_ker_cechToSupH1`), and
+      is injective by reduction to Forster 12.4 refinement-injectivity
       (`CechRefinementInjective.refinementDescend_unconditional`) along the shrinking cover `(V a)`.
 
   The `leray` field of `holomorphicCoboundaries` — the genuine analytic content (Forster 14.6) — is
-  now PROVEN (§A2-* below), via the global Bott–Tu `(0,1)`-form route (NOT the cross-chart `∂̄g_a`
+  proven below (§A2-*), via the global Bott–Tu `(0,1)`-form route (NOT the cross-chart `∂̄g_a`
   gluing the earlier attempts hit): a shrinking cocycle `s : Cshr` is read back to germ sections `σ`
-  (`shrinkGerm`); the global smooth form `ω̂ := ∑_{a,c} (ρ_a·holoFn σ_{ac})·∂̄ρ_c` (`glueForm`, shrinking
-  PoU) is built directly; the PROVEN per-disk solve `dolbeaultToCechCocycle ω̂` gives a holomorphic
-  cover cocycle on the FULL overlaps (`coverCochain`); the corrector `η_a := diskVal a ω̂ − G_a` is
-  holomorphic (`etaCochain`); and `s = δ⁰η + ρx` holds (`leray_identity`).  The whole file — including
-  `holomorphicCoboundaries` and `finiteDimensional_cechH1_chartDisk_complete` — is now COMPLETE
-  (axioms: `propext, Classical.choice, Quot.sound`).
+  (`shrinkGerm`); the global smooth form `ω̂ := ∑_{a,c} (ρ_a·holoFn σ_{ac})·∂̄ρ_c` (`glueForm`,
+  shrinking PoU) is built directly; the per-disk solve `dolbeaultToCechCocycle ω̂` gives a
+  holomorphic cover cocycle on the FULL overlaps (`coverCochain`); the corrector
+  `η_a := diskVal a ω̂ − G_a` is holomorphic (`etaCochain`); and `s = δ⁰η + ρx` holds
+  (`leray_identity`). The whole file — including `holomorphicCoboundaries` and
+  `finiteDimensional_cechH1_chartDisk_complete` — is now COMPLETE (axioms:
+  `propext, Classical.choice, Quot.sound`).
 
-  Conventions follow `ChartDiskFiniteness.lean` / `CechModelHolomorphicDelta.lean`.  The lift reuses the
-  proven Dolbeault-comparison machinery (`diskVal`/`planarPrimitive`/`dolbeaultToCechCocycle`,
-  `DolbeaultComparisonProof`/`Inverse`/`Equiv`) and the shrinking-level PoU `shrinkPoU` (`ChartDiskLeray`).
+  Conventions follow `ChartDiskFiniteness.lean` / `CechModelHolomorphicDelta.lean`. The lift reuses
+  the proven Dolbeault-comparison machinery (`diskVal`/`planarPrimitive`/`dolbeaultToCechCocycle`,
+  `DolbeaultComparisonProof`/`Inverse`/`Equiv`) and the shrinking-level PoU `shrinkPoU`
+  (`ChartDiskLeray`).
 -/
 import Jacobians.Dolbeault.ChartDiskFiniteness
 import Jacobians.Dolbeault.ChartDiskLeray
@@ -46,7 +48,6 @@ open TopologicalSpace (Opens)
 open Metric Complex Filter ContinuousLinearMap
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 set_option maxHeartbeats 1000000
 set_option synthInstance.maxHeartbeats 80000
 
@@ -68,15 +69,15 @@ variable (𝔇 : ChartDiskCover X)
 
 /-! ## §A — The cross-chart Čech δ-complex on `𝔇.overlapData`
 
-We build, for the chart-disk model `𝔇.overlapData` (whose `Uov`/`Wov` are the chart-`a` images of the
-ball overlap `U a ∩ U b` resp. the shrinking overlap `V a ∩ V b`), the same data that
+We build, for the chart-disk model `𝔇.overlapData` (whose `Uov`/`Wov` are the chart-`a` images of
+the ball overlap `U a ∩ U b` resp. the shrinking overlap `V a ∩ V b`), the same data that
 `CechModelHolomorphicDelta` builds for the Montel model: the cross-chart `δ⁰`/`δ¹`, the cover-side
-`δ¹cov`, the cocycle identity `δ²=0`, and the commuting `hcomm` square.  The transport in each
+`δ¹cov`, the cocycle identity `δ²=0`, and the commuting `hcomm` square. The transport in each
 differential is the analytic chart transition `𝔇.coverTransition a b`, analytic on the open `𝔇.Wov`
 and mapping it into the `b`-side cover-open.
 
-The geometry differs from Montel only in the concrete sets; the proofs are structurally identical, so
-we re-derive the `coverTransition`/maps-to witnesses against `𝔇.Wov`/`𝔇.Uov`. -/
+The geometry differs from Montel only in the concrete sets; the proofs are structurally identical,
+so we re-derive the `coverTransition`/maps-to witnesses against `𝔇.Wov`/`𝔇.Uov`. -/
 
 /-- The cover transition `τ_{ab}` is analytic on the OPEN shrinking overlap `𝔇.Wov (a,b)` (chart-`a`
 image of `V a ∩ V b`): at each point it is analytic by `transition_analyticAt_of_mem`, both centres'
@@ -104,15 +105,15 @@ theorem mapsTo_coverTransition_Wov (a b : 𝔇.ι) :
   rw [coverTransition, Function.comp_apply,
     (chartAt (H := ℂ) (𝔇.center a)).left_inv hxa_src]
 
-/-- The shrinking overlap `𝔇.Wov (a,b)` lies in the `a`-side DIAGONAL shrinking `𝔇.Wov (a,a)` (chart-`a`
-image of `V a ∩ V b ⊆ V a`), so the diagonal `a`-component restricts directly. -/
+/-- The shrinking overlap `𝔇.Wov (a,b)` lies in the `a`-side DIAGONAL shrinking `𝔇.Wov (a,a)`
+(chart-`a` image of `V a ∩ V b ⊆ V a`), so the diagonal `a`-component restricts directly. -/
 theorem Wov_subset_Wov_diag_fst (a b : 𝔇.ι) :
     𝔇.Wov (a, b) ⊆ 𝔇.Wov (a, a) :=
   Set.image_mono (fun _ hx => ⟨hx.1, hx.1⟩)
 
-/-- **Sup-norm 0-cochains, holomorphic side** `C0Holo` — bounded-holomorphic on each DIAGONAL shrinking
-`Wov (a,a) = chartAt (center a) '' (V a)`.  The shrinking (relatively-compact) image makes a germ
-section's analytic representative bounded there (the descent of coboundaries needs this). -/
+/-- **Sup-norm 0-cochains, holomorphic side** `C0Holo` — bounded-holomorphic on each DIAGONAL
+shrinking `Wov (a,a) = chartAt (center a) '' (V a)`. The shrinking (relatively-compact) image makes
+a germ section's analytic representative bounded there (the descent of coboundaries needs this). -/
 abbrev C0Holo (𝔇 : ChartDiskCover X) : Type _ :=
   ∀ a : 𝔇.ι, BddHol (𝔇.Wov (a, a))
 
@@ -126,8 +127,8 @@ noncomputable instance : CompleteSpace 𝔇.C0Holo := by
 
 /-- **The cross-chart Čech `δ⁰`** of the chart-disk model: `c.Cshr`-valued from `C0Holo`.
 Componentwise on overlap `(a,b)`,
-    `(δ⁰f)_{ab} = (transport of f_b to chart-a) − (restriction of f_a)`   on the OPEN `Wov (a,b)`,
-the genuine Čech coboundary with the `b`-side transported through the holomorphic transition `τ_{ab}`.
+`(δ⁰f)_{ab} = (transport of f_b to chart-a) − (restriction of f_a)` on the OPEN `Wov (a,b)`, the
+genuine Čech coboundary with the `b`-side transported through the holomorphic transition `τ_{ab}`.
 Both pieces stay `BddHol` on the open `Wov`. -/
 noncomputable def delta0Model :
     𝔇.C0Holo →L[ℂ] 𝔇.overlapData.Cshr :=
@@ -290,8 +291,8 @@ theorem UovTriple_subset_Uov_fst_trd (a b c : 𝔇.ι) :
   show (chartAt (H := ℂ) (𝔇.center a)) '' _ ⊆ (chartAt (H := ℂ) (𝔇.center a)) '' _
   exact Set.image_mono (fun x hx => ⟨hx.1.1, hx.2⟩)
 
-/-- **The cross-chart Čech `δ¹` on the COVER side** `c.Ccov →L[ℂ] C2Cov`.  Same shape as the shrinking
-`δ¹`, on the full cover overlaps. -/
+/-- **The cross-chart Čech `δ¹` on the COVER side** `c.Ccov →L[ℂ] C2Cov`. Same shape as the
+shrinking `δ¹`, on the full cover overlaps. -/
 noncomputable def delta1CovModel :
     𝔇.overlapData.Ccov →L[ℂ] 𝔇.C2Cov :=
   ContinuousLinearMap.pi fun t =>
@@ -384,7 +385,8 @@ theorem delta1_comp_rhoRaw_eq_rho2_comp_delta1Cov :
   · rw [delta1Model_apply_apply _ _ _ hz]
     obtain ⟨a, b, c⟩ := t
     simp only [HolomorphicDiskOverlapData.rhoRaw_apply, overlapData_Wov_eq, overlapData_Uov_eq]
-    rw [BddHol.restrictOpenCLM_toFun_of_mem _ _ (𝔇.mapsTo_coverTransition_WovTriple_shrink a b c hz),
+    rw [BddHol.restrictOpenCLM_toFun_of_mem _ _
+        (𝔇.mapsTo_coverTransition_WovTriple_shrink a b c hz),
       BddHol.restrictOpenCLM_toFun_of_mem _ _ (𝔇.WovTriple_subset_Wov_fst_trd a b c hz),
       BddHol.restrictOpenCLM_toFun_of_mem _ _ (𝔇.WovTriple_subset_Wov_fst_snd a b c hz)]
     rw [rho2Model_apply, BddHol.restrictOpenCLM_toFun_of_mem _ _ hz]
@@ -405,8 +407,8 @@ space is `∀ a, BddHol (Uov (a,a))` (bounded-holomorphic on each diagonal cover
 are the triple-overlap 2-cochains built above, and the δ's are the model differentials.
 
 The `leray` field is the Forster 14.6 cover→shrinking lift; see the (corrected) `leray_diagnosis`.
-The genuinely-new foundational input — a SHRINKING-level smooth partition of unity on `𝔇`, summing to
-`1` on all of `X` — is built in `ChartDiskLeray.lean` (`ChartDiskCover.shrinkPoU`). -/
+The genuinely-new foundational input — a SHRINKING-level smooth partition of unity on `𝔇`, summing
+to `1` on all of `X` — is built in `ChartDiskLeray.lean` (`ChartDiskCover.shrinkPoU`). -/
 
 /-! ## §A2-pre — The shrinking opens `V_a` (foundational, used by the §A2 `leray` lift below). -/
 
@@ -441,25 +443,28 @@ theorem isRefinement_shrinkCover :
 /-- `V a ⊆ (chartAt (center a)).source`. -/
 theorem shrinkOpens_subset_source (a : 𝔇.ι) :
     ((𝔇.shrinkOpens a : Opens X) : Set X) ⊆ (chartAt (H := ℂ) (𝔇.center a)).source :=
-  fun x hx => 𝔇.U_subset_chartAt_source a (𝔇.shrinkOpens_le_U a hx)
+  fun _ hx => 𝔇.U_subset_chartAt_source a (𝔇.shrinkOpens_le_U a hx)
 
 /-- `Wov (a,b)` is exactly the chart-`a` image of the open `shrinkOpens a ⊓ shrinkOpens b`. -/
 theorem Wov_eq_chartImage_shrinkInter (a b : 𝔇.ι) :
     𝔇.Wov (a, b)
-      = (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b : Opens X) : Set X) := by
+      = (chartAt (H := ℂ) (𝔇.center a)) ''
+        ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b : Opens X) : Set X) := by
   show (chartAt (H := ℂ) (𝔇.center a)) '' (𝔇.shrinkSet a ∩ 𝔇.shrinkSet b) = _
   congr 1
 
 /-- `V_a ∩ V_b ⊆ (chartAt (center a)).source`. -/
 theorem shrinkInter_subset_source (a b : 𝔇.ι) :
-    ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b : Opens X) : Set X) ⊆ (chartAt (H := ℂ) (𝔇.center a)).source := by
+    ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b : Opens X) : Set X) ⊆
+      (chartAt (H := ℂ) (𝔇.center a)).source := by
   intro x hx
   exact 𝔇.shrinkOpens_subset_source a hx.1
 
 /-- The `BddHol` component `s_{ab}`, retyped to live on the exact chart image of `shrinkOpens a ⊓
 shrinkOpens b` (which is `Wov (a,b)`), ready for `bddHolToOmegaDGerm_zero_image`. -/
 noncomputable def shrinkBddHolRetype (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) :
-    BddHol ((chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b : Opens X) : Set X)) :=
+    BddHol ((chartAt (H := ℂ) (𝔇.center a)) ''
+      ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b : Opens X) : Set X)) :=
   BddHol.restrictOpenCLM (𝔇.Wov_eq_chartImage_shrinkInter a b).ge (s (a, b))
 
 theorem shrinkBddHolRetype_toFun_of_mem (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) {z : ℂ}
@@ -488,7 +493,8 @@ theorem shrinkGerm_holoFn (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) {y : X}
     fun x => g'.toFun ((chartAt (H := ℂ) (𝔇.center a)) x.1) with hF
   have hgerm : toGerm (𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b) F = (𝔇.shrinkGerm s a b).1 := rfl
   have hmemImg : (chartAt (H := ℂ) (𝔇.center a)) y
-      ∈ (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b : Opens X) : Set X) :=
+      ∈ (chartAt (H := ℂ) (𝔇.center a)) ''
+        ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b : Opens X) : Set X) :=
     ⟨y, hy, rfl⟩
   -- `g'.toFun (φ_a y) = s_{ab}.toFun (φ_a y)` (`shrinkBddHolRetype` agrees on `Wov`).
   have hzW : (chartAt (H := ℂ) (𝔇.center a)) y ∈ 𝔇.Wov (a, b) := by
@@ -519,21 +525,23 @@ theorem chart_mem_WovTriple (i j k : 𝔇.ι) {y : X}
     (chartAt (H := ℂ) (𝔇.center i)) y ∈ 𝔇.WovTriple (i, j, k) :=
   ⟨y, ⟨⟨hy.1.1, hy.1.2⟩, hy.2⟩, rfl⟩
 
-/-- For `y ∈ V_i ∩ V_j ⊆ V_i ∩ V_j`, the transition point identity `(chart_j).symm (τ_{ij}(chart_i y))
-= ...` collapses: `τ_{ij}(chart_i y) = chart_j y`. -/
+/-- For `y ∈ V_i ∩ V_j ⊆ V_i ∩ V_j`, the transition point identity
+`(chart_j).symm (τ_{ij}(chart_i y)) = ...` collapses: `τ_{ij}(chart_i y) = chart_j y`. -/
 theorem coverTransition_chart_shrink (i j : 𝔇.ι) {y : X}
     (hyi : y ∈ (𝔇.shrinkOpens i : Opens X)) (hyj : y ∈ (𝔇.shrinkOpens j : Opens X)) :
-    𝔇.coverTransition i j ((chartAt (H := ℂ) (𝔇.center i)) y) = (chartAt (H := ℂ) (𝔇.center j)) y := by
+    𝔇.coverTransition i j ((chartAt (H := ℂ) (𝔇.center i)) y) =
+      (chartAt (H := ℂ) (𝔇.center j)) y := by
   have hyiU : y ∈ ((𝔇.U i : Opens X) : Set X) := 𝔇.shrinkOpens_le_U i hyi
   have hyjU : y ∈ ((𝔇.U j : Opens X) : Set X) := 𝔇.shrinkOpens_le_U j hyj
   exact 𝔇.coverTransition_apply i j ⟨hyiU, hyjU⟩
 
 /-- **The germ cocycle relation at the `holoFn` value level.**  For a `Cshr` cocycle `s` (i.e.
-`δ¹s = 0`) and `y ∈ V_i ∩ V_j ∩ V_k`, `holoFn σ_{ik} y = holoFn σ_{ij} y + holoFn σ_{jk} y`.  Direct
-from `delta1Model s = 0` evaluated at `chart_i y ∈ WovTriple (i,j,k)`, via `shrinkGerm_holoFn` and the
-transition identity. -/
+`δ¹s = 0`) and `y ∈ V_i ∩ V_j ∩ V_k`, `holoFn σ_{ik} y = holoFn σ_{ij} y + holoFn σ_{jk} y`. Direct
+from `delta1Model s = 0` evaluated at `chart_i y ∈ WovTriple (i,j,k)`, via `shrinkGerm_holoFn` and
+the transition identity. -/
 theorem shrinkGerm_cocycle_add (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0)
-    (i j k : 𝔇.ι) {y : X} (hy : y ∈ (𝔇.shrinkOpens i ⊓ 𝔇.shrinkOpens j ⊓ 𝔇.shrinkOpens k : Opens X)) :
+    (i j k : 𝔇.ι) {y : X}
+    (hy : y ∈ (𝔇.shrinkOpens i ⊓ 𝔇.shrinkOpens j ⊓ 𝔇.shrinkOpens k : Opens X)) :
     holoFn (𝔇.shrinkGerm s i k).2 y
       = holoFn (𝔇.shrinkGerm s i j).2 y + holoFn (𝔇.shrinkGerm s j k).2 y := by
   have hyi : y ∈ (𝔇.shrinkOpens i : Opens X) := hy.1.1
@@ -551,7 +559,7 @@ theorem shrinkGerm_cocycle_add (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Mode
     ← 𝔇.shrinkGerm_holoFn s i j ⟨hyi, hyj⟩, ← 𝔇.shrinkGerm_holoFn s j k ⟨hyj, hyk⟩] at h0
   linear_combination -h0
 
-/-- `holoFn σ_{ii} y = 0` on `V_i` (diagonal vanishing).  From the cocycle relation with `j = k = i`:
+/-- `holoFn σ_{ii} y = 0` on `V_i` (diagonal vanishing). From the cocycle relation with `j = k = i`:
 `holoFn σ_{ii} = holoFn σ_{ii} + holoFn σ_{ii}`. -/
 theorem shrinkGerm_diag_eq_zero (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0)
     (i : 𝔇.ι) {y : X} (hy : y ∈ (𝔇.shrinkOpens i : Opens X)) :
@@ -561,10 +569,10 @@ theorem shrinkGerm_diag_eq_zero (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Mod
 
 /-! ## §B — The global Bott–Tu `(0,1)`-form `ω̂` from `s`
 
-`ω̂ := ∑_{a,c} (ρ_a · holoFn σ_{ac}) • ∂̄ρ_c`, with `ρ = shrinkPoU` (subordinate to `(V_a)`, sum-to-one
-on `X`).  Each summand is a global smooth `(0,1)`-form by the confining 3-case `tsupport` argument
-(mirrors `cechTerm` of `DolbeaultComparisonInverse`).  This is the global form whose chart-`a` read on
-the FULL ball `U_a` is smooth — the input the per-disk solve consumes. -/
+`ω̂ := ∑_{a,c} (ρ_a · holoFn σ_{ac}) • ∂̄ρ_c`, with `ρ = shrinkPoU` (subordinate to `(V_a)`,
+sum-to-one on `X`). Each summand is a global smooth `(0,1)`-form by the confining 3-case `tsupport`
+argument (mirrors `cechTerm` of `DolbeaultComparisonInverse`). This is the global form whose
+chart-`a` read on the FULL ball `U_a` is smooth — the input the per-disk solve consumes. -/
 
 /-- `ρ_a` as a complex `SmoothCFunctions` (`ρ̃_a = ofReal ∘ shrinkPoU a`). -/
 noncomputable def shrinkRhoC (a : 𝔇.ι) : SmoothCFunctions X :=
@@ -576,7 +584,9 @@ noncomputable def shrinkDbarRho (a : 𝔇.ι) : SmoothCOneForms X :=
 
 theorem shrinkRhoC_eq_zero_of_notMem (a : 𝔇.ι) {x : X}
     (hx : x ∉ tsupport (𝔇.shrinkPoU a)) : 𝔇.shrinkRhoC a x = 0 := by
-  simp only [shrinkRhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hx]; rfl
+  simp only [shrinkRhoC, ContMDiffMap.comp_apply, ofRealCM,
+    image_eq_zero_of_notMem_tsupport hx]
+  rfl
 
 theorem shrinkDbarRho_eq_zero_of_notMem (a : 𝔇.ι) {x : X}
     (hx : x ∉ tsupport (𝔇.shrinkPoU a)) : (𝔇.shrinkDbarRho a) x = 0 := by
@@ -638,13 +648,15 @@ noncomputable def shrinkTerm (s : 𝔇.overlapData.Cshr) (a c : 𝔇.ι) : Smoot
       · refine ContMDiffAt.congr_of_eventuallyEq (Bundle.contMDiffAt_zeroSection ℝ
           (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x)) ?_
         filter_upwards [(isClosed_tsupport (𝔇.shrinkPoU c)).isOpen_compl.mem_nhds hbc] with x hx
-        have hV : (𝔇.shrinkRhoC a x * holoFn (𝔇.shrinkGerm s a c).2 x) • (𝔇.shrinkDbarRho c x) = 0 := by
+        have hV : (𝔇.shrinkRhoC a x * holoFn (𝔇.shrinkGerm s a c).2 x) •
+            (𝔇.shrinkDbarRho c x) = 0 := by
           rw [𝔇.shrinkDbarRho_eq_zero_of_notMem c hx]; module
         exact congrArg (Bundle.TotalSpace.mk x) hV
     · refine ContMDiffAt.congr_of_eventuallyEq (Bundle.contMDiffAt_zeroSection ℝ
         (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x)) ?_
       filter_upwards [(isClosed_tsupport (𝔇.shrinkPoU a)).isOpen_compl.mem_nhds hba] with x hx
-      have hV : (𝔇.shrinkRhoC a x * holoFn (𝔇.shrinkGerm s a c).2 x) • (𝔇.shrinkDbarRho c x) = 0 := by
+      have hV : (𝔇.shrinkRhoC a x * holoFn (𝔇.shrinkGerm s a c).2 x) •
+          (𝔇.shrinkDbarRho c x) = 0 := by
         rw [𝔇.shrinkRhoC_eq_zero_of_notMem a hx, zero_mul]; module
       exact congrArg (Bundle.TotalSpace.mk x) hV
 
@@ -662,7 +674,8 @@ theorem shrinkTerm_mem_zeroOne (s : 𝔇.overlapData.Cshr) (a c : 𝔇.ι) :
   have hfix : proj01 ((𝔇.shrinkDbarRho c) x) = (𝔇.shrinkDbarRho c x) := by
     show proj01 (dbarL (𝔇.shrinkRhoC c) x) = dbarL (𝔇.shrinkRhoC c) x
     rw [dbarL_eq_proj01L_differential]
-    show proj01 (proj01 ((differential (𝔇.shrinkRhoC c)) x)) = proj01 ((differential (𝔇.shrinkRhoC c)) x)
+    show proj01 (proj01 ((differential (𝔇.shrinkRhoC c)) x)) =
+      proj01 ((differential (𝔇.shrinkRhoC c)) x)
     exact proj01_idempotent _
   rw [hfix]
 
@@ -682,8 +695,8 @@ theorem glueForm_val (s : 𝔇.overlapData.Cshr) :
 
 `G_a(x) := ∑_c ρ_c(x) · holoFn σ_{ac}(x)` — a function smooth on `V_a` (each term confined to
 `tsupport ρ_c ∩ V_a ⊆ V_c ∩ V_a`, where `holoFn σ_{ac}` is smooth).  Two identities drive the lift:
-  * the **difference identity** `G_a(x) − G_b(x) = holoFn σ_{ab}(x) = s_{ab}.toFun(φ_a x)` on `V_a ∩ V_b`
-    (cocycle telescoping `∑ ρ = 1`);
+  * the **difference identity** `G_a(x) − G_b(x) = holoFn σ_{ab}(x) = s_{ab}.toFun(φ_a x)` on
+    `V_a ∩ V_b` (cocycle telescoping `∑ ρ = 1`);
   * the **`∂̄` identity** `proj01(mfderiv G_a x) = ω̂ x` on `V_a` (Wirtinger product rule + cocycle
     telescoping `∑ ∂̄ρ = 0`), built in §D.
 -/
@@ -695,8 +708,8 @@ noncomputable def globalPrim (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) : X → �
 theorem globalPrim_apply (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) (x : X) :
     𝔇.globalPrim s a x = ∑ c, 𝔇.shrinkRhoC c x * holoFn (𝔇.shrinkGerm s a c).2 x := rfl
 
-/-- **The difference identity** `G_a(x) − G_b(x) = holoFn σ_{ab}(x)` on `V_a ∩ V_b`.  Pointwise via the
-cocycle relation `holoFn σ_{ac} = holoFn σ_{ab} + holoFn σ_{bc}` and `∑ ρ = 1`.  (Mirror of
+/-- **The difference identity** `G_a(x) − G_b(x) = holoFn σ_{ab}(x)` on `V_a ∩ V_b`. Pointwise via
+the cocycle relation `holoFn σ_{ac} = holoFn σ_{ab} + holoFn σ_{bc}` and `∑ ρ = 1`. (Mirror of
 `chartDiskCoverPrim_diff`.) -/
 theorem globalPrim_diff (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a b : 𝔇.ι) {x : X}
     (hx : x ∈ (𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b : Opens X)) :
@@ -731,12 +744,14 @@ theorem mdifferentiableAt_globalPrimTerm (s : 𝔇.overlapData.Cshr) (a c : 𝔇
     have hxac : x ∈ ((𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens c : Opens X) : Set X) := ⟨hxa, hxc⟩
     exact (((𝔇.shrinkRhoC c).contMDiff x).mul
       (holoFn_contMDiffAt (𝔇.shrinkGerm s a c).2 hxac)).mdifferentiableAt (by simp)
-  · refine (mdifferentiableAt_const (I := 𝓘(ℝ, ℂ)) (I' := 𝓘(ℝ, ℂ)) (c := (0 : ℂ))).congr_of_eventuallyEq ?_
+  · refine (mdifferentiableAt_const (I := 𝓘(ℝ, ℂ)) (I' := 𝓘(ℝ, ℂ))
+      (c := (0 : ℂ))).congr_of_eventuallyEq ?_
     filter_upwards [(isClosed_tsupport (𝔇.shrinkPoU c)).isOpen_compl.mem_nhds hb] with y hy
     simp only [globalPrimTerm, 𝔇.shrinkRhoC_eq_zero_of_notMem c hy, zero_mul]
 
-/-- **The Wirtinger value of one summand** `proj01(mfderiv (ρ_c·holoFn σ_{ac}) x) = holoFn σ_{ac}(x) •
-∂̄ρ_c x` at `x ∈ V_a` (product rule + `holoFn` holomorphic; off `tsupport ρ_c` both sides vanish). -/
+/-- **The Wirtinger value of one summand**
+`proj01(mfderiv (ρ_c·holoFn σ_{ac}) x) = holoFn σ_{ac}(x) • ∂̄ρ_c x` at `x ∈ V_a` (product rule +
+`holoFn` holomorphic; off `tsupport ρ_c` both sides vanish). -/
 theorem dbar_globalPrimTerm (s : 𝔇.overlapData.Cshr) (a c : 𝔇.ι) {x : X}
     (hxa : x ∈ (𝔇.shrinkOpens a : Opens X)) :
     proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrimTerm s a c) x)
@@ -774,15 +789,16 @@ theorem shrinkGerm_antisymm (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s
   rw [𝔇.shrinkGerm_diag_eq_zero s hs p hyp] at h
   linear_combination -h
 
-/-- **`glueForm` value telescopes on `V_a`**: `ω̂ x = ∑_c holoFn σ_{ac}(x) • ∂̄ρ_c(x)` for `x ∈ V_a`.
-Via the cocycle substitution `holoFn σ_{pq} = holoFn σ_{aq} − holoFn σ_{ap}` (on `V_a`) and
-`telescope_sum` (`∑ ρ = 1`, `∑ ∂̄ρ = 0`). -/
+/-- **`glueForm` value telescopes on `V_a`**: `ω̂ x = ∑_c holoFn σ_{ac}(x) • ∂̄ρ_c(x)` for
+`x ∈ V_a`. Via the cocycle substitution `holoFn σ_{pq} = holoFn σ_{aq} − holoFn σ_{ap}` (on `V_a`)
+and `telescope_sum` (`∑ ρ = 1`, `∑ ∂̄ρ = 0`). -/
 theorem glueForm_apply_on_V (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a : 𝔇.ι) {x : X}
     (hxa : x ∈ (𝔇.shrinkOpens a : Opens X)) :
     ((𝔇.glueForm s : ↥(OneFormsZeroOne X)) : SmoothCOneForms X) x
       = ∑ c, holoFn (𝔇.shrinkGerm s a c).2 x • (𝔇.shrinkDbarRho c x) := by
   rw [glueForm_val, section_finset_sum_apply]
-  -- rewrite each term `(ρ_p·holoFn σ_{pq})•∂̄ρ_q` to `(ρ_p·(H_q − H_p))•∂̄ρ_q` with `H_q = holoFn σ_{aq}`.
+  -- rewrite each term `(ρ_p·holoFn σ_{pq})•∂̄ρ_q` to `(ρ_p·(H_q − H_p))•∂̄ρ_q` with
+  -- `H_q = holoFn σ_{aq}`.
   have hterm : ∀ p : 𝔇.ι × 𝔇.ι, (𝔇.shrinkTerm s p.1 p.2) x
       = (𝔇.shrinkRhoC p.1 x
           * (holoFn (𝔇.shrinkGerm s a p.2).2 x - holoFn (𝔇.shrinkGerm s a p.1).2 x))
@@ -811,9 +827,9 @@ theorem globalPrim_eq_sum (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) :
   rw [globalPrim_apply, Finset.sum_apply]
   rfl
 
-/-- **The intrinsic `∂̄` identity** `proj01(mfderiv G_a x) = ω̂ x` for `x ∈ V_a`.  The per-term Wirtinger
-values (`dbar_globalPrimTerm`) summed (`HasMFDerivAt.sum`), matched to `glueForm` by its `V_a`
-telescoping. -/
+/-- **The intrinsic `∂̄` identity** `proj01(mfderiv G_a x) = ω̂ x` for `x ∈ V_a`. The per-term
+Wirtinger values (`dbar_globalPrimTerm`) summed (`HasMFDerivAt.sum`), matched to `glueForm` by its
+`V_a` telescoping. -/
 theorem dbar_globalPrim (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a : 𝔇.ι) {x : X}
     (hxa : x ∈ (𝔇.shrinkOpens a : Opens X)) :
     proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrim s a) x)
@@ -840,8 +856,8 @@ bounded by `∑ ‖s_{·a}‖`).  So `η_a ∈ BddHol (Wov (a,a))`. -/
 noncomputable def primVal (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) : X → ℂ :=
   diskVal 𝔇 a (𝔇.glueForm s)
 
-/-- `proj01(mfderiv u_a x) = ω̂ x` on `U_a` (Forster 13.2 primitive; `dbar_diskValue_eq_g` upgraded to
-the full CLM by `dbar_eq_of_apply_one'`). -/
+/-- `proj01(mfderiv u_a x) = ω̂ x` on `U_a` (Forster 13.2 primitive; `dbar_diskValue_eq_g` upgraded
+to the full CLM by `dbar_eq_of_apply_one'`). -/
 theorem dbar_primVal (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) {x : X} (hxa : x ∈ (𝔇.U a : Set X)) :
     proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.primVal s a) x)
       = ((𝔇.glueForm s : ↥(OneFormsZeroOne X)) : SmoothCOneForms X) x :=
@@ -853,10 +869,11 @@ theorem mdifferentiableAt_primVal (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) {x :
   (contMDiffAt_diskVal 𝔇 a (𝔇.glueForm s) hxa).mdifferentiableAt (by simp)
 
 /-- **Chart-`a` Wirtinger bridge from intrinsic vanishing.**  If `w` is `MDifferentiableAt y` with
-intrinsic Wirtinger scalar `proj01(mfderiv w y)(1) = 0`, then for any chart `a` whose source contains
-`y`, the chart-`a` planar `∂̄(w ∘ φ_a⁻¹)(φ_a y) = 0`.  Proof: `w∘φ_a⁻¹ = (w∘φ_y⁻¹)∘(φ_y∘φ_a⁻¹)`, the
-inner map is holomorphic, so by the Wirtinger chain rule the chart-`a` `∂̄` is `conj(τ′)` times the
-own-chart `∂̄(w∘φ_y⁻¹)(φ_y y) = proj01(mfderiv w y)(1) = 0`. -/
+intrinsic Wirtinger scalar `proj01(mfderiv w y)(1) = 0`, then for any chart `a` whose source
+contains `y`, the chart-`a` planar `∂̄(w ∘ φ_a⁻¹)(φ_a y) = 0`. Proof:
+`w∘φ_a⁻¹ = (w∘φ_y⁻¹)∘(φ_y∘φ_a⁻¹)`, the inner map is holomorphic, so by the Wirtinger chain rule the
+chart-`a` `∂̄` is `conj(τ′)` times the own-chart `∂̄(w∘φ_y⁻¹)(φ_y y) = proj01(mfderiv w y)(1) = 0`.
+-/
 theorem dbar_chartFixed_of_intrinsic_zero {w : X → ℂ} {y : X} (a : 𝔇.ι)
     (hya : y ∈ (chartAt (H := ℂ) (𝔇.center a)).source)
     (hwmd : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) w y)
@@ -895,7 +912,8 @@ theorem dbar_chartFixed_of_intrinsic_zero {w : X → ℂ} {y : X} (a : 𝔇.ι)
     rw [writtenInExtChartAt, ModelWithCorners.Boundaryless.range_eq_univ,
       differentiableWithinAt_univ] at this
     simpa only [Function.comp, mfld_simps] using this
-  -- Wirtinger chain rule: `∂̄((w∘φ_y.symm)∘τ)(φ_a y) = conj(τ′)·∂̄(w∘φ_y.symm)(φ_y y) = conj·0 = 0`.
+  -- Wirtinger chain rule:
+  -- `∂̄((w∘φ_y.symm)∘τ)(φ_a y) = conj(τ′)·∂̄(w∘φ_y.symm)(φ_y y) = conj·0 = 0`.
   have hchain : DbarDisk.dbar ((fun z => w (φy.symm z)) ∘ τ) (φa y)
       = (starRingEnd ℂ) (deriv τ (φa y)) * DbarDisk.dbar (fun z => w (φy.symm z)) (τ (φa y)) :=
     dbarDisk_comp_holo (fun z => w (φy.symm z)) τ (φa y) (hτpt ▸ hℝ) hτdiff
@@ -917,7 +935,8 @@ theorem mdifferentiableAt_etaFn (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) {x : X
     (hxa : x ∈ (𝔇.shrinkOpens a : Opens X)) :
     MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.etaFn s a) x := by
   have hxaU : x ∈ (𝔇.U a : Set X) := 𝔇.shrinkOpens_le_U a hxa
-  have hpu : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.primVal s a) x := 𝔇.mdifferentiableAt_primVal s a hxaU
+  have hpu : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.primVal s a) x :=
+    𝔇.mdifferentiableAt_primVal s a hxaU
   have hpg : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrim s a) x := by
     rw [𝔇.globalPrim_eq_sum s a]
     exact MDifferentiableAt.sum fun c _ => 𝔇.mdifferentiableAt_globalPrimTerm s a c hxa
@@ -929,11 +948,13 @@ theorem dbar1_etaFn (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a
     (hya : y ∈ (𝔇.shrinkOpens a : Opens X)) :
     proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.etaFn s a) y) (1 : ℂ) = 0 := by
   have hyaU : y ∈ (𝔇.U a : Set X) := 𝔇.shrinkOpens_le_U a hya
-  have hpu : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.primVal s a) y := 𝔇.mdifferentiableAt_primVal s a hyaU
+  have hpu : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.primVal s a) y :=
+    𝔇.mdifferentiableAt_primVal s a hyaU
   have hpg : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.globalPrim s a) y := by
     rw [𝔇.globalPrim_eq_sum s a]
     exact MDifferentiableAt.sum fun c _ => 𝔇.mdifferentiableAt_globalPrimTerm s a c hya
-  -- own-chart planar `∂̄` of `η_a` = `∂̄(pu) − ∂̄(pg)` = `(ω̂)(1) − (ω̂)(1) = 0`; transfer back to scalar.
+  -- own-chart planar `∂̄` of `η_a` = `∂̄(pu) − ∂̄(pg)` = `(ω̂)(1) − (ω̂)(1) = 0`; transfer back to
+  -- scalar.
   set e := (extChartAt 𝓘(ℝ, ℂ) y) with he
   have hmd : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (𝔇.etaFn s a) y := 𝔇.mdifferentiableAt_etaFn s a hya
   rw [dbar_apply_one_eq_dbarDisk' hmd]
@@ -954,10 +975,10 @@ theorem dbar1_etaFn (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a
   rw [← dbar_apply_one_eq_dbarDisk' hpu, ← dbar_apply_one_eq_dbarDisk' hpg,
     𝔇.dbar_primVal s a hyaU, 𝔇.dbar_globalPrim s hs a hya, sub_self]
 
-/-- **`η_a` chart-`a`-read is `AnalyticOn` `Wov (a,a)`.**  At each `z = φ_a y` (`y ∈ V_a`) the chart-`a`
-planar `∂̄(η_a ∘ φ_a⁻¹) = 0` (`dbar_chartFixed_of_intrinsic_zero` + `dbar1_etaFn`), and the pullback is
-`ℝ`-differentiable on the open `W = φ_a.target ∩ φ_a.symm⁻¹'(V_a)`; an open `DifferentiableOn ℂ` ⟹
-`AnalyticOn`. -/
+/-- **`η_a` chart-`a`-read is `AnalyticOn` `Wov (a,a)`.** At each `z = φ_a y` (`y ∈ V_a`) the
+chart-`a` planar `∂̄(η_a ∘ φ_a⁻¹) = 0` (`dbar_chartFixed_of_intrinsic_zero` + `dbar1_etaFn`), and
+the pullback is `ℝ`-differentiable on the open `W = φ_a.target ∩ φ_a.symm⁻¹'(V_a)`; an open
+`DifferentiableOn ℂ` ⟹ `AnalyticOn`. -/
 theorem etaFn_chartA_analyticOn (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0) (a : 𝔇.ι) :
     AnalyticOn ℂ (𝔇.etaFn s a ∘ (chartAt (H := ℂ) (𝔇.center a)).symm) (𝔇.Wov (a, a)) := by
   set φa := chartAt (H := ℂ) (𝔇.center a) with hφa
@@ -992,11 +1013,11 @@ theorem etaFn_chartA_analyticOn (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Mod
   have hyV : y ∈ ((𝔇.shrinkOpens a : Opens X) : Set X) := hyVV.1
   have hysrc : y ∈ φa.source := 𝔇.shrinkOpens_subset_source a hyV
   have hwW : φa y ∈ W := ⟨φa.map_source hysrc, by
-    simp only [hW, Set.mem_preimage, φa.left_inv hysrc]; exact hyV⟩
+    simp only [Set.mem_preimage, φa.left_inv hysrc]; exact hyV⟩
   exact (hDiffOn.analyticOnNhd hWopen (φa y) hwW).analyticWithinAt
 
-/-- `‖holoFn σ_{ac} x‖ ≤ ‖s_{ac}‖` on `V_a ∩ V_c` (the germ-section value is `s.toFun∘φ_a`, bounded by
-the `BddHol` norm). -/
+/-- `‖holoFn σ_{ac} x‖ ≤ ‖s_{ac}‖` on `V_a ∩ V_c` (the germ-section value is `s.toFun∘φ_a`, bounded
+by the `BddHol` norm). -/
 theorem norm_shrinkGerm_holoFn_le (s : 𝔇.overlapData.Cshr) (a c : 𝔇.ι) {x : X}
     (hx : x ∈ (𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens c : Opens X)) :
     ‖holoFn (𝔇.shrinkGerm s a c).2 x‖ ≤ ‖s (a, c)‖ := by
@@ -1012,7 +1033,8 @@ theorem norm_globalPrim_le (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) {x : X}
   by_cases hb : x ∈ tsupport (𝔇.shrinkPoU c)
   · have hxc : x ∈ (𝔇.shrinkOpens c : Opens X) := 𝔇.shrinkPoU_tsupport_subset c hb
     rw [norm_mul]
-    refine (mul_le_of_le_one_left (norm_nonneg _) ?_).trans (𝔇.norm_shrinkGerm_holoFn_le s a c ⟨hxa, hxc⟩)
+    refine (mul_le_of_le_one_left (norm_nonneg _) ?_).trans
+      (𝔇.norm_shrinkGerm_holoFn_le s a c ⟨hxa, hxc⟩)
     -- `‖ρ̃_c x‖ = |ρ_c x| ≤ 1` (nonneg + `∑ρ = 1`).
     show ‖((𝔇.shrinkPoU c x : ℝ) : ℂ)‖ ≤ 1
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ((𝔇.shrinkPoU).nonneg c x)]
@@ -1029,11 +1051,13 @@ theorem primVal_chartSymm (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) {z : ℂ}
       = 𝔇.planarPrimitive a (𝔇.glueForm s) z := by
   show 𝔇.planarPrimitive a (𝔇.glueForm s)
       ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center a)) ((chartAt (H := ℂ) (𝔇.center a)).symm z)) = _
-  rw [show (extChartAt 𝓘(ℝ, ℂ) (𝔇.center a) : X → ℂ) = (chartAt (H := ℂ) (𝔇.center a) : X → ℂ) from rfl,
+  rw [show (extChartAt 𝓘(ℝ, ℂ) (𝔇.center a) : X → ℂ) =
+      (chartAt (H := ℂ) (𝔇.center a) : X → ℂ) from rfl,
     (chartAt (H := ℂ) (𝔇.center a)).right_inv hz]
 
 /-- **`η_a` chart-`a`-read is bounded on `Wov (a,a)`**: `‖planarPrimitive a ω̂ z‖` is bounded on the
-compact `closure (Wov (a,a))` (`planarPrimitive` is globally continuous), and `‖G_a‖ ≤ ∑‖s_{a·}‖`. -/
+compact `closure (Wov (a,a))` (`planarPrimitive` is globally continuous), and `‖G_a‖ ≤ ∑‖s_{a·}‖`.
+-/
 theorem etaFn_chartA_bounded (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) :
     ∃ C, ∀ z ∈ 𝔇.Wov (a, a),
       ‖(𝔇.etaFn s a ∘ (chartAt (H := ℂ) (𝔇.center a)).symm) z‖ ≤ C := by
@@ -1047,10 +1071,13 @@ theorem etaFn_chartA_bounded (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) :
   have htgt : (chartAt (H := ℂ) (𝔇.center a)) y ∈ (chartAt (H := ℂ) (𝔇.center a)).target :=
     (chartAt (H := ℂ) (𝔇.center a)).map_source hysrc
   -- value: `η_a∘φa.symm (φa y) = planarPrimitive a ω̂ (φa y) − G_a y`.
-  have hval : (𝔇.etaFn s a ∘ (chartAt (H := ℂ) (𝔇.center a)).symm) ((chartAt (H := ℂ) (𝔇.center a)) y)
-      = 𝔇.planarPrimitive a (𝔇.glueForm s) ((chartAt (H := ℂ) (𝔇.center a)) y) - 𝔇.globalPrim s a y := by
+  have hval :
+      (𝔇.etaFn s a ∘ (chartAt (H := ℂ) (𝔇.center a)).symm) ((chartAt (H := ℂ) (𝔇.center a)) y)
+        = 𝔇.planarPrimitive a (𝔇.glueForm s) ((chartAt (H := ℂ) (𝔇.center a)) y)
+          - 𝔇.globalPrim s a y := by
     simp only [Function.comp_apply, etaFn, (chartAt (H := ℂ) (𝔇.center a)).left_inv hysrc]
-    -- `primVal s a y = planarPrimitive a ω̂ (extChartAt(center a) y) = planarPrimitive a ω̂ (φa y)`.
+    -- `primVal s a y = planarPrimitive a ω̂ (extChartAt(center a) y)`
+    --   `= planarPrimitive a ω̂ (φa y)`.
     rfl
   rw [hval]
   refine (norm_sub_le _ _).trans (add_le_add ?_ (𝔇.norm_globalPrim_le s a hyV))
@@ -1073,19 +1100,20 @@ noncomputable def etaCochain (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model 
 
 /-! ## §A2-x — The holomorphic COVER cocycle `x : Ccov` (Forster 14.6 per-disk solve)
 
-`x'_{ab} := dolbeaultToCechCocycle 𝔇 ω̂` (the PROVEN per-disk ∂̄-solve via the Cauchy transform on each
-ball, `DolbeaultComparisonProof`) is a germ Čech cocycle, holomorphic on the FULL overlaps, with
-component value `holoFn(x'_{ab}) = u_b − u_a` (`u_a := diskVal a ω̂`).  We package each component as a
-`BddHol (Uov (a,b))` (analytic via `analyticOn_pullback_of_holo`; bounded since `u_a = planarPrimitive
-a ω̂ ∘ φ_a` and `planarPrimitive a ω̂` is continuous on the compact `closedBall ⊇ φ_a '' U_a`). -/
+`x'_{ab} := dolbeaultToCechCocycle 𝔇 ω̂` (the per-disk ∂̄-solve via the Cauchy transform on
+each ball, `DolbeaultComparisonProof`) is a germ Čech cocycle, holomorphic on the FULL overlaps,
+with component value `holoFn(x'_{ab}) = u_b − u_a` (`u_a := diskVal a ω̂`). We package each
+component as a `BddHol (Uov (a,b))` (analytic via `analyticOn_pullback_of_holo`; bounded since
+`u_a = planarPrimitive a ω̂ ∘ φ_a` and `planarPrimitive a ω̂` is continuous on the compact
+`closedBall ⊇ φ_a '' U_a`). -/
 
 /-- The germ cover cocycle `x' := dolbeaultToCechCocycle 𝔇 ω̂` (an element of `cocycles1`). -/
 noncomputable def coverCocycleGerm (s : 𝔇.overlapData.Cshr) :
     ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) :=
   dolbeaultToCechCocycle 𝔇 (𝔇.glueForm s)
 
-/-- The `(a,b)`-component germ is `cechDelta0 (rawCochain ω̂)` — its representative on `U_a ⊓ U_b` is
-`diskSection b ω̂ − diskSection a ω̂`. -/
+/-- The `(a,b)`-component germ is `cechDelta0 (rawCochain ω̂)` — its representative on `U_a ⊓ U_b`
+is `diskSection b ω̂ − diskSection a ω̂`. -/
 theorem coverCocycleGerm_component (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) :
     ((𝔇.coverCocycleGerm s : 𝔇.toFiniteCover.Cochain1)) (a, b)
       = toGerm (𝔇.U a ⊓ 𝔇.U b)
@@ -1111,7 +1139,8 @@ theorem coverCocycleGerm_holoFn (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) {y :
       = ((𝔇.coverCocycleGerm s : 𝔇.toFiniteCover.Cochain1)) (a, b) :=
     (𝔇.coverCocycleGerm_component s a b).symm
   -- `Gext F` agrees with the continuous `diskVal b − diskVal a` near `y`, and is continuous there.
-  have hcont : ContinuousAt (fun z : X => diskVal 𝔇 b (𝔇.glueForm s) z - diskVal 𝔇 a (𝔇.glueForm s) z) y :=
+  have hcont : ContinuousAt
+      (fun z : X => diskVal 𝔇 b (𝔇.glueForm s) z - diskVal 𝔇 a (𝔇.glueForm s) z) y :=
     ((contMDiffAt_diskVal 𝔇 b (𝔇.glueForm s) hy.2).continuousAt).sub
       ((contMDiffAt_diskVal 𝔇 a (𝔇.glueForm s) hy.1).continuousAt)
   have hFval : ∀ w : ↥(𝔇.U a ⊓ 𝔇.U b),
@@ -1134,8 +1163,8 @@ theorem chartSymm_mem_Uov (a b : 𝔇.ι) {z : ℂ} (hz : z ∈ 𝔇.Uov (a, b))
   rwa [(chartAt (H := ℂ) (𝔇.center a)).left_inv
     ((Set.inter_subset_left).trans (𝔇.U_subset_chartAt_source a) hx)]
 
-/-- `‖diskVal a ω̂ x‖` is bounded (uniformly in `x`) by the sup of `planarPrimitive a ω̂` on the compact
-`closedBall (e a) (radius a)` (`diskVal a ω̂ x = planarPrimitive a ω̂ (φ_a x)`). -/
+/-- `‖diskVal a ω̂ x‖` is bounded (uniformly in `x`) by the sup of `planarPrimitive a ω̂` on the
+compact `closedBall (e a) (radius a)` (`diskVal a ω̂ x = planarPrimitive a ω̂ (φ_a x)`). -/
 theorem exists_bound_diskVal (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) :
     ∃ C, ∀ x : X, x ∈ (𝔇.U a : Set X) → ‖diskVal 𝔇 a (𝔇.glueForm s) x‖ ≤ C := by
   obtain ⟨C, hC⟩ := (isCompact_closedBall (𝔇.e a) (𝔇.radius a)).exists_bound_of_continuousOn
@@ -1146,7 +1175,8 @@ theorem exists_bound_diskVal (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) :
   refine hC _ (Metric.ball_subset_closedBall ?_)
   rw [← 𝔇.image_U_eq_ball a]; exact ⟨x, hx, rfl⟩
 
-/-- **The cover-cochain analyticity input**: `holoFn(x'_{ab}) ∘ φ_a⁻¹` is `AnalyticOn (Uov (a,b))`. -/
+/-- **The cover-cochain analyticity input**: `holoFn(x'_{ab}) ∘ φ_a⁻¹` is `AnalyticOn (Uov (a,b))`.
+-/
 theorem coverCocycle_analyticOn (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) :
     AnalyticOn ℂ (holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b)
       ∘ (chartAt (H := ℂ) (𝔇.center a)).symm) (𝔇.Uov (a, b)) := by
@@ -1158,7 +1188,8 @@ theorem coverCocycle_analyticOn (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) :
         (holoRep_mem (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b)) hx)
   exact this
 
-/-- **The cover cochain component** `x_{ab} ∈ BddHol (Uov (a,b))` (analytic + bounded by `2·max diskVal`). -/
+/-- **The cover cochain component** `x_{ab} ∈ BddHol (Uov (a,b))` (analytic + bounded by
+`2·max diskVal`). -/
 noncomputable def coverBddHol (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) : BddHol (𝔇.Uov (a, b)) :=
   BddHol.ofAnalyticOn
     (holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b) ∘ (chartAt (H := ℂ) (𝔇.center a)).symm)
@@ -1175,7 +1206,8 @@ noncomputable def coverBddHol (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) : BddH
 theorem coverBddHol_toFun_of_mem (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) {z : ℂ}
     (hz : z ∈ 𝔇.Uov (a, b)) :
     (𝔇.coverBddHol s a b).toFun z
-      = holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b) ((chartAt (H := ℂ) (𝔇.center a)).symm z) :=
+      = holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b)
+        ((chartAt (H := ℂ) (𝔇.center a)).symm z) :=
   BddHol.ofAnalyticOn_toFun_of_mem _ _ _ hz
 
 /-- `x : Ccov` — the holomorphic cover cocycle (the NEGATED per-disk cocycle: the boundary-map sign
@@ -1186,7 +1218,8 @@ noncomputable def coverCochain (s : 𝔇.overlapData.Cshr) : 𝔇.overlapData.Cc
 theorem coverCochain_toFun_of_mem (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) {z : ℂ}
     (hz : z ∈ 𝔇.Uov (a, b)) :
     (𝔇.coverCochain s (a, b)).toFun z
-      = -holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b) ((chartAt (H := ℂ) (𝔇.center a)).symm z) := by
+      = -holoFn (cocycle_mem 𝔇 (𝔇.coverCocycleGerm s) a b)
+        ((chartAt (H := ℂ) (𝔇.center a)).symm z) := by
   show (-(𝔇.coverBddHol s a b)).toFun z = _
   rw [BddHol.toFun_neg, Pi.neg_apply, 𝔇.coverBddHol_toFun_of_mem s a b hz]
 
@@ -1292,22 +1325,22 @@ theorem leray_identity (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0)
       (𝔇.overlapData.rhoRaw (𝔇.coverCochain s) (a, b)).zero_off z hz, add_zero]
 
 
-/-- **The structural δ-complex on `𝔇.overlapData`, with the `leray` field** — all fields PROVEN.
+/-- **The structural δ-complex on `𝔇.overlapData`, with the `leray` field**.
 `δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm` are the model differentials of §A; `leray` (Forster 14.6) is
 discharged by the global Bott–Tu form route of §A2-*:
 
   Given a shrinking cocycle `s : Cshr` (`δ¹s = 0`):
   * `σ := shrinkGerm s` reads each `s_{ab}` back to an `𝒪_0` germ on `V_a ⊓ V_b`, a germ cocycle.
-  * `ω̂ := glueForm s = ∑_{a,c} (ρ_a · holoFn σ_{ac}) • ∂̄ρ_c` (shrinking PoU `shrinkPoU`) is a GLOBAL
-    smooth `(0,1)`-form, built directly (NO cross-chart `∂̄g_a` gluing).
-  * `x := coverCochain s` is the per-disk ∂̄-solve cocycle `dolbeaultToCechCocycle ω̂` (PROVEN, the
+  * `ω̂ := glueForm s = ∑_{a,c} (ρ_a · holoFn σ_{ac}) • ∂̄ρ_c` (shrinking PoU `shrinkPoU`) is a
+    GLOBAL smooth `(0,1)`-form, built directly (NO cross-chart `∂̄g_a` gluing).
+  * `x := coverCochain s` is the per-disk ∂̄-solve cocycle `dolbeaultToCechCocycle ω̂` (the
     no-cutoff ball solve), holomorphic on the FULL overlaps `Uov`; `δ¹cov x = 0`
     (`coverCochain_mem_Z1cov`).
   * `η := etaCochain s` has `η_a = diskVal a ω̂ − G_a` (`G_a := ∑_c ρ_c · holoFn σ_{ac}`, the local
     split), holomorphic on `V_a` since both `diskVal a ω̂` and `G_a` have intrinsic ∂̄ `= ω̂` there
     (`dbar_globalPrim`/`dbar_diskValue_eq_g`).
-  * `s = δ⁰η + ρx` (`leray_identity`): the `diskVal` terms cancel, leaving `G_a − G_b = holoFn σ_{ab}`
-    (`globalPrim_diff`, cocycle telescoping `∑ρ = 1`).
+  * `s = δ⁰η + ρx` (`leray_identity`): the `diskVal` terms cancel, leaving
+    `G_a − G_b = holoFn σ_{ab}` (`globalPrim_diff`, cocycle telescoping `∑ρ = 1`).
 
 This is the ball geometry's genuine unblock over the Montel cover: the global form has a smooth
 full-ball chart read, so the per-disk solve produces a cover cocycle on the FULL overlap. -/
@@ -1331,31 +1364,33 @@ noncomputable def holomorphicCoboundaries : HolomorphicCoboundaries 𝔇.overlap
 
 /-! ## §B — The comparison `cechH1 𝔇 0 ↪ supH1`
 
-For FINITENESS a linear INJECTION `cechH1 𝔇 0 ↪ c.supH1` suffices (`FiniteDimensional.of_injective`).
-We build the FORWARD germ→`BddHol` cochain map landing in the SHRINKING side `Cshr` (where boundedness
-is automatic on the relatively-compact `Wov`), show it is a cocycle (lands in `Z1shr`) and kills
-coboundaries (descends to `cechH1 → supH1`), and prove injectivity by the germ-class `𝒪_D`
-sheaf-gluing (`omegaDGerm_separated`/`omegaDGerm_glue`).
+For FINITENESS a linear INJECTION `cechH1 𝔇 0 ↪ c.supH1` suffices
+(`FiniteDimensional.of_injective`). We build the FORWARD germ→`BddHol` cochain map landing in the
+SHRINKING side `Cshr` (where boundedness is automatic on the relatively-compact `Wov`), show it is a
+cocycle (lands in `Z1shr`) and kills coboundaries (descends to `cechH1 → supH1`), and prove
+injectivity by the germ-class `𝒪_D` sheaf-gluing (`omegaDGerm_separated`/`omegaDGerm_glue`).
 
-The per-overlap atom reads a germ section `g (a,b) ∈ OmegaDGerm 0 (U a ⊓ U b)` through chart `center a`
-and restricts it to the relatively-compact `Wov (a,b)` (whose closure lies in `Uov (a,b) = chartAt ''
-(U a ⊓ U b)`, i.e. `closure_Wov_subset_Uov`).  This is the `holoSectionToBddHol` K-bridge atom; it is
-re-derived inline (the packaged `CechModelCochain.germSectionToBddHolCLM` is import-incompatible with
-`ChartDiskFiniteness` — the `dbarRho_eq_zero_of_notMem` duplicate-def collision). -/
+The per-overlap atom reads a germ section `g (a,b) ∈ OmegaDGerm 0 (U a ⊓ U b)` through chart
+`center a` and restricts it to the relatively-compact `Wov (a,b)` (whose closure lies in
+`Uov (a,b) = chartAt '' (U a ⊓ U b)`, i.e. `closure_Wov_subset_Uov`). This is the
+`holoSectionToBddHol` K-bridge atom; it is re-derived inline (the packaged
+`CechModelCochain.germSectionToBddHolCLM` is import-incompatible with `ChartDiskFiniteness` — the
+`dbarRho_eq_zero_of_notMem` duplicate-def collision). -/
 
 variable (D : Divisor X)
 
-/-- The per-overlap holomorphy domain for the forward map: the ball overlap `U a ⊓ U b`, read in chart
-`center a`.  `U a ⊓ U b ⊆ (chartAt (center a)).source`. -/
+/-- The per-overlap holomorphy domain for the forward map: the ball overlap `U a ⊓ U b`, read in
+chart `center a`. `U a ⊓ U b ⊆ (chartAt (center a)).source`. -/
 theorem overlap_subset_source (a b : 𝔇.ι) :
     ((𝔇.U a ⊓ 𝔇.U b : Opens X) : Set X) ⊆ (chartAt (H := ℂ) (𝔇.center a)).source :=
   (Set.inter_subset_left).trans (𝔇.U_subset_chartAt_source a)
 
 /-- `closure (Wov (a,b)) ⊆ chartAt (center a) '' (U a ⊓ U b)` — the relatively-compact nesting that
-makes the analytic representative bounded on `Wov`.  This is `closure_Wov_subset_Uov` read against the
-defining `Uov = chartAt '' (U a ⊓ U b)`. -/
+makes the analytic representative bounded on `Wov`. This is `closure_Wov_subset_Uov` read against
+the defining `Uov = chartAt '' (U a ⊓ U b)`. -/
 theorem closure_Wov_subset_chartImage_overlap (a b : 𝔇.ι) :
-    closure (𝔇.Wov (a, b)) ⊆ (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.U a ⊓ 𝔇.U b : Opens X) : Set X) :=
+    closure (𝔇.Wov (a, b)) ⊆
+      (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.U a ⊓ 𝔇.U b : Opens X) : Set X) :=
   𝔇.closure_Wov_subset_Uov (a, b)
 
 /-- **The per-overlap atom** (inline `germSectionToBddHol` on the shrinking `Wov`).  A germ section
@@ -1365,7 +1400,7 @@ noncomputable def overlapAtom (a b : 𝔇.ι) {g : MGerm (𝔇.U a ⊓ 𝔇.U b)
     (hg : g ∈ OmegaDGerm (0 : Divisor X) (𝔇.U a ⊓ 𝔇.U b)) :
     BddHol (𝔇.Wov (a, b)) :=
   holoSectionToBddHol (𝔇.overlap_subset_source a b)
-    (fun x hx => gextLimRep_chart_analyticAt (holoRep_mem hg) hx)
+    (fun _ hx => gextLimRep_chart_analyticAt (holoRep_mem hg) hx)
     (𝔇.closure_Wov_subset_chartImage_overlap a b) (𝔇.isCompact_closure_Wov (a, b))
 
 @[simp] theorem overlapAtom_toFun_of_mem (a b : 𝔇.ι) {g : MGerm (𝔇.U a ⊓ 𝔇.U b)}
@@ -1410,7 +1445,8 @@ theorem overlapAtom_smul (a b : 𝔇.ι) (c : ℂ) {g : MGerm (𝔇.U a ⊓ 𝔇
       (𝔇.overlapAtom a b (Submodule.smul_mem _ c hg)).zero_off z hz,
       (𝔇.overlapAtom a b hg).zero_off z hz, smul_zero]
 
-/-- **The per-overlap atom as a `ℂ`-linear map** `OmegaDGerm 0 (U a ⊓ U b) →ₗ[ℂ] BddHol (Wov (a,b))`. -/
+/-- **The per-overlap atom as a `ℂ`-linear map**
+`OmegaDGerm 0 (U a ⊓ U b) →ₗ[ℂ] BddHol (Wov (a,b))`. -/
 noncomputable def overlapAtomCLM (a b : 𝔇.ι) :
     (OmegaDGerm (0 : Divisor X) (𝔇.U a ⊓ 𝔇.U b)) →ₗ[ℂ] BddHol (𝔇.Wov (a, b)) where
   toFun g := 𝔇.overlapAtom a b g.2
@@ -1424,9 +1460,9 @@ noncomputable def overlapAtomCLM (a b : 𝔇.ι) :
 /-! ### The forward cochain map `↥(cocycles1 0) → Cshr`, and its image in `Z1shr` -/
 
 /-- **The forward germ→`BddHol` cochain map** `↥(cocycles1 0) →ₗ[ℂ] Cshr`.  Componentwise the
-per-overlap atom: a Čech germ cocycle `g`'s `(a,b)`-component (an `OmegaDGerm 0 (U a ⊓ U b)` section,
-`cocycle_mem`) becomes a `BddHol (Wov (a,b))` via its analytic representative restricted to the
-relatively-compact `Wov (a,b)`.  `ℂ`-linear (each component is, `overlapAtomCLM`). -/
+per-overlap atom: a Čech germ cocycle `g`'s `(a,b)`-component (an `OmegaDGerm 0 (U a ⊓ U b)`
+section, `cocycle_mem`) becomes a `BddHol (Wov (a,b))` via its analytic representative restricted to
+the relatively-compact `Wov (a,b)`. `ℂ`-linear (each component is, `overlapAtomCLM`). -/
 noncomputable def cechToCshr :
     ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) →ₗ[ℂ] 𝔇.overlapData.Cshr where
   toFun g := fun p => 𝔇.overlapAtom p.1 p.2 (cocycle_mem 𝔇 g p.1 p.2)
@@ -1454,8 +1490,8 @@ theorem chartSymm_coverTransition_eq (a b c : 𝔇.ι) {x : X}
   rw [𝔇.coverTransition_apply a b ⟨hx.1.1, hx.1.2⟩,
     (chartAt (H := ℂ) (𝔇.center b)).left_inv (𝔇.U_subset_chartAt_source b hx.1.2)]
 
-/-- **The forward map lands in `Z1shr`** (`δ¹` vanishes).  Pointwise on `WovTriple t`, the three terms
-reduce — via the transition point identity and the cocycle relation at the `holoFn` level
+/-- **The forward map lands in `Z1shr`** (`δ¹` vanishes). Pointwise on `WovTriple t`, the three
+terms reduce — via the transition point identity and the cocycle relation at the `holoFn` level
 (`holoFn_cocycle_add`) — to `0`. -/
 theorem cechToCshr_mem_Z1shr (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) :
     𝔇.cechToCshr g ∈ (𝔇.holomorphicCoboundaries).Z1shr := by
@@ -1507,21 +1543,22 @@ theorem U_subset_source (a : 𝔇.ι) :
     ((𝔇.U a : Opens X) : Set X) ⊆ (chartAt (H := ℂ) (𝔇.center a)).source :=
   𝔇.U_subset_chartAt_source a
 
-/-- `closure (Wov (a,a)) ⊆ chartAt (center a) '' (U a)` — the diagonal relatively-compact nesting. -/
+/-- `closure (Wov (a,a)) ⊆ chartAt (center a) '' (U a)` — the diagonal relatively-compact nesting.
+-/
 theorem closure_Wov_diag_subset_chartImage_U (a : 𝔇.ι) :
     closure (𝔇.Wov (a, a)) ⊆ (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.U a : Opens X) : Set X) := by
   refine (𝔇.closure_Wov_subset_Uov (a, a)).trans ?_
   show 𝔇.Uov (a, a) ⊆ _
   exact Set.image_mono (fun _ hx => hx.1)
 
-/-- **The diagonal atom.**  A germ section `η ∈ OmegaDGerm 0 (U a)`, read through chart `center a` and
-restricted to the diagonal shrinking `Wov (a,a)`, is a `BddHol (Wov (a,a))`.  Value:
+/-- **The diagonal atom.** A germ section `η ∈ OmegaDGerm 0 (U a)`, read through chart `center a`
+and restricted to the diagonal shrinking `Wov (a,a)`, is a `BddHol (Wov (a,a))`. Value:
 `holoFn hη ∘ (chartAt (center a)).symm`. -/
 noncomputable def diagAtom (a : 𝔇.ι) {η : MGerm (𝔇.U a)}
     (hη : η ∈ OmegaDGerm (0 : Divisor X) (𝔇.U a)) :
     BddHol (𝔇.Wov (a, a)) :=
   holoSectionToBddHol (𝔇.U_subset_source a)
-    (fun x hx => gextLimRep_chart_analyticAt (holoRep_mem hη) hx)
+    (fun _ hx => gextLimRep_chart_analyticAt (holoRep_mem hη) hx)
     (𝔇.closure_Wov_diag_subset_chartImage_U a) (𝔇.isCompact_closure_Wov (a, a))
 
 @[simp] theorem diagAtom_toFun_of_mem (a : 𝔇.ι) {η : MGerm (𝔇.U a)}
@@ -1564,14 +1601,16 @@ theorem chartSymm_coverTransition_eq_chartSymm (a b : 𝔇.ι) {z : ℂ} (hz : z
     (chartAt (H := ℂ) (𝔇.center b)).left_inv (𝔇.U_subset_chartAt_source b hxbU),
     (chartAt (H := ℂ) (𝔇.center a)).left_inv hxa_src]
 
-/-- **The forward map sends a germ coboundary to `δ⁰` of a diagonal `C0Holo` cochain.**  If `g` is the
-germ coboundary `cechDelta0 η₀` of a germ 0-cochain `η₀ ∈ sections0 0`, then
+/-- **The forward map sends a germ coboundary to `δ⁰` of a diagonal `C0Holo` cochain.** If `g` is
+the germ coboundary `cechDelta0 η₀` of a germ 0-cochain `η₀ ∈ sections0 0`, then
 `cechToCshr g = δ0 (fun a => diagAtom a (η₀ a))` — so `cechToCshr g ∈ range δ`.
 
-Pointwise on `Wov (a,b)`: `(cechToCshr g)_{ab}(z) = holoFn(g_{ab}) x = holoFn(η₀ b) x − holoFn(η₀ a) x`
-(`holoFn_restrict` + `holoFn_sub`, `x = (chart_a).symm z`), and `(δ0 f)_{ab}(z) = f_b(τ z) − f_a(z) =
-holoFn(η₀ b)((chart_b).symm (τ z)) − holoFn(η₀ a) x = holoFn(η₀ b) x − holoFn(η₀ a) x` (the transition
-point identity). -/
+Pointwise on `Wov (a,b)`:
+`(cechToCshr g)_{ab}(z) = holoFn(g_{ab}) x = holoFn(η₀ b) x − holoFn(η₀ a) x` (`holoFn_restrict` +
+`holoFn_sub`, `x = (chart_a).symm z`), and
+`(δ0 f)_{ab}(z) = f_b(τ z) − f_a(z) = holoFn(η₀ b)((chart_b).symm (τ z)) − holoFn(η₀ a) x
+= holoFn(η₀ b) x − holoFn(η₀ a) x`
+(the transition point identity). -/
 theorem cechToCshr_coboundary_eq_delta0 (η₀ : 𝔇.toFiniteCover.Cochain0)
     (hη₀ : η₀ ∈ 𝔇.toFiniteCover.sections0 (0 : Divisor X))
     (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
@@ -1621,8 +1660,8 @@ theorem cechToSupH1_apply (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))
     𝔇.cechToSupH1 g = Submodule.Quotient.mk (𝔇.cechToZ1shr g) := rfl
 
 /-- **The forward map kills germ coboundaries** (well-definedness of the descent): the submodule of
-cocycles that are germ coboundaries is contained in `ker cechToSupH1`.  An element is a germ coboundary
-`cechDelta0 η₀`, so its forward image is `δ0 (diagAtom ...) ∈ range δ`
+cocycles that are germ coboundaries is contained in `ker cechToSupH1`. An element is a germ
+coboundary `cechDelta0 η₀`, so its forward image is `δ0 (diagAtom ...) ∈ range δ`
 (`cechToCshr_coboundary_eq_delta0`), hence `0` in `supH1`. -/
 theorem coboundaries_le_ker_cechToSupH1 :
     (𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
@@ -1640,8 +1679,8 @@ theorem coboundaries_le_ker_cechToSupH1 :
   rw [HolomorphicCoboundaries.δ, ContinuousLinearMap.coe_codRestrict_apply]
   exact (𝔇.cechToCshr_coboundary_eq_delta0 η₀ hη₀ g hηeq.symm).symm
 
-/-- **The descended comparison map** `cechH1 𝔇 0 →ₗ[ℂ] supH1` (the forward germ→`BddHol` cochain map,
-descended to the cohomology quotients via `coboundaries_le_ker_cechToSupH1`). -/
+/-- **The descended comparison map** `cechH1 𝔇 0 →ₗ[ℂ] supH1` (the forward germ→`BddHol` cochain
+map, descended to the cohomology quotients via `coboundaries_le_ker_cechToSupH1`). -/
 noncomputable def comparisonMap :
     𝔇.toFiniteCover.cechH1 (0 : Divisor X) →ₗ[ℂ] (𝔇.holomorphicCoboundaries).supH1 :=
   Submodule.liftQ _ 𝔇.cechToSupH1 𝔇.coboundaries_le_ker_cechToSupH1
@@ -1655,13 +1694,14 @@ theorem comparisonMap_mk (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
 `comparisonMap` injectivity reduces, by germ-class `𝒪_D` sheaf-gluing (Forster 12.4), to: a germ
 cocycle `g` whose forward `BddHol` image is a `supH1`-coboundary `δ0 f` (`f : C0Holo`,
 bounded-holomorphic on the diagonal shrinkings `Wov (a,a) = chartAt (center a) '' (V a)`) is a germ
-coboundary.  The shrinking sets `V a := shrinkSet a` form a `FiniteCover` refining `𝔇`
+coboundary. The shrinking sets `V a := shrinkSet a` form a `FiniteCover` refining `𝔇`
 (`iUnion_shrinkSet_eq_univ` + `shrinkSet ⊆ U`), and `f` pulls back to a germ 0-cochain `η a = [ζ_a]`
-(`bddHolToOmegaDGerm`) on `V a` with `refineC1 g = δ⁰_𝔙 η` (pointwise via `holoFn`/`toGerm_holoFn` and
-the transition point identity).  Then `refinementDescend_unconditional` (Forster 12.4) gives
+(`bddHolToOmegaDGerm`) on `V a` with `refineC1 g = δ⁰_𝔙 η` (pointwise via `holoFn`/`toGerm_holoFn`
+and the transition point identity). Then `refinementDescend_unconditional` (Forster 12.4) gives
 `g ∈ coboundaries1 𝔇`. -/
 
-/-- `Wov (a,a) = chartAt (center a) '' (V a)` (the diagonal shrinking IS the chart-image of `V a`). -/
+/-- `Wov (a,a) = chartAt (center a) '' (V a)` (the diagonal shrinking IS the chart-image of `V a`).
+-/
 theorem Wov_diag_eq_chartImage_shrinkOpens (a : 𝔇.ι) :
     𝔇.Wov (a, a) = (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.shrinkOpens a : Opens X) : Set X) := by
   show (chartAt (H := ℂ) (𝔇.center a)) '' (𝔇.shrinkSet a ∩ 𝔇.shrinkSet a) = _
@@ -1672,8 +1712,8 @@ theorem chartImage_shrinkOpens_subset_Wov_diag (a : 𝔇.ι) :
     (chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.shrinkOpens a : Opens X) : Set X) ⊆ 𝔇.Wov (a, a) :=
   (𝔇.Wov_diag_eq_chartImage_shrinkOpens a).ge
 
-/-- The diagonal `C0Holo` element `f a`, restricted to the exact chart-image `chart_a '' (V a)` (which
-equals `Wov (a,a)`).  Avoids a propositional set-equality cast in `diagPullbackGerm`. -/
+/-- The diagonal `C0Holo` element `f a`, restricted to the exact chart-image `chart_a '' (V a)`
+(which equals `Wov (a,a)`). Avoids a propositional set-equality cast in `diagPullbackGerm`. -/
 noncomputable def diagRestrict (f : 𝔇.C0Holo) (a : 𝔇.ι) :
     BddHol ((chartAt (H := ℂ) (𝔇.center a)) '' ((𝔇.shrinkOpens a : Opens X) : Set X)) :=
   BddHol.restrictOpenCLM (𝔇.chartImage_shrinkOpens_subset_Wov_diag a) (f a)
@@ -1735,15 +1775,16 @@ theorem chart_mem_Wov_of_shrinkInter (a b : 𝔇.ι) {v : X}
 
 /-- **The key germ identity for injectivity.**  If `δ0 f = cechToCshr g`, then on each shrinking
 overlap `V a ⊓ V b` the germ `g_{ab}` (restricted) equals `[ζ_b] − [ζ_a]` (the diagonal pullback
-germs), i.e. `refineC1 g = δ⁰_𝔙 (diagPullbackGerm f)`.  Pointwise via `holoFn`/`diagPullbackGerm_holoFn`
-and the transition point identity. -/
+germs), i.e. `refineC1 g = δ⁰_𝔙 (diagPullbackGerm f)`. Pointwise via
+`holoFn`/`diagPullbackGerm_holoFn` and the transition point identity. -/
 theorem refineC1_eq_delta0_shrink (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
     (f : 𝔇.C0Holo) (hf : (𝔇.holomorphicCoboundaries).δ0 f = 𝔇.cechToCshr g) :
     (𝔇.isRefinement_shrinkCover).refineC1 (g : 𝔇.toFiniteCover.Cochain1)
       = 𝔇.shrinkCover.cechDelta0 (fun a => (𝔇.diagPullbackGerm f a).1) := by
   funext p
   obtain ⟨a, b⟩ := p
-  -- both sides are germs on `V a ⊓ V b`; reduce to a pointwise function identity via `toGerm_holoFn`
+  -- both sides are germs on `V a ⊓ V b`; reduce to a pointwise function identity via
+  -- `toGerm_holoFn`
   rw [FiniteCover.IsRefinement.refineC1_apply]
   show rawRestrictG (𝔇.isRefinement_shrinkCover.pair_le a b) ((g : 𝔇.toFiniteCover.Cochain1) (a, b))
       = (rawRestrictG inf_le_right ((𝔇.diagPullbackGerm f b).1)
@@ -1763,7 +1804,7 @@ theorem refineC1_eq_delta0_shrink (g : ↥(𝔇.toFiniteCover.cocycles1 (0 : Div
           (openIncl inf_le_right ⟨v, hv⟩)
         - (fun w : ↥(𝔇.shrinkOpens a) => holoFn (𝔇.diagPullbackGerm_mem f a) w.1)
           (openIncl inf_le_left ⟨v, hv⟩)
-  simp only [openIncl, Pi.sub_apply]
+  simp only [openIncl]
   -- `v ∈ V a ⊓ V b`, hence in `U a ⊓ U b` and in each `V a`, `V b`
   have hva : v ∈ (𝔇.shrinkOpens a : Opens X) := hv.1
   have hvb : v ∈ (𝔇.shrinkOpens b : Opens X) := hv.2
@@ -1819,7 +1860,7 @@ theorem comparisonMap_injective : Function.Injective 𝔇.comparisonMap := by
 /-! ## §C — The finiteness reduction (injective variant) and the COMPLETE theorem -/
 
 /-- **The finiteness reduction via a linear INJECTION** (lighter than the full iso of
-`finiteDimensional_cechH1_of_holomorphicModel`).  Given a `HolomorphicCoboundaries` model `c` for the
+`finiteDimensional_cechH1_of_holomorphicModel`). Given a `HolomorphicCoboundaries` model `c` for the
 chart-disk cover with its `supH1` finite (via `leray`), a linear injection `cechH1 𝔇 0 ↪ c.supH1`
 suffices to conclude `cechH1 𝔇 0` finite (`FiniteDimensional.of_injective`). -/
 theorem finiteDimensional_cechH1_of_holomorphicModel_inj
@@ -1838,9 +1879,9 @@ The δ-complex + comparison that `ChartDiskFiniteness.lean` leaves open are BUIL
 the injection `𝔇.comparisonMap` (forward germ→`BddHol` cochain map of §B).
 
 This theorem is SORRY-FREE and axiom-clean (`propext, Classical.choice, Quot.sound`): the entire
-δ-complex, the `leray` lift (Forster 14.6, global Bott–Tu form route — see `holomorphicCoboundaries`),
-the comparison `comparisonMap` and its injectivity (Forster 12.4 sheaf-gluing), and this assembly are
-all proven. -/
+δ-complex, the `leray` lift (Forster 14.6, global Bott–Tu form route — see
+`holomorphicCoboundaries`), the comparison `comparisonMap` and its injectivity (Forster 12.4
+sheaf-gluing), and this assembly are all proven. -/
 theorem finiteDimensional_cechH1_chartDisk_complete [Nonempty X] :
     FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)) :=
   𝔇.finiteDimensional_cechH1_of_holomorphicModel_inj 𝔇.holomorphicCoboundaries

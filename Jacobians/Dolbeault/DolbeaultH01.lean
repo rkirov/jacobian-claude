@@ -1,32 +1,21 @@
 /-
-  Dolbeault cohomology `H^{0,1}(X)` and the comparison to Čech `H¹(X,𝒪)` — the L3 kernel of `D=0`
-  Serre duality (`arithmeticGenus_eq_genus`). SCAFFOLD (from the 2026-06-02 expressibility spike).
+  The intrinsic `∂̄` as a linear map — the first layer of the Dolbeault `H^{0,1}` comparison.
 
-  Spike finding (measured): the intrinsic ∂̄ operator `RealForms.dbar : A⁰ → A¹` is a *bare function*,
-  but `A⁰ = SmoothCFunctions` and `A¹ = SmoothCOneForms` both already carry `AddCommGroup` + `Module ℝ`.
-  So `H^{0,1}` is expressible with only bounded, mechanical friction — NO fundamental obstruction (the
-  smooth-Dolbeault representation works; cf. the earlier (0,1)-form probe).
+  `RealForms.dbar : A⁰ → A¹` is a bare function; `A⁰ = SmoothCFunctions` and
+  `A¹ = SmoothCOneForms` already carry `AddCommGroup` + `Module ℝ`.  This file proves `dbar`
+  additive (via `mfderiv_add`) and ℝ-homogeneous (via `const_smul_mfderiv`) and packages it as
+  the ℝ-linear map `dbarL : A⁰ →ₗ[ℝ] A¹`, whose range is the coboundary space of `H^{0,1}`.
 
-  FIRST ATOM (here): upgrade `dbar` to an ℝ-`LinearMap` `dbarL`. Its two obligations `dbar_add`,
-  `dbar_smul` are TRUE (`differential` is additive/ℝ-linear via `mfderiv`; `proj01` is a CLM, hence
-  linear) — bounded to prove, left as honest named obligations here pending the `mfderiv`-additivity plumbing.
-
-  THEN (documented, not yet stated to avoid a mis-typed signature):
-  * `A^{0,1} X` := the (0,1)-forms = range of the `proj01`-induced endomorphism on `A¹` (a `Submodule`).
-  * `DolbeaultH01 X := A^{0,1} X ⧸ LinearMap.range dbarL` (on a curve `A^{0,2}=0`, so `H^{0,1}` is this
-    cokernel). Resolve whether `A¹`/the quotient carries a `Module ℂ` (the fiber is `ℂ →L[ℝ] ℂ` valued
-    in `Trivial X ℂ`) — needed to state the comparison as a `≃ₗ[ℂ]`.
-  * **L3 kernel:** `cechH1 𝔘 0 ≃ₗ[ℂ] DolbeaultH01 X` — Čech↔Dolbeault, via ∂̄-globalization
-    (`DbarLocal.dbar_solvable_locally` [building] + partition of unity + Čech patching). PDE-free.
-  * **L4:** `arithmeticGenus_eq_genus` = `finrank`-transport along that equiv + finiteness.
+  The space `DolbeaultH01` itself and the comparison with Čech `H¹(X, 𝒪)` are built in
+  `DolbeaultComparison` / `DolbeaultComparisonEquiv`.
 -/
 import Jacobians.Dolbeault.RealForms
 
 open scoped Manifold ContDiff
 
--- The `SmoothCOneForms` hom-bundle `TopologicalSpace`/`DFunLike` instances synthesize only under the
--- permissive transparency option `RealForms` itself uses (the ℂ-ℝ-module diamond); without it the
--- section `ext`/`coe_injective` lemmas fail to find `TopologicalSpace (TotalSpace …)`.
+-- The `SmoothCOneForms` hom-bundle `TopologicalSpace`/`DFunLike` instances synthesize only under
+-- the permissive transparency option `RealForms` itself uses (the ℂ-ℝ-module diamond); without it
+-- the section `ext`/`coe_injective` lemmas fail to find `TopologicalSpace (TotalSpace …)`.
 set_option backward.isDefEq.respectTransparency false
 
 namespace Jacobians.Dolbeault

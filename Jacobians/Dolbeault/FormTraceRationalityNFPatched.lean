@@ -10,57 +10,62 @@ import Jacobians.Dolbeault.FormTraceBundleBranchBound
 import Jacobians.Dolbeault.FormTraceBundleBridge
 
 /-!
-# Gate A `∑Res = 0` from the **branch-patched** geometric trace, *sound* `∞` fibre (Miranda §VIII.3)
+# The residue theorem `∑Res = 0` from the **branch-patched** geometric trace, *sound* `∞`
+fibre (Miranda §VIII.3)
 
 `Jacobians.Dolbeault.FormTraceFullFibre.traceRationalityDataNF_ofMovingData`
-(`FormTraceCoherenceFromMovingNF`) builds the sound full-fibre reduction target `TraceRationalityDataNF`
-from a global selection `Φ`, per-pole moving data, and — as *caller hypotheses* — the genus-`0`
-remainder vanishing `hentire`/`hrecip_cont` against the **raw** trace `valueChartTrace ω₀ f Φ`.
+(`FormTraceCoherenceFromMovingNF`) builds the sound full-fibre reduction target
+`TraceRationalityDataNF` from a global selection `Φ`, per-pole moving data, and — as *caller
+hypotheses* — the genus-`0` remainder vanishing `hentire`/`hrecip_cont` against the **raw** trace
+`valueChartTrace ω₀ f Φ`.
 
-That `hentire` (`AnalyticOnNhd ℂ (valueChartTrace ω₀ f Φ - L.R) Set.univ`) is, however, a
-**latent false hypothesis for the canonical full-fibre selection**: at a *branch value* of the cover the
-raw geometric trace `valueChartTrace` takes a *partial-sum* value, **not** the removable-singularity
-limit (`FormTraceGlobalTPatched`, the docstring explicitly flags `BranchAwareTraceSelection.hbranch` —
-continuity of the raw trace at a branch value — as **false**).  So the raw trace is *discontinuous*
+That `hentire` (`AnalyticOnNhd ℂ (valueChartTrace ω₀ f Φ - L.R) Set.univ`) is, however, a **latent
+false hypothesis for the canonical full-fibre selection**: at a *branch value* of the cover the raw
+geometric trace `valueChartTrace` takes a *partial-sum* value, **not** the removable-singularity
+limit (`FormTraceGlobalTPatched`, the docstring explicitly flags `BranchAwareTraceSelection.hbranch`
+— continuity of the raw trace at a branch value — as **false**). So the raw trace is *discontinuous*
 across branch points and cannot be entire.
 
-This file is the **value-correct** analogue.  It assembles `TraceRationalityDataNF` with the geometric
-trace replaced by the **branch-patched** trace
+This file is the **value-correct** analogue. It assembles `TraceRationalityDataNF` with the
+geometric trace replaced by the **branch-patched** trace
 
 > `T := valueChartTracePatched ω₀ f Φ br`,
 
-which equals `valueChartTrace` off the finite branch values `br` and the removable-singularity limit at
-each of them — the *planar shadow* of the proven bundle trace `traceFun` extension
-(`TraceForm.traceExtendsAt_branchPoint`, axiom-clean).  With this `T`:
+which equals `valueChartTrace` off the finite branch values `br` and the removable-singularity limit
+at each of them — the *planar shadow* of the proven bundle trace `traceFun` extension
+(`TraceForm.traceExtendsAt_branchPoint`, axiom-clean). With this `T`:
 
 * the genus-`0` `hentire` is **proven internally** (not assumed) via the off-centre analyticity
-  `analyticAt_valueChartTracePatched_off_centres` (regular values by the moving coherence; branch values
-  by the value-correct removable extension `tendsto_zero_valueChartTrace_of_bundleGerm`/the boundedness
-  crux) + the junk-freeness `hcont_int`, through `analyticOnNhd_remainder_of_junkFree'`;
+  `analyticAt_valueChartTracePatched_off_centres` (regular values by the moving coherence; branch
+  values by the value-correct removable extension `tendsto_zero_valueChartTrace_of_bundleGerm`/the
+  boundedness condition) + the junk-freeness `hcont_int`, through
+  `analyticOnNhd_remainder_of_junkFree'`;
 * `hrecip_cont` is `continuousAt_recipCoeff_of_vanishing` (the genus-`0` `R₀ 0 = 0` `∞`-vanishing);
-* `agree` (finite) uses `valueChartTracePatched =ᶠ[𝓝[≠] p] valueChartTrace` (the patch is inert off the
-  branch values) chained with the per-pole moving coherence `hcoh_fin_of_movingDatum`;
+* `agree` (finite) uses `valueChartTracePatched =ᶠ[𝓝[≠] p] valueChartTrace` (the patch is inert off
+  the branch values) chained with the per-pole moving coherence `hcoh_fin_of_movingDatum`;
 * `agree_infty` uses `recipCoeff (valueChartTracePatched) =ᶠ[𝓝[≠] 0] recipCoeff (valueChartTrace)`
-  (`recipCoeff_valueChartTracePatched_eventuallyEq`) chained with the **sound** `∞`-coherence `hcoh_inf`
-  against `inftyFibreTraceNF` (the repaired reciprocal — `FormTraceInftyFibreNF`).
+  (`recipCoeff_valueChartTracePatched_eventuallyEq`) chained with the **sound** `∞`-coherence
+  `hcoh_inf` against `inftyFibreTraceNF` (the repaired reciprocal — `FormTraceInftyFibreNF`).
 
-So this constructor removes the `hentire`/`hrecip_cont` *false-field risk* of the raw route, replacing
-them by the genuinely-satisfiable boundedness-crux/junk-free inputs, and keeps the sound `∞`-fibre.
+So this constructor removes the `hentire`/`hrecip_cont` *false-field risk* of the raw route,
+replacing them by the genuinely-satisfiable boundedness-condition/junk-free inputs, and keeps the
+sound `∞`-fibre.
 
-## What this file proves (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What this file proves
 
-* `traceRationalityDataNF_ofPatched` — a sound `TraceRationalityDataNF` from a global selection `Φ`, the
-  branch set `br`, the off-centre analyticity inputs (`hreg` regular-value analyticity + `hbnd`
+* `traceRationalityDataNF_ofPatched` — a sound `TraceRationalityDataNF` from a global selection `Φ`,
+  the branch set `br`, the off-centre analyticity inputs (`hreg` regular-value analyticity + `hbnd`
   branch-value boundedness), per-pole moving data, junk-freeness `hcont_int`, the genus-`0`
   `∞`-vanishing `R₀`, and the **sound** `∞`-fibre data + coherence;
-* `residueSum_eq_zero_of_patchedTraceRationalityNF` — Gate A `∑Res = 0` from it;
-* `traceRationalityDataNF_ofPatched_holomorphic` — end-to-end non-vacuity (empty-pole), confirming the
-  reduction is honest (not a disguised `False`).
+* `residueSum_eq_zero_of_patchedTraceRationalityNF` — the residue theorem `∑Res = 0` from it;
+* `traceRationalityDataNF_ofPatched_holomorphic` — end-to-end non-vacuity (empty-pole), confirming
+  the reduction is honest (not a disguised `False`).
 
 ## References
 
 * Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3 (the trace `Tr`, Lemma 3.2; the
-  trace is single-valued and meromorphic on `ℂℙ¹`, extending across branch points; the residue at `∞`).
+  trace is single-valued and meromorphic on `ℂℙ¹`, extending across branch points; the residue at
+  `∞`).
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.
 -/
 
@@ -77,26 +82,25 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.Dolbeault.FormTraceInftyRecip Jacobians.Dolbeault.FormTraceLiouville
   Jacobians.Dolbeault.FormTraceMovingFibre
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
 
 /-! ### Meromorphy of the patched trace at the finite centres
 
 The patched trace germ-equals the raw trace on every punctured neighbourhood
-(`valueChartTracePatched_eventuallyEq`); the raw trace is meromorphic at each pole-value via the moving
-datum (`meromorphicAt_valueChartTrace_of_movingDatum`).  Hence the patched trace is too — the input the
-principal-part extraction consumes. -/
+(`valueChartTracePatched_eventuallyEq`); the raw trace is meromorphic at each pole-value via the
+moving datum (`meromorphicAt_valueChartTrace_of_movingDatum`). Hence the patched trace is too — the
+input the principal-part extraction consumes. -/
 
 /-- **Meromorphy of the patched trace at a centre.**  At a finite pole-value `p` with a moving datum
 `C` whose fixed fibre is `D p`, the branch-patched trace `valueChartTracePatched ω₀ f Φ br` is
-`MeromorphicAt p`: it germ-equals the raw trace off `p` (`valueChartTracePatched_eventuallyEq`), which
-is meromorphic at `p` (`meromorphicAt_valueChartTrace_of_movingDatum`). -/
+`MeromorphicAt p`: it germ-equals the raw trace off `p` (`valueChartTracePatched_eventuallyEq`),
+which is meromorphic at `p` (`meromorphicAt_valueChartTrace_of_movingDatum`). -/
 theorem meromorphicAt_valueChartTracePatched_of_movingDatum
     {Φ : (b : ℂ) → FibreRegularData g f b} {D : (p : ℂ) → FibreRegularData g f p} {p : ℂ}
     (br : Finset ℂ) (C : MovingCoherenceDatum ω₀ g f Φ p) (hCD : C.D = D p) :
@@ -106,18 +110,19 @@ theorem meromorphicAt_valueChartTracePatched_of_movingDatum
 
 /-! ### The off-centre analyticity of the patched trace (`hT_off`)
 
-Mirrors `PatchedTraceSelection.hT_off`: regular values via the moving coherence (`hreg`), branch values
-via the value-correct removable extension (`hbnd` boundedness + punctured analyticity from `hreg`).  The
-punctured-analyticity input of the branch-value engine is supplied from `hreg`
+Mirrors `PatchedTraceSelection.hT_off`: regular values via the moving coherence (`hreg`), branch
+values via the value-correct removable extension (`hbnd` boundedness + punctured analyticity from
+`hreg`). The punctured-analyticity input of the branch-value engine is supplied from `hreg`
 (`eventually_analyticAt_valueChartTrace_of_reg`), so the only branch-specific datum is `hbnd`. -/
 
-/-- **Off-centre analyticity of the patched trace.**  With `centres := Finset.univ.image cs`: given the
-regular-value analyticity of the *raw* trace off `centres ∪ br` (`hreg`) and the branch-value
-boundedness crux off `centres` (`hbnd`), the **patched** trace is analytic at every value off
-`centres`.  This is the value-correct `hT_off` — branch values handled by the removable extension, *no*
-false continuity demand.  (`analyticAt_valueChartTracePatched_off_centres`, with the punctured
+/-- **Off-centre analyticity of the patched trace.** With `centres := Finset.univ.image cs`: given
+the regular-value analyticity of the *raw* trace off `centres ∪ br` (`hreg`) and the branch-value
+boundedness condition off `centres` (`hbnd`), the **patched** trace is analytic at every value off
+`centres`. This is the value-correct `hT_off` — branch values handled by the removable extension,
+*no* false continuity demand. (`analyticAt_valueChartTracePatched_off_centres`, with the punctured
 analyticity fed from `hreg`.) -/
-theorem hT_off_patched {Φ : (b : ℂ) → FibreRegularData g f b} {m : ℕ} {cs : Fin m → ℂ} {br : Finset ℂ}
+theorem hT_off_patched {Φ : (b : ℂ) → FibreRegularData g f b} {m : ℕ} {cs : Fin m → ℂ}
+    {br : Finset ℂ}
     (hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w)
     (hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
       Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0))
@@ -131,21 +136,23 @@ theorem hT_off_patched {Φ : (b : ℂ) → FibreRegularData g f b} {m : ℕ} {cs
 
 /-! ### The sound `TraceRationalityDataNF` from the patched trace
 
-We assemble `TraceRationalityDataNF` with `T := valueChartTracePatched ω₀ f Φ br`.  The internal
-`LaurentForm L` is `T`'s finite principal parts; the genus-`0` Liouville agreement `T = L.R` is proven
-from the *internally-discharged* `hentire` (`analyticOnNhd_remainder_of_junkFree'` from `hT_off_patched`
-+ the junk-freeness `hcont_int`) and `hrecip_cont` (`continuousAt_recipCoeff_of_vanishing` from the
-genus-`0` `∞`-vanishing `R₀`).  Then `agree`/`agree_infty` follow from `T = L.R` + the per-pole moving
-coherence / the sound `∞`-coherence. -/
+We assemble `TraceRationalityDataNF` with `T := valueChartTracePatched ω₀ f Φ br`. The internal
+`LaurentForm L` is `T`'s finite principal parts; the genus-`0` Liouville agreement `T = L.R` is
+proven from the *internally-discharged* `hentire` (`analyticOnNhd_remainder_of_junkFree'` from
+`hT_off_patched` + the junk-freeness `hcont_int`) and `hrecip_cont`
+(`continuousAt_recipCoeff_of_vanishing` from the genus-`0` `∞`-vanishing `R₀`). Then
+`agree`/`agree_infty` follow from `T = L.R` + the per-pole moving coherence / the sound
+`∞`-coherence. -/
 
 /-- **A sound `TraceRationalityDataNF` from the branch-patched geometric trace.**  With
 `T := valueChartTracePatched ω₀ f Φ br`:
 
-* `hreg` / `hbnd` — the off-centre analyticity inputs (regular-value analyticity of the *raw* trace off
-  `centres ∪ br`; the branch-value boundedness crux off `centres`).  These give the value-correct
-  `hT_off` (`hT_off_patched`) — the genuinely-satisfiable replacement of the false raw-trace continuity;
-* `Cfin` / `hCfin_D` — the per-pole-value moving coherence data (fixed fibre `D (cs i)`), giving both
-  the meromorphy at the centres and the finite coherence;
+* `hreg` / `hbnd` — the off-centre analyticity inputs (regular-value analyticity of the *raw* trace
+  off `centres ∪ br`; the branch-value boundedness condition off `centres`). These give the
+  value-correct `hT_off` (`hT_off_patched`) — the genuinely-satisfiable replacement of the false
+  raw-trace continuity;
+* `Cfin` / `hCfin_D` — the per-pole-value moving coherence data (fixed fibre `D (cs i)`), giving
+  both the meromorphy at the centres and the finite coherence;
 * `hcont_int` — junk-freeness (`T − L.R` continuous at each centre), giving `hentire` via
   `analyticOnNhd_remainder_of_junkFree'`;
 * `R₀` (`hR₀_an`/`hR₀0`/`hR₀_eq`) — the genus-`0` `∞`-vanishing, giving `hrecip_cont` via
@@ -153,7 +160,7 @@ coherence / the sound `∞`-coherence. -/
 * `Dinf` (sound `InftyFibreDataNF`) + `hcoh_inf` — the sound `∞`-fibre data and coherence against
   `inftyFibreTraceNF`.
 
-Producing one ⇒ Gate A `∑Res = 0` (sound `∞`-fibre, value-correct trace). -/
+Producing one ⇒ the residue theorem `∑Res = 0` (sound `∞`-fibre, value-correct trace). -/
 noncomputable def traceRationalityDataNF_ofPatched
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
@@ -201,7 +208,8 @@ noncomputable def traceRationalityDataNF_ofPatched
     intro z hz
     rw [hLcenters] at hz
     exact hT_off_patched hreg hbnd hz
-  have hrem : ∀ p ∈ Finset.univ.image L.a, ∃ R : ℂ → ℂ, AnalyticAt ℂ R p ∧ (T - L.R) =ᶠ[𝓝[≠] p] R := by
+  have hrem : ∀ p ∈ Finset.univ.image L.a,
+      ∃ R : ℂ → ℂ, AnalyticAt ℂ R p ∧ (T - L.R) =ᶠ[𝓝[≠] p] R := by
     intro p hp
     rw [hLcenters] at hp
     simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
@@ -230,7 +238,8 @@ noncomputable def traceRationalityDataNF_ofPatched
       hcenters := by rw [hLcenters]; exact hcenters_cs
       agree := ?_
       agree_infty := ?_ }
-  · -- finite agreement: `L.R = T`, and `T =ᶠ[𝓝[≠] cs i] (fibreTrace …).traceCoeff` (patched germ-equals
+  · -- finite agreement: `L.R = T`, and `T =ᶠ[𝓝[≠] cs i] (fibreTrace …).traceCoeff`
+    -- (patched germ-equals
     -- raw off branches, then moving coherence).
     intro p hp
     rw [hLcenters] at hp
@@ -244,8 +253,9 @@ noncomputable def traceRationalityDataNF_ofPatched
     rw [← hTL]
     exact hcoh_inf
 
-/-- **Gate A `∑Res = 0` from the branch-patched geometric trace (sound `∞`).**  The sound
-`TraceRationalityDataNF` route closed via `residueSum_eq_zero_of_traceRationalityDataNF`. -/
+/-- **The residue theorem `∑Res = 0` from the branch-patched geometric trace (sound `∞`).**
+The sound `TraceRationalityDataNF` route closed via `residueSum_eq_zero_of_traceRationalityDataNF`.
+-/
 theorem residueSum_eq_zero_of_patchedTraceRationalityNF
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
@@ -286,26 +296,26 @@ theorem residueSum_eq_zero_of_patchedTraceRationalityNF
 The two off-centre analyticity inputs of `traceRationalityDataNF_ofPatched` reduce, via *proven*
 atoms, to the standard regular-value geometry — *no* Puiseux frame:
 
-* `hreg` (regular-value analyticity) is `analyticAt_valueChartTrace_of_movingDatum` (the symmetric-lever
-  moving coherence + `g`-analyticity at the fibre);
+* `hreg` (regular-value analyticity) is `analyticAt_valueChartTrace_of_movingDatum` (the
+  symmetric-lever moving coherence + `g`-analyticity at the fibre);
 * `hbnd` (branch-value boundedness `(z − b₀)·valueChartTrace z → 0`) is the **bundle trace SUM**
   boundedness `tendsto_zero_valueChartTrace_of_bundleGerm` (resting on the axiom-clean
   `TraceForm.traceLocalCoeff_mul_sub_tendsto_zero`), with the bundle-trace germ bridge `hbridgeBr`
-  discharged from the eventual sphere-sheet coherence `hbridgeBr_of_eventual_sphereCoherence` — Miranda's
-  "the SUM extends across branch points", never an individual colliding sheet.
+  discharged from the eventual sphere-sheet coherence `hbridgeBr_of_eventual_sphereCoherence` —
+  Miranda's "the SUM extends across branch points", never an individual colliding sheet.
 
-This is the `T := traceFun` discharge of the genus-`0` analyticity content: the planar trace inherits
-analyticity across branch points from the proven bundle trace `traceFun` extension. -/
+This is the `T := traceFun` discharge of the genus-`0` analyticity content: the planar trace
+inherits analyticity across branch points from the proven bundle trace `traceFun` extension. -/
 
-/-- **`hbnd` (branch-value boundedness) from the eventual sphere coherence + a local form `αBr`.**  At a
-branch value `b₀` (in the branch locus of the cover, `hbr`; `f` nonconstant, `hncF`) with a holomorphic
-local representative `αBr` of `α = ω₀·g` near the fibre, the boundedness crux
+/-- **`hbnd` (branch-value boundedness) from the eventual sphere coherence + a local form `αBr`.**
+At a branch value `b₀` (in the branch locus of the cover, `hbr`; `f` nonconstant, `hncF`) with a
+holomorphic local representative `αBr` of `α = ω₀·g` near the fibre, the boundedness condition
 `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds, *provided* the eventual sphere-sheet coherence `hev`
 (the value-correct symmetric-SUM identification: near `b₀` each regular value carries a sphere sheet
 system whose planar fibre trace equals the geometric trace, and `αBr = ω₀·g` at the fibre).
 
-The bundle-trace germ bridge is `hbridgeBr_of_eventual_sphereCoherence`; the boundedness is the proven
-bundle SUM `tendsto_zero_valueChartTrace_of_bundleGerm` (axiom-clean
+The bundle-trace germ bridge is `hbridgeBr_of_eventual_sphereCoherence`; the boundedness is the
+proven bundle SUM `tendsto_zero_valueChartTrace_of_bundleGerm` (axiom-clean
 `TraceForm.traceLocalCoeff_mul_sub_tendsto_zero`). -/
 theorem hbnd_of_eventual_sphereCoherence (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) {b₀ : ℂ}
@@ -323,17 +333,20 @@ theorem hbnd_of_eventual_sphereCoherence (ω₀ : HolomorphicOneForms X) (g : X 
           ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
             (S.sheet i (((z : ℂ) : RiemannSphere))))),
         valueChartTrace ω₀ f Φ z
-            = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv _hmero)).traceCoeff z ∧
+            = (fibreTrace ω₀ f
+                (FibreRegularData.ofSphereSheetSystem S hderiv _hmero)).traceCoeff z ∧
         (∀ i, αBr.toFun (S.sheet i (((z : ℂ) : RiemannSphere)))
-          = g (S.sheet i (((z : ℂ) : RiemannSphere))) • ω₀.toFun (S.sheet i (((z : ℂ) : RiemannSphere))))) :
+          = g (S.sheet i (((z : ℂ) : RiemannSphere)))
+            • ω₀.toFun (S.sheet i (((z : ℂ) : RiemannSphere))))) :
     Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0) :=
   Jacobians.Dolbeault.FormTraceGlobal.tendsto_zero_valueChartTrace_of_bundleGerm ω₀ f Φ αBr hncF hbr
     (Jacobians.Dolbeault.FormTraceGlobal.hbridgeBr_of_eventual_sphereCoherence ω₀ αBr g f Φ hev)
 
-/-- **`hreg` (regular-value analyticity) from a moving coherence datum.**  At a regular value `z` with a
-moving coherence datum `C` whose fixed fibre `C.D` has `g`'s chart-pullback analytic at each fibre point
-(`hg`), the geometric trace `valueChartTrace ω₀ f Φ` is analytic at `z` (the symmetric-lever coherence
-`MovingCoherenceDatum.coherent` + `analyticAt_valueChartTrace_of_eventuallyEq`).  Re-export of
+/-- **`hreg` (regular-value analyticity) from a moving coherence datum.** At a regular value `z`
+with a moving coherence datum `C` whose fixed fibre `C.D` has `g`'s chart-pullback analytic at each
+fibre point (`hg`), the geometric trace `valueChartTrace ω₀ f Φ` is analytic at `z` (the
+symmetric-lever coherence `MovingCoherenceDatum.coherent` +
+`analyticAt_valueChartTrace_of_eventuallyEq`). Re-export of
 `FormTraceMovingFibre.analyticAt_valueChartTrace_of_movingDatum`. -/
 theorem hreg_of_movingDatum {Φ : (b : ℂ) → FibreRegularData g f b} {z : ℂ}
     (C : MovingCoherenceDatum ω₀ g f Φ z)
@@ -344,22 +357,23 @@ theorem hreg_of_movingDatum {Φ : (b : ℂ) → FibreRegularData g f b} {z : ℂ
 
 /-! ### The sound `∞`-moving reparametrization bridge (the `hcoh_inf` engine, repaired reciprocal)
 
-The sound `∞`-coherence `hcoh_inf` is `recipCoeff (valueChartTracePatched) =ᶠ[𝓝[≠] 0]
-(inftyFibreTraceNF ω₀ f Dinf).traceCoeff` (against the *repaired* `∞`-fibre trace, `FormTraceInftyFibreNF`).
-As in the finite case, the `∞`-fibre trace coefficient is the `recipCoeff` of a *finite* `∞`-moving sum
-read in the reciprocal chart — the `−ζ⁻²` Jacobian of `z = 1/ζ` cancels the moving-sum reparametrization
-(Miranda's "the SUM extends across `∞`").  We mirror the proven `recipCoeff_inftyMovingSum_eq_traceCoeff`
-verbatim, but with the **sound** `inftyFibreTraceNF` sheets (the genuinely-analytic repaired reciprocal),
-so the resulting bridge feeds the sound `agree_infty`/`hcoh_inf` *without* the buggy `InftyFibreData`.
+The sound `∞`-coherence `hcoh_inf` is
+`recipCoeff (valueChartTracePatched) =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf).traceCoeff` (against
+the *repaired* `∞`-fibre trace, `FormTraceInftyFibreNF`). As in the finite case, the `∞`-fibre trace
+coefficient is the `recipCoeff` of a *finite* `∞`-moving sum read in the reciprocal chart — the
+`−ζ⁻²` Jacobian of `z = 1/ζ` cancels the moving-sum reparametrization (Miranda's "the SUM extends
+across `∞`"). We mirror the proven `recipCoeff_inftyMovingSum_eq_traceCoeff` verbatim, but with the
+**sound** `inftyFibreTraceNF` sheets (the genuinely-analytic repaired reciprocal), so the resulting
+bridge feeds the sound `agree_infty`/`hcoh_inf` *without* the buggy `InftyFibreData`.
 
-The proof is structure-driven (only the `FibreTrace` interface + `inftyFibreTraceNF_b`/`_coeff`), so it
-is a clean transcription. -/
+The proof is structure-driven (only the `FibreTrace` interface + `inftyFibreTraceNF_b`/`_coeff`), so
+it is a clean transcription. -/
 
-/-- **The finite `∞`-moving sum along the *repaired* reciprocal sheets** of an `InftyFibreDataNF`: the
-value-coordinate fibre sum `∑ i, chartIntegrand ω₀ g (Dinf.xs i) (sheet i (b'⁻¹)) · deriv (b' ↦ sheet i
-(b'⁻¹)) b'`, read at the finite value `b'`, with `sheet := (inftyFibreTraceNF ω₀ f Dinf).sheet` (the
-planar inverses of the genuinely-analytic repaired reciprocal).  The sound `∞`-analogue of
-`inftyMovingSum`. -/
+/-- **The finite `∞`-moving sum along the *repaired* reciprocal sheets** of an `InftyFibreDataNF`:
+the value-coordinate fibre sum
+`∑ i, chartIntegrand ω₀ g (Dinf.xs i) (sheet i (b'⁻¹)) · deriv (b' ↦ sheet i (b'⁻¹)) b'`, read at
+the finite value `b'`, with `sheet := (inftyFibreTraceNF ω₀ f Dinf).sheet` (the planar inverses of
+the genuinely-analytic repaired reciprocal). The sound `∞`-analogue of `inftyMovingSum`. -/
 noncomputable def inftyMovingSumNF (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)
     (Dinf : InftyFibreDataNF g f) : ℂ → ℂ :=
   fun b' => ∑ i, chartIntegrand ω₀ g (Dinf.xs i) ((inftyFibreTraceNF ω₀ f Dinf).sheet i (b'⁻¹))
@@ -367,10 +381,10 @@ noncomputable def inftyMovingSumNF (ω₀ : HolomorphicOneForms X) (f : Meromorp
 
 /-- **The sound reparametrization identity (the `dζ` Jacobian cancellation, repaired reciprocal).**
 `recipCoeff (inftyMovingSumNF ω₀ f Dinf)` equals the sound `∞`-fibre trace coefficient
-`(inftyFibreTraceNF ω₀ f Dinf).traceCoeff` on a punctured neighbourhood of `0`.  Verbatim transcription
-of `recipCoeff_inftyMovingSum_eq_traceCoeff` with the `inftyFibreTraceNF` sheets (the genuinely-analytic
-repaired reciprocal — `sheet_analytic`, `inftyFibreTraceNF_b = 0`, `inftyFibreTraceNF_coeff =
-chartIntegrand` all hold identically). -/
+`(inftyFibreTraceNF ω₀ f Dinf).traceCoeff` on a punctured neighbourhood of `0`. Verbatim
+transcription of `recipCoeff_inftyMovingSum_eq_traceCoeff` with the `inftyFibreTraceNF` sheets (the
+genuinely-analytic repaired reciprocal — `sheet_analytic`, `inftyFibreTraceNF_b = 0`,
+`inftyFibreTraceNF_coeff = chartIntegrand` all hold identically). -/
 theorem recipCoeff_inftyMovingSumNF_eq_traceCoeff (ω₀ : HolomorphicOneForms X)
     (f : MeromorphicFunction X) (Dinf : InftyFibreDataNF g f) :
     recipCoeff (inftyMovingSumNF ω₀ f Dinf) =ᶠ[𝓝[≠] 0]
@@ -403,7 +417,8 @@ theorem recipCoeff_inftyMovingSumNF_eq_traceCoeff (ω₀ : HolomorphicOneForms X
       = deriv ((inftyFibreTraceNF ω₀ f Dinf).sheet i) ζ * (-((ζ⁻¹ ^ 2)⁻¹)) := by
     rw [show (fun w => (inftyFibreTraceNF ω₀ f Dinf).sheet i (w⁻¹))
         = (inftyFibreTraceNF ω₀ f Dinf).sheet i ∘ (fun w : ℂ => w⁻¹) from rfl]
-    rw [deriv_comp (ζ⁻¹) (by rw [inv_inv]; exact hdζ i) (differentiableAt_inv (by simpa using hζne)),
+    rw [deriv_comp (ζ⁻¹) (by rw [inv_inv]; exact hdζ i)
+        (differentiableAt_inv (by simpa using hζne)),
       deriv_inv, inv_inv]
   rw [inv_inv, hchain, inftyFibreTraceNF_coeff]
   set c := chartIntegrand ω₀ g (Dinf.xs i) ((inftyFibreTraceNF ω₀ f Dinf).sheet i ζ) with hc
@@ -411,15 +426,17 @@ theorem recipCoeff_inftyMovingSumNF_eq_traceCoeff (ω₀ : HolomorphicOneForms X
   rw [zpow_neg, zpow_two]
   field_simp
 
-/-- **The sound `∞`-coherence `hcoh_inf` from the `∞`-moving coherence (repaired reciprocal).**  If the
-reciprocal coefficient of the patched trace germ-equals the `recipCoeff` of the sound `∞`-moving sum off
-`0` (`hcoh` — the §VIII.3 `∞`-single-valuedness, the `∞`-analogue of the finite moving coherence), then it
-germ-equals the sound `∞`-fibre trace coefficient:
+/-- **The sound `∞`-coherence `hcoh_inf` from the `∞`-moving coherence (repaired reciprocal).** If
+the reciprocal coefficient of the patched trace germ-equals the `recipCoeff` of the sound `∞`-moving
+sum off `0` (`hcoh` — the §VIII.3 `∞`-single-valuedness, the `∞`-analogue of the finite moving
+coherence), then it germ-equals the sound `∞`-fibre trace coefficient:
 
-> `recipCoeff (valueChartTracePatched ω₀ f Φ br) =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf).traceCoeff`.
+>
+  `recipCoeff (valueChartTracePatched ω₀ f Φ br) =ᶠ[𝓝[≠] 0
+      (inftyFibreTraceNF ω₀ f Dinf).traceCoeff`.
 
-This is the exact `hcoh_inf` input of `traceRationalityDataNF_ofPatched`, reduced to the single genuine
-`∞`-moving residual `hcoh` (chained through the proven reparametrization
+This is the exact `hcoh_inf` input of `traceRationalityDataNF_ofPatched`, reduced to the single
+genuine `∞`-moving residual `hcoh` (chained through the proven reparametrization
 `recipCoeff_inftyMovingSumNF_eq_traceCoeff`). -/
 theorem hcoh_inf_of_inftyMovingCoherenceNF (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (br : Finset ℂ)
@@ -430,26 +447,26 @@ theorem hcoh_inf_of_inftyMovingCoherenceNF (ω₀ : HolomorphicOneForms X) (g : 
       =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf).traceCoeff :=
   hcoh.trans (recipCoeff_inftyMovingSumNF_eq_traceCoeff ω₀ f Dinf)
 
-/-! ### The top-level sound geometric assembly (Gate A on the precise residuals)
+/-! ### The top-level sound geometric assembly (the residue theorem on the precise residuals)
 
-Wiring all the discharge helpers, this reduces Gate A `∑Res = 0` — *soundly* (sound `∞`-fibre,
-value-correct branch-patched trace) and axiom-clean — to a precise list of **genuine §VIII.3
-geometric residuals**, with `f` a nonconstant cover (`hncF`):
+Wiring all the discharge helpers, this reduces the residue theorem `∑Res = 0` — *soundly*
+(sound `∞`-fibre, value-correct branch-patched trace) and axiom-clean — to a precise list of
+**genuine §VIII.3 geometric residuals**, with `f` a nonconstant cover (`hncF`):
 
-* `Φ`, `cs`/`ρ`, `D`/`hxs_*`, `hcenters_cs`, the enumeration bookkeeping — the global selection + discrete
-  fibre data (wall 2 bookkeeping);
-* `Creg z` (off `cs ∪ br`) + `hCreg_g` — the per-regular-value moving coherence (symmetric lever, giving
-  `hreg`);
+* `Φ`, `cs`/`ρ`, `D`/`hxs_*`, `hcenters_cs`, the enumeration bookkeeping — the global selection +
+  discrete fibre data (fibre-selection bookkeeping);
+* `Creg z` (off `cs ∪ br`) + `hCreg_g` — the per-regular-value moving coherence (symmetric lever,
+  giving `hreg`);
 * `br`, `hbr`, `αBr`, `hevBr` — the finite branch values, their branch-locus membership, a local
-  holomorphic representative of `α = ω₀·g`, and the eventual sphere-sheet coherence (giving `hbnd` via the
-  proven bundle SUM);
+  holomorphic representative of `α = ω₀·g`, and the eventual sphere-sheet coherence (giving `hbnd`
+  via the proven bundle SUM);
 * `xsInf`/`hsimpleInf` (simple `∞`-poles) — the sound `∞`-fibre data `InftyFibreDataNF.ofRegular`;
 * `hcoh` — the `∞`-moving coherence (the `∞`-single-valuedness; giving `hcoh_inf`);
 * `hcont_int`, `R₀`/`hR₀_*` — junk-freeness + the genus-`0` `∞`-vanishing.
 
 This is the sound replacement of the *raw*-trace route: `hentire` is **proven** (not assumed), the
-`∞`-fibre is the sound `InftyFibreDataNF`, and the genus-`0` analyticity rides on the proven bundle trace
-`traceFun` extension (`TraceForm.traceExtendsAt_branchPoint`, axiom-clean). -/
+`∞`-fibre is the sound `InftyFibreDataNF`, and the genus-`0` analyticity rides on the proven bundle
+trace `traceFun` extension (`TraceForm.traceExtendsAt_branchPoint`, axiom-clean). -/
 theorem residueSum_eq_zero_of_patchedGeometry
     (hncF : ¬ ∃ y₀ : RiemannSphere, ∀ x, f.toRiemannSphere x = y₀)
     (Φ : (b : ℂ) → FibreRegularData g f b)
@@ -474,7 +491,8 @@ theorem residueSum_eq_zero_of_patchedGeometry
             ((chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere))))
               (S.sheet i (((z : ℂ) : RiemannSphere))))),
           valueChartTrace ω₀ f Φ z
-              = (fibreTrace ω₀ f (FibreRegularData.ofSphereSheetSystem S hderiv _hmero)).traceCoeff z ∧
+              = (fibreTrace ω₀ f
+                (FibreRegularData.ofSphereSheetSystem S hderiv _hmero)).traceCoeff z ∧
           (∀ i, (αBr b₀).toFun (S.sheet i (((z : ℂ) : RiemannSphere)))
             = g (S.sheet i (((z : ℂ) : RiemannSphere)))
               • ω₀.toFun (S.sheet i (((z : ℂ) : RiemannSphere)))))
@@ -495,7 +513,8 @@ theorem residueSum_eq_zero_of_patchedGeometry
     (hxsInf_surj : ∀ a ∈ poles, f.toRiemannSphere a = OnePoint.infty → ∃ i, xsInf i = a)
     (hcoh : recipCoeff (valueChartTracePatched ω₀ f Φ br)
       =ᶠ[𝓝[≠] 0]
-        recipCoeff (inftyMovingSumNF ω₀ f (InftyFibreDataNF.ofRegular g f xsInf hsimpleInf hmeroInf)))
+        recipCoeff (inftyMovingSumNF ω₀ f
+          (InftyFibreDataNF.ofRegular g f xsInf hsimpleInf hmeroInf)))
     (hcenters_cs : (Finset.univ.image cs).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
       = (poles.image f.toRiemannSphere).erase OnePoint.infty)
     (hcont_int : ∀ (L : LaurentForm), Finset.univ.image L.a = Finset.univ.image cs →
@@ -519,14 +538,14 @@ theorem residueSum_eq_zero_of_patchedGeometry
 
 /-! ### Non-vacuity (end-to-end soundness)
 
-For the empty pole set the empty fibre selection assembles into a `TraceRationalityDataNF` through the
-patched constructor: no finite pole-values (the per-pole moving data vacuous), no branch values (`br = ∅`,
-so the patch is inert and the raw/patched traces coincide and are the zero function), the empty sound
-`∞`-fibre, the zero trace, and the trivially-true genus-`0`/`∞` fields.  Confirms the sound *value-correct*
-reduction is honest (not a disguised `False`). -/
+For the empty pole set the empty fibre selection assembles into a `TraceRationalityDataNF` through
+the patched constructor: no finite pole-values (the per-pole moving data vacuous), no branch values
+(`br = ∅`, so the patch is inert and the raw/patched traces coincide and are the zero function), the
+empty sound `∞`-fibre, the zero trace, and the trivially-true genus-`0`/`∞` fields. Confirms the
+sound *value-correct* reduction is honest (not a disguised `False`). -/
 
-/-- **Non-vacuity of the patched sound `TraceRationalityDataNF` reduction.**  For the empty pole set the
-reduction is satisfiable via the empty selection and `br = ∅`, yielding `∑Res = 0`. -/
+/-- **Non-vacuity of the patched sound `TraceRationalityDataNF` reduction.** For the empty pole set
+the reduction is satisfiable via the empty selection and `br = ∅`, yielding `∑Res = 0`. -/
 theorem residueSum_eq_zero_of_patchedTraceRationalityNF_holomorphic (ω₀ : HolomorphicOneForms X)
     (g : X → ℂ) (f : MeromorphicFunction X) :
     ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 := by

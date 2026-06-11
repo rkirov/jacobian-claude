@@ -6,7 +6,7 @@ Authors: Rado Kirov
 import Jacobians.Dolbeault.FormTraceFibre
 
 /-!
-# The global trace function `Tr_F α` and its holomorphy off the exceptional set (Gate A, §VIII.3)
+# The global trace function `Tr_F α` and its holomorphy off the exceptional set (Miranda §VIII.3)
 
 This file builds **steps 1–2** of the Miranda §VIII.3 trace-rationality programme (the deep core of
 `Jacobians.Dolbeault.FormTraceGlobalConstruct.TraceRationalityWitness`):
@@ -24,21 +24,21 @@ This file builds **steps 1–2** of the Miranda §VIII.3 trace-rationality progr
 
 This is the genuinely-analytic foundational layer the trace-rationality witness is assembled on; it
 reuses the proven per-fibre Lemma 3.2 (`FormTraceFibre`) and the now-unconditional residue
-change-of-variables (`MeromorphicTrace.residueChangeOfVariables`).  The remaining content (the global
+change-of-variables (`MeromorphicTrace.residueChangeOfVariables`). The remaining content (the global
 trace as a single meromorphic function, its rationality on the compact `ℂℙ¹`, and Lemma 3.2 at `∞`)
 sits on top of this; see the diagnosis at the bottom of the file and
 `Jacobians.Dolbeault.FormTraceGlobalConstruct`.
 
 ## The design — read everything in the value chart at `b`
 
-The single per-sheet pushforward of `α = ω₀·g` along a section `s : ℂ → ℂ` (the planar inverse of the
-chart-pullback of `f`, `s b = pre`, `deriv s b ≠ 0`) is
-`w ↦ (coeffAt ω₀ x₀ (s w) · g (chart_x₀⁻¹ (s w))) · deriv s w`,
-the pushforward of the chart integrand `chartIntegrand ω₀ g x₀` (`FormTraceFibre`).  When the chart
-integrand is **analytic** at `pre = s b` (i.e. `g`'s chart-pullback is analytic there — `x₀` a
-non-pole of `α`), this is a composition of analytics times the analytic section derivative, hence
-analytic at `b`.  Summing over the (finite) regular fibre gives the local trace coefficient, analytic
-at `b`.  This is step 2: `Tr_F α` is holomorphic at every regular value off the poles of `α`.
+The single per-sheet pushforward of `α = ω₀·g` along a section `s : ℂ → ℂ` (the planar inverse of
+the chart-pullback of `f`, `s b = pre`, `deriv s b ≠ 0`) is
+`w ↦ (coeffAt ω₀ x₀ (s w) · g (chart_x₀⁻¹ (s w))) · deriv s w`, the pushforward of the chart
+integrand `chartIntegrand ω₀ g x₀` (`FormTraceFibre`). When the chart integrand is **analytic** at
+`pre = s b` (i.e. `g`'s chart-pullback is analytic there — `x₀` a non-pole of `α`), this is a
+composition of analytics times the analytic section derivative, hence analytic at `b`. Summing over
+the (finite) regular fibre gives the local trace coefficient, analytic at `b`. This is step 2:
+`Tr_F α` is holomorphic at every regular value off the poles of `α`.
 
 ## References
 
@@ -57,25 +57,26 @@ namespace Jacobians.Dolbeault.FormTraceGlobal
 open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
   Jacobians.Dolbeault.FormTraceFibre
 
-set_option linter.unusedSectionVars false
 
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### Step 1 — the regular-sheet pushforward is analytic in the base
 
 The atom: pushing the chart integrand of `α = ω₀·g` forward along the planar section germ `s` of a
-regular non-pole point is analytic at the base value `b`, provided `g`'s chart-pullback is *analytic*
-(not merely meromorphic) at the source point — i.e. `α = ω₀·g` is holomorphic there, the defining
-condition of a regular value off the poles. -/
+regular non-pole point is analytic at the base value `b`, provided `g`'s chart-pullback is
+*analytic* (not merely meromorphic) at the source point — i.e. `α = ω₀·g` is holomorphic there, the
+defining condition of a regular value off the poles. -/
 
 /-- **The chart integrand of `α = ω₀·g` is analytic at the chart image of a non-pole point.**  When
 `g`'s chart-pullback is analytic at `chart_a a` (so `α·g` has no pole at `a`), the chart integrand
 `chartIntegrand ω₀ g a = coeffAt ω₀ a · (g ∘ chart_a⁻¹)` is analytic there (the product of the
 analytic coefficient `coeffAt_analyticAt` with the analytic `g`-pullback). -/
-theorem analyticAt_chartIntegrand (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (a : X)
+theorem analyticAt_chartIntegrand {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (a : X)
     (hg : AnalyticAt ℂ (fun z => g ((chartAt ℂ a).symm z)) ((chartAt ℂ a) a)) :
     AnalyticAt ℂ (chartIntegrand ω₀ g a) ((chartAt ℂ a) a) := by
   have hmem : (chartAt ℂ a) a ∈ (chartAt ℂ a).target :=
@@ -84,7 +85,7 @@ theorem analyticAt_chartIntegrand (ω₀ : HolomorphicOneForms X) (g : X → ℂ
 
 /-- **Step 1 — the regular-sheet pushforward is analytic at the base.**  For a planar section germ
 `s` (analytic at `b`, `s b = c`) and a chart integrand `φ` analytic at `c = s b`, the per-sheet
-pushforward `w ↦ φ (s w) · deriv s w` of `α = ω₀·g` is analytic at `b`.  (Composition of the analytic
+pushforward `w ↦ φ (s w) · deriv s w` of `α = ω₀·g` is analytic at `b`. (Composition of the analytic
 `φ` with the analytic section `s`, times the analytic section derivative `deriv s`.) -/
 theorem analyticAt_sheetPushforward {φ s : ℂ → ℂ} {b c : ℂ}
     (hφ : AnalyticAt ℂ φ c) (hs : AnalyticAt ℂ s b) (hsb : s b = c) :
@@ -94,9 +95,9 @@ theorem analyticAt_sheetPushforward {φ s : ℂ → ℂ} {b c : ℂ}
 
 /-! ### Step 2 — the local fibre trace coefficient is analytic at a regular value
 
-Assembling step 1 over a regular fibre.  We package the per-fibre regularity data over a regular
-value (the `FibreRegularData` of `FormTraceFibre`, *plus* analyticity of `g`'s pullback at each fibre
-point — the "regular value off the poles of `α`" condition) and show the trace coefficient
+Assembling step 1 over a regular fibre. We package the per-fibre regularity data over a regular
+value (the `FibreRegularData` of `FormTraceFibre`, *plus* analyticity of `g`'s pullback at each
+fibre point — the "regular value off the poles of `α`" condition) and show the trace coefficient
 `(fibreTrace ω₀ f D).traceCoeff` is analytic at `b`.
 
 This is the local model of "`Tr_F α` is holomorphic at every regular value off the poles of `α`",
@@ -105,7 +106,7 @@ the analytic core of step 2 (holomorphy off the finite exceptional set). -/
 variable {g : X → ℂ}
 
 /-- **The per-sheet section germ is analytic at the base, with `s b = pre i`** (read off the
-`exists_planar_section` choice baked into `fibreTrace`).  A convenience unpacking of the `fibreTrace`
+`exists_planar_section` choice baked into `fibreTrace`). A convenience unpacking of the `fibreTrace`
 `sheet` fields. -/
 theorem fibreTrace_sheet_analyticAt (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X) {b : ℂ}
     (D : FibreRegularData g f b) (i : D.ι) :
@@ -113,9 +114,9 @@ theorem fibreTrace_sheet_analyticAt (ω₀ : HolomorphicOneForms X) (f : Meromor
       (fibreTrace ω₀ f D).sheet i (fibreTrace ω₀ f D).b = (fibreTrace ω₀ f D).pre i :=
   ⟨(fibreTrace ω₀ f D).sheet_analytic i, (fibreTrace ω₀ f D).sheet_base i⟩
 
-/-- **Step 2, per sheet.**  Over a regular value `b`, each per-sheet summand of the trace coefficient
-is analytic at `b`, provided `g`'s chart-pullback is analytic at the fibre point `xs i` (so `α = ω₀·g`
-is holomorphic there).  The summand is the pushforward of the chart integrand
+/-- **Step 2, per sheet.** Over a regular value `b`, each per-sheet summand of the trace coefficient
+is analytic at `b`, provided `g`'s chart-pullback is analytic at the fibre point `xs i` (so
+`α = ω₀·g` is holomorphic there). The summand is the pushforward of the chart integrand
 `chartIntegrand ω₀ g (xs i)` (analytic at `pre i` by `analyticAt_chartIntegrand`) along the analytic
 section `sheet i` (`fibreTrace_sheet_analyticAt`). -/
 theorem analyticAt_fibreTrace_summand (ω₀ : HolomorphicOneForms X) (f : MeromorphicFunction X)

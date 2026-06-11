@@ -1,38 +1,35 @@
 /-
-  Dolbeault ladder — **Forster GTM 81 Lemma 12.4**: refinement maps on `H¹` are injective
-  UNCONDITIONALLY (sheaf axioms I + II / gluing only — no acyclicity, no Leray hypothesis).
+  **Forster GTM 81 Lemma 12.4**: refinement maps on `H¹` are injective unconditionally
+  (sheaf axioms I + II / gluing only — no acyclicity, no Leray hypothesis).
 
   The conditional version `IsRefinement.refinementDescend_of_isDiskAcyclic`
-  (`CechRefinementLeray.lean`) needs the coarse cover `𝔘` to be disk-acyclic.  Forster 12.4 shows the
-  `RefinementDescend` predicate holds for ANY refinement, using only that the germ-class `𝒪_D`-sections
-  form a genuine SHEAF (gluing + separation).  We supply exactly that sheaf input as two reusable
-  lemmas on an *open* `W ⊆ X` (NOT all of `X`):
+  (`CechRefinementLeray.lean`) needs the coarse cover `𝔘` to be disk-acyclic. Forster 12.4 shows the
+  `RefinementDescend` predicate holds for ANY refinement, using only that the germ-class
+  `𝒪_D`-sections form a genuine SHEAF (gluing + separation). We supply exactly that sheaf input as
+  two reusable lemmas on an *open* `W ⊆ X` (NOT all of `X`):
 
-    * `omegaDGerm_separated` — sheaf axiom I (separation): two `MGerm W` agreeing on every member of a
-      cover `(A k)_k` of `W` are equal.
+    * `omegaDGerm_separated` — sheaf axiom I (separation): two `MGerm W` agreeing on every member of
+      a cover `(A k)_k` of `W` are equal.
     * `omegaDGerm_glue` — sheaf axiom II (gluing): a matching family `(s k)_k` of `𝒪_D`-germs over a
       cover `(A k)_k` of `W` glues to a single `h ∈ OmegaDGerm D W` restricting to each `s k`.
 
-  Both are the `W`-local analogue of `CechH0`'s X-GLOBAL gluing (`cechRestrictL_surjective`).  The
-  gluing reuses `CechH0`'s per-point meromorphic-normal-form construction verbatim — that construction
-  is entirely chart-local, so it transports from `X` to the open region `W` with no compactness input.
+  Both are the `W`-local analogue of `CechH0`'s `X`-global gluing (`cechRestrictL_surjective`). The
+  gluing reuses `CechH0`'s per-point meromorphic-normal-form construction verbatim — that
+  construction is entirely chart-local, so it transports from `X` to the open region `W` with no
+  compactness input.
 
-  ## What is proven (complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
+  ## Main results
 
-    * `IsRefinement.refinementDescend_unconditional` — Forster 12.4: `RefinementDescend hr D` for ANY
-      refinement `hr : IsRefinement 𝔙 𝔘 r`.
-    * `IsRefinement.refineH1_injective_unconditional` — hence `refineH1 hr` is injective (immediate from
-      the existing `refineH1_injective_iff_descend`).
-
-  No gaps in this file.
+    * `IsRefinement.refinementDescend_unconditional` — Forster 12.4: `RefinementDescend hr D` for
+      *any* refinement `hr : IsRefinement 𝔙 𝔘 r`.
+    * `IsRefinement.refineH1_injective_unconditional` — hence `refineH1 hr` is injective (immediate
+      from `refineH1_injective_iff_descend`).
 -/
 import Jacobians.Dolbeault.CechRefinementLeray
 import Jacobians.Dolbeault.CechH0
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
-
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
@@ -41,19 +38,21 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 /-! ### The germ-class `𝒪_D` sheaf on an OPEN region `W` (gluing + separation)
 
-`CechH0` proves the gluing/separation only when the cover is all of `X` (`cechRestrictL_surjective`).
-Forster 12.4 needs it on each coarse set `𝔘.U i` — an *open* `W ⊆ X`.  We re-derive it here from the
-chart-local atoms `CechH0` already exposes (`Gext`, `nfX`, `Gext_meromorphicAt`,
-`Gext_overlap_eventuallyEq`, `nfX_Gext_codiscrete`, `toMeromorphicNFAt_chart_val_congr`, …); none of
-those uses compactness, so they transport to the region `W` unchanged. -/
+`CechH0` proves the gluing/separation only when the cover is all of `X`
+(`cechRestrictL_surjective`). Forster 12.4 needs it on each coarse set `𝔘.U i` — an *open* `W ⊆ X`.
+We re-derive it here from the chart-local atoms `CechH0` already exposes (`Gext`, `nfX`,
+`Gext_meromorphicAt`, `Gext_overlap_eventuallyEq`, `nfX_Gext_codiscrete`,
+`toMeromorphicNFAt_chart_val_congr`, …); none of those uses compactness, so they transport to the
+region `W` unchanged. -/
 
 variable (D : Divisor X)
 
-/-- A germ-class agreement between two `↥W`-functions on a sub-open `A ≤ W` upgrades, near each point
-of `A`, to a punctured-neighbourhood agreement of their extensions-by-zero on `X`.  (Pull the
-`↥(A)`-germ agreement back to `X` via `eventually_nhdsNE_of_subtype`; on the overlap the extensions are
-the functions themselves by `Gext_apply_mem`.) -/
-theorem Gext_eventuallyEq_of_subOpen {W A : Opens X} (hAW : A ≤ W) (fa fb : W → ℂ)
+/-- A germ-class agreement between two `↥W`-functions on a sub-open `A ≤ W` upgrades, near each
+point of `A`, to a punctured-neighbourhood agreement of their extensions-by-zero on `X`. (Pull the
+`↥(A)`-germ agreement back to `X` via `eventually_nhdsNE_of_subtype`; on the overlap the extensions
+are the functions themselves by `Gext_apply_mem`.) -/
+theorem Gext_eventuallyEq_of_subOpen {X : Type*} [TopologicalSpace X] {W A : Opens X}
+    (hAW : A ≤ W) (fa fb : W → ℂ)
     (hagree : toGerm A (fa ∘ openIncl hAW) = toGerm A (fb ∘ openIncl hAW))
     {x : X} (hx : x ∈ A) :
     Gext fa =ᶠ[𝓝[≠] x] Gext fb := by
@@ -64,11 +63,12 @@ theorem Gext_eventuallyEq_of_subOpen {W A : Opens X} (hAW : A ≤ W) (fa fb : W 
   rw [Gext_apply_mem fa hwW, Gext_apply_mem fb hwW]
   simpa only [Function.comp_apply, openIncl] using hw
 
-/-- **Sheaf axiom I (separation) for germ-class `𝒪_D`-sections.**  If two germ-classes on an open `W`
-restrict to the *same* germ-class on every member `A k` of a cover of `W`, they are equal.  (Each point
-of `↥W` lies in some `A k`, where the two agree; that agreement pulls back to a punctured-neighbourhood
-agreement on `↥W`.) -/
-theorem omegaDGerm_separated {W : Opens X} {K : Type*} (A : K → Opens X) (hAW : ∀ k, A k ≤ W)
+/-- **Sheaf axiom I (separation) for germ-class `𝒪_D`-sections.** If two germ-classes on an open `W`
+restrict to the *same* germ-class on every member `A k` of a cover of `W`, they are equal. (Each
+point of `↥W` lies in some `A k`, where the two agree; that agreement pulls back to a
+punctured-neighbourhood agreement on `↥W`.) -/
+theorem omegaDGerm_separated {X : Type*} [TopologicalSpace X] {W : Opens X} {K : Type*}
+    (A : K → Opens X) (hAW : ∀ k, A k ≤ W)
     (hcov : ⨆ k, A k = W) (a b : MGerm W)
     (hagree : ∀ k, rawRestrictG (hAW k) a = rawRestrictG (hAW k) b) :
     a = b := by
@@ -96,9 +96,11 @@ theorem omegaDGerm_separated {W : Opens X} {K : Type*} (A : K → Opens X) (hAW 
   simpa using hv
 
 /-- A function on `↥U` is meromorphic on `↥U` once its extension-by-zero `Gext g` is meromorphic at
-each point of `U` (read in `X`'s chart) — the converse direction of `Gext_meromorphicAt`, via the same
-`Gext_chart_bridge`. -/
-theorem isMeromorphic_of_Gext_meromorphicAt {U : Opens X} {g : U → ℂ}
+each point of `U` (read in `X`'s chart) — the converse direction of `Gext_meromorphicAt`, via the
+same `Gext_chart_bridge`. -/
+theorem isMeromorphic_of_Gext_meromorphicAt {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {U : Opens X}
+    {g : U → ℂ}
     (h : ∀ y ∈ U,
       MeromorphicAt (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y)) :
     IsMeromorphic (U : Type _) g := by
@@ -111,9 +113,9 @@ theorem isMeromorphic_of_Gext_meromorphicAt {U : Opens X} {g : U → ℂ}
 
 /-- **Sheaf axiom II (gluing) for germ-class `𝒪_D`-sections.**  A matching family `(s k)_k` of
 `𝒪_D`-germs over a cover `(A k)_k` of an open `W` glues to a single `h ∈ OmegaDGerm D W` whose
-restriction to each `A k` is `s k`.  This is the `W`-local form of `CechH0.cechRestrictL_surjective`:
+restriction to each `A k` is `s k`. This is the `W`-local form of `CechH0.cechRestrictL_surjective`:
 extract honest representatives `gA k ∈ OmegaD D (A k)`, extend each by `0`, and glue them by the
-per-point meromorphic-normal-form recipe (`toMeromorphicNFAt`).  The glued function agrees off a
+per-point meromorphic-normal-form recipe (`toMeromorphicNFAt`). The glued function agrees off a
 discrete set near every point of `W` with the local member whose patch contains the point, so it is
 meromorphic on `↥W`, satisfies the order bound, and has the prescribed germ on each `A k`. -/
 theorem omegaDGerm_glue {W : Opens X} {K : Type*} (A : K → Opens X) (hAW : ∀ k, A k ≤ W)
@@ -155,7 +157,8 @@ theorem omegaDGerm_glue {W : Opens X} {K : Type*} (A : K → Opens X) (hAW : ∀
     exact Gext_overlap_eventuallyEq (gA k) (gA l) hm hxk hxl
   have Hnf : ∀ k, ∀ y, y ∈ A k → ∀ᶠ z in 𝓝[≠] y, nfX (G k) z := by
     intro k y hy
-    -- `nfX_Gext_codiscrete` is stated through a `FiniteCover`; its content is `A k`-local.  Re-derive.
+    -- `nfX_Gext_codiscrete` is stated through a `FiniteCover`; its content is `A k`-local.
+    -- Re-derive.
     have hmer : MeromorphicAt (Gext (gA k) ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) :=
       Gext_meromorphicAt (hgA_mer k) hy
     have hana : ∀ᶠ w in 𝓝[≠] ((chartAt (H := ℂ) y) y),
@@ -233,7 +236,8 @@ theorem omegaDGerm_glue {W : Opens X} {K : Type*} (A : K → Opens X) (hAW : ∀
     (fun z => Gext hRep z = G k z) (hRepEv u.2)
   filter_upwards [hpull] with v hv
   simp only [Function.comp_apply, openIncl]
-  -- Goal `hRep ⟨v.1, _⟩ = gA k v`.  `hRep ⟨v.1,_⟩ = Gext hRep v.1 = G k v.1 = Gext (gA k) v.1 = gA k v`.
+  -- Goal `hRep ⟨v.1, _⟩ = gA k v`.
+  -- `hRep ⟨v.1,_⟩ = Gext hRep v.1 = G k v.1 = Gext (gA k) v.1 = gA k v`.
   rw [show (hRep ⟨(v : X), hAW k v.2⟩) = Gext hRep v.1 from
     (Gext_apply_mem hRep (hAW k v.2)).symm, hv]
   show Gext (gA k) v.1 = gA k v
@@ -241,8 +245,8 @@ theorem omegaDGerm_glue {W : Opens X} {K : Type*} (A : K → Opens X) (hAW : ∀
 
 /-! ### Forster 12.4 — unconditional injectivity of the refinement map on `H¹`
 
-The descend predicate (`RefinementDescend`, the cocycle-level form of `ker (refineH1) = 0`) is proven
-for ANY refinement by the standard sheaf-gluing argument (Forster GTM 81, Lemma 12.4, p. 99):
+The descend predicate (`RefinementDescend`, the cocycle-level form of `ker (refineH1) = 0`) is
+proven for ANY refinement by the standard sheaf-gluing argument (Forster GTM 81, Lemma 12.4, p. 99):
 
   Given a `𝔘`-cocycle `g` with `refineC1 g = δ⁰_𝔙 η` (a `𝔙`-coboundary), build a `𝔘`-coboundary
   witness `h ∈ C⁰(𝔘)` by gluing, on each coarse set `𝔘.U i`, the matching family
@@ -259,17 +263,20 @@ variable {𝔙 𝔘 : FiniteCover X} {r : 𝔙.ι → 𝔘.ι}
 
 /-- The cover `{𝔘.U i ⊓ 𝔙.U k}_k` of the coarse set `𝔘.U i` (used per coarse index in Forster 12.4).
 -/
-theorem coverInf_iSup (i : 𝔘.ι) : ⨆ k, (𝔘.U i ⊓ 𝔙.U k) = 𝔘.U i := by
+theorem coverInf_iSup {X : Type*} [TopologicalSpace X] {𝔙 𝔘 : FiniteCover X} (i : 𝔘.ι) :
+    ⨆ k, (𝔘.U i ⊓ 𝔙.U k) = 𝔘.U i := by
   rw [← inf_iSup_eq, 𝔙.covers, inf_top_eq]
 
 /-- The cover `{𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k}_k` of the coarse overlap `𝔘.U i ⊓ 𝔘.U j`. -/
-theorem coverInf2_iSup (i j : 𝔘.ι) : ⨆ k, (𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k) = 𝔘.U i ⊓ 𝔘.U j := by
+theorem coverInf2_iSup {X : Type*} [TopologicalSpace X] {𝔙 𝔘 : FiniteCover X} (i j : 𝔘.ι) :
+    ⨆ k, (𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k) = 𝔘.U i ⊓ 𝔘.U j := by
   rw [← inf_iSup_eq, 𝔙.covers, inf_top_eq]
 
 /-- **The Čech cocycle relation** `g_{ac} = g_{ab} + g_{bc}` on the triple overlap, extracted from
 `δ¹ g = 0` (the alternating-sum identity of `cechDelta1`).  Stated as germ equality on
 `𝔘.U a ⊓ 𝔘.U b ⊓ 𝔘.U c`, ready to be further restricted via `rawRestrictG_comp_apply`. -/
-theorem cocycleRel {gc : 𝔘.Cochain1} (hg : gc ∈ LinearMap.ker 𝔘.cechDelta1) (a b c : 𝔘.ι) :
+theorem cocycleRel {X : Type*} [TopologicalSpace X] {𝔘 : FiniteCover X} {gc : 𝔘.Cochain1}
+    (hg : gc ∈ LinearMap.ker 𝔘.cechDelta1) (a b c : 𝔘.ι) :
     rawRestrictG (le_inf (inf_le_left.trans inf_le_left) inf_le_right :
         𝔘.U a ⊓ 𝔘.U b ⊓ 𝔘.U c ≤ 𝔘.U a ⊓ 𝔘.U c) (gc (a, c))
       = rawRestrictG (inf_le_left : 𝔘.U a ⊓ 𝔘.U b ⊓ 𝔘.U c ≤ 𝔘.U a ⊓ 𝔘.U b) (gc (a, b))
@@ -298,7 +305,8 @@ theorem refinementDescend_unconditional (hr : IsRefinement 𝔙 𝔘 r) :
   obtain ⟨hker, _hsec⟩ := g.2
   rw [SetLike.mem_coe, LinearMap.mem_ker] at hker
   obtain ⟨η, hη_sec, hη_eq⟩ := hcob
-  -- The coboundary relation `g_{(r k)(r l)} = η_l − η_k` on `𝔙.U k ⊓ 𝔙.U l` (from `δ⁰ η = refineC1 g`).
+  -- The coboundary relation `g_{(r k)(r l)} = η_l − η_k` on `𝔙.U k ⊓ 𝔙.U l` (from
+  -- `δ⁰ η = refineC1 g`).
   have hcobRel : ∀ k l : 𝔙.ι,
       rawRestrictG (hr.pair_le k l) (gc (r k, r l))
         = rawRestrictG (inf_le_right : 𝔙.U k ⊓ 𝔙.U l ≤ 𝔙.U l) (η l)
@@ -330,7 +338,8 @@ theorem refinementDescend_unconditional (hr : IsRefinement 𝔙 𝔘 r) :
     set O : Opens X := (𝔘.U i ⊓ 𝔙.U k) ⊓ (𝔘.U i ⊓ 𝔙.U l) with hO
     -- Restrict the cocycle relation `(i, r k, r l)` and the coboundary relation `(k, l)` to `O`.
     have hcr := congrArg (rawRestrictG (show O ≤ 𝔘.U i ⊓ 𝔘.U (r k) ⊓ 𝔘.U (r l) from
-        le_inf (le_inf (inf_le_left.trans inf_le_left) ((inf_le_left).trans (inf_le_right.trans (hr k))))
+        le_inf (le_inf (inf_le_left.trans inf_le_left)
+          ((inf_le_left).trans (inf_le_right.trans (hr k))))
           ((inf_le_right).trans (inf_le_right.trans (hr l))))) (cocycleRel hker i (r k) (r l))
     have hcb := congrArg (rawRestrictG (show O ≤ 𝔙.U k ⊓ 𝔙.U l from
         le_inf (inf_le_left.trans inf_le_right) (inf_le_right.trans inf_le_right))) (hcobRel k l)
@@ -357,8 +366,9 @@ theorem refinementDescend_unconditional (hr : IsRefinement 𝔙 𝔘 r) :
   -- Separation over the cover `{U_i ⊓ U_j ⊓ V_k}_k` of `U_i ⊓ U_j`.
   refine omegaDGerm_separated (fun k => 𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k) (fun _ => inf_le_left)
     (coverInf2_iSup i j) _ _ (fun k => ?_)
-  -- Restrict both sides to `A k = U_i ⊓ U_j ⊓ V_k` and reduce to the cocycle relation `(i, j, r k)`.
-  -- The restrictions of `hC i`, `hC j` to `A k` are `sFam i k`, `sFam j k` (from `hC_spec`).
+  -- Restrict both sides to `A k = U_i ⊓ U_j ⊓ V_k` and reduce to the cocycle relation
+  -- `(i, j, r k)`. The restrictions of `hC i`, `hC j` to `A k` are `sFam i k`, `sFam j k` (from
+  -- `hC_spec`).
   have hi : rawRestrictG (le_inf (inf_le_left.trans inf_le_left) inf_le_right :
         𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k ≤ 𝔘.U i ⊓ 𝔙.U k) (sFam i k)
       = rawRestrictG (inf_le_left.trans inf_le_left : 𝔘.U i ⊓ 𝔘.U j ⊓ 𝔙.U k ≤ 𝔘.U i) (hC i) := by
@@ -380,8 +390,8 @@ theorem refinementDescend_unconditional (hr : IsRefinement 𝔙 𝔘 r) :
   linear_combination (norm := abel) hcr
 
 /-- **Forster 12.4: the refinement map on `H¹` is injective UNCONDITIONALLY.**  For ANY refinement
-`hr : IsRefinement 𝔙 𝔘 r`, `refineH1 hr` is injective — with NO acyclicity / Leray hypothesis on either
-cover (contrast `refineH1_injective`, which needs a back-refinement).  Immediate from
+`hr : IsRefinement 𝔙 𝔘 r`, `refineH1 hr` is injective — with NO acyclicity / Leray hypothesis on
+either cover (contrast `refineH1_injective`, which needs a back-refinement). Immediate from
 `refinementDescend_unconditional` via `refineH1_injective_iff_descend`. -/
 theorem refineH1_injective_unconditional (hr : IsRefinement 𝔙 𝔘 r) :
     Function.Injective (hr.refineH1 D) :=

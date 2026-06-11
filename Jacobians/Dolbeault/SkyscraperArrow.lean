@@ -1,16 +1,16 @@
 /-
   Dolbeault ladder — the skyscraper coefficient arrow `h0ToSky` and exactness `exact₁₂`.
 
-  This builds the `f₂`-half of `CohomologicalRR.exists_skyscraperLES` on top of the local-realization
-  germ-class coefficient `LocalRealization.coeffGermLin`:
+  This builds the `f₂`-half of `CohomologicalRR.exists_skyscraperLES` on top of the
+  local-realization germ-class coefficient `LocalRealization.coeffGermLin`:
 
-    * `h0ToSky 𝔘 D P hP_i : H⁰(𝒪_{D+P}) →ₗ[ℂ] ℂ` (the order-`(−D(P)−1)` principal-part coefficient at
-      `P`): restrict a global section to the cover-set `U i ∋ P` (a germ in `OmegaDGerm (D+P) (U i)`),
-      then apply `coeffGermLin`.
-    * `exact₁₂`: `range (h0Incl D P) = ker h0ToSky` — a section lies in `𝒪_D` iff its order-`(−D(P)−1)`
-      coefficient at `P` vanishes; transported from `ker_coeffGermLin` across the cover-set restriction
-      via the Čech matching condition (the genuine sheaf-theoretic content: vanishing at the one chosen
-      cover-set forces membership at every cover-set).
+    * `h0ToSky 𝔘 D P hP_i : H⁰(𝒪_{D+P}) →ₗ[ℂ] ℂ` (the order-`(−D(P)−1)` principal-part coefficient
+      at `P`): restrict a global section to the cover-set `U i ∋ P` (a germ in
+      `OmegaDGerm (D+P) (U i)`), then apply `coeffGermLin`.
+    * `exact₁₂`: `range (h0Incl D P) = ker h0ToSky` — a section lies in `𝒪_D` iff its
+      order-`(−D(P)−1)` coefficient at `P` vanishes; transported from `ker_coeffGermLin` across the
+      cover-set restriction via the Čech matching condition (the genuine sheaf-theoretic content:
+      vanishing at the one chosen cover-set forces membership at every cover-set).
 
   Sorry-free.  The snake-lemma data (`f₃`, `exact₂`, `exact₃`, `surj₄`) and the final
   `exists_skyscraperLES` assembly are OUT OF SCOPE here.
@@ -21,7 +21,6 @@ import Jacobians.Dolbeault.SkyscraperLESBase
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
@@ -30,17 +29,19 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 /-! ### Order/membership transport — the sheaf-theoretic glue for `exact₁₂`
 
-The genuine content of `exact₁₂` (backward: vanishing of the coefficient at the chosen cover-set `U i`
-forces membership in `𝒪_D` at *every* cover-set `U j`) reduces, via `mem_OmegaD_iff_ordU_at_P`, to a
-single order comparison at `P`, transported across the overlap `U i ⊓ U j` (the Čech matching). The
-order at `P` is `𝓝[≠]`-germ-invariant and restriction-invariant, so it is the same whether read on
-`U i` or on `U j`. When `P ∉ U j` the two order bounds (`D` vs `D+P`) coincide on all of `U j`, so the
-component is automatically an `𝒪_D`-germ. -/
+The genuine content of `exact₁₂` (backward: vanishing of the coefficient at the chosen cover-set
+`U i` forces membership in `𝒪_D` at *every* cover-set `U j`) reduces, via
+`mem_OmegaD_iff_ordU_at_P`, to a single order comparison at `P`, transported across the overlap
+`U i ⊓ U j` (the Čech matching). The order at `P` is `𝓝[≠]`-germ-invariant and
+restriction-invariant, so it is the same whether read on `U i` or on `U j`. When `P ∉ U j` the two
+order bounds (`D` vs `D+P`) coincide on all of `U j`, so the component is automatically an
+`𝒪_D`-germ. -/
 
 /-- **`ordU` is `𝓝[≠]`-germ-invariant** on the open submanifold `↥U`: two functions agreeing off a
 discrete set near `u` have equal order at `u` (chart-transport via `eventually_comp_chart_iff'` +
 `meromorphicOrderAt_congr`). -/
-theorem ordU_congr {U : Opens X} {f g : U → ℂ} {u : U} (h : f =ᶠ[𝓝[≠] u] g) :
+theorem ordU_congr {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {U : Opens X}
+    {f g : U → ℂ} {u : U} (h : f =ᶠ[𝓝[≠] u] g) :
     ordU f u = ordU g u := by
   refine meromorphicOrderAt_congr ?_
   have hkey := eventually_comp_chart_iff' (f - g) u (· = 0)
@@ -68,11 +69,12 @@ theorem OmegaDGerm_add_single_eq_of_not_mem {U : Opens X} {D : Divisor X} {P : X
   rw [OmegaD_add_single_eq_of_not_mem hP]
 
 /-- **Overlap membership transport** (the case `P ∈ V`).  If on the overlap `U ⊓ V` two matching
-germs (`hmatch`) come from `γU ∈ OmegaDGerm D U` and `γV ∈ OmegaDGerm (D+P) V`, then `γV` already lies
-in the *smaller* `OmegaDGerm D V`.  Reason: the order of `γV` at `P` (read on `V`) equals the order of
-`γU` at `P` (read on `U`, via the overlap — orders are `𝓝[≠]`-germ- and restriction-invariant), and
-`γU ∈ 𝒪_D` bounds that order by `−(D P)`; `mem_OmegaD_iff_ordU_at_P` then upgrades `γV`'s `𝒪_{D+P}`-
-membership to `𝒪_D`-membership.  This is the genuine sheaf-theoretic content of `exact₁₂`. -/
+germs (`hmatch`) come from `γU ∈ OmegaDGerm D U` and `γV ∈ OmegaDGerm (D+P) V`, then `γV` already
+lies in the *smaller* `OmegaDGerm D V`. Reason: the order of `γV` at `P` (read on `V`) equals the
+order of `γU` at `P` (read on `U`, via the overlap — orders are `𝓝[≠]`-germ- and
+restriction-invariant), and `γU ∈ 𝒪_D` bounds that order by `−(D P)`; `mem_OmegaD_iff_ordU_at_P`
+then upgrades `γV`'s `𝒪_{D+P}`- membership to `𝒪_D`-membership. This is the genuine sheaf-theoretic
+content of `exact₁₂`. -/
 theorem mem_OmegaDGerm_of_overlap_match {U V : Opens X} {D : Divisor X} {P : X}
     (hPU : P ∈ U) (hPV : P ∈ V) {γU : MGerm U} {γV : MGerm V}
     (hγU : γU ∈ OmegaDGerm D U) (hγV : γV ∈ OmegaDGerm (D + Finsupp.single P 1) V)
@@ -109,8 +111,9 @@ variable (𝔘 : FiniteCover X) (D : Divisor X) (P : X)
 /-! ### Restriction of a global section to a single cover-set germ -/
 
 /-- Restrict a global `𝒪_D`-section to its component germ on the cover-set `U i`, as an element of
-the subtype `↥(OmegaDGerm D (U i))`.  The underlying map is `s ↦ s.1 i`; the codomain-restriction
-membership `s.1 i ∈ OmegaDGerm D (U i)` is the `sections0` half of `globalSections = ker δ⁰ ⊓ sections0`. -/
+the subtype `↥(OmegaDGerm D (U i))`. The underlying map is `s ↦ s.1 i`; the codomain-restriction
+membership `s.1 i ∈ OmegaDGerm D (U i)` is the `sections0` half of
+`globalSections = ker δ⁰ ⊓ sections0`. -/
 noncomputable def restrictToCoverSet (i : 𝔘.ι) :
     ↥(𝔘.globalSections D) →ₗ[ℂ] ↥(OmegaDGerm D (𝔘.U i)) :=
   (((LinearMap.proj i).comp (𝔘.globalSections D).subtype).codRestrict (OmegaDGerm D (𝔘.U i))
@@ -121,8 +124,8 @@ noncomputable def restrictToCoverSet (i : 𝔘.ι) :
 
 /-- The Čech matching condition extracted from `s ∈ ker δ⁰`: on each overlap `U i ⊓ U j` the
 component germs `s i` and `s j` restrict to the same germ. -/
-theorem globalSections_matching {s : 𝔘.Cochain0} (hs : s ∈ LinearMap.ker 𝔘.cechDelta0)
-    (i j : 𝔘.ι) :
+theorem globalSections_matching {X : Type*} [TopologicalSpace X] (𝔘 : FiniteCover X)
+    {s : 𝔘.Cochain0} (hs : s ∈ LinearMap.ker 𝔘.cechDelta0) (i j : 𝔘.ι) :
     rawRestrictG (inf_le_right : 𝔘.U i ⊓ 𝔘.U j ≤ 𝔘.U j) (s j)
       = rawRestrictG (inf_le_left : 𝔘.U i ⊓ 𝔘.U j ≤ 𝔘.U i) (s i) := by
   rw [LinearMap.mem_ker] at hs
@@ -132,11 +135,11 @@ theorem globalSections_matching {s : 𝔘.Cochain0} (hs : s ∈ LinearMap.ker �
   rwa [sub_eq_zero] at hp
 
 /-- **The per-section core of `exact₁₂`.** For a global `𝒪_{D+P}`-section `s` and a cover-set
-`U i ∋ P`, the component on `U i` lies in `𝒪_D` iff *every* component lies in `𝒪_D` (equivalently, iff
-`s` is a global `𝒪_D`-section).  Forward is trivial (specialise to `i`); backward is the genuine sheaf
-content: at any `U j`, if `P ∉ U j` the `D` and `D+P` bounds coincide (`OmegaDGerm_add_single_eq_…`),
-and if `P ∈ U j` the order at `P` transports from `U i` across the overlap
-(`mem_OmegaDGerm_of_overlap_match`). -/
+`U i ∋ P`, the component on `U i` lies in `𝒪_D` iff *every* component lies in `𝒪_D` (equivalently,
+iff `s` is a global `𝒪_D`-section). Forward is trivial (specialise to `i`); backward is the genuine
+sheaf content: at any `U j`, if `P ∉ U j` the `D` and `D+P` bounds coincide
+(`OmegaDGerm_add_single_eq_…`), and if `P ∈ U j` the order at `P` transports from `U i` across the
+overlap (`mem_OmegaDGerm_of_overlap_match`). -/
 theorem component_mem_iff_all {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
     (s : ↥(𝔘.globalSections (D + Finsupp.single P 1))) :
     (s : 𝔘.Cochain0) i ∈ OmegaDGerm D (𝔘.U i)
@@ -153,10 +156,10 @@ theorem component_mem_iff_all {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
 
 /-! ### The skyscraper coefficient arrow `h0ToSky` (`f₂`) -/
 
-/-- **The skyscraper coefficient arrow** `f₂ : H⁰(𝒪_{D+P}) → ℂ_P` at `P`, given a cover-set `U i ∋ P`:
-restrict the global section to its component germ on `U i` (in `OmegaDGerm (D+P) (U i)`), then read its
-order-`(−D(P)−1)` principal-part coefficient at `P` (`coeffGermLin`).  The codomain `Skyscraper D P` is
-`ℂ`.  Not surjective in general (its image is the H⁰-cokernel). -/
+/-- **The skyscraper coefficient arrow** `f₂ : H⁰(𝒪_{D+P}) → ℂ_P` at `P`, given a cover-set
+`U i ∋ P`: restrict the global section to its component germ on `U i` (in `OmegaDGerm (D+P) (U i)`),
+then read its order-`(−D(P)−1)` principal-part coefficient at `P` (`coeffGermLin`). The codomain
+`Skyscraper D P` is `ℂ`. Not surjective in general (its image is the H⁰-cokernel). -/
 noncomputable def h0ToSky {i : 𝔘.ι} (hP : P ∈ 𝔘.U i) :
     ↥(𝔘.globalSections (D + Finsupp.single P 1)) →ₗ[ℂ] 𝔘.Skyscraper D P :=
   (coeffGermLin hP).comp (𝔘.restrictToCoverSet (D + Finsupp.single P 1) i)
@@ -197,16 +200,17 @@ end FiniteCover
 
 /-! ### Witness global-membership on a chart-disk (discharges `hwit`)
 
-`coeffGermLin_surjective`/`localRealizationGermEquiv` need the witness section
-`(chart − chart P)^k` (with `k = −(D P) − 1`) to lie globally in `OmegaD (D+P) W`.  This is the genuine
-*chart-disk* hypothesis: `W` sits inside the source of `↥W`'s chart at `P` (so the witness is
-chart-analytic everywhere on `W`), and `D` is supported on `W` only at `P`.  Then away from `P` the
-witness is analytic and nonvanishing (order `0 = −D = −(D+P)`), and at `P` it has order exactly
-`k = −(D+P)(P)` (`ordU_witnessFn`). -/
+`coeffGermLin_surjective`/`localRealizationGermEquiv` need the witness section `(chart − chart P)^k`
+(with `k = −(D P) − 1`) to lie globally in `OmegaD (D+P) W`. This is the genuine *chart-disk*
+hypothesis: `W` sits inside the source of `↥W`'s chart at `P` (so the witness is chart-analytic
+everywhere on `W`), and `D` is supported on `W` only at `P`. Then away from `P` the witness is
+analytic and nonvanishing (order `0 = −D = −(D+P)`), and at `P` it has order exactly `k = −(D+P)(P)`
+(`ordU_witnessFn`). -/
 
 /-! Compactness-free chart-transition analyticity (the open submanifold `↥W` is neither compact nor
-connected, so the `CechH0` versions — stated over the ambient `X` with those instances — do not apply;
-we re-prove them for a generic `ℂ`-charted `ω`-manifold `Y`, using only `contMDiffOn_chart`). -/
+connected, so the `CechH0` versions — stated over the ambient `X` with those instances — do not
+apply; we re-prove them for a generic `ℂ`-charted `ω`-manifold `Y`, using only `contMDiffOn_chart`).
+-/
 
 /-- The chart transition `chartAt y ∘ (chartAt z).symm` is analytic at `chartAt z z` (for `z` in the
 source of `chartAt y`), on a generic `ℂ`-charted `ω`-manifold `Y`. Compactness-free copy of
@@ -231,8 +235,8 @@ theorem transition_analyticAt' {Y : Type*} [TopologicalSpace Y] [ChartedSpace �
     (ContMDiffAt.comp (I' := 𝓘(ℂ)) ((chartAt (H := ℂ) z) z) h2 h1)).analyticAt
 
 /-- **Chart-invariance of analyticity** on a generic `ℂ`-charted `ω`-manifold `Y` (compactness-free
-copy of `CechH0.analyticAt_chart_change`): if `h` read in the chart at `y` is analytic at the image of
-`z` (with `z` in that chart's source), then `h` read in its own chart at `z` is analytic. -/
+copy of `CechH0.analyticAt_chart_change`): if `h` read in the chart at `y` is analytic at the image
+of `z` (with `z` in that chart's source), then `h` read in its own chart at `z` is analytic. -/
 theorem analyticAt_chart_change' {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
     [IsManifold 𝓘(ℂ) ω Y] {h : Y → ℂ} {y z : Y} (hz : z ∈ (chartAt (H := ℂ) y).source)
     (ha : AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) z)) :
@@ -264,23 +268,26 @@ section Witness
 
 variable {W : Opens X} {D : Divisor X} {P : X} (hP : P ∈ W)
 
-/-- Away from `P`, the witness `(chart − chart P)^k` is analytic in `↥W`'s chart at `Q` (chart-change
-of the analytic `(chart_P − c)^k` via the analytic transition map; needs `Q` in the `P`-chart source
-and `Q ≠ P`). -/
-theorem witnessFn_analyticAt_of_ne (k : ℤ) {Q : W} (hQne : Q ≠ ⟨P, hP⟩)
+/-- Away from `P`, the witness `(chart − chart P)^k` is analytic in `↥W`'s chart at `Q`
+(chart-change of the analytic `(chart_P − c)^k` via the analytic transition map; needs `Q` in the
+`P`-chart source and `Q ≠ P`). -/
+theorem witnessFn_analyticAt_of_ne {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {W : Opens X} {P : X} (hP : P ∈ W) (k : ℤ) {Q : W} (hQne : Q ≠ ⟨P, hP⟩)
     (hQsrc : Q ∈ (chartAt (H := ℂ) (⟨P, hP⟩ : W)).source) :
     AnalyticAt ℂ (witnessFn (⟨P, hP⟩ : W) k ∘ (chartAt (H := ℂ) Q).symm)
       ((chartAt (H := ℂ) Q) Q) := by
   set Pw : W := ⟨P, hP⟩ with hPw
   set c := (chartAt (H := ℂ) Pw) Pw with hc
-  -- Read in `P`'s chart, the witness is `w ↦ (w − c)^k`; analytic at `chart_P Q` since `chart_P Q ≠ c`.
+  -- Read in `P`'s chart, the witness is `w ↦ (w − c)^k`; analytic at `chart_P Q` since
+  -- `chart_P Q ≠ c`.
   have hval_ne : (chartAt (H := ℂ) Pw) Q ≠ c := by
     rw [hc]
     exact fun heq => hQne ((chartAt (H := ℂ) Pw).injOn hQsrc (mem_chart_source ℂ Pw) heq)
   have hsub : AnalyticAt ℂ (fun w : ℂ => w - c) ((chartAt (H := ℂ) Pw) Q) := by fun_prop
   have hzpow : AnalyticAt ℂ (fun w : ℂ => (w - c) ^ k) ((chartAt (H := ℂ) Pw) Q) :=
     (hsub.zpow (by simpa [sub_eq_zero] using hval_ne))
-  -- The witness in `P`'s OWN chart is `(chart_P ∘ chart_P.symm) - c)^k = (id − c)^k` near `chart_P Q`.
+  -- The witness in `P`'s OWN chart is `(chart_P ∘ chart_P.symm) - c)^k = (id − c)^k` near
+  -- `chart_P Q`.
   have hwit_Pchart : AnalyticAt ℂ (witnessFn Pw k ∘ (chartAt (H := ℂ) Pw).symm)
       ((chartAt (H := ℂ) Pw) Q) := by
     have heqf : (witnessFn Pw k ∘ (chartAt (H := ℂ) Pw).symm)
@@ -294,7 +301,8 @@ theorem witnessFn_analyticAt_of_ne (k : ℤ) {Q : W} (hQne : Q ≠ ⟨P, hP⟩)
   exact analyticAt_chart_change' (h := witnessFn Pw k) (y := Pw) (z := Q) hQsrc hwit_Pchart
 
 /-- Away from `P`, the witness has order `0` (analytic and nonvanishing at `Q`). -/
-theorem ordU_witnessFn_eq_zero_of_ne (k : ℤ) {Q : W} (hQne : Q ≠ ⟨P, hP⟩)
+theorem ordU_witnessFn_eq_zero_of_ne {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {W : Opens X} {P : X} (hP : P ∈ W) (k : ℤ) {Q : W} (hQne : Q ≠ ⟨P, hP⟩)
     (hQsrc : Q ∈ (chartAt (H := ℂ) (⟨P, hP⟩ : W)).source) :
     ordU (witnessFn (⟨P, hP⟩ : W) k) Q = 0 := by
   set Pw : W := ⟨P, hP⟩ with hPw
@@ -312,10 +320,11 @@ theorem ordU_witnessFn_eq_zero_of_ne (k : ℤ) {Q : W} (hQne : Q ≠ ⟨P, hP⟩
 
 /-- **Witness global membership on a chart-disk** (discharges `hwit`).  On a `W` contained in the
 source of `↥W`'s chart at `P` (`hWsrc`) where `D` is supported only at `P` (`hDsupp`), the witness
-section `(chart − chart P)^k` (with `k = −(D P) − 1`) lies in `OmegaD (D + single P 1) W`: at `P` its
-order is exactly `k = −(D+P)(P)` (`ordU_witnessFn`), and away from `P` it is analytic and nonvanishing
-(order `0 = −(D Q) = −(D+P)(Q)`, `ordU_witnessFn_eq_zero_of_ne`).  This is exactly the geometric input
-the local-realization surjectivity (`coeffGermLin_surjective`/`localRealizationGermEquiv`) needs. -/
+section `(chart − chart P)^k` (with `k = −(D P) − 1`) lies in `OmegaD (D + single P 1) W`: at `P`
+its order is exactly `k = −(D+P)(P)` (`ordU_witnessFn`), and away from `P` it is analytic and
+nonvanishing (order `0 = −(D Q) = −(D+P)(Q)`, `ordU_witnessFn_eq_zero_of_ne`). This is exactly the
+geometric input the local-realization surjectivity
+(`coeffGermLin_surjective`/`localRealizationGermEquiv`) needs. -/
 theorem witnessFn_mem_OmegaD_add_single
     (hWsrc : ∀ Q : W, Q ∈ (chartAt (H := ℂ) (⟨P, hP⟩ : W)).source)
     (hDsupp : ∀ Q : W, Q ≠ ⟨P, hP⟩ → D Q.1 = 0) :

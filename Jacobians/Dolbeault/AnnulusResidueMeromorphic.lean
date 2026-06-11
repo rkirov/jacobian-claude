@@ -1,6 +1,5 @@
 /-
-  The single-pole residue atom for a MEROMORPHIC integrand (Forster (10.21), assembled;
-  Route-H Stage A).
+  The single-pole residue lemma for a meromorphic integrand (Forster (10.21), assembled).
 
   `AnnulusResidueIntegral.lean` computes the Forster (10.21) area integral for one negative
   power, `∫_ℂ ∂̄(χ·(·−c)^{−k}) = −π·δ_{k,1}` (`integral_dbar_radialCutoff_zpow`).  This file
@@ -12,20 +11,20 @@
   radius dominates the cutoff (`s₁ < r²`), with `χ = η(normSq(·−c))` a radial `C¹` profile going
   `1 → 0` between `s₀` and `s₁` (`0 < s₀ < s₁`).
 
-  Proof layout (all complete, no sorries):
+  Proof layout:
   * principal-part split `m = P + G` (`exists_principalPart_meromorphicAt`): `P = negTail c b N`
     carries the pole, and the junk-repaired complement `G := update (m − P) c (R c)` is analytic
     on the WHOLE ball `ball c r` — the split is a *pointwise identity off `c`* (not just a germ),
     because `G` is literally defined as `m − P` away from `c`;
-  * the `G`-term dies: `χ·G` is `C¹` with compact support, so `∫ ∂̄(χ·G) = 0` by the proven
-    planar Stokes atom (`integral_dbar_eq_zero`, Forster (10.20));
+  * the `G`-term dies: `χ·G` is `C¹` with compact support, so `∫ ∂̄(χ·G) = 0` by the planar
+    Stokes lemma (`integral_dbar_eq_zero`, Forster (10.20));
   * the `P`-term is the finite sum of single-power computations,
     `∫ ∂̄(χ·P) = ∑_k b_k·(−π·δ_{k,1}) = −π·b₁`, with the sum/integral swap justified by the
     explicit continuous compactly-supported closed form `η′(normSq(z−c))·(z−c)^{1−k}`;
-  * `resAt m c = resAt P c + resAt G c = b₁ + 0` by the proven `resAt` calculus.
+  * `resAt m c = resAt P c + resAt G c = b₁ + 0` by the `resAt` calculus.
 
   Also provided for the global assembly (`ResidueTheoremStokes.lean`):
-  * `integral_radialDeriv_mul_eq_resAt` — the CLOSED-FORM version
+  * `integral_radialDeriv_mul_eq_resAt` — the closed-form version
     `∫_ℂ η′(normSq(z−c))·(z−c)·m(z) = −π·Res_c m` (the integrand the global ledger transports);
   * `continuous_radialDerivForm` / `hasCompactSupport_radialDerivForm` — the reusable
     continuity/support kit for `η′(normSq(·−c))·F`-shaped integrands.
@@ -37,7 +36,6 @@ import Jacobians.Dolbeault.AnnulusResidueIntegral
 
 -- The ℂ-as-ℝ-module diamond fix used across the Dolbeault tree (see `AnnulusResidueIntegral`).
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open Complex Metric MeasureTheory Filter Set Topology
 open scoped Real
@@ -225,7 +223,7 @@ at `c`, honestly analytic on a punctured ball of radius `r` dominating the cutof
 
   `∫_ℂ ∂̄(χ·m) = −π · Res_c m`.
 
-Principal-part split + planar Stokes for the complement + the proven single-power computation. -/
+Principal-part split + planar Stokes for the complement + the single-power computation. -/
 theorem integral_dbar_radialCutoff_meromorphic (hη : ContDiff ℝ 1 η)
     (hs₀ : 0 < s₀) (hs : s₀ < s₁)
     (h1 : ∀ s ≤ s₀, η s = 1) (h0 : ∀ s, s₁ ≤ s → η s = 0)

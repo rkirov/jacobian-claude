@@ -10,12 +10,10 @@
   `DbarDisk.dbar_solvable_of_compactSupport` solves `∂̄u = χ·g` globally, and `χ·g = g` on the ball.
   No Mittag-Leffler exhaustion is needed — boundedness of the ball does the work.
 
-  `dbar_solvable_ball` is therefore proven **complete** and **axiom-clean**.
-
-  `dbar_holo_splitting_ball` is the genuine Čech↔Dolbeault dictionary on a ball, ALSO proven
-  **complete**: a *holomorphic* difference `f = h₂ - h₁` of smooth functions whose `∂̄`s agree can
-  be re-split as a *holomorphic* difference of *holomorphic* functions, by solving `∂̄u = ∂̄h₁` on the
-  ball (the proven `dbar_solvable_ball`) and subtracting `u`.  This is the local engine behind
+  `dbar_holo_splitting_ball` is the Čech↔Dolbeault dictionary on a ball: a *holomorphic*
+  difference `f = h₂ - h₁` of smooth functions whose `∂̄`s agree can be re-split as a
+  *holomorphic* difference of *holomorphic* functions, by solving `∂̄u = ∂̄h₁` on the
+  ball (`dbar_solvable_ball`) and subtracting `u`.  This is the local engine behind
   `H¹(disk, 𝒪) = 0`.  The `∂̄ = 0 ⇒ holomorphic` direction is supplied by the Wirtinger
   characterisation `differentiableAt_complex_iff_differentiableAt_real`.
 -/
@@ -38,7 +36,8 @@ Strictly stronger than the local rung `DbarLocal.dbar_solvable_locally` (it solv
 ball, not just a neighborhood of the center).  The crucial point making this elementary — no
 exhaustion — is that a bounded ball has *compact* closure, so a single compactly-supported cutoff
 suffices. -/
-theorem dbar_solvable_ball {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (c : ℂ) {r : ℝ} (hr : 0 < r) :
+theorem dbar_solvable_ball {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (c : ℂ) {r : ℝ}
+    (hr : 0 < r) :
     ∃ u : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) u ∧ ∀ z ∈ Metric.ball c r, DbarDisk.dbar u z = g z := by
   -- A bump `= 1` on `closedBall c r` (so on `ball c r`) with compact support.
   set χ : ContDiffBump c :=
@@ -58,9 +57,9 @@ theorem dbar_solvable_ball {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g
   rw [χ.one_of_mem_closedBall (Metric.ball_subset_closedBall hz)]
   simp
 
-/-- **`∂̄ = 0 ⇒ holomorphic` (Wirtinger).** A function smooth on `ℂ` whose Wirtinger `∂̄` vanishes at
-`x` is complex-differentiable at `x`.  `dbar g x = ½((fderiv 1) + I·(fderiv I)) = 0` rearranges to
-`fderiv I = I·(fderiv 1)`, the Cauchy–Riemann condition of
+/-- **`∂̄ = 0 ⇒ holomorphic` (Wirtinger).** A function smooth on `ℂ` whose Wirtinger `∂̄` vanishes
+at `x` is complex-differentiable at `x`.  `dbar g x = ½((fderiv 1) + I·(fderiv I)) = 0`
+rearranges to `fderiv I = I·(fderiv 1)`, the Cauchy–Riemann condition of
 `differentiableAt_complex_iff_differentiableAt_real`. -/
 theorem differentiableAt_of_dbar_eq_zero {g : ℂ → ℂ} (hg : ContDiff ℝ (⊤ : ℕ∞) g) {x : ℂ}
     (hdb : DbarDisk.dbar g x = 0) : DifferentiableAt ℂ g x := by
@@ -77,25 +76,26 @@ theorem differentiableAt_of_dbar_eq_zero {g : ℂ → ℂ} (hg : ContDiff ℝ (�
 /-- **Holomorphic re-splitting on a ball (the Čech↔Dolbeault dictionary).**
 Suppose `f = h₂ - h₁` on a ball `ball c r`, with `h₁, h₂` smooth and `f` *holomorphic* on the ball
 (equivalently `∂̄h₁ = ∂̄h₂` there).  Then `f` is also a difference `g₂ - g₁` of functions that are
-each *holomorphic* on the ball: solve `∂̄u = ∂̄h₁` on the ball (`dbar_solvable_ball`, since `∂̄h₁` is
-smooth), and set `gᵢ = hᵢ - u`; then `gᵢ` is holomorphic (`∂̄gᵢ = ∂̄hᵢ - ∂̄u = 0`,
+each *holomorphic* on the ball: solve `∂̄u = ∂̄h₁` on the ball (`dbar_solvable_ball`, since
+`∂̄h₁` is smooth), and set `gᵢ = hᵢ - u`; then `gᵢ` is holomorphic (`∂̄gᵢ = ∂̄hᵢ - ∂̄u = 0`,
 `differentiableAt_of_dbar_eq_zero`) and `g₂ - g₁ = h₂ - h₁ = f`.
 
-This is the local engine of `H¹(disk, 𝒪) = 0`: a smooth Čech splitting of a holomorphic cocycle can
-be corrected to a *holomorphic* splitting.  Proven complete. -/
+This is the local engine of `H¹(disk, 𝒪) = 0`: a smooth Čech splitting of a holomorphic cocycle
+can be corrected to a *holomorphic* splitting. -/
 theorem dbar_holo_splitting_ball (c : ℂ) {r : ℝ} (hr : 0 < r)
     {h₁ h₂ : ℂ → ℂ} (hh₁ : ContDiff ℝ (⊤ : ℕ∞) h₁) (hh₂ : ContDiff ℝ (⊤ : ℕ∞) h₂)
     (hdbar : ∀ z ∈ Metric.ball c r, DbarDisk.dbar h₁ z = DbarDisk.dbar h₂ z) :
     ∃ g₁ g₂ : ℂ → ℂ,
       DifferentiableOn ℂ g₁ (Metric.ball c r) ∧ DifferentiableOn ℂ g₂ (Metric.ball c r) ∧
         ∀ z ∈ Metric.ball c r, h₂ z - h₁ z = g₂ z - g₁ z := by
-  -- `∂̄h₁` is smooth (built from `fderiv h₁`, itself `C^∞`), so `∂̄u = ∂̄h₁` is solvable on the ball.
+  -- `∂̄h₁` is smooth (built from `fderiv h₁`, itself `C^∞`), so `∂̄u = ∂̄h₁` is solvable on
+  -- the ball.
   have hdb1_smooth : ContDiff ℝ (⊤ : ℕ∞) (DbarDisk.dbar h₁) := by
     unfold DbarDisk.dbar
     have : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ h₁) := hh₁.fderiv_right (le_refl _)
     fun_prop
   obtain ⟨u, hu_smooth, hu_dbar⟩ := dbar_solvable_ball hdb1_smooth c hr
-  -- Subtractivity of `∂̄` at a differentiable point (in the lambda form the goal presents `h - u`).
+  -- Subtractivity of `∂̄` at a differentiable point (in the form the goal presents `h - u`).
   have hsub : ∀ (h : ℂ → ℂ) (w : ℂ), DifferentiableAt ℝ h w →
       DbarDisk.dbar (fun x => h x - u x) w = DbarDisk.dbar h w - DbarDisk.dbar u w := by
     intro h w hh

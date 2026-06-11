@@ -10,46 +10,50 @@ import Jacobians.Dolbeault.SerreResidueRamifiedClusterTopology
 # Building the SOUND `FullFibreCenterReindex` from the per-slit conservation-of-number geometry
 
 `SerreResidueRamifiedFullFibreReindex.lean` fixed the full-fibre-vs-pole inconsistency of
-`FibreClusterReindex` by introducing the SOUND `FullFibreCenterReindex` (whole-fibre `D`, non-poles →
-residue `0`, **no `hD_mem`**), and proved Gate-A `∑Res = 0` from a per-centre family of these.  This file
-discharges the per-centre `FullFibreCenterReindex` from the SAME per-slit conservation-of-number geometry
-the unsound `FibreClusterReindex` chain consumed (the `ClusterReindexData` / `FibreClusterTopology`
-families of `SerreResidueRamifiedClusterPartition.lean` / `SerreResidueRamifiedClusterTopology.lean`) —
-but with the inconsistent all-poles assumption removed.
+`FibreClusterReindex` by introducing the SOUND `FullFibreCenterReindex` (whole-fibre `D`, non-poles
+→ residue `0`, **no `hD_mem`**), and proved residue-theorem `∑Res = 0` from a per-centre family of
+these. This file discharges the per-centre `FullFibreCenterReindex` from the SAME per-slit
+conservation-of-number geometry the unsound `FibreClusterReindex` chain consumed (the
+`ClusterReindexData` / `FibreClusterTopology` families of
+`SerreResidueRamifiedClusterPartition.lean` / `SerreResidueRamifiedClusterTopology.lean`) — but with
+the inconsistent all-poles assumption removed.
 
-## What is delivered (axiom-clean `[propext, Classical.choice, Quot.sound]`)
+## What is delivered
 
 * `FullFibreCenterReindex.ofClusterReindexFamily` — the SOUND analogue of
-  `FibreClusterReindex.ofClusterReindexFamily`: builds the per-centre `FullFibreCenterReindex` from the
-  whole pole-value fibre `D`, the per-preimage cluster data, the meromorphy bound, the
+  `FibreClusterReindex.ofClusterReindexFamily`: builds the per-centre `FullFibreCenterReindex` from
+  the whole pole-value fibre `D`, the per-preimage cluster data, the meromorphy bound, the
   **non-pole-residue-`0`** datum + the pole surjectivity (replacing `hD_mem`), and a slit-wide
   `ClusterReindexData` family (`hgeom_fibre` discharged pointwise).
-* `FullFibreCenterReindex.ofFibreClusterTopologyFamily` — the same from a slit-wide `FibreClusterTopology`
-  family (the conservation-of-number datum, `hcard = deg f`).
-* `residueSum_eq_zero_of_fullFibreTopology` — Gate-A `∑Res = 0` from an `AdaptedFRamified` + a per-centre
-  `FullFibreCenterReindex`, anchoring the SOUND reduction to the Gate-A goal.
+* `FullFibreCenterReindex.ofFibreClusterTopologyFamily` — the same from a slit-wide
+  `FibreClusterTopology` family (the conservation-of-number datum, `hcard = deg f`).
+* `residueSum_eq_zero_of_fullFibreTopology` — residue-theorem `∑Res = 0` from an `AdaptedFRamified`
+  + a per-centre `FullFibreCenterReindex`, anchoring the SOUND reduction to the residue-theorem
+  goal.
 
 So the residue theorem `∑_{a ∈ poles} formFnResidue ω₀ g a = 0` is reduced, for the real cover, to
 **exactly** the per-slit `FibreClusterTopology` (Forster §4 conservation-of-number + §5 normal-form
-geometry — the genuine remaining wall, *unchanged* in content from the unsound chain) plus the discharged
-`AdaptedFRamified`/`GateAInftyData` bundle, with the full-fibre-vs-pole inconsistency **resolved**: `D` is
-the whole fibre and the non-pole preimages drop out at the residue level (`residueSum_full_eq_poleOnly`).
+geometry — the genuine remaining obligation, *unchanged* in content from the unsound chain) plus the
+discharged `AdaptedFRamified`/`GateAInftyData` bundle, with the full-fibre-vs-pole inconsistency
+**resolved**: `D` is the whole fibre and the non-pole preimages drop out at the residue level
+(`residueSum_full_eq_poleOnly`).
 
 ## ⚠ Soundness
 
-`D` = the WHOLE fibre.  **No `hD_mem` (no all-poles assumption).**  The per-slit geometry
-(`ClusterReindexData` / `FibreClusterTopology`) is the *same* genuine §4/§5 content as the unsound chain,
-now consistent with the whole fibre (`hcard = deg f`).  The residue reconciliation is the PROVEN
-`residueSum_full_eq_poleOnly` (non-poles → `0`).  No custom axiom; no unproved obligation on a false statement; no
-false/junk/circular field.
+`D` = the WHOLE fibre. **No `hD_mem` (no all-poles assumption).** The per-slit geometry
+(`ClusterReindexData` / `FibreClusterTopology`) is the *same* genuine §4/§5 content as the unsound
+chain, now consistent with the whole fibre (`hcard = deg f`). The residue reconciliation is the
+proven `residueSum_full_eq_poleOnly` (non-poles → `0`). No custom axiom; no unproved obligation on a
+false statement; no false/junk/circular field.
 
 ## References
 
-* `SerreResidueRamifiedFullFibreReindex.lean` (`FullFibreCenterReindex`, the residue-split reconciliation),
-  `SerreResidueRamifiedClusterTopology.lean` (`FibreClusterTopology`, `ClusterReindexData.ofFibreClusterTopology`),
-  `SerreResidueRamifiedClusterPartition.lean` (`ClusterReindexData`,
-  `valueChartTrace_eq_clusterSum_of_clusterReindexData`),
-  `SerreResidueRamifiedRealCover.lean` (`meromorphicAt_of_analyticOn_punctured_of_pow_mul_sub_tendsto`).
+* `SerreResidueRamifiedFullFibreReindex.lean` (`FullFibreCenterReindex`, the residue-split
+  reconciliation), `SerreResidueRamifiedClusterTopology.lean` (`FibreClusterTopology`,
+  `ClusterReindexData.ofFibreClusterTopology`), `SerreResidueRamifiedClusterPartition.lean`
+  (`ClusterReindexData`, `valueChartTrace_eq_clusterSum_of_clusterReindexData`),
+  `SerreResidueRamifiedRealCover.lean`
+  (`meromorphicAt_of_analyticOn_punctured_of_pow_mul_sub_tendsto`).
 * Forster, *Lectures on Riemann Surfaces* (GTM 81), §4 (conservation of number), §5 (`z = wᵐ`).
 -/
 
@@ -60,7 +64,6 @@ open scoped Manifold ContDiff Real
 
 attribute [local instance] Classical.propDecidable
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault.SerreResidueTheorem
 
@@ -71,17 +74,19 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- **`FullFibreCenterReindex` from a slit-wide family of `ClusterReindexData`** (the SOUND builder).
-Given the **whole** pole-value fibre `D` over `c` (injective; enumerating all `deg f` preimages — the
-`hcard` consistency), per-preimage cluster data `Cl` on the slit `Sset`, the eventual off-centre
-analyticity + finite pole-order bound (for the meromorphy `hvct_mero`), the slit accumulation, the
-non-pole-residue-`0` datum `hnonpole`, the pole surjectivity `hD_surj`, **and** a `ClusterReindexData` at
-every slit value `z`, the SOUND per-centre residual `FullFibreCenterReindex` holds.
+/-- **`FullFibreCenterReindex` from a slit-wide family of `ClusterReindexData`** (the SOUND
+builder). Given the **whole** pole-value fibre `D` over `c` (injective; enumerating all `deg f`
+preimages — the `hcard` consistency), per-preimage cluster data `Cl` on the slit `Sset`, the
+eventual off-centre analyticity + finite pole-order bound (for the meromorphy `hvct_mero`), the slit
+accumulation, the non-pole-residue-`0` datum `hnonpole`, the pole surjectivity `hD_surj`, **and** a
+`ClusterReindexData` at every slit value `z`, the SOUND per-centre residual `FullFibreCenterReindex`
+holds.
 
-`hgeom_fibre` is discharged pointwise on the slit by `valueChartTrace_eq_clusterSum_of_clusterReindexData`;
-`hvct_mero` by the removable-singularity atom `meromorphicAt_of_analyticOn_punctured_of_pow_mul_sub_tendsto`.
-**No `hD_mem`** (no all-poles assumption) — the corrected design that fixes the full-fibre-vs-pole
-inconsistency of `FibreClusterReindex.ofClusterReindexFamily`. -/
+`hgeom_fibre` is discharged pointwise on the slit by
+`valueChartTrace_eq_clusterSum_of_clusterReindexData`; `hvct_mero` by the removable-singularity atom
+`meromorphicAt_of_analyticOn_punctured_of_pow_mul_sub_tendsto`. **No `hD_mem`** (no all-poles
+assumption) — the corrected design that fixes the full-fibre-vs-pole inconsistency of
+`FibreClusterReindex.ofClusterReindexFamily`. -/
 noncomputable def FullFibreCenterReindex.ofClusterReindexFamily {ω₀ : HolomorphicOneForms X}
     {g : X → ℂ} {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0} {poles : Finset X}
     {c : ℂ} {Sset : Set ℂ}
@@ -116,12 +121,13 @@ noncomputable def FullFibreCenterReindex.ofClusterReindexFamily {ω₀ : Holomor
   hD_surj := hD_surj
 
 /-- **`FullFibreCenterReindex` from a slit-wide family of `FibreClusterTopology`** (the SOUND full
-reduction).  The corrected analogue of `FibreClusterReindex.ofFibreClusterTopologyFamily`: the per-centre
-SOUND residual follows from the routine bookkeeping + the non-pole-residue-`0` datum + the pole
-surjectivity + a `FibreClusterTopology` (the conservation-of-number datum, `hcard = deg f`) at every slit
-value.  **No `hD_mem`** — `D` is the whole fibre and non-poles drop out at the residue level.  The genuine
-remaining content is exactly the per-slit `FibreClusterTopology` (and via `ofClusterFibrePoints`, the
-three minimal facts: the cluster sheets are distinct fibre points numbering `deg f`). -/
+reduction). The corrected analogue of `FibreClusterReindex.ofFibreClusterTopologyFamily`: the
+per-centre SOUND residual follows from the routine bookkeeping + the non-pole-residue-`0` datum +
+the pole surjectivity + a `FibreClusterTopology` (the conservation-of-number datum, `hcard = deg f`)
+at every slit value. **No `hD_mem`** — `D` is the whole fibre and non-poles drop out at the residue
+level. The genuine remaining content is exactly the per-slit `FibreClusterTopology` (and via
+`ofClusterFibrePoints`, the three minimal facts: the cluster sheets are distinct fibre points
+numbering `deg f`). -/
 noncomputable def FullFibreCenterReindex.ofFibreClusterTopologyFamily {ω₀ : HolomorphicOneForms X}
     {g : X → ℂ} {f : MeromorphicFunction X} {hdiv : (f.div : Divisor X) ≠ 0} {poles : Finset X}
     {c : ℂ} {Sset : Set ℂ}
@@ -143,22 +149,23 @@ noncomputable def FullFibreCenterReindex.ofFibreClusterTopologyFamily {ω₀ : H
   FullFibreCenterReindex.ofClusterReindexFamily hanalytic D hD_inj hnonpole hD_surj hS_acc Cl hmult
     hsplit0 ppord hbnd (fun z hz => ClusterReindexData.ofFibreClusterTopology (hfam z hz))
 
-/-- **`hnonpole` is automatic from an `AdaptedFRamified` datum.**  A non-pole preimage `x ∉ poles` of a
-genuine meromorphic numerator has `g` analytic there (`A.hg_an_offpoles`), so `α = ω₀·g` is holomorphic
-and its form residue vanishes (`formFnResidue_eq_zero_of_analyticAt`).  This discharges the
-non-pole-residue-`0` field of `FullFibreCenterReindex` for free — it is **not** a hidden wall. -/
+/-- **`hnonpole` is automatic from an `AdaptedFRamified` datum.** A non-pole preimage `x ∉ poles` of
+a genuine meromorphic numerator has `g` analytic there (`A.hg_an_offpoles`), so `α = ω₀·g` is
+holomorphic and its form residue vanishes (`formFnResidue_eq_zero_of_analyticAt`). This discharges
+the non-pole-residue-`0` field of `FullFibreCenterReindex` for free — it carries no hidden content.
+-/
 theorem hnonpole_of_adaptedFRamified {ω₀ : HolomorphicOneForms X} {g : MeromorphicFunction X}
     {poles : Finset X} (A : AdaptedFRamified ω₀ g poles) {x : X} (hx : x ∉ poles) :
     formFnResidue ω₀ g.toFun x = 0 :=
   formFnResidue_eq_zero_of_analyticAt ω₀ g.toFun x (A.hg_an_offpoles x hx)
 
-/-- **The SOUND per-centre residual from an `AdaptedFRamified` + a `FibreClusterTopology` family**, with
-`hnonpole` AUTOMATIC.  The maximally-clean builder: from an `AdaptedFRamified` datum `A` (so `hnonpole`
-comes free via `hnonpole_of_adaptedFRamified`), the whole pole-value fibre `D`, the per-preimage cluster
-data, the meromorphy bound, the slit accumulation, the pole surjectivity, and a slit-wide
-`FibreClusterTopology` family, build the SOUND `FullFibreCenterReindex`.  **No `hD_mem`, no separate
-`hnonpole` obligation** — the genuinely-remaining content is exactly the per-slit `FibreClusterTopology`
-(the conservation-of-number geometry). -/
+/-- **The SOUND per-centre residual from an `AdaptedFRamified` + a `FibreClusterTopology` family**,
+with `hnonpole` AUTOMATIC. The maximally-clean builder: from an `AdaptedFRamified` datum `A` (so
+`hnonpole` comes free via `hnonpole_of_adaptedFRamified`), the whole pole-value fibre `D`, the
+per-preimage cluster data, the meromorphy bound, the slit accumulation, the pole surjectivity, and a
+slit-wide `FibreClusterTopology` family, build the SOUND `FullFibreCenterReindex`. **No `hD_mem`, no
+separate `hnonpole` obligation** — the genuinely-remaining content is exactly the per-slit
+`FibreClusterTopology` (the conservation-of-number geometry). -/
 noncomputable def FullFibreCenterReindex.ofFibreClusterTopologyFamily_adaptedFRamified
     {ω₀ : HolomorphicOneForms X} {g : MeromorphicFunction X} {poles : Finset X}
     (A : AdaptedFRamified ω₀ g poles) {c : ℂ} {Sset : Set ℂ}
@@ -179,19 +186,20 @@ noncomputable def FullFibreCenterReindex.ofFibreClusterTopologyFamily_adaptedFRa
   FullFibreCenterReindex.ofFibreClusterTopologyFamily hanalytic D hD_inj
     (fun _ hi => hnonpole_of_adaptedFRamified A hi) hD_surj hS_acc Cl hmult hsplit0 ppord hbnd hfam
 
-/-- **Gate A `∑Res = 0` from per-centre `FullFibreCenterReindex` families** (the SOUND residual
-exhibited).  For a genuine meromorphic numerator `g`, an `AdaptedFRamified` datum `A`, and at each finite
-pole-value centre a per-centre `FullFibreCenterReindex` (e.g. built via
-`FullFibreCenterReindex.ofFibreClusterTopologyFamily` from a slit-wide family of `FibreClusterTopology`),
-the total residue of `α = ω₀·g` vanishes:
+/-- **The residue theorem `∑Res = 0` from per-centre `FullFibreCenterReindex` families** (the
+SOUND residual exhibited). For a genuine meromorphic numerator `g`, an `AdaptedFRamified` datum `A`,
+and at each finite pole-value centre a per-centre `FullFibreCenterReindex` (e.g. built via
+`FullFibreCenterReindex.ofFibreClusterTopologyFamily` from a slit-wide family of
+`FibreClusterTopology`), the total residue of `α = ω₀·g` vanishes:
 
 > `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`.
 
-This anchors the conservation-of-number datum to the Gate-A goal: the *only* genuinely-remaining content
-is the per-centre `FibreClusterTopology` — and, via `ofClusterFibrePoints`, exactly the three minimal
-clustering facts (cluster sheets are distinct fibre points numbering `deg f`).  The full-fibre-vs-pole
-inconsistency that made the old `FibreClusterReindex` route vacuous is resolved here: `D` is the WHOLE
-fibre, non-poles → residue `0`. -/
+This anchors the conservation-of-number datum to the residue-theorem goal: the *only*
+genuinely-remaining content is the per-centre `FibreClusterTopology` — and, via
+`ofClusterFibrePoints`, exactly the three minimal clustering facts (cluster sheets are distinct
+fibre points numbering `deg f`). The full-fibre-vs-pole inconsistency that made the old
+`FibreClusterReindex` route vacuous is resolved here: `D` is the WHOLE fibre, non-poles → residue
+`0`. -/
 theorem residueSum_eq_zero_of_fullFibreTopology {ω₀ : HolomorphicOneForms X}
     {g : MeromorphicFunction X} {poles : Finset X} (A : AdaptedFRamified ω₀ g poles)
     (R : ∀ i, FullFibreCenterReindex ω₀ g.toFun A.f A.hdiv poles (A.cs i)) :

@@ -5,9 +5,10 @@
   partition-of-unity backbone, the `∂̄ρ_k` gluing data, the ℂ-scaling toolkit, and the glued-form
   operator `cechToDolbeaultForm` (Bott–Tu double-sum). It deliberately imports only the *light*
   dependencies (`DolbeaultComparison`, `CechH0`, `ChartDiskCover`, partitions of unity) and NOT the
-  heavy forward file `DolbeaultComparisonProof` — the construction uses no forward symbol, so keeping
-  this file off that import makes it fast to elaborate. The final assembly into the `ℝ`-linear
-  equivalence (which needs the forward map `dolbeault_to_cech`) lives in `DolbeaultComparisonEquiv`.
+  heavy forward file `DolbeaultComparisonProof` — the construction uses no forward symbol, so
+  keeping this file off that import makes it fast to elaborate. The final assembly into the
+  `ℝ`-linear equivalence (which needs the forward map `dolbeault_to_cech`) lives in
+  `DolbeaultComparisonEquiv`.
 -/
 import Jacobians.Dolbeault.DolbeaultComparison
 import Jacobians.Dolbeault.CechH0
@@ -24,12 +25,11 @@ open Filter
 -- Same permissive transparency as `RealForms` (the section hom-bundle instances, and any
 -- `Finset.sum` / ℂ-scaling over `SmoothCOneForms`, need it).
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 variable (𝔘 : FiniteCover X)
 
@@ -43,10 +43,10 @@ available because a compact `T2` `ℂ`-manifold is a `σ`-compact finite-dimensi
 
 /-- **(Čech → Dolbeault backbone, complete.)** The partition-of-unity *telescoping identity* — the
 algebraic heart of the Čech → Dolbeault coboundary construction. For any additive Čech `1`-cocycle
-`f` (`f_jk − f_ik + f_ij = 0`, the `cechDelta1 = 0` relation) and any weights `ρ` summing to `1`, the
-globalized functions `h_i := ∑_k ρ_k • f_ki` satisfy `h_j − h_i = f_ij` — i.e. the cocycle becomes a
-coboundary of the smooth (partition-of-unity-glued) `0`-cochain. Pure module algebra (it is what
-"`∂̄h_i` glue to a global form" rests on); proven here abstractly over any `ℂ`-module. -/
+`f` (`f_jk − f_ik + f_ij = 0`, the `cechDelta1 = 0` relation) and any weights `ρ` summing to `1`,
+the globalized functions `h_i := ∑_k ρ_k • f_ki` satisfy `h_j − h_i = f_ij` — i.e. the cocycle
+becomes a coboundary of the smooth (partition-of-unity-glued) `0`-cochain. Pure module algebra (it
+is what "`∂̄h_i` glue to a global form" rests on); proven here abstractly over any `ℂ`-module. -/
 theorem cechCoboundary_telescoping {ι : Type*} [Fintype ι] {M : Type*} [AddCommGroup M] [Module ℂ M]
     (f : ι → ι → M) (hcoc : ∀ a b c, f b c - f a c + f a b = 0)
     (ρ : ι → ℂ) (hρ : ∑ k, ρ k = 1) (i j : ι) :
@@ -59,7 +59,8 @@ theorem cechCoboundary_telescoping {ι : Type*} [Fintype ι] {M : Type*} [AddCom
 /-- **(Čech → Dolbeault backbone, complete.)** A smooth partition of unity subordinate to the
 finite cover `𝔘`, over the real-manifold structure `𝓘(ℝ, ℂ)`. The input for the globalization
 `h_i := ∑_k ρ_k · f_ik`. -/
-theorem exists_smoothPartitionOfUnity_subordinate :
+theorem exists_smoothPartitionOfUnity_subordinate {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (𝔘 : FiniteCover X) :
     ∃ ρ : SmoothPartitionOfUnity 𝔘.ι 𝓘(ℝ, ℂ) X (Set.univ : Set X),
       ρ.IsSubordinate (fun i => (𝔘.U i : Set X)) := by
   have hcov : (Set.univ : Set X) ⊆ ⋃ i, (𝔘.U i : Set X) := by
@@ -101,8 +102,8 @@ theorem sum_rhoC (𝔇 : ChartDiskCover X) : ∑ k, rhoC 𝔇 k = 1 := by
   rw [← Complex.ofReal_sum, ← finsum_eq_sum_of_fintype,
     (cechPoU 𝔇).sum_eq_one (Set.mem_univ x), Complex.ofReal_one]
 
-/-- **The gluing relation** `∑_k ∂̄ρ_k = 0` (`∂̄` of `∑ρ_k = 1` is `∂̄1 = 0`). This is what makes the
-local `∂̄η_i` agree on overlaps. -/
+/-- **The gluing relation** `∑_k ∂̄ρ_k = 0` (`∂̄` of `∑ρ_k = 1` is `∂̄1 = 0`). This is what makes
+the local `∂̄η_i` agree on overlaps. -/
 theorem dbarL_one_eq_zero : dbarL (1 : SmoothCFunctions X) = 0 := by
   rw [dbarL_eq_proj01L_differential]
   have hd : differential (1 : SmoothCFunctions X) = 0 := by
@@ -117,9 +118,10 @@ forms are `dbarRho 𝔇 k = dbarL (rhoC 𝔇 k)`; `dbarL` is `ℝ`-linear, so th
 (`map_sum`) onto `∑_k ρ_k = 1` (`sum_rhoC`).
 
 Historical note: summing `SmoothCOneForms` (`Finset.sum`) was once thought to be blocked by the
-`Module ℝ` section-instance diamond (`reference_module_real_diamond`). It is not: with the file-level
-`set_option backward.isDefEq.respectTransparency false` already in force (for the hom-bundle section
-instances), `AddCommMonoid (SmoothCOneForms X)` synthesises and the form-sum elaborates normally. -/
+`Module ℝ` section-instance diamond (`reference_module_real_diamond`). It is not: with the
+file-level `set_option backward.isDefEq.respectTransparency false` already in force (for the
+hom-bundle section instances), `AddCommMonoid (SmoothCOneForms X)` synthesises and the form-sum
+elaborates normally. -/
 theorem sum_dbarRho_eq_zero (𝔇 : ChartDiskCover X) :
     ∑ k, dbarRho 𝔇 k = 0 := by
   have h : ∑ k, dbarRho 𝔇 k = dbarL (∑ k, rhoC 𝔇 k) := (map_sum dbarL _ _).symm
@@ -154,7 +156,8 @@ mult-by-`z`) and using `clm_comp`. The result stays `(0,1)` because `proj01` com
 function, fiberwise, is smooth at `x₀` when both are. The ℂ-smul is post-composition on the trivial
 codomain (`z • β = (mul ℝ ℂ z).comp β`), so it slides through the tangent `symmL`, reducing to
 `clm_comp` of the smooth `x ↦ mul ℝ ℂ (F x)` and the smooth in-coordinates of `s`. -/
-theorem contMDiffAt_cSmul_section {F : X → ℂ}
+theorem contMDiffAt_cSmul_section {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {F : X → ℂ}
     {s : ∀ x : X, TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x} {x₀ : X}
     (hF : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) F x₀)
     (hs : ContMDiffAt 𝓘(ℝ, ℂ) (𝓘(ℝ, ℂ).prod 𝓘(ℝ, ℂ →L[ℝ] ℂ)) (⊤ : ℕ∞)
@@ -183,9 +186,10 @@ theorem contMDiff_cSmul_section (c : SmoothCFunctions X) (g : SmoothCOneForms X)
         (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) :=
   fun x₀ => contMDiffAt_cSmul_section (c.contMDiff x₀) (g.contMDiff_toFun x₀)
 
-/-- **ℂ-valued smooth-function scaling of a `(0,1)`-valued smooth form** (the double-sum term builder):
-`(c • g) x = c x • g x`, a smooth `(0,1)`-valued form. -/
-noncomputable def cSmulForm (c : SmoothCFunctions X) (g : SmoothCOneForms X) : SmoothCOneForms X where
+/-- **ℂ-valued smooth-function scaling of a `(0,1)`-valued smooth form** (the double-sum term
+builder): `(c • g) x = c x • g x`, a smooth `(0,1)`-valued form. -/
+noncomputable def cSmulForm (c : SmoothCFunctions X) (g : SmoothCOneForms X) :
+    SmoothCOneForms X where
   toFun := fun x => (c x) • (g x)
   contMDiff_toFun := contMDiff_cSmul_section c g
 
@@ -212,9 +216,9 @@ theorem cSmulForm_mem_zeroOne (c : SmoothCFunctions X) {g : SmoothCOneForms X}
   simp only [proj01L_apply, proj01Section_apply, cSmulForm_apply]
   exact proj01_smul (c x) (h x)
 
-/-- `ℂ`-multiplication is real-`C^∞` (it is `ℝ`-bilinear) — the instance Mathlib provides only over the
-*complex* model `𝓘(ℂ)`, supplied here over the real model `𝓘(ℝ,ℂ)` so that `SmoothCFunctions X` is a
-ring (needed for the `∂̄` Leibniz rule). -/
+/-- `ℂ`-multiplication is real-`C^∞` (it is `ℝ`-bilinear) — the instance Mathlib provides only over
+the *complex* model `𝓘(ℂ)`, supplied here over the real model `𝓘(ℝ,ℂ)` so that `SmoothCFunctions X`
+is a ring (needed for the `∂̄` Leibniz rule). -/
 instance contMDiffMul_real_complex : ContMDiffMul 𝓘(ℝ, ℂ) (⊤ : ℕ∞) ℂ :=
   { (inferInstance : IsManifold 𝓘(ℝ, ℂ) (⊤ : ℕ∞) ℂ) with
     contMDiff_mul := by
@@ -224,8 +228,8 @@ instance contMDiffMul_real_complex : ContMDiffMul 𝓘(ℝ, ℂ) (⊤ : ℕ∞) 
       rw [contDiffOn_univ]
       exact contDiff_mul }
 
-/-- **The `∂̄` Leibniz rule** `∂̄(g₁·g₂) = g₂·∂̄g₁ + g₁·∂̄g₂` (`∂̄ = proj01 ∘ mfderiv`; `mfderiv` has the
-product rule `HasMFDerivAt.mul`, `proj01` commutes with the ℂ-scale `proj01_smul`). -/
+/-- **The `∂̄` Leibniz rule** `∂̄(g₁·g₂) = g₂·∂̄g₁ + g₁·∂̄g₂` (`∂̄ = proj01 ∘ mfderiv`; `mfderiv`
+has the product rule `HasMFDerivAt.mul`, `proj01` commutes with the ℂ-scale `proj01_smul`). -/
 theorem dbarL_mul (g₁ g₂ : SmoothCFunctions X) :
     dbarL (g₁ * g₂) = cSmulForm g₂ (dbarL g₁) + cSmulForm g₁ (dbarL g₂) := by
   refine ContMDiffSection.ext fun x => ?_
@@ -267,42 +271,49 @@ theorem dbarRho_eq_zero_of_notMem (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCo
   exact fun h0 => hy (by simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, h0]; rfl)
 
 /-- The punctured neighborhood of any point of a `ℂ`-manifold is `NeBot` (no isolated points). -/
-theorem nhdsNE_neBot_of_chart (x : X) : (𝓝[≠] x).NeBot := by
+theorem nhdsNE_neBot_of_chart {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (x : X) :
+    (𝓝[≠] x).NeBot := by
   have hsrc : x ∈ (chartAt (H := ℂ) x).source := mem_chart_source ℂ x
   exact ((chartAt (H := ℂ) x).symm.tendsto_nhdsNE (x := (chartAt (H := ℂ) x) x)
-    (by simpa using (chartAt (H := ℂ) x).map_source hsrc)).neBot.mono
+    ((chartAt (H := ℂ) x).map_source hsrc)).neBot.mono
     (by simp only [(chartAt (H := ℂ) x).left_inv hsrc]; exact le_rfl)
 
 /-- `Gext` is additive (extension by `0`). -/
-theorem Gext_add {U : Opens X} (f g : U → ℂ) : Gext (f + g) = Gext f + Gext g := by
+theorem Gext_add {X : Type*} [TopologicalSpace X] {U : Opens X} (f g : U → ℂ) :
+    Gext (f + g) = Gext f + Gext g := by
   funext x
   simp only [Gext, Pi.add_apply]
   split <;> simp
 
 /-- `Gext` is homogeneous (extension by `0`). -/
-theorem Gext_smul {U : Opens X} (c : ℂ) (g : U → ℂ) : Gext (c • g) = c • Gext g := by
+theorem Gext_smul {X : Type*} [TopologicalSpace X] {U : Opens X} (c : ℂ) (g : U → ℂ) :
+    Gext (c • g) = c • Gext g := by
   funext x
   simp only [Gext, Pi.smul_apply]
   split <;> simp
 
 /-- `Gext` respects subtraction (extension by `0`). -/
-theorem Gext_sub {U : Opens X} (f g : U → ℂ) : Gext (f - g) = Gext f - Gext g := by
+theorem Gext_sub {X : Type*} [TopologicalSpace X] {U : Opens X} (f g : U → ℂ) :
+    Gext (f - g) = Gext f - Gext g := by
   funext x
   simp only [Gext, Pi.sub_apply]
   split <;> simp
 
-/-- For a holomorphic (`OmegaDGerm 0`) class, the analytic representative `Gext(holoRep)` has a genuine
-limit along `𝓝[≠] x` at every `x ∈ V` (order `≥ 0` ⟹ the limit exists; this is `holoFn x`). -/
+/-- For a holomorphic (`OmegaDGerm 0`) class, the analytic representative `Gext(holoRep)` has a
+genuine limit along `𝓝[≠] x` at every `x ∈ V` (order `≥ 0` ⟹ the limit exists; this is `holoFn x`).
+-/
 theorem holoFn_tendsto {V : Opens X} {g : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V) {x : X}
     (hx : x ∈ V) : ∃ c, Tendsto (Gext (holoRep hg)) (𝓝[≠] x) (𝓝 c) := by
   set φ := chartAt (H := ℂ) x with hφ
   have hmero : MeromorphicAt (Gext (holoRep hg) ∘ φ.symm) (φ x) :=
     Gext_meromorphicAt (holoRep_mem hg).1 hx
   have hord : 0 ≤ meromorphicOrderAt (Gext (holoRep hg) ∘ φ.symm) (φ x) := by
-    rw [← ordU_eq_orderAt_Gext (holoRep hg) hx]; simpa using (mem_OmegaD.1 (holoRep_mem hg)).2 ⟨x, hx⟩
+    rw [← ordU_eq_orderAt_Gext (holoRep hg) hx]
+    simpa using (mem_OmegaD.1 (holoRep_mem hg)).2 ⟨x, hx⟩
   obtain ⟨c, hc⟩ := tendsto_nhds_of_meromorphicOrderAt_nonneg hmero hord
   refine ⟨c, (hc.comp (φ.tendsto_nhdsNE (mem_chart_source ℂ x))).congr' ?_⟩
-  filter_upwards [mem_nhdsWithin_of_mem_nhds (φ.open_source.mem_nhds (mem_chart_source ℂ x))] with z hz
+  filter_upwards [mem_nhdsWithin_of_mem_nhds (φ.open_source.mem_nhds (mem_chart_source ℂ x))]
+    with z hz
   simp [Function.comp, φ.left_inv hz]
 
 /-! ### The holomorphic representative function and the double-sum terms -/
@@ -362,8 +373,8 @@ theorem holoFn_sub {V : Opens X} {g₁ g₂ : MGerm V} (hg₁ : g₁ ∈ OmegaDG
   rw [show holoFn hg₁ x = c₁ from hc₁.limUnder_eq, show holoFn hg₂ x = c₂ from hc₂.limUnder_eq]
   exact ((hc₁.sub hc₂).congr' heq.symm).limUnder_eq
 
-/-- **`holoFn` depends only on the germ class.** Two memberships of equal germs give the same `holoFn`
-at points of `V` (the `holoRep` choice washes out). -/
+/-- **`holoFn` depends only on the germ class.** Two memberships of equal germs give the same
+`holoFn` at points of `V` (the `holoRep` choice washes out). -/
 theorem holoFn_congr {V : Opens X} {g g' : MGerm V} (hg : g ∈ OmegaDGerm (0 : Divisor X) V)
     (hg' : g' ∈ OmegaDGerm (0 : Divisor X) V) (hgg : g = g') {x : X} (hx : x ∈ V) :
     holoFn hg x = holoFn hg' x := by
@@ -384,11 +395,12 @@ theorem cocycle_mem (𝔇 : ChartDiskCover X) (f : ↥(𝔇.toFiniteCover.cocycl
     (f : 𝔇.toFiniteCover.Cochain1) (j, k) ∈ OmegaDGerm (0 : Divisor X) (𝔇.U j ⊓ 𝔇.U k) :=
   (Submodule.mem_inf.1 f.2).2 (j, k)
 
-/-- The `(j,k)` **double-sum term** `T_jk = (ρ_j · F_jk) • ∂̄ρ_k`, a global smooth `(0,1)`-valued form
-(`F_jk = holoFn` = the analytic representative). Globally smooth by a 3-case `ContMDiffAt` argument:
-on the overlap `U_j ⊓ U_k` everything is smooth (`F_jk` via `holoFn_contMDiffAt`); off `tsupport ρ_j`
-the factor `ρ_j` vanishes; off `tsupport ρ_k` the factor `∂̄ρ_k` vanishes — and these three opens cover
-`X` (a point in neither support-complement lies in `tsupport ρ_j ∩ tsupport ρ_k ⊆ U_j ⊓ U_k`). -/
+/-- The `(j,k)` **double-sum term** `T_jk = (ρ_j · F_jk) • ∂̄ρ_k`, a global smooth `(0,1)`-valued
+form (`F_jk = holoFn` = the analytic representative). Globally smooth by a 3-case `ContMDiffAt`
+argument: on the overlap `U_j ⊓ U_k` everything is smooth (`F_jk` via `holoFn_contMDiffAt`); off
+`tsupport ρ_j` the factor `ρ_j` vanishes; off `tsupport ρ_k` the factor `∂̄ρ_k` vanishes — and these
+three opens cover `X` (a point in neither support-complement lies in
+`tsupport ρ_j ∩ tsupport ρ_k ⊆ U_j ⊓ U_k`). -/
 noncomputable def cechTerm (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (j k : 𝔇.toFiniteCover.ι) :
     SmoothCOneForms X where
@@ -426,7 +438,8 @@ noncomputable def cechTerm (𝔇 : ChartDiskCover X)
         rw [hr, zero_mul]; module
       exact congrArg (Bundle.TotalSpace.mk x) hV
 
-/-- `proj01 α` at a vector, written out: `proj01 α v = ½(α v + i·α(i·v))` (the Wirtinger average). -/
+/-- `proj01 α` at a vector, written out: `proj01 α v = ½(α v + i·α(i·v))` (the Wirtinger average).
+-/
 theorem proj01_apply_val (α : ℂ →L[ℝ] ℂ) (v : ℂ) :
     proj01 α v = (2 : ℂ)⁻¹ * (α v + Complex.I * α (Complex.I * v)) := by
   rw [proj01_apply]
@@ -443,9 +456,9 @@ theorem proj01_idempotent (α : ℂ →L[ℝ] ℂ) : proj01 (proj01 α) = proj01
   rw [hI, map_neg]
   linear_combination (-(1 / 4 : ℂ) * α v) * Complex.I_sq
 
-/-- **`holoFn` is restriction-compatible.** For `V ≤ U` and `x ∈ V`, the analytic rep of the restricted
-germ agrees with the original at `x` (`limUnder` depends only on the germ, which restriction preserves
-at `x`). -/
+/-- **`holoFn` is restriction-compatible.** For `V ≤ U` and `x ∈ V`, the analytic rep of the
+restricted germ agrees with the original at `x` (`limUnder` depends only on the germ, which
+restriction preserves at `x`). -/
 theorem holoFn_restrict {U V : Opens X} (h : V ≤ U) {g : MGerm U}
     (hg : g ∈ OmegaDGerm (0 : Divisor X) U) {x : X} (hx : x ∈ V) :
     holoFn (rawRestrictG_omegaDGerm h hg) x = holoFn hg x := by
@@ -462,9 +475,10 @@ theorem holoFn_restrict {U V : Opens X} (h : V ≤ U) {g : MGerm U}
   exact congrArg Filter.lim (Filter.map_congr heq.symm)
 
 /-- **The Čech cocycle relation, at the `holoFn` value level.** For a `1`-cocycle `f` (so `δ¹f = 0`)
-and `y ∈ U_i ⊓ U_j ⊓ U_k`, the holomorphic representatives satisfy `holoFn(f_ik) = holoFn(f_ij) +
-holoFn(f_jk)`. From `δ¹f = 0` the germs obey `f_ik = f_jk + f_ij` on the triple overlap; `holoFn` is
-additive (`holoFn_add`) and restriction-compatible (`holoFn_restrict`). The gateway to round-trip 2. -/
+and `y ∈ U_i ⊓ U_j ⊓ U_k`, the holomorphic representatives satisfy
+`holoFn(f_ik) = holoFn(f_ij) + holoFn(f_jk)`. From `δ¹f = 0` the germs obey `f_ik = f_jk + f_ij` on
+the triple overlap; `holoFn` is additive (`holoFn_add`) and restriction-compatible
+(`holoFn_restrict`). The gateway to round-trip 2. -/
 theorem holoFn_cocycle_add (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (i j k : 𝔇.toFiniteCover.ι) {y : X}
     (hy : y ∈ (𝔇.U i ⊓ 𝔇.U j ⊓ 𝔇.U k : Opens X)) :
@@ -500,9 +514,9 @@ theorem holoFn_cocycle_add (𝔇 : ChartDiskCover X)
     holoFn_restrict hij (cocycle_mem 𝔇 f i j) hy]
   abel
 
-/-- The **global primitive summand** `ρ_k · holoFn(s_k)` as a `SmoothCFunctions` (globally smooth: on
-`U_k` both factors are smooth, off `tsupport ρ_k` it vanishes). The `∂̄` of `h = ∑_k primFn` is the
-coboundary's image, since each `holoFn(s_k)` is holomorphic (`holoFn_dbar_eq_zero`). -/
+/-- The **global primitive summand** `ρ_k · holoFn(s_k)` as a `SmoothCFunctions` (globally smooth:
+on `U_k` both factors are smooth, off `tsupport ρ_k` it vanishes). The `∂̄` of `h = ∑_k primFn` is
+the coboundary's image, since each `holoFn(s_k)` is holomorphic (`holoFn_dbar_eq_zero`). -/
 noncomputable def primFn (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) {g : MGerm (𝔇.U k)}
     (hg : g ∈ OmegaDGerm (0 : Divisor X) (𝔇.U k)) : SmoothCFunctions X :=
   ⟨fun x => rhoC 𝔇 k x * holoFn hg x, by
@@ -512,16 +526,18 @@ noncomputable def primFn (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) {
     · refine (contMDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq ?_
       filter_upwards [(isClosed_tsupport (cechPoU 𝔇 k)).isOpen_compl.mem_nhds hb] with x hx
       have hr : rhoC 𝔇 k x = 0 := by
-        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hx]; rfl
+        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM,
+          image_eq_zero_of_notMem_tsupport hx]
+        rfl
       simp only [hr, zero_mul]⟩
 
 @[simp] theorem primFn_apply (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) {g : MGerm (𝔇.U k)}
     (hg : g ∈ OmegaDGerm (0 : Divisor X) (𝔇.U k)) (x : X) :
     primFn 𝔇 k hg x = rhoC 𝔇 k x * holoFn hg x := rfl
 
-/-- **`∂̄(ρ_k·holoFn(s_k)) = holoFn(s_k)·∂̄ρ_k`** (the Leibniz identity, with the `holoFn` term killed
-since `holoFn(s_k)` is holomorphic, `holoFn_dbar_eq_zero`). Pointwise, 2-case (on `tsupport ρ_k ⊆ U_k`
-the product rule; off it both sides vanish). -/
+/-- **`∂̄(ρ_k·holoFn(s_k)) = holoFn(s_k)·∂̄ρ_k`** (the Leibniz identity, with the `holoFn` term
+killed since `holoFn(s_k)` is holomorphic, `holoFn_dbar_eq_zero`). Pointwise, 2-case (on
+`tsupport ρ_k ⊆ U_k` the product rule; off it both sides vanish). -/
 theorem dbarL_primFn_apply (𝔇 : ChartDiskCover X) (k : 𝔇.toFiniteCover.ι) {g : MGerm (𝔇.U k)}
     (hg : g ∈ OmegaDGerm (0 : Divisor X) (𝔇.U k)) (x : X) :
     (dbarL (primFn 𝔇 k hg)) x = holoFn hg x • (dbarRho 𝔇 k x) := by
@@ -579,16 +595,19 @@ theorem cechTerm_add (𝔇 : ChartDiskCover X)
   · by_cases hxj : x ∈ tsupport (cechPoU 𝔇 j)
     · have hxV : x ∈ ((𝔇.U j ⊓ 𝔇.U k : Opens X) : Set X) :=
         ⟨cechPoU_subordinate 𝔇 j hxj, cechPoU_subordinate 𝔇 k hxk⟩
-      rw [holoFn_add (cocycle_mem 𝔇 f₁ j k) (cocycle_mem 𝔇 f₂ j k) (cocycle_mem 𝔇 (f₁ + f₂) j k) hxV,
+      rw [holoFn_add (cocycle_mem 𝔇 f₁ j k) (cocycle_mem 𝔇 f₂ j k)
+          (cocycle_mem 𝔇 (f₁ + f₂) j k) hxV,
         mul_add]
       module
     · have hr : rhoC 𝔇 j x = 0 := by
-        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hxj]; rfl
+        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM,
+          image_eq_zero_of_notMem_tsupport hxj]
+        rfl
       rw [hr]; module
   · rw [dbarRho_eq_zero_of_notMem 𝔇 k hxk]; module
 
-/-- The double-sum term is `ℝ`-homogeneous in the cocycle (`holoFn_smul` washout; the `ℝ`-action on the
-`ℂ`-module is `↑r`-scaling). -/
+/-- The double-sum term is `ℝ`-homogeneous in the cocycle (`holoFn_smul` washout; the `ℝ`-action on
+the `ℂ`-module is `↑r`-scaling). -/
 theorem cechTerm_smul (𝔇 : ChartDiskCover X) (r : ℝ)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) (j k : 𝔇.toFiniteCover.ι) :
     cechTerm 𝔇 (r • f) j k = r • cechTerm 𝔇 f j k := by
@@ -604,16 +623,18 @@ theorem cechTerm_smul (𝔇 : ChartDiskCover X) (r : ℝ)
       congr 1
       ring
     · have hr : rhoC 𝔇 j x = 0 := by
-        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM, image_eq_zero_of_notMem_tsupport hxj]; rfl
+        simp only [rhoC, ContMDiffMap.comp_apply, ofRealCM,
+          image_eq_zero_of_notMem_tsupport hxj]
+        rfl
       rw [hr]; module
   · rw [dbarRho_eq_zero_of_notMem 𝔇 k hxk]; module
 
 /-- **(Analytic sub-kernel — the Čech → Dolbeault glued-form operator.)** The `ℝ`-linear map sending
-a holomorphic Čech `1`-cocycle `f = {f_ij}` to the global `(0,1)`-form `ω` with `ω = ∂̄η_i` on `U_i`,
-`η_i := ∑_k ρ_k·f_ik` (partition-of-unity globalization). The genuine analytic content of the inverse:
-lift the germ-class cocycle to holomorphic reps, the PoU smooth globalization
-(`SmoothPartitionOfUnity.IsSubordinate.contMDiff_finsum_smul`), and glue the local `∂̄η_i` (which agree
-on overlaps, `cechCoboundary_telescoping`) into a global section (gluedFun-for-forms). Plan:
+a holomorphic Čech `1`-cocycle `f = {f_ij}` to the global `(0,1)`-form `ω` with `ω = ∂̄η_i` on
+`U_i`, `η_i := ∑_k ρ_k·f_ik` (partition-of-unity globalization). The genuine analytic content of the
+inverse: lift the germ-class cocycle to holomorphic reps, the PoU smooth globalization
+(`SmoothPartitionOfUnity.IsSubordinate.contMDiff_finsum_smul`), and glue the local `∂̄η_i` (which
+agree on overlaps, `cechCoboundary_telescoping`) into a global section (gluedFun-for-forms). Plan:
 -/
 noncomputable def cechToDolbeaultForm (𝔇 : ChartDiskCover X) :
     ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)) →ₗ[ℝ] ↥(OneFormsZeroOne X) where
@@ -628,9 +649,10 @@ noncomputable def cechToDolbeaultForm (𝔇 : ChartDiskCover X) :
     refine Finset.sum_congr rfl fun p _ => ?_
     exact Subtype.ext (cechTerm_smul 𝔇 r f p.1 p.2)
 
-/-- `cechToDolbeaultForm 𝔇 f` is (the section underlying) the finite sum `∑_{(j,k)} T_jk`. Isolates the
-single subtype-coercion-through-a-`Finset.sum` step (the only place the transparency-option `isDefEq`
-cost on `cechTerm` bodies appears), so downstream uses go through `section_finset_sum_apply` cheaply. -/
+/-- `cechToDolbeaultForm 𝔇 f` is (the section underlying) the finite sum `∑_{(j,k)} T_jk`. Isolates
+the single subtype-coercion-through-a-`Finset.sum` step (the only place the transparency-option
+`isDefEq` cost on `cechTerm` bodies appears), so downstream uses go through
+`section_finset_sum_apply` cheaply. -/
 theorem cechToDolbeaultForm_val (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) :
     ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
@@ -647,9 +669,9 @@ theorem section_finset_sum_apply {ι : Type*} (s : ι → SmoothCOneForms X) (t 
   have h1 : (⇑(∑ i ∈ t, s i)) = ∑ i ∈ t, ⇑(s i) := map_sum (ContMDiffSection.coeAddHom _ _ _ _) _ _
   rw [show ((∑ i ∈ t, s i) x) = (⇑(∑ i ∈ t, s i)) x from rfl, h1, Finset.sum_apply]
 
-/-- The **double-sum telescoping** `∑_{j,k} ρ_j·(H_k − H_j) • D_k = ∑_k H_k • D_k` when `∑_j ρ_j = 1`
-and `∑_k D_k = 0` — pure module algebra over any `ℂ`-module `M`, extracted so it elaborates without the
-manifold-instance / transparency cost of the section setting. -/
+/-- The **double-sum telescoping** `∑_{j,k} ρ_j·(H_k − H_j) • D_k = ∑_k H_k • D_k` when
+`∑_j ρ_j = 1` and `∑_k D_k = 0` — pure module algebra over any `ℂ`-module `M`, extracted so it
+elaborates without the manifold-instance / transparency cost of the section setting. -/
 theorem telescope_sum {ι : Type*} [Fintype ι] {M : Type*} [AddCommGroup M] [Module ℂ M]
     (R H : ι → ℂ) (D : ι → M) (hR : ∑ j, R j = 1) (hD : ∑ k, D k = 0) :
     (∑ p : ι × ι, (R p.1 * (H p.2 - H p.1)) • D p.2) = ∑ k, H k • D k := by
@@ -726,8 +748,8 @@ theorem cechToDolbeaultForm_coboundary_le (𝔇 : ChartDiskCover X) :
   exact (telescope_sum (fun j => rhoC 𝔇 j x) (fun k => holoFn (hs k) x)
     (fun k => dbarRho 𝔇 k x) (sum_rhoC_apply 𝔇 x) (sum_dbarRho_apply 𝔇 x)).symm
 
-/-- **Čech → Dolbeault.** The `ℝ`-linear inverse `H¹(X, 𝒪) → H^{0,1}(X)`. Assembled **completely** from
-the analytic glued-form operator `cechToDolbeaultForm` and its well-definedness
+/-- **Čech → Dolbeault.** The `ℝ`-linear inverse `H¹(X, 𝒪) → H^{0,1}(X)`. Assembled **completely**
+from the analytic glued-form operator `cechToDolbeaultForm` and its well-definedness
 `cechToDolbeaultForm_coboundary_le` via `Submodule.liftQ` through the Čech quotient `Z¹/B¹` (scalar
 `ℂ → ℝ`). The overall **minus sign** is the boundary-map sign convention (`(δc)(i,j) = c_j − c_i` in
 `cechDelta0`): without it the round-trips would be `−id`. All genuine content lives in the two named

@@ -19,16 +19,16 @@
 
     * `Subsingleton H1Q` — acyclicity `H¹(Q) = 0`.  `Q^•` is the constant-ℂ Čech complex on the star
       of `P` (`{i : P ∈ U_i}`): off the star a `Q`-component is `0` (the order bounds for `D` and
-      `D+P` coincide), and on the star a `Q`-component is determined by its principal-part coefficient
-      (a single ℂ).  A `Q`-1-cocycle of these coefficients on the star is a coboundary by the standard
-      cone-contraction at a fixed star vertex `i₀ ∋ P`.
+      `D+P` coincide), and on the star a `Q`-component is determined by its principal-part
+      coefficient (a single ℂ). A `Q`-1-cocycle of these coefficients on the star is a coboundary by
+      the standard cone-contraction at a fixed star vertex `i₀ ∋ P`.
 
-  The two `e0`/`Subsingleton`-`H1Q` lemmas are axiom-clean (no finiteness).  The bundled
-  `localRealizationData` additionally supplies the three `FiniteDimensional` instances; the two `H¹`
-  ones come from the repo finiteness lemma `CechFinitenessWiring.finiteDimensional_cechH1_wired`
-  (which carries the finiteness axiom via the OTHER track `exists_cechModel`), so the bundled datum carries
-  that axiom via finiteness ONLY.  The `H⁰(𝒪_{D+P})` finiteness is taken as an instance hypothesis
-  (no H⁰-finiteness lemma exists in the repo; this is the standard Forster-compactness input, kept
+  The two `e0`/`Subsingleton`-`H1Q` lemmas need no finiteness. The bundled `localRealizationData`
+  additionally supplies the three `FiniteDimensional` instances; the two `H¹` ones come from the
+  repo finiteness lemma `CechFinitenessWiring.finiteDimensional_cechH1_wired` (which carries the
+  finiteness axiom via the OTHER track `exists_cechModel`), so the bundled datum carries that axiom
+  via finiteness ONLY. The `H⁰(𝒪_{D+P})` finiteness is taken as an instance hypothesis (no
+  H⁰-finiteness lemma exists in the repo; this is the standard Forster-compactness input, kept
   honest as a hypothesis rather than re-proved here).
 -/
 import Jacobians.Dolbeault.SkyscraperSnake
@@ -37,7 +37,6 @@ import Jacobians.Dolbeault.CechFinitenessWiring
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
@@ -57,7 +56,8 @@ variable (𝔘 : FiniteCover X) (D : Divisor X) (P : X)
 
 For a `𝒪_{D+P}`-cochain `b` and a chosen cover-set `U i ∋ P`, the component germ `b i` lies in
 `OmegaDGerm (D+P) (U i)` (the `sections0` membership), so its order-`(−D(P)−1)` principal-part
-coefficient at `P` is defined (`coeffGermLin`).  This is the building block of the realization map. -/
+coefficient at `P` is defined (`coeffGermLin`). This is the building block of the realization map.
+-/
 
 /-- The component membership of a `sections0 (D+P)` cochain: `b j ∈ OmegaDGerm (D+P) (U j)`. -/
 theorem sections0_component_mem (b : ↥(𝔘.sections0 (D + Finsupp.single P 1)))
@@ -83,19 +83,19 @@ end FiniteCover
 /-! ### Overlap transport of `𝒪_D`-membership across a *quotient* matching
 
 For the realization map on `H0Q` we need: if a `𝒪_{D+P}`-cochain `b` has `δ⁰b ∈ 𝒪_D` (the quotient
-cocycle condition) and its component at one star vertex `U i ∋ P` lies in `𝒪_D`, then EVERY component
-lies in `𝒪_D`.  The genuinely-new step (vs. `mem_OmegaDGerm_of_overlap_match`, which assumed an exact
-overlap match) is that the matching is only *up to* an `𝒪_D`-germ on the overlap:
-`rawRestrictG b_j − rawRestrictG b_i ∈ OmegaDGerm D (U i ⊓ U j)`.  At the overlap point `P` the order
+cocycle condition) and its component at one star vertex `U i ∋ P` lies in `𝒪_D`, then EVERY
+component lies in `𝒪_D`. The genuinely-new step (vs. `mem_OmegaDGerm_of_overlap_match`, which
+assumed an exact overlap match) is that the matching is only *up to* an `𝒪_D`-germ on the overlap:
+`rawRestrictG b_j − rawRestrictG b_i ∈ OmegaDGerm D (U i ⊓ U j)`. At the overlap point `P` the order
 of `b_j` then still inherits the `≥ −(D P)` bound from `b_i ∈ 𝒪_D` (the difference being one order
 *above* contributes nothing). -/
 
-/-- **Overlap transport up to `𝒪_D` (the case `P ∈ V`).**  If on the overlap `U ⊓ V` the difference of
-the two germs is an `𝒪_D`-germ (`hdiff`), with `γU ∈ OmegaDGerm D U` and `γV ∈ OmegaDGerm (D+P) V`,
-then `γV` already lies in the smaller `OmegaDGerm D V`.  The order of `γV` at `P` (read on `V`) equals
-the order of `γU + (difference)` at `P` (via the overlap), and both summands have order `≥ −(D P)`, so
-`mem_OmegaD_iff_ordU_at_P` upgrades `γV`'s membership.  Generalises
-`mem_OmegaDGerm_of_overlap_match` (exact match = zero difference). -/
+/-- **Overlap transport up to `𝒪_D` (the case `P ∈ V`).** If on the overlap `U ⊓ V` the difference
+of the two germs is an `𝒪_D`-germ (`hdiff`), with `γU ∈ OmegaDGerm D U` and
+`γV ∈ OmegaDGerm (D+P) V`, then `γV` already lies in the smaller `OmegaDGerm D V`. The order of `γV`
+at `P` (read on `V`) equals the order of `γU + (difference)` at `P` (via the overlap), and both
+summands have order `≥ −(D P)`, so `mem_OmegaD_iff_ordU_at_P` upgrades `γV`'s membership.
+Generalises `mem_OmegaDGerm_of_overlap_match` (exact match = zero difference). -/
 theorem mem_OmegaDGerm_of_overlap_diff {U V : Opens X} {D : Divisor X} {P : X}
     (hPU : P ∈ U) (hPV : P ∈ V) {γU : MGerm U} {γV : MGerm V}
     (hγU : γU ∈ OmegaDGerm D U) (hγV : γV ∈ OmegaDGerm (D + Finsupp.single P 1) V)
@@ -107,11 +107,13 @@ theorem mem_OmegaDGerm_of_overlap_diff {U V : Opens X} {D : Divisor X} {P : X}
   set Q : (U ⊓ V : Opens X) := ⟨P, ⟨hPU, hPV⟩⟩ with hQ
   -- The order at `P` of the restricted `fV` (read on the overlap) is `≥ −(D P)`:
   -- on the overlap, `fV| = fU| + (fV| − fU|)` and both summands have order `≥ −(D P)` at `Q`.
-  have hordV_overlap : ((-(D P) : ℤ) : WithTop ℤ) ≤ ordU (fV ∘ openIncl (inf_le_right : U ⊓ V ≤ V)) Q := by
+  have hordV_overlap :
+      ((-(D P) : ℤ) : WithTop ℤ) ≤ ordU (fV ∘ openIncl (inf_le_right : U ⊓ V ≤ V)) Q := by
     -- `γU` restricted has order `≥ −(D P)` at `Q`.
     have hU_restr : rawRestrictG (inf_le_left : U ⊓ V ≤ U) γU ∈ OmegaDGerm D (U ⊓ V) :=
       rawRestrictG_omegaDGerm _ hγU
-    -- write the restricted `γV` as (restricted `γU`) + (difference); both are `𝒪_D`-germs on overlap.
+    -- write the restricted `γV` as (restricted `γU`) + (difference); both are `𝒪_D`-germs on
+    -- overlap.
     have hV_restr : rawRestrictG (inf_le_right : U ⊓ V ≤ V) γV ∈ OmegaDGerm D (U ⊓ V) := by
       have hsum := add_mem hU_restr hdiff
       rwa [add_sub_cancel] at hsum
@@ -135,9 +137,10 @@ namespace FiniteCover
 
 variable (𝔘 : FiniteCover X) (D : Divisor X) (P : X)
 
-/-- The quotient-cocycle matching extracted from `δ⁰b ∈ sections1 D`: on each overlap `U i ⊓ U j`, the
-difference `rawRestrictG b_j − rawRestrictG b_i` is an `𝒪_D`-germ.  (For a genuine cocycle `δ⁰b = 0`
-this difference is `0`; here it is only required to be `𝒪_D`, the `H0Q`/quotient condition.) -/
+/-- The quotient-cocycle matching extracted from `δ⁰b ∈ sections1 D`: on each overlap `U i ⊓ U j`,
+the difference `rawRestrictG b_j − rawRestrictG b_i` is an `𝒪_D`-germ. (For a genuine cocycle
+`δ⁰b = 0` this difference is `0`; here it is only required to be `𝒪_D`, the `H0Q`/quotient
+condition.) -/
 theorem sections1_matching_diff {b : 𝔘.Cochain0}
     (hb : 𝔘.cechDelta0 b ∈ 𝔘.sections1 D) (i j : 𝔘.ι) :
     rawRestrictG (inf_le_right : 𝔘.U i ⊓ 𝔘.U j ≤ 𝔘.U j) (b j)
@@ -172,9 +175,9 @@ theorem quotient_component_mem_iff_all {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
 (`𝒪_D`-cochains have vanishing coefficient, `ker_coeffGermLin`), so it descends to `Q0 = B0/A0` and
 then restricts to `H0Q = ker dQ0`.  The restricted map is bijective:
 * **surjective** — the constant-`a`-multiple of the witness section `(chart − chart P)^k` on `U i`,
-  extended by `0` off `U i`, is a `𝒪_{D+P}`-cochain whose `δ⁰` is `𝒪_D` (its only nonzero overlaps are
-  with `U i`, where the difference is the witness restricted, an `𝒪_D`-germ off `P`), realising
-  coefficient `a`;  here we take the direct route via `coeffGermLin_surjective` composed with a
+  extended by `0` off `U i`, is a `𝒪_{D+P}`-cochain whose `δ⁰` is `𝒪_D` (its only nonzero overlaps
+  are with `U i`, where the difference is the witness restricted, an `𝒪_D`-germ off `P`), realising
+  coefficient `a`; here we take the direct route via `coeffGermLin_surjective` composed with a
   one-cover-set cochain;
 * **injective** — vanishing coefficient at `U i` propagates to `𝒪_D`-membership everywhere
   (`quotient_component_mem_iff_all`), i.e. the class is `0` in `Q0`. -/
@@ -218,9 +221,9 @@ theorem cechDelta0_mem_sections1_of_mem_H0Q (b : (𝔘.skyscraperTwoStep D P).B0
     mem_submoduleOf] at hq
   exact hq
 
-/-- **Injectivity of the realization map.**  If the principal-part coefficient at `U i` vanishes for a
-`H0Q`-class `[b]`, then (since `δ⁰b ∈ 𝒪_D`, the `H0Q` condition) every component of `b` lies in `𝒪_D`
-(`quotient_component_mem_iff_all`), so `b ∈ A0` and `[b] = 0`. -/
+/-- **Injectivity of the realization map.** If the principal-part coefficient at `U i` vanishes for
+a `H0Q`-class `[b]`, then (since `δ⁰b ∈ 𝒪_D`, the `H0Q` condition) every component of `b` lies in
+`𝒪_D` (`quotient_component_mem_iff_all`), so `b ∈ A0` and `[b] = 0`. -/
 theorem e0Lin_injective {i : 𝔘.ι} (hP : P ∈ 𝔘.U i) :
     Function.Injective (𝔘.e0Lin D P hP) := by
   rw [← LinearMap.ker_eq_bot, Submodule.eq_bot_iff]
@@ -240,12 +243,12 @@ theorem e0Lin_injective {i : 𝔘.ι} (hP : P ∈ 𝔘.U i) :
 
 /-! ### Surjectivity of the realization map (witness, under a singleton-star hypothesis)
 
-Surjectivity needs a genuine `Q`-cocycle realising a prescribed principal-part coefficient.  When the
+Surjectivity needs a genuine `Q`-cocycle realising a prescribed principal-part coefficient. When the
 star of `P` is the single cover-set `U i` (`hstar`: `P ∈ U j → j = i`, a standard chart-disk-cover
 shrinking), the witness cochain `b := Pi.single i (a • witness)` — the scaled principal part
 `(chart − chart P)^k` on `U i`, `0` elsewhere — is such a cocycle: away from `P` (every overlap
 `U i ⊓ U k` with `k ≠ i` avoids `P` by `hstar`) the witness is an `𝒪_D`-germ, so `δ⁰b ∈ 𝒪_D`; and it
-realises coefficient `a` (`coeffGermLin_surjective`'s witness).  This is the same geometric input as
+realises coefficient `a` (`coeffGermLin_surjective`'s witness). This is the same geometric input as
 `witnessFn_mem_OmegaD_add_single` (`hWsrc`/`hDsupp`) plus the singleton-star condition. -/
 
 variable [DecidableEq 𝔘.ι]
@@ -254,12 +257,16 @@ variable [DecidableEq 𝔘.ι]
 noncomputable def witnessCochain {i : 𝔘.ι} (hP : P ∈ 𝔘.U i) (a : ℂ) : 𝔘.Cochain0 :=
   Pi.single i (toGerm (𝔘.U i) (a • witnessFn (⟨P, hP⟩ : 𝔘.U i) (-(D P) - 1)))
 
-theorem witnessCochain_self {i : 𝔘.ι} (hP : P ∈ 𝔘.U i) (a : ℂ) :
+theorem witnessCochain_self {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (𝔘 : FiniteCover X) (D : Divisor X) (P : X) [DecidableEq 𝔘.ι] {i : 𝔘.ι}
+    (hP : P ∈ 𝔘.U i) (a : ℂ) :
     𝔘.witnessCochain D P hP a i
       = toGerm (𝔘.U i) (a • witnessFn (⟨P, hP⟩ : 𝔘.U i) (-(D P) - 1)) := by
   rw [witnessCochain, Pi.single_eq_same]
 
-theorem witnessCochain_of_ne {i : 𝔘.ι} (hP : P ∈ 𝔘.U i) (a : ℂ) {j : 𝔘.ι} (hj : j ≠ i) :
+theorem witnessCochain_of_ne {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (𝔘 : FiniteCover X) (D : Divisor X) (P : X) [DecidableEq 𝔘.ι] {i : 𝔘.ι}
+    (hP : P ∈ 𝔘.U i) (a : ℂ) {j : 𝔘.ι} (hj : j ≠ i) :
     𝔘.witnessCochain D P hP a j = 0 := by
   rw [witnessCochain, Pi.single_eq_of_ne hj]
 
@@ -271,7 +278,8 @@ theorem witnessCochain_self_mem {i : 𝔘.ι} (hP : P ∈ 𝔘.U i) (a : ℂ)
   rw [witnessCochain_self]
   exact ⟨a • witnessFn (⟨P, hP⟩ : 𝔘.U i) (-(D P) - 1), Submodule.smul_mem _ a hwit, rfl⟩
 
-/-- The witness cochain lies in `B0 = sections0(D+P)` (component `i` from `hwit`, others are `0`). -/
+/-- The witness cochain lies in `B0 = sections0(D+P)` (component `i` from `hwit`, others are `0`).
+-/
 theorem witnessCochain_mem_sections0 {i : 𝔘.ι} (hP : P ∈ 𝔘.U i) (a : ℂ)
     (hwit : witnessFn (⟨P, hP⟩ : 𝔘.U i) (-(D P) - 1) ∈ OmegaD (D + Finsupp.single P 1) (𝔘.U i)) :
     𝔘.witnessCochain D P hP a ∈ 𝔘.sections0 (D + Finsupp.single P 1) := by
@@ -281,8 +289,8 @@ theorem witnessCochain_mem_sections0 {i : 𝔘.ι} (hP : P ∈ 𝔘.U i) (a : �
   · rw [𝔘.witnessCochain_of_ne D P hP a hj]; exact Submodule.zero_mem _
 
 /-- Under the singleton-star hypothesis, any overlap-set `W ≤ U i` that also lies in some `U k` with
-`k ≠ i` avoids `P` (`P ∈ W → P ∈ U k → k = i`), so the witness germ restricted to `W` is an `𝒪_D`-germ
-(the `D` and `D+P` bounds coincide off `P`). -/
+`k ≠ i` avoids `P` (`P ∈ W → P ∈ U k → k = i`), so the witness germ restricted to `W` is an
+`𝒪_D`-germ (the `D` and `D+P` bounds coincide off `P`). -/
 theorem witness_restrict_mem_omegaD_off_P {i : 𝔘.ι} (hP : P ∈ 𝔘.U i) (a : ℂ)
     (hwit : witnessFn (⟨P, hP⟩ : 𝔘.U i) (-(D P) - 1) ∈ OmegaD (D + Finsupp.single P 1) (𝔘.U i))
     {W : Opens X} (hWi : W ≤ 𝔘.U i) (hPW : P ∉ W) :
@@ -364,8 +372,8 @@ theorem e0Lin_surjective {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
 
 /-! ### The realization isomorphism `e0` and its compatibility with `h0ToSky` -/
 
-/-- **The local-realization isomorphism `e0 : H0Q ≃ₗ[ℂ] ℂ`**, under the witness membership `hwit` and
-the singleton-star hypothesis `hstar`.  The principal-part coefficient `e0Lin` is bijective
+/-- **The local-realization isomorphism `e0 : H0Q ≃ₗ[ℂ] ℂ`**, under the witness membership `hwit`
+and the singleton-star hypothesis `hstar`. The principal-part coefficient `e0Lin` is bijective
 (`e0Lin_injective` / `e0Lin_surjective`). -/
 noncomputable def e0 {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
     (hwit : witnessFn (⟨P, hP⟩ : 𝔘.U i) (-(D P) - 1) ∈ OmegaD (D + Finsupp.single P 1) (𝔘.U i))
@@ -380,8 +388,8 @@ noncomputable def e0 {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
     𝔘.e0 D P hP hwit hstar x = 𝔘.e0Lin D P hP x := rfl
 
 /-- **Compatibility of `e0` with the principal-part arrow `h0ToSky`**: `h0ToSky = e0 ∘ h0Map`.  Both
-sides read the order-`(−D(P)−1)` coefficient of the component on `U i`; `h0Map` is `mkQ`, and `e0` is
-the descended coefficient, so this is definitional up to the (germ-only-dependent) coefficient
+sides read the order-`(−D(P)−1)` coefficient of the component on `U i`; `h0Map` is `mkQ`, and `e0`
+is the descended coefficient, so this is definitional up to the (germ-only-dependent) coefficient
 functional. -/
 theorem e0_hcompat {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
     (hwit : witnessFn (⟨P, hP⟩ : 𝔘.U i) (-(D P) - 1) ∈ OmegaD (D + Finsupp.single P 1) (𝔘.U i))
@@ -406,16 +414,18 @@ theorem e0_hcompat {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
 /-! ### Acyclicity `H¹(Q) = 0` under the singleton-star hypothesis
 
 When the star of `P` is the single vertex `i` (`hstar`), every overlap `U j ⊓ U k` other than the
-diagonal `(i,i)` avoids `P`, so there the order bounds for `D` and `D+P` coincide and the `Q`-component
-`B1/A1` is `0`.  The `Q`-complex is thus concentrated at the single vertex `i`; we show directly that
-every `Q`-1-cocycle is `0` (hence `H¹(Q) = ker dQ1 / range dQ0` is trivial): off the diagonal a
-`B1`-component is automatically an `𝒪_D`-germ, and on the diagonal `(i,i)` the cocycle condition
-`(δ¹g)_{iii} ∈ 𝒪_D`, transported across the idempotent triple-overlap `U i ⊓ U i ⊓ U i = U i ⊓ U i`,
-forces `g_{ii} ∈ 𝒪_D` too. -/
+diagonal `(i,i)` avoids `P`, so there the order bounds for `D` and `D+P` coincide and the
+`Q`-component `B1/A1` is `0`. The `Q`-complex is thus concentrated at the single vertex `i`; we show
+directly that every `Q`-1-cocycle is `0` (hence `H¹(Q) = ker dQ1 / range dQ0` is trivial): off the
+diagonal a `B1`-component is automatically an `𝒪_D`-germ, and on the diagonal `(i,i)` the cocycle
+condition `(δ¹g)_{iii} ∈ 𝒪_D`, transported across the idempotent triple-overlap
+`U i ⊓ U i ⊓ U i = U i ⊓ U i`, forces `g_{ii} ∈ 𝒪_D` too. -/
 
-/-- Off the diagonal `(i,i)`, a `sections1 (D+P)`-component is automatically a `sections1 D`-component
-(the overlap avoids `P` by `hstar`, so the order bounds coincide). -/
-theorem sections1_component_omegaD_off_diag {i : 𝔘.ι}
+/-- Off the diagonal `(i,i)`, a `sections1 (D+P)`-component is automatically a
+`sections1 D`-component (the overlap avoids `P` by `hstar`, so the order bounds coincide). -/
+theorem sections1_component_omegaD_off_diag {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (𝔘 : FiniteCover X) (D : Divisor X) (P : X) {i : 𝔘.ι}
     (hstar : ∀ j, P ∈ 𝔘.U j → j = i) {g : 𝔘.Cochain1}
     (hg : g ∈ 𝔘.sections1 (D + Finsupp.single P 1)) {j k : 𝔘.ι} (hjk : ¬(j = i ∧ k = i)) :
     g (j, k) ∈ OmegaDGerm D (𝔘.U j ⊓ 𝔘.U k) := by
@@ -433,9 +443,9 @@ namespace FiniteCover
 variable (𝔘 : FiniteCover X) (D : Divisor X) (P : X)
 
 /-- **Membership reflection across the idempotent triple overlap.**  For the diagonal triple
-`U i ⊓ U i ⊓ U i` (which equals the double `U i ⊓ U i`), restriction reflects `𝒪_D`-membership: if the
-restriction of `γ : MGerm (U i ⊓ U i)` to the triple lies in `𝒪_D`, then so does `γ` (compose with the
-reverse inclusion, which round-trips to the identity). -/
+`U i ⊓ U i ⊓ U i` (which equals the double `U i ⊓ U i`), restriction reflects `𝒪_D`-membership: if
+the restriction of `γ : MGerm (U i ⊓ U i)` to the triple lies in `𝒪_D`, then so does `γ` (compose
+with the reverse inclusion, which round-trips to the identity). -/
 theorem mem_OmegaDGerm_of_restrict_triple {i : 𝔘.ι} {γ : MGerm (𝔘.U i ⊓ 𝔘.U i)}
     (h : rawRestrictG
         (le_inf (inf_le_left.trans inf_le_right) inf_le_right :
@@ -449,10 +459,10 @@ theorem mem_OmegaDGerm_of_restrict_triple {i : 𝔘.ι} {γ : MGerm (𝔘.U i �
   rwa [rawRestrictG_comp_apply, rawRestrictG_le_rfl] at hround
 
 /-- On the diagonal `(i,i)`, the cocycle condition `δ¹g ∈ 𝒪_D` (component `(i,i,i)`) forces the
-component `g_{ii}` to be an `𝒪_D`-germ.  The three terms of `(δ¹g)_{iii}` are restrictions of the SAME
-component `g_{ii}` (all indices are `i`); two cancel (proof-irrelevant equal inclusions), leaving one
-restriction to the triple overlap, which lies in `𝒪_D`; reflection (`mem_OmegaDGerm_of_restrict_triple`)
-brings it back to the double overlap. -/
+component `g_{ii}` to be an `𝒪_D`-germ. The three terms of `(δ¹g)_{iii}` are restrictions of the
+SAME component `g_{ii}` (all indices are `i`); two cancel (proof-irrelevant equal inclusions),
+leaving one restriction to the triple overlap, which lies in `𝒪_D`; reflection
+(`mem_OmegaDGerm_of_restrict_triple`) brings it back to the double overlap. -/
 theorem sections1_component_omegaD_diag {i : 𝔘.ι} {g : 𝔘.Cochain1}
     (hcoc : 𝔘.cechDelta1 g ∈ 𝔘.sections2 D) :
     g (i, i) ∈ OmegaDGerm D (𝔘.U i ⊓ 𝔘.U i) := by
@@ -464,9 +474,9 @@ theorem sections1_component_omegaD_diag {i : 𝔘.ι} {g : 𝔘.Cochain1}
   rw [sub_self, zero_add] at hiii
   exact 𝔘.mem_OmegaDGerm_of_restrict_triple D hiii
 
-/-- A `Q1`-element `mk gB` in `ker dQ1` is `0`: the cocycle condition `δ¹(gB) ∈ 𝒪_D` plus `hstar` puts
-every component of `gB` in `𝒪_D` (off-diagonal automatically, on the diagonal via the triple-overlap
-reflection), so `gB ∈ A1` and `[gB] = 0`. -/
+/-- A `Q1`-element `mk gB` in `ker dQ1` is `0`: the cocycle condition `δ¹(gB) ∈ 𝒪_D` plus `hstar`
+puts every component of `gB` in `𝒪_D` (off-diagonal automatically, on the diagonal via the
+triple-overlap reflection), so `gB ∈ A1` and `[gB] = 0`. -/
 theorem dQ1_mk_eq_zero_imp {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
     (hstar : ∀ j, P ∈ 𝔘.U j → j = i) (gB : (𝔘.skyscraperTwoStep D P).B1)
     (hq : (𝔘.skyscraperTwoStep D P).dQ1 (Submodule.Quotient.mk gB) = 0) :
@@ -485,8 +495,8 @@ theorem dQ1_mk_eq_zero_imp {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
     exact 𝔘.sections1_component_omegaD_diag D hcoc
   · exact 𝔘.sections1_component_omegaD_off_diag D P hstar gB.2 hjk
 
-/-- **Acyclicity `H¹(Q) = 0`** under the singleton-star hypothesis: every `Q`-1-cocycle is `0` in `Q1`
-(`dQ1_mk_eq_zero_imp`), so `ker dQ1 = ⊥` and `H¹(Q) = ker dQ1 / range dQ0` is trivial. -/
+/-- **Acyclicity `H¹(Q) = 0`** under the singleton-star hypothesis: every `Q`-1-cocycle is `0` in
+`Q1` (`dQ1_mk_eq_zero_imp`), so `ker dQ1 = ⊥` and `H¹(Q) = ker dQ1 / range dQ0` is trivial. -/
 theorem subsingleton_H1Q {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
     (hstar : ∀ j, P ∈ 𝔘.U j → j = i) :
     Subsingleton (𝔘.skyscraperTwoStep D P).H1Q := by
@@ -503,7 +513,7 @@ theorem subsingleton_H1Q {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
 
 /-! ### Assembling `LocalRealizationData`
 
-The two snake-irreducible pieces (`e0`/`hcompat`, `subsingleton_H1Q`) are axiom-clean above.  The
+The two snake-irreducible pieces (`e0`/`hcompat`, `subsingleton_H1Q`) are proven above.  The
 bundled `LocalRealizationData` additionally carries the three `FiniteDimensional` instances; the two
 `H¹` ones come from the repo finiteness lemma `finiteDimensional_cechH1_wired` (axiom-backed via the
 OTHER track `exists_cechModel`), so the bundled datum carries that axiom via finiteness ONLY.  The
@@ -511,13 +521,13 @@ OTHER track `exists_cechModel`), so the bundled datum carries that axiom via fin
 lemma exists in the repo, so it is kept honest as a hypothesis). -/
 
 /-- **The `LocalRealizationData` datum**, under the witness membership `hwit` and the singleton-star
-hypothesis `hstar` (both standard chart-disk-cover properties), with `H⁰(𝒪_{D+P})` finiteness supplied
-as an instance.  This is the deliverable that `SkyscraperSnake.skyscraperLES_of_localRealization`
-consumes to produce the four remaining `SkyscraperLES` fields, completing
-`CohomologicalRR.exists_skyscraperLES` via the 1-line wire
+hypothesis `hstar` (both standard chart-disk-cover properties), with `H⁰(𝒪_{D+P})` finiteness
+supplied as an instance. This is the deliverable that
+`SkyscraperSnake.skyscraperLES_of_localRealization` consumes to produce the four remaining
+`SkyscraperLES` fields, completing `CohomologicalRR.exists_skyscraperLES` via the 1-line wire
 `exists_skyscraperLES := ⟨skyscraperLES_of_localRealization (𝔘.localRealizationData …)⟩`.
 
-`e0`/`hcompat`/`hQac` are axiom-clean (`e0`, `e0_hcompat`, `subsingleton_H1Q`); `finH1D`/`finH1DP`
+`e0`/`hcompat`/`hQac` are proven above (`e0`, `e0_hcompat`, `subsingleton_H1Q`); `finH1D`/`finH1DP`
 come from `finiteDimensional_cechH1_wired` (the only axiom route, via the finiteness track). -/
 noncomputable def localRealizationData {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
     (hwit : witnessFn (⟨P, hP⟩ : 𝔘.U i) (-(D P) - 1) ∈ OmegaD (D + Finsupp.single P 1) (𝔘.U i))
@@ -535,9 +545,9 @@ noncomputable def localRealizationData {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
     finH0DP := inferInstance }
 
 /-- **`LocalRealizationData` from the chart-disk-cover hypotheses** (discharging `hwit` via
-`witnessFn_mem_OmegaD_add_single`): on a cover-set `U i ∋ P` whose `↥(U i)`-chart source covers all of
-`U i` (`hWsrc`) and where `D` is supported on `U i` only at `P` (`hDsupp`), with the singleton-star
-property `hstar` and `H⁰(𝒪_{D+P})` finiteness, the realization datum exists. -/
+`witnessFn_mem_OmegaD_add_single`): on a cover-set `U i ∋ P` whose `↥(U i)`-chart source covers all
+of `U i` (`hWsrc`) and where `D` is supported on `U i` only at `P` (`hDsupp`), with the
+singleton-star property `hstar` and `H⁰(𝒪_{D+P})` finiteness, the realization datum exists. -/
 noncomputable def localRealizationData_of_chartDisk {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
     (hWsrc : ∀ Q : 𝔘.U i, Q ∈ (chartAt (H := ℂ) (⟨P, hP⟩ : 𝔘.U i)).source)
     (hDsupp : ∀ Q : 𝔘.U i, Q ≠ ⟨P, hP⟩ → D Q.1 = 0)
@@ -548,25 +558,22 @@ noncomputable def localRealizationData_of_chartDisk {i : 𝔘.ι} (hP : P ∈ �
 
 /-! ### The skyscraper LES from the chart-disk-cover hypotheses (the full assembly, discharged)
 
-This is `CohomologicalRR.exists_skyscraperLES` with its genuine geometric prerequisites made *explicit*
-rather than (impossibly) derived from `IsLeray`.  It feeds the chart-disk realization datum
-(`localRealizationData_of_chartDisk`) through the snake assembly
-(`skyscraperLES_of_localRealization`) and is **fully proven** — no gaps in its own body and the
-*only* axiom dependency beyond `propext/Classical.choice/Quot.sound` is the finiteness axiom carried by the
-`H¹`-finiteness instances (`finiteDimensional_cechH1_wired`, axiom-backed via the OTHER track
-`exists_cechModel`).  Together with the `H⁰(𝒪_{D+P})` finiteness *instance* hypothesis (Forster
-compactness, `l(D+P) < ∞`; no such lemma exists in the repo, kept honest as an instance), it pins down
-*exactly* the residual content of `exists_skyscraperLES`:
+This is `CohomologicalRR.exists_skyscraperLES` with its genuine geometric prerequisites made
+*explicit* rather than (impossibly) derived from `IsLeray`. It feeds the chart-disk realization
+datum (`localRealizationData_of_chartDisk`) through the snake assembly
+(`skyscraperLES_of_localRealization`) — and the *only* axiom dependency beyond
+`propext/Classical.choice/Quot.sound` is the finiteness axiom carried by the `H¹`-finiteness
+instances (`finiteDimensional_cechH1_wired`, axiom-backed via the OTHER track `exists_cechModel`).
+Together with the `H⁰(𝒪_{D+P})` finiteness *instance* hypothesis (Forster compactness, `l(D+P) < ∞`;
+no such lemma exists in the repo, kept honest as an instance), it pins down *exactly* the residual
+content of `exists_skyscraperLES`:
 
-  `exists_skyscraperLES 𝔘 hL D P` reduces to supplying, for the given `D`/`P`,
-    1. a cover-set `U i ∋ P` (`hP`),
-    2. `hWsrc`: `↥(U i)`'s chart at `P` has source all of `U i`,
-    3. `hDsupp`: `D` is supported on `U i` only at `P`,
-    4. `hstar`: the star of `P` is the single vertex `i`,
-    5. `[FiniteDimensional ℂ H⁰(𝒪_{D+P})]`,
-  none of which follow from `IsLeray` alone (a generic Leray cover need not be a chart-disk cover with
-  a singleton star at `P` and `D` supported only at `P`).  The snake lemma, local realization, witness
-  surjectivity, and `H¹(Q) = 0` are all genuinely proven above. -/
+  `exists_skyscraperLES 𝔘 hL D P` reduces to supplying, for the given `D`/`P`, 1. a cover-set
+  `U i ∋ P` (`hP`), 2. `hWsrc`: `↥(U i)`'s chart at `P` has source all of `U i`, 3. `hDsupp`: `D` is
+  supported on `U i` only at `P`, 4. `hstar`: the star of `P` is the single vertex `i`, 5.
+  `[FiniteDimensional ℂ H⁰(𝒪_{D+P})]`, none of which follow from `IsLeray` alone (a generic Leray
+  cover need not be a chart-disk cover with a singleton star at `P` and `D` supported only at `P`).
+  The snake lemma, local realization, witness surjectivity, and `H¹(Q) = 0` are all proven above. -/
 noncomputable def skyscraperLES_of_chartDisk {i : 𝔘.ι} (hP : P ∈ 𝔘.U i)
     (hWsrc : ∀ Q : 𝔘.U i, Q ∈ (chartAt (H := ℂ) (⟨P, hP⟩ : 𝔘.U i)).source)
     (hDsupp : ∀ Q : 𝔘.U i, Q ≠ ⟨P, hP⟩ → D Q.1 = 0)

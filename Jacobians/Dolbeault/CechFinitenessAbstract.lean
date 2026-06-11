@@ -1,13 +1,12 @@
 /-
   The abstract Forster-14.9 reduction: Čech `H¹` is finite-dimensional once the cochain restriction
-  to a shrinking is compact (Montel) and the Leray-combined map is surjective. Cochain Banach spaces
-  appear here as abstract Banach spaces — NO manifold/Čech dependency — so this is the clean logical
-  core of the finiteness node, built directly on the Schwartz lemma (Forster 14.8).
+  to a shrinking is compact (Montel) and the Leray-combined map is surjective. Cochain Banach
+  spaces appear here as abstract Banach spaces — no manifold/Čech dependency — so this is the
+  logical core of the finiteness argument, built directly on the Schwartz lemma (Forster 14.8).
 
-  The two remaining manifold-side inputs it consumes —
-  `ρ` compact (Montel; from `CechFiniteness.isCompact_closure_restrict_bddHolo` + `BddHol`) and the
-  Leray surjectivity (`H¹(disk,𝒪)=0`, from the proven G1 `DbarDisk`) — are all that stands between
-  this and `DolbeaultLadder.finiteDimensional_cechH1`.
+  The two manifold-side inputs it consumes are the compactness of `ρ` (Montel; from
+  `CechFiniteness.isCompact_closure_restrict_bddHolo` + `BddHol`) and the Leray surjectivity
+  (`H¹(disk,𝒪)=0`); together they yield `DolbeaultLadder.finiteDimensional_cechH1`.
 -/
 import Jacobians.Dolbeault.SchwartzFiniteness
 
@@ -49,7 +48,8 @@ theorem finiteDimensional_h1_of_leray_compact
 `Πᵢ Kᵢ : (∀ i, E i) →L (∀ i, F i)` of compact operators `Kᵢ` is compact (it is the finite sum
 `∑ᵢ single_i ∘ Kᵢ ∘ proj_i`). This makes the cochain restriction `C^q(𝔘) → C^q(𝔙)` (componentwise
 over the finite pair-index of the cover) a compact operator from the per-overlap
-`BddHol.isCompactOperator_restrictCLM` — the bridge from STEP 1 to STEP 3's `ρ` input. -/
+`BddHol.isCompactOperator_restrictCLM`, providing the `ρ` input of
+`finiteDimensional_h1_of_leray_compact`. -/
 theorem isCompactOperator_pi {ι : Type*} [Fintype ι] [DecidableEq ι] {E F : ι → Type*}
     [∀ i, NormedAddCommGroup (E i)] [∀ i, NormedSpace ℂ (E i)]
     [∀ i, NormedAddCommGroup (F i)] [∀ i, NormedSpace ℂ (F i)]
@@ -59,7 +59,7 @@ theorem isCompactOperator_pi {ι : Type*} [Fintype ι] [DecidableEq ι] {E F : �
       = ∑ i : ι, (single ℂ F i).comp ((K i).comp (proj i)) := by
     ext x j
     simp [ContinuousLinearMap.pi_apply, ContinuousLinearMap.sum_apply,
-      ContinuousLinearMap.single_apply, Pi.single_apply, Finset.sum_apply, Finset.sum_ite_eq]
+      ContinuousLinearMap.single_apply, Finset.sum_apply]
   rw [hsum, ContinuousLinearMap.coe_sum']
   refine Finset.sum_induction _ IsCompactOperator (fun _ _ ha hb => ha.add hb)
     isCompactOperator_zero (fun i _ => ?_)

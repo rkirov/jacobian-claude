@@ -13,9 +13,9 @@ import Jacobians.Dolbeault.CanonicalFormIso
 # Serre duality on `X` — the direct Forster §17 route (the plan of record)
 
 This is the **direct** route to `arithmeticGenus_eq_genus` and `serre_h1_eq`, following Forster
-*Lectures on Riemann Surfaces* §17 (Serre Duality Theorem) verbatim — **no Dolbeault comparison and no
-Hodge symmetry**. Forster §17 is entirely PDE-free (harmonic forms first appear in §19, which §16–17
-never use); it proves, for the **canonical divisor** `K`, the perfect residue pairing
+*Lectures on Riemann Surfaces* §17 (Serre Duality Theorem) verbatim — **no Dolbeault comparison and
+no Hodge symmetry**. Forster §17 is entirely PDE-free (harmonic forms first appear in §19, which
+§16–17 never use); it proves, for the **canonical divisor** `K`, the perfect residue pairing
 
   `⟨ω, ξ⟩ := Res(ω·ξ)`,   `ι_D : H⁰(X, Ω_{−D}) → H¹(X, 𝒪_D)*`
 
@@ -24,31 +24,32 @@ is an isomorphism (Forster 17.6 injective + 17.9 surjective), whence (17.10/17.1
   `dim H¹(X, 𝒪_D) = dim H⁰(X, Ω_{−D})`,  and at `D = 0`:  `g = dim H¹(X,𝒪) = dim H⁰(X,Ω)`.
 
 Using Forster 17.4 (`Ω_{−D} ≅ 𝒪_{K−D}` via multiplication by a meromorphic 1-form with divisor `K`),
-we phrase the pairing on the **already-built junk-free linear system** `L(K−D)` (`lDim (K−D)`), so we do
-**not** need a separate meromorphic-1-form space:
+we phrase the pairing on the **already-built junk-free linear system** `L(K−D)` (`lDim (K−D)`), so
+we do **not** need a separate meromorphic-1-form space:
 
-  `ι_D : lSysModule (K − D) → (𝔘.cechH1 D)*`,   bijective ⟹  `h1Dim D = lDim (K − D)`  (= `serre_h1_eq`).
+  `ι_D : lSysModule (K − D) → (𝔘.cechH1 D)*`, bijective ⟹ `h1Dim D = lDim (K − D)` (=
+  `serre_h1_eq`).
 
-## What is proved here (complete, downstream of the bundled `SerreDualityData`)
+## What is proved here (downstream of the bundled `SerreDualityData`)
 
-The abstract finite-dimensional cores are already proven in `SerreDuality.lean`:
-`finrank_le_of_injective_to_dual` (17.6) and `serre_surjectivity_dim_core` (17.9). This file bundles the
-**geometric instantiation** of §17 into one honest, non-vacuous structure `SerreDualityData 𝔘` (the
-canonical `K`, the residue pairing, its injectivity and surjectivity, and the finiteness of `H¹`), and
-**derives** `serre_eq` (17.11), `serre_h1_eq`, and `arithmeticGenus_eq_genus` from it. The `≤` half wires
-`finrank_le_of_injective_to_dual` directly; the `≥` half uses the bundled surjectivity (whose eventual
-construction runs `serre_surjectivity_dim_core` on the §17.9 dimension count).
+The abstract finite-dimensional cores are proven in `SerreDuality.lean`:
+`finrank_le_of_injective_to_dual` (17.6) and `serre_surjectivity_dim_core` (17.9). This file
+bundles the **geometric instantiation** of §17 into one non-vacuous structure
+`SerreDualityData 𝔘` (the canonical `K`, the residue pairing, its injectivity and surjectivity,
+and the finiteness of `H¹`), and **derives** `serre_eq` (17.11), `serre_h1_eq`, and
+`arithmeticGenus_eq_genus` from it. The `≤` half wires `finrank_le_of_injective_to_dual`
+directly; the `≥` half uses the bundled surjectivity (whose construction runs
+`serre_surjectivity_dim_core` on the §17.9 dimension count).
 
-## Status: SUPERSEDED as a route to Riemann–Roch
+## Superseded as a route to Riemann–Roch
 
-The former isolated input `exists_serreDualityData` (the §17 instantiation for a general `X`) was
-PRUNED: `Jacobians.exists_riemannRoch_divisor` is now proven unconditionally via the Miranda
-Laurent-tail route (`LaurentTail.exists_riemannRoch_divisor_unconditional`), which never needs the
-Čech-level pairing.  Everything in this file is sorry-free and kept (the `SerreDualityData` bundle
-is still the target of the realization constructors).
+`Jacobians.exists_riemannRoch_divisor` is proven unconditionally via the Miranda Laurent-tail
+route (`LaurentTail.exists_riemannRoch_divisor_unconditional`), which never needs the Čech-level
+pairing, so no `exists_serreDualityData` instantiation lives here.  The `SerreDualityData` bundle
+and its derived theorems are kept as the target of the realization constructors.
 
-References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.4–17.11; Miranda, *Algebraic Curves and
-Riemann Surfaces*, §VIII.3.
+References: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.4–17.11; Miranda, *Algebraic
+Curves and Riemann Surfaces*, §VIII.3.
 -/
 
 noncomputable section
@@ -61,9 +62,10 @@ namespace Jacobians.Dolbeault
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- **The Forster §17 instantiation** (the geometric data of Serre duality on `X`): a canonical divisor
-`K` with `lDim K = genus` (17.4 at `D=0`: `𝒪_K ≅ Ω`), and the residue pairing
-`ι_D : L(K−D) → (H¹(𝒪_D))*` which is bijective (17.6 injective + 17.9 surjective), with `H¹` finite. -/
+/-- **The Forster §17 instantiation** (the geometric data of Serre duality on `X`): a canonical
+divisor `K` with `lDim K = genus` (17.4 at `D=0`: `𝒪_K ≅ Ω`), and the residue pairing
+`ι_D : L(K−D) → (H¹(𝒪_D))*` which is bijective (17.6 injective + 17.9 surjective), with `H¹` finite.
+-/
 structure SerreDualityData (𝔘 : FiniteCover X) where
   /-- The canonical divisor `K = div ω₀` of a nonzero meromorphic 1-form. -/
   K : Divisor X
@@ -83,8 +85,8 @@ namespace SerreDualityData
 variable {𝔘 : FiniteCover X}
 
 /-- **Forster 17.11 — the Serre duality dimension equality.** `dim H¹(X,𝒪_D) = dim H⁰(X,𝒪_{K−D})`,
-i.e. `h1Dim D = lDim (K − D)`. The pairing `ι_D` is bijective, so `L(K−D) ≃ (H¹(𝒪_D))*`, and the dual
-of a finite-dimensional space has equal dimension. -/
+i.e. `h1Dim D = lDim (K − D)`. The pairing `ι_D` is bijective, so `L(K−D) ≃ (H¹(𝒪_D))*`, and the
+dual of a finite-dimensional space has equal dimension. -/
 theorem serre_eq (data : SerreDualityData 𝔘) (D : Divisor X) :
     𝔘.h1Dim D = lDim (X := X) (data.K - D) := by
   haveI := data.finH1 D
@@ -97,9 +99,9 @@ theorem serre_eq (data : SerreDualityData 𝔘) (D : Divisor X) :
   -- `h1Dim D = finrank H¹(𝒪_D)`, `lDim (K−D) = finrank L(K−D)` (both definitional).
   exact h
 
-/-- **The `≤` half wired through the 17.6 core** (`finrank_le_of_injective_to_dual`): injectivity of the
-pairing gives `lDim (K−D) ≤ h1Dim D`. (Recorded separately to exhibit the core wiring; subsumed by
-`serre_eq`.) -/
+/-- **The `≤` half wired through the 17.6 core** (`finrank_le_of_injective_to_dual`): injectivity of
+the pairing gives `lDim (K−D) ≤ h1Dim D`. (Recorded separately to exhibit the core wiring; subsumed
+by `serre_eq`.) -/
 theorem lDim_le_h1Dim (data : SerreDualityData 𝔘) (D : Divisor X) :
     lDim (X := X) (data.K - D) ≤ 𝔘.h1Dim D := by
   haveI := data.finH1 D
@@ -109,17 +111,17 @@ theorem lDim_le_h1Dim (data : SerreDualityData 𝔘) (D : Divisor X) :
 theorem arithmeticGenus (data : SerreDualityData 𝔘) : 𝔘.h1Dim 0 = genus X := by
   rw [data.serre_eq 0, sub_zero]; exact data.hKgenus
 
-/-- **General Serre duality `serre_h1_eq`** from the data: a single canonical `K` works for all `D`. -/
+/-- **General Serre duality `serre_h1_eq`** from the data: a single canonical `K` works for all `D`.
+-/
 theorem serreH1 (data : SerreDualityData 𝔘) :
     ∃ K : Divisor X, ∀ D : Divisor X, 𝔘.h1Dim D = lDim (X := X) (K - D) :=
   ⟨data.K, data.serre_eq⟩
 
 end SerreDualityData
 
-/-! The former isolated input `exists_serreDualityData (𝔘) (hL) : Nonempty (SerreDualityData 𝔘)`
-(the Čech-level §17 instantiation, the last `sorry` on the old ladder route) and its two wrappers
-`arithmeticGenus_eq_genus_serre` / `serre_h1_eq_serre` were **PRUNED**: Riemann–Roch
-(`Jacobians.exists_riemannRoch_divisor`) is now proven unconditionally via the Miranda
+/-! There is deliberately no `exists_serreDualityData (𝔘) (hL) : Nonempty (SerreDualityData 𝔘)`
+(a Čech-level §17 instantiation) here: Riemann–Roch
+(`Jacobians.exists_riemannRoch_divisor`) is proven unconditionally via the Miranda
 Laurent-tail route (`LaurentTail.exists_riemannRoch_divisor_unconditional`), which runs Serre
 duality on the Mittag-Leffler tail `H¹` instead of the Čech `H¹` — no `SerreDualityData`
 instantiation needed.  The `SerreDualityData` structure and its derived theorems above are kept:

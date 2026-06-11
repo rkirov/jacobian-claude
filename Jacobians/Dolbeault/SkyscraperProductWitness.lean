@@ -12,22 +12,23 @@
   section `g ∈ 𝒪_{D+P}(U j)` whose order at `P` is *exactly* `k = −(D P) − 1`, so its top Laurent
   coefficient is nonzero.
 
-  This holds for the **canonical chart-disk cover** `chartDiskCover` because each cover-set `U j` sits
-  inside the source of a single chart `φ = chartAt (center j)` (`ChartDiskCover.subset_chart_source`),
-  on which the **product witness**
+  This holds for the **canonical chart-disk cover** `chartDiskCover` because each cover-set `U j`
+  sits inside the source of a single chart `φ = chartAt (center j)`
+  (`ChartDiskCover.subset_chart_source`), on which the **product witness**
 
       `g = ∏_{Q ∈ supp(D+P) ∩ U j} (φ − φ(Q))^{−(D+P)(Q)}`
 
-  is meromorphic with `ord_Q g = −(D+P)(Q)` at each support point `Q` (the other factors being analytic
-  and nonzero there) and `ord_x g = 0 ≥ −(D+P)(x)` elsewhere.  In particular `ord_P g = −(D+P)(P) = k`
-  exactly, so `coeffGermLin [g] ≠ 0` and `coeffGermLin` is onto `ℂ`.
+  is meromorphic with `ord_Q g = −(D+P)(Q)` at each support point `Q` (the other factors being
+  analytic and nonzero there) and `ord_x g = 0 ≥ −(D+P)(x)` elsewhere. In particular
+  `ord_P g = −(D+P)(P) = k` exactly, so `coeffGermLin [g] ≠ 0` and `coeffGermLin` is onto `ℂ`.
 
   ## Status
 
-  The product witness is the genuine local-analytic core (a finite-product order computation plus the
-  chart-change relating the center chart `φ` to the open-submanifold chart at `P` that `ordU`/`coeffGermLin`
-  use).  It is isolated here as the single named obligation `locallyRealizable_chartDiskCover`; closing
-  it makes the entire χ-side (`cohomological_riemannRoch`) fully complete on the canonical cover.
+  The product witness is the genuine local-analytic core (a finite-product order computation plus
+  the chart-change relating the center chart `φ` to the open-submanifold chart at `P` that
+  `ordU`/`coeffGermLin` use). It is isolated here as the single named obligation
+  `locallyRealizable_chartDiskCover`; closing it makes the entire χ-side
+  (`cohomological_riemannRoch`) fully complete on the canonical cover.
 -/
 import Jacobians.Dolbeault.SkyscraperConeRealization
 import Jacobians.Dolbeault.LerayCoverExists
@@ -38,7 +39,6 @@ open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Filter Function
 
-set_option linter.unusedSectionVars false
 set_option maxHeartbeats 1000000
 
 namespace Jacobians.Dolbeault
@@ -74,11 +74,13 @@ theorem coeffGermLin_ne_zero_of_ordU_eq {W : Opens X} {D : Divisor X} {P : X} (h
   rw [hord]
   exact lt_irrefl _
 
-/-- **Per-cover-set realizability from a witness of exact order.**  If for every `D` and `P ∈ W` there
-is a section of `𝒪_{D+P}(W)` of order *exactly* `−(D P)−1` at `P`, then `coeffGermLin` is surjective at
-`W` (the local Mittag–Leffler condition).  The product witness supplies such a section on a chart-disk. -/
-theorem coeffGermLin_surjective_of_exists_witness {W : Opens X} {D : Divisor X} {P : X} (hP : P ∈ W)
-    (hwit : ∃ g : W → ℂ, ∃ hg : g ∈ OmegaD (D + Finsupp.single P 1) W,
+/-- **Per-cover-set realizability from a witness of exact order.** If for every `D` and `P ∈ W`
+there is a section of `𝒪_{D+P}(W)` of order *exactly* `−(D P)−1` at `P`, then `coeffGermLin` is
+surjective at `W` (the local Mittag–Leffler condition). The product witness supplies such a section
+on a chart-disk. -/
+theorem coeffGermLin_surjective_of_exists_witness {W : Opens X} {D : Divisor X} {P : X}
+    (hP : P ∈ W)
+    (hwit : ∃ g : W → ℂ, ∃ _hg : g ∈ OmegaD (D + Finsupp.single P 1) W,
       ordU g ⟨P, hP⟩ = ((-(D P) - 1 : ℤ) : WithTop ℤ)) :
     Function.Surjective (coeffGermLin hP (D := D)) := by
   obtain ⟨g, hg, hord⟩ := hwit
@@ -98,7 +100,8 @@ equals the *planar* order of `F` at `φ x`.
 `ordU g ⟨x⟩` is read in the *ambient* chart at `x` (`CechH0.ordU_eq_orderAt_Gext`), where `Gext g`
 agrees with `F ∘ φ`; the chart-transition `φ ∘ (chartAt x).symm` is an analytic biholomorphism
 (`transition_analyticAt_of_mem` + `transition_deriv_ne_zero`), so
-`meromorphicOrderAt_comp_of_deriv_ne_zero` collapses the composition to `meromorphicOrderAt F (φ x)`. -/
+`meromorphicOrderAt_comp_of_deriv_ne_zero` collapses the composition to
+`meromorphicOrderAt F (φ x)`. -/
 theorem ordU_comp_chart_eq {c : X} {U : Opens X}
     (hU : (U : Set X) ⊆ (chartAt (H := ℂ) c).source) (F : ℂ → ℂ) {x : X} (hx : x ∈ U) :
     ordU (fun w : U => F ((chartAt (H := ℂ) c) w.1)) ⟨x, hx⟩ =
@@ -137,7 +140,8 @@ theorem ordU_comp_chart_eq {c : X} {U : Opens X}
 `U ⊆ φ.source` (`φ = chartAt c`), then `g = F ∘ φ` is meromorphic on the open submanifold `↥U`: in
 each point's own chart it agrees with `F ∘ (φ ∘ chart.symm)` (an analytic-precomposition of the
 meromorphic `F`). -/
-theorem isMeromorphic_comp_chart {c : X} {U : Opens X}
+theorem isMeromorphic_comp_chart {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {c : X} {U : Opens X}
     (hU : (U : Set X) ⊆ (chartAt (H := ℂ) c).source) {F : ℂ → ℂ} (hF : ∀ z : ℂ, MeromorphicAt F z) :
     IsMeromorphic (U : Type _) (fun w : U => F ((chartAt (H := ℂ) c) w.1)) := by
   set φ := chartAt (H := ℂ) c with hφ
@@ -158,9 +162,11 @@ theorem isMeromorphic_comp_chart {c : X} {U : Opens X}
       (chartAt (H := ℂ) (u : X)).symm w ∈ (U : Set X) := by
     have hwx_tgt : (chartAt (H := ℂ) (u : X)) (u : X) ∈ (chartAt (H := ℂ) (u : X)).target :=
       (chartAt (H := ℂ) (u : X)).map_source hxx
-    have hcont : ContinuousAt (chartAt (H := ℂ) (u : X)).symm ((chartAt (H := ℂ) (u : X)) (u : X)) :=
+    have hcont :
+        ContinuousAt (chartAt (H := ℂ) (u : X)).symm ((chartAt (H := ℂ) (u : X)) (u : X)) :=
       (chartAt (H := ℂ) (u : X)).continuousAt_symm hwx_tgt
-    have hh : (chartAt (H := ℂ) (u : X)).symm ((chartAt (H := ℂ) (u : X)) (u : X)) ∈ (U : Set X) := by
+    have hh :
+        (chartAt (H := ℂ) (u : X)).symm ((chartAt (H := ℂ) (u : X)) (u : X)) ∈ (U : Set X) := by
       rw [(chartAt (H := ℂ) (u : X)).left_inv hxx]; exact u.2
     exact hcont.preimage_mem_nhds (U.isOpen.mem_nhds hh)
   have heq2 : (Gext g ∘ (chartAt (H := ℂ) (u : X)).symm) =ᶠ[𝓝 ((chartAt (H := ℂ) (u : X)) (u : X))]
@@ -172,20 +178,20 @@ theorem isMeromorphic_comp_chart {c : X} {U : Opens X}
   -- `g ∘ (chartAt u).symm =ᶠ Gext g ∘ (chartAt u.1).symm =ᶠ F ∘ (φ ∘ (chartAt u.1).symm)`.
   exact hmer.congr (((hev.trans heq2).filter_mono nhdsWithin_le_nhds).symm)
 
-/-- **Existence of an exact-order witness on each chart-disk cover-set** — the local-analytic core of
-the χ-side (Forster §16, Mittag–Leffler).
+/-- **Existence of an exact-order witness on each chart-disk cover-set** — the local-analytic core
+of the χ-side (Forster §16, Mittag–Leffler).
 
-For each chart-disk cover-set `U j ∋ P` and divisor `D`, there is a section `g ∈ 𝒪_{D+P}(U j)` of order
-*exactly* `−(D P)−1` at `P`.
+For each chart-disk cover-set `U j ∋ P` and divisor `D`, there is a section `g ∈ 𝒪_{D+P}(U j)` of
+order *exactly* `−(D P)−1` at `P`.
 
-The witness is the **factorized rational** `g = (∏ᶠ u, (· − u)^{dz u}) ∘ φ` read through the *center*
-chart `φ = chartAt (center j)` (`U j ⊆ φ.source`), with exponent
-`dz w = −(D+P)(φ.symm w)` on `φ.target` (zero off it) — so `dz (φ x) = −(D+P)(x)` for every `x ∈ U j`.
-The Mathlib `FactorizedRational` API supplies the planar facts (`meromorphicNFOn_univ` — meromorphic
-everywhere; `meromorphicOrderAt_eq` — order `dz z` at `z`), and `ordU_comp_chart_eq` /
-`isMeromorphic_comp_chart` transfer them through the chart to `↥(U j)`.  Hence `ordU g ⟨x⟩ = −(D+P)(x)`
-for every `x ∈ U j`: this meets the `𝒪_{D+P}` bound with equality everywhere, and at `P` gives the
-exact order `−(D+P)(P) = −(D P)−1`. -/
+The witness is the **factorized rational** `g = (∏ᶠ u, (· − u)^{dz u}) ∘ φ` read through the
+*center* chart `φ = chartAt (center j)` (`U j ⊆ φ.source`), with exponent `dz w = −(D+P)(φ.symm w)`
+on `φ.target` (zero off it) — so `dz (φ x) = −(D+P)(x)` for every `x ∈ U j`. The Mathlib
+`FactorizedRational` API supplies the planar facts (`meromorphicNFOn_univ` — meromorphic everywhere;
+`meromorphicOrderAt_eq` — order `dz z` at `z`), and `ordU_comp_chart_eq` /
+`isMeromorphic_comp_chart` transfer them through the chart to `↥(U j)`. Hence
+`ordU g ⟨x⟩ = −(D+P)(x)` for every `x ∈ U j`: this meets the `𝒪_{D+P}` bound with equality
+everywhere, and at `P` gives the exact order `−(D+P)(P) = −(D P)−1`. -/
 theorem exists_orderExact_witness_chartDisk (D : Divisor X)
     (j : (chartDiskCover (X := X)).ι) (P : X) (hP : P ∈ (chartDiskCover (X := X)).U j) :
     ∃ g : (chartDiskCover (X := X)).U j → ℂ,
@@ -217,7 +223,8 @@ theorem exists_orderExact_witness_chartDisk (D : Divisor X)
     FactorizedRational.meromorphicOrderAt_eq dz hdz_fin
   set g : U → ℂ := fun w => F (φ w.1) with hg
   -- `ordU g ⟨x⟩ = −DP(x)` for every `x ∈ U` (exact equality everywhere).
-  have hgord : ∀ {x : X} (hx : x ∈ U), ordU g ⟨x, hx⟩ = ((-(DP x) : ℤ) : WithTop ℤ) := fun {x} hx => by
+  have hgord : ∀ {x : X} (hx : x ∈ U), ordU g ⟨x, hx⟩ = ((-(DP x) : ℤ) : WithTop ℤ) :=
+    fun {x} hx => by
     rw [ordU_comp_chart_eq hUsrc F hx, hForder, hdz_eval (hUsrc hx)]
   refine ⟨g, ?_, ?_⟩
   · rw [mem_OmegaD]
@@ -231,7 +238,7 @@ theorem exists_orderExact_witness_chartDisk (D : Divisor X)
 /-- **Local realizability of the canonical chart-disk cover** (the product witness / local
 Mittag–Leffler).  At every chart-disk cover-set `U j ∋ P`, the order-`(−D(P)−1)` principal-part
 coefficient `coeffGermLin` is surjective onto `ℂ`, for every divisor `D` — the single analytic input
-the cone skyscraper construction consumes.  PROVEN from the exact-order witness
+the cone skyscraper construction consumes.  Proven from the exact-order witness
 (`exists_orderExact_witness_chartDisk`) via `coeffGermLin_surjective_of_exists_witness`. -/
 theorem locallyRealizable_chartDiskCover :
     (chartDiskCover (X := X)).toFiniteCover.LocallyRealizable := by
