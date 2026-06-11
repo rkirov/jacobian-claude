@@ -19,17 +19,16 @@ where `Res_a(α) = formFnResidue ω₀ g a` is the local Laurent residue read in
 `a` (`Jacobians.Dolbeault.formFnResidue`) and `residueSum` (`Jacobians.Dolbeault.MittagLeffler`) is
 the finite sum over the (finitely many) poles.
 
-The well-definedness of the residue functional `Res : H¹(X, Ω) → ℂ` on cohomology classes
-(Forster 17.3) rests on exactly this — a globally-defined (coboundary) meromorphic 1-form has total residue `0`. It
-is the **general higher-order-pole** statement, strictly more than `deg_div` (which is the simple-pole
-`α = df/f` special case, `Jacobians.ResidueTheoremX`).
+The well-definedness of the residue functional `Res : H¹(X, Ω) → ℂ` on cohomology classes (Forster
+17.3) rests on exactly this — a globally-defined (coboundary) meromorphic 1-form has total residue
+`0`. It is the **general higher-order-pole** statement, strictly more than `deg_div` (which is the
+simple-pole `α = df/f` special case, `Jacobians.ResidueTheoremX`).
 
 ## The route (Miranda §VIII.3, the trace to ℙ¹)
 
-The proof is the algebraic residue theorem via the **trace to `ℂℙ¹`**: pick a nonconstant meromorphic
-`f : X → ℂℙ¹` (a branched cover `F = f.toRiemannSphere`, supplied by Riemann–Roch), form the
-trace
-`Tr_F α` (a rational 1-form on `ℂℙ¹`), and compute
+The proof is the algebraic residue theorem via the **trace to `ℂℙ¹`**: pick a nonconstant
+meromorphic `f : X → ℂℙ¹` (a branched cover `F = f.toRiemannSphere`, supplied by Riemann–Roch), form
+the trace `Tr_F α` (a rational 1-form on `ℂℙ¹`), and compute
 
 ```
 ∑_{x∈X} Res_x(α)  =  ∑_{y∈ℂℙ¹} ∑_{x∈F⁻¹y} Res_x(α)        (regroup by fibre)
@@ -39,19 +38,20 @@ trace
 
 The two one-variable engines are unconditional, in `Jacobians.ResidueChangeOfVariables`:
 
-* the fibre Lemma 3.2 `FibreTrace.resAt_traceCoeff'` — `Res_b(Tr_F α) = ∑_{sheets i} Res_{pre i}` — and
+* the fibre Lemma 3.2 `FibreTrace.resAt_traceCoeff'` — `Res_b(Tr_F α) = ∑_{sheets i} Res_{pre i}` —
+  and
 * the trace combine `finiteResidueSum_trace_eq_zero_of_fibres'` —
   `(∑_{centers p} Res_b(Tr_F α over fibre p)) + Res_∞(Tr_F α) = 0` —
 
 both in `Jacobians.ResidueChangeOfVariables` (the `'`-forms, no `ResidueChangeOfVariables`
-hypothesis), built on the `ℂℙ¹` residue theorem `LaurentForm.finiteResidueSum_add_resAtInfty_eq_zero`
-(`Jacobians.TraceResidue`).
+hypothesis), built on the `ℂℙ¹` residue theorem
+`LaurentForm.finiteResidueSum_add_resAtInfty_eq_zero` (`Jacobians.TraceResidue`).
 
 ## What this file builds
 
-This file is the **manifold trace assembly** — the generalization of `Jacobians.ResidueTheoremX` (the
-`df/f`/`deg_div` simple-pole assembly) to a general meromorphic 1-form, reusing the now-general
-feeders.  It mirrors that file field-for-field:
+This file is the **manifold trace assembly** — the generalization of `Jacobians.ResidueTheoremX`
+(the `df/f`/`deg_div` simple-pole assembly) to a general meromorphic 1-form, reusing the now-general
+feeders. It mirrors that file field-for-field:
 
 * the **fibrewise regrouping** (`residueSum_eq_fiberwise`, `residueSum_eq_infty_add_finite`): the
   finite residue-sum `∑_{a ∈ poles} formFnResidue ω₀ g a` partitions along the fibres of
@@ -65,9 +65,9 @@ feeders.  It mirrors that file field-for-field:
 * **the residue theorem** (`residueSum_eq_zero_of_formResidueTrace`,
   `formFnResidue_total_eq_zero_of_formResidueTrace`): given a `FormResidueTrace ω₀ g`, the total
   residue vanishes — *completely* from the general trace combine + the regrouping;
-* **non-vacuity** (`formResidueTrace_of_holomorphic`): a `FormResidueTrace ω₀ g` exists when `α = ω₀·g`
-  is globally holomorphic (the empty `LaurentForm`, no poles), confirming the structure's obligations
-  are *true and satisfiable*, not a disguised `False`.
+* **non-vacuity** (`formResidueTrace_of_holomorphic`): a `FormResidueTrace ω₀ g` exists when
+  `α = ω₀·g` is globally holomorphic (the empty `LaurentForm`, no poles), confirming the structure's
+  obligations are *true and satisfiable*, not a disguised `False`.
 
 ## The trace data (constructed downstream)
 
@@ -98,7 +98,7 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The fibrewise regrouping `∑_{a ∈ poles} = ∑_y ∑_{F⁻¹y}`
 
@@ -147,8 +147,8 @@ theorem residueSum_eq_infty_add_finite (ω₀ : HolomorphicOneForms X) (g : X �
 
 The remaining content is the **global manifold assembly** of the meromorphic trace `Tr_F α`
 (`α = ω₀·g`) through the cover `F = f.toRiemannSphere`: packaging the (finite, off-branch) fibres as
-`FibreTrace`s, exhibiting the rational trace as a `LaurentForm L` on `ℂℙ¹`, and identifying — via the
-**general** Lemma 3.2 (`FibreTrace.resAt_traceCoeff'`, now unconditional) and the local-residue
+`FibreTrace`s, exhibiting the rational trace as a `LaurentForm L` on `ℂℙ¹`, and identifying — via
+the **general** Lemma 3.2 (`FibreTrace.resAt_traceCoeff'`, now unconditional) and the local-residue
 bridge — each fibre's residue with the fibre's residue sum `∑_{a ∈ F⁻¹y} Res_a(α)`.
 
 We package this output as the structure `FormResidueTrace ω₀ g` below; each field is a *true*
@@ -163,7 +163,8 @@ aggregate identifications `infty_eq` and `finite_eq`, with everything downstream
 
 The crucial difference from `Jacobians.ResidueTheoremX.LogDerivTrace`: there are no simple-pole
 fields (`cs`/`hsp`) and no `ResidueChangeOfVariables` hypothesis — `α = ω₀·g` has *higher-order*
-poles, so we use the **general** unconditional combine `finiteResidueSum_trace_eq_zero_of_fibres'`. -/
+poles, so we use the **general** unconditional combine `finiteResidueSum_trace_eq_zero_of_fibres'`.
+-/
 
 /-- **The 1-form trace representation** of `α = ω₀·g` through `F = f.toRiemannSphere`.
 
@@ -174,8 +175,9 @@ for the general 1-form residue theorem:
 * `poles` — the finite set of poles of `α = ω₀·g` (off it, `α` is holomorphic);
 * a `LaurentForm L` (partial-fraction `1`-form on `ℂℙ¹`) representing `Tr_F α`;
 * a fibre datum `fibre p : FibreTrace` for each finite center `p`;
-* `hL32`: each finite center's fibre-residue sum equals `L`'s residue there (the manifold bookkeeping
-  that `L` *is* the trace — Lemma 3.2 at the finite centers, `FibreTrace.resAt_traceCoeff'`);
+* `hL32`: each finite center's fibre-residue sum equals `L`'s residue there (the manifold
+  bookkeeping that `L` *is* the trace — Lemma 3.2 at the finite centers,
+  `FibreTrace.resAt_traceCoeff'`);
 * `infty_eq`: the residue at infinity of the trace equals the **`∞`-fibre residue sum**
   `∑_{a : F a = ∞} Res_a(α)` (Lemma 3.2 at `∞`, via the local-residue bridge);
 * `finite_eq`: the total over the finite centers of the per-fibre trace residue equals the
@@ -199,7 +201,8 @@ structure FormResidueTrace (ω₀ : HolomorphicOneForms X) (g : X → ℂ) where
   /-- The `∞`-residue of the trace is the `∞`-fibre residue sum (Lemma 3.2 at `∞` + the bridge). -/
   infty_eq : resAtInfty L.R L.ρ
     = ∑ a ∈ poles with f.toRiemannSphere a = OnePoint.infty, formFnResidue ω₀ g a
-  /-- The finite-center trace-residue total is the finite-fibre residue sum (Lemma 3.2 + the bridge). -/
+  /-- The finite-center trace-residue total is the finite-fibre residue sum (Lemma 3.2 + the
+  bridge). -/
   finite_eq : (∑ p ∈ Finset.univ.image L.a, resAt (fibre p).traceCoeff (fibre p).b)
     = ∑ y ∈ (poles.image f.toRiemannSphere).erase OnePoint.infty,
         ∑ a ∈ poles with f.toRiemannSphere a = y, formFnResidue ω₀ g a
@@ -209,11 +212,11 @@ structure FormResidueTrace (ω₀ : HolomorphicOneForms X) (g : X → ℂ) where
 
 > `∑_{a ∈ poles} Res_a(α) = 0`.
 
-*Proof (complete).*  The **general** trace combine `finiteResidueSum_trace_eq_zero_of_fibres'`
-(now unconditional, the `ResidueChangeOfVariables` atom being discharged) gives
-`(∑_{centers} Res_b(Tr_F α)) + Res_∞(Tr_F α) = 0`.  By `finite_eq` and `infty_eq` the two summands
-are the finite-fibre and `∞`-fibre residue sums; by `residueSum_eq_infty_add_finite` their sum is the
-total residue, so it is `0`. -/
+*Proof (complete).* The **general** trace combine `finiteResidueSum_trace_eq_zero_of_fibres'` (now
+unconditional, the `ResidueChangeOfVariables` atom being discharged) gives
+`(∑_{centers} Res_b(Tr_F α)) + Res_∞(Tr_F α) = 0`. By `finite_eq` and `infty_eq` the two summands
+are the finite-fibre and `∞`-fibre residue sums; by `residueSum_eq_infty_add_finite` their sum is
+the total residue, so it is `0`. -/
 theorem residueSum_eq_zero_of_formResidueTrace (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (T : FormResidueTrace ω₀ g) :
     ∑ a ∈ T.poles, formFnResidue ω₀ g a = 0 := by
@@ -234,14 +237,14 @@ theorem residueSum_eq_zero_of_formResidueTrace' (ω₀ : HolomorphicOneForms X) 
   residueSum_eq_zero_of_formResidueTrace ω₀ g T
 
 /-- **Forster's residue `Res(μ) = 0` for a coboundary distribution.**  A Mittag–Leffler distribution
-`μ` of the shape `ω₀·g` whose recorded pole set has a `FormResidueTrace` (i.e. the global meromorphic
-1-form `α = ω₀·g` it represents has a rational trace) has total residue `Res(μ) = 0`.  This is the
-precise statement Forster 17.3 needs: a globally-defined (coboundary) Mittag–Leffler distribution has
-zero residue, which makes the residue functional `Res : H¹(X, Ω) → ℂ` well-defined on cohomology
-classes (the node-4 `globalRes` descent).
+`μ` of the shape `ω₀·g` whose recorded pole set has a `FormResidueTrace` (i.e. the global
+meromorphic 1-form `α = ω₀·g` it represents has a rational trace) has total residue `Res(μ) = 0`.
+This is the precise statement Forster 17.3 needs: a globally-defined (coboundary) Mittag–Leffler
+distribution has zero residue, which makes the residue functional `Res : H¹(X, Ω) → ℂ` well-defined
+on cohomology classes (the node-4 `globalRes` descent).
 
-The hypothesis `hpoles` records that `μ`'s bookkeeping pole set is the trace's pole set; combined with
-`MittagLefflerForm.res = residueSum` this gives `Res(μ) = residueSum ω₀ μ.g T.poles = 0`. -/
+The hypothesis `hpoles` records that `μ`'s bookkeeping pole set is the trace's pole set; combined
+with `MittagLefflerForm.res = residueSum` this gives `Res(μ) = residueSum ω₀ μ.g T.poles = 0`. -/
 theorem MittagLefflerForm_res_eq_zero (μ : MittagLefflerForm X) (T : FormResidueTrace μ.α μ.g)
     (hpoles : μ.poles = T.poles) :
     μ.res = 0 := by
@@ -254,8 +257,9 @@ The `FormResidueTrace ω₀ g` obligations are genuine (true, satisfiable), not 
 hypothesis: in the case where `α = ω₀·g` is **globally holomorphic** (its chart-pullback coefficient
 is analytic at every point — no poles) we exhibit a `FormResidueTrace ω₀ g` explicitly — the empty
 `LaurentForm` (no poles, trace `≡ 0`) with an empty pole set, whose residue data and both fibre sums
-vanish.  This mirrors `Jacobians.ResidueTheoremX.logDerivTrace_of_div_eq_zero`, confirming the
-isolated structure is honest (the residue theorem does hold in this case, with the trivial trace). -/
+vanish. This mirrors `Jacobians.ResidueTheoremX.logDerivTrace_of_div_eq_zero`, confirming the
+isolated structure is honest (the residue theorem does hold in this case, with the trivial trace).
+-/
 
 /-- **Non-vacuity witness.**  When `α = ω₀·g` is globally holomorphic (`g`'s chart-pullback is
 analytic at every point), a `FormResidueTrace ω₀ g` exists: an arbitrary cover `f`, the **empty pole
@@ -281,11 +285,11 @@ def formResidueTrace_of_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → �
     simp
   finite_eq := by rw [Jacobians.ResidueTheoremX.emptyLaurentForm_image_a]; simp
 
-/-- **The residue theorem, holomorphic case (unconditional).**  If `α = ω₀·g` is globally holomorphic
-(`g`'s chart-pullback is analytic at every point), then over any finite pole-candidate set the residue
-sum vanishes — directly from `residueSum_eq_zero_of_analyticAt`, and consistent with the trace
-representation.  (The honest content: a coboundary — globally-holomorphic — distribution has total
-residue `0`, the trivial case of Forster 17.3.) -/
+/-- **The residue theorem, holomorphic case (unconditional).** If `α = ω₀·g` is globally holomorphic
+(`g`'s chart-pullback is analytic at every point), then over any finite pole-candidate set the
+residue sum vanishes — directly from `residueSum_eq_zero_of_analyticAt`, and consistent with the
+trace representation. (The honest content: a coboundary — globally-holomorphic — distribution has
+total residue `0`, the trivial case of Forster 17.3.) -/
 theorem residueSum_eq_zero_of_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (S : Finset X)
     (hg : ∀ a ∈ S, AnalyticAt ℂ (fun z => g ((chartAt ℂ a).symm z)) ((chartAt ℂ a) a)) :
     residueSum ω₀ g S = 0 :=
