@@ -7,23 +7,24 @@
       `finiteDimensional_globalSections (𝔘 : FiniteCover X) (D : Divisor X) :
          FiniteDimensional ℂ ↥(𝔘.globalSections D)`
 
-  i.e. `l(D) = h⁰(D) < ∞`.  This is **Gap 1** of `CohomologicalRR.exists_skyscraperLES`: the
+  i.e. `l(D) = h⁰(D) < ∞`. This is **Gap 1** of `CohomologicalRR.exists_skyscraperLES`: the
   `[FiniteDimensional ℂ H⁰(𝒪_{D+P})]` instance hypothesis that the skyscraper assembly
-  (`SkyscraperAssembly.skyscraperLES_of_chartDisk`) previously had to *assume* (no repo lemma existed).
-  It is now *derived*.
+  (`SkyscraperAssembly.skyscraperLES_of_chartDisk`) previously had to *assume* (no repo lemma
+  existed). It is now *derived*.
 
   ## The argument (the SAME light skyscraper reduction used for `H¹` in `CechFinitenessDtwist`)
 
-  `globalSections D = ker δ⁰ ⊓ sections0 D` is a *submodule* (no quotient — `H⁰` is junk-free).  Adding
-  a point `P` only weakens the order bound, so `globalSections D ≤ globalSections (D+P)`, and the
-  correction quotient
+  `globalSections D = ker δ⁰ ⊓ sections0 D` is a *submodule* (no quotient — `H⁰` is junk-free).
+  Adding a point `P` only weakens the order bound, so `globalSections D ≤ globalSections (D+P)`, and
+  the correction quotient
 
       `globalSections (D+P) ⧸ globalSections D`
 
   injects into the finite-dimensional section quotient `sections0 (D+P) ⧸ sections0 D`
   (`CechFinitenessDtwist.finiteDimensional_sections0_quotient`, a finite product of ≤ 1-dimensional
-  principal-part stalk quotients) via `finiteDimensional_inf_quotient` (with `K = ker δ⁰`).  Hence
-  finiteness of `H⁰` propagates *both ways* along the inclusion `globalSections D ↪ globalSections (D+P)`:
+  principal-part stalk quotients) via `finiteDimensional_inf_quotient` (with `K = ker δ⁰`). Hence
+  finiteness of `H⁰` propagates *both ways* along the inclusion
+  `globalSections D ↪ globalSections (D+P)`:
 
     * **forward** (`H⁰(D)` finite ⟹ `H⁰(D+P)` finite): `H⁰(D+P)` is the extension of the finite
       submodule `H⁰(D)` by the finite correction quotient (`Module.Finite.of_submodule_quotient`);
@@ -43,7 +44,6 @@ import Jacobians.Dolbeault.CechH0
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
@@ -56,7 +56,7 @@ open FiniteFamily
 
 variable (𝔘 : FiniteCover X) (D : Divisor X) (P : X)
 
-/-! ### Order-weakening inclusions (the H⁰ analogue of the `CohomologicalRR` `_le_add_single` facts) -/
+/-! ### Order-weakening inclusions (the H⁰ analogue of the `_le_add_single` facts) -/
 
 /-- The `𝒪_D`-functions on `U` are contained in the `𝒪_{D+P}`-functions (adding the effective point
 `P` only weakens the order bound `−(D+P) ≤ −D`). -/
@@ -144,7 +144,8 @@ theorem finiteDimensional_globalSections_add_singlePoint_iff (k : ℤ) :
   | succ k ih =>
     rw [show (Finsupp.single P ((k : ℤ) + 1) : Divisor X)
         = Finsupp.single P (k : ℤ) + Finsupp.single P 1 from by rw [← Finsupp.single_add],
-      ← add_assoc, 𝔘.finiteDimensional_globalSections_add_single_iff (D + Finsupp.single P (k : ℤ)) P]
+      ← add_assoc,
+      𝔘.finiteDimensional_globalSections_add_single_iff (D + Finsupp.single P (k : ℤ)) P]
     exact ih
   | pred k ih =>
     rw [← ih,
@@ -154,7 +155,7 @@ theorem finiteDimensional_globalSections_add_singlePoint_iff (k : ℤ) :
 
 /-! ### The base case `D = 0` (Liouville: `h⁰(0) = l(0) = 1 > 0`) -/
 
-/-- **Base case (Liouville).**  `H⁰(𝒪)` is finite-dimensional: `finrank ℂ H⁰(0) = h0Dim 0 = l(0) = 1`
+/-- **Base case (Liouville).** `H⁰(𝒪)` is finite-dimensional: `finrank ℂ H⁰(0) = h0Dim 0 = l(0) = 1`
 is positive (`h0Dim_eq_lDim` + `lDim_zero_eq_one`), so `FiniteDimensional.of_finrank_pos`. -/
 theorem finiteDimensional_globalSections_zero :
     FiniteDimensional ℂ ↥(𝔘.globalSections (0 : Divisor X)) := by
@@ -181,10 +182,11 @@ end FiniteCover
 /-! ### The general theorem (any cover, any divisor) -/
 
 /-- **Finiteness of `H⁰(𝔘, 𝒪_D)` for any cover and any divisor** (Forster §14/§16 compactness;
-`l(D) = h⁰(D) < ∞`).  The Liouville base `H⁰(0)` (finrank `1`) is climbed to general `D` one point at
+`l(D) = h⁰(D) < ∞`). The Liouville base `H⁰(0)` (finrank `1`) is climbed to general `D` one point at
 a time via the principal-part skyscraper stalk quotient
-(`finiteDimensional_globalSections_of_zero`).  This is **Gap 1** of the χ-additivity skyscraper LES:
-the `[FiniteDimensional ℂ H⁰(𝒪_{D+P})]` instance the assembly previously had to assume is now derived.
+(`finiteDimensional_globalSections_of_zero`). This is **Gap 1** of the χ-additivity skyscraper LES:
+the `[FiniteDimensional ℂ H⁰(𝒪_{D+P})]` instance the assembly previously had to assume is now
+derived.
 
 `#print axioms finiteDimensional_globalSections` → `[propext, Classical.choice, Quot.sound]`. -/
 theorem finiteDimensional_globalSections (𝔘 : FiniteCover X) (D : Divisor X) :

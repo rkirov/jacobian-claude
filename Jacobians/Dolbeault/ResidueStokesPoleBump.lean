@@ -1,5 +1,5 @@
 /-
-  Pole bumps for the genus-uniform residue theorem (Route-H Stage C, part 2: geometry).
+  Pole bumps for the genus-uniform residue theorem (geometry).
 
   For the finite enlarged pole set `S` (poles ∪ the finite analytic-bad locus), this file
   constructs the per-pole radial bump data Forster's proof of the Residue Theorem (GTM 81,
@@ -22,7 +22,6 @@
 import Jacobians.Dolbeault.ResidueLedgerTransport
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open Complex Metric MeasureTheory Filter Set Topology
 open scoped Manifold ContDiff
@@ -31,8 +30,7 @@ namespace Jacobians.Dolbeault.StokesResidue
 
 open Jacobians.Dolbeault Jacobians
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ### A smooth cutoff profile (the `C^∞` upgrade of `exists_cutoff_profile`) -/
 
@@ -69,7 +67,8 @@ structure PoleBumpData (S : Finset X) where
 
 /-- **Existence of the bump data**: chart targets are open, `S` is finite and `X` is T1, so each
 `a ∈ S` has a chart-image neighbourhood whose `X`-side ball avoids `S \ {a}`. -/
-theorem exists_poleBumpData (S : Finset X) : Nonempty (PoleBumpData S) := by
+theorem exists_poleBumpData [T2Space X] [CompactSpace X] (S : Finset X) :
+    Nonempty (PoleBumpData S) := by
   classical
   -- the global fallback profile (for the junk values off `S`)
   obtain ⟨η₀, hη₀, _, _⟩ := exists_smooth_cutoff_profile (show (0 : ℝ) < 1 by norm_num)
@@ -202,7 +201,18 @@ theorem bump_eventually_one {a : X} (ha : a ∈ S) : ∀ᶠ x in 𝓝 a, D.bump 
   rw [bump, if_pos hx2]
   exact D.hη1 a ha _ hx1.le
 
-/-- The bump of `a` is `≡ 0` near every OTHER point of `S` (the separation field). -/
+/-- The chart-`a` read of `bump a` is the planar radial cutoff, near every target point. -/
+theorem bump_read_eventuallyEq {a : X} (_ha : a ∈ S) {z : ℂ}
+    (hz : z ∈ (chartAt (H := ℂ) a).target) :
+    (fun w => ((D.bump a ((chartAt (H := ℂ) a).symm w) : ℝ) : ℂ)) =ᶠ[𝓝 z]
+      fun w => ((D.η a (Complex.normSq (w - (chartAt (H := ℂ) a) a)) : ℝ) : ℂ) := by
+  set φ := chartAt (H := ℂ) a with hφdef
+  filter_upwards [φ.open_target.mem_nhds hz] with w hw
+  rw [bump, if_pos (φ.map_target hw), φ.right_inv hw]
+
+variable [T2Space X]
+
+/-- The bump of `a` is `≡ 0` near every other point of `S` (the separation field). -/
 theorem bump_eventually_zero_of_ne {a : X} (ha : a ∈ S) {p : X} (hp : p ∈ S) (hne : p ≠ a) :
     ∀ᶠ x in 𝓝 p, D.bump a x = 0 := by
   have hpB : p ∉ D.poleBall a := fun hmem => hne (D.hsep a ha p hp hmem)
@@ -216,6 +226,29 @@ theorem bump_eventually_zero_of_notMem {a : X} (ha : a ∈ S) {p : X}
   have hopen : IsOpen (D.poleBall a)ᶜ := (D.isCompact_poleBall ha).isClosed.isOpen_compl
   filter_upwards [hopen.mem_nhds hp] with x hx
   exact D.bump_eq_zero_of_notMem ha hx
+
+/-! ### The total bump `u = ∑ bump a` -/
+
+/-- Forster's `f₁ + ⋯ + f_n`: the sum of the per-pole bumps. -/
+noncomputable def totalBump : X → ℝ := fun x => ∑ a ∈ S, D.bump a x
+
+/-- **The total bump is `≡ 1` near every point of `S`** (its own bump is `1`, the others
+vanish — the separation field). -/
+theorem totalBump_eventually_one {p : X} (hp : p ∈ S) :
+    ∀ᶠ x in 𝓝 p, D.totalBump x = 1 := by
+  classical
+  have hall : ∀ᶠ x in 𝓝 p, ∀ a ∈ S, D.bump a x = if a = p then 1 else 0 := by
+    rw [eventually_all_finset]
+    intro a ha
+    rcases eq_or_ne a p with rfl | hne
+    · filter_upwards [D.bump_eventually_one ha] with x hx
+      rw [hx, if_pos rfl]
+    · filter_upwards [D.bump_eventually_zero_of_ne ha hp hne.symm] with x hx
+      rw [hx, if_neg hne]
+  filter_upwards [hall] with x hx
+  rw [totalBump, Finset.sum_congr rfl hx, Finset.sum_ite_eq' S p (fun _ => (1 : ℝ)), if_pos hp]
+
+variable [IsManifold 𝓘(ℂ) ω X]
 
 /-- **The bump is globally smooth** (`C^∞` chart read on the source; locally `0` off the
 compact `poleBall`). -/
@@ -241,39 +274,9 @@ theorem contMDiff_bump {a : X} (ha : a ∈ S) :
     refine ContMDiffAt.congr_of_eventuallyEq contMDiffAt_const
       (D.bump_eventually_zero_of_notMem ha hxB)
 
-/-- The chart-`a` read of `bump a` is the planar radial cutoff, near every target point. -/
-theorem bump_read_eventuallyEq {a : X} (ha : a ∈ S) {z : ℂ}
-    (hz : z ∈ (chartAt (H := ℂ) a).target) :
-    (fun w => ((D.bump a ((chartAt (H := ℂ) a).symm w) : ℝ) : ℂ)) =ᶠ[𝓝 z]
-      fun w => ((D.η a (Complex.normSq (w - (chartAt (H := ℂ) a) a)) : ℝ) : ℂ) := by
-  set φ := chartAt (H := ℂ) a with hφdef
-  filter_upwards [φ.open_target.mem_nhds hz] with w hw
-  rw [bump, if_pos (φ.map_target hw), φ.right_inv hw]
-
-/-! ### The total bump `u = ∑ bump a` -/
-
-/-- Forster's `f₁ + ⋯ + f_n`: the sum of the per-pole bumps. -/
-noncomputable def totalBump : X → ℝ := fun x => ∑ a ∈ S, D.bump a x
-
 theorem contMDiff_totalBump : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) D.totalBump := by
   show ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) fun x => ∑ a ∈ S, D.bump a x
   exact ContMDiff.sum fun a ha => D.contMDiff_bump ha
-
-/-- **The total bump is `≡ 1` near every point of `S`** (its own bump is `1`, the others
-vanish — the separation field). -/
-theorem totalBump_eventually_one {p : X} (hp : p ∈ S) :
-    ∀ᶠ x in 𝓝 p, D.totalBump x = 1 := by
-  classical
-  have hall : ∀ᶠ x in 𝓝 p, ∀ a ∈ S, D.bump a x = if a = p then 1 else 0 := by
-    rw [eventually_all_finset]
-    intro a ha
-    rcases eq_or_ne a p with rfl | hne
-    · filter_upwards [D.bump_eventually_one ha] with x hx
-      rw [hx, if_pos rfl]
-    · filter_upwards [D.bump_eventually_zero_of_ne ha hp hne.symm] with x hx
-      rw [hx, if_neg hne]
-  filter_upwards [hall] with x hx
-  rw [totalBump, Finset.sum_congr rfl hx, Finset.sum_ite_eq' S p (fun _ => (1 : ℝ)), if_pos hp]
 
 end PoleBumpData
 
