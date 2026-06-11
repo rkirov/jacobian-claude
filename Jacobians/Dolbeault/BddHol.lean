@@ -1,5 +1,5 @@
 /-
-  Dolbeault ladder — Čech finiteness (Forster 14.9), STEP 1.
+  Čech finiteness (Forster 14.9) — bounded holomorphic functions as a Banach space.
 
   The Banach space `BddHol U` of bounded holomorphic functions on an open `U ⊆ ℂ`, and the fact
   that restriction to a relatively-compact convex inner set `K ⋐ U` is a COMPACT operator
@@ -7,7 +7,7 @@
   finiteness lemma (Forster 14.8), which forces `H¹(X, 𝒪_D)` finite-dimensional.
 
   The compact-operator statement reduces, via the standard characterization
-  `isCompactOperator_iff_isCompact_closure_image_closedBall`, to the proven Montel atom
+  `isCompactOperator_iff_isCompact_closure_image_closedBall`, to the Montel lemma
   `Jacobians.Dolbeault.CechFiniteness.isCompact_closure_restrict_bddHolo`.
 
   Encoding: `BddHol U` is the `ℂ`-subspace of `ℂ → ℂ` of functions that are analytic on `U`, vanish
@@ -65,7 +65,8 @@ noncomputable instance : Module ℂ (BddHol U) := inferInstanceAs (Module ℂ �
 /-- Reinterpret `f : BddHol U` as the underlying subtype element. Definitional identity. -/
 def toCarrier (f : BddHol U) : ↥(BddHolCarrier U) := f
 
-@[simp] theorem toCarrier_add (f g : BddHol U) : (f + g).toCarrier = f.toCarrier + g.toCarrier := rfl
+@[simp] theorem toCarrier_add (f g : BddHol U) :
+    (f + g).toCarrier = f.toCarrier + g.toCarrier := rfl
 @[simp] theorem toCarrier_smul (c : ℂ) (f : BddHol U) : (c • f).toCarrier = c • f.toCarrier := rfl
 
 /-- The underlying `ℂ → ℂ` function of an element of `BddHol U`. -/
@@ -248,7 +249,7 @@ function on the compact `K`. This restriction is `ℂ`-linear and norm-nonincrea
 variable {K : Set ℂ} [CompactSpace K]
 
 /-- Restriction of `f : BddHol U` to a compact `K ⊆ U`, as a bounded continuous function on `K`.
-This is the exact element form consumed by the Montel atom
+This is the exact element form consumed by the Montel lemma
 `CechFiniteness.isCompact_closure_restrict_bddHolo`. -/
 noncomputable def restrict (hKU : K ⊆ U) (f : BddHol U) : K →ᵇ ℂ :=
   mkOfCompact ⟨K.restrict f.toFun, (f.analyticOn.continuousOn.mono hKU).restrict⟩
@@ -291,16 +292,17 @@ theorem norm_restrictCLM_le (hKU : K ⊆ U) : ‖restrictCLM hKU‖ ≤ 1 :=
 
 The cross-chart Čech `δ⁰`/`δ¹` transport a cochain component holomorphic on one chart-image to a
 neighbouring chart-image through the holomorphic transition `τ = φ_b ∘ φ_a⁻¹`. At the
-functional-analysis level this is **precomposition**: `g ↦ (z ↦ g(τ z))`, where `τ` is continuous on a
-compact `K ⊆ ℂ` and maps `K` into the open `U` where `g : BddHol U` lives. The result is a
-bounded-continuous function on `K` (NOT a `BddHol`, since `τ`'s image need not be open), with operator
-norm `≤ 1` (precomposition cannot increase the sup-norm). The manifold side supplies `τ` together with
-its `ContinuousOn`/`MapsTo` witnesses (from the analytic transition `transition_analyticAt_of_mem`);
-this section is pure one-variable analysis. (`restrictCLM` is the special case `τ = id`.) -/
+functional-analysis level this is **precomposition**: `g ↦ (z ↦ g(τ z))`, where `τ` is continuous on
+a compact `K ⊆ ℂ` and maps `K` into the open `U` where `g : BddHol U` lives. The result is a
+bounded-continuous function on `K` (NOT a `BddHol`, since `τ`'s image need not be open), with
+operator norm `≤ 1` (precomposition cannot increase the sup-norm). The manifold side supplies `τ`
+together with its `ContinuousOn`/`MapsTo` witnesses (from the analytic transition
+`transition_analyticAt_of_mem`); this section is pure one-variable analysis. (`restrictCLM` is the
+special case `τ = id`.) -/
 
-/-- Bounded-continuous precomposition `g ↦ (z ↦ g(τ z))` on the compact `K`, for `τ` continuous on `K`
-mapping into the open `U` where `g` lives. Continuity of the composite is `g.toFun` continuous on `U`
-composed with `τ : K → U`. -/
+/-- Bounded-continuous precomposition `g ↦ (z ↦ g(τ z))` on the compact `K`, for `τ` continuous
+on `K` mapping into the open `U` where `g` lives. Continuity of the composite is `g.toFun`
+continuous on `U` composed with `τ : K → U`. -/
 noncomputable def precompBcf {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (hτmaps : Set.MapsTo τ K U)
     (g : BddHol U) : K →ᵇ ℂ :=
   mkOfCompact ⟨fun z => g.toFun (τ z.1), by
@@ -342,14 +344,14 @@ theorem norm_precompCLM_le {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (hτ
     ‖precompCLM hτcont hτmaps‖ ≤ 1 :=
   LinearMap.mkContinuous_norm_le _ zero_le_one _
 
-/-- **The restriction operator is a compact operator** (Montel; Forster 14.9 STEP 1).
+/-- **The restriction operator is a compact operator** (Montel; Forster 14.9).
 
 For `U` open and `K ⋐ U` a compact *convex* subset, the restriction map
 `restrictCLM : BddHol U →L[ℂ] (K →ᵇ ℂ)` is a compact operator. The proof reduces, via the standard
 characterization `isCompactOperator_iff_isCompact_closure_image_closedBall`, to the relative
-compactness of the restricted closed ball — which is exactly the proven Montel atom
-`CechFiniteness.isCompact_closure_restrict_bddHolo` (Cauchy estimates + Arzelà–Ascoli). Convexity of
-`K` is required by the atom. -/
+compactness of the restricted closed ball — which is exactly the Montel lemma
+`CechFiniteness.isCompact_closure_restrict_bddHolo` (Cauchy estimates + Arzelà–Ascoli). Convexity
+of `K` is required by that lemma. -/
 theorem isCompactOperator_restrictCLM (hU : IsOpen U) (hKcpt : IsCompact K) (hKU : K ⊆ U)
     (hKconv : Convex ℝ K) :
     IsCompactOperator (restrictCLM (U := U) hKU) := by
@@ -357,7 +359,8 @@ theorem isCompactOperator_restrictCLM (hU : IsOpen U) (hKcpt : IsCompact K) (hKU
   show IsCompactOperator (⇑(restrictCLM (U := U) hKU).toLinearMap)
   rw [isCompactOperator_iff_isCompact_closure_image_closedBall
     (restrictCLM (U := U) hKU).toLinearMap (one_pos)]
-  -- the image of the unit ball is the atom's range, with `S := ↥(closedBall 0 1)`, `M := 1`
+  -- the image of the unit ball is the Montel lemma's range, with `S := ↥(closedBall 0 1)`,
+  -- `M := 1`
   have hatom := CechFiniteness.isCompact_closure_restrict_bddHolo hU hKcpt hKU hKconv
     (M := (1 : ℝ)) zero_le_one
     (S := ↥(Metric.closedBall (0 : BddHol U) 1))

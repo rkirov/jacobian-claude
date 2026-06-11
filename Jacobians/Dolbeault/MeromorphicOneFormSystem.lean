@@ -2,9 +2,8 @@
   The meromorphic-1-form linear system `Ω_D` (Forster §17.4), the 1-form analog of the
   function linear system `L(D) = H⁰(𝒪_D)`.
 
-  This is **Gate (C)** of the Forster §17 Serre-duality tower:
-  the space of global meromorphic 1-forms `α` with `div α ≥ −D` (poles bounded by `D`), built as
-  a `Submodule ℂ` of a meromorphic-1-form type, with its junk-free module
+  This is the space of global meromorphic 1-forms `α` with `div α ≥ −D` (poles bounded by `D`),
+  built as a `Submodule ℂ` of a meromorphic-1-form type, with its junk-free module
   (`Ω_D ⧸ germ-zero`), `omegaDim D := finrank ℂ` of it, and the soundness anchor
   `Ω_0 ⊇ HolomorphicOneForms` (every holomorphic form is a meromorphic 1-form with no pole).
 
@@ -23,10 +22,10 @@
     (`Montel.localRep_analyticOn_chartTarget`), hence meromorphic with order `≥ 0`
     (`AnalyticAt.meromorphicAt`, `AnalyticAt.meromorphicOrderAt_nonneg`).
 
-  The junk-free quotient is the campaign's recurring soundness fix: a raw section space carries
-  `toFun`-germ junk (a section whose germ is `0` everywhere but is a nonzero element), so the genuine
-  finite dimension `omegaDim` is the quotient by the germ-zero submodule — exactly as `lDim` quotients
-  `linearSystem` by `germZeroSubmodule`.
+  The junk-free quotient is the recurring soundness device of this development: a raw section
+  space carries `toFun`-germ junk (a section whose germ is `0` everywhere but is a nonzero
+  element), so the genuine finite dimension `omegaDim` is the quotient by the germ-zero
+  submodule — exactly as `lDim` quotients `linearSystem` by `germZeroSubmodule`.
 
   Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.4 (`ω·: 𝒪_{D+K} ≅ Ω_D`); the
   `linearSystem`/`lSysModule`/`lDim` pattern in `Jacobians.LinearSystem`.
@@ -39,10 +38,9 @@ open Module
 
 namespace Jacobians.Dolbeault
 
-set_option linter.unusedSectionVars false
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ## Part 1: the meromorphic-1-form type, mirroring `MeromorphicFunction`
 
@@ -57,8 +55,8 @@ abbrev FormFiber (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X] (x : X) :
 
 /-- The **coordinate coefficient** of a 1-form section `σ` in the canonical chart at `x`, read
 exactly as `Montel.localRep`: `σ` applied at `(chart x).symm z` to the unit coordinate tangent
-transported from the model space.  Near `x`, `σ = formCoeff σ x (z) · dz` in `z = chartAt ℂ x`.
-For a *holomorphic* form this is `Montel.localRep` composed with `chart.symm` (= `FormCoeff.coeffAt`),
+transported from the model space. Near `x`, `σ = formCoeff σ x (z) · dz` in `z = chartAt ℂ x`. For a
+*holomorphic* form this is `Montel.localRep` composed with `chart.symm` (= `FormCoeff.coeffAt`),
 hence analytic. -/
 noncomputable def formCoeff (σ : ∀ x, FormFiber X x) (x : X) : ℂ → ℂ :=
   fun z => σ ((chartAt ℂ x).symm z)
@@ -99,48 +97,60 @@ are continuous-linear and the trivialization frame is fixed). -/
 section Algebra
 
 /-- `formCoeff` is additive in the section. -/
-theorem formCoeff_add (σ τ : ∀ x, FormFiber X x) (x : X) :
+theorem formCoeff_add {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (σ τ : ∀ x, FormFiber X x) (x : X) :
     formCoeff (σ + τ) x = formCoeff σ x + formCoeff τ x := by
   funext z; simp [formCoeff]
 
 /-- `formCoeff` negates with the section. -/
-theorem formCoeff_neg (σ : ∀ x, FormFiber X x) (x : X) :
+theorem formCoeff_neg {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (σ : ∀ x, FormFiber X x) (x : X) :
     formCoeff (-σ) x = -formCoeff σ x := by
   funext z; simp [formCoeff]
 
 /-- `formCoeff` is ℂ-homogeneous in the section. -/
-theorem formCoeff_smul (c : ℂ) (σ : ∀ x, FormFiber X x) (x : X) :
+theorem formCoeff_smul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (c : ℂ) (σ : ∀ x, FormFiber X x) (x : X) :
     formCoeff (c • σ) x = c • formCoeff σ x := by
   funext z; simp [formCoeff]
 
-theorem IsMeromorphicOneForm.add {σ τ : ∀ x, FormFiber X x}
+theorem IsMeromorphicOneForm.add {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {σ τ : ∀ x, FormFiber X x}
     (hσ : IsMeromorphicOneForm σ) (hτ : IsMeromorphicOneForm τ) :
     IsMeromorphicOneForm (σ + τ) := by
   intro x; rw [formCoeff_add]; exact (hσ x).add (hτ x)
 
-theorem IsMeromorphicOneForm.neg {σ : ∀ x, FormFiber X x} (hσ : IsMeromorphicOneForm σ) :
+theorem IsMeromorphicOneForm.neg {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {σ : ∀ x, FormFiber X x}
+    (hσ : IsMeromorphicOneForm σ) :
     IsMeromorphicOneForm (-σ) := by
   intro x; rw [formCoeff_neg]; exact (hσ x).neg
 
-theorem IsMeromorphicOneForm.sub {σ τ : ∀ x, FormFiber X x}
+theorem IsMeromorphicOneForm.sub {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {σ τ : ∀ x, FormFiber X x}
     (hσ : IsMeromorphicOneForm σ) (hτ : IsMeromorphicOneForm τ) :
     IsMeromorphicOneForm (σ - τ) := by
   rw [sub_eq_add_neg]; exact hσ.add hτ.neg
 
-theorem IsMeromorphicOneForm.const_smul (c : ℂ) {σ : ∀ x, FormFiber X x}
+theorem IsMeromorphicOneForm.const_smul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (c : ℂ) {σ : ∀ x, FormFiber X x}
     (hσ : IsMeromorphicOneForm σ) : IsMeromorphicOneForm (c • σ) := by
   intro x; rw [formCoeff_smul]; exact (MeromorphicAt.const c _).smul (hσ x)
 
-theorem IsMeromorphicOneForm.zero : IsMeromorphicOneForm (0 : ∀ x, FormFiber X x) := by
+theorem IsMeromorphicOneForm.zero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] :
+    IsMeromorphicOneForm (0 : ∀ x, FormFiber X x) := by
   intro x
   have : formCoeff (0 : ∀ x, FormFiber X x) x = fun _ => 0 := by funext z; simp [formCoeff]
   rw [this]; exact MeromorphicAt.const 0 _
 
-theorem IsMeromorphicOneForm.nsmul (n : ℕ) {σ : ∀ x, FormFiber X x}
+theorem IsMeromorphicOneForm.nsmul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (n : ℕ) {σ : ∀ x, FormFiber X x}
     (hσ : IsMeromorphicOneForm σ) : IsMeromorphicOneForm (n • σ) := by
   rw [← Nat.cast_smul_eq_nsmul ℂ n σ]; exact hσ.const_smul _
 
-theorem IsMeromorphicOneForm.zsmul (n : ℤ) {σ : ∀ x, FormFiber X x}
+theorem IsMeromorphicOneForm.zsmul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (n : ℤ) {σ : ∀ x, FormFiber X x}
     (hσ : IsMeromorphicOneForm σ) : IsMeromorphicOneForm (n • σ) := by
   rw [← Int.cast_smul_eq_zsmul ℂ n σ]; exact hσ.const_smul _
 
@@ -293,9 +303,9 @@ theorem omegaD_mono {D D' : Divisor X} (h : D ≤ D') : omegaD (X := X) D ≤ om
 17.4 (`ω·: 𝒪_{D+K} ≅ Ω_D`).  Its coefficient is `(f ∘ chart⁻¹) · formCoeff α`, so the order is
 *additive*: `formOrderW (f · α) = orderW f + formOrderW α`.  This sends `L(D) × Ω_E → Ω_{D+E}`. -/
 
-/-- **Multiplication of a meromorphic 1-form by a meromorphic function.**  `(f · α)(x) := f(x) • α(x)`
-(scalar-mult the covector).  Meromorphic because its chart coefficient is the product
-`(f.toFun ∘ chart⁻¹) · formCoeff α`. -/
+/-- **Multiplication of a meromorphic 1-form by a meromorphic function.**
+`(f · α)(x) := f(x) • α(x)` (scalar-mult the covector). Meromorphic because its chart coefficient is
+the product `(f.toFun ∘ chart⁻¹) · formCoeff α`. -/
 noncomputable def meroFormSMul (f : MeromorphicFunction X) (α : MeromorphicOneForm X) :
     MeromorphicOneForm X where
   toFun x := f.toFun x • α.toFun x
@@ -486,10 +496,10 @@ theorem holToOmega0Module_injective :
 
 /-- **Soundness lower bound: `genus X ≤ omegaDim 0`** (when `Ω_0` is finite-dimensional).  The
 genus-dimensional holomorphic forms inject into `omegaDModule 0` (`holToOmega0Module_injective`), so
-`finrank` is monotone: `genus X ≤ omegaDim 0`.  This confirms `Ω_0` is the genuine Forster §17.4
-object `H⁰(X, Ω)`, not a junk space.  (Finite-dimensionality of `Ω_0` is itself part of §17.4 —
-`Ω_0 ≅ HolomorphicOneForms`, which is finite-dim; the bound is stated under that hypothesis so it
-is unconditionally TRUE, avoiding the `finrank = 0` junk value of an a-priori unbounded quotient.) -/
+`finrank` is monotone: `genus X ≤ omegaDim 0`. This confirms `Ω_0` is the genuine Forster §17.4
+object `H⁰(X, Ω)`, not a junk space. (Finite-dimensionality of `Ω_0` is itself part of §17.4 —
+`Ω_0 ≅ HolomorphicOneForms`, which is finite-dim; the bound is stated under that hypothesis so it is
+unconditionally TRUE, avoiding the `finrank = 0` junk value of an a-priori unbounded quotient.) -/
 theorem genus_le_omegaDim_zero [FiniteDimensional ℂ (omegaDModule (X := X) 0)] :
     genus X ≤ omegaDim (X := X) 0 :=
   calc genus X = finrank ℂ (HolomorphicOneForms X) := rfl

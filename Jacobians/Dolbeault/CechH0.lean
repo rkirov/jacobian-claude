@@ -6,36 +6,36 @@
   build a `ℂ`-linear equivalence `L(D) ⧸ germZero ≃ₗ globalSections D` and read off the `finrank`s.
 
   Math content (the two non-formal pieces):
-  * **keystone** `ordU_val_eq_orderW`: the order of a global meromorphic `F` restricted to the open
-    submanifold `↥U` (computed in `↥U`'s own chart, `ordU`) equals its global order `orderW F`. Both
-    charts are `subtypeRestr`s of the *same* ambient `chartAt ℂ x` (`Opens.chartAt_eq`), exactly as
-    `CechSection.restrict_chart_aux`.
-  * **gluing** (surjectivity): a matching family of germ-classes glues to a global `MeromorphicFunction`.
-    NOTE (correctness): the naive pointwise patch `x ↦ g (idx x) x` is *not* meromorphic at
-    cover-boundary points (the per-overlap disagreement set is only codiscrete *within* the overlap, so
-    it can accumulate at a boundary point `y ∉ U j`). The fix is to rigidify the representatives via the
-    meromorphic normal form read in the shared ambient chart, so they agree *honestly* (not just
-    codiscretely) on overlaps; the patch is then chart-locally a single normal-form function.
+  * **order bridge** `ordU_val_eq_orderW`: the order of a global meromorphic `F` restricted to
+    the open submanifold `↥U` (computed in `↥U`'s own chart, `ordU`) equals its global order
+    `orderW F`. Both charts are `subtypeRestr`s of the *same* ambient `chartAt ℂ x`
+    (`Opens.chartAt_eq`), exactly as `CechSection.restrict_chart_aux`.
+  * **gluing** (surjectivity): a matching family of germ-classes glues to a global
+    `MeromorphicFunction`. Note (correctness): the naive pointwise patch `x ↦ g (idx x) x` is
+    *not* meromorphic at cover-boundary points (the per-overlap disagreement set is only
+    codiscrete *within* the overlap, so it can accumulate at a boundary point `y ∉ U j`). The fix
+    is to rigidify the representatives via the meromorphic normal form read in the shared ambient
+    chart, so they agree *honestly* (not just codiscretely) on overlaps; the patch is then
+    chart-locally a single normal-form function.
 -/
 import Jacobians.Dolbeault.CechComplex
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X]
 
-/-! ### Keystone: local order on `↥U` = global order on `X` -/
+/-! ### Order bridge: local order on `↥U` = global order on `X` -/
 
 /-- Base-point and chart-pullback agreement between `↥U`'s chart at `u` and `X`'s chart at `u.1`:
 `↥U`'s chart is the `subtypeRestr` of the *same* ambient chart `chartAt ℂ u.1` (`Opens.chartAt_eq`),
 so it reads any `F : X → ℂ` at the same ambient point near `u`. The `↥U ↪ X` analogue of
 `restrict_chart_aux`. -/
-private theorem incl_chart_aux {U : Opens X} (F : X → ℂ) (u : U) :
+private theorem incl_chart_aux [ChartedSpace ℂ X]
+    {U : Opens X} (F : X → ℂ) (u : U) :
     (chartAt (H := ℂ) u) u = (chartAt (H := ℂ) u.1) u.1 ∧
     ((F ∘ Subtype.val) ∘ (chartAt (H := ℂ) u).symm) =ᶠ[𝓝 ((chartAt (H := ℂ) u) u)]
       (F ∘ (chartAt (H := ℂ) u.1).symm) := by
@@ -54,16 +54,22 @@ private theorem incl_chart_aux {U : Opens X} (F : X → ℂ) (u : U) :
       OpenPartialHomeomorph.subtypeRestr_symm_apply (e := chartAt (H := ℂ) u.1) ⟨u⟩ hw
   rw [e1]
 
-/-- **Keystone.** The order of `F` restricted to the open submanifold `↥U` (in `↥U`'s chart) equals
+/-- **Order bridge.** The order of `F` restricted to the open submanifold `↥U` (in `↥U`'s chart)
+equals
 the global order `orderW F` at the corresponding point. -/
-theorem ordU_val_eq_orderW {U : Opens X} (F : MeromorphicFunction X) (u : U) :
+theorem ordU_val_eq_orderW [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {U : Opens X} (F : MeromorphicFunction X) (u : U) :
     ordU (F.toFun ∘ Subtype.val) u = F.orderW u.1 := by
   obtain ⟨hbase, hev⟩ := incl_chart_aux F.toFun u
   rw [ordU, MeromorphicFunction.orderW, hbase]
   exact meromorphicOrderAt_congr (hev.filter_mono nhdsWithin_le_nhds)
 
-/-- `F : X → ℂ` meromorphic on `X` restricts to a meromorphic function on the open submanifold `↥U`. -/
-theorem isMeromorphic_val {U : Opens X} (F : MeromorphicFunction X) :
+/-- `F : X → ℂ` meromorphic on `X` restricts to a meromorphic function on the open submanifold `↥U`.
+-/
+theorem isMeromorphic_val [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {U : Opens X} (F : MeromorphicFunction X) :
     IsMeromorphic (U : Type _) (F.toFun ∘ Subtype.val) := by
   intro u
   obtain ⟨hbase, hev⟩ := incl_chart_aux F.toFun u
@@ -75,7 +81,8 @@ theorem isMeromorphic_val {U : Opens X} (F : MeromorphicFunction X) :
 
 /-- Chart-transport of an eventually-property across `𝓝[≠]`, for *any* `ℂ`-charted space `Y` (the
 repo's `eventually_comp_chart_iff` carries spurious `CompactSpace`/`ConnectedSpace`; the open
-submanifold `↥U` has neither). Proof copied verbatim — uses only the chart's local-homeo structure. -/
+submanifold `↥U` has neither). Proof copied verbatim — uses only the chart's local-homeo structure.
+-/
 theorem eventually_comp_chart_iff' {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
     (g : Y → ℂ) (y : Y) (P : ℂ → Prop) :
     (∀ᶠ w in 𝓝[≠] ((chartAt (H := ℂ) y) y), P ((g ∘ (chartAt (H := ℂ) y).symm) w))
@@ -113,7 +120,8 @@ theorem eventually_comp_chart_iff' {Y : Type*} [TopologicalSpace Y] [ChartedSpac
     rw [Function.comp_apply]; exact this
 
 /-- `ordU g u = ⊤` iff `g` vanishes throughout a punctured neighbourhood of `u` on `↥U`. -/
-theorem ordU_eq_top_iff {U : Opens X} (g : U → ℂ) (u : U) :
+theorem ordU_eq_top_iff [ChartedSpace ℂ X]
+    {U : Opens X} (g : U → ℂ) (u : U) :
     ordU g u = ⊤ ↔ ∀ᶠ z in 𝓝[≠] u, g z = 0 := by
   rw [ordU, meromorphicOrderAt_eq_top_iff]
   exact eventually_comp_chart_iff' g u (· = 0)
@@ -141,7 +149,8 @@ theorem toGerm_eq_iff {U : Opens X} (a b : U → ℂ) :
 
 /-! ### Extension-by-zero of an `↥U`-section and the `↥U ↔ X` chart bridge
 
-For the gluing crux we need to talk about a section `g : ↥U → ℂ` as a function on the *ambient* `X`,
+For the gluing step we need to talk about a section `g : ↥U → ℂ` as a function on the *ambient*
+`X`,
 so that the per-point normal form (read in `X`'s chart) makes sense. `Gext g` extends `g` by `0`;
 `Gext_chart_bridge` is the `↥U ↔ X` chart-pullback agreement (the `Gext` analogue of
 `incl_chart_aux`), from which meromorphy / order / normal-form on `X` all transfer from `↥U`. -/
@@ -159,10 +168,11 @@ theorem Gext_apply_mem {U : Opens X} (g : U → ℂ) {x : X} (hx : x ∈ U) :
     Gext g x = g ⟨x, hx⟩ := by simp only [Gext, dif_pos hx]
 
 /-- The base point and chart-pullback agree between `↥U`'s chart at `⟨y⟩` and `X`'s chart at `y` for
-`y ∈ U`: both are `subtypeRestr`s of the *same* ambient chart `chartAt ℂ y` (`Opens.chartAt_eq`), and
-`Gext g` agrees with `g` near `y` (the point and its neighbours lie in `U`). The `Gext` analogue of
-`incl_chart_aux`. -/
-theorem Gext_chart_bridge {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
+`y ∈ U`: both are `subtypeRestr`s of the *same* ambient chart `chartAt ℂ y` (`Opens.chartAt_eq`),
+and `Gext g` agrees with `g` near `y` (the point and its neighbours lie in `U`). The `Gext` analogue
+of `incl_chart_aux`. -/
+theorem Gext_chart_bridge [ChartedSpace ℂ X]
+    {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
     (chartAt (H := ℂ) (⟨y, hy⟩ : U)) ⟨y, hy⟩ = (chartAt (H := ℂ) y) y ∧
     (g ∘ (chartAt (H := ℂ) (⟨y, hy⟩ : U)).symm) =ᶠ[𝓝 ((chartAt (H := ℂ) y) y)]
       (Gext g ∘ (chartAt (H := ℂ) y).symm) := by
@@ -187,7 +197,9 @@ theorem Gext_chart_bridge {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
   exact Subtype.ext e1
 
 /-- `Gext g` is meromorphic at `y ∈ U` (in `X`'s chart), given `g` meromorphic on `↥U`. -/
-theorem Gext_meromorphicAt {U : Opens X} {g : U → ℂ} (hg : IsMeromorphic (U : Type _) g)
+theorem Gext_meromorphicAt [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {U : Opens X} {g : U → ℂ} (hg : IsMeromorphic (U : Type _) g)
     {y : X} (hy : y ∈ U) :
     MeromorphicAt (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) := by
   obtain ⟨hbase, hev⟩ := Gext_chart_bridge g hy
@@ -196,7 +208,9 @@ theorem Gext_meromorphicAt {U : Opens X} {g : U → ℂ} (hg : IsMeromorphic (U 
   exact hmer.congr (hev.filter_mono nhdsWithin_le_nhds)
 
 /-- The intrinsic order on `↥U` (`ordU g`) equals the order of `Gext g` read in `X`'s chart. -/
-theorem ordU_eq_orderAt_Gext {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
+theorem ordU_eq_orderAt_Gext [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
     ordU g ⟨y, hy⟩ =
       meromorphicOrderAt (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) := by
   obtain ⟨hbase, hev⟩ := Gext_chart_bridge g hy
@@ -206,16 +220,21 @@ theorem ordU_eq_orderAt_Gext {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U
 /-- A local `𝒪₀` representative has nonnegative meromorphic order when read in the ambient chart.
 This is the order half of the chart-disk germ/function bridge; raw representatives may still carry
 removable point-value junk, so analyticity is stated for the normal form below. -/
-theorem meromorphicOrderAt_Gext_nonneg_of_mem_OmegaD_zero {U : Opens X} {g : U → ℂ}
+theorem meromorphicOrderAt_Gext_nonneg_of_mem_OmegaD_zero [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {U : Opens X} {g : U → ℂ}
     (hg : g ∈ OmegaD (0 : Divisor X) U) {y : X} (hy : y ∈ U) :
     0 ≤ meromorphicOrderAt (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) := by
   have h := ((mem_OmegaD).1 hg).2 ⟨y, hy⟩
   simpa [ordU_eq_orderAt_Gext g hy] using h
 
-/-- The normal-form representative of a local `𝒪₀` section is analytic in the ambient chart.  This is
+/-- The normal-form representative of a local `𝒪₀` section is analytic in the ambient chart. This is
 the holomorphic half of the single-section germ/function bridge used by the chart-disk acyclicity
-route: first replace the representative by its meromorphic normal form, then use nonnegative order. -/
-theorem analyticAt_toMeromorphicNFAt_Gext_of_mem_OmegaD_zero {U : Opens X} {g : U → ℂ}
+route: first replace the representative by its meromorphic normal form, then use nonnegative order.
+-/
+theorem analyticAt_toMeromorphicNFAt_Gext_of_mem_OmegaD_zero [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {U : Opens X} {g : U → ℂ}
     (hg : g ∈ OmegaD (0 : Divisor X) U) {y : X} (hy : y ∈ U) :
     AnalyticAt ℂ
       (toMeromorphicNFAt (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y))
@@ -233,11 +252,13 @@ theorem analyticAt_toMeromorphicNFAt_Gext_of_mem_OmegaD_zero {U : Opens X} {g : 
 
 /-- The "normal form at `y`" predicate intrinsic to `X`: `h` read in `X`'s chart at `y` has
 meromorphic normal form at the chart centre. -/
-def nfX (h : X → ℂ) (y : X) : Prop :=
+def nfX [ChartedSpace ℂ X] (h : X → ℂ) (y : X) : Prop :=
   MeromorphicNFAt (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y)
 
 /-- `Gext g` is in normal form at `y ∈ U` iff `g` is (read in `↥U`'s chart at `⟨y⟩`). -/
-theorem nfX_Gext_iff {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
+theorem nfX_Gext_iff [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
     nfX (Gext g) y ↔
       MeromorphicNFAt (g ∘ (chartAt (H := ℂ) (⟨y, hy⟩ : U)).symm)
         ((chartAt (H := ℂ) (⟨y, hy⟩ : U)) ⟨y, hy⟩) := by
@@ -246,7 +267,8 @@ theorem nfX_Gext_iff {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
 
 /-- Transport a punctured-neighbourhood property from the open submanifold `↥V` to the ambient `X`:
 since `↥V ↪ X` is an open embedding and `V ∈ 𝓝 x`, a `𝓝[≠] ⟨x⟩`-statement on `↥V` becomes the
-corresponding `𝓝[≠] x`-statement on `X`. (`Subtype.val` maps `𝓝[≠] ⟨x⟩` to `𝓝[V\{x}] x = 𝓝[≠] x`.) -/
+corresponding `𝓝[≠] x`-statement on `X`. (`Subtype.val` maps `𝓝[≠] ⟨x⟩` to `𝓝[V\{x}] x = 𝓝[≠] x`.)
+-/
 theorem eventually_nhdsNE_of_subtype {V : Opens X} {x : X} (hx : x ∈ V) (P : X → Prop)
     (h : ∀ᶠ w in 𝓝[≠] (⟨x, hx⟩ : V), P w.1) :
     ∀ᶠ z in 𝓝[≠] x, P z := by
@@ -269,7 +291,9 @@ theorem eventually_nhdsNE_of_subtype {V : Opens X} {x : X} (hx : x ∈ V) (P : X
 /-- **Overlap agreement.** If two representatives' germs match after restriction to the overlap (the
 Čech matching condition, via `rawRestrictG`), their extensions-by-zero `Gext` agree off a discrete
 set near every overlap point. This is what makes the per-point normal forms glue *honestly*. -/
-theorem Gext_overlap_eventuallyEq {U V : Opens X} (gU : U → ℂ) (gV : V → ℂ)
+theorem Gext_overlap_eventuallyEq [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {U V : Opens X} (gU : U → ℂ) (gV : V → ℂ)
     (hmatch : rawRestrictG (inf_le_right : U ⊓ V ≤ V) (toGerm V gV)
       = rawRestrictG (inf_le_left : U ⊓ V ≤ U) (toGerm U gU))
     {x : X} (hxU : x ∈ U) (hxV : x ∈ V) :
@@ -289,8 +313,10 @@ facts are needed: the normal-form *value* at the chart centre is germ-determined
 (`toMeromorphicNFAt_chart_val_congr`), and *analyticity* (hence normal-form-ness) is chart-invariant
 (`analyticAt_chart_change`, via the analytic transition maps of the `ω`-manifold `X`). -/
 
-/-- Transport an `=ᶠ[𝓝[≠]]` from `X` to `X`'s chart at `x` (precompose with `chartAt x`'s inverse). -/
-theorem eventuallyEq_comp_chart {a b : X → ℂ} {x : X} (h : a =ᶠ[𝓝[≠] x] b) :
+/-- Transport an `=ᶠ[𝓝[≠]]` from `X` to `X`'s chart at `x` (precompose with `chartAt x`'s inverse).
+-/
+theorem eventuallyEq_comp_chart [ChartedSpace ℂ X]
+    {a b : X → ℂ} {x : X} (h : a =ᶠ[𝓝[≠] x] b) :
     (a ∘ (chartAt (H := ℂ) x).symm) =ᶠ[𝓝[≠] ((chartAt (H := ℂ) x) x)]
       (b ∘ (chartAt (H := ℂ) x).symm) := by
   have key := (eventually_comp_chart_iff' (a - b) x (· = 0)).2
@@ -303,7 +329,9 @@ theorem eventuallyEq_comp_chart {a b : X → ℂ} {x : X} (h : a =ᶠ[𝓝[≠] 
 discrete set near `x` (and `a` is meromorphic in the chart), their per-point normal forms (read in
 `X`'s chart at `x`) take equal value at the chart centre. The `MeromorphicNFAt` local-identity
 theorem upgrades the punctured-neighbourhood agreement to a full-neighbourhood one. -/
-theorem toMeromorphicNFAt_chart_val_congr {a b : X → ℂ} {x : X} (h : a =ᶠ[𝓝[≠] x] b)
+theorem toMeromorphicNFAt_chart_val_congr [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {a b : X → ℂ} {x : X} (h : a =ᶠ[𝓝[≠] x] b)
     (hma : MeromorphicAt (a ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)) :
     toMeromorphicNFAt (a ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
         ((chartAt (H := ℂ) x) x)
@@ -323,9 +351,10 @@ theorem toMeromorphicNFAt_chart_val_congr {a b : X → ℂ} {x : X} (h : a =ᶠ[
   exact ((hnfa.eventuallyEq_nhdsNE_iff_eventuallyEq_nhds hnfb).1 echain).eq_of_nhds
 
 /-- The chart transition `chartAt y ∘ (chartAt z).symm` is analytic at `chartAt z z` (for `z` in the
-source of `chartAt y`): chart and inverse-chart are `C^ω` (`contMDiffOn_chart`), and `C^ω = analytic`
-(`ContDiffAt.analyticAt`) since the model `𝓘(ℂ)` is the identity. -/
-theorem transition_analyticAt {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).source) :
+source of `chartAt y`): chart and inverse-chart are `C^ω` (`contMDiffOn_chart`), and
+`C^ω = analytic` (`ContDiffAt.analyticAt`) since the model `𝓘(ℂ)` is the identity. -/
+theorem transition_analyticAt [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).source) :
     AnalyticAt ℂ ((chartAt (H := ℂ) y) ∘ (chartAt (H := ℂ) z).symm) ((chartAt (H := ℂ) z) z) := by
   have hsrc_z : z ∈ (chartAt (H := ℂ) z).source := mem_chart_source ℂ z
   have hcz_tgt : (chartAt (H := ℂ) z) z ∈ (chartAt (H := ℂ) z).target :=
@@ -360,7 +389,9 @@ theorem eventually_subtype_of_nhdsNE {V : Opens X} {u : V} (P : X → Prop)
 /-- **Chart-invariance of analyticity.** If `h` read in the chart at `y` is analytic at the image of
 `z` (with `z` in that chart's source), then `h` read in its *own* chart at `z` is analytic. Composes
 with the analytic transition map (`transition_analyticAt`). -/
-theorem analyticAt_chart_change {h : X → ℂ} {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).source)
+theorem analyticAt_chart_change [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {h : X → ℂ} {y z : X} (hz : z ∈ (chartAt (H := ℂ) y).source)
     (ha : AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) z)) :
     AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) z).symm) ((chartAt (H := ℂ) z) z) := by
   have hcz_tgt : (chartAt (H := ℂ) z) z ∈ (chartAt (H := ℂ) z).target :=
@@ -398,18 +429,22 @@ variable (𝔘 : FiniteCover X) (D : Divisor X)
 
 /-- Restrict a global meromorphic function to the cover's germ-class 0-cochains:
 `F ↦ (i ↦ [F|_{U i}])`. `ℂ`-linear (depends only on the cover, not on `D`). -/
-noncomputable def cechRestrict : MeromorphicFunction X →ₗ[ℂ] 𝔘.Cochain0 where
+noncomputable def cechRestrict [ChartedSpace ℂ X] :
+    MeromorphicFunction X →ₗ[ℂ] 𝔘.Cochain0 where
   toFun F i := toGerm (𝔘.U i) (F.toFun ∘ Subtype.val)
   map_add' F G := by funext i; exact (map_add (toGerm (𝔘.U i)) _ _)
   map_smul' c F := by funext i; exact (map_smul (toGerm (𝔘.U i)) _ _)
 
-@[simp] theorem cechRestrict_apply (F : MeromorphicFunction X) (i : 𝔘.ι) :
+@[simp] theorem cechRestrict_apply [ChartedSpace ℂ X]
+    (F : MeromorphicFunction X) (i : 𝔘.ι) :
     𝔘.cechRestrict F i = toGerm (𝔘.U i) (F.toFun ∘ Subtype.val) := rfl
 
 /-- The restriction of `F ∈ L(D)` is a global matching `𝒪_D`-section: each component is an
-`𝒪_D`-germ (keystone: `ordU = orderW ≥ −D`), and the components match on overlaps automatically
-(both restrict the *same* `F`). -/
-theorem cechRestrict_mem_globalSections {F : MeromorphicFunction X}
+`𝒪_D`-germ (the order bridge `ordU = orderW ≥ −D`), and the components match on overlaps
+automatically (both restrict the *same* `F`). -/
+theorem cechRestrict_mem_globalSections [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {F : MeromorphicFunction X}
     (hF : F ∈ linearSystem D) : 𝔘.cechRestrict F ∈ 𝔘.globalSections D := by
   rw [globalSections, Submodule.mem_inf]
   refine ⟨?_, ?_⟩
@@ -427,18 +462,24 @@ theorem cechRestrict_mem_globalSections {F : MeromorphicFunction X}
     rw [ordU_val_eq_orderW]
     exact hF u.1
 
-/-- The forward map `Φ : L(D) →ₗ globalSections D` (domain/codomain restriction of `cechRestrict`). -/
-noncomputable def cechRestrictL :
+/-- The forward map `Φ : L(D) →ₗ globalSections D` (domain/codomain restriction of `cechRestrict`).
+-/
+noncomputable def cechRestrictL [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] :
     linearSystem (X := X) D →ₗ[ℂ] ↥(𝔘.globalSections D) :=
   ((𝔘.cechRestrict).domRestrict (linearSystem D)).codRestrict (𝔘.globalSections D)
     fun F => 𝔘.cechRestrict_mem_globalSections D F.2
 
-@[simp] theorem cechRestrictL_coe (F : linearSystem (X := X) D) :
+@[simp] theorem cechRestrictL_coe [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (F : linearSystem (X := X) D) :
     (𝔘.cechRestrictL D F : 𝔘.Cochain0) = 𝔘.cechRestrict (F : MeromorphicFunction X) := rfl
 
 /-- The restriction of `F` is the zero cochain iff `F` is germ-zero junk everywhere (`orderW ≡ ⊤`).
-Uses the keystone (`ordU = orderW`), the germ-zero bridge, and that the `U i` cover `X`. -/
-theorem cechRestrict_eq_zero_iff (F : MeromorphicFunction X) :
+Uses the order bridge (`ordU = orderW`), the germ-zero bridge, and that the `U i` cover `X`. -/
+theorem cechRestrict_eq_zero_iff [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (F : MeromorphicFunction X) :
     𝔘.cechRestrict F = 0 ↔ ∀ x, F.orderW x = ⊤ := by
   rw [funext_iff]
   simp only [cechRestrict_apply, Pi.zero_apply, toGerm_eq_zero_iff, ← ordU_eq_top_iff,
@@ -453,18 +494,20 @@ theorem cechRestrict_eq_zero_iff (F : MeromorphicFunction X) :
 
 /-- The kernel of the descended forward map is exactly the germ-zero junk: `Φ` descends to an
 *injective* map `L(D) ⧸ germZero ↪ H⁰`. -/
-theorem ker_cechRestrictL :
+theorem ker_cechRestrictL [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    :
     LinearMap.ker (𝔘.cechRestrictL D) = (germZeroSubmodule).submoduleOf (linearSystem D) := by
   ext F
   rw [LinearMap.mem_ker, ← Submodule.coe_eq_zero, cechRestrictL_coe,
     𝔘.cechRestrict_eq_zero_iff]
   exact Iff.rfl
 
-/-! ### Gluing (surjectivity) — the crux -/
+/-! ### Gluing (surjectivity) -/
 
 /-- The per-point glued function: at `x`, the meromorphic *normal-form* value of the local member
 `G (idx x)` read in `X`'s chart at `x`. -/
-noncomputable def gluedFun (G : 𝔘.ι → X → ℂ) (idx : X → 𝔘.ι) : X → ℂ :=
+noncomputable def gluedFun [ChartedSpace ℂ X] (G : 𝔘.ι → X → ℂ) (idx : X → 𝔘.ι) : X → ℂ :=
   fun x => toMeromorphicNFAt (G (idx x) ∘ (chartAt (H := ℂ) x).symm) ((chartAt (H := ℂ) x) x)
     ((chartAt (H := ℂ) x) x)
 
@@ -472,7 +515,9 @@ noncomputable def gluedFun (G : 𝔘.ι → X → ℂ) (idx : X → 𝔘.ι) : X
 (`nfX`, intrinsic to `X`'s per-point charts) off a discrete set: `Gext g` is meromorphic at `y`, so
 analytic at codiscretely-many nearby chart points, and analyticity is chart-invariant
 (`analyticAt_chart_change`), giving `nfX` at the point's own chart. -/
-theorem nfX_Gext_codiscrete {i : 𝔘.ι} {g : 𝔘.U i → ℂ} (hg : IsMeromorphic (𝔘.U i : Type _) g)
+theorem nfX_Gext_codiscrete [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    {i : 𝔘.ι} {g : 𝔘.U i → ℂ} (hg : IsMeromorphic (𝔘.U i : Type _) g)
     {y : X} (hy : y ∈ 𝔘.U i) :
     ∀ᶠ z in 𝓝[≠] y, nfX (Gext g) z := by
   have hmer : MeromorphicAt (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) :=
@@ -497,15 +542,18 @@ theorem nfX_Gext_codiscrete {i : 𝔘.ι} {g : 𝔘.U i → ℂ} (hg : IsMeromor
   exact (analyticAt_chart_change hzsrc hz).meromorphicNFAt
 
 /-- **Central gluing property.** The glued function agrees off a discrete set near every point with
-the local family member `G i` whose patch `U i` contains that point. Hence (downstream) `gluedFun` is
-meromorphic, satisfies the order bound, and restricts to the prescribed germ on each `U i`.
+the local family member `G i` whose patch `U i` contains that point. Hence (downstream) `gluedFun`
+is meromorphic, satisfies the order bound, and restricts to the prescribed germ on each `U i`.
 
-Needs: every point lies in `U (idx ·)` (`hidx`); each `G i` meromorphic on `U i` (`hmer`); the family
-agrees off a discrete set on overlaps (`hoverlap`); and `G i` is normal-form-codiscrete near `U i`
-(`hnf`). The proof: on the `𝓝[≠] y` set where `z ∈ U i` and `G i` is `nfX` at `z`, idx-independence
-(`toMeromorphicNFAt_chart_val_congr` + `hoverlap`) rewrites `gluedFun z` to the normal form of `G i`,
-which (being already normal form) equals `G i z` (`toMeromorphicNFAt_eq_self`). -/
-theorem gluedFun_eventuallyEq (G : 𝔘.ι → X → ℂ) (idx : X → 𝔘.ι)
+Needs: every point lies in `U (idx ·)` (`hidx`); each `G i` meromorphic on `U i` (`hmer`); the
+family agrees off a discrete set on overlaps (`hoverlap`); and `G i` is normal-form-codiscrete near
+`U i` (`hnf`). The proof: on the `𝓝[≠] y` set where `z ∈ U i` and `G i` is `nfX` at `z`,
+idx-independence (`toMeromorphicNFAt_chart_val_congr` + `hoverlap`) rewrites `gluedFun z` to the
+normal form of `G i`, which (being already normal form) equals `G i z`
+(`toMeromorphicNFAt_eq_self`). -/
+theorem gluedFun_eventuallyEq [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (G : 𝔘.ι → X → ℂ) (idx : X → 𝔘.ι)
     (hidx : ∀ x, x ∈ 𝔘.U (idx x))
     (hmer : ∀ i, ∀ y, y ∈ 𝔘.U i →
       MeromorphicAt (G i ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y))
@@ -532,17 +580,21 @@ meromorphic at cover-boundary points because the per-overlap disagreement set is
 *within* the overlap). Extract honest representatives `g i ∈ OmegaD D (U i)` with `[g i] = f i`
 (choice on `OmegaDGerm = map toGerm`). Extend each by `0` to `Gext i : X → ℂ`. Define
 
-  `F.toFun x := toMeromorphicNFAt (Gext (idx x) ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) (chartAt ℂ x x)`
+  `F.toFun x :=
+    toMeromorphicNFAt (Gext (idx x) ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) (chartAt ℂ x x)`
 
 (the per-point normal-form value; `idx x` any index with `x ∈ U i`).
   * **idx-independent**: the nf value at `x` depends only on the germ at `x`; the matching gives
-    `Gext i =ᶠ[𝓝[≠] x] Gext j` on overlaps, so (read in the shared chart `chartAt ℂ x`) the nf values
-    agree by NF-uniqueness (`MeromorphicNFAt.eventuallyEq_nhdsNE_iff_eventuallyEq_nhds`).
+    `Gext i =ᶠ[𝓝[≠] x] Gext j` on overlaps, so (read in the shared chart `chartAt ℂ x`) the nf
+    values agree by NF-uniqueness (`MeromorphicNFAt.eventuallyEq_nhdsNE_iff_eventuallyEq_nhds`).
   * **`F =ᶠ[𝓝[≠] y] Gext i` for `y ∈ U i`**: the normal form repairs only a *codiscrete* set
     (`analyticAt_mem_codiscreteWithin`; `toMeromorphicNFAt = id` on nf-points,
-    `eq_nhdsNE_toMeromorphicNFAt`), so `F` and `Gext i` agree off a discrete set ⟹ `F` meromorphic at
-    `y` and (keystone `ordU = orderW`) `orderW F ≥ −D` ⟹ `F ∈ L(D)`; and `[F|_{U i}] = [g i] = f i`. -/
-theorem cechRestrictL_surjective : Function.Surjective (𝔘.cechRestrictL D) := by
+    `eq_nhdsNE_toMeromorphicNFAt`), so `F` and `Gext i` agree off a discrete set ⟹ `F` meromorphic
+    at `y` and (order bridge `ordU = orderW`) `orderW F ≥ −D` ⟹ `F ∈ L(D)`; and
+    `[F|_{U i}] = [g i] = f i`. -/
+theorem cechRestrictL_surjective [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    : Function.Surjective (𝔘.cechRestrictL D) := by
   intro f
   obtain ⟨fc, hfc⟩ := f
   rw [globalSections, Submodule.mem_inf] at hfc
@@ -609,14 +661,17 @@ theorem cechRestrictL_surjective : Function.Surjective (𝔘.cechRestrictL D) :=
     rw [hw, Gext_apply_mem (g i) w.2]
 
 /-- `H⁰(𝔘, 𝒪_D) ≅ L(D) ⧸ germZero` as `ℂ`-modules (first isomorphism theorem + `ker = germZero`). -/
-noncomputable def globalSectionsEquivQuot :
+noncomputable def globalSectionsEquivQuot [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
     (linearSystem (X := X) D ⧸ (germZeroSubmodule (X := X)).submoduleOf (linearSystem D))
       ≃ₗ[ℂ] ↥(𝔘.globalSections D) :=
   (Submodule.quotEquivOfEq _ _ (𝔘.ker_cechRestrictL D).symm).trans
     (LinearMap.quotKerEquivOfSurjective _ (𝔘.cechRestrictL_surjective D))
 
 /-- **The bridge leaf** `h⁰(𝔘, 𝒪_D) = l(D)` — Čech global sections agree with the linear system. -/
-theorem h0Dim_eq_lDim (D : Divisor X) : 𝔘.h0Dim D = lDim D := by
+theorem h0Dim_eq_lDim [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
+    (D : Divisor X) : 𝔘.h0Dim D = lDim D := by
   rw [h0Dim, lDim]
   exact ((𝔘.globalSectionsEquivQuot D).finrank_eq).symm
 

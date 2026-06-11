@@ -1,7 +1,7 @@
 /-
-  Dolbeault ladder — **Forster 13.2**: `∂̄`-solvability on an *open* disk.
+  **Forster 13.2**: `∂̄`-solvability on an *open* disk.
 
-  This is the single missing analytic engine for the Čech finiteness node.  The repo already has:
+  This is the analytic engine of the Čech finiteness argument.  It builds on:
 
     * `DbarDisk.dbar_solvable_of_compactSupport` (Forster 13.1, Cauchy transform), and
     * `DbarDiskCohomology.dbar_solvable_ball` — solving `∂̄u = g` on a ball, but only for a
@@ -13,14 +13,14 @@
   glued `∂̄(smooth split)`, smooth on the union's chart-image ball but not globally, leaving no room
   for a cutoff bump.
 
-  **Proof (Forster p.106, exhaustion).**  Exhaust `ball c R` by `ball c ρₙ`, `ρₙ ↑ R`.  Cutoffs `χₙ`
-  (`= 1` on `closedBall c ρₙ`, supported in `ball c ρₙ₊₁ ⋐ ball c R`) make `χₙ·g` globally smooth with
-  compact support, so 13.1 gives `fₙ` with `∂̄fₙ = χₙ·g = g` on `ball c ρₙ`.  Inductively correct
-  `f̃ₙ` by a holomorphic polynomial `Pₙ` (Taylor partial sum of the holomorphic `fₙ₊₁ − f̃ₙ`) so that
-  `‖f̃ₙ₊₁ − f̃ₙ‖ ≤ 2⁻ⁿ` on `closedBall c ρₙ`; the limit `u` converges locally uniformly, is smooth, and
-  the holomorphic corrections preserve `∂̄u = g`.
+  **Proof (Forster p.106, exhaustion).** Exhaust `ball c R` by `ball c ρₙ`, `ρₙ ↑ R`. Cutoffs `χₙ`
+  (`= 1` on `closedBall c ρₙ`, supported in `ball c ρₙ₊₁ ⋐ ball c R`) make `χₙ·g` globally smooth
+  with compact support, so 13.1 gives `fₙ` with `∂̄fₙ = χₙ·g = g` on `ball c ρₙ`. Inductively
+  correct `f̃ₙ` by a holomorphic polynomial `Pₙ` (Taylor partial sum of the holomorphic
+  `fₙ₊₁ − f̃ₙ`) so that `‖f̃ₙ₊₁ − f̃ₙ‖ ≤ 2⁻ⁿ` on `closedBall c ρₙ`; the limit `u` converges locally
+  uniformly, is smooth, and the holomorphic corrections preserve `∂̄u = g`.
 
-  Mathlib ingredients (all confirmed present): `DifferentiableOn.hasFPowerSeriesOnBall`,
+  Mathlib ingredients: `DifferentiableOn.hasFPowerSeriesOnBall`,
   `HasFPowerSeriesOnBall.tendstoUniformlyOn'` (partial sums = polynomials → `f` uniformly on
   subdisks), `TendstoLocallyUniformlyOn.differentiableOn` (locally-uniform limit of holomorphic is
   holomorphic), `ContDiffBump`.
@@ -31,10 +31,9 @@ open Complex Metric Filter Topology
 open scoped NNReal ENNReal
 
 -- The transparency option resolves the `IsScalarTower ℝ ℂ ℂ` diamond (the documented `Module ℝ`
--- clash) so `restrictScalars`/`ContDiff.restrict_scalars` from `ℂ` to `ℝ` elaborate; the repo's other
--- Dolbeault files set the same option.
+-- clash) so `restrictScalars`/`ContDiff.restrict_scalars` from `ℂ` to `ℝ` elaborate; the repo's
+-- other Dolbeault files set the same option.
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 namespace DbarOpenDisk
@@ -51,8 +50,8 @@ theorem diff_partialSum (p : FormalMultilinearSeries ℂ ℂ ℂ) (n : ℕ) (c :
   exact (hcmm.differentiable (by norm_num)).comp (by fun_prop)
 
 /-- **Runge/Taylor approximation on a closed subdisk.**  A function holomorphic on `ball c R'` is,
-on any closed subdisk `closedBall c r` (`r < R'`), uniformly approximated to within `ε` by an *entire*
-function (a Taylor partial sum). -/
+on any closed subdisk `closedBall c r` (`r < R'`), uniformly approximated to within `ε` by an
+*entire* function (a Taylor partial sum). -/
 theorem exists_holo_approx (φ : ℂ → ℂ) (c : ℂ) (R' : ℝ)
     (hφ : DifferentiableOn ℂ φ (ball c R')) (r : ℝ) (hr0 : 0 ≤ r) (hrR : r < R')
     (ε : ℝ) (hε : 0 < ε) :
@@ -190,8 +189,8 @@ theorem dbar_solvable_open_disk (c : ℂ) {R : ℝ} (hR : 0 < R) {g : ℂ → �
   -- **Base case.**  Solve on `ball c (ρ 1)`.
   obtain ⟨φ0, hφ0_smooth, hφ0_dbar⟩ :=
     solve_on_ball c hg (a := ρ 1) (b := ρ 2) (ρpos 1) (ρmono (by norm_num)) (ρltR 2)
-  -- **Step.**  Correct a solution on `ball c (ρ (n+1))` to one on `ball c (ρ (n+2))`, controlling the
-  -- change on `closedBall c (ρ n)` by `2⁻ⁿ` via a holomorphic (Taylor) correction.
+  -- **Step.** Correct a solution on `ball c (ρ (n+1))` to one on `ball c (ρ (n+2))`, controlling
+  -- the change on `closedBall c (ρ n)` by `2⁻ⁿ` via a holomorphic (Taylor) correction.
   have step : ∀ (n : ℕ) (φ : ℂ → ℂ), ContDiff ℝ (⊤ : ℕ∞) φ →
       (∀ z ∈ ball c (ρ (n + 1)), DbarDisk.dbar φ z = g z) →
       ∃ φ' : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) φ' ∧

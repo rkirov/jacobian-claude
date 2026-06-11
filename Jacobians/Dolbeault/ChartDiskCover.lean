@@ -4,12 +4,12 @@
 
   The abstract `FiniteCover` only knows its sets cover `X`; solving `∂̄u_i = g` on a whole cover set
   `U_i` needs `U_i` to be a *coordinate disk* (so `g` pulls back through the chart to a planar
-  function on a Euclidean ball, where `DbarDiskCohomology.dbar_solvable_ball` applies). Solving on an
-  abstractly simply-connected `U_i` would instead require uniformization, which Mathlib lacks.
+  function on a Euclidean ball, where `DbarDiskCohomology.dbar_solvable_ball` applies). Solving on
+  an abstractly simply-connected `U_i` would instead require uniformization, which Mathlib lacks.
 
-  `ChartDiskCover` bundles a `FiniteCover` with, for each index, a chart center and radius witnessing
-  that `U_i` is exactly the chart-preimage of a Euclidean ball. All existing `𝔘.cechH1 / cocycles1`
-  machinery applies verbatim through `toFiniteCover`.
+  `ChartDiskCover` bundles a `FiniteCover` with, for each index, a chart center and radius
+  witnessing that `U_i` is exactly the chart-preimage of a Euclidean ball. All existing
+  `𝔘.cechH1 / cocycles1` machinery applies verbatim through `toFiniteCover`.
 -/
 import Jacobians.Dolbeault.CechComplex
 
@@ -34,9 +34,10 @@ structure ChartDiskCover (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSp
   /-- The coordinate radius of the disk `U i`. -/
   radius : ι → ℝ
   radius_pos : ∀ i, 0 < radius i
-  /-- The *closed* coordinate ball lies inside the (open) chart target. Being a compact set inside an
-  open one, it has positive distance to the target's complement — so a smooth bump that is `1` on the
-  whole disk and compactly supported inside the target exists (the cutoff the forward solve needs). -/
+  /-- The *closed* coordinate ball lies inside the (open) chart target. Being a compact set inside
+  an open one, it has positive distance to the target's complement — so a smooth bump that is `1` on
+  the whole disk and compactly supported inside the target exists (the cutoff the forward solve
+  needs). -/
   closedBall_subset_target : ∀ i,
     Metric.closedBall (extChartAt 𝓘(ℝ, ℂ) (center i) (center i)) (radius i)
       ⊆ (extChartAt 𝓘(ℝ, ℂ) (center i)).target
@@ -65,7 +66,8 @@ theorem center_mem (i : 𝔇.ι) : 𝔇.center i ∈ ((𝔇.U i : Opens X) : Set
 /-- A radius `R` strictly larger than the disk whose *closed* ball still lies in the chart target.
 Exists because the closed disk `closedBall (e i) (radius i)` is compact inside the open target
 (`IsCompact.exists_cthickening_subset_open` + `cthickening_closedBall`). The forward-solve cutoff
-bump uses `rIn = radius i`, `rOut = R`: it is `1` on the whole disk and supported inside the target. -/
+bump uses `rIn = radius i`, `rOut = R`: it is `1` on the whole disk and supported inside the target.
+-/
 theorem exists_bumpOuterRadius (i : 𝔇.ι) :
     ∃ R, 𝔇.radius i < R ∧
       Metric.closedBall (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) (𝔇.center i)) R
