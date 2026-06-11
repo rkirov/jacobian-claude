@@ -63,8 +63,8 @@ theorem dolbeault_to_cech_comp_cech_to_dolbeault' (𝔇 : ChartDiskCover X) :
   refine LinearMap.ext fun cls => ?_
   obtain ⟨f, rfl⟩ := Submodule.Quotient.mk_surjective _ cls
   rw [LinearMap.comp_apply, LinearMap.id_apply, cech_to_dolbeault_mk, map_neg]
-  set omg : SmoothCOneForms X := ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
-    with hωdef
+  set omg : SmoothCOneForms X :=
+    ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X) with hωdef
   have hdol : dolbeault_to_cech 𝔇 (Submodule.Quotient.mk (cechToDolbeaultForm 𝔇 f))
       = Submodule.Quotient.mk (dolbeaultToCechCocycle 𝔇 (cechToDolbeaultForm 𝔇 f)) := rfl
   rw [hdol]
