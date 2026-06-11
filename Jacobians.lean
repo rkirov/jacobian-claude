@@ -27,6 +27,8 @@ import Jacobians.PeriodLattice
 import Jacobians.TracePullback
 import Jacobians.Abel
 import Jacobians.AbelChains
+import Jacobians.AbelWeakSolutions
+import Jacobians.AbelCurveSolution
 import Jacobians.Degree
 import Jacobians.OfCurveAnalyticitySkeleton
 import Jacobians.ULiftManifold
