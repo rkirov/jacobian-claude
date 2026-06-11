@@ -24,6 +24,7 @@ import Jacobians.SmoothPathCore
 import Jacobians.LoopOffBranch
 import Jacobians.ManifoldIFT
 import Jacobians.PeriodLattice
+import Jacobians.PeriodLatticeBasis
 import Jacobians.TracePullback
 import Jacobians.Abel
 import Jacobians.AbelChains
@@ -95,11 +96,10 @@ Defined as `Jacobians.truePeriodLattice X` (see
 smooth closed loops, where the period pairing uses
 `Jacobians.periodBasisForm X` (basis via `ambientIso X`).
 
-The `DiscreteTopology` and `IsZLattice ℝ` instances require the
-Hodge / Riemann-bilinear rank-2g theorem (Forster §§19–20, not yet in
-Mathlib); they are supplied as unconditional unproved-obligation instances (S2/S3) in
-`PeriodLattice.lean`, so the Jacobian-as-complex-torus structure rests on
-them. -/
+The `DiscreteTopology` and `IsZLattice ℝ` instances are PROVEN in
+`Jacobians/PeriodLatticeBasis.lean` (Forster 21.4: discreteness via the
+Abel engine + residue theorem, full rank via the maximum principle), so
+the Jacobian-as-complex-torus structure is unconditional. -/
 noncomputable def periodLattice (X : Type*) [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] : Submodule ℤ (Fin (genus X) → ℂ) :=

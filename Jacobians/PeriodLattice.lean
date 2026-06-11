@@ -33,14 +33,10 @@ period pairing.
 * `periodVec_pushforward` — the change-of-variables identity
   `periodVec Y (f ∘ γ) = ambientPhi f hf (periodVec X γ)`, from
   which `ambientPhi` preservation of the period lattice follows.
-* `DiscreteTopology`/`IsZLattice ℝ` of `truePeriodLattice X` — both instances below are now
-  *derived* (not assumed) from `exists_periodLattice_realBasis`: the lattice is the ℤ-span of an
-  ℝ-basis, hence discrete (`ZSpan.instDiscreteTopology`) and a full-rank ℤ-lattice
-  (`instIsZLatticeRealSpan`). `exists_periodLattice_realBasis` itself is proven (`Dissection.lean`)
-  modulo the single isolated input `exists_canonicalDissection` (surface topology + the two Riemann
-  bilinear relations); its analytic core `periodVec_linearIndependent` is axiom-clean. So every
-  `Jacobian`-as-torus consequence now rests on that one isolated input, not on these instances
-  directly.
+* `DiscreteTopology`/`IsZLattice ℝ` of `truePeriodLattice X` and
+  `exists_periodLattice_realBasis` — now live DOWNSTREAM in
+  `Jacobians/PeriodLatticeBasis.lean`, proven dissection-free (Forster 21.4: B-3
+  non-degeneracy + B-4 discreteness via the Abel engine and the residue theorem).
 
 ## References
 
@@ -836,42 +832,16 @@ theorem periodVec_pushforward
   -- Goal: ∑ i, v i * lineIntegral (periodBasisForm X i) γ = ∑ i, v i * (periodVec γ) i
   rfl
 
-/-- **Existence of a period ℝ-basis** — the *single* classical input behind the
-Jacobian-as-complex-torus structure (the Riemann bilinear relations, Forster §§20–21).
-It states the period lattice is generated, as a `ℤ`-module, by a **real basis** of
-`ℂ^(genus X) ≅ ℝ^(2·genus X)`: the `2g` periods of a symplectic homology basis are
-`ℝ`-linearly independent and `ℤ`-generate the lattice.
-
-From this, **both** the discreteness and the full-rank-`ℤ`-lattice instances below are
-*mechanical* — they are Mathlib's `ZSpan.instDiscreteTopology` / `instIsZLatticeRealSpan`
-for the `ℤ`-span of a real basis, transported across the lattice equality. So this is the
-only remaining classical content; everything downstream is unconditional given it.
-
-**Now PROVEN modulo the two-pillar scaffold** (`Jacobians/Dissection.lean`): the *assembly*
-`realBasis_of_canonicalDissection` is unconditional; the remaining inputs are
-`exists_canonicalDissection` (the isolated surface-topology pillar — `H₁(X;ℤ) ≅ ℤ^{2g}` + the
-canonical dissection + period homology-invariance) and `periodVec_linearIndependent` (the analytic
-pillar — the Riemann bilinear relations, to be built via cut-surface + Green's theorem). -/
-theorem exists_periodLattice_realBasis :
-    ∃ b : Module.Basis (Fin (2 * genus X)) ℝ (Fin (genus X) → ℂ),
-      truePeriodLattice X = Submodule.span ℤ (Set.range ⇑b) := by
-  obtain ⟨D⟩ := exists_canonicalDissection X
-  obtain ⟨b, hb⟩ := realBasis_of_canonicalDissection D
-  exact ⟨b, by rw [truePeriodLattice]; exact hb⟩
-
-/-- **Discrete topology on the period lattice.** Mechanical from
-`exists_periodLattice_realBasis`: a `ℤ`-span of a real basis is discrete
-(`ZSpan.instDiscreteTopology`). -/
-instance : DiscreteTopology (truePeriodLattice X) := by
-  obtain ⟨b, hb⟩ := exists_periodLattice_realBasis (X := X)
-  rw [hb]; infer_instance
-
-/-- **Period lattice is a `ℤ`-lattice of full real rank** `2 * genus X` in
-`ℂ^(genus X) = ℝ^(2g)`. Mechanical from `exists_periodLattice_realBasis`: a `ℤ`-span
-of a real basis is a full-rank `ℤ`-lattice (`instIsZLatticeRealSpan`). -/
-instance : IsZLattice ℝ (truePeriodLattice X) := by
-  obtain ⟨b, hb⟩ := exists_periodLattice_realBasis (X := X)
-  exact { span_top := by rw [hb]; exact (instIsZLatticeRealSpan b).span_top }
+/- **Existence of a period ℝ-basis** (`exists_periodLattice_realBasis`), together with the
+`DiscreteTopology`/`IsZLattice` instances it yields, now lives DOWNSTREAM in
+`Jacobians/PeriodLatticeBasis.lean`, with its statement UNCHANGED.  It is proven
+**dissection-free** (Forster 21.4): discreteness via the local Jacobi map + the Abel
+engine + the residue theorem (`Jacobians/PeriodLatticeDiscrete.lean`, B-4), and
+non-degeneracy via the maximum principle (`Jacobians/PeriodLatticeNondegenerate.lean`,
+B-3).  The former cut-surface/dissection route (`exists_canonicalDissection`) is retired;
+the proven `CutSurface → CanonicalDissection → realBasis` assembly remains banked in
+`Jacobians/Dissection.lean` + `Jacobians/CutSurfaceRelations.lean` as
+hypothesis-conditional theorems. -/
 
 /-! ### Phase 4a: `ambientPhi` preserves the period lattice
 

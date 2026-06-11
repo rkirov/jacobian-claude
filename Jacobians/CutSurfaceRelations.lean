@@ -23,12 +23,13 @@ The two relations are therefore **no longer bundled assertions**: they are conse
 *boundary word* — the concrete integral identities `(AᵀB − BᵀA)_{ij} = ∮_{∂box}(F_i h_j dz)` and
 `(AᵀB̄ − BᵀĀ)_{ij} = −∮_{∂box}(F̄_i h_j dz)` that record how the cut chart's boundary traverses the
 symplectic loops. Those boundary words, the holomorphy of the pulled-back forms `h_j = cut^*ω_j`, and
-the non-degeneracy of the pullbacks are the **`CutSurface` fields**; the existence of such a cut
-surface (`exists_cutSurface`) is the single isolated input — the Radó triangulation + surface
-classification + `4g`-gon Green that Mathlib lacks for surfaces.
+the non-degeneracy of the pullbacks are the **`CutSurface` fields**.
 
-`exists_canonicalDissection` is then *derived* (no longer a raw obligation): a `CutSurface` yields a
-`CanonicalDissection` whose two relation fields are the theorems above.
+**ARCHIVAL (2026-06-11).** The former isolated existence input (`exists_cutSurface` — the Radó
+triangulation + surface classification + `4g`-gon Green that Mathlib lacks) is RETIRED, not proven:
+the period real basis is now obtained dissection-free via Forster 21.4
+(`Jacobians/PeriodLatticeDiscrete.lean` + `Jacobians/PeriodLatticeBasis.lean`).  Everything in this
+file is hypothesis-conditional on a given `CutSurface` and remains sorry-free.
 
 References: Riemann (1857); Griffiths–Harris pp. 231–232; Springer pp. 139–141; Chai §1.4;
 Forster §§20–21.
@@ -55,7 +56,7 @@ together with the *analytic boundary data* of the cut chart that realizes the ca
   open box — true because `cut` is a diffeo on the interior and the `ω_j` are a basis).
 
 From these the Riemann bilinear relations R1/R2 are **proven** (`cutSurface_R1`, `cutSurface_R2`).
-Only the *existence* of such data, `exists_cutSurface`, stays isolated. -/
+(Archival: existence of such data is no longer needed anywhere — see the retirement note below.) -/
 structure CutSurface (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] where
   /-- The `2g` symplectic homology-basis loops `a₁,…,a_g,b₁,…,b_g`. -/
@@ -147,26 +148,13 @@ def toCanonicalDissection : CanonicalDissection X where
 
 end CutSurface
 
-/-- **[ISOLATED INPUT — chart existence only]** Every compact connected Riemann surface admits a cut
-surface: a canonical dissection realized as a cut chart with the boundary-word data. This bundles
-exactly the surface-topology + polygon-Green content Mathlib lacks — the Radó triangulation, the
-classification of surfaces (`H₁(X;ℤ) ≅ ℤ^{2g}` + the canonical `4g`-gon), the holomorphic cut chart,
-and Green's theorem on the `4g`-gon (which turns `∮_{∂box}` into the period sums of the two boundary
-words). **Everything analytic downstream — both Riemann bilinear relations — is proven**
-(`CutSurface.cutSurface_R1`, `CutSurface.cutSurface_R2`). (Forster §§20–21; Griffiths–Harris
-pp. 231–232; Springer pp. 139–141.) -/
-theorem exists_cutSurface (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
-    Nonempty (CutSurface X) :=
-  sorry
-
-/-- **Every compact connected Riemann surface admits a canonical dissection** — *derived* from
-`exists_cutSurface` with the two Riemann bilinear relations as the proven theorems
-`CutSurface.cutSurface_R1` / `CutSurface.cutSurface_R2`. (This replaces the former raw obligation: the
-relations are no longer bundled; only the chart existence is isolated.) -/
-theorem exists_canonicalDissection (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
-    Nonempty (CanonicalDissection X) :=
-  (exists_cutSurface X).map CutSurface.toCanonicalDissection
+/- **RETIRED (2026-06-11, Wall B closed dissection-free).** The former isolated input
+`exists_cutSurface` (the cut-chart/4g-gon existence, the repo's last `sorry` on this wall)
+and its derived `exists_canonicalDissection` are GONE: `exists_periodLattice_realBasis` is
+now proven via Forster 21.4 (`Jacobians/PeriodLatticeDiscrete.lean` +
+`Jacobians/PeriodLatticeBasis.lean`), which never needs a dissection.  Everything above —
+the `CutSurface` structure and the two proven Riemann bilinear relations `cutSurface_R1` /
+`cutSurface_R2`, plus `toCanonicalDissection` — remains banked as hypothesis-conditional
+archival theorems (no axioms, no sorries). -/
 
 end Jacobians
