@@ -50,7 +50,8 @@ there), and the **genus-`0` `∞`-vanishing as a sphere-form corollary**
 * `traceCoeff_eventuallyEq_of_sheets_eventuallyEq` — trace coefficients germ-agree from per-sheet
   germ agreement (the reindexing core: two fibre selections sharing the same index type, fibre
   points, and planar section germs near `b` have germ-equal trace coefficients);
-* `CoherentTraceSelection` — the structure bundling the minimal residue-theorem germ-coherence obligation;
+* `CoherentTraceSelection` — the structure bundling the minimal residue-theorem germ-coherence
+  obligation;
 * `CoherentTraceSelection.residueSum_eq_zero` — the residue theorem `∑Res = 0` from a coherent
   selection;
 * `residueSum_eq_zero_of_coherentSelection` — the same as a standalone theorem;
@@ -352,8 +353,8 @@ noncomputable def coherentTraceSelection_empty (ω₀ : HolomorphicOneForms X) (
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **Non-vacuity of the coherent-selection residue-theorem reduction.** For the empty pole set the reduction
-`residueSum_eq_zero_of_coherentSelection` is satisfiable via the empty fibre selection
+/-- **Non-vacuity of the coherent-selection residue-theorem reduction.** For the empty pole set the
+reduction `residueSum_eq_zero_of_coherentSelection` is satisfiable via the empty fibre selection
 (`coherentTraceSelection_empty`), yielding `∑Res = 0`. Confirms the coherent-selection reduction is
 honest (not a disguised `False`), mirroring `residueSum_eq_zero_of_geometricSelection_holomorphic`.
 -/

@@ -215,8 +215,8 @@ theorem sphereSheet_hderiv (f : MeromorphicFunction X) (hdiv : (f.div : Divisor 
 MeromorphicFunction
 X` and a sphere sheet system `S`, `g.toFun`'s chart pullback is meromorphic at every sheet point
 (`g.meromorphic`). -/
-theorem sphereSheet_hmero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (g : MeromorphicFunction X)
-    {f : MeromorphicFunction X} {z : ℂ}
+theorem sphereSheet_hmero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (g : MeromorphicFunction X) {f : MeromorphicFunction X} {z : ℂ}
     (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))) :
     ∀ k, MeromorphicAt
       (fun w => g.toFun ((chartAt ℂ (S.sheet k (((z : ℂ) : RiemannSphere)))).symm w))
@@ -228,8 +228,8 @@ theorem sphereSheet_hmero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] 
 /-- **`hsheetInj` near `z` from a sphere sheet system.**  The sheets are injective on `S.V` (a
 neighbourhood of `coe z`), so they are injective at every `coe b'` for `b'` near `z` (pull back
 `S.V` along the continuous `coe`). -/
-theorem sphereSheet_hsheetInj {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {f : MeromorphicFunction X}
-    {z : ℂ}
+theorem sphereSheet_hsheetInj {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {f : MeromorphicFunction X} {z : ℂ}
     (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))) :
     ∀ᶠ b' in 𝓝 z, Function.Injective (fun i => S.sheet i (((b' : ℂ) : RiemannSphere))) := by
   have hVnhds : ((fun w : ℂ => ((w : ℂ) : RiemannSphere)) ⁻¹' S.V) ∈ 𝓝 z :=
@@ -240,8 +240,8 @@ theorem sphereSheet_hsheetInj {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ
 /-- **`hsheetMem` near `z` from a sphere sheet system.**  Each sheet `b' ↦ S.sheet i (coe b')` is
 continuous at `z` (the moving section `holoReprSheet i` is `ContMDiffAt`), so it stays in the chart
 source of `S.sheet i (coe z)` for `b'` near `z`. -/
-theorem sphereSheet_hsheetMem {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {f : MeromorphicFunction X} {z : ℂ}
+theorem sphereSheet_hsheetMem {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {f : MeromorphicFunction X} {z : ℂ}
     (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))) :
     ∀ᶠ b' in 𝓝 z, ∀ i, S.sheet i (((b' : ℂ) : RiemannSphere)) ∈
       (chartAt ℂ (S.sheet i (((z : ℂ) : RiemannSphere)))).source := by

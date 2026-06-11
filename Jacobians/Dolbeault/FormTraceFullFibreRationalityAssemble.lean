@@ -125,8 +125,8 @@ single global geometric trace `T : ℂ → ℂ` (the value-chart `dz`-coefficien
 /-- **The trace-coherence datum** for `α = ω₀·g` along the cover `F = f.toRiemannSphere`, over the
 pole set `poles`. Bundles the geometric trace `T` (the value-chart `dz`-coefficient of `Tr_F α`)
 with the honest §VIII.3 inputs (per-centre/∞ coherence + genus-`0` remainder vanishing) and the
-discrete fibre bookkeeping. Constructing one ⇒ a `TraceRationalityData` ⇒ the residue-theorem assembly
-`∑Res = 0`. -/
+discrete fibre bookkeeping. Constructing one ⇒ a `TraceRationalityData` ⇒ the residue-theorem
+assembly `∑Res = 0`. -/
 structure TraceCoherenceData (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
     (poles : Finset X) where
   /-- The geometric global trace `T = Tr_F α`, read in the value chart. -/

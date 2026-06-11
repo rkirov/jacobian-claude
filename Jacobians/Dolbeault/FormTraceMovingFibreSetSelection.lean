@@ -8,8 +8,8 @@ import Jacobians.Dolbeault.FormTraceMovingFibreSymm
 /-!
 # The set-form moving-fibre sheet selection (Miranda §VIII.3 — no global labeling)
 
-`Jacobians.Dolbeault.FormTraceMovingFibreSheet` reduced the residue-theorem assembly's `∑Res = 0` to a
-single `MovingSheetSelection`, whose per-value re-selection bijections `hselFin`/`hselReg` phrased
+`Jacobians.Dolbeault.FormTraceMovingFibreSheet` reduced the residue-theorem assembly's `∑Res = 0` to
+a single `MovingSheetSelection`, whose per-value re-selection bijections `hselFin`/`hselReg` phrased
 the moving fibre as a *labeled* enumeration matching the reference sheets. The prior round read that
 as demanding a global continuous sheet-labeling.
 
@@ -19,20 +19,21 @@ the fibre `Φ b'`, so it depends only on the fibre *as a set*; the per-`b'` inde
 reconstructed pointwise from set-equality (`MovingCoherenceDatum.ofSheetSectionsSet`), with **no
 labeling supplied**.
 
-This file repackages the whole residue-theorem input in **set form** — `MovingSheetSelectionSet` — whose
-per-value geometric content is the labeling-independent fact that the moving fibre `Φ b'` *is the
-sheet fibre as a set* near each base value (both injective, same image), plus the discharged
+This file repackages the whole residue-theorem input in **set form** — `MovingSheetSelectionSet` —
+whose per-value geometric content is the labeling-independent fact that the moving fibre `Φ b'` *is
+the sheet fibre as a set* near each base value (both injective, same image), plus the discharged
 smoothness/section data. It produces a `MovingCoherenceFamily` (hence the residue-theorem assembly
 `∑Res = 0`) via the set-form constructor. This is the honest minimal obligation **without the false
 global-labeling constraint**: every re-selection is by fibre *value*, never by a sheet ordering.
 
 ## What this file proves
 
-* `MovingSheetSelectionSet` — the residue-theorem input with `hselFin`/`hselReg` replaced by the set-form
-  re-selection `hsetFin`/`hsetReg` (moving fibre = sheet fibre as a set, injective both ways).
+* `MovingSheetSelectionSet` — the residue-theorem input with `hselFin`/`hselReg` replaced by the
+  set-form re-selection `hsetFin`/`hsetReg` (moving fibre = sheet fibre as a set, injective both
+  ways).
 * `MovingSheetSelectionSet.toMovingCoherenceFamily` /
-  `residueSum_eq_zero_of_movingSheetSelectionSet` — the set-form residue-theorem reduction, wiring the
-  per-value moving data through `MovingCoherenceDatum.ofSheetSectionsSet`.
+  `residueSum_eq_zero_of_movingSheetSelectionSet` — the set-form residue-theorem reduction, wiring
+  the per-value moving data through `MovingCoherenceDatum.ofSheetSectionsSet`.
 * `movingSheetSelectionSet_empty` / `residueSum_eq_zero_of_movingSheetSelectionSet_holomorphic` —
   end-to-end non-vacuity (the empty-pole case), confirming the reduction is honest.
 
@@ -64,20 +65,20 @@ variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunctio
 
 /-! ### The set-form residue-theorem input
 
-The whole residue-theorem input in **set form**: the per-pole-value and per-regular-value moving data is
-presented through the labeling-independent re-selection `hsetFin`/`hsetReg` — near each base value
-the moving fibre `Φ b'` and the section values enumerate the same set (both injective). Everything
-else (finite/∞ enumeration, `∞`-glue, junk-freeness, genus-`0`) is verbatim from
+The whole residue-theorem input in **set form**: the per-pole-value and per-regular-value moving
+data is presented through the labeling-independent re-selection `hsetFin`/`hsetReg` — near each base
+value the moving fibre `Φ b'` and the section values enumerate the same set (both injective).
+Everything else (finite/∞ enumeration, `∞`-glue, junk-freeness, genus-`0`) is verbatim from
 `MovingSheetSelection`. -/
 
 /-- **A set-form moving-fibre sheet selection** for `α = ω₀·g` over `poles`, relative to an adapted
-cover `hac`. The residue-theorem input with the per-value re-selection in *set form*: at each pole-value
-`cs i` (against the pole sub-fibre) and each regular value `z`, continuously-varying manifold
-sections `sec` of `f.holoRepr`, with the **labeling-independent** re-selection `hsetFin`/`hsetReg` —
-near the base value, the moving fibre `Φ b'` and the section values enumerate the *same set* (both
-injective). No global continuous sheet-labeling, by the trace's monodromy-invariance. The remaining
-fields carry over verbatim from `MovingSheetSelection`. Produces a `MovingCoherenceFamily` via
-`MovingCoherenceDatum.ofSheetSectionsSet`. -/
+cover `hac`. The residue-theorem input with the per-value re-selection in *set form*: at each
+pole-value `cs i` (against the pole sub-fibre) and each regular value `z`, continuously-varying
+manifold sections `sec` of `f.holoRepr`, with the **labeling-independent** re-selection
+`hsetFin`/`hsetReg` — near the base value, the moving fibre `Φ b'` and the section values enumerate
+the *same set* (both injective). No global continuous sheet-labeling, by the trace's
+monodromy-invariance. The remaining fields carry over verbatim from `MovingSheetSelection`. Produces
+a `MovingCoherenceFamily` via `MovingCoherenceDatum.ofSheetSectionsSet`. -/
 structure MovingSheetSelectionSet (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X)
     (poles : Finset X) (hac : AdaptedCover ω₀ g f poles) where
@@ -165,7 +166,8 @@ structure MovingSheetSelectionSet (ω₀ : HolomorphicOneForms X) (g : X → ℂ
 per-value moving data is derived from the sheet sections via
 `MovingCoherenceDatum.ofSheetSectionsSet` (the symmetric-invariance lever: the pointwise
 re-selection bijection from set-equality, no labeling); the remaining fields carry over verbatim.
-This wires the set-form residue-theorem input to the proved `MovingCoherenceFamily ⇒ ∑Res = 0` chain. -/
+This wires the set-form residue-theorem input to the proved `MovingCoherenceFamily ⇒ ∑Res = 0`
+chain. -/
 noncomputable def MovingSheetSelectionSet.toMovingCoherenceFamily {hac : AdaptedCover ω₀ g f poles}
     (S : MovingSheetSelectionSet ω₀ g f poles hac) :
     MovingCoherenceFamily ω₀ g f poles hac where
@@ -196,9 +198,9 @@ noncomputable def MovingSheetSelectionSet.toMovingCoherenceFamily {hac : Adapted
 /-- **The residue theorem `∑Res = 0` from a set-form moving-fibre sheet selection.**  Via
 `MovingSheetSelectionSet.toMovingCoherenceFamily` and the proved
 `residueSum_eq_zero_of_movingCoherenceFamily`, a set-form moving-fibre sheet selection closes the
-residue-theorem assembly's 1-form residue theorem for `α = ω₀·g`. This is the §VIII.3 reduction of the
-residue-theorem assembly **without the false global-labeling constraint**: every re-selection is by
-fibre *value* (set-equality), the pointwise bijection reconstructed by the symmetric lever. -/
+residue-theorem assembly's 1-form residue theorem for `α = ω₀·g`. This is the §VIII.3 reduction of
+the residue-theorem assembly **without the false global-labeling constraint**: every re-selection is
+by fibre *value* (set-equality), the pointwise bijection reconstructed by the symmetric lever. -/
 theorem residueSum_eq_zero_of_movingSheetSelectionSet (hac : AdaptedCover ω₀ g f poles)
     (S : MovingSheetSelectionSet ω₀ g f poles hac) :
     ∑ a ∈ poles, formFnResidue ω₀ g a = 0 :=
@@ -274,8 +276,8 @@ noncomputable def movingSheetSelectionSet_empty (ω₀ : HolomorphicOneForms X) 
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **Non-vacuity of the set-form moving-fibre residue-theorem reduction.** For the empty pole set the
-reduction `residueSum_eq_zero_of_movingSheetSelectionSet` is satisfiable via the empty set-form
+/-- **Non-vacuity of the set-form moving-fibre residue-theorem reduction.** For the empty pole set
+the reduction `residueSum_eq_zero_of_movingSheetSelectionSet` is satisfiable via the empty set-form
 selection (`movingSheetSelectionSet_empty`), yielding `∑Res = 0`. Confirms the set-form reduction is
 honest (not a disguised `False`). -/
 theorem residueSum_eq_zero_of_movingSheetSelectionSet_holomorphic (ω₀ : HolomorphicOneForms X)

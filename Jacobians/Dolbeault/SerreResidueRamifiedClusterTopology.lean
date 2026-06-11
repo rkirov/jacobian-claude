@@ -541,9 +541,9 @@ residuals (`hsrc`, `hcs_sec`) + cluster sheet differentiability, the `FibreClust
 holds.
 
 The cluster→sheet assignment `cl i j` is recovered as the unique sheet index over the cluster point
-(`S.fibre_eq` + `S.sheet_inj`); its injectivity reduces to `hcl_distinct`.  This is the cleanest
-statement of the genuine §4/§17.9 conservation-of-number / properness content: the cluster sheets are
-preimages, are distinct, and number `∑ᵢ mᵢ = deg f`. -/
+(`S.fibre_eq` + `S.sheet_inj`); its injectivity reduces to `hcl_distinct`. This is the cleanest
+statement of the genuine §4/§17.9 conservation-of-number / properness content: the cluster sheets
+are preimages, are distinct, and number `∑ᵢ mᵢ = deg f`. -/
 noncomputable def FibreClusterTopology.ofClusterFibrePoints {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
     {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
     {D : FibreRamifiedData g f c} {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}
@@ -599,12 +599,12 @@ noncomputable def FibreClusterTopology.ofClusterFibrePoints {ω₀ : Holomorphic
 
 /-! ## Soundness: the datum genuinely encodes conservation of number (multi-preimage, not vacuous)
 
-The decisive #13-style check.  A `FibreClusterTopology`'s bijection field `e` forces the
+The decisive #13-style check. A `FibreClusterTopology`'s bijection field `e` forces the
 conservation-of-number identity `∑ᵢ D.mult i = S.n` (`= deg f`), so the datum is genuinely
-multi-preimage — not a disguised single-preimage placeholder or a vacuous triviality.  The minimal
+multi-preimage — not a disguised single-preimage placeholder or a vacuous triviality. The minimal
 constructor `ofClusterFibrePoints` accepts *any* `hcard : ∑ᵢ D.mult i = S.n` with ramified
-multiplicities (several preimages with `mᵢ > 1`), confirming the content is the genuine multi-cluster
-content. -/
+multiplicities (several preimages with `mᵢ > 1`), confirming the content is the genuine
+multi-cluster content. -/
 
 /-- **Conservation of number, encoded by the topology datum.**  A `FibreClusterTopology` forces
 `∑ᵢ D.mult i = R.S.n` (`= deg f`): the bijection `e` of the cluster `Σ`-index with the `deg f`

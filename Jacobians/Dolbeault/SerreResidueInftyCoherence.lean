@@ -1073,10 +1073,10 @@ Replacing the bare `∞`-coherence hypothesis `hcoh_geom` of
 `Φ := canonicalFibreSelection`, `Dinf := inftyFibreDataNF_full`), the deep `∞`-coherence is now
 reduced — *soundly* — to the genuine §VIII.3 `∞`-monodromy datum (the continuously-varying index
 bijection at `∞`), the reciprocal-chart analogue of the finite `Cfull` datum. This is the
-most-reduced genus-`0` the residue-theorem assembly capstone: every analytic heart is now a *geometric
-datum* (the finite `Cfull`/`hreg` discharged by the symmetric lever; the `∞`-coherence reduced to
-its monodromy datum), with only `hbnd` and the discrete genericity bookkeeping remaining as named
-obligations. -/
+most-reduced genus-`0` the residue-theorem assembly capstone: every analytic heart is now a
+*geometric datum* (the finite `Cfull`/`hreg` discharged by the symmetric lever; the `∞`-coherence
+reduced to its monodromy datum), with only `hbnd` and the discrete genericity bookkeeping remaining
+as named obligations. -/
 
 /-- **The residue theorem `∑Res = 0` (genus `0`, simple `∞`-poles, canonical selection) with
 the `∞`-coherence reduced to its moving-coherence datum.** Identical to

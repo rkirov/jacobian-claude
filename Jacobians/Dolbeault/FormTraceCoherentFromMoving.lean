@@ -29,11 +29,11 @@ The packaging makes the remaining geometry explicit and *minimal*:
 * the **genus-`0` `∞`-vanishing** `R₀ 0 = 0` is `coeffAt_eq_zero_of_sphereForm` (`H⁰(ℂℙ¹, Ω) = 0`).
 
 We bundle these as a `MovingCoherenceFamily` and prove it produces a `CoherentTraceSelection`, hence
-the residue theorem `∑Res = 0` *unconditionally* (modulo the family's existence). This isolates the remaining
-work to a single structure whose fields are, individually, either proved (the per-value local
-self-coherence from `MovingCoherenceDatum`, the genus-`0` vanishing) or the precise residual (the
-`∞`-glue + junk-freeness + the family-existence = the continuously-varying index bijections + the
-pole/regular separation genericity).
+the residue theorem `∑Res = 0` *unconditionally* (modulo the family's existence). This isolates the
+remaining work to a single structure whose fields are, individually, either proved (the per-value
+local self-coherence from `MovingCoherenceDatum`, the genus-`0` vanishing) or the precise residual
+(the `∞`-glue + junk-freeness + the family-existence = the continuously-varying index bijections +
+the pole/regular separation genericity).
 
 ## References
 
@@ -106,11 +106,11 @@ then *derived* from the moving data (`glue_fin_of_movingDatum`/`hreg_of_movingDa
 carried verbatim. -/
 
 /-- **A moving-fibre coherence family** for `α = ω₀·g` over `poles`, relative to an adapted cover
-`hac`. The residue-theorem input assembled from the §VIII.3 monodromy data: the global selection `Φ`, the
-finite/∞ enumeration bookkeeping, the per-value moving-fibre self-coherence data (finite pole-values
-against the pole sub-fibre, regular values against a regular fibre), the `∞`-glue, junk-freeness,
-and the genus-`0` continuation. Produces a `CoherentTraceSelection` (hence the residue-theorem assembly
-`∑Res = 0`). -/
+`hac`. The residue-theorem input assembled from the §VIII.3 monodromy data: the global selection
+`Φ`, the finite/∞ enumeration bookkeeping, the per-value moving-fibre self-coherence data (finite
+pole-values against the pole sub-fibre, regular values against a regular fibre), the `∞`-glue,
+junk-freeness, and the genus-`0` continuation. Produces a `CoherentTraceSelection` (hence the
+residue-theorem assembly `∑Res = 0`). -/
 structure MovingCoherenceFamily (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f : MeromorphicFunction X)
     (poles : Finset X) (hac : AdaptedCover ω₀ g f poles) where
   /-- The global fibre selection. -/
@@ -196,9 +196,9 @@ noncomputable def MovingCoherenceFamily.toCoherentTraceSelection {hac : AdaptedC
 `MovingCoherenceFamily.toCoherentTraceSelection` and the proved
 `residueSum_eq_zero_of_coherentSelection`, a moving-fibre coherence family closes the
 residue-theorem assembly's 1-form residue theorem for `α = ω₀·g`. This is the §VIII.3-monodromy
-reduction of the residue-theorem assembly: every field is either proved (the per-value self-coherence,
-the genus-`0` vanishing) or the precise residual (the `∞`-glue, junk-freeness, and the
-family-existence = the continuously-varying index bijections + the pole/regular separation
+reduction of the residue-theorem assembly: every field is either proved (the per-value
+self-coherence, the genus-`0` vanishing) or the precise residual (the `∞`-glue, junk-freeness, and
+the family-existence = the continuously-varying index bijections + the pole/regular separation
 genericity). -/
 theorem residueSum_eq_zero_of_movingCoherenceFamily (hac : AdaptedCover ω₀ g f poles)
     (F : MovingCoherenceFamily ω₀ g f poles hac) :
@@ -260,8 +260,8 @@ noncomputable def movingCoherenceFamily_empty (ω₀ : HolomorphicOneForms X) (g
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **Non-vacuity of the moving-fibre residue-theorem reduction.**  For the empty pole set the reduction
-`residueSum_eq_zero_of_movingCoherenceFamily` is satisfiable via the empty family
+/-- **Non-vacuity of the moving-fibre residue-theorem reduction.** For the empty pole set the
+reduction `residueSum_eq_zero_of_movingCoherenceFamily` is satisfiable via the empty family
 (`movingCoherenceFamily_empty`), yielding `∑Res = 0`. Confirms the family reduction is honest (not a
 disguised `False`). -/
 theorem residueSum_eq_zero_of_movingCoherenceFamily_holomorphic (ω₀ : HolomorphicOneForms X)

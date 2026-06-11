@@ -271,12 +271,12 @@ the two soundness failures documented above: (1) the OUTER sum over the **whole*
 preimages, not the single `p`); and (2) the **genuine** sheet points `clusterSheet (sec ℓ) …` (the
 local inverse `sₗ` of `exists_clusterSplit`), not the first-order `wp + ζʲ·w₀ z`.
 
-It is the single genuinely-remaining analytic input to the `hoff_cs`-free residue-theorem route; everything
-else is done. Discharging it requires the **fibre-cluster reindexing** of the `LocalSheetSystem`
-full-fibre trace by preimage clusters (the `m` regular sheets near each ramification preimage `pₗ`
-over a nearby `z` are exactly `clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j z`, `j < mₗ`, by
-`exists_clusterSplit` + properness) — the genuine multi-hundred-line build, with the per-preimage
-atoms supplied here. -/
+It is the single genuinely-remaining analytic input to the `hoff_cs`-free residue-theorem route;
+everything else is done. Discharging it requires the **fibre-cluster reindexing** of the
+`LocalSheetSystem` full-fibre trace by preimage clusters (the `m` regular sheets near each
+ramification preimage `pₗ` over a nearby `z` are exactly `clusterSheet (sec ℓ) (ζ ℓ) (w₀ ℓ) j z`,
+`j < mₗ`, by `exists_clusterSplit` + properness) — the genuine multi-hundred-line build, with the
+per-preimage atoms supplied here. -/
 def RamifiedFullFibreClusterGeometry (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) (_c : ℂ)
     {r : ℕ} (pre : Fin r → X) (mult : Fin r → ℕ) (ζ : Fin r → ℂ) (S : Set ℂ)

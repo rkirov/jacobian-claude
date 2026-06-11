@@ -158,8 +158,8 @@ namespace Dolbeault
 variable {𝔘 : FiniteFamily X}
 
 /-- `globalGerm` is **multiplicative** in the meromorphic function. -/
-theorem globalGerm_mul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (f g : MeromorphicFunction X)
-    (U : Opens X) :
+theorem globalGerm_mul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f g : MeromorphicFunction X) (U : Opens X) :
     globalGerm (f * g) U = globalGerm f U * globalGerm g U := rfl
 
 /-- `globalGerm` of the constant `1` is the unit germ. -/
@@ -167,8 +167,8 @@ theorem globalGerm_one {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (U 
     globalGerm (1 : MeromorphicFunction X) U = 1 := rfl
 
 /-- `globalGerm` is **subtractive** in the meromorphic function. -/
-theorem globalGerm_sub {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (f g : MeromorphicFunction X)
-    (U : Opens X) :
+theorem globalGerm_sub {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f g : MeromorphicFunction X) (U : Opens X) :
     globalGerm (f - g) U = globalGerm f U - globalGerm g U := by
   have h1 : f - g = f + (-1 : ℂ) • g := by
     rw [neg_one_smul, sub_eq_add_neg]

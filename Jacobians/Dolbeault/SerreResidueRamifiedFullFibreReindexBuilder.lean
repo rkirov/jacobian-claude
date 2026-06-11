@@ -11,8 +11,8 @@ import Jacobians.Dolbeault.SerreResidueRamifiedClusterTopology
 
 `SerreResidueRamifiedFullFibreReindex.lean` fixed the full-fibre-vs-pole inconsistency of
 `FibreClusterReindex` by introducing the SOUND `FullFibreCenterReindex` (whole-fibre `D`, non-poles
-→ residue `0`, **no `hD_mem`**), and proved residue-theorem `∑Res = 0` from a per-centre family of these.
-This file discharges the per-centre `FullFibreCenterReindex` from the SAME per-slit
+→ residue `0`, **no `hD_mem`**), and proved residue-theorem `∑Res = 0` from a per-centre family of
+these. This file discharges the per-centre `FullFibreCenterReindex` from the SAME per-slit
 conservation-of-number geometry the unsound `FibreClusterReindex` chain consumed (the
 `ClusterReindexData` / `FibreClusterTopology` families of
 `SerreResidueRamifiedClusterPartition.lean` / `SerreResidueRamifiedClusterTopology.lean`) — but with
@@ -27,8 +27,9 @@ the inconsistent all-poles assumption removed.
   `ClusterReindexData` family (`hgeom_fibre` discharged pointwise).
 * `FullFibreCenterReindex.ofFibreClusterTopologyFamily` — the same from a slit-wide
   `FibreClusterTopology` family (the conservation-of-number datum, `hcard = deg f`).
-* `residueSum_eq_zero_of_fullFibreTopology` — residue-theorem `∑Res = 0` from an `AdaptedFRamified` + a
-  per-centre `FullFibreCenterReindex`, anchoring the SOUND reduction to the residue-theorem goal.
+* `residueSum_eq_zero_of_fullFibreTopology` — residue-theorem `∑Res = 0` from an `AdaptedFRamified`
+  + a per-centre `FullFibreCenterReindex`, anchoring the SOUND reduction to the residue-theorem
+  goal.
 
 So the residue theorem `∑_{a ∈ poles} formFnResidue ω₀ g a = 0` is reduced, for the real cover, to
 **exactly** the per-slit `FibreClusterTopology` (Forster §4 conservation-of-number + §5 normal-form
@@ -193,11 +194,12 @@ and at each finite pole-value centre a per-centre `FullFibreCenterReindex` (e.g.
 
 > `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`.
 
-This anchors the conservation-of-number datum to the residue-theorem goal: the *only* genuinely-remaining
-content is the per-centre `FibreClusterTopology` — and, via `ofClusterFibrePoints`, exactly the
-three minimal clustering facts (cluster sheets are distinct fibre points numbering `deg f`). The
-full-fibre-vs-pole inconsistency that made the old `FibreClusterReindex` route vacuous is resolved
-here: `D` is the WHOLE fibre, non-poles → residue `0`. -/
+This anchors the conservation-of-number datum to the residue-theorem goal: the *only*
+genuinely-remaining content is the per-centre `FibreClusterTopology` — and, via
+`ofClusterFibrePoints`, exactly the three minimal clustering facts (cluster sheets are distinct
+fibre points numbering `deg f`). The full-fibre-vs-pole inconsistency that made the old
+`FibreClusterReindex` route vacuous is resolved here: `D` is the WHOLE fibre, non-poles → residue
+`0`. -/
 theorem residueSum_eq_zero_of_fullFibreTopology {ω₀ : HolomorphicOneForms X}
     {g : MeromorphicFunction X} {poles : Finset X} (A : AdaptedFRamified ω₀ g poles)
     (R : ∀ i, FullFibreCenterReindex ω₀ g.toFun A.f A.hdiv poles (A.cs i)) :

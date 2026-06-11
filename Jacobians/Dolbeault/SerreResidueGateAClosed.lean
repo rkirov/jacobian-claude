@@ -420,9 +420,9 @@ theorem hev_coherence_canonical_of_offBranch (hdiv : (f.div : Divisor X) ≠ 0) 
 
 Assembling the sound `hbnd`: at a branch value `b₀` (off pole-centres), the geometric trace
 germ-equals the `g`-weighted bundle finsum (αBr-free coherence + the finsum bridge), and the
-`g`-weighted bundle SUM boundedness condition gives `(z − b₀)·trace → 0`. The form fed to the bound is the
-GLOBAL HOLOMORPHIC `ω₀`; `g` enters only as the bounded fibre weight (continuous at the branch
-fibre, off the pole-values). -/
+`g`-weighted bundle SUM boundedness condition gives `(z − b₀)·trace → 0`. The form fed to the bound
+is the GLOBAL HOLOMORPHIC `ω₀`; `g` enters only as the bounded fibre weight (continuous at the
+branch fibre, off the pole-values). -/
 
 /-- **The SOUND `hbnd` for the canonical selection at a branch value (general meromorphic `g`).**
 For a genuine branch value `b₀ ∈ branchValues f` off the pole-centres `cs`, the canonical full-fibre
@@ -616,11 +616,11 @@ variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunctio
 global holomorphic `ω₀`, `g` the bounded fibre weight) — NOT the unsatisfiable global-holomorphic
 `αBr` of `…_inftyClosed_bnd`.
 
-The genuine branch values use the `g`-weighted boundedness condition; the non-branch `br`-values use the
-good-value analyticity `hgood_brOff`/`hgmero_brOff` (vacuous when `br = branchValues f`). `hg_fibre`
-at the branch fibres and `hg_an` at the non-branch `br`-fibres are both derived internally from
-`hg_an_offpoles` (a fibre point over a value off `image cs` is off `poles`). This rests on **only
-the discrete genericity bookkeeping** — no `αBr`, no false field. -/
+The genuine branch values use the `g`-weighted boundedness condition; the non-branch `br`-values use
+the good-value analyticity `hgood_brOff`/`hgmero_brOff` (vacuous when `br = branchValues f`).
+`hg_fibre` at the branch fibres and `hg_an` at the non-branch `br`-fibres are both derived
+internally from `hg_an_offpoles` (a fibre point over a value off `image cs` is off `poles`). This
+rests on **only the discrete genericity bookkeeping** — no `αBr`, no false field. -/
 theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ_CfullHreg_inftyClosed_soundBnd
     (hdiv : (f.div : Divisor X) ≠ 0)
     (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →

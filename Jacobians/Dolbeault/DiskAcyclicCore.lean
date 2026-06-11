@@ -51,8 +51,8 @@ theorem exists_smoothPartitionOfUnity_core [T2Space X] [SigmaCompactSpace X] [Is
 /-- **Open-union subordinate PoU exists.** On the open submanifold given by the union of the family,
 the closed set is `univ`, so the partition of unity sums to `1` everywhere there. This is the sound
 rebase for the globalization step the comments point at. -/
-theorem exists_smoothPartitionOfUnity_openUnion [T2Space X] [LocallyCompactSpace X] [IsManifold 𝓘(ℂ) ω X]
-    {ι : Type} [Fintype ι] [SecondCountableTopology X]
+theorem exists_smoothPartitionOfUnity_openUnion [T2Space X] [LocallyCompactSpace X]
+    [IsManifold 𝓘(ℂ) ω X] {ι : Type} [Fintype ι] [SecondCountableTopology X]
     (U : ι → Opens X) :
     ∃ ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ)
       ↥(⟨⋃ i, (U i : Set X), isOpen_iUnion fun i => (U i).isOpen⟩ : Opens X)

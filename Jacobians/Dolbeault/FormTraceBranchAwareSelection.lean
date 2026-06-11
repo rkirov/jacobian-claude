@@ -21,8 +21,8 @@ the same fibre set as the local sheets; the per-`b'` index bijection is reconstr
 at the finitely-many branch values by Riemann's removable singularity (analytic on a punctured
 neighbourhood + continuous at the branch point), *without* a sheet system there.
 
-The result is `BranchAwareTraceSelection` — a residue-theorem input whose fields are exactly the genuine
-geometry:
+The result is `BranchAwareTraceSelection` — a residue-theorem input whose fields are exactly the
+genuine geometry:
 * the per-pole-value and per-regular-value moving-sheet *coherence data* `Cfin`/`Creg` (built
   upstream from the set-form sphere-sheet constructor, *no labeling*);
 * the regular-value `g`-analyticity (so the coherence gives analyticity at regular values);
@@ -37,8 +37,9 @@ false there).
 
 ## What this file proves
 
-* `BranchAwareTraceSelection` — the residue-theorem input bundling the moving-sheet coherence (no labeling),
-  the regular-value `g`-analyticity, the branch-value continuity, and the `∞`/junk/genus-`0` data.
+* `BranchAwareTraceSelection` — the residue-theorem input bundling the moving-sheet coherence (no
+  labeling), the regular-value `g`-analyticity, the branch-value continuity, and the
+  `∞`/junk/genus-`0` data.
 * `residueSum_eq_zero_of_branchAwareSelection` — the residue theorem `∑Res = 0` from it.
 * `branchAwareTraceSelection_empty` / `residueSum_eq_zero_of_branchAwareSelection_holomorphic` —
   end-to-end non-vacuity (empty-pole case), confirming the reduction is honest.
@@ -90,9 +91,9 @@ theorem analyticAt_valueChartTrace_of_movingDatum {Φ : (b : ℂ) → FibreRegul
 
 /-! ### The branch-aware trace selection
 
-The residue-theorem input bundling the genuine §VIII.3 geometry, *no labeling, branch values via removable
-singularity*.  Mirrors `MovingCoherenceFamily` for the finite/∞ bookkeeping and the pole-value
-coherence, but:
+The residue-theorem input bundling the genuine §VIII.3 geometry, *no labeling, branch values via
+removable singularity*. Mirrors `MovingCoherenceFamily` for the finite/∞ bookkeeping and the
+pole-value coherence, but:
 * the off-exceptional content is split: a moving-sheet coherence datum `Creg z` (with
   `g`-analyticity) at every value off `centres ∪ br`, and the *continuity* `hbranch` at the
   finitely-many branch values `br` (the Riemann-extension input);
@@ -100,8 +101,8 @@ coherence, but:
   branch values via the extension. -/
 
 /-- **A branch-aware trace selection** for `α = ω₀·g` over `poles`, relative to an adapted cover
-`hac`. The honest §VIII.3 residue-theorem input *without the false global-labeling constraint and with branch
-values handled by Riemann's removable singularity*:
+`hac`. The honest §VIII.3 residue-theorem input *without the false global-labeling constraint and
+with branch values handled by Riemann's removable singularity*:
 
 * `Φ`, `cs`/`ρ`/`hcenters_cs`, `Dinf`/`hxs_*` — the global selection + finite/∞ enumeration
   (verbatim);
@@ -265,9 +266,9 @@ noncomputable def branchAwareTraceSelection_empty (ω₀ : HolomorphicOneForms X
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **Non-vacuity of the branch-aware residue-theorem reduction.**  For the empty pole set the reduction
-`residueSum_eq_zero_of_branchAwareSelection` is satisfiable via the empty selection
-(`branchAwareTraceSelection_empty`), yielding `∑Res = 0`.  Confirms the reduction is honest (not a
+/-- **Non-vacuity of the branch-aware residue-theorem reduction.** For the empty pole set the
+reduction `residueSum_eq_zero_of_branchAwareSelection` is satisfiable via the empty selection
+(`branchAwareTraceSelection_empty`), yielding `∑Res = 0`. Confirms the reduction is honest (not a
 disguised `False`). -/
 theorem residueSum_eq_zero_of_branchAwareSelection_holomorphic (ω₀ : HolomorphicOneForms X)
     (g : X → ℂ) (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :

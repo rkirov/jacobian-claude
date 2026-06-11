@@ -59,10 +59,10 @@ the residue theorem `∑ₐ Resₐ(α) = 0` is now *unconditional modulo a singl
 > rational `LaurentForm` representing `Tr_F α` and prove it germ-agrees with the trace in every
   chart.
 
-This is the genuine §VIII.3 trace-rationality statement (the global meromorphic trace on compact `ℂℙ¹` is
-rational; partial-fraction extraction + germ-agreement), the same fibre/sheet/branched-cover
-apparatus as `exists_properMapDegree`. See the diagnosis in `FormTraceGlobalConstruct` /
-`FormResidueTheorem`.
+This is the genuine §VIII.3 trace-rationality statement (the global meromorphic trace on compact
+`ℂℙ¹` is rational; partial-fraction extraction + germ-agreement), the same
+fibre/sheet/branched-cover apparatus as `exists_properMapDegree`. See the diagnosis in
+`FormTraceGlobalConstruct` / `FormResidueTheorem`.
 
 ## References
 

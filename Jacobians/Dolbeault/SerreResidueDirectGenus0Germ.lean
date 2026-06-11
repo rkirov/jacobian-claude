@@ -59,8 +59,8 @@ then `recipCoeff h =ᶠ[𝓝[≠] 0] recipCoeff h'` (they agree for large `z`, `
 non-circular — it uses only analytic continuation + Cauchy for a genuinely-entire function, never
 `∑Res = 0`.
 
-So this file **eliminates `hcont_int`** from the genus-`0` residue-theorem capstones, replacing it with the
-free germ-regularity already supplied by the principal-part extraction.
+So this file **eliminates `hcont_int`** from the genus-`0` residue-theorem capstones, replacing it
+with the free germ-regularity already supplied by the principal-part extraction.
 
 ## What this file proves
 
@@ -545,8 +545,9 @@ theorem residueTheorem_ofAdaptedSimpleInfty_genus0_germ
 `residueTheorem_ofCanonicalSimpleInfty_genus0`: the canonical full-fibre selection + simple
 `∞`-poles, with the genus-`0` `∞`-vanishing discharged internally (germ-Cauchy) **and** the finite
 junk-freeness `hcont_int` removed (replaced by the free germ-regularity of the trace remainder). the
-residue-theorem assembly rests on *exactly* the per-centre full-fibre coherence `Cfull`, the off-centre
-analyticity `hreg`/`hbnd`, and the `∞`-coherence `hcoh_full` — the false `hcont_int` is **gone**. -/
+residue-theorem assembly rests on *exactly* the per-centre full-fibre coherence `Cfull`, the
+off-centre analyticity `hreg`/`hbnd`, and the `∞`-coherence `hcoh_full` — the false `hcont_int` is
+**gone**. -/
 theorem residueTheorem_ofCanonicalSimpleInfty_genus0_germ (hdiv : (f.div : Divisor X) ≠ 0)
     (hgood : ∀ p, (∃ a ∈ poles, f.toRiemannSphere a = (((p : ℂ) : RiemannSphere))) →
       GoodValue g f hdiv p)

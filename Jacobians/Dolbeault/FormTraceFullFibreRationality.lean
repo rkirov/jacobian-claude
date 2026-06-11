@@ -56,12 +56,12 @@ partial-fraction content (3.1)**, isolated here as the single field `agree`/`agr
 
 ## The single minimal remaining obligation (precise diagnosis)
 
-Below `TraceRationalityData` everything is **complete and axiom-clean**. the residue-theorem assembly
-is reduced to the single construction `∃ T, TraceRationalityData ω₀ g f poles` for a nonconstant `f`
-— concretely the two agreements `agree`/`agree_infty`, i.e. **the meromorphic trace `Tr_F α` on the
-compact `ℂℙ¹` is rational** (Miranda §VIII.3: a meromorphic function on `ℂℙ¹` is a rational
-function; the principal parts are read off the fibres by the normal form (3.1)). This is Miranda's
-Step-1 analytic content and nothing more: there is **no** unramified-over-poles demand
+Below `TraceRationalityData` everything is **complete and axiom-clean**. the residue-theorem
+assembly is reduced to the single construction `∃ T, TraceRationalityData ω₀ g f poles` for a
+nonconstant `f` — concretely the two agreements `agree`/`agree_infty`, i.e. **the meromorphic trace
+`Tr_F α` on the compact `ℂℙ¹` is rational** (Miranda §VIII.3: a meromorphic function on `ℂℙ¹` is a
+rational function; the principal parts are read off the fibres by the normal form (3.1)). This is
+Miranda's Step-1 analytic content and nothing more: there is **no** unramified-over-poles demand
 (`AdaptedCover.hnp`/`hderiv`), **no** moving-fibre selection `Φ`, and **no** `hglue_fin`/`hsep`. The
 cover only needs to be nonconstant.
 
@@ -261,8 +261,8 @@ noncomputable def toGlobalTraceData : GlobalTraceData ω₀ g f poles where
   infty_eq := infty_eq_of_agree ω₀ f T.L T.Dinf poles T.hxsInf_inj T.hxsInf_mem T.hxsInf_surj
     T.agree_infty
 
-/-- **the residue-theorem assembly for the represented form, from a `TraceRationalityData`.** The total
-residue of `α = ω₀·g` over its poles vanishes:
+/-- **the residue-theorem assembly for the represented form, from a `TraceRationalityData`.** The
+total residue of `α = ω₀·g` over its poles vanishes:
 
 > `∑_{a ∈ poles} formFnResidue ω₀ g a = 0`.
 

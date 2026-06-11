@@ -10,8 +10,8 @@ import Jacobians.Dolbeault.FormTraceBranchAwareSelection
 # The branch-value-patched global trace `Tᵉˣᵗ` and the residue theorem `∑Res = 0` (Miranda
 §VIII.3 — the close)
 
-This file is the **unification step** for the residue-theorem assembly (`∑ₐ Resₐ(α) = 0`, `α = ω₀·g`).
-All conceptual walls are down; the proven engines are wired into one instantiation of
+This file is the **unification step** for the residue-theorem assembly (`∑ₐ Resₐ(α) = 0`,
+`α = ω₀·g`). All conceptual walls are down; the proven engines are wired into one instantiation of
 `globalTrace_of_glue` (`FormTraceGlobalTAssemble`), using the **value-correct branch-patched trace**
 — *not* the false `hbranch`/`BranchAwareTraceSelection` continuity route (the raw `valueChartTrace`
 value at a branch value is a *partial* sheet sum, not the analytic-continuation limit, so it is
@@ -44,10 +44,10 @@ each branch value (the partial-sum junk is repaired to the limit).
   (germ-transport), branch values via the **patched** removable engine
   (`analyticAt_branchExtension_valueChartTrace`, needing punctured analyticity + the boundedness
   condition — *no* false continuity demand).
-* `PatchedTraceSelection` — the assembled residue-theorem input using `Tᵉˣᵗ`: the per-value moving-sheet
-  coherence (no labeling, via the symmetric lever), the **branch-value boundedness condition** (the
-  genuine §VIII.3 analytic content, reduced sheet-by-sheet to the proven ratio atom), the `∞`-glue,
-  junk-freeness, and the genus-`0` `∞`-vanishing.
+* `PatchedTraceSelection` — the assembled residue-theorem input using `Tᵉˣᵗ`: the per-value
+  moving-sheet coherence (no labeling, via the symmetric lever), the **branch-value boundedness
+  condition** (the genuine §VIII.3 analytic content, reduced sheet-by-sheet to the proven ratio
+  atom), the `∞`-glue, junk-freeness, and the genus-`0` `∞`-vanishing.
 * `residueSum_eq_zero_of_patchedTraceSelection` — **the residue theorem `∑Res = 0`** from it,
   via the proven `residueSum_eq_zero_of_glue`.
 * `patchedTraceSelection_empty` / `…_holomorphic` — end-to-end non-vacuity (empty-pole case).
@@ -64,8 +64,8 @@ moving-sheet data + the `∞`-glue) — the branched-cover monodromy, handled la
 symmetric lever; and 3. the genus-`0` `∞`-vanishing + junk-freeness.
 
 The false `hbranch` continuity route is *not* revived: branch values are handled by the
-value-correct patch, whose analyticity rests on the boundedness condition (genuine, partially proven) —
-never on continuity of the raw partial-sum trace.
+value-correct patch, whose analyticity rests on the boundedness condition (genuine, partially
+proven) — never on continuity of the raw partial-sum trace.
 
 ## References
 
@@ -173,9 +173,9 @@ theorem recipCoeff_valueChartTracePatched_eventuallyEq (ω₀ : HolomorphicOneFo
 
 /-! ### The branch-value boundedness condition from sheet sections (the §VIII.3 analytic port)
 
-This is **the one genuinely-new analytic step** of the close: discharge the boundedness condition `hbnd`
-`(z − b₀)·valueChartTrace z → 0` at a branch value `b₀` from the proven planar per-sheet ratio atom
-`FormTraceBranchPlanarExtend.tendsto_zero_section_deriv`.
+This is **the one genuinely-new analytic step** of the close: discharge the boundedness condition
+`hbnd` `(z − b₀)·valueChartTrace z → 0` at a branch value `b₀` from the proven planar per-sheet
+ratio atom `FormTraceBranchPlanarExtend.tendsto_zero_section_deriv`.
 
 Near a branch value `b₀`, the geometric trace is, on a punctured neighbourhood, the **moving fibre
 sum** `∑ j, chartIntegrand ω₀ g x_j (rinv_j z)·deriv (rinv_j) z` read along the chart pullbacks
@@ -198,10 +198,10 @@ the moving-sum germ-equality, this gives `hbnd`. This is the planar shadow of th
 machinery is *replaced* by the explicit sheet enumeration `sec_j` supplied per branch value (the
 moving selection's fibre data), and the per-sheet content is the same proven ratio atom. -/
 
-/-- **The branch-value boundedness condition from sheet sections.**  Let `b₀ : ℂ` and `ι : Type*` finite.
-Suppose the geometric trace germ-equals, on the *punctured* neighbourhood of `b₀`, the moving fibre
-sum along chart pullbacks `rinv : ι → ℂ → ℂ` of sheet sections through preimages `x : ι → X` of
-`b₀`:
+/-- **The branch-value boundedness condition from sheet sections.** Let `b₀ : ℂ` and `ι : Type*`
+finite. Suppose the geometric trace germ-equals, on the *punctured* neighbourhood of `b₀`, the
+moving fibre sum along chart pullbacks `rinv : ι → ℂ → ℂ` of sheet sections through preimages
+`x : ι → X` of `b₀`:
 
 * `hgerm` —
   `valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] b₀]
@@ -214,8 +214,8 @@ sum along chart pullbacks `rinv : ι → ℂ → ℂ` of sheet sections through 
   `chartIntegrand ω₀ g (x j)` continuous at `w₀ j` (`hcoeff` — `α` holomorphic at the non-pole
   `x j`).
 
-Then the boundedness condition `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds. *Proof.* Each per-sheet
-term `→ 0` by `tendsto_zero_perSheet` (the coeff continuous × the ratio atom
+Then the boundedness condition `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds. *Proof.* Each
+per-sheet term `→ 0` by `tendsto_zero_perSheet` (the coeff continuous × the ratio atom
 `tendsto_zero_section_deriv`); sum over the finite fibre (`tendsto_zero_fibreSum`); transport along
 `hgerm`. -/
 theorem tendsto_zero_valueChartTrace_of_sections (ω₀ : HolomorphicOneForms X)
@@ -253,7 +253,7 @@ theorem tendsto_zero_valueChartTrace_of_sections (ω₀ : HolomorphicOneForms X)
     = (z - b₀) * valueChartTrace ω₀ f Φ z
   rw [hz]
 
-/-- **The branch-value boundedness condition from smooth sheet sections.**  The reduced interface for
+/-- **The branch-value boundedness condition from smooth sheet sections.** The reduced interface for
 `tendsto_zero_valueChartTrace_of_sections`: the per-sheet differentiability/right-inverse data is
 *derived* from a family of smooth cover sheets `sec : ι → ℂ → X` through the preimages
 `x j := sec j b₀` of `b₀`. The caller supplies only the genuine geometric content:
@@ -451,8 +451,9 @@ trace `Tᵉˣᵗ = valueChartTracePatched ω₀ f Φ br` to `residueSum_eq_zero_
 
 * the off-exceptional content is split into a per-regular-value moving-sheet coherence datum `Creg`
   (no labeling, via the symmetric lever) **and**, at the finitely-many branch values, the genuine
-  §VIII.3 **boundedness condition** `hbnd` (replacing the *false* `BranchAwareTraceSelection.hbranch`
-  continuity — the raw trace value at a branch value is a partial sum, hence discontinuous);
+  §VIII.3 **boundedness condition** `hbnd` (replacing the *false*
+  `BranchAwareTraceSelection.hbranch` continuity — the raw trace value at a branch value is a
+  partial sum, hence discontinuous);
 * `hT_off` for `Tᵉˣᵗ` is then `analyticAt_valueChartTracePatched_off_centres`: regular values via
   the coherence (patch inert), branch values via the value-correct removable extension (whose
   analyticity rests on `hbnd`, never on continuity).
@@ -517,8 +518,8 @@ structure PatchedTraceSelection (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
   hCreg_g : ∀ z (hz : z ∉ Finset.univ.image cs ∪ br), ∀ i,
     AnalyticAt ℂ (fun w => g ((chartAt ℂ ((Creg z hz).D.xs i)).symm w))
       ((chartAt ℂ ((Creg z hz).D.xs i)) ((Creg z hz).D.xs i))
-  /-- **Branch-value boundedness condition** (the genuine §VIII.3 analytic content; *replaces* the false
-  `BranchAwareTraceSelection.hbranch` continuity): at each branch value off the centres,
+  /-- **Branch-value boundedness condition** (the genuine §VIII.3 analytic content; *replaces* the
+  false `BranchAwareTraceSelection.hbranch` continuity): at each branch value off the centres,
   `(z − b₀)·valueChartTrace z → 0`. -/
   hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
     Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0)
@@ -654,8 +655,8 @@ noncomputable def patchedTraceSelection_empty (ω₀ : HolomorphicOneForms X) (g
     show recipCoeff ((fun _ => (0 : ℂ)) - fun _ => (0 : ℂ)) ζ = (0 : ℂ)
     simp [recipCoeff]
 
-/-- **Non-vacuity of the patched-trace residue-theorem reduction.**  For the empty pole set the reduction
-`residueSum_eq_zero_of_patchedTraceSelection` is satisfiable via the empty selection
+/-- **Non-vacuity of the patched-trace residue-theorem reduction.** For the empty pole set the
+reduction `residueSum_eq_zero_of_patchedTraceSelection` is satisfiable via the empty selection
 (`patchedTraceSelection_empty`), yielding `∑Res = 0`. Confirms the reduction is honest (not a
 disguised `False`). -/
 theorem residueSum_eq_zero_of_patchedTraceSelection_holomorphic (ω₀ : HolomorphicOneForms X)

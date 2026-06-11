@@ -132,10 +132,10 @@ theorem residueTheorem_ofAdapted_genus0
     (poleSubEnum_hpole_image poles Dinf_full.xs)
     hnonpole_inf_an
 
-/-- **The residue theorem `∑Res = 0` from an adapted cover with simple `∞`-poles, remaining obligations
-discharged.** The simple-`∞` specialization of `residueTheorem_ofAdapted_genus0`: the full
-`∞`-fibre `Dinf_full` is constructed as `inftyFibreDataNF_full` (enumerating all `f`-poles, each
-simple), discharging the four `∞`-fibre-data inputs from `hsimpleInf`/`hmeroInf`. No genus-`0`
+/-- **The residue theorem `∑Res = 0` from an adapted cover with simple `∞`-poles, remaining
+obligations discharged.** The simple-`∞` specialization of `residueTheorem_ofAdapted_genus0`: the
+full `∞`-fibre `Dinf_full` is constructed as `inftyFibreDataNF_full` (enumerating all `f`-poles,
+each simple), discharging the four `∞`-fibre-data inputs from `hsimpleInf`/`hmeroInf`. No genus-`0`
 `∞`-vanishing. -/
 theorem residueTheorem_ofAdaptedSimpleInfty_genus0
     (Φ : (b : ℂ) → FibreRegularData g f b)

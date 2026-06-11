@@ -8,8 +8,8 @@ import Jacobians.Dolbeault.FormTraceMovingFibreSheet
 /-!
 # The symmetric-invariance lever for the moving-fibre coherence (Miranda §VIII.3)
 
-`Jacobians.Dolbeault.FormTraceMovingFibreSheet` reduced the residue-theorem assembly's `∑Res = 0` to a
-single `MovingSheetSelection`, whose per-value moving data is reduced (via
+`Jacobians.Dolbeault.FormTraceMovingFibreSheet` reduced the residue-theorem assembly's `∑Res = 0` to
+a single `MovingSheetSelection`, whose per-value moving data is reduced (via
 `MovingCoherenceDatum.ofSheetSections`) to the **§VIII.3 re-selection bijection** `hsel`: near each
 base value `b₀`, an index bijection `e : (Φ b').ι ≃ D.ι` with `(Φ b').xs i' = sec (e i') b'`.
 

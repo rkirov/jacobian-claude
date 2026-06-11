@@ -9,9 +9,9 @@ import Jacobians.Discharge.Manifold.CriticalValuesFiniteGeneral
 /-!
 # Constructing `GlobalTraceData` — discharging the routine fields
 
-`Jacobians.Dolbeault.FormTraceGlobal` reduced the residue-theorem assembly (the 1-form residue theorem
-`∑ₐ Resₐ(α) = 0` for `α = ω₀·g`) to the single construction of a `GlobalTraceData ω₀ g f poles`. Its
-five fields are
+`Jacobians.Dolbeault.FormTraceGlobal` reduced the residue-theorem assembly (the 1-form residue
+theorem `∑ₐ Resₐ(α) = 0` for `α = ω₀·g`) to the single construction of a
+`GlobalTraceData ω₀ g f poles`. Its five fields are
 
 * `L`, `hL32`, `infty_eq` — the **rational trace** `Tr_F α` on `ℂℙ¹` (the deep §VIII.3 content), and
 * `D`, `hxs_inj`/`hxs_mem`/`hxs_surj`, `hcenters` — the **per-center fibre data** (regular fibres

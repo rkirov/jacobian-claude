@@ -28,8 +28,8 @@ has at worst a *removable* singularity at `b₀`: redefined to its punctured-lim
 (`Jacobians/TraceForm.lean`) — but stated purely on `ℂ → ℂ`, so it applies directly to the
 value-chart geometric trace.
 
-The boundedness condition is the §VIII.3 analytic heart; for the planar trace it reduces *sheet by sheet*
-to the proven one-variable atom `TraceForm.sub_div_deriv_tendsto_zero` (the ratio
+The boundedness condition is the §VIII.3 analytic heart; for the planar trace it reduces *sheet by
+sheet* to the proven one-variable atom `TraceForm.sub_div_deriv_tendsto_zero` (the ratio
 `(F w − z₀)/F'(w) → 0` at a ramification point) — see `tendsto_zero_of_section_deriv` below, which
 packages exactly that reduction for a single regular sheet's section derivative.
 
@@ -68,10 +68,10 @@ extension. We package the hypotheses in the form the geometric trace actually de
 differentiable on a punctured neighbourhood, plus the *little-o-of-`(·−c)⁻¹` shadow*
 `(z − c)·T z → 0`. -/
 
-/-- **The boundedness condition is the little-o condition.**  If `(z − c)·T₀ z → 0` as `z → c` through
-`z ≠ c`, then `(T₀ z − T₀ c) =o[𝓝[≠] c] (z − c)⁻¹` — exactly the little-o hypothesis of Mathlib's
-removable-singularity theorem.  (`(T₀ z − T₀ c)/(z − c)⁻¹ = (z − c)·T₀ z − (z − c)·T₀ c`, and both
-terms tend to `0`: the first by hypothesis, the second since `z − c → 0`.) -/
+/-- **The boundedness condition is the little-o condition.** If `(z − c)·T₀ z → 0` as `z → c`
+through `z ≠ c`, then `(T₀ z − T₀ c) =o[𝓝[≠] c] (z − c)⁻¹` — exactly the little-o hypothesis of
+Mathlib's removable-singularity theorem. (`(T₀ z − T₀ c)/(z − c)⁻¹ = (z − c)·T₀ z − (z − c)·T₀ c`,
+and both terms tend to `0`: the first by hypothesis, the second since `z − c → 0`.) -/
 theorem isLittleO_sub_of_tendsto_zero {T₀ : ℂ → ℂ} {c : ℂ}
     (hbnd : Tendsto (fun z => (z - c) * T₀ z) (𝓝[≠] c) (𝓝 0)) :
     (fun z => T₀ z - T₀ c) =o[𝓝[≠] c] fun z => (z - c)⁻¹ := by
@@ -91,9 +91,9 @@ theorem isLittleO_sub_of_tendsto_zero {T₀ : ℂ → ℂ} {c : ℂ}
     rw [heq]; exact hdiff
 
 /-- **Planar removable-singularity extension.**  If `T₀` is complex-differentiable on a punctured
-neighbourhood of `b₀` (`hpunct`) and satisfies the boundedness condition `(z − b₀)·T₀ z → 0` (`hbnd`),
-then `Function.update T₀ b₀ (limUnder (𝓝[≠] b₀) T₀)` — `T₀` redefined to its punctured limit at
-`b₀` — is `AnalyticAt ℂ` at `b₀`.
+neighbourhood of `b₀` (`hpunct`) and satisfies the boundedness condition `(z − b₀)·T₀ z → 0`
+(`hbnd`), then `Function.update T₀ b₀ (limUnder (𝓝[≠] b₀) T₀)` — `T₀` redefined to its punctured
+limit at `b₀` — is `AnalyticAt ℂ` at `b₀`.
 
 This is the planar shadow of the bundle-side `traceExtendsAt_branchPoint`: the geometric trace has
 at worst a removable singularity at a branch value, so patching its value there makes it analytic.
@@ -146,9 +146,9 @@ theorem analyticAt_of_eventuallyEq_of_tendsto_zero {T T₀ : ℂ → ℂ} {b₀ 
 /-- **Germ form, value supplied externally.**  Variant of
 `analyticAt_of_eventuallyEq_of_tendsto_zero` for when the punctured limit is known to be a specific
 value `L` (e.g. computed by an independent matching lemma): if `T` germ-equals `T₀` off `b₀`, takes
-the value `L` at `b₀`, `T₀` is punctured-differentiable with the boundedness condition, and `L` is the
-punctured limit of `T₀`, then `T` is `AnalyticAt b₀`.  The hypothesis `hL` lets the caller carry the
-extension value through a separate (geometric) channel rather than as `limUnder`. -/
+the value `L` at `b₀`, `T₀` is punctured-differentiable with the boundedness condition, and `L` is
+the punctured limit of `T₀`, then `T` is `AnalyticAt b₀`. The hypothesis `hL` lets the caller carry
+the extension value through a separate (geometric) channel rather than as `limUnder`. -/
 theorem analyticAt_of_punctured_eq_of_value_of_tendsto_zero {T T₀ : ℂ → ℂ} {b₀ L : ℂ}
     (hpunct : ∀ᶠ z in 𝓝[≠] b₀, DifferentiableAt ℂ T₀ z)
     (hbnd : Tendsto (fun z => (z - b₀) * T₀ z) (𝓝[≠] b₀) (𝓝 0))
@@ -166,9 +166,9 @@ theorem analyticAt_of_punctured_eq_of_value_of_tendsto_zero {T T₀ : ℂ → �
 
 /-! ### Per-sheet boundedness reduction (the planar §VIII.3 atom for one regular sheet)
 
-The fibre-sum boundedness condition `(z − b₀)·T₀ z → 0` reduces, term by term over the (finitely many)
-sheets, to the boundedness of a single regular sheet's contribution
-`(z − b₀)·coeff(s z)·deriv s z`.  Near a branch value the section `s` of a regular sheet (the planar
+The fibre-sum boundedness condition `(z − b₀)·T₀ z → 0` reduces, term by term over the (finitely
+many) sheets, to the boundedness of a single regular sheet's contribution
+`(z − b₀)·coeff(s z)·deriv s z`. Near a branch value the section `s` of a regular sheet (the planar
 inverse of `f`'s chart-pullback `F` at a *ramification* point) has `deriv s` blowing up, but
 `(z − b₀)·deriv s z → 0`: writing `S = s` as the inverse of `F` with `F(s b₀) = b₀`,
 `deriv s z = 1/F'(s z)` and `z − b₀ = F(s z) − F(s b₀)`, so `(z − b₀)·deriv s z = (F w − b₀)/F'(w)`

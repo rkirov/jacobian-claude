@@ -10,7 +10,8 @@ import Jacobians.Dolbeault.FormTraceFibre
 
 This file assembles the per-fibre trace data (`Jacobians.Dolbeault.FormTraceFibre`) over **all** the
 finite fibres into a `Jacobians.Dolbeault.FormResidueTheorem.FormResidueTrace`, which closes the
-residue-theorem assembly (the 1-form residue theorem `∑ₐ Resₐ(α) = 0`) for the represented `α = ω₀·g`.
+residue-theorem assembly (the 1-form residue theorem `∑ₐ Resₐ(α) = 0`) for the represented
+`α = ω₀·g`.
 
 It packages the irreducible remaining content — the **rationality of the trace** `Tr_F α` on `ℂℙ¹`
 and the **unramifiedness of `f` over the finite pole values** — into a single honest bundle
@@ -183,8 +184,8 @@ theorem residueSum_eq_zero (T : GlobalTraceData ω₀ g f poles) :
 
 end GlobalTraceData
 
-/-- **The residue-theorem reduction, existential form.** If a `GlobalTraceData ω₀ g f poles` exists (the
-trace of `α = ω₀·g` is rational and `f` is unramified over the finite pole values), then a
+/-- **The residue-theorem reduction, existential form.** If a `GlobalTraceData ω₀ g f poles` exists
+(the trace of `α = ω₀·g` is rational and `f` is unramified over the finite pole values), then a
 `FormResidueTrace ω₀ g` exists — hence the represented `α` satisfies the 1-form residue theorem
 `∑ₐ Resₐ(α) = 0` *unconditionally* (the downstream consumers
 `residueSum_eq_zero_of_formResidueTrace` and `MittagLefflerForm_res_eq_zero` are *proved*). This

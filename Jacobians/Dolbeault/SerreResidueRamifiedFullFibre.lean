@@ -7,7 +7,8 @@ import Jacobians.Dolbeault.SerreResidueRamifiedClusterSplit
 import Jacobians.Dolbeault.SerreResidueRamifiedRealCover
 
 /-!
-# The SOUND full-fibre ramified geometric-trace identification (closing the residue-theorem assembly)
+# The SOUND full-fibre ramified geometric-trace identification (closing the residue-theorem
+assembly)
 
 This file proves the **sound, corrected** geometric identification
 `RamifiedFullFibreClusterGeometry` (`SerreResidueRamifiedClusterSplit.lean`) — the full-fibre
@@ -687,8 +688,8 @@ def FullFibreRamifiedCenters (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f 
 /-- **The residue theorem `∑Res = 0` for the real cover via the SOUND full-fibre cluster
 geometry, `hoff_cs`-FREE.** Given the per-centre full-fibre cluster data `FullFibreRamifiedCenters`
 (the corrected, SOUND geometric input — full fibre, genuine `clusterSheet` points) and the
-off-centre + `∞` input bundle `GateAInftyData` (the already-residue-theorem-discharged machinery), the total
-residue of `α = ω₀·g` vanishes:
+off-centre + `∞` input bundle `GateAInftyData` (the already-residue-theorem-discharged machinery),
+the total residue of `α = ω₀·g` vanishes:
 
 > `∑ a ∈ poles, formFnResidue ω₀ g a = 0`.
 

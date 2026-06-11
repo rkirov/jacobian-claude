@@ -12,8 +12,8 @@ close)
 
 `Jacobians.Dolbeault.FormTraceGlobalTPatched` reduced the residue theorem (`∑ₐ Resₐ(α) = 0`,
 `α = ω₀·g`) to the construction of a **non-empty `PatchedTraceSelection`** — the value-correct
-branch-patched trace input to `residueSum_eq_zero_of_glue`. Every conceptual difficulty is resolved; the
-proven engines are:
+branch-patched trace input to `residueSum_eq_zero_of_glue`. Every conceptual difficulty is resolved;
+the proven engines are:
 
 * the **boundedness port** `tendsto_zero_valueChartTrace_of_sheetSections` (the §VIII.3 analytic
   heart `(z − b₀)·valueChartTrace z → 0`, which *admits colliding base points* at ramification — the
@@ -53,8 +53,9 @@ branched analytic heart is closed.
 
 ## What this file proves
 
-* `hbnd_of_sheetFrame` — the per-branch-value boundedness condition `hbnd` from a branched full-fibre
-  frame, via `tendsto_zero_valueChartTrace_of_sheetSections` (colliding ramified sheets admitted).
+* `hbnd_of_sheetFrame` — the per-branch-value boundedness condition `hbnd` from a branched
+  full-fibre frame, via `tendsto_zero_valueChartTrace_of_sheetSections` (colliding ramified sheets
+  admitted).
 * `patchedTraceSelection_ofFrame` — the assembled `PatchedTraceSelection` from the global full-fibre
   frame data, every field discharged from the proven engines or carried as the genuine residual
   input.
@@ -100,7 +101,8 @@ the latter admissible because `tendsto_zero_valueChartTrace_of_sheetSections` do
 the base points injective. Each sheet is a non-pole section of `f.holoRepr`, `f` is nonconstant per
 sheet (so each chart-pullback `φ_j` is not eventually constant), `α = ω₀·g`'s chart integrand is
 continuous at each preimage, and the full-fibre trace germ-equals the moving fibre sum along the
-sheets near `b₀` (`hgerm`). The boundedness condition `(z − b₀)·valueChartTrace z → 0` follows directly.
+sheets near `b₀` (`hgerm`). The boundedness condition `(z − b₀)·valueChartTrace z → 0` follows
+directly.
 -/
 
 /-- **The boundedness condition `hbnd` from a branched full-fibre frame.**  Verbatim repackaging of
@@ -355,9 +357,9 @@ The frame constructor is *satisfiable*, not a disguised `False`: the empty-pole 
 and `residueSum_eq_zero_of_patchedTraceSelection_holomorphic` yields `∑Res = 0` for it. We re-export
 it here so the close-path is honest end-to-end. -/
 
-/-- **Non-vacuity of the frame residue-theorem reduction** (re-export). For the empty pole set the reduction
-is satisfiable via the empty selection, yielding `∑Res = 0`; the frame constructor does not encode a
-disguised `False`. -/
+/-- **Non-vacuity of the frame residue-theorem reduction** (re-export). For the empty pole set the
+reduction is satisfiable via the empty selection, yielding `∑Res = 0`; the frame constructor does
+not encode a disguised `False`. -/
 theorem residueSum_eq_zero_ofFrame_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
     ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 :=

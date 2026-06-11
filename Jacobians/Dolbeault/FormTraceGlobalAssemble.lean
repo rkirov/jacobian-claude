@@ -169,10 +169,11 @@ def traceAgreementData_of_globalTrace (hac : AdaptedCover ω₀ g f poles)
     TraceAgreementData ω₀ g f poles hac :=
   G.toTraceAgreementData
 
-/-- **the residue-theorem assembly from a `GlobalTrace`.** If an adapted cover and a `GlobalTrace` (the
-meromorphic trace as a single function whose principal-part remainder is a global holomorphic form)
-exist, then the 1-form residue theorem `∑ₐ Resₐ(α) = 0` holds *unconditionally* for `α = ω₀·g`.
-Composes `traceAgreementData_of_globalTrace` with the proved `residueSum_eq_zero_of_agreementData`.
+/-- **the residue-theorem assembly from a `GlobalTrace`.** If an adapted cover and a `GlobalTrace`
+(the meromorphic trace as a single function whose principal-part remainder is a global holomorphic
+form) exist, then the 1-form residue theorem `∑ₐ Resₐ(α) = 0` holds *unconditionally* for
+`α = ω₀·g`. Composes `traceAgreementData_of_globalTrace` with the proved
+`residueSum_eq_zero_of_agreementData`.
 -/
 theorem residueSum_eq_zero_of_globalTrace (hac : AdaptedCover ω₀ g f poles)
     (G : GlobalTrace ω₀ g f poles hac) :

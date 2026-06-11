@@ -45,8 +45,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 `chartAt ℂ y` is open in `ℂ`. (`chartAt ℂ y` is an `OpenPartialHomeomorph`, so this is
 `OpenPartialHomeomorph.isOpen_image_of_subset_source`.) This is exactly how an overlap chart-image
 `Uov` is shown open. -/
-theorem isOpen_chartImage_of_subset_source {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {y : X}
-    {s : Set X} (hs : IsOpen s)
+theorem isOpen_chartImage_of_subset_source {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {y : X} {s : Set X} (hs : IsOpen s)
     (hsub : s ⊆ (chartAt (H := ℂ) y).source) :
     IsOpen ((chartAt (H := ℂ) y) '' s) :=
   (chartAt (H := ℂ) y).isOpen_image_of_subset_source hs hsub
@@ -54,8 +54,8 @@ theorem isOpen_chartImage_of_subset_source {X : Type*} [TopologicalSpace X] [Cha
 /-- **Compact-image atom.** The image of a COMPACT set `K ⊆ (chartAt ℂ y).source` under the chart
 `chartAt ℂ y` is compact in `ℂ` (the chart is continuous on its source). This is how an overlap
 chart-image shrinking `Kov` is shown compact. -/
-theorem isCompact_chartImage_of_subset_source {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {y : X}
-    {K : Set X} (hK : IsCompact K)
+theorem isCompact_chartImage_of_subset_source {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {y : X} {K : Set X} (hK : IsCompact K)
     (hsub : K ⊆ (chartAt (H := ℂ) y).source) :
     IsCompact ((chartAt (H := ℂ) y) '' K) :=
   hK.image_of_continuousOn ((chartAt (H := ℂ) y).continuousOn.mono hsub)

@@ -620,8 +620,8 @@ theorem existsRamifiedCenterFacts_ofSheetData {ω₀ : HolomorphicOneForms X} {g
 `hoff_cs`-FREE, end to end.** The cleanest fully-reduced statement: each finite pole-value centre
 `cs i` carries a `RamifiedSheetData` `Sf i` (the Forster §5 `z = wᵐ` normal-form geometry) at a
 single ramified preimage that is the unique pole of `α = ω₀·g` in the fibre `F⁻¹(coe (cs i))`,
-together with the off-centre analyticity `hreg`/`hbnd` and the `∞`-group. the residue-theorem assembly
-then holds with **NO** `hoff_cs` (the finite centres may be ramified). This composes
+together with the off-centre analyticity `hreg`/`hbnd` and the `∞`-group. the residue-theorem
+assembly then holds with **NO** `hoff_cs` (the finite centres may be ramified). This composes
 `existsRamifiedCenterFacts_ofSheetData` (the proven `hcoh` via the normal form + the atom) into
 `residueTheorem_ofRamifiedCenters_genus0_mod`. The genuine remaining content is *only* the
 per-centre `RamifiedSheetData` — the holomorphic `m`-th-root branch and the geometric trace

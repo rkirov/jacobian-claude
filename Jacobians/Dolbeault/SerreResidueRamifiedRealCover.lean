@@ -327,10 +327,11 @@ def RealCoverRamifiedCenters (ω₀ : HolomorphicOneForms X) (g : X → ℂ) (f 
     (∀ i, f.toRiemannSphere (Sf i).p = ((cs i : ℂ) : RiemannSphere)) ∧
     (∀ i, ∀ a ∈ poles, f.toRiemannSphere a = ((cs i : ℂ) : RiemannSphere) → a = (Sf i).p)
 
-/-- **The residue-theorem off-centre + `∞` input bundle** for the canonical selection.  Packages exactly the
-hypotheses of `residueTheorem_ofSheetData_genus0` *other than* the per-centre `RamifiedSheetData`
-(which is `RealCoverRamifiedCenters`): the off-centre analyticity `hreg`, the branch-value
-boundedness `hbnd`, the centre/pole-image bookkeeping `hcenters_cs`, and the entire `∞`-group.
+/-- **The residue-theorem off-centre + `∞` input bundle** for the canonical selection. Packages
+exactly the hypotheses of `residueTheorem_ofSheetData_genus0` *other than* the per-centre
+`RamifiedSheetData` (which is `RealCoverRamifiedCenters`): the off-centre analyticity `hreg`, the
+branch-value boundedness `hbnd`, the centre/pole-image bookkeeping `hcenters_cs`, and the entire
+`∞`-group.
 
 For the canonical selection these are the **already-discharged** residue-theorem inputs (`hreg` via
 `hreg_canonical_at_goodValue_sound`, `hbnd` via the αBr-free `hbnd_canonical_sound_full`, the
@@ -416,8 +417,8 @@ hard fields, isolated:
 * **`hvct_mero`** — now *reduced* to a finite-pole-order bound `(z − cs i)^N · valueChartTrace → 0`
   via `hvct_mero_of_pow_bound` (using the already-available off-centre `hreg`). This is the
   meromorphy side (Miranda (3.1)), and is the strictly-easier obligation.
-* **`hgeom_slit`** — the genuine geometric obligation: on a slit accumulating at `cs i`, the geometric
-  trace `valueChartTrace` (the full-fibre sum) equals the `m`-sheet sum
+* **`hgeom_slit`** — the genuine geometric obligation: on a slit accumulating at `cs i`, the
+  geometric trace `valueChartTrace` (the full-fibre sum) equals the `m`-sheet sum
   `∑_{j<m} chartIntegrand(w_p + ζʲ w₀)· (d/dz)[…]` at the ramification preimage `p`. This is the
   **Forster §5 `z = wᵐ` local normal form + fibre-cluster splitting** — the ramified analogue of
   `valueChartTrace_eq_sphereSheetFibreTrace` (`FormTraceBundleBridge.lean`), a genuine
@@ -428,9 +429,9 @@ input to the `hoff_cs`-free residue-theorem route; everything else (the residue/
 identity-theorem globalisation, the meromorphy reduction, the off-centre/∞ machinery, the wiring) is
 done. -/
 
-/-- **The precise remaining per-centre geometric obligation** (the Forster §5 sheet-tracking obligation).
-At a finite pole-value centre `c` with ramification preimage `p` of multiplicity `m`, a primitive
-`m`-th root `ζ`, and the slit `S` carrying the `m`-th-root branch `w₀`, the two hard
+/-- **The precise remaining per-centre geometric obligation** (the Forster §5 sheet-tracking
+obligation). At a finite pole-value centre `c` with ramification preimage `p` of multiplicity `m`, a
+primitive `m`-th root `ζ`, and the slit `S` carrying the `m`-th-root branch `w₀`, the two hard
 `RamifiedSheetData` facts:
 
 * a **finite-pole-order bound** `(z − c)^N · valueChartTrace ω₀ f Φ → 0` (feeds `hvct_mero` via
@@ -468,8 +469,8 @@ of `α` avoiding `f'`'s branch values) — is recorded as the precise obligation
 `f' := (f₀ − a·1)⁻¹` has a *simple pole* at `y` (`orderAtPoint f' y = −1`). This is
 `orderAtPoint_inv` specialised — the algebraic step that makes `hsimpleInf` true for the reciprocal
 cover. -/
-theorem orderAtPoint_inv_eq_neg_one_of_simpleZero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] 
-    (f₀ : MeromorphicFunction X) (a : ℂ) {y : X}
+theorem orderAtPoint_inv_eq_neg_one_of_simpleZero {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (f₀ : MeromorphicFunction X) (a : ℂ) {y : X}
     (hy : (f₀ - a • (Jacobians.Dolbeault.constOneMero (X := X))).orderAtPoint y = 1) :
     ((f₀ - a • (Jacobians.Dolbeault.constOneMero (X := X)))⁻¹).orderAtPoint y = -1 := by
   rw [MeromorphicFunction.orderAtPoint_inv, hy]

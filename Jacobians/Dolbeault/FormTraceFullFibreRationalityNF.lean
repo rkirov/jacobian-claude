@@ -10,9 +10,9 @@ import Jacobians.Dolbeault.FormTraceInftyFibreNF
 # The residue theorem `∑Res = 0` from full-fibre trace rationality, *sound* `∞` fibre
 (Miranda §VIII.3)
 
-`Jacobians.Dolbeault.FormTraceFullFibre.TraceRationalityData` reduced the residue-theorem assembly to
-the agreements that a `LaurentForm L` represents `Tr_F α` at the finite centres (`agree`) and across
-`∞` (`agree_infty`). Its `agree_infty` is phrased against the buggy `inftyFibreTrace` (whose
+`Jacobians.Dolbeault.FormTraceFullFibre.TraceRationalityData` reduced the residue-theorem assembly
+to the agreements that a `LaurentForm L` represents `Tr_F α` at the finite centres (`agree`) and
+across `∞` (`agree_infty`). Its `agree_infty` is phrased against the buggy `inftyFibreTrace` (whose
 `∞`-fibre datum `InftyFibreData` is unsatisfiable for genuine `∞`-poles — see
 `FormTraceInftyFibreNF`). This file is the **sound** analogue: `TraceRationalityDataNF` uses the
 repaired `∞`-fibre trace `inftyFibreTraceNF` (built from the analytic normal-form reciprocal), so

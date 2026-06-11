@@ -11,10 +11,10 @@ import Jacobians.Dolbeault.FormTraceMovingFibreSphereSet
 §VIII.3)
 
 `Jacobians.Dolbeault.FormTraceFullFibreRationalityAssemble.TraceCoherenceData` is the cleanest
-residue-theorem target: a single global geometric trace `T : ℂ → ℂ` (the value-chart `dz`-coefficient of
-`Tr_F α`) with the honest §VIII.3 inputs. Constructing one closes the 1-form residue theorem
-`∑ₐ Resₐ(α) = 0` *unconditionally* (the principal-part extraction and the genus-`0` Liouville
-vanishing are *proved* inside `TraceCoherenceData`). Its fields split into
+residue-theorem target: a single global geometric trace `T : ℂ → ℂ` (the value-chart
+`dz`-coefficient of `Tr_F α`) with the honest §VIII.3 inputs. Constructing one closes the 1-form
+residue theorem `∑ₐ Resₐ(α) = 0` *unconditionally* (the principal-part extraction and the genus-`0`
+Liouville vanishing are *proved* inside `TraceCoherenceData`). Its fields split into
 
 * the **pole-centre coherence** `hcoh_fin`
   (`T =ᶠ[𝓝 (cs i)] (fibreTrace ω₀ f (D (cs i))).traceCoeff`) and the `∞`-coherence `hcoh_inf` — the
@@ -404,9 +404,9 @@ noncomputable def traceCoherenceData_ofMovingData_empty (ω₀ : HolomorphicOneF
       rw [h0, recipCoeff_zero]
       exact continuousAt_const)
 
-/-- **Non-vacuity of the moving `TraceCoherenceData` residue-theorem reduction.**  For the empty pole set the
-reduction is satisfiable via the empty selection, yielding `∑Res = 0`.  Confirms the moving/sheet
-`TraceCoherenceData` reduction is honest (not a disguised `False`). -/
+/-- **Non-vacuity of the moving `TraceCoherenceData` residue-theorem reduction.** For the empty pole
+set the reduction is satisfiable via the empty selection, yielding `∑Res = 0`. Confirms the
+moving/sheet `TraceCoherenceData` reduction is honest (not a disguised `False`). -/
 theorem residueSum_eq_zero_of_movingTraceCoherence_holomorphic (ω₀ : HolomorphicOneForms X)
     (g : X → ℂ) (f : MeromorphicFunction X) :
     ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 :=

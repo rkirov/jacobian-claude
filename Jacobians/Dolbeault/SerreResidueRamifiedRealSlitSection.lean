@@ -188,8 +188,8 @@ theorem eventually_holoRepr_clusterSheet_eq {X : Type*} [TopologicalSpace X] [Ch
 cluster sheet value `s a₀` (`a₀ := ζʲ · w₀ z₀`) lies in the (open) chart target at `p` (`hmem`), the
 cluster sheet value stays in that target for `w` in a full ℂ-neighbourhood of `z₀` (continuity of
 `w ↦ s (ζʲ · w₀ w)`). -/
-theorem eventually_clusterSheet_mem_target {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (p : X)
-    {s w₀ : ℂ → ℂ} {ζ : ℂ} {j : ℕ} {z₀ : ℂ}
+theorem eventually_clusterSheet_mem_target {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (p : X) {s w₀ : ℂ → ℂ} {ζ : ℂ} {j : ℕ} {z₀ : ℂ}
     (hs_cont : ContinuousAt s (ζ ^ j * w₀ z₀)) (hw₀_cont : ContinuousAt w₀ z₀)
     (hmem : s (ζ ^ j * w₀ z₀) ∈ (chartAt (H := ℂ) p).target) :
     ∀ᶠ w in 𝓝 z₀, clusterSheet s ζ w₀ j w ∈ (chartAt (H := ℂ) p).target := by

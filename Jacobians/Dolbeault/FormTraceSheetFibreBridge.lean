@@ -7,7 +7,8 @@ import Jacobians.Dolbeault.FormTraceSheetCovector
 import Jacobians.Dolbeault.FormTraceFibre
 
 /-!
-# The fibre-sum bridge: bundle trace ↔ planar fibre trace (steps 2–3 of the residue-theorem assembly)
+# The fibre-sum bridge: bundle trace ↔ planar fibre trace (steps 2–3 of the residue-theorem
+assembly)
 
 Building on the per-sheet covector linchpin (`FormTraceSheetCovector`) and the `localRep`
 frame-transition law, this file proves the **single-sheet bridge**: the bundle pushforward summand

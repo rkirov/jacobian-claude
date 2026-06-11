@@ -146,10 +146,10 @@ def traceRationalityWitness_of_agree (hac : AdaptedCover ω₀ g f poles) (L : L
   hL32 := fun p hp => hL32_of_agree hac L p (hagree p hp)
   infty_eq := hinfty
 
-/-- **the residue-theorem assembly from the trace agreement.** If an adapted cover and a `LaurentForm`
-representing `Tr_F α` (with the centre bookkeeping, the per-centre agreement, and the `∞`-residue
-identity) exist, then the 1-form residue theorem `∑ₐ Resₐ(α) = 0` holds *unconditionally* for
-`α = ω₀·g`. This composes `traceRationalityWitness_of_agree` with the proved
+/-- **the residue-theorem assembly from the trace agreement.** If an adapted cover and a
+`LaurentForm` representing `Tr_F α` (with the centre bookkeeping, the per-centre agreement, and the
+`∞`-residue identity) exist, then the 1-form residue theorem `∑ₐ Resₐ(α) = 0` holds
+*unconditionally* for `α = ω₀·g`. This composes `traceRationalityWitness_of_agree` with the proved
 `Jacobians.Dolbeault.FormTraceGlobal.residueSum_eq_zero_of_adapted`. -/
 theorem residueSum_eq_zero_of_agree (hac : AdaptedCover ω₀ g f poles) (L : LaurentForm)
     (hcenters : (Finset.univ.image L.a).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))

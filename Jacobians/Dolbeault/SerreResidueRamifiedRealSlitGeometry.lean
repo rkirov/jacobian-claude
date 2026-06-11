@@ -6,7 +6,8 @@ Authors: Rado Kirov
 import Jacobians.Dolbeault.SerreResidueRamifiedRemDescent
 
 /-!
-# Closing the residue theorem `∑Res = 0` unconditionally — the §5 slit-geometry assembly (residue-theorem)
+# Closing the residue theorem `∑Res = 0` unconditionally — the §5 slit-geometry assembly
+(residue-theorem)
 
 `SerreResidueRamifiedRealSlitSection.lean` proved the **section half** of the residue obligation
 (`RealSlitSectionData.ofSlitSectionGerm`): from a per-`(z₀,i)` `SlitSectionGerm` family it assembles
@@ -89,8 +90,8 @@ cluster section point `chart_p.symm (s (ζʲ·w₀ z))` tends to `p` as `z → c
 any filter `≤ 𝓝 c`). Mechanism: `w₀ z → 0` (`cpow_slitBranch_tendsto_zero`), `s` continuous so
 `s (ζʲ·w₀ z) → s 0 = chart_p p`, and `chart_p.symm` continuous at `chart_p p` with
 `chart_p.symm (chart_p p) = p`. -/
-theorem clusterSectionPoint_tendsto_preimage {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (p : X)
-    {s w₀ : ℂ → ℂ} {ζ : ℂ} {j : ℕ} {c : ℂ} {m : ℕ}
+theorem clusterSectionPoint_tendsto_preimage {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (p : X) {s w₀ : ℂ → ℂ} {ζ : ℂ} {j : ℕ} {c : ℂ} {m : ℕ}
     (hm : 0 < m) (hs_cont : ContinuousAt s 0) (hs0 : s 0 = (chartAt ℂ p) p)
     (hw₀_eq : w₀ =ᶠ[𝓝 c] fun z => (z - c) ^ ((m : ℂ)⁻¹)) :
     Tendsto (fun z => (chartAt ℂ p).symm (s (ζ ^ j * w₀ z))) (𝓝 c) (𝓝 p) := by

@@ -7,8 +7,8 @@ import Jacobians.Dolbeault.SerreResidueTheorem
 import Jacobians.Dolbeault.FormTraceCoherenceFromMoving
 
 /-!
-# The residue-level direct close of the residue-theorem assembly `∑ₐ Resₐ(α) = 0` (Miranda §VIII.3, no
-germ `agree`)
+# The residue-level direct close of the residue-theorem assembly `∑ₐ Resₐ(α) = 0` (Miranda §VIII.3,
+no germ `agree`)
 
 For a compact connected Riemann surface `X`, a holomorphic 1-form `ω₀ : HolomorphicOneForms X`, and
 a function `g : X → ℂ`, the **meromorphic 1-form** `α = ω₀·g` satisfies the residue theorem

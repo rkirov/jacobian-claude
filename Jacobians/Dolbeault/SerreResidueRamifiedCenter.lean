@@ -118,8 +118,8 @@ instead. -/
 
 Everything else (`D` the pole sub-fibre, its enumeration fields, `hcenters_cs`, the off-centre
 analyticity `hreg`/`hbnd`, and the entire `∞`-group) is verbatim. Producing one ⇒ the
-residue-theorem assembly `∑Res = 0`. The unramified capstone supplies (A)/(B) from `Cfull`; a ramified
-centre supplies them from the ramified atom — both feed *this* def. -/
+residue-theorem assembly `∑Res = 0`. The unramified capstone supplies (A)/(B) from `Cfull`; a
+ramified centre supplies them from the ramified atom — both feed *this* def. -/
 noncomputable def globalTraceData_of_genus0_germ_facts
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)
@@ -596,10 +596,10 @@ normal form). -/
 `residueTheorem_ofCanonicalSimpleInfty_genus0_germ_Cfull`: each finite pole-value centre `cs i`
 carries a `RamifiedCenterFacts ω₀ g f Φ poles (cs i)` (which supplies facts (A)/(B) through the
 proven ramified atom, admitting ramification — no off-branch genericity), and the off-centre
-analyticity `hreg`/`hbnd` + the `∞`-group are as before. the residue-theorem assembly then holds with
-**no** `hoff_cs` (no off-branch pole-value hypothesis). At an unramified centre the datum reduces to
-the `Cfull` route (`facts_of_Cfull`); the genuine per-centre content is the geometric identification
-`RamifiedCenterFacts.hcoh`. -/
+analyticity `hreg`/`hbnd` + the `∞`-group are as before. the residue-theorem assembly then holds
+with **no** `hoff_cs` (no off-branch pole-value hypothesis). At an unramified centre the datum
+reduces to the `Cfull` route (`facts_of_Cfull`); the genuine per-centre content is the geometric
+identification `RamifiedCenterFacts.hcoh`. -/
 theorem residueTheorem_ofRamifiedCenters_genus0
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)

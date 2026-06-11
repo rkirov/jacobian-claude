@@ -35,9 +35,9 @@ the residue theorem `∑Res = 0` follow from these honest inputs.
 
 ## The minimal remaining obligation
 
-the residue-theorem assembly is now *unconditional modulo* the data `globalTrace_of_data` consumes for
-a suitable adapted cover. The mechanical principal-part / entire / reciprocal-chart bookkeeping is
-fully discharged; the **irreducible §VIII.3 content** is exactly:
+the residue-theorem assembly is now *unconditional modulo* the data `globalTrace_of_data` consumes
+for a suitable adapted cover. The mechanical principal-part / entire / reciprocal-chart bookkeeping
+is fully discharged; the **irreducible §VIII.3 content** is exactly:
 
 1. **The glue** (`hglue_fin` / `hglue_inf`): the global trace function `T` germ-agrees with the
 local fibre traces — the branched-cover sheet-gluing (monodromy). For the genuine geometric trace

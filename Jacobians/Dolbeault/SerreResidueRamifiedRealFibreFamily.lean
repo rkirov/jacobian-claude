@@ -11,8 +11,8 @@ import Jacobians.Dolbeault.SerreResidueGateAGenericity
 /-!
 # The per-centre §5-data assembly for the real cover (feeding the SOUND `∑Res = 0` capstone)
 
-`SerreResidueRamifiedFullFibreReindexBuilder.lean` reduced residue-theorem `∑Res = 0`, for the real cover, to
-the per-centre SOUND residual `FullFibreCenterReindex`, built by
+`SerreResidueRamifiedFullFibreReindexBuilder.lean` reduced residue-theorem `∑Res = 0`, for the real
+cover, to the per-centre SOUND residual `FullFibreCenterReindex`, built by
 `ofFibreClusterTopologyFamily_adaptedFRamified` from, at each finite pole-value centre `c`:
 
 * a slit `Sset` accumulating at `c`;
@@ -41,8 +41,9 @@ geometry.
 * **`FullFibreCenterReindex.ofRealCenterClusterFamily`** — builds the SOUND per-centre residual from
   a `RealCenterClusterFamily`, via `ofFibreClusterTopologyFamily_adaptedFRamified` (`hnonpole`
   automatic).
-* **`residueSum_eq_zero_of_realCenterClusterFamily`** — residue-theorem `∑Res = 0` from an `AdaptedFRamified`
-  datum + a per-centre `RealCenterClusterFamily`, anchoring the precise remaining content.
+* **`residueSum_eq_zero_of_realCenterClusterFamily`** — residue-theorem `∑Res = 0` from an
+  `AdaptedFRamified` datum + a per-centre `RealCenterClusterFamily`, anchoring the precise remaining
+  content.
 
 ## ⚠ Soundness
 
@@ -280,8 +281,8 @@ noncomputable def FullFibreCenterReindex.ofRealCenterClusterFamily {ω₀ : Holo
     (realFibreData g A.hdiv c R.hnp) (realFibreData_inj g A.hdiv c R.hnp)
     (realFibreData_surj g A.hdiv c R.hnp) R.hS_acc R.Cl R.hmult R.hsplit0 R.ppord R.hbnd R.hfam
 
-/-- **residue-theorem `∑Res = 0` from an `AdaptedFRamified` + per-centre `RealCenterClusterFamily`** (the
-SOUND real-cover close, modulo the per-slit conservation-of-number geometry). For a genuine
+/-- **residue-theorem `∑Res = 0` from an `AdaptedFRamified` + per-centre `RealCenterClusterFamily`**
+(the SOUND real-cover close, modulo the per-slit conservation-of-number geometry). For a genuine
 meromorphic numerator `g`, an `AdaptedFRamified` datum `A`, and at each finite pole-value centre
 `A.cs i` a `RealCenterClusterFamily` (the slit + whole-fibre `D` + per-preimage §5 cluster data +
 slit-wide `FibreClusterTopology` family), the total residue of `α = ω₀·g` vanishes:

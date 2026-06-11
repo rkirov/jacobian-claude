@@ -24,9 +24,9 @@ given exactly two honest inputs:
   (every `b' ≠ b₀` near `b₀` is a regular value off the poles of `α`, where the geometric trace is
   the analytic regular-fibre sum — the off-branch sheet-gluing, already isolated as the
   per-regular-value germ-coherence in `FormTraceGlobalGeometric`);
-* `hbnd` — the **boundedness condition** `(z − b₀)·valueChartTrace z → 0` (the §VIII.3 boundedness; for
-  the planar geometric trace it reduces *sheet by sheet* to the proven `tendsto_zero_section_deriv`,
-  see `FormTraceBranchPlanarExtend.tendsto_zero_fibreSum`).
+* `hbnd` — the **boundedness condition** `(z − b₀)·valueChartTrace z → 0` (the §VIII.3 boundedness;
+  for the planar geometric trace it reduces *sheet by sheet* to the proven
+  `tendsto_zero_section_deriv`, see `FormTraceBranchPlanarExtend.tendsto_zero_fibreSum`).
 
 This is the precise, sound, value-correct replacement for the structurally-impossible
 `valueChartTrace`-at-the-branch-value (the `BranchAwareTraceSelection` obstruction): rather than
@@ -89,8 +89,8 @@ given:
 
 * `hpunct_an` — `valueChartTrace ω₀ f Φ` is analytic on the punctured neighbourhood of `b₀` (the
   off-branch regular-fibre analyticity at the nearby regular values off the poles of `α`);
-* `hbnd` — the boundedness condition `(z − b₀)·valueChartTrace z → 0` (the §VIII.3 boundedness, reduced
-  sheet-by-sheet to the proven `tendsto_zero_section_deriv` via `tendsto_zero_fibreSum`).
+* `hbnd` — the boundedness condition `(z − b₀)·valueChartTrace z → 0` (the §VIII.3 boundedness,
+  reduced sheet-by-sheet to the proven `tendsto_zero_section_deriv` via `tendsto_zero_fibreSum`).
 
 This is the precise sound discharge of `hT_off` at a branch value: the geometric trace is patched to
 its removable limit and is then analytic — *no* false demand that the regular-fibre selection host
@@ -111,16 +111,17 @@ theorem analyticAt_branchExtension_valueChartTrace (ω₀ : HolomorphicOneForms 
 The boundedness hypothesis `hbnd` of `analyticAt_branchExtension_valueChartTrace` is, near a branch
 value `b₀`, the boundedness of the geometric trace `valueChartTrace ω₀ f Φ`. When `valueChartTrace`
 germ-equals (off `b₀`) a *fixed* regular-fibre trace's fibre-sum
-`(fibreTrace ω₀ f D).traceCoeff = ∑ i, coeff i (sheet i z)·deriv (sheet i) z`, the condition reduces to
-the finite sum of per-sheet bounds (`tendsto_zero_fibreSum`), each discharged by
+`(fibreTrace ω₀ f D).traceCoeff = ∑ i, coeff i (sheet i z)·deriv (sheet i) z`, the condition reduces
+to the finite sum of per-sheet bounds (`tendsto_zero_fibreSum`), each discharged by
 `tendsto_zero_section_deriv` from the proven ratio atom. We package the reduction so the assembly
 only supplies the per-sheet section/chain-rule data. -/
 
-/-- **The boundedness condition from a regular-fibre germ + per-sheet bounds.**  If `valueChartTrace ω₀ f Φ`
-germ-equals (on the punctured neighbourhood of `b₀`) the fibre-sum `(fibreTrace ω₀ f D).traceCoeff`
-of a fibre `D`, and each per-sheet term `(z − b₀)·coeff_i(sheet_i z)·deriv(sheet_i) z → 0`, then the
-boundedness condition `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds. *Proof.* `tendsto_zero_fibreSum`
-gives the bound for the fibre-sum; transport along the germ-equality. -/
+/-- **The boundedness condition from a regular-fibre germ + per-sheet bounds.** If
+`valueChartTrace ω₀ f Φ` germ-equals (on the punctured neighbourhood of `b₀`) the fibre-sum
+`(fibreTrace ω₀ f D).traceCoeff` of a fibre `D`, and each per-sheet term
+`(z − b₀)·coeff_i(sheet_i z)·deriv(sheet_i) z → 0`, then the boundedness condition
+`(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds. *Proof.* `tendsto_zero_fibreSum` gives the bound for
+the fibre-sum; transport along the germ-equality. -/
 theorem tendsto_zero_valueChartTrace_of_fibreGerm (ω₀ : HolomorphicOneForms X)
     (f : MeromorphicFunction X) (Φ : (b : ℂ) → FibreRegularData g f b) {b₀ : ℂ}
     (D : FibreRegularData g f b₀)

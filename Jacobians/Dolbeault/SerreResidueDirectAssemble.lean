@@ -638,10 +638,10 @@ noncomputable def directTraceGeometry_ofCanonicalSimpleInfty (hdiv : (f.div : Di
 
 Chaining `directTraceGeometry_ofCanonicalSimpleInfty` into the proven
 `residueTheorem_of_directTraceGeometry` gives the residue theorem `∑Res = 0` directly from the
-residual hypotheses — making the standing of the residue-theorem assembly crisp: all the combinatorial
-/ pole-only / `∞`-fibre / centre-bookkeeping content is *proven*, and the residue theorem holds for
-`α = ω₀·g` modulo *exactly* the per-centre full-fibre coherence + the deep analytic genus-`0`
-content. -/
+residual hypotheses — making the standing of the residue-theorem assembly crisp: all the
+combinatorial / pole-only / `∞`-fibre / centre-bookkeeping content is *proven*, and the residue
+theorem holds for `α = ω₀·g` modulo *exactly* the per-centre full-fibre coherence + the deep
+analytic genus-`0` content. -/
 
 /-- **The residue theorem `∑Res = 0` from the canonical-selection residuals.** With the
 canonical full-fibre selection, simple `∞`-poles, and pole-value goodness, the residue theorem

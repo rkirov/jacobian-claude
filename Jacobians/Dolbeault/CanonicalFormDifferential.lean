@@ -129,8 +129,8 @@ noncomputable def differentialSection (f : MeromorphicFunction X) : ∀ x, FormF
 /-- `formCoeff (df) x` agrees with the chart-pullback derivative `(f ∘ chart⁻¹)'` on a punctured
 neighbourhood of `chart x x` (precisely where `f ∘ chart⁻¹` is analytic, hence `f` is
 `MDifferentiableAt`). -/
-theorem formCoeff_differentialSection_eventuallyEq {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X) (x : X) :
+theorem formCoeff_differentialSection_eventuallyEq {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X) (x : X) :
     (fun z => deriv (f.toFun ∘ (chartAt ℂ x).symm) z) =ᶠ[𝓝[≠] ((chartAt ℂ x) x)]
       formCoeff (differentialSection f) x := by
   have hmero : MeromorphicAt (f.toFun ∘ (chartAt (H := ℂ) x).symm) ((chartAt ℂ x) x) :=
@@ -156,8 +156,8 @@ theorem formCoeff_differentialSection_eventuallyEq {X : Type*} [TopologicalSpace
 /-- `df` is a **meromorphic 1-form**: its chart coefficient is `MeromorphicAt` because it
 germ-agrees with `(f ∘ chart⁻¹)'`, the derivative of a meromorphic function (`MeromorphicAt.deriv`).
 -/
-theorem isMeromorphicOneForm_differentialSection {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (f : MeromorphicFunction X) :
+theorem isMeromorphicOneForm_differentialSection {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X) :
     IsMeromorphicOneForm (differentialSection f) := by
   intro x
   have hderiv : MeromorphicAt (deriv (f.toFun ∘ (chartAt ℂ x).symm)) ((chartAt ℂ x) x) :=

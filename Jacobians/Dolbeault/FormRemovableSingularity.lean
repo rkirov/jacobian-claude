@@ -472,8 +472,8 @@ theorem formCoeff_repairedSection_eventuallyEq (α : MeromorphicOneForm X) (x₀
   rw [h1, h2, hz_crux]
 
 /-- **The repaired section's chart pullback is analytic at every centre.**  In chart `x₀`, the
-pullback agrees off the centre with `formCoeff α.toFun x₀` (the junk-free hypothesis + self-frame), and at
-the centre takes the normal-form value, so it equals the analytic normal-form repair of
+pullback agrees off the centre with `formCoeff α.toFun x₀` (the junk-free hypothesis + self-frame),
+and at the centre takes the normal-form value, so it equals the analytic normal-form repair of
 `formCoeff α.toFun x₀` near the centre. -/
 theorem analyticAt_pullback_repairedSection {α : MeromorphicOneForm X}
     (hα : α ∈ omegaD (X := X) 0) (x₀ : X) :

@@ -267,9 +267,9 @@ finite Lemma-3.2 residue identity is `resAt_eq_laurentR_of_principalPart` (free)
 junk-freeness `hcont_int` (needed for the remainder's entire-ness) and the `∞`-coherence `hcoh_full`
 remain — both genuine and non-circular. -/
 
-/-- **`GlobalTraceData` from the residue-level geometry, remaining obligations discharged.** Mirrors the
-inputs of `residueTheorem_of_directGeometry` but with `R₀`/`hR₀_an`/`hR₀0`/`hR₀_eq` **removed**: the
-`∞`-residue identity comes from the entire remainder (`hcont_int` gives entire-ness via
+/-- **`GlobalTraceData` from the residue-level geometry, remaining obligations discharged.** Mirrors
+the inputs of `residueTheorem_of_directGeometry` but with `R₀`/`hR₀_an`/`hR₀0`/`hR₀_eq` **removed**:
+the `∞`-residue identity comes from the entire remainder (`hcont_int` gives entire-ness via
 `analyticOnNhd_remainder_of_junkFree'`, then `resAt_recipCoeff_eq_zero_of_entire` is Cauchy at `∞`)
 and the `∞`-coherence `hcoh_full`. Producing one ⇒ the residue theorem `∑Res = 0`. -/
 noncomputable def globalTraceData_of_genus0 [Nonempty X]

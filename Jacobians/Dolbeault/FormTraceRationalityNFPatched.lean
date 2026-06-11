@@ -38,7 +38,8 @@ at each of them — the *planar shadow* of the proven bundle trace `traceFun` ex
 * the genus-`0` `hentire` is **proven internally** (not assumed) via the off-centre analyticity
   `analyticAt_valueChartTracePatched_off_centres` (regular values by the moving coherence; branch
   values by the value-correct removable extension `tendsto_zero_valueChartTrace_of_bundleGerm`/the
-  boundedness condition) + the junk-freeness `hcont_int`, through `analyticOnNhd_remainder_of_junkFree'`;
+  boundedness condition) + the junk-freeness `hcont_int`, through
+  `analyticOnNhd_remainder_of_junkFree'`;
 * `hrecip_cont` is `continuousAt_recipCoeff_of_vanishing` (the genus-`0` `R₀ 0 = 0` `∞`-vanishing);
 * `agree` (finite) uses `valueChartTracePatched =ᶠ[𝓝[≠] p] valueChartTrace` (the patch is inert off
   the branch values) chained with the per-pole moving coherence `hcoh_fin_of_movingDatum`;
@@ -47,8 +48,8 @@ at each of them — the *planar shadow* of the proven bundle trace `traceFun` ex
   `hcoh_inf` against `inftyFibreTraceNF` (the repaired reciprocal — `FormTraceInftyFibreNF`).
 
 So this constructor removes the `hentire`/`hrecip_cont` *false-field risk* of the raw route,
-replacing them by the genuinely-satisfiable boundedness-condition/junk-free inputs, and keeps the sound
-`∞`-fibre.
+replacing them by the genuinely-satisfiable boundedness-condition/junk-free inputs, and keeps the
+sound `∞`-fibre.
 
 ## What this file proves
 
@@ -147,9 +148,9 @@ proven from the *internally-discharged* `hentire` (`analyticOnNhd_remainder_of_j
 `T := valueChartTracePatched ω₀ f Φ br`:
 
 * `hreg` / `hbnd` — the off-centre analyticity inputs (regular-value analyticity of the *raw* trace
-  off `centres ∪ br`; the branch-value boundedness condition off `centres`). These give the value-correct
-  `hT_off` (`hT_off_patched`) — the genuinely-satisfiable replacement of the false raw-trace
-  continuity;
+  off `centres ∪ br`; the branch-value boundedness condition off `centres`). These give the
+  value-correct `hT_off` (`hT_off_patched`) — the genuinely-satisfiable replacement of the false
+  raw-trace continuity;
 * `Cfin` / `hCfin_D` — the per-pole-value moving coherence data (fixed fibre `D (cs i)`), giving
   both the meromorphy at the centres and the finite coherence;
 * `hcont_int` — junk-freeness (`T − L.R` continuous at each centre), giving `hentire` via
@@ -446,7 +447,7 @@ theorem hcoh_inf_of_inftyMovingCoherenceNF (ω₀ : HolomorphicOneForms X) (g : 
       =ᶠ[𝓝[≠] 0] (inftyFibreTraceNF ω₀ f Dinf).traceCoeff :=
   hcoh.trans (recipCoeff_inftyMovingSumNF_eq_traceCoeff ω₀ f Dinf)
 
-/-! ### The top-level sound geometric assembly (the residue-theorem assembly on the precise residuals)
+/-! ### The top-level sound geometric assembly (the residue theorem on the precise residuals)
 
 Wiring all the discharge helpers, this reduces the residue theorem `∑Res = 0` — *soundly*
 (sound `∞`-fibre, value-correct branch-patched trace) and axiom-clean — to a precise list of

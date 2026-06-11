@@ -249,8 +249,8 @@ end FibreClusterReindex
 
 Bundling the per-centre `FibreClusterReindex` over the finite pole-value centres `cs` and routing it
 through `FullFibreClusterData.ofReindex` discharges `FullFibreRamifiedCenters`, hence — with the
-already-residue-theorem-discharged off-centre/∞ bundle `GateAInftyData` — the residue-theorem assembly
-`∑Res = 0`. -/
+already-residue-theorem-discharged off-centre/∞ bundle `GateAInftyData` — the residue-theorem
+assembly `∑Res = 0`. -/
 
 open Jacobians Jacobians.Dolbeault.FormTraceInftyFibre Jacobians.Dolbeault.FormTraceInftyRecip
   Jacobians.Dolbeault.FormTraceFullFibre
@@ -271,8 +271,8 @@ theorem fullFibreRamifiedCenters_of_reindex {ω₀ : HolomorphicOneForms X} {g :
 
 /-- **The residue theorem `∑Res = 0` from per-centre reindex residuals, `hoff_cs`-FREE.**
 Given the per-centre fibre-cluster reindexing `FibreClusterReindex` (the SOUND full-fibre geometry —
-*all* preimages, genuine `clusterSheet` points) and the already-residue-theorem-discharged off-centre/∞
-bundle `GateAInftyData`, the total residue of `α = ω₀·g` vanishes:
+*all* preimages, genuine `clusterSheet` points) and the already-residue-theorem-discharged
+off-centre/∞ bundle `GateAInftyData`, the total residue of `α = ω₀·g` vanishes:
 
 > `∑ a ∈ poles, formFnResidue ω₀ g a = 0`.
 

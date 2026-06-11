@@ -53,9 +53,9 @@ SUM analogue of "`valueChartTrace = Tr_F(ω₀·g)` in the value chart", **no in
 
 ## What this file proves
 
-* `tendsto_zero_valueChartTrace_of_bundleGerm` — the §VIII.3 branch-value boundedness condition `hbnd`
-  from the **proven** bundle trace SUM boundedness + the bundle-trace germ bridge (the plan's step
-  1, no per-sheet frames).
+* `tendsto_zero_valueChartTrace_of_bundleGerm` — the §VIII.3 branch-value boundedness condition
+  `hbnd` from the **proven** bundle trace SUM boundedness + the bundle-trace germ bridge (the plan's
+  step 1, no per-sheet frames).
 * `patchedTraceSelection_ofBundleBranch` — a `PatchedTraceSelection` whose branch-value boundedness
   is discharged via the bundle SUM (the branch-frame block `secBr`/`hgermBr` of
   `patchedTraceSelection_ofFrame` *replaced* by the per-branch-value bundle-germ bridge + the
@@ -98,9 +98,9 @@ frames.  The boundedness HEART `traceLocalCoeff_mul_sub_tendsto_zero` is proven 
 bundle side for a holomorphic form on the cover; here we transport it through the clean affine-chart
 reading and the bundle-trace germ bridge. -/
 
-/-- **The §VIII.3 branch-value boundedness condition `hbnd`, from the bundle trace SUM.** Let `b₀ : ℂ` be
-a value with `coe b₀` in the branch locus of the cover `F = f.toRiemannSphere`, let `F` be
-nonconstant (`hncF`), and let `α'` be a holomorphic `1`-form on `X` (`= ω₀·g` near the fibre
+/-- **The §VIII.3 branch-value boundedness condition `hbnd`, from the bundle trace SUM.** Let
+`b₀ : ℂ` be a value with `coe b₀` in the branch locus of the cover `F = f.toRiemannSphere`, let `F`
+be nonconstant (`hncF`), and let `α'` be a holomorphic `1`-form on `X` (`= ω₀·g` near the fibre
 `F⁻¹{coe b₀}`, which exists because `b₀` is off the finite pole-values — there `g` is holomorphic).
 Suppose the geometric moving trace germ-equals, on `𝓝[≠] b₀`, the value-chart local coefficient of
 the bundle trace SUM:
@@ -108,10 +108,10 @@ the bundle trace SUM:
 > `hbridge` —
   `valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] b₀] z ↦ traceLocalCoeff (traceFun F α') (coe b₀) (coe z)`.
 
-Then the boundedness condition `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds. *Proof.* The proven bundle
-boundedness `TraceForm.traceLocalCoeff_mul_sub_tendsto_zero F … (coe b₀ ∈ branchLocus F)` — stated
-in the chart `chartAt ℂ (coe b₀)`, whose center coordinate is `chartCoe (coe b₀) = b₀` and whose
-inverse is `chartCoe.symm z = coe z` — reads, in the affine `ℂ` coordinate, as
+Then the boundedness condition `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds. *Proof.* The proven
+bundle boundedness `TraceForm.traceLocalCoeff_mul_sub_tendsto_zero F … (coe b₀ ∈ branchLocus F)` —
+stated in the chart `chartAt ℂ (coe b₀)`, whose center coordinate is `chartCoe (coe b₀) = b₀` and
+whose inverse is `chartCoe.symm z = coe z` — reads, in the affine `ℂ` coordinate, as
 `(z − b₀)·traceLocalCoeff (traceFun F α') (coe b₀) (coe z) → 0`; transport along `hbridge`.
 
 This is the **value-correct symmetric SUM** route: the boundedness is the proven bundle finsum-over-
@@ -340,9 +340,9 @@ The bundle-branch constructor is *satisfiable*, not a disguised `False`: the emp
 and `residueSum_eq_zero_of_patchedTraceSelection_holomorphic` yields `∑Res = 0` for it. We re-export
 it here so the close-path is honest end-to-end. -/
 
-/-- **Non-vacuity of the bundle-branch residue-theorem reduction** (re-export).  For the empty pole set the
-reduction is satisfiable via the empty selection, yielding `∑Res = 0`; the bundle-branch constructor
-does not encode a disguised `False`. -/
+/-- **Non-vacuity of the bundle-branch residue-theorem reduction** (re-export). For the empty pole
+set the reduction is satisfiable via the empty selection, yielding `∑Res = 0`; the bundle-branch
+constructor does not encode a disguised `False`. -/
 theorem residueSum_eq_zero_ofBundleBranch_holomorphic (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
     (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
     ∑ a ∈ (∅ : Finset X), formFnResidue ω₀ g a = 0 :=

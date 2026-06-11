@@ -578,8 +578,8 @@ content):
     model's `Cshr`/`Ccov` cochains, descending to and inverting the forward
     `CechModelCochain.cochainToCcov` (the round-trip `cechH1 ≃ supH1`).
 
-These two are pure cover/sheaf plumbing (no ∂̄, no Montel) — the analytic content is already discharged. We package
-the reduction so the connection is explicit and the heart is plugged in. -/
+These two are pure cover/sheaf plumbing (no ∂̄, no Montel) — the analytic content is already
+discharged. We package the reduction so the connection is explicit and the heart is plugged in. -/
 
 namespace ChartDiskCover
 

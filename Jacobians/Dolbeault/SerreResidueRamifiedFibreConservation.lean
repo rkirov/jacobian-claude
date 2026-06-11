@@ -254,8 +254,8 @@ D.mult i = S.n` follows, for a nonconstant cover `f` (`f.div ≠ 0`), from:
 
 The two `fibreMult` values are equal by the conservation of number
 (`fibreMult_const_of_nonconstant`), so `(S.n : ℤ) = (∑ᵢ D.mult i : ℤ)`, hence `∑ᵢ D.mult i = S.n` by
-`Nat.cast` injectivity. This is the genuine §4 content, isolated to the two cover-degree readings + the
-proven constancy engine. -/
+`Nat.cast` injectivity. This is the genuine §4 content, isolated to the two cover-degree readings +
+the proven constancy engine. -/
 theorem sum_mult_eq_sheetCount_of_readings {g : X → ℂ}
     {f : MeromorphicFunction X} {c : ℂ} {D : FibreRamifiedData g f c}
     {z : ℂ} {n : ℕ} (hdiv : (f.div : Divisor X) ≠ 0)

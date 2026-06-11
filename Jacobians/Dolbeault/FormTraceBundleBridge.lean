@@ -308,8 +308,8 @@ is unchanged from `residueSum_eq_zero_ofBundleBranch`. -/
 sphere coherence.** Identical to `residueSum_eq_zero_ofBundleBranch` except the per-branch
 bundle-trace germ bridge `hbridgeBr` is replaced by the per-branch **eventual sphere-sheet
 coherence** `hevBr` (the value-correct symmetric-SUM identification, discharged via
-`hbridgeBr_of_eventual_sphereCoherence`). This is the close of the §VIII.3 branch-value condition along
-the monodromy-free path: the only branch-value residual is the standard regular-value sphere
+`hbridgeBr_of_eventual_sphereCoherence`). This is the close of the §VIII.3 branch-value condition
+along the monodromy-free path: the only branch-value residual is the standard regular-value sphere
 coherence, exactly as at every other (regular/pole) value. -/
 theorem residueSum_eq_zero_ofBundleBranchCoherence (hac : AdaptedCover ω₀ g f poles)
     (Φ : (b : ℂ) → FibreRegularData g f b)
@@ -523,8 +523,8 @@ The cleanest close: wiring `hevBr_of_regularData` into `residueSum_eq_zero_ofBun
 so the per-branch input is reduced from the (false/hard) Puiseux frame all the way to the **single
 standard residual** `αBr b₀ = ω₀·g near the fibre` (`hαBrAgreeBr`) — every other branch-value
 obligation is discharged from the regular-value data the constructor already requires. This is the
-§VIII.3 branch-value step closed along the monodromy-free symmetric-SUM path: at branch values, only the
-local-holomorphic form `αBr = ω₀·g` remains, exactly the plan's step 1. -/
+§VIII.3 branch-value step closed along the monodromy-free symmetric-SUM path: at branch values, only
+the local-holomorphic form `αBr = ω₀·g` remains, exactly the plan's step 1. -/
 
 /-- **The residue theorem `∑Res = 0`, branch input = the `αBr`-agreement only.** Identical
 scaffolding to `residueSum_eq_zero_ofBundleBranch`, but the entire per-branch bundle data
