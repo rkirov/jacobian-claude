@@ -1,6 +1,5 @@
 /-
-  The chart-cover partition of unity for the genus-uniform residue theorem (Route-H Stage C,
-  part 2b).
+  The chart-cover partition of unity for the genus-uniform residue theorem.
 
   A clash-free re-derivation of the genuine-cover PoU of `ChartCoverDbarGlue.lean` (that file
   transitively imports `CechFinitenessBallSolve`, which cannot coexist with the
@@ -18,7 +17,6 @@ import Jacobians.Dolbeault.CechModelGeometry
 import Jacobians.Dolbeault.DiskAcyclicCore
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
@@ -28,12 +26,13 @@ namespace Jacobians.Dolbeault.StokesResidue
 
 open Jacobians.Dolbeault
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
 
 /-- The genuine chart cover covers `X` (inner shrinkings already cover, and
 `innerShrunkChart ⊆ chartOpen`). -/
-theorem iUnion_chartOpen_coverCenter_eq' :
+theorem iUnion_chartOpen_coverCenter_eq' {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ChartedSpace ℂ X] :
     (⋃ j : Fin ((chartCover : Finset X).card), chartOpen (X := X) (coverCenter j))
       = Set.univ := by
   apply Set.eq_univ_of_univ_subset

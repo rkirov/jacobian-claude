@@ -1,19 +1,19 @@
 /-
   Dolbeault ladder — the homological/combinatorial half of the skyscraper long exact sequence
-  (`CohomologicalRR.exists_skyscraperLES`), i.e. the snake lemma supplying the connecting map and the
-  exactness/surjectivity at `H¹` (Forster §16).
+  (`CohomologicalRR.exists_skyscraperLES`), i.e. the snake lemma supplying the connecting map and
+  the exactness/surjectivity at `H¹` (Forster §16).
 
   ## What this file is
 
   The skyscraper SES `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` is, at the Čech-cochain level, a **short exact
-  sequence of two-step cochain complexes built from nested subcomplexes of ONE ambient complex** — the
-  same Čech differential `δ` acts on all three, and the three subcomplexes are nested submodules
+  sequence of two-step cochain complexes built from nested subcomplexes of ONE ambient complex** —
+  the same Čech differential `δ` acts on all three, and the three subcomplexes are nested submodules
   `C^•(𝒪_D) ≤ C^•(𝒪_{D+P}) ≤ C^•` with the quotient `Q^• := C^•(𝒪_{D+P})/C^•(𝒪_D)`. The genuinely
   homological content — the connecting map and the long-exact-sequence at `H⁰`/`H¹` — is therefore a
   pure linear-algebra **snake lemma** for that configuration, with NO analytic input.
 
-  We build it abstractly and completely as `TwoStepSES` (the ambient/nested-subcomplex datum) together
-  with:
+  We build it abstractly and completely as `TwoStepSES` (the ambient/nested-subcomplex datum)
+  together with:
     * `connecting : H0Q → H1A` — the connecting homomorphism, built *canonically* (no choice-of-lift
       well-definedness chase): `δ|_{D0}` corestricted through `α₁⁻¹` to `Z¹(A)`, descended along the
       isomorphism `D0/A0 ≅ ker(dQ0)` where `D0 := {b ∈ B0 : δb ∈ A1}`;
@@ -25,37 +25,36 @@
 
   Instantiating `TwoStepSES` with the Čech subcomplexes `sections•(𝒪_D) ≤ sections•(𝒪_{D+P})` makes
   `H0A/H1A/H0B/H1B` definitionally `globalSections`/`cechH1` (Forster's `H⁰`/`H¹`), and `α₁*` the
-  inclusion-induced `h1Map`. To produce the four `SkyscraperLES` fields `f₃`/`exact₂`/`exact₃`/`surj₄`
-  one transports `connecting` and the two exactness statements across the **local-realization
-  isomorphism** `H⁰(Q) ≅ ℂ_P = ℂ` (the order-`(−D(P)−1)` principal-part coefficient) and uses
-  `H¹(Q) = 0`. BOTH of those identifications need the *local surjectivity* of the principal-part
-  coefficient — i.e. the **witness sections** `(chart − chart P)^k ∈ 𝒪_{D+P}` on the cover-sets and
-  overlaps meeting `P` (`LocalRealization.coeffGermLin_surjective`, valid on a chart-disk where `D` is
-  supported only at `P`, `SkyscraperArrow.witnessFn_mem_OmegaD_add_single`). That is a *geometric*
-  hypothesis on the cover, NOT supplied by `IsLeray` alone; it is captured honestly as an explicit
-  hypothesis in `LocalRealizationData` below, from which `exists_skyscraperLES` follows by feeding
-  `TwoStepSES.snake` data through the equivalences.
+  inclusion-induced `h1Map`. To produce the four `SkyscraperLES` fields
+  `f₃`/`exact₂`/`exact₃`/`surj₄` one transports `connecting` and the two exactness statements across
+  the **local-realization isomorphism** `H⁰(Q) ≅ ℂ_P = ℂ` (the order-`(−D(P)−1)` principal-part
+  coefficient) and uses `H¹(Q) = 0`. BOTH of those identifications need the *local surjectivity* of
+  the principal-part coefficient — i.e. the **witness sections** `(chart − chart P)^k ∈ 𝒪_{D+P}` on
+  the cover-sets and overlaps meeting `P` (`LocalRealization.coeffGermLin_surjective`, valid on a
+  chart-disk where `D` is supported only at `P`, `SkyscraperArrow.witnessFn_mem_OmegaD_add_single`).
+  That is a *geometric* hypothesis on the cover, NOT supplied by `IsLeray` alone; it is captured
+  honestly as an explicit hypothesis in `LocalRealizationData` below, from which
+  `exists_skyscraperLES` follows by feeding `TwoStepSES.snake` data through the equivalences.
 
-  Everything in this file is complete; the snake lemma is axiom-clean linear algebra.
+  The snake lemma here is pure linear algebra.
 -/
 import Jacobians.Dolbeault.SkyscraperArrow
 
 open scoped Manifold ContDiff Topology
 
-set_option linter.unusedSectionVars false
 
 namespace Jacobians.Dolbeault
 
 /-! ## The abstract snake lemma for nested two-step subcomplexes
 
-`TwoStepSES` packages one ambient two-step cochain complex `C0 →[d0] C1 →[d1] C2` (`d1 ∘ d0 = 0`) with
-two **nested** subcomplexes `A ≤ B` (`A i ≤ B i`, both preserved by `d`). The quotient subcomplex is
-`Q i := B i ⧸ A i` (term-wise), and we extract the snake-lemma connecting map and exactness at the
-`H⁰`/`H¹` junctions of the long exact sequence of `0 → A → B → Q → 0`. -/
+`TwoStepSES` packages one ambient two-step cochain complex `C0 →[d0] C1 →[d1] C2` (`d1 ∘ d0 = 0`)
+with two **nested** subcomplexes `A ≤ B` (`A i ≤ B i`, both preserved by `d`). The quotient
+subcomplex is `Q i := B i ⧸ A i` (term-wise), and we extract the snake-lemma connecting map and
+exactness at the `H⁰`/`H¹` junctions of the long exact sequence of `0 → A → B → Q → 0`. -/
 
-/-- One ambient two-step complex `C0 →[d0] C1 →[d1] C2` (with `d1 ∘ d0 = 0`) together with two nested
-`d`-stable subcomplexes `A ≤ B`. This is exactly the shape of the Čech skyscraper SES (one Čech
-differential `δ`, nested `𝒪_D`-section subcomplexes). -/
+/-- One ambient two-step complex `C0 →[d0] C1 →[d1] C2` (with `d1 ∘ d0 = 0`) together with two
+nested `d`-stable subcomplexes `A ≤ B`. This is exactly the shape of the Čech skyscraper SES (one
+Čech differential `δ`, nested `𝒪_D`-section subcomplexes). -/
 structure TwoStepSES (R : Type*) [Ring R] where
   /-- Degree-0 ambient cochains. -/
   C0 : Type*
@@ -148,15 +147,17 @@ noncomputable def dQ0 : S.Q0 →ₗ[R] S.Q1 :=
 @[simp] theorem dQ0_mk (b : S.B0) :
     S.dQ0 (Submodule.Quotient.mk b) = Submodule.Quotient.mk (S.dB0 b) := rfl
 
-/-- `H⁰` of the quotient complex `Q`: `ker dQ0` (a submodule of `Q0`). The snake-lemma middle term. -/
+/-- `H⁰` of the quotient complex `Q`: `ker dQ0` (a submodule of `Q0`). The snake-lemma middle term.
+-/
 noncomputable def H0Q : Submodule R S.Q0 := LinearMap.ker S.dQ0
 
 /-! ### The "liftable" submodule `D0 ⊆ B0` and the canonical connecting datum
 
 `D0 := {b ∈ B0 : δ⁰ b ∈ A1}` is the set of `B`-cochains whose differential lands in `A`. On it, `δ⁰`
 corestricts to a map into `Z¹(A)` (it is automatically a cocycle, `δ¹δ⁰ = 0`); descending to `H¹(A)`
-gives a map `ψ̄ : D0 → H¹(A)` that kills `A0`. And the quotient projection `mkQ : B0 → Q0` restricts to
-a *surjection* `D0 ↠ ker dQ0` with kernel `A0`. The connecting map is `ψ̄` descended along that iso. -/
+gives a map `ψ̄ : D0 → H¹(A)` that kills `A0`. And the quotient projection `mkQ : B0 → Q0` restricts
+to a *surjection* `D0 ↠ ker dQ0` with kernel `A0`. The connecting map is `ψ̄` descended along that
+iso. -/
 
 /-- `D0 = {b ∈ B0 : δ⁰ b ∈ A1}`, the elements of `B0` whose differential lies in the `A`-subcomplex.
 Pulled back along `dB0` from `A1.submoduleOf B1`. -/
@@ -182,7 +183,8 @@ noncomputable def psi : S.D0 →ₗ[R] S.Z1sub S.A1 :=
 
 @[simp] theorem psi_coe (b : S.D0) : (S.psi b : S.C1) = S.d0 b.1.1 := rfl
 
-/-- `ψ` descended to `H¹(A)`: `ψ̄ : D0 →ₗ H¹(A)`, the connecting datum before quotienting the source. -/
+/-- `ψ` descended to `H¹(A)`: `ψ̄ : D0 →ₗ H¹(A)`, the connecting datum before quotienting the
+source. -/
 noncomputable def psiBar : S.D0 →ₗ[R] S.H1A := (Submodule.mkQ _).comp S.psi
 
 @[simp] theorem psiBar_apply (b : S.D0) :
@@ -234,8 +236,8 @@ noncomputable def connecting : S.H0Q →ₗ[R] S.H1A :=
       rw [ker_theta]; exact S.A0_submoduleOf_le_ker_psiBar)) ∘ₗ
     (S.theta.quotKerEquivOfSurjective S.theta_surjective).symm.toLinearMap
 
-/-- **The defining property of `connecting`.** On the surjection `θ : D0 ↠ H⁰(Q)`, the connecting map
-is just `ψ̄` (the class of `δ⁰ b`): `connecting (θ b) = [δ⁰ b]`. The workhorse for exactness. -/
+/-- **The defining property of `connecting`.** On the surjection `θ : D0 ↠ H⁰(Q)`, the connecting
+map is just `ψ̄` (the class of `δ⁰ b`): `connecting (θ b) = [δ⁰ b]`. The workhorse for exactness. -/
 @[simp] theorem connecting_theta (b : S.D0) :
     S.connecting (S.theta b) = S.psiBar b := by
   rw [connecting, LinearMap.comp_apply, LinearEquiv.coe_coe,
@@ -255,9 +257,9 @@ theorem mem_B0_of_mem_H0sub {b : S.C0} (hb : b ∈ S.H0sub S.B0) : b ∈ S.B0 :=
 theorem d0_eq_zero_of_mem_H0sub {b : S.C0} (hb : b ∈ S.H0sub S.B0) : S.d0 b = 0 :=
   LinearMap.mem_ker.mp (Submodule.mem_inf.mp hb).1
 
-/-- `β₀* : H⁰(B) = ker δ⁰ ⊓ B0 → H⁰(Q) = ker dQ0`, induced by the quotient projection `mkQ : B0 → Q0`
-(it preserves cocycles: `dQ0 (mk b) = mk (δ⁰ b) = mk 0 = 0` for a global section `b`).
-Built as `H⁰(B) ↪ B0 →[mkQ] Q0`, corestricted to `ker dQ0`. -/
+/-- `β₀* : H⁰(B) = ker δ⁰ ⊓ B0 → H⁰(Q) = ker dQ0`, induced by the quotient projection
+`mkQ : B0 → Q0` (it preserves cocycles: `dQ0 (mk b) = mk (δ⁰ b) = mk 0 = 0` for a global section
+`b`). Built as `H⁰(B) ↪ B0 →[mkQ] Q0`, corestricted to `ker dQ0`. -/
 noncomputable def h0Map : ↥(S.H0sub S.B0) →ₗ[R] S.H0Q :=
   ((S.A0.submoduleOf S.B0).mkQ.comp (Submodule.inclusion (inf_le_right : S.H0sub S.B0 ≤ S.B0))
     ).codRestrict S.H0Q fun b => by
@@ -278,8 +280,9 @@ theorem Z1sub_A_le_B : S.Z1sub S.A1 ≤ S.Z1sub S.B1 :=
 theorem B1sub_A_le_B : S.B1sub S.A0 ≤ S.B1sub S.B0 :=
   Submodule.map_mono S.hAB0
 
-/-- `α₁* : H¹(A) → H¹(B)`, induced by the cocycle inclusion `Z¹(A) ↪ Z¹(B)` (it carries `A`-coboundaries
-into `B`-coboundaries). In the Čech instantiation this is exactly `FiniteCover.h1Map`. -/
+/-- `α₁* : H¹(A) → H¹(B)`, induced by the cocycle inclusion `Z¹(A) ↪ Z¹(B)` (it carries
+`A`-coboundaries into `B`-coboundaries). In the Čech instantiation this is exactly
+`FiniteCover.h1Map`. -/
 noncomputable def h1MapAbs : S.H1A →ₗ[R] S.H1B :=
   Submodule.mapQ _ _ (Submodule.inclusion S.Z1sub_A_le_B) (by
     rintro ⟨c, hc⟩ hcob
@@ -334,8 +337,8 @@ abbrev H1Q : Type _ :=
 
 /-! ### Exactness at `H⁰(Q)` and `H¹(A)` (the snake-lemma junctions) -/
 
-/-- **Exactness at `H⁰(Q)`**: `range (β₀* : H⁰(B)→H⁰(Q)) = ker connecting`. A cocycle class maps to `0`
-under the connecting map iff it is `β₀` of an honest `B`-global-section. -/
+/-- **Exactness at `H⁰(Q)`**: `range (β₀* : H⁰(B)→H⁰(Q)) = ker connecting`. A cocycle class maps to
+`0` under the connecting map iff it is `β₀` of an honest `B`-global-section. -/
 theorem exact_h0Map_connecting : Function.Exact S.h0Map S.connecting := by
   intro y
   constructor
@@ -370,8 +373,8 @@ theorem exact_h0Map_connecting : Function.Exact S.h0Map S.connecting := by
     rw [hzd0]
     exact zero_mem _
 
-/-- **Exactness at `H¹(A)`**: `range connecting = ker (α₁* : H¹(A)→H¹(B))`. A class in `H¹(A)` dies in
-`H¹(B)` (becomes a `B`-coboundary) iff it is in the image of the connecting map. -/
+/-- **Exactness at `H¹(A)`**: `range connecting = ker (α₁* : H¹(A)→H¹(B))`. A class in `H¹(A)` dies
+in `H¹(B)` (becomes a `B`-coboundary) iff it is in the image of the connecting map. -/
 theorem exact_connecting_h1Map : Function.Exact S.connecting S.h1MapAbs := by
   intro y
   constructor
@@ -402,9 +405,9 @@ theorem exact_connecting_h1Map : Function.Exact S.connecting S.h1MapAbs := by
 
 /-- **`surj₄`: `α₁* : H¹(A) → H¹(B)` is surjective once `H¹(Q) = 0`** (here `Subsingleton H1Q`). The
 last arrow of the six-term sequence `… → H¹(A) → H¹(B) → H¹(Q)`; if `H¹(Q)` is trivial the map onto
-`H¹(B)` is onto. Concretely: a `B`-1-cocycle `c` maps to a `Q`-1-cocycle whose class in `H¹(Q)` is `0`,
-so `c = dB0 b₀ + (A-cochain)` for some `b₀ ∈ B0`; the `A`-cochain `c − dB0 b₀` is an `A`-cocycle whose
-`α₁*`-class is `[c]`. -/
+`H¹(B)` is onto. Concretely: a `B`-1-cocycle `c` maps to a `Q`-1-cocycle whose class in `H¹(Q)` is
+`0`, so `c = dB0 b₀ + (A-cochain)` for some `b₀ ∈ B0`; the `A`-cochain `c − dB0 b₀` is an
+`A`-cocycle whose `α₁*`-class is `[c]`. -/
 theorem surjective_h1MapAbs_of_subsingleton (h : Subsingleton S.H1Q) :
     Function.Surjective S.h1MapAbs := by
   intro y
@@ -449,10 +452,10 @@ end TwoStepSES
 
 /-! ## Instantiation: the Čech skyscraper `TwoStepSES`
 
-The ambient complex is the germ-class Čech complex `Cochain0 → Cochain1 → Cochain2` (one differential
-`δ`), and the two nested subcomplexes are the `𝒪_D` ⊆ `𝒪_{D+P}` section subcomplexes. The homology
-objects of the abstract snake are then *definitionally* Forster's Čech `H⁰`/`H¹`, and the abstract
-`h1MapAbs` is the inclusion-induced `FiniteCover.h1Map`. -/
+The ambient complex is the germ-class Čech complex `Cochain0 → Cochain1 → Cochain2` (one
+differential `δ`), and the two nested subcomplexes are the `𝒪_D` ⊆ `𝒪_{D+P}` section subcomplexes.
+The homology objects of the abstract snake are then *definitionally* Forster's Čech `H⁰`/`H¹`, and
+the abstract `h1MapAbs` is the inclusion-induced `FiniteCover.h1Map`. -/
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -461,16 +464,16 @@ namespace FiniteCover
 
 open FiniteFamily
 
-/-- 2-cochains that are `𝒪_D`-sections on each triple intersection (the degree-2 section subcomplex —
-not previously needed in `CechComplex`, supplied here for the `Q`-degree-2 term of the snake). -/
+/-- 2-cochains that are `𝒪_D`-sections on each triple intersection (the degree-2 section subcomplex
+— not previously needed in `CechComplex`, supplied here for the `Q`-degree-2 term of the snake). -/
 def sections2 (𝔘 : FiniteCover X) (D : Divisor X) : Submodule ℂ 𝔘.Cochain2 where
   carrier := {g | ∀ t, g t ∈ OmegaDGerm D (𝔘.U t.1 ⊓ 𝔘.U t.2.1 ⊓ 𝔘.U t.2.2)}
   add_mem' hf hg t := add_mem (hf t) (hg t)
   zero_mem' _ := Submodule.zero_mem _
   smul_mem' c _ hg t := Submodule.smul_mem _ c (hg t)
 
-/-- `δ¹` preserves the `𝒪_D` section subcomplex (each component of `δ¹g` is a signed sum of restrictions
-of `𝒪_D`-germs, hence an `𝒪_D`-germ). -/
+/-- `δ¹` preserves the `𝒪_D` section subcomplex (each component of `δ¹g` is a signed sum of
+restrictions of `𝒪_D`-germs, hence an `𝒪_D`-germ). -/
 theorem cechDelta1_sections (𝔘 : FiniteCover X) (D : Divisor X) :
     Submodule.map 𝔘.cechDelta1 (𝔘.sections1 D) ≤ 𝔘.sections2 D := by
   rintro _ ⟨g, hg, rfl⟩ t
@@ -518,25 +521,26 @@ NOT a consequence of `IsLeray` alone. Bundling them as explicit hypotheses keeps
 while making the snake + linear-algebra reduction completely explicit.
 
 Given `LocalRealizationData`, the four `SkyscraperLES` snake fields are immediate:
-`f₃ = connecting ∘ e0.symm`, with `exact₂`/`exact₃` transported across `e0` (ladder/surjective-precomp
-isomorphism transport of `exact_h0Map_connecting` / `exact_connecting_h1Map`) and `surj₄` from
-`surjective_h1MapAbs_of_subsingleton`. -/
+`f₃ = connecting ∘ e0.symm`, with `exact₂`/`exact₃` transported across `e0`
+(ladder/surjective-precomp isomorphism transport of `exact_h0Map_connecting` /
+`exact_connecting_h1Map`) and `surj₄` from `surjective_h1MapAbs_of_subsingleton`. -/
 
-/-- The geometric input the snake lemma cannot supply, bundled honestly as explicit hypotheses (NOT a gap): the
-local-realization iso `H⁰(Q) ≅ ℂ` compatible with the principal-part arrow `h0ToSky`, the acyclicity
-`H¹(Q) = 0`, and the (Forster 14.9) `H¹` finiteness. -/
+/-- The geometric input the snake lemma cannot supply, bundled honestly as explicit hypotheses (NOT
+a gap): the local-realization iso `H⁰(Q) ≅ ℂ` compatible with the principal-part arrow `h0ToSky`,
+the acyclicity `H¹(Q) = 0`, and the (Forster 14.9) `H¹` finiteness. -/
 structure LocalRealizationData (𝔘 : FiniteCover X) (D : Divisor X) (P : X) where
   /-- A cover-set containing `P` (where the principal-part coefficient `h0ToSky` is read). -/
   i : 𝔘.ι
   /-- `P` lies in that cover-set. -/
   hP : P ∈ 𝔘.U i
-  /-- **The local-realization isomorphism `H⁰(Q) ≅ ℂ`** (the order-`(−D(P)−1)` coefficient at `P`): the
-  genuine 1-dimensional skyscraper stalk, in cohomology form. The analytic content of
-  `LocalRealization.localRealizationGermEquiv`, lifted from the overlap to the `H⁰`-of-quotient term. -/
+  /-- **The local-realization isomorphism `H⁰(Q) ≅ ℂ`** (the order-`(−D(P)−1)` coefficient at `P`):
+  the genuine 1-dimensional skyscraper stalk, in cohomology form. The analytic content of
+  `LocalRealization.localRealizationGermEquiv`, lifted from the overlap to the `H⁰`-of-quotient
+  term. -/
   e0 : (𝔘.skyscraperTwoStep D P).H0Q ≃ₗ[ℂ] ℂ
   /-- **Compatibility**: the principal-part coefficient arrow `h0ToSky` is `e0` composed with the
-  cohomology projection `β₀* : H⁰(𝒪_{D+P}) → H⁰(Q)` (`h0Map`). I.e. reading the coefficient = projecting
-  to `Q` and applying the realization iso. -/
+  cohomology projection `β₀* : H⁰(𝒪_{D+P}) → H⁰(Q)` (`h0Map`). I.e. reading the coefficient =
+  projecting to `Q` and applying the realization iso. -/
   hcompat : 𝔘.h0ToSky D P hP = (e0 : (𝔘.skyscraperTwoStep D P).H0Q →ₗ[ℂ] ℂ).comp
     (𝔘.skyscraperTwoStep D P).h0Map
   /-- **Acyclicity `H¹(Q) = 0`** (the constant/skyscraper quotient complex on the star of `P` is
@@ -599,10 +603,10 @@ theorem LocalRealizationData.surj₄ {𝔘 : FiniteCover X} {D : Divisor X} {P :
 set_option maxHeartbeats 1000000 in
 set_option synthInstance.maxHeartbeats 1000000 in
 /-- **The skyscraper long exact sequence from the snake + local realization.** Given the geometric
-`LocalRealizationData`, the snake lemma produces all four remaining `SkyscraperLES` fields, completing
-`exists_skyscraperLES`. The `H⁰`-arrow `h0ToSky` and `exact₁₂` come from `SkyscraperArrow`
-(`exact_h0Incl_h0ToSky`); everything else (`f₃`, `exact₂`, `exact₃`, `surj₄`) is the snake transported
-across `e0` and `H¹(Q) = 0`. -/
+`LocalRealizationData`, the snake lemma produces all four remaining `SkyscraperLES` fields,
+completing `exists_skyscraperLES`. The `H⁰`-arrow `h0ToSky` and `exact₁₂` come from
+`SkyscraperArrow` (`exact_h0Incl_h0ToSky`); everything else (`f₃`, `exact₂`, `exact₃`, `surj₄`) is
+the snake transported across `e0` and `H¹(Q) = 0`. -/
 noncomputable def skyscraperLES_of_localRealization {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
     (L : 𝔘.LocalRealizationData D P) : SkyscraperLES 𝔘 D P :=
   haveI := L.finH1D; haveI := L.finH1DP; haveI := L.finH0DP
