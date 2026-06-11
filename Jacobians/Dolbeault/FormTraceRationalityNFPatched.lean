@@ -38,7 +38,7 @@ at each of them — the *planar shadow* of the proven bundle trace `traceFun` ex
 * the genus-`0` `hentire` is **proven internally** (not assumed) via the off-centre analyticity
   `analyticAt_valueChartTracePatched_off_centres` (regular values by the moving coherence; branch
   values by the value-correct removable extension `tendsto_zero_valueChartTrace_of_bundleGerm`/the
-  boundedness crux) + the junk-freeness `hcont_int`, through `analyticOnNhd_remainder_of_junkFree'`;
+  boundedness condition) + the junk-freeness `hcont_int`, through `analyticOnNhd_remainder_of_junkFree'`;
 * `hrecip_cont` is `continuousAt_recipCoeff_of_vanishing` (the genus-`0` `R₀ 0 = 0` `∞`-vanishing);
 * `agree` (finite) uses `valueChartTracePatched =ᶠ[𝓝[≠] p] valueChartTrace` (the patch is inert off
   the branch values) chained with the per-pole moving coherence `hcoh_fin_of_movingDatum`;
@@ -47,7 +47,7 @@ at each of them — the *planar shadow* of the proven bundle trace `traceFun` ex
   `hcoh_inf` against `inftyFibreTraceNF` (the repaired reciprocal — `FormTraceInftyFibreNF`).
 
 So this constructor removes the `hentire`/`hrecip_cont` *false-field risk* of the raw route,
-replacing them by the genuinely-satisfiable boundedness-crux/junk-free inputs, and keeps the sound
+replacing them by the genuinely-satisfiable boundedness-condition/junk-free inputs, and keeps the sound
 `∞`-fibre.
 
 ## What this file proves
@@ -116,7 +116,7 @@ values via the value-correct removable extension (`hbnd` boundedness + punctured
 
 /-- **Off-centre analyticity of the patched trace.** With `centres := Finset.univ.image cs`: given
 the regular-value analyticity of the *raw* trace off `centres ∪ br` (`hreg`) and the branch-value
-boundedness crux off `centres` (`hbnd`), the **patched** trace is analytic at every value off
+boundedness condition off `centres` (`hbnd`), the **patched** trace is analytic at every value off
 `centres`. This is the value-correct `hT_off` — branch values handled by the removable extension,
 *no* false continuity demand. (`analyticAt_valueChartTracePatched_off_centres`, with the punctured
 analyticity fed from `hreg`.) -/
@@ -147,7 +147,7 @@ proven from the *internally-discharged* `hentire` (`analyticOnNhd_remainder_of_j
 `T := valueChartTracePatched ω₀ f Φ br`:
 
 * `hreg` / `hbnd` — the off-centre analyticity inputs (regular-value analyticity of the *raw* trace
-  off `centres ∪ br`; the branch-value boundedness crux off `centres`). These give the value-correct
+  off `centres ∪ br`; the branch-value boundedness condition off `centres`). These give the value-correct
   `hT_off` (`hT_off_patched`) — the genuinely-satisfiable replacement of the false raw-trace
   continuity;
 * `Cfin` / `hCfin_D` — the per-pole-value moving coherence data (fixed fibre `D (cs i)`), giving
@@ -308,7 +308,7 @@ inherits analyticity across branch points from the proven bundle trace `traceFun
 
 /-- **`hbnd` (branch-value boundedness) from the eventual sphere coherence + a local form `αBr`.**
 At a branch value `b₀` (in the branch locus of the cover, `hbr`; `f` nonconstant, `hncF`) with a
-holomorphic local representative `αBr` of `α = ω₀·g` near the fibre, the boundedness crux
+holomorphic local representative `αBr` of `α = ω₀·g` near the fibre, the boundedness condition
 `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds, *provided* the eventual sphere-sheet coherence `hev`
 (the value-correct symmetric-SUM identification: near `b₀` each regular value carries a sphere sheet
 system whose planar fibre trace equals the geometric trace, and `αBr = ω₀·g` at the fibre).

@@ -1,5 +1,5 @@
 /-
-  Planar change of variables under a holomorphic map (Route-H Stage B).
+  Planar change of variables under a holomorphic map.
 
   Three tools for transporting the residue-ledger integrands between charts of a Riemann
   surface (consumed by `ResidueTheoremStokes.lean`):

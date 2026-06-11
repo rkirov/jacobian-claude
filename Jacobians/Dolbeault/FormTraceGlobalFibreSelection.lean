@@ -175,7 +175,7 @@ every other value (branch values, or values with bad `g`-data) `Φ b` is the emp
 *canonical* selection: at regular values it enumerates the **full** fibre with no labeling, exactly
 the symmetric-lever input of `MovingCoherenceDatum.ofSphereSheetSystemCanon`.
 
-The empty fallback at branch values is harmless: the branch-value crux of
+The empty fallback at branch values is harmless: the branch-value condition of
 `residueSum_eq_zero_of_globalCoverData` is handled by the **bundle trace SUM** (`αBr`, the
 monodromy-free symmetric extension), not by `Φ` at the branch value; the canonical-fibre conditions
 `hΦrangeReg`/`hΦinjReg` are required only *near regular values* (off `cs ∪ branchValues f`), where

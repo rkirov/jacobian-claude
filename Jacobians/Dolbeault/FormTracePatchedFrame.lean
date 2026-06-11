@@ -53,7 +53,7 @@ branched analytic heart is closed.
 
 ## What this file proves
 
-* `hbnd_of_sheetFrame` — the per-branch-value boundedness crux `hbnd` from a branched full-fibre
+* `hbnd_of_sheetFrame` — the per-branch-value boundedness condition `hbnd` from a branched full-fibre
   frame, via `tendsto_zero_valueChartTrace_of_sheetSections` (colliding ramified sheets admitted).
 * `patchedTraceSelection_ofFrame` — the assembled `PatchedTraceSelection` from the global full-fibre
   frame data, every field discharged from the proven engines or carried as the genuine residual
@@ -90,7 +90,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
 
-/-! ### The branch-value boundedness crux from a branched full-fibre frame
+/-! ### The branch-value boundedness condition from a branched full-fibre frame
 
 The genuine §VIII.3 analytic step at a branch value `b₀`, packaged as the constructor will consume
 it. A **branched full-fibre frame** at `b₀` is a finite family of smooth cover sheets
@@ -100,10 +100,10 @@ the latter admissible because `tendsto_zero_valueChartTrace_of_sheetSections` do
 the base points injective. Each sheet is a non-pole section of `f.holoRepr`, `f` is nonconstant per
 sheet (so each chart-pullback `φ_j` is not eventually constant), `α = ω₀·g`'s chart integrand is
 continuous at each preimage, and the full-fibre trace germ-equals the moving fibre sum along the
-sheets near `b₀` (`hgerm`). The boundedness crux `(z − b₀)·valueChartTrace z → 0` follows directly.
+sheets near `b₀` (`hgerm`). The boundedness condition `(z − b₀)·valueChartTrace z → 0` follows directly.
 -/
 
-/-- **The boundedness crux `hbnd` from a branched full-fibre frame.**  Verbatim repackaging of
+/-- **The boundedness condition `hbnd` from a branched full-fibre frame.**  Verbatim repackaging of
 `tendsto_zero_valueChartTrace_of_sheetSections` (the proven boundedness port), exposed in the exact
 shape the `PatchedTraceSelection.hbnd` field requires. The sheets `sec` run through *all* preimages
 of `b₀` — including the colliding ramified ones (no injectivity of `sec · b₀` is demanded) — so the
@@ -136,7 +136,7 @@ the three substantial fields discharged from the proven engines:
 * **`Creg z`** — the per-regular-value moving datum over the *full* fibre, via
   `MovingCoherenceDatum.ofSphereSheetSystemCanon` from the sphere sheet system `Sreg z` and the
   canonical-fibre condition (`Φ z'` enumerates `F⁻¹(coe z')` near `z`).
-* **`hbnd b₀`** — the branch-value boundedness crux, via `hbnd_of_sheetFrame` from the branched
+* **`hbnd b₀`** — the branch-value boundedness condition, via `hbnd_of_sheetFrame` from the branched
   full-fibre frame `secBr b₀` (the `m`-sheet Puiseux frame through `b₀`'s preimages).
 
 The finite/`∞` enumeration, `hglue_inf`, `hcont_int`, and the genus-`0` `R₀ 0 = 0` are carried as

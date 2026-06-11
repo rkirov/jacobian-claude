@@ -308,7 +308,7 @@ is unchanged from `residueSum_eq_zero_ofBundleBranch`. -/
 sphere coherence.** Identical to `residueSum_eq_zero_ofBundleBranch` except the per-branch
 bundle-trace germ bridge `hbridgeBr` is replaced by the per-branch **eventual sphere-sheet
 coherence** `hevBr` (the value-correct symmetric-SUM identification, discharged via
-`hbridgeBr_of_eventual_sphereCoherence`). This is the close of the §VIII.3 branch-value crux along
+`hbridgeBr_of_eventual_sphereCoherence`). This is the close of the §VIII.3 branch-value condition along
 the monodromy-free path: the only branch-value residual is the standard regular-value sphere
 coherence, exactly as at every other (regular/pole) value. -/
 theorem residueSum_eq_zero_ofBundleBranchCoherence (hac : AdaptedCover ω₀ g f poles)
@@ -531,7 +531,7 @@ scaffolding to `residueSum_eq_zero_ofBundleBranch`, but the entire per-branch bu
 (`hbridgeBr`) is discharged from the **regular-value data** (already required) + the per-branch
 local form-agreement `hαBrAgreeBr` (`αBr b₀ = ω₀·g` at the fibre points near `b₀`). No monodromy, no
 Puiseux frame, no new geometric input at branch values: the same regular-value sphere machinery
-closes the branch-value crux. -/
+closes the branch-value condition. -/
 theorem residueSum_eq_zero_ofBundleBranchAgree (hac : AdaptedCover ω₀ g f poles)
     (Φ : (b : ℂ) → FibreRegularData g f b)
     (m : ℕ) (cs : Fin m → ℂ) (ρ : ℝ) (hcs_ball : ∀ i, cs i ∈ ball (0 : ℂ) ρ)

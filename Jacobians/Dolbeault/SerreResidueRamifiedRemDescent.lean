@@ -128,7 +128,7 @@ theorem exists_clusterTraceData_descent_at_fibrePoint (ω₀ : HolomorphicOneFor
   have := hRem_slit z hz
   simpa using this
 
-/-! ## The shrunk-slit smallness for the descent (the linchpin of STEP 3's smallness discharge)
+/-! ## The shrunk-slit smallness for the descent (the linchpin of the smallness discharge)
 
 The descent identity `∑_{j<m} ppR(ζʲ·u)·ζʲ = m·u^{m−1}·G(uᵐ)` holds only for `u` near `0`. In the
 slit form one substitutes `u = w₀ z` for the `cpow` branch `w₀ z = (z − c)^{1/m}`, which `→ 0` as

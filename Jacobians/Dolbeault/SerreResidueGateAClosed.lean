@@ -23,8 +23,7 @@ WITHOUT the over-strong global-holomorphic-`αBr` route of `SerreResidueInftyClo
 `b₀`. Those fibre points sweep an **open** set `U = F⁻¹(punctured disk)`, so `αBr = ω₀·g` on `U`,
 whence `αBr/ω₀ = g` GLOBALLY (identity theorem, `X` connected) — forcing every pole of `g` to sit at
 a zero of `ω₀`. For a general meromorphic `g` this is FALSE (the Serre-pairing consumer has
-`g = α/ω₀` with poles wherever `α` has poles). So that route is unsound for general `α`; see
-`human_input.md` (2026-06-09, "8th bad field").
+`g = α/ω₀` with poles wherever `α` has poles). So that route is unsound for general `α`.
 
 ## The sound route (the `g`-weighted bundle SUM)
 
@@ -38,7 +37,7 @@ We bound `(z − b₀)·[g-weighted sum] → 0` via a `g`-weighted analogue of
 `TraceForm.traceLocalCoeff_mul_sub_tendsto_zero`: the per-preimage `ω₀`-summand boundedness
 `TraceForm.traceSummand_localCoeff_mul_sub_tendsto` (applied to the GLOBAL HOLOMORPHIC `ω₀`, **not**
 `ω₀·g`) times the BOUNDED weight `g(x)` (continuous at the fibre, since `b₀` is off the
-pole-values). No global `αBr` — the form fed to the crux is `ω₀` itself.
+pole-values). No global `αBr` — the form fed to the bound is `ω₀` itself.
 
 ## What this file proves
 
@@ -48,8 +47,7 @@ pole-values). No global `αBr` — the form fed to the crux is `ω₀` itself.
 ## References
 
 * Miranda, *Algebraic Curves and Riemann Surfaces* (1995), §VIII.3, pp. 251–256.
-* `Jacobians/TraceForm.lean` (`traceLocalCoeff_mul_sub_tendsto_zero_Y`, the un-weighted crux).
-* `human_input.md` (2026-06-09 — the `αBr` soundness finding + this sound route).
+* `Jacobians/TraceForm.lean` (`traceLocalCoeff_mul_sub_tendsto_zero_Y`, the un-weighted bound).
 -/
 
 noncomputable section
@@ -71,7 +69,7 @@ variable {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connec
 
 Near a preimage `x₀` of the branch value `y₀`, the `g`-weighted bundle summand
 `(c(fx) − c(y₀)) · g(x) · inCoordinates(traceSummand ω₀ x) 1 = g(x) · bigPhi f ω₀ y₀ x`
-tends to `0`: `bigPhi → 0` (the un-weighted summand crux `traceSummand_localCoeff_mul_sub_tendsto`,
+tends to `0`: `bigPhi → 0` (the un-weighted summand bound `traceSummand_localCoeff_mul_sub_tendsto`,
 applied to the *global holomorphic* `ω₀`) and `g` is continuous at `x₀` (so bounded). -/
 
 /-- **`g`-weighted per-preimage summand boundedness.**  For a global holomorphic `ω₀`, a weight `g`
@@ -83,7 +81,7 @@ theorem traceSummand_localCoeff_mul_sub_gWeighted_tendsto (f : X → Y)
     (hg : ContinuousAt g x₀) :
     Tendsto (fun x => g x * bigPhi f ω₀ y₀ x)
       (𝓝[(criticalSet f)ᶜ \ {x₀}] x₀) (𝓝 0) := by
-  -- The un-weighted summand tends to 0 (the proven crux, applied to the global holomorphic ω₀).
+  -- The un-weighted summand tends to 0 (applied to the global holomorphic ω₀).
   have hbig : Tendsto (fun x => bigPhi f ω₀ y₀ x)
       (𝓝[(criticalSet f)ᶜ \ {x₀}] x₀) (𝓝 0) :=
     traceSummand_localCoeff_mul_sub_tendsto f hf hnonconst ω₀ hfx₀
@@ -229,7 +227,7 @@ The sound bridge: at a regular value `coe z` with a sphere sheet system `S`, the
 trace equals the `g`-weighted bundle finsum of the **global holomorphic** `ω₀` over the fibre — with
 **no** auxiliary global form `αBr`. This is the αBr-free analogue of
 `fibreTrace_traceCoeff_eq_traceLocalCoeff` (whose αBr-naming step we drop), feeding the `g`-weighted
-boundedness crux directly. -/
+boundedness condition directly. -/
 
 /-- **Per-sheet frame identity.**  On `RiemannSphere`, the `coe b₀`-frame local coefficient of the
 `ω₀`-trace summand at the sheet point `s (coe z)` equals the raw bundle summand `sheetPullback ω₀ s
@@ -422,7 +420,7 @@ theorem hev_coherence_canonical_of_offBranch (hdiv : (f.div : Divisor X) ≠ 0) 
 
 Assembling the sound `hbnd`: at a branch value `b₀` (off pole-centres), the geometric trace
 germ-equals the `g`-weighted bundle finsum (αBr-free coherence + the finsum bridge), and the
-`g`-weighted bundle SUM boundedness crux gives `(z − b₀)·trace → 0`. The form fed to the crux is the
+`g`-weighted bundle SUM boundedness condition gives `(z − b₀)·trace → 0`. The form fed to the bound is the
 GLOBAL HOLOMORPHIC `ω₀`; `g` enters only as the bounded fibre weight (continuous at the branch
 fibre, off the pole-values). -/
 
@@ -618,7 +616,7 @@ variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunctio
 global holomorphic `ω₀`, `g` the bounded fibre weight) — NOT the unsatisfiable global-holomorphic
 `αBr` of `…_inftyClosed_bnd`.
 
-The genuine branch values use the `g`-weighted boundedness crux; the non-branch `br`-values use the
+The genuine branch values use the `g`-weighted boundedness condition; the non-branch `br`-values use the
 good-value analyticity `hgood_brOff`/`hgmero_brOff` (vacuous when `br = branchValues f`). `hg_fibre`
 at the branch fibres and `hg_an` at the non-branch `br`-fibres are both derived internally from
 `hg_an_offpoles` (a fibre point over a value off `image cs` is off `poles`). This rests on **only

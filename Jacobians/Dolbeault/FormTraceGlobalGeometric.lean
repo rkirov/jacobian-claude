@@ -59,7 +59,7 @@ are holomorphic, so they share the residue but not the germ unless absent from t
 therefore phrase the finite glue as the coherence hypothesis
 `hcoh_fin i : valueChartTrace … =ᶠ[𝓝[≠] cs i] (fibreReg …)` directly — the precise honest content —
 rather than asserting a false full-fibre germ-equality. The separation requirement is folded into
-the global selection `Φ` (a Gate-D refinement; see `gate_a_global_trace_T_status_2026-06-08.md`).
+the global selection `Φ`.
 
 ## References
 

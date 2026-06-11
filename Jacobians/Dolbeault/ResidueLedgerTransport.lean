@@ -18,8 +18,8 @@
     honestly analytic — `ReadsAnalyticAt`, whose failure set is FINITE);
   * `analyticAt_pairRead` — off the bad set the pair coefficient is holomorphic in EVERY chart;
   * `integral_ledgerIntegrand_transport` — **the chart-change invariance**
-    `∫_ℂ ledgerIntegrand … y V = ∫_ℂ ledgerIntegrand … y' V`: holomorphic change of variables
-    (Stage B), with `conj T′` (from the `∂̄` chain rule) × `T′` (from `pairRead_transform`)
+    `∫_ℂ ledgerIntegrand … y V = ∫_ℂ ledgerIntegrand … y' V`: holomorphic change of variables,
+    with `conj T′` (from the `∂̄` chain rule) × `T′` (from `pairRead_transform`)
     combining EXACTLY into the real Jacobian `|T′|²`;
   * `ledgerIntegrand_congr_superset` — the indicator set may be enlarged/shrunk freely as long
     as `P` vanishes or `v` is locally constant on the difference;
@@ -300,7 +300,7 @@ not depend on the chart it is read in: for an open window `V` inside both chart 
 
   `∫_ℂ ledgerIntegrand g₀ h P v y V = ∫_ℂ ledgerIntegrand g₀ h P v y' V`.
 
-Holomorphic change of variables along the transition `T = chart_{y'} ∘ chart_y⁻¹` (Stage B):
+Holomorphic change of variables along the transition `T = chart_{y'} ∘ chart_y⁻¹`:
 the `∂̄`-chain-rule factor `conj T′` and the `pairRead` factor `T′` combine exactly into the real
 Jacobian `|T′|²`; the finitely many bad points are a null set. -/
 theorem integral_ledgerIntegrand_transport {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
@@ -344,7 +344,7 @@ theorem integral_ledgerIntegrand_transport {X : Type*} [TopologicalSpace X] [Cha
     refine Set.image_congr (fun x hx => ?_)
     show ψ (φ.symm (φ x)) = ψ x
     rw [φ.left_inv (hVy hx)]
-  -- holomorphic change of variables (Stage B)
+  -- holomorphic change of variables
   have hcov := integral_image_holomorphic hUopen.measurableSet hTdiff hTinj
     (ledgerIntegrand g₀ h P v y' V)
   rw [hTimage] at hcov

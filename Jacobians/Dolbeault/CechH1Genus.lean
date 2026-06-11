@@ -5,7 +5,7 @@ Authors: Rado Kirov
 
 # The dimension count `h¹(𝔘, 𝒪) = genus X` (Forster 19.x / Miranda Ch. X §2)
 
-The C-4 crux of the Abel-converse route: the Čech `H¹` of the structure sheaf on any locally
+The key step of the Abel-converse route: the Čech `H¹` of the structure sheaf on any locally
 realizable finite cover has dimension exactly the genus.
 
 *Proof (vanishing at a large divisor + the two Riemann–Rochs).*

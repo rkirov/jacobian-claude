@@ -21,7 +21,7 @@ contribute), and (2) the sheet points are the **genuine** `clusterSheet` points.
 
 ## The mathematics — the per-cluster collapse via the straightening coordinate
 
-The crux is the *per-cluster symmetric collapse* (piece (b)). At a preimage `p` with normal-form
+The heart is the *per-cluster symmetric collapse* (piece (b)). At a preimage `p` with normal-form
 local inverse `s = η⁻¹` (`F = c + ηᵐ`), the cluster sheet points are
 `clusterSheet s ζ w₀ j z = s(ζʲ w₀ z)`, the genuine roots of `F(w) = z` near `p`. Writing the chart
 integrand `h := chartIntegrand ω₀ g p` in the *straightening coordinate* `u` (`w = s(u)`,

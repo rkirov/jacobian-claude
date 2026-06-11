@@ -787,7 +787,7 @@ structure DirectTraceGeometry (ω₀ : HolomorphicOneForms X) (g : X → ℂ)
   br : Finset ℂ
   /-- Regular-value analyticity of the raw trace off the centres and branch values. -/
   hreg : ∀ w ∉ Finset.univ.image cs ∪ br, AnalyticAt ℂ (valueChartTrace ω₀ f Φ) w
-  /-- The branch-value boundedness crux off the centres. -/
+  /-- The branch-value boundedness condition off the centres. -/
   hbnd : ∀ b₀ ∈ br, b₀ ∉ Finset.univ.image cs →
     Tendsto (fun z => (z - b₀) * valueChartTrace ω₀ f Φ z) (𝓝[≠] b₀) (𝓝 0)
   /-- The **full-fibre** moving coherence at each finite centre (sound germ equality, full fibre).

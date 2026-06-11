@@ -55,7 +55,7 @@ theorem exists_cechModel (𝔘 : FiniteCover X) (D : Divisor X) :
     ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
   exists_cechModel_general 𝔘 D
 
-/-! ### STEP 6b — the comparison to the germ-class `cechH1`
+/-! ### The comparison to the germ-class `cechH1`
 
 SOUNDNESS NOTE.  The comparison is bundled into `exists_cechModel`'s conclusion (above) rather than
 stated as a standalone equivalence `(𝔘 D d c) → 𝔘.cechH1 D ≃ₗ c.supH1`.  The latter is FALSE for a
@@ -66,7 +66,7 @@ sides have different dimensions.  The equivalence holds only for the model that 
 is the corresponding correctly-scoped *consumer* (it extracts the bundled equivalence), kept as a
 named, inspectable entry point. -/
 
-/-- **STEP 6b — comparison `cechH1 ≃ₗ supH1` (consumer of `exists_cechModel`, complete).** For the
+/-- **Comparison `cechH1 ≃ₗ supH1` (consumer of `exists_cechModel`).** For the
 chart-disk Leray model produced by `exists_cechModel 𝔘 D`, the genuine germ-class `H¹` is
 `ℂ`-linearly isomorphic to the sup-norm `H¹` of that model.  This simply repackages the bundled
 equivalence.  Stated as an existence of *a* model with the comparison, so it cannot be vacuously
@@ -75,11 +75,11 @@ theorem cechH1_linearEquiv_supH1 (𝔘 : FiniteCover X) (D : Divisor X) :
     ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
   exists_cechModel 𝔘 D
 
-/-! ### STEP 7 — discharge `finiteDimensional_cechH1` -/
+/-! ### Discharging `finiteDimensional_cechH1` -/
 
 /-- **The finiteness node, assembled.** `H¹(𝔘, 𝒪_D)` is finite-dimensional: take the chart-disk
 Leray model with its comparison (`exists_cechModel`); its sup-norm `H¹` is
-finite-dimensional by `finiteDimensional_supH1` (STEP 5; `ρ` compact via the proven Montel atom +
+finite-dimensional by `finiteDimensional_supH1` (`ρ` compact via the Montel atom +
 the Leray surjectivity `leray_surjective`); and the bundled comparison `cechH1 ≃ₗ supH1`
 transports finiteness back to the germ-class `cechH1`. This discharges the exact statement of
 `DolbeaultLadder.finiteDimensional_cechH1`. -/

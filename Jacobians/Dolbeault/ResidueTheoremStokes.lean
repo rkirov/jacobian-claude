@@ -1,5 +1,5 @@
 /-
-  THE GENUS-UNIFORM PAIR-FORM RESIDUE THEOREM (Forster GTM 81, Theorem 10.21; Route-H final).
+  THE GENUS-UNIFORM PAIR-FORM RESIDUE THEOREM (Forster GTM 81, Theorem 10.21).
 
   For meromorphic `g₀ h` on the compact Riemann surface `X` (the pair-form `ω = h·dg₀`) and any
   finite `poles` off which the pair integrand is honestly analytic at the chart centres,
@@ -19,11 +19,11 @@
   canonical `ledgerIntegrand` shape (`ResidueLedgerTransport`); every step below is a finite
   sum/integral identity:
 
-  1. per `a ∈ S`:  `∫_ℂ ∂̄(χ_a·f_a) = −π·Res_a` — the Stage-A atom, in chart `a`;
+  1. per `a ∈ S`:  `∫_ℂ ∂̄(χ_a·f_a) = −π·Res_a` — the single-pole atom, in chart `a`;
   2. insert `1 = ∑_j ρ_j` under the integral, transport each `(a,j)` piece to chart `j`
-     (the Stage-C1 chart-change invariance), and aggregate `∑_a ∂̄(bump a) = ∂̄u`:
+     (the chart-change invariance), and aggregate `∑_a ∂̄(bump a) = ∂̄u`:
      `−π·∑_{a∈S} Res_a = ∑_j ∫_ℂ ρ̂_j·∂̄û·f̂_j`;
-  3. per `j`, planar Stokes (Forster 10.20, Stage 0): `∫_ℂ ∂̄(ρ̂_j·(û−1)·f̂_j) = 0` — the
+  3. per `j`, planar Stokes (Forster 10.20): `∫_ℂ ∂̄(ρ̂_j·(û−1)·f̂_j) = 0` — the
      function is `C¹` (`(û−1)f̂` extends by `0` across the poles since `u ≡ 1` there) with
      compact support; Leibniz gives `∫ ρ̂_j·∂̄û·f̂_j = −∫ (û−1)·∂̄ρ̂_j·f̂_j`;
   4. for the right side, repeat the insert-and-transport shuffle with `∑_i ρ_i = 1` and use
@@ -119,7 +119,7 @@ theorem readsAnalyticAt_of_notMem (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h 
 
 /-! #### Step 1 — the per-pole atom in the pole's own chart -/
 
-/-- **(L1)** `∫_ℂ η′_a(normSq(z−c_a))·(z−c_a)·f_a(z) = −π·pairFormResidue g₀ h a` — the Stage-A
+/-- **(L1)** `∫_ℂ η′_a(normSq(z−c_a))·(z−c_a)·f_a(z) = −π·pairFormResidue g₀ h a` — the
 closed-form single-pole atom, applied to the pair coefficient in the chart at `a`. -/
 theorem integral_psi_eq [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X]
     [IsManifold 𝓘(ℂ) ω X] (hSbad : ∀ x : X, ¬ ReadsAnalyticAt g₀ h x → x ∈ S)

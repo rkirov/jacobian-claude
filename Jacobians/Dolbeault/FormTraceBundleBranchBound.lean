@@ -7,9 +7,9 @@ import Jacobians.Dolbeault.FormTracePatchedFrame
 import Jacobians.ProjectiveLine
 
 /-!
-# The branch-value boundedness crux from the bundle **trace SUM** (Miranda § §VIII.3 — close)
+# The branch-value boundedness condition from the bundle **trace SUM** (Miranda § §VIII.3 — close)
 
-This file closes the §VIII.3 **branch-value boundedness crux**
+This file closes the §VIII.3 **branch-value boundedness condition**
 `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` along the *architecturally-correct* path the plan
 prescribes: derive it from the **bundle-side trace SUM** `TraceForm.traceFun`, whose removable
 branch-extension boundedness `TraceForm.traceLocalCoeff_mul_sub_tendsto_zero` is **proven
@@ -43,7 +43,7 @@ pole-values, `g` is holomorphic, so near a branch value `b₀` (off poles) `ω�
 
 The value chart at *every* finite point `coe b₀ : RiemannSphere` is the single global affine chart
 `chartCoe` (`RiemannSphere.chartAt_coe`), with `chartCoe (coe z) = z` (`chartCoe_apply_coe`) and
-`chartCoe.symm z = coe z` (`chartCoe_symm_apply`). Hence the bundle crux
+`chartCoe.symm z = coe z` (`chartCoe_symm_apply`). Hence the bundle condition
 `traceLocalCoeff_mul_sub_tendsto_zero F … (hy₀ : coe b₀ ∈ branchLocus F)` — stated in the chart
 `chartAt ℂ (coe b₀)` with center coordinate `chartCoe (coe b₀) = b₀` — reads in the affine `ℂ`
 coordinate as exactly the planar boundedness shape `hbnd` needs. The only obligation is then the
@@ -53,7 +53,7 @@ SUM analogue of "`valueChartTrace = Tr_F(ω₀·g)` in the value chart", **no in
 
 ## What this file proves
 
-* `tendsto_zero_valueChartTrace_of_bundleGerm` — the §VIII.3 branch-value boundedness crux `hbnd`
+* `tendsto_zero_valueChartTrace_of_bundleGerm` — the §VIII.3 branch-value boundedness condition `hbnd`
   from the **proven** bundle trace SUM boundedness + the bundle-trace germ bridge (the plan's step
   1, no per-sheet frames).
 * `patchedTraceSelection_ofBundleBranch` — a `PatchedTraceSelection` whose branch-value boundedness
@@ -91,14 +91,14 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
 
-/-! ### The branch-value boundedness crux from the bundle trace SUM
+/-! ### The branch-value boundedness condition from the bundle trace SUM
 
 The genuinely-new analytic step of the close, done via the SUM (`traceFun`) — *not* via per-sheet
 frames.  The boundedness HEART `traceLocalCoeff_mul_sub_tendsto_zero` is proven axiom-clean on the
 bundle side for a holomorphic form on the cover; here we transport it through the clean affine-chart
 reading and the bundle-trace germ bridge. -/
 
-/-- **The §VIII.3 branch-value boundedness crux `hbnd`, from the bundle trace SUM.** Let `b₀ : ℂ` be
+/-- **The §VIII.3 branch-value boundedness condition `hbnd`, from the bundle trace SUM.** Let `b₀ : ℂ` be
 a value with `coe b₀` in the branch locus of the cover `F = f.toRiemannSphere`, let `F` be
 nonconstant (`hncF`), and let `α'` be a holomorphic `1`-form on `X` (`= ω₀·g` near the fibre
 `F⁻¹{coe b₀}`, which exists because `b₀` is off the finite pole-values — there `g` is holomorphic).
@@ -108,7 +108,7 @@ the bundle trace SUM:
 > `hbridge` —
   `valueChartTrace ω₀ f Φ =ᶠ[𝓝[≠] b₀] z ↦ traceLocalCoeff (traceFun F α') (coe b₀) (coe z)`.
 
-Then the boundedness crux `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds. *Proof.* The proven bundle
+Then the boundedness condition `(z − b₀)·valueChartTrace ω₀ f Φ z → 0` holds. *Proof.* The proven bundle
 boundedness `TraceForm.traceLocalCoeff_mul_sub_tendsto_zero F … (coe b₀ ∈ branchLocus F)` — stated
 in the chart `chartAt ℂ (coe b₀)`, whose center coordinate is `chartCoe (coe b₀) = b₀` and whose
 inverse is `chartCoe.symm z = coe z` — reads, in the affine `ℂ` coordinate, as

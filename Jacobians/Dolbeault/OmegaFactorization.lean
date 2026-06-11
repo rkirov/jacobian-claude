@@ -1,5 +1,5 @@
 /-
-  The ω₀-factorization of meromorphic pair-forms (Route M input 2; Miranda Ch. VI pp. 186–188).
+  The ω₀-factorization of meromorphic pair-forms (Miranda Ch. VI pp. 186–188).
 
   A meromorphic 1-form on the compact Riemann surface `X` is represented as a PAIR `(g₀, h)` of
   meromorphic functions meaning `h·dg₀`.  To feed it into the 1-form residue theorem

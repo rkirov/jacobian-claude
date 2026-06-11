@@ -95,7 +95,7 @@ The `holoRep`/`holoFn`/`gextLimRep_chart_analyticAt`/`toGerm_holoFn` limit-repai
 holomorphic representative of an `OmegaDGerm 0` class, with the removable-singularity junk of `Gext`
 discarded by a `limUnder`) was formerly RE-DERIVED here, duplicating `DolbeaultComparisonInverse`'s
 copy. It now lives in the single canonical `Jacobians.Dolbeault.HoloRep` (imported above; built on
-the light, comparison- free `CechH0`), shared by both files (deduplicated 2026-06-04). §B.2 below
+the light, comparison- free `CechH0`), shared by both files. §B.2 below
 builds the chart-transport bridge on top of it. -/
 
 

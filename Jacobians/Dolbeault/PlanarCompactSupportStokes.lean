@@ -1,5 +1,5 @@
 /-
-  Planar compact-support Stokes (the Forster (10.20) engine; Route-H atom 1).
+  Planar compact-support Stokes (the Forster (10.20) engine).
 
   Two layers:
 

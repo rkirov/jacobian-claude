@@ -1,5 +1,5 @@
 /-
-  THE PAIR-FORM RESIDUE THEOREM, genus ≥ 1 (Miranda Ch. VI pp. 186–188; Route M input 2).
+  THE PAIR-FORM RESIDUE THEOREM, genus ≥ 1 (Miranda Ch. VI pp. 186–188).
 
   A meromorphic 1-form on the compact Riemann surface `X` is represented as a PAIR `(g₀, h)` of
   meromorphic functions meaning `h·dg₀` (no new form type).  Its residue at `a` is computed in the

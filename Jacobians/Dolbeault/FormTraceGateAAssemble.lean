@@ -16,7 +16,7 @@ import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 selection inputs (the adapted cover `hac`, the global fibre selection `Φ`, the finite-center data
 `cs`/`ρ`/`Dinf`, the regular-value sphere data `Sreg` with its canonical-fibre conditions, the
 per-branch local-form agreement `hαBrAgreeBr`, and the `∞`-rationality bookkeeping
-`hglue_inf`/`hcont_int`/`R₀`).  The branch-value crux is already closed (monodromy-free).
+`hglue_inf`/`hcont_int`/`R₀`).  The branch-value condition is already closed (monodromy-free).
 
 This file builds the **directly-derivable** inputs from the already-proven nodes, so the surface of
 genuinely-remaining obligations is exposed precisely:
