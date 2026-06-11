@@ -12,10 +12,14 @@ and overlays ONLY Submission.lean + Submission/** onto its pristine problem work
 The shim body is sourced from SubmissionShimTest.lean (kept in-repo, validated against
 our own pins by `lake env lean SubmissionShimTest.lean`).
 Run from the repo root: python3 scripts/make_submission.py
+Check staleness (CI-able, exits 1 if the committed copy differs from a fresh
+generation): python3 scripts/make_submission.py --check
 """
-import os, re, shutil
+import os, re, shutil, sys, filecmp
 
-DST = 'submission/jacobian_challenge_diffgeo'
+CHECK = '--check' in sys.argv
+REAL = 'submission/jacobian_challenge_diffgeo'
+DST = '/tmp/jacobian_submission_check' if CHECK else REAL
 shutil.rmtree(DST, ignore_errors=True)
 os.makedirs(f'{DST}/Submission', exist_ok=True)
 
@@ -59,4 +63,15 @@ open(f'{DST}/lakefile.toml', 'w').write(
     'defaultTargets = ["Submission"]\n\n'
     '[[lean_lib]]\nname = "Submission"\n')
 
-print(f"wrote {n} library modules + Root + Submission.lean + lakefile.toml -> {DST}")
+if CHECK:
+    cmp = filecmp.dircmp(REAL, DST)
+    def stale(c):
+        return c.left_only or c.right_only or c.diff_files or any(
+            stale(sub) for sub in c.subdirs.values())
+    if stale(cmp):
+        print("STALE: committed submission/ differs from a fresh generation — rerun "
+              "scripts/make_submission.py and commit")
+        sys.exit(1)
+    print("submission/ is up to date with Jacobians/**")
+else:
+    print(f"wrote {n} library modules + Root + Submission.lean + lakefile.toml -> {DST}")
