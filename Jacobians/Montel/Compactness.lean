@@ -330,7 +330,8 @@ theorem contMDiffOn_frame
     have hmk :
         (⟨y, (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symm y 1⟩ :
           TotalSpace ℂ (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x)) =
-        (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).toOpenPartialHomeomorph.symm (y, 1) :=
+        (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X))
+          x₀).toOpenPartialHomeomorph.symm (y, 1) :=
       Trivialization.mk_symm _ hy 1
     rw [hmk]
     simp [(trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).apply_symm_apply' hy]
@@ -849,7 +850,8 @@ theorem equicontinuous_localRep_inner_family
   have hy_in_V : y.val ∈ V := hy_eq ▸ hy'
   intro α
   have := hV_bd y.val hy_in_V α.1 α.2 hy_inner
-  -- Need: dist (F α y₀) (F α y) < ε. We have ‖localRep α.1 x₀ y.val - localRep α.1 x₀ y₀.val‖ ≤ ε/2.
+  -- Need: dist (F α y₀) (F α y) < ε. We have ‖localRep α.1 x₀ y.val - localRep α.1 x₀ y₀.val‖ ≤
+  -- ε/2.
   rw [dist_eq_norm]
   calc ‖localRep α.1 x₀ (y₀ : X) - localRep α.1 x₀ (y : X)‖
       = ‖localRep α.1 x₀ (y : X) - localRep α.1 x₀ (y₀ : X)‖ := norm_sub_rev _ _

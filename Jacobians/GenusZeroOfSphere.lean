@@ -31,9 +31,11 @@ Since the original scaffolding was written, **two of its three walls have fallen
 * **`S²` is simply connected** — now *unconditional* in the repo
   (`Jacobians.VanKampen` proves `twoOpenVanKampen_holds`, giving the global instance
   `SimplyConnectedSpace (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)`). So
-  `h : X ≃ₜ S²` yields `SimplyConnectedSpace X` completely (transport, `simplyConnectedSpace_of_homeo`).
+  `h : X ≃ₜ S²` yields `SimplyConnectedSpace X` completely (transport,
+  `simplyConnectedSpace_of_homeo`).
 * **Liouville / max-modulus** ("a holomorphic primitive on compact connected `X` is constant")
-  — now in Mathlib (`MDifferentiable.exists_eq_const_of_compactSpace`, `Mathlib.Geometry.Manifold.Complex`).
+  — now in Mathlib (`MDifferentiable.exists_eq_const_of_compactSpace`,
+  `Mathlib.Geometry.Manifold.Complex`).
 
 The route is therefore reduced to a **single** genuine analytic input, isolated here as the honest
 hypothesis `HasHolomorphicPrimitives X`:
@@ -43,8 +45,10 @@ hypothesis `HasHolomorphicPrimitives X`:
 
 This is the holomorphic Poincaré lemma / monodromy theorem — true for any simply connected Riemann
 surface (path-independence of `∫ η` from simple connectivity, Forster §10.5). Mathlib has the
-**plane** version (`Complex.DifferentiableOn.isExactOn_ball`, on balls) and covering-map path-lifting
-monodromy, but **not** the manifold de Rham line-integral homotopy invariance needed to globalise the
+**plane** version (`Complex.DifferentiableOn.isExactOn_ball`, on balls) and covering-map
+path-lifting
+monodromy, but **not** the manifold de Rham line-integral homotopy invariance needed to globalise
+the
 primitive on an abstract `X`; that is the remaining de Rham wall.
 
 Given `HasHolomorphicPrimitives X`, this file discharges **everything else completely**:

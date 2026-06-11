@@ -14,7 +14,8 @@ This is the box-layer analytic core for **R2** (positive-definiteness of the per
 the companion of `Jacobians.riemann_R1_of_boundaryWord` (the box-layer R1).
 
 Given period blocks `A B : Matrix (Fin g) (Fin g) ℂ`, pullback coefficients `h_j` (`= cut^*ω_j`)
-holomorphic on a convex open `U ⊇ [0,1]²` with primitives `F_i` (`F_i' = h_i`), the **boundary word**
+holomorphic on a convex open `U ⊇ [0,1]²` with primitives `F_i` (`F_i' = h_i`), the **boundary
+word**
 identity (the genuinely topological input, supplied by the cut surface)
 
   `(Aᵀ·B̄ − Bᵀ·Ā)_{ij} = − boundaryForm (h_j) (F_i)`   (`boundaryForm (h) (F) = ∮_{∂box} F̄·h dz`)
@@ -55,7 +56,8 @@ lemma boundaryForm_eq_edges (h F : ℂ → ℂ) :
   rfl
 
 /-- **Edge-level bilinearity.** Expanding the combinations `h_v = ∑ⱼ vⱼ·hⱼ`, `F_v = ∑ᵢ vᵢ·Fᵢ` inside
-one boundary edge: `edgeBF γ (h_v) (F_v) = ∑ᵢ ∑ⱼ conj(vᵢ)·vⱼ · edgeBF γ (hⱼ) (Fᵢ)` (interval-integral
+one boundary edge: `edgeBF γ (h_v) (F_v) = ∑ᵢ ∑ⱼ conj(vᵢ)·vⱼ · edgeBF γ (hⱼ) (Fᵢ)`
+(interval-integral
 linearity). -/
 lemma edgeBF_combo (γ : ℝ → ℂ) (v : Fin g → ℂ) (h F : Fin g → ℂ → ℂ)
     (hint : ∀ i j, IntervalIntegrable
@@ -108,7 +110,8 @@ lemma boundaryForm_combo (v : Fin g → ℂ) (h F : Fin g → ℂ → ℂ)
     intro p hp hmem i j
     apply ContinuousOn.intervalIntegrable
     rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
-    have hγc : ContinuousOn (fun t => wCLM (p t)) (Icc 0 1) := (wCLM.continuous.comp hp).continuousOn
+    have hγc : ContinuousOn (fun t => wCLM (p t)) (Icc 0 1) :=
+      (wCLM.continuous.comp hp).continuousOn
     have hγm : MapsTo (fun t => wCLM (p t)) (Icc 0 1) (wCLM '' (Icc 0 1 ×ˢ Icc 0 1)) :=
       fun t ht => ⟨p t, hmem t ht, rfl⟩
     exact (Complex.continuous_conj.comp_continuousOn ((hcontF i).comp hγc hγm)).mul
@@ -122,7 +125,8 @@ lemma boundaryForm_combo (v : Fin g → ℂ) (h F : Fin g → ℂ → ℂ)
   exact sum_lincomb4 _ _ _ _ _
 
 /-- **Riemann's second bilinear relation (positive-definiteness), from the boundary word.**
-Given period blocks `A, B`, holomorphic pullbacks `h_j` on a convex open `U ⊇ [0,1]²` with primitives
+Given period blocks `A, B`, holomorphic pullbacks `h_j` on a convex open `U ⊇ [0,1]²` with
+primitives
 `F_i`, the per-entry boundary word `(Aᵀ·B̄ − Bᵀ·Ā)_{ij} = −boundaryForm (h_j) (F_i)`, and
 non-degeneracy of the pullbacks, the period Hermitian form `i·(Aᵀ·B̄ − Bᵀ·Ā)` is positive definite.
 
@@ -178,7 +182,8 @@ theorem riemann_R2_posDef_of_boundaryWord
       rw [Matrix.smul_apply, smul_eq_mul, boundaryWord i j]; ring
     -- (c) the Green-positivity bridge: `−(i/2)·boundaryForm (h_v) (F_v) = c > 0`
     obtain ⟨p₀, hp₀, hp₀ne⟩ := nondeg v hv
-    have hhv : ∀ z ∈ U, HasDerivAt (fun z => ∑ j, v j * h j z) (deriv (fun z => ∑ j, v j * h j z) z) z := by
+    have hhv : ∀ z ∈ U,
+        HasDerivAt (fun z => ∑ j, v j * h j z) (deriv (fun z => ∑ j, v j * h j z) z) z := by
       intro z hz
       have hd : HasDerivAt (fun z => ∑ j, v j * h j z) (∑ j, v j * deriv (h j) z) z :=
         HasDerivAt.fun_sum (fun j _ => (hh j z hz).const_mul (v j))

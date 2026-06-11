@@ -37,8 +37,10 @@ a time and reduce to two monomial facts that are *both directly computable* thro
   the `s'` numerator, leaving a simple pole with the same coefficient).
 * **non-residue power `n ≠ −1`** — the pushforward `c·(s w − a)^n·s'(w)` has residue `0` at `b`,
   because it is the `w`-derivative of `c/(n+1)·(s w − a)^{n+1}` (chain rule), and the contour
-  integral of a derivative vanishes (`circleIntegral.integral_eq_zero_of_hasDerivWithinAt`).  This is
-  the genuinely new ingredient — the exactness/primitive argument that bypasses contour substitution.
+  integral of a derivative vanishes (`circleIntegral.integral_eq_zero_of_hasDerivWithinAt`).  This
+  is
+  the genuinely new ingredient — the exactness/primitive argument that bypasses contour
+  substitution.
 
 `g` itself, having order `n₀ = meromorphicOrderAt g a`, factors as `(w − a)^{n₀}·h` with `h`
 analytic and `h a ≠ 0` (`meromorphicOrderAt_eq_int_iff`); peeling the leading monomial `h a·(w −
@@ -68,7 +70,8 @@ holomorphic primitive on a punctured neighbourhood of `b`; its small circle inte
 residue at `b` is `0`.  (For `n = −1` the primitive would be a logarithm and this fails — that case
 is the simple pole, handled separately.) -/
 
-/-- **The non-residue monomial pushforward has residue zero.**  For a local biholomorphism `s` at `b`
+/-- **The non-residue monomial pushforward has residue zero.**  For a local biholomorphism `s` at
+`b`
 (`s` analytic at `b`, `deriv s b ≠ 0`, `s b = a`) and `n : ℤ` with `n ≠ −1`, the pushforward
 `w ↦ c·(s w − a)^n·s'(w)` of the Laurent monomial `c·(w − a)^n` has residue `0` at `b`:
 
@@ -79,7 +82,8 @@ vanish (`circleIntegral.integral_eq_zero_of_hasDerivWithinAt`). -/
 theorem resAt_zpow_pushforward_of_ne {s : ℂ → ℂ} {a b c : ℂ} {n : ℤ}
     (hs : AnalyticAt ℂ s b) (hs' : deriv s b ≠ 0) (hsb : s b = a) (hn : n ≠ -1) :
     resAt (fun w => c * (s w - a) ^ n * deriv s w) b = 0 := by
-  -- `s w - a` has a simple zero at `b`, so `s w ≠ a` on a punctured ball; there the integrand is the
+  -- `s w - a` has a simple zero at `b`, so `s w ≠ a` on a punctured ball; there the integrand is
+  -- the
   -- `w`-derivative of `c/(n+1)·(s w − a)^{n+1}`, hence has vanishing circle integrals.
   obtain ⟨g, hg, hga, hfact⟩ := exists_simpleZero_factorization hs hs' hsb
   -- choose a radius `ρ > 0` on which: `s` and `deriv s` are analytic, the factorization holds, and
@@ -118,7 +122,8 @@ theorem resAt_zpow_pushforward_of_ne {s : ℂ → ℂ} {a b c : ℂ} {n : ℤ}
     rw [show ((n : ℂ) + 1) = ((n + 1 : ℤ) : ℂ) by push_cast; ring]
     exact_mod_cast (by omega : n + 1 ≠ 0)
   refine circleIntegral.integral_eq_zero_of_hasDerivWithinAt (f := F) hr0.le (fun z hz => ?_)
-  -- on the sphere of radius `r < ρ`, `z ∈ ball b ρ \ {b}`, so `F` is differentiable with derivative `F₀`.
+  -- on the sphere of radius `r < ρ`, `z ∈ ball b ρ \ {b}`, so `F` is differentiable with
+  -- derivative `F₀`.
   have hzmem : z ∈ ball b ρ \ {b} := by
     have hd : dist z b = r := Metric.mem_sphere.mp hz
     refine ⟨mem_ball.mpr (by rw [hd]; exact hrρ), ?_⟩
@@ -128,7 +133,8 @@ theorem resAt_zpow_pushforward_of_ne {s : ℂ → ℂ} {a b c : ℂ} {n : ℤ}
   have hsza' : s z - a ≠ 0 := hsza z hzmem
   -- chain rule: `HasDerivAt (fun w => (s w − a)^{n+1}) ((n+1)·(s z − a)^n · s'(z)) z`.
   have hsderiv : HasDerivAt s (deriv s z) z := hzs.differentiableAt.hasDerivAt
-  have hzpow : HasDerivAt (fun y : ℂ => y ^ (n + 1)) (((n : ℂ) + 1) * (s z - a) ^ (n + 1 - 1)) (s z - a) := by
+  have hzpow : HasDerivAt (fun y : ℂ => y ^ (n + 1))
+      (((n : ℂ) + 1) * (s z - a) ^ (n + 1 - 1)) (s z - a) := by
     have := hasDerivAt_zpow (n + 1) (s z - a) (Or.inl hsza')
     convert this using 2
     push_cast; ring
@@ -280,7 +286,8 @@ theorem resAt_changeOfVariables_congr {s g₁ g₂ : ℂ → ℂ} {a b : ℂ}
   rw [hsb] at h₂ ⊢
   rw [resAt_pushforward_congr hs hs' hsb h, h₂, resAt_congr h]
 
-/-- A function meromorphic at `x` with `meromorphicOrderAt ≥ 0` agrees, off `x`, with an **analytic**
+/-- A function meromorphic at `x` with `meromorphicOrderAt ≥ 0` agrees, off `x`, with an
+**analytic**
 function (its normal form `toMeromorphicNFAt`).  This is all the residue calculus needs (the residue
 only sees the germ off `x`), sidestepping the removable-singularity extension at `x` itself. -/
 theorem exists_analyticAt_eventuallyEq_of_meromorphicOrderAt_nonneg {g : ℂ → ℂ} {x : ℂ}
@@ -451,7 +458,8 @@ combine no longer need `ResidueChangeOfVariables` as a hypothesis — these are 
 forms of `FibreTrace.resAt_traceCoeff` and `finiteResidueSum_trace_eq_zero_of_fibres` that feed the
 1-form residue theorem `∑ₐ Resₐ(α) = 0` (Gate A) without any analytic side condition. -/
 
-/-- **Lemma 3.2 (residue-trace compatibility), unconditional.**  The residue of the trace coefficient
+/-- **Lemma 3.2 (residue-trace compatibility), unconditional.**  The residue of the trace
+coefficient
 at the base equals the fibre sum of the per-sheet residues — now with **no** hypothesis (the residue
 change-of-variables atom is discharged):
 

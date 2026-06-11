@@ -10,11 +10,13 @@ import Jacobians.BoundaryWordR2
 /-!
 # The cut surface and the Riemann bilinear relations as THEOREMS
 
-This file discharges the directive *"prove the Riemann relations; isolate only the chart existence."*
+This file discharges the directive *"prove the Riemann relations; isolate only the chart
+existence."*
 It introduces a `CutSurface X` — the analytic boundary data of a canonical dissection realized as a
 cut chart `cut : box → X` — and **proves**, from that data alone, both Riemann bilinear relations:
 
-* `cutSurface_R1 : (aPeriodBlock loop)ᵀ * bPeriodBlock loop = (bPeriodBlock loop)ᵀ * aPeriodBlock loop`
+* `cutSurface_R1 : (aPeriodBlock loop)ᵀ * bPeriodBlock loop = (bPeriodBlock loop)ᵀ * aPeriodBlock
+loop`
   — via Cauchy's theorem on the box (`riemann_R1_of_boundaryWord`);
 * `cutSurface_R2 : (periodHermitian loop).PosDef`
   — via the Green-positivity bridge (`riemann_R2_posDef_of_boundaryWord`).
@@ -22,7 +24,8 @@ cut chart `cut : box → X` — and **proves**, from that data alone, both Riema
 The two relations are therefore **no longer bundled assertions**: they are consequences of the
 *boundary word* — the concrete integral identities `(AᵀB − BᵀA)_{ij} = ∮_{∂box}(F_i h_j dz)` and
 `(AᵀB̄ − BᵀĀ)_{ij} = −∮_{∂box}(F̄_i h_j dz)` that record how the cut chart's boundary traverses the
-symplectic loops. Those boundary words, the holomorphy of the pulled-back forms `h_j = cut^*ω_j`, and
+symplectic loops. Those boundary words, the holomorphy of the pulled-back forms `h_j = cut^*ω_j`,
+and
 the non-degeneracy of the pullbacks are the **`CutSurface` fields**.
 
 **ARCHIVAL (2026-06-11).** The former isolated existence input (`exists_cutSurface` — the Radó
@@ -47,7 +50,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-- **Cut surface of a compact Riemann surface.** A symplectic homology basis of `2g` closed loops
 together with the *analytic boundary data* of the cut chart that realizes the canonical dissection:
 
-* the pulled-back holomorphic forms `h_j = cut^*ω_j`, holomorphic on a convex open `U ⊇ [0,1]²`, with
+* the pulled-back holomorphic forms `h_j = cut^*ω_j`, holomorphic on a convex open `U ⊇ [0,1]²`,
+with
   primitives `F_i` (`F_i' = h_i`);
 * the two **boundary words** — concrete `∮_{∂box}` integral identities that record how the cut
   chart's boundary traverses the loops (this is the surface-topology / polygon-Green content);
@@ -78,19 +82,24 @@ structure CutSurface (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace 
   hh : ∀ i, ∀ z ∈ U, HasDerivAt (h i) (deriv (h i) z) z
   /-- Each `F_i` is a primitive of `h_i` on `U`. -/
   hF : ∀ i, ∀ z ∈ U, HasDerivAt (F i) (h i z) z
-  /-- **Riemann's first boundary word.** The `(i,j)` entry of `AᵀB − BᵀA` is the box contour integral
-  of the *holomorphic* `F_i·h_j`. (The cut chart's boundary traverses `a₁b₁a₁⁻¹b₁⁻¹⋯`; the primitive's
+  /-- **Riemann's first boundary word.** The `(i,j)` entry of `AᵀB − BᵀA` is the box contour
+  integral
+  of the *holomorphic* `F_i·h_j`. (The cut chart's boundary traverses `a₁b₁a₁⁻¹b₁⁻¹⋯`; the
+  primitive's
   jumps across the cuts are the conjugate periods, collapsing `∮_{∂box}` to this period sum.) -/
   boundaryWord_R1 : ∀ i j,
     ((aPeriodBlock loop)ᵀ * bPeriodBlock loop - (bPeriodBlock loop)ᵀ * aPeriodBlock loop) i j
       = rectBoundaryIntegral (fun z => F i z * h j z)
-  /-- **Riemann's second boundary word.** The `(i,j)` entry of `AᵀB̄ − BᵀĀ` is `−∮_{∂box}(F̄_i·h_j)`. -/
+  /-- **Riemann's second boundary word.** The `(i,j)` entry of `AᵀB̄ − BᵀĀ` is
+  `−∮_{∂box}(F̄_i·h_j)`. -/
   boundaryWord_R2 : ∀ i j,
     ((aPeriodBlock loop)ᵀ * (bPeriodBlock loop).map (starRingEnd ℂ)
       - (bPeriodBlock loop)ᵀ * (aPeriodBlock loop).map (starRingEnd ℂ)) i j
       = - boundaryForm (h j) (F i)
-  /-- **Non-degeneracy.** A nonzero coefficient vector `v` pulls back to a function `∑ⱼ vⱼ hⱼ` that is
-  nonzero somewhere in the *open* box. (`∑ⱼ vⱼ ωⱼ ≠ 0` is a nonzero holomorphic form, so its pullback
+  /-- **Non-degeneracy.** A nonzero coefficient vector `v` pulls back to a function `∑ⱼ vⱼ hⱼ` that
+  is
+  nonzero somewhere in the *open* box. (`∑ⱼ vⱼ ωⱼ ≠ 0` is a nonzero holomorphic form, so its
+  pullback
   is nonzero on the dense interior of the cut surface.) -/
   nondeg : ∀ v : Fin (genus X) → ℂ, v ≠ 0 →
     ∃ p ∈ Set.Ioo (0:ℝ) 1 ×ˢ Set.Ioo (0:ℝ) 1, (∑ j, v j * h j (wCLM p)) ≠ 0

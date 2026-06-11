@@ -98,7 +98,8 @@ theorem target_eq_inCoordinates_of_w (α : HolomorphicOneForms X) (x₀ x : X)
     α.toFun x ((1 : ℂ) : TangentSpace 𝓘(ℂ) x) =
       ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := X)) ℂ (Bundle.Trivial X ℂ)
         x₀ x x₀ x (α.toFun x)
-        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).continuousLinearMapAt ℂ x (1 : ℂ)) := by
+        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).continuousLinearMapAt ℂ x
+          (1 : ℂ)) := by
   have hxbase : x ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).baseSet := by
     rw [TangentBundle.trivializationAt_baseSet]; exact hx
   simp only [ContinuousLinearMap.inCoordinates, ContinuousLinearMap.comp_apply,
@@ -325,7 +326,8 @@ theorem velCont_compOn {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
   intro s hs
   have hgmdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g (γ s) :=
     (hg.contMDiffAt (hVo.mem_nhds (hγV s hs))).mdifferentiableAt (by decide : ω ≠ 0)
-  rw [Function.comp_apply, tangentMapWithin_eq_tangentMap (hVo.uniqueMDiffWithinAt (hγV s hs)) hgmdiff]
+  rw [Function.comp_apply,
+    tangentMapWithin_eq_tangentMap (hVo.uniqueMDiffWithinAt (hγV s hs)) hgmdiff]
   simp only [tangentMap, Bundle.TotalSpace.mk']
   congr 1
   exact pathSpeed_comp_eq_mfderiv_of_mdiff g γ s hgmdiff hγcont.continuousAt (hγdiff s hs)
@@ -400,7 +402,8 @@ theorem velCont_reverse {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
       have hsub_cwa : ContinuousWithinAt (fun s : ℝ => 1 - s) (Set.Icc (0:ℝ) 1) s₀ :=
         hsub_cont.continuousWithinAt
       exact hfib_orig.comp hsub_cwa hsub_maps
-    -- Now: target fibre = - (original reparametrized fibre), via continuousLinearMapAt + pathSpeed_reverse.
+    -- Now: target fibre = - (original reparametrized fibre), via continuousLinearMapAt +
+    -- pathSpeed_reverse.
     -- The map `· ↦ -·` on ℂ is continuous, so `(- original)` is continuous.
     have hneg : ContinuousWithinAt
         (fun s : ℝ => -(triv (Bundle.TotalSpace.mk' ℂ
@@ -529,7 +532,8 @@ end
 
 /-- **Velocity-section continuity under an affine reparametrization `s ↦ a*s + b` with the fibre
 rescaled by `a`.** This is the shape of each half of `concat` (left: `a = 2, b = 0`; right:
-`a = 2, b = -1`), where `pathSpeed (concat) s = 2 * pathSpeed γᵢ (2s + …)`. Mirrors `velCont_reverse`
+`a = 2, b = -1`), where `pathSpeed (concat) s = 2 * pathSpeed γᵢ (2s + …)`. Mirrors
+`velCont_reverse`
 (itself the `a = -1, b = 1` case): base continuity from reparametrizing the projection, fibre
 continuity from the original trivialized fibre scaled by `a` (scaling is ℂ-linear, passes through
 `continuousLinearMapAt`). -/

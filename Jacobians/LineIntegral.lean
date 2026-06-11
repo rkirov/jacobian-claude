@@ -553,7 +553,8 @@ theorem pathSpeed_comp_eq_mfderiv
     rw [ModelWithCorners.range_eq_univ, fderivWithin_univ]
     -- Need: fderiv ℂ (writtenInExtChartAt 𝓘(ℂ) 𝓘(ℂ) (γ t) f) ((extChartAt 𝓘(ℂ) (γ t)) (γ t))
     --     = fderiv ℂ f_loc (g_X t)
-    -- These are equal up to definitional unfolding (writtenInExtChartAt = f_loc, extChartAt x x = g_X t).
+    -- These are equal up to definitional unfolding (writtenInExtChartAt = f_loc, extChartAt x x =
+    -- g_X t).
     congr 1
   -- Step 8: Assemble.
   -- pathSpeed (f ∘ γ) t

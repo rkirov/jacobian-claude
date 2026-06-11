@@ -49,7 +49,8 @@ so its residue is the fibre sum of the per-point residues — Lemma 3.2.
 * **`FibreTrace` / `FibreTrace.traceCoeff`** — the coordinate model of the meromorphic trace
   `Tr_F α` over a finite (off-branch) fibre: the finite sum of the per-sheet pushforwards
   `∑ i, coeff i (sheet i w)·(sheet i)'(w)`.
-* **Lemma 3.2 (`FibreTrace.resAt_traceCoeff`)** — `Res_b (Tr_F α) = ∑_{sheets} Res_{pre i} (coeff i)`,
+* **Lemma 3.2 (`FibreTrace.resAt_traceCoeff`)** — `Res_b (Tr_F α) = ∑_{sheets} Res_{pre i} (coeff
+i)`,
   the residue-trace compatibility, from per-sheet change of variables + `resAt_finsum` (additivity).
   Its **simple-pole specialization** `FibreTrace.resAt_traceCoeff_of_simplePole` is *unconditional*
   (no analytic atom), built on the proved `resAt_simplePole_pushforward`.
@@ -210,7 +211,8 @@ differential), whose residue at a point is the **order** of `f` there:
 This is the local argument principle: if `f` has order `n` at `a`, then `f z = (z − a)^n · g z` with
 `g a ≠ 0` (`meromorphicOrderAt_eq_int_iff`), so `logDeriv f = n/(z − a) + logDeriv g` near `a`, and
 `logDeriv g` is analytic at `a` (`g a ≠ 0`), contributing no residue.  Hence `Res_a (df/f) = n`.
-The poles of `df/f` are all *simple* (residue `= n`), which is why the *proved* simple-pole change of
+The poles of `df/f` are all *simple* (residue `= n`), which is why the *proved* simple-pole change
+of
 variables (`resAt_simplePole_pushforward`) is all this route needs.  Fully proved. -/
 
 /-- `logDeriv g = deriv g / g` is **analytic at `a`** when `g` is analytic at `a` and `g a ≠ 0`. -/
@@ -269,7 +271,8 @@ theorem resAt_logDeriv_eq_order {f : ℂ → ℂ} {a : ℂ} {n : ℤ} (hf : Mero
     rw [hld]; field_simp
   rw [resAt_congr hlog_eq]
   -- `Res_a (n/(z − a) + logDeriv g) = n + 0`.
-  have heq : (fun z => (n : ℂ) / (z - a) + logDeriv g z) = (fun z => (n : ℂ) * (z - a)⁻¹) + logDeriv g := by
+  have heq : (fun z => (n : ℂ) / (z - a) + logDeriv g z)
+      = (fun z => (n : ℂ) * (z - a)⁻¹) + logDeriv g := by
     funext z; simp only [Pi.add_apply]; rw [div_eq_mul_inv]
   rw [heq]
   have hmono : MeromorphicAt (fun z => (n : ℂ) * (z - a)⁻¹) a :=
@@ -338,7 +341,8 @@ attribute [instance] FibreTrace.fintype_ι
 variable (T : FibreTrace)
 
 /-- The **trace coefficient** at the base: the finite sum of the per-sheet pushforwards
-`coeff i (sheet i w) · (sheet i)'(w)`.  This is `Tr_F α` read in the target chart, over the fibre. -/
+`coeff i (sheet i w) · (sheet i)'(w)`.  This is `Tr_F α` read in the target chart, over the fibre.
+-/
 noncomputable def traceCoeff : ℂ → ℂ :=
   fun w => ∑ i, T.coeff i (T.sheet i w) * deriv (T.sheet i) w
 
@@ -375,7 +379,8 @@ theorem resAt_traceCoeff (hCoV : ResidueChangeOfVariables) :
 /-- **Lemma 3.2 for simple-pole coefficients (fully proved, no hypothesis).**  When each sheet's
 form coefficient is a *simple* pole `coeff i = c i·(w − pre i)⁻¹` — the case of the logarithmic
 differential `df/f` and hence the `deg_div` route — the residue-trace compatibility holds
-*unconditionally* (the general change-of-variables atom `ResidueChangeOfVariables` is **not** needed;
+*unconditionally* (the general change-of-variables atom `ResidueChangeOfVariables` is **not**
+needed;
 the proved `resAt_simplePole_pushforward` supplies each sheet):
 
 > `Res_b (Tr_F α) = ∑_{sheets i} Res_{pre i} (coeff i) = ∑_i c i`. -/
@@ -398,7 +403,8 @@ end FibreTrace
 
 /-! ### The simple-pole instance of the change of variables (fully proved)
 
-For the `df/f` route to `deg_div`, every form coefficient is `df/f`, which has only **simple poles**,
+For the `df/f` route to `deg_div`, every form coefficient is `df/f`, which has only **simple
+poles**,
 with residue the integer order.  The simple-pole change of variables `resAt_simplePole_pushforward`
 is proved above; here we re-express it in the section (`s = φ⁻¹`) form used by `FibreTrace`, so the
 fibre Lemma 3.2 holds *unconditionally* for simple-pole coefficients.

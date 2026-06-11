@@ -21,7 +21,8 @@ full-rank ℝ-lattice — the Riemann bilinear relations). It decomposes the goa
 
 * **Analysis (the build).** `periodVec_linearIndependent`: the `2g` periods of a dissection are
   ℝ-linearly independent. This is the Riemann bilinear relations + positivity
-  `(i/2)∑(A_k B̄_k − B_k Ā_k) = (i/2)∬_X ω∧ω̄ > 0`, provable via Riemann's cut-surface + Green's-theorem
+  `(i/2)∑(A_k B̄_k − B_k Ā_k) = (i/2)∬_X ω∧ω̄ > 0`, provable via Riemann's cut-surface +
+  Green's-theorem
   argument (Mathlib has rectangle Green; *no* Hodge/de Rham).
 
 The **assembly** `realBasis_of_canonicalDissection` (PROVEN here) combines the two: `2g`
@@ -62,7 +63,8 @@ positive-definiteness is Riemann's second bilinear relation.
 Sign convention (validated against `g = 1`): for the standard elliptic curve `ℂ/(ℤ+ℤτ)`, `Im τ > 0`,
 with `a`-period `A = 1` and `b`-period `B = τ`, this evaluates to `2·Im τ > 0` — the geometric
 `(i/2)∬ ω∧ω̄`. (The opposite sign `−i` would be the *negative*-definite form; using `+i` matches the
-standard symplectic orientation `aₖ·bₖ = +1` under which `periodRel_vanishing` `AᵀB = BᵀA` also holds.) -/
+standard symplectic orientation `aₖ·bₖ = +1` under which `periodRel_vanishing` `AᵀB = BᵀA` also
+holds.) -/
 noncomputable def periodHermitian (loop : Fin (2 * genus X) → (ℝ → X)) :
     Matrix (Fin (genus X)) (Fin (genus X)) ℂ :=
   Complex.I • ((aPeriodBlock loop)ᵀ * (bPeriodBlock loop).map (starRingEnd ℂ)
@@ -73,7 +75,8 @@ closed smooth loops whose periods `ℤ`-generate the period lattice, **together 
 bilinear relations** for their period matrix.
 
 The loops + closedness + generation are the *topological* content. The two relation fields
-(`periodRel_vanishing`, `periodRel_posDef`) are the *analytic* Riemann bilinear relations, classically
+(`periodRel_vanishing`, `periodRel_posDef`) are the *analytic* Riemann bilinear relations,
+classically
 proven from the same cut-surface via Green's theorem (the box-level analytic core is built in
 `Jacobians.GreenPositivity`/`Jacobians.BoundaryPositivity`; the cut-chart/boundary-word that turns
 `∮_{∂box}` into the period sum, and the `4g`-gon Stokes for `g ≥ 2`, remain part of the isolated
@@ -90,7 +93,8 @@ structure CanonicalDissection (X : Type*) [TopologicalSpace X] [T2Space X] [Comp
   generates : closedLoopPeriods X ⊆
     Submodule.span ℤ (Set.range (fun k => periodVec (loop k)))
   /-- **Riemann's first bilinear relation** (vanishing): `AᵀB = BᵀA` for the `a`/`b`-period blocks.
-  Classically `∑ₖ(A_{lk}B_{jk} − B_{lk}A_{jk}) = ∬_X ω_l∧ω_j = 0` (wedge of holomorphic `(1,0)`-forms). -/
+  Classically `∑ₖ(A_{lk}B_{jk} − B_{lk}A_{jk}) = ∬_X ω_l∧ω_j = 0` (wedge of holomorphic
+  `(1,0)`-forms). -/
   periodRel_vanishing :
     (aPeriodBlock loop)ᵀ * bPeriodBlock loop = (bPeriodBlock loop)ᵀ * aPeriodBlock loop
   /-- **Riemann's second bilinear relation** (positivity): the Hermitian form `H = i(AᵀB̄ − BᵀĀ)`
@@ -102,7 +106,8 @@ structure CanonicalDissection (X : Type*) [TopologicalSpace X] [T2Space X] [Comp
 This is now *proven* from the dissection's two Riemann bilinear relations
 (`periodRel_vanishing` + `periodRel_posDef`) via the matrix-algebra core
 `linearIndependent_periodRows_of_posDef`: positive-definiteness of the period Hermitian form forces
-the doubled period matrix `[Π | Π̄]` to be nonsingular, hence the `2g` real period vectors independent.
+the doubled period matrix `[Π | Π̄]` to be nonsingular, hence the `2g` real period vectors
+independent.
 (Riemann; cut-surface + Green's theorem, NOT Hodge/de Rham.) -/
 theorem periodVec_linearIndependent (D : CanonicalDissection X) :
     LinearIndependent ℝ (fun k => (periodVec (D.loop k) : Fin (genus X) → ℂ)) := by

@@ -8,7 +8,8 @@ import Mathlib.RingTheory.RootsOfUnity.PrimitiveRoots
 import Mathlib.Algebra.Field.GeomSum
 
 /-!
-# The ramified residue change-of-variables (Miranda §VIII.3, formula (3.1) + Lemma 3.2 ramified case)
+# The ramified residue change-of-variables (Miranda §VIII.3, formula (3.1) + Lemma 3.2 ramified
+case)
 
 This file builds the **ramified** trace / residue change-of-variables for the local branched cover
 `z = wᵐ` (`m ≥ 1`).  It is the keystone atom that lets Gate A handle pole fibres lying over a
@@ -22,12 +23,14 @@ Over a value `q` with a single preimage `p` of multiplicity `m`, choose centered
 cover is `z = wᵐ`.  Write the upstairs `1`-form `α = h(w) dw`, with `h` a Laurent series
 `Σₙ cₙ wⁿ`.  The **trace** `Tr_m(α)` is the sum over the `m` sheets `w = ζ^j · z^{1/m}`
 (`ζ` a primitive `m`-th root of unity).  On sheet `j`, `w = ζ^j w₀` with `w₀ := z^{1/m}` a fixed
-branch, and `dw = ζ^j · w₀'(z) dz` with `w₀'(z) = (1/m) w₀^{1-m}` (from `m w₀^{m-1} w₀' = 1`).  Hence
+branch, and `dw = ζ^j · w₀'(z) dz` with `w₀'(z) = (1/m) w₀^{1-m}` (from `m w₀^{m-1} w₀' = 1`). 
+Hence
 the `dz`-coefficient of sheet `j` is `c·(ζ^j w₀)^n · ζ^j · (1/m) w₀^{1-m}`.  Summing over `j`, the
 cross-terms collapse via the **roots-of-unity sum** `∑_{j<m} (ζ^j)^{n+1} = m·[m ∣ n+1]`
 (`rootsOfUnity_geom_zsum`), leaving Miranda's
 
-> **(3.1)** `Tr_m(α) = Σₖ c_{km−1} z^{k−1} dz`,    hence    **`Res_{z=0}(Tr_m α) = c_{−1} = Res_{w=0}(α)`**
+> **(3.1)** `Tr_m(α) = Σₖ c_{km−1} z^{k−1} dz`,    hence    **`Res_{z=0}(Tr_m α) = c_{−1} =
+Res_{w=0}(α)`**
 
 (the surviving `k = 0` term).  This is **Lemma 3.2** at a ramified fibre.
 
@@ -46,7 +49,8 @@ residue read-off; the branch enters only in `monomialTraceCoeff_eq_sheetSum`, th
 
 A *single* sheet's pushforward under `w ↦ wᵐ` has residue `m·Res_w`, **not** `Res_w`
 (e.g. `h = w⁻¹`, sheet `w₀`: `h(w₀) w₀' = (1/m) z⁻¹`, residue `1/m`, not `1`).  The upstairs residue
-is recovered ONLY by the `m`-branch SUM, whose roots-of-unity factor `∑_{j<m}(ζ^j)^0 = m` cancels the
+is recovered ONLY by the `m`-branch SUM, whose roots-of-unity factor `∑_{j<m}(ζ^j)^0 = m` cancels
+the
 `1/m`.  Accordingly **every** statement here is about the SUM over `range m`; there is no
 "single-sheet residue = upstairs residue" lemma (that would be a *false field*).  Sanity:
 `m = 2, h = w⁻¹ (n=-1)` gives `monomialTraceCoeff = z⁻¹`, residue `1 = Res_w`;
@@ -54,15 +58,18 @@ is recovered ONLY by the `m`-branch SUM, whose roots-of-unity factor `∑_{j<m}(
 
 ## What is proved here (complete, axiom-clean)
 
-* **`rootsOfUnity_geom_zsum`** — `∑_{j<m}(ζ^j)^N = m·[m ∣ N]` for `ζ` a primitive `m`-th root, `N : ℤ`
+* **`rootsOfUnity_geom_zsum`** — `∑_{j<m}(ζ^j)^N = m·[m ∣ N]` for `ζ` a primitive `m`-th root, `N :
+ℤ`
   (the cross-term collapse; `geom_sum_eq` + `IsPrimitiveRoot.zpow_eq_one_iff_dvd`).
 * **`monomialTraceCoeff`** — the closed-form `dz`-coefficient of `Tr_m(c·wⁿ)`: `c·z^{(n+1)/m−1}` if
   `m ∣ n+1`, else `0` (a single Laurent monomial in `z`).
 * **`resAt_monomialTraceCoeff`** — `Res_{z=0}(Tr_m(c·wⁿ)) = Res_{w=0}(c·wⁿ)` (`= c·[n=−1]`).
-* **`monomialTraceCoeff_eq_sheetSum`** — the (3.1) **soundness** identity: the closed form equals the
+* **`monomialTraceCoeff_eq_sheetSum`** — the (3.1) **soundness** identity: the closed form equals
+the
   honest `m`-sheet sum `∑_{j<m} c·(ζ^j w₀)^n · ζ^j · (1/m) w₀^{1−m}` at `z = w₀ᵐ` (`w₀ ≠ 0`).
 * **`laurentTraceCoeff` / `resAt_laurentTraceCoeff` / `laurentTraceCoeff_eq_sheetSum`** — the same,
-  summed over a finite Laurent principal part `h = ∑_i c_i wⁿⁱ`: the trace residue at `z=0` equals the
+  summed over a finite Laurent principal part `h = ∑_i c_i wⁿⁱ`: the trace residue at `z=0` equals
+  the
   upstairs residue `∑_{i : n_i = −1} c_i`, and the closed form is the `m`-sheet sum of `h`.  This is
   the full ramified Lemma 3.2 at the level of a Laurent polynomial (the residue only sees the
   principal part, so this covers any meromorphic `α`).
@@ -93,7 +100,8 @@ and `N : ℤ`,
 
 > `∑_{j ∈ range m} (ζ^j)^N = if (m : ℤ) ∣ N then (m : ℂ) else 0`.
 
-The Miranda §VIII.3 cross-term cancellation: among the `m` sheets, only the powers `N = n+1` divisible
+The Miranda §VIII.3 cross-term cancellation: among the `m` sheets, only the powers `N = n+1`
+divisible
 by `m` survive (giving the trace its `z^{k−1}` terms). -/
 theorem rootsOfUnity_geom_zsum {m : ℕ} {ζ : ℂ} (hζ : IsPrimitiveRoot ζ m) (N : ℤ) :
     (∑ j ∈ range m, (ζ ^ j) ^ N) = if ((m : ℤ) ∣ N) then (m : ℂ) else 0 := by
@@ -116,11 +124,14 @@ theorem rootsOfUnity_geom_zsum {m : ℕ} {ζ : ℂ} (hζ : IsPrimitiveRoot ζ m)
 
 `monomialTraceCoeff c n m` is the `dz`-coefficient of `Tr_m(c·wⁿ)` as a function of `z`: by (3.1) it
 is the single Laurent monomial `c·z^{(n+1)/m − 1}` if `m ∣ n+1` (the only surviving term), and `0`
-otherwise.  Its residue at `z = 0` is read off by `resAt_laurentMonomial`: it is `c` exactly when the
-`z`-exponent `(n+1)/m − 1 = −1`, i.e. `(n+1)/m = 0`, i.e. (given `m ∣ n+1`, `m > 0`) `n + 1 = 0`, i.e.
+otherwise.  Its residue at `z = 0` is read off by `resAt_laurentMonomial`: it is `c` exactly when
+the
+`z`-exponent `(n+1)/m − 1 = −1`, i.e. `(n+1)/m = 0`, i.e. (given `m ∣ n+1`, `m > 0`) `n + 1 = 0`,
+i.e.
 `n = −1` — exactly `Res_{w=0}(c·wⁿ)`. -/
 
-/-- **The closed-form `dz`-coefficient of `Tr_m(c·wⁿ)`** (Miranda (3.1)): the single Laurent monomial
+/-- **The closed-form `dz`-coefficient of `Tr_m(c·wⁿ)`** (Miranda (3.1)): the single Laurent
+monomial
 `c·z^{(n+1)/m − 1}` if `m ∣ n+1`, else `0`.  Soundness (that this *is* the `m`-sheet sum) is
 `monomialTraceCoeff_eq_sheetSum`. -/
 noncomputable def monomialTraceCoeff (c : ℂ) (n : ℤ) (m : ℕ) : ℂ → ℂ :=
@@ -152,7 +163,8 @@ theorem resAt_monomialTraceCoeff (c : ℂ) (n : ℤ) {m : ℕ} (hm : 0 < m) :
       have hn1 : n + 1 ≠ 0 := fun h => hn (by omega)
       obtain ⟨k, hk⟩ := hdvd
       have hk0 : k ≠ 0 := by rintro rfl; rw [hk, mul_zero] at hn1; exact hn1 rfl
-      have hkval : (n + 1) / (m : ℤ) = k := by rw [hk, Int.mul_ediv_cancel_left _ (by exact_mod_cast hm.ne')]
+      have hkval : (n + 1) / (m : ℤ) = k := by
+        rw [hk, Int.mul_ediv_cancel_left _ (by exact_mod_cast hm.ne')]
       rw [if_neg (by rw [hkval]; omega)]
   · -- `m ∤ n+1`: closed form is `0`, and `n = −1` is impossible (`m ∣ 0`).
     simp only [hdvd, if_false]
@@ -160,10 +172,13 @@ theorem resAt_monomialTraceCoeff (c : ℂ) (n : ℤ) {m : ℕ} (hm : 0 < m) :
 
 /-! ### Soundness: the closed form is the `m`-sheet sum (the explicit (3.1) identity)
 
-`monomialTraceCoeff_eq_sheetSum` certifies that `monomialTraceCoeff` is **not** an ad-hoc closed form
+`monomialTraceCoeff_eq_sheetSum` certifies that `monomialTraceCoeff` is **not** an ad-hoc closed
+form
 but exactly the honest sum over the `m` sheets `w = ζ^j w₀` of the per-sheet `dz`-coefficient
-`c·(ζ^j w₀)^n · ζ^j · (1/m) w₀^{1−m}` (sheet `j`: `dw/dz = ζ^j w₀'`, `w₀' = (1/m) w₀^{1−m}`).  This is
-where the roots-of-unity collapse happens; the branch `w₀` (any `w₀ ≠ 0` with `z = w₀ᵐ`) appears only
+`c·(ζ^j w₀)^n · ζ^j · (1/m) w₀^{1−m}` (sheet `j`: `dw/dz = ζ^j w₀'`, `w₀' = (1/m) w₀^{1−m}`).  This
+is
+where the roots-of-unity collapse happens; the branch `w₀` (any `w₀ ≠ 0` with `z = w₀ᵐ`) appears
+only
 here, and the result is branch-independent. -/
 
 /-- **(3.1), the explicit `m`-sheet-sum identity (soundness).**  For `ζ` a primitive `m`-th root of
@@ -205,7 +220,8 @@ theorem monomialTraceCoeff_eq_sheetSum {m : ℕ} (hm : 0 < m) {ζ : ℂ} (hζ : 
 /-! ### The full ramified Lemma 3.2 over a finite Laurent principal part
 
 The residue of a meromorphic `1`-form `α = h(w) dw` at `w = 0` sees only finitely many Laurent
-coefficients (the principal part).  So the ramified Lemma 3.2 at the level of a **Laurent polynomial**
+coefficients (the principal part).  So the ramified Lemma 3.2 at the level of a **Laurent
+polynomial**
 `h = ∑_{i ∈ ι} c_i wⁿⁱ` already captures the full residue statement: summing the per-monomial closed
 forms gives `laurentTraceCoeff`, whose residue at `z = 0` is `∑_{i : n_i = −1} c_i = Res_{w=0}(h)`,
 and which equals the honest `m`-sheet sum of `h` (3.1). -/
@@ -229,14 +245,16 @@ theorem meromorphicAt_monomialTraceCoeff (c : ℂ) (n : ℤ) (m : ℕ) :
       ((analyticAt_id.sub analyticAt_const).meromorphicAt.zpow _)
   · simp only [hdvd, if_false]; exact analyticAt_const.meromorphicAt
 
-/-- **The closed-form Laurent trace coefficient is meromorphic at `0`** (fact (A), closed-form level):
+/-- **The closed-form Laurent trace coefficient is meromorphic at `0`** (fact (A), closed-form
+level):
 a finite sum of single Laurent monomials in `z`.  This is the meromorphy half of the ramified Lemma
 3.2 — the downstairs trace `Tr_m h` of a Laurent polynomial `h` is meromorphic at the branch value
 `z = 0`, the ramified analogue of `meromorphicAt_traceCoeff_fibreTrace`. -/
 theorem meromorphicAt_laurentTraceCoeff {ι : Type*} (s : Finset ι) (c : ι → ℂ) (n : ι → ℤ) (m : ℕ) :
     MeromorphicAt (laurentTraceCoeff s c n m) 0 := by
   classical
-  rw [show laurentTraceCoeff s c n m = fun z => ∑ i ∈ s, monomialTraceCoeff (c i) (n i) m z from rfl]
+  rw [show laurentTraceCoeff s c n m
+    = fun z => ∑ i ∈ s, monomialTraceCoeff (c i) (n i) m z from rfl]
   exact MeromorphicAt.fun_sum (fun i _ => meromorphicAt_monomialTraceCoeff (c i) (n i) m)
 
 /-- **Ramified Lemma 3.2 over a Laurent polynomial — the residue identity.**  For `h = ∑_i c_i wⁿⁱ`,
@@ -253,7 +271,8 @@ theorem resAt_laurentTraceCoeff {ι : Type*} (s : Finset ι) (c : ι → ℂ) (n
       = resAt (fun w => ∑ i ∈ s, c i * (w - 0) ^ n i) 0 := by
   classical
   -- LHS: residue of a finite sum splits termwise; each term is the monomial trace residue.
-  rw [show laurentTraceCoeff s c n m = fun z => ∑ i ∈ s, monomialTraceCoeff (c i) (n i) m z from rfl,
+  rw [show laurentTraceCoeff s c n m
+    = fun z => ∑ i ∈ s, monomialTraceCoeff (c i) (n i) m z from rfl,
     LaurentForm.resAt_finsum s (fun i z => monomialTraceCoeff (c i) (n i) m z)
       (fun i _ => meromorphicAt_monomialTraceCoeff (c i) (n i) m)]
   -- RHS: residue of a finite sum of Laurent monomials splits termwise too.

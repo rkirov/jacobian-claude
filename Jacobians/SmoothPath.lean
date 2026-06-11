@@ -1585,8 +1585,10 @@ lemma affine_combine_distrib {α : Type*} [CommRing α] (t x y : α) :
 /-- The chart-image formula at `t = t₀` lies in the chart target if `t₀`'s
 linear interp does. -/
 lemma chart_image_in_target_iff (anchor P Q : X) (t : ℝ) :
-    ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q) ∈ (chartAt ℂ anchor).target
-      ↔ ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q) ∈ (chartAt ℂ anchor).target := Iff.rfl
+    ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q)
+        ∈ (chartAt ℂ anchor).target
+      ↔ ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q)
+        ∈ (chartAt ℂ anchor).target := Iff.rfl
 
 /-! ## End of additional structural infrastructure for smoothPath
 
@@ -1692,7 +1694,8 @@ lemma smoothStep01_at_piece_right_eq (k n : ℕ) (hn : 0 < n) :
 
 /-- `ChartBallPath anchor P Q t` is well-defined for any `t` (since
 `(chartAt anchor).symm` is total). -/
-lemma ChartBallPath_total (anchor P Q : X) (t : ℝ) : ChartBallPath anchor P Q t = (chartAt ℂ anchor).symm
+lemma ChartBallPath_total (anchor P Q : X) (t : ℝ) :
+    ChartBallPath anchor P Q t = (chartAt ℂ anchor).symm
     ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q) := rfl
 
 /-- ChartBallPath at the chart anchor: equals `anchor` always. -/

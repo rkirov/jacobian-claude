@@ -725,7 +725,8 @@ lemma chartFrame_cancel (Q₀ Q : X) (i : Fin (genus X)) (t : ℝ)
   have h_fderiv_apply : (fderiv ℂ h_trans (affine t)) (z - z₀) =
       (z - z₀) * (fderiv ℂ h_trans (affine t)) 1 := by
     have := (fderiv ℂ h_trans (affine t)).map_smul (z - z₀) (1 : ℂ)
-    -- this : (fderiv ℂ h_trans (affine t)) ((z - z₀) • 1) = (z - z₀) • (fderiv ℂ h_trans (affine t)) 1
+    -- this : (fderiv ℂ h_trans (affine t)) ((z - z₀) • 1) = (z - z₀) • (fderiv ℂ h_trans (affine
+    -- t)) 1
     rw [smul_eq_mul, mul_one] at this
     rw [this, smul_eq_mul]
   -- pathSpeed γ t = (z - z₀) * (fderiv ℂ h_trans (affine t) 1).
@@ -993,7 +994,8 @@ lemma isSmoothPath_ChartBallPathSmooth (Q₀ Q : X)
       refine Continuous.add ?_ ?_
       · exact (continuous_const.sub
           (Complex.continuous_ofReal.comp Jacobians.smoothStep01_continuous)).mul continuous_const
-      · exact (Complex.continuous_ofReal.comp Jacobians.smoothStep01_continuous).mul continuous_const
+      · exact (Complex.continuous_ofReal.comp
+          Jacobians.smoothStep01_continuous).mul continuous_const
     have hβderiv_eq : deriv β = fun t : ℝ => (Jacobians.smoothStep01_deriv t : ℂ) * (z - z₀) := by
       funext t
       have hσ : HasDerivAt (fun s : ℝ => (Jacobians.smoothStep01 s : ℂ))

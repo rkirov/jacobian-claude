@@ -22,7 +22,8 @@ consumes — closing the upstream/downstream cycle that would otherwise block th
 
 open scoped Manifold ContDiff in
 /-- **Riemann–Roch consequence `l(P) = 2`.** Genus `0` yields a meromorphic function with a single
-simple pole (Forster §16: `l(P) = deg P + 1 − g + l(K−P) = 1 + 1 − 0 + 0 = 2`). The single-simple-pole
+simple pole (Forster §16: `l(P) = deg P + 1 − g + l(K−P) = 1 + 1 − 0 + 0 = 2`). The
+single-simple-pole
 extraction from `l(P) = 2` is fully proven in `Jacobians.RiemannRoch`; the only remaining inputs are
 the classical `exists_riemannRoch_divisor` (Dolbeault/Serre) and `MeromorphicFunction.deg_div`
 (argument principle), isolated there. -/

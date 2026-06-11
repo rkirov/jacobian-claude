@@ -111,7 +111,8 @@ theorem MeromorphicFunction.orderAtPoint_nonneg_iff_tendsto
 
 /-! ### The repair is the normal-form representative, chart by chart
 
-(`toMeromorphicNFAt_self_eq_limUnder` and `MeromorphicAt.exists_isOpen_meromorphicOn` now live in the
+(`toMeromorphicNFAt_self_eq_limUnder` and `MeromorphicAt.exists_isOpen_meromorphicOn` now live in
+the
 shared `Jacobians.MeromorphicNFRepair`.) -/
 
 /-- **The local repair lemma.** On a small open neighborhood `V` of `φ x₀` (with `φ = chartAt x₀`),
@@ -159,7 +160,8 @@ theorem MeromorphicFunction.exists_holoRepr_eq_NFOn (f : MeromorphicFunction X) 
   -- holoRepr value at φ.symm w = c : f.toFun has limit c at φ.symm w (transfer of hc).
   show limUnder (𝓝[≠] (φ.symm w)) f.toFun = c
   have hys : φ.symm w ∈ φ.source := φ.map_target (hVtarget hw)
-  -- The punctured neighborhood of `φ.symm w` is NeBot: it receives `𝓝[≠] w` (NeBot in ℂ) under φ.symm.
+  -- The punctured neighborhood of `φ.symm w` is NeBot: it receives `𝓝[≠] w` (NeBot in ℂ) under
+  -- φ.symm.
   have htsymm : Tendsto φ.symm (𝓝[≠] w) (𝓝[≠] (φ.symm w)) := by
     have := φ.symm.tendsto_nhdsNE (x := w) (by simpa using hVtarget hw)
     simpa using this
@@ -301,7 +303,8 @@ theorem MeromorphicFunction.orderAtPoint_eq_zero_of_holoRepr_const (f : Meromorp
       filter_upwards [eventually_nhdsWithin_of_eventually_nhds (hVopen.mem_nhds hzV)] with w hw
       exact hNFconst w hw
     exact h1.symm.trans h2
-  -- The order of `f` at `x` is the order of the pullback, which equals the order of the constant `c`.
+  -- The order of `f` at `x` is the order of the pullback, which equals the order of the constant
+  -- `c`.
   show (meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x)).untop₀ = 0
   rw [meromorphicOrderAt_congr hF_eq, meromorphicOrderAt_const]
   split <;> simp

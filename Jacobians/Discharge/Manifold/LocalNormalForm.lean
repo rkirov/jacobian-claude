@@ -441,7 +441,8 @@ At the mathlib pin (`8e3c989`, 15 April 2026) the precise gating input is
   — analytic ⟹ strict derivative at the point.
 * `Mathlib.Analysis.Calculus.Deriv.Inverse.HasStrictDerivAt.hasStrictFDerivAt_equiv`
   — strict derivative + nonzero ⟹ strict Fréchet derivative as an equiv.
-* `Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv.HasStrictFDerivAt.toOpenPartialHomeomorph`
+* `HasStrictFDerivAt.toOpenPartialHomeomorph`
+  (`Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv`)
   — the inverse function theorem packaged as an `OpenPartialHomeomorph`.
 
 What is **deferred** for the general `k ≥ 2` case:

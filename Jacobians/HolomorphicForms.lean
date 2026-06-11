@@ -285,8 +285,7 @@ noncomputable def ambientPhi {gX gY : ℕ}
 theorem ambientPsi_id (y : Fin (genus X) → ℂ) :
     ambientPsi (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id y = y := by
   unfold ambientPsi
-  set_option linter.unusedSimpArgs false in
-  simp only [dif_pos rfl]
+  simp only [↓reduceDIte]
   show (((ambientIso X).symm.toLinearMap.comp
       ((pullbackForm (id : X → X) contMDiff_id).comp (ambientIso X).toLinearMap)) : _ →ₗ[_] _) y = y
   rw [show (pullbackForm (id : X → X) contMDiff_id) = LinearMap.id from pullbackForm_id]
@@ -304,8 +303,7 @@ theorem ambientPsi_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpa
       ambientPsi (gX := genus X) (gY := genus Y) f hf
         (ambientPsi (gX := genus Y) (gY := genus Z) g hg z) := by
   unfold ambientPsi
-  set_option linter.unusedSimpArgs false in
-  simp only [dif_pos rfl]
+  simp only [↓reduceDIte]
   show (((ambientIso X).symm.toLinearMap.comp
       ((pullbackForm (g ∘ f) hgf).comp (ambientIso Z).toLinearMap))) z = _
   rw [pullbackForm_comp f hf g hg hgf]
@@ -330,7 +328,8 @@ theorem ambientPhi_id (x : Fin (genus X) → ℂ) :
       = ContinuousLinearMap.id ℂ (Fin (genus X) → ℂ) :=
     ContinuousLinearMap.ext (fun y => ambientPsi_id y)
   unfold ambientPhi
-  rw [show (ambientPsi (X := X) (Y := X) (gX := genus X) (gY := genus X) id contMDiff_id).toLinearMap
+  rw [show (ambientPsi (X := X) (Y := X) (gX := genus X) (gY := genus X) id
+      contMDiff_id).toLinearMap
       = LinearMap.id (R := ℂ) (M := Fin (genus X) → ℂ) from by rw [hpsi]; rfl]
   simp [Matrix.transpose_one, Matrix.mulVecLin_one]
 

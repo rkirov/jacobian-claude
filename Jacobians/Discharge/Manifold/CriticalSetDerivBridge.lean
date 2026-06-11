@@ -410,7 +410,8 @@ theorem notInjOn_iff_deriv_zero_of_analytic_of_order
     exact h_notInj (injOn_nhds_of_deriv_ne_zero hg hd_ne)
   · intro hd
     -- Reverse: if deriv g x₀ = 0, then `k ≥ 2` (else `k = 1` would give deriv ≠ 0
-    -- by `deriv_ne_zero_of_analyticOrderAt_eq_one`). Then apply `notInjOn_of_analyticOrderAt_ge_two`.
+    -- by `deriv_ne_zero_of_analyticOrderAt_eq_one`). Then apply
+    -- `notInjOn_of_analyticOrderAt_ge_two`.
     have hk_ge_two : 2 ≤ k := by
       by_contra hlt
       push Not at hlt

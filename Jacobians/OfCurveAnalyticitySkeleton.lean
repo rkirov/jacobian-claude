@@ -769,7 +769,8 @@ lemma isSmoothPath_smoothPathSmooth (P Q : X) :
     have h_inner_diff := h_smoothPath.diff (Jacobians.smoothStep01 t) hs_uIcc
     have h_sigma_diff : DifferentiableAt ℝ Jacobians.smoothStep01 t :=
       Jacobians.smoothStep01_differentiable t
-    -- smoothPathSmooth t = smoothPath (σ t), so chartAt (smoothPathSmooth t) = chartAt (smoothPath (σ t)).
+    -- smoothPathSmooth t = smoothPath (σ t), so chartAt (smoothPathSmooth t) = chartAt (smoothPath
+    -- (σ t)).
     have h_eq : ((chartAt (H := ℂ) (smoothPathSmooth P Q t)).toFun ∘ smoothPathSmooth P Q) =
         ((chartAt (H := ℂ) (Jacobians.smoothPath P Q (Jacobians.smoothStep01 t))).toFun ∘
           Jacobians.smoothPath P Q) ∘ Jacobians.smoothStep01 := by
@@ -1125,7 +1126,8 @@ lemma isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
       show Jacobians.pathSpeed (Jacobians.ChartBallPath Q₀ Q₀ Q ∘ Jacobians.smoothStep01) 1 = 0
       rw [pathSpeed_smoothStep01_comp_eq (Jacobians.ChartBallPath Q₀ Q₀ Q) 1 h_inner_diff_at_σ1,
         Jacobians.smoothStep01_deriv_one, Complex.ofReal_zero, zero_mul]
-    -- hv₂: pathSpeed (reverse (smoothPathSmooth Q₀ Q)) 0 = -pathSpeed (smoothPathSmooth Q₀ Q) 1 = 0.
+    -- hv₂: pathSpeed (reverse (smoothPathSmooth Q₀ Q)) 0 = -pathSpeed (smoothPathSmooth Q₀ Q) 1 =
+    -- 0.
     have h_smoothPath := Jacobians.isSmoothPath_smoothPath Q₀ Q
     have h_inner_diff_at_σ1_sp : DifferentiableAt ℝ
         ((chartAt (H := ℂ) (Jacobians.smoothPath Q₀ Q (Jacobians.smoothStep01 1))).toFun ∘
@@ -1136,7 +1138,8 @@ lemma isClosedSmoothLoop_concat_ChartBallPathSmooth_reverse_smoothPathSmooth
       rw [pathSpeed_smoothStep01_comp_eq (Jacobians.smoothPath Q₀ Q) 1 h_inner_diff_at_σ1_sp,
         Jacobians.smoothStep01_deriv_one, Complex.ofReal_zero, zero_mul]
     have h_smoothPathSmooth_one_diff : DifferentiableAt ℝ
-        ((chartAt (H := ℂ) (smoothPathSmooth Q₀ Q (1 - 0))).toFun ∘ smoothPathSmooth Q₀ Q) (1 - 0) := by
+        ((chartAt (H := ℂ) (smoothPathSmooth Q₀ Q (1 - 0))).toFun ∘ smoothPathSmooth Q₀ Q)
+        (1 - 0) := by
       rw [show (1 : ℝ) - 0 = 1 from by norm_num]; exact h_γ₂.diff 1 h_one_uIcc
     have hv₂ : Jacobians.pathSpeed (Jacobians.reverse (smoothPathSmooth Q₀ Q)) 0 = 0 := by
       rw [Jacobians.pathSpeed_reverse (smoothPathSmooth Q₀ Q) 0 h_smoothPathSmooth_one_diff,
@@ -1306,7 +1309,8 @@ lemma chartBallPath_smoothPath_endpoints_eq_in_quotient
   rw [← periodVec_ChartBallPathSmooth_eq Q₀ Q h_chart_ball]
   -- Step 2: replace smoothPath by smoothPathSmooth (same trick).
   rw [← periodVec_smoothPathSmooth_eq Q₀ Q]
-  -- Step 3: Apply mk_periodVec_eq_of_endpoints with γ₁ = ChartBallPathSmooth, γ₂ = smoothPathSmooth.
+  -- Step 3: Apply mk_periodVec_eq_of_endpoints with γ₁ = ChartBallPathSmooth, γ₂ =
+  -- smoothPathSmooth.
   refine Jacobians.mk_periodVec_eq_of_endpoints
     (Jacobians.ChartBallPathSmooth Q₀ Q) (smoothPathSmooth Q₀ Q) ?_ ?_ ?_
   · -- h0: γ₁ 0 = γ₂ 0

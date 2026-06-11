@@ -121,7 +121,8 @@ positive orders, resp. the absolute values of the negative orders), so both are
 `≥ 0`.  Consequently the proper-map-degree existential (a single `d : ℕ`
 with `zerosCount f = d = polesCount f`) is **equivalent** to the bare equality
 `zerosCount f = polesCount f`: given the equality, both sides are a common
-nonnegative integer, which is the cast of some `d : ℕ`.  This isolates the analytic content as the **argument-principle equality** `zerosCount f = polesCount f`
+nonnegative integer, which is the cast of some `d : ℕ`.  This isolates the analytic content as the
+**argument-principle equality** `zerosCount f = polesCount f`
 (Forster Cor. 4.25), stripping away the `∃ d : ℕ` packaging. -/
 
 /-- `zerosCount f ≥ 0`: it is a sum of positive orders. -/
@@ -157,7 +158,8 @@ theorem exists_properMapDegree_of_zerosCount_eq_polesCount (f : MeromorphicFunct
   exact ⟨d, hd, h ▸ hd⟩
 
 /-- The degree-route conclusion in the trivial case `f.div = 0` (constant or
-germ-zero `f`): both counts vanish, witnessed by `d = 0`.  This trivial sub-case *is* provable with no analytic input — it shows the
+germ-zero `f`): both counts vanish, witnessed by `d = 0`.  This trivial sub-case *is* provable with
+no analytic input — it shows the
 isolated statement is a genuine (true) one, not vacuous. -/
 theorem exists_properMapDegree_of_div_eq_zero (f : MeromorphicFunction X)
     (h : (f.div : Divisor X) = 0) :

@@ -25,7 +25,8 @@ descends through `(·)^m`: there is an analytic germ `G` at `0` with
 
 > `∑_{j<m} Q(ζʲ·u)·ζʲ = m·u^{m−1}·G(uᵐ)`   (for `u` near `0`).
 
-This is `analyticAt_weightedSymSum_descent`.  The downstream ramified-residue subtree needs it in the
+This is `analyticAt_weightedSymSum_descent`.  The downstream ramified-residue subtree needs it in
+the
 slit form `Rem z = ∑_{j<m} ppR(ζʲ·w₀ z)·(d/dz)[ζʲ·w₀ z] = G(z−c)` with `w₀ z = (z−c)^{1/m}` and the
 chain rule `(d/dz)[ζʲ·w₀ z] = ζʲ·(1/m)·w₀ z^{1−m}`; that wiring is `ramifiedRemainderTrace_descent`.
 
@@ -40,9 +41,11 @@ i.e. `n = m·k + (m−1)`, survive, so the sum is `m·u^{m−1}·∑ₖ a_{m·k+
 
 > `G(v) := ∑ₖ a_{m·k+(m−1)}·vᵏ`,
 
-an analytic germ at `0` (its coefficients are a subsequence of `Q`'s, so its radius is `≥ (radius Q)^m`).
+an analytic germ at `0` (its coefficients are a subsequence of `Q`'s, so its radius is `≥ (radius
+Q)^m`).
 
-The two delicate steps — the analyticity of the subsequence series `G`, and the `HasSum`-divisibility
+The two delicate steps — the analyticity of the subsequence series `G`, and the
+`HasSum`-divisibility
 reindex `∑ₙ [m ∣ n+1] cₙ = ∑ₖ c_{m·k+(m−1)}` — are `analyticAt_ofScalars_subseq` and the
 `HasSum.comp_injective` along `k ↦ m·k + d` inside `hasSum_weightedSymSum`.
 
@@ -73,7 +76,8 @@ open FormalMultilinearSeries
 
 Given an analytic germ `Q` at `0` with power series `pf`, the series `∑ₖ pf.coeff (m·k + d)·vᵏ`
 (coefficients sampled along an arithmetic progression `k ↦ m·k + d`) is analytic at `0`.  Its
-coefficients are a subsequence of `Q`'s, so a radius bound for `Q` gives one here: if `‖pf n‖·ρⁿ ≤ C`
+coefficients are a subsequence of `Q`'s, so a radius bound for `Q` gives one here: if `‖pf n‖·ρⁿ ≤
+C`
 for all `n` then `‖pf.coeff (m·k+d)‖·(ρᵐ)ᵏ ≤ ‖pf (m·k+d)‖·ρ^{m·k} ≤ C` (using `‖coeff n‖ ≤ ‖pf n‖`,
 `ρ ≤ 1`-free since we keep `ρ < 1` by shrinking, and `m·k ≤ m·k+d`). -/
 
@@ -126,7 +130,8 @@ theorem analyticAt_ofScalarsSum_of_pos_radius (c : ℕ → ℂ)
   have := ((ofScalars (𝕜 := ℂ) ℂ c).hasFPowerSeriesOnBall h).analyticAt
   rwa [show (ofScalars (𝕜 := ℂ) ℂ c).sum = ofScalarsSum (E := ℂ) c from rfl] at this
 
-/-- **The subsequence series is analytic at `0`.**  If `pf` is the power series of an analytic germ at
+/-- **The subsequence series is analytic at `0`.**  If `pf` is the power series of an analytic germ
+at
 `0` with positive radius, then the function `ofScalarsSum (fun k => pf.coeff (m·k + d))`
 (`= v ↦ ∑' k, pf.coeff (m·k + d)·vᵏ`, the coefficients sampled along the arithmetic progression
 `k ↦ m·k + d`) is analytic at `0`.  Its power series is `ofScalars ℂ (fun k => pf.coeff (m·k + d))`,
@@ -144,8 +149,10 @@ theorem analyticAt_ofScalars_subseq (pf : FormalMultilinearSeries ℂ ℂ ℂ) (
 
 /-! ## The arithmetic-progression index map and its range
 
-The reindex map `k ↦ m·k + (m−1)`.  Its image is exactly `{n | m ∣ n+1}` (for `m > 0`): a natural `n`
-has `n+1` divisible by `m` iff `n = m·k + (m−1)` for some `k`.  This is the divisibility reindex that
+The reindex map `k ↦ m·k + (m−1)`.  Its image is exactly `{n | m ∣ n+1}` (for `m > 0`): a natural
+`n`
+has `n+1` divisible by `m` iff `n = m·k + (m−1)` for some `k`.  This is the divisibility reindex
+that
 collapses the roots-of-unity sum to the subsequence series. -/
 
 /-- The reindex map `k ↦ m·k + (m−1)` is injective (for `m > 0`). -/
@@ -180,13 +187,15 @@ theorem mem_range_apIdx_iff {m : ℕ} (hm : 0 < m) (n : ℕ) :
 
 /-! ## The weighted symmetric-sum HasSum identity
 
-The heart of the descent.  For `Q` analytic at `0` (power series `pf`), `m > 0`, `ζ` a primitive `m`-th
+The heart of the descent.  For `Q` analytic at `0` (power series `pf`), `m > 0`, `ζ` a primitive
+`m`-th
 root of unity, and `u` near `0`, the weighted `m`-sheet sum collapses to the subsequence series:
 
 > `∑_{j<m} Q(ζʲ·u)·ζʲ = m·u^{m−1}·∑'ₖ pf.coeff (m·k+(m−1))·(uᵐ)ᵏ`.
 
 The proof scales each `HasSum (fun n => (ζʲu)ⁿ·pf.coeff n) (Q(ζʲu))` by `ζʲ`, sums over `j` via
-`hasSum_sum`, collapses the coefficient `∑_{j<m} ζ^{j(n+1)} = m·[m∣n+1]` by `rootsOfUnity_geom_zsum`,
+`hasSum_sum`, collapses the coefficient `∑_{j<m} ζ^{j(n+1)} = m·[m∣n+1]` by
+`rootsOfUnity_geom_zsum`,
 and reindexes `n = m·k+(m−1)` via `Function.Injective.hasSum_iff`. -/
 
 /-- For `u` near `0`, the `m`-sheet sum HasSum form: `∑_{j<m} Q(ζʲ·u)·ζʲ` is the sum of the series
@@ -196,7 +205,8 @@ theorem hasSum_symSheetSum_aux {Q : ℂ → ℂ} {pf : FormalMultilinearSeries �
     ∀ᶠ u in 𝓝 (0 : ℂ),
       HasSum (fun n : ℕ => (∑ j ∈ Finset.range m, (ζ ^ j) ^ ((n : ℤ) + 1)) * u ^ n * pf.coeff n)
         (∑ j ∈ Finset.range m, Q (ζ ^ j * u) * ζ ^ j) := by
-  -- The per-sheet eventual HasSum, pulled back along the continuous `u ↦ ζʲ·u` (each sends `𝓝 0 → 𝓝 0`).
+  -- The per-sheet eventual HasSum, pulled back along the continuous `u ↦ ζʲ·u` (each sends `𝓝 0 →
+  -- 𝓝 0`).
   rw [hasFPowerSeriesAt_iff] at hpf
   have hev : ∀ᶠ u in 𝓝 (0 : ℂ), ∀ j ∈ Finset.range m,
       HasSum (fun n => (ζ ^ j * u) ^ n • pf.coeff n) (Q (ζ ^ j * u)) := by
@@ -211,7 +221,8 @@ theorem hasSum_symSheetSum_aux {Q : ℂ → ℂ} {pf : FormalMultilinearSeries �
   filter_upwards [hev] with u hu
   -- scale each per-sheet HasSum by `ζ^j`, then sum over `j ∈ range m`.
   have hperj : ∀ j ∈ Finset.range m,
-      HasSum (fun n : ℕ => ((ζ ^ j) ^ ((n : ℤ) + 1)) * u ^ n * pf.coeff n) (Q (ζ ^ j * u) * ζ ^ j) := by
+      HasSum (fun n : ℕ => ((ζ ^ j) ^ ((n : ℤ) + 1)) * u ^ n * pf.coeff n)
+        (Q (ζ ^ j * u) * ζ ^ j) := by
     intro j hj
     have h0 := (hu j hj).mul_right (ζ ^ j)
     refine h0.congr_fun ?_  -- rewrite the summand
@@ -245,18 +256,22 @@ theorem hasSum_ofScalarsSum_of_lt_radius (c : ℕ → ℂ) {v : ℂ}
 /-! ## The descent: the weighted symmetric trace factors through `(·)^m` -/
 
 /-- **The weighted symmetric-sum descent** (the genuinely-new analytic lemma; Forster §5 / Miranda
-§VIII.3, "the trace of a holomorphic form is holomorphic").  For an analytic germ `Q` at `0`, `m > 0`,
-and a primitive `m`-th root of unity `ζ`, there is an analytic germ `G` at `0` (the subsequence series
+§VIII.3, "the trace of a holomorphic form is holomorphic").  For an analytic germ `Q` at `0`, `m >
+0`,
+and a primitive `m`-th root of unity `ζ`, there is an analytic germ `G` at `0` (the subsequence
+series
 `v ↦ ∑'ₖ a_{m·k+(m−1)}·vᵏ`, `aₙ` the Taylor coefficients of `Q`) with
 
 > `∑_{j<m} Q(ζʲ·u)·ζʲ = m·u^{m−1}·G(uᵐ)`   (for `u` near `0`).
 
-The `m`-sheet sum is single-valued (the roots-of-unity collapse `∑_j ζ^{j(n+1)} = m·[m∣n+1]` keeps only
+The `m`-sheet sum is single-valued (the roots-of-unity collapse `∑_j ζ^{j(n+1)} = m·[m∣n+1]` keeps
+only
 the indices `n = m·k+(m−1)`).  Then `aₙ uⁿ` becomes `m·u^{m−1}·a_{m·k+(m−1)}·(uᵐ)ᵏ`. -/
 theorem analyticAt_weightedSymSum_descent {Q : ℂ → ℂ} (hQ : AnalyticAt ℂ Q 0) {m : ℕ} (hm : 0 < m)
     {ζ : ℂ} (hζ : IsPrimitiveRoot ζ m) :
     ∃ G : ℂ → ℂ, AnalyticAt ℂ G 0 ∧
-      ∀ᶠ u in 𝓝 (0 : ℂ), (∑ j ∈ Finset.range m, Q (ζ ^ j * u) * ζ ^ j) = m * u ^ (m - 1) * G (u ^ m) := by
+      ∀ᶠ u in 𝓝 (0 : ℂ),
+        (∑ j ∈ Finset.range m, Q (ζ ^ j * u) * ζ ^ j) = m * u ^ (m - 1) * G (u ^ m) := by
   obtain ⟨pf, hpf⟩ := hQ
   set c : ℕ → ℂ := fun k => pf.coeff (m * k + (m - 1)) with hc
   refine ⟨ofScalarsSum (E := ℂ) c, ?_, ?_⟩
@@ -264,10 +279,12 @@ theorem analyticAt_weightedSymSum_descent {Q : ℂ → ℂ} (hQ : AnalyticAt ℂ
     have hrad : 0 < pf.radius := by
       obtain ⟨r, hr⟩ := hpf; exact lt_of_lt_of_le hr.r_pos hr.r_le
     exact analyticAt_ofScalars_subseq pf hrad hm (m - 1)
-  · -- the identity, on the nbhd where the aux HasSum holds and `uᵐ` is inside `ofScalars c`'s radius
+  · -- the identity, on the nbhd where the aux HasSum holds and `uᵐ` is inside
+    -- `ofScalars c`'s radius
     have hradc : 0 < (ofScalars ℂ c).radius := by
       obtain ⟨ρ, hρ0, hρ⟩ := ENNReal.lt_iff_exists_nnreal_btwn.mp
-        (show (0 : ℝ≥0∞) < pf.radius by obtain ⟨r, hr⟩ := hpf; exact lt_of_lt_of_le hr.r_pos hr.r_le)
+        (show (0 : ℝ≥0∞) < pf.radius by
+          obtain ⟨r, hr⟩ := hpf; exact lt_of_lt_of_le hr.r_pos hr.r_le)
       refine lt_of_lt_of_le ?_ (le_radius_ofScalars_subseq pf hm (m - 1) hρ)
       have hρ0' : (0 : ℝ≥0) < ρ := by exact_mod_cast hρ0
       rw [← ENNReal.coe_pow]
@@ -314,7 +331,8 @@ theorem analyticAt_weightedSymSum_descent {Q : ℂ → ℂ} (hQ : AnalyticAt ℂ
         rw [hdvd_iff (m * k + (m - 1)), ← mem_range_apIdx_iff hm]
         exact ⟨k, rfl⟩
       rw [if_pos hdvd, smul_eq_mul]
-      rw [show m * k + (m - 1) = (m - 1) + m * k by omega, pow_add, ← pow_mul, mul_comm m k, pow_mul]
+      rw [show m * k + (m - 1) = (m - 1) + m * k by omega, pow_add, ← pow_mul,
+        mul_comm m k, pow_mul]
       ring
     rw [show (F ∘ (fun k : ℕ => m * k + (m - 1)))
           = (fun k => (m : ℂ) * u ^ (m - 1) * (c k • (u ^ m) ^ k)) from funext hFcomp] at hreindex
@@ -327,13 +345,15 @@ theorem analyticAt_weightedSymSum_descent {Q : ℂ → ℂ} (hQ : AnalyticAt ℂ
 /-! ## Wiring: the ramified remainder trace `Rem z = G(z − c)`
 
 The downstream ramified-residue subtree (`ClusterTraceData.ofNormalForm`,
-`RamifiedSheetData.hRem_an`/`hRem_slit`) needs the descent in the *slit* form: with `wp` a base chart
+`RamifiedSheetData.hRem_an`/`hRem_slit`) needs the descent in the *slit* form: with `wp` a base
+chart
 value, `ppR` the analytic remainder of the straightened integrand (analytic at `wp`), and `w₀` a
 holomorphic branch of `(z − c)^{1/m}` on a slit `S`, the trace
 
 > `Rem z = ∑_{j<m} ppR(wp + ζʲ·w₀ z) · (d/dz)[wp + ζʲ·w₀ z]`
 
-is analytic at `c`, with closed form `Rem z = G(z − c)` (`G` from `analyticAt_weightedSymSum_descent`
+is analytic at `c`, with closed form `Rem z = G(z − c)` (`G` from
+`analyticAt_weightedSymSum_descent`
 applied to `Q t := ppR(wp + t)`).  The chain rule `(d/dz)[wp + ζʲ·w₀ z] = ζʲ·(1/m)·w₀ z^{1−m}`
 (`hw₀_deriv`) contributes the `1/m` that cancels the `m` of the descent and the `w₀ z^{1−m}` that
 cancels `w₀ z^{m−1}`, leaving exactly `G((w₀ z)ᵐ) = G(z − c)`. -/
@@ -367,7 +387,8 @@ theorem ramifiedTrace_slit_eq (ppR : ℂ → ℂ) (wp c : ℂ) {m : ℕ} (hm : 0
     intro j _
     rw [hderiv j]; ring
   rw [hslit, hdescent]
-  -- collapse `(1/m)·w₀ z^{1−m} · (m · w₀ z^{m−1}) = (w₀ z)^{1-m} · (w₀ z)^{m-1} = 1`, and `(w₀ z)ᵐ = z−c`.
+  -- collapse `(1/m)·w₀ z^{1−m} · (m · w₀ z^{m−1}) = (w₀ z)^{1-m} · (w₀ z)^{m-1} = 1`, and `(w₀ z)ᵐ
+  -- = z−c`.
   rw [show (w₀ z) ^ (m - 1) = (w₀ z) ^ ((m : ℤ) - 1) by
     rw [← zpow_natCast (w₀ z) (m - 1)]; congr 1; omega]
   rw [show (w₀ z) ^ m = (w₀ z) ^ (m : ℤ) by rw [zpow_natCast], hw₀_pow]
@@ -377,7 +398,8 @@ theorem ramifiedTrace_slit_eq (ppR : ℂ → ℂ) (wp c : ℂ) {m : ℕ} (hm : 0
     inv_mul_cancel₀ hm0]
   ring
 
-/-- **The descent germ `Q t := ppR(wp + t)`** is analytic at `0` (re-centring the analytic remainder).
+/-- **The descent germ `Q t := ppR(wp + t)`** is analytic at `0` (re-centring the analytic
+remainder).
 The bridge from the chart-centred `ppR` (analytic at `wp`) to the descent's `0`-centred input. -/
 theorem analyticAt_reCentre {ppR : ℂ → ℂ} {wp : ℂ} (hppR_an : AnalyticAt ℂ ppR wp) :
     AnalyticAt ℂ (fun t => ppR (wp + t)) 0 :=
@@ -386,15 +408,18 @@ theorem analyticAt_reCentre {ppR : ℂ → ℂ} {wp : ℂ} (hppR_an : AnalyticAt
 /-- **The ramified remainder trace exists and is analytic at `c`** (the wired descent, the form the
 ramified-residue subtree consumes).  From `ppR` analytic at `wp`, a positive multiplicity `m`, a
 primitive `m`-th root `ζ`, and a slit `S` on which `w₀` is a holomorphic branch of `(z − c)^{1/m}`
-**whose values land in the descent neighbourhood** (the smallness hypothesis `hsmall`, supplied as the
-descent identity holding pointwise at each `w₀ z`), there is `Rem` analytic at `c` agreeing on `S` with
+**whose values land in the descent neighbourhood** (the smallness hypothesis `hsmall`, supplied as
+the
+descent identity holding pointwise at each `w₀ z`), there is `Rem` analytic at `c` agreeing on `S`
+with
 the `m`-sheet slit sum
 
 > `Rem z = ∑_{j<m} ppR(wp + ζʲ·w₀ z)·(d/dz)[wp + ζʲ·w₀ z]`.
 
 `Rem := G(· − c)` for the descent germ `G`; `hRem_an` is `G`'s analyticity transported to `c`, and
 `hRem_slit` is `ramifiedTrace_slit_eq` applied pointwise.  The caller obtains `hsmall` from the
-shrunk slit (`w₀ z → 0` as `z → c`) and the descent's `∀ᶠ u in 𝓝 0` identity; the descent germ `G` and
+shrunk slit (`w₀ z → 0` as `z → c`) and the descent's `∀ᶠ u in 𝓝 0` identity; the descent germ `G`
+and
 its `∀ᶠ` identity are exposed via the explicit `G`/`hG`/`hGev` arguments so the caller's `hsmall`
 can refer to the same `G`. -/
 theorem exists_ramifiedTrace_descent {ppR : ℂ → ℂ} {wp : ℂ}

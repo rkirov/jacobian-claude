@@ -29,10 +29,13 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- Every principal divisor has degree `0` (Forster Cor. 4.25 / the argument principle). **PROVEN**
-via the **degree route**: `deg (div f) = zerosCount f − polesCount f` (`deg_div_eq_zeros_sub_poles`),
-and both counts equal a common proper-map degree `d` (`ProperMapDegreeSheets.exists_properMapDegree_proven`,
+via the **degree route**: `deg (div f) = zerosCount f − polesCount f`
+(`deg_div_eq_zeros_sub_poles`),
+and both counts equal a common proper-map degree `d`
+(`ProperMapDegreeSheets.exists_properMapDegree_proven`,
 the §17.9 conservation-of-number construction — now axiom-clean), so the difference is `0`. The RR
-derivations downstream consume this `deg_div`. (The old standalone `DegDivResidue.exists_properMapDegree`
+derivations downstream consume this `deg_div`. (The old standalone
+`DegDivResidue.exists_properMapDegree`
 that approach is now superseded by this proven route and no longer on any critical path.) -/
 theorem MeromorphicFunction.deg_div (f : MeromorphicFunction X) :
     Divisor.deg X f.div = 0 := by

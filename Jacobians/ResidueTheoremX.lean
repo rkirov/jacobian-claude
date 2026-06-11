@@ -36,7 +36,8 @@ contour-substitution atom is needed.
 ## What this file builds (complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
 
 * **Step 1 — the chart bridge** (`resLogDeriv`, `resLogDeriv_eq_order`): the intrinsic residue of
-  `df/f` at `x`, read in any chart, equals `ord_x(f)`.  The per-point input of the route; a corollary
+  `df/f` at `x`, read in any chart, equals `ord_x(f)`.  The per-point input of the route; a
+  corollary
   of `resAt_logDeriv_eq_order`.
 
 * **Step 4 — the fibrewise regrouping** (`orderSum_eq_fiberwise`, `orderSum_eq_infty_add_finite`):
@@ -46,7 +47,8 @@ contour-substitution atom is needed.
   3.2 — a fibre carrying the `df/f` simple poles has trace residue = the fibre order sum.
 * **The reduction** (`LogDerivTrace`, `orderSum_eq_zero_of_logDerivTrace`,
   `degDiv_eq_zero_of_logDerivTrace`, `zerosCount_eq_polesCount_of_logDerivTrace`): given the honest
-  trace-representation structure `LogDerivTrace f` (the §VIII.3 assembly output), the residue theorem
+  trace-representation structure `LogDerivTrace f` (the §VIII.3 assembly output), the residue
+  theorem
   `∑_{x∈X} ord_x f = 0`, hence `zerosCount f = polesCount f`, follows from the simple-pole trace
   combine (`finiteResidueSum_trace_eq_zero_of_simplePole_fibres`) + the regrouping.
 * **Non-vacuity** (`logDerivTrace_of_div_eq_zero`): a `LogDerivTrace f` exists when `f.div = 0`
@@ -58,7 +60,8 @@ contour-substitution atom is needed.
 What is **not** discharged is the *construction* of a `LogDerivTrace f` for a general non-constant
 `f`: the rational `LaurentForm L` representing `Tr_F(df/f)` (steps 2-3 — the cover's local
 holomorphic sections, the trace's finiteness/rationality, partial fractions), Lemma 3.2's manifold
-bookkeeping `hL32`, and the two aggregate fibre-residue↔order identifications `infty_eq`/`finite_eq`.
+bookkeeping `hL32`, and the two aggregate fibre-residue↔order identifications
+`infty_eq`/`finite_eq`.
 This is the §17.9-level trace assembly; it is isolated into the `LogDerivTrace` structure (whose
 fields are each *true, non-vacuous* statements), with everything downstream fully proved.  The
 parent wires `zerosCount_eq_polesCount_of_logDerivTrace` applied to a constructed `LogDerivTrace`
@@ -207,13 +210,15 @@ theorem orderSum_eq_infty_add_finite (f : MeromorphicFunction X) :
 The lemma that wires the chart bridge (step 1) into Miranda's Lemma 3.2 for the
 `df/f` route: if a fibre `T : FibreTrace` carries the simple poles of `df/f` — each sheet `i`'s
 coefficient being `cs i·(w − pre i)⁻¹` (`hsp`) with the simple-pole coefficient `cs i` equal to the
-**order** of the corresponding preimage point `xs i` (`hcs`, which is `Res_{pre i}(df/f) = ord_{xs i}`
+**order** of the corresponding preimage point `xs i` (`hcs`, which is `Res_{pre i}(df/f) = ord_{xs
+i}`
 by step 1) — then the residue of the trace `Tr_F(df/f)` at the base equals the **fibre order sum**:
 
 > `Res_b (Tr_F(df/f)) = ∑_{sheets i} ord_{xs i} f`.
 
 This is Lemma 3.2 (`resAt_traceCoeff_of_simplePole`, residue = `∑ cs i`) composed with the chart
-bridge (`cs i = ord_{xs i}`).  Any constructor of `LogDerivTrace` produces exactly this per fibre. -/
+bridge (`cs i = ord_{xs i}`).  Any constructor of `LogDerivTrace` produces exactly this per fibre.
+-/
 end
 
 section
@@ -288,7 +293,8 @@ structure LogDerivTrace (f : MeromorphicFunction X) where
   infty_eq : resAtInfty L.R L.ρ
     = ((∑ x ∈ (f.div : Divisor X).support with f.toRiemannSphere x = OnePoint.infty,
         f.orderAtPoint x : ℤ) : ℂ)
-  /-- The finite-center trace-residue total is the finite-fibre order sum (Lemma 3.2 + chart bridge). -/
+  /-- The finite-center trace-residue total is the finite-fibre order sum (Lemma 3.2 + chart
+  bridge). -/
   finite_eq : (∑ p ∈ Finset.univ.image L.a, resAt (fibre p).traceCoeff (fibre p).b)
     = ((∑ y ∈ ((f.div : Divisor X).support.image f.toRiemannSphere).erase OnePoint.infty,
         ∑ x ∈ (f.div : Divisor X).support with f.toRiemannSphere x = y,
@@ -391,7 +397,8 @@ def logDerivTrace_of_div_eq_zero (f : MeromorphicFunction X)
   fibre := fun _ => emptyFibreTrace
   cs := fun _ i => i.elim
   hsp := fun _ i => i.elim
-  hL32 := by intro p hp; rw [emptyLaurentForm_image_a] at hp; exact absurd hp (Finset.notMem_empty p)
+  hL32 := by
+    intro p hp; rw [emptyLaurentForm_image_a] at hp; exact absurd hp (Finset.notMem_empty p)
   infty_eq := by
     rw [resAtInfty, emptyLaurentForm_R]
     show -(2 * π * I : ℂ)⁻¹ • (∮ _z in C((0 : ℂ), emptyLaurentForm.ρ), (0 : ℂ)) = _
