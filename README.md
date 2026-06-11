@@ -143,6 +143,15 @@ shown is the approximate honest library delta. Days with ports include the porte
 code in the "+" column. "Model" reflects commit trailers; sub-agent-driven days inherit the
 trailer of whatever wrote the commit.
 
+### Provenance of the final tree
+
+Of the final ~111k Lean lines, **~96.9% (~107,700 LoC)** were produced by this project's Claude
+sessions; **~3.1% (~3,450 LoC)** is ported external code — B. Sanchez's degree/fibre/Hurwitz
+well-definedness machinery (3,296 lines across 22 surviving `Discharge/Manifold/` files, adapted
+and repackaged at port time) and the tangentstorm Green's-theorem seed (~148 lines of
+`PlanarCompactSupportStokes.lean`). The mrdouglasny port (`ContourDeformation`) was superseded by
+the in-repo monodromy toolkit and does not survive in the final tree.
+
 ## References & acknowledgments
 
 - Forster, *Lectures on Riemann Surfaces* (GTM 81) — primary.
