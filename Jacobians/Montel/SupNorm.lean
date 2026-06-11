@@ -19,28 +19,20 @@ namespace Jacobians.Montel
 open scoped Manifold ContDiff
 open Bundle
 
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### `supNormK` definition + basic properties -/
 
 /-- The assembled sup-norm on `HolomorphicOneForms X`: sup over `chartCover` of
 per-chart `chartNormK`. -/
-noncomputable def HolomorphicOneForms.supNormK
+noncomputable def HolomorphicOneForms.supNormK {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) : ℝ :=
   (chartCover : Finset X).sup' (chartCover_nonempty)
     (fun x₀ => HolomorphicOneForms.chartNormK α x₀)
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- `supNormK` is non-negative. -/
-theorem HolomorphicOneForms.supNormK_nonneg
+theorem HolomorphicOneForms.supNormK_nonneg {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) :
     0 ≤ HolomorphicOneForms.supNormK α := by
@@ -49,20 +41,9 @@ theorem HolomorphicOneForms.supNormK_nonneg
   exact le_trans (HolomorphicOneForms.chartNormK_nonneg α x₀)
     (Finset.le_sup' _ hx₀)
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- Chart-local bound via supNormK. -/
-theorem HolomorphicOneForms.chartNormK_le_supNormK
+theorem HolomorphicOneForms.chartNormK_le_supNormK {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X)) :
@@ -70,20 +51,9 @@ theorem HolomorphicOneForms.chartNormK_le_supNormK
   unfold HolomorphicOneForms.supNormK
   exact Finset.le_sup' _ hx₀
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- Pointwise bound via `supNormK`. -/
-theorem HolomorphicOneForms.norm_localRep_le_supNormK
+theorem HolomorphicOneForms.norm_localRep_le_supNormK {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
@@ -92,39 +62,17 @@ theorem HolomorphicOneForms.norm_localRep_le_supNormK
   le_trans (HolomorphicOneForms.norm_localRep_le_chartNormK α x₀ hy)
     (HolomorphicOneForms.chartNormK_le_supNormK α hx₀)
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- `supNormK` of zero is zero. -/
-theorem HolomorphicOneForms.supNormK_zero :
+theorem HolomorphicOneForms.supNormK_zero {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
     HolomorphicOneForms.supNormK (0 : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) = 0 := by
   unfold HolomorphicOneForms.supNormK
   simp [HolomorphicOneForms.chartNormK_zero]
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- Triangle inequality for `supNormK`. -/
-theorem HolomorphicOneForms.supNormK_add_le
+theorem HolomorphicOneForms.supNormK_add_le {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) :
     HolomorphicOneForms.supNormK (α + β) ≤
@@ -142,20 +90,9 @@ theorem HolomorphicOneForms.supNormK_add_le
           (fun y => HolomorphicOneForms.chartNormK β y) :=
         add_le_add (Finset.le_sup' _ hx₀) (Finset.le_sup' _ hx₀)
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- Homogeneity of `supNormK`. -/
-theorem HolomorphicOneForms.supNormK_smul (c : ℂ)
+theorem HolomorphicOneForms.supNormK_smul {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (c : ℂ)
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) :
     HolomorphicOneForms.supNormK (c • α) = ‖c‖ * HolomorphicOneForms.supNormK α := by
@@ -165,20 +102,9 @@ theorem HolomorphicOneForms.supNormK_smul (c : ℂ)
     funext x₀; exact HolomorphicOneForms.chartNormK_smul c α x₀
   rw [hrw, ← Finset.mul₀_sup' (norm_nonneg c) _ _ chartCover_nonempty]
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- Negation invariance: `supNormK (-α) = supNormK α`. -/
-theorem HolomorphicOneForms.supNormK_neg
+theorem HolomorphicOneForms.supNormK_neg {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x)) :
     HolomorphicOneForms.supNormK (-α) = HolomorphicOneForms.supNormK α := by
@@ -186,22 +112,11 @@ theorem HolomorphicOneForms.supNormK_neg
   rw [h, HolomorphicOneForms.supNormK_smul]
   simp
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### Vanishing consequences of `supNormK α = 0` -/
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X]
-
 /-- If `chartNormK α x₀ = 0` then `localRep α x₀ y = 0` for y ∈ shrunkChart x₀. -/
-theorem HolomorphicOneForms.localRep_eq_zero_of_chartNormK_eq_zero
+theorem HolomorphicOneForms.localRep_eq_zero_of_chartNormK_eq_zero {X : Type*} [TopologicalSpace X]
+    [T2Space X] [CompactSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (x₀ : X) (h : HolomorphicOneForms.chartNormK α x₀ = 0)
@@ -215,20 +130,9 @@ theorem HolomorphicOneForms.localRep_eq_zero_of_chartNormK_eq_zero
   have : ‖localRep α x₀ y‖ = 0 := le_antisymm hle (norm_nonneg _)
   exact norm_eq_zero.mp this
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- If `supNormK α = 0` then `chartNormK α x = 0` for every `x ∈ chartCover`. -/
-theorem HolomorphicOneForms.chartNormK_eq_zero_of_supNormK_eq_zero
+theorem HolomorphicOneForms.chartNormK_eq_zero_of_supNormK_eq_zero {X : Type*} [TopologicalSpace X]
+    [T2Space X] [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (h : HolomorphicOneForms.supNormK α = 0)
@@ -240,21 +144,10 @@ theorem HolomorphicOneForms.chartNormK_eq_zero_of_supNormK_eq_zero
   rw [h] at hle
   exact le_antisymm hle (HolomorphicOneForms.chartNormK_nonneg α x)
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- `supNormK α = 0` forces `localRep α x₀ y = 0` for every
 `x₀ ∈ chartCover` and `y ∈ shrunkChart x₀`. -/
-theorem HolomorphicOneForms.localRep_eq_zero_of_supNormK_eq_zero
+theorem HolomorphicOneForms.localRep_eq_zero_of_supNormK_eq_zero {X : Type*} [TopologicalSpace X]
+    [T2Space X] [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (h : HolomorphicOneForms.supNormK α = 0)
@@ -264,18 +157,7 @@ theorem HolomorphicOneForms.localRep_eq_zero_of_supNormK_eq_zero
   HolomorphicOneForms.localRep_eq_zero_of_chartNormK_eq_zero α x₀
     (HolomorphicOneForms.chartNormK_eq_zero_of_supNormK_eq_zero α h x₀ hx₀) y hy
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### The key geometric content: localRep = 0 on a base-set point forces α.toFun = 0 -/
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- If the local representative of α vanishes at y ∈ baseSet of the trivialization
 at x₀, then `α.toFun y = 0` as a continuous linear map.
@@ -283,7 +165,8 @@ at x₀, then `α.toFun y = 0` as a continuous linear map.
 This uses that `T_y X ≃L[ℂ] ℂ` on the trivialization base set (X is charted
 over ℂ, so tangent spaces are 1-dim over ℂ), and that the image of `1` under
 `(φ.symm)` is a nonzero vector — a CLM vanishing on a spanning vector is 0. -/
-theorem alpha_toFun_eq_zero_of_localRep_eq_zero
+theorem alpha_toFun_eq_zero_of_localRep_eq_zero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (x₀ y : X)
@@ -309,22 +192,11 @@ theorem alpha_toFun_eq_zero_of_localRep_eq_zero
     rw [φ.symm_apply_apply]
   rw [hext, hcomp, ContinuousLinearMap.zero_comp]
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### Positive-definiteness -/
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Nonempty X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- Positive-definiteness: `supNormK α = 0 → α = 0`. -/
-theorem HolomorphicOneForms.eq_zero_of_supNormK_eq_zero
+theorem HolomorphicOneForms.eq_zero_of_supNormK_eq_zero {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
       (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
     (h : HolomorphicOneForms.supNormK α = 0) :
@@ -350,11 +222,4 @@ theorem HolomorphicOneForms.eq_zero_of_supNormK_eq_zero
   exact (congrFun this y).symm
 
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
 end Jacobians.Montel

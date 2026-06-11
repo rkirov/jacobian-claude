@@ -50,10 +50,6 @@ open Complex Set MeasureTheory Filter
 
 namespace Jacobians.OfCurveSkeleton
 
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **General chart-frame cancellation.** For any path `γ` that stays in the chart
 source of `Q₀` on a neighbourhood of `t`, and is chart-pullback-differentiable at
 `t`, the `lineIntegral` integrand of the `i`-th period basis form factors through
@@ -67,7 +63,9 @@ This is `OfCurveSkeleton.chartFrame_cancel` generalised from `ChartBallPath` to 
 arbitrary path: the proof is the same chart-transition + ℂ-linearity computation,
 with the `ChartBallPath`-specific `chart_ChartBallPath_eq` step replaced by the
 local equality `e ∘ γ` (the chart coordinate) directly. -/
-lemma chartFrame_cancel_general (Q₀ : X) (γ : ℝ → X) (i : Fin (genus X)) (t : ℝ)
+lemma chartFrame_cancel_general {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (Q₀ : X) (γ : ℝ → X)
+    (i : Fin (genus X)) (t : ℝ)
     (h_source_nbhd : ∀ᶠ s : ℝ in nhds t, γ s ∈ (chartAt (H := ℂ) Q₀).source)
     (hγ_diff : DifferentiableAt ℝ ((chartAt (H := ℂ) Q₀).toFun ∘ γ) t) :
     (periodBasisForm X i).toFun (γ t) (pathSpeed γ t) =
@@ -158,7 +156,8 @@ through its chart-coordinate endpoints `e (γ 0)`, `e (γ 1)`.
 `hint` (interval-integrability of the line-integral integrand) is what a
 `IsClosedSmoothLoop`/`IsSmoothPath` already supplies via
 `intervalIntegrable_form_pathSpeed_of_velContinuous`. -/
-lemma lineIntegral_eq_primitive_diff_in_ballChart
+lemma lineIntegral_eq_primitive_diff_in_ballChart {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (Q₀ : X) (γ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ)
     (htgt : (chartAt (H := ℂ) Q₀).target = Metric.ball c r)
     (hγ_in : ∀ t ∈ Set.Icc (0 : ℝ) 1, γ t ∈ (chartAt (H := ℂ) Q₀).source)
@@ -216,7 +215,8 @@ primitive-difference (`lineIntegral_eq_primitive_diff_in_ballChart`).
 
 This is the local period-preservation primitive: a sub-arc and a same-endpoints
 detour inside a ball-chart contribute equally to every period. -/
-lemma lineIntegral_eq_of_chart_ball_endpoints
+lemma lineIntegral_eq_of_chart_ball_endpoints {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (Q₀ : X) (γ₁ γ₂ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ)
     (htgt : (chartAt (H := ℂ) Q₀).target = Metric.ball c r)
     (hγ₁_in : ∀ t ∈ Set.Icc (0 : ℝ) 1, γ₁ t ∈ (chartAt (H := ℂ) Q₀).source)
@@ -277,7 +277,8 @@ the full target, and chart-image confinement is supplied rather than derived fro
 `lineIntegral_eq_primitive_diff_in_ballChart`: the ball `Metric.ball c r` need only be a
 subset of `(chartAt Q₀).target`, with the path's chart-images supplied to lie in the ball
 (`hg_ball`). The conclusion is the same primitive-difference. -/
-lemma lineIntegral_eq_primitive_diff_in_subball
+lemma lineIntegral_eq_primitive_diff_in_subball {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (Q₀ : X) (γ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ)
     (hsub : Metric.ball c r ⊆ (chartAt (H := ℂ) Q₀).target)
     (hg_ball : ∀ t ∈ Set.Icc (0 : ℝ) 1, (chartAt (H := ℂ) Q₀) (γ t) ∈ Metric.ball c r)
@@ -330,7 +331,8 @@ lemma lineIntegral_eq_primitive_diff_in_subball
 common ball `Metric.ball c r ⊆ (chartAt Q₀).target` and share chart-coordinate endpoints have
 equal line integrals. This is the form directly usable from the subdivision machinery, where
 the relevant ball is the `chart_restrict_to_ball` ball sitting inside the chart target. -/
-lemma lineIntegral_eq_of_chart_subball_endpoints
+lemma lineIntegral_eq_of_chart_subball_endpoints {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (Q₀ : X) (γ₁ γ₂ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ)
     (hsub : Metric.ball c r ⊆ (chartAt (H := ℂ) Q₀).target)
     (hg₁_ball : ∀ t ∈ Set.Icc (0 : ℝ) 1, (chartAt (H := ℂ) Q₀) (γ₁ t) ∈ Metric.ball c r)
@@ -387,7 +389,8 @@ additivity over the subdivision) the whole `periodVec` — unchanged, with NO re
 sub-interval `[a,b]` of a path `γ` whose sub-arc lies in a sub-ball `Metric.ball c r ⊆ chart
 target`, integrates to `F(chart γ b) − F(chart γ a)` for the Morera primitive `F`. Hence the
 partial integral depends only on the chart-coordinate endpoints `chart γ a`, `chart γ b`. -/
-lemma intervalIntegral_form_pathSpeed_eq_primitive_diff_in_subball
+lemma intervalIntegral_form_pathSpeed_eq_primitive_diff_in_subball {X : Type*} [TopologicalSpace X]
+    [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (Q₀ : X) (γ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ) (a b : ℝ)
     (hsub : Metric.ball c r ⊆ (chartAt (H := ℂ) Q₀).target)
     (hg_ball : ∀ t ∈ Set.uIcc a b, (chartAt (H := ℂ) Q₀) (γ t) ∈ Metric.ball c r)
@@ -437,7 +440,9 @@ This is what lets a *single* ball-`k` primitive `F` be reused across several con
 (the original loop, the detour, and the connecting paths) so that their primitive-differences
 telescope — the line integral over each confined path is `F(chart endpoint) − F(chart start)`
 with the SAME `F`. -/
-lemma intervalIntegral_form_pathSpeed_eq_primitive_diff_of_primitive
+lemma intervalIntegral_form_pathSpeed_eq_primitive_diff_of_primitive {X : Type*}
+    [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X]
     (Q₀ : X) (γ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ) (a b : ℝ)
     (F : ℂ → ℂ) (hF : ∀ w ∈ Metric.ball c r, HasDerivAt F (chartFormCoeff (X := X) Q₀ i w) w)
     (hg_ball : ∀ t ∈ Set.uIcc a b, (chartAt (H := ℂ) Q₀) (γ t) ∈ Metric.ball c r)
@@ -476,7 +481,8 @@ lemma intervalIntegral_form_pathSpeed_eq_primitive_diff_of_primitive
 sub-ball and share chart-coordinate endpoints (`chart γ₁ a = chart γ₂ a`, `chart γ₁ b = chart γ₂ b`)
 have equal partial line integrals over `[a,b]`. This is the telescoping step: it lets a bad sub-arc
 be replaced by a same-chart-endpoints detour over the SAME `[a,b]` without changing the integral. -/
-lemma intervalIntegral_form_pathSpeed_eq_of_subball_endpoints
+lemma intervalIntegral_form_pathSpeed_eq_of_subball_endpoints {X : Type*} [TopologicalSpace X]
+    [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (Q₀ : X) (γ₁ γ₂ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ) (a b : ℝ)
     (hsub : Metric.ball c r ⊆ (chartAt (H := ℂ) Q₀).target)
     (hg₁_ball : ∀ t ∈ Set.uIcc a b, (chartAt (H := ℂ) Q₀) (γ₁ t) ∈ Metric.ball c r)
@@ -536,7 +542,8 @@ automatically C¹ with NO velocity-matching. -/
 (`pathSpeed_smoothStep01_comp_eq`) and `smoothStep01_deriv 0 = 0`. The chart-pullback
 differentiability of the underlying `ChartBallPath` at `smoothStep01 0 = 0` is supplied by
 `ChartBallPath_chart_at_self_differentiableAt`. -/
-lemma pathSpeed_ChartBallPathSmooth_zero (Q₀ Q : X)
+lemma pathSpeed_ChartBallPathSmooth_zero {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (Q₀ Q : X)
     (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
         (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
@@ -552,7 +559,8 @@ lemma pathSpeed_ChartBallPathSmooth_zero (Q₀ Q : X)
 
 /-- **Seam velocity of `ChartBallPathSmooth` vanishes at `t = 1`.** Same as the `t = 0` case, with
 `smoothStep01 1 = 1` and `smoothStep01_deriv 1 = 0`. -/
-lemma pathSpeed_ChartBallPathSmooth_one (Q₀ Q : X)
+lemma pathSpeed_ChartBallPathSmooth_one {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (Q₀ Q : X)
     (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) Q₀) Q₀ +
         (s : ℂ) * (chartAt (H := ℂ) Q₀) Q) ∈ (chartAt (H := ℂ) Q₀).target) :
@@ -697,34 +705,31 @@ anchor (the `_self` in `ChartBallPath_chart_at_self_differentiableAt` refers to 
 `chartAt (γ t)`, not the anchor), so this is the self-anchored `isSmoothPath_ChartBallPathSmooth`
 argument with `chartAt w P`, `chartAt w Q` in place of `chartAt Q₀ Q₀`, `chartAt Q₀ Q`. -/
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-
 /-- Flat-ended chart-linear path `P → Q` in the chart at anchor `w` (smoothStep-reparametrized so
 both endpoint velocities vanish). -/
-noncomputable def ChartBallPathSmooth3 (w P Q : X) : ℝ → X :=
+noncomputable def ChartBallPathSmooth3 {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (w P Q : X) : ℝ → X :=
   fun t => Jacobians.ChartBallPath w P Q (Jacobians.smoothStep01 t)
 
 /-- `ChartBallPathSmooth3 w P Q 0 = P` when `P` is in the anchor chart's source. -/
-@[simp] lemma ChartBallPathSmooth3_zero (w P Q : X) (hP : P ∈ (chartAt (H := ℂ) w).source) :
+@[simp] lemma ChartBallPathSmooth3_zero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (w P Q : X) (hP : P ∈ (chartAt (H := ℂ) w).source) :
     ChartBallPathSmooth3 w P Q 0 = P := by
   unfold ChartBallPathSmooth3
   rw [Jacobians.smoothStep01_zero]; exact Jacobians.ChartBallPath.start w P Q hP
 
 /-- `ChartBallPathSmooth3 w P Q 1 = Q` when `Q` is in the anchor chart's source. -/
-@[simp] lemma ChartBallPathSmooth3_one (w P Q : X) (hQ : Q ∈ (chartAt (H := ℂ) w).source) :
+@[simp] lemma ChartBallPathSmooth3_one {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (w P Q : X) (hQ : Q ∈ (chartAt (H := ℂ) w).source) :
     ChartBallPathSmooth3 w P Q 1 = Q := by
   unfold ChartBallPathSmooth3
   rw [Jacobians.smoothStep01_one]; exact Jacobians.ChartBallPath.finish w P Q hQ
 
-variable [ConnectedSpace X]
-
 /-- The chart-`w` pullback of `ChartBallPathSmooth3 w P Q` is the affine interpolation
 reparametrized by `smoothStep01` — used to read off the chart-coordinate endpoints for the
 splice. -/
-lemma chart_ChartBallPathSmooth3_eq (w P Q : X) (t : ℝ)
+lemma chart_ChartBallPathSmooth3_eq {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [ConnectedSpace X] (w P Q : X) (t : ℝ)
     (h_in_target : ((1 - (Jacobians.smoothStep01 t : ℂ)) * (chartAt (H := ℂ) w) P +
       (Jacobians.smoothStep01 t : ℂ) * (chartAt (H := ℂ) w) Q) ∈ (chartAt (H := ℂ) w).target) :
     (chartAt (H := ℂ) w) (ChartBallPathSmooth3 w P Q t) =
@@ -735,7 +740,8 @@ lemma chart_ChartBallPathSmooth3_eq (w P Q : X) (t : ℝ)
 
 /-- `ChartBallPathSmooth3 w P Q` stays in the anchor chart source on `[0,1]` under the chart-ball
 hypothesis. -/
-lemma ChartBallPathSmooth3_mem_source (w P Q : X) (t : ℝ)
+lemma ChartBallPathSmooth3_mem_source {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [ConnectedSpace X] (w P Q : X) (t : ℝ)
     (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
         ∈ (chartAt (H := ℂ) w).target) :
@@ -744,10 +750,9 @@ lemma ChartBallPathSmooth3_mem_source (w P Q : X) (t : ℝ)
   exact Jacobians.ChartBallPath_mem_source w P Q (Jacobians.smoothStep01 t)
     (h_chart_ball _ (Jacobians.smoothStep01_mem_unit t))
 
-variable [IsManifold 𝓘(ℂ) ω X]
-
 /-- Continuity of `ChartBallPathSmooth3 w P Q` under the chart-ball hypothesis on `[0,1]`. -/
-lemma ChartBallPathSmooth3_continuous (w P Q : X)
+lemma ChartBallPathSmooth3_continuous {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] (w P Q : X)
     (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
         ∈ (chartAt (H := ℂ) w).target) :
@@ -759,7 +764,8 @@ lemma ChartBallPathSmooth3_continuous (w P Q : X)
 
 /-- Moving-frame chart-pullback differentiability of `ChartBallPathSmooth3` (the `IsSmoothPath.diff`
 field). Chain rule on `(general-anchor ChartBallPath chart-pullback) ∘ smoothStep01`. -/
-lemma ChartBallPathSmooth3_chart_at_differentiableAt (w P Q : X) (t : ℝ)
+lemma ChartBallPathSmooth3_chart_at_differentiableAt {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] (w P Q : X) (t : ℝ)
     (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
         ∈ (chartAt (H := ℂ) w).target) :
@@ -780,17 +786,12 @@ lemma ChartBallPathSmooth3_chart_at_differentiableAt (w P Q : X) (t : ℝ)
   rw [h_eq]
   exact h_inner.comp t (Jacobians.smoothStep01_differentiable t)
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- Velocity-section continuity of `ChartBallPathSmooth3` (the `IsSmoothPath.velCont` field). The
 path is `(chartAt w).symm ∘ β` with `β` the smoothStep-reparametrized affine chart-coord curve;
 push the model-space velocity continuity through the holomorphic chart inverse via
 `velCont_compOn`. -/
-lemma ChartBallPathSmooth3_velCont (w P Q : X)
+lemma ChartBallPathSmooth3_velCont {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (w P Q : X)
     (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
         ∈ (chartAt (H := ℂ) w).target) :
@@ -847,7 +848,8 @@ lemma ChartBallPathSmooth3_velCont (w P Q : X)
 
 /-- **`IsSmoothPath` for the general-anchor flat-ended chart path.** Assembled from the fields
 above; this is the per-piece building block of the off-branch detour. -/
-lemma isSmoothPath_ChartBallPathSmooth3 (w P Q : X)
+lemma isSmoothPath_ChartBallPathSmooth3 {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (w P Q : X)
     (hP : P ∈ (chartAt (H := ℂ) w).source) (hQ : Q ∈ (chartAt (H := ℂ) w).source)
     (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
@@ -859,7 +861,8 @@ lemma isSmoothPath_ChartBallPathSmooth3 (w P Q : X)
     ChartBallPathSmooth3_velCont w P Q h_chart_ball⟩
 
 /-- Endpoint velocities of `ChartBallPathSmooth3` vanish (smoothStep chain rule, as in A1). -/
-lemma pathSpeed_ChartBallPathSmooth3_zero (w P Q : X)
+lemma pathSpeed_ChartBallPathSmooth3_zero {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (w P Q : X)
     (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
         ∈ (chartAt (H := ℂ) w).target) :
@@ -873,7 +876,8 @@ lemma pathSpeed_ChartBallPathSmooth3_zero (w P Q : X)
   show Jacobians.pathSpeed (Jacobians.ChartBallPath w P Q ∘ Jacobians.smoothStep01) 0 = 0
   rw [h, Jacobians.smoothStep01_deriv_zero]; simp
 
-lemma pathSpeed_ChartBallPathSmooth3_one (w P Q : X)
+lemma pathSpeed_ChartBallPathSmooth3_one {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (w P Q : X)
     (h_chart_ball : ∀ s ∈ Set.Icc (0 : ℝ) 1,
       ((1 - (s : ℂ)) * (chartAt (H := ℂ) w) P + (s : ℂ) * (chartAt (H := ℂ) w) Q)
         ∈ (chartAt (H := ℂ) w).target) :
@@ -902,20 +906,15 @@ so each `concat` junction is C¹ for free (`IsSmoothPath.concat`). The fundament
 `balancedGlue_apply_of_mem` reads off the value on the `k`-th dyadic interval as `g k` affinely
 reparametrized by `t ↦ 2^d · t − k`. -/
 
-end
-
-section
-variable {X : Type*}
-
 /-- Balanced binary concatenation of `2^d` paths `g 0, …, g (2^d-1)` (split always at the midpoint,
 so pieces land on uniform dyadic sub-intervals). -/
-noncomputable def balancedGlue (g : ℕ → ℝ → X) : ℕ → ℝ → X
+noncomputable def balancedGlue {X : Type*} (g : ℕ → ℝ → X) : ℕ → ℝ → X
   | 0 => g 0
   | (d+1) => Jacobians.concat (balancedGlue g d) (balancedGlue (fun k => g (2^d + k)) d)
 
-@[simp] lemma balancedGlue_zero (g : ℕ → ℝ → X) : balancedGlue g 0 = g 0 := rfl
+@[simp] lemma balancedGlue_zero {X : Type*} (g : ℕ → ℝ → X) : balancedGlue g 0 = g 0 := rfl
 
-lemma balancedGlue_succ (g : ℕ → ℝ → X) (d : ℕ) :
+lemma balancedGlue_succ {X : Type*} (g : ℕ → ℝ → X) (d : ℕ) :
     balancedGlue g (d+1) =
       Jacobians.concat (balancedGlue g d) (balancedGlue (fun k => g (2^d + k)) d) := rfl
 
@@ -923,7 +922,7 @@ lemma balancedGlue_succ (g : ℕ → ℝ → X) (d : ℕ) :
 `t ∈ [k/2^d, (k+1)/2^d]`, the glue equals `g k` reparametrized affinely by `t ↦ 2^d·t − k`.
 The chaining hypothesis `hchain` (consecutive pieces share their shared node value) handles the
 junctions, which `concat` resolves by its left branch. -/
-lemma balancedGlue_apply_of_mem (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
+lemma balancedGlue_apply_of_mem {X : Type*} (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
     (d : ℕ) (k : ℕ) (hk : k < 2^d) (t : ℝ)
     (ht0 : (k : ℝ) / 2^d ≤ t) (ht1 : t ≤ ((k : ℝ) + 1) / 2^d) :
     balancedGlue g d t = g k ((2:ℝ)^d * t - k) := by
@@ -997,19 +996,14 @@ lemma balancedGlue_apply_of_mem (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 =
         · rw [hkk']
         · rw [hk_cast, pow_succ]; ring
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **`balancedGlue` is a flat-ended smooth path with vanishing endpoint velocities.** The
 `n`-piece (dyadic) generalization of `IsSmoothPath.concat`: every piece `g k` (`k < 2^d`) is a
 flat-ended smooth path (zero endpoint velocity), consecutive pieces chain (`g k 1 = g (k+1) 0`), so
 each `concat` seam is `C¹` for free. Carried alongside the `IsSmoothPath` are the two endpoint
 velocities of the glue itself (`= pathSpeed (g 0) 0 = 0` and `= pathSpeed (g (2^d-1)) 1 = 0`),
 needed as the junction hypotheses of the next `concat` in the induction. -/
-lemma isSmoothPath_balancedGlue (g : ℕ → ℝ → X)
+lemma isSmoothPath_balancedGlue {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (g : ℕ → ℝ → X)
     (hchain : ∀ j, g j 1 = g (j+1) 0) (d : ℕ)
     (hpiece : ∀ k, k < 2^d → Jacobians.IsSmoothPath (g k 0) (g k 1) (g k))
     (hv0 : ∀ k, k < 2^d → Jacobians.pathSpeed (g k) 0 = 0)
@@ -1098,17 +1092,12 @@ pieces chain (`g k 1 = g (k+1) 0`), so each seam `t = k/n` is `C¹` for free —
 scale `n`.
 -/
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X]
-
 /-- **Moving-chart to fixed-anchor differentiability transfer.** If `γ` is continuous, `γ t` lies in
 the source of a fixed anchor chart `chartAt Q₀`, and `γ` is chart-pullback-differentiable at `t` in
 its own moving chart `chartAt (γ t)`, then it is also chart-pullback-differentiable in the fixed
 anchor chart. (Composition with the smooth chart-transition `chartAt Q₀ ∘ (chartAt (γ t)).symm`.) -/
-lemma differentiableAt_chart_anchor_of_self (Q₀ : X) (γ : ℝ → X) (t : ℝ)
+lemma differentiableAt_chart_anchor_of_self {X : Type*} [TopologicalSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (Q₀ : X) (γ : ℝ → X) (t : ℝ)
     (hγcont : Continuous γ)
     (hmem : γ t ∈ (chartAt (H := ℂ) Q₀).source)
     (hdiff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
@@ -1133,17 +1122,11 @@ lemma differentiableAt_chart_anchor_of_self (Q₀ : X) (γ : ℝ → X) (t : ℝ
     exact chart_transition_comp_differentiableAt_R (γ t) Q₀ ((e.toFun ∘ γ) t) h_target h_source
   exact htrans.comp t hdiff
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- Piece index of `t` among `n` uniform sub-intervals of `[0,1]`, clamped to `[0, n-1]`. -/
 noncomputable def uIdx (n : ℕ) (t : ℝ) : ℕ := min (⌊(n:ℝ) * t⌋.toNat) (n - 1)
 
 /-- **Uniform `n`-piece glue** of `g 0, …, g (n-1)`: on `[k/n,(k+1)/n]` it is `g k (n·t − k)`. -/
-noncomputable def uniformGlue (g : ℕ → ℝ → X) (n : ℕ) : ℝ → X :=
+noncomputable def uniformGlue {X : Type*} (g : ℕ → ℝ → X) (n : ℕ) : ℝ → X :=
   fun t => g (uIdx n t) ((n:ℝ) * t - uIdx n t)
 
 /-- **Piece index on the half-open `k`-th sub-interval.** For `k < n` and `t ∈ [k/n, (k+1)/n)`,
@@ -1180,14 +1163,9 @@ lemma uIdx_last_of_ge_one (n : ℕ) (hn : 0 < n) (t : ℝ) (ht : 1 ≤ t) : uIdx
   have h2 : (n:ℕ) ≤ ⌊(n:ℝ)*t⌋.toNat := by omega
   omega
 
-end
-
-section
-variable {X : Type*}
-
 /-- **Value of the uniform glue on the closed `k`-th sub-interval** (for `k < n`, with the right
 endpoint resolved by chaining `g k 1 = g (k+1) 0`). -/
-lemma uniformGlue_apply_of_mem (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
+lemma uniformGlue_apply_of_mem {X : Type*} (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
     (n : ℕ) (hn : 0 < n) (k : ℕ) (hk : k < n) (t : ℝ)
     (h0 : (k:ℝ)/n ≤ t) (h1 : t ≤ ((k:ℝ)+1)/n) :
     uniformGlue g n t = g k ((n:ℝ) * t - k) := by
@@ -1218,21 +1196,11 @@ lemma uniformGlue_apply_of_mem (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = 
     unfold uniformGlue
     rw [uIdx_eq n hn k hk t h0 hlt]
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-
 /-- **General affine-reparametrization pathSpeed.** `pathSpeed (s ↦ γ (a·s+b)) t = a · pathSpeed γ
 (a·t+b)`, given the chart-pullback of `γ` is differentiable at `a·t+b`. The general-`(a,b)` analogue
 of `pathSpeed_concat_left/right` (`a=2`), used at uniform-glue seams (`a=n`). -/
-lemma pathSpeed_affine_comp (γ : ℝ → X) (a b t : ℝ)
+lemma pathSpeed_affine_comp {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (γ : ℝ → X)
+    (a b t : ℝ)
     (hdiff : DifferentiableAt ℝ ((chartAt (H := ℂ) (γ (a*t+b))).toFun ∘ γ) (a*t+b)) :
     Jacobians.pathSpeed (fun s => γ (a*s+b)) t = (a:ℂ) * Jacobians.pathSpeed γ (a*t+b) := by
   unfold Jacobians.pathSpeed
@@ -1254,14 +1222,9 @@ lemma pathSpeed_affine_comp (γ : ℝ → X) (a b t : ℝ)
     _ = (a:ℝ) • (fderiv ℝ ψ (a*t+b)) 1 := (fderiv ℝ ψ (a*t+b)).map_smul a 1
     _ = (a:ℂ) * (fderiv ℝ ψ (a*t+b)) 1 := by rw [Complex.real_smul]
 
-end
-
-section
-variable {X : Type*}
-
 /-- `uniformGlue g n` agrees with the affine reparametrization `s ↦ g k (n·s − k)` of piece `k` on
 the closed `k`-th sub-interval `[k/n,(k+1)/n]`. -/
-lemma uniformGlue_eqOn_piece (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
+lemma uniformGlue_eqOn_piece {X : Type*} (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
     (n : ℕ) (hn : 0 < n) (k : ℕ) (hk : k < n) :
     Set.EqOn (uniformGlue g n) (fun s => g k ((n:ℝ) * s - k))
       (Set.Icc ((k:ℝ)/n) (((k:ℝ)+1)/n)) :=
@@ -1269,7 +1232,8 @@ lemma uniformGlue_eqOn_piece (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g 
 
 
 /-- On the open `k`-th sub-interval, the glue locally equals the affine reparam of piece `k`. -/
-lemma uniformGlue_eventuallyEq_piece (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n) (k : ℕ) (hk : k < n)
+lemma uniformGlue_eventuallyEq_piece {X : Type*} (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n) (k : ℕ)
+    (hk : k < n)
     (t : ℝ) (ht : t ∈ Set.Ioo ((k:ℝ)/n) (((k:ℝ)+1)/n)) :
     uniformGlue g n =ᶠ[nhds t] (fun s => g k ((n:ℝ)*s - k)) := by
   have hmem : Set.Ioo ((k:ℝ)/n) (((k:ℝ)+1)/n) ∈ nhds t := isOpen_Ioo.mem_nhds ht
@@ -1278,21 +1242,11 @@ lemma uniformGlue_eventuallyEq_piece (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 <
   unfold uniformGlue
   rw [uIdx_eq n hn k hk s (le_of_lt hs1) hs2]
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- **Seam `C¹`-junction of the uniform glue.** At an interior breakpoint `t₀ = j/n` (`0 < j < n`)
 the glue's chart-pullback has derivative `0`: both adjacent pieces are flat-ended, so each one-sided
 `HasDerivWithinAt` is `0`, and the two `Icc` halves union to a neighborhood. -/
-lemma uniformGlue_seam (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0) (n : ℕ) (hn : 0 < n)
+lemma uniformGlue_seam {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0) (n : ℕ) (hn : 0 < n)
     (hpiece : ∀ k, k < n → Jacobians.IsSmoothPath (g k 0) (g k 1) (g k))
     (hv0 : ∀ k, k < n → Jacobians.pathSpeed (g k) 0 = 0)
     (hv1 : ∀ k, k < n → Jacobians.pathSpeed (g k) 1 = 0)
@@ -1366,13 +1320,8 @@ lemma uniformGlue_seam (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 
     · rw [ht₀eq, div_lt_div_iff_of_pos_right hnpos]; linarith
   exact hunion.hasDerivAt hnbhd
 
-end
-
-section
-variable {X : Type*}
-
 /-- Near `t = 0` the glue equals the affine reparam of piece `0` (clamped index). -/
-lemma uniformGlue_eventuallyEq_zero (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n) :
+lemma uniformGlue_eventuallyEq_zero {X : Type*} (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n) :
     uniformGlue g n =ᶠ[nhds 0] (fun s => g 0 ((n:ℝ)*s - (0:ℕ))) := by
   have hnpos : (0:ℝ) < n := by exact_mod_cast hn
   have hmem : Iio ((1:ℝ)/n) ∈ nhds (0:ℝ) := isOpen_Iio.mem_nhds (by simp only [mem_Iio]; positivity)
@@ -1385,7 +1334,7 @@ lemma uniformGlue_eventuallyEq_zero (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < 
     norm_num
 
 /-- Near `t = 1` the glue equals the affine reparam of the last piece (clamped index). -/
-lemma uniformGlue_eventuallyEq_one (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n) :
+lemma uniformGlue_eventuallyEq_one {X : Type*} (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n) :
     uniformGlue g n =ᶠ[nhds 1] (fun s => g (n-1) ((n:ℝ)*s - (n-1:ℕ))) := by
   have hnpos : (0:ℝ) < n := by exact_mod_cast hn
   have hmem : Ioi (((n-1:ℕ):ℝ)/n) ∈ nhds (1:ℝ) := by
@@ -1400,28 +1349,17 @@ lemma uniformGlue_eventuallyEq_one (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n
         (by rw [show ((n-1:ℕ):ℝ)+1 = (n:ℝ) from by rw [Nat.cast_sub hn]; push_cast; ring,
               div_self (ne_of_gt hnpos)]; exact h)]
 
-variable [TopologicalSpace X] [ChartedSpace ℂ X]
-
 /-- `pathSpeed` is local: it agrees on functions equal near the point. -/
-lemma pathSpeed_congr_nhds (γ γ' : ℝ → X) (t : ℝ) (h : γ =ᶠ[nhds t] γ') :
+lemma pathSpeed_congr_nhds {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (γ γ' : ℝ → X)
+    (t : ℝ) (h : γ =ᶠ[nhds t] γ') :
     Jacobians.pathSpeed γ t = Jacobians.pathSpeed γ' t := by
   unfold Jacobians.pathSpeed
   rw [h.eq_of_nhds]; congr 1; exact Filter.EventuallyEq.fderiv_eq (h.fun_comp _)
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- The affine reparam of piece `k` has pathSpeed `n · (pathSpeed of piece k at the rescaled
 arg)`. -/
-lemma piece_pathSpeed_eq (g : ℕ → ℝ → X) (n : ℕ) (_hn : 0 < n)
+lemma piece_pathSpeed_eq {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (g : ℕ → ℝ → X) (n : ℕ) (_hn : 0 < n)
     (hpiece : ∀ k, k < n → Jacobians.IsSmoothPath (g k 0) (g k 1) (g k))
     (k : ℕ) (hk : k < n) (s : ℝ) (hsmem : (n:ℝ)*s - k ∈ Icc (0:ℝ) 1) :
     Jacobians.pathSpeed (fun u => g k ((n:ℝ)*u - k)) s
@@ -1441,7 +1379,8 @@ lemma piece_pathSpeed_eq (g : ℕ → ℝ → X) (n : ℕ) (_hn : 0 < n)
 piece.**
 On the open interior via locality; at the two endpoints both vanish (flat-ended seams /
 boundaries). -/
-lemma uniformGlue_pathSpeed_eqOn_piece (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
+lemma uniformGlue_pathSpeed_eqOn_piece {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (g : ℕ → ℝ → X) (hchain : ∀ j, g j 1 = g (j+1) 0)
     (n : ℕ) (hn : 0 < n)
     (hpiece : ∀ k, k < n → Jacobians.IsSmoothPath (g k 0) (g k 1) (g k))
     (hv0 : ∀ k, k < n → Jacobians.pathSpeed (g k) 0 = 0)
@@ -1496,12 +1435,6 @@ lemma uniformGlue_pathSpeed_eqOn_piece (g : ℕ → ℝ → X) (hchain : ∀ j, 
           exact ⟨zero_le_one, le_refl _⟩
     · rw [pathSpeed_congr_nhds _ _ s (uniformGlue_eventuallyEq_piece g n hn k hk s ⟨hgt, hlt2⟩)]
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### A4''. Smoothness of the uniform glue -/
 
 /-- **The uniform glue is a flat-ended smooth path.** Given each piece `g k` (`k < n`) is an
@@ -1510,7 +1443,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 over the closed uniform cover via the affine-reparam machinery; chart-pullback differentiability is
 the per-point chain rule on open pieces, and the `HasDerivWithinAt … 0` union at each seam (every
 piece flat-ended ⇒ both one-sided seam derivatives vanish). -/
-lemma isSmoothPath_uniformGlue (g : ℕ → ℝ → X)
+lemma isSmoothPath_uniformGlue {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (g : ℕ → ℝ → X)
     (hchain : ∀ j, g j 1 = g (j+1) 0) (n : ℕ) (hn : 0 < n)
     (hpiece : ∀ k, k < n → Jacobians.IsSmoothPath (g k 0) (g k 1) (g k))
     (hv0 : ∀ k, k < n → Jacobians.pathSpeed (g k) 0 = 0)
@@ -1711,11 +1645,6 @@ Lebesgue-number
 argument as `exists_chartCover`, but each cover element also pins the chart-image into a
 target sub-ball. -/
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-
 /-- **Sub-ball chart cover.** For a continuous `γ : ℝ → X`, there is a uniform partition into `n`
 pieces with, per piece `k`, a chart anchor `x k`, a center `c k` and radius `r k > 0` such that
 `Metric.ball (c k) (r k) ⊆ (chartAt ℂ (x k)).target`, and for every `s` in the `k`-th piece
@@ -1723,7 +1652,8 @@ pieces with, per piece `k`, a chart anchor `x k`, a center `c k` and radius `r k
 `chartAt ℂ (x k) (γ s) ∈ Metric.ball (c k) (r k)`. This supplies the sub-ball confinement
 consumed by
 `intervalIntegral_form_pathSpeed_eq_of_subball_endpoints`. -/
-theorem exists_subBallChartCover (γ : ℝ → X) (hγ : Continuous γ) :
+theorem exists_subBallChartCover {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (γ : ℝ → X)
+    (hγ : Continuous γ) :
     ∃ (n : ℕ) (_hn : 0 < n) (x : Fin n → X) (c : Fin n → ℂ) (r : Fin n → ℝ),
       (∀ k, 0 < r k) ∧
       ∀ (k : Fin n) (s : ℝ),
@@ -1831,14 +1761,6 @@ theorem exists_subBallChartCover (γ : ℝ → X) (hγ : Continuous γ) :
     fun k => (key k).choose_spec.choose_spec.choose_spec.1, ?_⟩
   intro k s hs_low hs_high
   exact (key k).choose_spec.choose_spec.choose_spec.2 s hs_low hs_high
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-
-end
 
 end Jacobians.OfCurveSkeleton
 

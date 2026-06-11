@@ -37,10 +37,6 @@ open Set Metric Filter Jacobians.AbelPlanar
 namespace Jacobians
 
 
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### The chart-comparison unit -/
 
 /-- **The chart-comparison unit.**  For `p` in the source of the chart at `x₀`, the centred
@@ -51,7 +47,9 @@ centred coordinate `chartCoord p`:
 
 `u` is `dslope` of the chart transition read through the chart at `p`; its value at `p` is
 the transition derivative, nonzero on a complex manifold. -/
-theorem exists_chartCompare_unit {x₀ p : X} (hp : p ∈ (chartAt (H := ℂ) x₀).source) :
+theorem exists_chartCompare_unit {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {x₀ p : X}
+    (hp : p ∈ (chartAt (H := ℂ) x₀).source) :
     ∃ (V : Set X) (u : X → ℂ), IsOpen V ∧ p ∈ V ∧
       V ⊆ (chartAt (H := ℂ) x₀).source ∩ (chartAt (H := ℂ) p).source ∧
       (∀ x ∈ V, ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) u x) ∧ (∀ x ∈ V, u x ≠ 0) ∧
@@ -112,21 +110,18 @@ theorem exists_chartCompare_unit {x₀ p : X} (hp : p ∈ (chartAt (H := ℂ) x�
     rw [hcc, ← hTx, ← hTw₀, ← hfact]
     ring
 
-end
-
 /-! ### Smoothness helpers: planar functions read through a chart -/
 
-section
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- The chart map is real-smooth at every source point. -/
-theorem contMDiffAt_chart_real {x₀ x : X} (hx : x ∈ (chartAt (H := ℂ) x₀).source) :
+theorem contMDiffAt_chart_real {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {x₀ x : X} (hx : x ∈ (chartAt (H := ℂ) x₀).source) :
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (chartAt (H := ℂ) x₀ : X → ℂ) x :=
   (contMDiffOn_chart (I := 𝓘(ℝ, ℂ)) (n := (⊤ : ℕ∞)) (x := x₀)).contMDiffAt
     ((chartAt (H := ℂ) x₀).open_source.mem_nhds hx)
 
 /-- A planar `C^∞` function read through a chart is real-smooth at every source point. -/
-theorem contMDiffAt_planar_comp_chart {φ : ℂ → ℂ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+theorem contMDiffAt_planar_comp_chart {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] {φ : ℂ → ℂ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     {x₀ x : X} (hx : x ∈ (chartAt (H := ℂ) x₀).source) :
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (fun y => φ ((chartAt (H := ℂ) x₀) y)) x := by
   have hφm : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) φ ((chartAt (H := ℂ) x₀) x) :=
@@ -135,7 +130,8 @@ theorem contMDiffAt_planar_comp_chart {φ : ℂ → ℂ} (hφ : ContDiff ℝ (�
 
 /-- The piece solution `F = W·(z−β)/(z−α)` read through a chart is real-smooth at every
 source point whose chart image avoids the pole `α`. -/
-theorem AbelPlanar.PlanarPieceSolution.contMDiffAt_F_comp_chart {c₀ α β : ℂ} {ρ : ℝ}
+theorem AbelPlanar.PlanarPieceSolution.contMDiffAt_F_comp_chart {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {c₀ α β : ℂ} {ρ : ℝ}
     (S : PlanarPieceSolution c₀ ρ α β) {x₀ x : X}
     (hx : x ∈ (chartAt (H := ℂ) x₀).source) (hne : (chartAt (H := ℂ) x₀) x ≠ α) :
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞)
@@ -154,12 +150,6 @@ theorem AbelPlanar.PlanarPieceSolution.contMDiffAt_F_comp_chart {c₀ α β : �
   show S.F (e y) = S.W (e y) * (e y - β) * (e y - α)⁻¹
   rw [AbelPlanar.PlanarPieceSolution.F, div_eq_mul_inv]
 
-end
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### The per-piece weak solution (Forster 20.5(a) on the surface) -/
 
 /-- **The per-piece weak solution.**  Given a planar piece solution `S` for the chart
@@ -168,7 +158,8 @@ endpoints `α = chart Pa`, `β = chart Pb` (with trivial cofactor in the degener
 `closedBall c₀ (5ρ)`-preimage, is a weak solution of the divisor `(Pb) − (Pa)`.  It is
 `≡ 1` as soon as the chart image leaves `ball c₀ (5ρ)` (or off the chart source), and it
 reads as the planar `S.F` throughout the chart source away from the pole point. -/
-theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
+theorem exists_pieceWeakSolution {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {x₀ Pa Pb : X} {ρ : ℝ}
     (hPa : Pa ∈ (chartAt (H := ℂ) x₀).source) (hPb : Pb ∈ (chartAt (H := ℂ) x₀).source)
     (hball : Metric.ball ((chartAt (H := ℂ) x₀) x₀) (8 * ρ) ⊆ (chartAt (H := ℂ) x₀).target)
     (S : PlanarPieceSolution ((chartAt (H := ℂ) x₀) x₀) ρ
@@ -458,7 +449,5 @@ theorem exists_pieceWeakSolution {x₀ Pa Pb : X} {ρ : ℝ}
     · rw [if_neg h3]
       intro x _
       rw [hD0 a h1 h2, zpow_zero, mul_one]
-
-end
 
 end Jacobians

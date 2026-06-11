@@ -36,16 +36,14 @@ open Set Filter Complex Jacobians.Dolbeault
 
 namespace Jacobians
 
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### The global smooth extension of a locally-smooth function -/
 
 /-- **Bump-glued global extension**: a function smooth on an open neighbourhood of `a`
 agrees near `a` with a global `SmoothCFunctions`. (Planar bump in the chart at `a` ×
 the chart read, lifted by `exists_smoothLift_of_chartFun`.) -/
-theorem exists_smoothCFunction_eventuallyEq {w : X → ℂ} {V : Set X} (hV : IsOpen V)
+theorem exists_smoothCFunction_eventuallyEq {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {w : X → ℂ}
+    {V : Set X} (hV : IsOpen V)
     {a : X} (ha : a ∈ V)
     (hw : ∀ x ∈ V, ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) w x) :
     ∃ u : SmoothCFunctions X, ⇑u =ᶠ[𝓝 a] w := by
@@ -110,24 +108,20 @@ theorem exists_smoothCFunction_eventuallyEq {w : X → ℂ} {V : Set X} (hV : Is
 
 /-! ### The logarithmic `∂̄`-fiber of a weak solution -/
 
-end
-
 namespace WeakSolution
-
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-variable {D D₁ D₂ : Divisor X}
 
 /-- **The logarithmic `∂̄`-fiber** of a weak solution at `x`: `(ψ_x x)⁻¹ • ∂̄ψ_x|_x` with
 `ψ_x = F.unit x` the centred local unit (Forster 20.2: `d″f/f = d″ψ/ψ`). -/
-def logDbarFiber (F : WeakSolution D) (x : X) : ℂ →L[ℝ] ℂ :=
+def logDbarFiber {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {D : Divisor X}
+    (F : WeakSolution D) (x : X) : ℂ →L[ℝ] ℂ :=
   (F.unit x x)⁻¹ • proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (F.unit x) x)
 
 /-- **Locality of the logarithmic fiber** (the Forster 20.2 mechanism): on `nbhd a` the
 fiber is computed from the single unit `ψ_a` — the holomorphic normal-form factor `z_a^k`
 is killed by `∂̄`. -/
-theorem logDbarFiber_eventuallyEq (F : WeakSolution D) (a : X) :
+theorem logDbarFiber_eventuallyEq {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (F : WeakSolution D)
+    (a : X) :
     ∀ x ∈ F.nbhd a, F.logDbarFiber x
       = (F.unit a x)⁻¹ • proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (F.unit a) x) := by
   intro x hx
@@ -174,22 +168,17 @@ theorem logDbarFiber_eventuallyEq (F : WeakSolution D) (a : X) :
         module
     _ = (F.unit a x)⁻¹ • proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (F.unit a) x) := by rw [hcoeff]
 
-end
-
 /-- The logarithmic fiber is `(0,1)` (fixed by `proj01`). -/
 theorem proj01_logDbarFiber {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
     {D : Divisor X} (F : WeakSolution D) (x : X) :
     proj01 (F.logDbarFiber x) = F.logDbarFiber x := by
   rw [logDbarFiber, proj01_smul, proj01_idempotent]
 
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-variable {D D₁ D₂ : Divisor X}
-
 /-- **Smoothness of the logarithmic fiber section**: near each `a`, replace `ψ_a` by a
 bump-glued global smooth function and use the smoothness of `(u⁻¹) • ∂̄u`. -/
-theorem contMDiff_logDbarFiber (F : WeakSolution D) :
+theorem contMDiff_logDbarFiber {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (F : WeakSolution D)
+    :
     ContMDiff (𝓘(ℝ, ℂ)) (𝓘(ℝ, ℂ).prod 𝓘(ℝ, ℂ →L[ℝ] ℂ)) (⊤ : ℕ∞)
       (fun x => (⟨x, F.logDbarFiber x⟩ : Bundle.TotalSpace (ℂ →L[ℝ] ℂ)
         (fun x : X => TangentSpace (𝓘(ℝ, ℂ)) x →L[ℝ] (Bundle.Trivial X ℂ) x))) := by
@@ -222,15 +211,21 @@ theorem contMDiff_logDbarFiber (F : WeakSolution D) :
 
 /-- **The global `(0,1)`-datum `σ_f = d″f/f`** of a weak solution (Forster 20.2), as a
 smooth `ℂ`-valued 1-form. -/
-def logDbar (F : WeakSolution D) : SmoothCOneForms X where
+def logDbar {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (F : WeakSolution D) :
+    SmoothCOneForms X where
   toFun := F.logDbarFiber
   contMDiff_toFun := F.contMDiff_logDbarFiber
 
-@[simp] theorem logDbar_apply (F : WeakSolution D) (x : X) :
+@[simp] theorem logDbar_apply {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (F : WeakSolution D)
+    (x : X) :
     F.logDbar x = F.logDbarFiber x := rfl
 
 /-- `σ_f` is a `(0,1)`-form. -/
-theorem logDbar_mem_zeroOne (F : WeakSolution D) : F.logDbar ∈ OneFormsZeroOne X := by
+theorem logDbar_mem_zeroOne {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (F : WeakSolution D)
+    : F.logDbar ∈ OneFormsZeroOne X := by
   refine ⟨F.logDbar, ?_⟩
   refine ContMDiffSection.ext fun x => ?_
   show proj01 (F.logDbar x) = F.logDbar x
@@ -240,7 +235,9 @@ theorem logDbar_mem_zeroOne (F : WeakSolution D) : F.logDbar ∈ OneFormsZeroOne
 /-! ### The logDbar algebra (mirroring the weak-solution algebra) -/
 
 /-- `σ_{f₁f₂} = σ_{f₁} + σ_{f₂}` (pointwise). -/
-theorem logDbarFiber_mul (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) (x : X) :
+theorem logDbarFiber_mul {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D₁ D₂ : Divisor X}
+    (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) (x : X) :
     (F₁.mul F₂).logDbarFiber x = F₁.logDbarFiber x + F₂.logDbarFiber x := by
   have h1 : HasMFDerivAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (F₁.unit x) x
       (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (F₁.unit x) x) :=
@@ -277,7 +274,9 @@ theorem logDbarFiber_mul (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) (
         rw [ha, hb]
 
 /-- `σ_1 = 0`. -/
-theorem logDbarFiber_one (x : X) : (one X).logDbarFiber x = 0 := by
+theorem logDbarFiber_one {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (x : X) :
+    (one X).logDbarFiber x = 0 := by
   rw [logDbarFiber]
   have h : mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ((one X).unit x) x = 0 := by
     show mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (fun _ : X => (1 : ℂ)) x = 0
@@ -286,7 +285,9 @@ theorem logDbarFiber_one (x : X) : (one X).logDbarFiber x = 0 := by
   module
 
 /-- `σ_{1/f} = −σ_f` (pointwise) — via the product rule on the germ `ψ·ψ⁻¹ = 1`. -/
-theorem logDbarFiber_inv (F : WeakSolution D) (x : X) :
+theorem logDbarFiber_inv {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (F : WeakSolution D)
+    (x : X) :
     F.inv.logDbarFiber x = -F.logDbarFiber x := by
   have hu : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (F.unit x) x :=
     F.unit_contMDiffAt x (F.mem_nbhd x)
@@ -322,21 +323,16 @@ theorem logDbarFiber_inv (F : WeakSolution D) (x : X) :
   rw [inv_inv, logDbarFiber]
   exact eq_neg_of_add_eq_zero_left hrel
 
-end
-
 /-- Recasting along a divisor equality does not change the fiber. -/
 theorem logDbarFiber_recast {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
     {D₁ D₂ : Divisor X} (h : D₁ = D₂) (F : WeakSolution D₁) (x : X) :
     (F.recast h).logDbarFiber x = F.logDbarFiber x := by
   cases h; rfl
 
-section
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-variable {D D₁ D₂ : Divisor X}
-
 /-- `σ_{f^n} = n·σ_f` for natural powers (pointwise). -/
-theorem logDbarFiber_pow (F : WeakSolution D) (n : ℕ) (x : X) :
+theorem logDbarFiber_pow {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (F : WeakSolution D)
+    (n : ℕ) (x : X) :
     (F.pow n).logDbarFiber x = (n : ℤ) • F.logDbarFiber x := by
   induction n with
   | zero =>
@@ -348,7 +344,9 @@ theorem logDbarFiber_pow (F : WeakSolution D) (n : ℕ) (x : X) :
     rw [add_zsmul, one_zsmul]
 
 /-- `σ_{f^n} = n·σ_f` for integer powers (pointwise). -/
-theorem logDbarFiber_zpow (F : WeakSolution D) (n : ℤ) (x : X) :
+theorem logDbarFiber_zpow {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (F : WeakSolution D)
+    (n : ℤ) (x : X) :
     (F.zpow n).logDbarFiber x = n • F.logDbarFiber x := by
   cases n with
   | ofNat m => exact F.logDbarFiber_pow m x
@@ -361,7 +359,9 @@ theorem logDbarFiber_zpow (F : WeakSolution D) (n : ℤ) (x : X) :
 /-! ### Vanishing and reads -/
 
 /-- Where `f ≡ 1` locally, the logarithmic fiber vanishes. -/
-theorem logDbarFiber_eq_zero_of_eventually_one (F : WeakSolution D) {x : X}
+theorem logDbarFiber_eq_zero_of_eventually_one {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X}
+    (F : WeakSolution D) {x : X}
     (h : ∀ᶠ y in 𝓝 x, F.toFun y = 1) : F.logDbarFiber x = 0 := by
   have hDx : D x = 0 := by
     by_contra hD
@@ -376,7 +376,9 @@ theorem logDbarFiber_eq_zero_of_eventually_one (F : WeakSolution D) {x : X}
 
 /-- **The chart read of `σ_f` off the divisor**: `read01 σ_f y x = ∂̄(f∘chart_y⁻¹)/f` at
 points `x ∈ source_y` with `D x = 0`. -/
-theorem read01_logDbar_of_coeff_zero (F : WeakSolution D) {y x : X}
+theorem read01_logDbar_of_coeff_zero {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (F : WeakSolution D)
+    {y x : X}
     (hx : x ∈ (chartAt (H := ℂ) y).source) (hD : D x = 0) :
     Dolbeault.AbelPairing.read01 F.logDbar y x
       = (F.toFun x)⁻¹
@@ -397,8 +399,6 @@ theorem read01_logDbar_of_coeff_zero (F : WeakSolution D) {y x : X}
         (trivializationAt ℂ (TangentSpace (𝓘(ℝ, ℂ))) y) x) (1 : ℂ)) = _
   congr 1
   exact Dolbeault.AbelPairing.read01_proj01_mfderiv hx (hsm.mdifferentiableAt (by simp))
-
-end
 
 end WeakSolution
 

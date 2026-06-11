@@ -243,9 +243,6 @@ theorem contMDiffAt_inv_complex {c : ℂ} (hc : c ≠ 0) :
   rw [contMDiffAt_iff_contDiffAt]
   exact contDiffAt_inv ℝ hc
 
-section
-variable [T2Space X] [CompactSpace X]
-
 /-! ### Products (Forster 20.1: `f₁f₂` solves `D₁ + D₂`)
 
 With the `zpow`-normalization no continuity-extension repair is needed: the product weak
@@ -255,7 +252,8 @@ product `f₁·f₂` away from the cancellation points (everywhere except where
 
 /-- **Product of weak solutions** (Forster 20.1): solves `D₁ + D₂`. The local-unit
 neighbourhood is shrunk to meet the supports only at the centre. -/
-def mul (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) : WeakSolution (D₁ + D₂) where
+def mul [T2Space X] [CompactSpace X] (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) :
+    WeakSolution (D₁ + D₂) where
   toFun := fun x => F₁.unit x x * F₂.unit x x * (0 : ℂ) ^ (D₁ x + D₂ x)
   nbhd a := (F₁.nbhd a ∩ F₂.nbhd a) ∩
     ((((D₁.support : Set X) ∪ (D₂.support : Set X))) \ {a})ᶜ
@@ -294,18 +292,18 @@ def mul (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) : WeakSolution (D�
         zpow_add₀ hz]
       ring
 
-@[simp] theorem mul_unit (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) (a x : X) :
+@[simp] theorem mul_unit [T2Space X] [CompactSpace X] (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂)
+    (a x : X) :
     (F₁.mul F₂).unit a x = F₁.unit a x * F₂.unit a x := rfl
 
 /-- Off both supports, the product weak solution is the pointwise product. -/
-theorem mul_toFun_of_coeff_zero (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂) {x : X}
+theorem mul_toFun_of_coeff_zero [T2Space X] [CompactSpace X] (F₁ : WeakSolution D₁)
+    (F₂ : WeakSolution D₂) {x : X}
     (h₁ : D₁ x = 0) (h₂ : D₂ x = 0) :
     (F₁.mul F₂).toFun x = F₁.toFun x * F₂.toFun x := by
   show F₁.unit x x * F₂.unit x x * (0 : ℂ) ^ (D₁ x + D₂ x) = _
   rw [h₁, h₂, add_zero, zpow_zero, mul_one,
     F₁.toFun_eq_unit_of_coeff_zero h₁, F₂.toFun_eq_unit_of_coeff_zero h₂]
-
-end
 
 /-! ### Inverses (Forster 20.1: `1/f` solves `−D`)
 
@@ -334,9 +332,6 @@ def inv (F : WeakSolution D) : WeakSolution (-D) where
 @[simp] theorem inv_unit (F : WeakSolution D) (a x : X) :
     F.inv.unit a x = (F.unit a x)⁻¹ := rfl
 
-section
-variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### The constant weak solution of `D = 0` -/
 
 /-- The constant function `1` is a weak solution of the zero divisor. -/
@@ -354,24 +349,25 @@ def one (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
   normalForm a x _ := by
     rw [show ((0 : Divisor X) a) = 0 from rfl, zpow_zero, mul_one]
 
-@[simp] theorem one_toFun (x : X) : (one X).toFun x = 1 := rfl
+@[simp] theorem one_toFun [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
+    (x : X) : (one X).toFun x = 1 := rfl
 
 /-! ### Integer powers -/
 
 /-- **Natural powers of a weak solution**: `f^n` solves `n • D`. -/
-def pow (F : WeakSolution D) : (n : ℕ) → WeakSolution ((n : ℤ) • D)
+def pow [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] (F : WeakSolution D) :
+    (n : ℕ) → WeakSolution ((n : ℤ) • D)
   | 0 => (one X).recast (by rw [Nat.cast_zero, zero_smul])
   | n + 1 => ((F.pow n).mul F).recast
       (by rw [Nat.cast_add, Nat.cast_one, add_smul, one_smul])
 
 /-- **Integer powers of a weak solution**: `f^n` solves `n • D` (negative powers via the
 inverse). -/
-def zpow (F : WeakSolution D) : (n : ℤ) → WeakSolution (n • D)
+def zpow [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] (F : WeakSolution D)
+    : (n : ℤ) → WeakSolution (n • D)
   | (n : ℕ) => F.pow n
   | Int.negSucc n => ((F.pow (n + 1)).inv).recast
       (by rw [Int.negSucc_eq, neg_smul, Nat.cast_add, Nat.cast_one])
-
-end
 
 end WeakSolution
 
