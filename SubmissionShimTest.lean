@@ -6,6 +6,8 @@ open scoped ContDiff
 
 noncomputable section
 
+namespace Submission
+
 namespace JacobianChallenge
 
 universe u v w
@@ -131,5 +133,7 @@ theorem pushforward_pullback (f : X → Y)
 end Jacobian
 
 end JacobianChallenge
+
+end Submission
 
 end
