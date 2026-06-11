@@ -9,7 +9,6 @@ import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 import Jacobians.ManifoldIFT
 import Jacobians.SmoothPath
 import Jacobians.SmoothPathCore
-import Jacobians.CutSurfaceRelations
 import Jacobians.ZLatticeQuotient
 import Mathlib.Analysis.Complex.OpenMapping
 
@@ -1256,9 +1255,7 @@ theorem periodVec_pushforward
 `DiscreteTopology`/`IsZLattice` instances it yields, lives downstream in
 `Jacobians/PeriodLatticeBasis.lean` (Forster 21.4): discreteness via the local Jacobi map +
 the Abel machinery + the residue theorem (`Jacobians/PeriodLatticeDiscrete.lean`), and
-non-degeneracy via the maximum principle (`Jacobians/PeriodLatticeNondegenerate.lean`).
-An alternative cut-surface/dissection route survives as hypothesis-conditional theorems in
-`Jacobians/Dissection.lean` + `Jacobians/CutSurfaceRelations.lean`. -/
+non-degeneracy via the maximum principle (`Jacobians/PeriodLatticeNondegenerate.lean`). -/
 
 /-! ### `ambientPhi` preserves the period lattice
 

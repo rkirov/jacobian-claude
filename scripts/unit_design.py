@@ -47,8 +47,6 @@ RULES = [
     (r'^(AbelFormRead|AbelLogDbar|AbelPairing.*|AbelDbarKill|AbelEngine.*|AbelFinal)$', 'abel-theorem'),
     (r'^(PeriodLattice|ZLatticeQuotient)$', 'jacobian-construction'),
     (r'^(PeriodLattice.*|JacobiBasePoints|JacobiLocalMap|OfCurveAnalyticitySkeleton)$', 'period-lattice-rank'),
-    # 10. archived bilinear-relations track
-    (r'^(CutSurface.*|Dissection|GreenBox|GreenPositivity|BoundaryWordR2|BoundaryPositivity|SurfacePositivity|PeriodMatrixIndep)$', 'riemann-bilinear-archive'),
 ]
 
 # ---- per-unit metadata: (proposed dir under Jacobians/, description, keystones) ----
@@ -188,11 +186,6 @@ META = {
         'The period lattice has a real basis of rank 2g (Forster 21.4, dissection-free): '
         'discreteness via the local Jacobi map, nondegeneracy, and the real basis.',
         ['exists_periodLattice_realBasis']),
-    'riemann-bilinear-archive': ('Archive',
-        'Banked, superseded route: cut-surface dissection and the Riemann bilinear '
-        'relations R1/R2 with positivity. Kept compiling as an archive; no live consumer '
-        '(migration: re-anchor its umbrella import at the root).',
-        ['cutSurface_R1 / cutSurface_R2 (banked)']),
 }
 
 imp = re.compile(r'^import (Jacobians[\w.]*)', re.M)
