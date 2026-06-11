@@ -1,22 +1,20 @@
 /-
   `HoloRep` — the canonical holomorphic-representative toolkit for `OmegaDGerm 0` classes.
 
-  DEDUPLICATION (2026-06-04): `holoRep`/`holoFn`/`gextLimRep_chart_analyticAt` + the chart-analyticity
-  lemmas were DUPLICATED, defined independently in BOTH `CechDiskAcyclicProof` AND
-  `DolbeaultComparisonInverse` (the latter's docstring cites a since-resolved `dbar_add` name clash as
-  the reason it couldn't be shared — only one `dbar_add` exists now, in `DolbeaultH01`, so the
-  obstruction is gone).  This file is the single canonical home; both consumers import it.
+  This file is the single canonical home of `holoRep`/`holoFn`/`gextLimRep_chart_analyticAt` and
+  the chart-analyticity lemmas; both `CechDiskAcyclicProof` and `DolbeaultComparisonInverse`
+  import it.
 
-  It is built on the LIGHT, comparison-free `CechH0` alone (NOT the `CechDiskAcyclic` combination, which
-  trips a `ℂ →L[ℝ] ℂ`-norm diamond), so it does not pull the ~900s Dolbeault-comparison chain — keeping
-  the model/finiteness branch that uses it cheap to build.
+  It is built on the light, comparison-free `CechH0` alone (*not* the `CechDiskAcyclic`
+  combination, which trips a `ℂ →L[ℝ] ℂ`-norm diamond), so it does not pull in the heavy
+  Dolbeault-comparison chain — keeping the model/finiteness branch that uses it cheap to build.
 
-  Contents (all complete, axiom-clean): `nhdsNE_neBot`; `holoRep`/`holoRep_mem`/`toGerm_holoRep`
-  (a chosen holomorphic representative of a germ class); `holoFn` (the limit-repaired analytic
-  representative `x ↦ limUnder (𝓝[≠] x) (Gext (holoRep hg))`); its chart-analyticity
+  Contents: `nhdsNE_neBot`; `holoRep`/`holoRep_mem`/`toGerm_holoRep` (a chosen holomorphic
+  representative of a germ class); `holoFn` (the limit-repaired analytic representative
+  `x ↦ limUnder (𝓝[≠] x) (Gext (holoRep hg))`); its chart-analyticity
   (`gextLimRep_chart_analyticAt`, `holoFn_chart_analyticAt`); the value-reading lemmas
-  (`holoFn_eq_of_tendsto`, `holoFn_eq_holoRep_of_chart_analyticAt`); and `toGerm_holoFn` (reads back the
-  germ).  The `∂̄`/`ContMDiff`/algebra lemmas built on top stay with their analytic consumers.
+  (`holoFn_eq_of_tendsto`, `holoFn_eq_holoRep_of_chart_analyticAt`); and `toGerm_holoFn` (reads back
+  the germ). The `∂̄`/`ContMDiff`/algebra lemmas built on top stay with their analytic consumers.
 -/
 import Jacobians.Dolbeault.CechH0
 import Jacobians.Dolbeault.RealManifold
@@ -27,18 +25,17 @@ open TopologicalSpace (Opens)
 open Complex Metric Filter
 
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSectionVars false
-
 namespace Jacobians.Dolbeault
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- The punctured neighbourhood of a point of a `ℂ`-manifold is `NeBot` (no isolated points). -/
-theorem nhdsNE_neBot (x : X) : (𝓝[≠] x).NeBot := by
+theorem nhdsNE_neBot {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (x : X) :
+    (𝓝[≠] x).NeBot := by
   have hsrc : x ∈ (chartAt (H := ℂ) x).source := mem_chart_source ℂ x
   exact ((chartAt (H := ℂ) x).symm.tendsto_nhdsNE (x := (chartAt (H := ℂ) x) x)
-    (by simpa using (chartAt (H := ℂ) x).map_source hsrc)).neBot.mono
+    ((chartAt (H := ℂ) x).map_source hsrc)).neBot.mono
     (by simp only [(chartAt (H := ℂ) x).left_inv hsrc]; exact le_rfl)
 
 /-- A holomorphic representative function of an `OmegaDGerm 0`-class (chosen). -/
@@ -61,8 +58,8 @@ noncomputable def holoFn {W : Opens X} {g : MGerm W}
 
 /-- **(Chart-analyticity of the analytic representative.)** For a holomorphic (`OmegaD 0`) function
 `g` on `↥W`, the limit-repair `x ↦ limUnder (𝓝[≠] x) (Gext g)` is chart-analytic at every `y ∈ W`
-(it discards the removable-singularity junk of `Gext g`, agreeing with the normal-form representative
-`toMeromorphicNFOn` of the chart-read).  Re-derivation of
+(it discards the removable-singularity junk of `Gext g`, agreeing with the normal-form
+representative `toMeromorphicNFOn` of the chart-read). Re-derivation of
 `DolbeaultComparisonInverse.gextLimRep_chart_analyticAt`. -/
 theorem gextLimRep_chart_analyticAt {W : Opens X} {g : W → ℂ} (hg : g ∈ OmegaD 0 W)
     {y : X} (hy : y ∈ W) :
@@ -110,7 +107,8 @@ theorem gextLimRep_chart_analyticAt {W : Opens X} {g : W → ℂ} (hg : g ∈ Om
   filter_upwards [mem_nhdsWithin_of_mem_nhds (φ.open_source.mem_nhds hys)] with z hz
   simp [hFdef, Function.comp, φ.left_inv hz]
 
-/-- The chart-read of the analytic representative `holoFn hg` is `AnalyticAt` at the chart centre. -/
+/-- The chart-read of the analytic representative `holoFn hg` is `AnalyticAt` at the chart centre.
+-/
 theorem holoFn_chart_analyticAt {W : Opens X} {g : MGerm W}
     (hg : g ∈ OmegaDGerm (0 : Divisor X) W) {y : X} (hy : y ∈ W) :
     AnalyticAt ℂ (holoFn hg ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) :=
@@ -118,7 +116,8 @@ theorem holoFn_chart_analyticAt {W : Opens X} {g : MGerm W}
 
 /-- **Chart-analytic ⟹ real-smooth.** If a `ℂ`-valued function `h` read in the chart at `y` is
 complex-analytic at the chart image, then `h` is real-`C^∞` at `y`. -/
-theorem contMDiffAt_real_of_chart_analyticAt {h : X → ℂ} {y : X}
+theorem contMDiffAt_real_of_chart_analyticAt {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {h : X → ℂ} {y : X}
     (ha : AnalyticAt ℂ (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y)) :
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) h y := by
   have hcd : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (h ∘ (chartAt (H := ℂ) y).symm)
@@ -149,8 +148,7 @@ theorem proj01_restrictScalars_eq_zero (L : ℂ →L[ℂ] ℂ) : proj01 (L.restr
       _ = Complex.I * (Complex.I * L v) := by
         simpa using congrArg (fun w => Complex.I * w) (L.map_smulₛₗ Complex.I v)
       _ = -L v := by
-        have hi : (Complex.I : ℂ) * Complex.I = -1 := by
-          simpa [pow_two] using Complex.I_sq
+        have hi : (Complex.I : ℂ) * Complex.I = -1 := Complex.I_mul_I
         calc
           Complex.I * (Complex.I * L v) = ((Complex.I : ℂ) * Complex.I) * L v := by
             rw [mul_assoc]
@@ -176,8 +174,8 @@ theorem holoFn_dbar_eq_zero {W : Opens X} {g : MGerm W}
   rw [hpull, hCdiff.fderiv_restrictScalars ℝ]
   exact proj01_restrictScalars_eq_zero _
 
-/-- **`holoFn` reads off a continuous representative's value.**  If the holomorphic germ class `g` has
-a representative `F : ↥W → ℂ` (`toGerm W F = g`) whose extension `Gext F` has limit `c` along
+/-- **`holoFn` reads off a continuous representative's value.** If the holomorphic germ class `g`
+has a representative `F : ↥W → ℂ` (`toGerm W F = g`) whose extension `Gext F` has limit `c` along
 `𝓝[≠] y`, then `holoFn hg y = c`. -/
 theorem holoFn_eq_of_tendsto {W : Opens X} {g : MGerm W} (hg : g ∈ OmegaDGerm (0 : Divisor X) W)
     (F : W → ℂ) (hgF : toGerm W F = g) {y : X} (hy : y ∈ W) {c : ℂ}
