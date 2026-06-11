@@ -1100,7 +1100,7 @@ noncomputable def etaCochain (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model 
 
 /-! ## §A2-x — The holomorphic COVER cocycle `x : Ccov` (Forster 14.6 per-disk solve)
 
-`x'_{ab} := dolbeaultToCechCocycle 𝔇 ω̂` (the PROVEN per-disk ∂̄-solve via the Cauchy transform on
+`x'_{ab} := dolbeaultToCechCocycle 𝔇 ω̂` (the per-disk ∂̄-solve via the Cauchy transform on
 each ball, `DolbeaultComparisonProof`) is a germ Čech cocycle, holomorphic on the FULL overlaps,
 with component value `holoFn(x'_{ab}) = u_b − u_a` (`u_a := diskVal a ω̂`). We package each
 component as a `BddHol (Uov (a,b))` (analytic via `analyticOn_pullback_of_holo`; bounded since
@@ -1325,7 +1325,7 @@ theorem leray_identity (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0)
       (𝔇.overlapData.rhoRaw (𝔇.coverCochain s) (a, b)).zero_off z hz, add_zero]
 
 
-/-- **The structural δ-complex on `𝔇.overlapData`, with the `leray` field** — all fields PROVEN.
+/-- **The structural δ-complex on `𝔇.overlapData`, with the `leray` field**.
 `δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm` are the model differentials of §A; `leray` (Forster 14.6) is
 discharged by the global Bott–Tu form route of §A2-*:
 
@@ -1333,7 +1333,7 @@ discharged by the global Bott–Tu form route of §A2-*:
   * `σ := shrinkGerm s` reads each `s_{ab}` back to an `𝒪_0` germ on `V_a ⊓ V_b`, a germ cocycle.
   * `ω̂ := glueForm s = ∑_{a,c} (ρ_a · holoFn σ_{ac}) • ∂̄ρ_c` (shrinking PoU `shrinkPoU`) is a
     GLOBAL smooth `(0,1)`-form, built directly (NO cross-chart `∂̄g_a` gluing).
-  * `x := coverCochain s` is the per-disk ∂̄-solve cocycle `dolbeaultToCechCocycle ω̂` (PROVEN, the
+  * `x := coverCochain s` is the per-disk ∂̄-solve cocycle `dolbeaultToCechCocycle ω̂` (the
     no-cutoff ball solve), holomorphic on the FULL overlaps `Uov`; `δ¹cov x = 0`
     (`coverCochain_mem_Z1cov`).
   * `η := etaCochain s` has `η_a = diskVal a ω̂ − G_a` (`G_a := ∑_c ρ_c · holoFn σ_{ac}`, the local

@@ -8,13 +8,14 @@ import Jacobians.Dolbeault.SerreResidueRamifiedRealCover
 import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
 
 /-!
-# residue-theorem TARGET 2: the off-centre/∞ genericity selection `ExistsAdaptedFRamified` (Miranda §VIII.3)
+# The off-centre/∞ genericity selection for the residue theorem: `ExistsAdaptedFRamified`
+(Miranda §VIII.3)
 
 `Jacobians.Dolbeault.SerreResidueTheorem.ExistsAdaptedFRamified ω₀ g poles`
-(`SerreResidueGateAInftyBuilder.lean`) is the `hoff_cs`-free off-centre/∞ genericity *input* of the
-ramified residue-theorem residue route: it asks for a single nonconstant cover `f` with **simple `∞`-poles**
+(`SerreResidueGateAInftyBuilder.lean`) is the `hoff_cs`-free off-centre/∞ genericity *input* of
+the ramified residue route: it asks for a single nonconstant cover `f` with **simple `∞`-poles**
 and the finite pole-value enumeration, *admitting ramified finite pole fibres* (which the cluster
-route, TARGET 1, handles). Miranda §VIII.3, p. 254 ("simply choose *any* nonconstant `f`") + the
+route handles). Miranda §VIII.3, p. 254 ("simply choose *any* nonconstant `f`") + the
 standard generic-position adjustment makes it genuinely achievable; this file **proves it directly**
 via the reciprocal-cover construction, with NO Riemann–Roch-with-prescribed-jets (which the book
 never needs).
@@ -52,7 +53,7 @@ Set the cover to the reciprocal of the shift:
 * `toRiemannSphere_eq_coe_of_sub_orderPos` — a zero of `f₀ − a·1` is a preimage of `coe a`.
 * `adaptedFRamified_of_regularValue` — **the `AdaptedFRamified` builder** from a finite regular
   value.
-* `existsAdaptedFRamified` — **TARGET 2**, fully proven: `ExistsAdaptedFRamified ω₀ g poles` holds
+* `existsAdaptedFRamified` — `ExistsAdaptedFRamified ω₀ g poles` holds
   for every `ω₀`, genuine meromorphic `g`, and finite `poles`.
 
 ## ⚠ Soundness
@@ -347,7 +348,7 @@ theorem exists_cs_enumeration {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ
           : RiemannSphere) = y
       rw [Equiv.symm_apply_apply]; exact hsec y hy
 
-/-! ## The `AdaptedFRamified` builder and TARGET 2 -/
+/-! ## The `AdaptedFRamified` builder -/
 
 /-- **The `AdaptedFRamified` cover from a finite regular value** (the genericity construction). For
 a nonconstant `f₀` (`hdiv₀`) and a finite regular value `a` of `f₀.toRiemannSphere` (`ha`), the
@@ -412,7 +413,7 @@ noncomputable def adaptedFRamified_of_regularValue {ω₀ : HolomorphicOneForms 
     have hpole : fc.orderAtPoint (inftyFibreEnum fc i) < 0 := inftyFibreEnum_lt fc i
     exact orderAtPoint_inv_eq_neg_one_of_regularValue f₀ hdiv₀ a ha hpole
 
-/-- **TARGET 2 (residue-theorem off-centre/∞ genericity selection), fully proven.** The `hoff_cs`-free
+/-- **The residue-theorem off-centre/∞ genericity selection.** The `hoff_cs`-free
 adapted cover exists for `α = ω₀·g` over any finite `poles` off which `g` is analytic. Construction:
 the nonconstant `f₀` of `exists_nonconstant_meromorphic` (Riemann inequality, Serre-independent) and
 the reciprocal `f := (f₀ − a·1)⁻¹` at a finite regular value `a` (`exists_finite_regularValue`); all

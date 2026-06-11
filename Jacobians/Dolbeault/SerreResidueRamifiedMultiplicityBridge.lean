@@ -20,7 +20,7 @@ conservation-of-number engine `LocalMultiplicitySheets`/`exists_properMapDegree`
 
 This is the **multiplicity bridge**: the single reusable lemma turning the intrinsic `localDeg`
 multiplicity into the `analyticOrderAt = m` input the per-preimage cluster atom needs. It is the
-multiplicity half of the cluster-reindexing wall (TARGET 1 of the residue-theorem assembly's
+multiplicity half of the cluster-reindexing geometry (part of the residue-theorem assembly's
 `∑Res = 0`); it mirrors the proven `exists_sheetDatum_coe` (`ProperMapDegreeSheets.lean`),
 extracting its per-point order computation as a standalone bridge.
 

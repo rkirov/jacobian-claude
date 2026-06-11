@@ -42,7 +42,7 @@ Riemann–Roch with *prescribed local jets* — not yet in Mathlib/this repo. 2.
 selection** `Φ` with `hΦrangeReg` (range `Φ b'` = the full fibre) and the per-pole moving-section
 consistency (`secFin`/`hselFin`): the moving-fibre coherence / monodromy content. 3. **Trace
 rationality at `∞`** (`hglue_inf`/`hcont_int`/`R₀`/`hR₀_eq`): the meromorphy of `Tr_F α` at `∞` with
-the correct principal part — the irreducible §VIII.3 wall already isolated as
+the correct principal part — the irreducible §VIII.3 obligation already isolated as
 `TraceRationalityWitness` in `FormTraceGlobalConstruct`.
 
 The clean reduction theorem `residueSum_eq_zero_of_globalCoverData` re-exports
@@ -287,7 +287,7 @@ from the constructions above. The remaining hypotheses are exactly the three hon
   fibres — automatic once `α` is a genuine global meromorphic form on the unramified locus) and the
   **selection range/injectivity** `hΦinjReg`/`hΦrangeReg`;
 * the **branch agreement** `hαBrAgreeBr` and the **`∞`-rationality**
-  `hglue_inf`/`hcont_int`/`R₀`/`hR₀_eq` (the irreducible trace-rationality wall,
+  `hglue_inf`/`hcont_int`/`R₀`/`hR₀_eq` (the irreducible trace-rationality obligation,
   `TraceRationalityWitness`).
 
 The boundedness heart (the bundle trace SUM) and the entire descent are already proven; this is the

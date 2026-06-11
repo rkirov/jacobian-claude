@@ -28,7 +28,7 @@ delivers:
   cluster geometric identity** `hgeom_fibre` (the genuine ramified analogue of
   `valueChartTrace_eq_sphereSheetFibreTrace` — the chart-coordinate reconciliation between
   `f.holoRepr∘chart⁻¹` and `f.toRiemannSphere` over the whole fibre). This is the single
-  multi-hundred-LoC geometric wall, isolated cleanly.
+  geometric obligation, isolated cleanly.
 
 * **`FullFibreClusterData.ofReindex`** — builds the `FullFibreClusterData` from a
   `FibreClusterReindex` (assembling `hvct_mero` via the proven `hvct_mero_of_pow_bound`).
@@ -161,7 +161,7 @@ pole enumeration of the fibre. None is asserted. -/
 open Jacobians.Dolbeault.FormTraceInftyFibre Jacobians.Dolbeault.FormTraceInftyRecip
   Jacobians.Dolbeault.FormTraceFullFibre
 
-/-- **The precise per-centre fibre-cluster reindexing residual** (the genuine geometric wall,
+/-- **The precise per-centre fibre-cluster reindexing residual** (the genuine geometric obligation,
 isolated). At a finite pole-value centre `c` of `α = ω₀·g` for the canonical selection
 `Φ = canonicalFibreSelection g f hdiv`, the data:
 

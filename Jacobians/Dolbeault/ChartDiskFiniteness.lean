@@ -564,7 +564,7 @@ The FA finiteness engine `CechFiniteness.finiteDimensional_h1_of_leray_compact` 
 Schwartz–Riesz) needs a `HolomorphicCoboundaries` model `c` for a `HolomorphicDiskOverlapData` with:
   * `ρ` compact (Montel) — for any `HolomorphicDiskOverlapData` (`ρ_compact`), the only input
     being a relatively-compact open shrinking `Wov ⋐ Uov`;
-  * the `leray` surjectivity — the analytic heart, whose function-level content is now PROVEN
+  * the `leray` surjectivity — the analytic heart, whose function-level content is proven
     (`ChartDiskCover.forster146_lift`).
 
 The remaining structural plumbing to reach the literal germ-class `cechH1 𝔇 0` (NOT analytic
@@ -578,14 +578,14 @@ content):
     model's `Cshr`/`Ccov` cochains, descending to and inverting the forward
     `CechModelCochain.cochainToCcov` (the round-trip `cechH1 ≃ supH1`).
 
-These two are pure cover/sheaf plumbing (no ∂̄, no Montel) — the analytic wall is gone. We package
+These two are pure cover/sheaf plumbing (no ∂̄, no Montel) — the analytic content is already discharged. We package
 the reduction so the connection is explicit and the heart is plugged in. -/
 
 namespace ChartDiskCover
 
 variable (𝔇 : ChartDiskCover X)
 
-/-- **The two finiteness statements are equivalent** (PROVEN, via
+/-- **The two finiteness statements are equivalent** (via
 `GoodCover.comparison_linearEquiv'`).
 `FiniteDimensional ℂ (cechH1 𝔇 0) ↔ FiniteDimensional ℝ (DolbeaultH01 X)`: the proven Dolbeault
 comparison `DolbeaultH01 X ≃ₗ[ℝ] cechH1 𝔇 0` transports `ℝ`-finiteness, and `ℂ`-finiteness of the
@@ -615,7 +615,7 @@ comparison `cechH1 𝔇 0 ≃ₗ[ℂ] c.supH1`, the Čech `H¹` is finite-dimens
 This is the assembly via the proven `HolomorphicCoboundaries.finiteDimensional_supH1` (= Forster
 14.8/14.7: compact `ρ` + `leray` surjectivity ⟹ finite `supH1`) transported across the comparison.
 The two inputs are the structural plumbing (G-shrink builds `d`'s shrinking, G-bridge builds the
-comparison); the analytic wall (the `leray` field) is discharged by the heart. -/
+comparison); the analytic content (the `leray` field) is discharged by the heart. -/
 theorem finiteDimensional_cechH1_of_holomorphicModel
     (d : HolomorphicDiskOverlapData) (c : HolomorphicCoboundaries d)
     (e : 𝔇.toFiniteCover.cechH1 (0 : Divisor X) ≃ₗ[ℂ] c.supH1) :

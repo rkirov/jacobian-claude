@@ -408,7 +408,7 @@ theorem realCoverRamifiedCenters_empty (ω₀ : HolomorphicOneForms X) (g : X �
     RealCoverRamifiedCenters ω₀ g f hdiv poles (m := 0) Fin.elim0 :=
   ⟨fun i => i.elim0, fun i => i.elim0, fun i => i.elim0, fun i => i.elim0⟩
 
-/-! ## The precise remaining real-cover obligation (the Forster §5 sheet-tracking wall)
+/-! ## The precise remaining real-cover obligation (Forster §5 sheet tracking)
 
 `RealCoverRamifiedCenters` is the per-centre `RamifiedSheetData` for the canonical selection. Its
 hard fields, isolated:
@@ -416,7 +416,7 @@ hard fields, isolated:
 * **`hvct_mero`** — now *reduced* to a finite-pole-order bound `(z − cs i)^N · valueChartTrace → 0`
   via `hvct_mero_of_pow_bound` (using the already-available off-centre `hreg`). This is the
   meromorphy side (Miranda (3.1)), and is the strictly-easier obligation.
-* **`hgeom_slit`** — the genuine geometric wall: on a slit accumulating at `cs i`, the geometric
+* **`hgeom_slit`** — the genuine geometric obligation: on a slit accumulating at `cs i`, the geometric
   trace `valueChartTrace` (the full-fibre sum) equals the `m`-sheet sum
   `∑_{j<m} chartIntegrand(w_p + ζʲ w₀)· (d/dz)[…]` at the ramification preimage `p`. This is the
   **Forster §5 `z = wᵐ` local normal form + fibre-cluster splitting** — the ramified analogue of
@@ -428,7 +428,7 @@ input to the `hoff_cs`-free residue-theorem route; everything else (the residue/
 identity-theorem globalisation, the meromorphy reduction, the off-centre/∞ machinery, the wiring) is
 done. -/
 
-/-- **The precise remaining per-centre geometric obligation** (the Forster §5 sheet-tracking wall).
+/-- **The precise remaining per-centre geometric obligation** (the Forster §5 sheet-tracking obligation).
 At a finite pole-value centre `c` with ramification preimage `p` of multiplicity `m`, a primitive
 `m`-th root `ζ`, and the slit `S` carrying the `m`-th-root branch `w₀`, the two hard
 `RamifiedSheetData` facts:

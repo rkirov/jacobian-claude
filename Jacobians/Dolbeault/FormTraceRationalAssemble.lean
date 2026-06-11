@@ -19,7 +19,7 @@ reciprocal-chart form) to the **reciprocal-chart trace agreement** over the pole
 a rational `LaurentForm L` whose coefficient germ-agrees with the trace `Tr_F α` at *every* fibre
 (finite charts at the finite centres, the reciprocal chart at `∞`).
 
-This pins the entire remaining §VIII.3 wall to one precise, honest statement: the meromorphic trace
+This pins the entire §VIII.3 obligation to one precise, honest statement: the meromorphic trace
 `Tr_F α` on the compact `ℂℙ¹` is **rational** — there is a `LaurentForm L` representing it
 (germ-equal to it in every chart). Both residue conditions (`hL32` at the finite centres, `infty_eq`
 at `∞`) then hold *by Lemma 3.2 at the respective fibre* (the proved `resAt_traceCoeff_fibreTrace` /
@@ -59,7 +59,7 @@ the residue theorem `∑ₐ Resₐ(α) = 0` is now *unconditional modulo a singl
 > rational `LaurentForm` representing `Tr_F α` and prove it germ-agrees with the trace in every
   chart.
 
-This is the genuine §VIII.3 trace-rationality wall (the global meromorphic trace on compact `ℂℙ¹` is
+This is the genuine §VIII.3 trace-rationality statement (the global meromorphic trace on compact `ℂℙ¹` is
 rational; partial-fraction extraction + germ-agreement), the same fibre/sheet/branched-cover
 apparatus as `exists_properMapDegree`. See the diagnosis in `FormTraceGlobalConstruct` /
 `FormResidueTheorem`.

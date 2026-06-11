@@ -8,10 +8,10 @@ import Jacobians.MultiplicityPatchingConstruct
 import Jacobians.ProperMapDegreeSheets
 
 /-!
-# Closing residue-theorem TARGET 1: the three conservation-of-number facts of `ofClusterFibrePoints`
+# The three conservation-of-number facts of `ofClusterFibrePoints`
 
-`SerreResidueRamifiedClusterTopology.lean` reduced residue-theorem TARGET 1 (`hgeom_fibre` for the real
-cover), at each regular slit value `z`, to the **three minimal facts** of
+`SerreResidueRamifiedClusterTopology.lean` reduced `hgeom_fibre` for the real
+cover, at each regular slit value `z`, to the **three minimal facts** of
 `FibreClusterTopology.ofClusterFibrePoints`:
 
 1. `hcl_fibre` — the cluster sheet points are preimages of `coe z`;
@@ -41,7 +41,7 @@ against the proven argument-principle engine
   the non-pole datum + the within-cluster injectivity) and the single conservation-of-number count
   `hcard`, proving facts 1 and 2 internally. The only non-routine, non-derived input is `hcard`.
 
-## The precise remaining `hcard` lemma (fact 3, the §4 conservation-of-number wall)
+## The precise remaining `hcard` lemma (fact 3, the §4 conservation of number)
 
 `hcard : ∑ᵢ D.mult i = S.n` is the genuine conservation-of-number degree count. It is **not** local
 in the slit value `z`: it equates the cover's sheet count `S.n = #F⁻¹(coe z)` (regular fibre) with
@@ -52,7 +52,7 @@ across the branch value `c` precisely by the local constancy of the multiplicity
 * the cover-degree readings `S.n = #F⁻¹(coe z)` and `∑ᵢ D.mult i = fibreMult f (coe c)`;
 * the local constancy `N f (coe z) = N f (coe c)` (the argument-principle engine).
 
-This is the single irreducible naturals equality of TARGET 1.
+This is the single irreducible naturals equality of the fibre-cluster reindexing.
 
 ## ⚠ Soundness
 
@@ -208,8 +208,8 @@ theorem clusterSection_injective_of_within_cross {ω₀ : HolomorphicOneForms X}
 
 /-! ## Fact 3 (`hcard`): the conservation-of-number degree count `∑ᵢ D.mult i = S.n`
 
-This is the genuine §4 conservation of number, the irreducible wall of TARGET 1.  Its content is the
-equality of two cover-degree readings across the branch value `c`:
+This is the genuine §4 conservation of number, the irreducible core of the fibre-cluster
+reindexing.  Its content is the equality of two cover-degree readings across the branch value `c`:
 
 * the **regular-fibre reading** `S.n = fibreMult f (coe z)` — the number of sheets at the regular
   slit value `z` equals the fibre-multiplicity sum (every local degree is `1` at a regular value);
@@ -254,7 +254,7 @@ D.mult i = S.n` follows, for a nonconstant cover `f` (`f.div ≠ 0`), from:
 
 The two `fibreMult` values are equal by the conservation of number
 (`fibreMult_const_of_nonconstant`), so `(S.n : ℤ) = (∑ᵢ D.mult i : ℤ)`, hence `∑ᵢ D.mult i = S.n` by
-`Nat.cast` injectivity. This is the genuine §4 wall, isolated to the two cover-degree readings + the
+`Nat.cast` injectivity. This is the genuine §4 content, isolated to the two cover-degree readings + the
 proven constancy engine. -/
 theorem sum_mult_eq_sheetCount_of_readings {g : X → ℂ}
     {f : MeromorphicFunction X} {c : ℂ} {D : FibreRamifiedData g f c}
@@ -277,8 +277,8 @@ range of the injective `D.xs` (`finsum_mem_range`), so the finsum reindexes to t
 `∑ᵢ localDeg f (coe c) (D.xs i)`, which is `∑ᵢ D.mult i` by `hmatch`. The `hmatch` half is the
 multiplicity bridge (`analyticOrderAt_holoRepr_sub_eq_mult`, the genuine local degree); `hrange` is
 the genuine conservation-of-number input that `D` enumerates the whole fibre. -/
-theorem sum_mult_eq_fibreMult_of_enumeration {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {g : X → ℂ}
-    {f : MeromorphicFunction X} {c : ℂ} (D : FibreRamifiedData g f c)
+theorem sum_mult_eq_fibreMult_of_enumeration {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {g : X → ℂ} {f : MeromorphicFunction X} {c : ℂ} (D : FibreRamifiedData g f c)
     (hD_inj : Function.Injective D.xs)
     (hrange : Set.range D.xs = f.toRiemannSphere ⁻¹' {(((c : ℂ) : RiemannSphere))})
     (hmatch : ∀ i, ((D.mult i : ℕ) : ℤ) = localDeg f (((c : ℂ) : RiemannSphere)) (D.xs i)) :
@@ -320,7 +320,8 @@ z`, the number of sheets `S.n` equals the cardinality of the fibre over `coe z`:
 z}).ncard`. The `n` injective holomorphic sheets sweep out the fibre (`S.fibre_eq` at `coe z ∈
 S.V`), and they are pairwise distinct (`S.sheet_inj`), so the fibre is the image of `Fin
 S.n` under an injection. -/
-theorem sheetSystem_n_eq_ncard {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {f : MeromorphicFunction X} {z : ℂ}
+theorem sheetSystem_n_eq_ncard {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {f : MeromorphicFunction X} {z : ℂ}
     (S : Jacobians.LocalSheetSystem f.toRiemannSphere (((z : ℂ) : RiemannSphere))) :
     S.n = (f.toRiemannSphere ⁻¹' {(((z : ℂ) : RiemannSphere))}).ncard := by
   rw [S.fibre_eq _ S.mem_V, ← Set.image_univ,
@@ -428,8 +429,8 @@ internally:
   `exists_properMapDegree` engine;
 * the routine cluster-sheet residuals `hsrc`/`hsheet_diff`.
 
-This is the cleanest geometric input for residue-theorem TARGET 1 at one slit value: the §5 normal-form data
-tied to `f`, plus the §4 conservation-of-number cover-degree readings. -/
+This is the cleanest geometric input for the fibre-cluster reindexing at one slit value: the §5
+normal-form data tied to `f`, plus the §4 conservation-of-number cover-degree readings. -/
 noncomputable def FibreClusterTopology.ofClusterSplitData {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
     {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
     {D : FibreRamifiedData g f c} {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}

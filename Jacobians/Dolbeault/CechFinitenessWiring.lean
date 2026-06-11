@@ -45,7 +45,7 @@ The comparison is bundled into the conclusion (rather than a free-`c` standalone
 `supH1` depends only on the model and `cechH1 D` only on `(𝔘, D)`: the isomorphism holds only for
 the model *built from* `(𝔘, D)`.
 
-PROVEN by `CechFinitenessDtwist.exists_cechModel_general`: the general-divisor finiteness
+proven by `CechFinitenessDtwist.exists_cechModel_general`: the general-divisor finiteness
 `finiteDimensional_cechH1_general` (the Forster §16 skyscraper reduction climbing the proven `D = 0`
 finiteness one point at a time) makes `𝔘.cechH1 D` finite-dimensional, and the artificial
 finite-dimensional Montel model `exists_cechModel_of_finiteDimensional` then supplies a
@@ -78,9 +78,9 @@ theorem cechH1_linearEquiv_supH1 (𝔘 : FiniteCover X) (D : Divisor X) :
 /-! ### STEP 7 — discharge `finiteDimensional_cechH1` -/
 
 /-- **The finiteness node, assembled.** `H¹(𝔘, 𝒪_D)` is finite-dimensional: take the chart-disk
-Leray model with its comparison (`exists_cechModel`, now PROVEN); its sup-norm `H¹` is
+Leray model with its comparison (`exists_cechModel`); its sup-norm `H¹` is
 finite-dimensional by `finiteDimensional_supH1` (STEP 5; `ρ` compact via the proven Montel atom +
-the PROVEN Leray surjectivity `leray_surjective`); and the bundled comparison `cechH1 ≃ₗ supH1`
+the Leray surjectivity `leray_surjective`); and the bundled comparison `cechH1 ≃ₗ supH1`
 transports finiteness back to the germ-class `cechH1`. This discharges the exact statement of
 `DolbeaultLadder.finiteDimensional_cechH1`. -/
 theorem finiteDimensional_cechH1_wired (𝔘 : FiniteCover X) (D : Divisor X) :

@@ -8,18 +8,17 @@ import Jacobians.Dolbeault.SerreResidueRamifiedMultiplicityBridge
 import Jacobians.Dolbeault.SerreResidueGateAInftyBuilder
 
 /-!
-# The fibre-cluster partition: reducing `FibreClusterReindex.hgeom_fibre` to the bijection (TARGET
-1)
+# The fibre-cluster partition: reducing `FibreClusterReindex.hgeom_fibre` to the bijection
 
 `FibreClusterReindex.hgeom_fibre` (`SerreResidueRamifiedFullFibreBuilder.lean`) is the single
-genuinely-remaining geometric input of the `hoff_cs`-free residue-theorem residue route.  On the slit near a
+genuinely-remaining geometric input of the `hoff_cs`-free residue route.  On the slit near a
 finite pole-value centre `c`, it asks for
 
 > `valueChartTrace ω₀ f Φ z = ∑ᵢ ∑_{j<mᵢ} chartIntegrand ω₀ g (D.xs i) (clusterSheet (Cl i).s … j z)
 >     · deriv (clusterSheet (Cl i).s … j z)`,
 
 the full-fibre cluster identity.  This file **reduces that identity to exactly the
-conservation-of-number bijection** — the precise multi-hundred-LoC topological wall — by reusing the
+conservation-of-number bijection** — the precise topological obligation — by reusing the
 proven machinery:
 
 * `valueChartTrace_eq_sphereSheetFibreTrace` (`FormTraceBundleBridge.lean`) — at a regular slit
@@ -57,7 +56,7 @@ proven machinery:
   **precise remaining clustering datum** at a regular slit value `z` (the sphere system, the
   bijection `e`, the point coincidence, the differentiability + section-derivative agreement) and
   the discharge of `hgeom_fibre` at `z` from it: the chart reconciliation is proven, so this
-  consumes only the bijection + coincidence (the genuine wall).
+  consumes only the bijection + coincidence (the genuine geometric content).
 
 * **`FibreClusterReindex.ofClusterReindexFamily`** — builds the whole per-centre
   `FibreClusterReindex` (the input `residueSum_eq_zero_of_reindex_adaptedFRamified` consumes) from
@@ -67,7 +66,7 @@ proven machinery:
   facts (the bijection forces `∑ᵢ mᵢ = deg f`; the section-derivative agreement is derivable).
 
 * **`residueSum_eq_zero_of_clusterReindex`** — the residue-theorem capstone: `∑Res = 0` from
-  `AdaptedFRamified` (TARGET 2, discharged) + per-centre `FibreClusterReindex` (TARGET 1).
+  `AdaptedFRamified` (already built) + the per-centre `FibreClusterReindex`.
 
 So `FibreClusterReindex.hgeom_fibre` is reduced, for the real cover, to **exactly** the
 conservation-of-number bijection between the `deg f` moving sheets of a nearby regular fibre and the
@@ -436,7 +435,7 @@ regular slit value `z` follows from the clustering datum: the per-`(i,j)` summan
 discharged by the chart reconciliation (`clusterSummand_eq_sphereSummand`, using the point
 coincidence + the section-derivative agreement + the differentiability), and the reindexing is
 `valueChartTrace_eq_clusterSum_of_sphereReindex`. This consumes **only** the conservation-of-number
-bijection + point coincidence (the genuine wall); the chart algebra is proven. -/
+bijection + point coincidence (the genuine geometric content); the chart algebra is proven. -/
 theorem valueChartTrace_eq_clusterSum_of_clusterReindexData {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
     {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
     {D : FibreRamifiedData g f c} {Cl : ∀ i, ClusterTraceData ω₀ g (D.xs i) c Sset} {z : ℂ}
@@ -456,12 +455,12 @@ theorem valueChartTrace_eq_clusterSum_of_clusterReindexData {ω₀ : Holomorphic
 /-! ## Building `FibreClusterReindex` from a slit-wide family of clustering data
 
 The `FibreClusterReindex` structure (`SerreResidueRamifiedFullFibreBuilder.lean`) — the precise
-input the `hoff_cs`-free residue-theorem capstone `residueSum_eq_zero_of_reindex` consumes — has, besides the
+input the `hoff_cs`-free capstone `residueSum_eq_zero_of_reindex` consumes — has, besides the
 routine bookkeeping (`hanalytic`/`hD_*`/`hS_acc`/`hmult`/`hsplit0`/`ppord`/`hbnd`), the single hard
 field `hgeom_fibre`. We discharge `hgeom_fibre` from a **slit-wide family** of `ClusterReindexData`
 (one per slit value `z`), so building the cover's `FibreClusterReindex` reduces to supplying that
 family — i.e., at each slit value, the conservation-of-number bijection + point coincidence (the
-genuine wall). -/
+genuine geometric content). -/
 
 /-- **`FibreClusterReindex` from a slit-wide family of `ClusterReindexData`.** Given the pole fibre
 `D` (injective, enumerating the `α`-poles of the fibre), the per-preimage cluster data `Cl` on the
@@ -605,12 +604,12 @@ theorem hderiv_match_of_section {f : MeromorphicFunction X} {s₁ s₂ : ℂ →
 
 /-! ## The residue-theorem capstone via the clustering datum
 
-Composing `FibreClusterReindex.ofClusterReindexFamily` with the proven residue-theorem theorem
+Composing `FibreClusterReindex.ofClusterReindexFamily` with the residue theorem
 `residueSum_eq_zero_of_reindex_adaptedFRamified` exhibits the full reduction: for a genuine
-meromorphic numerator `g`, the total residue `∑Res = 0` follows from an `AdaptedFRamified` (TARGET
-2's off-centre/∞ genericity, already discharged into `GateAInftyData`) together with, at each finite
+meromorphic numerator `g`, the total residue `∑Res = 0` follows from an `AdaptedFRamified` (the
+off-centre/∞ genericity, already discharged into `GateAInftyData`) together with, at each finite
 pole-value centre, a per-centre `FibreClusterReindex` built from a slit-wide family of
-`ClusterReindexData` (TARGET 1, with the chart reconciliation discharged — only the
+`ClusterReindexData` (with the chart reconciliation discharged — only the
 conservation-of-number bijection + point coincidence remain). -/
 
 /-- **The residue theorem `∑Res = 0` from the clustering datum** (the precise residual
@@ -622,7 +621,7 @@ total residue of `α = ω₀·g` vanishes:
 > `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`.
 
 This is `residueSum_eq_zero_of_reindex_adaptedFRamified`, restated here to anchor the partition
-skeleton to the residue-theorem goal: the *only* genuinely-remaining analytic content is the per-centre
+skeleton to the residue-theorem goal: the *only* remaining analytic content is the per-centre
 `FibreClusterReindex`, whose hard `hgeom_fibre` field is now reduced (via this file's
 `valueChartTrace_eq_clusterSum_of_clusterReindexData`) to the conservation-of-number bijection +
 point coincidence at each slit value. -/

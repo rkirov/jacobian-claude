@@ -8,12 +8,12 @@ import Jacobians.Dolbeault.SerreResidueGateAClosed
 import Jacobians.Dolbeault.SerreResidueInftyCoherence
 
 /-!
-# The residue-theorem off-centre/∞ bundle `GateAInftyData` from an adapted cover (TARGET 2)
+# The residue-theorem off-centre/∞ bundle `GateAInftyData` from an adapted cover
 
 The `hoff_cs`-free ramified residue-theorem capstone `residueSum_eq_zero_of_reindex`
 (`SerreResidueRamifiedFullFibreBuilder.lean`) consumes two residuals: the per-centre fibre-cluster
-reindexing `FibreClusterReindex` (the geometric wall, TARGET 1) **and** the off-centre/∞ genericity
-bundle `GateAInftyData` (`SerreResidueRamifiedRealCover.lean`). This file **builds
+reindexing `FibreClusterReindex` (the conservation-of-number geometry) **and** the off-centre/∞
+genericity bundle `GateAInftyData` (`SerreResidueRamifiedRealCover.lean`). This file **builds
 `GateAInftyData`** for the canonical full-fibre selection from a genericity datum that is exactly
 the unramified `AdaptedF` (`SerreResidueGateAClosed.lean`) *minus* the unramified-pole-fibre demand
 `hoff_cs` — i.e. the same "choose any nonconstant `f` with simple `∞`-poles" selection, but
@@ -35,8 +35,8 @@ the canonical selection:
 
 So `GateAInftyData` is NOT new analytic content: it is the off-centre/∞ genericity isolate,
 identical to what the unramified route discharges, packaged into the bundle the ramified route
-consumes. The *only* genuinely-remaining content of the ramified residue-theorem route is then TARGET 1
-(`FibreClusterReindex`).
+consumes. The *only* genuinely-remaining content of the ramified residue-theorem route is then the
+per-centre `FibreClusterReindex`.
 
 ## What is delivered
 
@@ -44,8 +44,8 @@ consumes. The *only* genuinely-remaining content of the ramified residue-theorem
   simple `∞`-poles and the pole-value enumeration, NOT demanding unramified finite pole fibres.
 * `gateAInftyData_of_adaptedFRamified` — **the `GateAInftyData` builder** from an `AdaptedFRamified`
   for a genuine meromorphic numerator `g`.
-* `residueSum_eq_zero_of_reindex_adaptedFRamified` — `∑Res = 0` from an `AdaptedFRamified` *and* the
-  per-centre `FibreClusterReindex` (TARGET 1), routing through `residueSum_eq_zero_of_reindex`.
+* `residueSum_eq_zero_of_reindex_adaptedFRamified` — `∑Res = 0` from an `AdaptedFRamified` *and*
+  the per-centre `FibreClusterReindex`, routing through `residueSum_eq_zero_of_reindex`.
 
 ## ⚠ Soundness
 
@@ -88,7 +88,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-- **The `hoff_cs`-free adapted-cover genericity datum** for `α = ω₀·g` (genuine meromorphic `g`)
 over `poles`. Identical to `AdaptedF` (`SerreResidueGateAClosed.lean`) **except** it drops the
 unramified-pole-fibre genericity `hoff_cs` — the finite pole fibres may be **ramified** (the cluster
-route, TARGET 1, handles them). Every `g`-meromorphy/holomorphy field is still automatic from `g`'s
+route handles them). Every `g`-meromorphy/holomorphy field is still automatic from `g`'s
 global meromorphy, so the only fields are the generic-position facts about `f`: nonconstancy, the
 pole-value enumeration `cs`, simple `∞`-poles, and the definition of `poles` (off it `g` is
 analytic). -/
@@ -134,7 +134,7 @@ def AdaptedFRamified.ofAdaptedF {ω₀ : HolomorphicOneForms X} {g : Meromorphic
 
 /-! ## The `GateAInftyData` builder -/
 
-/-- **The residue-theorem off-centre/∞ bundle from an adapted cover (TARGET 2).**  For a genuine meromorphic
+/-- **The residue-theorem off-centre/∞ bundle from an adapted cover.**  For a genuine meromorphic
 numerator `g`, an `AdaptedFRamified` datum produces a `GateAInftyData` for the canonical full-fibre
 selection, with `br := branchValues f`. Every field is discharged from the proven
 canonical-selection machinery:
@@ -267,9 +267,9 @@ noncomputable def gateAInftyData_of_adaptedFRamified {ω₀ : HolomorphicOneForm
 
 /-! ## The capstone: `∑Res = 0` from an adapted cover + the per-centre fibre-cluster reindexing
 
-With TARGET 2 (`GateAInftyData`) built from the off-centre/∞ genericity datum `AdaptedFRamified`,
-the *entire* remaining content of the `hoff_cs`-free ramified residue-theorem route is TARGET 1 — the
-per-centre fibre-cluster reindexing `FibreClusterReindex` (the geometric wall). This capstone
+With the bundle `GateAInftyData` built from the off-centre/∞ genericity datum `AdaptedFRamified`,
+the *entire* remaining content of the `hoff_cs`-free ramified residue-theorem route is the
+per-centre fibre-cluster reindexing `FibreClusterReindex`. This capstone
 composes the two: an `AdaptedFRamified` plus a per-centre `FibreClusterReindex` discharges
 `∑Res = 0` unconditionally (for the genuine meromorphic numerator). -/
 
@@ -278,15 +278,15 @@ reindexing.** For a genuine meromorphic numerator `g`, given:
 
 * an `AdaptedFRamified` datum `A` (the off-centre/∞ genericity — a nonconstant `f` with simple
   `∞`-poles and the finite pole-value enumeration, **admitting ramified finite pole fibres**), and
-* at each finite pole-value centre `A.cs i`, a `FibreClusterReindex` (TARGET 1 — the genuine
-  full-fibre cluster geometric reindexing of the moving trace),
+* at each finite pole-value centre `A.cs i`, a `FibreClusterReindex` (the genuine full-fibre
+  cluster geometric reindexing of the moving trace),
 
 the total residue of `α = ω₀·g` vanishes:
 
 > `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`.
 
-This routes the TARGET-2 bundle `gateAInftyData_of_adaptedFRamified` and the TARGET-1 per-centre
-residuals into the proven capstone `residueSum_eq_zero_of_reindex`. The *only* genuinely-remaining
+This routes the bundle `gateAInftyData_of_adaptedFRamified` and the per-centre residuals into
+the capstone `residueSum_eq_zero_of_reindex`. The *only* genuinely-remaining
 analytic content is `FibreClusterReindex` (the per-centre `hgeom_fibre` — the fibre-cluster
 reindexing of the moving full-fibre trace); the off-centre/∞ bundle is fully discharged here. -/
 theorem residueSum_eq_zero_of_reindex_adaptedFRamified {ω₀ : HolomorphicOneForms X}
@@ -299,13 +299,13 @@ theorem residueSum_eq_zero_of_reindex_adaptedFRamified {ω₀ : HolomorphicOneFo
 
 `ExistsAdaptedFRamified` packages the off-centre/∞ genericity selection (always achievable — Miranda
 p. 254 "choose any nonconstant `f`"), so that the unconditional residue theorem rests on **exactly
-two** named residuals: this genericity selection (TARGET 2's *input*, the same isolate as
-`ExistsAdaptedF`) and the per-centre fibre-cluster reindexing `FibreClusterReindex` (TARGET 1). -/
+two** named residuals: this genericity selection (the same isolate as `ExistsAdaptedF`) and the
+per-centre fibre-cluster reindexing `FibreClusterReindex`. -/
 
 /-- **The off-centre/∞ genericity selection obligation.**  An adapted (ramification-tolerant) cover
 exists for `α = ω₀·g` over any finite `poles` off which `g` is analytic. This is the `hoff_cs`-FREE
 analogue of `ExistsAdaptedF` (`SerreResidueGateAClosed.lean`) — it drops the unramified-pole-fibre
-demand, since the ramified cluster route (TARGET 1) handles ramified finite pole fibres. It is
+demand, since the ramified cluster route handles ramified finite pole fibres. It is
 genuinely achievable (Miranda p. 254 + the simple-`∞` reciprocal `f' = (f₀ − a)⁻¹`); strictly weaker
 than `ExistsAdaptedF`, hence *no harder* to discharge. -/
 def ExistsAdaptedFRamified (ω₀ : HolomorphicOneForms X) (g : MeromorphicFunction X)

@@ -12,7 +12,7 @@ close)
 
 `Jacobians.Dolbeault.FormTraceGlobalTPatched` reduced the residue theorem (`∑ₐ Resₐ(α) = 0`,
 `α = ω₀·g`) to the construction of a **non-empty `PatchedTraceSelection`** — the value-correct
-branch-patched trace input to `residueSum_eq_zero_of_glue`. Every conceptual wall is down; the
+branch-patched trace input to `residueSum_eq_zero_of_glue`. Every conceptual difficulty is resolved; the
 proven engines are:
 
 * the **boundedness port** `tendsto_zero_valueChartTrace_of_sheetSections` (the §VIII.3 analytic

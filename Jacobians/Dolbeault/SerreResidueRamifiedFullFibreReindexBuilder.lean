@@ -32,7 +32,7 @@ the inconsistent all-poles assumption removed.
 
 So the residue theorem `∑_{a ∈ poles} formFnResidue ω₀ g a = 0` is reduced, for the real cover, to
 **exactly** the per-slit `FibreClusterTopology` (Forster §4 conservation-of-number + §5 normal-form
-geometry — the genuine remaining wall, *unchanged* in content from the unsound chain) plus the
+geometry — the genuine remaining obligation, *unchanged* in content from the unsound chain) plus the
 discharged `AdaptedFRamified`/`GateAInftyData` bundle, with the full-fibre-vs-pole inconsistency
 **resolved**: `D` is the whole fibre and the non-pole preimages drop out at the residue level
 (`residueSum_full_eq_poleOnly`).
@@ -151,7 +151,7 @@ noncomputable def FullFibreCenterReindex.ofFibreClusterTopologyFamily {ω₀ : H
 /-- **`hnonpole` is automatic from an `AdaptedFRamified` datum.** A non-pole preimage `x ∉ poles` of
 a genuine meromorphic numerator has `g` analytic there (`A.hg_an_offpoles`), so `α = ω₀·g` is
 holomorphic and its form residue vanishes (`formFnResidue_eq_zero_of_analyticAt`). This discharges
-the non-pole-residue-`0` field of `FullFibreCenterReindex` for free — it is **not** a hidden wall.
+the non-pole-residue-`0` field of `FullFibreCenterReindex` for free — it carries no hidden content.
 -/
 theorem hnonpole_of_adaptedFRamified {ω₀ : HolomorphicOneForms X} {g : MeromorphicFunction X}
     {poles : Finset X} (A : AdaptedFRamified ω₀ g poles) {x : X} (hx : x ∉ poles) :

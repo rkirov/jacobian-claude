@@ -127,7 +127,7 @@ theorem chi_jump_of_LES {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
   linarith
 
 /-- **Existence of the local-realization datum** (the skyscraper-irreducible core of cohomological
-Riemann–Roch, Forster §16) — now PROVEN from local realizability of the cover.
+Riemann–Roch, Forster §16) — proven from local realizability of the cover.
 
 `LocalRealizationData 𝔘 D P` (`SkyscraperSnake`) packages **exactly** the two pieces that the snake
 lemma cannot supply (plus finiteness, discharged unconditionally):

@@ -10,7 +10,7 @@ import Jacobians.Dolbeault.SerreResidueGateAInftyBuilder
 # The SOUND full-fibre residue close of the residue-theorem assembly (whole-fibre `D`, non-poles →
 residue `0`)
 
-This file closes the residue-theorem residue theorem `∑_{a ∈ poles} formFnResidue ω₀ g a = 0` *soundly*,
+This file closes the residue theorem `∑_{a ∈ poles} formFnResidue ω₀ g a = 0` *soundly*,
 fixing the full-fibre-vs-pole-only inconsistency of `FibreClusterReindex`
 (`SerreResidueRamifiedFullFibreBuilder.lean`).
 
@@ -272,8 +272,8 @@ of `α = ω₀·g` vanishes:
 
 > `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`.
 
-This composes `gateAInftyData_of_adaptedFRamified` (TARGET 2, discharged) with the per-centre SOUND
-full-fibre residuals (TARGET 1) into `residueSum_eq_zero_of_fullFibreReindex`. The *only*
+This composes `gateAInftyData_of_adaptedFRamified` (already built) with the per-centre SOUND
+full-fibre residuals into `residueSum_eq_zero_of_fullFibreReindex`. The *only*
 genuinely-remaining analytic content is the per-centre `FullFibreCenterReindex` (the whole-fibre
 cluster geometry); the off-centre/∞ bundle is fully discharged. -/
 theorem residueSum_eq_zero_of_fullFibreReindex_adaptedFRamified {ω₀ : HolomorphicOneForms X}

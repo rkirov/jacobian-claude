@@ -60,7 +60,7 @@ no analysis — feeds `hxs_inj`/`hxs_mem`/`hxs_surj`. 3. **Trace rationality** �
 `Tr_F α` on `ℂℙ¹` is *rational*, i.e. realizable as a `LaurentForm L` with `hcenters` (the
 `L`-centers = the finite pole values) and `hL32` (Lemma 3.2 at the finite centers, `L.R`'s residue =
 the fibre residue sum). This is the genuinely deep §VIII.3 content (every meromorphic function on
-the compact `ℂℙ¹` is rational), the last analytic wall; it reuses `FibreTrace.resAt_traceCoeff'`
+the compact `ℂℙ¹` is rational), the hard analytic step; it reuses `FibreTrace.resAt_traceCoeff'`
 (Lemma 3.2, *proved*) for the residue identity and the partial-fraction `LaurentForm` machinery
 (`Jacobians.TraceResidue`, *proved*). 4. **Lemma 3.2 at `∞`** (`infty_eq`): the residue at infinity
 of `L.R` is the `∞`-fibre residue sum — the reciprocal-chart analogue of (3) at the pole fibre (cf.

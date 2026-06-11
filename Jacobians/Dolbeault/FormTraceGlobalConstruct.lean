@@ -61,7 +61,7 @@ is Lemma 3.2 at `∞` for `Tr_F α`, and combined with the proved finite-center 
 residue theorem it *is* the residue-theorem assembly. Hence `L` must be the actual rational trace;
 there is no shortcut.
 
-This makes (ii) the genuine §VIII.3 wall: build `Tr_F α` as a global meromorphic function on the
+This makes (ii) the genuine §VIII.3 content: build `Tr_F α` as a global meromorphic function on the
 compact `ℂℙ¹` (holomorphic off the finite exceptional set — critical values + pole-images + `∞` — by
 the per-sheet pushforwards, meromorphic at the exceptional points), extract its principal parts into
 a `LaurentForm`, and read off the `∞`-residue. (i) is a finite genericity choice (the bad source set

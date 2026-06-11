@@ -65,7 +65,7 @@ maximal-atlas coordinate change), and the proven `hderiv_match_of_section`.
 
 ## The precise remaining clustering-topology content
 
-After this file, residue-theorem TARGET 1 (`hgeom_fibre` for the real cover) reduces, at each regular slit
+After this file, `hgeom_fibre` for the real cover reduces, at each regular slit
 value `z`, to supplying the three minimal facts of `ofClusterFibrePoints`:
 
 1. **`hcl_fibre`** — the cluster sheet points are preimages of `coe z` (the sphere-level §5
@@ -81,7 +81,7 @@ are distinct via the primitive root `ζ`). 3. **`hcard`** — the conservation o
 engine), so
 `fibreMult f (coe z) = fibreMult f (coe c) = ∑ᵢ localDeg f (coe c) (D.xs i) = ∑ᵢ D.mult i` (with
 `D.mult i = localDeg`, the `analyticOrderAt_holoRepr_sub_eq_mult` bridge). This is the irreducible
-conservation-of-number wall, isolated to a single equality of naturals.
+conservation-of-number geometry, isolated to a single equality of naturals.
 
 ## ⚠ Soundness
 
@@ -532,7 +532,7 @@ The assignment `cl i j` is then the unique sheet index with
 `S.sheet (cl i j) (coe z) = clusterSection D Cl i j z` (existence by `S.fibre_eq`, uniqueness by
 `S.sheet_inj`), and `hcl_inj` follows from `hcl_distinct` (distinct points ⟹ distinct sheets, the
 sheet points being injective in the index). This is the precise remaining clustering-topology
-content of the whole residue-theorem TARGET 1, stated minimally. -/
+content of the whole fibre-cluster reindexing, stated minimally. -/
 
 /-- **`FibreClusterTopology` from the minimal conservation-of-number residual.**  Given the sphere
 sheet system data, the cluster-sheet-points-are-fibre-points fact `hcl_fibre`, their pairwise
@@ -542,7 +542,7 @@ holds.
 
 The cluster→sheet assignment `cl i j` is recovered as the unique sheet index over the cluster point
 (`S.fibre_eq` + `S.sheet_inj`); its injectivity reduces to `hcl_distinct`.  This is the cleanest
-statement of the genuine §4/§17.9 conservation-of-number / properness wall: the cluster sheets are
+statement of the genuine §4/§17.9 conservation-of-number / properness content: the cluster sheets are
 preimages, are distinct, and number `∑ᵢ mᵢ = deg f`. -/
 noncomputable def FibreClusterTopology.ofClusterFibrePoints {ω₀ : HolomorphicOneForms X} {g : X → ℂ}
     {f : MeromorphicFunction X} {Φ : (b : ℂ) → FibreRegularData g f b} {c : ℂ} {Sset : Set ℂ}
@@ -603,7 +603,7 @@ The decisive #13-style check.  A `FibreClusterTopology`'s bijection field `e` fo
 conservation-of-number identity `∑ᵢ D.mult i = S.n` (`= deg f`), so the datum is genuinely
 multi-preimage — not a disguised single-preimage placeholder or a vacuous triviality.  The minimal
 constructor `ofClusterFibrePoints` accepts *any* `hcard : ∑ᵢ D.mult i = S.n` with ramified
-multiplicities (several preimages with `mᵢ > 1`), confirming the wall is the genuine multi-cluster
+multiplicities (several preimages with `mᵢ > 1`), confirming the content is the genuine multi-cluster
 content. -/
 
 /-- **Conservation of number, encoded by the topology datum.**  A `FibreClusterTopology` forces
@@ -660,9 +660,10 @@ precise residual exhibited). For a genuine meromorphic numerator `g`, an `Adapte
 
 > `∑ a ∈ poles, formFnResidue ω₀ g.toFun a = 0`.
 
-This anchors the conservation-of-number datum to the residue-theorem goal: the *only* genuinely-remaining
-content is the per-centre `FibreClusterTopology` — and, via `ofClusterFibrePoints`, exactly the
-three minimal clustering facts (cluster sheets are distinct fibre points numbering `deg f`). -/
+This anchors the conservation-of-number datum to the residue-theorem goal: the *only*
+genuinely-remaining content is the per-centre `FibreClusterTopology` — and, via
+`ofClusterFibrePoints`, exactly the three minimal clustering facts (cluster sheets are distinct
+fibre points numbering `deg f`). -/
 theorem residueSum_eq_zero_of_fibreClusterTopology {ω₀ : HolomorphicOneForms X}
     {g : MeromorphicFunction X} {poles : Finset X} (A : AdaptedFRamified ω₀ g poles)
     (R : ∀ i, FibreClusterReindex ω₀ g.toFun A.f A.hdiv poles (A.cs i)) :
