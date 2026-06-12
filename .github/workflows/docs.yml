@@ -10,7 +10,6 @@ on:
       - 'scripts/unit_design.py'
       - 'scripts/generate_verso_site.py'
       - 'site/**'
-      - 'docbuild/**'
       - '.github/workflows/docs.yml'
 
 concurrency:
@@ -39,14 +38,6 @@ jobs:
           lake exe cache get
           lake build
 
-      - name: Build API docs (doc-gen4)
-        # doc-gen4 over a Mathlib-dependent library is heavy (it documents Mathlib too);
-        # non-fatal until its runtime on hosted runners is established
-        continue-on-error: true
-        run: |
-          cd docbuild
-          MATHLIB_NO_CACHE_ON_UPDATE=1 lake build Jacobians:docs
-
       - name: Generate + build Verso site
         run: |
           python3 scripts/unit_design.py
@@ -59,7 +50,6 @@ jobs:
           mkdir -p _site
           cp -r docs/* _site/                           # units.html, proposal, reviewer docs
           cp -r site/_out/html-multi _site/exposition
-          cp -r docbuild/.lake/build/doc _site/api 2>/dev/null || echo "api docs absent (non-fatal)" 
           printf '<meta http-equiv="refresh" content="0; url=exposition/">' > _site/index.html
           touch _site/.nojekyll
 

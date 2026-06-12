@@ -11,7 +11,6 @@ Run from the repo root; then `cd site && lake exe jacobianssite` renders _out/ht
 import os, re, collections
 
 REPO = 'https://github.com/rkirov/jacobian-claude'
-API = '../api'   # doc-gen4 output mounted next to the site on Pages
 
 src = open('scripts/unit_design.py').read()
 exec(src.split('# cycle detection')[0])   # mods, deps, assign, units, uedges, META
@@ -73,8 +72,7 @@ root = ['import VersoManual'] + [f'import Site.{c}' for c in chapters] + ['',
     '#doc (Manual) "The Jacobians Challenge, by unit" =>', '',
     'A machine-checked solution of Kevin Buzzard\'s Jacobians challenge: genus,',
     'the genus-0 sphere theorem, Riemann–Roch, Abel\'s theorem, and the Jacobian',
-    f'as a complex torus. [Source]({REPO}) · [unit dependency graph](../units.html) ·',
-    f'[API documentation]({API}/).', '',
+    f'as a complex torus. [Source]({REPO}) · [unit dependency graph](../units.html).', '',
     'Chapters are the 30 units of the decomposition, ordered foundations-first;',
     'each unit page is generated from the unit docstring in the repository, so the',
     'source of truth stays in code.', '']

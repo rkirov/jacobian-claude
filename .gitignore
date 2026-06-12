@@ -20,5 +20,4 @@ docs/architecture_map.html
 /site/Site.lean
 /site/Site/
 /site/_out/
-/docbuild/.lake/
 /site/.lake/
