@@ -27,3 +27,6 @@ jobs:
 
       - name: Axiom hygiene check
         run: lake env lean AxiomCheck.lean
+
+      - name: Comparator statement replica
+        run: python3 scripts/comparator_replica.py  # lean-eval statement check, local form
