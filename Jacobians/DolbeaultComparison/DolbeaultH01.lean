@@ -10,6 +10,7 @@
   `DolbeaultComparison` / `DolbeaultComparisonEquiv`.
 -/
 import Jacobians.Dbar.RealForms
+import Mathlib.Geometry.Manifold.Algebra.SmoothFunctions
 
 open scoped Manifold ContDiff
 

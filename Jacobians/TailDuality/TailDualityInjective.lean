@@ -1,35 +1,5 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Serre duality for the tail `H¹`, the injective half (Miranda Ch. VI Thm 3.3, p. 188)
-
-For genus ≥ 1 we run Miranda's duality in the **ω₀-frame**: fix `0 ≠ ω₀ ∈ Ω(X)` and represent
-meromorphic 1-forms as `h·ω₀` with `h` meromorphic.  The local coefficient of `h·ω₀` in the
-canonical chart at `p` is `coeffAt ω₀ p · (h ∘ chart⁻¹)` — exactly the integrand of the
-residue theorem `residueTheorem_formFn_unconditional`, so the residue map's vanishing on
-realized tails needs no factorization detour.
-
-Contents:
-* `canonicalDivisorOf ω₀ hω₀` — the divisor of zeros of `ω₀` (finite support by
-  `finite_localRep_self_eq_zero`); this is the canonical divisor `K = div ω₀`.
-* the order bridge `omegaOrderBounded_iff_mem`: `h·ω₀ ∈ L^(1)(−D) ⟺ h ∈ L(K−D)`.
-* the residue functional `omegaTailResidue ω₀ h` on tails; its vanishing on realized tails
-  (`omegaTailResidue_tailMap_eq_zero`, via `residueTheorem_formFn_unconditional` with the
-  analytic-bad-set enlargement); the descended **duality pairing**
-  `omegaDualMap : lSysModule (K−D) →ₗ (H¹(D))*`.
-* **Injectivity** (Miranda p. 188): a nonzero class `[h]` pairs against the single-monomial tail
-  `z^{−1−o}·p` (`o` the local order of `h·ω₀` at a point where `h`'s germ survives) to the
-  *leading Laurent coefficient*, nonzero by the anchor lemma `laurentCoeff_order_ne_zero`.
-  Hence the easy half of duality: `lDim (K − D) ≤ h1TailDim D`.
-
-The surjective half (Miranda pp. 189–191) is built separately.
--/
-import Jacobians.TailDuality.TailResidue
-import Jacobians.LaurentTail.RiemannRochFirstForm
-import Jacobians.SerrePairing.SerreDuality
-import Jacobians.ResidueTheorem.ResidueTheoremFormFn
+import Jacobians.LaurentTail.TailMap
+import Jacobians.ResidueTheorem.OmegaFactorization
 
 open scoped Manifold ContDiff Topology
 open Filter Set

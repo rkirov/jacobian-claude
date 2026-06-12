@@ -1,11 +1,5 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
--/
-import Jacobians.ProperDegree.DegDivResidue
-import Jacobians.ProperDegree.ToSphereGeneral
-import Jacobians.MappingDegree.RoucheBridge
+import Jacobians.ProjectiveLine
+import Mathlib.Analysis.CStarAlgebra.Classes
 
 /-!
 # The proper-map degree: `zerosCount f = polesCount f` (conservation of number)

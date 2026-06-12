@@ -1,31 +1,4 @@
-/-
-  **Forster 13.2**: `∂̄`-solvability on an *open* disk.
-
-  This is the analytic engine of the Čech finiteness argument.  It builds on:
-
-    * `DbarDisk.dbar_solvable_of_compactSupport` (Forster 13.1, Cauchy transform), and
-    * `DbarDiskCohomology.dbar_solvable_ball` — solving `∂̄u = g` on a ball, but only for a
-      **globally** smooth datum `g`.
-
-  Forster 13.2 removes the global-smoothness requirement: it solves `∂̄u = g` on an open disk for a
-  datum `g` smooth on the *open disk only*.  This is exactly what the genuine disk-acyclicity
-  `H¹(disk, 𝒪) = 0` (Forster 13.4 — required by Leray's theorem 12.8) needs: there the datum is the
-  glued `∂̄(smooth split)`, smooth on the union's chart-image ball but not globally, leaving no room
-  for a cutoff bump.
-
-  **Proof (Forster p.106, exhaustion).** Exhaust `ball c R` by `ball c ρₙ`, `ρₙ ↑ R`. Cutoffs `χₙ`
-  (`= 1` on `closedBall c ρₙ`, supported in `ball c ρₙ₊₁ ⋐ ball c R`) make `χₙ·g` globally smooth
-  with compact support, so 13.1 gives `fₙ` with `∂̄fₙ = χₙ·g = g` on `ball c ρₙ`. Inductively
-  correct `f̃ₙ` by a holomorphic polynomial `Pₙ` (Taylor partial sum of the holomorphic
-  `fₙ₊₁ − f̃ₙ`) so that `‖f̃ₙ₊₁ − f̃ₙ‖ ≤ 2⁻ⁿ` on `closedBall c ρₙ`; the limit `u` converges locally
-  uniformly, is smooth, and the holomorphic corrections preserve `∂̄u = g`.
-
-  Mathlib ingredients: `DifferentiableOn.hasFPowerSeriesOnBall`,
-  `HasFPowerSeriesOnBall.tendstoUniformlyOn'` (partial sums = polynomials → `f` uniformly on
-  subdisks), `TendstoLocallyUniformlyOn.differentiableOn` (locally-uniform limit of holomorphic is
-  holomorphic), `ContDiffBump`.
--/
-import Jacobians.Dbar.DbarDiskCohomology
+import Jacobians.Dbar.DbarDisk
 
 open Complex Metric Filter Topology
 open scoped NNReal ENNReal

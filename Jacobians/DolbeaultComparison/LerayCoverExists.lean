@@ -1,37 +1,3 @@
-/-
-  Existence of a finite Leray cover of a compact connected Riemann surface — the geometric input
-  that instantiates the Dolbeault/Riemann–Roch ladder on one fixed good cover.
-
-  `RiemannRoch.exists_riemannRoch_divisor` is stated via `lDim` and mentions no cover, and the
-  ladder leaves take an arbitrary `𝔘 : FiniteCover X` together with `hL : 𝔘.IsLeray`, so the
-  ladder→headline wiring may fix one Leray cover.  The statement that unlocks that wiring is
-
-      `exists_lerayCover : ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray`
-
-  (`IsLeray` is `CechComplex.FiniteFamily.IsLeray`: every cover set simply connected — Forster
-  §12's Leray hypothesis in the form needed for `H¹`; overlap-connectivity is needed only for
-  `H²` and higher and is not part of the predicate).
-
-  ## Main results
-
-    * `simplyConnectedSpace_chartBallPreimage` — the geometric content: the chart-preimage of a
-      coordinate ball, `e.source ∩ e ⁻¹' ball cc r` (with `ball cc r ⊆ e.target`), is a
-      `SimplyConnectedSpace`.  Proof: the chart restricts to a homeomorphism of this set onto the
-      ball `ball cc r ⊆ ℂ` (`OpenPartialHomeomorph.toHomeomorphSourceTarget` of `e.restr`), the
-      ball is contractible (`Metric.contractibleSpace_ball`), contractibility transports across
-      the homeomorphism (`Homeomorph.contractibleSpace`), and a contractible space is simply
-      connected (`SimplyConnectedSpace.ofContractible`).
-
-    * `chartDiskCover : ChartDiskCover X` — a concrete finite cover of compact `X` whose every
-      set is a chart-disk neighbourhood (an open neighborhood biholomorphic to a Euclidean ball),
-      built from compactness (`IsCompact.elim_finite_subcover` on the per-point neighborhoods).
-
-    * `chartDiskCover_simplyConnected` / `exists_chartDiskCover` / `exists_lerayCover` — every
-      set of the cover is simply connected, so the cover is Leray, unconditionally.
--/
-import Jacobians.Cech.CechComplex
-import Jacobians.Cech.ChartDiskCover
-import Mathlib.Analysis.Normed.Module.Connected
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

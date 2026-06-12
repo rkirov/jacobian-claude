@@ -1,38 +1,8 @@
-/-
-  Dolbeault's comparison theorem `H^{0,1}(X) ≅ H¹(X, 𝒪)` — the central analytic input of the
-  `D = 0` Serre route (`arithmeticGenus_eq_genus`).
-
-  Target (`cechH1_dolbeault_comparison_proof`; the `IsLeray`-free form is
-  `GoodCover.cechH1_dolbeault_comparison'`):
-
-    `cechH1_dolbeault_comparison_proof (𝔘 : FiniteCover X) :`
-    `    finrank ℝ (DolbeaultH01 X) = 2 * finrank ℂ (𝔘.cechH1 0)`
-
-  the `ℝ`-vs-`ℂ` dimension count of Dolbeault's iso (`H^{0,1}` is `Module ℝ` of real-dim `2g`;
-  `cechH1` is `Module ℂ` of complex-dim `g`).
-
-  The math (Dolbeault's theorem). Two mutually-inverse maps:
-  * **Dolbeault → Čech.** A smooth `(0,1)`-form `g`: on each chart-disk `U_i` solve `∂̄u_i = g`
-    *locally* (`DbarLocal.dbar_solvable_locally`). Then `∂̄(u_i − u_j) = g − g = 0` on
-    `U_i ∩ U_j`, so `{u_i − u_j}` is a holomorphic Čech `1`-cocycle; its class lands in `cechH1`.
-  * **Čech → Dolbeault.** A holomorphic cocycle `{f_ij}`: with a partition of unity `{ρ_k}`
-    subordinate to the cover, set `h_i := ∑_k ρ_k f_ik`; then `f_ij = h_j − h_i` (smooth) and
-    `∂̄h_i = ∂̄h_j` on overlaps (`f_ij` holomorphic) glue to a global `(0,1)`-form; its class.
-
-  These are mutually inverse, giving a linear iso and hence the `finrank` relation.
-
-  This file holds the **forward direction** (`dolbeault_to_cech`) and the shared analytic
-  infrastructure (chart bridge, Wirtinger chain rule, cutoff/planar primitives, the forward
-  cocycle operator). The **inverse direction** (`cech_to_dolbeault`), the assembled `ℝ`-linear
-  equivalence `comparison_linearEquiv`, and the target `cechH1_dolbeault_comparison_proof` live in
-  `Jacobians.Dolbeault.DolbeaultComparisonInverse`.
--/
-import Jacobians.DolbeaultComparison.DolbeaultComparison
-import Jacobians.Dbar.DbarLocal
 import Jacobians.Cech.ChartDiskCover
 import Jacobians.Cech.CechH0
 import Mathlib.Geometry.Manifold.PartitionOfUnity
 import Mathlib.Geometry.Manifold.BumpFunction
+import Jacobians.Dbar.DbarDisk
 
 open scoped Manifold ContDiff Bundle Topology
 open TopologicalSpace (Opens)

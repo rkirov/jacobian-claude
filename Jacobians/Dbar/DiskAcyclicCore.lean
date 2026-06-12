@@ -1,24 +1,3 @@
-/-
-  The **closed-core** partition-of-unity primitives for the disk-acyclicity.
-
-  A `SharedChartCover` is a finite *family* of opens living in one chart (not a cover of compact
-  `X` — a single chart cannot cover a compact connected surface).  The disk-acyclicity globalizes
-  a cocycle with a smooth partition of unity `ρ` subordinate to the family `(Uᵢ)`.  A subordinate
-  PoU *cannot* sum to `1` on the open `⋃ Uᵢ`: that would force `⋃ Uᵢ` clopen, hence `= X` on
-  connected `X`.
-
-  Instead, sum to `1` only on a **closed core** `C ⊆ ⋃ Uᵢ`.  Mathlib's
-  `SmoothPartitionOfUnity.exists_isSubordinate` takes a *closed* `s ⊆ ⋃ Uᵢ`; with `s := C` it
-  gives a subordinate PoU summing to `1` on `C` — no clopen issue.  Since every pairwise overlap
-  of a `SharedChartCover` lies in `interior C`, the cocycle germ-splitting (consumed only at
-  overlap points) happens exactly where `∑ ρ = 1` on a neighbourhood.
-
-  The lemmas are stated abstractly over a finite family `U : ι → Opens X` and a closed
-  `C ⊆ ⋃ Uᵢ`, so they are independent of the `SharedChartCover` packaging and reusable for any
-  closed-core globalization.
--/
-import Jacobians.Cech.CechComplex
-import Jacobians.Surface.RealManifold
 import Mathlib.Geometry.Manifold.PartitionOfUnity
 
 open scoped Manifold ContDiff Topology

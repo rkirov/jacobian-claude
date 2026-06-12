@@ -1,28 +1,4 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Planar integration atoms: the Forster 20.3 integration atoms on `ℂ`
-
-The planar heart of Forster's Lemma 20.5 identity `∫_c ω = (1/2πi)∬(df/f)∧ω`.  This file
-provides the Wirtinger `∂`-calculus (`del`, conjugate partner of the repo's `DbarDisk.dbar`)
-and the two integration atoms the identity rests on:
-
-  1. `integral_logDeriv_cross_eq_zero` — `∫_ℂ (∂W/W·∂̄G − ∂̄W/W·∂G) dA = 0` for smooth
-     nonvanishing `W` and `G ∈ C_c^∞(ℂ)`: this is `∬ d(G·dW/W) = 0` in Wirtinger coordinates
-     (compact-support Stokes `∫∂̄φ = ∫∂φ = 0`, `PlanarCompactSupportStokes`) plus the mixed
-     Wirtinger commutation `∂̄∂W = ∂∂̄W` (`dbar_del_eq_del_dbar`, symmetry of the second
-     Fréchet derivative);
-  2. `integral_dbar_mul_inv_sub` — `∫_ℂ ∂̄G·((z−α)⁻¹ − (z−β)⁻¹) dA = π·(G β − G α)`
-     (two applications of Cauchy–Pompeiu, `DbarDisk.cauchyPompeiu_area`).
-
-These are exactly the "planar Stokes + residue" ingredients of Forster's proof of 20.3
-(p. 160): the first kills the `dW/W` part of `df/f`, the second evaluates the two poles.
-
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.3 (p. 160).
--/
-import Jacobians.PlanarStokes.AnnulusResidueIntegral
+import Jacobians.Dbar.DbarDisk
 
 noncomputable section
 

@@ -1,21 +1,3 @@
-/-
-A `ULift` of a complex manifold is a complex manifold (with the *same* model `E`).
-
-Mathlib equips `ULift X` with the transported topology, T2 / compact / topological-group
-structure, but not with a charted-space / `IsManifold` structure.  This file fills that gap:
-given `M` a `C^ω` manifold modelled on a normed `ℂ`-space `E`, we relabel each chart of `M`
-through the homeomorphism `Homeomorph.ulift : ULift M ≃ₜ M` to obtain a `ChartedSpace E (ULift M)`
-whose transition maps are *literally* those of `M` (the `ULift` relabel and its inverse cancel),
-hence land in `contDiffGroupoid ω 𝓘(ℂ, E)`.
-
-The two coordinate maps `ULift.up` and `ULift.down` are then `C^ω`, because in these charts they
-are the identity.  Finally, if `M` is a `LieAddGroup`, so is `ULift M`.
-
-This file imports only Mathlib.
--/
-import Mathlib.Analysis.Complex.Basic
-import Mathlib.Geometry.Manifold.IsManifold.Basic
-import Mathlib.Geometry.Manifold.ContMDiff.Atlas
 import Mathlib.Geometry.Manifold.ContMDiff.Constructions
 import Mathlib.Geometry.Manifold.Algebra.LieGroup
 

@@ -1,39 +1,4 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# The dimension count `h¹(𝔘, 𝒪) = genus X` (Forster 19.x / Miranda Ch. X §2)
-
-The key step of the Abel-converse route: the Čech `H¹` of the structure sheaf on any locally
-realizable finite cover has dimension exactly the genus.
-
-*Proof (vanishing at a large divisor + the two Riemann–Rochs).*
-
-1. **`H¹(𝒪_A) = 0` for a suitable effective `A`.**  Pick a basis of the finite-dimensional
-   `H¹(𝒪)`; the kill lemma (`exists_effective_h1Incl_eq_zero`, the cup-multiplication
-   pigeonhole) provides an effective `Aᵢ` killing the `i`-th basis class.  For
-   `A := ∑ᵢ Aᵢ + m·P` (any `m ≥ 0`) every basis class dies in `H¹(𝒪_A)` (functoriality
-   `h1Incl_comp`), so the inclusion-induced map `H¹(𝒪) → H¹(𝒪_A)` is zero — and it is also
-   **surjective** (`h1Incl_surjective`, Forster 16.8 via the skyscraper LES).  Hence
-   `H¹(𝒪_A) = 0`.
-2. **Tail vanishing.**  Choosing `m > deg K` for the pair-frame canonical divisor
-   `K = div (dg₀)` makes `deg (K − A) < 0`, so by tail Serre duality
-   (`h1TailDim_eq_lDim_pairCanonical_sub`, Miranda VI.3.3) the Laurent-tail obstruction also
-   vanishes: `h¹_tail(A) = l(K − A) = 0`.
-3. **Subtract the two Riemann–Rochs at `A`.**  Cohomological RR (`cohomological_riemannRoch`,
-   the skyscraper-χ induction) gives `l(A) = deg A + 1 − h¹(0)` and tail RR
-   (`riemannRoch_tailForm` + `h1TailDim_zero_eq_genus_unconditional`, Miranda VI.3.1/3.11)
-   gives `l(A) = deg A + 1 − g`; hence `h¹(0) = g`.
-
-This is Miranda's Proposition X.2.6 (`dim H¹(X, 𝒪) = g`, p. 316) — proven here without GAGA:
-the Zariski/algebraic detour is replaced by the kill lemma on the fixed analytic cover.
-
-References: Miranda, *Algebraic Curves and Riemann Surfaces*, Ch. X §2 (pp. 313–316);
-Forster, *Lectures on Riemann Surfaces* (GTM 81), §16.
--/
-import Jacobians.H1Genus.CechH1CupKill
-import Jacobians.TailDuality.RiemannRochUnconditional
+import Jacobians.TailDuality.PairDualityInjective
 
 open scoped Manifold ContDiff Topology
 open Module

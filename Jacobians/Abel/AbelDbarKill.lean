@@ -1,28 +1,4 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# The Abel ∂̄-kill step: Forster 19.10 — `⟨ω,σ⟩ = 0 ∀ω ⟹ σ = ∂̄u`
-
-The solvability criterion for `∂̄`: a smooth `(0,1)`-form whose pairing against every
-holomorphic basis form vanishes is a `∂̄`-coboundary.
-
-Mechanism: the pairing functional
-`Λ : A^{0,1} → ℂ^g`, `Λ(σ)ᵢ = ⟨ωᵢ, σ⟩` kills `im ∂̄` (`pairForm_dbarL`), hence descends to
-`Λ̄ : H^{0,1} → ℂ^g`; `Λ̄` is surjective because the **period Gram matrix**
-`pairMatrix i j = ⟨ωᵢ, ω̄ⱼ⟩` is invertible (`pairForm_conjForm_ne_zero` positivity) and the
-range is an `ℝ`-submodule containing all `c·colⱼ`; and `dim_ℝ H^{0,1} = 2·h¹(𝒪) = 2g
-= dim_ℝ ℂ^g` (the Dolbeault comparison + the `h¹ = g` dimension count), so surjective ⟹
-injective ⟹ `[σ] = 0`.
-
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 19.9–19.10 (pp. 155–157).
--/
-import Jacobians.Abel.AbelPairingPositivity
-import Jacobians.DolbeaultComparison.DolbeaultComparisonEquiv
-import Jacobians.H1Genus.CechH1Genus
-import Jacobians.DolbeaultComparison.LerayCoverExists
-import Jacobians.Finiteness.SkyscraperProductWitness
+import Jacobians.Abel.AbelPairing
 
 noncomputable section
 

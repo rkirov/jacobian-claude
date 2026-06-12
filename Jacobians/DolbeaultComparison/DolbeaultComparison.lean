@@ -1,28 +1,3 @@
-/-
-  Dolbeault cohomology `H^{0,1}(X)` and the Čech↔Dolbeault comparison — the core of the `D = 0`
-  Serre duality (`arithmeticGenus_eq_genus`).
-
-  Built on the intrinsic Dolbeault data:
-  * `RealForms`: `A⁰ = SmoothCFunctions X`, `A¹ = SmoothCOneForms X` (a `ContMDiffSection`, an
-    `ℝ`-module), `differential : A⁰ → A¹` (`du`), `proj01 : (ℂ →L[ℝ] ℂ) →L[ℝ] (ℂ →L[ℝ] ℂ)` (the
-    `(0,1)`-fiber projection, a CLM), `dbar u = proj01 ∘ du` (`∂̄`).
-  * `DolbeaultH01`: `dbarL : A⁰ →ₗ[ℝ] A¹`, the `ℝ`-linear `∂̄`.
-
-  This file assembles, by pure algebra:
-  * `proj01L : A¹ →ₗ[ℝ] A¹` — `proj01` applied fiberwise (an `ℝ`-linear endomorphism of `A¹`);
-  * `OneFormsZeroOne X := LinearMap.range proj01L` — the `(0,1)`-forms `A^{0,1}` (a
-    `Submodule ℝ A¹`);
-  * `dbarL_mem_zeroOne` : `im ∂̄ ⊆ A^{0,1}` (since `∂̄ = proj01L ∘ d`);
-  * `DolbeaultH01 X` := the cokernel `A^{0,1} ⧸ im ∂̄` (on a curve `A^{0,2} = 0`, so this *is*
-    `H^{0,1}`); an `ℝ`-module.
-
-  The comparison statement itself (`finrank ℝ (DolbeaultH01 X) = 2 · finrank ℂ (cechH1 𝔘 0)`,
-  see the scalar note at the end of this file for the `2·` factor) is proven downstream:
-  `cechH1_dolbeault_comparison_proof` (`DolbeaultComparisonEquiv.lean`, via the explicit
-  `ℝ`-linear equivalence) and the `IsLeray`-free `GoodCover.cechH1_dolbeault_comparison'`.
--/
-import Jacobians.DolbeaultComparison.DolbeaultH01
-import Jacobians.Cech.CechComplex
 
 open scoped Manifold ContDiff Bundle
 

@@ -1,31 +1,4 @@
-/-
-  Serre duality (Forster §17) — the finite-dimensional linear-algebra core of the surjectivity
-  step (§17.9).
-
-  Forster's proof that `ι_D : H⁰(X, Ω_{-D}) → H¹(X, 𝒪_D)*` is surjective (the hard half of Serre
-  duality) bottoms out in *pure finite-dimensional linear algebra* — no harmonic forms, no Weyl's
-  lemma, no elliptic regularity.  Concretely (Forster 17.9, p. 138):
-
-    * `Λ_n ⊆ H¹(𝒪_{D_n})*` = forms `ψλ`, `ψ ∈ H⁰(𝒪_{nP})`; by Lemma 17.8 `Λ_n ≅ H⁰(𝒪_{nP})`,
-      so `dim Λ_n ≥ 1 - g + n` (Riemann–Roch);
-    * `Im ι_{D_n} ⊆ H¹(𝒪_{D_n})*`; by Lemmas 17.4/17.6 `dim Im ι_{D_n} ≥ n + k₀ - deg D`;
-    * for `n > deg D`, Riemann–Roch gives `dim H¹(𝒪_{D_n})* = n + g - 1 - deg D`;
-    * hence for `n` large `dim Λ_n + dim Im ι_{D_n} > dim H¹(𝒪_{D_n})*`, forcing
-      `Λ_n ∩ Im ι_{D_n} ≠ 0` — the surjectivity witness `0 ≠ ψλ = ι(ω)`.
-
-  The two abstractions of that argument are formalized here:
-    * `subspaces_inf_ne_bot_of_finrank_add_gt` — the pigeonhole (two subspaces of a
-      finite-dimensional space whose dimensions sum past the ambient must meet);
-    * `serre_surjectivity_dim_core` — the "for `n` sufficiently large" dimension count assembled
-      on top of it, parametrized by the Riemann–Roch bounds as hypotheses.
-
-  Both lemmas depend only on Mathlib linear algebra: §17.9 goes through *given* the geometric
-  inputs (17.4 the RR inequality, 17.6 injectivity, 17.7 the unwinding, 17.8 the `ψ`-action) and
-  the cohomology objects `H¹(𝒪_{D_n})`, `H⁰(𝒪_{nP})`.  Those objects and the maps `ι_D` are built,
-  and `serre_surjectivity_dim_core` instantiated, in the `SerreResidue*` modules.
--/
-import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
-import Mathlib.LinearAlgebra.Dual.Lemmas
+import Mathlib.LinearAlgebra.FiniteDimensional.Defs
 
 open Submodule Module
 

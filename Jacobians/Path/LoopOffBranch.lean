@@ -1,7 +1,3 @@
-import Jacobians.Path.SmoothPathCore
-import Mathlib.Analysis.Complex.HasPrimitives
-import Mathlib.Analysis.Normed.Module.Connected
-import Mathlib.Topology.Algebra.Module.Cardinality
 
 /-!
 # Chart-local FTC for the line integral, and the off-branch-loop foundations

@@ -1,22 +1,6 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Forster 21.4 assembled: the period real basis (`exists_periodLattice_realBasis`)
-
-The dissection-free proof of the period-lattice real basis, with the statement EXACTLY as
-frozen in the original `Jacobians/JacobianConstruction/PeriodLattice.lean`:
-
-* discreteness (`truePeriodLattice_isolated_zero`) ⟹ `DiscreteTopology`;
-* non-degeneracy (`span_real_truePeriodLattice_eq_top`) ⟹ `IsZLattice ℝ`;
-* Mathlib's ZLattice theory then yields a free `ℤ`-module of rank
-  `finrank ℝ ℂ^g = 2g`, whose `ℤ`-basis is an `ℝ`-basis of the ambient space spanning the
-  lattice over `ℤ` (`Basis.ofZLatticeBasis` + `ofZLatticeBasis_span`).
-
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.1 + 21.4 (pp. 166–170).
--/
-import Jacobians.PeriodLattice.PeriodLatticeDiscrete
+import Jacobians.JacobianConstruction.PeriodLattice
+import Mathlib.Algebra.Lie.OfAssociative
+import Mathlib.Analysis.CStarAlgebra.Classes
 
 noncomputable section
 

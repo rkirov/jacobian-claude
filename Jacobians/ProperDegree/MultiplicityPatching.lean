@@ -9,6 +9,8 @@ import Jacobians.LocalMultiplicity.AnalyticLocalFactorization
 import Jacobians.MappingDegree.RoucheBridge
 import Jacobians.MappingDegree.LocalNormalForm
 import Mathlib.Algebra.BigOperators.Finprod
+import Mathlib.Order.BourbakiWitt
+import Mathlib.Order.CompletePartialOrder
 
 /-!
 # Conservation of number for the multiplicity sum: `IsLocallyConstant (N f)`

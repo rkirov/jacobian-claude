@@ -1,20 +1,4 @@
-/-
-  The concrete Čech layer of the Riemann–Roch build: sections of the sheaf `𝒪_D`.
-
-    * Sections of `𝒪_D` over an open `U ⊆ X` are modelled **intrinsically on the open
-      submanifold `↥U`** (Mathlib gives `↥U` a `ChartedSpace ℂ` + `IsManifold 𝓘(ℂ) ω` structure
-      automatically), as a `Submodule ℂ` of the bare function space `↥U → ℂ`.
-    * The membership predicate bundles meromorphy-on-`↥U` with the order bound `-D x ≤ ord_x f`.
-    * Because sections are genuine functions on `↥U`, the Čech differential is plain **restriction**
-      (precomposition with `Set.inclusion`), with no chart-transition cocycle data.
-
-  The meromorphy infrastructure (`IsMeromorphic.zero` in `Jacobians.Abel`, the
-  `MeromorphicFunction` ℂ-module instances in `Jacobians.RiemannRoch`) requires only
-  `[ChartedSpace ℂ]`, so it applies to the non-compact open submanifold `↥U`. The bare-function
-  encoding `Submodule ℂ (↥U → ℂ)` is used (rather than `Submodule ℂ (MeromorphicFunction ↥U)`)
-  because it makes the Čech differential plain restriction.
--/
-import Jacobians.Meromorphic.LinearSystem
+import Jacobians.Meromorphic.Abel
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

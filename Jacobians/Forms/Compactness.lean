@@ -1,14 +1,4 @@
-import Jacobians.Forms.SupNorm
-import Mathlib.Topology.ContinuousMap.Compact
-import Mathlib.Topology.ContinuousMap.Bounded.Basic
-import Mathlib.Analysis.Calculus.ContDiff.Defs
-import Mathlib.Analysis.Complex.Liouville
-import Mathlib.Topology.MetricSpace.Thickening
-import Mathlib.Analysis.Normed.Module.RCLike.Real
-import Mathlib.Analysis.Calculus.MeanValue
-import Mathlib.Topology.MetricSpace.UniformConvergence
-import Mathlib.Topology.ContinuousMap.Bounded.ArzelaAscoli
-import Mathlib.Analysis.Complex.LocallyUniformLimit
+import Mathlib.Analysis.InnerProductSpace.Basic
 
 /-!
 # Montel path — compactness of the closed unit ball

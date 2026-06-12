@@ -1,36 +1,3 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Serre duality for the tail `H¹`, the injective half — meromorphic pair frame
-(Miranda Ch. VI Thm 3.3, p. 188)
-
-Miranda runs the duality with a **meromorphic** 1-form `ω = h·dg₀` (`g₀` the nonconstant
-meromorphic function of `exists_nonconstant_meromorphic`).  This file is the pair-frame port of
-`TailDualityInjective` (the genus ≥ 1 holomorphic-ω₀ specialization): the local coefficient
-of `h·dg₀` in the canonical chart at `p` is
-`pairCoeffFun g₀ h p = (h ∘ chart⁻¹) · (g₀ ∘ chart⁻¹)'` — the integrand of the genus-free
-pair-form residue theorem, so the whole chain runs in every genus.
-
-Contents:
-* `pairOrderAt g₀ p` — the local order of `dg₀` (= `formOrderW (differentialForm g₀)`, the
-  order bridge `pairOrderAt_eq_formOrderW`); finite everywhere for nonconstant `g₀`.
-* `pairCanonicalDivisor g₀ hg₀` — the canonical divisor `K = div (dg₀)`
-  (from `exists_differentialForm_divisor`).
-* the order bridge `pairOrderBounded_iff_mem`: `h·dg₀ ∈ L^(1)(−D) ⟺ h ∈ L(K−D)`.
-* the residue-weight linearity lemmas and the descended **duality pairing**
-  `pairDualMap : lSysModule (K−D) →ₗ (H¹(D))*` (descent input = the genus-free
-  `tailResidue_tailMap_eq_zero`).
-* **Injectivity** (Miranda p. 188): a nonzero class `[h]` pairs against the single-monomial tail
-  `z^{−1−o}·p` to the *leading Laurent coefficient*, nonzero by `laurentCoeff_order_ne_zero`.
-  Hence the easy half of duality: `lDim (K − D) ≤ h1TailDim D` — no genus hypothesis.
-
-The surjective half (Miranda pp. 189–191) is built separately in `PairDualitySurjective`.
--/
-import Jacobians.TailDuality.TailResidue
-import Jacobians.LaurentTail.RiemannRochFirstForm
-import Jacobians.SerrePairing.SerreDuality
 import Jacobians.CanonicalForms.CanonicalFormDifferential
 
 open scoped Manifold ContDiff Topology

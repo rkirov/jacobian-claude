@@ -1,15 +1,5 @@
-/-
-  `L(D)` is finite-dimensional — the cohomology bridge, packaged as an instance.
-
-  The Laurent-tail route (Miranda Ch. VI) needs `dim L(D) < ∞` for its dimension bookkeeping
-  (Lemma 2.3).  This follows from the Čech tower: `finiteDimensional_globalSections`
-  (`H⁰(𝔘, 𝒪_D)` finite, Forster §16) transported along
-  `globalSectionsEquivQuot : L(D)/germZero ≃ₗ H⁰(𝔘, 𝒪_D)` (`CechH0`), for the canonical
-  chart-disk cover (`exists_realizableLerayCover`).  No new analysis — this file only registers
-  the `FiniteDimensional ℂ (lSysModule D)` instance on the junk-free quotient whose `finrank`
-  *is* `lDim D`.
--/
-import Jacobians.CanonicalForms.SerreOmega0
+import Jacobians.CanonicalForms.CanonicalFormIso
+import Mathlib.Analysis.CStarAlgebra.Classes
 
 open scoped Manifold ContDiff Topology
 open Module

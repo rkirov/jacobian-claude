@@ -1,23 +1,4 @@
-/-
-  DbarDiskCohomology.lean
-
-  ∂̄-solvability on a disk (full-ball solvability) and the disk-acyclicity it produces.
-
-  The first Dolbeault rung `DbarLocal.dbar_solvable_locally` solves `∂̄u = g` only on a
-  *neighborhood* of a point.  Here we upgrade to solvability on a whole **ball** `ball c r`:
-  because the *closure* of a bounded ball is compact, a single smooth cutoff `χ` that equals `1`
-  on `closedBall c r` already has compact support, so the compactly-supported atom
-  `DbarDisk.dbar_solvable_of_compactSupport` solves `∂̄u = χ·g` globally, and `χ·g = g` on the ball.
-  No Mittag-Leffler exhaustion is needed — boundedness of the ball does the work.
-
-  `dbar_holo_splitting_ball` is the Čech↔Dolbeault dictionary on a ball: a *holomorphic*
-  difference `f = h₂ - h₁` of smooth functions whose `∂̄`s agree can be re-split as a
-  *holomorphic* difference of *holomorphic* functions, by solving `∂̄u = ∂̄h₁` on the
-  ball (`dbar_solvable_ball`) and subtracting `u`.  This is the local engine behind
-  `H¹(disk, 𝒪) = 0`.  The `∂̄ = 0 ⇒ holomorphic` direction is supplied by the Wirtinger
-  characterisation `differentiableAt_complex_iff_differentiableAt_real`.
--/
-import Jacobians.Dbar.DbarLocal
+import Jacobians.Dbar.DbarDisk
 
 open Complex MeasureTheory Metric
 open scoped Topology

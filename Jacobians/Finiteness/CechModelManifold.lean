@@ -1,23 +1,5 @@
-/-
-  Čech finiteness — the germ ↔ sup-norm comparison ("K-bridge"), manifold side.
-
-  Part of discharging `exists_cechModel` (Forster 14.9).
-  Companion to `CechModelBridge.lean` (the `BddHol` codomain side). Here: the chart-pullback of a
-  holomorphic `𝒪`-section is `AnalyticOn` the chart-image — the analyticity hypothesis that
-  `BddHol.ofAnalyticOn` consumes.
-
-  The natural holomorphy datum is stated in each point's OWN chart (matching `ordU`/`OmegaD`), so we
-  first build the missing **point-level** chart-change: `CechH0.analyticAt_chart_change` and
-  `transition_analyticAt` only act at a chart's *centre*; we need analyticity transported to a fixed
-  cover-chart `y` at an arbitrary point `x` of the overlap. `transition_analyticAt_of_mem` (the
-  transition map analytic at any overlap point) and `analyticAt_chart_change_to` (own-chart →
-  cover-chart `y`) provide that, then `analyticOn_pullback_of_holo` packages it.
-
-  Reuses only the chart machinery (`contMDiffOn_chart`, `ContDiffAt.analyticAt`).
--/
-import Jacobians.Cech.CechH0
-import Jacobians.Finiteness.CechModelBridge
-import Jacobians.Dbar.CechDiskAcyclicAssembly
+import Jacobians.Cech.CechSection
+import Mathlib.Analysis.CStarAlgebra.Classes
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

@@ -1,14 +1,6 @@
-/-
-  The abstract Forster-14.9 reduction: Čech `H¹` is finite-dimensional once the cochain restriction
-  to a shrinking is compact (Montel) and the Leray-combined map is surjective. Cochain Banach
-  spaces appear here as abstract Banach spaces — no manifold/Čech dependency — so this is the
-  logical core of the finiteness argument, built directly on the Schwartz lemma (Forster 14.8).
-
-  The two manifold-side inputs it consumes are the compactness of `ρ` (Montel; from
-  `CechFiniteness.isCompact_closure_restrict_bddHolo` + `BddHol`) and the Leray surjectivity
-  (`H¹(disk,𝒪)=0`); together they yield `DolbeaultLadder.finiteDimensional_cechH1`.
--/
-import Jacobians.Finiteness.SchwartzFiniteness
+import Mathlib.Analysis.Complex.Basic
+import Mathlib.LinearAlgebra.FiniteDimensional.Defs
+import Mathlib.Analysis.Normed.Operator.Compact
 
 open Jacobians.SchwartzFiniteness ContinuousLinearMap
 

@@ -1,24 +1,3 @@
-/-
-  Smooth ℂ-valued 1-forms over the real-manifold structure, and the intrinsic `∂̄` operator.
-
-  On top of `RealManifold` (the real-`C^∞` structure of the complex manifold), this is the intrinsic
-  real cotangent valued in `ℂ`: smooth sections of `TangentSpace 𝓘(ℝ,ℂ) →L[ℝ] ℂ`. This is the
-  textbook-standard container for the Dolbeault complex `A¹ = A^{1,0} ⊕ A^{0,1}` (`∂̄u` lands in the
-  `(0,1)` part) — no chart-local cocycle bespoke machinery.
-
-  Mathlib's hom-of-bundles machinery is generic over the scalar field, so the only obstructions are
-  the same ℂ-as-ℝ-module diamond as in `RealManifold` (handled with the same
-  `set_option backward.isDefEq.respectTransparency false`, as Mathlib's own
-  `Complex/RealDeriv.lean`), plus the single instance the hom-bundle needs but doesn't auto-derive
-  for the *sub*-field ℝ: `ContinuousSMul ℝ (Trivial X ℂ)` (the trivial fiber `Trivial X ℂ x` is
-  defeq `ℂ`). -/
-import Jacobians.Surface.RealManifold
-import Mathlib.Geometry.Manifold.VectorBundle.Hom
-import Mathlib.Geometry.Manifold.VectorBundle.Tangent
-import Mathlib.Geometry.Manifold.VectorBundle.SmoothSection
-import Mathlib.Analysis.Normed.Module.Basic
-import Mathlib.Geometry.Manifold.ContMDiffMFDeriv
-import Mathlib.Geometry.Manifold.Algebra.SmoothFunctions
 
 open scoped Manifold ContDiff Bundle
 

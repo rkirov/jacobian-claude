@@ -1,27 +1,3 @@
-/-
-  Dolbeault ladder — manifold instantiation of the Čech finiteness node (Forster 14.9), TOP LAYER.
-
-  The sup-norm Čech model TYPES and the abstract finiteness spine (`DiskOverlapData`,
-  `Coboundaries`, `supH1`, `finiteDimensional_supH1`, `leray_surjective`,
-  `exists_cechModel_of_subsingleton`) now live in `CechModelBase.lean`; this file is the thin top
-  layer that wires the general-divisor model term `CechFinitenessDtwist.exists_cechModel_general`
-  into `exists_cechModel`, and assembles the finiteness node `finiteDimensional_cechH1_wired`.
-
-  The split (model types into `CechModelBase`, this file importing `CechFinitenessDtwist`) BREAKS
-  what would otherwise be an import cycle: the model types are consumed by `CechModelArtificial` /
-  `CechModelGeometry` (now repointed to `CechModelBase`), which feed `exists_cechModel_general`.
-
-  Main results:
-    * `exists_cechModel` — every finite cover `𝔘` and divisor `D` admits a chart-disk Leray model
-      whose sup-norm `H¹` is `ℂ`-linearly isomorphic to the genuine germ-class `𝔘.cechH1 D`. Proven
-      by `exists_cechModel_general` (the general-divisor skyscraper reduction of
-      `CechFinitenessDtwist` onto the artificial finite-dimensional Montel model).
-    * `cechH1_linearEquiv_supH1` — the correctly-scoped comparison consumer.
-    * `finiteDimensional_cechH1_wired` — the finiteness node
-      (`DolbeaultLadder.finiteDimensional_cechH1`).
--/
-import Jacobians.Finiteness.CechModelBase
-import Jacobians.Finiteness.CechFinitenessDtwist
 
 open Jacobians.Dolbeault.CechFiniteness ContinuousLinearMap
 open BoundedContinuousFunction

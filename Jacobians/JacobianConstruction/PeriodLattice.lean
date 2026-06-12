@@ -1,16 +1,3 @@
-import Jacobians.Path.LineIntegral
-import Mathlib.LinearAlgebra.FiniteDimensional.Basic
-import Mathlib.Algebra.Module.ZLattice.Basic
-import Mathlib.Topology.Connected.LocPathConnected
-import Mathlib.Topology.Maps.Proper.Basic
-import Mathlib.Topology.Covering.Basic
-import Jacobians.MappingDegree.CriticalValuesFiniteGeneral
-import Jacobians.MappingDegree.RegularValueExistsRegUnconditional
-import Jacobians.Surface.ManifoldIFT
-import Jacobians.Path.SmoothPath
-import Jacobians.Path.SmoothPathCore
-import Jacobians.JacobianConstruction.ZLatticeQuotient
-import Mathlib.Analysis.Complex.OpenMapping
 
 /-!
 # Period lattice of a compact Riemann surface

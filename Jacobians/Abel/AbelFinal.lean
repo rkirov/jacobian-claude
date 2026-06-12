@@ -1,27 +1,5 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Wall C closed: `abelJacobi_twoPoint_ne_zero` (Forster 20.7 + 21.5)
-
-The headline of the Abel-converse route, with its statement EXACTLY as frozen in
-`Jacobians/Meromorphic/Abel.lean` (moved here because its proof consumes the whole downstream engine):
-
-if `0 < genus X` and `P ≠ Q`, the Abel–Jacobi class of `P − Q` is nonzero.
-
-Proof: if the class were zero, the Abel hypothesis unfolds to a 1-chain with boundary
-`P − Q` and vanishing basis periods (`exists_oneChain_of_abelJacobi_eq_zero`); the
-Abel machinery (`exists_meromorphic_of_oneChain`) produces a meromorphic `f` with
-`div f = P − Q`, i.e. a single simple pole at `Q`; then `X ≃ₜ S²`
-(`nonempty_homeo_sphere_of_singleSimplePole`) forces `genus X = 0`
-(`genus_zero_of_nonempty_homeo_sphere`) — contradiction.
-
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 20.7 + 21.5 (pp. 164, 170).
--/
-import Jacobians.Abel.AbelEngineMeromorphic
-import Jacobians.AbelWeak.AbelChains
-import Jacobians.ProperDegree.DegreeOneSphere
+import Jacobians.Meromorphic.Abel
+import Mathlib.Analysis.CStarAlgebra.Classes
 
 noncomputable section
 

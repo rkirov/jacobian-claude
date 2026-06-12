@@ -1,14 +1,5 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
--/
-import Jacobians.ProjectiveLine
-import Jacobians.ProperDegree.Degree
-import Jacobians.Meromorphic.Abel
-import Jacobians.Meromorphic.MeromorphicLiouville
-import Jacobians.SphereTopology.GenusZeroOfSphere
-import Jacobians.Monodromy.HolomorphicPrimitives
+import Mathlib.AlgebraicTopology.SimplexCategory.Basic
+import Mathlib.Analysis.CStarAlgebra.Classes
 
 /-!
 # Degree one implies the sphere

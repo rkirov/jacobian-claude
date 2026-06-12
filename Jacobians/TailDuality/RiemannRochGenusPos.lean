@@ -1,27 +1,5 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Riemann–Roch for positive genus (Miranda Ch. VI Thm 3.11 / Forster 16.9)
-
-The Miranda-route assembly for positive genus, combining
-
-* **RR-I** `riemannRoch_tailForm` (`l(D) − h¹(D) = deg D + 1 − h¹(0)`),
-* **Serre duality for the tail `H¹`** `h1TailDim_eq_lDim_canonical_sub` (`h¹(D) = l(K − D)`,
-  `K = div ω₀`), and
-* **`l(K) = genus`** — the Forster §17.4 canonical-form isomorphism (`hKgenus_unconditional`),
-  applied to the datum built from a nonzero *holomorphic* `ω₀` (which positive genus supplies),
-
-into the headline equality `l(D) − l(K − D) = deg D + 1 − g` for every divisor `D`.
-
-The only genus-restricted input is the existence of `0 ≠ ω₀ ∈ Ω(X)` — everything else is
-genus-uniform.  The genus-0 case runs the same duality in the meromorphic frame `ω₀ = df`
-(needs the genus-free residue theorem) and is assembled separately.
--/
-import Jacobians.TailDuality.TailDualitySurjectiveAssembly
-import Jacobians.CanonicalForms.FormRemovableSingularity
 import Jacobians.ResidueTheorem.OmegaFactorization
+import Jacobians.TailDuality.TailDualityInjective
 
 open scoped Manifold ContDiff Topology
 open Module

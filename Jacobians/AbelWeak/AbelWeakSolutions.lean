@@ -1,36 +1,4 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Weak solutions of divisors (Forster §20.1–20.2)
-
-A **weak solution** of a divisor `D` is a function that locally looks like `ψ · z^{D a}` with
-`ψ` smooth and nonvanishing — the smooth precursor of a meromorphic function with divisor `D`
-(`f` is a meromorphic solution exactly when it is holomorphic on `X_D`, Forster 20.1).
-
-Design (normalized, junk-friendly): the local coordinate is FIXED to the centred chart
-coordinate `chartCoord a = chartAt a · − chartAt a a`, and the normal form is imposed on the
-whole neighbourhood with `zpow`-junk conventions (`(0:ℂ)^k = 0` for `k ≠ 0`), which
-normalizes `toFun` to vanish at both zeros and poles of `D`. With this convention products,
-inverses and integer powers of weak solutions are weak solutions with **no**
-continuity-extension repair (the structure carries its local units, and the product unit is
-the product of units).
-
-Main contents:
-* `WeakSolution D` — the data-carrying structure (function + local units);
-* `one`, `mul`, `inv`, `pow`, `zpow` — the algebra of weak solutions
-  (divisors add/negate/scale);
-* `contMDiffAt_toFun` — `toFun` is real-smooth on `X_D = {x | 0 ≤ D x}` (Forster's
-  `f ∈ 𝓔(X_D)`);
-* `logDbar` — the **global smooth `(0,1)`-datum** `σ_f = d″f/f` (Forster 20.2): smooth
-  ACROSS the divisor because locally `d″f/f = d″ψ/ψ`; with `logDbar_mem_zeroOne`,
-  `logDbar_mul`, `logDbar_zpow`.
-
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.1, §20.2.
--/
-import Jacobians.Meromorphic.Abel
-import Jacobians.DolbeaultComparison.DolbeaultComparisonInverse
+import Jacobians.Dbar.RealForms
 
 noncomputable section
 

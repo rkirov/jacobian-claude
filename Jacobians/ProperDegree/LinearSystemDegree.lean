@@ -1,24 +1,4 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Degree consequences for linear systems: `deg_div` and negative-degree vanishing
-
-The two residue-theorem consequences that sit *below* Riemann–Roch:
-
-* `MeromorphicFunction.deg_div` — every principal divisor has degree `0` (Forster Cor. 4.25 /
-  the argument principle), via the proven proper-map degree route.
-* `lDim_eq_zero_of_deg_neg` — a linear system of negative degree is trivial.
-
-Extracted from `Jacobians/RiemannRoch.lean` so the Laurent-tail duality ladder
-(`Jacobians/LaurentTail/*`, which consumes `lDim_eq_zero_of_deg_neg` in the surjectivity
-pigeonhole) can be imported by `RiemannRoch.lean` without an import cycle.  `RiemannRoch.lean`
-re-exports these names transitively by importing this file.
--/
-import Jacobians.Meromorphic.LinearSystem
-import Jacobians.ProperDegree.DegDivResidue
-import Jacobians.ProperDegree.ProperMapDegreeSheets
+import Mathlib.Analysis.CStarAlgebra.Classes
 
 
 open scoped Manifold ContDiff Topology

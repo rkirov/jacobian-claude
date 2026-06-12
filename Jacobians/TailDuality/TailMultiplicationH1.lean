@@ -22,6 +22,7 @@ Consequently, for `λ ≠ 0` and `ψ` with surviving germ, `λ ∘ tailMulH1 ψ 
 dimension input for the pigeonhole half of Serre duality.
 -/
 import Jacobians.TailDuality.TailMultiplication
+import Jacobians.Meromorphic.MeromorphicInverse
 
 open scoped Manifold ContDiff Topology
 open Filter Set

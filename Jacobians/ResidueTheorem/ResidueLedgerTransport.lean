@@ -1,42 +1,5 @@
-/-
-  The residue-ledger chart transport engine.
-
-  The genus-uniform pair-form residue theorem (`ResidueTheoremStokes.lean`) is a ledger of
-  planar integrals of ONE canonical integrand shape, read in varying charts of the compact
-  Riemann surface `X`:
-
-    `ledgerIntegrand g₀ h P v y V (z) = 𝟙_{chart_y''V}(z) · P(chart_y⁻¹ z) · ∂̄(v∘chart_y⁻¹)(z)
-        · pairRead g₀ h y (z)`
-
-  — a scalar field `P : X → ℂ`, the planar `∂̄` of (the chart read of) a smooth cutoff
-  `v : X → ℝ` (the `(0,1)`-factor), and the pair-form coefficient
-  `pairRead g₀ h y = (h∘chart⁻¹)·(g₀∘chart⁻¹)′` (the `(1,0)`-factor).  This file provides the
-  engine lemmas:
-
-  * `pairRead_transform` — the `(1,0)`-coefficient rule `f_y = (f_{y'}∘T)·T′` under the chart
-    transition `T = chart_{y'} ∘ chart_y⁻¹` (valid at points where the `h`/`g₀` reads are
-    honestly analytic — `ReadsAnalyticAt`, whose failure set is FINITE);
-  * `analyticAt_pairRead` — off the bad set the pair coefficient is holomorphic in EVERY chart;
-  * `integral_ledgerIntegrand_transport` — **the chart-change invariance**
-    `∫_ℂ ledgerIntegrand … y V = ∫_ℂ ledgerIntegrand … y' V`: holomorphic change of variables,
-    with `conj T′` (from the `∂̄` chain rule) × `T′` (from `pairRead_transform`)
-    combining EXACTLY into the real Jacobian `|T′|²`;
-  * `ledgerIntegrand_congr_superset` — the indicator set may be enlarged/shrunk freely as long
-    as `P` vanishes or `v` is locally constant on the difference;
-  * `sum_ledgerIntegrand` — finite sums of cutoffs aggregate inside the `∂̄`;
-  * `continuous_ledgerIntegrand` / `hasCompactSupport_ledgerIntegrand` /
-    `integrable_ledgerIntegrand` — the integrability kit (continuity off a compact core is
-    bought by `P`-vanishing or local constancy of `v`; the finitely many non-analytic points
-    are killed the same way).
-
-  Reference: Forster GTM 81 §10 (the proof of the Residue Theorem 10.21 — these are the
-  chart-bookkeeping steps Forster performs implicitly when integrating `d(f_k ω)` "using the
-  coordinate `z_k`").
--/
-import Jacobians.PlanarStokes.PlanarHolomorphicChangeOfVariables
-import Jacobians.PlanarStokes.AnnulusResidueMeromorphic
-import Jacobians.Cech.MeromorphicAnalyticBadSet
-import Jacobians.Finiteness.CechModelManifold
+import Jacobians.Dbar.DbarDisk
+import Jacobians.Meromorphic.Abel
 
 set_option backward.isDefEq.respectTransparency false
 

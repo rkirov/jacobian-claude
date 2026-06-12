@@ -1,30 +1,6 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# The per-curve weak solution: the per-curve weak solution (Forster 20.5)
-
-The full Lemma 20.5: every continuous curve `γ : [0,1] → X` has a weak solution of its
-boundary divisor `(γ 1) − (γ 0)` together with the **integral identity** tying the planar
-`∂̄`-data of its pieces to the path value of every holomorphic 1-form:
-
-  `π · ∫_γ η = ∑ₖ ∫_ℂ Uₖ·(η-coefficient in chart k) dA`     (Forster: `∫_c ω = (1/2πi)∬(df/f)∧ω`).
-
-Contents:
-* `CurveWeakSolution γ hγ` — the bundled data: a chart-ball subdivision of the curve,
-  per-piece planar solutions (`PlanarPieceSolution`) and per-piece weak solutions with their
-  chart reads, the product weak solution of `(γ 1) − (γ 0)`, and the identity;
-* `exists_curveWeakSolution` — existence: subdivision by the monotone-cover lemma
-  (`exists_monotone_Icc_subset_open_cover_Icc`, as in `exists_primitiveChain`), pieces from
-  `exists_pieceWeakSolution`, the identity by evaluating `pathPrimValue` on the primitive
-  chain made of the per-chart-ball primitives (`exists_primitive_of_convex`) and applying
-  the planar identity `PlanarPieceSolution.integral_U_mul` piecewise.
-
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.5 (pp. 162–163).
--/
-import Jacobians.AbelWeak.AbelPieceSolution
-import Jacobians.AbelWeak.AbelChains
+import Jacobians.AbelWeak.AbelPlanarPiece
+import Jacobians.AbelWeak.AbelWeakSolutions
+import Jacobians.Monodromy.HolomorphicPrimitiveMonodromy
 
 noncomputable section
 

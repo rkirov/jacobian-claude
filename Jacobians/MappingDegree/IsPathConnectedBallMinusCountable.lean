@@ -1,11 +1,4 @@
-/-
-Copyright (c) 2026 Bryan Sanchez. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Bryan Sanchez
--/
-import Mathlib.Analysis.Complex.Basic
-import Mathlib.Analysis.Normed.Module.Connected
-import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+import Mathlib.Topology.Connected.PathConnected
 
 /-! # Path-connectedness of `ball z r \ s` for a countable obstruction `s`
 

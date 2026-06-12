@@ -1,33 +1,4 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Serre duality for the tail `H¹`, the surjectivity assembly (Miranda Thm 3.3, pp. 189–191)
-
-The pigeonhole half of Serre duality, Forster 17.9's count on Miranda's tail spaces.  Given
-`0 ≠ φ : H¹(D)* `, fix a base point `P` and compare, inside `V_n := H¹(D − nP)*`, the two
-subspaces
-
-* `Λ_n` — the functionals `φ ∘ T̄_ψ` for `ψ ∈ L(nP)` (the multiplication action of
-  `TailMultiplicationH1`); `Λ_n ≅ L(nP)/germ0` since `φ ∘ T̄_ψ ≠ 0` for surviving `ψ`
-  (`comp_tailMulH1_ne_zero`), so `dim Λ_n ≥ n + 1 − h¹(0)` by RR-I;
-* `I_n` — the residue functionals `Res_{h·ω₀}`, `h ∈ L(K − (D − nP))` (the range of
-  `omegaDualMap` at `D − nP`); `dim I_n = l(K − D + nP) ≥ deg K − deg D + n + 1 − h¹(0)` by RR-I.
-
-For `n > deg D` RR-I pins `dim V_n = n − deg D − 1 + h¹(0)` (negative degree kills `l`), so for
-`n` large the two subspaces meet in a nonzero functional `φ ∘ T̄_ψ = Res_{h·ω₀}`.  The recovery
-step (Miranda pp. 190–191) then pulls `φ` back along `μ_{ψ⁻¹}`: the composite identity turns
-`T̄_ψ ∘ μ̄_{ψ⁻¹}` into the truncation, μ-compatibility turns `Res_{h·ω₀} ∘ μ_{ψ⁻¹}` into
-`Res_{(ψ⁻¹h)·ω₀}`,
-and Miranda Lemma 3.6 (`omegaOrderBounded_of_vanishing`) downgrades the order bound of
-`ψ⁻¹h` from the fine level to `D` — exhibiting `φ = Res_{(ψ⁻¹h)·ω₀}` with `ψ⁻¹h ∈ L(K − D)`.
-
-Headlines: `omegaDualMap_surjective` and the dimension identity
-`h1TailDim_eq_lDim_canonical_sub : h¹(D) = l(K − D)`.
--/
-import Jacobians.TailDuality.TailDualitySurjective
-import Jacobians.ProperDegree.LinearSystemDegree
+import Jacobians.TailDuality.TailMultiplicationH1
 
 open scoped Manifold ContDiff Topology
 open Filter Set Module

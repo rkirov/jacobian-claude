@@ -1,35 +1,5 @@
-/-
-  THE 1-FORM RESIDUE THEOREM, ALL GENERA: `∑ a ∈ poles, Res_a(ω₀·g) = 0`.
-
-  `ω₀` is a global holomorphic 1-form and `g` a meromorphic function on the compact Riemann
-  surface `X`; the residue is the canonical-chart `formFnResidue` of `FormCoeff.lean`.  This is
-  the `formFnResidue`-shaped headline consumed by the period-lattice development
-  (`Jacobians/PeriodLattice/PeriodLatticeDiscrete.lean`).
-
-  Proof = reduction to the planar-Stokes pair-form residue theorem
-  `StokesResidue.residueSum_pairForm_eq_zero_unconditional`
-  (`Jacobians/ResidueTheorem/ResidueTheoremStokes.lean`) — the REVERSE of the classical
-  ω₀-factorization (Miranda Ch. VI pp. 186–188):
-
-  1. `ω₀ = 0`: every integrand has the `coeffAt 0 = 0` factor, so each residue vanishes.
-  2. `ω₀ ≠ 0`: pick a nonconstant meromorphic `g₀` (`exists_nonconstant_meromorphicFunction`)
-     and set `q := dg₀/ω₀` (`derivQuotientFn`).  The KEY LEMMA
-     (`derivQuotientFn_orderW_ne_top`) says `q` is nowhere germ-zero: were its chart read
-     eventually `0` near some point, `dg₀`'s would be too (the `coeffAt ω₀` factor has isolated
-     zeros), so `dg₀ = 0` everywhere by the form identity theorem
-     (`MeromorphicOneForm.formOrderW_ne_top_of_exists`), making `g₀` germ-constant
-     (`differentialForm_ne_zero`) — contradiction.
-  3. Apply the pair theorem to `(g₀, h := g·q⁻¹)` over the pole set enlarged by the finite
-     `¬ReadsAnalyticAt` locus; convert each term by the bridge
-     `pairFormResidue_eq_formFnResidue` (`Res_a(h·dg₀) = Res_a((h·q)·ω₀)`) and repair the germ
-     `(g·q⁻¹·q).toFun = g.toFun` off the (eventually avoided) zeros of `q`.
-  4. The enlargement terms vanish by `formFnResidue_eq_zero_of_analyticAt` + `hpoles`.
-
-  Everything here is complete and depends on no unproved lemma.
--/
-import Jacobians.ResidueTheorem.ResidueTheoremStokes
-import Jacobians.CanonicalForms.CanonicalFormDifferential
-import Jacobians.Meromorphic.MeromorphicInverse
+import Jacobians.CanonicalForms.SerreOmega0
+import Jacobians.ResidueTheorem.OmegaFactorization
 
 open scoped Manifold ContDiff Topology
 open Filter

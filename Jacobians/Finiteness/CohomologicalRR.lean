@@ -1,39 +1,3 @@
-/-
-  Dolbeault ladder — cohomological Riemann–Roch (χ-additivity, Forster §16).
-
-  This file proves the `DolbeaultLadder` leaf
-
-      `(h⁰(D) : ℤ) − h¹(D) = deg D + 1 − h¹(0)`
-
-  by the standard Euler-characteristic argument. Write `χ(D) := (h⁰(D) : ℤ) − h¹(D)`. The theorem
-  is `χ(D) = deg D + χ(0)` together with the Liouville base `h⁰(0) = 1` (so `χ(0) = 1 − h¹(0)`).
-
-  Structure (Forster §16):
-  * **Base** `h⁰(0) = 1`: the `h⁰ = l` bridge (`CechH0.h0Dim_eq_lDim`) plus `l(0) = 1`
-    (`RiemannRoch.lDim_zero_eq_one`, Liouville on the compact `X`).
-  * **Single-point jump** `χ(D + P) = χ(D) + 1`: from the skyscraper short exact sequence
-    `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` and its six-term long exact sequence in Čech cohomology
-    `0 → H⁰(𝒪_D) → H⁰(𝒪_{D+P}) → ℂ_P → H¹(𝒪_D) → H¹(𝒪_{D+P}) → 0` (the skyscraper has `H^{≥1}=0`).
-    This is decomposed into a counting crank and an isolated kernel:
-      - `six_term_exact_alt_sum`: alternating dim sum of a 6-term exact sequence of fin-dim spaces
-        is `0` (pure rank–nullity).
-      - the H⁰-inclusion `f₁ = h0Incl` (`globalSections D ↪ globalSections (D+P)`, order weakening),
-        its injectivity, and the inclusion-induced `f₄ = h1Map`.
-      - `chi_jump_of_LES`: runs the crank on a `SkyscraperLES` to get the jump.
-      - `exists_skyscraperLES`: THE single named honest obligation (a **TRUE** statement), packaging
-        the genuine `ℂ_P` (the 1-dim skyscraper, `finrank = 1` now trivial), the coefficient arrow
-        `f₂ = h0ToSky` with `range f₁ = ker f₂` (`exact₁₂`), the snake-lemma data (`f₃`, exactness
-        `exact₂`/`exact₃`/`surj₄`), and `H¹` finiteness. (Soundness note: the H⁰-cokernel with a
-        `skyDim : finrank = 1` field would be false at base points; the middle term is the genuine
-        `ℂ_P` — see `Skyscraper`.)
-  * **Iterated jump + induction on the divisor** (`Int.induction_on`, `Finsupp.induction`,
-    `Divisor.deg` additivity): pure `ℤ`-bookkeeping built on `chi_jump`.
-
-  `cohomological_riemannRoch` thus reduces to `exists_skyscraperLES` (discharged in
-  `CohomologicalRRChartDisk`); the base, the LES crank, the structural arrows, and the induction
-  skeleton are all here.
--/
-import Jacobians.Finiteness.CohomologicalRRChartDisk
 import Jacobians.Finiteness.SkyscraperConeRealization
 
 open scoped Manifold ContDiff Topology

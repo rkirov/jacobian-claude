@@ -1,27 +1,7 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# The Abel chain `∂̄`-datum and its `∂̄`-potential
-
-Given a 1-chain `c` with all basis periods zero, the total weak solution `G` of `∂c`
-(the `zpow`-fold of the per-curve solutions) has `∂̄`-datum `σ_G = d″G/G` pairing to zero
-against every basis form — so by the kill theorem (Forster 19.10) `σ_G = ∂̄u`:
-
-* `pairForm_congr_off_finite` — the pairing ignores finitely many fiber values;
-* `proj01_logDeriv_prod` — the logarithmic-`∂̄` product rule for finite pointwise products;
-* `pairForm_logDbar_piece` — **the per-piece value**: `⟨η, σ_{fₖ}⟩ = ∫ Uₖ·η̂ₖ` (the collapse
-  lemma + the planar `U = ∂̄F/F` identity);
-* `pairForm_logDbar_curve` — **the per-curve value** `⟨η, σ_{f_γ}⟩ = π·∫_γ η`
-  (Forster 20.5's identity through the subdivision product);
-* `exists_dbar_potential_of_oneChain` — the assembled `σ_G = ∂̄u`.
-
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.5–20.7 (pp. 162–165).
--/
-import Jacobians.Abel.AbelDbarKill
 import Jacobians.Abel.AbelLogDbar
 import Jacobians.AbelWeak.AbelCurveSolution
+import Jacobians.Abel.AbelPairing
+import Jacobians.AbelWeak.AbelChains
 
 noncomputable section
 

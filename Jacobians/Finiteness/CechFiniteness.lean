@@ -1,14 +1,6 @@
-/-
-  `H¹(X, 𝒪_D)` finiteness (Forster 14.9) — the Montel compactness input.
-
-  The cochain restriction between a cover and a relatively-compact shrinking is a compact
-  operator (Montel), so by the Schwartz finiteness lemma
-  (`SchwartzFiniteness.finiteDimensional_quotient_range_add_compact`, Forster 14.8) the Čech `H¹`
-  is finite-dimensional.  This file proves the de-bundled compact-restriction lemma that the
-  cochain layer is built on, reusing the plain-function disk lemmas of `Montel/Compactness.lean`.
--/
-import Jacobians.Forms.Compactness
-import Jacobians.Finiteness.SchwartzFiniteness
+import Mathlib.Analysis.Analytic.Basic
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Topology.ContinuousMap.Bounded.Basic
 
 open Metric Topology BoundedContinuousFunction
 open Jacobians.Montel

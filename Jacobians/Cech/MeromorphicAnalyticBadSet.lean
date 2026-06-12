@@ -1,31 +1,4 @@
-/-
-  The product of meromorphic functions, and FINITENESS of the analytic-bad set of a global
-  meromorphic function (the points where the chart pullback fails honest `AnalyticAt`).
-
-  ## Why this exists (Miranda Ch. VI pp. 186–188)
-
-  The unconditional 1-form residue theorem `residueTheorem_unconditional`
-  consumes a meromorphic numerator `g` through the hypothesis "`g`'s chart pullback is honestly
-  `AnalyticAt` at every point off the chosen finite `poles`".  A `MeromorphicFunction` carries
-  removable-singularity `toFun`-junk, so this hypothesis is *not* automatic off the genuine poles —
-  but the set where it fails IS finite:
-
-  * `MeromorphicFunction.eventually_analyticAt_ownChart` — around every point, a global
-    meromorphic function is honestly analytic (in each point's OWN canonical chart) on a punctured
-    neighbourhood.  Mathlib's `MeromorphicAt.eventually_analyticAt` gives this in the fixed chart
-    at the centre; the repo chart-invariance `analyticAt_chart_change` (`CechH0`) transports it to
-    each nearby point's own chart.
-  * `MeromorphicFunction.finite_nonAnalyticAt` — hence the bad set is isolated, and on the compact
-    `X` it is finite (`finite_of_forall_eventually_nhdsNE_notMem`).
-
-  This is what lets the pair-form residue theorem (`PairFormResidueTheorem`) enlarge its pole
-  set by a *finite* bad set before invoking the residue-theorem engine.
-
-  Also here: the pointwise product `f * g` of meromorphic functions (`Mul (MeromorphicFunction X)`),
-  which Mathlib's `MeromorphicAt.mul` makes immediate (`Jacobians.LinearSystem` provides only
-  the ℂ-module structure).
--/
-import Jacobians.Cech.CechH0
+import Jacobians.Meromorphic.Abel
 
 open scoped Manifold ContDiff Topology
 open Filter

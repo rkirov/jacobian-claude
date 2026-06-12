@@ -1,7 +1,6 @@
-import Mathlib.Geometry.Manifold.IsManifold.Basic
-import Mathlib.Topology.ShrinkingLemma
 import Mathlib.Topology.Separation.Regular
 import Mathlib.Analysis.Complex.Basic
+import Mathlib.Geometry.Manifold.ChartedSpace
 
 /-!
 # Montel path — finite chart cover + compact shrinking

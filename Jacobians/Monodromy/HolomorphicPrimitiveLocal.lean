@@ -1,30 +1,6 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Local primitives of holomorphic 1-forms (Wall A, step 0)
-
-The chart-local holomorphic Poincaré lemma on a Riemann surface: every point has a
-path-connected open neighbourhood on which a given holomorphic 1-form `η` has a holomorphic
-primitive (`IsLocalPrimitiveOn η F U`, the value-wise `dF = η`), and two primitives on a
-preconnected open set differ by a constant.
-
-Built from three existing bridges:
-* the chart coefficient `Montel.localRep η x₀ ∘ chart⁻¹` is analytic on the chart target
-  (`localRep_analyticOn_chartTarget`), so it has a primitive `G` on any ball
-  (`exists_primitive_of_convex`); `F := G ∘ chart` is the local primitive;
-* `toFun_eq_localRep_smul` (the 1-form side) and `mfderiv_apply_symmL_eq_deriv` (the
-  derivative side) reduce the value-wise identity `η = dF` on the 1-dimensional tangent
-  space to the single scalar equation `localRep η x₀ = (F ∘ chart⁻¹)'` — the frame lemma
-  `oneForm_eq_mfderiv_of_frame_eq`.
-
-Reference: Forster, *Lectures on Riemann Surfaces*, §10.5; Miranda Ch. IV §1.
--/
-import Jacobians.Forms.Montel
-import Jacobians.Forms.Complete
-import Jacobians.CanonicalForms.CanonicalFormDifferential
-import Jacobians.Path.Primitive
+import Jacobians.Forms.Genus
+import Jacobians.Forms.LocalRep
+import Mathlib.Analysis.CStarAlgebra.Classes
 
 noncomputable section
 

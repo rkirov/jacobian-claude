@@ -19,6 +19,7 @@
     chart-locally a single normal-form function.
 -/
 import Jacobians.Cech.CechComplex
+import Jacobians.Meromorphic.LinearSystem
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

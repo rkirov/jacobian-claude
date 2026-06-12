@@ -1,14 +1,3 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
--/
-import Jacobians.MeromorphicTrace.TraceForm
-import Jacobians.Path.LoopOffBranch
-import Mathlib.Topology.Homotopy.Lifting
-import Mathlib.Analysis.SpecialFunctions.SmoothTransition
-import Mathlib.MeasureTheory.Function.JacobianOneDim
-import Mathlib.GroupTheory.Perm.Cycle.Concrete
 
 /-!
 # The Jacobian pullback in ambient coordinates, driven by the geometric trace

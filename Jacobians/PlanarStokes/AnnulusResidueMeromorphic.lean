@@ -1,38 +1,6 @@
-/-
-  The single-pole residue lemma for a meromorphic integrand (Forster (10.21), assembled).
-
-  `AnnulusResidueIntegral.lean` computes the Forster (10.21) area integral for one negative
-  power, `∫_ℂ ∂̄(χ·(·−c)^{−k}) = −π·δ_{k,1}` (`integral_dbar_radialCutoff_zpow`).  This file
-  assembles the §5–§7 plan of that file's header into the full single-pole atom:
-
-    `∫_ℂ ∂̄(χ·m) = −π · Res_c m`        (`integral_dbar_radialCutoff_meromorphic`)
-
-  for `m` meromorphic at `c` and honestly analytic on a punctured ball `ball c r \ {c}` whose
-  radius dominates the cutoff (`s₁ < r²`), with `χ = η(normSq(·−c))` a radial `C¹` profile going
-  `1 → 0` between `s₀` and `s₁` (`0 < s₀ < s₁`).
-
-  Proof layout:
-  * principal-part split `m = P + G` (`exists_principalPart_meromorphicAt`): `P = negTail c b N`
-    carries the pole, and the junk-repaired complement `G := update (m − P) c (R c)` is analytic
-    on the WHOLE ball `ball c r` — the split is a *pointwise identity off `c`* (not just a germ),
-    because `G` is literally defined as `m − P` away from `c`;
-  * the `G`-term dies: `χ·G` is `C¹` with compact support, so `∫ ∂̄(χ·G) = 0` by the planar
-    Stokes lemma (`integral_dbar_eq_zero`, Forster (10.20));
-  * the `P`-term is the finite sum of single-power computations,
-    `∫ ∂̄(χ·P) = ∑_k b_k·(−π·δ_{k,1}) = −π·b₁`, with the sum/integral swap justified by the
-    explicit continuous compactly-supported closed form `η′(normSq(z−c))·(z−c)^{1−k}`;
-  * `resAt m c = resAt P c + resAt G c = b₁ + 0` by the `resAt` calculus.
-
-  Also provided for the global assembly (`ResidueTheoremStokes.lean`):
-  * `integral_radialDeriv_mul_eq_resAt` — the closed-form version
-    `∫_ℂ η′(normSq(z−c))·(z−c)·m(z) = −π·Res_c m` (the integrand the global ledger transports);
-  * `continuous_radialDerivForm` / `hasCompactSupport_radialDerivForm` — the reusable
-    continuity/support kit for `η′(normSq(·−c))·F`-shaped integrands.
-
-  Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §10, computation (10.21) inside
-  the proof of the Residue Theorem (text p. 80).
--/
-import Jacobians.PlanarStokes.AnnulusResidueIntegral
+import Jacobians.Dbar.DbarDisk
+import Jacobians.ResidueCalculus.FormTracePrincipalPart
+import Jacobians.ResidueCalculus.Residue
 
 -- The ℂ-as-ℝ-module diamond fix used across the Dolbeault tree (see `AnnulusResidueIntegral`).
 set_option backward.isDefEq.respectTransparency false

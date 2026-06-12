@@ -1,35 +1,4 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Chart reads for the Abel pairing: chart reads of `(0,1)`-forms and conjugate forms
-
-The scalar dictionary between intrinsic `(0,1)`-data and planar functions, feeding the
-`∬ σ∧ω` pairing atom (Forster 19.10):
-
-* `read01 g y` — the chart-`y` read of a smooth `(0,1)`-form `g`: the value of `g` on the
-  `y`-frame tangent vector `symmL (trivAt y) x 1`.  Smooth on the chart source
-  (`contMDiffAt_read01`, via `contMDiffAt_chartRead_datum`), with the explicit
-  conjugate-frame formula `read01_eq_conj_mul` and the `(0,1)`-transformation law
-  `read01_transform` (`read_y = conj(T′)·read_{y′}`, `T` the chart transition).
-* `read01_proj01_mfderiv` — **the `∂̄`-bridge**: the read of `proj01 (mfderiv w x)` in ANY
-  chart containing `x` is the planar Wirtinger `DbarDisk.dbar` of the chart pullback of `w`
-  (chart bridge `dbar_apply_one_eq_dbarDisk'` + Wirtinger chain rule `dbarDisk_comp_holo`);
-  specialised to `read01_dbarL`.
-* `localRep_transform` — the matching `(1,0)`-law `h_y = h_{y′}·T′` for the holomorphic
-  coefficient `Montel.localRep` (from `localRep_eq_transition_mul_self` + the transition
-  derivative cocycle `deriv_transition_cocycle`).
-* `conjForm η` — the **conjugate form** `ω̄` of a holomorphic 1-form, as a smooth
-  `(0,1)`-form (`conjForm_mem_zeroOne`), with read `conj (localRep η y ·)`
-  (`read01_conjForm`).
-
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §19 (pp. 153–157).
--/
-import Jacobians.DolbeaultComparison.DolbeaultComparisonProof
-import Jacobians.DolbeaultComparison.DolbeaultComparisonInverse
-import Jacobians.FormTraceSheetCovector
-import Jacobians.ResidueTheorem.ResidueLedgerTransport
+import Jacobians.Dbar.DbarDisk
 
 noncomputable section
 

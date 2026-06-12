@@ -1,26 +1,4 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# The Abel meromorphic solution `F = e⁻ᵘ·f` (Forster 20.7 (a))
-
-The exp-correction of the chain weak solution: with `σ_G = ∂̄u` (the σ layer), the function
-`F := e⁻ᵘ·G` is genuinely meromorphic with divisor `∂c`:
-
-* locally `F = (e⁻ᵘ·ψ_a)·z_a^{D a}` and the cofactor `h_a := e⁻ᵘ·ψ_a` has
-  `∂̄h_a = h_a·(σ_G − ∂̄u) = 0`, hence is **holomorphic** (planar Wirtinger:
-  `differentiableAt_of_dbar_eq_zero` after a bump extension) and nonvanishing;
-* so in each centred chart `F̂ = H·(w − w₀)^{D a}` with `H` analytic nonvanishing — giving
-  `MeromorphicAt` everywhere and `orderAtPoint = D` (`meromorphicOrderAt_mul` +
-  `meromorphicOrderAt_zpow_id_sub_const`);
-* `exists_meromorphic_of_oneChain` — **the Abel engine**: a 1-chain with vanishing basis
-  periods bounds a principal divisor: `∃ f, f.div = ∂c`.
-
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 20.7 proof part (a)
-(p. 164).
--/
-import Jacobians.Abel.AbelEngineSigma
+import Jacobians.AbelWeak.AbelChains
 
 noncomputable section
 

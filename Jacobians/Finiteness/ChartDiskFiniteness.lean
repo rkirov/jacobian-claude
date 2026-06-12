@@ -1,47 +1,6 @@
-/-
-  Čech `H¹` finiteness on a CHART-DISK cover — Forster GTM 81 §14, the analytic heart.
-
-  Goal: `FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 0)` for a `ChartDiskCover 𝔇` (and, via the
-  `GoodCover.comparison_linearEquiv'`, `FiniteDimensional ℝ (DolbeaultH01 X)`).
-
-  ## Why a `ChartDiskCover` (the strategic framing)
-
-  The repo's generic finiteness engine `CechFiniteness.finiteDimensional_h1_of_leray_compact`
-  (Forster 14.8 / Schwartz–Riesz) needs a SURJECTIVITY ("leray") field: every shrinking-cocycle is
-  `δ⁰(holomorphic 0-cochain) + ρ(cover-cocycle)`. For the Montel `chartCover` this field was a
-  genuine obstruction (that route is abandoned): the Montel cover sets `Uov` are chart-images of
-  `chartOpen ∩ chartOpen`, i.e. ARBITRARY planar opens, not balls; the per-chart cutoff ∂̄-solve
-  then produces the cover cocycle only on the shrinking `Wov`, not the full overlap `Uov` (the
-  two-scale cutoff dilemma), and the no-cutoff route would need ∂̄-solvability on an arbitrary
-  planar open (Behnke–Stein, absent from Mathlib).
-
-  A `ChartDiskCover` removes the obstruction: `U i` is the chart-preimage of a Euclidean *ball*
-  (`ChartDiskCover.isDisk`). Forster 14.6 then takes the cocycle at the COVER level and solves
-  `∂̄h_i = ω_i` on the FULL ball `U_i` (no cutoff — `DbarDiskCohomology.dbar_solvable_ball` applies
-  to the whole ball), so the cover cocycle `ζ_{ij} = h_j∘τ_{ij} − h_i` is holomorphic on the FULL
-  overlap automatically: the (0,1)-frame factors `conj(τ′)` cancel by the Wirtinger chain rule
-  `dbarDisk_comp_holo` (`∂̄(h_j∘τ) = conj(τ′)·(∂̄h_j)∘τ = conj(τ′)·ω_j∘τ = ω_i = ∂̄h_i`). No cutoff
-  dilemma. This is the genuinely-unblocked Forster 14.6 + 14.7 route.
-
-  ## What this file delivers
-
-  * The chart-disk geometry of a `ChartDiskCover` (ball images, overlap images, half-radius
-    shrinkings, transitions, relative compactness).
-  * The instantiation of the generic `HolomorphicDiskOverlapData` (`CechModelHolomorphic.lean`) from
-    a `ChartDiskCover`, with the compact restriction `ρ` (Montel).
-  * The Forster 14.6 ball-lift, the ANALYTIC HEART (the genuinely-unblocked content).
-  * The FA finiteness assembly via `finiteDimensional_h1_of_leray_compact`.
-
-  The δ-complex + germ↔`BddHol` comparison that feed the assembly are BUILT downstream in
-  `ChartDiskFinitenessComplete.lean` (`finiteDimensional_cechH1_chartDisk_complete`, complete and
-  axiom-clean).
--/
-import Jacobians.Finiteness.CechModelHolomorphic
-import Jacobians.Finiteness.CechModelManifold
-import Jacobians.Dbar.DbarDiskCohomology
-import Jacobians.Dbar.CechDiskAcyclic
-import Jacobians.DolbeaultComparison.GoodCover
-import Jacobians.Dbar.DbarOpenDisk
+import Jacobians.Cech.ChartDiskCover
+import Jacobians.Dbar.DbarDisk
+import Jacobians.DolbeaultComparison.DolbeaultComparison
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

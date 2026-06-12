@@ -1,33 +1,4 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# The residue map on Laurent tail divisors (Miranda Ch. VI pp. 186–188)
-
-For a meromorphic pair-form `ω = h·dg₀` whose local order is bounded below by a divisor `D`
-(Miranda's `ω ∈ L^(1)(−D)`), the **residue map**
-
-  `Res_ω : 𝒯[D](X) → ℂ`,  `Res_ω(∑ r_p·p) = ∑_p Res_p(r_p·ω)`
-
-is a finite sum of Laurent-coefficient pairings — pure coefficient algebra.  Its key property
-(Miranda p. 187) is the **vanishing on realized tails**: for any global meromorphic `f`,
-
-  `Res_ω(α_D f) = ∑_p Res_p(f·ω) = 0`
-
-by the genus-free 1-form residue theorem (`residueSum_pairForm_mul_eq_zero_unconditional`,
-the planar-Stokes ledger) — the residue of `f·ω` at `p` depends only on `f`'s Laurent tail
-below `−D(p)`, because the rest of `f` against `ω` has order ≥ `−D(p) + D(p) = 0`.  Hence
-`Res_ω` descends to the Mittag-Leffler obstruction space `H¹(D) = 𝒯[D]/im(α_D)` — the
-functional `tailResidueH1` that feeds the Serre duality pairing — in every genus.
-
-The planar core is `resAt_mul_eq_sum_tailPairing`: a *uniform window* form of "the residue of a
-product reads only the tail" (the window may be empty, subsuming the no-pole case).
--/
-import Jacobians.LaurentTail.TailMap
-import Jacobians.ResidueTheorem.PairFormResidueTheorem
-import Jacobians.ResidueTheorem.ResidueTheoremStokes
-import Jacobians.PlanarStokes.AnnulusResidueIntegral
+import Mathlib.Analysis.CStarAlgebra.Classes
 
 open scoped Manifold ContDiff Topology
 open Filter Set

@@ -1,13 +1,5 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
--/
-import Jacobians.Surface.ContMDiffOmegaAnalytic
-import Mathlib.Geometry.Manifold.ContMDiff.Atlas
-import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
-import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Deriv
-import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Analytic
+import Mathlib.Analysis.Complex.Basic
+import Mathlib.Geometry.Manifold.ContMDiff.Defs
 
 /-! # Manifold inverse function theorem for complex 1-manifolds
 

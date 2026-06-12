@@ -1,20 +1,5 @@
-/-
-  Assembling `FunctionDiskAcyclic 𝔙 0` from the chart-transport bridge (`CechDiskAcyclicProof`)
-  and the function-level finite-cover ball Čech split.
-
-  This file imports `Jacobians.Dolbeault.CechDiskAcyclicProof` (the chart-transport bridge
-  `chartHoloRep` / `chartHoloRep_dbar_eq_zero`, the analytic representative `holoFn` +
-  `toGerm_holoFn`, and the function-level ball split `ballSplit_glued` / `ballSplit_pou`) and
-  isolates the remaining ball-solve obligation as the predicates `HasHoloCorrectors` /
-  `HasChartAnalyticCorrectors`, discharging the germ-level collapse `H¹(disk, 𝒪) = 0` from them.
-
-  Note on imports: `CechDiskAcyclicProof` and `DolbeaultComparisonInverse` cannot be imported
-  together (they define identically-named declarations in the `Jacobians.Dolbeault` namespace:
-  `holoRep`, `holoFn`, `toGerm_holoFn`, …), so the partition-of-unity primitives of
-  `DolbeaultComparisonInverse` are not available here; the machinery of `CechDiskAcyclicProof` is
-  reused instead.
--/
-import Jacobians.Dbar.CechDiskAcyclicProof
+import Jacobians.Dbar.CechDiskAcyclic
+import Jacobians.Dbar.HoloRep
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

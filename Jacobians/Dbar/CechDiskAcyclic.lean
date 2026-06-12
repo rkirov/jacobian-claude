@@ -1,41 +1,4 @@
-/-
-  The **germ-level disk-acyclicity lemma** (`H¹(disk, 𝒪_D) = 0`):
-
-      every `MGerm`-cocycle on a finite cover of a *chart disk* `W` is an `MGerm`-coboundary.
-
-  This feeds both the Leray strictly-finer surjectivity (`RefinementLift`) and the finiteness
-  `leray` field (`CechFinitenessWiring.Coboundaries.leray`).
-
-  ## Route
-
-  There is no Riemann mapping theorem in Mathlib, so we work only on a *literal* chart disk,
-  where the cover sets pull back through a single chart to opens in a Euclidean ball `B ⊆ ℂ` and
-  the full-disk ∂̄ engine applies directly.
-
-  The analytic engine is `DbarDiskCohomology.dbar_holo_splitting_ball` / `dbar_solvable_ball`
-  (`H¹(ball, 𝒪) = 0` on *functions* `ℂ → ℂ`).  The work here is:
-
-    * **§1 `dbar` algebra** — `DbarDisk.dbar` is `ℝ`-linear in `f` (`add`/`sub`/`smul`), the
-      bookkeeping the Čech split needs.
-    * **§2 function-level ball Čech split** — the function-level acyclicity engine, packaged as a
-      clean statement on holomorphic functions over a ball: a Čech 1-cocycle of holomorphic
-      functions that splits *smoothly* into a 0-cochain difference splits *holomorphically*.  For
-      a 2-set cover this is exactly `dbar_holo_splitting_ball`.
-    * **§3 the germ ↔ function bridge** — a germ-class `𝒪_D`-section on an open `↥W ⊆ X` has an
-      honest meromorphic representative function on `↥W` (choice on `OmegaDGerm = map toGerm`);
-      the normal-form machinery of `CechH0` (`nfX_Gext_codiscrete`, `toGerm_eq_iff`) bridges
-      germ-class equality to honest `𝓝[≠]`-eventual equality and back.
-    * **§4 the germ-level reduction** — the target `cocycle ⟹ coboundary` reduced to a clean
-      *function-level chart-disk acyclicity* predicate `FunctionDiskAcyclic`, in exactly the
-      "lift mod coboundary" shape of `CechFinitenessWiring.Coboundaries.leray` /
-      `CechRefinementLeray.RefinementLift`.  The predicate is discharged for the degenerate
-      1-cover and 2-cover cases from §2; the general n-cover discharge (the partition-of-unity
-      multi-set Čech split) is carried out in `CechDiskAcyclicProof` and assembled in
-      `CechDiskAcyclicAssembly`.
--/
-import Jacobians.Cech.CechH0
-import Jacobians.Dbar.DbarDiskCohomology
-import Jacobians.Cech.ChartDiskCover
+import Jacobians.Dbar.DbarDisk
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

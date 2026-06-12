@@ -1,41 +1,7 @@
-/-
-  **Removable singularity for meromorphic 1-forms** (Forster §17.4, the reverse of `holToMeroₗ`).
-
-  Gate (C)'s one isolated analytic gap: a meromorphic 1-form `α` with `formOrderW α ≥ 0` everywhere
-  (i.e. `α ∈ omegaD 0`) is — modulo the removable-singularity germ-junk — a genuine *holomorphic*
-  1-form.  This is the reverse map `Ω_0 → HolomorphicOneForms` inverse to the injection
-  `holToMeroₗ : HolomorphicOneForms ↪ Ω_0` (`MeromorphicOneFormSystem.lean`), giving the §17.4
-  equality `omegaDim 0 = genus X` UNCONDITIONALLY and `FiniteDimensional ℂ (omegaDModule 0)`.
-
-  ## The math
-
-  `α ∈ omegaD 0` means the chart coefficient `formCoeff α.toFun x` is `MeromorphicAt` with
-  `meromorphicOrderAt ≥ 0` at `chart x x`, for every `x`.  Order `≥ 0` means the coefficient germ
-  agrees, off `x`, with an **analytic** function (`exists_analyticAt_eventuallyEq_…`, the standard
-  removable singularity).  We repair `α.toFun` to its analytic value:
-
-  * `repairedCoeff α x₀` is the normal-form `toMeromorphicNFAt` of `localRep`'s pullback — analytic
-    on the chart target, and equal to `localRep α.toFun` off the (removed) singular points.
-  * `repairedSection α` is the genuine bundle section `y ↦ repaired-coefficient • frame`, smooth
-    because its chart pullback is analytic (the section-assembly lemma `holOfLocalRepAnalytic`,
-    extracted from the Montel completeness reconstruction `contMDiffOn_totalSpaceMk_L_inner`).
-
-  This `repairedSection α : HolomorphicOneForms X` has `holToMero (repairedSection α)` germ-equal to
-  `α` (they agree off the singular points), so `holToOmega0Module` is **surjective**.  With its
-  injectivity (`holToOmega0Module_injective`) this is a `LinearEquiv`
-  `HolomorphicOneForms X ≃ₗ omegaDModule 0`, whence:
-
-  * `FiniteDimensional ℂ (omegaDModule 0)` (transported from `HolomorphicOneForms`, finite-dim);
-  * `omegaDim 0 = genus X` (the §17.4 equality, both directions).
-
-  Chaining with `CanonicalForm17Data.hKgenus` (`CanonicalFormIso.lean`) makes the Serre-duality
-  input `lDim K = genus X` UNCONDITIONAL.
-
-  Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §17.4; Mathlib's
-  `MeromorphicAt.analyticAt` / `toMeromorphicNFAt` removable singularity.
--/
-import Jacobians.CanonicalForms.CanonicalFormDifferential
 import Jacobians.Forms.Montel
+import Jacobians.CanonicalForms.CanonicalFormIso
+import Mathlib.Analysis.CStarAlgebra.ContinuousLinearMap
+import Mathlib.Geometry.Manifold.VectorField.Pullback
 
 open scoped Manifold ContDiff Topology Bundle
 open Module Filter

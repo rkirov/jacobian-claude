@@ -1,21 +1,8 @@
-/-
-  DbarDisk.lean
-
-  ∂̄-on-a-disk solvability (the Cauchy transform) — a standalone, Mathlib-only
-  probe toward the Dolbeault wall.
-
-  We define the Wirtinger ∂̄ operator on `ℂ → ℂ` and aim to prove the
-  inhomogeneous Cauchy–Riemann solvability statement:
-
-    for `g` continuous on the closed disk of radius `r`, there is an ℝ-differentiable
-    `f` on the open disk with `∂̄ f = g` there.
-
-  The classical witness is the **Cauchy transform**
-    f(z) = -(1/π) ∬_{|ζ|≤r} g(ζ)/(ζ - z) dA(ζ),
-  whose ∂̄ recovers `g` (Cauchy–Pompeiu).  This file isolates exactly the
-  Mathlib gap on that route; see `dbar_disk_solvable` below.
--/
-import Mathlib
+import Mathlib.Analysis.Convolution
+import Mathlib.Algebra.Lie.OfAssociative
+import Mathlib.Analysis.CStarAlgebra.Classes
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+import Mathlib.Analysis.Calculus.ContDiff.Defs
 
 open scoped Real Topology ENNReal
 open Complex MeasureTheory

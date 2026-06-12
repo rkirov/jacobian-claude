@@ -1,15 +1,5 @@
-/-
-  The Dolbeault comparison without any Leray hypothesis.
-
-  The comparison spine of `DolbeaultComparisonEquiv` (`comparison_linearEquiv` and its two
-  round-trips) takes an `hL : 𝔘.IsLeray` argument that its proof bodies never consume.  This file
-  re-derives the two round-trip identities, the comparison `≃ₗ[ℝ]`
-  (`comparison_linearEquiv'`), and the `finrank` comparison
-  `finrank ℝ (DolbeaultH01 X) = 2 · finrank ℂ (cechH1 𝔇 0)` (`cechH1_dolbeault_comparison'`)
-  with the hypothesis removed, reusing the `hL`-free sub-lemmas of `DolbeaultComparisonEquiv`
-  verbatim.  Consumers that have a `ChartDiskCover` but no Leray witness can use these directly.
--/
-import Jacobians.DolbeaultComparison.DolbeaultComparisonEquiv
+import Jacobians.DolbeaultComparison.DolbeaultComparisonInverse
+import Jacobians.DolbeaultComparison.DolbeaultComparisonProof
 
 open scoped Manifold ContDiff Bundle Topology
 open TopologicalSpace (Opens)

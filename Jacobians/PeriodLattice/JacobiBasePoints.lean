@@ -1,25 +1,3 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Forster Lemma 21.3 — base points for the Jacobi map
-
-On a compact Riemann surface of genus `g` there are `g` distinct points `a 0, …, a (g-1)` such
-that the only holomorphic 1-form vanishing at all of them is `0`.  Consequently the `g × g`
-**evaluation matrix** `A i j = (coefficient of ω_i in the chart at a j)` of the period basis
-forms is invertible — the Jacobian matrix of the local Jacobi map `F` of Forster 21.4(a).
-
-The proof is Forster's: for `a : X` the evaluation functional `formEvalSelf a`
-(`α ↦ localRep α a a`, the chart-centre coefficient) has kernel `H_a` of codimension `0` or `1`
-in the `g`-dimensional `Ω(X) = HolomorphicOneForms X`; since a nonzero form has a nonzero
-coefficient somewhere (`exists_localRep_self_ne_zero`), one can pick points dropping the
-dimension of `H_{a_1} ∩ ⋯ ∩ H_{a_k}` by exactly one each step.
-
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), Lemma 21.3 (p. 168).
--/
-import Jacobians.Path.SmoothPathCore
-import Jacobians.ResidueCalculus.FormCoeff
 
 open scoped Manifold ContDiff
 open Module

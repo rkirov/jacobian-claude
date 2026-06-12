@@ -1,27 +1,4 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
-
-# Forster 21.4(b) — discreteness of the period lattice (dissection-free)
-
-The period lattice is isolated at `0`: there is a neighbourhood `W ∈ 𝓝 0` of `ℂ^g`
-meeting `truePeriodLattice X` only in `0`.
-
-Forster's argument: `W` is the image of the local Jacobi map `G` (the inverse function
-theorem); a nonzero lattice point `t = G(z) ∈ W` yields a 1-chain — chart segments
-`aⱼ → xⱼ` minus the loop combination realizing `t` — with *all* basis periods zero, so the
-Abel machinery produces a meromorphic `f` with `div f = ∑ⱼ(xⱼ − aⱼ)`: simple poles at the
-`aⱼ` (those with `xⱼ ≠ aⱼ`) with nonvanishing leading Laurent coefficients.  The residue
-theorem applied to each `f·ωᵢ` gives `A·c = 0` for the evaluation matrix `A = (ωᵢ(aⱼ))` and
-the residue vector `c ≠ 0` — contradicting `det A ≠ 0`.
-
-Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.4(b) (p. 169).
--/
-import Jacobians.Abel.AbelEngineMeromorphic
-import Jacobians.AbelWeak.AbelChains
-import Jacobians.PeriodLattice.PeriodLatticeNondegenerate
-import Jacobians.ResidueTheorem.ResidueTheoremFormFn
+import Jacobians.Monodromy.HolomorphicPrimitiveMonodromy
 
 noncomputable section
 

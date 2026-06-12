@@ -1,28 +1,5 @@
-/-
-  The residue atom (Forster §17.1–17.2 building block).
-
-  `resAt f c` is the residue of `f : ℂ → ℂ` at `c`, defined by the contour integral
-  `(2πi)⁻¹ ∮_{|z-c|=r} f` in the limit `r → 0⁺`.  This is the basic object the Čech-residue route
-  to Serre duality rests on: every local residue `Res_a(ω)` of a meromorphic 1-form is, in a
-  chart, `resAt (coeff of ω) (chart a)`.
-
-  Mathlib has **no** residue / general Laurent-coefficient API (only `meromorphicTrailingCoeffAt`,
-  the *leading* coefficient), so we build it on Mathlib's circle-integral + Cauchy–Goursat
-  toolkit.
-
-  This module is pure one-variable complex analysis — no manifold — and so is reusable verbatim in
-  every chart.  The `limUnder (𝓝[>] 0)` shape mirrors the repo's `MeromorphicFunction.holoRepr`.
-
-  Main results:
-    * `resAt_eq_of_eventuallyEq_circleIntegral` — the workhorse: if the contour integral is
-      eventually constant `= K` as `r → 0⁺`, then `resAt f c = (2πi)⁻¹ • K`.
-    * `resAt_const_mul_sub_inv` / `resAt_sub_inv` — `Res_c (a/(z-c)) = a` (Forster 17.6's `dz/z`
-      witness).
-    * `resAt_eq_zero_of_differentiableOn_ball` — `Res_c(f) = 0` for `f` holomorphic near `c` (the
-      holomorphic-difference property that makes `Res` well-defined on Mittag–Leffler cochains).
--/
-import Mathlib.Analysis.Complex.CauchyIntegral
-import Mathlib.Analysis.Meromorphic.Order
+import Mathlib.Analysis.Meromorphic.Basic
+import Mathlib.MeasureTheory.Integral.CircleIntegral
 
 open Complex Metric Filter Topology
 open scoped Real

@@ -1,13 +1,8 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
--/
-import Jacobians.SerrePairing.SerreDuality
-import Jacobians.Finiteness.CohomologicalRR
 import Jacobians.Meromorphic.LinearSystem
 import Jacobians.Forms.Genus
 import Jacobians.CanonicalForms.CanonicalFormIso
+import Jacobians.Cech.CechComplex
+import Mathlib.Analysis.CStarAlgebra.Classes
 
 /-!
 # Serre duality on `X` — the direct Forster §17 route (the plan of record)

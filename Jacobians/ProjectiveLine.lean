@@ -1,18 +1,4 @@
-/-
-Copyright (c) 2026 Rado Kirov. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rado Kirov
--/
-import Mathlib.Topology.Compactification.OnePoint.Basic
-import Mathlib.Topology.Compactification.OnePoint.Sphere
-import Mathlib.Geometry.Manifold.IsManifold.Basic
-import Mathlib.Geometry.Manifold.Instances.Sphere
-import Mathlib.Analysis.Complex.Basic
-import Mathlib.Analysis.Complex.Liouville
-import Mathlib.Analysis.Calculus.Deriv.Inv
-import Mathlib.Analysis.Normed.Field.Lemmas
-import Jacobians.Forms.Genus
-import Jacobians.Path.SmoothPathCore
+import Jacobians.Forms.LocalRep
 
 /-!
 # The complex Riemann sphere `ℂℙ¹` as a compact complex 1-manifold

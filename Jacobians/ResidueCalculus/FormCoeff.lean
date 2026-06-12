@@ -1,21 +1,6 @@
-/-
-  The canonical-chart coefficient of a holomorphic 1-form, and the local residue of `ω·g`
-  (Forster §17 building block, on the injectivity path of the `D = 0` Serre pairing).
-
-  A holomorphic 1-form `α`, in the canonical chart `chartAt ℂ a`, reads `α = coeffAt α a (z) · dz`
-  with `coeffAt α a` **analytic** — this is exactly `Montel.localRep` + its analyticity bridge
-  `localRep_analyticOn_chartTarget` (reused rather than re-deriving the ω-smoothness ⟹
-  ℂ-analyticity manifold argument).
-
-  On top of it, the **local residue** `formFnResidue α g a` is the residue at `a` of the
-  meromorphic 1-form `α·g` (holomorphic form times a function `g`), computed in the canonical
-  chart; it vanishes when `g`'s chart-pullback is holomorphic at `a` (so `α·g` has no pole there).
-  Computing in the canonical chart is the trick that makes Forster's cover-independence of `Res_a`
-  follow from `Res(holo)=0` alone, sidestepping the chart-independence change-of-variables lemma.
--/
-import Jacobians.Forms.Compactness
 import Jacobians.Forms.Genus
 import Jacobians.ResidueCalculus.Residue
+import Jacobians.Forms.LocalRep
 
 open scoped Manifold ContDiff Topology
 open Complex Metric

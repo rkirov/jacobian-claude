@@ -1,45 +1,5 @@
-/-
-  Dolbeault ladder — **finiteness of `H⁰(𝔘, 𝒪_D)`** (Forster GTM 81 §14 / §16 compactness),
-  for an ARBITRARY finite cover `𝔘` and an ARBITRARY divisor `D`.
-
-  ## What this file proves
-
-      `finiteDimensional_globalSections (𝔘 : FiniteCover X) (D : Divisor X) :
-         FiniteDimensional ℂ ↥(𝔘.globalSections D)`
-
-  i.e. `l(D) = h⁰(D) < ∞`. This is **Gap 1** of `CohomologicalRR.exists_skyscraperLES`: the
-  `[FiniteDimensional ℂ H⁰(𝒪_{D+P})]` instance hypothesis that the skyscraper assembly
-  (`SkyscraperAssembly.skyscraperLES_of_chartDisk`) previously had to *assume* (no repo lemma
-  existed). It is now *derived*.
-
-  ## The argument (the SAME light skyscraper reduction used for `H¹` in `CechFinitenessDtwist`)
-
-  `globalSections D = ker δ⁰ ⊓ sections0 D` is a *submodule* (no quotient — `H⁰` is junk-free).
-  Adding a point `P` only weakens the order bound, so `globalSections D ≤ globalSections (D+P)`, and
-  the correction quotient
-
-      `globalSections (D+P) ⧸ globalSections D`
-
-  injects into the finite-dimensional section quotient `sections0 (D+P) ⧸ sections0 D`
-  (`CechFinitenessDtwist.finiteDimensional_sections0_quotient`, a finite product of ≤ 1-dimensional
-  principal-part stalk quotients) via `finiteDimensional_inf_quotient` (with `K = ker δ⁰`). Hence
-  finiteness of `H⁰` propagates *both ways* along the inclusion
-  `globalSections D ↪ globalSections (D+P)`:
-
-    * **forward** (`H⁰(D)` finite ⟹ `H⁰(D+P)` finite): `H⁰(D+P)` is the extension of the finite
-      submodule `H⁰(D)` by the finite correction quotient (`Module.Finite.of_submodule_quotient`);
-    * **backward** (`H⁰(D+P)` finite ⟹ `H⁰(D)` finite): a submodule of a finite-dimensional space.
-
-  The bidirectional per-point step then drives the standard `Int.induction_on` (a single point, `±1`
-  at a time) + `Finsupp.induction` (one point at a time) on the divisor, with **base** `D = 0`:
-  `H⁰(0)` is finite because `finrank ℂ H⁰(0) = h0Dim 0 = l(0) = 1 > 0`
-  (`h0Dim_eq_lDim` + `lDim_zero_eq_one`, Liouville), via `FiniteDimensional.of_finrank_pos`.
-
-  Everything is complete; `#print axioms finiteDimensional_globalSections` is
-  `[propext, Classical.choice, Quot.sound]`.
--/
-import Jacobians.Finiteness.CechFinitenessDtwist
-import Jacobians.Cech.CechH0
+import Jacobians.Cech.CechComplex
+import Mathlib.Analysis.CStarAlgebra.Classes
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

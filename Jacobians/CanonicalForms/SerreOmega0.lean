@@ -1,39 +1,5 @@
-/-
-  Serre §17 — node 1 (gate D): existence of a nonconstant meromorphic function (`ω₀`-existence).
-
-  This is the gate-D input to `exists_serreDualityData` (Forster §17 Serre duality). It supplies the
-  raw analytic existence underlying the canonical divisor `K = div ω₀`: a NONCONSTANT meromorphic
-  function `f` on the compact connected Riemann surface `X` (whence a nonzero meromorphic 1-form
-  `ω₀ = df`).
-
-  ## The argument (Serre-INDEPENDENT — no circularity)
-
-  Everything rests on the cohomological Riemann–Roch (χ-additivity, Forster §16),
-  `Jacobians.Dolbeault.cohomological_riemannRoch`, which gives — for a locally-realizable cover `𝔘`
-  —
-
-      `(h⁰(D) : ℤ) − h¹(D) = deg D + 1 − h¹(0)`.
-
-  Since `h¹(D) = h1Dim D ≥ 0`, this is an *inequality*
-
-      `(h⁰(D) : ℤ) ≥ deg D + 1 − h¹(0)`.
-
-  Take a point `P : X` (exists, `X` connected hence nonempty) and the effective divisor
-  `D = (h¹(0) + 1) · P`. Then `deg D = h¹(0) + 1`, so `h⁰(D) ≥ 2`, i.e. `2 ≤ lDim D` (via the
-  `h⁰ = l` bridge `h0Dim_eq_lDim`). A linear system of dimension `≥ 2` contains an element linearly
-  independent from the class of the constant function `1`; such an element is a meromorphic function
-  whose germ is NOT constant. That is the nonconstant witness.
-
-  Crucially this uses `h¹(0) = h1Dim 0` — a FINITE number (the arithmetic genus
-  `dim H¹(𝒪)`, finite by `finiteDimensional_cechH1_general`), **not** `genus X`. So it does **not**
-  invoke `arithmeticGenus_eq_genus` / Serre duality: there is no circularity.
-
-  Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §16 (the Riemann–Roch inequality
-  `l(D) ≥ deg D + 1 − g` and its corollary that nonconstant meromorphic functions exist).
--/
-import Jacobians.Finiteness.CohomologicalRR
-import Jacobians.Finiteness.SkyscraperProductWitness
 import Jacobians.CanonicalForms.CanonicalFormIso
+import Jacobians.Finiteness.SkyscraperConeRealization
 
 open scoped Manifold ContDiff Topology
 open Module
