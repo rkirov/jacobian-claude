@@ -7,8 +7,9 @@ import Jacobians.MappingDegree.HPkgUnconditional
 import Jacobians.MappingDegree.HurwitzWellDefinedUnconditionalTopo
 /-! # `degreeFiber` is well-defined across regular witnesses
 
-Combines `h_pkg_holds_unconditional` (`Manifold/HPkgUnconditional.lean`)
-with `fibre_card_well_defined_at_regular_holds_of_h_pkg`
+Combines `exists_finiteCriticalValues_fibreCard_isLocallyConstant`
+(`Manifold/HPkgUnconditional.lean`) with
+`fibre_card_well_defined_at_regular_holds_of_finiteCriticalValues`
 (`Manifold/HurwitzWellDefinedUnconditionalTopo.lean`) to discharge the
 "witness independence" of `degreeFiber`: the `Classical.choice`-selected
 witness's `card` equals the `card` of any other `RegularValueWitnessReg`.
@@ -45,9 +46,9 @@ theorem degreeFiber_eq_card_of_regular_witness
         ¬ Jacobians.Discharge.IsConstantMap g →
         ∀ (w₁ w₂ : Jacobians.Discharge.ContMDiff.RegularValueWitnessReg g),
           w₁.card = w₂.card :=
-    Jacobians.Discharge.ContMDiff.Degree.fibre_card_well_defined_at_regular_holds_of_h_pkg
+    ContMDiff.Degree.fibre_card_well_defined_at_regular_holds_of_finiteCriticalValues
       (h_pkg :=
-        Jacobians.Discharge.ContMDiff.Degree.h_pkg_holds_unconditional)
+        ContMDiff.Degree.exists_finiteCriticalValues_fibreCard_isLocallyConstant)
   -- Nonempty regular-witness type.
   have hne : Nonempty (Jacobians.Discharge.ContMDiff.RegularValueWitnessReg f) :=
     ⟨w⟩

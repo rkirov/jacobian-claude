@@ -38,34 +38,33 @@ namespace Degree
 
 universe u v
 
-/-- **Unconditional discharge of `regular_value_exists_statement`.**
-For compact connected complex 1-manifolds `X`, `Y`, every non-constant
-`C^ω` map `f : X → Y` admits a regular value witness.
+/-- **Existence of a regular-value witness**
+(`regular_value_exists_statement`, with no remaining hypotheses). For
+compact connected complex 1-manifolds `X`, `Y`, every non-constant `C^ω`
+map `f : X → Y` admits a regular value witness.
 
 The proof composes:
 
-* ZZ47 (`clopennessOfLocallyConst_holds`): the locally-constant locus of any
+* `clopennessOfLocallyConst_holds`: the locally-constant locus of any
   `C^ω` map onto a fixed value is closed (chart-local identity theorem).
-* ZZ43 (`fibres_finite_statement_holds_of_clopennessOfLocallyConst`):
+* `fibres_finite_statement_holds_of_clopennessOfLocallyConst`:
   fibres-finite reduces to clopen-ness of the locally-constant locus.
-* ZZ33 (`regular_value_exists_of_fibres_finite`): regular-value-exists
-  reduces to fibres-finite via "pick any `y : Y`".
-
-No external hypothesis. -/
-theorem regular_value_exists_statement_unconditional
+* `regular_value_exists_of_fibres_finite`: regular-value-exists
+  reduces to fibres-finite via "pick any `y : Y`". -/
+theorem exists_regularValueWitness
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] :
     ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
       ¬ Jacobians.Discharge.IsConstantMap f → Nonempty (RegularValueWitness f) := by
-  -- Unconditional fibres-finite from ZZ47 + ZZ43.
+  -- Fibres-finite with no remaining hypotheses.
   have h_fib :
       ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
         ¬ Jacobians.Discharge.IsConstantMap f → ∀ y : Y, (f ⁻¹' {y}).Finite :=
     fibres_finite_statement_holds_of_clopennessOfLocallyConst
       clopennessOfLocallyConst_holds
-  -- Reduce regular-value-exists to fibres-finite (ZZ33).
+  -- Reduce regular-value-exists to fibres-finite.
   exact regular_value_exists_of_fibres_finite h_fib
 
 end Degree

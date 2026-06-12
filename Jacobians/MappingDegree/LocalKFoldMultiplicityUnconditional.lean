@@ -7,9 +7,10 @@ import Jacobians.MappingDegree.AnalyticKthRoot
 import Mathlib.Analysis.Complex.Polynomial.Basic
 
 
-/-! # Unconditional k-fold local multiplicity (composition of ZZ74 + ZZ75 + ZZ87)
+/-! # k-fold local multiplicity from a local factorization
 
-Composes ZZ87 (analytic k-th root) + ZZ75 (substitution bundle) + ZZ74
+Composes the analytic k-th root (`AnalyticKthRoot.lean`), the substitution
+bundle (`KthRootSubstitution`), and the multiplicity-one preimage count
 (re-implemented inline with a radius bound) to give: under a local
 analytic factorization `g(z) - w₀ = (z - x₀)^k · u(z)` with `u(x₀) ≠ 0`,
 the equation `g z = w` has exactly `k` solutions in a small ball around
@@ -75,7 +76,7 @@ theorem kthRootSubstitution_of_localFactorization
     have h2 : r z ^ k = u z := hr_pow z hz
     rw [h1, ← h2, mul_pow]
 
-/-- ZZ74 with an extra radius bound `ε ≤ R`. -/
+/-- `localMultiplicityOne_preimage_card` with an extra radius bound `ε ≤ R`. -/
 theorem localMultiplicityOne_preimage_card_with_radius
     {g : ℂ → ℂ} {x₀ : ℂ}
     (h_an : AnalyticAt ℂ g x₀) (hd : deriv g x₀ ≠ 0)
@@ -325,9 +326,9 @@ theorem localKFoldMultiplicity_preimage_card_of_substitution
     rw [h1, h_image_eq, Set.ncard_coe_finset]
   rw [hPre_ncard, hF_card]
 
-/-- **Unconditional `k`-fold local multiplicity** under a local analytic
-factorization hypothesis. -/
-theorem localKFoldMultiplicity_preimage_card_unconditional
+/-- **`k`-fold local multiplicity** under a local analytic factorization
+`g z - w₀ = (z - x₀)^k · u z` with non-vanishing unit factor `u`. -/
+theorem localKFoldMultiplicity_preimage_card_of_localFactorization
     {g u : ℂ → ℂ} {x₀ w₀ : ℂ} {R : ℝ} {k : ℕ}
     (hR : 0 < R) (hk : 1 ≤ k)
     (hu_an : AnalyticOnNhd ℂ u (Metric.closedBall x₀ R))

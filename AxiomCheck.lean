@@ -12,8 +12,8 @@ import Jacobians.MappingDegree.RegularValueExistsRegUnconditional
 #print axioms Jacobians.RegularValueWitnessReg
 #print axioms Jacobians.regularValueWitnessReg_nonempty_of_nonConstantMap
 #print axioms Jacobians.Discharge.ContMDiff.degreeFiber
-#print axioms Jacobians.Discharge.ContMDiff.Degree.regular_value_exists_reg_unconditional
-#print axioms Jacobians.Discharge.ContMDiff.Degree.regular_value_exists_statement_unconditional
+#print axioms Jacobians.Discharge.ContMDiff.Degree.exists_regularValueWitnessReg
+#print axioms Jacobians.Discharge.ContMDiff.Degree.exists_regularValueWitness
 
 -- Degree well-definedness (ported from brsanch; discharges #8′): every regular
 -- fibre has the same cardinality `= degreeFiber f`. Axiom-clean.

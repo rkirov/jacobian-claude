@@ -1368,7 +1368,7 @@ theorem criticalSet_ne_univ_of_nonconstant
     Jacobians.Discharge.Manifold.criticalSet_finite_general f hf hnonconst
   rw [h_eq] at h_fin
   haveI : Infinite X :=
-    Jacobians.Discharge.ContMDiff.Degree.y_infinite_of_chartedSpace_complex
+    Jacobians.Discharge.ContMDiff.Degree.infinite_of_chartedSpace_complex
   exact Set.infinite_univ.not_finite h_fin
 
 /-- **Critical set is finite** (Forster §4 / isolated-zeros). For

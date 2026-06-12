@@ -24,9 +24,9 @@ this file's existence theorem is in scope.
 
 ## Composition
 
-* `criticalValues_finite_general` (CV-Gen): the critical-value set
+* `criticalValues_finite_general`: the critical-value set
   `criticalValuesGeneral f` is finite for non-constant analytic `f`.
-* `fibres_finite_statement_unconditional` (ZZ48): every fibre of
+* `fibres_finite`: every fibre of
   a non-constant analytic `f` is finite.
 * `Y` is infinite, derived from `ChartedSpace ℂ Y` + `T2Space Y` +
   non-emptiness.
@@ -34,8 +34,8 @@ this file's existence theorem is in scope.
 Pick a value `y₀ ∈ Y \ criticalValuesGeneral f` (non-empty because
 critical values are finite and `Y` is infinite). At every preimage
 `x ∈ f ⁻¹' {y₀}`, `x ∉ criticalSetGeneral f`, so the chart-pullback of
-`f` at `x` is locally injective. By the planar bridge ZZ99
-(`notInjOn_iff_deriv_zero_of_analytic_of_order`), local injectivity at
+`f` at `x` is locally injective. By the planar bridge
+`notInjOn_iff_deriv_zero_of_analytic_of_order`, local injectivity at
 an analytic point forces the derivative to be nonzero. Combined with
 fibre finiteness, this delivers a `RegularValueWitnessReg f`.
 
@@ -76,7 +76,7 @@ private lemma isOpen_complex_set_infinite_of_mem
 plus `T2Space Y` plus `Nonempty Y` (via `ConnectedSpace Y`), there is a
 chart at any point whose source is open in `Y` and homeomorphic to an open
 set of `ℂ`. Open sets of `ℂ` are infinite, so `Y` is infinite. -/
-theorem y_infinite_of_chartedSpace_complex
+theorem infinite_of_chartedSpace_complex
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] : Infinite Y := by
   -- Pick any y₀ : Y.
@@ -139,8 +139,9 @@ pullback's derivative at `c x` is nonzero, provided we additionally know
 the pullback is not eventually constant at `c x` (delivered by the
 clopenness-of-locally-const machinery for non-constant `f`).
 
-This packages the planar bridge ZZ99 specialised to the situation we are
-in: at a non-critical preimage of a non-critical-value `y`, both
+This packages the planar bridge
+`notInjOn_iff_deriv_zero_of_analytic_of_order` specialised to the situation
+we are in: at a non-critical preimage of a non-critical-value `y`, both
 analyticity and non-eventual-constancy hold. -/
 lemma deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
@@ -265,7 +266,7 @@ lemma deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
     interval_cases k
     apply h_ord_ne_zero
     exact hk_eq
-  -- Apply the planar bridge ZZ99.
+  -- Apply the planar bridge.
   have h_planar :
       (¬ ∃ U ∈ 𝓝 (c x), Set.InjOn F U) ↔ deriv F (c x) = 0 :=
     Jacobians.Discharge.Manifold.notInjOn_iff_deriv_zero_of_analytic_of_order
@@ -280,7 +281,7 @@ lemma deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
 /-- **Witness at a prescribed regular value.** A value `y₀` off the
 critical-value set yields a regularity-certified witness *with that exact
 value* — so its fibre cardinality can be identified with `y₀`'s. (This is
-steps 4–7 of `regular_value_exists_reg_unconditional` at a caller-chosen
+steps 4–7 of `exists_regularValueWitnessReg` at a caller-chosen
 `y₀` instead of a `Classical.choice`-picked one.) -/
 lemma exists_regularValueWitnessReg_value_eq
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
@@ -292,9 +293,9 @@ lemma exists_regularValueWitnessReg_value_eq
     {y₀ : Y} (hy₀ : y₀ ∉ Jacobians.Discharge.Manifold.criticalValuesGeneral f) :
     ∃ w : RegularValueWitnessReg f, w.toWitness.value = y₀ := by
   classical
-  -- Fibre over y₀ is finite (ZZ48).
+  -- Fibre over y₀ is finite.
   have h_fib_fin : (f ⁻¹' {y₀}).Finite :=
-    fibres_finite_statement_unconditional f hf hnc y₀
+    fibres_finite f hf hnc y₀
   -- Plain witness at y₀.
   let w : RegularValueWitness f := { value := y₀, fiber_finite := h_fib_fin }
   -- Regularity certificate at every preimage (same argument as the headline).
@@ -317,7 +318,7 @@ lemma exists_regularValueWitnessReg_value_eq
 /-- **Headline existence.** For every non-constant analytic
 `f : X → Y` between compact connected complex 1-manifolds,
 `Nonempty (RegularValueWitnessReg f)`. -/
-theorem regular_value_exists_reg_unconditional
+theorem exists_regularValueWitnessReg
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -326,11 +327,11 @@ theorem regular_value_exists_reg_unconditional
     (hnc : ¬ Jacobians.Discharge.IsConstantMap f) :
     Nonempty (RegularValueWitnessReg f) := by
   classical
-  -- 1. critical values finite (CV-Gen).
+  -- 1. critical values finite.
   have h_cv_fin : (Jacobians.Discharge.Manifold.criticalValuesGeneral f).Finite :=
     Jacobians.Discharge.Manifold.criticalValues_finite_general f hf hnc
   -- 2. Y is infinite.
-  haveI : Infinite Y := y_infinite_of_chartedSpace_complex
+  haveI : Infinite Y := infinite_of_chartedSpace_complex
   -- 3. Y \ criticalValuesGeneral f is non-empty.
   have h_compl_nonempty :
       (Jacobians.Discharge.Manifold.criticalValuesGeneral f)ᶜ.Nonempty := by
@@ -339,9 +340,9 @@ theorem regular_value_exists_reg_unconditional
     have h_univ_fin : (Set.univ : Set Y).Finite := h ▸ h_cv_fin
     exact (Set.infinite_univ).not_finite h_univ_fin
   obtain ⟨y₀, hy₀⟩ := h_compl_nonempty
-  -- 4. Fibre over y₀ is finite (ZZ48).
+  -- 4. Fibre over y₀ is finite.
   have h_fib_fin : (f ⁻¹' {y₀}).Finite :=
-    fibres_finite_statement_unconditional f hf hnc y₀
+    fibres_finite f hf hnc y₀
   -- 5. Build the underlying RegularValueWitness.
   let w : RegularValueWitness f :=
     { value := y₀, fiber_finite := h_fib_fin }

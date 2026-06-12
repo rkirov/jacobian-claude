@@ -8,7 +8,7 @@ import Jacobians.MappingDegree.PathConnectedComplFinite
 
 /-! # Hurwitz constant-card with unconditional topology (ZZ176)
 
-Compose ZZ160's `fibre_card_well_defined_at_regular_holds_of_h_path`
+Compose ZZ160's `fibre_card_well_defined_at_regular_holds_of_pathConnected_compl`
 (post-ZZ172, corrected) with ZZ165's
 `isPathConnected_compl_finite_of_connected_chartedSpace_complex`
 (unconditional path-connectedness of finite-complement subsets of a
@@ -45,16 +45,13 @@ namespace Degree
 
 universe u v
 
-/-- **Hurwitz constant-card, unconditional topology (ZZ176).**
-
-Discharge of the corrected `fibre_card_well_defined_at_regular_statement`
-that takes only the analytic per-`f` packaging — the topological
-path-connectedness residual is supplied unconditionally from ZZ165.
-
-When `h_pkg` lands (analytic identity theorem for the `C.Finite` leg, plus
-ZZ151/152/169 chain for `IsLocallyConstant`), this theorem is one rewrite
-away from strict closure of `Degree` item 3.reg. -/
-theorem fibre_card_well_defined_at_regular_holds_of_h_pkg
+/-- **Hurwitz constant fibre-cardinality, from the finite-critical-values
+packaging.** Discharge of `fibre_card_well_defined_at_regular_statement`
+taking only the analytic per-`f` packaging `h_pkg` (a finite critical-value
+set off which the fibre cardinality is locally constant) — the topological
+path-connectedness residual is supplied unconditionally by
+`isPathConnected_compl_finite_of_connected_chartedSpace_complex`. -/
+theorem fibre_card_well_defined_at_regular_holds_of_finiteCriticalValues
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -77,7 +74,7 @@ theorem fibre_card_well_defined_at_regular_holds_of_h_pkg
       Y _ _ _ _ _ C hC hne
   -- Apply the corrected ZZ160 with the supplied analytic packaging.
   intro f hf hnc w₁ w₂
-  exact fibre_card_well_defined_at_regular_holds_of_h_path h_path h_pkg f hf hnc w₁ w₂
+  exact fibre_card_well_defined_at_regular_holds_of_pathConnected_compl h_path h_pkg f hf hnc w₁ w₂
 
 end Degree
 

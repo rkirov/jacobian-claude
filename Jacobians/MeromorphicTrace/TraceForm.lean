@@ -887,13 +887,13 @@ theorem contMDiffAt_traceSection_ext_of_notMem_branchLocus {X Y : Type*} [Topolo
 
 /-- A connected complex 1-manifold has **no isolated points**: the punctured
 neighborhood filter `𝓝[≠] y₀` is `NeBot`. (`Y` is `Infinite`
-— `y_infinite_of_chartedSpace_complex` — hence `Nontrivial`; with `T1Space` +
+— `infinite_of_chartedSpace_complex` — hence `Nontrivial`; with `T1Space` +
 `ConnectedSpace` this gives `PerfectSpace`, hence `NeBot (𝓝[≠] y₀)`.) This is what
 makes limits along punctured neighborhoods unique, the engine of the linearity
 argument below. -/
 instance neBot_nhdsWithin_compl_self {Y : Type*} [TopologicalSpace Y] [T2Space Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] (y₀ : Y) : (𝓝[≠] y₀).NeBot := by
-  haveI : Infinite Y := Jacobians.Discharge.ContMDiff.Degree.y_infinite_of_chartedSpace_complex
+  haveI : Infinite Y := Jacobians.Discharge.ContMDiff.Degree.infinite_of_chartedSpace_complex
   infer_instance
 
 /-! ### The reduction lemma (regluing + linearity), conditional on per-branch extension
@@ -2606,7 +2606,7 @@ theorem traceFormTotal_id {X : Type*} [TopologicalSpace X] [T2Space X] [CompactS
     traceFormTotal (id : X → X) contMDiff_id =
     LinearMap.id (R := ℂ) (M := HolomorphicOneForms X) := by
   classical
-  haveI : Infinite X := Jacobians.Discharge.ContMDiff.Degree.y_infinite_of_chartedSpace_complex
+  haveI : Infinite X := Jacobians.Discharge.ContMDiff.Degree.infinite_of_chartedSpace_complex
   have hnc : ¬ ∃ x₀ : X, ∀ x, (id : X → X) x = x₀ := by
     rintro ⟨x₀, hx₀⟩
     obtain ⟨a, b, hab⟩ := exists_pair_ne X

@@ -38,8 +38,9 @@ namespace Degree
 
 universe u v
 
-/-- **The ZZ155 composition (ZZ172-corrected).** Conditional on a packaged
-existence (for every non-constant analytic `f`) of a regular-value subset
+/-- **Hurwitz constant fibre-cardinality from a locally-constant
+preconnected packaging.** Conditional on a packaged existence (for every
+non-constant analytic `f`) of a regular-value subset
 `R ⊆ Y` carrying:
 
 * support: every regular witness's value lies in `R`,
@@ -52,7 +53,7 @@ Stated in the unfolded `∀ f hf hnc w₁ w₂, w₁.card = w₂.card` shape rat
 than against the def, to avoid `intro`-time elaboration "typeclass instance
 problem is stuck" issues observed when applying the def directly. The
 underlying statement is identical (the def's body). -/
-theorem fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo
+theorem fibre_card_well_defined_at_regular_holds_of_locallyConstant_preconnected
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]

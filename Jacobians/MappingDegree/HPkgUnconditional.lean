@@ -6,10 +6,13 @@ Authors: Bryan Sanchez
 import Jacobians.MappingDegree.HLcUnconditional
 import Jacobians.MappingDegree.LocalSheetDataFromContMDiff
 import Jacobians.MappingDegree.RegularValueExistsRegUnconditional
-/-! # Unconditional `h_pkg` (item 9 close — composition chip)
+/-! # The finite-critical-values packaging
 
-Composes the landed unconditional ingredients into the analytic packaging
-`h_pkg` consumed by `fibre_card_well_defined_at_regular_holds_of_h_pkg`
+For every non-constant analytic `f : X → Y` between compact connected
+complex 1-manifolds there is a finite critical-value set `C ⊆ Y` such that
+all regular witnesses take values off `C` and the fibre cardinality is
+locally constant on `Cᶜ`. This is the analytic packaging consumed by
+`fibre_card_well_defined_at_regular_holds_of_finiteCriticalValues`
 (`Manifold/HurwitzWellDefinedUnconditionalTopo.lean`).
 
 We choose `C := criticalValuesGeneral f` directly so its identification is
@@ -33,8 +36,12 @@ namespace Degree
 
 universe u v
 
-/-- **Unconditional `h_pkg`.** -/
-theorem h_pkg_holds_unconditional
+/-- **The finite-critical-values packaging.** For every non-constant
+analytic `f : X → Y` there is a finite set `C ⊆ Y` (the critical values of
+`f`) such that every `RegularValueWitnessReg f` takes its value in `Cᶜ` and
+the fibre-cardinality function `y ↦ (f ⁻¹' {y}).ncard` is locally constant
+on `Cᶜ`. -/
+theorem exists_finiteCriticalValues_fibreCard_isLocallyConstant
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -132,7 +139,7 @@ theorem h_pkg_holds_unconditional
     exact hx_crit h_inj_f
   · -- Local constancy on Cᶜ via LocalSheetData supplier + HLcUnconditional.
     have h_fib_all : ∀ y : Y, (f ⁻¹' {y}).Finite :=
-      fibres_finite_statement_unconditional f hf hnc
+      fibres_finite f hf hnc
     have h_fib :
         ∀ y ∈ ((Jacobians.Discharge.Manifold.criticalValuesGeneral f)ᶜ : Set Y),
           (f ⁻¹' {y}).Finite := fun y _ => h_fib_all y
@@ -159,7 +166,7 @@ theorem h_pkg_holds_unconditional
         rw [← hx_eq]; exact h_deriv_fx
       exact LocalSheetData.ofContMDiffMfderivNeZero
         (hf := hf.contMDiffAt) (hxy := hx) (h_deriv := h_deriv_y)
-    exact h_lc_holds_for_subset_of_localSheets_supplier
+    exact fibreCard_isLocallyConstant_on_compl_of_localSheets
       hf.continuous (Jacobians.Discharge.Manifold.criticalValuesGeneral f)
       h_fib h_sheets
 

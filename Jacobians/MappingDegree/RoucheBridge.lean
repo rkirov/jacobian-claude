@@ -34,7 +34,7 @@ consequence. Rather than re-derive the open-mapping "exactly `k` simple zeros"
 passage from the integral, we observe that the very same count is **already
 proven, complete and axiom-clean**, by the k-th-root substitution route in
 `LocalKFoldMultiplicityFullyUnconditional.lean`
-(`localKFoldMultiplicity_preimage_card_fully_unconditional`): the substitution
+(`localKFoldMultiplicity_preimage_card`): the substitution
 `z ↦ (z - x₀)·u(z)^{1/k}` puts a bijection between the `k`-fold preimage and the
 `k` distinct `k`-th roots of `w - w₀`. (The brief sanctions this route as the
 "cleaner" alternative to re-deriving via the integral.)
@@ -105,7 +105,7 @@ exist `ε > 0` and a neighborhood `V` of `0` such that for every nonzero `w ∈
 ball 0 ε`, the equation `g z = w` has exactly `k` solutions in `V \ {0}`.
 
 Proof: route through the proven k-th-root count
-`localKFoldMultiplicity_preimage_card_fully_unconditional` with `w₀ := g 0 = 0`
+`localKFoldMultiplicity_preimage_card` with `w₀ := g 0 = 0`
 (the value at an order-`≥ 1` zero) and `x₀ := 0`. The order hypothesis transfers
 because `g - g 0 = g` (as `g 0 = 0`), and the set shapes agree because `0` is
 never in the fiber over a nonzero `w` (`g 0 = 0 ≠ w`). -/
@@ -122,7 +122,7 @@ theorem localMultiplicity_eq_order_punctured_statement_holds (k : ℕ) (g : ℂ 
     simpa [hg0] using hord
   -- Apply the proven k-th-root count at `x₀ = 0`, `w₀ = g 0`.
   obtain ⟨ε, hε_pos, δ, hδ_pos, hcount⟩ :=
-    Manifold.localKFoldMultiplicity_preimage_card_fully_unconditional hk hg rfl hord'
+    Manifold.localKFoldMultiplicity_preimage_card hk hg rfl hord'
   -- Package: `V := ball 0 ε`, and the punctured radius is `δ`.
   refine ⟨δ, hδ_pos, Metric.ball (0 : ℂ) ε, Metric.ball_mem_nhds 0 hε_pos, ?_⟩
   intro w hw
@@ -184,7 +184,7 @@ This section lands the **ℂ-analytic core** of that honest theorem, completely:
 under `f x = 0`, the chart representative `g := f ∘ chart⁻¹` is genuinely analytic
 at `c := chart x`, vanishes there, and has analytic order exactly
 `(localOrder I f x).natAbs`. From this, the planar Rouché count
-(`localKFoldMultiplicity_preimage_card_fully_unconditional`) applies to `g`
+(`localKFoldMultiplicity_preimage_card`) applies to `g`
 directly; the only remaining step to the full manifold statement is the
 topological transport of the count along the chart homeomorphism (which needs a
 radius-bounded variant of the planar count so the chart ball sits inside
@@ -263,7 +263,7 @@ radius-bounded count `localMultiplicityOne_preimage_card_with_radius`. This mirr
 open Jacobians.Discharge.Manifold in
 /-- **Radius-bounded fully-unconditional planar k-fold count.**
 
-Same conclusion as `localKFoldMultiplicity_preimage_card_fully_unconditional`, but
+Same conclusion as `localKFoldMultiplicity_preimage_card`, but
 with the additional guarantee `ε ≤ R` for a prescribed `R > 0`. -/
 theorem kFold_count_radiusBounded
     {g : ℂ → ℂ} {x₀ w₀ : ℂ} {k : ℕ} {R : ℝ}

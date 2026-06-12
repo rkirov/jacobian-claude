@@ -29,7 +29,7 @@ Per the project's "honest stub > speculative real definition" principle, we
 ship the **constant-vs-non-constant indicator**:
 
 ```
-degreeStub hf := if (∃ y, ∀ x, f x = y) then 0 else 1
+degreeIndicator hf := if (∃ y, ∀ x, f x = y) then 0 else 1
 ```
 
 This satisfies `degree(constant) = 0` and gives a typechecking witness for the
@@ -43,13 +43,13 @@ machinery is in.
 stub, and this single-file edit is forbidden from touching `Basic.lean`. If we
 declared `_root_.ContMDiff.degree` here as well, the build would fail with a
 duplicate definition. So we expose the candidate body under
-`Jacobians.Discharge.Manifold.degreeStub`. The sister edit that wires this in
-will replace the stub body in `Basic.lean` with `:= degreeStub f hf`.
+`Jacobians.Discharge.Manifold.degreeIndicator`. The sister edit that wires this in
+will replace the stub body in `Basic.lean` with `:= degreeIndicator f hf`.
 
 ## Main definitions
 
 * `Jacobians.Discharge.IsConstantMap f` — `f` is constant (one packaged form).
-* `Jacobians.Discharge.Manifold.degreeStub f hf` — `0` if `f` is constant,
+* `Jacobians.Discharge.Manifold.degreeIndicator f hf` — `0` if `f` is constant,
   `1` otherwise. **Stub.**
 -/
 
@@ -68,10 +68,12 @@ definition of the degree stub. -/
 def IsConstantMap {X : Type u} {Y : Type v} (f : X → Y) : Prop :=
   ∃ y, ∀ x, f x = y
 
+/-- A constant function is an `IsConstantMap`. -/
 lemma isConstantMap_const {X : Type u} {Y : Type v} (c : Y) :
     IsConstantMap (fun _ : X => c) :=
   ⟨c, fun _ => rfl⟩
 
+/-- `f` is non-constant iff every candidate value `y` is missed by some point. -/
 lemma not_isConstantMap_iff {X : Type u} {Y : Type v} (f : X → Y) :
     ¬ IsConstantMap f ↔ ∀ y, ∃ x, f x ≠ y := by
   unfold IsConstantMap
@@ -91,7 +93,7 @@ without touching the call site. -/
 surfaces, as a stub.
 
 ```
-degreeStub f hf = if f is constant then 0 else 1.
+degreeIndicator f hf = if f is constant then 0 else 1.
 ```
 
 This honours the `degree(constant) = 0` convention from challenge item 9 and
@@ -100,7 +102,7 @@ correct numerical degree for non-constant maps. The follow-up replaces the
 `else 1` branch with `Nat.card (f ⁻¹' {y₀})` for a regular value `y₀ : Y`,
 once chart-independent ramification order is available (see
 `Jacobians.Discharge.Manifold.MeromorphicAt`). -/
-def degreeStub {ω : WithTop ℕ∞}
+def degreeIndicator {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -111,28 +113,28 @@ def degreeStub {ω : WithTop ℕ∞}
 
 /-- The degree convention from challenge item 9: a constant map has degree
 zero. Holds unconditionally for the indicator stub. -/
-lemma degreeStub_const {ω : WithTop ℕ∞}
+lemma degreeIndicator_const {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (c : Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (fun _ : X => c)) :
-    degreeStub (fun _ : X => c) hf = 0 := by
-  unfold degreeStub
+    degreeIndicator (fun _ : X => c) hf = 0 := by
+  unfold degreeIndicator
   simp [isConstantMap_const]
 
 /-- Stub-level upper bound: under the indicator implementation, the degree
 is at most `1`. This bound disappears once the regular-value definition
 lands; it is recorded here so that downstream consumers can detect the stub
 regime and refuse to depend on a tight numerical degree. -/
-lemma degreeStub_le_one {ω : WithTop ℕ∞}
+lemma degreeIndicator_le_one {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    degreeStub f hf ≤ 1 := by
-  unfold degreeStub
+    degreeIndicator f hf ≤ 1 := by
+  unfold degreeIndicator
   split_ifs <;> simp
 
 end Manifold

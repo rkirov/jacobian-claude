@@ -21,7 +21,7 @@ one-step composition: pull `h_deriv` out of `w.is_regular` at the given
 preimage point and feed it into the ZZ169 builder.
 
 This is the supplier feeding the `h_sheets` hypothesis of
-`Jacobians.Discharge.h_lc_holds_for_subset_of_localSheets_supplier`
+`Jacobians.Discharge.fibreCard_isLocallyConstant_on_compl_of_localSheets`
 (`Manifold/HLcUnconditional.lean`) on the regular-value side of any
 `Cᶜ` decomposition where `C` contains the critical values.
 

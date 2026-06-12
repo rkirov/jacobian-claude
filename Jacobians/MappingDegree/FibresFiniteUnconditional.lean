@@ -6,11 +6,13 @@ Authors: Bryan Sanchez
 import Jacobians.MappingDegree.ClopennessOfLocallyConstDischarge
 
 
-/-! # Unconditional `fibres_finite_statement`
+/-! # Fibres of a non-constant analytic map are finite
 
-ZZ47 closed `ClopennessOfLocallyConstHypothesis` unconditionally. ZZ46
-reduced `fibres_finite_statement` to that hypothesis. Composing the two
-gives an unconditional discharge of the first `Degree` statement. -/
+`clopennessOfLocallyConst_holds` closed
+`ClopennessOfLocallyConstHypothesis` unconditionally;
+`fibres_finite_statement_holds_of_clopennessOfLocallyConst` reduced
+`fibres_finite_statement` to that hypothesis. Composing the two gives the
+first `Degree` statement with no remaining hypotheses. -/
 
 @[expose] public section
 
@@ -23,10 +25,12 @@ namespace Degree
 
 universe u v
 
-/-- **Unconditional `fibres_finite_statement`.** Direct composition of
-`fibres_finite_statement_holds_of_clopennessOfLocallyConst` (ZZ46) with
-`clopennessOfLocallyConst_holds` (ZZ47). -/
-theorem fibres_finite_statement_unconditional
+/-- **Every fibre of a non-constant analytic map between compact connected
+complex 1-manifolds is finite** (`fibres_finite_statement`, with no
+remaining hypotheses). Direct composition of
+`fibres_finite_statement_holds_of_clopennessOfLocallyConst` with
+`clopennessOfLocallyConst_holds`. -/
+theorem fibres_finite
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]

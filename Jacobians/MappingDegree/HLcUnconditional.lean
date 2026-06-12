@@ -6,11 +6,11 @@ Authors: Bryan Sanchez
 import Jacobians.MappingDegree.HurwitzPatchingDataConstruction
 
 
-/-! # Discharge of `h_lc` via ZZ153 ∘ ZZ157 (ZZ158)
+/-! # Locally-constant fibre cardinality from local sheets
 
-ZZ155 (`fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo` in
-`FibreCardWellDefinedAtRegular.lean`) consumes a hypothesis `h_lc` of the
-shape
+`fibre_card_well_defined_at_regular_holds_of_locallyConstant_preconnected`
+(`FibreCardWellDefinedAtRegular.lean`) consumes a local-constancy hypothesis
+of the shape
 
 ```
 ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ IsConstantMap f →
@@ -24,29 +24,22 @@ locally-constant fibre cardinality on `R`. Concretely:
 
 * `fibreCard_isLocallyConstant_on_subset_of_localSheets` — for every
   `y₀ ∈ R`, given `LocalSheetData f y₀ x` for every preimage `x` of `y₀`
-  and finiteness of the fibre, ZZ157 (`HurwitzPatchingData.ofLocalSheets`)
-  packages the patching data and ZZ153
-  (`fibreCard_isLocallyConstant_on_subset_of_pointwiseHurwitz`) reads off
+  and finiteness of the fibre, `HurwitzPatchingData.ofLocalSheets`
+  packages the patching data and
+  `fibreCard_isLocallyConstant_on_subset_of_pointwiseHurwitz` reads off
   local constancy of `(f ⁻¹' {·}).ncard` on the subtype `R`.
 
-* `h_lc_holds_for_subset_of_localSheets_supplier` — the parameterised
-  ZZ155-shape `h_lc` for a *fixed* candidate critical-value set
-  `C : Set Y`, conditional on a `LocalSheetData` supplier on `Cᶜ`.
+* `fibreCard_isLocallyConstant_on_compl_of_localSheets` — the same shape
+  for a *fixed* candidate critical-value set `C : Set Y`, conditional on a
+  `LocalSheetData` supplier on `Cᶜ`.
 
 The outer hypothesis (existence of per-fibre-point `LocalSheetData` on
-the regular subset) is the analytic content that ZZ152
-(`AnalyticAt.exists_local_biholomorphism`) supplies in chart-flat
-coordinates: a separate supplier chip transports that witness from `ℂ → ℂ`
-charts back to `f : X → Y` via the analytic atlases of `X` and `Y`. This
-chip leaves that supplier as a hypothesis and discharges the
-*ZZ153 ∘ ZZ157* structural skeleton above it.
-
-## Anti-cheat
-
-* No `axiom`, no gaps.
-* No signature change to any pre-existing definition or theorem.
-* Adds one new file, imported into the manifest.
--/
+the regular subset) is the analytic content that
+`AnalyticAt.exists_local_biholomorphism` supplies in chart-flat
+coordinates: `LocalSheetDataFromContMDiff.lean` transports that witness
+from `ℂ → ℂ` charts back to `f : X → Y` via the analytic atlases of `X`
+and `Y`. This file leaves that supplier as a hypothesis and discharges the
+structural skeleton above it. -/
 
 @[expose] public section
 
@@ -65,8 +58,8 @@ Given `f : X → Y` continuous with `X` compact T2 and `Y` T2, a subset
 fibre-cardinality function `fun y : R => (f ⁻¹' {y.val}).ncard` is locally
 constant.
 
-This is `HurwitzPatchingData.ofLocalSheets` (ZZ157) chained into
-`fibreCard_isLocallyConstant_on_subset_of_pointwiseHurwitz` (ZZ153). -/
+This is `HurwitzPatchingData.ofLocalSheets` chained into
+`fibreCard_isLocallyConstant_on_subset_of_pointwiseHurwitz`. -/
 theorem fibreCard_isLocallyConstant_on_subset_of_localSheets
     {X : Type u} {Y : Type v}
     [TopologicalSpace X] [T2Space X] [CompactSpace X]
@@ -87,26 +80,21 @@ theorem fibreCard_isLocallyConstant_on_subset_of_localSheets
   -- Step 2: ZZ153 reads off local-constancy on the subtype R.
   exact fibreCard_isLocallyConstant_on_subset_of_pointwiseHurwitz f R h_pkg
 
-/-- **`h_lc`-shape for a *fixed* candidate set `C`, from a `LocalSheetData`
+/-- **Locally-constant fibre cardinality on `Cᶜ`, from a `LocalSheetData`
 supplier on `Cᶜ`.**
 
-This is the canonical instance of the ZZ155 hypothesis `h_lc` at a
-specific `C : Set Y`: when `C` is large enough that the local-biholomorphism
-witnesses (`LocalSheetData`) are available on every point of `Cᶜ`, the
-fibre cardinality is locally constant on the regular subtype.
+When `C` is large enough that the local-biholomorphism witnesses
+(`LocalSheetData`) are available at every point of `Cᶜ`, the fibre
+cardinality is locally constant on the regular subtype `Cᶜ`.
 
 The supplier hypothesis `h_sheets` is satisfied when `C ⊇ critical_values f`
-(where critical values are the f-images of points where the local
+(where critical values are the `f`-images of points where the local
 multiplicity exceeds 1): on the complement, the analytic local normal form
 is `z ↦ z` (multiplicity 1), and `AnalyticAt.exists_local_biholomorphism`
-(ZZ152) yields the open partial homeomorphism that is exactly a
-`LocalSheetData`. The transport from chart-flat `ℂ → ℂ` to `f : X → Y` is
-the analytic content packaged by a separate supplier chip.
-
-This wrapper exposes the ZZ155-compatible per-`C` shape; the outer
-universal-`C` quantifier of ZZ155's hypothesis is satisfied at every
-specific `C` for which the `LocalSheetData` supplier is available. -/
-theorem h_lc_holds_for_subset_of_localSheets_supplier
+yields the open partial homeomorphism that is exactly a `LocalSheetData`.
+The transport from chart-flat `ℂ → ℂ` to `f : X → Y` is supplied by
+`LocalSheetDataFromContMDiff.lean`. -/
+theorem fibreCard_isLocallyConstant_on_compl_of_localSheets
     {X : Type u} {Y : Type v}
     [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [TopologicalSpace Y] [T2Space Y]

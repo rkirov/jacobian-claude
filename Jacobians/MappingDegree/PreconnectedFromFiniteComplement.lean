@@ -42,7 +42,7 @@ universe u
 (the manifold-lift content `(M1)`), preconnectedness follows.
 
 Used by `RegularSubsetPreconnected.lean`'s `h_topo` parameter via the
-convenience wrapper `h_topo_of_h_path` below. -/
+convenience wrapper `isPreconnected_compl_of_isPathConnected_compl` below. -/
 theorem isPreconnected_compl_finite_of_isPathConnected
     {Y : Type u} [TopologicalSpace Y] [T1Space Y]
     {C : Set Y} (_hC : C.Finite)
@@ -53,10 +53,10 @@ theorem isPreconnected_compl_finite_of_isPathConnected
   · have hne : (Cᶜ : Set Y).Nonempty := Set.nonempty_iff_ne_empty.mpr h
     exact (h_path hne).isConnected.isPreconnected
 
-/-- **Convenience composition.** Provides the `h_topo` shape that
-`RegularSubsetPreconnected.lean`'s reduction consumes, conditional on
-the manifold-lift path-connectedness `h_path`. -/
-theorem h_topo_of_h_path
+/-- **Convenience composition.** If the complement of every finite set is
+path-connected (when nonempty), then the complement of every finite set is
+preconnected — the shape consumed by `RegularSubsetPreconnected.lean`. -/
+theorem isPreconnected_compl_of_isPathConnected_compl
     {Y : Type u} [TopologicalSpace Y] [T1Space Y]
     (h_path : ∀ C : Set Y, C.Finite → (Cᶜ : Set Y).Nonempty →
       IsPathConnected (Cᶜ : Set Y)) :

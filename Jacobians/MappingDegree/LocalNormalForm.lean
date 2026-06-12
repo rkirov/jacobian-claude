@@ -33,7 +33,7 @@ What is **proven** in this file:
 
 1. `localOrder I f x : ℤ` — a structural rename of
    `MMeromorphicOn.orderFun I f x`. Definitionally equal; serves as the named
-   replacement for the `degreeStub` indicator in `LocalMultiplicity.lean`.
+   replacement for the `degreeIndicator` indicator in `LocalMultiplicity.lean`.
 2. `localOrder_eq_orderFun` — the structural identity.
 3. `localOrder_eq_zero_iff` — under the no-germ-zero hypothesis, vanishing
    of `localOrder` matches vanishing of `mmeromorphicOrderAt`.
@@ -410,7 +410,7 @@ hypothesis: if the integer order is nonzero, its absolute value is `≥ 1`.
 This is the only piece of R3 that does not require classical analytic input;
 it is purely arithmetic on `ℤ`. We prove it here so that `ResidueTheorem.lean`
 can route through `localOrder` rather than hand-rolling the same statement. -/
-theorem r3_natAbs_ge_one_of_ne_zero
+theorem one_le_natAbs_of_ne_zero
     (k : ℤ) (hk : k ≠ 0) : k.natAbs ≥ 1 := by
   rcases Int.natAbs_pos.mpr hk with h
   exact h

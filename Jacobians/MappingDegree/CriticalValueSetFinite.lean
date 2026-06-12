@@ -9,7 +9,7 @@ import Jacobians.MappingDegree.CriticalValuesFiniteGeneral
 
 This file (the **zzCritFin** chip) discharges the **`h_critical`** leg of the
 `h_pkg` packaging consumed by
-`fibre_card_well_defined_at_regular_holds_of_h_pkg` in
+`fibre_card_well_defined_at_regular_holds_of_finiteCriticalValues` in
 `Manifold/HurwitzWellDefinedUnconditionalTopo.lean`:
 
 ```
@@ -120,9 +120,9 @@ private lemma injOn_f_nhds_of_injOn_chart_pullback
 compact connected complex 1-manifolds, the set of critical values is finite
 and contains no value of any `RegularValueWitnessReg f`.
 
-This is the `h_critical` ingredient of the `h_pkg` packaging in
-`HurwitzWellDefinedUnconditionalTopo.fibre_card_well_defined_at_regular_holds_of_h_pkg`.
--/
+This is the `h_critical` ingredient of the `h_pkg` packaging consumed by
+`fibre_card_well_defined_at_regular_holds_of_finiteCriticalValues`
+(`HurwitzWellDefinedUnconditionalTopo.lean`). -/
 theorem critical_value_set_finite
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]

@@ -211,14 +211,14 @@ theorem localKFoldMultiplicity_preimage_card_of_substitution_one
 
 /-- **Closed-ball convenience corollary.**
 
-The brief's signature shape: from analyticity of `g` on `closedBall x₀ R`
-plus a `k = 1` substitution bundle (which here is just
-`deriv g x₀ ≠ 0`), conclude the `1`-fold preimage count.
+From analyticity of `g` on `closedBall x₀ R` plus a `k = 1` substitution
+bundle (which here is just `deriv g x₀ ≠ 0`), conclude the `1`-fold
+preimage count.
 
 This is *exactly* `localMultiplicityOne_preimage_card_on_closedBall`
-(ZZ74) re-exported through the bundle, demonstrating the bundle's
-non-degeneracy at `k = 1`. -/
-theorem localKFoldMultiplicity_preimage_card_one_unconditional
+re-exported through the bundle, demonstrating the bundle's non-degeneracy
+at `k = 1`. -/
+theorem localKFoldMultiplicity_preimage_card_one
     {g : ℂ → ℂ} {x₀ : ℂ} {R : ℝ} (hR : 0 < R)
     (h_an : AnalyticOnNhd ℂ g (Metric.closedBall x₀ R))
     (hd : deriv g x₀ ≠ 0) :

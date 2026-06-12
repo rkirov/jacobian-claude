@@ -217,7 +217,7 @@ theorem toRiemannSphere_not_isConstant_of_div_ne_zero {X : Type*} [TopologicalSp
   exact not_not.mp fun hx => h ⟨x, hx⟩
 
 /-- **All fibres of `F = toRiemannSphere` are finite** for a non-constant `f` (`f.div ≠ 0`).
-Direct from the unconditional finite-fibres theorem (`fibres_finite_statement_unconditional`)
+Direct from the unconditional finite-fibres theorem (`fibres_finite`)
 applied to the ContMDiff sphere map (`contMDiff_toRiemannSphere`), using the non-constancy bridge.
 -/
 theorem fibre_finite_of_div_ne_zero {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
@@ -225,7 +225,7 @@ theorem fibre_finite_of_div_ne_zero {X : Type*} [TopologicalSpace X] [T2Space X]
     (f : MeromorphicFunction X)
     (hnc : (f.div : Divisor X) ≠ 0) (w : RiemannSphere) :
     (f.toRiemannSphere ⁻¹' {w}).Finite :=
-  Jacobians.Discharge.ContMDiff.Degree.fibres_finite_statement_unconditional
+  Jacobians.Discharge.ContMDiff.Degree.fibres_finite
     f.toRiemannSphere f.contMDiff_toRiemannSphere
     (toRiemannSphere_not_isConstant_of_div_ne_zero f hnc) w
 

@@ -9,8 +9,8 @@ import Jacobians.MappingDegree.RegularSubsetPreconnected
 
 /-! # Hurwitz constant-card, staged on `h_path` (ZZ160, ZZ172-corrected)
 
-Compose ZZ155 (`fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo`)
-with ZZ159 (`h_topo_of_h_path`) so that the *only* topological residual
+Compose ZZ155 (`fibre_card_well_defined_at_regular_holds_of_locallyConstant_preconnected`)
+with ZZ159 (`isPreconnected_compl_of_isPathConnected_compl`) so that the *only* topological residual
 exposed at the headline is the manifold-lift content `(M1)`:
 
 ```
@@ -59,24 +59,19 @@ namespace Degree
 
 universe u v
 
-/-- **Hurwitz constant-card, staged on `h_path` (ZZ172-corrected).**
+/-- **Hurwitz constant fibre-cardinality, staged on path-connected
+complements.** Given:
 
-Given:
-
-* `h_path` — manifold-lift `(M1)`: the complement of any finite set in
-  `Y` is path-connected (when nonempty). This is the *single* named
-  topological residual; ZZ159 turns it into the `IsPreconnected`
-  hypothesis that ZZ134 consumes.
+* `h_path` — the complement of any finite set in `Y` is path-connected
+  (when nonempty); `isPreconnected_compl_of_isPathConnected_compl` turns
+  it into the `IsPreconnected` hypothesis consumed downstream.
 * `h_pkg` — per-`f` packaging: existence of a finite `C ⊆ Y` with
   - regular witnesses' values in `Cᶜ`,
   - locally-constant fibre-ncard on `Cᶜ`.
 
-Conclude the unfolded form of `fibre_card_well_defined_at_regular_statement`.
-
-When ZZ165 lands `h_path` unconditionally as a theorem of complex
-1-manifolds, this wrapper closes to a one-input statement parameterised
-only on the per-`f` analytic packaging. -/
-theorem fibre_card_well_defined_at_regular_holds_of_h_path
+Conclude the unfolded form of
+`fibre_card_well_defined_at_regular_statement`. -/
+theorem fibre_card_well_defined_at_regular_holds_of_pathConnected_compl
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -91,11 +86,11 @@ theorem fibre_card_well_defined_at_regular_holds_of_h_path
           (fun y : (Cᶜ : Set Y) => (f ⁻¹' {y.val}).ncard)) :
     ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ Jacobians.Discharge.IsConstantMap f →
       ∀ (w₁ w₂ : RegularValueWitnessReg f), w₁.card = w₂.card := by
-  -- Build h_topo from h_path via ZZ159.
+  -- Build the preconnectedness supplier from h_path.
   have h_topo : ∀ C : Set Y, C.Finite → IsPreconnected (Cᶜ : Set Y) :=
-    Jacobians.Discharge.Manifold.h_topo_of_h_path h_path
-  -- Apply ZZ155 (corrected): supply the bundled (R, h_supp, h_lc, h_conn).
-  apply fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo
+    Jacobians.Discharge.Manifold.isPreconnected_compl_of_isPathConnected_compl h_path
+  -- Supply the bundled (R, h_supp, h_lc, h_conn).
+  apply fibre_card_well_defined_at_regular_holds_of_locallyConstant_preconnected
   intro f hf hnc
   obtain ⟨C, hC_fin, h_supp, h_lc⟩ := h_pkg f hf hnc
   refine ⟨(Cᶜ : Set Y), h_supp, h_lc, ?_⟩

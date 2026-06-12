@@ -11,7 +11,7 @@ import Jacobians.LocalMultiplicity.LocalMultiplicity
 /-! # Degree of a holomorphic map between compact Riemann surfaces
 
 This file provides a *fibre-cardinality* candidate body for `ContMDiff.degree`,
-upgrading the constant-vs-non-constant indicator (`degreeStub`) toward the
+upgrading the constant-vs-non-constant indicator (`degreeIndicator`) toward the
 classical definition
 
 ```
@@ -39,11 +39,11 @@ Riemann surfaces, the following classical inputs are now formalised in the
 `Discharge/Manifold/` chain:
 
 1. **Properness with finite fibres.** Every fibre `f ⁻¹' {y}` is finite —
-   `fibres_finite_statement_unconditional` (discreteness via the identity
+   `fibres_finite` (discreteness via the identity
    theorem for analytic functions).
 2. **Existence of a regular value.** The critical values are finite
    (`criticalValues_finite_general`), so a regular value exists —
-   `regular_value_exists_reg_unconditional` produces a `RegularValueWitnessReg`.
+   `exists_regularValueWitnessReg` produces a `RegularValueWitnessReg`.
 3. **Constancy of fibre cardinality across regular values.** The Hurwitz
    patching / local-normal-form argument gives well-definedness —
    `degreeFiber_eq_card_of_regular_witness`.
@@ -65,7 +65,7 @@ file provides `Jacobians.Discharge.ContMDiff.degreeFiber` as a strict upgrade
 candidate that matches the same signature shape (no extra arguments at the
 call site beyond `f` and `hf`). When (1)–(3) above land in mathlib, the body
 of `_root_.ContMDiff.degree` in `Basic.lean` can be retargeted from
-`degreeStub` to `degreeFiber` without touching any caller.
+`degreeIndicator` to `degreeFiber` without touching any caller.
 
 ## Main definitions
 
@@ -77,11 +77,11 @@ of `_root_.ContMDiff.degree` in `Basic.lean` can be retargeted from
   otherwise `Classical.choice`-extracted fibre cardinality (falling back to
   `0` if no `RegularValueWitness` exists at the pin).
 
-## Compatibility with `degreeStub`
+## Compatibility with `degreeIndicator`
 
-* `degreeFiber_const` matches `degreeStub_const`: constant maps have degree 0.
+* `degreeFiber_const` matches `degreeIndicator_const`: constant maps have degree 0.
 * `degreeFiber f hf = 0` whenever no `RegularValueWitness f` exists — same as
-  `degreeStub` would give in the absence of any classical witness.
+  `degreeIndicator` would give in the absence of any classical witness.
 -/
 
 noncomputable section
@@ -217,7 +217,7 @@ the underlying one. -/
 
 /-! ## The degree
 
-A drop-in replacement for `degreeStub` that, when a `RegularValueWitnessReg`
+A drop-in replacement for `degreeIndicator` that, when a `RegularValueWitnessReg`
 is classically available, returns a *real* fibre cardinality rather than an
 indicator. -/
 
@@ -225,7 +225,7 @@ indicator. -/
 surfaces, as a fibre cardinality.
 
 * For constant `f`, returns `0` (matching the convention in challenge item 9
-  and `degreeStub`).
+  and `degreeIndicator`).
 * For non-constant `f`, returns the cardinality of *some* regular fibre,
   selected via `Classical.choice` on the existence of a `RegularValueWitnessReg`
   (a witness whose chosen value carries a chart-pullback-derivative-nonzero
@@ -271,7 +271,7 @@ lemma degreeFiber_const {ω : WithTop ℕ∞}
 
 /-- If no *regular* regular-value witness exists for a non-constant map at
 this pin, the fibre-degree falls back to `0`. (This is the same value
-`degreeStub` returns in the constant case, so callers that only know
+`degreeIndicator` returns in the constant case, so callers that only know
 "degree = 0 ⇒ ..." remain correct.) -/
 lemma degreeFiber_eq_zero_of_no_witness {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]

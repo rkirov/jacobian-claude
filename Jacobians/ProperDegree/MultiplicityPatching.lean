@@ -85,7 +85,7 @@ an analytic `v` with `v x₀ = 0`, `deriv v x₀ ≠ 0` and `g z - w₀ = v(z)^m
 disk.  For `w` near (but `≠`) `w₀`:
 
 * the equation `g z = w` has exactly `m` roots in a small ball
-  (`localKFoldMultiplicity_preimage_card_unconditional`);
+  (`localKFoldMultiplicity_preimage_card_of_localFactorization`);
 * **each root is simple**: at a root `z₁`, `v(z₁) ≠ 0` and `deriv v z₁ ≠ 0`
   (continuity, shrinking the ball), so `deriv g z₁ = m·v(z₁)^{m-1}·deriv v z₁ ≠ 0`,
   whence `meromorphicOrderAt (g − w) z₁ = 1` (`analyticOrderAt_eq_one_of_zero_deriv_ne_zero`);
