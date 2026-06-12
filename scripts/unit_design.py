@@ -9,7 +9,8 @@ RULES = [
     # 1. foundations
     (r'^(ChartedSpaceOfLocalHomeomorph|ULiftManifold|ManifoldIFT|Dolbeault\.RealManifold|Discharge\.Manifold\.ContMDiffOmegaAnalytic)$', 'surfaces-and-charts'),
     (r'^(ProjectiveLine)$', 'projective-line'),
-    (r'^(Abel|LinearSystem|MeromorphicLiouville|MeromorphicNFRepair)$', 'meromorphic-and-divisors'),
+    (r'^(Abel|LinearSystem|MeromorphicLiouville|MeromorphicNFRepair|MeromorphicInverse)$',
+     'meromorphic-and-divisors'),
     (r'^(HolomorphicForms|Genus|Montel(\..*)?)$', 'holomorphic-forms'),
     (r'^(LineIntegral|SmoothPath|SmoothPathCore|Primitive|CotangentCoeff|LoopOffBranch)$', 'paths-and-integrals'),
     # 2. degree theory
@@ -31,7 +32,8 @@ RULES = [
     # 6. residue calculus
     (r'^Dolbeault\.(Residue|FormCoeff|MittagLeffler)$', 'residue-calculus'),
     (r'^Dolbeault\.(PlanarCompactSupportStokes|PlanarHolomorphicChangeOfVariables|AnnulusResidue.*)$', 'planar-stokes-atoms'),
-    (r'^Dolbeault\.(ResidueTheoremStokes|ResidueLedgerTransport|ResidueStokes.*|PairFormResidueTheorem|OmegaFactorization)$', 'residue-theorem'),
+    (r'^Dolbeault\.(ResidueTheoremStokes|ResidueTheoremFormFn|ResidueLedgerTransport|'
+     r'ResidueStokes.*|PairFormResidueTheorem|OmegaFactorization)$', 'residue-theorem'),
     # 7. canonical forms + Serre + RR
     (r'^Dolbeault\.(MeromorphicOneFormSystem|CanonicalForm.*|FormRemovableSingularity|SerreOmega0)$', 'canonical-forms'),
     (r'^Dolbeault\.(SerreDuality|SerreDualityPairing|DolbeaultLadder)$', 'serre-duality-cech'),
