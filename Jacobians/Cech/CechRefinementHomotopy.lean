@@ -49,25 +49,6 @@ variable {𝔙 𝔘 : FiniteCover X} {r r' : 𝔙.ι → 𝔘.ι}
 
 /-! ### The prism homotopy operators -/
 
-/-- The fine set `𝔙.U j` sits inside the coarse `(r,r')`-overlap `𝔘.U (r j) ⊓ 𝔘.U (r' j)` (both
-`r, r'` are refinements). The well-typedness witness for `prismK0`. -/
-theorem le_pair (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘 r') (j : 𝔙.ι) :
-    𝔙.U j ≤ 𝔘.U (r j) ⊓ 𝔘.U (r' j) :=
-  le_inf (hr j) (hr' j)
-
-/-- For `prismK1` on the pair `(a,b)` we restrict the coarse triple germs `h_{(r a, r' a, r' b)}`
-and `h_{(r a, r b, r' b)}` from their triple overlaps down to `𝔙.U a ⊓ 𝔙.U b`. The two containment
-witnesses: -/
-theorem tripleA_le (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘 r') (a b : 𝔙.ι) :
-    𝔙.U a ⊓ 𝔙.U b ≤ 𝔘.U (r a) ⊓ 𝔘.U (r' a) ⊓ 𝔘.U (r' b) :=
-  le_inf (le_inf (inf_le_left.trans (hr a)) (inf_le_left.trans (hr' a)))
-    (inf_le_right.trans (hr' b))
-
-theorem tripleB_le (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘 r') (a b : 𝔙.ι) :
-    𝔙.U a ⊓ 𝔙.U b ≤ 𝔘.U (r a) ⊓ 𝔘.U (r b) ⊓ 𝔘.U (r' b) :=
-  le_inf (le_inf (inf_le_left.trans (hr a)) (inf_le_right.trans (hr b)))
-    (inf_le_right.trans (hr' b))
-
 /-! ### The prism (chain-homotopy) identity -/
 
 /-! ### Descent to `H¹`: the two refinement maps agree -/

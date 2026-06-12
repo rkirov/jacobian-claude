@@ -56,15 +56,16 @@ Jacobians.Cech.CechComplex | Jacobians.Dolbeault.FiniteFamily.ctorIdx
 Jacobians.Cech.CechComplex | Jacobians.Dolbeault.FiniteFamily.mk.injEq
 Jacobians.Cech.CechComplex | Jacobians.Dolbeault.FiniteFamily.mk.sizeOf_spec
 Jacobians.Cech.CechComplex | Jacobians.Dolbeault.FiniteFamily.recOn
-Jacobians.Cech.CechComplex | Jacobians.Dolbeault.FiniteFamily.restrictToOpen_le_left
+Jacobians.Cech.CechComplex | Jacobians.Dolbeault.FiniteFamily.restrictToOpen
 Jacobians.Cech.CechComplex | Jacobians.Dolbeault.rawRestrictG.congr_simp
 Jacobians.Cech.CechRefinement | Jacobians.Dolbeault.FiniteCover.IsRefinement.comp
 Jacobians.Cech.CechRefinement | Jacobians.Dolbeault.FiniteCover.IsRefinement.id
 Jacobians.Cech.CechRefinement | Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC0.congr_simp
 Jacobians.Cech.CechRefinement | Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC1.congr_simp
 Jacobians.Cech.CechRefinement | Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC2.congr_simp
-Jacobians.Cech.CechRefinementHomotopy | Jacobians.Dolbeault.FiniteCover.IsRefinement.prismK0
-Jacobians.Cech.CechRefinementHomotopy | Jacobians.Dolbeault.FiniteCover.IsRefinement.prismK1
+Jacobians.Cech.CechRefinementHomotopy | Jacobians.Dolbeault.FiniteCover.IsRefinement.le_pair
+Jacobians.Cech.CechRefinementHomotopy | Jacobians.Dolbeault.FiniteCover.IsRefinement.tripleA_le
+Jacobians.Cech.CechRefinementHomotopy | Jacobians.Dolbeault.FiniteCover.IsRefinement.tripleB_le
 Jacobians.Cech.CechSection | Jacobians.Dolbeault.openIncl.congr_simp
 Jacobians.Cech.CechSection | Jacobians.Dolbeault.openIncl_val
 Jacobians.Cech.ChartDiskCover | Jacobians.Dolbeault.ChartDiskCover.ctorIdx
@@ -115,7 +116,6 @@ Jacobians.Finiteness.CechModelHolomorphic | Jacobians.Dolbeault.HolomorphicDiskO
 Jacobians.Finiteness.CechModelHolomorphic | Jacobians.Dolbeault.HolomorphicDiskOverlapData.mk.sizeOf_spec
 Jacobians.Finiteness.CechModelHolomorphic | Jacobians.Dolbeault.HolomorphicDiskOverlapData.recOn
 Jacobians.Finiteness.CechModelHolomorphic | Jacobians.Dolbeault.chartCoverHolomorphicDiskOverlapData
-Jacobians.Finiteness.CechRefinementLeray | Jacobians.Dolbeault.FiniteCover.IsRefinement.overlapFamily
 Jacobians.Finiteness.ChartDiskFiniteness | Jacobians.Dolbeault.ChartDiskCover.BallSplitData.ctorIdx
 Jacobians.Finiteness.ChartDiskFiniteness | Jacobians.Dolbeault.ChartDiskCover.BallSplitData.g_smooth
 Jacobians.Finiteness.ChartDiskFiniteness | Jacobians.Dolbeault.ChartDiskCover.BallSplitData.mk.injEq

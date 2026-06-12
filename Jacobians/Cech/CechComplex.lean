@@ -57,13 +57,6 @@ this predicate; dropping it makes `LerayCoverExists.exists_lerayCover` unconditi
 def IsLeray (𝔘 : FiniteFamily X) : Prop :=
   ∀ i : 𝔘.ι, SimplyConnectedSpace ↥(𝔘.U i)
 
-/-- Restrict a finite family to an open subset `W`, replacing each `U_i` by `U_i ∩ W`.  The result
-is still a finite family on `X`; it generally covers only `W`, not all of `X`. -/
-def restrictToOpen (𝔘 : FiniteFamily X) (W : Opens X) : FiniteFamily X where
-  ι := 𝔘.ι
-  fintype := inferInstance
-  U i := 𝔘.U i ⊓ W
-
 /-! ### Cochain spaces — germ-classes (`MGerm`), the junk-free sections (no junk quotient). -/
 
 /-- 0-cochains: a germ-class on each `↥(U i)`. -/
