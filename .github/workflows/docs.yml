@@ -60,8 +60,7 @@ jobs:
           cp -r docs/* _site/                           # units.html, proposal, reviewer docs
           cp -r site/_out/html-multi _site/exposition
           cp -r docbuild/.lake/build/doc _site/api 2>/dev/null || echo "api docs absent (non-fatal)" 
-          cp _site/exposition/index.html _site/index.html 2>/dev/null || \
-            printf '<meta http-equiv="refresh" content="0; url=exposition/">' > _site/index.html
+          printf '<meta http-equiv="refresh" content="0; url=exposition/">' > _site/index.html
           touch _site/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
