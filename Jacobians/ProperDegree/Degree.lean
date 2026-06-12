@@ -10,9 +10,7 @@ Original code MIT-licensed by Bryan Sanchez (2026); audit verifies
 `#print axioms` returns only `[propext, Classical.choice, Quot.sound]`.
 Axiom-verified clean (`#print axioms` returns only `[propext, Classical.choice, Quot.sound]`).
 -/
-import Jacobians.MappingDegree.RegularValueExistsRegUnconditional
 import Jacobians.MappingDegree.DegreeWellDefined
-
 open scoped Manifold ContDiff
 
 namespace Jacobians

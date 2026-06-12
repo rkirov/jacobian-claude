@@ -5,8 +5,6 @@ Authors: Rado Kirov
 -/
 import Jacobians.SphereTopology.SphereSimplyConnected
 import Mathlib.Topology.Subpath
-import Mathlib.Topology.MetricSpace.Pseudo.Lemmas
-
 /-!
 # Two-open Seifert–van Kampen for `π₁`, and `S²` simply connected (unconditional)
 

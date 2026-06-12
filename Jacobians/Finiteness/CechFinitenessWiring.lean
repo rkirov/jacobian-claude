@@ -20,9 +20,7 @@
     * `finiteDimensional_cechH1_wired` — the finiteness node
       (`DolbeaultLadder.finiteDimensional_cechH1`).
 -/
-import Jacobians.Finiteness.CechModelBase
 import Jacobians.Finiteness.CechFinitenessDtwist
-
 open Jacobians.Dolbeault.CechFiniteness ContinuousLinearMap
 open BoundedContinuousFunction
 open scoped Manifold ContDiff Topology

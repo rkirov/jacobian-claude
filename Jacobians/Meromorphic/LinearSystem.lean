@@ -12,9 +12,7 @@
   `MeromorphicFunction X` (`Module ℂ`); `orderW` and its faithfulness/identity theorems; and the
   linear system `linearSystem D`, the germ-zero junk submodule `germZeroSubmodule`, and `lDim`.
 -/
-import Jacobians.Meromorphic.Abel
 import Jacobians.Meromorphic.MeromorphicLiouville
-
 open scoped Manifold ContDiff Topology
 
 namespace Jacobians

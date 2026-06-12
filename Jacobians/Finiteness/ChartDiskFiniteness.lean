@@ -36,13 +36,10 @@
   `ChartDiskFinitenessComplete.lean` (`finiteDimensional_cechH1_chartDisk_complete`, complete and
   axiom-clean).
 -/
+import Jacobians.Dbar.DbarOpenDisk
+import Jacobians.DolbeaultComparison.GoodCover
 import Jacobians.Finiteness.CechModelHolomorphic
 import Jacobians.Finiteness.CechModelManifold
-import Jacobians.Dbar.DbarDiskCohomology
-import Jacobians.Dbar.CechDiskAcyclic
-import Jacobians.DolbeaultComparison.GoodCover
-import Jacobians.Dbar.DbarOpenDisk
-
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Metric Complex Filter ContinuousLinearMap

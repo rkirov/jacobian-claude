@@ -18,12 +18,9 @@ injective ⟹ `[σ] = 0`.
 
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 19.9–19.10 (pp. 155–157).
 -/
+import Jacobians.Abel.AbelPairingStokes
 import Jacobians.Abel.AbelPairingPositivity
-import Jacobians.DolbeaultComparison.DolbeaultComparisonEquiv
 import Jacobians.H1Genus.CechH1Genus
-import Jacobians.DolbeaultComparison.LerayCoverExists
-import Jacobians.Finiteness.SkyscraperProductWitness
-
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false

@@ -12,11 +12,7 @@
   Riemann inequality and `exists_nonconstant_meromorphic`, which the tail route's pole-budget
   bound consumes.
 -/
-import Jacobians.Cech.CechH0
-import Jacobians.Finiteness.CohomologicalRR
-import Jacobians.SerrePairing.SerreDualityPairing
 import Jacobians.Finiteness.CechFinitenessWiring
-
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 

@@ -3,9 +3,8 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
-import Jacobians.LocalMultiplicity.MeromorphicAt
+import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Geometry.Manifold.ContMDiff.Defs
-
 set_option autoImplicit true
 
 

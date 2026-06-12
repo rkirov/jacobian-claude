@@ -1,9 +1,6 @@
-import Jacobians.JacobianConstruction.PeriodLattice
-import Mathlib.Analysis.Meromorphic.Basic
-import Mathlib.Analysis.Meromorphic.Order
-import Mathlib.Data.Finsupp.Weight
 import Mathlib.Topology.LocallyFinsupp
-
+import Jacobians.JacobianConstruction.PeriodLattice
+import Mathlib.Data.Finsupp.Weight
 /-!
 # Meromorphic functions, divisors, and the Abel–Jacobi map
 

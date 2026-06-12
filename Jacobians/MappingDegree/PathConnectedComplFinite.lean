@@ -29,19 +29,13 @@ Strategy:
 
 No `axiom`, no gaps.
 -/
+import Jacobians.MappingDegree.ChartLocalDetour
+import Jacobians.MappingDegree.ChartOverlapAvoidanceFull
 import Jacobians.MappingDegree.ChartedSpaceLocPathConnected
 import Jacobians.MappingDegree.ConnectedManifoldPathConnected
-import Jacobians.MappingDegree.ChartLocalDetour
 import Jacobians.MappingDegree.IsPathConnectedBallMinusCountable
-import Jacobians.MappingDegree.ChartRestrictionToBall
 import Jacobians.MappingDegree.PathSubdivisionByBallCharts
-import Jacobians.MappingDegree.ChartOverlapAvoidanceFull
-import Mathlib.Analysis.Complex.Basic
 import Mathlib.Geometry.Manifold.IsManifold.Basic
-import Mathlib.Geometry.Manifold.ContMDiff.Defs
-import Mathlib.Topology.Connected.PathConnected
-import Mathlib.Topology.Connected.LocPathConnected
-
 open scoped Manifold Topology ContDiff
 
 noncomputable section

@@ -5,14 +5,8 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.HurwitzPatchingDataConstruction
 import Jacobians.Surface.ContMDiffOmegaAnalytic
-import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
-import Mathlib.Analysis.Calculus.FDeriv.Analytic
-import Mathlib.Analysis.Calculus.Deriv.Inverse
 import Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv
-import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Analytic
-import Mathlib.Geometry.Manifold.ContMDiff.Defs
-import Mathlib.Geometry.Manifold.IsManifold.ExtChartAt
-
+import Mathlib.Analysis.InnerProductSpace.Basic
 set_option autoImplicit true
 
 /-! # `LocalSheetData` from `ContMDiffAt … ω` + chart-pullback non-degenerate derivative (ZZ169)

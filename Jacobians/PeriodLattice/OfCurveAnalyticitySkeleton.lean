@@ -3,12 +3,8 @@ Copyright (c) 2026.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Jacobians.JacobianConstruction.PeriodLattice
-import Jacobians.Surface.ContMDiffOmegaAnalytic
-import Jacobians.Forms.Compactness
 import Mathlib.Analysis.Complex.HasPrimitives
-import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
-
 /-!
 # Analyticity skeleton for `ofCurve_contMDiff`
 

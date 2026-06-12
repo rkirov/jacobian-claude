@@ -38,11 +38,8 @@
   `DolbeaultComparisonProof`/`Inverse`/`Equiv`) and the shrinking-level PoU `shrinkPoU`
   (`ChartDiskLeray`).
 -/
-import Jacobians.Finiteness.ChartDiskFiniteness
-import Jacobians.Finiteness.ChartDiskLeray
-import Jacobians.Finiteness.CechModelHolomorphicDelta
 import Jacobians.Finiteness.CechRefinementInjective
-
+import Jacobians.Finiteness.ChartDiskLeray
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Metric Complex Filter ContinuousLinearMap

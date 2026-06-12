@@ -5,10 +5,7 @@ Authors: Rado Kirov
 -/
 import Jacobians.ProjectiveLine
 import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
-import Mathlib.Analysis.Convex.Contractible
 import Mathlib.Analysis.Normed.Module.Connected
-import Mathlib.Topology.Compactification.OnePoint.Basic
-
 /-!
 # `S²` is simply connected — reachable scaffolding for `#1b`
 

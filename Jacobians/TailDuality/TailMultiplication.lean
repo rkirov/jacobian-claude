@@ -21,9 +21,7 @@ Contents:
   `−E ≤ ord ψ + (−D)` pointwise — "coefficients below a level only see the complementary tail".
 
 The `H¹`-level maps and the surjectivity assembly (Forster 17.9 / Miranda 3.4) build on this. -/
-import Jacobians.TailDuality.TailDualityInjective
-import Jacobians.Meromorphic.MeromorphicInverse
-
+import Jacobians.TailDuality.TailResidue
 open scoped Manifold ContDiff Topology
 open Filter Set
 open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace

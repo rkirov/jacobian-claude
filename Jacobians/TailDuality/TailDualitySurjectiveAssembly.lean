@@ -26,6 +26,7 @@ and Miranda Lemma 3.6 (`omegaOrderBounded_of_vanishing`) downgrades the order bo
 Headlines: `omegaDualMap_surjective` and the dimension identity
 `h1TailDim_eq_lDim_canonical_sub : h¹(D) = l(K − D)`.
 -/
+import Jacobians.LaurentTail.RiemannRochFirstForm
 import Jacobians.TailDuality.TailDualitySurjective
 import Jacobians.ProperDegree.LinearSystemDegree
 

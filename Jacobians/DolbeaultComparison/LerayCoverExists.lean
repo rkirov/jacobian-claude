@@ -29,10 +29,8 @@
     * `chartDiskCover_simplyConnected` / `exists_chartDiskCover` / `exists_lerayCover` — every
       set of the cover is simply connected, so the cover is Leray, unconditionally.
 -/
-import Jacobians.Cech.CechComplex
 import Jacobians.Cech.ChartDiskCover
 import Mathlib.Analysis.Normed.Module.Connected
-
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 

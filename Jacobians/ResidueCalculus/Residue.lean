@@ -22,8 +22,7 @@
       holomorphic-difference property that makes `Res` well-defined on Mittag–Leffler cochains).
 -/
 import Mathlib.Analysis.Complex.CauchyIntegral
-import Mathlib.Analysis.Meromorphic.Order
-
+import Mathlib.Analysis.Meromorphic.Basic
 open Complex Metric Filter Topology
 open scoped Real
 

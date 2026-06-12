@@ -22,8 +22,7 @@
   `ℝ`-linear equivalence) and the `IsLeray`-free `GoodCover.cechH1_dolbeault_comparison'`.
 -/
 import Jacobians.DolbeaultComparison.DolbeaultH01
-import Jacobians.Cech.CechComplex
-
+import Mathlib.Topology.Algebra.Module.PerfectSpace
 open scoped Manifold ContDiff Bundle
 
 -- Same permissive transparency as `RealForms`/`DolbeaultH01`: without it the `ContMDiffSection`

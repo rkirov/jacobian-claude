@@ -7,12 +7,9 @@ topological space charted on `ℂ`. Mathlib provides
 `ChartedSpace.locPathConnectedSpace` to lift across charts; this file just
 wires them together for `ℂ` so downstream chips can use `inferInstance`.
 -/
-import Mathlib.Topology.Algebra.Module.LocallyConvex
-import Mathlib.Analysis.LocallyConvex.WithSeminorms
-import Mathlib.Analysis.Normed.Module.Basic
-import Mathlib.Geometry.Manifold.ChartedSpace
 import Mathlib.Analysis.Complex.Basic
-
+import Mathlib.Analysis.LocallyConvex.WithSeminorms
+import Mathlib.Geometry.Manifold.ChartedSpace
 namespace Jacobians.Discharge.Manifold
 
 /-- `ℂ`, viewed as an ℝ-normed space, is locally path-connected. -/

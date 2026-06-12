@@ -13,34 +13,34 @@ Each unit ≈ one textbook chapter: a proposed directory under `Jacobians/`, a d
 |---|---|---|---|
 | 0 | **holomorphic-forms** | 11 | — |
 | 0 | **local-multiplicity** | 5 | — |
+| 0 | **surfaces-and-charts** | 6 | — |
+| 1 | **mapping-degree** | 49 | local-multiplicity, surfaces-and-charts |
 | 1 | **paths-and-integrals** | 7 | holomorphic-forms |
 | 1 | **residue-calculus** | 4 | holomorphic-forms |
-| 1 | **surfaces-and-charts** | 6 | holomorphic-forms |
-| 2 | **mapping-degree** | 49 | local-multiplicity, surfaces-and-charts |
+| 2 | **jacobian-construction** | 3 | mapping-degree, paths-and-integrals |
 | 2 | **projective-line** | 1 | paths-and-integrals |
-| 3 | **jacobian-construction** | 3 | mapping-degree, paths-and-integrals |
+| 3 | **meromorphic-and-divisors** | 6 | jacobian-construction |
+| 3 | **meromorphic-trace** | 5 | jacobian-construction, residue-calculus |
 | 3 | **sphere-topology** | 5 | projective-line |
-| 4 | **meromorphic-and-divisors** | 6 | jacobian-construction |
-| 4 | **meromorphic-trace** | 5 | jacobian-construction, residue-calculus |
-| 5 | **cech-cohomology** | 9 | meromorphic-and-divisors |
-| 5 | **form-trace-tower** | 1 | meromorphic-trace |
-| 6 | **dbar-solvability** | 11 | cech-cohomology |
-| 7 | **dolbeault-comparison** | 9 | dbar-solvability |
-| 7 | **planar-stokes-atoms** | 5 | dbar-solvability, residue-calculus |
-| 8 | **finiteness-and-chi** | 31 | dolbeault-comparison |
-| 9 | **canonical-forms** | 6 | finiteness-and-chi, residue-calculus |
-| 10 | **laurent-tails** | 8 | canonical-forms, meromorphic-trace |
-| 10 | **monodromy** | 5 | canonical-forms, sphere-topology |
-| 10 | **residue-theorem** | 8 | canonical-forms, planar-stokes-atoms |
-| 10 | **serre-duality-cech** | 4 | canonical-forms |
-| 11 | **abel-weak-solutions** | 6 | form-trace-tower, monodromy, planar-stokes-atoms |
-| 11 | **proper-map-degree** | 11 | monodromy |
-| 12 | **serre-duality-tails** | 11 | laurent-tails, proper-map-degree, residue-theorem, serre-duality-cech |
-| 13 | **cech-h1-genus** | 5 | serre-duality-tails |
-| 13 | **riemann-roch** | 1 | serre-duality-tails |
-| 14 | **abel-theorem** | 10 | abel-weak-solutions, cech-h1-genus |
-| 14 | **genus-zero-headline** | 1 | riemann-roch |
-| 15 | **period-lattice-rank** | 7 | abel-theorem |
+| 4 | **cech-cohomology** | 9 | meromorphic-and-divisors |
+| 4 | **form-trace-tower** | 1 | meromorphic-trace |
+| 5 | **dbar-solvability** | 11 | cech-cohomology |
+| 6 | **dolbeault-comparison** | 9 | dbar-solvability |
+| 6 | **planar-stokes-atoms** | 5 | dbar-solvability, residue-calculus |
+| 7 | **finiteness-and-chi** | 31 | dolbeault-comparison |
+| 8 | **canonical-forms** | 6 | finiteness-and-chi, residue-calculus |
+| 9 | **laurent-tails** | 8 | canonical-forms, meromorphic-trace |
+| 9 | **monodromy** | 5 | canonical-forms, sphere-topology |
+| 9 | **residue-theorem** | 8 | canonical-forms, planar-stokes-atoms |
+| 9 | **serre-duality-cech** | 4 | canonical-forms |
+| 10 | **abel-weak-solutions** | 6 | form-trace-tower, monodromy, planar-stokes-atoms |
+| 10 | **proper-map-degree** | 11 | monodromy |
+| 11 | **serre-duality-tails** | 11 | laurent-tails, proper-map-degree, residue-theorem, serre-duality-cech |
+| 12 | **cech-h1-genus** | 5 | serre-duality-tails |
+| 12 | **riemann-roch** | 1 | serre-duality-tails |
+| 13 | **abel-theorem** | 10 | abel-weak-solutions, cech-h1-genus |
+| 13 | **genus-zero-headline** | 1 | riemann-roch |
+| 14 | **period-lattice-rank** | 7 | abel-theorem |
 
 ## Units
 
@@ -64,6 +64,26 @@ Local theory at a point: analytic local factorization `z^k·unit`, derivative or
 
 **Members:** `LocalMultiplicity`, `LocalMultiplicity.AnalyticDerivOrder`, `LocalMultiplicity.AnalyticLocalFactorization`, `LocalMultiplicity.LocalMultiplicity`, `LocalMultiplicity.MeromorphicAt`
 
+### surfaces-and-charts  →  `Jacobians/Surface/`
+
+Riemann-surface foundations: charted spaces from local homeomorphisms, `ULift` transport of manifold structure, the holomorphic inverse function theorem on manifolds, and the underlying real 2-manifold of a Riemann surface.
+
+**Keystones:** `ManifoldIFT (holomorphic IFT)`; `chartedSpace-of-localHomeomorph constructors`
+
+**Builds on:** none (foundation)
+
+**Members:** `Surface`, `Surface.ChartedSpaceOfLocalHomeomorph`, `Surface.ContMDiffOmegaAnalytic`, `Surface.ManifoldIFT`, `Surface.RealManifold`, `Surface.ULiftManifold`
+
+### mapping-degree  →  `Jacobians/MappingDegree/`
+
+The mapping degree machine: regular values, critical-value finiteness, fibre counting, well-definedness of the degree (largest unit; contains the ported degree-well-definedness tree).
+
+**Keystones:** `ContMDiff.degree well-definedness engine`
+
+**Builds on:** local-multiplicity, surfaces-and-charts
+
+**Members:** `MappingDegree`, `MappingDegree.AnalyticContinuationGlobalization`, `MappingDegree.AnalyticFiberDiscrete`, `MappingDegree.AnalyticKthRoot`, `MappingDegree.ChartBallOffCentreWitnessDischarge`, `MappingDegree.ChartLocalDetour`, `MappingDegree.ChartOverlapAvoidanceFull`, `MappingDegree.ChartOverlapPropagationDischarge`, `MappingDegree.ChartPullbackDataConstruction`, `MappingDegree.ChartPullbackNotEventuallyConstDischarge`, `MappingDegree.ChartRestrictionToBall`, `MappingDegree.ChartedSpaceLocPathConnected`, `MappingDegree.ClopennessOfLocallyConstDischarge`, `MappingDegree.ConnectedManifoldPathConnected`, `MappingDegree.ConnectivityGlobalizationReduction`, `MappingDegree.CriticalSetDerivBridge`, `MappingDegree.CriticalSetDiscrete`, `MappingDegree.CriticalValueSetFinite`, `MappingDegree.CriticalValuesFiniteGeneral`, `MappingDegree.Degree`, `MappingDegree.DegreeWellDefined`, `MappingDegree.FibreCardLocallyConstantFromNormalForm`, `MappingDegree.FibreCardOnRegularSubset`, `MappingDegree.FibreCardWellDefinedAtRegular`, `MappingDegree.FibresFiniteAssembly`, `MappingDegree.FibresFiniteUnconditional`, `MappingDegree.HLcUnconditional`, `MappingDegree.HPkgUnconditional`, `MappingDegree.HurwitzPatchingDataConstruction`, `MappingDegree.HurwitzWellDefinedFromHPath`, `MappingDegree.HurwitzWellDefinedUnconditionalTopo`, `MappingDegree.IsPathConnectedBallMinusCountable`, `MappingDegree.LocalKFoldMultiplicity`, `MappingDegree.LocalKFoldMultiplicityFullyUnconditional`, `MappingDegree.LocalKFoldMultiplicityUnconditional`, `MappingDegree.LocalMultiplicityInvariance`, `MappingDegree.LocalNormalForm`, `MappingDegree.LocalSheetDataAtRegularValue`, `MappingDegree.LocalSheetDataFromContMDiff`, `MappingDegree.MeromorphicDivisor`, `MappingDegree.PathConnectedComplFinite`, `MappingDegree.PathSubdivisionByBallCharts`, `MappingDegree.PerChartNonConstancyReduction`, `MappingDegree.PreconnectedFromFiniteComplement`, `MappingDegree.RegularSubsetPreconnected`, `MappingDegree.RegularValueExistsRegUnconditional`, `MappingDegree.RegularValueExistsUnconditional`, `MappingDegree.RoucheBridge`, `MappingDegree.WithinChartWitnessReduction`
+
 ### paths-and-integrals  →  `Jacobians/Path/`
 
 Smooth paths and loops, path line integrals of 1-forms, primitives along paths, and perturbing loops off a finite bad set.
@@ -84,36 +104,6 @@ Planar residue calculus: `resAt`, Laurent coefficients of pair integrands, and M
 
 **Members:** `ResidueCalculus`, `ResidueCalculus.FormCoeff`, `ResidueCalculus.FormTracePrincipalPart`, `ResidueCalculus.Residue`
 
-### surfaces-and-charts  →  `Jacobians/Surface/`
-
-Riemann-surface foundations: charted spaces from local homeomorphisms, `ULift` transport of manifold structure, the holomorphic inverse function theorem on manifolds, and the underlying real 2-manifold of a Riemann surface.
-
-**Keystones:** `ManifoldIFT (holomorphic IFT)`; `chartedSpace-of-localHomeomorph constructors`
-
-**Builds on:** holomorphic-forms
-
-**Members:** `Surface`, `Surface.ChartedSpaceOfLocalHomeomorph`, `Surface.ContMDiffOmegaAnalytic`, `Surface.ManifoldIFT`, `Surface.RealManifold`, `Surface.ULiftManifold`
-
-### mapping-degree  →  `Jacobians/MappingDegree/`
-
-The mapping degree machine: regular values, critical-value finiteness, fibre counting, well-definedness of the degree (largest unit; contains the ported degree-well-definedness tree).
-
-**Keystones:** `ContMDiff.degree well-definedness engine`
-
-**Builds on:** local-multiplicity, surfaces-and-charts
-
-**Members:** `MappingDegree`, `MappingDegree.AnalyticContinuationGlobalization`, `MappingDegree.AnalyticFiberDiscrete`, `MappingDegree.AnalyticKthRoot`, `MappingDegree.ChartBallOffCentreWitnessDischarge`, `MappingDegree.ChartLocalDetour`, `MappingDegree.ChartOverlapAvoidanceFull`, `MappingDegree.ChartOverlapPropagationDischarge`, `MappingDegree.ChartPullbackDataConstruction`, `MappingDegree.ChartPullbackNotEventuallyConstDischarge`, `MappingDegree.ChartRestrictionToBall`, `MappingDegree.ChartedSpaceLocPathConnected`, `MappingDegree.ClopennessOfLocallyConstDischarge`, `MappingDegree.ConnectedManifoldPathConnected`, `MappingDegree.ConnectivityGlobalizationReduction`, `MappingDegree.CriticalSetDerivBridge`, `MappingDegree.CriticalSetDiscrete`, `MappingDegree.CriticalValueSetFinite`, `MappingDegree.CriticalValuesFiniteGeneral`, `MappingDegree.Degree`, `MappingDegree.DegreeWellDefined`, `MappingDegree.FibreCardLocallyConstantFromNormalForm`, `MappingDegree.FibreCardOnRegularSubset`, `MappingDegree.FibreCardWellDefinedAtRegular`, `MappingDegree.FibresFiniteAssembly`, `MappingDegree.FibresFiniteUnconditional`, `MappingDegree.HLcUnconditional`, `MappingDegree.HPkgUnconditional`, `MappingDegree.HurwitzPatchingDataConstruction`, `MappingDegree.HurwitzWellDefinedFromHPath`, `MappingDegree.HurwitzWellDefinedUnconditionalTopo`, `MappingDegree.IsPathConnectedBallMinusCountable`, `MappingDegree.LocalKFoldMultiplicity`, `MappingDegree.LocalKFoldMultiplicityFullyUnconditional`, `MappingDegree.LocalKFoldMultiplicityUnconditional`, `MappingDegree.LocalMultiplicityInvariance`, `MappingDegree.LocalNormalForm`, `MappingDegree.LocalSheetDataAtRegularValue`, `MappingDegree.LocalSheetDataFromContMDiff`, `MappingDegree.MeromorphicDivisor`, `MappingDegree.PathConnectedComplFinite`, `MappingDegree.PathSubdivisionByBallCharts`, `MappingDegree.PerChartNonConstancyReduction`, `MappingDegree.PreconnectedFromFiniteComplement`, `MappingDegree.RegularSubsetPreconnected`, `MappingDegree.RegularValueExistsRegUnconditional`, `MappingDegree.RegularValueExistsUnconditional`, `MappingDegree.RoucheBridge`, `MappingDegree.WithinChartWitnessReduction`
-
-### projective-line  →  `Jacobians/ProjectiveLine/`
-
-The Riemann sphere `ℙ¹` as the model compact Riemann surface.
-
-**Keystones:** `ProjectiveLine instances + genus ℙ¹ facts`
-
-**Builds on:** paths-and-integrals
-
-**Members:** `ProjectiveLine`
-
 ### jacobian-construction  →  `Jacobians/JacobianConstruction/`
 
 The Jacobian as a complex torus: the period lattice (ℤ-span of loop periods), period vectors, and the `ZLattice` quotient manifold machinery.
@@ -124,15 +114,15 @@ The Jacobian as a complex torus: the period lattice (ℤ-span of loop periods), 
 
 **Members:** `JacobianConstruction`, `JacobianConstruction.PeriodLattice`, `JacobianConstruction.ZLatticeQuotient`
 
-### sphere-topology  →  `Jacobians/SphereTopology/`
+### projective-line  →  `Jacobians/ProjectiveLine/`
 
-Topology of the 2-sphere: Van Kampen, simple connectivity, and the backward headline direction (homeomorphic-to-sphere ⇒ genus 0).
+The Riemann sphere `ℙ¹` as the model compact Riemann surface.
 
-**Keystones:** `SphereSimplyConnected`; `GenusZeroOfSphere`
+**Keystones:** `ProjectiveLine instances + genus ℙ¹ facts`
 
-**Builds on:** projective-line
+**Builds on:** paths-and-integrals
 
-**Members:** `SphereTopology`, `SphereTopology.GenusSphereBackward`, `SphereTopology.GenusZeroOfSphere`, `SphereTopology.SphereSimplyConnected`, `SphereTopology.VanKampen`
+**Members:** `ProjectiveLine`
 
 ### meromorphic-and-divisors  →  `Jacobians/Meromorphic/`
 
@@ -153,6 +143,16 @@ Surface-level trace of meromorphic functions/forms along a degree-d map and the 
 **Builds on:** jacobian-construction, residue-calculus
 
 **Members:** `MeromorphicTrace`, `MeromorphicTrace.MeromorphicTrace`, `MeromorphicTrace.TraceForm`, `MeromorphicTrace.TracePullback`, `MeromorphicTrace.TraceResidue`
+
+### sphere-topology  →  `Jacobians/SphereTopology/`
+
+Topology of the 2-sphere: Van Kampen, simple connectivity, and the backward headline direction (homeomorphic-to-sphere ⇒ genus 0).
+
+**Keystones:** `SphereSimplyConnected`; `GenusZeroOfSphere`
+
+**Builds on:** projective-line
+
+**Members:** `SphereTopology`, `SphereTopology.GenusSphereBackward`, `SphereTopology.GenusZeroOfSphere`, `SphereTopology.SphereSimplyConnected`, `SphereTopology.VanKampen`
 
 ### cech-cohomology  →  `Jacobians/Cech/`
 

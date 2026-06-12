@@ -1,6 +1,4 @@
 import Jacobians.Forms.Compactness
-import Mathlib.Topology.VectorBundle.Basic
-
 /-!
 # Montel path — chart-transition estimate
 

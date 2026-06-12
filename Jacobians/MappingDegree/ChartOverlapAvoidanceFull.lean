@@ -14,13 +14,7 @@ image is close to `(chartAt ℂ y) y` but not in the chart-image of the finite
 set `C`. The path is the pull-back of a straight segment in the chart ball,
 which lives entirely in the chart source ⊆ `U`.
 -/
-import Mathlib.Analysis.Complex.Basic
-import Mathlib.Geometry.Manifold.ChartedSpace
-import Mathlib.Topology.Connected.PathConnected
-import Mathlib.Topology.MetricSpace.Pseudo.Defs
-import Mathlib.Topology.OpenPartialHomeomorph.Basic
 import Jacobians.MappingDegree.ChartRestrictionToBall
-
 noncomputable section
 
 namespace Jacobians.Discharge.Manifold

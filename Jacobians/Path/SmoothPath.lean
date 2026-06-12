@@ -32,26 +32,10 @@ unity.
 * Prove `smoothPath_basepoint_change` via `periodVec_concat`.
 * Prove joint smoothness for `ofCurve_contMDiff`.
 -/
-import Mathlib.Analysis.Complex.Basic
-import Mathlib.Geometry.Manifold.ContMDiff.Defs
-import Mathlib.Geometry.Manifold.IsManifold.Basic
-import Mathlib.Topology.Connected.LocPathConnected
-import Mathlib.Analysis.Calculus.ContDiff.Defs
-import Mathlib.Analysis.Calculus.FDeriv.Mul
-import Mathlib.Analysis.Calculus.FDeriv.Add
-import Mathlib.Analysis.Calculus.Deriv.Pow
-import Mathlib.Analysis.Calculus.Deriv.Mul
-import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Analysis.Calculus.Deriv.MeanValue
-import Mathlib.Analysis.Calculus.FDeriv.RestrictScalars
-import Mathlib.Analysis.Complex.OperatorNorm
-import Mathlib.Topology.MetricSpace.Cover
-import Mathlib.Geometry.Manifold.MFDeriv.Defs
-import Mathlib.Geometry.Manifold.MFDeriv.Atlas
-import Mathlib.Geometry.Manifold.MFDeriv.NormedSpace
+import Mathlib.Analysis.Calculus.Deriv.Pow
+import Mathlib.Analysis.Complex.Basic
 import Mathlib.Geometry.Manifold.ContMDiff.Atlas
-import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
-
 namespace Jacobians
 
 open scoped Manifold ContDiff Topology

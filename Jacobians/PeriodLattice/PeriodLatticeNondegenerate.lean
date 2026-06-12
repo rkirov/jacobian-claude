@@ -21,8 +21,6 @@ dichotomy (`AnalyticAt.eventually_constant_or_nhds_le_map_nhds`).
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.4(c) (pp. 169–170) and 19.8.
 -/
 import Jacobians.PeriodLattice.JacobiLocalMap
-import Mathlib.Analysis.Complex.OpenMapping
-
 open scoped Manifold ContDiff Topology
 open Jacobians.OfCurveSkeleton
 

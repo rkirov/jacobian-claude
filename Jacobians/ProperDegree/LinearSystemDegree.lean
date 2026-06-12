@@ -16,10 +16,7 @@ Extracted from `Jacobians/RiemannRoch.lean` so the Laurent-tail duality ladder
 pigeonhole) can be imported by `RiemannRoch.lean` without an import cycle.  `RiemannRoch.lean`
 re-exports these names transitively by importing this file.
 -/
-import Jacobians.Meromorphic.LinearSystem
-import Jacobians.ProperDegree.DegDivResidue
 import Jacobians.ProperDegree.ProperMapDegreeSheets
-
 
 open scoped Manifold ContDiff Topology
 

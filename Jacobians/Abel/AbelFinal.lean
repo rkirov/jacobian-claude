@@ -20,9 +20,6 @@ Abel machinery (`exists_meromorphic_of_oneChain`) produces a meromorphic `f` wit
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 20.7 + 21.5 (pp. 164, 170).
 -/
 import Jacobians.Abel.AbelEngineMeromorphic
-import Jacobians.AbelWeak.AbelChains
-import Jacobians.ProperDegree.DegreeOneSphere
-
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false

@@ -17,11 +17,9 @@
   The Montel finiteness is taken in the assembly lemmas as an explicit HYPOTHESIS `hMontel` (so they
   are parametric in the analytic input); the wiring below discharges `hMontel` with that theorem.
 -/
-import Jacobians.Finiteness.CechRefinementInjective
 import Jacobians.Cech.ChartDiskRefinement
 import Jacobians.Finiteness.CechModelArtificial
 import Jacobians.Finiteness.ChartDiskFinitenessComplete
-
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 

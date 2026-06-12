@@ -26,8 +26,6 @@ Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §19 (pp. 153–157
 -/
 import Jacobians.Abel.AbelFormRead
 import Jacobians.ResidueTheorem.ResidueStokesCoverPoU
-import Jacobians.PlanarStokes.PlanarHolomorphicChangeOfVariables
-
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false

@@ -25,10 +25,8 @@ direction): the chain produced here is the one fed to the weak-solution machiner
 
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.4 (chains), §20.7.
 -/
-import Jacobians.Meromorphic.Abel
-import Jacobians.Monodromy.HolomorphicPrimitiveMonodromy
 import Jacobians.FormTraceSheetCovector
-
+import Jacobians.Monodromy.HolomorphicPrimitiveMonodromy
 noncomputable section
 
 -- The ℝ/ℂ-module diamond (`Bundle.Trivial`-fiber instances from the Dolbeault import chain

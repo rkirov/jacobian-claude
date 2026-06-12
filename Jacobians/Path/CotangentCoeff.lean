@@ -4,8 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.Path.LineIntegral
-import Jacobians.Forms.Genus
-
 /-!
 # Cotangent-bundle coefficient continuity (the *local* coefficient is the right object)
 

@@ -26,8 +26,6 @@
       from `refineH1_injective_iff_descend`).
 -/
 import Jacobians.Finiteness.CechRefinementLeray
-import Jacobians.Cech.CechH0
-
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 

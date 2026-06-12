@@ -17,10 +17,9 @@
   `C ⊆ ⋃ Uᵢ`, so they are independent of the `SharedChartCover` packaging and reusable for any
   closed-core globalization.
 -/
-import Jacobians.Cech.CechComplex
 import Jacobians.Surface.RealManifold
 import Mathlib.Geometry.Manifold.PartitionOfUnity
-
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 

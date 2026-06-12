@@ -8,8 +8,6 @@
   cochain layer is built on, reusing the plain-function disk lemmas of `Montel/Compactness.lean`.
 -/
 import Jacobians.Forms.Compactness
-import Jacobians.Finiteness.SchwartzFiniteness
-
 open Metric Topology BoundedContinuousFunction
 open Jacobians.Montel
 

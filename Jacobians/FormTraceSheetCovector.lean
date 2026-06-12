@@ -5,8 +5,6 @@ Authors: Rado Kirov
 -/
 import Jacobians.MeromorphicTrace.TraceForm
 import Jacobians.ResidueCalculus.FormCoeff
-import Jacobians.Path.SmoothPathCore
-
 /-!
 # The per-sheet covector identity in charts (Miranda §VIII.3)
 

@@ -14,11 +14,8 @@ are the identity.  Finally, if `M` is a `LieAddGroup`, so is `ULift M`.
 This file imports only Mathlib.
 -/
 import Mathlib.Analysis.Complex.Basic
-import Mathlib.Geometry.Manifold.IsManifold.Basic
-import Mathlib.Geometry.Manifold.ContMDiff.Atlas
-import Mathlib.Geometry.Manifold.ContMDiff.Constructions
 import Mathlib.Geometry.Manifold.Algebra.LieGroup
-
+import Mathlib.Geometry.Manifold.ContMDiff.Atlas
 open scoped Manifold ContDiff
 open Set Topology IsManifold
 

@@ -39,12 +39,11 @@
   concentrated where the model is *constructed* — discharged in
   `CechFinitenessDtwist.exists_cechModel_general`.
 -/
+import Jacobians.Cech.CechComplex
 import Jacobians.Finiteness.CechFinitenessAbstract
-import Jacobians.Finiteness.BddHol
 import Jacobians.Finiteness.CechModelBridge
-import Jacobians.Dbar.DbarDiskCohomology
-import Jacobians.Cech.CechH0
-
+import Mathlib.Algebra.Lie.OfAssociative
+import Mathlib.Analysis.CStarAlgebra.ContinuousMap
 open Jacobians.Dolbeault.CechFiniteness ContinuousLinearMap
 open BoundedContinuousFunction
 open scoped Manifold ContDiff Topology

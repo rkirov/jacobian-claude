@@ -18,17 +18,7 @@
   faithfulness/identity theorem (nonzero ⟹ order ≠ ⊤), `l(0)=1` via Liouville, `l(D)=0` for
   `deg D<0`, and the single-simple-pole extraction.
 -/
-import Jacobians.Meromorphic.Abel
-import Jacobians.Meromorphic.LinearSystem
-import Jacobians.ProperDegree.LinearSystemDegree
-import Jacobians.Meromorphic.MeromorphicLiouville
-import Jacobians.ProperDegree.DegDivResidue
-import Jacobians.ProperDegree.ProperMapDegreeSheets
-import Jacobians.SerrePairing.DolbeaultLadder
-import Jacobians.DolbeaultComparison.LerayCoverExists
-import Jacobians.Finiteness.SkyscraperProductWitness
 import Jacobians.TailDuality.RiemannRochUnconditional
-
 -- Many declarations here are purely algebraic (the ℂ-module on `MeromorphicFunction`) and use
 -- only `[ChartedSpace ℂ X]`, not the full compact-manifold hypotheses carried by the consumers.
 

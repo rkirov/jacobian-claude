@@ -14,19 +14,7 @@
   ],
   [
    "abel-theorem",
-   "finiteness-and-chi"
-  ],
-  [
-   "abel-theorem",
    "form-trace-tower"
-  ],
-  [
-   "abel-theorem",
-   "planar-stokes-atoms"
-  ],
-  [
-   "abel-theorem",
-   "proper-map-degree"
   ],
   [
    "abel-theorem",
@@ -42,14 +30,6 @@
   ],
   [
    "abel-weak-solutions",
-   "local-multiplicity"
-  ],
-  [
-   "abel-weak-solutions",
-   "meromorphic-and-divisors"
-  ],
-  [
-   "abel-weak-solutions",
    "monodromy"
   ],
   [
@@ -59,10 +39,6 @@
   [
    "canonical-forms",
    "finiteness-and-chi"
-  ],
-  [
-   "canonical-forms",
-   "holomorphic-forms"
   ],
   [
    "canonical-forms",
@@ -113,10 +89,6 @@
    "dbar-solvability"
   ],
   [
-   "dolbeault-comparison",
-   "meromorphic-and-divisors"
-  ],
-  [
    "finiteness-and-chi",
    "cech-cohomology"
   ],
@@ -138,15 +110,7 @@
   ],
   [
    "form-trace-tower",
-   "paths-and-integrals"
-  ],
-  [
-   "form-trace-tower",
    "residue-calculus"
-  ],
-  [
-   "genus-zero-headline",
-   "proper-map-degree"
   ],
   [
    "genus-zero-headline",
@@ -167,6 +131,10 @@
   [
    "laurent-tails",
    "canonical-forms"
+  ],
+  [
+   "laurent-tails",
+   "finiteness-and-chi"
   ],
   [
    "laurent-tails",
@@ -210,10 +178,6 @@
   ],
   [
    "monodromy",
-   "holomorphic-forms"
-  ],
-  [
-   "monodromy",
    "paths-and-integrals"
   ],
   [
@@ -230,14 +194,6 @@
   ],
   [
    "period-lattice-rank",
-   "abel-weak-solutions"
-  ],
-  [
-   "period-lattice-rank",
-   "holomorphic-forms"
-  ],
-  [
-   "period-lattice-rank",
    "jacobian-construction"
   ],
   [
@@ -249,14 +205,6 @@
    "residue-calculus"
   ],
   [
-   "period-lattice-rank",
-   "residue-theorem"
-  ],
-  [
-   "period-lattice-rank",
-   "surfaces-and-charts"
-  ],
-  [
    "planar-stokes-atoms",
    "dbar-solvability"
   ],
@@ -266,15 +214,7 @@
   ],
   [
    "projective-line",
-   "holomorphic-forms"
-  ],
-  [
-   "projective-line",
    "paths-and-integrals"
-  ],
-  [
-   "proper-map-degree",
-   "local-multiplicity"
   ],
   [
    "proper-map-degree",
@@ -291,10 +231,6 @@
   [
    "proper-map-degree",
    "projective-line"
-  ],
-  [
-   "proper-map-degree",
-   "sphere-topology"
   ],
   [
    "residue-calculus",
@@ -318,10 +254,6 @@
   ],
   [
    "residue-theorem",
-   "holomorphic-forms"
-  ],
-  [
-   "residue-theorem",
    "meromorphic-and-divisors"
   ],
   [
@@ -333,24 +265,8 @@
    "residue-calculus"
   ],
   [
-   "riemann-roch",
-   "dolbeault-comparison"
-  ],
-  [
-   "riemann-roch",
-   "finiteness-and-chi"
-  ],
-  [
-   "riemann-roch",
-   "meromorphic-and-divisors"
-  ],
-  [
-   "riemann-roch",
-   "proper-map-degree"
-  ],
-  [
-   "riemann-roch",
-   "serre-duality-cech"
+   "residue-theorem",
+   "surfaces-and-charts"
   ],
   [
    "riemann-roch",
@@ -369,14 +285,6 @@
    "finiteness-and-chi"
   ],
   [
-   "serre-duality-cech",
-   "holomorphic-forms"
-  ],
-  [
-   "serre-duality-cech",
-   "meromorphic-and-divisors"
-  ],
-  [
    "serre-duality-tails",
    "canonical-forms"
   ],
@@ -387,10 +295,6 @@
   [
    "serre-duality-tails",
    "meromorphic-and-divisors"
-  ],
-  [
-   "serre-duality-tails",
-   "planar-stokes-atoms"
   ],
   [
    "serre-duality-tails",
@@ -411,10 +315,6 @@
   [
    "sphere-topology",
    "projective-line"
-  ],
-  [
-   "surfaces-and-charts",
-   "holomorphic-forms"
   ]
  ]
 }

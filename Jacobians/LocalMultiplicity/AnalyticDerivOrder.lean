@@ -4,9 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Mathlib.Analysis.Analytic.Order
-import Mathlib.Analysis.Calculus.FDeriv.Analytic
 import Mathlib.Analysis.Complex.Basic
-
 /-! # Analytic derivative-order facts (planar, sphere-free)
 
 A small ℂ-analytic fact used by the critical-set finiteness argument: a

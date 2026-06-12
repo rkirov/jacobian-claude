@@ -1,9 +1,5 @@
-import Jacobians.Path.LineIntegral
-import Jacobians.Path.SmoothPath
-import Jacobians.Forms.Genus
 import Jacobians.Path.CotangentCoeff
-import Mathlib.Topology.Connected.LocPathConnected
-
+import Jacobians.Path.SmoothPath
 /-!
 # SmoothPathCore: smoothPath-independent foundations + chart-ball-hop machinery
 

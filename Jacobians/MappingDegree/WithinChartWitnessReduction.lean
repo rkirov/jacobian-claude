@@ -4,8 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.ConnectivityGlobalizationReduction
-import Jacobians.Surface.ContMDiffOmegaAnalytic
-
 set_option autoImplicit true
 
 

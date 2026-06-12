@@ -19,10 +19,8 @@ The only genus-restricted input is the existence of `0 ≠ ω₀ ∈ Ω(X)` — 
 genus-uniform.  The genus-0 case runs the same duality in the meromorphic frame `ω₀ = df`
 (needs the genus-free residue theorem) and is assembled separately.
 -/
-import Jacobians.TailDuality.TailDualitySurjectiveAssembly
 import Jacobians.CanonicalForms.FormRemovableSingularity
-import Jacobians.ResidueTheorem.OmegaFactorization
-
+import Jacobians.TailDuality.TailDualitySurjectiveAssembly
 open scoped Manifold ContDiff Topology
 open Module
 

@@ -19,11 +19,6 @@ is that for each `y` we use the ball-restricted chart `φ_y` from
 No `axiom`, no gaps.
 -/
 import Jacobians.MappingDegree.ChartRestrictionToBall
-import Mathlib.Geometry.Manifold.ChartedSpace
-import Mathlib.Topology.OpenPartialHomeomorph.Basic
-import Mathlib.Topology.UnitInterval
-import Mathlib.Topology.Path
-
 namespace Jacobians.Discharge.Manifold
 
 open Set unitInterval Jacobians.Discharge

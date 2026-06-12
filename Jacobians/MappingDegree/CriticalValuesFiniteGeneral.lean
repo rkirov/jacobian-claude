@@ -3,17 +3,11 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
-import Jacobians.LocalMultiplicity.AnalyticDerivOrder
-import Jacobians.Surface.ContMDiffOmegaAnalytic
-import Jacobians.MappingDegree.ChartOverlapPropagationDischarge
-import Jacobians.MappingDegree.ClopennessOfLocallyConstDischarge
-import Jacobians.MappingDegree.ChartBallOffCentreWitnessDischarge
-import Jacobians.MappingDegree.CriticalSetDiscrete
-import Jacobians.MappingDegree.CriticalSetDerivBridge
 import Jacobians.LocalMultiplicity.MeromorphicAt
-import Mathlib.Analysis.Calculus.Deriv.Comp
-import Mathlib.Analysis.Calculus.FDeriv.Analytic
-
+import Jacobians.LocalMultiplicity.AnalyticDerivOrder
+import Jacobians.MappingDegree.ClopennessOfLocallyConstDischarge
+import Jacobians.MappingDegree.CriticalSetDerivBridge
+import Jacobians.MappingDegree.CriticalSetDiscrete
 set_option autoImplicit true
 
 

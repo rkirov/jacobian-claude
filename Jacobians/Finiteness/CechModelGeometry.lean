@@ -29,8 +29,6 @@
 -- `CechFinitenessWiring`); this keeps the `CechFinitenessWiring → CechFinitenessDtwist → … →
 -- CechModelGeometry` chain acyclic.
 import Jacobians.Finiteness.CechModelBase
-import Jacobians.Forms.Cover
-
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 

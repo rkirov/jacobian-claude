@@ -35,8 +35,6 @@
 -/
 import Jacobians.Cech.CechH0
 import Jacobians.Dbar.DbarDiskCohomology
-import Jacobians.Cech.ChartDiskCover
-
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Complex Metric

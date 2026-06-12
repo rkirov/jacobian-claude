@@ -25,9 +25,6 @@ Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.4(a) (pp. 168–
 -/
 import Jacobians.PeriodLattice.JacobiBasePoints
 import Jacobians.PeriodLattice.OfCurveAnalyticitySkeleton
-import Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv
-import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
-
 open scoped Manifold ContDiff
 open Jacobians.OfCurveSkeleton
 

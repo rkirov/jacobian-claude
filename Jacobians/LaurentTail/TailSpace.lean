@@ -20,9 +20,6 @@
     enough truncation; used for Miranda Lemma 2.6).
 -/
 import Jacobians.Meromorphic.Abel
-import Mathlib.LinearAlgebra.Finsupp.Supported
-import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
-
 open Module
 
 namespace Jacobians.LaurentTail

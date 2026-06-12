@@ -4,12 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.ProperDegree.ProperMapDegreeConstruct
-import Jacobians.MappingDegree.LocalKFoldMultiplicityUnconditional
-import Jacobians.LocalMultiplicity.AnalyticLocalFactorization
-import Jacobians.MappingDegree.RoucheBridge
-import Jacobians.MappingDegree.LocalNormalForm
-import Mathlib.Algebra.BigOperators.Finprod
-
 /-!
 # Conservation of number for the multiplicity sum: `IsLocallyConstant (N f)`
 

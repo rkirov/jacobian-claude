@@ -17,6 +17,7 @@
     relative kernel of `H¹(E) → H¹(A₀) = 0`, and `H¹(E) ↠ H¹(D)` by surjectivity of the
     induced truncation.
 -/
+import Jacobians.CanonicalForms.SerreOmega0
 import Jacobians.LaurentTail.DimensionBookkeeping
 
 open scoped Manifold ContDiff Topology

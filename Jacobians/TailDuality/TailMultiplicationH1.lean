@@ -21,6 +21,7 @@ The two key facts for the Serre-duality surjectivity (Forster 17.8):
 Consequently, for `λ ≠ 0` and `ψ` with surviving germ, `λ ∘ tailMulH1 ψ A B ≠ 0` — the
 dimension input for the pigeonhole half of Serre duality.
 -/
+import Jacobians.Meromorphic.MeromorphicInverse
 import Jacobians.TailDuality.TailMultiplication
 
 open scoped Manifold ContDiff Topology

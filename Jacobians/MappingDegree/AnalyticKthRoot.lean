@@ -3,11 +3,8 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
-import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
-import Mathlib.Analysis.SpecialFunctions.ExpDeriv
-import Mathlib.Analysis.Analytic.Constructions
 import Jacobians.MappingDegree.LocalKFoldMultiplicity
-
+import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 set_option autoImplicit true
 
 

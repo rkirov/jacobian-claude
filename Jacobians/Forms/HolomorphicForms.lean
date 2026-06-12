@@ -1,17 +1,5 @@
-import Mathlib.Geometry.Manifold.Complex
-import Mathlib.Geometry.Manifold.ContMDiff.Basic
-import Mathlib.Geometry.Manifold.ContMDiffMFDeriv
-import Mathlib.Geometry.Manifold.VectorBundle.SmoothSection
-import Mathlib.Geometry.Manifold.VectorBundle.Tangent
-import Mathlib.Geometry.Manifold.VectorBundle.Hom
-import Mathlib.Geometry.Manifold.MFDeriv.Defs
-import Mathlib.LinearAlgebra.Dimension.Basic
-import Mathlib.LinearAlgebra.Dimension.Finrank
-import Mathlib.Analysis.Normed.Module.Basic
-import Mathlib.Analysis.Normed.Module.FiniteDimension
-import Jacobians.Forms.Genus
 import Jacobians.Forms.Montel
-
+import Mathlib.Geometry.Manifold.ContMDiffMFDeriv
 /-!
 # Holomorphic 1-forms on a complex manifold
 

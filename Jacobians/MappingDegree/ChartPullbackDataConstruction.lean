@@ -5,8 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.AnalyticFiberDiscrete
 import Jacobians.Surface.ContMDiffOmegaAnalytic
-import Mathlib.Topology.OpenPartialHomeomorph.Constructions
-
 set_option autoImplicit true
 
 

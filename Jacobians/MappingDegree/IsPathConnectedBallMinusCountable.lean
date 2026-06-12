@@ -4,9 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import Mathlib.Analysis.Complex.Basic
-import Mathlib.Analysis.Normed.Module.Connected
+import Mathlib.Analysis.Normed.Module.Convex
 import Mathlib.LinearAlgebra.Complex.FiniteDimensional
-
+import Mathlib.LinearAlgebra.Dimension.DivisionRing
+import Mathlib.Topology.Algebra.Module.Cardinality
 /-! # Path-connectedness of `ball z r \ s` for a countable obstruction `s`
 
 Mathlib's `Set.Countable.isPathConnected_compl_of_one_lt_rank` proves that the

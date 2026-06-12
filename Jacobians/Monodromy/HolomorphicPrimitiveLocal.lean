@@ -21,11 +21,8 @@ Built from three existing bridges:
 
 Reference: Forster, *Lectures on Riemann Surfaces*, §10.5; Miranda Ch. IV §1.
 -/
-import Jacobians.Forms.Montel
-import Jacobians.Forms.Complete
 import Jacobians.CanonicalForms.CanonicalFormDifferential
 import Jacobians.Path.Primitive
-
 noncomputable section
 
 open scoped Manifold ContDiff Topology

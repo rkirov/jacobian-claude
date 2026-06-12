@@ -16,6 +16,7 @@ frozen in the original `Jacobians/JacobianConstruction/PeriodLattice.lean`:
 
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.1 + 21.4 (pp. 166–170).
 -/
+import Jacobians.PeriodLattice.PeriodLatticeNondegenerate
 import Jacobians.PeriodLattice.PeriodLatticeDiscrete
 
 noncomputable section

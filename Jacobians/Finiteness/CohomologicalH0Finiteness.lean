@@ -39,8 +39,6 @@
   `[propext, Classical.choice, Quot.sound]`.
 -/
 import Jacobians.Finiteness.CechFinitenessDtwist
-import Jacobians.Cech.CechH0
-
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 

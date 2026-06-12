@@ -24,12 +24,10 @@ References: Miranda, *Algebraic Curves and Riemann Surfaces*, Ch. X §2 (pp. 313
 `H¹(D_n) = 0` enlargement in Lemma 2.3); Forster, *Lectures on Riemann Surfaces* (GTM 81),
 §16–17 (the multiplication action; the same pigeonhole drives 17.8).
 -/
-import Jacobians.H1Genus.SerreCupProduct
-import Jacobians.H1Genus.CechH1Monotonicity
 import Jacobians.Cech.MeromorphicAnalyticBadSet
+import Jacobians.H1Genus.CechH1Monotonicity
+import Jacobians.H1Genus.SerreCupProduct
 import Jacobians.Meromorphic.MeromorphicInverse
-import Jacobians.CanonicalForms.CanonicalFormIso
-
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 

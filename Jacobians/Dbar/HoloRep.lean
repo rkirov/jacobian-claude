@@ -17,9 +17,7 @@
   the germ). The `∂̄`/`ContMDiff`/algebra lemmas built on top stay with their analytic consumers.
 -/
 import Jacobians.Cech.CechH0
-import Jacobians.Surface.RealManifold
 import Jacobians.Dbar.RealForms
-
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Complex Metric Filter

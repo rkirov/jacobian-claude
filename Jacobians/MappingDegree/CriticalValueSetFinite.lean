@@ -4,9 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.CriticalValuesFiniteGeneral
-import Jacobians.MappingDegree.CriticalSetDerivBridge
-import Jacobians.MappingDegree.Degree
-
 set_option autoImplicit true
 
 /-! # `h_critical`: finite critical-value set containing every regular witness

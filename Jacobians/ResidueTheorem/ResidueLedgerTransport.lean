@@ -33,11 +33,10 @@
   chart-bookkeeping steps Forster performs implicitly when integrating `d(f_k ω)` "using the
   coordinate `z_k`").
 -/
-import Jacobians.PlanarStokes.PlanarHolomorphicChangeOfVariables
-import Jacobians.PlanarStokes.AnnulusResidueMeromorphic
 import Jacobians.Cech.MeromorphicAnalyticBadSet
 import Jacobians.Finiteness.CechModelManifold
-
+import Jacobians.PlanarStokes.AnnulusResidueIntegral
+import Jacobians.PlanarStokes.PlanarHolomorphicChangeOfVariables
 set_option backward.isDefEq.respectTransparency false
 
 open Complex MeasureTheory Filter Set Topology

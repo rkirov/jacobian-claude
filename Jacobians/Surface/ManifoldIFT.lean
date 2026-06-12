@@ -4,11 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
 import Jacobians.Surface.ContMDiffOmegaAnalytic
-import Mathlib.Geometry.Manifold.ContMDiff.Atlas
-import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
-import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Deriv
 import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Analytic
-
+import Mathlib.Geometry.Manifold.ContMDiff.Atlas
 /-! # Manifold inverse function theorem for complex 1-manifolds
 
 For a real-analytic (`C^ω`) map `f : X → Y` between complex-analytic manifolds

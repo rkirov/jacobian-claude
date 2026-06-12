@@ -17,8 +17,7 @@
 
   Everything here is pure order/quotient bookkeeping (no analytic content).
 -/
-import Jacobians.Cech.CechH0
-
+import Jacobians.Cech.CechComplex
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Classical

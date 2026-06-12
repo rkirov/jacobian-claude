@@ -3,12 +3,11 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
-import Jacobians.MappingDegree.LocalNormalForm
+import Mathlib.Analysis.Calculus.Deriv.Inverse
 import Mathlib.Analysis.Calculus.FDeriv.Analytic
 import Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv
-import Mathlib.Analysis.Calculus.Deriv.Inverse
-import Mathlib.Topology.OpenPartialHomeomorph.Defs
-
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Topology.Algebra.Module.ModuleTopology
 set_option autoImplicit true
 
 

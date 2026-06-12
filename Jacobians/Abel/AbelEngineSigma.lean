@@ -19,6 +19,7 @@ against every basis form — so by the kill theorem (Forster 19.10) `σ_G = ∂�
 
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.5–20.7 (pp. 162–165).
 -/
+import Jacobians.AbelWeak.AbelChains
 import Jacobians.Abel.AbelDbarKill
 import Jacobians.Abel.AbelLogDbar
 import Jacobians.AbelWeak.AbelCurveSolution

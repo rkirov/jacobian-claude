@@ -28,11 +28,9 @@
 
   Everything here is complete and depends on no unproved lemma.
 -/
-import Jacobians.Forms.ChartTransition
 import Jacobians.Cech.MeromorphicAnalyticBadSet
 import Jacobians.Finiteness.CechModelManifold
 import Jacobians.ResidueCalculus.FormCoeff
-
 open scoped Manifold ContDiff Topology
 open Bundle Filter Metric
 

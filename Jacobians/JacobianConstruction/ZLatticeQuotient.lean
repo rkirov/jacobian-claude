@@ -1,12 +1,8 @@
-import Mathlib.Algebra.Module.ZLattice.Basic
-import Mathlib.Topology.Covering.Quotient
-import Mathlib.Topology.Algebra.IsUniformGroup.Basic
-import Mathlib.Topology.LocallyConstant.Basic
-import Mathlib.Geometry.Manifold.Algebra.LieGroup
-import Mathlib.Geometry.Manifold.IsManifold.Basic
-import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import Jacobians.Surface.ChartedSpaceOfLocalHomeomorph
-
+import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.Geometry.Manifold.Algebra.LieGroup
+import Mathlib.Topology.Covering.Quotient
+import Mathlib.Topology.LocallyConstant.Basic
 /-!
 # Quotient of a finite-dimensional normed space by a `ZLattice`
 

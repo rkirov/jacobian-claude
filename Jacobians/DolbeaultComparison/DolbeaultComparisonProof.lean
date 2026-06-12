@@ -27,13 +27,10 @@
   equivalence `comparison_linearEquiv`, and the target `cechH1_dolbeault_comparison_proof` live in
   `Jacobians.Dolbeault.DolbeaultComparisonInverse`.
 -/
-import Jacobians.DolbeaultComparison.DolbeaultComparison
-import Jacobians.Dbar.DbarLocal
-import Jacobians.Cech.ChartDiskCover
 import Jacobians.Cech.CechH0
-import Mathlib.Geometry.Manifold.PartitionOfUnity
-import Mathlib.Geometry.Manifold.BumpFunction
-
+import Jacobians.Cech.ChartDiskCover
+import Jacobians.Dbar.DbarLocal
+import Jacobians.DolbeaultComparison.DolbeaultComparison
 open scoped Manifold ContDiff Bundle Topology
 open TopologicalSpace (Opens)
 

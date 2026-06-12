@@ -15,8 +15,13 @@
   whose ∂̄ recovers `g` (Cauchy–Pompeiu).  This file isolates exactly the
   Mathlib gap on that route; see `dbar_disk_solvable` below.
 -/
-import Mathlib
-
+import Mathlib.Algebra.Lie.OfAssociative
+import Mathlib.Analysis.CStarAlgebra.Classes
+import Mathlib.Analysis.Calculus.ContDiff.Convolution
+import Mathlib.Analysis.SpecialFunctions.PolarCoord
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+import Mathlib.Topology.UniformSpace.Uniformizable
 open scoped Real Topology ENNReal
 open Complex MeasureTheory
 

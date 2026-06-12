@@ -14,8 +14,8 @@
   `DolbeaultComparisonInverse` are not available here; the machinery of `CechDiskAcyclicProof` is
   reused instead.
 -/
-import Jacobians.Dbar.CechDiskAcyclicProof
-
+import Jacobians.Dbar.CechDiskAcyclic
+import Jacobians.Dbar.HoloRep
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Complex Metric Filter

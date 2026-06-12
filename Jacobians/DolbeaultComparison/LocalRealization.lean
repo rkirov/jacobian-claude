@@ -23,9 +23,7 @@
   the Mathlib explicit order witness `meromorphicOrderAt_zpow_id_sub_const`.
 
 -/
-import Jacobians.Cech.CechSection
 import Jacobians.Cech.CechH0
-
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Filter

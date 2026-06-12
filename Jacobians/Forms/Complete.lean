@@ -1,6 +1,4 @@
 import Jacobians.Forms.ChartTransition
-import Mathlib.Topology.UniformSpace.CompleteSeparated
-
 /-!
 # Montel path — completeness of `HolomorphicOneForms X`
 

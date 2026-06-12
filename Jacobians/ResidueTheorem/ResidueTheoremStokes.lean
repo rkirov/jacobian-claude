@@ -35,6 +35,7 @@
   same shape as the genus ≥ 1 version) — the LaurentTail consumer can swap `hgenus`-versions for
   these by deleting the genus argument.
 -/
+import Jacobians.ResidueTheorem.ResidueLedgerTransport
 import Jacobians.ResidueTheorem.ResidueStokesPoleBump
 import Jacobians.ResidueTheorem.ResidueStokesCoverPoU
 import Jacobians.ResidueTheorem.PairFormResidueTheorem

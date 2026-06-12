@@ -20,9 +20,7 @@
 
   Everything here is complete and depends on no unproved lemma.
 -/
-import Mathlib
 import Jacobians.Dbar.DbarDisk
-
 -- The ℂ-as-ℝ-module diamond fix used across the Dolbeault tree.
 set_option backward.isDefEq.respectTransparency false
 

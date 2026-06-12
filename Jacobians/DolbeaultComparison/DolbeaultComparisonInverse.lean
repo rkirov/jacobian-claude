@@ -10,14 +10,10 @@
   `ℝ`-linear equivalence (which needs the forward map `dolbeault_to_cech`) lives in
   `DolbeaultComparisonEquiv`.
 -/
-import Jacobians.DolbeaultComparison.DolbeaultComparison
-import Jacobians.Cech.CechH0
-import Jacobians.Dbar.HoloRep
 import Jacobians.Cech.ChartDiskCover
-import Jacobians.Meromorphic.MeromorphicNFRepair
+import Jacobians.Dbar.HoloRep
+import Jacobians.DolbeaultComparison.DolbeaultComparison
 import Mathlib.Geometry.Manifold.PartitionOfUnity
-import Mathlib.Geometry.Manifold.BumpFunction
-
 open scoped Manifold ContDiff Bundle Topology
 open TopologicalSpace (Opens)
 open Filter

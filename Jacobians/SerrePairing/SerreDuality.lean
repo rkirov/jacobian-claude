@@ -24,9 +24,7 @@
   the cohomology objects `H¹(𝒪_{D_n})`, `H⁰(𝒪_{nP})`.  Those objects and the maps `ι_D` are built,
   and `serre_surjectivity_dim_core` instantiated, in the `SerreResidue*` modules.
 -/
-import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 import Mathlib.LinearAlgebra.Dual.Lemmas
-
 open Submodule Module
 
 namespace Jacobians.Dolbeault.SerreDuality

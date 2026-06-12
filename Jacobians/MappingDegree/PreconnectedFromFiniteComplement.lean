@@ -3,11 +3,7 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
-import Mathlib.Geometry.Manifold.IsManifold.Basic
-import Mathlib.Geometry.Manifold.ChartedSpace
 import Mathlib.Topology.Connected.PathConnected
-import Mathlib.Topology.Separation.Basic
-
 /-! # Path-connected ⇒ preconnected reduction for the finite-puncture
 case (ZZ159, scope-reduced)
 

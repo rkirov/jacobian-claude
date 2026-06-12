@@ -16,8 +16,7 @@ invertibility of the period Gram matrix `pairMatrix` in `AbelDbarKill`.
 
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 19.6/19.9 (pp. 155–156).
 -/
-import Jacobians.Abel.AbelPairingStokes
-
+import Jacobians.Abel.AbelPairing
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false

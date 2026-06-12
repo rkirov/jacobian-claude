@@ -3,10 +3,8 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
-import Mathlib.Topology.LocallyConstant.Basic
 import Mathlib.Data.Set.Card
-import Mathlib.Data.Finset.Card
-
+import Mathlib.Topology.LocallyConstant.Basic
 set_option autoImplicit true
 
 /-! # Fibre cardinality is locally constant from a Hurwitz-style patching package (ZZ153)

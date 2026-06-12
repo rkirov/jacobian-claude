@@ -19,6 +19,7 @@ functional `Res_{h'·ω₀}`.  This file builds the compatibility toolkit and th
 * **Miranda Lemma 3.6** `omegaOrderBounded_of_vanishing`: a residue functional vanishing on
   `ker(truncation)` has the coarser order bound — the single-monomial witness contrapositive.
 -/
+import Jacobians.TailDuality.TailDualityInjective
 import Jacobians.TailDuality.TailMultiplicationH1
 
 open scoped Manifold ContDiff Topology

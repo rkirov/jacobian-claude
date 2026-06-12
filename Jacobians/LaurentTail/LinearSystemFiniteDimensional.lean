@@ -9,8 +9,8 @@
   the `FiniteDimensional ℂ (lSysModule D)` instance on the junk-free quotient whose `finrank`
   *is* `lDim D`.
 -/
-import Jacobians.CanonicalForms.SerreOmega0
-
+import Jacobians.CanonicalForms.CanonicalFormIso
+import Jacobians.Finiteness.SkyscraperProductWitness
 open scoped Manifold ContDiff Topology
 open Module
 

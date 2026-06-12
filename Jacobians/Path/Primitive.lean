@@ -1,6 +1,4 @@
-import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
-
 namespace Jacobians
 
 /-- **Holomorphic functions on a convex open set have a primitive.** If `h` is complex-

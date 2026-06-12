@@ -5,8 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.HPkgUnconditional
 import Jacobians.MappingDegree.HurwitzWellDefinedUnconditionalTopo
-import Jacobians.MappingDegree.Degree
-
 /-! # `degreeFiber` is well-defined across regular witnesses
 
 Combines `h_pkg_holds_unconditional` (`Manifold/HPkgUnconditional.lean`)

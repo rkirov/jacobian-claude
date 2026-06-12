@@ -19,10 +19,7 @@ the residue vector `c ≠ 0` — contradicting `det A ≠ 0`.
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.4(b) (p. 169).
 -/
 import Jacobians.Abel.AbelEngineMeromorphic
-import Jacobians.AbelWeak.AbelChains
-import Jacobians.PeriodLattice.PeriodLatticeNondegenerate
-import Jacobians.ResidueTheorem.ResidueTheoremFormFn
-
+import Jacobians.PeriodLattice.JacobiLocalMap
 noncomputable section
 
 set_option backward.isDefEq.respectTransparency false

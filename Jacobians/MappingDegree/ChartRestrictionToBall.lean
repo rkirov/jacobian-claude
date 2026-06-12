@@ -5,9 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Geometry.Manifold.ChartedSpace
-import Mathlib.Topology.OpenPartialHomeomorph.Basic
-import Mathlib.Topology.MetricSpace.Pseudo.Defs
-
 /-! # Chart restriction whose target is a metric ball
 
 Given a charted space `Y` modelled on `ℂ` and a point `x : Y`, the canonical

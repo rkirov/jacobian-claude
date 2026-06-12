@@ -24,8 +24,7 @@ Contents:
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.5 (pp. 162–163).
 -/
 import Jacobians.AbelWeak.AbelPieceSolution
-import Jacobians.AbelWeak.AbelChains
-
+import Jacobians.Monodromy.HolomorphicPrimitiveMonodromy
 noncomputable section
 
 -- ℝ/ℂ-module diamond discipline (as in `AbelChains`/`AbelWeakSolutions`).

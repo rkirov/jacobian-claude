@@ -9,11 +9,9 @@
   compact (Montel, componentwise `BddHol.restrictOpenCLM`); the Leray discharge and the geometric
   instantiation are built on top in the other `CechModel*` modules.
 -/
+import Jacobians.Cech.CechComplex
 import Jacobians.Finiteness.CechFinitenessAbstract
 import Jacobians.Finiteness.CechModelBridge
-import Jacobians.Cech.CechComplex
-import Jacobians.Forms.Cover
-
 open scoped Manifold ContDiff Topology
 open Metric Topology BoundedContinuousFunction
 open Jacobians.Montel

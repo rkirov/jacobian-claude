@@ -23,8 +23,6 @@ Reference: Forster, *Lectures on Riemann Surfaces*, §10.5; Miranda Ch. IV §1.
 -/
 import Jacobians.Monodromy.HolomorphicPrimitiveMonodromy
 import Jacobians.SphereTopology.GenusZeroOfSphere
-import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
-
 noncomputable section
 
 open scoped Manifold ContDiff Topology unitInterval

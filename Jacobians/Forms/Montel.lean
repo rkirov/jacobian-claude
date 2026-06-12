@@ -1,14 +1,5 @@
-import Mathlib.Analysis.Normed.Module.FiniteDimension
-import Mathlib.Analysis.Normed.Group.Seminorm
-import Jacobians.Forms.Genus
-import Jacobians.Forms.Cover
-import Jacobians.Forms.LocalRep
-import Jacobians.Forms.ChartNorm
-import Jacobians.Forms.SupNorm
-import Jacobians.Forms.Compactness
-import Jacobians.Forms.ChartTransition
 import Jacobians.Forms.Complete
-
+import Jacobians.Forms.Genus
 /-!
 # Montel path to finite-dimensionality of `HolomorphicOneForms`
 

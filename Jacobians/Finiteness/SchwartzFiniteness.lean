@@ -6,16 +6,12 @@
   spectral Fredholm alternative (`IsCompactOperator.hasEigenvalue_or_mem_resolventSet`) and Riesz's
   lemma but NOT this packaged "compact perturbation of a surjection has finite-codimensional image".
 -/
-import Mathlib.Analysis.Normed.Operator.Compact
-import Mathlib.Analysis.Normed.Operator.Banach
-import Mathlib.Analysis.Normed.Operator.FredholmAlternative
-import Mathlib.Analysis.Normed.Module.RieszLemma
-import Mathlib.Analysis.Normed.Module.FiniteDimension
-import Mathlib.Analysis.Normed.Group.Quotient
-import Mathlib.Analysis.SpecificLimits.Normed
+import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Analysis.Complex.Basic
-import Mathlib.LinearAlgebra.FiniteDimensional.Defs
-
+import Mathlib.Analysis.Normed.Group.Quotient
+import Mathlib.Analysis.Normed.Operator.Banach
+import Mathlib.Analysis.Normed.Operator.Compact
+import Mathlib.Topology.Algebra.Module.FiniteDimension
 namespace Jacobians.SchwartzFiniteness
 
 open Metric Filter Topology Finset

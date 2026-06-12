@@ -35,8 +35,6 @@
   `MeromorphicAt.analyticAt` / `toMeromorphicNFAt` removable singularity.
 -/
 import Jacobians.CanonicalForms.CanonicalFormDifferential
-import Jacobians.Forms.Montel
-
 open scoped Manifold ContDiff Topology Bundle
 open Module Filter
 open Jacobians.Montel

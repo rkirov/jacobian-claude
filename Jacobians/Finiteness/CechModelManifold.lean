@@ -15,10 +15,8 @@
 
   Reuses only the chart machinery (`contMDiffOn_chart`, `ContDiffAt.analyticAt`).
 -/
-import Jacobians.Cech.CechH0
-import Jacobians.Finiteness.CechModelBridge
 import Jacobians.Dbar.CechDiskAcyclicAssembly
-
+import Jacobians.Finiteness.CechModelBridge
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Filter

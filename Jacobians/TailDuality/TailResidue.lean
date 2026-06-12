@@ -25,10 +25,7 @@ The planar core is `resAt_mul_eq_sum_tailPairing`: a *uniform window* form of "t
 product reads only the tail" (the window may be empty, subsuming the no-pole case).
 -/
 import Jacobians.LaurentTail.TailMap
-import Jacobians.ResidueTheorem.PairFormResidueTheorem
 import Jacobians.ResidueTheorem.ResidueTheoremStokes
-import Jacobians.PlanarStokes.AnnulusResidueIntegral
-
 open scoped Manifold ContDiff Topology
 open Filter Set
 open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace

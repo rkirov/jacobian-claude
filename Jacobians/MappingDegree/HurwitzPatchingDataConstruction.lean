@@ -4,10 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.FibreCardLocallyConstantFromNormalForm
-import Mathlib.Topology.Separation.Hausdorff
-import Mathlib.Topology.Compactness.Compact
-import Mathlib.Topology.ContinuousOn
-
 set_option autoImplicit true
 
 /-! # Constructing `HurwitzPatchingData` at a regular value (ZZ157)

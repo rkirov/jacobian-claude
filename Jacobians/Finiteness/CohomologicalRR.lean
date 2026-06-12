@@ -33,9 +33,7 @@
   `CohomologicalRRChartDisk`); the base, the LES crank, the structural arrows, and the induction
   skeleton are all here.
 -/
-import Jacobians.Finiteness.CohomologicalRRChartDisk
 import Jacobians.Finiteness.SkyscraperConeRealization
-
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Classical

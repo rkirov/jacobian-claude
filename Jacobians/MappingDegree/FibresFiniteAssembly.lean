@@ -3,12 +3,7 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
-import Jacobians.MappingDegree.AnalyticFiberDiscrete
-import Jacobians.MappingDegree.AnalyticContinuationGlobalization
 import Jacobians.MappingDegree.ChartPullbackDataConstruction
-import Jacobians.Surface.ContMDiffOmegaAnalytic
-import Jacobians.MappingDegree.Degree
-
 set_option autoImplicit true
 
 

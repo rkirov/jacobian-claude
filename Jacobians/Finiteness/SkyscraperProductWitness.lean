@@ -30,11 +30,8 @@
   `locallyRealizable_chartDiskCover`; closing it makes the entire χ-side
   (`cohomological_riemannRoch`) fully complete on the canonical cover.
 -/
-import Jacobians.Finiteness.SkyscraperConeRealization
 import Jacobians.DolbeaultComparison.LerayCoverExists
-import Jacobians.Finiteness.CechModelManifold
-import Mathlib.Analysis.Meromorphic.FactorizedRational
-
+import Jacobians.Finiteness.SkyscraperConeRealization
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Filter Function

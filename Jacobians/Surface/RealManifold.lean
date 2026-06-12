@@ -12,10 +12,8 @@
   issue, handled exactly as Mathlib's own `Analysis/Complex/RealDeriv.lean` does:
   `set_option backward.isDefEq.respectTransparency false`.
 -/
-import Jacobians.Forms.Genus
-import Mathlib.Analysis.Calculus.ContDiff.Operations
-import Mathlib.Analysis.Complex.Basic
-
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Geometry.Manifold.IsManifold.Basic
 open scoped Manifold ContDiff
 
 namespace Jacobians.Dolbeault

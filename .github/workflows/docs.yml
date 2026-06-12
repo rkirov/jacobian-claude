@@ -1,0 +1,76 @@
+name: Docs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'Jacobians/**'
+      - 'docs/**'
+      - 'scripts/unit_design.py'
+      - 'scripts/generate_verso_site.py'
+      - 'site/**'
+      - 'docbuild/**'
+      - '.github/workflows/docs.yml'
+
+concurrency:
+  group: docs
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Get Mathlib cache + build library
+        run: |
+          lake exe cache get
+          lake build
+
+      - name: Build API docs (doc-gen4)
+        run: |
+          cd docbuild
+          MATHLIB_NO_CACHE_ON_UPDATE=1 lake build Jacobians:docs
+
+      - name: Generate + build Verso site
+        run: |
+          python3 scripts/unit_design.py
+          python3 scripts/generate_verso_site.py
+          cd site
+          lake exe jacobianssite
+
+      - name: Assemble Pages artifact
+        run: |
+          mkdir -p _site
+          cp -r docs/* _site/                           # units.html, proposal, reviewer docs
+          cp -r site/_out/html-multi _site/exposition
+          cp -r docbuild/.lake/build/doc _site/api
+          cp _site/exposition/index.html _site/index.html 2>/dev/null || \
+            printf '<meta http-equiv="refresh" content="0; url=exposition/">' > _site/index.html
+          touch _site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

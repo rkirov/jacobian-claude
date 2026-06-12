@@ -24,8 +24,6 @@ pp. 162–163.
 -/
 import Jacobians.AbelWeak.AbelPlanarPiece
 import Jacobians.AbelWeak.AbelWeakSolutions
-import Jacobians.LocalMultiplicity.MeromorphicAt
-
 noncomputable section
 
 -- ℝ/ℂ-module diamond discipline (as in `AbelChains`/`AbelWeakSolutions`).

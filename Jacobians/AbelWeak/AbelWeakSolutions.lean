@@ -29,9 +29,7 @@ Main contents:
 
 Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.1, §20.2.
 -/
-import Jacobians.Meromorphic.Abel
 import Jacobians.DolbeaultComparison.DolbeaultComparisonInverse
-
 noncomputable section
 
 -- ℝ/ℂ-module diamond discipline (as in `RealForms`, `DolbeaultH01`, `AbelChains`).

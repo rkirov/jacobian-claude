@@ -29,9 +29,7 @@
   `MeromorphicAt.deriv`, `TangentBundle.symmL_trivializationAt`,
   `mdifferentiableAt_iff_of_mem_source`.
 -/
-import Jacobians.CanonicalForms.CanonicalFormIso
 import Jacobians.CanonicalForms.SerreOmega0
-
 open scoped Manifold ContDiff Topology Bundle
 open Module
 

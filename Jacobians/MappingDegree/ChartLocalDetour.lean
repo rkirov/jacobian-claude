@@ -5,10 +5,7 @@ Authors: Bryan Sanchez
 -/
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Analysis.Normed.Module.Connected
-import Mathlib.Geometry.Manifold.ChartedSpace
 import Mathlib.LinearAlgebra.Complex.FiniteDimensional
-import Mathlib.Topology.OpenPartialHomeomorph.Basic
-
 /-! # Chart-local detour through a finite obstruction
 
 Given an `OpenPartialHomeomorph φ : X → Y` (typical example: a chart `chartAt ℂ x`
