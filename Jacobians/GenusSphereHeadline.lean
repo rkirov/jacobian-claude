@@ -3,7 +3,7 @@ Copyright (c) 2026 Rado Kirov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rado Kirov
 -/
-import Jacobians.ProperDegree.DegreeOneSphere
+import Jacobians.DegreeOneSphere
 import Jacobians.RiemannRoch
 
 /-!
@@ -14,7 +14,7 @@ The **forward** direction `genus X = 0 ⟹ X ≃ₜ S²` consumes Riemann–Roch
 `genus_eq_zero_iff_homeo` — live here, **downstream** of `Jacobians.RiemannRoch`.
 
 The Riemann–Roch-free `toSphere` / degree-route machinery and the degree-one theory
-(`nonempty_homeo_sphere_of_singleSimplePole`) stay in `Jacobians.ProperDegree.DegreeOneSphere`, which is now
+(`nonempty_homeo_sphere_of_singleSimplePole`) stay in `Jacobians.DegreeOneSphere`, which is now
 RR-free and therefore sits **upstream** of `RiemannRoch`. This lets `DegDivResidue` reuse `toSphere`
 to prove the residue-theorem degree route (`exists_properMapDegree`), which `RiemannRoch.deg_div`
 consumes — closing the upstream/downstream cycle that would otherwise block the degree route.

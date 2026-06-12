@@ -16,7 +16,7 @@ The whole file is a `noncomputable section`: the data declarations (`Jacobian`,
 
 `Jacobian` is genuinely `Type u` (universe-polymorphic), matching the spec: the
 construction `ULift`s the concrete `Type 0` torus to the surface's universe via
-`Jacobians.Surface.ULiftManifold` (which supplies the missing "a `ULift` of a complex
+`Jacobians.ULiftManifold` (which supplies the missing "a `ULift` of a complex
 manifold is a complex manifold" instances). The `Jacobian` example below pins
 the `Type u` signature. There are now **no** documented discrepancies.
 -/

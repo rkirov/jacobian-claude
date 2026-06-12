@@ -11,8 +11,8 @@ import Mathlib.Analysis.Complex.Basic
 import Mathlib.Analysis.Complex.Liouville
 import Mathlib.Analysis.Calculus.Deriv.Inv
 import Mathlib.Analysis.Normed.Field.Lemmas
-import Jacobians.Forms.Genus
-import Jacobians.Path.SmoothPathCore
+import Jacobians.Genus
+import Jacobians.SmoothPathCore
 
 /-!
 # The complex Riemann sphere `ℂℙ¹` as a compact complex 1-manifold

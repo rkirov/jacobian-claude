@@ -16,13 +16,13 @@
 
   Pure one-variable complex analysis — no manifold — reusable verbatim in every chart.
 -/
-import Jacobians.MeromorphicTrace.MeromorphicTrace
+import Jacobians.MeromorphicTrace
 
 open Complex Filter Topology
 
 namespace Jacobians.LaurentTail
 
-open Jacobians.Dolbeault Jacobians.MeromorphicTrace.TraceResidue Jacobians.MeromorphicTrace.MeromorphicTrace
+open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
 
 /-- The **`n`-th Laurent coefficient** of `g : ℂ → ℂ` at `c`: the residue at `c` of
 `g(z)·(z − c)^{−n−1}` (for `g = ∑ aₖ (z−c)^k` the only term surviving the contour integral is
