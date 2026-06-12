@@ -18,12 +18,13 @@ namespace Jacobians.LaurentTail
 
 open Jacobians Jacobians.Dolbeault
 
+/-- `lDim D` is by definition the `finrank` of the junk-free linear-system module. -/
+theorem lDim_eq_finrank_lSysModule {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (D : Divisor X) :
+    lDim (X := X) D = finrank ℂ (lSysModule (X := X) D) := rfl
+
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
-/-- `lDim D` is by definition the `finrank` of the junk-free linear-system module. -/
-theorem lDim_eq_finrank_lSysModule (D : Divisor X) :
-    lDim (X := X) D = finrank ℂ (lSysModule (X := X) D) := rfl
 
 /-- **`L(D)/germZero` is finite-dimensional** (Forster §16 / Miranda Ch. VI Prop. 2.5, by the
 Čech route: `h⁰(𝔘, 𝒪_D) < ∞` + the `H⁰ ≅ L(D)/germZero` bridge). -/

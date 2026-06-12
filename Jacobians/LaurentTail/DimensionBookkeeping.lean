@@ -28,10 +28,11 @@ namespace Jacobians.LaurentTail
 
 open Jacobians Jacobians.Dolbeault
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-! ### The chain maps -/
+
+section LightInstances
+
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- `L(D)` is monotone in `D`: a deeper allowed pole set is a weaker constraint. -/
 theorem linearSystem_mono {D₁ D₂ : Divisor X} (h : D₁ ≤ D₂) :
@@ -50,6 +51,21 @@ noncomputable def lSysInclusion {D₁ D₂ : Divisor X} (h : D₁ ≤ D₂) :
     lSysInclusion h (Submodule.Quotient.mk f)
       = Submodule.Quotient.mk (Submodule.inclusion (linearSystem_mono h) f) :=
   Submodule.mapQ_apply _ _ _ f
+
+/-- **Exactness at `L(D₁)`**: the inclusion of junk-free linear systems is injective. -/
+theorem lSysInclusion_injective {D₁ D₂ : Divisor X} (h : D₁ ≤ D₂) :
+    Function.Injective (lSysInclusion (X := X) h) := by
+  intro a b hab
+  obtain ⟨f, rfl⟩ := Submodule.Quotient.mk_surjective _ a
+  obtain ⟨g, rfl⟩ := Submodule.Quotient.mk_surjective _ b
+  rw [lSysInclusion_mk, lSysInclusion_mk, Submodule.Quotient.eq] at hab
+  rw [Submodule.Quotient.eq]
+  exact hab
+
+end LightInstances
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- `α_D` vanishes on an element iff it lies in `L(D)` (subtype form of `ker_tailMap`). -/
 theorem tailMapCo_eq_zero_iff (D : Divisor X) (f : MeromorphicFunction X) :
@@ -99,16 +115,6 @@ noncomputable def tailKernelToH1 (D₁ D₂ : Divisor X) :
       = Submodule.Quotient.mk (Z : ↥(tailSubspace (X := X) D₁)) := rfl
 
 /-! ### Exactness of the chain (Miranda Lemma 2.3, the five spots) -/
-
-/-- **Exactness at `L(D₁)`**: the inclusion of junk-free linear systems is injective. -/
-theorem lSysInclusion_injective {D₁ D₂ : Divisor X} (h : D₁ ≤ D₂) :
-    Function.Injective (lSysInclusion (X := X) h) := by
-  intro a b hab
-  obtain ⟨f, rfl⟩ := Submodule.Quotient.mk_surjective _ a
-  obtain ⟨g, rfl⟩ := Submodule.Quotient.mk_surjective _ b
-  rw [lSysInclusion_mk, lSysInclusion_mk, Submodule.Quotient.eq] at hab
-  rw [Submodule.Quotient.eq]
-  exact hab
 
 /-- **Exactness at `L(D₂)`**: `ker (α_{D₁}|_{L(D₂)}) = range (L(D₁) → L(D₂))` — a function in
 `L(D₂)` has vanishing `D₁`-tail iff it already lies in `L(D₁)`. -/

@@ -67,7 +67,7 @@ theorem exists_pairwise_disjoint_opens {X : Type*} [TopologicalSpace X] [T2Space
     exact Set.disjoint_of_subset hsub1 hsub2 (hdisj j k hjk)
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The simple-pole residue read -/
 

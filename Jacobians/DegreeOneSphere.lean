@@ -129,7 +129,9 @@ theorem contMDiffAt_omega_of_analyticAt_chartPullback {X : Type*} [TopologicalSp
 so `holoRepr` is analytic in the chart there; `toSphere = coe ∘ holoRepr` reads, in the
 affine chart `chartCoe` at the finite value `coe (holoRepr x)`, as `holoRepr ∘ (chartAt x).symm`,
 which is analytic (`analyticAt_holoRepr_chartPullback_of_orderNonneg`). -/
-theorem MeromorphicFunction.contMDiffAt_toSphere_of_ne (f : MeromorphicFunction X) {P x : X}
+theorem MeromorphicFunction.contMDiffAt_toSphere_of_ne {X : Type*} [TopologicalSpace X]
+    [T2Space X] [CompactSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) {P x : X}
     (hP : f.HasSingleSimplePole P) (hx : x ≠ P) :
     ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (f.toSphere P) x := by
   have hord : 0 ≤ f.orderAtPoint x := hP.2 x hx
@@ -183,7 +185,8 @@ open RiemannSphere in
 of the pullback `F = f.toFun ∘ φ.symm`.  Since `F` has `meromorphicOrderAt = -1` (the simple pole),
 its normal form `N` has order `-1`, so `N⁻¹` (which `=` the chart pullback) is in normal form of
 order `+1 ≥ 0`, hence **analytic at `φ P` with value `0`**. -/
-theorem MeromorphicFunction.contMDiffAt_toSphere_at_pole (f : MeromorphicFunction X) {P : X}
+theorem MeromorphicFunction.contMDiffAt_toSphere_at_pole {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X) {P : X}
     (hP : f.HasSingleSimplePole P) :
     ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (f.toSphere P) P := by
   set φ := chartAt (H := ℂ) P with hφ
@@ -326,7 +329,9 @@ theorem MeromorphicFunction.contMDiffAt_toSphere_at_pole (f : MeromorphicFunctio
 analytic where the order of `f` is `≥ 0` (`contMDiffAt_toSphere_of_ne`).  At `P`, reading in
 `chartInfty`, `toSphere` is `z ↦ 1/f`, which is analytic with value `0` because the pole is simple
 (`contMDiffAt_toSphere_at_pole`).  Together these give `ContMDiff … ω` everywhere. -/
-theorem MeromorphicFunction.contMDiff_toSphere (f : MeromorphicFunction X) {P : X}
+theorem MeromorphicFunction.contMDiff_toSphere {X : Type*} [TopologicalSpace X]
+    [T2Space X] [CompactSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) {P : X}
     (hP : f.HasSingleSimplePole P) :
     ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (f.toSphere P) := by
   intro x
@@ -386,7 +391,8 @@ bundle (`RegularValueWitnessReg.is_regular`) requires at the unique preimage `P`
 
 This is the same analytic local-normal-form content as `contMDiff_toSphere`, here
 specialized to the first-derivative non-vanishing at the simple pole. -/
-theorem MeromorphicFunction.toSphere_regular_at_pole (f : MeromorphicFunction X)
+theorem MeromorphicFunction.toSphere_regular_at_pole {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (f : MeromorphicFunction X)
     {P : X} (hP : f.HasSingleSimplePole P) :
     ∀ x ∈ (f.toSphere P) ⁻¹' {OnePoint.infty},
       deriv ((chartAt ℂ (OnePoint.infty : RiemannSphere)) ∘ (f.toSphere P) ∘
