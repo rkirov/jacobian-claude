@@ -1,20 +1,11 @@
 name: Docs
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'Jacobians/**'
-      - 'docs/**'
-      - 'scripts/unit_design.py'
-      - 'scripts/generate_verso_site.py'
-      - 'site/**'
-      - '.github/workflows/docs.yml'
+  workflow_dispatch:   # push trigger restored once the literate conversion lands
 
 concurrency:
-  group: docs
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 permissions:
   contents: read
