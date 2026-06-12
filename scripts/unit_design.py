@@ -336,6 +336,19 @@ loc = collections.Counter()
 for m, p in mods.items():
     loc[assign[m]] += sum(1 for _ in open(p))
 
+# kernel-level usage weights per unit pair (docs/usage_graph.json, optional):
+# weight = number of (user-decl, used-decl) constant pairs crossing the unit boundary
+uweight, uwit = collections.Counter(), collections.defaultdict(list)
+if os.path.exists('docs/usage_graph.json'):
+    ug = json.load(open('docs/usage_graph.json'))
+    for e in ug['edges']:
+        a, b = e['from'][len('Jacobians.'):], e['to'][len('Jacobians.'):]
+        if a in assign and b in assign and assign[a] != assign[b]:
+            k = (assign[a], assign[b])
+            uweight[k] += e['count']
+            if len(uwit[k]) < 4:
+                uwit[k] += e['witnesses'][:2]
+
 NODE_H, ROW_GAP, XGAP, PAD = 36, 64, 16, 28
 maxL = max(layer.values())
 rows = collections.defaultdict(list)
@@ -364,6 +377,10 @@ totalH = 2 * PAD + (maxL + 1) * NODE_H + maxL * ROW_GAP
 
 data = {u: dict(layer=layer[u], loc=loc[u], n=len(units[u]), dir=META[u][0],
                 desc=META[u][1], keys=META[u][2], deps=redges[u],
+                depmeta={v: dict(w=uweight.get((u, v), 0),
+                                 wit=[f'{a.split(".")[-1]} uses {b.split(".")[-1]}'
+                                      for a, b in uwit.get((u, v), [])][:2])
+                         for v in redges[u]},
                 members=sorted(units[u]), x=round(pos[u][0], 1),
                 y=round(pos[u][1], 1), w=round(width(u), 1)) for u in units}
 
@@ -428,8 +445,10 @@ const edges = [];
 for (const u in DATA) for (const v of DATA[u].deps) {
   const a = DATA[u], b = DATA[v];
   const x1 = a.x + a.w / 2, y1 = a.y + NODE_H, x2 = b.x + b.w / 2, y2 = b.y;
+  const w = (DATA[u].depmeta[v] || {}).w || 0;
   const p = el('path', {d: `M${x1},${y1} C${x1},${y1 + 45} ${x2},${y2 - 45} ${x2},${y2}`,
-                        'class': 'edge'});
+                        'class': 'edge',
+                        'stroke-width': (0.7 + Math.log2(1 + w) / 3).toFixed(2)});
   p.dataset.from = u; p.dataset.to = v; svg.appendChild(p); edges.push(p);
 }
 // nodes
@@ -452,13 +471,20 @@ function select(u) {
   for (const e of edges) e.setAttribute('class', 'edge ' +
     (e.dataset.from === u ? 'dep' : e.dataset.to === u ? 'use' : 'dim'));
   const link = v => `<code class="deplink" onclick="select('${v}')">${v}</code>`;
+  const dep = v => {
+    const m = d.depmeta[v] || {};
+    const wt = m.w ? ` <span class="hint">(${m.w} decl refs${
+      m.wit && m.wit.length ? '; e.g. ' + esc(m.wit[0]) : ''})</span>` : '';
+    return `<li>${link(v)}${wt}</li>`;
+  };
   document.getElementById('info').innerHTML =
     `<h2>${u}</h2>
      <div class="meta">layer ${d.layer} · ${d.n} modules · ${d.loc.toLocaleString()} LoC
        · proposed <code>Jacobians/${d.dir}/</code></div>
      <p>${esc(d.desc)}</p>
      <h3>Keystones</h3><ul>${d.keys.map(k => `<li><code>${esc(k)}</code></li>`).join('')}</ul>
-     <h3>Builds on</h3><p>${d.deps.map(link).join(', ') || '<span class="hint">nothing (foundation)</span>'}</p>
+     <h3>Builds on <span class="hint">(weight = kernel-level decl references)</span></h3>
+     <ul>${d.deps.map(dep).join('') || '<span class="hint">nothing (foundation)</span>'}</ul>
      <h3>Used by</h3><p>${users.map(link).join(', ') || '<span class="hint">nothing (headline)</span>'}</p>
      <h3>Members (${d.n})</h3><div class="members">${d.members.map(m => `<code>${m}</code>`).join('<br>')}</div>`;
 }
