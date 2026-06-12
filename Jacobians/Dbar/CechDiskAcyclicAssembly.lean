@@ -156,15 +156,6 @@ def HasHoloCorrectors (𝔙 : FiniteFamily X) : Prop :=
         (fun z => Gext (η j) z - Gext (η i) z)
           =ᶠ[𝓝[≠] x] holoFn (cocycleComp_mem 𝔙 s i j)
 
-/-- **`FunctionDiskAcyclic 𝔙 0` from the corrector input.**  The function → germ descent
-(`functionDiskAcyclic_of_holoCorrectors`) turns each cocycle's correctors into the matching
-germ-class `0`-cochain primitive, witnessing `FunctionDiskAcyclic`. -/
-theorem functionDiskAcyclic_of_hasHoloCorrectors (𝔙 : FiniteFamily X)
-    (h : HasHoloCorrectors 𝔙) : FunctionDiskAcyclic 𝔙 (0 : Divisor X) := by
-  intro s hs
-  obtain ⟨η, hη, hsplit⟩ := h ⟨s, hs⟩
-  exact ⟨η, hη, functionDiskAcyclic_of_holoCorrectors 𝔙 η hη ⟨s, hs⟩ hsplit⟩
-
 end Jacobians.Dolbeault
 
 /-! ## Status and the EXACT remaining goal

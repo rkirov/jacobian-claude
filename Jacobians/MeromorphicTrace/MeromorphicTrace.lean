@@ -125,53 +125,6 @@ has a *simple* zero at `a`: `φ z − b = (z − a) · g z` near `a`, with `g` a
 `g a = φ'(a) ≠ 0`.  This is the change-of-coordinate fact underlying Lemma 3.2: the cover, read in
 charts at an unramified preimage, is exactly such a `φ`. -/
 
-/-- **Simple-zero factorization of a local biholomorphism.**  For `φ` analytic at `a` with
-`φ'(a) ≠ 0` and `φ a = b`, there is an analytic `g` (nonzero at `a`, with `g a = φ'(a)`) such that
-`φ z − b = (z − a) · g z` for `z` near `a`.  The first-order Taylor expansion with analytic
-remainder; `g` is the "analytic slope" of `φ` at `a`. -/
-theorem exists_simpleZero_factorization {φ : ℂ → ℂ} {a b : ℂ} (hφ : AnalyticAt ℂ φ a)
-    (hφ' : deriv φ a ≠ 0) (hab : φ a = b) :
-    ∃ g : ℂ → ℂ, AnalyticAt ℂ g a ∧ g a = deriv φ a ∧
-      (∀ᶠ z in 𝓝 a, φ z - b = (z - a) * g z) := by
-  have hsub : AnalyticAt ℂ (fun z => φ z - b) a := hφ.sub analyticAt_const
-  have hne0 : ¬ ∀ᶠ z in 𝓝 a, (fun z => φ z - b) z = 0 := by
-    intro hcon
-    have hd : deriv φ a = deriv (fun _ : ℂ => b) a := by
-      apply Filter.EventuallyEq.deriv_eq
-      filter_upwards [hcon] with z hz; rw [sub_eq_zero] at hz; exact hz
-    rw [deriv_const] at hd; exact hφ' hd
-  obtain ⟨e, g, hg, hg0, hfact⟩ := (hsub.exists_eventuallyEq_pow_smul_nonzero_iff).mpr hne0
-  have he0 : e ≠ 0 := by
-    rintro rfl
-    have h := hfact.self_of_nhds
-    simp only [pow_zero, one_smul, hab, sub_self] at h
-    exact hg0 h.symm
-  -- Pin `e = 1` and `g a = φ'(a)` from the first derivative of the factorization.
-  have hφeq : φ =ᶠ[𝓝 a] fun z => b + (z - a) ^ e * g z := by
-    filter_upwards [hfact] with z hz; simp only [smul_eq_mul] at hz; rw [← hz]; ring
-  have hgdiff : DifferentiableAt ℂ g a := hg.differentiableAt
-  have hpow_deriv : HasDerivAt (fun z : ℂ => (z - a) ^ e * g z)
-      (((e : ℂ) * (a - a) ^ (e - 1)) * g a + (a - a) ^ e * deriv g a) a := by
-    have h1 : HasDerivAt (fun z : ℂ => (z - a) ^ e) ((e : ℂ) * (a - a) ^ (e - 1)) a := by
-      have hb : HasDerivAt (fun z : ℂ => z - a) 1 a := by simpa using (hasDerivAt_id a).sub_const a
-      simpa using hb.pow e
-    simpa using h1.mul hgdiff.hasDerivAt
-  have hderiv_eq : deriv φ a = ((e : ℂ) * (a - a) ^ (e - 1)) * g a + (a - a) ^ e * deriv g a :=
-    ((hpow_deriv.const_add b).congr_of_eventuallyEq hφeq).deriv
-  rw [sub_self] at hderiv_eq
-  have he1 : e = 1 := by
-    by_contra hne
-    have h1 : (0 : ℂ) ^ (e - 1) = 0 := zero_pow (by omega)
-    have h2 : (0 : ℂ) ^ e = 0 := zero_pow he0
-    rw [h1, h2] at hderiv_eq; simp at hderiv_eq; exact hφ' hderiv_eq
-  subst he1
-  have hga : g a = deriv φ a := by
-    simp only [Nat.cast_one, one_mul, Nat.sub_self, pow_zero, mul_one, pow_one, zero_mul,
-      add_zero] at hderiv_eq
-    exact hderiv_eq.symm
-  refine ⟨g, hg, hga, ?_⟩
-  filter_upwards [hfact] with z hz; simpa [pow_one] using hz
-
 /-! ### The simple-pole residue change of variables — the heart of Lemma 3.2
 
 For a single (unramified) sheet, pushing the simple pole `c·(w − b)⁻¹` of a `1`-form forward along

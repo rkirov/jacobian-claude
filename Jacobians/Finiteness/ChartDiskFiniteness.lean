@@ -110,16 +110,6 @@ theorem isOpen_Uov (p : 𝔇.ι × 𝔇.ι) : IsOpen (𝔇.Uov p) := by
   exact (Set.inter_subset_left (s := ((𝔇.U p.1 : Opens X) : Set X))).trans
     (𝔇.U_subset_chartAt_source p.1)
 
-/-- The overlap image `Uov (i,j)` lies inside the ball image of `U i` (it is the chart-`i` image of
-`U i ∩ U j ⊆ U i`). -/
-theorem Uov_subset_ball (p : 𝔇.ι × 𝔇.ι) :
-    𝔇.Uov p ⊆ Metric.ball (𝔇.e p.1) (𝔇.radius p.1) := by
-  -- `Uov p = chartAt '' (U p.1 ∩ U p.2) = extChartAt '' (U p.1 ∩ U p.2)` (coe is rfl-defeq)
-  show (extChartAt 𝓘(ℝ, ℂ) (𝔇.center p.1)) '' ((𝔇.U p.1 ⊓ 𝔇.U p.2 : Opens X) : Set X)
-      ⊆ Metric.ball (𝔇.e p.1) (𝔇.radius p.1)
-  rw [← 𝔇.image_U_eq_ball p.1]
-  exact Set.image_mono Set.inter_subset_left
-
 /-! ## §2 — The chart transition and the Wirtinger frame factor
 
 The cover chart transition `τ_{ij} = φ_j ∘ φ_i.symm` (chart-`i` → chart-`j` coordinates). On a ball
@@ -133,14 +123,6 @@ cover cocycle. -/
 coordinates). -/
 noncomputable def coverTransition (i j : 𝔇.ι) : ℂ → ℂ :=
   (chartAt (H := ℂ) (𝔇.center j)) ∘ (chartAt (H := ℂ) (𝔇.center i)).symm
-
-/-- The transition `τ_{ij}` is `ℂ`-differentiable at `φ_i x` for any `x ∈ U_i ∩ U_j` (both chart
-sources contain `x`).  From `transition_analyticAt_of_mem`. -/
-theorem differentiableAt_coverTransition (i j : 𝔇.ι) {x : X}
-    (hx : x ∈ (𝔇.U i ⊓ 𝔇.U j : Opens X)) :
-    DifferentiableAt ℂ (𝔇.coverTransition i j) ((chartAt (H := ℂ) (𝔇.center i)) x) :=
-  (transition_analyticAt_of_mem (𝔇.U_subset_chartAt_source i hx.1)
-    (𝔇.U_subset_chartAt_source j hx.2)).differentiableAt
 
 /-- The transition `τ_{ij}` maps `φ_i x` to `φ_j x` for `x` in the overlap (chart cancellation). -/
 theorem coverTransition_apply (i j : 𝔇.ι) {x : X} (hx : x ∈ (𝔇.U i ⊓ 𝔇.U j : Opens X)) :
@@ -228,22 +210,6 @@ namespace BallSplitData
 
 variable {𝔇} (𝒮 : 𝔇.BallSplitData)
 
-/-- `g a` is `ℝ`-differentiable at any point of the ball `ball (e a) (radius a)`. -/
-theorem differentiableAt_g {a : 𝔇.ι} {z : ℂ} (hz : z ∈ Metric.ball (𝔇.e a) (𝔇.radius a)) :
-    DifferentiableAt ℝ (𝒮.g a) z :=
-  (𝒮.g_smooth a).differentiableOn (by norm_num) z hz
-    |>.differentiableAt (Metric.isOpen_ball.mem_nhds hz)
-
-/-- The chart-`a` image of the overlap (`Uov (a,b)`) is open and its points are interior, so the
-split identity `g_b∘τ_{ab} =ᶠ g_a + s_{ab}` holds in a NEIGHBOURHOOD of each overlap point (needed
-to take `∂̄`, a germ operator). -/
-theorem split_eventuallyEq {a b : 𝔇.ι} {z : ℂ} (hz : z ∈ 𝔇.Uov (a, b)) :
-    (fun w => 𝒮.g b (𝔇.coverTransition a b w))
-      =ᶠ[𝓝 z] (fun w => 𝒮.g a w + 𝒮.s a b w) := by
-  filter_upwards [(𝔇.isOpen_Uov (a, b)).mem_nhds hz] with w hw
-  have h := 𝒮.split a b w hw
-  linear_combination h
-
 /-! ### The per-ball ∂̄-solve and the holomorphic correctors
 
 Solve `∂̄h_a = ∂̄g_a` on the FULL ball `ball (e a) (radius a)` (Forster 13.2 — no cutoff, the cover
@@ -263,11 +229,6 @@ theorem contDiffOn_dbar_g (a : 𝔇.ι) :
 (Forster 13.2 on the full ball — the no-cutoff solve the ball geometry permits). -/
 noncomputable def solve (a : 𝔇.ι) : ℂ → ℂ :=
   (DbarOpenDisk.dbar_solvable_open_disk (𝔇.e a) (𝔇.radius_pos a) (𝒮.contDiffOn_dbar_g a)).choose
-
-theorem solve_smooth (a : 𝔇.ι) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (𝒮.solve a) (Metric.ball (𝔇.e a) (𝔇.radius a)) :=
-  (DbarOpenDisk.dbar_solvable_open_disk (𝔇.e a) (𝔇.radius_pos a)
-    (𝒮.contDiffOn_dbar_g a)).choose_spec.1
 
 end BallSplitData
 

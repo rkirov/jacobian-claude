@@ -9,22 +9,22 @@ import Jacobians.MappingDegree.WithinChartWitnessReduction
 
 /-! # Reducing `PerChartNonConstancyHypothesis` to non-constancy on chart balls
 
-`WithinChartWitnessReduction.lean` (ZZ34) reduced
+`WithinChartWitnessReduction.lean` reduced
 `WithinChartWitnessHypothesis X Y` to `PerChartNonConstancyHypothesis X Y`.
 That hypothesis asserts that, for every non-constant `C^ω` map `f : X → Y`
 and every fibre point `x` of `y₀ = f x`, the chart pullback `F` differs from
 `F ((chartAt ℂ x) x)` in *every* neighborhood of `(chartAt ℂ x) x`.
 
-This file (ZZ36) provides the **identity-theorem reduction** to a strictly
+This file provides the **identity-theorem reduction** to a strictly
 local, filter-free hypothesis: it suffices to exhibit, for *every* radius
 `r > 0`, a single point `z₁ ∈ Metric.ball ((chartAt ℂ x) x) r` at which the
 chart pullback differs from its value at the chart image of `x`.
 
 The mechanism:
 
-1. ZZ24 (`contMDiff_omega_analyticAt_chart_pullback`) supplies analyticity
+1. `contMDiff_omega_analyticAt_chart_pullback` supplies analyticity
    of the chart pullback at the chart image of `x`.
-2. The `exists_preconnected_open_ball_of_analyticAt` helper from ZZ34 gives
+2. `exists_preconnected_open_ball_of_analyticAt` gives
    a preconnected open ball of analyticity of some radius `r₀ > 0`.
 3. The all-radii hypothesis is applied at radius `r₀`, giving a witness
    `z₁` inside the *same* preconnected open ball where analyticity holds.
@@ -37,10 +37,7 @@ The mechanism:
 The remaining obstruction is the existence of an off-centre value in
 *every* small chart ball — a strictly local statement (no filters, no
 preconnectedness, no analyticity of any kind in the input). Producing such
-a witness from the global `¬ IsConstantMap f` is unchanged content, the
-same parameter-input as in ZZ34.
-
-No gaps, no `axiom`. -/
+a witness from the global `¬ IsConstantMap f` remains the parameter-input. -/
 
 @[expose] public section
 
@@ -131,9 +128,9 @@ def ChartBallOffCentreWitnessHypothesis
 /-- **Reduction.** The chart-ball off-centre witness hypothesis (all radii)
 implies the per-chart non-constancy hypothesis. The proof:
 
-1. From ZZ24 (`contMDiff_omega_analyticAt_chart_pullback`) the chart
+1. From `contMDiff_omega_analyticAt_chart_pullback` the chart
    pullback is `AnalyticAt ℂ` at the chart image of `x`.
-2. By `exists_preconnected_open_ball_of_analyticAt` (ZZ34 helper), there
+2. By `exists_preconnected_open_ball_of_analyticAt`, there
    is a preconnected open ball of radius `r₀ > 0` on which the pullback is
    `AnalyticOnNhd ℂ`.
 3. The hypothesis applied at radius `r₀` gives a witness `z₁` inside that
@@ -151,7 +148,7 @@ theorem perChartNonConstancy_of_chartBallOffCentreWitness
   -- Set up the chart pullback and its centre.
   set F : ℂ → ℂ := (chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm with hF_def
   set z₀ : ℂ := (chartAt ℂ x) x with hz₀_def
-  -- (1) `AnalyticAt ℂ F z₀` from ZZ24.
+  -- (1) `AnalyticAt ℂ F z₀` from the chart-pullback bridge.
   have hFA_at : AnalyticAt ℂ F z₀ :=
     contMDiff_omega_analyticAt_chart_pullback hf x
   -- (2) Extract a preconnected open ball of analyticity around `z₀`.
@@ -182,34 +179,10 @@ theorem perChartNonConstancy_of_chartBallOffCentreWitness
   rw [hz₀_F] at hz_ne
   exact hz_ne
 
-/-! ## End-to-end composition through ZZ34 -/
-
-/-- **Within-chart witness from the chart-ball hypothesis.** Composing this
-file's reduction with `withinChartWitness_of_perChartNonConstancy` (ZZ34). -/
-theorem withinChartWitness_of_chartBallOffCentreWitness
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ChartBallOffCentreWitnessHypothesis X Y) :
-    WithinChartWitnessHypothesis X Y :=
-  withinChartWitness_of_perChartNonConstancy
-    (perChartNonConstancy_of_chartBallOffCentreWitness H)
-
-/-- **Connectivity globalization from the chart-ball hypothesis.** End-to-end
-through ZZ34 + ZZ32. -/
-theorem connectivityGlobalization_of_chartBallOffCentreWitness
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ChartBallOffCentreWitnessHypothesis X Y) :
-    ConnectivityGlobalizationHypothesis X Y :=
-  connectivityGlobalization_of_perChartNonConstancy
-    (perChartNonConstancy_of_chartBallOffCentreWitness H)
+/-! ## End-to-end composition -/
 
 /-- **End-to-end conditional discharge of `fibres_finite_statement` from the
-chart-ball hypothesis.** Composing through ZZ34 + ZZ32 + ZZ30. -/
+chart-ball hypothesis.** -/
 theorem fibres_finite_statement_holds_of_chartBallOffCentreWitness
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]

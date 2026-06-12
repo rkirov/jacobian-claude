@@ -127,17 +127,6 @@ def FunctionDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X) : Prop :=
     ∃ η : Π i, 𝔙.U i → ℂ, (∀ i, η i ∈ OmegaD D (𝔙.U i)) ∧
       𝔙.cechDelta0 (fun i => toGerm (𝔙.U i) (η i)) = s
 
-/-- **The reduction.** If the function-level chart-disk acyclicity input is available, then the
-cover is germ-level disk-acyclic. Sorry-free: the produced `0`-cochain primitive `η` assembles to a
-`sections0`-element (§3 `toGerm_mem_sections0`) whose `δ⁰`-image is `s`, witnessing
-`s ∈ coboundaries1 = map δ⁰ sections0`. This is the clean interface to the disk engine. -/
-theorem isDiskAcyclic_of_funcLevel (𝔙 : FiniteFamily X) (D : Divisor X)
-    (h : FunctionDiskAcyclic 𝔙 D) : IsDiskAcyclic 𝔙 D := by
-  intro s hs
-  obtain ⟨η, hη, hδ⟩ := h s hs
-  rw [FiniteFamily.coboundaries1, Submodule.mem_map]
-  exact ⟨fun i => toGerm (𝔙.U i) (η i), toGerm_mem_sections0 𝔙 D η hη, hδ⟩
-
 end Jacobians.Dolbeault
 
 /-! The discharge of `FunctionDiskAcyclic` for a chart-disk cover — the germ → honest-function

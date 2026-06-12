@@ -70,13 +70,6 @@ theorem refineZ1_id (𝔘 : FiniteCover X) (g : ↥(𝔘.cocycles1 D)) :
   apply Subtype.ext
   rw [refineZ1_coe, refineC1_id, LinearMap.id_apply]
 
-/-- **`refineH1` of the identity refinement is the identity on `H¹`** (`refineH1_id`). -/
-theorem refineH1_id (𝔘 : FiniteCover X) :
-    (IsRefinement.id 𝔘).refineH1 D = LinearMap.id := by
-  refine LinearMap.ext fun q => ?_
-  induction q using Submodule.Quotient.induction_on with
-  | _ g => rw [refineH1_mk, refineZ1_id, LinearMap.id_apply]
-
 /-- **`refineZ1` is functorial on cocycles.**  `(hs.comp hr).refineZ1 = hs.refineZ1 ∘ hr.refineZ1`
 (the cocycle-level form of `refineC1_comp`; corestricting both sides + cocycle-coe injectivity). -/
 theorem refineZ1_comp {s : 𝔚.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
@@ -84,16 +77,6 @@ theorem refineZ1_comp {s : 𝔚.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
     (hs.comp hr).refineZ1 D g = hs.refineZ1 D (hr.refineZ1 D g) := by
   apply Subtype.ext
   rw [refineZ1_coe, refineZ1_coe, refineZ1_coe, refineC1_comp hs hr, LinearMap.comp_apply]
-
-/-- **`refineH1` is functorial on `H¹`** `(hs.comp hr).refineH1 = hs.refineH1 ∘ₗ hr.refineH1`
-(`refineH1_comp`).  Descends `refineZ1_comp` through the `H¹ = Z¹/B¹` quotient. -/
-theorem refineH1_comp {s : 𝔚.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
-    (hs : IsRefinement 𝔚 𝔙 s) (hr : IsRefinement 𝔙 𝔘 r) :
-    (hs.comp hr).refineH1 D = hs.refineH1 D ∘ₗ hr.refineH1 D := by
-  refine LinearMap.ext fun q => ?_
-  induction q using Submodule.Quotient.induction_on with
-  | _ g =>
-    rw [refineH1_mk, LinearMap.comp_apply, refineH1_mk, refineH1_mk, refineZ1_comp]
 
 /-! ### Injectivity of `refineH1` from a back-refinement (STEP A + functoriality)
 
@@ -150,26 +133,11 @@ theorem overlapFamily_triple_le_fineTriple {X : Type*} [TopologicalSpace X] (�
     (inf_le_inf (overlapFamily_le_fine 𝔙 𝔘 i j a) (overlapFamily_le_fine 𝔙 𝔘 i j b))
     (overlapFamily_le_fine 𝔙 𝔘 i j c)
 
-/-- Restrict a fine-cover `0`-cochain to the local family over a fixed coarse overlap. -/
-noncomputable def overlapRestrictC0 (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι) :
-    𝔙.Cochain0 →ₗ[ℂ] (overlapFamily 𝔙 𝔘 i j).Cochain0 :=
-  LinearMap.pi fun a =>
-    rawRestrictG (overlapFamily_le_fine 𝔙 𝔘 i j a) ∘ₗ LinearMap.proj a
-
 /-- Restrict a fine-cover `1`-cochain to the local family over a fixed coarse overlap. -/
 noncomputable def overlapRestrictC1 (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι) :
     𝔙.Cochain1 →ₗ[ℂ] (overlapFamily 𝔙 𝔘 i j).Cochain1 :=
   LinearMap.pi fun p =>
     rawRestrictG (overlapFamily_pair_le_finePair 𝔙 𝔘 i j p.1 p.2) ∘ₗ LinearMap.proj p
-
-@[simp] theorem overlapRestrictC1_apply {X : Type*} [TopologicalSpace X]
-    (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι)
-    (g : 𝔙.Cochain1) (p : 𝔙.ι × 𝔙.ι) :
-    overlapRestrictC1 𝔙 𝔘 i j g p =
-      rawRestrictG (overlapFamily_pair_le_finePair 𝔙 𝔘 i j p.1 p.2) (g p) := by
-  change rawRestrictG (overlapFamily_pair_le_finePair 𝔙 𝔘 i j p.1 p.2) (g p) =
-    rawRestrictG (overlapFamily_pair_le_finePair 𝔙 𝔘 i j p.1 p.2) (g p)
-  rfl
 
 /-- Restrict a fine-cover `2`-cochain to the local family over a fixed coarse overlap. -/
 noncomputable def overlapRestrictC2 (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι) :
@@ -177,15 +145,6 @@ noncomputable def overlapRestrictC2 (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι) 
   LinearMap.pi fun t =>
     rawRestrictG (overlapFamily_triple_le_fineTriple 𝔙 𝔘 i j t.1 t.2.1 t.2.2) ∘ₗ
       LinearMap.proj t
-
-@[simp] theorem overlapRestrictC2_apply {X : Type*} [TopologicalSpace X]
-    (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι)
-    (g : 𝔙.Cochain2) (t : 𝔙.ι × 𝔙.ι × 𝔙.ι) :
-    overlapRestrictC2 𝔙 𝔘 i j g t =
-      rawRestrictG (overlapFamily_triple_le_fineTriple 𝔙 𝔘 i j t.1 t.2.1 t.2.2) (g t) := by
-  change rawRestrictG (overlapFamily_triple_le_fineTriple 𝔙 𝔘 i j t.1 t.2.1 t.2.2) (g t) =
-    rawRestrictG (overlapFamily_triple_le_fineTriple 𝔙 𝔘 i j t.1 t.2.1 t.2.2) (g t)
-  rfl
 
 /-- **The Leray LIFT condition (surjectivity input).**  Every `𝔙`-cocycle `t` is, modulo a
 `𝔙`-coboundary, the refinement `refineC1 g` of some `𝔘`-cocycle `g`.  This is the cocycle-level form
@@ -213,22 +172,6 @@ theorem refineH1_mk_eq_iff (hr : IsRefinement 𝔙 𝔘 r) (g : ↥(𝔘.cocycle
       hr.refineC1 (g : 𝔘.Cochain1) - (t : 𝔙.Cochain1) ∈ 𝔙.coboundaries1 D := by
   rw [refineH1_mk, Submodule.Quotient.eq]
   rfl
-
-/-- **Surjectivity of `refineH1` ⟺ the Leray LIFT condition.**  The cocycle-level lift predicate is
-exactly surjectivity of the induced `H¹` map (so `RefinementLift` is a faithful interface, not
-merely a sufficient condition). -/
-theorem refineH1_surjective_iff_lift (hr : IsRefinement 𝔙 𝔘 r) :
-    Function.Surjective (hr.refineH1 D) ↔ RefinementLift hr D := by
-  constructor
-  · intro hsurj t
-    obtain ⟨q, hq⟩ := hsurj (Submodule.Quotient.mk t)
-    induction q using Submodule.Quotient.induction_on with
-    | _ g => exact ⟨g, (refineH1_mk_eq_iff D hr g t).1 hq⟩
-  · intro hlift q
-    induction q using Submodule.Quotient.induction_on with
-    | _ t =>
-      obtain ⟨g, hg⟩ := hlift t
-      exact ⟨Submodule.Quotient.mk g, (refineH1_mk_eq_iff D hr g t).2 hg⟩
 
 /-- **Injectivity of `refineH1` ⟺ the Leray DESCEND condition.** -/
 theorem refineH1_injective_iff_descend (hr : IsRefinement 𝔙 𝔘 r) :

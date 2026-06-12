@@ -241,40 +241,6 @@ session; see `Jacobians.lean:162` / `PeriodLattice.lean:262` for the
 `IsSmoothPath` obligations still open.)
 -/
 
-/-- **The smoothPath foundation.** Given P, Q in a path-connected charted
-space, construct a piecewise chart-ball-linear path with smoothstep
-reparametrization at junctions.
-
-For the chart cover we use `(PathConnectedSpace.somePath P Q).extend`, the
-canonical continuous extension of Mathlib's `Path P Q` to all of `ℝ`. The
-chart cover then provides the anchor points `x : Fin n → X` along the
-path. -/
-noncomputable def smoothPathRaw {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    [PathConnectedSpace X] (P Q : X) : ℝ → X :=
-  let path := (PathConnectedSpace.somePath P Q).extend
-  let h_cont : Continuous path := (PathConnectedSpace.somePath P Q).continuous_extend
-  let cover := exists_chartCover path h_cont
-  let n := cover.choose
-  let hn_pos : 0 < n := cover.choose_spec.choose
-  let x := cover.choose_spec.choose_spec.choose
-  fun t =>
-    if _h : t ≤ 0 then P
-    else if _h' : 1 ≤ t then Q
-    else
-      -- t ∈ (0, 1). Determine which interval [k/n, (k+1)/n] contains t.
-      let k_real : ℝ := t * n
-      let k_floor : ℕ := ⌊k_real⌋₊
-      -- For t ∈ (0, 1), k_floor ∈ [0, n - 1]; fallback to 0 if not.
-      let k : Fin n :=
-        if hk : k_floor < n then ⟨k_floor, hk⟩
-        else ⟨0, hn_pos⟩
-      -- Path endpoints in piece k:
-      let y_start := path ((k : ℝ) / n)
-      let y_end := path (((k : ℝ) + 1) / n)
-      -- Reparametrize t ∈ [k/n, (k+1)/n] to [0, 1] via smoothstep.
-      let s : ℝ := smoothStep01 ((t - (k : ℝ) / n) * n)
-      ChartBallPath (x k) y_start y_end s
-
 /-! ## smoothStep01 properties
 
 The basic boundary identities; differentiability of the smoothstep
@@ -416,13 +382,6 @@ lemma smoothStep01_mem_unit (t : ℝ) : smoothStep01 t ∈ Set.Icc (0 : ℝ) 1 :
   ⟨smoothStep01_nonneg t, smoothStep01_le_one t⟩
 
 /-! ## Piece-wise reparametrization bounds -/
-
-/-- The rescale at the RIGHT endpoint of `[k/n, (k+1)/n]` is `1`. -/
-lemma piece_reparam_at_right (k n : ℕ) (hn : 0 < n) :
-    (((k : ℝ) + 1) / n - (k : ℝ) / n) * n = 1 := by
-  have hn_pos : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
-  field_simp
-  ring
 
 /-! ## Path-extend boundary values (Mathlib's `Path.extend`)
 

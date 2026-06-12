@@ -291,7 +291,7 @@ theorem localKFoldMultiplicity_preimage_card_of_substitution
       have hh : g z = (g z - w₀) + w₀ := by ring
       rw [hh, hpow]
     rw [this, hw₁_def]; ring
-  -- Injectivity of z ↦ v z on Pre via ZZ74 uniqueness.
+  -- Injectivity of z ↦ v z on Pre via the k=1 uniqueness count.
   have h_v_injOn : Set.InjOn (fun z => v z) Pre := by
     intro z₁ hz₁ z₂ hz₂ hvz
     have hξ : v z₁ ∈ F := h_v_to_roots z₁ hz₁
@@ -325,23 +325,6 @@ theorem localKFoldMultiplicity_preimage_card_of_substitution
       (Set.InjOn.ncard_image h_v_injOn).symm
     rw [h1, h_image_eq, Set.ncard_coe_finset]
   rw [hPre_ncard, hF_card]
-
-/-- **`k`-fold local multiplicity** under a local analytic factorization
-`g z - w₀ = (z - x₀)^k · u z` with non-vanishing unit factor `u`. -/
-theorem localKFoldMultiplicity_preimage_card_of_localFactorization
-    {g u : ℂ → ℂ} {x₀ w₀ : ℂ} {R : ℝ} {k : ℕ}
-    (hR : 0 < R) (hk : 1 ≤ k)
-    (hu_an : AnalyticOnNhd ℂ u (Metric.closedBall x₀ R))
-    (hu_x₀ : u x₀ ≠ 0)
-    (h_w₀ : g x₀ = w₀)
-    (hfact : ∀ z ∈ Metric.closedBall x₀ R,
-        g z - w₀ = (z - x₀) ^ k * u z) :
-    ∃ ε > (0 : ℝ), ∃ δ > (0 : ℝ),
-      ∀ w ∈ Metric.ball (g x₀) δ, w ≠ g x₀ →
-        ({z ∈ Metric.ball x₀ ε | g z = w} : Set ℂ).ncard = k := by
-  have hsub : KthRootSubstitution g x₀ w₀ k :=
-    kthRootSubstitution_of_localFactorization hR hk hu_an hu_x₀ hfact
-  exact localKFoldMultiplicity_preimage_card_of_substitution hk hsub h_w₀
 
 end Manifold
 end Jacobians.Discharge

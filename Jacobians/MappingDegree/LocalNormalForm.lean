@@ -107,13 +107,6 @@ This is **definitionally equal** to `MMeromorphicOn.orderFun I f x` from
 that `R3_localMultiplicity_statement` in `Manifold/ResidueTheorem.lean`
 should ultimately route through. -/
 
-/-- The **integer-valued local order** of `f : X → ℂ` at `x : X`, computed
-via the chart-pullback `mmeromorphicOrderAt`. -/
-def localOrder
-    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (I : ModelWithCorners ℂ ℂ ℂ) (f : X → ℂ) (x : X) : ℤ :=
-  MMeromorphicOn.orderFun I f x
-
 /-! ## The chart-coordinate local normal form
 
 The honest content. We invoke the mathlib lemma `meromorphicOrderAt_eq_int_iff`

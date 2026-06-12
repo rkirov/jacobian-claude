@@ -144,24 +144,6 @@ theorem refineC1_sub_mem_coboundaries1 [T2Space X] [CompactSpace X] [ConnectedSp
     hker, map_zero, add_zero] at hid
   exact hid.symm
 
-/-- **Homotopy-independence of the Čech refinement map.** Any two refinement-index maps `r, r'` for
-the same pair of covers induce the SAME map on Čech `H¹`: `refineH1 hr D = refineH1 hr' D`. The
-difference of the two cocycle-level refinements is a coboundary (`refineC1_sub_mem_coboundaries1`),
-so the induced classes in `H¹ = Z¹/B¹` coincide (`Submodule.Quotient.eq`); the maps then agree on
-every generator `Submodule.Quotient.mk g`. -/
-theorem refineH1_eq [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (D : Divisor X)
-    (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘 r') :
-    hr.refineH1 D = hr'.refineH1 D := by
-  refine LinearMap.ext fun q => ?_
-  induction q using Submodule.Quotient.induction_on with
-  | _ g =>
-    rw [refineH1_mk, refineH1_mk, Submodule.Quotient.eq]
-    -- `refineZ1 hr g − refineZ1 hr' g ∈ (coboundaries1 𝔙 D).submoduleOf (cocycles1 𝔙 D)`;
-    -- membership in `submoduleOf` is (definitionally) membership of the coe in `coboundaries1 𝔙 D`,
-    -- and the coe of `refineZ1 _ g` is `refineC1 _ g` (`refineZ1_coe`).
-    exact refineC1_sub_mem_coboundaries1 D hr' hr g.2
-
 end IsRefinement
 end FiniteCover
 

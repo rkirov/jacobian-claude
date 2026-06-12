@@ -82,28 +82,6 @@ is the boundedness that gives continuity of the linear embedding
 (Φ α x₀ := `mkOfCompact (localRepOnInnerShrunk α x₀)`) into the
 product space. -/
 
-/-- **Boundedness of the bcf-embedding component.**
-Under `HolomorphicOneForms.normedAddCommGroup`, the norm of
-`mkOfCompact (localRepOnInnerShrunk α x₀)` is bounded by `‖α‖`. -/
-theorem norm_mkOfCompact_localRepOnInnerShrunk_le
-    (α : Jacobians.HolomorphicOneForms X) (x₀ : X) :
-    letI := innerShrunkChart_compactSpace (X := X) x₀
-    letI := HolomorphicOneForms.normedAddCommGroup (X := X)
-    ‖BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀)‖ ≤ ‖α‖ := by
-  letI := innerShrunkChart_compactSpace (X := X) x₀
-  letI := HolomorphicOneForms.normedAddCommGroup (X := X)
-  -- BCF norm via mkOfCompact equals ContinuousMap norm.
-  rw [BoundedContinuousFunction.norm_mkOfCompact]
-  by_cases hx₀ : x₀ ∈ (chartCover : Finset X)
-  · exact norm_localRepOnInnerShrunk_le_supNormK α hx₀
-  · -- Out of chartCover: innerShrunkChart empty, continuous map is 0.
-    have h_iso : IsEmpty (innerShrunkChart (X := X) x₀) :=
-      Set.isEmpty_coe_sort.mpr (innerShrunkChart_eq_empty x₀ hx₀)
-    have h0 : localRepOnInnerShrunk α x₀ = 0 := by
-      ext y; exact h_iso.false y |>.elim
-    rw [h0, norm_zero]
-    exact norm_nonneg _
-
 /-! ### The per-chart continuous linear embedding (B.9 step 3b)
 
 Packages the embedding `α ↦ mkOfCompact (localRepOnInnerShrunk α x₀)`

@@ -35,18 +35,6 @@ namespace Jacobians.Dolbeault
 /-! ### Layer 1 — Green's theorem on an axis-aligned rectangle
 (ported from tangentstorm/JacobianChallenge, MIT, see file header) -/
 
-/-- The iterated `x`-then-`y` interval integral of a continuous field equals the set integral over
-the product rectangle. -/
-theorem rectangle_iterated_eq_setIntegral (f : ℝ × ℝ → ℝ) (a b c d : ℝ)
-    (hab : a ≤ b) (hcd : c ≤ d) (hf : Continuous f) :
-    (∫ x in a..b, ∫ y in c..d, f (x, y))
-      = ∫ p in Set.Icc a b ×ˢ Set.Icc c d, f p := by
-  erw [MeasureTheory.setIntegral_prod]
-  · simp +decide [hab, hcd, MeasureTheory.integral_Icc_eq_integral_Ioc,
-      intervalIntegral.integral_of_le]
-  · exact ContinuousOn.integrableOn_compact
-      (isCompact_Icc.prod CompactIccSpace.isCompact_Icc) hf.continuousOn
-
 /-! ### Layer 2 — compact-support vanishing on `ℂ` (Forster (10.20)) -/
 
 /-- The directional derivative of a `C¹` compactly-supported `φ : ℂ → ℂ` is integrable. -/

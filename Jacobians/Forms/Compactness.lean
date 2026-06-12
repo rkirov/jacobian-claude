@@ -50,16 +50,6 @@ theorem shrunkChart_subset_baseSet {X : Type*} [TopologicalSpace X] [T2Space X] 
   rw [TangentBundle.trivializationAt_baseSet]
   exact shrunkChart_subset_source x₀ hx₀
 
-/-- `localRep α x₀` is continuous on the compact `shrunkChart x₀` for
-`x₀ ∈ chartCover`. -/
-theorem localRep_continuousOn_shrunkChart {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (x₀ : X) (hx₀ : x₀ ∈ (chartCover : Finset X)) :
-    ContinuousOn (localRep α x₀) (shrunkChart (X := X) x₀) :=
-  (localRep_continuousOn α x₀).mono (shrunkChart_subset_baseSet x₀ hx₀)
-
 /-! ### Step B.2 — pointwise norm bound on `localRepOnShrunk`
 Under the `ContinuousMap.norm = sSup` identity on a compact `CompactSpace`,
 the bundled form `localRepOnShrunk α x₀` has norm exactly `chartNormK α x₀`
@@ -816,43 +806,6 @@ Pure algebraic facts about the embedding maps used in B.9/B.10:
 `localRepOnInnerShrunk` and its `mkOfCompact` packaging are ℂ-linear
 in α. No topology involved — just the vector-space structure of
 `ContMDiffSection` + pointwise linearity of `localRep`. -/
-
-/-- `localRepOnInnerShrunk` is additive in α. -/
-theorem localRepOnInnerShrunk_add {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (x₀ : X) :
-    localRepOnInnerShrunk (α + β) x₀ =
-      localRepOnInnerShrunk α x₀ + localRepOnInnerShrunk β x₀ := by
-  classical
-  by_cases hx₀ : x₀ ∈ (chartCover : Finset X)
-  · ext y
-    simp only [ContinuousMap.add_apply, localRepOnInnerShrunk_apply _ hx₀,
-      localRep_add]
-  · -- x₀ ∉ chartCover: innerShrunkChart empty, both sides zero.
-    have h_iso : IsEmpty (innerShrunkChart (X := X) x₀) :=
-      Set.isEmpty_coe_sort.mpr (innerShrunkChart_eq_empty x₀ hx₀)
-    ext y
-    exact h_iso.false y |>.elim
-
-/-- `localRepOnInnerShrunk` is ℂ-homogeneous in α. -/
-theorem localRepOnInnerShrunk_smul {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (c : ℂ)
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (x₀ : X) :
-    localRepOnInnerShrunk (c • α) x₀ = c • localRepOnInnerShrunk α x₀ := by
-  classical
-  by_cases hx₀ : x₀ ∈ (chartCover : Finset X)
-  · ext y
-    simp only [ContinuousMap.smul_apply, localRepOnInnerShrunk_apply _ hx₀,
-      localRep_smul]
-  · have h_iso : IsEmpty (innerShrunkChart (X := X) x₀) :=
-      Set.isEmpty_coe_sort.mpr (innerShrunkChart_eq_empty x₀ hx₀)
-    ext y
-    exact h_iso.false y |>.elim
 
 /-! ### Step B.9 step 3a — Injectivity of the embedding
 If `localRep α x₀ y = localRep β x₀ y` for every `y ∈ innerShrunkChart x₀`
