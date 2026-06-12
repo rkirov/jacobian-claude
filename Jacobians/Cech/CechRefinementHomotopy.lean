@@ -61,11 +61,6 @@ noncomputable def prismK0 (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement �
     𝔘.Cochain1 →ₗ[ℂ] 𝔙.Cochain0 :=
   LinearMap.pi fun j => rawRestrictG (le_pair hr hr' j) ∘ₗ LinearMap.proj (r j, r' j)
 
-@[simp] theorem prismK0_apply (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘 r')
-    (g : 𝔘.Cochain1) (j : 𝔙.ι) :
-    prismK0 hr hr' g j = rawRestrictG (le_pair hr hr' j) (g (r j, r' j)) := by
-  simp only [prismK0, LinearMap.pi_apply, LinearMap.comp_apply, LinearMap.proj_apply]
-
 /-- For `prismK1` on the pair `(a,b)` we restrict the coarse triple germs `h_{(r a, r' a, r' b)}`
 and `h_{(r a, r b, r' b)}` from their triple overlaps down to `𝔙.U a ⊓ 𝔙.U b`. The two containment
 witnesses: -/
@@ -87,14 +82,6 @@ noncomputable def prismK1 (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement �
   LinearMap.pi fun p =>
     rawRestrictG (tripleA_le hr hr' p.1 p.2) ∘ₗ LinearMap.proj (r p.1, r' p.1, r' p.2)
       - rawRestrictG (tripleB_le hr hr' p.1 p.2) ∘ₗ LinearMap.proj (r p.1, r p.2, r' p.2)
-
-@[simp] theorem prismK1_apply (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘 r')
-    (h : 𝔘.Cochain2) (p : 𝔙.ι × 𝔙.ι) :
-    prismK1 hr hr' h p =
-      rawRestrictG (tripleA_le hr hr' p.1 p.2) (h (r p.1, r' p.1, r' p.2))
-        - rawRestrictG (tripleB_le hr hr' p.1 p.2) (h (r p.1, r p.2, r' p.2)) := by
-  simp only [prismK1, LinearMap.pi_apply, LinearMap.sub_apply, LinearMap.comp_apply,
-    LinearMap.proj_apply]
 
 /-! ### The prism (chain-homotopy) identity -/
 

@@ -189,23 +189,6 @@ theorem differentiableAt_of_dbar_eq_zero_chartDisk {g : ℂ → ℂ} {x : ℂ}
   have hD1 : (fderiv ℝ g x) 1 = -(Complex.I * (fderiv ℝ g x) Complex.I) := by linear_combination h2
   rw [hD1, smul_eq_mul, mul_neg, ← mul_assoc, Complex.I_mul_I]; ring
 
-/-- **Planar `∂̄` of a `C^∞`-at-`z` function is `C^∞` at `z`** (`∂̄g z` is a fixed CLM-combination
-of `fderiv ℝ g` at `1, I`; `fderiv ℝ g` is `C^∞` near `z`). Local copy (the
-`CechFinitenessBallSolve` branch is excluded by an import collision with `GoodCover`; this avoids
-it). -/
-theorem contDiffAt_dbar_chartDisk {g : ℂ → ℂ} {z : ℂ} (hg : ContDiffAt ℝ (⊤ : ℕ∞) g z) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (DbarDisk.dbar g) z := by
-  have hfd : ContDiffAt ℝ (⊤ : ℕ∞) (fderiv ℝ g) z :=
-    hg.fderiv_right (m := (⊤ : ℕ∞)) (by exact_mod_cast le_top)
-  have h1 : ContDiffAt ℝ (⊤ : ℕ∞) (fun w => (fderiv ℝ g w) (1 : ℂ)) z :=
-    (ContinuousLinearMap.apply ℝ ℂ (1 : ℂ)).contDiff.contDiffAt.comp z hfd
-  have hI : ContDiffAt ℝ (⊤ : ℕ∞) (fun w => (fderiv ℝ g w) Complex.I) z :=
-    (ContinuousLinearMap.apply ℝ ℂ Complex.I).contDiff.contDiffAt.comp z hfd
-  have hsum : ContDiffAt ℝ (⊤ : ℕ∞)
-      (fun w => (2 : ℂ)⁻¹ * ((fderiv ℝ g w) (1 : ℂ) + Complex.I * (fderiv ℝ g w) Complex.I)) z :=
-    contDiffAt_const.mul (h1.add (contDiffAt_const.mul hI))
-  exact hsum.congr_of_eventuallyEq (Filter.Eventually.of_forall fun w => by rw [DbarDisk.dbar])
-
 namespace BallSplitData
 
 variable {𝔇} (𝒮 : 𝔇.BallSplitData)

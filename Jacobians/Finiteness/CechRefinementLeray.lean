@@ -82,12 +82,6 @@ Leray lift proof on a fixed coarse overlap. -/
 def overlapFamily (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι) : FiniteFamily X :=
   𝔙.toFiniteFamily.restrictToOpen (𝔘.U i ⊓ 𝔘.U j)
 
-/-- Each member of the overlap family lies in its fine cover set. -/
-theorem overlapFamily_le_fine {X : Type*} [TopologicalSpace X] (𝔙 𝔘 : FiniteCover X)
-    (i j : 𝔘.ι) (a : 𝔙.ι) :
-    (overlapFamily 𝔙 𝔘 i j).U a ≤ 𝔙.U a :=
-  FiniteFamily.restrictToOpen_le_left 𝔙.toFiniteFamily (𝔘.U i ⊓ 𝔘.U j) a
-
 /-- **The Leray DESCEND condition (injectivity input).**  A `𝔘`-cocycle whose refinement is a
 `𝔙`-coboundary was already a `𝔘`-coboundary (`ker (refineH1 hr) = 0`).  This is Forster 12.8
 (injectivity of the coarse→fine map on `H¹`); for `𝒪` with germ-class sections it is the H⁰ gluing
