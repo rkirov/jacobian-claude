@@ -17,6 +17,9 @@ jobs:
       - name: Sorry count (informational)
         run: python3 scripts/check_sorries.py  # informational; not a gate
 
+      - name: Unit DAG strict-deps gate
+        run: python3 scripts/unit_design.py  # fails on cycles, unassigned modules, undeclared unit edges
+
       - name: Build Lean project
         uses: leanprover/lean-action@v1
         with:

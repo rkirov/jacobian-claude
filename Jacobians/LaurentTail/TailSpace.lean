@@ -19,7 +19,7 @@
   * `tailCutoff A Z` — a divisor `B ≥ A` with `t^{A}_{B} Z = 0` (every tail dies under a deep
     enough truncation; used for Miranda Lemma 2.6).
 -/
-import Jacobians.Abel
+import Jacobians.Meromorphic.Abel
 import Mathlib.LinearAlgebra.Finsupp.Supported
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 

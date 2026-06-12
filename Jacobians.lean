@@ -13,28 +13,28 @@ import Mathlib.Geometry.Manifold.ContMDiff.Defs
 import Mathlib.Geometry.Manifold.IsManifold.Basic
 import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import Mathlib.Topology.Category.TopCat.Limits.Basic
-import Jacobians.Genus
-import Jacobians.DegreeOneSphere
+import Jacobians.Forms.Genus
+import Jacobians.ProperDegree.DegreeOneSphere
 import Jacobians.GenusSphereHeadline
-import Jacobians.ZLatticeQuotient
-import Jacobians.ChartedSpaceOfLocalHomeomorph
-import Jacobians.HolomorphicForms
-import Jacobians.LineIntegral
-import Jacobians.SmoothPathCore
-import Jacobians.LoopOffBranch
-import Jacobians.ManifoldIFT
-import Jacobians.PeriodLattice
-import Jacobians.PeriodLatticeBasis
-import Jacobians.TracePullback
-import Jacobians.Abel
-import Jacobians.AbelChains
-import Jacobians.AbelWeakSolutions
-import Jacobians.AbelCurveSolution
-import Jacobians.AbelFinal
-import Jacobians.Degree
-import Jacobians.OfCurveAnalyticitySkeleton
-import Jacobians.ULiftManifold
-import Jacobians.LaurentTail.RiemannRochGenusPos
+import Jacobians.JacobianConstruction.ZLatticeQuotient
+import Jacobians.Surface.ChartedSpaceOfLocalHomeomorph
+import Jacobians.Forms.HolomorphicForms
+import Jacobians.Path.LineIntegral
+import Jacobians.Path.SmoothPathCore
+import Jacobians.Path.LoopOffBranch
+import Jacobians.Surface.ManifoldIFT
+import Jacobians.JacobianConstruction.PeriodLattice
+import Jacobians.PeriodLattice.PeriodLatticeBasis
+import Jacobians.MeromorphicTrace.TracePullback
+import Jacobians.Meromorphic.Abel
+import Jacobians.AbelWeak.AbelChains
+import Jacobians.AbelWeak.AbelWeakSolutions
+import Jacobians.AbelWeak.AbelCurveSolution
+import Jacobians.Abel.AbelFinal
+import Jacobians.ProperDegree.Degree
+import Jacobians.PeriodLattice.OfCurveAnalyticitySkeleton
+import Jacobians.Surface.ULiftManifold
+import Jacobians.TailDuality.RiemannRochGenusPos
 
 /-
 
@@ -92,12 +92,12 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
 `(Fin (genus X) → ℂ)`.
 
 Defined as `Jacobians.truePeriodLattice X` (see
-`Jacobians/PeriodLattice.lean`): the ℤ-span of period vectors of
+`Jacobians/JacobianConstruction/PeriodLattice.lean`): the ℤ-span of period vectors of
 smooth closed loops, where the period pairing uses
 `Jacobians.periodBasisForm X` (basis via `ambientIso X`).
 
 The `DiscreteTopology` and `IsZLattice ℝ` instances are PROVEN in
-`Jacobians/PeriodLatticeBasis.lean` (Forster 21.4: discreteness via the
+`Jacobians/PeriodLattice/PeriodLatticeBasis.lean` (Forster 21.4: discreteness via the
 Abel engine + residue theorem, full rank via the maximum principle), so
 the Jacobian-as-complex-torus structure is unconditional. -/
 noncomputable def periodLattice (X : Type*) [TopologicalSpace X] [T2Space X]
@@ -306,7 +306,7 @@ variable (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
 
 /-- Lattice preservation: the ambient pushforward map sends the `X`-period
 lattice into the `Y`-period lattice. Real (proven) theorem from
-the period-pairing identity in `Jacobians/PeriodLattice.lean`, modulo
+the period-pairing identity in `Jacobians/JacobianConstruction/PeriodLattice.lean`, modulo
 the single remaining gap `lineIntegral_pullback` (the change-of-variables
 chain rule). -/
 lemma ambientPhi_preserves_lattice (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :

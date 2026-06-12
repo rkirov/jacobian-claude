@@ -10,7 +10,7 @@ Books-first research pass: full read of Forster GTM 81 §§19–21 (pp. 153–17
 The repo is at exactly **2 sorries**:
 
 * **Wall B** — `exists_cutSurface` (`Jacobians/CutSurfaceRelations.lean:161`).
-* **Wall C** — `abelJacobi_twoPoint_ne_zero` (`Jacobians/Abel.lean:671`).
+* **Wall C** — `abelJacobi_twoPoint_ne_zero` (`Jacobians/Meromorphic/Abel.lean:671`).
 
 ### Wall B: what `CutSurface` actually demands
 
@@ -156,7 +156,7 @@ CutSurface→R1/R2 files stay as banked archival theorems (hypothesis-conditiona
   are axioms there — `AX_IntersectionForm`, `AX_AnalyticCycleBasis` (H₁ basis),
   `AX_PeriodLattice`, `AX_RiemannBilinear`, `AX_AbelTheorem`. **Nothing portable** (confirms the
   2026-06-08 recon).
-* **Wallace**: already mined — the repo's `Jacobians/Dolbeault/PlanarCompactSupportStokes.lean`
+* **Wallace**: already mined — the repo's `Jacobians/PlanarStokes/PlanarCompactSupportStokes.lean`
   credits Michal J Wallace (`stokes_local_euclidean` port). Nothing further to take for either wall.
 * **Pinned Mathlib**: `Topology/CWComplex/` has bare definitions only (Abstract/Classical Basic,
   Finite, Subcomplex) — **no triangulations, no surface classification, no branched coverings**.

@@ -4,7 +4,7 @@ Verify the discharge port: every key declaration depends only on
   lake env lean AxiomCheck.lean
 -/
 import Jacobians
-import Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional
+import Jacobians.MappingDegree.RegularValueExistsRegUnconditional
 
 #print axioms ContMDiff.degree
 #print axioms Jacobians.degreeFiber

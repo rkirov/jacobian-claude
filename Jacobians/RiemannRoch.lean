@@ -18,16 +18,16 @@
   faithfulness/identity theorem (nonzero ⟹ order ≠ ⊤), `l(0)=1` via Liouville, `l(D)=0` for
   `deg D<0`, and the single-simple-pole extraction.
 -/
-import Jacobians.Abel
-import Jacobians.LinearSystem
-import Jacobians.LinearSystemDegree
-import Jacobians.MeromorphicLiouville
-import Jacobians.DegDivResidue
-import Jacobians.ProperMapDegreeSheets
-import Jacobians.Dolbeault.DolbeaultLadder
-import Jacobians.Dolbeault.LerayCoverExists
-import Jacobians.Dolbeault.SkyscraperProductWitness
-import Jacobians.LaurentTail.RiemannRochUnconditional
+import Jacobians.Meromorphic.Abel
+import Jacobians.Meromorphic.LinearSystem
+import Jacobians.ProperDegree.LinearSystemDegree
+import Jacobians.Meromorphic.MeromorphicLiouville
+import Jacobians.ProperDegree.DegDivResidue
+import Jacobians.ProperDegree.ProperMapDegreeSheets
+import Jacobians.SerrePairing.DolbeaultLadder
+import Jacobians.DolbeaultComparison.LerayCoverExists
+import Jacobians.Finiteness.SkyscraperProductWitness
+import Jacobians.TailDuality.RiemannRochUnconditional
 
 -- Many declarations here are purely algebraic (the ℂ-module on `MeromorphicFunction`) and use
 -- only `[ChartedSpace ℂ X]`, not the full compact-manifold hypotheses carried by the consumers.
@@ -63,7 +63,7 @@ theorem exists_riemannRoch_divisor :
   LaurentTail.exists_riemannRoch_divisor_unconditional
 
 /-! `MeromorphicFunction.deg_div` and `lDim_eq_zero_of_deg_neg` (Parts 2–3 of this interface)
-now live in `Jacobians/LinearSystemDegree.lean` (imported above, same `Jacobians` namespace), so
+now live in `Jacobians/ProperDegree/LinearSystemDegree.lean` (imported above, same `Jacobians` namespace), so
 the Laurent-tail duality ladder can consume them without importing this file. -/
 
 /-! ## Part 4: standard RR consequences (pure arithmetic from RR + `l(0)=1`) -/

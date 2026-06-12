@@ -16,7 +16,7 @@
 
   Pure one-variable complex analysis — no manifold — reusable verbatim in every chart.
 -/
-import Jacobians.MeromorphicTrace
+import Jacobians.MeromorphicTrace.MeromorphicTrace
 
 open Complex Filter Topology
 
