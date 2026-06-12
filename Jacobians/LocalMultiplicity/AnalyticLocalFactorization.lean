@@ -6,7 +6,6 @@ Authors: Bryan Sanchez
 import Mathlib.Analysis.Analytic.Order
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Topology.GDelta.MetrizableSpace
-set_option autoImplicit true
 
 
 /-! # Local analytic factorization at a zero of finite order (ZZ90)

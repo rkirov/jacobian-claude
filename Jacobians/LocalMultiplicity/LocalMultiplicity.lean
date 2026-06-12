@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Geometry.Manifold.ContMDiff.Defs
-set_option autoImplicit true
 
 
 /-! # Topological degree of a holomorphic map between compact Riemann surfaces
@@ -101,7 +100,7 @@ correct numerical degree for non-constant maps. The follow-up replaces the
 `else 1` branch with `Nat.card (f ⁻¹' {y₀})` for a regular value `y₀ : Y`,
 once chart-independent ramification order is available (see
 `Jacobians.Discharge.Manifold.MeromorphicAt`). -/
-def degreeStub
+def degreeStub {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -112,7 +111,7 @@ def degreeStub
 
 /-- The degree convention from challenge item 9: a constant map has degree
 zero. Holds unconditionally for the indicator stub. -/
-lemma degreeStub_const
+lemma degreeStub_const {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -126,7 +125,7 @@ lemma degreeStub_const
 is at most `1`. This bound disappears once the regular-value definition
 lands; it is recorded here so that downstream consumers can detect the stub
 regime and refuse to depend on a tight numerical degree. -/
-lemma degreeStub_le_one
+lemma degreeStub_le_one {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]

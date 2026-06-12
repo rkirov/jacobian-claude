@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Geometry.Manifold.ContMDiff.Defs
-set_option autoImplicit true
 
 
 /-! # Bridge `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω` to `AnalyticAt ℂ` on chart pullbacks

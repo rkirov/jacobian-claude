@@ -6,7 +6,6 @@ Authors: Bryan Sanchez
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Analysis.Meromorphic.Order
 import Mathlib.Geometry.Manifold.IsManifold.Basic
-set_option autoImplicit true
 
 
 /-! # Meromorphic functions on a complex manifold
