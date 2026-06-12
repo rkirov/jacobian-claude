@@ -323,7 +323,8 @@ theorem globalGerm_smul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 /-- **A germ-zero global function has zero germ on every open**
 (`orderW f ≡ ⊤ ⟹ globalGerm f U = 0`): `f.toFun` vanishes on a punctured neighbourhood of every
 point, which transfers to `↥U` along the open inclusion. -/
-theorem globalGerm_eq_zero_of_germZero {f : MeromorphicFunction X}
+theorem globalGerm_eq_zero_of_germZero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {f : MeromorphicFunction X}
     (hf : ∀ x, f.orderW x = ⊤) (U : Opens X) : globalGerm f U = 0 := by
   rw [globalGerm, toGerm_eq_zero_iff]
   intro u

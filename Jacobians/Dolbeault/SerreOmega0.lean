@@ -58,12 +58,10 @@ theorem constOneMero_orderW {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X
     meromorphicOrderAt_const]
   simp
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-
 /-- The constant `1` lies in `L(D)` for any divisor `D` with all coefficients `≥ 0` (`0 ≤ D x`):
 its order is `0 ≥ -(D x)`. -/
-theorem constOneMero_mem_linearSystem {D : Divisor X} (hD : ∀ x, 0 ≤ D x) :
+theorem constOneMero_mem_linearSystem {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {D : Divisor X} (hD : ∀ x, 0 ≤ D x) :
     constOneMero (X := X) ∈ linearSystem (X := X) D := by
   intro x
   rw [constOneMero_orderW x]
@@ -72,7 +70,8 @@ theorem constOneMero_mem_linearSystem {D : Divisor X} (hD : ∀ x, 0 ≤ D x) :
 
 /-- The class of the constant `1` in the linear-system quotient `lSysModule D` is nonzero
 (its order is `0 ≠ ⊤`, so it is not germ-zero). -/
-theorem constOneMero_class_ne_zero {D : Divisor X} (hD : ∀ x, 0 ≤ D x) :
+theorem constOneMero_class_ne_zero {X : Type*} [TopologicalSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] {D : Divisor X} (hD : ∀ x, 0 ≤ D x) :
     (Submodule.Quotient.mk ⟨constOneMero (X := X), constOneMero_mem_linearSystem hD⟩ :
       lSysModule (X := X) D) ≠ 0 := by
   rw [Ne, Submodule.Quotient.mk_eq_zero]
@@ -81,6 +80,9 @@ theorem constOneMero_class_ne_zero {D : Divisor X} (hD : ∀ x, 0 ≤ D x) :
   have hx : (constOneMero (X := X)).orderW x = ⊤ := (Submodule.mem_comap.mp hmem) x
   rw [constOneMero_orderW x] at hx
   exact (by decide : (0 : WithTop ℤ) ≠ ⊤) hx
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The Riemann–Roch lower bound `2 ≤ lDim D` for a large effective divisor -/
 

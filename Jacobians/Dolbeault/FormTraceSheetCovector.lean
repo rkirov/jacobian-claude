@@ -64,8 +64,7 @@ theorem mfderiv_eq_fderiv_chartPullback {X Y : Type*} [TopologicalSpace X] [Char
   congr 1
 
 variable {X Y : Type*}
-    [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     [TopologicalSpace Y] [ChartedSpace ℂ Y]
 
 /-- The trivialization-at-`a` of the tangent bundle of `X`. -/
@@ -86,6 +85,8 @@ theorem symmL_self_one (a : X) :
     simp only [Function.comp_apply, (chartAt ℂ a).right_inv hw, id_eq]
   rw [hcong.fderiv_eq, fderiv_id]
   rfl
+
+variable [T2Space X] [CompactSpace X] [ConnectedSpace X]
 
 /-- **The centred local representative is the pairing against the model unit.**
 `localRep ω₀ a a = ω₀.toFun a (1 : ℂ)` (since the self-frame unit tangent is `1`). -/

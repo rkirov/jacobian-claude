@@ -61,7 +61,7 @@ open MeasureTheory
 namespace Jacobians.OfCurveSkeleton
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 -- `chartFormCoeff` and `chartFormCoeff_differentiableOn` have moved
 -- UPSTREAM to `Jacobians/SmoothPathCore.lean` (same namespace

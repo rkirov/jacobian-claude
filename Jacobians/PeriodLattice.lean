@@ -178,6 +178,11 @@ def hopNbhd [ChartedSpace ℂ X] (y : X) : Set X := interior {Q | HopValid y Q}
 
 theorem isOpen_hopNbhd [ChartedSpace ℂ X] (y : X) : IsOpen (hopNbhd y) := isOpen_interior
 
+theorem self_mem_hopNbhd [ChartedSpace ℂ X] (y : X) : y ∈ hopNbhd y := by
+  rw [hopNbhd, mem_interior_iff_mem_nhds]
+  exact (OfCurveSkeleton.Q_in_chart_source_eventually y).and
+    (OfCurveSkeleton.affine_in_target_eventually y)
+
 theorem hopValid_of_mem_hopNbhd [ChartedSpace ℂ X] {y Q : X} (h : Q ∈ hopNbhd y) : HopValid y Q :=
   interior_subset (s := {Q' : X | HopValid y Q'}) h
 
@@ -888,11 +893,6 @@ theorem exists_zeroVelPath_of_common_anchor {w u v : X}
       rw [show (2:ℝ)*1-1 = 1 from by norm_num]; exact hv_sm.diff 1 h1uIcc
     rw [Jacobians.pathSpeed_concat_right _ (ChartBallPathSmooth w v) 1 (by norm_num) hd,
       show (2:ℝ)*1-1 = 1 from by norm_num, hv_v1, mul_zero]
-
-theorem self_mem_hopNbhd (y : X) : y ∈ hopNbhd y := by
-  rw [hopNbhd, mem_interior_iff_mem_nhds]
-  exact (OfCurveSkeleton.Q_in_chart_source_eventually y).and
-    (OfCurveSkeleton.affine_in_target_eventually y)
 
 /-- **Chart-ball cover**: a chain of zero-velocity smooth-path hops from
 `P` to `Q`. Lebesgue-number cover of `continuousPath P Q`; each segment's
