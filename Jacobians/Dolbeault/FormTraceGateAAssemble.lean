@@ -88,7 +88,9 @@ theorem hncF_of_div_ne_zero (f : MeromorphicFunction X) (hdiv : (f.div : Divisor
 /-- A meromorphic `f` with `f.div ≠ 0` has a point of nonzero order
 (`f.div x = f.orderAtPoint x` via `div_apply`).  The `∃ x, orderAtPoint x ≠ 0` form that
 `exists_sphereSheetSystem` consumes. -/
-theorem exists_orderAtPoint_ne_zero (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
+theorem exists_orderAtPoint_ne_zero {X : Type*} [TopologicalSpace X] [T2Space X]
+    [CompactSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (f : MeromorphicFunction X) (hdiv : (f.div : Divisor X) ≠ 0) :
     ∃ x, f.orderAtPoint x ≠ 0 := by
   obtain ⟨x, hx⟩ := Finsupp.ne_iff.mp hdiv
   refine ⟨x, ?_⟩

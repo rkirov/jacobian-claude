@@ -66,7 +66,8 @@ coe c` (a *finite* sphere value), then `x` is a non-pole (`0 ≤ orderAtPoint x`
 c`.  The sphere value is `≠ ∞`, so by `toRiemannSphere_preimage_infty` the order is `≥ 0`; then
 `toRiemannSphere x = coe (holoRepr x)` (`toRiemannSphere_of_nonneg`) and `coe` injectivity give
 `holoRepr x = c`.  This is the value-side translation `sphere-value ↦ holoRepr-value`. -/
-theorem MeromorphicFunction.nonpole_of_toRiemannSphere_eq_coe (f : MeromorphicFunction X) {x : X}
+theorem MeromorphicFunction.nonpole_of_toRiemannSphere_eq_coe {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (f : MeromorphicFunction X) {x : X}
     {c : ℂ} (hx : f.toRiemannSphere x = ((c : ℂ) : RiemannSphere)) :
     0 ≤ f.orderAtPoint x ∧ f.holoRepr x = c := by
   have hne : f.toRiemannSphere x ≠ OnePoint.infty := by
@@ -126,7 +127,8 @@ def holoReprSection (s : RiemannSphere → X) (b' : ℂ) : X := s (((b' : ℂ) :
 `f.toRiemannSphere` over an open `V ∋ coe b'` (`f.toRiemannSphere (s w) = w` on `V`), then
 `f.holoRepr (holoReprSection s b') = b'`: the sphere value `coe b'` is finite, so the sheet point is
 a non-pole identified by `nonpole_of_toRiemannSphere_eq_coe`. -/
-theorem holoReprSection_section (f : MeromorphicFunction X) {s : RiemannSphere → X} {V : Set ℂ}
+theorem holoReprSection_section {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) {s : RiemannSphere → X} {V : Set ℂ}
     {b' : ℂ} (hb'V : b' ∈ V)
     (hsec : ∀ w ∈ V,
       f.toRiemannSphere (s (((w : ℂ) : RiemannSphere))) = ((w : ℂ) : RiemannSphere)) :
@@ -214,7 +216,7 @@ open Jacobians Jacobians.Dolbeault Jacobians.Dolbeault.FormTraceFibre
 
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X}
 

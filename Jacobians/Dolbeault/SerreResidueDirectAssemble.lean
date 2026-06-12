@@ -92,7 +92,7 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 variable {ω₀ : HolomorphicOneForms X} {g : X → ℂ} {f : MeromorphicFunction X} {poles : Finset X}
 
@@ -331,7 +331,8 @@ theorem image_poleValueEnum {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X
 recovers exactly the finite pole-values:
 `(univ.image (poleValueEnum)).image coe = (poles.image F).erase ∞`. Proven from
 `coe (holoRepr a) = F a` for non-`∞` poles. -/
-theorem hcenters_cs_poleValueEnum (f : MeromorphicFunction X) (poles : Finset X) :
+theorem hcenters_cs_poleValueEnum {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) (poles : Finset X) :
     (Finset.univ.image (poleValueEnum f poles)).image (fun p : ℂ => ((p : ℂ) : RiemannSphere))
       = (poles.image f.toRiemannSphere).erase OnePoint.infty := by
   classical

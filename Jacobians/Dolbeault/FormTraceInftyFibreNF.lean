@@ -142,7 +142,8 @@ attribute [instance] InftyFibreDataNF.fintype_ι
 analytic at the chart centre, `deriv h (centre) ≠ 0` (order-`1` factorization), `h (centre) = 0`,
 and `h =ᶠ[𝓝[≠]] (f.holoRepr (chart⁻¹ ·))⁻¹` off the centre. A flat packaging (the analytic order
 `m = 1` is discharged here) so the `∞`-fibre datum constructor reads the fields directly. -/
-theorem exists_reciprocal_simple (f : MeromorphicFunction X) {x : X}
+theorem exists_reciprocal_simple {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold 𝓘(ℂ) ω X] (f : MeromorphicFunction X) {x : X}
     (hsimple : f.orderAtPoint x = -1) :
     ∃ h : ℂ → ℂ, AnalyticAt ℂ h ((chartAt ℂ x) x) ∧
       deriv h ((chartAt ℂ x) x) ≠ 0 ∧

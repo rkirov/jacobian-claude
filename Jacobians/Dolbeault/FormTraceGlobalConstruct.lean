@@ -90,7 +90,7 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
 attribute [local instance] Classical.propDecidable
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The adapted-cover hypothesis
 

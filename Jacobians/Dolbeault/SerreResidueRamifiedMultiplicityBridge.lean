@@ -79,7 +79,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 (`0 ≤ f.orderAtPoint p`) lying in the fibre `F⁻¹(coe c)` (`f.toRiemannSphere p = coe c`), then the
 limit-repair value `f.holoRepr p = c` (since `F p = coe (holoRepr p)` for a non-pole, and `coe` is
 injective). -/
-theorem holoRepr_eq_of_fibre_nonpole (f : MeromorphicFunction X) {c : ℂ} {p : X}
+theorem holoRepr_eq_of_fibre_nonpole {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (f : MeromorphicFunction X) {c : ℂ} {p : X}
     (hp_fib : f.toRiemannSphere p = ((c : ℂ) : RiemannSphere)) (hp_np : 0 ≤ f.orderAtPoint p) :
     f.holoRepr p = c := by
   have := f.toRiemannSphere_of_nonneg hp_np
