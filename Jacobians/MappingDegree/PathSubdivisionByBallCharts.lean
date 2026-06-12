@@ -1,24 +1,20 @@
 /-
 Copyright (c) 2026 Jacobian Lean Challenge contributors. All rights reserved.
-
-Foundation chip ZZ165c: refinement of `ZZ165b.Path.exists_chart_subdivision`
-that uses *ball-restricted* charts (from `ZZ164c.chart_restrict_to_ball`).
-
-For a continuous path `γ : Path p q` in a `ChartedSpace ℂ Y`, we produce a
-finite monotone partition of `[0,1]` together with, for each piece, an
-`OpenPartialHomeomorph Y ℂ` whose **target is an open ball** in `ℂ`, and
-whose source covers the image of the piece. This is the form needed by
-downstream chips that integrate against ball-shaped chart targets.
-
-The combinatorics is the same as ZZ165b: the open cover
-`{ γ ⁻¹' (φ_y).source }_{y : I}` of `I`, refined via
-`exists_monotone_Icc_subset_open_cover_unitInterval`. The only new ingredient
-is that for each `y` we use the ball-restricted chart `φ_y` from
-`chart_restrict_to_ball` instead of the raw `chartAt ℂ (γ y)`.
-
-No `axiom`, no gaps.
 -/
 import Jacobians.MappingDegree.ChartRestrictionToBall
+
+/-! # Path subdivision by ball-restricted charts
+
+For a continuous path `γ : Path p q` in a `ChartedSpace ℂ Y`, produce a
+finite monotone partition of `[0,1]` together with, for each piece, an
+`OpenPartialHomeomorph Y ℂ` whose **target is an open ball** in `ℂ` and
+whose source covers the image of the piece.
+
+The open cover `{ γ ⁻¹' (φ_y).source }_{y : I}` of `I` is refined via
+`exists_monotone_Icc_subset_open_cover_unitInterval`, using for each `y` the
+ball-restricted chart `φ_y` from `chart_restrict_to_ball` instead of the raw
+`chartAt ℂ (γ y)`. -/
+
 namespace Jacobians.Discharge.Manifold
 
 open Set unitInterval Jacobians.Discharge

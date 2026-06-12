@@ -92,13 +92,16 @@ def mmeromorphicOrderAt (_I : ModelWithCorners ℂ ℂ ℂ) (f : M → ℂ) (x :
 
 variable {I : ModelWithCorners ℂ ℂ ℂ}
 
+/-- Every function is meromorphic on the empty set. -/
 lemma mMeromorphicOn_empty (f : M → ℂ) : MMeromorphicOn I f ∅ := by
   intro x hx; exact absurd hx hx.elim
 
+/-- Meromorphy on a set restricts to any subset. -/
 lemma MMeromorphicOn.mono {f : M → ℂ} {s t : Set M}
     (h : MMeromorphicOn I f t) (hst : s ⊆ t) : MMeromorphicOn I f s :=
   fun x hx => h x (hst hx)
 
+/-- Meromorphy on two sets gives meromorphy on their union. -/
 lemma MMeromorphicOn.union {f : M → ℂ} {s t : Set M}
     (hs : MMeromorphicOn I f s) (ht : MMeromorphicOn I f t) :
     MMeromorphicOn I f (s ∪ t) := by
@@ -130,6 +133,7 @@ lemma const (c : ℂ) : MMeromorphicAt I (fun _ : M => c) x := by
   rw [h]
   exact analyticAt_const.meromorphicAt
 
+/-- The sum of two functions meromorphic at `x` is meromorphic at `x`. -/
 lemma add (hf : MMeromorphicAt I f x) (hg : MMeromorphicAt I g x) :
     MMeromorphicAt I (f + g) x := by
   -- Unfold via `show`: `MMeromorphicAt I f x` reduces to `MeromorphicAt (f ∘ ...) (...)`.
@@ -141,6 +145,7 @@ lemma add (hf : MMeromorphicAt I f x) (hg : MMeromorphicAt I g x) :
   rw [h]
   exact hf'.add hg'
 
+/-- The product of two functions meromorphic at `x` is meromorphic at `x`. -/
 lemma mul (hf : MMeromorphicAt I f x) (hg : MMeromorphicAt I g x) :
     MMeromorphicAt I (f * g) x := by
   have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
@@ -151,6 +156,7 @@ lemma mul (hf : MMeromorphicAt I f x) (hg : MMeromorphicAt I g x) :
   rw [h]
   exact hf'.mul hg'
 
+/-- The negation of a function meromorphic at `x` is meromorphic at `x`. -/
 lemma neg (hf : MMeromorphicAt I f x) : MMeromorphicAt I (-f) x := by
   have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
   show MeromorphicAt ((-f) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
@@ -158,6 +164,7 @@ lemma neg (hf : MMeromorphicAt I f x) : MMeromorphicAt I (-f) x := by
   rw [h]
   exact hf'.neg
 
+/-- The difference of two functions meromorphic at `x` is meromorphic at `x`. -/
 lemma sub (hf : MMeromorphicAt I f x) (hg : MMeromorphicAt I g x) :
     MMeromorphicAt I (f - g) x := by
   rw [sub_eq_add_neg]
@@ -256,59 +263,74 @@ namespace MMeromorphicOn
 
 variable {f g : M → ℂ} {s : Set M}
 
+/-- The zero function is meromorphic on every set. -/
 lemma zero : MMeromorphicOn I (0 : M → ℂ) s :=
   fun _ _ => MMeromorphicAt.zero
 
+/-- Constant functions are meromorphic on every set. -/
 lemma const (c : ℂ) : MMeromorphicOn I (fun _ : M => c) s :=
   fun _ _ => MMeromorphicAt.const c
 
+/-- The sum of two functions meromorphic on `s` is meromorphic on `s`. -/
 lemma add (hf : MMeromorphicOn I f s) (hg : MMeromorphicOn I g s) :
     MMeromorphicOn I (f + g) s :=
   fun x hx => (hf x hx).add (hg x hx)
 
+/-- The product of two functions meromorphic on `s` is meromorphic on `s`. -/
 lemma mul (hf : MMeromorphicOn I f s) (hg : MMeromorphicOn I g s) :
     MMeromorphicOn I (f * g) s :=
   fun x hx => (hf x hx).mul (hg x hx)
 
+/-- The negation of a function meromorphic on `s` is meromorphic on `s`. -/
 lemma neg (hf : MMeromorphicOn I f s) : MMeromorphicOn I (-f) s :=
   fun x hx => (hf x hx).neg
 
+/-- The difference of two functions meromorphic on `s` is meromorphic on `s`. -/
 lemma sub (hf : MMeromorphicOn I f s) (hg : MMeromorphicOn I g s) :
     MMeromorphicOn I (f - g) s :=
   fun x hx => (hf x hx).sub (hg x hx)
 
+/-- The pointwise inverse of a function meromorphic on `s` is meromorphic on `s`. -/
 lemma inv (hf : MMeromorphicOn I f s) : MMeromorphicOn I f⁻¹ s :=
   fun x hx => (hf x hx).inv
 
+/-- The quotient of two functions meromorphic on `s` is meromorphic on `s`. -/
 lemma div (hf : MMeromorphicOn I f s) (hg : MMeromorphicOn I g s) :
     MMeromorphicOn I (f / g) s :=
   fun x hx => (hf x hx).div (hg x hx)
 
+/-- A natural-number power of a function meromorphic on `s` is meromorphic on `s`. -/
 lemma pow (hf : MMeromorphicOn I f s) (n : ℕ) : MMeromorphicOn I (f ^ n) s :=
   fun x hx => (hf x hx).pow n
 
+/-- An integer power of a function meromorphic on `s` is meromorphic on `s`. -/
 lemma zpow (hf : MMeromorphicOn I f s) (n : ℤ) : MMeromorphicOn I (f ^ n) s :=
   fun x hx => (hf x hx).zpow n
 
+/-- A complex scalar multiple of a function meromorphic on `s` is meromorphic on `s`. -/
 lemma const_smul (c : ℂ) (hf : MMeromorphicOn I f s) :
     MMeromorphicOn I (c • f) s :=
   fun x hx => (hf x hx).const_smul c
 
+/-- A finite product of functions meromorphic on `s` is meromorphic on `s`. -/
 lemma prod {ι : Type*} {t : Finset ι} {F : ι → M → ℂ}
     (hF : ∀ i ∈ t, MMeromorphicOn I (F i) s) :
     MMeromorphicOn I (∏ i ∈ t, F i) s :=
   fun x hx => MMeromorphicAt.prod (fun i hi => hF i hi x hx)
 
+/-- Finite-product variant: the function `fun y => ∏ i, F i y` is meromorphic on `s`. -/
 lemma fun_prod {ι : Type*} {t : Finset ι} {F : ι → M → ℂ}
     (hF : ∀ i ∈ t, MMeromorphicOn I (F i) s) :
     MMeromorphicOn I (fun y => ∏ i ∈ t, F i y) s :=
   fun x hx => MMeromorphicAt.fun_prod (fun i hi => hF i hi x hx)
 
+/-- A finite sum of functions meromorphic on `s` is meromorphic on `s`. -/
 lemma sum {ι : Type*} {t : Finset ι} {F : ι → M → ℂ}
     (hF : ∀ i ∈ t, MMeromorphicOn I (F i) s) :
     MMeromorphicOn I (∑ i ∈ t, F i) s :=
   fun x hx => MMeromorphicAt.sum (fun i hi => hF i hi x hx)
 
+/-- Finite-sum variant: the function `fun y => ∑ i, F i y` is meromorphic on `s`. -/
 lemma fun_sum {ι : Type*} {t : Finset ι} {F : ι → M → ℂ}
     (hF : ∀ i ∈ t, MMeromorphicOn I (F i) s) :
     MMeromorphicOn I (fun y => ∑ i ∈ t, F i y) s :=
