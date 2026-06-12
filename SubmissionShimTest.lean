@@ -1,5 +1,15 @@
 -- In-repo validation of the leaderboard Submission.lean shim: identical content,
 -- except the real Submission.lean imports Submission.Root instead of Jacobians.
+--
+-- The shim is deliberately *not* `@[reducible]`: the problem file's
+-- `Solution.lean` wrappers elaborate their statements in an environment where
+-- the shim is imported, and a reducible `Jacobian` would let instance search
+-- see through to the concrete `ULift (JacobianTorus X)`, picking Mathlib's
+-- generic `ULift` instances instead of the named challenge instances and
+-- changing the elaborated statements comparator checks. With the
+-- lean-eval generator now emitting `noncomputable` delegations
+-- (https://github.com/leanprover/lean-eval/pull/422), the shim can use honest
+-- `noncomputable def`s with no `@[implemented_by]`/`unsafeCast` stubs.
 import Jacobians
 
 open scoped ContDiff
@@ -13,65 +23,52 @@ universe u v w
 variable {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
   [ChartedSpace ℂ X] [IsManifold (modelWithCornersSelf ℂ ℂ) ω X]
 
-/-- Runtime stub (the honest `genus` is noncomputable; the problem file's `Solution.lean`
-delegates via a plain `def`, so executable code must exist). Never affects the kernel. -/
-unsafe def genusImpl (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+noncomputable def genus (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
     [IsManifold (modelWithCornersSelf ℂ ℂ) ω X] : ℕ :=
-  unsafeCast ()
-
-@[implemented_by genusImpl]
-def genus (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold (modelWithCornersSelf ℂ ℂ) ω X] : ℕ :=
   _root_.genus X
 
 theorem genus_eq_zero_iff_homeo :
     genus X = 0 ↔ Nonempty (X ≃ₜ (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) :=
   _root_.genus_eq_zero_iff_homeo
 
-def Jacobian (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold (modelWithCornersSelf ℂ ℂ) ω X] : Type u :=
+noncomputable def Jacobian (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
+    [IsManifold (modelWithCornersSelf ℂ ℂ) ω X] : Type u :=
   _root_.Jacobian X
 
 namespace Jacobian
 
-unsafe def instAddCommGroupImpl : AddCommGroup (_root_.Jacobian X) := unsafeCast ()
+noncomputable instance instAddCommGroup : AddCommGroup (Jacobian X) :=
+  inferInstanceAs (AddCommGroup (_root_.Jacobian X))
 
-@[implemented_by instAddCommGroupImpl]
-def instAddCommGroup : AddCommGroup (_root_.Jacobian X) := inferInstance
+noncomputable instance instTopologicalSpace : TopologicalSpace (Jacobian X) :=
+  inferInstanceAs (TopologicalSpace (_root_.Jacobian X))
 
-unsafe def instTopologicalSpaceImpl : TopologicalSpace (_root_.Jacobian X) := unsafeCast ()
+instance instT2Space : T2Space (Jacobian X) :=
+  inferInstanceAs (T2Space (_root_.Jacobian X))
 
-@[implemented_by instTopologicalSpaceImpl]
-def instTopologicalSpace : TopologicalSpace (_root_.Jacobian X) := inferInstance
+instance instCompactSpace : CompactSpace (Jacobian X) :=
+  inferInstanceAs (CompactSpace (_root_.Jacobian X))
 
-def instT2Space : T2Space (_root_.Jacobian X) := inferInstance
+noncomputable instance instChartedSpace : ChartedSpace (Fin (genus X) → ℂ) (Jacobian X) :=
+  inferInstanceAs (ChartedSpace (Fin (_root_.genus X) → ℂ) (_root_.Jacobian X))
 
-def instCompactSpace : CompactSpace (_root_.Jacobian X) := inferInstance
+instance instIsManifold :
+    IsManifold (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) :=
+  inferInstanceAs (IsManifold (modelWithCornersSelf ℂ (Fin (_root_.genus X) → ℂ)) ω
+    (_root_.Jacobian X))
 
-unsafe def instChartedSpaceImpl : ChartedSpace (Fin (_root_.genus X) → ℂ) (_root_.Jacobian X) :=
-  unsafeCast ()
+instance instLieAddGroup :
+    LieAddGroup (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) :=
+  inferInstanceAs (LieAddGroup (modelWithCornersSelf ℂ (Fin (_root_.genus X) → ℂ)) ω
+    (_root_.Jacobian X))
 
-@[implemented_by instChartedSpaceImpl]
-def instChartedSpace : ChartedSpace (Fin (_root_.genus X) → ℂ) (_root_.Jacobian X) :=
-  inferInstance
-
-def instIsManifold :
-    IsManifold (modelWithCornersSelf ℂ (Fin (_root_.genus X) → ℂ)) ω (_root_.Jacobian X) :=
-  inferInstance
-
-def instLieAddGroup :
-    LieAddGroup (modelWithCornersSelf ℂ (Fin (_root_.genus X) → ℂ)) ω (_root_.Jacobian X) :=
-  inferInstance
-
-unsafe def ofCurveImpl (P : X) : X → _root_.Jacobian X := unsafeCast ()
-
-@[implemented_by ofCurveImpl]
-def ofCurve (P : X) : X → _root_.Jacobian X := _root_.Jacobian.ofCurve P
+noncomputable def ofCurve (P : X) : X → Jacobian X := _root_.Jacobian.ofCurve P
 
 theorem ofCurve_contMDiff (P : X) :
     ContMDiff (modelWithCornersSelf ℂ ℂ)
-      (modelWithCornersSelf ℂ (Fin (_root_.genus X) → ℂ)) ω (ofCurve P) :=
+      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) :=
   _root_.Jacobian.ofCurve_contMDiff P
 
 theorem ofCurve_self (P : X) : ofCurve P P = 0 := _root_.Jacobian.ofCurve_self P
@@ -84,24 +81,18 @@ variable {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [Connect
 
 variable (f : X → Y) (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f)
 
-unsafe def pushforwardImpl (f : X → Y)
+noncomputable def pushforward (f : X → Y)
     (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f) :
-    _root_.Jacobian X →ₜ+ _root_.Jacobian Y :=
-  unsafeCast ()
-
-@[implemented_by pushforwardImpl]
-def pushforward (f : X → Y)
-    (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f) :
-    _root_.Jacobian X →ₜ+ _root_.Jacobian Y :=
+    Jacobian X →ₜ+ Jacobian Y :=
   _root_.Jacobian.pushforward f hf
 
 theorem pushforward_contMDiff (f : X → Y)
     (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f) :
-    ContMDiff (modelWithCornersSelf ℂ (Fin (_root_.genus X) → ℂ))
-      (modelWithCornersSelf ℂ (Fin (_root_.genus Y) → ℂ)) ω (pushforward f hf) :=
+    ContMDiff (modelWithCornersSelf ℂ (Fin (genus X) → ℂ))
+      (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ)) ω (pushforward f hf) :=
   _root_.Jacobian.pushforward_contMDiff f hf
 
-theorem pushforward_id_apply (P : _root_.Jacobian X) :
+theorem pushforward_id_apply (P : Jacobian X) :
     pushforward id contMDiff_id P = P :=
   _root_.Jacobian.pushforward_id_apply P
 
@@ -113,68 +104,53 @@ variable (g : Y → Z) (hg : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWith
 theorem pushforward_comp_apply (f : X → Y)
     (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f)
     (g : Y → Z) (hg : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω g)
-    (P : _root_.Jacobian X) :
+    (P : Jacobian X) :
     pushforward (g ∘ f) (hg.comp hf) P = pushforward g hg (pushforward f hf P) := by
   apply _root_.Jacobian.pushforward_comp_apply
 
-unsafe def pullbackImpl (f : X → Y)
+noncomputable def pullback (f : X → Y)
     (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f) :
-    _root_.Jacobian Y →ₜ+ _root_.Jacobian X :=
-  unsafeCast ()
-
-@[implemented_by pullbackImpl]
-def pullback (f : X → Y)
-    (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f) :
-    _root_.Jacobian Y →ₜ+ _root_.Jacobian X :=
+    Jacobian Y →ₜ+ Jacobian X :=
   _root_.Jacobian.pullback f hf
 
 theorem pullback_contMDiff (f : X → Y)
     (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f) :
-    ContMDiff (modelWithCornersSelf ℂ (Fin (_root_.genus Y) → ℂ))
-      (modelWithCornersSelf ℂ (Fin (_root_.genus X) → ℂ)) ω (pullback f hf) :=
+    ContMDiff (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ))
+      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) :=
   _root_.Jacobian.pullback_contMDiff f hf
 
-theorem pullback_id_apply (P : _root_.Jacobian X) :
+theorem pullback_id_apply (P : Jacobian X) :
     pullback id contMDiff_id P = P :=
   _root_.Jacobian.pullback_id_apply P
 
 theorem pullback_comp_apply (f : X → Y)
     (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f)
     (g : Y → Z) (hg : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω g)
-    (P : _root_.Jacobian Z) :
+    (P : Jacobian Z) :
     pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := by
   apply _root_.Jacobian.pullback_comp_apply
 
-unsafe def degreeImpl {X' : Type u} [TopologicalSpace X'] [ChartedSpace ℂ X']
-    {Y' : Type v} [TopologicalSpace Y'] [ChartedSpace ℂ Y'] (f : X' → Y')
-    (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f) : ℕ :=
-  unsafeCast ()
-
-open Classical in
-/-- The mapping degree, in the challenge's (weak) signature: the benchmark's `degree` hole was
-elaborated from a `sorry` body, so only the instances mentioned by its signature were included.
-On compact connected Riemann surfaces this agrees with the honest `ContMDiff.degree`
-(propositional type classes are proof-irrelevant); off that case it returns `0`. -/
-@[implemented_by degreeImpl]
-def degree {X' : Type u} [TopologicalSpace X'] [ChartedSpace ℂ X']
-    {Y' : Type v} [TopologicalSpace Y'] [ChartedSpace ℂ Y'] (f : X' → Y')
-    (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f) : ℕ :=
-  if h : T2Space X' ∧ CompactSpace X' ∧ ConnectedSpace X'
-      ∧ IsManifold (modelWithCornersSelf ℂ ℂ) ω X'
-      ∧ T2Space Y' ∧ CompactSpace Y' ∧ ConnectedSpace Y'
-      ∧ IsManifold (modelWithCornersSelf ℂ ℂ) ω Y' then
-    @ContMDiff.degree X' _ h.1 h.2.1 h.2.2.1 _ h.2.2.2.1
-      Y' _ h.2.2.2.2.1 h.2.2.2.2.2.1 h.2.2.2.2.2.2.1 _ h.2.2.2.2.2.2.2 f hf
-  else 0
+/-- The challenge's `degree` only auto-binds `[TopologicalSpace _]` and
+`[ChartedSpace ℂ _]` on each surface (all that its signature mentions), so the
+shim must take exactly those binders or the `Solution.lean` wrapper pulls the
+extra section variables into its signature and the statements applying
+`degree` stop matching the challenge. `ContMDiff.degree` unfolds to
+`degreeFiber`, whose body needs only these instances, so we inline that body;
+`degree f hf` is definitionally `ContMDiff.degree f hf`. -/
+noncomputable def degree {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y] (f : X → Y)
+    (_hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f) : ℕ :=
+  open Classical in
+  if _root_.Jacobians.IsConstantMap f then 0
+  else
+    if h : Nonempty (_root_.Jacobians.RegularValueWitnessReg f) then
+      (Classical.choice h).card
+    else 0
 
 theorem pushforward_pullback (f : X → Y)
     (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f)
-    (P : _root_.Jacobian Y) :
+    (P : Jacobian Y) :
     pushforward f hf (pullback f hf P) = (degree f hf) • P := by
-  have hdeg : degree f hf = ContMDiff.degree f hf := by
-    rw [degree, dif_pos ⟨inferInstance, inferInstance, inferInstance, inferInstance,
-      inferInstance, inferInstance, inferInstance, inferInstance⟩]
-  rw [hdeg]
   apply _root_.Jacobian.pushforward_pullback
 
 end Jacobian
