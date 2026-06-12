@@ -35,40 +35,8 @@ namespace Jacobians.Dolbeault
 
 The smoothness of `x ↦ proj01 (α x)` is the same mechanism `RealForms.dbar` uses: `proj01` is a
 fixed CLM that slides through the tangent `symmL` because `mulI` commutes with `tangentCoordChange`.
-`RealForms` proves that commutation as the `private` lemma `tangentCoordChange_comp_mulI`, not
-visible here, so we re-establish it locally (pure, from public Mathlib lemmas) and adapt the proof
+`RealForms.tangentCoordChange_comp_mulI` provides that commutation; the proof here adapts it
 to an arbitrary smooth section `α` (where `dbar` had the concrete `differential u`). -/
-
-/-- A real-restricted `ℂ`-linear map commutes with `mulI = (·*i)`. -/
-private theorem restrictScalars_comp_mulI (L : ℂ →L[ℂ] ℂ) :
-    (L.restrictScalars ℝ).comp mulI = mulI.comp (L.restrictScalars ℝ) := by
-  ext v
-  simp only [ContinuousLinearMap.coe_comp', Function.comp_apply, mulI,
-    ContinuousLinearMap.mul_apply', ContinuousLinearMap.coe_restrictScalars']
-  rw [← smul_eq_mul Complex.I v, map_smul, smul_eq_mul]
-
-/-- The tangent `coordChange` of the complex manifold is `ℂ`-linear, hence commutes with `mulI`. -/
-private theorem tangentCoordChange_comp_mulI {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] {a b z : X}
-    (hz : z ∈ (extChartAt 𝓘(ℝ, ℂ) a).source ∩ (extChartAt 𝓘(ℝ, ℂ) b).source) :
-    (tangentCoordChange 𝓘(ℝ, ℂ) a b z).comp mulI =
-      mulI.comp (tangentCoordChange 𝓘(ℝ, ℂ) a b z) := by
-  have hℝ := hasFDerivWithinAt_tangentCoordChange (I := 𝓘(ℝ, ℂ)) (x := a) (y := b) (z := z) hz
-  have hmem : extChartAt 𝓘(ℝ, ℂ) a z ∈
-      ((extChartAt 𝓘(ℝ, ℂ) a).symm ≫ extChartAt 𝓘(ℝ, ℂ) b).source := by
-    rw [PartialEquiv.trans_source'', PartialEquiv.symm_symm, PartialEquiv.symm_target]
-    exact Set.mem_image_of_mem _ hz
-  have hℂ : DifferentiableWithinAt ℂ (extChartAt 𝓘(ℝ, ℂ) b ∘ (extChartAt 𝓘(ℝ, ℂ) a).symm)
-      (Set.range 𝓘(ℝ, ℂ)) (extChartAt 𝓘(ℝ, ℂ) a z) :=
-    (contDiffWithinAt_ext_coord_change (I := 𝓘(ℂ)) (n := ω) b a hmem).differentiableWithinAt
-      (by simp)
-  have huniq : UniqueDiffWithinAt ℝ (Set.range 𝓘(ℝ, ℂ)) (extChartAt 𝓘(ℝ, ℂ) a z) := by
-    rw [ModelWithCorners.Boundaryless.range_eq_univ]; exact uniqueDiffWithinAt_univ
-  have heq : tangentCoordChange 𝓘(ℝ, ℂ) a b z =
-      (fderivWithin ℂ (extChartAt 𝓘(ℝ, ℂ) b ∘ (extChartAt 𝓘(ℝ, ℂ) a).symm)
-        (Set.range 𝓘(ℝ, ℂ)) (extChartAt 𝓘(ℝ, ℂ) a z)).restrictScalars ℝ :=
-    huniq.eq hℝ (hℂ.hasFDerivWithinAt.restrictScalars ℝ)
-  rw [heq, restrictScalars_comp_mulI]
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]

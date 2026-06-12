@@ -1,7 +1,9 @@
 name: Docs
 
 on:
-  workflow_dispatch:   # push trigger restored once the literate conversion lands
+  workflow_dispatch:
+  push:
+    branches: [main]
 
 concurrency:
   group: pages
@@ -18,30 +20,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install elan
-        run: |
-          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
-            | sh -s -- -y --default-toolchain none
-          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+      # lean-action installs elan, reads lean-toolchain, caches .lake, fetches the
+      # Mathlib cache. Build is deferred to the literate facet below.
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
 
-      - name: Get Mathlib cache + build library
-        run: |
-          lake exe cache get
-          lake build
-
-      - name: Generate + build Verso site
-        run: |
-          python3 scripts/unit_design.py
-          python3 scripts/generate_verso_site.py
-          cd site
-          lake exe jacobianssite
+      - name: Build literate site
+        id: literate
+        run: echo "path=$(lake query :literateHtml)" >> "$GITHUB_OUTPUT"
 
       - name: Assemble Pages artifact
         run: |
           mkdir -p _site
-          cp -r docs/* _site/                           # units.html, proposal, reviewer docs
-          cp -r site/_out/html-multi _site/exposition
-          printf '<meta http-equiv="refresh" content="0; url=exposition/">' > _site/index.html
+          cp -r "${{ steps.literate.outputs.path }}"/* _site/
+          mkdir -p _site/docs && cp -r docs/* _site/docs/   # units.html graph, reviewer docs
           touch _site/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3

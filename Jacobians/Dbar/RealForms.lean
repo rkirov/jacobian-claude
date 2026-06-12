@@ -104,7 +104,7 @@ coordinates (`Jcoord = inCoordinates mulI`) to be the *constant* `mulI`, which i
 -/
 
 /-- A real-restricted `ℂ`-linear map commutes with `mulI = (·*i)` (the `ℂ`-`(i·)` action). -/
-private theorem restrictScalars_comp_mulI (L : ℂ →L[ℂ] ℂ) :
+theorem restrictScalars_comp_mulI (L : ℂ →L[ℂ] ℂ) :
     (L.restrictScalars ℝ).comp mulI = mulI.comp (L.restrictScalars ℝ) := by
   ext v
   simp only [ContinuousLinearMap.coe_comp', Function.comp_apply, mulI,
@@ -113,7 +113,7 @@ private theorem restrictScalars_comp_mulI (L : ℂ →L[ℂ] ℂ) :
 
 /-- The tangent `coordChange` of the complex manifold is `ℂ`-linear, hence commutes with `mulI`:
 `fderiv ℝ` of a holomorphic transition is `restrictScalars` of `fderiv ℂ`. -/
-private theorem tangentCoordChange_comp_mulI {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+theorem tangentCoordChange_comp_mulI {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] {a b z : X}
     (hz : z ∈ (extChartAt 𝓘(ℝ, ℂ) a).source ∩ (extChartAt 𝓘(ℝ, ℂ) b).source) :
     (tangentCoordChange 𝓘(ℝ, ℂ) a b z).comp mulI =

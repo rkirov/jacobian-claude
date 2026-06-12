@@ -17,7 +17,3 @@
 .claude/settings.local.json
 *.pdf
 docs/architecture_map.html
-/site/Site.lean
-/site/Site/
-/site/_out/
-/site/.lake/

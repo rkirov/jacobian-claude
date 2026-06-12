@@ -22,9 +22,9 @@ The lean-eval comparator (independent third-party checker) has accepted the subm
 
 ## Where to read
 
-- **The exposition site** (`site/`, rendered to Pages): one chapter per unit — description,
-  keystone declarations, dependencies, members. Generated from the unit docstrings, so it
-  cannot drift from the code.
+- **The literate site** (Verso `:literateHtml`, rendered to Pages): every module as a
+  literate page — highlighted code with docstrings as prose, search included. The unit
+  umbrella files (`Jacobians/<Unit>.lean`) render as the per-unit overview pages.
 - **The unit dependency graph**: `docs/units.html` (interactive; edge thickness = kernel-level
   declaration references) or `docs/UNITS_PROPOSAL.md` (same data as text).
 - The code itself: one directory per unit under `Jacobians/`, each with an umbrella
