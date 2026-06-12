@@ -218,13 +218,6 @@ applies. Then `η_a := g_a − h_a` is holomorphic on the ball, and the cover co
 `x_{ab} := h_b∘τ − h_a` is holomorphic on the FULL overlap (the frame identity makes
 `∂̄(h_b∘τ) = ∂̄h_a` there). -/
 
-/-- `∂̄g_a` is `C^∞` on the ball (∂̄ of the smooth split `g_a`). -/
-theorem contDiffOn_dbar_g (a : 𝔇.ι) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (DbarDisk.dbar (𝒮.g a)) (Metric.ball (𝔇.e a) (𝔇.radius a)) := by
-  intro z hz
-  exact (contDiffAt_dbar_chartDisk
-    ((𝒮.g_smooth a).contDiffAt (Metric.isOpen_ball.mem_nhds hz))).contDiffWithinAt
-
 end BallSplitData
 
 end ChartDiskCover

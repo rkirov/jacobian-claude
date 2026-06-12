@@ -98,34 +98,8 @@ noncomputable def prismK1 (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement �
 
 /-! ### The prism (chain-homotopy) identity -/
 
-/-- **The prism identity.** The two refinement maps differ by a chain homotopy:
-`refineC1 hr' − refineC1 hr = δ⁰_𝔙 ∘ prismK0 + prismK1 ∘ δ¹_𝔘`.  Componentwise on the fine pair
-`(a,b)` (everything germ-restricted to `𝔙.U a ⊓ 𝔙.U b`, nested restrictions collapsed by
-`rawRestrictG_comp_apply`) both sides equal `g_{(r' a)(r' b)} − g_{(r a)(r b)}`; the six prism terms
-cancel by `abel`. This is the algebraic heart of homotopy-independence. -/
-theorem refineC1_sub_eq_homotopy (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘 r') :
-    hr'.refineC1 - hr.refineC1
-      = 𝔙.cechDelta0 ∘ₗ prismK0 hr hr' + prismK1 hr hr' ∘ₗ 𝔘.cechDelta1 := by
-  refine LinearMap.ext fun g => ?_
-  funext p
-  obtain ⟨a, b⟩ := p
-  simp only [LinearMap.add_apply, LinearMap.sub_apply, LinearMap.comp_apply, refineC1_apply,
-    cechDelta0, cechDelta1, LinearMap.pi_apply, LinearMap.proj_apply, prismK0_apply, prismK1_apply,
-    Pi.add_apply, Pi.sub_apply, map_sub, map_add, rawRestrictG_comp_apply]
-  abel
-
 /-! ### Descent to `H¹`: the two refinement maps agree -/
 
-
-/-- The prism homotopy `prismK0` maps `𝒪_D` 1-sections to `𝒪_D` 0-sections: each component
-`(prismK0 g)_j = g_{(r j, r' j)} |_{𝔙.U j}` is a germ restriction of an `𝒪_D` germ
-(`rawRestrictG_omegaDGerm`). -/
-theorem prismK0_mem_sections0 [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (D : Divisor X)
-    (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘 r') {g : 𝔘.Cochain1}
-    (hg : g ∈ 𝔘.sections1 D) : prismK0 hr hr' g ∈ 𝔙.sections0 D := fun j => by
-  rw [prismK0_apply]
-  exact rawRestrictG_omegaDGerm (le_pair hr hr' j) (hg (r j, r' j))
 
 end IsRefinement
 end FiniteCover

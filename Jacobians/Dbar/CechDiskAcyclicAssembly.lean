@@ -31,12 +31,6 @@ The `(i,j)` component of an `𝒪`-cocycle is a holomorphic (`OmegaDGerm 0`) ger
 `U_i ⊓ U_j` — its `sections1` part. (Port of `DolbeaultComparisonInverse.cocycle_mem`, available
 here because `cocycles1`/`sections1` live in `CechComplex`, not in the un-importable file.) -/
 
-/-- The `(i,j)` component of a `1`-cocycle `s` is an `OmegaDGerm 0`-germ on `U_i ⊓ U_j`. -/
-theorem cocycleComp_mem (𝔙 : FiniteFamily X) (s : ↥(𝔙.cocycles1 (0 : Divisor X)))
-    (i j : 𝔙.ι) :
-    (s : 𝔙.Cochain1) (i, j) ∈ OmegaDGerm (0 : Divisor X) (𝔙.U i ⊓ 𝔙.U j) :=
-  (Submodule.mem_inf.1 s.2).2 (i, j)
-
 /-! ### Chart-transport bridge (reverse) — chart-analytic ambient functions restrict to
 holomorphic sections
 

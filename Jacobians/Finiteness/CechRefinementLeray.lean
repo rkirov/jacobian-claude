@@ -50,17 +50,6 @@ variable {𝔚 𝔙 𝔘 : FiniteCover X}
 
 /-! ### Round-trip / functoriality on `H¹` -/
 
-/-- **The identity refinement is the identity on 1-cochains.**  `(IsRefinement.id 𝔘).refineC1 = id`:
-on each pair `p` the value is `rawRestrictG le_rfl (g (id p.1, id p.2)) = g p`. -/
-theorem refineC1_id {X : Type*} [TopologicalSpace X] (𝔘 : FiniteCover X) :
-    (IsRefinement.id 𝔘).refineC1 = LinearMap.id := by
-  refine LinearMap.ext fun g => ?_
-  funext p
-  rw [refineC1_apply, LinearMap.id_apply]
-  -- `r = id`: `g (id p.1, id p.2) = g p` (defeq) and the restriction is along `U p ≤ U p`.
-  rw [show g (_root_.id p.1, _root_.id p.2) = g p from rfl]
-  induction g p using Filter.Germ.inductionOn with | _ f => rfl
-
 variable (D : Divisor X)
 
 /-! ### Injectivity of `refineH1` from a back-refinement (STEP A + functoriality)
@@ -98,25 +87,6 @@ theorem overlapFamily_le_fine {X : Type*} [TopologicalSpace X] (𝔙 𝔘 : Fini
     (i j : 𝔘.ι) (a : 𝔙.ι) :
     (overlapFamily 𝔙 𝔘 i j).U a ≤ 𝔙.U a :=
   FiniteFamily.restrictToOpen_le_left 𝔙.toFiniteFamily (𝔘.U i ⊓ 𝔘.U j) a
-
-/-- The pairwise overlap of the restricted overlap family sits inside the original fine pairwise
-overlap. -/
-theorem overlapFamily_pair_le_finePair {X : Type*} [TopologicalSpace X] (𝔙 𝔘 : FiniteCover X)
-    (i j : 𝔘.ι) (a b : 𝔙.ι) :
-    (overlapFamily 𝔙 𝔘 i j).U a ⊓ (overlapFamily 𝔙 𝔘 i j).U b ≤
-      𝔙.U a ⊓ 𝔙.U b :=
-  inf_le_inf (overlapFamily_le_fine 𝔙 𝔘 i j a) (overlapFamily_le_fine 𝔙 𝔘 i j b)
-
-/-- The triple overlap of the restricted overlap family sits inside the original fine triple
-overlap. -/
-theorem overlapFamily_triple_le_fineTriple {X : Type*} [TopologicalSpace X] (𝔙 𝔘 : FiniteCover X)
-    (i j : 𝔘.ι) (a b c : 𝔙.ι) :
-    (overlapFamily 𝔙 𝔘 i j).U a ⊓ (overlapFamily 𝔙 𝔘 i j).U b ⊓
-        (overlapFamily 𝔙 𝔘 i j).U c ≤
-      𝔙.U a ⊓ 𝔙.U b ⊓ 𝔙.U c :=
-  inf_le_inf
-    (inf_le_inf (overlapFamily_le_fine 𝔙 𝔘 i j a) (overlapFamily_le_fine 𝔙 𝔘 i j b))
-    (overlapFamily_le_fine 𝔙 𝔘 i j c)
 
 /-- **The Leray DESCEND condition (injectivity input).**  A `𝔘`-cocycle whose refinement is a
 `𝔙`-coboundary was already a `𝔘`-coboundary (`ker (refineH1 hr) = 0`).  This is Forster 12.8

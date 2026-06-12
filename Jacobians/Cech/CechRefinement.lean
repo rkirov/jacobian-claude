@@ -191,11 +191,6 @@ noncomputable def refineZ1 [T2Space X] [CompactSpace X] [ConnectedSpace X] [Char
   (h.refineC1.domRestrict (𝔘.cocycles1 D)).codRestrict (𝔙.cocycles1 D)
     fun g => h.refineC1_mem_cocycles1 D g.2
 
-@[simp] theorem refineZ1_coe [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X]
-    (g : ↥(𝔘.cocycles1 D)) :
-    (h.refineZ1 D g : 𝔙.Cochain1) = h.refineC1 (g : 𝔘.Cochain1) := rfl
-
 /-- **The induced map on Čech `H¹`** `cechH1 𝔘 D →ₗ[ℂ] cechH1 𝔙 D` (`refineH1`).  The
 cocycle-level refinement `refineZ1` sends `𝒪_D`-coboundaries on `𝔘` to `𝒪_D`-coboundaries on `𝔙`
 (`refineC1_mem_coboundaries1`), so it descends to the `H¹ = Z¹/B¹` quotients (`Submodule.mapQ`).
@@ -237,19 +232,6 @@ theorem comp {s : 𝔚.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
     (hs : IsRefinement 𝔚 𝔙 s) (hr : IsRefinement 𝔙 𝔘 r) :
     IsRefinement 𝔚 𝔘 (r ∘ s) :=
   fun k => (hs k).trans (hr (s k))
-
-/-- **Refinement on 1-cochains is functorial.** Refining `𝔚 → 𝔘` directly (via `r ∘ s`) equals
-refining `𝔘 → 𝔙` then `𝔙 → 𝔚` (nested germ restrictions collapse, `rawRestrictG_comp_apply`). This
-composition law is what the eventual cover-independence argument uses to compare the two composites
-of a pair of mutual refinement maps. -/
-theorem refineC1_comp {s : 𝔚.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
-    (hs : IsRefinement 𝔚 𝔙 s) (hr : IsRefinement 𝔙 𝔘 r) :
-    (hs.comp hr).refineC1 = hs.refineC1 ∘ₗ hr.refineC1 := by
-  refine LinearMap.ext fun g => ?_
-  funext p
-  obtain ⟨a, b⟩ := p
-  simp only [LinearMap.comp_apply, refineC1_apply, Function.comp_apply, rawRestrictG_comp_apply]
-  rfl
 
 end IsRefinement
 
