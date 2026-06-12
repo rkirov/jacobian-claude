@@ -41,7 +41,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 does not change its
 residue pairing: the dropped entries `(p, n)` have `n ≥ −D p`, so their weights
 `(h·dg₀)_{−1−n}` sit at degrees `−1−n < D p ≤ ord` and vanish. -/
-theorem tailResidue_truncateRaw (g₀ h : MeromorphicFunction X) {D : Divisor X}
+theorem tailResidue_truncateRaw {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (g₀ h : MeromorphicFunction X) {D : Divisor X}
     (hord : PairOrderBounded g₀ h D) (Z : TailSpace X) :
     tailResidue g₀ h (truncateRaw (X := X) D Z) = tailResidue g₀ h Z := by
   classical
@@ -74,7 +75,8 @@ open Classical in
 residue functional is the sum over base points of the `resAt`-pairings of the tail polynomial
 against the form's local coefficient (`resAt_mul_eq_sum_tailPairing`, read in reverse, with the
 tail polynomial as the meromorphic factor — its coefficients *are* the entries). -/
-theorem tailResidue_eq_sum_resAt (g₀ g : MeromorphicFunction X) {B : Divisor X}
+theorem tailResidue_eq_sum_resAt {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (g₀ g : MeromorphicFunction X) {B : Divisor X}
     (hord : PairOrderBounded g₀ g B)
     {Z : TailSpace X} (hZ : Z ∈ tailSubspace (X := X) B) (P : Finset X)
     (hP : Z.support.image Prod.fst ⊆ P) :
@@ -117,7 +119,8 @@ theorem tailResidue_eq_sum_resAt (g₀ g : MeromorphicFunction X) {B : Divisor X
 
 /-- The form-order bound multiplies: `ord((ψ·h)·dg₀) ≥ A` when `ord(h·dg₀) ≥ E` and
 `A − E ≤ ord ψ`. -/
-theorem pairOrderBounded_mul (g₀ h ψ : MeromorphicFunction X) {A E : Divisor X}
+theorem pairOrderBounded_mul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (g₀ h ψ : MeromorphicFunction X) {A E : Divisor X}
     (hord : PairOrderBounded g₀ h E) (hlev : MulLevelLE ψ A E) :
     PairOrderBounded g₀ (ψ * h) A := by
   intro p
@@ -157,7 +160,8 @@ theorem pairOrderBounded_mul (g₀ h ψ : MeromorphicFunction X) {A E : Divisor 
 `Res_{h·dg₀}(μ_ψ Z) = Res_{(ψ·h)·dg₀}(Z)` for `Z` of level `A`, the form of order ≥ `E`, and
 `A − E ≤ ord ψ`: per point, the defect `tailFn(μ_ψ Z) − ψ·tailFn(Z)` has order ≥ `−E` and
 pairs against order ≥ `E` to residue `0`. -/
-theorem tailResidue_tailMul (g₀ h ψ : MeromorphicFunction X) {A E : Divisor X}
+theorem tailResidue_tailMul {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (g₀ h ψ : MeromorphicFunction X) {A E : Divisor X}
     (hord : PairOrderBounded g₀ h E) (hlev : MulLevelLE ψ A E) {Z : TailSpace X}
     (hZ : Z ∈ tailSubspace (X := X) A) :
     tailResidue g₀ h (tailMul ψ E Z) = tailResidue g₀ (ψ * h) Z := by
@@ -257,7 +261,8 @@ theorem tailResidue_tailMul (g₀ h ψ : MeromorphicFunction X) {A E : Divisor X
 level `D'`) vanishes on every `D'`-tail killed by the `D`-truncation, then `h·dg₀` satisfies the
 coarser bound `D` — else the single-monomial witness `z^{−1−o}·p` at a violating point is killed
 by the truncation yet pairs to the nonzero leading coefficient. -/
-theorem pairOrderBounded_of_vanishing (g₀ h : MeromorphicFunction X) {D' D : Divisor X}
+theorem pairOrderBounded_of_vanishing {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    (g₀ h : MeromorphicFunction X) {D' D : Divisor X}
     (hord : PairOrderBounded g₀ h D')
     (hvan : ∀ Z : TailSpace X, Z ∈ tailSubspace (X := X) D' →
       truncateRaw (X := X) D Z = 0 → tailResidue g₀ h Z = 0) :

@@ -35,8 +35,7 @@ open Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicTrace
 
 namespace Jacobians.LaurentTail
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ### §1 The multiplication operator is linear in the multiplier -/
 
@@ -98,6 +97,8 @@ theorem tailMul_eq_zero_of_germZero {ψ : MeromorphicFunction X}
         = (ψ.toFun ∘ (chartAt (H := ℂ) q.1).symm) z from rfl, hz, zero_mul]
     rw [laurentCoeff_congr h0, laurentCoeff_zero]
   · rfl
+
+variable [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### §2 The Λ-side dual map `ψ ↦ φ ∘ T̄_ψ` on `L(C)/germ0` -/
 

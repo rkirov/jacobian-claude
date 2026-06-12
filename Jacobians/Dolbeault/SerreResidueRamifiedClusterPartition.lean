@@ -555,7 +555,8 @@ derivatives at `z`:
 *Proof.* The chart-pullbacks `chart_q ∘ sₖ` are continuous right-inverses of `φ` through `chart_q q`
 (`φ (chart_q (sₖ w)) = f.holoRepr (sₖ w) = w` near `z`, using `sₖ w ∈ chart_q.source`), so they
 germ-agree by `eventuallyEq_of_rightInverse_of_rightInverse`; equal germs have equal derivatives. -/
-theorem hderiv_match_of_section {f : MeromorphicFunction X} {s₁ s₂ : ℂ → X} {z : ℂ}
+theorem hderiv_match_of_section {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {f : MeromorphicFunction X} {s₁ s₂ : ℂ → X} {z : ℂ}
     (hq_np : 0 ≤ f.orderAtPoint (s₁ z)) (hq_val : f.holoRepr (s₁ z) = z)
     (hreg : deriv (fun u => f.holoRepr ((chartAt ℂ (s₁ z)).symm u)) ((chartAt ℂ (s₁ z)) (s₁ z)) ≠ 0)
     (hs₂z : s₂ z = s₁ z)

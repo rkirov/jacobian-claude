@@ -31,7 +31,7 @@ namespace Jacobians.LaurentTail
 open Jacobians Jacobians.Dolbeault
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### §1 A holomorphic `ω₀` as a §17.4 canonical-form datum -/
 

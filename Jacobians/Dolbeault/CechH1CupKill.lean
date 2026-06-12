@@ -36,8 +36,7 @@ open TopologicalSpace (Opens)
 
 namespace Jacobians
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-! ### Order and linear-system bookkeeping for products, the constant `1`, and reciprocals -/
 
@@ -105,6 +104,21 @@ at the statement level, where `f` is opaque). -/
 theorem linearSystem_congr {E E' : Divisor X} (h : E = E') {f : MeromorphicFunction X}
     (hf : f ∈ linearSystem (X := X) E) : f ∈ linearSystem (X := X) E' := h ▸ hf
 
+/-- **`f⁻¹·f − 1` is germ-zero** for a non-germ-zero `f`: off the (isolated) zeros of `f.toFun`
+the product is exactly `1`. -/
+theorem orderW_inv_mul_sub_one {f : MeromorphicFunction X} (hne : ∀ x, f.orderW x ≠ ⊤) (x : X) :
+    (f⁻¹ * f - 1).orderW x = ⊤ := by
+  rw [MeromorphicFunction.orderW_eq_top_iff]
+  have hev : ∀ᶠ z in 𝓝[≠] x, f.toFun z ≠ 0 := (MeromorphicFunction.orderW_ne_top_iff f x).mp (hne x)
+  filter_upwards [hev] with z hz
+  show (f⁻¹ * f - 1).toFun z = 0
+  rw [MeromorphicFunction.sub_toFun, MeromorphicFunction.mul_toFun, MeromorphicFunction.inv_toFun,
+    MeromorphicFunction.one_toFun]
+  simp only [Pi.sub_apply, Pi.mul_apply, Pi.inv_apply]
+  rw [inv_mul_cancel₀ hz, sub_self]
+
+variable [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ) ω X]
+
 /-- The divisor `div f` reads the germ-order: at every point `(div f) x = untop₀ (orderW f x)`. -/
 theorem MeromorphicFunction.div_apply_eq_untop₀ (f : MeromorphicFunction X) (x : X) :
     MeromorphicFunction.div X f x = (f.orderW x).untop₀ := by
@@ -138,18 +152,7 @@ theorem effective_add_div {E : Divisor X} {f : MeromorphicFunction X}
   have hcoe : -(E x) ≤ MeromorphicFunction.div X f x := by exact_mod_cast hx
   omega
 
-/-- **`f⁻¹·f − 1` is germ-zero** for a non-germ-zero `f`: off the (isolated) zeros of `f.toFun`
-the product is exactly `1`. -/
-theorem orderW_inv_mul_sub_one {f : MeromorphicFunction X} (hne : ∀ x, f.orderW x ≠ ⊤) (x : X) :
-    (f⁻¹ * f - 1).orderW x = ⊤ := by
-  rw [MeromorphicFunction.orderW_eq_top_iff]
-  have hev : ∀ᶠ z in 𝓝[≠] x, f.toFun z ≠ 0 := (MeromorphicFunction.orderW_ne_top_iff f x).mp (hne x)
-  filter_upwards [hev] with z hz
-  show (f⁻¹ * f - 1).toFun z = 0
-  rw [MeromorphicFunction.sub_toFun, MeromorphicFunction.mul_toFun, MeromorphicFunction.inv_toFun,
-    MeromorphicFunction.one_toFun]
-  simp only [Pi.sub_apply, Pi.mul_apply, Pi.inv_apply]
-  rw [inv_mul_cancel₀ hz, sub_self]
+variable [ConnectedSpace X]
 
 namespace Dolbeault
 

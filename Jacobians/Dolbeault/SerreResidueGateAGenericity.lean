@@ -88,7 +88,7 @@ open Jacobians Jacobians.Dolbeault Jacobians.RiemannSphere
 namespace Jacobians.Dolbeault.SerreResidueTheorem
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ## Nonconstant ⟹ `div ≠ 0` (compact Liouville) -/
 
@@ -150,7 +150,8 @@ theorem exists_finite_regularValue (f₀ : MeromorphicFunction X)
 /-- **A zero of `f₀ − a·1` is a preimage of `coe a`.** If `f₀ − a·1` has *positive* order at `y`,
 then `f₀.toFun → a` on the punctured neighbourhood, so `f₀` is a *non-pole* at `y` with
 `holoRepr y = a`, hence `f₀.toRiemannSphere y = coe a`. -/
-theorem toRiemannSphere_eq_coe_of_sub_orderPos (f₀ : MeromorphicFunction X) (a : ℂ) {y : X}
+theorem toRiemannSphere_eq_coe_of_sub_orderPos {X : Type*} [TopologicalSpace X]
+    [ChartedSpace ℂ X] (f₀ : MeromorphicFunction X) (a : ℂ) {y : X}
     (hy : 0 < (f₀ - a • (constOneMero (X := X))).orderAtPoint y) :
     f₀.toRiemannSphere y = ((a : ℂ) : RiemannSphere) := by
   set h := f₀ - a • (constOneMero (X := X)) with hh
