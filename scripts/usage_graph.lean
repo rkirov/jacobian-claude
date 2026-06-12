@@ -37,7 +37,10 @@ open Lean
     for c in datas[i]!.constNames do
       declCount := declCount.insert src (declCount.getD src 0 + 1)
       let some ci := env.find? c | continue
-      let used := ci.type.getUsedConstants ++ (ci.value?.map (·.getUsedConstants)).getD #[]
+      -- NB v4.30: `ci.value?` returns none for theorems by default (proofs are opaque-gated);
+      -- ask for the value explicitly or the graph silently loses all proof-level usage.
+      let used := ci.type.getUsedConstants
+        ++ ((ci.value? (allowOpaque := true)).map (·.getUsedConstants)).getD #[]
       let mut seen : NameSet := {}
       for u in used do
         if seen.contains u then continue
