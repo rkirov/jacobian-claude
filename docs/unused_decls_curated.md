@@ -5,7 +5,7 @@ DELETE entries are proposals — review before executing.
 
 | category | decls | est. LoC |
 |---|---|---|
-| DELETE | 310 | 371 |
+| DELETE | 306 | 349 |
 | LANDMARK | 9 | 269 |
 | PROTECTED | 27 | 408 |
 
@@ -124,30 +124,6 @@ DELETE entries are proposals — review before executing.
 - `Jacobians.TraceResidue.LaurentForm.mk.sizeOf_spec` (0 LoC) — (not located)
 - `Jacobians.TraceResidue.LaurentForm.recOn` (0 LoC) — (not located)
 
-### Cech — 22 decls, ~23 LoC
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.tripleA_le` (7 LoC) — Jacobians/Cech/CechRefinementHomotopy.lean:61
-- `Jacobians.Dolbeault.FiniteFamily.restrictToOpen` (6 LoC) — Jacobians/Cech/CechComplex.lean:62
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.le_pair` (5 LoC) — Jacobians/Cech/CechRefinementHomotopy.lean:54
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.tripleB_le` (4 LoC) — Jacobians/Cech/CechRefinementHomotopy.lean:66
-- `Jacobians.Dolbeault.openIncl_val` (1 LoC) — Jacobians/Cech/CechSection.lean:81
-- `Jacobians.Dolbeault.FiniteCover.ctorIdx` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.FiniteCover.mk.injEq` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.FiniteCover.mk.sizeOf_spec` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.FiniteCover.recOn` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.FiniteFamily.ctorIdx` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.FiniteFamily.mk.injEq` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.FiniteFamily.mk.sizeOf_spec` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.FiniteFamily.recOn` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.rawRestrictG.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC0.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC1.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC2.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.openIncl.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.ChartDiskCover.ctorIdx` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.ChartDiskCover.mk.injEq` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.ChartDiskCover.mk.sizeOf_spec` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.ChartDiskCover.recOn` (0 LoC) — (not located)
-
 ### DolbeaultComparison — 9 decls, ~18 LoC
 - `Jacobians.Dolbeault.OmegaD_le_add_single` (10 LoC) — Jacobians/DolbeaultComparison/LocalRealization.lean:430
 - `Jacobians.Dolbeault.primFn_apply` (3 LoC) — Jacobians/DolbeaultComparison/DolbeaultComparisonInverse.lean:500
@@ -261,6 +237,26 @@ DELETE entries are proposals — review before executing.
 - `Jacobians.Dolbeault.StokesResidue.PoleBumpData.mk.sizeOf_spec` (0 LoC) — (not located)
 - `Jacobians.Dolbeault.StokesResidue.PoleBumpData.recOn` (0 LoC) — (not located)
 - `Jacobians.Dolbeault.StokesResidue.coverRhoC.congr_simp` (0 LoC) — (not located)
+
+### Cech — 18 decls, ~1 LoC
+- `Jacobians.Dolbeault.openIncl_val` (1 LoC) — Jacobians/Cech/CechSection.lean:81
+- `Jacobians.Dolbeault.FiniteCover.ctorIdx` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.FiniteCover.mk.injEq` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.FiniteCover.mk.sizeOf_spec` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.FiniteCover.recOn` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.FiniteFamily.ctorIdx` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.FiniteFamily.mk.injEq` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.FiniteFamily.mk.sizeOf_spec` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.FiniteFamily.recOn` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.rawRestrictG.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC0.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC1.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC2.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.openIncl.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.ChartDiskCover.ctorIdx` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.ChartDiskCover.mk.injEq` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.ChartDiskCover.mk.sizeOf_spec` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.ChartDiskCover.recOn` (0 LoC) — (not located)
 
 ### Abel — 6 decls, ~0 LoC
 - `Jacobians.WeakSolution.mul.congr_simp` (0 LoC) — (not located)

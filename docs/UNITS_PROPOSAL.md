@@ -104,7 +104,7 @@ Planar residue calculus: `resAt`, Laurent coefficients of pair integrands, and M
 
 **Keystones:** `resAt / FormCoeff`; `MittagLeffler`
 
-**References:** Forster §17.6 · Forster §17 · Forster §17.1–17.2
+**References:** Forster §17 · Forster §17.1–17.2
 
 **Builds on:** holomorphic-forms
 

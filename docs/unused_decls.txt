@@ -56,16 +56,12 @@ Jacobians.Cech.CechComplex | Jacobians.Dolbeault.FiniteFamily.ctorIdx
 Jacobians.Cech.CechComplex | Jacobians.Dolbeault.FiniteFamily.mk.injEq
 Jacobians.Cech.CechComplex | Jacobians.Dolbeault.FiniteFamily.mk.sizeOf_spec
 Jacobians.Cech.CechComplex | Jacobians.Dolbeault.FiniteFamily.recOn
-Jacobians.Cech.CechComplex | Jacobians.Dolbeault.FiniteFamily.restrictToOpen
 Jacobians.Cech.CechComplex | Jacobians.Dolbeault.rawRestrictG.congr_simp
 Jacobians.Cech.CechRefinement | Jacobians.Dolbeault.FiniteCover.IsRefinement.comp
 Jacobians.Cech.CechRefinement | Jacobians.Dolbeault.FiniteCover.IsRefinement.id
 Jacobians.Cech.CechRefinement | Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC0.congr_simp
 Jacobians.Cech.CechRefinement | Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC1.congr_simp
 Jacobians.Cech.CechRefinement | Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC2.congr_simp
-Jacobians.Cech.CechRefinementHomotopy | Jacobians.Dolbeault.FiniteCover.IsRefinement.le_pair
-Jacobians.Cech.CechRefinementHomotopy | Jacobians.Dolbeault.FiniteCover.IsRefinement.tripleA_le
-Jacobians.Cech.CechRefinementHomotopy | Jacobians.Dolbeault.FiniteCover.IsRefinement.tripleB_le
 Jacobians.Cech.CechSection | Jacobians.Dolbeault.openIncl.congr_simp
 Jacobians.Cech.CechSection | Jacobians.Dolbeault.openIncl_val
 Jacobians.Cech.ChartDiskCover | Jacobians.Dolbeault.ChartDiskCover.ctorIdx
