@@ -60,6 +60,16 @@ def find_decl_statement(short, files):
                 return p, i + 1, '\n'.join(block)
     return None
 
+
+from urllib.parse import quote
+
+def issue_url(decl, path, line):
+    """Prefilled GitHub new-issue link for a specific declaration (Bridgeland-style)."""
+    title = quote(f'Issue with `{decl}`')
+    body = quote(f'Concerning the statement or proof of `{decl}`\n'
+                 f'({REPO}/blob/main/{path}#L{line}).\n\nDescribe the problem:\n')
+    return f'{REPO}/issues/new?title={title}&body={body}'
+
 def lean_str(s):
     return s.replace('\\', '\\\\').replace('"', '\\"')
 
@@ -92,7 +102,9 @@ for u in order:
             p, ln, stmt = found
             mod_of_p = p[:-5].replace('/', '/')
             lit = '../../' + p[:-5] + '/'
-            lines.append(f'**`{k}`** — [full proof]({lit}) · [source]({REPO}/blob/main/{p}#L{ln})')
+            lines.append(f'**`{k}`** — [full proof]({lit}) · '
+                         f'[source]({REPO}/blob/main/{p}#L{ln}) · '
+                         f'[report an issue]({issue_url(k, p, ln)})')
             lines.append('')
             lines.append('```')
             lines.append(stmt)
