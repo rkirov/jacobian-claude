@@ -5,18 +5,17 @@ DELETE entries are proposals — review before executing.
 
 | category | decls | est. LoC |
 |---|---|---|
-| DELETE | 310 | 381 |
+| DELETE | 310 | 370 |
 | LANDMARK | 9 | 269 |
 | PROTECTED | 27 | 408 |
 
 ## DELETE
 
-### Finiteness — 67 decls, ~175 LoC
+### Finiteness — 66 decls, ~159 LoC
 - `Jacobians.Dolbeault.chartCoverHolomorphicDiskOverlapData` (78 LoC) — Jacobians/Finiteness/CechModelHolomorphic.lean:119
 - `Jacobians.Dolbeault.chartCoverOverlapData` (34 LoC) — Jacobians/Finiteness/CechModelGeometry.lean:96
 - `Jacobians.Dolbeault.FiniteCover.skyscraperLES_of_chartDisk` (25 LoC) — Jacobians/Finiteness/SkyscraperAssembly.lean:571
-- `Jacobians.Dolbeault.ChartDiskCover.contDiffAt_dbar_chartDisk` (16 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:196
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.overlapFamily_le_fine` (5 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:86
+- `Jacobians.Dolbeault.FiniteCover.IsRefinement.overlapFamily` (5 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:82
 - `Jacobians.Dolbeault.ChartDiskCover.overlapData_Wov_eq` (3 LoC) — Jacobians/Finiteness/ChartDiskFinitenessComplete.lean:62
 - `Jacobians.Dolbeault.BddHol.precompBcf_apply` (2 LoC) — Jacobians/Finiteness/BddHol.lean:292
 - `Jacobians.Dolbeault.BddHol.precompCLM_apply` (2 LoC) — Jacobians/Finiteness/BddHol.lean:318
@@ -196,9 +195,10 @@ DELETE entries are proposals — review before executing.
 - `Jacobians.Discharge.Manifold.KthRootSubstitution.casesOn` (0 LoC) — (not located)
 - `Jacobians.Discharge.Manifold.KthRootSubstitution.recOn` (0 LoC) — (not located)
 
-### Cech — 20 decls, ~12 LoC
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.prismK1_apply` (7 LoC) — Jacobians/Cech/CechRefinementHomotopy.lean:91
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.prismK0_apply` (4 LoC) — Jacobians/Cech/CechRefinementHomotopy.lean:64
+### Cech — 21 decls, ~17 LoC
+- `Jacobians.Dolbeault.FiniteCover.IsRefinement.prismK1` (8 LoC) — Jacobians/Cech/CechRefinementHomotopy.lean:80
+- `Jacobians.Dolbeault.FiniteCover.IsRefinement.prismK0` (5 LoC) — Jacobians/Cech/CechRefinementHomotopy.lean:60
+- `Jacobians.Dolbeault.FiniteFamily.restrictToOpen_le_left` (3 LoC) — Jacobians/Cech/CechComplex.lean:67
 - `Jacobians.Dolbeault.openIncl_val` (1 LoC) — Jacobians/Cech/CechSection.lean:81
 - `Jacobians.Dolbeault.FiniteCover.ctorIdx` (0 LoC) — (not located)
 - `Jacobians.Dolbeault.FiniteCover.mk.injEq` (0 LoC) — (not located)
@@ -374,8 +374,8 @@ DELETE entries are proposals — review before executing.
 - `Jacobians.Dolbeault.DbarDiskCohomology.dbar_solvable_ball` (32 LoC) — Jacobians/Dbar/DbarDiskCohomology.lean:39
 
 ### Finiteness — 2 decls, ~37 LoC
-- `Jacobians.Dolbeault.ChartDiskCover.finiteDimensional_cechH1_iff_dolbeault` (21 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:368
-- `Jacobians.Dolbeault.ChartDiskCover.finiteDimensional_cechH1_of_holomorphicModel` (16 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:393
+- `Jacobians.Dolbeault.ChartDiskCover.finiteDimensional_cechH1_iff_dolbeault` (21 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:351
+- `Jacobians.Dolbeault.ChartDiskCover.finiteDimensional_cechH1_of_holomorphicModel` (16 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:376
 
 ### SerrePairing — 1 decls, ~33 LoC
 - `Jacobians.Dolbeault.SerreDuality.serre_surjectivity_dim_core` (33 LoC) — Jacobians/SerrePairing/SerreDuality.lean:56

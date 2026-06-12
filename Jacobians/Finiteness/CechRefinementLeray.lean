@@ -76,12 +76,6 @@ at the bottom). -/
 
 variable {r : 𝔙.ι → 𝔘.ι}
 
-/-- The local family obtained by restricting the fine cover `𝔙` to the coarse overlap
-`𝔘.U i ∩ 𝔘.U j`.  Its sets are `{𝔙.U a ∩ 𝔘.U i ∩ 𝔘.U j}_a`, the family that appears in the standard
-Leray lift proof on a fixed coarse overlap. -/
-def overlapFamily (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι) : FiniteFamily X :=
-  𝔙.toFiniteFamily.restrictToOpen (𝔘.U i ⊓ 𝔘.U j)
-
 /-- **The Leray DESCEND condition (injectivity input).**  A `𝔘`-cocycle whose refinement is a
 `𝔙`-coboundary was already a `𝔘`-coboundary (`ker (refineH1 hr) = 0`).  This is Forster 12.8
 (injectivity of the coarse→fine map on `H¹`); for `𝒪` with germ-class sections it is the H⁰ gluing

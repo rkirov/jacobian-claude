@@ -64,10 +64,6 @@ def restrictToOpen (𝔘 : FiniteFamily X) (W : Opens X) : FiniteFamily X where
   fintype := inferInstance
   U i := 𝔘.U i ⊓ W
 
-theorem restrictToOpen_le_left (𝔘 : FiniteFamily X) (W : Opens X) (i : 𝔘.ι) :
-    (𝔘.restrictToOpen W).U i ≤ 𝔘.U i :=
-  inf_le_left
-
 /-! ### Cochain spaces — germ-classes (`MGerm`), the junk-free sections (no junk quotient). -/
 
 /-- 0-cochains: a germ-class on each `↥(U i)`. -/

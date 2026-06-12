@@ -55,12 +55,6 @@ theorem le_pair (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘 r'
     𝔙.U j ≤ 𝔘.U (r j) ⊓ 𝔘.U (r' j) :=
   le_inf (hr j) (hr' j)
 
-/-- `prismK0 : Cochain¹ 𝔘 →ₗ[ℂ] Cochain⁰ 𝔙`, `(prismK0 g)_j = g_{(r j, r' j)} |_{𝔙.U j}`.
-The degree-1 piece of the simplicial prism homotopy between the two vertex maps `r#, r'#`. -/
-noncomputable def prismK0 (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘 r') :
-    𝔘.Cochain1 →ₗ[ℂ] 𝔙.Cochain0 :=
-  LinearMap.pi fun j => rawRestrictG (le_pair hr hr' j) ∘ₗ LinearMap.proj (r j, r' j)
-
 /-- For `prismK1` on the pair `(a,b)` we restrict the coarse triple germs `h_{(r a, r' a, r' b)}`
 and `h_{(r a, r b, r' b)}` from their triple overlaps down to `𝔙.U a ⊓ 𝔙.U b`. The two containment
 witnesses: -/
@@ -73,15 +67,6 @@ theorem tripleB_le (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘
     𝔙.U a ⊓ 𝔙.U b ≤ 𝔘.U (r a) ⊓ 𝔘.U (r b) ⊓ 𝔘.U (r' b) :=
   le_inf (le_inf (inf_le_left.trans (hr a)) (inf_le_right.trans (hr b)))
     (inf_le_right.trans (hr' b))
-
-/-- `prismK1 : Cochain² 𝔘 →ₗ[ℂ] Cochain¹ 𝔙`,
-`(prismK1 h)_{a b} = h_{(r a, r' a, r' b)} − h_{(r a, r b, r' b)} |_{𝔙.U a ⊓ 𝔙.U b}`.
-The degree-2 piece of the simplicial prism homotopy. -/
-noncomputable def prismK1 (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘 r') :
-    𝔘.Cochain2 →ₗ[ℂ] 𝔙.Cochain1 :=
-  LinearMap.pi fun p =>
-    rawRestrictG (tripleA_le hr hr' p.1 p.2) ∘ₗ LinearMap.proj (r p.1, r' p.1, r' p.2)
-      - rawRestrictG (tripleB_le hr hr' p.1 p.2) ∘ₗ LinearMap.proj (r p.1, r p.2, r' p.2)
 
 /-! ### The prism (chain-homotopy) identity -/
 
