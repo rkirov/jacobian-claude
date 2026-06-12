@@ -1,0 +1,58 @@
+import Submission.MappingDegree.AnalyticContinuationGlobalization
+import Submission.MappingDegree.AnalyticFiberDiscrete
+import Submission.MappingDegree.AnalyticKthRoot
+import Submission.MappingDegree.ChartBallOffCentreWitnessDischarge
+import Submission.MappingDegree.ChartLocalDetour
+import Submission.MappingDegree.ChartOverlapAvoidanceFull
+import Submission.MappingDegree.ChartOverlapPropagationDischarge
+import Submission.MappingDegree.ChartPullbackDataConstruction
+import Submission.MappingDegree.ChartPullbackNotEventuallyConstDischarge
+import Submission.MappingDegree.ChartRestrictionToBall
+import Submission.MappingDegree.ChartedSpaceLocPathConnected
+import Submission.MappingDegree.ClopennessOfLocallyConstDischarge
+import Submission.MappingDegree.ConnectedManifoldPathConnected
+import Submission.MappingDegree.ConnectivityGlobalizationReduction
+import Submission.MappingDegree.CriticalSetDerivBridge
+import Submission.MappingDegree.CriticalSetDiscrete
+import Submission.MappingDegree.CriticalValueSetFinite
+import Submission.MappingDegree.CriticalValuesFiniteGeneral
+import Submission.MappingDegree.Degree
+import Submission.MappingDegree.DegreeWellDefined
+import Submission.MappingDegree.FibreCardLocallyConstantFromNormalForm
+import Submission.MappingDegree.FibreCardOnRegularSubset
+import Submission.MappingDegree.FibreCardWellDefinedAtRegular
+import Submission.MappingDegree.FibresFiniteAssembly
+import Submission.MappingDegree.FibresFiniteUnconditional
+import Submission.MappingDegree.HLcUnconditional
+import Submission.MappingDegree.HPkgUnconditional
+import Submission.MappingDegree.HurwitzPatchingDataConstruction
+import Submission.MappingDegree.HurwitzWellDefinedFromHPath
+import Submission.MappingDegree.HurwitzWellDefinedUnconditionalTopo
+import Submission.MappingDegree.IsPathConnectedBallMinusCountable
+import Submission.MappingDegree.LocalKFoldMultiplicity
+import Submission.MappingDegree.LocalKFoldMultiplicityFullyUnconditional
+import Submission.MappingDegree.LocalKFoldMultiplicityUnconditional
+import Submission.MappingDegree.LocalMultiplicityInvariance
+import Submission.MappingDegree.LocalNormalForm
+import Submission.MappingDegree.LocalSheetDataAtRegularValue
+import Submission.MappingDegree.LocalSheetDataFromContMDiff
+import Submission.MappingDegree.MeromorphicDivisor
+import Submission.MappingDegree.PathConnectedComplFinite
+import Submission.MappingDegree.PathSubdivisionByBallCharts
+import Submission.MappingDegree.PerChartNonConstancyReduction
+import Submission.MappingDegree.PreconnectedFromFiniteComplement
+import Submission.MappingDegree.RegularSubsetPreconnected
+import Submission.MappingDegree.RegularValueExistsRegUnconditional
+import Submission.MappingDegree.RegularValueExistsUnconditional
+import Submission.MappingDegree.RoucheBridge
+import Submission.MappingDegree.WithinChartWitnessReduction
+
+/-!
+# Mapping Degree (`Jacobians/MappingDegree/`)
+
+The mapping degree machine: regular values, critical-value finiteness, fibre counting, well-definedness of the degree (largest unit; contains the ported degree-well-definedness tree).
+
+**Keystones:** `ContMDiff.degree well-definedness engine`
+
+**Builds on units:** local-multiplicity, surfaces-and-charts
+-/
