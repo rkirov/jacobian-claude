@@ -208,6 +208,17 @@ for m, ds in deps.items():
         if d in assign and assign[d] != assign[m]:
             uedges[assign[m]].add(assign[d])
 
+# book references per unit, extracted from member docstrings (no invented citations)
+cite_rx = re.compile(r'(Forster(?: GTM ?81)?[ ,]*(?:\u00a7\u00a7?|Theorem |Lemma |Ch\. )[0-9IVX.\u2013\-]+'
+                     r'|Miranda[ ,]*(?:Ch\. [IVX]+(?: ?\u00a7?[0-9. ]*(?:pp?\. [0-9\u2013\-]+)?)?|Lemma [0-9.]+))')
+unit_refs = {}
+for u in units:
+    found = collections.Counter()
+    for m in units[u]:
+        for c in cite_rx.findall(open(mods[m]).read()):
+            found[re.sub(r'\s+', ' ', c.strip(' ,'))] += 1
+    unit_refs[u] = [c.rstrip(' \u00a7.') for c, _ in found.most_common(4)]
+
 # cycle detection (simple DFS)
 WHITE, GRAY, BLACK = 0, 1, 2
 color = {u: WHITE for u in units}
@@ -299,17 +310,6 @@ def reachable(u, skip_direct=None):
     return seen
 redges = {u: sorted(v for v in uedges.get(u, set())
                     if v not in reachable(u, skip_direct=v)) for u in units}
-
-# book references per unit, extracted from member docstrings (no invented citations)
-cite_rx = re.compile(r'(Forster(?: GTM ?81)?[ ,]*(?:\u00a7\u00a7?|Theorem |Lemma |Ch\. )[0-9IVX.\u2013\-]+'
-                     r'|Miranda[ ,]*(?:Ch\. [IVX]+(?: ?\u00a7?[0-9. ]*(?:pp?\. [0-9\u2013\-]+)?)?|Lemma [0-9.]+))')
-unit_refs = {}
-for u in units:
-    found = collections.Counter()
-    for m in units[u]:
-        for c in cite_rx.findall(open(mods[m]).read()):
-            found[re.sub(r'\s+', ' ', c.strip(' ,'))] += 1
-    unit_refs[u] = [c.rstrip(' \u00a7.') for c, _ in found.most_common(4)]
 
 out = []
 out.append('# Unit decomposition proposal\n')
