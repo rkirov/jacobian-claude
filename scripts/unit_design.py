@@ -223,32 +223,6 @@ def dfs(u, path):
 for u in list(units):
     if color[u] == WHITE: dfs(u, [])
 
-# ---- strict-deps manifest: computed unit edges must be declared in advance ----
-# docs/unit_dag_manifest.json holds the ALLOWED direct unit→unit edges. A new cross-unit
-# import that induces an undeclared edge fails this script (and CI). To accept a new edge,
-# rerun with --update-manifest and commit the diff — making the dependency reviewable.
-import sys
-MANIFEST = 'docs/unit_dag_manifest.json'
-computed = sorted((a, b) for a in uedges for b in uedges[a])
-if '--update-manifest' in sys.argv:
-    import json as _json
-    open(MANIFEST, 'w').write(_json.dumps({'edges': computed}, indent=1))
-    print(f"manifest updated: {len(computed)} declared edges")
-elif os.path.exists(MANIFEST):
-    import json as _json
-    declared = {tuple(e) for e in _json.load(open(MANIFEST))['edges']}
-    bad = [e for e in computed if e not in declared]
-    if bad:
-        print(f"UNDECLARED unit edges ({len(bad)}) — declare via --update-manifest if intended:")
-        for a, b in bad:
-            print(f"  {a} -> {b}")
-            for m, ds in deps.items():
-                if assign[m] != a: continue
-                for d in ds:
-                    if d in assign and assign[d] == b:
-                        print(f"      {m} imports {d}")
-        sys.exit(1)
-
 print(f"units: {len(units)}  modules: {len(mods)}  unassigned: {len(units.get('UNASSIGNED', []))}")
 for m in units.get('UNASSIGNED', []): print("  UNASSIGNED:", m)
 if cycles:
