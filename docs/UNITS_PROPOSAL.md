@@ -50,6 +50,8 @@ Global holomorphic 1-forms as a `ContMDiffSection` bundle, the genus as their di
 
 **Keystones:** `HolomorphicOneForms`; `genus`
 
+**References:** Forster §§9–10
+
 **Builds on:** none (foundation)
 
 **Members:** `Forms`, `Forms.ChartNorm`, `Forms.ChartTransition`, `Forms.Compactness`, `Forms.Complete`, `Forms.Cover`, `Forms.Genus`, `Forms.HolomorphicForms`, `Forms.LocalRep`, `Forms.Montel`, `Forms.SupNorm`
@@ -90,6 +92,8 @@ Smooth paths and loops, path line integrals of 1-forms, primitives along paths, 
 
 **Keystones:** `SmoothPath`; `lineIntegral`
 
+**References:** Forster §§1–2 · Forster §§10–12 · Forster §1 · Forster §10.5
+
 **Builds on:** holomorphic-forms
 
 **Members:** `Path`, `Path.CotangentCoeff`, `Path.LineIntegral`, `Path.LoopOffBranch`, `Path.Primitive`, `Path.SmoothPath`, `Path.SmoothPathCore`
@@ -100,6 +104,8 @@ Planar residue calculus: `resAt`, Laurent coefficients of pair integrands, and M
 
 **Keystones:** `resAt / FormCoeff`; `MittagLeffler`
 
+**References:** Forster §17.6 · Forster §17 · Forster §17.1–17.2
+
 **Builds on:** holomorphic-forms
 
 **Members:** `ResidueCalculus`, `ResidueCalculus.FormCoeff`, `ResidueCalculus.FormTracePrincipalPart`, `ResidueCalculus.Residue`
@@ -109,6 +115,8 @@ Planar residue calculus: `resAt`, Laurent coefficients of pair integrands, and M
 The Jacobian as a complex torus: the period lattice (ℤ-span of loop periods), period vectors, and the `ZLattice` quotient manifold machinery.
 
 **Keystones:** `truePeriodLattice / periodVec`; `ZLatticeQuotient`
+
+**References:** Forster §§20–21 · Miranda Ch. V · Forster §I.7 · Forster §4.20
 
 **Builds on:** mapping-degree, paths-and-integrals
 
@@ -130,6 +138,8 @@ Meromorphic functions as germ data, divisors (`Finsupp`), orders, linear systems
 
 **Keystones:** `MeromorphicFunction`; `Divisor`; `lDim / linearSystem`
 
+**References:** Forster §6 · Forster §20 · Forster §6.4 · Forster §21.5
+
 **Builds on:** jacobian-construction
 
 **Members:** `Meromorphic`, `Meromorphic.Abel`, `Meromorphic.LinearSystem`, `Meromorphic.MeromorphicInverse`, `Meromorphic.MeromorphicLiouville`, `Meromorphic.MeromorphicNFRepair`
@@ -139,6 +149,8 @@ Meromorphic functions as germ data, divisors (`Finsupp`), orders, linear systems
 Surface-level trace of meromorphic functions/forms along a degree-d map and the argument principle on `X` (zeros = poles for `div f = 0` log-derivative traces).
 
 **Keystones:** `ResidueTheoremX.zerosCount_eq_polesCount_of_logDerivTrace`; `residue change of variables`
+
+**References:** Forster §10 · Forster §§4 · Forster §4.22 · Miranda Lemma 3.2
 
 **Builds on:** jacobian-construction, residue-calculus
 
@@ -150,6 +162,8 @@ Topology of the 2-sphere: Van Kampen, simple connectivity, and the backward head
 
 **Keystones:** `SphereSimplyConnected`; `GenusZeroOfSphere`
 
+**References:** Forster §10.5
+
 **Builds on:** projective-line
 
 **Members:** `SphereTopology`, `SphereTopology.GenusSphereBackward`, `SphereTopology.GenusZeroOfSphere`, `SphereTopology.SphereSimplyConnected`, `SphereTopology.VanKampen`
@@ -159,6 +173,8 @@ Topology of the 2-sphere: Van Kampen, simple connectivity, and the backward head
 Čech theory for `𝒪_D`: junk-free germ cochains over `codiscreteWithin`, the complex, refinements, chart-disk covers, and `H⁰ = L(D)`.
 
 **Keystones:** `CechH0.h0Dim_eq_lDim`; `CechComplex / MGerm cochains`
+
+**References:** Miranda Ch. VI pp. 186–188
 
 **Builds on:** meromorphic-and-divisors
 
@@ -179,6 +195,8 @@ The fibrewise trace tower for pair forms `h·ω₀` along a branched cover `f : 
 The intrinsic `∂̄` operator on the surface and its local solvability: the planar Dolbeault lemma on disks (Forster 13.2), disk acyclicity for the Čech complex, and holomorphic representatives of `∂̄`-closed germs.
 
 **Keystones:** `RealForms.dbar`; `DbarOpenDisk.dbar_solvable_open_disk`; `CechDiskAcyclic`
+
+**References:** Forster §15
 
 **Builds on:** cech-cohomology
 
@@ -210,6 +228,8 @@ Finite-dimensionality of `H¹(X, 𝒪_D)` (Forster §14, Schwartz + Montel funct
 
 **Keystones:** `finiteDimensional_cechH1`; `exists_cechModel`; `cohomological χ(D) ledger`
 
+**References:** Forster §16 · Forster §12 · Forster §14 · Forster GTM 81 §14
+
 **Builds on:** dolbeault-comparison
 
 **Members:** `Finiteness`, `Finiteness.BddHol`, `Finiteness.CechFiniteness`, `Finiteness.CechFinitenessAbstract`, `Finiteness.CechFinitenessAssembly`, `Finiteness.CechFinitenessDtwist`, `Finiteness.CechFinitenessWiring`, `Finiteness.CechModelArtificial`, `Finiteness.CechModelBase`, `Finiteness.CechModelBridge`, `Finiteness.CechModelDelta`, `Finiteness.CechModelDifferential`, `Finiteness.CechModelGeometry`, `Finiteness.CechModelHolomorphic`, `Finiteness.CechModelHolomorphicDelta`, `Finiteness.CechModelManifold`, `Finiteness.CechRefinementInjective`, `Finiteness.CechRefinementLeray`, `Finiteness.ChartDiskFiniteness`, `Finiteness.ChartDiskFinitenessComplete`, `Finiteness.ChartDiskLeray`, `Finiteness.CohomologicalH0Finiteness`, `Finiteness.CohomologicalRR`, `Finiteness.CohomologicalRRChartDisk`, `Finiteness.SchwartzFiniteness`, `Finiteness.SkyscraperArrow`, `Finiteness.SkyscraperAssembly`, `Finiteness.SkyscraperConeRealization`, `Finiteness.SkyscraperLESBase`, `Finiteness.SkyscraperProductWitness`, `Finiteness.SkyscraperSnake`
@@ -219,6 +239,8 @@ Finite-dimensionality of `H¹(X, 𝒪_D)` (Forster §14, Schwartz + Montel funct
 Meromorphic 1-form systems and the canonical divisor: removable singularities, differentials of canonical forms, and existence of a nonconstant meromorphic function / nonzero `ω₀` (via cohomological χ).
 
 **Keystones:** `MeromorphicOneFormSystem`; `exists_nonconstant_meromorphic`; `SerreOmega0`
+
+**References:** Forster §17.4 · Forster §16 · Forster GTM 81, §17.4 · Forster §17
 
 **Builds on:** finiteness-and-chi, residue-calculus
 
@@ -230,6 +252,8 @@ Miranda Ch. VI Laurent-tail calculus: tail spaces, truncation maps, tail finiten
 
 **Keystones:** `TailSpace`; `riemannRoch_tailForm`
 
+**References:** Miranda Ch. VI · Miranda Lemma 2.6 · Miranda Ch. VI §2 · Miranda Lemma 2.3
+
 **Builds on:** canonical-forms, meromorphic-trace
 
 **Members:** `LaurentTail`, `LaurentTail.DimensionBookkeeping`, `LaurentTail.Finiteness`, `LaurentTail.LaurentCoeff`, `LaurentTail.LinearSystemFiniteDimensional`, `LaurentTail.RiemannRochFirstForm`, `LaurentTail.TailMap`, `LaurentTail.TailSpace`
@@ -239,6 +263,8 @@ Miranda Ch. VI Laurent-tail calculus: tail spaces, truncation maps, tail finiten
 Global primitives on simply connected surfaces by discrete analytic continuation along chains (no integration): local primitive frames, chain values, homotopy invariance.
 
 **Keystones:** `hasHolomorphicPrimitives`
+
+**References:** Miranda Ch. IV §1 · Forster §10.4
 
 **Builds on:** canonical-forms, sphere-topology
 
@@ -250,6 +276,8 @@ The unconditional residue theorem `∑_p Res_p(h·dg₀) = 0` for meromorphic pa
 
 **Keystones:** `residueSum_pairForm_eq_zero_unconditional`
 
+**References:** Miranda Ch. VI pp. 186–188 · Miranda Ch. VI p. 186 · Forster GTM 81 §10 · Forster GTM 81, Theorem 10.21
+
 **Builds on:** canonical-forms, planar-stokes-atoms
 
 **Members:** `ResidueTheorem`, `ResidueTheorem.OmegaFactorization`, `ResidueTheorem.PairFormResidueTheorem`, `ResidueTheorem.ResidueLedgerTransport`, `ResidueTheorem.ResidueStokesCoverPoU`, `ResidueTheorem.ResidueStokesPoleBump`, `ResidueTheorem.ResidueTheoremFormFn`, `ResidueTheorem.ResidueTheoremStokes`
@@ -259,6 +287,8 @@ The unconditional residue theorem `∑_p Res_p(h·dg₀) = 0` for meromorphic pa
 The Serre pairing interface at the Čech level: dimension-counting surjectivity core and the duality bookkeeping consumed by the Laurent-tail route.
 
 **Keystones:** `serre_surjectivity_dim_core`; `SerreDualityData ladder`
+
+**References:** Forster §17 · Forster §16 · Forster §14
 
 **Builds on:** canonical-forms
 
@@ -270,6 +300,8 @@ Weak/planar solution steps for the Abel engine: chain decompositions and piecewi
 
 **Keystones:** `AbelChains`; `AbelCurveSolution`
 
+**References:** Forster §20.4 · Forster §20.1–20.2
+
 **Builds on:** form-trace-tower, monodromy, planar-stokes-atoms
 
 **Members:** `AbelWeak`, `AbelWeak.AbelChains`, `AbelWeak.AbelCurveSolution`, `AbelWeak.AbelPieceSolution`, `AbelWeak.AbelPlanarPiece`, `AbelWeak.AbelWeakSolutions`
@@ -279,6 +311,8 @@ Weak/planar solution steps for the Abel engine: chain decompositions and piecewi
 Degree of a global meromorphic map: `ContMDiff.degree`, sheet counting, multiplicity patching, `deg (div f) = 0`, and degree-one maps to the sphere are homeomorphisms.
 
 **Keystones:** `ContMDiff.degree`; `exists_properMapDegree`; `DegDivResidue (deg∘div = 0)`; `DegreeOneSphere`
+
+**References:** Forster §4 · Forster §17.9
 
 **Builds on:** monodromy
 
@@ -290,6 +324,8 @@ Serre duality through Laurent tails (Miranda VI.3): multiplication action on H¹
 
 **Keystones:** `tail duality injectivity/surjectivity`; `Miranda Lemma 3.6 order downgrade`
 
+**References:** Miranda Lemma 3.6 · Miranda Ch. VI · Forster §17.4 · Miranda Lemma 3.6
+
 **Builds on:** laurent-tails, proper-map-degree, residue-theorem, serre-duality-cech
 
 **Members:** `TailDuality`, `TailDuality.PairDualityInjective`, `TailDuality.PairDualitySurjective`, `TailDuality.RiemannRochGenusPos`, `TailDuality.RiemannRochUnconditional`, `TailDuality.TailDualityInjective`, `TailDuality.TailDualitySurjective`, `TailDuality.TailDualitySurjectiveAssembly`, `TailDuality.TailMultiplication`, `TailDuality.TailMultiplicationH1`, `TailDuality.TailResidue`
@@ -300,6 +336,8 @@ Serre duality through Laurent tails (Miranda VI.3): multiplication action on H¹
 
 **Keystones:** `FiniteCover.h1Dim_zero_eq_genus`
 
+**References:** Miranda Ch. X §2 · Forster §17.5 · Forster §17.4 · Forster §16-
+
 **Builds on:** serre-duality-tails
 
 **Members:** `H1Genus`, `H1Genus.CechH1CupKill`, `H1Genus.CechH1Genus`, `H1Genus.CechH1Monotonicity`, `H1Genus.SerreCupProduct`
@@ -309,6 +347,8 @@ Serre duality through Laurent tails (Miranda VI.3): multiplication action on H¹
 The Riemann–Roch theorem: `l(D) − l(K−D) = deg D + 1 − g` with the canonical divisor `K`, plus `deg K = 2g−2`, `l(K) = g`, and the single-simple-pole consequence for genus 0.
 
 **Keystones:** `exists_riemannRoch_divisor`
+
+**References:** Miranda Ch. VI
 
 **Builds on:** serre-duality-tails
 
@@ -330,6 +370,8 @@ The headline equivalence `genus X = 0 ↔ X ≃ₜ S²`, assembled from Riemann�
 
 **Keystones:** `genus_eq_zero_iff_homeo`
 
+**References:** Forster §16
+
 **Builds on:** riemann-roch
 
 **Members:** `GenusSphereHeadline`
@@ -339,6 +381,8 @@ The headline equivalence `genus X = 0 ↔ X ≃ₜ S²`, assembled from Riemann�
 The period lattice has a real basis of rank 2g (Forster 21.4, dissection-free): discreteness via the local Jacobi map, nondegeneracy, and the real basis.
 
 **Keystones:** `exists_periodLattice_realBasis`
+
+**References:** Forster Lemma 21.3 · Forster Lemma 21.3 · Forster §21
 
 **Builds on:** abel-theorem
 

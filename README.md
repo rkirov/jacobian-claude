@@ -90,10 +90,16 @@ shim) plus the full library re-rooted under `Submission/`. Regenerate with
 - [`Jacobian_challenge.lean`](Jacobian_challenge.lean) — the verbatim v0.4 spec ·
   [`ChallengeConformance.lean`](ChallengeConformance.lean) /
   [`ChallengeLeaderboard.lean`](ChallengeLeaderboard.lean) — the conformance checks.
-- [`Jacobians.lean`](Jacobians.lean) + `Jacobians/` — the implementation (~111k lines across
-  309 files): `Abel*.lean` (divisors, Abel–Jacobi, the Abel engine), `LaurentTail/` (Riemann–Roch +
-  Serre duality), `Dolbeault/` (Čech/∂̄/residue machinery), `HolomorphicPrimitive*.lean`
-  (monodromy), `PeriodLattice*.lean`, `Discharge/Manifold/` (degree/fibre machinery), `Montel/`, …
+- [`Jacobians.lean`](Jacobians.lean) + `Jacobians/` — the implementation: ~80.6k lines across
+  225 modules organized into **30 documented units** (one directory per unit, each with an
+  umbrella docstring file: `Meromorphic/`, `Forms/`, `Cech/`, `Dbar/`, `Finiteness/`,
+  `LaurentTail/` + `TailDuality/` (Riemann–Roch + Serre duality), `Monodromy/`,
+  `Abel/`, `PeriodLattice/`, `MappingDegree/`, …). The unit dependency DAG is declared in
+  [`docs/unit_dag_manifest.json`](docs/unit_dag_manifest.json) and enforced in CI; browse it
+  interactively at [`docs/units.html`](docs/units.html) or read
+  [`docs/UNITS_PROPOSAL.md`](docs/UNITS_PROPOSAL.md). (At challenge completion the tree was
+  ~111k lines / 309 files; a post-completion consolidation pruned a superseded 30k-line proof
+  route and minimized imports.)
 - `docs/` — [`DESIGN.md`](docs/DESIGN.md), [`REFERENCES.md`](docs/REFERENCES.md), and the dated
   route-decision plans (`rr_close_plan_2026-06-09.md`, `walls_bc_plan_2026-06-10.md`).
 - `scripts/` — `dead_modules.py` (import-graph reachability sweep), `make_submission.py` +
@@ -145,11 +151,12 @@ trailer of whatever wrote the commit.
 
 ### Provenance of the final tree
 
-Of the final ~111k Lean lines, **~96.9% (~107,700 LoC)** were produced by this project's Claude
-sessions; **~3.1% (~3,450 LoC)** is ported external code — B. Sanchez's degree/fibre/Hurwitz
-well-definedness machinery (3,296 lines across 22 surviving `Discharge/Manifold/` files, adapted
-and repackaged at port time) and the tangentstorm Green's-theorem seed (~148 lines of
-`PlanarCompactSupportStokes.lean`). The mrdouglasny port (`ContourDeformation`) was superseded by
+Of the ~111k Lean lines at challenge completion, **~96.9% (~107,700 LoC)** were produced by this
+project's Claude sessions; **~3.1% (~3,450 LoC)** is ported external code — B. Sanchez's
+degree/fibre/Hurwitz well-definedness machinery (3,296 lines across 22 surviving files, adapted
+and repackaged at port time; now under `MappingDegree/`) and the tangentstorm Green's-theorem
+seed (~148 lines of `PlanarStokes/PlanarCompactSupportStokes.lean`). In the current consolidated
+tree (~80.6k lines) the same ported material is ~4.3%. The mrdouglasny port (`ContourDeformation`) was superseded by
 the in-repo monodromy toolkit and does not survive in the final tree.
 
 ## References & acknowledgments

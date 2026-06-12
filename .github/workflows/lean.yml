@@ -25,6 +25,11 @@ jobs:
         with:
           use-mathlib-cache: true
 
+      - name: Zero-warning gate
+        run: |
+          lake build 2>&1 | tee /tmp/build.log | tail -2   # cache replay after lean-action
+          ! grep -E '^(warning|error)' /tmp/build.log
+
       - name: Axiom hygiene check
         run: lake env lean AxiomCheck.lean
 

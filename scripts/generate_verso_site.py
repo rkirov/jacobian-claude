@@ -47,6 +47,9 @@ for u in order:
     lines.append('')
     lines.append(f'*{len(mem)} modules, {loc[u]:,} lines, under `Jacobians/{dirname}/`.*')
     lines.append('')
+    if unit_refs.get(u):
+        lines.append('*References: ' + ' \u00b7 '.join(unit_refs[u]) + '.*')
+        lines.append('')
     lines.append('# Keystones')
     lines.append('')
     for k in keys:
