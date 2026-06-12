@@ -27,7 +27,7 @@ References: Miranda, *Algebraic Curves and Riemann Surfaces*, Ch. X §2 (pp. 313
 import Jacobians.Dolbeault.SerreCupProduct
 import Jacobians.Dolbeault.CechH1Monotonicity
 import Jacobians.Dolbeault.MeromorphicAnalyticBadSet
-import Jacobians.Dolbeault.SerreResidueRamifiedRealCover
+import Jacobians.MeromorphicInverse
 import Jacobians.Dolbeault.CanonicalFormIso
 
 open scoped Manifold ContDiff Topology

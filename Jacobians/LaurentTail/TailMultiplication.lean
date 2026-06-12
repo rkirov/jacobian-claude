@@ -22,7 +22,7 @@ Contents:
 
 The `H¹`-level maps and the surjectivity assembly (Forster 17.9 / Miranda 3.4) build on this. -/
 import Jacobians.LaurentTail.TailDualityInjective
-import Jacobians.Dolbeault.SerreResidueRamifiedRealCover
+import Jacobians.MeromorphicInverse
 
 open scoped Manifold ContDiff Topology
 open Filter Set
