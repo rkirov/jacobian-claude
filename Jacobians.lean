@@ -74,8 +74,6 @@ An AI challenge to make an API for Jacobians, by Kevin Buzzard. v0.4.
 * v0.1: initial public release
 -/
 
-set_option linter.unusedSectionVars false
-
 open scoped ContDiff -- for ω notation
 
 open scoped Manifold -- for 𝓘 notation
