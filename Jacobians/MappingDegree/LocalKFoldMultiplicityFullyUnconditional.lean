@@ -6,7 +6,6 @@ Authors: Bryan Sanchez
 import Jacobians.MappingDegree.LocalKFoldMultiplicityUnconditional
 import Jacobians.LocalMultiplicity.AnalyticLocalFactorization
 
-set_option autoImplicit true
 
 
 /-! # Fully unconditional planar k-fold local multiplicity (ZZ92)

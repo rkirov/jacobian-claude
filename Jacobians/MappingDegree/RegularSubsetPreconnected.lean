@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import Mathlib.Topology.Connected.Basic
-set_option autoImplicit true
 
 /-! # Preconnectedness of the regular subset on a general compact connected
 complex 1-manifold (ZZ154)

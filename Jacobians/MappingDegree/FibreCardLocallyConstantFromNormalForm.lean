@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Mathlib.Data.Set.Card
 import Mathlib.Topology.LocallyConstant.Basic
-set_option autoImplicit true
 
 /-! # Fibre cardinality is locally constant from a Hurwitz-style patching package (ZZ153)
 

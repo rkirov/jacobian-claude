@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.HurwitzPatchingDataConstruction
 
-set_option autoImplicit true
 
 /-! # Discharge of `h_lc` via ZZ153 ∘ ZZ157 (ZZ158)
 

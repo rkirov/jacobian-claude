@@ -6,7 +6,6 @@ Authors: Bryan Sanchez
 import Mathlib.Analysis.Calculus.Deriv.Add
 import Jacobians.MappingDegree.LocalMultiplicityInvariance
 
-set_option autoImplicit true
 
 
 /-! # Local multiplicity invariance — branched (`k ≥ 1`) reduction

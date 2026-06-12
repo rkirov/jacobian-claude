@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.CriticalValuesFiniteGeneral
 import Jacobians.MappingDegree.FibresFiniteUnconditional
-set_option autoImplicit true
 
 
 /-! # Unconditional discharge of `Nonempty (RegularValueWitnessReg f)`

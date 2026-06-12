@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.AnalyticKthRoot
 import Mathlib.Analysis.Complex.Polynomial.Basic
-set_option autoImplicit true
 
 
 /-! # Unconditional k-fold local multiplicity (composition of ZZ74 + ZZ75 + ZZ87)

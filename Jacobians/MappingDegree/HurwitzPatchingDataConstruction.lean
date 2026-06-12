@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.FibreCardLocallyConstantFromNormalForm
-set_option autoImplicit true
 
 /-! # Constructing `HurwitzPatchingData` at a regular value (ZZ157)
 

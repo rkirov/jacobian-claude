@@ -6,7 +6,6 @@ Authors: Bryan Sanchez
 import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.MeasureTheory.Integral.CircleIntegral
 import Jacobians.MappingDegree.MeromorphicDivisor
-set_option autoImplicit true
 
 
 /-! # Local normal form for analytic / meromorphic maps and local multiplicity

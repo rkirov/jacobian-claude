@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.AnalyticFiberDiscrete
 
-set_option autoImplicit true
 
 
 /-! # Discreteness of the critical set of an analytic map

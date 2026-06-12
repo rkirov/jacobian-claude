@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.WithinChartWitnessReduction
 
-set_option autoImplicit true
 
 
 /-! # Reducing `PerChartNonConstancyHypothesis` to non-constancy on chart balls

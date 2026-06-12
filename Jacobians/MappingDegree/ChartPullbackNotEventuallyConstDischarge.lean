@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.ChartBallOffCentreWitnessDischarge
 
-set_option autoImplicit true
 
 
 /-! # Discharging the chart-pullback non-eventual-constancy hypothesis

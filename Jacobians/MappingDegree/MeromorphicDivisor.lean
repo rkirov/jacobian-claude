@@ -7,7 +7,6 @@ import Jacobians.LocalMultiplicity.MeromorphicAt
 import Mathlib.Analysis.Meromorphic.Divisor
 import Mathlib.Topology.LocallyFinsupp
 
-set_option autoImplicit true
 
 
 /-! # The order divisor of a meromorphic function on a complex manifold

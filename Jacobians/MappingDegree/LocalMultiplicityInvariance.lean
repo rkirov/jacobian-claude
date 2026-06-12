@@ -8,7 +8,6 @@ import Mathlib.Analysis.Calculus.FDeriv.Analytic
 import Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Topology.Algebra.Module.ModuleTopology
-set_option autoImplicit true
 
 
 /-! # Local multiplicity invariance — the `k = 1` (biholomorphic) case

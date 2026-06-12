@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.ConnectivityGlobalizationReduction
-set_option autoImplicit true
 
 
 /-! # Reducing `WithinChartWitnessHypothesis` to a per-chart non-constancy hypothesis

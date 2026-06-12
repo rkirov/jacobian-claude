@@ -8,7 +8,6 @@ import Jacobians.LocalMultiplicity.AnalyticDerivOrder
 import Jacobians.MappingDegree.ClopennessOfLocallyConstDischarge
 import Jacobians.MappingDegree.CriticalSetDerivBridge
 import Jacobians.MappingDegree.CriticalSetDiscrete
-set_option autoImplicit true
 
 
 /-! # Unconditional finiteness of critical values for general `f : X → Y`

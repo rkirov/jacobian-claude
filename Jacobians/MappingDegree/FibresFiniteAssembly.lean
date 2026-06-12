@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.ChartPullbackDataConstruction
-set_option autoImplicit true
 
 
 /-! # Full assembly: `fibres_finite_statement` modulo a single connectivity hypothesis

@@ -7,7 +7,6 @@ import Jacobians.MappingDegree.HurwitzPatchingDataConstruction
 import Jacobians.Surface.ContMDiffOmegaAnalytic
 import Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv
 import Mathlib.Analysis.InnerProductSpace.Basic
-set_option autoImplicit true
 
 /-! # `LocalSheetData` from `ContMDiffAt … ω` + chart-pullback non-degenerate derivative (ZZ169)
 

@@ -6,7 +6,6 @@ Authors: Bryan Sanchez
 import Mathlib.Topology.LocallyConstant.Basic
 import Jacobians.LocalMultiplicity.LocalMultiplicity
 
-set_option autoImplicit true
 
 
 /-! # Degree of a holomorphic map between compact Riemann surfaces
@@ -246,7 +245,7 @@ is strictly smaller than the topological degree. Switching to
 is always at a regular value. Existence of a regular witness for
 non-constant analytic `f` is discharged unconditionally in
 `Manifold/RegularValueExistsRegUnconditional.lean`. -/
-def degreeFiber
+def degreeFiber {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -260,7 +259,7 @@ def degreeFiber
     else 0
 
 /-- Constant maps have fibre-degree `0`. -/
-lemma degreeFiber_const
+lemma degreeFiber_const {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -274,7 +273,7 @@ lemma degreeFiber_const
 this pin, the fibre-degree falls back to `0`. (This is the same value
 `degreeStub` returns in the constant case, so callers that only know
 "degree = 0 ⇒ ..." remain correct.) -/
-lemma degreeFiber_eq_zero_of_no_witness
+lemma degreeFiber_eq_zero_of_no_witness {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -291,7 +290,7 @@ witness. The particular witness is `Classical.choice`-selected; independence
 of choice is the deep classical input. Because the choice is now over
 `RegularValueWitnessReg f` (whose `is_regular` is built in), the chosen
 witness is always at a regular value. -/
-lemma degreeFiber_eq_witness_card
+lemma degreeFiber_eq_witness_card {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -321,7 +320,7 @@ Riemann surfaces, every fibre is finite. Classical: identity theorem
 (fibres are discrete) plus compactness.
 
 **Status:** statement only. No proof is provided. -/
-def fibres_finite_statement
+def fibres_finite_statement {ω : WithTop ℕ∞}
     (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (Y : Type v) [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -334,7 +333,7 @@ surfaces, the set of critical values is finite, so a regular value exists.
 Classical input for `Nonempty (RegularValueWitness f)`.
 
 **Status:** statement only. No proof is provided. -/
-def regular_value_exists_statement
+def regular_value_exists_statement {ω : WithTop ℕ∞}
     (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (Y : Type v) [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -347,7 +346,7 @@ surfaces, the cardinality of the fibre is constant across regular values.
 This is the well-definedness of the topological degree.
 
 **Status:** statement only. No proof is provided. -/
-def fibre_card_well_defined_statement
+def fibre_card_well_defined_statement {ω : WithTop ℕ∞}
     (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (Y : Type v) [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -393,7 +392,7 @@ analytic map carries the discrete subspace topology. This is what the chart-
 level identity theorem would supply. The remainder of the argument
 (closedness, compactness, finiteness from compact-discrete) is purely
 topological and is discharged here. -/
-lemma fibres_finite_of_all_fibers_isDiscrete
+lemma fibres_finite_of_all_fibers_isDiscrete {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -450,7 +449,7 @@ lemma regular_value_exists_of_some_fiber_finite
 Given that *every* fibre is finite (the conclusion of
 `fibres_finite_statement`), and `Y` is non-empty (free from
 `ConnectedSpace Y`), pick any `y : Y` and package it as a witness. -/
-lemma regular_value_exists_of_fibres_finite
+lemma regular_value_exists_of_fibres_finite {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -483,7 +482,7 @@ isolated to `h_disc`).
 This reduction makes the gap `regular_value_exists_statement` boil down to
 `h_crit` + `h_disc` + `Infinite Y`, with everything else (closedness,
 compactness, finite-from-compact-discrete) discharged. -/
-lemma regular_value_exists_of_critical_values_finite
+lemma regular_value_exists_of_critical_values_finite {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -581,7 +580,7 @@ fibre-cardinality function with its constancy on witness values).
 
 Everything else — extracting `w₁.card = w₂.card` from the data — is
 discharged here by `fibre_card_eq_of_fibreCardData`. -/
-lemma fibre_card_well_defined_of_fibreCardData
+lemma fibre_card_well_defined_of_fibreCardData {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -640,7 +639,7 @@ function on a preconnected regular-value subtype covering all witness
 values. This is exactly the covering-space content (locally constant on the
 regular-value set, which is preconnected since `Y` is a connected Riemann
 surface and the critical-value set is finite). -/
-lemma fibre_card_well_defined_of_locallyConstant
+lemma fibre_card_well_defined_of_locallyConstant {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
@@ -666,7 +665,7 @@ covering-space theory proves; the original `fibre_card_well_defined_statement`
 (over arbitrary `RegularValueWitness`) is false at branch points.
 
 **Status:** statement only. No proof is provided. -/
-def fibre_card_well_defined_at_regular_statement
+def fibre_card_well_defined_at_regular_statement {ω : WithTop ℕ∞}
     (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (Y : Type v) [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]

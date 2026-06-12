@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.LocalKFoldMultiplicity
 import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
-set_option autoImplicit true
 
 
 /-! # Analytic `k`-th root branch on a disc around a non-vanishing point.

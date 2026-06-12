@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.AnalyticFiberDiscrete
 import Jacobians.Surface.ContMDiffOmegaAnalytic
-set_option autoImplicit true
 
 
 /-! # Constructing `ChartPullbackData` from `ContMDiffAt … ω`

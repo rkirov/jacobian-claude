@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.Degree
 
-set_option autoImplicit true
 
 /-! # Fibre-cardinality well-definedness on the regular subset (ZZ134, ZZ172-corrected)
 

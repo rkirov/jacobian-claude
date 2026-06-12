@@ -8,7 +8,6 @@ import Jacobians.LocalMultiplicity.LocalMultiplicity
 import Mathlib.Analysis.Analytic.Uniqueness
 import Mathlib.Analysis.Analytic.IsolatedZeros
 
-set_option autoImplicit true
 
 
 /-! # Globalising "not constant" to "not eventually constant" via the identity theorem

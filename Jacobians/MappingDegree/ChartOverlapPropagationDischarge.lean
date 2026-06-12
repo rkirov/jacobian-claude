@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.ChartPullbackNotEventuallyConstDischarge
 
-set_option autoImplicit true
 
 
 /-! # Discharging chart-overlap propagation from clopen-ness of the locally-constant locus

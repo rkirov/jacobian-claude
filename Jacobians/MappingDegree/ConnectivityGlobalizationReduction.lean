@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.AnalyticContinuationGlobalization
 import Jacobians.MappingDegree.FibresFiniteAssembly
-set_option autoImplicit true
 
 
 /-! # Reducing `ConnectivityGlobalizationHypothesis` to a within-chart witness hypothesis

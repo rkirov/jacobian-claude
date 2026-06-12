@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.ClopennessOfLocallyConstDischarge
 
-set_option autoImplicit true
 
 
 /-! # Unconditional discharge of `Degree.regular_value_exists_statement`

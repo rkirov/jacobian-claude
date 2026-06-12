@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.LocalMultiplicity.AnalyticLocalFactorization
 import Jacobians.MappingDegree.AnalyticKthRoot
-set_option autoImplicit true
 
 
 /-! # Bridge: critical set ↔ chart-pullback derivative zero (ZZ99)

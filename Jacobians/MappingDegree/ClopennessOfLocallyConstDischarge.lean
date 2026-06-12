@@ -5,7 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.ChartOverlapPropagationDischarge
 
-set_option autoImplicit true
 
 
 /-! # Discharging `ClopennessOfLocallyConstHypothesis`

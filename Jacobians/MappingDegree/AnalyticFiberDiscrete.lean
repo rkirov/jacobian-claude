@@ -7,7 +7,6 @@ import Jacobians.MappingDegree.Degree
 import Mathlib.Analysis.Analytic.IsolatedZeros
 import Mathlib.Topology.DiscreteSubset
 
-set_option autoImplicit true
 
 
 /-! # From per-fibre analytic non-degeneracy to discreteness
@@ -296,7 +295,7 @@ every analytic non-constant `f` and every `y`, every fibre point admits a
 This is the maximal reduction available without bridging
 `ContMDiff … ω → AnalyticAt` on chart pullbacks, which is itself an
 unstated mathlib fact at this pin. -/
-lemma fibres_finite_of_chart_pullback
+lemma fibres_finite_of_chart_pullback {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
