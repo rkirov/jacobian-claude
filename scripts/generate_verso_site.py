@@ -28,6 +28,38 @@ def depth(u):
 for u in units: depth(u)
 order = sorted(units, key=lambda u: (layer[u], u))
 
+
+decl_rx_tpl = (r'^(?:@\[[^\]]*\]\s*)?(?:noncomputable\s+)?(?:protected\s+)?'
+               r'(?:theorem|def|structure|abbrev|instance|inductive)\s+(?:[\w\u00ab\u00bb.]*\.)?%s(?![\w.])')
+
+def find_decl_statement(short, files):
+    """Locate declaration `short` in member files; return (path, line, header-text) with the
+    header cut at the body marker (`:=` / `where` / trailing `by`)."""
+    rx = re.compile(decl_rx_tpl % re.escape(short))
+    opens, closes = '([{\u27e8', ')]}\u27e9'
+    for p in files:
+        lines = open(p).read().split('\n')
+        for i, l in enumerate(lines):
+            if rx.match(l):
+                block, depth = [], 0
+                for j in range(i, min(i + 24, len(lines))):
+                    s, cut = lines[j], None
+                    for k in range(len(s)):
+                        c = s[k]
+                        if c in opens: depth += 1
+                        elif c in closes: depth -= 1
+                        elif depth == 0 and s[k:k + 2] == ':=':
+                            cut = k
+                            break
+                    if cut is not None:
+                        block.append(s[:cut].rstrip())
+                        return p, i + 1, '\n'.join(b for b in block if b.strip())
+                    block.append(s)
+                    if depth == 0 and s.rstrip().endswith((' where', ' by')):
+                        return p, i + 1, '\n'.join(block)
+                return p, i + 1, '\n'.join(block)
+    return None
+
 def lean_str(s):
     return s.replace('\\', '\\\\').replace('"', '\\"')
 
@@ -52,9 +84,20 @@ for u in order:
         lines.append('')
     lines.append('# Keystones')
     lines.append('')
+    memfiles = [mods[m] for m in mem]
     for k in keys:
-        lines.append(f'* `{k}`')
-    lines.append('')
+        m_id = re.match(r'^([A-Za-z_][\w.]*)', k)
+        found = find_decl_statement(m_id.group(1).split('.')[-1], memfiles) if m_id else None
+        if found:
+            p, ln, stmt = found
+            lines.append(f'**`{k}`** — [source]({REPO}/blob/main/{p}#L{ln})')
+            lines.append('')
+            lines.append('```')
+            lines.append(stmt)
+            lines.append('```')
+        else:
+            lines.append(f'* `{k}`')
+        lines.append('')
     if deps_u:
         lines.append('# Builds on')
         lines.append('')
