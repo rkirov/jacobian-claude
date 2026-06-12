@@ -40,7 +40,7 @@ theorem degreeFiber_eq_card_of_regular_witness
     (w : Jacobians.Discharge.ContMDiff.RegularValueWitnessReg f) :
     Jacobians.Discharge.ContMDiff.degreeFiber f hf = w.card := by
   classical
-  -- Witness independence from h_pkg + ZZ176.
+  -- Witness independence from h_pkg + the unconditional-topology Hurwitz theorem.
   have h_well :
       ∀ (g : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g →
         ¬ Jacobians.Discharge.IsConstantMap g →

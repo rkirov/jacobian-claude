@@ -12,25 +12,11 @@ import Jacobians.MappingDegree.CriticalSetDiscrete
 
 /-! # Unconditional finiteness of critical values for general `f : X → Y`
 
-This file (the **CV-Gen** chip) ships the unconditional finiteness theorem
-for the critical set / critical values of a general analytic map
-`f : X → Y` between two compact connected charted spaces over `ℂ`,
-generalising the Wire-CV chip's `MeromorphicNonzero`-bound result.
-
-The proof is a near-verbatim port of `CriticalValuesFiniteUnconditional.lean`
-with `f.toRiemannSphere` replaced by `f` and `MeromorphicNonzero X`
-replaced by `(f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)`. All four
-ingredient chips (R-Compat, R-MN, R-Closed, RH6) are themselves
-generalisable because the load-bearing lemmas in their proofs already
-accept general `Y`:
-
-* `contMDiff_omega_analyticAt_chart_pullback` (ZZ24) is general,
-* `clopennessOfLocallyConst_holds` and
-  `chartPullbackNotEventuallyConst_of_clopennessOfLocallyConst` (ZZ43) are
-  general,
-* `analyticAt_chart_transition_of_isManifold` and
-  `deriv_chart_transition_of_isManifold_ne_zero` are general,
-* `notInjOn_iff_deriv_zero_of_analytic_of_order` (ZZ99) is purely planar.
+The finiteness theorem for the critical set / critical values of a general
+analytic map `f : X → Y` between two compact connected charted spaces over
+`ℂ`, generalising the `MeromorphicNonzero`-bound result of
+`CriticalValuesFiniteUnconditional.lean` (the load-bearing lemmas there
+already accept general `Y`).
 
 We do not factor through `MeromorphicNonzero`'s `criticalSet`/
 `criticalValues` definitions: instead, this file introduces parallel
@@ -39,20 +25,8 @@ general definitions
 * `criticalSetGeneral f := { x | ¬ ∃ U ∈ 𝓝 x, InjOn f U }`,
 * `criticalValuesGeneral f := f '' criticalSetGeneral f`,
 
-and discharges finiteness for them via the general
-`criticalSet_finite_of_chart_pullback` already supplied by ZZ44 in
-`CriticalSetDiscrete.lean`.
-
-## What this file ships
-
-* `criticalSetGeneral`, `criticalValuesGeneral` — definitions.
-* `isClosed_criticalSetGeneral` — closedness (parallel to R-Closed).
-* `criticalChartPullbackData_general` — per-point bridge data for any
-  `x ∈ criticalSetGeneral f hf`, given non-constancy of `f`.
-* `criticalSet_finite_general` — finiteness of the critical set.
-* `criticalValues_finite_general` — finiteness of the critical values.
-
-No gaps, no `axiom`, no signature changes outside this file. -/
+and proves their finiteness via the general
+`criticalSet_finite_of_chart_pullback` from `CriticalSetDiscrete.lean`. -/
 
 @[expose] public section
 
@@ -85,7 +59,7 @@ def criticalValuesGeneral
     [TopologicalSpace X] : Set Y :=
   f '' (criticalSetGeneral f)
 
-/-! ## Closedness (general analogue of R-Closed) -/
+/-! ## Closedness of the critical set -/
 
 /-- **General regular set.** Points where `f` is locally injective.
 By construction the complement of `criticalSetGeneral f`. -/
@@ -112,7 +86,7 @@ lemma criticalSetGeneral_eq_compl_regularSetGeneral
     criticalSetGeneral f = (regularSetGeneral f)ᶜ := by
   rw [regularSetGeneral_eq_compl_criticalSetGeneral, compl_compl]
 
-/-- **R-Closed (general).** The general regular set is open: any
+/-- The general regular set is open: any
 neighbourhood `U` witnessing local injectivity at `x` can be shrunk to an
 open `V ⊆ U` with `x ∈ V`, on which `InjOn f V` (restriction of
 `InjOn f U`), and `V` is a neighbourhood of every one of its points. -/
@@ -130,7 +104,7 @@ theorem isOpen_regularSetGeneral
     exact hU_inj.mono hV_subU
   exact Filter.mem_of_superset (hV_open.mem_nhds hxV) hV_sub_reg
 
-/-- **R-Closed (general headline).** The general critical set is closed. -/
+/-- The general critical set is closed. -/
 theorem isClosed_criticalSetGeneral
     {X : Type u} {Y : Type v} (f : X → Y)
     [TopologicalSpace X] :
@@ -179,7 +153,7 @@ noncomputable def criticalChartPullbackData_general
     exact d.open_source.preimage hf.continuous
   have hxV : x ∈ V := ⟨hxc, hfx_d⟩
   have hV_subS : V ⊆ c.source := fun _ hy => hy.1
-  -- Analyticity of `F` at `c x` (ZZ24).
+  -- Analyticity of `F` at `c x` (chart-pullback bridge).
   have hFA_at_x : AnalyticAt ℂ F (c x) :=
     Jacobians.Discharge.ContMDiff.Degree.contMDiff_omega_analyticAt_chart_pullback
       hf x
@@ -225,7 +199,7 @@ noncomputable def criticalChartPullbackData_general
     set F' : ℂ → ℂ := d' ∘ f ∘ c'.symm with hF'_def
     have hx'c' : x' ∈ c'.source := mem_chart_source ℂ x'
     have hfx'd' : f x' ∈ d'.source := mem_chart_source ℂ (f x')
-    -- F' analytic at c' x' (ZZ24).
+    -- F' analytic at c' x' (chart-pullback bridge).
     have hF'A_at_x' : AnalyticAt ℂ F' (c' x') :=
       Jacobians.Discharge.ContMDiff.Degree.contMDiff_omega_analyticAt_chart_pullback
         hf x'
@@ -275,7 +249,7 @@ noncomputable def criticalChartPullbackData_general
       interval_cases k
       apply h_ord_ne_zero
       exact hk_eq
-    -- ZZ99 planar bridge.
+    -- Planar bridge.
     have h_planar :
         (¬ ∃ U ∈ 𝓝 (c' x'), Set.InjOn F' U) ↔ deriv F' (c' x') = 0 := by
       apply notInjOn_iff_deriv_zero_of_analytic_of_order hF'A_at_x' hk_ge_one

@@ -7,16 +7,16 @@ import Jacobians.MappingDegree.ChartPullbackNotEventuallyConstDischarge
 
 
 
-/-! # Discharging chart-overlap propagation from clopen-ness of the locally-constant locus
+/-! # Chart-overlap propagation from clopen-ness of the locally-constant locus
 
-ZZ43 (`ChartPullbackNotEventuallyConstDischarge.lean`) reduced
-`fibres_finite_statement` end-to-end, modulo a single named hypothesis
+`ChartPullbackNotEventuallyConstDischarge.lean` reduced
+`fibres_finite_statement` to a single named hypothesis
 `ChartOverlapPropagationHypothesis X Y` asserting: for every non-constant
 `C^ω` map `f : X → Y`, every `y₀ : Y`, every `x₀ : X` with `f x₀ = y₀`,
 and every open `V ∋ x₀` on which `f ≡ y₀`, the map `f` is identically
 `y₀` on all of `X`.
 
-This file (ZZ46) reduces that hypothesis to a strictly smaller residual
+This file reduces that hypothesis to a strictly smaller residual
 analytic-continuation statement: **the locally-constant locus is closed**.
 
 ## The argument
@@ -37,41 +37,17 @@ Define the locally-constant locus
   point, covers the path with finitely many connected charts, and
   chains `AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq` across
   overlaps to propagate the local constancy. We isolate it as a single
-  hypothesis-parameter at this pin.
+  hypothesis-parameter.
 
 * `S` clopen + nonempty in a connected space ⇒ `S = univ`. Since
   `x ∈ S` implies `f x = y₀` (the eventually-condition includes the
   point itself via `Filter.Eventually.self_of_nhds`), we conclude
   `f ≡ y₀` on all of `X`.
 
-## What this file delivers
-
-* `ClopennessOfLocallyConstHypothesis X Y` — single named hypothesis
-  capturing the residual analytic-continuation content: the
-  locally-constant locus of any `C^ω` map onto a fixed value `y₀` is
-  closed.
-
-* `chartOverlapPropagation_of_clopennessOfLocallyConst` — discharges
-  `ChartOverlapPropagationHypothesis X Y` from
-  `ClopennessOfLocallyConstHypothesis X Y` using the connected-clopen
-  argument.
-
-* End-to-end composition theorems through ZZ43:
-  - `chartPullbackNotEventuallyConst_of_clopennessOfLocallyConst`
-  - `chartBallOffCentreWitness_of_clopennessOfLocallyConst`
-  - `perChartNonConstancy_of_clopennessOfLocallyConst`
-  - `withinChartWitness_of_clopennessOfLocallyConst`
-  - `connectivityGlobalization_of_clopennessOfLocallyConst`
-  - `fibres_finite_statement_holds_of_clopennessOfLocallyConst`
-
-The reduction `ChartOverlapPropagationHypothesis ⇐
-ClopennessOfLocallyConstHypothesis` is clean: the latter mentions only
-the topological closedness of a single explicitly-defined set; the
-former carries the open-neighborhood data that has to be turned into
-constancy. Once the residual closedness is supplied, the connected-
-clopen step is plain topology with no chart-coordinate manipulation.
-
-No gaps, no `axiom`. -/
+The reduction is clean: `ClopennessOfLocallyConstHypothesis` mentions only
+the topological closedness of a single explicitly-defined set, and once
+that is supplied, the connected-clopen step is plain topology with no
+chart-coordinate manipulation. -/
 
 @[expose] public section
 
@@ -188,10 +164,10 @@ theorem chartOverlapPropagation_of_clopennessOfLocallyConst
   have hx_S : x ∈ S := by rw [hS_univ]; exact mem_univ x
   exact locallyConstLocus_apply hx_S
 
-/-! ## End-to-end composition through ZZ43 + ZZ38 -/
+/-! ## End-to-end composition -/
 
 /-- **Chart-pullback non-eventual-constancy from clopen-ness of the
-locally-constant locus.** End-to-end through ZZ43. -/
+locally-constant locus.** -/
 theorem chartPullbackNotEventuallyConst_of_clopennessOfLocallyConst
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -202,9 +178,7 @@ theorem chartPullbackNotEventuallyConst_of_clopennessOfLocallyConst
   chartPullbackNotEventuallyConst_of_chartOverlapPropagation
     (chartOverlapPropagation_of_clopennessOfLocallyConst H)
 
-/-- **End-to-end conditional discharge of `fibres_finite_statement` from
-clopen-ness of the locally-constant locus.** Composing through ZZ43 +
-ZZ38 + ZZ36 + ZZ34 + ZZ32 + ZZ30. -/
+/-- **Finite fibres from clopen-ness of the locally-constant locus.** -/
 theorem fibres_finite_statement_holds_of_clopennessOfLocallyConst
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]

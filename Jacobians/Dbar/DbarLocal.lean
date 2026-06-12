@@ -5,7 +5,7 @@
   the `D = 0` Serre-duality input).
 
   From the compactly-supported ∂̄-solvability atom `DbarDisk.dbar_solvable_of_compactSupport`
-  (the Cauchy transform, proven axiom-clean in `DbarDisk.lean`), we deduce that *any* smooth
+  (the Cauchy transform, `DbarDisk.lean`), we deduce that *any* smooth
   `g : ℂ → ℂ` can be ∂̄-solved on a neighborhood of an arbitrary point: multiply `g` by a
   smooth cutoff `χ` (a `ContDiffBump`) that equals `1` near `z₀` and has compact support, solve
   the compactly-supported problem for `χ · g`, and restrict to the inner ball where `χ ≡ 1`.

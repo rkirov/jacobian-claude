@@ -123,7 +123,7 @@ end SerreDualityData
 Laurent-tail route (`LaurentTail.exists_riemannRoch_divisor_unconditional`), which runs Serre
 duality on the Mittag-Leffler tail `H¹` instead of the Čech `H¹` — no `SerreDualityData`
 instantiation needed.  The `SerreDualityData` structure and its derived theorems above are kept:
-they are sorry-free and the realization constructors (`toSerreDualityData` in
+the realization constructors (`toSerreDualityData` in
 `SerreResiduePairing` / `GlobalResidueConstruct` / `MeromorphicCousinSolve`) still target them. -/
 
 end Jacobians.Dolbeault

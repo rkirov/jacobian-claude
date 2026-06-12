@@ -89,13 +89,11 @@ theorem dbar_fun_sum {ι : Type*} (t : Finset ι) (f : ι → ℂ → ℂ) {z : 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-! ### §B.1 — the analytic representative `holoFn` toolkit (now canonical in `HoloRep`)
+/-! ### §B.1 — the analytic representative `holoFn` toolkit (canonical in `HoloRep`)
 
 The `holoRep`/`holoFn`/`gextLimRep_chart_analyticAt`/`toGerm_holoFn` limit-repair toolkit (a
 holomorphic representative of an `OmegaDGerm 0` class, with the removable-singularity junk of `Gext`
-discarded by a `limUnder`) was formerly RE-DERIVED here, duplicating `DolbeaultComparisonInverse`'s
-copy. It now lives in the single canonical `Jacobians.Dolbeault.HoloRep` (imported above; built on
-the light, comparison- free `CechH0`), shared by both files. §B.2 below
+discarded by a `limUnder`) lives in `Jacobians.Dolbeault.HoloRep`. §B.2 below
 builds the chart-transport bridge on top of it. -/
 
 
@@ -135,11 +133,11 @@ globalization of the cocycle), splits *holomorphically*: there are holomorphic `
 `η_j − η_i = h_j − h_i`.
 
 This is the `n`-set generalisation of `CechDiskAcyclic.ballSplit_two`
-(`= dbar_holo_splitting_ball`). The genuine engine is the committed
+(`= dbar_holo_splitting_ball`). The engine is
 `DbarDiskCohomology.dbar_solvable_ball`: solve `∂̄u = ∂̄h_{i₀}` on `B` for ONE index `i₀`, set
 `η_i := h_i − u`; then `∂̄η_i = ∂̄h_i − ∂̄h_{i₀} = 0` (the agreeing-`∂̄` hypothesis), so each `η_i`
-is holomorphic (`differentiableAt_of_dbar_eq_zero`), and the corrected differences are unchanged.
-Sorry-free; the `dbar`-algebra (`§1 dbar_sub`) does the bookkeeping. -/
+is holomorphic (`differentiableAt_of_dbar_eq_zero`), and the corrected differences are unchanged;
+the `dbar`-algebra (`§1 dbar_sub`) does the bookkeeping. -/
 
 /-- **Function-level finite-cover ball Čech split (the `n`-set `H¹(ball, 𝒪) = 0`).**  Smooth
 `h : ι → ℂ → ℂ` whose `∂̄`s all agree on `ball c r` (so all pairwise differences `h_j − h_i` are
@@ -197,22 +195,10 @@ end Jacobians.Dolbeault
 
 /-! ## Toward `FunctionDiskAcyclic 𝔙 0`
 
-Main results above:
-
-  * **The chart-transport bridge.**  `chartHoloRep` / `chartHoloRep_analyticAt` /
-    `chartHoloRep_dbar_eq_zero`: for `g ∈ OmegaDGerm 0 W`, the chart-image analytic representative
-    is `AnalyticAt` and has `DbarDisk.dbar = 0` at the chart centre — the holomorphy/∂̄ direction
-    of the `↥W ↔ ℂ`-chart dictionary previously available only for *order*
-    (`CechH0.ordU_val_eq_orderW`).
-  * **The function-level finite-cover ball Čech split** (`H¹(ball,𝒪)=0` on functions, `n`-set).
-    `ballSplit_pou` and `ballSplit_glued`: an `n`-set smooth Čech splitting whose differences are
-    holomorphic (resp. whose `∂̄` matches a glued datum `ω` on overlaps) is corrected to a
-    holomorphic splitting by a single `∂̄`-solve (`DbarDiskCohomology.dbar_solvable_ball`).
-  * `dbar_fun_sum` — `∂̄` distributes over a finite sum (the PoU `∂̄`-of-`∑` crank).
-  * `contDiff_dbar` — `∂̄` preserves `C^∞`, routed through `ContDiff.contDiff_fderiv_apply` to
-    dodge the `NormedAddCommGroup (ℂ →L[ℝ] ℂ)` instance that this file's combined import breaks (a
-    diamond: each constituent import — `CechH0`, `DbarDiskCohomology`, `ChartDiskCover` — resolves
-    the instance alone; only their union does not).
+NB: `contDiff_dbar` is routed through `ContDiff.contDiff_fderiv_apply` to
+dodge the `NormedAddCommGroup (ℂ →L[ℝ] ℂ)` instance that this file's combined import breaks (a
+diamond: each constituent import — `CechH0`, `DbarDiskCohomology`, `ChartDiskCover` — resolves
+the instance alone; only their union does not).
 
 The remaining step — the partition-of-unity `C^∞`-globalization of the cocycle (the standard
 Forster §15 argument: lift each overlap germ to `holoFn`, push through the shared chart, glue the

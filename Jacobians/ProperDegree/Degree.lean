@@ -6,9 +6,7 @@ analytic `f : X → Y` between compact connected complex 1-manifolds
 (`exists_regularValueWitnessReg`), so the `else 0`
 fallback in `degreeFiber` no longer fires for non-constant maps.
 
-Original code MIT-licensed by Bryan Sanchez (2026); audit verifies
-`#print axioms` returns only `[propext, Classical.choice, Quot.sound]`.
-Axiom-verified clean (`#print axioms` returns only `[propext, Classical.choice, Quot.sound]`).
+Original code MIT-licensed by Bryan Sanchez (2026).
 -/
 import Jacobians.MappingDegree.DegreeWellDefined
 open scoped Manifold ContDiff
@@ -35,8 +33,7 @@ abbrev RegularValueWitnessReg
 noncomputable abbrev degreeFiber := @Jacobians.Discharge.ContMDiff.degreeFiber
 
 /-- **Unconditional existence of a regular witness** for non-constant
-analytic maps between compact connected complex 1-manifolds. Forwards
-to `Jacobians.Discharge.ContMDiff.Degree.exists_regularValueWitnessReg`. -/
+analytic maps between compact connected complex 1-manifolds. -/
 theorem regularValueWitnessReg_nonempty_of_nonConstantMap
     {X : Type _} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X]
@@ -50,8 +47,7 @@ theorem regularValueWitnessReg_nonempty_of_nonConstantMap
 
 /-- **Degree well-definedness.** For non-constant analytic `f`, the
 fibre-cardinality degree `degreeFiber f hf` equals the `card` of *any*
-regularity-certified regular-value witness. Forwards to the ported,
-axiom-clean `Jacobians.Discharge.degreeFiber_eq_card_of_regular_witness`. -/
+regularity-certified regular-value witness. -/
 theorem degreeFiber_eq_card_of_regularWitness
     {X : Type _} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X]

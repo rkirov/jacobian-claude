@@ -38,7 +38,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace Jacobians.Dolbeault
 namespace DbarOpenDisk
 
-/-! ### Keystone lemmas (proven) -/
+/-! ### Keystone lemmas -/
 
 /-- Power-series partial sums (centred at `c`) are entire — they are polynomials. -/
 theorem diff_partialSum (p : FormalMultilinearSeries ℂ ℂ ℂ) (n : ℕ) (c : ℂ) :

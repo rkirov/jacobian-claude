@@ -44,7 +44,7 @@ The comparison is bundled into the conclusion (rather than a free-`c` standalone
 the model *built from* `(𝔘, D)`.
 
 proven by `CechFinitenessDtwist.exists_cechModel_general`: the general-divisor finiteness
-`finiteDimensional_cechH1_general` (the Forster §16 skyscraper reduction climbing the proven `D = 0`
+`finiteDimensional_cechH1_general` (the Forster §16 skyscraper reduction climbing the `D = 0`
 finiteness one point at a time) makes `𝔘.cechH1 D` finite-dimensional, and the artificial
 finite-dimensional Montel model `exists_cechModel_of_finiteDimensional` then supplies a
 `DiskOverlapData` + `Coboundaries` whose `supH1` is `ℂ`-linearly isomorphic to it. This is exactly

@@ -48,8 +48,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 The single non-trivial *algebraic* fact behind the χ-jump is that a 6-term exact sequence of
 finite-dimensional vector spaces `0 → A → B → C → D → E → 0` has alternating sum of dimensions `0`.
-This is pure linear algebra (rank–nullity at each map plus the exactness `range fₖ = ker fₖ₊₁`); it
-is proven here in full, with no gaps and no homological-algebra machinery. -/
+This is pure linear algebra (rank–nullity at each map plus the exactness `range fₖ = ker fₖ₊₁`),
+with no homological-algebra machinery. -/
 
 /-- **Alternating dimension sum of a 6-term exact sequence** (rank–nullity crank). For an exact
 sequence of finite-dimensional `K`-vector spaces
@@ -98,9 +98,8 @@ noncomputable def chi (𝔘 : FiniteCover X) (D : Divisor X) : ℤ :=
 
 /-! ### Structural inclusion `𝒪_D ↪ 𝒪_{D+P}`, `Skyscraper`, `h0Incl`, `h1Map`, `SkyscraperLES`
 
-These order-bookkeeping arrows and the `SkyscraperLES` structure now live in the base file
-`SkyscraperLESBase` (imported transitively via `CohomologicalRRChartDisk`), so that the proven
-downstream assembly can sit *upstream* of this χ-induction and discharge `exists_skyscraperLES`. -/
+These order-bookkeeping arrows and the `SkyscraperLES` structure live in the base file
+`SkyscraperLESBase`, so that the downstream assembly can sit *upstream* of this χ-induction. -/
 
 /-! ### Base: `h⁰(0) = 1` (Liouville) -/
 
@@ -125,7 +124,7 @@ theorem chi_jump_of_LES {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
   linarith
 
 /-- **Existence of the local-realization datum** (the skyscraper-irreducible core of cohomological
-Riemann–Roch, Forster §16) — proven from local realizability of the cover.
+Riemann–Roch, Forster §16) — from local realizability of the cover.
 
 `LocalRealizationData 𝔘 D P` (`SkyscraperSnake`) packages **exactly** the two pieces that the snake
 lemma cannot supply (plus finiteness, discharged unconditionally):
@@ -148,10 +147,10 @@ theorem exists_localRealizationData (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRea
     rwa [TopologicalSpace.Opens.mem_iSup] at hP
   exact ⟨𝔘.localRealizationData_of_realizable D P hR hPi⟩
 
-/-- **The skyscraper long exact sequence** (Forster §16) — now a *theorem*, reduced to the single
-local-realization datum `exists_localRealizationData` via the proven snake assembly
-`skyscraperLES_of_localRealization` (which builds the connecting map, all exactness, the LES
-termination, and carries the finiteness instances). -/
+/-- **The skyscraper long exact sequence** (Forster §16), from the local-realization datum
+`exists_localRealizationData` via the snake assembly `skyscraperLES_of_localRealization`
+(which builds the connecting map, all exactness, the LES termination, and carries the
+finiteness instances). -/
 theorem exists_skyscraperLES (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X)
     (P : X) :
     Nonempty (SkyscraperLES 𝔘 D P) :=
@@ -159,14 +158,14 @@ theorem exists_skyscraperLES (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable
 
 /-! ### The single-point χ-jump (complete given the skyscraper LES) -/
 
-/-- **Single-point χ-jump (Forster §16).** `χ(D + P) = χ(D) + 1`. Obtained by running the proven
-linear-algebra crank `chi_jump_of_LES` on the skyscraper long exact sequence
-(`exists_skyscraperLES`, the single isolated homological/analytic kernel). -/
+/-- **Single-point χ-jump (Forster §16).** `χ(D + P) = χ(D) + 1`: the
+linear-algebra crank `chi_jump_of_LES` run on the skyscraper long exact sequence
+(`exists_skyscraperLES`). -/
 theorem chi_jump (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X) (P : X) :
     𝔘.chi (D + Finsupp.single P 1) = 𝔘.chi D + 1 :=
   (exists_skyscraperLES 𝔘 hR D P).elim chi_jump_of_LES
 
-/-! ### Iterated jump along a single point — `Int.induction_on` (CLOSED, pure ℤ-bookkeeping) -/
+/-! ### Iterated jump along a single point — `Int.induction_on` (pure ℤ-bookkeeping) -/
 
 /-- **Iterated χ-jump.** `χ(D + n·P) = χ(D) + n` for every integer `n`, by induction on `n` built on
 the unit jump `chi_jump` (both directions). Pure `ℤ`-arithmetic; no analytic content. -/
@@ -212,8 +211,7 @@ end FiniteCover
 
 Rearrangement of `χ(D) = deg D + χ(0)` (`chi_eq_deg_add_chi_zero`, the iterated skyscraper jump +
 divisor induction) using the Liouville base `h⁰(0) = 1` (`h0Dim_zero_eq_one`), since then
-`χ(0) = 1 − h¹(0)`. This is the exact `DolbeaultLadder` leaf statement; it is proven *modulo the
-single named obligation `chi_jump`* — base and induction are complete. -/
+`χ(0) = 1 − h¹(0)`. -/
 theorem cohomological_riemannRoch (𝔘 : FiniteCover X) (hR : 𝔘.LocallyRealizable) (D : Divisor X) :
     (𝔘.h0Dim D : ℤ) - 𝔘.h1Dim D = Divisor.deg X D + 1 - 𝔘.h1Dim 0 := by
   have hχ := 𝔘.chi_eq_deg_add_chi_zero hR D

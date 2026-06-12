@@ -12,9 +12,7 @@ The two residue-theorem consequences that sit *below* Riemann–Roch:
 * `lDim_eq_zero_of_deg_neg` — a linear system of negative degree is trivial.
 
 Extracted from `Jacobians/RiemannRoch.lean` so the Laurent-tail duality ladder
-(`Jacobians/LaurentTail/*`, which consumes `lDim_eq_zero_of_deg_neg` in the surjectivity
-pigeonhole) can be imported by `RiemannRoch.lean` without an import cycle.  `RiemannRoch.lean`
-re-exports these names transitively by importing this file.
+(`Jacobians/LaurentTail/*`) can be imported by `RiemannRoch.lean` without an import cycle.
 -/
 import Jacobians.ProperDegree.ProperMapDegreeSheets
 
@@ -26,14 +24,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- Every principal divisor has degree `0` (Forster Cor. 4.25 / the argument principle),
-via the **degree route**: `deg (div f) = zerosCount f − polesCount f`
-(`deg_div_eq_zeros_sub_poles`),
-and both counts equal a common proper-map degree `d`
-(`ProperMapDegreeSheets.exists_properMapDegree_proven`,
-the §17.9 conservation-of-number construction — now axiom-clean), so the difference is `0`. The RR
-derivations downstream consume this `deg_div`. (The old standalone
-`DegDivResidue.exists_properMapDegree`
-that approach is now superseded by this proven route and no longer on any critical path.) -/
+via the **degree route**: `deg (div f) = zerosCount f − polesCount f`, and both counts equal a
+common proper-map degree `d` (conservation of number), so the difference is `0`. -/
 theorem MeromorphicFunction.deg_div (f : MeromorphicFunction X) :
     Divisor.deg X f.div = 0 := by
   obtain ⟨d, hz, hp⟩ := Jacobians.ProperMapDegreeSheets.exists_properMapDegree_proven f

@@ -9,52 +9,31 @@ import Jacobians.MappingDegree.FibresFiniteAssembly
 
 /-! # Reducing `ConnectivityGlobalizationHypothesis` to a within-chart witness hypothesis
 
-`FibresFiniteAssembly.lean` (ZZ30) reduced
-`fibres_finite_statement X Y` to a single hypothesis:
-`ConnectivityGlobalizationHypothesis X Y`. That hypothesis is *filter-shaped*
-("not eventually equal to a constant"), and its only known proof requires
+`FibresFiniteAssembly.lean` reduced `fibres_finite_statement X Y` to a single
+hypothesis: `ConnectivityGlobalizationHypothesis X Y`. That hypothesis is
+*filter-shaped* ("not eventually equal to a constant"), and its proof requires
 walking analytic continuation along a path in `X`.
 
-This file provides a **strictly smaller, strictly different-shaped** hypothesis
-that suffices: for every non-constant `C^ω` map `f : X → Y` and every fibre
-point `x` of every `y₀`, there exists a *concrete witness*
+This file provides a **strictly smaller, different-shaped** hypothesis that
+suffices: for every non-constant `C^ω` map `f : X → Y` and every fibre point
+`x` of every `y₀`, there exists a *concrete witness* — an open preconnected
+set `U ⊆ ℂ` containing the chart image `(chartAt ℂ x) x` on which the chart
+pullback is `AnalyticOnNhd ℂ`, together with a point `z₁ ∈ U` whose value
+under the chart pullback differs from the chart image of `f x`.
 
-* an open preconnected set `U ⊆ ℂ` containing the chart image
-  `(chartAt ℂ x) x`, together with
-* a witness point `z₁ ∈ U` whose value under the chart pullback differs from
-  the chart image of `f x`.
+The shape is genuinely smaller because it is *existential* (provide a
+`(U, z₁)` pair) rather than a *universal* filter statement; `U` need not be
+the entire chart domain; and the "not eventually `c`" conclusion is *derived*
+from the witness via the classical identity theorem
+(`AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq`, packaged as
+`not_eventually_const_of_not_constOn`).
 
-Crucially, in addition we ask that the chart pullback be `AnalyticOnNhd ℂ` on
-`U`. This is the *honest* obstruction: ZZ24 (`ContMDiff … ω → AnalyticAt`
-bridge on chart pullbacks) is not yet landed at this pin, so the analyticity
-half is still parameter-input.
-
-The shape is genuinely smaller because:
-
-1.  It is *existential* (provide a `(U, z₁)` pair) rather than the original's
-    *universal* filter statement (no constant-eventually).
-2.  `U` need not be the entire chart domain — any preconnected open superset of
-    `{(chartAt ℂ x) x, z₁}` inside the chart's image suffices.
-3.  The "not eventually `c`" filter conclusion is *derived* from the witness
-    via the classical identity theorem
-    (`AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq`), which is in
-    mathlib at the pin and is exactly what
-    `not_eventually_const_of_not_constOn` packages.
-
-Therefore: `WithinChartWitnessHypothesis X Y → ConnectivityGlobalizationHypothesis X Y`,
-and by composition with `fibres_finite_statement_holds_of_connectivity` (ZZ30),
-also `WithinChartWitnessHypothesis X Y → fibres_finite_statement X Y`.
-
-This is a *partial reduction*, not a discharge: the within-chart witness still
-encodes "non-constancy is observed *in this fibre point's chart*" which, in
-general, requires path-walking from a globally non-constant pair `(x', f x' ≠
-y₀)` into the chart of `x`. But the new hypothesis isolates the path-walking
-to a clean existence-of-witness statement in `ℂ`, separate from the filter
-statement. Whoever discharges this hypothesis only needs to produce a
-concrete chart-relative pair `(U, z₁)`; they no longer need to talk about
-eventually-equal filters or the identity theorem at all.
-
-No gaps, no `axiom`. -/
+This is a *partial* reduction: the within-chart witness still encodes
+"non-constancy is observed *in this fibre point's chart*", which in general
+requires path-walking from a globally non-constant pair into the chart of
+`x`.  But it isolates the path-walking to a clean existence-of-witness
+statement in `ℂ`, with no mention of eventually-equal filters or the identity
+theorem. -/
 
 @[expose] public section
 
@@ -113,8 +92,7 @@ theorem connectivityGlobalization_of_withinChartWitness
 
 /-! ## End-to-end: `fibres_finite_statement` from the within-chart witness -/
 
-/-- **End-to-end conditional discharge.** Composing the reduction of this
-file with the ZZ30 assembly: the within-chart witness hypothesis suffices for
+/-- **End-to-end:** the within-chart witness hypothesis suffices for
 the full `fibres_finite_statement`. -/
 theorem fibres_finite_statement_holds_of_withinChartWitness
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]

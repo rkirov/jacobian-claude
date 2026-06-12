@@ -382,10 +382,7 @@ simple** (`orderAtPoint P = -1`): a double pole would give a vanishing derivativ
 here (chart-pullback `z ↦ z²`-shaped), so its fibre-degree would be `2`, not `1`.
 This is the chart-pullback-derivative-nonzero certificate the regular-witness
 bundle (`RegularValueWitnessReg.is_regular`) requires at the unique preimage `P` of
-`∞`.
-
-This is the same analytic local-normal-form content as `contMDiff_toSphere`, here
-specialized to the first-derivative non-vanishing at the simple pole. -/
+`∞`. -/
 theorem MeromorphicFunction.toSphere_regular_at_pole {X : Type*} [TopologicalSpace X]
     [ChartedSpace ℂ X] (f : MeromorphicFunction X)
     {P : X} (hP : f.HasSingleSimplePole P) :
@@ -484,13 +481,7 @@ single preimage `P` (`toSphere_preimage_infty`), and `P` is a regular point
 (`toSphere_regular_at_pole`, consuming pole simplicity).  Packaging this as a
 `RegularValueWitnessReg` whose fibre `{P}` has cardinality `1`, witness-independence
 of the fibre degree (`degreeFiber_eq_card_of_regularWitness`) gives
-`degreeFiber F hF = 1`.
-
-Note the genuine use of simplicity: the `RegularValueWitnessReg.is_regular`
-certificate fed in here is `toSphere_regular_at_pole`, which *fails* for a higher-
-order pole.  A double pole has the same singleton preimage `{P}` but is a critical
-point, so it would not yield a regular witness — and indeed its topological degree
-is `2`, not `1`. -/
+`degreeFiber F hF = 1`. -/
 theorem MeromorphicFunction.degreeFiber_toSphere_eq_one (f : MeromorphicFunction X)
     {P : X} (hP : f.HasSingleSimplePole P)
     (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (f.toSphere P)) :
@@ -657,9 +648,9 @@ Declared in the **root namespace** (matching `genus`, which lives in root namesp
 `Genus.lean`),
 so the challenge-conformance file resolves the bare name. Lives in this module — not `Genus.lean` —
 because its forward direction needs the degree-one theory, which sits downstream of `Genus` (via
-`ProjectiveLine → Genus`); declaring it here breaks the import cycle. Both directions are now
-`Nonempty X` is supplied for free by `[ConnectedSpace X]`
-(`ConnectedSpace.toNonempty`), so the signature matches the spec exactly. -/
+`ProjectiveLine → Genus`); declaring it here breaks the import cycle. `Nonempty X` is supplied for
+free by `[ConnectedSpace X]` (`ConnectedSpace.toNonempty`), so the signature matches the spec
+exactly. -/
 
 open scoped Manifold ContDiff in
 /-- **The backward half.** A surface homeomorphic to `S²` has genus `0`.
@@ -669,14 +660,11 @@ open scoped Manifold ContDiff in
 `X ≃ₜ S²` makes `X` simply connected, on which every holomorphic `1`-form has a global primitive,
 hence (being constant on compact `X`, Liouville) vanishes, so `genus X = 0`.
 
-The route's three walls are all discharged:
-* **`S²` simply connected** — unconditional (`Jacobians.VanKampen.twoOpenVanKampen_holds`); `X ≃ₜ
-S²`
-  transports `SimplyConnectedSpace` to `X`.
-* **Liouville / max-modulus** — `MDifferentiable.exists_eq_const_of_compactSpace` (Mathlib).
-* **The holomorphic Poincaré lemma / monodromy theorem** — `Jacobians.hasHolomorphicPrimitives`
-  (`Jacobians/Monodromy/HolomorphicPrimitives.lean`): the discrete analytic-continuation build (primitive
-  chains, chain-independence, the monodromy theorem), no integration. -/
+The three ingredients: `S²` is simply connected (van Kampen,
+`Jacobians.VanKampen.twoOpenVanKampen_holds`), transported to `X` along the homeomorphism;
+Liouville / max-modulus (`MDifferentiable.exists_eq_const_of_compactSpace`); and the holomorphic
+Poincaré lemma / monodromy theorem (`Jacobians.hasHolomorphicPrimitives`), a discrete
+analytic-continuation build with no integration. -/
 theorem genus_zero_of_nonempty_homeo_sphere {X : Type*} [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (h : Nonempty (X ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) :

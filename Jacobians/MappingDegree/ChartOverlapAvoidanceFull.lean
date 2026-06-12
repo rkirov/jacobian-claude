@@ -40,7 +40,7 @@ theorem exists_avoidance_in_open_chartedSpace_complex
     {U : Set Y} (hU : IsOpen U) {y : Y} (hy : y ∈ U)
     {C : Set Y} (hC : C.Finite) :
     ∃ z : Y, z ∈ U ∧ z ∉ C ∧ JoinedIn U y z := by
-  -- (1) Get a ball-chart `φ'` at `y` from ZZ164c.
+  -- (1) Get a ball-chart `φ'` at `y`.
   obtain ⟨r₀, hr₀_pos, φ', hy_src, htarget, hcoe, hsrc_sub_chart⟩ :=
     Jacobians.Discharge.chart_restrict_to_ball (Y := Y) y
   -- Centre `c := φ' y = (chartAt ℂ y) y`.

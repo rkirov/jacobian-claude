@@ -53,9 +53,7 @@ primitive on an abstract `X`; that is the remaining de Rham wall.
 Given `HasHolomorphicPrimitives X`, this file discharges **everything else completely**:
 the primitive `F` is constant (Mathlib, compactness), so `mfderiv F = 0`, so `η = 0`; hence
 `genus X = 0`. The capstone `genus_zero_of_nonempty_homeo_sphere_of_hasPrimitives` takes the de Rham
-input *and the homeomorphism* and proves the exact target statement, axiom-clean. This mirrors the
-repo's established "isolate the one missing classical input as an explicit hypothesis" pattern
-(`simplyConnectedSpace_sphere_of_vanKampen`, `AbelStatement`).
+input *and the homeomorphism* and proves the exact target statement.
 
 ## References
 

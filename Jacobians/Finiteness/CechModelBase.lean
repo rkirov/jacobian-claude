@@ -221,7 +221,7 @@ abbrev supH1 : Type := c.Z1shr ⧸ LinearMap.range c.δ.toLinearMap
 
 /-- **Finiteness of the sup-norm `H¹`.** Given the Leray surjectivity of `(η,ξ) ↦ δη + ρξ`,
 the abstract reduction `finiteDimensional_h1_of_leray_compact` (with `ρ` compact by `ρ_compact`)
-gives `supH1` finite-dimensional. Fully proven modulo the surjectivity argument. -/
+gives `supH1` finite-dimensional. -/
 theorem finiteDimensional_supH1
     (hsurj : Function.Surjective (fun p : c.C0 × c.Z1cov => c.δ p.1 + c.ρ p.2)) :
     FiniteDimensional ℂ c.supH1 :=

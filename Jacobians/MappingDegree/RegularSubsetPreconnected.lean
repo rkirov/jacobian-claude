@@ -6,12 +6,11 @@ Authors: Bryan Sanchez
 import Mathlib.Topology.Connected.Basic
 
 /-! # Preconnectedness of the regular subset on a general compact connected
-complex 1-manifold (ZZ154)
+complex 1-manifold
 
 This file provides the general-`Y` analogue of
 `RegularValueSetConnected.lean`. It packages two purely topological
-reductions that downstream consumers (notably `FibreCardOnRegularSubset`
-via ZZ134) need:
+reductions:
 
 1.  **Subtype-from-ambient**: an ambient `IsPreconnected (S : Set Y)`
     upgrades to `IsPreconnected (Set.univ : Set ↥S)`. This is a clean
@@ -31,16 +30,9 @@ via ZZ134) need:
 The mathematical content of (2) — that a connected complex 1-manifold
 (equivalently, real 2-manifold) minus finitely many points is
 preconnected — is the standard "go around the puncture" path argument.
-A full mathlib derivation requires either a chart-by-chart path
-construction or a bridge through `IsManifold (𝓘(ℝ, ℝ × ℝ)) ω` /
-two-dimensional manifold connectedness, neither of which is in mathlib
-v4.29.0. Following the exact pattern of `RegularValueSetConnected.lean`
-(ZZ83 for the sphere case), we therefore name this fact as a clean
-topological boundary hypothesis here and let downstream consumers
-discharge it from whatever sphere/manifold-specific machinery is
-available.
-
-No gaps, no `axiom`. -/
+Following the pattern of `RegularValueSetConnected.lean` (the sphere
+case), we name this fact as a clean topological hypothesis here and let
+downstream consumers supply it. -/
 
 @[expose] public section
 

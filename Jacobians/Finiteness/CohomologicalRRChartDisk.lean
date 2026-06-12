@@ -27,7 +27,7 @@
       `exists_skyscraperLES_of_chartDisk` :
         chart-disk hypotheses on `(𝔘, D, P)` ⟹ `Nonempty (SkyscraperLES 𝔘 D P)`
 
-  is fully proven.  It is exactly
+  is exactly
   `CohomologicalRR.exists_skyscraperLES` with its genuine geometric prerequisites made explicit.
 
   ## The remaining gap to the GENERAL `exists_skyscraperLES` (the honest diagnosis)

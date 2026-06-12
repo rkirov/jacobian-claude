@@ -28,36 +28,15 @@ The mathematical input behind that hypothesis is:
   purely topological and is the same as `fiber_finite_of_isDiscrete`.
 
 This file delivers the first bullet on the chart-pullback-data side, in a
-form mirroring `ChartPullbackData` from the companion file. The
+form mirroring `ChartPullbackData` from the companion file: per critical
+point, a witness structure `CriticalChartPullbackData` tracking the
+chart-pullback derivative `F' : ℂ → ℂ` with the compatibility
+`x' ∈ crit ↔ F' (φ x') = 0` on the chart neighbourhood; the ℂ-side identity
+theorem applied to `F'` isolates each critical point, globalisation gives
+`IsDiscrete`, and closedness + compactness give finiteness.  The
 manifold-level bridges `ContMDiff … ω → AnalyticAt` and "non-constant ⇒
-some chart-pullback derivative is not eventually zero" are again left as
-hypothesis-parameters (no `axiom`, no gaps).
-
-What this file does discharge:
-
-* `analyticAt_isolated_zero_of_not_eventually_zero_of_analytic_deriv` —
-  the ℂ-side identity-theorem core for the *derivative*: if `F'` is
-  analytic at `z₀`, takes value `0` at `z₀`, and is not eventually zero,
-  then `z₀` is isolated in `{z | F' z = 0}`. This is just an alias of the
-  pre-existing `analyticAt_isolated_zero_of_not_eventually_zero` applied to
-  `F'`; we expose it under the "critical point" name for downstream use.
-
-* `CriticalChartPullbackData` — chart-pullback witness structure for
-  criticality. Mirrors `ChartPullbackData` but tracks the chart-pullback
-  derivative `F' : ℂ → ℂ` and the predicate "`x` is a critical point"
-  packaged as a `Set X → Prop` parameter `crit`, with a compatibility
-  axiom: `x' ∈ crit ↔ F' (φ x') = 0` for `x' ∈ V`.
-
-* `criticalSet_pointIsolated_via_chart_pullback` — manifold-side per-point:
-  given a `CriticalChartPullbackData` witness at a critical point `x`,
-  there is an open `U ∋ x` whose intersection with the critical set is
-  `{x}`.
-
-* `criticalSet_isDiscrete_of_chart_pullback` — globalisation in `x`: the
-  critical set carries the discrete subspace topology.
-
-* `criticalSet_finite_of_chart_pullback` — composition with closedness +
-  compactness: the critical set is finite.
+some chart-pullback derivative is not eventually zero" are left as
+hypothesis-parameters.
 -/
 
 @[expose] public section
@@ -235,15 +214,6 @@ lemma criticalSet_finite_of_chart_pullback
     crit.Finite :=
   criticalSet_finite_of_isDiscrete_of_isClosed h_closed
     (criticalSet_isDiscrete_of_chart_pullback f crit h)
-
-/-! ## Named deliverable: `criticalSet_isDiscrete_of_not_constant`
-
-The next lemma is the named clean deliverable for the chip. It states:
-the critical set of an analytic non-constant `f` is discrete *given* a
-chart-pullback derivative witness at every critical point. The
-"non-constant" hypothesis is what is *expected* (in the full classical
-proof) to provide the chart-pullback witnesses; here we expose them
-explicitly as a parameter so this lemma is provable unconditionally. -/
 
 end Degree
 end ContMDiff

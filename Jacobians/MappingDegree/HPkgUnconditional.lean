@@ -17,7 +17,7 @@ locally constant on `Cᶜ`. This is the analytic packaging consumed by
 
 We choose `C := criticalValuesGeneral f` directly so its identification is
 preserved syntactically, and inline the disjointness proof (the same shape
-as chip B's `critical_value_set_finite`, but stated for the concrete set so
+as `critical_value_set_finite`, but stated for the concrete set so
 the `IsLocallyConstant` clause downstream can refer to `Cᶜ` as
 `(criticalValuesGeneral f)ᶜ`). -/
 

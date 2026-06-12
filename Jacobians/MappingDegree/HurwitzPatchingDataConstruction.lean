@@ -5,9 +5,10 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.FibreCardLocallyConstantFromNormalForm
 
-/-! # Constructing `HurwitzPatchingData` at a regular value (ZZ157)
+/-! # Constructing `HurwitzPatchingData` at a regular value
 
-ZZ153 packaged the Hurwitz patching content of "regular value of a non-constant
+`FibreCardLocallyConstantFromNormalForm.lean` packaged the Hurwitz patching
+content of "regular value of a non-constant
 analytic map between Riemann surfaces ⇒ fibre count is locally constant" into
 the structure `HurwitzPatchingData f y₀`. This file constructs such a package
 from purely topological inputs.
@@ -22,25 +23,11 @@ At each preimage `x ∈ f ⁻¹' {y₀}`, we ask for:
   `RightInvOn g f V`.
 
 This is exactly the `OpenPartialHomeomorph`-shape data delivered by
-`AnalyticAt.exists_local_biholomorphism` (ZZ152). From `LeftInvOn` and
+`AnalyticAt.exists_local_biholomorphism`. From `LeftInvOn` and
 `RightInvOn` we derive `InjOn f U` and `SurjOn f U V`, and from continuity of
 `g` we derive that `f` restricted to `U` is an *open* map — which is exactly
 what we need to shrink `U` and still have surjectivity onto a corresponding
 shrunken `V`.
-
-## Outputs
-
-* `LocalSheetData` — the topological packaging of an analytic local
-  biholomorphism.
-* `exists_pairwiseDisjoint_open_of_finset` — finite-set ⇒ pairwise-disjoint
-  open neighbourhoods in T2.
-* `HurwitzPatchingData.ofLocalSheets` — the construction.
-
-## Anti-cheat
-
-* No `axiom`, no gaps.
-* No signature change to any pre-existing definition or theorem.
-* Adds one new file imported into the manifest.
 -/
 
 @[expose] public section

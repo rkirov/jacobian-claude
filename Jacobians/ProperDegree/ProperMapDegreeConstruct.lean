@@ -16,9 +16,8 @@ import Jacobians.MappingDegree.Degree
 
 For a non-constant meromorphic function `f` on a compact connected Riemann
 surface `X`, this file assembles a `ProperMapDegreeData f`
-(`Jacobians.ProperMapDegree`), whose existence discharges
-`exists_properMapDegree` — the Riemann–Roch keystone `deg (div f) = 0` — via the
-already-proven reduction `zerosCount_eq_polesCount_of_properMapDegreeData`.
+(`Jacobians.ProperMapDegree`), the input to the Riemann–Roch keystone
+`deg (div f) = 0`.
 
 ## The fibre-multiplicity function `N`
 
@@ -41,35 +40,10 @@ The multiplicity count *eats ramification*: at a zero/pole of order `k` the loca
 degree is `k`, so `N(0)`/`N(∞)` are precisely the with-multiplicity counts
 `zerosCount`/`polesCount`.
 
-## What this file builds (complete)
-
-* `fibreMult f w` — the honest local-degree sum (a concrete total function on
-  `ℂℙ¹`); its value at a fibre point is the chart-pullback meromorphic order of
-  `f − w` (finite `w`) or `−ord f` (`w = ∞`).
-* `N f` — the fibre-multiplicity function, defined so the two **boundary
-  readings are provable theorems** (`N_zero_eq`, `N_infty_eq`); these bank the
-  highest-value content (the special-fibre identities, both signs).
-* The **regular-value local constancy** of the ncard (= multiplicity on the
-  regular set) via the existing Hurwitz/sheet chain
-  (`isLocallyConstant_fibreNcard_on_regular`): the per-`w₀` patching datum from
-  the local normal form, discharged at every *regular* value `w₀`
-  through `HurwitzPatchingData.ofLocalSheets`.
-* `ProperMapDegreeData.ofParts` — the structural builder from the honest pieces.
-* `ProperMapDegreeData.ofConservation` — the packaged `ProperMapDegreeData`,
-  resting on the single honest, true, non-vacuous hypothesis
-  `IsLocallyConstant (N f)` (the *global* argument-principle constancy of the
-  multiplicity sum across all of `ℂℙ¹`, including the finitely many branch
-  values — the §17.9 conservation-of-number assembly).
-
-## The isolated wall
-
-`IsLocallyConstant (N f)` for the *multiplicity* sum is the genuine residual
-analytic content.  The regular-value half is fully proved here; the
-remaining half — extending local constancy across the finitely many *branch*
-values, where the ncard drops but the multiplicity sum does not — is the
-classical merging step (Forster §4 / Miranda §II.4).  It is isolated as a *true*,
-non-vacuous hypothesis (witnessed in the `div = 0` edge case by the constant
-function, `ProperMapDegree.ProperMapDegreeData.ofDivEqZero`), **never** vacuous.
+The single analytic hypothesis taken here is `IsLocallyConstant (N f)`: extending
+local constancy across the finitely many *branch* values — where the fibre ncard
+drops but the multiplicity sum does not — is the classical merging step
+(Forster §4 / Miranda §II.4), carried out in `ProperMapDegreeSheets`.
 
 ## References
 
@@ -184,20 +158,15 @@ def N {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSp
   have hne : (((0 : ℂ) : RiemannSphere)) ≠ OnePoint.infty := OnePoint.coe_ne_infty _
   simp [N, hne]
 
-/-! ### Regular-value local constancy (the discharged half of the wall)
+/-! ### Regular-value local constancy
 
-The local constancy of `N f` over the *regular* values is fully proved
-through the existing Hurwitz/local-sheet chain.  At a regular value `w₀` the map
-`F = f.toRiemannSphere` is, near each preimage, a biholomorphism onto a
-neighbourhood of `w₀` (a `LocalSheetData`), so the fibre cardinality is locally
-constant there (`HurwitzPatchingData.ofLocalSheets` ∘
-`fibreCard_isLocallyConstant_on_subset_of_pointwiseHurwitz`,
-`Jacobians.Discharge.fibreCard_isLocallyConstant_on_subset_of_localSheets`).  On
-the regular set the local degree at every preimage is `1`, so the ncard *equals*
-the multiplicity sum — this is the regular-value half of the constancy of `N`.
-
-What remains (the isolated wall, below) is the extension across the finitely many
-*branch* values, where the ncard drops but the multiplicity sum does not. -/
+The local constancy of `N f` over the *regular* values follows from the
+Hurwitz/local-sheet chain: at a regular value `w₀` the map `F = f.toRiemannSphere`
+is, near each preimage, a biholomorphism onto a neighbourhood of `w₀`, so the
+fibre cardinality is locally constant there; on the regular set the local degree
+at every preimage is `1`, so the ncard *equals* the multiplicity sum.  Extension
+across the finitely many *branch* values — where the ncard drops but the
+multiplicity sum does not — is the remaining content of `IsLocallyConstant (N f)`. -/
 
 /-! ### The structural builder and the packaged data
 
@@ -219,30 +188,6 @@ def ProperMapDegreeData.ofParts {X : Type*} [TopologicalSpace X] [T2Space X] [Co
   locallyConstant := hlc
   zero_eq := N_zero_eq f
   infty_eq := N_infty_eq f
-
-/-! ### Non-vacuity of the local-constancy obligation
-
-The local-constancy hypothesis fed to `ofParts` is a genuine, true, non-vacuous
-statement — not a disguised `False`.  Two complementary confirmations:
-
-* the *structure* `ProperMapDegreeData f` is satisfiable in the edge case
-  `f.div = 0` (the upstream `ProperMapDegree.ProperMapDegreeData.ofDivEqZero`,
-  `N ≡ 0`);
-* the *specific* boundary readings of `ofParts` (the values `N f` takes at `0`
-  and `∞`) are compatible with a locally constant function exactly when
-  `zerosCount f = polesCount f`, which is what the argument principle asserts:
-  given that equality, the constant function realises both readings, so the
-  obligation that `ofParts` discharges is consistent.  We record this
-  compatibility as the honest non-vacuity certificate. -/
-
-/-! ### The packaged conservation-of-number data and the keystone
-
-Assembling `ProperMapDegreeData f` from `ofParts` (boundary readings discharged)
-and the single honest local-constancy hypothesis yields, through the proven
-reduction `zerosCount_eq_polesCount_of_properMapDegreeData`
-(`Jacobians.ProperMapDegree`), the argument-principle equality and hence the
-proper-map-degree existential — the exact shape `exists_properMapDegree`
-expects. -/
 
 /-- **The conservation-of-number data, packaged.**  Given the honest local
 constancy of the fibre-multiplicity function `N f` (the global argument

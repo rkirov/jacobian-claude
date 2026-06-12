@@ -60,7 +60,7 @@ private lemma joinedIn_compl_in_ball_chart_source
   -- Rewrite as `φ.target \ φ '' (φ.source ∩ C)`.
   have hPC : IsPathConnected (φ.target \ φ '' (φ.source ∩ C)) := by
     rw [htarget]; exact h_pc_ball
-  -- Apply the chart-local detour lemma from ZZ164.
+  -- Apply the chart-local detour lemma.
   exact OpenPartialHomeomorph.chart_local_detour_of_pathConnected_complement
     (φ := φ) hC_fin hPC hu_src hv_src hu_nc hv_nc
 
@@ -191,7 +191,7 @@ private lemma joinedIn_compl_along_subdivision
       set U : Set Y := (φ k).source ∩ (φ (k + 1)).source with hU_def
       have hU_open : IsOpen U := (φ k).open_source.inter (φ (k + 1)).open_source
       have hγ_in_U : γ (t (k + 1)) ∈ U := ⟨hγ_in_k, hγ_in_k1⟩
-      -- Apply ZZ165e to perturb `γ s_next` to a `C`-avoiding point in `U`.
+      -- Perturb `γ s_next` to a `C`-avoiding point in `U`.
       obtain ⟨z', hz'_U, hz'_nC, hjoin_z⟩ :=
         exists_avoidance_in_open_chartedSpace_complex
           (Y := Y) (U := U) hU_open hγ_in_U hC_fin
@@ -232,7 +232,7 @@ theorem isPathConnected_compl_finite_of_connected_chartedSpace_complex
   intro q hq_nc
   -- Get a path from `p` to `q`.
   obtain ⟨γ⟩ := PathConnectedSpace.joined p q
-  -- Subdivide via ZZ165c.
+  -- Subdivide by ball charts.
   obtain ⟨t, φ, rfun, cfun, ht0, ht_mono, ⟨N, htN⟩, hr_pos, hφ_target, hpiece⟩ :=
     Path.exists_ball_chart_subdivision (Y := Y) γ
   -- `htN : ∀ m ≥ N, t m = 1`. We use `t N = 1`.

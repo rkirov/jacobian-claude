@@ -20,7 +20,7 @@ the Serre context), `Tr_F` is the trace (pushforward) of the meromorphic 1-form,
 equality is the **residue theorem on `ℂℙ¹`** — proved here, elementarily, from the residue calculus
 already built in `Jacobians.Dolbeault.Residue` (`resAt`).
 
-## What is in this file (pillar 2 — the `ℂℙ¹` residue theorem)
+## The `ℂℙ¹` residue theorem
 
 The residue theorem on `ℂℙ¹` for a rational 1-form is, in its sharpest elementary form, *partial
 fractions*: every rational 1-form `η = R(z) dz` decomposes (away from `∞`) into a finite sum of
@@ -50,9 +50,6 @@ is
 * `LaurentForm.finiteResidueSum_add_resAtInfty_eq_zero` — **the `ℂℙ¹` residue theorem**:
   `(∑_{centres} Res) + Res_∞ R = 0`.
 
-Everything here is complete and depends on no unproved lemma; it reuses only the
-one-variable residue calculus of `Residue.lean` and Mathlib's `circleIntegral` toolbox.
-
 ## What is deliberately NOT here (the trace combine — Miranda Lemma 3.2)
 
 The remaining two steps of the §VIII.3 route are **not** built here, because the repo's trace
@@ -67,9 +64,8 @@ interaction**.  The missing pieces are therefore:
   pushforward
      at `y` is the fibre sum of the residues of `α`).
 
-Both are genuinely new builds (the holomorphic trace gives no foothold for poles), so they are left
-to the trace-formalism work; the present file supplies the elementary `ℂℙ¹` end of the argument that
-they feed into.  See the report accompanying this commit for the exact remaining goal.
+Both are genuinely new builds (the holomorphic trace gives no foothold for poles); the present
+file supplies the elementary `ℂℙ¹` end of the argument that they feed into.
 
 ## References
 

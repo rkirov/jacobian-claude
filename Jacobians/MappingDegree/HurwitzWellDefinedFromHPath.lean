@@ -7,44 +7,21 @@ import Jacobians.MappingDegree.FibreCardWellDefinedAtRegular
 import Jacobians.MappingDegree.PreconnectedFromFiniteComplement
 import Jacobians.MappingDegree.RegularSubsetPreconnected
 
-/-! # Hurwitz constant-card, staged on `h_path` (ZZ160, ZZ172-corrected)
+/-! # Hurwitz constant-card, staged on `h_path`
 
-Compose ZZ155 (`fibre_card_well_defined_at_regular_holds_of_locallyConstant_preconnected`)
-with ZZ159 (`isPreconnected_compl_of_isPathConnected_compl`) so that the *only* topological residual
-exposed at the headline is the manifold-lift content `(M1)`:
+Compose `fibre_card_well_defined_at_regular_holds_of_locallyConstant_preconnected`
+with `isPreconnected_compl_of_isPathConnected_compl` so that the *only*
+topological residual exposed at the headline is
 
 ```
 ∀ C : Set Y, C.Finite → (Cᶜ).Nonempty → IsPathConnected (Cᶜ : Set Y).
 ```
 
-When `(M1)` lands unconditionally (target of ZZ165), this theorem
-becomes one rewrite away from the strict-closure of the constant-card
-statement.
-
-## What this file does and does not deliver
-
-This file *stages* the topological side. ZZ155 still needs the analytic
-content this file does not — and cannot, at the present pin — discharge:
-
-* **Per-`f` regular-subset packaging.** The consumer supplies, for every
-  non-constant analytic `f`, a finite set `C ⊆ Y` such that
-  - every `RegularValueWitnessReg f` has its `value` in `Cᶜ`, and
-  - the fibre-cardinality `(f ⁻¹' {y}).ncard` is locally constant on `Cᶜ`.
-
-  Specialising `C := f.criticalValues` is what ZZ100 produces under a
-  `CriticalSetWitness` for `f : MeromorphicNonzero X` (Riemann-sphere
-  target). For an arbitrary `f : X → Y` between general complex
-  1-manifolds, no unconditional packaging is available at this pin.
-
-The wrapper below therefore exposes the analytic packaging as a single
-`h_pkg` parameter, with `h_path` factored out via ZZ159 so the
-*topological* residual is the single named manifold-lift content `(M1)`.
-
-Compared with the pre-ZZ172 version, the universally-false `h_C_fin`
-hypothesis (which asserted that *every* set in `Y` is finite) is removed.
-The `C` finiteness is instead supplied by the per-`f` packaging.
-
-No gaps, no `axiom`. -/
+The wrapper exposes the analytic content as a single `h_pkg` parameter —
+the **per-`f` regular-subset packaging**: for every non-constant analytic
+`f`, a finite set `C ⊆ Y` such that every `RegularValueWitnessReg f` has
+its `value` in `Cᶜ`, and the fibre-cardinality `(f ⁻¹' {y}).ncard` is
+locally constant on `Cᶜ`. -/
 
 @[expose] public section
 

@@ -526,12 +526,12 @@ theorem delta1Model_diagonal_eq_zero (s : (chartCoverOverlapData (X := X)).Cshr)
 
 /-! ### Packaging the standard Čech differential construction
 
-The pieces above already prove the standard cross-chart Čech differential construction for the
-chart-cover model. This bundle packages the proven `δ⁰/δ¹` data so downstream code can refer to the
-construction as a single object; the genuine Leray/globalization theorem still lives in the
+The pieces above prove the standard cross-chart Čech differential construction for the
+chart-cover model. This bundle packages the `δ⁰/δ¹` data so downstream code can refer to the
+construction as a single object; the Leray/globalization theorem lives in the
 finiteness node. -/
 
-/-- The standard chart-cover Čech differential bundle, packaging the proven `δ⁰`, `δ¹`, `δ¹cov`,
+/-- The standard chart-cover Čech differential bundle, packaging `δ⁰`, `δ¹`, `δ¹cov`,
 `δ¹∘δ⁰ = 0`, and commuting-square data.  This is the structural half of the model construction; the
 `leray` field is handled separately downstream. -/
 structure ChartCoverDifferentialData where

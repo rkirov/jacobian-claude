@@ -9,17 +9,15 @@ import Jacobians.Surface.ContMDiffOmegaAnalytic
 
 /-! # Constructing `ChartPullbackData` from `ContMDiffAt … ω`
 
-ZZ22 packaged the per-fibre isolation argument behind the `ChartPullbackData`
-structure (in `AnalyticFiberDiscrete.lean`). ZZ24 supplied the bridge
-`ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f x → AnalyticAt ℂ (chart pullback)`
-(in `ContMDiffOmegaAnalytic.lean`).
+`AnalyticFiberDiscrete.lean` packaged the per-fibre isolation argument
+behind the `ChartPullbackData` structure; `ContMDiffOmegaAnalytic.lean`
+supplied the bridge
+`ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f x → AnalyticAt ℂ (chart pullback)`.
 
 This file combines them: from `ContMDiffAt … ω f x` plus the local
 non-degeneracy hypothesis "the chart-pulled-back representation of `f` near
 `x` is not eventually equal to its value at `(chartAt ℂ x) x`", we
-construct an inhabitant of `ChartPullbackData f x (f x)`.
-
-No gaps, no `axiom`. -/
+construct an inhabitant of `ChartPullbackData f x (f x)`. -/
 
 @[expose] public section
 
@@ -125,7 +123,7 @@ noncomputable def chartPullbackData_of_contMDiff
   -- The chart pullback `F` and target value `c`.
   set F : ℂ → ℂ := (eY) ∘ f ∘ eX.symm with hFdef
   set c : ℂ := eY (f x) with hcdef
-  -- Analyticity of `F` at `z₀`: ZZ24's bridge.
+  -- Analyticity of `F` at `z₀`: the chart-pullback bridge.
   have hFA : AnalyticAt ℂ F z₀ :=
     contMDiffAt_omega_analyticAt_chart_pullback hf
   -- Compatibility.

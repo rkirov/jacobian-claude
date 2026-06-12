@@ -70,14 +70,14 @@ theorem fibreCard_isLocallyConstant_on_subset_of_localSheets
     IsLocallyConstant
       (fun y : (R : Set Y) => (f ⁻¹' {y.val}).ncard) := by
   -- Step 1: For every y₀ ∈ R, build the HurwitzPatchingData from the
-  -- per-fibre LocalSheetData via ZZ157.
+  -- per-fibre LocalSheetData via the Hurwitz patching construction.
   have h_pkg : ∀ y₀ ∈ R, HurwitzPatchingData f y₀ := by
     intro y₀ hy₀
     refine HurwitzPatchingData.ofLocalSheets (f := f) hf
       (h_fib y₀ hy₀) ?_
     intro x hx
     exact h_sheets y₀ hy₀ x hx
-  -- Step 2: ZZ153 reads off local-constancy on the subtype R.
+  -- Step 2: the patching package reads off local-constancy on the subtype R.
   exact fibreCard_isLocallyConstant_on_subset_of_pointwiseHurwitz f R h_pkg
 
 /-- **Locally-constant fibre cardinality on `Cᶜ`, from a `LocalSheetData`

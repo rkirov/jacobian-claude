@@ -22,13 +22,9 @@
   analytic and nonzero there) and `ord_x g = 0 ≥ −(D+P)(x)` elsewhere. In particular
   `ord_P g = −(D+P)(P) = k` exactly, so `coeffGermLin [g] ≠ 0` and `coeffGermLin` is onto `ℂ`.
 
-  ## Status
-
-  The product witness is the genuine local-analytic core (a finite-product order computation plus
+  The product witness is the genuine local-analytic core: a finite-product order computation plus
   the chart-change relating the center chart `φ` to the open-submanifold chart at `P` that
-  `ordU`/`coeffGermLin` use). It is isolated here as the single named obligation
-  `locallyRealizable_chartDiskCover`; closing it makes the entire χ-side
-  (`cohomological_riemannRoch`) fully complete on the canonical cover.
+  `ordU`/`coeffGermLin` use (`locallyRealizable_chartDiskCover`).
 -/
 import Jacobians.DolbeaultComparison.LerayCoverExists
 import Jacobians.Finiteness.SkyscraperConeRealization

@@ -21,9 +21,7 @@ consumes:
   Jacobian pullback in ambient coordinates. By the projection formula it realises
   `periodVec δ ↦ periodVec(preimage cycle)`.
 
-It also hosts the **§3 lift chain** (relocated here from `PeriodLattice.lean`,
-whose covering / fibre-finiteness infrastructure is still imported through
-`TraceForm`): the `PreimageCycle` structure whose `pullback_eq` field references
+It also hosts the **lift chain**: the `PreimageCycle` structure whose `pullback_eq` field references
 `ambientPullbackJac`, and the lemmas that conclude `ambientPullbackJac` preserves
 the period lattice.
 
@@ -50,8 +48,7 @@ open Filter Set
 `ambientTrace` is the geometric trace `traceFormTotal` expressed in the chosen
 basis coordinates (via `ambientIso`); `ambientPullbackJac` is its matrix transpose.
 The construction is the exact dual of `ambientPsi`/`ambientPhi` for `pullbackForm`
-(see `HolomorphicForms.lean`), but built from the genuine trace rather than the old
-opaque stub. -/
+(see `HolomorphicForms.lean`). -/
 
 /-- Coordinate form of the trace `f₊`, parallel to `ambientPsi` for `pullbackForm`:
 `ambientTrace = (ambientIso Y)⁻¹ ∘ traceFormTotal f hf ∘ (ambientIso X)` (matrix
@@ -291,11 +288,9 @@ theorem ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal {X Y :
     rfl
   rw [hLHS, hRHS]
 
-/-! ## §3 The preimage cycle and lattice preservation
+/-! ## The preimage cycle and lattice preservation
 
-Relocated here from `PeriodLattice.lean` (whose covering / fibre-finiteness
-infrastructure is still imported via `TraceForm`): these are the parts of the §3
-lift chain that reference the **genuine** `ambientPullbackJac` defined above. The
+The parts of the lift chain that reference `ambientPullbackJac`. The
 `PreimageCycle.pullback_eq` field is the projection-formula identity
 `Tᵀ·periodVec δ = ∑ coeffs·periodVec loopsᵢ`. -/
 

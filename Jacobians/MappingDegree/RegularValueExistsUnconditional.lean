@@ -9,23 +9,17 @@ import Jacobians.MappingDegree.ClopennessOfLocallyConstDischarge
 
 /-! # Unconditional discharge of `Degree.regular_value_exists_statement`
 
-Step A.2 of Path A. ZZ33 (`Manifold/Degree.lean`) reduced
-`regular_value_exists_statement` to `fibres_finite_statement` via
-`regular_value_exists_of_fibres_finite`: given that *every* fibre is finite,
-non-emptiness of `Y` (from `ConnectedSpace Y`) suffices to package any
-`y : Y` as a `RegularValueWitness`.
+`Manifold/Degree.lean` reduced `regular_value_exists_statement` to
+`fibres_finite_statement` via `regular_value_exists_of_fibres_finite`:
+given that *every* fibre is finite, non-emptiness of `Y` (from
+`ConnectedSpace Y`) suffices to package any `y : Y` as a
+`RegularValueWitness`.
 
-ZZ47 (`Manifold/ClopennessOfLocallyConstDischarge.lean`) discharged
+`Manifold/ClopennessOfLocallyConstDischarge.lean` proved
 `ClopennessOfLocallyConstHypothesis X Y` unconditionally. Composing with
-`fibres_finite_statement_holds_of_clopennessOfLocallyConst` (ZZ43) yields
-`fibres_finite_statement X Y` unconditionally — and feeding that into the
-ZZ33 reduction yields `regular_value_exists_statement X Y` unconditionally.
-
-The composition is the entire content of this file. There is no further
-analytic obligation: the regular-value form follows from the fibre-finiteness
-form by a one-line "pick any `y : Y`" argument.
-
-No gaps, no `axiom`. -/
+`fibres_finite_statement_holds_of_clopennessOfLocallyConst` yields
+`fibres_finite_statement X Y`, hence `regular_value_exists_statement X Y`,
+unconditionally.  The composition is the entire content of this file. -/
 
 @[expose] public section
 

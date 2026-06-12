@@ -8,38 +8,25 @@ import Jacobians.MappingDegree.ChartPullbackDataConstruction
 
 /-! # Full assembly: `fibres_finite_statement` modulo a single connectivity hypothesis
 
-This file composes the landed pieces into the maximal unconditional reduction
-of `Degree.fibres_finite_statement` available at this pin:
+This file composes the reduction chain for `Degree.fibres_finite_statement`:
 
-* ZZ20 (`Degree.lean`): `fibres_finite_of_all_fibers_isDiscrete` reduces the
+* `Degree.lean`: `fibres_finite_of_all_fibers_isDiscrete` reduces the
   statement to per-fibre `IsDiscrete`.
-* ZZ22 (`AnalyticFiberDiscrete.lean`): `fibres_finite_of_chart_pullback`
+* `AnalyticFiberDiscrete.lean`: `fibres_finite_of_chart_pullback`
   reduces it further to a per-fibre-point `ChartPullbackData`.
-* ZZ24 (`ContMDiffOmegaAnalytic.lean`): the bridge
+* `ContMDiffOmegaAnalytic.lean`: the bridge
   `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f x → AnalyticAt ℂ` on chart pullbacks.
-* ZZ25 (`AnalyticContinuationGlobalization.lean`): the within-chart globalisation
+* `AnalyticContinuationGlobalization.lean`: the within-chart globalisation
   of "not eventually constant" via the identity theorem.
-* ZZ28 (`ChartPullbackDataConstruction.lean`):
+* `ChartPullbackDataConstruction.lean`:
   `chartPullbackData_of_contMDiff_global` builds `ChartPullbackData` from
   `ContMDiff … ω f` plus a per-fibre-point local non-degeneracy hypothesis.
 
-The composition above is unconditional. The single remaining input is the
-**connectivity-globalization** step: from "`f` is not (globally) constant" on a
-connected `X`, derive "for every fibre point `x`, the chart pullback of `f`
-is not eventually equal to its value at `(chartAt ℂ x) x`". This is the
-analytic-continuation argument across charts whose chart-overlap analyticity
-is in scope (mathlib at this pin) but whose path-walking has not yet been
-formalised in this repository.
-
-The deliverable of this file:
-
-* `ConnectivityGlobalizationHypothesis` — a clean predicate on `X, Y`
-  capturing exactly the missing globalisation step.
-* `fibres_finite_of_connectivity_hypothesis` — proves
-  `fibres_finite_statement X Y` from `ConnectivityGlobalizationHypothesis X Y`,
-  unconditionally and by composition of the landed pieces above.
-
-No gaps, no `axiom`. -/
+The single remaining input is the **connectivity-globalization** step,
+packaged as `ConnectivityGlobalizationHypothesis`: from "`f` is not (globally)
+constant" on a connected `X`, derive "for every fibre point `x`, the chart
+pullback of `f` is not eventually equal to its value at `(chartAt ℂ x) x`" —
+the analytic-continuation argument across charts. -/
 
 @[expose] public section
 
@@ -54,7 +41,7 @@ universe u v
 
 /-! ## Connectivity-globalization hypothesis
 
-The single input that is not unconditionally available at this pin: for every
+The single input taken as a hypothesis-parameter here: for every
 non-constant `C^ω` map between (connected) complex manifolds, the chart
 pullback near every fibre point is not eventually equal to its target
 chart-value. Equivalently, "`f` non-constant globally" implies "the chart
@@ -72,20 +59,13 @@ def ConnectivityGlobalizationHypothesis
 
 /-! ## Assembly
 
-The proof composes:
-
-1. `chartPullbackData_of_contMDiff_global` (ZZ28) to turn the connectivity
-   hypothesis into a `ChartPullbackData` at every fibre point, and
-2. `fibres_finite_of_chart_pullback` (ZZ22) to turn per-fibre-point
-   `ChartPullbackData` into the full `fibres_finite_statement`.
--/
+The proof composes `chartPullbackData_of_contMDiff_global` (the connectivity
+hypothesis into a `ChartPullbackData` at every fibre point) with
+`fibres_finite_of_chart_pullback`. -/
 
 /-- **Full assembly: `fibres_finite_statement` from the connectivity-
-globalization hypothesis.** Given the single remaining input
-`ConnectivityGlobalizationHypothesis X Y`, the classical statement
-`fibres_finite_statement X Y` holds. The proof is unconditional and proceeds
-by composing `chartPullbackData_of_contMDiff_global` with
-`fibres_finite_of_chart_pullback`. -/
+globalization hypothesis.** Given `ConnectivityGlobalizationHypothesis X Y`,
+the classical statement `fibres_finite_statement X Y` holds. -/
 theorem fibres_finite_of_connectivity_hypothesis
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -100,7 +80,7 @@ theorem fibres_finite_of_connectivity_hypothesis
   intro f hf hnc y x hx
   -- `hx : x ∈ f ⁻¹' {y}`, i.e. `f x = y`.
   have hx_eq : f x = y := hx
-  -- Apply ZZ28's globalised constructor; its non-degeneracy parameter is
+  -- Apply the globalised constructor; its non-degeneracy parameter is
   -- exactly the conclusion of `H` (after specialising `y₀ := y`).
   have hne : ∀ x' : X, f x' = y →
       ¬ ∀ᶠ z in 𝓝 ((chartAt ℂ x') x'),

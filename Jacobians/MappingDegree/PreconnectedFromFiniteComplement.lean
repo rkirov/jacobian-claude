@@ -4,32 +4,16 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import Mathlib.Topology.Connected.PathConnected
-/-! # Path-connected ⇒ preconnected reduction for the finite-puncture
-case (ZZ159, scope-reduced)
+/-! # Path-connected ⇒ preconnected reduction for the finite-puncture case
 
 For a connected complex 1-manifold `Y`, the complement of any finite set
-is preconnected. This is the standard "go around the puncture" fact —
-content `(M1)`: the path-connectedness of `Cᶜ` for finite `C` on a
-connected 2-manifold.
-
-`(M1)` itself is **not in mathlib at the project pin**
-(`8e3c989104daaa052921bf43de9eef0e1ac9fbf5`, lean v4.30.0-rc1). The
-relevant ambient lemma — `Set.Countable.isPathConnected_compl_of_one_lt_rank`
-in `Mathlib.Analysis.Normed.Module.Connected` — gives this for normed
-ℝ-spaces of real rank ≥ 2 but does not lift through a chart structure.
-A genuine manifold proof needs (a) local path-connectedness of `Y` from
-`ChartedSpace ℂ Y` (mathlib's `ChartedSpace.locPathConnectedSpace` —
-present, but as a theorem requiring `[LocPathConnectedSpace H]`) plus
-(b) the chart-by-chart "go around" routing — not present.
-
-This file therefore lands the **reduction-only headline**: given the
-unproven manifold-lift `h_path` (`(M1)`), preconnectedness of the finite
-complement follows. Downstream consumers (`ZZ160`) instantiate `h_path`
-either via the missing manifold-lift content (when present) or — for
-the strict-closure path of items 8/9/22/24 — re-package as an explicit
-named hypothesis on the closure theorem.
-
-No gaps, no `axiom`. -/
+is preconnected. This is the standard "go around the puncture" fact: the
+path-connectedness of `Cᶜ` for finite `C` on a connected 2-manifold.
+Mathlib's `Set.Countable.isPathConnected_compl_of_one_lt_rank` gives this
+for normed ℝ-spaces of real rank ≥ 2 but does not lift through a chart
+structure, so this file states the reduction: given the manifold-lift
+`h_path` (path-connectedness of the finite complement), preconnectedness
+follows. -/
 
 @[expose] public section
 
@@ -38,8 +22,7 @@ namespace Manifold
 
 universe u
 
-/-- **Reduction-only headline.** Given the path-connectedness of `Cᶜ`
-(the manifold-lift content `(M1)`), preconnectedness follows.
+/-- Given the path-connectedness of `Cᶜ`, preconnectedness follows.
 
 Used by `RegularSubsetPreconnected.lean`'s `h_topo` parameter via the
 convenience wrapper `isPreconnected_compl_of_isPathConnected_compl` below. -/

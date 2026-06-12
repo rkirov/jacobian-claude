@@ -7,7 +7,7 @@ import Jacobians.MappingDegree.CriticalValuesFiniteGeneral
 
 /-! # `h_critical`: finite critical-value set containing every regular witness
 
-This file (the **zzCritFin** chip) discharges the **`h_critical`** leg of the
+This file proves the **`h_critical`** leg of the
 `h_pkg` packaging consumed by
 `fibre_card_well_defined_at_regular_holds_of_finiteCriticalValues` in
 `Manifold/HurwitzWellDefinedUnconditionalTopo.lean`:
@@ -24,13 +24,11 @@ for every `RegularValueWitnessReg f` is by contradiction: if
 `w.toWitness.value = f x` with `x ∈ criticalSetGeneral f`, then `x` lies in
 the preimage of `w.toWitness.value`, hence by `w.is_regular` the literal
 chart pullback has nonzero derivative at `(chartAt ℂ x) x`.  The planar
-forward bridge `injOn_nhds_of_deriv_ne_zero` (ZZ99,
-`Manifold/CriticalSetDerivBridge.lean`) then produces a planar neighbourhood
+forward bridge `injOn_nhds_of_deriv_ne_zero`
+(`Manifold/CriticalSetDerivBridge.lean`) then produces a planar neighbourhood
 on which the chart pullback is injective; lifting through the chart
 homeomorphism gives `∃ U ∈ 𝓝 x, Set.InjOn f U`, contradicting
-`x ∈ criticalSetGeneral f`.
-
-No gaps, no `axiom`, no signature changes to consumer files. -/
+`x ∈ criticalSetGeneral f`. -/
 
 @[expose] public section
 
@@ -116,7 +114,7 @@ private lemma injOn_f_nhds_of_injOn_chart_pullback
   have h_inj_c : Set.InjOn c c.source := c.injOn
   exact h_inj_c hy₁_subc hy₂_subc hcy_eq
 
-/-- **zzCritFin headline.**  For non-constant analytic `f : X → Y` between
+/-- **Finite critical-value set headline.**  For non-constant analytic `f : X → Y` between
 compact connected complex 1-manifolds, the set of critical values is finite
 and contains no value of any `RegularValueWitnessReg f`.
 
@@ -155,7 +153,7 @@ theorem critical_value_set_finite
     have : w.toWitness.value = f x := hfx_eq.symm
     rw [this] at h_deriv_ne
     exact h_deriv_ne
-  -- Analyticity of F at (chartAt ℂ x) x (ZZ24).
+  -- Analyticity of F at (chartAt ℂ x) x (chart-pullback bridge).
   have hFA_at_x :
       AnalyticAt ℂ ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm)
         ((chartAt ℂ x) x) :=

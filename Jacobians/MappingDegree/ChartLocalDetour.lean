@@ -23,7 +23,7 @@ codomain `Y` back to the manifold side `X`.
   `φ.symm '' (φ.target ∩ T) = φ.source ∩ φ ⁻¹' T`.
 
 * `OpenPartialHomeomorph.chart_local_detour_of_pathConnected_complement` — the
-  chip-specific corollary. If `C ⊆ X` is finite and the chart-image complement
+  corollary. If `C ⊆ X` is finite and the chart-image complement
   `φ.target \ φ '' (φ.source ∩ C)` is path-connected (the rank-`> 1` mathlib
   lemma `Set.Countable.isPathConnected_compl_of_one_lt_rank` provides this for
   charts whose target is the whole vector space), then any two points

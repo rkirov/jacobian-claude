@@ -21,9 +21,7 @@ agrees with the chart on its (smaller) source.
 * `chart_restrict_to_ball` — produces such a radius `r > 0` and a restricted
   `OpenPartialHomeomorph Y ℂ` whose target is the open ball, whose underlying
   function is the original chart, and whose source sits inside the original
-  chart source.
-
-No `axiom`, no gaps. -/
+  chart source. -/
 
 noncomputable section
 

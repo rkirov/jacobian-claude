@@ -7,15 +7,15 @@ import Jacobians.MappingDegree.ChartOverlapPropagationDischarge
 
 
 
-/-! # Discharging `ClopennessOfLocallyConstHypothesis`
+/-! # Proving `ClopennessOfLocallyConstHypothesis`
 
-ZZ46 (`ChartOverlapPropagationDischarge.lean`) reduced the chart-overlap
+`ChartOverlapPropagationDischarge.lean` reduced the chart-overlap
 propagation hypothesis to a single residual analytic-continuation
 statement: the locally-constant locus
 `S = {x | ∀ᶠ x' in 𝓝 x, f x' = y₀}`
 of any `C^ω` map onto a fixed value `y₀` is closed.
 
-This file (ZZ47) discharges that statement via the local identity theorem
+This file proves that statement via the local identity theorem
 applied chart-by-chart, with no path-walking.
 
 ## The argument
@@ -27,9 +27,9 @@ Take `x ∈ closure S`.
    Hence `f x = y₀`.
 
 2. With `f x = y₀`, the target chart `chartAt ℂ (f x) = chartAt ℂ y₀`. By
-   ZZ24's bridge, the chart pullback
+   the chart-pullback bridge, the chart pullback
    `F := (chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm`
-   is `AnalyticAt ℂ` at `(chartAt ℂ x) x`. ZZ34's helper supplies a
+   is `AnalyticAt ℂ` at `(chartAt ℂ x) x`; take a
    preconnected open ball `B = Metric.ball ((chartAt ℂ x) x) r` on which
    `F` is `AnalyticOnNhd ℂ`.
 
@@ -50,9 +50,7 @@ Take `x ∈ closure S`.
    particular `F` is constant on the open ball `B ∋ (chartAt ℂ x) x`, so
    pulling back to `X` we get an open neighbourhood of `x` on which
    `f ≡ y₀` (using injectivity of `chartAt ℂ y₀` on its source). Hence
-   `x ∈ S`.
-
-No gaps, no `axiom`. -/
+   `x ∈ S`. -/
 
 @[expose] public section
 

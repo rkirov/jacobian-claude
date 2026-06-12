@@ -8,10 +8,10 @@ import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Topology.GDelta.MetrizableSpace
 
 
-/-! # Local analytic factorization at a zero of finite order (ZZ90)
+/-! # Local analytic factorization at a zero of finite order
 
-Discharge of the local-factorization hypothesis consumed by ZZ89
-(`LocalKFoldMultiplicityUnconditional`):
+The local-factorization hypothesis consumed by
+`LocalKFoldMultiplicityUnconditional`:
 
 > if `g : ℂ → ℂ` is analytic at `x₀`, `g x₀ = w₀`, and `g - w₀` has
 > `analyticOrderAt` equal to a natural number `k ≥ 1` at `x₀`, then on
@@ -29,14 +29,6 @@ to find a strictly smaller closed ball on which both the factorisation
 and `u x₀ ≠ 0` properties survive. The final `u` is taken to be `u₀`
 itself; positivity of the radius is the minimum of the three disk
 witnesses, halved.
-
-## Anti-cheat
-
-* No `axiom`, no gaps. Only mathlib lemmas plus algebra.
-* No signature of any pre-existing definition or theorem is changed.
-* The output exactly matches the hypothesis shape consumed by ZZ89:
-  `AnalyticOnNhd ℂ u (closedBall x₀ R)`, `u x₀ ≠ 0`, and the pointwise
-  identity on `closedBall x₀ R`.
 -/
 
 noncomputable section

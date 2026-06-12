@@ -8,7 +8,7 @@ import Jacobians.Surface.ContMDiffOmegaAnalytic
 import Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv
 import Mathlib.Analysis.InnerProductSpace.Basic
 
-/-! # `LocalSheetData` from `ContMDiffAt … ω` + chart-pullback non-degenerate derivative (ZZ169)
+/-! # `LocalSheetData` from `ContMDiffAt … ω` + chart-pullback non-degenerate derivative
 
 This file produces `LocalSheetData f y₀ x₀` (defined in
 `HurwitzPatchingDataConstruction.lean`) from
@@ -18,10 +18,10 @@ hypothesis
 
 ## Strategy
 
-ZZ24's bridge gives `AnalyticAt ℂ F z₀` where `F = eY ∘ f ∘ eX.symm` and
-`z₀ = eX x₀`. Combined with the non-degenerate-derivative hypothesis we apply
-the inverse function theorem inline (rather than via ZZ152's externally-stated
-wrapper) so that we keep the underlying `OpenPartialHomeomorph`. This is what
+The chart-pullback bridge gives `AnalyticAt ℂ F z₀` where `F = eY ∘ f ∘ eX.symm`
+and `z₀ = eX x₀`. Combined with the non-degenerate-derivative hypothesis we
+apply the inverse function theorem inline, keeping the underlying
+`OpenPartialHomeomorph`. This is what
 supplies the *global* continuity of `φ.symm` on its target, needed for the
 `ContinuousOn g V` field of `LocalSheetData`.
 
@@ -43,11 +43,6 @@ Then we shrink:
 Transport: `U := eX.symm '' Uc'`, `V := eY.symm '' Vc'`,
 `g := eX.symm ∘ φ.symm ∘ eY`.
 
-## Anti-cheat
-
-* No `axiom`, no gaps.
-* No signature change to any pre-existing definition or theorem.
-* Adds one new file imported into the manifest.
 -/
 
 @[expose] public section
@@ -96,7 +91,7 @@ noncomputable def ofContMDiffMfderivNeZero
   have hFz₀ : F z₀ = w₀ := by
     show eY (f (eX.symm (eX x₀))) = eY (f x₀)
     rw [eX.left_inv hx₀S]
-  -- Analyticity of `F` at `z₀` via ZZ24's bridge.
+  -- Analyticity of `F` at `z₀` via the chart-pullback bridge.
   have hFA : AnalyticAt ℂ F z₀ :=
     Jacobians.Discharge.ContMDiff.Degree.contMDiffAt_omega_analyticAt_chart_pullback hf
   -- Non-degenerate derivative of `F` at `z₀` (definitionally identical to `h_deriv`).

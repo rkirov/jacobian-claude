@@ -6,24 +6,18 @@ Authors: Bryan Sanchez
 import Jacobians.MappingDegree.FibreCardOnRegularSubset
 
 /-! # Composition: Hurwitz local-constancy + preconnected regular subset
-⇒ `fibre_card_well_defined_at_regular_statement` (ZZ155, ZZ172-corrected)
+⇒ `fibre_card_well_defined_at_regular_statement`
 
-Compose ZZ134 (`fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant`)
+Compose `fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant`
 with a per-`f` packaging of the regular subset `R` and its analytic
-locality + topological connectedness, into the named owed statement
+locality + topological connectedness, into
 `fibre_card_well_defined_at_regular_statement X Y`.
 
-This file is the structural glue. The unconditional discharges of the two
-analytic hypotheses (locally-constant ncard on the regular subset, the
-chart-pullback-deriv content) plug in via the packaged shape this file
-consumes.
-
-Compared with the pre-ZZ172 version, the universally-false `h_C_fin`
-hypothesis (which asserted that *every* set in `Y` is finite) is removed.
-The corrected witness type `RegularValueWitnessReg f` no longer carries a
-`C : Set Y` parameter — its regularity certificate is intrinsic to `f`.
-
-No gaps, no `axiom`. -/
+This file is the structural glue: the two analytic hypotheses
+(locally-constant ncard on the regular subset, the chart-pullback-deriv
+content) plug in via the packaged shape this file consumes.  The witness
+type `RegularValueWitnessReg f` carries no `C : Set Y` parameter — its
+regularity certificate is intrinsic to `f`. -/
 
 @[expose] public section
 

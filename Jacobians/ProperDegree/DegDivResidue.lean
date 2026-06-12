@@ -11,14 +11,10 @@ Helper lemmas for the residue theorem `MeromorphicFunction.deg_div` (every
 principal divisor on a compact Riemann surface has degree `0`, Forster Cor.
 4.25), which lives in `Jacobians.RiemannRoch`.
 
-The degree route writes `deg (div f) = zerosCount f - polesCount f` (the pure
-`Finset` book-keeping `deg_div_eq_zeros_sub_poles`), where `zerosCount` and
-`polesCount` count zeros and poles with multiplicity.  Both equal a common
-proper-map degree `d`, so the difference is `0`.  That common-degree fact is the
-conservation-of-number theorem `ProperMapDegreeSheets.exists_properMapDegree_proven`
-(proven axiom-clean), which consumes the reductions
-`exists_properMapDegree_of_zerosCount_eq_polesCount` and
-`exists_properMapDegree_of_div_eq_zero` defined here.  This file is complete.
+The degree route writes `deg (div f) = zerosCount f - polesCount f` (pure
+`Finset` book-keeping), where `zerosCount` and `polesCount` count zeros and
+poles with multiplicity.  Both equal a common proper-map degree `d`
+(conservation of number), so the difference is `0`.
 
 ## References
 
@@ -105,9 +101,7 @@ lemma poles_part_eq_neg_polesCount (f : MeromorphicFunction X) :
   simp
 
 /-- `deg (div f) = zerosCount f − polesCount f`: the divisor degree is the
-number of zeros minus the number of poles, each with multiplicity.  This is the
-pure book-keeping identity underlying the residue theorem; it is fully proved
-(no analytic input). -/
+number of zeros minus the number of poles, each with multiplicity. -/
 lemma deg_div_eq_zeros_sub_poles (f : MeromorphicFunction X) :
     Divisor.deg X f.div = zerosCount f - polesCount f := by
   rw [deg_div_eq_zeros_add_poles, poles_part_eq_neg_polesCount, ← sub_eq_add_neg]
@@ -136,11 +130,7 @@ lemma zerosCount_nonneg (f : MeromorphicFunction X) : 0 ≤ zerosCount f := by
 Since both counts are nonnegative (`zerosCount_nonneg`, `polesCount_nonneg`), the
 existence of a common natural-number degree `d` with `zerosCount f = d` and
 `polesCount f = d` is exactly the equality `zerosCount f = polesCount f`.  The
-common `d` is the natural number whose cast is the (nonnegative) shared value.
-
-This is the bridge that turns the full analytic content of the residue theorem
-into the single classical statement "the number of zeros equals the number of
-poles" (the argument principle), with the `∃ d : ℕ` book-keeping discharged. -/
+common `d` is the natural number whose cast is the (nonnegative) shared value. -/
 theorem exists_properMapDegree_of_zerosCount_eq_polesCount (f : MeromorphicFunction X)
     (h : zerosCount f = polesCount f) :
     ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) := by
@@ -148,9 +138,7 @@ theorem exists_properMapDegree_of_zerosCount_eq_polesCount (f : MeromorphicFunct
   exact ⟨d, hd, h ▸ hd⟩
 
 /-- The degree-route conclusion in the trivial case `f.div = 0` (constant or
-germ-zero `f`): both counts vanish, witnessed by `d = 0`.  This trivial sub-case *is* provable with
-no analytic input — it shows the
-isolated statement is a genuine (true) one, not vacuous. -/
+germ-zero `f`): both counts vanish, witnessed by `d = 0`. -/
 theorem exists_properMapDegree_of_div_eq_zero (f : MeromorphicFunction X)
     (h : (f.div : Divisor X) = 0) :
     ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) := by

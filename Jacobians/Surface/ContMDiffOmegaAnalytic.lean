@@ -9,7 +9,7 @@ import Mathlib.Geometry.Manifold.ContMDiff.Defs
 
 /-! # Bridge `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω` to `AnalyticAt ℂ` on chart pullbacks
 
-This file supplies the missing classical input flagged by ZZ22 in
+This file supplies the classical input consumed by
 `AnalyticFiberDiscrete.lean`: for `f : X → Y` with `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f x`,
 the chart-pulled-back representative
 `(chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm` is `AnalyticAt ℂ` at the chart
@@ -24,9 +24,7 @@ The proof is a routine chain through mathlib lemmas:
 * `ContDiffAt.analyticAt` (mathlib `Analysis/Calculus/ContDiff/Defs.lean:953`)
   is `C^ω → AnalyticAt`,
 * `extChartAt 𝓘(𝕜, E) x` coincides with `chartAt _ x` as a function (since
-  `𝓘(ℂ)` has identity coordinate map).
-
-No gaps, no `axiom`. -/
+  `𝓘(ℂ)` has identity coordinate map). -/
 
 @[expose] public section
 

@@ -7,10 +7,9 @@ import Jacobians.LocalMultiplicity.AnalyticLocalFactorization
 import Jacobians.MappingDegree.AnalyticKthRoot
 
 
-/-! # Bridge: critical set ↔ chart-pullback derivative zero (ZZ99)
+/-! # Bridge: critical set ↔ chart-pullback derivative zero
 
-This file supplies bridge lemmas linking ZZ97's *topological* critical-set
-definition
+Bridge lemmas linking the *topological* critical-set definition
 
 ```
 criticalSet f := { x | ¬ ∃ U ∈ 𝓝 x, Set.InjOn (f̃) U }
@@ -19,39 +18,18 @@ criticalSet f := { x | ¬ ∃ U ∈ 𝓝 x, Set.InjOn (f̃) U }
 to the *analytic* "chart-pullback derivative vanishes" condition consumed
 downstream.
 
-## Pieces delivered
-
-* **`deriv_ne_zero_of_analyticOrderAt_eq_one`** — order-`1` ⇒ deriv ≠ `0`.
-  From the factorization `g(z) - w₀ = (z - x₀) · u(z)` with `u(x₀) ≠ 0`
-  (ZZ90), the product rule gives `deriv g x₀ = u(x₀) ≠ 0`.
-
-* **`notInjOn_of_deriv_zero_of_analyticOrderAt`** — the headline planar
-  consequence: for analytic `g : ℂ → ℂ` at `x₀` with `g x₀ = w₀` and the
-  analytic order of `g - w₀` at `x₀` equal to some `k ≥ 2`, then `g` is
-  not injective on any neighbourhood of `x₀`. Proof: extract the
-  `KthRootSubstitution`-style data via the local factorization (ZZ90)
-  and the `k`-th root branch (ZZ87); use the inverse function theorem
-  applied to `v(z) := (z - x₀) · r(z)` (which has nonvanishing
-  derivative) to pull two distinct `k`-th roots of unity back to two
-  distinct preimages of any small target value.
-
-* **`injOn_nhds_of_deriv_ne_zero`** — the immediate forward direction:
-  `deriv g x₀ ≠ 0` ⇒ `g` is locally injective. Routes through the
-  inverse function theorem (`HasStrictFDerivAt.toOpenPartialHomeomorph`).
-
-* **`notInjOn_iff_deriv_zero_of_analytic_of_order`** — combined planar
-  iff. We state the iff under the explicit hypothesis that the analytic
-  order of `g - g x₀` at `x₀` equals some `k ≥ 1`; this avoids the
-  identity-theorem branching for "g locally constant at its value"
-  (which is folded into `analyticOrderAt = ⊤` in the unhypothesised
-  formulation).
-
-* **`criticalSet_iff_chart_pullback_deriv_zero`** — manifold-side
-  translation, packaged as a bridge taking a `ChartBridgePackage` that
-  records the chart pullback, its analyticity at the chart image, and
-  its order data.
-
-No gaps, no `axiom`. No signature changes outside this new file.
+The planar core: for analytic `g : ℂ → ℂ` at `x₀` with `g x₀ = w₀`, local
+injectivity near `x₀` is equivalent to `deriv g x₀ ≠ 0` (under an explicit
+analytic-order hypothesis `analyticOrderAt (g − w₀) x₀ = k ≥ 1`, which avoids
+the identity-theorem branching for "`g` locally constant at its value").
+Forward: order `1` factorizes `g(z) − w₀ = (z − x₀)·u(z)`, `u(x₀) ≠ 0`, so the
+product rule gives `deriv g x₀ ≠ 0` and the inverse function theorem gives
+local injectivity.  Reverse: for `k ≥ 2`, the `k`-th-root substitution writes
+`g − w₀` as a `k`-th power of a function with nonvanishing derivative, and two
+distinct `k`-th roots of unity pull back to two distinct preimages of any small
+target value.  The manifold-side translation is packaged through a
+`ChartBridgePackage` recording the chart pullback, its analyticity at the
+chart image, and its order data.
 -/
 
 @[expose] public section
@@ -144,26 +122,11 @@ theorem injOn_nhds_of_deriv_ne_zero
 
 For analytic `g : ℂ → ℂ` at `x₀` with `g x₀ = w₀` and analytic order of
 `g - w₀` at `x₀` equal to `k ≥ 2`, `g` is not injective on any
-neighbourhood of `x₀`.
-
-Proof: ZZ90 gives a factorization `g(z) - w₀ = (z - x₀)^k · u(z)` with
-`u` analytic and non-vanishing on `closedBall x₀ R`. ZZ87 supplies an
-analytic `k`-th root `r(z)` of `u(z)` on a smaller closed ball
-`closedBall x₀ ρ'`. Set `v(z) := (z - x₀) · r(z)`. Then `v(x₀) = 0`,
-`deriv v x₀ = r(x₀) ≠ 0`, and `v(z)^k = g(z) - w₀` on the small ball.
-
-The inverse function theorem applied to `v` gives an
-`OpenPartialHomeomorph ψ : ℂ → ℂ` with `v` as its underlying map,
-`ψ.source` an open nbhd of `x₀`, and `ψ.target` an open nbhd of `0`.
-For any open `U ∈ 𝓝 x₀`, shrink to `ball x₀ ε_top ⊆ U ∩ closedBall x₀ ρ'`,
-then to `ball x₀ s ⊆ ψ.source ∩ ball x₀ ε_top`, then pull back to find
-`τ > 0` such that for any `ξ ∈ ball 0 τ`, `ψ.symm ξ ∈ ball x₀ s`.
-
-Pick `ξ := τ/2` (real, nonzero) and `ω := exp(2π i / k)` (a primitive
-`k`-th root of unity, `≠ 1` because `k ≥ 2`). Then `ψ.symm ξ` and
-`ψ.symm (ω · ξ)` are two distinct points in `ball x₀ ε_top ⊆ U` with
-`v(·) = ξ, ω·ξ` respectively, hence `g(·) - w₀ = ξ^k, (ω·ξ)^k = ω^k ξ^k
-= ξ^k`, i.e. equal `g`-values. Contradicts `InjOn g U`. -/
+neighbourhood of `x₀`: write `g(z) − w₀ = v(z)^k` with
+`v(z) = (z − x₀)·r(z)`, `deriv v x₀ = r(x₀) ≠ 0` (analytic `k`-th root of
+the local factorization); the inverse function theorem on `v` pulls two
+distinct `k`-th roots of unity back to two distinct preimages with equal
+`g`-values. -/
 theorem notInjOn_of_analyticOrderAt_ge_two
     {g : ℂ → ℂ} {x₀ w₀ : ℂ} {k : ℕ}
     (hg : AnalyticAt ℂ g x₀)
@@ -397,7 +360,7 @@ theorem notInjOn_iff_deriv_zero_of_analytic_of_order
   refine ⟨?_, ?_⟩
   · intro h_notInj
     -- Forward: if not InjOn, then deriv g x₀ = 0.
-    -- If deriv g x₀ ≠ 0, ZZ74 / IFT gives local injectivity, contradiction.
+    -- If deriv g x₀ ≠ 0, the inverse function theorem gives local injectivity, contradiction.
     by_contra hd_ne
     exact h_notInj (injOn_nhds_of_deriv_ne_zero hg hd_ne)
   · intro hd

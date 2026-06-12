@@ -6,37 +6,20 @@ Authors: Bryan Sanchez
 import Jacobians.MappingDegree.Degree
 
 
-/-! # Fibre-cardinality well-definedness on the regular subset (ZZ134, ZZ172-corrected)
+/-! # Fibre-cardinality well-definedness on the regular subset
 
-## Goal
-
-Discharge `fibre_card_well_defined_at_regular_statement`-shape conclusions
+Derive `fibre_card_well_defined_at_regular_statement`-shape conclusions
 from a packaged `(R, card_of, h_witness, h_supp, h_lc, h_conn)` bundle.
-
-Compared with the pre-ZZ172 version of this file, the bundle no longer
-takes a critical-value set `C : Set Y` parameter: the regular-witness
-type `RegularValueWitnessReg f` (post-ZZ172) carries an intrinsic
+The bundle takes no critical-value set `C : Set Y` parameter: the
+regular-witness type `RegularValueWitnessReg f` carries an intrinsic
 chart-pullback-derivative-nonzero certificate, so callers wire support
-membership `∀ w, w.value ∈ R` directly to whatever regular-value subset `R`
-they choose.
+membership `∀ w, w.value ∈ R` directly to whatever regular-value subset
+`R` they choose.
 
-## What is delivered
-
-* `fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant` —
-  uniform top-level reduction. Conclusion is the unfolded form of
-  `fibre_card_well_defined_at_regular_statement X Y`.
-
-## Status
-
-Purely structural. The two analytic obligations
-(`IsLocallyConstant` of `card_of` on `R`, `IsPreconnected` of `R`) are
-inputs — they would be discharged by the analytic implicit-function
-theorem on Riemann surfaces (local triviality of regular-value covering)
-and the connectedness lemma "connected real-2-manifold minus finite
-critical values is connected", neither of which is formalised at this
-mathlib pin.
-
-No gaps. No `axiom`. -/
+Purely structural: the two analytic obligations (`IsLocallyConstant` of
+`card_of` on `R`, `IsPreconnected` of `R`) are inputs, supplied by the
+local triviality of the regular-value covering and the connectedness of a
+2-manifold minus finitely many points. -/
 
 @[expose] public section
 

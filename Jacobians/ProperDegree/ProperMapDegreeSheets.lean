@@ -6,19 +6,17 @@ Authors: Rado Kirov
 import Jacobians.ProperDegree.MultiplicityPatchingConstruct
 
 /-!
-# The local multiplicity sheets — discharging `exists_properMapDegree`
+# The local multiplicity sheets
 
-This file supplies the last input to the conservation-of-number / argument-principle wall:
-the *pointwise* local-conservation data `∀ w₀, LocalMultiplicitySheets f w₀` (the irreducible
-§17.9 content), from which `MultiplicityPatchingConstruct.exists_properMapDegree_of_localSheets`
-delivers the proper-map-degree existential `∃ d, zerosCount f = d = polesCount f`, hence the
+This file constructs the *pointwise* local-conservation data
+`∀ w₀, LocalMultiplicitySheets f w₀`, from which
+`MultiplicityPatchingConstruct.exists_properMapDegree_of_localSheets` delivers the
+proper-map-degree existential `∃ d, zerosCount f = d = polesCount f`, hence the
 residue theorem `deg (div f) = 0`.
 
-Everything *downstream* of `∀ w₀, LocalMultiplicitySheets f w₀` is already proved complete
-(the connectedness globalization of `N f`, the special-fibre identities, the `ofDisjointSheets`
-assembly). The content here is the per-value local construction:
+The per-value local construction:
 
-* `w₀ ∉ range F`: the empty fibre — `LocalMultiplicitySheets.ofNotMemRange` (proven upstream).
+* `w₀ ∉ range F`: the empty fibre — `LocalMultiplicitySheets.ofNotMemRange`.
 * `w₀ = coe c` (a finite value): around each fibre point `x` (a solution of `f = c`), the planar
   normal form `Planar.orderSum_eq_of_analyticOrder` applied to `g = f ∘ chart.symm` gives a
   value-neighbourhood on which the multiplicity sum is the local order; transported to `localDeg`
@@ -26,8 +24,6 @@ assembly). The content here is the per-value local construction:
 * `w₀ = ∞` (the pole fibre): around each pole `x`, the same engine applied to `1/g` at `0`
   (a zero of order = the pole order), with the order-matching `ord(g − c') = ord(1/g − 1/c')`
   for `g(z) = c'` finite nonzero.
-
-This is a true, non-vacuous obligation (the empty-fibre witness certifies satisfiability).
 
 References: Forster §4 (the degree, Cor. 4.24–4.25), Miranda II.4 (argument principle).
 -/
@@ -244,8 +240,8 @@ open Metric Jacobians.Discharge.Manifold
 
 /-- **Radius-bounded planar conservation of number.** Identical to
 `Planar.orderSum_eq_of_analyticOrder` but with the counting radius `ε` bounded by a prescribed
-`R_ext > 0` — the freedom we need to fit each sheet inside a pre-chosen disjoint neighbourhood.
-The proof copies the engine, threading `R ≤ R_ext` through the deriv-nonzero radius choice. -/
+`R_ext > 0` — the freedom we need to fit each sheet inside a pre-chosen disjoint
+neighbourhood. -/
 theorem orderSum_eq_of_analyticOrder_radiusBounded
     {g : ℂ → ℂ} {x₀ w₀ : ℂ} {m : ℕ} {R_ext : ℝ} (hR_ext : 0 < R_ext)
     (hm : 1 ≤ m)
@@ -626,22 +622,7 @@ open Metric in
 so `F x = ∞`), with a clean separating neighbourhood `V`, the same conservation-of-number content
 holds via the reciprocal normal form `1/g` (a zero of order `= the pole order` at `e x`): a sheet
 `U ⊆ V` and an `∞`-neighbourhood `W` on which the per-sheet multiplicity sum is the pole order
-`m = localDeg f ∞ x = −orderAtPoint x`.
-
-PROOF (mirrors `exists_sheetDatum_coe`; the keystone `meromorphicOrderAt_inv_sub_eq` and the
-reciprocal extraction `exists_reciprocal_NF` are proven, and the radius-bounded engine +
-`finsum_mem_image` reindexing are reusable):
-
-* `exists_reciprocal_NF` gives the *repaired reciprocal* `h : ℂ → ℂ` analytic at `e x` with
-  `h =ᶠ[𝓝[≠] (e x)] (G ·)⁻¹` (`G = f.toFun ∘ e.symm`), `h (e x) = 0`, `analyticOrderAt h (e x) = m`.
-* `Planar.orderSum_eq_of_analyticOrder_radiusBounded` applied to `h` at `w₀ = 0`, order `m`.
-* Value-neighbourhood `W := invMap ⁻¹' ((↑) '' ball 0 δ)` (open, `∞ ∈ W` since `invMap ∞ = coe 0`).
-* Generic rows (`w = coe c'`, `c' ≠ 0`): the engine count `{z ∈ ball ε | h z = w'}` (`w' = c'⁻¹`)
-  reindexes to `U ∩ F⁻¹(coe c')` via `h z = w' ↔ G z = c'` off the centre, and the summand
-  `localDeg f (coe c') (e.symm z) = (meromorphicOrderAt (h − w') z).untop₀` matches by
-  `meromorphicOrderAt_inv_sub_eq` plus the `holoRepr`/`toFun` reconciliation toolkit.
-* Central row (`w = ∞`): the pole fibre in `U` is the isolated point `x`, with
-  `localDeg f ∞ x = −orderAtPoint x = m`. -/
+`m = localDeg f ∞ x = −orderAtPoint x`. -/
 theorem exists_sheetDatum_infty {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (f : MeromorphicFunction X) (_hnc : (f.div : Divisor X) ≠ 0)
@@ -970,12 +951,10 @@ def localMultiplicitySheets_of_nonconstant {X : Type*} [TopologicalSpace X] [T2S
   · exact localMultiplicitySheets_of_mem_range f hnc hmem
   · exact LocalMultiplicitySheets.ofNotMemRange f hmem
 
-/-- **`exists_properMapDegree`.** The proper-map-degree existential — `∃ d : ℕ` with
+/-- **The proper-map-degree existential** — `∃ d : ℕ` with
 `zerosCount f = d = polesCount f`. For the trivial divisor (`f.div = 0`, the constant/germ-zero
-case) both counts vanish (`exists_properMapDegree_of_div_eq_zero`); otherwise it is discharged from
-the pointwise local-conservation supply via the proven connectedness globalization. This is the
-exact shape of the upstream named input `Jacobians.exists_properMapDegree`; closing the residue
-theorem `deg (div f) = 0`. -/
+case) both counts vanish; otherwise it follows from the pointwise local-conservation supply via
+the connectedness globalization. -/
 theorem exists_properMapDegree_proven {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (f : MeromorphicFunction X) :

@@ -7,9 +7,9 @@ import Jacobians.MappingDegree.CriticalValuesFiniteGeneral
 import Jacobians.MappingDegree.FibresFiniteUnconditional
 
 
-/-! # Unconditional discharge of `Nonempty (RegularValueWitnessReg f)`
+/-! # Unconditional existence of a `RegularValueWitnessReg`
 
-This file (the **RegFix** chip) ships the unconditional existence of a
+This file proves the unconditional existence of a
 `RegularValueWitnessReg f` for every non-constant analytic
 `f : X → Y` between compact connected complex 1-manifolds.
 
@@ -37,9 +37,7 @@ critical values are finite and `Y` is infinite). At every preimage
 `f` at `x` is locally injective. By the planar bridge
 `notInjOn_iff_deriv_zero_of_analytic_of_order`, local injectivity at
 an analytic point forces the derivative to be nonzero. Combined with
-fibre finiteness, this delivers a `RegularValueWitnessReg f`.
-
-No gaps, no `axiom`. -/
+fibre finiteness, this delivers a `RegularValueWitnessReg f`. -/
 
 @[expose] public section
 
@@ -160,7 +158,7 @@ lemma deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
   set F : ℂ → ℂ := d ∘ f ∘ c.symm with hF_def
   have hxc : x ∈ c.source := mem_chart_source ℂ x
   have hfx_d : f x ∈ d.source := mem_chart_source ℂ (f x)
-  -- Analyticity of F at c x (ZZ24).
+  -- Analyticity of F at c x (chart-pullback bridge).
   have hFA_at_x : AnalyticAt ℂ F (c x) :=
     Jacobians.Discharge.ContMDiff.Degree.contMDiff_omega_analyticAt_chart_pullback
       hf x

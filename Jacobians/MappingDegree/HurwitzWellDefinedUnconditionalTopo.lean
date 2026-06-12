@@ -6,16 +6,15 @@ Authors: Bryan Sanchez
 import Jacobians.MappingDegree.HurwitzWellDefinedFromHPath
 import Jacobians.MappingDegree.PathConnectedComplFinite
 
-/-! # Hurwitz constant-card with unconditional topology (ZZ176)
+/-! # Hurwitz constant-card with unconditional topology
 
-Compose ZZ160's `fibre_card_well_defined_at_regular_holds_of_pathConnected_compl`
-(post-ZZ172, corrected) with ZZ165's
-`isPathConnected_compl_finite_of_connected_chartedSpace_complex`
+Compose `fibre_card_well_defined_at_regular_holds_of_pathConnected_compl`
+with `isPathConnected_compl_finite_of_connected_chartedSpace_complex`
 (unconditional path-connectedness of finite-complement subsets of a
-connected complex 1-manifold) to discharge the topological residual
+connected complex 1-manifold) to settle the topological side
 without any assumption.
 
-The remaining residual is the **per-`f` analytic packaging** `h_pkg`:
+The remaining input is the **per-`f` analytic packaging** `h_pkg`:
 
 ```
 ∀ f : X → Y, ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ IsConstantMap f →
@@ -24,13 +23,10 @@ The remaining residual is the **per-`f` analytic packaging** `h_pkg`:
     IsLocallyConstant (fun y : (Cᶜ : Set Y) ↦ (f ⁻¹' {y.val}).ncard)
 ```
 
-This packaging encapsulates the analytic content that is genuinely owed at
-this mathlib pin: a finite critical-value set `C` (analytic identity
-theorem), and locally-constant fibre cardinality on its complement
-(local-triviality of the regular-value covering — Hurwitz local normal
-form, ZZ151/152, lifted by ZZ169).
-
-No gaps, no `axiom`. -/
+This packaging encapsulates the analytic content: a finite critical-value
+set `C` (analytic identity theorem), and locally-constant fibre cardinality
+on its complement (local-triviality of the regular-value covering — the
+Hurwitz local normal form). -/
 
 @[expose] public section
 
@@ -46,8 +42,8 @@ namespace Degree
 universe u v
 
 /-- **Hurwitz constant fibre-cardinality, from the finite-critical-values
-packaging.** Discharge of `fibre_card_well_defined_at_regular_statement`
-taking only the analytic per-`f` packaging `h_pkg` (a finite critical-value
+packaging.** `fibre_card_well_defined_at_regular_statement`
+from only the analytic per-`f` packaging `h_pkg` (a finite critical-value
 set off which the fibre cardinality is locally constant) — the topological
 path-connectedness residual is supplied unconditionally by
 `isPathConnected_compl_finite_of_connected_chartedSpace_complex`. -/
@@ -72,7 +68,7 @@ theorem fibre_card_well_defined_at_regular_holds_of_finiteCriticalValues
       IsPathConnected (Cᶜ : Set Y) := fun C hC hne =>
     @Jacobians.Discharge.Manifold.isPathConnected_compl_finite_of_connected_chartedSpace_complex
       Y _ _ _ _ _ C hC hne
-  -- Apply the corrected ZZ160 with the supplied analytic packaging.
+  -- Apply the staged theorem with the supplied analytic packaging.
   intro f hf hnc w₁ w₂
   exact fibre_card_well_defined_at_regular_holds_of_pathConnected_compl h_path h_pkg f hf hnc w₁ w₂
 

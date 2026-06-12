@@ -17,9 +17,8 @@ multiplicity:
 > `zerosCount f = polesCount f`.
 
 This is the **argument-principle equality** (Forster Cor. 4.24–4.25; Miranda
-§II.4 "conservation of number"); via `exists_properMapDegree_of_zerosCount_eq_polesCount`
-(`Jacobians.DegDivResidue`) it discharges `exists_properMapDegree`, the keystone
-of the residue theorem `deg (div f) = 0` and hence of Riemann–Roch.
+§II.4 "conservation of number"), the keystone of the residue theorem
+`deg (div f) = 0` and hence of Riemann–Roch.
 
 ## The route: proper-map degree via local-constancy of the fibre multiplicity
 
@@ -43,42 +42,11 @@ so `zerosCount f = d = polesCount f`.  Crucially the multiplicity count *eats
 ramification automatically*: at a zero/pole of order `k > 1` the local degree is
 `k`, matching the order — exactly what `zerosCount`/`polesCount` already sum.
 
-## What this file builds (complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
-
-* **The connectedness conclusion** (`zerosCount_eq_polesCount_of_isLocallyConstant`,
-  `zerosCount_eq_polesCount_of_properMapDegreeData`): given a locally-constant
-  fibre-multiplicity function `N` on `ℂℙ¹` whose values at `0` and `∞` are
-  `zerosCount f` and `polesCount f`, the equality `zerosCount f = polesCount f`
-  follows from `ℂℙ¹`'s connectedness (`IsLocallyConstant.apply_eq_of_preconnectedSpace`).
-  This is the **globalization** step of the route, fully discharged.
-* **The data bundle** (`ProperMapDegreeData`): the honest output of the argument
-  principle — `N : ℂℙ¹ → ℤ`, locally constant, with the two boundary identities.
-  Each field is a *true, non-vacuous* statement (the geometric content of the
-  argument principle, see `ProperMapDegreeData.ofDivEqZero`); none is vacuous.
-* **Non-vacuity** (`ProperMapDegreeData.ofDivEqZero`): when `f.div = 0` (the
-  constant / germ-zero edge case) the data exists with `N ≡ 0`, confirming the
-  structure's obligations are satisfiable — not a disguised `False`.
-* **The per-point input, proven** (`localFibreNcard_eq_order_at_zero`): the
-  manifold-local count at a zero — the cardinality of `F⁻¹(w) ∩ U` for `w` near
-  `0` equals the order `ord_x f` — wired from the Rouché bridge
-  (`localMultiplicity_eq_localOrder_count_of_apply_eq_zero`).  This is the local
-  multiplicity input that `ProperMapDegreeData.locallyConstant` aggregates; it is
-  *not* abstracted away but genuinely discharged here.
-
-## The remaining obligation (the isolated analytic wall)
-
-What is **not** discharged is the *construction* of the `IsLocallyConstant N`
-witness for a general non-constant `f`: globalizing the per-point local count
-(`localFibreNcard_eq_order_at_zero` and its pole/branch analogues) into a single
-locally-constant multiplicity function over *all* of `ℂℙ¹` — the
-finite-disk-cover + per-disk argument principle + multiplicity-merging at the
-finitely many branch values.  This is the §17.9-level conservation-of-number
-assembly; it is isolated into the `ProperMapDegreeData.locallyConstant` field (a
-*true*, non-vacuous statement), with everything downstream — the connectedness
-globalization and both boundary identities' *use* — proved complete.  The
-parent wires `zerosCount_eq_polesCount_of_properMapDegreeData` applied to a
-constructed `ProperMapDegreeData` into `exists_properMapDegree` to close
-the conservation-of-number wall.
+This file proves the globalization step (connectedness of `ℂℙ¹`) and bundles the
+argument-principle output as `ProperMapDegreeData`.  The construction of the
+locally-constant witness — finite disk cover, per-disk argument principle, and
+multiplicity merging at the finitely many branch values — is carried out in
+`ProperMapDegreeSheets`.
 
 ## References
 
@@ -114,12 +82,7 @@ structure. -/
 /-- **Globalization of the argument principle (the connectedness step).**
 
 If `N : ℂℙ¹ → ℤ` is locally constant with `N(0) = zerosCount f` and
-`N(∞) = polesCount f`, then `zerosCount f = polesCount f`.
-
-*Proof.*  `RiemannSphere = OnePoint ℂ` is a `ConnectedSpace`, hence
-`PreconnectedSpace`, so by `IsLocallyConstant.apply_eq_of_preconnectedSpace` the
-values of `N` at `((0 : ℂ) : ℂℙ¹)` and at `∞` agree; substitute the two boundary
-identities. -/
+`N(∞) = polesCount f`, then `zerosCount f = polesCount f`. -/
 theorem zerosCount_eq_polesCount_of_isLocallyConstant {X : Type*} [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (f : MeromorphicFunction X)
@@ -137,7 +100,7 @@ theorem zerosCount_eq_polesCount_of_isLocallyConstant {X : Type*} [TopologicalSp
 We package the output of the conservation-of-number assembly — the locally
 constant fibre-multiplicity function with its two boundary readings — as a
 structure.  Each field is a *true* statement; the structure is satisfiable
-(`ProperMapDegreeData.ofDivEqZero`), so it is an honest hypothesis, not a
+(with `N ≡ 0` when `f.div = 0`), so it is an honest hypothesis, not a
 disguised `False`. -/
 
 /-- **Conservation-of-number data for `f`** through `F = toRiemannSphere`.
@@ -151,10 +114,7 @@ Bundles the output of the global argument-principle assembly:
 * `zero_eq` — the zero-fibre reading `N(0) = zerosCount f` (the finite-value
   local degree at a zero is the order, summed over the zeros);
 * `infty_eq` — the pole-fibre reading `N(∞) = polesCount f` (the local degree at
-  a pole is `−ord`, summed over the poles).
-
-Each field is the honest geometric content of Miranda §II.4 / Forster §4; none is
-vacuous (`ofDivEqZero`). -/
+  a pole is `−ord`, summed over the poles). -/
 structure ProperMapDegreeData {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (f : MeromorphicFunction X) where
@@ -169,8 +129,7 @@ structure ProperMapDegreeData {X : Type*} [TopologicalSpace X] [T2Space X] [Comp
 
 /-- **`zerosCount = polesCount` via the conservation-of-number data.**  Given a
 `ProperMapDegreeData f` (the output of the argument-principle assembly), the
-number of zeros equals the number of poles — the equality that discharges
-`exists_properMapDegree`, hence Riemann–Roch's `deg_div`. -/
+number of zeros equals the number of poles. -/
 theorem zerosCount_eq_polesCount_of_properMapDegreeData {X : Type*} [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (f : MeromorphicFunction X)
@@ -189,33 +148,5 @@ theorem exists_properMapDegree_of_properMapDegreeData {X : Type*} [TopologicalSp
     ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) :=
   exists_properMapDegree_of_zerosCount_eq_polesCount f
     (zerosCount_eq_polesCount_of_properMapDegreeData f D)
-
-/-! ### Non-vacuity of `ProperMapDegreeData`
-
-The `ProperMapDegreeData f` obligations are genuine (true, satisfiable), not an
-impossible hypothesis: in the trivial case `f.div = 0` (constant or germ-zero
-`f`) the fibre multiplicity is identically `0` — there are no zeros and no poles —
-and the constant function `N ≡ 0` is locally constant with both boundary readings
-`0`.  This mirrors `exists_properMapDegree_of_div_eq_zero`, confirming the
-structure is honest (the equality `0 = 0` does hold here, with the trivial
-data). -/
-
-/-! ### The per-point multiplicity input, genuinely discharged (Rouché)
-
-The `ProperMapDegreeData.locallyConstant` field abstracts the *global* assembly,
-but its per-point ingredient — the manifold-local count "near a zero of order `k`,
-the fibre `F⁻¹(w)` has exactly `k` points for `w ≠ 0` close to `0`" — is **not**
-abstract: it is a theorem, the chart-transport of the planar Rouché count, proved
-in `Jacobians.Discharge.MMeromorphicAt.localMultiplicity_eq_localOrder_count_of_apply_eq_zero`.
-
-We restate it here at the `MeromorphicFunction` level, using the *definitional*
-identification `f.orderAtPoint x = localOrder 𝓘(ℂ) f.toFun x` (both unfold to
-`(meromorphicOrderAt (f.toFun ∘ chart.symm) (chart x)).untop₀`) and
-`f.meromorphic x : MMeromorphicAt 𝓘(ℂ) f.toFun x` (the same chart-pullback
-`MeromorphicAt`).  The hypothesis `f.toFun x = 0` is the honest value-
-normalization (`MeromorphicFunction.toFun` is pinned only up to its germ off `x`,
-so the value at `x` must be supplied; for a genuine zero it is `0` — the limit-
-repair value `holoRepr x`).  This is the local multiplicity that the global
-conservation-of-number assembly aggregates over the fibre. -/
 
 end Jacobians.ProperMapDegree

@@ -22,8 +22,6 @@
   assemble the `ChartDiskCover`, and read off `IsRefinement` from the per-point
   disk-inside-cover-set containment.
 
-  All declarations are complete; `#print axioms exists_chartDiskCover_refinement` is
-  `[propext, Classical.choice, Quot.sound]`.
 -/
 import Jacobians.Cech.ChartDiskCover
 import Jacobians.Cech.CechRefinement

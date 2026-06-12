@@ -11,62 +11,30 @@ import Mathlib.Topology.DiscreteSubset
 
 /-! # From per-fibre analytic non-degeneracy to discreteness
 
-Companion to `Jacobians.Discharge.Manifold.Degree`. ZZ20 reduced
+Companion to `Jacobians.Discharge.Manifold.Degree`, which reduced
 `Degree.fibres_finite_statement` to the topological hypothesis
 
 ```
 ∀ f y, IsDiscrete (f ⁻¹' {y}).
 ```
 
-This file gives the next reduction step: it reduces `IsDiscrete` of a fibre
-of `f : X → Y` to a hypothesis about chart pullbacks of `f`. Concretely the
-deliverable is a chart-pullback driver: given that the chart-pullback
-representative of `f` at a point `x ∈ f ⁻¹' {y}` is analytic at the chart
-image and is **not** identically equal to the chart image of `y` near it, the
-point `x` is isolated in the fibre.
+This file reduces `IsDiscrete` of a fibre of `f : X → Y` to a hypothesis about
+chart pullbacks of `f`: given that the chart-pullback representative of `f` at
+a point `x ∈ f ⁻¹' {y}` is analytic at the chart image and is **not**
+identically equal to the chart image of `y` near it, the point `x` is isolated
+in the fibre.  The identity-theorem core (`F` analytic at `z₀` with value `c`,
+not eventually `c` ⟹ `z₀` is the only zero of `F − c` nearby) is executed
+unconditionally on the ℂ-analytic side, then globalised over the fibre.
 
-What this file *does* discharge:
+The "chart trivialisation" is packaged as a homeomorphism between an open
+neighbourhood of `x` and an open subset of `ℂ`, plus a chart for `Y` near
+`y₀` — this avoids `extChartAt`-typeclass elaboration costs and keeps the
+statements self-contained.
 
-* `analyticAt_isolated_zero_of_not_eventually` — pure-ℂ identity-theorem core:
-  if `F : ℂ → ℂ` is analytic at `z₀`, takes value `c` at `z₀` and is not
-  eventually `c`, then `z₀` is the only zero of `F - c` in some open
-  neighbourhood. This is the per-point isolated-zero principle.
-
-* `fiber_pointIsolated_via_chart_pullback` — manifold-side per-point
-  consequence: if for every `x ∈ f ⁻¹' {y₀}` there is a chart-trivialised
-  neighbourhood of `x` on which the chart-pulled-back `f` is analytic and
-  not identically the chart of `y₀`, then `x` is isolated in `f ⁻¹' {y₀}`.
-  The "chart trivialisation" is packaged as a homeomorphism between an open
-  neighbourhood of `x` and an open subset of `ℂ`, plus a chart for `Y` near
-  `y₀`. This avoids `extChartAt`-typeclass elaboration costs and keeps the
-  statement self-contained.
-
-* `isDiscrete_fiber_of_chart_pullback` — globalisation in `x`: if the
-  chart-pullback non-degeneracy hypothesis holds at every `x ∈ f ⁻¹' {y₀}`,
-  then `f ⁻¹' {y₀}` is `IsDiscrete`.
-
-* `fibres_finite_of_chart_pullback` — composition with ZZ20: this discharges
-  `Degree.fibres_finite_statement` from the chart-pullback non-degeneracy
-  hypothesis.
-
-What this file does **not** do (still open):
-
-* The bridge `ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → for each x, the chart pullback of f
-  at x is `AnalyticAt`. This is the mathlib bridge from real-analytic
-  manifold smoothness to ℂ-analytic chart pullbacks under the model with
-  corners `𝓘(ℂ)`. It is left as a hypothesis-parameter on the final
-  reduction lemma (no `axiom`, no gaps).
-
-* The bridge `¬ IsConstantMap f → for each y, there is some x ∈ f⁻¹' {y}
-  with chart pullback not identically equal to chart-of-y near x`. This
-  is the standard analytic-continuation step on a connected manifold and is
-  also passed as a hypothesis-parameter.
-
-The point of this file: reduce *two* missing classical inputs (chart
-analyticity of `ContMDiff … ω`, and analytic-continuation
-non-degeneracy on connected manifolds) to a *single* clean condition on
-chart pullbacks, and execute the identity-theorem core of the argument
-unconditionally on the ℂ-analytic side.
+Two classical inputs are taken as hypothesis-parameters: the bridge from
+`ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω` to `AnalyticAt` chart pullbacks, and the
+analytic-continuation step `¬ IsConstantMap f ⟹` some fibre point has a
+chart pullback not identically the chart of `y` near it.
 -/
 
 @[expose] public section
@@ -283,18 +251,14 @@ lemma isDiscrete_fiber_of_chart_pullback
       (x := x) hx' (h x hx) with ⟨U, hU_open, hU_eq⟩
   exact ⟨U, hU_open, hU_eq⟩
 
-/-! ## Composition with ZZ20: discharge of `fibres_finite_statement` -/
+/-! ## Composition: `fibres_finite_statement` from the chart-pullback hypothesis -/
 
-/-- **Discharge of `fibres_finite_statement` from chart-pullback hypothesis.**
-Composing `fibres_finite_of_all_fibers_isDiscrete` (ZZ20) with
+/-- **`fibres_finite_statement` from the chart-pullback hypothesis.**
+Composing `fibres_finite_of_all_fibers_isDiscrete` with
 `isDiscrete_fiber_of_chart_pullback` reduces the full classical
 `fibres_finite_statement` to a single clean chart-pullback hypothesis: for
 every analytic non-constant `f` and every `y`, every fibre point admits a
-`ChartPullbackData` witness.
-
-This is the maximal reduction available without bridging
-`ContMDiff … ω → AnalyticAt` on chart pullbacks, which is itself an
-unstated mathlib fact at this pin. -/
+`ChartPullbackData` witness. -/
 lemma fibres_finite_of_chart_pullback {ω : WithTop ℕ∞}
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]

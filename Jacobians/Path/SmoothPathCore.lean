@@ -99,7 +99,7 @@ noncomputable def periodVec {X : Type*} [TopologicalSpace X] [T2Space X] [Compac
 /-- Regularity predicate for a closed loop in `X`: closed endpoints
 + continuity + chart-pullback differentiability + integrability of
 each basis-form integrand. Packages what's needed for the
-`lineIntegral` machinery (Phase 1 identities, chain rule, basis
+`lineIntegral` machinery (the algebraic identities, chain rule, basis
 expansion) to apply sensibly. -/
 structure IsClosedSmoothLoop {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] (γ : ℝ → X) : Prop where
@@ -111,10 +111,8 @@ structure IsClosedSmoothLoop {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ 
       Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s))
     (Set.Icc 0 1)
 
-/-- **Each basis-form integrand is interval-integrable** (drop-in for the former `integrable`
-field): derived from the geometric `velCont` field via
-`intervalIntegrable_form_pathSpeed_of_velContinuous`. Same signature as the old field, so all
-consumers are unchanged. -/
+/-- **Each basis-form integrand is interval-integrable** derived from the geometric `velCont` field via
+`intervalIntegrable_form_pathSpeed_of_velContinuous`. -/
 theorem IsClosedSmoothLoop.integrable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {γ : ℝ → X}
     (h : IsClosedSmoothLoop γ) :
@@ -125,7 +123,7 @@ theorem IsClosedSmoothLoop.integrable {X : Type*} [TopologicalSpace X] [T2Space 
 
 /-- The set of period vectors arising from closed smooth loops (at
 any basepoint). Requires `IsClosedSmoothLoop` regularity so that the
-Phase 1 line-integral identities + chain rule apply. -/
+line-integral identities + chain rule apply. -/
 def closedLoopPeriods (X : Type*) [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] : Set (Fin (genus X) → ℂ) :=
@@ -151,10 +149,8 @@ structure IsSmoothPath {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [Is
       Bundle.TotalSpace.mk' ℂ (E := TangentSpace 𝓘(ℂ) (M := X)) (γ s) (pathSpeed γ s))
     (Set.Icc 0 1)
 
-/-- **Each basis-form integrand is interval-integrable** (drop-in for the former `integrable`
-field): derived from the geometric `velCont` field via
-`intervalIntegrable_form_pathSpeed_of_velContinuous`. Same signature as the old field, so all
-consumers are unchanged. -/
+/-- **Each basis-form integrand is interval-integrable** derived from the geometric `velCont` field via
+`intervalIntegrable_form_pathSpeed_of_velContinuous`. -/
 theorem IsSmoothPath.integrable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {P Q : X} {γ : ℝ → X}
     (h : IsSmoothPath P Q γ) :

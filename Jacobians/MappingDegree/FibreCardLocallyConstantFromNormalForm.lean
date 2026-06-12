@@ -6,9 +6,7 @@ Authors: Bryan Sanchez
 import Mathlib.Data.Set.Card
 import Mathlib.Topology.LocallyConstant.Basic
 
-/-! # Fibre cardinality is locally constant from a Hurwitz-style patching package (ZZ153)
-
-## What this file proves
+/-! # Fibre cardinality is locally constant from a Hurwitz-style patching package
 
 Given `f : X → Y` and a *target point* `y₀ : Y` whose preimage `f ⁻¹' {y₀}`
 admits a finite "Hurwitz patching package" `HurwitzPatchingData`:
@@ -29,12 +27,9 @@ Then for **every** `y ∈ W`, the fibre `f ⁻¹' {y}` has cardinality
 This is the *patching* content of the classical "regular value of a non-constant
 analytic map between Riemann surfaces ⇒ fibre count is locally constant" fact.
 The hypothesis `HurwitzPatchingData` is exactly what `analytic_local_normal_form`
-(ZZ151, k = 1 at a regular value) plus the inverse function theorem deliver
+(`k = 1` at a regular value) plus the inverse function theorem deliver
 when packaged across all preimages of `y₀` and the local sheets are intersected.
-
-## Status
-
-Purely topological / structural. No `axiom`, no gaps. Single new file. -/
+Purely topological / structural. -/
 
 @[expose] public section
 

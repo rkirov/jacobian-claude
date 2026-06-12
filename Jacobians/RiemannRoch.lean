@@ -1,22 +1,9 @@
 /-
-  Riemann–Roch INTERFACE (the meet-in-the-middle).
+  Riemann–Roch interface.
 
-  Goal: reduce the headline consumer `exists_singleSimplePole_of_genus_zero` to ONE genuine
-  classical input — Riemann–Roch — by PROVING every step in between (no typeclass
-  relocation). When the Dolbeault→Serre climb (G2–G4) discharges that single input, the
-  headline theorem falls out.
-
-  proved: the ℂ-module on `MeromorphicFunction X` (so `L(D)` can be a
-  `Submodule ℂ`); `linearSystem D` as a `Submodule` + `lDim`.
-
-  ISOLATED INPUTS (the genuine wall — the only remaining gaps here):
-    • `exists_riemannRoch_divisor` — a canonical divisor `K` with `l(D)−l(K−D)=deg D+1−g`
-      (Forster 16.9; ⟸ Dolbeault/Serre, absent from Mathlib).
-    • `MeromorphicFunction.deg_div` — every principal divisor has degree 0 (residue theorem).
-
-  REAL REDUCTIONS STILL TO PROVE (no theater — these are genuine, not relocations):
-  faithfulness/identity theorem (nonzero ⟹ order ≠ ⊤), `l(0)=1` via Liouville, `l(D)=0` for
-  `deg D<0`, and the single-simple-pole extraction.
+  Reduces the headline consumer `exists_singleSimplePole_of_genus_zero` to Riemann–Roch
+  (`exists_riemannRoch_divisor`, Forster Thm 16.9) and derives the standard consequences:
+  `l(K) = g`, `deg K = 2g − 2`, and the single-simple-pole extraction at genus `0`.
 -/
 import Jacobians.TailDuality.RiemannRochUnconditional
 -- Many declarations here are purely algebraic (the ℂ-module on `MeromorphicFunction`) and use
@@ -33,19 +20,15 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 /-- **Riemann–Roch** (Forster Thm 16.9, Serre-dual form): a canonical divisor `K` with
 `l(D) − l(K−D) = deg D + 1 − g` for every `D`.
 
-proved unconditionally via the **Miranda Ch. VI Laurent-tail route**
+Proved via the **Miranda Ch. VI Laurent-tail route**
 (`LaurentTail.exists_riemannRoch_divisor_unconditional`): RR-I on the Mittag-Leffler tail spaces
 (`riemannRoch_tailForm`), Serre duality for the tail `H¹` in the meromorphic pair frame
 `ω = h·dg₀` (`h1TailDim_eq_lDim_pairCanonical_sub`, every genus — the descent input is the
 genus-free planar-Stokes residue theorem `residueSum_pairForm_mul_eq_zero_unconditional`), and
 `l(K) = genus` from the §17.4 canonical-form isomorphism (`hKgenus_unconditional`), with
 `K = div (dg₀)` for the nonconstant meromorphic `g₀` of `exists_nonconstant_meromorphic`.
-
-(The old Čech-ladder route through `riemannRoch_equality_of_ladder` — cohomological RR +
-`h⁰=l` + Serre at `0`/general on a realizable Leray cover — is SUPERSEDED: its remaining leaf
-`exists_serreDualityData` was never discharged, while the Čech tower below it — finiteness,
-skyscraper LES, the Riemann inequality feeding `exists_nonconstant_meromorphic` — remains
-load-bearing for the tail route's pole-budget bound.) -/
+The Čech tower — finiteness, skyscraper LES, the Riemann inequality feeding
+`exists_nonconstant_meromorphic` — is load-bearing for the tail route's pole-budget bound. -/
 theorem exists_riemannRoch_divisor :
     ∃ K : Divisor X, ∀ D : Divisor X,
       (lDim (X := X) D : ℤ) - (lDim (X := X) (K - D) : ℤ)

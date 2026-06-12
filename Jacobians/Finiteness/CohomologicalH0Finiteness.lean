@@ -7,12 +7,10 @@
       `finiteDimensional_globalSections (𝔘 : FiniteCover X) (D : Divisor X) :
          FiniteDimensional ℂ ↥(𝔘.globalSections D)`
 
-  i.e. `l(D) = h⁰(D) < ∞`. This is **Gap 1** of `CohomologicalRR.exists_skyscraperLES`: the
-  `[FiniteDimensional ℂ H⁰(𝒪_{D+P})]` instance hypothesis that the skyscraper assembly
-  (`SkyscraperAssembly.skyscraperLES_of_chartDisk`) previously had to *assume* (no repo lemma
-  existed). It is now *derived*.
+  i.e. `l(D) = h⁰(D) < ∞`: the `[FiniteDimensional ℂ H⁰(𝒪_{D+P})]` instance hypothesis
+  consumed by the skyscraper assembly (`SkyscraperAssembly.skyscraperLES_of_chartDisk`).
 
-  ## The argument (the SAME light skyscraper reduction used for `H¹` in `CechFinitenessDtwist`)
+  ## The argument (the same light skyscraper reduction used for `H¹` in `CechFinitenessDtwist`)
 
   `globalSections D = ker δ⁰ ⊓ sections0 D` is a *submodule* (no quotient — `H⁰` is junk-free).
   Adding a point `P` only weakens the order bound, so `globalSections D ≤ globalSections (D+P)`, and
@@ -34,9 +32,6 @@
   at a time) + `Finsupp.induction` (one point at a time) on the divisor, with **base** `D = 0`:
   `H⁰(0)` is finite because `finrank ℂ H⁰(0) = h0Dim 0 = l(0) = 1 > 0`
   (`h0Dim_eq_lDim` + `lDim_zero_eq_one`, Liouville), via `FiniteDimensional.of_finrank_pos`.
-
-  Everything is complete; `#print axioms finiteDimensional_globalSections` is
-  `[propext, Classical.choice, Quot.sound]`.
 -/
 import Jacobians.Finiteness.CechFinitenessDtwist
 open scoped Manifold ContDiff Topology
@@ -182,11 +177,8 @@ end FiniteCover
 /-- **Finiteness of `H⁰(𝔘, 𝒪_D)` for any cover and any divisor** (Forster §14/§16 compactness;
 `l(D) = h⁰(D) < ∞`). The Liouville base `H⁰(0)` (finrank `1`) is climbed to general `D` one point at
 a time via the principal-part skyscraper stalk quotient
-(`finiteDimensional_globalSections_of_zero`). This is **Gap 1** of the χ-additivity skyscraper LES:
-the `[FiniteDimensional ℂ H⁰(𝒪_{D+P})]` instance the assembly previously had to assume is now
-derived.
-
-`#print axioms finiteDimensional_globalSections` → `[propext, Classical.choice, Quot.sound]`. -/
+(`finiteDimensional_globalSections_of_zero`): the `[FiniteDimensional ℂ H⁰(𝒪_{D+P})]` instance
+hypothesis of the χ-additivity skyscraper LES. -/
 theorem finiteDimensional_globalSections (𝔘 : FiniteCover X) (D : Divisor X) :
     FiniteDimensional ℂ ↥(𝔘.globalSections D) :=
   𝔘.finiteDimensional_globalSections_of_zero D

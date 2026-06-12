@@ -8,54 +8,15 @@ import Jacobians.ProperDegree.MultiplicityPatching
 /-!
 # Constructing the multiplicity-patching supply: the `deg_div` assembly
 
-This file performs the manifold assembly for `deg_div`.  It provides — fully
-complete and axiom-clean — every layer of the conservation-of-number assembly
-*except* the irreducible per-sheet analytic content, which it isolates into the
-structure `LocalMultiplicitySheets f w₀`.  A pointwise supply
-`∀ w₀, LocalMultiplicitySheets f w₀` is fed through the proven wire
-(`exists_properMapDegree_of_pointwiseMultiplicityPatching`) to the Riemann–Roch
-keystone
+This file performs the manifold assembly for `deg_div`: every layer of the
+conservation-of-number assembly *except* the per-sheet analytic content, which it
+isolates into the structure `LocalMultiplicitySheets f w₀` — per fibre point, a
+chart-ball sheet with the per-sheet multiplicity conservation
+`∑_{y ∈ U x ∩ F⁻¹(w)} localDeg f w y = m x` for `w` near `w₀`, pairwise-disjoint
+sheets, and fibre finiteness over a value-neighbourhood.  A pointwise supply
+`∀ w₀, LocalMultiplicitySheets f w₀` yields the Riemann–Roch keystone
 
 > `∃ d : ℕ, zerosCount f = d ∧ polesCount f = d`   (`exists_properMapDegree_of_localSheets`).
-
-## The supporting pieces
-
-* **Special-fibre identities** (`fibreMult_zero_eq_zerosCount`,
-  `fibreMult_infty_eq_polesCount`): the genuine local-degree sums over the two
-  special fibres equal the with-multiplicity counts.  These are *pure
-  reindexing* — `localDeg f (coe 0) x = orderAtPoint f x`,
-  `localDeg f ∞ x = −orderAtPoint f x`, and the fibre over `coe 0` (resp. `∞`)
-  contains the zeros (resp. is exactly the poles), with the order-`0` points
-  contributing nothing.  No analytic input.  *(This is the highest-value piece;
-  it frees the `N_eq_fibreMult` field of `MultiplicityPatchingData` of all
-  special-value bookkeeping.)*
-* **`N f = fibreMult f` everywhere** (`N_eq_fibreMult_everywhere`): the two
-  special-value plugs of `N` *equal* the genuine multiplicity sums there, so
-  `N f` is literally the fibre-multiplicity function.
-* **The `localDeg` ↔ chart-pullback-order bridge** (`localDeg_coe_eq_chartPullback_order`):
-  via the shift meromorphic function `shiftMero f c` and the *proven*
-  chart-invariance `orderAtPoint_chart_invariant`, the local degree of `F` over a
-  finite value `coe c` at a preimage `y` is read through *any* atlas chart — the
-  summand half of the per-sheet conservation `sheetMult_eq`.
-* **The no-escape / disjointness / finiteness-shrinking skeleton**
-  (`MultiplicityPatchingData.ofDisjointSheets`): from pairwise-disjoint sheets
-  with per-sheet conservation and a fibre-finiteness value-neighbourhood, the
-  proper-map compactness argument builds the common neighbourhood `W` with
-  no-escape and persistent conservation/finiteness.  This reduces the per-`w₀`
-  obligation to the *purely local* `LocalMultiplicitySheets`.
-
-## The isolated analytic input (`LocalMultiplicitySheets`)
-
-The single remaining input is `∀ w₀, LocalMultiplicitySheets f w₀`: per fibre
-point, a chart-ball sheet with the per-sheet multiplicity conservation
-`∑_{y ∈ U x ∩ F⁻¹(w)} localDeg f w y = m x` for `w` near `w₀`, pairwise-disjoint
-sheets, and fibre finiteness over a value-neighbourhood.  This is the genuine
-§17.9 analytic content, to be built from the per-chart normal-form split
-`Planar.orderSum_eq_of_analyticOrder` (the `m`-fold simple-root multiplicity sum,
-already proven), the `localDeg` chart-pullback bridge above, the proper-map fibre
-finiteness, and T2 separation of the finite fibre.  It is a *true, non-vacuous*
-obligation — at a value off `range F` the empty datum satisfies it
-(`LocalMultiplicitySheets.ofNotMemRange`), so it is never a disguised `False`.
 
 ## References
 
@@ -244,11 +205,7 @@ lemma fibreMult_zero_eq_zerosCount {X : Type*} [TopologicalSpace X] [T2Space X] 
 where it plugs in `zerosCount f`, `polesCount f` respectively; the special-fibre
 identities (`fibreMult_zero_eq_zerosCount`, `fibreMult_infty_eq_polesCount`)
 prove those plugs *equal* the genuine multiplicity sums there.  Hence `N f w =
-fibreMult f w` for every `w`.
-
-Consequence: any `MultiplicityPatchingData f w₀` whose `N_eq_fibreMult` field is
-required only on its neighbourhood `W` is freed of *all* its special-value
-content by this global identity. -/
+fibreMult f w` for every `w`. -/
 lemma N_eq_fibreMult_everywhere {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (f : MeromorphicFunction X) (w : RiemannSphere) :
@@ -532,21 +489,10 @@ A *pointwise* supply of the local conservation data `∀ w₀, LocalMultiplicity
 f w₀` yields, through `toPatchingData` and the proven structure ⇒ local-constancy
 bridge `isLocallyConstant_N_of_pointwiseMultiplicityPatching`, the global local
 constancy `IsLocallyConstant (N f)` — and thence, via the proven connectedness
-globalization, the proper-map-degree existential `exists_properMapDegree`.
+globalization, the proper-map-degree existential `exists_properMapDegree`. -/
 
-This is the exact wiring the parent (`DegDivResidue.exists_properMapDegree`)
-invokes; the only remaining input is the *local* conservation supply (the
-irreducible §17.9 content isolated in `LocalMultiplicitySheets`, reduced here down
-to its genuine per-sheet core, with the no-escape/disjointness skeleton, the
-special-fibre identities, and the finiteness-shrinking all discharged
-complete). -/
-
-/-- **The proper-map-degree existential** (the exact shape of
-`Jacobians.DegDivResidue.exists_properMapDegree`: a common `d : ℕ` with
-`zerosCount f = d = polesCount f`) from a pointwise local-conservation supply.
-
-Feeding this theorem `∀ w₀, LocalMultiplicitySheets f w₀` closes
-`exists_properMapDegree`, hence `deg_div`, hence the Riemann–Roch keystone. -/
+/-- **The proper-map-degree existential** (a common `d : ℕ` with
+`zerosCount f = d = polesCount f`) from a pointwise local-conservation supply. -/
 theorem exists_properMapDegree_of_localSheets {X : Type*} [TopologicalSpace X] [T2Space X]
     [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (f : MeromorphicFunction X)
