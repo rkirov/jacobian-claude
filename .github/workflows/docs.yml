@@ -31,10 +31,18 @@ jobs:
         id: literate
         run: echo "path=$(lake query :literateHtml)" >> "$GITHUB_OUTPUT"
 
+      - name: Build exposition (Verso manual genre)
+        run: |
+          python3 scripts/unit_design.py
+          python3 scripts/generate_verso_site.py
+          cd site
+          lake exe jacobianssite
+
       - name: Assemble Pages artifact
         run: |
           mkdir -p _site
           cp -r "${{ steps.literate.outputs.path }}"/* _site/
+          cp -r site/_out/html-multi _site/exposition
           mkdir -p _site/docs && cp -r docs/* _site/docs/   # units.html graph, reviewer docs
           touch _site/.nojekyll
 
