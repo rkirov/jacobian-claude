@@ -89,10 +89,11 @@ import Site
 open Verso.Genre Manual
 
 def main := manualMain (%doc Site) (config := {
-  emitTeX := false,
-  emitHtmlSingle := false,
-  emitHtmlMulti := true,
-  htmlDepth := 1
+  emitHtmlSingle := .no,
+  emitHtmlMulti := .immediately,
+  htmlDepth := 1,
+  sourceLink := some "REPO",
+  issueLink := some "REPO/issues"
 })
-''')
+'''.replace('REPO', REPO))
 print(f"generated site/Site.lean + {len(chapters)} chapters")
