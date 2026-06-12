@@ -43,9 +43,6 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 def coverRhoCF (j : Fin ((chartCover : Finset X).card)) : SmoothCFunctions X :=
   ofRealCM.comp (coverPoU (X := X) j)
 
-theorem coverRhoCF_apply (j : Fin ((chartCover : Finset X).card)) (x : X) :
-    (coverRhoCF j x : ℂ) = coverRhoC (X := X) j x := rfl
-
 /-- The PoU components sum to the constant `1`. -/
 theorem sum_coverRhoCF : ∑ j, coverRhoCF (X := X) j = 1 := by
   refine ContMDiffMap.ext fun x => ?_

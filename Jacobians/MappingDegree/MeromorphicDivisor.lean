@@ -84,22 +84,6 @@ negative at poles, `0` at regular non-zero points. Under the hypothesis
 def orderFun (I : ModelWithCorners ℂ ℂ ℂ) (f : X → ℂ) (x : X) : ℤ :=
   (mmeromorphicOrderAt I f x).untop₀
 
-/-- Under `hf0`, `orderFun I f x = 0` is equivalent to
-`mmeromorphicOrderAt I f x = 0`, i.e. there is no spurious `⊤ ↦ 0` collapse. -/
-lemma orderFun_eq_zero_iff {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    {I : ModelWithCorners ℂ ℂ ℂ} {f : X → ℂ} {x : X}
-    (hf0 : mmeromorphicOrderAt I f x ≠ ⊤) :
-    orderFun I f x = 0 ↔ mmeromorphicOrderAt I f x = 0 := by
-  unfold orderFun
-  constructor
-  · intro h
-    have := WithTop.untop₀_eq_zero.mp h
-    rcases this with h0 | htop
-    · exact h0
-    · exact (hf0 htop).elim
-  · intro h
-    rw [h]; rfl
-
 /-- The **order divisor** of a meromorphic function `f` on a complex manifold,
 valued in `ℤ` (positive at zeros, negative at poles, `0` elsewhere). The
 `locallyFinsuppWithin Set.univ` packaging encodes the local-finiteness
@@ -272,69 +256,6 @@ lemma orderFun_support_finite
     D.finiteSupport isCompact_univ
   -- The two sets are pointwise equal by `D x = orderFun I f x` (rfl from `divisor.toFun`).
   exact h_finite
-
-/-- The set of points where `f` has **strictly positive order** ("zeros" in the
-order-divisor sense) is **finite** on a compact Hausdorff complex 1-manifold.
-
-This is the order-based formulation of R2's zero-fibre finiteness statement
-in `Manifold/ResidueTheorem.lean`. The proof shows
-`{x | mmeromorphicOrderAt I f x > 0} ⊆ {x | orderFun I f x ≠ 0}` (using
-`hf0` to rule out the `⊤` case) and applies `orderFun_support_finite`. -/
-lemma zeros_finite
-    {X : Type u}
-    [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    (I : ModelWithCorners ℂ ℂ ℂ)
-    (f : X → ℂ)
-    (hf : MMeromorphicOn I f Set.univ)
-    (hf0 : ∀ x, mmeromorphicOrderAt I f x ≠ ⊤) :
-    {x : X | (0 : WithTop ℤ) < mmeromorphicOrderAt I f x}.Finite := by
-  -- Reduce to `orderFun_support_finite` by showing the LHS is contained in the support.
-  apply (orderFun_support_finite (X := X) I f hf hf0).subset
-  intro x hx
-  -- Unfold `Set.mem` so that `hx : 0 < mmeromorphicOrderAt I f x` is rewritable.
-  simp only [Set.mem_setOf_eq] at hx
-  -- Goal: `x ∈ {x | orderFun I f x ≠ 0}`, i.e. `orderFun I f x ≠ 0`.
-  show orderFun I f x ≠ 0
-  unfold orderFun
-  -- `WithTop.untop₀_eq_zero : a.untop₀ = 0 ↔ a = 0 ∨ a = ⊤`. Negate.
-  intro h
-  rcases WithTop.untop₀_eq_zero.mp h with h0 | htop
-  · -- `mmeromorphicOrderAt I f x = 0` contradicts `0 < mmeromorphicOrderAt I f x`.
-    rw [h0] at hx
-    exact lt_irrefl _ hx
-  · exact hf0 x htop
-
-/-- The set of points where `f` has **strictly negative order** ("poles") is
-**finite** on a compact Hausdorff complex 1-manifold.
-
-Per spec. The proof shows
-`{x | mmeromorphicOrderAt I f x < 0} ⊆ {x | orderFun I f x ≠ 0}` (using
-`hf0` to rule out the `⊤` case — which would otherwise contradict
-`< 0` anyway, since `⊤` is not less than `0` in `WithTop ℤ`) and applies
-`orderFun_support_finite`. -/
-lemma poles_finite
-    {X : Type u}
-    [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    (I : ModelWithCorners ℂ ℂ ℂ)
-    (f : X → ℂ)
-    (hf : MMeromorphicOn I f Set.univ)
-    (hf0 : ∀ x, mmeromorphicOrderAt I f x ≠ ⊤) :
-    {x : X | mmeromorphicOrderAt I f x < (0 : WithTop ℤ)}.Finite := by
-  -- Reduce to `orderFun_support_finite` by showing the LHS is contained in the support.
-  apply (orderFun_support_finite (X := X) I f hf hf0).subset
-  intro x hx
-  -- Unfold `Set.mem` so that `hx : mmeromorphicOrderAt I f x < 0` is rewritable.
-  simp only [Set.mem_setOf_eq] at hx
-  show orderFun I f x ≠ 0
-  unfold orderFun
-  intro h
-  rcases WithTop.untop₀_eq_zero.mp h with h0 | htop
-  · -- `mmeromorphicOrderAt I f x = 0` contradicts `mmeromorphicOrderAt I f x < 0`.
-    rw [h0] at hx
-    exact lt_irrefl _ hx
-  · exact hf0 x htop
 
 end MMeromorphicOn
 

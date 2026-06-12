@@ -91,11 +91,6 @@ theorem one_mem_linearSystem {E : Divisor X} (hE : 0 ≤ E) :
     simpa using this
   exact_mod_cast neg_nonpos.mpr hx
 
-/-- A germ-zero function lies in every linear system (`orderW ≡ ⊤` dominates every bound). -/
-theorem mem_linearSystem_of_orderW_top {E : Divisor X} {f : MeromorphicFunction X}
-    (hf : ∀ x, f.orderW x = ⊤) : f ∈ linearSystem (X := X) E :=
-  fun x => by rw [hf x]; exact le_top
-
 /-- Transport of linear-system membership along an equality of divisors (the divisor appears in
 dependent positions at call sites, so a plain `rw` can fail the motive check; this helper rewrites
 at the statement level, where `f` is opaque). -/

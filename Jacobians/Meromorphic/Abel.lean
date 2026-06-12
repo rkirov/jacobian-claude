@@ -61,11 +61,6 @@ theorem Divisor.deg_add (D D' : Divisor X) :
   map_add _ _ _
 
 @[simp]
-theorem Divisor.deg_neg (D : Divisor X) :
-    Divisor.deg X (-D) = -Divisor.deg X D :=
-  map_neg _ _
-
-@[simp]
 theorem Divisor.deg_sub (D D' : Divisor X) :
     Divisor.deg X (D - D') = Divisor.deg X D - Divisor.deg X D' :=
   map_sub _ _ _
@@ -99,10 +94,6 @@ theorem twoPointDivisor_mem_degZero (P Q : X) :
     twoPointDivisor X P Q ∈ DivisorOfDegZero X := by
   show Divisor.deg X (twoPointDivisor X P Q) = 0
   exact twoPointDivisor_deg X P Q
-
-@[simp]
-theorem twoPointDivisor_self (P : X) : twoPointDivisor X P P = 0 := by
-  simp [twoPointDivisor]
 
 /-! ### Meromorphic functions on a compact Riemann surface
 

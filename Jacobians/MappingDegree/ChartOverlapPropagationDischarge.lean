@@ -202,54 +202,6 @@ theorem chartPullbackNotEventuallyConst_of_clopennessOfLocallyConst
   chartPullbackNotEventuallyConst_of_chartOverlapPropagation
     (chartOverlapPropagation_of_clopennessOfLocallyConst H)
 
-/-- **Chart-ball off-centre witness from clopen-ness of the
-locally-constant locus.** -/
-theorem chartBallOffCentreWitness_of_clopennessOfLocallyConst
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ClopennessOfLocallyConstHypothesis X Y) :
-    ChartBallOffCentreWitnessHypothesis X Y :=
-  chartBallOffCentreWitness_of_chartOverlapPropagation
-    (chartOverlapPropagation_of_clopennessOfLocallyConst H)
-
-/-- **Per-chart non-constancy from clopen-ness of the
-locally-constant locus.** -/
-theorem perChartNonConstancy_of_clopennessOfLocallyConst
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ClopennessOfLocallyConstHypothesis X Y) :
-    PerChartNonConstancyHypothesis X Y :=
-  perChartNonConstancy_of_chartOverlapPropagation
-    (chartOverlapPropagation_of_clopennessOfLocallyConst H)
-
-/-- **Within-chart witness from clopen-ness of the locally-constant
-locus.** -/
-theorem withinChartWitness_of_clopennessOfLocallyConst
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ClopennessOfLocallyConstHypothesis X Y) :
-    WithinChartWitnessHypothesis X Y :=
-  withinChartWitness_of_chartOverlapPropagation
-    (chartOverlapPropagation_of_clopennessOfLocallyConst H)
-
-/-- **Connectivity globalization from clopen-ness of the
-locally-constant locus.** -/
-theorem connectivityGlobalization_of_clopennessOfLocallyConst
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ClopennessOfLocallyConstHypothesis X Y) :
-    ConnectivityGlobalizationHypothesis X Y :=
-  connectivityGlobalization_of_chartOverlapPropagation
-    (chartOverlapPropagation_of_clopennessOfLocallyConst H)
-
 /-- **End-to-end conditional discharge of `fibres_finite_statement` from
 clopen-ness of the locally-constant locus.** Composing through ZZ43 +
 ZZ38 + ZZ36 + ZZ34 + ZZ32 + ZZ30. -/

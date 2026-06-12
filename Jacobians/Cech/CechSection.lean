@@ -157,11 +157,6 @@ theorem isMeromorphic_comp_openIncl [ChartedSpace ℂ X] (h : V ≤ U) {f : U �
   rw [← hbase] at hmer
   exact hmer.congr (hev.filter_mono nhdsWithin_le_nhds).symm
 
-/-- Restriction preserves germ-zero junk (`ordU` is preserved at corresponding points). -/
-theorem germZeroFn_restrict [ChartedSpace ℂ X] (h : V ≤ U) {f : U → ℂ} (hf : f ∈ germZeroFn U) :
-    (f ∘ openIncl h) ∈ germZeroFn V :=
-  fun v => by rw [ordU_comp_openIncl h]; exact hf (openIncl h v)
-
 /-- Restriction of sections `𝒪_D(U) → 𝒪_D(V)` for `V ≤ U`. -/
 noncomputable def OmegaD.restrict [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (h : V ≤ U) :
@@ -170,10 +165,6 @@ noncomputable def OmegaD.restrict [T2Space X] [CompactSpace X] [ConnectedSpace X
     fun f => ⟨isMeromorphic_comp_openIncl h f.2.1, fun v => by
       show (-(D v.1) : WithTop ℤ) ≤ ordU ((f : U → ℂ) ∘ openIncl h) v
       rw [ordU_comp_openIncl h]; exact f.2.2 (openIncl h v)⟩
-
-@[simp] theorem OmegaD.restrict_coe [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {D : Divisor X} (h : V ≤ U) (f : OmegaD D U) :
-    ((OmegaD.restrict h f : V → ℂ)) = (f : U → ℂ) ∘ openIncl h := rfl
 
 end Restriction
 

@@ -746,22 +746,6 @@ theorem inCoordinates_apply_one_smul {Y : Type*} [TopologicalSpace Y] [ChartedSp
     ContinuousLinearMap.comp_apply]
   exact ContinuousLinearMap.smul_apply a φ _
 
-/-- **The local coefficient is additive in the operator value.** The local coefficient of a
-pointwise sum of coefficient functions splits (from `inCoordinates_apply_one_add`). Used for
-ℂ-linearity of the trace at branch points, read in the fixed frame. -/
-theorem traceLocalCoeff_add {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
-    [IsManifold 𝓘(ℂ) ω Y] (g h : Y → (ℂ →L[ℂ] ℂ)) (y₀ y : Y) :
-    traceLocalCoeff (fun y => g y + h y) y₀ y
-      = traceLocalCoeff g y₀ y + traceLocalCoeff h y₀ y :=
-  inCoordinates_apply_one_add (g y) (h y) y₀ y
-
-/-- **The local coefficient is ℂ-homogeneous in the operator value.** Companion to
-`traceLocalCoeff_add`. -/
-theorem traceLocalCoeff_smul {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
-    [IsManifold 𝓘(ℂ) ω Y] (a : ℂ) (g : Y → (ℂ →L[ℂ] ℂ)) (y₀ y : Y) :
-    traceLocalCoeff (fun y => a • g y) y₀ y = a • traceLocalCoeff g y₀ y :=
-  inCoordinates_apply_one_smul a (g y) y₀ y
-
 /-- **Branch value of the trace, in the fixed `y₀`-frame.** At a branch point `y₀` the operator
 `traceFun f α y` (read in the *varying* chart at `y`) is genuinely discontinuous as `y → y₀` for a
 non-trivial tangent bundle (genus ≥ 2; the `CotangentCoeff.lean` obstruction), so the naive
@@ -845,19 +829,6 @@ theorem eventually_notMem_branchLocus {X Y : Type*} [TopologicalSpace X] [T2Spac
   filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds hnhd] with y hy_ne hy_notdiff
   rw [Set.mem_compl_iff, Set.mem_diff, not_and, not_not] at hy_notdiff
   exact fun hyB => hy_ne (hy_notdiff hyB)
-
-/-- On the **punctured** neighborhood of any point `y₀`, the extension agrees with the
-raw fibre sum: on `𝓝[≠] y₀` points are eventually off the branch locus
-(`eventually_notMem_branchLocus`), where `traceFunExt = traceFun`. This is the bridge
-turning a limit/continuity statement about `traceFun` into one about `traceFunExt`. -/
-theorem traceFunExt_eventuallyEq_traceFun {X Y : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [ChartedSpace ℂ Y]
-    [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X) (y₀ : Y) :
-    traceFunExt f α =ᶠ[𝓝[≠] y₀] traceFun f α := by
-  filter_upwards [eventually_notMem_branchLocus f hf hnonconst y₀] with y hy_off
-  exact traceFunExt_of_notMem_branchLocus f α hy_off
 
 /-! ### Off-branch smoothness of the extended section
 
@@ -2141,31 +2112,6 @@ theorem traceForm_toFun_of_notMem_branchLocus {X Y : Type*} [TopologicalSpace X]
     (traceForm f hf hnonconst α).toFun y = traceFun f α y :=
   (exists_traceForm f hf hnonconst).choose_spec α y hy
 
-/-- **Local sheet decomposition of the trace form.** Off the branch locus there is a
-local sheet system `S` at `y₀` over whose base `S.V` the trace one-form is the finite
-sum of the per-sheet pullbacks: at every off-branch `y ∈ S.V`,
-`(traceForm f hf hnonconst α).toFun y = ∑ᵢ sheetPullback α (S.sheet i) y`.
-
-This is the **per-base-neighborhood input to the period-level projection formula**:
-to integrate `traceForm f hf α` along a loop `δ` (which avoids the branch locus),
-cover the compact `δ([0,1])` by finitely many such bases, and on each the trace
-splits into sheet pullbacks, each of which is `∫_δ sheetPullback = ∫_{sheet∘δ} α`
-(`lineIntegral_pullback_section`). Combines `exists_localSheetSystem` (the off-branch
-covering) with `LocalSheetSystem.traceFun_eq_sum_sheetPullback` and the off-branch
-agreement `traceForm_toFun_of_notMem_branchLocus`. -/
-theorem exists_localSheetSystem_traceForm_eq_sum {X Y : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [ChartedSpace ℂ Y]
-    [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (α : HolomorphicOneForms X)
-    {y₀ : Y} (hy₀ : y₀ ∉ branchLocus f) :
-    ∃ S : LocalSheetSystem f y₀, ∀ y ∈ S.V, y ∉ branchLocus f →
-      (traceForm f hf hnonconst α).toFun y = ∑ i, sheetPullback α (S.sheet i) y := by
-  obtain ⟨S⟩ := exists_localSheetSystem f hf hnonconst hy₀
-  refine ⟨S, fun y hyV hyB => ?_⟩
-  rw [traceForm_toFun_of_notMem_branchLocus f hf hnonconst α hyB]
-  exact S.traceFun_eq_sum_sheetPullback hf α hyV
-
 /-! ## The projection formula (period level)
 
 The eventual goal is the multi-sheet projection formula
@@ -2199,28 +2145,6 @@ theorem lineIntegral_pullback_section {X Y : Type*} [TopologicalSpace X] [T2Spac
       DifferentiableAt ℝ ((chartAt (H := ℂ) (δ t)).toFun ∘ δ) t) :
     lineIntegral (pullbackForm s hs α) δ = lineIntegral α (s ∘ δ) :=
   (lineIntegral_pullback s hs α δ hδ_cont hδ_diff).symm
-
-/-- **Single-sheet projection formula for the trace.** When `f` admits a *global*
-holomorphic section `s` and the trace form coincides with the single-sheet pullback
-`pullbackForm s hs α` (e.g. a one-sheeted cover, where the fibre over each off-branch
-point is the single point `s y`), the line integral of the trace along `δ` equals
-the line integral of `α` along the lift `s ∘ δ`.
-
-The coincidence hypothesis `htrace` is what the multi-sheet assembly supplies as a
-sum; here we isolate the clean single-sheet consequence of `lineIntegral_pullback`. -/
-theorem lineIntegral_traceForm_single_sheet {X Y : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [ChartedSpace ℂ Y]
-    [IsManifold 𝓘(ℂ) ω Y] (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀) (s : Y → X) (hs : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω s)
-    (α : HolomorphicOneForms X) (δ : ℝ → Y)
-    (hδ_cont : Continuous δ)
-    (hδ_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) (δ t)).toFun ∘ δ) t)
-    (htrace : traceForm f hf hnonconst α = pullbackForm s hs α) :
-    lineIntegral (traceForm f hf hnonconst α) δ = lineIntegral α (s ∘ δ) := by
-  rw [htrace]
-  exact lineIntegral_pullback_section s hs α δ hδ_cont hδ_diff
 
 /-- Evaluating a finite sum of holomorphic one-forms at `y` against a tangent
 vector `v` equals the sum of the pointwise evaluations. -/
@@ -2265,32 +2189,6 @@ theorem lineIntegral_sum {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSp
       rw [heq]
       exact IntervalIntegrable.sum _ (fun i _ => hint_tail i)
     rw [lineIntegral_add _ _ _ hint_head hint_tailsum, ih (fun i => forms i.succ) hint_tail]
-
-/-- **Multi-sheet projection formula (line integral).** Given a family of global
-holomorphic sections `s i : Y → X` whose pullbacks sum to the trace form
-(`htrace`), the line integral of the trace along `δ` is the sum over sheets of the
-line integrals of `α` along the lifts `s i ∘ δ`. Combines `lineIntegral_sum` with
-the single-sheet `lineIntegral_pullback_section`. This is the period-level
-projection formula; the remaining classical input is producing the sheet sections
-+ the `htrace` decomposition (the loop-lifting machinery). -/
-theorem lineIntegral_traceForm_eq_sum_lifts {X Y : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [ChartedSpace ℂ Y]
-    [IsManifold 𝓘(ℂ) ω Y] {k : ℕ} (f : X → Y)
-    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hnonconst : ¬ ∃ y₀ : Y, ∀ x, f x = y₀)
-    (s : Fin k → Y → X) (hs : ∀ i, ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (s i))
-    (α : HolomorphicOneForms X) (δ : ℝ → Y)
-    (hδ_cont : Continuous δ)
-    (hδ_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) (δ t)).toFun ∘ δ) t)
-    (hint : ∀ i, IntervalIntegrable
-      (fun t : ℝ => (pullbackForm (s i) (hs i) α).toFun (δ t) (pathSpeed δ t))
-        MeasureTheory.volume 0 1)
-    (htrace : traceForm f hf hnonconst α = ∑ i, pullbackForm (s i) (hs i) α) :
-    lineIntegral (traceForm f hf hnonconst α) δ = ∑ i, lineIntegral α (s i ∘ δ) := by
-  rw [htrace, lineIntegral_sum _ δ hint]
-  exact Finset.sum_congr rfl fun i _ =>
-    lineIntegral_pullback_section (s i) (hs i) α δ hδ_cont hδ_diff
 
 /-! ## Covariant functoriality of the trace
 

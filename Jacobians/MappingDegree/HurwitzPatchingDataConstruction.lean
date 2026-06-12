@@ -97,11 +97,6 @@ variable {X : Type u} {Y : Type v}
 /-- `f` is injective on `U`. -/
 lemma injOn (s : LocalSheetData f y₀ x) : InjOn f s.U := s.leftInvOn.injOn
 
-/-- `f` is surjective from `U` onto `V`. -/
-lemma surjOn (s : LocalSheetData f y₀ x) : SurjOn f s.U s.V := by
-  intro y hy
-  refine ⟨s.g y, s.g_mapsTo hy, s.rightInvOn hy⟩
-
 end LocalSheetData
 
 /-- **Pairwise-disjoint open neighbourhoods of a finite set in a T2 space.**

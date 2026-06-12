@@ -59,10 +59,6 @@ def pairMatrix (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
   Matrix.of fun i j =>
     pairForm (periodBasisForm X i) (conjForm (periodBasisForm X j))
 
-@[simp] theorem pairMatrix_apply (i j : Fin (genus X)) :
-    pairMatrix X i j = pairForm (periodBasisForm X i) (conjForm (periodBasisForm X j)) :=
-  rfl
-
 /-- The expansion of `ambientIso` over the period basis (cf. `PeriodLatticeNondegenerate`). -/
 theorem ambientIso_eq_sum (d : Fin (genus X) → ℂ) :
     ambientIso X d = ∑ j, d j • periodBasisForm X j := by

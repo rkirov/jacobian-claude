@@ -631,23 +631,6 @@ theorem periodVec_concat (γ γ' : ℝ → X)
     (hint_concat_left i) (hint_concat_right i)
     (h_ae_left i) (h_ae_right i)
 
-/-- **Closed-loop period is zero in the Jacobian.** Classical fact:
-integrating any form along a closed smooth loop gives an element of
-the period lattice, which is the zero class in the Jacobian quotient. -/
-theorem mk_periodVec_closed_loop_zero (γ : ℝ → X) (hγ : IsClosedSmoothLoop γ) :
-    (QuotientAddGroup.mk (periodVec γ) :
-      (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) = 0 :=
-  (QuotientAddGroup.eq_zero_iff _).mpr
-    (periodVec_mem_truePeriodLattice_of_closed γ hγ)
-
-/-- **Constant-path Jacobian class is zero.** Corollary of
-`periodVec_const`: the quotient class of the zero vector is zero. -/
-theorem mk_periodVec_const_zero (P : X) :
-    (QuotientAddGroup.mk (periodVec (fun _ : ℝ => P)) :
-      (Fin (genus X) → ℂ) ⧸ (truePeriodLattice X).toAddSubgroup) = 0 := by
-  rw [periodVec_const]
-  exact QuotientAddGroup.mk_zero _
-
 /-- **Abel-Jacobi additivity under concatenation.** Classical fact:
 concatenating a path `P → Q` with a path `Q → R` corresponds to
 adding their Jacobian-valued classes. Takes the same per-basis-form
@@ -1126,19 +1109,6 @@ theorem IsClosedSmoothLoop.comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ
     velCont_comp f hf γ hγ.cont
       (fun s hs => hγ.diff s (Set.Icc_subset_uIcc hs)) hγ.velCont
 
-/-- Change-of-variables at the vector level: evaluating each Y-basis
-form against `f ∘ γ` equals evaluating its pullback against `γ`.
-Requires path regularity hypotheses (inherited from `lineIntegral_pullback`). -/
-theorem periodVec_comp_eq_lineIntegral_pullback
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (γ : ℝ → X) (j : Fin (genus Y))
-    (hγ_cont : Continuous γ)
-    (hγ_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t) :
-    periodVec (f ∘ γ) j =
-      lineIntegral (pullbackForm f hf (periodBasisForm Y j)) γ := by
-  unfold periodVec
-  exact lineIntegral_pullback f hf (periodBasisForm Y j) γ hγ_cont hγ_diff
-
 /-- **Key identity**: the period vector of the image loop equals
 `ambientPhi` applied to the period vector of the source loop.
 
@@ -1317,19 +1287,6 @@ theorem pullbackForm_eq_zero_of_const
     rw [hfconst]
     exact mfderiv_const
   rw [this, ContinuousLinearMap.comp_zero]
-
-/-- **ambientPsi of a constant map is zero.** Follows from
-`pullbackForm_eq_zero_of_const`: `ambientPsi = iso⁻¹ ∘ pullbackForm ∘ iso`,
-and composition with zero is zero. -/
-theorem ambientPsi_eq_zero_of_const
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hconst : ∃ y₀ : Y, ∀ x, f x = y₀) :
-    ambientPsi (gX := genus X) (gY := genus Y) f hf = 0 := by
-  unfold ambientPsi
-  simp only [dite_true]
-  rw [pullbackForm_eq_zero_of_const f hf hconst]
-  ext v i
-  simp
 
 /-! #### Branched-cover infrastructure
 

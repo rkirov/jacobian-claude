@@ -70,10 +70,6 @@ def restrictToOpen (𝔘 : FiniteFamily X) (W : Opens X) : FiniteFamily X where
   fintype := inferInstance
   U i := 𝔘.U i ⊓ W
 
-@[simp] theorem restrictToOpen_U (𝔘 : FiniteFamily X) (W : Opens X) (i : 𝔘.ι) :
-    (𝔘.restrictToOpen W).U i = 𝔘.U i ⊓ W :=
-  rfl
-
 theorem restrictToOpen_le_left (𝔘 : FiniteFamily X) (W : Opens X) (i : 𝔘.ι) :
     (𝔘.restrictToOpen W).U i ≤ 𝔘.U i :=
   inf_le_left

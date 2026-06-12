@@ -72,9 +72,6 @@ noncomputable def mulLeftG {U : Opens X} (a : MGerm U) : MGerm U →ₗ[ℂ] MGe
     rw [show c • (↑(a * g) : MGerm U) = (↑(c • (a * g)) : MGerm U) from rfl]
     congr 1; funext x; simp only [Pi.mul_apply, Pi.smul_apply, smul_eq_mul]; ring
 
-@[simp] theorem mulLeftG_apply {X : Type*} [TopologicalSpace X] {U : Opens X} (a g : MGerm U) :
-    mulLeftG a g = a * g := rfl
-
 /-- Scalar-multiplication / ring-multiplication associativity on `MGerm`
 (`(a • x) * y = a • (x*y)`): the `Module ℂ` action is the pointwise `(a • ·)` (definitionally
 `↑(a • ·)`). Proven directly to avoid an `IsScalarTower ℂ (MGerm U) (MGerm U)` synthesis gap (the
@@ -271,10 +268,6 @@ noncomputable def cupCocyclesMap {D K : Divisor X} {f : MeromorphicFunction X}
     ↥(𝔘.cocycles1 D) →ₗ[ℂ] ↥(𝔘.cocycles1 K) :=
   (cupCochain1 𝔘 f).restrict (fun _ hc => cupCochain1_cocycles1 hf hc)
 
-@[simp] theorem cupCocyclesMap_coe {D K : Divisor X} {f : MeromorphicFunction X}
-    (hf : f ∈ linearSystem (X := X) (K - D)) (c : ↥(𝔘.cocycles1 D)) :
-    (cupCocyclesMap hf c : 𝔘.Cochain1) = cupCochain1 𝔘 f c := rfl
-
 /-- **The descended cup product on cohomology** `[ξ] ↦ [f·ξ]`, `cechH1 D →ₗ[ℂ] cechH1 K`.
 Well-defined because the cup product maps `cocycles1 D → cocycles1 K` (`cupCochain1_cocycles1`) and
 `coboundaries1 D → coboundaries1 K` (`cupCochain1_coboundaries1`), so it descends through the
@@ -399,10 +392,6 @@ noncomputable def cupSubtype (D K : Divisor X) :
   map_smul' a f := by
     refine LinearMap.ext fun ξ => ?_
     exact cupH1_smul a f.2 (Submodule.smul_mem _ a f.2) ξ
-
-@[simp] theorem cupSubtype_apply (D K : Divisor X) (f : ↥(linearSystem (X := X) (K - D)))
-    (ξ : 𝔘.cechH1 D) :
-    cupSubtype D K f ξ = cupH1 f.2 ξ := rfl
 
 /-- **The bundled bilinear cup product** `cup : lSysModule (K−D) →ₗ[ℂ] (cechH1 D →ₗ[ℂ] cechH1 K)`.
 ℂ-linear in `f` (the junk-free source `lSysModule`) and in `ξ` — the algebraic input the Forster

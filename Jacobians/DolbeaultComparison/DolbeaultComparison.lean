@@ -125,12 +125,6 @@ theorem dbarL_mem_zeroOne (u : SmoothCFunctions X) : dbarL u ∈ OneFormsZeroOne
   rw [dbarL_eq_proj01L_differential]
   exact LinearMap.mem_range_self _ _
 
-/-- The image of `∂̄` is contained in `A^{0,1}` (the submodule form of `dbarL_mem_zeroOne`). -/
-theorem range_dbarL_le_zeroOne :
-    LinearMap.range (dbarL (X := X)) ≤ OneFormsZeroOne X := by
-  rintro _ ⟨u, rfl⟩
-  exact dbarL_mem_zeroOne u
-
 /-! ### Deliverable 4: Dolbeault cohomology `H^{0,1}(X)` as the `∂̄`-cokernel on `A^{0,1}`. -/
 
 /-- `im ∂̄` viewed inside `A^{0,1}` (legitimate as a submodule of `↥(OneFormsZeroOne X)` precisely

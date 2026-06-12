@@ -163,31 +163,6 @@ lemma fibre_ncard_eq_xs_card_of_mem_W
 
 end HurwitzPatchingData
 
-/-- **Local-constancy of fibre count from a pointwise Hurwitz package.**
-
-Suppose for *every* `y₀ : Y` we are given a `HurwitzPatchingData f y₀`. Then
-the fibre-cardinality function `fun y => (f ⁻¹' {y}).ncard` is locally constant
-on `Y`.
-
-The witness `h y₀` provides the open neighbourhood `(h y₀).W` of `y₀` on which
-the fibre count is constantly `(h y₀).xs.card`, which equals
-`(f ⁻¹' {y₀}).ncard`. -/
-theorem fibreCard_isLocallyConstant_of_pointwiseHurwitz
-    {X : Type u} {Y : Type v}
-    [TopologicalSpace X] [TopologicalSpace Y]
-    (f : X → Y) (h : ∀ y₀ : Y, HurwitzPatchingData f y₀) :
-    IsLocallyConstant (fun y : Y => (f ⁻¹' {y}).ncard) := by
-  rw [IsLocallyConstant.iff_eventually_eq]
-  intro y₀
-  have hW_mem : (h y₀).W ∈ nhds y₀ :=
-    (h y₀).W_open.mem_nhds (h y₀).y₀_mem_W
-  filter_upwards [hW_mem] with y hy
-  have h_y : (f ⁻¹' {y}).ncard = (h y₀).xs.card :=
-    (h y₀).fibre_ncard_eq_xs_card_of_mem_W hy
-  have h_y₀ : (f ⁻¹' {y₀}).ncard = (h y₀).xs.card :=
-    (h y₀).fibre_ncard_eq_xs_card_of_mem_W (h y₀).y₀_mem_W
-  rw [h_y, h_y₀]
-
 /-- **Local-constancy on a regular subset.**
 
 Suppose `R : Set Y` and for *every* `y₀ ∈ R` we are given a

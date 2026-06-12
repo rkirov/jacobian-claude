@@ -63,13 +63,6 @@ noncomputable def lineIntegralVec {X : Type*} [TopologicalSpace X] [T2Space X] [
     (γ : ℝ → X) : Fin n → ℂ :=
   fun i => lineIntegral (forms i) γ
 
-@[simp]
-theorem lineIntegralVec_apply {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {n : ℕ}
-    (forms : Fin n → HolomorphicOneForms X)
-    (γ : ℝ → X) (i : Fin n) :
-    lineIntegralVec forms γ i = lineIntegral (forms i) γ := rfl
-
 /-! ### Phase 1b: linearity of the line integral in the form
 
 Immediate from pointwise addition/scalar action on `ContMDiffSection`
@@ -118,14 +111,6 @@ theorem lineIntegral_smul {X : Type*} [TopologicalSpace X] [T2Space X] [CompactS
     rw [ContinuousLinearMap.smul_apply, smul_eq_mul]
   simp_rw [h_pw]
   exact intervalIntegral.integral_const_mul c _
-
-/-- Negation: `lineIntegral (-α) γ = -lineIntegral α γ`. -/
-theorem lineIntegral_neg {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X)
-    (γ : ℝ → X) :
-    lineIntegral (-α) γ = -lineIntegral α γ := by
-  have h : -α = (-1 : ℂ) • α := by rw [neg_smul, one_smul]
-  rw [h, lineIntegral_smul]; ring
 
 /-! ### Phase 1b: constant path
 

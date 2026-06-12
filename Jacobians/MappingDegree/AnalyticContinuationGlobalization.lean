@@ -181,20 +181,6 @@ structure FibreChartNonConstAssignment {X : Type u} [TopologicalSpace X]
   chartImage_mem : ∀ x (hx : f x = y₀),
     chartImage x ∈ (witness x hx).U
 
-/-- **Discharge of `hFne` from a fibre-chart non-constancy assignment.** For
-every fibre point, the chart pullback is not eventually equal to its target
-chart-value at the chart image. This is the input shape consumed by
-`ChartPullbackData.hFne`. -/
-lemma not_eventually_const_at_chartImage
-    {X : Type u} [TopologicalSpace X]
-    {Y : Type v}
-    {f : X → Y} {y₀ : Y}
-    (A : FibreChartNonConstAssignment f y₀)
-    (x : X) (hx : f x = y₀) :
-    ¬ ∀ᶠ z in 𝓝 (A.chartImage x), (A.witness x hx).F z = (A.witness x hx).c :=
-  chart_pullback_not_eventually_const_within_chart
-    (A.witness x hx) (A.chartImage_mem x hx)
-
 /-! ## Documentation: full manifold globalisation, what is still open
 
 Let `X, Y` be connected complex manifolds and `f : X → Y` analytic and

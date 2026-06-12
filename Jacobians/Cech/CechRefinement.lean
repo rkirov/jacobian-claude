@@ -251,15 +251,6 @@ theorem refineC1_comp {s : 𝔚.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
   simp only [LinearMap.comp_apply, refineC1_apply, Function.comp_apply, rawRestrictG_comp_apply]
   rfl
 
-/-- **Refinement on 0-cochains is functorial** (the degree-0 analogue of `refineC1_comp`). -/
-theorem refineC0_comp {s : 𝔚.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
-    (hs : IsRefinement 𝔚 𝔙 s) (hr : IsRefinement 𝔙 𝔘 r) :
-    (hs.comp hr).refineC0 = hs.refineC0 ∘ₗ hr.refineC0 := by
-  refine LinearMap.ext fun c => ?_
-  funext k
-  simp only [LinearMap.comp_apply, refineC0_apply, Function.comp_apply, rawRestrictG_comp_apply]
-  rfl
-
 end IsRefinement
 
 end FiniteCover

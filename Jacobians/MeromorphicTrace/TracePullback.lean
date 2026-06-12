@@ -1404,59 +1404,6 @@ theorem periodVec_congr_of_eqOn {X : Type*} [TopologicalSpace X] [T2Space X] [Co
     (h : Set.EqOn g₁ g₂ (Set.Icc (0:ℝ) 1)) : periodVec g₁ = periodVec g₂ := by
   funext i; exact lineIntegral_congr_of_eqOn (periodBasisForm X i) h
 
-/-- **Integrability is preserved by the `flatEndReparam` reparametrization.** If the
-form-integrand of `γ` is interval-integrable, so is that of `γ ∘ flatEndReparam`. Same
-monotone-CoV *integrability* lemma the codebase uses for `smoothStep01`
-(`integrableOn_image_iff_integrableOn_deriv_smul_of_monotoneOn`); the integrand of the
-reparametrized path equals `flatEndReparam' • (integrand ∘ flatEndReparam)` a.e. (chain
-rule `pathSpeed_flatEndReparam_comp_eq`). Feeds the lift-integrability upgrade. -/
-theorem intervalIntegrable_comp_flatEndReparam {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (α : HolomorphicOneForms X) (γ : ℝ → X)
-    (hγ_diff : ∀ t ∈ Set.uIcc (0:ℝ) 1,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) (γ t)).toFun ∘ γ) t)
-    (hγ_int : IntervalIntegrable (fun t => α.toFun (γ t) (pathSpeed γ t))
-      MeasureTheory.volume 0 1) :
-    IntervalIntegrable
-      (fun t => α.toFun ((γ ∘ flatEndReparam) t) (pathSpeed (γ ∘ flatEndReparam) t))
-      MeasureTheory.volume 0 1 := by
-  set h : ℝ → ℂ := fun u => α.toFun (γ u) (pathSpeed γ u) with hh_def
-  have h_int_Icc : MeasureTheory.IntegrableOn h (Set.Icc (0:ℝ) 1) MeasureTheory.volume :=
-    (intervalIntegrable_iff_integrableOn_Icc_of_le (by norm_num : (0:ℝ) ≤ 1)).mp hγ_int
-  have h_subst_iff := MeasureTheory.integrableOn_image_iff_integrableOn_deriv_smul_of_monotoneOn
-    (s := Set.Icc (0:ℝ) 1) measurableSet_Icc (f := flatEndReparam) (f' := deriv flatEndReparam)
-    (fun x _ => (flatEndReparam_hasDerivAt x).hasDerivWithinAt)
-    (flatEndReparam_monotone.monotoneOn _) h
-  rw [flatEndReparam_image_Icc] at h_subst_iff
-  have h_subst_Ioc : MeasureTheory.IntegrableOn
-      (fun x => deriv flatEndReparam x • h (flatEndReparam x)) (Set.Ioc (0:ℝ) 1)
-      MeasureTheory.volume :=
-    (h_subst_iff.mp h_int_Icc).mono_set Set.Ioc_subset_Icc_self
-  have h_sub_intInt : IntervalIntegrable
-      (fun x => deriv flatEndReparam x • h (flatEndReparam x)) MeasureTheory.volume 0 1 :=
-    (intervalIntegrable_iff_integrableOn_Ioc_of_le (by norm_num : (0:ℝ) ≤ 1)).mpr h_subst_Ioc
-  apply h_sub_intInt.congr
-  intro t _ht
-  have hrt : flatEndReparam t ∈ Set.uIcc (0:ℝ) 1 := by
-    rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]; exact flatEndReparam_mem_unit t
-  have h_speed := pathSpeed_flatEndReparam_comp_eq γ t (hγ_diff (flatEndReparam t) hrt)
-  show deriv flatEndReparam t • h (flatEndReparam t) =
-    α.toFun (γ (flatEndReparam t)) (pathSpeed (γ ∘ flatEndReparam) t)
-  rw [h_speed]
-  have h_lin : α.toFun (γ (flatEndReparam t))
-        (((deriv flatEndReparam t : ℝ) : ℂ) * pathSpeed γ (flatEndReparam t)) =
-      ((deriv flatEndReparam t : ℝ) : ℂ) *
-        α.toFun (γ (flatEndReparam t)) (pathSpeed γ (flatEndReparam t)) := by
-    have h_ml := (α.toFun (γ (flatEndReparam t))).map_smul
-      ((deriv flatEndReparam t : ℝ) : ℂ) (pathSpeed γ (flatEndReparam t))
-    simp only [smul_eq_mul] at h_ml
-    exact h_ml
-  rw [h_lin]
-  show (deriv flatEndReparam t : ℝ) • h (flatEndReparam t) =
-    ((deriv flatEndReparam t : ℝ) : ℂ) * h (flatEndReparam t)
-  exact Complex.real_smul
-
-
 /-- **§3 sub-piece B — smoothness of the lift.** A continuous lift `Γ` of `δ`
 through a non-critical point inherits `δ`'s chart-pullback differentiability.
 Given `Γ` continuous at `t₀`, `f ∘ Γ = δ` near `t₀`, `Γ t₀` off the critical set,

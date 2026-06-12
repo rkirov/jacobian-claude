@@ -66,41 +66,12 @@ theorem dbarFun_sub {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z
   simp only [ContinuousLinearMap.sub_apply]
   ring
 
-/-- `∂̄` commutes with multiplication by a complex constant. -/
-theorem dbarFun_const_smul (c : ℂ) {f : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) :
-    DbarDisk.dbar (fun x => c * f x) z = c * DbarDisk.dbar f z := by
-  unfold DbarDisk.dbar
-  rw [show (fun x => c * f x) = (fun x => c • f x) from rfl, fderiv_fun_const_smul hf c]
-  simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
-  ring
-
-/-- `∂̄` of a `ℝ`-differentiable function is `0` exactly when the function is `ℂ`-differentiable
-(Wirtinger).  This restates `DbarDiskCohomology.differentiableAt_of_dbar_eq_zero` together with the
-standard forward direction `DbarDisk.dbar_eq_zero_of_differentiableAt`. -/
-theorem dbarFun_eq_zero_iff {f : ℂ → ℂ} {z : ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    DbarDisk.dbar f z = 0 ↔ DifferentiableAt ℂ f z :=
-  ⟨DbarDiskCohomology.differentiableAt_of_dbar_eq_zero hf,
-    fun hd => DbarDisk.dbar_eq_zero_of_differentiableAt hd⟩
-
 /-! ### §2 — the function-level ball Čech split (the disk engine, on functions `ℂ → ℂ`)
 
 The genuine analytic content of `H¹(ball, 𝒪) = 0`, packaged on functions.  A **2-set** Čech cocycle
 on a ball is automatically a coboundary by `dbar_holo_splitting_ball`; we record that as the base
 case `ballSplit_two`.  The general n-set assembly (partition of unity over the ball, reducing to a
 single ∂̄-solve) is the OBSTRUCTION-3 gap and lives in §4 as prose. -/
-
-/-- **Function-level ball Čech split (2-set case).**  Given holomorphic `f₁₂ : ℂ → ℂ` on a ball
-`ball c r` that arises as a *smooth* Čech splitting `f₁₂ = h₂ − h₁` (smooth `h₁, h₂` with matching
-∂̄, the Čech 1-cocycle condition for a 2-set cover), there are *holomorphic* `g₁, g₂` on the ball
-with `f₁₂ = g₂ − g₁`. This is exactly `DbarDiskCohomology.dbar_holo_splitting_ball`, recorded as the
-base case of the multi-set ball split. Sorry-free. -/
-theorem ballSplit_two (c : ℂ) {r : ℝ} (hr : 0 < r)
-    {h₁ h₂ : ℂ → ℂ} (hh₁ : ContDiff ℝ (⊤ : ℕ∞) h₁) (hh₂ : ContDiff ℝ (⊤ : ℕ∞) h₂)
-    (hdbar : ∀ z ∈ ball c r, DbarDisk.dbar h₁ z = DbarDisk.dbar h₂ z) :
-    ∃ g₁ g₂ : ℂ → ℂ,
-      DifferentiableOn ℂ g₁ (ball c r) ∧ DifferentiableOn ℂ g₂ (ball c r) ∧
-        ∀ z ∈ ball c r, h₂ z - h₁ z = g₂ z - g₁ z :=
-  DbarDiskCohomology.dbar_holo_splitting_ball c hr hh₁ hh₂ hdbar
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -118,20 +89,6 @@ theorem exists_omegaD_rep {D : Divisor X} {W : Opens X} {f : MGerm W} (hf : f �
     ∃ g : W → ℂ, g ∈ OmegaD D W ∧ toGerm W g = f := by
   obtain ⟨g, hg, hgeq⟩ := hf
   exact ⟨g, hg, hgeq⟩
-
-/-- **`𝒪₀` germ → representative with analytic normal forms.**  A germ-class holomorphic section on
-`W` can be represented by an honest `OmegaD 0 W` function whose ambient-chart normal form is
-analytic at every point of `W`. This is the single-section bridge consumed by the chart-disk
-acyclicity construction before pushing representatives through coordinate disks. -/
-theorem exists_omegaD_zero_rep_analyticNF {W : Opens X} {f : MGerm W}
-    (hf : f ∈ OmegaDGerm (0 : Divisor X) W) :
-    ∃ g : W → ℂ, g ∈ OmegaD (0 : Divisor X) W ∧ toGerm W g = f ∧
-      ∀ y : W,
-        AnalyticAt ℂ
-          (toMeromorphicNFAt (Gext g ∘ (chartAt (H := ℂ) y.1).symm) ((chartAt (H := ℂ) y.1) y.1))
-          ((chartAt (H := ℂ) y.1) y.1) := by
-  obtain ⟨g, hg, hgf⟩ := exists_omegaD_rep hf
-  exact ⟨g, hg, hgf, fun y => analyticAt_toMeromorphicNFAt_Gext_of_mem_OmegaD_zero hg y.2⟩
 
 /-- A `0`-cochain of honest `𝒪_D`-representatives assembles to an `𝒪_D`-germ `0`-cochain.  The germ
 projection of a `sections0`-witness family lands in `sections0` (componentwise `toGerm` of an
@@ -155,18 +112,6 @@ field on a chart disk. -/
 def IsDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X) : Prop :=
   ∀ s ∈ 𝔙.cocycles1 D, s ∈ 𝔙.coboundaries1 D
 
-/-- **Degenerate case: an empty-indexed cover is disk-acyclic.**  When the cover has no patches, the
-1-cochain space `Π (p : ι × ι), MGerm …` is over the empty pair-index `ι × ι`, hence a subsingleton
-type, so the only 1-cocycle is `0 = δ⁰0`.  A sanity check that the
-`cocycles1`/`coboundaries1` plumbing is wired correctly.  (The substantive small case is the 2-patch
-chart-disk cover, handled by the function-level interface below + the ∂̄ engine.) -/
-theorem isDiskAcyclic_of_isEmpty (𝔙 : FiniteFamily X) (D : Divisor X)
-    [IsEmpty 𝔙.ι] : IsDiskAcyclic 𝔙 D := by
-  intro s _
-  have hzero : s = 0 := Subsingleton.elim _ _
-  rw [hzero]
-  exact Submodule.zero_mem _
-
 /-! ### The function-level chart-disk acyclicity predicate (the honest analytic interface)
 
 For the general (≥ 2 patches) case, the germ-level acyclicity reduces to a *function-level*
@@ -189,19 +134,6 @@ def FunctionDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X) : Prop :=
     ∃ η : Π i, 𝔙.U i → ℂ, (∀ i, η i ∈ OmegaD D (𝔙.U i)) ∧
       𝔙.cechDelta0 (fun i => toGerm (𝔙.U i) (η i)) = s
 
-/-- **Function-level base case: empty cover.**  On the empty index type, the `1`-cochain space is
-empty too, so the function-level acyclicity statement is vacuous. This is the function-side analogue
-of `isDiskAcyclic_of_isEmpty`. -/
-theorem functionDiskAcyclic_of_isEmpty (𝔙 : FiniteFamily X) (D : Divisor X)
-    [IsEmpty 𝔙.ι] : FunctionDiskAcyclic 𝔙 D := by
-  intro s hs
-  refine ⟨fun i => False.elim (IsEmpty.false i), ?_, ?_⟩
-  · intro i
-    exact False.elim (IsEmpty.false i)
-  · funext p
-    cases p with
-    | mk i j => exact False.elim (IsEmpty.false i)
-
 /-- **The reduction.** If the function-level chart-disk acyclicity input is available, then the
 cover is germ-level disk-acyclic. Sorry-free: the produced `0`-cochain primitive `η` assembles to a
 `sections0`-element (§3 `toGerm_mem_sections0`) whose `δ⁰`-image is `s`, witnessing
@@ -212,19 +144,6 @@ theorem isDiskAcyclic_of_funcLevel (𝔙 : FiniteFamily X) (D : Divisor X)
   obtain ⟨η, hη, hδ⟩ := h s hs
   rw [FiniteFamily.coboundaries1, Submodule.mem_map]
   exact ⟨fun i => toGerm (𝔙.U i) (η i), toGerm_mem_sections0 𝔙 D η hη, hδ⟩
-
-/-- **The converse bridge.**  A germ-level coboundary witness can be represented by honest
-`OmegaD` functions componentwise, so `IsDiskAcyclic` also supplies the function-level interface. -/
-theorem functionDiskAcyclic_of_isDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X)
-    (h : IsDiskAcyclic 𝔙 D) : FunctionDiskAcyclic 𝔙 D := by
-  intro s hs
-  have hcob : s ∈ 𝔙.coboundaries1 D := h s hs
-  rw [FiniteFamily.coboundaries1, Submodule.mem_map] at hcob
-  obtain ⟨c, hc, hδ⟩ := hcob
-  choose η hη hη_germ using fun i => exists_omegaD_rep (hc i)
-  refine ⟨η, hη, ?_⟩
-  have hcochain : (fun i => toGerm (𝔙.U i) (η i)) = c := funext hη_germ
-  rw [hcochain, hδ]
 
 /-- **Disk-acyclicity collapses `H¹`.** If the cover is germ-level disk-acyclic, then every class of
 `𝔙.cechH1 D` is `0` — i.e. `H¹(𝔙, 𝒪_D)` is the trivial module. This is the form the Serre-D=0 and

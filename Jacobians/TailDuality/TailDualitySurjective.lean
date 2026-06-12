@@ -33,37 +33,6 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 /-! ### §1 Truncation invariance of the residue functional -/
 
-/-- **Truncation invariance.**  Truncating a tail at a level `D` below the form's order bound
-does not change its
-residue pairing: the dropped entries `(p, n)` have `n ≥ −D p`, so their weights
-`(h·ω₀)_{−1−n}` sit at degrees `−1−n < D p ≤ ord` and vanish (anchor (a)). -/
-theorem omegaTailResidue_truncateRaw (ω₀ : HolomorphicOneForms X)
-    (h : MeromorphicFunction X) {D : Divisor X} (hord : OmegaOrderBounded ω₀ h D)
-    (Z : TailSpace X) :
-    omegaTailResidue ω₀ h (truncateRaw (X := X) D Z) = omegaTailResidue ω₀ h Z := by
-  classical
-  -- the difference is supported on entries with zero weight
-  have hzero : ∀ q : X × ℤ, ¬(q.2 < -(D q.1)) → omegaTailWeight ω₀ h q = 0 := by
-    intro q hq
-    rw [omegaTailWeight]
-    refine laurentCoeff_eq_zero_of_lt_order (meromorphicAt_omegaCoeffFun ω₀ h q.1) ?_
-    calc ((-1 - q.2 : ℤ) : WithTop ℤ) < ((D q.1 : ℤ) : WithTop ℤ) := by
-          exact_mod_cast (by omega : (-1 - q.2 : ℤ) < D q.1)
-      _ ≤ _ := hord q.1
-  rw [omegaTailResidue_apply, omegaTailResidue_apply]
-  -- compare the two support sums entry by entry over the union
-  rw [Finset.sum_subset (Finset.subset_union_left
-      (s₁ := (truncateRaw (X := X) D Z).support) (s₂ := Z.support)) (fun q _ hq => by
-    rw [Finsupp.notMem_support_iff.mp hq, zero_mul]),
-    Finset.sum_subset (Finset.subset_union_right
-      (s₁ := (truncateRaw (X := X) D Z).support) (s₂ := Z.support)) (fun q _ hq => by
-    rw [Finsupp.notMem_support_iff.mp hq, zero_mul])]
-  refine Finset.sum_congr rfl fun q _ => ?_
-  rw [truncateRaw_apply]
-  split_ifs with hq
-  · rfl
-  · rw [zero_mul, hzero q hq, mul_zero]
-
 /-! ### §2 The generalized composite: `μ_ψ ∘ μ_{ψ⁻¹} = truncation` -/
 
 /-- **The generalized composite identity**: for `ψ` with surviving germ and the level condition

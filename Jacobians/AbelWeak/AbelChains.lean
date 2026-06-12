@@ -226,13 +226,6 @@ with each curve integral in its discrete (`pathPrimValue`) incarnation. -/
 def period (c : OneChain X) (η : HolomorphicOneForms X) : ℂ :=
   ∑ j, c.coeff j • pathPrimValue η (c.curve j) (c.cont j)
 
-/-- The boundary of a 1-chain has degree zero (Forster §20.4: `deg (∂c) = 0`). -/
-theorem boundary_deg {X : Type*} [TopologicalSpace X] (c : OneChain X) :
-    Divisor.deg X c.boundary = 0 := by
-  rw [boundary, map_sum]
-  refine Finset.sum_eq_zero fun j _ => ?_
-  rw [map_zsmul, map_sub, Divisor.deg_single, Divisor.deg_single, sub_self, smul_zero]
-
 end OneChain
 
 /-! ### Unfolding the Abel hypothesis

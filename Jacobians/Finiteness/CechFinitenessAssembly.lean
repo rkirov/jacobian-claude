@@ -90,13 +90,4 @@ theorem finiteDimensional_cechH1_zero (𝔘 : FiniteCover X) :
     FiniteDimensional ℂ (𝔘.cechH1 (0 : Divisor X)) :=
   finiteDimensional_cechH1_zero_of_chartDiskMontel chartDiskMontel_zero 𝔘
 
-/-- **`exists_cechModel 𝔘 0` — UNCONDITIONAL (the 14.7 route, D = 0, fully discharged).** Combines
-the arbitrary-cover finiteness `finiteDimensional_cechH1_zero` with the artificial single-point
-model. This is the complete, axiom-clean D = 0 instance of `CechFinitenessWiring.exists_cechModel`.
--/
-theorem exists_cechModel_zero (𝔘 : FiniteCover X) :
-    ∃ (d : DiskOverlapData) (c : Coboundaries d),
-      Nonempty (𝔘.cechH1 (0 : Divisor X) ≃ₗ[ℂ] c.supH1) :=
-  exists_cechModel_zero_of_chartDiskMontel chartDiskMontel_zero 𝔘
-
 end Jacobians.Dolbeault

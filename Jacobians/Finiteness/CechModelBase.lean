@@ -182,8 +182,6 @@ noncomputable def Z1cov : Submodule ℂ d.Ccov := LinearMap.ker c.δ1cov.toLinea
 /-- `Z¹(shrinking) = ker δ¹(shrinking)`, a closed subspace of the shrinking 1-cochains. -/
 noncomputable def Z1shr : Submodule ℂ d.Cshr := LinearMap.ker c.δ1.toLinearMap
 
-theorem isClosed_Z1cov : IsClosed (c.Z1cov : Set d.Ccov) := c.δ1cov.isClosed_ker
-
 theorem isClosed_Z1shr : IsClosed (c.Z1shr : Set d.Cshr) := c.δ1.isClosed_ker
 
 noncomputable instance : CompleteSpace c.Z1cov := c.δ1cov.isClosed_ker.completeSpace_coe
@@ -315,20 +313,5 @@ instance : Subsingleton (DiskOverlapData.empty.trivialCoboundaries).supH1 :=
   DiskOverlapData.empty.supH1_trivialCoboundaries_subsingleton
 
 end DiskOverlapData
-
-/-- **`exists_cechModel` for a subsingleton germ-class `H¹` (the assembled acyclic case,
-complete).** If the genuine germ-class `𝔘.cechH1 D` is a SUBSINGLETON, then `exists_cechModel 𝔘 D`
-holds: take the trivial acyclic model (`DiskOverlapData.empty` with its `trivialCoboundaries`, whose
-`leray` disk-acyclicity field is discharged and whose `supH1` is `0`); the comparison
-`𝔘.cechH1 D ≃ₗ supH1` is then `LinearEquiv.ofSubsingleton` (both sides subsingleton `ℂ`-modules).
-This is the end-to-end model assembly for exactly the case the completed disk-acyclicity produces
-(`H¹ = 0`); it is correctly tied to `(𝔘, D)` via the existential (not a free `c`). The geometric
-instantiation — a `SharedChartCover` at `D = 0` discharging the subsingleton hypothesis via
-`hasGluedDbarDatum` — is `CechModelConstruction.exists_cechModel_of_sharedChart_zero`. -/
-theorem exists_cechModel_of_subsingleton (𝔘 : FiniteFamily X) (D : Divisor X)
-    [Subsingleton (𝔘.cechH1 D)] :
-    ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
-  ⟨DiskOverlapData.empty, DiskOverlapData.empty.trivialCoboundaries,
-    ⟨LinearEquiv.ofSubsingleton _ _⟩⟩
 
 end Jacobians.Dolbeault

@@ -115,40 +115,6 @@ def localOrder
     (I : ModelWithCorners ℂ ℂ ℂ) (f : X → ℂ) (x : X) : ℤ :=
   MMeromorphicOn.orderFun I f x
 
-/-- `localOrder` is exactly the underlying `orderFun` — structural identity. -/
-@[simp] lemma localOrder_eq_orderFun
-    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (I : ModelWithCorners ℂ ℂ ℂ) (f : X → ℂ) (x : X) :
-    localOrder I f x = MMeromorphicOn.orderFun I f x := rfl
-
-/-- Unfolded form: `localOrder` is the `WithTop.untop₀` of the meromorphic
-order at `x`. -/
-lemma localOrder_eq_untop₀
-    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (I : ModelWithCorners ℂ ℂ ℂ) (f : X → ℂ) (x : X) :
-    localOrder I f x = (mmeromorphicOrderAt I f x).untop₀ := rfl
-
-/-- Under the no-germ-zero hypothesis, `localOrder I f x = 0` iff
-`mmeromorphicOrderAt I f x = 0` (no spurious `⊤ ↦ 0` collapse).
-
-Inlined (rather than delegated to `MMeromorphicOn.orderFun_eq_zero_iff`)
-because the latter carries a spurious `[IsManifold ...]` dependency from
-its enclosing `variable` block; the statement here is purely about
-`WithTop ℤ.untop₀` and needs no manifold structure. -/
-lemma localOrder_eq_zero_iff
-    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
-    {I : ModelWithCorners ℂ ℂ ℂ} {f : X → ℂ} {x : X}
-    (hf0 : mmeromorphicOrderAt I f x ≠ ⊤) :
-    localOrder I f x = 0 ↔ mmeromorphicOrderAt I f x = 0 := by
-  change (mmeromorphicOrderAt I f x).untop₀ = 0 ↔ _
-  constructor
-  · intro h
-    rcases WithTop.untop₀_eq_zero.mp h with h0 | htop
-    · exact h0
-    · exact (hf0 htop).elim
-  · intro h
-    rw [h]; rfl
-
 /-! ## The chart-coordinate local normal form
 
 The honest content. We invoke the mathlib lemma `meromorphicOrderAt_eq_int_iff`
@@ -159,115 +125,6 @@ namespace MMeromorphicAt
 
 variable {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
 variable {I : ModelWithCorners ℂ ℂ ℂ} {f : X → ℂ} {x : X}
-
-/-- **Local normal form for a meromorphic function in chart coordinates.**
-
-For `f : X → ℂ` meromorphic at `x : X` on a complex chart, with finite
-chart-pullback order `k = (mmeromorphicOrderAt I f x).untop₀`, the chart
-representative `f ∘ (chartAt ℂ x).symm` admits the local form
-
-  `(f ∘ chart⁻¹)(z) = (z - (chartAt ℂ x) x) ^ k • g(z)`
-
-for some analytic `g` with `g ((chartAt ℂ x) x) ≠ 0`, on a punctured
-neighborhood of `(chartAt ℂ x) x`.
-
-This is the **chart-coordinate** version of R3. The R3 statement in
-`ResidueTheorem.lean` further requires extracting the *topological*
-multiplicity (cardinality of preimages); that step is deferred from a
-mathlib-side Rouché argument and is captured as
-`localMultiplicity_eq_localOrder_statement` below.
-
-Proof: direct application of `meromorphicOrderAt_eq_int_iff`. -/
-theorem exists_local_normal_form
-    (hf : MMeromorphicAt I f x)
-    (hf0 : mmeromorphicOrderAt I f x ≠ ⊤) :
-    ∃ g : ℂ → ℂ,
-      AnalyticAt ℂ g ((chartAt ℂ x) x) ∧
-      g ((chartAt ℂ x) x) ≠ 0 ∧
-      ∀ᶠ z in 𝓝[≠] ((chartAt ℂ x) x),
-        (f ∘ (chartAt ℂ x).symm) z = (z - (chartAt ℂ x) x) ^ localOrder I f x • g z := by
-  -- Unfold `MMeromorphicAt` to the underlying flat-domain `MeromorphicAt`.
-  have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
-  -- The flat-domain order equals our `localOrder` definitionally
-  -- (`localOrder = (mmeromorphicOrderAt I f x).untop₀ = meromorphicOrderAt _ _.untop₀`).
-  set k : ℤ := localOrder I f x with hk
-  have h_order_ne_top :
-      meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) ≠ ⊤ := hf0
-  -- Express `meromorphicOrderAt _ _ = (k : ℤ)` so we can apply
-  -- `meromorphicOrderAt_eq_int_iff`.
-  have h_order_eq :
-      meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = (k : WithTop ℤ) := by
-    -- `k = (mmeromorphicOrderAt I f x).untop₀ = meromorphicOrderAt _ _.untop₀`,
-    -- and a `WithTop ℤ` value `≠ ⊤` equals the cast of its `untop₀`.
-    change meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) =
-      ((meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)).untop₀ : WithTop ℤ)
-    exact (WithTop.coe_untop₀_of_ne_top h_order_ne_top).symm
-  -- Apply the mathlib characterization.
-  exact (meromorphicOrderAt_eq_int_iff hf').mp h_order_eq
-
-/-- **Local normal form for an analytic function in chart coordinates.**
-
-Strengthening of `exists_local_normal_form` to a *full* neighborhood (not
-just punctured) when `f` is analytic at the chart image, i.e. when the
-order is `≥ 0`. This is the case relevant to `R3` for *zeros* (rather
-than poles) of `f`.
-
-Proof: combine the punctured-neighborhood form with continuity of the
-right-hand side at `(chartAt ℂ x) x` (where `(z - x₀)^k` is continuous
-for `k ≥ 0` and the value at `x₀` is `0` for `k > 0`, matching `f x`). -/
-theorem exists_local_normal_form_of_nonneg
-    (_hf : MMeromorphicAt I f x)
-    (hf0 : mmeromorphicOrderAt I f x ≠ ⊤)
-    (hk : 0 ≤ localOrder I f x)
-    (hf_an : AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)) :
-    ∃ g : ℂ → ℂ,
-      AnalyticAt ℂ g ((chartAt ℂ x) x) ∧
-      g ((chartAt ℂ x) x) ≠ 0 ∧
-      ∀ᶠ z in 𝓝 ((chartAt ℂ x) x),
-        (f ∘ (chartAt ℂ x).symm) z =
-          (z - (chartAt ℂ x) x) ^ (localOrder I f x).toNat • g z := by
-  -- Step 1: The analytic order equals `(localOrder I f x).toNat`.
-  -- Use the analytic-order/meromorphic-order compatibility lemma.
-  set k : ℤ := localOrder I f x with hk_def
-  set n : ℕ := k.toNat with hn_def
-  have h_kn : (k : WithTop ℤ) = ((n : ℤ) : WithTop ℤ) := by
-    simp [hn_def, Int.toNat_of_nonneg hk]
-  -- The analytic order (`ℕ∞`-valued) equals `n`.
-  have h_an_order : analyticOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = (n : ℕ∞) := by
-    -- From `AnalyticAt.meromorphicOrderAt_eq` we have
-    -- `meromorphicOrderAt = (analyticOrderAt).map (↑)`. Combine with `h_order_eq` from the
-    -- meromorphic side.
-    have h_mero_eq : meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
-        = (analyticOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)).map (↑· : ℕ → ℤ) :=
-      hf_an.meromorphicOrderAt_eq
-    have h_mero_int : meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
-        = (k : WithTop ℤ) := by
-      show meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = (k : WithTop ℤ)
-      have h_ne_top :
-          meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) ≠ ⊤ := hf0
-      exact (WithTop.coe_untop₀_of_ne_top h_ne_top).symm
-    -- Combine: `(analyticOrderAt _).map (↑) = (n : ℤ)` ⟹ `analyticOrderAt _ = n`.
-    have h_combined :
-        (analyticOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)).map (↑· : ℕ → ℤ)
-          = ((n : ℤ) : WithTop ℤ) := by
-      rw [← h_mero_eq, h_mero_int, h_kn]
-    -- The map `Nat.cast : ℕ → ℤ` is injective on `WithTop`; extract `analyticOrderAt _ = n`.
-    -- We do this by case analysis on `analyticOrderAt _`.
-    cases h_top : analyticOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) with
-    | top =>
-      -- Then `(⊤).map _ = ⊤ ≠ ((n : ℤ) : WithTop ℤ)` — contradiction.
-      rw [h_top] at h_combined
-      exact absurd h_combined (by simp)
-    | coe m =>
-      rw [h_top] at h_combined
-      -- `(m : ℕ).map _ = (m : ℤ)` and `((n : ℤ) : WithTop ℤ) = ((n : ℤ) : WithTop ℤ)`.
-      simp only [ENat.map_coe] at h_combined
-      -- `((m : ℤ) : WithTop ℤ) = ((n : ℤ) : WithTop ℤ)` ⟹ `m = n`.
-      have h_eq : (m : ℤ) = (n : ℤ) := by exact_mod_cast h_combined
-      have h_mn : m = n := by exact_mod_cast h_eq
-      rw [h_mn]
-  -- Step 2: Apply `analyticOrderAt_eq_natCast` to extract the local form.
-  exact (hf_an.analyticOrderAt_eq_natCast).mp h_an_order
 
 /-! ### Topological-multiplicity content for the analytic case
 
@@ -284,58 +141,6 @@ nonvanishing derivative). We discharge that slice honestly here. The general
 `localMultiplicity_eq_order_punctured_statement` below as a `Prop`-valued
 `def` (not an `axiom`). -/
 
-/-- **The order-1 case of the topological-multiplicity bridge.**
-
-For an analytic function `g : ℂ → ℂ` with `g 0 = 0` and `deriv g 0 ≠ 0`, the
-function `g` is locally injective on some neighborhood of `0`. (No use is
-made of `g 0 = 0` in the proof — local injectivity follows from the
-nonvanishing-derivative hypothesis alone via the inverse function theorem —
-but the hypothesis is kept to match the calling shape from
-`exists_local_normal_form_of_nonneg` with `k = 1`.)
-
-This is the order-`k = 1` slice of the Rouché-style statement
-`localMultiplicity_eq_order_punctured_statement`: when `k = 1`, the equation
-`g z = w` has a *unique* solution near `0` for every `w` close enough to `0`,
-so in particular the cardinality is `1`.
-
-Proof: `AnalyticAt.hasStrictDerivAt` (from `Mathlib.Analysis.Calculus.FDeriv
-.Analytic`) lifts `AnalyticAt` to `HasStrictDerivAt`. Since the strict
-derivative `deriv g 0` is nonzero, `HasStrictDerivAt.hasStrictFDerivAt_equiv`
-(from `Mathlib.Analysis.Calculus.Deriv.Inverse`) repackages the strict
-derivative as a `ContinuousLinearEquiv`, and the inverse function theorem
-(`HasStrictFDerivAt.toOpenPartialHomeomorph` in
-`Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv`) gives an
-`OpenPartialHomeomorph` whose source is an open neighborhood of `0` on which
-`g` is injective. -/
-lemma localMultiplicity_one_locally_injective
-    {g : ℂ → ℂ} (h : AnalyticAt ℂ g 0) (_h0 : g 0 = 0) (hd : deriv g 0 ≠ 0) :
-    ∃ U ∈ nhds (0 : ℂ), Set.InjOn g U := by
-  -- 1. Lift `AnalyticAt` to `HasStrictDerivAt` via the analytic-derivative bridge.
-  have hsd : HasStrictDerivAt g (deriv g 0) 0 := h.hasStrictDerivAt
-  -- 2. Repackage `HasStrictDerivAt` with nonvanishing derivative as
-  --    `HasStrictFDerivAt` with a continuous-linear-equiv `f'`.
-  have hsfd :
-      HasStrictFDerivAt g
-        (ContinuousLinearEquiv.unitsEquivAut ℂ (Units.mk0 (deriv g 0) hd) :
-          ℂ →L[ℂ] ℂ) 0 :=
-    hsd.hasStrictFDerivAt_equiv hd
-  -- 3. The inverse function theorem yields an `OpenPartialHomeomorph` whose
-  --    `toFun` is `g`, with `0 ∈ source` and `source` open.
-  let φ : OpenPartialHomeomorph ℂ ℂ := hsfd.toOpenPartialHomeomorph g
-  have h0_src : (0 : ℂ) ∈ φ.source := hsfd.mem_toOpenPartialHomeomorph_source
-  -- The source of an `OpenPartialHomeomorph` is open, so it is a neighborhood
-  -- of any point it contains.
-  have h_src_nhds : φ.source ∈ nhds (0 : ℂ) :=
-    φ.open_source.mem_nhds h0_src
-  -- And `φ` is injective on its source (the partial-equiv left-inverse property).
-  have h_inj_φ : Set.InjOn (φ : ℂ → ℂ) φ.source := φ.injOn
-  -- The coercion `(φ : ℂ → ℂ)` is definitionally `g` (`toOpenPartialHomeomorph_coe`).
-  have h_coe : (φ : ℂ → ℂ) = g := hsfd.toOpenPartialHomeomorph_coe
-  refine ⟨φ.source, h_src_nhds, ?_⟩
-  -- Transport injectivity along the definitional equality.
-  rw [← h_coe]
-  exact h_inj_φ
-
 end MMeromorphicAt
 
 /-! ## The headline R3 statement (Prop-valued, not axiom)
@@ -351,50 +156,6 @@ counting that is not in mathlib at the pin. -/
 variable (X : Type u)
   [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X]
   [IsManifold (modelWithCornersSelf ℂ ℂ) ω X]
-
-/-- **Local multiplicity = local order.** For every meromorphic `f` and
-every `x : X`, the chart-coordinate local form gives a unique `k = localOrder
-I f x` with `f ∘ chart⁻¹ = (z - chart x)^k · g(z)` on a punctured neighborhood.
-The classical assertion (R3) is that, when `k > 0`, the topological
-multiplicity of `f` at `x` (cardinality of `f⁻¹ {w} ∩ U` for any sufficiently
-small neighborhood `U` of `x` and any sufficiently close-to-`f x` value `w`)
-equals `k.natAbs`.
-
-We package this as the conjunction of:
-
-* the chart-coordinate local form (proven above as
-  `MMeromorphicAt.exists_local_normal_form`);
-* the topological-multiplicity bridge (the actual count statement).
-
-For the **bridge** we use the equivalent formulation: there exists an open
-neighborhood `U` of `x` and a deleted neighborhood `V` of `f x` such that for
-every `w ∈ V`, the set `{y ∈ U | f y = w}` has exactly `(localOrder I f x).natAbs`
-elements (when the order is positive; the pole case is symmetric via
-`f⁻¹`).
-
-**Status.** Stated, not proven (the Rouché count). ⚠ The `f x = 0` hypothesis is
-required: without it the statement is *false* — `f x` is a junk value
-on the punctured germ (e.g. `f z = z` for `z ≠ 0`, `f 0 = 5`: `localOrder = 1` yet
-`f 0 ≠ 0`), while the count is centered at `f x`. Under `f x = 0` the honest content is
-proved in `RoucheBridge.lean` (`localMultiplicity_eq_localOrder_count_of_apply_eq_zero`). -/
-def localMultiplicity_eq_localOrder_statement : Prop :=
-  ∀ (f : X → ℂ) (_ : MMeromorphicOn (modelWithCornersSelf ℂ ℂ) f Set.univ)
-    (_ : ∀ x, mmeromorphicOrderAt (modelWithCornersSelf ℂ ℂ) f x ≠ ⊤)
-    (x : X),
-    -- Positive-order (zero) case: the topological multiplicity at `x` over
-    -- nearby values `w` is the natural-number absolute value of the local order.
-    -- We use `Set.ncard` (cardinality of a `Set`, `0` for infinite sets) so
-    -- the statement does not need a separate finiteness hypothesis embedded in
-    -- the type. The implicit content of "for sufficiently nearby `w`, the count
-    -- equals `k`" includes the assertion that the preimage set is finite (and
-    -- so `ncard` is the honest cardinality).
-    0 < localOrder (modelWithCornersSelf ℂ ℂ) f x → f x = 0 →
-      ∃ (U : Set X) (V : Set ℂ),
-        IsOpen U ∧ x ∈ U ∧
-        IsOpen V ∧ f x ∈ V ∧
-        ∀ w ∈ V, w ≠ f x →
-          ({y ∈ U | f y = w} : Set X).ncard =
-            (localOrder (modelWithCornersSelf ℂ ℂ) f x).natAbs
 
 /-! ## Compatibility statement bridging `localOrder` to the existing
 `R3_localMultiplicity_statement` in `ResidueTheorem.lean`
@@ -582,48 +343,6 @@ Cauchy's theorem (Cauchy–Goursat) applied to `deriv f / f` then gives
 This is the `k = 0` (no-zero, no-pole) leg of the argument principle, and it
 is honestly proven below from `Complex.circleIntegral_eq_zero_of_differentiable_on_off_countable`.
 The general (k ≥ 1) case is deferred; see `argumentPrinciple_disk_statement`. -/
-
-/-- **Argument principle, trivial (k = 0) case.**
-
-If `f : ℂ → ℂ` is holomorphic on a neighborhood of the closed disk
-`closedBall z₀ r` (with `0 ≤ r`) and is nonzero everywhere on that closed
-disk, then the contour integral of the logarithmic derivative `f' / f`
-around the boundary circle is zero:
-
-  `∮_{|z - z₀| = r} (deriv f z) / f z  dz = 0`.
-
-**Proof.** Where `f ≠ 0`, the function `deriv f / f` is differentiable
-(`deriv f` is analytic by `AnalyticOnNhd.deriv`, and division by a nonvanishing
-analytic function is analytic). Hence `deriv f / f` is differentiable on the
-open ball and continuous on the closed ball, so Cauchy–Goursat
-(`circleIntegral_eq_zero_of_differentiable_on_off_countable` with empty
-exceptional set) gives the integral is zero. -/
-theorem argumentPrinciple_disk_zero_case
-    {f : ℂ → ℂ} {z₀ : ℂ} {r : ℝ} (hr : 0 ≤ r)
-    (hf : AnalyticOnNhd ℂ f (Metric.closedBall z₀ r))
-    (hne : ∀ z ∈ Metric.closedBall z₀ r, f z ≠ 0) :
-    (∮ z in C(z₀, r), deriv f z / f z) = 0 := by
-  -- `deriv f` is analytic on a neighborhood of the closed ball.
-  have hf' : AnalyticOnNhd ℂ (deriv f) (Metric.closedBall z₀ r) := hf.deriv
-  -- `deriv f / f` is analytic on a neighborhood of the closed ball, since `f ≠ 0` there.
-  have hquot : AnalyticOnNhd ℂ (deriv f / f) (Metric.closedBall z₀ r) := by
-    intro z hz
-    exact (hf' z hz).div (hf z hz) (hne z hz)
-  -- Continuous on the closed ball.
-  have hcont : ContinuousOn (deriv f / f) (Metric.closedBall z₀ r) :=
-    hquot.continuousOn
-  -- Differentiable at every point of the open ball.
-  have hdiff : ∀ z ∈ Metric.ball z₀ r,
-      DifferentiableAt ℂ (deriv f / f) z := fun z hz =>
-    (hquot z (Metric.ball_subset_closedBall hz)).differentiableAt
-  -- Apply Cauchy–Goursat with empty exceptional set.
-  have hzero : (∮ z in C(z₀, r), (deriv f / f) z) = 0 :=
-    Complex.circleIntegral_eq_zero_of_differentiable_on_off_countable
-      (E := ℂ) (R := r) (c := z₀) (f := deriv f / f)
-      (s := (∅ : Set ℂ)) hr Set.countable_empty hcont
-      (fun z hz => hdiff z hz.1)
-  -- `(deriv f / f) z = deriv f z / f z` definitionally (Pi division).
-  simpa [Pi.div_apply] using hzero
 
 end MMeromorphicAt
 

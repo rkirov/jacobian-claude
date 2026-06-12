@@ -44,14 +44,6 @@ theorem det_restrictScalars_smulRight (d : ℂ) :
     Complex.normSq_apply, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]
   ring
 
-/-- **The real Jacobian of a holomorphic map**: at a point of ℂ-differentiability,
-`det (fderiv ℝ T z) = normSq (deriv T z)`. -/
-theorem det_fderiv_eq_normSq_deriv {T : ℂ → ℂ} {z : ℂ} (hT : DifferentiableAt ℂ T z) :
-    (fderiv ℝ T z).det = Complex.normSq (deriv T z) := by
-  have hfd : fderiv ℝ T z = ((1 : ℂ →L[ℂ] ℂ).smulRight (deriv T z)).restrictScalars ℝ :=
-    ((hT.hasDerivAt.hasFDerivAt).restrictScalars ℝ).fderiv
-  rw [hfd, det_restrictScalars_smulRight]
-
 /-! ### Change of variables under a holomorphic injective map -/
 
 /-- **Planar holomorphic change of variables** (unconditional — both sides may fail to be
@@ -125,17 +117,5 @@ theorem deriv_mul_deriv_inverse {T S : ℂ → ℂ} {z : ℂ}
   have h := deriv_comp z hS hT
   rw [hid.deriv_eq, deriv_id] at h
   exact h.symm
-
-/-- The combined transport factor: for `T` holomorphic at `z` with local inverse `S` at `T z`,
-`S′(T z) · normSq (T′ z) = conj (T′ z)` — exactly how the `(1,0)`-coefficient derivative and the
-real Jacobian combine in the ledger's change of variables. -/
-theorem deriv_inverse_mul_normSq {T S : ℂ → ℂ} {z : ℂ}
-    (hT : DifferentiableAt ℂ T z) (hS : DifferentiableAt ℂ S (T z))
-    (hid : (S ∘ T) =ᶠ[𝓝 z] id) :
-    deriv S (T z) * (Complex.normSq (deriv T z) : ℂ) = (starRingEnd ℂ) (deriv T z) := by
-  have hinv := deriv_mul_deriv_inverse hT hS hid
-  have hns : (Complex.normSq (deriv T z) : ℂ) = deriv T z * (starRingEnd ℂ) (deriv T z) :=
-    (Complex.mul_conj (deriv T z)).symm
-  rw [hns, ← mul_assoc, hinv, one_mul]
 
 end Jacobians.Dolbeault

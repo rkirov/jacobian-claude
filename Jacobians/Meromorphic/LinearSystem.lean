@@ -88,8 +88,6 @@ noncomputable instance : SMul ℂ (MeromorphicFunction X) :=
 
 @[simp] theorem add_toFun (f g : MeromorphicFunction X) :
     (f + g).toFun = f.toFun + g.toFun := rfl
-@[simp] theorem zero_toFun : (0 : MeromorphicFunction X).toFun = 0 := rfl
-@[simp] theorem neg_toFun (f : MeromorphicFunction X) : (-f).toFun = -f.toFun := rfl
 @[simp] theorem sub_toFun (f g : MeromorphicFunction X) :
     (f - g).toFun = f.toFun - g.toFun := rfl
 @[simp] theorem smul_toFun (c : ℂ) (f : MeromorphicFunction X) :

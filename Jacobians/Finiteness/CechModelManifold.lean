@@ -212,17 +212,6 @@ theorem bddHol_pullback_mem_OmegaD_zero_image {y : X} {V : Opens X}
         intro z hz
         exact hz) g
 
-/-- **Inverse exact-image K-bridge as a linear map.**  Pulling a `BddHol` function back along the
-chart on the exact image of `V` yields an `OmegaD 0` section of `V`. -/
-noncomputable def bddHolToOmegaD_zero_image {y : X} {V : Opens X}
-    (hV : (V : Set X) ⊆ (chartAt (H := ℂ) y).source) :
-    BddHol ((chartAt (H := ℂ) y) '' (V : Set X)) →ₗ[ℂ] OmegaD (0 : Divisor X) V where
-  toFun g :=
-    ⟨fun x : V => g.toFun ((chartAt (H := ℂ) y) x),
-      bddHol_pullback_mem_OmegaD_zero_image (y := y) hV g⟩
-  map_add' _ _ := rfl
-  map_smul' _ _ := rfl
-
 /-- **Inverse exact-image K-bridge at the germ level.** Pulling a `BddHol` function back along the
 chart on the exact image of `V` yields an `OmegaDGerm 0` section of `V`. This is the germ-class
 version of `bddHolToOmegaD_zero_image`, and the bridge the cochain comparison can consume. -/
@@ -233,17 +222,6 @@ noncomputable def bddHolToOmegaDGerm_zero_image {y : X} {V : Opens X}
     ⟨toGerm V (fun x : V => g.toFun ((chartAt (H := ℂ) y) x)),
       ⟨fun x : V => g.toFun ((chartAt (H := ℂ) y) x),
         bddHol_pullback_mem_OmegaD_zero_image (y := y) hV g, rfl⟩⟩
-  map_add' _ _ := rfl
-  map_smul' _ _ := rfl
-
-/-- **Inverse exact-image K-bridge as a linear map.**  Pulling a `BddHol` function back along the
-chart on the exact image of `V` yields an `OmegaD 0` section of `V`. -/
-noncomputable def bddHolToOmegaD_zero {y : X} {V : Opens X}
-    (hV : (V : Set X) ⊆ (chartAt (H := ℂ) y).source) :
-    BddHol ((chartAt (H := ℂ) y) '' (V : Set X)) →ₗ[ℂ] OmegaD (0 : Divisor X) V where
-  toFun g :=
-    ⟨fun x : V => g.toFun ((chartAt (H := ℂ) y) x),
-      bddHol_pullback_mem_OmegaD_zero_image (y := y) hV g⟩
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
 

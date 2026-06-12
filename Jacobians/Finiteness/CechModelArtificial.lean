@@ -86,12 +86,6 @@ def artificialData (k : ℕ) : DiskOverlapData where
     subst hz
     simp [Metric.mem_ball]
 
-@[simp] theorem artificialData_Uov (k : ℕ) (p : Fin k) :
-    (artificialData k).Uov p = Metric.ball (0 : ℂ) 1 := rfl
-
-@[simp] theorem artificialData_Kov (k : ℕ) (p : Fin k) :
-    (artificialData k).Kov p = {(0 : ℂ)} := rfl
-
 /-- `rhoRaw` of the artificial model is SURJECTIVE: each component
 `BddHol.restrictCLM : BddHol (ball 0 1) → (↥{0} →ᵇ ℂ)` is surjected by a constant
 bounded-holomorphic function, since the one-point bcf is determined by its value at `0`. -/

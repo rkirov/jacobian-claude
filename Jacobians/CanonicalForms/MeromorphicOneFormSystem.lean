@@ -176,14 +176,8 @@ noncomputable instance : SMul ℤ (MeromorphicOneForm X) :=
 noncomputable instance : SMul ℂ (MeromorphicOneForm X) :=
   ⟨fun c α => ⟨c • α.toFun, IsMeromorphicOneForm.const_smul c α.meromorphic⟩⟩
 
-@[simp] theorem zero_toFun : (0 : MeromorphicOneForm X).toFun = 0 := rfl
-@[simp] theorem add_toFun (α β : MeromorphicOneForm X) :
-    (α + β).toFun = α.toFun + β.toFun := rfl
-@[simp] theorem neg_toFun (α : MeromorphicOneForm X) : (-α).toFun = -α.toFun := rfl
 @[simp] theorem sub_toFun (α β : MeromorphicOneForm X) :
     (α - β).toFun = α.toFun - β.toFun := rfl
-@[simp] theorem smul_toFun (c : ℂ) (α : MeromorphicOneForm X) :
-    (c • α).toFun = c • α.toFun := rfl
 
 noncomputable instance : AddCommGroup (MeromorphicOneForm X) :=
   toFun_injective.addCommGroup _ rfl (fun _ _ => rfl) (fun _ => rfl) (fun _ _ => rfl)
@@ -333,22 +327,6 @@ theorem formOrderW_meroFormSMul (f : MeromorphicFunction X) (α : MeromorphicOne
     MeromorphicOneForm.formOrderW]
   exact meromorphicOrderAt_mul (f.meromorphic x) (α.meromorphic x)
 
-/-- **Forster 17.4 — `L(D) · Ω_E ⊆ Ω_{D+E}`.**  Multiplying a form in `Ω_E` by a function in `L(D)`
-lands in `Ω_{D+E}`: orders add, and `−D ≤ orderW f`, `−E ≤ formOrderW α` give
-`−(D+E) ≤ orderW f + formOrderW α`. -/
-theorem meroFormSMul_mem_omegaD {D E : Divisor X} {f : MeromorphicFunction X}
-    {α : MeromorphicOneForm X} (hf : f ∈ linearSystem (X := X) D) (hα : α ∈ omegaD (X := X) E) :
-    meroFormSMul f α ∈ omegaD (X := X) (D + E) := by
-  intro x
-  rw [formOrderW_meroFormSMul]
-  have h1 : (-(D x) : WithTop ℤ) ≤ f.orderW x := hf x
-  have h2 : (-(E x) : WithTop ℤ) ≤ α.formOrderW x := hα x
-  have hle : (-(D x) : WithTop ℤ) + (-(E x) : WithTop ℤ) ≤ f.orderW x + α.formOrderW x :=
-    add_le_add h1 h2
-  have heq : (-((D + E) x) : WithTop ℤ) = (-(D x) : WithTop ℤ) + (-(E x) : WithTop ℤ) := by
-    rw [Finsupp.add_apply]; norm_cast; ring
-  rw [heq]; exact hle
-
 /-! ## Part 3: non-vacuity and the soundness anchor `Ω_0 ⊇ HolomorphicOneForms`
 
 A holomorphic 1-form is a meromorphic 1-form (its coordinate coefficient `Montel.localRep ∘ chart⁻¹`
@@ -408,28 +386,6 @@ noncomputable def holToMeroₗ : HolomorphicOneForms X →ₗ[ℂ] MeromorphicOn
   map_smul' c α :=
     MeromorphicOneForm.ext (show holToSection (c • α) = c • holToSection α by
       funext x; exact congrFun (ContMDiffSection.coe_smul c α) x)
-
-@[simp] theorem holToMeroₗ_apply (α : HolomorphicOneForms X) : holToMeroₗ α = holToMero α := rfl
-
-/-- `holToMeroₗ` is **injective**: equal underlying sections force equal holomorphic forms
-(`ContMDiffSection.coe_injective`). -/
-theorem holToMeroₗ_injective :
-    Function.Injective (holToMeroₗ (X := X)) := by
-  intro α β h
-  apply ContMDiffSection.coe_injective
-  have : (holToMero α).toFun = (holToMero β).toFun := congrArg MeromorphicOneForm.toFun h
-  exact this
-
-/-- **Non-vacuity / soundness anchor.**  `Ω_0` is non-trivial: it contains a faithful copy of the
-genus-dimensional space of holomorphic 1-forms.  Concretely, `holToMeroₗ` is an injective ℂ-linear
-map `HolomorphicOneForms X → MeromorphicOneForm X` whose image lies in `Ω_0`.  In particular, for an
-effective `D` (all `0 ≤ D x`), `Ω_D ⊇ Ω_0 ⊇ HolomorphicOneForms`, so `Ω_D` is the genuine Forster
-object, not a junk space. -/
-theorem holToMero_mem_omegaD_of_effective {D : Divisor X} (hD : ∀ x, 0 ≤ D x)
-    (α : HolomorphicOneForms X) : holToMero α ∈ omegaD (X := X) D := by
-  have h0 : holToMero α ∈ omegaD (X := X) 0 := holToMero_mem_omegaD_zero α
-  refine omegaD_mono ?_ h0
-  intro x; simpa using hD x
 
 /-! ### `Ω_0 ≅ HolomorphicOneForms` — the soundness check (Forster §17.4 at `D = 0`)
 
@@ -506,14 +462,6 @@ theorem genus_le_omegaDim_zero [FiniteDimensional ℂ (omegaDModule (X := X) 0)]
     _ ≤ finrank ℂ (omegaDModule (X := X) 0) :=
           LinearMap.finrank_le_finrank_of_injective holToOmega0Module_injective
     _ = omegaDim (X := X) 0 := rfl
-
-/-- **The unconditional rank bound** `rank (HolomorphicOneForms) ≤ rank (omegaDModule 0)`.  The
-honest junk-value-free soundness statement: the holomorphic forms inject into the meromorphic-1-form
-quotient `Ω_0` (`holToOmega0Module_injective`), so its module rank is at least the genus rank — with
-no finiteness hypothesis.  (Upgrades to `genus ≤ omegaDim 0` once `Ω_0` is known finite-dim.) -/
-theorem rank_holomorphicOneForms_le_omega0 :
-    Module.rank ℂ (HolomorphicOneForms X) ≤ Module.rank ℂ (omegaDModule (X := X) 0) :=
-  holToOmega0Module.rank_le_of_injective holToOmega0Module_injective
 
 /-- **`Ω_0 ≅ HolomorphicOneForms` (the full §17.4 soundness equality), conditional on the reverse
 bound.**  `omegaDim 0 = genus X` follows from the proven lower bound `genus_le_omegaDim_zero`

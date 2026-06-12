@@ -75,38 +75,6 @@ in a manifestly chart-independent way: **`f` has a limit along the punctured nei
 chart homeomorphism is elementary (`OpenPartialHomeomorph.tendsto_nhdsNE`,
 `Jacobians.MeromorphicNFRepair`). -/
 
-/-- The order of `f` at `x` is `≥ 0` iff `f.toFun` has a limit along the punctured neighborhood of
-`x` — a manifestly chart-independent statement. -/
-theorem MeromorphicFunction.orderAtPoint_nonneg_iff_tendsto
-    (f : MeromorphicFunction X) (x : X) :
-    0 ≤ f.orderAtPoint x ↔ ∃ c, Tendsto f.toFun (𝓝[≠] x) (𝓝 c) := by
-  set φ := chartAt (H := ℂ) x with hφ
-  have hxs : x ∈ φ.source := mem_chart_source ℂ x
-  have hmero : MeromorphicAt (f.toFun ∘ φ.symm) (φ x) := f.meromorphic x
-  -- bridge ℤ-order to WithTop-order, then to the punctured-limit of the pullback
-  rw [show f.orderAtPoint x = (meromorphicOrderAt (f.toFun ∘ φ.symm) (φ x)).untop₀ from rfl,
-    untop₀_nonneg_iff, ← tendsto_nhds_iff_meromorphicOrderAt_nonneg hmero]
-  constructor
-  · rintro ⟨c, hc⟩
-    -- pullback has a limit at φ x  ⟹  f.toFun has a limit at x.
-    -- Compose `f.toFun ∘ φ.symm` (limit at φx) with the forward chart `φ` (𝓝[≠]x → 𝓝[≠]φx).
-    refine ⟨c, ?_⟩
-    have htfwd : Tendsto φ (𝓝[≠] x) (𝓝[≠] (φ x)) := φ.tendsto_nhdsNE hxs
-    have hcomp : Tendsto (f.toFun ∘ φ.symm ∘ φ) (𝓝[≠] x) (𝓝 c) := hc.comp htfwd
-    refine hcomp.congr' ?_
-    have hev : ∀ᶠ y in 𝓝 x, y ∈ φ.source := φ.open_source.mem_nhds hxs
-    filter_upwards [mem_nhdsWithin_of_mem_nhds hev] with y hy
-    simp [Function.comp, φ.left_inv hy]
-  · rintro ⟨c, hc⟩
-    -- f.toFun has a limit at x ⟹ pullback has a limit at φ x.
-    -- Compose `f.toFun` (limit at x) with the inverse chart `φ.symm` (𝓝[≠]φx → 𝓝[≠]x).
-    refine ⟨c, ?_⟩
-    have hwt : φ x ∈ φ.target := φ.map_source hxs
-    have htsymm : Tendsto φ.symm (𝓝[≠] (φ x)) (𝓝[≠] x) := by
-      have := φ.symm.tendsto_nhdsNE (x := φ x) (by simpa using hwt)
-      simpa [φ.left_inv hxs] using this
-    exact hc.comp htsymm
-
 /-! ### The repair is the normal-form representative, chart by chart
 
 (`toMeromorphicNFAt_self_eq_limUnder` and `MeromorphicAt.exists_isOpen_meromorphicOn` now live in

@@ -222,66 +222,6 @@ theorem analyticAt_logDeriv {g : ℂ → ℂ} {a : ℂ} (hg : AnalyticAt ℂ g a
   have heq : logDeriv g = fun z => deriv g z / g z := by funext z; rw [logDeriv]; rfl
   rw [heq]; exact hg.deriv.div hg hg0
 
-/-- **The logarithmic-derivative residue (local argument principle).**  For `f` meromorphic at `a`
-with order `n` (`meromorphicOrderAt f a = n`), the residue of the logarithmic derivative `df/f` at
-`a` is `n`:
-
-> `Res_a (logDeriv f) = n`.
-
-This is exactly `Res_a(df/f) = ord_a f`, the per-point fact the `deg_div` route uses: summed over
-`X`, `∑ Res = ∑ ord = #zeros − #poles`, and the residue theorem (the combine above, via `Tr_F`)
-forces it to `0`. -/
-theorem resAt_logDeriv_eq_order {f : ℂ → ℂ} {a : ℂ} {n : ℤ} (hf : MeromorphicAt f a)
-    (hord : meromorphicOrderAt f a = (n : ℤ)) :
-    resAt (logDeriv f) a = (n : ℂ) := by
-  obtain ⟨g, hg, hg0, hfact⟩ := (meromorphicOrderAt_eq_int_iff hf).mp hord
-  -- Propagate the punctured factorization to a full eventual eq at each off-center point.
-  have hprop : ∀ᶠ z in 𝓝[≠] a, f =ᶠ[𝓝 z] fun w => (w - a) ^ n • g w := by
-    have heq' : ∀ᶠ z in 𝓝[≠] a, f z = (z - a) ^ n • g z := hfact
-    rw [eventually_nhdsWithin_iff, Metric.eventually_nhds_iff] at heq'
-    obtain ⟨ε, hε, hball⟩ := heq'
-    rw [eventually_nhdsWithin_iff]
-    filter_upwards [Metric.ball_mem_nhds a hε] with z hz hz_ne
-    have hopen : IsOpen (ball a ε \ {a}) := Metric.isOpen_ball.sdiff isClosed_singleton
-    have hzmem : z ∈ ball a ε \ {a} := ⟨hz, by simpa using hz_ne⟩
-    filter_upwards [hopen.mem_nhds hzmem] with w hw
-    exact hball hw.1 (by simpa using hw.2)
-  have hgdiff_ev : ∀ᶠ z in 𝓝 a, DifferentiableAt ℂ g z := by
-    filter_upwards [hg.eventually_analyticAt] with z hz using hz.differentiableAt
-  have hg_ne_ev : ∀ᶠ z in 𝓝 a, g z ≠ 0 := hg.continuousAt.eventually_ne hg0
-  -- `logDeriv f = n/(z − a) + logDeriv g` on the punctured neighborhood.
-  have hlog_eq : logDeriv f =ᶠ[𝓝[≠] a] fun z => (n : ℂ) / (z - a) + logDeriv g z := by
-    filter_upwards [hprop, self_mem_nhdsWithin, mem_nhdsWithin_of_mem_nhds hgdiff_ev,
-      mem_nhdsWithin_of_mem_nhds hg_ne_ev] with z hzprop hz_ne hzgd hzg0
-    have hzne : z ≠ a := by simpa using hz_ne
-    have hcongr : logDeriv f z = logDeriv (fun w => (w - a) ^ n • g w) z := by
-      simp only [logDeriv, Pi.div_apply, hzprop.deriv_eq, hzprop.eq_of_nhds]
-    rw [hcongr]
-    simp only [smul_eq_mul]
-    have hbase_ne : z - a ≠ 0 := sub_ne_zero.mpr hzne
-    have hsub_diff : DifferentiableAt ℂ (fun w : ℂ => w - a) z := differentiableAt_id.sub_const a
-    have hpow_ne : (fun w : ℂ => (w - a) ^ n) z ≠ 0 := by simpa using zpow_ne_zero n hbase_ne
-    have hpow_diff : DifferentiableAt ℂ (fun w : ℂ => (w - a) ^ n) z :=
-      hsub_diff.zpow (Or.inl hbase_ne)
-    rw [logDeriv_mul z hpow_ne hzg0 hpow_diff hzgd]
-    congr 1
-    rw [logDeriv_fun_zpow hsub_diff n]
-    have hld : logDeriv (fun w => w - a) z = 1 / (z - a) := by
-      have h1 : HasDerivAt (fun w => w - a) 1 z := by simpa using (hasDerivAt_id z).sub_const a
-      simp only [logDeriv, Pi.div_apply, h1.deriv]
-    rw [hld]; field_simp
-  rw [resAt_congr hlog_eq]
-  -- `Res_a (n/(z − a) + logDeriv g) = n + 0`.
-  have heq : (fun z => (n : ℂ) / (z - a) + logDeriv g z)
-      = (fun z => (n : ℂ) * (z - a)⁻¹) + logDeriv g := by
-    funext z; simp only [Pi.add_apply]; rw [div_eq_mul_inv]
-  rw [heq]
-  have hmono : MeromorphicAt (fun z => (n : ℂ) * (z - a)⁻¹) a :=
-    (MeromorphicAt.const (n : ℂ) a).mul ((analyticAt_id.sub analyticAt_const).meromorphicAt.inv)
-  rw [resAt_add hmono.holoPunctured (analyticAt_logDeriv hg hg0).meromorphicAt.holoPunctured,
-    resAt_const_mul_sub_inv (n : ℂ) a, resAt_eq_zero_of_analyticAt (analyticAt_logDeriv hg hg0),
-    add_zero]
-
 /-! ### The general residue change of variables, as a named atom
 
 The fully-general (any-order-pole) residue change of variables `resAt (g ∘ s · s') b = resAt g a`
@@ -416,16 +356,6 @@ The section form follows from the forward form by reading the inverse: if `s` is
 `s b = a`, this is exactly the shape `resAt_simplePole_pushforward` evaluates (with `φ := s`,
 `b := a`), giving residue `c = resAt g a` (`resAt_const_mul_sub_inv`). -/
 
-/-- **Simple-pole change of variables, section form (fully proved).**  For a section `s` (local
-biholomorphism, `s b = a`) and a simple-pole coefficient `g w = c·(w − a)⁻¹`, the pushforward
-`w ↦ g (s w)·s'(w)` has residue `c = resAt g a` at `b`.  This is the unconditional instance of
-`ResidueChangeOfVariables` for simple poles — all the `df/f`/`deg_div` route needs. -/
-theorem resAt_changeOfVariables_of_simplePole {s : ℂ → ℂ} {a b c : ℂ}
-    (hs : AnalyticAt ℂ s b) (hs' : deriv s b ≠ 0) (hsb : s b = a) :
-    resAt (fun w => (c * (s w - a)⁻¹) * deriv s w) b = resAt (fun w => c * (w - a)⁻¹) a := by
-  rw [resAt_const_mul_sub_inv]
-  exact resAt_simplePole_pushforward hs hs' hsb
-
 /-! ### The combine — pillar (a) ∘ Lemma 3.2 = the residue theorem on `X`
 
 The final step of Miranda §VIII.3.  The trace `Tr_F α` is a rational `1`-form on `ℂℙ¹`, so (away
@@ -459,45 +389,5 @@ theorem finiteResidueSum_trace_eq_zero (L : LaurentForm) (fibreRes : ℂ → ℂ
     exact Finset.sum_congr rfl hfibre
   rw [hsum]
   exact L.finiteResidueSum_add_resAtInfty_eq_zero
-
-/-- **The combine, fibre-trace form.**  Specialization of `finiteResidueSum_trace_eq_zero` in which
-each center's fibre residue is presented as the `FibreTrace.resAt_traceCoeff` fibre sum, tied to the
-`LaurentForm` residue by Lemma 3.2 + the identification of the trace coefficient with `L.R` at each
-center.  The hypothesis `hL32` is exactly "Lemma 3.2 holds at every center, and there `L.R` is the
-trace coefficient" — both supplied by the manifold assembly of `Tr_F` over the finite cover.
-
-> `(∑_{centers p} (fibre p).resAt_traceCoeff-value) + Res_∞ (Tr_F α) = 0`. -/
-theorem finiteResidueSum_trace_eq_zero_of_fibres (L : LaurentForm)
-    (fibre : ℂ → FibreTrace) (hCoV : ResidueChangeOfVariables)
-    (hL32 : ∀ p ∈ (Finset.univ.image L.a),
-      (∑ i, resAt ((fibre p).coeff i) ((fibre p).pre i)) = resAt L.R p) :
-    (∑ p ∈ Finset.univ.image L.a, resAt (fibre p).traceCoeff (fibre p).b)
-      + resAtInfty L.R L.ρ = 0 := by
-  refine finiteResidueSum_trace_eq_zero L (fun p => resAt (fibre p).traceCoeff (fibre p).b) ?_
-  intro p hp
-  show resAt (fibre p).traceCoeff (fibre p).b = resAt L.R p
-  rw [(fibre p).resAt_traceCoeff hCoV]
-  exact hL32 p hp
-
-/-- **The combine, simple-pole fibre-trace form (fully proved, no analytic atom).**  The
-`df/f`/`deg_div` specialization of `finiteResidueSum_trace_eq_zero_of_fibres`: each fibre's
-coefficients are simple poles (`hsp p`), so Lemma 3.2 holds *unconditionally*
-(`resAt_traceCoeff_of_simplePole`) — no `ResidueChangeOfVariables` hypothesis.  Given only the
-identification `hL32` of each center's fibre-residue sum with `L.R`'s residue (the manifold
-bookkeeping that `L` *is* the trace), the total fibre-residue sum plus `Res_∞` vanishes:
-
-> `(∑_{centers p} Res_b (Tr_F α over fibre p)) + Res_∞ (Tr_F α) = 0`. -/
-theorem finiteResidueSum_trace_eq_zero_of_simplePole_fibres (L : LaurentForm)
-    (fibre : ℂ → FibreTrace) (cs : (p : ℂ) → (fibre p).ι → ℂ)
-    (hsp : ∀ p, ∀ i, (fibre p).coeff i = fun w => cs p i * (w - (fibre p).pre i)⁻¹)
-    (hL32 : ∀ p ∈ (Finset.univ.image L.a),
-      (∑ i, resAt ((fibre p).coeff i) ((fibre p).pre i)) = resAt L.R p) :
-    (∑ p ∈ Finset.univ.image L.a, resAt (fibre p).traceCoeff (fibre p).b)
-      + resAtInfty L.R L.ρ = 0 := by
-  refine finiteResidueSum_trace_eq_zero L (fun p => resAt (fibre p).traceCoeff (fibre p).b) ?_
-  intro p hp
-  show resAt (fibre p).traceCoeff (fibre p).b = resAt L.R p
-  rw [(fibre p).resAt_traceCoeff_of_simplePole (cs p) (hsp p)]
-  exact hL32 p hp
 
 end Jacobians.MeromorphicTrace

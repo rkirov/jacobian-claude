@@ -220,12 +220,6 @@ theorem h1Incl_surjective (hR : 𝔘.LocallyRealizable) {D D' : Divisor X} (h : 
     obtain ⟨w, hw⟩ := hsurj₁ z
     exact ⟨w, by rw [← 𝔘.h1Incl_comp h₁ h₂ w, hw, hz]⟩
 
-/-- `h1Dim` is **monotone decreasing** along divisor growth on a locally realizable cover. -/
-theorem h1Dim_antitone (hR : 𝔘.LocallyRealizable) {D D' : Divisor X} (h : D ≤ D') :
-    𝔘.h1Dim D' ≤ 𝔘.h1Dim D := by
-  haveI := finiteDimensional_cechH1_general 𝔘 D
-  exact LinearMap.finrank_le_finrank_of_surjective (𝔘.h1Incl_surjective hR h)
-
 end FiniteCover
 
 end Jacobians.Dolbeault

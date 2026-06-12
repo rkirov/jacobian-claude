@@ -166,13 +166,6 @@ noncomputable def D0 : Submodule R S.B0 := S.A1.submoduleOf S.B1 |>.comap S.dB0
 @[simp] theorem mem_D0 {b : S.B0} : b ∈ S.D0 ↔ (S.d0 b.1 : S.C1) ∈ S.A1 := by
   simp only [D0, Submodule.mem_comap, mem_submoduleOf, dB0_coe]
 
-/-- `A0 ⊆ D0` (as submodules of `B0`): on `A0`, `δ⁰` already lands in `A1` (`hdA0`). -/
-theorem A0_submoduleOf_le_D0 : S.A0.submoduleOf S.B0 ≤ S.D0 := by
-  intro b hb
-  rw [mem_submoduleOf] at hb
-  rw [mem_D0]
-  exact S.hdA0 ⟨b.1, hb, rfl⟩
-
 /-- The corestriction of `δ⁰|_{D0}` to `Z¹(A)`: for `b ∈ D0`, `δ⁰ b ∈ A1` (by definition) and
 `δ¹(δ⁰ b) = 0` (`hd`), so `δ⁰ b ∈ Z¹(A) = ker δ¹ ⊓ A1`. -/
 noncomputable def psi : S.D0 →ₗ[R] S.Z1sub S.A1 :=
@@ -325,10 +318,6 @@ theorem dQ1_comp_dQ0 : S.dQ1 ∘ₗ S.dQ0 = 0 := by
   rw [dB1_coe, dB0_coe]
   show S.d1 (S.d0 b.1) = (0 : S.C2)
   rw [← LinearMap.comp_apply, S.hd, LinearMap.zero_apply]
-
-/-- `B¹(Q) = range dQ0` is contained in `Z¹(Q) = ker dQ1`. -/
-theorem range_dQ0_le_ker_dQ1 : LinearMap.range S.dQ0 ≤ LinearMap.ker S.dQ1 := by
-  rw [LinearMap.range_le_ker_iff]; exact S.dQ1_comp_dQ0
 
 /-- `H¹(Q) = Z¹(Q)/B¹(Q) = ker dQ1 ⧸ range dQ0`. The cokernel-of-cohomology term whose vanishing
 gives the surjectivity `surj₄`. -/

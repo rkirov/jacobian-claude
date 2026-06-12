@@ -74,11 +74,6 @@ noncomputable def ofAnalyticOn (g : ℂ → ℂ) (ha : AnalyticOn ℂ g U)
     (ofAnalyticOn g ha hb).toFun z = g z :=
   Set.indicator_of_mem hz g
 
-theorem ofAnalyticOn_toFun_eqOn (g : ℂ → ℂ) (ha : AnalyticOn ℂ g U)
-    (hb : ∃ C, ∀ z ∈ U, ‖g z‖ ≤ C) :
-    Set.EqOn (ofAnalyticOn g ha hb).toFun g U :=
-  fun _ hz => ofAnalyticOn_toFun_of_mem g ha hb hz
-
 /-- **Boundedness on a relatively-compact piece.**  An analytic function on `U` is bounded on any
 compact `K ⊆ U` (it is continuous, hence bounded on the compact).  This supplies the `BddHol`
 boundedness hypothesis: a cochain holomorphic on a cover-open is bounded on the (relatively-compact)
@@ -159,11 +154,6 @@ noncomputable def precompHolₗ {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : Analy
   map_add' := precompHol_add hτ hτmaps
   map_smul' c g := precompHol_smul hτ hτmaps c g
 
-@[simp] theorem precompHolₗ_apply {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
-    (hτmaps : Set.MapsTo τ U' U) (g : BddHol U) :
-    precompHolₗ hτ hτmaps g = precompHol hτ hτmaps g :=
-  rfl
-
 /-- **Cross-chart transport continuous-linear map** `BddHol U →L[ℂ] BddHol U'` for `τ` analytic
 `U' → U`, operator norm `≤ 1`. The open-set (analytic) counterpart of `precompCLM`, used to
 transport cover-side sup-norm cochain components across the holomorphic chart transitions. -/
@@ -203,9 +193,6 @@ noncomputable def restrictOpenCLM {U U' : Set ℂ} (hsub : U' ⊆ U) : BddHol U 
     {z : ℂ} (hz : z ∈ U') : (restrictOpenCLM hsub g).toFun z = g.toFun z := by
   rw [restrictOpenCLM, precompHolCLM_apply, precompHol_toFun_of_mem _ _ _ hz, id]
 
-theorem norm_restrictOpenCLM_le {U U' : Set ℂ} (hsub : U' ⊆ U) : ‖restrictOpenCLM hsub‖ ≤ 1 :=
-  norm_precompHolCLM_le _ _
-
 end BddHol
 
 /-! ### Non-convex restriction compactness — Step 1: finite convex-disk cover
@@ -213,25 +200,6 @@ end BddHol
 Toward generalizing `BddHol.isCompactOperator_restrictCLM` to a non-convex compact `K` (needed so a
 `DiskOverlapData` can use chart-images of overlaps, which are not convex across charts). Step 1: any
 compact `K ⊆ U` (open) is covered by finitely many *closed balls* (convex compact) each `⊆ U`. -/
-
-/-- **Finite convex-disk cover.** For `K` compact inside an open `U ⊆ ℂ`, there is a finite family
-of closed balls — centred on `K`, each contained in `U` (hence convex compact `⊆ U`) — whose open
-cores cover `K`. -/
-theorem exists_finite_closedBall_cover {K U : Set ℂ} (hK : IsCompact K) (hU : IsOpen U)
-    (hKU : K ⊆ U) :
-    ∃ (t : Finset K) (r : K → ℝ), (∀ z : K, 0 < r z) ∧
-      (∀ z : K, Metric.closedBall (z : ℂ) (r z) ⊆ U) ∧
-      K ⊆ ⋃ z ∈ t, Metric.ball (z : ℂ) (r z) := by
-  have hr : ∀ z : K, ∃ ρ : ℝ, 0 < ρ ∧ Metric.closedBall (z : ℂ) ρ ⊆ U := by
-    intro z
-    obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp (hU.mem_nhds (hKU z.2))
-    exact ⟨ε / 2, by positivity, (Metric.closedBall_subset_ball (by linarith)).trans hball⟩
-  choose r hr_pos hr_sub using hr
-  have hcover : K ⊆ ⋃ z : K, Metric.ball (z : ℂ) (r z) := fun x hx =>
-    Set.mem_iUnion.mpr ⟨⟨x, hx⟩, Metric.mem_ball_self (hr_pos ⟨x, hx⟩)⟩
-  obtain ⟨t, ht⟩ := hK.elim_finite_subcover (fun z : K => Metric.ball (z : ℂ) (r z))
-    (fun _ => Metric.isOpen_ball) hcover
-  exact ⟨t, r, hr_pos, hr_sub, ht⟩
 
 /-! ### Non-convex restriction compactness — Step 2: equicontinuity on a non-convex compact
 

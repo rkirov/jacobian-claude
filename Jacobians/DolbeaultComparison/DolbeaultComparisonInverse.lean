@@ -37,21 +37,6 @@ cover. We provide it **completely** from Mathlib (`SmoothPartitionOfUnity.exists
 available because a compact `T2` `ℂ`-manifold is a `σ`-compact finite-dimensional real manifold via
 `RealManifold`). This `ρ` is the actual analytic input `h_i := ∑_k ρ_k · f_ik` is built from. -/
 
-/-- **(Čech → Dolbeault backbone, complete.)** The partition-of-unity *telescoping identity* — the
-algebraic heart of the Čech → Dolbeault coboundary construction. For any additive Čech `1`-cocycle
-`f` (`f_jk − f_ik + f_ij = 0`, the `cechDelta1 = 0` relation) and any weights `ρ` summing to `1`,
-the globalized functions `h_i := ∑_k ρ_k • f_ki` satisfy `h_j − h_i = f_ij` — i.e. the cocycle
-becomes a coboundary of the smooth (partition-of-unity-glued) `0`-cochain. Pure module algebra (it
-is what "`∂̄h_i` glue to a global form" rests on); proven here abstractly over any `ℂ`-module. -/
-theorem cechCoboundary_telescoping {ι : Type*} [Fintype ι] {M : Type*} [AddCommGroup M] [Module ℂ M]
-    (f : ι → ι → M) (hcoc : ∀ a b c, f b c - f a c + f a b = 0)
-    (ρ : ι → ℂ) (hρ : ∑ k, ρ k = 1) (i j : ι) :
-    (∑ k, ρ k • f k j) - (∑ k, ρ k • f k i) = f i j := by
-  rw [← Finset.sum_sub_distrib]
-  have hpt : ∀ k, ρ k • f k j - ρ k • f k i = ρ k • f i j := fun k => by
-    rw [← smul_sub]; congr 1; linear_combination (norm := module) -hcoc k i j
-  simp_rw [hpt, ← Finset.sum_smul, hρ, one_smul]
-
 /-- **(Čech → Dolbeault backbone, complete.)** A smooth partition of unity subordinate to the
 finite cover `𝔘`, over the real-manifold structure `𝓘(ℝ, ℂ)`. The input for the globalization
 `h_i := ∑_k ρ_k · f_ik`. -/
@@ -223,21 +208,6 @@ instance contMDiffMul_real_complex : ContMDiffMul 𝓘(ℝ, ℂ) (⊤ : ℕ∞) 
       simp only [mfld_simps]
       rw [contDiffOn_univ]
       exact contDiff_mul }
-
-/-- **The `∂̄` Leibniz rule** `∂̄(g₁·g₂) = g₂·∂̄g₁ + g₁·∂̄g₂` (`∂̄ = proj01 ∘ mfderiv`; `mfderiv`
-has the product rule `HasMFDerivAt.mul`, `proj01` commutes with the ℂ-scale `proj01_smul`). -/
-theorem dbarL_mul (g₁ g₂ : SmoothCFunctions X) :
-    dbarL (g₁ * g₂) = cSmulForm g₂ (dbarL g₁) + cSmulForm g₁ (dbarL g₂) := by
-  refine ContMDiffSection.ext fun x => ?_
-  have h1 : HasMFDerivAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑g₁) x (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑g₁) x) :=
-    (g₁.contMDiff.mdifferentiable (by simp) x).hasMFDerivAt
-  have h2 : HasMFDerivAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑g₂) x (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑g₂) x) :=
-    (g₂.contMDiff.mdifferentiable (by simp) x).hasMFDerivAt
-  show proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑(g₁ * g₂)) x)
-    = g₂ x • proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑g₁) x)
-      + g₁ x • proj01 (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (⇑g₂) x)
-  rw [show (⇑(g₁ * g₂) : X → ℂ) = ⇑g₁ * ⇑g₂ from rfl, (h1.mul h2).mfderiv, map_add,
-    proj01_smul, proj01_smul, add_comm]
 
 /-! ### Support of the gluing forms `∂̄ρ_k`
 

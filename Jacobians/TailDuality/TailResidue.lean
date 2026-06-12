@@ -346,12 +346,4 @@ noncomputable def tailResidueH1 [T2Space X] [CompactSpace X] [ConnectedSpace X]
     rw [LinearMap.mem_ker, LinearMap.comp_apply, Submodule.subtype_apply, tailMapCo_coe]
     exact tailResidue_tailMap_eq_zero g₀ h hord f)
 
-@[simp] theorem tailResidueH1_mk [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [IsManifold 𝓘(ℂ) ω X] [Nonempty X] {D : Divisor X}
-    (g₀ h : MeromorphicFunction X) (hord : PairOrderBounded g₀ h D)
-    (Z : ↥(tailSubspace (X := X) D)) :
-    tailResidueH1 g₀ h hord (Submodule.Quotient.mk Z)
-      = tailResidue g₀ h (Z : TailSpace X) :=
-  rfl
-
 end Jacobians.LaurentTail

@@ -98,10 +98,6 @@ noncomputable def shiftMero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X
     rw [this]
     exact h.sub hc⟩
 
-@[simp] lemma shiftMero_toFun {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (f : MeromorphicFunction X) (c : ℂ) :
-    (shiftMero f c).toFun = fun x => f.toFun x - c := rfl
-
 /-- **`localDeg` at a finite value as an `orderAtPoint` of the shift `f − c`.**
 
 `localDeg f (coe c) y = orderAtPoint (shiftMero f c) y`.  Both are
@@ -142,15 +138,6 @@ The fibre-multiplicity sums over the two special values `coe 0` and `∞` equal 
 with-multiplicity counts `zerosCount f` and `polesCount f`.  These are the
 highest-value supporting pieces; they require *no* analytic content — only the
 re-indexing of the order-sum from the (finite) fibre to the divisor support. -/
-
-/-- The fibre over `∞` is finite (it is exactly the poles `{x | order x < 0}`,
-finite on a compact `X`). -/
-lemma fibre_infty_finite {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (f : MeromorphicFunction X) :
-    (f.toRiemannSphere ⁻¹' {OnePoint.infty}).Finite := by
-  rw [f.toRiemannSphere_preimage_infty]
-  exact f.finite_poles
 
 /-- **Special-fibre identity at `∞`:** the genuine local-degree sum over the
 pole fibre `F⁻¹(∞)` equals `polesCount f`.
@@ -553,25 +540,6 @@ irreducible §17.9 content isolated in `LocalMultiplicitySheets`, reduced here d
 to its genuine per-sheet core, with the no-escape/disjointness skeleton, the
 special-fibre identities, and the finiteness-shrinking all discharged
 complete). -/
-
-/-- **Local constancy of `N f` from a pointwise local-conservation supply.** -/
-theorem isLocallyConstant_N_of_localSheets {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (f : MeromorphicFunction X)
-    (h : ∀ w₀ : RiemannSphere, LocalMultiplicitySheets f w₀) :
-    IsLocallyConstant (N f) :=
-  isLocallyConstant_N_of_pointwiseMultiplicityPatching f
-    (fun w₀ => (h w₀).toPatchingData)
-
-/-- **`zerosCount = polesCount`** (the argument-principle equality) from a
-pointwise local-conservation supply. -/
-theorem zerosCount_eq_polesCount_of_localSheets {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (f : MeromorphicFunction X)
-    (h : ∀ w₀ : RiemannSphere, LocalMultiplicitySheets f w₀) :
-    zerosCount f = polesCount f :=
-  zerosCount_eq_polesCount_of_pointwiseMultiplicityPatching f
-    (fun w₀ => (h w₀).toPatchingData)
 
 /-- **The proper-map-degree existential** (the exact shape of
 `Jacobians.DegDivResidue.exists_properMapDegree`: a common `d : ℕ` with

@@ -45,10 +45,6 @@ theorem isLocalHomeomorph_mk :
     IsLocalHomeomorph (QuotientAddGroup.mk : E → E ⧸ Λ) :=
   (isCoveringMap_mk Λ).isLocalHomeomorph
 
-/-- The quotient map `E → E ⧸ Λ` is an open map. -/
-theorem isOpenMap_mk : IsOpenMap (QuotientAddGroup.mk : E → E ⧸ Λ) :=
-  (isLocalHomeomorph_mk Λ).isOpenMap
-
 /-- Charted space structure on `E ⧸ Λ` modelled on `E`, coming from the fact
 that the quotient map is a surjective local homeomorphism. -/
 noncomputable instance chartedSpaceQuotient : ChartedSpace E (E ⧸ Λ) :=
@@ -648,22 +644,6 @@ theorem pushforward_id_of_ambient
   | H x =>
     show (QuotientAddGroup.mk (Φ x) : _) = _
     rw [hΦid]
-
-/-- Functoriality: ambient composition descends to quotient composition. -/
-theorem pushforward_comp_of_ambient
-    {gX gY gZ : ℕ}
-    (ΛX : Submodule ℤ (Fin gX → ℂ)) (ΛY : Submodule ℤ (Fin gY → ℂ))
-    (ΛZ : Submodule ℤ (Fin gZ → ℂ))
-    (Φ₁ : (Fin gX → ℂ) →L[ℂ] (Fin gY → ℂ))
-    (Φ₂ : (Fin gY → ℂ) →L[ℂ] (Fin gZ → ℂ))
-    (hΦ₁ : ΛX.toAddSubgroup ≤ ΛY.toAddSubgroup.comap Φ₁.toAddMonoidHom)
-    (hΦ₂ : ΛY.toAddSubgroup ≤ ΛZ.toAddSubgroup.comap Φ₂.toAddMonoidHom)
-    (hΦ₁₂ : ΛX.toAddSubgroup ≤ ΛZ.toAddSubgroup.comap (Φ₂.comp Φ₁).toAddMonoidHom)
-    (P : (Fin gX → ℂ) ⧸ ΛX.toAddSubgroup) :
-    pushforward ΛX ΛZ (Φ₂.comp Φ₁) hΦ₁₂ P =
-      pushforward ΛY ΛZ Φ₂ hΦ₂ (pushforward ΛX ΛY Φ₁ hΦ₁ P) := by
-  induction P using QuotientAddGroup.induction_on with
-  | H x => rfl
 
 /-- **Smoothness**: a ℂ-linear continuous ambient map descends to a
 `ContMDiff` map on the quotient tori. Uses chart-pullback +

@@ -73,13 +73,6 @@ lemma isConstantMap_const {X : Type u} {Y : Type v} (c : Y) :
     IsConstantMap (fun _ : X => c) :=
   ⟨c, fun _ => rfl⟩
 
-/-- `f` is non-constant iff every candidate value `y` is missed by some point. -/
-lemma not_isConstantMap_iff {X : Type u} {Y : Type v} (f : X → Y) :
-    ¬ IsConstantMap f ↔ ∀ y, ∃ x, f x ≠ y := by
-  unfold IsConstantMap
-  push Not
-  rfl
-
 namespace Manifold
 
 /-! ## Degree stub

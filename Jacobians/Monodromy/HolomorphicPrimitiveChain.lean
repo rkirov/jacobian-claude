@@ -197,10 +197,6 @@ theorem exists_block_left {s : ℝ} (h0 : 0 < s) (h1 : s ≤ 1) :
   rw [C.t_stab k hkn] at hks
   linarith
 
-/-- The path point of any `s` in block `k` lies in `Uₖ`. -/
-theorem mem_U_of_mem_block (k : ℕ) {s : ℝ} (hs : s ∈ Icc (C.t k) (C.t (k + 1))) :
-    γ s ∈ C.U k := C.covers k s hs
-
 end PrimitiveChain
 
 /-! ### Chain existence -/

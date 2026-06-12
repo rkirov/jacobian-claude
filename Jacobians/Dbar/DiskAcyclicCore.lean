@@ -89,23 +89,6 @@ noncomputable def openUnionPoU [T2Space X] [LocallyCompactSpace X] [IsManifold �
       (Set.univ : Set ↥(⟨⋃ i, (U i : Set X), isOpen_iUnion fun i => (U i).isOpen⟩ : Opens X)) :=
   (exists_smoothPartitionOfUnity_openUnion U).choose
 
-theorem openUnionPoU_subordinate [T2Space X] [LocallyCompactSpace X] [IsManifold 𝓘(ℂ) ω X]
-    {ι : Type} [Fintype ι] [SecondCountableTopology X]
-    (U : ι → Opens X) :
-    (openUnionPoU (X := X) U).IsSubordinate (fun i =>
-      {x : ↥(⟨⋃ i, (U i : Set X), isOpen_iUnion fun i => (U i).isOpen⟩ : Opens X) |
-        (x : X) ∈ U i}) :=
-  (exists_smoothPartitionOfUnity_openUnion U).choose_spec
-
-/-- The open-union partition of unity sums to one at every point of the union. -/
-theorem openUnionPoU_sum_eq_one [T2Space X] [LocallyCompactSpace X] [IsManifold 𝓘(ℂ) ω X]
-    {ι : Type} [Fintype ι] (U : ι → Opens X)
-    [SecondCountableTopology X]
-    {x : ↥(⟨⋃ i, (U i : Set X), isOpen_iUnion fun i => (U i).isOpen⟩ : Opens X)} :
-    ∑ i, openUnionPoU (X := X) U i x = 1 := by
-  rw [← finsum_eq_sum_of_fintype]
-  exact (openUnionPoU (X := X) U).sum_eq_one (by simp)
-
 /-- **Sum-to-one on the core**, value form: a PoU over the closed set `C` sums to `1` at every
 point of `C`.  (Repackages Mathlib's `SmoothPartitionOfUnity.sum_eq_one` with the
 `finsum = Finset.sum` collapse for the `Fintype` index.) -/

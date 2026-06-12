@@ -230,9 +230,6 @@ def recast (h : D₁ = D₂) (F : WeakSolution D₁) : WeakSolution D₂ := h �
 @[simp] theorem recast_toFun (h : D₁ = D₂) (F : WeakSolution D₁) :
     (F.recast h).toFun = F.toFun := by cases h; rfl
 
-@[simp] theorem recast_unit (h : D₁ = D₂) (F : WeakSolution D₁) :
-    (F.recast h).unit = F.unit := by cases h; rfl
-
 /-! ### Inversion of ℂ over `𝓘(ℝ,ℂ)` (no `ContMDiffInv₀` instance for the real model) -/
 
 /-- `z ↦ z⁻¹` is real-`C^∞` at any nonzero complex number, over the real model `𝓘(ℝ,ℂ)`. -/
@@ -290,10 +287,6 @@ def mul [T2Space X] [CompactSpace X] (F₁ : WeakSolution D₁) (F₂ : WeakSolu
         zpow_add₀ hz]
       ring
 
-@[simp] theorem mul_unit [T2Space X] [CompactSpace X] (F₁ : WeakSolution D₁) (F₂ : WeakSolution D₂)
-    (a x : X) :
-    (F₁.mul F₂).unit a x = F₁.unit a x * F₂.unit a x := rfl
-
 /-- Off both supports, the product weak solution is the pointwise product. -/
 theorem mul_toFun_of_coeff_zero [T2Space X] [CompactSpace X] (F₁ : WeakSolution D₁)
     (F₂ : WeakSolution D₂) {x : X}
@@ -324,12 +317,6 @@ def inv (F : WeakSolution D) : WeakSolution (-D) where
   normalForm a x hx := by
     rw [F.normalForm a x hx, mul_inv, Finsupp.neg_apply, zpow_neg]
 
-@[simp] theorem inv_toFun (F : WeakSolution D) (x : X) :
-    F.inv.toFun x = (F.toFun x)⁻¹ := rfl
-
-@[simp] theorem inv_unit (F : WeakSolution D) (a x : X) :
-    F.inv.unit a x = (F.unit a x)⁻¹ := rfl
-
 /-! ### The constant weak solution of `D = 0` -/
 
 /-- The constant function `1` is a weak solution of the zero divisor. -/
@@ -346,9 +333,6 @@ def one (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
   unit_ne_zero _ _ _ := one_ne_zero
   normalForm a x _ := by
     rw [show ((0 : Divisor X) a) = 0 from rfl, zpow_zero, mul_one]
-
-@[simp] theorem one_toFun [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
-    (x : X) : (one X).toFun x = 1 := rfl
 
 /-! ### Integer powers -/
 

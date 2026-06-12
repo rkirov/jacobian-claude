@@ -218,13 +218,6 @@ theorem cechH1_subsingleton_of_hasHoloCorrectors (𝔙 : FiniteFamily X)
     (h : HasHoloCorrectors 𝔙) (q : 𝔙.cechH1 (0 : Divisor X)) : q = 0 :=
   cechH1_subsingleton_of_isDiskAcyclic 𝔙 0 (isDiskAcyclic_of_hasHoloCorrectors 𝔙 h) q
 
-/-- **`H¹(disk, 𝒪) = 0` from ambient chart-analytic correctors.**  The end-to-end collapse
-modulo the natural ball-solve output `HasChartAnalyticCorrectors`: the reverse chart bridge, the
-function → germ descent, and the `IsDiskAcyclic`-collapse. -/
-theorem cechH1_subsingleton_of_chartAnalyticCorrectors (𝔙 : FiniteFamily X)
-    (h : HasChartAnalyticCorrectors 𝔙) (q : 𝔙.cechH1 (0 : Divisor X)) : q = 0 :=
-  cechH1_subsingleton_of_hasHoloCorrectors 𝔙 (hasHoloCorrectors_of_chartAnalytic 𝔙 h) q
-
 end Jacobians.Dolbeault
 
 /-! ## Status and the EXACT remaining goal

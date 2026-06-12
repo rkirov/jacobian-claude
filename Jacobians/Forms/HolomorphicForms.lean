@@ -54,11 +54,6 @@ structure via `supNormK` homogeneity. -/
 noncomputable instance : NormedSpace ℂ (HolomorphicOneForms X) :=
   Jacobians.Montel.HolomorphicOneForms.normedSpace
 
-/-- The norm on `HolomorphicOneForms X` is exactly Montel's `supNormK` (by
-construction — the `NormedAddCommGroup` instance is built from it). -/
-theorem norm_HOF_eq_supNormK (α : HolomorphicOneForms X) :
-    ‖α‖ = Jacobians.Montel.HolomorphicOneForms.supNormK α := rfl
-
 /-- On a compact connected complex 1-manifold, the space of global holomorphic
 1-forms is finite-dimensional. Derived via Montel/Riesz from
 `Jacobians.Montel.HolomorphicOneForms.closedBall_isCompact` (the single

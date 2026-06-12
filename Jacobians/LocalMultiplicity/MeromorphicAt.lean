@@ -92,24 +92,6 @@ def mmeromorphicOrderAt (_I : ModelWithCorners ℂ ℂ ℂ) (f : M → ℂ) (x :
 
 variable {I : ModelWithCorners ℂ ℂ ℂ}
 
-/-- Every function is meromorphic on the empty set. -/
-lemma mMeromorphicOn_empty (f : M → ℂ) : MMeromorphicOn I f ∅ := by
-  intro x hx; exact absurd hx hx.elim
-
-/-- Meromorphy on a set restricts to any subset. -/
-lemma MMeromorphicOn.mono {f : M → ℂ} {s t : Set M}
-    (h : MMeromorphicOn I f t) (hst : s ⊆ t) : MMeromorphicOn I f s :=
-  fun x hx => h x (hst hx)
-
-/-- Meromorphy on two sets gives meromorphy on their union. -/
-lemma MMeromorphicOn.union {f : M → ℂ} {s t : Set M}
-    (hs : MMeromorphicOn I f s) (ht : MMeromorphicOn I f t) :
-    MMeromorphicOn I f (s ∪ t) := by
-  intro x hx
-  rcases hx with hx | hx
-  · exact hs x hx
-  · exact ht x hx
-
 /-! ## Algebraic operations: lifted from `MeromorphicAt` via chart pullback
 
 These are immediate consequences of the underlying mathlib lemmas, since the
@@ -156,52 +138,11 @@ lemma mul (hf : MMeromorphicAt I f x) (hg : MMeromorphicAt I g x) :
   rw [h]
   exact hf'.mul hg'
 
-/-- The negation of a function meromorphic at `x` is meromorphic at `x`. -/
-lemma neg (hf : MMeromorphicAt I f x) : MMeromorphicAt I (-f) x := by
-  have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
-  show MeromorphicAt ((-f) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
-  have h : (-f) ∘ (chartAt ℂ x).symm = -(f ∘ (chartAt ℂ x).symm) := rfl
-  rw [h]
-  exact hf'.neg
-
-/-- The difference of two functions meromorphic at `x` is meromorphic at `x`. -/
-lemma sub (hf : MMeromorphicAt I f x) (hg : MMeromorphicAt I g x) :
-    MMeromorphicAt I (f - g) x := by
-  rw [sub_eq_add_neg]
-  exact hf.add hg.neg
-
-/-- Pointwise inverse of a meromorphic function is meromorphic. Mathlib's
-`MeromorphicAt.inv` is unconditional (poles are absorbed into the meromorphic
-class); the chart pullback transports this directly. -/
-lemma inv (hf : MMeromorphicAt I f x) : MMeromorphicAt I f⁻¹ x := by
-  have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
-  show MeromorphicAt (f⁻¹ ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
-  have h : f⁻¹ ∘ (chartAt ℂ x).symm = (f ∘ (chartAt ℂ x).symm)⁻¹ := rfl
-  rw [h]
-  exact hf'.inv
-
 /-- Pointwise quotient of two meromorphic functions is meromorphic. -/
 lemma div (hf : MMeromorphicAt I f x) (hg : MMeromorphicAt I g x) :
     MMeromorphicAt I (f / g) x := by
   rw [div_eq_mul_inv]
   exact hf.mul hg.inv
-
-/-- A natural-number power of a meromorphic function is meromorphic. -/
-lemma pow (hf : MMeromorphicAt I f x) (n : ℕ) : MMeromorphicAt I (f ^ n) x := by
-  induction n with
-  | zero =>
-    have h : (f ^ 0 : M → ℂ) = (fun _ : M => (1 : ℂ)) := by funext y; simp
-    rw [h]
-    exact MMeromorphicAt.const 1
-  | succ m hm => simpa only [pow_succ] using hm.mul hf
-
-/-- An integer power of a meromorphic function is meromorphic. -/
-lemma zpow (hf : MMeromorphicAt I f x) (n : ℤ) : MMeromorphicAt I (f ^ n) x := by
-  cases n with
-  | ofNat m => simpa only [Int.ofNat_eq_natCast, zpow_natCast] using hf.pow m
-  | negSucc m =>
-    have h := (hf.pow (m + 1)).inv
-    simpa only [zpow_negSucc] using h
 
 /-- Finite products of `MMeromorphicAt` functions are `MMeromorphicAt`. -/
 lemma prod {ι : Type*} {s : Finset ι} {F : ι → M → ℂ}

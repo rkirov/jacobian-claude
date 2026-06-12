@@ -132,15 +132,6 @@ lemma zerosCount_nonneg (f : MeromorphicFunction X) : 0 ≤ zerosCount f := by
   rw [Finset.mem_filter] at hx
   exact hx.2.le
 
-/-- `polesCount f ≥ 0`: it is a sum of absolute values of negative orders. -/
-lemma polesCount_nonneg (f : MeromorphicFunction X) : 0 ≤ polesCount f := by
-  rw [polesCount]
-  apply Finset.sum_nonneg
-  intro x hx
-  rw [Finset.mem_filter] at hx
-  have := hx.2
-  omega
-
 /-- **Reduction to the argument-principle equality.**
 Since both counts are nonnegative (`zerosCount_nonneg`, `polesCount_nonneg`), the
 existence of a common natural-number degree `d` with `zerosCount f = d` and

@@ -95,33 +95,4 @@ noncomputable def comparison_linearEquiv' (𝔇 : ChartDiskCover X) :
     (dolbeault_to_cech_comp_cech_to_dolbeault' 𝔇)
     (cech_to_dolbeault_comp_dolbeault_to_cech' 𝔇)
 
-/-- **Exact Bott-Tu form gives a Čech coboundary.**  If the Čech-to-Dolbeault form attached to a
-chart-disk `𝒪`-cocycle is a global `∂̄`-image, then the original cocycle is already a Čech
-coboundary. This packages the injectivity half of the comparison in the form needed by the local
-disk/refinement route: the analytic side only has to prove exactness of the Bott-Tu form; this
-theorem turns that exactness into the germ-level coboundary statement. -/
-theorem cech_coboundary_of_cechToDolbeaultForm_exact (𝔇 : ChartDiskCover X)
-    (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))
-    (hexact : (cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) ∈ dbarImageInZeroOne X) :
-    (f : 𝔇.toFiniteCover.Cochain1) ∈ 𝔇.toFiniteCover.coboundaries1 (0 : Divisor X) := by
-  have hmkForm : Submodule.Quotient.mk (cechToDolbeaultForm 𝔇 f) = (0 : DolbeaultH01 X) := by
-    rw [Submodule.Quotient.mk_eq_zero]
-    exact hexact
-  have hcech : cech_to_dolbeault 𝔇 (Submodule.Quotient.mk f) = 0 := by
-    rw [cech_to_dolbeault_mk, hmkForm, neg_zero]
-  have hsymm : (comparison_linearEquiv' 𝔇).symm (Submodule.Quotient.mk f) = 0 := hcech
-  have hq : Submodule.Quotient.mk f = (0 : 𝔇.toFiniteCover.cechH1 0) :=
-    (comparison_linearEquiv' 𝔇).symm.injective (by simpa using hsymm)
-  exact (Submodule.Quotient.mk_eq_zero
-    ((𝔇.toFiniteCover.coboundaries1 (0 : Divisor X)).submoduleOf
-      (𝔇.toFiniteCover.cocycles1 (0 : Divisor X)))).1 hq
-
-/-- **The L3 comparison `finrank ℝ (DolbeaultH01 X) = 2 · finrank ℂ (cechH1 𝔇 0)`, with NO `IsLeray`
-hypothesis.**  This is the Čech↔Dolbeault comparison statement (`DolbeaultComparison.lean`'s
-deliverable 5) with `hL` dropped — proving the comparison half of the Serre-at-`0` route does not
-need a Leray/good-cover hypothesis on the overlaps. -/
-theorem cechH1_dolbeault_comparison' (𝔇 : ChartDiskCover X) :
-    Module.finrank ℝ (DolbeaultH01 X) = 2 * Module.finrank ℂ (𝔇.toFiniteCover.cechH1 0) := by
-  rw [(comparison_linearEquiv' 𝔇).finrank_eq, finrank_real_of_complex]
-
 end Jacobians.Dolbeault

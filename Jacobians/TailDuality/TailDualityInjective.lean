@@ -86,15 +86,6 @@ theorem omegaOrderAt_ne_top (ω₀ : HolomorphicOneForms X) (hω₀ : ω₀ ≠ 
   obtain ⟨z, hz0, hzne⟩ := (hev.and (coeffAt_eventually_ne_zero ω₀ hω₀ p)).exists
   exact hzne hz0
 
-/-- The order of `ω₀` is nonnegative (the coefficient is analytic). -/
-theorem omegaOrderAt_nonneg (ω₀ : HolomorphicOneForms X) (p : X) :
-    (0 : WithTop ℤ) ≤ omegaOrderAt ω₀ p := by
-  show ((0 : ℤ) : WithTop ℤ) ≤ omegaOrderAt ω₀ p
-  rw [omegaOrderAt, le_order_iff_laurentCoeff_eq_zero
-    (analyticAt_coeffAt_self ω₀ p).meromorphicAt 0]
-  intro n hn
-  exact laurentCoeff_eq_zero_of_analyticAt_of_neg (analyticAt_coeffAt_self ω₀ p) hn
-
 /-- The chart-centre value of `coeffAt` is `localRep` on the diagonal. -/
 theorem coeffAt_self_eq_localRep (ω₀ : HolomorphicOneForms X) (p : X) :
     coeffAt ω₀ p ((chartAt (H := ℂ) p) p) = Jacobians.Montel.localRep ω₀ p p := by
@@ -456,16 +447,5 @@ theorem omegaDualMap_injective (ω₀ : HolomorphicOneForms X) (hω₀ : ω₀ �
   rw [show omegaDualMap ω₀ hω₀ D (Submodule.Quotient.mk h)
       = omegaDualFun ω₀ hω₀ D h from rfl, omegaDualFun_mk] at happ
   exact hne0 (hval ▸ happ)
-
-/-- **The easy half of Serre duality for the tail `H¹`** (Miranda Thm 3.3, injectivity):
-
-  `l(K − D) ≤ h¹(D)`
-
-for the canonical divisor `K = div ω₀` of any nonzero holomorphic 1-form. -/
-theorem lDim_canonical_sub_le_h1TailDim (ω₀ : HolomorphicOneForms X) (hω₀ : ω₀ ≠ 0)
-    (D : Divisor X) :
-    lDim (X := X) (canonicalDivisorOf ω₀ hω₀ - D) ≤ h1TailDim (X := X) D :=
-  SerreDuality.finrank_le_of_injective_to_dual (omegaDualMap ω₀ hω₀ D)
-    (omegaDualMap_injective ω₀ hω₀ D)
 
 end Jacobians.LaurentTail

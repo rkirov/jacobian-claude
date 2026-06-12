@@ -64,15 +64,6 @@ sides have different dimensions.  The equivalence holds only for the model that 
 is the corresponding correctly-scoped *consumer* (it extracts the bundled equivalence), kept as a
 named, inspectable entry point. -/
 
-/-- **Comparison `cechH1 ≃ₗ supH1` (consumer of `exists_cechModel`).** For the
-chart-disk Leray model produced by `exists_cechModel 𝔘 D`, the genuine germ-class `H¹` is
-`ℂ`-linearly isomorphic to the sup-norm `H¹` of that model.  This simply repackages the bundled
-equivalence.  Stated as an existence of *a* model with the comparison, so it cannot be vacuously
-discharged by an unrelated finite-dimensional model. -/
-theorem cechH1_linearEquiv_supH1 (𝔘 : FiniteCover X) (D : Divisor X) :
-    ∃ (d : DiskOverlapData) (c : Coboundaries d), Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
-  exists_cechModel 𝔘 D
-
 /-! ### Discharging `finiteDimensional_cechH1` -/
 
 /-- **The finiteness node, assembled.** `H¹(𝔘, 𝒪_D)` is finite-dimensional: take the chart-disk

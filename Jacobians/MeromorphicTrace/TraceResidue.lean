@@ -189,11 +189,6 @@ variable (L : LaurentForm)
 /-- The `dz`-coefficient of the form: the pointwise sum of the Laurent monomials. -/
 noncomputable def R : ℂ → ℂ := fun z => ∑ i, L.c i * (z - L.a i) ^ L.n i
 
-/-- The contour `C(0, ρ)` has nonnegative radius (it contains a centre, so `ρ > 0` whenever the
-family is nonempty; in general `dist_nonneg` gives `0 ≤ ρ` from any centre). -/
-theorem rho_pos_of_nonempty [Nonempty L.ι] : 0 < L.ρ :=
-  pos_of_mem_ball (L.centers_mem (Classical.arbitrary L.ι))
-
 /-- Each monomial `z ↦ c i·(z − a i) ^ (n i)` is circle-integrable on `C(0, ρ)`: its only
 singularity `a i` lies strictly inside the contour, off the sphere. -/
 theorem circleIntegrable_monomial (i : L.ι) :

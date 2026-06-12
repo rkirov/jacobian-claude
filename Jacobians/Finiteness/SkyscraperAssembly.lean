@@ -59,11 +59,6 @@ For a `𝒪_{D+P}`-cochain `b` and a chosen cover-set `U i ∋ P`, the component
 coefficient at `P` is defined (`coeffGermLin`). This is the building block of the realization map.
 -/
 
-/-- The component membership of a `sections0 (D+P)` cochain: `b j ∈ OmegaDGerm (D+P) (U j)`. -/
-theorem sections0_component_mem (b : ↥(𝔘.sections0 (D + Finsupp.single P 1)))
-    (j : 𝔘.ι) : (b : 𝔘.Cochain0) j ∈ OmegaDGerm (D + Finsupp.single P 1) (𝔘.U j) :=
-  b.2 j
-
 /-- The component-`i` principal-part coefficient functional on `B0 = sections0(D+P)`:
 `b ↦ coeffGermLin (b i)` at the cover-set `U i ∋ P`. -/
 noncomputable def coeffB0 {i : 𝔘.ι} (hP : P ∈ 𝔘.U i) :

@@ -56,20 +56,6 @@ theorem orderW_inv (f : MeromorphicFunction X) (x : X) :
       = (f.toFun ∘ (chartAt (H := ℂ) x).symm)⁻¹ := rfl
   rw [heq, meromorphicOrderAt_inv]
 
-/-- **The order-at-point of a reciprocal is the negation:**
-`(f⁻¹).orderAtPoint x = −(f.orderAtPoint x)`. (`orderAtPoint = (orderW).untop₀`;
-`untop₀ (−w) = −(untop₀ w)` since `−⊤ = ⊤` and `untop₀ ⊤ = 0`.) This is the key order law for the
-simple-`∞` reduction: a *simple zero* of `f₀ − a` (order `+1`) is a *simple pole* of `(f₀ − a)⁻¹`
-(order `−1`). -/
-theorem orderAtPoint_inv (f : MeromorphicFunction X) (x : X) :
-    (f⁻¹).orderAtPoint x = -(f.orderAtPoint x) := by
-  show ((f⁻¹).orderW x).untop₀ = -(f.orderW x).untop₀
-  rw [orderW_inv]
-  rcases eq_or_ne (f.orderW x) ⊤ with h | h
-  · rw [h]; simp
-  · lift (f.orderW x) to ℤ using h with a
-    simp
-
 end MeromorphicFunction
 
 end Jacobians

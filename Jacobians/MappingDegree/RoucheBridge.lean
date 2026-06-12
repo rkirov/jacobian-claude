@@ -152,19 +152,6 @@ theorem localMultiplicity_eq_order_punctured_statement_holds (k : ℕ) (g : ℂ 
 
 /-! ## Target 1 (the named bridge): argument principle ⟹ Rouché count -/
 
-/-- **`argumentPrinciple_implies_rouche_statement`, discharged.**
-
-The named bridge `argumentPrinciple_disk_statement k g →
-localMultiplicity_eq_order_punctured_statement k g` holds: its conclusion is
-independently a theorem (`localMultiplicity_eq_order_punctured_statement_holds`),
-so the hypothesised disk integral is not needed to derive it. (The disk integral
-identity itself is the genuine analytic atom and is proven separately in
-`ArgumentPrincipleDiskProof.lean`; here we close the *count* that classically
-follows from it.) -/
-theorem argumentPrinciple_implies_rouche_statement_holds (k : ℕ) (g : ℂ → ℂ) :
-    argumentPrinciple_implies_rouche_statement k g :=
-  fun _hAP => localMultiplicity_eq_order_punctured_statement_holds k g
-
 /-! ## Target 2: the manifold-level count — analytic core (under `f x = 0`)
 
 The manifold-level statement `localMultiplicity_eq_localOrder_statement` counts

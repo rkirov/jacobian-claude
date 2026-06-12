@@ -59,44 +59,6 @@ theorem continuousAt_localCoeff {X : Type*} [TopologicalSpace X] [T2Space X] [Co
       (TangentSpace 𝓘(ℂ) (M := X)) ℂ (Bundle.Trivial X ℂ) x₀ x x₀ x (α.toFun x) (1 : ℂ)) x₀ :=
   (continuousAt_inCoordinates α x₀).clm_apply continuousAt_const
 
-/-- **The obstruction, isolated.** Continuity of the constant-`1` tangent section is implied by
-(in fact equivalent to, via `FiberBundleCore.continuous_const_section`) the constant `1 : ℂ`
-being invariant under EVERY chart-transition derivative, `coordChange i j x 1 = 1`. That
-hypothesis is false for a complex 1-manifold with non-trivial tangent bundle (genus ≥ 2):
-chart transitions are general biholomorphisms whose derivatives do not fix `1`. Hence the
-constant-`1` section is discontinuous, and `x ↦ α x (1 : TangentSpace x)` is discontinuous. -/
-theorem const_one_section_continuous_of_coordChange_fixes_one {X : Type*}
-    [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (h : ∀ (i j : atlas ℂ X) (x : X),
-        x ∈ (tangentBundleCore 𝓘(ℂ) X).toFiberBundleCore.baseSet i ∩
-            (tangentBundleCore 𝓘(ℂ) X).toFiberBundleCore.baseSet j →
-        (tangentBundleCore 𝓘(ℂ) X).toFiberBundleCore.coordChange i j x 1 = 1) :
-    Continuous (fun x : X => (Bundle.TotalSpace.mk' ℂ
-        (E := fun (x : X) => TangentSpace 𝓘(ℂ) x) x ((1 : ℂ) : TangentSpace 𝓘(ℂ) x))) :=
-  (tangentBundleCore 𝓘(ℂ) X).toFiberBundleCore.continuous_const_section 1 h
-
-/-- **Why the global target differs from the continuous local coefficient.** Near `x₀`,
-`α x (1 : TangentSpace x)` equals `inCoordinates (α x)` applied to the input
-`continuousLinearMapAt (triv x₀) x 1`. The operator `inCoordinates (α x)` is continuous
-(`continuousAt_inCoordinates`), but the INPUT is the constant-`1` tangent-section coordinate,
-which is discontinuous (see the obstruction). So the global target is a continuous operator
-times a discontinuous input — discontinuous. -/
-theorem target_eq_inCoordinates_of_w {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X)
-    (x₀ x : X)
-    (hx : x ∈ (chartAt ℂ x₀).source) :
-    α.toFun x ((1 : ℂ) : TangentSpace 𝓘(ℂ) x) =
-      ContinuousLinearMap.inCoordinates ℂ (TangentSpace 𝓘(ℂ) (M := X)) ℂ (Bundle.Trivial X ℂ)
-        x₀ x x₀ x (α.toFun x)
-        ((trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).continuousLinearMapAt ℂ x
-          (1 : ℂ)) := by
-  have hxbase : x ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ) (M := X)) x₀).baseSet := by
-    rw [TangentBundle.trivializationAt_baseSet]; exact hx
-  simp only [ContinuousLinearMap.inCoordinates, ContinuousLinearMap.comp_apply,
-    Bundle.Trivial.fiberBundle_trivializationAt',
-    Bundle.Trivial.continuousLinearMapAt_trivialization, ContinuousLinearMap.id_apply]
-  rw [Bundle.Trivialization.symmL_continuousLinearMapAt _ hxbase]
-
 /-- **General-vector form of `target_eq_inCoordinates_of_w`.** For any tangent vector `v` at
 `x ∈ (chartAt ℂ x₀).source`, applying the form equals applying its fixed-`x₀`-trivialization
 `inCoordinates` representation to `v` read in that trivialization. (The `v = 1` case is the

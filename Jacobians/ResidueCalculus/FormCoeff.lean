@@ -104,30 +104,4 @@ theorem coeffAt_chartCenter (α : HolomorphicOneForms X) (a : X) :
   simp only [coeffAt]
   rw [(chartAt ℂ a).left_inv (mem_chart_source ℂ a)]
 
-/-- **Forster §17.6's injectivity witness.**  At a point `a` where the holomorphic form `α` has a
-nonzero coefficient, there is a function `g` (the local principal part `1/(z·coeff)`) such that the
-meromorphic 1-form `α·g` has a **simple pole at `a` with residue `1`**.  Combined with
-`exists_localRep_self_ne_zero` (such an `a` exists for any `α ≠ 0`), this is the local heart of
-`ι₀ : H⁰(X,Ω) → H¹(X,𝒪)*` being injective. -/
-theorem exists_formFnResidue_eq_one_of_localRep_ne_zero (α : HolomorphicOneForms X) (a : X)
-    (ha : Jacobians.Montel.localRep α a a ≠ 0) :
-    ∃ g : X → ℂ, formFnResidue α g a = 1 := by
-  set z₀ := (chartAt ℂ a) a with hz₀
-  refine ⟨fun x => ((chartAt ℂ a) x - z₀)⁻¹ * (coeffAt α a ((chartAt ℂ a) x))⁻¹, ?_⟩
-  unfold formFnResidue
-  apply resAt_eq_of_eventuallyEq_sub_inv
-  have htarget : (chartAt ℂ a).target ∈ 𝓝 z₀ :=
-    (chartAt ℂ a).open_target.mem_nhds ((chartAt ℂ a).map_source (mem_chart_source ℂ a))
-  have hcoeff_z0 : coeffAt α a z₀ ≠ 0 := by rw [coeffAt_chartCenter]; exact ha
-  have hne : ∀ᶠ z in 𝓝 z₀, coeffAt α a z ≠ 0 :=
-    ((coeffAt_analyticAt α a
-      ((chartAt ℂ a).map_source (mem_chart_source ℂ a))).continuousAt).eventually_ne hcoeff_z0
-  filter_upwards [nhdsWithin_le_nhds htarget, nhdsWithin_le_nhds hne, self_mem_nhdsWithin]
-    with z hztarget hzne hz0
-  have hz0' : z ≠ z₀ := by rwa [Set.mem_compl_iff, Set.mem_singleton_iff] at hz0
-  have hsub : z - z₀ ≠ 0 := sub_ne_zero.mpr hz0'
-  -- `g ∘ chart.symm` at `z`, using the chart right-inverse on the target
-  simp only [(chartAt ℂ a).right_inv hztarget]
-  rw [one_mul, mul_left_comm, mul_inv_cancel₀ hzne, mul_one]
-
 end Jacobians.Dolbeault

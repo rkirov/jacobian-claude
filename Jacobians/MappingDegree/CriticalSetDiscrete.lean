@@ -245,20 +245,6 @@ chart-pullback derivative witness at every critical point. The
 proof) to provide the chart-pullback witnesses; here we expose them
 explicitly as a parameter so this lemma is provable unconditionally. -/
 
-/-- **Named deliverable.** The critical set of `f : X → Y` is discrete,
-given that every critical point admits a chart-pullback derivative witness
-(i.e., a `CriticalChartPullbackData`). The non-constancy hypothesis is
-included for documentation and downstream chaining; it is not used in the
-proof beyond what the chart-pullback witness already encodes. -/
-lemma criticalSet_isDiscrete_of_not_constant
-    {X : Type u} [TopologicalSpace X]
-    {Y : Type v} [TopologicalSpace Y]
-    (f : X → Y) (_hnc : ¬ Jacobians.Discharge.IsConstantMap f)
-    (crit : Set X)
-    (h : ∀ x ∈ crit, CriticalChartPullbackData f crit x) :
-    IsDiscrete crit :=
-  criticalSet_isDiscrete_of_chart_pullback f crit h
-
 end Degree
 end ContMDiff
 end Jacobians.Discharge

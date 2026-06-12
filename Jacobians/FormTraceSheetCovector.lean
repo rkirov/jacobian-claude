@@ -162,19 +162,4 @@ theorem sheetPullback_apply_eq_coeffAt_mul_deriv (ω₀ : HolomorphicOneForms X)
   simp only [coeffAt_chartCenter]
   exact toFun_apply_eq_mul_localRep ω₀ (s y) _
 
-/-- **The linchpin at the affine unit tangent.**  Specialising
-`sheetPullback_apply_eq_coeffAt_mul_deriv` to `v = 1` (the affine value-chart unit tangent): the
-per-sheet covector reads as `deriv(section)·coeffAt` — precisely the `fibreTrace` summand at the
-base in the `g ≡ 1` frame.
-
-> `sheetPullback ω₀ s y 1
->    = deriv (chart_{s y} ∘ s ∘ chart_y.symm) (chart_y y) · coeffAt ω₀ (s y) (chart_{s y}(s y))`. -/
-theorem sheetPullback_one_eq_coeffAt_mul_deriv (ω₀ : HolomorphicOneForms X) (s : Y → X) {y : Y}
-    (hs : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) s y) :
-    sheetPullback ω₀ s y (1 : ℂ)
-      = deriv (fun z => (chartAt ℂ (s y)) (s ((chartAt ℂ y).symm z))) ((chartAt ℂ y) y)
-        * coeffAt ω₀ (s y) ((chartAt ℂ (s y)) (s y)) := by
-  rw [sheetPullback_apply_eq_coeffAt_mul_deriv ω₀ s hs (1 : ℂ)]
-  rw [deriv]
-
 end Jacobians.Dolbeault.FormTraceSheet

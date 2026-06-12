@@ -25,11 +25,6 @@ open scoped Manifold ContDiff
 
 /-! ### Finite chart cover -/
 
-/-- The chart source at x is open in X. -/
-theorem isOpen_chartAt_source {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (x : X) :
-    IsOpen (chartAt ℂ x).source :=
-  (chartAt ℂ x).open_source
-
 /-- Chart sources cover X. -/
 theorem iUnion_chartAt_source_eq_univ {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] :
     (⋃ x : X, (chartAt ℂ x).source) = Set.univ :=

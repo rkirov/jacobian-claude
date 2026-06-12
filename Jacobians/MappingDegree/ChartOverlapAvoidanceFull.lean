@@ -216,16 +216,4 @@ theorem exists_avoidance_in_open_chartedSpace_complex
   show φ'.symm (γ_chart t) ∈ U
   exact hsymm_sub_U (γ_chart t) (hγ_chart_mem_ball t)
 
-/--
-**Chart-overlap version.** If `y ∈ U ∩ V` with both `U, V` open, the same
-construction (carried out with `U ∩ V` in place of `U`) gives `z ∈ U ∩ V`,
-`z ∉ C`, and a path from `y` to `z` lying in `U ∩ V`.
--/
-theorem exists_chart_overlap_avoidance_full
-    {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
-    {U V : Set Y} (hU : IsOpen U) (hV : IsOpen V)
-    {y : Y} (hy : y ∈ U ∩ V) {C : Set Y} (hC : C.Finite) :
-    ∃ z : Y, z ∈ U ∩ V ∧ z ∉ C ∧ JoinedIn (U ∩ V) y z := by
-  exact exists_avoidance_in_open_chartedSpace_complex (hU.inter hV) hy hC
-
 end Jacobians.Discharge.Manifold

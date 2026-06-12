@@ -116,12 +116,5 @@ theorem analytic_kth_root_of_nonvanishing
     -- c₀ * (u z / c₀) = u z
     field_simp
 
-/-- **Discharge of the named gap** from `LocalKFoldMultiplicity`. -/
-theorem analytic_kth_root_branch_exists
-    (u : ℂ → ℂ) (x₀ : ℂ) (ρ : ℝ) (k : ℕ) (hρ : 0 < ρ) :
-    analytic_kth_root_branch_exists_statement u x₀ ρ k := by
-  intro hu hux₀ hk
-  exact analytic_kth_root_of_nonvanishing hρ hu hux₀ hk
-
 end Manifold
 end Jacobians.Discharge

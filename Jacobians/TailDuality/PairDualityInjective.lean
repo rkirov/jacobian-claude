@@ -324,16 +324,4 @@ theorem pairDualMap_injective [T2Space X] [CompactSpace X] [ConnectedSpace X] [N
       = pairDualFun g₀ hg₀ D h from rfl, pairDualFun_mk] at happ
   exact hne0 (hval ▸ happ)
 
-/-- **The easy half of Serre duality for the tail `H¹`** (Miranda Thm 3.3, injectivity):
-
-  `l(K − D) ≤ h¹(D)`
-
-for the canonical divisor `K = div (dg₀)` of any nonconstant meromorphic `g₀` — every genus. -/
-theorem lDim_pairCanonical_sub_le_h1TailDim [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [Nonempty X] [IsManifold 𝓘(ℂ) ω X] (g₀ : MeromorphicFunction X)
-    (hg₀ : ¬ IsGermConstant g₀) (D : Divisor X) :
-    lDim (X := X) (pairCanonicalDivisor g₀ hg₀ - D) ≤ h1TailDim (X := X) D :=
-  SerreDuality.finrank_le_of_injective_to_dual (pairDualMap g₀ hg₀ D)
-    (pairDualMap_injective g₀ hg₀ D)
-
 end Jacobians.LaurentTail

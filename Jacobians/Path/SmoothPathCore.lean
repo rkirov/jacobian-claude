@@ -199,29 +199,6 @@ theorem isSmoothPath_const {X : Type*} [TopologicalSpace X] [T2Space X] [Compact
     rw [h_eq]
     exact continuousOn_const
 
-/-- **Reverse of a closed smooth loop is a closed smooth loop** (REAL).
-The reverse loop `t ↦ γ(1 - t)` is still closed and smooth. -/
-theorem IsClosedSmoothLoop.reverse {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {γ : ℝ → X}
-    (h : IsClosedSmoothLoop γ) : IsClosedSmoothLoop (Jacobians.reverse γ) where
-  closed := by show γ (1 - 0) = γ (1 - 1); simp [h.closed]
-  cont := h.cont.comp (continuous_const.sub continuous_id)
-  diff := by
-    intro t ht
-    have h1t : 1 - t ∈ Set.uIcc (0 : ℝ) 1 := by
-      rw [Set.uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht ⊢
-      rcases ht with ⟨h0, h1⟩
-      refine ⟨by linarith, by linarith⟩
-    have hdiff_inner := h.diff (1 - t) h1t
-    have h_comp : (chartAt (H := ℂ) (Jacobians.reverse γ t)).toFun ∘ Jacobians.reverse γ =
-        (chartAt (H := ℂ) (γ (1 - t))).toFun ∘ γ ∘ (fun s => 1 - s) := by
-      funext s; rfl
-    rw [h_comp]
-    have h_sub_diff : DifferentiableAt ℝ (fun s : ℝ => 1 - s) t :=
-      (differentiableAt_const _).sub differentiableAt_id
-    exact hdiff_inner.comp t h_sub_diff
-  velCont := velCont_reverse γ h.diff h.velCont
-
 /-- **Reverse of a smooth path is a smooth path** (REAL). The reverse
 path `t ↦ γ(1 - t)` goes from `Q` to `P` when `γ` goes `P` to `Q`,
 with smoothness preserved via the chain rule on `(1 - ·)`. -/

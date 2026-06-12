@@ -74,24 +74,6 @@ noncomputable def localRepOnShrunkBcf {X : Type*} [TopologicalSpace X] [T2Space 
 The per-chart bcf distance is bounded by supNormK of the difference,
 so a supNormK-Cauchy sequence has bcf-Cauchy chart restrictions. -/
 
-/-- Per-chart bcf-distance ≤ supNormK-distance for `α, β ∈ HOF X`. -/
-theorem dist_localRepOnShrunkBcf_le_supNormK_sub {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X)) :
-    letI := shrunkChart_compactSpace' (X := X) x₀
-    dist (localRepOnShrunkBcf α x₀) (localRepOnShrunkBcf β x₀) ≤
-      HolomorphicOneForms.supNormK (α - β) := by
-  letI := shrunkChart_compactSpace' (X := X) x₀
-  refine (BoundedContinuousFunction.dist_le
-    (HolomorphicOneForms.supNormK_nonneg _)).mpr ?_
-  intro y
-  have hy : (y : X) ∈ shrunkChart (X := X) x₀ := y.2
-  simp only [localRepOnShrunkBcf, BoundedContinuousFunction.mkOfCompact_apply,
-    localRepOnShrunk_apply _ hx₀, dist_eq_norm]
-  exact norm_localRep_sub_le_supNormK α β hx₀ hy
-
 /-! ### Step 3 — Pointwise CLM limit from supNormK Cauchy
 For a supNormK-Cauchy sequence of sections, `α_n.toFun y` is Cauchy in
 the complete space `T_y X →L[ℂ] ℂ` (CLM space, complete since ℂ is).

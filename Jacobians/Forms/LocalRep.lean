@@ -33,22 +33,6 @@ noncomputable def localRep {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
     (x₀ : X) (y : X) : ℂ :=
   α.toFun y ((trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1)
 
-/-- Outside the trivialization's base set, `localRep α x₀` is zero (junk value
-from `Trivialization.symm_apply_of_notMem`). -/
-theorem localRep_eq_zero_of_notMem_baseSet {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X]
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (x₀ y : X)
-    (hy : y ∉ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).baseSet) :
-    localRep α x₀ y = 0 := by
-  unfold localRep
-  have : (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symmL ℂ y 1 = 0 := by
-    change (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀).symm y 1 = 0
-    exact Trivialization.symm_apply_of_notMem _ hy 1
-  rw [this]
-  exact map_zero (α.toFun y)
-
 /-! ### Continuity on the trivialization base set -/
 
 /-- A constant section of a vector bundle (via inverse trivialization) is

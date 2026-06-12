@@ -98,18 +98,5 @@ theorem regularSubset_isPreconnected_of_finite_complement_hypothesis
     IsPreconnected (Set.univ : Set ((Cᶜ : Set Y))) :=
   regularSubset_isPreconnected_subtype_of_compl C (h_topo C hC_fin)
 
-/-- **Bare ambient form.** The same conclusion as
-`regularSubset_isPreconnected_of_finite_complement_hypothesis`, stated
-in the ambient `Set Y` form rather than as a subtype. Both shapes are
-useful: the ambient form composes with `IsLocallyConstant.of_isOpen`
-arguments in `Y`, while the subtype form is what
-`fibre_card_eq_of_locallyConstant_subtype_reg` consumes directly. -/
-theorem regularSubset_isPreconnected_ambient_of_finite_complement_hypothesis
-    {Y : Type u} [TopologicalSpace Y]
-    (h_topo : ∀ C : Set Y, C.Finite → IsPreconnected (Cᶜ : Set Y))
-    (C : Set Y) (hC_fin : C.Finite) :
-    IsPreconnected (Cᶜ : Set Y) :=
-  h_topo C hC_fin
-
 end Manifold
 end Jacobians.Discharge

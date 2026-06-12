@@ -200,33 +200,6 @@ and the constant function `N ≡ 0` is locally constant with both boundary readi
 structure is honest (the equality `0 = 0` does hold here, with the trivial
 data). -/
 
-/-- **Non-vacuity witness.**  When `f.div = 0`, a `ProperMapDegreeData f` exists:
-the constant function `N ≡ 0` (no zeros, no poles), locally constant, with both
-boundary readings `0`.  Hence the `ProperMapDegreeData` obligations are
-*satisfiable* — the structure is not a disguised `False`. -/
-def ProperMapDegreeData.ofDivEqZero {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (f : MeromorphicFunction X)
-    (h0 : (f.div : Divisor X) = 0) : ProperMapDegreeData f where
-  N := fun _ => 0
-  locallyConstant := IsLocallyConstant.const 0
-  zero_eq := by
-    symm
-    -- `zerosCount f = 0`: the positive-order part of an empty support.
-    simp only [zerosCount]
-    apply Finset.sum_eq_zero
-    intro x hx
-    rw [Finset.mem_filter, h0] at hx
-    simp at hx
-  infty_eq := by
-    symm
-    -- `polesCount f = 0`: the negative-order part of an empty support.
-    simp only [polesCount]
-    apply Finset.sum_eq_zero
-    intro x hx
-    rw [Finset.mem_filter, h0] at hx
-    simp at hx
-
 /-! ### The per-point multiplicity input, genuinely discharged (Rouché)
 
 The `ProperMapDegreeData.locallyConstant` field abstracts the *global* assembly,
@@ -244,45 +217,5 @@ normalization (`MeromorphicFunction.toFun` is pinned only up to its germ off `x`
 so the value at `x` must be supplied; for a genuine zero it is `0` — the limit-
 repair value `holoRepr x`).  This is the local multiplicity that the global
 conservation-of-number assembly aggregates over the fibre. -/
-
-/-- **The Rouché per-point count at a zero (local degree = order).**
-
-For `f : MeromorphicFunction X` and `x : X` a zero of *positive order* with the
-value-normalization `f.toFun x = 0`, there are open `U ∋ x` and `V ∋ 0` such that
-for every `w ∈ V` with `w ≠ 0`, the local fibre `{y ∈ U | f.toFun y = w}` has
-exactly `(f.orderAtPoint x).natAbs` points:
-
-> `#{y ∈ U : f y = w} = ord_x f`     (for `w ≠ 0` near `0`).
-
-This is the local degree = multiplicity input behind the fibre-multiplicity
-function `N` near a zero (the value `N(0) = ∑_x ord_x f` is the limit of these
-counts as `w → 0`).  It is the chart-transport of the planar Rouché count,
-discharged in `RoucheBridge.localMultiplicity_eq_localOrder_count_of_apply_eq_zero`,
-restated at the `MeromorphicFunction` level via the definitional
-`orderAtPoint = localOrder` and `meromorphic = MMeromorphicAt` identifications. -/
-theorem localFibreNcard_eq_order_at_zero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (f : MeromorphicFunction X) (x : X)
-    (hpos : 0 < f.orderAtPoint x) (hfx : f.toFun x = 0) :
-    ∃ (U : Set X) (V : Set ℂ),
-      IsOpen U ∧ x ∈ U ∧ IsOpen V ∧ (0 : ℂ) ∈ V ∧
-      ∀ w ∈ V, w ≠ (0 : ℂ) →
-        ({y ∈ U | f.toFun y = w} : Set X).ncard = (f.orderAtPoint x).natAbs := by
-  -- `f.orderAtPoint x` and `localOrder 𝓘(ℂ) f.toFun x` are definitionally equal,
-  -- as is `f.meromorphic x : MMeromorphicAt 𝓘(ℂ) f.toFun x`; apply the bridge.
-  have hmero : Jacobians.Discharge.MMeromorphicAt 𝓘(ℂ) f.toFun x := f.meromorphic x
-  have hpos' : 0 < Jacobians.Discharge.localOrder 𝓘(ℂ) f.toFun x := hpos
-  obtain ⟨U, V, hU, hxU, hV, h0V, hcount⟩ :=
-    Jacobians.Discharge.MMeromorphicAt.localMultiplicity_eq_localOrder_count_of_apply_eq_zero
-      hmero hpos' hfx
-  -- `f.toFun x = 0`, so the `f x ∈ V` and `w ≠ f x` of the bridge become `0 ∈ V`, `w ≠ 0`.
-  rw [hfx] at h0V
-  refine ⟨U, V, hU, hxU, hV, h0V, ?_⟩
-  intro w hwV hwne
-  have hwne' : w ≠ f.toFun x := by rw [hfx]; exact hwne
-  -- The bridge's count, with `localOrder` rewritten to `orderAtPoint` (definitionally equal).
-  have := hcount w hwV hwne'
-  rwa [show (Jacobians.Discharge.localOrder 𝓘(ℂ) f.toFun x).natAbs
-    = (f.orderAtPoint x).natAbs from rfl] at this
-
 
 end Jacobians.ProperMapDegree

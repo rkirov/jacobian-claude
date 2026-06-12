@@ -218,13 +218,6 @@ theorem meromorphicAt_pullback {X : Type*} [TopologicalSpace X] [ChartedSpace �
     (Pw : W) : MeromorphicAt (f ∘ (chartAt (H := ℂ) Pw).symm) ((chartAt (H := ℂ) Pw) Pw) :=
   hf Pw
 
-/-- The chart-pullback order is exactly `ordU f Pw` (definitional). -/
-theorem meromorphicOrderAt_pullback {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    {W : Opens X}
-    (f : W → ℂ) (Pw : W) :
-    meromorphicOrderAt (f ∘ (chartAt (H := ℂ) Pw).symm) ((chartAt (H := ℂ) Pw) Pw) = ordU f Pw :=
-  rfl
-
 /-- **`coeffWFn` is additive** on `↥W`-functions of order `≥ k` at `Pw`. -/
 theorem coeffWFn_add {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] {W : Opens X} {k : ℤ}
     {Pw : W} {f g : W → ℂ}
@@ -465,18 +458,6 @@ theorem ker_coeffLin :
   rw [LinearMap.mem_ker, coeffLin_eq_zero_iff hP f, Submodule.submoduleOf, Submodule.mem_comap,
     Submodule.coe_subtype]
 
-/-- **The local realization isomorphism** (function level):
-`𝒪_{D+P}(W) ⧸ 𝒪_D(W) ≅ₗ[ℂ] ℂ`, the order-`k` coefficient at `P`. Given the witness membership
-(`hwit`), this is the genuine 1-dimensional skyscraper stalk: the quotient of meromorphic sections
-by the pole-order condition is realised by the single Laurent coefficient. This is the isolated
-analytic content that `exists_skyscraperLES` bottoms out in. -/
-noncomputable def localRealizationEquiv
-    (hwit : witnessFn ⟨P, hP⟩ (-(D P) - 1) ∈ OmegaD (D + Finsupp.single P 1) W) :
-    (OmegaD (D + Finsupp.single P 1) W ⧸
-        (OmegaD D W).submoduleOf (OmegaD (D + Finsupp.single P 1) W)) ≃ₗ[ℂ] ℂ :=
-  (Submodule.quotEquivOfEq _ _ (ker_coeffLin hP).symm).trans
-    (LinearMap.quotKerEquivOfSurjective _ (coeffLin_surjective hP hwit))
-
 end Iso
 
 /-! ### The germ-class coefficient (`OmegaDGerm`) — the form the skyscraper LES `h0ToSky` uses
@@ -527,18 +508,6 @@ noncomputable def coeffGermLin :
       coeffGermFn_coe, coeffGermFn_coe, RingHom.id_apply]
     exact coeffWFn_smul c hf.1 (ordU_ge_of_mem_add_single hP hf)
 
-@[simp] theorem coeffGermLin_coe_toGerm
-    (f : OmegaD (D + Finsupp.single P 1) W) :
-    coeffGermLin hP (⟨toGerm W (f : W → ℂ), ⟨f, f.2, rfl⟩⟩ :
-      OmegaDGerm (D + Finsupp.single P 1) W)
-      = coeffWFn (-(D P) - 1) ⟨P, hP⟩ (f : W → ℂ) := rfl
-
-/-- `OmegaDGerm D W ≤ OmegaDGerm (D+P) W` (germ image of the function-level inclusion). -/
-theorem OmegaDGerm_le_add_single :
-    OmegaDGerm D W ≤ OmegaDGerm (D + Finsupp.single P 1) W := by
-  rintro _ ⟨g, hg, rfl⟩
-  exact ⟨g, OmegaD_le_add_single hg, rfl⟩
-
 /-- **Surjectivity of the germ-class coefficient** (given the witness membership): every `a : ℂ` is
 realised by the germ of `a • witness`. -/
 theorem coeffGermLin_surjective
@@ -588,19 +557,6 @@ theorem ker_coeffGermLin :
   · -- germ in `𝒪_D`-germs ⟹ coefficient `0`
     intro hγD
     exact coeffGermFn_eq_zero_of_mem_OmegaDGerm hP hγD
-
-/-- **The local realization isomorphism (germ-class form)**:
-`OmegaDGerm (D+P) W ⧸ OmegaDGerm D W ≅ₗ[ℂ] ℂ`, the order-`k` Laurent coefficient at `P`. This is the
-genuine 1-dimensional skyscraper stalk `ℂ_P` in junk-free germ-class form — exactly the local
-analytic content the χ-additivity skyscraper LES (`exists_skyscraperLES`) bottoms out in. The single
-geometric input is the witness membership `hwit` (true on a coordinate disk where `D` is supported
-only at `P`). -/
-noncomputable def localRealizationGermEquiv
-    (hwit : witnessFn ⟨P, hP⟩ (-(D P) - 1) ∈ OmegaD (D + Finsupp.single P 1) W) :
-    (OmegaDGerm (D + Finsupp.single P 1) W ⧸
-        (OmegaDGerm D W).submoduleOf (OmegaDGerm (D + Finsupp.single P 1) W)) ≃ₗ[ℂ] ℂ :=
-  (Submodule.quotEquivOfEq _ _ (ker_coeffGermLin hP).symm).trans
-    (LinearMap.quotKerEquivOfSurjective _ (coeffGermLin_surjective hP hwit))
 
 end Germ
 

@@ -180,20 +180,6 @@ theorem differentiableAt_comp_normSq {η : ℝ → ℝ} (hη : ContDiff ℝ 1 η
 
 /-! ### §3 — an explicit `C¹` radial profile from `Real.smoothTransition` -/
 
-/-- A `C¹` (indeed smooth) profile `η` with `η ≡ 1` on `(-∞, s₀]` and `η ≡ 0` on `[s₁, ∞)`.
-Composed with `normSq(·−c)` this is the explicit radial cutoff used for the (10.21)
-computation. -/
-theorem exists_cutoff_profile {s₀ s₁ : ℝ} (h : s₀ < s₁) :
-    ∃ η : ℝ → ℝ, ContDiff ℝ 1 η ∧ (∀ s ≤ s₀, η s = 1) ∧ (∀ s, s₁ ≤ s → η s = 0) := by
-  refine ⟨fun s => Real.smoothTransition ((s₁ - s) / (s₁ - s₀)), ?_, ?_, ?_⟩
-  · exact (Real.smoothTransition.contDiff (n := 1)).comp
-      ((contDiff_const.sub contDiff_id).div_const _)
-  · intro s hs
-    exact Real.smoothTransition.one_of_one_le ((one_le_div (by linarith)).mpr (by linarith))
-  · intro s hs
-    exact Real.smoothTransition.zero_of_nonpos
-      (div_nonpos_of_nonpos_of_nonneg (by linarith) (by linarith))
-
 /-- The derivative of a profile that is constant `1` on `(-∞, s₀]` vanishes on the open ray
 `(-∞, s₀)` (local constancy). -/
 theorem deriv_profile_eq_zero_left {η : ℝ → ℝ} {s₀ : ℝ} (h1 : ∀ s ≤ s₀, η s = 1)

@@ -137,10 +137,6 @@ theorem poleBall_subset_source {a : X} (ha : a ∈ S) :
   rintro x ⟨z, hz, rfl⟩
   exact (chartAt (H := ℂ) a).map_target (D.hball a ha hz)
 
-theorem mem_poleBall_self {a : X} (ha : a ∈ S) : a ∈ D.poleBall a :=
-  ⟨(chartAt (H := ℂ) a) a, mem_closedBall_self (D.hε a ha).le,
-    (chartAt (H := ℂ) a).left_inv (mem_chart_source ℂ a)⟩
-
 theorem isCompact_poleBall {a : X} (ha : a ∈ S) : IsCompact (D.poleBall a) :=
   (isCompact_closedBall _ _).image_of_continuousOn
     ((chartAt (H := ℂ) a).continuousOn_symm.mono (D.hball a ha))

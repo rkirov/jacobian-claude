@@ -136,19 +136,6 @@ theorem cechDelta0_sections (𝔘 : FiniteCover X) (D : Divisor X) :
   exact sub_mem (rawRestrictG_omegaDGerm inf_le_right (hf p.2))
     (rawRestrictG_omegaDGerm inf_le_left (hf p.1))
 
-/-- **`B¹ ⊆ Z¹`** (coboundaries are cocycles). A `1`-coboundary `δ⁰f` lies in `ker δ¹` (since
-`δ¹ ∘ δ⁰ = 0`, `cechDelta1_comp_cechDelta0`) and is an `𝒪_D`-`1`-section (`cechDelta0_sections`), so
-it is an `𝒪_D` `1`-cocycle. This is the containment that makes `H¹ = Z¹/B¹` (`cechH1`) the genuine
-cohomology, and that lets the snake-lemma connecting map land a lifted coboundary in `Z¹(𝒪_D)`. -/
-theorem coboundaries1_le_cocycles1 (𝔘 : FiniteCover X) (D : Divisor X) :
-    𝔘.coboundaries1 D ≤ 𝔘.cocycles1 D := by
-  rw [coboundaries1, cocycles1, le_inf_iff]
-  refine ⟨?_, 𝔘.cechDelta0_sections D⟩
-  rw [Submodule.map_le_iff_le_comap]
-  intro f _
-  rw [Submodule.mem_comap, LinearMap.mem_ker, ← LinearMap.comp_apply, cechDelta1_comp_cechDelta0,
-    LinearMap.zero_apply]
-
 /-! ### The skyscraper long exact sequence structure (the genuine homological/analytic kernel)
 
 The single-point χ-jump comes from the **skyscraper short exact sequence** of `𝒪_D`-modules

@@ -139,37 +139,6 @@ theorem chart_local_detour_of_pathConnected_complement
   intro hyC
   exact hy_pre ⟨y, ⟨hy_src, hyC⟩, rfl⟩
 
-/-- **Specialisation to charts modelled on `ℂ` with full target `Set.univ`.**
-For an open partial homeomorphism `φ : X → ℂ` whose target is the whole plane
-`Set.univ` (e.g. a global complex chart), and any finite obstruction `C ⊆ X`,
-two points `p, q ∈ φ.source \ C` are joined in `Cᶜ ∩ φ.source` by a path. The
-path-connectedness of `ℂ \ φ '' (φ.source ∩ C)` is supplied by
-`Set.Countable.isPathConnected_compl_of_one_lt_rank` together with
-`Complex.rank_real_complex` (which gives `1 < Module.rank ℝ ℂ`). -/
-theorem chart_local_detour_of_target_univ_complex
-    (φ : _root_.OpenPartialHomeomorph X ℂ) (h_target : φ.target = Set.univ)
-    {C : Set X} (hC_fin : C.Finite)
-    {p q : X} (hp : p ∈ φ.source) (hq : q ∈ φ.source)
-    (hp_notin : p ∉ C) (hq_notin : q ∉ C) :
-    JoinedIn (Cᶜ ∩ φ.source : Set X) p q := by
-  -- The image of `φ.source ∩ C` under `φ` is finite, hence countable.
-  have h_img_fin : (φ '' (φ.source ∩ C)).Finite :=
-    (hC_fin.inter_of_right φ.source).image φ
-  have h_img_countable : (φ '' (φ.source ∩ C)).Countable := h_img_fin.countable
-  -- `1 < Module.rank ℝ ℂ`.
-  have h_rank : (1 : Cardinal) < Module.rank ℝ ℂ := by
-    rw [Complex.rank_real_complex]
-    exact_mod_cast (Nat.one_lt_two)
-  -- Path-connectedness of the complement in the whole plane.
-  have h_compl_pc : IsPathConnected ((φ '' (φ.source ∩ C))ᶜ : Set ℂ) :=
-    h_img_countable.isPathConnected_compl_of_one_lt_rank h_rank
-  -- Rewrite to `φ.target \ φ '' (φ.source ∩ C)` using `φ.target = univ`.
-  have h_eq : φ.target \ φ '' (φ.source ∩ C) = (φ '' (φ.source ∩ C))ᶜ := by
-    rw [h_target]; ext z; simp
-  have hPC : IsPathConnected (φ.target \ φ '' (φ.source ∩ C)) := h_eq ▸ h_compl_pc
-  exact chart_local_detour_of_pathConnected_complement
-    (φ := φ) hC_fin hPC hp hq hp_notin hq_notin
-
 end OpenPartialHomeomorph
 
 end Jacobians.Discharge

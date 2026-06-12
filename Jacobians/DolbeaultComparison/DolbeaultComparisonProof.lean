@@ -76,15 +76,6 @@ theorem cechDelta0_mem_ker_cechDelta1 {X : Type*} [TopologicalSpace X] (𝔘 : F
   rw [LinearMap.mem_ker, ← LinearMap.comp_apply, 𝔘.cechDelta1_comp_cechDelta0,
     LinearMap.zero_apply]
 
-/-- **(Algebraic backbone, complete.)** The image of `cechDelta0` (the Čech coboundaries at the raw
-germ-class level) is contained in the kernel of `cechDelta1` (the cocycles), for the same `δ²=0`
-reason. The submodule form of `cechDelta0_mem_ker_cechDelta1`. -/
-theorem range_cechDelta0_le_ker_cechDelta1 {X : Type*} [TopologicalSpace X]
-    (𝔘 : FiniteCover X) :
-    LinearMap.range 𝔘.cechDelta0 ≤ LinearMap.ker 𝔘.cechDelta1 := by
-  rintro _ ⟨c, rfl⟩
-  exact cechDelta0_mem_ker_cechDelta1 𝔘 c
-
 /-! ### The analytic heart: local `∂̄`-solvability on the manifold
 
 The Dolbeault → Čech map solves `∂̄u_i = g` on each chart-disk. The input

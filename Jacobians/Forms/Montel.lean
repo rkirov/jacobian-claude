@@ -167,34 +167,6 @@ theorem HolomorphicOneForms.cauchySeq_embedInnerBcf_of_cauchySeq
   have h := hCauchy.map (HolomorphicOneForms.embedInnerBcf x₀).uniformContinuous
   convert h using 0
 
-/-- **Chart-wise convergence**: CauchySeq in HOF X has per-chart bcf
-limits, since bcf is complete. -/
-theorem HolomorphicOneForms.exists_bcf_limit_of_cauchySeq
-    (x₀ : X)
-    (αs : ℕ → Jacobians.HolomorphicOneForms X)
-    (hCauchy : letI := HolomorphicOneForms.normedAddCommGroup (X := X)
-      CauchySeq αs) :
-    letI := innerShrunkChart_compactSpace (X := X) x₀
-    letI := HolomorphicOneForms.normedAddCommGroup (X := X)
-    letI := HolomorphicOneForms.normedSpace (X := X)
-    ∃ g : BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ,
-      Filter.Tendsto
-        (fun n => BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk (αs n) x₀))
-        Filter.atTop (nhds g) := by
-  letI := innerShrunkChart_compactSpace (X := X) x₀
-  letI := HolomorphicOneForms.normedAddCommGroup (X := X)
-  letI := HolomorphicOneForms.normedSpace (X := X)
-  have hCSeq := HolomorphicOneForms.cauchySeq_embedInnerBcf_of_cauchySeq x₀ αs hCauchy
-  exact cauchySeq_tendsto_of_complete hCSeq
-
-/-- The continuous linear map's value at α is `mkOfCompact (localRepOnInnerShrunk α x₀)`. -/
-theorem HolomorphicOneForms.embedInnerBcf_apply (x₀ : X) (α : Jacobians.HolomorphicOneForms X) :
-    letI := innerShrunkChart_compactSpace (X := X) x₀
-    letI := HolomorphicOneForms.normedAddCommGroup (X := X)
-    letI := HolomorphicOneForms.normedSpace (X := X)
-    (HolomorphicOneForms.embedInnerBcf x₀ : _ →L[ℂ] _) α =
-      BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀) := rfl
-
 /-! ### Montel conclusion: closed unit ball is compact + Riesz
 
 Strategy (classical — Ahlfors-Sario, Rudin Ch. 14):

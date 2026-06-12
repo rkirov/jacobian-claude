@@ -160,10 +160,6 @@ open Classical in
 noncomputable def Gext {U : Opens X} (g : U → ℂ) : X → ℂ :=
   fun x => if hx : x ∈ U then g ⟨x, hx⟩ else 0
 
-theorem Gext_comp_val {U : Opens X} (g : U → ℂ) :
-    (Gext g) ∘ (Subtype.val : U → X) = g := by
-  funext u; simp only [Function.comp_apply, Gext, dif_pos u.2]
-
 theorem Gext_apply_mem {U : Opens X} (g : U → ℂ) {x : X} (hx : x ∈ U) :
     Gext g x = g ⟨x, hx⟩ := by simp only [Gext, dif_pos hx]
 
@@ -254,16 +250,6 @@ theorem analyticAt_toMeromorphicNFAt_Gext_of_mem_OmegaD_zero [T2Space X] [Compac
 meromorphic normal form at the chart centre. -/
 def nfX [ChartedSpace ℂ X] (h : X → ℂ) (y : X) : Prop :=
   MeromorphicNFAt (h ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y)
-
-/-- `Gext g` is in normal form at `y ∈ U` iff `g` is (read in `↥U`'s chart at `⟨y⟩`). -/
-theorem nfX_Gext_iff [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X]
-    {U : Opens X} (g : U → ℂ) {y : X} (hy : y ∈ U) :
-    nfX (Gext g) y ↔
-      MeromorphicNFAt (g ∘ (chartAt (H := ℂ) (⟨y, hy⟩ : U)).symm)
-        ((chartAt (H := ℂ) (⟨y, hy⟩ : U)) ⟨y, hy⟩) := by
-  obtain ⟨hbase, hev⟩ := Gext_chart_bridge g hy
-  rw [nfX, hbase, meromorphicNFAt_congr hev]
 
 /-- Transport a punctured-neighbourhood property from the open submanifold `↥V` to the ambient `X`:
 since `↥V ↪ X` is an open embedding and `V ∈ 𝓝 x`, a `𝓝[≠] ⟨x⟩`-statement on `↥V` becomes the

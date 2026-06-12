@@ -412,12 +412,6 @@ theorem F_ne_zero {z : ℂ} (hzα : z ≠ α) (hzβ : z ≠ β) : S.F z ≠ 0 :=
   have h2 : z - α ≠ 0 := sub_ne_zero.mpr hzα
   exact div_ne_zero (mul_ne_zero (S.ne_zero z) h1) h2
 
-@[simp] theorem F_alpha : S.F α = 0 := by
-  rw [F, sub_self, div_zero]
-
-@[simp] theorem F_beta : S.F β = 0 := by
-  rw [F, sub_self, mul_zero, zero_div]
-
 /-! ### The 20.5(a) identity: `∫ U·g′ = π·(g β − g α)` -/
 
 /-- **The planar piece identity** (Forster 20.3 + 20.5(a) for holomorphic test data): if `g`

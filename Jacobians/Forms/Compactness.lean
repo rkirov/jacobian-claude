@@ -114,36 +114,6 @@ because the component-wise bound is what downstream Arzelà–Ascoli
 actually consumes; product-norm bookkeeping adds complexity without
 unlocking new content. -/
 
-/-- Component-wise bound: for `x₀ ∈ chartCover`, the bundled continuous
-map `localRepOnShrunk α x₀` on the compact shrunk chart has norm ≤ the
-global Montel sup-norm `supNormK α`. -/
-theorem norm_localRepOnShrunk_le_supNormK {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X)) :
-    letI := shrunkChart_compactSpace (X := X) x₀
-    ‖localRepOnShrunk α x₀‖ ≤ HolomorphicOneForms.supNormK α := by
-  letI := shrunkChart_compactSpace (X := X) x₀
-  -- Non-empty vs empty shrunkChart split.
-  by_cases hne : Nonempty (shrunkChart (X := X) x₀)
-  · haveI := hne
-    refine (ContinuousMap.norm_le_of_nonempty _).mpr ?_
-    intro y
-    have hy : (y : X) ∈ shrunkChart (X := X) x₀ := y.2
-    calc ‖localRepOnShrunk α x₀ y‖
-        = ‖localRep α x₀ (y : X)‖ := by
-          rw [localRepOnShrunk_apply α hx₀ y]
-      _ ≤ HolomorphicOneForms.supNormK α :=
-          HolomorphicOneForms.norm_localRep_le_supNormK α hx₀ hy
-  · -- Empty shrunk chart ⇒ ‖·‖ = 0 ≤ supNormK α.
-    rw [not_nonempty_iff] at hne
-    have h0 : localRepOnShrunk α x₀ = 0 := by
-      ext y
-      exact (hne.false y).elim
-    rw [h0, norm_zero]
-    exact HolomorphicOneForms.supNormK_nonneg α
-
 /-! ### Inner analog: `localRepOnInnerShrunk` on `innerShrunkChart`
 Inner closed shrinkage `innerShrunkChart x₀ ⊆ chartOpen x₀ ⊆ shrunkChart x₀`
 gives the Arzelà–Ascoli domain: compact, covers X (in union over
@@ -547,29 +517,6 @@ theorem analyticOn_of_tendstoLocallyUniformlyOn
       (by filter_upwards [hF] with n hn using hn.differentiableOn) hU
   exact h_diff.analyticOn hU
 
-/-- **Chart-pullback analytic limit.** Given a sequence of holomorphic
-1-forms whose chart-pullbacks converge locally uniformly on
-`chart '' chartOpen x₀`, the limit function is analytic there.
-
-Specialization of `analyticOn_of_tendstoLocallyUniformlyOn` to our
-pulled-back family. Used downstream in B.10 to reconstruct the limit
-section's chart representatives as analytic functions. -/
-theorem analyticOn_of_pullback_tendsto_locally_uniformly {X : Type*} [TopologicalSpace X]
-    [T2Space X] [CompactSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {ι : Type*} {φ : Filter ι} [φ.NeBot]
-    (αf : ι → ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
-    (g : ℂ → ℂ)
-    (hconv : TendstoLocallyUniformlyOn
-      (fun n : ι => fun z : ℂ => localRep (αf n) x₀ ((chartAt ℂ x₀).symm z))
-      g φ ((chartAt ℂ x₀) '' chartOpen (X := X) x₀)) :
-    AnalyticOn ℂ g ((chartAt ℂ x₀) '' chartOpen (X := X) x₀) := by
-  apply analyticOn_of_tendstoLocallyUniformlyOn (isOpen_chart_image_chartOpen x₀ hx₀)
-    hconv
-  filter_upwards with n
-  exact localRep_analyticOn_chart_image_chartOpen (αf n) x₀ hx₀
-
 /-- **Chart-pullback analytic limit on `innerChartOpen`.** Inner-open
 variant of `analyticOn_of_pullback_tendsto_locally_uniformly`. Needed
 when we can only establish locally uniform convergence on the smaller
@@ -908,68 +855,6 @@ for `x₀ ∈ chartCover`, B.8 gives compact closure. Either way each
 factor is compact; by `isCompact_univ_pi`, the infinite product is
 compact. -/
 
-/-- **Product compactness.**
-Product over all `x₀ : X` of per-chart closures. Each factor is either
-compact by B.8 (for `x₀ ∈ chartCover`) or a single-point singleton (for
-`x₀ ∉ chartCover`, where `innerShrunkChart x₀ = ∅` makes the BCF zero). -/
-theorem isCompact_univ_pi_closure_image_inner_bcf {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (M : ℝ) (hMnn : 0 ≤ M) :
-    letI := fun x₀ : X => innerShrunkChart_compactSpace (X := X) x₀
-    IsCompact (Set.univ.pi
-      (fun x₀ : X =>
-        closure (Set.range
-          (fun α : {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-              (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
-              HolomorphicOneForms.supNormK α ≤ M} =>
-            BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α.1 x₀))))) := by
-  classical
-  letI := fun x₀ : X => innerShrunkChart_compactSpace (X := X) x₀
-  apply isCompact_univ_pi
-  intro x₀
-  by_cases hx₀ : x₀ ∈ (chartCover : Finset X)
-  · exact isCompact_closure_image_inner_bcf M hMnn hx₀
-  · -- x₀ ∉ chartCover ⇒ innerShrunkChart x₀ = ∅ ⇒ all BCF values are 0 ⇒ range is {0}.
-    have hempty : innerShrunkChart (X := X) x₀ = ∅ := innerShrunkChart_eq_empty x₀ hx₀
-    have h_iso : IsEmpty (innerShrunkChart (X := X) x₀) := Set.isEmpty_coe_sort.mpr hempty
-    have hrange_sub : Set.range
-        (fun α : {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-            (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
-            HolomorphicOneForms.supNormK α ≤ M} =>
-          BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α.1 x₀)) ⊆ {0} := by
-      rintro f ⟨α, rfl⟩
-      rw [Set.mem_singleton_iff]
-      ext y
-      exact h_iso.false y |>.elim
-    -- closure of a subset of {0} is a subset of {0}, hence compact (finite).
-    refine (Set.Finite.isCompact (Set.finite_singleton (0 :
-        BoundedContinuousFunction (innerShrunkChart (X := X) x₀) ℂ))).of_isClosed_subset
-      isClosed_closure ?_
-    exact (isClosed_singleton.closure_subset_iff).mpr hrange_sub
-
-/-- **Step B.9 step 2 — Embedding lands in the compact product.**
-For each α with `supNormK α ≤ M`, the associated function
-`x₀ ↦ mkOfCompact (localRepOnInnerShrunk α x₀)` lies in the compact
-`univ.pi`-set from step 1. -/
-theorem embedding_in_univ_pi_closure {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (M : ℝ)
-    (α : {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-        (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
-        HolomorphicOneForms.supNormK α ≤ M}) :
-    letI := fun x₀ : X => innerShrunkChart_compactSpace (X := X) x₀
-    (fun x₀ : X =>
-        BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α.1 x₀)) ∈
-      Set.univ.pi
-        (fun x₀ : X =>
-          closure (Set.range
-            (fun α : {α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-                (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x) //
-                HolomorphicOneForms.supNormK α ≤ M} =>
-              BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α.1 x₀)))) := by
-  intro x₀ _
-  exact subset_closure ⟨α, rfl⟩
-
 /-! ### Linearity of the bcf-embedding components
 Pure algebraic facts about the embedding maps used in B.9/B.10:
 `localRepOnInnerShrunk` and its `mkOfCompact` packaging are ℂ-linear
@@ -1020,60 +905,6 @@ vanishing of `α - β`: for any `y ∈ X`, by inner-cover there's `x₀`
 with `y ∈ innerShrunkChart x₀` (which ⊆ baseSet), so
 `localRep (α - β) x₀ y = 0` forces `(α - β).toFun y = 0` by the
 1-dim tangent argument (`alpha_toFun_eq_zero_of_localRep_eq_zero`). -/
-
-/-- **Injectivity of the bcf-embedding.** Equality of
-`mkOfCompact (localRepOnInnerShrunk · x₀)` at every `x₀` (including
-outside chartCover) pins down the holomorphic 1-form. -/
-theorem eq_of_mkOfCompact_localRepOnInnerShrunk_eq {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (α β : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (h : ∀ x₀ : X,
-      letI := innerShrunkChart_compactSpace (X := X) x₀
-      BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀) =
-        BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk β x₀)) :
-    α = β := by
-  -- Extract pointwise equality localRep α x₀ y = localRep β x₀ y on innerShrunkChart x₀.
-  have h' : ∀ x₀ ∈ (chartCover : Finset X), ∀ y ∈ innerShrunkChart (X := X) x₀,
-      localRep α x₀ y = localRep β x₀ y := by
-    intro x₀ hx₀ y hy
-    haveI := innerShrunkChart_compactSpace (X := X) x₀
-    have := congrArg (fun f => f ⟨y, hy⟩) (h x₀)
-    simp only [BoundedContinuousFunction.mkOfCompact_apply] at this
-    rw [localRepOnInnerShrunk_apply _ hx₀, localRepOnInnerShrunk_apply _ hx₀] at this
-    exact this
-  -- Now show α = β via pointwise vanishing of γ := α - β.
-  apply ContMDiffSection.ext
-  intro y
-  -- y ∈ ⋃ innerShrunkChart x₀ = univ ⇒ ∃ x₀' ∈ chartCover, y ∈ innerShrunkChart x₀'.
-  have hmem : y ∈ (Set.univ : Set X) := Set.mem_univ _
-  rw [← iUnion_innerShrunkChart_chartCover_eq (X := X)] at hmem
-  simp only [Set.mem_iUnion] at hmem
-  obtain ⟨x₀', hx₀'mem, hy_in⟩ := hmem
-  -- localRep (α - β) x₀' y = 0.
-  have hlocal : localRep α x₀' y - localRep β x₀' y = 0 := by
-    rw [h' x₀' hx₀'mem y hy_in]; ring
-  -- Convert to: localRep (γ := α - β) x₀' y = 0.
-  -- Use linearity of localRep (localRep_add and localRep_neg).
-  have hγ_localRep : localRep (α - β) x₀' y = 0 := by
-    have hsub : α - β = α + (-β) := by rw [sub_eq_add_neg]
-    rw [hsub, localRep_add, localRep_neg]
-    calc localRep α x₀' y + -localRep β x₀' y
-        = localRep α x₀' y - localRep β x₀' y := by ring
-      _ = 0 := hlocal
-  -- y is in baseSet (since innerShrunkChart ⊆ baseSet for x₀' ∈ chartCover).
-  have hy_base : y ∈ (trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀').baseSet :=
-    innerShrunkChart_subset_baseSet x₀' hx₀'mem hy_in
-  have h_toFun : (α - β).toFun y = 0 :=
-    alpha_toFun_eq_zero_of_localRep_eq_zero (α - β) x₀' y hy_base hγ_localRep
-  -- Convert "(α - β).toFun y = 0" to "α.toFun y = β.toFun y".
-  have hsub_zero : α.toFun y - β.toFun y = 0 := by
-    have heq : (α - β).toFun y = α.toFun y - β.toFun y := by
-      change (⇑(α - β)) y = _
-      rw [ContMDiffSection.coe_sub]
-      rfl
-    rw [← heq]; exact h_toFun
-  exact sub_eq_zero.mp hsub_zero
 
 /-! ### Next steps (scheduled, not implemented here)
 **B.9** Inject HOF X into the finite product

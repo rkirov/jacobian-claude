@@ -168,30 +168,6 @@ theorem localMultiplicityOne_preimage_card
   rw [h_preimage_eq]
   exact Set.ncard_singleton _
 
-/-- **Variant with `closedBall x₀ R` analyticity hypothesis.**
-
-This is the `k = 1` form of the brief's stated theorem (which gives an
-analyticity hypothesis on a closed ball of radius `R`). It follows from
-`localMultiplicityOne_preimage_card` because `AnalyticOnNhd ℂ g
-(closedBall x₀ R)` implies `AnalyticAt ℂ g x₀` (when `0 < R`, so `x₀` lies in
-the closed ball).
-
-The hypothesis "`g(z) ≠ w₀` for `z ∈ closedBall x₀ R \ {x₀}`" from the brief
-is the *isolation-of-the-w₀-fiber* condition, which is automatic at `k = 1`
-(local injectivity from non-vanishing derivative); we therefore do not need
-it as a separate hypothesis here. The general `k ≥ 2` version (not in this
-file) does require either the isolation hypothesis or the order-from-below
-hypothesis. -/
-theorem localMultiplicityOne_preimage_card_on_closedBall
-    {g : ℂ → ℂ} {x₀ : ℂ} {R : ℝ} (hR : 0 < R)
-    (h_an : AnalyticOnNhd ℂ g (Metric.closedBall x₀ R))
-    (hd : deriv g x₀ ≠ 0) :
-    ∃ ε > (0 : ℝ), ∃ δ > (0 : ℝ),
-      ∀ w ∈ Metric.ball (g x₀) δ, w ≠ g x₀ →
-        ({z ∈ Metric.ball x₀ ε | g z = w} : Set ℂ).ncard = 1 := by
-  have hx0 : x₀ ∈ Metric.closedBall x₀ R := Metric.mem_closedBall_self hR.le
-  exact localMultiplicityOne_preimage_card (h_an x₀ hx0) hd
-
 end Manifold
 end Jacobians.Discharge
 

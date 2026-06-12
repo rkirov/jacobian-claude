@@ -239,8 +239,6 @@ noncomputable def Z1cov : Submodule ℂ d.Ccov := LinearMap.ker c.δ1cov.toLinea
 /-- `Z¹(shrinking) = ker δ¹(shrinking)`, a closed subspace of the shrinking 1-cochains. -/
 noncomputable def Z1shr : Submodule ℂ d.Cshr := LinearMap.ker c.δ1.toLinearMap
 
-theorem isClosed_Z1cov : IsClosed (c.Z1cov : Set d.Ccov) := c.δ1cov.isClosed_ker
-
 theorem isClosed_Z1shr : IsClosed (c.Z1shr : Set d.Cshr) := c.δ1.isClosed_ker
 
 noncomputable instance : CompleteSpace c.Z1cov := c.δ1cov.isClosed_ker.completeSpace_coe
@@ -331,15 +329,6 @@ def empty : HolomorphicDiskOverlapData where
 
 instance : Subsingleton (HolomorphicDiskOverlapData.empty.trivialCoboundaries).supH1 :=
   HolomorphicDiskOverlapData.empty.supH1_trivialCoboundaries_subsingleton
-
-/-- The corrected holomorphic branch has the same acyclic existence theorem as the old branch:
-if the germ-class `H¹` is a subsingleton, the trivial corrected model suffices. -/
-theorem exists_holomorphicCechModel_of_subsingleton (𝔘 : FiniteFamily X) (D : Divisor X)
-    [Subsingleton (𝔘.cechH1 D)] :
-    ∃ (d : HolomorphicDiskOverlapData) (c : HolomorphicCoboundaries d),
-      Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
-  ⟨HolomorphicDiskOverlapData.empty, HolomorphicDiskOverlapData.empty.trivialCoboundaries,
-    ⟨LinearEquiv.ofSubsingleton _ _⟩⟩
 
 end HolomorphicDiskOverlapData
 

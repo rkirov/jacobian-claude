@@ -92,16 +92,6 @@ theorem shrinkPoU_tsupport_subset (a : 𝔇.ι) :
     tsupport (𝔇.shrinkPoU a) ⊆ 𝔇.shrinkSet a :=
   𝔇.shrinkPoU_subordinate a
 
-/-- Each PoU function `ρ_a : X → ℝ` is globally `C^∞` on `X` (over `𝓘(ℝ,ℂ) → 𝓘(ℝ,ℝ)`). -/
-theorem contMDiff_shrinkPoU (a : 𝔇.ι) :
-    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) (𝔇.shrinkPoU a) :=
-  (𝔇.shrinkPoU a).contMDiff
-
-/-- `ρ_a x = 0` for `x ∉ tsupport ρ_a`. -/
-theorem shrinkPoU_eq_zero_of_notMem (a : 𝔇.ι) {x : X}
-    (hx : x ∉ tsupport (𝔇.shrinkPoU a)) : (𝔇.shrinkPoU a) x = 0 :=
-  image_eq_zero_of_notMem_tsupport hx
-
 end ChartDiskCover
 
 end Jacobians.Dolbeault

@@ -56,13 +56,6 @@ theorem subset_chart_source (i : 𝔇.ι) :
     ((𝔇.U i : Opens X) : Set X) ⊆ (extChartAt 𝓘(ℝ, ℂ) (𝔇.center i)).source := by
   rw [𝔇.isDisk i]; exact Set.inter_subset_right
 
-/-- The center lies in its own disk `U i` (the chart coordinate of the center is the ball center,
-and the radius is positive). -/
-theorem center_mem (i : 𝔇.ι) : 𝔇.center i ∈ ((𝔇.U i : Opens X) : Set X) := by
-  rw [𝔇.isDisk i]
-  exact ⟨by simp only [Set.mem_preimage]; exact Metric.mem_ball_self (𝔇.radius_pos i),
-    mem_extChartAt_source (𝔇.center i)⟩
-
 /-- A radius `R` strictly larger than the disk whose *closed* ball still lies in the chart target.
 Exists because the closed disk `closedBall (e i) (radius i)` is compact inside the open target
 (`IsCompact.exists_cthickening_subset_open` + `cthickening_closedBall`). The forward-solve cutoff

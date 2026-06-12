@@ -55,36 +55,6 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 /-! ### The skyscraper stalk quotient is finite-dimensional (≤ 1) -/
 
-/-- **The skyscraper stalk quotient is at most `1`-dimensional.**  At any open `W ∋ P`, the order-
-`(−D(P)−1)` principal-part coefficient `coeffGermLin` has kernel exactly `OmegaDGerm D W`
-(`ker_coeffGermLin`), so the quotient `OmegaDGerm (D+P) W ⧸ OmegaDGerm D W` injects into `ℂ` and is
-finite-dimensional. -/
-theorem finiteDimensional_stalkQuotient {W : Opens X} {D : Divisor X} {P : X} (hP : P ∈ W) :
-    FiniteDimensional ℂ
-      (OmegaDGerm (D + Finsupp.single P 1) W ⧸
-        (OmegaDGerm D W).submoduleOf (OmegaDGerm (D + Finsupp.single P 1) W)) := by
-  -- The descended coefficient map `quotient ↪ ℂ` (kernel is exactly `OmegaDGerm D W`).
-  have hker : (OmegaDGerm D W).submoduleOf (OmegaDGerm (D + Finsupp.single P 1) W)
-      = LinearMap.ker (coeffGermLin hP (D := D)) := (ker_coeffGermLin hP).symm
-  rw [hker]
-  -- `quotient by ker(coeffGermLin) ≅ range(coeffGermLin) ⊆ ℂ`, a finite-dim space.
-  exact Module.Finite.equiv (LinearMap.quotKerEquivRange (coeffGermLin hP (D := D))).symm
-
-/-- For an open `W` NOT containing `P`, the stalk quotient is `0` (the section spaces coincide). -/
-theorem finiteDimensional_stalkQuotient_of_not_mem {W : Opens X} {D : Divisor X} {P : X}
-    (hP : P ∉ W) :
-    FiniteDimensional ℂ
-      (OmegaDGerm (D + Finsupp.single P 1) W ⧸
-        (OmegaDGerm D W).submoduleOf (OmegaDGerm (D + Finsupp.single P 1) W)) := by
-  -- The two section spaces coincide, so the quotient is by `⊤` (subsingleton, hence finite-dim).
-  have heq : OmegaDGerm (D + Finsupp.single P 1) W = OmegaDGerm D W :=
-    OmegaDGerm_add_single_eq_of_not_mem hP
-  haveI : Subsingleton (OmegaDGerm (D + Finsupp.single P 1) W ⧸
-      (OmegaDGerm D W).submoduleOf (OmegaDGerm (D + Finsupp.single P 1) W)) := by
-    rw [Submodule.Quotient.subsingleton_iff, Submodule.submoduleOf, heq,
-      Submodule.comap_subtype_self]
-  infer_instance
-
 /-! ### The Pi-section quotient is finite-dimensional (the shape of `sections0`/`sections1`) -/
 
 /-- The `𝒪_D` Pi-section submodule over a finite family of opens `W : ι → Opens X`: tuples of germs

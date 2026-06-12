@@ -180,16 +180,6 @@ noncomputable def holOfLocalRepAnalyticAt
     have h_on := contMDiffOn_totalSpaceMk_of_pullback_analyticOn L y hSopen hSsub hAnS
     exact (h_on y hyS).contMDiffAt (hSopen.mem_nhds hyS)
 
-@[simp] theorem holOfLocalRepAnalyticAt_toFun {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-        (L : (y : X) → TangentSpace 𝓘(ℂ, ℂ) y →L[ℂ] (Bundle.Trivial X ℂ) y)
-    (hAn : ∀ x₀ : X,
-      letI e := trivializationAt ℂ (TangentSpace 𝓘(ℂ, ℂ) (M := X)) x₀
-      AnalyticAt ℂ
-        (fun z : ℂ => L ((chartAt ℂ x₀).symm z) (e.symmL ℂ ((chartAt ℂ x₀).symm z) 1))
-        ((chartAt ℂ x₀) x₀)) :
-    (holOfLocalRepAnalyticAt L hAn).toFun = L := rfl
-
 /-! ## Part 2: the repaired holomorphic section of an order-`≥ 0` meromorphic 1-form
 
 For `α ∈ omegaD 0`, the chart coefficient `formCoeff α.toFun x` is `MeromorphicAt` with order `≥ 0`
@@ -250,12 +240,6 @@ theorem analyticAt_repairedCoeff {α : MeromorphicOneForm X} (hα : α ∈ omega
       ((chartAt ℂ y) y) := by
     rwa [meromorphicOrderAt_congr hmero.eq_nhdsNE_toMeromorphicNFAt] at hord
   exact hNF.meromorphicOrderAt_nonneg_iff_analyticAt.mp hord_nf
-
-/-- The chart coefficient agrees, off the centre, with its repaired (normal-form) coefficient. -/
-theorem formCoeff_eventuallyEq_repairedCoeff (α : MeromorphicOneForm X) (y : X) :
-    formCoeff α.toFun y =ᶠ[𝓝[≠] ((chartAt ℂ y) y)]
-      toMeromorphicNFAt (formCoeff α.toFun y) ((chartAt ℂ y) y) :=
-  (α.meromorphic y).eq_nhdsNE_toMeromorphicNFAt
 
 /-! ### Raw chart representative of a bare cotangent section, and its chart-transition law
 
@@ -603,14 +587,5 @@ removable-singularity inputs (`Ω_0` finite-dimensional and `omegaDim 0 ≤ genu
 theorem CanonicalForm17Data.hKgenus_unconditional (data : CanonicalForm17Data X) :
     lDim (X := X) data.K = genus X :=
   data.hKgenus omegaDim_zero_le_genus
-
-/-- **The unconditional Serre-duality input** `∃ data, lDim data.K = genus X` (Forster §17.4).
-Chains the proven existence of a §17.4 datum (`nonempty_canonicalForm17Data`) with the
-now-unconditional `hKgenus`. This discharges the `SerreDualityData.hKgenus` field with no
-hypotheses. -/
-theorem exists_canonicalForm17Data_hKgenus :
-    ∃ data : CanonicalForm17Data X, lDim (X := X) data.K = genus X := by
-  obtain ⟨data⟩ := nonempty_canonicalForm17Data (X := X)
-  exact ⟨data, data.hKgenus_unconditional⟩
 
 end Jacobians.Dolbeault

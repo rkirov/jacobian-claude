@@ -199,59 +199,6 @@ the multiplicity sum — this is the regular-value half of the constancy of `N`.
 What remains (the isolated wall, below) is the extension across the finitely many
 *branch* values, where the ncard drops but the multiplicity sum does not. -/
 
-/-- **Regular-value local constancy of the fibre cardinality of `F`.**
-
-Let `R : Set ℂℙ¹` be a set of values over which `F = f.toRiemannSphere` has
-*finite fibres* and a *local-sheet datum* `LocalSheetData F w₀ x` at every
-preimage `x` of every `w₀ ∈ R` (the analytic content of "`w₀` is a regular
-value": near each preimage `F` is a biholomorphism).  Then the fibre-cardinality
-function `w ↦ #F⁻¹(w)` is locally constant on the subtype `R`.
-
-This is the discharged regular-value half of the conservation-of-number assembly,
-obtained from `fibreCard_isLocallyConstant_on_subset_of_localSheets` with the
-proper holomorphic `F` (`continuous_toRiemannSphere`).  On `R` the local degree
-at each preimage is `1`, so this ncard coincides with the multiplicity sum
-`fibreMult f` — i.e. `N f` is locally constant on the regular set. -/
-theorem isLocallyConstant_fibreNcard_on_regular {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (f : MeromorphicFunction X)
-    (R : Set RiemannSphere)
-    (h_fib : ∀ w ∈ R, (f.toRiemannSphere ⁻¹' {w}).Finite)
-    (h_sheets : ∀ w ∈ R, ∀ x ∈ f.toRiemannSphere ⁻¹' {w},
-      Jacobians.Discharge.LocalSheetData f.toRiemannSphere w x) :
-    IsLocallyConstant
-      (fun w : (R : Set RiemannSphere) => (f.toRiemannSphere ⁻¹' {w.val}).ncard) :=
-  Jacobians.Discharge.fibreCard_isLocallyConstant_on_subset_of_localSheets
-    f.continuous_toRiemannSphere R h_fib h_sheets
-
-/-- **The local-sheet supplier at a regular value, via `RegularValueWitnessReg`.**
-
-For each value `w₀ ∈ R` carrying a regular-value witness `wit w₀ : `
-`RegularValueWitnessReg F` whose chosen value is `w₀`, the existing builder
-`LocalSheetData.ofRegularValueWitnessReg` produces the per-preimage
-`LocalSheetData` (from the holomorphy `contMDiff_toRiemannSphere` and the
-chart-pullback-derivative-nonzero certificate in the witness).  This is the
-analytic supplier feeding `isLocallyConstant_fibreNcard_on_regular`. -/
-noncomputable def localSheets_of_regularWitnesses {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (f : MeromorphicFunction X)
-    (R : Set RiemannSphere)
-    (wit : ∀ w ∈ R, Jacobians.Discharge.ContMDiff.RegularValueWitnessReg f.toRiemannSphere)
-    (hwit : ∀ w (hw : w ∈ R), (wit w hw).toWitness.value = w) :
-    ∀ w ∈ R, ∀ x ∈ f.toRiemannSphere ⁻¹' {w},
-      Jacobians.Discharge.LocalSheetData f.toRiemannSphere w x := by
-  intro w hw x hx
-  -- Transport the membership `x ∈ F⁻¹{w}` to `x ∈ F⁻¹{(wit w hw).value}` via `hwit`.
-  have hx' : x ∈ f.toRiemannSphere ⁻¹' {(wit w hw).toWitness.value} := by
-    rw [hwit w hw]; exact hx
-  have hsheet :
-      Jacobians.Discharge.LocalSheetData f.toRiemannSphere (wit w hw).toWitness.value x :=
-    Jacobians.Discharge.LocalSheetData.ofRegularValueWitnessReg
-      f.contMDiff_toRiemannSphere (wit w hw) hx'
-  -- Rewrite the value back to `w`.
-  rw [hwit w hw] at hsheet
-  exact hsheet
-
 /-! ### The structural builder and the packaged data
 
 `ProperMapDegreeData` (`Jacobians.ProperMapDegree`) needs a locally-constant
@@ -288,19 +235,6 @@ statement — not a disguised `False`.  Two complementary confirmations:
   obligation that `ofParts` discharges is consistent.  We record this
   compatibility as the honest non-vacuity certificate. -/
 
-/-- **Non-vacuity certificate.**  If `zerosCount f = polesCount f` (the argument-
-principle equality), then a locally-constant function with `N f`'s two boundary
-readings exists — namely the constant function `polesCount f`.  This confirms the
-local-constancy obligation of `ofParts` is consistent (satisfiable), not a
-disguised `False`; the genuine multiplicity function `N f` is one such witness
-once its global constancy is established. -/
-lemma exists_isLocallyConstant_boundaryReadings {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (f : MeromorphicFunction X) (heq : zerosCount f = polesCount f) :
-    ∃ M : RiemannSphere → ℤ, IsLocallyConstant M ∧
-      M ((0 : ℂ) : RiemannSphere) = zerosCount f ∧ M OnePoint.infty = polesCount f := by
-  exact ⟨fun _ => polesCount f, IsLocallyConstant.const _, heq.symm, rfl⟩
-
 /-! ### The packaged conservation-of-number data and the keystone
 
 Assembling `ProperMapDegreeData f` from `ofParts` (boundary readings discharged)
@@ -319,30 +253,5 @@ def ProperMapDegreeData.ofConservation {X : Type*} [TopologicalSpace X] [T2Space
     (hlc : IsLocallyConstant (N f)) :
     Jacobians.ProperMapDegree.ProperMapDegreeData f :=
   ProperMapDegreeData.ofParts f hlc
-
-/-- **`zerosCount = polesCount` from the local constancy of `N f`.**  The argument-
-principle equality, obtained by feeding the constructed `ProperMapDegreeData`
-through the proven connectedness globalization. -/
-theorem zerosCount_eq_polesCount_of_isLocallyConstant_N {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (f : MeromorphicFunction X)
-    (hlc : IsLocallyConstant (N f)) :
-    zerosCount f = polesCount f :=
-  Jacobians.ProperMapDegree.zerosCount_eq_polesCount_of_properMapDegreeData f
-    (ProperMapDegreeData.ofConservation f hlc)
-
-/-- **The proper-map degree existential from local constancy of `N f`.**  This is
-the exact shape of `Jacobians.exists_properMapDegree`: a common natural-number
-degree `d` with `zerosCount f = d = polesCount f`.  It is derived from the local
-constancy of the fibre-multiplicity function via the nonnegativity reduction
-`exists_properMapDegree_of_zerosCount_eq_polesCount`. -/
-theorem exists_properMapDegree_of_isLocallyConstant_N {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (f : MeromorphicFunction X)
-    (hlc : IsLocallyConstant (N f)) :
-    ∃ d : ℕ, zerosCount f = (d : ℤ) ∧ polesCount f = (d : ℤ) :=
-  Jacobians.ProperMapDegree.exists_properMapDegree_of_properMapDegreeData f
-    (ProperMapDegreeData.ofConservation f hlc)
-
 
 end Jacobians.ProperMapDegreeConstruct

@@ -166,9 +166,6 @@ theorem isMeromorphicOneForm_differentialSection {X : Type*} [TopologicalSpace X
 noncomputable def differentialForm (f : MeromorphicFunction X) : MeromorphicOneForm X :=
   ⟨differentialSection f, isMeromorphicOneForm_differentialSection f⟩
 
-@[simp] theorem differentialForm_toFun (f : MeromorphicFunction X) (x : X) :
-    (differentialForm f).toFun x = mfderiv 𝓘(ℂ) 𝓘(ℂ) f.toFun x := rfl
-
 /-- `formOrderW (df)` at `x` is the meromorphic order of the chart-pullback derivative
 `(f ∘ chart⁻¹)'` (via the germ-agreement of `formCoeff (df)` with it). -/
 theorem formOrderW_differentialForm (f : MeromorphicFunction X) (x : X) :

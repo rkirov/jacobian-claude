@@ -65,14 +65,8 @@ noncomputable instance : Module ℂ (BddHol U) := inferInstanceAs (Module ℂ �
 /-- Reinterpret `f : BddHol U` as the underlying subtype element. Definitional identity. -/
 def toCarrier (f : BddHol U) : ↥(BddHolCarrier U) := f
 
-@[simp] theorem toCarrier_add (f g : BddHol U) :
-    (f + g).toCarrier = f.toCarrier + g.toCarrier := rfl
-@[simp] theorem toCarrier_smul (c : ℂ) (f : BddHol U) : (c • f).toCarrier = c • f.toCarrier := rfl
-
 /-- The underlying `ℂ → ℂ` function of an element of `BddHol U`. -/
 def toFun (f : BddHol U) : ℂ → ℂ := (f.toCarrier : ℂ → ℂ)
-
-@[simp] theorem toFun_coe (f : BddHol U) : f.toFun = (f.toCarrier : ℂ → ℂ) := rfl
 
 theorem analyticOn (f : BddHol U) : AnalyticOn ℂ f.toFun U := f.toCarrier.2.1
 
@@ -82,7 +76,6 @@ theorem bddOn (f : BddHol U) : ∃ C, ∀ z ∈ U, ‖f.toFun z‖ ≤ C := f.to
 
 @[simp] theorem toFun_add (f g : BddHol U) : (f + g).toFun = f.toFun + g.toFun := rfl
 @[simp] theorem toFun_smul (c : ℂ) (f : BddHol U) : (c • f).toFun = c • f.toFun := rfl
-@[simp] theorem toFun_zero : (0 : BddHol U).toFun = 0 := rfl
 
 theorem toFun_injective : Function.Injective (toFun : BddHol U → (ℂ → ℂ)) :=
   fun _ _ h => Subtype.ext h
@@ -119,8 +112,6 @@ noncomputable def toBcfₗ : BddHol U →ₗ[ℂ] (↥U →ᵇ ℂ) where
     show (c • f).toFun z.1 = c • f.toFun z.1
     rw [toFun_smul]; rfl
 
-@[simp] theorem toBcfₗ_apply (f : BddHol U) : toBcfₗ f = f.toBcf := rfl
-
 theorem toBcf_injective : Function.Injective (toBcf : BddHol U → (↥U →ᵇ ℂ)) := by
   intro f g h
   apply toFun_injective
@@ -139,10 +130,6 @@ noncomputable instance : NormedSpace ℂ (BddHol U) :=
   NormedSpace.induced ℂ (BddHol U) (↥U →ᵇ ℂ) toBcfₗ
 
 theorem norm_def (f : BddHol U) : ‖f‖ = ‖f.toBcf‖ := rfl
-
-theorem norm_eq_iSup (f : BddHol U) : ‖f‖ = ⨆ z : ↥U, ‖f.toFun z.1‖ := by
-  rw [norm_def, BoundedContinuousFunction.norm_eq_iSup_norm]
-  rfl
 
 /-! ### Completeness
 
@@ -269,9 +256,6 @@ noncomputable def restrictₗ (hKU : K ⊆ U) : BddHol U →ₗ[ℂ] (K →ᵇ �
     show (c • f).toFun z.1 = c • f.toFun z.1
     rw [toFun_smul]; rfl
 
-@[simp] theorem restrictₗ_apply (hKU : K ⊆ U) (f : BddHol U) : restrictₗ hKU f = restrict hKU f :=
-  rfl
-
 /-- **Restriction continuous-linear map** `BddHol U →L[ℂ] (K →ᵇ ℂ)` for `K ⊆ U` compact, with
 operator norm `≤ 1`. -/
 noncomputable def restrictCLM (hKU : K ⊆ U) : BddHol U →L[ℂ] (K →ᵇ ℂ) :=
@@ -284,9 +268,6 @@ noncomputable def restrictCLM (hKU : K ⊆ U) : BddHol U →L[ℂ] (K →ᵇ ℂ
 
 @[simp] theorem restrictCLM_apply (hKU : K ⊆ U) (f : BddHol U) :
     restrictCLM hKU f = restrict hKU f := rfl
-
-theorem norm_restrictCLM_le (hKU : K ⊆ U) : ‖restrictCLM hKU‖ ≤ 1 :=
-  LinearMap.mkContinuous_norm_le _ zero_le_one _
 
 /-! ### Precomposition with a continuous reindexing `τ : K → U`
 
@@ -321,9 +302,6 @@ noncomputable def precompₗ {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (h
   map_smul' c f := by
     ext z; show (c • f).toFun (τ z.1) = c • f.toFun (τ z.1)
     rw [toFun_smul]; rfl
-
-@[simp] theorem precompₗ_apply {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (hτmaps : Set.MapsTo τ K U)
-    (g : BddHol U) : precompₗ hτcont hτmaps g = precompBcf hτcont hτmaps g := rfl
 
 /-- **Precomposition continuous-linear map** `BddHol U →L[ℂ] (K →ᵇ ℂ)` for `τ` continuous `K → U`,
 operator norm `≤ 1`. The cross-chart transport of a sup-norm cochain component: a function

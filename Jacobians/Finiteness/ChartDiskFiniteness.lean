@@ -67,13 +67,6 @@ model), a defeq we use to read `ChartDiskCover.isDisk`/`closedBall_subset_target
 /-- The chart-`i` coordinate of the center of `U i` (the ball center). -/
 noncomputable def e (i : 𝔇.ι) : ℂ := extChartAt 𝓘(ℝ, ℂ) (𝔇.center i) (𝔇.center i)
 
-/-- `chartAt (H := ℂ) x = extChartAt 𝓘(ℝ,ℂ) x` — definitional for the identity chart model.  Lets us
-read `ChartDiskCover`'s `extChartAt`-stated fields against the `chartAt`-stated transition
-machinery. -/
-theorem chartAt_eq_extChartAt {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (x : X) :
-    (chartAt (H := ℂ) x : X → ℂ) = (extChartAt 𝓘(ℝ, ℂ) x : X → ℂ) := rfl
-
 /-- `U i` is contained in the chart-`i` source (the `chartAt` form of `subset_chart_source`; the
 `chartAt`/`extChartAt` sources agree by `extChartAt_source`). -/
 theorem U_subset_chartAt_source (i : 𝔇.ι) :
@@ -403,40 +396,6 @@ theorem split_eq (a b : 𝔇.ι) {z : ℂ} (hz : z ∈ 𝔇.Uov (a, b)) :
 
 end BallSplitData
 
-/-- **The function-level Forster 14.6 lift (the analytic heart, packaged).**  From the Bott–Tu
-smooth-split data of a holomorphic cover cocycle on the ball cover, produce:
-
-  * `η : ι → ℂ → ℂ` with each `η a` holomorphic on the FULL ball `ball (e a) (radius a)`;
-  * `x : ι → ι → ℂ → ℂ` with each `x a b` holomorphic on the FULL overlap image `Uov (a,b)`;
-  * the split identity `s_{ab} = (η_b∘τ_{ab} − η_a) + x_{ab}` on the overlap.
-
-This is exactly the shape `s = δ⁰η + ρ·x` of the `HolomorphicCoboundaries.leray` field, at the raw
-chart-read-function level (`η` the holomorphic 0-cochain, `x` the holomorphic cover cocycle). The
-critical content the ball geometry unblocks: BOTH `η a` (on the full ball) AND `x a b` (on the full
-overlap) are holomorphic — the Montel model can only reach `x` on a shrinking (the two-scale
-dilemma).
-
-Wiring this into the actual `leray` field requires the germ↔`BddHol` identification of the
-chart-read functions with the model's `Cshr`/`Ccov` cochains (`CechModelCochain` has the forward
-direction `cochainToCcov`; the round-trip is the remaining structural bridge). -/
-theorem forster146_lift (𝒮 : 𝔇.BallSplitData) :
-    ∃ (η : 𝔇.ι → ℂ → ℂ) (x : 𝔇.ι → 𝔇.ι → ℂ → ℂ),
-      (∀ a, DifferentiableOn ℂ (η a) (Metric.ball (𝔇.e a) (𝔇.radius a))) ∧
-      (∀ a b, DifferentiableOn ℂ (x a b) (𝔇.Uov (a, b))) ∧
-      (∀ a b, ∀ z ∈ 𝔇.Uov (a, b),
-        𝒮.s a b z = (η b (𝔇.coverTransition a b z) - η a z) + x a b z) := by
-  refine ⟨fun a => fun z => 𝒮.g a z - 𝒮.solve a z,
-    fun a b => fun z => 𝒮.solve b (𝔇.coverTransition a b z) - 𝒮.solve a z,
-    𝒮.differentiableOn_eta, 𝒮.differentiableOn_x, fun a b z hz => ?_⟩
-  -- the split identity, regrouped: `η_b∘τ − η_a = (g_b∘τ−h_b∘τ) − (g_a−h_a)`
-  have hsplit := 𝒮.split_eq a b hz
-  -- `η b (τ z) = g b (τ z) − h b (τ z)` is `(fun z => g b z − h b z) (τ z)`; unfold and match
-  show 𝒮.s a b z
-      = ((𝒮.g b (𝔇.coverTransition a b z) - 𝒮.solve b (𝔇.coverTransition a b z))
-          - (𝒮.g a z - 𝒮.solve a z))
-        + (𝒮.solve b (𝔇.coverTransition a b z) - 𝒮.solve a z)
-  exact hsplit
-
 end ChartDiskCover
 
 /-! ## §3b — The covering relatively-compact shrinking (Forster §12) and the
@@ -546,12 +505,6 @@ noncomputable def overlapData (𝔇 : ChartDiskCover X) : HolomorphicDiskOverlap
   hWov := 𝔇.isOpen_Wov
   hKcpt := 𝔇.isCompact_closure_Wov
   hWU := 𝔇.closure_Wov_subset_Uov
-
-/-- The chart-disk model's restriction `ρ` is compact (Montel) — inherited from
-`HolomorphicDiskOverlapData.rhoRaw_compact`, with no further analytic input. -/
-theorem overlapData_rhoRaw_compact (𝔇 : ChartDiskCover X) :
-    IsCompactOperator 𝔇.overlapData.rhoRaw :=
-  𝔇.overlapData.rhoRaw_compact
 
 end ChartDiskCover
 

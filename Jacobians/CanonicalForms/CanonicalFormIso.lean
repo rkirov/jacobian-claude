@@ -496,9 +496,6 @@ noncomputable def meroFormSMulω₀ₗ : MeromorphicFunction X →ₗ[ℂ] Merom
     show (c * f.toFun y) • data.ω₀.toFun y = c • (f.toFun y • data.ω₀.toFun y)
     module
 
-@[simp] theorem meroFormSMulω₀ₗ_apply (f : MeromorphicFunction X) :
-    data.meroFormSMulω₀ₗ f = meroFormSMul f data.ω₀ := rfl
-
 /-- **The §17.4 map on representatives** `L(D+K) → omegaDModule D`, `f ↦ [f·ω₀]` (multiply by `ω₀`,
 land in `Ω_D` by `meroFormSMul_ω₀_mem_omegaD`, project to the junk-free quotient).  ℂ-linear. -/
 noncomputable def omega17Map (D : Divisor X) :
@@ -659,14 +656,6 @@ The §17.4 iso is genuine (not a junk dimension-identity): the genus-dimensional
 inject into `Ω_0 ≅ 𝒪_K`, so `genus X ≤ lDim K`.  In particular, for a positive-genus surface both
 sides of the `D = 0` iso have dimension `≥ genus ≥ 1`, so it is a non-vacuous isomorphism of nonzero
 modules. -/
-
-/-- **Soundness lower bound:** `genus X ≤ lDim K` (when `Ω_0` is finite-dimensional).  The §17.4 iso
-sends the genus-dimensional holomorphic forms faithfully into `𝒪_K`, so `lSysModule K` is at least
-genus-dimensional — the iso is non-vacuous. -/
-theorem genus_le_lDim_K [FiniteDimensional ℂ (omegaDModule (X := X) 0)] :
-    genus X ≤ lDim (X := X) data.K := by
-  rw [data.lDim_K_eq_omegaDim_zero]
-  exact genus_le_omegaDim_zero
 
 end CanonicalForm17Data
 

@@ -98,13 +98,4 @@ theorem simplyConnectedSpace_iff_of_homeo {X : Type*} [TopologicalSpace X] {Y : 
     SimplyConnectedSpace X ↔ SimplyConnectedSpace Y :=
   e.toHomotopyEquiv.simplyConnectedSpace_iff
 
-/-- **Step 5, specialised to the `2`-sphere.** If `S² ⊆ ℝ³` is simply connected, then any
-`X ≃ₜ S²` is simply connected.  Phrased with `SimplyConnectedSpace (sphere …)` as an explicit
-hypothesis; it is discharged by `Jacobians/SphereTopology/SphereSimplyConnected.lean`. -/
-theorem simplyConnectedSpace_of_homeo_sphere {X : Type*} [TopologicalSpace X]
-    (hS : SimplyConnectedSpace (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1))
-    (e : X ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1) :
-    SimplyConnectedSpace X :=
-  (simplyConnectedSpace_iff_of_homeo e).mpr hS
-
 end Jacobians

@@ -52,11 +52,6 @@ theorem extChartAt_real_eq_chartAt (y : X) :
     ((extChartAt 𝓘(ℝ, ℂ) y) : X → ℂ) = (chartAt (H := ℂ) y) := by
   funext w; simp [extChartAt]
 
-/-- The boundaryless identity-model `extChartAt.symm` is the bare chart inverse. -/
-theorem extChartAt_real_symm_eq_chartAt_symm (y : X) :
-    ((extChartAt 𝓘(ℝ, ℂ) y).symm : ℂ → X) = (chartAt (H := ℂ) y).symm := by
-  funext w; simp [extChartAt]
-
 /-- Source transfer between the two chart spellings. -/
 theorem mem_extChartAt_real_source_iff (y x : X) :
     x ∈ (extChartAt 𝓘(ℝ, ℂ) y).source ↔ x ∈ (chartAt (H := ℂ) y).source := by
@@ -172,14 +167,6 @@ theorem read01_eq_conj_mul [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsMa
         * (g x) (1 : ℂ) := by
   rw [read01, frameVector_eq_deriv_chart hx, oneForm_apply_conjLinear hg]
 
-/-- The own-chart read at the base point is the bare value at `1`. -/
-theorem read01_self [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
-    {g : SmoothCOneForms X} (hg : g ∈ OneFormsZeroOne X) (x : X) :
-    read01 g x x = (g x) (1 : ℂ) := by
-  rw [read01_eq_conj_mul hg (mem_chart_source ℂ x),
-    deriv_transition_self x ((chartAt (H := ℂ) x).map_source (mem_chart_source ℂ x)),
-    map_one, one_mul]
-
 /-- **The `(0,1)`-transformation law**: `read_y = conj(T′)·read_{y'}` along the chart
 transition `T = chart_{y'} ∘ chart_y⁻¹`. -/
 theorem read01_transform [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
@@ -280,14 +267,6 @@ theorem read01_smul [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 
     rw [show (⇑(r • g)) x = (r • g) x from rfl, ContMDiffSection.coe_smul]; rfl]
   rfl
 
-theorem read01_neg [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
-    (g : SmoothCOneForms X) (y x : X) :
-    read01 (-g) y x = -read01 g y x := by
-  unfold read01
-  rw [show ((-g) x) = -(g x) by
-    rw [show (⇑(-g)) x = (-g) x from rfl, ContMDiffSection.coe_neg]; rfl]
-  rfl
-
 theorem read01_zero [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] (y x : X)
     : read01 (0 : SmoothCOneForms X) y x = 0 := by
   unfold read01
@@ -295,15 +274,6 @@ theorem read01_zero [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 
     rw [show (⇑(0 : SmoothCOneForms X)) x = (0 : SmoothCOneForms X) x from rfl,
       ContMDiffSection.coe_zero]; rfl]
   rfl
-
-theorem read01_sum [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] {ι : Type*}
-    (s : Finset ι) (g : ι → SmoothCOneForms X) (y x : X) :
-    read01 (∑ k ∈ s, g k) y x = ∑ k ∈ s, read01 (g k) y x := by
-  classical
-  induction s using Finset.induction with
-  | empty => simp [read01_zero]
-  | insert a s ha ih =>
-    rw [Finset.sum_insert ha, Finset.sum_insert ha, read01_add, ih]
 
 theorem read01_zsmul [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] (n : ℤ)
     (g : SmoothCOneForms X) (y x : X) :

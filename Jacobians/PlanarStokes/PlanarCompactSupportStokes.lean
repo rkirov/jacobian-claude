@@ -132,55 +132,6 @@ theorem rectangle_iterated_eq_setIntegral_rev (f : ℝ × ℝ → ℝ) (a b c d 
   rw [← rectangle_fubini_swap_continuous f a b c d hab hcd hf]
   exact rectangle_iterated_eq_setIntegral f a b c d hab hcd hf
 
-/-- **Green's theorem on the axis-aligned rectangle `[a,b] × [c,d] ⊂ ℝ²`** (Forster (10.20)'s
-local engine): for `C¹` scalar fields `P, Q : ℝ × ℝ → ℝ`,
-
-  `∮_{∂R} (P dx + Q dy) = ∫∫_R (∂Q/∂x − ∂P/∂y)`,
-
-the boundary integral written as the four counter-clockwise edge integrals and the partials read
-off `fderiv ℝ` at the basis directions `(1,0)`, `(0,1)`. -/
-theorem green_rectangle (P Q : ℝ × ℝ → ℝ) (a b c d : ℝ)
-    (hab : a ≤ b) (hcd : c ≤ d)
-    (hP : ContDiff ℝ 1 P) (hQ : ContDiff ℝ 1 Q) :
-    (∫ x in a..b, P (x, c)) + (∫ y in c..d, Q (b, y))
-        - (∫ x in a..b, P (x, d)) - (∫ y in c..d, Q (a, y))
-      = ∫ y in c..d, ∫ x in a..b,
-          (fderiv ℝ Q (x, y) (1, 0) - fderiv ℝ P (x, y) (0, 1)) := by
-  set q : ℝ × ℝ → ℝ := fun p => fderiv ℝ Q p (1, 0) with hq
-  set pfun : ℝ × ℝ → ℝ := fun p => fderiv ℝ P p (0, 1) with hpfun
-  have hqc : Continuous q :=
-    (hQ.continuous_fderiv_apply one_ne_zero).comp (continuous_id.prodMk continuous_const)
-  have hpc : Continuous pfun :=
-    (hP.continuous_fderiv_apply one_ne_zero).comp (continuous_id.prodMk continuous_const)
-  have hQset : (∫ y in c..d, Q (b, y)) - (∫ y in c..d, Q (a, y))
-      = ∫ z in Set.Icc a b ×ˢ Set.Icc c d, q z := by
-    rw [green_rectangle_slice_Q Q a b c d hQ]
-    exact rectangle_iterated_eq_setIntegral_rev q a b c d hab hcd hqc
-  have hPset : (∫ x in a..b, P (x, d)) - (∫ x in a..b, P (x, c))
-      = ∫ z in Set.Icc a b ×ˢ Set.Icc c d, pfun z := by
-    rw [green_rectangle_slice_P P a b c d hP]
-    exact rectangle_iterated_eq_setIntegral pfun a b c d hab hcd hpc
-  have hRset : (∫ y in c..d, ∫ x in a..b,
-        (fderiv ℝ Q (x, y) (1, 0) - fderiv ℝ P (x, y) (0, 1)))
-      = ∫ z in Set.Icc a b ×ˢ Set.Icc c d, (q z - pfun z) :=
-    rectangle_iterated_eq_setIntegral_rev (fun z => q z - pfun z) a b c d hab hcd
-      (hqc.sub hpc)
-  calc
-    (∫ x in a..b, P (x, c)) + (∫ y in c..d, Q (b, y))
-        - (∫ x in a..b, P (x, d)) - (∫ y in c..d, Q (a, y))
-        = ((∫ y in c..d, Q (b, y)) - (∫ y in c..d, Q (a, y))) -
-          ((∫ x in a..b, P (x, d)) - (∫ x in a..b, P (x, c))) := by ring
-    _ = (∫ z in Set.Icc a b ×ˢ Set.Icc c d, q z) -
-          (∫ z in Set.Icc a b ×ˢ Set.Icc c d, pfun z) := by rw [hQset, hPset]
-    _ = ∫ z in Set.Icc a b ×ˢ Set.Icc c d, (q z - pfun z) := by
-      rw [← MeasureTheory.integral_sub]
-      · exact ContinuousOn.integrableOn_compact
-          (isCompact_Icc.prod CompactIccSpace.isCompact_Icc) hqc.continuousOn
-      · exact ContinuousOn.integrableOn_compact
-          (isCompact_Icc.prod CompactIccSpace.isCompact_Icc) hpc.continuousOn
-    _ = ∫ y in c..d, ∫ x in a..b,
-          (fderiv ℝ Q (x, y) (1, 0) - fderiv ℝ P (x, y) (0, 1)) := by rw [hRset]
-
 /-! ### Layer 2 — compact-support vanishing on `ℂ` (Forster (10.20)) -/
 
 /-- The directional derivative of a `C¹` compactly-supported `φ : ℂ → ℂ` is integrable. -/

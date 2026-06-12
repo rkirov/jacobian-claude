@@ -246,12 +246,6 @@ noncomputable def UovTriple (t : 𝔇.ι × 𝔇.ι × 𝔇.ι) : Set ℂ :=
   (chartAt (H := ℂ) (𝔇.center t.1)) ''
     ((𝔇.U t.1 ⊓ 𝔇.U t.2.1 ⊓ 𝔇.U t.2.2 : Opens X) : Set X)
 
-theorem isOpen_UovTriple (t : 𝔇.ι × 𝔇.ι × 𝔇.ι) : IsOpen (𝔇.UovTriple t) := by
-  refine (chartAt (H := ℂ) (𝔇.center t.1)).isOpen_image_of_subset_source
-    (𝔇.U t.1 ⊓ 𝔇.U t.2.1 ⊓ 𝔇.U t.2.2 : Opens X).isOpen ?_
-  refine (Set.Subset.trans ?_ (𝔇.U_subset_chartAt_source t.1))
-  exact (Set.inter_subset_left).trans (Set.inter_subset_left)
-
 abbrev C2Cov (𝔇 : ChartDiskCover X) : Type _ :=
   ∀ t : 𝔇.ι × 𝔇.ι × 𝔇.ι, BddHol (𝔇.UovTriple t)
 
@@ -475,10 +469,6 @@ noncomputable def shrinkGerm (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) :
     ↥(OmegaDGerm (0 : Divisor X) (𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b)) :=
   bddHolToOmegaDGerm_zero_image (y := 𝔇.center a) (V := 𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b)
     (𝔇.shrinkInter_subset_source a b) (𝔇.shrinkBddHolRetype s a b)
-
-theorem shrinkGerm_mem (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) :
-    (𝔇.shrinkGerm s a b).1 ∈ OmegaDGerm (0 : Divisor X) (𝔇.shrinkOpens a ⊓ 𝔇.shrinkOpens b) :=
-  (𝔇.shrinkGerm s a b).2
 
 /-- **The value of `holoFn σ_{ab}`** at `y ∈ V_a ∩ V_b` is `s_{ab}.toFun (φ_a y)`.  (Mirror of
 `diagPullbackGerm_holoFn`.) -/
@@ -1041,17 +1031,6 @@ theorem norm_globalPrim_le (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) {x : X}
   · rw [𝔇.shrinkRhoC_eq_zero_of_notMem c hb, zero_mul, norm_zero]
     exact norm_nonneg _
 
-/-- `primVal s a (φ_a.symm z) = planarPrimitive a ω̂ z` for `z ∈ φ_a.target` (chart round-trip). -/
-theorem primVal_chartSymm (s : 𝔇.overlapData.Cshr) (a : 𝔇.ι) {z : ℂ}
-    (hz : z ∈ (chartAt (H := ℂ) (𝔇.center a)).target) :
-    𝔇.primVal s a ((chartAt (H := ℂ) (𝔇.center a)).symm z)
-      = 𝔇.planarPrimitive a (𝔇.glueForm s) z := by
-  show 𝔇.planarPrimitive a (𝔇.glueForm s)
-      ((extChartAt 𝓘(ℝ, ℂ) (𝔇.center a)) ((chartAt (H := ℂ) (𝔇.center a)).symm z)) = _
-  rw [show (extChartAt 𝓘(ℝ, ℂ) (𝔇.center a) : X → ℂ) =
-      (chartAt (H := ℂ) (𝔇.center a) : X → ℂ) from rfl,
-    (chartAt (H := ℂ) (𝔇.center a)).right_inv hz]
-
 /-- **`η_a` chart-`a`-read is bounded on `Wov (a,a)`**: `‖planarPrimitive a ω̂ z‖` is bounded on the
 compact `closure (Wov (a,a))` (`planarPrimitive` is globally continuous), and `‖G_a‖ ≤ ∑‖s_{a·}‖`.
 -/
@@ -1221,12 +1200,6 @@ theorem coverCochain_toFun_of_mem (s : 𝔇.overlapData.Cshr) (a b : 𝔇.ι) {z
   rw [BddHol.toFun_neg, Pi.neg_apply, 𝔇.coverBddHol_toFun_of_mem s a b hz]
 
 /-! ## §A2-leray — the cocycle property of `x` and the lift identity `s = δ⁰η + ρx` -/
-
-/-- `chart_a w ∈ UovTriple (a,b,c)` for `w ∈ U_a ∩ U_b ∩ U_c`. -/
-theorem chart_mem_UovTriple (a b c : 𝔇.ι) {w : X}
-    (hw : w ∈ (𝔇.U a ⊓ 𝔇.U b ⊓ 𝔇.U c : Opens X)) :
-    (chartAt (H := ℂ) (𝔇.center a)) w ∈ 𝔇.UovTriple (a, b, c) :=
-  ⟨w, hw, rfl⟩
 
 /-- **`δ¹cov x = 0`** — the cover cochain `x` is a cocycle.  Pointwise on `UovTriple`, the three
 `holoFn(x'_{··})` values obey the cocycle relation `holoFn_cocycle_add` (`x' ∈ cocycles1`). -/
@@ -1450,10 +1423,6 @@ noncomputable def overlapAtomCLM (a b : 𝔇.ι) :
   map_add' g₁ g₂ := 𝔇.overlapAtom_add a b g₁.2 g₂.2
   map_smul' c g := 𝔇.overlapAtom_smul a b c g.2
 
-@[simp] theorem overlapAtomCLM_apply (a b : 𝔇.ι) {g : MGerm (𝔇.U a ⊓ 𝔇.U b)}
-    (hg : g ∈ OmegaDGerm (0 : Divisor X) (𝔇.U a ⊓ 𝔇.U b)) :
-    𝔇.overlapAtomCLM a b ⟨g, hg⟩ = 𝔇.overlapAtom a b hg := rfl
-
 /-! ### The forward cochain map `↥(cocycles1 0) → Cshr`, and its image in `Z1shr` -/
 
 /-- **The forward germ→`BddHol` cochain map** `↥(cocycles1 0) →ₗ[ℂ] Cshr`.  Componentwise the
@@ -1562,25 +1531,6 @@ noncomputable def diagAtom (a : 𝔇.ι) {η : MGerm (𝔇.U a)}
     (hη : η ∈ OmegaDGerm (0 : Divisor X) (𝔇.U a)) {z : ℂ} (hz : z ∈ 𝔇.Wov (a, a)) :
     (𝔇.diagAtom a hη).toFun z = holoFn hη ((chartAt (H := ℂ) (𝔇.center a)).symm z) :=
   holoSectionToBddHol_toFun_of_mem _ _ _ _ hz
-
-/-- For `z ∈ Wov (a,b)`, the chart-`a` preimage lies in `U a` (the `a`-side ball). -/
-theorem chartSymm_mem_U_fst (a b : 𝔇.ι) {z : ℂ} (hz : z ∈ 𝔇.Wov (a, b)) :
-    (chartAt (H := ℂ) (𝔇.center a)).symm z ∈ ((𝔇.U a : Opens X) : Set X) :=
-  (𝔇.chartSymm_mem_overlap a b hz).1
-
-/-- For `z ∈ Wov (a,b)`, the chart-`b` preimage of `τ_{ab} z` lies in `U b` (the `b`-side ball). -/
-theorem chartSymm_coverTransition_mem_U_snd (a b : 𝔇.ι) {z : ℂ} (hz : z ∈ 𝔇.Wov (a, b)) :
-    (chartAt (H := ℂ) (𝔇.center b)).symm (𝔇.coverTransition a b z)
-      ∈ ((𝔇.U b : Opens X) : Set X) := by
-  obtain ⟨x, ⟨hxa, hxb⟩, rfl⟩ := hz
-  have hxbU : x ∈ ((𝔇.U b : Opens X) : Set X) :=
-    𝔇.closure_shrinkSet_subset_U b (subset_closure hxb)
-  have hxa_src : x ∈ (chartAt (H := ℂ) (𝔇.center a)).source :=
-    𝔇.U_subset_chartAt_source a (𝔇.closure_shrinkSet_subset_U a (subset_closure hxa))
-  rw [coverTransition, Function.comp_apply,
-    (chartAt (H := ℂ) (𝔇.center a)).left_inv hxa_src,
-    (chartAt (H := ℂ) (𝔇.center b)).left_inv (𝔇.U_subset_chartAt_source b hxbU)]
-  exact hxbU
 
 /-- The `b`-side transition point `(chart_b).symm (τ_{ab} z)` equals the `a`-side preimage
 `(chart_a).symm z` for `z ∈ Wov (a,b)` (both `= x`). -/

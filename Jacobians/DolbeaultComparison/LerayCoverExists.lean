@@ -106,15 +106,6 @@ theorem ball_chartBallRadius_subset_target {X : Type*} [TopologicalSpace X] [Cha
     Metric.ball ((chartAt ℂ x) x) (chartBallRadius x) ⊆ (chartAt ℂ x).target :=
   (chartBallRadius_spec x).2
 
-/-- **`exists_lerayCover` from any cover with simply-connected sets.** Trivial repackaging — kept as
-an alternative entry point. Subsumed by the unconditional `exists_lerayCover` (the canonical
-chart-disk cover already has simply-connected sets); offered for an owner who would rather supply a
-different good cover. -/
-theorem exists_lerayCover_of_goodCover {X : Type*} [TopologicalSpace X]
-    (hGood : ∃ 𝔘 : FiniteCover X, ∀ i, SimplyConnectedSpace ↥(𝔘.U i)) :
-    ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray :=
-  hGood
-
 /-! ### A concrete chart-disk cover
 
 The `chartBallCover` above is enough for `IsLeray`, but the downstream Dolbeault comparison and
@@ -209,32 +200,9 @@ noncomputable def chartDiskCover : ChartDiskCover X where
     intro i
     simp [chartDiskNbhd, chartDiskRadius, Set.inter_comm, mfld_simps]
 
-@[simp] theorem chartDiskCover_U (i : (chartDiskCover (X := X)).ι) :
-    ((chartDiskCover (X := X)).U i : Set X) = chartDiskNbhd (chartDiskCenter i) := rfl
-
 /-- Every set of the canonical chart-disk cover is simply connected. -/
 theorem chartDiskCover_simplyConnected (i : (chartDiskCover (X := X)).ι) :
     SimplyConnectedSpace ↥((chartDiskCover (X := X)).U i) :=
   simplyConnectedSpace_chartDiskNbhd (chartDiskCenter (X := X) i)
-
-/-- A concrete chart-disk Leray cover exists. -/
-theorem exists_chartDiskCover : ∃ 𝔇 : ChartDiskCover X, 𝔇.toFiniteCover.IsLeray :=
-  ⟨chartDiskCover (X := X), chartDiskCover_simplyConnected (X := X)⟩
-
-/-- **`exists_lerayCover` — UNCONDITIONAL.** `X` admits a finite Leray cover: the canonical
-chart-disk cover `chartDiskCover`, whose sets are simply connected
-(`chartDiskCover_simplyConnected`) — which is *all* `IsLeray` now requires (its overlap conjunct was
-dropped as dead weight; for `H¹` Cartan needs only acyclic sets — see
-`CechComplex.FiniteFamily.IsLeray` and `GoodCover`).
-
-This is the statement that unlocks the ladder→headline wiring
-(`RiemannRoch.exists_riemannRoch_divisor` via `DolbeaultLadder.riemannRoch_equality_of_ladder 𝔘 hL`
-with this `𝔘 = chartDiskCover` and `hL` the produced `IsLeray`).  Previously gated on the good-cover
-overlap-preconnectedness `hOverlaps` (a Mathlib-absent Whitney geodesic-convexity fact); that
-hypothesis is now eliminated, so the wiring is unconditional. -/
-theorem exists_lerayCover : ∃ 𝔘 : FiniteCover X, 𝔘.IsLeray :=
-  ⟨(chartDiskCover (X := X)).toFiniteCover, by
-    intro i
-    simpa using chartDiskCover_simplyConnected (X := X) i⟩
 
 end Jacobians.Dolbeault

@@ -53,18 +53,6 @@ noncomputable def negTail (c : ℂ) (b : ℕ → ℂ) (N : ℕ) : ℂ → ℂ :=
 Scaling a meromorphic `h` at `c` by `(z − c)^N` raises its order by `N`.  When `−N ≤ order h` the
 scaled function has nonnegative order, hence converges at `c`, hence (junk-repaired) is analytic. -/
 
-/-- **Order arithmetic for the `(z − c)^N` scaling.**  `meromorphicOrderAt ((z−c)^N • h) c
-= N + meromorphicOrderAt h c`.  Specialises `meromorphicOrderAt_smul` with
-`meromorphicOrderAt_pow_id_sub_const`. -/
-theorem meromorphicOrderAt_pow_sub_smul {h : ℂ → ℂ} {c : ℂ} (hh : MeromorphicAt h c) (N : ℕ) :
-    meromorphicOrderAt (fun z => (z - c) ^ N • h z) c =
-      (N : WithTop ℤ) + meromorphicOrderAt h c := by
-  have hpow : MeromorphicAt (fun z => (z - c) ^ N) c := by fun_prop
-  rw [show (fun z => (z - c) ^ N • h z) = (fun z => (z - c) ^ N) • h from rfl,
-    meromorphicOrderAt_smul hpow hh]
-  congr 1
-  exact meromorphicOrderAt_pow_id_sub_const
-
 /-! ### Single-step Taylor division for an analytic function
 
 The cornerstone of principal-part extraction: an analytic `G` at `c` can be written `G(z) = G(c) +
@@ -317,34 +305,5 @@ at each `c ∈ C`.  The promotion to a **full** `AnalyticAt c` (the shape of `Gl
 holds exactly when `h − P` is additionally continuous at each `c ∈ C` (the junk-value is the
 analytic-continuation value); we record that as the explicit hypothesis `hcont`, isolating the
 junk-freeness condition that the global trace construction must supply. -/
-
-/-- **The global finite `hentire` bridge.**  Let `h` be analytic at every point off a finite set `C`
-(`hoff`), meromorphic at every `c ∈ C` (`hmero`), and such that, after the finite principal-part
-subtraction `P` (from `exists_finitePrincipalPart`), `h − P` is **continuous at every `c ∈ C`**
-(`hcont` — the junk-free condition).  Then there is a finite principal part `P` with `h − P`
-`AnalyticOnNhd ℂ … Set.univ` (entire) — the finite half of `GlobalTrace.hentire`.
-
-The continuity hypothesis is the precise, irreducible junk-value requirement: a meromorphic `h`
-whose *pole is removed* by `P` has a removable singularity at each `c ∈ C`, and
-`MeromorphicAt.analyticAt` upgrades "meromorphic + continuous" to "analytic".  The global trace
-`T` built from the geometric pushforward is junk-free by construction, so `hcont` is automatic
-there. -/
-theorem exists_entire_of_finitePoles {h : ℂ → ℂ} {C : Finset ℂ}
-    (hoff : ∀ c ∉ C, AnalyticAt ℂ h c) (hmero : ∀ c ∈ C, MeromorphicAt h c) :
-    ∃ P : ℂ → ℂ, (∀ c ∉ C, AnalyticAt ℂ P c) ∧
-      (∀ c ∈ C, ∃ R : ℂ → ℂ, AnalyticAt ℂ R c ∧ (h - P) =ᶠ[𝓝[≠] c] R) ∧
-      ((∀ c ∈ C, ContinuousAt (h - P) c) → AnalyticOnNhd ℂ (h - P) Set.univ) := by
-  classical
-  obtain ⟨P, hP_an, hP_centres⟩ := exists_finitePrincipalPart hmero
-  refine ⟨P, hP_an, hP_centres, fun hcont z _ => ?_⟩
-  by_cases hzC : z ∈ C
-  · -- At a centre: meromorphic (pole removed) + continuous ⟹ analytic.
-    obtain ⟨R, hR_an, hR_eq⟩ := hP_centres z hzC
-    -- `h − P =ᶠ[𝓝[≠] z] R` with `R` analytic (hence meromorphic), so `h − P` is
-    -- meromorphic at `z`.
-    have hmeroHP : MeromorphicAt (h - P) z := hR_an.meromorphicAt.congr hR_eq.symm
-    exact hmeroHP.analyticAt (hcont z hzC)
-  · -- Off `C`: `h` analytic and `P` analytic.
-    exact (hoff z hzC).sub (hP_an z hzC)
 
 end Jacobians.Dolbeault.FormTracePrincipalPart
