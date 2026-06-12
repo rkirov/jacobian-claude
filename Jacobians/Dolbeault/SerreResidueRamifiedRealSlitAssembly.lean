@@ -66,7 +66,7 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.ProperMapDegree Jacobians.ProperMapDegreeConstruct Jacobians.RiemannSphere
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ## The per-slit-value §5 normal-form section facts (the irreducible residual) -/
 

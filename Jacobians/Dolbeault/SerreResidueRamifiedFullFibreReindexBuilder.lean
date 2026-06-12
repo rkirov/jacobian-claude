@@ -72,7 +72,7 @@ open Jacobians Jacobians.Dolbeault Jacobians.TraceResidue Jacobians.MeromorphicT
   Jacobians.Dolbeault.FormTraceGlobal Jacobians.Dolbeault.FormTracePrincipalPart
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- **`FullFibreCenterReindex` from a slit-wide family of `ClusterReindexData`** (the SOUND
 builder). Given the **whole** pole-value fibre `D` over `c` (injective; enumerating all `deg f`

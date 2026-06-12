@@ -43,7 +43,7 @@ namespace Jacobians
 
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ### The pointwise FTC
 
