@@ -70,11 +70,83 @@ def issue_url(decl, path, line):
                  f'({REPO}/blob/main/{path}#L{line}).\n\nDescribe the problem:\n')
     return f'{REPO}/issues/new?title={title}&body={body}'
 
+DECL_HEAD = re.compile(
+    r'^(?:noncomputable\s+)?(?:protected\s+)?'
+    r'(theorem|def|lemma|structure|abbrev|instance|inductive)\s+([\w\u00ab\u00bb.]+)')
+
+def module_public_decls(path):
+    """All public declarations of a module: (name, docstring, statement-header)."""
+    lines = open(path).read().split('\n')
+    opens, closes = '([{\u27e8', ')]}\u27e9'
+    out, i, comment = [], 0, 0
+    while i < len(lines):
+        l = lines[i]
+        if comment > 0:
+            comment += l.count('/-') - l.count('-/')
+            i += 1
+            continue
+        comment += l.count('/-') - l.count('-/')
+        if comment > 0 or l.startswith('private '):
+            i += 1
+            continue
+        m = DECL_HEAD.match(re.sub(r'^@\[[^\]]*\]\s*', '', l))
+        if not m or l.startswith(('--', '/-', ' ')):
+            i += 1
+            continue
+        doc = []
+        j = i - 1
+        while j >= 0 and lines[j].startswith('@['):
+            j -= 1
+        if j >= 0 and lines[j].rstrip().endswith('-/'):
+            k = j
+            while k >= 0 and not lines[k].lstrip().startswith('/--'):
+                k -= 1
+            if k >= 0:
+                doc = lines[k:j + 1]
+        block, depth, end = [], 0, i
+        for j2 in range(i, min(i + 24, len(lines))):
+            s, cut = lines[j2], None
+            for k2 in range(len(s)):
+                c = s[k2]
+                if c in opens: depth += 1
+                elif c in closes: depth -= 1
+                elif depth == 0 and s[k2:k2 + 2] == ':=':
+                    cut = k2
+                    break
+            if cut is not None:
+                block.append(s[:cut].rstrip())
+                end = j2
+                break
+            block.append(s)
+            end = j2
+            if depth == 0 and s.rstrip().endswith((' where', ' by')):
+                break
+        doctext = re.sub(r'^\s*/--\s?', '', '\n'.join(doc))
+        doctext = re.sub(r'\s*-/\s*$', '', doctext)
+        out.append((m.group(2), doctext.strip(), '\n'.join(b for b in block if b.strip())))
+        i = end + 1
+    return out
+
 def lean_str(s):
     return s.replace('\\', '\\\\').replace('"', '\\"')
 
 def md_escape(s):
-    return s.replace('{', '\\{').replace('}', '\\}')
+    """Render docstring text as inert Verso prose: keep backtick code spans, convert
+    list bullets to dashes, strip bold markers, escape other markup characters."""
+    out_lines = []
+    for line in s.split('\n'):
+        if line.lstrip().startswith('```'):
+            continue
+        line = re.sub(r'^(\s*)\* ', r'\1- ', line)
+        parts = re.split(r'(`[^`]*`)', line)
+        for i, part in enumerate(parts):
+            if i % 2 == 0:
+                part = part.replace('**', '')
+                for c in '*_[]{}':
+                    part = part.replace(c, '\\' + c)
+                parts[i] = part
+        out_lines.append(''.join(parts))
+    return '\n'.join(out_lines)
 
 os.makedirs('site/Site', exist_ok=True)
 chapters = []
@@ -118,11 +190,24 @@ for u in order:
         for v in deps_u:
             lines.append(f'* {v.replace("-", " ")}')
         lines.append('')
-    lines.append('# Modules')
-    lines.append('')
     for m in mem:
+        path = mods[m]
         lit = '../../Jacobians/' + m.replace('.', '/') + '/'
-        lines.append(f'* [`{m}`]({lit})')
+        lines.append(f'# {m}')
+        lines.append('')
+        lines.append(f'`Jacobians.{m}` — [literate page with proofs]({lit}) · '
+                     f'[source]({REPO}/blob/main/{path})')
+        lines.append('')
+        for name, doc, stmt in module_public_decls(path):
+            lines.append(f'**`{name}`**')
+            lines.append('')
+            if doc:
+                lines.append(md_escape(doc))
+                lines.append('')
+            lines.append('```')
+            lines.append(stmt)
+            lines.append('```')
+            lines.append('')
     lines.append('')
     open(f'site/Site/{dirname}.lean', 'w').write('\n'.join(lines))
     chapters.append(dirname)
@@ -149,7 +234,7 @@ open Verso.Genre Manual
 def main := manualMain (%doc Site) (config := {
   emitHtmlSingle := .no,
   emitHtmlMulti := .immediately,
-  htmlDepth := 1,
+  htmlDepth := 2,
   sourceLink := some "REPO",
   issueLink := some "REPO/issues"
 })
