@@ -8,15 +8,15 @@ Authors: Rado Kirov
 For genus ≥ 1 we run Miranda's duality in the **ω₀-frame**: fix `0 ≠ ω₀ ∈ Ω(X)` and represent
 meromorphic 1-forms as `h·ω₀` with `h` meromorphic.  The local coefficient of `h·ω₀` in the
 canonical chart at `p` is `coeffAt ω₀ p · (h ∘ chart⁻¹)` — exactly the integrand of the
-residue theorem `residueTheorem_unconditional`, so the residue map's vanishing on realized
-tails needs no factorization detour.
+residue theorem `residueTheorem_formFn_unconditional`, so the residue map's vanishing on
+realized tails needs no factorization detour.
 
 Contents:
 * `canonicalDivisorOf ω₀ hω₀` — the divisor of zeros of `ω₀` (finite support by
   `finite_localRep_self_eq_zero`); this is the canonical divisor `K = div ω₀`.
 * the order bridge `omegaOrderBounded_iff_mem`: `h·ω₀ ∈ L^(1)(−D) ⟺ h ∈ L(K−D)`.
 * the residue functional `omegaTailResidue ω₀ h` on tails; its vanishing on realized tails
-  (`omegaTailResidue_tailMap_eq_zero`, via `residueTheorem_unconditional` with the
+  (`omegaTailResidue_tailMap_eq_zero`, via `residueTheorem_formFn_unconditional` with the
   analytic-bad-set enlargement); the descended **duality pairing**
   `omegaDualMap : lSysModule (K−D) →ₗ (H¹(D))*`.
 * **Injectivity** (Miranda p. 188): a nonzero class `[h]` pairs against the single-monomial tail
@@ -29,6 +29,7 @@ The surjective half (Miranda pp. 189–191) is built separately.
 import Jacobians.LaurentTail.TailResidue
 import Jacobians.LaurentTail.RiemannRochFirstForm
 import Jacobians.Dolbeault.SerreDuality
+import Jacobians.Dolbeault.ResidueTheoremFormFn
 
 open scoped Manifold ContDiff Topology
 open Filter Set
@@ -231,7 +232,7 @@ theorem resAt_pullback_mul_omegaCoeff (D : Divisor X) (ω₀ : HolomorphicOneFor
   rfl
 
 /-- **The vanishing of `Res_ω` on realized tails, ω₀-frame** (Miranda p. 187): direct from
-`residueTheorem_unconditional` at the numerator `f·h`, with the analytic-bad-set
+`residueTheorem_formFn_unconditional` at the numerator `f·h`, with the analytic-bad-set
 enlargement. -/
 theorem omegaTailResidue_tailMap_eq_zero {D : Divisor X} (ω₀ : HolomorphicOneForms X)
     (h : MeromorphicFunction X) (hord : OmegaOrderBounded ω₀ h D)
@@ -284,7 +285,7 @@ theorem omegaTailResidue_tailMap_eq_zero {D : Divisor X} (ω₀ : HolomorphicOne
     rw [MeromorphicFunction.mul_toFun, Pi.mul_apply, omegaCoeffFun]
     ring
   rw [hregroup, Finset.sum_congr rfl hpoint]
-  refine SerreResidueTheorem.residueTheorem_unconditional ω₀ (f * h) S fun x hx => ?_
+  refine residueTheorem_formFn_unconditional ω₀ (f * h) S fun x hx => ?_
   by_contra hbad
   exact hx (Finset.mem_union_right _ ((f * h).finite_nonAnalyticAt.mem_toFinset.mpr hbad))
 

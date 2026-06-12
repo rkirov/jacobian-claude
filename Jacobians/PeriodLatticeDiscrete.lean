@@ -21,7 +21,7 @@ Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.4(b) (p. 169).
 import Jacobians.AbelEngineMeromorphic
 import Jacobians.AbelChains
 import Jacobians.PeriodLatticeNondegenerate
-import Jacobians.Dolbeault.SerreResidueRamifiedRealSlitGeometry
+import Jacobians.Dolbeault.ResidueTheoremFormFn
 
 noncomputable section
 
@@ -469,7 +469,7 @@ theorem truePeriodLattice_isolated_zero :
   have hres : ∀ i : Fin (genus X),
       ∑ y ∈ poles, formFnResidue (periodBasisForm X i) f.toFun y = 0 := by
     intro i
-    refine SerreResidueTheorem.residueTheorem_unconditional (periodBasisForm X i) f poles
+    refine residueTheorem_formFn_unconditional (periodBasisForm X i) f poles
       (fun y hy => hgood y (le_of_eq (hD_off y hy).symm))
   -- the residue at `a j` is `cvec j · A i j`; elsewhere it vanishes.
   have hres_a : ∀ (i j : Fin (genus X)),
