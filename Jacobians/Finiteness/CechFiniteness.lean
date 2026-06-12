@@ -20,39 +20,6 @@ convex `K ⋐ U`, is relatively compact in `K →ᵇ ℂ`. This is the plain-fun
 bundle-level `isCompact_closure_image_inner_bcf`, without the `localRep`/cotangent bookkeeping.
 It is the engine that makes the cochain restriction a compact operator. -/
 
-theorem isCompact_closure_restrict_bddHolo
-    {U K : Set ℂ} (hU : IsOpen U) (hKcpt : IsCompact K) (hKU : K ⊆ U)
-    (hKconv : Convex ℝ K) {M : ℝ} (hMnn : 0 ≤ M)
-    {S : Type*} (g : S → ℂ → ℂ)
-    (hg_an : ∀ s, AnalyticOn ℂ (g s) U) (hg_bd : ∀ s, ∀ z ∈ U, ‖g s z‖ ≤ M)
-    (hg_cont : ∀ s, ContinuousOn (g s) U) :
-    letI : CompactSpace K := isCompact_iff_compactSpace.mp hKcpt
-    IsCompact (closure (Set.range (fun s : S =>
-      mkOfCompact ⟨K.restrict (g s), ((hg_cont s).mono hKU).restrict⟩))) := by
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hKcpt
-  apply BoundedContinuousFunction.arzela_ascoli (closedBall (0 : ℂ) M) (isCompact_closedBall _ _)
-  · -- bounded: every value lies in `closedBall 0 M`
-    rintro f y ⟨s, rfl⟩
-    rw [Metric.mem_closedBall, dist_zero_right, mkOfCompact_apply]
-    exact hg_bd s y.1 (hKU y.2)
-  · -- equicontinuous: plain-function repo lemma + subtype transfer (mirrors the bundle atom)
-    classical
-    set F_bcf : S → (K →ᵇ ℂ) :=
-      fun s => mkOfCompact ⟨K.restrict (g s), ((hg_cont s).mono hKU).restrict⟩ with hFbcf
-    have hequi_on : UniformEquicontinuousOn g K :=
-      uniformEquicontinuousOn_of_bounded_analyticOn hU hKcpt hKU hKconv hMnn hg_an hg_bd
-    have hFbcf_fn : Equicontinuous (fun s : S => (⇑(F_bcf s) : K → ℂ)) :=
-      (equicontinuous_restrict_iff g).mpr hequi_on.equicontinuousOn
-    let u : ↥(Set.range F_bcf) → S := fun x => Classical.choose x.2
-    have hu_spec : ∀ x : ↥(Set.range F_bcf), F_bcf (u x) = x.val :=
-      fun x => Classical.choose_spec x.2
-    have hcomp : (fun x : ↥(Set.range F_bcf) => (⇑x.val : K → ℂ)) =
-        (fun s : S => (⇑(F_bcf s) : K → ℂ)) ∘ u := by
-      funext x y; simp only [Function.comp]; rw [hu_spec x]
-    have hrange : Equicontinuous (fun x : ↥(Set.range F_bcf) => (⇑x.val : K → ℂ)) := by
-      rw [hcomp]; exact hFbcf_fn.comp u
-    exact hrange
-
 /-! ### From this lemma to `DolbeaultLadder.finiteDimensional_cechH1`
 
 The assembly built on this Montel core:

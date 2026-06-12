@@ -46,20 +46,6 @@ open Jacobians Jacobians.Dolbeault Jacobians.Montel
 
 /-! ### `mfderiv` as the planar chart-pullback derivative -/
 
-/-- **`mfderiv` is the chart-pullback `fderiv`.**  For `s : Y → X` `MDifferentiable` at `y`, the
-manifold derivative `mfderiv 𝓘(ℂ) 𝓘(ℂ) s y` equals the planar complex derivative of the chart
-pullback `s_loc = chart_{s y} ∘ s ∘ chart_y.symm` at `chart_y y`.  This is the `mfderiv = fderiv`
-reading (cf. `LineIntegral.pathSpeed_comp_eq_mfderiv` step 7): `mfderiv` is `fderiv ℂ` of
-`writtenInExtChartAt`, which is definitionally `s_loc`, at `extChartAt y y = chart_y y`. -/
-theorem mfderiv_eq_fderiv_chartPullback {X Y : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    [TopologicalSpace Y] [ChartedSpace ℂ Y] (s : Y → X) {y : Y}
-    (hs : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) s y) :
-    mfderiv 𝓘(ℂ) 𝓘(ℂ) s y
-      = fderiv ℂ (fun z => (chartAt ℂ (s y)) (s ((chartAt ℂ y).symm z)))
-          ((chartAt ℂ y) y) := by
-  rw [hs.mfderiv, ModelWithCorners.range_eq_univ, fderivWithin_univ]
-  congr 1
-
 variable {X Y : Type*}
     [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     [TopologicalSpace Y] [ChartedSpace ℂ Y]

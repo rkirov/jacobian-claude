@@ -2126,22 +2126,6 @@ over the sheet sections; what is missing is the lift/monodromy assembly producin
 the indexed family of global lifts (the loop-lifting `PreimageCycle` machinery in
 `PeriodLattice.lean`, gated on `exists_preimageCycle_of_off_branchLocus`). -/
 
-/-- Evaluating a finite sum of holomorphic one-forms at `y` against a tangent
-vector `v` equals the sum of the pointwise evaluations. -/
-theorem sum_toFun_apply {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
-    [ConnectedSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] {k : ℕ}
-    (forms : Fin k → HolomorphicOneForms Y) (y : Y) (v : ℂ) :
-    (∑ i, forms i).toFun y v = ∑ i, (forms i).toFun y v := by
-  classical
-  induction k with
-  | zero =>
-    show (0 : HolomorphicOneForms Y).toFun y v = 0
-    rfl
-  | succ m ih =>
-    rw [Fin.sum_univ_succ, Fin.sum_univ_succ, ← ih (fun i => forms i.succ)]
-    -- Addition of sections is pointwise; the covector evaluation distributes.
-    rfl
-
 /-! ## Covariant functoriality of the trace
 
 `traceForm` is covariant to `f` (a trace sums over the sheets of the cover, and

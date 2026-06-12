@@ -275,20 +275,6 @@ noncomputable def smoothPathRaw {X : Type*} [TopologicalSpace X] [ChartedSpace �
       let s : ℝ := smoothStep01 ((t - (k : ℝ) / n) * n)
       ChartBallPath (x k) y_start y_end s
 
-@[simp] lemma smoothPathRaw_of_nonpos {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    [PathConnectedSpace X] {P Q : X} {t : ℝ} (h : t ≤ 0) :
-    smoothPathRaw P Q t = P := by
-  unfold smoothPathRaw
-  simp [h]
-
-@[simp] lemma smoothPathRaw_of_ge_one {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    [PathConnectedSpace X] {P Q : X} {t : ℝ} (h : 1 ≤ t) :
-    smoothPathRaw P Q t = Q := by
-  unfold smoothPathRaw
-  have ht_pos : (0 : ℝ) < t := lt_of_lt_of_le (by norm_num) h
-  have ht_not_le : ¬ t ≤ 0 := not_le.mpr ht_pos
-  simp [ht_not_le, h]
-
 /-! ## smoothStep01 properties
 
 The basic boundary identities; differentiability of the smoothstep
@@ -405,45 +391,10 @@ lemma differentiable_chart_image_formula {X : Type*} [TopologicalSpace X] [Chart
 
 /-! ## ChartBallPath specializations and identities -/
 
-/-- ChartBallPath anchor P P is the constant path P, when P is in the
-chart source. -/
-
-lemma ChartBallPath_self {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P : X)
-    (hP : P ∈ (chartAt ℂ anchor).source) (t : ℝ) :
-    ChartBallPath anchor P P t = P := by
-  show (chartAt ℂ anchor).symm
-      ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) P) = P
-  have h_combine : (1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) P
-      = (chartAt ℂ anchor) P := by ring
-  rw [h_combine]
-  exact (chartAt ℂ anchor).left_inv hP
-
 /-! ## smoothPathRaw: more boundary / shape lemmas
 
 These structural lemmas about the gluing definition will be useful when
 proving the full `IsSmoothPath` for `smoothPathRaw`. -/
-
-/-- `smoothStep01 t = 1 - smoothStep01 (1 - t)`: the smoothstep is
-symmetric around `t = 1/2`. Useful for proving reversal properties. -/
-lemma smoothStep01_one_sub (t : ℝ) :
-    smoothStep01 (1 - t) = 1 - smoothStep01 t := by
-  unfold smoothStep01
-  by_cases h0 : t ≤ 0
-  · have h_1mt_ge : 1 ≤ 1 - t := by linarith
-    have h_1mt_pos : ¬ (1 - t ≤ 0) := by linarith
-    simp [h0, h_1mt_pos, h_1mt_ge]
-  · by_cases h1 : 1 ≤ t
-    · have h_1mt_le : 1 - t ≤ 0 := by linarith
-      simp [h0, h1, h_1mt_le]
-    · push Not at h0 h1
-      have h_1mt_pos : 0 < 1 - t := by linarith
-      have h_1mt_lt : 1 - t < 1 := by linarith
-      have h_1mt_not_le : ¬ (1 - t ≤ 0) := not_le.mpr h_1mt_pos
-      have h_1mt_not_ge : ¬ (1 ≤ 1 - t) := not_le.mpr h_1mt_lt
-      have h0_not : ¬ (t ≤ 0) := not_le.mpr h0
-      have h1_not : ¬ (1 ≤ t) := not_le.mpr h1
-      simp only [h0_not, h1_not, h_1mt_not_le, h_1mt_not_ge, if_false]
-      ring
 
 /-! ## Affine chart-image manipulation -/
 
@@ -466,27 +417,6 @@ lemma smoothStep01_mem_unit (t : ℝ) : smoothStep01 t ∈ Set.Icc (0 : ℝ) 1 :
 
 /-! ## Piece-wise reparametrization bounds -/
 
-/-- For `t ∈ [k/n, (k+1)/n]`, the rescale `(t - k/n) * n` lies in `[0, 1]`. -/
-lemma piece_reparam_mem_unit (k n : ℕ) (hn : 0 < n) (t : ℝ)
-    (h_low : (k : ℝ) / n ≤ t) (h_high : t ≤ ((k : ℝ) + 1) / n) :
-    (t - (k : ℝ) / n) * n ∈ Set.Icc (0 : ℝ) 1 := by
-  constructor
-  · have ht_ge_zero : 0 ≤ t - (k : ℝ) / n := by linarith
-    have hn_pos : 0 < (n : ℝ) := by exact_mod_cast hn
-    exact mul_nonneg ht_ge_zero (le_of_lt hn_pos)
-  · have h_diff_le : t - (k : ℝ) / n ≤ 1 / (n : ℝ) := by
-      have h_eq : ((k : ℝ) + 1) / n = (k : ℝ) / n + 1 / n := by ring
-      linarith
-    have hn_pos : 0 < (n : ℝ) := by exact_mod_cast hn
-    calc (t - (k : ℝ) / n) * n
-        ≤ (1 / (n : ℝ)) * n :=
-          mul_le_mul_of_nonneg_right h_diff_le (le_of_lt hn_pos)
-      _ = 1 := by field_simp
-
-/-- The rescale at the LEFT endpoint of `[k/n, (k+1)/n]` is `0`. -/
-lemma piece_reparam_at_left (k n : ℕ) (_hn : 0 < n) :
-    ((k : ℝ) / n - (k : ℝ) / n) * n = 0 := by ring
-
 /-- The rescale at the RIGHT endpoint of `[k/n, (k+1)/n]` is `1`. -/
 lemma piece_reparam_at_right (k n : ℕ) (hn : 0 < n) :
     (((k : ℝ) + 1) / n - (k : ℝ) / n) * n = 1 := by
@@ -503,19 +433,6 @@ identities are pure Mathlib but stated here for convenient reference
 in the smoothPath-gluing arguments. -/
 
 /-! ## Misc Useful Inequalities -/
-
-/-- `(0 : ℝ) ≤ k / n` for naturals `k, n`. -/
-lemma cast_div_nonneg (k n : ℕ) : (0 : ℝ) ≤ (k : ℝ) / n := by
-  apply div_nonneg
-  · exact_mod_cast Nat.zero_le k
-  · exact_mod_cast Nat.zero_le n
-
-/-- `(k : ℝ) / n ≤ 1` when `k ≤ n` (and `n > 0`). -/
-lemma cast_div_le_one (k n : ℕ) (hkn : k ≤ n) (hn : 0 < n) :
-    (k : ℝ) / n ≤ 1 := by
-  have hn_pos : (0 : ℝ) < n := by exact_mod_cast hn
-  rw [div_le_one hn_pos]
-  exact_mod_cast hkn
 
 /-! ## Continuity helpers (using EqOn-based reasoning) -/
 
@@ -550,13 +467,6 @@ example {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] :
 
 /-! ## More piece arithmetic -/
 
-/-- `(k + 1) / n - k / n = 1 / n` for naturals. -/
-lemma piece_width (k n : ℕ) (hn : 0 < n) :
-    ((k : ℝ) + 1) / n - (k : ℝ) / n = 1 / n := by
-  have hn_pos : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
-  field_simp
-  ring
-
 /-! ## Constant-path period vector arithmetic
 
 For a constant path γ = fun _ => P, integrals against any holomorphic
@@ -565,18 +475,11 @@ corollary for periodVec. -/
 
 /-! ## Real-line topology helpers used in chart-cover gluing -/
 
-/-- For any open set `U ⊆ ℝ` containing `t`, eventually `s ∈ U` near `t`. -/
-lemma eventually_mem_open {U : Set ℝ} (hU : IsOpen U) {t : ℝ} (ht : t ∈ U) :
-    ∀ᶠ s in 𝓝 t, s ∈ U := hU.mem_nhds ht
-
 /-! ## smoothStep01 derivative computation
 
 For `t ∈ (0, 1)`, the derivative of `smoothStep01` is `6t - 6t²`, which
 vanishes at `t = 0` and `t = 1`. This is what makes smoothStep01 a C¹
 junction smoother. -/
-
-/-- The cubic `3t² - 2t³` factors as `t² * (3 - 2t)`. -/
-lemma cubic_factor (t : ℝ) : 3 * t^2 - 2 * t^3 = t^2 * (3 - 2 * t) := by ring
 
 /-! ## ChartBallPath via the chart-image formula
 
@@ -590,11 +493,6 @@ These lemmas connect the various forms. -/
 Helper lemmas for piecing together paths. -/
 
 /-! ## Chart-source membership helpers -/
-
-/-- If `P` is in the chart source at itself, then `chartAt ℂ P` is well-defined at `P`. -/
-lemma mem_chart_at_self {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (P : X) :
-    P ∈ (chartAt ℂ P).source :=
-  mem_chart_source ℂ P
 
 /-! ## Real-coercion identities for chart-image arithmetic -/
 
@@ -615,13 +513,6 @@ lemma mem_chart_at_self {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (P
 The general continuity of smoothStep01 is left for the gluing phase
 (needs careful boundary case handling). Below are point-wise
 continuity lemmas that are immediate. -/
-
-/-- The cubic is continuous on `(0, 1)` (as a polynomial). -/
-lemma cubic_continuous :
-    Continuous (fun t : ℝ => 3 * t^2 - 2 * t^3) := by
-  refine Continuous.sub ?_ ?_
-  · exact (continuous_pow 2).const_mul 3
-  · exact (continuous_pow 3).const_mul 2
 
 /-- **`smoothStep01` is globally continuous on ℝ.**
 
@@ -1050,15 +941,6 @@ specialized to our setup.
 -/
 
 /-! ## Auxiliary `mapsTo` / interval lemmas (Forster §1 chart-cover prep) -/
-
-/-- The piece-rescale at the left endpoint is 0. -/
-lemma piece_rescale_at_left_eq (k n : ℕ) :
-    ((k : ℝ) / n - (k : ℝ) / n) * n = 0 := by ring
-
-/-- The piece-rescale at the right endpoint is 1 (for `n > 0`). -/
-lemma piece_rescale_at_right_eq (k n : ℕ) (hn : 0 < n) :
-    (((k : ℝ) + 1) / n - (k : ℝ) / n) * n = 1 :=
-  piece_reparam_at_right k n hn
 
 /-! ## More smoothPathRaw / smoothPath identities -/
 

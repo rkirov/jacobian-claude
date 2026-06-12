@@ -47,39 +47,6 @@ theorem exists_smoothPartitionOfUnity_core [T2Space X] [SigmaCompactSpace X] [Is
   SmoothPartitionOfUnity.exists_isSubordinate 𝓘(ℝ, ℂ) hCclosed
     (fun i => (U i : Set X)) (fun i => (U i).isOpen) hCsub
 
-/-- **Open-union subordinate PoU exists.** On the open submanifold given by the union of the family,
-the closed set is `univ`, so the partition of unity sums to `1` everywhere there. This is the sound
-rebase for the globalization step the comments point at. -/
-theorem exists_smoothPartitionOfUnity_openUnion [T2Space X] [LocallyCompactSpace X]
-    [IsManifold 𝓘(ℂ) ω X] {ι : Type} [Fintype ι] [SecondCountableTopology X]
-    (U : ι → Opens X) :
-    ∃ ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ)
-      ↥(⟨⋃ i, (U i : Set X), isOpen_iUnion fun i => (U i).isOpen⟩ : Opens X)
-      (Set.univ : Set ↥(⟨⋃ i, (U i : Set X), isOpen_iUnion fun i => (U i).isOpen⟩ : Opens X)),
-      ρ.IsSubordinate (fun i =>
-        {x : ↥(⟨⋃ i, (U i : Set X), isOpen_iUnion fun i => (U i).isOpen⟩ : Opens X) |
-          (x : X) ∈ U i}) := by
-  classical
-  let Y : Opens X := ⟨⋃ i, (U i : Set X), isOpen_iUnion fun i => (U i).isOpen⟩
-  haveI : LocallyCompactSpace ↥Y := Y.2.locallyCompactSpace
-  haveI : SecondCountableTopology ↥Y := inferInstance
-  have hopen : ∀ i, IsOpen ({x : ↥Y | (x : X) ∈ U i} : Set ↥Y) := by
-    intro i
-    simpa [Set.preimage] using
-      (isOpen_induced_iff.mpr ⟨(U i : Set X), (U i).isOpen, rfl⟩ :
-        IsOpen ({x : ↥Y | (x : X) ∈ U i}))
-  have hcov : (Set.univ : Set ↥Y) ⊆ ⋃ i, {x : ↥Y | (x : X) ∈ U i} := by
-    intro x hx
-    rcases Set.mem_iUnion.mp x.property with ⟨i, hi⟩
-    exact Set.mem_iUnion.mpr ⟨i, hi⟩
-  have hpoU :
-      ∃ ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ) ↥Y (Set.univ : Set ↥Y),
-        ρ.IsSubordinate (fun i => {x : ↥Y | (x : X) ∈ U i}) :=
-    SmoothPartitionOfUnity.exists_isSubordinate (I := 𝓘(ℝ, ℂ))
-      (s := (Set.univ : Set ↥Y)) isClosed_univ
-      (fun i => {x : ↥Y | (x : X) ∈ U i}) hopen hcov
-  simpa [Y] using hpoU
-
 /-- **Sum-to-one on the core**, value form: a PoU over the closed set `C` sums to `1` at every
 point of `C`.  (Repackages Mathlib's `SmoothPartitionOfUnity.sum_eq_one` with the
 `finsum = Finset.sum` collapse for the `Fintype` index.) -/

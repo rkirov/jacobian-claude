@@ -55,11 +55,6 @@ theorem norm_localRep_sub_le_supNormK {X : Type*} [TopologicalSpace X] [T2Space 
 Bundles `localRep α x₀` restricted to `shrunkChart x₀` as a `C(_, ℂ)`,
 parallel to `localRepOnInnerShrunk` but on the outer shrinkage. -/
 
-theorem shrunkChart_compactSpace' {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ChartedSpace ℂ X] (x₀ : X) :
-    CompactSpace (shrunkChart (X := X) x₀) :=
-  isCompact_iff_compactSpace.mp (shrunkChart_isCompact x₀)
-
 /-! ### Step 2 — bcf-Cauchy on shrunkChart from supNormK-Cauchy
 
 The per-chart bcf distance is bounded by supNormK of the difference,

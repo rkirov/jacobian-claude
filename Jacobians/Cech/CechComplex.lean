@@ -57,12 +57,6 @@ this predicate; dropping it makes `LerayCoverExists.exists_lerayCover` unconditi
 def IsLeray (𝔘 : FiniteFamily X) : Prop :=
   ∀ i : 𝔘.ι, SimplyConnectedSpace ↥(𝔘.U i)
 
-/-- A finite family covers a specified open `W` when the supremum of its opens is exactly `W`.
-This is the local-cover analogue of `FiniteCover.covers`, used for families such as `{U_i ∩ W}_i`
-that cover only an overlap region rather than all of `X`. -/
-def CoversOpen (𝔘 : FiniteFamily X) (W : Opens X) : Prop :=
-  ⨆ i, 𝔘.U i = W
-
 /-- Restrict a finite family to an open subset `W`, replacing each `U_i` by `U_i ∩ W`.  The result
 is still a finite family on `X`; it generally covers only `W`, not all of `X`. -/
 def restrictToOpen (𝔘 : FiniteFamily X) (W : Opens X) : FiniteFamily X where
@@ -73,11 +67,6 @@ def restrictToOpen (𝔘 : FiniteFamily X) (W : Opens X) : FiniteFamily X where
 theorem restrictToOpen_le_left (𝔘 : FiniteFamily X) (W : Opens X) (i : 𝔘.ι) :
     (𝔘.restrictToOpen W).U i ≤ 𝔘.U i :=
   inf_le_left
-
-/-- The restricted family covers the part of `W` covered by the original family. -/
-theorem iSup_restrictToOpen (𝔘 : FiniteFamily X) (W : Opens X) :
-    (⨆ i, (𝔘.restrictToOpen W).U i) = (⨆ i, 𝔘.U i) ⊓ W := by
-  simp [restrictToOpen, iSup_inf_eq]
 
 /-! ### Cochain spaces — germ-classes (`MGerm`), the junk-free sections (no junk quotient). -/
 

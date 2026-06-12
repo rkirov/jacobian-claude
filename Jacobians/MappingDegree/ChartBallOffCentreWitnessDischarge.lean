@@ -8,16 +8,16 @@ import Jacobians.MappingDegree.PerChartNonConstancyReduction
 
 /-! # Discharging the chart-ball off-centre witness from "not eventually constant"
 
-ZZ36 (`PerChartNonConstancyReduction.lean`) reduced
+`PerChartNonConstancyReduction.lean` reduced
 `PerChartNonConstancyHypothesis X Y` to `ChartBallOffCentreWitnessHypothesis X Y`.
 That hypothesis asks, for every non-constant `C^ω` map `f`, every fibre point
 `x` of `y₀ = f x`, and every radius `r > 0`, to exhibit a single point
 `z₁ ∈ Metric.ball ((chartAt ℂ x) x) r` at which the chart pullback differs
 from its value at the chart image of `x`.
 
-This file (ZZ38) provides the **identity-theorem witness extractor**: given
+This file provides the **identity-theorem witness extractor**: given
 that the chart pullback `F : ℂ → ℂ` is analytic at `z₀ = (chartAt ℂ x) x`
-(true under `ContMDiff … ω` by ZZ24) and that `F` is **not** eventually equal
+(true under `ContMDiff … ω`) and that `F` is **not** eventually equal
 to `F z₀` near `z₀`, every metric ball around `z₀` contains an off-centre
 point at which `F` differs from `F z₀`.
 
@@ -26,26 +26,9 @@ The mechanism is the mathlib dichotomy
 eventually zero near `z₀` (excluded by hypothesis) or `F - F z₀ ≠ 0` on a
 punctured neighborhood, hence on every small enough metric ball minus `z₀`.
 
-What this file *does* discharge:
-
-* `AnalyticAt.exists_off_centre_value_ne` — pure-ℂ extractor: from analyticity
-  at `z₀` and "not eventually `F z₀`" produce, for every `r > 0`, a point
-  `z ∈ Metric.ball z₀ r` with `F z ≠ F z₀`. The `z` is automatically off-centre
-  since `F z ≠ F z₀` rules out `z = z₀`.
-
-* `chartBallOffCentreWitness_of_chart_pullback_not_eventually_const` —
-  manifold-side: discharges `ChartBallOffCentreWitnessHypothesis X Y` from the
-  hypothesis-parameter that for every non-constant `C^ω` map and every fibre
-  point, the chart pullback is **not eventually equal** to its centre value at
-  the chart image. That hypothesis-parameter is the same content already
-  consumed by `chart_pullback_not_eventually_const_of_witness` in
-  `AnalyticContinuationGlobalization.lean`.
-
 The remaining obstruction is the bridge from `¬ IsConstantMap f` to "chart
 pullback at every fibre point is not eventually `chartAt _ y₀ y₀`" — the
-manifold-level analytic-continuation step, unchanged by this file.
-
-No gaps, no `axiom`. -/
+manifold-level analytic-continuation step, taken as a hypothesis-parameter. -/
 
 @[expose] public section
 
@@ -167,10 +150,10 @@ def ChartPullbackNotEventuallyConstHypothesis
 
 /-- **Discharge of `ChartBallOffCentreWitnessHypothesis`.** From the
 chart-pullback non-eventual-constancy hypothesis-parameter and the
-ℂ-analyticity of chart pullbacks (ZZ24), every chart ball around the chart
+ℂ-analyticity of chart pullbacks, every chart ball around the chart
 image of a fibre point contains an off-centre value witness.
 
-Proof: the chart pullback is analytic at `z₀ = (chartAt ℂ x) x` by ZZ24
+Proof: the chart pullback is analytic at `z₀ = (chartAt ℂ x) x` by the bridge
 (`contMDiff_omega_analyticAt_chart_pullback`). Combined with the hypothesis
 "`F` is not eventually `F z₀`" (rewritten via the chart-left-inverse identity
 `F z₀ = (chartAt ℂ (f x)) (f x)`), the ℂ-side extractor
@@ -186,7 +169,7 @@ theorem chartBallOffCentreWitness_of_chart_pullback_not_eventually_const
   -- Set up the chart pullback and its centre.
   set F : ℂ → ℂ := (chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm with hF_def
   set z₀ : ℂ := (chartAt ℂ x) x with hz₀_def
-  -- Analyticity at `z₀` from ZZ24.
+  -- Analyticity at `z₀` from the chart-pullback bridge.
   have hFA_at : AnalyticAt ℂ F z₀ :=
     contMDiff_omega_analyticAt_chart_pullback hf x
   -- `F z₀ = (chartAt ℂ (f x)) (f x)` via the chart left-inverse.
@@ -217,44 +200,8 @@ theorem chartBallOffCentreWitness_of_chart_pullback_not_eventually_const
 
 /-! ## End-to-end composition -/
 
-/-- **Per-chart non-constancy from chart-pullback non-eventual-constancy.**
-End-to-end through ZZ36. -/
-theorem perChartNonConstancy_of_chart_pullback_not_eventually_const
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ChartPullbackNotEventuallyConstHypothesis X Y) :
-    PerChartNonConstancyHypothesis X Y :=
-  perChartNonConstancy_of_chartBallOffCentreWitness
-    (chartBallOffCentreWitness_of_chart_pullback_not_eventually_const H)
-
-/-- **Within-chart witness from chart-pullback non-eventual-constancy.**
-End-to-end through ZZ36 + ZZ34. -/
-theorem withinChartWitness_of_chart_pullback_not_eventually_const
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ChartPullbackNotEventuallyConstHypothesis X Y) :
-    WithinChartWitnessHypothesis X Y :=
-  withinChartWitness_of_chartBallOffCentreWitness
-    (chartBallOffCentreWitness_of_chart_pullback_not_eventually_const H)
-
-/-- **Connectivity globalization from chart-pullback non-eventual-constancy.**
-End-to-end through ZZ36 + ZZ34 + ZZ32. -/
-theorem connectivityGlobalization_of_chart_pullback_not_eventually_const
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ChartPullbackNotEventuallyConstHypothesis X Y) :
-    ConnectivityGlobalizationHypothesis X Y :=
-  connectivityGlobalization_of_chartBallOffCentreWitness
-    (chartBallOffCentreWitness_of_chart_pullback_not_eventually_const H)
-
 /-- **End-to-end conditional discharge of `fibres_finite_statement` from
-chart-pullback non-eventual-constancy.** Composing through ZZ36 + ZZ34 + ZZ32 + ZZ30. -/
+chart-pullback non-eventual-constancy.** -/
 theorem fibres_finite_statement_holds_of_chart_pullback_not_eventually_const
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]

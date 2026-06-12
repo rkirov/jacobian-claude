@@ -67,11 +67,6 @@ definition of the degree stub. -/
 def IsConstantMap {X : Type u} {Y : Type v} (f : X → Y) : Prop :=
   ∃ y, ∀ x, f x = y
 
-/-- A constant function is an `IsConstantMap`. -/
-lemma isConstantMap_const {X : Type u} {Y : Type v} (c : Y) :
-    IsConstantMap (fun _ : X => c) :=
-  ⟨c, fun _ => rfl⟩
-
 namespace Manifold
 
 /-! ## Degree stub
@@ -80,28 +75,6 @@ Note the underscore on `_hf` — the indicator stub does not consume the
 holomorphy hypothesis. It is retained in the signature so that the eventual
 real definition (regular-value cardinality) can be a drop-in replacement
 without touching the call site. -/
-
-/-- The **degree** of a holomorphic map between compact connected Riemann
-surfaces, as a stub.
-
-```
-degreeIndicator f hf = if f is constant then 0 else 1.
-```
-
-This honours the `degree(constant) = 0` convention from challenge item 9 and
-gives a type witness for `pushforward_pullback`, but it does **not** give the
-correct numerical degree for non-constant maps. The follow-up replaces the
-`else 1` branch with `Nat.card (f ⁻¹' {y₀})` for a regular value `y₀ : Y`,
-once chart-independent ramification order is available (see
-`Jacobians.Discharge.Manifold.MeromorphicAt`). -/
-def degreeIndicator {ω : WithTop ℕ∞}
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (f : X → Y) (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
-  open Classical in
-  if IsConstantMap f then 0 else 1
 
 end Manifold
 

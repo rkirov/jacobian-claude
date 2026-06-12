@@ -203,30 +203,6 @@ argument-principle content not in mathlib at the pin.
 We therefore state the general case as a `Prop`-valued `def` (NOT an
 `axiom`) so future filling does not contaminate the kernel. -/
 
-/-- **The general-`k` Rouché-style statement, in `Prop`-only form.**
-
-For `g : ℂ → ℂ` analytic at `0` with `analyticOrderAt g 0 = k` and `k ≥ 1`,
-there exists `ε > 0` and a neighborhood `V` of `0` such that for every
-non-zero `w` in the open ball of radius `ε`, the equation `g z = w` has
-exactly `k` solutions in `V \ {0}`.
-
-The hypotheses are packaged as the `→` body so the type-shape of the
-statement is `Prop`-valued (not a function-type), matching the structural
-convention used elsewhere in this repo for stated-but-unproven content
-(`R3_localMultiplicity_statement` in `ResidueTheorem.lean`,
-`R5_principal_degree_zero_statement`, etc.).
-
-**Status:** stated, not proven. The `k = 1` slice is honest content in
-`MMeromorphicAt.localMultiplicity_one_locally_injective`. The `k ≥ 2` slice
-requires Rouché / argument-principle content not in mathlib at the pin
-`8e3c989` (15 April 2026). -/
-def localMultiplicity_eq_order_punctured_statement
-    (k : ℕ) (g : ℂ → ℂ) : Prop :=
-  AnalyticAt ℂ g 0 → analyticOrderAt g 0 = (k : ℕ∞) → 1 ≤ k →
-    ∃ ε > (0 : ℝ), ∃ V ∈ nhds (0 : ℂ),
-      ∀ w ∈ Metric.ball (0 : ℂ) ε \ {0},
-        ({z ∈ V \ {0} | g z = w} : Set ℂ).ncard = k
-
 /-! ## The argument-principle disk lemma
 
 The discharge of `localMultiplicity_eq_order_punctured_statement` for `k ≥ 2`
@@ -257,42 +233,6 @@ Both are stated as `def : Prop`, not `axiom`, so they are inert until
 discharged. -/
 
 namespace MMeromorphicAt
-
-/-- **Argument-principle integral identity on a disk centred at `0`.**
-
-For `g : ℂ → ℂ` analytic at `0` with `analyticOrderAt g 0 = k`, there exists
-`ε₀ > 0` such that for every `ε ∈ (0, ε₀)` the contour integral
-
-  `(1 / (2πi)) · ∮_{|z|=ε} (g'(z) / (g(z) - w)) dz = k`  (here `w := 0`)
-
-equivalently (parametrising the circle by `θ ↦ ε e^{iθ}`),
-
-  `(2πi)⁻¹ · ∫_{0}^{2π} (g'(εe^{iθ}) / g(εe^{iθ})) · (iε e^{iθ}) dθ = k`.
-
-This is the classical argument principle specialised to `w = 0`. The general
-"`w` close to `0`, `w ≠ 0`" version is the Rouché count, which follows by
-applying this to `g - w` and using the open-mapping theorem.
-
-**Status:** `Prop`-valued statement, not proven. The mathlib pin does not
-package this identity at the level of generality required (although the
-ingredients — `Complex.integral_circle_div_eq`, `MeromorphicAt.exists_eq_pow_smul`,
-and Cauchy's theorem on a disk for analytic functions — are present in
-adjacent files). The statement is named here so that the dependency surface
-between the (R3) Rouché count and the mathlib gap is explicit.
-
-The hypotheses are packaged as the `→` body so the type-shape is `Prop`-valued
-(matching `R3_localMultiplicity_statement` and
-`localMultiplicity_eq_order_punctured_statement` above). -/
-def argumentPrinciple_disk_statement (k : ℕ) (g : ℂ → ℂ) : Prop :=
-  AnalyticAt ℂ g 0 ∧ analyticOrderAt g 0 = k →
-    ∃ ε₀ > (0 : ℝ),
-      ∀ ε ∈ Set.Ioo (0 : ℝ) ε₀,
-        (2 * Real.pi * Complex.I)⁻¹ *
-          ∫ θ in (0 : ℝ)..(2 * Real.pi),
-            (deriv g (ε * Complex.exp (Complex.I * θ)) /
-             g (ε * Complex.exp (Complex.I * θ))) *
-            (ε * Complex.I * Complex.exp (Complex.I * θ))
-          = k
 
 /-! ### k = 0 trivial case of the argument principle (zero-free disk)
 

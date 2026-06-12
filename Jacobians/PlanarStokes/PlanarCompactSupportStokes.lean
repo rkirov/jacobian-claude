@@ -47,23 +47,6 @@ theorem rectangle_iterated_eq_setIntegral (f : ℝ × ℝ → ℝ) (a b c d : �
   · exact ContinuousOn.integrableOn_compact
       (isCompact_Icc.prod CompactIccSpace.isCompact_Icc) hf.continuousOn
 
-/-- **Continuous Fubini for the rectangle**: the iterated integrals in either order agree (this is
-the form needed after one `fderiv`, where only continuity of the derivative term survives). -/
-theorem rectangle_fubini_swap_continuous (f : ℝ × ℝ → ℝ) (a b c d : ℝ)
-    (hab : a ≤ b) (hcd : c ≤ d) (hf : Continuous f) :
-    (∫ x in a..b, ∫ y in c..d, f (x, y))
-      = ∫ y in c..d, ∫ x in a..b, f (x, y) := by
-  rw [rectangle_iterated_eq_setIntegral f a b c d hab hcd hf]
-  erw [MeasureTheory.setIntegral_prod]
-  · rw [MeasureTheory.integral_integral_swap]
-    · simp +decide only [MeasureTheory.integral_Icc_eq_integral_Ioc,
-        intervalIntegral.integral_of_le hab, intervalIntegral.integral_of_le hcd]
-    · rw [MeasureTheory.Measure.prod_restrict]
-      exact ContinuousOn.integrableOn_compact
-        (isCompact_Icc.prod CompactIccSpace.isCompact_Icc) hf.continuousOn
-  · exact ContinuousOn.integrableOn_compact
-      (isCompact_Icc.prod CompactIccSpace.isCompact_Icc) hf.continuousOn
-
 /-! ### Layer 2 — compact-support vanishing on `ℂ` (Forster (10.20)) -/
 
 /-- The directional derivative of a `C¹` compactly-supported `φ : ℂ → ℂ` is integrable. -/

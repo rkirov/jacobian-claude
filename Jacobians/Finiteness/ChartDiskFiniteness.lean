@@ -244,51 +244,6 @@ theorem split_eventuallyEq {a b : 𝔇.ι} {z : ℂ} (hz : z ∈ 𝔇.Uov (a, b)
   have h := 𝒮.split a b w hw
   linear_combination h
 
-/-- **The Forster 14.6 (0,1)-frame identity (Wirtinger chain rule).**  On the overlap image,
-`∂̄g_a z = conj(τ_{ab}′(z)) · (∂̄g_b)(τ_{ab} z)`. Proof: `g_b∘τ_{ab} = g_a + s_{ab}` near `z`
-(`split_eventuallyEq`), so `∂̄(g_b∘τ_{ab}) z = ∂̄g_a z + ∂̄s_{ab} z = ∂̄g_a z` (`s_{ab}`
-holomorphic); and `∂̄(g_b∘τ_{ab}) z = conj(τ′)·(∂̄g_b)(τ z)` by `dbarDisk_comp_holo`. This is the
-defining (0,1) behaviour: the per-ball ∂̄-data `(∂̄g_a)` is the chart read of a global (0,1)-FORM
-(the `conj(τ′)` frame factor is the obstruction to a single scalar datum). -/
-theorem dbar_g_frame {a b : 𝔇.ι} {x : X} (hx : x ∈ (𝔇.U a ⊓ 𝔇.U b : Opens X)) :
-    DbarDisk.dbar (𝒮.g a) ((chartAt (H := ℂ) (𝔇.center a)) x)
-      = (starRingEnd ℂ) (deriv (𝔇.coverTransition a b) ((chartAt (H := ℂ) (𝔇.center a)) x))
-        * DbarDisk.dbar (𝒮.g b) (𝔇.coverTransition a b ((chartAt (H := ℂ) (𝔇.center a)) x)) := by
-  set z := (chartAt (H := ℂ) (𝔇.center a)) x with hzdef
-  -- `z ∈ Uov (a,b)` (chart image of the overlap point `x`)
-  have hzUov : z ∈ 𝔇.Uov (a, b) := ⟨x, hx, rfl⟩
-  have hzballa : z ∈ Metric.ball (𝔇.e a) (𝔇.radius a) := 𝔇.Uov_subset_ball (a, b) hzUov
-  -- `τ z ∈ Uov`-image ⊆ ball b: `τ_{ab} z = φ_b x`, which is in `Uov (b,a) ⊆ ball b`
-  have hτz : 𝔇.coverTransition a b z = (chartAt (H := ℂ) (𝔇.center b)) x :=
-    𝔇.coverTransition_apply a b hx
-  have hτzUov : 𝔇.coverTransition a b z ∈ 𝔇.Uov (b, a) := by
-    rw [hτz]; exact ⟨x, ⟨hx.2, hx.1⟩, rfl⟩
-  have hτzballb : 𝔇.coverTransition a b z ∈ Metric.ball (𝔇.e b) (𝔇.radius b) :=
-    𝔇.Uov_subset_ball (b, a) hτzUov
-  -- differentiabilities
-  have hga : DifferentiableAt ℝ (𝒮.g a) z := 𝒮.differentiableAt_g hzballa
-  have hgb : DifferentiableAt ℝ (𝒮.g b) (𝔇.coverTransition a b z) := 𝒮.differentiableAt_g hτzballb
-  have hτ : DifferentiableAt ℂ (𝔇.coverTransition a b) z :=
-    𝔇.differentiableAt_coverTransition a b hx
-  have hsab : DifferentiableAt ℂ (𝒮.s a b) z :=
-    (𝒮.s_holo a b).differentiableAt ((𝔇.isOpen_Uov (a, b)).mem_nhds hzUov)
-  -- `∂̄(g_b∘τ) z = conj(τ′)·(∂̄g_b)(τ z)`  (Wirtinger chain rule)
-  have hchain : DbarDisk.dbar (fun w => 𝒮.g b (𝔇.coverTransition a b w)) z
-      = (starRingEnd ℂ) (deriv (𝔇.coverTransition a b) z)
-        * DbarDisk.dbar (𝒮.g b) (𝔇.coverTransition a b z) :=
-    dbarDisk_comp_holo (𝒮.g b) (𝔇.coverTransition a b) z hgb hτ
-  -- `∂̄(g_b∘τ) z = ∂̄(g_a + s_{ab}) z = ∂̄g_a z + ∂̄s_{ab} z` (germ congr + additivity)
-  have hcong : DbarDisk.dbar (fun w => 𝒮.g b (𝔇.coverTransition a b w)) z
-      = DbarDisk.dbar (fun w => 𝒮.g a w + 𝒮.s a b w) z :=
-    dbarDisk_congr (𝒮.split_eventuallyEq hzUov)
-  have hadd : DbarDisk.dbar (fun w => 𝒮.g a w + 𝒮.s a b w) z
-      = DbarDisk.dbar (𝒮.g a) z + DbarDisk.dbar (𝒮.s a b) z :=
-    dbarFun_add hga (hsab.restrictScalars ℝ)
-  -- `∂̄s_{ab} z = 0` (holomorphic)
-  have hsab0 : DbarDisk.dbar (𝒮.s a b) z = 0 := DbarDisk.dbar_eq_zero_of_differentiableAt hsab
-  -- assemble
-  rw [← hchain, hcong, hadd, hsab0, add_zero]
-
 /-! ### The per-ball ∂̄-solve and the holomorphic correctors
 
 Solve `∂̄h_a = ∂̄g_a` on the FULL ball `ball (e a) (radius a)` (Forster 13.2 — no cutoff, the cover
@@ -313,16 +268,6 @@ theorem solve_smooth (a : 𝔇.ι) :
     ContDiffOn ℝ (⊤ : ℕ∞) (𝒮.solve a) (Metric.ball (𝔇.e a) (𝔇.radius a)) :=
   (DbarOpenDisk.dbar_solvable_open_disk (𝔇.e a) (𝔇.radius_pos a)
     (𝒮.contDiffOn_dbar_g a)).choose_spec.1
-
-theorem solve_dbar (a : 𝔇.ι) {z : ℂ} (hz : z ∈ Metric.ball (𝔇.e a) (𝔇.radius a)) :
-    DbarDisk.dbar (𝒮.solve a) z = DbarDisk.dbar (𝒮.g a) z :=
-  (DbarOpenDisk.dbar_solvable_open_disk (𝔇.e a) (𝔇.radius_pos a)
-    (𝒮.contDiffOn_dbar_g a)).choose_spec.2 z hz
-
-theorem differentiableAt_solve {a : 𝔇.ι} {z : ℂ} (hz : z ∈ Metric.ball (𝔇.e a) (𝔇.radius a)) :
-    DifferentiableAt ℝ (𝒮.solve a) z :=
-  (𝒮.solve_smooth a).differentiableOn (by norm_num) z hz
-    |>.differentiableAt (Metric.isOpen_ball.mem_nhds hz)
 
 end BallSplitData
 

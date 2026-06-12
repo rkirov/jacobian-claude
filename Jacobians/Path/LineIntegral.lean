@@ -62,32 +62,6 @@ are stated; integrability hypotheses are passed in for `lineIntegral_add`
 integrable on [0,1]", will add a hypothesis-free variant once the
 path-regularity infrastructure is built out). -/
 
-/-- `lineIntegral (0 : HOF X) γ = 0`. -/
-theorem lineIntegral_zero {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (γ : ℝ → X) :
-    lineIntegral (0 : HolomorphicOneForms X) γ = 0 := by
-  unfold lineIntegral
-  have h_zero : ∀ t : ℝ,
-      (0 : HolomorphicOneForms X).toFun (γ t) (pathSpeed γ t) = 0 := fun _ => rfl
-  simp_rw [h_zero]
-  exact intervalIntegral.integral_zero
-
-/-- Additivity of `lineIntegral` in the form, under integrability. -/
-theorem lineIntegral_add {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α β : HolomorphicOneForms X)
-    (γ : ℝ → X)
-    (hα : IntervalIntegrable (fun t : ℝ => α.toFun (γ t) (pathSpeed γ t))
-      MeasureTheory.volume 0 1)
-    (hβ : IntervalIntegrable (fun t : ℝ => β.toFun (γ t) (pathSpeed γ t))
-      MeasureTheory.volume 0 1) :
-    lineIntegral (α + β) γ = lineIntegral α γ + lineIntegral β γ := by
-  unfold lineIntegral
-  have h_pw : ∀ t : ℝ,
-      (α + β).toFun (γ t) (pathSpeed γ t) =
-        α.toFun (γ t) (pathSpeed γ t) + β.toFun (γ t) (pathSpeed γ t) := fun _ => rfl
-  simp_rw [h_pw]
-  exact intervalIntegral.integral_add hα hβ
-
 /-! ### Phase 1b: constant path
 
 Classical fact: the line integral of any holomorphic 1-form along a
@@ -107,21 +81,6 @@ theorem pathSpeed_const {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
     funext s; rfl
   rw [h_const, fderiv_fun_const]
   rfl
-
-/-- **Line integral of any form along a constant path is zero.** -/
-theorem lineIntegral_const {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (α : HolomorphicOneForms X) (P : X)
-    :
-    lineIntegral α (fun _ : ℝ => P) = 0 := by
-  unfold lineIntegral
-  -- integrand: α.toFun P (pathSpeed (fun _ => P) t) = α.toFun P 0 = 0.
-  have h_zero : ∀ t : ℝ,
-      α.toFun ((fun _ : ℝ => P) t) (pathSpeed (fun _ : ℝ => P) t) = 0 := by
-    intro t
-    rw [pathSpeed_const]
-    exact (α.toFun P).map_zero
-  simp_rw [h_zero]
-  exact intervalIntegral.integral_zero
 
 /-! ### Phase 1b: path reversal
 

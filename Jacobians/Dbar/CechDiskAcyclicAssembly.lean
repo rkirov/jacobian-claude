@@ -156,22 +156,6 @@ def HasHoloCorrectors (𝔙 : FiniteFamily X) : Prop :=
         (fun z => Gext (η j) z - Gext (η i) z)
           =ᶠ[𝓝[≠] x] holoFn (cocycleComp_mem 𝔙 s i j)
 
-/-- **Ambient chart-analytic correctors (the natural ball-solve output).**  For every `𝒪` 1-cocycle
-`s` there exist AMBIENT functions `H_i : X → ℂ`, each chart-analytic at every point of `U_i`, whose
-differences `H_j − H_i` agree off a discrete set with `holoFn (s_{ij})` near every overlap point.
-
-This is strictly more natural than `HasHoloCorrectors` as the output of the ball solve: it
-(`ballSplit_glued`) produces the correctors as honest *functions* whose chart-reads are analytic,
-and chart-analyticity (not an a-priori `OmegaD` membership) is exactly what it delivers. The reverse
-chart dictionary `omegaD_zero_of_chart_analyticAt` upgrades chart-analyticity to
-`OmegaD 0`-membership of the restriction, so this implies `HasHoloCorrectors` (next lemma). -/
-def HasChartAnalyticCorrectors (𝔙 : FiniteFamily X) : Prop :=
-  ∀ s : ↥(𝔙.cocycles1 (0 : Divisor X)),
-    ∃ H : 𝔙.ι → X → ℂ,
-      (∀ i, ∀ y ∈ 𝔙.U i, AnalyticAt ℂ (H i ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y)) ∧
-      ∀ i j, ∀ x : X, x ∈ (𝔙.U i ⊓ 𝔙.U j : Opens X) →
-        (fun z => H j z - H i z) =ᶠ[𝓝[≠] x] holoFn (cocycleComp_mem 𝔙 s i j)
-
 /-- **`FunctionDiskAcyclic 𝔙 0` from the corrector input.**  The function → germ descent
 (`functionDiskAcyclic_of_holoCorrectors`) turns each cocycle's correctors into the matching
 germ-class `0`-cochain primitive, witnessing `FunctionDiskAcyclic`. -/
@@ -180,12 +164,6 @@ theorem functionDiskAcyclic_of_hasHoloCorrectors (𝔙 : FiniteFamily X)
   intro s hs
   obtain ⟨η, hη, hsplit⟩ := h ⟨s, hs⟩
   exact ⟨η, hη, functionDiskAcyclic_of_holoCorrectors 𝔙 η hη ⟨s, hs⟩ hsplit⟩
-
-/-- **The germ-level disk-acyclicity atom from the corrector input.**  `IsDiskAcyclic 𝔙 0` — every
-`𝒪` 1-cocycle is a coboundary — via `CechDiskAcyclic.isDiskAcyclic_of_funcLevel`. -/
-theorem isDiskAcyclic_of_hasHoloCorrectors (𝔙 : FiniteFamily X)
-    (h : HasHoloCorrectors 𝔙) : IsDiskAcyclic 𝔙 (0 : Divisor X) :=
-  isDiskAcyclic_of_funcLevel 𝔙 0 (functionDiskAcyclic_of_hasHoloCorrectors 𝔙 h)
 
 end Jacobians.Dolbeault
 

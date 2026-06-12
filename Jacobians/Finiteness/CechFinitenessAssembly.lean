@@ -46,20 +46,6 @@ theorem finiteDimensional_cechH1_of_chartDiskMontel (D : Divisor X)
     FiniteCover.IsRefinement.refineH1_injective_unconditional (D := D) hr
   exact FiniteDimensional.of_injective _ hinj
 
-/-- **`exists_cechModel 𝔘 D` from the chart-disk Montel finiteness (the 14.7 route, any divisor
-`D`).** Combines the arbitrary-cover finiteness above with the artificial single-point model
-(`exists_cechModel_of_finiteDimensional`). This discharges
-`CechFinitenessWiring.exists_cechModel 𝔘 D` for every finite cover `𝔘`, modulo only the Montel
-hypothesis `hMontel`. -/
-theorem exists_cechModel_of_chartDiskMontel (D : Divisor X)
-    (hMontel : ∀ 𝔇 : ChartDiskCover X, FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 D))
-    (𝔘 : FiniteCover X) :
-    ∃ (d : DiskOverlapData) (c : Coboundaries d),
-      Nonempty (𝔘.cechH1 D ≃ₗ[ℂ] c.supH1) :=
-  haveI : FiniteDimensional ℂ (𝔘.cechH1 D) :=
-    finiteDimensional_cechH1_of_chartDiskMontel D hMontel 𝔘
-  exists_cechModel_of_finiteDimensional 𝔘 D
-
 /-- D = 0 specialization of `finiteDimensional_cechH1_of_chartDiskMontel`. -/
 theorem finiteDimensional_cechH1_zero_of_chartDiskMontel
     (hMontel : ∀ 𝔇 : ChartDiskCover X, FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)))

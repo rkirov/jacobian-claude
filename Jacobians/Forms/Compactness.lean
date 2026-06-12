@@ -60,38 +60,6 @@ theorem localRep_continuousOn_shrunkChart {X : Type*} [TopologicalSpace X] [T2Sp
     ContinuousOn (localRep α x₀) (shrunkChart (X := X) x₀) :=
   (localRep_continuousOn α x₀).mono (shrunkChart_subset_baseSet x₀ hx₀)
 
-/-- The compact subtype `shrunkChart x₀` is a compact topological space
-(automatic from `shrunkChart_isCompact`). -/
-theorem shrunkChart_compactSpace {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ChartedSpace ℂ X] (x₀ : X) :
-    CompactSpace (shrunkChart (X := X) x₀) :=
-  isCompact_iff_compactSpace.mp (shrunkChart_isCompact x₀)
-
-/-- `localRep α x₀` bundled as a continuous map on the compact
-`shrunkChart x₀`. Requires `x₀ ∈ chartCover` so that the shrunk chart
-sits inside the trivialization base set where `localRep` is continuous.
-
-For `x₀ ∉ chartCover`, `shrunkChart x₀ = ∅` (see `shrunkChart_eq_empty`),
-so any continuous map out of it is vacuous; we still return a genuine
-`C(shrunkChart x₀, ℂ)` by taking the restriction of the constant-zero
-map in that case. -/
-noncomputable def localRepOnShrunk {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (x₀ : X) : C(shrunkChart (X := X) x₀, ℂ) := by
-  classical
-  by_cases hx₀ : x₀ ∈ (chartCover : Finset X)
-  · -- `localRep α x₀` is continuous on `shrunkChart x₀` — restrict to subtype.
-    exact
-      { toFun := fun y => localRep α x₀ (y : X)
-        continuous_toFun := by
-          have h := localRep_continuousOn_shrunkChart α x₀ hx₀
-          exact h.restrict }
-  · exact
-      { toFun := fun _ => 0
-        continuous_toFun := continuous_const }
-
 /-! ### Step B.2 — pointwise norm bound on `localRepOnShrunk`
 Under the `ContinuousMap.norm = sSup` identity on a compact `CompactSpace`,
 the bundled form `localRepOnShrunk α x₀` has norm exactly `chartNormK α x₀`

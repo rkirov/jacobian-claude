@@ -138,20 +138,6 @@ theorem isDiskAcyclic_of_funcLevel (𝔙 : FiniteFamily X) (D : Divisor X)
   rw [FiniteFamily.coboundaries1, Submodule.mem_map]
   exact ⟨fun i => toGerm (𝔙.U i) (η i), toGerm_mem_sections0 𝔙 D η hη, hδ⟩
 
-/-- **Disk-acyclicity collapses `H¹`.** If the cover is germ-level disk-acyclic, then every class of
-`𝔙.cechH1 D` is `0` — i.e. `H¹(𝔙, 𝒪_D)` is the trivial module. This is the form the Serre-D=0 and
-finiteness consumers actually want (`H¹(disk, 𝒪) = 0`): a cocycle `g` maps to `0` in the quotient
-exactly when `↑g ∈ coboundaries1` (`Submodule.Quotient.mk_eq_zero`, with `submoduleOf` membership
-defeq to `↑g ∈ coboundaries1`), which is precisely `IsDiskAcyclic` applied to the cocycle `↑g`. -/
-theorem cechH1_subsingleton_of_isDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X)
-    (h : IsDiskAcyclic 𝔙 D) (q : 𝔙.cechH1 D) : q = 0 := by
-  induction q using Submodule.Quotient.induction_on with
-  | _ g =>
-    rw [Submodule.Quotient.mk_eq_zero]
-    -- `g ∈ submoduleOf coboundaries1 cocycles1` is defeq to `↑g ∈ coboundaries1`; supply it from
-    -- `h`.
-    exact h (g : 𝔙.Cochain1) g.2
-
 end Jacobians.Dolbeault
 
 /-! The discharge of `FunctionDiskAcyclic` for a chart-disk cover — the germ → honest-function

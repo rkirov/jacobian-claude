@@ -127,64 +127,6 @@ radius-bounded variant of the planar count so the chart ball sits inside
 variable {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
 variable {I : ModelWithCorners ℂ ℂ ℂ} {f : X → ℂ} {x : X}
 
-/-- **Analytic core of the manifold count (under `f x = 0`).**
-
-For `f : X → ℂ` meromorphic at `x` with positive local order and `f x = 0`, the
-chart representative `g := f ∘ (chartAt ℂ x).symm` is analytic at `c := chartAt ℂ
-x x`, vanishes there, and has analytic order exactly `(localOrder I f x).natAbs`.
-
-This packages the value/order facts the planar Rouché count needs. The key inputs
-are `AnalyticAt.of_meromorphicOrderAt_pos` (positive meromorphic order + zero
-value ⟹ analytic) and `AnalyticAt.meromorphicOrderAt_eq` (meromorphic order is the
-`ℤ`-cast of the analytic order). -/
-theorem chartRepr_analytic_order_of_apply_eq_zero
-    (_hf : MMeromorphicAt I f x)
-    (hpos : 0 < localOrder I f x)
-    (hfx : f x = 0) :
-    AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) ∧
-      (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = 0 ∧
-      analyticOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) =
-        ((localOrder I f x).natAbs : ℕ∞) := by
-  set g : ℂ → ℂ := f ∘ (chartAt ℂ x).symm with hg
-  set c := (chartAt ℂ x) x with hc
-  -- `g c = f x = 0`.
-  have hgc : g c = 0 := by
-    have hli : (chartAt ℂ x).symm ((chartAt ℂ x) x) = x :=
-      (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
-    rw [hg, hc, Function.comp_apply, hli, hfx]
-  -- `meromorphicOrderAt g c > 0` from `0 < localOrder = untop₀ (meromorphicOrderAt g c)`.
-  have hmpos : 0 < meromorphicOrderAt g c := by
-    have hdef : localOrder I f x = (meromorphicOrderAt g c).untop₀ := rfl
-    rw [hdef] at hpos
-    have hne0 : (meromorphicOrderAt g c).untop₀ ≠ 0 := ne_of_gt hpos
-    have hnv : ¬ (meromorphicOrderAt g c = 0 ∨ meromorphicOrderAt g c = ⊤) :=
-      fun hh => hne0 (WithTop.untop₀_eq_zero.mpr hh)
-    push Not at hnv
-    obtain ⟨_, hvtop⟩ := hnv
-    have hco : (↑(meromorphicOrderAt g c).untop₀ : WithTop ℤ) = meromorphicOrderAt g c :=
-      WithTop.coe_untop₀_of_ne_top hvtop
-    rw [← hco]; exact_mod_cast hpos
-  -- `g` analytic at `c`.
-  have hg_an : AnalyticAt ℂ g c := AnalyticAt.of_meromorphicOrderAt_pos hmpos hgc
-  refine ⟨hg_an, hgc, ?_⟩
-  -- `analyticOrderAt g c = (localOrder).natAbs`.
-  have hmap : meromorphicOrderAt g c = (analyticOrderAt g c).map (↑· : ℕ → ℤ) :=
-    hg_an.meromorphicOrderAt_eq
-  have hLO : localOrder I f x = (meromorphicOrderAt g c).untop₀ := rfl
-  cases hh : analyticOrderAt g c with
-  | top =>
-    rw [hh] at hmap
-    simp only [ENat.map_top] at hmap
-    rw [hmap, WithTop.untop₀_top] at hLO
-    rw [hLO] at hpos
-    exact absurd hpos (lt_irrefl 0)
-  | coe m =>
-    rw [hh] at hmap
-    simp only [ENat.map_coe] at hmap
-    rw [hmap, WithTop.untop₀_coe] at hLO
-    rw [hLO]
-    simp [Int.natAbs_natCast]
-
 /-! ### Radius-bounded planar k-fold count
 
 The full manifold transport needs the planar count to take place in a disk that

@@ -212,17 +212,6 @@ theorem ordU_eq_orderAt_Gext [T2Space X] [CompactSpace X] [ConnectedSpace X] [Ch
   rw [ordU, hbase]
   exact meromorphicOrderAt_congr (hev.filter_mono nhdsWithin_le_nhds)
 
-/-- A local `𝒪₀` representative has nonnegative meromorphic order when read in the ambient chart.
-This is the order half of the chart-disk germ/function bridge; raw representatives may still carry
-removable point-value junk, so analyticity is stated for the normal form below. -/
-theorem meromorphicOrderAt_Gext_nonneg_of_mem_OmegaD_zero [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {U : Opens X} {g : U → ℂ}
-    (hg : g ∈ OmegaD (0 : Divisor X) U) {y : X} (hy : y ∈ U) :
-    0 ≤ meromorphicOrderAt (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) := by
-  have h := ((mem_OmegaD).1 hg).2 ⟨y, hy⟩
-  simpa [ordU_eq_orderAt_Gext g hy] using h
-
 /-- The "normal form at `y`" predicate intrinsic to `X`: `h` read in `X`'s chart at `y` has
 meromorphic normal form at the chart centre. -/
 def nfX [ChartedSpace ℂ X] (h : X → ℂ) (y : X) : Prop :=

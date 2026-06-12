@@ -183,25 +183,6 @@ so Cauchy (`resAt_inv_sub_mul`) gives residue `H a = c`.
 This is exactly the residue-preservation the `df/f` route to `deg_div` needs: `df/f` has only simple
 poles, with residue the integer order, and unramified preimages give such `φ`. -/
 
-/-- **Simple-pole residue change of variables (Lemma 3.2, one unramified sheet).**  For `φ` analytic
-at `a` with `φ'(a) ≠ 0` and `φ a = b`, the pushforward `z ↦ c·(φ z − b)⁻¹·φ'(z)` of the simple pole
-`c·(w − b)⁻¹` has `resAt = c` at `a` — the residue is preserved across the change of variables. -/
-theorem resAt_simplePole_pushforward {φ : ℂ → ℂ} {a b c : ℂ} (hφ : AnalyticAt ℂ φ a)
-    (hφ' : deriv φ a ≠ 0) (hab : φ a = b) :
-    resAt (fun z => c * (φ z - b)⁻¹ * deriv φ z) a = c := by
-  obtain ⟨g, hg, hga, hfact⟩ := exists_simpleZero_factorization hφ hφ' hab
-  set H : ℂ → ℂ := fun z => c * deriv φ z / g z with hH
-  have hg0 : g a ≠ 0 := hga ▸ hφ'
-  have hHana : AnalyticAt ℂ H a := (analyticAt_const.mul hφ.deriv).div hg hg0
-  have hHa : H a = c := by simp only [hH]; rw [hga]; field_simp
-  rw [resAt_congr (g := fun z => (z - a)⁻¹ * H z) ?_, resAt_inv_sub_mul hHana, hHa]
-  filter_upwards [self_mem_nhdsWithin, mem_nhdsWithin_of_mem_nhds hfact,
-    mem_nhdsWithin_of_mem_nhds (hg.continuousAt.eventually_ne hg0)] with z hz_ne hzfact hzg
-  have hzane : z - a ≠ 0 := sub_ne_zero.mpr (by simpa using hz_ne)
-  show c * (φ z - b)⁻¹ * deriv φ z = (z - a)⁻¹ * H z
-  rw [hzfact, hH]
-  field_simp
-
 /-! ### The logarithmic-derivative residue — the `df/f` route to `deg_div`
 
 For the divisor route to the residue theorem, the relevant `1`-form is `α = df/f` (the logarithmic
@@ -227,14 +208,6 @@ winding-number-invariance of `circleIntegral` along a biholomorphism).  We isola
 
 `s` is the **section** (the local inverse of the cover read in charts): `w ↦ z`.  The pushforward of
 the `1`-form `g·dz` is `(g ∘ s)·s'·dw`. -/
-
-/-- **The residue change-of-variables atom.**  For every local biholomorphism `s` at `b`
-(`deriv s b ≠ 0`) and every function `g` meromorphic at `s b`, the pushforward `1`-form
-`w ↦ g (s w) · s'(w)` has the same residue at `b` as `g·dz` has at `s b`.  *Isolated* as a `Prop`;
-not needed for the simple-pole (`df/f`) route. -/
-def ResidueChangeOfVariables : Prop :=
-  ∀ (s g : ℂ → ℂ) (b : ℂ), AnalyticAt ℂ s b → deriv s b ≠ 0 → MeromorphicAt g (s b) →
-    resAt (fun w => g (s w) * deriv s w) b = resAt g (s b)
 
 /-! ### The fibre trace and Lemma 3.2
 
@@ -274,21 +247,6 @@ namespace FibreTrace
 attribute [instance] FibreTrace.fintype_ι
 
 variable (T : FibreTrace)
-
-/-- The **trace coefficient** at the base: the finite sum of the per-sheet pushforwards
-`coeff i (sheet i w) · (sheet i)'(w)`.  This is `Tr_F α` read in the target chart, over the fibre.
--/
-noncomputable def traceCoeff : ℂ → ℂ :=
-  fun w => ∑ i, T.coeff i (T.sheet i w) * deriv (T.sheet i) w
-
-/-- Each per-sheet summand of the trace coefficient is meromorphic at the base (composition of the
-meromorphic form coefficient with the analytic section, times the analytic section derivative). -/
-theorem meromorphicAt_summand (i : T.ι) :
-    MeromorphicAt (fun w => T.coeff i (T.sheet i w) * deriv (T.sheet i) w) T.b := by
-  have hcomp : MeromorphicAt (T.coeff i ∘ T.sheet i) T.b :=
-    MeromorphicAt.comp_analyticAt (g := T.sheet i) (f := T.coeff i)
-      (by rw [T.sheet_base i]; exact T.coeff_mero i) (T.sheet_analytic i)
-  exact hcomp.mul (T.sheet_analytic i).deriv.meromorphicAt
 
 end FibreTrace
 

@@ -22,12 +22,8 @@ The result is a hypothesis-free statement: from `AnalyticAt ℂ g x₀`,
 exist radii `ε, δ > 0` such that for every `w ∈ ball w₀ δ \ {w₀}` the
 equation `g z = w` has exactly `k` solutions in `ball x₀ ε`.
 
-## Anti-cheat
-
-* No `axiom`, no gaps.
-* No signature changes outside this new file.
-* No bundle hypotheses: only `AnalyticAt`, the value condition, and the
-  `analyticOrderAt = k` order condition.
+No bundle hypotheses: only `AnalyticAt`, the value condition, and the
+`analyticOrderAt = k` order condition.
 -/
 
 noncomputable section
@@ -37,29 +33,6 @@ open Set Filter Metric
 
 namespace Jacobians.Discharge
 namespace Manifold
-
-/-- **Planar `k`-fold local multiplicity.**
-
-For analytic `g : ℂ → ℂ` at `x₀` with `g x₀ = w₀`, if the local analytic
-order of `g - w₀` at `x₀` equals `k ∈ ℕ` with `k ≥ 1`, then there exist
-`ε, δ > 0` such that for every `w` in the punctured disk
-`ball w₀ δ \ {w₀}` the equation `g z = w` has exactly `k` solutions in
-`ball x₀ ε`. -/
-theorem localKFoldMultiplicity_preimage_card
-    {g : ℂ → ℂ} {x₀ w₀ : ℂ} {k : ℕ}
-    (hk : 1 ≤ k)
-    (hg : AnalyticAt ℂ g x₀)
-    (h_w₀ : g x₀ = w₀)
-    (hord : analyticOrderAt (fun z => g z - w₀) x₀ = (k : ℕ∞)) :
-    ∃ ε > (0 : ℝ), ∃ δ > (0 : ℝ),
-      ∀ w ∈ Metric.ball (g x₀) δ, w ≠ g x₀ →
-        ({z ∈ Metric.ball x₀ ε | g z = w} : Set ℂ).ncard = k := by
-  -- Discharge the factorization hypothesis.
-  obtain ⟨R, hR_pos, u, hu_an, hu_x₀, hfact⟩ :=
-    analytic_local_factorization hk hg h_w₀ hord
-  -- Apply the factorization form with the now-supplied factorization.
-  exact localKFoldMultiplicity_preimage_card_of_localFactorization
-    hR_pos hk hu_an hu_x₀ h_w₀ hfact
 
 end Manifold
 end Jacobians.Discharge
