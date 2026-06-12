@@ -225,11 +225,6 @@ theorem contDiffOn_dbar_g (a : 𝔇.ι) :
   exact (contDiffAt_dbar_chartDisk
     ((𝒮.g_smooth a).contDiffAt (Metric.isOpen_ball.mem_nhds hz))).contDiffWithinAt
 
-/-- The per-ball ∂̄-solve: `h_a` smooth on `ball (e a) (radius a)` with `∂̄h_a = ∂̄g_a` there
-(Forster 13.2 on the full ball — the no-cutoff solve the ball geometry permits). -/
-noncomputable def solve (a : 𝔇.ι) : ℂ → ℂ :=
-  (DbarOpenDisk.dbar_solvable_open_disk (𝔇.e a) (𝔇.radius_pos a) (𝒮.contDiffOn_dbar_g a)).choose
-
 end BallSplitData
 
 end ChartDiskCover

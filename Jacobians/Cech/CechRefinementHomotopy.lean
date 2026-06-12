@@ -127,23 +127,6 @@ theorem prismK0_mem_sections0 [T2Space X] [CompactSpace X] [ConnectedSpace X]
   rw [prismK0_apply]
   exact rawRestrictG_omegaDGerm (le_pair hr hr' j) (hg (r j, r' j))
 
-/-- **Homotopy step at the cocycle level.** For an `𝒪_D` 1-cocycle `g`, the difference of the two
-refinements `refineC1 hr' g − refineC1 hr g` is an `𝒪_D` coboundary `δ⁰_𝔙 (prismK0 g)`: the prism
-identity gives `refineC1 hr' g − refineC1 hr g = δ⁰_𝔙 (prismK0 g) + prismK1 (δ¹_𝔘 g)`, and
-`δ¹_𝔘 g = 0` since `g` is a cocycle, while `prismK0 g` is an `𝒪_D` 0-section. -/
-theorem refineC1_sub_mem_coboundaries1 [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (D : Divisor X)
-    (hr : IsRefinement 𝔙 𝔘 r) (hr' : IsRefinement 𝔙 𝔘 r') {g : 𝔘.Cochain1}
-    (hg : g ∈ 𝔘.cocycles1 D) :
-    hr'.refineC1 g - hr.refineC1 g ∈ 𝔙.coboundaries1 D := by
-  obtain ⟨hker, hsec⟩ := hg
-  rw [SetLike.mem_coe, LinearMap.mem_ker] at hker
-  refine ⟨prismK0 hr hr' g, prismK0_mem_sections0 D hr hr' hsec, ?_⟩
-  have hid := LinearMap.congr_fun (refineC1_sub_eq_homotopy hr hr') g
-  rw [LinearMap.sub_apply, LinearMap.add_apply, LinearMap.comp_apply, LinearMap.comp_apply,
-    hker, map_zero, add_zero] at hid
-  exact hid.symm
-
 end IsRefinement
 end FiniteCover
 

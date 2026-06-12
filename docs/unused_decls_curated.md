@@ -5,27 +5,22 @@ DELETE entries are proposals — review before executing.
 
 | category | decls | est. LoC |
 |---|---|---|
-| DELETE | 334 | 762 |
+| DELETE | 322 | 711 |
 | LANDMARK | 8 | 134 |
-| PROTECTED | 24 | 400 |
+| PROTECTED | 25 | 400 |
 
 ## DELETE
 
-### Finiteness — 75 decls, ~239 LoC
+### Finiteness — 70 decls, ~189 LoC
 - `Jacobians.Dolbeault.chartCoverHolomorphicDiskOverlapData` (78 LoC) — Jacobians/Finiteness/CechModelHolomorphic.lean:119
 - `Jacobians.Dolbeault.chartCoverOverlapData` (34 LoC) — Jacobians/Finiteness/CechModelGeometry.lean:96
 - `Jacobians.Dolbeault.FiniteCover.skyscraperLES_of_chartDisk` (25 LoC) — Jacobians/Finiteness/SkyscraperAssembly.lean:571
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineH1_surjective_iff_lift` (15 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:220
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineH1_comp` (9 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:90
-- `Jacobians.Dolbeault.ChartDiskCover.BallSplitData.split_eventuallyEq` (9 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:240
-- `Jacobians.Dolbeault.ChartDiskCover.Uov_subset_ball` (9 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:115
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.overlapRestrictC1_apply` (8 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:165
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.overlapRestrictC2_apply` (8 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:181
-- `Jacobians.Dolbeault.ChartDiskCover.differentiableAt_coverTransition` (7 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:139
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineH1_id` (6 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:74
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.overlapRestrictC0` (5 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:154
-- `Jacobians.Dolbeault.ChartDiskCover.BallSplitData.differentiableAt_g` (5 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:232
-- `Jacobians.Dolbeault.ChartDiskCover.BallSplitData.solve_smooth` (4 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:267
+- `Jacobians.Dolbeault.FiniteCover.IsRefinement.RefinementLift` (7 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:153
+- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineZ1_comp` (7 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:75
+- `Jacobians.Dolbeault.FiniteCover.IsRefinement.overlapRestrictC2` (6 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:143
+- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineZ1_id` (6 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:68
+- `Jacobians.Dolbeault.FiniteCover.IsRefinement.overlapRestrictC1` (5 LoC) — Jacobians/Finiteness/CechRefinementLeray.lean:137
+- `Jacobians.Dolbeault.ChartDiskCover.BallSplitData.solve` (4 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:230
 - `Jacobians.Dolbeault.ChartDiskCover.overlapData_Wov_eq` (3 LoC) — Jacobians/Finiteness/ChartDiskFinitenessComplete.lean:62
 - `Jacobians.Dolbeault.BddHol.precompBcf_apply` (2 LoC) — Jacobians/Finiteness/BddHol.lean:292
 - `Jacobians.Dolbeault.BddHol.precompCLM_apply` (2 LoC) — Jacobians/Finiteness/BddHol.lean:318
@@ -88,13 +83,10 @@ DELETE entries are proposals — review before executing.
 - `Jacobians.Dolbeault.TwoStepSES.mk.sizeOf_spec` (0 LoC) — (not located)
 - `Jacobians.Dolbeault.TwoStepSES.recOn` (0 LoC) — (not located)
 
-### MappingDegree — 62 decls, ~150 LoC
-- `Jacobians.Discharge.Manifold.localMultiplicityOne_preimage_card` (88 LoC) — Jacobians/MappingDegree/LocalMultiplicityInvariance.lean:77
+### MappingDegree — 59 decls, ~164 LoC
+- `Jacobians.Discharge.Manifold.localKFoldMultiplicity_preimage_card_of_substitution` (134 LoC) — Jacobians/MappingDegree/LocalKFoldMultiplicityUnconditional.lean:195
 - `Jacobians.Discharge.ContMDiff.Degree.regular_value_exists_of_fibres_finite` (18 LoC) — Jacobians/MappingDegree/Degree.lean:333
-- `Jacobians.Discharge.Manifold.localKFoldMultiplicity_preimage_card_of_localFactorization` (16 LoC) — Jacobians/MappingDegree/LocalKFoldMultiplicityUnconditional.lean:331
-- `Jacobians.Discharge.ContMDiff.Degree.connectivityGlobalization_of_chartBallOffCentreWitness` (11 LoC) — Jacobians/MappingDegree/PerChartNonConstancyReduction.lean:198
-- `Jacobians.Discharge.ContMDiff.Degree.withinChartWitness_of_chartBallOffCentreWitness` (11 LoC) — Jacobians/MappingDegree/PerChartNonConstancyReduction.lean:186
-- `Jacobians.Discharge.localOrder` (6 LoC) — Jacobians/MappingDegree/LocalNormalForm.lean:112
+- `Jacobians.Discharge.ContMDiff.Degree.connectivityGlobalization_of_perChartNonConstancy` (12 LoC) — Jacobians/MappingDegree/WithinChartWitnessReduction.lean:145
 - `Jacobians.Discharge.ContMDiff.Degree.ChartNonConstWitness.ctorIdx` (0 LoC) — (not located)
 - `Jacobians.Discharge.ContMDiff.Degree.ChartNonConstWitness.hFA` (0 LoC) — (not located)
 - `Jacobians.Discharge.ContMDiff.Degree.ChartNonConstWitness.hFz₁` (0 LoC) — (not located)
@@ -152,8 +144,39 @@ DELETE entries are proposals — review before executing.
 - `Jacobians.Discharge.Manifold.KthRootSubstitution.casesOn` (0 LoC) — (not located)
 - `Jacobians.Discharge.Manifold.KthRootSubstitution.recOn` (0 LoC) — (not located)
 
-### MeromorphicTrace — 32 decls, ~82 LoC
-- `Jacobians.MeromorphicTrace.exists_simpleZero_factorization` (46 LoC) — Jacobians/MeromorphicTrace/MeromorphicTrace.lean:132
+### Path — 8 decls, ~98 LoC
+- `Jacobians.exists_chartCover` (90 LoC) — Jacobians/Path/SmoothPath.lean:120
+- `Jacobians.smoothStep01_at_quarter` (5 LoC) — Jacobians/Path/SmoothPath.lean:413
+- `Jacobians.smoothStep01_at_three_quarter` (3 LoC) — Jacobians/Path/SmoothPath.lean:417
+- `Jacobians.IsClosedSmoothLoop.casesOn` (0 LoC) — (not located)
+- `Jacobians.IsClosedSmoothLoop.recOn` (0 LoC) — (not located)
+- `Jacobians.IsSmoothPath.casesOn` (0 LoC) — (not located)
+- `Jacobians.IsSmoothPath.recOn` (0 LoC) — (not located)
+- `Jacobians.periodBasisForm.congr_simp` (0 LoC) — (not located)
+
+### Dbar — 7 decls, ~83 LoC
+- `Jacobians.Dolbeault.functionDiskAcyclic_of_holoCorrectors` (36 LoC) — Jacobians/Dbar/CechDiskAcyclicAssembly.lean:109
+- `Jacobians.Dolbeault.FunctionDiskAcyclic` (14 LoC) — Jacobians/Dbar/CechDiskAcyclic.lean:125
+- `Jacobians.Dolbeault.HasHoloCorrectors` (12 LoC) — Jacobians/Dbar/CechDiskAcyclicAssembly.lean:152
+- `Jacobians.Dolbeault.dbarFun_add` (8 LoC) — Jacobians/Dbar/CechDiskAcyclic.lean:52
+- `Jacobians.Dolbeault.toGerm_mem_sections0` (7 LoC) — Jacobians/Dbar/CechDiskAcyclic.lean:89
+- `Jacobians.Dolbeault.IsDiskAcyclic` (6 LoC) — Jacobians/Dbar/CechDiskAcyclic.lean:105
+- `Jacobians.Dolbeault.holoFn.congr_simp` (0 LoC) — (not located)
+
+### LocalMultiplicity — 11 decls, ~68 LoC
+- `Jacobians.Discharge.MMeromorphicOn.prod` (11 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:148
+- `Jacobians.Discharge.MMeromorphicOn.mul` (10 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:131
+- `Jacobians.Discharge.MMeromorphicOn.const_smul` (9 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:191
+- `Jacobians.Discharge.MMeromorphicOn.fun_prod` (8 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:160
+- `Jacobians.Discharge.MMeromorphicOn.fun_sum` (8 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:181
+- `Jacobians.Discharge.MMeromorphicOn.const` (6 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:112
+- `Jacobians.Discharge.MMeromorphicOn.sub` (4 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:230
+- `Jacobians.Discharge.MMeromorphicOn.inv` (3 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:235
+- `Jacobians.Discharge.MMeromorphicOn.neg` (3 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:226
+- `Jacobians.Discharge.MMeromorphicOn.pow` (3 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:244
+- `Jacobians.Discharge.MMeromorphicOn.zpow` (3 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:248
+
+### MeromorphicTrace — 31 decls, ~36 LoC
 - `Jacobians.TraceResidue.LaurentForm.finiteResidueSum_add_resAtInfty_eq_zero` (36 LoC) — Jacobians/MeromorphicTrace/TraceResidue.lean:342
 - `Jacobians.MeromorphicTrace.FibreTrace.coeff_mero` (0 LoC) — (not located)
 - `Jacobians.MeromorphicTrace.FibreTrace.ctorIdx` (0 LoC) — (not located)
@@ -186,54 +209,19 @@ DELETE entries are proposals — review before executing.
 - `Jacobians.TraceResidue.LaurentForm.mk.sizeOf_spec` (0 LoC) — (not located)
 - `Jacobians.TraceResidue.LaurentForm.recOn` (0 LoC) — (not located)
 
-### LocalMultiplicity — 11 decls, ~68 LoC
-- `Jacobians.Discharge.MMeromorphicOn.prod` (11 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:148
-- `Jacobians.Discharge.MMeromorphicOn.mul` (10 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:131
-- `Jacobians.Discharge.MMeromorphicOn.const_smul` (9 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:191
-- `Jacobians.Discharge.MMeromorphicOn.fun_prod` (8 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:160
-- `Jacobians.Discharge.MMeromorphicOn.fun_sum` (8 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:181
-- `Jacobians.Discharge.MMeromorphicOn.const` (6 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:112
-- `Jacobians.Discharge.MMeromorphicOn.sub` (4 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:230
-- `Jacobians.Discharge.MMeromorphicOn.inv` (3 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:235
-- `Jacobians.Discharge.MMeromorphicOn.neg` (3 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:226
-- `Jacobians.Discharge.MMeromorphicOn.pow` (3 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:244
-- `Jacobians.Discharge.MMeromorphicOn.zpow` (3 LoC) — Jacobians/LocalMultiplicity/MeromorphicAt.lean:248
+### DolbeaultComparison — 9 decls, ~18 LoC
+- `Jacobians.Dolbeault.OmegaD_le_add_single` (10 LoC) — Jacobians/DolbeaultComparison/LocalRealization.lean:430
+- `Jacobians.Dolbeault.primFn_apply` (3 LoC) — Jacobians/DolbeaultComparison/DolbeaultComparisonInverse.lean:500
+- `Jacobians.Dolbeault.proj01Section_apply` (2 LoC) — Jacobians/DolbeaultComparison/DolbeaultComparison.lean:85
+- `Jacobians.Dolbeault.gdTerm_apply` (2 LoC) — Jacobians/DolbeaultComparison/DolbeaultComparisonEquiv.lean:74
+- `Jacobians.Dolbeault.proj01L_apply` (1 LoC) — Jacobians/DolbeaultComparison/DolbeaultComparison.lean:101
+- `Jacobians.Dolbeault.FiniteFamily.coboundaries1.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.primFn.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.FiniteFamily.coboundaries1.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Dolbeault.FiniteFamily.cocycles1.congr_simp` (0 LoC) — (not located)
 
-### Forms — 14 decls, ~65 LoC
-- `Jacobians.Montel.norm_mkOfCompact_localRepOnInnerShrunk_le` (21 LoC) — Jacobians/Forms/Montel.lean:88
-- `Jacobians.Montel.localRepOnInnerShrunk_add` (18 LoC) — Jacobians/Forms/Compactness.lean:821
-- `Jacobians.Montel.localRepOnInnerShrunk_smul` (17 LoC) — Jacobians/Forms/Compactness.lean:840
-- `Jacobians.Montel.localRep_continuousOn_shrunkChart` (9 LoC) — Jacobians/Forms/Compactness.lean:55
-- `Jacobians.Montel.HolomorphicOneForms.chartNormK.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Montel.chartCover.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Montel.chartOpen.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Montel.innerChartOpen.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Montel.innerShrunkChart.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Montel.shrunkChart.congr_simp` (0 LoC) — (not located)
-- `Jacobians.HolomorphicOneForms.congr_simp` (0 LoC) — (not located)
-- `Jacobians.pullbackForm.congr_simp` (0 LoC) — (not located)
-- `genus.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Montel.HolomorphicOneForms.supNormK.congr_simp` (0 LoC) — (not located)
-
-### Path — 9 decls, ~47 LoC
-- `Jacobians.smoothPathRaw` (33 LoC) — Jacobians/Path/SmoothPath.lean:252
-- `Jacobians.piece_reparam_at_right` (6 LoC) — Jacobians/Path/SmoothPath.lean:421
-- `Jacobians.smoothStep01_at_quarter` (5 LoC) — Jacobians/Path/SmoothPath.lean:454
-- `Jacobians.smoothStep01_at_three_quarter` (3 LoC) — Jacobians/Path/SmoothPath.lean:458
-- `Jacobians.IsClosedSmoothLoop.casesOn` (0 LoC) — (not located)
-- `Jacobians.IsClosedSmoothLoop.recOn` (0 LoC) — (not located)
-- `Jacobians.IsSmoothPath.casesOn` (0 LoC) — (not located)
-- `Jacobians.IsSmoothPath.recOn` (0 LoC) — (not located)
-- `Jacobians.periodBasisForm.congr_simp` (0 LoC) — (not located)
-
-### Dbar — 4 decls, ~26 LoC
-- `Jacobians.Dolbeault.isDiskAcyclic_of_funcLevel` (10 LoC) — Jacobians/Dbar/CechDiskAcyclic.lean:134
-- `Jacobians.Dolbeault.dbarFun_add` (8 LoC) — Jacobians/Dbar/CechDiskAcyclic.lean:52
-- `Jacobians.Dolbeault.functionDiskAcyclic_of_hasHoloCorrectors` (8 LoC) — Jacobians/Dbar/CechDiskAcyclicAssembly.lean:162
-- `Jacobians.Dolbeault.holoFn.congr_simp` (0 LoC) — (not located)
-
-### Cech — 21 decls, ~18 LoC
-- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineH1_eq` (17 LoC) — Jacobians/Cech/CechRefinementHomotopy.lean:152
+### Cech — 21 decls, ~17 LoC
+- `Jacobians.Dolbeault.FiniteCover.IsRefinement.refineC1_sub_mem_coboundaries1` (16 LoC) — Jacobians/Cech/CechRefinementHomotopy.lean:134
 - `Jacobians.Dolbeault.openIncl_val` (1 LoC) — Jacobians/Cech/CechSection.lean:81
 - `Jacobians.Dolbeault.FiniteCover.ctorIdx` (0 LoC) — (not located)
 - `Jacobians.Dolbeault.FiniteCover.mk.injEq` (0 LoC) — (not located)
@@ -255,25 +243,11 @@ DELETE entries are proposals — review before executing.
 - `Jacobians.Dolbeault.ChartDiskCover.mk.sizeOf_spec` (0 LoC) — (not located)
 - `Jacobians.Dolbeault.ChartDiskCover.recOn` (0 LoC) — (not located)
 
-### DolbeaultComparison — 9 decls, ~18 LoC
-- `Jacobians.Dolbeault.OmegaD_le_add_single` (10 LoC) — Jacobians/DolbeaultComparison/LocalRealization.lean:430
-- `Jacobians.Dolbeault.primFn_apply` (3 LoC) — Jacobians/DolbeaultComparison/DolbeaultComparisonInverse.lean:500
-- `Jacobians.Dolbeault.proj01Section_apply` (2 LoC) — Jacobians/DolbeaultComparison/DolbeaultComparison.lean:85
-- `Jacobians.Dolbeault.gdTerm_apply` (2 LoC) — Jacobians/DolbeaultComparison/DolbeaultComparisonEquiv.lean:74
-- `Jacobians.Dolbeault.proj01L_apply` (1 LoC) — Jacobians/DolbeaultComparison/DolbeaultComparison.lean:101
-- `Jacobians.Dolbeault.FiniteFamily.coboundaries1.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.primFn.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.FiniteFamily.coboundaries1.congr_simp` (0 LoC) — (not located)
-- `Jacobians.Dolbeault.FiniteFamily.cocycles1.congr_simp` (0 LoC) — (not located)
-
 ### H1Genus — 4 decls, ~12 LoC
 - `Jacobians.Dolbeault.globalGerm_mul` (4 LoC) — Jacobians/H1Genus/CechH1CupKill.lean:157
 - `Jacobians.Dolbeault.cupCochain0_apply` (4 LoC) — Jacobians/H1Genus/SerreCupProduct.lean:180
 - `Jacobians.Dolbeault.cupCochain2_apply` (4 LoC) — Jacobians/H1Genus/SerreCupProduct.lean:190
 - `Jacobians.MeromorphicFunction.div.congr_simp` (0 LoC) — (not located)
-
-### PlanarStokes — 1 decls, ~11 LoC
-- `Jacobians.Dolbeault.rectangle_iterated_eq_setIntegral` (11 LoC) — Jacobians/PlanarStokes/PlanarCompactSupportStokes.lean:40
 
 ### SerrePairing — 1 decls, ~11 LoC
 - `Jacobians.Dolbeault.SerreDuality.finrank_le_of_injective_to_dual` (11 LoC) — Jacobians/SerrePairing/SerreDuality.lean:86
@@ -339,6 +313,18 @@ DELETE entries are proposals — review before executing.
 - `Jacobians.Dolbeault.MeromorphicOneForm.recOn` (0 LoC) — (not located)
 - `Jacobians.Dolbeault.formCoeff.congr_simp` (0 LoC) — (not located)
 
+### Forms — 10 decls, ~0 LoC
+- `Jacobians.Montel.HolomorphicOneForms.chartNormK.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Montel.chartCover.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Montel.chartOpen.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Montel.innerChartOpen.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Montel.innerShrunkChart.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Montel.shrunkChart.congr_simp` (0 LoC) — (not located)
+- `Jacobians.HolomorphicOneForms.congr_simp` (0 LoC) — (not located)
+- `Jacobians.pullbackForm.congr_simp` (0 LoC) — (not located)
+- `genus.congr_simp` (0 LoC) — (not located)
+- `Jacobians.Montel.HolomorphicOneForms.supNormK.congr_simp` (0 LoC) — (not located)
+
 ### JacobianConstruction — 4 decls, ~0 LoC
 - `Jacobians.ambientPhi.congr_simp` (0 LoC) — (not located)
 - `Jacobians.truePeriodLattice.congr_simp` (0 LoC) — (not located)
@@ -396,8 +382,8 @@ DELETE entries are proposals — review before executing.
 ## LANDMARK
 
 ### Finiteness — 2 decls, ~37 LoC
-- `Jacobians.Dolbeault.ChartDiskCover.finiteDimensional_cechH1_iff_dolbeault` (21 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:419
-- `Jacobians.Dolbeault.ChartDiskCover.finiteDimensional_cechH1_of_holomorphicModel` (16 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:444
+- `Jacobians.Dolbeault.ChartDiskCover.finiteDimensional_cechH1_iff_dolbeault` (21 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:380
+- `Jacobians.Dolbeault.ChartDiskCover.finiteDimensional_cechH1_of_holomorphicModel` (16 LoC) — Jacobians/Finiteness/ChartDiskFiniteness.lean:405
 
 ### SerrePairing — 1 decls, ~33 LoC
 - `Jacobians.Dolbeault.SerreDuality.serre_surjectivity_dim_core` (33 LoC) — Jacobians/SerrePairing/SerreDuality.lean:56
@@ -452,3 +438,6 @@ DELETE entries are proposals — review before executing.
 
 ### Path — 1 decls, ~5 LoC
 - `Jacobians.basepoint` (5 LoC) — Jacobians/Path/SmoothPathCore.lean:46
+
+### Finiteness — 1 decls, ~0 LoC
+- `Jacobians.Dolbeault.ChartDiskCover.BallSplitData.split` (0 LoC) — (not located)

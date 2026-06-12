@@ -97,43 +97,6 @@ function-level ball solve, transported back through the cover's chart), the germ
 `i ↦ [η_i]` has Čech coboundary exactly `s`.  This is the germ-bookkeeping half of the descent:
 it turns the pointwise/`𝓝[≠]` splitting into the germ-class identity `δ⁰[η] = s`. -/
 
-/-- **Function → germ descent.**  Honest holomorphic correctors `η_i ∈ OmegaD 0 (U_i)` whose
-extension-by-zero differences `Gext η_j − Gext η_i` agree off a discrete set with the cocycle's
-analytic representative `holoFn (s_{ij})` near every overlap point yield `FunctionDiskAcyclic 𝔙 0`.
-
-The germ-bookkeeping: on `U_i ⊓ U_j`, `(δ⁰[η])_{ij} = [η_j ∘ incl − η_i ∘ incl]`.  By
-`toGerm_eq_iff` this germ equals `s_{ij}` once `η_j ∘ incl − η_i ∘ incl =ᶠ[𝓝[≠] u]` a representative
-of `s_{ij}`; `toGerm_holoFn` gives `holoFn (s_{ij})` as such a representative, and the hypothesis
-supplies the `𝓝[≠]`-agreement (pulled back to the overlap submanifold).  Reuses `holoFn` /
-`toGerm_holoFn` from `CechDiskAcyclicProof`. -/
-theorem functionDiskAcyclic_of_holoCorrectors (𝔙 : FiniteFamily X)
-    (η : Π i, 𝔙.U i → ℂ) (_hη : ∀ i, η i ∈ OmegaD (0 : Divisor X) (𝔙.U i))
-    (s : ↥(𝔙.cocycles1 (0 : Divisor X)))
-    (hsplit : ∀ i j, ∀ x : X, x ∈ (𝔙.U i ⊓ 𝔙.U j : Opens X) →
-      (fun z => Gext (η j) z - Gext (η i) z)
-        =ᶠ[𝓝[≠] x] holoFn (cocycleComp_mem 𝔙 s i j)) :
-    𝔙.cechDelta0 (fun i => toGerm (𝔙.U i) (η i)) = (s : 𝔙.Cochain1) := by
-  funext p
-  obtain ⟨i, j⟩ := p
-  -- `(δ⁰[η])_{ij} = toGerm (η_j ∘ incl) − toGerm (η_i ∘ incl) = toGerm (η_j ∘ incl − η_i ∘ incl)`.
-  show (rawRestrictG (inf_le_right : 𝔙.U i ⊓ 𝔙.U j ≤ 𝔙.U j) (toGerm (𝔙.U j) (η j))
-        - rawRestrictG (inf_le_left : 𝔙.U i ⊓ 𝔙.U j ≤ 𝔙.U i) (toGerm (𝔙.U i) (η i)))
-      = (s : 𝔙.Cochain1) (i, j)
-  rw [rawRestrictG_coe, rawRestrictG_coe, ← map_sub]
-  -- Reduce to a germ equality against `holoFn (s_{ij})` and apply `toGerm_holoFn`.
-  rw [← toGerm_holoFn (cocycleComp_mem 𝔙 s i j), toGerm_eq_iff]
-  intro u
-  -- Transport the ambient `𝓝[≠] u.1` splitting to the overlap submanifold `↥(U_i ⊓ U_j)`.
-  have hamb := hsplit i j u.1 u.2
-  have hpb := eventually_subtype_of_nhdsNE
-    (V := 𝔙.U i ⊓ 𝔙.U j) (u := u)
-    (fun z => Gext (η j) z - Gext (η i) z = holoFn (cocycleComp_mem 𝔙 s i j) z) hamb
-  filter_upwards [hpb] with w hw
-  -- On the overlap, `Gext (η k) w.1 = (η k ∘ incl) w` (membership of `w.1` in `U k`).
-  simp only [Function.comp_apply, Pi.sub_apply, openIncl]
-  rw [Gext_apply_mem (η j) w.2.2, Gext_apply_mem (η i) w.2.1] at hw
-  exact hw
-
 /-! ### The honest chart-disk-cover corrector input and the `FunctionDiskAcyclic` discharge
 
 `FunctionDiskAcyclic 𝔙 0` is exactly: every `𝒪`-cocycle admits holomorphic correctors splitting it.
@@ -142,19 +105,6 @@ ball solve over the cover's shared chart — as a single predicate `HasHoloCorre
 `FunctionDiskAcyclic` from it via the STEP-D descent. Supplying `HasHoloCorrectors` (the ball-solve
 output) is the precise remaining gap; the germ-level collapse `H¹(disk, 𝒪) = 0` then follows from
 `cechH1_subsingleton_of_isDiskAcyclic`. -/
-
-/-- **The honest corrector input (the precise remaining analytic obligation).**  For every `𝒪`
-1-cocycle `s` there exist holomorphic correctors `η_i ∈ OmegaD 0 (U_i)` whose `Gext`-differences
-split the analytic representatives `holoFn (s_{ij})` off a discrete set on each overlap. This is the
-output of the function-level finite-cover ball Čech split (`CechDiskAcyclicProof.ballSplit_glued` +
-`DbarDiskCohomology.dbar_solvable_ball`) transported back through the cover's shared chart — STEP C
-of Isolated as a predicate so the discharge below is self-contained. -/
-def HasHoloCorrectors (𝔙 : FiniteFamily X) : Prop :=
-  ∀ s : ↥(𝔙.cocycles1 (0 : Divisor X)),
-    ∃ η : Π i, 𝔙.U i → ℂ, (∀ i, η i ∈ OmegaD (0 : Divisor X) (𝔙.U i)) ∧
-      ∀ i j, ∀ x : X, x ∈ (𝔙.U i ⊓ 𝔙.U j : Opens X) →
-        (fun z => Gext (η j) z - Gext (η i) z)
-          =ᶠ[𝓝[≠] x] holoFn (cocycleComp_mem 𝔙 s i j)
 
 end Jacobians.Dolbeault
 

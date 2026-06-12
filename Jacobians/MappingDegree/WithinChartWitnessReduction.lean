@@ -8,7 +8,7 @@ import Jacobians.MappingDegree.ConnectivityGlobalizationReduction
 
 /-! # Reducing `WithinChartWitnessHypothesis` to a per-chart non-constancy hypothesis
 
-`ConnectivityGlobalizationReduction.lean` (ZZ32) reduced
+`ConnectivityGlobalizationReduction.lean` reduced
 `ConnectivityGlobalizationHypothesis X Y` to
 `WithinChartWitnessHypothesis X Y`. That hypothesis is *existential* on a
 preconnected open `U ⊆ ℂ` plus a witness point `z₁`, and packages the
@@ -24,7 +24,7 @@ neighborhood**. Concretely:
   pullback takes a value other than the chart image of `f x`.
 
 The analyticity half of the within-chart witness is now supplied
-unconditionally via ZZ24 (`contMDiff_omega_analyticAt_chart_pullback`,
+unconditionally via the bridge (`contMDiff_omega_analyticAt_chart_pullback`,
 `Manifold/ContMDiffOmegaAnalytic.lean`): an `AnalyticAt` statement gives, by
 `AnalyticAt.eventually_analyticAt` plus `Metric.eventually_nhds_iff`, an open
 ball on which the pullback is `AnalyticOnNhd`. Open balls in `ℂ` are convex,
@@ -39,14 +39,12 @@ smaller because:
     produces a value-witness in `V`).
 2.  It does not mention `IsPreconnected`, `AnalyticOnNhd`, or any
     chart-pullback analyticity datum. The analyticity is supplied
-    automatically from `ContMDiff … ω` via ZZ24.
+    automatically from `ContMDiff … ω` via the chart-pullback bridge.
 
 The remaining *honest* obstruction (path-walking analytic continuation
 across charts to derive per-chart non-constancy from global
 `¬ IsConstantMap f`) is unchanged and remains the same parameter-input as
-before.
-
-No gaps, no `axiom`. -/
+before. -/
 
 @[expose] public section
 
@@ -92,7 +90,7 @@ This is strictly weaker (and strictly different in shape) than
 `WithinChartWitnessHypothesis`: the caller does not need to provide a
 preconnected open `U`, an analyticity statement, or a specific witness
 point. The analyticity of the chart pullback on a small open ball around
-the chart image follows from ZZ24 (`contMDiff_omega_analyticAt_chart_pullback`);
+the chart image follows from `contMDiff_omega_analyticAt_chart_pullback`;
 the witness point `z₁` is extracted as a value-difference inside that ball. -/
 def PerChartNonConstancyHypothesis
     (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
@@ -110,7 +108,7 @@ def PerChartNonConstancyHypothesis
 /-- **Reduction.** The per-chart non-constancy hypothesis implies the
 within-chart witness hypothesis. The proof:
 
-1. Get analyticity of the chart pullback at `(chartAt ℂ x) x` from ZZ24.
+1. Get analyticity of the chart pullback at `(chartAt ℂ x) x` from the bridge.
 2. Extract a preconnected open ball `U = Metric.ball ((chartAt ℂ x) x) r`
    on which the pullback is `AnalyticOnNhd`, via
    `exists_preconnected_open_ball_of_analyticAt`.
@@ -125,7 +123,7 @@ theorem withinChartWitness_of_perChartNonConstancy
     (H : PerChartNonConstancyHypothesis X Y) :
     WithinChartWitnessHypothesis X Y := by
   intro f hf hnc y₀ x hx
-  -- (1) Chart pullback is `AnalyticAt ℂ` at the chart image of `x`, by ZZ24.
+  -- (1) Chart pullback is `AnalyticAt ℂ` at the chart image of `x`, by the bridge.
   have hFA_at :
       AnalyticAt ℂ ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm)
         ((chartAt ℂ x) x) :=
@@ -141,22 +139,8 @@ theorem withinChartWitness_of_perChartNonConstancy
 
 /-! ## End-to-end composition -/
 
-/-- **Connectivity globalization from per-chart non-constancy.** Composing
-this file's reduction with `connectivityGlobalization_of_withinChartWitness`
-(ZZ32). -/
-theorem connectivityGlobalization_of_perChartNonConstancy
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : PerChartNonConstancyHypothesis X Y) :
-    ConnectivityGlobalizationHypothesis X Y :=
-  connectivityGlobalization_of_withinChartWitness
-    (withinChartWitness_of_perChartNonConstancy H)
-
 /-- **End-to-end conditional discharge of `fibres_finite_statement` from
-per-chart non-constancy.** Composing this file's reduction with the ZZ30
-assembly (via ZZ32). -/
+per-chart non-constancy.** -/
 theorem fibres_finite_statement_holds_of_perChartNonConstancy
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]

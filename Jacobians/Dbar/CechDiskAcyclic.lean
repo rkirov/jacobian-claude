@@ -83,14 +83,6 @@ A germ-class `𝒪_D`-section on an open submanifold `↥W` lifts to an honest r
 codiscrete ↔ `𝓝[≠]` dictionary (`toGerm_eq_iff`, `Gext_overlap_eventuallyEq`,
 `nfX_Gext_codiscrete`) bridge germ-class statements to honest punctured-neighbourhood ones. -/
 
-/-- A `0`-cochain of honest `𝒪_D`-representatives assembles to an `𝒪_D`-germ `0`-cochain.  The germ
-projection of a `sections0`-witness family lands in `sections0` (componentwise `toGerm` of an
-`OmegaD`-member is an `OmegaDGerm`-member). -/
-theorem toGerm_mem_sections0 (𝔙 : FiniteFamily X) (D : Divisor X) (η : Π i, 𝔙.U i → ℂ)
-    (hη : ∀ i, η i ∈ OmegaD D (𝔙.U i)) :
-    (fun i => toGerm (𝔙.U i) (η i)) ∈ 𝔙.sections0 D :=
-  fun i => ⟨η i, hη i, rfl⟩
-
 /-! ### §4 — the germ-level disk-acyclicity target and its function-level reduction
 
 `IsDiskAcyclic 𝔙 D` is the deliverable in the SHAPE of `CechFinitenessWiring.Coboundaries.leray` and
@@ -98,34 +90,12 @@ theorem toGerm_mem_sections0 (𝔙 : FiniteFamily X) (D : Divisor X) (η : Π i,
 unconditionally for a **subsingleton-indexed** cover (the cocycle is forced to be `0`), and reduce
 the general case to a clean function-level chart-disk acyclicity predicate. -/
 
-/-- **The germ-level disk-acyclicity target.**  Every `𝒪_D` 1-cocycle on the cover `𝔙` is an `𝒪_D`
-1-coboundary — i.e. `H¹(𝔙, 𝒪_D) = 0` at the junk-free germ-class level.  This is exactly the atom
-that discharges the Leray strictly-finer surjectivity (`RefinementLift`) and the finiteness `leray`
-field on a chart disk. -/
-def IsDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X) : Prop :=
-  ∀ s ∈ 𝔙.cocycles1 D, s ∈ 𝔙.coboundaries1 D
-
 /-! ### The function-level chart-disk acyclicity predicate (the honest analytic interface)
 
 For the general (≥ 2 patches) case, the germ-level acyclicity reduces to a *function-level*
 statement on the chart-image balls, which is what the committed ∂̄ engine proves. We isolate that
 statement as a predicate, in the same "lift the cocycle to a coboundary" shape, and discharge the
 analytic part where the engine applies. -/
-
-/-- **Function-level chart-disk acyclicity (the honest analytic interface).**  Mirrors
-`CechRefinementLeray.RefinementLift` / `Coboundaries.leray`: a hypothesis packaging the
-function-level disk-acyclicity input that the chart-disk model supplies via the ∂̄ engine. Given a
-germ-class `𝒪_D` 1-cocycle `s`, it produces the `0`-cochain primitive `η` of honest `𝒪_D`
-representatives whose Čech coboundary `δ⁰` matches `s`. This is exactly the per-overlap output of
-running `DbarDiskCohomology.dbar_holo_splitting_ball` (transported through the cover's charts and
-the §3 germ ↔ function bridge) once the principal parts of `D` have been split off.
-
-It is stated as a predicate so the reduction `isDiskAcyclic_of_funcLevel` is complete; producing it
-is the remaining honest analytic obligation (OBSTRUCTION 3 of `CechRefinementLeray`). -/
-def FunctionDiskAcyclic (𝔙 : FiniteFamily X) (D : Divisor X) : Prop :=
-  ∀ s : 𝔙.Cochain1, s ∈ 𝔙.cocycles1 D →
-    ∃ η : Π i, 𝔙.U i → ℂ, (∀ i, η i ∈ OmegaD D (𝔙.U i)) ∧
-      𝔙.cechDelta0 (fun i => toGerm (𝔙.U i) (η i)) = s
 
 end Jacobians.Dolbeault
 

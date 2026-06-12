@@ -63,21 +63,6 @@ theorem refineC1_id {X : Type*} [TopologicalSpace X] (𝔘 : FiniteCover X) :
 
 variable (D : Divisor X)
 
-/-- **The identity refinement is the identity on cocycles** `Z¹(𝔘) → Z¹(𝔘)`.  Follows from
-`refineC1_id` since `refineZ1` corestricts `refineC1` and the cocycle-coe is injective. -/
-theorem refineZ1_id (𝔘 : FiniteCover X) (g : ↥(𝔘.cocycles1 D)) :
-    (IsRefinement.id 𝔘).refineZ1 D g = g := by
-  apply Subtype.ext
-  rw [refineZ1_coe, refineC1_id, LinearMap.id_apply]
-
-/-- **`refineZ1` is functorial on cocycles.**  `(hs.comp hr).refineZ1 = hs.refineZ1 ∘ hr.refineZ1`
-(the cocycle-level form of `refineC1_comp`; corestricting both sides + cocycle-coe injectivity). -/
-theorem refineZ1_comp {s : 𝔚.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
-    (hs : IsRefinement 𝔚 𝔙 s) (hr : IsRefinement 𝔙 𝔘 r) (g : ↥(𝔘.cocycles1 D)) :
-    (hs.comp hr).refineZ1 D g = hs.refineZ1 D (hr.refineZ1 D g) := by
-  apply Subtype.ext
-  rw [refineZ1_coe, refineZ1_coe, refineZ1_coe, refineC1_comp hs hr, LinearMap.comp_apply]
-
 /-! ### Injectivity of `refineH1` from a back-refinement (STEP A + functoriality)
 
 The standard Leray injectivity, in the complete *mutual-refinement* form: if `𝔙 ⪯ 𝔘` (via `r`) AND
@@ -132,27 +117,6 @@ theorem overlapFamily_triple_le_fineTriple {X : Type*} [TopologicalSpace X] (�
   inf_le_inf
     (inf_le_inf (overlapFamily_le_fine 𝔙 𝔘 i j a) (overlapFamily_le_fine 𝔙 𝔘 i j b))
     (overlapFamily_le_fine 𝔙 𝔘 i j c)
-
-/-- Restrict a fine-cover `1`-cochain to the local family over a fixed coarse overlap. -/
-noncomputable def overlapRestrictC1 (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι) :
-    𝔙.Cochain1 →ₗ[ℂ] (overlapFamily 𝔙 𝔘 i j).Cochain1 :=
-  LinearMap.pi fun p =>
-    rawRestrictG (overlapFamily_pair_le_finePair 𝔙 𝔘 i j p.1 p.2) ∘ₗ LinearMap.proj p
-
-/-- Restrict a fine-cover `2`-cochain to the local family over a fixed coarse overlap. -/
-noncomputable def overlapRestrictC2 (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι) :
-    𝔙.Cochain2 →ₗ[ℂ] (overlapFamily 𝔙 𝔘 i j).Cochain2 :=
-  LinearMap.pi fun t =>
-    rawRestrictG (overlapFamily_triple_le_fineTriple 𝔙 𝔘 i j t.1 t.2.1 t.2.2) ∘ₗ
-      LinearMap.proj t
-
-/-- **The Leray LIFT condition (surjectivity input).**  Every `𝔙`-cocycle `t` is, modulo a
-`𝔙`-coboundary, the refinement `refineC1 g` of some `𝔘`-cocycle `g`.  This is the cocycle-level form
-of surjectivity of `refineH1 hr`; geometrically it is the Leray cover-refinement lift fed by
-overlap-acyclicity `H¹(overlap, 𝒪) = 0` (`dbar_solvable_ball`). -/
-def RefinementLift (hr : IsRefinement 𝔙 𝔘 r) (D : Divisor X) : Prop :=
-  ∀ t : ↥(𝔙.cocycles1 D), ∃ g : ↥(𝔘.cocycles1 D),
-    hr.refineC1 (g : 𝔘.Cochain1) - (t : 𝔙.Cochain1) ∈ 𝔙.coboundaries1 D
 
 /-- **The Leray DESCEND condition (injectivity input).**  A `𝔘`-cocycle whose refinement is a
 `𝔙`-coboundary was already a `𝔘`-coboundary (`ker (refineH1 hr) = 0`).  This is Forster 12.8
