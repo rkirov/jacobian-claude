@@ -20,7 +20,7 @@
 -/
 import Jacobians.LaurentTail.LaurentCoeff
 import Jacobians.LaurentTail.TailSpace
-import Jacobians.LinearSystem
+import Jacobians.Meromorphic.LinearSystem
 
 open scoped Manifold ContDiff Topology
 open Module

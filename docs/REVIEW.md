@@ -27,7 +27,7 @@ listed subtleties. File paths are clickable from the repo root.
 
 | Lean | Informal claim | Subtleties to check |
 |---|---|---|
-| `genus X` (`Jacobians/Genus.lean`) | the genus, as `dim_ℂ Ω(X)` (space of global holomorphic 1-forms) | `HolomorphicOneForms` is a `ContMDiffSection` bundle type — check it really is the space of holomorphic 1-forms |
+| `genus X` (`Jacobians/Forms/Genus.lean`) | the genus, as `dim_ℂ Ω(X)` (space of global holomorphic 1-forms) | `HolomorphicOneForms` is a `ContMDiffSection` bundle type — check it really is the space of holomorphic 1-forms |
 | `genus_eq_zero_iff_homeo` (`Jacobians/GenusSphereHeadline.lean`) | genus 0 ⟺ homeomorphic to S² | the sphere is the metric sphere in `EuclideanSpace ℝ (Fin 3)`; homeomorphism, not biholomorphism |
 | `Jacobian X` + 7 instances (`Jacobians.lean`) | the complex torus `ℂ^g / Λ` with its manifold/Lie structure | `Jacobian` is an `ULift` of the concrete `Type 0` torus to `Type u`; the lattice `Λ` is the ℤ-span of period vectors of smooth loops — check `truePeriodLattice` |
 | `ofCurve P` + `_self`/`_contMDiff`/`_inj` | the Abel–Jacobi map `Q ↦ ∫_P^Q (ω₁…ω_g) mod Λ` | the path integral is `periodVec ∘ smoothPath`; injectivity requires `0 < genus` |
@@ -40,10 +40,10 @@ listed subtleties. File paths are clickable from the repo root.
 | Lean | Informal claim | Subtleties to check |
 |---|---|---|
 | `Jacobians.exists_riemannRoch_divisor` (`Jacobians/RiemannRoch.lean`) | ∃ canonical divisor `K`, ∀ divisors `D`: `l(D) − l(K−D) = deg D + 1 − g` | `lDim` is the dimension of the *germ-quotient* linear system `L(D)/germ-zero` — check the quotient kills only junk (`toFun` values off the defining germ); divisors are finsupps |
-| `residueSum_pairForm_eq_zero_unconditional` (`Jacobians/Dolbeault/ResidueTheoremStokes.lean`) | `∑_p Res_p(h · dg₀) = 0` for meromorphic `g₀, h`, any genus | a meromorphic 1-form is represented as a *pair* `(g₀, h)` meaning `h·dg₀`; residues are chart `resAt` of the pair integrand — check `pairFormResidue` reads the classical residue |
-| `Jacobians.abelJacobi_twoPoint_ne_zero` (`Jacobians/Abel.lean`) | on genus ≥ 1, `AJ(P − Q) ≠ 0` for `P ≠ Q` (Abel ⟹ `ofCurve` injective) | check `abelJacobi` is the honest path-integral map and `twoPointDivisor` is `P − Q` |
-| `Jacobians.hasHolomorphicPrimitives` (`Jacobians/HolomorphicPrimitives.lean`) | on a simply connected surface every holomorphic 1-form has a global primitive | "primitive" is value-wise: `∀ x v, η x v = mfderiv F x v` — check this captures `dF = η` |
-| `Jacobians.exists_periodLattice_realBasis` (`Jacobians/PeriodLattice.lean`) | the period lattice has a real basis of rank 2g (so `ℂ^g/Λ` is a torus) | check `closedLoopPeriods` captures all periods and the basis claim gives `IsZLattice` |
+| `residueSum_pairForm_eq_zero_unconditional` (`Jacobians/ResidueTheorem/ResidueTheoremStokes.lean`) | `∑_p Res_p(h · dg₀) = 0` for meromorphic `g₀, h`, any genus | a meromorphic 1-form is represented as a *pair* `(g₀, h)` meaning `h·dg₀`; residues are chart `resAt` of the pair integrand — check `pairFormResidue` reads the classical residue |
+| `Jacobians.abelJacobi_twoPoint_ne_zero` (`Jacobians/Meromorphic/Abel.lean`) | on genus ≥ 1, `AJ(P − Q) ≠ 0` for `P ≠ Q` (Abel ⟹ `ofCurve` injective) | check `abelJacobi` is the honest path-integral map and `twoPointDivisor` is `P − Q` |
+| `Jacobians.hasHolomorphicPrimitives` (`Jacobians/Monodromy/HolomorphicPrimitives.lean`) | on a simply connected surface every holomorphic 1-form has a global primitive | "primitive" is value-wise: `∀ x v, η x v = mfderiv F x v` — check this captures `dF = η` |
+| `Jacobians.exists_periodLattice_realBasis` (`Jacobians/JacobianConstruction/PeriodLattice.lean`) | the period lattice has a real basis of rank 2g (so `ℂ^g/Λ` is a torus) | check `closedLoopPeriods` captures all periods and the basis claim gives `IsZLattice` |
 
 ### Known deliberate design choices (not bugs)
 
@@ -66,8 +66,8 @@ listed subtleties. File paths are clickable from the repo root.
    yourself the contract is the real challenge.
 2. The crosswalk statements above, in order; for each, also skim the module docstring of its file.
 3. The definitions feeding them: `Divisor`, `MeromorphicFunction`/`orderW`, `linearSystem`/`lDim`
-   (`Jacobians/Abel.lean`, `Jacobians/LinearSystem.lean`), `HolomorphicOneForms`
-   (`Jacobians/HolomorphicForms.lean`), `periodVec`/`lineIntegral` (`Jacobians/LineIntegral.lean`).
+   (`Jacobians/Meromorphic/Abel.lean`, `Jacobians/Meromorphic/LinearSystem.lean`), `HolomorphicOneForms`
+   (`Jacobians/Forms/HolomorphicForms.lean`), `periodVec`/`lineIntegral` (`Jacobians/Path/LineIntegral.lean`).
 4. Anything that surprises you: `git log -p <file>` carries the development history, and
    `docs/RETRO.md` the project's honest self-assessment.
 

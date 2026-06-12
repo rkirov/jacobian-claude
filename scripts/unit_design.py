@@ -6,49 +6,38 @@ import os, re, collections
 
 # ---- ordered (regex, unit) rules; first match wins. Paths relative to Jacobians/. ----
 RULES = [
-    # 1. foundations
-    (r'^(ChartedSpaceOfLocalHomeomorph|ULiftManifold|ManifoldIFT|Dolbeault\.RealManifold|Discharge\.Manifold\.ContMDiffOmegaAnalytic)$', 'surfaces-and-charts'),
-    (r'^(ProjectiveLine)$', 'projective-line'),
-    (r'^(Abel|LinearSystem|MeromorphicLiouville|MeromorphicNFRepair|MeromorphicInverse)$',
-     'meromorphic-and-divisors'),
-    (r'^(HolomorphicForms|Genus|Montel(\..*)?)$', 'holomorphic-forms'),
-    (r'^(LineIntegral|SmoothPath|SmoothPathCore|Primitive|CotangentCoeff|LoopOffBranch)$', 'paths-and-integrals'),
-    # 2. degree theory
-    (r'^Discharge\.Manifold\.(MeromorphicAt|LocalMultiplicity|AnalyticDerivOrder|AnalyticLocalFactorization)$', 'local-multiplicity'),
-    (r'^Discharge\..*$', 'mapping-degree'),
-    (r'^(Degree|ProperMapDegree|ProperMapDegreeConstruct|ProperMapDegreeSheets|MultiplicityPatching|MultiplicityPatchingConstruct|DegDivResidue|LinearSystemDegree|DegreeOneSphere|ToSphereGeneral)$', 'proper-map-degree'),
-    # 3. trace machinery (the residue theorem via traces)
-    (r'^(MeromorphicTrace|TraceForm|TracePullback|TraceResidue|ResidueChangeOfVariables|RamifiedResidueChangeOfVariables|ResidueTheoremX|SymmetricFunctionDescent)$', 'meromorphic-trace'),
-    (r'^Dolbeault\.FormTracePrincipalPart$', 'residue-calculus'),  # Mathlib-only planar atom
-    (r'^Dolbeault\.(FormTrace.*|FormResidueTheorem)$', 'form-trace-tower'),
-    (r'^Dolbeault\.SerreResidue.*$', 'residue-via-trace'),
-    # 4. Čech cohomology
-    (r'^Dolbeault\.(CechComplex|CechSection|CechH0|CechRefinement|CechRefinementHomotopy|ChartDiskCover|ChartDiskRefinement|MeromorphicAnalyticBadSet)$', 'cech-cohomology'),
-    (r'^Dolbeault\.(Cech(Finiteness.*|Model.*)|CechRefinementLeray|CechRefinementInjective|SchwartzFiniteness|BddHol|CohomologicalH0Finiteness|ChartDiskFiniteness.*|ChartDiskLeray|CohomologicalRR.*|Skyscraper.*)$', 'finiteness-and-chi'),
-    (r'^Dolbeault\.(CechH1CupKill|CechH1Genus|CechH1Monotonicity|SerreCupProduct)$', 'cech-h1-genus'),
-    # 5. dbar + Dolbeault comparison
-    (r'^(DbarDisk|Dolbeault\.(RealForms|DbarLocal|DbarOpenDisk|DbarDiskCohomology|DiskAcyclicCore|CechDiskAcyclic.*|HoloRep))$', 'dbar-solvability'),
-    (r'^Dolbeault\.(DolbeaultH01|DolbeaultComparison.*|LocalRealization|GeneralMittagLeffler|GoodCover|LerayCoverExists)$', 'dolbeault-comparison'),
-    # 6. residue calculus
-    (r'^Dolbeault\.(Residue|FormCoeff|MittagLeffler)$', 'residue-calculus'),
-    (r'^Dolbeault\.(PlanarCompactSupportStokes|PlanarHolomorphicChangeOfVariables|AnnulusResidue.*)$', 'planar-stokes-atoms'),
-    (r'^Dolbeault\.(ResidueTheoremStokes|ResidueTheoremFormFn|ResidueLedgerTransport|'
-     r'ResidueStokes.*|PairFormResidueTheorem|OmegaFactorization)$', 'residue-theorem'),
-    # 7. canonical forms + Serre + RR
-    (r'^Dolbeault\.(MeromorphicOneFormSystem|CanonicalForm.*|FormRemovableSingularity|SerreOmega0)$', 'canonical-forms'),
-    (r'^Dolbeault\.(SerreDuality|SerreDualityPairing|DolbeaultLadder)$', 'serre-duality-cech'),
-    (r'^LaurentTail\.(TailSpace|TailMap|LaurentCoeff|Finiteness|DimensionBookkeeping|LinearSystemFiniteDimensional|RiemannRochFirstForm)$', 'laurent-tails'),
-    (r'^LaurentTail\..*$', 'serre-duality-tails'),
+    # After the M1 migration, directory = unit. Umbrella files (Jacobians/<Dir>.lean)
+    # belong to their unit via the optional-suffix pattern.
+    (r'^Surface(\..*)?$', 'surfaces-and-charts'),
+    (r'^ProjectiveLine$', 'projective-line'),
+    (r'^Meromorphic(\..*)?$', 'meromorphic-and-divisors'),
+    (r'^Forms(\..*)?$', 'holomorphic-forms'),
+    (r'^Path(\..*)?$', 'paths-and-integrals'),
+    (r'^LocalMultiplicity(\..*)?$', 'local-multiplicity'),
+    (r'^MappingDegree(\..*)?$', 'mapping-degree'),
+    (r'^ProperDegree(\..*)?$', 'proper-map-degree'),
+    (r'^MeromorphicTrace(\..*)?$', 'meromorphic-trace'),
+    (r'^FormTraceSheetCovector$', 'form-trace-tower'),
+    (r'^Cech(\..*)?$', 'cech-cohomology'),
+    (r'^Finiteness(\..*)?$', 'finiteness-and-chi'),
+    (r'^H1Genus(\..*)?$', 'cech-h1-genus'),
+    (r'^Dbar(\..*)?$', 'dbar-solvability'),
+    (r'^DolbeaultComparison(\..*)?$', 'dolbeault-comparison'),
+    (r'^ResidueCalculus(\..*)?$', 'residue-calculus'),
+    (r'^PlanarStokes(\..*)?$', 'planar-stokes-atoms'),
+    (r'^ResidueTheorem(\..*)?$', 'residue-theorem'),
+    (r'^CanonicalForms(\..*)?$', 'canonical-forms'),
+    (r'^SerrePairing(\..*)?$', 'serre-duality-cech'),
+    (r'^LaurentTail(\..*)?$', 'laurent-tails'),
+    (r'^TailDuality(\..*)?$', 'serre-duality-tails'),
     (r'^RiemannRoch$', 'riemann-roch'),
-    # 8. monodromy + genus-sphere
-    (r'^(HolomorphicPrimitive.*|HolomorphicPrimitives)$', 'monodromy'),
-    (r'^(VanKampen|SphereSimplyConnected|GenusZeroOfSphere|GenusSphereBackward)$', 'sphere-topology'),
-    (r'^(GenusSphereHeadline)$', 'genus-zero-headline'),
-    # 9. abel + jacobian
-    (r'^(AbelChains|AbelWeakSolutions|AbelPlanarPiece|AbelPieceSolution|AbelCurveSolution)$', 'abel-weak-solutions'),
-    (r'^(AbelFormRead|AbelLogDbar|AbelPairing.*|AbelDbarKill|AbelEngine.*|AbelFinal)$', 'abel-theorem'),
-    (r'^(PeriodLattice|ZLatticeQuotient)$', 'jacobian-construction'),
-    (r'^(PeriodLattice.*|JacobiBasePoints|JacobiLocalMap|OfCurveAnalyticitySkeleton)$', 'period-lattice-rank'),
+    (r'^Monodromy(\..*)?$', 'monodromy'),
+    (r'^SphereTopology(\..*)?$', 'sphere-topology'),
+    (r'^GenusSphereHeadline$', 'genus-zero-headline'),
+    (r'^AbelWeak(\..*)?$', 'abel-weak-solutions'),
+    (r'^Abel(\..*)?$', 'abel-theorem'),
+    (r'^JacobianConstruction(\..*)?$', 'jacobian-construction'),
+    (r'^PeriodLattice(\..*)?$', 'period-lattice-rank'),
 ]
 
 # ---- per-unit metadata: (proposed dir under Jacobians/, description, keystones) ----

@@ -25,7 +25,7 @@ Conformance is machine-checked in two forms:
   of the same statements (`modelWithCornersSelf` spelling, `[Nonempty X]` binders).
 
 The universe-polymorphic `Jacobian : Type u` is met by `ULift`-ing the concrete `Type 0` torus
-([`Jacobians/ULiftManifold.lean`](Jacobians/ULiftManifold.lean) — infrastructure Mathlib lacks).
+([`Jacobians/Surface/ULiftManifold.lean`](Jacobians/Surface/ULiftManifold.lean) — infrastructure Mathlib lacks).
 
 ## ⚠ Disclaimer — AI-produced, unreviewed by a mathematician
 
@@ -46,10 +46,10 @@ arguments (Forster GTM 81, Miranda):
 | Theorem | Route | Where |
 |---|---|---|
 | **Riemann–Roch** (`exists_riemannRoch_divisor`, every genus) | Miranda Ch. VI Laurent-tail (adelic) route: tail `H¹`, RR-I, Serre duality `h¹(D) = l(K−D)` in the meromorphic pair frame | `Jacobians/LaurentTail/` |
-| **Residue theorem** (`∑ Res = 0`, genus-free) | planar Stokes + annulus residue atoms + partition-of-unity ledger (Forster 10.20/10.21); also the degree route for `deg_div` | `Jacobians/Dolbeault/ResidueTheoremStokes.lean` |
+| **Residue theorem** (`∑ Res = 0`, genus-free) | planar Stokes + annulus residue atoms + partition-of-unity ledger (Forster 10.20/10.21); also the degree route for `deg_div` | `Jacobians/ResidueTheorem/ResidueTheoremStokes.lean` |
 | **Genus 0 ⟺ sphere** (`genus_eq_zero_iff_homeo`) | forward: RR ⟹ single simple pole ⟹ degree-1 map; backward: the monodromy theorem via discrete analytic continuation (no integration) | `Jacobians/GenusSphereHeadline.lean`, `Jacobians/HolomorphicPrimitive*.lean` |
-| **Abel's theorem** (`abelJacobi_twoPoint_ne_zero` ⟹ `ofCurve_inj`) | Forster 19.10/20.7, dissection-free: weak solutions + the ∂̄-solvability criterion (`h¹(0) = g` + the ∂̄-pairing) | `Jacobians/Abel*.lean`, `Jacobians/Dolbeault/CechH1Genus.lean` |
-| **Period lattice full rank** (the Jacobian torus structure) | Forster 21.4, dissection-free (the planned 4g-gon cut surface was never needed and was retired) | `Jacobians/PeriodLattice*.lean`, `Jacobians/JacobiLocalMap.lean` |
+| **Abel's theorem** (`abelJacobi_twoPoint_ne_zero` ⟹ `ofCurve_inj`) | Forster 19.10/20.7, dissection-free: weak solutions + the ∂̄-solvability criterion (`h¹(0) = g` + the ∂̄-pairing) | `Jacobians/Abel*.lean`, `Jacobians/H1Genus/CechH1Genus.lean` |
+| **Period lattice full rank** (the Jacobian torus structure) | Forster 21.4, dissection-free (the planned 4g-gon cut surface was never needed and was retired) | `Jacobians/PeriodLattice*.lean`, `Jacobians/PeriodLattice/JacobiLocalMap.lean` |
 
 Supporting towers built along the way: Čech cohomology with finiteness (Forster §14) and the
 skyscraper χ-machinery (§16), the Čech↔Dolbeault comparison (§15.14), disk ∂̄-solvability (§13),

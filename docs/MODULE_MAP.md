@@ -6,370 +6,370 @@ Modules grouped by import depth (layer 1 = leaves of the import graph; higher la
 
 ## Layer 1
 
-- `Jacobians.ChartedSpaceOfLocalHomeomorph` — `ChartedSpace` from a surjective local homeomorphism
-- `Jacobians.DbarDisk` — DbarDisk.lean
-- `Jacobians.Discharge.Manifold.AnalyticDerivOrder`
-- `Jacobians.Discharge.Manifold.AnalyticLocalFactorization`
-- `Jacobians.Discharge.Manifold.ChartLocalDetour`
-- `Jacobians.Discharge.Manifold.ChartRestrictionToBall`
-- `Jacobians.Discharge.Manifold.ChartedSpaceLocPathConnected`
-- `Jacobians.Discharge.Manifold.ConnectedManifoldPathConnected` — Connected + locally path-connected ⇒ path-connected
-- `Jacobians.Discharge.Manifold.ContMDiffOmegaAnalytic`
-- `Jacobians.Discharge.Manifold.FibreCardLocallyConstantFromNormalForm`
-- `Jacobians.Discharge.Manifold.IsPathConnectedBallMinusCountable`
-- `Jacobians.Discharge.Manifold.MeromorphicAt`
-- `Jacobians.Discharge.Manifold.PreconnectedFromFiniteComplement`
-- `Jacobians.Discharge.Manifold.RegularSubsetPreconnected`
-- `Jacobians.Dolbeault.FormTracePrincipalPart` — Principal-part extraction for a meromorphic coefficient (Gate A, §VIII.3 step 2)
-- `Jacobians.Dolbeault.Residue` — The residue atom (Forster §17.1–17.2 building block).
-- `Jacobians.Dolbeault.SchwartzFiniteness` — The abstract Schwartz / Riesz–Schauder finiteness lemma (Forster *Lectures on Riemann Surfaces*
-- `Jacobians.Dolbeault.SerreDuality` — Serre duality (Forster §17) — the PDE-free finite-dim core of the surjectivity step (§17.9).
-- `Jacobians.Genus` — Genus of a compact Riemann surface
+- `Jacobians.Surface.ChartedSpaceOfLocalHomeomorph` — `ChartedSpace` from a surjective local homeomorphism
+- `Jacobians.Dbar.DbarDisk` — DbarDisk.lean
+- `Jacobians.LocalMultiplicity.AnalyticDerivOrder`
+- `Jacobians.LocalMultiplicity.AnalyticLocalFactorization`
+- `Jacobians.MappingDegree.ChartLocalDetour`
+- `Jacobians.MappingDegree.ChartRestrictionToBall`
+- `Jacobians.MappingDegree.ChartedSpaceLocPathConnected`
+- `Jacobians.MappingDegree.ConnectedManifoldPathConnected` — Connected + locally path-connected ⇒ path-connected
+- `Jacobians.Surface.ContMDiffOmegaAnalytic`
+- `Jacobians.MappingDegree.FibreCardLocallyConstantFromNormalForm`
+- `Jacobians.MappingDegree.IsPathConnectedBallMinusCountable`
+- `Jacobians.LocalMultiplicity.MeromorphicAt`
+- `Jacobians.MappingDegree.PreconnectedFromFiniteComplement`
+- `Jacobians.MappingDegree.RegularSubsetPreconnected`
+- `Jacobians.ResidueCalculus.FormTracePrincipalPart` — Principal-part extraction for a meromorphic coefficient (Gate A, §VIII.3 step 2)
+- `Jacobians.ResidueCalculus.Residue` — The residue atom (Forster §17.1–17.2 building block).
+- `Jacobians.Finiteness.SchwartzFiniteness` — The abstract Schwartz / Riesz–Schauder finiteness lemma (Forster *Lectures on Riemann Surfaces*
+- `Jacobians.SerrePairing.SerreDuality` — Serre duality (Forster §17) — the PDE-free finite-dim core of the surjectivity step (§17.9).
+- `Jacobians.Forms.Genus` — Genus of a compact Riemann surface
 - `Jacobians.GreenBox`
-- `Jacobians.MeromorphicNFRepair` — Chart-level helpers for the limit-repair of a meromorphic function
-- `Jacobians.Montel.Cover` — Montel path — finite chart cover + compact shrinking
-- `Jacobians.Montel.LocalRep` — Montel path — local representative of a holomorphic 1-form
+- `Jacobians.Meromorphic.MeromorphicNFRepair` — Chart-level helpers for the limit-repair of a meromorphic function
+- `Jacobians.Forms.Cover` — Montel path — finite chart cover + compact shrinking
+- `Jacobians.Forms.LocalRep` — Montel path — local representative of a holomorphic 1-form
 - `Jacobians.PeriodMatrixIndep`
-- `Jacobians.Primitive`
-- `Jacobians.SmoothPath` — Foundations for the smooth-path construction.
+- `Jacobians.Path.Primitive`
+- `Jacobians.Path.SmoothPath` — Foundations for the smooth-path construction.
 - `Jacobians.SurfacePositivity`
-- `Jacobians.ULiftManifold` — A `ULift` of a complex manifold is a complex manifold (with the *same* model `E`).
+- `Jacobians.Surface.ULiftManifold` — A `ULift` of a complex manifold is a complex manifold (with the *same* model `E`).
 
 ## Layer 2
 
-- `Jacobians.Discharge.Manifold.ChartOverlapAvoidanceFull`
-- `Jacobians.Discharge.Manifold.HurwitzPatchingDataConstruction`
-- `Jacobians.Discharge.Manifold.LocalMultiplicity`
-- `Jacobians.Discharge.Manifold.MeromorphicDivisor`
-- `Jacobians.Discharge.Manifold.PathSubdivisionByBallCharts`
-- `Jacobians.Dolbeault.CechFinitenessAbstract` — The abstract Forster-14.9 reduction: Čech `H¹` is finite-dimensional once the cochain restriction
-- `Jacobians.Dolbeault.DbarLocal` — DbarLocal.lean
-- `Jacobians.Dolbeault.PlanarCompactSupportStokes` — Planar compact-support Stokes (the Forster (10.20) engine; Route-H atom 1).
-- `Jacobians.Dolbeault.PlanarHolomorphicChangeOfVariables` — Planar change of variables under a holomorphic map (Route-H Stage B).
-- `Jacobians.Dolbeault.RealManifold` — Dolbeault ladder — the underlying REAL-`C^∞` manifold structure of a complex manifold.
+- `Jacobians.MappingDegree.ChartOverlapAvoidanceFull`
+- `Jacobians.MappingDegree.HurwitzPatchingDataConstruction`
+- `Jacobians.LocalMultiplicity.LocalMultiplicity`
+- `Jacobians.MappingDegree.MeromorphicDivisor`
+- `Jacobians.MappingDegree.PathSubdivisionByBallCharts`
+- `Jacobians.Finiteness.CechFinitenessAbstract` — The abstract Forster-14.9 reduction: Čech `H¹` is finite-dimensional once the cochain restriction
+- `Jacobians.Dbar.DbarLocal` — DbarLocal.lean
+- `Jacobians.PlanarStokes.PlanarCompactSupportStokes` — Planar compact-support Stokes (the Forster (10.20) engine; Route-H atom 1).
+- `Jacobians.PlanarStokes.PlanarHolomorphicChangeOfVariables` — Planar change of variables under a holomorphic map (Route-H Stage B).
+- `Jacobians.Surface.RealManifold` — Dolbeault ladder — the underlying REAL-`C^∞` manifold structure of a complex manifold.
 - `Jacobians.GreenPositivity` — Green positivity bridge
-- `Jacobians.ManifoldIFT`
-- `Jacobians.Montel.ChartNorm` — Montel path — bounded chart-local sup-norm `chartNormK`
-- `Jacobians.TraceResidue` — The residue theorem on `ℂℙ¹` (the trace-to-`ℙ¹` route, Miranda §VIII.3, pillar 2)
-- `Jacobians.ZLatticeQuotient` — Quotient of a finite-dimensional normed space by a `ZLattice`
+- `Jacobians.Surface.ManifoldIFT`
+- `Jacobians.Forms.ChartNorm` — Montel path — bounded chart-local sup-norm `chartNormK`
+- `Jacobians.MeromorphicTrace.TraceResidue` — The residue theorem on `ℂℙ¹` (the trace-to-`ℙ¹` route, Miranda §VIII.3, pillar 2)
+- `Jacobians.JacobianConstruction.ZLatticeQuotient` — Quotient of a finite-dimensional normed space by a `ZLattice`
 
 ## Layer 3
 
 - `Jacobians.BoundaryPositivity` — Box-level Riemann positivity
-- `Jacobians.Discharge.Manifold.Degree`
-- `Jacobians.Discharge.Manifold.HLcUnconditional`
-- `Jacobians.Discharge.Manifold.LocalNormalForm`
-- `Jacobians.Discharge.Manifold.LocalSheetDataFromContMDiff`
-- `Jacobians.Discharge.Manifold.PathConnectedComplFinite`
-- `Jacobians.Dolbeault.AnnulusResidueIntegral` — The annulus residue integral (Forster (10.21), planar form; Route-H atom 2).
-- `Jacobians.Dolbeault.DbarDiskCohomology` — DbarDiskCohomology.lean
-- `Jacobians.Dolbeault.RealForms` — Dolbeault ladder — smooth ℂ-valued 1-forms over the real-manifold structure (the INTRINSIC route).
-- `Jacobians.MeromorphicTrace` — The meromorphic trace `Tr_F α` and the residue-trace compatibility (Miranda §VIII.3, b + c)
-- `Jacobians.Montel.SupNorm` — Montel path — assembled sup-norm `supNormK`
+- `Jacobians.MappingDegree.Degree`
+- `Jacobians.MappingDegree.HLcUnconditional`
+- `Jacobians.MappingDegree.LocalNormalForm`
+- `Jacobians.MappingDegree.LocalSheetDataFromContMDiff`
+- `Jacobians.MappingDegree.PathConnectedComplFinite`
+- `Jacobians.PlanarStokes.AnnulusResidueIntegral` — The annulus residue integral (Forster (10.21), planar form; Route-H atom 2).
+- `Jacobians.Dbar.DbarDiskCohomology` — DbarDiskCohomology.lean
+- `Jacobians.Dbar.RealForms` — Dolbeault ladder — smooth ℂ-valued 1-forms over the real-manifold structure (the INTRINSIC route).
+- `Jacobians.MeromorphicTrace.MeromorphicTrace` — The meromorphic trace `Tr_F α` and the residue-trace compatibility (Miranda §VIII.3, b + c)
+- `Jacobians.Forms.SupNorm` — Montel path — assembled sup-norm `supNormK`
 - `Jacobians.RamifiedResidueChangeOfVariables` — The ramified residue change-of-variables (Miranda §VIII.3, formula (3.1) + Lemma 3.2 ramified case)
 
 ## Layer 4
 
-- `Jacobians.AbelPlanarPiece` — Abel engine C-2 (planar layer): the Forster 20.3 integration atoms on `ℂ`
+- `Jacobians.AbelWeak.AbelPlanarPiece` — Abel engine C-2 (planar layer): the Forster 20.3 integration atoms on `ℂ`
 - `Jacobians.BoundaryWordR2` — Riemann's second bilinear relation, from the boundary word
 - `Jacobians.CutSurface` — Cut-surface bridge: proving the Riemann bilinear relations
-- `Jacobians.Discharge.Manifold.AnalyticFiberDiscrete`
-- `Jacobians.Discharge.Manifold.FibreCardOnRegularSubset`
-- `Jacobians.Discharge.Manifold.LocalMultiplicityInvariance`
-- `Jacobians.Discharge.Manifold.LocalSheetDataAtRegularValue`
-- `Jacobians.Dolbeault.AnnulusResidueMeromorphic` — The single-pole residue atom for a MEROMORPHIC integrand (Forster (10.21), assembled;
-- `Jacobians.Dolbeault.DbarOpenDisk` — Dolbeault ladder — **Forster 13.2**: `∂̄`-solvability on an *open* disk.
-- `Jacobians.Dolbeault.DolbeaultH01` — Dolbeault cohomology `H^{0,1}(X)` and the comparison to Čech `H¹(X,𝒪)` — the L3 kernel of `D=0`
+- `Jacobians.MappingDegree.AnalyticFiberDiscrete`
+- `Jacobians.MappingDegree.FibreCardOnRegularSubset`
+- `Jacobians.MappingDegree.LocalMultiplicityInvariance`
+- `Jacobians.MappingDegree.LocalSheetDataAtRegularValue`
+- `Jacobians.PlanarStokes.AnnulusResidueMeromorphic` — The single-pole residue atom for a MEROMORPHIC integrand (Forster (10.21), assembled;
+- `Jacobians.Dbar.DbarOpenDisk` — Dolbeault ladder — **Forster 13.2**: `∂̄`-solvability on an *open* disk.
+- `Jacobians.DolbeaultComparison.DolbeaultH01` — Dolbeault cohomology `H^{0,1}(X)` and the comparison to Čech `H¹(X,𝒪)` — the L3 kernel of `D=0`
 - `Jacobians.Dolbeault.FormTraceInftyRecip` — The reciprocal-chart residue at `∞` (Gate A, §VIII.3 step 5 — the `infty_eq` close-path)
 - `Jacobians.LaurentTail.LaurentCoeff` — Laurent coefficients of a meromorphic germ, via the residue calculus (Miranda Ch. VI §2).
-- `Jacobians.Montel.Compactness` — Montel path — compactness of the closed unit ball
+- `Jacobians.Forms.Compactness` — Montel path — compactness of the closed unit ball
 - `Jacobians.ResidueChangeOfVariables` — The residue change-of-variables atom (Gate A, input A-i)
 - `Jacobians.SymmetricFunctionDescent` — The symmetric-function descent: the trace of a holomorphic germ is holomorphic
 
 ## Layer 5
 
-- `Jacobians.Discharge.Manifold.AnalyticContinuationGlobalization`
-- `Jacobians.Discharge.Manifold.ChartPullbackDataConstruction`
-- `Jacobians.Discharge.Manifold.CriticalSetDiscrete`
-- `Jacobians.Discharge.Manifold.FibreCardWellDefinedAtRegular`
-- `Jacobians.Discharge.Manifold.LocalKFoldMultiplicity`
-- `Jacobians.Dolbeault.CechFiniteness` — Dolbeault ladder — `H¹(X, 𝒪_D)` finiteness (Forster 14.9), the de-risked finiteness tree.
-- `Jacobians.Dolbeault.FormCoeff` — The canonical-chart coefficient of a holomorphic 1-form, and the local residue of `ω·g`
+- `Jacobians.MappingDegree.AnalyticContinuationGlobalization`
+- `Jacobians.MappingDegree.ChartPullbackDataConstruction`
+- `Jacobians.MappingDegree.CriticalSetDiscrete`
+- `Jacobians.MappingDegree.FibreCardWellDefinedAtRegular`
+- `Jacobians.MappingDegree.LocalKFoldMultiplicity`
+- `Jacobians.Finiteness.CechFiniteness` — Dolbeault ladder — `H¹(X, 𝒪_D)` finiteness (Forster 14.9), the de-risked finiteness tree.
+- `Jacobians.ResidueCalculus.FormCoeff` — The canonical-chart coefficient of a holomorphic 1-form, and the local residue of `ω·g`
 - `Jacobians.Dolbeault.FormTraceLiouville` — Liouville vanishing for `dz`-coefficients on `ℂℙ¹` (Gate A, §VIII.3 step 3 — the remainder vanishes)
 - `Jacobians.Dolbeault.FormTracePrincipalPartInfty` — Principal-part extraction across `∞` for the global trace (Gate A, §VIII.3 step 3 — `∞` part)
-- `Jacobians.Montel.ChartTransition` — Montel path — chart-transition estimate
+- `Jacobians.Forms.ChartTransition` — Montel path — chart-transition estimate
 
 ## Layer 6
 
-- `Jacobians.Discharge.Manifold.AnalyticKthRoot`
-- `Jacobians.Discharge.Manifold.FibresFiniteAssembly`
-- `Jacobians.Discharge.Manifold.HurwitzWellDefinedFromHPath`
-- `Jacobians.Dolbeault.BddHol` — Dolbeault ladder — Čech finiteness (Forster 14.9), STEP 1.
+- `Jacobians.MappingDegree.AnalyticKthRoot`
+- `Jacobians.MappingDegree.FibresFiniteAssembly`
+- `Jacobians.MappingDegree.HurwitzWellDefinedFromHPath`
+- `Jacobians.Finiteness.BddHol` — Dolbeault ladder — Čech finiteness (Forster 14.9), STEP 1.
 - `Jacobians.Dolbeault.MittagLeffler` — Mittag–Leffler distributions of 1-forms and the global residue `Res` (Forster §17.1–17.2).
-- `Jacobians.Montel.Complete` — Montel path — completeness of `HolomorphicOneForms X`
+- `Jacobians.Forms.Complete` — Montel path — completeness of `HolomorphicOneForms X`
 
 ## Layer 7
 
-- `Jacobians.Discharge.Manifold.ConnectivityGlobalizationReduction`
-- `Jacobians.Discharge.Manifold.HurwitzWellDefinedUnconditionalTopo`
-- `Jacobians.Discharge.Manifold.LocalKFoldMultiplicityUnconditional`
-- `Jacobians.Dolbeault.CechModelBridge`
-- `Jacobians.Montel` — Montel path to finite-dimensionality of `HolomorphicOneForms`
+- `Jacobians.MappingDegree.ConnectivityGlobalizationReduction`
+- `Jacobians.MappingDegree.HurwitzWellDefinedUnconditionalTopo`
+- `Jacobians.MappingDegree.LocalKFoldMultiplicityUnconditional`
+- `Jacobians.Finiteness.CechModelBridge`
+- `Jacobians.Forms.Montel` — Montel path to finite-dimensionality of `HolomorphicOneForms`
 
 ## Layer 8
 
-- `Jacobians.Discharge.Manifold.LocalKFoldMultiplicityFullyUnconditional`
-- `Jacobians.Discharge.Manifold.WithinChartWitnessReduction`
-- `Jacobians.HolomorphicForms` — Holomorphic 1-forms on a complex manifold
+- `Jacobians.MappingDegree.LocalKFoldMultiplicityFullyUnconditional`
+- `Jacobians.MappingDegree.WithinChartWitnessReduction`
+- `Jacobians.Forms.HolomorphicForms` — Holomorphic 1-forms on a complex manifold
 
 ## Layer 9
 
-- `Jacobians.Discharge.Manifold.CriticalSetDerivBridge`
-- `Jacobians.Discharge.Manifold.PerChartNonConstancyReduction`
-- `Jacobians.Discharge.Manifold.RoucheBridge`
-- `Jacobians.GenusSphereBackward` — Backward headline `#1b`: a surface `≃ₜ S²` has genus `0` — reachable scaffolding
-- `Jacobians.LineIntegral` — Line integral of a holomorphic 1-form along a smooth path
+- `Jacobians.MappingDegree.CriticalSetDerivBridge`
+- `Jacobians.MappingDegree.PerChartNonConstancyReduction`
+- `Jacobians.MappingDegree.RoucheBridge`
+- `Jacobians.SphereTopology.GenusSphereBackward` — Backward headline `#1b`: a surface `≃ₜ S²` has genus `0` — reachable scaffolding
+- `Jacobians.Path.LineIntegral` — Line integral of a holomorphic 1-form along a smooth path
 
 ## Layer 10
 
-- `Jacobians.CotangentCoeff` — Cotangent-bundle coefficient continuity (the *local* coefficient is the right object)
-- `Jacobians.Discharge.Manifold.ChartBallOffCentreWitnessDischarge`
+- `Jacobians.Path.CotangentCoeff` — Cotangent-bundle coefficient continuity (the *local* coefficient is the right object)
+- `Jacobians.MappingDegree.ChartBallOffCentreWitnessDischarge`
 
 ## Layer 11
 
-- `Jacobians.Discharge.Manifold.ChartPullbackNotEventuallyConstDischarge`
-- `Jacobians.SmoothPathCore` — SmoothPathCore: smoothPath-independent foundations + chart-ball-hop machinery
+- `Jacobians.MappingDegree.ChartPullbackNotEventuallyConstDischarge`
+- `Jacobians.Path.SmoothPathCore` — SmoothPathCore: smoothPath-independent foundations + chart-ball-hop machinery
 
 ## Layer 12
 
-- `Jacobians.Discharge.Manifold.ChartOverlapPropagationDischarge`
+- `Jacobians.MappingDegree.ChartOverlapPropagationDischarge`
 - `Jacobians.Dissection` — Canonical dissection and the period real basis (#7 scaffold)
-- `Jacobians.JacobiBasePoints` — Forster Lemma 21.3 — base points for the Jacobi map
-- `Jacobians.LoopOffBranch` — Chart-local FTC for the line integral, and the off-branch-loop foundations
+- `Jacobians.PeriodLattice.JacobiBasePoints` — Forster Lemma 21.3 — base points for the Jacobi map
+- `Jacobians.Path.LoopOffBranch` — Chart-local FTC for the line integral, and the off-branch-loop foundations
 - `Jacobians.ProjectiveLine` — The complex Riemann sphere `ℂℙ¹` as a compact complex 1-manifold
 
 ## Layer 13
 
 - `Jacobians.CutSurfaceRelations` — The cut surface and the Riemann bilinear relations as THEOREMS
-- `Jacobians.Discharge.Manifold.ClopennessOfLocallyConstDischarge`
-- `Jacobians.SphereSimplyConnected` — `S²` is simply connected — reachable scaffolding for `#1b`
+- `Jacobians.MappingDegree.ClopennessOfLocallyConstDischarge`
+- `Jacobians.SphereTopology.SphereSimplyConnected` — `S²` is simply connected — reachable scaffolding for `#1b`
 
 ## Layer 14
 
-- `Jacobians.Discharge.Manifold.CriticalValuesFiniteGeneral`
-- `Jacobians.Discharge.Manifold.FibresFiniteUnconditional`
-- `Jacobians.Discharge.Manifold.RegularValueExistsUnconditional`
-- `Jacobians.VanKampen` — Two-open Seifert–van Kampen for `π₁`, and `S²` simply connected (unconditional)
+- `Jacobians.MappingDegree.CriticalValuesFiniteGeneral`
+- `Jacobians.MappingDegree.FibresFiniteUnconditional`
+- `Jacobians.MappingDegree.RegularValueExistsUnconditional`
+- `Jacobians.SphereTopology.VanKampen` — Two-open Seifert–van Kampen for `π₁`, and `S²` simply connected (unconditional)
 
 ## Layer 15
 
-- `Jacobians.Discharge.Manifold.CriticalValueSetFinite`
-- `Jacobians.Discharge.Manifold.RegularValueExistsRegUnconditional`
-- `Jacobians.GenusZeroOfSphere` — Backward headline `#1b`: a surface `≃ₜ S²` has genus `0` — assembled route
+- `Jacobians.MappingDegree.CriticalValueSetFinite`
+- `Jacobians.MappingDegree.RegularValueExistsRegUnconditional`
+- `Jacobians.SphereTopology.GenusZeroOfSphere` — Backward headline `#1b`: a surface `≃ₜ S²` has genus `0` — assembled route
 
 ## Layer 16
 
-- `Jacobians.Discharge.Manifold.HPkgUnconditional`
-- `Jacobians.PeriodLattice` — Period lattice of a compact Riemann surface
+- `Jacobians.MappingDegree.HPkgUnconditional`
+- `Jacobians.JacobianConstruction.PeriodLattice` — Period lattice of a compact Riemann surface
 
 ## Layer 17
 
-- `Jacobians.Abel` — Abel's theorem on a compact Riemann surface
-- `Jacobians.Discharge.Manifold.DegreeWellDefined`
-- `Jacobians.OfCurveAnalyticitySkeleton` — Analyticity skeleton for `ofCurve_contMDiff`
-- `Jacobians.TraceForm` — Trace (pushforward) of a holomorphic 1-form along a branched cover
+- `Jacobians.Meromorphic.Abel` — Abel's theorem on a compact Riemann surface
+- `Jacobians.MappingDegree.DegreeWellDefined`
+- `Jacobians.PeriodLattice.OfCurveAnalyticitySkeleton` — Analyticity skeleton for `ofCurve_contMDiff`
+- `Jacobians.MeromorphicTrace.TraceForm` — Trace (pushforward) of a holomorphic 1-form along a branched cover
 
 ## Layer 18
 
-- `Jacobians.Degree` — Thin forwarder from `Jacobians.*` to the ported discharge under
-- `Jacobians.Dolbeault.FormTraceSheetCovector` — The per-sheet covector identity in charts (Gate A linchpin, Miranda §VIII.3)
-- `Jacobians.JacobiLocalMap` — Forster 21.4(a) — the local Jacobi map and its open image
+- `Jacobians.ProperDegree.Degree` — Thin forwarder from `Jacobians.*` to the ported discharge under
+- `Jacobians.FormTraceSheetCovector` — The per-sheet covector identity in charts (Gate A linchpin, Miranda §VIII.3)
+- `Jacobians.PeriodLattice.JacobiLocalMap` — Forster 21.4(a) — the local Jacobi map and its open image
 - `Jacobians.LaurentTail.TailSpace` — Laurent tail divisors `𝒯[D](X)` and their truncation maps (Miranda Ch. VI §2, pp. 178–181).
-- `Jacobians.MeromorphicLiouville` — Compact Liouville for meromorphic functions (non-Dolbeault)
-- `Jacobians.TracePullback` — The Jacobian pullback in ambient coordinates, driven by the geometric trace
+- `Jacobians.Meromorphic.MeromorphicLiouville` — Compact Liouville for meromorphic functions (non-Dolbeault)
+- `Jacobians.MeromorphicTrace.TracePullback` — The Jacobian pullback in ambient coordinates, driven by the geometric trace
 
 ## Layer 19
 
-- `Jacobians.DegDivResidue` — Degree-route arithmetic for `deg_div`
-- `Jacobians.LinearSystem` — Linear system `L(D)`, its dimension `l(D)`, and the `MeromorphicFunction` ℂ-algebra + `orderW`.
-- `Jacobians.PeriodLatticeNondegenerate` — Forster 21.4(c) — non-degeneracy: the period lattice spans `ℂ^g` over `ℝ`
+- `Jacobians.ProperDegree.DegDivResidue` — Degree-route arithmetic for `deg_div`
+- `Jacobians.Meromorphic.LinearSystem` — Linear system `L(D)`, its dimension `l(D)`, and the `MeromorphicFunction` ℂ-algebra + `orderW`.
+- `Jacobians.PeriodLattice.PeriodLatticeNondegenerate` — Forster 21.4(c) — non-degeneracy: the period lattice spans `ℂ^g` over `ℝ`
 
 ## Layer 20
 
-- `Jacobians.Dolbeault.CechSection` — Dolbeault ladder — the concrete Čech layer (G3 scaffold).
-- `Jacobians.Dolbeault.MeromorphicOneFormSystem` — The meromorphic-1-form linear system `Ω_D` (Forster §17.4), the 1-form analog of the
+- `Jacobians.Cech.CechSection` — Dolbeault ladder — the concrete Čech layer (G3 scaffold).
+- `Jacobians.CanonicalForms.MeromorphicOneFormSystem` — The meromorphic-1-form linear system `Ω_D` (Forster §17.4), the 1-form analog of the
 - `Jacobians.LaurentTail.TailMap` — The truncation-of-Laurent-series map `α_D : ℳ(X) → 𝒯[D](X)` and the Mittag-Leffler
 
 ## Layer 21
 
-- `Jacobians.Dolbeault.CanonicalFormIso` — Forster §17.4 — the canonical-form multiplication isomorphism `ω₀·: 𝒪_{D+K} ≅ Ω_D`, the
-- `Jacobians.Dolbeault.CechComplex` — Dolbeault ladder — the concrete Čech complex and `H¹`, on a fixed finite cover.
+- `Jacobians.CanonicalForms.CanonicalFormIso` — Forster §17.4 — the canonical-form multiplication isomorphism `ω₀·: 𝒪_{D+K} ≅ Ω_D`, the
+- `Jacobians.Cech.CechComplex` — Dolbeault ladder — the concrete Čech complex and `H¹`, on a fixed finite cover.
 
 ## Layer 22
 
-- `Jacobians.Dolbeault.CechH0` — Dolbeault ladder — the `h⁰ = l(D)` bridge leaf (`h0Dim_eq_lDim`).
-- `Jacobians.Dolbeault.CechModelHolomorphic`
-- `Jacobians.Dolbeault.CechRefinement` — Dolbeault ladder — the Čech **refinement map** between finite covers (cover-comparison scaffold).
-- `Jacobians.Dolbeault.ChartDiskCover` — A finite cover whose every set is a coordinate disk — the cover the Dolbeault → Čech forward
-- `Jacobians.Dolbeault.DiskAcyclicCore` — Dolbeault ladder — the **closed-core** partition-of-unity primitives for the disk-acyclicity.
-- `Jacobians.Dolbeault.DolbeaultComparison` — Dolbeault cohomology `H^{0,1}(X)` and the Čech↔Dolbeault comparison — the **L3 kernel** of the
+- `Jacobians.Cech.CechH0` — Dolbeault ladder — the `h⁰ = l(D)` bridge leaf (`h0Dim_eq_lDim`).
+- `Jacobians.Finiteness.CechModelHolomorphic`
+- `Jacobians.Cech.CechRefinement` — Dolbeault ladder — the Čech **refinement map** between finite covers (cover-comparison scaffold).
+- `Jacobians.Cech.ChartDiskCover` — A finite cover whose every set is a coordinate disk — the cover the Dolbeault → Čech forward
+- `Jacobians.Dbar.DiskAcyclicCore` — Dolbeault ladder — the **closed-core** partition-of-unity primitives for the disk-acyclicity.
+- `Jacobians.DolbeaultComparison.DolbeaultComparison` — Dolbeault cohomology `H^{0,1}(X)` and the Čech↔Dolbeault comparison — the **L3 kernel** of the
 
 ## Layer 23
 
-- `Jacobians.Dolbeault.CechDiskAcyclic` — Dolbeault ladder — the **germ-level disk-acyclicity atom** (`H¹(disk, 𝒪_D) = 0`).
-- `Jacobians.Dolbeault.CechModelBase` — Dolbeault ladder — the sup-norm Čech model TYPES and abstract finiteness spine (Forster 14.9).
-- `Jacobians.Dolbeault.CechRefinementHomotopy` — Dolbeault ladder — **homotopy-independence of the Čech refinement map** (STEP A of the `cechH1`
-- `Jacobians.Dolbeault.ChartDiskRefinement` — Every finite cover of a compact Riemann surface is refined by a chart-disk cover.
-- `Jacobians.Dolbeault.DolbeaultComparisonProof` — The **L3 kernel** — Dolbeault's comparison theorem `H^{0,1}(X) ≅ H¹(X, 𝒪)`, the single hardest
-- `Jacobians.Dolbeault.HoloRep`
-- `Jacobians.Dolbeault.LerayCoverExists` — Existence of a finite Leray cover of a compact connected Riemann surface — the single missing
-- `Jacobians.Dolbeault.LocalRealization` — Dolbeault ladder — the LOCAL REALIZATION analytic kernel (Mittag–Leffler / Cousin-I).
-- `Jacobians.Dolbeault.MeromorphicAnalyticBadSet` — The product of meromorphic functions, and FINITENESS of the analytic-bad set of a global
-- `Jacobians.Dolbeault.SerreCupProduct` — Forster §17.5 — the cup product `L(K−D) × H¹(𝒪_D) → H¹(𝒪_K)` (the residue-pairing's product)
-- `Jacobians.Dolbeault.SkyscraperLESBase` — Dolbeault ladder — the **base layer** of the skyscraper long exact sequence.
+- `Jacobians.Dbar.CechDiskAcyclic` — Dolbeault ladder — the **germ-level disk-acyclicity atom** (`H¹(disk, 𝒪_D) = 0`).
+- `Jacobians.Finiteness.CechModelBase` — Dolbeault ladder — the sup-norm Čech model TYPES and abstract finiteness spine (Forster 14.9).
+- `Jacobians.Cech.CechRefinementHomotopy` — Dolbeault ladder — **homotopy-independence of the Čech refinement map** (STEP A of the `cechH1`
+- `Jacobians.Cech.ChartDiskRefinement` — Every finite cover of a compact Riemann surface is refined by a chart-disk cover.
+- `Jacobians.DolbeaultComparison.DolbeaultComparisonProof` — The **L3 kernel** — Dolbeault's comparison theorem `H^{0,1}(X) ≅ H¹(X, 𝒪)`, the single hardest
+- `Jacobians.Dbar.HoloRep`
+- `Jacobians.DolbeaultComparison.LerayCoverExists` — Existence of a finite Leray cover of a compact connected Riemann surface — the single missing
+- `Jacobians.DolbeaultComparison.LocalRealization` — Dolbeault ladder — the LOCAL REALIZATION analytic kernel (Mittag–Leffler / Cousin-I).
+- `Jacobians.Cech.MeromorphicAnalyticBadSet` — The product of meromorphic functions, and FINITENESS of the analytic-bad set of a global
+- `Jacobians.H1Genus.SerreCupProduct` — Forster §17.5 — the cup product `L(K−D) × H¹(𝒪_D) → H¹(𝒪_K)` (the residue-pairing's product)
+- `Jacobians.Finiteness.SkyscraperLESBase` — Dolbeault ladder — the **base layer** of the skyscraper long exact sequence.
 
 ## Layer 24
 
-- `Jacobians.Dolbeault.CechDiskAcyclicProof` — Dolbeault ladder — discharging `FunctionDiskAcyclic 𝔙 0` for a chart-disk cover (the germ-level
-- `Jacobians.Dolbeault.CechModelArtificial` — Dolbeault ladder — the ARTIFICIAL (single-point) chart-disk model of `exists_cechModel`.
-- `Jacobians.Dolbeault.CechModelGeometry`
-- `Jacobians.Dolbeault.CechRefinementLeray` — Dolbeault ladder — **STEP B of the Čech Leray cover-independence**: `refineH1` is a `ℂ`-linear
-- `Jacobians.Dolbeault.DolbeaultComparisonInverse` — Dolbeault's comparison theorem — **inverse direction** (`Čech → Dolbeault`), the CONSTRUCTION.
-- `Jacobians.Dolbeault.SkyscraperArrow` — Dolbeault ladder — the skyscraper coefficient arrow `h0ToSky` and exactness `exact₁₂`.
+- `Jacobians.Dbar.CechDiskAcyclicProof` — Dolbeault ladder — discharging `FunctionDiskAcyclic 𝔙 0` for a chart-disk cover (the germ-level
+- `Jacobians.Finiteness.CechModelArtificial` — Dolbeault ladder — the ARTIFICIAL (single-point) chart-disk model of `exists_cechModel`.
+- `Jacobians.Finiteness.CechModelGeometry`
+- `Jacobians.Finiteness.CechRefinementLeray` — Dolbeault ladder — **STEP B of the Čech Leray cover-independence**: `refineH1` is a `ℂ`-linear
+- `Jacobians.DolbeaultComparison.DolbeaultComparisonInverse` — Dolbeault's comparison theorem — **inverse direction** (`Čech → Dolbeault`), the CONSTRUCTION.
+- `Jacobians.Finiteness.SkyscraperArrow` — Dolbeault ladder — the skyscraper coefficient arrow `h0ToSky` and exactness `exact₁₂`.
 
 ## Layer 25
 
-- `Jacobians.AbelWeakSolutions` — Abel engine C-1: weak solutions of divisors (Forster §20.1–20.2)
-- `Jacobians.Dolbeault.CechDiskAcyclicAssembly` — Dolbeault ladder — assembling `FunctionDiskAcyclic 𝔙 0` from the reused chart-transport bridge
-- `Jacobians.Dolbeault.CechModelDelta`
-- `Jacobians.Dolbeault.CechRefinementInjective` — Dolbeault ladder — **Forster GTM 81 Lemma 12.4**: refinement maps on `H¹` are injective
-- `Jacobians.Dolbeault.DolbeaultComparisonEquiv` — Dolbeault's comparison theorem — final assembly of the `ℝ`-linear equivalence
-- `Jacobians.Dolbeault.ResidueStokesCoverPoU` — The chart-cover partition of unity for the genus-uniform residue theorem (Route-H Stage C,
-- `Jacobians.Dolbeault.SkyscraperSnake` — Dolbeault ladder — the homological/combinatorial half of the skyscraper long exact sequence
+- `Jacobians.AbelWeak.AbelWeakSolutions` — Abel engine C-1: weak solutions of divisors (Forster §20.1–20.2)
+- `Jacobians.Dbar.CechDiskAcyclicAssembly` — Dolbeault ladder — assembling `FunctionDiskAcyclic 𝔙 0` from the reused chart-transport bridge
+- `Jacobians.Finiteness.CechModelDelta`
+- `Jacobians.Finiteness.CechRefinementInjective` — Dolbeault ladder — **Forster GTM 81 Lemma 12.4**: refinement maps on `H¹` are injective
+- `Jacobians.DolbeaultComparison.DolbeaultComparisonEquiv` — Dolbeault's comparison theorem — final assembly of the `ℝ`-linear equivalence
+- `Jacobians.ResidueTheorem.ResidueStokesCoverPoU` — The chart-cover partition of unity for the genus-uniform residue theorem (Route-H Stage C,
+- `Jacobians.Finiteness.SkyscraperSnake` — Dolbeault ladder — the homological/combinatorial half of the skyscraper long exact sequence
 
 ## Layer 26
 
-- `Jacobians.AbelPieceSolution` — Abel engine C-2 (manifold layer): the per-piece weak solution (Forster 20.5(a))
-- `Jacobians.Dolbeault.CechModelManifold`
-- `Jacobians.Dolbeault.GoodCover` — GoodCover — the SCOUT verdict on the Leray good-cover overlap condition.
+- `Jacobians.AbelWeak.AbelPieceSolution` — Abel engine C-2 (manifold layer): the per-piece weak solution (Forster 20.5(a))
+- `Jacobians.Finiteness.CechModelManifold`
+- `Jacobians.DolbeaultComparison.GoodCover` — GoodCover — the SCOUT verdict on the Leray good-cover overlap condition.
 
 ## Layer 27
 
-- `Jacobians.Dolbeault.CechModelDifferential`
-- `Jacobians.Dolbeault.ChartDiskFiniteness`
-- `Jacobians.Dolbeault.OmegaFactorization` — The ω₀-factorization of meromorphic pair-forms (Route M input 2; Miranda Ch. VI pp. 186–188).
-- `Jacobians.Dolbeault.ResidueLedgerTransport` — The residue-ledger chart transport (Route-H Stage C, part 1: the transport engine).
+- `Jacobians.Finiteness.CechModelDifferential`
+- `Jacobians.Finiteness.ChartDiskFiniteness`
+- `Jacobians.ResidueTheorem.OmegaFactorization` — The ω₀-factorization of meromorphic pair-forms (Route M input 2; Miranda Ch. VI pp. 186–188).
+- `Jacobians.ResidueTheorem.ResidueLedgerTransport` — The residue-ledger chart transport (Route-H Stage C, part 1: the transport engine).
 
 ## Layer 28
 
-- `Jacobians.AbelFormRead` — Abel engine C-3 (read layer): chart reads of `(0,1)`-forms and conjugate forms
-- `Jacobians.Dolbeault.CechModelHolomorphicDelta`
-- `Jacobians.Dolbeault.ChartDiskLeray`
-- `Jacobians.Dolbeault.ResidueStokesPoleBump` — Pole bumps for the genus-uniform residue theorem (Route-H Stage C, part 2: geometry).
+- `Jacobians.Abel.AbelFormRead` — Abel engine C-3 (read layer): chart reads of `(0,1)`-forms and conjugate forms
+- `Jacobians.Finiteness.CechModelHolomorphicDelta`
+- `Jacobians.Finiteness.ChartDiskLeray`
+- `Jacobians.ResidueTheorem.ResidueStokesPoleBump` — Pole bumps for the genus-uniform residue theorem (Route-H Stage C, part 2: geometry).
 
 ## Layer 29
 
-- `Jacobians.AbelLogDbar` — Abel engine C-3 (logDbar layer): the global `(0,1)`-datum `σ_f = d″f/f` (Forster 20.2)
-- `Jacobians.AbelPairing` — Abel engine C-3 (pairing layer): the `∬_X σ∧ω` pairing atom (Forster 19.10)
-- `Jacobians.Dolbeault.ChartDiskFinitenessComplete`
+- `Jacobians.Abel.AbelLogDbar` — Abel engine C-3 (logDbar layer): the global `(0,1)`-datum `σ_f = d″f/f` (Forster 20.2)
+- `Jacobians.Abel.AbelPairing` — Abel engine C-3 (pairing layer): the `∬_X σ∧ω` pairing atom (Forster 19.10)
+- `Jacobians.Finiteness.ChartDiskFinitenessComplete`
 
 ## Layer 30
 
-- `Jacobians.AbelPairingStokes` — Abel engine C-3 (Stokes layer): `⟨η, ∂̄u⟩ = 0` (Forster 19.10, necessity half)
-- `Jacobians.Dolbeault.CechFinitenessAssembly` — Dolbeault ladder — the Čech finiteness ASSEMBLY (the 14.7 route, D = 0).
+- `Jacobians.Abel.AbelPairingStokes` — Abel engine C-3 (Stokes layer): `⟨η, ∂̄u⟩ = 0` (Forster 19.10, necessity half)
+- `Jacobians.Finiteness.CechFinitenessAssembly` — Dolbeault ladder — the Čech finiteness ASSEMBLY (the 14.7 route, D = 0).
 
 ## Layer 31
 
-- `Jacobians.AbelPairingPositivity` — Abel engine C-3 (positivity layer): `⟨η, ω̄⟩`-nondegeneracy (Forster 19.9)
-- `Jacobians.Dolbeault.CechFinitenessDtwist` — Dolbeault ladder — **general-divisor Čech `H¹` finiteness** (Forster GTM 81 §16, the skyscraper
+- `Jacobians.Abel.AbelPairingPositivity` — Abel engine C-3 (positivity layer): `⟨η, ω̄⟩`-nondegeneracy (Forster 19.9)
+- `Jacobians.Finiteness.CechFinitenessDtwist` — Dolbeault ladder — **general-divisor Čech `H¹` finiteness** (Forster GTM 81 §16, the skyscraper
 
 ## Layer 32
 
-- `Jacobians.Dolbeault.CechFinitenessWiring` — Dolbeault ladder — manifold instantiation of the Čech finiteness node (Forster 14.9), TOP LAYER.
-- `Jacobians.Dolbeault.CohomologicalH0Finiteness` — Dolbeault ladder — **finiteness of `H⁰(𝔘, 𝒪_D)`** (Forster GTM 81 §14 / §16 compactness),
+- `Jacobians.Finiteness.CechFinitenessWiring` — Dolbeault ladder — manifold instantiation of the Čech finiteness node (Forster 14.9), TOP LAYER.
+- `Jacobians.Finiteness.CohomologicalH0Finiteness` — Dolbeault ladder — **finiteness of `H⁰(𝔘, 𝒪_D)`** (Forster GTM 81 §14 / §16 compactness),
 
 ## Layer 33
 
-- `Jacobians.Dolbeault.SkyscraperAssembly` — Dolbeault ladder — assembling `LocalRealizationData` (completing `exists_skyscraperLES`).
+- `Jacobians.Finiteness.SkyscraperAssembly` — Dolbeault ladder — assembling `LocalRealizationData` (completing `exists_skyscraperLES`).
 
 ## Layer 34
 
-- `Jacobians.Dolbeault.CohomologicalRRChartDisk` — Dolbeault ladder — the skyscraper long exact sequence on a chart-disk-adapted cover (the
-- `Jacobians.Dolbeault.SkyscraperConeRealization` — Dolbeault ladder — the skyscraper local-realization datum on a *locally realizable* cover, via the
+- `Jacobians.Finiteness.CohomologicalRRChartDisk` — Dolbeault ladder — the skyscraper long exact sequence on a chart-disk-adapted cover (the
+- `Jacobians.Finiteness.SkyscraperConeRealization` — Dolbeault ladder — the skyscraper local-realization datum on a *locally realizable* cover, via the
 
 ## Layer 35
 
-- `Jacobians.Dolbeault.CohomologicalRR` — Dolbeault ladder — cohomological Riemann–Roch (χ-additivity, Forster §16).
-- `Jacobians.Dolbeault.SkyscraperProductWitness` — Dolbeault ladder — local realizability of the canonical chart-disk cover (the product witness
+- `Jacobians.Finiteness.CohomologicalRR` — Dolbeault ladder — cohomological Riemann–Roch (χ-additivity, Forster §16).
+- `Jacobians.Finiteness.SkyscraperProductWitness` — Dolbeault ladder — local realizability of the canonical chart-disk cover (the product witness
 
 ## Layer 36
 
-- `Jacobians.Dolbeault.CechH1Monotonicity` — The inclusion-induced maps `H¹(𝒪_D) → H¹(𝒪_{D'})` for `D ≤ D'` and their surjectivity
-- `Jacobians.Dolbeault.SerreDualityPairing` — Serre duality on `X` — the direct Forster §17 route (the plan of record)
-- `Jacobians.Dolbeault.SerreOmega0` — Serre §17 — node 1 (gate D): existence of a nonconstant meromorphic function (`ω₀`-existence).
+- `Jacobians.H1Genus.CechH1Monotonicity` — The inclusion-induced maps `H¹(𝒪_D) → H¹(𝒪_{D'})` for `D ≤ D'` and their surjectivity
+- `Jacobians.SerrePairing.SerreDualityPairing` — Serre duality on `X` — the direct Forster §17 route (the plan of record)
+- `Jacobians.CanonicalForms.SerreOmega0` — Serre §17 — node 1 (gate D): existence of a nonconstant meromorphic function (`ω₀`-existence).
 
 ## Layer 37
 
-- `Jacobians.Dolbeault.CanonicalFormDifferential` — Forster §17.4 — the canonical meromorphic 1-form `ω₀ = df` and its canonical divisor `K = div ω₀`,
-- `Jacobians.Dolbeault.DolbeaultLadder` — Dolbeault ladder — the Čech finiteness headline (light scaffold).
+- `Jacobians.CanonicalForms.CanonicalFormDifferential` — Forster §17.4 — the canonical meromorphic 1-form `ω₀ = df` and its canonical divisor `K = div ω₀`,
+- `Jacobians.SerrePairing.DolbeaultLadder` — Dolbeault ladder — the Čech finiteness headline (light scaffold).
 - `Jacobians.LaurentTail.LinearSystemFiniteDimensional`
 
 ## Layer 38
 
-- `Jacobians.Dolbeault.FormRemovableSingularity`
-- `Jacobians.HolomorphicPrimitiveLocal` — Local primitives of holomorphic 1-forms (Wall A, step 0)
+- `Jacobians.CanonicalForms.FormRemovableSingularity`
+- `Jacobians.Monodromy.HolomorphicPrimitiveLocal` — Local primitives of holomorphic 1-forms (Wall A, step 0)
 - `Jacobians.LaurentTail.DimensionBookkeeping` — Miranda's Lemma 2.3 (Ch. VI §2, p. 181): the five-term exact chain
 
 ## Layer 39
 
-- `Jacobians.HolomorphicPrimitiveChain` — Primitive chains along paths (Wall A, step 1 — discrete analytic continuation)
+- `Jacobians.Monodromy.HolomorphicPrimitiveChain` — Primitive chains along paths (Wall A, step 1 — discrete analytic continuation)
 - `Jacobians.LaurentTail.Finiteness` — Finite-dimensionality of the Mittag-Leffler obstruction spaces `H¹(D)` (Miranda Ch. VI §2,
 
 ## Layer 40
 
-- `Jacobians.HolomorphicPrimitiveMonodromy` — The monodromy theorem (Wall A, step 2 — homotopy invariance of the path value)
+- `Jacobians.Monodromy.HolomorphicPrimitiveMonodromy` — The monodromy theorem (Wall A, step 2 — homotopy invariance of the path value)
 - `Jacobians.LaurentTail.RiemannRochFirstForm` — Riemann–Roch, first form (Miranda Ch. VI Thm. 3.1, p. 185):
 
 ## Layer 41
 
-- `Jacobians.AbelChains` — Abel engine C-0: 1-chains and the `pathPrimValue = lineIntegral` bridge
-- `Jacobians.HolomorphicPrimitives` — The holomorphic Poincaré lemma on simply connected surfaces (Wall A, final assembly)
+- `Jacobians.AbelWeak.AbelChains` — Abel engine C-0: 1-chains and the `pathPrimValue = lineIntegral` bridge
+- `Jacobians.Monodromy.HolomorphicPrimitives` — The holomorphic Poincaré lemma on simply connected surfaces (Wall A, final assembly)
 
 ## Layer 42
 
-- `Jacobians.AbelCurveSolution` — Abel engine C-2 (curve layer): the per-curve weak solution (Forster 20.5)
-- `Jacobians.DegreeOneSphere` — Degree-one ⟹ sphere endgame
+- `Jacobians.AbelWeak.AbelCurveSolution` — Abel engine C-2 (curve layer): the per-curve weak solution (Forster 20.5)
+- `Jacobians.ProperDegree.DegreeOneSphere` — Degree-one ⟹ sphere endgame
 
 ## Layer 43
 
-- `Jacobians.ToSphereGeneral` — The general holomorphic map `X → ℂℙ¹` of a meromorphic function
+- `Jacobians.ProperDegree.ToSphereGeneral` — The general holomorphic map `X → ℂℙ¹` of a meromorphic function
 
 ## Layer 44
 
-- `Jacobians.ProperMapDegree` — The proper-map degree: `zerosCount f = polesCount f` (conservation of number)
+- `Jacobians.ProperDegree.ProperMapDegree` — The proper-map degree: `zerosCount f = polesCount f` (conservation of number)
 - `Jacobians.ResidueTheoremX` — The residue theorem on a compact Riemann surface — the global assembly (`deg_div`)
 
 ## Layer 45
 
 - `Jacobians.Dolbeault.FormResidueTheorem` — The general 1-form residue theorem `∑ₐ Resₐ(α) = 0` (Gate A, node A-ii)
-- `Jacobians.ProperMapDegreeConstruct` — Constructing `ProperMapDegreeData`: the conservation-of-number assembly
+- `Jacobians.ProperDegree.ProperMapDegreeConstruct` — Constructing `ProperMapDegreeData`: the conservation-of-number assembly
 
 ## Layer 46
 
-- `Jacobians.MultiplicityPatching` — Conservation of number for the multiplicity sum: `IsLocallyConstant (N f)`
+- `Jacobians.ProperDegree.MultiplicityPatching` — Conservation of number for the multiplicity sum: `IsLocallyConstant (N f)`
 
 ## Layer 47
 
-- `Jacobians.MultiplicityPatchingConstruct` — Constructing the multiplicity-patching supply: the `deg_div` endgame
+- `Jacobians.ProperDegree.MultiplicityPatchingConstruct` — Constructing the multiplicity-patching supply: the `deg_div` endgame
 
 ## Layer 48
 
-- `Jacobians.ProperMapDegreeSheets` — The local multiplicity sheets — discharging `exists_properMapDegree`
+- `Jacobians.ProperDegree.ProperMapDegreeSheets` — The local multiplicity sheets — discharging `exists_properMapDegree`
 
 ## Layer 49
 
 - `Jacobians.Dolbeault.FormTraceFibre` — The per-fibre trace data of `α = ω₀·g` (Gate A, node A-ii — bridges (a)/(b)/(c))
-- `Jacobians.LinearSystemDegree` — Degree consequences for linear systems: `deg_div` and negative-degree vanishing
+- `Jacobians.ProperDegree.LinearSystemDegree` — Degree consequences for linear systems: `deg_div` and negative-degree vanishing
 
 ## Layer 50
 
@@ -511,7 +511,7 @@ Modules grouped by import depth (layer 1 = leaves of the import graph; higher la
 
 ## Layer 79
 
-- `Jacobians.Dolbeault.CechH1CupKill` — Killing a Čech `H¹(𝒪)` class in a larger divisor (Miranda Ch. X §2 / Forster §16-style)
+- `Jacobians.H1Genus.CechH1CupKill` — Killing a Čech `H¹(𝒪)` class in a larger divisor (Miranda Ch. X §2 / Forster §16-style)
 - `Jacobians.Dolbeault.SerreResidueRamifiedFullFibre` — The SOUND full-fibre ramified geometric-trace identification (closing Gate A)
 
 ## Layer 80
@@ -563,70 +563,70 @@ Modules grouped by import depth (layer 1 = leaves of the import graph; higher la
 
 ## Layer 91
 
-- `Jacobians.Dolbeault.PairFormResidueTheorem` — THE PAIR-FORM RESIDUE THEOREM, genus ≥ 1 (Miranda Ch. VI pp. 186–188; Route M input 2).
+- `Jacobians.ResidueTheorem.PairFormResidueTheorem` — THE PAIR-FORM RESIDUE THEOREM, genus ≥ 1 (Miranda Ch. VI pp. 186–188; Route M input 2).
 
 ## Layer 92
 
-- `Jacobians.Dolbeault.ResidueTheoremStokes` — THE GENUS-UNIFORM PAIR-FORM RESIDUE THEOREM (Forster GTM 81, Theorem 10.21; Route-H final).
+- `Jacobians.ResidueTheorem.ResidueTheoremStokes` — THE GENUS-UNIFORM PAIR-FORM RESIDUE THEOREM (Forster GTM 81, Theorem 10.21; Route-H final).
 
 ## Layer 93
 
-- `Jacobians.LaurentTail.TailResidue` — The residue map on Laurent tail divisors (Miranda Ch. VI pp. 186–188)
+- `Jacobians.TailDuality.TailResidue` — The residue map on Laurent tail divisors (Miranda Ch. VI pp. 186–188)
 
 ## Layer 94
 
-- `Jacobians.LaurentTail.PairDualityInjective` — Serre duality for the tail `H¹`, the injective half — meromorphic pair frame
-- `Jacobians.LaurentTail.TailDualityInjective` — Serre duality for the tail `H¹`, the injective half (Miranda Ch. VI Thm 3.3, p. 188)
+- `Jacobians.TailDuality.PairDualityInjective` — Serre duality for the tail `H¹`, the injective half — meromorphic pair frame
+- `Jacobians.TailDuality.TailDualityInjective` — Serre duality for the tail `H¹`, the injective half (Miranda Ch. VI Thm 3.3, p. 188)
 
 ## Layer 95
 
-- `Jacobians.LaurentTail.TailMultiplication` — Multiplication operators on Laurent tail divisors (Miranda Ch. VI p. 179, Problem VI.2.A)
+- `Jacobians.TailDuality.TailMultiplication` — Multiplication operators on Laurent tail divisors (Miranda Ch. VI p. 179, Problem VI.2.A)
 
 ## Layer 96
 
-- `Jacobians.LaurentTail.TailMultiplicationH1` — The multiplication action on the Mittag-Leffler `H¹` (Forster 17.8 / Miranda Problem VI.2.J)
+- `Jacobians.TailDuality.TailMultiplicationH1` — The multiplication action on the Mittag-Leffler `H¹` (Forster 17.8 / Miranda Problem VI.2.J)
 
 ## Layer 97
 
-- `Jacobians.LaurentTail.TailDualitySurjective` — Serre duality for the tail `H¹`, the surjective half (Miranda Thm 3.3, pp. 189–191)
+- `Jacobians.TailDuality.TailDualitySurjective` — Serre duality for the tail `H¹`, the surjective half (Miranda Thm 3.3, pp. 189–191)
 
 ## Layer 98
 
-- `Jacobians.LaurentTail.TailDualitySurjectiveAssembly` — Serre duality for the tail `H¹`, the surjectivity assembly (Miranda Thm 3.3, pp. 189–191)
+- `Jacobians.TailDuality.TailDualitySurjectiveAssembly` — Serre duality for the tail `H¹`, the surjectivity assembly (Miranda Thm 3.3, pp. 189–191)
 
 ## Layer 99
 
-- `Jacobians.LaurentTail.PairDualitySurjective` — Serre duality for the tail `H¹`, the surjective half — meromorphic pair frame
-- `Jacobians.LaurentTail.RiemannRochGenusPos` — Riemann–Roch for positive genus (Miranda Ch. VI Thm 3.11 / Forster 16.9)
+- `Jacobians.TailDuality.PairDualitySurjective` — Serre duality for the tail `H¹`, the surjective half — meromorphic pair frame
+- `Jacobians.TailDuality.RiemannRochGenusPos` — Riemann–Roch for positive genus (Miranda Ch. VI Thm 3.11 / Forster 16.9)
 
 ## Layer 100
 
-- `Jacobians.LaurentTail.RiemannRochUnconditional` — Riemann–Roch, unconditional (Miranda Ch. VI Thm 3.11 / Forster 16.9 — every genus)
+- `Jacobians.TailDuality.RiemannRochUnconditional` — Riemann–Roch, unconditional (Miranda Ch. VI Thm 3.11 / Forster 16.9 — every genus)
 
 ## Layer 101
 
-- `Jacobians.Dolbeault.CechH1Genus` — The dimension count `h¹(𝔘, 𝒪) = genus X` (Forster 19.x / Miranda Ch. X §2)
+- `Jacobians.H1Genus.CechH1Genus` — The dimension count `h¹(𝔘, 𝒪) = genus X` (Forster 19.x / Miranda Ch. X §2)
 - `Jacobians.RiemannRoch` — Riemann–Roch INTERFACE (the meet-in-the-middle).
 
 ## Layer 102
 
-- `Jacobians.AbelDbarKill` — Abel engine C-5 (∂̄-kill): Forster 19.10 — `⟨ω,σ⟩ = 0 ∀ω ⟹ σ = ∂̄u`
+- `Jacobians.Abel.AbelDbarKill` — Abel engine C-5 (∂̄-kill): Forster 19.10 — `⟨ω,σ⟩ = 0 ∀ω ⟹ σ = ∂̄u`
 - `Jacobians.GenusSphereHeadline` — The genus-0 ⟺ sphere headline (the Riemann–Roch-gated endgame)
 
 ## Layer 103
 
-- `Jacobians.AbelEngineSigma` — Abel engine C-5 (σ layer): the chain `∂̄`-datum and its `∂̄`-potential
+- `Jacobians.Abel.AbelEngineSigma` — Abel engine C-5 (σ layer): the chain `∂̄`-datum and its `∂̄`-potential
 
 ## Layer 104
 
-- `Jacobians.AbelEngineMeromorphic` — Abel engine C-5 (E4): the meromorphic solution `F = e⁻ᵘ·f` (Forster 20.7 (a))
+- `Jacobians.Abel.AbelEngineMeromorphic` — Abel engine C-5 (E4): the meromorphic solution `F = e⁻ᵘ·f` (Forster 20.7 (a))
 
 ## Layer 105
 
-- `Jacobians.AbelFinal` — Wall C closed: `abelJacobi_twoPoint_ne_zero` (Forster 20.7 + 21.5)
-- `Jacobians.PeriodLatticeDiscrete` — Forster 21.4(b) — discreteness of the period lattice (dissection-free)
+- `Jacobians.Abel.AbelFinal` — Wall C closed: `abelJacobi_twoPoint_ne_zero` (Forster 20.7 + 21.5)
+- `Jacobians.PeriodLattice.PeriodLatticeDiscrete` — Forster 21.4(b) — discreteness of the period lattice (dissection-free)
 
 ## Layer 106
 
-- `Jacobians.PeriodLatticeBasis` — Forster 21.4 assembled: the period real basis (`exists_periodLattice_realBasis`)
+- `Jacobians.PeriodLattice.PeriodLatticeBasis` — Forster 21.4 assembled: the period real basis (`exists_periodLattice_realBasis`)
 
