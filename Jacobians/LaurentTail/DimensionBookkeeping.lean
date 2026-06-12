@@ -1,5 +1,25 @@
-import Jacobians.CanonicalForms.CanonicalFormIso
-import Mathlib.Analysis.CStarAlgebra.Classes
+/-
+  Miranda's Lemma 2.3 (Ch. VI §2, p. 181): the five-term exact chain
+
+      `0 → L(D₁) → L(D₂) →^{α_{D₁}} ker t^{D₁}_{D₂} → H¹(D₁) → H¹(D₂) → 0`
+
+  built by hand (no general snake lemma), with exactness at each spot, and the resulting
+  **dimension identity** for `D₁ ≤ D₂`
+
+      `dim ker(H¹(D₁) → H¹(D₂)) = (deg D₂ − l(D₂)) − (deg D₁ − l(D₁))`
+
+  (`finrank_ker_mittagLefflerTruncate`).  Only the *finite-dimensional* pieces enter the
+  rank–nullity bookkeeping — `ker t` (the monomial window) and the `L(D)`s (the Čech bridge);
+  no finiteness of `H¹` is assumed.  The relative kernel `ker(H¹(D₁) → H¹(D₂))` is finite-
+  dimensional *because* it is the image of the window (`finiteDimensional_ker_mittagLeffler-
+  Truncate`), which is what later makes Miranda 2.6/2.7 (h¹ < ∞) and RR-I run.
+
+  The maps (on the junk-free `lSysModule D = L(D)/germZero`, where `lDim` lives):
+  inclusion; `α_{D₁}` (lands in `ker t` because `t ∘ α_{D₁} = α_{D₂}` kills `L(D₂)`); class-of;
+  the induced truncation.
+-/
+import Jacobians.LaurentTail.TailMap
+import Jacobians.LaurentTail.LinearSystemFiniteDimensional
 
 open scoped Manifold ContDiff Topology
 open Module

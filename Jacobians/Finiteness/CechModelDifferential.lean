@@ -1,3 +1,32 @@
+/-
+  Čech finiteness — the CROSS-CHART Čech `δ⁰` on the sup-norm `BddHol` cochains (piece (a) of
+  `exists_cechModel`, Forster 14.9).
+
+  `CechModelDelta.lean` built the sup-norm cochain SPACES (`Cochain0Model`, `Cochain2*Model`) and
+  their Banach structure, and flagged the next gap as the CROSS-CHART differentials — the
+  off-diagonal components of the Čech coboundary, transported between neighbouring chart-images
+  through the holomorphic chart transitions `φ_a ∘ φ_b⁻¹`. THIS FILE builds the Čech
+  `δ⁰ : Cochain0Model →L Cshr` for the chart-cover model `chartCoverOverlapData`.
+
+  THE CROSS-CHART SUBTLETY (recap). A 0-cochain `f` assigns each cover chart `a` a
+  bounded-holomorphic function `f a` on its OWN chart-image `coverSetImage a` (chart-`a`
+  coordinates). The Čech `δ⁰` on the overlap `(a,b)`, read in the FIRST chart `a` (matching
+  `chartCoverOverlapData`'s `Uov`/`Kov`), is `(δ⁰f)_{ab} = (f b ∘ φ_b ∘ φ_a⁻¹) − (f a)` on the
+  shrinking `Kov (a,b)`, i.e. `f a` restricts directly, but `f b` (living in chart-`b` coordinates)
+  must be TRANSPORTED to chart-`a` coordinates through the holomorphic transition
+  `τ_{ab} = φ_b ∘ φ_a⁻¹`. The two geometric witnesses the transport needs — `τ_{ab}` continuous on
+  `Kov (a,b)` and mapping it into `coverSetImage b` — come from the `ω`-manifold's chart change
+  (`transition_analyticAt_of_mem`, `CechModelManifold`), and the functional-analysis transport
+  `g ↦ g ∘ τ` is `BddHol.precompCLM` (`BddHol`). `δ⁰` is then the per-overlap difference
+  (off-diagonal transport `−` diagonal restriction), assembled by `ContinuousLinearMap.pi`.
+
+  This is the genuine content of part (a) of the `exists_cechModel` model.
+  `[propext, Classical.choice, Quot.sound]`. (The shrinking-side `δ¹`, the cover-side `δ¹cov`, the
+  `hδδ`/`hcomm` algebra, the `leray` disk-acyclicity field, and the `cechH1 ≃ supH1` comparison
+  remain — see `CechFinitenessWiring.exists_cechModel`.)
+-/
+import Jacobians.Finiteness.CechModelDelta
+import Jacobians.Finiteness.CechModelManifold
 
 open scoped Manifold ContDiff Topology
 open Jacobians.Montel ContinuousLinearMap

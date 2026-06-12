@@ -1,7 +1,20 @@
+/-
+  Dolbeault ladder — the underlying REAL-`C^∞` manifold structure of a complex manifold.
+
+  Real Dolbeault (real-`C^∞` functions, (0,1)-forms, the ∂̄ operator) needs `X` viewed as a REAL
+  manifold, not the ℂ-manifold the rest of the repo uses: over the ℂ-model `𝓘(ℂ)`, `ContMDiff … ⊤`
+  means *holomorphic* (`ContDiff ℂ 1 ⟹` holo), which is the wrong (often-zero) class for ∂̄. This
+  module supplies the real structure `IsManifold 𝓘(ℝ,ℂ) ⊤ X` from the complex one: the holomorphic
+  chart transitions (`contDiffGroupoid ω 𝓘(ℂ)`) are real-smooth (`contDiffGroupoid ⊤ 𝓘(ℝ,ℂ)`), via
+  `ContDiffOn ℂ ω ⟹ ContDiffOn ℝ ⊤` (`of_le` + `restrict_scalars`).
+
+  The ℂ-as-ℝ-module instance diamond surfacing in `restrict_scalars` is a defeq-transparency
+  issue, handled exactly as Mathlib's own `Analysis/Complex/RealDeriv.lean` does:
+  `set_option backward.isDefEq.respectTransparency false`.
+-/
+import Jacobians.Forms.Genus
 import Mathlib.Analysis.Calculus.ContDiff.Operations
 import Mathlib.Analysis.Complex.Basic
-import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.Geometry.Manifold.IsManifold.Basic
 
 open scoped Manifold ContDiff
 

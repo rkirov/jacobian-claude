@@ -19,7 +19,6 @@
   planar-Stokes ledger.  Everything here is complete and depends on no unproved lemma.
 -/
 import Jacobians.ResidueTheorem.OmegaFactorization
-import Jacobians.Cech.MeromorphicAnalyticBadSet
 
 open scoped Manifold ContDiff Topology
 open Filter

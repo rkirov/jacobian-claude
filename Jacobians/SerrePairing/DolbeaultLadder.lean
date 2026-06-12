@@ -1,5 +1,21 @@
-import Jacobians.Cech.CechComplex
-import Mathlib.Analysis.CStarAlgebra.Classes
+/-
+  The Čech finiteness headline.
+
+  Riemann–Roch (`Jacobians.exists_riemannRoch_divisor`) is proven via the Miranda Laurent-tail
+  route (`LaurentTail.exists_riemannRoch_divisor_unconditional`, wired in `RiemannRoch.lean`), so
+  this file carries only the load-bearing finiteness headline:
+
+    * `finiteDimensional_cechH1` — finiteness (Forster 14.9): disk-Montel +
+      Schwartz/Riesz–Schauder (`finiteDimensional_cechH1_wired`).
+
+  The Čech tower imported here (cohomological RR / skyscraper LES / `h0Dim_eq_lDim`) feeds the
+  Riemann inequality and `exists_nonconstant_meromorphic`, which the tail route's pole-budget
+  bound consumes.
+-/
+import Jacobians.Cech.CechH0
+import Jacobians.Finiteness.CohomologicalRR
+import Jacobians.SerrePairing.SerreDualityPairing
+import Jacobians.Finiteness.CechFinitenessWiring
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

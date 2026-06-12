@@ -1,4 +1,28 @@
-import Jacobians.TailDuality.PairDualityInjective
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+
+# Riemann–Roch, unconditional (Miranda Ch. VI Thm 3.11 / Forster 16.9 — every genus)
+
+The Miranda-route final assembly in the meromorphic pair frame, combining
+
+* **RR-I** `riemannRoch_tailForm` (`l(D) − h¹(D) = deg D + 1 − h¹(0)`),
+* **Serre duality for the tail `H¹`** `h1TailDim_eq_lDim_pairCanonical_sub`
+  (`h¹(D) = l(K − D)`, `K = div (dg₀)` — every genus, by the genus-free residue theorem), and
+* **`l(K) = genus`** — the Forster §17.4 canonical-form isomorphism
+  (`hKgenus_unconditional`), applied to the datum `ω₀ = dg₀`,
+  `K = pairCanonicalDivisor g₀ hg₀` (the divisor is the form divisor of `dg₀` by
+  construction),
+
+into the headline `l(D) − l(K − D) = deg D + 1 − g` for every divisor `D`, with `g₀` the
+nonconstant meromorphic function of `exists_nonconstant_meromorphic`.  Unlike the genus ≥ 1
+assembly (`RiemannRochGenusPos`), nothing here needs a nonzero *holomorphic* 1-form, so there
+is no genus hypothesis — this is the exact statement shape of
+`Jacobians.exists_riemannRoch_divisor`, which it discharges.
+-/
+import Jacobians.TailDuality.PairDualitySurjective
+import Jacobians.CanonicalForms.FormRemovableSingularity
 
 open scoped Manifold ContDiff Topology
 open Module

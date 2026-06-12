@@ -1,5 +1,20 @@
-import Jacobians.LaurentTail.TailMap
-import Mathlib.Analysis.CStarAlgebra.Classes
+/-
+  Riemann–Roch, first form (Miranda Ch. VI Thm. 3.1, p. 185):
+
+      `l(D) − h¹(D) = deg D + 1 − h¹(0)`,
+
+  where `h¹(D) = dim H¹(D)` is the Laurent-tail (Mittag-Leffler) obstruction dimension and
+  `l(D)` the linear-system dimension `lDim`.  Proof: `l(D) − h¹(D) − deg D` is constant in `D` —
+  for `D₁ ≤ D₂` this is Lemma 2.3 (`finrank_ker_mittagLefflerTruncate`) plus rank–nullity on
+  the (now finite-dimensional, Prop. 2.7) surjection `H¹(D₁) ↠ H¹(D₂)`; an arbitrary pair is
+  compared through the common upper bound `D₁ ⊔ D₂`.  Evaluating at `D = 0` (`l(0) = 1`,
+  `deg 0 = 0`) gives the theorem.
+
+  This is Riemann–Roch with `h¹` in its Laurent-tail incarnation; Serre duality
+  (`h¹(D) = l(K − D)`, Miranda Ch. VI §3) converts it into the
+  `exists_riemannRoch_divisor` form.
+-/
+import Jacobians.LaurentTail.Finiteness
 
 open scoped Manifold ContDiff Topology
 open Module

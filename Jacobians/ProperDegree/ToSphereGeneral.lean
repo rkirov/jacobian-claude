@@ -1,5 +1,12 @@
-import Jacobians.ProperDegree.Degree
-import Mathlib.Analysis.CStarAlgebra.Classes
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+import Jacobians.ProjectiveLine
+import Jacobians.Meromorphic.Abel
+import Jacobians.Meromorphic.MeromorphicLiouville
+import Jacobians.ProperDegree.DegreeOneSphere
 
 /-!
 # The general holomorphic map `X → ℂℙ¹` of a meromorphic function

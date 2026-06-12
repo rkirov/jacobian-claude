@@ -1,5 +1,27 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+
+# Forster 21.4(c) — non-degeneracy: the period lattice spans `ℂ^g` over `ℝ`
+
+If a nonzero real-linear functional vanished on `truePeriodLattice X`, writing it as
+`v ↦ Re (∑ⱼ dⱼ·vⱼ)` would give `d ∈ ℂ^g ∖ {0}` with `Re ∫_γ ∑ dⱼωⱼ = 0` for every closed smooth
+loop `γ`.  Then `u(x) := Re (∑ⱼ dⱼ·periodVec (smoothPath x₀ x)ⱼ)` is well-defined up to nothing
+(a definite function) and **locally the real part of an analytic function** — near `Q₀` it agrees
+with `Re H_{Q₀} ∘ chart` for `H_{Q₀}(z) = ∑ⱼ dⱼ·Φ̃_{Q₀,j}(z)` (the chart primitives), because two
+smooth paths with the same endpoints have lattice-equal periods
+(`localLift_quotient_eq_ofCurve_eventually`).  At a maximum of `u` (compactness) the open-mapping
+dichotomy forces `H` locally constant, so `{u = max}` is clopen, `u` is constant, every chart
+derivative `∑ⱼ dⱼ·ω_j`-coefficient vanishes, and `∑ dⱼωⱼ = 0` — contradicting `d ≠ 0`.
+
+No harmonic theory, no surface integration: the only analysis is Mathlib's planar open-mapping
+dichotomy (`AnalyticAt.eventually_constant_or_nhds_le_map_nhds`).
+
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.4(c) (pp. 169–170) and 19.8.
+-/
+import Jacobians.PeriodLattice.JacobiLocalMap
 import Mathlib.Analysis.Complex.OpenMapping
-import Jacobians.JacobianConstruction.PeriodLattice
 
 open scoped Manifold ContDiff Topology
 open Jacobians.OfCurveSkeleton

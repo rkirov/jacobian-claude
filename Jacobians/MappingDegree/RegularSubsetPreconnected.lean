@@ -1,3 +1,10 @@
+/-
+Copyright (c) 2026 Bryan Sanchez. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bryan Sanchez
+-/
+import Mathlib.Topology.Connected.Basic
+import Mathlib.Topology.Connected.PathConnected
 import Mathlib.Topology.Constructions
 
 set_option autoImplicit true

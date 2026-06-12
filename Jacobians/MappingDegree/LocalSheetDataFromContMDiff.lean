@@ -1,6 +1,17 @@
+/-
+Copyright (c) 2026 Bryan Sanchez. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bryan Sanchez
+-/
+import Jacobians.MappingDegree.HurwitzPatchingDataConstruction
+import Jacobians.Surface.ContMDiffOmegaAnalytic
+import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
+import Mathlib.Analysis.Calculus.FDeriv.Analytic
+import Mathlib.Analysis.Calculus.Deriv.Inverse
+import Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv
+import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Analytic
 import Mathlib.Geometry.Manifold.ContMDiff.Defs
 import Mathlib.Geometry.Manifold.IsManifold.ExtChartAt
-import Mathlib.Analysis.InnerProductSpace.Basic
 
 set_option autoImplicit true
 

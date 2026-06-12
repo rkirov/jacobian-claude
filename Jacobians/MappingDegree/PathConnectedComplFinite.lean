@@ -1,3 +1,44 @@
+/-
+Copyright (c) 2026 Bryan Sanchez. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bryan Sanchez
+
+Chip ZZ165 (retry-2): the global path-connected gluing chip.
+
+For a connected, T2 charted space `Y` modelled on `ℂ`, the complement of any
+finite set `C ⊆ Y` is path-connected (provided it is nonempty).
+
+Strategy:
+1. `Y` is path-connected (ZZ162 + ZZ163).
+2. Pick a basepoint `p ∈ Cᶜ`. For any `q ∈ Cᶜ`, take a path `γ` from `p`
+   to `q` (`PathConnectedSpace.somePath` / `PathConnectedSpace.joined`).
+3. Subdivide `γ` into finitely many pieces, each contained in the source of
+   a ball-restricted chart `φ_i` (`Path.exists_ball_chart_subdivision`,
+   ZZ165c).
+4. For each interior endpoint `z_i := γ(t_i)`, perturb it to a point
+   `z'_i` lying in the chart-overlap `φ_{i-1}.source ∩ φ_i.source`,
+   outside `C`, with a chart-local path `z_i ⇝ z'_i` inside that overlap
+   (`exists_avoidance_in_open_chartedSpace_complex`, ZZ165e). The boundary
+   endpoints stay fixed: `z'_0 := p`, `z'_N := q`.
+5. For each piece `i`, both `z'_i` and `z'_{i+1}` lie in `φ_i.source` and
+   outside `C`. Use `chart_local_detour_of_pathConnected_complement` (ZZ164)
+   together with `Set.Countable.isPathConnected_ball_diff_complex` (ZZ164b)
+   to get a path from `z'_i` to `z'_{i+1}` in `Cᶜ ∩ φ_i.source ⊆ Cᶜ`.
+6. Concatenate all these `JoinedIn Cᶜ` segments to obtain a path from `p`
+   to `q` in `Cᶜ`.
+
+No `axiom`, no gaps.
+-/
+import Jacobians.MappingDegree.ChartedSpaceLocPathConnected
+import Jacobians.MappingDegree.ConnectedManifoldPathConnected
+import Jacobians.MappingDegree.ChartLocalDetour
+import Jacobians.MappingDegree.IsPathConnectedBallMinusCountable
+import Jacobians.MappingDegree.ChartRestrictionToBall
+import Jacobians.MappingDegree.PathSubdivisionByBallCharts
+import Jacobians.MappingDegree.ChartOverlapAvoidanceFull
+import Mathlib.Analysis.Complex.Basic
+import Mathlib.Geometry.Manifold.IsManifold.Basic
+import Mathlib.Geometry.Manifold.ContMDiff.Defs
 import Mathlib.Topology.Connected.PathConnected
 import Mathlib.Topology.Connected.LocPathConnected
 

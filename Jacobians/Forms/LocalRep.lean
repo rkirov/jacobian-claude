@@ -1,6 +1,7 @@
+import Mathlib.Geometry.Manifold.VectorBundle.Tangent
+import Mathlib.Geometry.Manifold.VectorBundle.Hom
 import Mathlib.Geometry.Manifold.VectorBundle.SmoothSection
 import Mathlib.Analysis.Complex.Basic
-import Mathlib.Topology.VectorBundle.Hom
 
 /-!
 # Montel path — local representative of a holomorphic 1-form

@@ -1,4 +1,17 @@
-import Jacobians.MappingDegree.Degree
+/-
+Thin forwarder from `Jacobians.*` to the ported discharge under
+`Jacobians.Discharge.*`. The discharge ships
+`Nonempty (RegularValueWitnessReg f)` unconditionally for non-constant
+analytic `f : X → Y` between compact connected complex 1-manifolds
+(`regular_value_exists_reg_unconditional`), so the `else 0`
+fallback in `degreeFiber` no longer fires for non-constant maps.
+
+Original code MIT-licensed by Bryan Sanchez (2026); audit verifies
+`#print axioms` returns only `[propext, Classical.choice, Quot.sound]`.
+Axiom-verified clean (`#print axioms` returns only `[propext, Classical.choice, Quot.sound]`).
+-/
+import Jacobians.MappingDegree.RegularValueExistsRegUnconditional
+import Jacobians.MappingDegree.DegreeWellDefined
 
 open scoped Manifold ContDiff
 

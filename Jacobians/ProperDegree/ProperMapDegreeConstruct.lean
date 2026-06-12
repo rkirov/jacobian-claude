@@ -8,7 +8,6 @@ import Jacobians.MappingDegree.FibreCardLocallyConstantFromNormalForm
 import Jacobians.MappingDegree.HurwitzPatchingDataConstruction
 import Jacobians.MappingDegree.LocalSheetDataAtRegularValue
 import Jacobians.MappingDegree.Degree
-import Jacobians.ProperDegree.ToSphereGeneral
 
 /-!
 # Constructing `ProperMapDegreeData`: the conservation-of-number assembly

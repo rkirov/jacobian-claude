@@ -1,6 +1,37 @@
+/-
+  The ω₀-factorization of meromorphic pair-forms (Miranda Ch. VI pp. 186–188).
+
+  A meromorphic 1-form on the compact Riemann surface `X` is represented as a PAIR `(g₀, h)` of
+  meromorphic functions meaning `h·dg₀`.  To feed it into the 1-form residue theorem
+  `residueTheorem_unconditional` (which is typed at `ω₀·g` with `ω₀ : HolomorphicOneForms X`
+  HOLOMORPHIC), we factor `dg₀ = q·ω₀` through any nonzero holomorphic 1-form `ω₀` (existence =
+  `0 < genus X`), where the quotient
+
+    `derivQuotient ω₀ g₀ : X → ℂ`,  `y ↦ (dg₀-coefficient at y)/(ω₀-coefficient at y)`
+
+  (both read in `y`'s OWN canonical chart) is a GLOBAL meromorphic function.  Then
+  `h·dg₀ = (h·q)·ω₀` and the pair-form residue theorem reduces to the 1-form one.
+
+  Contents:
+  * **Identity-theorem atoms** for a nonzero holomorphic 1-form (analytic continuation on the
+    connected `X`, clopen argument): `eq_zero_of_coeffAt_eventually_zero` (global propagation),
+    `coeffAt_eventually_ne_zero` (zeros are isolated), `finite_localRep_self_eq_zero` (the zero
+    set is FINITE — the `div(ω₀) ≥ 0` finiteness atom).
+  * **`chartTransitionFactor` = transition derivative**
+    (`chartTransitionFactor_eq_deriv_transition`): the Montel chart-transition factor of the tangent
+    bundle is the honest `deriv` of the chart-transition map — the bridge that makes the
+    dg₀-coefficient (chain rule) and the ω₀-coefficient (`localRep_chart_transition`) transform with
+    the SAME factor, so their ratio is chart-coherent.
+  * **The quotient** `derivQuotient`/`derivQuotientFn`: its chart-coherence
+    (`derivQuotient_eventuallyEq_chart`) and global meromorphy (`isMeromorphic_derivQuotient`,
+    via Mathlib's `MeromorphicAt.deriv` + `MeromorphicAt.div` + germ invariance).
+
+  Everything here is complete and depends on no unproved lemma.
+-/
+import Jacobians.Forms.ChartTransition
+import Jacobians.Cech.MeromorphicAnalyticBadSet
+import Jacobians.Finiteness.CechModelManifold
 import Jacobians.ResidueCalculus.FormCoeff
-import Jacobians.Meromorphic.Abel
-import Mathlib.Analysis.CStarAlgebra.Classes
 
 open scoped Manifold ContDiff Topology
 open Bundle Filter Metric

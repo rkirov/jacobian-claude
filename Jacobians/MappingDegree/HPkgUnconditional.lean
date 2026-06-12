@@ -1,4 +1,14 @@
-import Jacobians.MappingDegree.Degree
+/-
+Copyright (c) 2026 Bryan Sanchez. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bryan Sanchez
+-/
+import Jacobians.MappingDegree.CriticalValueSetFinite
+import Jacobians.MappingDegree.LocalSheetDataAtRegularValue
+import Jacobians.MappingDegree.HLcUnconditional
+import Jacobians.MappingDegree.FibresFiniteUnconditional
+import Jacobians.MappingDegree.RegularValueExistsRegUnconditional
+import Jacobians.MappingDegree.CriticalValuesFiniteGeneral
 
 /-! # Unconditional `h_pkg` (item 9 close — composition chip)
 

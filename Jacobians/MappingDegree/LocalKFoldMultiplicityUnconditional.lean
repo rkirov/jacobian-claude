@@ -1,3 +1,16 @@
+/-
+Copyright (c) 2026 Bryan Sanchez. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bryan Sanchez
+-/
+import Jacobians.MappingDegree.AnalyticKthRoot
+import Jacobians.MappingDegree.LocalKFoldMultiplicity
+import Jacobians.MappingDegree.LocalMultiplicityInvariance
+import Mathlib.Analysis.Calculus.Deriv.Mul
+import Mathlib.Analysis.Calculus.Deriv.Comp
+import Mathlib.RingTheory.Polynomial.Cyclotomic.Roots
+import Mathlib.Analysis.Complex.Polynomial.Basic
+import Mathlib.FieldTheory.Separable
 
 set_option autoImplicit true
 

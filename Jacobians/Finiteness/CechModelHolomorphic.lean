@@ -1,3 +1,15 @@
+/-
+  Čech finiteness — the holomorphic-shrinking model.
+
+  The shrinking side of the Montel/Schwartz finiteness argument is modeled here by
+  bounded-holomorphic functions on relatively-compact open shrinkings `Wov p`, not by
+  bounded-continuous functions on compact sets.
+
+  This file defines the data bundle and the raw restriction operator and proves the restriction
+  compact (Montel, componentwise `BddHol.restrictOpenCLM`); the Leray discharge and the geometric
+  instantiation are built on top in the other `CechModel*` modules.
+-/
+import Jacobians.Finiteness.CechFinitenessAbstract
 import Jacobians.Finiteness.CechModelBridge
 import Jacobians.Cech.CechComplex
 import Jacobians.Forms.Cover

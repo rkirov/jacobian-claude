@@ -1,5 +1,10 @@
-import Mathlib.Analysis.Analytic.Order
-import Mathlib.Analysis.InnerProductSpace.Basic
+/-
+Copyright (c) 2026 Bryan Sanchez. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bryan Sanchez
+-/
+import Jacobians.MappingDegree.LocalKFoldMultiplicityUnconditional
+import Jacobians.LocalMultiplicity.AnalyticLocalFactorization
 
 set_option autoImplicit true
 

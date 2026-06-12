@@ -1,5 +1,37 @@
+/-
+  Dolbeault ladder — **STEP B of the Čech Leray cover-independence**: `refineH1` is a `ℂ`-linear
+  isomorphism for two Leray covers (the key step of `CechFinitenessWiring.exists_cechModel`).
+
+  Builds on STEP A (`CechRefinementHomotopy.refineH1_eq`, homotopy/index-independence of the
+  refinement map) and the refinement chain-map machinery (`CechRefinement`). See the `## PLAN` block
+  of `CechRefinement.lean` for the full route.
+
+  ## What is proven here (complete, axiom-clean `[propext, Classical.choice, Quot.sound]`)
+
+    * **Round-trip / functoriality on `H¹`** (pure restriction algebra + STEP A):
+        - `refineC1_id`  — the identity refinement is the identity on 1-cochains;
+        - `refineH1_id`  — `(IsRefinement.id 𝔘).refineH1 D = LinearMap.id`;
+        - `refineH1_comp` — `(hs.comp hr).refineH1 D = hs.refineH1 D ∘ₗ hr.refineH1 D`
+          (functoriality, using `refineC1_comp` + descent through the quotient).
+    * **Injectivity from a back-refinement** (homotopy-independence + functoriality):
+        - `refineH1_leftInverse` — a back-refinement `𝔘 ⪯ 𝔙` gives `refineH1 hs` as an explicit
+          left inverse of `refineH1 hr` (`(hs.comp hr).refineH1 = id` by homotopy-independence,
+          since `r∘s : 𝔘 → 𝔘` is a self-refinement, equal on `H¹` to the identity refinement);
+        - `refineH1_injective` — hence `refineH1 hr` is injective.
+    * **The mutual-refinement isomorphism** (no analytic input):
+        - `refineH1_equiv` — for covers `𝔙, 𝔘` with *mutual* refinements `𝔙 ⪯ 𝔘` and `𝔘 ⪯ 𝔙`,
+          both round-trips are self-refinements (= identity on `H¹`), so `refineH1 hr` is a
+          `ℂ`-linear bijection `cechH1 𝔘 D ≃ₗ[ℂ] cechH1 𝔙 D`.  This is the cover-independence
+          isomorphism whenever the two covers mutually refine (in particular it does not need
+          disk-acyclicity).
+    * **The strictly-finer case, reduced to two cocycle-level conditions** — see the note at the
+      bottom of this file: `RefinementLift` (surjectivity) and `RefinementDescend` (injectivity),
+      with `refineH1_equiv_of_leray` giving the iso from the two.  They are discharged for
+      chart-disk refinements via the disk-acyclicity of `CechDiskAcyclic*`
+      (`CechRefinementInjective` and the model files).
+-/
+import Jacobians.Cech.CechRefinementHomotopy
 import Jacobians.Dbar.CechDiskAcyclic
-import Jacobians.Cech.CechRefinement
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

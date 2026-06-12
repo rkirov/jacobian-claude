@@ -1,7 +1,22 @@
-import Mathlib.Analysis.Analytic.Basic
-import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.Analysis.Normed.Operator.Compact
-import Mathlib.Topology.ContinuousMap.Bounded.Normed
+/-
+  Čech finiteness (Forster 14.9) — bounded holomorphic functions as a Banach space.
+
+  The Banach space `BddHol U` of bounded holomorphic functions on an open `U ⊆ ℂ`, and the fact
+  that restriction to a relatively-compact convex inner set `K ⋐ U` is a COMPACT operator
+  `BddHol U →L[ℂ] (K →ᵇ ℂ)`. This is the Montel-compactness input to the abstract Schwartz
+  finiteness lemma (Forster 14.8), which forces `H¹(X, 𝒪_D)` finite-dimensional.
+
+  The compact-operator statement reduces, via the standard characterization
+  `isCompactOperator_iff_isCompact_closure_image_closedBall`, to the Montel lemma
+  `Jacobians.Dolbeault.CechFiniteness.isCompact_closure_restrict_bddHolo`.
+
+  Encoding: `BddHol U` is the `ℂ`-subspace of `ℂ → ℂ` of functions that are analytic on `U`, vanish
+  off `U` (a canonical normal form pinning junk values, making the sup-`U` seminorm a genuine norm
+  and the bcf-embedding injective), and bounded on `U`. The norm `‖f‖ = ⨆ z, ‖f z‖` over `↥U` is
+  induced by the isometric embedding into the Banach space `↥U →ᵇ ℂ`; completeness comes from
+  closedness of the holomorphic subspace under `analyticOn_of_tendstoLocallyUniformlyOn`.
+-/
+import Jacobians.Finiteness.CechFiniteness
 
 open Metric Topology BoundedContinuousFunction
 open Jacobians.Montel

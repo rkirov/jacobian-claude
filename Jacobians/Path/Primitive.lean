@@ -1,6 +1,5 @@
-import Mathlib.Analysis.Complex.Basic
-import Mathlib.Analysis.Calculus.Deriv.Basic
-import Mathlib.Topology.Algebra.Module.ModuleTopology
+import Mathlib.Analysis.Complex.CauchyIntegral
+import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
 
 namespace Jacobians
 

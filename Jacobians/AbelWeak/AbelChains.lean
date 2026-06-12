@@ -1,4 +1,33 @@
-import Mathlib.Algebra.Lie.OfAssociative
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+
+# 1-chains and the `pathPrimValue = lineIntegral` bridge
+
+Connects the path-integral layer (`lineIntegral`, `periodVec`, `abelJacobi`) to the
+discrete-monodromy layer (`pathPrimValue`, `PrimitiveChain`):
+
+* `hasDerivAt_comp_of_isLocalPrimitiveOn` — the pointwise FTC: along a chart-C¹ path, a local
+  primitive of `η` differentiates to the `lineIntegral` integrand `η(γ t)(γ'(t))`;
+* `pathPrimValue_eq_lineIntegral` — the discrete path value (the telescoping sum over any
+  primitive chain) IS the line integral, for chart-C¹ paths with integrable integrand;
+  specialized to `IsSmoothPath` / `IsClosedSmoothLoop` and to `periodVec`;
+* `OneChain` — Forster §20.4 1-chains: finitely many continuous curves with ℤ-coefficients,
+  their `boundary` divisor `∂c` and `period` (the discrete `∫_c η`);
+* `exists_oneChain_of_abelJacobi_eq_zero` — the Abel hypothesis unfolded: if
+  `abelJacobi (P - Q) = 0` (`P ≠ Q`), some 1-chain `c` has `∂c = P - Q` and all
+  basis-form periods zero.
+
+This is the entry plumbing for Forster's proof of Abel's theorem (20.7, sufficiency
+direction): the chain produced here is the one fed to the weak-solution machinery of
+§§20.1–20.5.
+
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), §20.4 (chains), §20.7.
+-/
+import Jacobians.Meromorphic.Abel
+import Jacobians.Monodromy.HolomorphicPrimitiveMonodromy
+import Jacobians.FormTraceSheetCovector
 
 noncomputable section
 

@@ -1,4 +1,20 @@
-import Jacobians.Finiteness.SkyscraperConeRealization
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+
+# The inclusion-induced maps `H¹(𝒪_D) → H¹(𝒪_{D'})` for `D ≤ D'` and their surjectivity
+
+`SkyscraperLESBase` provides the **single-point** inclusion arrow `h1Map D P : H¹(𝒪_D) →
+H¹(𝒪_{D+P})` together with (via `exists_skyscraperLES`) its surjectivity.  This file generalises
+to an arbitrary pair `D ≤ D'` (Forster Corollary 16.8): the order bound only weakens, so the
+cocycle/coboundary submodules grow monotonically, the quotient map `h1Incl` descends, composition
+is functorial, and surjectivity follows by induction on the degree of the (effective) difference
+`D' − D`, one point at a time.
+
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 16.7–16.8 (pp. 129).
+-/
+import Jacobians.Finiteness.CohomologicalRR
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

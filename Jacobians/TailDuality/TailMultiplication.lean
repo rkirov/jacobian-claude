@@ -1,6 +1,28 @@
-import Jacobians.Cech.MeromorphicAnalyticBadSet
-import Jacobians.LaurentTail.TailMap
-import Mathlib.Analysis.CStarAlgebra.Classes
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+
+# Multiplication operators on Laurent tail divisors (Miranda Ch. VI p. 179, Problem VI.2.A)
+
+For a meromorphic `ψ` and a target level `E`, the operator
+
+  `μ_ψ : 𝒯(X) → 𝒯[E](X)`,  `μ_ψ(∑ r_p·p) = ∑ (tail of ψ·r_p below −E(p))·p`
+
+multiplies each per-point tail polynomial by `ψ` and re-truncates.  The Lean representation goes
+through the **tail polynomial as an actual function** `tailFnAt Z p : ℂ → ℂ`, whose Laurent
+coefficients are literally the tail entries (`laurentCoeff_tailFnAt`) — so the operator algebra
+reduces to the `laurentCoeff` toolkit and no explicit convolution ever appears.
+
+Contents:
+* `tailFnAt`, `laurentCoeff_tailFnAt`, meromorphy, additivity/homogeneity;
+* `tailMul ψ E : TailSpace X →ₗ[ℂ] TailSpace X`, range in `tailSubspace E`;
+* **Miranda (2.2)** `tailMul_tailMap`: `μ_ψ(α_D f) = α_E(ψ·f)` whenever
+  `−E ≤ ord ψ + (−D)` pointwise — "coefficients below a level only see the complementary tail".
+
+The `H¹`-level maps and the surjectivity assembly (Forster 17.9 / Miranda 3.4) build on this. -/
+import Jacobians.TailDuality.TailDualityInjective
+import Jacobians.Meromorphic.MeromorphicInverse
 
 open scoped Manifold ContDiff Topology
 open Filter Set

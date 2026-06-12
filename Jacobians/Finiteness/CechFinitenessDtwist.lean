@@ -1,6 +1,47 @@
-import Jacobians.DolbeaultComparison.LocalRealization
-import Jacobians.Finiteness.CechModelBase
-import Jacobians.Finiteness.SkyscraperLESBase
+/-
+  Dolbeault ladder — **general-divisor Čech `H¹` finiteness** (Forster GTM 81 §16, the skyscraper
+  reduction), reducing the arbitrary-divisor case to the `D = 0` case.
+
+  ## What this file proves
+
+      `finiteDimensional_cechH1_general (𝔘 : FiniteCover X) (D : Divisor X) :
+         FiniteDimensional ℂ (𝔘.cechH1 D)`
+
+  for an ARBITRARY finite cover `𝔘` and an ARBITRARY divisor `D`.  The `D = 0` case
+  (`CechFinitenessAssembly.finiteDimensional_cechH1_zero`) is the base; we climb the divisor
+  one point at a time.
+
+  ## The argument (a LIGHT skyscraper reduction — no snake lemma, no acyclicity, no witness)
+
+  The sheaves `𝒪_D ⊆ 𝒪_{D+P}` differ only in the allowed pole order at the single point `P`. At
+  every open `W`, the **stalk quotient** `OmegaDGerm (D+P) W ⧸ OmegaDGerm D W` is at most
+  `1`-dimensional: the order-`(−D(P)−1)` principal-part coefficient `coeffGermLin` has kernel
+  exactly `OmegaDGerm D W` (`ker_coeffGermLin`), so the quotient injects into `ℂ`. Consequently, for
+  the *finite* index types of the Čech complex:
+
+    * `sections0 (D+P) ⧸ sections0 D` is finite-dimensional (a finite product of stalk quotients);
+    * `sections1 (D+P) ⧸ sections1 D` is finite-dimensional likewise;
+    * hence `cocycles1 (D+P) ⧸ cocycles1 D` is finite-dimensional (it injects into the `sections1`
+      quotient), and `coboundaries1 (D+P) ⧸ coboundaries1 D` is too (a quotient of the `sections0`
+      one).
+
+  From these finite "correction" spaces, finiteness of `H¹` propagates BOTH ways along the inclusion
+  `h1Map : H¹(𝒪_D) → H¹(𝒪_{D+P})`:
+
+    * **forward** (`H¹(D)` finite ⟹ `H¹(D+P)` finite): `range h1Map` is finite (image of a
+      finite-dim space) and `coker h1Map` is a quotient of `cocycles1(D+P)/cocycles1(D)` (finite),
+      so `H¹(D+P)` is an extension of two finite-dim spaces (`Module.Finite.of_submodule_quotient`);
+    * **backward** (`H¹(D+P)` finite ⟹ `H¹(D)` finite): `ker h1Map` is a quotient of
+      `coboundaries1(D+P)/coboundaries1(D)` (finite) and `H¹(D)/ker h1Map ≅ range h1Map` (finite),
+      so `H¹(D)` is again an extension of two finite-dim spaces.
+
+  The bidirectional per-point step (`finiteDimensional_cechH1_add_single_iff`) then drives an
+  induction: `Int.induction_on` on the coefficient (a single point, `±1` at a time) and
+  `Finsupp.induction` on the divisor (one point at a time), with base `D = 0`.
+
+-/
+import Jacobians.Finiteness.CechFinitenessAssembly
+import Jacobians.Finiteness.SkyscraperArrow
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

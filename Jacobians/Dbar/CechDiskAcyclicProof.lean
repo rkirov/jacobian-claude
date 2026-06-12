@@ -1,5 +1,37 @@
+/-
+  Discharging `FunctionDiskAcyclic 𝔙 0` for a chart-disk cover (the germ-level disk-acyclicity
+  `H¹(disk, 𝒪) = 0`).
+
+  `CechDiskAcyclic.lean` reduces the germ-level statement `IsDiskAcyclic 𝔙 D` (every `𝒪_D`-cocycle
+  is a coboundary) to the function-level interface predicate `FunctionDiskAcyclic 𝔙 D`, via
+  `isDiskAcyclic_of_funcLevel` + `cechH1_subsingleton_of_isDiskAcyclic`.  The remaining analytic
+  obligation is to produce `FunctionDiskAcyclic 𝔙 0` for a chart-disk cover.  This file builds the
+  two main ingredients.
+
+  ## The chart-transport bridge
+
+  Relate `g ∈ OmegaD 0 W` (holomorphic on the open submanifold `↥W`) to chart-image holomorphy of an
+  honest analytic representative function `ℂ → ℂ`, and to `DbarDisk.dbar (rep) = 0`. The repo
+  bridges only ORDER so far (`CechSection.ordU` / `CechH0.ordU_val_eq_orderW`); we extend the
+  PATTERN to holomorphy/∂̄. The analytic representative is the **limit-repair** `holoFn hg` of the
+  chosen holomorphic representative; its chart-read is `ℂ`-analytic (`gextLimRep_chart_analyticAt`,
+  re-derived here from the `MeromorphicNFRepair`/`MeromorphicLiouville` machinery already in scope,
+  not from the name-clashing `DolbeaultComparisonInverse`), hence its `DbarDisk.dbar` in the chart
+  vanishes.
+
+  ## The function-level finite-cover ball Čech split (the analytic core)
+
+  A smooth Čech 1-cocycle on a finite cover of a Euclidean ball `B ⊆ ℂ` whose pairwise differences
+  are holomorphic splits *holomorphically*, via a smooth partition of unity on `B` +
+  `DbarDiskCohomology.dbar_solvable_ball`. The §1 `dbar` algebra of `CechDiskAcyclic` + the
+  `∂̄`-of-finite-sum crank (`dbar_fun_sum`, from `HasFDerivAt.fun_sum`) drive it; `ballSplit_two` is
+  the 2-set base.
+
+  The partition-of-unity globalization that feeds these (and discharges `FunctionDiskAcyclic`) is
+  carried out in `CechDiskAcyclicAssembly`.
+-/
+import Jacobians.Dbar.CechDiskAcyclic
 import Jacobians.Dbar.HoloRep
-import Jacobians.Dbar.DbarDisk
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

@@ -1,6 +1,25 @@
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.Geometry.Manifold.ContMDiff.Defs
+/-
+  Pole bumps for the genus-uniform residue theorem (geometry).
+
+  For the finite enlarged pole set `S` (poles ∪ the finite analytic-bad locus), this file
+  constructs the per-pole radial bump data Forster's proof of the Residue Theorem (GTM 81,
+  10.21) chooses: pairwise-separated coordinate balls around the poles and smooth radial
+  cutoffs `≡ 1` near each pole, supported inside its ball.
+
+  * `PoleBumpData` — per pole `a ∈ S`: a radius `ε a` with the closed coordinate ball inside
+    the chart target and its `X`-side ball (`poleBall`) meeting `S` only in `{a}`, plus a
+    SMOOTH radial profile `η a` going `1 → 0` between `ε²/4` and `ε²/2`.
+  * `exists_poleBumpData` — existence (chart targets are open; `S` is finite and `X` is T1,
+    so each pole has a chart neighbourhood avoiding the other members of `S`).
+  * `PoleBumpData.bump a : X → ℝ` — the bump `η_a(normSq(chart_a · − chart_a a))` extended by
+    `0` (supported in `poleBall a`), with: global smoothness, `≡ 1` near `a`, `≡ 0` near every
+    other point of `S` and outside `poleBall a`.
+  * `PoleBumpData.totalBump = ∑_{a ∈ S} bump a` — Forster's `f₁ + ⋯ + f_n`: smooth, `≡ 1`
+    near EVERY point of `S`.
+
+  Everything here is complete and depends on no unproved lemma.
+-/
+import Jacobians.ResidueTheorem.ResidueLedgerTransport
 
 set_option backward.isDefEq.respectTransparency false
 

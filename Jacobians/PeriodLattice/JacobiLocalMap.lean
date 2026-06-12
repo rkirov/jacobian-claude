@@ -1,3 +1,30 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+
+# Forster 21.4(a) — the local Jacobi map and its open image
+
+The local Jacobi map at a family of base points `a : Fin g → X`:
+
+    G(z)ᵢ := ∑ⱼ Φ̃_{a j, i}(z j),
+
+where `Φ̃_{Q₀,i} = localLiftChart Q₀ 0 i` is the chart-coordinate primitive of the period-basis
+form `ω_i` at `Q₀` (the straight-segment integral of `chartFormCoeff`).  `G` is a sum of
+one-variable holomorphic functions, `G(center) = 0`, and its Fréchet derivative at the center is
+the evaluation matrix `A = jacobiEvalMatrix a` (B-1).  At a base-point family with `det A ≠ 0`
+(Forster 21.3, `exists_jacobiBasePoints_det_ne_zero`), the inverse function theorem
+(`HasStrictFDerivAt.map_nhds_eq_of_equiv`) makes `G` open at the center:
+
+    Filter.map G (𝓝 center) = 𝓝 0,
+
+so every `t` near `0 ∈ ℂ^g` is `G(z)` for `z` near the center — the engine of Forster's
+dissection-free discreteness argument (21.4(b), phase B-4).
+
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 21.4(a) (pp. 168–169).
+-/
+import Jacobians.PeriodLattice.JacobiBasePoints
+import Jacobians.PeriodLattice.OfCurveAnalyticitySkeleton
 import Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv
 import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
 

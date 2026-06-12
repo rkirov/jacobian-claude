@@ -1,6 +1,20 @@
+/-
+  The abstract Schwartz / Riesz–Schauder finiteness lemma (Forster *Lectures on Riemann Surfaces*
+  Lemma 14.8) — the functional-analysis core of the `H¹(X, 𝒪_D)` finiteness theorem (14.9).
+
+  Standalone (Banach-space functional analysis; no manifold / Čech dependency). Mathlib has the
+  spectral Fredholm alternative (`IsCompactOperator.hasEigenvalue_or_mem_resolventSet`) and Riesz's
+  lemma but NOT this packaged "compact perturbation of a surjection has finite-codimensional image".
+-/
+import Mathlib.Analysis.Normed.Operator.Compact
+import Mathlib.Analysis.Normed.Operator.Banach
+import Mathlib.Analysis.Normed.Operator.FredholmAlternative
+import Mathlib.Analysis.Normed.Module.RieszLemma
+import Mathlib.Analysis.Normed.Module.FiniteDimension
+import Mathlib.Analysis.Normed.Group.Quotient
+import Mathlib.Analysis.SpecificLimits.Normed
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.LinearAlgebra.FiniteDimensional.Defs
-import Mathlib.Topology.MetricSpace.HausdorffDistance
 
 namespace Jacobians.SchwartzFiniteness
 

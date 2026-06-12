@@ -1,4 +1,22 @@
-import Jacobians.ResidueCalculus.Residue
+/-
+  Laurent coefficients of a meromorphic germ, via the residue calculus (Miranda Ch. VI §2).
+
+  `laurentCoeff g c n` is the coefficient of `(z − c)^n` in the Laurent expansion of `g` at `c`,
+  defined through the residue: `coeff_n(g) = Res_c (g(z)·(z − c)^{−n−1})`.  This is the
+  technically cheapest definition — `resAt` already carries germ-invariance, ℂ-linearity (on
+  isolated singularities), and the two Cauchy evaluations needed for the anchor lemmas:
+
+  * `laurentCoeff_eq_zero_of_lt_order` — coefficients below the meromorphic order vanish
+    (`resAt = 0` on germs of order `≥ 0`, via the analytic factorization);
+  * `laurentCoeff_order_ne_zero` — the *leading* coefficient (at `n = order`) is nonzero
+    (Cauchy's integral formula `resAt_mul_inv_sub`);
+  * `le_order_iff_laurentCoeff_eq_zero` — the order is `≥ k` iff all coefficients below `k`
+    vanish.  This is the bridge that identifies `L(D)` with the kernel of the Laurent-tail
+    truncation map `α_D` (Miranda Ch. VI, Lemma 2.2 / p. 181).
+
+  Pure one-variable complex analysis — no manifold — reusable verbatim in every chart.
+-/
+import Jacobians.MeromorphicTrace.MeromorphicTrace
 
 open Complex Filter Topology
 

@@ -1,6 +1,49 @@
-import Jacobians.Cech.CechComplex
-import Mathlib.Algebra.Lie.OfAssociative
-import Mathlib.Analysis.CStarAlgebra.ContinuousMap
+/-
+  The sup-norm Čech model types and the abstract finiteness spine (Forster 14.9).
+
+  This is the *type / abstract-spine* base of the manifold instantiation of the Čech finiteness
+  argument. It is separate from `CechFinitenessWiring.lean` to break an import cycle: the model
+  types (`DiskOverlapData`, `Coboundaries`, `supH1`) are consumed by `CechModelArtificial` /
+  `CechModelGeometry`, which in turn feed (transitively) the general-divisor finiteness term
+  `CechFinitenessDtwist.exists_cechModel_general`; that term is what discharges
+  `CechFinitenessWiring.exists_cechModel`. Keeping the types here (importing only the abstract
+  spine) lets `CechFinitenessWiring` import `CechFinitenessDtwist` without a cycle.
+
+  This file assembles the abstract finiteness spine
+  (`CechFinitenessAbstract.finiteDimensional_h1_of_leray_compact`, `isCompactOperator_pi`,
+  `isCompactOperator_of_subtypeL_comp`) against the disk-Montel lemma
+  (`BddHol.isCompactOperator_restrictCLM`) to provide the finiteness machinery behind
+  `DolbeaultLadder.finiteDimensional_cechH1`.
+
+  The sup-norm cochain encoding (the Leray chart-disk cover, read in charts):
+  the 1-cochains on the COVER live in `Π_p BddHol (Uov p)` (bounded-holomorphic on the chart-image
+  of each overlap, an open set in `ℂ`); the 1-cochains on the relatively-compact SHRINKING live in
+  `Π_p (Kov p →ᵇ ℂ)` (the Montel atom restricts `BddHol U →L[ℂ] (K →ᵇ ℂ)` for `K` compact, so the
+  shrinking side is a product of `→ᵇ` spaces, NOT `BddHol`). Cocycle subspaces are kernels of the
+  sup-norm coboundary `δ¹`, hence closed (so Banach). This data is packaged in `DiskOverlapData`
+  (the geometric overlap data) + `Coboundaries` (the sup-norm `δ⁰/δ¹` and the commuting square for
+  restriction).
+
+  Main results:
+    * `DiskOverlapData` Banach instances; `rhoRaw` + `rhoRaw_compact` (the Montel payoff).
+    * `finiteDimensional_supH1` — builds the cocycle `δ`/`ρ`, transports compactness to the
+      closed cocycle subspace, and applies the abstract reduction, *given* the Leray surjectivity.
+    * `leray_surjective` — the Leray surjectivity, derived from the model's `leray` field.
+    * `exists_cechModel_of_subsingleton` — the assembled acyclic case (`H¹ = 0`).
+
+  A soundness-critical design point: the Leray surjectivity `(η,ξ) ↦ δη + ρξ` is *false* for an
+  arbitrary abstract `(δ, ρ)` — a *compact* `ρ` (which `rhoRaw_compact` proves ours is) cannot
+  surject onto an infinite-dimensional cocycle space. Surjectivity holds only for a genuine
+  *acyclic* Leray model. The acyclicity is therefore recorded as the `Coboundaries.leray` field
+  (the disk-`H¹=0` witness): `leray_surjective` unpacks it, and the honest analytic obligation is
+  concentrated where the model is *constructed* — discharged in
+  `CechFinitenessDtwist.exists_cechModel_general`.
+-/
+import Jacobians.Finiteness.CechFinitenessAbstract
+import Jacobians.Finiteness.BddHol
+import Jacobians.Finiteness.CechModelBridge
+import Jacobians.Dbar.DbarDiskCohomology
+import Jacobians.Cech.CechH0
 
 open Jacobians.Dolbeault.CechFiniteness ContinuousLinearMap
 open BoundedContinuousFunction

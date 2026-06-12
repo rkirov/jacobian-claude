@@ -20,7 +20,6 @@ functional `Res_{h'·ω₀}`.  This file builds the compatibility toolkit and th
   `ker(truncation)` has the coarser order bound — the single-monomial witness contrapositive.
 -/
 import Jacobians.TailDuality.TailMultiplicationH1
-import Jacobians.TailDuality.TailDualityInjective
 
 open scoped Manifold ContDiff Topology
 open Filter Set

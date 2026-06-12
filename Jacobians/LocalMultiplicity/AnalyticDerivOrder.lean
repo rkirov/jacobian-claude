@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+import Mathlib.Analysis.Analytic.Order
+import Mathlib.Analysis.Calculus.FDeriv.Analytic
 import Mathlib.Analysis.Complex.Basic
-import Mathlib.Analysis.Analytic.Basic
-import Mathlib.Analysis.Calculus.Deriv.Basic
 
 /-! # Analytic derivative-order facts (planar, sphere-free)
 

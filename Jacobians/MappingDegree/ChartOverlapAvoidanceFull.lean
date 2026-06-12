@@ -1,3 +1,25 @@
+/-
+Copyright (c) 2026 Bryan Sanchez. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bryan Sanchez
+
+Chip ZZ165e: chart-overlap finite-avoidance, **full** case.
+
+Whereas `ChartOverlapAvoidance.lean` (ZZ165d) handled only `y ∉ C` (taking
+`z := y`), this file handles the general case `y ∈ U` (and the chart-overlap
+version `y ∈ U ∩ V`) where `y` may itself lie in the finite obstruction `C`,
+provided the ambient space is a `ChartedSpace ℂ Y`. The construction
+perturbs `y` inside a small ball-chart around `y` to a point `z` whose chart
+image is close to `(chartAt ℂ y) y` but not in the chart-image of the finite
+set `C`. The path is the pull-back of a straight segment in the chart ball,
+which lives entirely in the chart source ⊆ `U`.
+-/
+import Mathlib.Analysis.Complex.Basic
+import Mathlib.Geometry.Manifold.ChartedSpace
+import Mathlib.Topology.Connected.PathConnected
+import Mathlib.Topology.MetricSpace.Pseudo.Defs
+import Mathlib.Topology.OpenPartialHomeomorph.Basic
+import Jacobians.MappingDegree.ChartRestrictionToBall
 
 noncomputable section
 

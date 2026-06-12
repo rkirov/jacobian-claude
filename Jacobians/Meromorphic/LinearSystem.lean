@@ -1,3 +1,19 @@
+/-
+  Linear system `L(D)`, its dimension `l(D)`, and the `MeromorphicFunction` ℂ-algebra + `orderW`.
+
+  Extracted from `RiemannRoch.lean` so the Čech/Dolbeault layer can depend on
+  `lDim`/`linearSystem`/`orderW` without importing `RiemannRoch`: `RiemannRoch` *states* the
+  interface `exists_riemannRoch_divisor`, while the theory that *proves* its content sits
+  downstream, so this split lets `RiemannRoch` import that theory and connect the two.
+
+  Contents (charted-space-only footprint where possible, so the definitions apply to open
+  submanifolds `↥U`): `MeromorphicFunction.ext`/`toFun_injective`; the pointwise meromorphy
+  lemmas `IsMeromorphic.{add,neg,sub,const_smul,nsmul,zsmul}`; the ℂ-vector-space instances on
+  `MeromorphicFunction X` (`Module ℂ`); `orderW` and its faithfulness/identity theorems; and the
+  linear system `linearSystem D`, the germ-zero junk submodule `germZeroSubmodule`, and `lDim`.
+-/
+import Jacobians.Meromorphic.Abel
+import Jacobians.Meromorphic.MeromorphicLiouville
 
 open scoped Manifold ContDiff Topology
 

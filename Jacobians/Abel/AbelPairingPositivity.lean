@@ -1,4 +1,22 @@
-import Jacobians.Abel.AbelPairing
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+
+# Positivity for the Abel pairing: `⟨η, ω̄⟩`-nondegeneracy (Forster 19.9)
+
+The pairing of a nonzero holomorphic 1-form against its own conjugate is nonzero:
+
+  `pairForm η (conjForm η) ≠ 0`   (`η ≠ 0`),
+
+because each chart piece is `∫ ρⱼ·|h|² dA ≥ 0` (the `2i`-normalised `∬ i·η∧η̄ > 0`
+positivity) and at a point where `η ≠ 0` some PoU weight is positive.  Together with the
+ℂ-scaling rules (`pairForm_cSmul_const`, `conjForm_smul/add/sum`), this gives the
+invertibility of the period Gram matrix `pairMatrix` in `AbelDbarKill`.
+
+Reference: Forster, *Lectures on Riemann Surfaces* (GTM 81), 19.6/19.9 (pp. 155–156).
+-/
+import Jacobians.Abel.AbelPairingStokes
 
 noncomputable section
 

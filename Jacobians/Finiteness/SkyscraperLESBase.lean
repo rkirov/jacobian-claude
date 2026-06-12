@@ -1,4 +1,23 @@
-import Jacobians.Cech.CechComplex
+/-
+  Dolbeault ladder — the **base layer** of the skyscraper long exact sequence.
+
+  This small file holds exactly the order-bookkeeping arrows and the `SkyscraperLES` structure that
+  BOTH directions of the skyscraper construction need:
+
+  * the consumer side — `CohomologicalRR`'s χ-induction (`chi_jump_of_LES`,
+    `cohomological_riemannRoch`) runs the six-term alternating-sum crank on a `SkyscraperLES`;
+  * the producer side — the downstream snake/realization assembly (`SkyscraperArrow` →
+    `SkyscraperSnake` → `SkyscraperAssembly` → `CohomologicalRRChartDisk`) BUILDS a `SkyscraperLES`,
+    and references `Skyscraper`/`h0Incl`/`h1Map`.
+
+  Putting `SkyscraperLES` (+ `h0Incl`, `Skyscraper`, `h1Map`, and the degreewise order-weakening
+  inclusions) here breaks an import cycle: `CohomologicalRR` can sit *downstream* of the assembly
+  and discharge `exists_skyscraperLES` from a `LocalRealizationData` (the single genuine
+  local-realization + acyclicity input).
+
+  Everything here is pure order/quotient bookkeeping (no analytic content).
+-/
+import Jacobians.Cech.CechH0
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

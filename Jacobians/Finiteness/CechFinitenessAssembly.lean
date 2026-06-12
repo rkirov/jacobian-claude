@@ -1,5 +1,26 @@
-import Jacobians.Cech.ChartDiskCover
-import Jacobians.Finiteness.CechModelBase
+/-
+  Dolbeault ladder — the Čech finiteness ASSEMBLY (the 14.7 route, D = 0).
+
+  Combines the two structural pieces with the analytic Montel finiteness:
+    * **Forster 12.4** (`refineH1_injective_unconditional`, `CechRefinementInjective`): refinement
+      maps on `H¹` are injective UNCONDITIONALLY (germ-class `𝒪_D` sheaf-gluing).
+    * **chart-disk refinement existence** (`exists_chartDiskCover_refinement`,
+      `ChartDiskRefinement`): every finite cover is refined by a `ChartDiskCover` (ball sets).
+    * **Montel finiteness** (`ChartDiskCover.finiteDimensional_cechH1_chartDisk_complete`,
+      `ChartDiskFinitenessComplete.lean`): `cechH1 𝔇 0` is finite-dimensional for a
+      `ChartDiskCover 𝔇` — the analytic heart (Forster 14.6/14.7).
+
+  Given the Montel finiteness, finiteness for an ARBITRARY cover follows by the injection
+  `cechH1 𝔘 0 ↪ cechH1 𝔇 0` (12.4) into the finite-dimensional `cechH1 𝔇 0` — NO cover-independence
+  isomorphism (hence NO Riemann mapping) is needed.  This is the key to the 14.7 route.
+
+  The Montel finiteness is taken in the assembly lemmas as an explicit HYPOTHESIS `hMontel` (so they
+  are parametric in the analytic input); the wiring below discharges `hMontel` with that theorem.
+-/
+import Jacobians.Finiteness.CechRefinementInjective
+import Jacobians.Cech.ChartDiskRefinement
+import Jacobians.Finiteness.CechModelArtificial
+import Jacobians.Finiteness.ChartDiskFinitenessComplete
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

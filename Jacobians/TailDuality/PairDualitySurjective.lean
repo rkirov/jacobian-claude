@@ -1,4 +1,30 @@
-import Jacobians.TailDuality.TailMultiplicationH1
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+
+# Serre duality for the tail `H¹`, the surjective half — meromorphic pair frame
+(Miranda Thm 3.3, pp. 189–191)
+
+The pair-frame port of `TailDualitySurjective` + §3–§5 of `TailDualitySurjectiveAssembly`
+(the genus ≥ 1 holomorphic-ω₀ specialization).  The Λ-side (§1–§2 of the assembly:
+`tailMulDual(Q)`, injectivity, `finrank_range_tailMulDualQ`) is frame-independent and reused
+by import.
+
+* **truncation invariance** `tailResidue_truncateRaw`: dropped entries have *zero weights*.
+* **the master bridge** `tailResidue_eq_sum_resAt`: the residue functional as a base-point sum
+  of `resAt`-pairings of the tail polynomial against `pairCoeffFun`.
+* **μ-compatibility** `tailResidue_tailMul`: `Res_{h·dg₀}(μ_ψ Z) = Res_{(ψh)·dg₀}(Z)`.
+* **Miranda Lemma 3.6** `pairOrderBounded_of_vanishing`: the order downgrade.
+* **the recovery step** `pairDualMap_recovery` and **surjectivity** `pairDualMap_surjective`
+  (pigeonhole on `H¹(D − nP)*` with the RR-I counts), giving the dimension identity
+
+    `h1TailDim_eq_lDim_pairCanonical_sub : h¹(D) = l(K − D)`, `K = div (dg₀)`
+
+  for any nonconstant meromorphic `g₀` — no genus hypothesis anywhere.
+-/
+import Jacobians.TailDuality.PairDualityInjective
+import Jacobians.TailDuality.TailDualitySurjectiveAssembly
 
 open scoped Manifold ContDiff Topology
 open Filter Set Module

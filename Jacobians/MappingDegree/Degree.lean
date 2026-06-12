@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import Jacobians.LocalMultiplicity.LocalMultiplicity
-import Mathlib.Topology.LocallyConstant.Basic
 
 set_option autoImplicit true
 

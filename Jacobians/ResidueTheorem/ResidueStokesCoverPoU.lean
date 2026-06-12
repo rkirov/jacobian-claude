@@ -1,3 +1,20 @@
+/-
+  The chart-cover partition of unity for the genus-uniform residue theorem.
+
+  A clash-free re-derivation of the genuine-cover PoU of `ChartCoverDbarGlue.lean` (that file
+  transitively imports `CechFinitenessBallSolve`, which cannot coexist with the
+  `PairFormResidueTheorem` import chain — duplicate `rhoC` declarations).  Built directly on
+  `CechModelGeometry` + `DiskAcyclicCore`'s `exists_smoothPartitionOfUnity_core`:
+
+  * `coverPoU` — a smooth PoU over `𝓘(ℝ, ℂ)`, subordinate to the genuine Montel chart cover
+    `(chartOpen (coverCenter j))_j`, summing to `1` on ALL of `X`;
+  * `sum_coverPoU_eq_one`, `coverPoU_tsupport_subset`, `contMDiff_coverPoU`;
+  * the complexified components `coverRhoC` with their sum/vanishing/continuity facts.
+
+  Everything here is complete and depends on no unproved lemma.
+-/
+import Jacobians.Finiteness.CechModelGeometry
+import Jacobians.Dbar.DiskAcyclicCore
 
 set_option backward.isDefEq.respectTransparency false
 

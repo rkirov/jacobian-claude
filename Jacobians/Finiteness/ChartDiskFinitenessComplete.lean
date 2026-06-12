@@ -1,5 +1,47 @@
-import Jacobians.Cech.CechRefinement
-import Jacobians.DolbeaultComparison.DolbeaultComparisonEquiv
+/-
+  Čech `H¹` finiteness on a CHART-DISK cover — the COMPLETE version.
+
+  `ChartDiskFiniteness.lean` proves the analytic heart — the Forster 14.6 cover-level ∂̄-lift
+  (`ChartDiskCover.forster146_lift`) — and the relatively-compact covering shrinking + the
+  `HolomorphicDiskOverlapData` (`𝔇.overlapData`, with compact `ρ` for free, Montel).  The two pieces
+  it does not build are the structural δ-complex `HolomorphicCoboundaries 𝔇.overlapData` and a
+  comparison `cechH1 𝔇 0 ≃ₗ supH1`.
+
+  This file builds that δ-complex + comparison, supplying the two pieces for the
+  reduction `ChartDiskCover.finiteDimensional_cechH1_of_holomorphicModel`:
+
+    * **(A) the δ-complex** `HolomorphicCoboundaries 𝔇.overlapData` (`holomorphicCoboundaries`) —
+      mirroring `CechModelHolomorphicDelta.lean` (the MONTEL cover) but for `𝔇.overlapData`, the
+      chart-disk ball-overlaps `𝔇.Uov`/`𝔇.Wov`.  all structural fields are built here
+      (`δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm`).
+
+    * **(B) the comparison** `comparisonMap : cechH1 𝔇 0 →ₗ[ℂ] supH1` — proven, and
+      INJECTIVE (`comparisonMap_injective`). The forward germ→`BddHol` cochain map lands in the
+      SHRINKING side `Cshr` (boundedness automatic on the relatively-compact `Wov`), is a cocycle
+      (`cechToCshr_mem_Z1shr`), descends (well-definedness `coboundaries_le_ker_cechToSupH1`), and
+      is injective by reduction to Forster 12.4 refinement-injectivity
+      (`CechRefinementInjective.refinementDescend_unconditional`) along the shrinking cover `(V a)`.
+
+  The `leray` field of `holomorphicCoboundaries` — the genuine analytic content (Forster 14.6) — is
+  proven below (§A2-*), via the global Bott–Tu `(0,1)`-form route (NOT the cross-chart `∂̄g_a`
+  gluing the earlier attempts hit): a shrinking cocycle `s : Cshr` is read back to germ sections `σ`
+  (`shrinkGerm`); the global smooth form `ω̂ := ∑_{a,c} (ρ_a·holoFn σ_{ac})·∂̄ρ_c` (`glueForm`,
+  shrinking PoU) is built directly; the per-disk solve `dolbeaultToCechCocycle ω̂` gives a
+  holomorphic cover cocycle on the FULL overlaps (`coverCochain`); the corrector
+  `η_a := diskVal a ω̂ − G_a` is holomorphic (`etaCochain`); and `s = δ⁰η + ρx` holds
+  (`leray_identity`). The whole file — including `holomorphicCoboundaries` and
+  `finiteDimensional_cechH1_chartDisk_complete` — is now COMPLETE (axioms:
+  `propext, Classical.choice, Quot.sound`).
+
+  Conventions follow `ChartDiskFiniteness.lean` / `CechModelHolomorphicDelta.lean`. The lift reuses
+  the proven Dolbeault-comparison machinery (`diskVal`/`planarPrimitive`/`dolbeaultToCechCocycle`,
+  `DolbeaultComparisonProof`/`Inverse`/`Equiv`) and the shrinking-level PoU `shrinkPoU`
+  (`ChartDiskLeray`).
+-/
+import Jacobians.Finiteness.ChartDiskFiniteness
+import Jacobians.Finiteness.ChartDiskLeray
+import Jacobians.Finiteness.CechModelHolomorphicDelta
+import Jacobians.Finiteness.CechRefinementInjective
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

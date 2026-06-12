@@ -1,3 +1,30 @@
+/-
+  The local-realization analytic kernel of the skyscraper sequence (Mittag–Leffler / Cousin-I).
+
+  This is the genuine analytic content that the χ-additivity skyscraper LES
+  (`CohomologicalRR.exists_skyscraperLES`) bottoms out in.
+
+  For the skyscraper short exact sequence `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0`, the local fact is:
+  the order-`k` Laurent coefficient at `P` (where `k = -(D+P)(P) = -(D P) - 1`) gives, for an open
+  `W ∋ P`, an isomorphism
+
+      `OmegaDGerm (D + single P 1) W  ⧸  (image of OmegaDGerm D W)  ≅ₗ[ℂ]  ℂ`,
+
+  and `= 0` for `W ∌ P`. The membership characterization is: a germ lies in `OmegaDGerm D` iff its
+  order-`k` coefficient vanishes (pole order at `P` is `≤ D(P)`).
+
+  The order-`k` coefficient functional is realised as a genuine LIMIT (the repo's `resAt`/`holoRepr`
+  style): for `f` with `ord_P f ≥ k`, the chart pullback `F = f ∘ chart.symm` satisfies that
+  `z ↦ (z - c)^(-k) · F(z)` is analytic at `c = chart P`, so its punctured-neighbourhood limit
+  exists; that limit is the coefficient.  It is ℂ-linear because each summand's limit exists.
+
+  Explicit witness (surjectivity): the germ of `(chart - chart P)^k` (transported through the
+  `↥W`-chart machinery of `CechSection`) realises coefficient `1` with a pole only at `P`; this uses
+  the Mathlib explicit order witness `meromorphicOrderAt_zpow_id_sub_const`.
+
+-/
+import Jacobians.Cech.CechSection
+import Jacobians.Cech.CechH0
 
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)

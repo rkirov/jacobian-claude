@@ -1,3 +1,10 @@
+/-
+Copyright (c) 2026 Bryan Sanchez. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bryan Sanchez
+-/
+import Jacobians.MappingDegree.HPkgUnconditional
+import Jacobians.MappingDegree.HurwitzWellDefinedUnconditionalTopo
 import Jacobians.MappingDegree.Degree
 
 /-! # `degreeFiber` is well-defined across regular witnesses

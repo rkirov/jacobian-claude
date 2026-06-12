@@ -1,5 +1,11 @@
-import Jacobians.Forms.Genus
-import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+import Jacobians.SphereTopology.GenusSphereBackward
+import Jacobians.SphereTopology.VanKampen
+import Mathlib.Geometry.Manifold.Complex
 
 /-!
 # Backward headline `#1b`: a surface `≃ₜ S²` has genus `0` — assembled route
