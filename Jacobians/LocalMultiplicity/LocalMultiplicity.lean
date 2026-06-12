@@ -6,7 +6,6 @@ Authors: Bryan Sanchez
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Geometry.Manifold.ContMDiff.Defs
 
-
 /-! # Topological degree of a holomorphic map between compact Riemann surfaces
 
 This file provides the candidate body for `ContMDiff.degree`, the degree of a
@@ -103,32 +102,6 @@ def degreeIndicator {ω : WithTop ℕ∞}
     (f : X → Y) (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
   open Classical in
   if IsConstantMap f then 0 else 1
-
-/-- The degree convention from challenge item 9: a constant map has degree
-zero. Holds unconditionally for the indicator stub. -/
-lemma degreeIndicator_const {ω : WithTop ℕ∞}
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (c : Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (fun _ : X => c)) :
-    degreeIndicator (fun _ : X => c) hf = 0 := by
-  unfold degreeIndicator
-  simp [isConstantMap_const]
-
-/-- Stub-level upper bound: under the indicator implementation, the degree
-is at most `1`. This bound disappears once the regular-value definition
-lands; it is recorded here so that downstream consumers can detect the stub
-regime and refuse to depend on a tight numerical degree. -/
-lemma degreeIndicator_le_one {ω : WithTop ℕ∞}
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    degreeIndicator f hf ≤ 1 := by
-  unfold degreeIndicator
-  split_ifs <;> simp
 
 end Manifold
 

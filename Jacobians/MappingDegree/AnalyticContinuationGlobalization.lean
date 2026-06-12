@@ -8,8 +8,6 @@ import Jacobians.LocalMultiplicity.LocalMultiplicity
 import Mathlib.Analysis.Analytic.Uniqueness
 import Mathlib.Analysis.Analytic.IsolatedZeros
 
-
-
 /-! # Globalising "not constant" to "not eventually constant" via the identity theorem
 
 Companion to `Jacobians.Discharge.Manifold.AnalyticFiberDiscrete`. ZZ22 reduced
@@ -142,16 +140,6 @@ structure ChartNonConstWitness where
   z₁ : ℂ
   hz₁ : z₁ ∈ U
   hFz₁ : F z₁ ≠ c
-
-/-- **Within-one-chart globalisation of "not eventually `c`".** From a chart
-non-constancy witness, the pullback `F` is not eventually equal to `c` at any
-point `z₀` of the chart domain `U`. This is the `hFne` ingredient required by
-`ChartPullbackData` in `AnalyticFiberDiscrete.lean`. -/
-lemma chart_pullback_not_eventually_const_within_chart
-    (W : ChartNonConstWitness) {z₀ : ℂ} (hz₀ : z₀ ∈ W.U) :
-    ¬ ∀ᶠ z in 𝓝 z₀, W.F z = W.c :=
-  not_eventually_const_of_not_constOn
-    W.hFA W.hU_pc hz₀ W.hz₁ W.hFz₁
 
 /-! ## Composition with `AnalyticFiberDiscrete`
 

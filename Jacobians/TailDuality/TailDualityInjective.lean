@@ -38,20 +38,6 @@ namespace Jacobians.LaurentTail
 
 /-! ### §0 A planar helper: analytic germs have no negative Laurent coefficients -/
 
-/-- Negative Laurent coefficients of an analytic germ vanish. -/
-theorem laurentCoeff_eq_zero_of_analyticAt_of_neg {g : ℂ → ℂ} {c : ℂ} (hg : AnalyticAt ℂ g c)
-    {n : ℤ} (hn : n < 0) : laurentCoeff g c n = 0 := by
-  rw [laurentCoeff_def]
-  obtain ⟨k, hk⟩ : ∃ k : ℕ, (-n - 1 : ℤ) = (k : ℤ) := ⟨(-n - 1).toNat, by omega⟩
-  have hev : (fun z => g z * (z - c) ^ (-n - 1))
-      =ᶠ[𝓝[≠] c] fun z => g z * (z - c) ^ k := by
-    refine Eventually.of_forall fun z => ?_
-    show g z * (z - c) ^ (-n - 1) = g z * (z - c) ^ k
-    rw [hk, zpow_natCast]
-  rw [resAt_congr hev]
-  exact Jacobians.Dolbeault.resAt_eq_zero_of_analyticAt
-    (hg.mul ((analyticAt_id.sub analyticAt_const).pow k))
-
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 

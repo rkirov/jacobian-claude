@@ -216,12 +216,6 @@ The poles of `df/f` are all *simple* (residue `= n`), which is why the *proved* 
 of
 variables (`resAt_simplePole_pushforward`) is all this route needs.  Fully proved. -/
 
-/-- `logDeriv g = deriv g / g` is **analytic at `a`** when `g` is analytic at `a` and `g a ≠ 0`. -/
-theorem analyticAt_logDeriv {g : ℂ → ℂ} {a : ℂ} (hg : AnalyticAt ℂ g a) (hg0 : g a ≠ 0) :
-    AnalyticAt ℂ (logDeriv g) a := by
-  have heq : logDeriv g = fun z => deriv g z / g z := by funext z; rw [logDeriv]; rfl
-  rw [heq]; exact hg.deriv.div hg hg0
-
 /-! ### The general residue change of variables, as a named atom
 
 The fully-general (any-order-pole) residue change of variables `resAt (g ∘ s · s') b = resAt g a`
@@ -296,50 +290,6 @@ theorem meromorphicAt_summand (i : T.ι) :
       (by rw [T.sheet_base i]; exact T.coeff_mero i) (T.sheet_analytic i)
   exact hcomp.mul (T.sheet_analytic i).deriv.meromorphicAt
 
-/-- **Lemma 3.2 (residue-trace compatibility).**  Given the residue change-of-variables atom, the
-residue of the trace coefficient at the base equals the fibre sum of the residues of the per-sheet
-form coefficients at the preimages:
-
-> `Res_b (Tr_F α) = ∑_{sheets i} Res_{pre i} (coeff i)`.
-
-The trace coefficient is a finite sum, so its residue is the sum of the per-summand residues
-(`resAt_finsum`); each summand's residue equals the corresponding preimage residue by the change of
-variables (`hCoV`). -/
-theorem resAt_traceCoeff (hCoV : ResidueChangeOfVariables) :
-    resAt T.traceCoeff T.b = ∑ i, resAt (T.coeff i) (T.pre i) := by
-  rw [show T.traceCoeff = fun w => ∑ i, T.coeff i (T.sheet i w) * deriv (T.sheet i) w from rfl,
-    LaurentForm.resAt_finsum Finset.univ
-    (fun i w => T.coeff i (T.sheet i w) * deriv (T.sheet i) w)
-    (fun i _ => T.meromorphicAt_summand i)]
-  refine Finset.sum_congr rfl (fun i _ => ?_)
-  have := hCoV (T.sheet i) (T.coeff i) T.b (T.sheet_analytic i) (T.sheet_deriv_ne i)
-    (by rw [T.sheet_base i]; exact T.coeff_mero i)
-  rw [T.sheet_base i] at this
-  exact this
-
-/-- **Lemma 3.2 for simple-pole coefficients (fully proved, no hypothesis).**  When each sheet's
-form coefficient is a *simple* pole `coeff i = c i·(w − pre i)⁻¹` — the case of the logarithmic
-differential `df/f` and hence the `deg_div` route — the residue-trace compatibility holds
-*unconditionally* (the general change-of-variables atom `ResidueChangeOfVariables` is **not**
-needed;
-the proved `resAt_simplePole_pushforward` supplies each sheet):
-
-> `Res_b (Tr_F α) = ∑_{sheets i} Res_{pre i} (coeff i) = ∑_i c i`. -/
-theorem resAt_traceCoeff_of_simplePole (c : T.ι → ℂ)
-    (hcoeff : ∀ i, T.coeff i = fun w => c i * (w - T.pre i)⁻¹) :
-    resAt T.traceCoeff T.b = ∑ i, resAt (T.coeff i) (T.pre i) := by
-  rw [show T.traceCoeff = fun w => ∑ i, T.coeff i (T.sheet i w) * deriv (T.sheet i) w from rfl,
-    LaurentForm.resAt_finsum Finset.univ
-      (fun i w => T.coeff i (T.sheet i w) * deriv (T.sheet i) w)
-      (fun i _ => T.meromorphicAt_summand i)]
-  refine Finset.sum_congr rfl (fun i _ => ?_)
-  have hLHS : resAt (fun w => T.coeff i (T.sheet i w) * deriv (T.sheet i) w) T.b = c i := by
-    rw [show (fun w => T.coeff i (T.sheet i w) * deriv (T.sheet i) w)
-        = (fun w => c i * (T.sheet i w - T.pre i)⁻¹ * deriv (T.sheet i) w) from by
-      funext w; rw [hcoeff i]]
-    exact resAt_simplePole_pushforward (T.sheet_analytic i) (T.sheet_deriv_ne i) (T.sheet_base i)
-  rw [hLHS, hcoeff i, resAt_const_mul_sub_inv]
-
 end FibreTrace
 
 /-! ### The simple-pole instance of the change of variables (fully proved)
@@ -369,25 +319,5 @@ finite-fibre points of `X`.  Hence
 
 which is `∑_{x ∈ X} Res_x α = 0` once the `∞`-fibre residues are folded into `Res_∞` (the standard
 inversion-symmetric bookkeeping; geometrically the residue theorem on `X`). -/
-
-/-- **The combine (Miranda §VIII.3, conclusion).**  Let `L : LaurentForm` represent `Tr_F α` on
-`ℂℙ¹` (so `L.R` is the trace coefficient), and suppose each center `p` of `L` carries a fibre
-residue datum `fibreRes p` equal — by Lemma 3.2 — to the local residue `resAt L.R p` (the fibre sum
-`∑_{x ∈ F⁻¹ p} Res_x α`).  Then the total fibre-residue sum over the centers, plus the residue at
-infinity of the trace, vanishes:
-
-> `(∑_{centers p} fibreRes p) + Res_∞ (Tr_F α) = 0`.
-
-This is the residue theorem on `X`, with the finite residues regrouped by fibre via Lemma 3.2 and
-the `∞`-residue carried by `Res_∞ L.R`.  Pure assembly: `finiteResidueSum` is by definition
-`∑_{centers} resAt L.R p`, each term replaced by `fibreRes p` via `hfibre`, then pillar (a). -/
-theorem finiteResidueSum_trace_eq_zero (L : LaurentForm) (fibreRes : ℂ → ℂ)
-    (hfibre : ∀ p ∈ (Finset.univ.image L.a), fibreRes p = resAt L.R p) :
-    (∑ p ∈ Finset.univ.image L.a, fibreRes p) + resAtInfty L.R L.ρ = 0 := by
-  have hsum : (∑ p ∈ Finset.univ.image L.a, fibreRes p) = L.finiteResidueSum := by
-    rw [LaurentForm.finiteResidueSum]
-    exact Finset.sum_congr rfl hfibre
-  rw [hsum]
-  exact L.finiteResidueSum_add_resAtInfty_eq_zero
 
 end Jacobians.MeromorphicTrace

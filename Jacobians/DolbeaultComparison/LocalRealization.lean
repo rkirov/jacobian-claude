@@ -412,20 +412,6 @@ theorem coeffLin_eq_zero_iff (f : OmegaD (D + Finsupp.single P 1) W) :
   | coe n =>
     rw [WithTop.coe_lt_coe, WithTop.coe_le_coe]; omega
 
-/-- **The witness realises every coefficient.**  Given that the witness section
-`(chart − chart P)^k` lies in `𝒪_{D+P}(W)` (the geometric input — true when `W` is a coordinate disk
-where `D` is supported only at `P`), `coeffLin` is surjective onto `ℂ`: scaling the witness by
-`a : ℂ` hits coefficient `a`. -/
-theorem coeffLin_surjective
-    (hwit : witnessFn ⟨P, hP⟩ (-(D P) - 1) ∈ OmegaD (D + Finsupp.single P 1) W) :
-    Function.Surjective (coeffLin hP (D := D)) := by
-  intro a
-  refine ⟨a • ⟨witnessFn ⟨P, hP⟩ (-(D P) - 1), hwit⟩, ?_⟩
-  have hmem : witnessFn ⟨P, hP⟩ (-(D P) - 1) ∈ OmegaD (D + Finsupp.single P 1) W := hwit
-  show coeffWFn (-(D P) - 1) ⟨P, hP⟩ (a • witnessFn ⟨P, hP⟩ (-(D P) - 1)) = a
-  rw [coeffWFn_smul a hmem.1 (ordU_ge_of_mem_add_single hP hmem),
-    coeffWFn_witnessFn, smul_eq_mul, mul_one]
-
 end Functional
 
 /-! ### The local realization isomorphism `𝒪_{D+P}(W) ⧸ 𝒪_D(W) ≅ₗ[ℂ] ℂ`
@@ -449,14 +435,6 @@ theorem OmegaD_le_add_single : OmegaD D W ≤ OmegaD (D + Finsupp.single P 1) W 
     rw [Finsupp.add_apply, Finsupp.single_apply]
     split <;> omega
   exact_mod_cast neg_le_neg hmono
-
-/-- The kernel of `coeffLin` as a submodule equals `𝒪_D(W)` viewed inside `𝒪_{D+P}(W)`. -/
-theorem ker_coeffLin :
-    LinearMap.ker (coeffLin hP (D := D)) =
-      (OmegaD D W).submoduleOf (OmegaD (D + Finsupp.single P 1) W) := by
-  ext f
-  rw [LinearMap.mem_ker, coeffLin_eq_zero_iff hP f, Submodule.submoduleOf, Submodule.mem_comap,
-    Submodule.coe_subtype]
 
 end Iso
 
@@ -507,18 +485,6 @@ noncomputable def coeffGermLin :
         = c • (γ : MGerm W) from rfl, hγ, ← map_smul (toGerm W),
       coeffGermFn_coe, coeffGermFn_coe, RingHom.id_apply]
     exact coeffWFn_smul c hf.1 (ordU_ge_of_mem_add_single hP hf)
-
-/-- **Surjectivity of the germ-class coefficient** (given the witness membership): every `a : ℂ` is
-realised by the germ of `a • witness`. -/
-theorem coeffGermLin_surjective
-    (hwit : witnessFn ⟨P, hP⟩ (-(D P) - 1) ∈ OmegaD (D + Finsupp.single P 1) W) :
-    Function.Surjective (coeffGermLin hP (D := D)) := by
-  intro a
-  refine ⟨⟨toGerm W (a • witnessFn ⟨P, hP⟩ (-(D P) - 1)),
-    ⟨a • witnessFn ⟨P, hP⟩ (-(D P) - 1), Submodule.smul_mem _ a hwit, rfl⟩⟩, ?_⟩
-  show coeffGermFn (-(D P) - 1) ⟨P, hP⟩ (toGerm W (a • witnessFn ⟨P, hP⟩ (-(D P) - 1))) = a
-  rw [coeffGermFn_coe, coeffWFn_smul a hwit.1 (ordU_ge_of_mem_add_single hP hwit),
-    coeffWFn_witnessFn, smul_eq_mul, mul_one]
 
 /-- A germ in `OmegaDGerm D W` (image of `𝒪_D(W)`) has vanishing order-`k` coefficient at `P` (it
 already lies one order below: `ordU g P ≥ -(D P) = k + 1 > k`). -/

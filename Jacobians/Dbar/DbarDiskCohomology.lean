@@ -73,45 +73,4 @@ theorem differentiableAt_of_dbar_eq_zero {g : ℂ → ℂ} (hg : ContDiff ℝ (�
   have hD1 : (fderiv ℝ g x) 1 = -(Complex.I * (fderiv ℝ g x) Complex.I) := by linear_combination h2
   rw [hD1, smul_eq_mul, mul_neg, ← mul_assoc, Complex.I_mul_I]; ring
 
-/-- **Holomorphic re-splitting on a ball (the Čech↔Dolbeault dictionary).**
-Suppose `f = h₂ - h₁` on a ball `ball c r`, with `h₁, h₂` smooth and `f` *holomorphic* on the ball
-(equivalently `∂̄h₁ = ∂̄h₂` there).  Then `f` is also a difference `g₂ - g₁` of functions that are
-each *holomorphic* on the ball: solve `∂̄u = ∂̄h₁` on the ball (`dbar_solvable_ball`, since
-`∂̄h₁` is smooth), and set `gᵢ = hᵢ - u`; then `gᵢ` is holomorphic (`∂̄gᵢ = ∂̄hᵢ - ∂̄u = 0`,
-`differentiableAt_of_dbar_eq_zero`) and `g₂ - g₁ = h₂ - h₁ = f`.
-
-This is the local engine of `H¹(disk, 𝒪) = 0`: a smooth Čech splitting of a holomorphic cocycle
-can be corrected to a *holomorphic* splitting. -/
-theorem dbar_holo_splitting_ball (c : ℂ) {r : ℝ} (hr : 0 < r)
-    {h₁ h₂ : ℂ → ℂ} (hh₁ : ContDiff ℝ (⊤ : ℕ∞) h₁) (hh₂ : ContDiff ℝ (⊤ : ℕ∞) h₂)
-    (hdbar : ∀ z ∈ Metric.ball c r, DbarDisk.dbar h₁ z = DbarDisk.dbar h₂ z) :
-    ∃ g₁ g₂ : ℂ → ℂ,
-      DifferentiableOn ℂ g₁ (Metric.ball c r) ∧ DifferentiableOn ℂ g₂ (Metric.ball c r) ∧
-        ∀ z ∈ Metric.ball c r, h₂ z - h₁ z = g₂ z - g₁ z := by
-  -- `∂̄h₁` is smooth (built from `fderiv h₁`, itself `C^∞`), so `∂̄u = ∂̄h₁` is solvable on
-  -- the ball.
-  have hdb1_smooth : ContDiff ℝ (⊤ : ℕ∞) (DbarDisk.dbar h₁) := by
-    unfold DbarDisk.dbar
-    have : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ h₁) := hh₁.fderiv_right (le_refl _)
-    fun_prop
-  obtain ⟨u, hu_smooth, hu_dbar⟩ := dbar_solvable_ball hdb1_smooth c hr
-  -- Subtractivity of `∂̄` at a differentiable point (in the form the goal presents `h - u`).
-  have hsub : ∀ (h : ℂ → ℂ) (w : ℂ), DifferentiableAt ℝ h w →
-      DbarDisk.dbar (fun x => h x - u x) w = DbarDisk.dbar h w - DbarDisk.dbar u w := by
-    intro h w hh
-    show DbarDisk.dbar (h - u) w = _
-    unfold DbarDisk.dbar
-    rw [fderiv_sub hh (hu_smooth.differentiable (by norm_num) w)]
-    simp only [ContinuousLinearMap.sub_apply]; ring
-  refine ⟨h₁ - u, h₂ - u, fun z hz => ?_, fun z hz => ?_, fun z hz => ?_⟩
-  · -- `∂̄(h₁ - u) = ∂̄h₁ - ∂̄u = 0` on the ball, so `h₁ - u` is holomorphic there.
-    refine (differentiableAt_of_dbar_eq_zero (hh₁.sub hu_smooth) ?_).differentiableWithinAt
-    rw [hsub h₁ z (hh₁.differentiable (by norm_num) z), hu_dbar z hz]; ring
-  · -- `∂̄(h₂ - u) = ∂̄h₂ - ∂̄u = ∂̄h₂ - ∂̄h₁ = 0` (using `hdbar`).
-    refine (differentiableAt_of_dbar_eq_zero (hh₂.sub hu_smooth) ?_).differentiableWithinAt
-    rw [hsub h₂ z (hh₂.differentiable (by norm_num) z), hu_dbar z hz, ← hdbar z hz]; ring
-  · -- The corrected difference is unchanged: `(h₂ - u) - (h₁ - u) = h₂ - h₁`.
-    show h₂ z - h₁ z = (h₂ z - u z) - (h₁ z - u z)
-    ring
-
 end Jacobians.Dolbeault.DbarDiskCohomology

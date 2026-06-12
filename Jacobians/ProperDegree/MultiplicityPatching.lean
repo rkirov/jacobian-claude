@@ -74,7 +74,6 @@ namespace Jacobians.MultiplicityPatching
 
 open Jacobians Jacobians.ProperMapDegree Jacobians.ProperMapDegreeConstruct
 
-
 /-! ### The planar `m`-fold multiplicity split (step 3, the analytic core)
 
 This is the genuine §17.9 content at the level of one chart.  In a chart at a
@@ -359,15 +358,6 @@ def properMapDegreeData_of_pointwiseMultiplicityPatching
     (h : ∀ w₀ : RiemannSphere, MultiplicityPatchingData f w₀) :
     Jacobians.ProperMapDegree.ProperMapDegreeData f :=
   ProperMapDegreeData.ofConservation f (isLocallyConstant_N_of_pointwiseMultiplicityPatching f h)
-
-/-- **`zerosCount = polesCount`** (the argument-principle equality) from the
-multiplicity-patching supply, via the connectedness globalization. -/
-theorem zerosCount_eq_polesCount_of_pointwiseMultiplicityPatching
-    (f : MeromorphicFunction X)
-    (h : ∀ w₀ : RiemannSphere, MultiplicityPatchingData f w₀) :
-    zerosCount f = polesCount f :=
-  Jacobians.ProperMapDegree.zerosCount_eq_polesCount_of_properMapDegreeData f
-    (properMapDegreeData_of_pointwiseMultiplicityPatching f h)
 
 /-- **The proper-map-degree existential** (the exact shape of
 `Jacobians.exists_properMapDegree`: a common `d : ℕ` with `zerosCount f = d =

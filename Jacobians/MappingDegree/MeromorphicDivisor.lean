@@ -7,8 +7,6 @@ import Jacobians.LocalMultiplicity.MeromorphicAt
 import Mathlib.Analysis.Meromorphic.Divisor
 import Mathlib.Topology.LocallyFinsupp
 
-
-
 /-! # The order divisor of a meromorphic function on a complex manifold
 
 This file packages the chart-pulled-back meromorphic order
@@ -66,7 +64,6 @@ open scoped Manifold Topology ContDiff
 open Filter Set
 
 namespace Jacobians.Discharge
-
 
 namespace MMeromorphicOn
 
@@ -232,30 +229,6 @@ The mathematically correct, provable claim is the order-positive one
 above; this is also exactly what R2 of `Manifold/ResidueTheorem.lean`
 states (`(mmeromorphicOrderAt I f.toFun x).untop₀ > 0`). We therefore
 prove the order-based formulation. -/
-
-/-- The support of `orderFun I f` (= the support of the order divisor of
-`f`) is **finite** on a compact Hausdorff complex 1-manifold. Direct
-specialization of `Function.locallyFinsuppWithin.finiteSupport` to the
-order divisor of `MMeromorphicOn.divisor`.
-
-Both `hf` and `hf0` are load-bearing: they are the inputs to `divisor`. -/
-lemma orderFun_support_finite
-    {X : Type u}
-    [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    (I : ModelWithCorners ℂ ℂ ℂ)
-    (f : X → ℂ)
-    (hf : MMeromorphicOn I f Set.univ)
-    (hf0 : ∀ x, mmeromorphicOrderAt I f x ≠ ⊤) :
-    {x : X | orderFun I f x ≠ 0}.Finite := by
-  -- The divisor packages the order function with local-finiteness of its support.
-  set D : Function.locallyFinsuppWithin (Set.univ : Set X) ℤ :=
-    MMeromorphicOn.divisor I f hf hf0 with hD_def
-  -- Compactness of `Set.univ` upgrades local finiteness of the support to global.
-  have h_finite : (Function.support fun x => (D : X → ℤ) x).Finite :=
-    D.finiteSupport isCompact_univ
-  -- The two sets are pointwise equal by `D x = orderFun I f x` (rfl from `divisor.toFun`).
-  exact h_finite
 
 end MMeromorphicOn
 

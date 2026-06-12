@@ -7,7 +7,6 @@ import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.MeasureTheory.Integral.CircleIntegral
 import Jacobians.MappingDegree.MeromorphicDivisor
 
-
 /-! # Local normal form for analytic / meromorphic maps and local multiplicity
 
 This file lays the framework for the **(R3) local-multiplicity = local-order**
@@ -164,18 +163,6 @@ The R3 statement in `ResidueTheorem.lean` is the coarse "multiplicity ≥ 1"
 form. We discharge it directly here, since it follows from the no-germ-zero
 hypothesis and the fact that `Int.natAbs` of a nonzero integer is `≥ 1`. -/
 
-/-- The coarse R3 statement (`R3_localMultiplicity_statement` in
-`ResidueTheorem.lean`) is **unconditionally true** under the standing
-hypothesis: if the integer order is nonzero, its absolute value is `≥ 1`.
-
-This is the only piece of R3 that does not require classical analytic input;
-it is purely arithmetic on `ℤ`. We prove it here so that `ResidueTheorem.lean`
-can route through `localOrder` rather than hand-rolling the same statement. -/
-theorem one_le_natAbs_of_ne_zero
-    (k : ℤ) (hk : k ≠ 0) : k.natAbs ≥ 1 := by
-  rcases Int.natAbs_pos.mpr hk with h
-  exact h
-
 /-! ## The general-`k` Rouché-style statement (Prop-only)
 
 The general `k ≥ 1` case asserts that an analytic `g : ℂ → ℂ` with order
@@ -306,30 +293,6 @@ def argumentPrinciple_disk_statement (k : ℕ) (g : ℂ → ℂ) : Prop :=
              g (ε * Complex.exp (Complex.I * θ))) *
             (ε * Complex.I * Complex.exp (Complex.I * θ))
           = k
-
-/-- **The argument-principle integral on a disk implies the Rouché count.**
-
-If the argument-principle identity (`argumentPrinciple_disk_statement`) holds
-for `g`, then so does the Rouché-style preimage count statement
-(`localMultiplicity_eq_order_punctured_statement`).
-
-The bridge is classical: applying the argument principle to `g - w` for `w`
-close to but not equal to `0`, the integral
-`(1/2πi) ∮ (g - w)'/(g - w) dz` equals the number of zeros of `g - w` in the
-disk, counted with multiplicity. By the open-mapping theorem (and continuity
-of the integrand in `w`), this equals `k` for all sufficiently small nonzero
-`w`. The simple-zero structure (each zero has multiplicity `1` for nonzero
-`w`, since `(g - w)'(z₀) = g'(z₀) ≠ 0` away from the order-`k` zero of `g`)
-turns the multiplicity-counted count into a set-cardinality count.
-
-**Status:** `Prop`-valued statement, not proven. Discharging requires both
-the argument-principle integral (above) and the Hurwitz / open-mapping
-content for the simple-zero passage. Stated here to make the chain explicit:
-once `argumentPrinciple_disk_statement` is filled, this implication closes
-`localMultiplicity_eq_order_punctured_statement` for `k ≥ 2`, completing R3. -/
-def argumentPrinciple_implies_rouche_statement (k : ℕ) (g : ℂ → ℂ) : Prop :=
-  argumentPrinciple_disk_statement k g →
-    localMultiplicity_eq_order_punctured_statement k g
 
 /-! ### k = 0 trivial case of the argument principle (zero-free disk)
 

@@ -83,13 +83,6 @@ A germ-class `𝒪_D`-section on an open submanifold `↥W` lifts to an honest r
 codiscrete ↔ `𝓝[≠]` dictionary (`toGerm_eq_iff`, `Gext_overlap_eventuallyEq`,
 `nfX_Gext_codiscrete`) bridge germ-class statements to honest punctured-neighbourhood ones. -/
 
-/-- **Honest representative of a germ-class section.**  Every `𝒪_D`-germ on `↥W` is `toGerm W g` for
-an honest `g ∈ OmegaD D W` (it is the image of `OmegaD` under `toGerm`). -/
-theorem exists_omegaD_rep {D : Divisor X} {W : Opens X} {f : MGerm W} (hf : f ∈ OmegaDGerm D W) :
-    ∃ g : W → ℂ, g ∈ OmegaD D W ∧ toGerm W g = f := by
-  obtain ⟨g, hg, hgeq⟩ := hf
-  exact ⟨g, hg, hgeq⟩
-
 /-- A `0`-cochain of honest `𝒪_D`-representatives assembles to an `𝒪_D`-germ `0`-cochain.  The germ
 projection of a `sections0`-witness family lands in `sections0` (componentwise `toGerm` of an
 `OmegaD`-member is an `OmegaDGerm`-member). -/

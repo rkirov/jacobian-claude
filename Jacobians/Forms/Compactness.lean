@@ -92,18 +92,6 @@ noncomputable def localRepOnShrunk {X : Type*} [TopologicalSpace X] [T2Space X] 
       { toFun := fun _ => 0
         continuous_toFun := continuous_const }
 
-/-- On the shrunk chart (for `x₀ ∈ chartCover`), `localRepOnShrunk` agrees
-pointwise with `localRep`. -/
-theorem localRepOnShrunk_apply {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    {x₀ : X} (hx₀ : x₀ ∈ (chartCover : Finset X))
-    (y : shrunkChart (X := X) x₀) :
-    localRepOnShrunk α x₀ y = localRep α x₀ (y : X) := by
-  unfold localRepOnShrunk
-  simp [hx₀]
-
 /-! ### Step B.2 — pointwise norm bound on `localRepOnShrunk`
 Under the `ContinuousMap.norm = sSup` identity on a compact `CompactSpace`,
 the bundled form `localRepOnShrunk α x₀` has norm exactly `chartNormK α x₀`

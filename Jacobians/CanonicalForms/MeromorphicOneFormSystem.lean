@@ -38,7 +38,6 @@ open Module
 
 namespace Jacobians.Dolbeault
 
-
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -76,7 +75,6 @@ structure MeromorphicOneForm (X : Type*) [TopologicalSpace X] [T2Space X] [Compa
   meromorphic : IsMeromorphicOneForm toFun
 
 namespace MeromorphicOneForm
-
 
 /-- Two meromorphic 1-forms are equal iff their underlying sections agree (the meromorphy field is
 a `Prop`). -/
@@ -283,14 +281,6 @@ theorem omegaDim_eq_finrank (D : Divisor X) :
 
 /-! ### Monotonicity `D ≤ D' → Ω_D ≤ Ω_{D'}` -/
 
-/-- **Monotonicity of the linear system.**  A larger pole bound admits more forms: `D ≤ D'`
-(coefficientwise) gives `Ω_D ≤ Ω_{D'}`.  (If `−D ≤ formOrderW α` and `D ≤ D'` then
-`−D' ≤ −D ≤ formOrderW α`.) -/
-theorem omegaD_mono {D D' : Divisor X} (h : D ≤ D') : omegaD (X := X) D ≤ omegaD (X := X) D' := by
-  intro α hα x
-  refine le_trans ?_ (hα x)
-  exact_mod_cast neg_le_neg (h x)
-
 /-! ## Part 2b: multiplication of a 1-form by a meromorphic function (Forster §17.4)
 
 `f · α` (scalar-multiply the covector by the function value `f`) is the structure map of Forster
@@ -374,18 +364,6 @@ theorem holToMero_mem_omegaD_zero (α : HolomorphicOneForms X) :
   have hmem : (chartAt ℂ x) x ∈ (chartAt ℂ x).target :=
     (chartAt ℂ x).map_source (mem_chart_source ℂ x)
   exact (coeffAt_analyticAt α x hmem).meromorphicOrderAt_nonneg
-
-/-- **The holomorphic-to-meromorphic 1-form linear map.**  `holToMero` is ℂ-linear (the section
-operations and `formCoeff` are pointwise-linear), giving `HolomorphicOneForms X →ₗ[ℂ]
-MeromorphicOneForm X`.  This is the structure map of Forster §17.4 at `D = 0`. -/
-noncomputable def holToMeroₗ : HolomorphicOneForms X →ₗ[ℂ] MeromorphicOneForm X where
-  toFun := holToMero
-  map_add' α β :=
-    MeromorphicOneForm.ext (show holToSection (α + β) = holToSection α + holToSection β by
-      funext x; exact congrFun (ContMDiffSection.coe_add α β) x)
-  map_smul' c α :=
-    MeromorphicOneForm.ext (show holToSection (c • α) = c • holToSection α by
-      funext x; exact congrFun (ContMDiffSection.coe_smul c α) x)
 
 /-! ### `Ω_0 ≅ HolomorphicOneForms` — the soundness check (Forster §17.4 at `D = 0`)
 

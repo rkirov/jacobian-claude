@@ -318,48 +318,6 @@ noncomputable def precompCLM {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (h
 @[simp] theorem precompCLM_apply {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (hτmaps : Set.MapsTo τ K U)
     (g : BddHol U) : precompCLM hτcont hτmaps g = precompBcf hτcont hτmaps g := rfl
 
-theorem norm_precompCLM_le {τ : ℂ → ℂ} (hτcont : ContinuousOn τ K) (hτmaps : Set.MapsTo τ K U) :
-    ‖precompCLM hτcont hτmaps‖ ≤ 1 :=
-  LinearMap.mkContinuous_norm_le _ zero_le_one _
-
-/-- **The restriction operator is a compact operator** (Montel; Forster 14.9).
-
-For `U` open and `K ⋐ U` a compact *convex* subset, the restriction map
-`restrictCLM : BddHol U →L[ℂ] (K →ᵇ ℂ)` is a compact operator. The proof reduces, via the standard
-characterization `isCompactOperator_iff_isCompact_closure_image_closedBall`, to the relative
-compactness of the restricted closed ball — which is exactly the Montel lemma
-`CechFiniteness.isCompact_closure_restrict_bddHolo` (Cauchy estimates + Arzelà–Ascoli). Convexity
-of `K` is required by that lemma. -/
-theorem isCompactOperator_restrictCLM (hU : IsOpen U) (hKcpt : IsCompact K) (hKU : K ⊆ U)
-    (hKconv : Convex ℝ K) :
-    IsCompactOperator (restrictCLM (U := U) hKU) := by
-  -- characterise compactness of the operator by the closed ball image (use radius `1`)
-  show IsCompactOperator (⇑(restrictCLM (U := U) hKU).toLinearMap)
-  rw [isCompactOperator_iff_isCompact_closure_image_closedBall
-    (restrictCLM (U := U) hKU).toLinearMap (one_pos)]
-  -- the image of the unit ball is the Montel lemma's range, with `S := ↥(closedBall 0 1)`,
-  -- `M := 1`
-  have hatom := CechFiniteness.isCompact_closure_restrict_bddHolo hU hKcpt hKU hKconv
-    (M := (1 : ℝ)) zero_le_one
-    (S := ↥(Metric.closedBall (0 : BddHol U) 1))
-    (g := fun s => (s : BddHol U).toFun)
-    (hg_an := fun s => (s : BddHol U).analyticOn)
-    (hg_bd := fun s z hz => by
-      have hs : ‖(s : BddHol U)‖ ≤ 1 := by
-        have := s.2
-        rwa [Metric.mem_closedBall, dist_zero_right] at this
-      exact le_trans ((s : BddHol U).norm_toFun_le hz) hs)
-    (hg_cont := fun s => (s : BddHol U).analyticOn.continuousOn)
-  -- match the two closure-of-set expressions
-  convert hatom using 3
-  ext φ
-  constructor
-  · rintro ⟨f, hf, rfl⟩
-    exact ⟨⟨f, by rwa [Metric.mem_closedBall, dist_zero_right]⟩, rfl⟩
-  · rintro ⟨s, rfl⟩
-    exact ⟨(s : BddHol U), by
-      have := s.2; rwa [Metric.mem_closedBall, dist_zero_right] at this, rfl⟩
-
 end BddHol
 
 end Jacobians.Dolbeault

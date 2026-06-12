@@ -7,7 +7,6 @@ import Jacobians.Forms.Genus
 compact connected complex 1-manifold via the classical Montel /
 compactness route (Ahlfors–Sario, Rudin).
 
-
 ## Classical textbook approach (Ahlfors–Sario Ch II §5)
 
 1. **Finite atlas.** X compact ⇒ finite open cover by chart domains.
@@ -147,25 +146,6 @@ noncomputable def HolomorphicOneForms.embedInnerBcf (x₀ : X) :
     calc ‖BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk α x₀)‖
         ≤ ‖α‖ := norm_mkOfCompact_localRepOnInnerShrunk_le α x₀
       _ = 1 * ‖α‖ := (one_mul _).symm
-
-/-- **Cauchy preservation**: CauchySeq in HOF X maps to CauchySeq in bcf
-under the per-chart embedding (via continuity of `embedInnerBcf`). -/
-theorem HolomorphicOneForms.cauchySeq_embedInnerBcf_of_cauchySeq
-    (x₀ : X)
-    (αs : ℕ → Jacobians.HolomorphicOneForms X)
-    (hCauchy : letI := HolomorphicOneForms.normedAddCommGroup (X := X)
-      CauchySeq αs) :
-    letI := innerShrunkChart_compactSpace (X := X) x₀
-    letI := HolomorphicOneForms.normedAddCommGroup (X := X)
-    letI := HolomorphicOneForms.normedSpace (X := X)
-    CauchySeq fun n =>
-      BoundedContinuousFunction.mkOfCompact (localRepOnInnerShrunk (αs n) x₀) := by
-  letI := innerShrunkChart_compactSpace (X := X) x₀
-  letI := HolomorphicOneForms.normedAddCommGroup (X := X)
-  letI := HolomorphicOneForms.normedSpace (X := X)
-  -- Push CauchySeq through the continuous linear embedding.
-  have h := hCauchy.map (HolomorphicOneForms.embedInnerBcf x₀).uniformContinuous
-  convert h using 0
 
 /-! ### Montel conclusion: closed unit ball is compact + Riesz
 

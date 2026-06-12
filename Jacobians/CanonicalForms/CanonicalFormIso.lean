@@ -51,7 +51,6 @@ open Module
 
 namespace Jacobians.Dolbeault
 
-
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -479,22 +478,6 @@ theorem meroFormSMul_ω₀_mem_omegaD {D : Divisor X} {f : MeromorphicFunction X
   calc (-(D x) : WithTop ℤ) = (-(D x) + -(data.K x) : WithTop ℤ) + (data.K x : WithTop ℤ) := by
             norm_cast; ring
         _ ≤ f.orderW x + (data.K x : WithTop ℤ) := hstep
-
-/-- The multiplication-by-`ω₀` linear map `MeromorphicFunction X →ₗ[ℂ] MeromorphicOneForm X`,
-`f ↦ f·ω₀` (the §17.4 structure map at the section level). -/
-noncomputable def meroFormSMulω₀ₗ : MeromorphicFunction X →ₗ[ℂ] MeromorphicOneForm X where
-  toFun f := meroFormSMul f data.ω₀
-  map_add' f g := by
-    refine MeromorphicOneForm.ext ?_
-    funext y
-    show (f.toFun y + g.toFun y) • data.ω₀.toFun y
-      = f.toFun y • data.ω₀.toFun y + g.toFun y • data.ω₀.toFun y
-    module
-  map_smul' c f := by
-    refine MeromorphicOneForm.ext ?_
-    funext y
-    show (c * f.toFun y) • data.ω₀.toFun y = c • (f.toFun y • data.ω₀.toFun y)
-    module
 
 /-- **The §17.4 map on representatives** `L(D+K) → omegaDModule D`, `f ↦ [f·ω₀]` (multiply by `ω₀`,
 land in `Ω_D` by `meroFormSMul_ω₀_mem_omegaD`, project to the junk-free quotient).  ℂ-linear. -/

@@ -60,15 +60,6 @@ theorem shrunkChart_compactSpace' {X : Type*} [TopologicalSpace X] [T2Space X] [
     CompactSpace (shrunkChart (X := X) x₀) :=
   isCompact_iff_compactSpace.mp (shrunkChart_isCompact x₀)
 
-/-- Bundled version of `localRep α x₀` on shrunkChart x₀. -/
-noncomputable def localRepOnShrunkBcf {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (α : ContMDiffSection 𝓘(ℂ, ℂ) (ℂ →L[ℂ] ℂ) ω
-      (fun x : X => TangentSpace 𝓘(ℂ, ℂ) x →L[ℂ] (Bundle.Trivial X ℂ) x))
-    (x₀ : X) : BoundedContinuousFunction (shrunkChart (X := X) x₀) ℂ := by
-  letI := shrunkChart_compactSpace' (X := X) x₀
-  exact BoundedContinuousFunction.mkOfCompact (localRepOnShrunk α x₀)
-
 /-! ### Step 2 — bcf-Cauchy on shrunkChart from supNormK-Cauchy
 
 The per-chart bcf distance is bounded by supNormK of the difference,
@@ -486,7 +477,6 @@ theorem exists_toFun_limit {X : Type*} [TopologicalSpace X] [T2Space X] [Compact
     exact h_back
   choose L hL using h_pw_limit
   exact ⟨L, hL⟩
-
 
 /-! ### Step 6 helper — pointwise `localRep` Tendsto
 From pointwise CLM Tendsto of `(αs n).toFun y`, evaluation at

@@ -33,7 +33,6 @@ finite sum of holomorphic 1-forms.
 Forster §§4, 10; Griffiths–Harris Ch. 2 §2.7 (the trace map for forms).
 -/
 
-
 namespace Jacobians
 
 open scoped Manifold ContDiff Bundle Topology
@@ -302,7 +301,6 @@ structure LocalSheetSystem {X Y : Type*} [TopologicalSpace X] [ChartedSpace ℂ 
   fibre_eq : ∀ y ∈ V, f ⁻¹' {y} = Set.range (fun i => sheet i y)
 
 namespace LocalSheetSystem
-
 
 /-- Each sheet is `MDifferentiableAt` at every point of `V`. -/
 theorem sheet_mdifferentiableAt {X Y : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
@@ -2128,24 +2126,6 @@ over the sheet sections; what is missing is the lift/monodromy assembly producin
 the indexed family of global lifts (the loop-lifting `PreimageCycle` machinery in
 `PeriodLattice.lean`, gated on `exists_preimageCycle_of_off_branchLocus`). -/
 
-/-- **Single-sheet projection formula (line integral).** For a holomorphic section
-`s : Y → X` of `f`, the line integral of the pulled-back form `pullbackForm s hs α`
-along a (regular) path `δ` equals the line integral of `α` along the lift `s ∘ δ`.
-
-This is exactly `lineIntegral_pullback` read with the section `s` as the map: it is
-the per-sheet term of the projection formula. The lift `s ∘ δ` is the path in `X`
-covering `δ` (`f ∘ (s ∘ δ) = δ` since `f ∘ s = id`). -/
-theorem lineIntegral_pullback_section {X Y : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [ChartedSpace ℂ Y]
-    [IsManifold 𝓘(ℂ) ω Y] (s : Y → X) (hs : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω s)
-    (α : HolomorphicOneForms X) (δ : ℝ → Y)
-    (hδ_cont : Continuous δ)
-    (hδ_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) (δ t)).toFun ∘ δ) t) :
-    lineIntegral (pullbackForm s hs α) δ = lineIntegral α (s ∘ δ) :=
-  (lineIntegral_pullback s hs α δ hδ_cont hδ_diff).symm
-
 /-- Evaluating a finite sum of holomorphic one-forms at `y` against a tangent
 vector `v` equals the sum of the pointwise evaluations. -/
 theorem sum_toFun_apply {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
@@ -2161,34 +2141,6 @@ theorem sum_toFun_apply {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpa
     rw [Fin.sum_univ_succ, Fin.sum_univ_succ, ← ih (fun i => forms i.succ)]
     -- Addition of sections is pointwise; the covector evaluation distributes.
     rfl
-
-/-- Line integral of a finite sum of forms is the sum of line integrals, under
-per-form integrability along `γ`. (Finset version of `lineIntegral_add`, by
-induction on the index set.) -/
-theorem lineIntegral_sum {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
-    [ConnectedSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] {k : ℕ}
-    (forms : Fin k → HolomorphicOneForms Y) (δ : ℝ → Y)
-    (hint : ∀ i, IntervalIntegrable
-      (fun t : ℝ => (forms i).toFun (δ t) (pathSpeed δ t)) MeasureTheory.volume 0 1) :
-    lineIntegral (∑ i, forms i) δ = ∑ i, lineIntegral (forms i) δ := by
-  classical
-  induction k with
-  | zero => simp [lineIntegral_zero]
-  | succ m ih =>
-    rw [Fin.sum_univ_succ, Fin.sum_univ_succ]
-    have hint_tail : ∀ i : Fin m, IntervalIntegrable
-        (fun t : ℝ => (forms i.succ).toFun (δ t) (pathSpeed δ t)) MeasureTheory.volume 0 1 :=
-      fun i => hint i.succ
-    have hint_head := hint 0
-    have hint_tailsum : IntervalIntegrable
-        (fun t : ℝ => (∑ i : Fin m, forms i.succ).toFun (δ t) (pathSpeed δ t))
-          MeasureTheory.volume 0 1 := by
-      have heq : (fun t : ℝ => (∑ i : Fin m, forms i.succ).toFun (δ t) (pathSpeed δ t)) =
-          ∑ i : Fin m, (fun t : ℝ => (forms i.succ).toFun (δ t) (pathSpeed δ t)) := by
-        funext t; rw [Finset.sum_apply]; exact sum_toFun_apply _ (δ t) (pathSpeed δ t)
-      rw [heq]
-      exact IntervalIntegrable.sum _ (fun i _ => hint_tail i)
-    rw [lineIntegral_add _ _ _ hint_head hint_tailsum, ih (fun i => forms i.succ) hint_tail]
 
 /-! ## Covariant functoriality of the trace
 
@@ -2548,6 +2500,5 @@ theorem traceFormTotal_comp {X Y : Type*} [TopologicalSpace X] [T2Space X] [Comp
       rw [traceFormTotal_of_nonconstant (g ∘ f) hgf hgfnc,
         traceFormTotal_of_nonconstant f hf hfc, traceFormTotal_of_nonconstant g hg hgc,
         traceForm_comp f hf hfc g hg hgc hgf hgfnc]
-
 
 end Jacobians

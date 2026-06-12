@@ -172,30 +172,6 @@ def HasChartAnalyticCorrectors (𝔙 : FiniteFamily X) : Prop :=
       ∀ i j, ∀ x : X, x ∈ (𝔙.U i ⊓ 𝔙.U j : Opens X) →
         (fun z => H j z - H i z) =ᶠ[𝓝[≠] x] holoFn (cocycleComp_mem 𝔙 s i j)
 
-/-- **`HasChartAnalyticCorrectors ⟹ HasHoloCorrectors`.**  Restrict each ambient
-chart-analytic corrector `H_i` to `η_i := H_i ∘ val ∈ OmegaD 0 (U_i)`
-(`omegaD_zero_of_chart_analyticAt`); near an overlap point `Gext (η_i) = H_i` (both equal `H_i` on
-the open `U_i`), so the ambient splitting of the `H_i` transfers verbatim to the `Gext (η_i)`. -/
-theorem hasHoloCorrectors_of_chartAnalytic (𝔙 : FiniteFamily X)
-    (h : HasChartAnalyticCorrectors 𝔙) : HasHoloCorrectors 𝔙 := by
-  intro s
-  obtain ⟨H, hana, hsplit⟩ := h s
-  refine ⟨fun i => H i ∘ (Subtype.val : 𝔙.U i → X),
-    fun i => omegaD_zero_of_chart_analyticAt (hana i),
-    fun i j x hx => ?_⟩
-  -- Near every point of the open `U_k`, `Gext (H_k ∘ val) = H_k`.
-  have hGextEq : ∀ (k : 𝔙.ι), x ∈ 𝔙.U k →
-      Gext (H k ∘ (Subtype.val : 𝔙.U k → X)) =ᶠ[𝓝[≠] x] H k := by
-    intro k hxk
-    have hUk : ∀ᶠ z in 𝓝[≠] x, z ∈ 𝔙.U k :=
-      eventually_nhdsWithin_of_eventually_nhds ((𝔙.U k).isOpen.mem_nhds hxk)
-    filter_upwards [hUk] with z hz
-    simp only [Function.comp_apply, Gext_apply_mem (H k ∘ (Subtype.val : 𝔙.U k → X)) hz]
-  have hj := hGextEq j hx.2
-  have hi := hGextEq i hx.1
-  -- Transfer the ambient splitting of `H` to the `Gext (η)` splitting.
-  refine (Filter.EventuallyEq.sub hj hi).trans (hsplit i j x hx)
-
 /-- **`FunctionDiskAcyclic 𝔙 0` from the corrector input.**  The function → germ descent
 (`functionDiskAcyclic_of_holoCorrectors`) turns each cocycle's correctors into the matching
 germ-class `0`-cochain primitive, witnessing `FunctionDiskAcyclic`. -/
@@ -210,13 +186,6 @@ theorem functionDiskAcyclic_of_hasHoloCorrectors (𝔙 : FiniteFamily X)
 theorem isDiskAcyclic_of_hasHoloCorrectors (𝔙 : FiniteFamily X)
     (h : HasHoloCorrectors 𝔙) : IsDiskAcyclic 𝔙 (0 : Divisor X) :=
   isDiskAcyclic_of_funcLevel 𝔙 0 (functionDiskAcyclic_of_hasHoloCorrectors 𝔙 h)
-
-/-- **`H¹(disk, 𝒪) = 0` from the corrector input.**  Every class of `𝔙.cechH1 0` is `0` — the
-headline germ-level collapse the finiteness / Serre-D=0 consumers want — modulo the single honest
-corrector obligation `HasHoloCorrectors` (the ball solve over the shared chart). -/
-theorem cechH1_subsingleton_of_hasHoloCorrectors (𝔙 : FiniteFamily X)
-    (h : HasHoloCorrectors 𝔙) (q : 𝔙.cechH1 (0 : Divisor X)) : q = 0 :=
-  cechH1_subsingleton_of_isDiskAcyclic 𝔙 0 (isDiskAcyclic_of_hasHoloCorrectors 𝔙 h) q
 
 end Jacobians.Dolbeault
 

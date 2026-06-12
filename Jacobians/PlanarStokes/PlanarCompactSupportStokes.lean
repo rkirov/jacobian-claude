@@ -35,66 +35,6 @@ namespace Jacobians.Dolbeault
 /-! ### Layer 1 — Green's theorem on an axis-aligned rectangle
 (ported from tangentstorm/JacobianChallenge, MIT, see file header) -/
 
-/-- **FTC slice for `P`** (the `dy`-direction): the top-minus-bottom edge difference is the
-iterated `y`-integral of `∂P/∂y` over the rectangle. -/
-theorem green_rectangle_slice_P (P : ℝ × ℝ → ℝ) (a b c d : ℝ)
-    (hP : ContDiff ℝ 1 P) :
-    (∫ x in a..b, P (x, d)) - (∫ x in a..b, P (x, c))
-      = ∫ x in a..b, ∫ y in c..d, fderiv ℝ P (x, y) (0, 1) := by
-  have hslice : ∀ x : ℝ,
-      (∫ y in c..d, fderiv ℝ P (x, y) (0, 1)) = P (x, d) - P (x, c) := by
-    intro x
-    have hderiv : ∀ y ∈ Set.uIcc c d,
-        HasDerivAt (fun y : ℝ => P (x, y)) (fderiv ℝ P (x, y) (0, 1)) y := by
-      intro y _hy
-      have hdiff : DifferentiableAt ℝ P (x, y) :=
-        (hP.differentiable one_ne_zero).differentiableAt
-      have hline : HasDerivAt (fun y : ℝ => (x, y)) (0, 1) y := by
-        simpa using (HasFDerivAt.hasDerivAt (hasFDerivAt_prodMk_right (𝕜 := ℝ) x y))
-      have h := hdiff.hasFDerivAt.comp_hasDerivAt y hline
-      exact h.congr_of_eventuallyEq (Filter.Eventually.of_forall fun _ => rfl)
-    have hint : IntervalIntegrable (fun y : ℝ => fderiv ℝ P (x, y) (0, 1))
-        MeasureTheory.volume c d := by
-      have hc : Continuous fun y : ℝ => fderiv ℝ P (x, y) (0, 1) :=
-        (hP.continuous_fderiv_apply one_ne_zero).comp
-          ((continuous_const.prodMk continuous_id).prodMk continuous_const)
-      exact hc.intervalIntegrable _ _
-    exact intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv hint
-  rw [← intervalIntegral.integral_sub]
-  · simp_rw [← hslice]
-  · exact (hP.continuous.comp (continuous_id.prodMk continuous_const)).intervalIntegrable _ _
-  · exact (hP.continuous.comp (continuous_id.prodMk continuous_const)).intervalIntegrable _ _
-
-/-- **FTC slice for `Q`** (the `dx`-direction): the right-minus-left edge difference is the
-iterated `x`-integral of `∂Q/∂x` over the rectangle. -/
-theorem green_rectangle_slice_Q (Q : ℝ × ℝ → ℝ) (a b c d : ℝ)
-    (hQ : ContDiff ℝ 1 Q) :
-    (∫ y in c..d, Q (b, y)) - (∫ y in c..d, Q (a, y))
-      = ∫ y in c..d, ∫ x in a..b, fderiv ℝ Q (x, y) (1, 0) := by
-  have hslice : ∀ y : ℝ,
-      (∫ x in a..b, fderiv ℝ Q (x, y) (1, 0)) = Q (b, y) - Q (a, y) := by
-    intro y
-    have hderiv : ∀ x ∈ Set.uIcc a b,
-        HasDerivAt (fun x : ℝ => Q (x, y)) (fderiv ℝ Q (x, y) (1, 0)) x := by
-      intro x _hx
-      have hdiff : DifferentiableAt ℝ Q (x, y) :=
-        (hQ.differentiable one_ne_zero).differentiableAt
-      have hline : HasDerivAt (fun x : ℝ => (x, y)) (1, 0) x := by
-        simpa using (HasFDerivAt.hasDerivAt (hasFDerivAt_prodMk_left (𝕜 := ℝ) x y))
-      have h := hdiff.hasFDerivAt.comp_hasDerivAt x hline
-      exact h.congr_of_eventuallyEq (Filter.Eventually.of_forall fun _ => rfl)
-    have hint : IntervalIntegrable (fun x : ℝ => fderiv ℝ Q (x, y) (1, 0))
-        MeasureTheory.volume a b := by
-      have hc : Continuous fun x : ℝ => fderiv ℝ Q (x, y) (1, 0) :=
-        (hQ.continuous_fderiv_apply one_ne_zero).comp
-          ((continuous_id.prodMk continuous_const).prodMk continuous_const)
-      exact hc.intervalIntegrable _ _
-    exact intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv hint
-  rw [← intervalIntegral.integral_sub]
-  · simp_rw [← hslice]
-  · exact (hQ.continuous.comp (continuous_const.prodMk continuous_id)).intervalIntegrable _ _
-  · exact (hQ.continuous.comp (continuous_const.prodMk continuous_id)).intervalIntegrable _ _
-
 /-- The iterated `x`-then-`y` interval integral of a continuous field equals the set integral over
 the product rectangle. -/
 theorem rectangle_iterated_eq_setIntegral (f : ℝ × ℝ → ℝ) (a b c d : ℝ)
@@ -123,14 +63,6 @@ theorem rectangle_fubini_swap_continuous (f : ℝ × ℝ → ℝ) (a b c d : ℝ
         (isCompact_Icc.prod CompactIccSpace.isCompact_Icc) hf.continuousOn
   · exact ContinuousOn.integrableOn_compact
       (isCompact_Icc.prod CompactIccSpace.isCompact_Icc) hf.continuousOn
-
-/-- Reverse-order companion of `rectangle_iterated_eq_setIntegral`. -/
-theorem rectangle_iterated_eq_setIntegral_rev (f : ℝ × ℝ → ℝ) (a b c d : ℝ)
-    (hab : a ≤ b) (hcd : c ≤ d) (hf : Continuous f) :
-    (∫ y in c..d, ∫ x in a..b, f (x, y))
-      = ∫ p in Set.Icc a b ×ˢ Set.Icc c d, f p := by
-  rw [← rectangle_fubini_swap_continuous f a b c d hab hcd hf]
-  exact rectangle_iterated_eq_setIntegral f a b c d hab hcd hf
 
 /-! ### Layer 2 — compact-support vanishing on `ℂ` (Forster (10.20)) -/
 

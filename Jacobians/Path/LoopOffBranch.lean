@@ -43,7 +43,6 @@ is the assembly of `exists_loop_off_branchLocus` itself.
 Forster §10.5; Mathlib `Mathlib/Analysis/Complex/HasPrimitives.lean` (Morera).
 -/
 
-
 open scoped Manifold ContDiff Bundle Topology
 open Complex Set MeasureTheory Filter
 
@@ -136,75 +135,6 @@ lemma chartFrame_cancel_general {X : Type*} [TopologicalSpace X] [T2Space X] [Co
     simp only [smul_eq_mul] at this; exact this
   rw [h_lin]; ring
 
-/-- **Chart-local Fundamental Theorem of Calculus for `lineIntegral`.**
-
-If a path `γ` stays in a **ball**-chart around `Q₀` (chart target
-`Metric.ball c r`, so the chart-coordinate region is simply connected) and is
-C¹ in chart coordinates on `[0,1]`, then the line integral of the `i`-th period
-basis form along `γ` equals the **primitive-difference**
-
-```
-lineIntegral ωᵢ γ = F (e (γ 1)) − F (e (γ 0)),    e := chartAt ℂ Q₀,
-```
-
-where `F` is a holomorphic primitive of the (holomorphic) chart coefficient
-`chartFormCoeff Q₀ i` on the ball, produced by Morera's theorem
-(`DifferentiableOn.isExactOn_ball`). In particular the value depends on `γ` only
-through its chart-coordinate endpoints `e (γ 0)`, `e (γ 1)`.
-
-`hint` (interval-integrability of the line-integral integrand) is what a
-`IsClosedSmoothLoop`/`IsSmoothPath` already supplies via
-`intervalIntegrable_form_pathSpeed_of_velContinuous`. -/
-lemma lineIntegral_eq_primitive_diff_in_ballChart {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (Q₀ : X) (γ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ)
-    (htgt : (chartAt (H := ℂ) Q₀).target = Metric.ball c r)
-    (hγ_in : ∀ t ∈ Set.Icc (0 : ℝ) 1, γ t ∈ (chartAt (H := ℂ) Q₀).source)
-    (hγ_cont : Continuous γ)
-    (hγ_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) Q₀).toFun ∘ γ) t)
-    (hint : IntervalIntegrable
-      (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t)) volume 0 1) :
-    ∃ F : ℂ → ℂ,
-      (∀ w ∈ Metric.ball c r, HasDerivAt F (chartFormCoeff (X := X) Q₀ i w) w) ∧
-      lineIntegral (periodBasisForm X i) γ =
-        F ((chartAt (H := ℂ) Q₀) (γ 1)) - F ((chartAt (H := ℂ) Q₀) (γ 0)) := by
-  set e := chartAt (H := ℂ) Q₀ with he
-  -- `chartFormCoeff Q₀ i` is holomorphic on the (ball) chart target ⟹ has a primitive `F`.
-  have hcoeff_diffOn : DifferentiableOn ℂ (chartFormCoeff (X := X) Q₀ i) (Metric.ball c r) := by
-    rw [← htgt]; exact chartFormCoeff_differentiableOn Q₀ i
-  obtain ⟨F, hF⟩ := hcoeff_diffOn.isExactOn_ball
-  refine ⟨F, hF, ?_⟩
-  set g : ℝ → ℂ := e.toFun ∘ γ with hg
-  have hg_ball : ∀ t ∈ Set.Icc (0 : ℝ) 1, g t ∈ Metric.ball c r := by
-    intro t ht; rw [hg]; show e (γ t) ∈ Metric.ball c r
-    rw [← htgt]; exact e.map_source (hγ_in t ht)
-  have huIcc_sub : Set.uIcc (0 : ℝ) 1 = Set.Icc (0 : ℝ) 1 := Set.uIcc_of_le (by norm_num)
-  -- `F ∘ g` has derivative `coeff(g t) · g'(t)` by the chain rule.
-  have hFg_deriv : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-      HasDerivAt (F ∘ g) (chartFormCoeff (X := X) Q₀ i (g t) * (fderiv ℝ g t 1)) t := by
-    intro t ht
-    rw [huIcc_sub] at ht
-    have hg_deriv : HasDerivAt g (fderiv ℝ g t 1) t := (hγ_diff t (huIcc_sub ▸ ht)).hasDerivAt
-    have hF_at : HasDerivAt F (chartFormCoeff (X := X) Q₀ i (g t)) (g t) := hF (g t) (hg_ball t ht)
-    have := hF_at.comp t hg_deriv
-    convert this using 1
-  unfold lineIntegral
-  -- The line-integral integrand equals `coeff(g t) · g'(t)` on `[0,1]`.
-  have hintegrand : Set.EqOn
-      (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
-      (fun t => chartFormCoeff (X := X) Q₀ i (g t) * (fderiv ℝ g t 1))
-      (Set.uIcc 0 1) := by
-    intro t ht
-    rw [huIcc_sub] at ht
-    have h_src_nbhd : ∀ᶠ s : ℝ in nhds t, γ s ∈ e.source :=
-      (e.open_source.preimage hγ_cont).mem_nhds (hγ_in t ht)
-    exact chartFrame_cancel_general Q₀ γ i t h_src_nbhd (hγ_diff t (huIcc_sub ▸ ht))
-  rw [intervalIntegral.integral_congr hintegrand,
-    intervalIntegral.integral_eq_sub_of_hasDerivAt hFg_deriv
-      (hint.congr (fun t ht => hintegrand (Set.uIoc_subset_uIcc ht)))]
-  rfl
-
 /-! ## Sub-ball generalization (usable with `chart_restrict_to_ball`)
 
 The two lemmas above require the chart `chartAt Q₀` to have its **entire** target equal
@@ -219,59 +149,6 @@ change is `chartFormCoeff` is now holomorphic on the ball by `DifferentiableOn.m
 the full target, and chart-image confinement is supplied rather than derived from
 `map_source`. -/
 
-/-- **Chart-local FTC on a sub-ball of the chart target.** Generalizes
-`lineIntegral_eq_primitive_diff_in_ballChart`: the ball `Metric.ball c r` need only be a
-subset of `(chartAt Q₀).target`, with the path's chart-images supplied to lie in the ball
-(`hg_ball`). The conclusion is the same primitive-difference. -/
-lemma lineIntegral_eq_primitive_diff_in_subball {X : Type*} [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (Q₀ : X) (γ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ)
-    (hsub : Metric.ball c r ⊆ (chartAt (H := ℂ) Q₀).target)
-    (hg_ball : ∀ t ∈ Set.Icc (0 : ℝ) 1, (chartAt (H := ℂ) Q₀) (γ t) ∈ Metric.ball c r)
-    (hγ_in : ∀ t ∈ Set.Icc (0 : ℝ) 1, γ t ∈ (chartAt (H := ℂ) Q₀).source)
-    (hγ_cont : Continuous γ)
-    (hγ_diff : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) Q₀).toFun ∘ γ) t)
-    (hint : IntervalIntegrable
-      (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t)) volume 0 1) :
-    ∃ F : ℂ → ℂ,
-      (∀ w ∈ Metric.ball c r, HasDerivAt F (chartFormCoeff (X := X) Q₀ i w) w) ∧
-      lineIntegral (periodBasisForm X i) γ =
-        F ((chartAt (H := ℂ) Q₀) (γ 1)) - F ((chartAt (H := ℂ) Q₀) (γ 0)) := by
-  set e := chartAt (H := ℂ) Q₀ with he
-  -- `chartFormCoeff Q₀ i` is holomorphic on the (sub-)ball ⟹ has a primitive `F`.
-  have hcoeff_diffOn : DifferentiableOn ℂ (chartFormCoeff (X := X) Q₀ i) (Metric.ball c r) :=
-    (chartFormCoeff_differentiableOn Q₀ i).mono hsub
-  obtain ⟨F, hF⟩ := hcoeff_diffOn.isExactOn_ball
-  refine ⟨F, hF, ?_⟩
-  set g : ℝ → ℂ := e.toFun ∘ γ with hg
-  have hg_ball' : ∀ t ∈ Set.Icc (0 : ℝ) 1, g t ∈ Metric.ball c r := hg_ball
-  have huIcc_sub : Set.uIcc (0 : ℝ) 1 = Set.Icc (0 : ℝ) 1 := Set.uIcc_of_le (by norm_num)
-  -- `F ∘ g` has derivative `coeff(g t) · g'(t)` by the chain rule.
-  have hFg_deriv : ∀ t ∈ Set.uIcc (0 : ℝ) 1,
-      HasDerivAt (F ∘ g) (chartFormCoeff (X := X) Q₀ i (g t) * (fderiv ℝ g t 1)) t := by
-    intro t ht
-    rw [huIcc_sub] at ht
-    have hg_deriv : HasDerivAt g (fderiv ℝ g t 1) t := (hγ_diff t (huIcc_sub ▸ ht)).hasDerivAt
-    have hF_at : HasDerivAt F (chartFormCoeff (X := X) Q₀ i (g t)) (g t) := hF (g t) (hg_ball' t ht)
-    have := hF_at.comp t hg_deriv
-    convert this using 1
-  unfold lineIntegral
-  -- The line-integral integrand equals `coeff(g t) · g'(t)` on `[0,1]`.
-  have hintegrand : Set.EqOn
-      (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
-      (fun t => chartFormCoeff (X := X) Q₀ i (g t) * (fderiv ℝ g t 1))
-      (Set.uIcc 0 1) := by
-    intro t ht
-    rw [huIcc_sub] at ht
-    have h_src_nbhd : ∀ᶠ s : ℝ in nhds t, γ s ∈ e.source :=
-      (e.open_source.preimage hγ_cont).mem_nhds (hγ_in t ht)
-    exact chartFrame_cancel_general Q₀ γ i t h_src_nbhd (hγ_diff t (huIcc_sub ▸ ht))
-  rw [intervalIntegral.integral_congr hintegrand,
-    intervalIntegral.integral_eq_sub_of_hasDerivAt hFg_deriv
-      (hint.congr (fun t ht => hintegrand (Set.uIoc_subset_uIcc ht)))]
-  rfl
-
 /-! ## Sub-interval primitive-difference (telescoping primitive)
 
 The lemmas above integrate over the *full* interval `[0,1]` (i.e. over `lineIntegral`). For the
@@ -282,54 +159,6 @@ partial integral `∫ t in a..b, ωᵢ(γ t)(γ'(t))` equals the primitive-diffe
 `a` and `b`. This is the "splice" primitive: replacing a sub-arc of a loop by a same-chart-endpoints
 detour over the SAME parameter sub-interval leaves the partial integral — and therefore (by
 additivity over the subdivision) the whole `periodVec` — unchanged, with NO reparametrization. -/
-
-/-- **Sub-interval primitive-difference.** The partial line-integral integrand of `ωᵢ` over a
-sub-interval `[a,b]` of a path `γ` whose sub-arc lies in a sub-ball `Metric.ball c r ⊆ chart
-target`, integrates to `F(chart γ b) − F(chart γ a)` for the Morera primitive `F`. Hence the
-partial integral depends only on the chart-coordinate endpoints `chart γ a`, `chart γ b`. -/
-lemma intervalIntegral_form_pathSpeed_eq_primitive_diff_in_subball {X : Type*} [TopologicalSpace X]
-    [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (Q₀ : X) (γ : ℝ → X) (i : Fin (genus X)) (c : ℂ) (r : ℝ) (a b : ℝ)
-    (hsub : Metric.ball c r ⊆ (chartAt (H := ℂ) Q₀).target)
-    (hg_ball : ∀ t ∈ Set.uIcc a b, (chartAt (H := ℂ) Q₀) (γ t) ∈ Metric.ball c r)
-    (hγ_in : ∀ t ∈ Set.uIcc a b, γ t ∈ (chartAt (H := ℂ) Q₀).source)
-    (hγ_cont : Continuous γ)
-    (hγ_diff : ∀ t ∈ Set.uIcc a b,
-      DifferentiableAt ℝ ((chartAt (H := ℂ) Q₀).toFun ∘ γ) t)
-    (hint : IntervalIntegrable
-      (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t)) volume a b) :
-    ∃ F : ℂ → ℂ,
-      (∀ w ∈ Metric.ball c r, HasDerivAt F (chartFormCoeff (X := X) Q₀ i w) w) ∧
-      (∫ t in a..b, (periodBasisForm X i).toFun (γ t) (pathSpeed γ t)) =
-        F ((chartAt (H := ℂ) Q₀) (γ b)) - F ((chartAt (H := ℂ) Q₀) (γ a)) := by
-  set e := chartAt (H := ℂ) Q₀ with he
-  have hcoeff_diffOn : DifferentiableOn ℂ (chartFormCoeff (X := X) Q₀ i) (Metric.ball c r) :=
-    (chartFormCoeff_differentiableOn Q₀ i).mono hsub
-  obtain ⟨F, hF⟩ := hcoeff_diffOn.isExactOn_ball
-  refine ⟨F, hF, ?_⟩
-  set g : ℝ → ℂ := e.toFun ∘ γ with hg
-  have hg_ball' : ∀ t ∈ Set.uIcc a b, g t ∈ Metric.ball c r := hg_ball
-  -- `F ∘ g` has derivative `coeff(g t) · g'(t)` by the chain rule on `uIcc a b`.
-  have hFg_deriv : ∀ t ∈ Set.uIcc a b,
-      HasDerivAt (F ∘ g) (chartFormCoeff (X := X) Q₀ i (g t) * (fderiv ℝ g t 1)) t := by
-    intro t ht
-    have hg_deriv : HasDerivAt g (fderiv ℝ g t 1) t := (hγ_diff t ht).hasDerivAt
-    have hF_at : HasDerivAt F (chartFormCoeff (X := X) Q₀ i (g t)) (g t) := hF (g t) (hg_ball' t ht)
-    have := hF_at.comp t hg_deriv
-    convert this using 1
-  -- The line-integral integrand equals `coeff(g t) · g'(t)` on `uIcc a b`.
-  have hintegrand : Set.EqOn
-      (fun t => (periodBasisForm X i).toFun (γ t) (pathSpeed γ t))
-      (fun t => chartFormCoeff (X := X) Q₀ i (g t) * (fderiv ℝ g t 1))
-      (Set.uIcc a b) := by
-    intro t ht
-    have h_src_nbhd : ∀ᶠ s : ℝ in nhds t, γ s ∈ e.source :=
-      (e.open_source.preimage hγ_cont).mem_nhds (hγ_in t ht)
-    exact chartFrame_cancel_general Q₀ γ i t h_src_nbhd (hγ_diff t ht)
-  rw [intervalIntegral.integral_congr hintegrand,
-    intervalIntegral.integral_eq_sub_of_hasDerivAt hFg_deriv
-      (hint.congr (fun t ht => hintegrand (Set.uIoc_subset_uIcc ht)))]
-  rfl
 
 /-- **Sub-interval primitive-difference, with a GIVEN primitive `F`.** Identical to
 `intervalIntegral_form_pathSpeed_eq_primitive_diff_in_subball`, but `F` (a primitive of
@@ -726,12 +555,6 @@ noncomputable def balancedGlue {X : Type*} (g : ℕ → ℝ → X) : ℕ → ℝ
   | 0 => g 0
   | (d+1) => Jacobians.concat (balancedGlue g d) (balancedGlue (fun k => g (2^d + k)) d)
 
-@[simp] lemma balancedGlue_zero {X : Type*} (g : ℕ → ℝ → X) : balancedGlue g 0 = g 0 := rfl
-
-lemma balancedGlue_succ {X : Type*} (g : ℕ → ℝ → X) (d : ℕ) :
-    balancedGlue g (d+1) =
-      Jacobians.concat (balancedGlue g d) (balancedGlue (fun k => g (2^d + k)) d) := rfl
-
 /-! ### A4'. Uniform `n`-piece glue
 
 For the off-branch surgery the detour pieces must occupy the **uniform** sub-intervals
@@ -885,7 +708,6 @@ lemma uniformGlue_eqOn_piece {X : Type*} (g : ℕ → ℝ → X) (hchain : ∀ j
     Set.EqOn (uniformGlue g n) (fun s => g k ((n:ℝ) * s - k))
       (Set.Icc ((k:ℝ)/n) (((k:ℝ)+1)/n)) :=
   fun s hs => uniformGlue_apply_of_mem g hchain n hn k hk s hs.1 hs.2
-
 
 /-- On the open `k`-th sub-interval, the glue locally equals the affine reparam of piece `k`. -/
 lemma uniformGlue_eventuallyEq_piece {X : Type*} (g : ℕ → ℝ → X) (n : ℕ) (hn : 0 < n) (k : ℕ)

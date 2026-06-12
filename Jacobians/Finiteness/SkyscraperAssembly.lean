@@ -37,7 +37,6 @@ import Jacobians.Finiteness.CechFinitenessWiring
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 
-
 namespace Jacobians.Dolbeault
 
 -- The Čech complex (`cechDelta0`, `globalSections`, …) lives on the parent `FiniteFamily`; open it

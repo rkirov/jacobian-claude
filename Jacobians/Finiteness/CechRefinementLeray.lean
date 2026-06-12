@@ -115,20 +115,6 @@ theorem refineH1_comp_eq_id {s : 𝔘.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
 
 /-! ### The mutual-refinement isomorphism (complete, no analytic input) -/
 
-/-- **Cover-independence isomorphism for mutually-refining covers.**  If `𝔙, 𝔘` admit MUTUAL
-refinements `𝔙 ⪯ 𝔘` (`hr`) and `𝔘 ⪯ 𝔙` (`hs`), then `refineH1 hr` is a `ℂ`-linear ISOMORPHISM
-`cechH1 𝔘 D ≃ₗ[ℂ] cechH1 𝔙 D`, with inverse `refineH1 hs`. Both round-trips `r∘s : 𝔘 → 𝔘` and
-`s∘r : 𝔙 → 𝔙` are self-refinements, hence equal on `H¹` to the identity by STEP A
-(`refineH1_comp_eq_id`); so the two maps are mutually inverse. Entirely complete — it does NOT need
-disk-acyclicity (the analytic input is only required when one cover STRICTLY refines the other with
-no back-refinement; see the `## SURJECTIVITY` note at the bottom). -/
-noncomputable def refineH1_equiv {s : 𝔘.ι → 𝔙.ι} {r : 𝔙.ι → 𝔘.ι}
-    (hr : IsRefinement 𝔙 𝔘 r) (hs : IsRefinement 𝔘 𝔙 s) :
-    𝔘.cechH1 D ≃ₗ[ℂ] 𝔙.cechH1 D :=
-  LinearEquiv.ofLinear (hr.refineH1 D) (hs.refineH1 D)
-    (by rw [← refineH1_comp D hr hs, refineH1_eq D (hr.comp hs) (IsRefinement.id 𝔙), refineH1_id])
-    (refineH1_comp_eq_id D hr hs)
-
 /-! ### The Leray analytic conditions for a STRICTLY-finer refinement (honest predicates)
 
 The mutual-refinement equiv above covers the case where the two covers refine each other. The
@@ -219,18 +205,6 @@ noncomputable def overlapRestrictC2 (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι) 
     rawRestrictG (overlapFamily_triple_le_fineTriple 𝔙 𝔘 i j t.1 t.2.1 t.2.2) (g t)
   rfl
 
-/-- Restriction to a coarse-overlap family commutes with the Čech `δ⁰`. -/
-theorem overlapRestrictC1_comp_cechDelta0 {X : Type*} [TopologicalSpace X]
-    (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι) :
-    (overlapFamily 𝔙 𝔘 i j).cechDelta0 ∘ₗ overlapRestrictC0 𝔙 𝔘 i j =
-      overlapRestrictC1 𝔙 𝔘 i j ∘ₗ 𝔙.cechDelta0 := by
-  refine LinearMap.ext fun g => ?_
-  funext p
-  obtain ⟨a, b⟩ := p
-  simp only [LinearMap.comp_apply, FiniteFamily.cechDelta0, LinearMap.pi_apply,
-    LinearMap.sub_apply, LinearMap.comp_apply, LinearMap.proj_apply, overlapRestrictC0_apply,
-    overlapRestrictC1_apply, map_sub, FiniteFamily.rawRestrictG_comp_apply]
-
 /-- Restriction to a coarse-overlap family commutes with the Čech `δ¹`. -/
 theorem overlapRestrictC2_comp_cechDelta1 {X : Type*} [TopologicalSpace X]
     (𝔙 𝔘 : FiniteCover X) (i j : 𝔘.ι) :
@@ -245,14 +219,6 @@ theorem overlapRestrictC2_comp_cechDelta1 {X : Type*} [TopologicalSpace X]
     FiniteFamily.rawRestrictG_comp_apply]
   congr 1
 
-/-- Restricting a fine-cover `𝒪_D` `0`-section to a coarse-overlap family gives an `𝒪_D`
-`0`-section on that local family. -/
-theorem overlapRestrictC0_mem_sections0 (𝔙 𝔘 : FiniteCover X) (D : Divisor X) (i j : 𝔘.ι)
-    {g : 𝔙.Cochain0} (hg : g ∈ 𝔙.sections0 D) :
-    overlapRestrictC0 𝔙 𝔘 i j g ∈ (overlapFamily 𝔙 𝔘 i j).sections0 D := fun a => by
-  rw [overlapRestrictC0_apply]
-  exact rawRestrictG_omegaDGerm (overlapFamily_le_fine 𝔙 𝔘 i j a) (hg a)
-
 /-- Restricting a fine-cover `𝒪_D` `1`-section to a coarse-overlap family gives an `𝒪_D`
 `1`-section on that local family. -/
 theorem overlapRestrictC1_mem_sections1 (𝔙 𝔘 : FiniteCover X) (D : Divisor X) (i j : 𝔘.ι)
@@ -260,28 +226,6 @@ theorem overlapRestrictC1_mem_sections1 (𝔙 𝔘 : FiniteCover X) (D : Divisor
     overlapRestrictC1 𝔙 𝔘 i j g ∈ (overlapFamily 𝔙 𝔘 i j).sections1 D := fun p => by
   rw [overlapRestrictC1_apply]
   exact rawRestrictG_omegaDGerm (overlapFamily_pair_le_finePair 𝔙 𝔘 i j p.1 p.2) (hg p)
-
-/-- Restricting a fine-cover cocycle to a coarse-overlap family gives a cocycle on the local
-restricted family.  This is the first algebraic step in the Leray lift proof. -/
-theorem overlapRestrictC1_mem_cocycles1 (𝔙 𝔘 : FiniteCover X) (D : Divisor X) (i j : 𝔘.ι)
-    {g : 𝔙.Cochain1} (hg : g ∈ 𝔙.cocycles1 D) :
-    overlapRestrictC1 𝔙 𝔘 i j g ∈ (overlapFamily 𝔙 𝔘 i j).cocycles1 D := by
-  obtain ⟨hker, hsec⟩ := hg
-  refine ⟨?_, overlapRestrictC1_mem_sections1 𝔙 𝔘 D i j hsec⟩
-  rw [SetLike.mem_coe, LinearMap.mem_ker] at hker ⊢
-  rw [← LinearMap.comp_apply, overlapRestrictC2_comp_cechDelta1, LinearMap.comp_apply, hker,
-    map_zero]
-
-/-- The exact local acyclicity target for the Leray lift proof: for every coarse overlap
-`𝔘.U i ∩ 𝔘.U j`, the fine family restricted to that overlap is function-level disk-acyclic.  This is
-the formal version of the attack-plan atom "a cocycle on a restricted chart-disk overlap family is a
-coboundary". -/
-def OverlapFunctionDiskAcyclic (𝔙 𝔘 : FiniteCover X) (D : Divisor X) : Prop :=
-  ∀ i j : 𝔘.ι, FunctionDiskAcyclic (overlapFamily 𝔙 𝔘 i j) D
-
-/-- Germ-level version of `OverlapFunctionDiskAcyclic`. -/
-def OverlapIsDiskAcyclic (𝔙 𝔘 : FiniteCover X) (D : Divisor X) : Prop :=
-  ∀ i j : 𝔘.ι, IsDiskAcyclic (overlapFamily 𝔙 𝔘 i j) D
 
 /-- **The Leray LIFT condition (surjectivity input).**  Every `𝔙`-cocycle `t` is, modulo a
 `𝔙`-coboundary, the refinement `refineC1 g` of some `𝔘`-cocycle `g`.  This is the cocycle-level form
@@ -303,13 +247,6 @@ theorem refinementLift_of_isDiskAcyclic (hr : IsRefinement 𝔙 𝔘 r) (D : Div
   rw [show (hr.refineC1 (0 : 𝔘.Cochain1)) = 0 by simp]
   simpa using (Submodule.neg_mem _ ht)
 
-/-- **A function-level disk-acyclic fine cover gives the Leray lift condition.**  This is the bridge
-the chart-disk PoU kernel is meant to feed: once `FunctionDiskAcyclic` is produced, the refinement
-lift condition follows by the previous disk-acyclic reduction. -/
-theorem refinementLift_of_funcLevel (hr : IsRefinement 𝔙 𝔘 r) (D : Divisor X)
-    (h : FunctionDiskAcyclic 𝔙.toFiniteFamily D) : RefinementLift hr D :=
-  refinementLift_of_isDiskAcyclic hr D (isDiskAcyclic_of_funcLevel 𝔙.toFiniteFamily D h)
-
 /-- **The Leray DESCEND condition (injectivity input).**  A `𝔘`-cocycle whose refinement is a
 `𝔙`-coboundary was already a `𝔘`-coboundary (`ker (refineH1 hr) = 0`).  This is Forster 12.8
 (injectivity of the coarse→fine map on `H¹`); for `𝒪` with germ-class sections it is the H⁰ gluing
@@ -325,12 +262,6 @@ theorem refinementDescend_of_isDiskAcyclic (hr : IsRefinement 𝔙 𝔘 r) (D : 
     (h : IsDiskAcyclic 𝔘.toFiniteFamily D) : RefinementDescend hr D := by
   intro g _
   exact h g g.2
-
-/-- **A function-level disk-acyclic coarse cover gives the Leray descend condition.**  Companion to
-`refinementLift_of_funcLevel`. -/
-theorem refinementDescend_of_funcLevel (hr : IsRefinement 𝔙 𝔘 r) (D : Divisor X)
-    (h : FunctionDiskAcyclic 𝔘.toFiniteFamily D) : RefinementDescend hr D :=
-  refinementDescend_of_isDiskAcyclic hr D (isDiskAcyclic_of_funcLevel 𝔘.toFiniteFamily D h)
 
 /-- `refineH1 hr [g] = [t]` (in `H¹`) ⟺ `refineC1 g − t` is a `𝔙`-coboundary. The bridge between the
 quotient `H¹`-class equality and the cocycle-level "mod coboundary" statement
@@ -391,18 +322,6 @@ theorem refineH1_injective_of_descend (hr : IsRefinement 𝔙 𝔘 r)
     (hdesc : RefinementDescend hr D) :
     Function.Injective (hr.refineH1 D) :=
   (refineH1_injective_iff_descend D hr).2 hdesc
-
-/-- **The Leray cover-independence isomorphism (conditional on the analytic inputs).**  Given the
-LIFT (surjectivity) and DESCEND (injectivity) conditions for a refinement `𝔙 ⪯ 𝔘`, `refineH1 hr` is
-a `ℂ`-linear ISOMORPHISM `cechH1 𝔘 D ≃ₗ[ℂ] cechH1 𝔙 D`. Sorry-free reduction of the
-cover-independence iso to the two honest cocycle-level analytic conditions (which are the
-disk/overlap-acyclicity content; see the `## SURJECTIVITY` plan). For mutually-refining covers use
-the unconditional `refineH1_equiv` instead. -/
-noncomputable def refineH1_equiv_of_leray (hr : IsRefinement 𝔙 𝔘 r)
-    (hlift : RefinementLift hr D) (hdesc : RefinementDescend hr D) :
-    𝔘.cechH1 D ≃ₗ[ℂ] 𝔙.cechH1 D :=
-  LinearEquiv.ofBijective (hr.refineH1 D)
-    ⟨refineH1_injective_of_descend D hr hdesc, refineH1_surjective_of_lift D hr hlift⟩
 
 end IsRefinement
 end FiniteCover

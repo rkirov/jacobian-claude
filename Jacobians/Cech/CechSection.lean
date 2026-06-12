@@ -43,29 +43,6 @@ private theorem meromorphicAt_of_ordU_eq_top [ChartedSpace ℂ X] {U : Opens X} 
   rw [ordU, meromorphicOrderAt_of_not_meromorphicAt hc] at h
   exact absurd h (by simp)
 
-/-- **Germ-zero "junk".** Functions on `↥U` that vanish as a germ at every point (`ordU ≡ ⊤`) — the
-removable-singularity junk (point-indicators etc.); `= ker toGerm` characterised by the order.
-`ordU ≡ ⊤ ⟹` meromorphic, so this is the codiscrete-zero class of `Analysis.Meromorphic.NormalForm`
-(`=ᶠ[codiscreteWithin] 0`). The `h0Dim_eq_lDim` bridge needs exactly this order-characterisation
-to connect the `Filter.Germ` kernel to the `orderW ≡ ⊤` submodule `germZeroSubmodule` of
-`Jacobians.RiemannRoch`. -/
-def germZeroFn [ChartedSpace ℂ X] (U : Opens X) : Submodule ℂ (U → ℂ) where
-  carrier := {f | ∀ x, ordU f x = ⊤}
-  add_mem' {f g} hf hg x := by
-    have h : min (ordU f x) (ordU g x) ≤ ordU (f + g) x :=
-      meromorphicOrderAt_add (meromorphicAt_of_ordU_eq_top (hf x))
-        (meromorphicAt_of_ordU_eq_top (hg x))
-    rw [hf x, hg x, min_self] at h
-    exact top_le_iff.mp h
-  zero_mem' x := ordU_zero x
-  smul_mem' c f hf x := by
-    rcases eq_or_ne c 0 with hc | hc
-    · rw [hc, zero_smul]; exact ordU_zero x
-    · have he : ordU (c • f) x = ordU f x := by
-        rw [ordU, ordU]
-        exact meromorphicOrderAt_smul_of_ne_zero analyticAt_const (by simpa using hc)
-      rw [he]; exact hf x
-
 /-- **Sections of `𝒪_D` over an open `U`** (Forster's `𝒪_D(U)`): functions meromorphic on the open
 submanifold `↥U` whose order is `≥ −D` at every point of `U`. A `Submodule ℂ` of `↥U → ℂ`. -/
 noncomputable def OmegaD [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]

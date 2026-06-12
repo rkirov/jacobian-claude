@@ -23,7 +23,6 @@ import Jacobians.Cech.CechComplex
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 
-
 namespace Jacobians.Dolbeault
 
 variable {X : Type*} [TopologicalSpace X]
@@ -223,28 +222,6 @@ theorem meromorphicOrderAt_Gext_nonneg_of_mem_OmegaD_zero [T2Space X] [CompactSp
     0 ≤ meromorphicOrderAt (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y) := by
   have h := ((mem_OmegaD).1 hg).2 ⟨y, hy⟩
   simpa [ordU_eq_orderAt_Gext g hy] using h
-
-/-- The normal-form representative of a local `𝒪₀` section is analytic in the ambient chart. This is
-the holomorphic half of the single-section germ/function bridge used by the chart-disk acyclicity
-route: first replace the representative by its meromorphic normal form, then use nonnegative order.
--/
-theorem analyticAt_toMeromorphicNFAt_Gext_of_mem_OmegaD_zero [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {U : Opens X} {g : U → ℂ}
-    (hg : g ∈ OmegaD (0 : Divisor X) U) {y : X} (hy : y ∈ U) :
-    AnalyticAt ℂ
-      (toMeromorphicNFAt (Gext g ∘ (chartAt (H := ℂ) y).symm) ((chartAt (H := ℂ) y) y))
-      ((chartAt (H := ℂ) y) y) := by
-  set F := Gext g ∘ (chartAt (H := ℂ) y).symm
-  set c := (chartAt (H := ℂ) y) y
-  have hmer : MeromorphicAt F c := by
-    simpa [F, c] using Gext_meromorphicAt ((mem_OmegaD).1 hg).1 hy
-  have hNF : MeromorphicNFAt (toMeromorphicNFAt F c) c := meromorphicNFAt_toMeromorphicNFAt
-  have hnonnegF : 0 ≤ meromorphicOrderAt F c := by
-    simpa [F, c] using meromorphicOrderAt_Gext_nonneg_of_mem_OmegaD_zero hg hy
-  have hnonnegNF : 0 ≤ meromorphicOrderAt (toMeromorphicNFAt F c) c := by
-    rwa [← meromorphicOrderAt_congr hmer.eq_nhdsNE_toMeromorphicNFAt]
-  exact hNF.meromorphicOrderAt_nonneg_iff_analyticAt.1 hnonnegNF
 
 /-- The "normal form at `y`" predicate intrinsic to `X`: `h` read in `X`'s chart at `y` has
 meromorphic normal form at the chart centre. -/

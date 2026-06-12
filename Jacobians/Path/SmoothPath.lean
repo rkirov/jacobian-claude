@@ -40,7 +40,6 @@ namespace Jacobians
 
 open scoped Manifold ContDiff Topology
 
-
 universe u
 
 /-! ## Chart-ball-local linear path
@@ -282,11 +281,6 @@ noncomputable def smoothPathRaw {X : Type*} [TopologicalSpace X] [ChartedSpace �
   unfold smoothPathRaw
   simp [h]
 
-@[simp] lemma smoothPathRaw_zero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    [PathConnectedSpace X] (P Q : X) :
-    smoothPathRaw P Q 0 = P :=
-  smoothPathRaw_of_nonpos (le_refl 0)
-
 @[simp] lemma smoothPathRaw_of_ge_one {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
     [PathConnectedSpace X] {P Q : X} {t : ℝ} (h : 1 ≤ t) :
     smoothPathRaw P Q t = Q := by
@@ -294,11 +288,6 @@ noncomputable def smoothPathRaw {X : Type*} [TopologicalSpace X] [ChartedSpace �
   have ht_pos : (0 : ℝ) < t := lt_of_lt_of_le (by norm_num) h
   have ht_not_le : ¬ t ≤ 0 := not_le.mpr ht_pos
   simp [ht_not_le, h]
-
-@[simp] lemma smoothPathRaw_one {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    [PathConnectedSpace X] (P Q : X) :
-    smoothPathRaw P Q 1 = Q :=
-  smoothPathRaw_of_ge_one (le_refl 1)
 
 /-! ## smoothStep01 properties
 
@@ -330,17 +319,6 @@ lemma smoothStep01_eqOn_zero : Set.EqOn smoothStep01 (fun _ => (0 : ℝ)) (Set.I
   show (if s ≤ 0 then (0 : ℝ) else _) = 0
   have : s ≤ 0 := le_of_lt hs_lt
   simp [this]
-
-/-- `smoothStep01` at `t = 0` equals the cubic at `0`. Both branches agree:
-the `t ≤ 0` branch gives `0`, and the cubic gives `3·0² - 2·0³ = 0`. -/
-lemma smoothStep01_zero_eq_cubic : smoothStep01 0 = 3 * (0 : ℝ)^2 - 2 * (0 : ℝ)^3 := by
-  simp [smoothStep01]
-
-/-- `smoothStep01` at `t = 1` equals the cubic at `1`. Both branches agree:
-the `1 ≤ t` branch gives `1`, and the cubic gives `3·1² - 2·1³ = 1`. -/
-lemma smoothStep01_one_eq_cubic : smoothStep01 1 = 3 * (1 : ℝ)^2 - 2 * (1 : ℝ)^3 := by
-  simp [smoothStep01]
-  norm_num
 
 /-- The smoothstep is bounded between 0 and 1 globally. -/
 lemma smoothStep01_nonneg (t : ℝ) : 0 ≤ smoothStep01 t := by
@@ -377,34 +355,6 @@ lemma smoothStep01_le_one (t : ℝ) : smoothStep01 t ≤ 1 := by
 
 /-! ## ChartBallPath: convexity-based continuity + algebraic identities -/
 
-/-- A convenience corollary: if both `P, Q ∈ c.source` and the chart-coords
-linear interpolation lies in a common open ball within `c.target`, then
-`ChartBallPath` is continuous on `[0, 1]`. The "ball" hypothesis is
-slightly stronger than needed but immediately captures the typical
-chart-cover use case. -/
-
-lemma ChartBallPath.continuousOn_of_ball {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (anchor P Q : X) (z₀ : ℂ) (r : ℝ)
-    (hball_sub_target : Metric.ball z₀ r ⊆ (chartAt ℂ anchor).target)
-    (hP_in_ball : (chartAt ℂ anchor) P ∈ Metric.ball z₀ r)
-    (hQ_in_ball : (chartAt ℂ anchor) Q ∈ Metric.ball z₀ r) :
-    ContinuousOn (ChartBallPath anchor P Q) (Set.Icc 0 1) := by
-  refine ChartBallPath.continuousOn anchor P Q ?_
-  intro t ht
-  -- Convex combination of two points in a ball stays in the ball.
-  apply hball_sub_target
-  have hconv : Convex ℝ (Metric.ball z₀ r) := convex_ball _ _
-  have ht_unit : t ∈ Set.Icc (0 : ℝ) 1 := ht
-  have h := hconv hP_in_ball hQ_in_ball
-    (a := 1 - t) (b := t) (by linarith [ht_unit.1, ht_unit.2])
-    (by linarith [ht_unit.1, ht_unit.2]) (by linarith)
-  -- h : (1 - t) • (chartAt ℂ anchor) P + t • (chartAt ℂ anchor) Q ∈ Metric.ball z₀ r
-  -- Our expression uses complex `*` not real `•`. Translate via Complex.real_smul.
-  convert h using 1
-  rw [Complex.real_smul, Complex.real_smul]
-  push_cast
-  ring
-
 /-- The chart-coords formula `(chartAt ℂ anchor) (ChartBallPath anchor P Q t)`
 on the inverse domain: when `(1-t)*cP + t*cQ ∈ chart.target`, the
 chart inverse-applied-then-chart-applied is identity. -/
@@ -417,19 +367,6 @@ lemma chart_ChartBallPath_eq {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ 
       (1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q := by
   unfold ChartBallPath
   exact (chartAt ℂ anchor).right_inv h_in_target
-
-/-- The path's image under the anchor chart is the linear interpolation,
-provided the linear interpolation stays in the chart target. Same as
-`chart_ChartBallPath_eq` but stated as an `EqOn` over an explicit set. -/
-lemma chart_ChartBallPath_eqOn {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X)
-    (S : Set ℝ)
-    (h_in_target : ∀ t ∈ S,
-      ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q)
-        ∈ (chartAt ℂ anchor).target) :
-    Set.EqOn ((chartAt (H := ℂ) anchor).toFun ∘ ChartBallPath anchor P Q)
-      (fun t => (1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q) S := by
-  intro t ht
-  exact chart_ChartBallPath_eq anchor P Q t (h_in_target t ht)
 
 /-- The composition `(chartAt ℂ anchor) ∘ ChartBallPath anchor P Q` is
 continuous as a real-valued function ℝ → ℂ (in fact, polynomial). This
@@ -466,34 +403,6 @@ lemma differentiable_chart_image_formula {X : Type*} [TopologicalSpace X] [Chart
     DifferentiableAt.mul h_id_C (differentiableAt_const _)
   exact DifferentiableAt.add h_term1 h_term2
 
-/-- The chart-image formula at `t = 0` is `c P`. -/
-
-@[simp] lemma chart_image_formula_at_zero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (anchor P Q : X) :
-    (1 - ((0 : ℝ) : ℂ)) * (chartAt ℂ anchor) P + ((0 : ℝ) : ℂ) * (chartAt ℂ anchor) Q
-      = (chartAt ℂ anchor) P := by
-  push_cast
-  ring
-
-/-- The chart-image formula at `t = 1` is `c Q`. -/
-
-@[simp] lemma chart_image_formula_at_one {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (anchor P Q : X) :
-    (1 - ((1 : ℝ) : ℂ)) * (chartAt ℂ anchor) P + ((1 : ℝ) : ℂ) * (chartAt ℂ anchor) Q
-      = (chartAt ℂ anchor) Q := by
-  push_cast
-  ring
-
-/-- The chart-image formula at `t = 1/2` is the midpoint `(c P + c Q) / 2`. -/
-
-lemma chart_image_formula_at_half {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (anchor P Q : X) :
-    (1 - (((1 / 2) : ℝ) : ℂ)) * (chartAt ℂ anchor) P
-      + (((1 / 2) : ℝ) : ℂ) * (chartAt ℂ anchor) Q
-      = ((chartAt ℂ anchor) P + (chartAt ℂ anchor) Q) / 2 := by
-  push_cast
-  ring
-
 /-! ## ChartBallPath specializations and identities -/
 
 /-- ChartBallPath anchor P P is the constant path P, when P is in the
@@ -508,20 +417,6 @@ lemma ChartBallPath_self {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (
       = (chartAt ℂ anchor) P := by ring
   rw [h_combine]
   exact (chartAt ℂ anchor).left_inv hP
-
-/-- The reverse of a ChartBallPath swaps endpoints. -/
-
-lemma ChartBallPath_reverse {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X)
-    (t : ℝ) :
-    ChartBallPath anchor P Q (1 - t) = ChartBallPath anchor Q P t := by
-  show (chartAt ℂ anchor).symm
-      ((1 - ((1 - t : ℝ) : ℂ)) * (chartAt ℂ anchor) P
-        + (((1 - t : ℝ)) : ℂ) * (chartAt ℂ anchor) Q)
-    = (chartAt ℂ anchor).symm
-        ((1 - (t : ℂ)) * (chartAt ℂ anchor) Q + (t : ℂ) * (chartAt ℂ anchor) P)
-  congr 1
-  push_cast
-  ring
 
 /-! ## smoothPathRaw: more boundary / shape lemmas
 
@@ -550,39 +445,7 @@ lemma smoothStep01_one_sub (t : ℝ) :
       simp only [h0_not, h1_not, h_1mt_not_le, h_1mt_not_ge, if_false]
       ring
 
-/-- `smoothStep01 (1/2) = 1/2`. -/
-lemma smoothStep01_half : smoothStep01 (1 / 2) = 1 / 2 := by
-  rw [smoothStep01_of_mem_open (1/2) (by norm_num) (by norm_num)]
-  ring
-
-/-- `smoothStep01` symmetry: `smoothStep01 t + smoothStep01 (1 - t) = 1`. -/
-lemma smoothStep01_add_one_sub (t : ℝ) :
-    smoothStep01 t + smoothStep01 (1 - t) = 1 := by
-  rw [smoothStep01_one_sub]
-  ring
-
 /-! ## Affine chart-image manipulation -/
-
-/-- Chart-image formula as `P + t · (Q - P)`. -/
-lemma chart_image_formula_eval {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X)
-    (t : ℝ) :
-    (1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q
-      = (chartAt ℂ anchor) P + (t : ℂ) * ((chartAt ℂ anchor) Q - (chartAt ℂ anchor) P) := by
-  ring
-
-/-- If P = Q, the chart-affine formula is constant. -/
-lemma chart_image_formula_self {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P : X)
-    (t : ℝ) :
-    (1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) P
-      = (chartAt ℂ anchor) P := by
-  ring
-
-/-- ChartBallPath is constant when `P = Q` and `P` is in the chart source. -/
-lemma ChartBallPath_eq_const_of_eq {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (anchor P : X) (hP : P ∈ (chartAt ℂ anchor).source) :
-    ChartBallPath anchor P P = fun _ => P := by
-  ext t
-  exact ChartBallPath_self anchor P hP t
 
 /-- The ChartBallPath at `t` lies in the chart source if the affine
 chart-image formula stays in the chart target. -/
@@ -600,11 +463,6 @@ lemma ChartBallPath_mem_source {X : Type*} [TopologicalSpace X] [ChartedSpace �
 /-- `smoothStep01 t ∈ [0, 1]` for any `t`. -/
 lemma smoothStep01_mem_unit (t : ℝ) : smoothStep01 t ∈ Set.Icc (0 : ℝ) 1 :=
   ⟨smoothStep01_nonneg t, smoothStep01_le_one t⟩
-
-/-- `smoothStep01` maps `[0, 1]` into `[0, 1]`. -/
-lemma smoothStep01_mapsTo_unit :
-    Set.MapsTo smoothStep01 (Set.Icc (0 : ℝ) 1) (Set.Icc (0 : ℝ) 1) :=
-  fun t _ => smoothStep01_mem_unit t
 
 /-! ## Piece-wise reparametrization bounds -/
 
@@ -636,18 +494,6 @@ lemma piece_reparam_at_right (k n : ℕ) (hn : 0 < n) :
   field_simp
   ring
 
-/-- Boundary value at the left endpoint of a piece: smoothstep is 0. -/
-lemma smoothStep01_at_piece_left (k n : ℕ) (hn : 0 < n) :
-    smoothStep01 (((k : ℝ) / n - (k : ℝ) / n) * n) = 0 := by
-  rw [piece_reparam_at_left k n hn]
-  exact smoothStep01_zero
-
-/-- Boundary value at the right endpoint of a piece: smoothstep is 1. -/
-lemma smoothStep01_at_piece_right (k n : ℕ) (hn : 0 < n) :
-    smoothStep01 ((((k : ℝ) + 1) / n - (k : ℝ) / n) * n) = 1 := by
-  rw [piece_reparam_at_right k n hn]
-  exact smoothStep01_one
-
 /-! ## Path-extend boundary values (Mathlib's `Path.extend`)
 
 For Mathlib's `Path P Q`, the `extend` function gives a continuous map
@@ -655,16 +501,6 @@ For Mathlib's `Path P Q`, the `extend` function gives a continuous map
 `[0, 1]` is constant (extending by the endpoints). These boundary
 identities are pure Mathlib but stated here for convenient reference
 in the smoothPath-gluing arguments. -/
-
-/-- `(somePath P Q).extend 0 = P`. -/
-lemma somePath_extend_zero {X : Type u} [TopologicalSpace X] [PathConnectedSpace X] (P Q : X) :
-    (PathConnectedSpace.somePath P Q).extend 0 = P :=
-  Path.extend_zero _
-
-/-- `(somePath P Q).extend 1 = Q`. -/
-lemma somePath_extend_one {X : Type u} [TopologicalSpace X] [PathConnectedSpace X] (P Q : X) :
-    (PathConnectedSpace.somePath P Q).extend 1 = Q :=
-  Path.extend_one _
 
 /-! ## Misc Useful Inequalities -/
 
@@ -681,31 +517,7 @@ lemma cast_div_le_one (k n : ℕ) (hkn : k ≤ n) (hn : 0 < n) :
   rw [div_le_one hn_pos]
   exact_mod_cast hkn
 
-/-- `(k : ℝ) / n ∈ Icc 0 1` for `k ≤ n` (and `n > 0`). -/
-lemma cast_div_mem_unit (k n : ℕ) (hkn : k ≤ n) (hn : 0 < n) :
-    ((k : ℝ) / n) ∈ Set.Icc (0 : ℝ) 1 :=
-  ⟨cast_div_nonneg k n, cast_div_le_one k n hkn hn⟩
-
 /-! ## Continuity helpers (using EqOn-based reasoning) -/
-
-/-- ContinuousAt at a point where two functions agree in a neighborhood. -/
-lemma continuousAt_of_eqOn_open {α β : Type*} [TopologicalSpace α] [TopologicalSpace β]
-    {f g : α → β} {U : Set α} {x : α} (hU : IsOpen U) (hx : x ∈ U)
-    (hfg : ∀ y ∈ U, f y = g y) (hgx : ContinuousAt g x) :
-    ContinuousAt f x := by
-  have hnbhd : f =ᶠ[𝓝 x] g := by
-    filter_upwards [hU.mem_nhds hx] with y hy
-    exact hfg y hy
-  exact hgx.congr (Filter.EventuallyEq.symm hnbhd)
-
-/-- The `Continuous` predicate is preserved by `Set.EqOn` plus
-`ContinuousOn` agreement (used when piecing together piecewise
-continuous functions). -/
-lemma continuousOn_congr_of_eqOn {α β : Type*} [TopologicalSpace α] [TopologicalSpace β]
-    {f g : α → β} {S : Set α} (hf : ContinuousOn f S) (hfg : Set.EqOn f g S) :
-    ContinuousOn g S := by
-  intro x hx
-  exact (hf x hx).congr (fun y hy => (hfg hy).symm) (hfg hx).symm
 
 /-! ## Lemmas for smoothPath used by downstream consumers
 
@@ -713,50 +525,10 @@ Once `IsSmoothPath` is closed for the gluing, these algebraic
 consequences will follow automatically. We collect them here for
 later use. -/
 
-/-- ChartBallPath has constant `y_start = y_end` value when both
-endpoints are equal. -/
-lemma ChartBallPath_eq_when_eq {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor : X)
-    (P : X)
-    (hP : P ∈ (chartAt ℂ anchor).source) (t : ℝ) :
-    ChartBallPath anchor P P t = P :=
-  ChartBallPath_self anchor P hP t
-
-/-- ChartBallPath at endpoints is endpoint, in unit interval. -/
-lemma ChartBallPath_at_endpoint {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X)
-    (hP : P ∈ (chartAt ℂ anchor).source) (hQ : Q ∈ (chartAt ℂ anchor).source) :
-    ChartBallPath anchor P Q 0 = P ∧ ChartBallPath anchor P Q 1 = Q :=
-  ⟨ChartBallPath.start anchor P Q hP, ChartBallPath.finish anchor P Q hQ⟩
-
 /-! ## Chart-image affine arithmetic
 
 These elementary algebraic identities will be useful when chaining
 ChartBallPaths together. -/
-
-/-- The chart-image at `t = a + b` decomposes additively. -/
-lemma chart_image_formula_add {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X)
-    (a b : ℝ) :
-    (1 - ((a + b : ℝ) : ℂ)) * (chartAt ℂ anchor) P + ((a + b : ℝ) : ℂ) * (chartAt ℂ anchor) Q
-      = ((1 - (a : ℂ) - (b : ℂ))) * (chartAt ℂ anchor) P
-        + ((a : ℂ) + (b : ℂ)) * (chartAt ℂ anchor) Q := by
-  push_cast
-  ring
-
-/-- The chart-image difference along the path. -/
-lemma chart_image_formula_diff {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X)
-    (s t : ℝ) :
-    ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q)
-      - ((1 - (s : ℂ)) * (chartAt ℂ anchor) P + (s : ℂ) * (chartAt ℂ anchor) Q)
-      = ((t : ℂ) - (s : ℂ)) * ((chartAt ℂ anchor) Q - (chartAt ℂ anchor) P) := by
-  ring
-
-/-- The chart-image at `t = c · s` for some scalar `c`. -/
-lemma chart_image_formula_scale {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X)
-    (c s : ℝ) :
-    (1 - ((c * s : ℝ) : ℂ)) * (chartAt ℂ anchor) P + ((c * s : ℝ) : ℂ) * (chartAt ℂ anchor) Q
-      = (chartAt ℂ anchor) P
-        + ((c : ℂ) * (s : ℂ)) * ((chartAt ℂ anchor) Q - (chartAt ℂ anchor) P) := by
-  push_cast
-  ring
 
 /-! ## Smoothstep elementary identities -/
 
@@ -778,40 +550,12 @@ example {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] :
 
 /-! ## More piece arithmetic -/
 
-/-- For natural `k`, `n` with `k + 1 ≤ n` (i.e., `k.succ ≤ n`), the
-endpoints `k/n` and `(k+1)/n` are in `[0, 1]`. -/
-lemma piece_endpoints_mem_unit (k : ℕ) (n : ℕ) (hn : 0 < n) (hkn : k + 1 ≤ n) :
-    (k : ℝ) / n ∈ Set.Icc (0 : ℝ) 1 ∧ ((k : ℝ) + 1) / n ∈ Set.Icc (0 : ℝ) 1 := by
-  have hn_pos : (0 : ℝ) < n := by exact_mod_cast hn
-  refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
-  · exact cast_div_nonneg k n
-  · rw [div_le_one hn_pos]
-    have : (k : ℝ) ≤ n := by exact_mod_cast le_of_lt (Nat.lt_of_succ_le hkn)
-    linarith
-  · apply div_nonneg
-    · have : (0 : ℝ) ≤ k := by exact_mod_cast Nat.zero_le k
-      linarith
-    · linarith
-  · rw [div_le_one hn_pos]
-    have : (k : ℝ) + 1 ≤ n := by exact_mod_cast hkn
-    linarith
-
 /-- `(k + 1) / n - k / n = 1 / n` for naturals. -/
 lemma piece_width (k n : ℕ) (hn : 0 < n) :
     ((k : ℝ) + 1) / n - (k : ℝ) / n = 1 / n := by
   have hn_pos : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
   field_simp
   ring
-
-/-- For `t ∈ [k/n, (k+1)/n]`: `t - k/n ∈ [0, 1/n]`. -/
-lemma piece_offset_mem_width (k n : ℕ) (_hn : 0 < n) (t : ℝ)
-    (h_low : (k : ℝ) / n ≤ t) (h_high : t ≤ ((k : ℝ) + 1) / n) :
-    t - (k : ℝ) / n ∈ Set.Icc (0 : ℝ) (1 / n) := by
-  refine ⟨?_, ?_⟩
-  · linarith
-  · have hw : ((k : ℝ) + 1) / n = (k : ℝ) / n + 1 / n := by
-      rw [add_div]
-    linarith
 
 /-! ## Constant-path period vector arithmetic
 
@@ -825,118 +569,25 @@ corollary for periodVec. -/
 lemma eventually_mem_open {U : Set ℝ} (hU : IsOpen U) {t : ℝ} (ht : t ∈ U) :
     ∀ᶠ s in 𝓝 t, s ∈ U := hU.mem_nhds ht
 
-/-- For real `t ∈ Ioo a b`, eventually `s ∈ Ioo a b` near `t`. -/
-lemma eventually_mem_Ioo {a b t : ℝ} (h : t ∈ Set.Ioo a b) :
-    ∀ᶠ s in 𝓝 t, s ∈ Set.Ioo a b :=
-  eventually_mem_open isOpen_Ioo h
-
-/-- For real `t < a`, eventually `s < a` near `t`. -/
-lemma eventually_lt_of_lt {a t : ℝ} (h : t < a) :
-    ∀ᶠ s in 𝓝 t, s < a :=
-  eventually_mem_open isOpen_Iio h
-
-/-- For real `t > a`, eventually `s > a` near `t`. -/
-lemma eventually_gt_of_gt {a t : ℝ} (h : a < t) :
-    ∀ᶠ s in 𝓝 t, a < s :=
-  eventually_mem_open isOpen_Ioi h
-
 /-! ## smoothStep01 derivative computation
 
 For `t ∈ (0, 1)`, the derivative of `smoothStep01` is `6t - 6t²`, which
 vanishes at `t = 0` and `t = 1`. This is what makes smoothStep01 a C¹
 junction smoother. -/
 
-/-- The derivative formula in the open interval. -/
-lemma smoothStep01_deriv_formula_eqOn :
-    Set.EqOn (fun t => 3 * t^2 - 2 * t^3) smoothStep01 (Set.Ioo (0 : ℝ) 1) := by
-  intro t ht
-  exact (smoothStep01_of_mem_open t ht.1 ht.2).symm
-
 /-- The cubic `3t² - 2t³` factors as `t² * (3 - 2t)`. -/
 lemma cubic_factor (t : ℝ) : 3 * t^2 - 2 * t^3 = t^2 * (3 - 2 * t) := by ring
-
-/-- The cubic at endpoints. -/
-lemma cubic_at_zero : 3 * (0 : ℝ)^2 - 2 * (0 : ℝ)^3 = 0 := by ring
-
-lemma cubic_at_one : 3 * (1 : ℝ)^2 - 2 * (1 : ℝ)^3 = 1 := by ring
-
-/-- The cubic is nonneg on `[0, 1]` (factored form: `t² * (3 - 2t) ≥ 0`). -/
-lemma cubic_nonneg_on_unit (t : ℝ) (ht : t ∈ Set.Icc (0 : ℝ) 1) :
-    0 ≤ 3 * t^2 - 2 * t^3 := by
-  rw [cubic_factor]
-  refine mul_nonneg (sq_nonneg _) ?_
-  linarith [ht.2]
-
-/-- The cubic is ≤ 1 on `[0, 1]` (equivalent: `(1 - t)² * (1 + 2t) ≥ 0`). -/
-lemma cubic_le_one_on_unit (t : ℝ) (ht : t ∈ Set.Icc (0 : ℝ) 1) :
-    3 * t^2 - 2 * t^3 ≤ 1 := by
-  have h_factor : (1 - t)^2 * (1 + 2 * t) = 1 - (3 * t^2 - 2 * t^3) := by ring
-  have h_nn : 0 ≤ (1 - t)^2 * (1 + 2 * t) :=
-    mul_nonneg (sq_nonneg _) (by linarith [ht.1])
-  linarith
 
 /-! ## ChartBallPath via the chart-image formula
 
 A direct way to express ChartBallPath is via its formula in chart-coords.
 These lemmas connect the various forms. -/
 
-/-- Direct formula for ChartBallPath. -/
-lemma ChartBallPath_def {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X) (t : ℝ)
-    :
-    ChartBallPath anchor P Q t = (chartAt ℂ anchor).symm
-      ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q) := rfl
-
-/-- ChartBallPath in terms of `c P + t · (c Q - c P)`. -/
-lemma ChartBallPath_alt_form {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X)
-    (t : ℝ) :
-    ChartBallPath anchor P Q t = (chartAt ℂ anchor).symm
-      ((chartAt ℂ anchor) P + (t : ℂ) * ((chartAt ℂ anchor) Q - (chartAt ℂ anchor) P)) := by
-  show (chartAt ℂ anchor).symm
-      ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q)
-    = (chartAt ℂ anchor).symm
-        ((chartAt ℂ anchor) P + (t : ℂ) * ((chartAt ℂ anchor) Q - (chartAt ℂ anchor) P))
-  congr 1
-  ring
-
 /-! ## smoothStep01 evaluation lemmas at specific points -/
-
-/-- `smoothStep01 (1/3) = 7/27`. -/
-lemma smoothStep01_at_third : smoothStep01 (1 / 3) = 7 / 27 := by
-  rw [smoothStep01_of_mem_open (1/3) (by norm_num) (by norm_num)]
-  ring
-
-/-- `smoothStep01 (2/3) = 20/27`. -/
-lemma smoothStep01_at_two_third : smoothStep01 (2 / 3) = 20 / 27 := by
-  rw [smoothStep01_of_mem_open (2/3) (by norm_num) (by norm_num)]
-  ring
-
-/-- The smoothstep boundary check via case split. -/
-lemma smoothStep01_boundary_zero : smoothStep01 0 = 0 := smoothStep01_zero
-
-lemma smoothStep01_boundary_one : smoothStep01 1 = 1 := smoothStep01_one
 
 /-! ## Path concatenation arithmetic
 
 Helper lemmas for piecing together paths. -/
-
-/-- For `t ∈ [0, 1/2]`, `2 * t ∈ [0, 1]`. -/
-lemma double_t_mem_unit_left (t : ℝ) (ht : t ∈ Set.Icc (0 : ℝ) (1 / 2)) :
-    2 * t ∈ Set.Icc (0 : ℝ) 1 := by
-  constructor
-  · linarith [ht.1]
-  · linarith [ht.2]
-
-/-- For `t ∈ [1/2, 1]`, `2 * t - 1 ∈ [0, 1]`. -/
-lemma double_t_minus_one_mem_unit_right (t : ℝ) (ht : t ∈ Set.Icc (1 / 2) (1 : ℝ)) :
-    2 * t - 1 ∈ Set.Icc (0 : ℝ) 1 := by
-  constructor
-  · linarith [ht.1]
-  · linarith [ht.2]
-
-/-- Concatenation at `t = 1/2`: both halves give the same value. -/
-lemma double_at_half_left : (2 : ℝ) * (1 / 2) = 1 := by norm_num
-
-lemma double_at_half_right : (2 : ℝ) * (1 / 2) - 1 = 0 := by norm_num
 
 /-! ## Chart-source membership helpers -/
 
@@ -945,102 +596,19 @@ lemma mem_chart_at_self {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (P
     P ∈ (chartAt ℂ P).source :=
   mem_chart_source ℂ P
 
-/-- `ChartBallPath anchor P P` evaluated at the right endpoint when `P` is in
-the source. -/
-lemma ChartBallPath_self_one {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P : X)
-    (hP : P ∈ (chartAt ℂ anchor).source) :
-    ChartBallPath anchor P P 1 = P :=
-  ChartBallPath_self anchor P hP 1
-
-/-- `ChartBallPath anchor P P` evaluated at the left endpoint when `P` is in
-the source. -/
-lemma ChartBallPath_self_zero {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P : X)
-    (hP : P ∈ (chartAt ℂ anchor).source) :
-    ChartBallPath anchor P P 0 = P :=
-  ChartBallPath_self anchor P hP 0
-
-/-- `ChartBallPath anchor P P` at any `t` when `P` is in the source. -/
-lemma ChartBallPath_self_at {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P : X)
-    (hP : P ∈ (chartAt ℂ anchor).source) (t : ℝ) :
-    ChartBallPath anchor P P t = P :=
-  ChartBallPath_self anchor P hP t
-
 /-! ## Real-coercion identities for chart-image arithmetic -/
-
-/-- `((0 : ℝ) : ℂ) = 0`. -/
-@[simp] lemma cast_zero_to_C : ((0 : ℝ) : ℂ) = 0 := by push_cast; rfl
-
-/-- `((1 : ℝ) : ℂ) = 1`. -/
-@[simp] lemma cast_one_to_C : ((1 : ℝ) : ℂ) = 1 := by push_cast; rfl
-
-/-- For real `t`, `(t : ℂ)` is real. -/
-lemma cast_C_im (t : ℝ) : (t : ℂ).im = 0 := by simp
-
-/-- For real `t`, `(t : ℂ).re = t`. -/
-lemma cast_C_re (t : ℝ) : (t : ℂ).re = t := by simp
 
 /-! ## Compact-interval continuity helpers -/
 
-/-- The image of `[0, 1]` under a continuous function is compact. -/
-lemma continuous_image_Icc_isCompact {α : Type*} [TopologicalSpace α]
-    {f : ℝ → α} (hf : ContinuousOn f (Set.Icc (0 : ℝ) 1)) :
-    IsCompact (f '' Set.Icc (0 : ℝ) 1) :=
-  isCompact_Icc.image_of_continuousOn hf
-
 /-! ## Lemmas to help with chart-cover gluing -/
-
-/-- For a chart cover of `n` pieces, the boundary points of each piece
-agree with the path at `k/n`. -/
-lemma boundary_values_at_k_over_n {X : Type*} {γ : ℝ → X} (n : ℕ) (k : ℕ)
-    (_h : (k : ℝ) / n ≤ ((k : ℝ) + 1) / n) :
-    γ ((k : ℝ) / n) = γ ((k : ℝ) / n) := rfl
-
-/-- The half-open interval `[k/n, (k+1)/n)` has measure `1/n`. -/
-lemma piece_interval_length (k n : ℕ) (hn : 0 < n) :
-    ((k : ℝ) + 1) / n - (k : ℝ) / n = 1 / n :=
-  piece_width k n hn
 
 /-! ## Mathlib-style helpers we don't have direct API for -/
 
 /-! ## Constant-path lemmas (for completeness alongside isSmoothPath_const) -/
 
-/-- `(fun _ : ℝ => P) 0 = P`. -/
-lemma const_path_zero {X : Type*} (P : X) : (fun _ : ℝ => P) 0 = P := rfl
-
-/-- `(fun _ : ℝ => P) 1 = P`. -/
-lemma const_path_one {X : Type*} (P : X) : (fun _ : ℝ => P) 1 = P := rfl
-
-/-- The constant path is continuous. -/
-lemma const_path_continuous {X : Type*} [TopologicalSpace X] (P : X) :
-    Continuous (fun _ : ℝ => P) := continuous_const
-
-/-- The composition `chartAt P ∘ (fun _ => P)` is the constant `chartAt P P`. -/
-lemma chartAt_comp_const_path {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (P : X) :
-    (chartAt (H := ℂ) P).toFun ∘ (fun _ : ℝ => P) = fun _ => (chartAt (H := ℂ) P).toFun P := by
-  ext t; rfl
-
 /-! ## Some more chart-image arithmetic with abstract scalar -/
 
-/-- Generalization: the chart-image at `t` with general real `α`. -/
-lemma chart_image_at_zero_scalar {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (anchor P Q : X) :
-    (1 - ((0 : ℝ) : ℂ)) * (chartAt ℂ anchor) P + ((0 : ℝ) : ℂ) * (chartAt ℂ anchor) Q
-      = (chartAt ℂ anchor) P := by
-  push_cast; ring
-
-lemma chart_image_at_one_scalar {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X)
-    :
-    (1 - ((1 : ℝ) : ℂ)) * (chartAt ℂ anchor) P + ((1 : ℝ) : ℂ) * (chartAt ℂ anchor) Q
-      = (chartAt ℂ anchor) Q := by
-  push_cast; ring
-
 /-! ## Group structure on chart targets (in ℂ) -/
-
-/-- Negation in ℂ commutes with multiplication. -/
-lemma chart_image_neg {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X) (t : ℝ) :
-    -((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q)
-      = (1 - (t : ℂ)) * (-(chartAt ℂ anchor) P) + (t : ℂ) * (-(chartAt ℂ anchor) Q) := by
-  ring
 
 /-! ## smoothStep01 ContinuousAt at various points
 
@@ -1048,42 +616,12 @@ The general continuity of smoothStep01 is left for the gluing phase
 (needs careful boundary case handling). Below are point-wise
 continuity lemmas that are immediate. -/
 
-/-- `smoothStep01` is continuous on `(-∞, 0)` (constant `0`). -/
-lemma smoothStep01_continuousOn_neg :
-    ContinuousOn smoothStep01 (Set.Iio (0 : ℝ)) := by
-  intro t ht
-  have h_eq : ∀ᶠ s in 𝓝[Set.Iio 0] t, smoothStep01 s = 0 := by
-    filter_upwards [self_mem_nhdsWithin] with s hs
-    exact smoothStep01_eqOn_zero hs
-  apply ContinuousWithinAt.congr_of_eventuallyEq (continuousWithinAt_const) h_eq
-  exact smoothStep01_eqOn_zero ht
-
-/-- `smoothStep01` is continuous on `(1, ∞)` (constant `1`). -/
-lemma smoothStep01_continuousOn_pos :
-    ContinuousOn smoothStep01 (Set.Ioi (1 : ℝ)) := by
-  intro t ht
-  have h_eq : ∀ᶠ s in 𝓝[Set.Ioi 1] t, smoothStep01 s = 1 := by
-    filter_upwards [self_mem_nhdsWithin] with s hs
-    exact smoothStep01_eqOn_one hs
-  apply ContinuousWithinAt.congr_of_eventuallyEq (continuousWithinAt_const) h_eq
-  exact smoothStep01_eqOn_one ht
-
 /-- The cubic is continuous on `(0, 1)` (as a polynomial). -/
 lemma cubic_continuous :
     Continuous (fun t : ℝ => 3 * t^2 - 2 * t^3) := by
   refine Continuous.sub ?_ ?_
   · exact (continuous_pow 2).const_mul 3
   · exact (continuous_pow 3).const_mul 2
-
-/-- `smoothStep01` is continuous on `(0, 1)` (cubic). -/
-lemma smoothStep01_continuousOn_open :
-    ContinuousOn smoothStep01 (Set.Ioo (0 : ℝ) 1) := by
-  intro t ht
-  have h_eq : ∀ᶠ s in 𝓝[Set.Ioo 0 1] t, smoothStep01 s = 3 * s^2 - 2 * s^3 := by
-    filter_upwards [self_mem_nhdsWithin] with s hs
-    exact smoothStep01_of_mem_open s hs.1 hs.2
-  apply ContinuousWithinAt.congr_of_eventuallyEq cubic_continuous.continuousWithinAt h_eq
-  exact smoothStep01_of_mem_open t ht.1 ht.2
 
 /-- **`smoothStep01` is globally continuous on ℝ.**
 
@@ -1478,78 +1016,15 @@ lemma ChartBallPathSmooth.continuous {X : Type*} [TopologicalSpace X] [ChartedSp
 
 /-! ## More chart-image affine identities -/
 
-/-- The chart-image at `t = 0` is `c P` (alternative phrasing). -/
-@[simp] lemma chart_image_zero_eq_P {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (anchor P Q : X) :
-    (fun t : ℝ => (1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q) 0
-      = (chartAt ℂ anchor) P := by
-  push_cast; ring
-
-/-- The chart-image at `t = 1` is `c Q` (alternative phrasing). -/
-@[simp] lemma chart_image_one_eq_Q {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (anchor P Q : X) :
-    (fun t : ℝ => (1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q) 1
-      = (chartAt ℂ anchor) Q := by
-  push_cast; ring
-
 /-! ## Helper: subtype membership simplifications -/
-
-/-- `t ∈ Icc a b ∧ t ∈ Ioo a b → t ∈ Ioo a b`. -/
-lemma mem_Ioo_of_Icc_and_Ioo {a b t : ℝ} (_h1 : t ∈ Set.Icc a b)
-    (h2 : t ∈ Set.Ioo a b) : t ∈ Set.Ioo a b := h2
-
-/-- `Ioo a b ⊆ Icc a b`. -/
-lemma Ioo_subset_Icc_of_le {a b : ℝ} : Set.Ioo a b ⊆ Set.Icc a b := Set.Ioo_subset_Icc_self
 
 /-! ## Numerical scaffolding for chart-cover arguments -/
 
-/-- For `n : ℕ` with `n > 0`, `1 / n > 0`. -/
-lemma one_div_n_pos (n : ℕ) (hn : 0 < n) : (0 : ℝ) < 1 / n := by
-  have hn_pos : (0 : ℝ) < n := by exact_mod_cast hn
-  exact div_pos one_pos hn_pos
-
-/-- For `n : ℕ` with `n > 0`, `1 / n ≤ 1`. -/
-lemma one_div_n_le_one (n : ℕ) (hn : 0 < n) : (1 : ℝ) / n ≤ 1 := by
-  have hn_pos : (0 : ℝ) < n := by exact_mod_cast hn
-  have hn_ge_one : (1 : ℝ) ≤ n := by
-    have : (1 : ℕ) ≤ n := hn
-    exact_mod_cast this
-  exact (div_le_one hn_pos).mpr hn_ge_one
-
-/-- For `0 < t < 1` and `n ≥ 1`, `t ∈ (0, 1)` (just trivially). -/
-lemma t_mem_unit_open (t : ℝ) (h0 : 0 < t) (h1 : t < 1) :
-    t ∈ Set.Ioo (0 : ℝ) 1 := ⟨h0, h1⟩
-
 /-! ## ChartBallPath bounded by image of [0, 1] in chart target -/
-
-/-- ChartBallPath's image at `t ∈ [0, 1]` is `(chartAt anchor).symm` applied
-to a point in the convex hull of `c P` and `c Q`. -/
-lemma ChartBallPath_image {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X)
-    (t : ℝ) (_ht : t ∈ Set.Icc (0 : ℝ) 1) :
-    ∃ z : ℂ, z = (1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q
-      ∧ ChartBallPath anchor P Q t = (chartAt ℂ anchor).symm z := by
-  refine ⟨_, rfl, rfl⟩
 
 /-! ## smoothStep01 boundary equalities (more) -/
 
-/-- For `t < 0`, `smoothStep01 t = 0`. (Strict inequality version of
-the underlying conditional.) -/
-lemma smoothStep01_of_lt_zero {t : ℝ} (h : t < 0) : smoothStep01 t = 0 := by
-  exact smoothStep01_eqOn_zero h
-
-/-- For `t > 1`, `smoothStep01 t = 1`. (Strict inequality version.) -/
-lemma smoothStep01_of_gt_one {t : ℝ} (h : 1 < t) : smoothStep01 t = 1 := by
-  exact smoothStep01_eqOn_one h
-
 /-! ## More chart-image inequalities -/
-
-/-- Affine combination identity `(1 - t) * x + t * x = x`. -/
-lemma affine_combine_eq {α : Type*} [CommRing α] (t x : α) :
-    (1 - t) * x + t * x = x := by ring
-
-/-- Affine combination distributive: `(1 - t) * x + t * y = x + t * (y - x)`. -/
-lemma affine_combine_distrib {α : Type*} [CommRing α] (t x y : α) :
-    (1 - t) * x + t * y = x + t * (y - x) := by ring
 
 /-! ## Chart-source / target sanity checks -/
 
@@ -1564,15 +1039,6 @@ lemma affine_combine_distrib {α : Type*} [CommRing α] (t x y : α) :
     (chartAt ℂ anchor) anchor ∈ (chartAt ℂ anchor).target :=
   (chartAt ℂ anchor).map_source (anchor_mem_chart_source anchor)
 
-/-- The chart-image formula at `t = t₀` lies in the chart target if `t₀`'s
-linear interp does. -/
-lemma chart_image_in_target_iff {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X)
-    (t : ℝ) :
-    ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q)
-        ∈ (chartAt ℂ anchor).target
-      ↔ ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q)
-        ∈ (chartAt ℂ anchor).target := Iff.rfl
-
 /-! ## End of additional structural infrastructure for smoothPath
 
 These lemmas form a substrate for the eventual closure of
@@ -1585,19 +1051,6 @@ specialized to our setup.
 
 /-! ## Auxiliary `mapsTo` / interval lemmas (Forster §1 chart-cover prep) -/
 
-/-- The piece-rescale `(t - k/n) * n` maps `[k/n, (k+1)/n]` to `[0, 1]`. -/
-lemma piece_rescale_mapsTo (k n : ℕ) (hn : 0 < n) :
-    Set.MapsTo (fun t : ℝ => (t - (k : ℝ) / n) * n)
-      (Set.Icc ((k : ℝ) / n) (((k : ℝ) + 1) / n)) (Set.Icc (0 : ℝ) 1) := by
-  intro t ht
-  exact piece_reparam_mem_unit k n hn t ht.1 ht.2
-
-/-- The smoothstep of the piece-rescale at a point in the piece is well-defined. -/
-lemma smoothStep01_of_piece_rescale (k n : ℕ) (_hn : 0 < n) (t : ℝ)
-    (_h_low : (k : ℝ) / n ≤ t) (_h_high : t ≤ ((k : ℝ) + 1) / n) :
-    smoothStep01 ((t - (k : ℝ) / n) * n) ∈ Set.Icc (0 : ℝ) 1 :=
-  smoothStep01_mem_unit _
-
 /-- The piece-rescale at the left endpoint is 0. -/
 lemma piece_rescale_at_left_eq (k n : ℕ) :
     ((k : ℝ) / n - (k : ℝ) / n) * n = 0 := by ring
@@ -1609,22 +1062,6 @@ lemma piece_rescale_at_right_eq (k n : ℕ) (hn : 0 < n) :
 
 /-! ## More smoothPathRaw / smoothPath identities -/
 
-/-- `smoothPathRaw P Q` at any `t` outside `(0, 1)` is one of the endpoints. -/
-lemma smoothPathRaw_eq_endpoint_of_outside {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    [PathConnectedSpace X] (P Q : X) {t : ℝ}
-    (h_outside : t ≤ 0 ∨ 1 ≤ t) :
-    smoothPathRaw P Q t = P ∨ smoothPathRaw P Q t = Q := by
-  rcases h_outside with h | h
-  · left; exact smoothPathRaw_of_nonpos h
-  · right; exact smoothPathRaw_of_ge_one h
-
-/-- `smoothPathRaw` at `t = 1/2` is some point in `X`. (Trivial, but
-useful for casing.) -/
-lemma smoothPathRaw_half_well_defined {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    [PathConnectedSpace X] (P Q : X) :
-    ∃ x : X, smoothPathRaw P Q (1 / 2) = x :=
-  ⟨smoothPathRaw P Q (1 / 2), rfl⟩
-
 /-! ## Aux for ChartBallPath integration
 
 For `IsSmoothPath.integrable`, the integrand is bounded continuous on
@@ -1633,17 +1070,6 @@ integrable. These lemmas don't quite close `integrable` but get us
 closer. -/
 
 /-! ## Final exports / re-exports -/
-
-/-- The smoothstep `smoothStep01` cubic identity (re-exported). -/
-lemma smoothStep01_cubic (t : ℝ) (ht : t ∈ Set.Ioo (0 : ℝ) 1) :
-    smoothStep01 t = 3 * t^2 - 2 * t^3 :=
-  smoothStep01_of_mem_open t ht.1 ht.2
-
-/-- Chart-image at `t` in chart coords (re-exported). -/
-lemma chart_image_value {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X) (t : ℝ)
-    :
-    ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q) =
-      ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q) := rfl
 
 /-! ## Conclusion
 
@@ -1657,45 +1083,7 @@ into that proof when written. -/
 
 /-! ## Final round of structural lemmas (chart-image symmetry) -/
 
-/-- The chart-image formula at `t` and `1 - t` interchange `P` and `Q`. -/
-lemma chart_image_swap {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X) (t : ℝ)
-    :
-    (1 - ((1 - t : ℝ) : ℂ)) * (chartAt ℂ anchor) P + (((1 - t) : ℝ) : ℂ) * (chartAt ℂ anchor) Q
-      = (1 - (t : ℂ)) * (chartAt ℂ anchor) Q + (t : ℂ) * (chartAt ℂ anchor) P := by
-  push_cast
-  ring
-
-/-- The smoothstep applied at piece-rescale's left endpoint is `0`. -/
-lemma smoothStep01_at_piece_left_eq (k n : ℕ) (_hn : 0 < n) :
-    smoothStep01 ((((k : ℝ) / n) - (k : ℝ) / n) * n) = 0 := by
-  rw [piece_rescale_at_left_eq k n]
-  exact smoothStep01_zero
-
-/-- The smoothstep applied at piece-rescale's right endpoint is `1`. -/
-lemma smoothStep01_at_piece_right_eq (k n : ℕ) (hn : 0 < n) :
-    smoothStep01 ((((k : ℝ) + 1) / n - (k : ℝ) / n) * n) = 1 := by
-  rw [piece_rescale_at_right_eq k n hn]
-  exact smoothStep01_one
-
 /-! ## Trivial-but-named ChartBallPath identities -/
-
-/-- `ChartBallPath anchor P Q t` is well-defined for any `t` (since
-`(chartAt anchor).symm` is total). -/
-lemma ChartBallPath_total {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor P Q : X)
-    (t : ℝ) :
-    ChartBallPath anchor P Q t = (chartAt ℂ anchor).symm
-    ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q) := rfl
-
-/-- ChartBallPath at the chart anchor: equals `anchor` always. -/
-lemma ChartBallPath_anchor_anchor {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (anchor : X)
-    (t : ℝ) :
-    ChartBallPath anchor anchor anchor t = anchor := by
-  exact ChartBallPath_self anchor anchor (mem_chart_at_self anchor) t
-
-/-- ChartBallPath endpoint type-check. -/
-lemma ChartBallPath_endpoint_type {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
-    (anchor P Q : X) (t : ℝ) :
-    ChartBallPath anchor P Q t = ChartBallPath anchor P Q t := rfl
 
 /-! ## Chart transition smoothness via contDiffGroupoid
 
@@ -1735,12 +1123,6 @@ lemma chart_transition_contDiffOn_simplified {X : Type*} [TopologicalSpace X] [C
   have h := chart_transition_contDiffOn x y
   -- 𝓘(ℂ) = id, range 𝓘(ℂ) = univ, 𝓘(ℂ).symm = id, so simp simplifies.
   simpa using h
-
-/-- The trans as a function applied to a point. -/
-lemma chart_trans_apply {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] (x y : X) (u : ℂ)
-    (_hu : u ∈ ((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)).source) :
-    (((chartAt ℂ x).symm ≫ₕ (chartAt ℂ y)) : ℂ → ℂ) u = (chartAt ℂ y) ((chartAt ℂ x).symm u) := by
-  rfl
 
 /-- Chart transition source membership: `u` is in the trans source iff
 `u ∈ (chartAt ℂ x).target` and `(chartAt ℂ x).symm u ∈ (chartAt ℂ y).source`. -/
@@ -1926,14 +1308,6 @@ lemma ChartBallPath_continuousOn_target_set {X : Type*} [TopologicalSpace X] [Ch
 
 Mathlib re-exports of `chartAt`'s smoothness. -/
 
-/-- The chart-coordinate value `Q ↦ (chartAt ℂ P) Q` is `ContMDiffOn` on
-the chart source — Mathlib's `contMDiffOn_chart`. -/
-lemma chartAt_contMDiffOn {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (P : X) :
-    ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω
-      (fun Q : X => (chartAt ℂ P) Q) (chartAt ℂ P).source :=
-  contMDiffOn_chart
-
 /-- The chart-coordinate inverse `(chartAt ℂ P).symm` is `ContMDiffOn` on
 the chart target — Mathlib's `contMDiffOn_chart_symm`. -/
 lemma chartAt_symm_contMDiffOn {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
@@ -1954,46 +1328,5 @@ field for `ChartBallPath`; locally, `Q ↦ ChartBallPath P P Q` is smooth on the
 chart ball of `P`, since
 `(chartAt P).symm ((1−s)·(chartAt P) P + s·(chartAt P) Q)` depends smoothly
 on `Q`. -/
-
-/-- The composition `(chartAt ℂ (γ t)) ∘ γ` is `Continuous` at each `t` in
-the open set where `z(s) ∈ chart.target` near `t`. (Useful for the
-diff-via-eventuallyEq path.) -/
-lemma chart_at_self_comp_continuousAt_of_target_nbhd {X : Type*} [TopologicalSpace X]
-    [ChartedSpace ℂ X] (anchor P Q : X) (t : ℝ)
-    (h_nbhd : ∀ᶠ s : ℝ in 𝓝 t,
-      ((1 - (s : ℂ)) * (chartAt ℂ anchor) P + (s : ℂ) * (chartAt ℂ anchor) Q)
-        ∈ (chartAt ℂ anchor).target) :
-    ContinuousAt
-      ((chartAt (H := ℂ) (ChartBallPath anchor P Q t)).toFun ∘ ChartBallPath anchor P Q) t := by
-  -- The chart at γ t is continuous at γ t.
-  set γ := ChartBallPath anchor P Q
-  have h_chart_cont : ContinuousAt (chartAt (H := ℂ) (γ t)).toFun (γ t) :=
-    (chartAt ℂ (γ t)).continuousAt (mem_chart_source ℂ (γ t))
-  -- γ is continuous near t (within the target-nbhd).
-  -- For Continuous of composition, need γ continuous at t.
-  have h_γ_cont : ContinuousAt γ t := by
-    -- γ = (chartAt anchor).symm ∘ z. We use ContinuousAt of composition.
-    have h_t_target : ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q)
-        ∈ (chartAt ℂ anchor).target := h_nbhd.self_of_nhds
-    -- Restrict ContinuousOn (chartAt anchor).symm to ContinuousAt at z t.
-    have h_inv_at : ContinuousAt (chartAt ℂ anchor).symm
-        ((1 - (t : ℂ)) * (chartAt ℂ anchor) P + (t : ℂ) * (chartAt ℂ anchor) Q) :=
-      (chartAt ℂ anchor).continuousOn_invFun.continuousAt
-        ((chartAt ℂ anchor).open_target.mem_nhds h_t_target)
-    -- z is continuous everywhere; in particular ContinuousAt t.
-    have h_z_at : ContinuousAt (fun s : ℝ =>
-        (1 - (s : ℂ)) * (chartAt ℂ anchor) P + (s : ℂ) * (chartAt ℂ anchor) Q) t :=
-      (continuous_chart_image_formula anchor P Q).continuousAt
-    -- γ s = (chartAt anchor).symm (z s) for all s.
-    -- ContinuousAt.comp gives us the composition.
-    have h_comp : ContinuousAt
-        ((chartAt ℂ anchor).symm ∘
-          fun s : ℝ => (1 - (s : ℂ)) * (chartAt ℂ anchor) P + (s : ℂ) * (chartAt ℂ anchor) Q)
-        t :=
-      ContinuousAt.comp h_inv_at h_z_at
-    exact h_comp
-  -- Compose: chart ∘ γ continuous at t.
-  exact h_chart_cont.comp h_γ_cont
-
 
 end Jacobians

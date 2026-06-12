@@ -170,10 +170,6 @@ noncomputable def precompHolCLM {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : Analy
     (hτmaps : Set.MapsTo τ U' U) (g : BddHol U) :
     precompHolCLM hτ hτmaps g = precompHol hτ hτmaps g := rfl
 
-theorem norm_precompHolCLM_le {U U' : Set ℂ} {τ : ℂ → ℂ} (hτ : AnalyticOn ℂ τ U')
-    (hτmaps : Set.MapsTo τ U' U) : ‖precompHolCLM hτ hτmaps‖ ≤ 1 :=
-  LinearMap.mkContinuous_norm_le _ zero_le_one _
-
 /-! ### Open-subset restriction `BddHol U → BddHol U'` (the diagonal cover-side transport)
 
 The cross-chart Čech differentials on the COVER side also need the *same-chart* (diagonal)

@@ -5,8 +5,6 @@ Authors: Bryan Sanchez
 -/
 import Jacobians.MappingDegree.ChartBallOffCentreWitnessDischarge
 
-
-
 /-! # Discharging the chart-pullback non-eventual-constancy hypothesis
 
 ZZ38 (`ChartBallOffCentreWitnessDischarge.lean`) reduced
@@ -255,51 +253,6 @@ theorem chartPullbackNotEventuallyConst_of_chartOverlapPropagation
   exact ⟨y₀, h_global⟩
 
 /-! ## End-to-end composition through ZZ38 -/
-
-/-- **Chart-ball off-centre witness from chart-overlap propagation.**
-End-to-end through ZZ38 + ZZ36 + ZZ34 + ZZ32 + ZZ30. -/
-theorem chartBallOffCentreWitness_of_chartOverlapPropagation
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ChartOverlapPropagationHypothesis X Y) :
-    ChartBallOffCentreWitnessHypothesis X Y :=
-  chartBallOffCentreWitness_of_chart_pullback_not_eventually_const
-    (chartPullbackNotEventuallyConst_of_chartOverlapPropagation H)
-
-/-- **Per-chart non-constancy from chart-overlap propagation.** -/
-theorem perChartNonConstancy_of_chartOverlapPropagation
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ChartOverlapPropagationHypothesis X Y) :
-    PerChartNonConstancyHypothesis X Y :=
-  perChartNonConstancy_of_chart_pullback_not_eventually_const
-    (chartPullbackNotEventuallyConst_of_chartOverlapPropagation H)
-
-/-- **Within-chart witness from chart-overlap propagation.** -/
-theorem withinChartWitness_of_chartOverlapPropagation
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ChartOverlapPropagationHypothesis X Y) :
-    WithinChartWitnessHypothesis X Y :=
-  withinChartWitness_of_chart_pullback_not_eventually_const
-    (chartPullbackNotEventuallyConst_of_chartOverlapPropagation H)
-
-/-- **Connectivity globalization from chart-overlap propagation.** -/
-theorem connectivityGlobalization_of_chartOverlapPropagation
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (H : ChartOverlapPropagationHypothesis X Y) :
-    ConnectivityGlobalizationHypothesis X Y :=
-  connectivityGlobalization_of_chart_pullback_not_eventually_const
-    (chartPullbackNotEventuallyConst_of_chartOverlapPropagation H)
 
 /-- **End-to-end conditional discharge of `fibres_finite_statement` from
 chart-overlap propagation.** Composing through ZZ38 + ZZ36 + ZZ34 + ZZ32 +

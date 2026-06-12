@@ -80,15 +80,6 @@ theorem exists_smoothPartitionOfUnity_openUnion [T2Space X] [LocallyCompactSpace
       (fun i => {x : ↥Y | (x : X) ∈ U i}) hopen hcov
   simpa [Y] using hpoU
 
-/-- The chosen smooth partition of unity on the open union of a finite family. -/
-noncomputable def openUnionPoU [T2Space X] [LocallyCompactSpace X] [IsManifold 𝓘(ℂ) ω X]
-    {ι : Type} [Fintype ι] [SecondCountableTopology X]
-    (U : ι → Opens X) :
-    SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ)
-      ↥(⟨⋃ i, (U i : Set X), isOpen_iUnion fun i => (U i).isOpen⟩ : Opens X)
-      (Set.univ : Set ↥(⟨⋃ i, (U i : Set X), isOpen_iUnion fun i => (U i).isOpen⟩ : Opens X)) :=
-  (exists_smoothPartitionOfUnity_openUnion U).choose
-
 /-- **Sum-to-one on the core**, value form: a PoU over the closed set `C` sums to `1` at every
 point of `C`.  (Repackages Mathlib's `SmoothPartitionOfUnity.sum_eq_one` with the
 `finsum = Finset.sum` collapse for the `Fintype` index.) -/

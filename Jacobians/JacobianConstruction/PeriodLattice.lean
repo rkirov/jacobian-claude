@@ -154,7 +154,6 @@ theorem properNbhd [TopologicalSpace Y] {f : X → Y} (hf : IsProperMap f) (x : 
     by_contra hzV
     exact hz ⟨z, hzV, rfl⟩
 
-
 /-- A valid chart-ball hop `Q₀ → Q`: `Q` is in `Q₀`'s chart source and the
 affine segment between their chart images stays in the chart target. Exactly
 the hypotheses `ChartBallPathSmooth` needs. -/
@@ -582,13 +581,6 @@ theorem periodVec_mem_truePeriodLattice_of_closed (γ : ℝ → X)
     (hγ : IsClosedSmoothLoop γ) :
     periodVec γ ∈ truePeriodLattice X :=
   Submodule.subset_span ⟨γ, hγ, rfl⟩
-
-
-/-- **Constant-path period vector is zero.** Classical fact: the
-tangent of a constant curve is zero, so every integrand is zero. -/
-theorem periodVec_const (P : X) : periodVec (fun _ : ℝ => P) = 0 := by
-  funext i
-  exact lineIntegral_const _ P
 
 /-- **Period vector reverses sign under path reversal.** Classical
 fact: `∫_{reverse γ} ω = -∫_γ ω`. Applied componentwise to the basis
@@ -1270,24 +1262,6 @@ the preimage `f⁻¹(δ)` is a ℤ-cycle in `X` and the trace identity places
 `ambientPsi (periodVec δ)` in the period lattice (Forster §10.11), via the
 branched-cover lifts and the trace adjunction of `Jacobians/MeromorphicTrace/TracePullback.lean`. -/
 
-/-- **pullbackForm of a constant map is zero.** If `f` is constant,
-then `mfderiv f x = 0` everywhere, making the pointwise composition
-`α(f x) ∘ mfderiv f x = 0`. -/
-theorem pullbackForm_eq_zero_of_const
-    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hconst : ∃ y₀ : Y, ∀ x, f x = y₀) :
-    pullbackForm f hf = 0 := by
-  obtain ⟨y₀, hy₀⟩ := hconst
-  ext α
-  apply ContMDiffSection.ext
-  intro x
-  show (α.toFun (f x)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) f x) = 0
-  have : mfderiv 𝓘(ℂ) 𝓘(ℂ) f x = 0 := by
-    have hfconst : f = fun _ => y₀ := funext hy₀
-    rw [hfconst]
-    exact mfderiv_const
-  rw [this, ContinuousLinearMap.comp_zero]
-
 /-! #### Branched-cover infrastructure
 
 For non-constant holomorphic `f : X → Y` between compact connected
@@ -1351,8 +1325,6 @@ Non-constant holomorphic maps between Riemann surfaces are open and discrete
 since a compact source makes them proper, they restrict to finite-sheeted
 coverings off the branch locus (§4.22–4.23). The open-mapping half is
 `isOpenMap_of_nonconstant` below. -/
-
-
 
 /-- **Chart-bridge package at a single point.** For non-constant analytic
 `f : X → Y` and any `x : X`, assembles the `ChartBridgePackage f x` consumed by

@@ -334,16 +334,4 @@ theorem tailResidue_tailMap_eq_zero [T2Space X] [CompactSpace X] [ConnectedSpace
       (g₀.finite_nonAnalyticAt.mem_toFinset.mpr hbad)))
   exact hfh.mul hg₀.deriv
 
-/-- **The descended residue functional `Res_ω : H¹(D) → ℂ`** (Miranda Ch. VI pp. 187–188): the
-residue map on `𝒯[D]` kills `im(α_D)` (the residue theorem), hence factors through the
-Mittag-Leffler quotient.  This is the linear functional that feeds the Serre duality pairing. -/
-noncomputable def tailResidueH1 [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [IsManifold 𝓘(ℂ) ω X] [Nonempty X] {D : Divisor X}
-    (g₀ h : MeromorphicFunction X) (hord : PairOrderBounded g₀ h D) :
-    mittagLefflerH1 (X := X) D →ₗ[ℂ] ℂ :=
-  Submodule.liftQ _ ((tailResidue g₀ h).comp (Submodule.subtype _)) (by
-    rintro Z ⟨f, rfl⟩
-    rw [LinearMap.mem_ker, LinearMap.comp_apply, Submodule.subtype_apply, tailMapCo_coe]
-    exact tailResidue_tailMap_eq_zero g₀ h hord f)
-
 end Jacobians.LaurentTail

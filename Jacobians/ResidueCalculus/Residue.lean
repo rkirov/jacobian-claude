@@ -200,12 +200,4 @@ theorem resAt_congr {f g : ℂ → ℂ} {c : ℂ} (h : f =ᶠ[𝓝[≠] c] g) : 
   unfold resAt Filter.limUnder
   rw [Filter.map_congr hint]
 
-/-- **Simple-pole residue.**  If `f` agrees near `c` with `z ↦ a·(z-c)⁻¹`, then `resAt f c = a`.
-This is what reads off the residue of `α·g` once it is shown to be a simple pole `a/(z-c)` locally
-(Forster §17.6's `dz/z` computation). -/
-theorem resAt_eq_of_eventuallyEq_sub_inv {f : ℂ → ℂ} {a c : ℂ}
-    (h : f =ᶠ[𝓝[≠] c] fun z => a * (z - c)⁻¹) :
-    resAt f c = a := by
-  rw [resAt_congr h, resAt_const_mul_sub_inv]
-
 end Jacobians.Dolbeault

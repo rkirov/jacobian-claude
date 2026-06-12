@@ -44,7 +44,6 @@ namespace Jacobians.Dolbeault.FormTraceSheet
 
 open Jacobians Jacobians.Dolbeault Jacobians.Montel
 
-
 /-! ### `mfderiv` as the planar chart-pullback derivative -/
 
 /-- **`mfderiv` is the chart-pullback `fderiv`.**  For `s : Y → X` `MDifferentiable` at `y`, the
@@ -134,32 +133,5 @@ theorem localRep_eq_transition_mul_self (ω₀ : HolomorphicOneForms X) (a y : X
   rw [deriv, Function.comp_def]
 
 /-! ### The linchpin: per-sheet covector identity in charts -/
-
-/-- **Per-sheet covector identity in charts.**  For a holomorphic section
-`s : Y → X` `MDifferentiable` at `y`, the bundle per-sheet covector `sheetPullback ω₀ s y v`
-(Miranda's pushforward summand `(ω₀.toFun (s y)) (mfderiv s y v)`) reads, in charts, as the
-**planar** `coeffAt·deriv(section)` object:
-
-> `sheetPullback ω₀ s y v
-> = fderiv ℂ (chart_{s y} ∘ s ∘ chart_y.symm) (chart_y y) v · coeffAt ω₀ (s y) (chart_{s y}(s y))`.
-
-This connects the bundle trace `TraceForm.traceFun = ∑ᵢ sheetPullback ω₀ (sheet i)` to the planar
-fibre trace `FormTraceFibre.fibreTrace.traceCoeff = ∑ᵢ coeff i (sheet i w)·deriv(sheet i) w`. The
-proof combines `toFun_apply_eq_mul_localRep` (the self-frame pairing),
-`mfderiv_eq_fderiv_chartPullback` (the `mfderiv = fderiv` reading), and `coeffAt_chartCenter`
-(`coeffAt ω₀ a (chart a a) = localRep ω₀ a a`). -/
-theorem sheetPullback_apply_eq_coeffAt_mul_deriv (ω₀ : HolomorphicOneForms X) (s : Y → X) {y : Y}
-    (hs : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) s y) (v : TangentSpace 𝓘(ℂ) y) :
-    sheetPullback ω₀ s y v
-      = fderiv ℂ (fun z => (chartAt ℂ (s y)) (s ((chartAt ℂ y).symm z))) ((chartAt ℂ y) y) v
-        * coeffAt ω₀ (s y) ((chartAt ℂ (s y)) (s y)) := by
-  -- `sheetPullback ω₀ s y v = ω₀.toFun (s y) (mfderiv s y v)`.
-  show (ω₀.toFun (s y)).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) s y) v = _
-  rw [ContinuousLinearMap.comp_apply]
-  -- read `mfderiv s y v` as the chart-pullback `fderiv`
-  rw [mfderiv_eq_fderiv_chartPullback s hs]
-  -- `coeffAt ω₀ (s y) (chart (s y) (s y)) = localRep ω₀ (s y) (s y)`, then the self-frame pairing
-  simp only [coeffAt_chartCenter]
-  exact toFun_apply_eq_mul_localRep ω₀ (s y) _
 
 end Jacobians.Dolbeault.FormTraceSheet

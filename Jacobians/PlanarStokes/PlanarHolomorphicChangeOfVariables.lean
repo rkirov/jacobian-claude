@@ -108,14 +108,4 @@ theorem dbar_comp_holomorphic {g T : ℂ → ℂ} {z : ℂ}
   push_cast
   linear_combination ((c.im : ℂ) * M Complex.I / 2) * Complex.I_sq
 
-/-- The chain-rule inversion: if `S` inverts `T` near `z` (`S ∘ T = id` as germs), then
-`S′(T z) · T′(z) = 1`.  Gives the derivative cancellations of the chart-transport algebra. -/
-theorem deriv_mul_deriv_inverse {T S : ℂ → ℂ} {z : ℂ}
-    (hT : DifferentiableAt ℂ T z) (hS : DifferentiableAt ℂ S (T z))
-    (hid : (S ∘ T) =ᶠ[𝓝 z] id) :
-    deriv S (T z) * deriv T z = 1 := by
-  have h := deriv_comp z hS hT
-  rw [hid.deriv_eq, deriv_id] at h
-  exact h.symm
-
 end Jacobians.Dolbeault

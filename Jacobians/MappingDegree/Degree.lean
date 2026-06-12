@@ -6,8 +6,6 @@ Authors: Bryan Sanchez
 import Mathlib.Topology.LocallyConstant.Basic
 import Jacobians.LocalMultiplicity.LocalMultiplicity
 
-
-
 /-! # Degree of a holomorphic map between compact Riemann surfaces
 
 This file provides a *fibre-cardinality* candidate body for `ContMDiff.degree`,
@@ -396,61 +394,6 @@ structure FibreCardData {X : Type u} {Y : Type v} (f : X → Y) where
   covering-space + connected-regular-value-set argument supplies.) -/
   card_of_constant : ∀ w₁ w₂ : RegularValueWitness f,
     card_of w₁.value = card_of w₂.value
-
-/-- **Trivial reduction.** Given a `FibreCardData f`, the cardinalities of
-any two regular-value witnesses agree. This is purely structural composition
-of the fields of `FibreCardData`. -/
-lemma fibre_card_eq_of_fibreCardData
-    {X : Type u} {Y : Type v} {f : X → Y}
-    (D : FibreCardData f) (w₁ w₂ : RegularValueWitness f) :
-    w₁.card = w₂.card := by
-  have h₁ : D.card_of w₁.value = w₁.card := D.card_of_witness w₁
-  have h₂ : D.card_of w₂.value = w₂.card := D.card_of_witness w₂
-  have hc : D.card_of w₁.value = D.card_of w₂.value := D.card_of_constant w₁ w₂
-  -- w₁.card = card_of w₁.value = card_of w₂.value = w₂.card
-  calc w₁.card = D.card_of w₁.value := h₁.symm
-    _ = D.card_of w₂.value := hc
-    _ = w₂.card := h₂
-
-/-- **Sharper reduction: locally-constant fibre-cardinality on a preconnected
-regular-value subtype.**
-
-This form exposes the analytic obligation in covering-space shape, using the
-subspace topology on the regular-value set `R ⊆ Y`.
-
-* `card_of : Y → ℕ`, the fibre-cardinality function on `Y` (its value off
-  regular values is irrelevant).
-* `h_witness`: `card_of` reads off any witness's card.
-* `h_supp`: every witness's value lies in `R`.
-* `h_lc_sub`: `card_of` restricted to the subtype `R` is locally constant —
-  this is exactly the covering-space content.
-* `h_conn_sub`: the subtype `R` is preconnected — the topological content
-  (a connected Riemann surface minus a finite set is preconnected, real
-  dimension `≥ 2`).
-
-The conclusion follows from
-`IsLocallyConstant.apply_eq_of_isPreconnected`. -/
-lemma fibre_card_eq_of_locallyConstant_subtype
-    {X : Type u} {Y : Type v} [TopologicalSpace Y]
-    {f : X → Y}
-    {R : Set Y}
-    (card_of : Y → ℕ)
-    (h_witness : ∀ w : RegularValueWitness f, card_of w.value = w.card)
-    (h_supp : ∀ w : RegularValueWitness f, w.value ∈ R)
-    (h_lc_sub : IsLocallyConstant (fun y : R => card_of y.val))
-    (h_conn_sub : IsPreconnected (Set.univ : Set R))
-    (w₁ w₂ : RegularValueWitness f) :
-    w₁.card = w₂.card := by
-  have hc : card_of w₁.value = card_of w₂.value := by
-    have :=
-      h_lc_sub.apply_eq_of_isPreconnected h_conn_sub
-        (Set.mem_univ (⟨w₁.value, h_supp w₁⟩ : R))
-        (Set.mem_univ (⟨w₂.value, h_supp w₂⟩ : R))
-    simpa using this
-  calc w₁.card
-      = card_of w₁.value := (h_witness w₁).symm
-    _ = card_of w₂.value := hc
-    _ = w₂.card := h_witness w₂
 
 /-- **Sharper reduction (regular form): locally-constant fibre-cardinality on
 a preconnected subset.** Same shape as the unrestricted

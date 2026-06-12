@@ -35,7 +35,6 @@ open Module
 
 namespace Jacobians.Dolbeault
 
-
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -552,16 +551,5 @@ theorem exists_differentialForm_divisor (f : MeromorphicFunction X)
     ∃ K : Divisor X, ∀ x, (differentialForm f).formOrderW x = (K x : WithTop ℤ) :=
   exists_form_divisor (differentialForm f)
     (fun x => MeromorphicOneForm.formOrderW_ne_top_of_exists (differentialForm f) hf x)
-
-/-- **Forster §17.4 — the canonical-form datum `ω₀ = df`, `K = div ω₀` exists.**  Combining the
-nonconstant meromorphic function `f` of `exists_nonconstant_meromorphic` (`SerreOmega0`), its
-differential `df` (a genuine `MeromorphicOneForm`, nonzero by `differentialForm_ne_zero`), and its
-canonical divisor `K` (`exists_differentialForm_divisor`), this instantiates `CanonicalForm17Data X`
-— making the §17.4 isomorphism `omega17Equiv : L(D+K) ≃ₗ[ℂ] Ω_D` of `CanonicalFormIso`
-unconditional. -/
-theorem nonempty_canonicalForm17Data : Nonempty (CanonicalForm17Data X) := by
-  obtain ⟨_D, f, _hmem, hf⟩ := exists_nonconstant_meromorphic (X := X)
-  obtain ⟨K, hK⟩ := exists_differentialForm_divisor f (differentialForm_ne_zero hf)
-  exact ⟨canonicalForm17DataOfDivisor f hf K hK⟩
 
 end Jacobians.Dolbeault

@@ -58,7 +58,6 @@ open scoped Manifold ContDiff Topology
 
 namespace Jacobians
 
-
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -91,11 +90,5 @@ Via `Homeomorph.toHomotopyEquiv` and `ContinuousMap.HomotopyEquiv.simplyConnecte
 theorem simplyConnectedSpace_of_homeo {X : Type*} [TopologicalSpace X] {Y : Type*}
     [TopologicalSpace Y] [SimplyConnectedSpace Y] (e : X ≃ₜ Y) : SimplyConnectedSpace X :=
   e.toHomotopyEquiv.simplyConnectedSpace
-
-/-- **Step 5 (transport), `iff` form.** Simple connectivity is a homeomorphism invariant. -/
-theorem simplyConnectedSpace_iff_of_homeo {X : Type*} [TopologicalSpace X] {Y : Type*}
-    [TopologicalSpace Y] (e : X ≃ₜ Y) :
-    SimplyConnectedSpace X ↔ SimplyConnectedSpace Y :=
-  e.toHomotopyEquiv.simplyConnectedSpace_iff
 
 end Jacobians

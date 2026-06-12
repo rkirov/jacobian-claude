@@ -67,14 +67,6 @@ theorem finiteDimensional_cechH1_zero_of_chartDiskMontel
     FiniteDimensional ℂ (𝔘.cechH1 (0 : Divisor X)) :=
   finiteDimensional_cechH1_of_chartDiskMontel (0 : Divisor X) hMontel 𝔘
 
-/-- D = 0 specialization of `exists_cechModel_of_chartDiskMontel`. -/
-theorem exists_cechModel_zero_of_chartDiskMontel
-    (hMontel : ∀ 𝔇 : ChartDiskCover X, FiniteDimensional ℂ (𝔇.toFiniteCover.cechH1 (0 : Divisor X)))
-    (𝔘 : FiniteCover X) :
-    ∃ (d : DiskOverlapData) (c : Coboundaries d),
-      Nonempty (𝔘.cechH1 (0 : Divisor X) ≃ₗ[ℂ] c.supH1) :=
-  exists_cechModel_of_chartDiskMontel (0 : Divisor X) hMontel 𝔘
-
 /-- **The chart-disk Montel finiteness, discharged unconditionally** (Forster 14.9, D = 0).  This is
 exactly `ChartDiskCover.finiteDimensional_cechH1_chartDisk_complete`
 (the `leray` field / global Bott–Tu (0,1)-form) — packaged as the `hMontel` hypothesis the

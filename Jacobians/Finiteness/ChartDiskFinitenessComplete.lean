@@ -1294,7 +1294,6 @@ theorem leray_identity (s : 𝔇.overlapData.Cshr) (hs : 𝔇.delta1Model s = 0)
       (𝔇.delta0Model (𝔇.etaCochain s hs) (a, b)).zero_off z hz,
       (𝔇.overlapData.rhoRaw (𝔇.coverCochain s) (a, b)).zero_off z hz, add_zero]
 
-
 /-- **The structural δ-complex on `𝔇.overlapData`, with the `leray` field**.
 `δ0`/`δ1`/`δ1cov`/`hδδ`/`hcomm` are the model differentials of §A; `leray` (Forster 14.6) is
 discharged by the global Bott–Tu form route of §A2-*:
@@ -1414,14 +1413,6 @@ theorem overlapAtom_smul (a b : 𝔇.ι) (c : ℂ) {g : MGerm (𝔇.U a ⊓ 𝔇
   · rw [BddHol.toFun_smul, Pi.smul_apply,
       (𝔇.overlapAtom a b (Submodule.smul_mem _ c hg)).zero_off z hz,
       (𝔇.overlapAtom a b hg).zero_off z hz, smul_zero]
-
-/-- **The per-overlap atom as a `ℂ`-linear map**
-`OmegaDGerm 0 (U a ⊓ U b) →ₗ[ℂ] BddHol (Wov (a,b))`. -/
-noncomputable def overlapAtomCLM (a b : 𝔇.ι) :
-    (OmegaDGerm (0 : Divisor X) (𝔇.U a ⊓ 𝔇.U b)) →ₗ[ℂ] BddHol (𝔇.Wov (a, b)) where
-  toFun g := 𝔇.overlapAtom a b g.2
-  map_add' g₁ g₂ := 𝔇.overlapAtom_add a b g₁.2 g₂.2
-  map_smul' c g := 𝔇.overlapAtom_smul a b c g.2
 
 /-! ### The forward cochain map `↥(cocycles1 0) → Cshr`, and its image in `Z1shr` -/
 

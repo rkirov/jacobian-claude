@@ -74,19 +74,10 @@ theorem restrictToOpen_le_left (𝔘 : FiniteFamily X) (W : Opens X) (i : 𝔘.�
     (𝔘.restrictToOpen W).U i ≤ 𝔘.U i :=
   inf_le_left
 
-theorem restrictToOpen_le_right (𝔘 : FiniteFamily X) (W : Opens X) (i : 𝔘.ι) :
-    (𝔘.restrictToOpen W).U i ≤ W :=
-  inf_le_right
-
 /-- The restricted family covers the part of `W` covered by the original family. -/
 theorem iSup_restrictToOpen (𝔘 : FiniteFamily X) (W : Opens X) :
     (⨆ i, (𝔘.restrictToOpen W).U i) = (⨆ i, 𝔘.U i) ⊓ W := by
   simp [restrictToOpen, iSup_inf_eq]
-
-/-- Restricting a genuine cover to `W` gives a local finite family covering `W`. -/
-theorem restrictToOpen_covers_of_cover (𝔘 : FiniteCover X) (W : Opens X) :
-    (𝔘.toFiniteFamily.restrictToOpen W).CoversOpen W := by
-  rw [CoversOpen, iSup_restrictToOpen, 𝔘.covers, top_inf_eq]
 
 /-! ### Cochain spaces — germ-classes (`MGerm`), the junk-free sections (no junk quotient). -/
 

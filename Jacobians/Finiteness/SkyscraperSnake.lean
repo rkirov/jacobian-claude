@@ -42,7 +42,6 @@ import Jacobians.Finiteness.SkyscraperArrow
 
 open scoped Manifold ContDiff Topology
 
-
 namespace Jacobians.Dolbeault
 
 /-! ## The abstract snake lemma for nested two-step subcomplexes
@@ -307,17 +306,6 @@ noncomputable def dQ1 : S.Q1 →ₗ[R] S.Q2 :=
 
 @[simp] theorem dQ1_mk (b : S.B1) :
     S.dQ1 (Submodule.Quotient.mk b) = Submodule.Quotient.mk (S.dB1 b) := rfl
-
-/-- `dQ1 ∘ dQ0 = 0` (the quotient complex is a complex; inherited from `δ¹ ∘ δ⁰ = 0`). -/
-theorem dQ1_comp_dQ0 : S.dQ1 ∘ₗ S.dQ0 = 0 := by
-  refine LinearMap.ext fun q => ?_
-  obtain ⟨b, rfl⟩ := Submodule.Quotient.mk_surjective _ q
-  simp only [LinearMap.comp_apply, dQ0_mk, dQ1_mk, LinearMap.zero_apply]
-  rw [show (S.dB1 (S.dB0 b)) = 0 from ?_, Submodule.Quotient.mk_zero]
-  apply Subtype.ext
-  rw [dB1_coe, dB0_coe]
-  show S.d1 (S.d0 b.1) = (0 : S.C2)
-  rw [← LinearMap.comp_apply, S.hd, LinearMap.zero_apply]
 
 /-- `H¹(Q) = Z¹(Q)/B¹(Q) = ker dQ1 ⧸ range dQ0`. The cokernel-of-cohomology term whose vanishing
 gives the surjectivity `surj₄`. -/

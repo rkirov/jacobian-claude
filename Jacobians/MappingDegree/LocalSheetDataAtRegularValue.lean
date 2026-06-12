@@ -42,29 +42,6 @@ universe u v
 
 namespace LocalSheetData
 
-/-- **`LocalSheetData` supplier at a regular value.**
-
-Given an analytic map `f : X → Y` between complex manifolds, a regular-value
-witness `w : RegularValueWitnessReg f`, and a preimage point
-`x ∈ f ⁻¹' {w.value}`, produce a `LocalSheetData f w.value x`.
-
-The construction extracts the chart-pullback-derivative-nonzero certificate
-`w.is_regular x hx` and feeds it together with
-`hf.contMDiffAt` into `LocalSheetData.ofContMDiffMfderivNeZero` (ZZ169). -/
-noncomputable def ofRegularValueWitnessReg
-    {X : Type u} {Y : Type v}
-    [TopologicalSpace X] [ChartedSpace ℂ X]
-    [TopologicalSpace Y] [ChartedSpace ℂ Y]
-    {f : X → Y} (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (w : Jacobians.Discharge.ContMDiff.RegularValueWitnessReg f)
-    {x : X} (hx : x ∈ f ⁻¹' {w.toWitness.value}) :
-    LocalSheetData f w.toWitness.value x :=
-  -- `hx : x ∈ f ⁻¹' {w.toWitness.value}` unfolds to `f x = w.toWitness.value`.
-  LocalSheetData.ofContMDiffMfderivNeZero
-    (hf := hf.contMDiffAt)
-    (hxy := hx)
-    (h_deriv := w.is_regular x hx)
-
 end LocalSheetData
 
 end Jacobians.Discharge

@@ -32,7 +32,6 @@ needed.
 Forster §§10–12; Miranda Ch. 4 §§3–4.
 -/
 
-
 namespace Jacobians
 
 open scoped Manifold ContDiff Bundle Topology
@@ -53,15 +52,6 @@ noncomputable def lineIntegral {X : Type*} [TopologicalSpace X] [T2Space X] [Com
   ∫ t in (0 : ℝ)..1, α.toFun (γ t) (pathSpeed γ t)
 
 /-! ### Phase 1a of the Abel–Jacobi plan: vector line integral -/
-
-/-- Vector line integral of a tuple of holomorphic 1-forms along `γ`.
-The building block for the "period map" `Fin (genus X) → ℂ` whose
-image (over closed loops at a basepoint) is the period lattice. -/
-noncomputable def lineIntegralVec {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] {n : ℕ}
-    (forms : Fin n → HolomorphicOneForms X)
-    (γ : ℝ → X) : Fin n → ℂ :=
-  fun i => lineIntegral (forms i) γ
 
 /-! ### Phase 1b: linearity of the line integral in the form
 
@@ -97,20 +87,6 @@ theorem lineIntegral_add {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSp
         α.toFun (γ t) (pathSpeed γ t) + β.toFun (γ t) (pathSpeed γ t) := fun _ => rfl
   simp_rw [h_pw]
   exact intervalIntegral.integral_add hα hβ
-
-/-- Scalar-homogeneity of `lineIntegral` in the form. -/
-theorem lineIntegral_smul {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (c : ℂ) (α : HolomorphicOneForms X)
-    (γ : ℝ → X) :
-    lineIntegral (c • α) γ = c * lineIntegral α γ := by
-  unfold lineIntegral
-  have h_pw : ∀ t : ℝ,
-      (c • α).toFun (γ t) (pathSpeed γ t) = c * α.toFun (γ t) (pathSpeed γ t) := by
-    intro t
-    show (c • α.toFun (γ t)) (pathSpeed γ t) = _
-    rw [ContinuousLinearMap.smul_apply, smul_eq_mul]
-  simp_rw [h_pw]
-  exact intervalIntegral.integral_const_mul c _
 
 /-! ### Phase 1b: constant path
 
@@ -588,6 +564,5 @@ theorem lineIntegral_pullback {X : Type*} [TopologicalSpace X] [T2Space X] [Comp
     (α.toFun (f (γ t))).comp (mfderiv 𝓘(ℂ) 𝓘(ℂ) f (γ t)) (pathSpeed γ t)
   rw [ContinuousLinearMap.comp_apply,
     pathSpeed_comp_eq_mfderiv f hf γ t hγ_cont.continuousAt (hγ_diff t ht)]
-
 
 end Jacobians

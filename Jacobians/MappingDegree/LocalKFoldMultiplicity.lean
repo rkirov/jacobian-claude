@@ -6,8 +6,6 @@ Authors: Bryan Sanchez
 import Mathlib.Analysis.Calculus.Deriv.Add
 import Jacobians.MappingDegree.LocalMultiplicityInvariance
 
-
-
 /-! # Local multiplicity invariance — branched (`k ≥ 1`) reduction
 
 This file extends ZZ74's `k = 1` result
@@ -106,27 +104,6 @@ structure KthRootSubstitution (g : ℂ → ℂ) (x₀ w₀ : ℂ) (k : ℕ) : Pr
       deriv v x₀ ≠ 0 ∧
       (∀ z ∈ Metric.closedBall x₀ ρ, g z - w₀ = (v z) ^ k)
 
-/-- **Named statement of the missing-mathlib content.**
-
-For `u : ℂ → ℂ` analytic on a closed disc `closedBall x₀ ρ` with
-`u x₀ ≠ 0`, there exists an analytic function `r : ℂ → ℂ` on
-some smaller closed disc `closedBall x₀ ρ'` (`0 < ρ' ≤ ρ`) with
-`r(z) ^ k = u(z)` for all `z ∈ closedBall x₀ ρ'`.
-
-This is the named-only gap blocking the general `k ≥ 2` construction of
-`KthRootSubstitution`. The candidate proof routes through
-`Complex.log`'s analyticity on `slitPlane` (and the uniform smallness of
-`‖u(z) - u(x₀)‖` for `z` in a small disc, which keeps `u(z)` inside a
-logarithm branch).
-
-We state this as a `Prop` and *do not* discharge it here. -/
-def analytic_kth_root_branch_exists_statement
-    (u : ℂ → ℂ) (x₀ : ℂ) (ρ : ℝ) (k : ℕ) : Prop :=
-  AnalyticOnNhd ℂ u (Metric.closedBall x₀ ρ) → u x₀ ≠ 0 → 1 ≤ k →
-    ∃ (r : ℂ → ℂ) (ρ' : ℝ), 0 < ρ' ∧ ρ' ≤ ρ ∧
-      AnalyticOnNhd ℂ r (Metric.closedBall x₀ ρ') ∧
-      ∀ z ∈ Metric.closedBall x₀ ρ', (r z) ^ k = u z
-
 /-- **`k = 1` substitution is unconditional.**
 
 For `k = 1`, the substitution is `v(z) := g(z) - w₀`. Hypotheses:
@@ -208,26 +185,6 @@ theorem localKFoldMultiplicity_preimage_card_of_substitution_one
   have h_dg_ne : deriv g x₀ ≠ 0 := h_dg_eq ▸ hv_d
   -- Apply ZZ74 to g at x₀.
   exact localMultiplicityOne_preimage_card h_g_an h_dg_ne
-
-/-- **Closed-ball convenience corollary.**
-
-From analyticity of `g` on `closedBall x₀ R` plus a `k = 1` substitution
-bundle (which here is just `deriv g x₀ ≠ 0`), conclude the `1`-fold
-preimage count.
-
-This is *exactly* `localMultiplicityOne_preimage_card_on_closedBall`
-re-exported through the bundle, demonstrating the bundle's non-degeneracy
-at `k = 1`. -/
-theorem localKFoldMultiplicity_preimage_card_one
-    {g : ℂ → ℂ} {x₀ : ℂ} {R : ℝ} (hR : 0 < R)
-    (h_an : AnalyticOnNhd ℂ g (Metric.closedBall x₀ R))
-    (hd : deriv g x₀ ≠ 0) :
-    ∃ ε > (0 : ℝ), ∃ δ > (0 : ℝ),
-      ∀ w ∈ Metric.ball (g x₀) δ, w ≠ g x₀ →
-        ({z ∈ Metric.ball x₀ ε | g z = w} : Set ℂ).ncard = 1 := by
-  have hsub :=
-    kthRootSubstitution_of_localMultiplicityOne hR h_an rfl hd
-  exact localKFoldMultiplicity_preimage_card_of_substitution_one hsub rfl
 
 end Manifold
 end Jacobians.Discharge
