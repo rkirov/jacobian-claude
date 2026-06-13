@@ -40,6 +40,9 @@ jobs:
           cp -r site/_out/html-multi/* _site/        # exposition is the site root
           mkdir -p _site/docs && cp -r docs/* _site/docs/   # units.html graph, reviewer docs
           touch _site/.nojekyll
+          # Old literate-facet URLs (/Jacobians/...) were retired; this catch-all
+          # redirects any stale bookmark to the new site root instead of 404-ing.
+          cp site/404.html _site/404.html
 
       - uses: actions/upload-pages-artifact@v3
         with:
