@@ -7,10 +7,10 @@ package jacobian where
     ⟨`autoImplicit, false⟩
   ]
 
--- Verso supplies the `:literateHtml` lake facet (lake query :literateHtml) that renders
--- every module as a literate page — code highlighted, docstrings as prose. Docs only;
--- nothing in the library imports it. Listed before mathlib so that on shared transitive
--- dependencies (plausible) Mathlib's pins take precedence (later require wins).
+-- Verso is required only by the docs/exposition site under `site/` (a separate Lake
+-- package). Nothing in this library imports it, so `lake build` never builds it; the
+-- require is retained here purely so the existing lake-manifest stays consistent.
+-- (The former `:literateHtml` per-module facet has been retired.)
 require verso from git
   "https://github.com/leanprover/verso.git" @ "v4.30.0-rc1"
 

@@ -172,10 +172,7 @@ for u in order:
         found = find_decl_statement(m_id.group(1).split('.')[-1], memfiles) if m_id else None
         if found:
             p, ln, stmt = found
-            mod_of_p = p[:-5].replace('/', '/')
-            lit = '../../' + p[:-5] + '/'
-            lines.append(f'**`{k}`** — [full proof]({lit}) · '
-                         f'[source]({REPO}/blob/main/{p}#L{ln}) · '
+            lines.append(f'**`{k}`** — [source]({REPO}/blob/main/{p}#L{ln}) · '
                          f'[report an issue]({issue_url(k, p, ln)})')
             lines.append('')
             lines.append('```')
@@ -192,11 +189,9 @@ for u in order:
         lines.append('')
     for m in mem:
         path = mods[m]
-        lit = '../../Jacobians/' + m.replace('.', '/') + '/'
         lines.append(f'# {m}')
         lines.append('')
-        lines.append(f'`Jacobians.{m}` — [literate page with proofs]({lit}) · '
-                     f'[source]({REPO}/blob/main/{path})')
+        lines.append(f'`Jacobians.{m}` — [source]({REPO}/blob/main/{path})')
         lines.append('')
         for name, doc, stmt in module_public_decls(path):
             lines.append(f'**`{name}`**')
@@ -212,31 +207,115 @@ for u in order:
     open(f'site/Site/{dirname}.lean', 'w').write('\n'.join(lines))
     chapters.append(dirname)
 
-root = ['import VersoManual'] + [f'import Site.{c}' for c in chapters] + ['',
+# the conformance/validation chapter (generated separately) leads the book.
+root = ['import VersoManual', 'import Site.Conformance'] \
+    + [f'import Site.{c}' for c in chapters] + ['',
     'open Verso.Genre Manual', '',
-    '#doc (Manual) "The Jacobians Challenge, by unit" =>', '',
-    'A machine-checked solution of Kevin Buzzard\'s Jacobians challenge: genus,',
-    'the genus-0 sphere theorem, Riemann–Roch, Abel\'s theorem, and the Jacobian',
-    f'as a complex torus. [Source]({REPO}) · [unit dependency graph](../docs/units.html).', '',
-    'Chapters are the 30 units of the decomposition, ordered foundations-first;',
-    'each unit page is generated from the unit docstring in the repository, so the',
-    'source of truth stays in code.', '']
+    '#doc (Manual) "A machine-checked solution to the Jacobians challenge" =>', '',
+    'This site documents a complete, machine-checked solution to Kevin Buzzard\'s',
+    f'[Jacobians challenge]({REPO}/blob/main/Jacobian_challenge.lean) — an API for the',
+    'Jacobian of a compact Riemann surface, formalized in Lean 4 on top of Mathlib. The',
+    'mathematics (genus, the genus-0 sphere theorem, Riemann–Roch, Abel\'s theorem, the',
+    'Jacobian as a complex torus) is written by AI agents under human direction; nothing',
+    'is taken on trust — every statement is checked by the Lean kernel.', '',
+    '# How to validate this solution', '',
+    'The challenge ships as a list of definitions and theorems left as `sorry`. A solution',
+    'must replace every `sorry` with a real, axiom-free proof of the *exact* statement asked',
+    'for — no weakened hypotheses, no renamed goals. Two artifacts let you confirm that:', '',
+    f'* The **conformance table** (first chapter below) restates each of Buzzard\'s'
+    f' signatures verbatim and discharges it with our declaration. It is checked by'
+    f' `lake env lean ChallengeConformance.lean`.',
+    f'* The unit chapters below decompose the proof into self-contained pieces, each linking'
+    f' to its source so you can read the actual argument.', '',
+    f'[Source repository]({REPO}) · [verbatim spec]({REPO}/blob/main/Jacobian_challenge.lean)'
+    f' · [axiom check]({REPO}/blob/main/AxiomCheck.lean) · [unit dependency graph](../docs/units.html).', '',
+    'Chapters are the 30 units of the decomposition, ordered foundations-first; each unit',
+    'page is generated from the unit docstring in the repository, so the source of truth',
+    'stays in code.', '',
+    '{include 0 Site.Conformance}', '']
 for c in chapters:
     root.append('{include 0 Site.' + c + '}')
 root.append('')
 open('site/Site.lean', 'w').write('\n'.join(root))
 
-open('site/Main.lean', 'w').write('''import VersoManual
+# Custom theme: Verso is entirely CSS-variable driven, and `extraHead` is rendered
+# last in <head> (after book.css), so this <style> wins the cascade. Tightens
+# typography, widens the column for long Lean signatures, and gives code blocks and
+# section headings a clean "comparator manual" look.
+THEME_CSS = r'''
+:root {
+  --verso-content-max-width: 52rem;
+  --verso-font-size: 17px;
+  --verso-text-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif;
+  --verso-structure-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif;
+  --verso-code-font-family: "JetBrains Mono", "SFMono-Regular", "Menlo", "Consolas", monospace;
+  --verso-text-color: #1b1f24;
+  --verso-structure-color: #0d1117;
+  --jac-accent: #4f46e5;
+  --jac-rule: #e6e8eb;
+  --jac-code-bg: #f6f8fa;
+}
+body { line-height: 1.65; }
+a { color: var(--jac-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1, h2, h3, h4 { letter-spacing: -0.012em; line-height: 1.25; }
+.content-wrapper h2 {
+  margin-top: 2.2rem; padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--jac-rule);
+}
+.content-wrapper h3 { margin-top: 1.6rem; }
+/* Lean signatures: crisp card, horizontal scroll instead of ugly wraps */
+pre {
+  background: var(--jac-code-bg);
+  border: 1px solid var(--jac-rule);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
+  font-size: 0.86em;
+  line-height: 1.5;
+}
+:not(pre) > code {
+  background: var(--jac-code-bg);
+  border: 1px solid var(--jac-rule);
+  border-radius: 5px;
+  padding: 0.08em 0.34em;
+  font-size: 0.9em;
+}
+/* Title / landing hero */
+.titlepage h1 {
+  font-size: 2.5rem; font-weight: 800;
+  border-bottom: 3px solid var(--jac-accent);
+  padding-bottom: 0.6rem; margin-bottom: 0.4rem;
+}
+.titlepage .authors { color: #57606a; }
+/* Table of contents accent */
+nav#toc .split-toc .title > a:hover { color: var(--jac-accent); }
+header { border-bottom: 1px solid var(--jac-rule); }
+'''
+
+main_tpl = '''import VersoManual
 import Site
 
 open Verso.Genre Manual
+
+/-- Injected verbatim into every page's `<head>` (after `book.css`). -/
+def jacobianTheme : String := JAC_CSS_LIT
 
 def main := manualMain (%doc Site) (config := {
   emitHtmlSingle := .no,
   emitHtmlMulti := .immediately,
   htmlDepth := 2,
   sourceLink := some "REPO",
-  issueLink := some "REPO/issues"
+  issueLink := some "REPO/issues",
+  extraHead := #[Verso.Output.Html.tag "style" #[] (Verso.Output.Html.text false jacobianTheme)]
 })
-'''.replace('REPO', REPO))
-print(f"generated site/Site.lean + {len(chapters)} chapters")
+'''
+# embed the CSS as a Lean raw string literal that won't collide with `"#`
+css_lit = 'r##"' + THEME_CSS + '"##'
+open('site/Main.lean', 'w').write(
+    main_tpl.replace('JAC_CSS_LIT', css_lit).replace('REPO', REPO))
+
+# the conformance/validation chapter is generated from the challenge spec + the
+# machine-check file; keep it in lock-step with the rest of the site.
+os.system('python3 scripts/generate_conformance_page.py')
+print(f"generated site/Site.lean + Conformance + {len(chapters)} chapters")

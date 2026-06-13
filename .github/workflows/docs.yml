@@ -27,22 +27,17 @@ jobs:
           build: false
           test: false
 
-      - name: Build literate site
-        id: literate
-        run: echo "path=$(lake query :literateHtml)" >> "$GITHUB_OUTPUT"
-
       - name: Build exposition (Verso manual genre)
         run: |
           python3 scripts/unit_design.py
-          python3 scripts/generate_verso_site.py
+          python3 scripts/generate_verso_site.py   # also generates the conformance chapter
           cd site
           lake exe jacobianssite
 
       - name: Assemble Pages artifact
         run: |
           mkdir -p _site
-          cp -r "${{ steps.literate.outputs.path }}"/* _site/
-          cp -r site/_out/html-multi _site/exposition
+          cp -r site/_out/html-multi/* _site/        # exposition is the site root
           mkdir -p _site/docs && cp -r docs/* _site/docs/   # units.html graph, reviewer docs
           touch _site/.nojekyll
 
