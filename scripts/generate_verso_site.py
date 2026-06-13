@@ -228,7 +228,7 @@ root = ['import VersoManual', 'import Site.Conformance'] \
     f'* The unit chapters below decompose the proof into self-contained pieces, each linking'
     f' to its source so you can read the actual argument.', '',
     f'[Source repository]({REPO}) · [verbatim spec]({REPO}/blob/main/Jacobian_challenge.lean)'
-    f' · [axiom check]({REPO}/blob/main/AxiomCheck.lean) · [unit dependency graph](../docs/units.html).', '',
+    f' · [axiom check]({REPO}/blob/main/AxiomCheck.lean) · [unit dependency graph](docs/units.html).', '',
     'Chapters are the 30 units of the decomposition, ordered foundations-first; each unit',
     'page is generated from the unit docstring in the repository, so the source of truth',
     'stays in code.', '',
