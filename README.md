@@ -47,7 +47,7 @@ arguments (Forster GTM 81, Miranda):
 |---|---|---|
 | **Riemann–Roch** (`exists_riemannRoch_divisor`, every genus) | Miranda Ch. VI Laurent-tail (adelic) route: tail `H¹`, RR-I, Serre duality `h¹(D) = l(K−D)` in the meromorphic pair frame | `Jacobians/LaurentTail/` |
 | **Residue theorem** (`∑ Res = 0`, genus-free) | planar Stokes + annulus residue atoms + partition-of-unity ledger (Forster 10.20/10.21); also the degree route for `deg_div` | `Jacobians/ResidueTheorem/ResidueTheoremStokes.lean` |
-| **Genus 0 ⟺ sphere** (`genus_eq_zero_iff_homeo`) | forward: RR ⟹ single simple pole ⟹ degree-1 map; backward: the monodromy theorem via discrete analytic continuation (no integration) | `Jacobians/GenusSphereHeadline.lean`, `Jacobians/HolomorphicPrimitive*.lean` |
+| **Genus 0 ⟺ sphere** (`genus_eq_zero_iff_homeo`) | forward: RR ⟹ single simple pole ⟹ degree-1 map; backward: the monodromy theorem via discrete analytic continuation (no integration) | `Jacobians/GenusSphereHeadline.lean`, `Jacobians/Monodromy/` |
 | **Abel's theorem** (`abelJacobi_twoPoint_ne_zero` ⟹ `ofCurve_inj`) | Forster 19.10/20.7, dissection-free: weak solutions + the ∂̄-solvability criterion (`h¹(0) = g` + the ∂̄-pairing) | `Jacobians/Abel*.lean`, `Jacobians/H1Genus/CechH1Genus.lean` |
 | **Period lattice full rank** (the Jacobian torus structure) | Forster 21.4, dissection-free (the planned 4g-gon cut surface was never needed and was retired) | `Jacobians/PeriodLattice*.lean`, `Jacobians/PeriodLattice/JacobiLocalMap.lean` |
 
@@ -90,8 +90,8 @@ shim) plus the full library re-rooted under `Submission/`. Regenerate with
 - [`Jacobian_challenge.lean`](Jacobian_challenge.lean) — the verbatim v0.4 spec ·
   [`ChallengeConformance.lean`](ChallengeConformance.lean) /
   [`ChallengeLeaderboard.lean`](ChallengeLeaderboard.lean) — the conformance checks.
-- [`Jacobians.lean`](Jacobians.lean) + `Jacobians/` — the implementation: ~80.6k lines across
-  225 modules organized into **30 documented units** (one directory per unit, each with an
+- [`Jacobians.lean`](Jacobians.lean) + `Jacobians/` — the implementation: ~72.4k lines across
+  251 modules organized into **30 documented units** (one directory per unit, each with an
   umbrella docstring file: `Meromorphic/`, `Forms/`, `Cech/`, `Dbar/`, `Finiteness/`,
   `LaurentTail/` + `TailDuality/` (Riemann–Roch + Serre duality), `Monodromy/`,
   `Abel/`, `PeriodLattice/`, `MappingDegree/`, …). The unit dependency DAG is declared in
@@ -118,7 +118,7 @@ dissection-free §19–21 analysis).
 ## Development timeline
 
 Per-day Lean LoC deltas from git history (`git log --numstat`, `*.lean` only); model from the
-commit `Co-Authored-By` trailers. 20 working days total, 2026-04-19 → 2026-06-11.
+commit `Co-Authored-By` trailers. 22 working days total, 2026-04-19 → 2026-06-13.
 
 | Day | LoC + | LoC − | Model | Notes |
 |---|---:|---:|---|---|
@@ -136,18 +136,21 @@ commit `Co-Authored-By` trailers. 20 working days total, 2026-04-19 → 2026-06-
 | 2026-06-03 | 4,945 | 480 | Opus 4.8 (1M) | |
 | 2026-06-04 | 13,218 | 1,255 | Opus 4.8 (1M) | |
 | 2026-06-05 | 1,310 | 52 | Opus 4.8 (1M) | |
-| 2026-06-06 | 937 | 141 | *(no trailer; Opus 4.8 era)* | |
-| 2026-06-07 | 681 | 175 | *(no trailer; Opus 4.8 era)* | |
+| 2026-06-06 | 937 | 141 | GPT-5.5 Codex | |
+| 2026-06-07 | 681 | 175 | GPT-5.5 Codex | |
 | 2026-06-08 | 21,545 | 2,628 | Opus 4.8 (1M) | port: mrdouglasny ContourDeformation (Apache-2.0; later superseded) |
 | 2026-06-09 | 26,360 | 4,847 | Opus 4.8 (1M) → Fable 5 | port: tangentstorm Green rectangle (MIT, Stokes seed); RR route plan |
 | 2026-06-10 | 9,914 | 190 | Fable 5 | Riemann–Roch closed; headline #1 closed |
 | 2026-06-11 | ~7,000\* | ~6,400\* | Fable 5 | Abel + period lattice closed; dead-module sweep |
+| 2026-06-12 | 15,231 | 53,431 | Fable 5 | consolidation: pruned superseded Dolbeault route + unreferenced decls; literate site |
+| 2026-06-13 | 18 | 62 | Fable 5 | docs/site + perf polish; maxHeartbeats prune |
 
 \* Raw 06-11 numbers (+118,335/−117,687) include the generated submission workspace being
 committed to main and moved to its own branch the same day (±111,303 of churn both ways);
 shown is the approximate honest library delta. Days with ports include the ported external
 code in the "+" column. "Model" reflects commit trailers; sub-agent-driven days inherit the
-trailer of whatever wrote the commit.
+trailer of whatever wrote the commit. The 06-06/06-07 commits carry no `Co-Authored-By`
+trailer; those days were coded with GPT-5.5 Codex.
 
 ### Provenance of the final tree
 
@@ -156,7 +159,7 @@ project's Claude sessions; **~3.1% (~3,450 LoC)** is ported external code — B.
 degree/fibre/Hurwitz well-definedness machinery (3,296 lines across 22 surviving files, adapted
 and repackaged at port time; now under `MappingDegree/`) and the tangentstorm Green's-theorem
 seed (~148 lines of `PlanarStokes/PlanarCompactSupportStokes.lean`). In the current consolidated
-tree (~80.6k lines) the same ported material is ~4.3%. The mrdouglasny port (`ContourDeformation`) was superseded by
+tree (~72.4k lines) the same ported material is ~4.8%. The mrdouglasny port (`ContourDeformation`) was superseded by
 the in-repo monodromy toolkit and does not survive in the final tree.
 
 ## References & acknowledgments
