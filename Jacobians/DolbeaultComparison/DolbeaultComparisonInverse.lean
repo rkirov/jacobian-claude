@@ -650,7 +650,6 @@ theorem telescope_sum {ι : Type*} [Fintype ι] {M : Type*} [AddCommGroup M] [Mo
   refine Finset.sum_congr rfl fun k _ => ?_
   rw [← Finset.sum_smul, ← Finset.sum_mul, hR, one_mul]
 
-set_option maxHeartbeats 1000000 in
 /-- **(Analytic sub-kernel — well-definedness of Čech → Dolbeault.)** A Čech **coboundary** cocycle
 maps to a `∂̄`-image (its glued form `ω` is `∂̄` of the global primitive that the coboundary's
 holomorphic `0`-cochain supplies), hence to `0` in `H^{0,1} = A^{0,1}/im ∂̄`. This is the kernel

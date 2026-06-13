@@ -402,7 +402,6 @@ theorem integral_Ioo_one_complex :
     ENNReal.toReal_ofReal (by linarith [Real.pi_pos] : (0 : ℝ) ≤ π - -π)]
   ring
 
-set_option maxHeartbeats 800000 in
 /-- **The Forster (10.21) single-term computation.**  For the radial cutoff
 `χ = η(normSq(·−c))` (profile `1 → 0` between `s₀` and `s₁`),
 

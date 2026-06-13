@@ -32,7 +32,6 @@ open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 open Filter Function
 
-set_option maxHeartbeats 1000000
 
 namespace Jacobians.Dolbeault
 

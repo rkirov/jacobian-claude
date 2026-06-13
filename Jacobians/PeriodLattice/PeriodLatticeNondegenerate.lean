@@ -96,7 +96,6 @@ theorem exists_re_dotProduct_repr {n : ℕ} (l : (Fin n → ℂ) →ₗ[ℝ] ℝ
 
 /-! ### The headline: `span ℝ (truePeriodLattice) = ⊤` -/
 
-set_option maxHeartbeats 1000000 in
 /-- **Forster 21.4(c): the period lattice is non-degenerate** — its real span is all of `ℂ^g`.
 A nonzero killing functional `Re ⟨d, ·⟩` would make `u = Re ⟨d, periodVec (smoothPath x₀ ·)⟩` a
 global continuous function that is locally the real part of an analytic chart primitive; the

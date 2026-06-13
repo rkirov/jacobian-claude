@@ -289,7 +289,6 @@ theorem dbar_etaFn_apply (𝔇 : ChartDiskCover X)
   rw [hsumeq, (HasMFDerivAt.sum hhas).mfderiv, map_sum]
   exact Finset.sum_congr rfl fun k _ => dbar_etaTermFn_apply 𝔇 f i k hxi
 
-set_option maxHeartbeats 1000000 in
 /-- **`ω = ∑_k holoFn(f_ik)·∂̄ρ_k` on `U_i`** (= `∂̄η_i`). The double-sum
 `ω = ∑_{j,k} (ρ_j·holoFn(f_jk))·∂̄ρ_k` telescopes once the cocycle relation
 `holoFn(f_jk) = holoFn(f_ik) − holoFn(f_ij)` (`holoFn_cocycle_add`, valid on the triple overlap, the
@@ -427,7 +426,6 @@ theorem differentiableAt_holDiffFn_ownChart (𝔇 : ChartDiskCover X)
       ContinuousLinearMap.zero_apply]
   exact differentiableAt_cplx_of_dbarDisk_eq_zero hRdiff hdb
 
-set_option maxHeartbeats 1000000 in
 /-- **`holDiffFn` read in each point's own chart is analytic** (the `OmegaD`-membership input). For
 `v ∈ U_i`, the analytic representative of the germ `[holDiffFn]` on `↥U_i` is analytic at
 `(chartAt v) v`. Proof: `holDiffFn ∘ (chartAt v).symm` is `ℂ`-differentiable on the open
@@ -496,7 +494,6 @@ theorem holDiffFn_chart_analyticAt (𝔇 : ChartDiskCover X)
     simp only [Function.comp_apply, Gext_apply_mem F hzU, hFeq]
   exact (hOn.congr hEq).analyticAt (hWopen.mem_nhds hmemW)
 
-set_option maxHeartbeats 1000000 in
 /-- **`comparison_bijective`, part 1**: Dolbeault → Čech → Dolbeault is the identity. Globalizing
 the forward cocycle of `g` via the partition of unity returns `[g]` (the global primitive
 `h = ∑ρ_k·wₖ` has `∂̄h = ω + g`, so `cech_to_dolbeault` — carrying the boundary sign — sends `[ω]`
@@ -595,7 +592,6 @@ theorem holCochain_mem_sections0 (𝔇 : ChartDiskCover X)
     mem_OmegaD_zero_of_gext_analytic
       (fun v => holDiffFn_chart_analyticAt 𝔇 f k _ (fun _ => rfl) v), rfl⟩
 
-set_option maxHeartbeats 1000000 in
 /-- **The Čech identity `cechDelta0 {hol_i} = cechDelta0 (rawCochain ω) + f`.** Componentwise on
 `U_i ⊓ U_l`: `hol_l − hol_i = (diskVal_l ω − diskVal_i ω) − (η_l − η_i)`; the first bracket is
 `cechDelta0 (rawCochain ω)(i,l)` (the disk-primitive difference germ), the second is `−f_il`
@@ -639,7 +635,6 @@ theorem cechDelta0_holCochain_eq (𝔇 : ChartDiskCover X)
       ring,
     map_add, etaFn_germ_diff_eq]
 
-set_option maxHeartbeats 1000000 in
 theorem dolbeault_to_cech_comp_cech_to_dolbeault (𝔇 : ChartDiskCover X)
     (_hL : 𝔇.toFiniteCover.IsLeray) :
     (dolbeault_to_cech 𝔇) ∘ₗ (cech_to_dolbeault 𝔇) = LinearMap.id := by

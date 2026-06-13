@@ -292,7 +292,6 @@ theorem sum_ledgerIntegrand {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X
 
 /-! ### The chart-transport theorem -/
 
-set_option maxHeartbeats 1000000 in
 /-- **THE CHART-TRANSPORT INVARIANCE.**  The total plane integral of the ledger integrand does
 not depend on the chart it is read in: for an open window `V` inside both chart sources, and
 `g₀`/`h`-reads honestly analytic on `V` off a finite set,

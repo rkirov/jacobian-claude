@@ -62,7 +62,6 @@ theorem dbar_neg {g : ℂ → ℂ} (w : ℂ) :
 
 /-! ### The meromorphic solution -/
 
-set_option maxHeartbeats 2000000 in
 /-- **The Abel engine** (Forster 20.7, sufficiency): a 1-chain whose basis periods all
 vanish bounds a principal divisor — there is a meromorphic function with `div f = ∂c`,
 together with its centred local normal form `f̂ = H·(w − w₀)^{∂c(a)}` (analytic

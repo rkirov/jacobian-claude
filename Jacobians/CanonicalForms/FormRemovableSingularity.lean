@@ -501,7 +501,6 @@ every centre), so `holToMero (repairedHOF hα) − α ∈ formGermZeroSubmodule`
 and the §17.4 equality `omegaDim 0 = genus X`. Chaining with `CanonicalForm17Data.hKgenus` makes
 `lDim K = genus X` unconditional. -/
 
-set_option maxHeartbeats 1000000 in
 /-- **Every order-`≥ 0` meromorphic 1-form is holomorphic modulo germ-junk.** There is a holomorphic
 1-form `β` (the repaired section) with `holToMero β − α` germ-zero everywhere (order `⊤` at every
 centre): their chart coefficients agree on a punctured neighbourhood of each centre. Packaging it as

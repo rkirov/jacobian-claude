@@ -39,7 +39,6 @@ open TopologicalSpace (Opens)
 open Metric Complex Filter
 
 set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
 namespace Jacobians.Dolbeault
 

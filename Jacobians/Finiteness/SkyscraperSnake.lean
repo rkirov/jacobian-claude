@@ -538,8 +538,6 @@ noncomputable def LocalRealizationData.f₃ {𝔘 : FiniteCover X} {D : Divisor 
   (𝔘.skyscraperTwoStep D P).connecting.comp
     (L.e0.symm : ℂ →ₗ[ℂ] (𝔘.skyscraperTwoStep D P).H0Q)
 
-set_option maxHeartbeats 1000000 in
-set_option synthInstance.maxHeartbeats 1000000 in
 /-- **Exactness at `ℂ_P`** (`exact₂`): `range h0ToSky = ker f₃`. The snake exactness
 `exact_h0Map_connecting` transported across the realization iso `e0` (ladder `(id, e0, id)`). -/
 theorem LocalRealizationData.exact₂ {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
@@ -556,7 +554,6 @@ theorem LocalRealizationData.exact₂ {𝔘 : FiniteCover X} {D : Divisor X} {P 
     simp only [LinearMap.comp_apply, LinearEquiv.refl_apply, LinearEquiv.coe_coe,
       LinearEquiv.symm_apply_apply]
 
-set_option maxHeartbeats 1000000 in
 /-- **Exactness at `H¹(𝒪_D)`** (`exact₃`): `range f₃ = ker h1Map`. The snake exactness
 `exact_connecting_h1Map` precomposed by the surjective `e0.symm` (and `h1Map = h1MapAbs`). -/
 theorem LocalRealizationData.exact₃ {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
@@ -568,7 +565,6 @@ theorem LocalRealizationData.exact₃ {𝔘 : FiniteCover X} {D : Divisor X} {P 
       (𝔘.skyscraperTwoStep D P).exact_connecting_h1Map
   exact h
 
-set_option maxHeartbeats 1000000 in
 /-- **Surjectivity of `h1Map`** (`surj₄`): from the acyclicity `H¹(Q) = 0` via
 `surjective_h1MapAbs_of_subsingleton` (and `h1Map = h1MapAbs`). -/
 theorem LocalRealizationData.surj₄ {𝔘 : FiniteCover X} {D : Divisor X} {P : X}
@@ -577,8 +573,6 @@ theorem LocalRealizationData.surj₄ {𝔘 : FiniteCover X} {D : Divisor X} {P :
   rw [show 𝔘.h1Map D P = (𝔘.skyscraperTwoStep D P).h1MapAbs from rfl]
   exact (𝔘.skyscraperTwoStep D P).surjective_h1MapAbs_of_subsingleton L.hQac
 
-set_option maxHeartbeats 1000000 in
-set_option synthInstance.maxHeartbeats 1000000 in
 /-- **The skyscraper long exact sequence from the snake + local realization.** Given the geometric
 `LocalRealizationData`, the snake lemma produces all four remaining `SkyscraperLES` fields,
 completing `exists_skyscraperLES`. The `H⁰`-arrow `h0ToSky` and `exact₁₂` come from

@@ -37,7 +37,6 @@ import Jacobians.Finiteness.SkyscraperAssembly
 open scoped Manifold ContDiff Topology
 open TopologicalSpace (Opens)
 
-set_option maxHeartbeats 1000000
 
 namespace Jacobians.Dolbeault
 

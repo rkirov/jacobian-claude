@@ -71,7 +71,6 @@ theorem ambientIso_eq_sum (d : Fin (genus X) → ℂ) :
         rw [map_sum]
         exact Finset.sum_congr rfl fun i _ => by rw [map_smul]; rfl
 
-set_option maxHeartbeats 1000000 in
 /-- **The period Gram matrix is nonsingular** (the 19.9 positivity argument): a kernel
 vector `v` would make `g = ∑ v̄ⱼ·ωⱼ ≠ 0` pair to zero against its own conjugate. -/
 theorem pairMatrix_det_ne_zero : (pairMatrix X).det ≠ 0 := by
@@ -123,7 +122,7 @@ theorem pairMatrix_det_ne_zero : (pairMatrix X).det ≠ 0 := by
 
 /-! ### The pairing functional and its descent to `H^{0,1}` -/
 
-set_option synthInstance.maxHeartbeats 1000000 in
+set_option synthInstance.maxHeartbeats 80000 in
 /-- **The pairing functional** `Λ : A^{0,1} →ₗ[ℝ] ℂ^g`, `Λ(σ)ᵢ = ⟨ωᵢ, σ⟩`. -/
 def pairFunctional (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :

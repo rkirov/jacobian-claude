@@ -15,7 +15,6 @@ open scoped Manifold ContDiff Bundle Topology
 open TopologicalSpace (Opens)
 
 set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 80000
 
 namespace Jacobians.Dolbeault
 
@@ -31,7 +30,7 @@ The proof bodies are identical to the originals (which never reference `hL`); th
 `dbarL_globalPrim_eq`.  That they still close is the mechanical proof that the overlap hypothesis is
 dead weight in the comparison. -/
 
-set_option maxHeartbeats 1000000 in
+set_option maxHeartbeats 400000 in
 /-- **Round-trip 1 (Dolbeault → Čech → Dolbeault = id), `IsLeray`-free.**  Identical statement and
 proof to `cech_to_dolbeault_comp_dolbeault_to_cech` minus the unused `hL`. -/
 theorem cech_to_dolbeault_comp_dolbeault_to_cech' (𝔇 : ChartDiskCover X) :
@@ -55,7 +54,6 @@ theorem cech_to_dolbeault_comp_dolbeault_to_cech' (𝔇 : ChartDiskCover X) :
   rw [Submodule.mkQ_apply, Submodule.mkQ_apply] at hz
   exact neg_eq_of_add_eq_zero_right hz
 
-set_option maxHeartbeats 1000000 in
 /-- **Round-trip 2 (Čech → Dolbeault → Čech = id), `IsLeray`-free.** Identical statement and proof
 to `dolbeault_to_cech_comp_cech_to_dolbeault` minus the unused `hL`. -/
 theorem dolbeault_to_cech_comp_cech_to_dolbeault' (𝔇 : ChartDiskCover X) :

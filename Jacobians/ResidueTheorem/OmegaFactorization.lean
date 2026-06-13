@@ -154,7 +154,6 @@ theorem toFun_eventually_zero_of_coeffAt_eventually_zero (α : HolomorphicOneFor
   rw [hcoeff] at hy
   exact toFun_eq_zero_of_localRep_eq_zero α hysrc hy
 
-set_option maxHeartbeats 400000 in
 /-- **Identity theorem for holomorphic 1-forms (global propagation).**  If the canonical-chart
 coefficient of `α` vanishes on a neighbourhood of one chart centre, then `α = 0` — the set where
 `α` vanishes locally is clopen (openness is trivial; closedness is the one-variable isolated-zeros

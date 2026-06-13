@@ -205,7 +205,6 @@ theorem hasCompactSupport_stokesPotential (u : SmoothCFunctions X)
   refine HasCompactSupport.intro hKimg fun z hz => ?_
   exact (stokesPotential_eventually_zero u η j hz).self_of_nhds
 
-set_option maxHeartbeats 1000000 in
 /-- **The pointwise Stokes split**: `∂̄Φⱼ = (𝟙·(∂̄ρ̂ⱼ)·ûⱼ·η̂ⱼ) + (𝟙·ρ̂ⱼ·∂̄ûⱼ·η̂ⱼ)`, i.e.
 `∂̄` of the potential is the `glueForm`-integrand plus the `∂̄u`-integrand (the `η̂ⱼ` factor
 is holomorphic so its `∂̄` dies). -/

@@ -173,7 +173,6 @@ theorem Dolbeault.AbelPairing.pairForm_congr_off_finite [T2Space X] [CompactSpac
 
 /-! ### The per-piece pairing value -/
 
-set_option maxHeartbeats 1600000 in
 /-- **The per-piece pairing value**: the pairing of `η` against the piece `∂̄`-datum is the
 planar integral `∫ Uₖ·η̂ₖ` of Forster 20.5. -/
 theorem pairForm_logDbar_piece [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
@@ -302,7 +301,6 @@ theorem pairForm_logDbar_piece [T2Space X] [CompactSpace X] [ConnectedSpace X] [
 
 /-! ### The per-curve pairing value (Forster 20.5) -/
 
-set_option maxHeartbeats 1600000 in
 /-- **The per-curve pairing value** (Forster 20.5): `⟨η, σ_{f_γ}⟩ = π·∫_γ η`. -/
 theorem pairForm_logDbar_curve [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X]
     (η : HolomorphicOneForms X) {γ : ℝ → X}
@@ -389,7 +387,6 @@ theorem exists_weakSolution_finsum [T2Space X] [CompactSpace X] [ConnectedSpace 
     rw [WeakSolution.logDbarFiber_recast, WeakSolution.logDbarFiber_mul, hG' x,
       Fin.sum_univ_succ]
 
-set_option maxHeartbeats 1600000 in
 /-- **The chain `∂̄`-potential** (Forster 20.7 (a), the analytic heart): a 1-chain with all
 basis periods zero has a weak solution `G` of its boundary whose `∂̄`-datum is exact:
 `σ_G = ∂̄u`. -/

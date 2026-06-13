@@ -45,7 +45,6 @@ open TopologicalSpace (Opens)
 open Metric Complex Filter ContinuousLinearMap
 
 set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 80000
 
 namespace Jacobians.Dolbeault
 

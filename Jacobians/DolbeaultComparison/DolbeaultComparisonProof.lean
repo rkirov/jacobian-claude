@@ -1383,7 +1383,6 @@ The cohomological assembly — lifting through the two quotients `DolbeaultH01 =
 `cechH1 = Z¹/B¹`, with the `ℂ→ℝ` scalar restriction — is then **complete** (`Submodule.liftQ`).
 -/
 
-set_option maxHeartbeats 1000000 in
 /-- **(Analytic sub-kernel — the Dolbeault → Čech cocycle operator.)** The `ℝ`-linear map sending a
 `(0,1)`-form `g ∈ A^{0,1}` to the Čech `1`-cocycle
 `{[u_j] − [u_i]} = cechDelta0 {[u_i]} ∈ Z¹(𝔘, 𝒪)`, where `u_i` solves `∂̄u_i = g` on the

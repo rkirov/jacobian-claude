@@ -133,7 +133,6 @@ theorem pairForm_eta_sum {ι : Type*} (s : Finset ι) (f : ι → HolomorphicOne
 
 /-! ### The positivity of `⟨η, η̄⟩` -/
 
-set_option maxHeartbeats 1000000 in
 /-- **Positivity of the conjugate pairing** (Forster 19.6-style): for `η ≠ 0`,
 `pairForm η (conjForm η) ≠ 0` — each chart piece is `∫ ρⱼ·|h|² ≥ 0` and some piece is
 strictly positive at a point where the coefficient and the PoU weight are both nonzero. -/

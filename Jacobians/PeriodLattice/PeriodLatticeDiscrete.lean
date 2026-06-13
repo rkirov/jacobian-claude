@@ -110,7 +110,6 @@ theorem pathPrimValue_congr_curve {η : HolomorphicOneForms X} {γ₁ γ₂ : �
 
 /-! ### Forster 21.4(b): isolation of the lattice at the origin -/
 
-set_option maxHeartbeats 2000000 in
 /-- **Forster 21.4(b): the period lattice is isolated at `0`.**  There is a neighbourhood
 of `0 ∈ ℂ^g` meeting the period lattice only in `0`. -/
 theorem truePeriodLattice_isolated_zero :

@@ -310,7 +310,6 @@ theorem integrable_B [T2Space X] [CompactSpace X] [ConnectedSpace X] [Nonempty X
 
 /-! #### Step 3 — the chart-local planar Stokes pairing `∫A_j + ∫B_j = 0` -/
 
-set_option maxHeartbeats 1600000 in
 /-- **(L5)** Per PoU chart `j`, planar Stokes for `Φ = ρ̂_j·(û−1)·f̂_j` (which is `C¹` with
 compact support: `û ≡ 1` near the poles kills the singularities of `f̂`) gives, via Leibniz,
 
@@ -636,7 +635,6 @@ theorem sum_integral_A_eq_zero [T2Space X] [CompactSpace X] [ConnectedSpace X] [
 /-! #### Step 5 — the assembled `S`-sum -/
 
 include D in
-set_option maxHeartbeats 1600000 in
 /-- **The residue ledger assembled**: over the enlarged pole set `S` (containing the analytic
 bad locus), `∑_{a ∈ S} pairFormResidue g₀ h a = 0`. -/
 theorem residueSum_pairForm_eq_zero_S [T2Space X] [CompactSpace X] [ConnectedSpace X]

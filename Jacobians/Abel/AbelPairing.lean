@@ -178,7 +178,6 @@ theorem integrable_pairingIntegrand {X : Type*} [TopologicalSpace X] [T2Space X]
 
 /-! ### The chart-transport invariance -/
 
-set_option maxHeartbeats 1000000 in
 /-- **Chart-change invariance of the pairing integral**: for `g ∈ A^{0,1}` and an open
 window inside both chart sources, the plane integral of the pairing integrand does not
 depend on the chart it is read in.  Holomorphic change of variables along the transition:
@@ -436,7 +435,6 @@ theorem pairForm_eta_smul {X : Type*} [TopologicalSpace X] [T2Space X] [CompactS
 
 /-! ### The collapse lemma -/
 
-set_option maxHeartbeats 1000000 in
 /-- **The collapse lemma**: if the `(0,1)`-form `g` is fiber-supported in a compact `K`
 inside an open window `W` of a single chart (centre `c`), the PoU pairing collapses to the
 single un-weighted chart-`c` integral:
