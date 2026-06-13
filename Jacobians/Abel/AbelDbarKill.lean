@@ -122,24 +122,20 @@ theorem pairMatrix_det_ne_zero : (pairMatrix X).det ≠ 0 := by
 
 /-! ### The pairing functional and its descent to `H^{0,1}` -/
 
-set_option synthInstance.maxHeartbeats 80000 in
-/-- **The pairing functional** `Λ : A^{0,1} →ₗ[ℝ] ℂ^g`, `Λ(σ)ᵢ = ⟨ωᵢ, σ⟩`. -/
+/-- `pairForm η` as an `ℝ`-linear functional on `A¹`, bundling its `ℝ`-linearity in the
+form argument (`pairForm_add` / `pairForm_smul`). -/
+def pairFormL (η : HolomorphicOneForms X) : SmoothCOneForms X →ₗ[ℝ] ℂ where
+  toFun g := pairForm η g
+  map_add' := pairForm_add η
+  map_smul' r g := pairForm_smul η r g
+
+/-- **The pairing functional** `Λ : A^{0,1} →ₗ[ℝ] ℂ^g`, `Λ(σ)ᵢ = ⟨ωᵢ, σ⟩`.  Assembled from
+combinators (`LinearMap.pi` of `pairFormL ∘ subtype`) so additivity and homogeneity are
+inherited, rather than re-proved by hand against the `Fin g → ℂ` real-module diamond. -/
 def pairFunctional (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [Nonempty X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
-    ↥(OneFormsZeroOne X) →ₗ[ℝ] (Fin (genus X) → ℂ) where
-  toFun s := fun i => pairForm (periodBasisForm X i) (s : SmoothCOneForms X)
-  map_add' s t := by
-    funext i
-    show pairForm (periodBasisForm X i) ((s + t : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
-      = pairForm (periodBasisForm X i) (s : SmoothCOneForms X)
-        + pairForm (periodBasisForm X i) (t : SmoothCOneForms X)
-    rw [Submodule.coe_add, pairForm_add]
-  map_smul' r s := by
-    funext i
-    show pairForm (periodBasisForm X i) ((r • s : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
-      = (r • fun i => pairForm (periodBasisForm X i) (s : SmoothCOneForms X)) i
-    rw [Submodule.coe_smul, pairForm_smul]
-    rfl
+    ↥(OneFormsZeroOne X) →ₗ[ℝ] (Fin (genus X) → ℂ) :=
+  LinearMap.pi fun i => (pairFormL (periodBasisForm X i)).comp (OneFormsZeroOne X).subtype
 
 theorem pairFunctional_apply (s : ↥(OneFormsZeroOne X)) (i : Fin (genus X)) :
     pairFunctional X s i = pairForm (periodBasisForm X i) (s : SmoothCOneForms X) := rfl
