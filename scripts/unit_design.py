@@ -403,7 +403,25 @@ for u in pos:
     pos[u][1] = PAD + (maxL - layer[u]) * (NODE_H + ROW_GAP)
 totalH = 2 * PAD + (maxL + 1) * NODE_H + maxL * ROW_GAP
 
+REPO = 'https://github.com/rkirov/jacobian-claude'
+
+def unit_src(u):
+    """GitHub link + display path for a unit, derived from its actual member files (the
+    proposed `dir` name doesn't always match the on-disk layout): a blob link for a single
+    file, a tree link for a shared directory, else the proposed dir / the library root."""
+    paths = [m.replace('.', '/') for m in sorted(units[u])]
+    if len(paths) == 1:
+        return f'{REPO}/blob/main/Jacobians/{paths[0]}.lean', f'Jacobians/{paths[0]}.lean'
+    common = {os.path.dirname(p) for p in paths}
+    if len(common) == 1 and (d := common.pop()):
+        return f'{REPO}/tree/main/Jacobians/{d}', f'Jacobians/{d}/'
+    d = META[u][0]
+    if os.path.isdir(f'Jacobians/{d}'):
+        return f'{REPO}/tree/main/Jacobians/{d}', f'Jacobians/{d}/'
+    return f'{REPO}/tree/main/Jacobians', 'Jacobians/'
+
 data = {u: dict(layer=layer[u], loc=loc[u], n=len(units[u]), dir=META[u][0],
+                src=unit_src(u)[0], srcp=unit_src(u)[1],
                 desc=META[u][1], keys=META[u][2], deps=redges[u], refs=unit_refs.get(u, []),
                 depmeta={v: dict(w=uweight.get((u, v), 0),
                                  wit=[f'{a.split(".")[-1]} uses {b.split(".")[-1]}'
@@ -430,6 +448,11 @@ html = '''<!DOCTYPE html>
   #panel li { margin:2px 0; }
   #panel .members { font-size:12px; columns:1; }
   .hint { color:#999; font-size:13px; }
+  #panel .links { margin:2px 0 10px; font-size:13px; }
+  #panel .links a { color:#2b5fc0; text-decoration:none; font-weight:500; }
+  #panel .links a:hover { text-decoration:underline; }
+  #panel .members a { text-decoration:none; color:inherit; }
+  #panel .members a:hover code { background:#e8f0fd; color:#2b5fc0; }
   svg text { font:12.5px ui-monospace, "SF Mono", Menlo, monospace; cursor:pointer;
              user-select:none; }
   .node rect { fill:#fff; stroke:#9aa0b4; stroke-width:1.2; rx:7; cursor:pointer; }
@@ -459,6 +482,7 @@ html = '''<!DOCTYPE html>
 <script>
 const DATA = __DATA__;
 const NODE_H = __NODE_H__;
+const REPO = 'https://github.com/rkirov/jacobian-claude';
 const svg = document.getElementById('svg'), NS = 'http://www.w3.org/2000/svg';
 function el(t, a) { const e = document.createElementNS(NS, t);
   for (const k in a) e.setAttribute(k, a[k]); return e; }
@@ -507,15 +531,20 @@ function select(u) {
   };
   document.getElementById('info').innerHTML =
     `<h2>${u}</h2>
+     <div class="links">
+       <a href="../${u}/" target="_blank" rel="noopener">exposition page ↗</a> ·
+       <a href="${d.src}" target="_blank" rel="noopener">source ↗</a>
+     </div>
      <div class="meta">layer ${d.layer} · ${d.n} modules · ${d.loc.toLocaleString()} LoC
-       · proposed <code>Jacobians/${d.dir}/</code></div>
+       · <code>${d.srcp}</code></div>
      <p>${esc(d.desc)}</p>
      <h3>Keystones</h3><ul>${d.keys.map(k => `<li><code>${esc(k)}</code></li>`).join('')}</ul>
      ${d.refs.length ? `<h3>References</h3><p>${d.refs.map(esc).join(' \u00b7 ')}</p>` : ''}
      <h3>Builds on <span class="hint">(weight = kernel-level decl references)</span></h3>
      <ul>${d.deps.map(dep).join('') || '<span class="hint">nothing (foundation)</span>'}</ul>
      <h3>Used by</h3><p>${users.map(link).join(', ') || '<span class="hint">nothing (headline)</span>'}</p>
-     <h3>Members (${d.n})</h3><div class="members">${d.members.map(m => `<code>${m}</code>`).join('<br>')}</div>`;
+     <h3>Members (${d.n})</h3><div class="members">${d.members.map(m =>
+       `<a href="${REPO}/blob/main/Jacobians/${m.replace(/\./g, '/')}.lean" target="_blank" rel="noopener"><code>${m}</code></a>`).join('<br>')}</div>`;
 }
 document.getElementById('graph').addEventListener('click', () => {
   for (const v in nodes) nodes[v].setAttribute('class', 'node');
