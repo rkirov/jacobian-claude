@@ -10,15 +10,19 @@ cannot catch).
 
 ```bash
 lake exe cache get && lake build          # all modules, zero warnings (CI-gated)
-lake env lean ChallengeConformance.lean   # exit 0: every v0.4 spec signature, verbatim
-lake env lean ChallengeLeaderboard.lean   # exit 0: the lean-eval leaderboard form
-lake env lean AxiomCheck.lean             # axiom audit (CI-gated)
+./verify.sh                               # THE authoritative check: the real
+                                          # leanprover/comparator (statements + permitted
+                                          # axioms + kernel replay) vs lean-eval's exact
+                                          # jacobian_challenge_diffgeo. CI-gated (comparator.yml).
+lake env lean ChallengeConformance.lean   # human-readable conformance (drives the docs table)
 python3 scripts/unit_design.py            # unit-DAG strict-deps gate (CI-gated)
-python3 scripts/comparator_replica.py     # lean-eval statement check, local form (CI-gated)
 ```
 
-Every declaration reports `#print axioms` = `[propext, Classical.choice, Quot.sound]`.
-The lean-eval comparator (independent third-party checker) has accepted the submission.
+`./verify.sh` runs the same comparator lean-eval runs, against the same toolchain
+(`v4.30.0`) and Mathlib (`c5ea003`) and the verbatim `Challenge.lean`/`Solution.lean`/`config.json`
+from lean-eval's `generated/jacobian_challenge_diffgeo/`. A local **"Your solution is okay!"**
+should therefore mean a green lean-eval leaderboard run. It supersedes the former local
+approximations (`AxiomCheck.lean`, `scripts/comparator_replica.py`), which have been removed.
 
 ## Where to read
 

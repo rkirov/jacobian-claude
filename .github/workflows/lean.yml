@@ -30,8 +30,7 @@ jobs:
           lake build 2>&1 | tee /tmp/build.log | tail -2   # cache replay after lean-action
           ! grep -E '^(warning|error)' /tmp/build.log
 
-      - name: Axiom hygiene check
-        run: lake env lean AxiomCheck.lean
-
-      - name: Comparator statement replica
-        run: python3 scripts/comparator_replica.py  # lean-eval statement check, local form
+      # Challenge conformance (exact statements + permitted axioms + kernel replay) is the
+      # authoritative job in `comparator.yml`, which runs the real leanprover/comparator.
+      # The former local approximations (AxiomCheck.lean, scripts/comparator_replica.py) are
+      # subsumed by it and have been removed.

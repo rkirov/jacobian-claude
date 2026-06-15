@@ -3,7 +3,7 @@ Unreferenced-declaration report (Tier-2 polish): every non-internal `Jacobians.*
 that no other declaration's type or proof references, with its defining module.
 
 These are candidates for deletion or `private`, NOT automatic deletions: API endpoints,
-`#print axioms` targets (AuditAll/AxiomCheck), challenge-surface declarations, and instances
+`#print axioms` targets (AuditAll), challenge-surface declarations, and instances
 (used by synthesis, which DOES leave references — an unreferenced instance is genuinely unused)
 must be filtered against before acting.
 

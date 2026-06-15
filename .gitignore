@@ -22,3 +22,4 @@ docs/architecture_map.html
 /site/Main.lean
 /site/_out/
 /site/.lake/
+/comparator/.lake/

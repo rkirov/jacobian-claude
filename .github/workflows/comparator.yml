@@ -1,0 +1,42 @@
+name: comparator
+
+# Runs the real leanprover/comparator against this repo's solution to the lean-eval
+# problem `jacobian_challenge_diffgeo` — the authoritative challenge check. Mirrors
+# lean-eval's own environment (toolchain + Mathlib + verbatim Challenge/Solution/config),
+# so a green run here should mean a green run on the lean-eval leaderboard.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: comparator-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Build the Jacobians library + fetch the Mathlib cache. The comparator workspace
+      # (which path-requires the library) reuses this build.
+      - uses: leanprover/lean-action@v1
+        with:
+          use-mathlib-cache: true
+          test: false
+
+      # comparator + lean4export are pinned to the toolchain and rarely change; cache them.
+      - name: Cache comparator tooling
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/jacobian-comparator
+          key: comparator-${{ hashFiles('comparator/lean-toolchain') }}
+
+      - name: Run comparator
+        env:
+          LANDRUN_LOG_LEVEL: debug
+        run: ./verify.sh

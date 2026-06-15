@@ -11,10 +11,11 @@ import collections, os, re
 
 # protected: any identifier appearing in the external surface files
 prot = set()
-for f in ['AuditAll.lean', 'AxiomCheck.lean', 'ChallengeConformance.lean',
+for f in ['AuditAll.lean', 'ChallengeConformance.lean',
           'ChallengeLeaderboard.lean', 'SubmissionShimTest.lean', 'Jacobians.lean',
           'Jacobian_challenge.lean', 'scripts/axiom_check_final.lean',
-          'scripts/comparator_replica.py']:
+          'comparator/Challenge.lean', 'comparator/Solution.lean',
+          'comparator/Submission.lean']:
     prot |= set(re.findall(r'[A-Za-z_][\w]*', open(f).read()))
 
 # landmarks: keystones from unit_design META + headline-ish names

@@ -68,13 +68,19 @@ metadata. For authoritative per-theorem status, prefer the tree itself
 ```bash
 lake exe cache get                          # pull the Mathlib olean cache
 lake build                                  # green, no sorry warnings
-lake env lean ChallengeConformance.lean     # exit 0 — verbatim v0.4 conformance
-lake env lean ChallengeLeaderboard.lean     # exit 0 — leaderboard-form conformance
-lake env lean scripts/axiom_check_final.lean  # prints the axiom audit of the headliners
+./verify.sh                                 # THE authoritative check — runs the real
+                                            # leanprover/comparator (statements + permitted
+                                            # axioms + kernel replay) against lean-eval's
+                                            # exact jacobian_challenge_diffgeo. Expect
+                                            # "Your solution is okay!"
+lake env lean ChallengeConformance.lean     # human-readable conformance (drives the docs table)
 ```
 
-Verify any individual result with `#print axioms <decl>` — everything reports
-`[propext, Classical.choice, Quot.sound]`.
+`./verify.sh` mirrors lean-eval as closely as possible — same toolchain (`v4.30.0`), same
+Mathlib (`c5ea003`), and the verbatim `Challenge.lean` / `Solution.lean` / `config.json` from
+lean-eval's `generated/jacobian_challenge_diffgeo/` (see [`comparator/`](comparator/)). A local
+pass should therefore mean a green leaderboard run. Verify any individual result with
+`#print axioms <decl>` — everything reports `[propext, Classical.choice, Quot.sound]`.
 
 ## Leaderboard submission
 

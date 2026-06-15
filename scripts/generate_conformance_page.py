@@ -152,8 +152,9 @@ out += [
     f"[`{CONF}`]({blob(CONF, 1)}) is the machine-check: each item below is an `example` "
     "that restates Buzzard’s **verbatim** signature and discharges it with our "
     "declaration. The file compiles with no errors, no `sorry`, and "
-    f"[axiom-clean]({blob('AxiomCheck.lean', 1)}) — so the table is not a claim, it is "
-    "checked by the Lean kernel.", '',
+    f"[axiom-clean]({blob('verify.sh', 1)}) — so the table is not a claim, it is "
+    "checked by the Lean kernel (and, independently, by the real leanprover/comparator: "
+    f"see [`verify.sh`]({blob('verify.sh', 1)})).", '',
     "To validate an item yourself: read Buzzard’s required type (left of `:=`), confirm "
     "it matches the spec, then follow the **submission surface** link into "
     "`Jacobians.lean` and on into the proof. Every row links the spec, the check, and our "
