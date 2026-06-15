@@ -178,7 +178,7 @@ theorem span_real_truePeriodLattice_eq_top :
   have hΛcont : Continuous Λ := by
     rw [hΛ]
     exact Complex.continuous_re.comp
-      (continuous_finset_sum _ fun j _ => continuous_const.mul (continuous_apply j))
+      (continuous_finsetSum _ fun j _ => continuous_const.mul (continuous_apply j))
   have hHcont : ∀ Q₀ : X, ContinuousAt (fun Q => (Hf Q₀ ((chartAt (H := ℂ) Q₀) Q)).re) Q₀ := by
     intro Q₀
     have h1 : ContinuousAt (chartAt (H := ℂ) Q₀) Q₀ :=

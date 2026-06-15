@@ -499,7 +499,7 @@ theorem pairForm_eq_singleChart {X : Type*} [TopologicalSpace X] [T2Space X] [Co
       = ∑ j : Fin ((chartCover : Finset X).card),
         ∫ z, pairingIntegrand g η (coverRhoC j) c (coverWindow (X := X) j ∩ W) z from
     Finset.sum_congr rfl fun j _ => by rw [hshrink j, htrans j]]
-  rw [← integral_finset_sum _ fun j _ => hint j]
+  rw [← integral_finsetSum _ fun j _ => hint j]
   refine integral_congr_ae (Eventually.of_forall fun z => ?_)
   show (∑ j : Fin ((chartCover : Finset X).card),
       pairingIntegrand g η (coverRhoC j) c (coverWindow (X := X) j ∩ W) z)

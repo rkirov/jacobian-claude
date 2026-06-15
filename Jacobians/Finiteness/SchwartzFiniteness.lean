@@ -10,7 +10,9 @@ import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Analysis.Normed.Group.Quotient
 import Mathlib.Analysis.Normed.Operator.Banach
-import Mathlib.Analysis.Normed.Operator.Compact
+import Mathlib.Analysis.Normed.Operator.Compact.Basic
+import Mathlib.Analysis.Normed.Operator.Compact.FredholmAlternative
+import Mathlib.Analysis.Normed.Operator.Compact.FiniteDimension
 import Mathlib.Topology.Algebra.Module.FiniteDimension
 namespace Jacobians.SchwartzFiniteness
 

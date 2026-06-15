@@ -7,16 +7,12 @@ package jacobian where
     ⟨`autoImplicit, false⟩
   ]
 
--- Verso is required only by the docs/exposition site under `site/` (a separate Lake
--- package). Nothing in this library imports it, so `lake build` never builds it; the
--- require is retained here purely so the existing lake-manifest stays consistent.
--- (The former `:literateHtml` per-module facet has been retired.)
-require verso from git
-  "https://github.com/leanprover/verso.git" @ "v4.30.0-rc1"
-
+-- Pinned to lean-eval's v4.30.0 environment (toolchain + Mathlib commit) so the
+-- in-repo comparator checks the identical environment the hosted judge uses.
+-- (Verso, used only by the docs site under `site/`, is required there, not here.)
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git" @
-  "8e3c989104daaa052921bf43de9eef0e1ac9fbf5"
+  "c5ea00351c28e24afc9f0f84379aa41082b1188f"
 
 @[default_target]
 lean_lib Jacobians where

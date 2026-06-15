@@ -354,7 +354,7 @@ theorem integral_dbar_radialCutoff_meromorphic (hη : ContDiff ℝ 1 η)
             DbarDisk.dbar (fun w => χ w * (b k * (w - c) ^ (-(k : ℤ)))) z := by
       filter_upwards [compl_mem_ae_iff.mpr (measure_singleton c)] with z hz
       exact hP_expand z hz
-    rw [integral_congr_ae hae, integral_finset_sum _ hterm_intble]
+    rw [integral_congr_ae hae, integral_finsetSum _ hterm_intble]
     refine Finset.sum_congr rfl fun k hk => ?_
     -- each term: pull the constant out and use the single-power computation
     have hconst_ae : (fun z => DbarDisk.dbar (fun w => χ w * (b k * (w - c) ^ (-(k : ℤ)))) z)
@@ -409,7 +409,7 @@ theorem integral_dbar_radialCutoff_meromorphic (hη : ContDiff ℝ 1 η)
             DbarDisk.dbar (fun w => χ w * (b k * (w - c) ^ (-(k : ℤ)))) z := by
       filter_upwards [compl_mem_ae_iff.mpr (measure_singleton c)] with z hz
       exact hP_expand z hz
-    exact Integrable.congr (integrable_finset_sum _ hterm_intble) hae.symm
+    exact Integrable.congr (integrable_finsetSum _ hterm_intble) hae.symm
   have hG_intble : Integrable (fun z => DbarDisk.dbar (fun w => χ w * G w) z) volume := by
     have hcont : Continuous fun z => DbarDisk.dbar (fun w => χ w * G w) z := by
       rw [continuous_iff_continuousAt]

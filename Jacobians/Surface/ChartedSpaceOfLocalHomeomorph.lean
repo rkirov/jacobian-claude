@@ -36,9 +36,11 @@ lemma eq_chartAtPreimage {f : X → Y} (hf : IsLocalHomeomorph f) (x : X) :
 
 /-- Charted space structure on `Y` induced by a surjective local
 homeomorphism `f : X → Y`. The chart at `y` is the inverse of a partial
-homeomorphism around a chosen preimage of `y`. -/
+homeomorphism around a chosen preimage of `y`. (Distinct from Mathlib's
+`IsLocalHomeomorph.chartedSpace`, whose charts are built differently; downstream
+proofs here depend on the `chartAtPreimage _ _ |>.symm` normal form.) -/
 @[implicit_reducible]
-noncomputable def chartedSpace {f : X → Y} (hf : IsLocalHomeomorph f)
+noncomputable def chartedSpacePreimage {f : X → Y} (hf : IsLocalHomeomorph f)
     (hs : Function.Surjective f) : ChartedSpace X Y where
   atlas := Set.range fun y : Y =>
     (chartAtPreimage hf (Classical.choose (hs y))).symm

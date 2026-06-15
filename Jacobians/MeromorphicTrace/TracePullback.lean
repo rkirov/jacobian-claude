@@ -279,7 +279,7 @@ theorem ambientPullbackJac_periodVec_apply_eq_lineIntegral_traceFormTotal {X Y :
             ContinuousLinearMap.add_apply, ih]
           rfl
       simp_rw [h_pw]
-      rw [intervalIntegral.integral_finset_sum (s := Finset.univ)
+      rw [intervalIntegral.integral_finsetSum (s := Finset.univ)
         (f := fun j t => w j * (periodBasisForm Y j).toFun (δ t) (pathSpeed δ t))
         (fun j _ => (hint_Y j).const_mul (w j))]
       refine Finset.sum_congr rfl (fun j _ => ?_)
@@ -2120,7 +2120,7 @@ theorem lineIntegral_traceFormTotal_eq_sum_periodVec {X Y : Type*} [TopologicalS
   -- Step 3: pull the RHS sum inside the integral.
   have hRHS : ∑ i, periodVec (M.Γ i) j
       = ∫ t in (0:ℝ)..1, ∑ i, ωj.toFun (M.Γ i t) (pathSpeed (M.Γ i) t) := by
-    rw [intervalIntegral.integral_finset_sum (fun i _ => (M.smooth i).integrable j)]
+    rw [intervalIntegral.integral_finsetSum (fun i _ => (M.smooth i).integrable j)]
     rfl
   rw [hRHS]
   -- Unfold the LHS to an interval integral over the reparametrized integrand.

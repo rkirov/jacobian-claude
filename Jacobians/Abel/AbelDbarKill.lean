@@ -185,7 +185,7 @@ theorem pairFunctionalH01_surjective : Function.Surjective (pairFunctionalH01 X)
         cSmulForm_mem_zeroOne _ (conjForm_mem_zeroOne _)⟩ : ↥(OneFormsZeroOne X)) :
       ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
       = ∑ j, cSmulForm (constCF (v j)) (conjForm (periodBasisForm X j)) from by
-    exact_mod_cast AddSubmonoidClass.coe_finset_sum _ _]
+    exact_mod_cast AddSubmonoidClass.coe_finsetSum _ _]
   rw [pairForm_sum]
   rw [show (∑ j, pairForm (periodBasisForm X i)
         (cSmulForm (constCF (v j)) (conjForm (periodBasisForm X j))))

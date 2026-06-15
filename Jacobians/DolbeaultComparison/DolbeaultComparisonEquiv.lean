@@ -217,7 +217,7 @@ theorem dbarL_globalPrim_eq (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
         rw [hd]; module
   have hLHS : (dbarL (∑ k, gdTerm 𝔇 k g)) x
       = (∑ k, diskVal 𝔇 k g x • (dbarRho 𝔇 k x)) + g x := by
-    rw [map_sum, section_finset_sum_apply,
+    rw [map_sum, section_finsetSum_apply,
       show (∑ k, (dbarL (gdTerm 𝔇 k g)) x)
         = ∑ k, (diskVal 𝔇 k g x • (dbarRho 𝔇 k x) + rhoC 𝔇 k x • (g x))
         from Finset.sum_congr rfl fun k _ => dbarL_gdTerm_apply 𝔇 hg k x,
@@ -229,7 +229,7 @@ theorem dbarL_globalPrim_eq (𝔇 : ChartDiskCover X) {g : SmoothCOneForms X}
         = ((cechToDolbeaultForm 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) : ↥(OneFormsZeroOne X)) :
             SmoothCOneForms X) x + g x := by
       simp only [ContMDiffSection.coe_add, Pi.add_apply]
-    rw [h1, cechToDolbeaultForm_val, section_finset_sum_apply,
+    rw [h1, cechToDolbeaultForm_val, section_finsetSum_apply,
       show (∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι,
           cechTerm 𝔇 (dolbeaultToCechCocycle 𝔇 ⟨g, hg⟩) p.1 p.2 x)
         = ∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι,
@@ -323,7 +323,7 @@ theorem cechToDolbeaultForm_eq_on_Ui (𝔇 : ChartDiskCover X)
           image_eq_zero_of_notMem_tsupport hbj]
         rfl
       rw [hr, zero_mul, zero_mul]
-  rw [cechToDolbeaultForm_val, section_finset_sum_apply,
+  rw [cechToDolbeaultForm_val, section_finsetSum_apply,
     show (∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι, cechTerm 𝔇 f p.1 p.2 x)
       = ∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι,
           (rhoC 𝔇 p.1 x * (holoFn (cocycle_mem 𝔇 f i p.2) x - holoFn (cocycle_mem 𝔇 f i p.1) x))

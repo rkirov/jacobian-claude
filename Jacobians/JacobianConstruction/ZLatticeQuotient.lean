@@ -48,7 +48,7 @@ theorem isLocalHomeomorph_mk :
 /-- Charted space structure on `E ⧸ Λ` modelled on `E`, coming from the fact
 that the quotient map is a surjective local homeomorphism. -/
 noncomputable instance chartedSpaceQuotient : ChartedSpace E (E ⧸ Λ) :=
-  (isLocalHomeomorph_mk Λ).chartedSpace QuotientAddGroup.mk_surjective
+  (isLocalHomeomorph_mk Λ).chartedSpacePreimage QuotientAddGroup.mk_surjective
 
 end CoveringMap
 
@@ -93,7 +93,7 @@ lattice-translation argument.
 ## Proof of `IsManifold 𝓘(𝕜, E) n (E ⧸ Λ)`
 
 Apply `isManifold_of_contDiffOn`. Charts `e, e'` in the atlas come from
-`IsLocalHomeomorph.chartedSpace`, so each is `P.symm` for some
+`IsLocalHomeomorph.chartedSpacePreimage`, so each is `P.symm` for some
 `P : OpenPartialHomeomorph E (E ⧸ Λ)` agreeing with `QuotientAddGroup.mk`
 on its source. The transition `e.symm ≫ₕ e' = P ≫ₕ P'.symm : E → E`
 sends `x ∈ P.source` with `mk x ∈ P'.target` to the unique `y ∈ P'.source`
@@ -294,7 +294,7 @@ theorem contDiffOn_symm_mk [DiscreteTopology Λ]
 /-! ### Smoothness of the group operations on `E ⧸ Λ`
 
 The approach: each chart `chartAt q` on `E ⧸ Λ` unfolds (via
-`IsLocalHomeomorph.chartedSpace`) to the inverse of an
+`IsLocalHomeomorph.chartedSpacePreimage`) to the inverse of an
 `OpenPartialHomeomorph E (E ⧸ Λ)` agreeing with `mk`. So chart pullbacks
 of `add` and `neg` become expressions of the form `P.symm ∘ mk ∘ f`
 for a `ContDiff` `f : E → E` (or `f : E × E → E`). By `contDiffOn_symm_mk`
@@ -305,7 +305,7 @@ is then `ContDiff`. -/
 /-- The **quotient projection** `mk : E → E ⧸ Λ.toAddSubgroup` is `ContMDiff`.
 
 The chart on `E ⧸ Λ` at `mk x` is essentially `mk⁻¹` on a neighborhood
-(via `IsLocalHomeomorph.chartedSpace`), so the chart-pullback of `mk`
+(via `IsLocalHomeomorph.chartedSpacePreimage`), so the chart-pullback of `mk`
 along the trivial chart on `E` and this inverse chart is locally the
 identity, hence `ContDiff`. The proof mirrors the structure of
 `contMDiff_neg` but with `id` in place of the `neg` ambient map. -/

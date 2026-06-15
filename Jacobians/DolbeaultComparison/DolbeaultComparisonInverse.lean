@@ -618,7 +618,7 @@ noncomputable def cechToDolbeaultForm (𝔇 : ChartDiskCover X) :
 /-- `cechToDolbeaultForm 𝔇 f` is (the section underlying) the finite sum `∑_{(j,k)} T_jk`. Isolates
 the single subtype-coercion-through-a-`Finset.sum` step (the only place the transparency-option
 `isDefEq` cost on `cechTerm` bodies appears), so downstream uses go through
-`section_finset_sum_apply` cheaply. -/
+`section_finsetSum_apply` cheaply. -/
 theorem cechToDolbeaultForm_val (𝔇 : ChartDiskCover X)
     (f : ↥(𝔇.toFiniteCover.cocycles1 (0 : Divisor X))) :
     ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X)
@@ -626,11 +626,11 @@ theorem cechToDolbeaultForm_val (𝔇 : ChartDiskCover X)
   show ((∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι,
       (⟨cechTerm 𝔇 f p.1 p.2, cechTerm_mem_zeroOne 𝔇 f p.1 p.2⟩ : ↥(OneFormsZeroOne X)) :
       ↥(OneFormsZeroOne X)) : SmoothCOneForms X) = _
-  rw [AddSubmonoidClass.coe_finset_sum]
+  rw [AddSubmonoidClass.coe_finsetSum]
 
 /-- Section-eval commutes with finite sums of `(0,1)`-forms (generic; applied by unification, so it
 never whnfs the heavy `cechTerm` body — avoiding the transparency-option `isDefEq` blowup). -/
-theorem section_finset_sum_apply {ι : Type*} (s : ι → SmoothCOneForms X) (t : Finset ι) (x : X) :
+theorem section_finsetSum_apply {ι : Type*} (s : ι → SmoothCOneForms X) (t : Finset ι) (x : X) :
     (∑ i ∈ t, s i) x = ∑ i ∈ t, (s i) x := by
   have h1 : (⇑(∑ i ∈ t, s i)) = ∑ i ∈ t, ⇑(s i) := map_sum (ContMDiffSection.coeAddHom _ _ _ _) _ _
   rw [show ((∑ i ∈ t, s i) x) = (⇑(∑ i ∈ t, s i)) x from rfl, h1, Finset.sum_apply]
@@ -702,12 +702,12 @@ theorem cechToDolbeaultForm_coboundary_le (𝔇 : ChartDiskCover X) :
   rw [map_sum]
   refine ContMDiffSection.ext fun x => ?_
   have hLHS : (∑ k, dbarL (primFn 𝔇 k (hs k))) x = ∑ k, holoFn (hs k) x • (dbarRho 𝔇 k x) := by
-    rw [section_finset_sum_apply]
+    rw [section_finsetSum_apply]
     exact Finset.sum_congr rfl fun k _ => dbarL_primFn_apply 𝔇 k (hs k) x
   have hRHS : ((cechToDolbeaultForm 𝔇 f : ↥(OneFormsZeroOne X)) : SmoothCOneForms X) x
       = ∑ p : 𝔇.toFiniteCover.ι × 𝔇.toFiniteCover.ι,
           (rhoC 𝔇 p.1 x * (holoFn (hs p.2) x - holoFn (hs p.1) x)) • (dbarRho 𝔇 p.2 x) := by
-    rw [cechToDolbeaultForm_val, section_finset_sum_apply]
+    rw [cechToDolbeaultForm_val, section_finsetSum_apply]
     exact Finset.sum_congr rfl fun p _ => hTerm p.1 p.2 x
   rw [hLHS, hRHS]
   exact (telescope_sum (fun j => rhoC 𝔇 j x) (fun k => holoFn (hs k) x)

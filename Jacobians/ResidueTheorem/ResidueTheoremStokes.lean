@@ -602,7 +602,7 @@ theorem sum_integral_A_eq_zero [T2Space X] [CompactSpace X] [ConnectedSpace X] [
           (coverCenter j) (chartOpen (X := X) (coverCenter j)) w := by
         refine Finset.sum_congr rfl fun j _ => ?_
         rw [hexpand j]
-        exact integral_finset_sum _ (fun i _ => hintJ j i)
+        exact integral_finsetSum _ (fun i _ => hintJ j i)
     _ = ∑ j, ∑ i, ∫ w, ledgerIntegrand g₀ h
           (fun x => coverRhoC (X := X) i x * (uC D x - 1))
           (fun x => coverPoU (X := X) j x)
@@ -615,7 +615,7 @@ theorem sum_integral_A_eq_zero [T2Space X] [CompactSpace X] [ConnectedSpace X] [
           (coverCenter i) (chartOpen (X := X) (coverCenter i)) w := Finset.sum_comm
     _ = 0 := by
         refine Finset.sum_eq_zero fun i _ => ?_
-        rw [← integral_finset_sum _ (fun j _ => hintI j i)]
+        rw [← integral_finsetSum _ (fun j _ => hintI j i)]
         have hpt : (fun w => ∑ j, ledgerIntegrand g₀ h
             (fun x => coverRhoC (X := X) i x * (uC D x - 1))
             (fun x => coverPoU (X := X) j x)
@@ -675,7 +675,7 @@ theorem residueSum_pairForm_eq_zero_S [T2Space X] [CompactSpace X] [ConnectedSpa
             * (Complex.ofReal (deriv (D.η a)
                 (Complex.normSq (z - (chartAt (H := ℂ) a) a)))
               * (z - (chartAt (H := ℂ) a) a) * pairRead g₀ h a z) := by
-          refine integral_finset_sum _ (fun j _ => ?_)
+          refine integral_finsetSum _ (fun j _ => ?_)
           rw [show (fun z : ℂ => coverRhoC (X := X) j ((chartAt (H := ℂ) a).symm z)
               * (Complex.ofReal (deriv (D.η a)
                   (Complex.normSq (z - (chartAt (H := ℂ) a) a)))
@@ -714,7 +714,7 @@ theorem residueSum_pairForm_eq_zero_S [T2Space X] [CompactSpace X] [ConnectedSpa
           (coverCenter j) (chartOpen (X := X) (coverCenter j)) w := by
     rw [Finset.mul_sum, Finset.sum_congr rfl hchain, Finset.sum_comm]
     refine Finset.sum_congr rfl fun j _ => ?_
-    rw [← integral_finset_sum _ (fun a ha => integrable_polePiece g₀ h D hSbad ha j
+    rw [← integral_finsetSum _ (fun a ha => integrable_polePiece g₀ h D hSbad ha j
       (chartOpen_isOpen _)
       (chartOpen_subset_chartAt_source (coverCenter j) (coverCenter_mem j))
       (Set.inter_subset_right.trans (coverPoU_tsupport_subset (X := X) j)))]

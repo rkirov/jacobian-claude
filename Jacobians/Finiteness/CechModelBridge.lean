@@ -11,6 +11,7 @@
   `CechH0.analyticAt_chart_change`.
 -/
 import Jacobians.Finiteness.BddHol
+import Mathlib.Analysis.Normed.Operator.Compact.Basic
 
 open Metric Topology BoundedContinuousFunction
 

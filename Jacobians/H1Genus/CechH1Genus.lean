@@ -62,7 +62,7 @@ theorem exists_effective_h1Dim_eq_zero (𝔘 : FiniteCover X) (hR : 𝔘.Locally
   -- effectivity and degree bookkeeping.
   have hsum_nonneg : ∀ x, (0 : ℤ) ≤ (∑ i, Ak i) x := by
     intro x
-    rw [Finsupp.finset_sum_apply]
+    rw [Finsupp.finsetSum_apply]
     exact Finset.sum_nonneg fun i _ => by
       have := Finsupp.le_def.mp (hAk i) x
       simpa using this
@@ -78,7 +78,7 @@ theorem exists_effective_h1Dim_eq_zero (𝔘 : FiniteCover X) (hR : 𝔘.Locally
     intro i
     rw [Finsupp.le_def]
     intro x
-    rw [hA, Finsupp.add_apply, Finsupp.single_apply, Finsupp.finset_sum_apply]
+    rw [hA, Finsupp.add_apply, Finsupp.single_apply, Finsupp.finsetSum_apply]
     have hle : Ak i x ≤ ∑ j, Ak j x := by
       refine Finset.single_le_sum (f := fun j => Ak j x) (fun j _ => ?_) (Finset.mem_univ i)
       have := Finsupp.le_def.mp (hAk j) x

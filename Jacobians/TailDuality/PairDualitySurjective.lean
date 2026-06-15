@@ -266,7 +266,7 @@ theorem pairOrderBounded_of_vanishing {X : Type*} [TopologicalSpace X] [ChartedS
     · rfl
   have hval : tailResidue g₀ h (Finsupp.single ((p, -1 - o) : X × ℤ) (1 : ℂ))
       = laurentCoeff (pairCoeffFun g₀ h p) ((chartAt (H := ℂ) p) p) o := by
-    rw [tailResidue_apply, Finsupp.support_single_ne_zero _ one_ne_zero,
+    rw [tailResidue_apply, Finsupp.support_single _ one_ne_zero,
       Finset.sum_singleton, Finsupp.single_eq_same, one_mul, tailResidueWeight]
     congr 1
     omega

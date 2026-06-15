@@ -384,8 +384,8 @@ theorem loop_at_overlap_nullhomotopic {U V : Set Z} (hU : IsOpen U) (hV : IsOpen
   have hsubγ : (γ.subpath (t 0) (t (last n))).cast h0.symm hl.symm = γ := by
     ext s
     rw [Path.cast_coe]
-    show (γ ∘ Set.Icc.convexCombo (t 0) (t (last n))) s = γ s
-    rw [Function.comp_apply, ht0, htl, Set.Icc.convexCombo_zero_one]
+    show (γ ∘ Set.Icc.convexComb (t 0) (t (last n))) s = γ s
+    rw [Function.comp_apply, ht0, htl, Set.Icc.convexComb_zero_one]
   -- The doubly-cast constant path is the constant path.
   have hcastrefl : ((Path.refl o).cast h0 hl).cast h0.symm hl.symm = Path.refl o := by
     ext s; rw [Path.cast_coe, Path.cast_coe]

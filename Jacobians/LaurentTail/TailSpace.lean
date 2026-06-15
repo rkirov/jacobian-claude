@@ -259,7 +259,7 @@ private theorem single_toNat_apply_nonneg (a : X) (v : ℤ) (b : X) :
 theorem le_tailCutoff (A : Divisor X) (Z : TailSpace X) : A ≤ tailCutoff A Z := by
   rw [tailCutoff]
   refine le_add_of_nonneg_right fun p => ?_
-  rw [Finsupp.finset_sum_apply]
+  rw [Finsupp.finsetSum_apply]
   exact Finset.sum_nonneg fun q _ => single_toNat_apply_nonneg q.1 _ p
 
 /-- Every entry of `Z` has degree `≥ −(tailCutoff A Z)(p)`: the cutoff is deep enough. -/
@@ -267,7 +267,7 @@ theorem neg_tailCutoff_le_of_mem_support (A : Divisor X) (Z : TailSpace X) {q : 
     (hq : q ∈ Z.support) : -(tailCutoff A Z q.1) ≤ q.2 := by
   have hterm : -q.2 - A q.1
       ≤ (∑ r ∈ Z.support, Finsupp.single r.1 ((-r.2 - A r.1).toNat : ℤ)) q.1 := by
-    rw [Finsupp.finset_sum_apply]
+    rw [Finsupp.finsetSum_apply]
     calc -q.2 - A q.1 ≤ ((-q.2 - A q.1).toNat : ℤ) := Int.self_le_toNat _
       _ = (Finsupp.single q.1 ((-q.2 - A q.1).toNat : ℤ)) q.1 := Finsupp.single_eq_same.symm
       _ ≤ ∑ r ∈ Z.support, (Finsupp.single r.1 ((-r.2 - A r.1).toNat : ℤ)) q.1 :=

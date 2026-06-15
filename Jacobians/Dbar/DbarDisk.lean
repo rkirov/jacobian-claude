@@ -77,14 +77,14 @@ theorem integrableOn_inv_closedBall (R : ℝ) :
       rw [Set.indicator_of_mem hmem, Set.indicator_of_mem hpB]
       have hne : Complex.polarCoord.symm (r, θ) ≠ 0 := by
         rw [← norm_ne_zero_iff, Complex.norm_polarCoord_symm, abs_of_pos hr]; exact hr.ne'
-      rw [enorm_inv hne, ← ofReal_norm_eq_enorm, Complex.norm_polarCoord_symm, abs_of_pos hr,
+      rw [enorm_inv hne, ← ofReal_norm, Complex.norm_polarCoord_symm, abs_of_pos hr,
         smul_eq_mul, ← ENNReal.ofReal_inv_of_pos hr, ← ENNReal.ofReal_mul hr.le,
         mul_inv_cancel₀ hr.ne', ENNReal.ofReal_one]
     · -- outside the ball: the closedBall indicator vanishes.
       have hnmem : Complex.polarCoord.symm (r, θ) ∉ Metric.closedBall (0 : ℂ) R := by
         rw [Metric.mem_closedBall, dist_zero_right, Complex.norm_polarCoord_symm, abs_of_pos hr]
         exact hrR
-      rw [Set.indicator_of_notMem hnmem, smul_zero]; exact zero_le _
+      rw [Set.indicator_of_notMem hnmem, smul_zero]; exact zero_le
   calc
     ∫⁻ p in Complex.polarCoord.target,
           ENNReal.ofReal p.1 • (Metric.closedBall (0 : ℂ) R).indicator
@@ -94,7 +94,7 @@ theorem integrableOn_inv_closedBall (R : ℝ) :
           refine lintegral_mono fun p => ?_
           by_cases hp : p ∈ Complex.polarCoord.target
           · simpa [Set.indicator_of_mem hp] using hbound p hp
-          · rw [Set.indicator_of_notMem hp]; exact zero_le _
+          · rw [Set.indicator_of_notMem hp]; exact zero_le
       _ = volume B := by
           rw [lintegral_indicator (by exact (measurableSet_Ioc.prod measurableSet_Ioo)),
             setLIntegral_const, one_mul]

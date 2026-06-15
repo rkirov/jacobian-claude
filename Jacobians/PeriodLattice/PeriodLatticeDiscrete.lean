@@ -396,7 +396,7 @@ theorem truePeriodLattice_isolated_zero :
   have hD_apply : ∀ y : X, D y = ∑ j, ((if x j = y then (1 : ℤ) else 0)
       - (if a j = y then 1 else 0)) := by
     intro y
-    rw [hD, Finsupp.finset_sum_apply]
+    rw [hD, Finsupp.finsetSum_apply]
     refine Finset.sum_congr rfl fun j _ => ?_
     rw [Finsupp.sub_apply, Finsupp.single_apply, Finsupp.single_apply]
   have hxO : ∀ j, x j ∈ O j := fun j => (hx_mem j).1
